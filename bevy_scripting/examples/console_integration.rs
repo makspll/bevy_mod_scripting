@@ -1,6 +1,6 @@
-use bevy::prelude::*;
+use bevy::{prelude::*, ecs::event::Events};
 use bevy_asset_loader::{AssetCollection, AssetLoader};
-use bevy_console::{AddConsoleCommand, ConsoleCommand, ConsolePlugin};
+use bevy_console::{AddConsoleCommand, ConsoleCommand, ConsolePlugin, PrintConsoleLine};
 use bevy_scripting::{
     APIProvider, LuaEvent, LuaFile, LuaPlugin, RLuaScriptHost, Script, ScriptHost,
 };
@@ -27,18 +27,21 @@ impl APIProvider for LuaAPIProvider {
         // return any `FromLuaMulti` arguments, here a `usize`
         // check the Rlua documentation for more details
         RLuaScriptHost::<Self>::register_api_callback(
-            "test",
-            |ctx, ()| {
+            "print_to_console",
+            |ctx, msg : String| {
                 // retrieve the world pointer
                 let world_data: LuaLightUserData = ctx.globals().get("world").unwrap();
                 let world = unsafe { &mut *(world_data.0 as *mut World) };
-
-                // do stuff
+                
+                // do stuff with it
                 // ...
 
-                // return something
+                let mut events : Mut<Events<PrintConsoleLine>> = world.get_resource_mut().unwrap();
+                events.send(PrintConsoleLine{ line: msg });
 
-                Ok(world.components().len())
+
+                // return something
+                Ok(())
             },
             ctx,
         )
