@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 pub mod hosts;
-pub use {hosts::*};
+pub use hosts::*;
 
 #[derive(Default)]
 pub struct LuaPlugin;

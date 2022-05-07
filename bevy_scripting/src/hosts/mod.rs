@@ -92,7 +92,7 @@ pub fn script_event_handler<H: ScriptHost>(world: &mut World) {
         |world, mut cached_state: Mut<CachedScriptEventState<H::ScriptEventType>>| {
             // we need to clone the events otherwise we cannot perform the subsequent query for scripts
             // assumption is that events are few, so this shouldn't be much of a problem
-            let events : Vec<<H as ScriptHost>::ScriptEventType> = cached_state
+            let events: Vec<<H as ScriptHost>::ScriptEventType> = cached_state
                 .event_state
                 .get_mut(world)
                 .iter()
@@ -100,7 +100,7 @@ pub fn script_event_handler<H: ScriptHost>(world: &mut World) {
                 .collect();
 
             match H::handle_events(world, &events) {
-                Ok(_) => {},
+                Ok(_) => {}
                 Err(e) => warn!("{}", e),
             }
         },
