@@ -5,6 +5,9 @@ name: Continuous integration
 jobs:
   check:
     name: Check
+    defaults:
+      run:
+        working-directory: ./bevy_scripting
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
@@ -19,6 +22,9 @@ jobs:
 
   test:
     name: Test Suite
+    defaults:
+      run:
+        working-directory: ./bevy_scripting
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
@@ -33,6 +39,9 @@ jobs:
 
   fmt:
     name: Rustfmt
+    defaults:
+      run:
+        working-directory: ./bevy_scripting
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
@@ -49,6 +58,9 @@ jobs:
 
   clippy:
     name: Clippy
+    defaults:
+      run:
+        working-directory: ./bevy_scripting
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
