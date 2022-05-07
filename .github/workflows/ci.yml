@@ -18,11 +18,21 @@ jobs:
       - run: rustup component add rustfmt
       - run: rustup component add clippy
       - name: cargo check
-        run: cargo check 
+        uses: actions-rs/cargo@v1
+        with:
+          command: check
       - name: cargo test
-        run: cargo check
+        uses: actions-rs/cargo@v1
+        with:
+          command: test
       - name: cargo fmt
-        run: cargo fmt --all -- --check
+        uses: actions-rs/cargo@v1
+        with:
+          command: fmt
+          args: --all -- --check
       - name: clippy
-        run: cargo clippy -- -D warnings
+        uses: actions-rs/cargo@v1
+        with:
+          command: clippy
+          args: -- -D warnings
   
