@@ -5,7 +5,7 @@ use bevy::{
     ecs::system::SystemState,
     prelude::{
         warn, Added, App, Assets, Component, EventReader, FromWorld, Handle, Mut, Query,
-        RemovedComponents, Res, ResMut, StageLabel, World,
+        RemovedComponents, Res, ResMut, StageLabel, World, Entity,
     },
 };
 pub use rlua_host::*;
@@ -32,7 +32,9 @@ pub struct Script<T: Asset> {
 
 #[derive(Default)]
 pub struct ScriptContexts<H: ScriptHost> {
-    pub contexts: HashMap<String, H::ScriptContext>,
+    /// holds script contexts for all scripts
+    /// and keeps track of which entities they're attached to
+    pub contexts: HashMap<u32,HashMap<String, H::ScriptContext>>,
 }
 
 pub struct CachedScriptEventState<'w, 's, S: Send + Sync + 'static> {
@@ -48,14 +50,15 @@ impl<'w, 's, S: Send + Sync + 'static> FromWorld for CachedScriptEventState<'w, 
 }
 
 pub fn script_add_synchronizer<H: ScriptHost + 'static>(
-    query: Query<(
-        &Script<H::ScriptAssetType>,
+    query: Query<
+        (Entity,&Script<H::ScriptAssetType>),
         Added<Script<H::ScriptAssetType>>,
-    )>,
+    >,
     mut contexts: ResMut<ScriptContexts<H>>,
     script_assets: Res<Assets<H::ScriptAssetType>>,
 ) {
-    query.for_each(|(new_script, _added)| {
+
+    query.for_each(|(entity,new_script)| {
         let script = match script_assets.get(&new_script.handle) {
             Some(s) => s,
             None => {
@@ -66,9 +69,22 @@ pub fn script_add_synchronizer<H: ScriptHost + 'static>(
 
         match H::load_script(script.bytes(), &new_script.name) {
             Ok(ctx) => {
-                H::ScriptAPIProvider::attach_api(&ctx);
 
-                contexts.contexts.insert(new_script.name.clone(), ctx);
+                // allow plugging in an API 
+                H::ScriptAPIProvider::attach_api(&ctx);
+                
+                let name_map= contexts.contexts
+                    .entry(entity.id())
+                    .or_default();
+                
+                // if the script already exists on an entity, panic
+                // not allowed at least for now
+                if name_map.contains_key(&new_script.name){
+                    panic!("Attempted to attach script: {} to entity which already has another copy of this script attached", new_script.name);
+                } 
+
+                name_map.insert(new_script.name.clone(),ctx);
+                    
             }
             Err(_e) => {
                 warn! {"Failed to load script: {}", new_script.name}
@@ -79,12 +95,17 @@ pub fn script_add_synchronizer<H: ScriptHost + 'static>(
 }
 
 pub fn script_remove_synchronizer<H: ScriptHost + 'static>(
-    _query: RemovedComponents<Script<H::ScriptAssetType>>,
-    _contexts: ResMut<ScriptContexts<H>>,
-    _script_assets: Res<Assets<H::ScriptAssetType>>,
+    query: RemovedComponents<Script<H::ScriptAssetType>>,
+    mut contexts: ResMut<ScriptContexts<H>>,
 ) {
 
-    // TODO : this functionality
+    let ctxs = &mut contexts.contexts;
+    query.iter().for_each(|v| {
+        // we know that this entity used to have a script component
+        // ergo a script context must exist in ctxs, remove it 
+        ctxs.remove(&v.id());
+
+    })
 }
 
 pub fn script_event_handler<H: ScriptHost>(world: &mut World) {

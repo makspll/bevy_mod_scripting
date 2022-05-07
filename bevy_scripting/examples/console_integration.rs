@@ -54,6 +54,7 @@ pub struct RunScriptCmd {
     pub path: String,
 }
 
+
 pub fn run_script_cmd(
     mut log: ConsoleCommand<RunScriptCmd>,
     server: Res<AssetServer>,
@@ -61,22 +62,54 @@ pub fn run_script_cmd(
 ) {
     if let Some(RunScriptCmd { path }) = log.take() {
         info!("Running script: scripts/{}", path);
-        log.ok();
 
         let handle = server.load::<LuaFile, &str>(&format!("scripts/{}", &path));
 
-        commands.spawn().insert(Script::<
+        let entity = commands.spawn().insert(Script::<
             <RLuaScriptHost<LuaAPIProvider> as ScriptHost>::ScriptAssetType,
         > {
             handle,
             name: path,
-        });
+        }).id().id();
+
+        log.reply_ok(format!("Running script on entity with ID: {entity}"))
+
     }
 }
+
+#[derive(ConsoleCommand)]
+#[console_command(name = "delete_script")]
+///Runs a Lua script from the `assets/scripts` directory
+pub struct DeleteScriptCmd {
+    ///the entity the script is attached to (only one script can be attached to an entitty as of now)
+    pub entity_id: u32,
+}
+
 
 /// optional, hot reloading
 fn watch_assets(server: Res<AssetServer>) {
     server.watch_for_changes().unwrap();
+}
+
+pub fn delete_script_cmd<H : ScriptHost>(
+    mut log: ConsoleCommand<DeleteScriptCmd>,
+    mut commands: Commands,
+    scripts : Query<(Entity,&Script<H::ScriptAssetType>)>
+) {
+    if let Some(DeleteScriptCmd { entity_id }) = log.take() {
+
+        for (e,s) in scripts.iter() {
+            if e.id() == entity_id {
+                commands.entity(e)
+                    .remove::<Script<H::ScriptAssetType>>();
+                log.reply_ok(format!("Deleted script {}",s.name));
+                return;
+            }
+        };
+        
+        log.reply_failed("Could not find given entity ID with a script")
+
+    }
 }
 
 /// sends updates to script host which are then handled by the scripts
@@ -104,6 +137,7 @@ fn main() -> std::io::Result<()> {
         .add_startup_system(watch_assets)
         .add_state(GameState::AssetLoading)
         .add_console_command::<RunScriptCmd, _, _>(run_script_cmd)
+        .add_console_command::<DeleteScriptCmd, _, _>(delete_script_cmd::<RLuaScriptHost<LuaAPIProvider>>)
         .add_system(trigger_on_update_script_callback);
 
     // bevy_asset_loader

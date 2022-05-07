@@ -5,7 +5,7 @@ use std::sync::{Arc, Mutex};
 
 use crate::{
     script_add_synchronizer, script_event_handler, APIProvider, CachedScriptEventState, CodeAsset,
-    ScriptContexts, ScriptHost,
+    ScriptContexts, ScriptHost, script_remove_synchronizer,
 };
 use anyhow::{anyhow, Result};
 use beau_collector::BeauCollector as _;
@@ -93,6 +93,7 @@ impl<A: APIProvider<Ctx = Mutex<Lua>>> ScriptHost for RLuaScriptHost<A> {
             stage,
             SystemSet::new()
                 .with_system(script_add_synchronizer::<Self>)
+                .with_system(script_remove_synchronizer::<Self>)
                 .with_system(script_event_handler::<Self>.exclusive_system().at_end()),
         );
     }
@@ -118,34 +119,39 @@ impl<A: APIProvider<Ctx = Mutex<Lua>>> ScriptHost for RLuaScriptHost<A> {
         // instead of storing contexts directly on the components
         world.resource_scope(|world, res: Mut<ScriptContexts<Self>>| {
             res.contexts
-                .iter()
-                .map(|(_script_name, ctx)| {
-                    let lua_ctx = ctx.lock().unwrap();
+                .values()
+                .flat_map(|ctx| {
 
-                    lua_ctx.context::<_, Result<()>>(|lua_ctx| {
-                        let globals = lua_ctx.globals();
-                        lua_ctx.scope::<_, Result<()>>(|_lua_scope| {
-                            globals.set(
-                                "world",
-                                LuaLightUserData(world as *mut World as *mut c_void),
-                            )?;
-
-                            // event order is preserved, but scripts can't rely on any temporal
-                            // guarantees when it comes to other scripts callbacks,
-                            // at least for now
-                            for event in events.iter() {
-                                let f: Function = match globals.get(event.hook_name.clone()) {
-                                    Ok(f) => f,
-                                    Err(_) => continue, // not subscribed to this event
-                                };
-
-                                f.call::<MultiValue, ()>(event.args.clone().to_lua_multi(lua_ctx)?)
-                                    .map_err(|e| anyhow!("Runtime LUA error: {}", e))?;
-                            }
-
-                            Ok(())
+                    let world_ptr = LuaLightUserData(world as *mut World as *mut c_void);
+                    ctx
+                        .values()
+                        .map(move |ctx| {
+                            let lua_ctx = ctx.lock().unwrap();
+                            
+                            lua_ctx.context::<_, Result<()>>(|lua_ctx| {
+                                let globals = lua_ctx.globals();
+                                    globals.set(
+                                        "world",
+                                        world_ptr
+                                    )?;
+        
+                                    // event order is preserved, but scripts can't rely on any temporal
+                                    // guarantees when it comes to other scripts callbacks,
+                                    // at least for now
+                                    for event in events.iter() {
+                                        let f: Function = match globals.get(event.hook_name.clone()) {
+                                            Ok(f) => f,
+                                            Err(_) => continue, // not subscribed to this event
+                                        };
+        
+                                        f.call::<MultiValue, ()>(event.args.clone().to_lua_multi(lua_ctx)?)
+                                            .map_err(|e| anyhow!("Runtime LUA error: {}", e))?;
+                                    }
+        
+                                Ok(())
+                            })
                         })
-                    })
+
                 })
                 .bcollect()
         })
@@ -168,37 +174,3 @@ impl<API: APIProvider<Ctx = Mutex<Lua>>> RLuaScriptHost<API> {
         });
     }
 }
-
-// pub trait RLuaAPIProvider : rlua::UserData {
-//     fn get_world(& self) -> &World;
-// }
-
-// pub struct DefaultRluaAPI<'a> {
-//     world : &'a World
-// }
-
-// impl RLuaAPIProvider for DefaultRluaAPI<'_> {
-//     fn get_world(&self) -> &World {
-//         self.world
-//     }
-// }
-
-// pub trait Registrar {
-//     fn add_methods<'lua,'a, T: LuaUserDataMethods<'lua,DefaultRluaAPI<'a>>>(methods : *mut T);
-// }
-
-// type APIFunction<'lua> = fn(&);
-
-// pub static RLUA_API: Lazy<Mutex<dyn Registrar>> = Lazy::new (|| {
-
-// });
-
-// impl rlua::UserData for DefaultRluaAPI<'_> {
-//     fn add_methods<'lua, T: LuaUserDataMethods<'lua, Self>>(methods: &mut T) {
-//         methods.add_method("test", |lua_ctx, world, ()| {
-//             info!("test called yippe!");
-
-//             Ok(5)
-//         })
-//     }
-// }
