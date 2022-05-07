@@ -1,5 +1,7 @@
-use std::sync::Arc;
-use bevy::{prelude::*, asset::{AssetLoader, LoadedAsset}, reflect::TypeUuid};
 use anyhow::Result;
-
-
+use bevy::{
+    asset::{AssetLoader, LoadedAsset},
+    prelude::*,
+    reflect::TypeUuid,
+};
+use std::sync::Arc;

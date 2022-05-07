@@ -1,9 +1,7 @@
-
-use bevy::{prelude::*};
-pub mod hosts;
+use bevy::prelude::*;
 pub mod assets;
-pub use {hosts::*, assets::*};
-
+pub mod hosts;
+pub use {assets::*, hosts::*};
 
 #[derive(Default)]
 pub struct LuaPlugin;
@@ -13,13 +11,5 @@ impl Plugin for LuaPlugin {
         // custom assets
         app.add_asset::<LuaFile>();
         app.init_asset_loader::<LuaLoader>();
-
     }
 }
-
-
-
-
-
-
-
