@@ -1,7 +1,7 @@
 use std::ffi::c_void;
 use std::marker::PhantomData;
-use std::ops::Deref;
-use std::sync::{Arc, Mutex, MutexGuard};
+
+use std::sync::{Arc, Mutex};
 
 use crate::{
     script_add_synchronizer, script_event_handler, APIProvider, CachedScriptEventState, CodeAsset,
@@ -10,13 +10,12 @@ use crate::{
 use anyhow::{anyhow, Result};
 use beau_collector::BeauCollector as _;
 use bevy::asset::{AssetLoader, LoadedAsset};
-use bevy::ecs::world::WorldCell;
+
 use bevy::prelude::{
-    info, App, CoreStage, ExclusiveSystemDescriptorCoercion, IntoExclusiveSystem, Mut,
-    ParallelSystemDescriptorCoercion, StageLabel, SystemSet, World,
+    App, ExclusiveSystemDescriptorCoercion, IntoExclusiveSystem, Mut, StageLabel, SystemSet, World,
 };
 use bevy::reflect::TypeUuid;
-use once_cell::sync::{Lazy, OnceCell};
+
 use rlua::prelude::*;
 use rlua::{Context, Function, Lua, MultiValue, ToLua, ToLuaMulti};
 
@@ -120,12 +119,12 @@ impl<A: APIProvider<Ctx = Mutex<Lua>>> ScriptHost for RLuaScriptHost<A> {
         world.resource_scope(|world, res: Mut<ScriptContexts<Self>>| {
             res.contexts
                 .iter()
-                .map(|(script_name, ctx)| {
+                .map(|(_script_name, ctx)| {
                     let lua_ctx = ctx.lock().unwrap();
 
                     lua_ctx.context::<_, Result<()>>(|lua_ctx| {
                         let globals = lua_ctx.globals();
-                        lua_ctx.scope::<_, Result<()>>(|lua_scope| {
+                        lua_ctx.scope::<_, Result<()>>(|_lua_scope| {
                             globals.set(
                                 "world",
                                 LuaLightUserData(world as *mut World as *mut c_void),

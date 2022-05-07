@@ -48,14 +48,14 @@ impl<'w, 's, S: Send + Sync + 'static> FromWorld for CachedScriptEventState<'w, 
 }
 
 pub fn script_add_synchronizer<H: ScriptHost + 'static>(
-    mut query: Query<(
+    query: Query<(
         &Script<H::ScriptAssetType>,
         Added<Script<H::ScriptAssetType>>,
     )>,
     mut contexts: ResMut<ScriptContexts<H>>,
-    mut script_assets: Res<Assets<H::ScriptAssetType>>,
+    script_assets: Res<Assets<H::ScriptAssetType>>,
 ) {
-    query.for_each(|(new_script, added)| {
+    query.for_each(|(new_script, _added)| {
         let script = match script_assets.get(&new_script.handle) {
             Some(s) => s,
             None => {
@@ -70,7 +70,7 @@ pub fn script_add_synchronizer<H: ScriptHost + 'static>(
 
                 contexts.contexts.insert(new_script.name.clone(), ctx);
             }
-            Err(e) => {
+            Err(_e) => {
                 warn! {"Failed to load script: {}", new_script.name}
                 // TODO: deal with component, remove ? or make ctx Optional
             }
@@ -79,9 +79,9 @@ pub fn script_add_synchronizer<H: ScriptHost + 'static>(
 }
 
 pub fn script_remove_synchronizer<H: ScriptHost + 'static>(
-    mut query: RemovedComponents<Script<H::ScriptAssetType>>,
-    mut contexts: ResMut<ScriptContexts<H>>,
-    mut script_assets: Res<Assets<H::ScriptAssetType>>,
+    _query: RemovedComponents<Script<H::ScriptAssetType>>,
+    _contexts: ResMut<ScriptContexts<H>>,
+    _script_assets: Res<Assets<H::ScriptAssetType>>,
 ) {
 
     // TODO : this functionality
