@@ -16,7 +16,7 @@ pub trait AddScriptHost {
 }
 
 pub trait CodeAsset: Asset {
-    fn bytes<'a>(&'a self) -> &'a [u8];
+    fn bytes(&self) -> &[u8];
 }
 
 pub trait APIProvider: 'static + Default {
@@ -64,7 +64,7 @@ pub fn script_add_synchronizer<H: ScriptHost + 'static>(
             }
         };
 
-        match H::load_script(&script.bytes(), &new_script.name) {
+        match H::load_script(script.bytes(), &new_script.name) {
             Ok(ctx) => {
                 H::ScriptAPIProvider::attach_api(&ctx);
 
@@ -92,15 +92,15 @@ pub fn script_event_handler<H: ScriptHost>(world: &mut World) {
         |world, mut cached_state: Mut<CachedScriptEventState<H::ScriptEventType>>| {
             // we need to clone the events otherwise we cannot perform the subsequent query for scripts
             // assumption is that events are few, so this shouldn't be much of a problem
-            let events = cached_state
+            let events : Vec<<H as ScriptHost>::ScriptEventType> = cached_state
                 .event_state
                 .get_mut(world)
                 .iter()
-                .map(|v| v.clone())
+                .cloned()
                 .collect();
 
             match H::handle_events(world, &events) {
-                Ok(_) => return,
+                Ok(_) => {},
                 Err(e) => warn!("{}", e),
             }
         },
@@ -114,7 +114,7 @@ pub trait ScriptHost: Send + Sync {
     type ScriptAPIProvider: APIProvider<Ctx = Self::ScriptContext>;
 
     fn load_script(path: &[u8], script_name: &str) -> Result<Self::ScriptContext>;
-    fn handle_events(world: &mut World, events: &Vec<Self::ScriptEventType>) -> Result<()>;
+    fn handle_events(world: &mut World, events: &[Self::ScriptEventType]) -> Result<()>;
 
     /// registers the script host with the given app, and stage.
     /// all script events generated will be handled at the end of this stage. Ideally place after update

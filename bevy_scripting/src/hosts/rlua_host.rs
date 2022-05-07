@@ -26,7 +26,7 @@ pub struct LuaFile {
 }
 
 impl CodeAsset for LuaFile {
-    fn bytes<'a>(&'a self) -> &'a [u8] {
+    fn bytes(&self) -> &[u8] {
         &self.bytes
     }
 }
@@ -104,7 +104,7 @@ impl<A: APIProvider<Ctx = Mutex<Lua>>> ScriptHost for RLuaScriptHost<A> {
                 .load(script)
                 .set_name(script_name)
                 .map(|c| c.exec())
-                .map_err(|_e| anyhow!("Error loading script {}", script_name))?;
+                .map_err(|_e| anyhow!("Error loading script {}", script_name))??;
 
             Ok(())
         })?;
@@ -112,7 +112,7 @@ impl<A: APIProvider<Ctx = Mutex<Lua>>> ScriptHost for RLuaScriptHost<A> {
         Ok(Mutex::new(lua))
     }
 
-    fn handle_events(world: &mut World, events: &Vec<Self::ScriptEventType>) -> Result<()> {
+    fn handle_events(world: &mut World, events: &[Self::ScriptEventType]) -> Result<()> {
         // we need to do this since scripts need access to the world, but they also
         // live in it, hence we only store indices into a resource which can then be scoped
         // instead of storing contexts directly on the components
@@ -133,7 +133,7 @@ impl<A: APIProvider<Ctx = Mutex<Lua>>> ScriptHost for RLuaScriptHost<A> {
                             // event order is preserved, but scripts can't rely on any temporal
                             // guarantees when it comes to other scripts callbacks,
                             // at least for now
-                            for event in events.into_iter() {
+                            for event in events.iter() {
                                 let f: Function = match globals.get(event.hook_name.clone()) {
                                     Ok(f) => f,
                                     Err(_) => continue, // not subscribed to this event
@@ -164,7 +164,7 @@ impl<API: APIProvider<Ctx = Mutex<Lua>>> RLuaScriptHost<API> {
     {
         script.lock().unwrap().context(|lua_ctx| {
             let f = lua_ctx.create_function(callback).unwrap();
-            lua_ctx.globals().set(callback_fn_name, f);
+            lua_ctx.globals().set(callback_fn_name, f).unwrap();
         });
     }
 }
