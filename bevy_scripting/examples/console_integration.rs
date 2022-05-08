@@ -1,8 +1,8 @@
-use bevy::{prelude::*, ecs::event::Events};
+use bevy::{ecs::event::Events, prelude::*};
 use bevy_asset_loader::{AssetCollection, AssetLoader};
-use bevy_console::{AddConsoleCommand, ConsoleCommand, ConsolePlugin, PrintConsoleLine, FromValue};
+use bevy_console::{AddConsoleCommand, ConsoleCommand, ConsolePlugin, PrintConsoleLine};
 use bevy_scripting::{
-    APIProvider, LuaEvent, LuaFile, LuaPlugin, RLuaScriptHost, Script, ScriptHost, ScriptCollection,
+    APIProvider, LuaEvent, LuaFile, LuaPlugin, RLuaScriptHost, Script, ScriptCollection, ScriptHost,
 };
 use rlua::{prelude::LuaLightUserData, Lua};
 use std::sync::Mutex;
@@ -28,17 +28,16 @@ impl APIProvider for LuaAPIProvider {
         // check the Rlua documentation for more details
         RLuaScriptHost::<Self>::register_api_callback(
             "print_to_console",
-            |ctx, msg : String| {
+            |ctx, msg: String| {
                 // retrieve the world pointer
                 let world_data: LuaLightUserData = ctx.globals().get("world").unwrap();
                 let world = unsafe { &mut *(world_data.0 as *mut World) };
-                
+
                 // do stuff with it
                 // ...
 
-                let mut events : Mut<Events<PrintConsoleLine>> = world.get_resource_mut().unwrap();
-                events.send(PrintConsoleLine{ line: msg });
-
+                let mut events: Mut<Events<PrintConsoleLine>> = world.get_resource_mut().unwrap();
+                events.send(PrintConsoleLine { line: msg });
 
                 // return something
                 Ok(())
@@ -59,7 +58,6 @@ pub fn trigger_on_update_script_callback(mut w: EventWriter<LuaEvent>) {
     w.send(event);
 }
 
-
 fn main() -> std::io::Result<()> {
     let mut app = App::new();
     app.add_plugins(DefaultPlugins)
@@ -68,7 +66,9 @@ fn main() -> std::io::Result<()> {
         .add_startup_system(watch_assets)
         .add_state(GameState::AssetLoading)
         .add_console_command::<RunScriptCmd, _, _>(run_script_cmd)
-        .add_console_command::<DeleteScriptCmd, _, _>(delete_script_cmd::<RLuaScriptHost<LuaAPIProvider>>)
+        .add_console_command::<DeleteScriptCmd, _, _>(
+            delete_script_cmd::<RLuaScriptHost<LuaAPIProvider>>,
+        )
         .add_system(trigger_on_update_script_callback);
 
     // bevy_asset_loader
@@ -86,7 +86,6 @@ fn main() -> std::io::Result<()> {
     Ok(())
 }
 
-
 // we use bevy-debug-console to demonstrate how this can fit in in the runtime of a game
 // note that using just the entity id instead of the full Entity has issues,
 // but since we aren't despawning/spawning entities this works in our case
@@ -97,81 +96,80 @@ pub struct RunScriptCmd {
     /// the relative path to the script, e.g.: `/hello.lua` for a script located in `assets/scripts/hello.lua`
     pub path: String,
 
-    /// the entity id to attach this script to 
-    pub entity: Option<u32> 
+    /// the entity id to attach this script to
+    pub entity: Option<u32>,
 }
-
-
 
 pub fn run_script_cmd(
     mut log: ConsoleCommand<RunScriptCmd>,
     server: Res<AssetServer>,
     mut commands: Commands,
-    mut existing_scripts: Query<&mut ScriptCollection<<RLuaScriptHost<LuaAPIProvider> as ScriptHost>::ScriptAssetType>>
+    mut existing_scripts: Query<
+        &mut ScriptCollection<<RLuaScriptHost<LuaAPIProvider> as ScriptHost>::ScriptAssetType>,
+    >,
 ) {
     if let Some(RunScriptCmd { path, entity }) = log.take() {
         info!("Running script: scripts/{}", path);
 
         let handle = server.load::<LuaFile, &str>(&format!("scripts/{}", &path));
 
-
         match entity {
             Some(e) => {
                 if let Ok(mut scripts) = existing_scripts.get_mut(Entity::from_raw(e)) {
-                    scripts.scripts.push(Script::<<RLuaScriptHost<LuaAPIProvider> as ScriptHost>::ScriptAssetType>
-                        ::new::<RLuaScriptHost<LuaAPIProvider>>(path,handle));
+                    scripts.scripts.push(Script::<
+                        <RLuaScriptHost<LuaAPIProvider> as ScriptHost>::ScriptAssetType,
+                    >::new::<RLuaScriptHost<LuaAPIProvider>>(
+                        path, handle
+                    ));
                 } else {
                     log.reply_failed(format!("Something went wrong"));
                 };
-            },
+            }
             None => {
                 commands.spawn().insert(ScriptCollection::<
                     <RLuaScriptHost<LuaAPIProvider> as ScriptHost>::ScriptAssetType,
                 > {
-                    scripts: vec![Script::<<RLuaScriptHost<LuaAPIProvider> as ScriptHost>::ScriptAssetType>
-                    ::new::<RLuaScriptHost<LuaAPIProvider>>(path,handle)],
+                    scripts: vec![Script::<
+                        <RLuaScriptHost<LuaAPIProvider> as ScriptHost>::ScriptAssetType,
+                    >::new::<RLuaScriptHost<LuaAPIProvider>>(
+                        path, handle
+                    )],
                 });
-            },
+            }
         };
     }
 }
-
-
 
 /// optional, hot reloading
 fn watch_assets(server: Res<AssetServer>) {
     server.watch_for_changes().unwrap();
 }
 
-pub fn delete_script_cmd<H : ScriptHost>(
+pub fn delete_script_cmd<H: ScriptHost>(
     mut log: ConsoleCommand<DeleteScriptCmd>,
-    mut scripts : Query<(Entity,&mut ScriptCollection<H::ScriptAssetType>)>
+    mut scripts: Query<(Entity, &mut ScriptCollection<H::ScriptAssetType>)>,
 ) {
     if let Some(DeleteScriptCmd { name, entity_id }) = log.take() {
-
-        for (e,mut s) in scripts.iter_mut() {
+        for (e, mut s) in scripts.iter_mut() {
             if e.id() == entity_id {
-
                 let old_len = s.scripts.len();
-                s.scripts.retain( |s|{
-                    s.name() != name
-                });
+                s.scripts.retain(|s| s.name() != name);
 
-                if old_len > s.scripts.len(){
-                    log.reply_ok(format!("Deleted script {}, on entity: {}",name, entity_id));
+                if old_len > s.scripts.len() {
+                    log.reply_ok(format!("Deleted script {}, on entity: {}", name, entity_id));
                 } else {
-                    log.reply_failed(format!("Entity {} did own a script named: {}",entity_id, name))
+                    log.reply_failed(format!(
+                        "Entity {} did own a script named: {}",
+                        entity_id, name
+                    ))
                 };
-                return
-                
+                return;
             }
-        };
-        
-        log.reply_failed("Could not find given entity ID with a script")
+        }
 
+        log.reply_failed("Could not find given entity ID with a script")
     }
 }
-
 
 #[derive(Clone, Eq, PartialEq, Debug, Hash)]
 enum GameState {
@@ -183,7 +181,6 @@ enum GameState {
 #[console_command(name = "delete_script")]
 ///Runs a Lua script from the `assets/scripts` directory
 pub struct DeleteScriptCmd {
-
     /// the name of the script
     pub name: String,
 

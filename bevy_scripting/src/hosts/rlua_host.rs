@@ -4,8 +4,8 @@ use std::marker::PhantomData;
 use std::sync::{Arc, Mutex};
 
 use crate::{
-    script_add_synchronizer, script_event_handler, APIProvider, CachedScriptEventState, CodeAsset,
-    ScriptContexts, ScriptHost, script_remove_synchronizer,
+    script_add_synchronizer, script_event_handler, script_remove_synchronizer, APIProvider,
+    CachedScriptEventState, CodeAsset, ScriptContexts, ScriptHost,
 };
 use anyhow::{anyhow, Result};
 use beau_collector::BeauCollector as _;
@@ -121,37 +121,30 @@ impl<A: APIProvider<Ctx = Mutex<Lua>>> ScriptHost for RLuaScriptHost<A> {
             res.contexts
                 .values()
                 .flat_map(|ctx| {
-
                     let world_ptr = LuaLightUserData(world as *mut World as *mut c_void);
-                    ctx
-                        .values()
-                        .map(move |ctx| {
-                            let lua_ctx = ctx.lock().unwrap();
-                            
-                            lua_ctx.context::<_, Result<()>>(|lua_ctx| {
-                                let globals = lua_ctx.globals();
-                                    globals.set(
-                                        "world",
-                                        world_ptr
-                                    )?;
-        
-                                    // event order is preserved, but scripts can't rely on any temporal
-                                    // guarantees when it comes to other scripts callbacks,
-                                    // at least for now
-                                    for event in events.iter() {
-                                        let f: Function = match globals.get(event.hook_name.clone()) {
-                                            Ok(f) => f,
-                                            Err(_) => continue, // not subscribed to this event
-                                        };
-        
-                                        f.call::<MultiValue, ()>(event.args.clone().to_lua_multi(lua_ctx)?)
-                                            .map_err(|e| anyhow!("Runtime LUA error: {}", e))?;
-                                    }
-        
-                                Ok(())
-                            })
-                        })
+                    ctx.values().map(move |ctx| {
+                        let lua_ctx = ctx.lock().unwrap();
 
+                        lua_ctx.context::<_, Result<()>>(|lua_ctx| {
+                            let globals = lua_ctx.globals();
+                            globals.set("world", world_ptr)?;
+
+                            // event order is preserved, but scripts can't rely on any temporal
+                            // guarantees when it comes to other scripts callbacks,
+                            // at least for now
+                            for event in events.iter() {
+                                let f: Function = match globals.get(event.hook_name.clone()) {
+                                    Ok(f) => f,
+                                    Err(_) => continue, // not subscribed to this event
+                                };
+
+                                f.call::<MultiValue, ()>(event.args.clone().to_lua_multi(lua_ctx)?)
+                                    .map_err(|e| anyhow!("Runtime LUA error: {}", e))?;
+                            }
+
+                            Ok(())
+                        })
+                    })
                 })
                 .bcollect()
         })
