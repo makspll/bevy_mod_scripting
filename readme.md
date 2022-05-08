@@ -25,9 +25,6 @@ The API will likely change in the future as more scripting support is rolled out
 - [ ] Improved Ergonomics 
 - [ ] Tests
 
-
-As of now script component removals do not work properly just yet
-
 ## Examples 
 
 Examples are available in the examples directory, 
