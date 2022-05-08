@@ -1,8 +1,16 @@
 # Bevy Scripting
 
 While for Bevy out of the box scripting is a non-goal, scripting support is being worked on. 
+This crate is an attempt to make scripting a possibility with the current state of Bevy.
 
-This crate is an attempt to make multi-language scripting a possibility with the current state of Bevy.
+The API will likely change in the future as more scripting support is rolled out.
+
+
+# Why Use Scripts?
+
+- Re-load your game logic without re-compiling the entire crate
+- If your game logic is encapsualted with scripts it becomes moddable
+- Scripting allows for writing game logic/UI in a simpler language, making development more accessible to non-coders on your team
 
 ## State of this crate
 
@@ -12,6 +20,8 @@ This crate is an attempt to make multi-language scripting a possibility with the
 - [x] Customisable Lua API
 - [x] Event based hooks (i.e. on_update)
 - [ ] Flexible event scheduling (i.e. allow handling events at different stages rather than a single stage based on the event) 
+- [x] Multiple scripts per entity
+- [ ] Multiple instances of the same script on one entity
 - [ ] Improved Ergonomics 
 - [ ] Tests
 
