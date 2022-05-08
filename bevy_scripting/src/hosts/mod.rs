@@ -3,13 +3,10 @@ use anyhow::Result;
 use bevy::{
     asset::Asset,
     ecs::system::SystemState,
-    prelude::{
-        warn, Added, App, Assets, Component, EventReader, FromWorld, Handle, Mut, Query,
-        RemovedComponents, Res, ResMut, StageLabel, World, Entity,
-    },
+    prelude::*
 };
 pub use rlua_host::*;
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 
 pub trait AddScriptHost {
     fn add_script_host<T: ScriptHost>(&mut self) -> &mut Self;
@@ -24,10 +21,67 @@ pub trait APIProvider: 'static + Default {
     fn attach_api(ctx: &Self::Ctx);
 }
 
-#[derive(Component)]
 pub struct Script<T: Asset> {
-    pub handle: Handle<T>,
-    pub name: String,
+    handle: Handle<T>,
+    name: String,
+}
+
+impl <T : Asset>Script<T> {
+    pub fn new<H: ScriptHost>(name: String, handle : Handle<T>) -> Self {
+        Self {
+            handle,
+            name,
+        }
+    }
+
+    pub fn name(&self) -> &str {&self.name}
+    pub fn handle(&self) -> &Handle<T> {&self.handle}
+
+    fn insert_new_script_context<H : ScriptHost>(
+        new_script : &Script<H::ScriptAssetType>,
+        entity : &Entity,
+        script_assets : &Res<Assets<H::ScriptAssetType>>,
+        contexts : &mut ResMut<ScriptContexts<H>>,
+    ){
+        let script = match script_assets.get(&new_script.handle) {
+            Some(s) => s,
+            None => {
+                warn!("Failed to load script: {}", new_script.name);
+                return;
+            }
+        };
+
+        
+        match H::load_script(script.bytes(), &new_script.name) {
+            Ok(ctx) => {
+
+                // allow plugging in an API 
+                H::ScriptAPIProvider::attach_api(&ctx);
+                
+                let name_map = contexts.contexts
+                    .entry(entity.id())
+                    .or_default();
+                
+                // if the script already exists on an entity, panic
+                // not allowed at least for now
+                if name_map.contains_key(&new_script.name){
+                    panic!("Attempted to attach script: {} to entity which already has another copy of this script attached", &new_script.name);
+                } 
+
+                name_map.insert(new_script.name.clone(),ctx);
+                    
+            }
+            Err(_e) => {
+                warn! {"Failed to load script: {}", &new_script.name}
+                // TODO: deal with component, remove ? or make ctx Optional
+            }
+        }
+    }
+}
+
+#[derive(Component)]
+pub struct ScriptCollection<T: Asset> {
+    pub scripts : Vec<Script<T>>
 }
 
 #[derive(Default)]
@@ -51,62 +105,87 @@ impl<'w, 's, S: Send + Sync + 'static> FromWorld for CachedScriptEventState<'w, 
 
 pub fn script_add_synchronizer<H: ScriptHost + 'static>(
     query: Query<
-        (Entity,&Script<H::ScriptAssetType>),
-        Added<Script<H::ScriptAssetType>>,
+        (Entity,
+            &ScriptCollection<H::ScriptAssetType>,
+            ChangeTrackers<ScriptCollection<H::ScriptAssetType>>),
+        Changed<ScriptCollection<H::ScriptAssetType>>,
     >,
     mut contexts: ResMut<ScriptContexts<H>>,
     script_assets: Res<Assets<H::ScriptAssetType>>,
 ) {
 
-    query.for_each(|(entity,new_script)| {
-        let script = match script_assets.get(&new_script.handle) {
-            Some(s) => s,
-            None => {
-                warn!("Failed to load script: {}", new_script.name);
-                return;
-            }
-        };
+    query.for_each(|(entity,new_scripts,tracker)| {
+        
+        if tracker.is_added(){
+            new_scripts.scripts.iter().for_each(|new_script|{
+                Script::<H::ScriptAssetType>::insert_new_script_context(&new_script,&entity,&script_assets,&mut contexts)
+            })
+        } else {
+            // changed but structure already exists in contexts
+            // find out what's changed
+            // we only care about added or removed scripts here
+            // if the script asset gets changed we deal with that elsewhere
+            // TODO: reduce allocations in this function the change detection here is kinda clunky
+            
+            let name_map= contexts.contexts
+                .entry(entity.id())
+                .or_default();
 
-        match H::load_script(script.bytes(), &new_script.name) {
-            Ok(ctx) => {
+            let previous_scripts = name_map
+                .keys()
+                .cloned()
+                .collect::<HashSet<String>>();
 
-                // allow plugging in an API 
-                H::ScriptAPIProvider::attach_api(&ctx);
+            let current_scripts = new_scripts.scripts.iter()
+                .map(|s| s.name.clone())
+                .collect::<HashSet<String>>(); 
+
+            // find new/removed scripts 
+            let removed_scripts = previous_scripts.difference(&current_scripts);
+            let added_scripts = current_scripts.difference(&previous_scripts);
+
+            for r in removed_scripts {
+                name_map.remove(r);
+            };
+
+            for a in added_scripts {
+                let script = new_scripts.scripts
+                    .iter()
+                    .find(|e| &e.name == a)
+                    .unwrap();
                 
-                let name_map= contexts.contexts
-                    .entry(entity.id())
-                    .or_default();
-                
-                // if the script already exists on an entity, panic
-                // not allowed at least for now
-                if name_map.contains_key(&new_script.name){
-                    panic!("Attempted to attach script: {} to entity which already has another copy of this script attached", new_script.name);
-                } 
+                Script::<H::ScriptAssetType>::insert_new_script_context(&script,&entity,&script_assets,&mut contexts)
+            };
 
-                name_map.insert(new_script.name.clone(),ctx);
-                    
-            }
-            Err(_e) => {
-                warn! {"Failed to load script: {}", new_script.name}
-                // TODO: deal with component, remove ? or make ctx Optional
-            }
         }
+
+        
+        
+        
     })
 }
 
+
+
+
+
 pub fn script_remove_synchronizer<H: ScriptHost + 'static>(
-    query: RemovedComponents<Script<H::ScriptAssetType>>,
+    query: RemovedComponents<ScriptCollection<H::ScriptAssetType>>,
     mut contexts: ResMut<ScriptContexts<H>>,
 ) {
 
     let ctxs = &mut contexts.contexts;
+    
     query.iter().for_each(|v| {
         // we know that this entity used to have a script component
-        // ergo a script context must exist in ctxs, remove it 
+        // ergo a script context must exist in ctxs, remove 
+        // all scripts on the entity 
         ctxs.remove(&v.id());
 
     })
 }
+
+
 
 pub fn script_event_handler<H: ScriptHost>(world: &mut World) {
     world.resource_scope(
@@ -128,7 +207,7 @@ pub fn script_event_handler<H: ScriptHost>(world: &mut World) {
     );
 }
 
-pub trait ScriptHost: Send + Sync {
+pub trait ScriptHost: Send + Sync + 'static {
     type ScriptContext: Send + Sync + 'static;
     type ScriptEventType: Send + Sync + Clone + 'static;
     type ScriptAssetType: CodeAsset;
