@@ -111,7 +111,7 @@ pub fn script_add_synchronizer<H: ScriptHost + 'static>(
         if tracker.is_added() {
             new_scripts.scripts.iter().for_each(|new_script| {
                 Script::<H::ScriptAssetType>::insert_new_script_context(
-                    &new_script,
+                    new_script,
                     &entity,
                     &script_assets,
                     &mut contexts,
@@ -146,7 +146,7 @@ pub fn script_add_synchronizer<H: ScriptHost + 'static>(
                 let script = new_scripts.scripts.iter().find(|e| &e.name == a).unwrap();
 
                 Script::<H::ScriptAssetType>::insert_new_script_context(
-                    &script,
+                    script,
                     &entity,
                     &script_assets,
                     &mut contexts,
