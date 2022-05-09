@@ -1,6 +1,14 @@
+//! Scripting plugin for the Bevy game engine.
+//! 
+//! Enables multi-language scripting with custom script facing API's.
+//! 
+//! Supported scripting languages:
+//!     - lua
+//!  
+//! More languages coming!
+
 use bevy::prelude::*;
 
-/// All script host related things
 pub mod hosts;
 
 pub use hosts::*;

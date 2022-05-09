@@ -1,3 +1,5 @@
+//! All script host related stuff
+
 pub mod rlua_host;
 use anyhow::Result;
 use bevy::{asset::Asset, ecs::system::SystemState, prelude::*};
