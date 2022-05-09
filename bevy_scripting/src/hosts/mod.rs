@@ -2,7 +2,7 @@ pub mod rlua_host;
 use anyhow::Result;
 use bevy::{asset::Asset, ecs::system::SystemState, prelude::*};
 pub use rlua_host::*;
-use std::collections::{HashMap, HashSet};
+use std::{collections::{HashMap, HashSet}, sync::atomic::{AtomicU32, Ordering}};
 
 pub trait AddScriptHost {
     fn add_script_host<T: ScriptHost>(&mut self) -> &mut Self;
@@ -12,19 +12,42 @@ pub trait CodeAsset: Asset {
     fn bytes(&self) -> &[u8];
 }
 
+/// Implementers can modify a script context in order to enable
+/// API access. ScriptHosts call `attach_api` when creating scripts
 pub trait APIProvider: 'static + Default {
     type Ctx;
     fn attach_api(ctx: &Self::Ctx);
 }
 
+#[derive(Component)]
+pub struct ScriptCollection<T: Asset> {
+    pub scripts: Vec<Script<T>>,
+}
+
+#[derive(Default)]
+pub struct ScriptContexts<H: ScriptHost> {
+    /// holds script contexts for all scripts given their instance ids
+    pub contexts: HashMap<u32, H::ScriptContext>,
+}
+
+
+/// A struct defining an instance of a script asset
 pub struct Script<T: Asset> {
+
+    /// a strong handle to the script asset 
     handle: Handle<T>,
+
+    /// the name of the script, usually its file name + relative asset path
     name: String,
+
+    /// uniquely identifies the script instance (scripts which use the same asset don't necessarily have the same ID)
+    id: u32,
 }
 
 impl<T: Asset> Script<T> {
     pub fn new<H: ScriptHost>(name: String, handle: Handle<T>) -> Self {
-        Self { handle, name }
+        static COUNTER:AtomicU32 = AtomicU32::new(0);
+        Self { handle, name, id:COUNTER.fetch_add(1,Ordering::Relaxed)}
     }
 
     pub fn name(&self) -> &str {
@@ -33,10 +56,24 @@ impl<T: Asset> Script<T> {
     pub fn handle(&self) -> &Handle<T> {
         &self.handle
     }
+    pub fn id(&self) -> u32 {
+        self.id
+    }
+
+    fn reload_script<H: ScriptHost> (
+        script: &Script<H::ScriptAssetType>,
+        script_assets: &Res<Assets<H::ScriptAssetType>>,
+        contexts : &mut ResMut<ScriptContexts<H>>
+    ){
+        // remove old context 
+        contexts.contexts.remove(&script.id);
+
+        // insert new re-loaded context
+        Self::insert_new_script_context(script,script_assets,contexts)
+    }
 
     fn insert_new_script_context<H: ScriptHost>(
         new_script: &Script<H::ScriptAssetType>,
-        entity: &Entity,
         script_assets: &Res<Assets<H::ScriptAssetType>>,
         contexts: &mut ResMut<ScriptContexts<H>>,
     ) {
@@ -53,15 +90,7 @@ impl<T: Asset> Script<T> {
                 // allow plugging in an API
                 H::ScriptAPIProvider::attach_api(&ctx);
 
-                let name_map = contexts.contexts.entry(entity.id()).or_default();
-
-                // if the script already exists on an entity, panic
-                // not allowed at least for now
-                if name_map.contains_key(&new_script.name) {
-                    panic!("Attempted to attach script: {} to entity which already has another copy of this script attached", &new_script.name);
-                }
-
-                name_map.insert(new_script.name.clone(), ctx);
+                contexts.contexts.insert(new_script.id(), ctx);
             }
             Err(_e) => {
                 warn! {"Failed to load script: {}", &new_script.name}
@@ -71,17 +100,6 @@ impl<T: Asset> Script<T> {
     }
 }
 
-#[derive(Component)]
-pub struct ScriptCollection<T: Asset> {
-    pub scripts: Vec<Script<T>>,
-}
-
-#[derive(Default)]
-pub struct ScriptContexts<H: ScriptHost> {
-    /// holds script contexts for all scripts
-    /// and keeps track of which entities they're attached to
-    pub contexts: HashMap<u32, HashMap<String, H::ScriptContext>>,
-}
 
 pub struct CachedScriptEventState<'w, 's, S: Send + Sync + 'static> {
     event_state: SystemState<EventReader<'w, 's, S>>,
@@ -98,7 +116,6 @@ impl<'w, 's, S: Send + Sync + 'static> FromWorld for CachedScriptEventState<'w, 
 pub fn script_add_synchronizer<H: ScriptHost + 'static>(
     query: Query<
         (
-            Entity,
             &ScriptCollection<H::ScriptAssetType>,
             ChangeTrackers<ScriptCollection<H::ScriptAssetType>>,
         ),
@@ -107,12 +124,11 @@ pub fn script_add_synchronizer<H: ScriptHost + 'static>(
     mut contexts: ResMut<ScriptContexts<H>>,
     script_assets: Res<Assets<H::ScriptAssetType>>,
 ) {
-    query.for_each(|(entity, new_scripts, tracker)| {
+    query.for_each(|(new_scripts, tracker)| {
         if tracker.is_added() {
             new_scripts.scripts.iter().for_each(|new_script| {
                 Script::<H::ScriptAssetType>::insert_new_script_context(
                     new_script,
-                    &entity,
                     &script_assets,
                     &mut contexts,
                 )
@@ -122,32 +138,26 @@ pub fn script_add_synchronizer<H: ScriptHost + 'static>(
             // find out what's changed
             // we only care about added or removed scripts here
             // if the script asset gets changed we deal with that elsewhere
-            // TODO: reduce allocations in this function the change detection here is kinda clunky
 
-            let name_map = contexts.contexts.entry(entity.id()).or_default();
+            let context_ids = contexts.contexts.keys().cloned().collect::<HashSet<u32>>();
+            let script_ids = new_scripts.scripts.iter()
+                .map(|s| s.id())
+                .collect::<HashSet<u32>>();
 
-            let previous_scripts = name_map.keys().cloned().collect::<HashSet<String>>();
-
-            let current_scripts = new_scripts
-                .scripts
-                .iter()
-                .map(|s| s.name.clone())
-                .collect::<HashSet<String>>();
-
-            // find new/removed scripts
-            let removed_scripts = previous_scripts.difference(&current_scripts);
-            let added_scripts = current_scripts.difference(&previous_scripts);
+            let removed_scripts = context_ids.difference(&script_ids);
+            let added_scripts = script_ids.difference(&context_ids);
 
             for r in removed_scripts {
-                name_map.remove(r);
+                contexts.contexts.remove(r);
             }
 
             for a in added_scripts {
-                let script = new_scripts.scripts.iter().find(|e| &e.name == a).unwrap();
+                let script = new_scripts.scripts
+                    .iter()
+                    .find(|e| &e.id == a).unwrap();
 
                 Script::<H::ScriptAssetType>::insert_new_script_context(
                     script,
-                    &entity,
                     &script_assets,
                     &mut contexts,
                 )
@@ -156,7 +166,7 @@ pub fn script_add_synchronizer<H: ScriptHost + 'static>(
     })
 }
 
-pub fn script_remove_synchronizer<H: ScriptHost + 'static>(
+pub fn script_remove_synchronizer<H: ScriptHost>(
     query: RemovedComponents<ScriptCollection<H::ScriptAssetType>>,
     mut contexts: ResMut<ScriptContexts<H>>,
 ) {
@@ -168,6 +178,33 @@ pub fn script_remove_synchronizer<H: ScriptHost + 'static>(
         // all scripts on the entity
         ctxs.remove(&v.id());
     })
+}
+
+pub fn script_hot_reload_handler<H: ScriptHost>(
+    mut events : EventReader<AssetEvent<H::ScriptAssetType>>,
+    scripts : Query<&ScriptCollection<H::ScriptAssetType>>,
+    script_assets: Res<Assets<H::ScriptAssetType>>,
+    mut contexts: ResMut<ScriptContexts<H>>
+) {
+    for e in events.iter() {
+        match e {
+            AssetEvent::Modified { handle } => {
+                // find script using this handle by handle id 
+                'outer : for scripts in scripts.iter() {
+                    for script in &scripts.scripts {
+                        if &script.handle == handle{
+                            // reload the script 
+                            Script::<H::ScriptAssetType>::reload_script(&script,&script_assets,&mut contexts);
+                            
+                            // update other changed assets
+                            break 'outer
+                        }
+                    }
+                }
+            },
+            _ => continue,
+        }
+    }
 }
 
 pub fn script_event_handler<H: ScriptHost>(world: &mut World) {
