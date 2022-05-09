@@ -6,7 +6,7 @@ This crate is an attempt to make scripting a possibility with the current state 
 The API will likely change in the future as more scripting support is rolled out.
 
 
-# Why Use Scripts?
+## Why Use Scripts?
 
 - Re-load your game logic without re-compiling the entire crate
 - If your game logic is encapsualted with scripts it becomes moddable
@@ -23,10 +23,59 @@ The API will likely change in the future as more scripting support is rolled out
 - [x] Multiple scripts per entity
 - [ ] Multiple instances of the same script on one entity
 - [ ] Improved Ergonomics 
+- [ ] More extensive callback argument type support 
 - [ ] Tests
 
 
 As of now script component removals do not work properly just yet
+
+## Usage
+
+### Installation
+
+``` rust
+fn main() -> std::io::Result<()> {
+    let mut app = App::new();
+    app.add_plugins(DefaultPlugins)
+        .add_plugin(ScriptingPlugin)
+
+    // pick and register host
+    RLuaScriptHost::<LuaAPIProvider>::register_with_app(
+        &mut app,   
+        CoreStage::PostUpdate // use any stage AFTER you main game systems
+                              // in order for your script updates to propagate in a  
+                              // single frame
+    );
+
+    app.run();
+
+    Ok(())
+}
+```
+
+### Firing Script Callbacks
+
+Scripts are triggered by firing events, the order of events matters so trigger them in the order you'd like your scripts to process them.
+
+As it stands currently there are no guarantees that force the script callbacks to be executed fully for all scripts, before processing the next callback event (i.e. this order guarantee only holds on a per script basis).
+
+#### RLua 
+
+Use valid lua function names for hook names and any number of arguments which are passed on to the function. 
+
+Currently only integer arguments are supported.
+
+``` rust 
+pub fn trigger_on_update_script_callback(mut w: EventWriter<LuaEvent>) {
+    let event = LuaEvent {
+        hook_name: "on_update".to_string(), 
+        args: Vec::default(),
+    };
+
+    w.send(event);
+}
+```
+
 
 ## Examples 
 
