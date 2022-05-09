@@ -22,8 +22,6 @@ pub trait APIProvider: 'static + Default {
 
     /// provide the given script context with the API permamently
     fn attach_api(ctx: &Self::Ctx);
-
-
 }
 
 #[derive(Component)]
@@ -45,27 +43,27 @@ pub struct ScriptCollection<T: Asset> {
 /// outside of events. Later this might change.
 pub struct ScriptContexts<H: ScriptHost> {
     /// holds script contexts for all scripts given their instance ids
-    pub context_entities: HashMap<u32, (Entity,H::ScriptContext)>,
-
+    pub context_entities: HashMap<u32, (Entity, H::ScriptContext)>,
 }
 
-impl <H : ScriptHost>ScriptContexts<H> {
-
-    pub fn script_owner(&self, script_id : u32) -> Option<Entity>{
-        self.context_entities.get(&script_id).map(|(e,c)| e.clone())
+impl<H: ScriptHost> ScriptContexts<H> {
+    pub fn script_owner(&self, script_id: u32) -> Option<Entity> {
+        self.context_entities
+            .get(&script_id)
+            .map(|(e, _c)| e.clone())
     }
 
-    pub fn insert_context(&mut self, script_id : u32, entity: Entity, ctx : H::ScriptContext){
-        self.context_entities.insert(script_id,(entity,ctx));
+    pub fn insert_context(&mut self, script_id: u32, entity: Entity, ctx: H::ScriptContext) {
+        self.context_entities.insert(script_id, (entity, ctx));
     }
-    
-    pub fn remove_context(&mut self, script_id : u32){
+
+    pub fn remove_context(&mut self, script_id: u32) {
         self.context_entities.remove(&script_id);
     }
 }
 
 /// A struct defining an instance of a script asset.
-/// Multiple instances of the same script can exist on the same entity 
+/// Multiple instances of the same script can exist on the same entity
 pub struct Script<T: Asset> {
     /// a strong handle to the script asset
     handle: Handle<T>,
@@ -117,7 +115,7 @@ impl<T: Asset> Script<T> {
     ) {
         // retrieve owning entity
         let entity = contexts.script_owner(script.id()).unwrap();
-        
+
         // remove old context
         contexts.remove_context(script.id());
 
@@ -144,8 +142,8 @@ impl<T: Asset> Script<T> {
             Ok(ctx) => {
                 // allow plugging in an API
                 H::ScriptAPIProvider::attach_api(&ctx);
-                
-                contexts.insert_context(new_script.id(),entity,ctx);
+
+                contexts.insert_context(new_script.id(), entity, ctx);
             }
             Err(_e) => {
                 warn! {"Failed to load script: {}", &new_script.name}
@@ -171,7 +169,7 @@ impl<'w, 's, S: Send + Sync + 'static> FromWorld for CachedScriptEventState<'w, 
 /// Handles creating contexts for new/modified scripts
 pub(crate) fn script_add_synchronizer<H: ScriptHost + 'static>(
     query: Query<
-        (   
+        (
             Entity,
             &ScriptCollection<H::ScriptAsset>,
             ChangeTrackers<ScriptCollection<H::ScriptAsset>>,
@@ -181,7 +179,7 @@ pub(crate) fn script_add_synchronizer<H: ScriptHost + 'static>(
     mut contexts: ResMut<ScriptContexts<H>>,
     script_assets: Res<Assets<H::ScriptAsset>>,
 ) {
-    query.for_each(|(entity,new_scripts, tracker)| {
+    query.for_each(|(entity, new_scripts, tracker)| {
         if tracker.is_added() {
             new_scripts.scripts.iter().for_each(|new_script| {
                 Script::<H::ScriptAsset>::insert_new_script_context(
@@ -197,7 +195,11 @@ pub(crate) fn script_add_synchronizer<H: ScriptHost + 'static>(
             // we only care about added or removed scripts here
             // if the script asset gets changed we deal with that elsewhere
 
-            let context_ids = contexts.context_entities.keys().cloned().collect::<HashSet<u32>>();
+            let context_ids = contexts
+                .context_entities
+                .keys()
+                .cloned()
+                .collect::<HashSet<u32>>();
             let script_ids = new_scripts
                 .scripts
                 .iter()

@@ -75,11 +75,11 @@ pub struct LuaEvent {
 /// Always provides two global variables to each script by default:
 ///     - `world` - a raw pointer to the `bevy::World` the script lives in
 ///     - `entity` - an `Entity::to_bits` representation of the entity the script is attached to
-/// 
+///
 /// # Examples
-/// 
+///
 /// You can use these variables in your APIProviders like so:
-/// ``` 
+/// ```
 ///    #[derive(Default)]
 ///    pub struct LuaAPIProvider {}
 ///
@@ -163,8 +163,7 @@ impl<A: APIProvider<Ctx = Mutex<Lua>>> ScriptHost for RLuaScriptHost<A> {
         world.resource_scope(|world, res: Mut<ScriptContexts<Self>>| {
             res.context_entities
                 .values()
-                .map(|(entity,ctx)| {
-
+                .map(|(entity, ctx)| {
                     let world_ptr = LuaLightUserData(world as *mut World as *mut c_void);
                     let lua_ctx = ctx.lock().unwrap();
 
