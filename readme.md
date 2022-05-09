@@ -28,9 +28,6 @@ The API will likely change in the future as more scripting support is rolled out
 - [ ] More extensive callback argument type support 
 - [ ] Tests
 
-
-As of now script component removals do not work properly just yet
-
 ## Usage
 
 ### Installation
