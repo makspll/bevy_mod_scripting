@@ -48,9 +48,7 @@ pub struct ScriptContexts<H: ScriptHost> {
 
 impl<H: ScriptHost> ScriptContexts<H> {
     pub fn script_owner(&self, script_id: u32) -> Option<Entity> {
-        self.context_entities
-            .get(&script_id)
-            .map(|(e, _c)| *e)
+        self.context_entities.get(&script_id).map(|(e, _c)| *e)
     }
 
     pub fn insert_context(&mut self, script_id: u32, entity: Entity, ctx: H::ScriptContext) {
@@ -292,9 +290,13 @@ pub(crate) fn script_event_handler<H: ScriptHost>(world: &mut World) {
 /// A script host is the interface between your rust application
 /// and the scripts in some interpreted language.
 pub trait ScriptHost: Send + Sync + 'static {
+    /// the type of the persistent script context, representing the execution context of the script
     type ScriptContext: Send + Sync + 'static;
+    /// the type of events picked up by lua callbacks
     type ScriptEvent: Send + Sync + Clone + 'static;
+    /// the type of asset representing the script files for this host
     type ScriptAsset: CodeAsset;
+    /// the type of an API provider which supplies scripts with user-defined API's
     type ScriptAPIProvider: APIProvider<Ctx = Self::ScriptContext>;
 
     /// Loads a script in byte array format, the script name can be used
