@@ -4,10 +4,9 @@ use bevy::{asset::Asset, ecs::system::SystemState, prelude::*};
 pub use rlua_host::*;
 use std::{collections::{HashMap, HashSet}, sync::atomic::{AtomicU32, Ordering}};
 
-pub trait AddScriptHost {
-    fn add_script_host<T: ScriptHost>(&mut self) -> &mut Self;
-}
-
+/// All code assets share this common interface.
+/// When adding a new code asset don't forget to implement asset loading 
+/// and inserting appropriate systems when registering with the app
 pub trait CodeAsset: Asset {
     fn bytes(&self) -> &[u8];
 }
@@ -15,23 +14,38 @@ pub trait CodeAsset: Asset {
 /// Implementers can modify a script context in order to enable
 /// API access. ScriptHosts call `attach_api` when creating scripts
 pub trait APIProvider: 'static + Default {
+    /// The type of script context this api provider handles
     type Ctx;
+
+    /// provide the given script context with the API permamently
     fn attach_api(ctx: &Self::Ctx);
 }
 
 #[derive(Component)]
+/// The component storing many scripts.
+/// Scripts receive information about the entity they are attached to
+/// Scripts have unique identifiers and hence multiple copies of the same script
+/// can be attached to the same entity
 pub struct ScriptCollection<T: Asset> {
     pub scripts: Vec<Script<T>>,
 }
 
 #[derive(Default)]
+/// A resource storing the script contexts for each script instance.
+/// The reason we need this is to split the world borrow in our handle event systems, but this 
+/// has the added benefit that users don't see the contexts at all, and we can provide 
+/// generic handling for each new/removed script in one place.
+/// 
+/// We keep this public for now since there is no API for communicating with scripts 
+/// outside of events. Later this might change.
 pub struct ScriptContexts<H: ScriptHost> {
     /// holds script contexts for all scripts given their instance ids
     pub contexts: HashMap<u32, H::ScriptContext>,
 }
 
 
-/// A struct defining an instance of a script asset
+/// A struct defining an instance of a script asset.
+/// Multiple instances of the same script can exist on the same entity (unlike in Unity for example)
 pub struct Script<T: Asset> {
 
     /// a strong handle to the script asset 
@@ -45,22 +59,37 @@ pub struct Script<T: Asset> {
 }
 
 impl<T: Asset> Script<T> {
+
+    /// creates a new script instance with the given name and asset handle
+    /// automatically gives this script instance a unique ID.
+    /// No two scripts instances ever share the same ID 
     pub fn new<H: ScriptHost>(name: String, handle: Handle<T>) -> Self {
         static COUNTER:AtomicU32 = AtomicU32::new(0);
         Self { handle, name, id:COUNTER.fetch_add(1,Ordering::Relaxed)}
     }
 
+    
+    #[inline(always)]
+    /// returns the name of the script
     pub fn name(&self) -> &str {
         &self.name
     }
+
+    #[inline(always)]
+    /// returns the asset handle which this script is executing
     pub fn handle(&self) -> &Handle<T> {
         &self.handle
     }
+
+    #[inline(always)]
+    /// returns the unique ID of this script instance
     pub fn id(&self) -> u32 {
         self.id
     }
 
-    fn reload_script<H: ScriptHost> (
+    /// reloads the script by deleting the old context and inserting a new one
+    /// if the script context never existed, it will after this call.
+    pub(crate) fn reload_script<H: ScriptHost> (
         script: &Script<H::ScriptAssetType>,
         script_assets: &Res<Assets<H::ScriptAssetType>>,
         contexts : &mut ResMut<ScriptContexts<H>>
@@ -72,7 +101,8 @@ impl<T: Asset> Script<T> {
         Self::insert_new_script_context(script,script_assets,contexts)
     }
 
-    fn insert_new_script_context<H: ScriptHost>(
+    /// inserts a new script context for the given script 
+    pub(crate) fn insert_new_script_context<H: ScriptHost>(
         new_script: &Script<H::ScriptAssetType>,
         script_assets: &Res<Assets<H::ScriptAssetType>>,
         contexts: &mut ResMut<ScriptContexts<H>>,
@@ -101,7 +131,8 @@ impl<T: Asset> Script<T> {
 }
 
 
-pub struct CachedScriptEventState<'w, 's, S: Send + Sync + 'static> {
+/// system state for exclusive systems dealing with script events
+pub(crate) struct CachedScriptEventState<'w, 's, S: Send + Sync + 'static> {
     event_state: SystemState<EventReader<'w, 's, S>>,
 }
 
@@ -113,7 +144,8 @@ impl<'w, 's, S: Send + Sync + 'static> FromWorld for CachedScriptEventState<'w, 
     }
 }
 
-pub fn script_add_synchronizer<H: ScriptHost + 'static>(
+/// Handles creating contexts for new/modified scripts
+pub(crate) fn script_add_synchronizer<H: ScriptHost + 'static>(
     query: Query<
         (
             &ScriptCollection<H::ScriptAssetType>,
@@ -166,7 +198,8 @@ pub fn script_add_synchronizer<H: ScriptHost + 'static>(
     })
 }
 
-pub fn script_remove_synchronizer<H: ScriptHost>(
+/// Handles the removal of script components and their contexts
+pub(crate) fn script_remove_synchronizer<H: ScriptHost>(
     query: RemovedComponents<ScriptCollection<H::ScriptAssetType>>,
     mut contexts: ResMut<ScriptContexts<H>>,
 ) {
@@ -180,7 +213,8 @@ pub fn script_remove_synchronizer<H: ScriptHost>(
     })
 }
 
-pub fn script_hot_reload_handler<H: ScriptHost>(
+/// Reloads hot-reloaded scripts 
+pub(crate) fn script_hot_reload_handler<H: ScriptHost>(
     mut events : EventReader<AssetEvent<H::ScriptAssetType>>,
     scripts : Query<&ScriptCollection<H::ScriptAssetType>>,
     script_assets: Res<Assets<H::ScriptAssetType>>,
@@ -190,14 +224,10 @@ pub fn script_hot_reload_handler<H: ScriptHost>(
         match e {
             AssetEvent::Modified { handle } => {
                 // find script using this handle by handle id 
-                'outer : for scripts in scripts.iter() {
+                for scripts in scripts.iter() {
                     for script in &scripts.scripts {
-                        if &script.handle == handle{
-                            // reload the script 
+                        if &script.handle == handle { 
                             Script::<H::ScriptAssetType>::reload_script(&script,&script_assets,&mut contexts);
-                            
-                            // update other changed assets
-                            break 'outer
                         }
                     }
                 }
@@ -207,7 +237,8 @@ pub fn script_hot_reload_handler<H: ScriptHost>(
     }
 }
 
-pub fn script_event_handler<H: ScriptHost>(world: &mut World) {
+/// Lets the script host handle all script events 
+pub(crate) fn script_event_handler<H: ScriptHost>(world: &mut World) {
     world.resource_scope(
         |world, mut cached_state: Mut<CachedScriptEventState<H::ScriptEventType>>| {
             // we need to clone the events otherwise we cannot perform the subsequent query for scripts
@@ -227,16 +258,34 @@ pub fn script_event_handler<H: ScriptHost>(world: &mut World) {
     );
 }
 
+
+/// A script host is the interface between your rust application
+/// and the scripts in some interpreted language.
 pub trait ScriptHost: Send + Sync + 'static {
     type ScriptContext: Send + Sync + 'static;
     type ScriptEventType: Send + Sync + Clone + 'static;
     type ScriptAssetType: CodeAsset;
     type ScriptAPIProvider: APIProvider<Ctx = Self::ScriptContext>;
 
+    /// Loads a script in byte array format, the script name can be used 
+    /// to send useful errors.
     fn load_script(path: &[u8], script_name: &str) -> Result<Self::ScriptContext>;
+    
+    /// the main point of contact with the bevy world.
+    /// Scripts are called with appropriate events in the event order
     fn handle_events(world: &mut World, events: &[Self::ScriptEventType]) -> Result<()>;
 
-    /// registers the script host with the given app, and stage.
-    /// all script events generated will be handled at the end of this stage. Ideally place after update
+    /// Registers the script host with the given app, and stage.
+    /// all script events generated will be handled at the end of this stage. Ideally place after any game logic 
+    /// which can spawn/remove/modify scripts to avoid frame lag. (typically `CoreStage::Post_Update`)
     fn register_with_app(app: &mut App, stage: impl StageLabel);
 }
+
+
+/// Trait for app builder notation
+pub trait AddScriptHost {
+    
+    /// registers the given script host with your app
+    fn add_script_host<T: ScriptHost>(&mut self) -> &mut Self;
+}
+

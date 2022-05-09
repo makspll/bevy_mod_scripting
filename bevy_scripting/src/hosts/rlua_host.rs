@@ -1,8 +1,6 @@
 use std::ffi::c_void;
 use std::marker::PhantomData;
-
 use std::sync::{Arc, Mutex};
-
 use crate::{
     script_add_synchronizer, script_event_handler, script_remove_synchronizer, APIProvider,
     CachedScriptEventState, CodeAsset, ScriptContexts, ScriptHost, script_hot_reload_handler,
@@ -10,17 +8,14 @@ use crate::{
 use anyhow::{anyhow, Result};
 use beau_collector::BeauCollector as _;
 use bevy::asset::{AssetLoader, LoadedAsset};
-
-use bevy::prelude::{
-    App, ExclusiveSystemDescriptorCoercion, IntoExclusiveSystem, Mut, StageLabel, SystemSet, World,
-};
+use bevy::prelude::*;
 use bevy::reflect::TypeUuid;
-
 use rlua::prelude::*;
 use rlua::{Context, Function, Lua, MultiValue, ToLua, ToLuaMulti};
 
 #[derive(Debug, TypeUuid)]
 #[uuid = "39cadc56-aa9c-4543-8640-a018b74b5052"]
+/// A lua code file in bytes
 pub struct LuaFile {
     pub bytes: Arc<[u8]>,
 }
@@ -32,6 +27,7 @@ impl CodeAsset for LuaFile {
 }
 
 #[derive(Default)]
+/// Asset loader for lua scripts
 pub struct LuaLoader;
 
 impl AssetLoader for LuaLoader {
@@ -52,6 +48,7 @@ impl AssetLoader for LuaLoader {
 }
 
 /// defines a value allowed to be passed as lua script arguments for callbacks
+/// TODO: expand this  
 #[derive(Clone)]
 pub enum LuaCallbackArgument {
     Integer(usize),
@@ -64,13 +61,18 @@ impl<'lua> ToLua<'lua> for LuaCallbackArgument {
         }
     }
 }
+
 #[derive(Clone)]
+/// A Lua Hook. The result of creating this event will be
+/// a call to the lua script with the hook_name and the given arguments 
 pub struct LuaEvent {
     pub hook_name: String,
     pub args: Vec<LuaCallbackArgument>,
 }
 
+
 #[derive(Default)]
+/// Rlua script host, enables Lua scripting provided by the Rlua library.
 pub struct RLuaScriptHost<A: APIProvider> {
     _ph: PhantomData<A>,
 }
@@ -165,3 +167,4 @@ impl<API: APIProvider<Ctx = Mutex<Lua>>> RLuaScriptHost<API> {
         });
     }
 }
+
