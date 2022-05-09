@@ -106,7 +106,7 @@ pub fn run_script_cmd(
     server: Res<AssetServer>,
     mut commands: Commands,
     mut existing_scripts: Query<
-        &mut ScriptCollection<<RLuaScriptHost<LuaAPIProvider> as ScriptHost>::ScriptAssetType>,
+        &mut ScriptCollection<<RLuaScriptHost<LuaAPIProvider> as ScriptHost>::ScriptAsset>,
     >,
 ) {
     if let Some(RunScriptCmd { path, entity }) = log.take() {
@@ -118,7 +118,7 @@ pub fn run_script_cmd(
                     info!("Creating script: scripts/{} {:?}", &path, &entity);
 
                     scripts.scripts.push(Script::<
-                        <RLuaScriptHost<LuaAPIProvider> as ScriptHost>::ScriptAssetType,
+                        <RLuaScriptHost<LuaAPIProvider> as ScriptHost>::ScriptAsset,
                     >::new::<RLuaScriptHost<LuaAPIProvider>>(
                         path, handle
                     ));
@@ -130,10 +130,10 @@ pub fn run_script_cmd(
                 info!("Creating script: scripts/{}", &path);
 
                 commands.spawn().insert(ScriptCollection::<
-                    <RLuaScriptHost<LuaAPIProvider> as ScriptHost>::ScriptAssetType,
+                    <RLuaScriptHost<LuaAPIProvider> as ScriptHost>::ScriptAsset,
                 > {
                     scripts: vec![Script::<
-                        <RLuaScriptHost<LuaAPIProvider> as ScriptHost>::ScriptAssetType,
+                        <RLuaScriptHost<LuaAPIProvider> as ScriptHost>::ScriptAsset,
                     >::new::<RLuaScriptHost<LuaAPIProvider>>(
                         path, handle
                     )],
@@ -150,7 +150,7 @@ fn watch_assets(server: Res<AssetServer>) {
 
 pub fn delete_script_cmd<H: ScriptHost>(
     mut log: ConsoleCommand<DeleteScriptCmd>,
-    mut scripts: Query<(Entity, &mut ScriptCollection<H::ScriptAssetType>)>,
+    mut scripts: Query<(Entity, &mut ScriptCollection<H::ScriptAsset>)>,
 ) {
     if let Some(DeleteScriptCmd { name, entity_id }) = log.take() {
         for (e, mut s) in scripts.iter_mut() {

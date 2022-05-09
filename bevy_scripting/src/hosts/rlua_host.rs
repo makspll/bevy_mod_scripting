@@ -71,8 +71,48 @@ pub struct LuaEvent {
     pub args: Vec<LuaCallbackArgument>,
 }
 
-#[derive(Default)]
 /// Rlua script host, enables Lua scripting provided by the Rlua library.
+/// Always provides two global variables to each script by default:
+///     - `world` - a raw pointer to the `bevy::World` the script lives in
+///     - `entity` - an `Entity::to_bits` representation of the entity the script is attached to
+/// 
+/// # Examples
+/// 
+/// You can use these variables in your APIProviders like so:
+/// ``` 
+///    #[derive(Default)]
+///    pub struct LuaAPIProvider {}
+///
+///    /// the custom Lua api, world is provided via a global pointer,
+///    /// and callbacks are defined only once at script creation
+///    impl APIProvider for LuaAPIProvider {
+///        type Ctx = Mutex<Lua>;
+///        fn attach_api(ctx: &Self::Ctx) {
+///            // callbacks can receive any `ToLuaMulti` arguments, here '()' and
+///            // return any `FromLuaMulti` arguments, here a `usize`
+///            // check the Rlua documentation for more details
+///            RLuaScriptHost::<Self>::register_api_callback(
+///                "your_callback",
+///                |ctx, ()| {
+///                    let globals = ctx.globals();
+///
+///                    // retrieve the world pointer
+///                    let world_data: LuaLightUserData = globals.get("world").unwrap();
+///                    let world = unsafe { &mut *(world_data.0 as *mut World) };
+///                    
+///                    // retrieve script entity
+///                    let entity_id : u64 = globals.get("entity").unwrap();
+///                    let entity : Entity = Entity::from_bits(entity_id);
+///
+///                    
+///                    Ok(())
+///                },
+///                ctx,
+///            )
+///        }
+///    }
+/// ```
+#[derive(Default)]
 pub struct RLuaScriptHost<A: APIProvider> {
     _ph: PhantomData<A>,
 }
@@ -82,13 +122,13 @@ unsafe impl<A: APIProvider> Sync for RLuaScriptHost<A> {}
 
 impl<A: APIProvider<Ctx = Mutex<Lua>>> ScriptHost for RLuaScriptHost<A> {
     type ScriptContext = Mutex<Lua>;
-    type ScriptEventType = LuaEvent;
-    type ScriptAssetType = LuaFile;
+    type ScriptEvent = LuaEvent;
+    type ScriptAsset = LuaFile;
     type ScriptAPIProvider = A;
 
     fn register_with_app(app: &mut App, stage: impl StageLabel) {
         app.add_event::<LuaEvent>();
-        app.init_resource::<CachedScriptEventState<Self::ScriptEventType>>();
+        app.init_resource::<CachedScriptEventState<Self::ScriptEvent>>();
         app.init_resource::<ScriptContexts<Self>>();
 
         app.add_system_set_to_stage(
@@ -116,20 +156,22 @@ impl<A: APIProvider<Ctx = Mutex<Lua>>> ScriptHost for RLuaScriptHost<A> {
         Ok(Mutex::new(lua))
     }
 
-    fn handle_events(world: &mut World, events: &[Self::ScriptEventType]) -> Result<()> {
+    fn handle_events(world: &mut World, events: &[Self::ScriptEvent]) -> Result<()> {
         // we need to do this since scripts need access to the world, but they also
         // live in it, hence we only store indices into a resource which can then be scoped
         // instead of storing contexts directly on the components
         world.resource_scope(|world, res: Mut<ScriptContexts<Self>>| {
-            res.contexts
+            res.context_entities
                 .values()
-                .map(|ctx| {
+                .map(|(entity,ctx)| {
+
                     let world_ptr = LuaLightUserData(world as *mut World as *mut c_void);
                     let lua_ctx = ctx.lock().unwrap();
 
                     lua_ctx.context::<_, Result<()>>(|lua_ctx| {
                         let globals = lua_ctx.globals();
                         globals.set("world", world_ptr)?;
+                        globals.set("entity", entity.to_bits())?;
 
                         // event order is preserved, but scripts can't rely on any temporal
                         // guarantees when it comes to other scripts callbacks,
