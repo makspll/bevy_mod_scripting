@@ -2,19 +2,11 @@ use bevy::{ecs::event::Events, prelude::*};
 use bevy_asset_loader::{AssetCollection, AssetLoader};
 use bevy_console::{AddConsoleCommand, ConsoleCommand, ConsolePlugin, PrintConsoleLine};
 use bevy_scripting::{
-    APIProvider, LuaEvent, LuaFile, RLuaScriptHost, Script, ScriptCollection, ScriptHost,
-    ScriptingPlugin,
+    APIProvider, AddScriptHost, LuaEvent, LuaFile, RLuaScriptHost, Script, ScriptCollection,
+    ScriptHost, ScriptingPlugin,
 };
 use rlua::{prelude::LuaLightUserData, Lua};
 use std::sync::Mutex;
-
-/// optional, convenience for loading our script assets provided by bevy_asset_loader
-/// keeps all of them loaded
-#[derive(AssetCollection)]
-struct LuaAssets {
-    #[asset(path = "scripts", folder(typed))]
-    folder: Vec<Handle<LuaFile>>,
-}
 
 #[derive(Default)]
 pub struct LuaAPIProvider {}
@@ -59,6 +51,14 @@ pub fn trigger_on_update_script_callback(mut w: EventWriter<LuaEvent>) {
     w.send(event);
 }
 
+/// optional, convenience for loading our script assets provided by bevy_asset_loader
+/// keeps all of them loaded
+#[derive(AssetCollection)]
+struct LuaAssets {
+    #[asset(path = "scripts", folder(typed))]
+    folder: Vec<Handle<LuaFile>>,
+}
+
 fn main() -> std::io::Result<()> {
     let mut app = App::new();
     app.add_plugins(DefaultPlugins)
@@ -66,22 +66,22 @@ fn main() -> std::io::Result<()> {
         .add_plugin(ConsolePlugin)
         .add_startup_system(watch_assets)
         .add_state(GameState::AssetLoading)
+        // register bevy_console commands
         .add_console_command::<RunScriptCmd, _, _>(run_script_cmd)
         .add_console_command::<DeleteScriptCmd, _, _>(
             delete_script_cmd::<RLuaScriptHost<LuaAPIProvider>>,
         )
-        .add_system(trigger_on_update_script_callback);
+        .add_system(trigger_on_update_script_callback)
+        // choose and register script host
+        .add_script_host::<RLuaScriptHost<LuaAPIProvider>, CoreStage>(CoreStage::PostUpdate);
 
-    // bevy_asset_loader
+    // bevy_asset_loader for loading and keeping script assets around easilly
     AssetLoader::new(GameState::AssetLoading)
         .continue_to_state(GameState::MainMenu)
         .with_collection::<LuaAssets>()
         .build(&mut app);
 
-    // bevy_scripting setup
-    RLuaScriptHost::<LuaAPIProvider>::register_with_app(&mut app, CoreStage::PostUpdate);
-
-    // at runtime press '~' for console then type in help
+    // at runtime press '~' for console then type in help for command formats
     app.run();
 
     Ok(())

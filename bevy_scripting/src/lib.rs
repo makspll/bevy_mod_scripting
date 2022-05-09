@@ -1,11 +1,4 @@
-//! Scripting plugin for the Bevy game engine.
-//! 
-//! Enables multi-language scripting with custom script facing API's.
-//! 
-//! Supported scripting languages:
-//!     - lua
-//!  
-//! More languages coming!
+#![doc = include_str!("../../readme.md")]
 
 use bevy::prelude::*;
 

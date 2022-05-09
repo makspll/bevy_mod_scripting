@@ -318,5 +318,12 @@ pub trait ScriptHost: Send + Sync + 'static {
 /// Trait for app builder notation
 pub trait AddScriptHost {
     /// registers the given script host with your app
-    fn add_script_host<T: ScriptHost>(&mut self) -> &mut Self;
+    fn add_script_host<T: ScriptHost, S: StageLabel>(&mut self, stage: S) -> &mut Self;
+}
+
+impl AddScriptHost for App {
+    fn add_script_host<T: ScriptHost, S: StageLabel>(&mut self, stage: S) -> &mut Self {
+        T::register_with_app(self, stage);
+        self
+    }
 }
