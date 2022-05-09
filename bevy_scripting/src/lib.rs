@@ -3,9 +3,9 @@ pub mod hosts;
 pub use hosts::*;
 
 #[derive(Default)]
-pub struct LuaPlugin;
+pub struct ScriptingPlugin;
 
-impl Plugin for LuaPlugin {
+impl Plugin for ScriptingPlugin {
     fn build(&self, app: &mut bevy::prelude::App) {
         // custom assets
         app.add_asset::<LuaFile>();
