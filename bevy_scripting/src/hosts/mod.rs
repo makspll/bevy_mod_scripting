@@ -47,7 +47,7 @@ pub struct ScriptContexts<H: ScriptHost> {
 }
 
 /// A struct defining an instance of a script asset.
-/// Multiple instances of the same script can exist on the same entity (unlike in Unity for example)
+/// Multiple instances of the same script can exist on the same entity 
 pub struct Script<T: Asset> {
     /// a strong handle to the script asset
     handle: Handle<T>,
