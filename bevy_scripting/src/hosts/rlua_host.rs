@@ -1,9 +1,7 @@
-use std::ffi::c_void;
-use std::marker::PhantomData;
-use std::sync::{Arc, Mutex};
 use crate::{
-    script_add_synchronizer, script_event_handler, script_remove_synchronizer, APIProvider,
-    CachedScriptEventState, CodeAsset, ScriptContexts, ScriptHost, script_hot_reload_handler,
+    script_add_synchronizer, script_event_handler, script_hot_reload_handler,
+    script_remove_synchronizer, APIProvider, CachedScriptEventState, CodeAsset, ScriptContexts,
+    ScriptHost,
 };
 use anyhow::{anyhow, Result};
 use beau_collector::BeauCollector as _;
@@ -12,6 +10,9 @@ use bevy::prelude::*;
 use bevy::reflect::TypeUuid;
 use rlua::prelude::*;
 use rlua::{Context, Function, Lua, MultiValue, ToLua, ToLuaMulti};
+use std::ffi::c_void;
+use std::marker::PhantomData;
+use std::sync::{Arc, Mutex};
 
 #[derive(Debug, TypeUuid)]
 #[uuid = "39cadc56-aa9c-4543-8640-a018b74b5052"]
@@ -64,12 +65,11 @@ impl<'lua> ToLua<'lua> for LuaCallbackArgument {
 
 #[derive(Clone)]
 /// A Lua Hook. The result of creating this event will be
-/// a call to the lua script with the hook_name and the given arguments 
+/// a call to the lua script with the hook_name and the given arguments
 pub struct LuaEvent {
     pub hook_name: String,
     pub args: Vec<LuaCallbackArgument>,
 }
-
 
 #[derive(Default)]
 /// Rlua script host, enables Lua scripting provided by the Rlua library.
@@ -98,7 +98,7 @@ impl<A: APIProvider<Ctx = Mutex<Lua>>> ScriptHost for RLuaScriptHost<A> {
                 .with_system(script_remove_synchronizer::<Self>)
                 .with_system(script_hot_reload_handler::<Self>)
                 .with_system(script_event_handler::<Self>.exclusive_system().at_end()),
-            );
+        );
     }
 
     fn load_script(script: &[u8], script_name: &str) -> Result<Self::ScriptContext> {
@@ -146,7 +146,8 @@ impl<A: APIProvider<Ctx = Mutex<Lua>>> ScriptHost for RLuaScriptHost<A> {
 
                         Ok(())
                     })
-                }).bcollect()
+                })
+                .bcollect()
         })
     }
 }
@@ -167,4 +168,3 @@ impl<API: APIProvider<Ctx = Mutex<Lua>>> RLuaScriptHost<API> {
         });
     }
 }
-

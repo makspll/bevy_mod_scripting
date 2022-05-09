@@ -110,26 +110,24 @@ pub fn run_script_cmd(
     >,
 ) {
     if let Some(RunScriptCmd { path, entity }) = log.take() {
-
         let handle = server.load::<LuaFile, &str>(&format!("scripts/{}", &path));
 
         match entity {
             Some(e) => {
                 if let Ok(mut scripts) = existing_scripts.get_mut(Entity::from_raw(e)) {
-                    info!("Creating script: scripts/{} {:?}",&path, &entity);
+                    info!("Creating script: scripts/{} {:?}", &path, &entity);
 
                     scripts.scripts.push(Script::<
                         <RLuaScriptHost<LuaAPIProvider> as ScriptHost>::ScriptAssetType,
                     >::new::<RLuaScriptHost<LuaAPIProvider>>(
                         path, handle
                     ));
-
                 } else {
                     log.reply_failed(format!("Something went wrong"));
                 };
             }
             None => {
-                info!("Creating script: scripts/{}",&path);
+                info!("Creating script: scripts/{}", &path);
 
                 commands.spawn().insert(ScriptCollection::<
                     <RLuaScriptHost<LuaAPIProvider> as ScriptHost>::ScriptAssetType,
@@ -189,6 +187,6 @@ pub struct DeleteScriptCmd {
     /// the name of the script
     pub name: String,
 
-    /// the entity the script is attached to 
+    /// the entity the script is attached to
     pub entity_id: u32,
 }
