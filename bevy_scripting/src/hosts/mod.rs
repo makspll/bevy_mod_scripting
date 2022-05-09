@@ -230,7 +230,7 @@ pub(crate) fn script_hot_reload_handler<H: ScriptHost>(
                     for script in &scripts.scripts {
                         if &script.handle == handle {
                             Script::<H::ScriptAssetType>::reload_script(
-                                &script,
+                                script,
                                 &script_assets,
                                 &mut contexts,
                             );
