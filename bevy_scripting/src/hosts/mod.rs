@@ -50,7 +50,7 @@ impl<H: ScriptHost> ScriptContexts<H> {
     pub fn script_owner(&self, script_id: u32) -> Option<Entity> {
         self.context_entities
             .get(&script_id)
-            .map(|(e, _c)| e.clone())
+            .map(|(e, _c)| *e)
     }
 
     pub fn insert_context(&mut self, script_id: u32, entity: Entity, ctx: H::ScriptContext) {
