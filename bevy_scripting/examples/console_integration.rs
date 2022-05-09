@@ -2,7 +2,8 @@ use bevy::{ecs::event::Events, prelude::*};
 use bevy_asset_loader::{AssetCollection, AssetLoader};
 use bevy_console::{AddConsoleCommand, ConsoleCommand, ConsolePlugin, PrintConsoleLine};
 use bevy_scripting::{
-    APIProvider, LuaEvent, LuaFile, ScriptingPlugin, RLuaScriptHost, Script, ScriptCollection, ScriptHost,
+    APIProvider, LuaEvent, LuaFile, RLuaScriptHost, Script, ScriptCollection, ScriptHost,
+    ScriptingPlugin,
 };
 use rlua::{prelude::LuaLightUserData, Lua};
 use std::sync::Mutex;
