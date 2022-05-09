@@ -2,7 +2,7 @@ use bevy::{ecs::event::Events, prelude::*};
 use bevy_asset_loader::{AssetCollection, AssetLoader};
 use bevy_console::{AddConsoleCommand, ConsoleCommand, ConsolePlugin, PrintConsoleLine};
 use bevy_scripting::{
-    APIProvider, LuaEvent, LuaFile, LuaPlugin, RLuaScriptHost, Script, ScriptCollection, ScriptHost,
+    APIProvider, LuaEvent, LuaFile, ScriptingPlugin, RLuaScriptHost, Script, ScriptCollection, ScriptHost,
 };
 use rlua::{prelude::LuaLightUserData, Lua};
 use std::sync::Mutex;
@@ -61,7 +61,7 @@ pub fn trigger_on_update_script_callback(mut w: EventWriter<LuaEvent>) {
 fn main() -> std::io::Result<()> {
     let mut app = App::new();
     app.add_plugins(DefaultPlugins)
-        .add_plugin(LuaPlugin)
+        .add_plugin(ScriptingPlugin)
         .add_plugin(ConsolePlugin)
         .add_startup_system(watch_assets)
         .add_state(GameState::AssetLoading)
