@@ -1,26 +1,22 @@
-use std::ffi::c_void;
-use std::marker::PhantomData;
-
-use std::sync::{Arc, Mutex};
-
 use crate::{
-    script_add_synchronizer, script_event_handler, script_remove_synchronizer, APIProvider,
-    CachedScriptEventState, CodeAsset, ScriptContexts, ScriptHost,
+    script_add_synchronizer, script_event_handler, script_hot_reload_handler,
+    script_remove_synchronizer, APIProvider, CachedScriptEventState, CodeAsset, ScriptContexts,
+    ScriptHost,
 };
 use anyhow::{anyhow, Result};
 use beau_collector::BeauCollector as _;
 use bevy::asset::{AssetLoader, LoadedAsset};
-
-use bevy::prelude::{
-    App, ExclusiveSystemDescriptorCoercion, IntoExclusiveSystem, Mut, StageLabel, SystemSet, World,
-};
+use bevy::prelude::*;
 use bevy::reflect::TypeUuid;
-
 use rlua::prelude::*;
 use rlua::{Context, Function, Lua, MultiValue, ToLua, ToLuaMulti};
+use std::ffi::c_void;
+use std::marker::PhantomData;
+use std::sync::{Arc, Mutex};
 
 #[derive(Debug, TypeUuid)]
 #[uuid = "39cadc56-aa9c-4543-8640-a018b74b5052"]
+/// A lua code file in bytes
 pub struct LuaFile {
     pub bytes: Arc<[u8]>,
 }
@@ -32,6 +28,7 @@ impl CodeAsset for LuaFile {
 }
 
 #[derive(Default)]
+/// Asset loader for lua scripts
 pub struct LuaLoader;
 
 impl AssetLoader for LuaLoader {
@@ -52,6 +49,7 @@ impl AssetLoader for LuaLoader {
 }
 
 /// defines a value allowed to be passed as lua script arguments for callbacks
+/// TODO: expand this  
 #[derive(Clone)]
 pub enum LuaCallbackArgument {
     Integer(usize),
@@ -64,13 +62,17 @@ impl<'lua> ToLua<'lua> for LuaCallbackArgument {
         }
     }
 }
+
 #[derive(Clone)]
+/// A Lua Hook. The result of creating this event will be
+/// a call to the lua script with the hook_name and the given arguments
 pub struct LuaEvent {
     pub hook_name: String,
     pub args: Vec<LuaCallbackArgument>,
 }
 
 #[derive(Default)]
+/// Rlua script host, enables Lua scripting provided by the Rlua library.
 pub struct RLuaScriptHost<A: APIProvider> {
     _ph: PhantomData<A>,
 }
@@ -94,6 +96,7 @@ impl<A: APIProvider<Ctx = Mutex<Lua>>> ScriptHost for RLuaScriptHost<A> {
             SystemSet::new()
                 .with_system(script_add_synchronizer::<Self>)
                 .with_system(script_remove_synchronizer::<Self>)
+                .with_system(script_hot_reload_handler::<Self>)
                 .with_system(script_event_handler::<Self>.exclusive_system().at_end()),
         );
     }
@@ -120,30 +123,28 @@ impl<A: APIProvider<Ctx = Mutex<Lua>>> ScriptHost for RLuaScriptHost<A> {
         world.resource_scope(|world, res: Mut<ScriptContexts<Self>>| {
             res.contexts
                 .values()
-                .flat_map(|ctx| {
+                .map(|ctx| {
                     let world_ptr = LuaLightUserData(world as *mut World as *mut c_void);
-                    ctx.values().map(move |ctx| {
-                        let lua_ctx = ctx.lock().unwrap();
+                    let lua_ctx = ctx.lock().unwrap();
 
-                        lua_ctx.context::<_, Result<()>>(|lua_ctx| {
-                            let globals = lua_ctx.globals();
-                            globals.set("world", world_ptr)?;
+                    lua_ctx.context::<_, Result<()>>(|lua_ctx| {
+                        let globals = lua_ctx.globals();
+                        globals.set("world", world_ptr)?;
 
-                            // event order is preserved, but scripts can't rely on any temporal
-                            // guarantees when it comes to other scripts callbacks,
-                            // at least for now
-                            for event in events.iter() {
-                                let f: Function = match globals.get(event.hook_name.clone()) {
-                                    Ok(f) => f,
-                                    Err(_) => continue, // not subscribed to this event
-                                };
+                        // event order is preserved, but scripts can't rely on any temporal
+                        // guarantees when it comes to other scripts callbacks,
+                        // at least for now
+                        for event in events.iter() {
+                            let f: Function = match globals.get(event.hook_name.clone()) {
+                                Ok(f) => f,
+                                Err(_) => continue, // not subscribed to this event
+                            };
 
-                                f.call::<MultiValue, ()>(event.args.clone().to_lua_multi(lua_ctx)?)
-                                    .map_err(|e| anyhow!("Runtime LUA error: {}", e))?;
-                            }
+                            f.call::<MultiValue, ()>(event.args.clone().to_lua_multi(lua_ctx)?)
+                                .map_err(|e| anyhow!("Runtime LUA error: {}", e))?;
+                        }
 
-                            Ok(())
-                        })
+                        Ok(())
                     })
                 })
                 .bcollect()

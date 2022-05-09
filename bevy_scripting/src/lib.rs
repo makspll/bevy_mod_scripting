@@ -1,8 +1,12 @@
 use bevy::prelude::*;
+
+/// All script host related things
 pub mod hosts;
+
 pub use hosts::*;
 
 #[derive(Default)]
+/// Bevy plugin enabling run-time scripting
 pub struct ScriptingPlugin;
 
 impl Plugin for ScriptingPlugin {
