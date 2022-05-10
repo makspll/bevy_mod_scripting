@@ -52,8 +52,8 @@ fn main() -> std::io::Result<()> {
         // use any stage AFTER you main game systems
         // in order for your script updates to propagate in a  
         // single frame
-        .add_script_host::<RhaiScriptHost<MyEventArgStruct, RhaiAPIProvider>,CoreStage>(CoreStage::PostUpdate)    
-        .add_script_host::<RLuaScriptHost<LuaAPIProvider>,CoreStage>(CoreStage::PostUpdate)
+        .add_script_host::<RhaiScriptHost<MyEventArgStruct, RhaiAPI>,CoreStage>(CoreStage::PostUpdate)    
+        .add_script_host::<RLuaScriptHost<LuaAPI>,CoreStage>(CoreStage::PostUpdate)
 
         // generate events for scripts to pickup
         .add_system(trigger_on_update_script_callback)
@@ -141,9 +141,9 @@ use bevy_scripting::*;
 
 
 #[derive(Default)]
-pub struct LuaAPIProvider {}
+pub struct LuaAPI {}
 
-impl APIProvider for LuaAPIProvider {
+impl APIProvider for LuaAPI {
     type Ctx = Mutex<Lua>;
     fn attach_api(ctx: &mut Self::Ctx) {}
 }
@@ -160,7 +160,7 @@ pub fn load_a_script(
 
 
     commands.spawn().insert(ScriptCollection::<LuaFile> {
-        scripts: vec![Script::<LuaFile>::new::<RLuaScriptHost<LuaAPIProvider>>(
+        scripts: vec![Script::<LuaFile>::new::<RLuaScriptHost<LuaAPI>>(
             path, handle,
         )],
     });
@@ -169,7 +169,7 @@ pub fn load_a_script(
 
 
 ### Defining an API
-Simply implement the APIProvider trait, and use your struct in the ScriptHost type
+Simply implement the APIProvider trait + any others required by the specific ScriptHost your're using, and use your struct in the ScriptHost type
 
 ``` rust
 use std::sync::Mutex;
@@ -178,11 +178,11 @@ use rlua::prelude::*;
 use bevy_scripting::*;
 
 #[derive(Default)]
-pub struct LuaAPIProvider {}
+pub struct LuaAPI {}
 
 /// the custom Lua api, world is provided via a global pointer,
 /// and callbacks are defined only once at script creation
-impl APIProvider for LuaAPIProvider {
+impl APIProvider for LuaAPI {
     type Ctx = Mutex<Lua>;
     fn attach_api(ctx: &mut Self::Ctx) {
         // generate API here
@@ -192,12 +192,18 @@ impl APIProvider for LuaAPIProvider {
 }
 
 #[derive(Default)]
-pub struct RhaiAPIProvider {}
+pub struct RhaiAPI {}
 
-impl APIProvider for RhaiAPIProvider {
+impl APIProvider for RhaiAPI {
     type Ctx = RhaiContext;
 
     fn attach_api(ctx: &mut Self::Ctx) {
+        // ...
+    }
+}
+
+impl RhaiAPIProvider for RhaiAPI{
+    fn setup_engine(engine : &mut Engine){
         // ...
     }
 }

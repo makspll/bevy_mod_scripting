@@ -143,16 +143,17 @@ impl<T: Asset> Script<T> {
         let script = match script_assets.get(&new_script.handle) {
             Some(s) => s,
             None => {
-                warn!("Script asset missing: {}", new_script.name);
+                warn!(
+                    "Script asset missing: {}. Did you make sure the script asset is loaded?",
+                    new_script.name
+                );
+                // TODO: deal with component, remove ? or make ctx Optional
                 return;
             }
         };
 
         match H::load_script(script.bytes(), &new_script.name) {
             Ok(mut ctx) => {
-                // allow plugging in an API
-                H::ScriptAPIProvider::attach_api(&mut ctx);
-
                 contexts.insert_context(new_script.id(), entity, ctx);
             }
             Err(e) => {
@@ -308,8 +309,6 @@ pub trait ScriptHost: Send + Sync + 'static {
     type ScriptEvent: Send + Sync + Clone + 'static;
     /// the type of asset representing the script files for this host
     type ScriptAsset: CodeAsset;
-    /// the type of an API provider which supplies scripts with user-defined API's
-    type ScriptAPIProvider: APIProvider<Ctx = Self::ScriptContext>;
 
     /// Loads a script in byte array format, the script name can be used
     /// to send useful errors.

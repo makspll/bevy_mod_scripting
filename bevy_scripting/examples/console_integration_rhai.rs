@@ -1,17 +1,18 @@
 use bevy::{ecs::event::Events, prelude::*};
+use bevy_asset_loader::{AssetCollection, AssetLoader};
 use bevy_console::{AddConsoleCommand, ConsoleCommand, ConsolePlugin, PrintConsoleLine};
 use bevy_scripting::{
-    APIProvider, AddScriptHost, RhaiContext, RhaiEvent, RhaiFile, RhaiScriptHost, Script,
-    ScriptCollection, ScriptingPlugin,
+    APIProvider, AddScriptHost, RhaiAPIProvider, RhaiContext, RhaiEvent, RhaiFile, RhaiScriptHost,
+    Script, ScriptCollection, ScriptingPlugin,
 };
 use rhai::FuncArgs;
 
 /// custom Rhai API, world is provided as a usize (by the script this time), since
 /// Rhai does not allow global/local variable access from a callback
 #[derive(Default)]
-pub struct RhaiAPIProvider {}
+pub struct RhaiAPI {}
 
-impl APIProvider for RhaiAPIProvider {
+impl APIProvider for RhaiAPI {
     type Ctx = RhaiContext;
 
     fn attach_api(ctx: &mut Self::Ctx) {
@@ -27,6 +28,12 @@ impl APIProvider for RhaiAPIProvider {
 
         ctx.engine
             .register_fn("entity_id", |entity: Entity| entity.id());
+    }
+}
+
+impl RhaiAPIProvider for RhaiAPI {
+    fn setup_engine(engine: &mut rhai::Engine) {
+        engine.set_max_expr_depths(0, 0);
     }
 }
 
@@ -48,20 +55,40 @@ pub fn trigger_on_update_rhai(mut w: EventWriter<RhaiEvent<RhaiEventArgs>>) {
     w.send(event);
 }
 
+/// optional, convenience for pre-loading scripts
+#[derive(AssetCollection)]
+struct RhaiAssets {
+    #[asset(path = "scripts", folder(typed))]
+    folder: Vec<Handle<RhaiFile>>,
+}
+
+#[derive(Clone, Eq, PartialEq, Debug, Hash)]
+enum GameState {
+    AssetLoading,
+    Next,
+}
+
 fn main() -> std::io::Result<()> {
     let mut app = App::new();
     app.add_plugins(DefaultPlugins)
         .add_plugin(ScriptingPlugin)
         .add_plugin(ConsolePlugin)
+        .add_state(GameState::AssetLoading)
         .add_startup_system(watch_assets)
         // register bevy_console commands
         .add_console_command::<RunScriptCmd, _, _>(run_script_cmd)
         .add_console_command::<DeleteScriptCmd, _, _>(delete_script_cmd)
         .add_system(trigger_on_update_rhai)
         // choose and register the script hosts you want to use
-        .add_script_host::<RhaiScriptHost<RhaiEventArgs, RhaiAPIProvider>, CoreStage>(
+        .add_script_host::<RhaiScriptHost<RhaiEventArgs, RhaiAPI>, CoreStage>(
             CoreStage::PostUpdate,
         );
+
+    // bevy_asset_loader for loading and keeping script assets around easilly
+    AssetLoader::new(GameState::AssetLoading)
+        .continue_to_state(GameState::Next)
+        .with_collection::<RhaiAssets>()
+        .build(&mut app);
 
     // at runtime press '~' for console then type in help for command formats
     app.run();
@@ -98,7 +125,7 @@ pub fn run_script_cmd(
                     info!("Creating script: scripts/{} {:?}", &path, &entity);
 
                     scripts.scripts.push(Script::<RhaiFile>::new::<
-                        RhaiScriptHost<RhaiEventArgs, RhaiAPIProvider>,
+                        RhaiScriptHost<RhaiEventArgs, RhaiAPI>,
                     >(path, handle));
                 } else {
                     log.reply_failed(format!("Something went wrong"));
@@ -109,7 +136,7 @@ pub fn run_script_cmd(
 
                 commands.spawn().insert(ScriptCollection::<RhaiFile> {
                     scripts: vec![Script::<RhaiFile>::new::<
-                        RhaiScriptHost<RhaiEventArgs, RhaiAPIProvider>,
+                        RhaiScriptHost<RhaiEventArgs, RhaiAPI>,
                     >(path, handle)],
                 });
             }

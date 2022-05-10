@@ -14,6 +14,12 @@ use std::marker::PhantomData;
 
 pub use assets::*;
 
+/// More specific APIProvider implementation allowing more control over Rhai scripts
+pub trait RhaiAPIProvider: APIProvider {
+    /// set Rhai engine settings before scripts are compiled
+    fn setup_engine(engine: &mut Engine);
+}
+
 pub struct RhaiScriptHost<A: FuncArgs + Send, API: APIProvider> {
     _ph: PhantomData<A>,
     _ph2: PhantomData<API>,
@@ -36,13 +42,12 @@ pub struct RhaiEvent<A: FuncArgs + Clone + 'static> {
     pub args: A,
 }
 
-impl<A: FuncArgs + Send + Clone + Sync + 'static, API: APIProvider<Ctx = RhaiContext>> ScriptHost
-    for RhaiScriptHost<A, API>
+impl<A: FuncArgs + Send + Clone + Sync + 'static, API: RhaiAPIProvider<Ctx = RhaiContext>>
+    ScriptHost for RhaiScriptHost<A, API>
 {
     type ScriptContext = RhaiContext;
     type ScriptEvent = RhaiEvent<A>;
     type ScriptAsset = RhaiFile;
-    type ScriptAPIProvider = API;
 
     fn register_with_app(app: &mut bevy::prelude::App, stage: impl bevy::prelude::StageLabel) {
         app.add_event::<Self::ScriptEvent>();
@@ -64,6 +69,9 @@ impl<A: FuncArgs + Send + Clone + Sync + 'static, API: APIProvider<Ctx = RhaiCon
     #[allow(deprecated)]
     fn load_script(path: &[u8], script_name: &str) -> anyhow::Result<Self::ScriptContext> {
         let mut engine = Engine::new();
+
+        API::setup_engine(&mut engine);
+
         let mut scope = Scope::new();
         let ast = engine
             .compile(std::str::from_utf8(path)?)
@@ -77,7 +85,11 @@ impl<A: FuncArgs + Send + Clone + Sync + 'static, API: APIProvider<Ctx = RhaiCon
         // persistent state for scripts
         scope.push("state", Map::new());
 
-        Ok(RhaiContext { engine, ast, scope })
+        let mut ctx = RhaiContext { engine, ast, scope };
+
+        API::attach_api(&mut ctx);
+
+        Ok(ctx)
     }
 
     fn handle_events(

@@ -96,7 +96,6 @@ impl<A: APIProvider<Ctx = Mutex<Lua>>> ScriptHost for RLuaScriptHost<A> {
     type ScriptContext = Mutex<Lua>;
     type ScriptEvent = LuaEvent;
     type ScriptAsset = LuaFile;
-    type ScriptAPIProvider = A;
 
     fn register_with_app(app: &mut App, stage: impl StageLabel) {
         app.add_event::<LuaEvent>();
@@ -127,7 +126,11 @@ impl<A: APIProvider<Ctx = Mutex<Lua>>> ScriptHost for RLuaScriptHost<A> {
             Ok(())
         })?;
 
-        Ok(Mutex::new(lua))
+        let mut lua = Mutex::new(lua);
+
+        A::attach_api(&mut lua);
+
+        Ok(lua)
     }
 
     fn handle_events(world: &mut World, events: &[Self::ScriptEvent]) -> Result<()> {

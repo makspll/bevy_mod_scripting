@@ -6,9 +6,7 @@ fn on_update(){
     }
 
     if (state.a % 100) == 0 {
-        let eid = entity_id(entity);
-        let str = `${state.a}, entity:${eid}`;
-        print_to_console(world,str);
+        print_to_console(world,`${state.a}, entity:${ entity_id(entity)}`);
     }
 
     state.a = state.a + 1;
