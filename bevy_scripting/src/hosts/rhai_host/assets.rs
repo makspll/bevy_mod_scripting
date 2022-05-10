@@ -1,6 +1,9 @@
-use bevy::{reflect::TypeUuid, asset::{AssetLoader, LoadedAsset}};
-use std::sync::Arc;
 use crate::CodeAsset;
+use bevy::{
+    asset::{AssetLoader, LoadedAsset},
+    reflect::TypeUuid,
+};
+use std::sync::Arc;
 
 #[derive(Debug, TypeUuid)]
 #[uuid = "e4f7d00d-5acd-45fb-a29c-5a44c5447f5c"]

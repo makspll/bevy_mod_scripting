@@ -1,24 +1,18 @@
 pub mod assets;
 
-
-
 use crate::{
     script_add_synchronizer, script_event_handler, script_hot_reload_handler,
-    script_remove_synchronizer, APIProvider, CachedScriptEventState, ScriptContexts,
-    ScriptHost,
+    script_remove_synchronizer, APIProvider, CachedScriptEventState, ScriptContexts, ScriptHost,
 };
-use anyhow::{anyhow, Result};
+use anyhow::anyhow;
 use beau_collector::BeauCollector as _;
-use bevy::{
-    prelude::{
-        AddAsset, ExclusiveSystemDescriptorCoercion, IntoExclusiveSystem, Mut, SystemSet, World,
-    },
+use bevy::prelude::{
+    AddAsset, ExclusiveSystemDescriptorCoercion, IntoExclusiveSystem, Mut, SystemSet, World,
 };
 use rhai::*;
 use std::marker::PhantomData;
 
-pub use {assets::*};
-
+pub use assets::*;
 
 pub struct RhaiScriptHost<A: FuncArgs + Send, API: APIProvider> {
     _ph: PhantomData<A>,

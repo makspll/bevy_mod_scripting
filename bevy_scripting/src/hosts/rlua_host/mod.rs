@@ -2,8 +2,7 @@ pub mod assets;
 
 use crate::{
     script_add_synchronizer, script_event_handler, script_hot_reload_handler,
-    script_remove_synchronizer, APIProvider, CachedScriptEventState, ScriptContexts,
-    ScriptHost,
+    script_remove_synchronizer, APIProvider, CachedScriptEventState, ScriptContexts, ScriptHost,
 };
 use anyhow::{anyhow, Result};
 use beau_collector::BeauCollector as _;
@@ -15,7 +14,6 @@ use std::marker::PhantomData;
 use std::sync::Mutex;
 
 pub use assets::*;
-
 
 /// defines a value allowed to be passed as lua script arguments for callbacks
 /// TODO: expand this  
