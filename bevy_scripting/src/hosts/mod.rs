@@ -5,7 +5,7 @@ pub mod rlua_host;
 
 use anyhow::Result;
 use bevy::{asset::Asset, ecs::system::SystemState, prelude::*};
-pub use {rhai_host::*, rlua_host::*};
+pub use {crate::rhai_host::*, crate::rlua_host::*};
 
 use std::{
     collections::{HashMap, HashSet},
