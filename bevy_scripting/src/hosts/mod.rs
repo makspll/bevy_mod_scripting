@@ -153,7 +153,7 @@ impl<T: Asset> Script<T> {
         };
 
         match H::load_script(script.bytes(), &new_script.name) {
-            Ok(mut ctx) => {
+            Ok(ctx) => {
                 contexts.insert_context(new_script.id(), entity, ctx);
             }
             Err(e) => {
