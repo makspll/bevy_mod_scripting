@@ -25,7 +25,6 @@ beau_collector = "0.2.1"
 once_cell = "1.10.0"
 
 [dev-dependencies]
-bevy_asset_loader = {git = "https://github.com/NiklasEi/bevy_asset_loader", features = ["dynamic_assets"]}
 bevy_console = { git = "https://github.com/makspll/bevy-console-bevy-0.7" }
 
 

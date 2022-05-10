@@ -1,5 +1,4 @@
 use bevy::{ecs::event::Events, prelude::*};
-use bevy_asset_loader::{AssetCollection, AssetLoader};
 use bevy_console::{AddConsoleCommand, ConsoleCommand, ConsolePlugin, PrintConsoleLine};
 use bevy_scripting::{
     APIProvider, AddScriptHost, RhaiContext, RhaiEvent, RhaiFile, RhaiScriptHost, Script,
@@ -49,13 +48,6 @@ pub fn trigger_on_update_rhai(mut w: EventWriter<RhaiEvent<RhaiEventArgs>>) {
     w.send(event);
 }
 
-/// optional, convenience for loading our script assets provided by bevy_asset_loader
-/// keeps all of them loaded
-#[derive(AssetCollection)]
-struct RhaiAssets {
-    #[asset(path = "scripts", folder(typed))]
-    folder: Vec<Handle<RhaiFile>>,
-}
 
 fn main() -> std::io::Result<()> {
     let mut app = App::new();
@@ -63,7 +55,6 @@ fn main() -> std::io::Result<()> {
         .add_plugin(ScriptingPlugin)
         .add_plugin(ConsolePlugin)
         .add_startup_system(watch_assets)
-        .add_state(GameState::AssetLoading)
         // register bevy_console commands
         .add_console_command::<RunScriptCmd, _, _>(run_script_cmd)
         .add_console_command::<DeleteScriptCmd, _, _>(delete_script_cmd)
@@ -73,11 +64,6 @@ fn main() -> std::io::Result<()> {
             CoreStage::PostUpdate,
         );
 
-    // bevy_asset_loader for loading and keeping script assets around easilly
-    AssetLoader::new(GameState::AssetLoading)
-        .continue_to_state(GameState::MainMenu)
-        .with_collection::<RhaiAssets>()
-        .build(&mut app);
 
     // at runtime press '~' for console then type in help for command formats
     app.run();
@@ -164,11 +150,7 @@ pub fn delete_script_cmd(
     }
 }
 
-#[derive(Clone, Eq, PartialEq, Debug, Hash)]
-enum GameState {
-    AssetLoading,
-    MainMenu,
-}
+
 
 #[derive(ConsoleCommand)]
 #[console_command(name = "delete_script")]
