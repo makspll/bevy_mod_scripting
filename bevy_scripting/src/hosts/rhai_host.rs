@@ -96,6 +96,7 @@ impl<A: FuncArgs + Send + Clone + Sync + 'static, API: APIProvider<Ctx = RhaiCon
         );
     }
 
+    #[allow(deprecated)]
     fn load_script(path: &[u8], script_name: &str) -> anyhow::Result<Self::ScriptContext> {
         let mut engine = Engine::new();
         let mut scope = Scope::new();
