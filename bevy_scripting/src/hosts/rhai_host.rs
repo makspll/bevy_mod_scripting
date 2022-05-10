@@ -16,7 +16,7 @@ use rhai::*;
 use std::{marker::PhantomData, sync::Arc};
 
 #[derive(Debug, TypeUuid)]
-#[uuid = "39cadc56-aa9c-4543-8640-a018b74b5052"]
+#[uuid = "e4f7d00d-5acd-45fb-a29c-5a44c5447f5c"]
 /// A rhai code file in bytes
 pub struct RhaiFile {
     pub bytes: Arc<[u8]>,

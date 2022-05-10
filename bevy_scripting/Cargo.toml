@@ -30,5 +30,10 @@ bevy_console = { git = "https://github.com/makspll/bevy-console-bevy-0.7" }
 
 
 [[example]]
-name = "console_integration"
-path = "examples/console_integration.rs"
+name = "console_integration_lua"
+path = "examples/console_integration_lua.rs"
+
+
+[[example]]
+name = "console_integration_rhai"
+path = "examples/console_integration_rhai.rs"

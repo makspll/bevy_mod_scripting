@@ -80,6 +80,11 @@ pub struct LuaEvent {
 ///
 /// You can use these variables in your APIProviders like so:
 /// ```
+///    use std::sync::Mutex;
+///    use bevy::prelude::*;
+///    use rlua::prelude::*;
+///    use bevy_scripting::{RLuaScriptHost, APIProvider};
+///    
 ///    #[derive(Default)]
 ///    pub struct LuaAPIProvider {}
 ///
@@ -87,7 +92,7 @@ pub struct LuaEvent {
 ///    /// and callbacks are defined only once at script creation
 ///    impl APIProvider for LuaAPIProvider {
 ///        type Ctx = Mutex<Lua>;
-///        fn attach_api(ctx: &Self::Ctx) {
+///        fn attach_api(ctx: &mut Self::Ctx) {
 ///            // callbacks can receive any `ToLuaMulti` arguments, here '()' and
 ///            // return any `FromLuaMulti` arguments, here a `usize`
 ///            // check the Rlua documentation for more details

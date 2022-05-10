@@ -30,31 +30,130 @@ The API will likely change in the future as more scripting support is rolled out
 
 ## Usage
 
-### Installation
+```rust
 
-``` rust
+use std::sync::Mutex;
+use bevy::prelude::*;
+use rlua::{prelude::*};
+use rhai::FuncArgs;
+use bevy_scripting::*;
+
+
+#[derive(Clone)]
+pub struct MyEventArgStruct {
+    // ... add your fields
+}
+
+impl FuncArgs for MyEventArgStruct {
+    fn parse<ARGS: Extend<rhai::Dynamic>>(self, _args: &mut ARGS) {
+        // ... implement this
+    }
+}
+
+// event callback generator for rhai
+// rhai event arguments can be any rust type implementing FuncArgs
+pub fn trigger_on_update_rhai(mut w: EventWriter<RhaiEvent<MyEventArgStruct>>) {
+    let event = RhaiEvent {
+        hook_name: "on_update".to_string(),
+        args: MyEventArgStruct {},
+    };
+
+    w.send(event);
+}
+
+// event callback generator for lua
+// right now only integer arguments are supported
+pub fn trigger_on_update_script_callback(mut w: EventWriter<LuaEvent>) {
+    let event = LuaEvent {
+        hook_name: "on_update".to_string(), 
+        args: Vec::default(),
+    };
+
+    w.send(event);
+}
+
+// An example of a startup system which loads the lua script "console_integration.lua" 
+// placed in "assets/scripts/" and attaches it to a new entity
+pub fn load_a_script(
+    server: Res<AssetServer>,
+    mut commands: Commands,
+) {
+    // this handle is kept by the script so it will not be unloaded
+    let path = "scripts/console_integration.lua".to_string();
+    let handle = server.load::<LuaFile, &str>(&path);
+
+
+    commands.spawn().insert(ScriptCollection::<LuaFile> {
+        scripts: vec![Script::<LuaFile>::new::<RLuaScriptHost<LuaAPIProvider>>(
+            path, handle,
+        )],
+    });
+}
+
+
+// write API providers for your scripts
+
+#[derive(Default)]
+pub struct LuaAPIProvider {}
+
+/// the custom Lua api, world is provided via a global pointer,
+/// and callbacks are defined only once at script creation
+impl APIProvider for LuaAPIProvider {
+    type Ctx = Mutex<Lua>;
+    fn attach_api(ctx: &mut Self::Ctx) {
+        // ... generate API here
+        // world is provided via ctx see examples
+    }
+}
+
+#[derive(Default)]
+pub struct RhaiAPIProvider {}
+
+impl APIProvider for RhaiAPIProvider {
+    type Ctx = RhaiContext;
+
+    fn attach_api(ctx: &mut Self::Ctx) {
+    }
+}
+
+
 fn main() -> std::io::Result<()> {
     let mut app = App::new();
     app.add_plugins(DefaultPlugins)
         .add_plugin(ScriptingPlugin)
 
-    // pick and register host
-    RLuaScriptHost::<LuaAPIProvider>::register_with_app(
-        &mut app,   
-        CoreStage::PostUpdate // use any stage AFTER you main game systems
-                              // in order for your script updates to propagate in a  
-                              // single frame
-    );
+        // pick and register only the hosts you want to use
+        // use any stage AFTER you main game systems
+        // in order for your script updates to propagate in a  
+        // single frame
+        .add_script_host::<RhaiScriptHost<MyEventArgStruct, RhaiAPIProvider>,CoreStage>(CoreStage::PostUpdate)    
+        .add_script_host::<RLuaScriptHost<LuaAPIProvider>,CoreStage>(CoreStage::PostUpdate)
 
-    app.run();
+        // generate events for scripts to pickup
+        .add_system(trigger_on_update_script_callback)
+        .add_system(trigger_on_update_rhai)
+
+        // attach script components to entities
+        .add_startup_system(load_a_script);
+
+    // app.run();
 
     Ok(())
 }
 ```
 
+### Installation
+
+To install:
+    - Add ScriptingPlugin to your app
+    - Add the ScriptHosts you plan on using
+        - Make sure to attach them to a stage running AFTER any systems which may generate either script events or modify/create/remove script components  
+    - Add systems which generate ScriptEvents corresponding to your script host
+    - Add systems which add ScriptCollection components to your entities and fill them with scripts
+
 ### Firing Script Callbacks
 
-Scripts are triggered by firing events, the order of events matters so trigger them in the order you'd like your scripts to process them.
+Scripts are triggered by firing 'ScriptEvents', the order of events matters so trigger them in the order you'd like your scripts to process them.
 
 As it stands currently there are no guarantees that force the script callbacks to be executed fully for all scripts, before processing the next callback event (i.e. this order guarantee only holds on a per script basis).
 
@@ -64,17 +163,16 @@ Use valid lua function names for hook names and any number of arguments which ar
 
 Currently only integer arguments are supported.
 
-``` rust 
-pub fn trigger_on_update_script_callback(mut w: EventWriter<LuaEvent>) {
-    let event = LuaEvent {
-        hook_name: "on_update".to_string(), 
-        args: Vec::default(),
-    };
+#### Rhai
 
-    w.send(event);
-}
-```
+Rhai supports the use of any rust types implementing FuncArgs as function arguments (apart from references),
 
+
+### Adding scripts
+
+A script consist of:
+    - an asset handle to their code file
+    - a name which is usually their path relative to the assets folder
 
 ## Examples 
 
@@ -85,8 +183,10 @@ have a look at how you can use this crate in conjunction with bevy_debug_console
 
 to run this example use:
 
-`cargo run --console_integration`
+`cargo run --console_integration_lua`
 
 then in-game use `~` to bring up the console, then use:
 
 `run_script "console_integration.lua"`
+`run_script "console_integration.lua" 0`
+`delete_script "console_integration.lua" 0`
