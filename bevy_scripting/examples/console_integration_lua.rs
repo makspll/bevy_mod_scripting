@@ -68,9 +68,7 @@ fn main() -> std::io::Result<()> {
         .add_state(GameState::AssetLoading)
         // register bevy_console commands
         .add_console_command::<RunScriptCmd, _, _>(run_script_cmd)
-        .add_console_command::<DeleteScriptCmd, _, _>(
-            delete_script_cmd::<RLuaScriptHost<LuaAPIProvider>>,
-        )
+        .add_console_command::<DeleteScriptCmd, _, _>(delete_script_cmd)
         .add_system(trigger_on_update_lua)
         // choose and register the script hosts you want to use
         .add_script_host::<RLuaScriptHost<LuaAPIProvider>, CoreStage>(CoreStage::PostUpdate);
@@ -106,7 +104,7 @@ pub fn run_script_cmd(
     server: Res<AssetServer>,
     mut commands: Commands,
     mut existing_scripts: Query<
-        &mut ScriptCollection<<RLuaScriptHost<LuaAPIProvider> as ScriptHost>::ScriptAsset>,
+        &mut ScriptCollection<LuaFile>,
     >,
 ) {
     if let Some(RunScriptCmd { path, entity }) = log.take() {
@@ -118,7 +116,7 @@ pub fn run_script_cmd(
                     info!("Creating script: scripts/{} {:?}", &path, &entity);
 
                     scripts.scripts.push(Script::<
-                        <RLuaScriptHost<LuaAPIProvider> as ScriptHost>::ScriptAsset,
+                        LuaFile,
                     >::new::<RLuaScriptHost<LuaAPIProvider>>(
                         path, handle
                     ));
@@ -130,10 +128,10 @@ pub fn run_script_cmd(
                 info!("Creating script: scripts/{}", &path);
 
                 commands.spawn().insert(ScriptCollection::<
-                    <RLuaScriptHost<LuaAPIProvider> as ScriptHost>::ScriptAsset,
+                    LuaFile,
                 > {
                     scripts: vec![Script::<
-                        <RLuaScriptHost<LuaAPIProvider> as ScriptHost>::ScriptAsset,
+                        LuaFile,
                     >::new::<RLuaScriptHost<LuaAPIProvider>>(
                         path, handle
                     )],
@@ -148,9 +146,9 @@ fn watch_assets(server: Res<AssetServer>) {
     server.watch_for_changes().unwrap();
 }
 
-pub fn delete_script_cmd<H: ScriptHost>(
+pub fn delete_script_cmd(
     mut log: ConsoleCommand<DeleteScriptCmd>,
-    mut scripts: Query<(Entity, &mut ScriptCollection<H::ScriptAsset>)>,
+    mut scripts: Query<(Entity, &mut ScriptCollection<LuaFile>)>,
 ) {
     if let Some(DeleteScriptCmd { name, entity_id }) = log.take() {
         for (e, mut s) in scripts.iter_mut() {
