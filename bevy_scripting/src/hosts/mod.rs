@@ -1,9 +1,12 @@
 //! All script host related stuff
 
 pub mod rlua_host;
+pub mod rhai_host;
+
 use anyhow::Result;
 use bevy::{asset::Asset, ecs::system::SystemState, prelude::*};
-pub use rlua_host::*;
+pub use {rlua_host::*, rhai_host::*};
+
 use std::{
     collections::{HashMap, HashSet},
     sync::atomic::{AtomicU32, Ordering},
@@ -23,7 +26,7 @@ pub trait APIProvider: 'static + Default {
     type Ctx;
 
     /// provide the given script context with the API permamently
-    fn attach_api(ctx: &Self::Ctx);
+    fn attach_api(ctx: &mut Self::Ctx);
 }
 
 #[derive(Component)]
@@ -35,7 +38,6 @@ pub struct ScriptCollection<T: Asset> {
     pub scripts: Vec<Script<T>>,
 }
 
-#[derive(Default)]
 /// A resource storing the script contexts for each script instance.
 /// The reason we need this is to split the world borrow in our handle event systems, but this
 /// has the added benefit that users don't see the contexts at all, and we can provide
@@ -46,6 +48,12 @@ pub struct ScriptCollection<T: Asset> {
 pub struct ScriptContexts<H: ScriptHost> {
     /// holds script contexts for all scripts given their instance ids
     pub context_entities: HashMap<u32, (Entity, H::ScriptContext)>,
+}
+
+impl <H : ScriptHost>Default for ScriptContexts<H>{
+    fn default() -> Self {
+        Self { context_entities: Default::default() }
+    }
 }
 
 impl<H: ScriptHost> ScriptContexts<H> {
@@ -130,23 +138,24 @@ impl<T: Asset> Script<T> {
         script_assets: &Res<Assets<H::ScriptAsset>>,
         contexts: &mut ResMut<ScriptContexts<H>>,
     ) {
+
         let script = match script_assets.get(&new_script.handle) {
             Some(s) => s,
             None => {
-                warn!("Failed to load script: {}", new_script.name);
+                warn!("Script asset missing: {}", new_script.name);
                 return;
             }
         };
 
         match H::load_script(script.bytes(), &new_script.name) {
-            Ok(ctx) => {
+            Ok(mut ctx) => {
                 // allow plugging in an API
-                H::ScriptAPIProvider::attach_api(&ctx);
+                H::ScriptAPIProvider::attach_api(&mut ctx);
 
                 contexts.insert_context(new_script.id(), entity, ctx);
             }
-            Err(_e) => {
-                warn! {"Failed to load script: {}", &new_script.name}
+            Err(e) => {
+                warn! {"Error in loading script {}:\n{}", &new_script.name,e}
                 // TODO: deal with component, remove ? or make ctx Optional
             }
         }

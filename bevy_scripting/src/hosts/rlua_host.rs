@@ -128,6 +128,8 @@ impl<A: APIProvider<Ctx = Mutex<Lua>>> ScriptHost for RLuaScriptHost<A> {
 
     fn register_with_app(app: &mut App, stage: impl StageLabel) {
         app.add_event::<LuaEvent>();
+        app.add_asset::<LuaFile>();
+        app.init_asset_loader::<LuaLoader>();
         app.init_resource::<CachedScriptEventState<Self::ScriptEvent>>();
         app.init_resource::<ScriptContexts<Self>>();
 

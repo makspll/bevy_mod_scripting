@@ -19,6 +19,7 @@ path = "src/lib.rs"
 [dependencies]
 bevy = "0.7"
 rlua = "0.19.1"
+rhai = { version = "1.7.0", features = ["sync"] }
 anyhow = "1.0.57"
 beau_collector = "0.2.1"
 once_cell = "1.10.0"

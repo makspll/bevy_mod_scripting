@@ -3,49 +3,52 @@ use bevy_asset_loader::{AssetCollection, AssetLoader};
 use bevy_console::{AddConsoleCommand, ConsoleCommand, ConsolePlugin, PrintConsoleLine};
 use bevy_scripting::{
     APIProvider, AddScriptHost, LuaEvent, LuaFile, RLuaScriptHost, Script, ScriptCollection,
-    ScriptHost, ScriptingPlugin,
+    ScriptHost, ScriptingPlugin, RhaiContext, RhaiEvent, RhaiScriptHost, RhaiFile,
 };
+use rhai::{NativeCallContext, FuncArgs};
 use rlua::{prelude::LuaLightUserData, Lua};
-use std::sync::Mutex;
+use std::{sync::Mutex, ffi::OsStr, path::Path};
 
+/// custom Rhai API, world is provided as a usize (by the script this time), since
+/// Rhai does not allow global/local variable access from a callback
 #[derive(Default)]
-pub struct LuaAPIProvider {}
+pub struct RhaiAPIProvider {}
 
-/// the custom Lua api, world is provided via a global pointer,
-/// and callbacks are defined only once at script creation
-impl APIProvider for LuaAPIProvider {
-    type Ctx = Mutex<Lua>;
-    fn attach_api(ctx: &Self::Ctx) {
-        // callbacks can receive any `ToLuaMulti` arguments, here '()' and
-        // return any `FromLuaMulti` arguments, here a `usize`
-        // check the Rlua documentation for more details
-        RLuaScriptHost::<Self>::register_api_callback(
-            "print_to_console",
-            |ctx, msg: String| {
-                // retrieve the world pointer
-                let world_data: LuaLightUserData = ctx.globals().get("world").unwrap();
-                let world = unsafe { &mut *(world_data.0 as *mut World) };
+impl APIProvider for RhaiAPIProvider {
+    type Ctx=RhaiContext;
 
-                // do stuff with it
-                // ...
+    fn attach_api(ctx: &mut Self::Ctx) {
+        ctx.engine.register_fn("print_to_console", |shared_world : usize,msg : String| {
+            let world : &mut World = unsafe { &mut *(shared_world as *mut World)};
 
-                let mut events: Mut<Events<PrintConsoleLine>> = world.get_resource_mut().unwrap();
-                events.send(PrintConsoleLine { line: msg });
+            let mut events: Mut<Events<PrintConsoleLine>> = world.get_resource_mut().unwrap();
+            events.send(PrintConsoleLine { line: msg });
 
-                // return something
-                Ok(())
-            },
-            ctx,
-        )
+            ()
+        });
+
+        ctx.engine.register_fn("entity_id", |entity: Entity| {
+            entity.id()
+        });
     }
 }
 
+#[derive(Clone)]
+pub struct RhaiEventArgs {}
+
+impl FuncArgs for RhaiEventArgs {
+    fn parse<ARGS: Extend<rhai::Dynamic>>(self, args: &mut ARGS) {
+
+    }
+}
+
+
 /// sends updates to script host which are then handled by the scripts
 /// in the designated stage
-pub fn trigger_on_update_script_callback(mut w: EventWriter<LuaEvent>) {
-    let event = LuaEvent {
+pub fn trigger_on_update_rhai(mut w: EventWriter<RhaiEvent<RhaiEventArgs>>) {
+    let event = RhaiEvent {
         hook_name: "on_update".to_string(),
-        args: Vec::default(),
+        args: RhaiEventArgs{},
     };
 
     w.send(event);
@@ -54,9 +57,9 @@ pub fn trigger_on_update_script_callback(mut w: EventWriter<LuaEvent>) {
 /// optional, convenience for loading our script assets provided by bevy_asset_loader
 /// keeps all of them loaded
 #[derive(AssetCollection)]
-struct LuaAssets {
+struct RhaiAssets {
     #[asset(path = "scripts", folder(typed))]
-    folder: Vec<Handle<LuaFile>>,
+    folder: Vec<Handle<RhaiFile>>,
 }
 
 fn main() -> std::io::Result<()> {
@@ -68,17 +71,15 @@ fn main() -> std::io::Result<()> {
         .add_state(GameState::AssetLoading)
         // register bevy_console commands
         .add_console_command::<RunScriptCmd, _, _>(run_script_cmd)
-        .add_console_command::<DeleteScriptCmd, _, _>(
-            delete_script_cmd::<RLuaScriptHost<LuaAPIProvider>>,
-        )
-        .add_system(trigger_on_update_script_callback)
-        // choose and register script host
-        .add_script_host::<RLuaScriptHost<LuaAPIProvider>, CoreStage>(CoreStage::PostUpdate);
+        .add_console_command::<DeleteScriptCmd, _, _>(delete_script_cmd)
+        .add_system(trigger_on_update_rhai)
+        // choose and register the script hosts you want to use
+        .add_script_host::<RhaiScriptHost<RhaiEventArgs,RhaiAPIProvider>, CoreStage>(CoreStage::PostUpdate);
 
     // bevy_asset_loader for loading and keeping script assets around easilly
     AssetLoader::new(GameState::AssetLoading)
         .continue_to_state(GameState::MainMenu)
-        .with_collection::<LuaAssets>()
+        .with_collection::<RhaiAssets>()
         .build(&mut app);
 
     // at runtime press '~' for console then type in help for command formats
@@ -106,20 +107,19 @@ pub fn run_script_cmd(
     server: Res<AssetServer>,
     mut commands: Commands,
     mut existing_scripts: Query<
-        &mut ScriptCollection<<RLuaScriptHost<LuaAPIProvider> as ScriptHost>::ScriptAsset>,
+        &mut ScriptCollection<RhaiFile>,
     >,
 ) {
     if let Some(RunScriptCmd { path, entity }) = log.take() {
-        let handle = server.load::<LuaFile, &str>(&format!("scripts/{}", &path));
+        let handle = server.load::<RhaiFile, &str>(&format!("scripts/{}", &path));
+    
 
         match entity {
             Some(e) => {
                 if let Ok(mut scripts) = existing_scripts.get_mut(Entity::from_raw(e)) {
                     info!("Creating script: scripts/{} {:?}", &path, &entity);
 
-                    scripts.scripts.push(Script::<
-                        <RLuaScriptHost<LuaAPIProvider> as ScriptHost>::ScriptAsset,
-                    >::new::<RLuaScriptHost<LuaAPIProvider>>(
+                    scripts.scripts.push(Script::<RhaiFile>::new::<RhaiScriptHost<RhaiEventArgs,RhaiAPIProvider>>(
                         path, handle
                     ));
                 } else {
@@ -129,12 +129,8 @@ pub fn run_script_cmd(
             None => {
                 info!("Creating script: scripts/{}", &path);
 
-                commands.spawn().insert(ScriptCollection::<
-                    <RLuaScriptHost<LuaAPIProvider> as ScriptHost>::ScriptAsset,
-                > {
-                    scripts: vec![Script::<
-                        <RLuaScriptHost<LuaAPIProvider> as ScriptHost>::ScriptAsset,
-                    >::new::<RLuaScriptHost<LuaAPIProvider>>(
+                commands.spawn().insert(ScriptCollection::<RhaiFile>{
+                    scripts: vec![Script::<RhaiFile>::new::<RhaiScriptHost<RhaiEventArgs,RhaiAPIProvider>>(
                         path, handle
                     )],
                 });
@@ -148,9 +144,9 @@ fn watch_assets(server: Res<AssetServer>) {
     server.watch_for_changes().unwrap();
 }
 
-pub fn delete_script_cmd<H: ScriptHost>(
+pub fn delete_script_cmd(
     mut log: ConsoleCommand<DeleteScriptCmd>,
-    mut scripts: Query<(Entity, &mut ScriptCollection<H::ScriptAsset>)>,
+    mut scripts: Query<(Entity, &mut ScriptCollection<RhaiFile>)>,
 ) {
     if let Some(DeleteScriptCmd { name, entity_id }) = log.take() {
         for (e, mut s) in scripts.iter_mut() {
