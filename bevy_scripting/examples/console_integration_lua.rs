@@ -3,11 +3,11 @@ use bevy_asset_loader::{AssetCollection, AssetLoader};
 use bevy_console::{AddConsoleCommand, ConsoleCommand, ConsolePlugin, PrintConsoleLine};
 use bevy_scripting::{
     APIProvider, AddScriptHost, LuaEvent, LuaFile, RLuaScriptHost, Script, ScriptCollection,
-    ScriptHost, ScriptingPlugin, RhaiContext, RhaiEvent, RhaiScriptHost,
+    ScriptingPlugin,
 };
-use rhai::{NativeCallContext, FuncArgs};
+
 use rlua::{prelude::LuaLightUserData, Lua};
-use std::{sync::Mutex, ffi::OsStr, path::Path};
+use std::sync::Mutex;
 
 #[derive(Default)]
 pub struct LuaAPIProvider {}
@@ -48,8 +48,6 @@ pub fn trigger_on_update_lua(mut w: EventWriter<LuaEvent>) {
 
     w.send(event);
 }
-
-
 
 /// optional, convenience for loading our script assets provided by bevy_asset_loader
 /// keeps all of them loaded
@@ -103,23 +101,21 @@ pub fn run_script_cmd(
     mut log: ConsoleCommand<RunScriptCmd>,
     server: Res<AssetServer>,
     mut commands: Commands,
-    mut existing_scripts: Query<
-        &mut ScriptCollection<LuaFile>,
-    >,
+    mut existing_scripts: Query<&mut ScriptCollection<LuaFile>>,
 ) {
     if let Some(RunScriptCmd { path, entity }) = log.take() {
         let handle = server.load::<LuaFile, &str>(&format!("scripts/{}", &path));
-        
+
         match entity {
             Some(e) => {
                 if let Ok(mut scripts) = existing_scripts.get_mut(Entity::from_raw(e)) {
                     info!("Creating script: scripts/{} {:?}", &path, &entity);
 
-                    scripts.scripts.push(Script::<
-                        LuaFile,
-                    >::new::<RLuaScriptHost<LuaAPIProvider>>(
-                        path, handle
-                    ));
+                    scripts
+                        .scripts
+                        .push(Script::<LuaFile>::new::<RLuaScriptHost<LuaAPIProvider>>(
+                            path, handle,
+                        ));
                 } else {
                     log.reply_failed(format!("Something went wrong"));
                 };
@@ -127,13 +123,9 @@ pub fn run_script_cmd(
             None => {
                 info!("Creating script: scripts/{}", &path);
 
-                commands.spawn().insert(ScriptCollection::<
-                    LuaFile,
-                > {
-                    scripts: vec![Script::<
-                        LuaFile,
-                    >::new::<RLuaScriptHost<LuaAPIProvider>>(
-                        path, handle
+                commands.spawn().insert(ScriptCollection::<LuaFile> {
+                    scripts: vec![Script::<LuaFile>::new::<RLuaScriptHost<LuaAPIProvider>>(
+                        path, handle,
                     )],
                 });
             }

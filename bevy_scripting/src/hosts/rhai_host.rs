@@ -1,9 +1,19 @@
-use std::{sync::{Arc, Mutex}, marker::PhantomData};
-use crate::{ScriptHost, CodeAsset, APIProvider, ScriptContexts, CachedScriptEventState, script_add_synchronizer, script_remove_synchronizer, script_hot_reload_handler, script_event_handler};
-use bevy::{reflect::TypeUuid, asset::{AssetLoader, LoadedAsset}, prelude::{Mut, World, SystemSet, IntoExclusiveSystem, ExclusiveSystemDescriptorCoercion, AddAsset}};
-use rhai::*;
-use anyhow::{anyhow,Result};
+use crate::{
+    script_add_synchronizer, script_event_handler, script_hot_reload_handler,
+    script_remove_synchronizer, APIProvider, CachedScriptEventState, CodeAsset, ScriptContexts,
+    ScriptHost,
+};
+use anyhow::{anyhow, Result};
 use beau_collector::BeauCollector as _;
+use bevy::{
+    asset::{AssetLoader, LoadedAsset},
+    prelude::{
+        AddAsset, ExclusiveSystemDescriptorCoercion, IntoExclusiveSystem, Mut, SystemSet, World,
+    },
+    reflect::TypeUuid,
+};
+use rhai::*;
+use std::{marker::PhantomData, sync::Arc};
 
 #[derive(Debug, TypeUuid)]
 #[uuid = "39cadc56-aa9c-4543-8640-a018b74b5052"]
@@ -39,16 +49,16 @@ impl AssetLoader for RhaiLoader {
     }
 }
 
-pub struct RhaiScriptHost<A : FuncArgs + Send, API : APIProvider>{
-    _ph : PhantomData<A>,
-    _ph2 : PhantomData<API>,
+pub struct RhaiScriptHost<A: FuncArgs + Send, API: APIProvider> {
+    _ph: PhantomData<A>,
+    _ph2: PhantomData<API>,
 }
 
-unsafe impl<A: FuncArgs + Send, API: APIProvider> Send for RhaiScriptHost<A,API> {}
-unsafe impl<A: FuncArgs + Send, API: APIProvider> Sync for RhaiScriptHost<A,API> {}
+unsafe impl<A: FuncArgs + Send, API: APIProvider> Send for RhaiScriptHost<A, API> {}
+unsafe impl<A: FuncArgs + Send, API: APIProvider> Sync for RhaiScriptHost<A, API> {}
 
 pub struct RhaiContext {
-    pub engine : Engine,
+    pub engine: Engine,
     pub ast: AST,
     pub scope: Scope<'static>,
 }
@@ -56,14 +66,14 @@ pub struct RhaiContext {
 #[derive(Clone)]
 /// A Rhai Hook. The result of creating this event will be
 /// a call to the lua script with the hook_name and the given arguments
-pub struct RhaiEvent<A : FuncArgs + Clone + 'static> {
+pub struct RhaiEvent<A: FuncArgs + Clone + 'static> {
     pub hook_name: String,
     pub args: A,
 }
 
-
-
-impl <A : FuncArgs + Send + Clone + Sync + 'static, API : APIProvider<Ctx = RhaiContext>>ScriptHost for RhaiScriptHost<A,API> {
+impl<A: FuncArgs + Send + Clone + Sync + 'static, API: APIProvider<Ctx = RhaiContext>> ScriptHost
+    for RhaiScriptHost<A, API>
+{
     type ScriptContext = RhaiContext;
     type ScriptEvent = RhaiEvent<A>;
     type ScriptAsset = RhaiFile;
@@ -83,50 +93,53 @@ impl <A : FuncArgs + Send + Clone + Sync + 'static, API : APIProvider<Ctx = Rhai
                 .with_system(script_remove_synchronizer::<Self>)
                 .with_system(script_hot_reload_handler::<Self>)
                 .with_system(script_event_handler::<Self>.exclusive_system().at_end()),
-        );    
+        );
     }
 
     fn load_script(path: &[u8], script_name: &str) -> anyhow::Result<Self::ScriptContext> {
         let mut engine = Engine::new();
         let mut scope = Scope::new();
-        let ast = engine.compile(std::str::from_utf8(path)?)
-                            .map_err(|e| anyhow!("Error in script {}:\n{}",script_name,e.to_string()))?;
-        
-        // prevent shadowing of `state`,`world` and `entity` in variable in scripts
-        engine.on_def_var(|_, info, _| 
-            Ok(info.name != "state" && info.name != "world" && info.name != "entity"));
-        
-        // persistent state for scripts 
-        scope.push("state", Map::new()); 
+        let ast = engine
+            .compile(std::str::from_utf8(path)?)
+            .map_err(|e| anyhow!("Error in script {}:\n{}", script_name, e.to_string()))?;
 
-        Ok(RhaiContext{
-            engine,
-            ast,
-            scope,
-        })
+        // prevent shadowing of `state`,`world` and `entity` in variable in scripts
+        engine.on_def_var(|_, info, _| {
+            Ok(info.name != "state" && info.name != "world" && info.name != "entity")
+        });
+
+        // persistent state for scripts
+        scope.push("state", Map::new());
+
+        Ok(RhaiContext { engine, ast, scope })
     }
 
-    fn handle_events(world: &mut bevy::prelude::World, events: &[Self::ScriptEvent]) -> anyhow::Result<()> {
+    fn handle_events(
+        world: &mut bevy::prelude::World,
+        events: &[Self::ScriptEvent],
+    ) -> anyhow::Result<()> {
         // we need to do this since scripts need access to the world, but they also
         // live in it, hence we only store indices into a resource which can then be scoped
         // instead of storing contexts directly on the components
-        world.resource_scope( |world, mut res: Mut<ScriptContexts<Self>>| {
+        world.resource_scope(|world, mut res: Mut<ScriptContexts<Self>>| {
             res.context_entities
                 .values_mut()
                 .flat_map(|(entity, ctx)| {
-                    
                     ctx.scope.set_value("world", world as *mut World as usize);
                     ctx.scope.set_value("entity", *entity);
 
-                    events.iter().map( |event | {
+                    events.iter().map(|event| {
                         ctx.engine
-                            .call_fn(&mut ctx.scope, &ctx.ast, &event.hook_name,event.args.clone())
-                            .map_err(|e| anyhow!("{:?}",*e))
+                            .call_fn(
+                                &mut ctx.scope,
+                                &ctx.ast,
+                                &event.hook_name,
+                                event.args.clone(),
+                            )
+                            .map_err(|e| anyhow!("{:?}", *e))
                     })
-                }).bcollect()
+                })
+                .bcollect()
         })
-
     }
-
-
 }

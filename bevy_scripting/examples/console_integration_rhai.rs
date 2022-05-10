@@ -2,12 +2,10 @@ use bevy::{ecs::event::Events, prelude::*};
 use bevy_asset_loader::{AssetCollection, AssetLoader};
 use bevy_console::{AddConsoleCommand, ConsoleCommand, ConsolePlugin, PrintConsoleLine};
 use bevy_scripting::{
-    APIProvider, AddScriptHost, LuaEvent, LuaFile, RLuaScriptHost, Script, ScriptCollection,
-    ScriptHost, ScriptingPlugin, RhaiContext, RhaiEvent, RhaiScriptHost, RhaiFile,
+    APIProvider, AddScriptHost, RhaiContext, RhaiEvent, RhaiFile, RhaiScriptHost, Script,
+    ScriptCollection, ScriptingPlugin,
 };
-use rhai::{NativeCallContext, FuncArgs};
-use rlua::{prelude::LuaLightUserData, Lua};
-use std::{sync::Mutex, ffi::OsStr, path::Path};
+use rhai::FuncArgs;
 
 /// custom Rhai API, world is provided as a usize (by the script this time), since
 /// Rhai does not allow global/local variable access from a callback
@@ -15,21 +13,21 @@ use std::{sync::Mutex, ffi::OsStr, path::Path};
 pub struct RhaiAPIProvider {}
 
 impl APIProvider for RhaiAPIProvider {
-    type Ctx=RhaiContext;
+    type Ctx = RhaiContext;
 
     fn attach_api(ctx: &mut Self::Ctx) {
-        ctx.engine.register_fn("print_to_console", |shared_world : usize,msg : String| {
-            let world : &mut World = unsafe { &mut *(shared_world as *mut World)};
+        ctx.engine
+            .register_fn("print_to_console", |shared_world: usize, msg: String| {
+                let world: &mut World = unsafe { &mut *(shared_world as *mut World) };
 
-            let mut events: Mut<Events<PrintConsoleLine>> = world.get_resource_mut().unwrap();
-            events.send(PrintConsoleLine { line: msg });
+                let mut events: Mut<Events<PrintConsoleLine>> = world.get_resource_mut().unwrap();
+                events.send(PrintConsoleLine { line: msg });
 
-            ()
-        });
+                ()
+            });
 
-        ctx.engine.register_fn("entity_id", |entity: Entity| {
-            entity.id()
-        });
+        ctx.engine
+            .register_fn("entity_id", |entity: Entity| entity.id());
     }
 }
 
@@ -37,18 +35,15 @@ impl APIProvider for RhaiAPIProvider {
 pub struct RhaiEventArgs {}
 
 impl FuncArgs for RhaiEventArgs {
-    fn parse<ARGS: Extend<rhai::Dynamic>>(self, args: &mut ARGS) {
-
-    }
+    fn parse<ARGS: Extend<rhai::Dynamic>>(self, _args: &mut ARGS) {}
 }
-
 
 /// sends updates to script host which are then handled by the scripts
 /// in the designated stage
 pub fn trigger_on_update_rhai(mut w: EventWriter<RhaiEvent<RhaiEventArgs>>) {
     let event = RhaiEvent {
         hook_name: "on_update".to_string(),
-        args: RhaiEventArgs{},
+        args: RhaiEventArgs {},
     };
 
     w.send(event);
@@ -74,7 +69,9 @@ fn main() -> std::io::Result<()> {
         .add_console_command::<DeleteScriptCmd, _, _>(delete_script_cmd)
         .add_system(trigger_on_update_rhai)
         // choose and register the script hosts you want to use
-        .add_script_host::<RhaiScriptHost<RhaiEventArgs,RhaiAPIProvider>, CoreStage>(CoreStage::PostUpdate);
+        .add_script_host::<RhaiScriptHost<RhaiEventArgs, RhaiAPIProvider>, CoreStage>(
+            CoreStage::PostUpdate,
+        );
 
     // bevy_asset_loader for loading and keeping script assets around easilly
     AssetLoader::new(GameState::AssetLoading)
@@ -106,22 +103,19 @@ pub fn run_script_cmd(
     mut log: ConsoleCommand<RunScriptCmd>,
     server: Res<AssetServer>,
     mut commands: Commands,
-    mut existing_scripts: Query<
-        &mut ScriptCollection<RhaiFile>,
-    >,
+    mut existing_scripts: Query<&mut ScriptCollection<RhaiFile>>,
 ) {
     if let Some(RunScriptCmd { path, entity }) = log.take() {
         let handle = server.load::<RhaiFile, &str>(&format!("scripts/{}", &path));
-    
 
         match entity {
             Some(e) => {
                 if let Ok(mut scripts) = existing_scripts.get_mut(Entity::from_raw(e)) {
                     info!("Creating script: scripts/{} {:?}", &path, &entity);
 
-                    scripts.scripts.push(Script::<RhaiFile>::new::<RhaiScriptHost<RhaiEventArgs,RhaiAPIProvider>>(
-                        path, handle
-                    ));
+                    scripts.scripts.push(Script::<RhaiFile>::new::<
+                        RhaiScriptHost<RhaiEventArgs, RhaiAPIProvider>,
+                    >(path, handle));
                 } else {
                     log.reply_failed(format!("Something went wrong"));
                 };
@@ -129,10 +123,10 @@ pub fn run_script_cmd(
             None => {
                 info!("Creating script: scripts/{}", &path);
 
-                commands.spawn().insert(ScriptCollection::<RhaiFile>{
-                    scripts: vec![Script::<RhaiFile>::new::<RhaiScriptHost<RhaiEventArgs,RhaiAPIProvider>>(
-                        path, handle
-                    )],
+                commands.spawn().insert(ScriptCollection::<RhaiFile> {
+                    scripts: vec![Script::<RhaiFile>::new::<
+                        RhaiScriptHost<RhaiEventArgs, RhaiAPIProvider>,
+                    >(path, handle)],
                 });
             }
         };

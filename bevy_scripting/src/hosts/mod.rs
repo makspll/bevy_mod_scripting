@@ -1,11 +1,11 @@
 //! All script host related stuff
 
-pub mod rlua_host;
 pub mod rhai_host;
+pub mod rlua_host;
 
 use anyhow::Result;
 use bevy::{asset::Asset, ecs::system::SystemState, prelude::*};
-pub use {rlua_host::*, rhai_host::*};
+pub use {rhai_host::*, rlua_host::*};
 
 use std::{
     collections::{HashMap, HashSet},
@@ -50,9 +50,11 @@ pub struct ScriptContexts<H: ScriptHost> {
     pub context_entities: HashMap<u32, (Entity, H::ScriptContext)>,
 }
 
-impl <H : ScriptHost>Default for ScriptContexts<H>{
+impl<H: ScriptHost> Default for ScriptContexts<H> {
     fn default() -> Self {
-        Self { context_entities: Default::default() }
+        Self {
+            context_entities: Default::default(),
+        }
     }
 }
 
@@ -138,7 +140,6 @@ impl<T: Asset> Script<T> {
         script_assets: &Res<Assets<H::ScriptAsset>>,
         contexts: &mut ResMut<ScriptContexts<H>>,
     ) {
-
         let script = match script_assets.get(&new_script.handle) {
             Some(s) => s,
             None => {
