@@ -33,11 +33,11 @@ The API will likely change in the future as more scripting support is rolled out
 ### Installation
 
 To install:
-    - Add ScriptingPlugin to your app
-    - Add the ScriptHosts you plan on using
-        - Make sure to attach them to a stage running AFTER any systems which may generate either script events or modify/create/remove script components  
-    - Add systems which generate ScriptEvents corresponding to your script host
-    - Add systems which add ScriptCollection components to your entities and fill them with scripts
+- Add ScriptingPlugin to your app
+- Add the ScriptHosts you plan on using
+    - Make sure to attach them to a stage running AFTER any systems which may generate either script events or modify/create/remove script components  
+- Add systems which generate ScriptEvents corresponding to your script host
+- Add systems which add ScriptCollection components to your entities and fill them with scripts
 
 An example can be seen below
 
@@ -130,8 +130,8 @@ pub fn trigger_on_update_rhai(mut w: EventWriter<RhaiEvent<MyEventArgStruct>>) {
 ### Adding scripts
 
 A script consist of:
-    - an asset handle to their code file
-    - a name which is usually their path relative to the assets folder
+- an asset handle to their code file
+- a name which is usually their path relative to the assets folder
 
 ``` rust
 use std::sync::Mutex;

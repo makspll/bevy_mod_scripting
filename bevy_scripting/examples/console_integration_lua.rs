@@ -48,7 +48,6 @@ pub fn trigger_on_update_lua(mut w: EventWriter<LuaEvent>) {
     w.send(event);
 }
 
-
 fn main() -> std::io::Result<()> {
     let mut app = App::new();
     app.add_plugins(DefaultPlugins)
@@ -61,7 +60,6 @@ fn main() -> std::io::Result<()> {
         .add_system(trigger_on_update_lua)
         // choose and register the script hosts you want to use
         .add_script_host::<RLuaScriptHost<LuaAPIProvider>, CoreStage>(CoreStage::PostUpdate);
-
 
     // at runtime press '~' for console then type in help for command formats
     app.run();
@@ -149,7 +147,6 @@ pub fn delete_script_cmd(
         log.reply_failed("Could not find given entity ID with a script")
     }
 }
-
 
 #[derive(ConsoleCommand)]
 #[console_command(name = "delete_script")]

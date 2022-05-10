@@ -48,7 +48,6 @@ pub fn trigger_on_update_rhai(mut w: EventWriter<RhaiEvent<RhaiEventArgs>>) {
     w.send(event);
 }
 
-
 fn main() -> std::io::Result<()> {
     let mut app = App::new();
     app.add_plugins(DefaultPlugins)
@@ -63,7 +62,6 @@ fn main() -> std::io::Result<()> {
         .add_script_host::<RhaiScriptHost<RhaiEventArgs, RhaiAPIProvider>, CoreStage>(
             CoreStage::PostUpdate,
         );
-
 
     // at runtime press '~' for console then type in help for command formats
     app.run();
@@ -149,8 +147,6 @@ pub fn delete_script_cmd(
         log.reply_failed("Could not find given entity ID with a script")
     }
 }
-
-
 
 #[derive(ConsoleCommand)]
 #[console_command(name = "delete_script")]
