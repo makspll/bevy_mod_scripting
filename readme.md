@@ -145,11 +145,11 @@ fn main() -> std::io::Result<()> {
 ### Installation
 
 To install:
-    - Add ScriptingPlugin to your app
-    - Add the ScriptHosts you plan on using
-        - Make sure to attach them to a stage running AFTER any systems which may generate either script events or modify/create/remove script components  
-    - Add systems which generate ScriptEvents corresponding to your script host
-    - Add systems which add ScriptCollection components to your entities and fill them with scripts
+- Add ScriptingPlugin to your app
+- Add the ScriptHosts you plan on using
+    - Make sure to attach them to a stage running AFTER any systems which may generate either script events or modify/create/remove script components  
+- Add systems which generate ScriptEvents corresponding to your script host
+- Add systems which add ScriptCollection components to your entities and fill them with scripts
 
 ### Firing Script Callbacks
 
@@ -171,8 +171,8 @@ Rhai supports the use of any rust types implementing FuncArgs as function argume
 ### Adding scripts
 
 A script consist of:
-    - an asset handle to their code file
-    - a name which is usually their path relative to the assets folder
+- an asset handle to their code file
+- a name which is usually their path relative to the assets folder
 
 ## Examples 
 
@@ -188,5 +188,7 @@ to run this example use:
 then in-game use `~` to bring up the console, then use:
 
 `run_script "console_integration.lua"`
+
 `run_script "console_integration.lua" 0`
+
 `delete_script "console_integration.lua" 0`
