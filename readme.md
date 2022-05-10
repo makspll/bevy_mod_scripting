@@ -217,5 +217,7 @@ to run this example use:
 then in-game use `~` to bring up the console, then use:
 
 `run_script "console_integration.lua"`
+
 `run_script "console_integration.lua" 0`
+
 `delete_script "console_integration.lua" 0`
