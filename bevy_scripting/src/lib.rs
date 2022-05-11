@@ -10,6 +10,8 @@ pub use hosts::*;
 /// Bevy plugin enabling run-time scripting
 pub struct ScriptingPlugin;
 
+
+
 impl Plugin for ScriptingPlugin {
     fn build(&self, _app: &mut bevy::prelude::App) {}
 }

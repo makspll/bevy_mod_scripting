@@ -7,6 +7,7 @@ use crate::{
 use anyhow::{anyhow, Result};
 use beau_collector::BeauCollector as _;
 use bevy::prelude::*;
+use bevy_event_priority::AddPriorityEvent;
 use rlua::prelude::*;
 use rlua::{Context, Function, Lua, MultiValue, ToLua, ToLuaMulti};
 use std::ffi::c_void;
@@ -98,7 +99,7 @@ impl<A: APIProvider<Ctx = Mutex<Lua>>> ScriptHost for RLuaScriptHost<A> {
     type ScriptAsset = LuaFile;
 
     fn register_with_app(app: &mut App, stage: impl StageLabel) {
-        app.add_event::<LuaEvent>();
+        app.add_priority_event::<LuaEvent>();
         app.add_asset::<LuaFile>();
         app.init_asset_loader::<LuaLoader>();
         app.init_resource::<CachedScriptEventState<Self::ScriptEvent>>();
@@ -110,9 +111,13 @@ impl<A: APIProvider<Ctx = Mutex<Lua>>> ScriptHost for RLuaScriptHost<A> {
                 .with_system(script_add_synchronizer::<Self>)
                 .with_system(script_remove_synchronizer::<Self>)
                 .with_system(script_hot_reload_handler::<Self>)
-                .with_system(script_event_handler::<Self>.exclusive_system().at_end()),
         );
     }
+
+    fn register_handler_stage<S : StageLabel, const P : u32>(app: &mut bevy::prelude::App, stage: S) {
+        app.add_system_to_stage(stage, script_event_handler::<Self,P>.exclusive_system().at_end());
+    }
+    
 
     fn load_script(script: &[u8], script_name: &str) -> Result<Self::ScriptContext> {
         let lua = Lua::new();

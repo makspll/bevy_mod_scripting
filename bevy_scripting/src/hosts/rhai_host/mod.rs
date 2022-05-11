@@ -7,8 +7,9 @@ use crate::{
 use anyhow::anyhow;
 use beau_collector::BeauCollector as _;
 use bevy::prelude::{
-    AddAsset, ExclusiveSystemDescriptorCoercion, IntoExclusiveSystem, Mut, SystemSet, World,
+    AddAsset, ExclusiveSystemDescriptorCoercion, IntoExclusiveSystem, Mut, SystemSet, World, StageLabel,
 };
+use bevy_event_priority::AddPriorityEvent;
 use rhai::*;
 use std::marker::PhantomData;
 
@@ -50,7 +51,7 @@ impl<A: FuncArgs + Send + Clone + Sync + 'static, API: RhaiAPIProvider<Ctx = Rha
     type ScriptAsset = RhaiFile;
 
     fn register_with_app(app: &mut bevy::prelude::App, stage: impl bevy::prelude::StageLabel) {
-        app.add_event::<Self::ScriptEvent>();
+        app.add_priority_event::<Self::ScriptEvent>();
         app.add_asset::<RhaiFile>();
         app.init_asset_loader::<RhaiLoader>();
         app.init_resource::<CachedScriptEventState<Self::ScriptEvent>>();
@@ -62,10 +63,13 @@ impl<A: FuncArgs + Send + Clone + Sync + 'static, API: RhaiAPIProvider<Ctx = Rha
                 .with_system(script_add_synchronizer::<Self>)
                 .with_system(script_remove_synchronizer::<Self>)
                 .with_system(script_hot_reload_handler::<Self>)
-                .with_system(script_event_handler::<Self>.exclusive_system().at_end()),
         );
     }
 
+    fn register_handler_stage<S : StageLabel, const P : u32>(app: &mut bevy::prelude::App, stage: S) {
+        app.add_system_to_stage(stage, script_event_handler::<Self,P>.exclusive_system().at_end());
+    }
+    
     #[allow(deprecated)]
     fn load_script(path: &[u8], script_name: &str) -> anyhow::Result<Self::ScriptContext> {
         let mut engine = Engine::new();
@@ -120,4 +124,5 @@ impl<A: FuncArgs + Send + Clone + Sync + 'static, API: RhaiAPIProvider<Ctx = Rha
                 .bcollect()
         })
     }
+
 }

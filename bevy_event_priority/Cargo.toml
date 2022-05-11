@@ -1,0 +1,20 @@
+[package]
+name = "bevy_event_priority"
+version = "0.1.0"
+authors = ["Maksymilian Mozolewski <makspl17@gmail.com>"]
+edition = "2021"
+license = "MIT"
+description = "Bevy plugin providing priority based event handling"
+repository = "https://github.com/makspll/bevy_scripting"
+homepage = "https://github.com/makspll/bevy_scripting"
+keywords = ["bevy", "gamedev", "scripting", "lua"]
+categories = ["game-development"]
+readme = "../readme.md"
+
+[lib]
+name = "bevy_event_priority"
+path = "src/lib.rs"
+
+[dependencies]
+bevy = "0.7"
+

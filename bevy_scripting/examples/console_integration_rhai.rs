@@ -1,9 +1,10 @@
 use bevy::{ecs::event::Events, prelude::*};
 use bevy_asset_loader::{AssetCollection, AssetLoader};
 use bevy_console::{AddConsoleCommand, ConsoleCommand, ConsolePlugin, PrintConsoleLine};
+use bevy_event_priority::PriorityEventWriter;
 use bevy_scripting::{
     APIProvider, AddScriptHost, RhaiAPIProvider, RhaiContext, RhaiEvent, RhaiFile, RhaiScriptHost,
-    Script, ScriptCollection, ScriptingPlugin,
+    Script, ScriptCollection, ScriptingPlugin, AddScriptHostHandler,
 };
 use rhai::FuncArgs;
 
@@ -46,13 +47,13 @@ impl FuncArgs for RhaiEventArgs {
 
 /// sends updates to script host which are then handled by the scripts
 /// in the designated stage
-pub fn trigger_on_update_rhai(mut w: EventWriter<RhaiEvent<RhaiEventArgs>>) {
+pub fn trigger_on_update_rhai(mut w: PriorityEventWriter<RhaiEvent<RhaiEventArgs>>) {
     let event = RhaiEvent {
         hook_name: "on_update".to_string(),
         args: RhaiEventArgs {},
     };
 
-    w.send(event);
+    w.send(event,0);
 }
 
 /// optional, convenience for pre-loading scripts
@@ -78,11 +79,11 @@ fn main() -> std::io::Result<()> {
         // register bevy_console commands
         .add_console_command::<RunScriptCmd, _, _>(run_script_cmd)
         .add_console_command::<DeleteScriptCmd, _, _>(delete_script_cmd)
-        .add_system(trigger_on_update_rhai)
         // choose and register the script hosts you want to use
-        .add_script_host::<RhaiScriptHost<RhaiEventArgs, RhaiAPI>, CoreStage>(
-            CoreStage::PostUpdate,
-        );
+        .add_script_host::<RhaiScriptHost<RhaiEventArgs, RhaiAPI>, _>(CoreStage::PostUpdate)
+        .add_script_handler_stage::<RhaiScriptHost<RhaiEventArgs,RhaiAPI>,_,0>(CoreStage::PostUpdate)
+        // add your systems
+        .add_system(trigger_on_update_rhai);
 
     // bevy_asset_loader for loading and keeping script assets around easilly
     AssetLoader::new(GameState::AssetLoading)

@@ -1,9 +1,10 @@
 use bevy::{ecs::event::Events, prelude::*};
 use bevy_asset_loader::{AssetCollection, AssetLoader};
 use bevy_console::{AddConsoleCommand, ConsoleCommand, ConsolePlugin, PrintConsoleLine};
+use bevy_event_priority::PriorityEventWriter;
 use bevy_scripting::{
     APIProvider, AddScriptHost, LuaEvent, LuaFile, RLuaScriptHost, Script, ScriptCollection,
-    ScriptingPlugin,
+    ScriptingPlugin, AddScriptHostHandler,
 };
 use rlua::{prelude::LuaLightUserData, Lua};
 use std::sync::Mutex;
@@ -39,13 +40,13 @@ impl APIProvider for LuaAPIProvider {
 
 /// sends updates to script host which are then handled by the scripts
 /// in the designated stage
-pub fn trigger_on_update_lua(mut w: EventWriter<LuaEvent>) {
+pub fn trigger_on_update_lua(mut w: PriorityEventWriter<LuaEvent>) {
     let event = LuaEvent {
         hook_name: "on_update".to_string(),
         args: Vec::default(),
     };
 
-    w.send(event);
+    w.send(event,0);
 }
 
 /// optional, convenience for pre-loading scripts
@@ -71,9 +72,11 @@ fn main() -> std::io::Result<()> {
         // register bevy_console commands
         .add_console_command::<RunScriptCmd, _, _>(run_script_cmd)
         .add_console_command::<DeleteScriptCmd, _, _>(delete_script_cmd)
-        .add_system(trigger_on_update_lua)
         // choose and register the script hosts you want to use
-        .add_script_host::<RLuaScriptHost<LuaAPIProvider>, CoreStage>(CoreStage::PostUpdate);
+        .add_script_host::<RLuaScriptHost<LuaAPIProvider>,_>(CoreStage::PostUpdate)
+        .add_script_handler_stage::<RLuaScriptHost<LuaAPIProvider>,_,0>(CoreStage::PostUpdate)
+        // add your systems
+        .add_system(trigger_on_update_lua);
 
     // bevy_asset_loader for loading and keeping script assets around easilly
     AssetLoader::new(GameState::AssetLoading)

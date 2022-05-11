@@ -5,12 +5,90 @@ pub mod rlua_host;
 
 use anyhow::Result;
 use bevy::{asset::Asset, ecs::system::SystemState, prelude::*};
+use bevy_event_priority::PriorityEventReader;
 pub use {crate::rhai_host::*, crate::rlua_host::*};
 
 use std::{
     collections::{HashMap, HashSet},
     sync::atomic::{AtomicU32, Ordering},
 };
+
+
+/// A script host is the interface between your rust application
+/// and the scripts in some interpreted language.
+pub trait ScriptHost: Send + Sync + 'static {
+    /// the type of the persistent script context, representing the execution context of the script
+    type ScriptContext: Send + Sync + 'static;
+    /// the type of events picked up by lua callbacks
+    type ScriptEvent: Send + Sync + Clone + 'static;
+    /// the type of asset representing the script files for this host
+    type ScriptAsset: CodeAsset;
+
+    /// Loads a script in byte array format, the script name can be used
+    /// to send useful errors.
+    fn load_script(path: &[u8], script_name: &str) -> Result<Self::ScriptContext>;
+
+    /// the main point of contact with the bevy world.
+    /// Scripts are called with appropriate events in the event order
+    fn handle_events(world: &mut World, events: &[Self::ScriptEvent]) -> Result<()>;
+
+    /// Registers the script host with the given app, and attaches handlers to deal with spawning/removing scripts at the given stage.
+    /// 
+    /// Ideally place after any game logic which can spawn/remove/modify scripts to avoid frame lag. (typically `CoreStage::Post_Update`)
+    fn register_with_app(app: &mut App, stage: impl StageLabel);
+
+
+    /// Attaches a script handling stage with the given minimum priority 
+    fn register_handler_stage<S : StageLabel, const P : u32 >(app: &mut App, stage: S);
+}
+
+/// Trait for app builder notation
+pub trait AddScriptHost {
+    /// registers the given script host with your app
+    fn add_script_host<T: ScriptHost, S: StageLabel>(&mut self, stage: S) -> &mut Self;
+}
+
+impl AddScriptHost for App {
+    fn add_script_host<T: ScriptHost, S: StageLabel>(&mut self, stage: S) -> &mut Self {
+        T::register_with_app(self, stage);
+        self
+    }
+}
+
+pub trait AddScriptHostHandler {
+
+    /// Enables this script host to handle events with priorities in the range [0,min_prio] (inclusive),
+    /// during the runtime of the given stage.
+    /// 
+    /// Think of handler stages as a way to run certain types of events at various points in your engine.
+    /// A good example of this is Unity [game loop's](https://docs.unity3d.com/Manual/ExecutionOrder.html) `onUpdate` and `onFixedUpdate`. 
+    /// FixedUpdate runs *before* any physics while Update runs after physics and input events.
+    /// 
+    /// A similar setup can be achieved by using a separate stage before and after your physics,
+    /// then assigning event priorities such that your events are forced to run at a particular stage, for example:
+    /// 
+    /// PrePhysics: min_prio = 1
+    /// PostPhysics: min_prio = 4 
+    /// 
+    /// | Priority | Handler     | Event        |
+    /// | -------- | ----------- | ------------ |
+    /// | 0        | PrePhysics  | Start        |
+    /// | 1        | PrePhysics  | FixedUpdate  |
+    /// | 2        | PostPhysics | OnCollision  |
+    /// | 3        | PostPhysics | OnMouse      |
+    /// | 4        | PostPhysics | Update       |
+    /// 
+    /// The *frequency* of running these events, is controlled by your systems, if the event is not emitted, it cannot not handled.
+    /// Of course there is nothing stopping your from emitting a single event type at varying priorities.
+    fn add_script_handler_stage<T : ScriptHost, S : StageLabel, const P : u32>(&mut self,stage : S) -> &mut Self;
+}
+
+impl AddScriptHostHandler for App {
+    fn add_script_handler_stage<T : ScriptHost, S : StageLabel, const P : u32>(&mut self,stage : S) -> &mut Self{
+        T::register_handler_stage::<S,P>(self, stage);
+        self
+    }
+}
 
 /// All code assets share this common interface.
 /// When adding a new code asset don't forget to implement asset loading
@@ -166,7 +244,7 @@ impl<T: Asset> Script<T> {
 
 /// system state for exclusive systems dealing with script events
 pub(crate) struct CachedScriptEventState<'w, 's, S: Send + Sync + 'static> {
-    event_state: SystemState<EventReader<'w, 's, S>>,
+    event_state: SystemState<PriorityEventReader<'w, 's, S>>,
 }
 
 impl<'w, 's, S: Send + Sync + 'static> FromWorld for CachedScriptEventState<'w, 's, S> {
@@ -280,7 +358,7 @@ pub(crate) fn script_hot_reload_handler<H: ScriptHost>(
 }
 
 /// Lets the script host handle all script events
-pub(crate) fn script_event_handler<H: ScriptHost>(world: &mut World) {
+pub(crate) fn script_event_handler<H: ScriptHost, const P : u32>(world: &mut World) {
     world.resource_scope(
         |world, mut cached_state: Mut<CachedScriptEventState<H::ScriptEvent>>| {
             // we need to clone the events otherwise we cannot perform the subsequent query for scripts
@@ -288,8 +366,7 @@ pub(crate) fn script_event_handler<H: ScriptHost>(world: &mut World) {
             let events: Vec<<H as ScriptHost>::ScriptEvent> = cached_state
                 .event_state
                 .get_mut(world)
-                .iter()
-                .cloned()
+                .iter_min_prio(P)
                 .collect();
 
             match H::handle_events(world, &events) {
@@ -300,39 +377,3 @@ pub(crate) fn script_event_handler<H: ScriptHost>(world: &mut World) {
     );
 }
 
-/// A script host is the interface between your rust application
-/// and the scripts in some interpreted language.
-pub trait ScriptHost: Send + Sync + 'static {
-    /// the type of the persistent script context, representing the execution context of the script
-    type ScriptContext: Send + Sync + 'static;
-    /// the type of events picked up by lua callbacks
-    type ScriptEvent: Send + Sync + Clone + 'static;
-    /// the type of asset representing the script files for this host
-    type ScriptAsset: CodeAsset;
-
-    /// Loads a script in byte array format, the script name can be used
-    /// to send useful errors.
-    fn load_script(path: &[u8], script_name: &str) -> Result<Self::ScriptContext>;
-
-    /// the main point of contact with the bevy world.
-    /// Scripts are called with appropriate events in the event order
-    fn handle_events(world: &mut World, events: &[Self::ScriptEvent]) -> Result<()>;
-
-    /// Registers the script host with the given app, and stage.
-    /// all script events generated will be handled at the end of this stage. Ideally place after any game logic
-    /// which can spawn/remove/modify scripts to avoid frame lag. (typically `CoreStage::Post_Update`)
-    fn register_with_app(app: &mut App, stage: impl StageLabel);
-}
-
-/// Trait for app builder notation
-pub trait AddScriptHost {
-    /// registers the given script host with your app
-    fn add_script_host<T: ScriptHost, S: StageLabel>(&mut self, stage: S) -> &mut Self;
-}
-
-impl AddScriptHost for App {
-    fn add_script_host<T: ScriptHost, S: StageLabel>(&mut self, stage: S) -> &mut Self {
-        T::register_with_app(self, stage);
-        self
-    }
-}
