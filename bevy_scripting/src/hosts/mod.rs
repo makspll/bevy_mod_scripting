@@ -124,8 +124,9 @@ pub struct ScriptCollection<T: Asset> {
 /// We keep this public for now since there is no API for communicating with scripts
 /// outside of events. Later this might change.
 pub struct ScriptContexts<H: ScriptHost> {
-    /// holds script contexts for all scripts given their instance ids
-    pub context_entities: HashMap<u32, (Entity, H::ScriptContext)>,
+    /// holds script contexts for all scripts given their instance ids.
+    /// This also stores contexts which are not fully loaded hence the Option
+    pub context_entities: HashMap<u32, (Entity, Option<H::ScriptContext>)>,
 }
 
 impl<H: ScriptHost> Default for ScriptContexts<H> {
@@ -141,7 +142,7 @@ impl<H: ScriptHost> ScriptContexts<H> {
         self.context_entities.get(&script_id).map(|(e, _c)| *e)
     }
 
-    pub fn insert_context(&mut self, script_id: u32, entity: Entity, ctx: H::ScriptContext) {
+    pub fn insert_context(&mut self, script_id: u32, entity: Entity, ctx: Option<H::ScriptContext>) {
         self.context_entities.insert(script_id, (entity, ctx));
     }
 
@@ -221,22 +222,21 @@ impl<T: Asset> Script<T> {
         let script = match script_assets.get(&new_script.handle) {
             Some(s) => s,
             None => {
-                warn!(
-                    "Script asset missing: {}. Did you make sure the script asset is loaded?",
-                    new_script.name
-                );
-                // TODO: deal with component, remove ? or make ctx Optional
+                // not loaded yet
+                contexts.insert_context(new_script.id(), entity, None);
                 return;
             }
         };
 
         match H::load_script(script.bytes(), &new_script.name) {
             Ok(ctx) => {
-                contexts.insert_context(new_script.id(), entity, ctx);
+                contexts.insert_context(new_script.id(), entity, Some(ctx));
             }
             Err(e) => {
                 warn! {"Error in loading script {}:\n{}", &new_script.name,e}
-                // TODO: deal with component, remove ? or make ctx Optional
+                // this script will now never execute, unless manually reloaded
+                // but contexts are left in a valid state
+                contexts.insert_context(new_script.id(), entity, None)
             }
         }
     }
@@ -256,6 +256,8 @@ impl<'w, 's, S: Send + Sync + 'static> FromWorld for CachedScriptEventState<'w, 
 }
 
 /// Handles creating contexts for new/modified scripts
+/// Scripts are likely not loaded instantly at this point, so most of the time 
+/// this system simply inserts an empty context 
 pub(crate) fn script_add_synchronizer<H: ScriptHost + 'static>(
     query: Query<
         (
@@ -323,13 +325,12 @@ pub(crate) fn script_remove_synchronizer<H: ScriptHost>(
 ) {
     query.iter().for_each(|v| {
         // we know that this entity used to have a script component
-        // ergo a script context must exist in ctxs, remove
-        // all scripts on the entity
+        // ergo a script context must exist in ctxts, remove all scripts on the entity
         contexts.remove_context(v.id());
     })
 }
 
-/// Reloads hot-reloaded scripts
+/// Reloads hot-reloaded scripts, or loads missing contexts for scripts which were added but not loaded
 pub(crate) fn script_hot_reload_handler<H: ScriptHost>(
     mut events: EventReader<AssetEvent<H::ScriptAsset>>,
     scripts: Query<&ScriptCollection<H::ScriptAsset>>,
@@ -338,20 +339,24 @@ pub(crate) fn script_hot_reload_handler<H: ScriptHost>(
 ) {
     for e in events.iter() {
         match e {
-            AssetEvent::Modified { handle } => {
-                // find script using this handle by handle id
-                for scripts in scripts.iter() {
-                    for script in &scripts.scripts {
-                        if &script.handle == handle {
-                            Script::<H::ScriptAsset>::reload_script(
-                                script,
-                                &script_assets,
-                                &mut contexts,
-                            );
+            AssetEvent::Modified { handle } | AssetEvent::Created { handle } => {
+                    // find script using this handle by handle id
+                    // whether this script was modified or created
+                    // if a script exists with this handle, we should reload it to load in a new context
+                    // which at this point will be either None or Some(outdated context)
+                    // both ways are fine
+                    for scripts in scripts.iter() {
+                        for script in &scripts.scripts {
+                            if &script.handle == handle {
+                                Script::<H::ScriptAsset>::reload_script(
+                                    script,
+                                    &script_assets,
+                                    &mut contexts,
+                                );
+                            }
                         }
                     }
-                }
-            }
+                },
             _ => continue,
         }
     }

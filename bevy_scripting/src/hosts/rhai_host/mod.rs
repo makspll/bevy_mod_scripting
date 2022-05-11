@@ -106,6 +106,7 @@ impl<A: FuncArgs + Send + Clone + Sync + 'static, API: RhaiAPIProvider<Ctx = Rha
         world.resource_scope(|world, mut res: Mut<ScriptContexts<Self>>| {
             res.context_entities
                 .values_mut()
+                .filter_map(|(entity,ctx)| ctx.as_mut().map(|v| {(entity,v)}))
                 .flat_map(|(entity, ctx)| {
                     ctx.scope.set_value("world", world as *mut World as usize);
                     ctx.scope.set_value("entity", *entity);

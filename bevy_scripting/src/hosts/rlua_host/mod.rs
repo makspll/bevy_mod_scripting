@@ -145,6 +145,7 @@ impl<A: APIProvider<Ctx = Mutex<Lua>>> ScriptHost for RLuaScriptHost<A> {
         world.resource_scope(|world, res: Mut<ScriptContexts<Self>>| {
             res.context_entities
                 .values()
+                .filter_map(|(entity,ctx)| ctx.as_ref().map(|v| {(entity,v)}))
                 .map(|(entity, ctx)| {
                     let world_ptr = LuaLightUserData(world as *mut World as *mut c_void);
                     let lua_ctx = ctx.lock().unwrap();

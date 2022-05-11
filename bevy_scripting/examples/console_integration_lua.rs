@@ -1,5 +1,4 @@
 use bevy::{ecs::event::Events, prelude::*};
-use bevy_asset_loader::{AssetCollection, AssetLoader};
 use bevy_console::{AddConsoleCommand, ConsoleCommand, ConsolePlugin, PrintConsoleLine};
 use bevy_event_priority::PriorityEventWriter;
 use bevy_scripting::{
@@ -49,25 +48,11 @@ pub fn trigger_on_update_lua(mut w: PriorityEventWriter<LuaEvent>) {
     w.send(event,0);
 }
 
-/// optional, convenience for pre-loading scripts
-#[derive(AssetCollection)]
-struct LuaAssets {
-    #[asset(path = "scripts", folder(typed))]
-    folder: Vec<Handle<LuaFile>>,
-}
-
-#[derive(Clone, Eq, PartialEq, Debug, Hash)]
-enum GameState {
-    AssetLoading,
-    Next,
-}
-
 fn main() -> std::io::Result<()> {
     let mut app = App::new();
     app.add_plugins(DefaultPlugins)
         .add_plugin(ScriptingPlugin)
         .add_plugin(ConsolePlugin)
-        .add_state(GameState::AssetLoading)
         .add_startup_system(watch_assets)
         // register bevy_console commands
         .add_console_command::<RunScriptCmd, _, _>(run_script_cmd)
@@ -77,12 +62,6 @@ fn main() -> std::io::Result<()> {
         .add_script_handler_stage::<RLuaScriptHost<LuaAPIProvider>,_,0>(CoreStage::PostUpdate)
         // add your systems
         .add_system(trigger_on_update_lua);
-
-    // bevy_asset_loader for loading and keeping script assets around easilly
-    AssetLoader::new(GameState::AssetLoading)
-        .continue_to_state(GameState::Next)
-        .with_collection::<LuaAssets>()
-        .build(&mut app);
 
     // at runtime press '~' for console then type in help for command formats
     app.run();
@@ -116,7 +95,7 @@ pub fn run_script_cmd(
         match entity {
             Some(e) => {
                 if let Ok(mut scripts) = existing_scripts.get_mut(Entity::from_raw(e)) {
-                    info!("Creating script: scripts/{} {:?}", &path, &entity);
+                    info!("Creating script: scripts/{} {:?}", &path, e);
 
                     scripts
                         .scripts
