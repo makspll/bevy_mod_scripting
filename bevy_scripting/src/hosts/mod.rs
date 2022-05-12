@@ -104,7 +104,7 @@ impl AddScriptHostHandler for App {
     ) -> &mut Self {
         self.add_system_to_stage(
             stage,
-            script_event_handler::<T, MIN, MAX>
+            script_event_handler::<T, MAX, MIN>
                 .exclusive_system()
                 .at_end(),
         );
@@ -125,7 +125,7 @@ impl AddScriptHostHandler for App {
     ) -> &mut Self {
         self.add_system_to_stage(
             stage,
-            script_event_handler::<T, MIN, MAX>
+            script_event_handler::<T, MAX, MIN>
                 .exclusive_system()
                 .at_end()
                 .with_run_criteria(criteria),
@@ -422,7 +422,7 @@ pub(crate) fn script_event_handler<H: ScriptHost, const MAX: u32, const MIN: u32
             let events: Vec<<H as ScriptHost>::ScriptEvent> = cached_state
                 .event_state
                 .get_mut(world)
-                .iter_prio_range(MIN, MAX)
+                .iter_prio_range(MAX, MIN)
                 .collect();
 
             match H::handle_events(world, &events) {

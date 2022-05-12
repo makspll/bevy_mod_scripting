@@ -113,7 +113,7 @@ impl<'s, E: PriorityEvent> PriorityEventReader<'_, 's, E> {
     /// Will not remove any events of priority lower than min (0 is highest, inf is lowest)
     /// but will discard events of higher priority
     /// i.e. will handle events in the priority range [min,max] (inclusive)
-    pub fn iter_prio_range(&mut self, min: u32, max: u32) -> impl Iterator<Item = E> + '_ {
+    pub fn iter_prio_range(&mut self, max: u32, min: u32) -> impl Iterator<Item = E> + '_ {
         PriorityIterator {
             min,
             max,
@@ -240,7 +240,7 @@ mod tests {
             let mut w = state_reader.get_mut(&mut world);
 
             // system reads all events
-            w.iter_prio_range(5, 1).for_each(drop);
+            w.iter_prio_range(1, 5).for_each(drop);
         }
 
         // first event is consumed immediately
@@ -382,7 +382,7 @@ mod tests {
             let mut w = state_reader.get_mut(&mut world);
 
             assert_eq!(
-                w.iter_prio_range(1, 0).collect::<Vec<TestEvent>>(),
+                w.iter_prio_range(0, 1).collect::<Vec<TestEvent>>(),
                 vec![TestEvent(0), TestEvent(1)]
             );
 
