@@ -1,6 +1,7 @@
 <p align="center">
     <img src="./logo_bevy_scripting.svg" width="250">
 </p>
+
 # Bevy Scripting
 
 While for Bevy out of the box scripting is a non-goal, scripting support is being worked on. 
