@@ -8,16 +8,14 @@ use bevy_scripting::{
 use rlua::{prelude::LuaLightUserData, Lua, ToLua};
 use std::sync::Mutex;
 
-
 #[derive(Clone)]
 pub struct MyLuaArg;
 
-impl <'lua>ToLua<'lua> for MyLuaArg{
+impl<'lua> ToLua<'lua> for MyLuaArg {
     fn to_lua(self, _lua: rlua::Context<'lua>) -> rlua::Result<rlua::Value<'lua>> {
         Ok(rlua::Value::Nil)
     }
 }
-
 
 #[derive(Default)]
 pub struct LuaAPIProvider {}
@@ -30,7 +28,7 @@ impl APIProvider for LuaAPIProvider {
         // callbacks can receive any `ToLuaMulti` arguments, here '()' and
         // return any `FromLuaMulti` arguments, here a `usize`
         // check the Rlua documentation for more details
-        RLuaScriptHost::<MyLuaArg,Self>::register_api_callback(
+        RLuaScriptHost::<MyLuaArg, Self>::register_api_callback(
             "print_to_console",
             |ctx, msg: String| {
                 // retrieve the world pointer
@@ -69,8 +67,10 @@ fn main() -> std::io::Result<()> {
         .add_console_command::<RunScriptCmd, _, _>(run_script_cmd)
         .add_console_command::<DeleteScriptCmd, _, _>(delete_script_cmd)
         // choose and register the script hosts you want to use
-        .add_script_host::<RLuaScriptHost<MyLuaArg,LuaAPIProvider>, _>(CoreStage::PostUpdate)
-        .add_script_handler_stage::<RLuaScriptHost<MyLuaArg,LuaAPIProvider>, _, 0, 0>(CoreStage::PostUpdate)
+        .add_script_host::<RLuaScriptHost<MyLuaArg, LuaAPIProvider>, _>(CoreStage::PostUpdate)
+        .add_script_handler_stage::<RLuaScriptHost<MyLuaArg, LuaAPIProvider>, _, 0, 0>(
+            CoreStage::PostUpdate,
+        )
         // add your systems
         .add_system(trigger_on_update_lua);
 
@@ -108,11 +108,9 @@ pub fn run_script_cmd(
                 if let Ok(mut scripts) = existing_scripts.get_mut(Entity::from_raw(e)) {
                     info!("Creating script: scripts/{} {:?}", &path, e);
 
-                    scripts
-                        .scripts
-                        .push(Script::<LuaFile>::new::<RLuaScriptHost<MyLuaArg,LuaAPIProvider>>(
-                            path, handle,
-                        ));
+                    scripts.scripts.push(Script::<LuaFile>::new::<
+                        RLuaScriptHost<MyLuaArg, LuaAPIProvider>,
+                    >(path, handle));
                 } else {
                     log.reply_failed(format!("Something went wrong"));
                 };
@@ -121,9 +119,9 @@ pub fn run_script_cmd(
                 info!("Creating script: scripts/{}", &path);
 
                 commands.spawn().insert(ScriptCollection::<LuaFile> {
-                    scripts: vec![Script::<LuaFile>::new::<RLuaScriptHost<MyLuaArg,LuaAPIProvider>>(
-                        path, handle,
-                    )],
+                    scripts: vec![Script::<LuaFile>::new::<
+                        RLuaScriptHost<MyLuaArg, LuaAPIProvider>,
+                    >(path, handle)],
                 });
             }
         };

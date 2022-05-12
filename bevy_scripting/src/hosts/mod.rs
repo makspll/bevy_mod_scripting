@@ -339,7 +339,7 @@ pub(crate) fn script_add_synchronizer<H: ScriptHost + 'static>(
             let context_ids = contexts
                 .context_entities
                 .iter()
-                .filter_map(|(sid,(e,_))| if *e == entity {Some(sid)} else {None})
+                .filter_map(|(sid, (e, _))| if *e == entity { Some(sid) } else { None })
                 .cloned()
                 .collect::<HashSet<u32>>();
             let script_ids = new_scripts

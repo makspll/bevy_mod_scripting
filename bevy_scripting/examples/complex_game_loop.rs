@@ -2,8 +2,8 @@ use bevy::{core::FixedTimestep, prelude::*};
 use bevy_console::ConsolePlugin;
 use bevy_event_priority::PriorityEventWriter;
 use bevy_scripting::{
-    APIProvider, AddScriptHost, AddScriptHostHandler, LuaEvent, LuaFile,
-    RLuaScriptHost, Script, ScriptCollection, ScriptingPlugin,
+    APIProvider, AddScriptHost, AddScriptHostHandler, LuaEvent, LuaFile, RLuaScriptHost, Script,
+    ScriptCollection, ScriptingPlugin,
 };
 use rand::prelude::SliceRandom;
 use rlua::{Lua, ToLua};
@@ -13,12 +13,11 @@ use std::sync::{atomic::AtomicU32, Mutex};
 #[derive(Clone)]
 pub struct MyLuaArg(usize);
 
-impl <'lua>ToLua<'lua> for MyLuaArg{
+impl<'lua> ToLua<'lua> for MyLuaArg {
     fn to_lua(self, lua: rlua::Context<'lua>) -> rlua::Result<rlua::Value<'lua>> {
         self.0.to_lua(lua)
     }
 }
-
 
 #[derive(Default)]
 pub struct LuaAPIProvider {}
@@ -31,7 +30,7 @@ impl APIProvider for LuaAPIProvider {
         // callbacks can receive any `ToLuaMulti` arguments, here '()' and
         // return any `FromLuaMulti` arguments, here a `usize`
         // check the Rlua documentation for more details
-        RLuaScriptHost::<MyLuaArg,Self>::register_api_callback(
+        RLuaScriptHost::<MyLuaArg, Self>::register_api_callback(
             "print",
             |_ctx, msg: String| {
                 info!("{}", msg);
@@ -117,10 +116,9 @@ fn load_our_script(server: Res<AssetServer>, mut commands: Commands) {
     let handle = server.load::<LuaFile, &str>(path);
 
     commands.spawn().insert(ScriptCollection::<LuaFile> {
-        scripts: vec![Script::<LuaFile>::new::<RLuaScriptHost<MyLuaArg,LuaAPIProvider>>(
-            path.to_string(),
-            handle,
-        )],
+        scripts: vec![Script::<LuaFile>::new::<
+            RLuaScriptHost<MyLuaArg, LuaAPIProvider>,
+        >(path.to_string(), handle)],
     });
 }
 

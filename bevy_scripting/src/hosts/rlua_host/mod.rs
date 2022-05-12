@@ -17,7 +17,7 @@ use std::sync::Mutex;
 pub use assets::*;
 
 // /// defines a value allowed to be passed as lua script arguments for callbacks
-// /// TODO: expand this  
+// /// TODO: expand this
 // #[derive(Clone)]
 // pub enum LuaCallbackArgument {
 //     Integer(usize),
@@ -31,14 +31,14 @@ pub use assets::*;
 //     }
 // }
 
-pub trait LuaArg :  for <'lua> ToLua<'lua> + Clone + Sync + Send + 'static {}
+pub trait LuaArg: for<'lua> ToLua<'lua> + Clone + Sync + Send + 'static {}
 
-impl <T :  for <'lua> ToLua<'lua> + Clone + Sync + Send + 'static> LuaArg for T {}
+impl<T: for<'lua> ToLua<'lua> + Clone + Sync + Send + 'static> LuaArg for T {}
 
 #[derive(Clone)]
 /// A Lua Hook. The result of creating this event will be
 /// a call to the lua script with the hook_name and the given arguments
-pub struct LuaEvent<A : LuaArg> {
+pub struct LuaEvent<A: LuaArg> {
     pub hook_name: String,
     pub args: Vec<A>,
 }
@@ -90,15 +90,15 @@ pub struct LuaEvent<A : LuaArg> {
 ///    }
 /// ```
 #[derive(Default)]
-pub struct RLuaScriptHost<A: LuaArg,API: APIProvider> {
+pub struct RLuaScriptHost<A: LuaArg, API: APIProvider> {
     _ph: PhantomData<API>,
-    _ph2: PhantomData<A>
+    _ph2: PhantomData<A>,
 }
 
-unsafe impl<A: LuaArg,API: APIProvider> Send for RLuaScriptHost<A,API> {}
-unsafe impl<A: LuaArg,API: APIProvider> Sync for RLuaScriptHost<A,API> {}
+unsafe impl<A: LuaArg, API: APIProvider> Send for RLuaScriptHost<A, API> {}
+unsafe impl<A: LuaArg, API: APIProvider> Sync for RLuaScriptHost<A, API> {}
 
-impl< A: LuaArg,API: APIProvider<Ctx = Mutex<Lua>>> ScriptHost for RLuaScriptHost<A,API> {
+impl<A: LuaArg, API: APIProvider<Ctx = Mutex<Lua>>> ScriptHost for RLuaScriptHost<A, API> {
     type ScriptContext = Mutex<Lua>;
     type ScriptEvent = LuaEvent<A>;
     type ScriptAsset = LuaFile;
@@ -181,7 +181,7 @@ impl< A: LuaArg,API: APIProvider<Ctx = Mutex<Lua>>> ScriptHost for RLuaScriptHos
         })
     }
 }
-impl<A: LuaArg,API: APIProvider<Ctx = Mutex<Lua>>> RLuaScriptHost<A,API> {
+impl<A: LuaArg, API: APIProvider<Ctx = Mutex<Lua>>> RLuaScriptHost<A, API> {
     pub fn register_api_callback<F, Arg, R>(
         callback_fn_name: &str,
         callback: F,
