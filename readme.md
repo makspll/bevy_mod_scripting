@@ -234,6 +234,6 @@ impl RhaiAPIProvider for RhaiAPI{
 
 Examples are available in the examples directory:
 
-- [lua - bevy console integartion](bevy_scripting/examples/console_integration_lua.rs)
-- [rhai - bevy console integartion](bevy_scripting/examples/console_integration_rhai.rs)
+- [lua - bevy console integration](bevy_scripting/examples/console_integration_lua.rs)
+- [rhai - bevy console integration](bevy_scripting/examples/console_integration_rhai.rs)
 - [lua - complex game loop](bevy_scripting/examples/complex_game_loop.rs)
