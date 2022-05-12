@@ -1,7 +1,7 @@
 pub mod assets;
 
 use crate::{
-    script_add_synchronizer, script_event_handler, script_hot_reload_handler,
+    script_add_synchronizer, script_hot_reload_handler,
     script_remove_synchronizer, APIProvider, CachedScriptEventState, ScriptContexts, ScriptHost,
 };
 use anyhow::{anyhow, Result};

@@ -1,12 +1,12 @@
-use bevy::{ecs::event::Events, prelude::*, core::FixedTimestep};
-use bevy_console::{AddConsoleCommand, ConsoleCommand, ConsolePlugin, PrintConsoleLine};
+use bevy::{prelude::*, core::FixedTimestep};
+use bevy_console::{ConsolePlugin};
 use bevy_event_priority::PriorityEventWriter;
 use bevy_scripting::{
     APIProvider, AddScriptHost, LuaEvent, LuaFile, RLuaScriptHost, Script, ScriptCollection,
     ScriptingPlugin, AddScriptHostHandler, LuaCallbackArgument,
 };
 use rand::prelude::SliceRandom;
-use rlua::{prelude::LuaLightUserData, Lua};
+use rlua::{Lua};
 use std::sync::{Mutex, atomic::AtomicU32};
 use std::sync::atomic::Ordering::Relaxed;
 
@@ -23,7 +23,7 @@ impl APIProvider for LuaAPIProvider {
         // check the Rlua documentation for more details
         RLuaScriptHost::<Self>::register_api_callback(
             "print",
-            |ctx, msg: String| {
+            |_ctx, msg: String| {
                 info!("{}",msg);
                 Ok(())
             },

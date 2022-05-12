@@ -4,7 +4,7 @@ pub mod rhai_host;
 pub mod rlua_host;
 
 use anyhow::Result;
-use bevy::{asset::Asset, ecs::{system::SystemState, schedule::{IntoSystemDescriptor, ParallelSystemDescriptor, IntoRunCriteria}}, prelude::*};
+use bevy::{asset::Asset, ecs::{system::SystemState, schedule::{IntoRunCriteria}}, prelude::*};
 use bevy_event_priority::PriorityEventReader;
 pub use {crate::rhai_host::*, crate::rlua_host::*};
 

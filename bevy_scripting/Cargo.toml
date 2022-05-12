@@ -40,5 +40,5 @@ name = "console_integration_rhai"
 path = "examples/console_integration_rhai.rs"
 
 [[example]]
-name = "unity_game_loop"
-path = "examples/unity_game_loop.rs"
+name = "complex_game_loop"
+path = "examples/complex_game_loop.rs"

@@ -1,13 +1,13 @@
 pub mod assets;
 
 use crate::{
-    script_add_synchronizer, script_event_handler, script_hot_reload_handler,
+    script_add_synchronizer, script_hot_reload_handler,
     script_remove_synchronizer, APIProvider, CachedScriptEventState, ScriptContexts, ScriptHost,
 };
 use anyhow::anyhow;
 use beau_collector::BeauCollector as _;
 use bevy::prelude::{
-    AddAsset, ExclusiveSystemDescriptorCoercion, IntoExclusiveSystem, Mut, SystemSet, World, StageLabel,
+    AddAsset, Mut, SystemSet, World,
 };
 use bevy_event_priority::AddPriorityEvent;
 use rhai::*;

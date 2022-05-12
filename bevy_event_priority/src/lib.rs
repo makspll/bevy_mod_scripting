@@ -1,5 +1,5 @@
 use bevy::ecs::system::SystemParam;
-use bevy::{ecs::event::EventId, prelude::*};
+use bevy::{prelude::*};
 use std::marker::PhantomData;
 use std::sync::atomic::Ordering::Relaxed;
 use std::{collections::BinaryHeap, sync::atomic::AtomicU32};
