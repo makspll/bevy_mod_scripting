@@ -101,7 +101,7 @@ Any types implementing the `rlua::ToLua` trait can be used.
 
 ``` rust
 use bevy::prelude::*;
-use bevy_scripting::{*,events::*};
+use bevy_mod_scripting::{*,events::*};
 use rlua::ToLua;
 
 #[derive(Clone)]
@@ -133,7 +133,7 @@ Rhai supports any rust types implementing FuncArgs as function arguments.
 ``` rust
 use bevy::prelude::*;
 use rhai::FuncArgs;
-use bevy_scripting::{*,events::*};
+use bevy_mod_scripting::{*,events::*};
 
 #[derive(Clone)]
 pub struct MyRhaiArgStruct {
@@ -164,13 +164,13 @@ A script consist of:
 - an asset handle to their code file
 - a name which is usually their path relative to the assets folder
 
-Scripts are attached to entities in the form of `bevy_scripting::ScriptCollection` components as seen below:
+Scripts are attached to entities in the form of `bevy_mod_scripting::ScriptCollection` components as seen below:
 
 ``` rust
 use std::sync::Mutex;
 use rlua::prelude::*;
 use bevy::prelude::*;
-use bevy_scripting::*;
+use bevy_mod_scripting::*;
 
 
 #[derive(Default)]
@@ -218,7 +218,7 @@ To expose an API to your scripts, implement the APIProvider trait along with any
 use std::sync::Mutex;
 use rhai::*;
 use rlua::prelude::*;
-use bevy_scripting::*;
+use bevy_mod_scripting::*;
 
 #[derive(Default)]
 pub struct LuaAPI {}
@@ -256,6 +256,6 @@ impl RhaiAPIProvider for RhaiAPI{
 
 To see more complex applications of this library have a look at the examples:
 
-- [lua - bevy console integration](bevy_scripting/examples/console_integration_lua.rs)
-- [rhai - bevy console integration](bevy_scripting/examples/console_integration_rhai.rs)
-- [lua - complex game loop](bevy_scripting/examples/complex_game_loop.rs)
+- [lua - bevy console integration](bevy_mod_scripting/examples/console_integration_lua.rs)
+- [rhai - bevy console integration](bevy_mod_scripting/examples/console_integration_rhai.rs)
+- [lua - complex game loop](bevy_mod_scripting/examples/complex_game_loop.rs)

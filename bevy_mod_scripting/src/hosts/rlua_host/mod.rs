@@ -40,7 +40,7 @@ pub struct LuaEvent<A: LuaArg> {
 ///    use std::sync::Mutex;
 ///    use bevy::prelude::*;
 ///    use rlua::prelude::*;
-///    use bevy_scripting::{RLuaScriptHost, APIProvider};
+///    use bevy_mod_scripting::{RLuaScriptHost, APIProvider};
 ///    
 ///    #[derive(Default)]
 ///    pub struct LuaAPIProvider {}

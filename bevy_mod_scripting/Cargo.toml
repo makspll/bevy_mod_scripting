@@ -1,5 +1,5 @@
 [package]
-name = "bevy_scripting"
+name = "bevy_mod_scripting"
 version = "0.1.0"
 authors = ["Maksymilian Mozolewski <makspl17@gmail.com>"]
 edition = "2021"
@@ -12,7 +12,7 @@ categories = ["game-development"]
 readme = "../readme.md"
 
 [lib]
-name = "bevy_scripting"
+name = "bevy_mod_scripting"
 path = "src/lib.rs"
 
 

@@ -1,6 +1,6 @@
 [workspace]
 resolver = "2"
 members = [
-    "bevy_scripting",
+    "bevy_mod_scripting",
     "bevy_event_priority"
 ]

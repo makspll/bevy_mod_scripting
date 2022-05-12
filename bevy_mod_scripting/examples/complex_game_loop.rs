@@ -1,7 +1,7 @@
 use bevy::{core::FixedTimestep, prelude::*};
 use bevy_console::ConsolePlugin;
 use bevy_event_priority::PriorityEventWriter;
-use bevy_scripting::{
+use bevy_mod_scripting::{
     APIProvider, AddScriptHost, AddScriptHostHandler, LuaEvent, LuaFile, RLuaScriptHost, Script,
     ScriptCollection, ScriptingPlugin,
 };
