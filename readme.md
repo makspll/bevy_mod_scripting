@@ -22,7 +22,7 @@ The API will likely change in the future as more scripting support is rolled out
 - [x] Hot re-loading scripts (on script asset changes, scripts using those assets are re-started)
 - [x] Rlua integration
 - [x] Rhai integration
-- [x] Customisable Lua API
+- [x] Customisable script API's
 - [x] Event based hooks (i.e. on_update)
 - [x] Flexible event scheduling (i.e. allow handling events at different stages rather than a single stage based on the event) 
 - [x] Multiple scripts per entity
@@ -85,9 +85,13 @@ fn main() -> std::io::Result<()> {
 
 ### Firing Script Callbacks
 
-Scripts are triggered by firing 'ScriptEvents', the order of events matters so trigger them in the order you'd like your scripts to process them.
+Scripts are triggered by firing `ScriptEvents`. This crate uses custom priority event writers and readers, so events are sent along with a priority. Together with your event pipeline this priority affects when your events are handled. A priority of 0 is the highest.
 
-As it stands currently there are no guarantees that force the script callbacks to be executed fully for all scripts, before processing the next callback event (i.e. this order guarantee only holds on a per script basis).
+You can use this to create game loops akin to Unity's or other game engine's.
+
+There are no guarantees that force the script callbacks to be executed fully for all scripts, i.e. before processing the next callback event, so this order guarantee only holds on a per script basis.
+
+Examples of systems which generate callbacks can be seen below:
 
 #### RLua 
 
