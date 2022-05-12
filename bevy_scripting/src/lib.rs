@@ -4,8 +4,8 @@ use bevy::prelude::*;
 
 pub mod hosts;
 
-pub use hosts::*;
 pub use bevy_event_priority as events;
+pub use hosts::*;
 
 #[derive(Default)]
 /// Bevy plugin enabling run-time scripting

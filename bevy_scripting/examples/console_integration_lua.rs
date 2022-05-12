@@ -1,9 +1,8 @@
 use bevy::{ecs::event::Events, prelude::*};
 use bevy_console::{AddConsoleCommand, ConsoleCommand, ConsolePlugin, PrintConsoleLine};
 use bevy_scripting::{
-
-    events::PriorityEventWriter,APIProvider, AddScriptHost, AddScriptHostHandler, LuaEvent, LuaFile, RLuaScriptHost, Script,
-    ScriptCollection, ScriptingPlugin,
+    events::PriorityEventWriter, APIProvider, AddScriptHost, AddScriptHostHandler, LuaEvent,
+    LuaFile, RLuaScriptHost, Script, ScriptCollection, ScriptingPlugin,
 };
 use rlua::{prelude::LuaLightUserData, Lua, ToLua};
 use std::sync::Mutex;
