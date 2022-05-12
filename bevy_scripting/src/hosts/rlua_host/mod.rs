@@ -10,7 +10,7 @@ use bevy::prelude::*;
 use bevy_event_priority::AddPriorityEvent;
 use rlua::prelude::*;
 use rlua::{Context, Function, Lua, MultiValue, ToLua, ToLuaMulti};
-use std::ffi::c_void;
+
 use std::marker::PhantomData;
 use std::sync::Mutex;
 
