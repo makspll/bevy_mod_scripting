@@ -5,8 +5,19 @@ use bevy_scripting::{
     APIProvider, AddScriptHost, AddScriptHostHandler, LuaEvent, LuaFile, RLuaScriptHost, Script,
     ScriptCollection, ScriptingPlugin,
 };
-use rlua::{prelude::LuaLightUserData, Lua};
+use rlua::{prelude::LuaLightUserData, Lua, ToLua};
 use std::sync::Mutex;
+
+
+#[derive(Clone)]
+pub struct MyLuaArg;
+
+impl <'lua>ToLua<'lua> for MyLuaArg{
+    fn to_lua(self, _lua: rlua::Context<'lua>) -> rlua::Result<rlua::Value<'lua>> {
+        Ok(rlua::Value::Nil)
+    }
+}
+
 
 #[derive(Default)]
 pub struct LuaAPIProvider {}
@@ -19,7 +30,7 @@ impl APIProvider for LuaAPIProvider {
         // callbacks can receive any `ToLuaMulti` arguments, here '()' and
         // return any `FromLuaMulti` arguments, here a `usize`
         // check the Rlua documentation for more details
-        RLuaScriptHost::<Self>::register_api_callback(
+        RLuaScriptHost::<MyLuaArg,Self>::register_api_callback(
             "print_to_console",
             |ctx, msg: String| {
                 // retrieve the world pointer
@@ -39,7 +50,7 @@ impl APIProvider for LuaAPIProvider {
 
 /// sends updates to script host which are then handled by the scripts
 /// in the designated stage
-pub fn trigger_on_update_lua(mut w: PriorityEventWriter<LuaEvent>) {
+pub fn trigger_on_update_lua(mut w: PriorityEventWriter<LuaEvent<MyLuaArg>>) {
     let event = LuaEvent {
         hook_name: "on_update".to_string(),
         args: Vec::default(),
@@ -58,8 +69,8 @@ fn main() -> std::io::Result<()> {
         .add_console_command::<RunScriptCmd, _, _>(run_script_cmd)
         .add_console_command::<DeleteScriptCmd, _, _>(delete_script_cmd)
         // choose and register the script hosts you want to use
-        .add_script_host::<RLuaScriptHost<LuaAPIProvider>, _>(CoreStage::PostUpdate)
-        .add_script_handler_stage::<RLuaScriptHost<LuaAPIProvider>, _, 0, 0>(CoreStage::PostUpdate)
+        .add_script_host::<RLuaScriptHost<MyLuaArg,LuaAPIProvider>, _>(CoreStage::PostUpdate)
+        .add_script_handler_stage::<RLuaScriptHost<MyLuaArg,LuaAPIProvider>, _, 0, 0>(CoreStage::PostUpdate)
         // add your systems
         .add_system(trigger_on_update_lua);
 
@@ -99,7 +110,7 @@ pub fn run_script_cmd(
 
                     scripts
                         .scripts
-                        .push(Script::<LuaFile>::new::<RLuaScriptHost<LuaAPIProvider>>(
+                        .push(Script::<LuaFile>::new::<RLuaScriptHost<MyLuaArg,LuaAPIProvider>>(
                             path, handle,
                         ));
                 } else {
@@ -110,7 +121,7 @@ pub fn run_script_cmd(
                 info!("Creating script: scripts/{}", &path);
 
                 commands.spawn().insert(ScriptCollection::<LuaFile> {
-                    scripts: vec![Script::<LuaFile>::new::<RLuaScriptHost<LuaAPIProvider>>(
+                    scripts: vec![Script::<LuaFile>::new::<RLuaScriptHost<MyLuaArg,LuaAPIProvider>>(
                         path, handle,
                     )],
                 });

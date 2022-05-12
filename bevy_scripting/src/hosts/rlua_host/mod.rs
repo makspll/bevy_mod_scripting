@@ -16,27 +16,31 @@ use std::sync::Mutex;
 
 pub use assets::*;
 
-/// defines a value allowed to be passed as lua script arguments for callbacks
-/// TODO: expand this  
-#[derive(Clone)]
-pub enum LuaCallbackArgument {
-    Integer(usize),
-}
+// /// defines a value allowed to be passed as lua script arguments for callbacks
+// /// TODO: expand this  
+// #[derive(Clone)]
+// pub enum LuaCallbackArgument {
+//     Integer(usize),
+// }
 
-impl<'lua> ToLua<'lua> for LuaCallbackArgument {
-    fn to_lua(self, lua: Context<'lua>) -> LuaResult<LuaValue<'lua>> {
-        match self {
-            LuaCallbackArgument::Integer(i) => i.to_lua(lua),
-        }
-    }
-}
+// impl<'lua> ToLua<'lua> for LuaCallbackArgument {
+//     fn to_lua(self, lua: Context<'lua>) -> LuaResult<LuaValue<'lua>> {
+//         match self {
+//             LuaCallbackArgument::Integer(i) => i.to_lua(lua),
+//         }
+//     }
+// }
+
+pub trait LuaArg :  for <'lua> ToLua<'lua> + Clone + Sync + Send + 'static {}
+
+impl <T :  for <'lua> ToLua<'lua> + Clone + Sync + Send + 'static> LuaArg for T {}
 
 #[derive(Clone)]
 /// A Lua Hook. The result of creating this event will be
 /// a call to the lua script with the hook_name and the given arguments
-pub struct LuaEvent {
+pub struct LuaEvent<A : LuaArg> {
     pub hook_name: String,
-    pub args: Vec<LuaCallbackArgument>,
+    pub args: Vec<A>,
 }
 
 /// Rlua script host, enables Lua scripting provided by the Rlua library.
@@ -86,20 +90,21 @@ pub struct LuaEvent {
 ///    }
 /// ```
 #[derive(Default)]
-pub struct RLuaScriptHost<A: APIProvider> {
-    _ph: PhantomData<A>,
+pub struct RLuaScriptHost<A: LuaArg,API: APIProvider> {
+    _ph: PhantomData<API>,
+    _ph2: PhantomData<A>
 }
 
-unsafe impl<A: APIProvider> Send for RLuaScriptHost<A> {}
-unsafe impl<A: APIProvider> Sync for RLuaScriptHost<A> {}
+unsafe impl<A: LuaArg,API: APIProvider> Send for RLuaScriptHost<A,API> {}
+unsafe impl<A: LuaArg,API: APIProvider> Sync for RLuaScriptHost<A,API> {}
 
-impl<A: APIProvider<Ctx = Mutex<Lua>>> ScriptHost for RLuaScriptHost<A> {
+impl< A: LuaArg,API: APIProvider<Ctx = Mutex<Lua>>> ScriptHost for RLuaScriptHost<A,API> {
     type ScriptContext = Mutex<Lua>;
-    type ScriptEvent = LuaEvent;
+    type ScriptEvent = LuaEvent<A>;
     type ScriptAsset = LuaFile;
 
     fn register_with_app(app: &mut App, stage: impl StageLabel) {
-        app.add_priority_event::<LuaEvent>();
+        app.add_priority_event::<Self::ScriptEvent>();
         app.add_asset::<LuaFile>();
         app.init_asset_loader::<LuaLoader>();
         app.init_resource::<CachedScriptEventState<Self::ScriptEvent>>();
@@ -128,7 +133,7 @@ impl<A: APIProvider<Ctx = Mutex<Lua>>> ScriptHost for RLuaScriptHost<A> {
 
         let mut lua = Mutex::new(lua);
 
-        A::attach_api(&mut lua);
+        API::attach_api(&mut lua);
 
         Ok(lua)
     }
@@ -176,16 +181,15 @@ impl<A: APIProvider<Ctx = Mutex<Lua>>> ScriptHost for RLuaScriptHost<A> {
         })
     }
 }
-
-impl<API: APIProvider<Ctx = Mutex<Lua>>> RLuaScriptHost<API> {
-    pub fn register_api_callback<F, A, R>(
+impl<A: LuaArg,API: APIProvider<Ctx = Mutex<Lua>>> RLuaScriptHost<A,API> {
+    pub fn register_api_callback<F, Arg, R>(
         callback_fn_name: &str,
         callback: F,
         script: &<Self as ScriptHost>::ScriptContext,
     ) where
-        A: for<'lua> FromLuaMulti<'lua>,
+        Arg: for<'lua> FromLuaMulti<'lua>,
         R: for<'lua> ToLuaMulti<'lua>,
-        F: 'static + Send + for<'lua> Fn(Context<'lua>, A) -> Result<R, LuaError>,
+        F: 'static + Send + for<'lua> Fn(Context<'lua>, Arg) -> Result<R, LuaError>,
     {
         script.lock().unwrap().context(|lua_ctx| {
             let f = lua_ctx.create_function(callback).unwrap();

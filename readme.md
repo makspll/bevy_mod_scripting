@@ -23,9 +23,8 @@ The API will likely change in the future as more scripting support is rolled out
 - [x] Flexible event scheduling (i.e. allow handling events at different stages rather than a single stage based on the event) 
 - [x] Multiple scripts per entity
 - [x] Multiple instances of the same script on one entity
-- [ ] Improved Ergonomics (some types are cumbersome right now)
+- [x] Extensive callback argument type support 
 - [ ] General Bevy API for all script hosts (i.e. Add component, remove component etc.). Blocked by <https://github.com/bevyengine/bevy/issues/4474>
-- [ ] More extensive callback argument type support 
 - [ ] Tests
 
 ## Usage

@@ -2,13 +2,23 @@ use bevy::{core::FixedTimestep, prelude::*};
 use bevy_console::ConsolePlugin;
 use bevy_event_priority::PriorityEventWriter;
 use bevy_scripting::{
-    APIProvider, AddScriptHost, AddScriptHostHandler, LuaCallbackArgument, LuaEvent, LuaFile,
+    APIProvider, AddScriptHost, AddScriptHostHandler, LuaEvent, LuaFile,
     RLuaScriptHost, Script, ScriptCollection, ScriptingPlugin,
 };
 use rand::prelude::SliceRandom;
-use rlua::Lua;
+use rlua::{Lua, ToLua};
 use std::sync::atomic::Ordering::Relaxed;
 use std::sync::{atomic::AtomicU32, Mutex};
+
+#[derive(Clone)]
+pub struct MyLuaArg(usize);
+
+impl <'lua>ToLua<'lua> for MyLuaArg{
+    fn to_lua(self, lua: rlua::Context<'lua>) -> rlua::Result<rlua::Value<'lua>> {
+        self.0.to_lua(lua)
+    }
+}
+
 
 #[derive(Default)]
 pub struct LuaAPIProvider {}
@@ -21,7 +31,7 @@ impl APIProvider for LuaAPIProvider {
         // callbacks can receive any `ToLuaMulti` arguments, here '()' and
         // return any `FromLuaMulti` arguments, here a `usize`
         // check the Rlua documentation for more details
-        RLuaScriptHost::<Self>::register_api_callback(
+        RLuaScriptHost::<MyLuaArg,Self>::register_api_callback(
             "print",
             |_ctx, msg: String| {
                 info!("{}", msg);
@@ -35,10 +45,10 @@ impl APIProvider for LuaAPIProvider {
 static COUNTER: AtomicU32 = AtomicU32::new(0);
 
 /// utility for generating random events from a list
-fn fire_random_event(w: &mut PriorityEventWriter<LuaEvent>, events: &[ScriptEventData]) {
+fn fire_random_event(w: &mut PriorityEventWriter<LuaEvent<MyLuaArg>>, events: &[ScriptEventData]) {
     let mut rng = rand::thread_rng();
     let id = COUNTER.fetch_add(1, Relaxed);
-    let arg = LuaCallbackArgument::Integer(id as usize);
+    let arg = MyLuaArg(id as usize);
     let (event, prio) = events
         .choose(&mut rng)
         .map(|v| {
@@ -59,7 +69,7 @@ fn fire_random_event(w: &mut PriorityEventWriter<LuaEvent>, events: &[ScriptEven
     w.send(event, prio);
 }
 
-fn do_some_shit_before_physics(mut w: PriorityEventWriter<LuaEvent>) {
+fn do_some_shit_before_physics(mut w: PriorityEventWriter<LuaEvent<MyLuaArg>>) {
     info!("PrePhysics, firing:");
 
     for _ in 0..5 {
@@ -68,7 +78,7 @@ fn do_some_shit_before_physics(mut w: PriorityEventWriter<LuaEvent>) {
     }
 }
 
-fn do_physics(mut w: PriorityEventWriter<LuaEvent>) {
+fn do_physics(mut w: PriorityEventWriter<LuaEvent<MyLuaArg>>) {
     info!("Physics, firing:");
 
     for _ in 0..5 {
@@ -77,7 +87,7 @@ fn do_physics(mut w: PriorityEventWriter<LuaEvent>) {
     }
 }
 
-fn do_update(mut w: PriorityEventWriter<LuaEvent>) {
+fn do_update(mut w: PriorityEventWriter<LuaEvent<MyLuaArg>>) {
     info!("Update, firing:");
 
     // fire random event, for any stages
@@ -107,7 +117,7 @@ fn load_our_script(server: Res<AssetServer>, mut commands: Commands) {
     let handle = server.load::<LuaFile, &str>(path);
 
     commands.spawn().insert(ScriptCollection::<LuaFile> {
-        scripts: vec![Script::<LuaFile>::new::<RLuaScriptHost<LuaAPIProvider>>(
+        scripts: vec![Script::<LuaFile>::new::<RLuaScriptHost<MyLuaArg,LuaAPIProvider>>(
             path.to_string(),
             handle,
         )],
@@ -152,7 +162,7 @@ fn main() -> std::io::Result<()> {
             PRE_PHYSICS_SCRIPTS,
             SystemStage::single_threaded(),
         )
-        .add_script_handler_stage_with_criteria::<RLuaScriptHost<LuaAPIProvider>, _, _, _, 0, 10>(
+        .add_script_handler_stage_with_criteria::<RLuaScriptHost<MyLuaArg,LuaAPIProvider>, _, _, _, 0, 10>(
             PRE_PHYSICS_SCRIPTS,
             FixedTimestep::step(TIMESTEP_2_PER_SECOND),
         )
@@ -163,7 +173,7 @@ fn main() -> std::io::Result<()> {
             POST_PHYSICS_SCRIPTS,
             SystemStage::single_threaded(),
         )
-        .add_script_handler_stage_with_criteria::<RLuaScriptHost<LuaAPIProvider>, _, _, _, 11, 20>(
+        .add_script_handler_stage_with_criteria::<RLuaScriptHost<MyLuaArg,LuaAPIProvider>, _, _, _, 11, 20>(
             POST_PHYSICS_SCRIPTS,
             FixedTimestep::step(TIMESTEP_2_PER_SECOND),
         )
@@ -175,9 +185,9 @@ fn main() -> std::io::Result<()> {
             POST_UPDATE_SCRIPTS,
             SystemStage::single_threaded(),
         )
-        .add_script_handler_stage::<RLuaScriptHost<LuaAPIProvider>, _, 21, 30>(POST_UPDATE_SCRIPTS)
+        .add_script_handler_stage::<RLuaScriptHost<MyLuaArg,LuaAPIProvider>, _, 21, 30>(POST_UPDATE_SCRIPTS)
         // this stage handles addition and removal of script contexts, we can safely use `CoreStage::PostUpdate`
-        .add_script_host::<RLuaScriptHost<LuaAPIProvider>, _>(CoreStage::PostUpdate);
+        .add_script_host::<RLuaScriptHost<MyLuaArg,LuaAPIProvider>, _>(CoreStage::PostUpdate);
 
     // We have 3 core systems
 
