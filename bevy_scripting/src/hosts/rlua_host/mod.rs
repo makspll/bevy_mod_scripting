@@ -60,6 +60,15 @@ pub struct LuaEvent<A: LuaArg> {
 ///    #[derive(Default)]
 ///    pub struct LuaAPIProvider {}
 ///
+///    #[derive(Clone)]
+///    pub struct MyLuaArg;
+/// 
+///    impl<'lua> ToLua<'lua> for MyLuaArg {
+///        fn to_lua(self, _lua: rlua::Context<'lua>) -> rlua::Result<rlua::Value<'lua>> {
+///            Ok(rlua::Value::Nil)
+///        }
+///    }
+
 ///    /// the custom Lua api, world is provided via a global pointer,
 ///    /// and callbacks are defined only once at script creation
 ///    impl APIProvider for LuaAPIProvider {
@@ -68,7 +77,7 @@ pub struct LuaEvent<A: LuaArg> {
 ///            // callbacks can receive any `ToLuaMulti` arguments, here '()' and
 ///            // return any `FromLuaMulti` arguments, here a `usize`
 ///            // check the Rlua documentation for more details
-///            RLuaScriptHost::<Self>::register_api_callback(
+///            RLuaScriptHost::<MyLuaArg,Self>::register_api_callback(
 ///                "your_callback",
 ///                |ctx, ()| {
 ///                    let globals = ctx.globals();
