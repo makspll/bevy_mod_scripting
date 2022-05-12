@@ -31,8 +31,8 @@ impl APIProvider for LuaAPIProvider {
             "print_to_console",
             |ctx, msg: String| {
                 // retrieve the world pointer
-                let world_data: LuaLightUserData = ctx.globals().get("world").unwrap();
-                let world = unsafe { &mut *(world_data.0 as *mut World) };
+                let world_data: usize = ctx.globals().get("world").unwrap();
+                let world: &mut World = unsafe { &mut *(world_data as *mut World) };
 
                 let mut events: Mut<Events<PrintConsoleLine>> = world.get_resource_mut().unwrap();
                 events.send(PrintConsoleLine { line: msg });

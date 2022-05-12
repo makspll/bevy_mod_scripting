@@ -68,8 +68,8 @@ pub struct LuaEvent<A: LuaArg> {
 ///                    let globals = ctx.globals();
 ///
 ///                    // retrieve the world pointer
-///                    let world_data: LuaLightUserData = globals.get("world").unwrap();
-///                    let world = unsafe { &mut *(world_data.0 as *mut World) };
+///                    let world_data: usize = globals.get("world").unwrap();
+///                    let world: &mut World = unsafe { &mut *(world_data as *mut World) };
 ///                    
 ///                    // retrieve script entity
 ///                    let entity_id : u64 = globals.get("entity").unwrap();
@@ -138,7 +138,7 @@ impl<A: LuaArg, API: APIProvider<Ctx = Mutex<Lua>>> ScriptHost for RLuaScriptHos
         ctxs: impl Iterator<Item = (&'a mut Entity, &'a mut Self::ScriptContext)>,
     ) -> anyhow::Result<()> {
         ctxs.map(|(entity, ctx)| {
-            let world_ptr = LuaLightUserData(world as *mut World as *mut c_void);
+            let world_ptr = world as *mut World as usize;
             let lua_ctx = ctx.get_mut().unwrap();
 
             lua_ctx.context::<_, Result<()>>(|lua_ctx| {
