@@ -6,7 +6,7 @@ use crate::{
 };
 use anyhow::anyhow;
 use beau_collector::BeauCollector as _;
-use bevy::prelude::{AddAsset, Mut, SystemSet, World, Entity};
+use bevy::prelude::{AddAsset, Entity, SystemSet, World};
 use bevy_event_priority::AddPriorityEvent;
 use rhai::*;
 use std::marker::PhantomData;
@@ -90,24 +90,26 @@ impl<A: FuncArgs + Send + Clone + Sync + 'static, API: RhaiAPIProvider<Ctx = Rha
         Ok(ctx)
     }
 
-    fn handle_events<'a>(world: &mut World,events: &[Self::ScriptEvent], ctxs : impl Iterator<Item=(&'a mut Entity,&'a mut Self::ScriptContext)>) -> anyhow::Result<()>{
+    fn handle_events<'a>(
+        world: &mut World,
+        events: &[Self::ScriptEvent],
+        ctxs: impl Iterator<Item = (&'a mut Entity, &'a mut Self::ScriptContext)>,
+    ) -> anyhow::Result<()> {
         ctxs.flat_map(|(entity, ctx)| {
-                ctx.scope.set_value("world", world as *mut World as usize);
-                ctx.scope.set_value("entity", *entity);
+            ctx.scope.set_value("world", world as *mut World as usize);
+            ctx.scope.set_value("entity", *entity);
 
-                events.iter().map(|event| {
-                    ctx.engine
-                        .call_fn(
-                            &mut ctx.scope,
-                            &ctx.ast,
-                            &event.hook_name,
-                            event.args.clone(),
-                        )
-                        .map_err(|e| anyhow!("{:?}", *e))
-                })
+            events.iter().map(|event| {
+                ctx.engine
+                    .call_fn(
+                        &mut ctx.scope,
+                        &ctx.ast,
+                        &event.hook_name,
+                        event.args.clone(),
+                    )
+                    .map_err(|e| anyhow!("{:?}", *e))
             })
-            .bcollect()
+        })
+        .bcollect()
     }
-
-
 }

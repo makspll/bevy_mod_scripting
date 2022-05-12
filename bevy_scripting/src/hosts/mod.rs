@@ -4,7 +4,7 @@ pub mod rhai_host;
 pub mod rlua_host;
 
 use anyhow::Result;
-use beau_collector::BeauCollector as _;
+
 use bevy::{
     asset::Asset,
     ecs::{schedule::IntoRunCriteria, system::SystemState},
@@ -34,18 +34,27 @@ pub trait ScriptHost: Send + Sync + 'static {
 
     /// the main point of contact with the bevy world.
     /// Scripts are called with appropriate events in the event order
-    fn handle_events<'a>(world: &mut World,events: &[Self::ScriptEvent], ctxs : impl Iterator<Item=(&'a mut Entity,&'a mut Self::ScriptContext)>) -> Result<()>;
+    fn handle_events<'a>(
+        world: &mut World,
+        events: &[Self::ScriptEvent],
+        ctxs: impl Iterator<Item = (&'a mut Entity, &'a mut Self::ScriptContext)>,
+    ) -> Result<()>;
 
-    /// Loads and runs script instantaneously without storing any script data into the world. 
+    /// Loads and runs script instantaneously without storing any script data into the world.
     /// The script receives the `world` global as normal, but `entity` is set to `u64::MAX`
-    fn run_one_shot(script: &[u8], script_name: &str, world: &mut World, event: Self::ScriptEvent) -> Result<()>{
+    fn run_one_shot(
+        script: &[u8],
+        script_name: &str,
+        world: &mut World,
+        event: Self::ScriptEvent,
+    ) -> Result<()> {
         let mut ctx = Self::load_script(script, script_name)?;
         let mut entity = Entity::from_bits(u64::MAX);
 
-        let events = [event;1];
-        let ctx_iter = [(&mut entity ,&mut ctx);1].into_iter();
+        let events = [event; 1];
+        let ctx_iter = [(&mut entity, &mut ctx); 1].into_iter();
 
-        Self::handle_events(world,&events,ctx_iter)
+        Self::handle_events(world, &events, ctx_iter)
     }
 
     /// Registers the script host with the given app, and attaches handlers to deal with spawning/removing scripts at the given stage.
@@ -53,7 +62,6 @@ pub trait ScriptHost: Send + Sync + 'static {
     /// Ideally place after any game logic which can spawn/remove/modify scripts to avoid frame lag. (typically `CoreStage::Post_Update`)
     fn register_with_app(app: &mut App, stage: impl StageLabel);
 }
-
 
 /// Trait for app builder notation
 pub trait AddScriptHost {
@@ -200,12 +208,7 @@ impl<C> ScriptContexts<C> {
         self.context_entities.get(&script_id).map(|(e, _c)| *e)
     }
 
-    pub fn insert_context(
-        &mut self,
-        script_id: u32,
-        entity: Entity,
-        ctx: Option<C>,
-    ) {
+    pub fn insert_context(&mut self, script_id: u32, entity: Entity, ctx: Option<C>) {
         self.context_entities.insert(script_id, (entity, ctx));
     }
 
@@ -430,28 +433,27 @@ pub(crate) fn script_hot_reload_handler<H: ScriptHost>(
 pub(crate) fn script_event_handler<H: ScriptHost, const MAX: u32, const MIN: u32>(
     world: &mut World,
 ) {
-
     // we need to collect the events to drop the borrow of the world
-    let events = world.resource_scope(|world, mut cached_state: Mut<CachedScriptEventState<H>>|{
+    let events = world.resource_scope(|world, mut cached_state: Mut<CachedScriptEventState<H>>| {
         let mut cached_state = cached_state.event_state.get_mut(world);
         cached_state
-            .iter_prio_range(MAX,MIN)
+            .iter_prio_range(MAX, MIN)
             .collect::<Vec<H::ScriptEvent>>()
     });
 
-    // we need a resource scope to be able to simultaneously access the contexts as well 
+    // we need a resource scope to be able to simultaneously access the contexts as well
     // as provide world access to scripts
     // afaik there is not really a better way to do this in bevy just now
-    world.resource_scope(|world, mut ctxts : Mut<ScriptContexts<H::ScriptContext>>| {
-        let ctx_iter = ctxts.as_mut()
-        .context_entities
-        .values_mut()
-        .filter_map(|(e,o)| o.as_mut().map(|v| (e,v)));
+    world.resource_scope(|world, mut ctxts: Mut<ScriptContexts<H::ScriptContext>>| {
+        let ctx_iter = ctxts
+            .as_mut()
+            .context_entities
+            .values_mut()
+            .filter_map(|(e, o)| o.as_mut().map(|v| (e, v)));
 
-        match H::handle_events(world,&events,ctx_iter) {
+        match H::handle_events(world, &events, ctx_iter) {
             Ok(_) => {}
             Err(e) => warn!("{}", e),
         };
     });
 }
-
