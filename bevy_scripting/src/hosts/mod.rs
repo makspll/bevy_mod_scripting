@@ -151,7 +151,7 @@ pub trait APIProvider: 'static + Default {
     fn attach_api(ctx: &mut Self::Ctx);
 }
 
-#[derive(Component)]
+#[derive(Component, Debug)]
 /// The component storing many scripts.
 /// Scripts receive information about the entity they are attached to
 /// Scripts have unique identifiers and hence multiple copies of the same script
@@ -202,6 +202,7 @@ impl<H: ScriptHost> ScriptContexts<H> {
 
 /// A struct defining an instance of a script asset.
 /// Multiple instances of the same script can exist on the same entity
+#[derive(Debug)]
 pub struct Script<T: Asset> {
     /// a strong handle to the script asset
     handle: Handle<T>,
@@ -337,7 +338,8 @@ pub(crate) fn script_add_synchronizer<H: ScriptHost + 'static>(
 
             let context_ids = contexts
                 .context_entities
-                .keys()
+                .iter()
+                .filter_map(|(sid,(e,_))| if *e == entity {Some(sid)} else {None})
                 .cloned()
                 .collect::<HashSet<u32>>();
             let script_ids = new_scripts
@@ -355,7 +357,6 @@ pub(crate) fn script_add_synchronizer<H: ScriptHost + 'static>(
 
             for a in added_scripts {
                 let script = new_scripts.scripts.iter().find(|e| &e.id == a).unwrap();
-
                 Script::<H::ScriptAsset>::insert_new_script_context(
                     script,
                     entity,
