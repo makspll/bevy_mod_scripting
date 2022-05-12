@@ -147,7 +147,11 @@ fn main() -> std::io::Result<()> {
         .add_system(do_update)
         // --- script handler stages
         // pre_physics,     priority: [0,10] inclusive
-        .add_stage_after(PRE_PHYSICS, PRE_PHYSICS_SCRIPTS, SystemStage::single_threaded())
+        .add_stage_after(
+            PRE_PHYSICS,
+            PRE_PHYSICS_SCRIPTS,
+            SystemStage::single_threaded(),
+        )
         .add_script_handler_stage_with_criteria::<RLuaScriptHost<LuaAPIProvider>, _, _, _, 0, 10>(
             PRE_PHYSICS_SCRIPTS,
             FixedTimestep::step(TIMESTEP_2_PER_SECOND),
