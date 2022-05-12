@@ -51,8 +51,8 @@ fn main() -> std::io::Result<()> {
         // use any stage AFTER you main game systems
         // in order for your script updates to propagate in a  
         // single frame
-        .add_script_host::<RhaiScriptHost<MyEventArgStruct, RhaiAPI>,CoreStage>(CoreStage::PostUpdate)    
-        .add_script_host::<RLuaScriptHost<LuaAPI>,CoreStage>(CoreStage::PostUpdate)
+        .add_script_host::<RhaiScriptHost<MyRhaiArgStruct, RhaiAPI>,CoreStage>(CoreStage::PostUpdate)    
+        .add_script_host::<RLuaScriptHost<MyLuaArgStruct,LuaAPI>,CoreStage>(CoreStage::PostUpdate)
 
         // generate events for scripts to pickup
         .add_system(trigger_on_update_script_callback)
@@ -82,10 +82,22 @@ Currently only integer arguments are supported.
 ``` rust
 use bevy::prelude::*;
 use bevy_scripting::*;
+use rlua::ToLua;
+
+#[derive(Clone)]
+pub struct MyLuaArg;
+
+impl<'lua> ToLua<'lua> for MyLuaArg {
+    fn to_lua(self, _lua: rlua::Context<'lua>) -> rlua::Result<rlua::Value<'lua>> {
+        // ...
+        Ok(rlua::Value::Nil)
+    }
+}
+
 // event callback generator for lua
 // right now only integer arguments are supported
-pub fn trigger_on_update_script_callback(mut w: EventWriter<LuaEvent>) {
-    let event = LuaEvent {
+pub fn trigger_on_update_script_callback(mut w: EventWriter<LuaEvent<MyLuaArg>>) {
+    let event = LuaEvent::<MyLuaArg> {
         hook_name: "on_update".to_string(), 
         args: Vec::default(),
     };
@@ -104,22 +116,22 @@ use rhai::FuncArgs;
 use bevy_scripting::*;
 
 #[derive(Clone)]
-pub struct MyEventArgStruct {
-    // ... add your fields
+pub struct MyRhaiArgStruct {
+    // ...
 }
 
-impl FuncArgs for MyEventArgStruct {
+impl FuncArgs for MyRhaiArgStruct {
     fn parse<ARGS: Extend<rhai::Dynamic>>(self, _args: &mut ARGS) {
-        // ... implement this
+        // ... 
     }
 }
 
 // event callback generator for rhai
 // rhai event arguments can be any rust type implementing FuncArgs
-pub fn trigger_on_update_rhai(mut w: EventWriter<RhaiEvent<MyEventArgStruct>>) {
+pub fn trigger_on_update_rhai(mut w: EventWriter<RhaiEvent<MyRhaiArgStruct>>) {
     let event = RhaiEvent {
         hook_name: "on_update".to_string(),
-        args: MyEventArgStruct {},
+        args: MyRhaiArgStruct {},
     };
 
     w.send(event);
@@ -147,6 +159,16 @@ impl APIProvider for LuaAPI {
     fn attach_api(ctx: &mut Self::Ctx) {}
 }
 
+#[derive(Clone)]
+pub struct MyLuaArg;
+
+impl<'lua> ToLua<'lua> for MyLuaArg {
+    fn to_lua(self, _lua: rlua::Context<'lua>) -> rlua::Result<rlua::Value<'lua>> {
+        // ...
+        Ok(rlua::Value::Nil)
+    }
+}
+
 // An example of a startup system which loads the lua script "console_integration.lua" 
 // placed in "assets/scripts/" and attaches it to a new entity
 pub fn load_a_script(
@@ -159,7 +181,7 @@ pub fn load_a_script(
 
 
     commands.spawn().insert(ScriptCollection::<LuaFile> {
-        scripts: vec![Script::<LuaFile>::new::<RLuaScriptHost<LuaAPI>>(
+        scripts: vec![Script::<LuaFile>::new::<RLuaScriptHost<MyLuaArg,LuaAPI>>(
             path, handle,
         )],
     });
@@ -210,19 +232,8 @@ impl RhaiAPIProvider for RhaiAPI{
 
 ## Examples 
 
-Examples are available in the examples directory, 
+Examples are available in the examples directory:
 
-have a look at how you can use this crate in conjunction with bevy_debug_console and bevy_asset_loader: 
-[link](bevy_scripting/examples/console_integration.rs)
-
-to run this example use:
-
-`cargo run --console_integration_lua`
-
-then in-game use `~` to bring up the console, then use:
-
-`run_script "console_integration.lua"`
-
-`run_script "console_integration.lua" 0`
-
-`delete_script "console_integration.lua" 0`
+- [lua - bevy console integartion](bevy_scripting/examples/console_integration_lua.rs)
+- [rhai - bevy console integartion](bevy_scripting/examples/console_integration_rhai.rs)
+- [lua - complex game loop](bevy_scripting/examples/complex_game_loop.rs)
