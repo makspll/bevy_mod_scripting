@@ -22,7 +22,7 @@ The API will likely change in the future as more scripting support is rolled out
 - [x] Hot re-loading scripts (on script asset changes, scripts using those assets are re-started)
 - [x] Rlua integration
 - [x] Rhai integration
-- [x] Customisable Lua API
+- [x] Customisable script API's
 - [x] Event based hooks (i.e. on_update)
 - [x] Flexible event scheduling (i.e. allow handling events at different stages rather than a single stage based on the event) 
 - [x] Multiple scripts per entity
