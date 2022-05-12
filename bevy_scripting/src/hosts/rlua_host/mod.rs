@@ -101,8 +101,8 @@ impl<A: LuaArg, API: APIProvider<Ctx = Mutex<Lua>>> ScriptHost for RLuaScriptHos
         app.add_priority_event::<Self::ScriptEvent>();
         app.add_asset::<LuaFile>();
         app.init_asset_loader::<LuaLoader>();
-        app.init_resource::<CachedScriptEventState<Self::ScriptEvent>>();
-        app.init_resource::<ScriptContexts<Self>>();
+        app.init_resource::<CachedScriptEventState<Self>>();
+        app.init_resource::<ScriptContexts<Self::ScriptContext>>();
 
         app.add_system_set_to_stage(
             stage,
@@ -132,48 +132,42 @@ impl<A: LuaArg, API: APIProvider<Ctx = Mutex<Lua>>> ScriptHost for RLuaScriptHos
         Ok(lua)
     }
 
-    fn handle_events(world: &mut World, events: &[Self::ScriptEvent]) -> Result<()> {
-        // we need to do this since scripts need access to the world, but they also
-        // live in it, hence we only store indices into a resource which can then be scoped
-        // instead of storing contexts directly on the components
-        world.resource_scope(|world, res: Mut<ScriptContexts<Self>>| {
-            res.context_entities
-                .values()
-                .filter_map(|(entity, ctx)| ctx.as_ref().map(|v| (entity, v)))
-                .map(|(entity, ctx)| {
-                    let world_ptr = LuaLightUserData(world as *mut World as *mut c_void);
-                    let lua_ctx = ctx.lock().unwrap();
+    fn handle_events<'a>(world: &mut World,events: &[Self::ScriptEvent], ctxs : impl Iterator<Item=(&'a mut Entity,&'a mut Self::ScriptContext)>) -> anyhow::Result<()>{
+        ctxs.map(|(entity, ctx)| {
+                let world_ptr = LuaLightUserData(world as *mut World as *mut c_void);
+                let lua_ctx = ctx.lock().unwrap();
 
-                    lua_ctx.context::<_, Result<()>>(|lua_ctx| {
-                        let globals = lua_ctx.globals();
-                        globals.set("world", world_ptr)?;
-                        globals.set("entity", entity.to_bits())?;
+                lua_ctx.context::<_, Result<()>>(|lua_ctx| {
+                    let globals = lua_ctx.globals();
+                    globals.set("world", world_ptr)?;
+                    globals.set("entity", entity.to_bits())?;
 
-                        // event order is preserved, but scripts can't rely on any temporal
-                        // guarantees when it comes to other scripts callbacks,
-                        // at least for now
-                        for event in events.iter() {
-                            let mut f: Function = match globals.get(event.hook_name.clone()) {
-                                Ok(f) => f,
-                                Err(_) => continue, // not subscribed to this event
-                            };
+                    // event order is preserved, but scripts can't rely on any temporal
+                    // guarantees when it comes to other scripts callbacks,
+                    // at least for now
+                    for event in events {
+                        let mut f: Function = match globals.get(event.hook_name.clone()) {
+                            Ok(f) => f,
+                            Err(_) => continue, // not subscribed to this event
+                        };
 
-                            // bind arguments and catch any errors
-                            f = event.args.clone().into_iter().fold(Ok(f), |a, i| match a {
-                                Ok(f) => f.bind(i.to_lua(lua_ctx)),
-                                Err(e) => Err(e),
-                            })?;
+                        // bind arguments and catch any errors
+                        f = event.args.clone().into_iter().fold(Ok(f), |a, i| match a {
+                            Ok(f) => f.bind(i.to_lua(lua_ctx)),
+                            Err(e) => Err(e),
+                        })?;
 
-                            f.call::<MultiValue, ()>(event.args.clone().to_lua_multi(lua_ctx)?)
-                                .map_err(|e| anyhow!("Runtime LUA error: {}", e))?;
-                        }
+                        f.call::<MultiValue, ()>(event.args.clone().to_lua_multi(lua_ctx)?)
+                            .map_err(|e| anyhow!("Runtime LUA error: {}", e))?;
+                    }
 
-                        Ok(())
-                    })
+                    Ok(())
                 })
-                .bcollect()
-        })
+            }).bcollect()
     }
+    
+
+
 }
 impl<A: LuaArg, API: APIProvider<Ctx = Mutex<Lua>>> RLuaScriptHost<A, API> {
     pub fn register_api_callback<F, Arg, R>(

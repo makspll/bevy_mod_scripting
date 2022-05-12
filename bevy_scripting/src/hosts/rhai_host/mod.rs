@@ -6,7 +6,7 @@ use crate::{
 };
 use anyhow::anyhow;
 use beau_collector::BeauCollector as _;
-use bevy::prelude::{AddAsset, Mut, SystemSet, World};
+use bevy::prelude::{AddAsset, Mut, SystemSet, World, Entity};
 use bevy_event_priority::AddPriorityEvent;
 use rhai::*;
 use std::marker::PhantomData;
@@ -52,8 +52,8 @@ impl<A: FuncArgs + Send + Clone + Sync + 'static, API: RhaiAPIProvider<Ctx = Rha
         app.add_priority_event::<Self::ScriptEvent>();
         app.add_asset::<RhaiFile>();
         app.init_asset_loader::<RhaiLoader>();
-        app.init_resource::<CachedScriptEventState<Self::ScriptEvent>>();
-        app.init_resource::<ScriptContexts<Self>>();
+        app.init_resource::<CachedScriptEventState<Self>>();
+        app.init_resource::<ScriptContexts<Self::ScriptContext>>();
 
         app.add_system_set_to_stage(
             stage,
@@ -90,33 +90,24 @@ impl<A: FuncArgs + Send + Clone + Sync + 'static, API: RhaiAPIProvider<Ctx = Rha
         Ok(ctx)
     }
 
-    fn handle_events(
-        world: &mut bevy::prelude::World,
-        events: &[Self::ScriptEvent],
-    ) -> anyhow::Result<()> {
-        // we need to do this since scripts need access to the world, but they also
-        // live in it, hence we only store indices into a resource which can then be scoped
-        // instead of storing contexts directly on the components
-        world.resource_scope(|world, mut res: Mut<ScriptContexts<Self>>| {
-            res.context_entities
-                .values_mut()
-                .filter_map(|(entity, ctx)| ctx.as_mut().map(|v| (entity, v)))
-                .flat_map(|(entity, ctx)| {
-                    ctx.scope.set_value("world", world as *mut World as usize);
-                    ctx.scope.set_value("entity", *entity);
+    fn handle_events<'a>(world: &mut World,events: &[Self::ScriptEvent], ctxs : impl Iterator<Item=(&'a mut Entity,&'a mut Self::ScriptContext)>) -> anyhow::Result<()>{
+        ctxs.flat_map(|(entity, ctx)| {
+                ctx.scope.set_value("world", world as *mut World as usize);
+                ctx.scope.set_value("entity", *entity);
 
-                    events.iter().map(|event| {
-                        ctx.engine
-                            .call_fn(
-                                &mut ctx.scope,
-                                &ctx.ast,
-                                &event.hook_name,
-                                event.args.clone(),
-                            )
-                            .map_err(|e| anyhow!("{:?}", *e))
-                    })
+                events.iter().map(|event| {
+                    ctx.engine
+                        .call_fn(
+                            &mut ctx.scope,
+                            &ctx.ast,
+                            &event.hook_name,
+                            event.args.clone(),
+                        )
+                        .map_err(|e| anyhow!("{:?}", *e))
                 })
-                .bcollect()
-        })
+            })
+            .bcollect()
     }
+
+
 }

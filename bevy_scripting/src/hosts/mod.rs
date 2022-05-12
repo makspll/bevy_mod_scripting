@@ -4,6 +4,7 @@ pub mod rhai_host;
 pub mod rlua_host;
 
 use anyhow::Result;
+use beau_collector::BeauCollector as _;
 use bevy::{
     asset::Asset,
     ecs::{schedule::IntoRunCriteria, system::SystemState},
@@ -29,17 +30,30 @@ pub trait ScriptHost: Send + Sync + 'static {
 
     /// Loads a script in byte array format, the script name can be used
     /// to send useful errors.
-    fn load_script(path: &[u8], script_name: &str) -> Result<Self::ScriptContext>;
+    fn load_script(script: &[u8], script_name: &str) -> Result<Self::ScriptContext>;
 
     /// the main point of contact with the bevy world.
     /// Scripts are called with appropriate events in the event order
-    fn handle_events(world: &mut World, events: &[Self::ScriptEvent]) -> Result<()>;
+    fn handle_events<'a>(world: &mut World,events: &[Self::ScriptEvent], ctxs : impl Iterator<Item=(&'a mut Entity,&'a mut Self::ScriptContext)>) -> Result<()>;
+
+    /// Loads and runs script instantaneously without storing any script data into the world. 
+    /// The script receives the `world` global as normal, but `entity` is set to `u64::MAX`
+    fn run_one_shot(script: &[u8], script_name: &str, world: &mut World, event: Self::ScriptEvent) -> Result<()>{
+        let mut ctx = Self::load_script(script, script_name)?;
+        let mut entity = Entity::from_bits(u64::MAX);
+
+        let events = [event;1];
+        let ctx_iter = [(&mut entity ,&mut ctx);1].into_iter();
+
+        Self::handle_events(world,&events,ctx_iter)
+    }
 
     /// Registers the script host with the given app, and attaches handlers to deal with spawning/removing scripts at the given stage.
     ///
     /// Ideally place after any game logic which can spawn/remove/modify scripts to avoid frame lag. (typically `CoreStage::Post_Update`)
     fn register_with_app(app: &mut App, stage: impl StageLabel);
 }
+
 
 /// Trait for app builder notation
 pub trait AddScriptHost {
@@ -167,13 +181,13 @@ pub struct ScriptCollection<T: Asset> {
 ///
 /// We keep this public for now since there is no API for communicating with scripts
 /// outside of events. Later this might change.
-pub struct ScriptContexts<H: ScriptHost> {
+pub struct ScriptContexts<C> {
     /// holds script contexts for all scripts given their instance ids.
     /// This also stores contexts which are not fully loaded hence the Option
-    pub context_entities: HashMap<u32, (Entity, Option<H::ScriptContext>)>,
+    pub context_entities: HashMap<u32, (Entity, Option<C>)>,
 }
 
-impl<H: ScriptHost> Default for ScriptContexts<H> {
+impl<C> Default for ScriptContexts<C> {
     fn default() -> Self {
         Self {
             context_entities: Default::default(),
@@ -181,7 +195,7 @@ impl<H: ScriptHost> Default for ScriptContexts<H> {
     }
 }
 
-impl<H: ScriptHost> ScriptContexts<H> {
+impl<C> ScriptContexts<C> {
     pub fn script_owner(&self, script_id: u32) -> Option<Entity> {
         self.context_entities.get(&script_id).map(|(e, _c)| *e)
     }
@@ -190,7 +204,7 @@ impl<H: ScriptHost> ScriptContexts<H> {
         &mut self,
         script_id: u32,
         entity: Entity,
-        ctx: Option<H::ScriptContext>,
+        ctx: Option<C>,
     ) {
         self.context_entities.insert(script_id, (entity, ctx));
     }
@@ -250,7 +264,7 @@ impl<T: Asset> Script<T> {
     pub(crate) fn reload_script<H: ScriptHost>(
         script: &Script<H::ScriptAsset>,
         script_assets: &Res<Assets<H::ScriptAsset>>,
-        contexts: &mut ResMut<ScriptContexts<H>>,
+        contexts: &mut ResMut<ScriptContexts<H::ScriptContext>>,
     ) {
         // retrieve owning entity
         let entity = contexts.script_owner(script.id()).unwrap();
@@ -259,7 +273,7 @@ impl<T: Asset> Script<T> {
         contexts.remove_context(script.id());
 
         // insert new re-loaded context
-        Self::insert_new_script_context(script, entity, script_assets, contexts);
+        Self::insert_new_script_context::<H>(script, entity, script_assets, contexts);
     }
 
     /// inserts a new script context for the given script
@@ -267,7 +281,7 @@ impl<T: Asset> Script<T> {
         new_script: &Script<H::ScriptAsset>,
         entity: Entity,
         script_assets: &Res<Assets<H::ScriptAsset>>,
-        contexts: &mut ResMut<ScriptContexts<H>>,
+        contexts: &mut ResMut<ScriptContexts<H::ScriptContext>>,
     ) {
         let script = match script_assets.get(&new_script.handle) {
             Some(s) => s,
@@ -293,11 +307,11 @@ impl<T: Asset> Script<T> {
 }
 
 /// system state for exclusive systems dealing with script events
-pub(crate) struct CachedScriptEventState<'w, 's, S: Send + Sync + 'static> {
-    event_state: SystemState<PriorityEventReader<'w, 's, S>>,
+pub(crate) struct CachedScriptEventState<'w, 's, H: ScriptHost> {
+    event_state: SystemState<PriorityEventReader<'w, 's, H::ScriptEvent>>,
 }
 
-impl<'w, 's, S: Send + Sync + 'static> FromWorld for CachedScriptEventState<'w, 's, S> {
+impl<'w, 's, H: ScriptHost> FromWorld for CachedScriptEventState<'w, 's, H> {
     fn from_world(world: &mut World) -> Self {
         Self {
             event_state: SystemState::new(world),
@@ -317,13 +331,13 @@ pub(crate) fn script_add_synchronizer<H: ScriptHost + 'static>(
         ),
         Changed<ScriptCollection<H::ScriptAsset>>,
     >,
-    mut contexts: ResMut<ScriptContexts<H>>,
+    mut contexts: ResMut<ScriptContexts<H::ScriptContext>>,
     script_assets: Res<Assets<H::ScriptAsset>>,
 ) {
     query.for_each(|(entity, new_scripts, tracker)| {
         if tracker.is_added() {
             new_scripts.scripts.iter().for_each(|new_script| {
-                Script::<H::ScriptAsset>::insert_new_script_context(
+                Script::<H::ScriptAsset>::insert_new_script_context::<H>(
                     new_script,
                     entity,
                     &script_assets,
@@ -357,7 +371,7 @@ pub(crate) fn script_add_synchronizer<H: ScriptHost + 'static>(
 
             for a in added_scripts {
                 let script = new_scripts.scripts.iter().find(|e| &e.id == a).unwrap();
-                Script::<H::ScriptAsset>::insert_new_script_context(
+                Script::<H::ScriptAsset>::insert_new_script_context::<H>(
                     script,
                     entity,
                     &script_assets,
@@ -371,7 +385,7 @@ pub(crate) fn script_add_synchronizer<H: ScriptHost + 'static>(
 /// Handles the removal of script components and their contexts
 pub(crate) fn script_remove_synchronizer<H: ScriptHost>(
     query: RemovedComponents<ScriptCollection<H::ScriptAsset>>,
-    mut contexts: ResMut<ScriptContexts<H>>,
+    mut contexts: ResMut<ScriptContexts<H::ScriptContext>>,
 ) {
     query.iter().for_each(|v| {
         // we know that this entity used to have a script component
@@ -385,7 +399,7 @@ pub(crate) fn script_hot_reload_handler<H: ScriptHost>(
     mut events: EventReader<AssetEvent<H::ScriptAsset>>,
     scripts: Query<&ScriptCollection<H::ScriptAsset>>,
     script_assets: Res<Assets<H::ScriptAsset>>,
-    mut contexts: ResMut<ScriptContexts<H>>,
+    mut contexts: ResMut<ScriptContexts<H::ScriptContext>>,
 ) {
     for e in events.iter() {
         match e {
@@ -398,7 +412,7 @@ pub(crate) fn script_hot_reload_handler<H: ScriptHost>(
                 for scripts in scripts.iter() {
                     for script in &scripts.scripts {
                         if &script.handle == handle {
-                            Script::<H::ScriptAsset>::reload_script(
+                            Script::<H::ScriptAsset>::reload_script::<H>(
                                 script,
                                 &script_assets,
                                 &mut contexts,
@@ -416,20 +430,28 @@ pub(crate) fn script_hot_reload_handler<H: ScriptHost>(
 pub(crate) fn script_event_handler<H: ScriptHost, const MAX: u32, const MIN: u32>(
     world: &mut World,
 ) {
-    world.resource_scope(
-        |world, mut cached_state: Mut<CachedScriptEventState<H::ScriptEvent>>| {
-            // we need to clone the events otherwise we cannot perform the subsequent query for scripts
-            // assumption is that events are few, so this shouldn't be much of a problem
-            let events: Vec<<H as ScriptHost>::ScriptEvent> = cached_state
-                .event_state
-                .get_mut(world)
-                .iter_prio_range(MAX, MIN)
-                .collect();
 
-            match H::handle_events(world, &events) {
-                Ok(_) => {}
-                Err(e) => warn!("{}", e),
-            }
-        },
-    );
+    // we need to collect the events to drop the borrow of the world
+    let events = world.resource_scope(|world, mut cached_state: Mut<CachedScriptEventState<H>>|{
+        let mut cached_state = cached_state.event_state.get_mut(world);
+        cached_state
+            .iter_prio_range(MAX,MIN)
+            .collect::<Vec<H::ScriptEvent>>()
+    });
+
+    // we need a resource scope to be able to simultaneously access the contexts as well 
+    // as provide world access to scripts
+    // afaik there is not really a better way to do this in bevy just now
+    world.resource_scope(|world, mut ctxts : Mut<ScriptContexts<H::ScriptContext>>| {
+        let ctx_iter = ctxts.as_mut()
+        .context_entities
+        .values_mut()
+        .filter_map(|(e,o)| o.as_mut().map(|v| (e,v)));
+
+        match H::handle_events(world,&events,ctx_iter) {
+            Ok(_) => {}
+            Err(e) => warn!("{}", e),
+        };
+    });
 }
+
