@@ -13,8 +13,8 @@ The API will likely change in the future as more scripting support is rolled out
 ## Why Use Scripts?
 
 - Re-load your game logic without re-compiling the entire crate
-- If your game logic is encapsualted with scripts it becomes moddable
-- Scripting allows for writing game logic/UI in a simpler language, making development more accessible to non-coders on your team
+- If your game logic is encapsulated with scripts it becomes easilly moddable
+- Allows writing game logic/UI in a smaller language, making development more accessible to non-coders on your team
 
 ## State of this crate
 
@@ -79,7 +79,7 @@ As it stands currently there are no guarantees that force the script callbacks t
 
 #### RLua 
 
-Use valid lua function names for hook names and any number of arguments which are passed on to the function. 
+Use valid lua function names for hook names and any number of arguments which are to be passed on to the function. 
 
 Any types implementing the `rlua::ToLua` trait can be used.
 
@@ -112,7 +112,7 @@ pub fn trigger_on_update_script_callback(mut w: EventWriter<LuaEvent<MyLuaArg>>)
 
 #### Rhai
 
-Rhai supports the use of any rust types implementing FuncArgs as function arguments (apart from references),
+Rhai supports any rust types implementing FuncArgs as function arguments.
 
 ``` rust
 use bevy::prelude::*;
@@ -147,6 +147,8 @@ pub fn trigger_on_update_rhai(mut w: EventWriter<RhaiEvent<MyRhaiArgStruct>>) {
 A script consist of:
 - an asset handle to their code file
 - a name which is usually their path relative to the assets folder
+
+Scripts are attached to entities in the form of `bevy_scripting::ScriptCollection` components as seen below:
 
 ``` rust
 use std::sync::Mutex;
@@ -194,7 +196,7 @@ pub fn load_a_script(
 
 
 ### Defining an API
-Simply implement the APIProvider trait + any others required by the specific ScriptHost your're using, and use your struct in the ScriptHost type
+To expose an API to your scripts, implement the APIProvider trait along with any others requested by the specific `ScriptHost` your're using. Use the implementing struct in yout `ScriptHost`s type signature
 
 ``` rust
 use std::sync::Mutex;
@@ -236,7 +238,7 @@ impl RhaiAPIProvider for RhaiAPI{
 
 ## Examples 
 
-Examples are available in the examples directory:
+To see more complex applications of this library have a look at the examples:
 
 - [lua - bevy console integration](bevy_scripting/examples/console_integration_lua.rs)
 - [rhai - bevy console integration](bevy_scripting/examples/console_integration_rhai.rs)
