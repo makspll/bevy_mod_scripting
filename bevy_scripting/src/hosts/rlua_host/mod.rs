@@ -62,7 +62,7 @@ pub struct LuaEvent<A: LuaArg> {
 ///
 ///    #[derive(Clone)]
 ///    pub struct MyLuaArg;
-/// 
+///
 ///    impl<'lua> ToLua<'lua> for MyLuaArg {
 ///        fn to_lua(self, _lua: rlua::Context<'lua>) -> rlua::Result<rlua::Value<'lua>> {
 ///            Ok(rlua::Value::Nil)
