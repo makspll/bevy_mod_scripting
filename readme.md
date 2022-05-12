@@ -97,7 +97,7 @@ Any types implementing the `rlua::ToLua` trait can be used.
 
 ``` rust
 use bevy::prelude::*;
-use bevy_scripting::*;
+use bevy_scripting::{*,events::*};
 use rlua::ToLua;
 
 #[derive(Clone)]
@@ -112,13 +112,13 @@ impl<'lua> ToLua<'lua> for MyLuaArg {
 
 // event callback generator for lua
 // right now only integer arguments are supported
-pub fn trigger_on_update_script_callback(mut w: EventWriter<LuaEvent<MyLuaArg>>) {
+pub fn trigger_on_update_script_callback(mut w: PriorityEventWriter<LuaEvent<MyLuaArg>>) {
     let event = LuaEvent::<MyLuaArg> {
         hook_name: "on_update".to_string(), 
         args: Vec::default(),
     };
 
-    w.send(event);
+    w.send(event,0);
 }
 ```
 
@@ -129,7 +129,7 @@ Rhai supports any rust types implementing FuncArgs as function arguments.
 ``` rust
 use bevy::prelude::*;
 use rhai::FuncArgs;
-use bevy_scripting::*;
+use bevy_scripting::{*,events::*};
 
 #[derive(Clone)]
 pub struct MyRhaiArgStruct {
@@ -144,13 +144,13 @@ impl FuncArgs for MyRhaiArgStruct {
 
 // event callback generator for rhai
 // rhai event arguments can be any rust type implementing FuncArgs
-pub fn trigger_on_update_rhai(mut w: EventWriter<RhaiEvent<MyRhaiArgStruct>>) {
+pub fn trigger_on_update_rhai(mut w: PriorityEventWriter<RhaiEvent<MyRhaiArgStruct>>) {
     let event = RhaiEvent {
         hook_name: "on_update".to_string(),
         args: MyRhaiArgStruct {},
     };
 
-    w.send(event);
+    w.send(event,0);
 }
 ```
 

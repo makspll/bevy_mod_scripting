@@ -1,8 +1,7 @@
 use bevy::{ecs::event::Events, prelude::*};
 use bevy_console::{AddConsoleCommand, ConsoleCommand, ConsolePlugin, PrintConsoleLine};
-use bevy_event_priority::PriorityEventWriter;
 use bevy_scripting::{
-    APIProvider, AddScriptHost, AddScriptHostHandler, RhaiAPIProvider, RhaiContext, RhaiEvent,
+    events::PriorityEventWriter,APIProvider, AddScriptHost, AddScriptHostHandler, RhaiAPIProvider, RhaiContext, RhaiEvent,
     RhaiFile, RhaiScriptHost, Script, ScriptCollection, ScriptingPlugin,
 };
 use rhai::FuncArgs;

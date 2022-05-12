@@ -16,21 +16,6 @@ use std::sync::Mutex;
 
 pub use assets::*;
 
-// /// defines a value allowed to be passed as lua script arguments for callbacks
-// /// TODO: expand this
-// #[derive(Clone)]
-// pub enum LuaCallbackArgument {
-//     Integer(usize),
-// }
-
-// impl<'lua> ToLua<'lua> for LuaCallbackArgument {
-//     fn to_lua(self, lua: Context<'lua>) -> LuaResult<LuaValue<'lua>> {
-//         match self {
-//             LuaCallbackArgument::Integer(i) => i.to_lua(lua),
-//         }
-//     }
-// }
-
 pub trait LuaArg: for<'lua> ToLua<'lua> + Clone + Sync + Send + 'static {}
 
 impl<T: for<'lua> ToLua<'lua> + Clone + Sync + Send + 'static> LuaArg for T {}

@@ -1,8 +1,8 @@
 use bevy::{ecs::event::Events, prelude::*};
 use bevy_console::{AddConsoleCommand, ConsoleCommand, ConsolePlugin, PrintConsoleLine};
-use bevy_event_priority::PriorityEventWriter;
 use bevy_scripting::{
-    APIProvider, AddScriptHost, AddScriptHostHandler, LuaEvent, LuaFile, RLuaScriptHost, Script,
+
+    events::PriorityEventWriter,APIProvider, AddScriptHost, AddScriptHostHandler, LuaEvent, LuaFile, RLuaScriptHost, Script,
     ScriptCollection, ScriptingPlugin,
 };
 use rlua::{prelude::LuaLightUserData, Lua, ToLua};
