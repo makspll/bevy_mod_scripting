@@ -412,7 +412,7 @@ pub(crate) fn script_hot_reload_handler<H: ScriptHost>(
 }
 
 /// Lets the script host handle all script events
-pub(crate) fn script_event_handler<H: ScriptHost, const Min: u32, const Max: u32>(
+pub(crate) fn script_event_handler<H: ScriptHost, const MAX: u32, const MIN: u32>(
     world: &mut World,
 ) {
     world.resource_scope(
@@ -422,7 +422,7 @@ pub(crate) fn script_event_handler<H: ScriptHost, const Min: u32, const Max: u32
             let events: Vec<<H as ScriptHost>::ScriptEvent> = cached_state
                 .event_state
                 .get_mut(world)
-                .iter_prio_range(Min, Max)
+                .iter_prio_range(MIN, MAX)
                 .collect();
 
             match H::handle_events(world, &events) {
