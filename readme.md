@@ -77,7 +77,7 @@ As it stands currently there are no guarantees that force the script callbacks t
 
 Use valid lua function names for hook names and any number of arguments which are passed on to the function. 
 
-Currently only integer arguments are supported.
+Any types implementing the `rlua::ToLua` trait can be used.
 
 ``` rust
 use bevy::prelude::*;
