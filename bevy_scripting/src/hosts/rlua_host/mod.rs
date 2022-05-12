@@ -114,10 +114,6 @@ impl<A: APIProvider<Ctx = Mutex<Lua>>> ScriptHost for RLuaScriptHost<A> {
         );
     }
 
-    fn register_handler_stage<S : StageLabel, const P : u32>(app: &mut bevy::prelude::App, stage: S) {
-        app.add_system_to_stage(stage, script_event_handler::<Self,P>.exclusive_system().at_end());
-    }
-    
 
     fn load_script(script: &[u8], script_name: &str) -> Result<Self::ScriptContext> {
         let lua = Lua::new();
@@ -159,10 +155,20 @@ impl<A: APIProvider<Ctx = Mutex<Lua>>> ScriptHost for RLuaScriptHost<A> {
                         // guarantees when it comes to other scripts callbacks,
                         // at least for now
                         for event in events.iter() {
-                            let f: Function = match globals.get(event.hook_name.clone()) {
+                            let mut f: Function = match globals.get(event.hook_name.clone()) {
                                 Ok(f) => f,
                                 Err(_) => continue, // not subscribed to this event
                             };
+                            
+                            // bind arguments and catch any errors
+                            f = event.args.clone().into_iter()
+                                          .fold(Ok(f),|a,i| {
+                                              match a {
+                                                Ok(f) => f.bind(i.to_lua(lua_ctx)),
+                                                Err(e) => Err(e),
+                                            }
+                                        })?;
+                                            
 
                             f.call::<MultiValue, ()>(event.args.clone().to_lua_multi(lua_ctx)?)
                                 .map_err(|e| anyhow!("Runtime LUA error: {}", e))?;

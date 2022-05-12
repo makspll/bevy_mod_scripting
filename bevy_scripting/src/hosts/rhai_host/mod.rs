@@ -66,9 +66,6 @@ impl<A: FuncArgs + Send + Clone + Sync + 'static, API: RhaiAPIProvider<Ctx = Rha
         );
     }
 
-    fn register_handler_stage<S : StageLabel, const P : u32>(app: &mut bevy::prelude::App, stage: S) {
-        app.add_system_to_stage(stage, script_event_handler::<Self,P>.exclusive_system().at_end());
-    }
     
     #[allow(deprecated)]
     fn load_script(path: &[u8], script_name: &str) -> anyhow::Result<Self::ScriptContext> {

@@ -67,7 +67,7 @@ fn main() -> std::io::Result<()> {
         .add_console_command::<DeleteScriptCmd, _, _>(delete_script_cmd)
         // choose and register the script hosts you want to use
         .add_script_host::<RhaiScriptHost<RhaiEventArgs, RhaiAPI>, _>(CoreStage::PostUpdate)
-        .add_script_handler_stage::<RhaiScriptHost<RhaiEventArgs,RhaiAPI>,_,0>(CoreStage::PostUpdate)
+        .add_script_handler_stage::<RhaiScriptHost<RhaiEventArgs,RhaiAPI>,_,0,0>(CoreStage::PostUpdate)
         // add your systems
         .add_system(trigger_on_update_rhai);
 

@@ -4,7 +4,7 @@ pub mod rhai_host;
 pub mod rlua_host;
 
 use anyhow::Result;
-use bevy::{asset::Asset, ecs::system::SystemState, prelude::*};
+use bevy::{asset::Asset, ecs::{system::SystemState, schedule::{IntoSystemDescriptor, ParallelSystemDescriptor, IntoRunCriteria}}, prelude::*};
 use bevy_event_priority::PriorityEventReader;
 pub use {crate::rhai_host::*, crate::rlua_host::*};
 
@@ -36,10 +36,6 @@ pub trait ScriptHost: Send + Sync + 'static {
     /// 
     /// Ideally place after any game logic which can spawn/remove/modify scripts to avoid frame lag. (typically `CoreStage::Post_Update`)
     fn register_with_app(app: &mut App, stage: impl StageLabel);
-
-
-    /// Attaches a script handling stage with the given minimum priority 
-    fn register_handler_stage<S : StageLabel, const P : u32 >(app: &mut App, stage: S);
 }
 
 /// Trait for app builder notation
@@ -80,14 +76,26 @@ pub trait AddScriptHostHandler {
     /// 
     /// The *frequency* of running these events, is controlled by your systems, if the event is not emitted, it cannot not handled.
     /// Of course there is nothing stopping your from emitting a single event type at varying priorities.
-    fn add_script_handler_stage<T : ScriptHost, S : StageLabel, const P : u32>(&mut self,stage : S) -> &mut Self;
+    fn add_script_handler_stage<T : ScriptHost, S : StageLabel, const MAX : u32, const MIN : u32>(&mut self,stage : S) -> &mut Self;
+
+    fn add_script_handler_stage_with_criteria<T : ScriptHost, S : StageLabel,M,C : IntoRunCriteria<M> ,const MAX : u32, const MIN : u32>(&mut self,stage : S, criteria: C) -> &mut Self;
+
 }
 
 impl AddScriptHostHandler for App {
-    fn add_script_handler_stage<T : ScriptHost, S : StageLabel, const P : u32>(&mut self,stage : S) -> &mut Self{
-        T::register_handler_stage::<S,P>(self, stage);
+    fn add_script_handler_stage<T : ScriptHost, S : StageLabel, const MAX : u32, const MIN : u32>(&mut self,stage : S) -> &mut Self{
+        self.add_system_to_stage(stage, script_event_handler::<T,MIN, MAX>.exclusive_system().at_end());
         self
     }
+    
+    fn add_script_handler_stage_with_criteria<T : ScriptHost, S : StageLabel,M,C : IntoRunCriteria<M> ,const MAX : u32, const MIN : u32>(&mut self,stage : S, criteria: C) -> &mut Self{
+        self.add_system_to_stage(stage, script_event_handler::<T,MIN, MAX>
+                .exclusive_system()
+                .at_end()
+                .with_run_criteria(criteria));
+        self
+    }
+
 }
 
 /// All code assets share this common interface.
@@ -363,7 +371,7 @@ pub(crate) fn script_hot_reload_handler<H: ScriptHost>(
 }
 
 /// Lets the script host handle all script events
-pub(crate) fn script_event_handler<H: ScriptHost, const P : u32>(world: &mut World) {
+pub(crate) fn script_event_handler<H: ScriptHost, const Min : u32, const Max : u32>(world: &mut World) {
     world.resource_scope(
         |world, mut cached_state: Mut<CachedScriptEventState<H::ScriptEvent>>| {
             // we need to clone the events otherwise we cannot perform the subsequent query for scripts
@@ -371,7 +379,7 @@ pub(crate) fn script_event_handler<H: ScriptHost, const P : u32>(world: &mut Wor
             let events: Vec<<H as ScriptHost>::ScriptEvent> = cached_state
                 .event_state
                 .get_mut(world)
-                .iter_min_prio(P)
+                .iter_prio_range(Min,Max)
                 .collect();
 
             match H::handle_events(world, &events) {
