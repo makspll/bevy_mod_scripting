@@ -29,6 +29,7 @@ The API will likely change in the future as more scripting support is rolled out
 - [x] Multiple instances of the same script on one entity
 - [x] Extensive callback argument type support 
 - [ ] General Bevy API for all script hosts (i.e. Add component, remove component etc.). Blocked by <https://github.com/bevyengine/bevy/issues/4474>
+- [ ] Utilities for generating script native documentation 
 - [ ] Tests
 
 ## Usage
@@ -52,11 +53,22 @@ fn main() -> std::io::Result<()> {
         .add_plugins(DefaultPlugins) 
 
         // pick and register only the hosts you want to use
-        // use any stage AFTER you main game systems
-        // in order for your script updates to propagate in a  
-        // single frame
-        .add_script_host::<RhaiScriptHost<MyRhaiArgStruct, RhaiAPI>,CoreStage>(CoreStage::PostUpdate)    
-        .add_script_host::<RLuaScriptHost<MyLuaArgStruct,LuaAPI>,CoreStage>(CoreStage::PostUpdate)
+        // use any stage AFTER any systems which add/remove/modify script components 
+        // in order for your script updates to propagate in a single frame
+        .add_script_host::<RhaiScriptHost<MyRhaiArgStruct, RhaiAPI>,_>(CoreStage::PostUpdate)    
+        .add_script_host::<RLuaScriptHost<MyLuaArgStruct,LuaAPI>,_>(CoreStage::PostUpdate)
+        
+        // the handlers should be placed after any stages which produce script events
+        // PostUpdate is okay only if your API doesn't require the core Bevy systems' commands
+        // to run beforehand.
+        // Note, this setup assumes a single script handler stage with all events having identical
+        // priority of zero (see examples for more complex scenarios)
+        .add_script_handler_stage::<RLuaScriptHost<MyLuaArg, LuaAPIProvider>, _, 0, 0>(
+            CoreStage::PostUpdate,
+        )
+        .add_script_handler_stage::<RhaiScriptHost<RhaiEventArgs, RhaiAPI>, _, 0, 0>(
+            CoreStage::PostUpdate,
+        )
 
         // generate events for scripts to pickup
         .add_system(trigger_on_update_script_callback)
