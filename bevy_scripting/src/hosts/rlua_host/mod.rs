@@ -1,8 +1,8 @@
 pub mod assets;
 
 use crate::{
-    script_add_synchronizer, script_hot_reload_handler,
-    script_remove_synchronizer, APIProvider, CachedScriptEventState, ScriptContexts, ScriptHost,
+    script_add_synchronizer, script_hot_reload_handler, script_remove_synchronizer, APIProvider,
+    CachedScriptEventState, ScriptContexts, ScriptHost,
 };
 use anyhow::{anyhow, Result};
 use beau_collector::BeauCollector as _;
@@ -110,10 +110,9 @@ impl<A: APIProvider<Ctx = Mutex<Lua>>> ScriptHost for RLuaScriptHost<A> {
             SystemSet::new()
                 .with_system(script_add_synchronizer::<Self>)
                 .with_system(script_remove_synchronizer::<Self>)
-                .with_system(script_hot_reload_handler::<Self>)
+                .with_system(script_hot_reload_handler::<Self>),
         );
     }
-
 
     fn load_script(script: &[u8], script_name: &str) -> Result<Self::ScriptContext> {
         let lua = Lua::new();
@@ -141,7 +140,7 @@ impl<A: APIProvider<Ctx = Mutex<Lua>>> ScriptHost for RLuaScriptHost<A> {
         world.resource_scope(|world, res: Mut<ScriptContexts<Self>>| {
             res.context_entities
                 .values()
-                .filter_map(|(entity,ctx)| ctx.as_ref().map(|v| {(entity,v)}))
+                .filter_map(|(entity, ctx)| ctx.as_ref().map(|v| (entity, v)))
                 .map(|(entity, ctx)| {
                     let world_ptr = LuaLightUserData(world as *mut World as *mut c_void);
                     let lua_ctx = ctx.lock().unwrap();
@@ -159,16 +158,12 @@ impl<A: APIProvider<Ctx = Mutex<Lua>>> ScriptHost for RLuaScriptHost<A> {
                                 Ok(f) => f,
                                 Err(_) => continue, // not subscribed to this event
                             };
-                            
+
                             // bind arguments and catch any errors
-                            f = event.args.clone().into_iter()
-                                          .fold(Ok(f),|a,i| {
-                                              match a {
-                                                Ok(f) => f.bind(i.to_lua(lua_ctx)),
-                                                Err(e) => Err(e),
-                                            }
-                                        })?;
-                                            
+                            f = event.args.clone().into_iter().fold(Ok(f), |a, i| match a {
+                                Ok(f) => f.bind(i.to_lua(lua_ctx)),
+                                Err(e) => Err(e),
+                            })?;
 
                             f.call::<MultiValue, ()>(event.args.clone().to_lua_multi(lua_ctx)?)
                                 .map_err(|e| anyhow!("Runtime LUA error: {}", e))?;

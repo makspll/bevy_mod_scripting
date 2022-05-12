@@ -2,8 +2,8 @@ use bevy::{ecs::event::Events, prelude::*};
 use bevy_console::{AddConsoleCommand, ConsoleCommand, ConsolePlugin, PrintConsoleLine};
 use bevy_event_priority::PriorityEventWriter;
 use bevy_scripting::{
-    APIProvider, AddScriptHost, LuaEvent, LuaFile, RLuaScriptHost, Script, ScriptCollection,
-    ScriptingPlugin, AddScriptHostHandler,
+    APIProvider, AddScriptHost, AddScriptHostHandler, LuaEvent, LuaFile, RLuaScriptHost, Script,
+    ScriptCollection, ScriptingPlugin,
 };
 use rlua::{prelude::LuaLightUserData, Lua};
 use std::sync::Mutex;
@@ -45,7 +45,7 @@ pub fn trigger_on_update_lua(mut w: PriorityEventWriter<LuaEvent>) {
         args: Vec::default(),
     };
 
-    w.send(event,0);
+    w.send(event, 0);
 }
 
 fn main() -> std::io::Result<()> {
@@ -58,8 +58,8 @@ fn main() -> std::io::Result<()> {
         .add_console_command::<RunScriptCmd, _, _>(run_script_cmd)
         .add_console_command::<DeleteScriptCmd, _, _>(delete_script_cmd)
         // choose and register the script hosts you want to use
-        .add_script_host::<RLuaScriptHost<LuaAPIProvider>,_>(CoreStage::PostUpdate)
-        .add_script_handler_stage::<RLuaScriptHost<LuaAPIProvider>,_,0,0>(CoreStage::PostUpdate)
+        .add_script_host::<RLuaScriptHost<LuaAPIProvider>, _>(CoreStage::PostUpdate)
+        .add_script_handler_stage::<RLuaScriptHost<LuaAPIProvider>, _, 0, 0>(CoreStage::PostUpdate)
         // add your systems
         .add_system(trigger_on_update_lua);
 

@@ -1,14 +1,12 @@
 pub mod assets;
 
 use crate::{
-    script_add_synchronizer, script_hot_reload_handler,
-    script_remove_synchronizer, APIProvider, CachedScriptEventState, ScriptContexts, ScriptHost,
+    script_add_synchronizer, script_hot_reload_handler, script_remove_synchronizer, APIProvider,
+    CachedScriptEventState, ScriptContexts, ScriptHost,
 };
 use anyhow::anyhow;
 use beau_collector::BeauCollector as _;
-use bevy::prelude::{
-    AddAsset, Mut, SystemSet, World,
-};
+use bevy::prelude::{AddAsset, Mut, SystemSet, World};
 use bevy_event_priority::AddPriorityEvent;
 use rhai::*;
 use std::marker::PhantomData;
@@ -62,11 +60,10 @@ impl<A: FuncArgs + Send + Clone + Sync + 'static, API: RhaiAPIProvider<Ctx = Rha
             SystemSet::new()
                 .with_system(script_add_synchronizer::<Self>)
                 .with_system(script_remove_synchronizer::<Self>)
-                .with_system(script_hot_reload_handler::<Self>)
+                .with_system(script_hot_reload_handler::<Self>),
         );
     }
 
-    
     #[allow(deprecated)]
     fn load_script(path: &[u8], script_name: &str) -> anyhow::Result<Self::ScriptContext> {
         let mut engine = Engine::new();
@@ -103,7 +100,7 @@ impl<A: FuncArgs + Send + Clone + Sync + 'static, API: RhaiAPIProvider<Ctx = Rha
         world.resource_scope(|world, mut res: Mut<ScriptContexts<Self>>| {
             res.context_entities
                 .values_mut()
-                .filter_map(|(entity,ctx)| ctx.as_mut().map(|v| {(entity,v)}))
+                .filter_map(|(entity, ctx)| ctx.as_mut().map(|v| (entity, v)))
                 .flat_map(|(entity, ctx)| {
                     ctx.scope.set_value("world", world as *mut World as usize);
                     ctx.scope.set_value("entity", *entity);
@@ -122,5 +119,4 @@ impl<A: FuncArgs + Send + Clone + Sync + 'static, API: RhaiAPIProvider<Ctx = Rha
                 .bcollect()
         })
     }
-
 }

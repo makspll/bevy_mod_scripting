@@ -4,7 +4,11 @@ pub mod rhai_host;
 pub mod rlua_host;
 
 use anyhow::Result;
-use bevy::{asset::Asset, ecs::{system::SystemState, schedule::{IntoRunCriteria}}, prelude::*};
+use bevy::{
+    asset::Asset,
+    ecs::{schedule::IntoRunCriteria, system::SystemState},
+    prelude::*,
+};
 use bevy_event_priority::PriorityEventReader;
 pub use {crate::rhai_host::*, crate::rlua_host::*};
 
@@ -12,7 +16,6 @@ use std::{
     collections::{HashMap, HashSet},
     sync::atomic::{AtomicU32, Ordering},
 };
-
 
 /// A script host is the interface between your rust application
 /// and the scripts in some interpreted language.
@@ -33,7 +36,7 @@ pub trait ScriptHost: Send + Sync + 'static {
     fn handle_events(world: &mut World, events: &[Self::ScriptEvent]) -> Result<()>;
 
     /// Registers the script host with the given app, and attaches handlers to deal with spawning/removing scripts at the given stage.
-    /// 
+    ///
     /// Ideally place after any game logic which can spawn/remove/modify scripts to avoid frame lag. (typically `CoreStage::Post_Update`)
     fn register_with_app(app: &mut App, stage: impl StageLabel);
 }
@@ -52,20 +55,19 @@ impl AddScriptHost for App {
 }
 
 pub trait AddScriptHostHandler {
-
     /// Enables this script host to handle events with priorities in the range [0,min_prio] (inclusive),
     /// during the runtime of the given stage.
-    /// 
+    ///
     /// Think of handler stages as a way to run certain types of events at various points in your engine.
-    /// A good example of this is Unity [game loop's](https://docs.unity3d.com/Manual/ExecutionOrder.html) `onUpdate` and `onFixedUpdate`. 
+    /// A good example of this is Unity [game loop's](https://docs.unity3d.com/Manual/ExecutionOrder.html) `onUpdate` and `onFixedUpdate`.
     /// FixedUpdate runs *before* any physics while Update runs after physics and input events.
-    /// 
+    ///
     /// A similar setup can be achieved by using a separate stage before and after your physics,
     /// then assigning event priorities such that your events are forced to run at a particular stage, for example:
-    /// 
+    ///
     /// PrePhysics: min_prio = 1
-    /// PostPhysics: min_prio = 4 
-    /// 
+    /// PostPhysics: min_prio = 4
+    ///
     /// | Priority | Handler     | Event        |
     /// | -------- | ----------- | ------------ |
     /// | 0        | PrePhysics  | Start        |
@@ -73,29 +75,63 @@ pub trait AddScriptHostHandler {
     /// | 2        | PostPhysics | OnCollision  |
     /// | 3        | PostPhysics | OnMouse      |
     /// | 4        | PostPhysics | Update       |
-    /// 
+    ///
     /// The *frequency* of running these events, is controlled by your systems, if the event is not emitted, it cannot not handled.
     /// Of course there is nothing stopping your from emitting a single event type at varying priorities.
-    fn add_script_handler_stage<T : ScriptHost, S : StageLabel, const MAX : u32, const MIN : u32>(&mut self,stage : S) -> &mut Self;
+    fn add_script_handler_stage<T: ScriptHost, S: StageLabel, const MAX: u32, const MIN: u32>(
+        &mut self,
+        stage: S,
+    ) -> &mut Self;
 
-    fn add_script_handler_stage_with_criteria<T : ScriptHost, S : StageLabel,M,C : IntoRunCriteria<M> ,const MAX : u32, const MIN : u32>(&mut self,stage : S, criteria: C) -> &mut Self;
-
+    fn add_script_handler_stage_with_criteria<
+        T: ScriptHost,
+        S: StageLabel,
+        M,
+        C: IntoRunCriteria<M>,
+        const MAX: u32,
+        const MIN: u32,
+    >(
+        &mut self,
+        stage: S,
+        criteria: C,
+    ) -> &mut Self;
 }
 
 impl AddScriptHostHandler for App {
-    fn add_script_handler_stage<T : ScriptHost, S : StageLabel, const MAX : u32, const MIN : u32>(&mut self,stage : S) -> &mut Self{
-        self.add_system_to_stage(stage, script_event_handler::<T,MIN, MAX>.exclusive_system().at_end());
-        self
-    }
-    
-    fn add_script_handler_stage_with_criteria<T : ScriptHost, S : StageLabel,M,C : IntoRunCriteria<M> ,const MAX : u32, const MIN : u32>(&mut self,stage : S, criteria: C) -> &mut Self{
-        self.add_system_to_stage(stage, script_event_handler::<T,MIN, MAX>
+    fn add_script_handler_stage<T: ScriptHost, S: StageLabel, const MAX: u32, const MIN: u32>(
+        &mut self,
+        stage: S,
+    ) -> &mut Self {
+        self.add_system_to_stage(
+            stage,
+            script_event_handler::<T, MIN, MAX>
                 .exclusive_system()
-                .at_end()
-                .with_run_criteria(criteria));
+                .at_end(),
+        );
         self
     }
 
+    fn add_script_handler_stage_with_criteria<
+        T: ScriptHost,
+        S: StageLabel,
+        M,
+        C: IntoRunCriteria<M>,
+        const MAX: u32,
+        const MIN: u32,
+    >(
+        &mut self,
+        stage: S,
+        criteria: C,
+    ) -> &mut Self {
+        self.add_system_to_stage(
+            stage,
+            script_event_handler::<T, MIN, MAX>
+                .exclusive_system()
+                .at_end()
+                .with_run_criteria(criteria),
+        );
+        self
+    }
 }
 
 /// All code assets share this common interface.
@@ -150,7 +186,12 @@ impl<H: ScriptHost> ScriptContexts<H> {
         self.context_entities.get(&script_id).map(|(e, _c)| *e)
     }
 
-    pub fn insert_context(&mut self, script_id: u32, entity: Entity, ctx: Option<H::ScriptContext>) {
+    pub fn insert_context(
+        &mut self,
+        script_id: u32,
+        entity: Entity,
+        ctx: Option<H::ScriptContext>,
+    ) {
         self.context_entities.insert(script_id, (entity, ctx));
     }
 
@@ -264,8 +305,8 @@ impl<'w, 's, S: Send + Sync + 'static> FromWorld for CachedScriptEventState<'w, 
 }
 
 /// Handles creating contexts for new/modified scripts
-/// Scripts are likely not loaded instantly at this point, so most of the time 
-/// this system simply inserts an empty context 
+/// Scripts are likely not loaded instantly at this point, so most of the time
+/// this system simply inserts an empty context
 pub(crate) fn script_add_synchronizer<H: ScriptHost + 'static>(
     query: Query<
         (
@@ -348,30 +389,32 @@ pub(crate) fn script_hot_reload_handler<H: ScriptHost>(
     for e in events.iter() {
         match e {
             AssetEvent::Modified { handle } | AssetEvent::Created { handle } => {
-                    // find script using this handle by handle id
-                    // whether this script was modified or created
-                    // if a script exists with this handle, we should reload it to load in a new context
-                    // which at this point will be either None or Some(outdated context)
-                    // both ways are fine
-                    for scripts in scripts.iter() {
-                        for script in &scripts.scripts {
-                            if &script.handle == handle {
-                                Script::<H::ScriptAsset>::reload_script(
-                                    script,
-                                    &script_assets,
-                                    &mut contexts,
-                                );
-                            }
+                // find script using this handle by handle id
+                // whether this script was modified or created
+                // if a script exists with this handle, we should reload it to load in a new context
+                // which at this point will be either None or Some(outdated context)
+                // both ways are fine
+                for scripts in scripts.iter() {
+                    for script in &scripts.scripts {
+                        if &script.handle == handle {
+                            Script::<H::ScriptAsset>::reload_script(
+                                script,
+                                &script_assets,
+                                &mut contexts,
+                            );
                         }
                     }
-                },
+                }
+            }
             _ => continue,
         }
     }
 }
 
 /// Lets the script host handle all script events
-pub(crate) fn script_event_handler<H: ScriptHost, const Min : u32, const Max : u32>(world: &mut World) {
+pub(crate) fn script_event_handler<H: ScriptHost, const Min: u32, const Max: u32>(
+    world: &mut World,
+) {
     world.resource_scope(
         |world, mut cached_state: Mut<CachedScriptEventState<H::ScriptEvent>>| {
             // we need to clone the events otherwise we cannot perform the subsequent query for scripts
@@ -379,7 +422,7 @@ pub(crate) fn script_event_handler<H: ScriptHost, const Min : u32, const Max : u
             let events: Vec<<H as ScriptHost>::ScriptEvent> = cached_state
                 .event_state
                 .get_mut(world)
-                .iter_prio_range(Min,Max)
+                .iter_prio_range(Min, Max)
                 .collect();
 
             match H::handle_events(world, &events) {
@@ -389,4 +432,3 @@ pub(crate) fn script_event_handler<H: ScriptHost, const Min : u32, const Max : u
         },
     );
 }
-

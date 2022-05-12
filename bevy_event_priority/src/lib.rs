@@ -1,13 +1,11 @@
 use bevy::ecs::system::SystemParam;
-use bevy::{prelude::*};
+use bevy::prelude::*;
 use std::marker::PhantomData;
 use std::sync::atomic::Ordering::Relaxed;
 use std::{collections::BinaryHeap, sync::atomic::AtomicU32};
 
-
-
-pub trait PriorityEvent : Send + Sync + 'static {}
-impl <E : Send + Sync + 'static> PriorityEvent for E {}
+pub trait PriorityEvent: Send + Sync + 'static {}
+impl<E: Send + Sync + 'static> PriorityEvent for E {}
 
 #[derive(Debug)]
 struct EventInstance<E> {
@@ -104,7 +102,7 @@ impl<'w, E: PriorityEvent> Iterator for PriorityIterator<'w, E> {
             } else {
                 break;
             };
-        };
+        }
 
         self.events.events.pop().map(|e| e.event)
     }
@@ -115,7 +113,7 @@ impl<'s, E: PriorityEvent> PriorityEventReader<'_, 's, E> {
     /// Will not remove any events of priority lower than min (0 is highest, inf is lowest)
     /// but will discard events of higher priority
     /// i.e. will handle events in the priority range [min,max] (inclusive)
-    pub fn iter_prio_range(&mut self, min: u32,max: u32) -> impl Iterator<Item = E> + '_ {
+    pub fn iter_prio_range(&mut self, min: u32, max: u32) -> impl Iterator<Item = E> + '_ {
         PriorityIterator {
             min,
             max,
@@ -163,14 +161,13 @@ impl<'w, 's, E: PriorityEvent> PriorityEventWriter<'w, 's, E> {
     }
 }
 
-
 /// a convenience for initialising prioritised event types
 pub trait AddPriorityEvent {
-    fn add_priority_event<E : PriorityEvent>(&mut self) -> &mut Self;
+    fn add_priority_event<E: PriorityEvent>(&mut self) -> &mut Self;
 }
 
-impl AddPriorityEvent for App{
-    fn add_priority_event<E : PriorityEvent>(&mut self) -> &mut Self {
+impl AddPriorityEvent for App {
+    fn add_priority_event<E: PriorityEvent>(&mut self) -> &mut Self {
         self.init_resource::<PriorityEvents<E>>();
 
         self
@@ -228,7 +225,7 @@ mod tests {
             let mut w = state_reader.get_mut(&mut world);
 
             // system reads only top event
-            w.iter_prio_range(0,0).for_each(drop);
+            w.iter_prio_range(0, 0).for_each(drop);
         }
 
         // first event is consumed immediately
@@ -237,13 +234,13 @@ mod tests {
             vec![TestEvent(1), TestEvent(0)]
         );
 
-        // stage 3 
+        // stage 3
 
         {
             let mut w = state_reader.get_mut(&mut world);
 
             // system reads all events
-            w.iter_prio_range(5,1).for_each(drop);
+            w.iter_prio_range(5, 1).for_each(drop);
         }
 
         // first event is consumed immediately
@@ -261,10 +258,9 @@ mod tests {
         let mut state_reader: SystemState<PriorityEventReader<TestEvent>> =
             SystemState::new(&mut world);
 
-
         world.init_resource::<PriorityEvents<TestEvent>>();
 
-        // two systems run at different frequencies, both serve non-overlapping priorities 
+        // two systems run at different frequencies, both serve non-overlapping priorities
 
         // stage 1
         // system sends events of lower priority than it serves
@@ -276,7 +272,7 @@ mod tests {
         {
             let mut w = state_reader.get_mut(&mut world);
 
-            w.iter_prio_range(0, 0).for_each(drop); 
+            w.iter_prio_range(0, 0).for_each(drop);
         }
 
         assert_eq!(
@@ -284,9 +280,9 @@ mod tests {
             vec![TestEvent(0)]
         );
 
-        // stage 2 
+        // stage 2
         // same system runs writes another of the same event
-        
+
         {
             let mut w = state_writer.get_mut(&mut world);
 
@@ -295,15 +291,15 @@ mod tests {
         {
             let mut w = state_reader.get_mut(&mut world);
 
-            w.iter_prio_range(0, 0).for_each(drop); 
+            w.iter_prio_range(0, 0).for_each(drop);
         }
 
         assert_eq!(
             collect_events(world.resource::<PriorityEvents<TestEvent>>().events.clone()),
-            vec![TestEvent(0),TestEvent(0)]
+            vec![TestEvent(0), TestEvent(0)]
         );
 
-        // stage 3 
+        // stage 3
         // this time another system runs clearing those events
         {
             let mut w = state_reader.get_mut(&mut world);
@@ -314,7 +310,6 @@ mod tests {
             collect_events(world.resource::<PriorityEvents<TestEvent>>().events.clone()),
             Vec::default()
         );
-
     }
 
     #[test]
@@ -325,10 +320,9 @@ mod tests {
         let mut state_reader: SystemState<PriorityEventReader<TestEvent>> =
             SystemState::new(&mut world);
 
-
         world.init_resource::<PriorityEvents<TestEvent>>();
 
-        // two systems run at different frequencies, both serve non-overlapping priorities 
+        // two systems run at different frequencies, both serve non-overlapping priorities
 
         // stage 1
         // system sends events of higher priority than another serves
@@ -338,14 +332,16 @@ mod tests {
             w.send(TestEvent(0), 0);
         }
 
-        // stage 2 
+        // stage 2
         // system receives event of higher priority than it serves
         {
             let mut w = state_reader.get_mut(&mut world);
 
             // event is not read but discarded
-            assert_eq!(w.iter_prio_range(1, 1).collect::<Vec<TestEvent>>(),
-                Vec::default()); 
+            assert_eq!(
+                w.iter_prio_range(1, 1).collect::<Vec<TestEvent>>(),
+                Vec::default()
+            );
         }
 
         // the event is cleared
@@ -363,10 +359,9 @@ mod tests {
         let mut state_reader: SystemState<PriorityEventReader<TestEvent>> =
             SystemState::new(&mut world);
 
-
         world.init_resource::<PriorityEvents<TestEvent>>();
 
-        // two systems run at different frequencies, both serve non-overlapping priorities 
+        // two systems run at different frequencies, both serve non-overlapping priorities
 
         // stage 1
         // system sends events of various priorities
@@ -379,27 +374,33 @@ mod tests {
             w.send(TestEvent(3), 3);
             w.send(TestEvent(4), 4);
             w.send(TestEvent(5), 5);
-
-
         }
 
-        // stage 2 
+        // stage 2
         // multiple systems in order of priority remove them one by one
         {
             let mut w = state_reader.get_mut(&mut world);
 
-            assert_eq!(w.iter_prio_range(1,0).collect::<Vec<TestEvent>>(),
-                vec![TestEvent(0),TestEvent(1)]); 
+            assert_eq!(
+                w.iter_prio_range(1, 0).collect::<Vec<TestEvent>>(),
+                vec![TestEvent(0), TestEvent(1)]
+            );
 
-            assert_eq!(w.iter_prio_range(2,2).collect::<Vec<TestEvent>>(),
-                vec![TestEvent(2)]); 
+            assert_eq!(
+                w.iter_prio_range(2, 2).collect::<Vec<TestEvent>>(),
+                vec![TestEvent(2)]
+            );
 
-            assert_eq!(w.iter_prio_range(3,3).collect::<Vec<TestEvent>>(),
-                vec![TestEvent(3)]); 
+            assert_eq!(
+                w.iter_prio_range(3, 3).collect::<Vec<TestEvent>>(),
+                vec![TestEvent(3)]
+            );
 
             // 4 is discarded
-            assert_eq!(w.iter_prio_range(5,5).collect::<Vec<TestEvent>>(),
-                vec![TestEvent(5)]); 
+            assert_eq!(
+                w.iter_prio_range(5, 5).collect::<Vec<TestEvent>>(),
+                vec![TestEvent(5)]
+            );
         }
 
         // the events are all cleared

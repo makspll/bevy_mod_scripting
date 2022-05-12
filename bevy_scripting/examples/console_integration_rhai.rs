@@ -1,10 +1,10 @@
 use bevy::{ecs::event::Events, prelude::*};
-use bevy_asset_loader::{AssetCollection};
+use bevy_asset_loader::AssetCollection;
 use bevy_console::{AddConsoleCommand, ConsoleCommand, ConsolePlugin, PrintConsoleLine};
 use bevy_event_priority::PriorityEventWriter;
 use bevy_scripting::{
-    APIProvider, AddScriptHost, RhaiAPIProvider, RhaiContext, RhaiEvent, RhaiFile, RhaiScriptHost,
-    Script, ScriptCollection, ScriptingPlugin, AddScriptHostHandler,
+    APIProvider, AddScriptHost, AddScriptHostHandler, RhaiAPIProvider, RhaiContext, RhaiEvent,
+    RhaiFile, RhaiScriptHost, Script, ScriptCollection, ScriptingPlugin,
 };
 use rhai::FuncArgs;
 
@@ -53,7 +53,7 @@ pub fn trigger_on_update_rhai(mut w: PriorityEventWriter<RhaiEvent<RhaiEventArgs
         args: RhaiEventArgs {},
     };
 
-    w.send(event,0);
+    w.send(event, 0);
 }
 
 fn main() -> std::io::Result<()> {
@@ -67,7 +67,9 @@ fn main() -> std::io::Result<()> {
         .add_console_command::<DeleteScriptCmd, _, _>(delete_script_cmd)
         // choose and register the script hosts you want to use
         .add_script_host::<RhaiScriptHost<RhaiEventArgs, RhaiAPI>, _>(CoreStage::PostUpdate)
-        .add_script_handler_stage::<RhaiScriptHost<RhaiEventArgs,RhaiAPI>,_,0,0>(CoreStage::PostUpdate)
+        .add_script_handler_stage::<RhaiScriptHost<RhaiEventArgs, RhaiAPI>, _, 0, 0>(
+            CoreStage::PostUpdate,
+        )
         // add your systems
         .add_system(trigger_on_update_rhai);
 
