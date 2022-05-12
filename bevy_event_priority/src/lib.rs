@@ -51,8 +51,8 @@ impl<E> PartialOrd for EventInstance<E> {
 impl<E: Clone> Clone for EventInstance<E> {
     fn clone(&self) -> Self {
         Self {
-            prio: self.prio.clone(),
-            event_id: self.event_id.clone(),
+            prio: self.prio,
+            event_id: self.event_id,
             event: self.event.clone(),
         }
     }
