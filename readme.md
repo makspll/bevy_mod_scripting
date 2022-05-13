@@ -72,7 +72,7 @@ fn main() -> std::io::Result<()> {
         )
 
         // generate events for scripts to pickup
-        .add_system(trigger_on_update_script_callback)
+        .add_system(trigger_on_update_lua)
         .add_system(trigger_on_update_rhai)
 
         // attach script components to entities
@@ -116,7 +116,7 @@ impl<'lua> ToLua<'lua> for MyLuaArg {
 }
 
 // event callback generator for lua
-pub fn trigger_on_update_script_callback(mut w: PriorityEventWriter<LuaEvent<MyLuaArg>>) {
+pub fn trigger_on_update_lua(mut w: PriorityEventWriter<LuaEvent<MyLuaArg>>) {
     let event = LuaEvent::<MyLuaArg> {
         hook_name: "on_update".to_string(), 
         args: Vec::default(),
