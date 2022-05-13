@@ -17,12 +17,10 @@ jobs:
           override: true
       - run: rustup component add rustfmt
       - run: rustup component add clippy
-      - name: cargo check
-        run: cargo check
-      - name: cargo test
-        run: test
-      - name: cargo fmt
-        run: cargo fmt --all -- --check
-      - name: clippy
-        run: -- -D warnings
-  
+      - name: check + test + fmt + clippy
+        run: | 
+          cargo check
+          cargo test
+          cargo fmt --all -- --check
+          cargo clippy -- -D warnings
+    
