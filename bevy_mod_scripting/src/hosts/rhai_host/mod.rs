@@ -6,7 +6,7 @@ use crate::{
 };
 use anyhow::anyhow;
 use beau_collector::BeauCollector as _;
-use bevy::prelude::{AddAsset, Entity, SystemSet, World};
+use bevy::prelude::{AddAsset, SystemSet, World};
 use bevy_event_priority::AddPriorityEvent;
 use rhai::*;
 use std::marker::PhantomData;
