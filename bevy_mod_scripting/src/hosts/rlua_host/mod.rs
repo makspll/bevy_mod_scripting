@@ -2,7 +2,7 @@ pub mod assets;
 
 use crate::{
     script_add_synchronizer, script_hot_reload_handler, script_remove_synchronizer, APIProvider,
-    CachedScriptEventState, ScriptContexts, ScriptHost,
+    CachedScriptEventState, FlatScriptData, Recipients, ScriptContexts, ScriptEvent, ScriptHost,
 };
 use anyhow::{anyhow, Result};
 use beau_collector::BeauCollector as _;
@@ -26,6 +26,13 @@ impl<T: for<'lua> ToLua<'lua> + Clone + Sync + Send + 'static> LuaArg for T {}
 pub struct LuaEvent<A: LuaArg> {
     pub hook_name: String,
     pub args: Vec<A>,
+    pub recipients: Recipients,
+}
+
+impl<A: LuaArg> ScriptEvent for LuaEvent<A> {
+    fn recipients(&self) -> &crate::Recipients {
+        &self.recipients
+    }
 }
 
 /// Rlua script host, enables Lua scripting provided by the Rlua library.
@@ -135,21 +142,26 @@ impl<A: LuaArg, API: APIProvider<Ctx = Mutex<Lua>>> ScriptHost for RLuaScriptHos
     fn handle_events<'a>(
         world: &mut World,
         events: &[Self::ScriptEvent],
-        ctxs: impl Iterator<Item = (&'a mut Entity, &'a mut Self::ScriptContext)>,
+        ctxs: impl Iterator<Item = (FlatScriptData<'a>, &'a mut Self::ScriptContext)>,
     ) -> anyhow::Result<()> {
-        ctxs.map(|(entity, ctx)| {
+        ctxs.map(|(fd, ctx)| {
             let world_ptr = world as *mut World as usize;
-            let lua_ctx = ctx.get_mut().unwrap();
 
-            lua_ctx.context::<_, Result<()>>(|lua_ctx| {
+            ctx.get_mut().unwrap().context::<_, Result<()>>(|lua_ctx| {
                 let globals = lua_ctx.globals();
                 globals.set("world", world_ptr)?;
-                globals.set("entity", entity.to_bits())?;
+                globals.set("entity", fd.entity.to_bits())?;
+                globals.set("script", fd.sid)?;
 
                 // event order is preserved, but scripts can't rely on any temporal
                 // guarantees when it comes to other scripts callbacks,
                 // at least for now
                 for event in events {
+                    // check if this script should handle this event
+                    if !event.recipients().is_recipient(&fd) {
+                        continue;
+                    }
+
                     let mut f: Function = match globals.get(event.hook_name.clone()) {
                         Ok(f) => f,
                         Err(_) => continue, // not subscribed to this event
