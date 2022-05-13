@@ -37,6 +37,8 @@ The API will likely change in the future as more scripting support is rolled out
 ### Installation
 
 To install:
+- Add this crate to your Cargo.toml file dependencies
+    - The crate is still in development so I recommended pinning to a git commit    
 - Add ScriptingPlugin to your app
 - Add the ScriptHosts you plan on using (`add_script_host`)
     - Make sure to attach it to a stage running AFTER any systems which may generate modify/create/remove script components
