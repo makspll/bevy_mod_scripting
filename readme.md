@@ -38,8 +38,9 @@ The API will likely change in the future as more scripting support is rolled out
 
 To install:
 - Add ScriptingPlugin to your app
-- Add the ScriptHosts you plan on using
-    - Make sure to attach them to a stage running AFTER any systems which may generate either script events or modify/create/remove script components  
+- Add the ScriptHosts you plan on using (`add_script_host`)
+    - Make sure to attach it to a stage running AFTER any systems which may generate modify/create/remove script components
+- Add script handler stages to capture events in the priority range you're expecting (`add_script_handler_stage`)   
 - Add systems which generate ScriptEvents corresponding to your script host
 - Add systems which add ScriptCollection components to your entities and fill them with scripts
 
@@ -115,7 +116,6 @@ impl<'lua> ToLua<'lua> for MyLuaArg {
 }
 
 // event callback generator for lua
-// right now only integer arguments are supported
 pub fn trigger_on_update_script_callback(mut w: PriorityEventWriter<LuaEvent<MyLuaArg>>) {
     let event = LuaEvent::<MyLuaArg> {
         hook_name: "on_update".to_string(), 
