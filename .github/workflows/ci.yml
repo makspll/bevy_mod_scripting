@@ -22,7 +22,6 @@ jobs:
       - name: cargo test
         run: test
       - name: cargo fmt
-        uses: actions-rs/cargo@v1
         run: cargo fmt --all -- --check
       - name: clippy
         run: -- -D warnings
