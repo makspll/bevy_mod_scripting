@@ -2,7 +2,7 @@ use bevy::{ecs::event::Events, prelude::*};
 use bevy_console::{AddConsoleCommand, ConsoleCommand, ConsolePlugin, PrintConsoleLine};
 use bevy_mod_scripting::{
     events::PriorityEventWriter, APIProvider, AddScriptHost, AddScriptHostHandler, LuaEvent,
-    LuaFile, RLuaScriptHost, Script, ScriptCollection, ScriptingPlugin,
+    LuaFile, RLuaScriptHost, Script, ScriptCollection, ScriptingPlugin, Recipients,
 };
 use rlua::{Lua, ToLua};
 use std::sync::Mutex;
@@ -51,6 +51,7 @@ pub fn trigger_on_update_lua(mut w: PriorityEventWriter<LuaEvent<MyLuaArg>>) {
     let event = LuaEvent {
         hook_name: "on_update".to_string(),
         args: Vec::default(),
+        recipients: Recipients::All
     };
 
     w.send(event, 0);

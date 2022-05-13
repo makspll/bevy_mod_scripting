@@ -2,7 +2,7 @@ use bevy::{ecs::event::Events, prelude::*};
 use bevy_console::{AddConsoleCommand, ConsoleCommand, ConsolePlugin, PrintConsoleLine};
 use bevy_mod_scripting::{
     events::PriorityEventWriter, APIProvider, AddScriptHost, AddScriptHostHandler, RhaiAPIProvider,
-    RhaiContext, RhaiEvent, RhaiFile, RhaiScriptHost, Script, ScriptCollection, ScriptingPlugin,
+    RhaiContext, RhaiEvent, RhaiFile, RhaiScriptHost, Script, ScriptCollection, ScriptingPlugin, Recipients,
 };
 use rhai::FuncArgs;
 
@@ -49,6 +49,7 @@ pub fn trigger_on_update_rhai(mut w: PriorityEventWriter<RhaiEvent<RhaiEventArgs
     let event = RhaiEvent {
         hook_name: "on_update".to_string(),
         args: RhaiEventArgs {},
+        recipients: Recipients::All
     };
 
     w.send(event, 0);

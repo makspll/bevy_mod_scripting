@@ -120,6 +120,7 @@ pub fn trigger_on_update_script_callback(mut w: PriorityEventWriter<LuaEvent<MyL
     let event = LuaEvent::<MyLuaArg> {
         hook_name: "on_update".to_string(), 
         args: Vec::default(),
+        recipients: Recipients::All
     };
 
     w.send(event,0);
@@ -152,6 +153,7 @@ pub fn trigger_on_update_rhai(mut w: PriorityEventWriter<RhaiEvent<MyRhaiArgStru
     let event = RhaiEvent {
         hook_name: "on_update".to_string(),
         args: MyRhaiArgStruct {},
+        recipients: Recipients::All
     };
 
     w.send(event,0);

@@ -42,3 +42,8 @@ path = "examples/console_integration_rhai.rs"
 [[example]]
 name = "complex_game_loop"
 path = "examples/complex_game_loop.rs"
+
+
+[[example]]
+name = "event_recipients"
+path = "examples/event_recipients.rs"
