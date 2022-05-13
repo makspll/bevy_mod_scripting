@@ -53,6 +53,5 @@ jobs:
       - uses: Swatinem/rust-cache@v1
       - uses: actions-rs/clippy-check@v1
         with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          args: --all-features
+          args: -- -D warnings
           name: Clippy Output
