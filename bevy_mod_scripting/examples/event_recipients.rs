@@ -2,8 +2,8 @@ use bevy::{core::FixedTimestep, prelude::*};
 use bevy_console::ConsolePlugin;
 use bevy_event_priority::PriorityEventWriter;
 use bevy_mod_scripting::{
-    APIProvider, AddScriptHost, AddScriptHostHandler, LuaEvent, LuaFile, RLuaScriptHost, Script,
-    ScriptCollection, ScriptingPlugin, Recipients,
+    APIProvider, AddScriptHost, AddScriptHostHandler, LuaEvent, LuaFile, RLuaScriptHost,
+    Recipients, Script, ScriptCollection, ScriptingPlugin,
 };
 use rand::prelude::SliceRandom;
 use rlua::{Lua, ToLua};
@@ -50,14 +50,11 @@ fn fire_random_event(w: &mut PriorityEventWriter<LuaEvent<MyLuaArg>>, events: &[
     let arg = MyLuaArg(id as usize);
     let event = events
         .choose(&mut rng)
-        .map(|v| 
-            
-                LuaEvent {
-                    hook_name: v.0.to_string(),
-                    args: vec![arg],
-                    recipients: v.1.clone()
-                }
-            )
+        .map(|v| LuaEvent {
+            hook_name: v.0.to_string(),
+            args: vec![arg],
+            recipients: v.1.clone(),
+        })
         .unwrap();
 
     info!(
@@ -67,7 +64,6 @@ fn fire_random_event(w: &mut PriorityEventWriter<LuaEvent<MyLuaArg>>, events: &[
     w.send(event, 0);
 }
 
-
 fn do_update(mut w: PriorityEventWriter<LuaEvent<MyLuaArg>>) {
     info!("Update, firing:");
 
@@ -75,7 +71,10 @@ fn do_update(mut w: PriorityEventWriter<LuaEvent<MyLuaArg>>) {
         ScriptEventData("on_event", Recipients::All),
         ScriptEventData("on_event", Recipients::ScriptID(0)),
         ScriptEventData("on_event", Recipients::ScriptID(1)),
-        ScriptEventData("on_event", Recipients::ScriptName("scripts/event_recipients.lua".to_owned()))
+        ScriptEventData(
+            "on_event",
+            Recipients::ScriptName("scripts/event_recipients.lua".to_owned()),
+        ),
     ];
 
     // fire random event, for any stages
@@ -85,21 +84,24 @@ fn do_update(mut w: PriorityEventWriter<LuaEvent<MyLuaArg>>) {
 #[derive(Clone)]
 pub struct ScriptEventData(&'static str, Recipients);
 
-
 fn load_our_scripts(server: Res<AssetServer>, mut commands: Commands) {
     // spawn two identical scripts
     // id's will be 0 and 1
     let path = "scripts/event_recipients.lua";
     let handle = server.load::<LuaFile, &str>(path);
-    let scripts = (0..2).into_iter()
-                        .map(|_| {
-                            Script::<LuaFile>::new::<RLuaScriptHost<MyLuaArg, LuaAPIProvider>,>(path.to_string(), handle.clone())
-                        })
-                        .collect();
+    let scripts = (0..2)
+        .into_iter()
+        .map(|_| {
+            Script::<LuaFile>::new::<RLuaScriptHost<MyLuaArg, LuaAPIProvider>>(
+                path.to_string(),
+                handle.clone(),
+            )
+        })
+        .collect();
 
-    commands.spawn().insert(ScriptCollection::<LuaFile> {
-        scripts
-    });
+    commands
+        .spawn()
+        .insert(ScriptCollection::<LuaFile> { scripts });
 }
 
 fn main() -> std::io::Result<()> {
@@ -109,13 +111,14 @@ fn main() -> std::io::Result<()> {
         .add_plugin(ScriptingPlugin)
         .add_plugin(ConsolePlugin)
         .add_startup_system(load_our_scripts)
-
         // randomly fire events for either all scripts,
         // the script with id 0
         // or the script with id 1
         .add_system(do_update)
-        .add_script_handler_stage::<RLuaScriptHost<MyLuaArg,LuaAPIProvider>,_,0,0>(CoreStage::PostUpdate)
-        .add_script_host::<RLuaScriptHost<MyLuaArg,LuaAPIProvider>, _>(CoreStage::PostUpdate);
+        .add_script_handler_stage::<RLuaScriptHost<MyLuaArg, LuaAPIProvider>, _, 0, 0>(
+            CoreStage::PostUpdate,
+        )
+        .add_script_host::<RLuaScriptHost<MyLuaArg, LuaAPIProvider>, _>(CoreStage::PostUpdate);
 
     app.run();
 

@@ -1,9 +1,8 @@
 pub mod assets;
-pub mod api;
 
 use crate::{
     script_add_synchronizer, script_hot_reload_handler, script_remove_synchronizer, APIProvider,
-    CachedScriptEventState, ScriptContexts, ScriptHost, ScriptEvent, Recipients, FlatScriptData,
+    CachedScriptEventState, FlatScriptData, Recipients, ScriptContexts, ScriptEvent, ScriptHost,
 };
 use anyhow::anyhow;
 use beau_collector::BeauCollector as _;
@@ -12,7 +11,7 @@ use bevy_event_priority::AddPriorityEvent;
 use rhai::*;
 use std::marker::PhantomData;
 
-pub use {assets::*,api::*};
+pub use assets::*;
 
 /// More specific APIProvider implementation allowing more control over Rhai scripts
 pub trait RhaiAPIProvider: APIProvider {
@@ -40,15 +39,14 @@ pub struct RhaiContext {
 pub struct RhaiEvent<A: FuncArgs + Clone + 'static> {
     pub hook_name: String,
     pub args: A,
-    pub recipients: Recipients
+    pub recipients: Recipients,
 }
 
-impl <A : FuncArgs + Clone + Send + Sync + 'static> ScriptEvent for RhaiEvent<A>{
+impl<A: FuncArgs + Clone + Send + Sync + 'static> ScriptEvent for RhaiEvent<A> {
     fn recipients(&self) -> &crate::Recipients {
         &self.recipients
     }
 }
-
 
 impl<A: FuncArgs + Send + Clone + Sync + 'static, API: RhaiAPIProvider<Ctx = RhaiContext>>
     ScriptHost for RhaiScriptHost<A, API>
@@ -102,17 +100,17 @@ impl<A: FuncArgs + Send + Clone + Sync + 'static, API: RhaiAPIProvider<Ctx = Rha
     fn handle_events<'a>(
         world: &mut World,
         events: &[Self::ScriptEvent],
-        ctxs: impl Iterator<Item = (FlatScriptData<'a>,&'a mut Self::ScriptContext)>,
+        ctxs: impl Iterator<Item = (FlatScriptData<'a>, &'a mut Self::ScriptContext)>,
     ) -> anyhow::Result<()> {
-        ctxs.flat_map(|(fd,ctx)| {
+        ctxs.flat_map(|(fd, ctx)| {
             ctx.scope.set_value("world", world as *mut World as usize);
             ctx.scope.set_value("entity", fd.entity);
             ctx.scope.set_value("script", fd.sid);
 
             events.iter().map(move |event| {
                 // check if this script should handle this event
-                if !event.recipients().is_recipient(&fd){
-                    return Ok(())
+                if !event.recipients().is_recipient(&fd) {
+                    return Ok(());
                 };
 
                 ctx.engine

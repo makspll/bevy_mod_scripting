@@ -2,7 +2,7 @@ pub mod assets;
 
 use crate::{
     script_add_synchronizer, script_hot_reload_handler, script_remove_synchronizer, APIProvider,
-    CachedScriptEventState, ScriptContexts, ScriptHost, ScriptEvent, Recipients, FlatScriptData,
+    CachedScriptEventState, FlatScriptData, Recipients, ScriptContexts, ScriptEvent, ScriptHost,
 };
 use anyhow::{anyhow, Result};
 use beau_collector::BeauCollector as _;
@@ -26,11 +26,10 @@ impl<T: for<'lua> ToLua<'lua> + Clone + Sync + Send + 'static> LuaArg for T {}
 pub struct LuaEvent<A: LuaArg> {
     pub hook_name: String,
     pub args: Vec<A>,
-    pub recipients: Recipients
+    pub recipients: Recipients,
 }
 
-
-impl <A : LuaArg> ScriptEvent for LuaEvent<A>{
+impl<A: LuaArg> ScriptEvent for LuaEvent<A> {
     fn recipients(&self) -> &crate::Recipients {
         &self.recipients
     }
@@ -143,9 +142,9 @@ impl<A: LuaArg, API: APIProvider<Ctx = Mutex<Lua>>> ScriptHost for RLuaScriptHos
     fn handle_events<'a>(
         world: &mut World,
         events: &[Self::ScriptEvent],
-        ctxs: impl Iterator<Item = (FlatScriptData<'a>,&'a mut Self::ScriptContext)>,
+        ctxs: impl Iterator<Item = (FlatScriptData<'a>, &'a mut Self::ScriptContext)>,
     ) -> anyhow::Result<()> {
-        ctxs.map(|(fd,ctx)| {
+        ctxs.map(|(fd, ctx)| {
             let world_ptr = world as *mut World as usize;
 
             ctx.get_mut().unwrap().context::<_, Result<()>>(|lua_ctx| {
@@ -158,10 +157,9 @@ impl<A: LuaArg, API: APIProvider<Ctx = Mutex<Lua>>> ScriptHost for RLuaScriptHos
                 // guarantees when it comes to other scripts callbacks,
                 // at least for now
                 for event in events {
-                    
                     // check if this script should handle this event
-                    if !event.recipients().is_recipient(&fd){
-                        continue 
+                    if !event.recipients().is_recipient(&fd) {
+                        continue;
                     }
 
                     let mut f: Function = match globals.get(event.hook_name.clone()) {
@@ -181,7 +179,8 @@ impl<A: LuaArg, API: APIProvider<Ctx = Mutex<Lua>>> ScriptHost for RLuaScriptHos
 
                 Ok(())
             })
-        }).bcollect()    
+        })
+        .bcollect()
     }
 }
 impl<A: LuaArg, API: APIProvider<Ctx = Mutex<Lua>>> RLuaScriptHost<A, API> {

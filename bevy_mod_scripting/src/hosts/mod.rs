@@ -18,18 +18,18 @@ use std::{
     sync::atomic::{AtomicU32, Ordering},
 };
 
-/// Describes the target set of scripts this event should 
+/// Describes the target set of scripts this event should
 /// be handled by
 #[derive(Clone, Debug)]
-pub enum Recipients{
+pub enum Recipients {
     /// Send to all scripts
     All,
     /// Send only to scripts on the given entity
     Entity(Entity),
-    /// Send to script with the given ID 
+    /// Send to script with the given ID
     ScriptID(u32),
     // Send to script with the given name
-    ScriptName(String)
+    ScriptName(String),
 }
 
 #[derive(Debug)]
@@ -40,8 +40,8 @@ pub struct FlatScriptData<'a> {
 }
 
 impl Recipients {
-    /// Returns true if the given script should 
-    pub fn is_recipient(&self, c : &FlatScriptData) -> bool{
+    /// Returns true if the given script should
+    pub fn is_recipient(&self, c: &FlatScriptData) -> bool {
         match self {
             Recipients::All => true,
             Recipients::Entity(e) => e == &c.entity,
@@ -57,14 +57,10 @@ impl Default for Recipients {
     }
 }
 
-pub trait ScriptEvent : Send + Sync + Clone + 'static {
-
+pub trait ScriptEvent: Send + Sync + Clone + 'static {
     /// Retrieves the recipient scripts for this event
     fn recipients(&self) -> &Recipients;
 }
-
-
-
 
 /// A script host is the interface between your rust application
 /// and the scripts in some interpreted language.
@@ -85,9 +81,8 @@ pub trait ScriptHost: Send + Sync + 'static {
     fn handle_events<'a>(
         world: &mut World,
         events: &[Self::ScriptEvent],
-        ctxs: impl Iterator<Item = (FlatScriptData<'a>,&'a mut Self::ScriptContext)>
-    )
-     -> Result<()>;
+        ctxs: impl Iterator<Item = (FlatScriptData<'a>, &'a mut Self::ScriptContext)>,
+    ) -> Result<()>;
 
     /// Loads and runs script instantaneously without storing any script data into the world.
     /// The script receives the `world` global as normal, but `entity` is set to `u64::MAX`.
@@ -102,12 +97,15 @@ pub trait ScriptHost: Send + Sync + 'static {
         let entity = Entity::from_bits(u64::MAX);
 
         let events = [event; 1];
-        let ctx_iter = [
-            (FlatScriptData{
-                name:script_name,
-                sid:u32::MAX,
-                entity},&mut ctx)
-            ; 1].into_iter();
+        let ctx_iter = [(
+            FlatScriptData {
+                name: script_name,
+                sid: u32::MAX,
+                entity,
+            },
+            &mut ctx,
+        ); 1]
+            .into_iter();
 
         Self::handle_events(world, &events, ctx_iter)
     }
@@ -260,11 +258,12 @@ impl<C> Default for ScriptContexts<C> {
 
 impl<C> ScriptContexts<C> {
     pub fn script_owner(&self, script_id: u32) -> Option<Entity> {
-        self.context_entities.get(&script_id).map(|(e, _c , _n)| *e)
+        self.context_entities.get(&script_id).map(|(e, _c, _n)| *e)
     }
 
     pub fn insert_context(&mut self, fd: FlatScriptData, ctx: Option<C>) {
-        self.context_entities.insert(fd.sid, (fd.entity,ctx ,fd.name.to_owned()));
+        self.context_entities
+            .insert(fd.sid, (fd.entity, ctx, fd.name.to_owned()));
     }
 
     pub fn remove_context(&mut self, script_id: u32) {
@@ -341,10 +340,10 @@ impl<T: Asset> Script<T> {
         script_assets: &Res<Assets<H::ScriptAsset>>,
         contexts: &mut ResMut<ScriptContexts<H::ScriptContext>>,
     ) {
-        let fd =  FlatScriptData{ 
-            sid: new_script.id(), 
-            entity, 
-            name: new_script.name() 
+        let fd = FlatScriptData {
+            sid: new_script.id(),
+            entity,
+            name: new_script.name(),
         };
 
         let script = match script_assets.get(&new_script.handle) {
@@ -506,19 +505,26 @@ pub(crate) fn script_event_handler<H: ScriptHost, const MAX: u32, const MIN: u32
     // as provide world access to scripts
     // afaik there is not really a better way to do this in bevy just now
     world.resource_scope(|world, mut ctxts: Mut<ScriptContexts<H::ScriptContext>>| {
-        let ctx_iter = ctxts
-            .as_mut()
-            .context_entities
-            .iter_mut()
-            .filter_map(|(sid,(entity, o, name))| {
+        let ctx_iter =
+            ctxts
+                .as_mut()
+                .context_entities
+                .iter_mut()
+                .filter_map(|(sid, (entity, o, name))| {
+                    let ctx = match o {
+                        Some(v) => v,
+                        None => return None,
+                    };
 
-                let ctx = match o {
-                    Some(v) => v,
-                    None => return None,
-                };
-                
-                Some((FlatScriptData{ sid:*sid, entity:*entity, name },ctx))
-            });
+                    Some((
+                        FlatScriptData {
+                            sid: *sid,
+                            entity: *entity,
+                            name,
+                        },
+                        ctx,
+                    ))
+                });
 
         match H::handle_events(world, &events, ctx_iter) {
             Ok(_) => {}
