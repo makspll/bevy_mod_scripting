@@ -10,7 +10,7 @@ name: Continuous integration
 
 jobs:
   check:
-    name: Check
+    name: CI
     runs-on: ubuntu-latest
     steps:
       - name: Install alsa and udev
@@ -23,7 +23,8 @@ jobs:
           override: true
       - run: rustup component add rustfmt
       - run: rustup component add clippy
-      - name: check + test + fmt + clippy
+      - uses: Swatinem/rust-cache@v1
+      - name: build and test
         run: | 
           cargo check
           cargo test
