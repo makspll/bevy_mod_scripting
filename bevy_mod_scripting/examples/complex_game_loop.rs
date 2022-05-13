@@ -2,8 +2,8 @@ use bevy::{core::FixedTimestep, prelude::*};
 use bevy_console::ConsolePlugin;
 use bevy_event_priority::PriorityEventWriter;
 use bevy_mod_scripting::{
-    APIProvider, AddScriptHost, AddScriptHostHandler, LuaEvent, LuaFile, RLuaScriptHost, Script,
-    ScriptCollection, ScriptingPlugin,
+    APIProvider, AddScriptHost, AddScriptHostHandler, LuaEvent, LuaFile, RLuaScriptHost,
+    Recipients, Script, ScriptCollection, ScriptingPlugin,
 };
 use rand::prelude::SliceRandom;
 use rlua::{Lua, ToLua};
@@ -55,6 +55,7 @@ fn fire_random_event(w: &mut PriorityEventWriter<LuaEvent<MyLuaArg>>, events: &[
                 LuaEvent {
                     hook_name: v.0.to_string(),
                     args: vec![arg],
+                    recipients: Recipients::All,
                 },
                 v.1,
             )

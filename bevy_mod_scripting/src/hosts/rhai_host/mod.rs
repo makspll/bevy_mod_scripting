@@ -2,11 +2,11 @@ pub mod assets;
 
 use crate::{
     script_add_synchronizer, script_hot_reload_handler, script_remove_synchronizer, APIProvider,
-    CachedScriptEventState, ScriptContexts, ScriptHost,
+    CachedScriptEventState, FlatScriptData, Recipients, ScriptContexts, ScriptEvent, ScriptHost,
 };
 use anyhow::anyhow;
 use beau_collector::BeauCollector as _;
-use bevy::prelude::{AddAsset, Entity, SystemSet, World};
+use bevy::prelude::{AddAsset, SystemSet, World};
 use bevy_event_priority::AddPriorityEvent;
 use rhai::*;
 use std::marker::PhantomData;
@@ -39,6 +39,13 @@ pub struct RhaiContext {
 pub struct RhaiEvent<A: FuncArgs + Clone + 'static> {
     pub hook_name: String,
     pub args: A,
+    pub recipients: Recipients,
+}
+
+impl<A: FuncArgs + Clone + Send + Sync + 'static> ScriptEvent for RhaiEvent<A> {
+    fn recipients(&self) -> &crate::Recipients {
+        &self.recipients
+    }
 }
 
 impl<A: FuncArgs + Send + Clone + Sync + 'static, API: RhaiAPIProvider<Ctx = RhaiContext>>
@@ -93,13 +100,19 @@ impl<A: FuncArgs + Send + Clone + Sync + 'static, API: RhaiAPIProvider<Ctx = Rha
     fn handle_events<'a>(
         world: &mut World,
         events: &[Self::ScriptEvent],
-        ctxs: impl Iterator<Item = (&'a mut Entity, &'a mut Self::ScriptContext)>,
+        ctxs: impl Iterator<Item = (FlatScriptData<'a>, &'a mut Self::ScriptContext)>,
     ) -> anyhow::Result<()> {
-        ctxs.flat_map(|(entity, ctx)| {
+        ctxs.flat_map(|(fd, ctx)| {
             ctx.scope.set_value("world", world as *mut World as usize);
-            ctx.scope.set_value("entity", *entity);
+            ctx.scope.set_value("entity", fd.entity);
+            ctx.scope.set_value("script", fd.sid);
 
-            events.iter().map(|event| {
+            events.iter().map(move |event| {
+                // check if this script should handle this event
+                if !event.recipients().is_recipient(&fd) {
+                    return Ok(());
+                };
+
                 ctx.engine
                     .call_fn(
                         &mut ctx.scope,
