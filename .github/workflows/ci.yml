@@ -1,6 +1,11 @@
-on: [push, pull_request]
+on:
+  pull_request:
+  push:
+    branches:
+      - main
 
-name: Continuous integration
+
+name: Check and Lint
 
 jobs:
   check:
@@ -15,24 +20,44 @@ jobs:
           profile: minimal
           toolchain: stable
           override: true
-      - run: rustup component add rustfmt
-      - run: rustup component add clippy
-      - name: cargo check
-        uses: actions-rs/cargo@v1
+      - uses: Swatinem/rust-cache@v1
+      - uses: actions-rs/cargo@v1
         with:
           command: check
-      - name: cargo test
-        uses: actions-rs/cargo@v1
+
+  fmt:
+    name: Rustfmt
+    runs-on: ubuntu-latest
+    steps:
+      - name: Install alsa and udev
+        run: sudo apt-get update; sudo apt-get install --no-install-recommends libasound2-dev libudev-dev
+      - uses: actions/checkout@v2
+      - uses: actions-rs/toolchain@v1
         with:
-          command: test
-      - name: cargo fmt
-        uses: actions-rs/cargo@v1
+          profile: minimal
+          components: rustfmt
+          toolchain: stable
+          override: true
+      - uses: Swatinem/rust-cache@v1
+      - uses: actions-rs/cargo@v1
         with:
           command: fmt
           args: --all -- --check
-      - name: clippy
-        uses: actions-rs/cargo@v1
+
+  clippy:
+    name: Clippy
+    runs-on: ubuntu-latest
+    steps:
+      - name: Install alsa and udev
+        run: sudo apt-get update; sudo apt-get install --no-install-recommends libasound2-dev libudev-dev
+      - uses: actions/checkout@v2
+      - uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          components: clippy
+          override: true
+      - uses: Swatinem/rust-cache@v1
+      - uses: actions-rs/cargo@v1
         with:
           command: clippy
           args: -- -D warnings
-  
