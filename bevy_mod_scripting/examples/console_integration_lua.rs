@@ -2,7 +2,7 @@ use bevy::{ecs::event::Events, prelude::*};
 use bevy_console::{AddConsoleCommand, ConsoleCommand, ConsolePlugin, PrintConsoleLine};
 use bevy_mod_scripting::{
     events::PriorityEventWriter, APIProvider, AddScriptHost, AddScriptHostHandler, LuaEvent,
-    LuaFile, RLuaScriptHost, Recipients, Script, ScriptCollection, ScriptingPlugin,
+    LuaFile, RLuaScriptHost, Recipients, Script, ScriptCollection, ScriptingPlugin, LuaWorld,
 };
 use rlua::{Lua, ToLua};
 use std::sync::Mutex;
@@ -25,14 +25,14 @@ impl APIProvider for LuaAPIProvider {
     type Ctx = Mutex<Lua>;
     fn attach_api(ctx: &mut Self::Ctx) {
         // callbacks can receive any `ToLuaMulti` arguments, here '()' and
-        // return any `FromLuaMulti` arguments, here a `usize`
+        // return any `FromLuaMulti` arguments, here a `String`
         // check the Rlua documentation for more details
         RLuaScriptHost::<MyLuaArg, Self>::register_api_callback(
             "print_to_console",
             |ctx, msg: String| {
-                // retrieve the world pointer
-                let world_data: usize = ctx.globals().get("world").unwrap();
-                let world: &mut World = unsafe { &mut *(world_data as *mut World) };
+                // retrieve the world
+                let world: LuaWorld = ctx.globals().get("world").unwrap();
+                let world = unsafe { &mut *world.0 };
 
                 let mut events: Mut<Events<PrintConsoleLine>> = world.get_resource_mut().unwrap();
                 events.send(PrintConsoleLine { line: msg });

@@ -12,5 +12,7 @@ pub use hosts::*;
 pub struct ScriptingPlugin;
 
 impl Plugin for ScriptingPlugin {
-    fn build(&self, _app: &mut bevy::prelude::App) {}
+    fn build(&self, app: &mut bevy::prelude::App) {
+
+    }
 }

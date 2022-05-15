@@ -3,8 +3,9 @@ local a
 function on_update()
 
     if a == nil then
-        a = test:get_script_component(entity_test)
+        a = world:get_component(entity,"ScriptCollection<LuaFile>")
     end
+
 
     print(a.scripts)
 

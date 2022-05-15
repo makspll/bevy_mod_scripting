@@ -3,7 +3,7 @@ pub mod api;
 
 use crate::{
     script_add_synchronizer, script_hot_reload_handler, script_remove_synchronizer, APIProvider,
-    CachedScriptEventState, FlatScriptData, Recipients, ScriptContexts, ScriptEvent, ScriptHost,
+    CachedScriptEventState, FlatScriptData, Recipients, ScriptContexts, ScriptEvent, ScriptHost, ScriptCollection, Script,
 };
 use anyhow::{anyhow, Result};
 use beau_collector::BeauCollector as _;
@@ -106,19 +106,21 @@ impl<A: LuaArg, API: APIProvider<Ctx = Mutex<Lua>>> ScriptHost for RLuaScriptHos
     type ScriptAsset = LuaFile;
 
     fn register_with_app(app: &mut App, stage: impl StageLabel) {
-        app.add_priority_event::<Self::ScriptEvent>();
-        app.add_asset::<LuaFile>();
-        app.init_asset_loader::<LuaLoader>();
-        app.init_resource::<CachedScriptEventState<Self>>();
-        app.init_resource::<ScriptContexts<Self::ScriptContext>>();
+        app.add_priority_event::<Self::ScriptEvent>()
+            .add_asset::<LuaFile>()
+            .init_asset_loader::<LuaLoader>()
+            .init_resource::<CachedScriptEventState<Self>>()
+            .init_resource::<ScriptContexts<Self::ScriptContext>>()
+            .register_type::<ScriptCollection<Self::ScriptAsset>>()
+            .register_type::<Script<Self::ScriptAsset>>()
 
-        app.add_system_set_to_stage(
-            stage,
-            SystemSet::new()
-                .with_system(script_add_synchronizer::<Self>)
-                .with_system(script_remove_synchronizer::<Self>)
-                .with_system(script_hot_reload_handler::<Self>),
-        );
+            .add_system_set_to_stage(
+                stage,
+                SystemSet::new()
+                    .with_system(script_add_synchronizer::<Self>)
+                    .with_system(script_remove_synchronizer::<Self>)
+                    .with_system(script_hot_reload_handler::<Self>),
+            );
     }
 
     fn load_script(script: &[u8], script_name: &str) -> Result<Self::ScriptContext> {
@@ -146,18 +148,14 @@ impl<A: LuaArg, API: APIProvider<Ctx = Mutex<Lua>>> ScriptHost for RLuaScriptHos
         ctxs: impl Iterator<Item = (FlatScriptData<'a>, &'a mut Self::ScriptContext)>,
     ) -> anyhow::Result<()> {
         ctxs.map(|(fd, ctx)| {
-            let world_ptr = world as *mut World as usize;
 
             ctx.get_mut().unwrap().context::<_, Result<()>>(|lua_ctx| {
                 let globals = lua_ctx.globals();
-                globals.set("world", world_ptr)?;
-                globals.set("entity", fd.entity.to_bits())?;
+                globals.set("world", LuaWorld(world as *mut World))?;
+                globals.set("entity", LuaEntity(fd.entity))?;
                 globals.set("script", fd.sid)?;
                 
-                let luaworld = LuaWorld(world as *mut World);
-                globals.set("entity_test", LuaEntity(fd.entity) )?;
 
-                globals.set("test", luaworld )?;
                 // event order is preserved, but scripts can't rely on any temporal
                 // guarantees when it comes to other scripts callbacks,
                 // at least for now

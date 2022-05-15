@@ -2,6 +2,7 @@
 
 pub mod rhai_host;
 pub mod rlua_host;
+pub mod common_api;
 
 use anyhow::Result;
 
@@ -11,7 +12,7 @@ use bevy::{
     prelude::*, reflect::FromReflect,
 };
 use bevy_event_priority::PriorityEventReader;
-pub use {crate::rhai_host::*, crate::rlua_host::*};
+pub use {crate::rhai_host::*, crate::rlua_host::*, crate::common_api::*};
 
 use std::{
     collections::{HashMap, HashSet},
@@ -227,6 +228,8 @@ pub trait APIProvider: 'static + Default {
 }
 
 
+
+
 /// A resource storing the script contexts for each script instance.
 /// The reason we need this is to split the world borrow in our handle event systems, but this
 /// has the added benefit that users don't see the contexts at all, and we can provide
@@ -365,12 +368,19 @@ impl<T: Asset> Script<T> {
 
 
 #[derive(Component, Debug, FromReflect,Reflect)]
+#[reflect(Component)]
 /// The component storing many scripts.
 /// Scripts receive information about the entity they are attached to
 /// Scripts have unique identifiers and hence multiple copies of the same script
 /// can be attached to the same entity
 pub struct ScriptCollection<T: Asset> {
     pub scripts: Vec<Script<T>>,
+}
+
+impl <T: Asset>Default for ScriptCollection<T>{
+    fn default() -> Self {
+        Self { scripts: Default::default() }
+    }
 }
 
 /// system state for exclusive systems dealing with script events
