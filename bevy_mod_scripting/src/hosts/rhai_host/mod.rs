@@ -107,6 +107,7 @@ impl<A: FuncArgs + Send + Clone + Sync + 'static, API: RhaiAPIProvider<Ctx = Rha
             ctx.scope.set_value("entity", fd.entity);
             ctx.scope.set_value("script", fd.sid);
 
+
             events.iter().map(move |event| {
                 // check if this script should handle this event
                 if !event.recipients().is_recipient(&fd) {

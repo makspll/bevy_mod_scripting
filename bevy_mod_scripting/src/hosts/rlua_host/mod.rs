@@ -1,4 +1,5 @@
 pub mod assets;
+pub mod api;
 
 use crate::{
     script_add_synchronizer, script_hot_reload_handler, script_remove_synchronizer, APIProvider,
@@ -12,9 +13,9 @@ use rlua::prelude::*;
 use rlua::{Context, Function, Lua, MultiValue, ToLua, ToLuaMulti};
 
 use std::marker::PhantomData;
-use std::sync::Mutex;
+use std::sync::{RwLock,Weak,Mutex};
 
-pub use assets::*;
+pub use {assets::*,api::*};
 
 pub trait LuaArg: for<'lua> ToLua<'lua> + Clone + Sync + Send + 'static {}
 
@@ -152,7 +153,11 @@ impl<A: LuaArg, API: APIProvider<Ctx = Mutex<Lua>>> ScriptHost for RLuaScriptHos
                 globals.set("world", world_ptr)?;
                 globals.set("entity", fd.entity.to_bits())?;
                 globals.set("script", fd.sid)?;
+                
+                let luaworld = LuaWorld(world as *mut World);
+                globals.set("entity_test", LuaEntity(fd.entity) )?;
 
+                globals.set("test", luaworld )?;
                 // event order is preserved, but scripts can't rely on any temporal
                 // guarantees when it comes to other scripts callbacks,
                 // at least for now

@@ -8,7 +8,7 @@ use anyhow::Result;
 use bevy::{
     asset::Asset,
     ecs::{schedule::IntoRunCriteria, system::SystemState},
-    prelude::*,
+    prelude::*, reflect::FromReflect,
 };
 use bevy_event_priority::PriorityEventReader;
 pub use {crate::rhai_host::*, crate::rlua_host::*};
@@ -226,14 +226,6 @@ pub trait APIProvider: 'static + Default {
     fn attach_api(ctx: &mut Self::Ctx);
 }
 
-#[derive(Component, Debug)]
-/// The component storing many scripts.
-/// Scripts receive information about the entity they are attached to
-/// Scripts have unique identifiers and hence multiple copies of the same script
-/// can be attached to the same entity
-pub struct ScriptCollection<T: Asset> {
-    pub scripts: Vec<Script<T>>,
-}
 
 /// A resource storing the script contexts for each script instance.
 /// The reason we need this is to split the world borrow in our handle event systems, but this
@@ -273,7 +265,7 @@ impl<C> ScriptContexts<C> {
 
 /// A struct defining an instance of a script asset.
 /// Multiple instances of the same script can exist on the same entity
-#[derive(Debug)]
+#[derive(Debug,Reflect,FromReflect)]
 pub struct Script<T: Asset> {
     /// a strong handle to the script asset
     handle: Handle<T>,
@@ -284,6 +276,8 @@ pub struct Script<T: Asset> {
     /// uniquely identifies the script instance (scripts which use the same asset don't necessarily have the same ID)
     id: u32,
 }
+
+
 
 impl<T: Asset> Script<T> {
     /// creates a new script instance with the given name and asset handle
@@ -367,6 +361,16 @@ impl<T: Asset> Script<T> {
             }
         }
     }
+}
+
+
+#[derive(Component, Debug, FromReflect,Reflect)]
+/// The component storing many scripts.
+/// Scripts receive information about the entity they are attached to
+/// Scripts have unique identifiers and hence multiple copies of the same script
+/// can be attached to the same entity
+pub struct ScriptCollection<T: Asset> {
+    pub scripts: Vec<Script<T>>,
 }
 
 /// system state for exclusive systems dealing with script events
