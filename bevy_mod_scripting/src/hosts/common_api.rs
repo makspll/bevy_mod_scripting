@@ -1,10 +1,11 @@
 use std::{fmt,sync::Arc, cell::UnsafeCell, ops::Deref};
 use bevy::reflect::*;
 use anyhow::{anyhow,Result};
+use rlua::Debug;
 
 /// Represents a rust type but stored in a script. We try to store only references to actual rust data
 /// to make data transfer cheaper, however sometimes lua has to semantically 'own' some stuff.
-#[derive(Debug,Clone)]
+#[derive(Clone)]
 pub enum ScriptReflectVal {
     /// A rust object living in the bevy world, or alternatively
     /// a reference to a subfield of a lua owned value
@@ -14,6 +15,108 @@ pub enum ScriptReflectVal {
     Owned(Arc<UnsafeCell<dyn Reflect + 'static>>),
 }
 
+
+pub struct PrintableReflect<'a>(pub &'a dyn Reflect);
+
+impl fmt::Debug for PrintableReflect<'_>{
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        self.0.print(f)
+    }
+}
+
+
+
+pub trait PrintReflect {
+    fn print(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result;
+}
+
+macro_rules! impl_downcast_print_cases {
+    ($v:ident,$fmt:ident,$f:ty,$($x:ty),*) => {
+        {   
+
+            if let Some(i) = $v.downcast_ref::<$f>(){
+                write!($fmt,"({:#?}){}",$v.type_name(),i)?;
+            }
+            $(
+            else if let Some(i) = $v.downcast_ref::<$x>() {
+                write!($fmt,"({:#?}){}",$v.type_name(),i)?;
+            }
+            )*
+            else {
+                write!($fmt,"({:#?})",$v.type_name())?;
+            }
+        }
+    };
+}
+
+impl <T : Reflect + ?Sized> PrintReflect for &T {
+    fn print(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self.reflect_ref() {
+            ReflectRef::Struct(s) => {
+                (0..s.field_len()).fold(f.debug_struct(s.type_name()), |mut b, i| {
+                    b.field(
+                        s.name_at(i).unwrap(),
+                        &PrintableReflect(s.field_at(i).unwrap()));
+                    b
+                }).finish()
+            },
+            ReflectRef::Map(m) => {
+                m.iter().fold(f.debug_map(), |mut b, (k,v)| {
+                    b.entry(
+                        &PrintableReflect(k),
+                        &PrintableReflect(v));
+                    b
+                }).finish()
+            },
+            ReflectRef::TupleStruct(ts) => {
+                ts.iter_fields().fold(f.debug_tuple(ts.type_name()),|mut b, i|{
+                    b.field(&PrintableReflect(i));
+                    b
+                }).finish()
+            },
+            ReflectRef::Tuple(t) => {
+                t.iter_fields().fold(f.debug_tuple(""),|mut b, i|{
+                    b.field(&PrintableReflect(i));
+                    b
+                }).finish()
+            },
+            ReflectRef::List(l) => {
+                l.iter().fold(f.debug_list(), |mut b, i|{
+                    b.entry(&PrintableReflect(i));
+                    b
+                }).finish()
+            },
+            ReflectRef::Value(v) => {
+                impl_downcast_print_cases!(v,f,
+                    usize,
+                    isize,
+                    u128,
+                    i128,
+                    u64,
+                    i64,
+                    u32,
+                    i32,
+                    u16,
+                    i16,
+                    u8,
+                    i8,
+                    f32,
+                    f64,
+                    String);
+                Ok(())
+            },
+        }
+
+    }
+} 
+
+
+
+impl fmt::Debug for ScriptReflectVal {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        self.ref_immut().print(f)
+    }
+}
 
 
 impl fmt::Display for ScriptReflectVal {
@@ -49,7 +152,7 @@ impl ScriptReflectVal {
     pub fn path_ref(&self, path: &str) -> Result<Self> {
         let ref_mut = self.ref_immut();
 
-        let re = ref_mut.path(path).map_err(|e| anyhow!(e.to_string()))?;
+        let re = ref_mut.path(path).map_err(|e| anyhow!("Cannot access field `{}`",path))?;
         Ok(Self::Ref(re as *const dyn Reflect as *mut dyn Reflect))
     }
 
@@ -58,8 +161,9 @@ impl ScriptReflectVal {
 
         match ref_mut.path_mut(path){
             Ok(f) => {
-                f.set(val)
-                .map_err(|_| anyhow!("No field named {} exists", path))
+                f.apply(val.as_ref());
+                Ok(())
+
             },
             Err(e) => {
                 // we check if we are a dynamic struct/enum since then we can add the field
