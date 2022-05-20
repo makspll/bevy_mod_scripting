@@ -105,19 +105,23 @@ impl<A: LuaArg, API: APIProvider<Ctx = Mutex<Lua>>> ScriptHost for RLuaScriptHos
     type ScriptAsset = LuaFile;
 
     fn register_with_app(app: &mut App, stage: impl StageLabel) {
-        app.add_priority_event::<Self::ScriptEvent>();
-        app.add_asset::<LuaFile>();
-        app.init_asset_loader::<LuaLoader>();
-        app.init_resource::<CachedScriptEventState<Self>>();
-        app.init_resource::<ScriptContexts<Self::ScriptContext>>();
+        app.add_priority_event::<Self::ScriptEvent>()
+            .add_asset::<LuaFile>()
+            .init_asset_loader::<LuaLoader>()
+            .init_resource::<CachedScriptEventState<Self>>()
+            .init_resource::<ScriptContexts<Self::ScriptContext>>()
+            .register_type::<ScriptCollection<Self::ScriptAsset>>()
+            .register_type::<Script<Self::ScriptAsset>>()
 
-        app.add_system_set_to_stage(
-            stage,
-            SystemSet::new()
-                .with_system(script_add_synchronizer::<Self>)
-                .with_system(script_remove_synchronizer::<Self>)
-                .with_system(script_hot_reload_handler::<Self>),
-        );
+            .add_system_set_to_stage(
+                stage,
+                SystemSet::new()
+                    // handle script insertions removal first
+                    // then update their contexts later on script asset changes
+                    .with_system(script_add_synchronizer::<Self>.before(script_remove_synchronizer::<Self>))
+                    .with_system(script_remove_synchronizer::<Self>.before(script_hot_reload_handler::<Self>))
+                    .with_system(script_hot_reload_handler::<Self>),
+            );
     }
 
     fn load_script(script: &[u8], script_name: &str) -> Result<Self::ScriptContext> {
