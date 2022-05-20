@@ -8,7 +8,7 @@ use anyhow::Result;
 use bevy::{
     asset::Asset,
     ecs::{schedule::IntoRunCriteria, system::SystemState},
-    prelude::*,
+    prelude::*, reflect::FromReflect,
 };
 use bevy_event_priority::PriorityEventReader;
 pub use {crate::rhai_host::*, crate::rlua_host::*};
@@ -226,13 +226,20 @@ pub trait APIProvider: 'static + Default {
     fn attach_api(ctx: &mut Self::Ctx);
 }
 
-#[derive(Component, Debug)]
+#[derive(Component, Debug, FromReflect,Reflect)]
+#[reflect(Component)]
 /// The component storing many scripts.
 /// Scripts receive information about the entity they are attached to
 /// Scripts have unique identifiers and hence multiple copies of the same script
 /// can be attached to the same entity
 pub struct ScriptCollection<T: Asset> {
     pub scripts: Vec<Script<T>>,
+}
+
+impl <T: Asset>Default for ScriptCollection<T>{
+    fn default() -> Self {
+        Self { scripts: Default::default() }
+    }
 }
 
 /// A resource storing the script contexts for each script instance.
@@ -273,7 +280,7 @@ impl<C> ScriptContexts<C> {
 
 /// A struct defining an instance of a script asset.
 /// Multiple instances of the same script can exist on the same entity
-#[derive(Debug)]
+#[derive(Debug,Reflect,FromReflect)]
 pub struct Script<T: Asset> {
     /// a strong handle to the script asset
     handle: Handle<T>,

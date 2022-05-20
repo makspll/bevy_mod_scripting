@@ -2,7 +2,7 @@ pub mod assets;
 
 use crate::{
     script_add_synchronizer, script_hot_reload_handler, script_remove_synchronizer, APIProvider,
-    CachedScriptEventState, FlatScriptData, Recipients, ScriptContexts, ScriptEvent, ScriptHost,
+    CachedScriptEventState, FlatScriptData, Recipients, ScriptContexts, ScriptEvent, ScriptHost, ScriptCollection, Script,
 };
 use anyhow::{anyhow, Result};
 use beau_collector::BeauCollector as _;
