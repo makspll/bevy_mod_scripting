@@ -117,8 +117,10 @@ impl<A: LuaArg, API: APIProvider<Ctx = Mutex<Lua>>> ScriptHost for RLuaScriptHos
             .add_system_set_to_stage(
                 stage,
                 SystemSet::new()
-                    .with_system(script_add_synchronizer::<Self>)
-                    .with_system(script_remove_synchronizer::<Self>)
+                    // handle script insertions removal first
+                    // then update their contexts later on script asset changes
+                    .with_system(script_add_synchronizer::<Self>.before(script_remove_synchronizer::<Self>))
+                    .with_system(script_remove_synchronizer::<Self>.before(script_hot_reload_handler::<Self>))
                     .with_system(script_hot_reload_handler::<Self>),
             );
     }
