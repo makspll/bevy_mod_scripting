@@ -6,7 +6,7 @@ use crate::{
 };
 use anyhow::anyhow;
 use beau_collector::BeauCollector as _;
-use bevy::prelude::{AddAsset, SystemSet, World, ParallelSystemDescriptorCoercion};
+use bevy::prelude::{AddAsset, ParallelSystemDescriptorCoercion, SystemSet, World};
 use bevy_event_priority::AddPriorityEvent;
 use rhai::*;
 use std::marker::PhantomData;
@@ -65,8 +65,12 @@ impl<A: FuncArgs + Send + Clone + Sync + 'static, API: RhaiAPIProvider<Ctx = Rha
         app.add_system_set_to_stage(
             stage,
             SystemSet::new()
-                .with_system(script_add_synchronizer::<Self>.before(script_remove_synchronizer::<Self>))
-                .with_system(script_remove_synchronizer::<Self>.before(script_hot_reload_handler::<Self>))
+                .with_system(
+                    script_add_synchronizer::<Self>.before(script_remove_synchronizer::<Self>),
+                )
+                .with_system(
+                    script_remove_synchronizer::<Self>.before(script_hot_reload_handler::<Self>),
+                )
                 .with_system(script_hot_reload_handler::<Self>),
         );
     }
