@@ -3,7 +3,8 @@ pub mod api;
 
 use crate::{
     script_add_synchronizer, script_hot_reload_handler, script_remove_synchronizer, APIProvider,
-    CachedScriptEventState, FlatScriptData, Recipients, ScriptContexts, ScriptEvent, ScriptHost, ScriptCollection, Script,
+    CachedScriptEventState, FlatScriptData, Recipients, Script, ScriptCollection, ScriptContexts,
+    ScriptEvent, ScriptHost,
 };
 use anyhow::{anyhow, Result};
 use beau_collector::BeauCollector as _;
@@ -113,14 +114,18 @@ impl<A: LuaArg, API: APIProvider<Ctx = Mutex<Lua>>> ScriptHost for RLuaScriptHos
             .init_resource::<ScriptContexts<Self::ScriptContext>>()
             .register_type::<ScriptCollection<Self::ScriptAsset>>()
             .register_type::<Script<Self::ScriptAsset>>()
-
             .add_system_set_to_stage(
                 stage,
                 SystemSet::new()
                     // handle script insertions removal first
                     // then update their contexts later on script asset changes
-                    .with_system(script_add_synchronizer::<Self>.before(script_remove_synchronizer::<Self>))
-                    .with_system(script_remove_synchronizer::<Self>.before(script_hot_reload_handler::<Self>))
+                    .with_system(
+                        script_add_synchronizer::<Self>.before(script_remove_synchronizer::<Self>),
+                    )
+                    .with_system(
+                        script_remove_synchronizer::<Self>
+                            .before(script_hot_reload_handler::<Self>),
+                    )
                     .with_system(script_hot_reload_handler::<Self>),
             );
     }

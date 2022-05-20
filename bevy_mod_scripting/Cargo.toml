@@ -28,7 +28,7 @@ num = "0.4.0"
 phf = {version = "0.10.1", features= ["macros"] }
 
 [dev-dependencies]
-# bevy_console = { git = "https://github.com/makspll/bevy-console-bevy-0.7" }
+bevy_console = { git = "https://github.com/RichoDemus/bevy-console" }
 bevy_asset_loader = {git = "https://github.com/NiklasEi/bevy_asset_loader", features = ["dynamic_assets"]}
 rand = "0.8.5"
 

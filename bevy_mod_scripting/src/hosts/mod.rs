@@ -7,8 +7,9 @@ use anyhow::Result;
 
 use bevy::{
     asset::Asset,
-    ecs::{schedule::IntoRunCriteria, system::{SystemState, SystemParam}},
-    prelude::*, reflect::FromReflect,
+    ecs::{schedule::IntoRunCriteria, system::SystemState},
+    prelude::*,
+    reflect::FromReflect,
 };
 use bevy_event_priority::PriorityEventReader;
 pub use {crate::rhai_host::*, crate::rlua_host::*};
@@ -229,6 +230,8 @@ pub trait APIProvider: 'static + Default {
 
 
 
+
+
 /// A resource storing the script contexts for each script instance.
 /// The reason we need this is to split the world borrow in our handle event systems, but this
 /// has the added benefit that users don't see the contexts at all, and we can provide
@@ -267,7 +270,7 @@ impl<C> ScriptContexts<C> {
 
 /// A struct defining an instance of a script asset.
 /// Multiple instances of the same script can exist on the same entity
-#[derive(Debug,Reflect,FromReflect)]
+#[derive(Debug, Reflect, FromReflect)]
 pub struct Script<T: Asset> {
     /// a strong handle to the script asset
     handle: Handle<T>,
@@ -386,6 +389,13 @@ impl <T: Asset>Default for ScriptCollection<T>{
     }
 }
 
+impl<T: Asset> Default for ScriptCollection<T> {
+    fn default() -> Self {
+        Self {
+            scripts: Default::default(),
+        }
+    }
+}
 /// system state for exclusive systems dealing with script events
 pub(crate) struct CachedScriptEventState<'w, 's, H: ScriptHost> {
     event_state: SystemState<PriorityEventReader<'w, 's, H::ScriptEvent>>,
