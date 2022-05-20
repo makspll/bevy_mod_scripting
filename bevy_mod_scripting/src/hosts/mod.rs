@@ -2,17 +2,16 @@
 
 pub mod rhai_host;
 pub mod rlua_host;
-pub mod common_api;
 
 use anyhow::Result;
 
 use bevy::{
     asset::Asset,
-    ecs::{schedule::IntoRunCriteria, system::SystemState},
+    ecs::{schedule::IntoRunCriteria, system::{SystemState, SystemParam}},
     prelude::*, reflect::FromReflect,
 };
 use bevy_event_priority::PriorityEventReader;
-pub use {crate::rhai_host::*, crate::rlua_host::*, crate::common_api::*};
+pub use {crate::rhai_host::*, crate::rlua_host::*};
 
 use std::{
     collections::{HashMap, HashSet},
@@ -281,13 +280,14 @@ pub struct Script<T: Asset> {
 }
 
 
+static COUNTER: AtomicU32 = AtomicU32::new(0);
 
 impl<T: Asset> Script<T> {
+
     /// creates a new script instance with the given name and asset handle
     /// automatically gives this script instance a unique ID.
     /// No two scripts instances ever share the same ID
-    pub fn new<H: ScriptHost>(name: String, handle: Handle<T>) -> Self {
-        static COUNTER: AtomicU32 = AtomicU32::new(0);
+    pub fn new(name: String, handle: Handle<T>) -> Self {
         Self {
             handle,
             name,
@@ -320,6 +320,7 @@ impl<T: Asset> Script<T> {
         script_assets: &Res<Assets<H::ScriptAsset>>,
         contexts: &mut ResMut<ScriptContexts<H::ScriptContext>>,
     ) {
+        debug!("reloading script {}", script.id);
         // retrieve owning entity
         let entity = contexts.script_owner(script.id()).unwrap();
 
@@ -347,10 +348,12 @@ impl<T: Asset> Script<T> {
             Some(s) => s,
             None => {
                 // not loaded yet
+                debug!("Inserted script which hasn't loaded yet {:?}", fd);
                 contexts.insert_context(fd, None);
                 return;
             }
         };
+        debug!("Inserted script {:?}", fd);
 
         match H::load_script(script.bytes(), &new_script.name) {
             Ok(ctx) => {
@@ -368,7 +371,7 @@ impl<T: Asset> Script<T> {
 
 
 #[derive(Component, Debug, FromReflect,Reflect)]
-#[reflect(Component)]
+#[reflect(Component,Default)]
 /// The component storing many scripts.
 /// Scripts receive information about the entity they are attached to
 /// Scripts have unique identifiers and hence multiple copies of the same script
@@ -411,8 +414,11 @@ pub(crate) fn script_add_synchronizer<H: ScriptHost + 'static>(
     mut contexts: ResMut<ScriptContexts<H::ScriptContext>>,
     script_assets: Res<Assets<H::ScriptAsset>>,
 ) {
+    debug!("Handling addition/modification of scripts");
+
     query.for_each(|(entity, new_scripts, tracker)| {
         if tracker.is_added() {
+            debug!("Script added to {}",entity.id());
             new_scripts.scripts.iter().for_each(|new_script| {
                 Script::<H::ScriptAsset>::insert_new_script_context::<H>(
                     new_script,
@@ -422,6 +428,7 @@ pub(crate) fn script_add_synchronizer<H: ScriptHost + 'static>(
                 )
             })
         } else {
+            debug!("Script changed on {}",entity.id());
             // changed but structure already exists in contexts
             // find out what's changed
             // we only care about added or removed scripts here
@@ -465,6 +472,7 @@ pub(crate) fn script_remove_synchronizer<H: ScriptHost>(
     mut contexts: ResMut<ScriptContexts<H::ScriptContext>>,
 ) {
     query.iter().for_each(|v| {
+        debug!("removed script on entity {}",v.id());
         // we know that this entity used to have a script component
         // ergo a script context must exist in ctxts, remove all scripts on the entity
         contexts.remove_context(v.id());
@@ -479,6 +487,7 @@ pub(crate) fn script_hot_reload_handler<H: ScriptHost>(
     mut contexts: ResMut<ScriptContexts<H::ScriptContext>>,
 ) {
     for e in events.iter() {
+        debug!("Handling creation/modification of script asset: {:?}",e);
         match e {
             AssetEvent::Modified { handle } | AssetEvent::Created { handle } => {
                 // find script using this handle by handle id
@@ -507,6 +516,7 @@ pub(crate) fn script_hot_reload_handler<H: ScriptHost>(
 pub(crate) fn script_event_handler<H: ScriptHost, const MAX: u32, const MIN: u32>(
     world: &mut World,
 ) {
+    debug!("Handling scripts with prio in [{:?},{:?}]",MAX,MIN);
     // we need to collect the events to drop the borrow of the world
     let events = world.resource_scope(|world, mut cached_state: Mut<CachedScriptEventState<H>>| {
         let mut cached_state = cached_state.event_state.get_mut(world);

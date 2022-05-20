@@ -1,5 +1,4 @@
 use bevy::prelude::*;
-use bevy_console::ConsolePlugin;
 use bevy_event_priority::PriorityEventWriter;
 use bevy_mod_scripting::{
     APIProvider, AddScriptHost, AddScriptHostHandler, LuaEvent, LuaFile, RLuaScriptHost,
@@ -109,7 +108,6 @@ fn main() -> std::io::Result<()> {
 
     app.add_plugins(DefaultPlugins)
         .add_plugin(ScriptingPlugin)
-        .add_plugin(ConsolePlugin)
         .add_startup_system(load_our_scripts)
         // randomly fire events for either all scripts,
         // the script with id 0

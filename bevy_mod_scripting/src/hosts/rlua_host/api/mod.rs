@@ -1,51 +1,44 @@
-pub mod rust_primitives;
+pub mod primitives;
+pub mod base;
 
 use bevy::{prelude::*, reflect::{DynamicStruct, TypeRegistry, TypeData, ReflectRef}};
-use rlua::{UserData, MetaMethod, Value};
+use rlua::{UserData, MetaMethod, Value, FromLuaMulti,ToLuaMulti};
 use rlua::prelude::LuaError;
 use std::{sync::Arc,ops::{Deref,DerefMut}, cell::UnsafeCell, fmt};
 
-use crate::{ScriptReflectVal, PrintableReflect, rust_primitives::LuaNumber};
+use crate::{base::LuaRef, base::PrintableReflect, ScriptCollection, LuaFile, Script};
 use anyhow::{anyhow,Result};
 
-pub use rust_primitives::*;
+pub use {primitives::*,base::*};
 
-pub fn lua_to_reflect(v :Value) -> Result<Box<dyn Reflect + 'static>>{
-    Ok(match v {
-        Value::Boolean(v) => Box::new(v),
-        Value::Integer(v) => Box::new(v),
-        Value::Number(v) => Box::new(v),
-        Value::String(v) => Box::new(v.to_str().unwrap().to_owned()),
+
+pub fn apply_lua_to_reflect(v :Value, dest : &mut dyn Reflect) -> Result<()>{
+
+    match v {
+        Value::Boolean(b) => LuaNumber::Usize(b as usize).reflect_apply(dest),
+        Value::Integer(i) => LuaNumber::I64(i).reflect_apply(dest),
+        Value::Number(n) => LuaNumber::F64(n).reflect_apply(dest),
+        Value::String(v) => {dest.apply(&v.to_str().unwrap().to_owned()); Ok(()) },
         Value::UserData(v) => {
-            // can only set a field to another field or primitive
-            if v.is::<ScriptReflectVal>(){
-                let mut b = v.borrow_mut::<ScriptReflectVal>().unwrap();
+                // can only set a field to another field or primitive
+                if v.is::<LuaRef>(){
+                    let mut b = v.borrow_mut::<LuaRef>().unwrap();
+                    dest.apply(b.get());
+                    Ok(())
+                } else {
+                    return Err(anyhow!(""))
+                }
+            },
+        _ => return Err(anyhow!("Type not supported")),
 
-                b.deref_mut().to_owned()?
-            } else if v.is::<LuaNumber>(){
-                let mut b = v.borrow_mut::<LuaNumber>().unwrap();
-
-                b.deref_mut().to_reflect()
-            } else {
-                return Err(anyhow!(""))
-            }
-
-        },
-        Value::Function(_) => return Err(anyhow!("Type not supported")),
-        Value::Table(_) => return Err(anyhow!("Type not supported")),
-        Value::Error(_) => return Err(anyhow!("Type not supported")),
-        Value::Thread(_) => return Err(anyhow!("Type not supported")),
-        Value::Nil => return Err(anyhow!("Type not supported")),
-        Value::LightUserData(_) => return Err(anyhow!("Type not supported")),
-
-    })
+    }
 }
 
 pub fn reflect_to_lua<'s,'lua>(v : &'s dyn Reflect, ctx : &mut rlua::Context<'lua> ) -> Result<Value<'lua>>{
 
 
     match v.reflect_ref() {
-        bevy::reflect::ReflectRef::List(l) => {
+        ReflectRef::List(l) => {
             let i = l.iter()
                 .map(|v| reflect_to_lua(v,ctx))
                 .collect::<Result<Vec<Value<'lua>>>>()?
@@ -56,24 +49,9 @@ pub fn reflect_to_lua<'s,'lua>(v : &'s dyn Reflect, ctx : &mut rlua::Context<'lu
                 .map(|v| Value::Table(v))
                 .map_err(|e| anyhow!(e.to_string()))
         },
-        bevy::reflect::ReflectRef::Struct(s) => {
-
-            
-            Ok(Value::Nil)
-        },
-        bevy::reflect::ReflectRef::TupleStruct(ts) => todo!(),
-        bevy::reflect::ReflectRef::Tuple(t) => todo!(),
-
-        bevy::reflect::ReflectRef::Map(m) => todo!(),
-        bevy::reflect::ReflectRef::Value(v) => {
-            if let Some(v) = v.downcast_ref::<bool>(){
-                return Ok(Value::Boolean(*v))
-            } else if let Some(v) = v.downcast_ref::<u32>() {
-                return Ok(Value::Integer((*v) as i64))
-            } else if let Some(v) = v.downcast_ref::<i64>() {
-                return Ok(Value::Integer(*v))
-            } else if let Some(v) = v.downcast_ref::<f64>() {
-                return Ok(Value::Number(*v))
+        ReflectRef::Value(v) => {
+            if let Some(c) = REFLECT_TO_LUA_CONVERSIONS.get(v.type_name()){
+                return Ok(c(v,ctx))
             } else if let Some(v) = v.downcast_ref::<String>(){
                 return ctx.create_string(v)
                             .map(|v| Value::String(v)).map_err(|e| anyhow!("{}",e))
@@ -81,6 +59,14 @@ pub fn reflect_to_lua<'s,'lua>(v : &'s dyn Reflect, ctx : &mut rlua::Context<'lu
                 return Err(anyhow!("This type cannot be converted to a lua value: {:#?}",PrintableReflect(v)))
             }
         },
+        ReflectRef::Struct(s) => {
+            Ok(Value::Nil)
+        },
+        ReflectRef::TupleStruct(ts) => todo!(),
+        ReflectRef::Tuple(t) => todo!(),
+        ReflectRef::Map(m) => todo!(),
+        ReflectRef::Array(_) => todo!(),
+        
     }
 
 
@@ -150,16 +136,16 @@ pub fn get_type_data<T : TypeData + ToOwned<Owned=T>>(w : &mut World, name : &st
 
 impl UserData for LuaWorld {
     fn add_methods<'lua, T: rlua::UserDataMethods<'lua, Self>>(methods: &mut T) {
-        methods.add_method("new_component", |_,w,comp_name : String |{
+        methods.add_method("add_component", |_,w,(entity, comp_name ): (LuaEntity,String) |{
             let w = unsafe { &mut *w.0 };
 
-            let refl = get_type_data(w,&comp_name).map_err(|e| LuaError::RuntimeError(e.to_string()))?;
-
-            let mut s = DynamicStruct::default();
-            s.set_name(comp_name);
+            let refl : ReflectComponent = get_type_data(w,&comp_name).unwrap();
+            let def = get_type_data::<ReflectDefault>(w,&comp_name).unwrap();
+            let s = def.default();
+            refl.add_component(w, *entity, s.as_ref());
 
             Ok(LuaComponent {
-                comp: ScriptReflectVal::Owned(Arc::new(UnsafeCell::new(s))),
+                comp: LuaRef(refl.reflect_component(w, *entity).unwrap() as *const dyn Reflect as *mut dyn Reflect),
                 refl
             })
         });
@@ -167,34 +153,41 @@ impl UserData for LuaWorld {
         methods.add_method::<_,(LuaEntity,String),_,_>("get_component", |_,w,(entity, comp_name)|{
             let w = unsafe { &mut *w.0 };
             
-            let refl : ReflectComponent = get_type_data(w,&comp_name).map_err(|e| LuaError::RuntimeError(e.to_string())).unwrap();
+            let refl : ReflectComponent = get_type_data(w,&comp_name).unwrap();
 
             let dyn_comp = refl.reflect_component(w, *entity)
                 .ok_or(LuaError::RuntimeError("Component not part of entity".to_string())).unwrap();
 
             Ok(LuaComponent{
-                comp: ScriptReflectVal::Ref(dyn_comp as *const dyn Reflect as *mut dyn Reflect),
+                comp: LuaRef(dyn_comp as *const dyn Reflect as *mut dyn Reflect),
                 refl,
             })
         });
 
-        methods.add_method("spawn", |_,w,components : Vec<LuaComponent> |{
+        methods.add_method("new_script_entity", |_,w,name : String|{
             let w = unsafe { &mut *w.0 };
 
-            let e = w.spawn().id();
+            w.resource_scope(|w,r : Mut<AssetServer>|{
+                let handle = r.load::<LuaFile,_>(&name);
+                Ok(LuaEntity(w.spawn()
+                    .insert(ScriptCollection::<crate::LuaFile>{
+                        scripts: vec![
+                            Script::<LuaFile>::new(name,handle)
+                        ],
+                    }).id()))
+            })
+        });
 
-            components.iter().for_each(|c| {
-                c.refl.add_component(w, e, c.comp.ref_immut())
-            });
-        
-            Ok(LuaEntity(e))
+        methods.add_method("spawn", |_,w,()|{
+            let w = unsafe { &mut *w.0 };        
+            Ok(LuaEntity(w.spawn().id()))
         });
     }
 }
 
 #[derive(Clone)]
 pub struct LuaComponent{
-    comp: ScriptReflectVal,
+    comp: LuaRef,
     refl: ReflectComponent
 }
 
@@ -207,13 +200,17 @@ impl fmt::Debug for LuaComponent {
 
 impl UserData for LuaComponent {
     fn add_methods<'lua, T: rlua::UserDataMethods<'lua, Self>>(methods: &mut T) {
+        methods.add_meta_method(MetaMethod::ToString, |_, val, a : Value| {
+            Ok(format!("{:#?}",PrintableReflect(val.comp.get())))
+        });
+
         methods.add_meta_method(MetaMethod::Index, |_,val,field : String|{ 
-           
+    
             Ok(val.comp.path_ref(&field).unwrap())
         });
 
-        methods.add_meta_method_mut::<(String,Value),_,_>(MetaMethod::NewIndex, |a,val,(field,new_val)|{
-            val.comp.path_set(&field,lua_to_reflect(new_val).unwrap()).unwrap();
+        methods.add_meta_method_mut(MetaMethod::NewIndex, |_,val,(field,new_val) : (Value,Value)|{  
+            apply_lua_to_reflect(new_val,val.comp.path_lua_val_ref(field).unwrap().get_mut()).unwrap();
             Ok(())
         })
     }
@@ -221,7 +218,7 @@ impl UserData for LuaComponent {
 }
 
 pub struct LuaResource {
-    res: ScriptReflectVal 
+    res: LuaRef 
 }
 
 impl UserData for LuaResource {
@@ -231,44 +228,30 @@ impl UserData for LuaResource {
 
 }
 
-impl UserData for ScriptReflectVal {
+
+impl UserData for LuaRef {
     fn add_methods<'lua, T: rlua::UserDataMethods<'lua, Self>>(methods: &mut T) {
         methods.add_meta_method(MetaMethod::ToString, |_, val, ()| {
-            Ok(format!("{:#?}",PrintableReflect(val.ref_immut())))
+            Ok(format!("{:#?}",PrintableReflect(val.get())))
         });
 
-        methods.add_meta_method(MetaMethod::Index, |_,val,field : Value|{    
+        methods.add_meta_method(MetaMethod::Index, |ctx,val,field : Value|{    
+                let r = val.path_lua_val_ref(field).unwrap();
 
-            let r = val.ref_immut().reflect_ref();
+                if let Some(c) =  REFLECT_TO_LUA_CONVERSIONS.get(r.get().type_name()){
+                    Ok(c(r.get(),&ctx))
+                } else {
+                    Ok(Value::UserData(ctx.create_userdata(r).unwrap()))
+                }
+        });
 
-            let r = match field {
-                Value::Integer(idx) => {
-                    let idx = idx as usize - 1;
-                    match r {
-                        ReflectRef::Tuple(v) => Ok(v.field(idx).unwrap()),
-                        ReflectRef::TupleStruct(v) => Ok(v.field(idx).unwrap()),
-                        ReflectRef::List(v) => Ok(v.get(idx).unwrap()),
-                        ReflectRef::Map(v) => Ok(v.get(&(idx)).unwrap()),
-                        _ => Err(LuaError::RuntimeError("".to_string()))
-                    }
-                },
-                Value::String(field) => {
-                    let path = field.to_str().unwrap();
-                    match r {
-                        ReflectRef::Map(v) => Ok(v.get(&path.to_owned()).unwrap()),
-                        ReflectRef::Struct(v) => Ok(v.field(path).unwrap()),
-                        _ => Err(LuaError::RuntimeError("".to_string()))
-                    }
-
-                },
-                _ => panic!("ASDASD")
-            }?;
-
-            Ok(ScriptReflectVal::Ref(r as *const dyn Reflect as *mut dyn Reflect))
+        methods.add_meta_method_mut(MetaMethod::NewIndex, |_,val,(field,new_val): (Value,Value)|{
+            apply_lua_to_reflect(new_val,val.path_lua_val_ref(field).unwrap().get_mut()).unwrap();
+            Ok(())
         });
 
         methods.add_meta_method(MetaMethod::Len, |_,val,()|{    
-            let r =  val.ref_immut().reflect_ref();
+            let r =  val.get().reflect_ref();
             if let ReflectRef::List(v) = r {
                 Ok(v.len())
             } else if let ReflectRef::Map(v) = r {
@@ -280,21 +263,9 @@ impl UserData for ScriptReflectVal {
             }
         });
 
-        methods.add_meta_method_mut::<(String,Value),_,_>(MetaMethod::NewIndex, |_,val,(field,new_val)|{
-            val.path_set(&field, lua_to_reflect(new_val).unwrap()).unwrap();
-            Ok(())
-        });
-        
-
         methods.add_method("val",|mut ctx,val,()|{
-            Ok(reflect_to_lua(val.ref_immut(),&mut ctx).map_err(|e| LuaError::RuntimeError(e.to_string())).unwrap())
+            Ok(reflect_to_lua(val.get(),&mut ctx).map_err(|e| LuaError::RuntimeError(e.to_string())).unwrap())
         });
-
-        methods.add_meta_method(MetaMethod::Add, |_,val,o : Value|{
-            let l = LuaNumber::from_reflect(val.ref_immut()).unwrap();
-            let r = LuaNumber::from_lua(o,l.type_name()).unwrap();
-            Ok(l.add(r).unwrap())
-        })
     }
 }
 

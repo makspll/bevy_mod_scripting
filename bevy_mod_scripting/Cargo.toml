@@ -17,7 +17,7 @@ path = "src/lib.rs"
 
 
 [dependencies]
-bevy = "0.7"
+bevy = { git = "https://github.com/bevyengine/bevy" }
 rlua = "0.19.1"
 rhai = { version = "1.7.0", features = ["sync"] }
 anyhow = "1.0.57"
@@ -25,20 +25,23 @@ beau_collector = "0.2.1"
 once_cell = "1.10.0"
 bevy_event_priority = { path = "../bevy_event_priority" }
 num = "0.4.0"
+phf = {version = "0.10.1", features= ["macros"] }
 
 [dev-dependencies]
-bevy_console = { git = "https://github.com/makspll/bevy-console-bevy-0.7" }
+# bevy_console = { git = "https://github.com/makspll/bevy-console-bevy-0.7" }
 bevy_asset_loader = {git = "https://github.com/NiklasEi/bevy_asset_loader", features = ["dynamic_assets"]}
 rand = "0.8.5"
 
-[[example]]
-name = "console_integration_lua"
-path = "examples/console_integration_lua.rs"
+
+# needs bevy 0.8 support from console
+# [[example]]
+# name = "console_integration_lua"
+# path = "examples/console_integration_lua.rs"
 
 
-[[example]]
-name = "console_integration_rhai"
-path = "examples/console_integration_rhai.rs"
+# [[example]]
+# name = "console_integration_rhai"
+# path = "examples/console_integration_rhai.rs"
 
 [[example]]
 name = "complex_game_loop"

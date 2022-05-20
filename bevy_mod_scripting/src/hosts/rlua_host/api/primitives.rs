@@ -1,7 +1,8 @@
 use bevy::reflect::Reflect;
-use num::ToPrimitive;
+use num::{ToPrimitive,Num};
 use anyhow::{anyhow,Result};
 use rlua::{UserData, Value};
+
 
 /// Represents a Rust numeric type stored in lua
 /// Necessary to retain precision and assign to various numeric rust via scripts
@@ -57,7 +58,6 @@ impl ToPrimitive for LuaNumber {
 impl LuaNumber {
 
     pub fn from_reflect(r : &dyn Reflect) -> Result<Self> {
-        
         if let Some(v) = r.downcast_ref::<usize>(){
             Ok(Self::Usize(*v))
         } else if let Some(v) = r.downcast_ref::<isize>(){
@@ -84,20 +84,21 @@ impl LuaNumber {
             Err(anyhow!("Wrong type"))
         }
     } 
-    pub fn to_reflect(self) -> Box<dyn Reflect> {
-        match self {
-            LuaNumber::Usize(v) => Box::new(v),
-            LuaNumber::Isize(v) => Box::new(v),
-            LuaNumber::I64(v) => Box::new(v),
-            LuaNumber::I32(v) => Box::new(v),
-            LuaNumber::U32(v) => Box::new(v),
-            LuaNumber::U16(v) => Box::new(v),
-            LuaNumber::I16(v) => Box::new(v),
-            LuaNumber::U8(v) => Box::new(v),
-            LuaNumber::I8(v) => Box::new(v),
-            LuaNumber::F32(v) => Box::new(v),
-            LuaNumber::F64(v) => Box::new(v),
-        }
+    
+    pub fn reflect_apply(self, r : &mut dyn Reflect) -> Result<()> {
+        Ok(match self.as_type(r.type_name())? {
+            LuaNumber::Usize(v) => r.apply(&v),
+            LuaNumber::Isize(v) => r.apply(&v),
+            LuaNumber::I64(v) => r.apply(&v),
+            LuaNumber::I32(v) => r.apply(&v),
+            LuaNumber::U32(v) => r.apply(&v),
+            LuaNumber::U16(v) => r.apply(&v),
+            LuaNumber::I16(v) => r.apply(&v),
+            LuaNumber::U8(v) => r.apply(&v),
+            LuaNumber::I8(v) => r.apply(&v),
+            LuaNumber::F32(v) => r.apply(&v),
+            LuaNumber::F64(v) => r.apply(&v),
+        })
     }
 
     pub fn add(&self, o: LuaNumber) -> Result<LuaNumber> {
@@ -303,6 +304,10 @@ impl UserData for LuaNumber {
 
         methods.add_meta_method(rlua::MetaMethod::ToString, |_,v,()|{
             Ok(format!("{:?}",v))
+        });
+
+        methods.add_method_mut("as",|_,v,typ : String|{
+            Ok(v.as_type(&typ).unwrap())
         })
     }
 }
