@@ -26,7 +26,7 @@ once_cell = "1.10.0"
 bevy_event_priority = { path = "../bevy_event_priority" }
 
 [dev-dependencies]
-bevy_console = { git = "https://github.com/makspll/bevy-console-bevy-0.7" }
+bevy_console = { git = "https://github.com/RichoDemus/bevy-console" }
 bevy_asset_loader = {git = "https://github.com/NiklasEi/bevy_asset_loader", features = ["dynamic_assets"]}
 rand = "0.8.5"
 
