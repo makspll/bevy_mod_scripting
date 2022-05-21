@@ -37,6 +37,7 @@ impl APIProvider for LuaAPIProvider {
             },
             ctx,
         )
+        .unwrap();
     }
 }
 

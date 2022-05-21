@@ -3,14 +3,7 @@
 pub mod rhai_host;
 pub mod rlua_host;
 
-use anyhow::Result;
-
-use bevy::{
-    asset::Asset,
-    ecs::{schedule::IntoRunCriteria, system::SystemState},
-    prelude::*,
-    reflect::FromReflect,
-};
+use bevy::{asset::Asset, ecs::system::SystemState, prelude::*, reflect::FromReflect};
 use bevy_event_priority::PriorityEventReader;
 pub use {crate::rhai_host::*, crate::rlua_host::*};
 
@@ -18,6 +11,8 @@ use std::{
     collections::{HashMap, HashSet},
     sync::atomic::{AtomicU32, Ordering},
 };
+
+use crate::{ScriptError, ScriptErrorEvent};
 
 /// Describes the target set of scripts this event should
 /// be handled by
@@ -75,7 +70,7 @@ pub trait ScriptHost: Send + Sync + 'static {
 
     /// Loads a script in byte array format, the script name can be used
     /// to send useful errors.
-    fn load_script(script: &[u8], script_name: &str) -> Result<Self::ScriptContext>;
+    fn load_script(script: &[u8], script_name: &str) -> Result<Self::ScriptContext, ScriptError>;
 
     /// the main point of contact with the bevy world.
     /// Scripts are called with appropriate events in the event order
@@ -83,18 +78,13 @@ pub trait ScriptHost: Send + Sync + 'static {
         world: &mut World,
         events: &[Self::ScriptEvent],
         ctxs: impl Iterator<Item = (FlatScriptData<'a>, &'a mut Self::ScriptContext)>,
-    ) -> Result<()>;
+    );
 
     /// Loads and runs script instantaneously without storing any script data into the world.
     /// The script receives the `world` global as normal, but `entity` is set to `u64::MAX`.
     /// The script id is set to `u32::MAX`.
-    fn run_one_shot(
-        script: &[u8],
-        script_name: &str,
-        world: &mut World,
-        event: Self::ScriptEvent,
-    ) -> Result<()> {
-        let mut ctx = Self::load_script(script, script_name)?;
+    fn run_one_shot(script: &[u8], script_name: &str, world: &mut World, event: Self::ScriptEvent) {
+        let mut ctx = Self::load_script(script, script_name).unwrap();
         let entity = Entity::from_bits(u64::MAX);
 
         let events = [event; 1];
@@ -115,99 +105,6 @@ pub trait ScriptHost: Send + Sync + 'static {
     ///
     /// Ideally place after any game logic which can spawn/remove/modify scripts to avoid frame lag. (typically `CoreStage::Post_Update`)
     fn register_with_app(app: &mut App, stage: impl StageLabel);
-}
-
-/// Trait for app builder notation
-pub trait AddScriptHost {
-    /// registers the given script host with your app
-    fn add_script_host<T: ScriptHost, S: StageLabel>(&mut self, stage: S) -> &mut Self;
-}
-
-impl AddScriptHost for App {
-    fn add_script_host<T: ScriptHost, S: StageLabel>(&mut self, stage: S) -> &mut Self {
-        T::register_with_app(self, stage);
-        self
-    }
-}
-
-pub trait AddScriptHostHandler {
-    /// Enables this script host to handle events with priorities in the range [0,min_prio] (inclusive),
-    /// during the runtime of the given stage.
-    ///
-    /// Think of handler stages as a way to run certain types of events at various points in your engine.
-    /// A good example of this is Unity [game loop's](https://docs.unity3d.com/Manual/ExecutionOrder.html) `onUpdate` and `onFixedUpdate`.
-    /// FixedUpdate runs *before* any physics while Update runs after physics and input events.
-    ///
-    /// A similar setup can be achieved by using a separate stage before and after your physics,
-    /// then assigning event priorities such that your events are forced to run at a particular stage, for example:
-    ///
-    /// PrePhysics: min_prio = 1
-    /// PostPhysics: min_prio = 4
-    ///
-    /// | Priority | Handler     | Event        |
-    /// | -------- | ----------- | ------------ |
-    /// | 0        | PrePhysics  | Start        |
-    /// | 1        | PrePhysics  | FixedUpdate  |
-    /// | 2        | PostPhysics | OnCollision  |
-    /// | 3        | PostPhysics | OnMouse      |
-    /// | 4        | PostPhysics | Update       |
-    ///
-    /// The *frequency* of running these events, is controlled by your systems, if the event is not emitted, it cannot not handled.
-    /// Of course there is nothing stopping your from emitting a single event type at varying priorities.
-    fn add_script_handler_stage<T: ScriptHost, S: StageLabel, const MAX: u32, const MIN: u32>(
-        &mut self,
-        stage: S,
-    ) -> &mut Self;
-
-    fn add_script_handler_stage_with_criteria<
-        T: ScriptHost,
-        S: StageLabel,
-        M,
-        C: IntoRunCriteria<M>,
-        const MAX: u32,
-        const MIN: u32,
-    >(
-        &mut self,
-        stage: S,
-        criteria: C,
-    ) -> &mut Self;
-}
-
-impl AddScriptHostHandler for App {
-    fn add_script_handler_stage<T: ScriptHost, S: StageLabel, const MAX: u32, const MIN: u32>(
-        &mut self,
-        stage: S,
-    ) -> &mut Self {
-        self.add_system_to_stage(
-            stage,
-            script_event_handler::<T, MAX, MIN>
-                .exclusive_system()
-                .at_end(),
-        );
-        self
-    }
-
-    fn add_script_handler_stage_with_criteria<
-        T: ScriptHost,
-        S: StageLabel,
-        M,
-        C: IntoRunCriteria<M>,
-        const MAX: u32,
-        const MIN: u32,
-    >(
-        &mut self,
-        stage: S,
-        criteria: C,
-    ) -> &mut Self {
-        self.add_system_to_stage(
-            stage,
-            script_event_handler::<T, MAX, MIN>
-                .exclusive_system()
-                .at_end()
-                .with_run_criteria(criteria),
-        );
-        self
-    }
 }
 
 /// All code assets share this common interface.
@@ -391,7 +288,10 @@ impl<T: Asset> Default for ScriptCollection<T> {
 
 /// system state for exclusive systems dealing with script events
 pub(crate) struct CachedScriptEventState<'w, 's, H: ScriptHost> {
-    event_state: SystemState<PriorityEventReader<'w, 's, H::ScriptEvent>>,
+    event_state: SystemState<(
+        PriorityEventReader<'w, 's, H::ScriptEvent>,
+        EventWriter<'w, 's, ScriptErrorEvent>,
+    )>,
 }
 
 impl<'w, 's, H: ScriptHost> FromWorld for CachedScriptEventState<'w, 's, H> {
@@ -520,7 +420,7 @@ pub(crate) fn script_event_handler<H: ScriptHost, const MAX: u32, const MIN: u32
 ) {
     // we need to collect the events to drop the borrow of the world
     let events = world.resource_scope(|world, mut cached_state: Mut<CachedScriptEventState<H>>| {
-        let mut cached_state = cached_state.event_state.get_mut(world);
+        let (mut cached_state, _) = cached_state.event_state.get_mut(world);
         cached_state
             .iter_prio_range(MAX, MIN)
             .collect::<Vec<H::ScriptEvent>>()
@@ -551,9 +451,6 @@ pub(crate) fn script_event_handler<H: ScriptHost, const MAX: u32, const MIN: u32
                     ))
                 });
 
-        match H::handle_events(world, &events, ctx_iter) {
-            Ok(_) => {}
-            Err(e) => warn!("{}", e),
-        };
+        H::handle_events(world, &events, ctx_iter);
     });
 }
