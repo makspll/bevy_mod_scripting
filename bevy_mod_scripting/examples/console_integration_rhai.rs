@@ -3,7 +3,7 @@ use bevy_console::{AddConsoleCommand, ConsoleCommand, ConsolePlugin, PrintConsol
 use bevy_mod_scripting::{
     events::PriorityEventWriter, APIProvider, AddScriptHost, AddScriptHostHandler, Recipients,
     RhaiAPIProvider, RhaiContext, RhaiEvent, RhaiFile, RhaiScriptHost, Script, ScriptCollection,
-    ScriptingPlugin, ScriptErrorEvent,
+    ScriptErrorEvent, ScriptingPlugin,
 };
 use rhai::FuncArgs;
 
@@ -56,14 +56,16 @@ pub fn trigger_on_update_rhai(mut w: PriorityEventWriter<RhaiEvent<RhaiEventArgs
     w.send(event, 0);
 }
 
-pub fn forward_script_err_to_console(mut r: EventReader<ScriptErrorEvent>, mut w : EventWriter<PrintConsoleLine> ) {
-    for e in r.iter(){
+pub fn forward_script_err_to_console(
+    mut r: EventReader<ScriptErrorEvent>,
+    mut w: EventWriter<PrintConsoleLine>,
+) {
+    for e in r.iter() {
         w.send(PrintConsoleLine {
-            line: format!("ERROR:{}",e.err),
+            line: format!("ERROR:{}", e.err),
         });
     }
 }
-
 
 fn main() -> std::io::Result<()> {
     let mut app = App::new();
@@ -141,7 +143,6 @@ pub fn run_script_cmd(
 fn watch_assets(server: Res<AssetServer>) {
     server.watch_for_changes().unwrap();
 }
-
 
 pub fn delete_script_cmd(
     mut log: ConsoleCommand<DeleteScriptCmd>,

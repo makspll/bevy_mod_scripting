@@ -1,25 +1,16 @@
-use std::{fmt::Debug, f32::consts::E};
+use std::fmt::Debug;
 use thiserror::Error;
 
-
-#[derive(Error,Debug)]
+#[derive(Error, Debug)]
 pub enum ScriptError {
     #[error("Runtime error in script `{script}` {msg}")]
-    RuntimeError{
-        script: String,
-        msg: String,
-    },
+    RuntimeError { script: String, msg: String },
     #[error("Failed to load script asset for `{script}`")]
-    FailedToLoad{
-        script: String
-    },
+    FailedToLoad { script: String },
     #[error("Syntax error for script `{script}` {msg}")]
-    SyntaxError{
-        script: String,
-        msg : String
-    },
+    SyntaxError { script: String, msg: String },
     #[error("Callback method `{callback}` invalid for script `{script}` {msg}")]
-    InvalidCallback{
+    InvalidCallback {
         script: String,
         callback: String,
         msg: String,
@@ -28,10 +19,8 @@ pub enum ScriptError {
     Other(String),
 }
 
-
 impl From<rlua::Error> for ScriptError {
     fn from(e: rlua::Error) -> Self {
         Self::Other(e.to_string())
     }
 }
-

@@ -3,13 +3,7 @@
 pub mod rhai_host;
 pub mod rlua_host;
 
-
-use bevy::{
-    asset::Asset,
-    ecs::system::SystemState,
-    prelude::*,
-    reflect::FromReflect,
-};
+use bevy::{asset::Asset, ecs::system::SystemState, prelude::*, reflect::FromReflect};
 use bevy_event_priority::PriorityEventReader;
 pub use {crate::rhai_host::*, crate::rlua_host::*};
 
@@ -64,8 +58,6 @@ pub trait ScriptEvent: Send + Sync + Clone + 'static {
     fn recipients(&self) -> &Recipients;
 }
 
-
-
 /// A script host is the interface between your rust application
 /// and the scripts in some interpreted language.
 pub trait ScriptHost: Send + Sync + 'static {
@@ -78,7 +70,7 @@ pub trait ScriptHost: Send + Sync + 'static {
 
     /// Loads a script in byte array format, the script name can be used
     /// to send useful errors.
-    fn load_script(script: &[u8], script_name: &str) -> Result<Self::ScriptContext,ScriptError>;
+    fn load_script(script: &[u8], script_name: &str) -> Result<Self::ScriptContext, ScriptError>;
 
     /// the main point of contact with the bevy world.
     /// Scripts are called with appropriate events in the event order
@@ -91,12 +83,7 @@ pub trait ScriptHost: Send + Sync + 'static {
     /// Loads and runs script instantaneously without storing any script data into the world.
     /// The script receives the `world` global as normal, but `entity` is set to `u64::MAX`.
     /// The script id is set to `u32::MAX`.
-    fn run_one_shot(
-        script: &[u8],
-        script_name: &str,
-        world: &mut World,
-        event: Self::ScriptEvent,
-    ){
+    fn run_one_shot(script: &[u8], script_name: &str, world: &mut World, event: Self::ScriptEvent) {
         let mut ctx = Self::load_script(script, script_name).unwrap();
         let entity = Entity::from_bits(u64::MAX);
 
@@ -111,7 +98,7 @@ pub trait ScriptHost: Send + Sync + 'static {
         ); 1]
             .into_iter();
 
-        Self::handle_events(world,&events, ctx_iter)
+        Self::handle_events(world, &events, ctx_iter)
     }
 
     /// Registers the script host with the given app, and attaches handlers to deal with spawning/removing scripts at the given stage.
@@ -119,7 +106,6 @@ pub trait ScriptHost: Send + Sync + 'static {
     /// Ideally place after any game logic which can spawn/remove/modify scripts to avoid frame lag. (typically `CoreStage::Post_Update`)
     fn register_with_app(app: &mut App, stage: impl StageLabel);
 }
-
 
 /// All code assets share this common interface.
 /// When adding a new code asset don't forget to implement asset loading
@@ -300,7 +286,8 @@ impl<T: Asset> Script<T> {
 pub(crate) struct CachedScriptEventState<'w, 's, H: ScriptHost> {
     event_state: SystemState<(
         PriorityEventReader<'w, 's, H::ScriptEvent>,
-        EventWriter<'w,'s,ScriptErrorEvent>)>,
+        EventWriter<'w, 's, ScriptErrorEvent>,
+    )>,
 }
 
 impl<'w, 's, H: ScriptHost> FromWorld for CachedScriptEventState<'w, 's, H> {
@@ -427,7 +414,7 @@ pub(crate) fn script_event_handler<H: ScriptHost, const MAX: u32, const MIN: u32
 ) {
     // we need to collect the events to drop the borrow of the world
     let events = world.resource_scope(|world, mut cached_state: Mut<CachedScriptEventState<H>>| {
-        let (mut cached_state,_) = cached_state.event_state.get_mut(world);
+        let (mut cached_state, _) = cached_state.event_state.get_mut(world);
         cached_state
             .iter_prio_range(MAX, MIN)
             .collect::<Vec<H::ScriptEvent>>()

@@ -2,9 +2,10 @@ pub mod assets;
 
 use crate::{
     script_add_synchronizer, script_hot_reload_handler, script_remove_synchronizer, APIProvider,
-    CachedScriptEventState, FlatScriptData, Recipients, ScriptContexts, ScriptEvent, ScriptHost, ScriptError, ScriptErrorEvent,
+    CachedScriptEventState, FlatScriptData, Recipients, ScriptContexts, ScriptError,
+    ScriptErrorEvent, ScriptEvent, ScriptHost,
 };
-use bevy::prelude::{AddAsset, ParallelSystemDescriptorCoercion, SystemSet, World, EventWriter, Mut, error};
+use bevy::prelude::{error, AddAsset, Mut, ParallelSystemDescriptorCoercion, SystemSet, World};
 use bevy_event_priority::AddPriorityEvent;
 use rhai::*;
 use std::marker::PhantomData;
@@ -74,15 +75,22 @@ impl<A: FuncArgs + Send + Clone + Sync + 'static, API: RhaiAPIProvider<Ctx = Rha
     }
 
     #[allow(deprecated)]
-    fn load_script(path: &[u8], script_name: &str) -> Result<Self::ScriptContext,ScriptError> {
+    fn load_script(path: &[u8], script_name: &str) -> Result<Self::ScriptContext, ScriptError> {
         let mut engine = Engine::new();
 
         API::setup_engine(&mut engine);
 
         let mut scope = Scope::new();
         let ast = engine
-            .compile(std::str::from_utf8(path).map_err(|_| ScriptError::FailedToLoad { script: script_name.to_owned() })?)
-            .map_err(|e| ScriptError::SyntaxError { script: script_name.to_owned(), msg: e.to_string() } )?;
+            .compile(
+                std::str::from_utf8(path).map_err(|_| ScriptError::FailedToLoad {
+                    script: script_name.to_owned(),
+                })?,
+            )
+            .map_err(|e| ScriptError::SyntaxError {
+                script: script_name.to_owned(),
+                msg: e.to_string(),
+            })?;
 
         // prevent shadowing of `state`,`world` and `entity` in variable in scripts
         engine.on_def_var(|_, info, _| {
@@ -103,42 +111,42 @@ impl<A: FuncArgs + Send + Clone + Sync + 'static, API: RhaiAPIProvider<Ctx = Rha
         world: &mut World,
         events: &[Self::ScriptEvent],
         ctxs: impl Iterator<Item = (FlatScriptData<'a>, &'a mut Self::ScriptContext)>,
-    ){
+    ) {
         let world_ptr = world as *mut World as usize;
-        world.resource_scope(|world, mut cached_state: Mut<CachedScriptEventState<Self>>| {
-            let (_,mut error_wrt) = cached_state.event_state.get_mut(world);
-        
-            ctxs.for_each(|(fd, ctx)| {
-                ctx.scope.set_value("world", world_ptr);
-                ctx.scope.set_value("entity", fd.entity);
-                ctx.scope.set_value("script", fd.sid);
+        world.resource_scope(
+            |world, mut cached_state: Mut<CachedScriptEventState<Self>>| {
+                let (_, mut error_wrt) = cached_state.event_state.get_mut(world);
 
-                for event in events.iter(){
-                    // check if this script should handle this event
-                    if !event.recipients().is_recipient(&fd) {
-                        return;
-                    };
+                ctxs.for_each(|(fd, ctx)| {
+                    ctx.scope.set_value("world", world_ptr);
+                    ctx.scope.set_value("entity", fd.entity);
+                    ctx.scope.set_value("script", fd.sid);
 
-                    match ctx.engine
-                        .call_fn(
+                    for event in events.iter() {
+                        // check if this script should handle this event
+                        if !event.recipients().is_recipient(&fd) {
+                            return;
+                        };
+
+                        match ctx.engine.call_fn(
                             &mut ctx.scope,
                             &ctx.ast,
                             &event.hook_name,
                             event.args.clone(),
-                        )
-                    {
-                        Ok(v) => v,
-                        Err(e) => {
-                            let err = ScriptError::RuntimeError { script: fd.name.to_string(), msg: e.to_string() };
-                            error!("{}",err);
-                            error_wrt.send(ScriptErrorEvent{err});
-                        }
-                    };
-                }
-
-                
-            })
-        });
-
+                        ) {
+                            Ok(v) => v,
+                            Err(e) => {
+                                let err = ScriptError::RuntimeError {
+                                    script: fd.name.to_string(),
+                                    msg: e.to_string(),
+                                };
+                                error!("{}", err);
+                                error_wrt.send(ScriptErrorEvent { err });
+                            }
+                        };
+                    }
+                })
+            },
+        );
     }
 }

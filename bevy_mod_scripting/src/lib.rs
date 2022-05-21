@@ -1,13 +1,12 @@
 #![doc=include_str!("../../readme.md")]
 
-use bevy::{prelude::*, ecs::schedule::IntoRunCriteria};
+use bevy::{ecs::schedule::IntoRunCriteria, prelude::*};
 
-pub mod hosts;
 pub mod error;
-
+pub mod hosts;
 
 pub use bevy_event_priority as events;
-pub use {hosts::*,error::*};
+pub use {error::*, hosts::*};
 
 #[derive(Default)]
 /// Bevy plugin enabling run-time scripting
@@ -22,9 +21,8 @@ impl Plugin for ScriptingPlugin {
 /// An error coming from a script
 #[derive(Debug)]
 pub struct ScriptErrorEvent {
-    pub err : ScriptError
+    pub err: ScriptError,
 }
-
 
 /// Trait for app builder notation
 pub trait AddScriptHost {

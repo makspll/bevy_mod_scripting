@@ -2,7 +2,8 @@ use bevy::{ecs::event::Events, prelude::*};
 use bevy_console::{AddConsoleCommand, ConsoleCommand, ConsolePlugin, PrintConsoleLine};
 use bevy_mod_scripting::{
     events::PriorityEventWriter, APIProvider, AddScriptHost, AddScriptHostHandler, LuaEvent,
-    LuaFile, RLuaScriptHost, Recipients, Script, ScriptCollection, ScriptingPlugin, ScriptErrorEvent,
+    LuaFile, RLuaScriptHost, Recipients, Script, ScriptCollection, ScriptErrorEvent,
+    ScriptingPlugin,
 };
 use rlua::{Lua, ToLua};
 use std::sync::Mutex;
@@ -41,7 +42,8 @@ impl APIProvider for LuaAPIProvider {
                 Ok(())
             },
             ctx,
-        ).unwrap();
+        )
+        .unwrap();
     }
 }
 
@@ -57,10 +59,13 @@ pub fn trigger_on_update_lua(mut w: PriorityEventWriter<LuaEvent<MyLuaArg>>) {
     w.send(event, 0);
 }
 
-pub fn forward_script_err_to_console(mut r: EventReader<ScriptErrorEvent>, mut w : EventWriter<PrintConsoleLine> ) {
-    for e in r.iter(){
+pub fn forward_script_err_to_console(
+    mut r: EventReader<ScriptErrorEvent>,
+    mut w: EventWriter<PrintConsoleLine>,
+) {
+    for e in r.iter() {
         w.send(PrintConsoleLine {
-            line: format!("ERROR:{}",e.err),
+            line: format!("ERROR:{}", e.err),
         });
     }
 }
