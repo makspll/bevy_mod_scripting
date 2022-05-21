@@ -3,19 +3,18 @@ pub mod primitives;
 
 use bevy::{
     prelude::*,
-    reflect::{DynamicStruct, ReflectRef, TypeData, TypeRegistry},
+    reflect::{ReflectRef, TypeData, TypeRegistry},
 };
 use rlua::prelude::LuaError;
-use rlua::{Context, FromLuaMulti, MetaMethod, ToLua, ToLuaMulti, UserData, Value};
+use rlua::{Context, MetaMethod, ToLua, UserData, Value};
 use std::{
-    cell::{Ref, UnsafeCell},
+    cell::Ref,
     fmt,
     ops::{Deref, DerefMut},
-    sync::Arc,
 };
 
 use crate::{base::LuaRef, base::PrintableReflect, LuaFile, Script, ScriptCollection};
-use anyhow::{anyhow, Result};
+use anyhow::Result;
 
 pub use {base::*, primitives::*};
 
@@ -200,7 +199,7 @@ impl fmt::Debug for LuaComponent {
 
 impl UserData for LuaComponent {
     fn add_methods<'lua, T: rlua::UserDataMethods<'lua, Self>>(methods: &mut T) {
-        methods.add_meta_method(MetaMethod::ToString, |_, val, a: Value| {
+        methods.add_meta_method(MetaMethod::ToString, |_, val, _a: Value| {
             Ok(format!("{:#?}", PrintableReflect(val.comp.get())))
         });
 
@@ -262,7 +261,7 @@ impl UserData for LuaRef {
             }
         });
 
-        methods.add_method("val", |mut ctx, val, ()| {
+        methods.add_method("val", |ctx, val, ()| {
             Ok(reflect_to_lua(val.get(), ctx)
                 .map_err(|e| LuaError::RuntimeError(e.to_string()))
                 .unwrap())

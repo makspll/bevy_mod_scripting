@@ -1,9 +1,7 @@
 use anyhow::{anyhow, Result};
-use bevy::{asset::Asset, prelude::Handle, reflect::Reflect};
-use num::{Num, ToPrimitive};
+use bevy::reflect::Reflect;
+use num::ToPrimitive;
 use rlua::{UserData, Value};
-
-use crate::{CustomUserData, LuaFile};
 
 /// Represents a Rust numeric type stored in lua
 /// Necessary to retain precision and assign to various numeric rust via scripts

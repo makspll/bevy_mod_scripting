@@ -1,13 +1,11 @@
 use anyhow::{anyhow, Result};
-use bevy::{prelude::info, reflect::*};
-use rlua::{Context, Lua, ToLua, Value};
-use std::{cell::UnsafeCell, fmt, ops::Deref, sync::Arc};
+use bevy::reflect::*;
+use rlua::{Context, Value};
+use std::fmt;
 
 use phf::{phf_map, Map};
 
-use crate::{
-    primitives::LuaNumber, CustomUserData, LuaCustomUserData, LuaWorld, ReflectCustomUserData,
-};
+use crate::{primitives::LuaNumber, CustomUserData, LuaWorld, ReflectCustomUserData};
 
 /// A rust type representation in lua
 #[derive(Clone)]
@@ -41,7 +39,7 @@ impl LuaRef {
 
         let re = ref_mut
             .path(path)
-            .map_err(|e| anyhow!("Cannot access field `{}`", path))?;
+            .map_err(|_e| anyhow!("Cannot access field `{}`", path))?;
         Ok(Self(re as *const dyn Reflect as *mut dyn Reflect))
     }
 
@@ -265,10 +263,10 @@ pub fn reflect_to_lua<'s, 'lua>(
                 ));
             }
         }
-        ReflectRef::Struct(s) => Ok(Value::Nil),
-        ReflectRef::TupleStruct(ts) => todo!(),
-        ReflectRef::Tuple(t) => todo!(),
-        ReflectRef::Map(m) => todo!(),
+        ReflectRef::Struct(_s) => Ok(Value::Nil),
+        ReflectRef::TupleStruct(_ts) => todo!(),
+        ReflectRef::Tuple(_t) => todo!(),
+        ReflectRef::Map(_m) => todo!(),
         ReflectRef::Array(_) => todo!(),
     }
 }

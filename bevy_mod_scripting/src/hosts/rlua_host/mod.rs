@@ -15,7 +15,7 @@ use rlua::{Context, Function, Lua, ToLua, ToLuaMulti};
 
 use std::fmt;
 use std::marker::PhantomData;
-use std::sync::{Mutex, RwLock, Weak};
+use std::sync::Mutex;
 
 pub use {api::*, assets::*};
 

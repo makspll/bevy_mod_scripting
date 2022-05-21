@@ -1,20 +1,20 @@
-use bevy::{core::FixedTimestep, prelude::*};
+use bevy::prelude::*;
 use bevy_event_priority::PriorityEventWriter;
 use bevy_mod_scripting::ReflectCustomUserData;
 use bevy_mod_scripting::{
-    APIProvider, AddScriptHost, AddScriptHostHandler, CustomUserData, LuaEvent, LuaFile, LuaWorld,
-    RLuaScriptHost, Recipients, Script, ScriptCollection, ScriptingPlugin,
+    APIProvider, AddScriptHost, AddScriptHostHandler, LuaEvent, LuaFile, RLuaScriptHost,
+    Recipients, Script, ScriptCollection, ScriptingPlugin,
 };
-use rand::prelude::SliceRandom;
+
 use rlua::{Lua, MetaMethod, ToLua, UserData, Value};
-use std::sync::atomic::Ordering::Relaxed;
-use std::sync::{atomic::AtomicU32, Mutex};
+
+use std::sync::Mutex;
 
 #[derive(Clone)]
 pub struct MyLuaArg;
 
 impl<'lua> ToLua<'lua> for MyLuaArg {
-    fn to_lua(self, lua: rlua::Context<'lua>) -> rlua::Result<rlua::Value<'lua>> {
+    fn to_lua(self, _lua: rlua::Context<'lua>) -> rlua::Result<rlua::Value<'lua>> {
         Ok(Value::Nil)
     }
 }
