@@ -117,9 +117,7 @@ fn load_our_script(server: Res<AssetServer>, mut commands: Commands) {
     let handle = server.load::<LuaFile, &str>(path);
 
     commands.spawn().insert(ScriptCollection::<LuaFile> {
-        scripts: vec![Script::<LuaFile>::new::<
-            RLuaScriptHost<MyLuaArg, LuaAPIProvider>,
-        >(path.to_string(), handle)],
+        scripts: vec![Script::<LuaFile>::new(path.to_string(), handle)],
     });
 }
 

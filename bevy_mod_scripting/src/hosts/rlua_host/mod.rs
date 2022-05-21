@@ -179,7 +179,7 @@ impl<A: LuaArg, API: APIProvider<Ctx = Mutex<Lua>>> ScriptHost for RLuaScriptHos
                         .expect("Could not get lock on script context")
                         .context::<_, Result<(), ScriptError>>(|lua_ctx| {
                             let globals = lua_ctx.globals();
-                            globals.set("world", world_ptr)?;
+                            globals.set("world", world_ptr.clone())?;
                             globals.set("entity", LuaEntity(fd.entity))?;
                             globals.set("script", fd.sid)?;
 
