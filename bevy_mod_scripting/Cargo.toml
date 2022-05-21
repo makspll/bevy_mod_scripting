@@ -18,7 +18,7 @@ path = "src/lib.rs"
 
 
 [dependencies]
-bevy = { git = "https://github.com/bevyengine/bevy" }
+bevy = { git = "https://github.com/bevyengine/bevy?rev=fed93a0edce9d66586dc70c1207a2092694b9a7d" }
 rlua = "0.19.1"
 rhai = { version = "1.7.0", features = ["sync"] }
 anyhow = "1.0.57"
@@ -30,10 +30,16 @@ phf = {version = "0.10.1", features= ["macros"] }
 thiserror = "1.0.31"
 
 [dev-dependencies]
-# bevy_console = { git = "https://github.com/RichoDemus/bevy-console" }
+bevy_console = { git = "https://github.com/OnlyGraphs/bevy-console" }
 bevy_asset_loader = {git = "https://github.com/NiklasEi/bevy_asset_loader", features = ["dynamic_assets"]}
 rand = "0.8.5"
 
+# For those that have not specified anything:
+[patch."https://github.com/bevyengine/bevy"]
+bevy = { git = "https://github.com/bevyengine/bevy?rev=fed93a0edce9d66586dc70c1207a2092694b9a7d" }
+
+[patch.crates-io]
+bevy = { git = "https://github.com/bevyengine/bevy?rev=fed93a0edce9d66586dc70c1207a2092694b9a7d"}
 
 # needs bevy 0.8 support from console
 # [[example]]

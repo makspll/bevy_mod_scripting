@@ -16,5 +16,5 @@ name = "bevy_event_priority"
 path = "src/lib.rs"
 
 [dependencies]
-bevy = { git = "https://github.com/bevyengine/bevy"}
+bevy = { git = "https://github.com/bevyengine/bevy?rev=fed93a0edce9d66586dc70c1207a2092694b9a7d"}
 
