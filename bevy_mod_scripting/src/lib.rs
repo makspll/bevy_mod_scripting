@@ -14,13 +14,17 @@ pub use {hosts::*,error::*};
 pub struct ScriptingPlugin;
 
 impl Plugin for ScriptingPlugin {
-    fn build(&self, _app: &mut bevy::prelude::App) {}
+    fn build(&self, app: &mut bevy::prelude::App) {
+        app.add_event::<ScriptErrorEvent>();
+    }
 }
 
 /// An error coming from a script
+#[derive(Debug)]
 pub struct ScriptErrorEvent {
-    err : ScriptError
+    pub err : ScriptError
 }
+
 
 /// Trait for app builder notation
 pub trait AddScriptHost {

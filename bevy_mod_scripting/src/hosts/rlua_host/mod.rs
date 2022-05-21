@@ -200,7 +200,7 @@ impl<A: LuaArg, API: APIProvider<Ctx = Mutex<Lua>>> ScriptHost for RLuaScriptHos
 
                         Ok(())
                     });
-                success.map_err(|e| error_wrt.send(ScriptErrorEvent{ err: e })).ok();
+                success.map_err(|e| {error!("{}",e);error_wrt.send(ScriptErrorEvent{ err: e })}).ok();
             });
         });
 

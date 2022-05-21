@@ -4,7 +4,7 @@ use crate::{
     script_add_synchronizer, script_hot_reload_handler, script_remove_synchronizer, APIProvider,
     CachedScriptEventState, FlatScriptData, Recipients, ScriptContexts, ScriptEvent, ScriptHost, ScriptError, ScriptErrorEvent,
 };
-use bevy::prelude::{AddAsset, ParallelSystemDescriptorCoercion, SystemSet, World, EventWriter, Mut};
+use bevy::prelude::{AddAsset, ParallelSystemDescriptorCoercion, SystemSet, World, EventWriter, Mut, error};
 use bevy_event_priority::AddPriorityEvent;
 use rhai::*;
 use std::marker::PhantomData;
@@ -125,12 +125,14 @@ impl<A: FuncArgs + Send + Clone + Sync + 'static, API: RhaiAPIProvider<Ctx = Rha
                             &ctx.ast,
                             &event.hook_name,
                             event.args.clone(),
-                        ){
+                        )
+                    {
                         Ok(v) => v,
-                        Err(e) => error_wrt.send(
-                            ScriptErrorEvent{err: 
-                                ScriptError::RuntimeError { script: fd.name.to_string(), msg: e.to_string() }
-                            }),
+                        Err(e) => {
+                            let err = ScriptError::RuntimeError { script: fd.name.to_string(), msg: e.to_string() };
+                            error!("{}",err);
+                            error_wrt.send(ScriptErrorEvent{err});
+                        }
                     };
                 }
 
