@@ -91,12 +91,7 @@ fn load_our_scripts(server: Res<AssetServer>, mut commands: Commands) {
     let handle = server.load::<LuaFile, &str>(path);
     let scripts = (0..2)
         .into_iter()
-        .map(|_| {
-            Script::<LuaFile>::new(
-                path.to_string(),
-                handle.clone(),
-            )
-        })
+        .map(|_| Script::<LuaFile>::new(path.to_string(), handle.clone()))
         .collect();
 
     commands
