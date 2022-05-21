@@ -1,7 +1,10 @@
-use bevy::reflect::Reflect;
+use bevy::{reflect::Reflect, prelude::Handle, asset::Asset};
 use num::{ToPrimitive,Num};
 use anyhow::{anyhow,Result};
 use rlua::{UserData, Value};
+
+use crate::{CustomUserData, LuaFile};
+
 
 
 /// Represents a Rust numeric type stored in lua

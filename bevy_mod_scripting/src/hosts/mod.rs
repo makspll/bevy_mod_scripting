@@ -389,13 +389,8 @@ impl <T: Asset>Default for ScriptCollection<T>{
     }
 }
 
-impl<T: Asset> Default for ScriptCollection<T> {
-    fn default() -> Self {
-        Self {
-            scripts: Default::default(),
-        }
-    }
-}
+
+
 /// system state for exclusive systems dealing with script events
 pub(crate) struct CachedScriptEventState<'w, 's, H: ScriptHost> {
     event_state: SystemState<PriorityEventReader<'w, 's, H::ScriptEvent>>,

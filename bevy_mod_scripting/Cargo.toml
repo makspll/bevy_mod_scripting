@@ -28,7 +28,7 @@ num = "0.4.0"
 phf = {version = "0.10.1", features= ["macros"] }
 
 [dev-dependencies]
-bevy_console = { git = "https://github.com/RichoDemus/bevy-console" }
+# bevy_console = { git = "https://github.com/RichoDemus/bevy-console" }
 bevy_asset_loader = {git = "https://github.com/NiklasEi/bevy_asset_loader", features = ["dynamic_assets"]}
 rand = "0.8.5"
 
@@ -51,3 +51,8 @@ path = "examples/complex_game_loop.rs"
 [[example]]
 name = "event_recipients"
 path = "examples/event_recipients.rs"
+
+
+[[example]]
+name = "custom_user_data"
+path = "examples/custom_user_data.rs"

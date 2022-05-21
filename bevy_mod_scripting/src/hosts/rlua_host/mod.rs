@@ -114,6 +114,7 @@ impl<A: LuaArg, API: APIProvider<Ctx = Mutex<Lua>>> ScriptHost for RLuaScriptHos
             .init_resource::<ScriptContexts<Self::ScriptContext>>()
             .register_type::<ScriptCollection<Self::ScriptAsset>>()
             .register_type::<Script<Self::ScriptAsset>>()
+            .register_type::<Handle<LuaFile>>()
             .add_system_set_to_stage(
                 stage,
                 SystemSet::new()
@@ -193,6 +194,7 @@ impl<A: LuaArg, API: APIProvider<Ctx = Mutex<Lua>>> ScriptHost for RLuaScriptHos
         .bcollect()
     }
 }
+
 impl<A: LuaArg, API: APIProvider<Ctx = Mutex<Lua>>> RLuaScriptHost<A, API> {
     pub fn register_api_callback<F, Arg, R>(
         callback_fn_name: &str,

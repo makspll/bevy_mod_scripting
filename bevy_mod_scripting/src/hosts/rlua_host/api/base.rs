@@ -1,9 +1,11 @@
 use std::{fmt,sync::Arc, cell::UnsafeCell, ops::Deref};
-use bevy::reflect::*;
+use bevy::{reflect::*, prelude::info};
 use anyhow::{anyhow,Result};
-use rlua::{Value, Lua, Context};
+use rlua::{Value, Lua, Context, ToLua};
 
 use phf::{phf_map,Map};
+
+use crate::{primitives::LuaNumber, CustomUserData, LuaCustomUserData, ReflectCustomUserData, LuaWorld};
 
 /// A rust type representation in lua
 #[derive(Clone)]
@@ -67,13 +69,64 @@ impl LuaRef {
             _ => Err(anyhow!("Cannot index a rust object with {:?}", path))
         }.map(|v| LuaRef(v as *const dyn Reflect as *mut dyn Reflect))
     }
+
+    pub fn convert_to_lua<'lua>(self, ctx : Context<'lua>) -> Result<Value<'lua>>{
+
+        if let Some(c) =  REFLECT_TO_LUA_CONVERSIONS.get(self.get().type_name()){
+            Ok(c(self.get(),ctx))
+        } else {
+
+            let w = unsafe { &mut *(ctx.globals().get::<_,LuaWorld>("world").unwrap()).0 };
+            let typedata = w.resource::<TypeRegistry>();
+
+            let g = typedata.read();
+            if let Some(v) = g.get_type_data::<ReflectCustomUserData>(self.get().type_id()){ 
+                Ok(v.get(self.get()).unwrap().ref_to_lua(ctx).unwrap())
+            } else {
+                Ok(Value::UserData(ctx.create_userdata(self).unwrap()))
+            }
+        }
+    }
+
+
+    pub fn apply_lua<'lua>(&mut self,ctx : Context<'lua>,v :Value<'lua>) -> Result<()>{
+        let w = unsafe { &mut *(ctx.globals().get::<_,LuaWorld>("world").unwrap()).0 };
+        let typedata = w.resource::<TypeRegistry>();
+        let g = typedata.read();
+        
+        if let Some(ud) = g.get_type_data::<ReflectCustomUserData>(self.get().type_id()){ 
+            
+            ud.get_mut(self.get_mut()).unwrap().apply_lua(ctx,v).unwrap();
+            Ok(())
+        } else {
+            match v {
+                Value::Boolean(b) => LuaNumber::Usize(b as usize).reflect_apply(self.get_mut()),
+                Value::Integer(i) => LuaNumber::I64(i).reflect_apply(self.get_mut()),
+                Value::Number(n) => LuaNumber::F64(n).reflect_apply(self.get_mut()),
+                Value::String(v) => {self.get_mut().apply(&v.to_str().unwrap().to_owned()); Ok(()) },
+                Value::UserData(v) => {
+                        // can only set a field to another field or primitive
+                        if v.is::<LuaRef>(){
+                            let b = v.borrow_mut::<LuaRef>().unwrap();
+                            self.get_mut().apply(b.get());
+                            Ok(())
+                        } else {
+                            return Err(anyhow!(""))
+                        }
+                    },
+                _ => return Err(anyhow!("Type not supported")),
+
+            }
+        }
+    }
 }
+
 
 unsafe impl Send for LuaRef {}
 
 
 /// Jump table for numeric conversions to lua
-pub static REFLECT_TO_LUA_CONVERSIONS: Map<&'static str, for<'l> fn(&dyn Reflect, ctx: &Context<'l>)->Value<'l> > = phf_map! {
+pub static REFLECT_TO_LUA_CONVERSIONS: Map<&'static str, for<'l> fn(&dyn Reflect, ctx: Context<'l>)->Value<'l> > = phf_map! {
         "usize" => |r,_| Value::Integer( *r.downcast_ref::<usize>().unwrap() as i64) ,
         "isize" => |r,_| Value::Integer(*r.downcast_ref::<isize>().unwrap() as i64) ,
         "i64" => |r,_| Value::Integer(*r.downcast_ref::<i64>().unwrap() as i64) ,
@@ -87,23 +140,6 @@ pub static REFLECT_TO_LUA_CONVERSIONS: Map<&'static str, for<'l> fn(&dyn Reflect
         "f64" => |r,_| Value::Number(*r.downcast_ref::<f64>().unwrap() as f64) 
 };
 
-
-/// Jump table for conversions from lua
-/// conversions are placed in destination directly if they are successful
-// pub static LUA_TO_REFLECT_CONVERSIONS: Map<&'static str, for <'a> fn(Value<'a>, *const dyn Reflect)-> Result<()>> = phf_map! {
-//     "usize" => |v,d| unsafe{  if let Value::Integer(v) = v {*(d as *mut usize) = v as usize; Ok(())} else if let Value::Number(v) = v {*(d as *mut usize) = v as usize;Ok(())} else {Err(anyhow!("Cannot convert {:#?} to numeric type",v))} },
-//     "isize" => |v,d| unsafe{  if let Value::Integer(v) = v {*(d as *mut isize) = v as isize; Ok(())} else if let Value::Number(v) = v {*(d as *mut isize) = v as isize;Ok(())} else {Err(anyhow!("Cannot convert {:#?} to numeric type",v))} },
-//     "i64" => |v,d| unsafe{  if let Value::Integer(v) = v {*(d as *mut i64) = v as i64; Ok(())} else if let Value::Number(v) = v {*(d as *mut i64) = v as i64;Ok(())} else {Err(anyhow!("Cannot convert {:#?} to numeric type",v))} },
-//     "i32" => |v,d| unsafe{ if let Value::Integer(v) = v {*(d as *mut i32) = v as i32; Ok(())} else if let Value::Number(v) = v {*(d as *mut i32) = v as i32;Ok(())} else {Err(anyhow!("Cannot convert {:#?} to numeric type",v))} },
-//     "u32" => |v,d| unsafe{  if let Value::Integer(v) = v {*(d as *mut u32) = v as u32; Ok(())} else if let Value::Number(v) = v {*(d as *mut u32) = v as u32;Ok(())} else {Err(anyhow!("Cannot convert {:#?} to numeric type",v))} },
-//     "u16" => |v,d| unsafe{  if let Value::Integer(v) = v {*(d as *mut u16) = v as u16; Ok(())} else if let Value::Number(v) = v {*(d as *mut u16) = v as u16;Ok(())} else {Err(anyhow!("Cannot convert {:#?} to numeric type",v))} },   
-//     "i16" => |v,d| unsafe{  if let Value::Integer(v) = v {*(d as *mut i16) = v as i16; Ok(())} else if let Value::Number(v) = v {*(d as *mut i16) = v as i16;Ok(())} else {Err(anyhow!("Cannot convert {:#?} to numeric type",v))} },
-//     "u8" => |v,d| unsafe{  if let Value::Integer(v) = v {*(d as *mut u8) = v as u8; Ok(())} else if let Value::Number(v) = v {*(d as *mut u8) = v as u8;Ok(())} else {Err(anyhow!("Cannot convert {:#?} to numeric type",v))} },
-//     "i8" => |v,d| unsafe{  if let Value::Integer(v) = v {*(d as *mut i8) = v as i8; Ok(())} else if let Value::Number(v) = v {*(d as *mut i8) = v as i8;Ok(())} else {Err(anyhow!("Cannot convert {:#?} to numeric type",v))} },
-//     "f32" => |v,d| unsafe{  if let Value::Integer(v) = v {*(d as *mut f32) = v as f32; Ok(())} else if let Value::Number(v) = v {*(d as *mut f32) = v as f32;Ok(())} else {Err(anyhow!("Cannot convert {:#?} to numeric type",v))} },
-//     "f64" => |v,d| unsafe{  if let Value::Integer(v) = v {*(d as *mut f64) = v as f64; Ok(())} else if let Value::Number(v) = v {*(d as *mut f64) = v as f64;Ok(())} else {Err(anyhow!("Cannot convert {:#?} to numeric type",v))}},
-//     "bool" => |v,d| unsafe{  if let Value::Boolean(v) = v {*(d as *mut bool) = v;Ok(())} else {Err(anyhow!("Cannot convert {:#?} to bool type",v))}}
-// };
 
 
 
@@ -207,3 +243,44 @@ impl <T : Reflect + ?Sized> PrintReflect for &T {
 
     }
 } 
+
+
+
+
+pub fn reflect_to_lua<'s,'lua>(v : &'s dyn Reflect, ctx : rlua::Context<'lua> ) -> Result<Value<'lua>>{
+
+
+    match v.reflect_ref() {
+        ReflectRef::List(l) => {
+            let i = l.iter()
+                .map(|v| reflect_to_lua(v,ctx))
+                .collect::<Result<Vec<Value<'lua>>>>()?
+                .into_iter()
+                .enumerate();
+
+            ctx.create_table_from(i)
+                .map(|v| Value::Table(v))
+                .map_err(|e| anyhow!(e.to_string()))
+        },
+        ReflectRef::Value(v) => {
+            if let Some(c) = REFLECT_TO_LUA_CONVERSIONS.get(v.type_name()){
+                return Ok(c(v,ctx))
+            } else if let Some(v) = v.downcast_ref::<String>(){
+                return ctx.create_string(v)
+                            .map(|v| Value::String(v)).map_err(|e| anyhow!("{}",e))
+            } else {
+                return Err(anyhow!("This type cannot be converted to a lua value: {:#?}",PrintableReflect(v)))
+            }
+        },
+        ReflectRef::Struct(s) => {
+            Ok(Value::Nil)
+        },
+        ReflectRef::TupleStruct(ts) => todo!(),
+        ReflectRef::Tuple(t) => todo!(),
+        ReflectRef::Map(m) => todo!(),
+        ReflectRef::Array(_) => todo!(),
+        
+    }
+
+
+}
