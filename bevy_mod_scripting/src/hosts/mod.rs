@@ -227,11 +227,6 @@ pub trait APIProvider: 'static + Default {
     fn attach_api(ctx: &mut Self::Ctx);
 }
 
-
-
-
-
-
 /// A resource storing the script contexts for each script instance.
 /// The reason we need this is to split the world borrow in our handle event systems, but this
 /// has the added benefit that users don't see the contexts at all, and we can provide
@@ -266,6 +261,12 @@ impl<C> ScriptContexts<C> {
     pub fn remove_context(&mut self, script_id: u32) {
         self.context_entities.remove(&script_id);
     }
+
+    pub fn has_context(&self, script_id: u32) -> bool {
+        self.context_entities
+            .get(&script_id)
+            .map_or(false, |(_, c, _)| c.is_some())
+    }
 }
 
 /// A struct defining an instance of a script asset.
@@ -282,11 +283,9 @@ pub struct Script<T: Asset> {
     id: u32,
 }
 
-
 static COUNTER: AtomicU32 = AtomicU32::new(0);
 
 impl<T: Asset> Script<T> {
-
     /// creates a new script instance with the given name and asset handle
     /// automatically gives this script instance a unique ID.
     /// No two scripts instances ever share the same ID
@@ -372,9 +371,8 @@ impl<T: Asset> Script<T> {
     }
 }
 
-
-#[derive(Component, Debug, FromReflect,Reflect)]
-#[reflect(Component,Default)]
+#[derive(Component, Debug, FromReflect, Reflect)]
+#[reflect(Component, Default)]
 /// The component storing many scripts.
 /// Scripts receive information about the entity they are attached to
 /// Scripts have unique identifiers and hence multiple copies of the same script
@@ -383,13 +381,13 @@ pub struct ScriptCollection<T: Asset> {
     pub scripts: Vec<Script<T>>,
 }
 
-impl <T: Asset>Default for ScriptCollection<T>{
+impl<T: Asset> Default for ScriptCollection<T> {
     fn default() -> Self {
-        Self { scripts: Default::default() }
+        Self {
+            scripts: Default::default(),
+        }
     }
 }
-
-
 
 /// system state for exclusive systems dealing with script events
 pub(crate) struct CachedScriptEventState<'w, 's, H: ScriptHost> {
@@ -423,7 +421,6 @@ pub(crate) fn script_add_synchronizer<H: ScriptHost + 'static>(
 
     query.for_each(|(entity, new_scripts, tracker)| {
         if tracker.is_added() {
-            debug!("Script added to {}",entity.id());
             new_scripts.scripts.iter().for_each(|new_script| {
                 Script::<H::ScriptAsset>::insert_new_script_context::<H>(
                     new_script,
@@ -433,7 +430,6 @@ pub(crate) fn script_add_synchronizer<H: ScriptHost + 'static>(
                 )
             })
         } else {
-            debug!("Script changed on {}",entity.id());
             // changed but structure already exists in contexts
             // find out what's changed
             // we only care about added or removed scripts here
@@ -477,7 +473,6 @@ pub(crate) fn script_remove_synchronizer<H: ScriptHost>(
     mut contexts: ResMut<ScriptContexts<H::ScriptContext>>,
 ) {
     query.iter().for_each(|v| {
-        debug!("removed script on entity {}",v.id());
         // we know that this entity used to have a script component
         // ergo a script context must exist in ctxts, remove all scripts on the entity
         contexts.remove_context(v.id());
@@ -492,27 +487,29 @@ pub(crate) fn script_hot_reload_handler<H: ScriptHost>(
     mut contexts: ResMut<ScriptContexts<H::ScriptContext>>,
 ) {
     for e in events.iter() {
-        debug!("Handling creation/modification of script asset: {:?}",e);
-        match e {
-            AssetEvent::Modified { handle } | AssetEvent::Created { handle } => {
-                // find script using this handle by handle id
-                // whether this script was modified or created
-                // if a script exists with this handle, we should reload it to load in a new context
-                // which at this point will be either None or Some(outdated context)
-                // both ways are fine
-                for scripts in scripts.iter() {
-                    for script in &scripts.scripts {
-                        if &script.handle == handle {
-                            Script::<H::ScriptAsset>::reload_script::<H>(
-                                script,
-                                &script_assets,
-                                &mut contexts,
-                            );
-                        }
-                    }
+        let (handle, created) = match e {
+            AssetEvent::Modified { handle } => (handle, false),
+            AssetEvent::Created { handle } => (handle, true),
+            _ => continue,
+        };
+
+        // find script using this handle by handle id
+        // whether this script was modified or created
+        // if a script exists with this handle, we should reload it to load in a new context
+        // which at this point will be either None or Some(outdated context)
+        // both ways are fine
+        for scripts in scripts.iter() {
+            for script in &scripts.scripts {
+                // the script could have well loaded in the same frame that it was added
+                // in that case it will have a context attached and we do not want to reload it
+                if &script.handle == handle && !(contexts.has_context(script.id()) && created) {
+                    Script::<H::ScriptAsset>::reload_script::<H>(
+                        script,
+                        &script_assets,
+                        &mut contexts,
+                    );
                 }
             }
-            _ => continue,
         }
     }
 }
@@ -521,7 +518,6 @@ pub(crate) fn script_hot_reload_handler<H: ScriptHost>(
 pub(crate) fn script_event_handler<H: ScriptHost, const MAX: u32, const MIN: u32>(
     world: &mut World,
 ) {
-    debug!("Handling scripts with prio in [{:?},{:?}]",MAX,MIN);
     // we need to collect the events to drop the borrow of the world
     let events = world.resource_scope(|world, mut cached_state: Mut<CachedScriptEventState<H>>| {
         let mut cached_state = cached_state.event_state.get_mut(world);
