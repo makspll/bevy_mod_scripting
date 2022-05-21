@@ -1,5 +1,5 @@
-pub mod assets;
 pub mod api;
+pub mod assets;
 
 use crate::{
     script_add_synchronizer, script_hot_reload_handler, script_remove_synchronizer, APIProvider,
@@ -15,9 +15,9 @@ use rlua::{Context, Function, Lua, MultiValue, ToLua, ToLuaMulti};
 
 use std::fmt;
 use std::marker::PhantomData;
-use std::sync::{RwLock,Weak,Mutex};
+use std::sync::{Mutex, RwLock, Weak};
 
-pub use {assets::*,api::*};
+pub use {api::*, assets::*};
 
 pub trait LuaArg: for<'lua> ToLua<'lua> + Clone + Sync + Send + 'static {}
 
@@ -32,9 +32,12 @@ pub struct LuaEvent<A: LuaArg> {
     pub recipients: Recipients,
 }
 
-impl <A : LuaArg> fmt::Debug for LuaEvent<A> {
+impl<A: LuaArg> fmt::Debug for LuaEvent<A> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        f.debug_struct("LuaEvent").field("hook_name", &self.hook_name).field("recipients", &self.recipients).finish()
+        f.debug_struct("LuaEvent")
+            .field("hook_name", &self.hook_name)
+            .field("recipients", &self.recipients)
+            .finish()
     }
 }
 
@@ -163,13 +166,11 @@ impl<A: LuaArg, API: APIProvider<Ctx = Mutex<Lua>>> ScriptHost for RLuaScriptHos
         ctxs: impl Iterator<Item = (FlatScriptData<'a>, &'a mut Self::ScriptContext)>,
     ) -> anyhow::Result<()> {
         ctxs.map(|(fd, ctx)| {
-
             ctx.get_mut().unwrap().context::<_, Result<()>>(|lua_ctx| {
                 let globals = lua_ctx.globals();
                 globals.set("world", LuaWorld(world as *mut World))?;
                 globals.set("entity", LuaEntity(fd.entity))?;
                 globals.set("script", fd.sid)?;
-                
 
                 // event order is preserved, but scripts can't rely on any temporal
                 // guarantees when it comes to other scripts callbacks,

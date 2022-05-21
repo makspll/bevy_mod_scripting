@@ -65,8 +65,12 @@ impl<A: FuncArgs + Send + Clone + Sync + 'static, API: RhaiAPIProvider<Ctx = Rha
         app.add_system_set_to_stage(
             stage,
             SystemSet::new()
-                .with_system(script_add_synchronizer::<Self>.before(script_remove_synchronizer::<Self>))
-                .with_system(script_remove_synchronizer::<Self>.before(script_hot_reload_handler::<Self>))
+                .with_system(
+                    script_add_synchronizer::<Self>.before(script_remove_synchronizer::<Self>),
+                )
+                .with_system(
+                    script_remove_synchronizer::<Self>.before(script_hot_reload_handler::<Self>),
+                )
                 .with_system(script_hot_reload_handler::<Self>),
         );
     }
@@ -105,7 +109,6 @@ impl<A: FuncArgs + Send + Clone + Sync + 'static, API: RhaiAPIProvider<Ctx = Rha
             ctx.scope.set_value("world", world as *mut World as usize);
             ctx.scope.set_value("entity", fd.entity);
             ctx.scope.set_value("script", fd.sid);
-
 
             events.iter().map(move |event| {
                 // check if this script should handle this event
