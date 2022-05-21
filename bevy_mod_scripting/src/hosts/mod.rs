@@ -279,6 +279,12 @@ impl<C> ScriptContexts<C> {
     pub fn remove_context(&mut self, script_id: u32) {
         self.context_entities.remove(&script_id);
     }
+
+    pub fn has_context(&self, script_id: u32) -> bool {
+        self.context_entities
+            .get(&script_id)
+            .map_or(false, |(_, c, _)| c.is_some())
+    }
 }
 
 /// A struct defining an instance of a script asset.
@@ -475,26 +481,29 @@ pub(crate) fn script_hot_reload_handler<H: ScriptHost>(
     mut contexts: ResMut<ScriptContexts<H::ScriptContext>>,
 ) {
     for e in events.iter() {
-        match e {
-            AssetEvent::Modified { handle } | AssetEvent::Created { handle } => {
-                // find script using this handle by handle id
-                // whether this script was modified or created
-                // if a script exists with this handle, we should reload it to load in a new context
-                // which at this point will be either None or Some(outdated context)
-                // both ways are fine
-                for scripts in scripts.iter() {
-                    for script in &scripts.scripts {
-                        if &script.handle == handle {
-                            Script::<H::ScriptAsset>::reload_script::<H>(
-                                script,
-                                &script_assets,
-                                &mut contexts,
-                            );
-                        }
-                    }
+        let (handle, created) = match e {
+            AssetEvent::Modified { handle } => (handle, false),
+            AssetEvent::Created { handle } => (handle, true),
+            _ => continue,
+        };
+
+        // find script using this handle by handle id
+        // whether this script was modified or created
+        // if a script exists with this handle, we should reload it to load in a new context
+        // which at this point will be either None or Some(outdated context)
+        // both ways are fine
+        for scripts in scripts.iter() {
+            for script in &scripts.scripts {
+                // the script could have well loaded in the same frame that it was added
+                // in that case it will have a context attached and we do not want to reload it
+                if &script.handle == handle && !(contexts.has_context(script.id()) && created) {
+                    Script::<H::ScriptAsset>::reload_script::<H>(
+                        script,
+                        &script_assets,
+                        &mut contexts,
+                    );
                 }
             }
-            _ => continue,
         }
     }
 }
