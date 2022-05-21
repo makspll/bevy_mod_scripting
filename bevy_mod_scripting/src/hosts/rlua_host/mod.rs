@@ -3,7 +3,7 @@ pub mod assets;
 use crate::{
     script_add_synchronizer, script_hot_reload_handler, script_remove_synchronizer, APIProvider,
     CachedScriptEventState, FlatScriptData, Recipients, Script, ScriptCollection, ScriptContexts,
-    ScriptEvent, ScriptHost,
+    ScriptEvent, ScriptHost, ScriptError, ScriptErrorEvent,
 };
 use anyhow::{anyhow, Result};
 use beau_collector::BeauCollector as _;
@@ -87,7 +87,7 @@ impl<A: LuaArg> ScriptEvent for LuaEvent<A> {
 ///                    Ok(())
 ///                },
 ///                ctx,
-///            )
+///            ).unwrap();
 ///        }
 ///    }
 /// ```
@@ -129,14 +129,14 @@ impl<A: LuaArg, API: APIProvider<Ctx = Mutex<Lua>>> ScriptHost for RLuaScriptHos
             );
     }
 
-    fn load_script(script: &[u8], script_name: &str) -> Result<Self::ScriptContext> {
+    fn load_script(script: &[u8], script_name: &str) -> Result<Self::ScriptContext,ScriptError> {
         let lua = Lua::new();
-        lua.context::<_, Result<()>>(|lua_ctx| {
+        lua.context::<_, Result<(),ScriptError>>(|lua_ctx| {
             lua_ctx
                 .load(script)
                 .set_name(script_name)
                 .map(|c| c.exec())
-                .map_err(|_e| anyhow!("Error loading script {}", script_name))??;
+                .map_err(|_e| ScriptError::FailedToLoad { script: script_name.to_owned() })??;
 
             Ok(())
         })?;
@@ -152,44 +152,58 @@ impl<A: LuaArg, API: APIProvider<Ctx = Mutex<Lua>>> ScriptHost for RLuaScriptHos
         world: &mut World,
         events: &[Self::ScriptEvent],
         ctxs: impl Iterator<Item = (FlatScriptData<'a>, &'a mut Self::ScriptContext)>,
-    ) -> anyhow::Result<()> {
-        ctxs.map(|(fd, ctx)| {
-            let world_ptr = world as *mut World as usize;
+    ) {
+        let world_ptr = world as *mut World as usize;
 
-            ctx.get_mut().unwrap().context::<_, Result<()>>(|lua_ctx| {
-                let globals = lua_ctx.globals();
-                globals.set("world", world_ptr)?;
-                globals.set("entity", fd.entity.to_bits())?;
-                globals.set("script", fd.sid)?;
+        world.resource_scope(|world, mut cached_state: Mut<CachedScriptEventState<Self>>| {
+            let (_,mut error_wrt) = cached_state.event_state.get_mut(world);
 
-                // event order is preserved, but scripts can't rely on any temporal
-                // guarantees when it comes to other scripts callbacks,
-                // at least for now
-                for event in events {
-                    // check if this script should handle this event
-                    if !event.recipients().is_recipient(&fd) {
-                        continue;
-                    }
+            ctxs.for_each(|(fd, ctx)| {
 
-                    let mut f: Function = match globals.get(event.hook_name.clone()) {
-                        Ok(f) => f,
-                        Err(_) => continue, // not subscribed to this event
-                    };
+                let success = ctx.get_mut().expect("Could not get lock on script context")
+                    .context::<_, Result<(),ScriptError>>(|lua_ctx| {
+                        let globals = lua_ctx.globals();
+                        globals.set("world", world_ptr)?;
+                        globals.set("entity", fd.entity.to_bits())?;
+                        globals.set("script", fd.sid)?;
 
-                    // bind arguments and catch any errors
-                    f = event.args.clone().into_iter().fold(Ok(f), |a, i| match a {
-                        Ok(f) => f.bind(i.to_lua(lua_ctx)),
-                        Err(e) => Err(e),
-                    })?;
+                        // event order is preserved, but scripts can't rely on any temporal
+                        // guarantees when it comes to other scripts callbacks,
+                        // at least for now.
+                        // we stop on the first error encountered
+                        for event in events {
+                            // check if this script should handle this event
+                            if !event.recipients().is_recipient(&fd) {
+                                continue;
+                            }
 
-                    f.call::<MultiValue, ()>(event.args.clone().to_lua_multi(lua_ctx)?)
-                        .map_err(|e| anyhow!("Runtime LUA error: {}", e))?;
-                }
+                            let mut f: Function = match globals.get(event.hook_name.clone()) {
+                                Ok(f) => f,
+                                Err(_) => continue, // not subscribed to this event
+                            };
+                            
+                            let ags = event.args.clone();
+                            // bind arguments and catch any errors
+                            for a in ags{
+                                f = f.bind(a.to_lua(lua_ctx))
+                                    .map_err(|e|
+                                        ScriptError::InvalidCallback{ 
+                                            script: fd.name.to_owned(), 
+                                            callback: event.hook_name.to_owned(), 
+                                            msg: e.to_string() 
+                                        })?
+                            }
 
-                Ok(())
-            })
-        })
-        .bcollect()
+                            f.call::<(), ()>(())
+                                .map_err(|e| ScriptError::RuntimeError { script: fd.name.to_owned(), msg: e.to_string() })?
+                        }
+
+                        Ok(())
+                    });
+                success.map_err(|e| error_wrt.send(ScriptErrorEvent{ err: e })).ok();
+            });
+        });
+
     }
 }
 impl<A: LuaArg, API: APIProvider<Ctx = Mutex<Lua>>> RLuaScriptHost<A, API> {
@@ -197,14 +211,18 @@ impl<A: LuaArg, API: APIProvider<Ctx = Mutex<Lua>>> RLuaScriptHost<A, API> {
         callback_fn_name: &str,
         callback: F,
         script: &<Self as ScriptHost>::ScriptContext,
-    ) where
+    ) -> Result<(), ScriptError> 
+    where
         Arg: for<'lua> FromLuaMulti<'lua>,
         R: for<'lua> ToLuaMulti<'lua>,
         F: 'static + Send + for<'lua> Fn(Context<'lua>, Arg) -> Result<R, LuaError>,
     {
-        script.lock().unwrap().context(|lua_ctx| {
-            let f = lua_ctx.create_function(callback).unwrap();
-            lua_ctx.globals().set(callback_fn_name, f).unwrap();
-        });
+        script.lock().expect("Could not get lock on script context")
+            .context::<_,Result<(),ScriptError>>(|lua_ctx| {
+                let f = lua_ctx.create_function(callback)?;
+                lua_ctx.globals().set(callback_fn_name, f)?;
+
+                Ok(())
+            })
     }
 }
