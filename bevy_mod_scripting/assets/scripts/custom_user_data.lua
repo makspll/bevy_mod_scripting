@@ -1,13 +1,14 @@
 
-local current_scripts
+local comp
 
 function on_update()
+    print(string.format("%s",comp))
+    if comp == nil then
+        comp = world:get_component(entity,"MyComponent")
 
-    if current_scripts == nil then
-        local comp = world:get_component(entity,"MyComponent")
-
-        print(string.format("%s",comp.vec))
 
         comp.vec = comp.vec + comp.vec;
+        print(string.format("%s",comp.vec))
+
     end
 end

@@ -13,6 +13,7 @@ use bevy_event_priority::AddPriorityEvent;
 use rlua::prelude::*;
 use rlua::{Context, Function, Lua, MultiValue, ToLua, ToLuaMulti};
 
+use std::fmt;
 use std::marker::PhantomData;
 use std::sync::{RwLock,Weak,Mutex};
 
@@ -29,6 +30,12 @@ pub struct LuaEvent<A: LuaArg> {
     pub hook_name: String,
     pub args: Vec<A>,
     pub recipients: Recipients,
+}
+
+impl <A : LuaArg> fmt::Debug for LuaEvent<A> {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.debug_struct("LuaEvent").field("hook_name", &self.hook_name).field("recipients", &self.recipients).finish()
+    }
 }
 
 impl<A: LuaArg> ScriptEvent for LuaEvent<A> {
@@ -168,6 +175,7 @@ impl<A: LuaArg, API: APIProvider<Ctx = Mutex<Lua>>> ScriptHost for RLuaScriptHos
                 // guarantees when it comes to other scripts callbacks,
                 // at least for now
                 for event in events {
+                    debug!("Handling {:?}, script {:?}", event, fd.sid);
                     // check if this script should handle this event
                     if !event.recipients().is_recipient(&fd) {
                         continue;
