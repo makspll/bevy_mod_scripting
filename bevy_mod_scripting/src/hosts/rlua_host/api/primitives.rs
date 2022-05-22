@@ -1,7 +1,6 @@
-use anyhow::{anyhow, Result};
 use bevy::reflect::Reflect;
 use num::ToPrimitive;
-use rlua::{UserData, Value};
+use rlua::{UserData, Value,Error};
 
 /// Represents a Rust numeric type stored in lua
 /// Necessary to retain precision and assign to various numeric rust via scripts
@@ -55,7 +54,7 @@ impl ToPrimitive for LuaNumber {
 }
 
 impl LuaNumber {
-    pub fn from_reflect(r: &dyn Reflect) -> Result<Self> {
+    pub fn from_reflect(r: &dyn Reflect) -> Result<Self,Error> {
         if let Some(v) = r.downcast_ref::<usize>() {
             Ok(Self::Usize(*v))
         } else if let Some(v) = r.downcast_ref::<isize>() {
@@ -79,11 +78,11 @@ impl LuaNumber {
         } else if let Some(v) = r.downcast_ref::<f64>() {
             Ok(Self::F64(*v))
         } else {
-            Err(anyhow!("Wrong type"))
+            Err(Error::RuntimeError("Wrong type".to_owned()))
         }
     }
 
-    pub fn reflect_apply(self, r: &mut dyn Reflect) -> Result<()> {
+    pub fn reflect_apply(self, r: &mut dyn Reflect) -> Result<(),Error> {
         Ok(match self.as_type(r.type_name())? {
             LuaNumber::Usize(v) => r.apply(&v),
             LuaNumber::Isize(v) => r.apply(&v),
@@ -99,7 +98,7 @@ impl LuaNumber {
         })
     }
 
-    pub fn add(&self, o: LuaNumber) -> Result<LuaNumber> {
+    pub fn add(&self, o: LuaNumber) -> Result<LuaNumber,Error> {
         match (self, o) {
             (LuaNumber::Usize(l), LuaNumber::Usize(r)) => l.checked_add(r).map(LuaNumber::Usize),
             (LuaNumber::Isize(l), LuaNumber::Isize(r)) => l.checked_add(r).map(LuaNumber::Isize),
@@ -114,14 +113,14 @@ impl LuaNumber {
             (LuaNumber::F64(l), LuaNumber::F64(r)) => Some(LuaNumber::F64(l + r)),
             _ => None,
         }
-        .ok_or(anyhow!(
+        .ok_or(Error::RuntimeError(format!(
             "Cannot perform addition, numbers are not of the same type. For {:#?} and {:#?}",
             self,
             o
-        ))
+        )))
     }
 
-    pub fn sub(&self, o: LuaNumber) -> Result<LuaNumber> {
+    pub fn sub(&self, o: LuaNumber) -> Result<LuaNumber,Error> {
         match (self, o) {
             (LuaNumber::Usize(l), LuaNumber::Usize(r)) => l.checked_sub(r).map(LuaNumber::Usize),
             (LuaNumber::Isize(l), LuaNumber::Isize(r)) => l.checked_sub(r).map(LuaNumber::Isize),
@@ -136,14 +135,14 @@ impl LuaNumber {
             (LuaNumber::F64(l), LuaNumber::F64(r)) => Some(LuaNumber::F64(l + r)),
             _ => None,
         }
-        .ok_or(anyhow!(
+        .ok_or(Error::RuntimeError(format!(
             "Cannot perform subtraction, numbers are not of the same type. For {:#?} and {:#?}",
             self,
             o
-        ))
+        )))
     }
 
-    pub fn mul(&self, o: LuaNumber) -> Result<LuaNumber> {
+    pub fn mul(&self, o: LuaNumber) -> Result<LuaNumber,Error> {
         match (self, o) {
             (LuaNumber::Usize(l), LuaNumber::Usize(r)) => l.checked_mul(r).map(LuaNumber::Usize),
             (LuaNumber::Isize(l), LuaNumber::Isize(r)) => l.checked_mul(r).map(LuaNumber::Isize),
@@ -158,14 +157,14 @@ impl LuaNumber {
             (LuaNumber::F64(l), LuaNumber::F64(r)) => Some(LuaNumber::F64(l + r)),
             _ => None,
         }
-        .ok_or(anyhow!(
+        .ok_or(Error::RuntimeError(format!(
             "Cannot perform multiplication, numbers are not of the same type. For {:#?} and {:#?}",
             self,
             o
-        ))
+        )))
     }
 
-    pub fn div(&self, o: LuaNumber) -> Result<LuaNumber> {
+    pub fn div(&self, o: LuaNumber) -> Result<LuaNumber,Error> {
         match (self, o) {
             (LuaNumber::Usize(l), LuaNumber::Usize(r)) => l.checked_div(r).map(LuaNumber::Usize),
             (LuaNumber::Isize(l), LuaNumber::Isize(r)) => l.checked_div(r).map(LuaNumber::Isize),
@@ -180,14 +179,14 @@ impl LuaNumber {
             (LuaNumber::F64(l), LuaNumber::F64(r)) => Some(LuaNumber::F64(l + r)),
             _ => None,
         }
-        .ok_or(anyhow!(
+        .ok_or(Error::RuntimeError(format!(
             "Cannot perform division, numbers are not of the same type. For {:#?} and {:#?}",
             self,
             o
-        ))
+        )))
     }
 
-    pub fn rem(&self, o: LuaNumber) -> Result<LuaNumber> {
+    pub fn rem(&self, o: LuaNumber) -> Result<LuaNumber,Error> {
         match (self, o) {
             (LuaNumber::Usize(l), LuaNumber::Usize(r)) => l.checked_rem(r).map(LuaNumber::Usize),
             (LuaNumber::Isize(l), LuaNumber::Isize(r)) => l.checked_rem(r).map(LuaNumber::Isize),
@@ -202,14 +201,14 @@ impl LuaNumber {
             (LuaNumber::F64(l), LuaNumber::F64(r)) => Some(LuaNumber::F64(l + r)),
             _ => None,
         }
-        .ok_or(anyhow!(
+        .ok_or(Error::RuntimeError(format!(
             "Cannot perform modulo, numbers are not of the same type. For {:#?} and {:#?}",
             self,
             o
-        ))
+        )))
     }
 
-    pub fn pow(&self, o: LuaNumber) -> Result<LuaNumber> {
+    pub fn pow(&self, o: LuaNumber) -> Result<LuaNumber,Error> {
         match (self,o){
             (LuaNumber::Usize(l),LuaNumber::Usize(r)) => Ok(LuaNumber::Usize(l.pow((r) as u32))),
             (LuaNumber::Isize(l),LuaNumber::Isize(r)) => Ok(LuaNumber::Isize(l.pow((r) as u32))),
@@ -222,11 +221,11 @@ impl LuaNumber {
             (LuaNumber::I8(l),LuaNumber::I8(r))             => Ok(LuaNumber::I8(l.pow((r) as u32))),
             (LuaNumber::F32(l),LuaNumber::F32(r))         => Ok(LuaNumber::F32(l.powf(r))),
             (LuaNumber::F64(l),LuaNumber::F64(r))         => Ok(LuaNumber::F64(l.powf(r))),
-            _ => return Err(anyhow!("Cannot perform exponentiation, numbers are not of the same type. For {:#?} and {:#?}",self,o))
+            _ => return Err(Error::RuntimeError(format!("Cannot perform exponentiation, numbers are not of the same type. For {:#?} and {:#?}",self,o)))
         }
     }
 
-    pub fn neg(&self) -> Result<LuaNumber> {
+    pub fn neg(&self) -> Result<LuaNumber,Error> {
         match self {
             LuaNumber::Isize(l) => Ok(LuaNumber::Isize(-l)),
             LuaNumber::I64(l) => Ok(LuaNumber::I64(-l)),
@@ -236,10 +235,10 @@ impl LuaNumber {
             LuaNumber::F32(l) => Ok(LuaNumber::F32(-l)),
             LuaNumber::F64(l) => Ok(LuaNumber::F64(-l)),
             _ => {
-                return Err(anyhow!(
+                return Err(Error::RuntimeError(format!(
                     "Cannot perform negation, number is not signed. For {:#?}",
                     self
-                ))
+                )))
             }
         }
     }
@@ -277,7 +276,7 @@ impl LuaNumber {
         }
     }
 
-    pub fn as_type(&self, typ: &str) -> Result<LuaNumber> {
+    pub fn as_type(&self, typ: &str) -> Result<LuaNumber,Error> {
         match self {
             LuaNumber::Usize(v) => LuaNumber::cast(*v, typ),
             LuaNumber::Isize(v) => LuaNumber::cast(*v, typ),
@@ -291,17 +290,17 @@ impl LuaNumber {
             LuaNumber::F32(v) => LuaNumber::cast(*v, typ),
             LuaNumber::F64(v) => LuaNumber::cast(*v, typ),
         }
-        .ok_or(anyhow!("Could not cast {:#?} to {:#?}", self, typ))
+        .ok_or(Error::RuntimeError(format!("Could not cast {:#?} to {:#?}", self, typ)))
     }
 
-    pub fn from_lua(v: Value, expected_type: &'static str) -> Result<Self> {
+    pub fn from_lua(v: Value, expected_type: &'static str) -> Result<Self,Error> {
         let lua_val = match v {
             Value::Nil => LuaNumber::Usize(0),
             Value::Boolean(v) => LuaNumber::Usize(v as usize),
             Value::Integer(v) => LuaNumber::I64(v),
             Value::Number(v) => LuaNumber::F64(v),
             Value::UserData(d) => *d.borrow::<LuaNumber>()?,
-            _ => return Err(anyhow!("")),
+            _ => return Err(Error::RuntimeError(format!(""))),
         };
 
         if lua_val.type_name() != expected_type {

@@ -1,11 +1,10 @@
-use anyhow::{anyhow, Result};
 use bevy::reflect::*;
 use rlua::{Context, Value};
-use std::{fmt, any::TypeId};
+use std::fmt;
 
 use phf::{phf_map, Map};
 
-use crate::{primitives::LuaNumber, LuaWorld, ReflectCustomUserData, PrintReflect, util::PrintableReflect, APPLY_LUA_TO_BEVY, BEVY_TO_LUA};
+use crate::{primitives::LuaNumber, LuaWorld, ReflectCustomUserData, PrintReflect, APPLY_LUA_TO_BEVY, BEVY_TO_LUA};
 
 /// A rust type representation in lua
 #[derive(Clone)]
@@ -34,16 +33,16 @@ impl LuaRef {
         unsafe { &mut *self.0 }
     }
 
-    pub fn path_ref(&self, path: &str) -> Result<Self> {
+    pub fn path_ref(&self, path: &str) -> Result<Self,rlua::Error> {
         let ref_mut = self.get();
 
         let re = ref_mut
             .path(path)
-            .map_err(|_e| anyhow!("Cannot access field `{}`", path))?;
+            .map_err(|_e| rlua::Error::RuntimeError(format!("Cannot access field `{}`", path)))?;
         Ok(Self(re as *const dyn Reflect as *mut dyn Reflect))
     }
 
-    pub fn path_lua_val_ref(&self, path: Value) -> Result<Self> {
+    pub fn path_lua_val_ref(&self, path: Value) -> Result<Self,rlua::Error> {
         let r = self.get().reflect_ref();
 
         match path {
@@ -54,7 +53,7 @@ impl LuaRef {
                     ReflectRef::TupleStruct(v) => Ok(v.field(idx).unwrap()),
                     ReflectRef::List(v) => Ok(v.get(idx).unwrap()),
                     ReflectRef::Map(v) => Ok(v.get(&(idx)).unwrap()),
-                    _ => Err(anyhow!("Tried to index a primitive rust type {:#?}", self)),
+                    _ => Err(rlua::Error::RuntimeError(format!("Tried to index a primitive rust type {:#?}", self))),
                 }
             }
             Value::String(field) => {
@@ -62,15 +61,15 @@ impl LuaRef {
                 match r {
                     ReflectRef::Map(v) => Ok(v.get(&path.to_owned()).unwrap()),
                     ReflectRef::Struct(v) => Ok(v.field(path).unwrap()),
-                    _ => Err(anyhow!("Tried to index a primitive rust type {:#?}", self)),
+                    _ => Err(rlua::Error::RuntimeError(format!("Tried to index a primitive rust type {:#?}", self))),
                 }
             }
-            _ => Err(anyhow!("Cannot index a rust object with {:?}", path)),
+            _ => Err(rlua::Error::RuntimeError(format!("Cannot index a rust object with {:?}", path))),
         }
         .map(|v| LuaRef(v as *const dyn Reflect as *mut dyn Reflect))
     }
 
-    pub fn convert_to_lua<'lua>(self, ctx: Context<'lua>) -> Result<Value<'lua>> {
+    pub fn convert_to_lua<'lua>(self, ctx: Context<'lua>) -> Result<Value<'lua>,rlua::Error> {
         
         if let Some(f) = BEVY_TO_LUA.get(self.get().type_name()){
             Ok(f(self.get(),ctx))
@@ -90,14 +89,13 @@ impl LuaRef {
         // another case for an enumeration of 
     }
 
-    pub fn apply_lua<'lua>(&mut self, ctx: Context<'lua>, v: Value<'lua>) -> Result<()> {
+    pub fn apply_lua<'lua>(&mut self, ctx: Context<'lua>, v: Value<'lua>) -> Result<(),rlua::Error> {
         let w = unsafe { &mut *(ctx.globals().get::<_, LuaWorld>("world").unwrap()).0 };
         let typedata = w.resource::<TypeRegistry>();
         let g = typedata.read();
 
         if let Some(f) = APPLY_LUA_TO_BEVY.get(self.get().type_name()) {
-            f(self.get_mut(),ctx,v);
-            Ok(())
+            f(self.get_mut(),ctx,v)
         } else if let Some(ud) = g.get_type_data::<ReflectCustomUserData>(self.get().type_id()) {
             ud.get_mut(self.get_mut())
                 .unwrap()
@@ -120,10 +118,10 @@ impl LuaRef {
                         self.get_mut().apply(b.get());
                         Ok(())
                     } else {
-                        return Err(anyhow!(""));
+                        return Err(rlua::Error::RuntimeError("Invalid assignment".to_owned()));
                     }
                 }
-                _ => return Err(anyhow!("Type not supported")),
+                _ => return Err(rlua::Error::RuntimeError("Invalid assignment".to_owned())),
             }
         }
     }

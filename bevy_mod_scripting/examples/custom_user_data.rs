@@ -78,6 +78,7 @@ impl UserData for MyUserData {
 #[reflect(Component)]
 pub struct MyComponent {
     vec: MyUserData,
+    bevy_vec: Vec2,
 }
 
 fn load_our_script(server: Res<AssetServer>, mut commands: Commands) {
@@ -91,6 +92,7 @@ fn load_our_script(server: Res<AssetServer>, mut commands: Commands) {
         })
         .insert(MyComponent {
             vec: MyUserData { x: 2, y: 3 },
+            bevy_vec: Vec2::new(2.0,3.0)
         });
 }
 

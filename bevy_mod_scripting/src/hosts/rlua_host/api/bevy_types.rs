@@ -1,7 +1,7 @@
 use rlua::{UserData, MetaMethod,Value,Context};
 use paste::paste;
-use bevy::prelude::{Vec2,Vec3,Reflect};
-use std::fmt::{Display,Formatter};
+use bevy::prelude::{Vec2,Reflect};
+use std::{fmt::{Display,Formatter}, ops::Add};
 use phf::{phf_map, Map};
 use std::ops::DerefMut;
 
@@ -11,7 +11,7 @@ macro_rules! make_lua_types {
     (   
         [
             $(
-                $str:expr => $name:ty:($($inner:tt)+){
+                $str:expr => $name:ty:($($inner:tt)*){
                     $(##[$q:tt] => $r:expr;)*
                     $(#[$e:tt] $g:expr => $f:expr;)*
                 }
@@ -22,7 +22,7 @@ macro_rules! make_lua_types {
 
             $(
                 make_lua_struct!(
-                    $name: ($($inner)+) {
+                    $name: ($($inner)*) {
                         $(##[$q] => $r;)*
                         $(#[$e] $g => $f;)*
                     }
@@ -43,16 +43,17 @@ macro_rules! make_lua_types {
             }; 
 
             pub static APPLY_LUA_TO_BEVY: Map<&'static str,
-                for<'l> fn(&mut dyn Reflect, ctx: Context<'l>, new_val: Value<'l>)
+                for<'l> fn(&mut dyn Reflect, ctx: Context<'l>, new_val: Value<'l>) -> Result<(),rlua::Error>
             > = phf_map!{
                 $(
                     $str => |r,c,n| {
 
                         if let Value::UserData(v) = n {
-                            let mut v = v.borrow_mut::<[<Lua $name>]>().unwrap();
+                            let mut v = v.borrow_mut::<[<Lua $name>]>()?;
                             [<Lua $name>]::apply_self_to_base(v.deref_mut(),r.downcast_mut::<$name>().unwrap());
+                            Ok(())
                         } else {
-                            panic!();
+                            Err(rlua::Error::RuntimeError("Invalid type".to_owned()))
                         }
                     }
                 )*
@@ -162,7 +163,7 @@ macro_rules! make_lua_struct {
     ) => {
         paste!{
             #[derive(Debug,Clone)]
-            pub struct [<Lua $base>] ($($inner)*);
+            pub struct [<Lua $base>] ($($inner),*);
             
             impl Display for [<Lua $base>] {
                 fn fmt(&self, f: &mut Formatter<'_>) -> Result<(), std::fmt::Error> { 
@@ -198,11 +199,10 @@ macro_rules! make_lua_struct {
 
 make_lua_types!(
     [
-        "Vec3" => Vec3:(usize) {
-            ##[from_base] => |b| {LuaVec3(2)};
-            ##[apply_to_base] => |s,b| {};
-            #[meta] MetaMethod::ToString => |_,_,()| { Ok(()) };
-            #[meta_mut] MetaMethod::Add => |_,_,()| { Ok(()) };
+        "glam::vec2::Vec2" => Vec2:(Vec2) {
+            ##[from_base] => |b : &Vec2| {LuaVec2(*b)};
+            ##[apply_to_base] => |s : &mut LuaVec2,b : &mut Vec2| {*b=s.0};
+            #[meta_mut] MetaMethod::Add => |_,s : &mut LuaVec2,o : LuaVec2| { Ok(LuaVec2(s.0.add(o.0))) };
         }
     ]
 );
