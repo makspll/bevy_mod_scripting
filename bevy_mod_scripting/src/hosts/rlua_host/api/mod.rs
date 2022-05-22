@@ -1,5 +1,6 @@
 pub mod base;
 pub mod primitives;
+pub mod bevy_types;
 
 use bevy::{
     prelude::*,
@@ -13,10 +14,10 @@ use std::{
     ops::{Deref, DerefMut},
 };
 
-use crate::{base::LuaRef, base::PrintableReflect, LuaFile, Script, ScriptCollection};
+use crate::{base::LuaRef, PrintableReflect, LuaFile, Script, ScriptCollection};
 use anyhow::Result;
 
-pub use {base::*, primitives::*};
+pub use {base::*, primitives::*, bevy_types::*};
 
 #[reflect_trait]
 pub trait CustomUserData {
@@ -134,8 +135,7 @@ impl UserData for LuaWorld {
                     comp: LuaRef(
                         refl.reflect_component(w, *entity).unwrap() as *const dyn Reflect
                             as *mut dyn Reflect,
-                    ),
-                    refl,
+                    )                
                 })
             },
         );
@@ -146,7 +146,6 @@ impl UserData for LuaWorld {
                 let w = unsafe { &mut *w.0 };
 
                 let refl: ReflectComponent = get_type_data(w, &comp_name).unwrap();
-
                 let dyn_comp = refl
                     .reflect_component(w, *entity)
                     .ok_or(LuaError::RuntimeError(
@@ -156,7 +155,6 @@ impl UserData for LuaWorld {
 
                 Ok(LuaComponent {
                     comp: LuaRef(dyn_comp as *const dyn Reflect as *mut dyn Reflect),
-                    refl,
                 })
             },
         );
@@ -186,7 +184,6 @@ impl UserData for LuaWorld {
 #[derive(Clone)]
 pub struct LuaComponent {
     comp: LuaRef,
-    refl: ReflectComponent,
 }
 
 impl fmt::Debug for LuaComponent {
@@ -214,10 +211,11 @@ impl UserData for LuaComponent {
                 val.comp
                     .path_lua_val_ref(field)
                     .unwrap()
-                    .apply_lua(ctx, new_val);
+                    .apply_lua(ctx, new_val)
+                    .unwrap();
                 Ok(())
             },
-        )
+        );
     }
 }
 
@@ -261,10 +259,5 @@ impl UserData for LuaRef {
             }
         });
 
-        methods.add_method("val", |ctx, val, ()| {
-            Ok(reflect_to_lua(val.get(), ctx)
-                .map_err(|e| LuaError::RuntimeError(e.to_string()))
-                .unwrap())
-        });
     }
 }

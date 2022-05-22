@@ -1,11 +1,11 @@
 use anyhow::{anyhow, Result};
 use bevy::reflect::*;
 use rlua::{Context, Value};
-use std::fmt;
+use std::{fmt, any::TypeId};
 
 use phf::{phf_map, Map};
 
-use crate::{primitives::LuaNumber, CustomUserData, LuaWorld, ReflectCustomUserData};
+use crate::{primitives::LuaNumber, LuaWorld, ReflectCustomUserData, PrintReflect, util::PrintableReflect, APPLY_LUA_TO_BEVY, BEVY_TO_LUA};
 
 /// A rust type representation in lua
 #[derive(Clone)]
@@ -19,7 +19,7 @@ impl fmt::Debug for LuaRef {
 
 impl fmt::Display for LuaRef {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "{:?}", self)
+        write!(f, "{:#?}", self)
     }
 }
 
@@ -71,7 +71,10 @@ impl LuaRef {
     }
 
     pub fn convert_to_lua<'lua>(self, ctx: Context<'lua>) -> Result<Value<'lua>> {
-        if let Some(c) = REFLECT_TO_LUA_CONVERSIONS.get(self.get().type_name()) {
+        
+        if let Some(f) = BEVY_TO_LUA.get(self.get().type_name()){
+            Ok(f(self.get(),ctx))
+        } else if let Some(c) = REFLECT_TO_LUA_CONVERSIONS.get(self.get().type_name()) {
             Ok(c(self.get(), ctx))
         } else {
             let w = unsafe { &mut *(ctx.globals().get::<_, LuaWorld>("world").unwrap()).0 };
@@ -83,7 +86,8 @@ impl LuaRef {
             } else {
                 Ok(Value::UserData(ctx.create_userdata(self).unwrap()))
             }
-        }
+        } 
+        // another case for an enumeration of 
     }
 
     pub fn apply_lua<'lua>(&mut self, ctx: Context<'lua>, v: Value<'lua>) -> Result<()> {
@@ -91,7 +95,10 @@ impl LuaRef {
         let typedata = w.resource::<TypeRegistry>();
         let g = typedata.read();
 
-        if let Some(ud) = g.get_type_data::<ReflectCustomUserData>(self.get().type_id()) {
+        if let Some(f) = APPLY_LUA_TO_BEVY.get(self.get().type_name()) {
+            f(self.get_mut(),ctx,v);
+            Ok(())
+        } else if let Some(ud) = g.get_type_data::<ReflectCustomUserData>(self.get().type_id()) {
             ud.get_mut(self.get_mut())
                 .unwrap()
                 .apply_lua(ctx, v)
@@ -142,131 +149,5 @@ pub static REFLECT_TO_LUA_CONVERSIONS: Map<
         "f64" => |r,_| Value::Number(*r.downcast_ref::<f64>().unwrap() as f64)
 };
 
-pub struct PrintableReflect<'a>(pub &'a dyn Reflect);
 
-impl fmt::Debug for PrintableReflect<'_> {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        self.0.print(f)
-    }
-}
 
-pub trait PrintReflect {
-    fn print(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result;
-}
-
-macro_rules! impl_downcast_print_cases {
-    ($v:ident,$fmt:ident,$f:ty,$($x:ty),*) => {
-        {
-
-            if let Some(i) = $v.downcast_ref::<$f>(){
-                write!($fmt,"({:#?}){}",$v.type_name(),i)?;
-            }
-            $(
-            else if let Some(i) = $v.downcast_ref::<$x>() {
-                write!($fmt,"({:#?}){}",$v.type_name(),i)?;
-            }
-            )*
-            else {
-                write!($fmt,"({:#?})",$v.type_name())?;
-            }
-        }
-    };
-}
-
-impl<T: Reflect + ?Sized> PrintReflect for &T {
-    fn print(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        match self.reflect_ref() {
-            ReflectRef::Struct(s) => (0..s.field_len())
-                .fold(f.debug_struct(s.type_name()), |mut b, i| {
-                    b.field(
-                        s.name_at(i).unwrap(),
-                        &PrintableReflect(s.field_at(i).unwrap()),
-                    );
-                    b
-                })
-                .finish(),
-            ReflectRef::Map(m) => m
-                .iter()
-                .fold(f.debug_map(), |mut b, (k, v)| {
-                    b.entry(&PrintableReflect(k), &PrintableReflect(v));
-                    b
-                })
-                .finish(),
-            ReflectRef::TupleStruct(ts) => ts
-                .iter_fields()
-                .fold(f.debug_tuple(ts.type_name()), |mut b, i| {
-                    b.field(&PrintableReflect(i));
-                    b
-                })
-                .finish(),
-            ReflectRef::Tuple(t) => t
-                .iter_fields()
-                .fold(f.debug_tuple(""), |mut b, i| {
-                    b.field(&PrintableReflect(i));
-                    b
-                })
-                .finish(),
-            ReflectRef::List(l) => l
-                .iter()
-                .fold(f.debug_list(), |mut b, i| {
-                    b.entry(&PrintableReflect(i));
-                    b
-                })
-                .finish(),
-            ReflectRef::Array(a) => a
-                .iter()
-                .fold(f.debug_list(), |mut b, i| {
-                    b.entry(&PrintableReflect(i));
-                    b
-                })
-                .finish(),
-            ReflectRef::Value(v) => {
-                impl_downcast_print_cases!(
-                    v, f, usize, isize, u128, i128, u64, i64, u32, i32, u16, i16, u8, i8, f32, f64,
-                    String
-                );
-                Ok(())
-            }
-        }
-    }
-}
-
-pub fn reflect_to_lua<'s, 'lua>(
-    v: &'s dyn Reflect,
-    ctx: rlua::Context<'lua>,
-) -> Result<Value<'lua>> {
-    match v.reflect_ref() {
-        ReflectRef::List(l) => {
-            let i = l
-                .iter()
-                .map(|v| reflect_to_lua(v, ctx))
-                .collect::<Result<Vec<Value<'lua>>>>()?
-                .into_iter()
-                .enumerate();
-
-            ctx.create_table_from(i)
-                .map(|v| Value::Table(v))
-                .map_err(|e| anyhow!(e.to_string()))
-        }
-        ReflectRef::Value(v) => {
-            if let Some(c) = REFLECT_TO_LUA_CONVERSIONS.get(v.type_name()) {
-                return Ok(c(v, ctx));
-            } else if let Some(v) = v.downcast_ref::<String>() {
-                return ctx
-                    .create_string(v)
-                    .map(|v| Value::String(v))
-                    .map_err(|e| anyhow!("{}", e));
-            } else {
-                return Err(anyhow!(
-                    "This type cannot be converted to a lua value: {:#?}",
-                    PrintableReflect(v)
-                ));
-            }
-        }
-        ReflectRef::Struct(_s) => Ok(Value::Nil),
-        ReflectRef::TupleStruct(_ts) => todo!(),
-        ReflectRef::Tuple(_t) => todo!(),
-        ReflectRef::Map(_m) => todo!(),
-        ReflectRef::Array(_) => todo!(),
-    }
-}
