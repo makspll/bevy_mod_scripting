@@ -1,5 +1,4 @@
 pub mod base;
-pub mod primitives;
 pub mod bevy_types;
 
 use bevy::{
@@ -17,7 +16,7 @@ use std::{
 use crate::{base::LuaRef, PrintableReflect, LuaFile, Script, ScriptCollection};
 use anyhow::Result;
 
-pub use {base::*, primitives::*, bevy_types::*};
+pub use {base::*, bevy_types::*};
 
 #[reflect_trait]
 pub trait CustomUserData {
