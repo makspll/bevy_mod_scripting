@@ -52,36 +52,17 @@ fn fire_script_update(mut w: PriorityEventWriter<LuaEvent<MyLuaArg>>) {
     )
 }
 
-#[derive(Clone, Reflect, Default)]
-#[reflect(CustomUserData)]
-pub struct MyUserData {
-    x: u32,
-    y: u32,
-}
-
-impl UserData for MyUserData {
-    fn add_methods<'lua, T: rlua::UserDataMethods<'lua, Self>>(methods: &mut T) {
-        methods.add_meta_method(MetaMethod::ToString, |_, s, ()| {
-            Ok(format!("({},{})", s.x, s.y))
-        });
-
-        methods.add_meta_method(MetaMethod::Add, |_, s, o: MyUserData| {
-            Ok(MyUserData {
-                x: s.x.wrapping_add(o.x),
-                y: s.y.wrapping_add(o.y),
-            })
-        });
-    }
-}
-
 #[derive(Component, Default, Reflect)]
 #[reflect(Component)]
 pub struct MyComponent {
-    vec: MyUserData,
+    vec2: Vec2,
+    uvec2: UVec2,
+    usize: usize,
+    f32: f32,
 }
 
 fn load_our_script(server: Res<AssetServer>, mut commands: Commands) {
-    let path = "scripts/custom_user_data.lua";
+    let path = "scripts/native_types.lua";
     let handle = server.load::<LuaFile, &str>(path);
 
     commands
@@ -90,7 +71,10 @@ fn load_our_script(server: Res<AssetServer>, mut commands: Commands) {
             scripts: vec![Script::<LuaFile>::new(path.to_string(), handle)],
         })
         .insert(MyComponent {
-            vec: MyUserData { x: 2, y: 3 },
+            vec2: Vec2::new(1.0,2.0),
+            uvec2: UVec2::new(3,4),
+            usize: 5,
+            f32: 6.7,
         });
 }
 
@@ -107,7 +91,6 @@ fn main() -> std::io::Result<()> {
             SystemStage::single_threaded(),
         )
         .add_script_handler_stage::<RLuaScriptHost<MyLuaArg, LuaAPIProvider>, _, 0, 0>("scripts")
-        .register_type::<MyUserData>()
         .register_type::<MyComponent>()
         // this stage handles addition and removal of script contexts, we can safely use `CoreStage::PostUpdate`
         .add_script_host::<RLuaScriptHost<MyLuaArg, LuaAPIProvider>, _>(CoreStage::PostUpdate);
