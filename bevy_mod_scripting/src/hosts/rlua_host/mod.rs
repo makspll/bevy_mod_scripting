@@ -2,7 +2,7 @@ pub mod api;
 pub mod assets;
 
 use crate::{
-    script_add_synchronizer, script_hot_reload_handler, script_remove_synchronizer, APIProvider,
+    script_add_synchronizer, script_hot_reload_handler, script_remove_synchronizer, APIProvider,bevy_types::LuaBevyAPI,
     CachedScriptEventState, FlatScriptData, Recipients, Script, ScriptCollection, ScriptContexts,
     ScriptError, ScriptErrorEvent, ScriptEvent, ScriptHost,
 };
@@ -115,6 +115,7 @@ impl<A: LuaArg, API: APIProvider<Ctx = Mutex<Lua>>> ScriptHost for RLuaScriptHos
     type ScriptContext = Mutex<Lua>;
     type ScriptEvent = LuaEvent<A>;
     type ScriptAsset = LuaFile;
+    type BevyAPI = LuaBevyAPI;
 
     fn register_with_app(app: &mut App, stage: impl StageLabel) {
         app.add_priority_event::<Self::ScriptEvent>()
@@ -157,6 +158,7 @@ impl<A: LuaArg, API: APIProvider<Ctx = Mutex<Lua>>> ScriptHost for RLuaScriptHos
 
         let mut lua = Mutex::new(lua);
 
+        Self::BevyAPI::attach_api(&mut lua);
         API::attach_api(&mut lua);
 
         Ok(lua)

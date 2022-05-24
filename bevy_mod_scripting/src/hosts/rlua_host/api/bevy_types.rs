@@ -1,10 +1,10 @@
 use bevy::reflect::TypeData;
 use bevy::reflect::TypeRegistry;
-use rlua::{UserData, MetaMethod,Value,Context,Error};
+use rlua::{UserData, MetaMethod,Value,Context,Error,Lua};
 use paste::paste;
 use bevy::prelude::*;
 use bevy::math::*;
-use std::{fmt,fmt::{Debug,Display,Formatter}, ops::*};
+use std::{fmt,fmt::{Debug,Display,Formatter}, ops::*,sync::Mutex};
 use phf::{phf_map, Map};
 use std::ops::DerefMut;
 use num::ToPrimitive;
@@ -13,13 +13,17 @@ use crate::PrintableReflect;
 use crate::Script;
 use crate::ScriptCollection;
 use crate::LuaRef;
+use crate::APIProvider;
+use crate::ScriptError;
 
 macro_rules! make_lua_types {
     (   
         [
             $(
                 $str:expr ;=> $name:ty:$(($($inner:tt)*))?{
+                    $(##[glob] $glob_name:expr => $global_fn:expr;)*
                     $(#[$e:tt] $g:expr => $f:expr;)*
+
                 }
             ),*
         ]
@@ -33,6 +37,27 @@ macro_rules! make_lua_types {
         ]
     ) => {
         paste!{
+
+            // constructors/api 
+            #[derive(Default)]
+            pub struct LuaBevyAPI;
+
+            impl APIProvider for LuaBevyAPI {
+                type Ctx = Mutex<Lua>;
+                fn attach_api(c: &mut <Self as APIProvider>::Ctx) {
+                    c.lock()
+                    .expect("Could not get lock on script context")
+                    .context::<_, Result<(), ScriptError>>(|lua_ctx| {
+                        $($(
+                            lua_ctx.globals()
+                                .set($glob_name, lua_ctx.create_function($global_fn)?)?;
+                        )*)*
+                        Ok(())
+                    }).unwrap();
+                }
+            }
+
+            // structs
 
             $(
                 make_lua_struct!(
@@ -311,6 +336,9 @@ macro_rules! make_it_all_baby {
                         $(
 
                             $vec_str ;=> $vec_base : {
+
+                                $($vec_inner)*
+
                                 $(
                                     // $vec_base $vec_float_inner
                                     #[meta] MetaMethod::Pow => |_,s : &[<Lua $vec_base>], o : $vec_float_inner| { Ok([<Lua $vec_base>]::new(s.val.powf(o))) };
@@ -370,7 +398,6 @@ macro_rules! make_it_all_baby {
                                     }
                                 };
 
-                                $($vec_inner)*
                             },
                         )*
                         // vanilla/others
@@ -393,27 +420,49 @@ macro_rules! make_it_all_baby {
 make_it_all_baby!{
     vectors: [
         "glam::vec2::Vec2" ;=> Vec2,f32 :+: f32 : {
+            ##[glob] "vec2" => |_,(x,y): (f32,f32)| {Ok(LuaVec2::new(Vec2::new(x,y)))};
             #[func] "perp_dot" => |_,s : &LuaVec2,o : LuaVec2| { Ok(s.val.perp_dot(o.val)) };
         },
-        "glam::vec3::Vec3" ;=> Vec3,f32 :+: f32: {},
-        "glam::vec4::Vec4" ;=> Vec4,f32 :+: f32: {},
+        "glam::vec3::Vec3" ;=> Vec3,f32 :+: f32: {
+            ##[glob] "vec3" => |_,(x,y,z): (f32,f32,f32)| {Ok(LuaVec3::new(Vec3::new(x,y,z)))};
+        },
+        "glam::vec4::Vec4" ;=> Vec4,f32 :+: f32: {
+            ##[glob] "vec4" => |_,(x,y,z,w): (f32,f32,f32,f32)| {Ok(LuaVec4::new(Vec4::new(x,y,z,w)))};
+        },
 
         // f64
         "glam::vec2::DVec2" ;=> DVec2 ,f64 :+: f64 :{
+            ##[glob] "dvec2" => |_,(x,y): (f64,f64)| {Ok(LuaDVec2::new(DVec2::new(x,y)))};
             #[func] "perp_dot" => |_,s : &LuaDVec2,o : LuaDVec2| { Ok(s.val.perp_dot(o.val)) };
         },
-        "glam::vec3::DVec3" ;=> DVec3,f64 :+: f64: {},
-        "glam::vec4::DVec4" ;=> DVec4,f64 :+: f64: {},
+        "glam::vec3::DVec3" ;=> DVec3,f64 :+: f64: {
+            ##[glob] "dvec3" => |_,(x,y,z): (f64,f64,f64)| {Ok(LuaDVec3::new(DVec3::new(x,y,z)))};
+        },
+        "glam::vec4::DVec4" ;=> DVec4,f64 :+: f64: {
+            ##[glob] "dvec4" => |_,(x,y,z,w): (f64,f64,f64,f64)| {Ok(LuaDVec4::new(DVec4::new(x,y,z,w)))};
+        },
 
         // u32
-        "glam::vec2::UVec2" ;=> UVec2,u32: {},
-        "glam::vec3::UVec3" ;=> UVec3, u32: {},
-        "glam::vec4::UVec4" ;=> UVec4, u32: {},
+        "glam::vec2::UVec2" ;=> UVec2,u32: {
+            ##[glob] "uvec2" => |_,(x,y): (u32,u32)| {Ok(LuaUVec2::new(UVec2::new(x,y)))};
+        },
+        "glam::vec3::UVec3" ;=> UVec3, u32: {
+            ##[glob] "uvec3" => |_,(x,y,z): (u32,u32,u32)| {Ok(LuaUVec3::new(UVec3::new(x,y,z)))};
+        },
+        "glam::vec4::UVec4" ;=> UVec4, u32: {
+            ##[glob] "uvec4" => |_,(x,y,z,w): (u32,u32,u32,u32)| {Ok(LuaUVec4::new(UVec4::new(x,y,z,w)))};
+        },
 
         // i32
-        "glam::vec2::IVec2" ;=> IVec2,i32: {},
-        "glam::vec3::IVec3" ;=> IVec3,i32: {},
-        "glam::vec4::IVec4" ;=> IVec4,i32: {}
+        "glam::vec2::IVec2" ;=> IVec2,i32: {
+            ##[glob] "ivec2" => |_,(x,y): (i32,i32)| {Ok(LuaIVec2::new(IVec2::new(x,y)))};
+        },
+        "glam::vec3::IVec3" ;=> IVec3,i32: {
+            ##[glob] "uvec3" => |_,(x,y,z): (i32,i32,i32)| {Ok(LuaIVec3::new(IVec3::new(x,y,z)))};
+        },
+        "glam::vec4::IVec4" ;=> IVec4,i32: {
+            ##[glob] "ivec4" => |_,(x,y,z,w): (i32,i32,i32,i32)| {Ok(LuaIVec4::new(IVec4::new(x,y,z,w)))};
+        }
 
     ]
     primitives: [

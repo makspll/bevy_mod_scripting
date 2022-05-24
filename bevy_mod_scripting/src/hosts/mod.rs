@@ -68,6 +68,8 @@ pub trait ScriptHost: Send + Sync + 'static {
     type ScriptEvent: ScriptEvent;
     /// the type of asset representing the script files for this host
     type ScriptAsset: CodeAsset;
+    /// The default api provider for generic bevy-related API's
+    type BevyAPI: APIProvider;
 
     /// Loads a script in byte array format, the script name can be used
     /// to send useful errors.

@@ -8,7 +8,7 @@ function on_update()
         print(string.format("%s",comp))
 
 
-        comp.vec2 = -comp.vec2 + comp.vec2 + comp.vec2:min(comp.vec2);
+        comp.vec2 = -comp.vec2 + comp.vec2 + comp.vec2:min(comp.vec2) + vec2(6,10);
         comp.uvec2 = comp.uvec2 + comp.uvec2;
         comp.usize = comp.vec2:min_element();
         comp.f32 = comp.f32 + comp.f32 + comp.vec2:min_element()

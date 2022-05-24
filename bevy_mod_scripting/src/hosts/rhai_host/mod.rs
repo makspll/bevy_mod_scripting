@@ -47,12 +47,25 @@ impl<A: FuncArgs + Clone + Send + Sync + 'static> ScriptEvent for RhaiEvent<A> {
     }
 }
 
+#[derive(Default)]
+pub struct DummyRhaiAPI;
+impl APIProvider for DummyRhaiAPI {
+    type Ctx = RhaiContext;
+
+    fn attach_api(ctx: &mut Self::Ctx) {
+        todo!()
+    }
+    
+}
+
+
 impl<A: FuncArgs + Send + Clone + Sync + 'static, API: RhaiAPIProvider<Ctx = RhaiContext>>
     ScriptHost for RhaiScriptHost<A, API>
 {
     type ScriptContext = RhaiContext;
     type ScriptEvent = RhaiEvent<A>;
     type ScriptAsset = RhaiFile;
+    type BevyAPI = DummyRhaiAPI;
 
     fn register_with_app(app: &mut bevy::prelude::App, stage: impl bevy::prelude::StageLabel) {
         app.add_priority_event::<Self::ScriptEvent>();
