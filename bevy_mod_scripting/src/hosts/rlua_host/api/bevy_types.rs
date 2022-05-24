@@ -261,9 +261,9 @@ macro_rules! make_it_all_baby {
                                 $(
                                     // $vec_base $vec_float_inner
                                     #[meta] MetaMethod::Pow => |_,s : &[<Lua $vec_base>], o : $vec_float_inner| { Ok([<Lua $vec_base>]::new(s.val.powf(o))) };
-                                    // #[meta] MetaMethod::Unm => |_,s : &[Lua $vec_base],()| { Ok([Lua $vec_base](s.val.neg())) };
-                                    // #[func] "abs" => |_,s : &[Lua $vec_base],()| { Ok([Lua $vec_base](s.val.abs())) };
-                                    // #[func] "signum" => |_,s : &[Lua $vec_base],()| { Ok([Lua $vec_base](s.val.signum())) };
+                                    #[meta] MetaMethod::Unm => |_,s : &[<Lua $vec_base>],()| { Ok(([<Lua $vec_base>]::new(s.val.neg()))) };
+                                    #[func] "abs" => |_,s : &[<Lua $vec_base>],()| { Ok([<Lua $vec_base>]::new(s.val.abs())) };
+                                    #[func] "signum" => |_,s : &[<Lua $vec_base>],()| { Ok([<Lua $vec_base>]::new(s.val.signum())) };
                                 )?
                                 #[func] "dot" => |_,s : &[<Lua $vec_base>],o : [<Lua $vec_base>]| { Ok(s.val.dot(o.val)) };
                                 #[func] "min_element" => |_,s : &[<Lua $vec_base>],()| { Ok(s.val.min_element()) };
