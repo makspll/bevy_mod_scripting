@@ -4,7 +4,7 @@ use std::fmt;
 
 use phf::{phf_map, Map};
 
-use crate::{primitives::LuaNumber, LuaWorld, ReflectCustomUserData, PrintReflect, APPLY_LUA_TO_BEVY, BEVY_TO_LUA};
+use crate::{LuaWorld, ReflectCustomUserData, PrintReflect, APPLY_LUA_TO_BEVY, BEVY_TO_LUA};
 
 /// A rust type representation in lua
 #[derive(Clone)]
