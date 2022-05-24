@@ -53,18 +53,18 @@
 -[ ] BVec3
 -[ ] BVec4
 -[ ] EulerRot
--[ ] IVec2
--[ ] IVec3
--[ ] IVec4
+-[x] IVec2
+-[x] IVec3
+-[x] IVec4
 -[ ] Mat3
 -[ ] Mat4
 -[ ] Quat
--[ ] UVec2
--[ ] UVec3
--[ ] UVec4
--[ ] Vec2
--[ ] Vec3
--[ ] Vec4
+-[x] UVec2
+-[x] UVec3
+-[x] UVec4
+-[x] Vec2
+-[x] Vec3
+-[x] Vec4
 
 ## bevy_render
 -[ ] Camera

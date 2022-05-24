@@ -180,7 +180,7 @@ impl<A: LuaArg, API: APIProvider<Ctx = Mutex<Lua>>> ScriptHost for RLuaScriptHos
                         .context::<_, Result<(), ScriptError>>(|lua_ctx| {
                             let globals = lua_ctx.globals();
                             globals.set("world", world_ptr.clone())?;
-                            globals.set("entity", LuaEntity(fd.entity))?;
+                            globals.set("entity", LuaEntity::new(fd.entity))?;
                             globals.set("script", fd.sid)?;
 
                             // event order is preserved, but scripts can't rely on any temporal

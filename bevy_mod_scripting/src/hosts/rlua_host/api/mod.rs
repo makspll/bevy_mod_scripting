@@ -1,22 +1,19 @@
-pub mod base;
 pub mod bevy_types;
 
 use bevy::{
     prelude::*,
-    reflect::{ReflectRef, TypeData, TypeRegistry},
+    reflect::{ReflectRef, TypeRegistry, GetPath},
 };
-use rlua::prelude::LuaError;
 use rlua::{Context, MetaMethod, ToLua, UserData, Value};
 use std::{
     cell::Ref,
     fmt,
-    ops::{Deref, DerefMut},
 };
 
-use crate::{base::LuaRef, PrintableReflect, LuaFile, Script, ScriptCollection};
+use crate::{PrintableReflect, PrintReflect};
 use anyhow::Result;
 
-pub use {base::*, bevy_types::*};
+pub use bevy_types::*;
 
 #[reflect_trait]
 pub trait CustomUserData {
@@ -60,171 +57,119 @@ impl<'lua> ToLua<'lua> for LuaCustomUserData {
     }
 }
 
-/// A lua representation of an entity reference
-#[derive(Clone)]
-pub struct LuaEntity(pub Entity);
-
-impl UserData for LuaEntity {
-    fn add_methods<'lua, T: rlua::UserDataMethods<'lua, Self>>(methods: &mut T) {
-        methods.add_method("id", |_, e, ()| Ok(e.0.id()));
-
-        methods.add_method("generation", |_, e, ()| Ok(e.0.generation()));
-
-        methods.add_method("bits", |_, e, ()| Ok(e.0.to_bits()));
-    }
-}
-
-impl Deref for LuaEntity {
-    type Target = Entity;
-
-    fn deref(&self) -> &Self::Target {
-        &self.0
-    }
-}
-
-impl DerefMut for LuaEntity {
-    fn deref_mut(&mut self) -> &mut Self::Target {
-        &mut self.0
-    }
-}
-
-/// A lua representation of a world reference.
-#[derive(Clone)]
-pub struct LuaWorld(pub *mut World);
-
-unsafe impl Send for LuaWorld {}
-
-pub fn get_type_data<T: TypeData + ToOwned<Owned = T>>(w: &mut World, name: &str) -> Result<T> {
-    let registry: &TypeRegistry = w.get_resource().unwrap();
-
-    let registry = registry.read();
-
-    let reg = registry
-        .get_with_short_name(&name)
-        .or(registry.get_with_name(&name))
-        .ok_or(LuaError::RuntimeError(format!(
-            "Invalid component name {name}"
-        )))
-        .unwrap();
-
-    let refl: T = reg
-        .data::<T>()
-        .ok_or(LuaError::RuntimeError(format!(
-            "Invalid component name {name}"
-        )))
-        .unwrap()
-        .to_owned();
-
-    Ok(refl)
-}
-
-impl UserData for LuaWorld {
-    fn add_methods<'lua, T: rlua::UserDataMethods<'lua, Self>>(methods: &mut T) {
-        methods.add_method(
-            "add_component",
-            |_, w, (entity, comp_name): (LuaEntity, String)| {
-                let w = unsafe { &mut *w.0 };
-
-                let refl: ReflectComponent = get_type_data(w, &comp_name).unwrap();
-                let def = get_type_data::<ReflectDefault>(w, &comp_name).unwrap();
-                let s = def.default();
-                refl.add_component(w, *entity, s.as_ref());
-
-                Ok(LuaComponent {
-                    comp: LuaRef(
-                        refl.reflect_component(w, *entity).unwrap() as *const dyn Reflect
-                            as *mut dyn Reflect,
-                    )                
-                })
-            },
-        );
-
-        methods.add_method::<_, (LuaEntity, String), _, _>(
-            "get_component",
-            |_, w, (entity, comp_name)| {
-                let w = unsafe { &mut *w.0 };
-
-                let refl: ReflectComponent = get_type_data(w, &comp_name).unwrap();
-                let dyn_comp = refl
-                    .reflect_component(w, *entity)
-                    .ok_or(LuaError::RuntimeError(
-                        "Component not part of entity".to_string(),
-                    ))
-                    .unwrap();
-
-                Ok(LuaComponent {
-                    comp: LuaRef(dyn_comp as *const dyn Reflect as *mut dyn Reflect),
-                })
-            },
-        );
-
-        methods.add_method("new_script_entity", |_, w, name: String| {
-            let w = unsafe { &mut *w.0 };
-
-            w.resource_scope(|w, r: Mut<AssetServer>| {
-                let handle = r.load::<LuaFile, _>(&name);
-                Ok(LuaEntity(
-                    w.spawn()
-                        .insert(ScriptCollection::<crate::LuaFile> {
-                            scripts: vec![Script::<LuaFile>::new(name, handle)],
-                        })
-                        .id(),
-                ))
-            })
-        });
-
-        methods.add_method("spawn", |_, w, ()| {
-            let w = unsafe { &mut *w.0 };
-            Ok(LuaEntity(w.spawn().id()))
-        });
-    }
-}
 
 #[derive(Clone)]
-pub struct LuaComponent {
-    comp: LuaRef,
-}
+pub struct LuaRef(pub(crate) *mut (dyn Reflect + 'static));
 
-impl fmt::Debug for LuaComponent {
+impl fmt::Debug for LuaRef {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        f.debug_struct("LuaComponent")
-            .field("comp", &self.comp)
-            .finish()
+        self.get().print(f)
     }
 }
 
-impl UserData for LuaComponent {
-    fn add_methods<'lua, T: rlua::UserDataMethods<'lua, Self>>(methods: &mut T) {
-        methods.add_meta_method(MetaMethod::ToString, |_, val, _a: Value| {
-            Ok(format!("{:#?}", PrintableReflect(val.comp.get())))
-        });
+impl fmt::Display for LuaRef {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{:#?}", self)
+    }
+}
 
-        methods.add_meta_method(MetaMethod::Index, |ctx, val, field: String| {
-            let r = val.comp.path_ref(&field).unwrap();
-            Ok(r.convert_to_lua(ctx).unwrap())
-        });
+impl LuaRef {
+    pub fn get(&self) -> &dyn Reflect {
+        assert!(!self.0.is_null());
+        unsafe { &*self.0 }
+    }
 
-        methods.add_meta_method_mut(
-            MetaMethod::NewIndex,
-            |ctx, val, (field, new_val): (Value, Value)| {
-                val.comp
-                    .path_lua_val_ref(field)
+    pub fn get_mut(&mut self) -> &mut dyn Reflect {
+        assert!(!self.0.is_null());
+        unsafe { &mut *self.0 }
+    }
+
+    pub fn path_ref(&self, path: &str) -> Result<Self,rlua::Error> {
+        let ref_mut = self.get();
+
+        let re = ref_mut
+            .path(path)
+            .map_err(|_e| rlua::Error::RuntimeError(format!("Cannot access field `{}`", path)))?;
+        Ok(Self(re as *const dyn Reflect as *mut dyn Reflect))
+    }
+
+    pub fn path_lua_val_ref(&self, path: Value) -> Result<Self,rlua::Error> {
+        let r = self.get().reflect_ref();
+
+        match path {
+            Value::Integer(idx) => {
+                let idx = idx as usize - 1;
+                match r {
+                    ReflectRef::Tuple(v) => Ok(v.field(idx).unwrap()),
+                    ReflectRef::TupleStruct(v) => Ok(v.field(idx).unwrap()),
+                    ReflectRef::List(v) => Ok(v.get(idx).unwrap()),
+                    ReflectRef::Map(v) => Ok(v.get(&(idx)).unwrap()),
+                    _ => Err(rlua::Error::RuntimeError(format!("Tried to index a primitive rust type {:#?}", self))),
+                }
+            }
+            Value::String(field) => {
+                let path = field.to_str().unwrap();
+                match r {
+                    ReflectRef::Map(v) => Ok(v.get(&path.to_owned()).unwrap()),
+                    ReflectRef::Struct(v) => Ok(v.field(path).unwrap()),
+                    _ => Err(rlua::Error::RuntimeError(format!("Tried to index a primitive rust type {:#?}", self))),
+                }
+            }
+            _ => Err(rlua::Error::RuntimeError(format!("Cannot index a rust object with {:?}", path))),
+        }
+        .map(|v| LuaRef(v as *const dyn Reflect as *mut dyn Reflect))
+    }
+
+    pub fn convert_to_lua<'lua>(self, ctx: Context<'lua>) -> Result<Value<'lua>,rlua::Error> {
+        
+        if let Some(f) = BEVY_TO_LUA.get(self.get().type_name()){
+            Ok(f(self.get(),ctx))
+        } else {
+            let w = unsafe { &mut *(ctx.globals().get::<_, LuaWorld>("world").unwrap()).0 };
+            let typedata = w.resource::<TypeRegistry>();
+            let g = typedata.read();
+
+            if let Some(v) = g.get_type_data::<ReflectCustomUserData>(self.get().type_id()) {
+                Ok(v.get(self.get()).unwrap().ref_to_lua(ctx).unwrap())
+            } else {
+                Ok(Value::UserData(ctx.create_userdata(self).unwrap()))
+            }
+        } 
+        // another case for an enumeration of 
+    }
+
+    pub fn apply_lua<'lua>(&mut self, ctx: Context<'lua>, v: Value<'lua>) -> Result<(),rlua::Error> {
+
+        if let Some(f) = APPLY_LUA_TO_BEVY.get(self.get().type_name()) {
+            println!("{}",self.get().type_name());
+            return f(self.get_mut(),ctx,v)
+        } else {
+            let w = unsafe { &mut *(ctx.globals().get::<_, LuaWorld>("world").unwrap()).0 };
+            let typedata = w.resource::<TypeRegistry>();
+            let g = typedata.read();
+    
+            if let Some(ud) = g.get_type_data::<ReflectCustomUserData>(self.get().type_id()){
+                ud.get_mut(self.get_mut())
                     .unwrap()
-                    .apply_lua(ctx, new_val)
+                    .apply_lua(ctx, v)
                     .unwrap();
-                Ok(())
-            },
-        );
+                return Ok(())
+            } else if let Value::UserData(v) = v {
+                if v.is::<LuaRef>() {
+                    let b = v.borrow_mut::<LuaRef>().unwrap();
+                    self.get_mut().apply(b.get());
+                    return Ok(())
+                }
+            } 
+        }; 
+
+        Err(rlua::Error::RuntimeError("Invalid assignment".to_owned()))
+        
     }
 }
 
-pub struct LuaResource {
-    res: LuaRef,
-}
+unsafe impl Send for LuaRef {}
 
-impl UserData for LuaResource {
-    fn add_methods<'lua, T: rlua::UserDataMethods<'lua, Self>>(_methods: &mut T) {}
-}
 
 impl UserData for LuaRef {
     fn add_methods<'lua, T: rlua::UserDataMethods<'lua, Self>>(methods: &mut T) {
@@ -260,3 +205,5 @@ impl UserData for LuaRef {
 
     }
 }
+
+
