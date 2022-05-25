@@ -59,6 +59,7 @@ pub struct MyComponent {
     uvec2: UVec2,
     usize: usize,
     f32: f32,
+    mat3: Mat3
 }
 
 fn load_our_script(server: Res<AssetServer>, mut commands: Commands) {
@@ -75,6 +76,7 @@ fn load_our_script(server: Res<AssetServer>, mut commands: Commands) {
             uvec2: UVec2::new(3,4),
             usize: 5,
             f32: 6.7,
+            mat3: Mat3::from_cols(Vec3::new(1.0,2.0,3.0),Vec3::new(4.0,5.0,6.0),Vec3::new(7.0,8.0,9.0)),
         });
 }
 

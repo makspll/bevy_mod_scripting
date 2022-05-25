@@ -7,12 +7,13 @@ function on_update()
 
         print(string.format("%s",comp))
 
-
-        comp.vec2 = -comp.vec2 + comp.vec2 + comp.vec2:min(comp.vec2) + vec2(6,10);
-        comp.uvec2 = comp.uvec2 + comp.uvec2;
-        comp.usize = comp.vec2:min_element();
+        print(string.format("%s",comp.vec2:min_element()))
+        comp.vec2 = vec2(6,10)
+        comp.vec2.x = 69
+        comp.uvec2 = comp.uvec2 + comp.uvec2
+        comp.usize = comp.vec2:min_element()
         comp.f32 = comp.f32 + comp.f32 + comp.vec2:min_element()
-        comp.vec2.x = 5.4
+        comp.mat3:col(0).x = -5
 
         print(string.format("%s",comp))
 

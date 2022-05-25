@@ -240,7 +240,7 @@ macro_rules! make_lua_struct {
             
         }
     };
-    // Value type
+    // Value type (Assignable so needs to sometimes represent a reference)
     (
     $base:ty :{
         $(#[$e:tt] $g:expr => $f:expr;)*
@@ -249,9 +249,9 @@ macro_rules! make_lua_struct {
     ) => {
         paste!{
             #[derive(Debug,Clone)]
-            pub struct [<Lua $base>] { 
-                pub val: $base, 
-                pub vref: Option<LuaRef> 
+            pub enum [<Lua $base>] { 
+                Owned($base),
+                Ref(LuaRef)
             }
             
             
@@ -263,22 +263,41 @@ macro_rules! make_lua_struct {
             }
 
             impl [<Lua $base>] {
-                pub fn base_to_self<'lua>(b: &$base) -> Self {
-                    [<Lua $base>] {
-                        val:*b,
-                        vref: Some(LuaRef(b as *const dyn Reflect as *mut dyn Reflect))
+
+                pub fn get(&self) -> &$base{
+                    match self {
+                        [<Lua $base>]::Owned(v) => v,
+                        [<Lua $base>]::Ref(v) => v.get().downcast_ref::<$base>().unwrap(),
                     }
                 }
-                pub fn apply_self_to_base<'lua>(&mut self, b: &mut $base){
-                    *b = self.val;
+                pub fn get_mut(&mut self) -> &mut $base{
+                    match self {
+                        [<Lua $base>]::Owned(v) => v,
+                        [<Lua $base>]::Ref(v) => v.get_mut().downcast_mut::<$base>().unwrap(),
+                    }
                 }
 
-                pub fn new(b : $base) -> Self {
-                    [<Lua $base>] {
-                        val:b,
-                        vref: None
-                    }
+                pub fn base_to_self<'lua>(b: &$base) -> Self {
+                    [<Lua $base>]::Ref(LuaRef(b as *const dyn Reflect as *mut dyn Reflect))
+                    
                 }
+                pub fn apply_self_to_base<'lua>(&mut self, b: &mut $base){
+                    *b = *self.get();
+                }
+
+                // pub fn new(b : $base) -> Self {
+                //     [<Lua $base>] {
+                //         val:b,
+                //         vref: None
+                //     }
+                // }
+
+                // pub fn new_with_ref(b : &$base) -> Self {
+                //     [<Lua $base>] {
+                //         val:*b,
+                //         vref: Some(LuaRef(b as *const dyn Reflect as *mut dyn Reflect))
+                //     }
+                // }
             }
 
             impl UserData for [<Lua $base>] {
@@ -304,6 +323,13 @@ macro_rules! make_it_all_baby {
             $(
                 $vec_str:expr ;=> $vec_base:ty, $vec_num:ty $(:+:  $vec_float_inner:ty)? :{  
                     $($vec_inner:tt)* 
+                } 
+            ),*
+        ]
+        matrices: [
+            $(
+                $mat_str:expr ;=> $mat_base:ty, $mat_col:ty, $mat_num:ty $(:+:  $mat_float_inner:ty)? :{  
+                    $($mat_inner:tt)* 
                 } 
             ),*
         ]
@@ -341,63 +367,92 @@ macro_rules! make_it_all_baby {
 
                                 $(
                                     // $vec_base $vec_float_inner
-                                    #[meta] MetaMethod::Pow => |_,s : &[<Lua $vec_base>], o : $vec_float_inner| { Ok([<Lua $vec_base>]::new(s.val.powf(o))) };
-                                    #[meta] MetaMethod::Unm => |_,s : &[<Lua $vec_base>],()| { Ok(([<Lua $vec_base>]::new(s.val.neg()))) };
-                                    #[func] "abs" => |_,s : &[<Lua $vec_base>],()| { Ok([<Lua $vec_base>]::new(s.val.abs())) };
-                                    #[func] "signum" => |_,s : &[<Lua $vec_base>],()| { Ok([<Lua $vec_base>]::new(s.val.signum())) };
+                                    #[meta] MetaMethod::Pow => |_,s : &[<Lua $vec_base>], o : $vec_float_inner| { Ok([<Lua $vec_base>]::Owned(s.get().powf(o))) };
+                                    #[meta] MetaMethod::Unm => |_,s : &[<Lua $vec_base>],()| { Ok(([<Lua $vec_base>]::Owned(s.get().neg()))) };
+                                    #[func] "abs" => |_,s : &[<Lua $vec_base>],()| { Ok([<Lua $vec_base>]::Owned(s.get().abs())) };
+                                    #[func] "signum" => |_,s : &[<Lua $vec_base>],()| { Ok([<Lua $vec_base>]::Owned(s.get().signum())) };
                                 )?
-                                #[func] "dot" => |_,s : &[<Lua $vec_base>],o : [<Lua $vec_base>]| { Ok(s.val.dot(o.val)) };
-                                #[func] "min_element" => |_,s : &[<Lua $vec_base>],()| { Ok(s.val.min_element()) };
-                                #[func] "max_element" => |_,s : &[<Lua $vec_base>],()| { Ok(s.val.max_element()) };
-                                #[func] "min" => |_,s : &[<Lua $vec_base>],o : [<Lua $vec_base>]| { Ok([<Lua $vec_base>]::new(s.val.min(o.val))) };
-                                #[func] "max" => |_,s : &[<Lua $vec_base>],o : [<Lua $vec_base>]| { Ok([<Lua $vec_base>]::new(s.val.max(o.val))) };
-                                #[func] "clamp" => |_,s : &[<Lua $vec_base>],(o,max) : ([<Lua $vec_base>],[<Lua $vec_base>])| { Ok([<Lua $vec_base>]::new(s.val.clamp(o.val,max.val))) };
+                                #[func] "dot" => |_,s : &[<Lua $vec_base>],o : [<Lua $vec_base>]| { Ok(s.get().dot(*o.get())) };
+                                #[func] "min_element" => |_,s : &[<Lua $vec_base>],()| { Ok(s.get().min_element()) };
+                                #[func] "max_element" => |_,s : &[<Lua $vec_base>],()| { Ok(s.get().max_element()) };
+                                #[func] "min" => |_,s : &[<Lua $vec_base>],o : [<Lua $vec_base>]| { Ok([<Lua $vec_base>]::Owned(s.get().min(*o.get()))) };
+                                #[func] "max" => |_,s : &[<Lua $vec_base>],o : [<Lua $vec_base>]| { Ok([<Lua $vec_base>]::Owned(s.get().max(*o.get()))) };
+                                #[func] "clamp" => |_,s : &[<Lua $vec_base>],(o,max) : ([<Lua $vec_base>],[<Lua $vec_base>])| { Ok([<Lua $vec_base>]::Owned(s.get().clamp(*o.get(),*max.get()))) };
 
-
-
-                                #[meta] MetaMethod::Add => |_,s : &[<Lua $vec_base>],o : [<Lua $vec_base>]| { Ok([<Lua $vec_base>]::new(s.val.add(o.val))) };
-                                #[meta] MetaMethod::Sub => |_,s : &[<Lua $vec_base>],o : [<Lua $vec_base>]| { Ok([<Lua $vec_base>]::new(s.val.sub(o.val))) };
-                                #[meta] MetaMethod::Mul => |_,s : &[<Lua $vec_base>],o : [<Lua $vec_base>]| { Ok([<Lua $vec_base>]::new(s.val.mul(o.val))) };
-                                #[meta] MetaMethod::Div => |_,s : &[<Lua $vec_base>],o : [<Lua $vec_base>]| { Ok([<Lua $vec_base>]::new(s.val.div(o.val))) };
-                                #[meta] MetaMethod::Mod => |_,s : &[<Lua $vec_base>],o : [<Lua $vec_base>]| { Ok([<Lua $vec_base>]::new(s.val.rem(o.val))) };
-                                #[meta] MetaMethod::Eq => |_,s : &[<Lua $vec_base>],o : [<Lua $vec_base>]| { Ok((s.val.eq(&o.val))) };
-                                #[meta] MetaMethod::Index => |_,s : &[<Lua $vec_base>],idx : Value| { 
-                                    match idx {
-                                        Value::Integer(v) => Ok(s.val[v as usize]),
-                                        Value::String(ref v) => match v.to_str()? {
-                                            "x" => Ok(s.val[0]),
-                                            "y" => Ok(s.val[1]),
-                                            "z" => Ok(s.val[2]),
-                                            "w" => Ok(s.val[3]),
-                                            _ => Err(Error::RuntimeError(format!("Cannot index {} with {:#?}",stringify!($vec_base),idx)))
-                                        },
-                                        _ => Err(Error::RuntimeError(format!("Cannot index {} with {:#?}",stringify!($vec_base),idx)))
-                                    }
+                                #[meta] MetaMethod::Add => |_,s : &[<Lua $vec_base>],o : [<Lua $vec_base>]| { Ok([<Lua $vec_base>]::Owned(s.get().add(*o.get()))) };
+                                #[meta] MetaMethod::Sub => |_,s : &[<Lua $vec_base>],o : [<Lua $vec_base>]| { Ok([<Lua $vec_base>]::Owned(s.get().sub(*o.get()))) };
+                                #[meta] MetaMethod::Mul => |_,s : &[<Lua $vec_base>],o : [<Lua $vec_base>]| { Ok([<Lua $vec_base>]::Owned(s.get().mul(*o.get()))) };
+                                #[meta] MetaMethod::Div => |_,s : &[<Lua $vec_base>],o : [<Lua $vec_base>]| { Ok([<Lua $vec_base>]::Owned(s.get().div(*o.get()))) };
+                                #[meta] MetaMethod::Mod => |_,s : &[<Lua $vec_base>],o : [<Lua $vec_base>]| { Ok([<Lua $vec_base>]::Owned(s.get().rem(*o.get()))) };
+                                #[meta] MetaMethod::Eq => |_,s : &[<Lua $vec_base>],o : [<Lua $vec_base>]| { Ok((s.get().eq(&o.get()))) };
+                                #[meta_mut] MetaMethod::Index => |_,s : &mut [<Lua $vec_base>],idx : String| { 
+                                    let idx = match idx.as_str() {
+                                        "x" => 0,
+                                        "y" => 1,
+                                        "z" => 2,
+                                        "w" => 3,
+                                        _ => Err(Error::RuntimeError(format!("Cannot index {} with {:#?}",stringify!($vec_base),idx)))?
+                                    };
+                                    Ok(s.get()[idx])
                                 };
-                                #[meta_mut] MetaMethod::NewIndex => |_,s : &mut [<Lua $vec_base>],(idx,val) : (Value,$vec_num)| { 
-                                    match idx {
-                                        Value::Integer(v) => Ok(s.val[v as usize] = val),
-                                        Value::String(ref v) => {
-                                            let idx = match v.to_str()? {
+                                #[meta_mut] MetaMethod::NewIndex => |_,s : &mut [<Lua $vec_base>],(idx,val) : (String,$vec_num)| { // (Value,$vec_num) 
+                                    // match idx {
+                                        // Value::Integer(v) => Ok(s.val[v as usize] = val), does not currently work
+                                        // Value::String(ref v) => {
+                                            let idx = match idx.as_str() {
                                                 "x" => 0,
                                                 "y" => 1,
                                                 "z" => 2,
                                                 "w" => 3,
                                                 _ => Err(Error::RuntimeError(format!("Cannot index {} with {:#?}",stringify!($vec_base),idx)))?
                                             };
-                                            
                                             // if our wrapper holds a reference it means it is an immediate indexing into
                                             // the original value, i.e. some_struct.our_vec[idx] = value
-                                            Ok(match &mut s.vref {
-                                                Some(r) => r.get_mut().downcast_mut::<$vec_base>().unwrap()[idx] = val,
-                                                None => s.val[idx] = val,
-                                            })
+                                            Ok(s.get_mut()[idx] = val)
 
-                                        },
-                                        _ => Err(Error::RuntimeError(format!("Cannot index {} with {:#?}",stringify!($vec_base),idx)))
-                                    }
+                                        // },
+                                        // _ => Err(Error::RuntimeError(format!("Cannot index {} with {:#?}",stringify!($vec_base),idx)))
+                                        
+                                    // }
                                 };
 
+                            },
+                        )*
+                        // matrices 
+                        $(
+
+                            $mat_str ;=> $mat_base : {
+                                $($mat_inner)*
+
+                                #[func_mut] "col" => |_,s,idx : usize| Ok([<Lua $mat_col>]::Ref(LuaRef(s.get_mut().col_mut(idx))));
+                                // #[func] "row" => |_,s,idx : usize| Ok([<Lua $mat_col>]::Owned(s.get().row(idx)));
+                                #[func] "transpose" => |_,s,()| Ok([<Lua $mat_base>]::Owned(s.get().transpose()));
+                                #[func] "determinant" => |_,s,()| Ok(s.get().determinant());
+                                #[func] "inverse" => |_,s,()| Ok([<Lua $mat_base>]::Owned(s.get().inverse()));
+
+                                #[meta] MetaMethod::Unm => |_,s,()| Ok([<Lua $mat_base>]::Owned(s.get().neg()));
+                                #[meta] MetaMethod::Sub => |_,s,o : [<Lua $mat_base>]| Ok([<Lua $mat_base>]::Owned(s.get().sub(*o.get())));
+                                #[meta] MetaMethod::Add => |_,s,o : [<Lua $mat_base>]| Ok([<Lua $mat_base>]::Owned(s.get().add(*o.get())));
+
+                                #[meta] MetaMethod::Mul => |c,s,v: Value| {
+                                    match &v {
+                                        Value::UserData(u) => {
+                                            if let Ok(v) = u.borrow::<[<Lua $mat_base>]>(){
+                                                return c.create_userdata([<Lua $mat_base>]::Owned(s.get().mul(*v.get()))).map(Value::UserData)
+                                            } else if let Ok(v) = u.borrow::<[<Lua $mat_col>]>() {
+                                                return c.create_userdata([<Lua $mat_col>]::Owned(s.get().mul(*v.get()))).map(Value::UserData)
+                                            }
+                                        },
+                                        _ => {}
+                                    }
+
+                                    c.coerce_number(v)?
+                                        .and_then(|v| Some([<Lua $mat_base>]::Owned(s.get().mul(v as $mat_num))))
+                                        .and_then(|v| c.create_userdata(v).ok())
+                                        .map(Value::UserData)
+                                        .ok_or(Error::RuntimeError(format!("Can only multiply matrix by number or vector")))
+                                };
+                          
                             },
                         )*
                         // vanilla/others
@@ -420,51 +475,67 @@ macro_rules! make_it_all_baby {
 make_it_all_baby!{
     vectors: [
         "glam::vec2::Vec2" ;=> Vec2,f32 :+: f32 : {
-            ##[glob] "vec2" => |_,(x,y): (f32,f32)| {Ok(LuaVec2::new(Vec2::new(x,y)))};
-            #[func] "perp_dot" => |_,s : &LuaVec2,o : LuaVec2| { Ok(s.val.perp_dot(o.val)) };
+            ##[glob] "vec2" => |_,(x,y): (f32,f32)| {Ok(LuaVec2::Owned(Vec2::new(x,y)))};
+            #[func] "perp_dot" => |_,s : &LuaVec2,o : LuaVec2| { Ok(s.get().perp_dot(*o.get())) };
         },
         "glam::vec3::Vec3" ;=> Vec3,f32 :+: f32: {
-            ##[glob] "vec3" => |_,(x,y,z): (f32,f32,f32)| {Ok(LuaVec3::new(Vec3::new(x,y,z)))};
+            ##[glob] "vec3" => |_,(x,y,z): (f32,f32,f32)| {Ok(LuaVec3::Owned(Vec3::new(x,y,z)))};
         },
         "glam::vec4::Vec4" ;=> Vec4,f32 :+: f32: {
-            ##[glob] "vec4" => |_,(x,y,z,w): (f32,f32,f32,f32)| {Ok(LuaVec4::new(Vec4::new(x,y,z,w)))};
+            ##[glob] "vec4" => |_,(x,y,z,w): (f32,f32,f32,f32)| {Ok(LuaVec4::Owned(Vec4::new(x,y,z,w)))};
         },
 
         // f64
         "glam::vec2::DVec2" ;=> DVec2 ,f64 :+: f64 :{
-            ##[glob] "dvec2" => |_,(x,y): (f64,f64)| {Ok(LuaDVec2::new(DVec2::new(x,y)))};
-            #[func] "perp_dot" => |_,s : &LuaDVec2,o : LuaDVec2| { Ok(s.val.perp_dot(o.val)) };
+            ##[glob] "dvec2" => |_,(x,y): (f64,f64)| {Ok(LuaDVec2::Owned(DVec2::new(x,y)))};
+            #[func] "perp_dot" => |_,s : &LuaDVec2,o : LuaDVec2| { Ok(s.get().perp_dot(*o.get())) };
         },
         "glam::vec3::DVec3" ;=> DVec3,f64 :+: f64: {
-            ##[glob] "dvec3" => |_,(x,y,z): (f64,f64,f64)| {Ok(LuaDVec3::new(DVec3::new(x,y,z)))};
+            ##[glob] "dvec3" => |_,(x,y,z): (f64,f64,f64)| {Ok(LuaDVec3::Owned(DVec3::new(x,y,z)))};
         },
         "glam::vec4::DVec4" ;=> DVec4,f64 :+: f64: {
-            ##[glob] "dvec4" => |_,(x,y,z,w): (f64,f64,f64,f64)| {Ok(LuaDVec4::new(DVec4::new(x,y,z,w)))};
+            ##[glob] "dvec4" => |_,(x,y,z,w): (f64,f64,f64,f64)| {Ok(LuaDVec4::Owned(DVec4::new(x,y,z,w)))};
         },
 
         // u32
         "glam::vec2::UVec2" ;=> UVec2,u32: {
-            ##[glob] "uvec2" => |_,(x,y): (u32,u32)| {Ok(LuaUVec2::new(UVec2::new(x,y)))};
+            ##[glob] "uvec2" => |_,(x,y): (u32,u32)| {Ok(LuaUVec2::Owned(UVec2::new(x,y)))};
         },
         "glam::vec3::UVec3" ;=> UVec3, u32: {
-            ##[glob] "uvec3" => |_,(x,y,z): (u32,u32,u32)| {Ok(LuaUVec3::new(UVec3::new(x,y,z)))};
+            ##[glob] "uvec3" => |_,(x,y,z): (u32,u32,u32)| {Ok(LuaUVec3::Owned(UVec3::new(x,y,z)))};
         },
         "glam::vec4::UVec4" ;=> UVec4, u32: {
-            ##[glob] "uvec4" => |_,(x,y,z,w): (u32,u32,u32,u32)| {Ok(LuaUVec4::new(UVec4::new(x,y,z,w)))};
+            ##[glob] "uvec4" => |_,(x,y,z,w): (u32,u32,u32,u32)| {Ok(LuaUVec4::Owned(UVec4::new(x,y,z,w)))};
         },
 
         // i32
         "glam::vec2::IVec2" ;=> IVec2,i32: {
-            ##[glob] "ivec2" => |_,(x,y): (i32,i32)| {Ok(LuaIVec2::new(IVec2::new(x,y)))};
+            ##[glob] "ivec2" => |_,(x,y): (i32,i32)| {Ok(LuaIVec2::Owned(IVec2::new(x,y)))};
         },
         "glam::vec3::IVec3" ;=> IVec3,i32: {
-            ##[glob] "uvec3" => |_,(x,y,z): (i32,i32,i32)| {Ok(LuaIVec3::new(IVec3::new(x,y,z)))};
+            ##[glob] "uvec3" => |_,(x,y,z): (i32,i32,i32)| {Ok(LuaIVec3::Owned(IVec3::new(x,y,z)))};
         },
         "glam::vec4::IVec4" ;=> IVec4,i32: {
-            ##[glob] "ivec4" => |_,(x,y,z,w): (i32,i32,i32,i32)| {Ok(LuaIVec4::new(IVec4::new(x,y,z,w)))};
+            ##[glob] "ivec4" => |_,(x,y,z,w): (i32,i32,i32,i32)| {Ok(LuaIVec4::Owned(IVec4::new(x,y,z,w)))};
         }
 
     ]
+
+    matrices: [
+        "glam::mat3::Mat3" ;=> Mat3,Vec3,f32: {
+            ##[glob] "mat3" => |_,(x,y,z): (LuaVec3,LuaVec3,LuaVec3)| {Ok(LuaMat3::Owned(Mat3::from_cols(*x.get(),*y.get(),*z.get())))};
+        },
+        "glam::mat4::Mat4" ;=> Mat4,Vec4,f32: {
+            ##[glob] "mat4" => |_,(x,y,z,w): (LuaVec4,LuaVec4,LuaVec4,LuaVec4)| {Ok(LuaMat4::Owned(Mat4::from_cols(*x.get(),*y.get(),*z.get(),*w.get())))};
+        },
+        "glam::mat3::DMat3" ;=> DMat3,DVec3,f64: {
+            ##[glob] "dmat3" => |_,(x,y,z): (LuaDVec3,LuaDVec3,LuaDVec3)| {Ok(LuaDMat3::Owned(DMat3::from_cols(*x.get(),*y.get(),*z.get())))};
+        },
+        "glam::mat4::DMat4" ;=> DMat4,DVec4,f64: {
+            ##[glob] "dmat4" => |_,(x,y,z,w): (LuaDVec4,LuaDVec4,LuaDVec4,LuaDVec4)| {Ok(LuaDMat4::Owned(DMat4::from_cols(*x.get(),*y.get(),*z.get(),*w.get())))};
+        }
+    ]
+
     primitives: [
         "usize" ;=> usize : {
             #[from] |r,_| Value::Integer( r.downcast_ref::<usize>().unwrap().to_i64().unwrap());
@@ -529,9 +600,9 @@ make_it_all_baby!{
     ]
     other: [
         "bevy_ecs::entity::Entity" ;=> Entity : {
-            #[func] "id" => |_,s : &LuaEntity, ()| Ok(s.val.id());
-            #[func] "generation" => |_,s : &LuaEntity, ()| Ok(s.val.generation());
-            #[func] "bits" => |_,s : &LuaEntity, ()| Ok(s.val.to_bits());
+            #[func] "id" => |_,s : &LuaEntity, ()| Ok(s.get().id());
+            #[func] "generation" => |_,s : &LuaEntity, ()| Ok(s.get().generation());
+            #[func] "bits" => |_,s : &LuaEntity, ()| Ok(s.get().to_bits());
         }
     ]
     non_assignable: [
@@ -545,11 +616,11 @@ make_it_all_baby!{
                     .map_err(|_| Error::RuntimeError(format!("Component does not derive Default and cannot be instantiated: {}",comp_name)))?;
 
                 let s = def.default();
-                refl.add_component(w, entity.val, s.as_ref());
+                refl.add_component(w, *entity.get(), s.as_ref());
 
                 Ok(LuaComponent {
                     comp: LuaRef(
-                        refl.reflect_component(w, entity.val).expect("Could not reflect freshly added component") as *const dyn Reflect
+                        refl.reflect_component(w, *entity.get()).expect("Could not reflect freshly added component") as *const dyn Reflect
                             as *mut dyn Reflect,
                     )                
                 })
@@ -562,8 +633,8 @@ make_it_all_baby!{
                     .map_err(|_| Error::RuntimeError(format!("Not a component {}",comp_name)))?;
 
                 let dyn_comp = refl
-                    .reflect_component(w, entity.val)
-                    .ok_or(Error::RuntimeError(format!("Could not find {comp_name} on {:?}",entity.val),
+                    .reflect_component(w, *entity.get())
+                    .ok_or(Error::RuntimeError(format!("Could not find {comp_name} on {:?}",entity.get()),
                     ))?;
 
                 Ok(LuaComponent {
@@ -576,7 +647,7 @@ make_it_all_baby!{
     
                 w.resource_scope(|w, r: Mut<AssetServer>| {
                     let handle = r.load::<LuaFile, _>(&name);
-                    Ok(LuaEntity::new(
+                    Ok(LuaEntity::Owned(
                         w.spawn()
                             .insert(ScriptCollection::<crate::LuaFile> {
                                 scripts: vec![Script::<LuaFile>::new(name, handle)],
@@ -588,7 +659,7 @@ make_it_all_baby!{
 
             #[func] "spawn" => |_, w, ()| {
                 let w = unsafe { &mut *w.0 };
-                Ok(LuaEntity::new(w.spawn().id()))
+                Ok(LuaEntity::Owned(w.spawn().id()))
             };
 
         }

@@ -141,7 +141,6 @@ impl LuaRef {
     pub fn apply_lua<'lua>(&mut self, ctx: Context<'lua>, v: Value<'lua>) -> Result<(),rlua::Error> {
 
         if let Some(f) = APPLY_LUA_TO_BEVY.get(self.get().type_name()) {
-            println!("{}",self.get().type_name());
             return f(self.get_mut(),ctx,v)
         } else {
             let w = unsafe { &mut *(ctx.globals().get::<_, LuaWorld>("world").unwrap()).0 };
