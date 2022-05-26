@@ -18,7 +18,7 @@ use crate::ScriptError;
 
 macro_rules! make_lua_types {
     (   
-        [
+        userdata: [
             $(
                 $str:expr ;=> $name:ty:$(($($inner:tt)*))?{
                     $(##[glob] $glob_name:expr => $global_fn:expr;)*
@@ -27,7 +27,16 @@ macro_rules! make_lua_types {
                 }
             ),*
         ]
-        [
+        non_assignable_ud: [
+            $(
+                $na_str:expr ;=> $na_name:ty:$(($($na_inner:tt)*))?{
+                    $(##[glob] $na_glob_name:expr => $na_global_fn:expr;)*
+                    $(#[$na_e:tt] $na_g:expr => $na_f:expr;)*
+
+                }
+            ),*     
+        ]
+        primitives: [
             $(
             $primitive_str:expr ;=> $primitive_base:ty : {
                 #[from] $primitive_from:expr;
@@ -48,10 +57,14 @@ macro_rules! make_lua_types {
                     c.lock()
                     .expect("Could not get lock on script context")
                     .context::<_, Result<(), ScriptError>>(|lua_ctx| {
+                        let g = lua_ctx.globals();
                         $($(
-                            lua_ctx.globals()
-                                .set($glob_name, lua_ctx.create_function($global_fn)?)?;
+                            g.set($glob_name, lua_ctx.create_function($global_fn)?)?;
                         )*)*
+                        $($(
+                            g.set($na_glob_name, lua_ctx.create_function($na_global_fn)?)?;
+                        )*)*
+
                         Ok(())
                     }).unwrap();
                 }
@@ -63,6 +76,13 @@ macro_rules! make_lua_types {
                 make_lua_struct!(
                     $name: $( ($($inner)*) )? {
                         $(#[$e] $g => $f;)*
+                    }
+                );
+            )*
+            $(
+                make_lua_struct!(
+                    $na_name: $( ($($na_inner)*) )? {
+                        $(#[$na_e] $na_g => $na_f;)*
                     }
                 );
             )*
@@ -87,13 +107,13 @@ macro_rules! make_lua_types {
                 $(
                     $str => |r,c,n| {
 
-                        if let Value::UserData(v) = n {
-                            let mut v = v.borrow_mut::<[<Lua $name>]>()?;
-                            [<Lua $name>]::apply_self_to_base(v.deref_mut(),r.downcast_mut::<$name>().unwrap());
-                            Ok(())
-                        } else {
-                            Err(Error::RuntimeError("Invalid type".to_owned()))
-                        }
+                    if let Value::UserData(v) = n {
+                        let mut v = v.borrow_mut::<[<Lua $name>]>()?;
+                        [<Lua $name>]::apply_self_to_base(v.deref_mut(),r.downcast_mut::<$name>().unwrap());
+                        Ok(())
+                    } else {
+                        Err(Error::RuntimeError("Invalid type".to_owned()))
+                    }
                     }
                 ),*,
                 $(
@@ -148,39 +168,6 @@ macro_rules! make_add_method {
 }
 
 macro_rules! make_lua_struct {
-    // bare pointer type 
-    (
-        $base:ty:(*mut $_:ty) {
-            $(#[$e:tt] $g:expr => $f:expr;)*
-        }
-    ) => {
-        paste!{
-            #[derive(Debug,Clone)]
-            pub struct [<Lua $base>] (pub *mut $base);
-            
-            unsafe impl Send for [<Lua $base>]{}
-
-            impl Display for [<Lua $base>] {
-                fn fmt(&self, f: &mut Formatter<'_>) -> Result<(), std::fmt::Error> { 
-                    write!(f,"{:#?}", self)
-                }
-            }
-
-            impl UserData for [<Lua $base>] {
-                fn add_methods<'lua, T: rlua::UserDataMethods<'lua, Self>>(methods: &mut T) {
-                    // automatically generate 
-                    methods.add_meta_method(MetaMethod::ToString, |_,s,()|{
-                        Ok(format!("{}",s))
-                    });
-
-                    $(
-                        make_add_method!(methods,#[$e] $g => $f);
-                    )*
-                }
-            }
-        }
-    };
-
     // reflect type
     (
         $base:ty:(LuaRef) {
@@ -199,7 +186,7 @@ macro_rules! make_lua_struct {
             }
 
             impl [<Lua $base>] {
-                pub fn base_to_self<'lua>(b: &$base) -> Self {
+                pub fn base_to_self(b: &$base) -> Self {
                     Self(LuaRef(b as *const dyn Reflect as *mut dyn Reflect))
                 }
                 pub fn apply_self_to_base<'lua>(&mut self, b: &mut $base){
@@ -242,7 +229,7 @@ macro_rules! make_lua_struct {
     };
     // Value type (Assignable so needs to sometimes represent a reference)
     (
-    $base:ty :{
+    $base:ty:{
         $(#[$e:tt] $g:expr => $f:expr;)*
     }
 
@@ -266,38 +253,37 @@ macro_rules! make_lua_struct {
 
                 pub fn get(&self) -> &$base{
                     match self {
-                        [<Lua $base>]::Owned(v) => v,
+                        [<Lua $base>]::Owned(ref v) => v,
                         [<Lua $base>]::Ref(v) => v.get().downcast_ref::<$base>().unwrap(),
                     }
                 }
                 pub fn get_mut(&mut self) -> &mut $base{
                     match self {
-                        [<Lua $base>]::Owned(v) => v,
+                        [<Lua $base>]::Owned(ref mut v) => v,
                         [<Lua $base>]::Ref(v) => v.get_mut().downcast_mut::<$base>().unwrap(),
                     }
                 }
 
-                pub fn base_to_self<'lua>(b: &$base) -> Self {
+                pub fn base_to_self(b: &$base) -> Self {
                     [<Lua $base>]::Ref(LuaRef(b as *const dyn Reflect as *mut dyn Reflect))
                     
                 }
-                pub fn apply_self_to_base<'lua>(&mut self, b: &mut $base){
+                pub fn apply_self_to_base(&self, b: &mut $base){
+                    // self is either a reference:
+                    //  - to another field
+                    //  - to base
+                    // or just a value
+                    // base is a reference to the actual object living we are trying to apply to 
+                    println!("hello {} {:?}",self,b);
+                    match self {
+                        [<Lua $base>]::Owned(ref v) => {println!("Owned: {:?}",v.clone());},
+                        _ => {},
+                    };
                     *b = *self.get();
+
+                    println!("hello2");
                 }
 
-                // pub fn new(b : $base) -> Self {
-                //     [<Lua $base>] {
-                //         val:b,
-                //         vref: None
-                //     }
-                // }
-
-                // pub fn new_with_ref(b : &$base) -> Self {
-                //     [<Lua $base>] {
-                //         val:*b,
-                //         vref: Some(LuaRef(b as *const dyn Reflect as *mut dyn Reflect))
-                //     }
-                // }
             }
 
             impl UserData for [<Lua $base>] {
@@ -314,6 +300,39 @@ macro_rules! make_lua_struct {
             }
         }
     };
+    // any old plain clone type with only string defaults
+    (
+        $base:ty:($($inner_tkns:tt)*) {
+            $(#[$e:tt] $g:expr => $f:expr;)*
+        }
+    ) => {
+        paste!{
+            #[derive(Debug,Clone)]
+            pub struct [<Lua $base>] ($($inner_tkns)*);
+            
+            unsafe impl Send for [<Lua $base>]{}
+
+            impl Display for [<Lua $base>] {
+                fn fmt(&self, f: &mut Formatter<'_>) -> Result<(), std::fmt::Error> { 
+                    write!(f,"{:#?}", self)
+                }
+            }
+
+            impl UserData for [<Lua $base>] {
+                fn add_methods<'lua, T: rlua::UserDataMethods<'lua, Self>>(methods: &mut T) {
+                    // automatically generate 
+                    methods.add_meta_method(MetaMethod::ToString, |_,s,()|{
+                        Ok(format!("{}",s))
+                    });
+
+                    $(
+                        make_add_method!(methods,#[$e] $g => $f);
+                    )*
+                }
+            }
+        }
+    };
+
 }
 
 
@@ -328,41 +347,35 @@ macro_rules! make_it_all_baby {
         ]
         matrices: [
             $(
-                $mat_str:expr ;=> $mat_base:ty, $mat_col:ty, $mat_num:ty $(:+:  $mat_float_inner:ty)? :{  
+                $mat_str:expr ;=> $mat_base:ty, $mat_col:ty, $mat_num:ty :{  
                     $($mat_inner:tt)* 
                 } 
             ),*
         ]
+
+        quats : [
+            $(
+                $quat_str:expr ;=> $quat_base:ty, $quat_vec:ty ,$quat_num:ty :{  
+                    $($quat_inner:tt)* 
+                } 
+            ),*
+        ]
+
         primitives: [
             $(
                 $primitive_inner:tt
             )*
         ]
         other: [$($o:tt)+]
-        non_assignable: [
-            $(
-                $na_str:expr ;=> $na_base:ty : (*mut $_:ty) {  
-                    $($na_inner:tt)* 
-                } 
-            ),*
-        ]
+        non_assignable: [$($na_inner:tt)*]
     ) => {
         paste!(
-                // non assignable
-                $(make_lua_struct!{
-                    $na_base : (*mut $_){  
-                        $($na_inner)* 
-                    }              
-                })*
-
                 make_lua_types!{
-                    [   
-
+                    userdata: [   
                         // vectors
                         $(
 
                             $vec_str ;=> $vec_base : {
-
                                 $($vec_inner)*
 
                                 $(
@@ -425,10 +438,11 @@ macro_rules! make_it_all_baby {
                                 $($mat_inner)*
 
                                 #[func_mut] "col" => |_,s,idx : usize| Ok([<Lua $mat_col>]::Ref(LuaRef(s.get_mut().col_mut(idx))));
-                                // #[func] "row" => |_,s,idx : usize| Ok([<Lua $mat_col>]::Owned(s.get().row(idx)));
                                 #[func] "transpose" => |_,s,()| Ok([<Lua $mat_base>]::Owned(s.get().transpose()));
                                 #[func] "determinant" => |_,s,()| Ok(s.get().determinant());
                                 #[func] "inverse" => |_,s,()| Ok([<Lua $mat_base>]::Owned(s.get().inverse()));
+                                #[func] "is_nan" => |_,s,()| Ok(s.get().is_nan());
+                                #[func] "is_finite" => |_,s,()| Ok(s.get().is_finite());
 
                                 #[meta] MetaMethod::Unm => |_,s,()| Ok([<Lua $mat_base>]::Owned(s.get().neg()));
                                 #[meta] MetaMethod::Sub => |_,s,o : [<Lua $mat_base>]| Ok([<Lua $mat_base>]::Owned(s.get().sub(*o.get())));
@@ -455,11 +469,61 @@ macro_rules! make_it_all_baby {
                           
                             },
                         )*
+
+                        // quats
+                        $(
+                            $quat_str ;=> $quat_base : {
+                                $($quat_inner)*
+                                #[func] "to_axis_angle" => |_,s,()| {
+                                    let (v,f) = s.get().to_axis_angle();
+                                    Ok(([<Lua $quat_vec>]::Owned(v),f))
+                                };
+
+                                #[func] "to_scaled_axis" => |_,s,()| Ok([<Lua $quat_vec>]::Owned(s.get().to_scaled_axis()));
+                                #[func] "to_euler" => |_,s,e : LuaEulerRot| Ok(s.get().to_euler(e.0));
+                                #[func] "xyz" => |_,s,()| Ok([<Lua $quat_vec>]::Owned(s.get().xyz()));
+                                #[func] "conjugate" => |_,s,()| Ok([<Lua $quat_base>]::Owned(s.get().conjugate()));
+                                #[func] "inverse" => |_,s,()| Ok([<Lua $quat_base>]::Owned(s.get().inverse()));
+                                #[func] "dot" => |_,s,o : [<Lua $quat_base>]| Ok(s.get().dot(*o.get()));
+                                #[func] "length" => |_,s,()| Ok(s.get().length());
+                                #[func] "length_squared" => |_,s,()| Ok(s.get().length_squared());
+                                #[func] "length_recip" => |_,s,()| Ok(s.get().length_recip());
+                                #[func] "normalize" => |_,s,()| Ok([<Lua $quat_base>]::Owned(s.get().normalize()));
+                                #[func] "is_finite" => |_,s,()| Ok(s.get().is_finite());
+                                #[func] "is_nan" => |_,s,()| Ok(s.get().is_nan());
+                                #[func] "is_normalized" => |_,s,()| Ok(s.get().is_normalized());
+                                #[func] "is_near_identity" => |_,s,()| Ok(s.get().is_near_identity());
+                                #[func] "angle_between" => |_,s,o : [<Lua $quat_base>]| Ok(s.get().angle_between(*o.get()));
+                                #[func] "abs_diff_eq" => |_,s,(o,diff) : ([<Lua $quat_base>],$quat_num)| Ok(s.get().abs_diff_eq(*o.get(),diff));
+                                #[func] "lerp" => |_,s,(o,f) : ([<Lua $quat_base>],$quat_num)| Ok([<Lua $quat_base>]::Owned(s.get().lerp(*o.get(),f)));
+                                #[func] "slerp" => |_,s,(o,f) : ([<Lua $quat_base>],$quat_num)| Ok([<Lua $quat_base>]::Owned(s.get().slerp(*o.get(),f)));
+                                #[meta] MetaMethod::Mul => |c,s,o : Value| {
+                                    if let Value::UserData(ref o) = o {
+                                        if let Ok(o) = o.borrow::<[<Lua $quat_vec>]>(){
+                                            return c.create_userdata([<Lua $quat_vec>]::Owned(s.get().mul(*o.get()))).map(Value::UserData)
+                                        } else if let Ok(o) = o.borrow::<[<Lua $quat_base>]>(){
+                                            return c.create_userdata([<Lua $quat_base>]::Owned(s.get().mul(*o.get()))).map(Value::UserData)
+                                        }
+                                    } 
+                                    c.coerce_number(o)?
+                                        .and_then(|o| c.create_userdata([<Lua $quat_base>]::Owned(s.get().mul(o as $quat_num))).ok())
+                                        .map(Value::UserData)
+                                        .ok_or(Error::RuntimeError("Can only multiply Quat by vec3, quat or a number".to_owned()))
+                                };
+                                #[meta] MetaMethod::Add => |_,s,o : [<Lua $quat_base>]| Ok([<Lua $quat_base>]::Owned(s.get().add(*o.get())));
+                                #[meta] MetaMethod::Sub => |_,s,o : [<Lua $quat_base>]| Ok([<Lua $quat_base>]::Owned(s.get().sub(*o.get())));
+                                #[meta] MetaMethod::Unm => |_,s,()| Ok([<Lua $quat_base>]::Owned(s.get().neg()));
+                            },
+                        )*
+
                         // vanilla/others
                         $($o)+
 
                     ]
-                    [
+                    non_assignable_ud:[
+                        $($na_inner)*
+                    ]
+                    primitives: [
                         // primitives
                         $($primitive_inner)*
                     ]
@@ -469,7 +533,7 @@ macro_rules! make_it_all_baby {
     }
 }
 
-// the string paths are neccessary since phf cannot handle macro inputs 
+// the string paths are neccessary since phf cannot handle macro inputs  
 // maybe in a switch to TypeId this will workout automatically
 // and there won't be a need for these auto-tests
 make_it_all_baby!{
@@ -533,6 +597,15 @@ make_it_all_baby!{
         },
         "glam::mat4::DMat4" ;=> DMat4,DVec4,f64: {
             ##[glob] "dmat4" => |_,(x,y,z,w): (LuaDVec4,LuaDVec4,LuaDVec4,LuaDVec4)| {Ok(LuaDMat4::Owned(DMat4::from_cols(*x.get(),*y.get(),*z.get(),*w.get())))};
+        }
+    ]
+
+    quats: [
+        "glam::quat::Quat" ;=> Quat,Vec3,f32 : {
+            ##[glob] "quat" => |_,(x,y,z,w) : (f32,f32,f32,f32)| Ok(LuaQuat::Owned(Quat::from_xyzw(x,y,z,w)));
+        },
+        "glam::quat::DQuat" ;=> DQuat,DVec3,f64 : {
+            ##[glob] "dquat" => |_,(x,y,z,w) : (f64,f64,f64,f64)| Ok(LuaDQuat::Owned(DQuat::from_xyzw(x,y,z,w)));
         }
     ]
 
@@ -605,8 +678,21 @@ make_it_all_baby!{
             #[func] "bits" => |_,s : &LuaEntity, ()| Ok(s.get().to_bits());
         }
     ]
+    // things which cannot be reflected from/assigned to, since they do not support reflection/
+    // hence can only be created via lua globals or passed explicitly to the script
     non_assignable: [
-        "bevy_ecs::world::World" ;=> World: (*mut World) {
+        "glam::EulerRot" ;=> EulerRot :(pub EulerRot) {
+            ##[glob] "euler_rot" => |_,v : String| Ok(LuaEulerRot(match v.as_str() {
+                "ZYX" => EulerRot::ZYX,
+                "ZXY" => EulerRot::ZXY,
+                "YXZ" => EulerRot::YXZ,
+                "YZX" => EulerRot::YZX,
+                "XYZ" => EulerRot::XYZ,
+                "XZY" => EulerRot::ZXY,
+                _ => return Err(Error::RuntimeError("Invalid euler rotation".to_owned()))
+            }));
+        },
+        "bevy_ecs::world::World" ;=> World: (pub *mut World) {
             #[func] "add_component" =>  |_, w, (entity, comp_name): (LuaEntity, String)| {
                 let w = unsafe { &mut *w.0 };
 
@@ -724,10 +810,8 @@ impl UserData for LuaComponent {
             MetaMethod::NewIndex,
             |ctx, val, (field, new_val): (Value, Value)| {
                 val.comp
-                    .path_lua_val_ref(field)
-                    .unwrap()
-                    .apply_lua(ctx, new_val)
-                    .unwrap();
+                    .path_lua_val_ref(field)?
+                    .apply_lua(ctx, new_val).unwrap();
                 Ok(())
             },
         );

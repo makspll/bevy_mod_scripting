@@ -148,6 +148,7 @@ impl LuaRef {
             let g = typedata.read();
     
             if let Some(ud) = g.get_type_data::<ReflectCustomUserData>(self.get().type_id()){
+
                 ud.get_mut(self.get_mut())
                     .unwrap()
                     .apply_lua(ctx, v)

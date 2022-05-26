@@ -55,11 +55,12 @@ fn fire_script_update(mut w: PriorityEventWriter<LuaEvent<MyLuaArg>>) {
 #[derive(Component, Default, Reflect)]
 #[reflect(Component)]
 pub struct MyComponent {
+    pub quat: Quat,
     vec2: Vec2,
     uvec2: UVec2,
     usize: usize,
     f32: f32,
-    mat3: Mat3
+    mat3: Mat3,
 }
 
 fn load_our_script(server: Res<AssetServer>, mut commands: Commands) {
@@ -77,6 +78,7 @@ fn load_our_script(server: Res<AssetServer>, mut commands: Commands) {
             usize: 5,
             f32: 6.7,
             mat3: Mat3::from_cols(Vec3::new(1.0,2.0,3.0),Vec3::new(4.0,5.0,6.0),Vec3::new(7.0,8.0,9.0)),
+            quat: Quat::from_xyzw(1.0,2.0,3.0,4.0),
         });
 }
 
