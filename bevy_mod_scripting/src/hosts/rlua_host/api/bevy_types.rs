@@ -88,11 +88,11 @@ macro_rules! make_lua_types {
             )*
 
             pub static BEVY_TO_LUA: Map<&'static str,
-                for<'l> fn(&dyn Reflect, ctx: Context<'l>) -> Value<'l>
+                for<'l> fn(&mut dyn Reflect, ctx: Context<'l>) -> Value<'l>
             > = phf_map!{
                 $(
                     $str => |r,c| {
-                        let usr = c.create_userdata([<Lua $name>]::base_to_self(r.downcast_ref::<$name>().unwrap())).unwrap();
+                        let usr = c.create_userdata([<Lua $name>]::base_to_self(r.downcast_mut::<$name>().unwrap())).unwrap();
                         Value::UserData(usr)
                     }
                 ),*,
@@ -186,8 +186,8 @@ macro_rules! make_lua_struct {
             }
 
             impl [<Lua $base>] {
-                pub fn base_to_self(b: &$base) -> Self {
-                    Self(LuaRef(b as *const dyn Reflect as *mut dyn Reflect))
+                pub fn base_to_self(b: &mut $base) -> Self {
+                    Self(LuaRef(b as *mut dyn Reflect))
                 }
                 pub fn apply_self_to_base<'lua>(&mut self, b: &mut $base){
                     b.apply(self.0.get());
@@ -252,20 +252,22 @@ macro_rules! make_lua_struct {
             impl [<Lua $base>] {
 
                 pub fn get(&self) -> &$base{
+                    println!("Calling `get` on lua val {:?}", self);
                     match self {
                         [<Lua $base>]::Owned(ref v) => v,
-                        [<Lua $base>]::Ref(v) => v.get().downcast_ref::<$base>().unwrap(),
+                        [<Lua $base>]::Ref(v) => unsafe { v.get() } .downcast_ref::<$base>().unwrap(),
                     }
                 }
                 pub fn get_mut(&mut self) -> &mut $base{
+                    println!("Calling `get_mut` on lua val {:?}", self);
                     match self {
                         [<Lua $base>]::Owned(ref mut v) => v,
-                        [<Lua $base>]::Ref(v) => v.get_mut().downcast_mut::<$base>().unwrap(),
+                        [<Lua $base>]::Ref(v) => unsafe { v.get_mut() } .downcast_mut::<$base>().unwrap(),
                     }
                 }
 
-                pub fn base_to_self(b: &$base) -> Self {
-                    [<Lua $base>]::Ref(LuaRef(b as *const dyn Reflect as *mut dyn Reflect))
+                pub fn base_to_self(b: &mut $base) -> Self {
+                    [<Lua $base>]::Ref(LuaRef(b as *mut dyn Reflect))
                     
                 }
                 pub fn apply_self_to_base(&self, b: &mut $base){
@@ -274,12 +276,13 @@ macro_rules! make_lua_struct {
                     //  - to base
                     // or just a value
                     // base is a reference to the actual object living we are trying to apply to 
-                    println!("hello {} {:?}",self,b);
-                    match self {
-                        [<Lua $base>]::Owned(ref v) => {println!("Owned: {:?}",v.clone());},
-                        _ => {},
-                    };
-                    *b = *self.get();
+                    // println!("hello {} {:?}",self,b);
+                    // match self {
+                    //     [<Lua $base>]::Owned(ref v) => {println!("Owned: {:?}",v.clone());},
+                    //     _ => {},
+                    // };
+                    println!("{:p} {:p} {} {:?}",self,b,self,b);
+                    b.apply(self.get());
 
                     println!("hello2");
                 }
@@ -464,7 +467,7 @@ macro_rules! make_it_all_baby {
                                         .and_then(|v| Some([<Lua $mat_base>]::Owned(s.get().mul(v as $mat_num))))
                                         .and_then(|v| c.create_userdata(v).ok())
                                         .map(Value::UserData)
-                                        .ok_or(Error::RuntimeError(format!("Can only multiply matrix by number or vector")))
+                                        .ok_or_else(|| Error::RuntimeError(format!("Can only multiply matrix by number or vector")))
                                 };
                           
                             },
@@ -508,7 +511,7 @@ macro_rules! make_it_all_baby {
                                     c.coerce_number(o)?
                                         .and_then(|o| c.create_userdata([<Lua $quat_base>]::Owned(s.get().mul(o as $quat_num))).ok())
                                         .map(Value::UserData)
-                                        .ok_or(Error::RuntimeError("Can only multiply Quat by vec3, quat or a number".to_owned()))
+                                        .ok_or_else(|| Error::RuntimeError("Can only multiply Quat by vec3, quat or a number".to_owned()))
                                 };
                                 #[meta] MetaMethod::Add => |_,s,o : [<Lua $quat_base>]| Ok([<Lua $quat_base>]::Owned(s.get().add(*o.get())));
                                 #[meta] MetaMethod::Sub => |_,s,o : [<Lua $quat_base>]| Ok([<Lua $quat_base>]::Owned(s.get().sub(*o.get())));
@@ -612,63 +615,63 @@ make_it_all_baby!{
     primitives: [
         "usize" ;=> usize : {
             #[from] |r,_| Value::Integer( r.downcast_ref::<usize>().unwrap().to_i64().unwrap());
-            #[to] |r,c,v : Value| Ok(r.apply(&c.coerce_integer(v)?.ok_or(Error::RuntimeError("Not an integer".to_owned()))?.to_usize().ok_or(Error::RuntimeError("Value not compatibile with usize".to_owned()))?));
+            #[to] |r,c,v : Value| Ok(r.apply(&c.coerce_integer(v)?.ok_or_else(||Error::RuntimeError("Not an integer".to_owned()))?.to_usize().ok_or_else(||Error::RuntimeError("Value not compatibile with usize".to_owned()))?));
         },
         "isize" ;=> isize : {
             #[from] |r,_| Value::Integer( r.downcast_ref::<isize>().unwrap().to_i64().unwrap());
-            #[to] |r,c,v : Value| Ok(r.apply(&c.coerce_integer(v)?.ok_or(Error::RuntimeError("Not an integer".to_owned()))?.to_isize().ok_or(Error::RuntimeError("Value not compatibile with isize".to_owned()))?));
+            #[to] |r,c,v : Value| Ok(r.apply(&c.coerce_integer(v)?.ok_or_else(||Error::RuntimeError("Not an integer".to_owned()))?.to_isize().ok_or_else(||Error::RuntimeError("Value not compatibile with isize".to_owned()))?));
         },
         "i128" ;=> i128 : {
             #[from] |r,_| Value::Integer( r.downcast_ref::<i128>().unwrap().to_i64().unwrap());
-            #[to] |r,c,v : Value| Ok(r.apply(&c.coerce_integer(v)?.ok_or(Error::RuntimeError("Not an integer".to_owned()))?.to_i128().ok_or(Error::RuntimeError("Value not compatibile with i128".to_owned()))?));
+            #[to] |r,c,v : Value| Ok(r.apply(&c.coerce_integer(v)?.ok_or_else(||Error::RuntimeError("Not an integer".to_owned()))?.to_i128().ok_or_else(||Error::RuntimeError("Value not compatibile with i128".to_owned()))?));
         },
         "i64" ;=> i64 : {
             #[from] |r,_| Value::Integer( r.downcast_ref::<i64>().unwrap().to_i64().unwrap());
-            #[to] |r,c,v : Value| Ok(r.apply(&c.coerce_integer(v)?.ok_or(Error::RuntimeError("Not an integer".to_owned()))?.to_i64().ok_or(Error::RuntimeError("Value not compatibile with i64".to_owned()))?));
+            #[to] |r,c,v : Value| Ok(r.apply(&c.coerce_integer(v)?.ok_or_else(||Error::RuntimeError("Not an integer".to_owned()))?.to_i64().ok_or_else(||Error::RuntimeError("Value not compatibile with i64".to_owned()))?));
         },
         "i32" ;=> i32 : {
             #[from] |r,_| Value::Integer( r.downcast_ref::<i32>().unwrap().to_i64().unwrap());
-            #[to] |r,c,v : Value| Ok(r.apply(&c.coerce_integer(v)?.ok_or(Error::RuntimeError("Not an integer".to_owned()))?.to_i32().ok_or(Error::RuntimeError("Value not compatibile with i32".to_owned()))?));
+            #[to] |r,c,v : Value| Ok(r.apply(&c.coerce_integer(v)?.ok_or_else(||Error::RuntimeError("Not an integer".to_owned()))?.to_i32().ok_or_else(||Error::RuntimeError("Value not compatibile with i32".to_owned()))?));
         },
         "i16" ;=> i16 : {
             #[from] |r,_| Value::Integer( r.downcast_ref::<i16>().unwrap().to_i64().unwrap());
-            #[to] |r,c,v : Value| Ok(r.apply(&c.coerce_integer(v)?.ok_or(Error::RuntimeError("Not an integer".to_owned()))?.to_i16().ok_or(Error::RuntimeError("Value not compatibile with i16".to_owned()))?));
+            #[to] |r,c,v : Value| Ok(r.apply(&c.coerce_integer(v)?.ok_or_else(||Error::RuntimeError("Not an integer".to_owned()))?.to_i16().ok_or_else(||Error::RuntimeError("Value not compatibile with i16".to_owned()))?));
         },
         "i8" ;=> i8 : {
             #[from] |r,_| Value::Integer( r.downcast_ref::<i8>().unwrap().to_i64().unwrap());
-            #[to] |r,c,v : Value| Ok(r.apply(&c.coerce_integer(v)?.ok_or(Error::RuntimeError("Not an integer".to_owned()))?.to_i8().ok_or(Error::RuntimeError("Value not compatibile with i8".to_owned()))?));
+            #[to] |r,c,v : Value| Ok(r.apply(&c.coerce_integer(v)?.ok_or_else(||Error::RuntimeError("Not an integer".to_owned()))?.to_i8().ok_or_else(||Error::RuntimeError("Value not compatibile with i8".to_owned()))?));
         },
         "u128" ;=> u128 : {
             #[from] |r,_| Value::Integer( r.downcast_ref::<u128>().unwrap().to_i64().unwrap());
-            #[to] |r,c,v : Value| Ok(r.apply(&c.coerce_integer(v)?.ok_or(Error::RuntimeError("Not an integer".to_owned()))?.to_u128().ok_or(Error::RuntimeError("Value not compatibile with u128".to_owned()))?));
+            #[to] |r,c,v : Value| Ok(r.apply(&c.coerce_integer(v)?.ok_or_else(||Error::RuntimeError("Not an integer".to_owned()))?.to_u128().ok_or_else(||Error::RuntimeError("Value not compatibile with u128".to_owned()))?));
         },
         "u64" ;=> u64 : {
             #[from] |r,_| Value::Integer( r.downcast_ref::<u64>().unwrap().to_i64().unwrap());
-            #[to] |r,c,v : Value| Ok(r.apply(&c.coerce_integer(v)?.ok_or(Error::RuntimeError("Not an integer".to_owned()))?.to_u64().ok_or(Error::RuntimeError("Value not compatibile with u64".to_owned()))?));
+            #[to] |r,c,v : Value| Ok(r.apply(&c.coerce_integer(v)?.ok_or_else(||Error::RuntimeError("Not an integer".to_owned()))?.to_u64().ok_or_else(||Error::RuntimeError("Value not compatibile with u64".to_owned()))?));
         },
         "u32" ;=> u32 : {
             #[from] |r,_| Value::Integer( r.downcast_ref::<u32>().unwrap().to_i64().unwrap());
-            #[to] |r,c,v : Value| Ok(r.apply(&c.coerce_integer(v)?.ok_or(Error::RuntimeError("Not an integer".to_owned()))?.to_u32().ok_or(Error::RuntimeError("Value not compatibile with u32".to_owned()))?));
+            #[to] |r,c,v : Value| Ok(r.apply(&c.coerce_integer(v)?.ok_or_else(||Error::RuntimeError("Not an integer".to_owned()))?.to_u32().ok_or_else(||Error::RuntimeError("Value not compatibile with u32".to_owned()))?));
         },
         "u16" ;=> u16 : {
             #[from] |r,_| Value::Integer( r.downcast_ref::<u16>().unwrap().to_i64().unwrap());
-            #[to] |r,c,v : Value| Ok(r.apply(&c.coerce_integer(v)?.ok_or(Error::RuntimeError("Not an integer".to_owned()))?.to_u16().ok_or(Error::RuntimeError("Value not compatibile with u16".to_owned()))?));
+            #[to] |r,c,v : Value| Ok(r.apply(&c.coerce_integer(v)?.ok_or_else(||Error::RuntimeError("Not an integer".to_owned()))?.to_u16().ok_or_else(||Error::RuntimeError("Value not compatibile with u16".to_owned()))?));
         },
         "u8" ;=> u8 : {
             #[from] |r,_| Value::Integer( r.downcast_ref::<u8>().unwrap().to_i64().unwrap());
-            #[to] |r,c,v : Value| Ok(r.apply(&c.coerce_integer(v)?.ok_or(Error::RuntimeError("Not an integer".to_owned()))?.to_u8().ok_or(Error::RuntimeError("Value not compatibile with u8".to_owned()))?));
+            #[to] |r,c,v : Value| Ok(r.apply(&c.coerce_integer(v)?.ok_or_else(||Error::RuntimeError("Not an integer".to_owned()))?.to_u8().ok_or_else(||Error::RuntimeError("Value not compatibile with u8".to_owned()))?));
         },
         "f32" ;=> f32 : {
             #[from] |r,_| Value::Number( r.downcast_ref::<f32>().unwrap().to_f64().unwrap());
-            #[to] |r,c,v : Value| Ok(r.apply(&c.coerce_number(v)?.ok_or(Error::RuntimeError("Not a number".to_owned()))?.to_f32().ok_or(Error::RuntimeError("Value not compatibile with f32".to_owned()))?));
+            #[to] |r,c,v : Value| Ok(r.apply(&c.coerce_number(v)?.ok_or_else(||Error::RuntimeError("Not a number".to_owned()))?.to_f32().ok_or_else(||Error::RuntimeError("Value not compatibile with f32".to_owned()))?));
         },
         "f64" ;=> f64 : {
             #[from] |r,_| Value::Number( r.downcast_ref::<f64>().unwrap().to_f64().unwrap());
-            #[to] |r,c,v : Value| Ok(r.apply(&c.coerce_number(v)?.ok_or(Error::RuntimeError("Not a number".to_owned()))?.to_f64().ok_or(Error::RuntimeError("Value not compatibile with f64".to_owned()))?));
+            #[to] |r,c,v : Value| Ok(r.apply(&c.coerce_number(v)?.ok_or_else(||Error::RuntimeError("Not a number".to_owned()))?.to_f64().ok_or_else(||Error::RuntimeError("Value not compatibile with f64".to_owned()))?));
         },
         "string" ;=> String : {
             #[from] |r,c| Value::String( c.create_string(r.downcast_ref::<String>().unwrap()).unwrap());
-            #[to] |r,c,v : Value| c.coerce_string(v)?.ok_or(Error::RuntimeError("Not a string".to_owned())).and_then(|s| Ok(r.apply(&s.to_str()?.to_owned())));
+            #[to] |r,c,v : Value| c.coerce_string(v)?.ok_or_else(||Error::RuntimeError("Not a string".to_owned())).and_then(|s| Ok(r.apply(&s.to_str()?.to_owned())));
         }
     ]
     other: [
@@ -706,25 +709,26 @@ make_it_all_baby!{
 
                 Ok(LuaComponent {
                     comp: LuaRef(
-                        refl.reflect_component(w, *entity.get()).expect("Could not reflect freshly added component") as *const dyn Reflect
+                        refl.reflect_component_mut(w, *entity.get()).expect("Could not reflect freshly added component") 
+                            .as_mut()
                             as *mut dyn Reflect,
                     )                
                 })
             };
 
-            #[func] "get_component" => |_, w, (entity, comp_name) : (LuaEntity,String)| {
+            #[func_mut] "get_component" => |_, w, (entity, comp_name) : (LuaEntity,String)| {
                 let w = unsafe { &mut *w.0 };
 
                 let refl: ReflectComponent = get_type_data(w, &comp_name)
                     .map_err(|_| Error::RuntimeError(format!("Not a component {}",comp_name)))?;
 
-                let dyn_comp = refl
-                    .reflect_component(w, *entity.get())
-                    .ok_or(Error::RuntimeError(format!("Could not find {comp_name} on {:?}",entity.get()),
+                let mut dyn_comp = refl
+                    .reflect_component_mut(w, *entity.get())
+                    .ok_or_else(|| Error::RuntimeError(format!("Could not find {comp_name} on {:?}",entity.get()),
                     ))?;
 
                 Ok(LuaComponent {
-                    comp: LuaRef(dyn_comp as *const dyn Reflect as *mut dyn Reflect),
+                    comp: LuaRef(dyn_comp.as_mut() as *mut dyn Reflect),
                 })
             };
 
@@ -762,14 +766,14 @@ pub fn get_type_data<T: TypeData + ToOwned<Owned = T>>(w: &mut World, name: &str
     let reg = registry
         .get_with_short_name(&name)
         .or(registry.get_with_name(&name))
-        .ok_or(Error::RuntimeError(format!(
+        .ok_or_else(|| Error::RuntimeError(format!(
             "Invalid component name {name}"
         )))
         .unwrap();
 
     let refl: T = reg
         .data::<T>()
-        .ok_or(Error::RuntimeError(format!(
+        .ok_or_else(|| Error::RuntimeError(format!(
             "Invalid component name {name}"
         )))
         .unwrap()
@@ -795,23 +799,27 @@ impl Debug for LuaComponent {
 impl UserData for LuaComponent {
     fn add_methods<'lua, T: rlua::UserDataMethods<'lua, Self>>(methods: &mut T) {
         methods.add_meta_method(MetaMethod::ToString, |_, val, _a: Value| {
-            Ok(format!("{:#?}", PrintableReflect(val.comp.get())))
+            Ok(format!("{:#?}", PrintableReflect(unsafe { val.comp.get() } )))
         });
 
-        methods.add_meta_method(MetaMethod::Index, |ctx, val, field: String| {
-            let r = val.comp
+        methods.add_meta_method_mut(MetaMethod::Index, |ctx, val, field: String| {
+            let r = unsafe { 
+                val.comp
                 .path_ref(&field)
+            }
                 .map_err(|_| Error::RuntimeError(format!("The field {field} does not exist on {val:?}")))?;
                 
-            Ok(r.convert_to_lua(ctx).unwrap())
+            Ok(unsafe { r.convert_to_lua(ctx) }.unwrap())
         });
 
         methods.add_meta_method_mut(
             MetaMethod::NewIndex,
             |ctx, val, (field, new_val): (Value, Value)| {
-                val.comp
+                unsafe { val.comp
                     .path_lua_val_ref(field)?
                     .apply_lua(ctx, new_val).unwrap();
+                }
+                
                 Ok(())
             },
         );
