@@ -5,7 +5,7 @@ function on_update()
     if comp == nil then
         comp = world:get_component(entity,"MyComponent")
 
-        -- print(string.format("%s",comp))
+        print(string.format("%s",comp))
 
         -- comp.vec2 = comp.vec2 * vec2(6,10)
         -- comp.vec2.x = 69
@@ -14,9 +14,10 @@ function on_update()
         -- comp.f32 = comp.f32 + comp.f32 + comp.vec2:min_element()
         -- comp.mat3:col(0).x = -5
 
+        -- comp.dquat = dquat(3,2,1,4) -- comp.quat * 2
         comp.quat = quat(3,2,1,4) -- comp.quat * 2
 
-        -- print(string.format("%s", comp))
+        print(string.format("%s", comp))
 
     end
 end

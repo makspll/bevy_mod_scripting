@@ -1,51 +1,56 @@
-//! This example illustrates how reflection works for simple data structures, like
-//! structs, tuples and vectors.
+use rlua::{Value,UserData,MetaMethod,Function,prelude::*};
 
-use bevy::{
-    prelude::*,
-    reflect::{DynamicList, ReflectRef},
-    utils::HashMap,
-};
-use serde::{Deserialize, Serialize};
+#[derive(Debug)]
+pub struct MyUserData {
+    v : [u32;3]
+}
+
+impl UserData for MyUserData {
+    fn add_methods<'lua, T: LuaUserDataMethods<'lua, Self>>(methods: &mut T) {
+        methods.add_meta_method(MetaMethod::ToString, |_,s,()| {
+            Ok(format!("{:?}",s))
+        });
+
+        methods.add_meta_method_mut(MetaMethod::NewIndex, |_,s,(idx,val) : (Value,u32)|{
+            let idx = match idx {
+                Value::Integer(i) => i as usize,
+                Value::String(s) => match s.to_str().unwrap() {
+                    "x" => 0,
+                    "y" => 1,
+                    "z" => 2,
+                    _ => panic!()
+                },
+                _ => panic!(),
+            };
+
+            Ok(s.v[idx] = val)
+        })
+    }
+}
+
 
 fn main() {
-    App::new()
-        .add_plugins(DefaultPlugins)
-        .add_startup_system(setup)
-        .run();
-}
+    let lua = Lua::new();
+    lua.context(|lua_ctx| {
+        lua_ctx
+            .load("
+            function on_update(my_user_data)
+                print(my_user_data)
+                my_user_data[0] = 69
+                my_user_data.y = 42
+                print(my_user_data)
+            end
+            ")
+            .exec()
+    }).unwrap();
 
-/// Deriving reflect on a struct will implement the `Reflect` and `Struct` traits
-#[derive(Reflect,Debug)]
-pub struct A {
-    e: Quat
-}
+    lua.context(|lua_ctx| {
+        let g = lua_ctx.globals();
+        let f : Function = g.get("on_update").unwrap();
 
-fn setup() {
-
-    // some value we want to affect via lua
-    let mut value: Box<dyn Reflect> = Box::new(A {
-        e: Quat::from_xyzw(1.0,2.0,3.0,4.0)
-    });
-
-    // transformed into a pointer
-    let ptr_val : *mut dyn Reflect = value.as_mut() as *mut dyn Reflect; 
-
-    // we get the `e` destination field as a pointer as well
-    let ptr_dest : *mut dyn Reflect = match unsafe{&mut *ptr_val}.reflect_mut() {
-        bevy::reflect::ReflectMut::Struct(s) => {
-            s.field_mut("e").unwrap() as *mut dyn Reflect
-        },
-        _ => {panic!()}
-    };
-
-    // we downcast this destination back to a quat
-    let base = unsafe {&mut *ptr_dest}.downcast_mut::<Quat>().unwrap();
-
-    // we apply new quat to the base
-    // SEGFAULT on `clone` in apply internals here
-    base.apply(&Quat::from_xyzw(4.0,3.0,2.0,1.0));
-
-    println!("{:?}",value.take::<A>());
+        f.call::<MyUserData,()>(MyUserData{
+            v: [0,1,2],
+        }).unwrap();
+    })
 
 }
