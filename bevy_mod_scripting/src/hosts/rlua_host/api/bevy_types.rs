@@ -9,7 +9,6 @@ use phf::{phf_map, Map};
 use std::ops::DerefMut;
 use num::ToPrimitive;
 use crate::LuaFile;
-use crate::LuaPtr;
 use crate::LuaRefBase;
 use crate::PrintableReflect;
 use crate::Script;
@@ -17,6 +16,7 @@ use crate::ScriptCollection;
 use crate::LuaRef;
 use crate::APIProvider;
 use crate::ScriptError;
+use std::sync::{RwLock,Arc};
 
 macro_rules! make_lua_types {
     (   
@@ -371,8 +371,7 @@ macro_rules! make_it_all_baby {
                             $mat_str ;=> $mat_base : {
                                 $($mat_inner)*
 
-                                #[func_mut] "col" => |_,s,idx : usize| Ok([<Lua $mat_col>]::Ref(LuaRef{path:None, r:LuaPtr::Mut(s.get_mut().col_mut(idx)), root: LuaRefBase::LuaOwned}));
-                                    // (s.get_mut().col_mut(idx))));
+                                // #[func_mut] "col" => |_,s,idx : usize| Ok([<Lua $mat_col>]::Ref(LuaRef{path:None, r:LuaPtr::Mut(s.get_mut().col_mut(idx)), root: LuaRefBase::LuaOwned}));
                                 #[func] "transpose" => |_,s,()| Ok([<Lua $mat_base>]::Owned(s.get().transpose()));
                                 #[func] "determinant" => |_,s,()| Ok(s.get().determinant());
                                 #[func] "inverse" => |_,s,()| Ok([<Lua $mat_base>]::Owned(s.get().inverse()));
@@ -647,7 +646,7 @@ make_it_all_baby!{
                             world: world.0 
                         }, 
                         path: Some("".to_string()), 
-                        r: LuaPtr::Const(refl.reflect_component(w,*entity.get()).unwrap())
+                        // r: LuaPtr::Const(refl.reflect_component(w,*entity.get()).unwrap())
                     }    
                 })
             };
@@ -672,7 +671,7 @@ make_it_all_baby!{
                                 world: world.0 
                             }, 
                             path: Some("".to_string()), 
-                            r: LuaPtr::Const(dyn_comp)
+                            // r: LuaPtr::Const(dyn_comp)
                         }    
                     }  
                 //     LuaComponent {

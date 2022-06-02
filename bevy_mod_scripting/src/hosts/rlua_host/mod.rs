@@ -169,10 +169,12 @@ impl<A: LuaArg, API: APIProvider<Ctx = Mutex<Lua>>> ScriptHost for RLuaScriptHos
         events: &[Self::ScriptEvent],
         ctxs: impl Iterator<Item = (FlatScriptData<'a>, &'a mut Self::ScriptContext)>,
     ) {
-        let world_ptr = LuaWorld(world as *mut World);
 
         world.resource_scope(
             |world, mut cached_state: Mut<CachedScriptEventState<Self>>| {
+                
+                let world_ptr = LuaWorld(world as *mut World);
+
                 let (_, mut error_wrt) = cached_state.event_state.get_mut(world);
 
                 ctxs.for_each(|(fd, ctx)| {

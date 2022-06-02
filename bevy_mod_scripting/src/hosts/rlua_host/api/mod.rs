@@ -73,8 +73,17 @@ pub enum LuaRefBase {
     LuaOwned
 }
 
+impl fmt::Debug for LuaRefBase {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            Self::Component { comp, entity, world } => f.debug_struct("Component").field("entity", entity).field("world", world).finish(),
+            Self::LuaOwned => write!(f, "LuaOwned"),
+        }
+    }
+}
 
-#[derive(Clone)]
+
+#[derive(Clone,Debug)]
 pub enum LuaPtr {
     Const(*const (dyn Reflect + 'static)),
     Mut(*mut (dyn Reflect + 'static))
@@ -84,7 +93,7 @@ pub enum LuaPtr {
 /// References can be either to rust or lua managed values (created either on the bevy or script side).
 /// but also to any subfield of those values (All pointed to values must support `reflect`).
 /// Each reference holds a reflection path from the root.
-#[derive(Clone)]
+#[derive(Clone,Debug)]
 pub struct LuaRef{
     /// The underlying top-level value 
     root: LuaRefBase,
@@ -92,21 +101,22 @@ pub struct LuaRef{
     /// The reflection path from the root
     path: Option<String>,
 
-    /// A read-only 'current' pointer pointing to the reflected field,
-    /// the purpose of this pointer is to avoid reflection through the path when not necessary
-    /// and to perform type checking at each field access
-    r: LuaPtr
+    // A read-only 'current' pointer pointing to the reflected field,
+    // the purpose of this pointer is to avoid reflection through the path when not necessary
+    // and to perform type checking at each field access
+    // r: LuaPtr
 }
 
 
 
 unsafe impl Send for LuaRef {}
 
-impl fmt::Debug for LuaRef {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        self.get().print(f)
-    }
-}
+// impl fmt::Debug for LuaRef {
+//     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        // self.get().print(f)
+
+//     }
+// }
 
 impl fmt::Display for LuaRef {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
@@ -118,9 +128,19 @@ impl LuaRef {
 
     pub fn get(&self) -> &(dyn Reflect + 'static) {
         unsafe {
-            match self.r {
-                LuaPtr::Const(r) => r.as_ref().expect("Invalid pointer"),
-                LuaPtr::Mut(r) => r.as_ref().expect("Invalid pointer"),
+            // match self.r {
+            //     LuaPtr::Const(r) => r.as_ref().expect("Invalid pointer"),
+            //     LuaPtr::Mut(r) => r.as_ref().expect("Invalid pointer"),
+            // }
+            match &self.root {
+                LuaRefBase::Component { comp, entity, world } => {
+                    comp.reflect_component_mut(world.as_mut().expect("Invalid pointer"), *entity)
+                    .unwrap()
+                    .into_inner()
+                    .path(&self.path.as_ref().expect("No reflection path available"))
+                    .unwrap()
+                },
+                LuaRefBase::LuaOwned => todo!(),
             }
         }
     }
@@ -134,10 +154,11 @@ impl LuaRef {
                         .into_inner()
                         .path_mut(&self.path.as_ref().expect("No reflection path available"))
                         .unwrap(),
-                LuaRefBase::LuaOwned => match self.r {
-                    LuaPtr::Mut(ptr) => ptr.as_mut().unwrap(),
-                    _ => panic!("Cannot get_mut without pointer")
-                }
+                // LuaRefBase::LuaOwned => match self.r {
+                //     LuaPtr::Mut(ptr) => ptr.as_mut().unwrap(),
+                //     _ => panic!("Cannot get_mut without pointer")
+                // }
+                _ => panic!()
             }
         }
     }
@@ -152,7 +173,7 @@ impl LuaRef {
         Ok(LuaRef {
             root: self.root.clone(),
             path: Some(format!("{}{}",self.path.as_ref().unwrap(), path)),
-            r: LuaPtr::Const(re),
+            // r: LuaPtr::Const(re),
         })
     }
 
@@ -189,7 +210,7 @@ impl LuaRef {
         Ok(LuaRef{ 
             root: self.root.clone(), 
             path: Some(format!("{}{}",self.path.as_ref().unwrap(),path)), 
-            r: LuaPtr::Const(v)
+            // r: LuaPtr::Const(v)
         })
     }
 
@@ -212,7 +233,7 @@ impl LuaRef {
     }
 
     pub unsafe fn apply_lua<'lua>(&mut self, ctx: Context<'lua>, v: Value<'lua>) -> Result<(),rlua::Error> {
-        println!("Applying lua to luaref {:p} with {:?}", self.get(), v);
+        println!("Applying lua to luaref {:?} with {:?}", self, v);
         if let Some(f) = APPLY_LUA_TO_BEVY.get(self.get().type_name()) {
             return f(self,ctx,v)
         } else {
