@@ -28,7 +28,7 @@ macro_rules! impl_downcast_print_cases {
             }
             )*
             else {
-                write!($fmt,"({:#?})",$v.type_name())?;
+                write!($fmt,"({:#?}){:?}",$v.type_name(),$v)?;
             }
         }
     };

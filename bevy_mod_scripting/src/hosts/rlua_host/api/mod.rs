@@ -1,8 +1,9 @@
 pub mod bevy_types;
-use std::{sync::{Arc,Mutex}, cell::UnsafeCell};
+use std::{ops::DerefMut,sync::Weak};
+use parking_lot::{RwLock};
 use bevy::{
     prelude::*,
-    reflect::{ReflectRef, TypeRegistry, GetPath, ReflectMut},
+    reflect::{ReflectRef, TypeRegistry, GetPath},
 };
 use rlua::{Context, MetaMethod, ToLua, UserData, Value};
 use std::{
@@ -10,7 +11,7 @@ use std::{
     fmt,
 };
 
-use crate::{PrintableReflect, PrintReflect};
+use crate::{PrintableReflect};
 use anyhow::Result;
 
 pub use bevy_types::*;
@@ -48,12 +49,13 @@ pub struct LuaCustomUserData {
 
 impl<'lua> ToLua<'lua> for LuaCustomUserData {
     fn to_lua(self, lua: Context<'lua>) -> rlua::Result<Value<'lua>> where {
-        let refl = self.val.get() ;
-        let usrdata = self.refl.get(refl);
-        match usrdata {
-            Some(v) => v.ref_to_lua(lua),
-            None => todo!(),
-        }
+        self.val.get(|s,_| {
+            let usrdata = self.refl.get(s);
+            match usrdata {
+                Some(v) => v.ref_to_lua(lua),
+                None => todo!(),
+            }
+        })
     }
 }
 
@@ -67,7 +69,7 @@ pub enum LuaRefBase {
     Component{
         comp: ReflectComponent,
         entity: Entity,
-        world: *mut World,
+        world: Weak<RwLock<World>>,
     },
     // A lua owned reflect type (for example a vector constructed in lua)
     LuaOwned
@@ -85,8 +87,8 @@ impl fmt::Debug for LuaRefBase {
 
 #[derive(Clone,Debug)]
 pub enum LuaPtr {
-    Const(*const (dyn Reflect + 'static)),
-    Mut(*mut (dyn Reflect + 'static))
+    Const(*const dyn Reflect),
+    Mut(*mut dyn Reflect)
 }
 
 /// A reference to a rust type available from lua.
@@ -124,138 +126,296 @@ impl fmt::Display for LuaRef {
     }
 }
 
+
+
+
+// pub struct WorldRefBorrow<'a> {
+//     world_ref : Option<Arc<RwLock<World>>>,
+//     luaref: &'a LuaRef
+// }
+
+// impl <'a>WorldRefBorrow<'a> {
+//     pub fn new(luaref: &'a LuaRef) -> Self  
+//     {
+//         match &luaref.root {
+//             LuaRefBase::Component { world , .. } => {
+//                 Self {
+//                     world_ref: Some(world.upgrade().unwrap()),
+//                     luaref
+//                 }
+//             },
+//             LuaRefBase::LuaOwned => Self {
+//                 world_ref: None,
+//                 luaref
+//             },
+//         }
+//     }
+
+//     pub fn get(&self) -> MappedRwLockReadGuard<dyn Reflect>{
+//         match &self.luaref.root {
+//             LuaRefBase::Component { comp, entity, .. } => {
+                
+//                 let g = self.world_ref.as_ref().unwrap().read();
+
+//                 RwLockReadGuard::map(g, |g| {
+//                     comp.reflect_component(g, *entity)
+//                     .unwrap()
+//                     .path(&self.luaref.path.as_ref().expect("No reflection path available"))
+//                     .unwrap()
+//                 })
+
+//             },
+//             LuaRefBase::LuaOwned => todo!(),
+//         }
+//     }
+
+// }
+
+
+// pub struct RefMutWrapper<'a>(RwLockWriteGuard<'a,World>, &'a ReflectComponent, Entity, &'a mut LuaRef);
+
+// impl<'a> RefMutWrapper<'a> {
+//     fn get_mut(&'a mut self) -> MappedRwLockWriteGuard<'a, dyn Reflect> {
+//         RwLockWriteGuard::map(self.0, |g| {
+//             self.1.reflect_component_mut(g, self.2)
+//             .unwrap()
+//             .as_mut()
+//             .path_mut(&self.3.path.as_ref().expect("No reflection path available"))
+//             .unwrap()
+//         })
+//     } 
+// }
+
+
+// pub struct WorldMutBorrow<'a> {
+//     world_ref : Option<Arc<RwLock<World>>>,
+//     luaref: &'a mut LuaRef
+// }
+
+// impl <'a>WorldMutBorrow<'a> {
+
+//     pub fn new(luaref: &'a mut LuaRef) -> Self  
+//     {
+//         match &luaref.root {
+//             LuaRefBase::Component { world , .. } => {
+//                 Self {
+//                     world_ref: Some(world.upgrade().unwrap()),
+//                     luaref
+//                 }
+//             },
+//             LuaRefBase::LuaOwned => Self {
+//                 world_ref: None,
+//                 luaref
+//             },
+//         }
+//     }
+
+//     pub fn get_mut(&'a mut self) -> RefMutWrapper<'a>{
+//         match &self.luaref.root {
+//             LuaRefBase::Component { comp, entity, .. } => {
+                
+//                 let g = self.world_ref.as_ref().unwrap().write();
+
+//                 RefMutWrapper(g,comp,*entity,self.luaref)
+//             },
+//             LuaRefBase::LuaOwned => todo!(),
+//         }
+//     }
+// }
+
+
+
 impl LuaRef {
 
-    pub fn get(&self) -> &(dyn Reflect + 'static) {
-        unsafe {
-            // match self.r {
-            //     LuaPtr::Const(r) => r.as_ref().expect("Invalid pointer"),
-            //     LuaPtr::Mut(r) => r.as_ref().expect("Invalid pointer"),
-            // }
-            match &self.root {
-                LuaRefBase::Component { comp, entity, world } => {
-                    comp.reflect_component_mut(world.as_mut().expect("Invalid pointer"), *entity)
+    
+    pub fn get<O,F>(&self, f: F) -> O  where 
+        F : FnOnce(&dyn Reflect, &LuaRef) -> O
+    {
+        match &self.root {
+            LuaRefBase::Component { comp, entity, world } => {
+                
+                let g = world.upgrade().unwrap();
+                let g = g.read();
+
+                let dyn_ref = comp.reflect_component(&g, *entity)
                     .unwrap()
-                    .into_inner()
                     .path(&self.path.as_ref().expect("No reflection path available"))
-                    .unwrap()
-                },
-                LuaRefBase::LuaOwned => todo!(),
-            }
+                    .unwrap();
+
+                f(dyn_ref,self)
+
+            },
+            LuaRefBase::LuaOwned => todo!(),
         }
     }
 
-    pub fn get_mut(&mut self) -> &mut (dyn Reflect + 'static) {
-        unsafe {
-            match &self.root {
-                LuaRefBase::Component { comp, entity, world } => 
-                    comp.reflect_component_mut(world.as_mut().expect("Invalid pointer"), *entity)
-                        .unwrap()
-                        .into_inner()
-                        .path_mut(&self.path.as_ref().expect("No reflection path available"))
-                        .unwrap(),
-                // LuaRefBase::LuaOwned => match self.r {
-                //     LuaPtr::Mut(ptr) => ptr.as_mut().unwrap(),
-                //     _ => panic!("Cannot get_mut without pointer")
-                // }
-                _ => panic!()
-            }
-        }
+    pub fn get_mut<O,F>(&mut self, f: F) -> O  where 
+        F : FnOnce(&mut dyn Reflect, &mut LuaRef) -> O
+    {
+        match &self.root {
+            LuaRefBase::Component { comp, entity, world } => {
+                
+                let g = world.upgrade().unwrap();
+                let mut g = g.write();
+
+                let mut ref_mut = comp.reflect_component_mut(&mut g, *entity)
+                    .unwrap();
+
+                let dyn_ref = ref_mut
+                    .path_mut(&self.path.as_ref().expect("No reflection path available"))
+                    .unwrap();
+
+                f(dyn_ref,self)
+            },
+            LuaRefBase::LuaOwned => todo!(),
+        }    
     }
 
-    pub unsafe fn path_ref(&self, path: &str) -> Result<Self,rlua::Error> {
-        let ref_mut = self.get();
-
-        let re = ref_mut
-            .path(path)
+    pub fn path_ref(&self, path: &str) -> Result<Self,rlua::Error> {
+        self.get(|s,_| {
+            s.path(path)
             .map_err(|_e| rlua::Error::RuntimeError(format!("Cannot access field `{}`", path)))?;
 
-        Ok(LuaRef {
-            root: self.root.clone(),
-            path: Some(format!("{}{}",self.path.as_ref().unwrap(), path)),
-            // r: LuaPtr::Const(re),
+            Ok(LuaRef {
+                root: self.root.clone(),
+                path: Some(format!("{}{}",self.path.as_ref().unwrap(), path)),
+                // r: LuaPtr::Const(re),
+            })
+        })
+
+
+    }
+
+    pub fn path_lua_val_ref(&self, path: Value) -> Result<Self,rlua::Error> {
+        self.get(|s,_| {
+            let r = s.reflect_ref();
+
+            let (path,_) = match path {
+                Value::Integer(idx) => {
+                    let idx = idx as usize - 1;
+                    let path_str = format!("[{idx}]");
+                    let field = match r {
+                        ReflectRef::Tuple(v) => v.field(idx).unwrap(),
+                        ReflectRef::TupleStruct(v) => v.field(idx).unwrap(),
+                        ReflectRef::List(v) => v.get(idx).unwrap(),
+                        ReflectRef::Map(v) => v.get(&(idx)).unwrap(),
+                        _ => return Err(rlua::Error::RuntimeError(format!("Tried to index a primitive rust type {:#?}", self))),
+                    };
+    
+                    (path_str,field)
+                }
+                Value::String(field) => {
+                    let path_str = field.to_str().unwrap().to_string();
+                    let field = match r {
+                        ReflectRef::Map(v) => v.get(&path_str.to_owned()).unwrap(),
+                        ReflectRef::Struct(v) => v.field(&path_str).unwrap(),
+                        _ => return Err(rlua::Error::RuntimeError(format!("Tried to index a primitive rust type {:#?}", self))),
+                    };
+    
+                    (path_str,field)
+                }
+                _ => return Err(rlua::Error::RuntimeError(format!("Cannot index a rust object with {:?}", path))),
+            };
+    
+            Ok(LuaRef{ 
+                root: self.root.clone(), 
+                path: Some(format!("{}{}",self.path.as_ref().unwrap(),path)), 
+                // r: LuaPtr::Const(v)
+            })
+        })
+    
+    }
+
+    pub fn convert_to_lua<'lua>(self, ctx: Context<'lua>) -> Result<Value<'lua>,rlua::Error> {
+        self.get(|s,_| {
+            if let Some(f) = BEVY_TO_LUA.get(s.type_name()){
+                Ok(f(&self,ctx))
+            } else {
+                let luaworld = ctx.globals()
+                    .get::<_, LuaWorld>("world")
+                    .unwrap();
+
+                let world = luaworld.0.read();
+    
+                let typedata = world.resource::<TypeRegistry>();
+                let g = typedata.read();
+    
+                if let Some(v) = g.get_type_data::<ReflectCustomUserData>(s.type_id()) {
+                    Ok(v.get(s).unwrap().ref_to_lua(ctx).unwrap())
+                } else {
+                    Ok(Value::UserData(ctx.create_userdata(self.clone()).unwrap()))
+                }
+            } 
         })
     }
 
-    pub unsafe fn path_lua_val_ref(&self, path: Value) -> Result<Self,rlua::Error> {
-        let r = self.get().reflect_ref();
+    /// applies another luaref by carefuly acquiring locks and cloning
+    pub fn apply_luaref(&mut self, o : &LuaRef){
 
-        let (path,v) = match path {
-            Value::Integer(idx) => {
-                let idx = idx as usize - 1;
-                let path_str = format!("[{idx}]");
-                let field = match r {
-                    ReflectRef::Tuple(v) => v.field(idx).unwrap(),
-                    ReflectRef::TupleStruct(v) => v.field(idx).unwrap(),
-                    ReflectRef::List(v) => v.get(idx).unwrap(),
-                    ReflectRef::Map(v) => v.get(&(idx)).unwrap(),
-                    _ => return Err(rlua::Error::RuntimeError(format!("Tried to index a primitive rust type {:#?}", self))),
-                };
 
-                (path_str,field)
-            }
-            Value::String(field) => {
-                let path_str = field.to_str().unwrap().to_string();
-                let field = match r {
-                    ReflectRef::Map(v) => v.get(&path_str.to_owned()).unwrap(),
-                    ReflectRef::Struct(v) => v.field(&path_str).unwrap(),
-                    _ => return Err(rlua::Error::RuntimeError(format!("Tried to index a primitive rust type {:#?}", self))),
-                };
+        let cloned = o.get(|s,_| s.clone_value());
+        // sadly apply already performs a clone for value types, so this incurs
+        // a double clone in some cases TODO: is there another way ?
+        // can we avoid the box ?
+        self.get_mut(|s,_| s.apply(&*cloned));
+    }
 
-                (path_str,field)
-            }
-            _ => return Err(rlua::Error::RuntimeError(format!("Cannot index a rust object with {:?}", path))),
+    pub fn apply_lua<'lua>(&mut self, ctx: Context<'lua>, v: Value<'lua>) -> Result<(),rlua::Error> {
+
+
+        let type_name = self.get_mut(|s,_| s.type_name().to_owned());
+
+        if let Some(f) = APPLY_LUA_TO_BEVY.get(&type_name) {
+            return f(self,ctx,v)
+        };
+            
+
+        let luaworld = ctx.globals()
+                                    .get::<_, LuaWorld>("world")
+                                    .unwrap();
+
+        // remove typedata from the world to be able to manipulate world 
+        // TODO: avoid the removal when a thing is not a ReflectCustomUserData
+        let typedata = {
+            luaworld.0.write().remove_resource::<TypeRegistry>().unwrap()
         };
 
-        Ok(LuaRef{ 
-            root: self.root.clone(), 
-            path: Some(format!("{}{}",self.path.as_ref().unwrap(),path)), 
-            // r: LuaPtr::Const(v)
-        })
-    }
+        let g = typedata.read();
 
-    pub unsafe fn convert_to_lua<'lua>(self, ctx: Context<'lua>) -> Result<Value<'lua>,rlua::Error> {
-        println!("Converting luaref {self} {:p}", self.get());
+        // forgive me father for i have sinned
+        let v = match self.get_mut(|mut s,_| {
+            if let Some(ud) = g.get_type_data::<ReflectCustomUserData>(s.type_id()){
 
-        if let Some(f) = BEVY_TO_LUA.get(self.get().type_name()){
-            Ok(f(&self,ctx))
-        } else {
-            let w = &mut *(ctx.globals().get::<_, LuaWorld>("world").unwrap()).0;
-            let typedata = w.resource::<TypeRegistry>();
-            let g = typedata.read();
-
-            if let Some(v) = g.get_type_data::<ReflectCustomUserData>(self.get().type_id()) {
-                Ok(v.get(self.get()).unwrap().ref_to_lua(ctx).unwrap())
-            } else {
-                Ok(Value::UserData(ctx.create_userdata(self).unwrap()))
-            }
-        } 
-    }
-
-    pub unsafe fn apply_lua<'lua>(&mut self, ctx: Context<'lua>, v: Value<'lua>) -> Result<(),rlua::Error> {
-        println!("Applying lua to luaref {:?} with {:?}", self, v);
-        if let Some(f) = APPLY_LUA_TO_BEVY.get(self.get().type_name()) {
-            return f(self,ctx,v)
-        } else {
-            let w = &mut *(ctx.globals().get::<_, LuaWorld>("world").unwrap()).0 ;
-            let typedata = w.resource::<TypeRegistry>();
-            let g = typedata.read();
-    
-            if let Some(ud) = g.get_type_data::<ReflectCustomUserData>(self.get().type_id()){
-
-                ud.get_mut(self.get_mut())
+                ud.get_mut(s.deref_mut())
                     .unwrap()
                     .apply_lua(ctx, v)
                     .unwrap();
+                Ok(Ok(()))
+            } else {
+                Err(v)
+            }
+        }) {
+            Ok(o) => {
+                drop(g);
+                luaworld.0.write().insert_resource(typedata);
+
+                return o
+            },
+            Err(o) => o,
+        };
+
+        drop(g);
+        luaworld.0.write().insert_resource(typedata);
+
+        
+
+        if let Value::UserData(v) = v{
+            if v.is::<LuaRef>() {
+                let b = v.borrow_mut::<LuaRef>().unwrap();
+                self.apply_luaref(&b);
                 return Ok(())
-            } else if let Value::UserData(v) = v {
-                if v.is::<LuaRef>() {
-                    let b = v.borrow_mut::<LuaRef>().unwrap();
-                    self.get_mut().apply(b.get());
-                    return Ok(())
-                }
-            } 
-        }; 
+            }
+        }
 
         Err(rlua::Error::RuntimeError("Invalid assignment".to_owned()))
         
@@ -267,33 +427,37 @@ impl LuaRef {
 impl UserData for LuaRef {
     fn add_methods<'lua, T: rlua::UserDataMethods<'lua, Self>>(methods: &mut T) {
         methods.add_meta_method(MetaMethod::ToString, |_, val, ()| {
-            Ok(format!("{:#?}", PrintableReflect(unsafe{val.get()})))
+            val.get(|s,_| 
+                Ok(format!("{:#?}", PrintableReflect(s))
+                ))
         });
 
         methods.add_meta_method_mut(MetaMethod::Index, |ctx, val, field: Value| {
-            let r = unsafe { val.path_lua_val_ref(field) }.unwrap();
-            Ok(unsafe{ r.convert_to_lua(ctx) } .unwrap())
+            let r = val.path_lua_val_ref(field).unwrap();
+            Ok(r.convert_to_lua(ctx).unwrap())
         });
 
         methods.add_meta_method_mut(
             MetaMethod::NewIndex,
             |ctx, val, (field, new_val): (Value, Value)| {
-                unsafe { val.path_lua_val_ref(field).unwrap().apply_lua(ctx, new_val) };
+                val.path_lua_val_ref(field).unwrap().apply_lua(ctx, new_val).unwrap();
                 Ok(())
             },
         );
 
         methods.add_meta_method(MetaMethod::Len, |_, val, ()| {
-            let r = unsafe{ val.get() }.reflect_ref();
-            if let ReflectRef::List(v) = r {
-                Ok(v.len())
-            } else if let ReflectRef::Map(v) = r {
-                Ok(v.len())
-            } else if let ReflectRef::Tuple(v) = r {
-                Ok(v.field_len())
-            } else {
-                panic!("Hello");
-            }
+            val.get(|s,_| {
+                let r = s.reflect_ref();
+                if let ReflectRef::List(v) = r {
+                    Ok(v.len())
+                } else if let ReflectRef::Map(v) = r {
+                    Ok(v.len())
+                } else if let ReflectRef::Tuple(v) = r {
+                    Ok(v.field_len())
+                } else {
+                    panic!("Hello");
+                }
+            })
         });
 
     }

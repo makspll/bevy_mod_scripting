@@ -10,12 +10,13 @@ use anyhow::Result;
 
 use bevy::prelude::*;
 use bevy_event_priority::AddPriorityEvent;
+use parking_lot::RwLock;
 use rlua::prelude::*;
 use rlua::{Context, Function, Lua, ToLua, ToLuaMulti};
 
 use std::fmt;
 use std::marker::PhantomData;
-use std::sync::Mutex;
+use std::sync::{Mutex,Arc};
 
 pub use {api::*, assets::*};
 
@@ -171,11 +172,9 @@ impl<A: LuaArg, API: APIProvider<Ctx = Mutex<Lua>>> ScriptHost for RLuaScriptHos
     ) {
 
         world.resource_scope(
-            |world, mut cached_state: Mut<CachedScriptEventState<Self>>| {
+            |world_orig, mut cached_state: Mut<CachedScriptEventState<Self>>| {
                 
-                let world_ptr = LuaWorld(world as *mut World);
-
-                let (_, mut error_wrt) = cached_state.event_state.get_mut(world);
+                let world = LuaWorld(Arc::new(RwLock::new(std::mem::take(world_orig))));
 
                 ctxs.for_each(|(fd, ctx)| {
                     let success = ctx
@@ -183,7 +182,7 @@ impl<A: LuaArg, API: APIProvider<Ctx = Mutex<Lua>>> ScriptHost for RLuaScriptHos
                         .expect("Could not get lock on script context")
                         .context::<_, Result<(), ScriptError>>(|lua_ctx| {
                             let globals = lua_ctx.globals();
-                            globals.set("world", world_ptr.clone())?;
+                            globals.set("world", world.clone())?;
                             globals.set("entity", LuaEntity::Owned(fd.entity))?;
                             globals.set("script", fd.sid)?;
 
@@ -225,11 +224,18 @@ impl<A: LuaArg, API: APIProvider<Ctx = Mutex<Lua>>> ScriptHost for RLuaScriptHos
                         });
                     success
                         .map_err(|e| {
+                            let mut guard = world.0.write() ;
+                            let (_, mut error_wrt) = cached_state.event_state.get_mut(&mut guard);
+
                             error!("{}", e);
                             error_wrt.send(ScriptErrorEvent { err: e })
                         })
                         .ok();
                 });
+
+                println!("{}",Arc::strong_count(&world.0));
+                *world_orig = Arc::try_unwrap(world.0).unwrap().into_inner();
+
             },
         );
     }
