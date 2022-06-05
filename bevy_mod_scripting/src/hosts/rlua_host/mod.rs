@@ -171,7 +171,7 @@ impl<A: LuaArg, API: APIProvider<Ctx = Mutex<Lua>>> ScriptHost for RLuaScriptHos
         world.resource_scope(
             |world_orig, mut cached_state: Mut<CachedScriptEventState<Self>>| {
                 
-                let world = LuaWorld(Arc::new(RwLock::new(std::mem::take(world_orig))));
+                let world_arc = Arc::new(RwLock::new(std::mem::take(world_orig)));
 
                 ctxs.for_each(|(fd, ctx)| {
                     let success = ctx
@@ -179,7 +179,7 @@ impl<A: LuaArg, API: APIProvider<Ctx = Mutex<Lua>>> ScriptHost for RLuaScriptHos
                         .expect("Could not get lock on script context")
                         .context::<_, Result<(), ScriptError>>(|lua_ctx| {
                             let globals = lua_ctx.globals();
-                            globals.set("world", world.clone())?;
+                            globals.set("world", LuaWorld(Arc::downgrade(&world_arc)))?;
                             globals.set("entity", LuaEntity::Owned(fd.entity))?;
                             globals.set("script", fd.sid)?;
 
@@ -217,11 +217,12 @@ impl<A: LuaArg, API: APIProvider<Ctx = Mutex<Lua>>> ScriptHost for RLuaScriptHos
                                     })?
                             }
 
+                            // we must clear the world in order to free the Arc pointer
                             Ok(())
                         });
                     success
                         .map_err(|e| {
-                            let mut guard = world.0.write() ;
+                            let mut guard = world_arc.write() ;
                             let (_, mut error_wrt) = cached_state.event_state.get_mut(&mut guard);
 
                             error!("{}", e);
@@ -230,8 +231,7 @@ impl<A: LuaArg, API: APIProvider<Ctx = Mutex<Lua>>> ScriptHost for RLuaScriptHos
                         .ok();
                 });
 
-                println!("{}",Arc::strong_count(&world.0));
-                *world_orig = Arc::try_unwrap(world.0).unwrap().into_inner();
+                *world_orig = Arc::try_unwrap(world_arc).unwrap().into_inner();
 
             },
         );

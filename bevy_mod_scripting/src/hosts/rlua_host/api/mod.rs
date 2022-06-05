@@ -85,11 +85,16 @@ impl fmt::Debug for LuaRefBase {
 }
 
 
-// #[derive(Clone,Debug)]
-// pub enum LuaPtr {
-//     Const(*const dyn Reflect),
-//     Mut(*mut dyn Reflect)
-// }
+#[derive(Clone,Debug)]
+pub enum ReflectPtr {
+    Const(*const dyn Reflect),
+    Mut(*mut dyn Reflect),
+}
+
+/// safe since Reflect values have to be Send 
+unsafe impl Send for ReflectPtr {}
+/// safe since Reflect values have to be Sync
+unsafe impl Sync for ReflectPtr {}
 
 /// A reference to a rust type available from lua.
 /// References can be either to rust or lua managed values (created either on the bevy or script side).
@@ -103,21 +108,11 @@ pub struct LuaRef{
     /// The reflection path from the root
     path: Option<String>,
 
-    // A read-only 'current' pointer pointing to the reflected field,
-    // the purpose of this pointer is to avoid reflection through the path when not necessary
-    // and to perform type checking at each field access
-    // r: LuaPtr
+    // A ptr caching the last reflection
+    // it's only safe to deref when we have appropriate world access
+    r: ReflectPtr
 }
 
-
-
-
-// impl fmt::Debug for LuaRef {
-//     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        // self.get().print(f)
-
-//     }
-// }
 
 impl fmt::Display for LuaRef {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
@@ -129,19 +124,40 @@ impl fmt::Display for LuaRef {
 impl LuaRef {
 
     
-    pub fn get<O,F>(&self, f: F) -> O  where 
-        F : FnOnce(&dyn Reflect, &LuaRef) -> O
-    {
+    /// Checks that the cached pointer is valid 
+    /// by checking that the root reference is valid
+    fn is_valid(&self) -> bool {
         match &self.root {
             LuaRefBase::Component { comp, entity, world } => {
-                
                 let g = world.upgrade().unwrap();
                 let g = g.read();
 
-                let dyn_ref = comp.reflect_component(&g, *entity)
-                    .unwrap()
-                    .path(&self.path.as_ref().expect("No reflection path available"))
-                    .unwrap();
+                comp.reflect_component(&g,*entity).is_some()
+            },
+            LuaRefBase::LuaOwned => todo!(),
+        }
+    }
+
+    /// Retrieves the underlying `dyn Reflect` reference and applies function which can retrieve a value.
+    /// Panics if world is already borrowed mutably
+    /// # Safety
+    /// The caller must ensure the root reference has not been deleted or moved 
+    pub unsafe fn get_unsafe<O,F>(&self, f: F) -> O  where 
+        F : FnOnce(&dyn Reflect, &LuaRef) -> O 
+    {
+        match &self.root {
+            LuaRefBase::Component { world , ..} => {
+
+                let g = world.upgrade().unwrap();
+                if g.is_locked_exclusive(){
+                    panic!("Rust safety violation: attempted to borrow world while it was already mutably borrowed")
+                }
+
+                // unsafe since pointer may be dangling
+                let dyn_ref = match self.r {
+                    ReflectPtr::Const(r) => &*r,
+                    ReflectPtr::Mut(r) => &*r,
+                };
 
                 f(dyn_ref,self)
 
@@ -150,13 +166,50 @@ impl LuaRef {
         }
     }
 
-    pub fn get_mut<O,F>(&mut self, f: F) -> O  where 
-        F : FnOnce(&mut dyn Reflect, &mut LuaRef) -> O
+    /// Retrieves the underlying `dyn Reflect` reference and applies function which can retrieve a value.
+    /// Panics if the reference is invalid or world is already borrowed mutably.
+    #[inline(always)]    
+    pub fn get<O,F>(&self, f: F) -> O  where 
+        F : FnOnce(&dyn Reflect, &LuaRef) -> O
     {
+
+        // check the cached pointer is dangling
+        if !self.is_valid(){
+            panic!("reference {self:?} is invalid")
+        }
+        // safety: we know the pointer is valid
+        unsafe {
+            self.get_unsafe(f)
+        }
+    }
+
+    /// Retrieves the underlying `dyn Reflect` reference and applies function which can retrieve a value.
+    /// Panics if the world is already borrowed.
+    /// # Safety
+    /// The caller must ensure the root reference has not been deleted or moved     
+    pub unsafe fn get_mut_unsafe<O,F>(&mut self, f: F) -> O  
+    where 
+        F : FnOnce(&mut dyn Reflect, &mut LuaRef) -> O 
+    {
+
+
         match &self.root {
             LuaRefBase::Component { comp, entity, world } => {
                 
                 let g = world.upgrade().unwrap();
+
+                if g.is_locked(){
+                    panic!("Rust safety violation: attempted to mutably borrow world while it was already aliased")
+                }
+
+                // check we cached the mutable reference already
+                // safety: if we have mutable access to the world, no other reference to this value or world exists
+                // TODO: make sure that if this was cached, we also mark the component as changed appropriately
+                match self.r {
+                    ReflectPtr::Const(_) => {},
+                    ReflectPtr::Mut(r) => return f(&mut *r,self),
+                }
+
                 let mut g = g.write();
 
                 let mut ref_mut = comp.reflect_component_mut(&mut g, *entity)
@@ -166,32 +219,53 @@ impl LuaRef {
                     .path_mut(&self.path.as_ref().expect("No reflection path available"))
                     .unwrap();
 
+                // cache this pointer for future use
+                self.r = ReflectPtr::Mut(dyn_ref);
+
                 f(dyn_ref,self)
             },
             LuaRefBase::LuaOwned => todo!(),
         }    
     }
 
+    /// Retrieves the underlying `dyn Reflect` reference and applies function which can retrieve a value.
+    /// Panics if the reference is invalid or if the world is already borrowed.
+    #[inline(always)]
+    pub fn get_mut<O,F>(&mut self, f: F) -> O  where 
+        F : FnOnce(&mut dyn Reflect, &mut LuaRef) -> O
+    {
+        if !self.is_valid(){
+            panic!("reference {self:?} is invalid")
+        }
+
+        unsafe {
+            self.get_mut_unsafe(f)
+        }
+    }
+
+    /// Accesses a subfield of the underlying reflect value given a string path using the `bevy_reflect::path::GetPath` trait
     pub fn path_ref(&self, path: &str) -> Result<Self,rlua::Error> {
         self.get(|s,_| {
-            s.path(path)
-            .map_err(|_e| rlua::Error::RuntimeError(format!("Cannot access field `{}`", path)))?;
+            let subfield = s.path(path)
+                .map_err(|_e| rlua::Error::RuntimeError(format!("Cannot access field `{}`", path)))?;
 
             Ok(LuaRef {
                 root: self.root.clone(),
                 path: Some(format!("{}{}",self.path.as_ref().unwrap(), path)),
-                // r: LuaPtr::Const(re),
+                r: ReflectPtr::Const(subfield),
             })
         })
 
 
     }
 
-    pub fn path_lua_val_ref(&self, path: Value) -> Result<Self,rlua::Error> {
+    /// Accesses a subfield of the underlying reflect value given a lua value index/path using the `bevy_reflect::path::GetPath` trait.
+    /// Accepts both array expressions and integer indices as well as string paths.
+    pub fn path_ref_lua(&self, path: Value) -> Result<Self,rlua::Error> {
         self.get(|s,_| {
             let r = s.reflect_ref();
 
-            let (path,_) = match path {
+            let (path,subfield) = match path {
                 Value::Integer(idx) => {
                     let idx = idx as usize - 1;
                     let path_str = format!("[{idx}]");
@@ -221,12 +295,18 @@ impl LuaRef {
             Ok(LuaRef{ 
                 root: self.root.clone(), 
                 path: Some(format!("{}{}",self.path.as_ref().unwrap(),path)), 
-                // r: LuaPtr::Const(v)
+                r: ReflectPtr::Const(subfield)
             })
         })
     
     }
 
+    /// Converts the given lua reference to an appropriate lua value.
+    /// The actual lua value depends on the underlying type of the field pointed to by the reference:
+    /// - If the type is one of supported standard bevy types (such as Vec2), and is in the `bevy_mod_scripting::BEVY_TO_LUA` array, 
+    ///     it is converted to a wrapper type which supports a subset of the original methods.
+    /// - If the type is registered with the `TypeRegistry` and implemnets `CustomUserData` it is converted using the `CustomUserData::ref_to_lua` function
+    /// - If the type is not any of the above, it's converted to lua as a plain `LuaRef` UserData  
     pub fn convert_to_lua<'lua>(self, ctx: Context<'lua>) -> Result<Value<'lua>,rlua::Error> {
         self.get(|s,_| {
             if let Some(f) = BEVY_TO_LUA.get(s.type_name()){
@@ -236,7 +316,8 @@ impl LuaRef {
                     .get::<_, LuaWorld>("world")
                     .unwrap();
 
-                let world = luaworld.0.read();
+                let world = luaworld.0.upgrade().unwrap();
+                let world = &mut world.read();
     
                 let typedata = world.resource::<TypeRegistry>();
                 let g = typedata.read();
@@ -250,21 +331,27 @@ impl LuaRef {
         })
     }
 
-    /// applies another luaref by carefuly acquiring locks and cloning
+    /// applies another luaref to self by carefuly acquiring locks and cloning.
+    /// This is semantically equivalent to the `bevy_reflect::Reflect::apply` method. 
     pub fn apply_luaref(&mut self, o : &LuaRef){
-
-
-        let cloned = o.get(|s,_| s.clone_value());
         // sadly apply already performs a clone for value types, so this incurs
         // a double clone in some cases TODO: is there another way ?
         // can we avoid the box ?
-        self.get_mut(|s,_| s.apply(&*cloned));
+        let cloned = o.get(|s,_| s.clone_value());
+
+        // safety: we already called get so reference must be valid
+        unsafe {
+            self.get_mut_unsafe(|s,_| s.apply(&*cloned));
+        }
     }
 
+    /// Applies a lua value to self by carefuly acquiring locks and cloning if necessary.
+    /// This is semantically equivalent to the `bevy_reflect::Reflect::apply` method. 
     pub fn apply_lua<'lua>(&mut self, ctx: Context<'lua>, v: Value<'lua>) -> Result<(),rlua::Error> {
 
 
-        let type_name = self.get_mut(|s,_| s.type_name().to_owned());
+    
+        let type_name = self.get(|s,_| s.type_name().to_owned());
 
         if let Some(f) = APPLY_LUA_TO_BEVY.get(&type_name) {
             return f(self,ctx,v)
@@ -277,34 +364,44 @@ impl LuaRef {
 
         // remove typedata from the world to be able to manipulate world 
         let typedata = {
-            luaworld.0.write().remove_resource::<TypeRegistry>().unwrap()
+            let world = luaworld.0.upgrade().unwrap();
+            let world = &mut world.write();
+            world.remove_resource::<TypeRegistry>().unwrap()
         };
 
         let g = typedata.read();
 
-        let v = match self.get_mut(|mut s,_| {
-            if let Some(ud) = g.get_type_data::<ReflectCustomUserData>(s.type_id()){
+        // safety we already called `get` so reference must be valid
+        let v = unsafe {
+            match self.get_mut_unsafe(|mut s,_| {
+                if let Some(ud) = g.get_type_data::<ReflectCustomUserData>(s.type_id()){
 
-                ud.get_mut(s.deref_mut())
-                    .unwrap()
-                    .apply_lua(ctx, v)
-                    .unwrap();
-                Ok(Ok(()))
-            } else {
-                Err(v)
-            }
-        }) {
+                    ud.get_mut(s.deref_mut())
+                        .unwrap()
+                        .apply_lua(ctx, v)
+                        .unwrap();
+                    Ok(Ok(()))
+                } else {
+                    Err(v)
+                }
+        })
+         {
             Ok(o) => {
                 drop(g);
-                luaworld.0.write().insert_resource(typedata);
+
+                let world = luaworld.0.upgrade().unwrap();
+                let world = &mut world.write();
+                world.insert_resource(typedata);
 
                 return o
             },
             Err(o) => o,
-        };
+        }};
 
         drop(g);
-        luaworld.0.write().insert_resource(typedata);
+        let world = luaworld.0.upgrade().unwrap();
+        let world = &mut world.write();
+        world.insert_resource(typedata);
 
         
 
@@ -323,6 +420,7 @@ impl LuaRef {
 
 
 
+/// Plain reference based UserData, the default lua representation of non-supported types
 impl UserData for LuaRef {
     fn add_methods<'lua, T: rlua::UserDataMethods<'lua, Self>>(methods: &mut T) {
         methods.add_meta_method(MetaMethod::ToString, |_, val, ()| {
@@ -332,14 +430,14 @@ impl UserData for LuaRef {
         });
 
         methods.add_meta_method_mut(MetaMethod::Index, |ctx, val, field: Value| {
-            let r = val.path_lua_val_ref(field).unwrap();
+            let r = val.path_ref_lua(field).unwrap();
             Ok(r.convert_to_lua(ctx).unwrap())
         });
 
         methods.add_meta_method_mut(
             MetaMethod::NewIndex,
             |ctx, val, (field, new_val): (Value, Value)| {
-                val.path_lua_val_ref(field).unwrap().apply_lua(ctx, new_val).unwrap();
+                val.path_ref_lua(field).unwrap().apply_lua(ctx, new_val).unwrap();
                 Ok(())
             },
         );

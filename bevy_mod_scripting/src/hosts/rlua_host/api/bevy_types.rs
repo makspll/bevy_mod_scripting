@@ -4,6 +4,7 @@ use rlua::{UserData, MetaMethod,Value,Context,Error,Lua};
 use paste::paste;
 use bevy::prelude::*;
 use bevy::math::*;
+use std::sync::Weak;
 use std::{fmt,fmt::{Debug,Display,Formatter}, ops::*,sync::Mutex};
 use phf::{phf_map, Map};
 use std::ops::DerefMut;
@@ -11,6 +12,7 @@ use num::ToPrimitive;
 use crate::LuaFile;
 use crate::LuaRefBase;
 use crate::PrintableReflect;
+use crate::ReflectPtr;
 use crate::Script;
 use crate::ScriptCollection;
 use crate::LuaRef;
@@ -194,6 +196,7 @@ macro_rules! make_lua_struct {
             impl [<Lua $base>] {
 
                 /// Perform an operation on the base type and optionally retrieve something by value
+                /// may require a read lock on the world in case this is a reference
                 pub fn val<G,F>(&self, accessor: F) -> G
                     where 
                     F: FnOnce(&$base) -> G
@@ -206,7 +209,8 @@ macro_rules! make_lua_struct {
                     }
                 }
 
-                /// Perform a binary operation on self and another base type and optionally retrieve something by value
+                /// Perform a binary operation on self and another base type and optionally retrieve something by value,
+                /// may require a read lock on the world in case this is a reference
                 pub fn bin<G,F>(&self,o: &[<Lua $base>], bin: F) -> G
                 where 
                 F: FnOnce(&$base,&$base) -> G
@@ -219,6 +223,8 @@ macro_rules! make_lua_struct {
                     }
                 }
 
+                /// Perform a binary operation on self and any other type and optionally retrieve something by value,
+                /// may require a read lock on the world in case this is a reference
                 pub fn binv<O,G,F>(&self,o: &O, binv: F) -> G
                 where 
                 F: FnOnce(&$base,&O) -> G
@@ -229,7 +235,8 @@ macro_rules! make_lua_struct {
                     }
                 }
 
-                /// returns wrapped value by value
+                /// returns wrapped value by value, 
+                /// may require a read lock on the world in case this is a reference
                 pub fn inner(&self) -> $base
                 {
                     match self {
@@ -240,16 +247,15 @@ macro_rules! make_lua_struct {
                     }
                 }
 
+                /// Converts a LuaRef to Self
                 pub fn base_to_self(b: &LuaRef) -> Self {
                     [<Lua $base>]::Ref(b.clone())
-                    
                 }
+
+                /// Applies Self to a LuaRef.
+                /// may require a write lock on the world
                 pub fn apply_self_to_base(&self, b: &mut LuaRef){
 
-                    println!("applying {self:?} to {b:?}");
-                    println!("copying {self:?}");
-                    self.clone();
-                    println!("copied {self:?}");
                     match self {
                         [<Lua $base>]::Owned(ref v) => {
                             // if we own the value, we are not borrowing from the world
@@ -261,8 +267,6 @@ macro_rules! make_lua_struct {
                             b.apply_luaref(v)
                         }
                     }
-                    println!("applied {self:?} to {b:?}");
-
                 }
 
             }
@@ -496,7 +500,7 @@ macro_rules! make_it_all_baby {
                                         }
                                     } 
                                     c.coerce_number(o)?
-                                        .and_then(|o| c.create_userdata([<Lua $quat_base>]::Owned(s.binv(&o,|s,v| s.mul(o as $quat_num)))).ok())
+                                        .and_then(|o| c.create_userdata([<Lua $quat_base>]::Owned(s.binv(&o,|s,_| s.mul(o as $quat_num)))).ok())
                                         .map(Value::UserData)
                                         .ok_or_else(|| Error::RuntimeError("Can only multiply Quat by vec3, quat or a number".to_owned()))
                                 };
@@ -682,9 +686,14 @@ make_it_all_baby!{
                 _ => return Err(Error::RuntimeError("Invalid euler rotation".to_owned()))
             }));
         },
-        "bevy_ecs::world::World" ;=> World: (pub Arc<RwLock<World>>) {
+        "bevy_ecs::world::World" ;=> World: (pub Weak<RwLock<World>>) {
             #[func] "add_component" =>  |_, world, (entity, comp_name): (LuaEntity, String)| {
-                let w = &mut world.0.write();
+
+                // grab this entity before acquiring a lock in case it's a reference
+                let entity = entity.inner();
+
+                let w = world.0.upgrade().unwrap();
+                let w = &mut w.write();
 
                 let refl: ReflectComponent = get_type_data(w, &comp_name)
                     .map_err(|_| Error::RuntimeError(format!("Not a component {}",comp_name)))?;
@@ -692,30 +701,36 @@ make_it_all_baby!{
                     .map_err(|_| Error::RuntimeError(format!("Component does not derive Default and cannot be instantiated: {}",comp_name)))?;
 
                 let s = def.default();
-                refl.add_component(w, entity.inner(), s.as_ref());
+                refl.add_component(w, entity, s.as_ref());
+
 
                 Ok(LuaComponent {
                     comp: LuaRef{
                         root: LuaRefBase::Component{ 
                             comp: refl.clone(), 
-                            entity: entity.inner(),
-                            world: Arc::downgrade(&world.0) 
+                            entity: entity,
+                            world: world.0.clone()
                         }, 
                         path: Some("".to_string()), 
-                        // r: LuaPtr::Const(refl.reflect_component(w,*entity.get()).unwrap())
+                        r: ReflectPtr::Const(refl.reflect_component(w,entity).unwrap())
                     }    
                 })
             };
 
             #[func_mut] "get_component" => |_, world, (entity, comp_name) : (LuaEntity,String)| {
-                let w = &mut world.0.write();
+
+                // grab this entity before acquiring a lock in case it's a reference
+                let entity = entity.inner();
+
+                let w = world.0.upgrade().unwrap();
+                let w = &mut w.write();
 
                 let refl: ReflectComponent = get_type_data(w, &comp_name)
                     .map_err(|_| Error::RuntimeError(format!("Not a component {}",comp_name)))?;
 
                 let dyn_comp = refl
-                    .reflect_component(&w, entity.inner())
-                    .ok_or_else(|| Error::RuntimeError(format!("Could not find {comp_name} on {:?}",entity.inner()),
+                    .reflect_component(&w, entity)
+                    .ok_or_else(|| Error::RuntimeError(format!("Could not find {comp_name} on {:?}",entity),
                     ))?;
 
                 Ok(
@@ -723,22 +738,20 @@ make_it_all_baby!{
                         comp: LuaRef{
                             root: LuaRefBase::Component{ 
                                 comp: refl, 
-                                entity: entity.inner(),
-                                world: Arc::downgrade(&world.0) 
+                                entity: entity,
+                                world: world.0.clone()
                             }, 
                             path: Some("".to_string()), 
-                            // r: LuaPtr::Const(dyn_comp)
+                            r: ReflectPtr::Const(dyn_comp)
                         }    
                     }  
-                //     LuaComponent {
-                //     comp: LuaRef(dyn_comp.as_mut() as *mut dyn Reflect),
-                // }
                 )
             };
 
             #[func] "new_script_entity" => |_, world, name: String| {
-                let w = &mut world.0.write() ;
-    
+                let w = world.0.upgrade().unwrap();
+                let w = &mut w.write();
+
                 w.resource_scope(|w, r: Mut<AssetServer>| {
                     let handle = r.load::<LuaFile, _>(&name);
                     Ok(LuaEntity::Owned(
@@ -752,7 +765,9 @@ make_it_all_baby!{
             };
 
             #[func] "spawn" => |_, world, ()| {
-                let w = &mut world.0.write();
+                let w = world.0.upgrade().unwrap();
+                let w = &mut w.write();                
+                
                 Ok(LuaEntity::Owned(w.spawn().id()))
             };
 
@@ -820,7 +835,7 @@ impl UserData for LuaComponent {
             MetaMethod::NewIndex,
             |ctx, val, (field, new_val): (Value, Value)| {
                 val.comp
-                    .path_lua_val_ref(field)?
+                    .path_ref_lua(field)?
                     .apply_lua(ctx, new_val).unwrap();
                 
                 
