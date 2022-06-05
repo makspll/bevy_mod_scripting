@@ -109,9 +109,6 @@ pub struct RLuaScriptHost<A: LuaArg, API: APIProvider> {
     _ph2: PhantomData<A>,
 }
 
-unsafe impl<A: LuaArg, API: APIProvider> Send for RLuaScriptHost<A, API> {}
-unsafe impl<A: LuaArg, API: APIProvider> Sync for RLuaScriptHost<A, API> {}
-
 impl<A: LuaArg, API: APIProvider<Ctx = Mutex<Lua>>> ScriptHost for RLuaScriptHost<A, API> {
     type ScriptContext = Mutex<Lua>;
     type ScriptEvent = LuaEvent<A>;

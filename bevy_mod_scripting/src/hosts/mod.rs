@@ -119,7 +119,7 @@ pub trait CodeAsset: Asset {
 
 /// Implementers can modify a script context in order to enable
 /// API access. ScriptHosts call `attach_api` when creating scripts
-pub trait APIProvider: 'static + Default {
+pub trait APIProvider: 'static + Default + Send + Sync {
     /// The type of script context this api provider handles
     type Ctx;
 

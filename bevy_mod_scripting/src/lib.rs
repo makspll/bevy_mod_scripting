@@ -1,5 +1,5 @@
 #![doc=include_str!("../../readme.md")]
-
+#![forbid(unsafe_code)]
 use bevy::{ecs::schedule::IntoRunCriteria, prelude::*};
 
 pub mod error;

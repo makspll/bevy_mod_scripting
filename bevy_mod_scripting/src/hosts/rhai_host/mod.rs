@@ -23,8 +23,6 @@ pub struct RhaiScriptHost<A: FuncArgs + Send, API: APIProvider> {
     _ph2: PhantomData<API>,
 }
 
-unsafe impl<A: FuncArgs + Send, API: APIProvider> Send for RhaiScriptHost<A, API> {}
-unsafe impl<A: FuncArgs + Send, API: APIProvider> Sync for RhaiScriptHost<A, API> {}
 
 pub struct RhaiContext {
     pub engine: Engine,

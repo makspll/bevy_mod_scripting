@@ -1,8 +1,9 @@
-use rlua::{Value,UserData,MetaMethod,Function,prelude::*};
+use rlua::{UserData,MetaMethod,Function,prelude::*};
+use bevy::prelude::Quat;
 
-#[derive(Debug)]
+#[derive(Debug,Clone)]
 pub struct MyUserData {
-    v : [u32;3]
+    quat: Quat
 }
 
 impl UserData for MyUserData {
@@ -11,19 +12,9 @@ impl UserData for MyUserData {
             Ok(format!("{:?}",s))
         });
 
-        methods.add_meta_method_mut(MetaMethod::NewIndex, |_,s,(idx,val) : (Value,u32)|{
-            let idx = match idx {
-                Value::Integer(i) => i as usize,
-                Value::String(s) => match s.to_str().unwrap() {
-                    "x" => 0,
-                    "y" => 1,
-                    "z" => 2,
-                    _ => panic!()
-                },
-                _ => panic!(),
-            };
-
-            Ok(s.v[idx] = val)
+        methods.add_meta_method_mut(MetaMethod::NewIndex, |_,s,(_,val) : (String,MyUserData)|{
+            s.quat = val.quat.clone();
+            Ok(())
         })
     }
 }
@@ -32,12 +23,18 @@ impl UserData for MyUserData {
 fn main() {
     let lua = Lua::new();
     lua.context(|lua_ctx| {
+        let g = lua_ctx.globals();
+        let f = lua_ctx.create_function(|_,(x,y,z,w):(f32,f32,f32,f32)| 
+                Ok(MyUserData{quat:Quat::from_xyzw(x, y, z, w)
+            })).unwrap();
+
+        g.set("quat",f).unwrap();
+
         lua_ctx
             .load("
             function on_update(my_user_data)
                 print(my_user_data)
-                my_user_data[0] = 69
-                my_user_data.y = 42
+                my_user_data.quat = quat(4,3,2,1)
                 print(my_user_data)
             end
             ")
@@ -49,7 +46,7 @@ fn main() {
         let f : Function = g.get("on_update").unwrap();
 
         f.call::<MyUserData,()>(MyUserData{
-            v: [0,1,2],
+            quat : Quat::from_xyzw(1.0,2.0,3.0,4.0),
         }).unwrap();
     })
 

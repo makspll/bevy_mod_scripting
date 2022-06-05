@@ -85,11 +85,11 @@ impl fmt::Debug for LuaRefBase {
 }
 
 
-#[derive(Clone,Debug)]
-pub enum LuaPtr {
-    Const(*const dyn Reflect),
-    Mut(*mut dyn Reflect)
-}
+// #[derive(Clone,Debug)]
+// pub enum LuaPtr {
+//     Const(*const dyn Reflect),
+//     Mut(*mut dyn Reflect)
+// }
 
 /// A reference to a rust type available from lua.
 /// References can be either to rust or lua managed values (created either on the bevy or script side).
@@ -111,7 +111,6 @@ pub struct LuaRef{
 
 
 
-unsafe impl Send for LuaRef {}
 
 // impl fmt::Debug for LuaRef {
 //     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
@@ -125,104 +124,6 @@ impl fmt::Display for LuaRef {
         write!(f, "{:#?}", self)
     }
 }
-
-
-
-
-// pub struct WorldRefBorrow<'a> {
-//     world_ref : Option<Arc<RwLock<World>>>,
-//     luaref: &'a LuaRef
-// }
-
-// impl <'a>WorldRefBorrow<'a> {
-//     pub fn new(luaref: &'a LuaRef) -> Self  
-//     {
-//         match &luaref.root {
-//             LuaRefBase::Component { world , .. } => {
-//                 Self {
-//                     world_ref: Some(world.upgrade().unwrap()),
-//                     luaref
-//                 }
-//             },
-//             LuaRefBase::LuaOwned => Self {
-//                 world_ref: None,
-//                 luaref
-//             },
-//         }
-//     }
-
-//     pub fn get(&self) -> MappedRwLockReadGuard<dyn Reflect>{
-//         match &self.luaref.root {
-//             LuaRefBase::Component { comp, entity, .. } => {
-                
-//                 let g = self.world_ref.as_ref().unwrap().read();
-
-//                 RwLockReadGuard::map(g, |g| {
-//                     comp.reflect_component(g, *entity)
-//                     .unwrap()
-//                     .path(&self.luaref.path.as_ref().expect("No reflection path available"))
-//                     .unwrap()
-//                 })
-
-//             },
-//             LuaRefBase::LuaOwned => todo!(),
-//         }
-//     }
-
-// }
-
-
-// pub struct RefMutWrapper<'a>(RwLockWriteGuard<'a,World>, &'a ReflectComponent, Entity, &'a mut LuaRef);
-
-// impl<'a> RefMutWrapper<'a> {
-//     fn get_mut(&'a mut self) -> MappedRwLockWriteGuard<'a, dyn Reflect> {
-//         RwLockWriteGuard::map(self.0, |g| {
-//             self.1.reflect_component_mut(g, self.2)
-//             .unwrap()
-//             .as_mut()
-//             .path_mut(&self.3.path.as_ref().expect("No reflection path available"))
-//             .unwrap()
-//         })
-//     } 
-// }
-
-
-// pub struct WorldMutBorrow<'a> {
-//     world_ref : Option<Arc<RwLock<World>>>,
-//     luaref: &'a mut LuaRef
-// }
-
-// impl <'a>WorldMutBorrow<'a> {
-
-//     pub fn new(luaref: &'a mut LuaRef) -> Self  
-//     {
-//         match &luaref.root {
-//             LuaRefBase::Component { world , .. } => {
-//                 Self {
-//                     world_ref: Some(world.upgrade().unwrap()),
-//                     luaref
-//                 }
-//             },
-//             LuaRefBase::LuaOwned => Self {
-//                 world_ref: None,
-//                 luaref
-//             },
-//         }
-//     }
-
-//     pub fn get_mut(&'a mut self) -> RefMutWrapper<'a>{
-//         match &self.luaref.root {
-//             LuaRefBase::Component { comp, entity, .. } => {
-                
-//                 let g = self.world_ref.as_ref().unwrap().write();
-
-//                 RefMutWrapper(g,comp,*entity,self.luaref)
-//             },
-//             LuaRefBase::LuaOwned => todo!(),
-//         }
-//     }
-// }
-
 
 
 impl LuaRef {
@@ -375,14 +276,12 @@ impl LuaRef {
                                     .unwrap();
 
         // remove typedata from the world to be able to manipulate world 
-        // TODO: avoid the removal when a thing is not a ReflectCustomUserData
         let typedata = {
             luaworld.0.write().remove_resource::<TypeRegistry>().unwrap()
         };
 
         let g = typedata.read();
 
-        // forgive me father for i have sinned
         let v = match self.get_mut(|mut s,_| {
             if let Some(ud) = g.get_type_data::<ReflectCustomUserData>(s.type_id()){
 

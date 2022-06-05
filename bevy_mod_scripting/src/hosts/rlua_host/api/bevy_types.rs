@@ -246,6 +246,10 @@ macro_rules! make_lua_struct {
                 }
                 pub fn apply_self_to_base(&self, b: &mut LuaRef){
 
+                    println!("applying {self:?} to {b:?}");
+                    println!("copying {self:?}");
+                    self.clone();
+                    println!("copied {self:?}");
                     match self {
                         [<Lua $base>]::Owned(ref v) => {
                             // if we own the value, we are not borrowing from the world
@@ -257,6 +261,7 @@ macro_rules! make_lua_struct {
                             b.apply_luaref(v)
                         }
                     }
+                    println!("applied {self:?} to {b:?}");
 
                 }
 
@@ -294,7 +299,6 @@ macro_rules! make_lua_struct {
                 )*
             }
 
-            unsafe impl Send for [<Lua $base>]{}
 
             impl Display for [<Lua $base>] {
                 fn fmt(&self, f: &mut Formatter<'_>) -> Result<(), std::fmt::Error> { 
