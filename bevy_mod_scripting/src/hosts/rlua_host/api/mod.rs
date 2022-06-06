@@ -71,15 +71,21 @@ pub enum LuaRefBase {
         entity: Entity,
         world: Weak<RwLock<World>>,
     },
-    // A lua owned reflect type (for example a vector constructed in lua)
-    LuaOwned
+    /// A lua owned reflect type (for example a vector constructed in lua)
+    /// These can be de-allocated whenever the lua gc picks them up, so every lua owned object
+    /// allocates a valid bit which new references store a weak pointer to
+    LuaOwned{
+        /// a pointer to valid bit
+        /// We use the rwlock to validate reads and writes
+        valid: Weak<RwLock<u8>>
+    }
 }
 
 impl fmt::Debug for LuaRefBase {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
-            Self::Component { comp, entity, world } => f.debug_struct("Component").field("entity", entity).field("world", world).finish(),
-            Self::LuaOwned => write!(f, "LuaOwned"),
+            Self::Component { entity, world , ..} => f.debug_struct("Component").field("entity", entity).field("world", world).finish(),
+            Self::LuaOwned {..} => write!(f, "LuaOwned"),
         }
     }
 }
@@ -122,24 +128,32 @@ impl fmt::Display for LuaRef {
 
 
 impl LuaRef {
-
-    
     /// Checks that the cached pointer is valid 
     /// by checking that the root reference is valid
     fn is_valid(&self) -> bool {
         match &self.root {
             LuaRefBase::Component { comp, entity, world } => {
+                if world.strong_count() == 0 {
+                    return false;
+                }
+
                 let g = world.upgrade().unwrap();
                 let g = g.read();
 
                 comp.reflect_component(&g,*entity).is_some()
             },
-            LuaRefBase::LuaOwned => todo!(),
+            LuaRefBase::LuaOwned { valid } => 
+                if valid.strong_count() == 0 {
+                    false
+                } else {
+                    true
+                }
+            ,
         }
     }
 
     /// Retrieves the underlying `dyn Reflect` reference and applies function which can retrieve a value.
-    /// Panics if world is already borrowed mutably
+    /// Panics if world/value is already borrowed mutably
     /// # Safety
     /// The caller must ensure the root reference has not been deleted or moved 
     pub unsafe fn get_unsafe<O,F>(&self, f: F) -> O  where 
@@ -147,7 +161,6 @@ impl LuaRef {
     {
         match &self.root {
             LuaRefBase::Component { world , ..} => {
-
                 let g = world.upgrade().unwrap();
                 if g.is_locked_exclusive(){
                     panic!("Rust safety violation: attempted to borrow world while it was already mutably borrowed")
@@ -160,9 +173,22 @@ impl LuaRef {
                 };
 
                 f(dyn_ref,self)
-
             },
-            LuaRefBase::LuaOwned => todo!(),
+            LuaRefBase::LuaOwned { valid } => {
+                // in this case we don't allocate the whole value but a valid bit
+                // nonetheless we can use it to uphold borrow rules
+                let g = valid.upgrade().unwrap();
+                if g.is_locked_exclusive() {
+                    panic!("Rust safety violation: attempted to borrow value while it was already mutably borrowed")
+                };
+
+                let dyn_ref = match self.r {
+                    ReflectPtr::Const(r) => &*r,
+                    ReflectPtr::Mut(r) => &*r,
+                };
+
+                f(dyn_ref,self)
+            },
         }
     }
 
@@ -184,7 +210,7 @@ impl LuaRef {
     }
 
     /// Retrieves the underlying `dyn Reflect` reference and applies function which can retrieve a value.
-    /// Panics if the world is already borrowed.
+    /// Panics if the world/value is already borrowed or if r is not a mutable pointer.
     /// # Safety
     /// The caller must ensure the root reference has not been deleted or moved     
     pub unsafe fn get_mut_unsafe<O,F>(&mut self, f: F) -> O  
@@ -224,12 +250,24 @@ impl LuaRef {
 
                 f(dyn_ref,self)
             },
-            LuaRefBase::LuaOwned => todo!(),
+            LuaRefBase::LuaOwned{ valid } => {
+                let g = valid.upgrade().unwrap();
+                if g.is_locked() {
+                    panic!("Rust safety violation: attempted to borrow value while it was already borrowed")
+                };
+
+                let dyn_ref = match self.r {
+                    ReflectPtr::Const(_) => panic!("Mutable pointer not available!"),
+                    ReflectPtr::Mut(r) => &mut *r,
+                };
+
+                f(dyn_ref,self)
+            },
         }    
     }
 
     /// Retrieves the underlying `dyn Reflect` reference and applies function which can retrieve a value.
-    /// Panics if the reference is invalid or if the world is already borrowed.
+    /// Panics if the reference is invalid or if the world/value is already borrowed or if r is not a mutable pointer.
     #[inline(always)]
     pub fn get_mut<O,F>(&mut self, f: F) -> O  where 
         F : FnOnce(&mut dyn Reflect, &mut LuaRef) -> O

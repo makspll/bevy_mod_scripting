@@ -181,10 +181,16 @@ macro_rules! make_lua_struct {
         paste!{
             #[derive(Debug,Clone)]
             pub enum [<Lua $base>] { 
-                Owned($base),
+                Owned($base,Arc<RwLock<u8>>),
                 Ref(LuaRef)
             }
             
+
+            // impl Drop for [<Lua $base>] {
+            //     fn drop(&mut self) { 
+                    
+            //     }
+            // }
             
 
             impl Display for [<Lua $base>] {
@@ -195,6 +201,14 @@ macro_rules! make_lua_struct {
 
             impl [<Lua $base>] {
 
+                pub fn new(b : $base) -> Self {
+                    Self::Owned(b,Arc::new(RwLock::new(0)))
+                }
+
+                pub fn new_ref(b : &LuaRef) -> Self {
+                    Self::Ref(b.clone())
+                }
+
                 /// Perform an operation on the base type and optionally retrieve something by value
                 /// may require a read lock on the world in case this is a reference
                 pub fn val<G,F>(&self, accessor: F) -> G
@@ -202,12 +216,24 @@ macro_rules! make_lua_struct {
                     F: FnOnce(&$base) -> G
                 {
                     match self {
-                        [<Lua $base>]::Owned(ref v) => accessor(v),
+                        [<Lua $base>]::Owned(ref v, ..) => accessor(v),
                         [<Lua $base>]::Ref(v) => {
                             v.get(|s,_| accessor(s.downcast_ref::<$base>().unwrap()))
                         },
                     }
                 }
+
+            pub fn val_mut<G,F>(&mut self, accessor: F) -> G
+                where 
+                F: FnOnce(&mut $base) -> G
+            {
+                match self {
+                    [<Lua $base>]::Owned(ref mut v, ..) => accessor(v),
+                    [<Lua $base>]::Ref(v) => {
+                        v.get_mut(|s,_| accessor(s.downcast_mut::<$base>().unwrap()))
+                    },
+                }
+            }
 
                 /// Perform a binary operation on self and another base type and optionally retrieve something by value,
                 /// may require a read lock on the world in case this is a reference
@@ -216,12 +242,14 @@ macro_rules! make_lua_struct {
                 F: FnOnce(&$base,&$base) -> G
                 {
                     match (self,o) {
-                        ([<Lua $base>]::Owned(ref v),[<Lua $base>]::Owned(ref o)) => bin(v,o),
-                        ([<Lua $base>]::Owned(ref v),[<Lua $base>]::Ref(o)) => o.get(|o,_| bin(v,o.downcast_ref::<$base>().unwrap())),
-                        ([<Lua $base>]::Ref(ref v),[<Lua $base>]::Owned(o)) => v.get(|v,_| bin(v.downcast_ref::<$base>().unwrap(),o)),
+                        ([<Lua $base>]::Owned(ref v, ..),[<Lua $base>]::Owned(ref o, ..)) => bin(v,o),
+                        ([<Lua $base>]::Owned(ref v, ..),[<Lua $base>]::Ref(o)) => o.get(|o,_| bin(v,o.downcast_ref::<$base>().unwrap())),
+                        ([<Lua $base>]::Ref(ref v),[<Lua $base>]::Owned(o, ..)) => v.get(|v,_| bin(v.downcast_ref::<$base>().unwrap(),o)),
                         ([<Lua $base>]::Ref(ref v),[<Lua $base>]::Ref(o)) => o.get(|o,_| v.get(|v,_| bin(v.downcast_ref::<$base>().unwrap(),o.downcast_ref::<$base>().unwrap()))),
                     }
                 }
+
+                
 
                 /// Perform a binary operation on self and any other type and optionally retrieve something by value,
                 /// may require a read lock on the world in case this is a reference
@@ -230,7 +258,7 @@ macro_rules! make_lua_struct {
                 F: FnOnce(&$base,&O) -> G
                 {
                     match self {
-                        [<Lua $base>]::Owned(ref v) => binv(v,o),
+                        [<Lua $base>]::Owned(ref v, ..) => binv(v,o),
                         [<Lua $base>]::Ref(ref v) => v.get(|v,_| binv(v.downcast_ref::<$base>().unwrap(),o)),
                     }
                 }
@@ -240,7 +268,7 @@ macro_rules! make_lua_struct {
                 pub fn inner(&self) -> $base
                 {
                     match self {
-                        [<Lua $base>]::Owned(ref v) => *v,
+                        [<Lua $base>]::Owned(ref v, ..) => *v,
                         [<Lua $base>]::Ref(v) => {
                             v.get(|s,_| *s.downcast_ref::<$base>().unwrap())
                         },
@@ -257,7 +285,7 @@ macro_rules! make_lua_struct {
                 pub fn apply_self_to_base(&self, b: &mut LuaRef){
 
                     match self {
-                        [<Lua $base>]::Owned(ref v) => {
+                        [<Lua $base>]::Owned(ref v, ..) => {
                             // if we own the value, we are not borrowing from the world
                             // we're good to just apply, yeet
                             b.get_mut(|b,_| b.apply(v))
@@ -277,6 +305,7 @@ macro_rules! make_lua_struct {
                     methods.add_meta_method(MetaMethod::ToString, |_,s,()|{
                         Ok(format!("{}",s))
                     });
+
 
                     $(
                         make_add_method!(methods,#[$e] $g => $f);
@@ -372,23 +401,23 @@ macro_rules! make_it_all_baby {
 
                                 $(
                                     // $vec_base $vec_float_inner
-                                    #[meta] MetaMethod::Pow => |_,s : &[<Lua $vec_base>], o : $vec_float_inner| { Ok([<Lua $vec_base>]::Owned(s.val(|s| s.powf(o)))) };
-                                    #[meta] MetaMethod::Unm => |_,s : &[<Lua $vec_base>],()| { Ok(([<Lua $vec_base>]::Owned(s.inner().neg()))) };
-                                    #[func] "abs" => |_,s : &[<Lua $vec_base>],()| { Ok([<Lua $vec_base>]::Owned(s.inner().abs())) };
-                                    #[func] "signum" => |_,s : &[<Lua $vec_base>],()| { Ok([<Lua $vec_base>]::Owned(s.inner().signum())) };
+                                    #[meta] MetaMethod::Pow => |_,s : &[<Lua $vec_base>], o : $vec_float_inner| { Ok([<Lua $vec_base>]::new(s.val(|s| s.powf(o)))) };
+                                    #[meta] MetaMethod::Unm => |_,s : &[<Lua $vec_base>],()| { Ok(([<Lua $vec_base>]::new(s.inner().neg()))) };
+                                    #[func] "abs" => |_,s : &[<Lua $vec_base>],()| { Ok([<Lua $vec_base>]::new(s.inner().abs())) };
+                                    #[func] "signum" => |_,s : &[<Lua $vec_base>],()| { Ok([<Lua $vec_base>]::new(s.inner().signum())) };
                                 )?
                                 #[func] "dot" => |_,s : &[<Lua $vec_base>],o : [<Lua $vec_base>]| { Ok(s.inner().dot(o.inner())) };
                                 #[func] "min_element" => |_,s : &[<Lua $vec_base>],()| { Ok(s.inner().min_element()) };
                                 #[func] "max_element" => |_,s : &[<Lua $vec_base>],()| { Ok(s.inner().max_element()) };
-                                #[func] "min" => |_,s : &[<Lua $vec_base>],o : [<Lua $vec_base>]| { Ok([<Lua $vec_base>]::Owned(s.inner().min(o.inner()))) };
-                                #[func] "max" => |_,s : &[<Lua $vec_base>],o : [<Lua $vec_base>]| { Ok([<Lua $vec_base>]::Owned(s.inner().max(o.inner()))) };
-                                #[func] "clamp" => |_,s : &[<Lua $vec_base>],(o,max) : ([<Lua $vec_base>],[<Lua $vec_base>])| { Ok([<Lua $vec_base>]::Owned(s.inner().clamp(o.inner(),max.inner()))) };
+                                #[func] "min" => |_,s : &[<Lua $vec_base>],o : [<Lua $vec_base>]| { Ok([<Lua $vec_base>]::new(s.inner().min(o.inner()))) };
+                                #[func] "max" => |_,s : &[<Lua $vec_base>],o : [<Lua $vec_base>]| { Ok([<Lua $vec_base>]::new(s.inner().max(o.inner()))) };
+                                #[func] "clamp" => |_,s : &[<Lua $vec_base>],(o,max) : ([<Lua $vec_base>],[<Lua $vec_base>])| { Ok([<Lua $vec_base>]::new(s.inner().clamp(o.inner(),max.inner()))) };
 
-                                #[meta] MetaMethod::Add => |_,s : &[<Lua $vec_base>],o : [<Lua $vec_base>]| { Ok([<Lua $vec_base>]::Owned(s.inner().add(o.inner()))) };
-                                #[meta] MetaMethod::Sub => |_,s : &[<Lua $vec_base>],o : [<Lua $vec_base>]| { Ok([<Lua $vec_base>]::Owned(s.inner().sub(o.inner()))) };
-                                #[meta] MetaMethod::Mul => |_,s : &[<Lua $vec_base>],o : [<Lua $vec_base>]| { Ok([<Lua $vec_base>]::Owned(s.inner().mul(o.inner()))) };
-                                #[meta] MetaMethod::Div => |_,s : &[<Lua $vec_base>],o : [<Lua $vec_base>]| { Ok([<Lua $vec_base>]::Owned(s.inner().div(o.inner()))) };
-                                #[meta] MetaMethod::Mod => |_,s : &[<Lua $vec_base>],o : [<Lua $vec_base>]| { Ok([<Lua $vec_base>]::Owned(s.inner().rem(o.inner()))) };
+                                #[meta] MetaMethod::Add => |_,s : &[<Lua $vec_base>],o : [<Lua $vec_base>]| { Ok([<Lua $vec_base>]::new(s.inner().add(o.inner()))) };
+                                #[meta] MetaMethod::Sub => |_,s : &[<Lua $vec_base>],o : [<Lua $vec_base>]| { Ok([<Lua $vec_base>]::new(s.inner().sub(o.inner()))) };
+                                #[meta] MetaMethod::Mul => |_,s : &[<Lua $vec_base>],o : [<Lua $vec_base>]| { Ok([<Lua $vec_base>]::new(s.inner().mul(o.inner()))) };
+                                #[meta] MetaMethod::Div => |_,s : &[<Lua $vec_base>],o : [<Lua $vec_base>]| { Ok([<Lua $vec_base>]::new(s.inner().div(o.inner()))) };
+                                #[meta] MetaMethod::Mod => |_,s : &[<Lua $vec_base>],o : [<Lua $vec_base>]| { Ok([<Lua $vec_base>]::new(s.inner().rem(o.inner()))) };
                                 #[meta] MetaMethod::Eq => |_,s : &[<Lua $vec_base>],o : [<Lua $vec_base>]| { Ok((s.bin(&o,|s,o| s.eq(o)))) };
                                 #[meta_mut] MetaMethod::Index => |_,s : &mut [<Lua $vec_base>],idx : String| { 
                                     let idx = match idx.as_str() {
@@ -400,26 +429,26 @@ macro_rules! make_it_all_baby {
                                     };
                                     Ok(s.val(|s| s[idx]))
                                 };
-                                // #[meta_mut] MetaMethod::NewIndex => |_,s : &mut [<Lua $vec_base>],(idx,val) : (Value,$vec_num)| { // (Value,$vec_num) 
-                                //     match idx {
-                                //         Value::Integer(v) => Ok(s.get_mut()[v as usize] = val),
-                                //         Value::String(ref v) => {
-                                //             let idx = match v.to_str()? {
-                                //                 "x" => 0,
-                                //                 "y" => 1,
-                                //                 "z" => 2,
-                                //                 "w" => 3,
-                                //                 _ => Err(Error::RuntimeError(format!("Cannot index {} with {:#?}",stringify!($vec_base),idx)))?
-                                //             };
-                                //             // if our wrapper holds a reference it means it is an immediate indexing into
-                                //             // the original value, i.e. some_struct.our_vec[idx] = value
-                                //             Ok(s.get_mut()[idx] = val)
+                                #[meta_mut] MetaMethod::NewIndex => |_,s : &mut [<Lua $vec_base>],(idx,val) : (Value,$vec_num)| { // (Value,$vec_num) 
+                                    match idx {
+                                        Value::Integer(v) => Ok(s.val_mut(|s| s[v as usize] = val)),
+                                        Value::String(ref v) => {
+                                            let idx = match v.to_str()? {
+                                                "x" => 0,
+                                                "y" => 1,
+                                                "z" => 2,
+                                                "w" => 3,
+                                                _ => Err(Error::RuntimeError(format!("Cannot index {} with {:#?}",stringify!($vec_base),idx)))?
+                                            };
+                                            // if our wrapper holds a reference it means it is an immediate indexing into
+                                            // the original value, i.e. some_struct.our_vec[idx] = value
+                                            Ok(s.val_mut(|s| s[idx] = val))
 
-                                //         },
-                                //         _ => Err(Error::RuntimeError(format!("Cannot index {} with {:#?}",stringify!($vec_base),idx)))
+                                        },
+                                        _ => Err(Error::RuntimeError(format!("Cannot index {} with {:#?}",stringify!($vec_base),idx)))
                                         
-                                //     }
-                                // };
+                                    }
+                                };
 
                             },
                         )*
@@ -429,31 +458,54 @@ macro_rules! make_it_all_baby {
                             $mat_str ;=> $mat_base : {
                                 $($mat_inner)*
 
-                                // #[func_mut] "col" => |_,s,idx : usize| Ok([<Lua $mat_col>]::Ref(LuaRef{path:None, r:LuaPtr::Mut(s.get_mut().col_mut(idx)), root: LuaRefBase::LuaOwned}));
-                                #[func] "transpose" => |_,s,()| Ok([<Lua $mat_base>]::Owned(s.val(|s| s.transpose())));
+                                #[func_mut] "col" => |_,s,idx : usize| {
+                                    match s {
+                                        [<Lua $mat_base>]::Owned(ref mut v, ref valid) => {
+                                            Ok([<Lua $mat_col>]::Ref(LuaRef{
+                                                root: LuaRefBase::LuaOwned{valid: Arc::downgrade(valid)},
+                                                r: ReflectPtr::Mut(v.col_mut(idx)),
+                                                path: None
+                                            }))
+                                        },
+                                        [<Lua $mat_base>]::Ref(ref mut r) => {
+                                            // if this is rust owned,
+                                            // we need to make sure to clear the reflection path
+                                            // since it's not relevant anymore
+                                            r.get_mut(|s,r| {
+                                                Ok([<Lua $mat_col>]::Ref(LuaRef{
+                                                    root: r.root.clone(),
+                                                    r: ReflectPtr::Mut(s.downcast_mut::<$mat_base>().unwrap().col_mut(idx)),
+                                                    path: None
+                                                })) 
+                                            })
+                                        },
+                                    }
+
+                                };
+                                #[func] "transpose" => |_,s,()| Ok([<Lua $mat_base>]::new(s.val(|s| s.transpose())));
                                 #[func] "determinant" => |_,s,()| Ok(s.val(|s| s.determinant()));
-                                #[func] "inverse" => |_,s,()| Ok([<Lua $mat_base>]::Owned(s.val(|s| s.inverse())));
+                                #[func] "inverse" => |_,s,()| Ok([<Lua $mat_base>]::new(s.val(|s| s.inverse())));
                                 #[func] "is_nan" => |_,s,()| Ok(s.val(|s| s.is_nan()));
                                 #[func] "is_finite" => |_,s,()| Ok(s.val(|s| s.is_finite()));
 
-                                #[meta] MetaMethod::Unm => |_,s,()| Ok([<Lua $mat_base>]::Owned(s.val(|s| s.neg())));
-                                #[meta] MetaMethod::Sub => |_,s,o : [<Lua $mat_base>]| Ok([<Lua $mat_base>]::Owned(s.bin(&o,|s,o|s.sub(*o))));
-                                #[meta] MetaMethod::Add => |_,s,o : [<Lua $mat_base>]| Ok([<Lua $mat_base>]::Owned(s.bin(&o,|s,o|s.add(*o))));
+                                #[meta] MetaMethod::Unm => |_,s,()| Ok([<Lua $mat_base>]::new(s.val(|s| s.neg())));
+                                #[meta] MetaMethod::Sub => |_,s,o : [<Lua $mat_base>]| Ok([<Lua $mat_base>]::new(s.bin(&o,|s,o|s.sub(*o))));
+                                #[meta] MetaMethod::Add => |_,s,o : [<Lua $mat_base>]| Ok([<Lua $mat_base>]::new(s.bin(&o,|s,o|s.add(*o))));
 
                                 #[meta] MetaMethod::Mul => |c,s,v: Value| {
                                     match &v {
                                         Value::UserData(u) => {
                                             if let Ok(v) = u.borrow::<[<Lua $mat_base>]>(){
-                                                return c.create_userdata([<Lua $mat_base>]::Owned(s.bin(&v,|s,o|s.mul(*o)))).map(Value::UserData)
+                                                return c.create_userdata([<Lua $mat_base>]::new(s.bin(&v,|s,o|s.mul(*o)))).map(Value::UserData)
                                             } else if let Ok(v) = u.borrow::<[<Lua $mat_col>]>() {
-                                                return c.create_userdata([<Lua $mat_col>]::Owned(s.binv(&v,|s,o|s.mul(o.inner())))).map(Value::UserData)
+                                                return c.create_userdata([<Lua $mat_col>]::new(s.binv(&v,|s,o|s.mul(o.inner())))).map(Value::UserData)
                                             }
                                         },
                                         _ => {}
                                     }
 
                                     c.coerce_number(v)?
-                                        .and_then(|v| Some([<Lua $mat_base>]::Owned(s.binv(&v,|s,o| s.mul(*o as $mat_num)))))
+                                        .and_then(|v| Some([<Lua $mat_base>]::new(s.binv(&v,|s,o| s.mul(*o as $mat_num)))))
                                         .and_then(|v| c.create_userdata(v).ok())
                                         .map(Value::UserData)
                                         .ok_or_else(|| Error::RuntimeError(format!("Can only multiply matrix by number or vector")))
@@ -468,17 +520,17 @@ macro_rules! make_it_all_baby {
                                 $($quat_inner)*
                                 #[func] "to_axis_angle" => |_,s,()| {
                                     let (v,f) = s.val(|v| v.to_axis_angle());
-                                    Ok(([<Lua $quat_vec>]::Owned(v),f))
+                                    Ok(([<Lua $quat_vec>]::new(v),f))
                                 };
 
-                                #[func] "to_scaled_axis" => |_,s,()| Ok([<Lua $quat_vec>]::Owned(s.val(|v| v.to_scaled_axis())));
-                                #[func] "xyz" => |_,s,()| Ok([<Lua $quat_vec>]::Owned(s.val(|v| v.xyz())));
-                                #[func] "conjugate" => |_,s,()| Ok([<Lua $quat_base>]::Owned(s.val(|v| v.conjugate())));
-                                #[func] "inverse" => |_,s,()| Ok([<Lua $quat_base>]::Owned(s.val(|v| v.inverse())));
+                                #[func] "to_scaled_axis" => |_,s,()| Ok([<Lua $quat_vec>]::new(s.val(|v| v.to_scaled_axis())));
+                                #[func] "xyz" => |_,s,()| Ok([<Lua $quat_vec>]::new(s.val(|v| v.xyz())));
+                                #[func] "conjugate" => |_,s,()| Ok([<Lua $quat_base>]::new(s.val(|v| v.conjugate())));
+                                #[func] "inverse" => |_,s,()| Ok([<Lua $quat_base>]::new(s.val(|v| v.inverse())));
                                 #[func] "length" => |_,s,()| Ok(s.val(|v| v.length()));
                                 #[func] "length_squared" => |_,s,()| Ok(s.val(|v| v.length_squared()));
                                 #[func] "length_recip" => |_,s,()| Ok(s.val(|v| v.length_recip()));
-                                #[func] "normalize" => |_,s,()| Ok([<Lua $quat_base>]::Owned(s.val(|v| v.normalize())));
+                                #[func] "normalize" => |_,s,()| Ok([<Lua $quat_base>]::new(s.val(|v| v.normalize())));
                                 #[func] "is_finite" => |_,s,()| Ok(s.val(|v| v.is_finite()));
                                 #[func] "is_nan" => |_,s,()| Ok(s.val(|v| v.is_nan()));
                                 #[func] "is_normalized" => |_,s,()| Ok(s.val(|v| v.is_normalized()));
@@ -489,24 +541,24 @@ macro_rules! make_it_all_baby {
                                 #[func] "dot" => |_,s,o : [<Lua $quat_base>]| Ok(s.bin(&o,|s,o| s.dot(*o)));
                                 #[func] "angle_between" => |_,s,o : [<Lua $quat_base>]| Ok(s.bin(&o,|s,o| s.angle_between(*o)));
                                 #[func] "abs_diff_eq" => |_,s,(o,diff) : ([<Lua $quat_base>],$quat_num)| Ok(s.bin(&o,|s,o| s.abs_diff_eq(*o,diff)));
-                                #[func] "lerp" => |_,s,(o,f) : ([<Lua $quat_base>],$quat_num)| Ok([<Lua $quat_base>]::Owned(s.bin(&o,|s,o| s.lerp(*o,f))));
-                                #[func] "slerp" => |_,s,(o,f) : ([<Lua $quat_base>],$quat_num)| Ok([<Lua $quat_base>]::Owned(s.bin(&o,|s,o| s.slerp(*o,f))));
+                                #[func] "lerp" => |_,s,(o,f) : ([<Lua $quat_base>],$quat_num)| Ok([<Lua $quat_base>]::new(s.bin(&o,|s,o| s.lerp(*o,f))));
+                                #[func] "slerp" => |_,s,(o,f) : ([<Lua $quat_base>],$quat_num)| Ok([<Lua $quat_base>]::new(s.bin(&o,|s,o| s.slerp(*o,f))));
                                 #[meta] MetaMethod::Mul => |c,s,o : Value| {
                                     if let Value::UserData(ref o) = o {
                                         if let Ok(o) = o.borrow::<[<Lua $quat_vec>]>(){
-                                            return c.create_userdata([<Lua $quat_vec>]::Owned(s.binv(&o,|s,o| s.mul(o.inner())))).map(Value::UserData)
+                                            return c.create_userdata([<Lua $quat_vec>]::new(s.binv(&o,|s,o| s.mul(o.inner())))).map(Value::UserData)
                                         } else if let Ok(o) = o.borrow::<[<Lua $quat_base>]>(){
-                                            return c.create_userdata([<Lua $quat_base>]::Owned(s.bin(&o,|s,o| s.mul(*o)))).map(Value::UserData)
+                                            return c.create_userdata([<Lua $quat_base>]::new(s.bin(&o,|s,o| s.mul(*o)))).map(Value::UserData)
                                         }
                                     } 
                                     c.coerce_number(o)?
-                                        .and_then(|o| c.create_userdata([<Lua $quat_base>]::Owned(s.binv(&o,|s,_| s.mul(o as $quat_num)))).ok())
+                                        .and_then(|o| c.create_userdata([<Lua $quat_base>]::new(s.binv(&o,|s,_| s.mul(o as $quat_num)))).ok())
                                         .map(Value::UserData)
                                         .ok_or_else(|| Error::RuntimeError("Can only multiply Quat by vec3, quat or a number".to_owned()))
                                 };
-                                #[meta] MetaMethod::Add => |_,s,o : [<Lua $quat_base>]| Ok([<Lua $quat_base>]::Owned(s.bin(&o,|s,v| s.add(*v))));
-                                #[meta] MetaMethod::Sub => |_,s,o : [<Lua $quat_base>]| Ok([<Lua $quat_base>]::Owned(s.bin(&o,|s,v| s.sub(*v))));
-                                #[meta] MetaMethod::Unm => |_,s,()| Ok([<Lua $quat_base>]::Owned(s.val(|s| s.neg())));
+                                #[meta] MetaMethod::Add => |_,s,o : [<Lua $quat_base>]| Ok([<Lua $quat_base>]::new(s.bin(&o,|s,v| s.add(*v))));
+                                #[meta] MetaMethod::Sub => |_,s,o : [<Lua $quat_base>]| Ok([<Lua $quat_base>]::new(s.bin(&o,|s,v| s.sub(*v))));
+                                #[meta] MetaMethod::Unm => |_,s,()| Ok([<Lua $quat_base>]::new(s.val(|s| s.neg())));
                             },
                         )*
 
@@ -533,73 +585,73 @@ macro_rules! make_it_all_baby {
 make_it_all_baby!{
     vectors: [
         "glam::vec2::Vec2" ;=> Vec2,f32 :+: f32 : {
-            ##[glob] "vec2" => |_,(x,y): (f32,f32)| {Ok(LuaVec2::Owned(Vec2::new(x,y)))};
+            ##[glob] "vec2" => |_,(x,y): (f32,f32)| {Ok(LuaVec2::new(Vec2::new(x,y)))};
             #[func] "perp_dot" => |_,s : &LuaVec2,o : LuaVec2| { Ok(s.bin(&o,|s,o| s.perp_dot(*o))) };
         },
         "glam::vec3::Vec3" ;=> Vec3,f32 :+: f32: {
-            ##[glob] "vec3" => |_,(x,y,z): (f32,f32,f32)| {Ok(LuaVec3::Owned(Vec3::new(x,y,z)))};
+            ##[glob] "vec3" => |_,(x,y,z): (f32,f32,f32)| {Ok(LuaVec3::new(Vec3::new(x,y,z)))};
         },
         "glam::vec4::Vec4" ;=> Vec4,f32 :+: f32: {
-            ##[glob] "vec4" => |_,(x,y,z,w): (f32,f32,f32,f32)| {Ok(LuaVec4::Owned(Vec4::new(x,y,z,w)))};
+            ##[glob] "vec4" => |_,(x,y,z,w): (f32,f32,f32,f32)| {Ok(LuaVec4::new(Vec4::new(x,y,z,w)))};
         },
 
         // f64
         "glam::vec2::DVec2" ;=> DVec2 ,f64 :+: f64 :{
-            ##[glob] "dvec2" => |_,(x,y): (f64,f64)| {Ok(LuaDVec2::Owned(DVec2::new(x,y)))};
+            ##[glob] "dvec2" => |_,(x,y): (f64,f64)| {Ok(LuaDVec2::new(DVec2::new(x,y)))};
             #[func] "perp_dot" => |_,s : &LuaDVec2,o : LuaDVec2| { Ok(s.bin(&o,|s,o| s.perp_dot(*o))) };
         },
         "glam::vec3::DVec3" ;=> DVec3,f64 :+: f64: {
-            ##[glob] "dvec3" => |_,(x,y,z): (f64,f64,f64)| {Ok(LuaDVec3::Owned(DVec3::new(x,y,z)))};
+            ##[glob] "dvec3" => |_,(x,y,z): (f64,f64,f64)| {Ok(LuaDVec3::new(DVec3::new(x,y,z)))};
         },
         "glam::vec4::DVec4" ;=> DVec4,f64 :+: f64: {
-            ##[glob] "dvec4" => |_,(x,y,z,w): (f64,f64,f64,f64)| {Ok(LuaDVec4::Owned(DVec4::new(x,y,z,w)))};
+            ##[glob] "dvec4" => |_,(x,y,z,w): (f64,f64,f64,f64)| {Ok(LuaDVec4::new(DVec4::new(x,y,z,w)))};
         },
 
         // u32
         "glam::vec2::UVec2" ;=> UVec2,u32: {
-            ##[glob] "uvec2" => |_,(x,y): (u32,u32)| {Ok(LuaUVec2::Owned(UVec2::new(x,y)))};
+            ##[glob] "uvec2" => |_,(x,y): (u32,u32)| {Ok(LuaUVec2::new(UVec2::new(x,y)))};
         },
         "glam::vec3::UVec3" ;=> UVec3, u32: {
-            ##[glob] "uvec3" => |_,(x,y,z): (u32,u32,u32)| {Ok(LuaUVec3::Owned(UVec3::new(x,y,z)))};
+            ##[glob] "uvec3" => |_,(x,y,z): (u32,u32,u32)| {Ok(LuaUVec3::new(UVec3::new(x,y,z)))};
         },
         "glam::vec4::UVec4" ;=> UVec4, u32: {
-            ##[glob] "uvec4" => |_,(x,y,z,w): (u32,u32,u32,u32)| {Ok(LuaUVec4::Owned(UVec4::new(x,y,z,w)))};
+            ##[glob] "uvec4" => |_,(x,y,z,w): (u32,u32,u32,u32)| {Ok(LuaUVec4::new(UVec4::new(x,y,z,w)))};
         },
 
         // i32
         "glam::vec2::IVec2" ;=> IVec2,i32: {
-            ##[glob] "ivec2" => |_,(x,y): (i32,i32)| {Ok(LuaIVec2::Owned(IVec2::new(x,y)))};
+            ##[glob] "ivec2" => |_,(x,y): (i32,i32)| {Ok(LuaIVec2::new(IVec2::new(x,y)))};
         },
         "glam::vec3::IVec3" ;=> IVec3,i32: {
-            ##[glob] "uvec3" => |_,(x,y,z): (i32,i32,i32)| {Ok(LuaIVec3::Owned(IVec3::new(x,y,z)))};
+            ##[glob] "uvec3" => |_,(x,y,z): (i32,i32,i32)| {Ok(LuaIVec3::new(IVec3::new(x,y,z)))};
         },
         "glam::vec4::IVec4" ;=> IVec4,i32: {
-            ##[glob] "ivec4" => |_,(x,y,z,w): (i32,i32,i32,i32)| {Ok(LuaIVec4::Owned(IVec4::new(x,y,z,w)))};
+            ##[glob] "ivec4" => |_,(x,y,z,w): (i32,i32,i32,i32)| {Ok(LuaIVec4::new(IVec4::new(x,y,z,w)))};
         }
 
     ]
 
     matrices: [
         "glam::mat3::Mat3" ;=> Mat3,Vec3,f32: {
-            ##[glob] "mat3" => |_,(x,y,z): (LuaVec3,LuaVec3,LuaVec3)| {Ok(LuaMat3::Owned(Mat3::from_cols(x.inner(),y.inner(),z.inner())))};
+            ##[glob] "mat3" => |_,(x,y,z): (LuaVec3,LuaVec3,LuaVec3)| {Ok(LuaMat3::new(Mat3::from_cols(x.inner(),y.inner(),z.inner())))};
         },
         "glam::mat4::Mat4" ;=> Mat4,Vec4,f32: {
-            ##[glob] "mat4" => |_,(x,y,z,w): (LuaVec4,LuaVec4,LuaVec4,LuaVec4)| {Ok(LuaMat4::Owned(Mat4::from_cols(x.inner(),y.inner(),z.inner(),w.inner())))};
+            ##[glob] "mat4" => |_,(x,y,z,w): (LuaVec4,LuaVec4,LuaVec4,LuaVec4)| {Ok(LuaMat4::new(Mat4::from_cols(x.inner(),y.inner(),z.inner(),w.inner())))};
         },
         "glam::mat3::DMat3" ;=> DMat3,DVec3,f64: {
-            ##[glob] "dmat3" => |_,(x,y,z): (LuaDVec3,LuaDVec3,LuaDVec3)| {Ok(LuaDMat3::Owned(DMat3::from_cols(x.inner(),y.inner(),z.inner())))};
+            ##[glob] "dmat3" => |_,(x,y,z): (LuaDVec3,LuaDVec3,LuaDVec3)| {Ok(LuaDMat3::new(DMat3::from_cols(x.inner(),y.inner(),z.inner())))};
         },
         "glam::mat4::DMat4" ;=> DMat4,DVec4,f64: {
-            ##[glob] "dmat4" => |_,(x,y,z,w): (LuaDVec4,LuaDVec4,LuaDVec4,LuaDVec4)| {Ok(LuaDMat4::Owned(DMat4::from_cols(x.inner(),y.inner(),z.inner(),w.inner())))};
+            ##[glob] "dmat4" => |_,(x,y,z,w): (LuaDVec4,LuaDVec4,LuaDVec4,LuaDVec4)| {Ok(LuaDMat4::new(DMat4::from_cols(x.inner(),y.inner(),z.inner(),w.inner())))};
         }
     ]
 
     quats: [
         "glam::quat::Quat" ;=> Quat,Vec3,f32 : {
-            ##[glob] "quat" => |_,(x,y,z,w) : (f32,f32,f32,f32)| Ok(LuaQuat::Owned(Quat::from_xyzw(x,y,z,w)));
+            ##[glob] "quat" => |_,(x,y,z,w) : (f32,f32,f32,f32)| Ok(LuaQuat::new(Quat::from_xyzw(x,y,z,w)));
         },
         "glam::quat::DQuat" ;=> DQuat,DVec3,f64 : {
-            ##[glob] "dquat" => |_,(x,y,z,w) : (f64,f64,f64,f64)| Ok(LuaDQuat::Owned(DQuat::from_xyzw(x,y,z,w)));
+            ##[glob] "dquat" => |_,(x,y,z,w) : (f64,f64,f64,f64)| Ok(LuaDQuat::new(DQuat::from_xyzw(x,y,z,w)));
         }
     ]
 
@@ -754,7 +806,7 @@ make_it_all_baby!{
 
                 w.resource_scope(|w, r: Mut<AssetServer>| {
                     let handle = r.load::<LuaFile, _>(&name);
-                    Ok(LuaEntity::Owned(
+                    Ok(LuaEntity::new(
                         w.spawn()
                             .insert(ScriptCollection::<crate::LuaFile> {
                                 scripts: vec![Script::<LuaFile>::new(name, handle)],
@@ -768,7 +820,7 @@ make_it_all_baby!{
                 let w = world.0.upgrade().unwrap();
                 let w = &mut w.write();                
                 
-                Ok(LuaEntity::Owned(w.spawn().id()))
+                Ok(LuaEntity::new(w.spawn().id()))
             };
 
         }
