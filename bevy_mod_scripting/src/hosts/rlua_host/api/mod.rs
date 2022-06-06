@@ -73,11 +73,17 @@ pub enum LuaRefBase {
     },
     /// A lua owned reflect type (for example a vector constructed in lua)
     /// These can be de-allocated whenever the lua gc picks them up, so every lua owned object
-    /// allocates a valid bit which new references store a weak pointer to
+    /// has safety features.
+    /// 
+    /// It's extremely important that the userdata aliasing rules are upheld.
+    /// this is protected in  rust -> lua accesses using the valid pointer. on the lua side,
+    /// we handle references directly which are safe. If those accesses are ever mixed, one must be extremely careful!
     LuaOwned{
-        /// a pointer to valid bit
         /// We use the rwlock to validate reads and writes
-        valid: Weak<RwLock<u8>>
+        /// When a lua value goes out of scope, it checks there are no strong references
+        /// to this value, if there are it panicks,
+        /// so being able to acquire a read/write lock is enough to validate the reference!
+        valid: Weak<RwLock<()>>
     }
 }
 
@@ -137,18 +143,13 @@ impl LuaRef {
                     return false;
                 }
 
-                let g = world.upgrade().unwrap();
+                let g = world.upgrade().expect("Trying to access cached value from previous frame");
+
                 let g = g.read();
 
                 comp.reflect_component(&g,*entity).is_some()
             },
-            LuaRefBase::LuaOwned { valid } => 
-                if valid.strong_count() == 0 {
-                    false
-                } else {
-                    true
-                }
-            ,
+            LuaRefBase::LuaOwned { valid } => valid.strong_count() > 0,
         }
     }
 
@@ -161,7 +162,9 @@ impl LuaRef {
     {
         match &self.root {
             LuaRefBase::Component { world , ..} => {
-                let g = world.upgrade().unwrap();
+                let g = world.upgrade()
+                    .expect("Trying to access cached value from previous frame");
+
                 if g.is_locked_exclusive(){
                     panic!("Rust safety violation: attempted to borrow world while it was already mutably borrowed")
                 }
@@ -177,9 +180,11 @@ impl LuaRef {
             LuaRefBase::LuaOwned { valid } => {
                 // in this case we don't allocate the whole value but a valid bit
                 // nonetheless we can use it to uphold borrow rules
-                let g = valid.upgrade().unwrap();
+                let g = valid.upgrade()
+                    .expect("Trying to access cached value from previous frame");
+
                 if g.is_locked_exclusive() {
-                    panic!("Rust safety violation: attempted to borrow value while it was already mutably borrowed")
+                    panic!("Rust safety violation: attempted to borrow value {self:?} while it was already mutably borrowed")
                 };
 
                 let dyn_ref = match self.r {
@@ -210,6 +215,7 @@ impl LuaRef {
     }
 
     /// Retrieves the underlying `dyn Reflect` reference and applies function which can retrieve a value.
+    /// If this is a component it is marked as changed.
     /// Panics if the world/value is already borrowed or if r is not a mutable pointer.
     /// # Safety
     /// The caller must ensure the root reference has not been deleted or moved     
@@ -217,26 +223,36 @@ impl LuaRef {
     where 
         F : FnOnce(&mut dyn Reflect, &mut LuaRef) -> O 
     {
-
-
         match &self.root {
             LuaRefBase::Component { comp, entity, world } => {
                 
-                let g = world.upgrade().unwrap();
+                let g = world.upgrade()
+                                                            .expect("Trying to access cached value from previous frame");
 
                 if g.is_locked(){
-                    panic!("Rust safety violation: attempted to mutably borrow world while it was already aliased")
-                }
-
-                // check we cached the mutable reference already
-                // safety: if we have mutable access to the world, no other reference to this value or world exists
-                // TODO: make sure that if this was cached, we also mark the component as changed appropriately
-                match self.r {
-                    ReflectPtr::Const(_) => {},
-                    ReflectPtr::Mut(r) => return f(&mut *r,self),
+                    panic!("Rust safety violation: attempted to mutably borrow world while it was already borrowed")
                 }
 
                 let mut g = g.write();
+
+                // check we cached the mutable reference already
+                // safety: if we have mutable access to the world, no other reference to this value or world exists
+                match self.r {
+                    ReflectPtr::Const(_) => {},
+                    ReflectPtr::Mut(r) => {
+                        
+                        // make sure that if this was cached, we also mark the component as changed appropriately
+                        // this is necessary if we decide to allow to hold LuaRefs for more than one frame!
+                        comp.reflect_component_mut(&mut g, *entity)
+                            .unwrap()
+                            .set_changed();
+
+                        // important since we are dereferencing a pointer for &mut g
+                        drop(g);
+
+                        return f(&mut *r,self)
+                    },
+                }
 
                 let mut ref_mut = comp.reflect_component_mut(&mut g, *entity)
                     .unwrap();
@@ -251,10 +267,12 @@ impl LuaRef {
                 f(dyn_ref,self)
             },
             LuaRefBase::LuaOwned{ valid } => {
-                let g = valid.upgrade().unwrap();
+                let g = valid.upgrade().expect("Trying to access cached value from previous frame");
+                
                 if g.is_locked() {
-                    panic!("Rust safety violation: attempted to borrow value while it was already borrowed")
+                    panic!("Rust safety violation: attempted to borrow value {self:?} while it was already borrowed")
                 };
+
 
                 let dyn_ref = match self.r {
                     ReflectPtr::Const(_) => panic!("Mutable pointer not available!"),
@@ -267,6 +285,7 @@ impl LuaRef {
     }
 
     /// Retrieves the underlying `dyn Reflect` reference and applies function which can retrieve a value.
+    /// If this is a component it is marked as changed.
     /// Panics if the reference is invalid or if the world/value is already borrowed or if r is not a mutable pointer.
     #[inline(always)]
     pub fn get_mut<O,F>(&mut self, f: F) -> O  where 

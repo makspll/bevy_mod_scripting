@@ -181,17 +181,22 @@ macro_rules! make_lua_struct {
         paste!{
             #[derive(Debug,Clone)]
             pub enum [<Lua $base>] { 
-                Owned($base,Arc<RwLock<u8>>),
+                Owned($base,Arc<RwLock<()>>),
                 Ref(LuaRef)
             }
             
-
-            // impl Drop for [<Lua $base>] {
-            //     fn drop(&mut self) { 
-                    
-            //     }
-            // }
-            
+            impl Drop for [<Lua $base>] {
+                fn drop(&mut self) {
+                    match self {
+                        [<Lua $base>]::Owned(_,valid) => {
+                            if valid.is_locked() {
+                                panic!("Something is referencing {self:?} and it's about to go out of scope!");
+                            }
+                        },
+                        [<Lua $base>]::Ref(_) => {},
+                    }
+                }
+            }
 
             impl Display for [<Lua $base>] {
                 fn fmt(&self, f: &mut Formatter<'_>) -> Result<(), std::fmt::Error> { 
@@ -202,7 +207,7 @@ macro_rules! make_lua_struct {
             impl [<Lua $base>] {
 
                 pub fn new(b : $base) -> Self {
-                    Self::Owned(b,Arc::new(RwLock::new(0)))
+                    Self::Owned(b,Arc::new(RwLock::new(())))
                 }
 
                 pub fn new_ref(b : &LuaRef) -> Self {
@@ -462,7 +467,7 @@ macro_rules! make_it_all_baby {
                                     match s {
                                         [<Lua $mat_base>]::Owned(ref mut v, ref valid) => {
                                             Ok([<Lua $mat_col>]::Ref(LuaRef{
-                                                root: LuaRefBase::LuaOwned{valid: Arc::downgrade(valid)},
+                                                root: LuaRefBase::LuaOwned{valid: Arc::downgrade((valid))},
                                                 r: ReflectPtr::Mut(v.col_mut(idx)),
                                                 path: None
                                             }))
