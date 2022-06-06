@@ -2,5 +2,6 @@
 resolver = "2"
 members = [
     "bevy_mod_scripting",
-    "bevy_event_priority"
+    "bevy_event_priority",
+    "bevy_mod_scripting_derive",
 ]

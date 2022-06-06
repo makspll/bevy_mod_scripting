@@ -1,0 +1,40 @@
+[package]
+name = "bevy_mod_scripting_derive"
+version = "0.1.0"
+authors = ["Maksymilian Mozolewski <makspl17@gmail.com>"]
+edition = "2021"
+license = "MIT"
+description = "Derive macros for bevy_mod_scripting"
+repository = "https://github.com/makspll/bevy_scripting"
+homepage = "https://github.com/makspll/bevy_scripting"
+keywords = ["bevy", "gamedev", "scripting", "lua"]
+categories = ["game-development"]
+readme = "../readme.md"
+rust-version = "1.61.0"
+
+[lib]
+name = "bevy_mod_scripting"
+proc-macro = true
+path = "src/lib.rs"
+
+
+[dependencies]
+bevy = { git = "https://github.com/bevyengine/bevy?rev=fed93a0edce9d66586dc70c1207a2092694b9a7d" }
+rlua = "0.19.1"
+rhai = { version = "1.7.0", features = ["sync"] }
+num = "0.4.0"
+phf = {version = "0.10.1", features= ["macros"] }
+thiserror = "1.0.31"
+paste = "1.0.7"
+parking_lot = "0.12.1"
+syn = {version="1.0.57",features=["full","fold"]}
+quote = "1.0.8"
+proc-macro2 = "1.0"
+
+# For those that have not specified anything:
+[patch."https://github.com/bevyengine/bevy"]
+bevy = { git = "https://github.com/bevyengine/bevy?rev=fed93a0edce9d66586dc70c1207a2092694b9a7d" }
+
+[patch.crates-io]
+bevy = { git = "https://github.com/bevyengine/bevy?rev=fed93a0edce9d66586dc70c1207a2092694b9a7d"}
+
