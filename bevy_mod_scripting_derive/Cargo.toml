@@ -13,7 +13,7 @@ readme = "../readme.md"
 rust-version = "1.61.0"
 
 [lib]
-name = "bevy_mod_scripting"
+name = "bevy_mod_scripting_derive"
 proc-macro = true
 path = "src/lib.rs"
 

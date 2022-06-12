@@ -366,14 +366,16 @@ impl LuaRef {
     /// - If the type is not any of the above, it's converted to lua as a plain `LuaRef` UserData  
     pub fn convert_to_lua<'lua>(self, ctx: Context<'lua>) -> Result<Value<'lua>,rlua::Error> {
         self.get(|s,_| {
+
             if let Some(f) = BEVY_TO_LUA.get(s.type_name()){
                 Ok(f(&self,ctx))
             } else {
+
                 let luaworld = ctx.globals()
                     .get::<_, LuaWorld>("world")
                     .unwrap();
 
-                let world = luaworld.0.upgrade().unwrap();
+                let world = luaworld.world.upgrade().unwrap();
                 let world = &mut world.read();
     
                 let typedata = world.resource::<TypeRegistry>();
@@ -405,8 +407,6 @@ impl LuaRef {
     /// Applies a lua value to self by carefuly acquiring locks and cloning if necessary.
     /// This is semantically equivalent to the `bevy_reflect::Reflect::apply` method. 
     pub fn apply_lua<'lua>(&mut self, ctx: Context<'lua>, v: Value<'lua>) -> Result<(),rlua::Error> {
-
-
     
         let type_name = self.get(|s,_| s.type_name().to_owned());
 
@@ -416,12 +416,12 @@ impl LuaRef {
             
 
         let luaworld = ctx.globals()
-                                    .get::<_, LuaWorld>("world")
-                                    .unwrap();
+                        .get::<_, LuaWorld>("world")
+                        .unwrap();
 
         // remove typedata from the world to be able to manipulate world 
         let typedata = {
-            let world = luaworld.0.upgrade().unwrap();
+            let world = luaworld.world.upgrade().unwrap();
             let world = &mut world.write();
             world.remove_resource::<TypeRegistry>().unwrap()
         };
@@ -446,7 +446,7 @@ impl LuaRef {
             Ok(o) => {
                 drop(g);
 
-                let world = luaworld.0.upgrade().unwrap();
+                let world = luaworld.world.upgrade().unwrap();
                 let world = &mut world.write();
                 world.insert_resource(typedata);
 
@@ -456,7 +456,7 @@ impl LuaRef {
         }};
 
         drop(g);
-        let world = luaworld.0.upgrade().unwrap();
+        let world = luaworld.world.upgrade().unwrap();
         let world = &mut world.write();
         world.insert_resource(typedata);
 
