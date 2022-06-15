@@ -16,7 +16,8 @@ function on_update()
         comp.dquat = comp.dquat * 2
 
         a = mat3(vec3(1,0,0),vec3(0,1,0),vec3(0,0,-1))
-        print(string.format("%s",a * vec3(1,2,3)))
+
+        print(string.format("%s",test(a[1],a[1]) ))
 
         comp.mat3[1][1] = 69 -- this is safe!
 

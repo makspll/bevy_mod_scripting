@@ -68,7 +68,14 @@ impl <T : LuaWrappable>LuaWrapper<T> {
         F: FnOnce(&T) -> G
     {
         match self {
-            Self::Owned(ref v, ..) => accessor(v),
+            Self::Owned(ref v, valid) => {
+                // we lock here in case the accessor has a luaref holding reference to us
+                let lock = valid.read();
+                let o = accessor(v);
+                drop(lock);
+
+                o
+            },
             Self::Ref(v) => {
                 v.get(|s,_| accessor(s.downcast_ref::<T>().unwrap()))
             },
@@ -80,7 +87,13 @@ impl <T : LuaWrappable>LuaWrapper<T> {
         F: FnOnce(&mut T) -> G
     {
         match self {
-            Self::Owned(ref mut v, ..) => accessor(v),
+            Self::Owned(ref mut v, valid) => {
+                let lock = valid.read();
+                let o = accessor(v);
+                drop(lock);
+
+                o
+            },
             Self::Ref(v) => {
                 v.get_mut(|s,_| accessor(s.downcast_mut::<T>().unwrap()))
             },
@@ -97,7 +110,12 @@ impl <T : LuaWrappable>LuaWrapper<T> {
     F: FnOnce(&T,&O) -> G
     {
         match self {
-            Self::Owned(ref v, ..) => binv(v,o),
+            Self::Owned(ref v, valid) => {
+                let lock = valid.read();
+                let o = binv(v,o);
+                drop(lock);
+                o
+            },
             Self::Ref(ref v) => v.get(|v,_| binv(v.downcast_ref::<T>().unwrap(),o)),
         }
     }
@@ -107,7 +125,7 @@ impl <T : LuaWrappable>LuaWrapper<T> {
     pub fn inner(&self) -> T
     {
         match self {
-            Self::Owned(ref v, ..) => v.clone(),
+            Self::Owned(ref v, ..) => v.clone(),//no need to lock here
             Self::Ref(v) => {
                 v.get(|s,_| s.downcast_ref::<T>().unwrap().clone())
             },
@@ -1234,13 +1252,16 @@ impl_lua_newtypes!{
                  let refl: ReflectComponent = get_type_data(w, &comp_name)
                      .map_err(|_| Error::RuntimeError(format!("Not a component {}",comp_name)))?;
                  let def = get_type_data::<ReflectDefault>(w, &comp_name)
-                     .map_err(|_| Error::RuntimeError(format!("Component does not derive Default and cannot be instantiated: {}",comp_name)))?;
+                     .map_err(|_| Error::RuntimeError(format!("Component does not derive ReflectDefault and cannot be instantiated: {}",comp_name)))?;
                  let s = def.default();
                  refl.add_component(w, entity, s.as_ref());
+                 let id = w.components().get_id(s.type_id()).unwrap();
+
                  Ok(LuaComponent {
                      comp: LuaRef{
                          root: LuaRefBase::Component{ 
                              comp: refl.clone(), 
+                             id,
                              entity: entity,
                              world: world.world.clone()
                          }, 
@@ -1263,6 +1284,8 @@ impl_lua_newtypes!{
                     .map_err(|_| Error::RuntimeError(format!("Component does not derive Default and cannot be instantiated: {}",comp_name)))?;
 
                 let s = def.default();
+                let id = w.components().get_id(s.type_id()).unwrap();
+
                 refl.add_component(w, entity, s.as_ref());
 
 
@@ -1270,6 +1293,7 @@ impl_lua_newtypes!{
                     comp: LuaRef{
                         root: LuaRefBase::Component{ 
                             comp: refl.clone(), 
+                            id,
                             entity: entity,
                             world: world.world.clone()
                         }, 
@@ -1295,11 +1319,14 @@ impl_lua_newtypes!{
                     .ok_or_else(|| Error::RuntimeError(format!("Could not find {comp_name} on {:?}",entity),
                     ))?;
 
+                let id = w.components().get_id(dyn_comp.type_id()).unwrap();
+
                 Ok(
                     LuaComponent {
                         comp: LuaRef{
                             root: LuaRefBase::Component{ 
                                 comp: refl, 
+                                id,
                                 entity: entity,
                                 world: world.world.clone()
                             }, 

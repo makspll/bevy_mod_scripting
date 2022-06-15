@@ -3,7 +3,7 @@ use std::{ops::DerefMut,sync::Weak};
 use parking_lot::{RwLock};
 use bevy::{
     prelude::*,
-    reflect::{ReflectRef, TypeRegistry, GetPath},
+    reflect::{ReflectRef, TypeRegistry, GetPath}, ecs::component::ComponentId,
 };
 use rlua::{Context, MetaMethod, ToLua, UserData, Value};
 use std::{
@@ -68,6 +68,7 @@ pub enum LuaRefBase {
     /// A bevy component reference
     Component{
         comp: ReflectComponent,
+        id: ComponentId,
         entity: Entity,
         world: Weak<RwLock<World>>,
     },
@@ -138,7 +139,7 @@ impl LuaRef {
     /// by checking that the root reference is valid
     fn is_valid(&self) -> bool {
         match &self.root {
-            LuaRefBase::Component { comp, entity, world } => {
+            LuaRefBase::Component { comp, entity, world, .. } => {
                 if world.strong_count() == 0 {
                     return false;
                 }
@@ -192,7 +193,12 @@ impl LuaRef {
                     ReflectPtr::Mut(r) => &*r,
                 };
 
-                f(dyn_ref,self)
+                let o = f(dyn_ref,self);
+
+                // important
+                drop(g);
+
+                o
             },
         }
     }
@@ -224,7 +230,7 @@ impl LuaRef {
         F : FnOnce(&mut dyn Reflect, &mut LuaRef) -> O 
     {
         match &self.root {
-            LuaRefBase::Component { comp, entity, world } => {
+            LuaRefBase::Component { comp, entity, world, .. } => {
                 
                 let g = world.upgrade()
                                                             .expect("Trying to access cached value from previous frame");
@@ -279,7 +285,12 @@ impl LuaRef {
                     ReflectPtr::Mut(r) => &mut *r,
                 };
 
-                f(dyn_ref,self)
+                let o = f(dyn_ref,self);
+                
+                // important
+                drop(g);
+
+                o
             },
         }    
     }
