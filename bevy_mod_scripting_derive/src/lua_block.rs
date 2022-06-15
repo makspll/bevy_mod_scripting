@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+use std::{collections::HashMap, ops::Neg};
 
 use proc_macro2::{Span, TokenStream,Delimiter, Group, TokenTree};
 use syn::{*, parse::{ParseStream, Parse, ParseBuffer}, token::{Brace, Paren, Token}, punctuated::Punctuated, spanned::Spanned};
@@ -92,7 +92,9 @@ impl Parse for LuaMethodType {
         }
 
         let mutable = input.peek(Token![mut]);
+
         let global = input.peek(Token![static]);
+
         if mutable {
             input.parse::<Token![mut]>()?;
         } else if global {
@@ -152,8 +154,6 @@ impl ToTokens for LuaMethodType {
             LuaMethodType::Method(x) => quote!{#x},
             LuaMethodType::MethodMut(x) => quote!{mut #x},
             LuaMethodType::Global(x) => quote!{static #x},
-
-            
         };
 
         tokens.extend(quote!{
@@ -190,6 +190,7 @@ impl Parse for LuaClosure {
                 expr: g.parse()?,
             })
         } else {
+            
             Ok(Self::PureClosure{
                 arrow: input.parse()?,
                 expr: input.parse()?
@@ -274,7 +275,6 @@ impl LuaMethod {
     pub fn to_call_expr(&self,receiver : &'static str) -> Option<TokenStream>{
         let closure = &self.closure.to_applied_closure(); 
         let receiver = Ident::new(receiver,Span::call_site());
-
         match &self.method_type {
             LuaMethodType::MetaMethod{ path , ..} => Some(quote_spanned!{closure.span()=>
                 #receiver.add_meta_method(#path,#closure);
@@ -294,7 +294,7 @@ impl LuaMethod {
             LuaMethodType::MethodMut(v) => Some(quote_spanned!{closure.span()=>
                 #receiver.add_method_mut(#v,#closure);
             }),
-            
+
             _ => None,
         }
     }
@@ -317,7 +317,7 @@ impl LuaMethod {
 
     pub fn to_create_global_expr(&self, global_receiver : &'static str, context_receiver: &'static str) -> Option<TokenStream> {
 
-        let closure = &self.closure;
+        let closure = &self.closure.to_applied_closure();
         let global_receiver = Ident::new(global_receiver,Span::call_site());
         let context_receiver = Ident::new(context_receiver, Span::call_site());
 

@@ -3,8 +3,8 @@ use std::collections::{HashSet, HashMap};
 use proc_macro2::{TokenStream, Span};
 use syn::{*, punctuated::*, token::*, parse::{ParseStream, Parse}, spanned::Spanned};
 
-use crate::{AdditionalImplBlock, lua_method::{LuaBlock, LuaMethod}, impls::DeriveFlag, utils::impl_parse_enum};
-use quote::{quote, ToTokens};
+use crate::{AdditionalImplBlock, lua_block::{LuaBlock, LuaMethod,LuaMethodType}, impls::DeriveFlag, utils::impl_parse_enum};
+use quote::{quote, ToTokens, quote_spanned};
 
 
 pub(crate)  struct NewtypeArgs {
@@ -20,7 +20,6 @@ pub(crate)  struct NewtypeArgs {
 
 impl Parse for NewtypeArgs {
     fn parse(input: ParseStream) -> Result<Self>{
-
         let base_type : TypePath = input.parse()?;
         let short_base_type : String = base_type.path.segments.last().ok_or(input.error("Path does not have identifier"))?.ident.to_string();
         let short_wrapper_type : String = format!("Lua{}",short_base_type);
@@ -76,6 +75,76 @@ pub(crate) struct Newtype {
     pub additional_functions: Option<AdditionalImplBlock>,
     pub additional_lua_functions: Option<LuaBlock>
 }
+
+impl Newtype {
+    pub fn to_from_lua_entry(&self) -> Option<TokenStream> {
+        let k = &mut self.args.full_base_type.clone().into_token_stream().to_string();
+        k.retain(|c| !c.is_whitespace());
+        let wrapper_type = &self.args.short_wrapper_type;
+
+        if self.args.variation.is_full() {
+            Some(quote_spanned!(self.args.full_base_type.span()=>
+                #k => |r,c,n| {
+                    if let Value::UserData(v) = n {
+                        let mut v = v.borrow_mut::<#wrapper_type>()?;
+                        #wrapper_type::apply_self_to_base(v.deref_mut(),r);
+                        Ok(())
+                    } else {
+                        Err(Error::RuntimeError("Invalid type".to_owned()))
+                    }
+                
+            }))
+        } else if self.args.variation.is_primitive() {
+            self.additional_lua_functions.as_ref().map(|v| {
+                let from = v.functions.iter().find(|f| {
+                    if let LuaMethodType::Method(s) = &f.method_type {
+                        if s.value() == "from"{
+                            return true
+                        } 
+                    } 
+                    false
+                }).expect("").closure.to_applied_closure();
+                quote_spanned!(self.args.full_base_type.span()=>
+                    #k => #from
+                )
+            })
+        } else {
+            None
+        }
+    }
+
+    pub fn to_to_lua_entry(&self) -> Option<TokenStream>{
+        let k = &mut self.args.full_base_type.clone().into_token_stream().to_string();
+        k.retain(|c| !c.is_whitespace());
+        let wrapper_type = &self.args.short_wrapper_type;
+
+        if self.args.variation.is_full() {
+            Some(quote_spanned!(self.args.full_base_type.span()=>
+                #k => |r,c| {
+                    let usr = c.create_userdata(#wrapper_type::base_to_self(r)).unwrap();
+                    Value::UserData(usr)
+                }
+            ))
+        } else if self.args.variation.is_primitive() {
+            self.additional_lua_functions.as_ref().map(|v| {
+                let to = v.functions.iter().find(|f| {
+                    if let LuaMethodType::Method(s) = &f.method_type {
+                        if s.value() == "to"{
+                            return true
+                        } 
+                    } 
+                    false
+                }).expect("").closure.to_applied_closure();
+                quote_spanned!(self.args.full_base_type.span()=>
+                    #k => #to
+                )
+            })
+        } else {
+            None
+        }
+    }
+}
+
 
 impl Parse for Newtype {
     fn parse(input: ParseStream) -> Result<Self> {

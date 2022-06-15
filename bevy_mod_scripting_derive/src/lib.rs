@@ -1,6 +1,6 @@
 #![allow(dead_code,unused_variables,unused_features)]
 
-pub(crate) mod lua_method;
+pub(crate) mod lua_block;
 pub(crate) mod impls;
 pub(crate) mod newtype;
 pub(crate) mod utils;
@@ -14,7 +14,7 @@ use quote::{quote, ToTokens, TokenStreamExt};
 use rlua::MetaMethod;
 use syn::{parse::{ParseStream, Parse, ParseBuffer},Result, punctuated::Punctuated, Token, Ident, Error, parse_macro_input, Field, Visibility, ItemFn, braced, Type, token::{Brace, Token, self, Dot, Paren, Bracket, Bang}, ExprClosure, PatPath, LitStr, Path, ExprMethodCall, Expr, ExprPath, PathSegment, PathArguments, parse_quote, bracketed, parenthesized, parse_quote_spanned, UsePath, UseTree, ItemUse};
 
-pub(crate) use {impls::*,lua_method::*,newtype::*,utils::*};
+pub(crate) use {impls::*,lua_block::*,newtype::*,utils::*};
 
 
 
@@ -82,41 +82,13 @@ pub fn impl_lua_newtypes(input: TokenStream) -> TokenStream {
 
     let to_lua : Punctuated<proc_macro2::TokenStream,Token![,]> = new_types.new_types
         .iter()
-        .filter(|base| base.args.variation.is_full())
-        .map(|base|{
-        let k = &mut base.args.full_base_type.clone().into_token_stream().to_string();
-        k.retain(|c| !c.is_whitespace());
-        let wrapper_type = &base.args.short_wrapper_type;
-
-
-        quote!{
-            #k => |r,c| {
-                let usr = c.create_userdata(#wrapper_type::base_to_self(r)).unwrap();
-                Value::UserData(usr)
-            }
-        }
-    }).collect();
+        .filter(|base| !base.args.variation.is_non_assignable())
+        .filter_map(|base| base.to_to_lua_entry()).collect();
 
     let from_lua : Punctuated<proc_macro2::TokenStream,Token![,]> = new_types.new_types
         .iter()
-        .filter(|base| base.args.variation.is_full())
-        .map(|base|{
-        let k = &mut base.args.full_base_type.clone().into_token_stream().to_string();
-        k.retain(|c| !c.is_whitespace());
-        let wrapper_type = &base.args.short_wrapper_type;
-
-        quote!{
-            #k => |r,c,n| {
-                if let Value::UserData(v) = n {
-                    let mut v = v.borrow_mut::<#wrapper_type>()?;
-                    #wrapper_type::apply_self_to_base(v.deref_mut(),r);
-                    Ok(())
-                } else {
-                    Err(Error::RuntimeError("Invalid type".to_owned()))
-                }
-            }
-        }
-    }).collect();
+        .filter(|base| !base.args.variation.is_non_assignable())
+        .filter_map(|base| base.to_from_lua_entry()).collect();
 
 
     let lookup_tables = quote!{
@@ -124,13 +96,13 @@ pub fn impl_lua_newtypes(input: TokenStream) -> TokenStream {
         pub static BEVY_TO_LUA: Map<&'static str,
             for<'l> fn(&LuaRef,Context<'l>) -> Value<'l>
             > = phf_map!{
-                #to_lua
+                #to_lua,
             };
 
         pub static APPLY_LUA_TO_BEVY: Map<&'static str,
             for<'l> fn(&mut LuaRef, Context<'l>, Value<'l>) -> Result<(),Error>
             > = phf_map!{
-                #from_lua
+                #from_lua,
             };
     };
 

@@ -20,7 +20,7 @@ path = "src/lib.rs"
 
 [dependencies]
 bevy = { git = "https://github.com/bevyengine/bevy?rev=fed93a0edce9d66586dc70c1207a2092694b9a7d" }
-rlua = "0.19.1"
+rlua = "0.19.2"
 rhai = { version = "1.7.0", features = ["sync"] }
 num = "0.4.0"
 phf = {version = "0.10.1", features= ["macros"] }

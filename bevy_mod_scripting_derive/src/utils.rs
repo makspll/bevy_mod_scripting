@@ -1,4 +1,4 @@
-use proc_macro2::TokenStream;
+
 /// Utility for parsing enums based on the variant identifier first
 macro_rules! impl_parse_enum {
     (
