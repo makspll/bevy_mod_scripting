@@ -30,6 +30,7 @@ parking_lot = "0.12.1"
 syn = {version="1.0.57",features=["full","fold"]}
 quote = "1.0.8"
 proc-macro2 = "1.0"
+convert_case = "0.5.0"
 
 # For those that have not specified anything:
 [patch."https://github.com/bevyengine/bevy"]

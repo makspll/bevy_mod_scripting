@@ -191,7 +191,7 @@ impl MathBinOpArg {
         }} else {inner_expr};
 
         quote!{
-            return #ud_ident.bin(#op_ident,|#ud_ident,#op_ident| {
+            return #ud_ident.val(|#ud_ident| {
                 #inner_expr
             })
         }

@@ -3,7 +3,8 @@ use std::{collections::HashMap, ops::Neg};
 use proc_macro2::{Span, TokenStream,Delimiter, Group, TokenTree};
 use syn::{*, parse::{ParseStream, Parse, ParseBuffer}, token::{Brace, Paren, Token}, punctuated::Punctuated, spanned::Spanned};
 use quote::{quote, ToTokens, quote_spanned};
-use crate::{impls::*};
+use crate::{impls::*, newtype::NewtypeArgs};
+use convert_case::{Case, Casing};
 
 pub(crate) trait ToLuaMethod {
     fn to_lua_method(self) -> LuaMethod;
@@ -243,11 +244,36 @@ impl ToTokens for LuaClosure {
     }
 }
 
+#[derive(Clone,Debug)]
+pub(crate) struct Test {
+    pub brace: Brace,
+    pub ts: TokenStream
+}
+
+impl Parse for Test {
+    fn parse(input: ParseStream) -> Result<Self> {
+        let f;
+        Ok(Self{
+            brace: braced!(f in input),
+            ts: f.parse()?,
+        })
+    }
+}
+
+impl ToTokens for Test {
+    fn to_tokens(&self, tokens: &mut TokenStream) {
+        let ts = &self.ts;
+        tokens.extend(quote!{
+            {#ts}
+        })
+    }
+}
 
 #[derive(Clone,Debug)]
 pub(crate) struct LuaMethod {
     pub method_type: LuaMethodType,
     pub closure: LuaClosure,
+    pub test: Option<Test>
 }
 
 
@@ -256,6 +282,10 @@ impl Parse for LuaMethod {
         Ok(Self {  
             method_type: input.parse()?,
             closure: input.parse()?,
+            test: if input.peek(Token![=>]) {
+                input.parse::<Token![=>]>()?;
+                Some(input.parse()?)
+            } else {None}
         })
     }
 }
@@ -264,13 +294,37 @@ impl ToTokens for LuaMethod {
     fn to_tokens(&self, tokens: &mut TokenStream) {
         let mt = &self.method_type;
         let closure = &self.closure;
+        let test = self.test.as_ref().map(|t| quote!{
+            => #t
+        });
         tokens.extend(quote!{
-            #mt #closure
+            #mt #closure #test
         })
     }
 }
 
 impl LuaMethod {
+
+
+    pub fn gen_tests(&self, newtype_name : &str) -> Option<TokenStream>{
+        self.test.as_ref().map(|v| {
+
+            let fun = v.ts.clone();
+            let test_ident = Ident::new(&format!{"{}",
+                newtype_name.to_case(Case::Snake)
+            },Span::call_site()); 
+
+            match &self.closure{
+                LuaClosure::MetaClosure { args, .. } => {
+                    quote!{
+                        replace!{#args : #fun}
+                    }},
+                LuaClosure::PureClosure {..} => {
+                    fun.clone().into_token_stream()
+                },
+            }
+        })
+    }
 
     pub fn to_call_expr(&self,receiver : &'static str) -> Option<TokenStream>{
         let closure = &self.closure.to_applied_closure(); 

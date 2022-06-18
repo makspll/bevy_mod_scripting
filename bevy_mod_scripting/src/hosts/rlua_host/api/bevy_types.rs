@@ -1,6 +1,5 @@
 use bevy::reflect::TypeData;
 use bevy::reflect::TypeRegistry;
-use bevy_mod_scripting_derive::{impl_lua_newtypes,replace};
 use rlua::{UserData, MetaMethod,Value,Context,Error,Lua};
 use paste::paste;
 use bevy::prelude::*;
@@ -21,6 +20,8 @@ use crate::APIProvider;
 use crate::ScriptError;
 use std::sync::{Arc};
 use parking_lot::{RwLock};
+use bevy_mod_scripting_derive::{impl_lua_newtypes,replace};
+
 pub trait LuaWrappable : Reflect + Clone {}
 
 impl <T : Reflect + Clone> LuaWrappable for T {}
@@ -97,26 +98,6 @@ impl <T : LuaWrappable>LuaWrapper<T> {
             Self::Ref(v) => {
                 v.get_mut(|s,_| accessor(s.downcast_mut::<T>().unwrap()))
             },
-        }
-    }
-
-
-    
-
-    /// Perform a binary operation on self and any other type and optionally retrieve something by value,
-    /// may require a read lock on the world in case this is a reference
-    pub fn bin<O,G,F>(&self,o: &O, binv: F) -> G
-    where 
-    F: FnOnce(&T,&O) -> G
-    {
-        match self {
-            Self::Owned(ref v, valid) => {
-                let lock = valid.read();
-                let o = binv(v,o);
-                drop(lock);
-                o
-            },
-            Self::Ref(ref v) => v.get(|v,_| binv(v.downcast_ref::<T>().unwrap(),o)),
         }
     }
 
@@ -235,59 +216,16 @@ impl UserData for LuaResource {
 }
 
 
-// pub type LuaDQuat = crate::LuaWrapper<DQuat>;
-// impl rlua::UserData for LuaDQuat {
-//     fn add_methods<'lua, T: rlua::UserDataMethods<'lua, Self>>(methods: &mut T) {
-//         methods.add_meta_function(rlua::MetaMethod::Sub, |ctx, (lhs, rhs): (Value, Value)| {
-//             let (ud, op_on_rhs): (&rlua::AnyUserData, bool) = match (&lhs, &rhs) {
-//                 (Value::UserData(v), _) => (v, true),
-//                 (_, Value::UserData(v)) => (v, false),
-//                 _ => panic!(""),
-//             };
-//             let ud: &LuaDQuat = &ud.borrow::<LuaDQuat>().unwrap();
-//             if op_on_rhs {
-//                 let op = &rhs;
-//                 if let Value::UserData(op) = op {
-//                     if let Ok(op) = op.borrow::<LuaDQuat>() {
-//                         let op = &op;
-//                         return ud
-//                             .bin(op, |ud, op| op.val(|op| Ok(LuaDQuat::new((ud).sub(*op)))));
-//                     };
-//                 };
-//             } else {
-//                 let op = &lhs;
-//             };
-//             Err(rlua::Error::RuntimeError(
-//                 "Attempted to perform invalid arithmetic with userdata".to_owned(),
-//             ))
-//         });
-//         methods.add_meta_function(rlua::MetaMethod::Mul, |ctx, (lhs, rhs): (Value, Value)| {
-//             let (ud, op_on_rhs): (&rlua::AnyUserData, bool) = match (&lhs, &rhs) {
-//                 (Value::UserData(v), _) => (v, true),
-//                 (_, Value::UserData(v)) => (v, false),
-//                 _ => panic!(""),
-//             };
-//             let ud: &LuaDQuat = &ud.borrow::<LuaDQuat>().unwrap();
-//             if op_on_rhs {
-//                 let op = &rhs;
-//                 if let Ok(Some(op)) = ctx.coerce_number(op.clone()) {
-//                     let op = &(op as f64);
-//                     return ud.bin(op, |ud, op| Ok(LuaDQuat::new((ud).mul(*op))));
-//                 };
-//             } else {
-//                 let op = &lhs;
-//             };
-//             Err(rlua::Error::RuntimeError(
-//                 "Attempted to perform invalid arithmetic with userdata".to_owned(),
-//             ))
-//         });
-//     }
-// }
+fn wrap_and_test<T : LuaWrappable, F : FnOnce(LuaWrapper<T>)>(val: T, f: F){
+    let a = LuaWrapper::<T>::Owned(val.clone(),Arc::new(RwLock::new(())));
+    f(a);
+}
 
 impl_lua_newtypes!{
     ( // test imports
         use bevy::math::*;
         use bevy::prelude::*;
+        use bevy_mod_scripting_derive::replace;
     )
     [     // wrappers
         
@@ -394,7 +332,7 @@ impl_lua_newtypes!{
             }
     },
     {
-            String : Primitive
+            alloc::string::String : Primitive
             impl {
             "to" => |r,c| r.get(|s,_| Value::String(c.create_string(s.downcast_ref::<String>().unwrap()).unwrap()));
             "from" =>   |r,c,v : Value| c.coerce_string(v)?.ok_or_else(||Error::RuntimeError("Not a string".to_owned())).and_then(|string| r.get_mut(|s,_| Ok(s.apply(&string.to_str()?.to_owned()))));                             //      
@@ -404,7 +342,7 @@ impl_lua_newtypes!{
     // --------------------------- BEVY MATH --------------------------- //
     // ----------------------------------------------------------------- //
 
-    // --------------------------- Vectors --------------------------- //
+    // --------------------------- Vectors ----------------------------- //
 
     {
         glam::vec2::Vec2 : Full 
@@ -426,52 +364,51 @@ impl_lua_newtypes!{
                 &self(Rhs:LuaVec2)],
                 Number[&self(Rhs:f32),(Lhs:f32)])
             + MathUnaryOp(Unm:)
+            + AutoMethods(
+                abs(),
+                signum(),
+                round(),
+                floor(),
+                ceil(),
+                fract(),
+                exp(),
+                recip(),
+                clamp(LuaVec2,LuaVec2),
+                clamp_length(f32,f32),
+                clamp_length_max(f32),
+                clamp_length_min(f32),
+                lerp(LuaVec2,f32),
+                abs_diff_eq(LuaVec2,f32)->bool,
+                normalize(),
+                normalize_or_zero(),
+                perp(),
+                is_normalized() -> bool,
+                is_finite() -> bool,
+                is_nan() -> bool,
+                length() -> f32,
+                length_squared() -> f32,
+                length_recip() -> f32,
+                min_element() -> f32,
+                max_element() -> f32,
+                angle_between(LuaVec2) -> f32,
+                project_onto(LuaVec2),
+                reject_from(LuaVec2),
+                project_onto_normalized(LuaVec2),
+                reject_from_normalized(LuaVec2),
+                perp_dot(LuaVec2) -> f32,
+                dot(LuaVec2) -> f32,
+                distance(LuaVec2) -> f32,
+                distance_squared(LuaVec2) -> f32,
+                min(LuaVec2),
+                max(LuaVec2),
+            )
         
 
         impl {
             static "vec2" => |_,(x,y) : (f32,f32)| Ok(LuaVec2::new(Vec2::new(x,y)));
-
-            (MetaMethod::Index) (s=LuaVec2)=> {|_,s,idx: usize| {Ok(s.val(|s| s[idx-1]))}};
+            (MetaMethod::Index) (s=LuaVec2)=> {|_,s,idx: usize| {Ok(s.inner()[idx-1])}};
             mut (MetaMethod::NewIndex) (n=f32) => {|_,s,(idx,val): (usize,($n))| {Ok(s.val_mut(|s| s[idx-1] = val))}};
-
-            (MetaMethod::Pow) (s=LuaVec2,a=f32) => {|_,s : &($s), o : ($a)| { Ok(($s)::new(s.val(|s| s.powf(o)))) }};
-            "abs" (s=LuaVec2,a=f32) => {|_,s : &($s),()| { Ok(($s)::new(s.inner().abs())) }};
-            "signum" (s=LuaVec2,a=f32) => {|_,s : &($s),()| { Ok(($s)::new(s.inner().signum())) }};
-            "round" (s=LuaVec2,a=f32) => {|_,s : &($s),()| { Ok(($s)::new(s.inner().round())) }};
-            "floor" (s=LuaVec2,a=f32) => {|_,s : &($s),()| { Ok(($s)::new(s.inner().floor())) }};
-            "ceil" (s=LuaVec2,a=f32) => {|_,s : &($s),()| { Ok(($s)::new(s.inner().ceil())) }};
-            "fract" (s=LuaVec2,a=f32) => {|_,s : &($s),()| { Ok(($s)::new(s.inner().fract())) }};
-            "exp" (s=LuaVec2,a=f32) => {|_,s : &($s),()| { Ok(($s)::new(s.inner().exp())) }};
-            "recip" (s=LuaVec2,a=f32) => {|_,s : &($s),()| { Ok(($s)::new(s.inner().recip())) }};
-            "clamp" (s=LuaVec2,a=f32) => {|_,s : &($s),(min,max) :(($s),($s))| { Ok(($s)::new(s.inner().clamp(min.inner(),max.inner()))) }};
-            "clamp_length" (s=LuaVec2,a=f32) => {|_,s : &($s),(min,max) :(($a),($a))| { Ok(($s)::new(s.inner().clamp_length(min,max))) }};
-            "clamp_length_max" (s=LuaVec2,a=f32) => {|_,s : &($s),(max) :($a)| { Ok(($s)::new(s.inner().clamp_length_max(max))) }};
-            "clamp_length_min" (s=LuaVec2,a=f32) => {|_,s : &($s),(max) :($a)| { Ok(($s)::new(s.inner().clamp_length_min(max))) }};
-            "lerp" (s=LuaVec2,a=f32) => {|_,s : &($s),(o,f) :(($s),($a))| { Ok(($s)::new(s.inner().lerp(o.inner(),f))) }};
-            "abs_diff_eq" (s=LuaVec2,a=f32) => {|_,s : &($s),(o,max_diff) :(($s),($a))| { Ok(s.inner().abs_diff_eq(o.inner(),max_diff)) }};
-            "normalize" (s=LuaVec2) => {|_,s : &($s),()| { Ok(($s)::new(s.inner().normalize())) }};
-            "normalize_or_zero" (s=LuaVec2) => {|_,s : &($s),()| { Ok(($s)::new(s.inner().normalize_or_zero())) }};
-            "perp" (s=LuaVec2) => {|_,s : &($s),()| { Ok(($s)::new(s.inner().perp())) }};
-            "is_normalized" (s=LuaVec2) => {|_,s : &($s),()| { Ok(s.inner().is_normalized()) }};
-            "is_finite" (s=LuaVec2) => {|_,s : &($s),()| { Ok(s.inner().is_finite()) }};
-            "is_nan" (s=LuaVec2) => {|_,s : &($s),()| { Ok(s.inner().is_nan()) }};
-            "length" (s=LuaVec2) => {|_,s : &($s),()| { Ok(s.inner().length()) }};
-            "length_squared" (s=LuaVec2) => {|_,s : &($s),()| { Ok(s.inner().length_squared()) }};
-            "length_recip" (s=LuaVec2) => {|_,s : &($s),()| { Ok(s.inner().length_recip()) }};
-            "min_element" (s=LuaVec2) => {|_,s : &($s),()| { Ok(s.inner().min_element()) }};
-            "max_element" (s=LuaVec2) => {|_,s : &($s),()| { Ok(s.inner().max_element()) }};
-            "angle_between" (s=LuaVec2) => {|_,s : &($s),o : ($s)| { Ok(s.inner().angle_between(o.inner())) }};
-            "project_onto" (s=LuaVec2) => {|_,s : &($s),o : ($s)| { Ok(($s)::new(s.inner().project_onto(o.inner()))) }};
-            "reject_from" (s=LuaVec2) => {|_,s : &($s),o : ($s)| { Ok(($s)::new(s.inner().reject_from(o.inner()))) }};
-            "project_onto_normalized" (s=LuaVec2) => {|_,s : &($s),o : ($s)| { Ok(($s)::new(s.inner().project_onto_normalized(o.inner()))) }};
-            "reject_from_normalized" (s=LuaVec2) => {|_,s : &($s),o : ($s)| { Ok(($s)::new(s.inner().reject_from_normalized(o.inner()))) }};
-            "perp_dot" (s=LuaVec2) => {|_,s : &($s),o : ($s)| { Ok(s.inner().perp_dot(o.inner())) }};
-            "dot" (s=LuaVec2) => {|_,s : &($s),o : ($s)| { Ok(s.inner().dot(o.inner())) }};
-            "distance" (s=LuaVec2) => {|_,s : &($s),o : ($s)| { Ok(s.inner().distance(o.inner())) }};
-            "distance_squared" (s=LuaVec2) => {|_,s : &($s),o : ($s)| { Ok(s.inner().distance_squared(o.inner())) }};
-            "min" (s=LuaVec2) => {|_,s : &($s),o : ($s)| { Ok(($s)::new(s.inner().min(o.inner()))) }};
-            "max" (s=LuaVec2) => {|_,s : &($s),o : ($s)| { Ok(($s)::new(s.inner().max(o.inner()))) }};
-            
+            (MetaMethod::Pow) (s=LuaVec2,a=f32) => {|_,s : &($s), o : ($a)| { Ok(($s)::new(s.inner().powf(o))) }};
         }
     },
     {
@@ -494,51 +431,55 @@ impl_lua_newtypes!{
                 &self(Rhs:LuaVec3)],
                 Number[&self(Rhs:f32),(Lhs:f32)])
             + MathUnaryOp(Unm:)
+            + AutoMethods(
+                // vec2 
+                abs(),
+                signum(),
+                round(),
+                floor(),
+                ceil(),
+                fract(),
+                exp(),
+                recip(),
+                clamp(LuaVec3,LuaVec3),
+                clamp_length(f32,f32),
+                clamp_length_max(f32),
+                clamp_length_min(f32),
+                lerp(LuaVec3,f32),
+                abs_diff_eq(LuaVec3,f32)->bool,
+                normalize(),
+                normalize_or_zero(),
+                is_normalized() -> bool,
+                is_finite() -> bool,
+                is_nan() -> bool,
+                length() -> f32,
+                length_squared() -> f32,
+                length_recip() -> f32,
+                min_element() -> f32,
+                max_element() -> f32,
+                angle_between(LuaVec3) -> f32,
+                project_onto(LuaVec3),
+                reject_from(LuaVec3),
+                project_onto_normalized(LuaVec3),
+                reject_from_normalized(LuaVec3),
+                dot(LuaVec3) -> f32,
+                distance(LuaVec3) -> f32,
+                distance_squared(LuaVec3) -> f32,
+                min(LuaVec3),
+                max(LuaVec3),
+                // vec3 
+                cross(LuaVec3),
+                any_orthogonal_vector(),
+                any_orthonormal_vector(),
+            )
             + Copy(
                 LuaVec2 -> (MetaMethod::Index) (s=LuaVec3),
                 LuaVec2 -> mut (MetaMethod::NewIndex) (n=f32),
                 LuaVec2 -> (MetaMethod::Pow) (s=LuaVec3,a=f32),
-                LuaVec2 -> "abs" (s=LuaVec3,a=f32),
-                LuaVec2 -> "signum" (s=LuaVec3,a=f32),
-                LuaVec2 -> "round" (s=LuaVec3,a=f32),
-                LuaVec2 -> "floor" (s=LuaVec3,a=f32),
-                LuaVec2 -> "ceil" (s=LuaVec3,a=f32),
-                LuaVec2 -> "fract" (s=LuaVec3,a=f32),
-                LuaVec2 -> "exp" (s=LuaVec3,a=f32),
-                LuaVec2 -> "recip" (s=LuaVec3,a=f32),
-                LuaVec2 -> "clamp" (s=LuaVec3,a=f32),
-                LuaVec2 -> "clamp_length" (s=LuaVec3,a=f32),
-                LuaVec2 -> "clamp_length_max" (s=LuaVec3,a=f32),
-                LuaVec2 -> "clamp_length_min" (s=LuaVec3,a=f32),
-                LuaVec2 -> "lerp" (s=LuaVec3,a=f32),
-                LuaVec2 -> "abs_diff_eq" (s=LuaVec3,a=f32),
-                LuaVec2 -> "normalize" (s=LuaVec3),
-                LuaVec2 -> "normalize_or_zero" (s=LuaVec3),
-                LuaVec2 -> "is_normalized" (s=LuaVec3),
-                LuaVec2 -> "is_finite" (s=LuaVec3),
-                LuaVec2 -> "is_nan" (s=LuaVec3),
-                LuaVec2 -> "length" (s=LuaVec3),
-                LuaVec2 -> "length_squared" (s=LuaVec3),
-                LuaVec2 -> "length_recip" (s=LuaVec3),
-                LuaVec2 -> "min_element" (s=LuaVec3),
-                LuaVec2 -> "max_element" (s=LuaVec3),
-                LuaVec2 -> "angle_between" (s=LuaVec3),
-                LuaVec2 -> "project_onto" (s=LuaVec3),
-                LuaVec2 -> "reject_from" (s=LuaVec3),
-                LuaVec2 -> "project_onto_normalized" (s=LuaVec3),
-                LuaVec2 -> "reject_from_normalized" (s=LuaVec3),
-                LuaVec2 -> "dot" (s=LuaVec3),
-                LuaVec2 -> "distance" (s=LuaVec3),
-                LuaVec2 -> "distance_squared" (s=LuaVec3),
-                LuaVec2 -> "min" (s=LuaVec3),
-                LuaVec2 -> "max" (s=LuaVec3),
             )
     
         impl {
             static "vec3" => |_,(x,y,z) : (f32,f32,f32)| Ok(LuaVec3::new(Vec3::new(x,y,z)));
-            "cross" (s=LuaVec3) => {|_,s : &($s),o : ($s)| { Ok(($s)::new(s.inner().cross(o.inner()))) }};
-            "any_orthogonal_vector" (s=LuaVec3) => {|_,s : &($s),()| { Ok(($s)::new(s.inner().any_orthogonal_vector())) }};
-            "any_orthonormal_vector" (s=LuaVec3) => {|_,s : &($s),()| { Ok(($s)::new(s.inner().any_orthonormal_vector())) }};
             "any_orthonormal_pair" (s=LuaVec3) => {|_,s : &($s),()| { 
                 let (a,b) = s.inner().any_orthonormal_pair();
                 Ok((($s)::new(a),($s)::new(b))) }
@@ -565,43 +506,46 @@ impl_lua_newtypes!{
                 &self(Rhs:LuaVec4)],
                 Number[&self(Rhs:f32),(Lhs:f32)])
             + MathUnaryOp(Unm:)
+            + AutoMethods(
+                // vec2 
+                abs(),
+                signum(),
+                round(),
+                floor(),
+                ceil(),
+                fract(),
+                exp(),
+                recip(),
+                clamp(LuaVec4,LuaVec4),
+                clamp_length(f32,f32),
+                clamp_length_max(f32),
+                clamp_length_min(f32),
+                lerp(LuaVec4,f32),
+                abs_diff_eq(LuaVec4,f32)->bool,
+                normalize(),
+                normalize_or_zero(),
+                is_normalized() -> bool,
+                is_finite() -> bool,
+                is_nan() -> bool,
+                length() -> f32,
+                length_squared() -> f32,
+                length_recip() -> f32,
+                min_element() -> f32,
+                max_element() -> f32,
+                project_onto(LuaVec4),
+                reject_from(LuaVec4),
+                project_onto_normalized(LuaVec4),
+                reject_from_normalized(LuaVec4),
+                dot(LuaVec4) -> f32,
+                distance(LuaVec4) -> f32,
+                distance_squared(LuaVec4) -> f32,
+                min(LuaVec4),
+                max(LuaVec4),
+            )
             + Copy(
                 LuaVec2 -> (MetaMethod::Index) (s=LuaVec4),
                 LuaVec2 -> mut (MetaMethod::NewIndex) (n=f32),
                 LuaVec2 -> (MetaMethod::Pow) (s=LuaVec4,a=f32),
-                LuaVec2 -> "abs" (s=LuaVec4,a=f32),
-                LuaVec2 -> "signum" (s=LuaVec4,a=f32),
-                LuaVec2 -> "round" (s=LuaVec4,a=f32),
-                LuaVec2 -> "floor" (s=LuaVec4,a=f32),
-                LuaVec2 -> "ceil" (s=LuaVec4,a=f32),
-                LuaVec2 -> "fract" (s=LuaVec4,a=f32),
-                LuaVec2 -> "exp" (s=LuaVec4,a=f32),
-                LuaVec2 -> "recip" (s=LuaVec4,a=f32),
-                LuaVec2 -> "clamp" (s=LuaVec4,a=f32),
-                LuaVec2 -> "clamp_length" (s=LuaVec4,a=f32),
-                LuaVec2 -> "clamp_length_max" (s=LuaVec4,a=f32),
-                LuaVec2 -> "clamp_length_min" (s=LuaVec4,a=f32),
-                LuaVec2 -> "lerp" (s=LuaVec4,a=f32),
-                LuaVec2 -> "abs_diff_eq" (s=LuaVec4,a=f32),
-                LuaVec2 -> "normalize" (s=LuaVec4),
-                LuaVec2 -> "normalize_or_zero" (s=LuaVec4),
-                LuaVec2 -> "is_normalized" (s=LuaVec4),
-                LuaVec2 -> "is_finite" (s=LuaVec4),
-                LuaVec2 -> "is_nan" (s=LuaVec4),
-                LuaVec2 -> "length" (s=LuaVec4),
-                LuaVec2 -> "length_squared" (s=LuaVec4),
-                LuaVec2 -> "length_recip" (s=LuaVec4),
-                LuaVec2 -> "min_element" (s=LuaVec4),
-                LuaVec2 -> "max_element" (s=LuaVec4),
-                LuaVec2 -> "project_onto" (s=LuaVec4),
-                LuaVec2 -> "reject_from" (s=LuaVec4),
-                LuaVec2 -> "project_onto_normalized" (s=LuaVec4),
-                LuaVec2 -> "reject_from_normalized" (s=LuaVec4),
-                LuaVec2 -> "dot" (s=LuaVec4),
-                LuaVec2 -> "distance" (s=LuaVec4),
-                LuaVec2 -> "distance_squared" (s=LuaVec4),
-                LuaVec2 -> "min" (s=LuaVec4),
-                LuaVec2 -> "max" (s=LuaVec4),
             )
     
         impl {
@@ -628,46 +572,49 @@ impl_lua_newtypes!{
                 &self(Rhs:LuaDVec2)],
                 Number[&self(Rhs:f64),(Lhs:f64)])
             + MathUnaryOp(Unm:)
+            + AutoMethods(
+                abs(),
+                signum(),
+                round(),
+                floor(),
+                ceil(),
+                fract(),
+                exp(),
+                recip(),
+                clamp(LuaDVec2,LuaDVec2),
+                clamp_length(f64,f64),
+                clamp_length_max(f64),
+                clamp_length_min(f64),
+                lerp(LuaDVec2,f64),
+                abs_diff_eq(LuaDVec2,f64)->bool,
+                normalize(),
+                normalize_or_zero(),
+                perp(),
+                is_normalized() -> bool,
+                is_finite() -> bool,
+                is_nan() -> bool,
+                length() -> f64,
+                length_squared() -> f64,
+                length_recip() -> f64,
+                min_element() -> f64,
+                max_element() -> f64,
+                angle_between(LuaDVec2) -> f64,
+                project_onto(LuaDVec2),
+                reject_from(LuaDVec2),
+                project_onto_normalized(LuaDVec2),
+                reject_from_normalized(LuaDVec2),
+                perp_dot(LuaDVec2) -> f64,
+                dot(LuaDVec2) -> f64,
+                distance(LuaDVec2) -> f64,
+                distance_squared(LuaDVec2) -> f64,
+                min(LuaDVec2),
+                max(LuaDVec2),
+            )
+        
             + Copy(
                 LuaVec2 -> (MetaMethod::Index) (s=LuaDVec2),
                 LuaVec2 -> mut (MetaMethod::NewIndex) (n=f64),
                 LuaVec2 -> (MetaMethod::Pow) (s=LuaDVec2,a=f64),
-                LuaVec2 -> "abs" (s=LuaDVec2,a=f64),
-                LuaVec2 -> "signum" (s=LuaDVec2,a=f64),
-                LuaVec2 -> "round" (s=LuaDVec2,a=f64),
-                LuaVec2 -> "floor" (s=LuaDVec2,a=f64),
-                LuaVec2 -> "ceil" (s=LuaDVec2,a=f64),
-                LuaVec2 -> "fract" (s=LuaDVec2,a=f64),
-                LuaVec2 -> "exp" (s=LuaDVec2,a=f64),
-                LuaVec2 -> "recip" (s=LuaDVec2,a=f64),
-                LuaVec2 -> "clamp" (s=LuaDVec2,a=f64),
-                LuaVec2 -> "clamp_length" (s=LuaDVec2,a=f64),
-                LuaVec2 -> "clamp_length_max" (s=LuaDVec2,a=f64),
-                LuaVec2 -> "clamp_length_min" (s=LuaDVec2,a=f64),
-                LuaVec2 -> "lerp" (s=LuaDVec2,a=f64),
-                LuaVec2 -> "abs_diff_eq" (s=LuaDVec2,a=f64),
-                LuaVec2 -> "normalize" (s=LuaDVec2),
-                LuaVec2 -> "normalize_or_zero" (s=LuaDVec2),
-                LuaVec2 -> "is_normalized" (s=LuaDVec2),
-                LuaVec2 -> "is_finite" (s=LuaDVec2),
-                LuaVec2 -> "is_nan" (s=LuaDVec2),
-                LuaVec2 -> "length" (s=LuaDVec2),
-                LuaVec2 -> "length_squared" (s=LuaDVec2),
-                LuaVec2 -> "length_recip" (s=LuaDVec2),
-                LuaVec2 -> "min_element" (s=LuaDVec2),
-                LuaVec2 -> "max_element" (s=LuaDVec2),
-                LuaVec2 -> "angle_between" (s=LuaDVec2),
-                LuaVec2 -> "project_onto" (s=LuaDVec2),
-                LuaVec2 -> "reject_from" (s=LuaDVec2),
-                LuaVec2 -> "project_onto_normalized" (s=LuaDVec2),
-                LuaVec2 -> "reject_from_normalized" (s=LuaDVec2),
-                LuaVec2 -> "dot" (s=LuaDVec2),
-                LuaVec2 -> "distance" (s=LuaDVec2),
-                LuaVec2 -> "distance_squared" (s=LuaDVec2),
-                LuaVec2 -> "min" (s=LuaDVec2),
-                LuaVec2 -> "max" (s=LuaDVec2),
-                LuaVec2 -> "perp" (s=LuaDVec2),
-                LuaVec2 -> "perp_dot" (s=LuaDVec2),
             )
     
         impl {
@@ -694,47 +641,51 @@ impl_lua_newtypes!{
                 &self(Rhs:LuaDVec3)],
                 Number[&self(Rhs:f64),(Lhs:f64)])
             + MathUnaryOp(Unm:)
+            + AutoMethods(
+                // vec2 
+                abs(),
+                signum(),
+                round(),
+                floor(),
+                ceil(),
+                fract(),
+                exp(),
+                recip(),
+                clamp(LuaDVec3,LuaDVec3),
+                clamp_length(f64,f64),
+                clamp_length_max(f64),
+                clamp_length_min(f64),
+                lerp(LuaDVec3,f64),
+                abs_diff_eq(LuaDVec3,f64)->bool,
+                normalize(),
+                normalize_or_zero(),
+                is_normalized() -> bool,
+                is_finite() -> bool,
+                is_nan() -> bool,
+                length() -> f64,
+                length_squared() -> f64,
+                length_recip() -> f64,
+                min_element() -> f64,
+                max_element() -> f64,
+                angle_between(LuaDVec3) -> f64,
+                project_onto(LuaDVec3),
+                reject_from(LuaDVec3),
+                project_onto_normalized(LuaDVec3),
+                reject_from_normalized(LuaDVec3),
+                dot(LuaDVec3) -> f64,
+                distance(LuaDVec3) -> f64,
+                distance_squared(LuaDVec3) -> f64,
+                min(LuaDVec3),
+                max(LuaDVec3),
+                // vec3 
+                cross(LuaDVec3),
+                any_orthogonal_vector(),
+                any_orthonormal_vector(),
+            )
             + Copy(
                 LuaVec2 -> (MetaMethod::Index) (s=LuaDVec3),
                 LuaVec2 -> mut (MetaMethod::NewIndex) (n=f64),
                 LuaVec2 -> (MetaMethod::Pow) (s=LuaDVec3,a=f64),
-                LuaVec2 -> "abs" (s=LuaDVec3,a=f64),
-                LuaVec2 -> "signum" (s=LuaDVec3,a=f64),
-                LuaVec2 -> "round" (s=LuaDVec3,a=f64),
-                LuaVec2 -> "floor" (s=LuaDVec3,a=f64),
-                LuaVec2 -> "ceil" (s=LuaDVec3,a=f64),
-                LuaVec2 -> "fract" (s=LuaDVec3,a=f64),
-                LuaVec2 -> "exp" (s=LuaDVec3,a=f64),
-                LuaVec2 -> "recip" (s=LuaDVec3,a=f64),
-                LuaVec2 -> "clamp" (s=LuaDVec3,a=f64),
-                LuaVec2 -> "clamp_length" (s=LuaDVec3,a=f64),
-                LuaVec2 -> "clamp_length_max" (s=LuaDVec3,a=f64),
-                LuaVec2 -> "clamp_length_min" (s=LuaDVec3,a=f64),
-                LuaVec2 -> "lerp" (s=LuaDVec3,a=f64),
-                LuaVec2 -> "abs_diff_eq" (s=LuaDVec3,a=f64),
-                LuaVec2 -> "normalize" (s=LuaDVec3),
-                LuaVec2 -> "normalize_or_zero" (s=LuaDVec3),
-                LuaVec2 -> "is_normalized" (s=LuaDVec3),
-                LuaVec2 -> "is_finite" (s=LuaDVec3),
-                LuaVec2 -> "is_nan" (s=LuaDVec3),
-                LuaVec2 -> "length" (s=LuaDVec3),
-                LuaVec2 -> "length_squared" (s=LuaDVec3),
-                LuaVec2 -> "length_recip" (s=LuaDVec3),
-                LuaVec2 -> "min_element" (s=LuaDVec3),
-                LuaVec2 -> "max_element" (s=LuaDVec3),
-                LuaVec2 -> "angle_between" (s=LuaDVec3),
-                LuaVec2 -> "project_onto" (s=LuaDVec3),
-                LuaVec2 -> "reject_from" (s=LuaDVec3),
-                LuaVec2 -> "project_onto_normalized" (s=LuaDVec3),
-                LuaVec2 -> "reject_from_normalized" (s=LuaDVec3),
-                LuaVec2 -> "dot" (s=LuaDVec3),
-                LuaVec2 -> "distance" (s=LuaDVec3),
-                LuaVec2 -> "distance_squared" (s=LuaDVec3),
-                LuaVec2 -> "min" (s=LuaDVec3),
-                LuaVec2 -> "max" (s=LuaDVec3),
-                LuaVec3 -> "cross" (s=LuaDVec3),
-                LuaVec3 -> "any_orthogonal_vector" (s=LuaDVec3), 
-                LuaVec3 -> "any_orthonormal_vector" (s=LuaDVec3), 
                 LuaVec3 -> "any_orthonormal_pair" (s=LuaDVec3),
             )
         impl {
@@ -761,43 +712,46 @@ impl_lua_newtypes!{
                 &self(Rhs:LuaDVec4)],
                 Number[&self(Rhs:f64),(Lhs:f64)])
             + MathUnaryOp(Unm:)
+            + AutoMethods(
+                // vec2 
+                abs(),
+                signum(),
+                round(),
+                floor(),
+                ceil(),
+                fract(),
+                exp(),
+                recip(),
+                clamp(LuaDVec4,LuaDVec4),
+                clamp_length(f64,f64),
+                clamp_length_max(f64),
+                clamp_length_min(f64),
+                lerp(LuaDVec4,f64),
+                abs_diff_eq(LuaDVec4,f64)->bool,
+                normalize(),
+                normalize_or_zero(),
+                is_normalized() -> bool,
+                is_finite() -> bool,
+                is_nan() -> bool,
+                length() -> f64,
+                length_squared() -> f64,
+                length_recip() -> f64,
+                min_element() -> f64,
+                max_element() -> f64,
+                project_onto(LuaDVec4),
+                reject_from(LuaDVec4),
+                project_onto_normalized(LuaDVec4),
+                reject_from_normalized(LuaDVec4),
+                dot(LuaDVec4) -> f64,
+                distance(LuaDVec4) -> f64,
+                distance_squared(LuaDVec4) -> f64,
+                min(LuaDVec4),
+                max(LuaDVec4),
+            )
             + Copy(
                 LuaVec2 -> (MetaMethod::Index) (s=LuaDVec4),
                 LuaVec2 -> mut (MetaMethod::NewIndex) (n=f64),
                 LuaVec2 -> (MetaMethod::Pow) (s=LuaDVec4,a=f64),
-                LuaVec2 -> "abs" (s=LuaDVec4,a=f64),
-                LuaVec2 -> "signum" (s=LuaDVec4,a=f64),
-                LuaVec2 -> "round" (s=LuaDVec4,a=f64),
-                LuaVec2 -> "floor" (s=LuaDVec4,a=f64),
-                LuaVec2 -> "ceil" (s=LuaDVec4,a=f64),
-                LuaVec2 -> "fract" (s=LuaDVec4,a=f64),
-                LuaVec2 -> "exp" (s=LuaDVec4,a=f64),
-                LuaVec2 -> "recip" (s=LuaDVec4,a=f64),
-                LuaVec2 -> "clamp" (s=LuaDVec4,a=f64),
-                LuaVec2 -> "clamp_length" (s=LuaDVec4,a=f64),
-                LuaVec2 -> "clamp_length_max" (s=LuaDVec4,a=f64),
-                LuaVec2 -> "clamp_length_min" (s=LuaDVec4,a=f64),
-                LuaVec2 -> "lerp" (s=LuaDVec4,a=f64),
-                LuaVec2 -> "abs_diff_eq" (s=LuaDVec4,a=f64),
-                LuaVec2 -> "normalize" (s=LuaDVec4),
-                LuaVec2 -> "normalize_or_zero" (s=LuaDVec4),
-                LuaVec2 -> "is_normalized" (s=LuaDVec4),
-                LuaVec2 -> "is_finite" (s=LuaDVec4),
-                LuaVec2 -> "is_nan" (s=LuaDVec4),
-                LuaVec2 -> "length" (s=LuaDVec4),
-                LuaVec2 -> "length_squared" (s=LuaDVec4),
-                LuaVec2 -> "length_recip" (s=LuaDVec4),
-                LuaVec2 -> "min_element" (s=LuaDVec4),
-                LuaVec2 -> "max_element" (s=LuaDVec4),
-                LuaVec2 -> "project_onto" (s=LuaDVec4),
-                LuaVec2 -> "reject_from" (s=LuaDVec4),
-                LuaVec2 -> "project_onto_normalized" (s=LuaDVec4),
-                LuaVec2 -> "reject_from_normalized" (s=LuaDVec4),
-                LuaVec2 -> "dot" (s=LuaDVec4),
-                LuaVec2 -> "distance" (s=LuaDVec4),
-                LuaVec2 -> "distance_squared" (s=LuaDVec4),
-                LuaVec2 -> "min" (s=LuaDVec4),
-                LuaVec2 -> "max" (s=LuaDVec4),
             )
         impl {
             static "dvec4" => |_,(x,y,z,w) : (f64,f64,f64,f64)| Ok(LuaDVec4::new(DVec4::new(x,y,z,w)));
@@ -823,19 +777,20 @@ impl_lua_newtypes!{
                 &self(Rhs:LuaIVec2)],
                 Number[&self(Rhs:i32),(Lhs:i32)])
             + MathUnaryOp(Unm:)
+            + AutoMethods(
+                // vec2 
+                abs(),
+                signum(),
+                clamp(LuaIVec2,LuaIVec2),
+                min_element() -> i32,
+                max_element() -> i32,
+                dot(LuaIVec2) -> i32,
+                min(LuaIVec2),
+                max(LuaIVec2),
+            )
             + Copy(
                 LuaVec2 -> (MetaMethod::Index) (s=LuaIVec2),
                 LuaVec2 -> mut (MetaMethod::NewIndex) (n=i32),
-                LuaVec2 -> "abs" (s=LuaIVec2,a=i32),
-                LuaVec2 -> "signum" (s=LuaIVec2,a=i32),
-                LuaVec2 -> "clamp" (s=LuaIVec2,a=i32),
-                LuaVec2 -> "min_element" (s=LuaIVec2),
-                LuaVec2 -> "max_element" (s=LuaIVec2),
-                LuaVec2 -> "dot" (s=LuaIVec2),
-                LuaVec2 -> "min" (s=LuaIVec2),
-                LuaVec2 -> "max" (s=LuaIVec2),
-                LuaVec2 -> "perp" (s=LuaIVec2),
-                LuaVec2 -> "perp_dot" (s=LuaIVec2),
             )
     
         impl {
@@ -862,18 +817,21 @@ impl_lua_newtypes!{
                 &self(Rhs:LuaIVec3)],
                 Number[&self(Rhs:i32),(Lhs:i32)])
             + MathUnaryOp(Unm:)
+            + AutoMethods(
+                // vec2 
+                abs(),
+                signum(),
+                clamp(LuaIVec3,LuaIVec3),
+                min_element() -> i32,
+                max_element() -> i32,
+                dot(LuaIVec3) -> i32,
+                min(LuaIVec3),
+                max(LuaIVec3),
+                cross(LuaIVec3),
+            )
             + Copy(
                 LuaVec2 -> (MetaMethod::Index) (s=LuaIVec3),
                 LuaVec2 -> mut (MetaMethod::NewIndex) (n=i32),
-                LuaVec2 -> "abs" (s=LuaIVec3,a=i32),
-                LuaVec2 -> "signum" (s=LuaIVec3,a=i32),
-                LuaVec2 -> "clamp" (s=LuaIVec3,a=i32),
-                LuaVec2 -> "min_element" (s=LuaIVec3),
-                LuaVec2 -> "max_element" (s=LuaIVec3),
-                LuaVec2 -> "dot" (s=LuaIVec3),
-                LuaVec2 -> "min" (s=LuaIVec3),
-                LuaVec2 -> "max" (s=LuaIVec3),
-                LuaVec3 -> "cross" (s=LuaIVec3),
             )
     
         impl {
@@ -900,17 +858,20 @@ impl_lua_newtypes!{
                 &self(Rhs:LuaIVec4)],
                 Number[&self(Rhs:i32),(Lhs:i32)])
             + MathUnaryOp(Unm:)
+            + AutoMethods(
+                // vec2 
+                abs(),
+                signum(),
+                clamp(LuaIVec4,LuaIVec4),
+                min_element() -> i32,
+                max_element() -> i32,
+                dot(LuaIVec4) -> i32,
+                min(LuaIVec4),
+                max(LuaIVec4),
+            )
             + Copy(
                 LuaVec2 -> (MetaMethod::Index) (s=LuaIVec4),
                 LuaVec2 -> mut (MetaMethod::NewIndex) (n=i32),
-                LuaVec2 -> "abs" (s=LuaIVec4,a=i32),
-                LuaVec2 -> "signum" (s=LuaIVec4,a=i32),
-                LuaVec2 -> "clamp" (s=LuaIVec4,a=i32),
-                LuaVec2 -> "min_element" (s=LuaIVec4),
-                LuaVec2 -> "max_element" (s=LuaIVec4),
-                LuaVec2 -> "dot" (s=LuaIVec4),
-                LuaVec2 -> "min" (s=LuaIVec4),
-                LuaVec2 -> "max" (s=LuaIVec4),
             )
     
         impl {
@@ -936,15 +897,18 @@ impl_lua_newtypes!{
             + MathBinOp(Mod:LuaWrapper[
                 &self(Rhs:LuaUVec2)],
                 Number[&self(Rhs:u32),(Lhs:u32)])
+            + AutoMethods(
+                // vec2 
+                clamp(LuaUVec2,LuaUVec2),
+                min_element() -> i32,
+                max_element() -> i32,
+                dot(LuaUVec2) -> i32,
+                min(LuaUVec2),
+                max(LuaUVec2),
+            )
             + Copy(
                 LuaVec2 -> (MetaMethod::Index) (s=LuaUVec2),
                 LuaVec2 -> mut (MetaMethod::NewIndex) (n=u32),
-                LuaVec2 -> "clamp" (s=LuaUVec2,a=u32),
-                LuaVec2 -> "min_element" (s=LuaUVec2),
-                LuaVec2 -> "max_element" (s=LuaUVec2),
-                LuaVec2 -> "dot" (s=LuaUVec2),
-                LuaVec2 -> "min" (s=LuaUVec2),
-                LuaVec2 -> "max" (s=LuaUVec2),
             )
     
         impl {
@@ -970,16 +934,19 @@ impl_lua_newtypes!{
             + MathBinOp(Mod:LuaWrapper[
                 &self(Rhs:LuaUVec3)],
                 Number[&self(Rhs:u32),(Lhs:u32)])
+            + AutoMethods(
+                // vec2 
+                clamp(LuaUVec3,LuaUVec3),
+                min_element() -> i32,
+                max_element() -> i32,
+                dot(LuaUVec3) -> i32,
+                min(LuaUVec3),
+                max(LuaUVec3),
+                cross(LuaUVec3)
+            )
             + Copy(
                 LuaVec2 -> (MetaMethod::Index) (s=LuaUVec3),
                 LuaVec2 -> mut (MetaMethod::NewIndex) (n=u32),
-                LuaVec2 -> "clamp" (s=LuaUVec3,a=u32),
-                LuaVec2 -> "min_element" (s=LuaUVec3),
-                LuaVec2 -> "max_element" (s=LuaUVec3),
-                LuaVec2 -> "dot" (s=LuaUVec3),
-                LuaVec2 -> "min" (s=LuaUVec3),
-                LuaVec2 -> "max" (s=LuaUVec3),
-                LuaVec3 -> "cross" (s=LuaUVec3),
             )
         impl {
             static "uvec3" => |_,(x,y,z) : (u32,u32,u32)| Ok(LuaUVec3::new(UVec3::new(x,y,z)));
@@ -1004,16 +971,18 @@ impl_lua_newtypes!{
             + MathBinOp(Mod:LuaWrapper[
                 &self(Rhs:LuaUVec4)],
                 Number[&self(Rhs:u32),(Lhs:u32)])
-            // + MathUnaryOp(Unm:)
+            + AutoMethods(
+                // vec2 
+                clamp(LuaUVec4,LuaUVec4),
+                min_element() -> i32,
+                max_element() -> i32,
+                dot(LuaUVec4) -> i32,
+                min(LuaUVec4),
+                max(LuaUVec4),
+            )
             + Copy(
                 LuaVec2 -> (MetaMethod::Index) (s=LuaUVec4),
                 LuaVec2 -> mut (MetaMethod::NewIndex) (n=u32),
-                LuaVec2 -> "clamp" (s=LuaUVec4,a=u32),
-                LuaVec2 -> "min_element" (s=LuaUVec4),
-                LuaVec2 -> "max_element" (s=LuaUVec4),
-                LuaVec2 -> "dot" (s=LuaUVec4),
-                LuaVec2 -> "min" (s=LuaUVec4),
-                LuaVec2 -> "max" (s=LuaUVec4),
             )
     
         impl {
@@ -1033,7 +1002,16 @@ impl_lua_newtypes!{
             + MathBinOp(Add:
                 LuaWrapper[&self(Rhs:LuaMat3)])
             + MathUnaryOp(Unm:)
-
+            + AutoMethods(
+                transpose(),
+                determinant() -> f32,
+                inverse(),
+                is_nan() -> bool,
+                is_finite() -> bool,
+                is_nan() -> bool,
+                transform_point2(LuaVec2) -> LuaVec2,
+                transform_vector2(LuaVec2) -> LuaVec2,
+            )
         impl{       
             static "mat3" => |_,(x,y,z) : (LuaVec3,LuaVec3,LuaVec3)| Ok(LuaMat3::new(Mat3::from_cols(x.inner(),y.inner(),z.inner())));
               
@@ -1057,14 +1035,6 @@ impl_lua_newtypes!{
                     }
                 }
             }};
-
-            "transpose" (s=LuaMat3) => {|_,s,()| Ok(($s)::new(s.val(|s| s.transpose())))};
-            "determinant" (s=LuaMat3) => {|_,s,()| Ok(s.val(|s| s.determinant()))};
-            "inverse" (s=LuaMat3) => {|_,s,()| Ok(($s)::new(s.val(|s| s.inverse())))};
-            "is_nan"(s=LuaMat3) => {|_,s,()| Ok(s.val(|s| s.is_nan()))};
-            "is_finite" (s=LuaMat3) => {|_,s,()| Ok(s.val(|s| s.is_finite()))};
-            "transform_point2" => |_,s,o:LuaVec2| Ok(s.val(|s| LuaVec2::new(s.transform_point2(o.inner()))));
-            "transform_vector2" => |_,s,o:LuaVec2| Ok(s.val(|s| LuaVec2::new(s.transform_vector2(o.inner()))));
         }
     },
     {
@@ -1079,20 +1049,23 @@ impl_lua_newtypes!{
             + MathBinOp(Add:
                 LuaWrapper[&self(Rhs:LuaMat4)])
             + MathUnaryOp(Unm:)
+            + AutoMethods(
+                transpose(),
+                determinant() -> f32,
+                inverse(),
+                is_nan() -> bool,
+                is_finite() -> bool,
+                is_nan() -> bool,
+                transform_point3(LuaVec3) -> LuaVec3,
+                transform_vector3(LuaVec3) -> LuaVec3,
+                project_point3(LuaVec3) -> LuaVec3,
+            )
             + Copy(
                 LuaMat3 -> mut (MetaMethod::Index) (s=LuaMat4,b=Mat4,v=LuaVec4),
-                LuaMat3 -> "transpose" (s=LuaMat4),
-                LuaMat3 -> "determinant" (s=LuaMat4),
-                LuaMat3 -> "inverse" (s=LuaMat4),
-                LuaMat3 -> "is_nan"(s=LuaMat4),
-                LuaMat3 -> "is_finite" (s=LuaMat4),
             )
         impl {
             static "mat4" => |_,(x,y,z,w) : (LuaVec4,LuaVec4,LuaVec4,LuaVec4)| Ok(LuaMat4::new(Mat4::from_cols(x.inner(),y.inner(),z.inner(),w.inner())));
-            "transform_point3" (v=LuaVec3) => {|_,s,o:($v)| Ok(s.val(|s| ($v)::new(s.transform_point3(o.inner()))))};
-            "project_point3" (v=LuaVec3) => {|_,s,o:($v)| Ok(s.val(|s| ($v)::new(s.project_point3(o.inner()))))};
-            "transform_vector3" (v=LuaVec3) => {|_,s,o:($v)| Ok(s.val(|s| ($v)::new(s.transform_vector3(o.inner()))))};
-        }
+       }
     },
     {
         glam::mat3::DMat3: Full 
@@ -1106,13 +1079,18 @@ impl_lua_newtypes!{
             + MathBinOp(Add:
                 LuaWrapper[&self(Rhs:LuaDMat3)])
             + MathUnaryOp(Unm:)
+            + AutoMethods(
+                transpose(),
+                determinant() -> f64,
+                inverse(),
+                is_nan() -> bool,
+                is_finite() -> bool,
+                is_nan() -> bool,
+                transform_point2(LuaDVec2) -> LuaDVec2,
+                transform_vector2(LuaDVec2) -> LuaDVec2,
+            )
             + Copy(
                 LuaMat3 -> mut (MetaMethod::Index) (s=LuaDMat3,b=DMat3,v=LuaDVec3),
-                LuaMat3 -> "transpose" (s=LuaDMat3),
-                LuaMat3 -> "determinant" (s=LuaDMat3),
-                LuaMat3 -> "inverse" (s=LuaDMat3),
-                LuaMat3 -> "is_nan"(s=LuaDMat3),
-                LuaMat3 -> "is_finite" (s=LuaDMat3),
             )
     },
     {
@@ -1127,16 +1105,19 @@ impl_lua_newtypes!{
             + MathBinOp(Add:
                 LuaWrapper[&self(Rhs:LuaDMat4)])
             + MathUnaryOp(Unm:)
+            + AutoMethods(
+                transpose(),
+                determinant() -> f64,
+                inverse(),
+                is_nan() -> bool,
+                is_finite() -> bool,
+                is_nan() -> bool,
+                transform_point3(LuaDVec3) -> LuaDVec3,
+                transform_vector3(LuaDVec3) -> LuaDVec3,
+                project_point3(LuaDVec3) -> LuaDVec3,
+            )
             + Copy(
                 LuaMat3 -> mut (MetaMethod::Index) (s=LuaDMat4,b=DMat4,v=LuaDVec4),
-                LuaMat3 -> "transpose" (s=LuaDMat4),
-                LuaMat3 -> "determinant" (s=LuaDMat4),
-                LuaMat3 -> "inverse" (s=LuaDMat4),
-                LuaMat3 -> "is_nan"(s=LuaDMat4),
-                LuaMat3 -> "is_finite" (s=LuaDMat4),
-                LuaMat4 -> "transform_point3" (v=LuaDVec3),
-                LuaMat4 -> "project_point3" (v=LuaDVec3),
-                LuaMat4 -> "transform_vector3" (v=LuaDVec3),
             )
         impl {
             static "dmat4" => |_,(x,y,z,w) : (LuaDVec4,LuaDVec4,LuaDVec4,LuaDVec4)| Ok(LuaDMat4 ::new(DMat4::from_cols(x.inner(),y.inner(),z.inner(),w.inner())));
@@ -1159,33 +1140,35 @@ impl_lua_newtypes!{
             + MathBinOp(Mul:
                 Number[&self(Rhs:f32)])
             + MathUnaryOp(Unm:)
+            + AutoMethods(
+                to_scaled_axis() -> LuaVec3,
+                xyz() -> LuaVec3,
+                conjugate(),
+                inverse(),
+                length() -> f32,
+                length_squared() -> f32,
+                length_recip() -> f32,
+                normalize(),
+                is_finite() -> bool,
+                is_nan() -> bool,
+                is_normalized() -> bool,
+                is_near_identity() -> bool,
+                dot(LuaQuat) -> f32,
+                angle_between(LuaQuat) -> f32,
+                abs_diff_eq(LuaQuat,f32) -> bool,
+                lerp(LuaQuat,f32),
+                slerp(LuaQuat,f32)
+            )
 
         impl {
             static "quat" => |_,(x,y,z,w) : (f32,f32,f32,f32)| Ok(LuaQuat::new(Quat::from_xyzw(x,y,z,w)));
 
             "to_axis_angle" (v=LuaVec3) => {|_,s,()| {
-                                                let (v,f) = s.val(|v| v.to_axis_angle());
+                                                let (v,f) = s.inner().to_axis_angle();
                                                 let o = (($v)::new(v),f);
                                                 Ok(o)
                                             }};
-            "to_scaled_axis" (v=LuaVec3) => {|_,s,()| Ok(($v)::new(s.val(|v| v.to_scaled_axis())))};
-            "xyz" (v=LuaVec3) => {|_,s,()| Ok(($v)::new(s.val(|v| v.xyz())))};
-            "conjugate" (s=LuaQuat) => {|_,s,()| Ok(($s)::new(s.val(|v| v.conjugate())))};
-            "inverse" (s=LuaQuat) => {|_,s,()| Ok(($s)::new(s.val(|v| v.inverse())))};
-            "length" (s=LuaQuat) => {|_,s,()| Ok(s.val(|v| v.length()))};
-            "length_squared" (s=LuaQuat) => {|_,s,()| Ok(s.val(|v| v.length_squared()))};
-            "length_recip" (s=LuaQuat) => {|_,s,()| Ok(s.val(|v| v.length_recip()))};
-            "normalize" (s=LuaQuat) => {|_,s,()| Ok(($s)::new(s.val(|v| v.normalize())))};
-            "is_finite" (s=LuaQuat) => {|_,s,()| Ok(s.val(|v| v.is_finite()))};
-            "is_nan" (s=LuaQuat) => {|_,s,()| Ok(s.val(|v| v.is_nan()))};
-            "is_normalized" (s=LuaQuat) => {|_,s,()| Ok(s.val(|v| v.is_normalized()))};
-            "is_near_identity" (s=LuaQuat) => {|_,s,()| Ok(s.val(|v| v.is_near_identity()))};
-            "to_euler" (s=LuaQuat) => {|_,s,e : LuaEulerRot| Ok(s.val(|v| v.to_euler(e.rot)))};
-            "dot" (s=LuaQuat) => {|_,s,o : ($s)| Ok(s.bin(&o,|s,o| s.dot(o.inner())))};
-            "angle_between"(s=LuaQuat) => {|_,s,o : ($s)| Ok(s.bin(&o,|s,o| s.angle_between(o.inner())))};
-            "abs_diff_eq" (s=LuaQuat,n=f32) => {|_,s,(o,diff) : (($s),($n))| Ok(s.bin(&o,|s,o| s.abs_diff_eq(o.inner(),diff)))};
-            "lerp" (s=LuaQuat,n=f32) => {|_,s,(o,f) : (($s),($n))| Ok(($s)::new(s.bin(&o,|s,o| s.lerp(o.inner(),f))))};
-            "slerp"(s=LuaQuat,n=f32) => {|_,s,(o,f) : (($s),($n))| Ok(($s)::new(s.bin(&o,|s,o| s.slerp(o.inner(),f))))};
+            "to_euler" (s=LuaQuat) => {|_,s,e : LuaEulerRot| Ok(s.inner().to_euler(e.rot))};
         }
     },
     {
@@ -1206,39 +1189,40 @@ impl_lua_newtypes!{
         + MathBinOp(Mul:
             Number[&self(Rhs:f64)])
         + MathUnaryOp(Unm:)
-        
+        + AutoMethods(
+            to_scaled_axis() -> LuaDVec3,
+            xyz() -> LuaDVec3,
+            conjugate(),
+            inverse(),
+            length() -> f64,
+            length_squared() -> f64,
+            length_recip() -> f64,
+            normalize(),
+            is_finite() -> bool,
+            is_nan() -> bool,
+            is_normalized() -> bool,
+            is_near_identity() -> bool,
+            dot(LuaDQuat) -> f64,
+            angle_between(LuaDQuat) -> f64,
+            abs_diff_eq(LuaDQuat,f64) -> bool,
+            lerp(LuaDQuat,f64),
+            slerp(LuaDQuat,f64)
+        )
         + Copy(
             LuaQuat -> "to_axis_angle" (v=LuaDVec3),
-            LuaQuat -> "to_scaled_axis" (v=LuaDVec3),
-            LuaQuat -> "xyz" (v=LuaDVec3),
-            LuaQuat -> "conjugate" (s=LuaDQuat),
-            LuaQuat -> "inverse" (s=LuaDQuat),
-            LuaQuat -> "length" (s=LuaDQuat),
-            LuaQuat -> "length_squared" (s=LuaDQuat),
-            LuaQuat -> "length_recip" (s=LuaDQuat),
-            LuaQuat -> "normalize" (s=LuaDQuat),
-            LuaQuat -> "is_finite" (s=LuaDQuat),
-            LuaQuat -> "is_nan" (s=LuaDQuat),
-            LuaQuat -> "is_normalized" (s=LuaDQuat),
-            LuaQuat -> "is_near_identity" (s=LuaDQuat),
             LuaQuat -> "to_euler" (s=LuaDQuat),
-            LuaQuat -> "dot" (s=LuaDQuat),
-            LuaQuat -> "angle_between"(s=LuaDQuat),
-            LuaQuat -> "abs_diff_eq" (s=LuaDQuat,n=f64),
-            LuaQuat -> "lerp" (s=LuaDQuat,n=f64),
-            LuaQuat -> "slerp"(s=LuaDQuat,n=f64),
         )
         impl {
             static "dquat" => |_,(x,y,z,w) : (f64,f64,f64,f64)| Ok(LuaDQuat::new(DQuat::from_xyzw(x,y,z,w)));
         }
     },
     {
-        bevy_ecs::entity::Entity: Full 
-        impl {
-            "id" => |_,s : &LuaEntity, ()| Ok(s.val(|v| v.id()));
-            "generation" => |_,s : &LuaEntity, ()| Ok(s.val(|v| v.generation()));
-            "bits" => |_,s : &LuaEntity, ()| Ok(s.val(|v| v.to_bits()));
-        }
+        bevy_ecs::entity::Entity: Full :
+            AutoMethods(
+                id() -> u32,
+                generation() -> u32,
+                to_bits() -> u64,
+            )
     },
     {
         bevy_ecs::world::World: NonAssignable{pub world: Weak<RwLock<World>>}
@@ -1365,5 +1349,138 @@ impl_lua_newtypes!{
         glam::euler::EulerRot: NonAssignable{pub rot: EulerRot} 
     }
     ]
+
+}
+
+
+
+
+#[cfg(test)]
+
+mod test {
+    use crate::{RLuaScriptHost,ScriptHost, LuaEntity, LuaEvent, Recipients, LuaComponent, LuaRef, LuaRefBase, get_type_data, ReflectPtr};
+    use bevy::{prelude::*,reflect::TypeRegistryArc};
+    use rlua::prelude::*;
+    use std::{any::Any,sync::Arc};
+    use parking_lot::RwLock;
+
+    #[derive(Clone)]
+    struct TestArg(LuaEntity);
+
+    impl <'lua>ToLua<'lua> for TestArg {
+        fn to_lua(self, ctx: LuaContext<'lua>) -> Result<LuaValue<'lua>, rlua::Error> { 
+            self.0.to_lua(ctx) 
+        }
+    }
+
+    #[derive(Component,Reflect,Default)]
+    #[reflect(Component)]
+    struct TestComponent{
+        mat3: Mat3,
+    }
+
+    #[test]
+    #[should_panic]
+    fn miri_test_components(){
+        let world_arc = Arc::new(RwLock::new(World::new()));
+
+        let mut component_ref1;
+        let mut component_ref2;
+
+        {
+            let world = &mut world_arc.write();
+
+            world.init_resource::<TypeRegistryArc>();
+            let registry = world.resource_mut::<TypeRegistryArc>();
+            registry.write().register::<TestComponent>();
+
+            let tst_comp = TestComponent{
+                mat3: Mat3::from_cols(Vec3::new(1.0,2.0,3.0),
+                                    Vec3::new(4.0,5.0,6.0),
+                                    Vec3::new(7.0,8.0,9.0))
+            };
+
+            let entity = world.spawn()
+                            .insert(tst_comp)
+                            .id();
+
+            let refl: ReflectComponent = get_type_data(world, "TestComponent").unwrap();
+            let refl_ref = refl.reflect_component(world,entity).unwrap();
+            let ptr : ReflectPtr = ReflectPtr::Const(refl_ref);
+            let id = world.components().get_id(refl_ref.type_id()).unwrap();
+
+            component_ref1 = LuaRef{
+                r: ptr,
+                root: LuaRefBase::Component{ 
+                    comp: refl, 
+                    id,
+                    entity,
+                    world: Arc::downgrade(&world_arc),
+                }, 
+                path: Some("".to_string()), 
+            };
+            component_ref2 = component_ref1.clone();
+        }
+
+        component_ref1.get(|r1,_| {
+            component_ref2.get(|r2,_|{
+                let _ = r1.downcast_ref::<TestComponent>().unwrap().mat3 + r2.downcast_ref::<TestComponent>().unwrap().mat3;
+            })
+        });
+
+        component_ref1.get_mut(|r1,_| {
+            let _ = r1.downcast_ref::<TestComponent>().unwrap().mat3 * 2.0;
+        });
+
+        component_ref2.get_mut(|r2,_|{
+            let _ = r2.downcast_ref::<TestComponent>().unwrap().mat3 * 2.0;
+        });
+
+        // invalid should panic here
+        component_ref1.get_mut(|r1,_| {
+            component_ref2.get(|r2,_|{
+                *r1.downcast_mut::<TestComponent>().unwrap().mat3 = *r2.downcast_ref::<TestComponent>().unwrap().mat3;
+            })
+        });    
+    }
+
+    #[test]
+    #[should_panic]
+    fn miri_test_owned(){
+       
+        let mut mat = Mat3::from_cols(Vec3::new(1.0,2.0,3.0),
+                                Vec3::new(4.0,5.0,6.0),
+                                Vec3::new(7.0,8.0,9.0));
+        
+        let ptr : ReflectPtr = ReflectPtr::Mut(mat.col_mut(0));
+        let valid = Arc::new(RwLock::new(()));
+
+        let mut ref1 = LuaRef{
+            r: ptr,
+            root: LuaRefBase::LuaOwned{valid:Arc::downgrade(&valid)},
+            path: None, 
+        };
+        let mut ref2 = ref1.clone();
+
+        ref1.get(|r1,_| {
+            ref2.get(|r2,_|{
+                let _ = *r1.downcast_ref::<Vec3>().unwrap() + *r2.downcast_ref::<Vec3>().unwrap();
+            })
+        });
+
+        ref1.get_mut(|r1,_| {
+            let _ = *r1.downcast_ref::<Vec3>().unwrap() * 2.0;
+        });
+
+        ref2.get_mut(|r2,_|{
+            let _ = *r2.downcast_ref::<Vec3>().unwrap() * 2.0;
+        });
+
+        drop(valid);
+        drop(mat);
+
+        // should panic since original value dropped
+        ref1.get_mut(|r1,_| r1.downcast_mut::<Vec3>().unwrap()[1] = 2.0);
+    }
 
 }

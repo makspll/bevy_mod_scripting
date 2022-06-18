@@ -39,6 +39,7 @@ bevy_console = { git = "https://github.com/OnlyGraphs/bevy-console" }
 bevy_asset_loader = {git = "https://github.com/NiklasEi/bevy_asset_loader", features = ["dynamic_assets"]}
 rand = "0.8.5"
 serde = "1.0.137"
+criterion = "0.3"
 
 # For those that have not specified anything:
 [patch."https://github.com/bevyengine/bevy"]
@@ -46,6 +47,12 @@ bevy = { git = "https://github.com/bevyengine/bevy?rev=fed93a0edce9d66586dc70c12
 
 [patch.crates-io]
 bevy = { git = "https://github.com/bevyengine/bevy?rev=fed93a0edce9d66586dc70c1207a2092694b9a7d"}
+
+
+[[bench]]
+name = "wrappers"
+harness = false
+
 
 # needs bevy 0.8 support from console
 # [[example]]

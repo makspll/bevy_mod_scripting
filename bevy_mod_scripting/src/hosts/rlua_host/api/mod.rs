@@ -146,7 +146,7 @@ impl LuaRef {
 
                 let g = world.upgrade().expect("Trying to access cached value from previous frame");
 
-                let g = g.read();
+                let g = g.try_read().expect("Rust safety violation: attempted to borrow data immutably while it was already mutably borrowed");
 
                 comp.reflect_component(&g,*entity).is_some()
             },
@@ -166,9 +166,7 @@ impl LuaRef {
                 let g = world.upgrade()
                     .expect("Trying to access cached value from previous frame");
 
-                if g.is_locked_exclusive(){
-                    panic!("Rust safety violation: attempted to borrow world while it was already mutably borrowed")
-                }
+                let g = g.try_read().expect("Rust safety violation: attempted to borrow world while it was already mutably borrowed");
 
                 // unsafe since pointer may be dangling
                 let dyn_ref = match self.r {
@@ -176,7 +174,11 @@ impl LuaRef {
                     ReflectPtr::Mut(r) => &*r,
                 };
 
-                f(dyn_ref,self)
+                let o = f(dyn_ref,self);
+
+                drop(g);
+
+                o
             },
             LuaRefBase::LuaOwned { valid } => {
                 // in this case we don't allocate the whole value but a valid bit
@@ -184,9 +186,7 @@ impl LuaRef {
                 let g = valid.upgrade()
                     .expect("Trying to access cached value from previous frame");
 
-                if g.is_locked_exclusive() {
-                    panic!("Rust safety violation: attempted to borrow value {self:?} while it was already mutably borrowed")
-                };
+                let g = g.try_read().expect("Rust safety violation: attempted to borrow value {self:?} while it was already mutably borrowed");
 
                 let dyn_ref = match self.r {
                     ReflectPtr::Const(r) => &*r,
@@ -235,11 +235,7 @@ impl LuaRef {
                 let g = world.upgrade()
                                                             .expect("Trying to access cached value from previous frame");
 
-                if g.is_locked(){
-                    panic!("Rust safety violation: attempted to mutably borrow world while it was already borrowed")
-                }
-
-                let mut g = g.write();
+                let mut g = g.try_write().expect("Rust safety violation: attempted to mutably borrow world while it was already borrowed");
 
                 // check we cached the mutable reference already
                 // safety: if we have mutable access to the world, no other reference to this value or world exists
@@ -253,10 +249,11 @@ impl LuaRef {
                             .unwrap()
                             .set_changed();
 
-                        // important since we are dereferencing a pointer for &mut g
+                        // this is safe since &mut g is now out of scope
+                        // the lock itself is not an active &mut reference
+                        let o = f(&mut *r,self);
                         drop(g);
-
-                        return f(&mut *r,self)
+                        return o
                     },
                 }
 
@@ -270,16 +267,14 @@ impl LuaRef {
                 // cache this pointer for future use
                 self.r = ReflectPtr::Mut(dyn_ref);
 
-                f(dyn_ref,self)
+                let o = f(dyn_ref,self);
+                drop(g);
+                o
             },
             LuaRefBase::LuaOwned{ valid } => {
                 let g = valid.upgrade().expect("Trying to access cached value from previous frame");
-                
-                if g.is_locked() {
-                    panic!("Rust safety violation: attempted to borrow value {self:?} while it was already borrowed")
-                };
-
-
+                let g = g.try_write().expect("Rust safety violation: attempted to borrow value {self:?} while it was already borrowed");
+           
                 let dyn_ref = match self.r {
                     ReflectPtr::Const(_) => panic!("Mutable pointer not available!"),
                     ReflectPtr::Mut(r) => &mut *r,

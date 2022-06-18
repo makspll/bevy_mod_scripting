@@ -18,6 +18,7 @@ pub(crate) use {impls::*,lua_block::*,newtype::*,utils::*};
 
 
 
+#[derive(Default)]
 struct EmptyToken;
 
 impl Parse for EmptyToken {
@@ -157,19 +158,23 @@ pub fn impl_lua_newtypes(input: TokenStream) -> TokenStream {
     }).collect();
 
     let imports = &new_types.imports;
+    let custom_tests : Punctuated<proc_macro2::TokenStream,EmptyToken> = methods_so_far.iter()
+        .flat_map(|(n,v)| v.iter().filter_map(|v| v.gen_tests(n)))
+        .collect();
 
     let tests = quote!{
         #[cfg(test)]
-        mod test {
+        mod gen_test {
             #imports
 
             #[test]
             pub fn test_wrapper_keys(){
                 #asserts
             }
+
+            #custom_tests
         }
     };
-
 
     TokenStream::from(quote!{
         #api_provider

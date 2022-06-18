@@ -5,7 +5,7 @@ use std::collections::{HashSet, HashMap};
 use proc_macro2::Span;
 use syn::{*, parse::*, punctuated::*, token::*};
 
-use crate::{lua_block::{LuaBlock, LuaMethodType, MethodMacroArg, LuaMethod, LuaClosure},TokenStream2, newtype::NewtypeArgs, utils::impl_parse_enum};
+use crate::{lua_block::{LuaBlock, LuaMethodType, MethodMacroArg, LuaMethod, LuaClosure},TokenStream2, newtype::NewtypeArgs, utils::impl_parse_enum, EmptyToken};
 use paste::paste;
 
 
@@ -36,12 +36,46 @@ impl Parse for MethodMacroInvokation {
     }
 }
 
+
+#[derive(PartialEq,Eq,Hash)]
+pub(crate) struct AutoMethod {
+    ident: Ident,
+    paren: Paren,
+    args: Punctuated<Ident,Token![,]>,
+    out: Option<Ident>,
+}
+
+
+
+impl Parse for AutoMethod {
+    fn parse(input: ParseStream) -> Result<Self> {
+        let f;
+        Ok(Self{
+            ident: input.parse()?,
+            paren: parenthesized!(f in input),
+            args: f.parse_terminated(Ident::parse)?,
+            out: if input.peek(Token![->]) {input.parse::<Token![->]>()?;input.parse()?} else {None},
+        })
+    }
+}
+
 impl_parse_enum!(input,ident:
 #[derive(PartialEq,Eq,Hash)]
 pub(crate) enum DeriveFlag {
     
     DebugToString => {Ok(Self::DebugToString{ident})},
     DisplayToString => {Ok(Self::DisplayToString{ident})},
+    AutoMethods {
+        paren: Paren,
+        methods: Punctuated<AutoMethod,Token![,]>
+    } => {
+        let f; 
+        Ok(Self::AutoMethods{
+            ident, 
+            paren: parenthesized!(f in input), 
+            methods: f.parse_terminated(AutoMethod::parse)? 
+        })
+    },
     Copy{
         paren : Paren,
         invocations: Punctuated<MethodMacroInvokation,Token![,]>
@@ -111,6 +145,60 @@ impl DeriveFlag {
                     (rlua::MetaMethod::ToString) => |_,s,()| Ok(format!("{}",s));
                 }
             }),
+            DeriveFlag::AutoMethods { ident,methods , ..} => {
+                
+                let methods: Punctuated<proc_macro2::TokenStream,EmptyToken> = methods.iter()
+                    .map(|m| {
+                        let ident = &m.ident;
+                        let ident_str = ident.to_string();
+                        let args = &m.args;
+                        let inner_args : Punctuated<proc_macro2::TokenStream,Token![,]> = args.iter().enumerate().map(|(idx,a)| {
+                            let lit = LitInt::new(&idx.to_string(),Span::call_site());
+                            let lit = if args.len() == 1 {
+                                quote_spanned!{ident.span()=>
+                                    a
+                                }
+                            } else {
+                                quote_spanned!{ident.span()=>
+                                    a.#lit
+                                }
+                            };
+
+                            if a.to_string().starts_with("Lua"){
+                                quote_spanned!{ident.span()=>
+                                    #lit.inner()
+                                }
+                            } else {
+                                quote_spanned!{ident.span()=>
+                                    #lit
+                                }
+                            }
+                        }).collect();
+                        let mut inner_expr = quote!{s.inner().#ident(#inner_args)};
+                        let out_ident = &m.out;
+                        let newtype_ident = newtype_args.short_wrapper_type.path.get_ident().unwrap();
+                        inner_expr = out_ident.as_ref().map(|v| 
+                            if v.to_string().starts_with("Lua"){
+                                quote!{
+                                    #out_ident::new(#inner_expr)
+                                }
+                            } else {
+                                inner_expr.clone()
+                            }
+                        ).unwrap_or(quote!{
+                            #newtype_ident::new(#inner_expr)
+                        });
+                        quote_spanned!{ident.span()=>
+                            #ident_str => |_,s,a:(#args)| Ok(#inner_expr);
+                        }
+                    }).collect();
+
+                Some(parse_quote_spanned!{ident.span()=>
+                    impl{
+                        #methods
+                    }
+                })
+            },
             DeriveFlag::Copy { ident, paren, invocations } =>{ 
                 let mut new_methods = Vec::default();
                 for i in invocations{
@@ -125,7 +213,7 @@ impl DeriveFlag {
                             found = true;
                             // hit apply replacements
                             let mut new_method = m.clone();
-
+                            
                             new_method.rebind_macro_args(i.args.iter()).unwrap();
 
                             new_methods.push(new_method);
