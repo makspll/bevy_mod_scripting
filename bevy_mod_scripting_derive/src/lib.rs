@@ -107,14 +107,24 @@ pub fn impl_lua_newtypes(input: TokenStream) -> TokenStream {
             };
     };
 
-    let global_method_calls : Punctuated<TokenStream2, Token![;]> = new_types.new_types.iter().flat_map(|base|  
+    let global_method_calls : TokenStream2 = new_types.new_types.iter().flat_map(|base|  
         if let Some(ref b) = base.additional_lua_functions {
-            b.functions.iter()
-                .filter_map(|f| f.to_create_global_expr("g", "lua_ctx"))
-                .collect::<Vec<TokenStream2>>()
-                .into_iter()
+            let static_methods = b.functions.iter()
+                .filter_map(|f| f.to_create_static_expr("static_table", "lua_ctx"))
+                .collect::<Punctuated<TokenStream2,EmptyToken>>();
+            if !static_methods.is_empty(){
+                let table_name = base.args.short_base_type.path.get_ident().unwrap().to_string();
+                quote!{
+                    let static_table = lua_ctx.create_table()?;
+                    #static_methods
+                    g.set(#table_name,static_table)?;
+
+                }
+            } else {
+                default()
+            }
         } else {
-            Vec::default().into_iter()
+            default()
         }
     ).collect();
 

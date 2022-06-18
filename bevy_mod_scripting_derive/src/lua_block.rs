@@ -369,7 +369,7 @@ impl LuaMethod {
         }
     }
 
-    pub fn to_create_global_expr(&self, global_receiver : &'static str, context_receiver: &'static str) -> Option<TokenStream> {
+    pub fn to_create_static_expr(&self, global_receiver : &'static str, context_receiver: &'static str) -> Option<TokenStream> {
 
         let closure = &self.closure.to_applied_closure();
         let global_receiver = Ident::new(global_receiver,Span::call_site());
@@ -377,7 +377,7 @@ impl LuaMethod {
 
         match &self.method_type {
             LuaMethodType::Global(v) => Some(quote_spanned!{closure.span()=>
-                 #global_receiver.set(#v, #context_receiver.create_function(#closure)?)?
+                 #global_receiver.set(#v, #context_receiver.create_function(#closure)?)?;
             }),
             _ => None,
         }

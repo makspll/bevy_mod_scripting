@@ -405,7 +405,7 @@ impl_lua_newtypes!{
         
 
         impl {
-            static "vec2" => |_,(x,y) : (f32,f32)| Ok(LuaVec2::new(Vec2::new(x,y)));
+            static "new" => |_,(x,y) : (f32,f32)| Ok(LuaVec2::new(Vec2::new(x,y)));
             (MetaMethod::Index) (s=LuaVec2)=> {|_,s,idx: usize| {Ok(s.inner()[idx-1])}};
             mut (MetaMethod::NewIndex) (n=f32) => {|_,s,(idx,val): (usize,($n))| {Ok(s.val_mut(|s| s[idx-1] = val))}};
             (MetaMethod::Pow) (s=LuaVec2,a=f32) => {|_,s : &($s), o : ($a)| { Ok(($s)::new(s.inner().powf(o))) }};
@@ -479,7 +479,7 @@ impl_lua_newtypes!{
             )
     
         impl {
-            static "vec3" => |_,(x,y,z) : (f32,f32,f32)| Ok(LuaVec3::new(Vec3::new(x,y,z)));
+            static "new" => |_,(x,y,z) : (f32,f32,f32)| Ok(LuaVec3::new(Vec3::new(x,y,z)));
             "any_orthonormal_pair" (s=LuaVec3) => {|_,s : &($s),()| { 
                 let (a,b) = s.inner().any_orthonormal_pair();
                 Ok((($s)::new(a),($s)::new(b))) }
@@ -549,7 +549,7 @@ impl_lua_newtypes!{
             )
     
         impl {
-            static "vec4" => |_,(x,y,z,w) : (f32,f32,f32,f32)| Ok(LuaVec4::new(Vec4::new(x,y,z,w)));
+            static "new" => |_,(x,y,z,w) : (f32,f32,f32,f32)| Ok(LuaVec4::new(Vec4::new(x,y,z,w)));
         }
     },
     {
@@ -618,7 +618,7 @@ impl_lua_newtypes!{
             )
     
         impl {
-            static "DVec2" => |_,(x,y) : (f64,f64)| Ok(LuaDVec2::new(DVec2::new(x,y)));
+            static "new" => |_,(x,y) : (f64,f64)| Ok(LuaDVec2::new(DVec2::new(x,y)));
         }
     },
     {
@@ -689,7 +689,7 @@ impl_lua_newtypes!{
                 LuaVec3 -> "any_orthonormal_pair" (s=LuaDVec3),
             )
         impl {
-            static "dvec3" => |_,(x,y,z) : (f64,f64,f64)| Ok(LuaDVec3::new(DVec3::new(x,y,z)));
+            static "new" => |_,(x,y,z) : (f64,f64,f64)| Ok(LuaDVec3::new(DVec3::new(x,y,z)));
         }
     },
     {
@@ -754,7 +754,7 @@ impl_lua_newtypes!{
                 LuaVec2 -> (MetaMethod::Pow) (s=LuaDVec4,a=f64),
             )
         impl {
-            static "dvec4" => |_,(x,y,z,w) : (f64,f64,f64,f64)| Ok(LuaDVec4::new(DVec4::new(x,y,z,w)));
+            static "new" => |_,(x,y,z,w) : (f64,f64,f64,f64)| Ok(LuaDVec4::new(DVec4::new(x,y,z,w)));
         }
     },
     {
@@ -794,7 +794,7 @@ impl_lua_newtypes!{
             )
     
         impl {
-            static "ivec2" => |_,(x,y) : (i32,i32)| Ok(LuaIVec2::new(IVec2::new(x,y)));
+            static "new" => |_,(x,y) : (i32,i32)| Ok(LuaIVec2::new(IVec2::new(x,y)));
         }
     },
     {
@@ -835,7 +835,7 @@ impl_lua_newtypes!{
             )
     
         impl {
-            static "ivec3" => |_,(x,y,z) : (i32,i32,i32)| Ok(LuaIVec3::new(IVec3::new(x,y,z)));
+            static "new" => |_,(x,y,z) : (i32,i32,i32)| Ok(LuaIVec3::new(IVec3::new(x,y,z)));
         }
     },
     {
@@ -875,7 +875,7 @@ impl_lua_newtypes!{
             )
     
         impl {
-            static "ivec4" => |_,(x,y,z,w) : (i32,i32,i32,i32)| Ok(LuaIVec4::new(IVec4::new(x,y,z,w)));
+            static "new" => |_,(x,y,z,w) : (i32,i32,i32,i32)| Ok(LuaIVec4::new(IVec4::new(x,y,z,w)));
         }
     },
     {
@@ -912,7 +912,7 @@ impl_lua_newtypes!{
             )
     
         impl {
-            static "uvec2" => |_,(x,y) : (u32,u32)| Ok(LuaUVec2::new(UVec2::new(x,y)));
+            static "new" => |_,(x,y) : (u32,u32)| Ok(LuaUVec2::new(UVec2::new(x,y)));
         }
     },
     {
@@ -949,7 +949,7 @@ impl_lua_newtypes!{
                 LuaVec2 -> mut (MetaMethod::NewIndex) (n=u32),
             )
         impl {
-            static "uvec3" => |_,(x,y,z) : (u32,u32,u32)| Ok(LuaUVec3::new(UVec3::new(x,y,z)));
+            static "new" => |_,(x,y,z) : (u32,u32,u32)| Ok(LuaUVec3::new(UVec3::new(x,y,z)));
         }
     },
     {
@@ -986,7 +986,7 @@ impl_lua_newtypes!{
             )
     
         impl {
-            static "uvec4" => |_,(x,y,z,w) : (u32,u32,u32,u32)| Ok(LuaUVec4::new(UVec4::new(x,y,z,w)));
+            static "new" => |_,(x,y,z,w) : (u32,u32,u32,u32)| Ok(LuaUVec4::new(UVec4::new(x,y,z,w)));
         }
     },
     // --------------------------- Matrices --------------------------- //
@@ -1013,7 +1013,7 @@ impl_lua_newtypes!{
                 transform_vector2(LuaVec2) -> LuaVec2,
             )
         impl{       
-            static "mat3" => |_,(x,y,z) : (LuaVec3,LuaVec3,LuaVec3)| Ok(LuaMat3::new(Mat3::from_cols(x.inner(),y.inner(),z.inner())));
+            static "new" => |_,(x,y,z) : (LuaVec3,LuaVec3,LuaVec3)| Ok(LuaMat3::new(Mat3::from_cols(x.inner(),y.inner(),z.inner())));
               
             mut (MetaMethod::Index) (s=LuaMat3,b=Mat3,v=LuaVec3) => {|_,s,idx : usize| {
                 match s {
@@ -1064,7 +1064,7 @@ impl_lua_newtypes!{
                 LuaMat3 -> mut (MetaMethod::Index) (s=LuaMat4,b=Mat4,v=LuaVec4),
             )
         impl {
-            static "mat4" => |_,(x,y,z,w) : (LuaVec4,LuaVec4,LuaVec4,LuaVec4)| Ok(LuaMat4::new(Mat4::from_cols(x.inner(),y.inner(),z.inner(),w.inner())));
+            static "new" => |_,(x,y,z,w) : (LuaVec4,LuaVec4,LuaVec4,LuaVec4)| Ok(LuaMat4::new(Mat4::from_cols(x.inner(),y.inner(),z.inner(),w.inner())));
        }
     },
     {
@@ -1120,7 +1120,7 @@ impl_lua_newtypes!{
                 LuaMat3 -> mut (MetaMethod::Index) (s=LuaDMat4,b=DMat4,v=LuaDVec4),
             )
         impl {
-            static "dmat4" => |_,(x,y,z,w) : (LuaDVec4,LuaDVec4,LuaDVec4,LuaDVec4)| Ok(LuaDMat4 ::new(DMat4::from_cols(x.inner(),y.inner(),z.inner(),w.inner())));
+            static "new" => |_,(x,y,z,w) : (LuaDVec4,LuaDVec4,LuaDVec4,LuaDVec4)| Ok(LuaDMat4 ::new(DMat4::from_cols(x.inner(),y.inner(),z.inner(),w.inner())));
         }
     },
     // --------------------------- Quats --------------------------- //
@@ -1136,8 +1136,6 @@ impl_lua_newtypes!{
                 &self(Rhs:LuaVec3->LuaWrapper(LuaVec3))],
                 Number[&self(Rhs:f32)])
             + MathBinOp(Div:
-                Number[&self(Rhs:f32)])
-            + MathBinOp(Mul:
                 Number[&self(Rhs:f32)])
             + MathUnaryOp(Unm:)
             + AutoMethods(
@@ -1161,7 +1159,7 @@ impl_lua_newtypes!{
             )
 
         impl {
-            static "quat" => |_,(x,y,z,w) : (f32,f32,f32,f32)| Ok(LuaQuat::new(Quat::from_xyzw(x,y,z,w)));
+            static "new" => |_,(x,y,z,w) : (f32,f32,f32,f32)| Ok(LuaQuat::new(Quat::from_xyzw(x,y,z,w)));
 
             "to_axis_angle" (v=LuaVec3) => {|_,s,()| {
                                                 let (v,f) = s.inner().to_axis_angle();
@@ -1179,14 +1177,10 @@ impl_lua_newtypes!{
         + MathBinOp(Sub:
             LuaWrapper[&self(Rhs:LuaDQuat)])
         + MathBinOp(Mul:
-            LuaWrapper[&self(Rhs:LuaDQuat)])
-        + MathBinOp(Mul:
             LuaWrapper[&self(Rhs:LuaDQuat),
             &self(Rhs:LuaDVec3->LuaWrapper(LuaDVec3))],
             Number[&self(Rhs:f64)])
         + MathBinOp(Div:
-            Number[&self(Rhs:f64)])
-        + MathBinOp(Mul:
             Number[&self(Rhs:f64)])
         + MathUnaryOp(Unm:)
         + AutoMethods(
@@ -1213,7 +1207,7 @@ impl_lua_newtypes!{
             LuaQuat -> "to_euler" (s=LuaDQuat),
         )
         impl {
-            static "dquat" => |_,(x,y,z,w) : (f64,f64,f64,f64)| Ok(LuaDQuat::new(DQuat::from_xyzw(x,y,z,w)));
+            static "new" => |_,(x,y,z,w) : (f64,f64,f64,f64)| Ok(LuaDQuat::new(DQuat::from_xyzw(x,y,z,w)));
         }
     },
     {
