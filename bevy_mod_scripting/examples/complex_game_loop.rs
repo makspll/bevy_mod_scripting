@@ -25,8 +25,8 @@ pub struct LuaAPIProvider;
 /// the custom Lua api, world is provided via a global pointer,
 /// and callbacks are defined only once at script creation
 impl APIProvider for LuaAPIProvider {
-    type Ctx = Mutex<Lua>;
-    fn attach_api(&self, ctx: &mut Self::Ctx) -> Result<(),ScriptError> {
+    type Target = Mutex<Lua>;
+    fn attach_api(&self, ctx: &mut Self::Target) -> Result<(),ScriptError> {
         // callbacks can receive any `ToLuaMulti` arguments, here '()' and
         // return any `FromLuaMulti` arguments, here a `usize`
         // check the Rlua documentation for more details
@@ -188,7 +188,7 @@ fn main() -> std::io::Result<()> {
         .add_script_handler_stage::<RLuaScriptHost<MyLuaArg>, _, 21, 30>(POST_UPDATE_SCRIPTS)
         // this stage handles addition and removal of script contexts, we can safely use `CoreStage::PostUpdate`
         .add_script_host::<RLuaScriptHost<MyLuaArg>, _>(CoreStage::PostUpdate)
-        .add_api_provider(Box::new(LuaAPIProvider));
+        .add_api_provider::<RLuaScriptHost<MyLuaArg>>(Box::new(LuaAPIProvider));
     // We have 3 core systems
 
     // PrePhysics (twice per second), fires 5 random events

@@ -94,9 +94,14 @@ impl<A: LuaArg> ScriptEvent for LuaEvent<A> {
 ///        }
 ///    }
 /// ```
-#[derive(Default)]
 pub struct RLuaScriptHost<A: LuaArg> {
     _ph: PhantomData<A>,
+}
+
+impl <A : LuaArg>Default for RLuaScriptHost<A>{
+    fn default() -> Self {
+        Self { _ph: Default::default() }
+    }
 }
 
 unsafe impl<A: LuaArg> Send for RLuaScriptHost<A> {}
@@ -104,6 +109,7 @@ unsafe impl<A: LuaArg> Sync for RLuaScriptHost<A> {}
 
 impl<A: LuaArg> ScriptHost for RLuaScriptHost<A> {
     type ScriptContext = Mutex<Lua>;
+    type APITarget = Mutex<Lua>;
     type ScriptEvent = LuaEvent<A>;
     type ScriptAsset = LuaFile;
 
@@ -113,7 +119,7 @@ impl<A: LuaArg> ScriptHost for RLuaScriptHost<A> {
             .init_asset_loader::<LuaLoader>()
             .init_resource::<CachedScriptEventState<Self>>()
             .init_resource::<ScriptContexts<Self::ScriptContext>>()
-            .init_resource::<APIProviders<Self::ScriptContext>>()
+            .init_resource::<APIProviders<Self::APITarget>>()
             .register_type::<ScriptCollection<Self::ScriptAsset>>()
             .register_type::<Script<Self::ScriptAsset>>()
             .add_system_set_to_stage(
@@ -132,7 +138,7 @@ impl<A: LuaArg> ScriptHost for RLuaScriptHost<A> {
             );
     }
 
-    fn load_script(script: &[u8], script_name: &str, providers: &APIProviders<Self::ScriptContext>) -> Result<Self::ScriptContext, ScriptError> {
+    fn load_script(&mut self, script: &[u8], script_name: &str, providers: &APIProviders<Self::APITarget>) -> Result<Self::ScriptContext, ScriptError> {
         let lua = Lua::new();
         
         lua.load(script)
@@ -150,6 +156,7 @@ impl<A: LuaArg> ScriptHost for RLuaScriptHost<A> {
     }
 
     fn handle_events<'a>(
+        &self,
         world: &mut World,
         events: &[Self::ScriptEvent],
         ctxs: impl Iterator<Item = (FlatScriptData<'a>, &'a mut Self::ScriptContext)>,

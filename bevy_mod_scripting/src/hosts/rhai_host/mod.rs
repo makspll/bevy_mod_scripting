@@ -5,7 +5,7 @@ use crate::{
     CachedScriptEventState, FlatScriptData, Recipients, ScriptContexts, ScriptError,
     ScriptErrorEvent, ScriptEvent, ScriptHost, APIProviders, ScriptCollection, Script,
 };
-use bevy::prelude::{error, AddAsset, Mut, ParallelSystemDescriptorCoercion, SystemSet, World};
+use bevy::prelude::{error, AddAsset, Mut, ParallelSystemDescriptorCoercion, SystemSet, World, ResMut, Res};
 use bevy_event_priority::AddPriorityEvent;
 use rhai::*;
 use std::marker::PhantomData;
@@ -19,14 +19,30 @@ pub trait RhaiAPIProvider: APIProvider {
 }
 
 pub struct RhaiScriptHost<A: FuncArgs + Send> {
+    pub engine: Engine,
     _ph: PhantomData<A>,
+}
+
+#[allow(deprecated)]
+impl <A: FuncArgs + Send>Default for RhaiScriptHost<A>{
+    fn default() -> Self {
+        let mut e = Engine::new();
+        // prevent shadowing of `state`,`world` and `entity` in variable in scripts
+        e.on_def_var(|_, info, _| {
+            Ok(info.name != "state" && info.name != "world" && info.name != "entity")
+        });
+
+        Self { 
+            engine: e,
+            _ph: Default::default() 
+        }
+    }
 }
 
 unsafe impl<A: FuncArgs + Send> Send for RhaiScriptHost<A> {}
 unsafe impl<A: FuncArgs + Send> Sync for RhaiScriptHost<A> {}
 
 pub struct RhaiContext {
-    pub engine: Engine,
     pub ast: AST,
     pub scope: Scope<'static>,
 }
@@ -52,14 +68,15 @@ impl<A: FuncArgs + Send + Clone + Sync + 'static>
     type ScriptContext = RhaiContext;
     type ScriptEvent = RhaiEvent<A>;
     type ScriptAsset = RhaiFile;
-
+    type APITarget = Engine;
+    
     fn register_with_app(app: &mut bevy::prelude::App, stage: impl bevy::prelude::StageLabel) {
         app.add_priority_event::<Self::ScriptEvent>()
             .add_asset::<RhaiFile>()
             .init_asset_loader::<RhaiLoader>()
             .init_resource::<CachedScriptEventState<Self>>()
             .init_resource::<ScriptContexts<Self::ScriptContext>>()
-            .init_resource::<APIProviders<Self::ScriptContext>>()
+            .init_resource::<APIProviders<Self::APITarget>>()
             .register_type::<ScriptCollection<Self::ScriptAsset>>()
             .register_type::<Script<Self::ScriptAsset>>()
             .add_system_set_to_stage(
@@ -72,17 +89,17 @@ impl<A: FuncArgs + Send + Clone + Sync + 'static>
                         script_remove_synchronizer::<Self>.before(script_hot_reload_handler::<Self>),
                     )
                     .with_system(script_hot_reload_handler::<Self>),
-            );
+            )
+            // setup engine
+            .add_startup_system(|providers: Res<APIProviders<Self::APITarget>>,
+                                mut host: ResMut<Self>| {
+                providers.attach_all(&mut host.engine).expect("Error in adding api's for rhai");
+            });
     }
 
-    #[allow(deprecated)]
-    fn load_script(path: &[u8], script_name: &str, providers: &APIProviders<Self::ScriptContext>) -> Result<Self::ScriptContext, ScriptError> {
-        let mut engine = Engine::new();
-
-        // TODO: fix this API::setup_engine(&mut engine);
-
+    fn load_script(&mut self,path: &[u8], script_name: &str, _: &APIProviders<Self::APITarget>) -> Result<Self::ScriptContext, ScriptError> {
         let mut scope = Scope::new();
-        let ast = engine
+        let ast = self.engine
             .compile(
                 std::str::from_utf8(path).map_err(|_| ScriptError::FailedToLoad {
                     script: script_name.to_owned(),
@@ -93,22 +110,14 @@ impl<A: FuncArgs + Send + Clone + Sync + 'static>
                 msg: e.to_string(),
             })?;
 
-        // prevent shadowing of `state`,`world` and `entity` in variable in scripts
-        engine.on_def_var(|_, info, _| {
-            Ok(info.name != "state" && info.name != "world" && info.name != "entity")
-        });
-
         // persistent state for scripts
         scope.push("state", Map::new());
 
-        let mut ctx = RhaiContext { engine, ast, scope };
-
-        providers.attach_all(&mut ctx)?;
-
-        Ok(ctx)
+        Ok(RhaiContext { ast, scope })
     }
 
     fn handle_events<'a>(
+        &self,
         world: &mut World,
         events: &[Self::ScriptEvent],
         ctxs: impl Iterator<Item = (FlatScriptData<'a>, &'a mut Self::ScriptContext)>,
@@ -129,7 +138,7 @@ impl<A: FuncArgs + Send + Clone + Sync + 'static>
                             return;
                         };
 
-                        match ctx.engine.call_fn(
+                        match self.engine.call_fn(
                             &mut ctx.scope,
                             &ctx.ast,
                             &event.hook_name,

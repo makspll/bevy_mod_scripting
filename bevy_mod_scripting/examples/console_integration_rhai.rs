@@ -5,7 +5,7 @@ use bevy_mod_scripting::{
     RhaiAPIProvider, RhaiContext, RhaiEvent, RhaiFile, RhaiScriptHost, Script, ScriptCollection,
     ScriptErrorEvent, ScriptingPlugin, ScriptError, AddScriptApiProvider,
 };
-use rhai::FuncArgs;
+use rhai::{FuncArgs, Engine};
 
 /// custom Rhai API, world is provided as a usize (by the script this time), since
 /// Rhai does not allow global/local variable access from a callback
@@ -13,11 +13,17 @@ use rhai::FuncArgs;
 pub struct RhaiAPI;
 
 impl APIProvider for RhaiAPI {
-    type Ctx = RhaiContext;
+    type Target = Engine;
 
-    fn attach_api(&self,ctx: &mut Self::Ctx) -> Result<(),ScriptError> {
-        ctx.engine
-            .register_fn("print_to_console", |shared_world: usize, msg: String| {
+    fn attach_api(&self,engine: &mut Self::Target) -> Result<(),ScriptError> {
+        // rhai allows us to decouple the api from the script context,
+        // so here we do not have access to the script scope, but the advantage is that 
+        // this single engine is shared with all of our scripts.
+        // we can also set script wide settings here like this one for all our scripts.
+        
+        engine.set_max_expr_depths(0, 0);
+
+        engine.register_fn("print_to_console", |shared_world: usize, msg: String| {
                 let world: &mut World = unsafe { &mut *(shared_world as *mut World) };
 
                 let mut events: Mut<Events<PrintConsoleLine>> = world.get_resource_mut().unwrap();
@@ -26,18 +32,12 @@ impl APIProvider for RhaiAPI {
                 ()
             });
 
-        ctx.engine
-            .register_fn("entity_id", |entity: Entity| entity.id());
+        engine.register_fn("entity_id", |entity: Entity| entity.id());
 
         Ok(())
     }
 }
 
-impl RhaiAPIProvider for RhaiAPI {
-    fn setup_engine(engine: &mut rhai::Engine) {
-        engine.set_max_expr_depths(0, 0);
-    }
-}
 
 #[derive(Clone)]
 pub struct RhaiEventArgs {}
@@ -80,7 +80,7 @@ fn main() -> std::io::Result<()> {
         .add_console_command::<DeleteScriptCmd, _, _>(delete_script_cmd)
         // choose and register the script hosts you want to use
         .add_script_host::<RhaiScriptHost<RhaiEventArgs>, _>(CoreStage::PostUpdate)
-        .add_api_provider(Box::new(RhaiAPI))
+        .add_api_provider::<RhaiScriptHost<RhaiEventArgs>>(Box::new(RhaiAPI))
         .add_script_handler_stage::<RhaiScriptHost<RhaiEventArgs>, _, 0, 0>(
             CoreStage::PostUpdate,
         )

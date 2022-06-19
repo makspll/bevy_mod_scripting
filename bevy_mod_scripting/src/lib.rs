@@ -33,18 +33,19 @@ pub trait AddScriptHost {
 impl AddScriptHost for App {
     fn add_script_host<T: ScriptHost, S: StageLabel>(&mut self, stage: S) -> &mut Self {
         T::register_with_app(self, stage);
+        self.init_resource::<T>();
         self
     }
 }
 
 pub trait AddScriptApiProvider {
-    fn add_api_provider<T: 'static>(&mut self, provider: Box<dyn APIProvider<Ctx=T>>) -> &mut Self;
+    fn add_api_provider<T: ScriptHost>(&mut self, provider: Box<dyn APIProvider<Target=T::APITarget>>) -> &mut Self;
 }
 
 impl AddScriptApiProvider for App {
-    fn add_api_provider<T : 'static>(&mut self,provider: Box<dyn APIProvider<Ctx=T>>) -> &mut Self {
+    fn add_api_provider<T : ScriptHost>(&mut self,provider: Box<dyn APIProvider<Target=T::APITarget>>) -> &mut Self {
         let w = &mut self.world;
-        let providers : &mut APIProviders<T> = &mut w.resource_mut();
+        let providers : &mut APIProviders<T::APITarget> = &mut w.resource_mut();
         providers.providers.push(provider);
         self
     }
