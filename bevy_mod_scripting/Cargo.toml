@@ -18,7 +18,7 @@ path = "src/lib.rs"
 
 [dependencies]
 bevy = "0.7"
-rlua = "0.19.1"
+tealr = { version = "0.8.2", features = ["mlua_luajit","mlua_vendored","mlua_send"] }
 rhai = { version = "1.7.0", features = ["sync"] }
 anyhow = "1.0.57"
 beau_collector = "0.2.1"

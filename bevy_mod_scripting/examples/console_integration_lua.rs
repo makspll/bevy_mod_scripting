@@ -3,17 +3,17 @@ use bevy_console::{AddConsoleCommand, ConsoleCommand, ConsolePlugin, PrintConsol
 use bevy_mod_scripting::{
     events::PriorityEventWriter, APIProvider, AddScriptHost, AddScriptHostHandler, LuaEvent,
     LuaFile, RLuaScriptHost, Recipients, Script, ScriptCollection, ScriptErrorEvent,
-    ScriptingPlugin,
+    ScriptingPlugin, ScriptError,
 };
-use rlua::{Lua, ToLua};
+use tealr::mlu::mlua::{Lua, ToLua, Value};
 use std::sync::Mutex;
 
 #[derive(Clone)]
 pub struct MyLuaArg;
 
 impl<'lua> ToLua<'lua> for MyLuaArg {
-    fn to_lua(self, _lua: rlua::Context<'lua>) -> rlua::Result<rlua::Value<'lua>> {
-        Ok(rlua::Value::Nil)
+    fn to_lua(self, _: &'lua Lua) -> tealr::mlu::mlua::Result<Value<'lua>> {
+        Ok(Value::Nil)
     }
 }
 
@@ -24,26 +24,26 @@ pub struct LuaAPIProvider {}
 /// and callbacks are defined only once at script creation
 impl APIProvider for LuaAPIProvider {
     type Ctx = Mutex<Lua>;
-    fn attach_api(ctx: &mut Self::Ctx) {
+    fn attach_api(ctx: &mut Self::Ctx) -> Result<(),ScriptError> {
         // callbacks can receive any `ToLuaMulti` arguments, here '()' and
         // return any `FromLuaMulti` arguments, here a `usize`
         // check the Rlua documentation for more details
-        RLuaScriptHost::<MyLuaArg, Self>::register_api_callback(
-            "print_to_console",
-            |ctx, msg: String| {
-                // retrieve the world pointer
-                let world_data: usize = ctx.globals().get("world").unwrap();
-                let world: &mut World = unsafe { &mut *(world_data as *mut World) };
 
-                let mut events: Mut<Events<PrintConsoleLine>> = world.get_resource_mut().unwrap();
-                events.send(PrintConsoleLine { line: msg });
+        let ctx = ctx.lock().unwrap();
 
-                // return something
-                Ok(())
-            },
-            ctx,
-        )
-        .unwrap();
+        ctx.globals().set("print_to_console",ctx.create_function(|ctx, msg: String| {
+            // retrieve the world pointer
+            let world_data: usize = ctx.globals().get("world").unwrap();
+            let world: &mut World = unsafe { &mut *(world_data as *mut World) };
+
+            let mut events: Mut<Events<PrintConsoleLine>> = world.get_resource_mut().unwrap();
+            events.send(PrintConsoleLine { line: msg });
+
+            // return something
+            Ok(())
+        })?)?;
+
+        Ok(())
     }
 }
 

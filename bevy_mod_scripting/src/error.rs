@@ -1,5 +1,6 @@
 use std::fmt::Debug;
 use thiserror::Error;
+use tealr::mlu::mlua;
 
 #[derive(Error, Debug)]
 pub enum ScriptError {
@@ -15,12 +16,15 @@ pub enum ScriptError {
         callback: String,
         msg: String,
     },
+    #[error("Failed to attach API for script `{script}` {msg}")]
+    FailedToAttachAPI { script: String, msg: String },
     #[error("{0}")]
     Other(String),
 }
 
-impl From<rlua::Error> for ScriptError {
-    fn from(e: rlua::Error) -> Self {
+impl From<mlua::Error> for ScriptError {
+    fn from(e: mlua::Error) -> Self {
         Self::Other(e.to_string())
     }
 }
+

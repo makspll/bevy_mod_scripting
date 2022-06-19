@@ -3,10 +3,10 @@ use bevy_console::ConsolePlugin;
 use bevy_event_priority::PriorityEventWriter;
 use bevy_mod_scripting::{
     APIProvider, AddScriptHost, AddScriptHostHandler, LuaEvent, LuaFile, RLuaScriptHost,
-    Recipients, Script, ScriptCollection, ScriptingPlugin,
+    Recipients, Script, ScriptCollection, ScriptingPlugin, ScriptError,
 };
 use rand::prelude::SliceRandom;
-use rlua::{Lua, ToLua};
+use tealr::mlu::mlua::{Lua, ToLua};
 use std::sync::atomic::Ordering::Relaxed;
 use std::sync::{atomic::AtomicU32, Mutex};
 
@@ -14,7 +14,7 @@ use std::sync::{atomic::AtomicU32, Mutex};
 pub struct MyLuaArg(usize);
 
 impl<'lua> ToLua<'lua> for MyLuaArg {
-    fn to_lua(self, lua: rlua::Context<'lua>) -> rlua::Result<rlua::Value<'lua>> {
+    fn to_lua(self, lua: &'lua Lua) -> tealr::mlu::mlua::Result<tealr::mlu::mlua::Value<'lua>> {
         self.0.to_lua(lua)
     }
 }
@@ -26,19 +26,19 @@ pub struct LuaAPIProvider {}
 /// and callbacks are defined only once at script creation
 impl APIProvider for LuaAPIProvider {
     type Ctx = Mutex<Lua>;
-    fn attach_api(ctx: &mut Self::Ctx) {
+    fn attach_api(ctx: &mut Self::Ctx) -> Result<(),ScriptError> {
         // callbacks can receive any `ToLuaMulti` arguments, here '()' and
         // return any `FromLuaMulti` arguments, here a `usize`
         // check the Rlua documentation for more details
-        RLuaScriptHost::<MyLuaArg, Self>::register_api_callback(
-            "print",
-            |_ctx, msg: String| {
-                info!("{}", msg);
-                Ok(())
-            },
-            ctx,
-        )
-        .unwrap();
+
+        let ctx = ctx.lock().unwrap();
+
+        ctx.globals().set("print", ctx.create_function(|_ctx, msg: String| {
+            info!("{}", msg);
+            Ok(())
+        })?)?;
+
+        Ok(())
     }
 }
 

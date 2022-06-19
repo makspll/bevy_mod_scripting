@@ -102,7 +102,7 @@ impl<A: FuncArgs + Send + Clone + Sync + 'static, API: RhaiAPIProvider<Ctx = Rha
 
         let mut ctx = RhaiContext { engine, ast, scope };
 
-        API::attach_api(&mut ctx);
+        API::attach_api(&mut ctx)?;
 
         Ok(ctx)
     }

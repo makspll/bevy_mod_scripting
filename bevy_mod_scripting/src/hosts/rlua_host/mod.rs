@@ -9,8 +9,8 @@ use anyhow::Result;
 
 use bevy::prelude::*;
 use bevy_event_priority::AddPriorityEvent;
-use rlua::prelude::*;
-use rlua::{Context, Function, Lua, ToLua, ToLuaMulti};
+use tealr::mlu::mlua::{prelude::*,Function};
+// use tealr::{Context, Function, Lua, ToLua, ToLuaMulti};
 
 use std::marker::PhantomData;
 use std::sync::Mutex;
@@ -131,21 +131,17 @@ impl<A: LuaArg, API: APIProvider<Ctx = Mutex<Lua>>> ScriptHost for RLuaScriptHos
 
     fn load_script(script: &[u8], script_name: &str) -> Result<Self::ScriptContext, ScriptError> {
         let lua = Lua::new();
-        lua.context::<_, Result<(), ScriptError>>(|lua_ctx| {
-            lua_ctx
-                .load(script)
-                .set_name(script_name)
-                .map(|c| c.exec())
-                .map_err(|_e| ScriptError::FailedToLoad {
-                    script: script_name.to_owned(),
-                })??;
-
-            Ok(())
-        })?;
+        
+        lua.load(script)
+            .set_name(script_name)
+            .map(|c| c.exec())
+            .map_err(|_e| ScriptError::FailedToLoad {
+                script: script_name.to_owned(),
+            })??;
 
         let mut lua = Mutex::new(lua);
 
-        API::attach_api(&mut lua);
+        API::attach_api(&mut lua)?;
 
         Ok(lua)
     }
@@ -164,9 +160,9 @@ impl<A: LuaArg, API: APIProvider<Ctx = Mutex<Lua>>> ScriptHost for RLuaScriptHos
                 ctxs.for_each(|(fd, ctx)| {
                     let success = ctx
                         .get_mut()
-                        .expect("Could not get lock on script context")
-                        .context::<_, Result<(), ScriptError>>(|lua_ctx| {
-                            let globals = lua_ctx.globals();
+                        .map_err(|e| ScriptError::Other(e.to_string()) )
+                        .and_then(|ctx| {
+                            let globals = ctx.globals();
                             globals.set("world", world_ptr)?;
                             globals.set("entity", fd.entity.to_bits())?;
                             globals.set("script", fd.sid)?;
@@ -189,7 +185,7 @@ impl<A: LuaArg, API: APIProvider<Ctx = Mutex<Lua>>> ScriptHost for RLuaScriptHos
                                 let ags = event.args.clone();
                                 // bind arguments and catch any errors
                                 for a in ags {
-                                    f = f.bind(a.to_lua(lua_ctx)).map_err(|e| {
+                                    f = f.bind(a.to_lua(ctx)).map_err(|e| {
                                         ScriptError::InvalidCallback {
                                             script: fd.name.to_owned(),
                                             callback: event.hook_name.to_owned(),
@@ -207,6 +203,7 @@ impl<A: LuaArg, API: APIProvider<Ctx = Mutex<Lua>>> ScriptHost for RLuaScriptHos
 
                             Ok(())
                         });
+
                     success
                         .map_err(|e| {
                             error!("{}", e);
@@ -218,25 +215,4 @@ impl<A: LuaArg, API: APIProvider<Ctx = Mutex<Lua>>> ScriptHost for RLuaScriptHos
         );
     }
 }
-impl<A: LuaArg, API: APIProvider<Ctx = Mutex<Lua>>> RLuaScriptHost<A, API> {
-    pub fn register_api_callback<F, Arg, R>(
-        callback_fn_name: &str,
-        callback: F,
-        script: &<Self as ScriptHost>::ScriptContext,
-    ) -> Result<(), ScriptError>
-    where
-        Arg: for<'lua> FromLuaMulti<'lua>,
-        R: for<'lua> ToLuaMulti<'lua>,
-        F: 'static + Send + for<'lua> Fn(Context<'lua>, Arg) -> Result<R, LuaError>,
-    {
-        script
-            .lock()
-            .expect("Could not get lock on script context")
-            .context::<_, Result<(), ScriptError>>(|lua_ctx| {
-                let f = lua_ctx.create_function(callback)?;
-                lua_ctx.globals().set(callback_fn_name, f)?;
 
-                Ok(())
-            })
-    }
-}

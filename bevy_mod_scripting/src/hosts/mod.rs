@@ -121,7 +121,7 @@ pub trait APIProvider: 'static + Default {
     type Ctx;
 
     /// provide the given script context with the API permamently
-    fn attach_api(ctx: &mut Self::Ctx);
+    fn attach_api(ctx: &mut Self::Ctx) -> Result<(),ScriptError>;
 }
 
 #[derive(Component, Debug, FromReflect, Reflect)]

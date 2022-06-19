@@ -3,7 +3,7 @@ use bevy_console::{AddConsoleCommand, ConsoleCommand, ConsolePlugin, PrintConsol
 use bevy_mod_scripting::{
     events::PriorityEventWriter, APIProvider, AddScriptHost, AddScriptHostHandler, Recipients,
     RhaiAPIProvider, RhaiContext, RhaiEvent, RhaiFile, RhaiScriptHost, Script, ScriptCollection,
-    ScriptErrorEvent, ScriptingPlugin,
+    ScriptErrorEvent, ScriptingPlugin, ScriptError,
 };
 use rhai::FuncArgs;
 
@@ -15,7 +15,7 @@ pub struct RhaiAPI {}
 impl APIProvider for RhaiAPI {
     type Ctx = RhaiContext;
 
-    fn attach_api(ctx: &mut Self::Ctx) {
+    fn attach_api(ctx: &mut Self::Ctx) -> Result<(),ScriptError>  {
         ctx.engine
             .register_fn("print_to_console", |shared_world: usize, msg: String| {
                 let world: &mut World = unsafe { &mut *(shared_world as *mut World) };
@@ -28,6 +28,8 @@ impl APIProvider for RhaiAPI {
 
         ctx.engine
             .register_fn("entity_id", |entity: Entity| entity.id());
+
+        Ok(())
     }
 }
 
