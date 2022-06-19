@@ -3,14 +3,13 @@ pub mod assets;
 use crate::{
     script_add_synchronizer, script_hot_reload_handler, script_remove_synchronizer, APIProvider,
     CachedScriptEventState, FlatScriptData, Recipients, Script, ScriptCollection, ScriptContexts,
-    ScriptError, ScriptErrorEvent, ScriptEvent, ScriptHost,
+    ScriptError, ScriptErrorEvent, ScriptEvent, ScriptHost, APIProviders,
 };
 use anyhow::Result;
 
 use bevy::prelude::*;
 use bevy_event_priority::AddPriorityEvent;
 use tealr::mlu::mlua::{prelude::*,Function};
-// use tealr::{Context, Function, Lua, ToLua, ToLuaMulti};
 
 use std::marker::PhantomData;
 use std::sync::Mutex;
@@ -20,6 +19,10 @@ pub use assets::*;
 pub trait LuaArg: for<'lua> ToLua<'lua> + Clone + Sync + Send + 'static {}
 
 impl<T: for<'lua> ToLua<'lua> + Clone + Sync + Send + 'static> LuaArg for T {}
+
+
+
+
 
 #[derive(Clone)]
 /// A Lua Hook. The result of creating this event will be
@@ -92,15 +95,14 @@ impl<A: LuaArg> ScriptEvent for LuaEvent<A> {
 ///    }
 /// ```
 #[derive(Default)]
-pub struct RLuaScriptHost<A: LuaArg, API: APIProvider> {
-    _ph: PhantomData<API>,
-    _ph2: PhantomData<A>,
+pub struct RLuaScriptHost<A: LuaArg> {
+    _ph: PhantomData<A>,
 }
 
-unsafe impl<A: LuaArg, API: APIProvider> Send for RLuaScriptHost<A, API> {}
-unsafe impl<A: LuaArg, API: APIProvider> Sync for RLuaScriptHost<A, API> {}
+unsafe impl<A: LuaArg> Send for RLuaScriptHost<A> {}
+unsafe impl<A: LuaArg> Sync for RLuaScriptHost<A> {}
 
-impl<A: LuaArg, API: APIProvider<Ctx = Mutex<Lua>>> ScriptHost for RLuaScriptHost<A, API> {
+impl<A: LuaArg> ScriptHost for RLuaScriptHost<A> {
     type ScriptContext = Mutex<Lua>;
     type ScriptEvent = LuaEvent<A>;
     type ScriptAsset = LuaFile;
@@ -111,6 +113,7 @@ impl<A: LuaArg, API: APIProvider<Ctx = Mutex<Lua>>> ScriptHost for RLuaScriptHos
             .init_asset_loader::<LuaLoader>()
             .init_resource::<CachedScriptEventState<Self>>()
             .init_resource::<ScriptContexts<Self::ScriptContext>>()
+            .init_resource::<APIProviders<Self::ScriptContext>>()
             .register_type::<ScriptCollection<Self::ScriptAsset>>()
             .register_type::<Script<Self::ScriptAsset>>()
             .add_system_set_to_stage(
@@ -129,7 +132,7 @@ impl<A: LuaArg, API: APIProvider<Ctx = Mutex<Lua>>> ScriptHost for RLuaScriptHos
             );
     }
 
-    fn load_script(script: &[u8], script_name: &str) -> Result<Self::ScriptContext, ScriptError> {
+    fn load_script(script: &[u8], script_name: &str, providers: &APIProviders<Self::ScriptContext>) -> Result<Self::ScriptContext, ScriptError> {
         let lua = Lua::new();
         
         lua.load(script)
@@ -141,7 +144,7 @@ impl<A: LuaArg, API: APIProvider<Ctx = Mutex<Lua>>> ScriptHost for RLuaScriptHos
 
         let mut lua = Mutex::new(lua);
 
-        API::attach_api(&mut lua)?;
+        providers.attach_all(&mut lua)?;
 
         Ok(lua)
     }

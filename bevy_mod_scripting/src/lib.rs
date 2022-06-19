@@ -37,6 +37,19 @@ impl AddScriptHost for App {
     }
 }
 
+pub trait AddScriptApiProvider {
+    fn add_api_provider<T: 'static>(&mut self, provider: Box<dyn APIProvider<Ctx=T>>) -> &mut Self;
+}
+
+impl AddScriptApiProvider for App {
+    fn add_api_provider<T : 'static>(&mut self,provider: Box<dyn APIProvider<Ctx=T>>) -> &mut Self {
+        let w = &mut self.world;
+        let providers : &mut APIProviders<T> = &mut w.resource_mut();
+        providers.providers.push(provider);
+        self
+    }
+}
+
 pub trait AddScriptHostHandler {
     /// Enables this script host to handle events with priorities in the range [0,min_prio] (inclusive),
     /// during the runtime of the given stage.

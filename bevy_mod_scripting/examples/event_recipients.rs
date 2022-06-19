@@ -3,7 +3,7 @@ use bevy_console::ConsolePlugin;
 use bevy_event_priority::PriorityEventWriter;
 use bevy_mod_scripting::{
     APIProvider, AddScriptHost, AddScriptHostHandler, LuaEvent, LuaFile, RLuaScriptHost,
-    Recipients, Script, ScriptCollection, ScriptingPlugin, ScriptError,
+    Recipients, Script, ScriptCollection, ScriptingPlugin, ScriptError, AddScriptApiProvider,
 };
 use rand::prelude::SliceRandom;
 use tealr::mlu::mlua::{Lua, ToLua};
@@ -20,14 +20,15 @@ impl<'lua> ToLua<'lua> for MyLuaArg {
 }
 
 #[derive(Default)]
-pub struct LuaAPIProvider {}
+pub struct LuaAPIProvider;
 
 /// the custom Lua api, world is provided via a global pointer,
 /// and callbacks are defined only once at script creation
 impl APIProvider for LuaAPIProvider {
     type Ctx = Mutex<Lua>;
-    fn attach_api(ctx: &mut Self::Ctx) -> Result<(),ScriptError>  {
-        // callbacks can receive any `ToLuaMulti` arguments, here '()' and
+
+    fn attach_api(&self,ctx: &mut Self::Ctx) -> Result<(),ScriptError> {
+       // callbacks can receive any `ToLuaMulti` arguments, here '()' and
         // return any `FromLuaMulti` arguments, here a `usize`
         // check the Rlua documentation for more details
 
@@ -39,6 +40,7 @@ impl APIProvider for LuaAPIProvider {
         })?)?;
 
         Ok(())
+                
     }
 }
 
@@ -93,7 +95,7 @@ fn load_our_scripts(server: Res<AssetServer>, mut commands: Commands) {
     let scripts = (0..2)
         .into_iter()
         .map(|_| {
-            Script::<LuaFile>::new::<RLuaScriptHost<MyLuaArg, LuaAPIProvider>>(
+            Script::<LuaFile>::new::<RLuaScriptHost<MyLuaArg>>(
                 path.to_string(),
                 handle.clone(),
             )
@@ -116,11 +118,11 @@ fn main() -> std::io::Result<()> {
         // the script with id 0
         // or the script with id 1
         .add_system(do_update)
-        .add_script_handler_stage::<RLuaScriptHost<MyLuaArg, LuaAPIProvider>, _, 0, 0>(
+        .add_script_handler_stage::<RLuaScriptHost<MyLuaArg>, _, 0, 0>(
             CoreStage::PostUpdate,
         )
-        .add_script_host::<RLuaScriptHost<MyLuaArg, LuaAPIProvider>, _>(CoreStage::PostUpdate);
-
+        .add_script_host::<RLuaScriptHost<MyLuaArg>, _>(CoreStage::PostUpdate)
+        .add_api_provider(Box::new(LuaAPIProvider));
     app.run();
 
     Ok(())

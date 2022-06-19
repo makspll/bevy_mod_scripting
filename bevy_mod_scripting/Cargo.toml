@@ -15,10 +15,26 @@ readme = "../readme.md"
 name = "bevy_mod_scripting"
 path = "src/lib.rs"
 
+[package.metadata.docs.rs]
+features = ["lua54"]
+
+[features]
+
+lua51 = ["tealr/mlua_lua51"]
+lua52 = ["tealr/mlua_lua52"]
+lua53 = ["tealr/mlua_lua53"]
+lua54 = ["tealr/mlua_lua54"]
+luajit = ["tealr/mlua_luajit"]
+luajit52 = ["tealr/mlua_luajit52"]
+
+mlua_serialize = ["tealr/mlua_serialize"]
+mlua_macros = ["tealr/mlua_macros"]
+
+# mlua_parking_lot = ["tealr/mlua_parking_lot"]
 
 [dependencies]
 bevy = "0.7"
-tealr = { version = "0.8.2", features = ["mlua_luajit","mlua_vendored","mlua_send"] }
+tealr = { git = "https://github.com/lenscas/tealr", features = ["mlua_vendored","mlua_send"] }
 rhai = { version = "1.7.0", features = ["sync"] }
 anyhow = "1.0.57"
 beau_collector = "0.2.1"
@@ -34,6 +50,7 @@ rand = "0.8.5"
 [[example]]
 name = "console_integration_lua"
 path = "examples/console_integration_lua.rs"
+required-features = ["lua54"]
 
 
 [[example]]
@@ -43,8 +60,10 @@ path = "examples/console_integration_rhai.rs"
 [[example]]
 name = "complex_game_loop"
 path = "examples/complex_game_loop.rs"
+required-features = ["lua54"]
 
 
 [[example]]
 name = "event_recipients"
 path = "examples/event_recipients.rs"
+required-features = ["lua54"]

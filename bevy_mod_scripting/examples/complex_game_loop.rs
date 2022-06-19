@@ -3,7 +3,7 @@ use bevy_console::ConsolePlugin;
 use bevy_event_priority::PriorityEventWriter;
 use bevy_mod_scripting::{
     APIProvider, AddScriptHost, AddScriptHostHandler, LuaEvent, LuaFile, RLuaScriptHost,
-    Recipients, Script, ScriptCollection, ScriptingPlugin, ScriptError,
+    Recipients, Script, ScriptCollection, ScriptingPlugin, ScriptError, AddScriptApiProvider,
 };
 use rand::prelude::SliceRandom;
 use tealr::mlu::mlua::{Lua, ToLua};
@@ -20,13 +20,13 @@ impl<'lua> ToLua<'lua> for MyLuaArg {
 }
 
 #[derive(Default)]
-pub struct LuaAPIProvider {}
+pub struct LuaAPIProvider;
 
 /// the custom Lua api, world is provided via a global pointer,
 /// and callbacks are defined only once at script creation
 impl APIProvider for LuaAPIProvider {
     type Ctx = Mutex<Lua>;
-    fn attach_api(ctx: &mut Self::Ctx) -> Result<(),ScriptError> {
+    fn attach_api(&self, ctx: &mut Self::Ctx) -> Result<(),ScriptError> {
         // callbacks can receive any `ToLuaMulti` arguments, here '()' and
         // return any `FromLuaMulti` arguments, here a `usize`
         // check the Rlua documentation for more details
@@ -119,7 +119,7 @@ fn load_our_script(server: Res<AssetServer>, mut commands: Commands) {
 
     commands.spawn().insert(ScriptCollection::<LuaFile> {
         scripts: vec![Script::<LuaFile>::new::<
-            RLuaScriptHost<MyLuaArg, LuaAPIProvider>,
+            RLuaScriptHost<MyLuaArg>,
         >(path.to_string(), handle)],
     });
 }
@@ -162,7 +162,7 @@ fn main() -> std::io::Result<()> {
             PRE_PHYSICS_SCRIPTS,
             SystemStage::single_threaded(),
         )
-        .add_script_handler_stage_with_criteria::<RLuaScriptHost<MyLuaArg,LuaAPIProvider>, _, _, _, 0, 10>(
+        .add_script_handler_stage_with_criteria::<RLuaScriptHost<MyLuaArg>, _, _, _, 0, 10>(
             PRE_PHYSICS_SCRIPTS,
             FixedTimestep::step(TIMESTEP_2_PER_SECOND),
         )
@@ -173,7 +173,7 @@ fn main() -> std::io::Result<()> {
             POST_PHYSICS_SCRIPTS,
             SystemStage::single_threaded(),
         )
-        .add_script_handler_stage_with_criteria::<RLuaScriptHost<MyLuaArg,LuaAPIProvider>, _, _, _, 11, 20>(
+        .add_script_handler_stage_with_criteria::<RLuaScriptHost<MyLuaArg>, _, _, _, 11, 20>(
             POST_PHYSICS_SCRIPTS,
             FixedTimestep::step(TIMESTEP_2_PER_SECOND),
         )
@@ -185,10 +185,10 @@ fn main() -> std::io::Result<()> {
             POST_UPDATE_SCRIPTS,
             SystemStage::single_threaded(),
         )
-        .add_script_handler_stage::<RLuaScriptHost<MyLuaArg,LuaAPIProvider>, _, 21, 30>(POST_UPDATE_SCRIPTS)
+        .add_script_handler_stage::<RLuaScriptHost<MyLuaArg>, _, 21, 30>(POST_UPDATE_SCRIPTS)
         // this stage handles addition and removal of script contexts, we can safely use `CoreStage::PostUpdate`
-        .add_script_host::<RLuaScriptHost<MyLuaArg,LuaAPIProvider>, _>(CoreStage::PostUpdate);
-
+        .add_script_host::<RLuaScriptHost<MyLuaArg>, _>(CoreStage::PostUpdate)
+        .add_api_provider(Box::new(LuaAPIProvider));
     // We have 3 core systems
 
     // PrePhysics (twice per second), fires 5 random events

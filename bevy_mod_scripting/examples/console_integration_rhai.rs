@@ -3,19 +3,19 @@ use bevy_console::{AddConsoleCommand, ConsoleCommand, ConsolePlugin, PrintConsol
 use bevy_mod_scripting::{
     events::PriorityEventWriter, APIProvider, AddScriptHost, AddScriptHostHandler, Recipients,
     RhaiAPIProvider, RhaiContext, RhaiEvent, RhaiFile, RhaiScriptHost, Script, ScriptCollection,
-    ScriptErrorEvent, ScriptingPlugin, ScriptError,
+    ScriptErrorEvent, ScriptingPlugin, ScriptError, AddScriptApiProvider,
 };
 use rhai::FuncArgs;
 
 /// custom Rhai API, world is provided as a usize (by the script this time), since
 /// Rhai does not allow global/local variable access from a callback
 #[derive(Default)]
-pub struct RhaiAPI {}
+pub struct RhaiAPI;
 
 impl APIProvider for RhaiAPI {
     type Ctx = RhaiContext;
 
-    fn attach_api(ctx: &mut Self::Ctx) -> Result<(),ScriptError>  {
+    fn attach_api(&self,ctx: &mut Self::Ctx) -> Result<(),ScriptError> {
         ctx.engine
             .register_fn("print_to_console", |shared_world: usize, msg: String| {
                 let world: &mut World = unsafe { &mut *(shared_world as *mut World) };
@@ -79,8 +79,9 @@ fn main() -> std::io::Result<()> {
         .add_console_command::<RunScriptCmd, _, _>(run_script_cmd)
         .add_console_command::<DeleteScriptCmd, _, _>(delete_script_cmd)
         // choose and register the script hosts you want to use
-        .add_script_host::<RhaiScriptHost<RhaiEventArgs, RhaiAPI>, _>(CoreStage::PostUpdate)
-        .add_script_handler_stage::<RhaiScriptHost<RhaiEventArgs, RhaiAPI>, _, 0, 0>(
+        .add_script_host::<RhaiScriptHost<RhaiEventArgs>, _>(CoreStage::PostUpdate)
+        .add_api_provider(Box::new(RhaiAPI))
+        .add_script_handler_stage::<RhaiScriptHost<RhaiEventArgs>, _, 0, 0>(
             CoreStage::PostUpdate,
         )
         // add your systems
@@ -122,7 +123,7 @@ pub fn run_script_cmd(
                     info!("Creating script: scripts/{} {:?}", &path, e);
 
                     scripts.scripts.push(Script::<RhaiFile>::new::<
-                        RhaiScriptHost<RhaiEventArgs, RhaiAPI>,
+                        RhaiScriptHost<RhaiEventArgs>,
                     >(path, handle));
                 } else {
                     log.reply_failed(format!("Something went wrong"));
@@ -133,7 +134,7 @@ pub fn run_script_cmd(
 
                 commands.spawn().insert(ScriptCollection::<RhaiFile> {
                     scripts: vec![Script::<RhaiFile>::new::<
-                        RhaiScriptHost<RhaiEventArgs, RhaiAPI>,
+                        RhaiScriptHost<RhaiEventArgs>,
                     >(path, handle)],
                 });
             }

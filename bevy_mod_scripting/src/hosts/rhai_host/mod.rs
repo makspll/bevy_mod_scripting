@@ -3,7 +3,7 @@ pub mod assets;
 use crate::{
     script_add_synchronizer, script_hot_reload_handler, script_remove_synchronizer, APIProvider,
     CachedScriptEventState, FlatScriptData, Recipients, ScriptContexts, ScriptError,
-    ScriptErrorEvent, ScriptEvent, ScriptHost,
+    ScriptErrorEvent, ScriptEvent, ScriptHost, APIProviders, ScriptCollection, Script,
 };
 use bevy::prelude::{error, AddAsset, Mut, ParallelSystemDescriptorCoercion, SystemSet, World};
 use bevy_event_priority::AddPriorityEvent;
@@ -18,13 +18,12 @@ pub trait RhaiAPIProvider: APIProvider {
     fn setup_engine(engine: &mut Engine);
 }
 
-pub struct RhaiScriptHost<A: FuncArgs + Send, API: APIProvider> {
+pub struct RhaiScriptHost<A: FuncArgs + Send> {
     _ph: PhantomData<A>,
-    _ph2: PhantomData<API>,
 }
 
-unsafe impl<A: FuncArgs + Send, API: APIProvider> Send for RhaiScriptHost<A, API> {}
-unsafe impl<A: FuncArgs + Send, API: APIProvider> Sync for RhaiScriptHost<A, API> {}
+unsafe impl<A: FuncArgs + Send> Send for RhaiScriptHost<A> {}
+unsafe impl<A: FuncArgs + Send> Sync for RhaiScriptHost<A> {}
 
 pub struct RhaiContext {
     pub engine: Engine,
@@ -47,38 +46,40 @@ impl<A: FuncArgs + Clone + Send + Sync + 'static> ScriptEvent for RhaiEvent<A> {
     }
 }
 
-impl<A: FuncArgs + Send + Clone + Sync + 'static, API: RhaiAPIProvider<Ctx = RhaiContext>>
-    ScriptHost for RhaiScriptHost<A, API>
+impl<A: FuncArgs + Send + Clone + Sync + 'static>
+    ScriptHost for RhaiScriptHost<A>
 {
     type ScriptContext = RhaiContext;
     type ScriptEvent = RhaiEvent<A>;
     type ScriptAsset = RhaiFile;
 
     fn register_with_app(app: &mut bevy::prelude::App, stage: impl bevy::prelude::StageLabel) {
-        app.add_priority_event::<Self::ScriptEvent>();
-        app.add_asset::<RhaiFile>();
-        app.init_asset_loader::<RhaiLoader>();
-        app.init_resource::<CachedScriptEventState<Self>>();
-        app.init_resource::<ScriptContexts<Self::ScriptContext>>();
-
-        app.add_system_set_to_stage(
-            stage,
-            SystemSet::new()
-                .with_system(
-                    script_add_synchronizer::<Self>.before(script_remove_synchronizer::<Self>),
-                )
-                .with_system(
-                    script_remove_synchronizer::<Self>.before(script_hot_reload_handler::<Self>),
-                )
-                .with_system(script_hot_reload_handler::<Self>),
-        );
+        app.add_priority_event::<Self::ScriptEvent>()
+            .add_asset::<RhaiFile>()
+            .init_asset_loader::<RhaiLoader>()
+            .init_resource::<CachedScriptEventState<Self>>()
+            .init_resource::<ScriptContexts<Self::ScriptContext>>()
+            .init_resource::<APIProviders<Self::ScriptContext>>()
+            .register_type::<ScriptCollection<Self::ScriptAsset>>()
+            .register_type::<Script<Self::ScriptAsset>>()
+            .add_system_set_to_stage(
+                stage,
+                SystemSet::new()
+                    .with_system(
+                        script_add_synchronizer::<Self>.before(script_remove_synchronizer::<Self>),
+                    )
+                    .with_system(
+                        script_remove_synchronizer::<Self>.before(script_hot_reload_handler::<Self>),
+                    )
+                    .with_system(script_hot_reload_handler::<Self>),
+            );
     }
 
     #[allow(deprecated)]
-    fn load_script(path: &[u8], script_name: &str) -> Result<Self::ScriptContext, ScriptError> {
+    fn load_script(path: &[u8], script_name: &str, providers: &APIProviders<Self::ScriptContext>) -> Result<Self::ScriptContext, ScriptError> {
         let mut engine = Engine::new();
 
-        API::setup_engine(&mut engine);
+        // TODO: fix this API::setup_engine(&mut engine);
 
         let mut scope = Scope::new();
         let ast = engine
@@ -102,7 +103,7 @@ impl<A: FuncArgs + Send + Clone + Sync + 'static, API: RhaiAPIProvider<Ctx = Rha
 
         let mut ctx = RhaiContext { engine, ast, scope };
 
-        API::attach_api(&mut ctx)?;
+        providers.attach_all(&mut ctx)?;
 
         Ok(ctx)
     }

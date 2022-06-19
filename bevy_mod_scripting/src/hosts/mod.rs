@@ -70,7 +70,7 @@ pub trait ScriptHost: Send + Sync + 'static {
 
     /// Loads a script in byte array format, the script name can be used
     /// to send useful errors.
-    fn load_script(script: &[u8], script_name: &str) -> Result<Self::ScriptContext, ScriptError>;
+    fn load_script(script: &[u8], script_name: &str, providers: &APIProviders<Self::ScriptContext>) -> Result<Self::ScriptContext, ScriptError>;
 
     /// the main point of contact with the bevy world.
     /// Scripts are called with appropriate events in the event order
@@ -84,7 +84,10 @@ pub trait ScriptHost: Send + Sync + 'static {
     /// The script receives the `world` global as normal, but `entity` is set to `u64::MAX`.
     /// The script id is set to `u32::MAX`.
     fn run_one_shot(script: &[u8], script_name: &str, world: &mut World, event: Self::ScriptEvent) {
-        let mut ctx = Self::load_script(script, script_name).unwrap();
+        
+        let providers : &APIProviders<Self::ScriptContext> = world.resource();
+        let mut ctx = Self::load_script(script, script_name,providers).unwrap();
+
         let entity = Entity::from_bits(u64::MAX);
 
         let events = [event; 1];
@@ -116,12 +119,33 @@ pub trait CodeAsset: Asset {
 
 /// Implementers can modify a script context in order to enable
 /// API access. ScriptHosts call `attach_api` when creating scripts
-pub trait APIProvider: 'static + Default {
+pub trait APIProvider: 'static + Send + Sync {
     /// The type of script context this api provider handles
-    type Ctx;
+    type Ctx : Sized;
 
     /// provide the given script context with the API permamently
-    fn attach_api(ctx: &mut Self::Ctx) -> Result<(),ScriptError>;
+    fn attach_api(&self,ctx: &mut Self::Ctx) -> Result<(),ScriptError>;
+}
+
+/// Stores many API providers, used for 
+pub struct APIProviders<T> {
+    pub providers: Vec<Box<dyn APIProvider<Ctx=T>>>
+}
+
+impl <T>Default for APIProviders<T> {
+    fn default() -> Self {
+        Self { providers: Default::default() }
+    }
+}
+
+impl <T : 'static>APIProviders<T> {
+    pub fn attach_all(&self, ctx: &mut T) -> Result<(),ScriptError>{
+        for p in self.providers.iter() {
+            p.attach_api(ctx)?;
+        }
+
+        Ok(())
+    }
 }
 
 #[derive(Component, Debug, FromReflect, Reflect)]
@@ -233,8 +257,9 @@ impl<T: Asset> Script<T> {
     /// if the script context never existed, it will after this call.
     pub(crate) fn reload_script<H: ScriptHost>(
         script: &Script<H::ScriptAsset>,
-        script_assets: &Res<Assets<H::ScriptAsset>>,
-        contexts: &mut ResMut<ScriptContexts<H::ScriptContext>>,
+        script_assets: &Assets<H::ScriptAsset>,
+        providers: &APIProviders<H::ScriptContext>,
+        contexts: &mut ScriptContexts<H::ScriptContext>,
     ) {
         // retrieve owning entity
         let entity = contexts.script_owner(script.id()).unwrap();
@@ -243,15 +268,16 @@ impl<T: Asset> Script<T> {
         contexts.remove_context(script.id());
 
         // insert new re-loaded context
-        Self::insert_new_script_context::<H>(script, entity, script_assets, contexts);
+        Self::insert_new_script_context::<H>(script, entity, script_assets, providers, contexts);
     }
 
     /// inserts a new script context for the given script
     pub(crate) fn insert_new_script_context<H: ScriptHost>(
         new_script: &Script<H::ScriptAsset>,
         entity: Entity,
-        script_assets: &Res<Assets<H::ScriptAsset>>,
-        contexts: &mut ResMut<ScriptContexts<H::ScriptContext>>,
+        script_assets: &Assets<H::ScriptAsset>,
+        providers: &APIProviders<H::ScriptContext>,
+        contexts: &mut ScriptContexts<H::ScriptContext>,
     ) {
         let fd = FlatScriptData {
             sid: new_script.id(),
@@ -268,7 +294,7 @@ impl<T: Asset> Script<T> {
             }
         };
 
-        match H::load_script(script.bytes(), &new_script.name) {
+        match H::load_script(script.bytes(), &new_script.name,providers) {
             Ok(ctx) => {
                 contexts.insert_context(fd, Some(ctx));
             }
@@ -310,8 +336,9 @@ pub(crate) fn script_add_synchronizer<H: ScriptHost + 'static>(
         ),
         Changed<ScriptCollection<H::ScriptAsset>>,
     >,
-    mut contexts: ResMut<ScriptContexts<H::ScriptContext>>,
+    providers: Res<APIProviders<H::ScriptContext>>,
     script_assets: Res<Assets<H::ScriptAsset>>,
+    mut contexts: ResMut<ScriptContexts<H::ScriptContext>>,
 ) {
     query.for_each(|(entity, new_scripts, tracker)| {
         if tracker.is_added() {
@@ -320,6 +347,7 @@ pub(crate) fn script_add_synchronizer<H: ScriptHost + 'static>(
                     new_script,
                     entity,
                     &script_assets,
+                    &providers,
                     &mut contexts,
                 )
             })
@@ -354,6 +382,7 @@ pub(crate) fn script_add_synchronizer<H: ScriptHost + 'static>(
                     script,
                     entity,
                     &script_assets,
+                    &providers,
                     &mut contexts,
                 )
             }
@@ -378,6 +407,7 @@ pub(crate) fn script_hot_reload_handler<H: ScriptHost>(
     mut events: EventReader<AssetEvent<H::ScriptAsset>>,
     scripts: Query<&ScriptCollection<H::ScriptAsset>>,
     script_assets: Res<Assets<H::ScriptAsset>>,
+    providers: Res<APIProviders<H::ScriptContext>>,
     mut contexts: ResMut<ScriptContexts<H::ScriptContext>>,
 ) {
     for e in events.iter() {
@@ -400,6 +430,7 @@ pub(crate) fn script_hot_reload_handler<H: ScriptHost>(
                     Script::<H::ScriptAsset>::reload_script::<H>(
                         script,
                         &script_assets,
+                        &providers,
                         &mut contexts,
                     );
                 }
