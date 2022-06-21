@@ -34,13 +34,14 @@ mlua_macros = ["tealr/mlua_macros"]
 
 [dependencies]
 bevy = "0.7"
-tealr = { git = "https://github.com/lenscas/tealr", features = ["mlua_vendored","mlua_send"] }
+tealr = { git = "https://github.com/lenscas/tealr", features = ["mlua_vendored","mlua_send"], branch="feature/document_global_instances" }
 rhai = { version = "1.7.0", features = ["sync"] }
 anyhow = "1.0.57"
 beau_collector = "0.2.1"
 once_cell = "1.10.0"
 bevy_event_priority = { path = "../bevy_event_priority" }
 thiserror = "1.0.31"
+serde_json = "1.0.81"
 
 [dev-dependencies]
 bevy_console = { git = "https://github.com/RichoDemus/bevy-console" }

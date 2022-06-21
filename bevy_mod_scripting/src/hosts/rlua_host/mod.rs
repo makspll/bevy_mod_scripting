@@ -1,4 +1,5 @@
 pub mod assets;
+pub mod docs;
 
 use crate::{
     script_add_synchronizer, script_hot_reload_handler, script_remove_synchronizer, APIProvider,
@@ -14,7 +15,7 @@ use tealr::mlu::mlua::{prelude::*,Function};
 use std::marker::PhantomData;
 use std::sync::Mutex;
 
-pub use assets::*;
+pub use {assets::*,docs::*};
 
 pub trait LuaArg: for<'lua> ToLua<'lua> + Clone + Sync + Send + 'static {}
 
@@ -112,6 +113,7 @@ impl<A: LuaArg> ScriptHost for RLuaScriptHost<A> {
     type APITarget = Mutex<Lua>;
     type ScriptEvent = LuaEvent<A>;
     type ScriptAsset = LuaFile;
+    type DocTarget = LuaDocFragment;
 
     fn register_with_app(app: &mut App, stage: impl StageLabel) {
         app.add_priority_event::<Self::ScriptEvent>()
@@ -119,7 +121,7 @@ impl<A: LuaArg> ScriptHost for RLuaScriptHost<A> {
             .init_asset_loader::<LuaLoader>()
             .init_resource::<CachedScriptEventState<Self>>()
             .init_resource::<ScriptContexts<Self::ScriptContext>>()
-            .init_resource::<APIProviders<Self::APITarget>>()
+            .init_resource::<APIProviders<Self::APITarget,Self::DocTarget>>()
             .register_type::<ScriptCollection<Self::ScriptAsset>>()
             .register_type::<Script<Self::ScriptAsset>>()
             .add_system_set_to_stage(
@@ -138,7 +140,7 @@ impl<A: LuaArg> ScriptHost for RLuaScriptHost<A> {
             );
     }
 
-    fn load_script(&mut self, script: &[u8], script_name: &str, providers: &APIProviders<Self::APITarget>) -> Result<Self::ScriptContext, ScriptError> {
+    fn load_script(&mut self, script: &[u8], script_name: &str, providers: &mut APIProviders<Self::APITarget,Self::DocTarget>) -> Result<Self::ScriptContext, ScriptError> {
         let lua = Lua::new();
         
         lua.load(script)

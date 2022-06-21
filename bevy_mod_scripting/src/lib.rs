@@ -1,5 +1,7 @@
 #![doc=include_str!("../../readme.md")]
 
+use std::{env, process};
+
 use bevy::{ecs::schedule::IntoRunCriteria, prelude::*};
 
 pub mod error;
@@ -24,6 +26,32 @@ pub struct ScriptErrorEvent {
     pub err: ScriptError,
 }
 
+
+
+pub trait GenDocumentation {
+    fn gen_documentation<T : ScriptHost>(&mut self) -> &mut Self;
+}
+
+impl GenDocumentation for App {
+    /// generates documentation if it detects the environment variable `GEN_SCRIPT_DOC` is set
+    /// exits the process. Otherwise this is a no-op
+    fn gen_documentation<T : ScriptHost>(&mut self) -> &mut Self {
+
+        if env::var("GEN_SCRIPT_DOC").is_ok(){
+            info!("Generating documentation");
+            let w = &mut self.world;
+            let providers : APIProviders<T::APITarget,T::DocTarget> = w.remove_resource().expect("No APIProviders resource found for the given script host. Did you forget to register the host?");
+            providers.gen_all().expect("Could not generate documentation");
+            println!("Documentation generated successfully, exiting..");
+            process::exit(0);
+        }
+
+
+        self
+    }
+}
+
+
 /// Trait for app builder notation
 pub trait AddScriptHost {
     /// registers the given script host with your app
@@ -39,13 +67,13 @@ impl AddScriptHost for App {
 }
 
 pub trait AddScriptApiProvider {
-    fn add_api_provider<T: ScriptHost>(&mut self, provider: Box<dyn APIProvider<Target=T::APITarget>>) -> &mut Self;
+    fn add_api_provider<T: ScriptHost>(&mut self, provider: Box<dyn APIProvider<Target=T::APITarget,DocTarget=T::DocTarget>>) -> &mut Self;
 }
 
 impl AddScriptApiProvider for App {
-    fn add_api_provider<T : ScriptHost>(&mut self,provider: Box<dyn APIProvider<Target=T::APITarget>>) -> &mut Self {
+    fn add_api_provider<T : ScriptHost>(&mut self,provider: Box<dyn APIProvider<Target=T::APITarget,DocTarget=T::DocTarget>>) -> &mut Self {
         let w = &mut self.world;
-        let providers : &mut APIProviders<T::APITarget> = &mut w.resource_mut();
+        let providers : &mut APIProviders<T::APITarget,T::DocTarget> = &mut w.resource_mut();
         providers.providers.push(provider);
         self
     }

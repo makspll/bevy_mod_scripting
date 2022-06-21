@@ -2,10 +2,11 @@
 
 pub mod rhai_host;
 pub mod rlua_host;
+pub mod docs;
 
 use bevy::{asset::Asset, ecs::system::SystemState, prelude::*, reflect::FromReflect};
 use bevy_event_priority::PriorityEventReader;
-pub use {crate::rhai_host::*, crate::rlua_host::*};
+pub use {crate::rhai_host::*, crate::rlua_host::*,crate::docs::*};
 
 use std::{
     collections::{HashMap, HashSet},
@@ -13,6 +14,7 @@ use std::{
 };
 
 use crate::{ScriptError, ScriptErrorEvent};
+
 
 /// Describes the target set of scripts this event should
 /// be handled by
@@ -70,10 +72,12 @@ pub trait ScriptHost: Send + Sync + 'static + Default {
     /// the type representing the target of api providers, i.e. the 
     /// script engine or the thing which stores the API
     type APITarget;
+    /// the type of each doc fragment
+    type DocTarget : DocFragment;
 
     /// Loads a script in byte array format, the script name can be used
     /// to send useful errors.
-    fn load_script(&mut self,script: &[u8], script_name: &str, providers: &APIProviders<Self::APITarget>) -> Result<Self::ScriptContext, ScriptError>;
+    fn load_script(&mut self,script: &[u8], script_name: &str, providers: &mut APIProviders<Self::APITarget,Self::DocTarget>) -> Result<Self::ScriptContext, ScriptError>;
 
     /// the main point of contact with the bevy world.
     /// Scripts are called with appropriate events in the event order
@@ -89,7 +93,7 @@ pub trait ScriptHost: Send + Sync + 'static + Default {
     /// The script id is set to `u32::MAX`.
     fn run_one_shot(&mut self, script: &[u8], script_name: &str, world: &mut World, event: Self::ScriptEvent) {
         
-        let providers : &APIProviders<Self::APITarget> = world.resource();
+        let providers : &mut APIProviders<Self::APITarget,Self::DocTarget> = &mut world.resource_mut();
         let mut ctx = self.load_script(script, script_name,providers).unwrap();
 
         let entity = Entity::from_bits(u64::MAX);
@@ -124,29 +128,51 @@ pub trait CodeAsset: Asset {
 /// Implementers can modify a script context in order to enable
 /// API access. ScriptHosts call `attach_api` when creating scripts
 pub trait APIProvider: 'static + Send + Sync {
+    // the type of script engine/context this api provider operates on
     type Target;
+    type DocTarget : DocFragment;
 
     /// provide the given script context with the API permamently
-    fn attach_api(&self,ctx: &mut Self::Target) -> Result<(),ScriptError>;
+    fn attach_api(&mut self,ctx: &mut Self::Target) -> Result<(),ScriptError>;
+
+    fn get_doc_fragment(&self) -> Option<Self::DocTarget>{
+        None
+    }
 }
 
-/// Stores many API providers, used for 
-pub struct APIProviders<T : 'static> {
-    pub providers: Vec<Box<dyn APIProvider<Target=T>>>
+/// Stores many API providers
+pub struct APIProviders<T : 'static, D: DocFragment> {
+    pub providers: Vec<Box<dyn APIProvider<Target=T,DocTarget=D>>>
 }
 
-impl <T : 'static>Default for APIProviders<T> {
+impl <T : 'static,D: DocFragment>Default for APIProviders<T,D> {
     fn default() -> Self {
         Self { providers: Default::default() }
     }
 }
 
-impl <T : 'static>APIProviders<T> {
-    pub fn attach_all(&self,ctx: &mut T) -> Result<(),ScriptError>{
-        for p in self.providers.iter() {
+impl <T : 'static,D: DocFragment>APIProviders<T,D> {
+    pub fn attach_all(&mut self,ctx: &mut T) -> Result<(),ScriptError>{
+        for p in self.providers.iter_mut() {
             p.attach_api(ctx)?;
         }
 
+        Ok(())
+    }
+
+    pub fn gen_all(self) -> Result<(),ScriptError>{
+        let mut d : Option<D> = None;
+        for p in self.providers{
+            if let Some(f) = p.get_doc_fragment(){
+                if let Some(prev) = d {
+                    d = Some(prev.merge(f))
+                } else {
+                    d = Some(f)
+                }
+            }
+        }
+        d.map(|d| d.gen_docs());
+        
         Ok(())
     }
 }
@@ -262,7 +288,7 @@ impl<T: Asset> Script<T> {
         host: &mut H,
         script: &Script<H::ScriptAsset>,
         script_assets: &Assets<H::ScriptAsset>,
-        providers: &APIProviders<H::APITarget>,
+        providers: &mut APIProviders<H::APITarget,H::DocTarget>,
         contexts: &mut ScriptContexts<H::ScriptContext>,
     ) {
         // retrieve owning entity
@@ -281,7 +307,7 @@ impl<T: Asset> Script<T> {
         new_script: &Script<H::ScriptAsset>,
         entity: Entity,
         script_assets: &Assets<H::ScriptAsset>,
-        providers: &APIProviders<H::APITarget>,
+        providers: &mut APIProviders<H::APITarget,H::DocTarget>,
         contexts: &mut ScriptContexts<H::ScriptContext>,
     ) {
         let fd = FlatScriptData {
@@ -342,7 +368,7 @@ pub(crate) fn script_add_synchronizer<H: ScriptHost + 'static>(
         Changed<ScriptCollection<H::ScriptAsset>>,
     >,
     mut host: ResMut<H>,
-    providers: Res<APIProviders<H::APITarget>>,
+    mut providers: ResMut<APIProviders<H::APITarget,H::DocTarget>>,
     script_assets: Res<Assets<H::ScriptAsset>>,
     mut contexts: ResMut<ScriptContexts<H::ScriptContext>>,
 ) {
@@ -354,7 +380,7 @@ pub(crate) fn script_add_synchronizer<H: ScriptHost + 'static>(
                     new_script,
                     entity,
                     &script_assets,
-                    &providers,
+                    &mut providers,
                     &mut contexts,
                 )
             })
@@ -390,7 +416,7 @@ pub(crate) fn script_add_synchronizer<H: ScriptHost + 'static>(
                     script,
                     entity,
                     &script_assets,
-                    &providers,
+                    &mut providers,
                     &mut contexts,
                 )
             }
@@ -416,7 +442,7 @@ pub(crate) fn script_hot_reload_handler<H: ScriptHost>(
     mut host: ResMut<H>,
     scripts: Query<&ScriptCollection<H::ScriptAsset>>,
     script_assets: Res<Assets<H::ScriptAsset>>,
-    providers: Res<APIProviders<H::APITarget>>,
+    mut providers: ResMut<APIProviders<H::APITarget,H::DocTarget>>,
     mut contexts: ResMut<ScriptContexts<H::ScriptContext>>,
 ) {
     for e in events.iter() {
@@ -440,7 +466,7 @@ pub(crate) fn script_hot_reload_handler<H: ScriptHost>(
                         &mut host,
                         script,
                         &script_assets,
-                        &providers,
+                        &mut providers,
                         &mut contexts,
                     );
                 }

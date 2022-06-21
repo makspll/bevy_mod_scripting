@@ -3,7 +3,7 @@ use bevy_console::ConsolePlugin;
 use bevy_event_priority::PriorityEventWriter;
 use bevy_mod_scripting::{
     APIProvider, AddScriptHost, AddScriptHostHandler, LuaEvent, LuaFile, RLuaScriptHost,
-    Recipients, Script, ScriptCollection, ScriptingPlugin, ScriptError, AddScriptApiProvider,
+    Recipients, Script, ScriptCollection, ScriptingPlugin, ScriptError, AddScriptApiProvider, LuaDocFragment,
 };
 use rand::prelude::SliceRandom;
 use tealr::mlu::mlua::{Lua, ToLua};
@@ -26,7 +26,9 @@ pub struct LuaAPIProvider;
 /// and callbacks are defined only once at script creation
 impl APIProvider for LuaAPIProvider {
     type Target = Mutex<Lua>;
-    fn attach_api(&self, ctx: &mut Self::Target) -> Result<(),ScriptError> {
+    type DocTarget = LuaDocFragment;
+    
+    fn attach_api(&mut self, ctx: &mut Self::Target) -> Result<(),ScriptError> {
         // callbacks can receive any `ToLuaMulti` arguments, here '()' and
         // return any `FromLuaMulti` arguments, here a `usize`
         // check the Rlua documentation for more details

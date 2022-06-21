@@ -3,7 +3,7 @@ use bevy_console::{AddConsoleCommand, ConsoleCommand, ConsolePlugin, PrintConsol
 use bevy_mod_scripting::{
     events::PriorityEventWriter, APIProvider, AddScriptHost, AddScriptHostHandler, LuaEvent,
     LuaFile, RLuaScriptHost, Recipients, Script, ScriptCollection, ScriptErrorEvent,
-    ScriptingPlugin, ScriptError, AddScriptApiProvider,
+    ScriptingPlugin, ScriptError, AddScriptApiProvider, LuaDocFragment,
 };
 use tealr::mlu::mlua::{Lua, ToLua, Value};
 use std::sync::Mutex;
@@ -24,7 +24,9 @@ pub struct LuaAPIProvider;
 /// and callbacks are defined only once at script creation
 impl APIProvider for LuaAPIProvider {
     type Target = Mutex<Lua>;
-    fn attach_api(&self, ctx: &mut Self::Target) -> Result<(),ScriptError> {
+    type DocTarget = LuaDocFragment;
+
+    fn attach_api(&mut self, ctx: &mut Self::Target) -> Result<(),ScriptError> {
         // callbacks can receive any `ToLuaMulti` arguments, here '()' and
         // return any `FromLuaMulti` arguments, here a `usize`
         // check the Rlua documentation for more details

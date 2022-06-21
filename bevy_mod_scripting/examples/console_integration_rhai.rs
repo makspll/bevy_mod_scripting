@@ -2,8 +2,8 @@ use bevy::{ecs::event::Events, prelude::*};
 use bevy_console::{AddConsoleCommand, ConsoleCommand, ConsolePlugin, PrintConsoleLine};
 use bevy_mod_scripting::{
     events::PriorityEventWriter, APIProvider, AddScriptHost, AddScriptHostHandler, Recipients,
-    RhaiAPIProvider, RhaiContext, RhaiEvent, RhaiFile, RhaiScriptHost, Script, ScriptCollection,
-    ScriptErrorEvent, ScriptingPlugin, ScriptError, AddScriptApiProvider,
+    RhaiContext, RhaiEvent, RhaiFile, RhaiScriptHost, Script, ScriptCollection,
+    ScriptErrorEvent, ScriptingPlugin, ScriptError, AddScriptApiProvider, RhaiDocFragment,
 };
 use rhai::{FuncArgs, Engine};
 
@@ -14,8 +14,9 @@ pub struct RhaiAPI;
 
 impl APIProvider for RhaiAPI {
     type Target = Engine;
+    type DocTarget = RhaiDocFragment;
 
-    fn attach_api(&self,engine: &mut Self::Target) -> Result<(),ScriptError> {
+    fn attach_api(&mut self,engine: &mut Self::Target) -> Result<(),ScriptError> {
         // rhai allows us to decouple the api from the script context,
         // so here we do not have access to the script scope, but the advantage is that 
         // this single engine is shared with all of our scripts.
