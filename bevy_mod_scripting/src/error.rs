@@ -1,6 +1,6 @@
 use std::fmt::Debug;
-use thiserror::Error;
 use tealr::mlu::mlua;
+use thiserror::Error;
 
 #[derive(Error, Debug)]
 pub enum ScriptError {
@@ -29,4 +29,3 @@ impl From<mlua::Error> for ScriptError {
         Self::Other(e.to_string())
     }
 }
-

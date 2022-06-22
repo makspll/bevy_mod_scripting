@@ -2,28 +2,24 @@ pub mod assets;
 pub mod docs;
 
 use crate::{
-    script_add_synchronizer, script_hot_reload_handler, script_remove_synchronizer,
+    script_add_synchronizer, script_hot_reload_handler, script_remove_synchronizer, APIProviders,
     CachedScriptEventState, FlatScriptData, Recipients, Script, ScriptCollection, ScriptContexts,
-    ScriptError, ScriptErrorEvent, ScriptEvent, ScriptHost, APIProviders,
+    ScriptError, ScriptErrorEvent, ScriptEvent, ScriptHost,
 };
 use anyhow::Result;
 
 use bevy::prelude::*;
 use bevy_event_priority::AddPriorityEvent;
-use tealr::mlu::mlua::{prelude::*,Function};
+use tealr::mlu::mlua::{prelude::*, Function};
 
 use std::marker::PhantomData;
 use std::sync::Mutex;
 
-pub use {assets::*,docs::*};
+pub use {assets::*, docs::*};
 
 pub trait LuaArg: for<'lua> ToLua<'lua> + Clone + Sync + Send + 'static {}
 
 impl<T: for<'lua> ToLua<'lua> + Clone + Sync + Send + 'static> LuaArg for T {}
-
-
-
-
 
 #[derive(Clone)]
 /// A Lua Hook. The result of creating this event will be
@@ -70,13 +66,13 @@ impl<A: LuaArg> ScriptEvent for LuaEvent<A> {
 ///    impl APIProvider for LuaAPIProvider {
 ///        type Target = Mutex<Lua>;
 ///        type DocTarget = LuaDocFragment;
-/// 
+///
 ///        fn attach_api(&mut self, ctx: &mut Self::Target) -> Result<(),ScriptError> {
 ///            // callbacks can receive any `ToLuaMulti` arguments, here '()' and
 ///            // return any `FromLuaMulti` arguments, here a `usize`
 ///            // check the Rlua documentation for more details
 ///            let ctx = ctx.lock().unwrap();
-/// 
+///
 ///            ctx.globals().set("your_callback", ctx.create_function(|ctx, ()| {
 ///                 let globals = ctx.globals();
 ///                 // retrieve the world pointer
@@ -85,7 +81,7 @@ impl<A: LuaArg> ScriptEvent for LuaEvent<A> {
 ///                 // retrieve script entity
 ///                 let entity_id : u64 = globals.get("entity").unwrap();
 ///                 let entity : Entity = Entity::from_bits(entity_id);
-/// 
+///
 ///                 Ok(())
 ///            })?)?;
 ///
@@ -98,9 +94,11 @@ pub struct RLuaScriptHost<A: LuaArg> {
     _ph: PhantomData<A>,
 }
 
-impl <A : LuaArg>Default for RLuaScriptHost<A>{
+impl<A: LuaArg> Default for RLuaScriptHost<A> {
     fn default() -> Self {
-        Self { _ph: Default::default() }
+        Self {
+            _ph: Default::default(),
+        }
     }
 }
 
@@ -120,7 +118,7 @@ impl<A: LuaArg> ScriptHost for RLuaScriptHost<A> {
             .init_asset_loader::<LuaLoader>()
             .init_resource::<CachedScriptEventState<Self>>()
             .init_resource::<ScriptContexts<Self::ScriptContext>>()
-            .init_resource::<APIProviders<Self::APITarget,Self::DocTarget>>()
+            .init_resource::<APIProviders<Self::APITarget, Self::DocTarget>>()
             .register_type::<ScriptCollection<Self::ScriptAsset>>()
             .register_type::<Script<Self::ScriptAsset>>()
             .add_system_set_to_stage(
@@ -139,12 +137,16 @@ impl<A: LuaArg> ScriptHost for RLuaScriptHost<A> {
             );
     }
 
-    fn load_script(&mut self, script: &[u8], script_name: &str, providers: &mut APIProviders<Self::APITarget,Self::DocTarget>) -> Result<Self::ScriptContext, ScriptError> {
-        #[cfg(feature="lua_modules")]
-        let lua = unsafe{ Lua::unsafe_new() };
-        #[cfg(not(feature="lua_modules"))]
+    fn load_script(
+        &mut self,
+        script: &[u8],
+        script_name: &str,
+        providers: &mut APIProviders<Self::APITarget, Self::DocTarget>,
+    ) -> Result<Self::ScriptContext, ScriptError> {
+        #[cfg(feature = "lua_modules")]
+        let lua = unsafe { Lua::unsafe_new() };
+        #[cfg(not(feature = "lua_modules"))]
         let lua = Lua::new();
-
 
         lua.load(script)
             .set_name(script_name)
@@ -175,7 +177,7 @@ impl<A: LuaArg> ScriptHost for RLuaScriptHost<A> {
                 ctxs.for_each(|(fd, ctx)| {
                     let success = ctx
                         .get_mut()
-                        .map_err(|e| ScriptError::Other(e.to_string()) )
+                        .map_err(|e| ScriptError::Other(e.to_string()))
                         .and_then(|ctx| {
                             let globals = ctx.globals();
                             globals.set("world", world_ptr)?;
@@ -230,4 +232,3 @@ impl<A: LuaArg> ScriptHost for RLuaScriptHost<A> {
         );
     }
 }
-

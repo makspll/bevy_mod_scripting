@@ -4,7 +4,7 @@ use bevy::{
     reflect::TypeUuid,
 };
 
-use std::{sync::Arc};
+use std::sync::Arc;
 
 #[derive(Debug, TypeUuid)]
 #[uuid = "39cadc56-aa9c-4543-8640-a018b74b5052"]
@@ -29,14 +29,10 @@ impl AssetLoader for LuaLoader {
         bytes: &'a [u8],
         load_context: &'a mut bevy::asset::LoadContext,
     ) -> bevy::asset::BoxedFuture<'a, Result<(), anyhow::Error>> {
-
         match load_context.path().extension().map(|s| s.to_str().unwrap()) {
-            #[cfg(all(feature="teal",debug_assertions))]
+            #[cfg(all(feature = "teal", debug_assertions))]
             Some("tl") => {
-                
-                let scripts_dir = &FileAssetIo::get_root_path()
-                    .join("assets")
-                    .join("scripts");
+                let scripts_dir = &FileAssetIo::get_root_path().join("assets").join("scripts");
 
                 let temp_file_path = &scripts_dir.join(".temp.lua");
 
@@ -62,36 +58,36 @@ impl AssetLoader for LuaLoader {
                         // path.as_os_str(),
                         full_path.to_str().unwrap(),
                         "-o",
-                        temp_file_path.to_str().unwrap()
+                        temp_file_path.to_str().unwrap(),
                     ])
                     .current_dir(scripts_dir)
                     .status()
                     .expect("Could not generate lua file");
-                
-                let lua_code = fs::read_to_string(temp_file_path).expect("Could not find output lua file");
+
+                let lua_code =
+                    fs::read_to_string(temp_file_path).expect("Could not find output lua file");
                 fs::remove_file(temp_file_path).unwrap();
 
                 load_context.set_default_asset(LoadedAsset::new(LuaFile {
                     bytes: lua_code.as_bytes().into(),
                 }));
-            },
+            }
             _ => {
                 load_context.set_default_asset(LoadedAsset::new(LuaFile {
                     bytes: bytes.into(),
                 }));
-            },
+            }
         }
 
         Box::pin(async move { Ok(()) })
     }
 
-    #[cfg(feature="teal")]
+    #[cfg(feature = "teal")]
     fn extensions(&self) -> &[&str] {
-        &["lua","tl"]
+        &["lua", "tl"]
     }
-    #[cfg(not(feature="teal"))]
+    #[cfg(not(feature = "teal"))]
     fn extensions(&self) -> &[&str] {
         &["lua"]
     }
-
 }

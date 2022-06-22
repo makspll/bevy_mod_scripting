@@ -2,9 +2,10 @@ use bevy::{core::FixedTimestep, prelude::*};
 use bevy_console::ConsolePlugin;
 use bevy_event_priority::PriorityEventWriter;
 use bevy_mod_scripting::{
-    APIProvider, AddScriptHost, AddScriptHostHandler, LuaEvent, LuaFile, RLuaScriptHost,
-    Recipients, Script, ScriptCollection, ScriptingPlugin, ScriptError, AddScriptApiProvider, LuaDocFragment,
-    langs::mlu::{mlua,mlua::Value,mlua::prelude::*}
+    langs::mlu::{mlua, mlua::prelude::*, mlua::Value},
+    APIProvider, AddScriptApiProvider, AddScriptHost, AddScriptHostHandler, LuaDocFragment,
+    LuaEvent, LuaFile, RLuaScriptHost, Recipients, Script, ScriptCollection, ScriptError,
+    ScriptingPlugin,
 };
 use rand::prelude::SliceRandom;
 use std::sync::atomic::Ordering::Relaxed;
@@ -27,18 +28,21 @@ pub struct LuaAPIProvider;
 impl APIProvider for LuaAPIProvider {
     type Target = Mutex<Lua>;
     type DocTarget = LuaDocFragment;
-    
-    fn attach_api(&mut self, ctx: &mut Self::Target) -> Result<(),ScriptError> {
+
+    fn attach_api(&mut self, ctx: &mut Self::Target) -> Result<(), ScriptError> {
         // callbacks can receive any `ToLuaMulti` arguments, here '()' and
         // return any `FromLuaMulti` arguments, here a `usize`
         // check the Rlua documentation for more details
 
         let ctx = ctx.lock().unwrap();
 
-        ctx.globals().set("print", ctx.create_function(|_ctx, msg: String| {
-            info!("{}", msg);
-            Ok(())
-        })?)?;
+        ctx.globals().set(
+            "print",
+            ctx.create_function(|_ctx, msg: String| {
+                info!("{}", msg);
+                Ok(())
+            })?,
+        )?;
 
         Ok(())
     }
@@ -120,9 +124,10 @@ fn load_our_script(server: Res<AssetServer>, mut commands: Commands) {
     let handle = server.load::<LuaFile, &str>(path);
 
     commands.spawn().insert(ScriptCollection::<LuaFile> {
-        scripts: vec![Script::<LuaFile>::new::<
-            RLuaScriptHost<MyLuaArg>,
-        >(path.to_string(), handle)],
+        scripts: vec![Script::<LuaFile>::new::<RLuaScriptHost<MyLuaArg>>(
+            path.to_string(),
+            handle,
+        )],
     });
 }
 

@@ -2,16 +2,18 @@ pub mod assets;
 mod docs;
 
 use crate::{
-    script_add_synchronizer, script_hot_reload_handler, script_remove_synchronizer,
-    CachedScriptEventState, FlatScriptData, Recipients, ScriptContexts, ScriptError,
-    ScriptErrorEvent, ScriptEvent, ScriptHost, APIProviders, ScriptCollection, Script,
+    script_add_synchronizer, script_hot_reload_handler, script_remove_synchronizer, APIProviders,
+    CachedScriptEventState, FlatScriptData, Recipients, Script, ScriptCollection, ScriptContexts,
+    ScriptError, ScriptErrorEvent, ScriptEvent, ScriptHost,
 };
-use bevy::prelude::{error, AddAsset, Mut, ParallelSystemDescriptorCoercion, SystemSet, World, ResMut};
+use bevy::prelude::{
+    error, AddAsset, Mut, ParallelSystemDescriptorCoercion, ResMut, SystemSet, World,
+};
 use bevy_event_priority::AddPriorityEvent;
 use rhai::*;
 use std::marker::PhantomData;
 
-pub use {assets::*,docs::*};
+pub use {assets::*, docs::*};
 
 pub struct RhaiScriptHost<A: FuncArgs + Send> {
     pub engine: Engine,
@@ -19,7 +21,7 @@ pub struct RhaiScriptHost<A: FuncArgs + Send> {
 }
 
 #[allow(deprecated)]
-impl <A: FuncArgs + Send>Default for RhaiScriptHost<A>{
+impl<A: FuncArgs + Send> Default for RhaiScriptHost<A> {
     fn default() -> Self {
         let mut e = Engine::new();
         // prevent shadowing of `state`,`world` and `entity` in variable in scripts
@@ -27,9 +29,9 @@ impl <A: FuncArgs + Send>Default for RhaiScriptHost<A>{
             Ok(info.name != "state" && info.name != "world" && info.name != "entity")
         });
 
-        Self { 
+        Self {
             engine: e,
-            _ph: Default::default() 
+            _ph: Default::default(),
         }
     }
 }
@@ -57,22 +59,20 @@ impl<A: FuncArgs + Clone + Send + Sync + 'static> ScriptEvent for RhaiEvent<A> {
     }
 }
 
-impl<A: FuncArgs + Send + Clone + Sync + 'static>
-    ScriptHost for RhaiScriptHost<A>
-{
+impl<A: FuncArgs + Send + Clone + Sync + 'static> ScriptHost for RhaiScriptHost<A> {
     type ScriptContext = RhaiContext;
     type ScriptEvent = RhaiEvent<A>;
     type ScriptAsset = RhaiFile;
     type APITarget = Engine;
     type DocTarget = RhaiDocFragment;
-    
+
     fn register_with_app(app: &mut bevy::prelude::App, stage: impl bevy::prelude::StageLabel) {
         app.add_priority_event::<Self::ScriptEvent>()
             .add_asset::<RhaiFile>()
             .init_asset_loader::<RhaiLoader>()
             .init_resource::<CachedScriptEventState<Self>>()
             .init_resource::<ScriptContexts<Self::ScriptContext>>()
-            .init_resource::<APIProviders<Self::APITarget,Self::DocTarget>>()
+            .init_resource::<APIProviders<Self::APITarget, Self::DocTarget>>()
             .register_type::<ScriptCollection<Self::ScriptAsset>>()
             .register_type::<Script<Self::ScriptAsset>>()
             .add_system_set_to_stage(
@@ -82,20 +82,31 @@ impl<A: FuncArgs + Send + Clone + Sync + 'static>
                         script_add_synchronizer::<Self>.before(script_remove_synchronizer::<Self>),
                     )
                     .with_system(
-                        script_remove_synchronizer::<Self>.before(script_hot_reload_handler::<Self>),
+                        script_remove_synchronizer::<Self>
+                            .before(script_hot_reload_handler::<Self>),
                     )
                     .with_system(script_hot_reload_handler::<Self>),
             )
             // setup engine
-            .add_startup_system(|mut providers: ResMut<APIProviders<Self::APITarget,Self::DocTarget>>,
-                                mut host: ResMut<Self>| {
-                providers.attach_all(&mut host.engine).expect("Error in adding api's for rhai");
-            });
+            .add_startup_system(
+                |mut providers: ResMut<APIProviders<Self::APITarget, Self::DocTarget>>,
+                 mut host: ResMut<Self>| {
+                    providers
+                        .attach_all(&mut host.engine)
+                        .expect("Error in adding api's for rhai");
+                },
+            );
     }
 
-    fn load_script(&mut self,path: &[u8], script_name: &str, _: &mut APIProviders<Self::APITarget,Self::DocTarget>) -> Result<Self::ScriptContext, ScriptError> {
+    fn load_script(
+        &mut self,
+        path: &[u8],
+        script_name: &str,
+        _: &mut APIProviders<Self::APITarget, Self::DocTarget>,
+    ) -> Result<Self::ScriptContext, ScriptError> {
         let mut scope = Scope::new();
-        let mut ast = self.engine
+        let mut ast = self
+            .engine
             .compile(
                 std::str::from_utf8(path).map_err(|_| ScriptError::FailedToLoad {
                     script: script_name.to_owned(),
@@ -107,7 +118,7 @@ impl<A: FuncArgs + Send + Clone + Sync + 'static>
             })?;
 
         ast.set_source(script_name);
-        
+
         // persistent state for scripts
         scope.push("state", Map::new());
 

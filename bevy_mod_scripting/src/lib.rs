@@ -1,17 +1,15 @@
 #![doc=include_str!("../../readme.md")]
 
-
-
 use bevy::{ecs::schedule::IntoRunCriteria, prelude::*};
 
 pub mod error;
 pub mod hosts;
-pub mod langs{
-    pub use {tealr::mlu,rhai};
+pub mod langs {
+    pub use {rhai, tealr::mlu};
 }
 
 pub use bevy_event_priority as events;
-pub use {error::*, hosts::*,langs::*};
+pub use {error::*, hosts::*, langs::*};
 
 #[derive(Default)]
 /// Bevy plugin enabling run-time scripting
@@ -29,32 +27,27 @@ pub struct ScriptErrorEvent {
     pub err: ScriptError,
 }
 
-
-
 pub trait GenDocumentation {
-    fn update_documentation<T : ScriptHost>(&mut self) -> &mut Self;
+    fn update_documentation<T: ScriptHost>(&mut self) -> &mut Self;
 }
 
 impl GenDocumentation for App {
     /// Updates/Generates documentation and any other artifacts required for script API's. Disabled in optimized builds unless `doc_always` feature is enabled.
-    fn update_documentation<T : ScriptHost>(&mut self) -> &mut Self {
-
-        #[cfg(any(debug_assertions,feature="doc_always")) ]
+    fn update_documentation<T: ScriptHost>(&mut self) -> &mut Self {
+        #[cfg(any(debug_assertions, feature = "doc_always"))]
         {
             info!("Generating documentation");
             let w = &mut self.world;
-            let providers : &APIProviders<T::APITarget,T::DocTarget> = w.resource();
-            if let Err(e) = providers.gen_all(){
-                error!("{}",e);
+            let providers: &APIProviders<T::APITarget, T::DocTarget> = w.resource();
+            if let Err(e) = providers.gen_all() {
+                error!("{}", e);
             }
             info!("Documentation generated");
         }
 
         self
-
     }
 }
-
 
 /// Trait for app builder notation
 pub trait AddScriptHost {
@@ -71,13 +64,19 @@ impl AddScriptHost for App {
 }
 
 pub trait AddScriptApiProvider {
-    fn add_api_provider<T: ScriptHost>(&mut self, provider: Box<dyn APIProvider<Target=T::APITarget,DocTarget=T::DocTarget>>) -> &mut Self;
+    fn add_api_provider<T: ScriptHost>(
+        &mut self,
+        provider: Box<dyn APIProvider<Target = T::APITarget, DocTarget = T::DocTarget>>,
+    ) -> &mut Self;
 }
 
 impl AddScriptApiProvider for App {
-    fn add_api_provider<T : ScriptHost>(&mut self,provider: Box<dyn APIProvider<Target=T::APITarget,DocTarget=T::DocTarget>>) -> &mut Self {
+    fn add_api_provider<T: ScriptHost>(
+        &mut self,
+        provider: Box<dyn APIProvider<Target = T::APITarget, DocTarget = T::DocTarget>>,
+    ) -> &mut Self {
         let w = &mut self.world;
-        let providers : &mut APIProviders<T::APITarget,T::DocTarget> = &mut w.resource_mut();
+        let providers: &mut APIProviders<T::APITarget, T::DocTarget> = &mut w.resource_mut();
         providers.providers.push(provider);
         self
     }

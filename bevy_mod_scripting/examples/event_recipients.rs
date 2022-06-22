@@ -2,9 +2,10 @@ use bevy::prelude::*;
 use bevy_console::ConsolePlugin;
 use bevy_event_priority::PriorityEventWriter;
 use bevy_mod_scripting::{
-    APIProvider, AddScriptHost, AddScriptHostHandler, LuaEvent, LuaFile, RLuaScriptHost,
-    Recipients, Script, ScriptCollection, ScriptingPlugin, ScriptError, AddScriptApiProvider, LuaDocFragment,
-    langs::mlu::{mlua,mlua::Value,mlua::prelude::*}
+    langs::mlu::{mlua, mlua::prelude::*, mlua::Value},
+    APIProvider, AddScriptApiProvider, AddScriptHost, AddScriptHostHandler, LuaDocFragment,
+    LuaEvent, LuaFile, RLuaScriptHost, Recipients, Script, ScriptCollection, ScriptError,
+    ScriptingPlugin,
 };
 use rand::prelude::SliceRandom;
 use std::sync::atomic::Ordering::Relaxed;
@@ -28,20 +29,22 @@ impl APIProvider for LuaAPIProvider {
     type Target = Mutex<Lua>;
     type DocTarget = LuaDocFragment;
 
-    fn attach_api(&mut self,ctx: &mut Self::Target) -> Result<(),ScriptError> {
-       // callbacks can receive any `ToLuaMulti` arguments, here '()' and
+    fn attach_api(&mut self, ctx: &mut Self::Target) -> Result<(), ScriptError> {
+        // callbacks can receive any `ToLuaMulti` arguments, here '()' and
         // return any `FromLuaMulti` arguments, here a `usize`
         // check the Rlua documentation for more details
 
         let ctx = ctx.lock().unwrap();
 
-        ctx.globals().set("print",ctx.create_function(|_ctx, msg: String| {
-            info!("{}", msg);
-            Ok(())
-        })?)?;
+        ctx.globals().set(
+            "print",
+            ctx.create_function(|_ctx, msg: String| {
+                info!("{}", msg);
+                Ok(())
+            })?,
+        )?;
 
         Ok(())
-                
     }
 }
 
@@ -96,10 +99,7 @@ fn load_our_scripts(server: Res<AssetServer>, mut commands: Commands) {
     let scripts = (0..2)
         .into_iter()
         .map(|_| {
-            Script::<LuaFile>::new::<RLuaScriptHost<MyLuaArg>>(
-                path.to_string(),
-                handle.clone(),
-            )
+            Script::<LuaFile>::new::<RLuaScriptHost<MyLuaArg>>(path.to_string(), handle.clone())
         })
         .collect();
 
@@ -119,9 +119,7 @@ fn main() -> std::io::Result<()> {
         // the script with id 0
         // or the script with id 1
         .add_system(do_update)
-        .add_script_handler_stage::<RLuaScriptHost<MyLuaArg>, _, 0, 0>(
-            CoreStage::PostUpdate,
-        )
+        .add_script_handler_stage::<RLuaScriptHost<MyLuaArg>, _, 0, 0>(CoreStage::PostUpdate)
         .add_script_host::<RLuaScriptHost<MyLuaArg>, _>(CoreStage::PostUpdate)
         .add_api_provider::<RLuaScriptHost<MyLuaArg>>(Box::new(LuaAPIProvider));
     app.run();

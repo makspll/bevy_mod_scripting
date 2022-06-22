@@ -1,10 +1,9 @@
 use bevy::{ecs::event::Events, prelude::*};
 use bevy_console::{AddConsoleCommand, ConsoleCommand, ConsolePlugin, PrintConsoleLine};
 use bevy_mod_scripting::{
-    events::PriorityEventWriter, APIProvider, AddScriptHost, AddScriptHostHandler, Recipients, RhaiEvent, RhaiFile, RhaiScriptHost, Script, ScriptCollection,
-    ScriptErrorEvent, ScriptingPlugin, ScriptError, AddScriptApiProvider, RhaiDocFragment,
-    langs::rhai::*,
-
+    events::PriorityEventWriter, langs::rhai::*, APIProvider, AddScriptApiProvider, AddScriptHost,
+    AddScriptHostHandler, Recipients, RhaiDocFragment, RhaiEvent, RhaiFile, RhaiScriptHost, Script,
+    ScriptCollection, ScriptError, ScriptErrorEvent, ScriptingPlugin,
 };
 
 /// custom Rhai API, world is provided as a usize (by the script this time), since
@@ -16,29 +15,28 @@ impl APIProvider for RhaiAPI {
     type Target = Engine;
     type DocTarget = RhaiDocFragment;
 
-    fn attach_api(&mut self,engine: &mut Self::Target) -> Result<(),ScriptError> {
+    fn attach_api(&mut self, engine: &mut Self::Target) -> Result<(), ScriptError> {
         // rhai allows us to decouple the api from the script context,
-        // so here we do not have access to the script scope, but the advantage is that 
+        // so here we do not have access to the script scope, but the advantage is that
         // this single engine is shared with all of our scripts.
         // we can also set script wide settings here like this one for all our scripts.
-        
+
         engine.set_max_expr_depths(0, 0);
 
         engine.register_fn("print_to_console", |shared_world: usize, msg: String| {
-                let world: &mut World = unsafe { &mut *(shared_world as *mut World) };
+            let world: &mut World = unsafe { &mut *(shared_world as *mut World) };
 
-                let mut events: Mut<Events<PrintConsoleLine>> = world.get_resource_mut().unwrap();
-                events.send(PrintConsoleLine { line: msg });
+            let mut events: Mut<Events<PrintConsoleLine>> = world.get_resource_mut().unwrap();
+            events.send(PrintConsoleLine { line: msg });
 
-                ()
-            });
+            ()
+        });
 
         engine.register_fn("entity_id", |entity: Entity| entity.id());
 
         Ok(())
     }
 }
-
 
 #[derive(Clone)]
 pub struct RhaiEventArgs {}
@@ -82,9 +80,7 @@ fn main() -> std::io::Result<()> {
         // choose and register the script hosts you want to use
         .add_script_host::<RhaiScriptHost<RhaiEventArgs>, _>(CoreStage::PostUpdate)
         .add_api_provider::<RhaiScriptHost<RhaiEventArgs>>(Box::new(RhaiAPI))
-        .add_script_handler_stage::<RhaiScriptHost<RhaiEventArgs>, _, 0, 0>(
-            CoreStage::PostUpdate,
-        )
+        .add_script_handler_stage::<RhaiScriptHost<RhaiEventArgs>, _, 0, 0>(CoreStage::PostUpdate)
         // add your systems
         .add_system(trigger_on_update_rhai)
         .add_system(forward_script_err_to_console);
@@ -123,9 +119,11 @@ pub fn run_script_cmd(
                 if let Ok(mut scripts) = existing_scripts.get_mut(Entity::from_raw(e)) {
                     info!("Creating script: scripts/{} {:?}", &path, e);
 
-                    scripts.scripts.push(Script::<RhaiFile>::new::<
-                        RhaiScriptHost<RhaiEventArgs>,
-                    >(path, handle));
+                    scripts
+                        .scripts
+                        .push(Script::<RhaiFile>::new::<RhaiScriptHost<RhaiEventArgs>>(
+                            path, handle,
+                        ));
                 } else {
                     log.reply_failed(format!("Something went wrong"));
                 };
@@ -134,9 +132,9 @@ pub fn run_script_cmd(
                 info!("Creating script: scripts/{}", &path);
 
                 commands.spawn().insert(ScriptCollection::<RhaiFile> {
-                    scripts: vec![Script::<RhaiFile>::new::<
-                        RhaiScriptHost<RhaiEventArgs>,
-                    >(path, handle)],
+                    scripts: vec![Script::<RhaiFile>::new::<RhaiScriptHost<RhaiEventArgs>>(
+                        path, handle,
+                    )],
                 });
             }
         };

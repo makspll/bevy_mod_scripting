@@ -1,11 +1,11 @@
 use bevy::{ecs::event::Events, prelude::*};
 use bevy_console::{AddConsoleCommand, ConsoleCommand, ConsolePlugin, PrintConsoleLine};
 use bevy_mod_scripting::{
-    events::PriorityEventWriter, APIProvider, AddScriptHost, AddScriptHostHandler, LuaEvent,
-    LuaFile, RLuaScriptHost, Recipients, Script, ScriptCollection, ScriptErrorEvent,
-    ScriptingPlugin, ScriptError, AddScriptApiProvider, LuaDocFragment,
-    langs::mlu::{mlua,mlua::Value,mlua::prelude::*},
-
+    events::PriorityEventWriter,
+    langs::mlu::{mlua, mlua::prelude::*, mlua::Value},
+    APIProvider, AddScriptApiProvider, AddScriptHost, AddScriptHostHandler, LuaDocFragment,
+    LuaEvent, LuaFile, RLuaScriptHost, Recipients, Script, ScriptCollection, ScriptError,
+    ScriptErrorEvent, ScriptingPlugin,
 };
 use std::sync::Mutex;
 
@@ -27,24 +27,27 @@ impl APIProvider for LuaAPIProvider {
     type Target = Mutex<Lua>;
     type DocTarget = LuaDocFragment;
 
-    fn attach_api(&mut self, ctx: &mut Self::Target) -> Result<(),ScriptError> {
+    fn attach_api(&mut self, ctx: &mut Self::Target) -> Result<(), ScriptError> {
         // callbacks can receive any `ToLuaMulti` arguments, here '()' and
         // return any `FromLuaMulti` arguments, here a `usize`
         // check the Rlua documentation for more details
 
         let ctx = ctx.lock().unwrap();
 
-        ctx.globals().set("print_to_console",ctx.create_function(|ctx, msg: String| {
-            // retrieve the world pointer
-            let world_data: usize = ctx.globals().get("world").unwrap();
-            let world: &mut World = unsafe { &mut *(world_data as *mut World) };
+        ctx.globals().set(
+            "print_to_console",
+            ctx.create_function(|ctx, msg: String| {
+                // retrieve the world pointer
+                let world_data: usize = ctx.globals().get("world").unwrap();
+                let world: &mut World = unsafe { &mut *(world_data as *mut World) };
 
-            let mut events: Mut<Events<PrintConsoleLine>> = world.get_resource_mut().unwrap();
-            events.send(PrintConsoleLine { line: msg });
+                let mut events: Mut<Events<PrintConsoleLine>> = world.get_resource_mut().unwrap();
+                events.send(PrintConsoleLine { line: msg });
 
-            // return something
-            Ok(())
-        })?)?;
+                // return something
+                Ok(())
+            })?,
+        )?;
 
         Ok(())
     }
@@ -85,9 +88,7 @@ fn main() -> std::io::Result<()> {
         // choose and register the script hosts you want to use
         .add_script_host::<RLuaScriptHost<MyLuaArg>, _>(CoreStage::PostUpdate)
         .add_api_provider::<RLuaScriptHost<MyLuaArg>>(Box::new(LuaAPIProvider))
-        .add_script_handler_stage::<RLuaScriptHost<MyLuaArg>, _, 0, 0>(
-            CoreStage::PostUpdate,
-        )
+        .add_script_handler_stage::<RLuaScriptHost<MyLuaArg>, _, 0, 0>(CoreStage::PostUpdate)
         // add your systems
         .add_system(trigger_on_update_lua)
         .add_system(forward_script_err_to_console);
@@ -126,9 +127,11 @@ pub fn run_script_cmd(
                 if let Ok(mut scripts) = existing_scripts.get_mut(Entity::from_raw(e)) {
                     info!("Creating script: scripts/{} {:?}", &path, e);
 
-                    scripts.scripts.push(Script::<LuaFile>::new::<
-                        RLuaScriptHost<MyLuaArg>,
-                    >(path, handle));
+                    scripts
+                        .scripts
+                        .push(Script::<LuaFile>::new::<RLuaScriptHost<MyLuaArg>>(
+                            path, handle,
+                        ));
                 } else {
                     log.reply_failed(format!("Something went wrong"));
                 };
@@ -137,9 +140,9 @@ pub fn run_script_cmd(
                 info!("Creating script: scripts/{}", &path);
 
                 commands.spawn().insert(ScriptCollection::<LuaFile> {
-                    scripts: vec![Script::<LuaFile>::new::<
-                        RLuaScriptHost<MyLuaArg>,
-                    >(path, handle)],
+                    scripts: vec![Script::<LuaFile>::new::<RLuaScriptHost<MyLuaArg>>(
+                        path, handle,
+                    )],
                 });
             }
         };
