@@ -203,7 +203,7 @@ pub fn load_a_script(
 
 
 ### Defining an API
-To expose an API to your scripts, implement the APIProvider trait along with any others requested by the specific `ScriptHost` your're using. Use the implementing struct in yout `ScriptHost`s type signature
+To expose an API to your scripts, implement the APIProvider trait. To register this API with your script host use the `add_api_provider` of `App`:
 
 ``` rust
 use std::sync::Mutex;
@@ -241,6 +241,18 @@ impl APIProvider for RhaiAPI {
 
 ```
 
+Register the API providers like so:
+
+```rust,ignore
+    app.add_plugins(DefaultPlugins)
+        .add_plugin(ScriptingPlugin)
+        .add_script_host::<RLuaScriptHost<MyLuaArg>, _>(CoreStage::PostUpdate)
+        .add_script_host::<RhaiScriptHost<MyRhaiArg>, _>(CoreStage::PostUpdate)
+        .add_api_provider::<RLuaScriptHost<MyLuaArg>>(Box::new(LuaAPIProvider))
+        .add_api_provider::<RLuaScriptHost<MyRhaiArg>>(Box::new(RhaiAPIProvider))
+        //...
+```
+
 
 ### Documentation Generation
 Documentation features are exposed at runtime via the `update_documentation` builder trait method for `App`:
@@ -262,6 +274,8 @@ fn main() -> std::io::Result<()> {
         .add_plugin(ScriptingPlugin)
         .add_script_host::<RLuaScriptHost<MyLuaArg>, _>(CoreStage::PostUpdate)
         // Note: This is a noop in optimized builds unless the `doc_always` feature is enabled!
+        // this will pickup any API providers added *BEFOREHAND* like this one
+        // .add_api_provider::<RLuaScriptHost<MyLuaArg>>(Box::new(LuaAPIProvider))
         .update_documentation::<RLuaScriptHost<MyLuaArg>>()
         .add_script_handler_stage::<RLuaScriptHost<MyLuaArg>, _, 0, 0>(
             CoreStage::PostUpdate,
