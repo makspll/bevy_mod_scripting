@@ -13,5 +13,4 @@
 function on_update()
     local lol : string = my_api.my_function()
     print(lol)
-
 end

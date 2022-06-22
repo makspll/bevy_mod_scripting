@@ -13,6 +13,8 @@ use std::fs;
 #[cfg(all(feature = "teal", debug_assertions))]
 use std::process::Command;
 
+use anyhow::anyhow;
+
 #[derive(Debug, TypeUuid)]
 #[uuid = "39cadc56-aa9c-4543-8640-a018b74b5052"]
 /// A lua code file in bytes
@@ -47,29 +49,37 @@ impl AssetLoader for LuaLoader {
                     .join("assets")
                     .join(load_context.path());
 
-                Command::new("tl")
+                if let Ok(e) = Command::new("tl")
                     .args(&[
                         "check",
-                        // "-I",
-                        // path.as_os_str(),
                         full_path.to_str().unwrap(),
                     ])
                     .current_dir(scripts_dir)
-                    .status()
-                    .expect("Invalid .tl file");
+                    .status(){
 
-                Command::new("tl")
+                    if !e.success(){
+                        return Box::pin(async move { Err(anyhow!("Teal file `{}` has errors", load_context.path().to_str().unwrap())) })
+                    }
+                } else {
+                    panic!("Something went wrong running `tl check`");
+                }
+
+
+                if let Ok(e) = Command::new("tl")
                     .args(&[
                         "gen",
-                        // "-I",
-                        // path.as_os_str(),
                         full_path.to_str().unwrap(),
                         "-o",
                         temp_file_path.to_str().unwrap(),
                     ])
                     .current_dir(scripts_dir)
-                    .status()
-                    .expect("Could not generate lua file");
+                    .status(){
+                    if !e.success(){
+                        return Box::pin(async move { Err(anyhow!("Teal file `{}` could not be compiled!", load_context.path().to_str().unwrap())) })
+                    }                
+                } else {
+                    panic!("Something went wrong running `tl gen`")
+                }
 
                 let lua_code =
                     fs::read_to_string(temp_file_path).expect("Could not find output lua file");
