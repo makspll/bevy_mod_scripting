@@ -19,10 +19,6 @@ impl CodeAsset for LuaFile {
     }
 }
 
-
-// #[cfg(feature="teal")]
-static teal_compiler : fn(&str) -> String = embed_compiler!("v0.9.0");
-
 #[derive(Default)]
 /// Asset loader for lua scripts
 pub struct LuaLoader;
@@ -38,36 +34,42 @@ impl AssetLoader for LuaLoader {
             // #[cfg(feature="teal")]
             Some("tl") => {
                 
+                let scripts_dir = &FileAssetIo::get_root_path()
+                    .join("assets")
+                    .join("scripts");
+
+                let temp_file_path = &scripts_dir.join(".temp.lua");
+
                 let full_path = &FileAssetIo::get_root_path()
                     .join("assets")
                     .join(load_context.path());
 
-                // TODO: go through string and remove instances of require asking for .t.dl scripts
-
-                let command = Command::new("tl")
+                Command::new("tl")
                     .args(&[
                         "check",
                         // "-I",
                         // path.as_os_str(),
                         full_path.to_str().unwrap(),
                     ])
+                    .current_dir(scripts_dir)
                     .status()
                     .expect("Invalid .tl file");
 
-                let command = Command::new("tl")
+                Command::new("tl")
                     .args(&[
                         "gen",
                         // "-I",
                         // path.as_os_str(),
                         full_path.to_str().unwrap(),
                         "-o",
-                        "temp.lua"
+                        temp_file_path.to_str().unwrap()
                     ])
+                    .current_dir(scripts_dir)
                     .status()
                     .expect("Could not generate lua file");
                 
-                let lua_code = fs::read_to_string("temp.lua").expect("Could not find output lua file");
-                fs::remove_file("temp.lua");
+                let lua_code = fs::read_to_string(temp_file_path).expect("Could not find output lua file");
+                fs::remove_file(temp_file_path).unwrap();
 
                 load_context.set_default_asset(LoadedAsset::new(LuaFile {
                     bytes: lua_code.as_bytes().into(),
