@@ -2,7 +2,7 @@ use bevy::prelude::*;
 use bevy_console::ConsolePlugin;
 use bevy_event_priority::PriorityEventWriter;
 use bevy_mod_scripting::{
-    langs::mlu::{mlua, mlua::prelude::*, mlua::Value,TealData},
+    langs::mlu::{mlua, mlua::prelude::*, mlua::Value, TealData},
     APIProvider, AddScriptApiProvider, AddScriptHost, AddScriptHostHandler, GenDocumentation,
     LuaDocFragment, LuaEvent, LuaFile, RLuaScriptHost, Recipients, Script, ScriptCollection,
     ScriptError, ScriptingPlugin,
