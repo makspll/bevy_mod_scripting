@@ -13,8 +13,6 @@ use std::fs;
 #[cfg(all(feature = "teal", debug_assertions))]
 use std::process::Command;
 
-use anyhow::anyhow;
-
 #[derive(Debug, TypeUuid)]
 #[uuid = "39cadc56-aa9c-4543-8640-a018b74b5052"]
 /// A lua code file in bytes
@@ -50,20 +48,21 @@ impl AssetLoader for LuaLoader {
                     .join(load_context.path());
 
                 if let Ok(e) = Command::new("tl")
-                    .args(&[
-                        "check",
-                        full_path.to_str().unwrap(),
-                    ])
+                    .args(&["check", full_path.to_str().unwrap()])
                     .current_dir(scripts_dir)
-                    .status(){
-
-                    if !e.success(){
-                        return Box::pin(async move { Err(anyhow!("Teal file `{}` has errors", load_context.path().to_str().unwrap())) })
+                    .status()
+                {
+                    if !e.success() {
+                        return Box::pin(async move {
+                            Err(anyhow!(
+                                "Teal file `{}` has errors",
+                                load_context.path().to_str().unwrap()
+                            ))
+                        });
                     }
                 } else {
                     panic!("Something went wrong running `tl check`");
                 }
-
 
                 if let Ok(e) = Command::new("tl")
                     .args(&[
@@ -73,10 +72,16 @@ impl AssetLoader for LuaLoader {
                         temp_file_path.to_str().unwrap(),
                     ])
                     .current_dir(scripts_dir)
-                    .status(){
-                    if !e.success(){
-                        return Box::pin(async move { Err(anyhow!("Teal file `{}` could not be compiled!", load_context.path().to_str().unwrap())) })
-                    }                
+                    .status()
+                {
+                    if !e.success() {
+                        return Box::pin(async move {
+                            Err(anyhow!(
+                                "Teal file `{}` could not be compiled!",
+                                load_context.path().to_str().unwrap()
+                            ))
+                        });
+                    }
                 } else {
                     panic!("Something went wrong running `tl gen`")
                 }
