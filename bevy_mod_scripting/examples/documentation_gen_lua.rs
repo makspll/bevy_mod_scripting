@@ -6,6 +6,7 @@ use bevy_mod_scripting::{
     Recipients, Script, ScriptCollection, ScriptingPlugin, ScriptError, AddScriptApiProvider, LuaDocFragment, GenDocumentation,
 };
 use rand::prelude::SliceRandom;
+use tealr::mlu::mlua::Value;
 use tealr::{TypeWalker, TypeName};
 use tealr::mlu::TypedFunction;
 use tealr::mlu::{mlua,mlua::{Lua, ToLua},TealData};
@@ -13,11 +14,11 @@ use std::sync::atomic::Ordering::Relaxed;
 use std::sync::{atomic::AtomicU32, Mutex};
 
 #[derive(Clone)]
-pub struct MyLuaArg(usize);
+pub struct MyLuaArg;
 
 impl<'lua> ToLua<'lua> for MyLuaArg {
     fn to_lua(self, lua: &'lua Lua) -> tealr::mlu::mlua::Result<tealr::mlu::mlua::Value<'lua>> {
-        self.0.to_lua(lua)
+        Ok(Value::Nil)
     }
 }
 
@@ -41,10 +42,10 @@ impl TealData for APIModule {
         methods.document("Here we document the next function");
         methods.document("## Markdown!:");
         methods.document(
-            r#"```lua
-            local hello = "string";
-            ```\n"#);
-        methods.add_function("my_function", |_,s: String| Ok("hello world!"));
+            "```lua
+                local hello = \"string\"  
+            \n```");
+        methods.add_function("my_function", |_,()| Ok("hello world!"));
 
         methods.generate_help();
     }
@@ -90,20 +91,35 @@ impl APIProvider for LuaAPIProvider {
     fn get_doc_fragment(&self) -> Option<Self::DocTarget>{
         Some(
             LuaDocFragment::new(
-                // we must select items we want included in the documentation
-                TypeWalker::new()
-                    .process_type::<APIModule>()
+                |tw|
+                    // we must select items we want included in the documentation
+                    tw.process_type::<APIModule>()
                     .document_global_instance::<Export>().unwrap()
-                    ,
-                // you probably want to keep this false in most cases
-                false,
-                // this is the name of the exported .d.tl file top level export 
-                "my_lib".to_string()
+                    
             )
         )
     }
 
     
+}
+
+fn load_our_script(server: Res<AssetServer>, mut commands: Commands) {
+    let path = "scripts/teal_file.tl";
+    let handle = server.load::<LuaFile, &str>(path);
+
+    commands.spawn().insert(ScriptCollection::<LuaFile> {
+        scripts: vec![Script::<LuaFile>::new::<
+            RLuaScriptHost<MyLuaArg>,
+        >(path.to_string(), handle)],
+    });
+}
+
+fn fire_our_script(mut w: PriorityEventWriter<LuaEvent<MyLuaArg>>) {
+    w.send(LuaEvent::<MyLuaArg>{
+        hook_name: "on_update".to_string(),
+        args: vec![MyLuaArg],
+        recipients: Recipients::All,
+    }, 0)
 }
 
 fn main() -> std::io::Result<()> {
@@ -114,8 +130,18 @@ fn main() -> std::io::Result<()> {
         .add_plugin(ConsolePlugin)
         .add_script_host::<RLuaScriptHost<MyLuaArg>, _>(CoreStage::PostUpdate)
         .add_api_provider::<RLuaScriptHost<MyLuaArg>>(Box::new(LuaAPIProvider))
-        // this is a no-op unless the `GEN_SCRIPT_DOC` env variable is set
-        .gen_documentation::<RLuaScriptHost<MyLuaArg>>();
+        // this needs to be placed after any `add_api_provider` and `add_script_host` calls
+        // it will generate `doc` and `types` folders under `assets/scripts` containing the documentation and teal declaration files
+        // respectively. See example asset folder to see how they look like. The `teal_file.tl` script in example assets shows the usage of one of those 
+        // declaration files, use the teal vscode extension to explore the type hints!
+
+        // Note: This is a noop in optimized builds unless the `doc_always` feature is enabled!
+        .update_documentation::<RLuaScriptHost<MyLuaArg>>()
+        .add_script_handler_stage::<RLuaScriptHost<MyLuaArg>, _, 0, 0>(
+            CoreStage::PostUpdate,
+        )
+        .add_startup_system(load_our_script)
+        .add_system(fire_our_script);
 
     app.run();
 

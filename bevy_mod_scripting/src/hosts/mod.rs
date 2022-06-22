@@ -160,9 +160,9 @@ impl <T : 'static,D: DocFragment>APIProviders<T,D> {
         Ok(())
     }
 
-    pub fn gen_all(self) -> Result<(),ScriptError>{
+    pub fn gen_all(&self) -> Result<(),ScriptError>{
         let mut d : Option<D> = None;
-        for p in self.providers{
+        for p in self.providers.iter(){
             if let Some(f) = p.get_doc_fragment(){
                 if let Some(prev) = d {
                     d = Some(prev.merge(f))

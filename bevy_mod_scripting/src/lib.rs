@@ -29,25 +29,26 @@ pub struct ScriptErrorEvent {
 
 
 pub trait GenDocumentation {
-    fn gen_documentation<T : ScriptHost>(&mut self) -> &mut Self;
+    fn update_documentation<T : ScriptHost>(&mut self) -> &mut Self;
 }
 
 impl GenDocumentation for App {
-    /// generates documentation if it detects the environment variable `GEN_SCRIPT_DOC` is set
-    /// exits the process. Otherwise this is a no-op
-    fn gen_documentation<T : ScriptHost>(&mut self) -> &mut Self {
+    /// Updates/Generates documentation and any other artifacts required for script API's. Disabled in optimized builds unless `doc_always` feature is enabled.
+    fn update_documentation<T : ScriptHost>(&mut self) -> &mut Self {
 
-        if env::var("GEN_SCRIPT_DOC").is_ok(){
+        #[cfg(any(debug_assertions,feature="doc_always")) ]
+        {
             info!("Generating documentation");
             let w = &mut self.world;
-            let providers : APIProviders<T::APITarget,T::DocTarget> = w.remove_resource().expect("No APIProviders resource found for the given script host. Did you forget to register the host?");
-            providers.gen_all().expect("Could not generate documentation");
-            println!("Documentation generated successfully, exiting..");
-            process::exit(0);
+            let providers : &APIProviders<T::APITarget,T::DocTarget> = w.resource();
+            if let Err(e) = providers.gen_all(){
+                error!("{}",e);
+            }
+            info!("Documentation generated");
         }
 
-
         self
+
     }
 }
 

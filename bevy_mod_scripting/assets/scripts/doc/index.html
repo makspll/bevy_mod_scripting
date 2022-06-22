@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html>
+
+<head id="head">
+    <link id="bulma-theme" rel="stylesheet" href="https://unpkg.com/bulmaswatch/default/bulmaswatch.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta charset="utf-8">
+    <link id="codeHighlight" rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.4.0/styles/a11y-light.min.css"
+        integrity="sha512-WDk6RzwygsN9KecRHAfm9HTN87LQjqdygDmkHSJxVkVI7ErCZ8ZWxP6T8RvBujY1n2/E4Ac+bn2ChXnp5rnnHA=="
+        crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <!-- <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.4.0/styles/a11y-dark.min.css" -->
+    <!-- integrity="sha512-Vj6gPCk8EZlqnoveEyuGyYaWZ1+jyjMPg8g4shwyyNlRQl6d3L9At02ZHQr5K6s5duZl/+YKMnM3/8pDhoUphg==" -->
+    <!-- crossorigin="anonymous" referrerpolicy="no-referrer" /> -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.4.0/highlight.min.js"
+        integrity="sha512-IaaKO80nPNs5j+VLxd42eK/7sYuXQmr+fyywCNA0e+C6gtQnuCXNtORe9xR4LqGPz5U9VpH+ff41wKs/ZmC3iA=="
+        crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <title>LuaApi</title>
+    <style>
+        html,
+        body,
+        #app {
+            height: 100%;
+        }
+
+        #app {
+            min-height: 100%;
+        }
+
+        .footer {
+            margin-top: -12px;
+        }
+
+        @media screen and (max-width: 768px) {
+            #menu-toggle:checked+.nav-menu {
+                display: block;
+            }
+        }
+
+        .sticky-sidebar {
+            height: calc(100vh - 3.25rem);
+            position: sticky;
+            top: 0;
+            overflow: auto;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="app">
+        <nav class="navbar has-shadow">
+            <div class="navbar-menu">
+                <div class="navbar-start">
+                    <div class="navbar-item has-dropdown is-hoverable">
+                        <a class="navbar-link">
+                            Themes
+                        </a>
+                        <div class="navbar-dropdown is-boxed">
+                            <div class="columns">
+                                <div class="collumn" id="theme-select-column1"></div>
+                                <div class="collumn" id="theme-select-column2"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </nav>
+
+        <section class="main-content columns is-fullheight">
+            <aside class="column is-2 is-narrow-mobile is-fullheight section is-hidden-mobile sticky-sidebar">
+                <p class="menu-label is-hidden-touch">Navigation</p>
+                <ul class="menu-list">
+                    <li>
+                    <a href="./APIModule.html" class="">
+                        <span class="icon"><i class="fa fa-file"></i></span> APIModule
+                    </a>
+                    <ul>
+                    
+                       
+                       <li>Methods</li>
+            <li>
+    <a href="./APIModule.html#my_function">
+        <span class="icon is-small"><i class="fa fa-link"></i></span> my_function
+    </a>
+</li><li>
+    <a href="./APIModule.html#help">
+        <span class="icon is-small"><i class="fa fa-link"></i></span> help
+    </a>
+</li>
+                        
+                    </ul>
+                </li>
+                </ul>
+            </aside>
+            <div class="container column is-10">
+                <div class="section">
+                    <div class="panel">
+                        <div class="panel-heading">
+                            <h1 class="title">LuaApi</h1>
+                        </div>
+                        <div class="panel-block">
+                            <div class="container">
+<div class="panel">
+            <div class="panel-heading">
+                <p class="panel-header-title">Types:</p>
+            </div>
+            <div class="panel-block">
+                <div class="container">
+        <div class="card block"><a href="./APIModule.html"><div class="card-header"><code class="card-header-title">APIModule</code></div> <div class="card-content content"><p>This is module level documentation for our api, it will be shown first</p>
+</div></a></div></div></div>
+</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+    <script>
+        const bulmaTheme = document.getElementById("bulma-theme")
+        const isDarkTheme = {
+            "Cerulean": false,
+            "Cosmo": false,
+            "Cyborg": true,
+            "Darkly": true,
+            "Default": false,
+            "Flatly": false,
+            "Journal": false,
+            "Litera": false,
+            "Lumen": false,
+            "Lux": false,
+            "Materia": false,
+            "Minty": false,
+            "Nuclear": true,
+            "Pulse": false,
+            "Sandstone": false,
+            "Simplex": false,
+            "Slate": true,
+            "Solar": true,
+            "Spacelab": false,
+            "Superhero": true,
+            "United": false,
+            "Yeti": false
+        }
+        const lightHighlight = ` <link id="codeHighlight" rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.4.0/styles/a11y-light.min.css"
+        integrity="sha512-WDk6RzwygsN9KecRHAfm9HTN87LQjqdygDmkHSJxVkVI7ErCZ8ZWxP6T8RvBujY1n2/E4Ac+bn2ChXnp5rnnHA=="
+        crossorigin="anonymous" referrerpolicy="no-referrer" />`
+        const darkHighlight = `<link id="codeHighlight" rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.4.0/styles/a11y-dark.min.css"
+integrity="sha512-Vj6gPCk8EZlqnoveEyuGyYaWZ1+jyjMPg8g4shwyyNlRQl6d3L9At02ZHQr5K6s5duZl/+YKMnM3/8pDhoUphg=="
+crossorigin="anonymous" referrerpolicy="no-referrer" />`
+        const setTheme = (str, name) => {
+            bulmaTheme.href = str;
+            document.getElementById("codeHighlight").remove()
+            const head = document.getElementById("head")
+            if (isDarkTheme[name]) {
+                head.insertAdjacentHTML("beforeend", darkHighlight)
+            } else {
+                head.insertAdjacentHTML("beforeend", lightHighlight)
+            }
+        }
+        const v = localStorage.getItem("editor_last_selected");
+        try {
+            if (v) {
+                const res = JSON.parse(v);
+                if (res && res.name && res.url) {
+                    setTheme(res.url, res.name)
+                }
+            }
+        } catch (e) {
+            console.error("Error while setting saved theme. Going back to default", e)
+            localStorage.removeItem("editor_last_selected")
+        }
+
+        fetch("https://jenil.github.io/bulmaswatch/api/themes.json")
+            .then(x => x.json())
+            .then(x => {
+
+                const max = x.themes.length / 2
+                const col1 = document.getElementById("theme-select-column1")
+                const col2 = document.getElementById("theme-select-column2")
+                x.themes.forEach((z, k) => {
+                    const a = document.createElement("a")
+                    a.onclick = () => {
+                        setTheme(z.css, z.name)
+                        localStorage.setItem(
+                            "editor_last_selected",
+                            JSON.stringify({ url: z.css, name: z.name })
+                        );
+                    }
+                    a.text = z.name;
+                    const div = document.createElement("div")
+                    div.classList.add("navbar-item")
+                    div.appendChild(a)
+                    if (k < max) {
+                        col1.appendChild(div)
+                    } else {
+                        col2.appendChild(div)
+                    }
+                })
+            })
+        const getOpposite = (language) => language == "teal" ? "lua" : "teal"
+        const preferredLanguage = localStorage.getItem("last_selected_language") || "teal";
+        const disableLanguage = getOpposite(preferredLanguage)
+        const elementsToDisable = document.getElementsByClassName("code-block-" + disableLanguage)
+        for (var i = 0; i < elementsToDisable.length; i++) {
+            elementsToDisable[i].style.display = "none"
+        }
+
+        const createSwitchLanguage = (newLang) =>
+            () => {
+                const oppositeLanguage = getOpposite(newLang)
+                const toShow = document.getElementsByClassName("code-block-" + newLang)
+
+                for (var i = 0; i < toShow.length; i++) {
+                    toShow[i].style.display = ""; // or
+                }
+                const toHide = document.getElementsByClassName("code-block-" + oppositeLanguage)
+                for (var i = 0; i < toHide.length; i++) {
+                    toHide[i].style.display = "none";
+                }
+                const removeFromActive = document.getElementsByClassName("select-" + oppositeLanguage)
+                for (var i = 0; i < removeFromActive.length; i++) {
+                    removeFromActive[i].classList.remove("is-active")
+                }
+                const addToActive = document.getElementsByClassName("select-" + newLang)
+                for (var i = 0; i < addToActive.length; i++) {
+                    addToActive[i].classList.add("is-active")
+                }
+                localStorage.setItem("last_selected_language", newLang)
+
+            }
+
+        const elementsToSetActive = document.getElementsByClassName("select-" + preferredLanguage)
+        for (var i = 0; i < elementsToSetActive.length; i++) {
+            elementsToSetActive[i].classList.add("is-active")
+            elementsToSetActive[i].onclick = createSwitchLanguage(preferredLanguage)
+        }
+        const otherLangSelectors = document.getElementsByClassName("select-" + disableLanguage)
+        for (var i = 0; i < otherLangSelectors.length; i++) {
+            otherLangSelectors[i].onclick = createSwitchLanguage(disableLanguage)
+        }
+
+    </script>
+    <script>hljs.highlightAll();</script>
+</body>
+
+</html>

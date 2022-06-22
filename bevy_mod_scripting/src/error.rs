@@ -18,6 +18,8 @@ pub enum ScriptError {
     },
     #[error("Failed to attach API for script `{script}` {msg}")]
     FailedToAttachAPI { script: String, msg: String },
+    #[error("Failed to generate documentation `{0}`")]
+    DocGenError(String),
     #[error("{0}")]
     Other(String),
 }

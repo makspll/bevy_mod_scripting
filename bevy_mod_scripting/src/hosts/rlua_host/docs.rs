@@ -1,30 +1,30 @@
 use std::{string::FromUtf8Error, env, path::PathBuf, process::Command, fs::{File, self}, io::Write};
 
+use bevy::asset::FileAssetIo;
 use tealr::TypeWalker;
 
 use crate::{DocFragment, ScriptError};
 
 
+
+pub type TypeWalkerBuilder = fn(TypeWalker) -> TypeWalker;
+
+
 struct Fragment{
-    walker : TypeWalker,
-    is_global: bool,
-    outer_name: String,
+    builder: TypeWalkerBuilder,
 }
 
-impl Fragment {
-    fn generate(self) -> Result<String,FromUtf8Error>{
-        self.walker.generate(&self.outer_name, self.is_global)
-    }
-}
 
 pub struct LuaDocFragment {
     walker: Vec<Fragment>
 }
 
+/// A piece of lua documentation,
+/// Each piece is combined into one large documentation page, and also a single teal declaration file if the `teal` feature is enabled 
 impl LuaDocFragment{
-    pub fn new(walker : TypeWalker, is_global: bool, outer_name: String) -> Self{
+    pub fn new(f : TypeWalkerBuilder) -> Self{
         Self {
-            walker: vec![Fragment{ walker, is_global, outer_name }],
+            walker: vec![Fragment{builder: f}],
         }
     }
 }
@@ -36,32 +36,74 @@ impl DocFragment for LuaDocFragment {
     }
 
     fn gen_docs(self) -> Result<(),ScriptError>{
-        // asset path: FileAssetIo::get_root_path
-        self.walker.into_iter().for_each(|v|{
+        let script_asset_path = &FileAssetIo::get_root_path()
+            .join("assets")
+            .join("scripts");
+        
+        let script_doc_dir = &script_asset_path.join("doc");
+        let script_types_dir = &script_asset_path.join("types");
 
-            let json = serde_json::to_string_pretty(&v.walker).expect("Failed to serialize TypeWalker");
-            let tdl_file = v.generate().unwrap();
+        fs::create_dir_all(script_doc_dir).expect("Could not create `.../assets/scripts/doc` directories");
+        fs::create_dir_all(script_types_dir).expect("Could not create `.../assets/scripts/types` directories");
+        
+        let decl_path = &script_types_dir.join("global_types.d.tl");
 
-            let target_dir = env::var("TARGET_DIR").expect("TARGET_DIR is not set");
-            let root_dir = &PathBuf::from(target_dir).join("script_docs");
-            let temp_dir = &root_dir.join("temp.json");
-            fs::create_dir_all(root_dir).expect("Could not create script_docs directory");
+        // build the type walker
+        let tw = self.walker
+            .into_iter()
+            .fold(TypeWalker::new(),|a,v|(v.builder)(a));
 
-            let mut json_file = File::create(&temp_dir).expect("Could not create temporary json file");
-            json_file.write_all(json.as_bytes()).expect("Failed to write json to temporary file");
+        // generate temporary json file
+        let json = serde_json::to_string_pretty(&tw)
+        .map_err(|e| ScriptError::DocGenError(e.to_string()))?;
 
-            Command::new("tealr_doc_gen")
-                .args(["--json",
-                    temp_dir.to_str().unwrap(),
-                    "--name",
-                    "LuaDoc",
-                    // "--build_folder",
-                    // fs::canonicalize(&root_dir).unwrap().to_str().unwrap()
-                ])
-                .status()
-                .expect("Failed to generate documentation");
+        
+        let temp_dir = &script_asset_path.join(".temp.json");
 
-        });
+        let mut json_file = File::create(temp_dir)
+            .map_err(|e| ScriptError::DocGenError(e.to_string()))?;
+
+        json_file.write_all(json.as_bytes())
+            .map_err(|e| ScriptError::DocGenError(e.to_string()))?;
+        json_file.flush().unwrap();
+
+        // generate declaration file
+        let decl_file_contents = tw.generate("global_types",false).unwrap();
+
+        Command::new("tealr_doc_gen")
+            .args(["--json",
+                temp_dir.to_str().unwrap(),
+                "--name",
+                "LuaApi",
+                "--build_folder",
+                fs::canonicalize(script_doc_dir).unwrap().to_str().unwrap()
+            ])
+            .status()
+            .map_err(|e| ScriptError::DocGenError(e.to_string()))?;
+
+        fs::remove_file(&temp_dir).unwrap();
+
+        // now generate teal declaration (d.tl) file
+        let mut decl_file = File::create(decl_path)
+            .map_err(|e| ScriptError::DocGenError(e.to_string()))?;
+        
+        decl_file.write_all(decl_file_contents.as_bytes()).expect("Failed to write to declaration file");
+        decl_file.flush().unwrap();
+
+
+        // finally create a tlconfig.lua file if doesn't exist
+        // we do this to avoid problems with varying teal configurations
+        // keep em settings consistent everywhere
+        let tl_config_path = script_asset_path.join("tlconfig.lua");
+        if !tl_config_path.exists() {
+            let mut tl_file = File::create(tl_config_path).map_err(|e| ScriptError::DocGenError(e.to_string()))?;
+            tl_file.write_all(r#"
+return {
+    global_env_def="types/global_types",
+    build_dir="."
+}
+"#.as_bytes()).map_err(|e| ScriptError::DocGenError(e.to_string()))?;
+        }
 
         Ok(())
     }

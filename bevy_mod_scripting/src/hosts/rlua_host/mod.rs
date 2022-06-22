@@ -141,8 +141,12 @@ impl<A: LuaArg> ScriptHost for RLuaScriptHost<A> {
     }
 
     fn load_script(&mut self, script: &[u8], script_name: &str, providers: &mut APIProviders<Self::APITarget,Self::DocTarget>) -> Result<Self::ScriptContext, ScriptError> {
+        #[cfg(feature="lua_modules")]
+        let lua = unsafe{ Lua::unsafe_new() };
+        #[cfg(not(feature="lua_modules"))]
         let lua = Lua::new();
-        
+
+
         lua.load(script)
             .set_name(script_name)
             .map(|c| c.exec())

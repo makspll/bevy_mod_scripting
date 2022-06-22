@@ -20,6 +20,16 @@ features = ["lua54"]
 
 [features]
 
+# if enabled enables documentation updating in optimized builds
+doc_always = []
+
+# enables loading possibly unsafe lua modules by lua scripts
+lua_modules = []
+
+# enable teal utilities
+teal = []
+
+
 lua51 = ["tealr/mlua_lua51"]
 lua52 = ["tealr/mlua_lua52"]
 lua53 = ["tealr/mlua_lua53"]
@@ -68,3 +78,8 @@ required-features = ["lua54"]
 name = "event_recipients"
 path = "examples/event_recipients.rs"
 required-features = ["lua54"]
+
+[[example]]
+name = "documentation_gen_lua"
+path = "examples/documentation_gen_lua.rs"
+required-features = ["lua54","teal"]
