@@ -31,6 +31,7 @@ The API will likely change in the future as more scripting support is rolled out
 - [ ] General Bevy API for all script hosts (i.e. Add component, remove component etc.). Blocked by <https://github.com/bevyengine/bevy/issues/4474>
 - [x] Utilities for generating script native documentation 
 - [ ] Tests
+- [x] Optionally loading external lua libraries (via require) (enabled with `lua_modules` cargo feature)
 
 ## Usage
 
