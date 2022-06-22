@@ -5,6 +5,7 @@
     "lldb.consoleMode": "commands",
 
     "rust-analyzer.cargo.features": [
-        "lua54"
+        "lua54",
+        "teal",
     ]
 }

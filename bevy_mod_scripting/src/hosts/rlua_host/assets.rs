@@ -6,6 +6,9 @@ use bevy::{
 
 use std::sync::Arc;
 
+#[cfg(all(feature = "teal", debug_assertions))]
+use std::process::Command;
+
 #[derive(Debug, TypeUuid)]
 #[uuid = "39cadc56-aa9c-4543-8640-a018b74b5052"]
 /// A lua code file in bytes
