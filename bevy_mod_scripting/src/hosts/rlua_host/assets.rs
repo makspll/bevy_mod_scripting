@@ -1,10 +1,10 @@
 use crate::CodeAsset;
 use bevy::{
-    asset::{AssetLoader, LoadedAsset, FileAssetIo},
+    asset::{AssetLoader, LoadedAsset},
     reflect::TypeUuid,
 };
-use tealr::embed_compiler;
-use std::{sync::Arc, process::Command, fs};
+
+use std::{sync::Arc};
 
 #[derive(Debug, TypeUuid)]
 #[uuid = "39cadc56-aa9c-4543-8640-a018b74b5052"]

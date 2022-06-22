@@ -2,11 +2,11 @@ pub mod assets;
 mod docs;
 
 use crate::{
-    script_add_synchronizer, script_hot_reload_handler, script_remove_synchronizer, APIProvider,
+    script_add_synchronizer, script_hot_reload_handler, script_remove_synchronizer,
     CachedScriptEventState, FlatScriptData, Recipients, ScriptContexts, ScriptError,
     ScriptErrorEvent, ScriptEvent, ScriptHost, APIProviders, ScriptCollection, Script,
 };
-use bevy::prelude::{error, AddAsset, Mut, ParallelSystemDescriptorCoercion, SystemSet, World, ResMut, Res};
+use bevy::prelude::{error, AddAsset, Mut, ParallelSystemDescriptorCoercion, SystemSet, World, ResMut};
 use bevy_event_priority::AddPriorityEvent;
 use rhai::*;
 use std::marker::PhantomData;

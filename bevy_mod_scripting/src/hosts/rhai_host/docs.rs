@@ -5,7 +5,7 @@ use crate::{DocFragment, ScriptError};
 pub struct RhaiDocFragment;
 
 impl DocFragment for RhaiDocFragment {
-    fn merge(self, o : Self) -> Self {
+    fn merge(self, _o : Self) -> Self {
         todo!()
     }
 

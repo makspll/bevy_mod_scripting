@@ -1,4 +1,4 @@
-use std::{string::FromUtf8Error, env, path::PathBuf, process::Command, fs::{File, self}, io::Write};
+use std::{process::Command, fs::{File, self}, io::Write};
 
 use bevy::asset::FileAssetIo;
 use tealr::TypeWalker;
