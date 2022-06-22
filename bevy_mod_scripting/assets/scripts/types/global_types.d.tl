@@ -22,5 +22,7 @@ local record global_types
 
 	end
 end
+--Documentation for the exposed global variable
+
 global my_api: global_types.APIModule
 return global_types
