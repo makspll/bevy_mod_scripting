@@ -312,7 +312,7 @@ The reccomended workflow is to use vscode and the official teal extension, with 
 
 #### Rhai
 
-Rhai currently does not have any utilities existing for generating documentation, once something comes out we'll include it.
+Rhai currently does not have any utilities existing for generating documentation (for the rust provided API), once something comes out we'll include it.
 
 
 ## Examples 
