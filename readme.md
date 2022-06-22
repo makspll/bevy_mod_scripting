@@ -29,8 +29,9 @@ The API will likely change in the future as more scripting support is rolled out
 - [x] Multiple instances of the same script on one entity
 - [x] Extensive callback argument type support 
 - [ ] General Bevy API for all script hosts (i.e. Add component, remove component etc.). On track for Bevy 0.8
-- [ ] Utilities for generating script native documentation 
+- [x] Utilities for generating script native documentation 
 - [ ] Tests
+- [x] Optionally loading external lua libraries (via require) (enabled with `lua_modules` cargo feature)
 
 ## Usage
 
@@ -54,22 +55,21 @@ fn main() -> std::io::Result<()> {
     let mut app = App::new();
         app.add_plugin(ScriptingPlugin)
         .add_plugins(DefaultPlugins) 
-
         // pick and register only the hosts you want to use
         // use any stage AFTER any systems which add/remove/modify script components 
         // in order for your script updates to propagate in a single frame
-        .add_script_host::<RhaiScriptHost<MyRhaiArgStruct, RhaiAPI>,_>(CoreStage::PostUpdate)    
-        .add_script_host::<RLuaScriptHost<MyLuaArgStruct,LuaAPI>,_>(CoreStage::PostUpdate)
+        .add_script_host::<RhaiScriptHost<MyRhaiArgStruct>,_>(CoreStage::PostUpdate)    
+        .add_script_host::<RLuaScriptHost<MyLuaArgStruct>,_>(CoreStage::PostUpdate)
         
         // the handlers should be placed after any stages which produce script events
         // PostUpdate is okay only if your API doesn't require the core Bevy systems' commands
         // to run beforehand.
         // Note, this setup assumes a single script handler stage with all events having identical
         // priority of zero (see examples for more complex scenarios)
-        .add_script_handler_stage::<RLuaScriptHost<MyLuaArg, LuaAPIProvider>, _, 0, 0>(
+        .add_script_handler_stage::<RLuaScriptHost<MyLuaArg>, _, 0, 0>(
             CoreStage::PostUpdate,
         )
-        .add_script_handler_stage::<RhaiScriptHost<RhaiEventArgs, RhaiAPI>, _, 0, 0>(
+        .add_script_handler_stage::<RhaiScriptHost<RhaiEventArgs>, _, 0, 0>(
             CoreStage::PostUpdate,
         )
 
@@ -79,8 +79,7 @@ fn main() -> std::io::Result<()> {
 
         // attach script components to entities
         .add_startup_system(load_a_script);
-
-    // app.run();
+    app.run();
 
     Ok(())
 }
@@ -96,24 +95,23 @@ There are no guarantees that force the script callbacks to be executed fully for
 
 Examples of systems which generate callbacks can be seen below:
 
-#### RLua 
+#### Mlua 
 
 Use valid lua function names for hook names and any number of arguments which are to be passed on to the function. 
 
-Any types implementing the `rlua::ToLua` trait can be used.
+Any types implementing the `mlua::ToLua` trait can be used.
 
 ``` rust
 use bevy::prelude::*;
-use bevy_mod_scripting::{*,events::*};
-use rlua::ToLua;
+use bevy_mod_scripting::{*,events::*,langs::mlu::{mlua,mlua::prelude::*}};
+
 
 #[derive(Clone)]
 pub struct MyLuaArg;
 
 impl<'lua> ToLua<'lua> for MyLuaArg {
-    fn to_lua(self, _lua: rlua::Context<'lua>) -> rlua::Result<rlua::Value<'lua>> {
-        // ...
-        Ok(rlua::Value::Nil)
+    fn to_lua(self, _lua: &'lua mlua::Lua) -> mlua::Result<mlua::Value<'lua>> {
+        Ok(mlua::Value::Nil)
     }
 }
 
@@ -135,8 +133,7 @@ Rhai supports any rust types implementing FuncArgs as function arguments.
 
 ``` rust
 use bevy::prelude::*;
-use rhai::FuncArgs;
-use bevy_mod_scripting::{*,events::*};
+use bevy_mod_scripting::{*,events::*,langs::rhai::FuncArgs};
 
 #[derive(Clone)]
 pub struct MyRhaiArgStruct {
@@ -172,26 +169,16 @@ Scripts are attached to entities in the form of `bevy_mod_scripting::ScriptColle
 
 ``` rust
 use std::sync::Mutex;
-use rlua::prelude::*;
 use bevy::prelude::*;
-use bevy_mod_scripting::*;
-
-
-#[derive(Default)]
-pub struct LuaAPI {}
-
-impl APIProvider for LuaAPI {
-    type Ctx = Mutex<Lua>;
-    fn attach_api(ctx: &mut Self::Ctx) {}
-}
+use bevy_mod_scripting::{*,langs::mlu::mlua};
 
 #[derive(Clone)]
 pub struct MyLuaArg;
 
-impl<'lua> ToLua<'lua> for MyLuaArg {
-    fn to_lua(self, _lua: rlua::Context<'lua>) -> rlua::Result<rlua::Value<'lua>> {
+impl<'lua> mlua::ToLua<'lua> for MyLuaArg {
+    fn to_lua(self, _lua: &'lua mlua::Lua) -> mlua::Result<mlua::Value<'lua>> {
         // ...
-        Ok(rlua::Value::Nil)
+        Ok(mlua::Value::Nil)
     }
 }
 
@@ -207,7 +194,7 @@ pub fn load_a_script(
 
 
     commands.spawn().insert(ScriptCollection::<LuaFile> {
-        scripts: vec![Script::<LuaFile>::new::<RLuaScriptHost<MyLuaArg,LuaAPI>>(
+        scripts: vec![Script::<LuaFile>::new::<RLuaScriptHost<MyLuaArg>>(
             path, handle,
         )],
     });
@@ -216,13 +203,11 @@ pub fn load_a_script(
 
 
 ### Defining an API
-To expose an API to your scripts, implement the APIProvider trait along with any others requested by the specific `ScriptHost` your're using. Use the implementing struct in yout `ScriptHost`s type signature
+To expose an API to your scripts, implement the APIProvider trait. To register this API with your script host use the `add_api_provider` of `App`:
 
 ``` rust
 use std::sync::Mutex;
-use rhai::*;
-use rlua::prelude::*;
-use bevy_mod_scripting::*;
+use bevy_mod_scripting::{*,langs::{mlu::mlua::prelude::*,rhai::*}};
 
 #[derive(Default)]
 pub struct LuaAPI {}
@@ -230,11 +215,14 @@ pub struct LuaAPI {}
 /// the custom Lua api, world is provided via a global pointer,
 /// and callbacks are defined only once at script creation
 impl APIProvider for LuaAPI {
-    type Ctx = Mutex<Lua>;
-    fn attach_api(ctx: &mut Self::Ctx) {
+    type Target = Mutex<Lua>;
+    type DocTarget = LuaDocFragment;
+
+    fn attach_api(&mut self, ctx: &mut Self::Target) -> Result<(),ScriptError> {
         // generate API here
         // world is provided via ctx see examples
         // ...
+        Ok(())
     }
 }
 
@@ -242,19 +230,90 @@ impl APIProvider for LuaAPI {
 pub struct RhaiAPI {}
 
 impl APIProvider for RhaiAPI {
-    type Ctx = RhaiContext;
+    type Target = Engine;
+    type DocTarget = RhaiDocFragment;
 
-    fn attach_api(ctx: &mut Self::Ctx) {
+    fn attach_api(&mut self, ctx: &mut Self::Target) -> Result<(),ScriptError> {
         // ...
+        Ok(())
     }
 }
 
-impl RhaiAPIProvider for RhaiAPI{
-    fn setup_engine(engine : &mut Engine){
-        // ...
-    }
-}
 ```
+
+Register the API providers like so:
+
+```rust,ignore
+    app.add_plugins(DefaultPlugins)
+        .add_plugin(ScriptingPlugin)
+        .add_script_host::<RLuaScriptHost<MyLuaArg>, _>(CoreStage::PostUpdate)
+        .add_script_host::<RhaiScriptHost<MyRhaiArg>, _>(CoreStage::PostUpdate)
+        .add_api_provider::<RLuaScriptHost<MyLuaArg>>(Box::new(LuaAPIProvider))
+        .add_api_provider::<RLuaScriptHost<MyRhaiArg>>(Box::new(RhaiAPIProvider))
+        //...
+```
+
+
+### Documentation Generation
+Documentation features are exposed at runtime via the `update_documentation` builder trait method for `App`:
+
+```rust
+use bevy::prelude::*;
+use bevy_mod_scripting::{*,langs::mlu::mlua};
+
+#[derive(Clone)]
+pub struct MyLuaArg;
+impl<'lua> mlua::ToLua<'lua> for MyLuaArg {
+    fn to_lua(self, lua: &'lua mlua::Lua) -> mlua::Result<mlua::Value<'lua>> {Ok(mlua::Value::Nil)}
+}
+
+fn main() -> std::io::Result<()> {
+    let mut app = App::new();
+
+    app.add_plugins(DefaultPlugins)
+        .add_plugin(ScriptingPlugin)
+        .add_script_host::<RLuaScriptHost<MyLuaArg>, _>(CoreStage::PostUpdate)
+        // Note: This is a noop in optimized builds unless the `doc_always` feature is enabled!
+        // this will pickup any API providers added *BEFOREHAND* like this one
+        // .add_api_provider::<RLuaScriptHost<MyLuaArg>>(Box::new(LuaAPIProvider))
+        .update_documentation::<RLuaScriptHost<MyLuaArg>>()
+        .add_script_handler_stage::<RLuaScriptHost<MyLuaArg>, _, 0, 0>(
+            CoreStage::PostUpdate,
+        );
+
+    Ok(())
+}
+
+```
+Currently we generate documentation at runtime due to the way `tealr` works but this might change in the future as ideally this would be done statically.
+
+It is probably a wise idea to setup a separate executable whose purpose is to only generate documentation, and run it every time before a release. But keeping this step in your main app will make sure your script environment is always setup correctly.
+
+#### Lua
+
+Lua documentation is provided by `tealr`, a wrapper around the `mlua` lua api which decorates their standard types. On top of providing documentation generation it's also capable of generating `d.tl` files which can be used to introduce static typing to lua via the `teal` project (you do not need to use teal to generate documentation). 
+
+This can all be seen at work in the [this example](bevy_mod_scripting/examples/documentation_gen_lua.rs).
+
+##### Teal - Lua static typing
+
+Teal is the reccomended way of introducing lua to your bevy game. This functionality is locked behind the `teal` cargo feature however, since it's quite opinionanted when it comes to your asset structure, and also requires `lua` + `teal` to be installed (see https://github.com/teal-language/tl).
+
+Once enabled, `.tl` files can be loaded as lua scripts in addition to `.lua` files and compiled on the fly. With full hot-reloading support. When you're ready to release your game, you just need to run `tl build` from the `assets/scripts` directory to compile your teal files.
+
+If `teal` is enabled and you've added the `update_documentation` step to your app, every time you run/build your app in development the following will be generated/synced:
+    - a `scripts/doc` directory containing documentation for your lua exposed API
+    - a `scripts/types` directory containing `.d.tl` files for your lua IDE
+    - a `scripts/tlconfig.lua` file will be generated *once* if it does not yet exist
+    - any scripts with a `.tl` extension will be compiled to lua code and type checked
+On optimized release builds none of this happens (no debug_asserts).
+
+The reccomended workflow is to use vscode and the official teal extension, with the script directory as the root of your workspace (as a second window to your main project), this will ensure your environment is properly configured out of the box.
+
+#### Rhai
+
+Rhai currently does not have any utilities existing for generating documentation (for the rust provided API), once something comes out we'll include it.
+
 
 ## Examples 
 
@@ -263,3 +322,6 @@ To see more complex applications of this library have a look at the examples:
 - [lua - bevy console integration](bevy_mod_scripting/examples/console_integration_lua.rs)
 - [rhai - bevy console integration](bevy_mod_scripting/examples/console_integration_rhai.rs)
 - [lua - complex game loop](bevy_mod_scripting/examples/complex_game_loop.rs)
+- [lua - event recipients](bevy_mod_scripting/examples/event_recipients.rs)
+- [lua - documentation generation + lua static typing](bevy_mod_scripting/examples/documentation_gen_lua.rs)
+

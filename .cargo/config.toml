@@ -1,0 +1,2 @@
+[env]
+TARGET_DIR={ value = "target" , relative = true }
