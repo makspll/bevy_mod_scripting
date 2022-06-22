@@ -24,7 +24,7 @@ jobs:
       - uses: actions-rs/cargo@v1
         with:
           command: check
-          args: --features="lua54"
+          args: --features=lua54
 
   fmt:
     name: Rustfmt
@@ -61,4 +61,4 @@ jobs:
       - uses: actions-rs/cargo@v1
         with:
           command: clippy
-          args: -- -D warnings --features="lua54"
+          args: -- -D warnings --features=lua54
