@@ -260,11 +260,6 @@ fn main() -> std::io::Result<()> {
     app.add_plugins(DefaultPlugins)
         .add_plugin(ScriptingPlugin)
         .add_script_host::<RLuaScriptHost<MyLuaArg>, _>(CoreStage::PostUpdate)
-        // this needs to be placed after any `add_api_provider` and `add_script_host` calls
-        // it will generate `doc` and `types` folders under `assets/scripts` containing the documentation and teal declaration files
-        // respectively. See example asset folder to see how they look like. The `teal_file.tl` script in example assets shows the usage of one of those 
-        // declaration files, use the teal vscode extension to explore the type hints!
-
         // Note: This is a noop in optimized builds unless the `doc_always` feature is enabled!
         .update_documentation::<RLuaScriptHost<MyLuaArg>>()
         .add_script_handler_stage::<RLuaScriptHost<MyLuaArg>, _, 0, 0>(
@@ -275,10 +270,30 @@ fn main() -> std::io::Result<()> {
 }
 
 ```
+Currently we generate documentation at runtime due to the way `tealr` works but this might change in the future as ideally this would be done statically.
+
+It is probably a wise idea to setup a separate executable whose purpose is to only generate documentation, and run it every time before a release. But keeping this step in your main app will make sure your script environment is always setup correctly.
 
 #### Lua
-Lua 
 
+Lua documentation is provided by `tealr`, a wrapper around the `mlua` lua api which decorates their standard types. On top of providing documentation generation it's also capable of generating `d.tl` files which can be used to introduce static typing to lua via the `teal` project (you do not need to use teal to generate documentation). 
+
+This can all be seen at work in the [this example](bevy_mod_scripting/examples/documentation_gen_lua.rs).
+
+##### Teal - Lua static typing
+
+Teal is the reccomended way of introducing lua to your bevy game. This functionality is locked behind the `teal` cargo feature however, since it's quite opinionanted when it comes to your asset structure, and also requires `lua` + `teal` to be installed (see https://github.com/teal-language/tl).
+
+Once enabled, `.tl` files can be loaded as lua scripts in addition to `.lua` files and compiled on the fly. With full hot-reloading support. When you're ready to release your game, you just need to run `tl build` from the `assets/scripts` directory to compile your teal files.
+
+If `teal` is enabled and you've added the `update_documentation` step to your app, every time you run/build your app in development the following will be generated/synced:
+    - a `scripts/doc` directory containing documentation for your lua exposed API
+    - a `scripts/types` directory containing `.d.tl` files for your lua IDE
+    - a `scripts/tlconfig.lua` file will be generated *once* if it does not yet exist
+    - any scripts with a `.tl` extension will be compiled to lua code and type checked
+On optimized release builds none of this happens (no debug_asserts).
+
+The reccomended workflow is to use vscode and the official teal extension, with the script directory as the root of your workspace (as a second window to your main project), this will ensure your environment is properly configured out of the box.
 
 #### Rhai
 
@@ -292,3 +307,6 @@ To see more complex applications of this library have a look at the examples:
 - [lua - bevy console integration](bevy_mod_scripting/examples/console_integration_lua.rs)
 - [rhai - bevy console integration](bevy_mod_scripting/examples/console_integration_rhai.rs)
 - [lua - complex game loop](bevy_mod_scripting/examples/complex_game_loop.rs)
+- [lua - event recipients](bevy_mod_scripting/examples/event_recipients.rs)
+- [lua - documentation generation + lua static typing](bevy_mod_scripting/examples/documentation_gen_lua.rs)
+
