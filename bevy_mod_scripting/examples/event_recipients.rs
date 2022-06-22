@@ -4,9 +4,9 @@ use bevy_event_priority::PriorityEventWriter;
 use bevy_mod_scripting::{
     APIProvider, AddScriptHost, AddScriptHostHandler, LuaEvent, LuaFile, RLuaScriptHost,
     Recipients, Script, ScriptCollection, ScriptingPlugin, ScriptError, AddScriptApiProvider, LuaDocFragment,
+    langs::mlu::{mlua,mlua::Value,mlua::prelude::*}
 };
 use rand::prelude::SliceRandom;
-use tealr::mlu::mlua::{Lua, ToLua};
 use std::sync::atomic::Ordering::Relaxed;
 use std::sync::{atomic::AtomicU32, Mutex};
 
@@ -14,7 +14,7 @@ use std::sync::{atomic::AtomicU32, Mutex};
 pub struct MyLuaArg(usize);
 
 impl<'lua> ToLua<'lua> for MyLuaArg {
-    fn to_lua(self, lua: &'lua Lua) -> tealr::mlu::mlua::Result<tealr::mlu::mlua::Value<'lua>> {
+    fn to_lua(self, lua: &'lua Lua) -> mlua::Result<Value<'lua>> {
         self.0.to_lua(lua)
     }
 }

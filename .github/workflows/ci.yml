@@ -24,6 +24,7 @@ jobs:
       - uses: actions-rs/cargo@v1
         with:
           command: check
+          args: --features="lua54"
 
   fmt:
     name: Rustfmt

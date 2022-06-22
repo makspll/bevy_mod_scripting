@@ -4,8 +4,9 @@ use bevy_mod_scripting::{
     events::PriorityEventWriter, APIProvider, AddScriptHost, AddScriptHostHandler, Recipients,
     RhaiContext, RhaiEvent, RhaiFile, RhaiScriptHost, Script, ScriptCollection,
     ScriptErrorEvent, ScriptingPlugin, ScriptError, AddScriptApiProvider, RhaiDocFragment,
+    langs::rhai::*,
+
 };
-use rhai::{FuncArgs, Engine};
 
 /// custom Rhai API, world is provided as a usize (by the script this time), since
 /// Rhai does not allow global/local variable access from a callback

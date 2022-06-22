@@ -4,15 +4,16 @@ use bevy_mod_scripting::{
     events::PriorityEventWriter, APIProvider, AddScriptHost, AddScriptHostHandler, LuaEvent,
     LuaFile, RLuaScriptHost, Recipients, Script, ScriptCollection, ScriptErrorEvent,
     ScriptingPlugin, ScriptError, AddScriptApiProvider, LuaDocFragment,
+    langs::mlu::{mlua,mlua::Value,mlua::prelude::*},
+
 };
-use tealr::mlu::mlua::{Lua, ToLua, Value};
 use std::sync::Mutex;
 
 #[derive(Clone)]
 pub struct MyLuaArg;
 
 impl<'lua> ToLua<'lua> for MyLuaArg {
-    fn to_lua(self, _: &'lua Lua) -> tealr::mlu::mlua::Result<Value<'lua>> {
+    fn to_lua(self, _: &'lua Lua) -> mlua::Result<Value<'lua>> {
         Ok(Value::Nil)
     }
 }

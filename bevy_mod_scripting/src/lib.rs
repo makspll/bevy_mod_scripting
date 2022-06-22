@@ -6,9 +6,12 @@ use bevy::{ecs::schedule::IntoRunCriteria, prelude::*};
 
 pub mod error;
 pub mod hosts;
+pub mod langs{
+    pub use {tealr::mlu,rhai};
+}
 
 pub use bevy_event_priority as events;
-pub use {error::*, hosts::*};
+pub use {error::*, hosts::*,langs::*};
 
 #[derive(Default)]
 /// Bevy plugin enabling run-time scripting

@@ -16,7 +16,7 @@ name = "bevy_mod_scripting"
 path = "src/lib.rs"
 
 [package.metadata.docs.rs]
-features = ["lua54"]
+features = ["lua54","teal","lua_modules"]
 
 [features]
 

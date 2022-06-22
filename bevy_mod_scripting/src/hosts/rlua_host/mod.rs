@@ -51,8 +51,7 @@ impl<A: LuaArg> ScriptEvent for LuaEvent<A> {
 /// ```
 ///    use std::sync::Mutex;
 ///    use bevy::prelude::*;
-///    use rlua::prelude::*;
-///    use bevy_mod_scripting::{RLuaScriptHost, APIProvider};
+///    use bevy_mod_scripting::{*, langs::mlu::{mlua,mlua::prelude::*}};
 ///    
 ///    #[derive(Default)]
 ///    pub struct LuaAPIProvider {}
@@ -61,37 +60,37 @@ impl<A: LuaArg> ScriptEvent for LuaEvent<A> {
 ///    pub struct MyLuaArg;
 ///
 ///    impl<'lua> ToLua<'lua> for MyLuaArg {
-///        fn to_lua(self, _lua: rlua::Context<'lua>) -> rlua::Result<rlua::Value<'lua>> {
-///            Ok(rlua::Value::Nil)
+///        fn to_lua(self, _lua: &'lua mlua::Lua) -> mlua::Result<mlua::Value<'lua>> {
+///            Ok(mlua::Value::Nil)
 ///        }
 ///    }
 
 ///    /// the custom Lua api, world is provided via a global pointer,
 ///    /// and callbacks are defined only once at script creation
 ///    impl APIProvider for LuaAPIProvider {
-///        type Ctx = Mutex<Lua>;
-///        fn attach_api(ctx: &mut Self::Ctx) {
+///        type Target = Mutex<Lua>;
+///        type DocTarget = LuaDocFragment;
+/// 
+///        fn attach_api(&mut self, ctx: &mut Self::Target) -> Result<(),ScriptError> {
 ///            // callbacks can receive any `ToLuaMulti` arguments, here '()' and
 ///            // return any `FromLuaMulti` arguments, here a `usize`
 ///            // check the Rlua documentation for more details
-///            RLuaScriptHost::<MyLuaArg,Self>::register_api_callback(
-///                "your_callback",
-///                |ctx, ()| {
-///                    let globals = ctx.globals();
+///            let ctx = ctx.lock().unwrap();
+/// 
+///            ctx.globals().set("your_callback", ctx.create_function(|ctx, ()| {
+///                 let globals = ctx.globals();
+///                 // retrieve the world pointer
+///                 let world_data: usize = globals.get("world").unwrap();
+///                 let world: &mut World = unsafe { &mut *(world_data as *mut World) };
+///                 // retrieve script entity
+///                 let entity_id : u64 = globals.get("entity").unwrap();
+///                 let entity : Entity = Entity::from_bits(entity_id);
+/// 
+///                 Ok(())
+///            })?)?;
 ///
-///                    // retrieve the world pointer
-///                    let world_data: usize = globals.get("world").unwrap();
-///                    let world: &mut World = unsafe { &mut *(world_data as *mut World) };
 ///                    
-///                    // retrieve script entity
-///                    let entity_id : u64 = globals.get("entity").unwrap();
-///                    let entity : Entity = Entity::from_bits(entity_id);
-///
-///                    
-///                    Ok(())
-///                },
-///                ctx,
-///            ).unwrap();
+///            Ok(())
 ///        }
 ///    }
 /// ```

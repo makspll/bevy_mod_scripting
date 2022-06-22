@@ -31,7 +31,7 @@ impl AssetLoader for LuaLoader {
     ) -> bevy::asset::BoxedFuture<'a, Result<(), anyhow::Error>> {
 
         match load_context.path().extension().map(|s| s.to_str().unwrap()) {
-            // #[cfg(feature="teal")]
+            #[cfg(all(feature="teal",debug_assertions))]
             Some("tl") => {
                 
                 let scripts_dir = &FileAssetIo::get_root_path()
