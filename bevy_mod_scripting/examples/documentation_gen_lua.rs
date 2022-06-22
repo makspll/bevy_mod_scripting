@@ -2,11 +2,13 @@ use bevy::prelude::*;
 use bevy_console::ConsolePlugin;
 use bevy_event_priority::PriorityEventWriter;
 use bevy_mod_scripting::{
-    langs::mlu::{mlua, mlua::prelude::*, mlua::Value},
+    langs::mlu::{mlua, mlua::prelude::*, mlua::Value,TealData},
     APIProvider, AddScriptApiProvider, AddScriptHost, AddScriptHostHandler, GenDocumentation,
     LuaDocFragment, LuaEvent, LuaFile, RLuaScriptHost, Recipients, Script, ScriptCollection,
     ScriptError, ScriptingPlugin,
 };
+use tealr::TypeName;
+
 use rand::prelude::SliceRandom;
 use std::sync::atomic::Ordering::Relaxed;
 use std::sync::{atomic::AtomicU32, Mutex};
