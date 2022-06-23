@@ -1,14 +1,12 @@
+#![allow(unused_variables,unused_parens)]
+
 use bevy::reflect::TypeData;
 use bevy::reflect::TypeRegistry;
-use rlua::{UserData, MetaMethod,Value,Context,Error,Lua};
-use paste::paste;
 use bevy::prelude::*;
 use bevy::math::*;
 use std::sync::Weak;
-use std::{fmt,fmt::{Debug,Display,Formatter}, ops::*,sync::Mutex};
+use std::{fmt,fmt::{Debug}, ops::*,sync::Mutex};
 use phf::{phf_map, Map};
-use std::ops::DerefMut;
-use num::ToPrimitive;
 use crate::LuaFile;
 use crate::LuaRefBase;
 use crate::PrintableReflect;
@@ -16,127 +14,14 @@ use crate::ReflectPtr;
 use crate::Script;
 use crate::ScriptCollection;
 use crate::LuaRef;
-use crate::APIProvider;
+use crate::{APIProvider};
 use crate::ScriptError;
 use std::sync::{Arc};
 use parking_lot::{RwLock};
+use crate::util::impl_tealr_type;
+
 use bevy_mod_scripting_derive::{impl_lua_newtypes,replace};
-
-pub trait LuaWrappable : Reflect + Clone {}
-
-impl <T : Reflect + Clone> LuaWrappable for T {}
-
-
-#[derive(Debug,Clone)]
-pub enum LuaWrapper<T : LuaWrappable> { 
-    Owned(T,Arc<RwLock<()>>),
-    Ref(LuaRef)
-}
-
-impl <T : LuaWrappable>Drop for LuaWrapper<T> {
-    fn drop(&mut self) {
-        match self {
-            Self::Owned(_,valid) => {
-                if valid.is_locked() {
-                    panic!("Something is referencing a lua value and it's about to go out of scope!");
-                }
-            },
-            Self::Ref(_) => {},
-        }
-    }
-}
-
-impl <T : LuaWrappable + Display> Display for LuaWrapper<T> {
-    fn fmt(&self, f: &mut Formatter<'_>) -> Result<(), std::fmt::Error> { 
-        write!(f,"{}", self)
-    }
-}
-
-impl <T : LuaWrappable>LuaWrapper<T> {
-
-    pub fn new(b : T) -> Self {
-        Self::Owned(b,Arc::new(RwLock::new(())))
-    }
-
-    pub fn new_ref(b : &LuaRef) -> Self {
-        Self::Ref(b.clone())
-    }
-
-    /// Perform an operation on the base type and optionally retrieve something by value
-    /// may require a read lock on the world in case this is a reference
-    pub fn val<G,F>(&self, accessor: F) -> G
-        where 
-        F: FnOnce(&T) -> G
-    {
-        match self {
-            Self::Owned(ref v, valid) => {
-                // we lock here in case the accessor has a luaref holding reference to us
-                let lock = valid.read();
-                let o = accessor(v);
-                drop(lock);
-
-                o
-            },
-            Self::Ref(v) => {
-                v.get(|s,_| accessor(s.downcast_ref::<T>().unwrap()))
-            },
-        }
-    }
-
-    pub fn val_mut<G,F>(&mut self, accessor: F) -> G
-        where 
-        F: FnOnce(&mut T) -> G
-    {
-        match self {
-            Self::Owned(ref mut v, valid) => {
-                let lock = valid.read();
-                let o = accessor(v);
-                drop(lock);
-
-                o
-            },
-            Self::Ref(v) => {
-                v.get_mut(|s,_| accessor(s.downcast_mut::<T>().unwrap()))
-            },
-        }
-    }
-
-    /// returns wrapped value by value, 
-    /// may require a read lock on the world in case this is a reference
-    pub fn inner(&self) -> T
-    {
-        match self {
-            Self::Owned(ref v, ..) => v.clone(),//no need to lock here
-            Self::Ref(v) => {
-                v.get(|s,_| s.downcast_ref::<T>().unwrap().clone())
-            },
-        }
-    }
-
-    /// Converts a LuaRef to Self
-    pub fn base_to_self(b: &LuaRef) -> Self {
-        Self::Ref(b.clone())
-    }
-
-    /// Applies Self to a LuaRef.
-    /// may require a write lock on the world
-    pub fn apply_self_to_base(&self, b: &mut LuaRef){
-
-        match self {
-            Self::Owned(ref v, ..) => {
-                // if we own the value, we are not borrowing from the world
-                // we're good to just apply, yeet
-                b.get_mut(|b,_| b.apply(v))
-            },
-            Self::Ref(v) => {
-                // if we are a luaref, we have to be careful with borrows
-                b.apply_luaref(v)
-            }
-        }
-    }
-}
-
-
+use tealr::{mlu::{mlua,TealDataMethods,TealData,mlua::{prelude::*,Error,MetaMethod,Value}}};
 
 
 pub fn get_type_data<T: TypeData + ToOwned<Owned = T>>(w: &mut World, name: &str) -> Result<T,Error> {
@@ -169,6 +54,9 @@ pub struct LuaComponent {
     comp: LuaRef,
 }
 
+impl_tealr_type!(LuaComponent);
+
+
 impl Debug for LuaComponent {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         f.debug_struct("LuaComponent")
@@ -177,8 +65,8 @@ impl Debug for LuaComponent {
     }
 }
 
-impl UserData for LuaComponent {
-    fn add_methods<'lua, T: rlua::UserDataMethods<'lua, Self>>(methods: &mut T) {
+impl TealData for LuaComponent {
+    fn add_methods<'lua, T: TealDataMethods<'lua, Self>>(methods: &mut T) {
         methods.add_meta_method(MetaMethod::ToString, |_, val, _a: Value| {
             val.comp.get(|s,_| {
                 Ok(format!("{:#?}", PrintableReflect(s)))
@@ -210,16 +98,14 @@ impl UserData for LuaComponent {
 pub struct LuaResource {
     res: LuaRef,
 }
+impl_tealr_type!(LuaResource);
 
-impl UserData for LuaResource {
-    fn add_methods<'lua, T: rlua::UserDataMethods<'lua, Self>>(_methods: &mut T) {}
+impl TealData for LuaResource {
+    fn add_methods<'lua, T: TealDataMethods<'lua, Self>>(_methods: &mut T) {}
 }
 
 
-fn wrap_and_test<T : LuaWrappable, F : FnOnce(LuaWrapper<T>)>(val: T, f: F){
-    let a = LuaWrapper::<T>::Owned(val.clone(),Arc::new(RwLock::new(())));
-    f(a);
-}
+
 
 impl_lua_newtypes!{
     ( // test imports
@@ -1166,7 +1052,7 @@ impl_lua_newtypes!{
                                                 let o = (($v)::new(v),f);
                                                 Ok(o)
                                             }};
-            "to_euler" (s=LuaQuat) => {|_,s,e : LuaEulerRot| Ok(s.inner().to_euler(e.rot))};
+            "to_euler" (s=LuaQuat) => {|_,s,e : LuaEulerRot| Ok(s.inner().to_euler(*e))};
         }
     },
     {
@@ -1219,13 +1105,13 @@ impl_lua_newtypes!{
             )
     },
     {
-        bevy_ecs::world::World: NonAssignable{pub world: Weak<RwLock<World>>}
+        bevy_ecs::world::World: NonAssignable(Weak<RwLock<World>>)
 
         impl {
             "add_component" =>  |_, world, (entity, comp_name): (LuaEntity, String)| {
                  // grab this entity before acquiring a lock in case it's a reference
                  let entity = entity.inner();
-                 let w = world.world.upgrade().unwrap();
+                 let w = world.upgrade().unwrap();
                  let w = &mut w.write();
                  let refl: ReflectComponent = get_type_data(w, &comp_name)
                      .map_err(|_| Error::RuntimeError(format!("Not a component {}",comp_name)))?;
@@ -1241,7 +1127,7 @@ impl_lua_newtypes!{
                              comp: refl.clone(), 
                              id,
                              entity: entity,
-                             world: world.world.clone()
+                             world: world.as_ref().clone()
                          }, 
                          path: Some("".to_string()), 
                          r: ReflectPtr::Const(refl.reflect_component(w,entity).unwrap())
@@ -1253,7 +1139,7 @@ impl_lua_newtypes!{
                 // grab this entity before acquiring a lock in case it's a reference
                 let entity = entity.inner();
 
-                let w = world.world.upgrade().unwrap();
+                let w = world.upgrade().unwrap();
                 let w = &mut w.write();
 
                 let refl: ReflectComponent = get_type_data(w, &comp_name)
@@ -1273,7 +1159,7 @@ impl_lua_newtypes!{
                             comp: refl.clone(), 
                             id,
                             entity: entity,
-                            world: world.world.clone()
+                            world: world.as_ref().clone()
                         }, 
                         path: Some("".to_string()), 
                         r: ReflectPtr::Const(refl.reflect_component(w,entity).unwrap())
@@ -1286,7 +1172,7 @@ impl_lua_newtypes!{
                 // grab this entity before acquiring a lock in case it's a reference
                 let entity = entity.inner();
 
-                let w = world.world.upgrade().unwrap();
+                let w = world.upgrade().unwrap();
                 let w = &mut w.write();
 
                 let refl: ReflectComponent = get_type_data(w, &comp_name)
@@ -1306,7 +1192,7 @@ impl_lua_newtypes!{
                                 comp: refl, 
                                 id,
                                 entity: entity,
-                                world: world.world.clone()
+                                world: world.as_ref().clone()
                             }, 
                             path: Some("".to_string()), 
                             r: ReflectPtr::Const(dyn_comp)
@@ -1316,7 +1202,7 @@ impl_lua_newtypes!{
             };
 
             "new_script_entity" => |_, world, name: String| {
-                let w = world.world.upgrade().unwrap();
+                let w = world.upgrade().unwrap();
                 let w = &mut w.write();
 
                 w.resource_scope(|w, r: Mut<AssetServer>| {
@@ -1332,7 +1218,7 @@ impl_lua_newtypes!{
             };
 
             "spawn" => |_, world, ()| {
-                let w = world.world.upgrade().unwrap();
+                let w = world.upgrade().unwrap();
                 let w = &mut w.write();                
                 
                 Ok(LuaEntity::new(w.spawn().id()))
@@ -1340,7 +1226,7 @@ impl_lua_newtypes!{
         }
     },
     {
-        glam::euler::EulerRot: NonAssignable{pub rot: EulerRot} 
+        glam::euler::EulerRot: NonAssignable(EulerRot) 
     }
     ]
 
@@ -1349,12 +1235,12 @@ impl_lua_newtypes!{
 
 
 
+
 #[cfg(test)]
 
 mod test {
-    use crate::{RLuaScriptHost,ScriptHost, LuaEntity, LuaEvent, Recipients, LuaComponent, LuaRef, LuaRefBase, get_type_data, ReflectPtr};
+    use crate::{langs::mlu::{mlua,mlua::prelude::*},RLuaScriptHost,ScriptHost, LuaEntity, LuaEvent, Recipients, LuaComponent, LuaRef, LuaRefBase, get_type_data, ReflectPtr};
     use bevy::{prelude::*,reflect::TypeRegistryArc};
-    use rlua::prelude::*;
     use std::{any::Any,sync::Arc};
     use parking_lot::RwLock;
 
@@ -1362,7 +1248,7 @@ mod test {
     struct TestArg(LuaEntity);
 
     impl <'lua>ToLua<'lua> for TestArg {
-        fn to_lua(self, ctx: LuaContext<'lua>) -> Result<LuaValue<'lua>, rlua::Error> { 
+        fn to_lua(self, ctx: &'lua Lua) -> Result<LuaValue<'lua>, mlua::Error> { 
             self.0.to_lua(ctx) 
         }
     }

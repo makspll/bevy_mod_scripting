@@ -5,7 +5,7 @@ use std::collections::{HashSet, HashMap};
 use proc_macro2::Span;
 use syn::{*, parse::*, punctuated::*, token::*};
 
-use crate::{lua_block::{LuaBlock, LuaMethodType, MethodMacroArg, LuaMethod, LuaClosure},TokenStream2, newtype::NewtypeArgs, utils::impl_parse_enum, EmptyToken};
+use crate::{userdata_block::{UserdataBlock, LuaMethodType, MethodMacroArg, LuaMethod, LuaClosure},TokenStream2, newtype::NewtypeArgs, utils::impl_parse_enum, EmptyToken};
 use paste::paste;
 
 
@@ -14,50 +14,6 @@ use quote::{ToTokens,quote, quote_spanned};
 pub(crate) use math::*;
 
 
-#[derive(PartialEq,Eq,Hash,Debug)]
-pub(crate) struct MethodMacroInvokation{
-    target: TypePath,
-    arrow: Token![->],
-    identifier: LuaMethodType,
-    paren: Paren,
-    args : Punctuated<MethodMacroArg,Token![,]>
-}
-
-impl Parse for MethodMacroInvokation {
-    fn parse(input: ParseStream) -> Result<Self> {
-        let f;
-        Ok(Self{
-            target: input.parse()?,
-            arrow: input.parse()?,
-            identifier: input.parse()?,
-            paren: parenthesized!(f in input),
-            args: f.parse_terminated(MethodMacroArg::parse)?,
-        })
-    }
-}
-
-
-#[derive(PartialEq,Eq,Hash)]
-pub(crate) struct AutoMethod {
-    ident: Ident,
-    paren: Paren,
-    args: Punctuated<Ident,Token![,]>,
-    out: Option<Ident>,
-}
-
-
-
-impl Parse for AutoMethod {
-    fn parse(input: ParseStream) -> Result<Self> {
-        let f;
-        Ok(Self{
-            ident: input.parse()?,
-            paren: parenthesized!(f in input),
-            args: f.parse_terminated(Ident::parse)?,
-            out: if input.peek(Token![->]) {input.parse::<Token![->]>()?;input.parse()?} else {None},
-        })
-    }
-}
 
 impl_parse_enum!(input,ident:
 #[derive(PartialEq,Eq,Hash)]
@@ -123,26 +79,18 @@ pub(crate) enum DeriveFlag {
 
     
 impl DeriveFlag {
-    pub fn into_impl_block(&self, newtype_args : &NewtypeArgs) -> Option<ItemImpl>{
 
-        let wrapper_type = &newtype_args.short_wrapper_type;
-
-        match self {
-            _ => None
-        }
-    }
-
-    pub fn into_lua_block(&self, newtype_args : &NewtypeArgs, all_methods: &HashMap<String,Vec<LuaMethod>>) -> Option<LuaBlock> {
+    pub fn gen_userdata_block(&self, newtype_args : &NewtypeArgs, all_methods: &HashMap<String,Vec<LuaMethod>>) -> Option<UserdataBlock> {
 
         match self {
             DeriveFlag::DebugToString{ident} => Some(parse_quote_spanned!{ident.span()=>
                 impl {
-                    (rlua::MetaMethod::ToString) => |_,s,()| Ok(format!("{:?}",s));
+                    (mlua::MetaMethod::ToString) => |_,s,()| Ok(format!("{:?}",s));
                 }
             }),
             DeriveFlag::DisplayToString{ident} => Some(parse_quote_spanned!{ident.span()=>
                 impl {
-                    (rlua::MetaMethod::ToString) => |_,s,()| Ok(format!("{}",s));
+                    (mlua::MetaMethod::ToString) => |_,s,()| Ok(format!("{}",s));
                 }
             }),
             DeriveFlag::AutoMethods { ident,methods , ..} => {
@@ -251,7 +199,7 @@ impl DeriveFlag {
                 let body_ud_borrow = quote_spanned! {ident.span()=>
                     // figure out which side is the newtype
 
-                    let (ud,op_on_rhs) : (&rlua::AnyUserData,bool) = match (&lhs,&rhs) {
+                    let (ud,op_on_rhs) : (&mlua::AnyUserData,bool) = match (&lhs,&rhs) {
                         (Value::UserData(v),_) => (v,true),
                         (_,Value::UserData(v)) => (v,false),
                         _ => panic!("Something went wrong"),   
@@ -348,13 +296,13 @@ impl DeriveFlag {
                         #number_handlers_lhs
                     };
 
-                    Err(rlua::Error::RuntimeError("Attempted to perform invalid arithmetic with userdata".to_owned()))
+                    Err(mlua::Error::RuntimeError("Attempted to perform invalid arithmetic with userdata".to_owned()))
                 };
 
 
                 Some(parse_quote_spanned! {ident.span()=>
                     impl {
-                        fn (rlua::MetaMethod::#name) => |ctx,(lhs,rhs) :(Value,Value)| {
+                        fn (mlua::MetaMethod::#name) => |ctx,(lhs,rhs) :(Value,Value)| {
                             #body_ud_borrow
                             #op_handling
                         };
@@ -366,7 +314,7 @@ impl DeriveFlag {
                 let body = op.gen_unary_call_expr(&newtype_args.short_wrapper_type, name, "ud");
                 Some(parse_quote_spanned! {ident.span()=>
                     impl {
-                        (rlua::MetaMethod::#name) => |_,ud,()|{
+                        (mlua::MetaMethod::#name) => |_,ud,()|{
                             #body
                         }
                     }
@@ -379,5 +327,49 @@ impl DeriveFlag {
 
 
 
+#[derive(PartialEq,Eq,Hash,Debug)]
+pub(crate) struct MethodMacroInvokation{
+    target: TypePath,
+    arrow: Token![->],
+    identifier: LuaMethodType,
+    paren: Paren,
+    args : Punctuated<MethodMacroArg,Token![,]>
+}
+
+impl Parse for MethodMacroInvokation {
+    fn parse(input: ParseStream) -> Result<Self> {
+        let f;
+        Ok(Self{
+            target: input.parse()?,
+            arrow: input.parse()?,
+            identifier: input.parse()?,
+            paren: parenthesized!(f in input),
+            args: f.parse_terminated(MethodMacroArg::parse)?,
+        })
+    }
+}
+
+
+#[derive(PartialEq,Eq,Hash)]
+pub(crate) struct AutoMethod {
+    ident: Ident,
+    paren: Paren,
+    args: Punctuated<Ident,Token![,]>,
+    out: Option<Ident>,
+}
+
+
+
+impl Parse for AutoMethod {
+    fn parse(input: ParseStream) -> Result<Self> {
+        let f;
+        Ok(Self{
+            ident: input.parse()?,
+            paren: parenthesized!(f in input),
+            args: f.parse_terminated(Ident::parse)?,
+            out: if input.peek(Token![->]) {input.parse::<Token![->]>()?;input.parse()?} else {None},
+        })
+    }
+}
 
 

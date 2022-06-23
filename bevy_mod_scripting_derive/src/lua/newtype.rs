@@ -1,9 +1,9 @@
 use std::collections::{HashSet, HashMap};
 
 use proc_macro2::{TokenStream, Span};
-use syn::{*, punctuated::*, token::*, parse::{ParseStream, Parse}, spanned::Spanned};
+use syn::{*,Type, punctuated::*, token::*, parse::{ParseStream, Parse}, spanned::Spanned};
 
-use crate::{AdditionalImplBlock, lua_block::{LuaBlock, LuaMethod,LuaMethodType}, impls::DeriveFlag, utils::impl_parse_enum};
+use crate::{AdditionalImplBlock, userdata_block::{UserdataBlock, LuaMethod,LuaMethodType}, derive_flags::DeriveFlag, utils::impl_parse_enum};
 use quote::{quote, ToTokens, quote_spanned};
 
 
@@ -56,14 +56,14 @@ pub(crate) enum NewtypeVariation {
     Full => {Ok(Self::Full {ident})},
     Primitive => {Ok(Self::Primitive{ident})},
     NonAssignable{
-        braces: Brace,
-        fields: Punctuated<Field,Token![,]>
+        braces: Paren,
+        field: Type
     } => {
         let f;
         Ok(Self::NonAssignable{
             ident,
-            braces: braced!(f in input), 
-            fields: f.parse_terminated(Field::parse_named)?,
+            braces: parenthesized!(f in input), 
+            field: f.parse()?,
         })
     },
 }
@@ -73,7 +73,7 @@ pub(crate) struct Newtype {
     pub braces: Brace,
     pub args: NewtypeArgs,
     pub additional_functions: Option<AdditionalImplBlock>,
-    pub additional_lua_functions: Option<LuaBlock>
+    pub additional_lua_functions: Option<UserdataBlock>
 }
 
 impl Newtype {
@@ -175,10 +175,6 @@ impl Newtype {
     pub fn to_applied_tokens(&self, all_methods:&mut HashMap<String,Vec<LuaMethod>> ) -> TokenStream {
         let name : &Ident = &self.args.short_wrapper_type.path.get_ident().unwrap();
 
-        let functions = self.additional_functions.as_ref().map(|v| &v.functions);
-
-        let trait_impls = self.args.flags.iter()
-            .filter_map(|s| s.into_impl_block(&self.args));
 
         let mut our_functions : Vec<LuaMethod> = self.additional_lua_functions
             .as_ref()
@@ -186,8 +182,8 @@ impl Newtype {
             .unwrap_or_default();
 
         our_functions.extend(self.args.flags.iter()
-            .filter_map(|s| s.into_lua_block(&self.args,&all_methods))
-            .flat_map(|m : LuaBlock| m.functions.iter().cloned().collect::<Vec<LuaMethod>>()));
+            .filter_map(|s| s.gen_userdata_block(&self.args,&all_methods))
+            .flat_map(|m : UserdataBlock| m.functions.iter().cloned().collect::<Vec<LuaMethod>>()));
 
         // generate call expressions
         let call_exprs : Punctuated<TokenStream,Token![;]> = our_functions.iter()
@@ -204,12 +200,12 @@ impl Newtype {
             NewtypeVariation::Full{..} => Some(quote!{
                 pub type #name = crate::LuaWrapper<#base_type>;
             }),
-            NewtypeVariation::NonAssignable { fields , ..} => Some(quote!{
-                #[derive(Clone)]
-                pub struct #name{#fields}
+            NewtypeVariation::NonAssignable { field , ..} => Some(quote!{
+                pub type #name = crate::AnyLuaWrapper<#field>;
             }),
             NewtypeVariation::Primitive{..} => None
         };
+        let functions = self.additional_functions.as_ref().map(|v| &v.functions);
 
         let impl_block = struct_def.as_ref()
             .and_then(|_| functions)
@@ -217,14 +213,19 @@ impl Newtype {
                 Some(quote!{
                     impl #name {
                         #f
-                    }
-                })
-        );
+                    };
+                }));
+        
+        let tealr_impls = struct_def.as_ref().and_then(|_|
+            Some(quote!{
+                impl_tealr_type!(#name);
+            }));
+
 
         let lua_impl_block = struct_def.as_ref().map(|_| 
             quote!{
-                impl rlua::UserData for #name {
-                    fn add_methods<'lua, T: rlua::UserDataMethods<'lua, Self>>(methods: &mut T) {
+                impl TealData for #name {
+                    fn add_methods<'lua, T: TealDataMethods<'lua, Self>>(methods: &mut T) {
                         #call_exprs;
                     }
                 }
@@ -234,8 +235,8 @@ impl Newtype {
         quote!{
             #struct_def
             #impl_block
+            #tealr_impls
             #lua_impl_block
-            #(#trait_impls)*
         }
 
     }

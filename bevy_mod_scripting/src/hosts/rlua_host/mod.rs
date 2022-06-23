@@ -194,7 +194,7 @@ impl<A: LuaArg> ScriptHost for RLuaScriptHost<A> {
                         .map_err(|e| ScriptError::Other(e.to_string()))
                         .and_then(|ctx| {
                             let globals = ctx.globals();
-                            globals.set("world", LuaWorld{world:Arc::downgrade(&world_arc)})?;
+                            globals.set("world", LuaWorld::new(Arc::downgrade(&world_arc)))?;
                             globals.set("entity", LuaEntity::new(fd.entity))?;
                             globals.set("script", fd.sid)?;
 

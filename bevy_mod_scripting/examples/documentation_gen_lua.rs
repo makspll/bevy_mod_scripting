@@ -20,6 +20,7 @@ impl<'lua> ToLua<'lua> for MyLuaArg {
     }
 }
 
+
 #[derive(Clone, tealr::MluaUserData, TypeName)]
 /// This is acts as a documentation and function holder
 /// We can add some general documentation about what it holds
@@ -93,7 +94,7 @@ fn load_our_script(server: Res<AssetServer>, mut commands: Commands) {
     let handle = server.load::<LuaFile, &str>(path);
 
     commands.spawn().insert(ScriptCollection::<LuaFile> {
-        scripts: vec![Script::<LuaFile>::new::<RLuaScriptHost<MyLuaArg>>(
+        scripts: vec![Script::<LuaFile>::new(
             path.to_string(),
             handle,
         )],
@@ -116,7 +117,6 @@ fn main() -> std::io::Result<()> {
 
     app.add_plugins(DefaultPlugins)
         .add_plugin(ScriptingPlugin)
-        .add_plugin(ConsolePlugin)
         .add_script_host::<RLuaScriptHost<MyLuaArg>, _>(CoreStage::PostUpdate)
         .add_api_provider::<RLuaScriptHost<MyLuaArg>>(Box::new(LuaAPIProvider))
         // this needs to be placed after any `add_api_provider` and `add_script_host` calls

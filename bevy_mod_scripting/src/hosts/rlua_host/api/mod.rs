@@ -1,11 +1,12 @@
 pub mod bevy_types;
+pub mod wrappers;
+
 use std::{ops::DerefMut,sync::Weak};
 use parking_lot::{RwLock};
 use bevy::{
     prelude::*,
     reflect::{ReflectRef, TypeRegistry, GetPath}, ecs::component::ComponentId,
 };
-use rlua::{Context, MetaMethod, ToLua, UserData, Value};
 use std::{
     cell::Ref,
     fmt,
@@ -13,34 +14,36 @@ use std::{
 
 use crate::{PrintableReflect};
 use anyhow::Result;
+use tealr::mlu::{mlua,mlua::{prelude::*,Value,UserData,MetaMethod}, TealData};
 
-pub use bevy_types::*;
+pub use {bevy_types::*, wrappers::*};
 
 #[reflect_trait]
 pub trait CustomUserData {
-    /// a version of `rlua::to_lua` which does not consume the object
-    fn ref_to_lua<'lua>(&self, lua: Context<'lua>) -> rlua::Result<Value<'lua>>;
+    /// a version of `mlua::to_lua` which does not consume the object
+    fn ref_to_lua<'lua>(&self, lua: &'lua Lua) -> mlua::Result<Value<'lua>>;
 
-    fn apply_lua<'lua>(&mut self, lua: Context<'lua>, new_val: Value<'lua>) -> rlua::Result<()>;
+    fn apply_lua<'lua>(&mut self, lua: &'lua Lua, new_val: Value<'lua>) -> mlua::Result<()>;
 }
 
 impl<T: Clone + UserData + Send + 'static> CustomUserData for T {
-    fn ref_to_lua<'lua>(&self, lua: Context<'lua>) -> rlua::Result<Value<'lua>> {
+    fn ref_to_lua<'lua>(&self, lua: &'lua Lua) -> mlua::Result<Value<'lua>> {
         Ok(Value::UserData(lua.create_userdata(self.clone())?))
     }
 
-    fn apply_lua<'lua>(&mut self, _lua: Context<'lua>, new_val: Value<'lua>) -> rlua::Result<()> {
+    fn apply_lua<'lua>(&mut self, _lua: &'lua Lua, new_val: Value<'lua>) -> mlua::Result<()> {
         if let Value::UserData(v) = new_val {
             let s: Ref<T> = v.borrow::<T>()?;
             *self = s.clone();
             Ok(())
         } else {
-            Err(rlua::Error::RuntimeError(
+            Err(mlua::Error::RuntimeError(
                 "Error in assigning to custom user data".to_owned(),
             ))
         }
     }
 }
+
 
 pub struct LuaCustomUserData {
     val: LuaRef,
@@ -48,7 +51,7 @@ pub struct LuaCustomUserData {
 }
 
 impl<'lua> ToLua<'lua> for LuaCustomUserData {
-    fn to_lua(self, lua: Context<'lua>) -> rlua::Result<Value<'lua>> where {
+    fn to_lua(self, lua: &'lua Lua) -> mlua::Result<Value<'lua>> where {
         self.val.get(|s,_| {
             let usrdata = self.refl.get(s);
             match usrdata {
@@ -307,10 +310,10 @@ impl LuaRef {
     }
 
     /// Accesses a subfield of the underlying reflect value given a string path using the `bevy_reflect::path::GetPath` trait
-    pub fn path_ref(&self, path: &str) -> Result<Self,rlua::Error> {
+    pub fn path_ref(&self, path: &str) -> Result<Self,mlua::Error> {
         self.get(|s,_| {
             let subfield = s.path(path)
-                .map_err(|_e| rlua::Error::RuntimeError(format!("Cannot access field `{}`", path)))?;
+                .map_err(|_e| mlua::Error::RuntimeError(format!("Cannot access field `{}`", path)))?;
 
             Ok(LuaRef {
                 root: self.root.clone(),
@@ -324,7 +327,7 @@ impl LuaRef {
 
     /// Accesses a subfield of the underlying reflect value given a lua value index/path using the `bevy_reflect::path::GetPath` trait.
     /// Accepts both array expressions and integer indices as well as string paths.
-    pub fn path_ref_lua(&self, path: Value) -> Result<Self,rlua::Error> {
+    pub fn path_ref_lua(&self, path: Value) -> Result<Self,mlua::Error> {
         self.get(|s,_| {
             let r = s.reflect_ref();
 
@@ -337,7 +340,7 @@ impl LuaRef {
                         ReflectRef::TupleStruct(v) => v.field(idx).unwrap(),
                         ReflectRef::List(v) => v.get(idx).unwrap(),
                         ReflectRef::Map(v) => v.get(&(idx)).unwrap(),
-                        _ => return Err(rlua::Error::RuntimeError(format!("Tried to index a primitive rust type {:#?}", self))),
+                        _ => return Err(mlua::Error::RuntimeError(format!("Tried to index a primitive rust type {:#?}", self))),
                     };
     
                     (path_str,field)
@@ -347,12 +350,12 @@ impl LuaRef {
                     let field = match r {
                         ReflectRef::Map(v) => v.get(&path_str.to_owned()).unwrap(),
                         ReflectRef::Struct(v) => v.field(&path_str).unwrap(),
-                        _ => return Err(rlua::Error::RuntimeError(format!("Tried to index a primitive rust type {:#?}", self))),
+                        _ => return Err(mlua::Error::RuntimeError(format!("Tried to index a primitive rust type {:#?}", self))),
                     };
     
                     (path_str,field)
                 }
-                _ => return Err(rlua::Error::RuntimeError(format!("Cannot index a rust object with {:?}", path))),
+                _ => return Err(mlua::Error::RuntimeError(format!("Cannot index a rust object with {:?}", path))),
             };
     
             Ok(LuaRef{ 
@@ -370,7 +373,7 @@ impl LuaRef {
     ///     it is converted to a wrapper type which supports a subset of the original methods.
     /// - If the type is registered with the `TypeRegistry` and implemnets `CustomUserData` it is converted using the `CustomUserData::ref_to_lua` function
     /// - If the type is not any of the above, it's converted to lua as a plain `LuaRef` UserData  
-    pub fn convert_to_lua<'lua>(self, ctx: Context<'lua>) -> Result<Value<'lua>,rlua::Error> {
+    pub fn convert_to_lua<'lua>(self, ctx: &'lua Lua) -> Result<Value<'lua>,mlua::Error> {
         self.get(|s,_| {
 
             if let Some(f) = BEVY_TO_LUA.get(s.type_name()){
@@ -381,7 +384,7 @@ impl LuaRef {
                     .get::<_, LuaWorld>("world")
                     .unwrap();
 
-                let world = luaworld.world.upgrade().unwrap();
+                let world = luaworld.upgrade().unwrap();
                 let world = &mut world.read();
     
                 let typedata = world.resource::<TypeRegistry>();
@@ -412,7 +415,7 @@ impl LuaRef {
 
     /// Applies a lua value to self by carefuly acquiring locks and cloning if necessary.
     /// This is semantically equivalent to the `bevy_reflect::Reflect::apply` method. 
-    pub fn apply_lua<'lua>(&mut self, ctx: Context<'lua>, v: Value<'lua>) -> Result<(),rlua::Error> {
+    pub fn apply_lua<'lua>(&mut self, ctx: &'lua Lua, v: Value<'lua>) -> Result<(),mlua::Error> {
     
         let type_name = self.get(|s,_| s.type_name().to_owned());
 
@@ -427,7 +430,7 @@ impl LuaRef {
 
         // remove typedata from the world to be able to manipulate world 
         let typedata = {
-            let world = luaworld.world.upgrade().unwrap();
+            let world = luaworld.upgrade().unwrap();
             let world = &mut world.write();
             world.remove_resource::<TypeRegistry>().unwrap()
         };
@@ -452,7 +455,7 @@ impl LuaRef {
             Ok(o) => {
                 drop(g);
 
-                let world = luaworld.world.upgrade().unwrap();
+                let world = luaworld.upgrade().unwrap();
                 let world = &mut world.write();
                 world.insert_resource(typedata);
 
@@ -462,7 +465,7 @@ impl LuaRef {
         }};
 
         drop(g);
-        let world = luaworld.world.upgrade().unwrap();
+        let world = luaworld.upgrade().unwrap();
         let world = &mut world.write();
         world.insert_resource(typedata);
 
@@ -476,7 +479,7 @@ impl LuaRef {
             }
         }
 
-        Err(rlua::Error::RuntimeError("Invalid assignment".to_owned()))
+        Err(mlua::Error::RuntimeError("Invalid assignment".to_owned()))
         
     }
 }
@@ -485,7 +488,7 @@ impl LuaRef {
 
 /// Plain reference based UserData, the default lua representation of non-supported types
 impl UserData for LuaRef {
-    fn add_methods<'lua, T: rlua::UserDataMethods<'lua, Self>>(methods: &mut T) {
+    fn add_methods<'lua, T: mlua::UserDataMethods<'lua, Self>>(methods: &mut T) {
         methods.add_meta_method(MetaMethod::ToString, |_, val, ()| {
             val.get(|s,_| 
                 Ok(format!("{:#?}", PrintableReflect(s))

@@ -1,9 +1,6 @@
 #![allow(dead_code,unused_variables,unused_features)]
 
-pub(crate) mod lua_block;
-pub(crate) mod impls;
-pub(crate) mod newtype;
-pub(crate) mod utils;
+pub(crate) mod lua;
 
 use std::{collections::{HashSet, HashMap}};
 
@@ -14,7 +11,7 @@ use quote::{quote, ToTokens, TokenStreamExt};
 use rlua::MetaMethod;
 use syn::{parse::{ParseStream, Parse, ParseBuffer},Result, punctuated::Punctuated, Token, Ident, Error, parse_macro_input, Field, Visibility, ItemFn, braced, Type, token::{Brace, Token, self, Dot, Paren, Bracket, Bang}, ExprClosure, PatPath, LitStr, Path, ExprMethodCall, Expr, ExprPath, PathSegment, PathArguments, parse_quote, bracketed, parenthesized, parse_quote_spanned, UsePath, UseTree, ItemUse};
 
-pub(crate) use {impls::*,lua_block::*,newtype::*,utils::*};
+pub(crate) use lua::*;
 
 
 
@@ -95,17 +92,19 @@ pub fn impl_lua_newtypes(input: TokenStream) -> TokenStream {
     let lookup_tables = quote!{
 
         pub static BEVY_TO_LUA: Map<&'static str,
-            for<'l> fn(&LuaRef,Context<'l>) -> Value<'l>
+            for<'l> fn(&LuaRef,&'l Lua) -> Value<'l>
             > = phf_map!{
-                #to_lua,
+                // #to_lua,
             };
 
         pub static APPLY_LUA_TO_BEVY: Map<&'static str,
-            for<'l> fn(&mut LuaRef, Context<'l>, Value<'l>) -> Result<(),Error>
+            for<'l> fn(&mut LuaRef,&'l Lua, Value<'l>) -> Result<(),Error>
             > = phf_map!{
-                #from_lua,
+                // #from_lua,
             };
     };
+
+
 
     let global_method_calls : TokenStream2 = new_types.new_types.iter().flat_map(|base|  
         if let Some(ref b) = base.additional_lua_functions {
@@ -135,17 +134,15 @@ pub fn impl_lua_newtypes(input: TokenStream) -> TokenStream {
         pub struct LuaBevyAPI;
 
         impl APIProvider for LuaBevyAPI{
-            type Ctx = Mutex<Lua>;
+            type Target = Mutex<Lua>;
+            type DocTarget = crate::LuaDocFragment;
 
+            fn attach_api(&mut self, c: &mut <Self as APIProvider>::Target) -> Result<(),ScriptError> {
+                let lua_ctx = c.lock().expect("Could not get lock on script context");
 
-            fn attach_api(c: &mut <Self as APIProvider>::Ctx) {
-                c.lock()
-                .expect("Could not get lock on script context")
-                .context::<_, Result<(), ScriptError>>(|lua_ctx| {
-                    let g = lua_ctx.globals();
-                    #global_method_calls;
-                    Ok(())
-                }).unwrap();
+                let g = lua_ctx.globals();
+                #global_method_calls;
+                Ok(())
 
             }
         }

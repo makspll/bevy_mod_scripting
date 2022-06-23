@@ -1,9 +1,7 @@
-use std::{collections::HashMap, ops::Neg};
 
-use proc_macro2::{Span, TokenStream,Delimiter, Group, TokenTree};
-use syn::{*, parse::{ParseStream, Parse, ParseBuffer}, token::{Brace, Paren, Token}, punctuated::Punctuated, spanned::Spanned};
+use proc_macro2::{Span, TokenStream};
+use syn::{*, parse::{ParseStream, Parse}, token::{Brace, Paren}, punctuated::Punctuated, spanned::Spanned};
 use quote::{quote, ToTokens, quote_spanned};
-use crate::{impls::*, newtype::NewtypeArgs};
 use convert_case::{Case, Casing};
 
 pub(crate) trait ToLuaMethod {
@@ -14,13 +12,13 @@ pub(crate) trait ToLuaMethod {
 
 
 #[derive(Debug)]
-pub(crate) struct LuaBlock {
+pub(crate) struct UserdataBlock {
     pub impl_token: Token![impl],
     pub impl_braces: Brace,
     pub functions: Punctuated<LuaMethod,Token![;]>
 }
 
-impl Parse for LuaBlock {
+impl Parse for UserdataBlock {
     fn parse(input: ParseStream) -> Result<Self> {
         let f;
 
