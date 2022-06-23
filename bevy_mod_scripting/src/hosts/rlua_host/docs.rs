@@ -1,7 +1,7 @@
 use std::{
     fs::{self, File},
     io::Write,
-    process::Command,
+    process::Command, env, path::PathBuf,
 };
 
 use bevy::asset::FileAssetIo;
@@ -38,7 +38,10 @@ impl DocFragment for LuaDocFragment {
     fn gen_docs(self) -> Result<(), ScriptError> {
         let script_asset_path = &FileAssetIo::get_root_path().join("assets").join("scripts");
 
-        let script_doc_dir = &script_asset_path.join("doc");
+        let script_doc_dir = &env::var("SCRIPT_DOC_DIR")
+                .map(|v| v.into())
+                .unwrap_or_else(|e| script_asset_path.join("doc"));
+
         let script_types_dir = &script_asset_path.join("types");
 
         fs::create_dir_all(script_doc_dir)
@@ -58,8 +61,9 @@ impl DocFragment for LuaDocFragment {
         let json = serde_json::to_string_pretty(&tw)
             .map_err(|e| ScriptError::DocGenError(e.to_string()))?;
 
-        let temp_dir = &script_asset_path.join(".temp.json");
+        let temp_dir = &std::env::temp_dir().join("bevy_mod_scripting.temp.json");
 
+       
         let mut json_file =
             File::create(temp_dir).map_err(|e| ScriptError::DocGenError(e.to_string()))?;
 
@@ -68,8 +72,6 @@ impl DocFragment for LuaDocFragment {
             .map_err(|e| ScriptError::DocGenError(e.to_string()))?;
         json_file.flush().unwrap();
 
-        // generate declaration file
-        let decl_file_contents = tw.generate("global_types", false).unwrap();
 
         Command::new("tealr_doc_gen")
             .args([
@@ -86,6 +88,12 @@ impl DocFragment for LuaDocFragment {
         fs::remove_file(&temp_dir).unwrap();
 
         // now generate teal declaration (d.tl) file
+
+        #[cfg(feature="teal")]
+        {
+        // generate declaration file
+        let decl_file_contents = tw.generate("global_types", false).unwrap();
+
         let mut decl_file =
             File::create(decl_path).map_err(|e| ScriptError::DocGenError(e.to_string()))?;
 
@@ -113,7 +121,7 @@ return {
                 )
                 .map_err(|e| ScriptError::DocGenError(e.to_string()))?;
         }
-
+        }
         Ok(())
     }
 }

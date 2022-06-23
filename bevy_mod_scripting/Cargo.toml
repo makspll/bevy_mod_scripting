@@ -16,7 +16,7 @@ name = "bevy_mod_scripting"
 path = "src/lib.rs"
 
 [package.metadata.docs.rs]
-features = ["lua54","teal","lua_modules"]
+features = ["lua54","teal","unsafe_lua_modules"]
 
 [features]
 
@@ -24,7 +24,7 @@ features = ["lua54","teal","lua_modules"]
 doc_always = []
 
 # enables loading possibly unsafe lua modules by lua scripts
-lua_modules = []
+unsafe_lua_modules = []
 
 # enable teal utilities
 teal = []

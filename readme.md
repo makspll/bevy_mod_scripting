@@ -31,7 +31,7 @@ The API will likely change in the future as more scripting support is rolled out
 - [ ] General Bevy API for all script hosts (i.e. Add component, remove component etc.). On track for Bevy 0.8
 - [x] Utilities for generating script native documentation 
 - [ ] Tests
-- [x] Optionally loading external lua libraries (via require) (enabled with `lua_modules` cargo feature)
+- [x] Optionally loading external lua libraries via `require` (enabled with `unsafe_lua_modules` cargo feature due to potential unsafety)
 
 ## Usage
 
@@ -314,6 +314,9 @@ The reccomended workflow is to use vscode and the official teal extension, with 
 
 Rhai currently does not have any utilities existing for generating documentation (for the rust provided API), once something comes out we'll include it.
 
+## Configuration
+
+- `SCRIPT_DOC_DIR` - documentation is generated in `assets/scripts/docs` or to the path in this ENV variable if it's set.
 
 ## Examples 
 
