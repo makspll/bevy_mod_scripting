@@ -9,15 +9,13 @@ use bevy_mod_scripting::{
 };
 use tealr::TypeName;
 
-use rand::prelude::SliceRandom;
-use std::sync::atomic::Ordering::Relaxed;
-use std::sync::{atomic::AtomicU32, Mutex};
+use std::sync::Mutex;
 
 #[derive(Clone)]
 pub struct MyLuaArg;
 
 impl<'lua> ToLua<'lua> for MyLuaArg {
-    fn to_lua(self, lua: &'lua Lua) -> mlua::Result<mlua::Value<'lua>> {
+    fn to_lua(self, _lua: &'lua Lua) -> mlua::Result<mlua::Value<'lua>> {
         Ok(Value::Nil)
     }
 }
