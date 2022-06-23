@@ -3,7 +3,7 @@ use bevy::{
     asset::{AssetLoader, LoadedAsset},
     reflect::TypeUuid,
 };
-use anyhow::anyhow;
+
 use std::sync::Arc;
 
 #[cfg(all(feature = "teal", debug_assertions))]
@@ -61,7 +61,8 @@ impl AssetLoader for LuaLoader {
                         });
                     }
                 } else {
-                    fs::remove_file(temp_file_path).expect("Something went wrong running `tl check`");
+                    fs::remove_file(temp_file_path)
+                        .expect("Something went wrong running `tl check`");
                     panic!("Something went wrong running `tl check`");
                 }
 

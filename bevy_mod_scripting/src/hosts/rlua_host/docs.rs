@@ -1,7 +1,8 @@
 use std::{
+    env,
     fs::{self, File},
     io::Write,
-    process::Command, env, path::PathBuf,
+    process::Command,
 };
 
 use bevy::asset::FileAssetIo;
@@ -39,8 +40,8 @@ impl DocFragment for LuaDocFragment {
         let script_asset_path = &FileAssetIo::get_root_path().join("assets").join("scripts");
 
         let script_doc_dir = &env::var("SCRIPT_DOC_DIR")
-                .map(|v| v.into())
-                .unwrap_or_else(|e| script_asset_path.join("doc"));
+            .map(|v| v.into())
+            .unwrap_or_else(|_e| script_asset_path.join("doc"));
 
         let script_types_dir = &script_asset_path.join("types");
 
@@ -49,7 +50,7 @@ impl DocFragment for LuaDocFragment {
         fs::create_dir_all(script_types_dir)
             .expect("Could not create `.../assets/scripts/types` directories");
 
-        let decl_path = &script_types_dir.join("global_types.d.tl");
+        let _decl_path = &script_types_dir.join("global_types.d.tl");
 
         // build the type walker
         let tw = self
@@ -63,7 +64,6 @@ impl DocFragment for LuaDocFragment {
 
         let temp_dir = &std::env::temp_dir().join("bevy_mod_scripting.temp.json");
 
-       
         let mut json_file =
             File::create(temp_dir).map_err(|e| ScriptError::DocGenError(e.to_string()))?;
 
@@ -71,7 +71,6 @@ impl DocFragment for LuaDocFragment {
             .write_all(json.as_bytes())
             .map_err(|e| ScriptError::DocGenError(e.to_string()))?;
         json_file.flush().unwrap();
-
 
         Command::new("tealr_doc_gen")
             .args([
@@ -89,38 +88,38 @@ impl DocFragment for LuaDocFragment {
 
         // now generate teal declaration (d.tl) file
 
-        #[cfg(feature="teal")]
+        #[cfg(feature = "teal")]
         {
-        // generate declaration file
-        let decl_file_contents = tw.generate("global_types", false).unwrap();
+            // generate declaration file
+            let decl_file_contents = tw.generate("global_types", false).unwrap();
 
-        let mut decl_file =
-            File::create(decl_path).map_err(|e| ScriptError::DocGenError(e.to_string()))?;
+            let mut decl_file =
+                File::create(decl_path).map_err(|e| ScriptError::DocGenError(e.to_string()))?;
 
-        decl_file
-            .write_all(decl_file_contents.as_bytes())
-            .expect("Failed to write to declaration file");
-        decl_file.flush().unwrap();
+            decl_file
+                .write_all(decl_file_contents.as_bytes())
+                .expect("Failed to write to declaration file");
+            decl_file.flush().unwrap();
 
-        // finally create a tlconfig.lua file if doesn't exist
-        // we do this to avoid problems with varying teal configurations
-        // keep em settings consistent everywhere
-        let tl_config_path = script_asset_path.join("tlconfig.lua");
-        if !tl_config_path.exists() {
-            let mut tl_file = File::create(tl_config_path)
-                .map_err(|e| ScriptError::DocGenError(e.to_string()))?;
-            tl_file
-                .write_all(
-                    r#"
+            // finally create a tlconfig.lua file if doesn't exist
+            // we do this to avoid problems with varying teal configurations
+            // keep em settings consistent everywhere
+            let tl_config_path = script_asset_path.join("tlconfig.lua");
+            if !tl_config_path.exists() {
+                let mut tl_file = File::create(tl_config_path)
+                    .map_err(|e| ScriptError::DocGenError(e.to_string()))?;
+                tl_file
+                    .write_all(
+                        r#"
 return {
     global_env_def="types/global_types",
     build_dir="."
 }
 "#
-                    .as_bytes(),
-                )
-                .map_err(|e| ScriptError::DocGenError(e.to_string()))?;
-        }
+                        .as_bytes(),
+                    )
+                    .map_err(|e| ScriptError::DocGenError(e.to_string()))?;
+            }
         }
         Ok(())
     }
