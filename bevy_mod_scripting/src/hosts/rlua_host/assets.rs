@@ -12,6 +12,8 @@ use bevy::asset::FileAssetIo;
 use std::fs;
 #[cfg(all(feature = "teal", debug_assertions))]
 use std::process::Command;
+#[cfg(all(feature = "teal", debug_assertions))]
+use anyhow::anyhow;
 
 #[derive(Debug, TypeUuid)]
 #[uuid = "39cadc56-aa9c-4543-8640-a018b74b5052"]

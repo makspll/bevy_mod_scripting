@@ -43,14 +43,8 @@ impl DocFragment for LuaDocFragment {
             .map(|v| v.into())
             .unwrap_or_else(|_e| script_asset_path.join("doc"));
 
-        let script_types_dir = &script_asset_path.join("types");
-
         fs::create_dir_all(script_doc_dir)
             .expect("Could not create `.../assets/scripts/doc` directories");
-        fs::create_dir_all(script_types_dir)
-            .expect("Could not create `.../assets/scripts/types` directories");
-
-        let _decl_path = &script_types_dir.join("global_types.d.tl");
 
         // build the type walker
         let tw = self
@@ -90,6 +84,11 @@ impl DocFragment for LuaDocFragment {
 
         #[cfg(feature = "teal")]
         {
+            let script_types_dir = &script_asset_path.join("types");
+            fs::create_dir_all(script_types_dir)
+                .expect("Could not create `.../assets/scripts/types` directories");
+
+            let decl_path = &script_types_dir.join("global_types.d.tl");
             // generate declaration file
             let decl_file_contents = tw.generate("global_types", false).unwrap();
 
