@@ -16,10 +16,36 @@ rust-version = "1.61.0"
 name = "bevy_mod_scripting"
 path = "src/lib.rs"
 
+[package.metadata.docs.rs]
+features = ["lua54","teal","unsafe_lua_modules"]
+
+[features]
+
+# if enabled enables documentation updating in optimized builds
+doc_always = []
+
+# enables loading possibly unsafe lua modules by lua scripts
+unsafe_lua_modules = []
+
+# enable teal utilities
+teal = []
+
+
+lua51 = ["tealr/mlua_lua51"]
+lua52 = ["tealr/mlua_lua52"]
+lua53 = ["tealr/mlua_lua53"]
+lua54 = ["tealr/mlua_lua54"]
+luajit = ["tealr/mlua_luajit"]
+luajit52 = ["tealr/mlua_luajit52"]
+
+mlua_serialize = ["tealr/mlua_serialize"]
+mlua_macros = ["tealr/mlua_macros"]
+
+# mlua_parking_lot = ["tealr/mlua_parking_lot"]
 
 [dependencies]
 bevy = { git = "https://github.com/bevyengine/bevy?rev=fed93a0edce9d66586dc70c1207a2092694b9a7d" }
-rlua = "0.19.2"
+tealr = { git = "https://github.com/lenscas/tealr", features = ["mlua_vendored","mlua_send"], branch="feature/document_global_instances" }
 rhai = { version = "1.7.0", features = ["sync"] }
 anyhow = "1.0.57"
 beau_collector = "0.2.1"
@@ -33,6 +59,7 @@ paste = "1.0.7"
 parking_lot = "0.12.1"
 ouroboros = "0.15.0"
 bevy_mod_scripting_derive = {path = "../bevy_mod_scripting_derive"}
+serde_json = "1.0.81"
 
 [dev-dependencies]
 bevy_console = { git = "https://github.com/OnlyGraphs/bevy-console" }
@@ -58,6 +85,7 @@ harness = false
 # [[example]]
 # name = "console_integration_lua"
 # path = "examples/console_integration_lua.rs"
+# required-features = ["lua54"]
 
 
 # [[example]]
@@ -67,6 +95,7 @@ harness = false
 [[example]]
 name = "complex_game_loop"
 path = "examples/complex_game_loop.rs"
+required-features = ["lua54"]
 
 
 [[example]]
@@ -77,3 +106,9 @@ path = "examples/event_recipients.rs"
 [[example]]
 name = "custom_user_data"
 path = "examples/custom_user_data.rs"
+required-features = ["lua54"]
+
+[[example]]
+name = "documentation_gen_lua"
+path = "examples/documentation_gen_lua.rs"
+required-features = ["lua54","teal"]

@@ -1,0 +1,302 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug unit tests in library 'bevy_mod_scripting'",
+            "cargo": {
+                "args": [
+                    "test",
+                    "--no-run",
+                    "--lib",
+                    "--package=bevy_mod_scripting"
+                ],
+                "filter": {
+                    "name": "bevy_mod_scripting",
+                    "kind": "lib"
+                }
+            },
+            "args": [],
+            "env": {"CARGO_MANIFEST_DIR": "${workspaceFolder}/bevy_mod_scripting"},
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug unit tests in library 'bevy_mod_scripting_derive'",
+            "cargo": {
+                "args": [
+                    "test",
+                    "--no-run",
+                    "--lib",
+                    "--package=bevy_mod_scripting_derive"
+                ],
+                "filter": {
+                    "name": "bevy_mod_scripting_derive",
+                    "kind": "lib"
+                }
+            },
+            "args": [],
+            "env": {"CARGO_MANIFEST_DIR": "${workspaceFolder}/bevy_mod_scripting"},
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug example 'complex_game_loop'",
+            "cargo": {
+                "args": [
+                    "build",
+                    "--example=complex_game_loop",
+                    "--package=bevy_mod_scripting"
+                ],
+                "filter": {
+                    "name": "complex_game_loop",
+                    "kind": "example"
+                }
+            },
+            "args": [],
+            "env": {"CARGO_MANIFEST_DIR": "${workspaceFolder}/bevy_mod_scripting"},
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug unit tests in example 'complex_game_loop'",
+            "cargo": {
+                "args": [
+                    "test",
+                    "--no-run",
+                    "--example=complex_game_loop",
+                    "--package=bevy_mod_scripting"
+                ],
+                "filter": {
+                    "name": "complex_game_loop",
+                    "kind": "example"
+                }
+            },
+            "args": [],
+            "env": {"CARGO_MANIFEST_DIR": "${workspaceFolder}/bevy_mod_scripting"},
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug example 'event_recipients'",
+            "cargo": {
+                "args": [
+                    "build",
+                    "--example=event_recipients",
+                    "--package=bevy_mod_scripting"
+                ],
+                "filter": {
+                    "name": "event_recipients",
+                    "kind": "example"
+                }
+            },
+            "args": [],
+            "env": {"CARGO_MANIFEST_DIR": "${workspaceFolder}/bevy_mod_scripting"},
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug unit tests in example 'event_recipients'",
+            "cargo": {
+                "args": [
+                    "test",
+                    "--no-run",
+                    "--example=event_recipients",
+                    "--package=bevy_mod_scripting"
+                ],
+                "filter": {
+                    "name": "event_recipients",
+                    "kind": "example"
+                }
+            },
+            "args": [],
+            "env": {"CARGO_MANIFEST_DIR": "${workspaceFolder}/bevy_mod_scripting"},
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug example 'custom_user_data'",
+            "cargo": {
+                "args": [
+                    "build",
+                    "--example=custom_user_data",
+                    "--package=bevy_mod_scripting"
+                ],
+                "filter": {
+                    "name": "custom_user_data",
+                    "kind": "example"
+                }
+            },
+            "args": [],
+            "env": {"CARGO_MANIFEST_DIR": "${workspaceFolder}/bevy_mod_scripting"},
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug unit tests in example 'custom_user_data'",
+            "cargo": {
+                "args": [
+                    "test",
+                    "--no-run",
+                    "--example=custom_user_data",
+                    "--package=bevy_mod_scripting"
+                ],
+                "filter": {
+                    "name": "custom_user_data",
+                    "kind": "example"
+                }
+            },
+            "args": [],
+            "env": {"CARGO_MANIFEST_DIR": "${workspaceFolder}/bevy_mod_scripting"},
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug example 'console_integration_rhai'",
+            "cargo": {
+                "args": [
+                    "build",
+                    "--example=console_integration_rhai",
+                    "--package=bevy_mod_scripting"
+                ],
+                "filter": {
+                    "name": "console_integration_rhai",
+                    "kind": "example"
+                }
+            },
+            "args": [],
+            "env": {"CARGO_MANIFEST_DIR": "${workspaceFolder}/bevy_mod_scripting"},
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug unit tests in example 'console_integration_rhai'",
+            "cargo": {
+                "args": [
+                    "test",
+                    "--no-run",
+                    "--example=console_integration_rhai",
+                    "--package=bevy_mod_scripting"
+                ],
+                "filter": {
+                    "name": "console_integration_rhai",
+                    "kind": "example"
+                }
+            },
+            "args": [],
+            "env": {"CARGO_MANIFEST_DIR": "${workspaceFolder}/bevy_mod_scripting"},
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug example 'console_integration_lua'",
+            "cargo": {
+                "args": [
+                    "build",
+                    "--example=console_integration_lua",
+                    "--package=bevy_mod_scripting"
+                ],
+                "filter": {
+                    "name": "console_integration_lua",
+                    "kind": "example"
+                }
+            },
+            "args": [],
+            "env": {"CARGO_MANIFEST_DIR": "${workspaceFolder}/bevy_mod_scripting"},
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug unit tests in example 'console_integration_lua'",
+            "cargo": {
+                "args": [
+                    "test",
+                    "--no-run",
+                    "--example=console_integration_lua",
+                    "--package=bevy_mod_scripting"
+                ],
+                "filter": {
+                    "name": "console_integration_lua",
+                    "kind": "example"
+                }
+            },
+            "args": [],
+            "env": {"CARGO_MANIFEST_DIR": "${workspaceFolder}/bevy_mod_scripting"},
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug example 'native_types'",
+            "cargo": {
+                "args": [
+                    "build",
+                    "--example=native_types",
+                    "--package=bevy_mod_scripting"
+                ],
+                "filter": {
+                    "name": "native_types",
+                    "kind": "example"
+                }
+            },
+            "env": {"CARGO_MANIFEST_DIR": "${workspaceFolder}/bevy_mod_scripting"},
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug unit tests in example 'native_types'",
+            "cargo": {
+                "args": [
+                    "test",
+                    "--no-run",
+                    "--example=native_types",
+                    "--package=bevy_mod_scripting"
+                ],
+                "filter": {
+                    "name": "native_types",
+                    "kind": "example"
+                }
+            },
+            "args": [],
+            "env": {"CARGO_MANIFEST_DIR": "${workspaceFolder}/bevy_mod_scripting"},
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug unit tests in library 'bevy_event_priority'",
+            "cargo": {
+                "args": [
+                    "test",
+                    "--no-run",
+                    "--lib",
+                    "--package=bevy_event_priority"
+                ],
+                "filter": {
+                    "name": "bevy_event_priority",
+                    "kind": "lib"
+                }
+            },
+            "args": [],
+            "env": {"CARGO_MANIFEST_DIR": "${workspaceFolder}/bevy_mod_scripting"},
+            "cwd": "${workspaceFolder}"
+        }
+    ]
+}
