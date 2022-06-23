@@ -15,8 +15,7 @@ use std::{
 use crate::{PrintableReflect};
 use anyhow::Result;
 use tealr::mlu::{mlua,mlua::{prelude::*,Value,UserData,MetaMethod}, TealData};
-
-pub use {bevy_types::*, wrappers::*};
+pub use {bevy_types::*, wrappers::*,bevy_types::LuaBevyAPIProvider };
 
 #[reflect_trait]
 pub trait CustomUserData {

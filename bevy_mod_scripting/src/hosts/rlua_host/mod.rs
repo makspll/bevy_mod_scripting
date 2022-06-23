@@ -4,9 +4,10 @@ pub mod docs;
 
 use crate::APIProviders;
 use crate::{
-    script_add_synchronizer, script_hot_reload_handler, script_remove_synchronizer, APIProvider,bevy_types::LuaBevyAPI,
+    script_add_synchronizer, script_hot_reload_handler, script_remove_synchronizer, APIProvider,
     CachedScriptEventState, FlatScriptData, Recipients, Script, ScriptCollection, ScriptContexts,
     ScriptError, ScriptErrorEvent, ScriptEvent, ScriptHost,
+    api::LuaBevyAPIProvider
 };
 use anyhow::Result;
 

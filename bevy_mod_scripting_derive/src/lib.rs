@@ -94,13 +94,13 @@ pub fn impl_lua_newtypes(input: TokenStream) -> TokenStream {
         pub static BEVY_TO_LUA: Map<&'static str,
             for<'l> fn(&LuaRef,&'l Lua) -> Value<'l>
             > = phf_map!{
-                // #to_lua,
+                #to_lua,
             };
 
         pub static APPLY_LUA_TO_BEVY: Map<&'static str,
             for<'l> fn(&mut LuaRef,&'l Lua, Value<'l>) -> Result<(),Error>
             > = phf_map!{
-                // #from_lua,
+                #from_lua,
             };
     };
 
@@ -131,9 +131,9 @@ pub fn impl_lua_newtypes(input: TokenStream) -> TokenStream {
     let api_provider = quote!{
 
         #[derive(Default)]
-        pub struct LuaBevyAPI;
+        pub struct LuaBevyAPIProvider;
 
-        impl APIProvider for LuaBevyAPI{
+        impl APIProvider for LuaBevyAPIProvider{
             type Target = Mutex<Lua>;
             type DocTarget = crate::LuaDocFragment;
 

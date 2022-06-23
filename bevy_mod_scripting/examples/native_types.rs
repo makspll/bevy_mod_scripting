@@ -1,11 +1,12 @@
 use bevy::math::DQuat;
 use bevy::prelude::*;
 use bevy_event_priority::PriorityEventWriter;
-use bevy_mod_scripting::{ReflectCustomUserData, LuaDocFragment, ScriptError};
+use bevy_mod_scripting::{ReflectCustomUserData, LuaDocFragment, ScriptError, AddScriptApiProvider};
 use bevy_mod_scripting::{
     APIProvider, AddScriptHost, AddScriptHostHandler, LuaEvent, LuaFile, RLuaScriptHost,
     Recipients, Script, ScriptCollection, ScriptingPlugin,
-    langs::mlu::mlua
+    langs::mlu::mlua,
+    api::LuaBevyAPIProvider
 };
 
 
@@ -20,30 +21,6 @@ impl<'lua> mlua::ToLua<'lua> for MyLuaArg {
     }
 }
 
-#[derive(Default)]
-pub struct LuaAPIProvider {}
-
-/// the custom Lua api, world is provided via a global pointer,
-/// and callbacks are defined only once at script creation
-impl APIProvider for LuaAPIProvider {
-    type Target = Mutex<mlua::Lua>;
-    type DocTarget = LuaDocFragment;
-
-    fn attach_api(&mut self, ctx: &mut Self::Target) -> Result<(),ScriptError> {
-        // callbacks can receive any `ToLuaMulti` arguments, here '()' and
-        // return any `FromLuaMulti` arguments, here a `usize`
-        // check the Rlua documentation for more details
-
-        let ctx = ctx.lock().unwrap();
-
-        ctx.globals().set("print", ctx.create_function(|_, msg: String| {
-            info!("{}", msg);
-            Ok(())
-        })?)?;
-        
-        Ok(())
-    }
-}
 
 fn fire_script_update(mut w: PriorityEventWriter<LuaEvent<MyLuaArg>>) {
     w.send(
@@ -105,7 +82,9 @@ fn main() -> std::io::Result<()> {
         .add_script_handler_stage::<RLuaScriptHost<MyLuaArg>, _, 0, 0>("scripts")
         .register_type::<MyComponent>()
         // this stage handles addition and removal of script contexts, we can safely use `CoreStage::PostUpdate`
-        .add_script_host::<RLuaScriptHost<MyLuaArg>, _>(CoreStage::PostUpdate);
+        .add_script_host::<RLuaScriptHost<MyLuaArg>, _>(CoreStage::PostUpdate)
+        .add_api_provider::<RLuaScriptHost<MyLuaArg>>(Box::new(LuaBevyAPIProvider));
+
     app.run();
 
     Ok(())

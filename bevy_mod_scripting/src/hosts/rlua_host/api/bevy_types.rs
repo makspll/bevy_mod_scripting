@@ -1,5 +1,4 @@
 #![allow(unused_variables,unused_parens)]
-
 use bevy::reflect::TypeData;
 use bevy::reflect::TypeRegistry;
 use bevy::prelude::*;
@@ -19,6 +18,7 @@ use crate::ScriptError;
 use std::sync::{Arc};
 use parking_lot::{RwLock};
 use crate::util::impl_tealr_type;
+use num_traits::cast::ToPrimitive;
 
 use bevy_mod_scripting_derive::{impl_lua_newtypes,replace};
 use tealr::{mlu::{mlua,TealDataMethods,TealData,mlua::{prelude::*,Error,MetaMethod,Value}}};
@@ -77,7 +77,7 @@ impl TealData for LuaComponent {
             let r = val.comp
                 .path_ref(&field)
                 .map_err(|_| Error::RuntimeError(format!("The field {field} does not exist on {val:?}")))?;
-                
+
             Ok(r.convert_to_lua(ctx).unwrap())
         });
 
@@ -1239,7 +1239,7 @@ impl_lua_newtypes!{
 #[cfg(test)]
 
 mod test {
-    use crate::{langs::mlu::{mlua,mlua::prelude::*},RLuaScriptHost,ScriptHost, LuaEntity, LuaEvent, Recipients, LuaComponent, LuaRef, LuaRefBase, get_type_data, ReflectPtr};
+    use crate::{langs::mlu::{mlua,mlua::prelude::*},LuaEntity, LuaEvent, Recipients, LuaComponent, LuaRef, LuaRefBase, get_type_data, ReflectPtr};
     use bevy::{prelude::*,reflect::TypeRegistryArc};
     use std::{any::Any,sync::Arc};
     use parking_lot::RwLock;
