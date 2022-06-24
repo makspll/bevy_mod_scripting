@@ -172,6 +172,7 @@ impl DeriveFlag {
                     }
                 };
                 let new_methods: Punctuated<LuaMethod,Token![;]> = new_methods.into_iter().collect();
+
                 Some(parse_quote_spanned!{ident.span()=>
                     impl {
                         #new_methods

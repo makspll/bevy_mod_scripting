@@ -1,0 +1,199 @@
+pub mod bevy_types {
+    #![allow(unused_variables, unused_parens)]
+    use bevy::reflect::TypeData;
+    use bevy::reflect::TypeRegistry;
+    use bevy::prelude::*;
+    use bevy::math::*;
+    use std::sync::Weak;
+    use std::{fmt, fmt::Debug, ops::*, sync::Mutex};
+    use phf::{phf_map, Map};
+    use crate::LuaFile;
+    use crate::LuaRefBase;
+    use crate::PrintableReflect;
+    use crate::ReflectPtr;
+    use crate::Script;
+    use crate::ScriptCollection;
+    use crate::LuaRef;
+    use crate::APIProvider;
+    use crate::ScriptError;
+    use std::sync::Arc;
+    use parking_lot::RwLock;
+    use crate::util::impl_tealr_type;
+    use num_traits::cast::ToPrimitive;
+    use bevy_mod_scripting_derive::{impl_lua_newtypes, replace};
+    use tealr::mlu::{
+        mlua, TealDataMethods, TealData,
+        mlua::{prelude::*, Error, MetaMethod, Value},
+    };
+    pub fn get_type_data<T: TypeData + ToOwned<Owned = T>>(
+        w: &mut World,
+        name: &str,
+    ) -> Result<T, Error> {
+        let registry: &TypeRegistry = w.get_resource().unwrap();
+        let registry = registry.read();
+        let reg = registry
+            .get_with_short_name(&name)
+            .or(registry.get_with_name(&name))
+            .ok_or_else(|| {
+                Error::RuntimeError({
+                    let res = ::alloc::fmt::format(::core::fmt::Arguments::new_v1(
+                        &["Invalid component name "],
+                        &[::core::fmt::ArgumentV1::new_display(&name)],
+                    ));
+                    res
+                })
+            })
+            .unwrap();
+        let refl: T = reg
+            .data::<T>()
+            .ok_or_else(|| {
+                Error::RuntimeError({
+                    let res = ::alloc::fmt::format(::core::fmt::Arguments::new_v1(
+                        &["Invalid component name "],
+                        &[::core::fmt::ArgumentV1::new_display(&name)],
+                    ));
+                    res
+                })
+            })
+            .unwrap()
+            .to_owned();
+        Ok(refl)
+    }
+    pub struct LuaComponent {
+        comp: LuaRef,
+    }
+    #[automatically_derived]
+    #[allow(unused_qualifications)]
+    impl ::core::clone::Clone for LuaComponent {
+        #[inline]
+        fn clone(&self) -> LuaComponent {
+            match *self {
+                LuaComponent {
+                    comp: ref __self_0_0,
+                } => LuaComponent {
+                    comp: ::core::clone::Clone::clone(&(*__self_0_0)),
+                },
+            }
+        }
+    }
+    impl tealr::TypeName for LuaComponent {
+        fn get_type_parts() -> std::borrow::Cow<'static, [tealr::NamePart]> {
+            std::borrow::Cow::Borrowed(&[tealr::NamePart::Type(tealr::TealType {
+                name: std::borrow::Cow::Borrowed("LuaComponent"),
+                generics: None,
+                type_kind: tealr::KindOfType::External,
+            })])
+        }
+    }
+    impl mlua::UserData for LuaComponent {
+        fn add_fields<'lua, F: mlua::prelude::LuaUserDataFields<'lua, Self>>(fields: &mut F) {
+            let mut wrapper = ::tealr::mlu::UserDataWrapper::from_user_data_fields(fields);
+            <Self as ::tealr::mlu::TealData>::add_fields(&mut wrapper)
+        }
+        fn add_methods<'lua, M: mlua::prelude::LuaUserDataMethods<'lua, Self>>(methods: &mut M) {
+            let mut x = ::tealr::mlu::UserDataWrapper::from_user_data_methods(methods);
+            <Self as ::tealr::mlu::TealData>::add_methods(&mut x);
+        }
+    }
+    impl tealr::TypeBody for LuaComponent {
+        fn get_type_body() -> tealr::TypeGenerator {
+            let mut gen = ::tealr::RecordGenerator::new::<Self>(false);
+            gen.is_user_data = true;
+            <Self as ::tealr::mlu::TealData>::add_fields(&mut gen);
+            <Self as ::tealr::mlu::TealData>::add_methods(&mut gen);
+            <_ as ::std::convert::From<_>>::from(gen)
+        }
+    }
+    impl Debug for LuaComponent {
+        fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+            f.debug_struct("LuaComponent")
+                .field("comp", &self.comp)
+                .finish()
+        }
+    }
+    impl TealData for LuaComponent {
+        fn add_methods<'lua, T: TealDataMethods<'lua, Self>>(methods: &mut T) {
+            methods.add_meta_method(MetaMethod::ToString, |_, val, _a: Value| {
+                val.comp.get(|s, _| {
+                    Ok({
+                        let res = ::alloc::fmt::format(::core::fmt::Arguments::new_v1_formatted(
+                            &[""],
+                            &[::core::fmt::ArgumentV1::new_debug(&PrintableReflect(s))],
+                            &[::core::fmt::rt::v1::Argument {
+                                position: 0usize,
+                                format: ::core::fmt::rt::v1::FormatSpec {
+                                    fill: ' ',
+                                    align: ::core::fmt::rt::v1::Alignment::Unknown,
+                                    flags: 4u32,
+                                    precision: ::core::fmt::rt::v1::Count::Implied,
+                                    width: ::core::fmt::rt::v1::Count::Implied,
+                                },
+                            }],
+                            unsafe { ::core::fmt::UnsafeArg::new() },
+                        ));
+                        res
+                    })
+                })
+            });
+            methods.add_meta_method_mut(MetaMethod::Index, |ctx, val, field: String| {
+                let r = val.comp.path_ref(&field).map_err(|_| {
+                    Error::RuntimeError({
+                        let res = ::alloc::fmt::format(::core::fmt::Arguments::new_v1(
+                            &["The field ", " does not exist on "],
+                            &[
+                                ::core::fmt::ArgumentV1::new_display(&field),
+                                ::core::fmt::ArgumentV1::new_debug(&val),
+                            ],
+                        ));
+                        res
+                    })
+                })?;
+                Ok(r.convert_to_lua(ctx).unwrap())
+            });
+            methods.add_meta_method_mut(
+                MetaMethod::NewIndex,
+                |ctx, val, (field, new_val): (Value, Value)| {
+                    val.comp
+                        .path_ref_lua(field)?
+                        .apply_lua(ctx, new_val)
+                        .unwrap();
+                    Ok(())
+                },
+            );
+        }
+    }
+    pub struct LuaResource {
+        res: LuaRef,
+    }
+    impl tealr::TypeName for LuaResource {
+        fn get_type_parts() -> std::borrow::Cow<'static, [tealr::NamePart]> {
+            std::borrow::Cow::Borrowed(&[tealr::NamePart::Type(tealr::TealType {
+                name: std::borrow::Cow::Borrowed("LuaResource"),
+                generics: None,
+                type_kind: tealr::KindOfType::External,
+            })])
+        }
+    }
+    impl mlua::UserData for LuaResource {
+        fn add_fields<'lua, F: mlua::prelude::LuaUserDataFields<'lua, Self>>(fields: &mut F) {
+            let mut wrapper = ::tealr::mlu::UserDataWrapper::from_user_data_fields(fields);
+            <Self as ::tealr::mlu::TealData>::add_fields(&mut wrapper)
+        }
+        fn add_methods<'lua, M: mlua::prelude::LuaUserDataMethods<'lua, Self>>(methods: &mut M) {
+            let mut x = ::tealr::mlu::UserDataWrapper::from_user_data_methods(methods);
+            <Self as ::tealr::mlu::TealData>::add_methods(&mut x);
+        }
+    }
+    impl tealr::TypeBody for LuaResource {
+        fn get_type_body() -> tealr::TypeGenerator {
+            let mut gen = ::tealr::RecordGenerator::new::<Self>(false);
+            gen.is_user_data = true;
+            <Self as ::tealr::mlu::TealData>::add_fields(&mut gen);
+            <Self as ::tealr::mlu::TealData>::add_methods(&mut gen);
+            <_ as ::std::convert::From<_>>::from(gen)
+        }
+    }
+    impl TealData for LuaResource {
+        fn add_methods<'lua, T: TealDataMethods<'lua, Self>>(_methods: &mut T) {}
+    }
+}

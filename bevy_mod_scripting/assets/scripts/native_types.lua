@@ -6,7 +6,7 @@ function on_update()
         comp = world:get_component(entity,"MyComponent")
 
         print(string.format("%s",comp))
-
+        
         comp.vec2 = comp.vec2 - comp.vec2
         comp.uvec2 = comp.uvec2 + comp.uvec2
         comp.usize = comp.vec2:min_element()

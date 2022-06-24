@@ -7,7 +7,7 @@ use std::{collections::{HashSet, HashMap}};
 use bevy::prelude::default;
 use proc_macro::{TokenStream, token_stream::IntoIter, TokenTree, Delimiter, Group};
 use proc_macro2::{Span,TokenStream as TokenStream2};
-use quote::{quote, ToTokens, TokenStreamExt};
+use quote::{quote, ToTokens, TokenStreamExt, format_ident};
 use rlua::MetaMethod;
 use syn::{parse::{ParseStream, Parse, ParseBuffer},Result, punctuated::Punctuated, Token, Ident, Error, parse_macro_input, Field, Visibility, ItemFn, braced, Type, token::{Brace, Token, self, Dot, Paren, Bracket, Bang}, ExprClosure, PatPath, LitStr, Path, ExprMethodCall, Expr, ExprPath, PathSegment, PathArguments, parse_quote, bracketed, parenthesized, parse_quote_spanned, UsePath, UseTree, ItemUse};
 
@@ -105,30 +105,62 @@ pub fn impl_lua_newtypes(input: TokenStream) -> TokenStream {
     };
 
 
-
-    let global_method_calls : TokenStream2 = new_types.new_types.iter().flat_map(|base|  
+    let mut userdata_newtype_global_names = Vec::default();
+    let global_modules : TokenStream2 = new_types.new_types.iter()
+        .filter(|v| (!v.args.variation.is_primitive()).into())
+        .flat_map(|base|{
         if let Some(ref b) = base.additional_lua_functions {
             let static_methods = b.functions.iter()
-                .filter_map(|f| f.to_create_static_expr("static_table", "lua_ctx"))
+                .filter(|f| f.method_type.is_static)
+                .map(|f| f.to_call_expr("methods"))
                 .collect::<Punctuated<TokenStream2,EmptyToken>>();
-            if !static_methods.is_empty(){
-                let table_name = base.args.short_base_type.path.get_ident().unwrap().to_string();
-                quote!{
-                    let static_table = lua_ctx.create_table()?;
-                    #static_methods
-                    g.set(#table_name,static_table)?;
 
+            let ident = format_ident!{"{}Globals",base.args.short_wrapper_type.path.get_ident().unwrap()};
+
+            if !static_methods.is_empty(){
+                userdata_newtype_global_names.push(ident.clone());
+
+                let global_key = base.args.short_base_type.path.get_ident().unwrap().to_string();
+
+                return quote!{
+                    struct #ident;
+                    impl tealr::mlu::TealData for #ident {
+                        fn add_methods<'lua,T: tealr::mlu::TealDataMethods<'lua,Self>>(methods: &mut T) {
+                            methods.document_type(concat!("Global methods for ", #global_key));
+                            #static_methods
+                        }
+                    }
+
+                    impl_tealr_type!(#ident);
                 }
-            } else {
-                default()
-            }
-        } else {
-            default()
-        }
+            } 
+        };
+        default()}
     ).collect();
 
+    let userdata_newtype_names : Vec<&Ident> = new_types.new_types
+        .iter()
+        .filter(|v| (!v.args.variation.is_primitive()).into())
+        .map(|v| v.args.short_wrapper_type.path.get_ident().unwrap())
+        .collect();
 
-    let api_provider = quote!{
+        let api_provider = quote!{
+
+        struct BevyAPIGlobals;
+        impl tealr::mlu::ExportInstances for BevyAPIGlobals {
+            fn add_instances<'lua, T: tealr::mlu::InstanceCollector<'lua>>(
+                instance_collector: &mut T,
+            ) -> mlua::Result<()> {
+                #(
+                    instance_collector.document_instance(concat!("Global methods for ", stringify!(#userdata_newtype_global_names)));
+                    instance_collector.add_instance(stringify!(#userdata_newtype_global_names).into(), |_| Ok(#userdata_newtype_global_names))?;
+                )*
+
+                Ok(())
+            }
+        }
+
+        #global_modules
 
         #[derive(Default)]
         pub struct LuaBevyAPIProvider;
@@ -140,10 +172,22 @@ pub fn impl_lua_newtypes(input: TokenStream) -> TokenStream {
             fn attach_api(&mut self, c: &mut <Self as APIProvider>::Target) -> Result<(),ScriptError> {
                 let lua_ctx = c.lock().expect("Could not get lock on script context");
 
-                let g = lua_ctx.globals();
-                #global_method_calls;
-                Ok(())
+                tealr::mlu::set_global_env::<BevyAPIGlobals>(&lua_ctx)?;
 
+                Ok(())
+            }
+
+            fn get_doc_fragment(&self) -> Option<Self::DocTarget> {
+                Some(crate::LuaDocFragment::new(|tw|
+                            tw.document_global_instance::<BevyAPIGlobals>().unwrap()
+                            #(
+                                .process_type::<#userdata_newtype_names>()
+                            )*
+                            #(
+                                .process_type::<#userdata_newtype_global_names>()  
+                            )*
+                        )
+                    )
             }
         }
     };

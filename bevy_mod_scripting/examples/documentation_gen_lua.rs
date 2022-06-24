@@ -6,6 +6,7 @@ use bevy_mod_scripting::{
     APIProvider, AddScriptApiProvider, AddScriptHost, AddScriptHostHandler, GenDocumentation,
     LuaDocFragment, LuaEvent, LuaFile, RLuaScriptHost, Recipients, Script, ScriptCollection,
     ScriptError, ScriptingPlugin,
+    api::LuaBevyAPIProvider
 };
 use tealr::TypeName;
 
@@ -55,7 +56,11 @@ impl tealr::mlu::ExportInstances for Export {
         instance_collector: &mut T,
     ) -> mlua::Result<()> {
         instance_collector.document_instance("Documentation for the exposed global variable");
-        instance_collector.add_instance("my_api".into(), |_| Ok(APIModule))
+        instance_collector.add_instance("my_api".into(), |_| {
+        
+            Ok(APIModule)
+        
+        })
     }
 }
 
@@ -76,7 +81,7 @@ impl APIProvider for LuaAPIProvider {
         let ctx = ctx.lock().unwrap();
 
         // equivalent to ctx.globals().set() but for multiple items
-        tealr::mlu::set_global_env::<Export>(&ctx).unwrap();
+        tealr::mlu::set_global_env::<Export>(&ctx)?;
 
         Ok(())
     }
@@ -119,6 +124,7 @@ fn main() -> std::io::Result<()> {
         .add_plugin(ScriptingPlugin)
         .add_script_host::<RLuaScriptHost<MyLuaArg>, _>(CoreStage::PostUpdate)
         .add_api_provider::<RLuaScriptHost<MyLuaArg>>(Box::new(LuaAPIProvider))
+        .add_api_provider::<RLuaScriptHost<MyLuaArg>>(Box::new(LuaBevyAPIProvider))
         // this needs to be placed after any `add_api_provider` and `add_script_host` calls
         // it will generate `doc` and `types` folders under `assets/scripts` containing the documentation and teal declaration files
         // respectively. See example asset folder to see how they look like. The `teal_file.tl` script in example assets shows the usage of one of those

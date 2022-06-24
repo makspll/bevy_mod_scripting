@@ -1,8 +1,12 @@
 
 use proc_macro2::{Span, TokenStream};
 use syn::{*, parse::{ParseStream, Parse}, token::{Brace, Paren}, punctuated::Punctuated, spanned::Spanned};
-use quote::{quote, ToTokens, quote_spanned};
+use quote::{quote, ToTokens, quote_spanned, format_ident};
 use convert_case::{Case, Casing};
+
+use crate::EmptyToken;
+
+use super::utils::{attribute_to_string_lit};
 
 pub(crate) trait ToLuaMethod {
     fn to_lua_method(self) -> LuaMethod;
@@ -59,104 +63,79 @@ impl ToTokens for MethodMacroArg {
 }
 
 #[derive(PartialEq,Eq,Clone,Hash,Debug)]
-pub(crate) enum LuaMethodType {
-    MetaMethod{
-        paren: Paren,
-        path: TypePath
-    },
-    MetaMethodMut{
-        paren: Paren,
-        path: TypePath
-    },
-    MetaFunction{
-        paren: Paren,
-        path: TypePath
-    },
-    MetaFunctionMut{
-        paren: Paren,
-        path: TypePath
-    },
-    Method(LitStr),
-    MethodMut(LitStr),
-    Global(LitStr),
+pub(crate) struct LuaMethodType {
+    /// does it take &mut  self ?
+    pub is_mut : bool,
+    /// should it be inlined into the global API ?
+    pub is_static: bool,
+    /// is it part of the metatable?
+    pub is_meta: bool,
+    /// does it take self as first parameter?
+    pub is_function: bool,
+
+    /// if is_meta this will be Some
+    meta_method: Option<TypePath>,
+    /// if !is_meta this will be Some
+    method_name: Option<LitStr>,
+}
+
+impl LuaMethodType {
+    pub fn get_inner_tokens(&self) -> TokenStream {
+        if self.is_meta {
+            return self.meta_method.as_ref().unwrap().into_token_stream()
+        } else {
+            return self.method_name.as_ref().unwrap().into_token_stream()
+        }
+    }
 }
 
 impl Parse for LuaMethodType {
     fn parse(input: ParseStream) -> Result<Self> {
 
+        let is_static = input.peek(Token![static]).then(|| input.parse::<Token![static]>().unwrap()).is_some();
+        let is_mut = input.peek(Token![mut]).then(|| input.parse::<Token![mut]>().unwrap()).is_some();
+        let is_function = input.peek(Token![fn]).then(|| input.parse::<Token![fn]>().unwrap()).is_some();
 
-        let function_variant = input.peek(Token![fn]);
-        if function_variant {
-            input.parse::<Token![fn]>()?;
+        let mut method_name = None;
+        let mut meta_method = None;
+        let mut is_meta = false;
+
+        if input.peek(Paren){
+            // meta method
+            let f;
+            parenthesized!(f in input);
+            is_meta = true;
+            meta_method = Some(f.parse()?);
+
+        } else {
+            method_name = Some(input.parse()?);
         }
 
-        let mutable = input.peek(Token![mut]);
-
-        let global = input.peek(Token![static]);
-
-        if mutable {
-            input.parse::<Token![mut]>()?;
-        } else if global {
-            input.parse::<Token![static]>()?;
-            return Ok(Self::Global(input.parse()?));
-        };
-
-        Ok(match (function_variant,input.peek(Paren),mutable) {
-            // fn mut metamethod
-            (false,true, true) => {
-                let f;
-                Self::MetaMethodMut{ 
-                    paren: parenthesized!(f in input), 
-                    path: f.parse()?, 
-                }
-            },
-            // mut metamethod
-            (false,true, false) => {
-                let f;
-                Self::MetaMethod{
-                    paren: parenthesized!(f in input),
-                    path: f.parse()?
-                }
-            },
-            // fn mut metamethod
-            (true,true, true) => {
-                let f;
-                Self::MetaFunctionMut{ 
-                    paren: parenthesized!(f in input), 
-                    path: f.parse()?, 
-                }
-            },
-            // fn metamethod
-            (true,true, false) => {
-                let f;
-                Self::MetaFunction{
-                    paren: parenthesized!(f in input),
-                    path: f.parse()?
-                }
-            },
-            // mut method
-            (false,false, true) => Self::MethodMut(input.parse()?),
-            // method
-            (false,false, false) => Self::Method(input.parse()?),
-            _ => panic!("Invalid lua closure type")
+        Ok(Self{
+            is_mut,
+            is_static,
+            is_meta,
+            is_function,
+            meta_method,
+            method_name,
         })
+    
     }
 }
 
 impl ToTokens for LuaMethodType {
     fn to_tokens(&self, tokens: &mut TokenStream) {
-        let q = match self {
-            LuaMethodType::MetaMethod{path , ..} => quote!{(#path)},
-            LuaMethodType::MetaMethodMut{path , ..} => quote!{mut (#path)},
-            LuaMethodType::MetaFunction { path , ..} => quote!{fn (#path)},
-            LuaMethodType::MetaFunctionMut { path, .. } => quote!{fn mut (#path)},
-            LuaMethodType::Method(x) => quote!{#x},
-            LuaMethodType::MethodMut(x) => quote!{mut #x},
-            LuaMethodType::Global(x) => quote!{static #x},
+        let is_static = self.is_static.then(|| Token![static](tokens.span()));
+        let is_mut = self.is_mut.then(|| Token![mut](tokens.span()));
+        let is_function = self.is_function.then(|| Token![fn](tokens.span()));
+        let mut inner = self.get_inner_tokens();
+        if self.is_meta {
+            inner = quote!{
+                (#inner)
+            }
         };
-
         tokens.extend(quote!{
-            #q
+           #is_static #is_mut #is_function #inner
         })
     }
 }
@@ -269,6 +248,7 @@ impl ToTokens for Test {
 
 #[derive(Clone,Debug)]
 pub(crate) struct LuaMethod {
+    pub docstring: Vec<Attribute>,
     pub method_type: LuaMethodType,
     pub closure: LuaClosure,
     pub test: Option<Test>
@@ -278,6 +258,7 @@ pub(crate) struct LuaMethod {
 impl Parse for LuaMethod {
     fn parse(input: ParseStream) -> Result<Self> {
         Ok(Self {  
+            docstring: Attribute::parse_outer(input)?,
             method_type: input.parse()?,
             closure: input.parse()?,
             test: if input.peek(Token![=>]) {
@@ -290,13 +271,15 @@ impl Parse for LuaMethod {
 
 impl ToTokens for LuaMethod {
     fn to_tokens(&self, tokens: &mut TokenStream) {
+        let ds : Punctuated<Attribute,EmptyToken> = self.docstring.iter().cloned().collect();
+
         let mt = &self.method_type;
         let closure = &self.closure;
         let test = self.test.as_ref().map(|t| quote!{
             => #t
         });
         tokens.extend(quote!{
-            #mt #closure #test
+            #ds #mt #closure #test
         })
     }
 }
@@ -324,30 +307,31 @@ impl LuaMethod {
         })
     }
 
-    pub fn to_call_expr(&self,receiver : &'static str) -> Option<TokenStream>{
+    pub fn to_call_expr(&self,receiver : &'static str) -> TokenStream{
+
+
         let closure = &self.closure.to_applied_closure(); 
         let receiver = Ident::new(receiver,Span::call_site());
-        match &self.method_type {
-            LuaMethodType::MetaMethod{ path , ..} => Some(quote_spanned!{closure.span()=>
-                #receiver.add_meta_method(#path,#closure);
-            }),
-            LuaMethodType::MetaMethodMut{path , ..} => Some(quote_spanned!{closure.span()=>
-                #receiver.add_meta_method_mut(#path,#closure);
-            }),
-            LuaMethodType::MetaFunction{ path , ..} => Some(quote_spanned!{closure.span()=>
-                #receiver.add_meta_function(#path,#closure);
-            }),
-            LuaMethodType::MetaFunctionMut{path , ..} => Some(quote_spanned!{closure.span()=>
-                #receiver.add_meta_function_mut(#path,#closure);
-            }),
-            LuaMethodType::Method(v) => Some(quote_spanned!{closure.span()=>
-                #receiver.add_method(#v,#closure);
-            }),
-            LuaMethodType::MethodMut(v) => Some(quote_spanned!{closure.span()=>
-                #receiver.add_method_mut(#v,#closure);
-            }),
 
-            _ => None,
+        let ds : TokenStream = self.docstring.iter().map(|v| {
+                let ts : TokenStream = attribute_to_string_lit(v);
+                quote!{
+                    #receiver.document(#ts);
+                }
+            }).collect();
+        
+        let call_ident = format_ident!("add{}{}{}",
+            self.method_type.is_meta.then(|| "_meta").unwrap_or(""),
+            self.method_type.is_function.then(|| "_function").unwrap_or("_method"),
+            self.method_type.is_mut.then(|| "_mut").unwrap_or(""),
+        );
+
+        let inner_tokens = self.method_type.get_inner_tokens();
+
+
+        quote_spanned!{closure.span()=>
+            #ds
+            #receiver.#call_ident(#inner_tokens,#closure);
         }
     }
 
@@ -367,19 +351,6 @@ impl LuaMethod {
         }
     }
 
-    pub fn to_create_static_expr(&self, global_receiver : &'static str, context_receiver: &'static str) -> Option<TokenStream> {
-
-        let closure = &self.closure.to_applied_closure();
-        let global_receiver = Ident::new(global_receiver,Span::call_site());
-        let context_receiver = Ident::new(context_receiver, Span::call_site());
-
-        match &self.method_type {
-            LuaMethodType::Global(v) => Some(quote_spanned!{closure.span()=>
-                 #global_receiver.set(#v, #context_receiver.create_function(#closure)?)?;
-            }),
-            _ => None,
-        }
-    }
 }
 
 

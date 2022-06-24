@@ -83,5 +83,14 @@ macro_rules! impl_parse_enum {
 }
 
 pub(crate) use impl_parse_enum;
+use proc_macro2::TokenStream;
+use syn::Attribute;
 
 
+
+pub fn attribute_to_string_lit(attrs: &Attribute) -> TokenStream{
+    attrs.tokens.clone()
+        .into_iter()
+        .skip(1)
+        .collect()
+}

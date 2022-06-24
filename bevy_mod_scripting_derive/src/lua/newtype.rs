@@ -6,8 +6,11 @@ use syn::{*,Type, punctuated::*, token::*, parse::{ParseStream, Parse}, spanned:
 use crate::{AdditionalImplBlock, userdata_block::{UserdataBlock, LuaMethod,LuaMethodType}, derive_flags::DeriveFlag, utils::impl_parse_enum};
 use quote::{quote, ToTokens, quote_spanned};
 
+use super::utils::attribute_to_string_lit;
+
 
 pub(crate)  struct NewtypeArgs {
+    pub docstring : Vec<Attribute>,
     pub full_base_type: TypePath,
     pub type_colon : Token![:],
     pub short_base_type: TypePath,
@@ -20,6 +23,7 @@ pub(crate)  struct NewtypeArgs {
 
 impl Parse for NewtypeArgs {
     fn parse(input: ParseStream) -> Result<Self>{
+        let docstring = Attribute::parse_outer(input)?;
         let base_type : TypePath = input.parse()?;
         let short_base_type : String = base_type.path.segments.last().ok_or(input.error("Path does not have identifier"))?.ident.to_string();
         let short_wrapper_type : String = format!("Lua{}",short_base_type);
@@ -27,6 +31,7 @@ impl Parse for NewtypeArgs {
         let swt_ident = Ident::new(&short_wrapper_type, Span::call_site());
         let mut colon : Option<Token![:]> = None;
         Ok(Self {
+            docstring,
             short_wrapper_type: parse_quote_spanned!{base_type.span()=>
                 #swt_ident
             },
@@ -97,8 +102,8 @@ impl Newtype {
         } else if self.args.variation.is_primitive() {
             self.additional_lua_functions.as_ref().map(|v| {
                 let from = v.functions.iter().find(|f| {
-                    if let LuaMethodType::Method(s) = &f.method_type {
-                        if s.value() == "from"{
+                    if !f.method_type.is_function && !f.method_type.is_mut && !f.method_type.is_meta && !f.method_type.is_static{
+                        if f.method_type.get_inner_tokens().to_string() == "\"from\"" {
                             return true
                         } 
                     } 
@@ -128,8 +133,8 @@ impl Newtype {
         } else if self.args.variation.is_primitive() {
             self.additional_lua_functions.as_ref().map(|v| {
                 let to = v.functions.iter().find(|f| {
-                    if let LuaMethodType::Method(s) = &f.method_type {
-                        if s.value() == "to"{
+                    if !f.method_type.is_function && !f.method_type.is_mut && !f.method_type.is_meta && !f.method_type.is_static{
+                        if f.method_type.get_inner_tokens().to_string() == "\"to\"" {
                             return true
                         } 
                     } 
@@ -185,9 +190,10 @@ impl Newtype {
             .filter_map(|s| s.gen_userdata_block(&self.args,&all_methods))
             .flat_map(|m : UserdataBlock| m.functions.iter().cloned().collect::<Vec<LuaMethod>>()));
 
-        // generate call expressions
+        // generate non-static call expressions
         let call_exprs : Punctuated<TokenStream,Token![;]> = our_functions.iter()
-            .filter_map(|f| f.to_call_expr("methods"))
+            .filter(|f| !f.method_type.is_static)
+            .map(|f| f.to_call_expr("methods"))
             .collect();
 
         // append all those functions to global map
@@ -220,12 +226,19 @@ impl Newtype {
             Some(quote!{
                 impl_tealr_type!(#name);
             }));
-
+        
+        let ds : TokenStream = self.args.docstring.iter()
+            .map(attribute_to_string_lit)
+            .map(|q| quote!{
+                methods.document_type(#q);
+            })
+            .collect();
 
         let lua_impl_block = struct_def.as_ref().map(|_| 
             quote!{
                 impl TealData for #name {
                     fn add_methods<'lua, T: TealDataMethods<'lua, Self>>(methods: &mut T) {
+                        #ds
                         #call_exprs;
                     }
                 }
