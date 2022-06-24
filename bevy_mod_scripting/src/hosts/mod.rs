@@ -3,10 +3,11 @@
 pub mod docs;
 pub mod rhai_host;
 pub mod rlua_host;
+pub mod util;
 
 use bevy::{asset::Asset, ecs::system::SystemState, prelude::*, reflect::FromReflect};
 use bevy_event_priority::PriorityEventReader;
-pub use {crate::docs::*, crate::rhai_host::*, crate::rlua_host::*};
+pub use {crate::docs::*,crate::rhai_host::*, crate::rlua_host::*, crate::util::*};
 
 use std::{
     collections::{HashMap, HashSet},
@@ -189,24 +190,6 @@ impl<T: 'static, D: DocFragment> APIProviders<T, D> {
     }
 }
 
-#[derive(Component, Debug, FromReflect, Reflect)]
-#[reflect(Component)]
-/// The component storing many scripts.
-/// Scripts receive information about the entity they are attached to
-/// Scripts have unique identifiers and hence multiple copies of the same script
-/// can be attached to the same entity
-pub struct ScriptCollection<T: Asset> {
-    pub scripts: Vec<Script<T>>,
-}
-
-impl<T: Asset> Default for ScriptCollection<T> {
-    fn default() -> Self {
-        Self {
-            scripts: Default::default(),
-        }
-    }
-}
-
 /// A resource storing the script contexts for each script instance.
 /// The reason we need this is to split the world borrow in our handle event systems, but this
 /// has the added benefit that users don't see the contexts at all, and we can provide
@@ -263,12 +246,13 @@ pub struct Script<T: Asset> {
     id: u32,
 }
 
+static COUNTER: AtomicU32 = AtomicU32::new(0);
+
 impl<T: Asset> Script<T> {
     /// creates a new script instance with the given name and asset handle
     /// automatically gives this script instance a unique ID.
     /// No two scripts instances ever share the same ID
-    pub fn new<H: ScriptHost>(name: String, handle: Handle<T>) -> Self {
-        static COUNTER: AtomicU32 = AtomicU32::new(0);
+    pub fn new(name: String, handle: Handle<T>) -> Self {
         Self {
             handle,
             name,
@@ -303,6 +287,7 @@ impl<T: Asset> Script<T> {
         providers: &mut APIProviders<H::APITarget, H::DocTarget>,
         contexts: &mut ScriptContexts<H::ScriptContext>,
     ) {
+        debug!("reloading script {}", script.id);
         // retrieve owning entity
         let entity = contexts.script_owner(script.id()).unwrap();
 
@@ -339,10 +324,12 @@ impl<T: Asset> Script<T> {
             Some(s) => s,
             None => {
                 // not loaded yet
+                debug!("Inserted script which hasn't loaded yet {:?}", fd);
                 contexts.insert_context(fd, None);
                 return;
             }
         };
+        debug!("Inserted script {:?}", fd);
 
         match host.load_script(script.bytes(), &new_script.name, providers) {
             Ok(ctx) => {
@@ -354,6 +341,24 @@ impl<T: Asset> Script<T> {
                 // but contexts are left in a valid state
                 contexts.insert_context(fd, None)
             }
+        }
+    }
+}
+
+#[derive(Component, Debug, FromReflect, Reflect)]
+#[reflect(Component, Default)]
+/// The component storing many scripts.
+/// Scripts receive information about the entity they are attached to
+/// Scripts have unique identifiers and hence multiple copies of the same script
+/// can be attached to the same entity
+pub struct ScriptCollection<T: Asset> {
+    pub scripts: Vec<Script<T>>,
+}
+
+impl<T: Asset> Default for ScriptCollection<T> {
+    fn default() -> Self {
+        Self {
+            scripts: Default::default(),
         }
     }
 }
@@ -391,6 +396,8 @@ pub(crate) fn script_add_synchronizer<H: ScriptHost + 'static>(
     script_assets: Res<Assets<H::ScriptAsset>>,
     mut contexts: ResMut<ScriptContexts<H::ScriptContext>>,
 ) {
+    debug!("Handling addition/modification of scripts");
+
     query.for_each(|(entity, new_scripts, tracker)| {
         if tracker.is_added() {
             new_scripts.scripts.iter().for_each(|new_script| {

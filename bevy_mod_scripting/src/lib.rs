@@ -1,5 +1,4 @@
 #![doc=include_str!("../../readme.md")]
-
 use bevy::{ecs::schedule::IntoRunCriteria, prelude::*};
 
 pub mod error;

@@ -1,21 +1,26 @@
+pub mod api;
 pub mod assets;
 pub mod docs;
 
+use crate::APIProviders;
 use crate::{
-    script_add_synchronizer, script_hot_reload_handler, script_remove_synchronizer, APIProviders,
+    script_add_synchronizer, script_hot_reload_handler, script_remove_synchronizer, APIProvider,
     CachedScriptEventState, FlatScriptData, Recipients, Script, ScriptCollection, ScriptContexts,
     ScriptError, ScriptErrorEvent, ScriptEvent, ScriptHost,
+    api::LuaBevyAPIProvider
 };
 use anyhow::Result;
 
 use bevy::prelude::*;
 use bevy_event_priority::AddPriorityEvent;
+use parking_lot::RwLock;
 use tealr::mlu::mlua::{prelude::*, Function};
 
+use std::fmt;
 use std::marker::PhantomData;
-use std::sync::Mutex;
+use std::sync::{Mutex,Arc};
 
-pub use {assets::*, docs::*};
+pub use {docs::*, api::*, assets::*};
 
 pub trait LuaArg: for<'lua> ToLua<'lua> + Clone + Sync + Send + 'static {}
 
@@ -28,6 +33,15 @@ pub struct LuaEvent<A: LuaArg> {
     pub hook_name: String,
     pub args: Vec<A>,
     pub recipients: Recipients,
+}
+
+impl<A: LuaArg> fmt::Debug for LuaEvent<A> {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.debug_struct("LuaEvent")
+            .field("hook_name", &self.hook_name)
+            .field("recipients", &self.recipients)
+            .finish()
+    }
 }
 
 impl<A: LuaArg> ScriptEvent for LuaEvent<A> {
@@ -102,8 +116,8 @@ impl<A: LuaArg> Default for RLuaScriptHost<A> {
     }
 }
 
-unsafe impl<A: LuaArg> Send for RLuaScriptHost<A> {}
-unsafe impl<A: LuaArg> Sync for RLuaScriptHost<A> {}
+// unsafe impl<A: LuaArg> Send for RLuaScriptHost<A> {}
+// unsafe impl<A: LuaArg> Sync for RLuaScriptHost<A> {}
 
 impl<A: LuaArg> ScriptHost for RLuaScriptHost<A> {
     type ScriptContext = Mutex<Lua>;
@@ -121,6 +135,7 @@ impl<A: LuaArg> ScriptHost for RLuaScriptHost<A> {
             .init_resource::<APIProviders<Self::APITarget, Self::DocTarget>>()
             .register_type::<ScriptCollection<Self::ScriptAsset>>()
             .register_type::<Script<Self::ScriptAsset>>()
+            .register_type::<Handle<LuaFile>>()
             .add_system_set_to_stage(
                 stage,
                 SystemSet::new()
@@ -168,11 +183,11 @@ impl<A: LuaArg> ScriptHost for RLuaScriptHost<A> {
         events: &[Self::ScriptEvent],
         ctxs: impl Iterator<Item = (FlatScriptData<'a>, &'a mut Self::ScriptContext)>,
     ) {
-        let world_ptr = world as *mut World as usize;
 
         world.resource_scope(
-            |world, mut cached_state: Mut<CachedScriptEventState<Self>>| {
-                let (_, mut error_wrt) = cached_state.event_state.get_mut(world);
+            |world_orig, mut cached_state: Mut<CachedScriptEventState<Self>>| {
+                
+                let world_arc = Arc::new(RwLock::new(std::mem::take(world_orig)));
 
                 ctxs.for_each(|(fd, ctx)| {
                     let success = ctx
@@ -180,8 +195,8 @@ impl<A: LuaArg> ScriptHost for RLuaScriptHost<A> {
                         .map_err(|e| ScriptError::Other(e.to_string()))
                         .and_then(|ctx| {
                             let globals = ctx.globals();
-                            globals.set("world", world_ptr)?;
-                            globals.set("entity", fd.entity.to_bits())?;
+                            globals.set("world", LuaWorld::new(Arc::downgrade(&world_arc)))?;
+                            globals.set("entity", LuaEntity::new(fd.entity))?;
                             globals.set("script", fd.sid)?;
 
                             // event order is preserved, but scripts can't rely on any temporal
@@ -218,16 +233,23 @@ impl<A: LuaArg> ScriptHost for RLuaScriptHost<A> {
                                     })?
                             }
 
+                            // we must clear the world in order to free the Arc pointer
                             Ok(())
                         });
 
                     success
                         .map_err(|e| {
+                            let mut guard = world_arc.write() ;
+                            let (_, mut error_wrt) = cached_state.event_state.get_mut(&mut guard);
+
                             error!("{}", e);
                             error_wrt.send(ScriptErrorEvent { err: e })
                         })
                         .ok();
                 });
+
+                *world_orig = Arc::try_unwrap(world_arc).unwrap().into_inner();
+
             },
         );
     }
