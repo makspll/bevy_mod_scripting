@@ -44,7 +44,7 @@ mlua_macros = ["tealr/mlua_macros"]
 
 [dependencies]
 bevy = "0.7"
-tealr = { git = "https://github.com/lenscas/tealr", features = ["mlua_vendored","mlua_send"], branch="feature/document_global_instances" }
+tealr = { git = "https://github.com/lenscas/tealr", features = ["mlua_vendored","mlua_send"] }
 rhai = { version = "1.7.0", features = ["sync"] }
 anyhow = "1.0.57"
 beau_collector = "0.2.1"
