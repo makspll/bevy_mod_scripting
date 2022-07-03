@@ -10,3 +10,8 @@ Cargo.lock
 **/*.rs.bk
 
 .vscode/
+
+**/doc
+
+global_types.d.tl
+tlconfig.lua

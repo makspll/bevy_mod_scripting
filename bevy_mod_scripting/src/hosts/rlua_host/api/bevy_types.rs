@@ -101,7 +101,7 @@ impl TealData for LuaWorld {
             })
        });
     
-        methods.add_method("get_components", |_, world, (entity, comp_name) : (LuaEntity,String)| {
+        methods.add_method("get_component", |_, world, (entity, comp_name) : (LuaEntity,String)| {
 
             // grab this entity before acquiring a lock in case it's a reference
             let entity = entity.inner();

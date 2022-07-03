@@ -60,6 +60,9 @@ pub(crate) struct Newtype {
 
     #[serde(default)]
     pub derive_flags: Vec<String>,
+
+    #[serde(default)]
+    pub import_path: String,
 }
 
 #[derive(Deserialize,Debug)]
@@ -264,6 +267,14 @@ impl WrappedItem<'_> {
         s.lines()
         .map(|l| format!("\n{}///{l}","\t".repeat(tabs)))
         .collect()
+    }
+
+    pub fn get_full_path(&self) -> String {
+        if self.config.import_path.is_empty(){
+            self.path_components.join("::")
+        } else {
+            self.config.import_path.to_owned()
+        }
     }
 
     pub fn get_type_docstring(&self) -> String{
@@ -527,7 +538,7 @@ pub(crate) fn generate_macros(crates: &[Crate], config: Config) -> Result<String
     let macro_list_body : String = wrapped_items.iter().map(|v| {
 
 
-        let full_path = v.path_components.join("::");
+        let full_path = v.get_full_path();
         let type_docstring : String = v.get_type_docstring();
         let wrapper_type = v.wrapper_type.to_string();
         let mut flags = v.get_derive_flags_body(&config);

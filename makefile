@@ -30,9 +30,10 @@ valgrind:
 			--simulate-cache=yes \
 			${EXEC} --bench  ${T_ID} 
 generate_api:
-	cargo run --features=lua54 -- \
-	--json "api_gen/bevy.json" \
-	--json "api_gen/glam.json" \
-	--json "api_gen/bevy_ecs.json" \
-	--config api_gen/api_gen_config.toml \
-	> bevy_mod_scripting/src/rlua_host/api/generated.rs
+	cd bevy_mod_scripting_derive && \
+	cargo run -- \
+	--json "../api_gen/bevy.json" \
+	--json "../api_gen/glam.json" \
+	--json "../api_gen/bevy_ecs.json" \
+	--config "../api_gen/api_gen_config.toml" \
+	> ../bevy_mod_scripting/src/hosts/rlua_host/api/generated.rs

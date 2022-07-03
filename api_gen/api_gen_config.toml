@@ -31,182 +31,203 @@ primitives = ["usize","isize","f32","f64","u128","u64","u32","u16","u8","i128","
 type="Entity"
 source="bevy_ecs"
 
- [[types]]
- type="Vec2"
- source="glam"
- lua_methods=[
-     "(MetaMethod::Index) (s=LuaVec2)=> {|_,s,idx: usize| {Ok(s.inner()[idx-1])}}",
-     "mut (MetaMethod::NewIndex) (n=f32) => {|_,s,(idx,val): (usize,($n))| {Ok(s.val_mut(|s| s[idx-1] = val))}}"
- ]
+[[types]]
+type="Vec2"
+source="glam"
+lua_methods=[
+    "(MetaMethod::Index) (s=LuaVec2)=> {|_,s,idx: usize| {Ok(s.inner()[idx-1])}}",
+    "mut (MetaMethod::NewIndex) (n=f32) => {|_,s,(idx,val): (usize,($n))| {Ok(s.val_mut(|s| s[idx-1] = val))}}"
+]
+import_path="glam::vec2::Vec2"
 
- [[types]]
- type="Vec3"
- source="glam"
- derive_flags=[
-     """
-     Copy(LuaVec2 -> (MetaMethod::Index) (s=LuaVec3),
-         LuaVec2 -> mut (MetaMethod::NewIndex) (n=f32))
-     """
- ]
 
- [[types]]
- type="Vec4"
- source="glam"
- derive_flags=[
-     """
-     Copy(LuaVec2 -> (MetaMethod::Index) (s=LuaVec4),
-         LuaVec2 -> mut (MetaMethod::NewIndex) (n=f32))
-     """
- ]
+[[types]]
+type="Vec3"
+source="glam"
+derive_flags=[
+    """
+    Copy(LuaVec2 -> (MetaMethod::Index) (s=LuaVec3),
+        LuaVec2 -> mut (MetaMethod::NewIndex) (n=f32))
+    """
+]
+import_path="glam::vec3::Vec3"
 
- [[types]]
- type="DVec2"
- source="glam"
- derive_flags=[
-     """
-     Copy(LuaVec2 -> (MetaMethod::Index) (s=LuaDVec2),
-         LuaVec2 -> mut (MetaMethod::NewIndex) (n=f64))
-     """
- ]
 
- [[types]]
- type="DVec3"
- source="glam"
- derive_flags=[
-     """
-     Copy(LuaVec2 -> (MetaMethod::Index) (s=LuaDVec3),
-         LuaVec2 -> mut (MetaMethod::NewIndex) (n=f64))
-     """
- ]
+[[types]]
+type="Vec4"
+source="glam"
+derive_flags=[
+    """
+    Copy(LuaVec2 -> (MetaMethod::Index) (s=LuaVec4),
+        LuaVec2 -> mut (MetaMethod::NewIndex) (n=f32))
+    """
+]
+import_path="glam::vec4::Vec4"
 
- [[types]]
- type="DVec4"
- source="glam"
- derive_flags=[
-     """
-     Copy(LuaVec2 -> (MetaMethod::Index) (s=LuaDVec4),
-         LuaVec2 -> mut (MetaMethod::NewIndex) (n=f64))
-     """
- ]
+[[types]]
+type="DVec2"
+source="glam"
+derive_flags=[
+    """
+    Copy(LuaVec2 -> (MetaMethod::Index) (s=LuaDVec2),
+        LuaVec2 -> mut (MetaMethod::NewIndex) (n=f64))
+    """
+]
+import_path="glam::vec2::DVec2"
 
- [[types]]
- type="IVec2"
- source="glam"
- derive_flags=[
-     """
-     Copy(LuaVec2 -> (MetaMethod::Index) (s=LuaIVec2),
-         LuaVec2 -> mut (MetaMethod::NewIndex) (n=i32))
-     """
- ]
+[[types]]
+type="DVec3"
+source="glam"
+derive_flags=[
+    """
+    Copy(LuaVec2 -> (MetaMethod::Index) (s=LuaDVec3),
+        LuaVec2 -> mut (MetaMethod::NewIndex) (n=f64))
+    """
+]
+import_path="glam::vec3::DVec3"
 
- [[types]]
- type="IVec3"
- source="glam"
- derive_flags=[
-     """
-     Copy(LuaVec2 -> (MetaMethod::Index) (s=LuaIVec3),
-         LuaVec2 -> mut (MetaMethod::NewIndex) (n=i32))
-     """
- ]
+[[types]]
+type="DVec4"
+source="glam"
+derive_flags=[
+    """
+    Copy(LuaVec2 -> (MetaMethod::Index) (s=LuaDVec4),
+        LuaVec2 -> mut (MetaMethod::NewIndex) (n=f64))
+    """
+]
+import_path="glam::vec4::DVec4"
 
- [[types]]
- type="IVec4"
- source="glam"
- derive_flags=[
-     """
-     Copy(LuaVec2 -> (MetaMethod::Index) (s=LuaIVec4),
-         LuaVec2 -> mut (MetaMethod::NewIndex) (n=i32))
-     """
- ]
+[[types]]
+type="IVec2"
+source="glam"
+derive_flags=[
+    """
+    Copy(LuaVec2 -> (MetaMethod::Index) (s=LuaIVec2),
+        LuaVec2 -> mut (MetaMethod::NewIndex) (n=i32))
+    """
+]
+import_path="glam::vec2::IVec2"
 
- [[types]]
- type="UVec2"
- source="glam"
- derive_flags=[
-     """
-     Copy(LuaVec2 -> (MetaMethod::Index) (s=LuaUVec2),
-         LuaVec2 -> mut (MetaMethod::NewIndex) (n=u32))
-     """
- ]
+[[types]]
+type="IVec3"
+source="glam"
+derive_flags=[
+    """
+    Copy(LuaVec2 -> (MetaMethod::Index) (s=LuaIVec3),
+        LuaVec2 -> mut (MetaMethod::NewIndex) (n=i32))
+    """
+]
+import_path="glam::vec3::IVec3"
 
- [[types]]
- type="UVec3"
- source="glam"
- derive_flags=[
-     """
-     Copy(LuaVec2 -> (MetaMethod::Index) (s=LuaUVec3),
-         LuaVec2 -> mut (MetaMethod::NewIndex) (n=u32))
-     """
- ]
+[[types]]
+type="IVec4"
+source="glam"
+derive_flags=[
+    """
+    Copy(LuaVec2 -> (MetaMethod::Index) (s=LuaIVec4),
+        LuaVec2 -> mut (MetaMethod::NewIndex) (n=i32))
+    """
+]
+import_path="glam::vec4::IVec4"
 
- [[types]]
- type="UVec4"
- source="glam"
- derive_flags=[
-     """
-     Copy(LuaVec2 -> (MetaMethod::Index) (s=LuaUVec4),
-         LuaVec2 -> mut (MetaMethod::NewIndex) (n=u32))
-     """
- ]
+[[types]]
+type="UVec2"
+source="glam"
+derive_flags=[
+    """
+    Copy(LuaVec2 -> (MetaMethod::Index) (s=LuaUVec2),
+        LuaVec2 -> mut (MetaMethod::NewIndex) (n=u32))
+    """
+]
+import_path="glam::vec2::UVec2"
+
+[[types]]
+type="UVec3"
+source="glam"
+derive_flags=[
+    """
+    Copy(LuaVec2 -> (MetaMethod::Index) (s=LuaUVec3),
+        LuaVec2 -> mut (MetaMethod::NewIndex) (n=u32))
+    """
+]
+import_path="glam::vec3::UVec3"
+
+[[types]]
+type="UVec4"
+source="glam"
+derive_flags=[
+    """
+    Copy(LuaVec2 -> (MetaMethod::Index) (s=LuaUVec4),
+        LuaVec2 -> mut (MetaMethod::NewIndex) (n=u32))
+    """
+]
+import_path="glam::vec4::UVec4"
 
 [[types]]
 type="Mat3"
 source="glam"
 lua_methods=[
-    """    
-    mut (MetaMethod::Index) (s=LuaMat3,b=Mat3,v=LuaVec3) => {|_,s,idx : usize| {
-        match s {
-            ($s)::Owned(ref mut v, ref valid) => {
+"""    
+mut (MetaMethod::Index) (s=LuaMat3,b=Mat3,v=LuaVec3) => {|_,s,idx : usize| {
+    match s {
+        ($s)::Owned(ref mut v, ref valid) => {
+            Ok(($v)::Ref(LuaRef{
+                root: LuaRefBase::LuaOwned{valid: Arc::downgrade((valid))},
+                r: ReflectPtr::Mut(v.col_mut(idx-1)),
+                path: None
+            }))
+        },
+        ($s)::Ref(ref mut r) => {
+            r.get_mut(|s,r| {
                 Ok(($v)::Ref(LuaRef{
-                    root: LuaRefBase::LuaOwned{valid: Arc::downgrade((valid))},
-                    r: ReflectPtr::Mut(v.col_mut(idx-1)),
+                    root: r.root.clone(),
+                    r: ReflectPtr::Mut(s.downcast_mut::<($b)>().unwrap().col_mut(idx-1)),
                     path: None
-                }))
-            },
-            ($s)::Ref(ref mut r) => {
-                r.get_mut(|s,r| {
-                    Ok(($v)::Ref(LuaRef{
-                        root: r.root.clone(),
-                        r: ReflectPtr::Mut(s.downcast_mut::<($b)>().unwrap().col_mut(idx-1)),
-                        path: None
-                    })) 
-                })
-            }
+                })) 
+            })
         }
-    }}
-    """
+    }
+}}
+"""
 ]
+import_path="glam::mat3::Mat3"
 
- [[types]]
- type="Mat4"
- source="glam"
- derive_flags=[
-     "Copy(LuaMat3 -> mut (MetaMethod::Index) (s=LuaMat4,b=Mat4,v=LuaVec4))"
- ]
+[[types]]
+type="Mat4"
+source="glam"
+derive_flags=[
+    "Copy(LuaMat3 -> mut (MetaMethod::Index) (s=LuaMat4,b=Mat4,v=LuaVec4))"
+]
+import_path="glam::mat4::Mat4"
 
- [[types]]
- type="DMat3"
- source="glam"
- derive_flags=[
-     "Copy(LuaMat3 -> mut (MetaMethod::Index) (s=LuaDMat3,b=DMat3,v=LuaDVec3))"
- ]
+[[types]]
+type="DMat3"
+source="glam"
+derive_flags=[
+    "Copy(LuaMat3 -> mut (MetaMethod::Index) (s=LuaDMat3,b=DMat3,v=LuaDVec3))"
+]
+import_path="glam::mat3::DMat3"
 
- [[types]]
- type="DMat4"
- source="glam"
- derive_flags=[
-     "Copy(LuaMat3 -> mut (MetaMethod::Index) (s=LuaDMat4,b=DMat4,v=LuaDVec4))"
- ]
+[[types]]
+type="DMat4"
+source="glam"
+derive_flags=[
+    "Copy(LuaMat3 -> mut (MetaMethod::Index) (s=LuaDMat4,b=DMat4,v=LuaDVec4))"
+]
+import_path="glam::mat4::DMat4"
 
- [[types]]
- type="Quat"
- source="glam"
+[[types]]
+type="Quat"
+source="glam"
+import_path="glam::quat::Quat"
 
- [[types]]
- type="DQuat"
- source="glam"
+[[types]]
+type="DQuat"
+source="glam"
+import_path="glam::quat::DQuat"
 
- [[types]]
- type="EulerRot"
- source="glam"
- wrapper_type="NonReflect"
+[[types]]
+type="EulerRot"
+source="glam"
+wrapper_type="NonReflect"
+import_path="glam::euler::EulerRot"
