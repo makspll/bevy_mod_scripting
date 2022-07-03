@@ -1,38 +1,15 @@
 
 use proc_macro2::{Span, TokenStream};
 use syn::{*, parse::{ParseStream, Parse}, token::{Brace, Paren}, punctuated::Punctuated, spanned::Spanned};
-use quote::{quote, ToTokens, quote_spanned, format_ident};
+use quote::{ToTokens, quote_spanned, format_ident};
 use convert_case::{Case, Casing};
 
 use crate::EmptyToken;
 
-use super::utils::{attribute_to_string_lit};
-
-pub(crate) trait ToLuaMethod {
-    fn to_lua_method(self) -> LuaMethod;
-}
+use crate::utils::{attribute_to_string_lit};
 
 
 
-
-#[derive(Debug)]
-pub(crate) struct UserdataBlock {
-    pub impl_token: Token![impl],
-    pub impl_braces: Brace,
-    pub functions: Punctuated<LuaMethod,Token![;]>
-}
-
-impl Parse for UserdataBlock {
-    fn parse(input: ParseStream) -> Result<Self> {
-        let f;
-
-        Ok(Self{
-            impl_token: input.parse()?,
-            impl_braces: braced!(f in input),
-            functions: f.parse_terminated(LuaMethod::parse)?,
-        })
-    }
-}
 
 #[derive(Clone,PartialEq,Eq,Hash,Debug)]
 pub(crate) struct MethodMacroArg {
@@ -56,7 +33,7 @@ impl ToTokens for MethodMacroArg {
     fn to_tokens(&self, tokens: &mut TokenStream) {
         let id = &self.ident;
         let rep = &self.replacement;
-        tokens.extend(quote!{
+        tokens.extend(quote::quote!{
             #id = #rep
         })
     }
@@ -130,11 +107,11 @@ impl ToTokens for LuaMethodType {
         let is_function = self.is_function.then(|| Token![fn](tokens.span()));
         let mut inner = self.get_inner_tokens();
         if self.is_meta {
-            inner = quote!{
+            inner = quote::quote!{
                 (#inner)
             }
         };
-        tokens.extend(quote!{
+        tokens.extend(quote::quote!{
            #is_static #is_mut #is_function #inner
         })
     }
@@ -186,12 +163,12 @@ impl LuaClosure {
                 expr,
                 .. } => {
                     
-                quote!{
+                quote_spanned!{self.span()=>
                     replace!{#args : #expr}
                 }
             },
             LuaClosure::PureClosure { expr, .. } => {
-                quote!{
+                quote_spanned!{self.span()=>
                     #expr
                 }
             },
@@ -208,12 +185,12 @@ impl ToTokens for LuaClosure {
                 expr,
                 .. } => {
                     
-                tokens.extend(quote!{
+                tokens.extend(quote::quote!{
                     (#args) => {#expr} 
                 })
             },
             LuaClosure::PureClosure { expr, .. } => {
-                tokens.extend(quote!{
+                tokens.extend(quote::quote!{
                     => #expr
                 })
             },
@@ -240,7 +217,7 @@ impl Parse for Test {
 impl ToTokens for Test {
     fn to_tokens(&self, tokens: &mut TokenStream) {
         let ts = &self.ts;
-        tokens.extend(quote!{
+        tokens.extend(quote::quote!{
             {#ts}
         })
     }
@@ -253,6 +230,7 @@ pub(crate) struct LuaMethod {
     pub closure: LuaClosure,
     pub test: Option<Test>
 }
+
 
 
 impl Parse for LuaMethod {
@@ -275,10 +253,10 @@ impl ToTokens for LuaMethod {
 
         let mt = &self.method_type;
         let closure = &self.closure;
-        let test = self.test.as_ref().map(|t| quote!{
+        let test = self.test.as_ref().map(|t| quote::quote!{
             => #t
         });
-        tokens.extend(quote!{
+        tokens.extend(quote::quote!{
             #ds #mt #closure #test
         })
     }
@@ -297,7 +275,7 @@ impl LuaMethod {
 
             match &self.closure{
                 LuaClosure::MetaClosure { args, .. } => {
-                    quote!{
+                    quote_spanned!{self.span()=>
                         replace!{#args : #fun}
                     }},
                 LuaClosure::PureClosure {..} => {
@@ -315,7 +293,7 @@ impl LuaMethod {
 
         let ds : TokenStream = self.docstring.iter().map(|v| {
                 let ts : TokenStream = attribute_to_string_lit(v);
-                quote!{
+                quote_spanned!{self.span()=>
                     #receiver.document(#ts);
                 }
             }).collect();
@@ -329,7 +307,7 @@ impl LuaMethod {
         let inner_tokens = self.method_type.get_inner_tokens();
 
 
-        quote_spanned!{closure.span()=>
+        quote_spanned!{self.span()=>
             #ds
             #receiver.#call_ident(#inner_tokens,#closure);
         }

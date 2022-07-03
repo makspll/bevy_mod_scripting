@@ -20,9 +20,13 @@ pub enum LuaWrapper<T : LuaWrappable> {
 pub struct AnyLuaWrapper<T>(T);
 
 
-impl <T>AnyLuaWrapper<T> {
+impl <T : Clone>AnyLuaWrapper<T> {
     pub fn new(i : T) -> Self{
         Self(i)
+    }
+
+    pub fn inner(&self) -> T{
+        self.0.clone()
     }
 }
 

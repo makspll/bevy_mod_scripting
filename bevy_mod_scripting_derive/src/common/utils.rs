@@ -44,7 +44,7 @@ macro_rules! impl_parse_enum {
         impl ToTokens for $name {
             fn to_tokens(&self, ts: &mut proc_macro2::TokenStream) { 
                 let ident = Ident::new(self.to_str(),Span::call_site());
-                ts.extend(quote!{#ident});
+                ts.extend(quote::quote_spanned!{syn::spanned::Spanned::span(ts)=> #ident});
             }
         }
 
@@ -84,7 +84,8 @@ macro_rules! impl_parse_enum {
 
 pub(crate) use impl_parse_enum;
 use proc_macro2::TokenStream;
-use syn::Attribute;
+use quote::ToTokens;
+use syn::{Attribute, TypePath, Type};
 
 
 
@@ -93,4 +94,26 @@ pub fn attribute_to_string_lit(attrs: &Attribute) -> TokenStream{
         .into_iter()
         .skip(1)
         .collect()
+}
+
+
+/// Removes whitespace from TypePath and converts it to string
+pub fn stringify_type_path(t : &TypePath) -> String{
+        let mut k = t.into_token_stream().to_string();
+        k.retain(|c| !c.is_whitespace());
+        k
+}
+
+
+
+/// Converts simple type to base string (i.e. one which has a single type identifier)
+pub fn type_base_string(t : &Type) -> Option<String> {
+    match t {
+        Type::Paren(v) => type_base_string(&v.elem),
+        Type::Path(p) => Some(p.path.segments.last()?.ident.to_string()),
+        Type::Ptr(p) => type_base_string(&p.elem),
+        Type::Reference(r) => type_base_string(&r.elem),
+        Type::Slice(v) => type_base_string(&v.elem),
+        _ => None,
+    }
 }

@@ -1,5 +1,6 @@
 pub mod bevy_types;
 pub mod wrappers;
+pub mod generated;
 
 use std::{ops::DerefMut,sync::Weak};
 use parking_lot::{RwLock};
@@ -15,7 +16,7 @@ use std::{
 use crate::{PrintableReflect};
 use anyhow::Result;
 use tealr::mlu::{mlua,mlua::{prelude::*,Value,UserData,MetaMethod}, TealData};
-pub use {bevy_types::*, wrappers::*,bevy_types::LuaBevyAPIProvider };
+pub use {generated::*,bevy_types::*, wrappers::*,generated::LuaBevyAPIProvider };
 
 #[reflect_trait]
 pub trait CustomUserData {
