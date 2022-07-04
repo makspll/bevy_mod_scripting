@@ -145,7 +145,7 @@ pub trait APIProvider: 'static + Send + Sync {
     /// the type of script engine/context the API is attached to, this must be the same as the APITarget of the ScriptHost meant to receive it.
     type APITarget: Send + Sync + 'static;
     /// The type of script context the APIProvider works with, must be the same as the ScriptContext of the target ScriptHost.
-    type ScriptContext;
+    type ScriptContext: Send + Sync + 'static;
     /// The type of documentation fragment produced by the APIProvider, must be the same as the DocTarget of the target ScriptHost.
     type DocTarget: DocFragment;
     /// The type of script asset, must be the same as the ScriptAsset of the target ScriptHost
