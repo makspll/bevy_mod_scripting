@@ -4,8 +4,8 @@ use bevy_mod_scripting::{
     events::PriorityEventWriter,
     langs::mlu::{mlua, mlua::prelude::*, mlua::Value},
     APIProvider, AddScriptApiProvider, AddScriptHost, AddScriptHostHandler, LuaDocFragment,
-    LuaEvent, LuaFile, RLuaScriptHost, Recipients, Script, ScriptCollection, ScriptError,
-    ScriptErrorEvent, ScriptingPlugin, ScriptData,
+    LuaEvent, LuaFile, RLuaScriptHost, Recipients, Script, ScriptCollection, ScriptData,
+    ScriptError, ScriptErrorEvent, ScriptingPlugin,
 };
 use std::sync::Mutex;
 
@@ -53,7 +53,11 @@ impl APIProvider for LuaAPIProvider {
         Ok(())
     }
 
-    fn setup_script(&mut self, _: &ScriptData,_: &mut Self::ScriptContext) -> Result<(), ScriptError> {
+    fn setup_script(
+        &mut self,
+        _: &ScriptData,
+        _: &mut Self::ScriptContext,
+    ) -> Result<(), ScriptError> {
         Ok(())
     }
 }

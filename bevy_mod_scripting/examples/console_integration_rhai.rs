@@ -2,8 +2,9 @@ use bevy::{ecs::event::Events, prelude::*};
 use bevy_console::{AddConsoleCommand, ConsoleCommand, ConsolePlugin, PrintConsoleLine};
 use bevy_mod_scripting::{
     events::PriorityEventWriter, langs::rhai::*, APIProvider, AddScriptApiProvider, AddScriptHost,
-    AddScriptHostHandler, Recipients, RhaiDocFragment, RhaiEvent, RhaiFile, RhaiScriptHost, Script,
-    ScriptCollection, ScriptError, ScriptErrorEvent, ScriptingPlugin, RhaiContext, ScriptData,
+    AddScriptHostHandler, Recipients, RhaiContext, RhaiDocFragment, RhaiEvent, RhaiFile,
+    RhaiScriptHost, Script, ScriptCollection, ScriptData, ScriptError, ScriptErrorEvent,
+    ScriptingPlugin,
 };
 
 /// custom Rhai API, world is provided as a usize (by the script this time), since
@@ -38,11 +39,13 @@ impl APIProvider for RhaiAPI {
         Ok(())
     }
 
-
-    fn setup_script(&mut self, _: &ScriptData, _: &mut Self::ScriptContext) -> Result<(), ScriptError> {
+    fn setup_script(
+        &mut self,
+        _: &ScriptData,
+        _: &mut Self::ScriptContext,
+    ) -> Result<(), ScriptError> {
         Ok(())
     }
-
 }
 
 #[derive(Clone)]

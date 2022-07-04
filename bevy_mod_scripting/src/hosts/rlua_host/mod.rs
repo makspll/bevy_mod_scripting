@@ -3,7 +3,7 @@ pub mod docs;
 
 use crate::{
     script_add_synchronizer, script_hot_reload_handler, script_remove_synchronizer, APIProviders,
-    CachedScriptEventState, ScriptData, Recipients, Script, ScriptCollection, ScriptContexts,
+    CachedScriptEventState, Recipients, Script, ScriptCollection, ScriptContexts, ScriptData,
     ScriptError, ScriptErrorEvent, ScriptEvent, ScriptHost,
 };
 use anyhow::Result;

@@ -5,7 +5,7 @@ use bevy_mod_scripting::{
     langs::mlu::{mlua, mlua::prelude::*, mlua::Value, TealData},
     APIProvider, AddScriptApiProvider, AddScriptHost, AddScriptHostHandler, GenDocumentation,
     LuaDocFragment, LuaEvent, LuaFile, RLuaScriptHost, Recipients, Script, ScriptCollection,
-    ScriptError, ScriptingPlugin, ScriptData,
+    ScriptData, ScriptError, ScriptingPlugin,
 };
 use tealr::TypeName;
 
@@ -88,7 +88,11 @@ impl APIProvider for LuaAPIProvider {
                     .document_global_instance::<Export>().unwrap()))
     }
 
-    fn setup_script(&mut self, _: &ScriptData, _: &mut Self::ScriptContext) -> Result<(), ScriptError> {
+    fn setup_script(
+        &mut self,
+        _: &ScriptData,
+        _: &mut Self::ScriptContext,
+    ) -> Result<(), ScriptError> {
         Ok(())
     }
 }

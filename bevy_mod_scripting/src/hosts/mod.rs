@@ -111,17 +111,11 @@ pub trait ScriptHost: Send + Sync + 'static + Default {
             entity,
         };
 
-        let providers: &mut APIProviders<Self> =
-            &mut world.resource_mut();
+        let providers: &mut APIProviders<Self> = &mut world.resource_mut();
         let mut ctx = self.load_script(script, &fd, providers).unwrap();
 
-
         let events = [event; 1];
-        let ctx_iter = [(
-            fd,
-            &mut ctx,
-        ); 1]
-            .into_iter();
+        let ctx_iter = [(fd, &mut ctx); 1].into_iter();
 
         self.handle_events(world, &events, ctx_iter)
     }
@@ -150,16 +144,20 @@ pub trait APIProvider: 'static + Send + Sync {
     type DocTarget: DocFragment;
     /// The type of script asset, must be the same as the ScriptAsset of the target ScriptHost
     // type ScriptAsset : CodeAsset;
-    
+
     /// provide the given script context with the API permamently.
     /// Depending on the host, API's may be attached on a per-script basis
     /// or on a per-engine basis. Rhai for example allows you to decouple the State of each script from the
-    /// engine. For one-time setup use `Self::setup_script` 
+    /// engine. For one-time setup use `Self::setup_script`
     fn attach_api(&mut self, ctx: &mut Self::APITarget) -> Result<(), ScriptError>;
 
     /// Setup meant to be executed once for every single script. Use this if you need to consistently setup scripts.
     /// For API's use `Self::attach_api` instead.
-    fn setup_script(&mut self, script_data: &ScriptData,ctx: &mut Self::ScriptContext) -> Result<(), ScriptError>;
+    fn setup_script(
+        &mut self,
+        script_data: &ScriptData,
+        ctx: &mut Self::ScriptContext,
+    ) -> Result<(), ScriptError>;
 
     fn get_doc_fragment(&self) -> Option<Self::DocTarget> {
         None
@@ -168,9 +166,15 @@ pub trait APIProvider: 'static + Send + Sync {
 
 /// Stores many API providers
 pub struct APIProviders<T: ScriptHost> {
-    pub providers: Vec<Box<dyn APIProvider<APITarget = T::APITarget, 
-        DocTarget = T::DocTarget, 
-        ScriptContext = T::ScriptContext>>>,
+    pub providers: Vec<
+        Box<
+            dyn APIProvider<
+                APITarget = T::APITarget,
+                DocTarget = T::DocTarget,
+                ScriptContext = T::ScriptContext,
+            >,
+        >,
+    >,
 }
 
 impl<T: ScriptHost> Default for APIProviders<T> {
@@ -182,7 +186,6 @@ impl<T: ScriptHost> Default for APIProviders<T> {
 }
 
 impl<T: ScriptHost> APIProviders<T> {
-
     pub fn attach_all(&mut self, ctx: &mut T::APITarget) -> Result<(), ScriptError> {
         for p in self.providers.iter_mut() {
             p.attach_api(ctx)?;
@@ -191,9 +194,9 @@ impl<T: ScriptHost> APIProviders<T> {
         Ok(())
     }
 
-    pub fn setup_all(&mut self, script_data: &ScriptData,ctx: &mut T::ScriptContext){
-        for p in self.providers.iter_mut(){
-            p.setup_script(script_data,ctx);
+    pub fn setup_all(&mut self, script_data: &ScriptData, ctx: &mut T::ScriptContext) {
+        for p in self.providers.iter_mut() {
+            p.setup_script(script_data, ctx);
         }
     }
 

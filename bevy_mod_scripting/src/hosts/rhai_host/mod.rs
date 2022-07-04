@@ -3,7 +3,7 @@ mod docs;
 
 use crate::{
     script_add_synchronizer, script_hot_reload_handler, script_remove_synchronizer, APIProviders,
-    CachedScriptEventState, ScriptData, Recipients, Script, ScriptCollection, ScriptContexts,
+    CachedScriptEventState, Recipients, Script, ScriptCollection, ScriptContexts, ScriptData,
     ScriptError, ScriptErrorEvent, ScriptEvent, ScriptHost,
 };
 use bevy::prelude::{
@@ -89,8 +89,7 @@ impl<A: FuncArgs + Send + Clone + Sync + 'static> ScriptHost for RhaiScriptHost<
             )
             // setup engine
             .add_startup_system(
-                |mut providers: ResMut<APIProviders<Self>>,
-                 mut host: ResMut<Self>| {
+                |mut providers: ResMut<APIProviders<Self>>, mut host: ResMut<Self>| {
                     providers
                         .attach_all(&mut host.engine)
                         .expect("Error in adding api's for rhai");
