@@ -194,10 +194,12 @@ impl<T: ScriptHost> APIProviders<T> {
         Ok(())
     }
 
-    pub fn setup_all(&mut self, script_data: &ScriptData, ctx: &mut T::ScriptContext) {
+    pub fn setup_all(&mut self, script_data: &ScriptData, ctx: &mut T::ScriptContext) -> Result<(), ScriptError>{
         for p in self.providers.iter_mut() {
-            p.setup_script(script_data, ctx);
-        }
+            p.setup_script(script_data, ctx)?;
+        };
+
+        Ok(())
     }
 
     pub fn gen_all(&self) -> Result<(), ScriptError> {

@@ -122,7 +122,7 @@ impl<A: FuncArgs + Send + Clone + Sync + 'static> ScriptHost for RhaiScriptHost<
         scope.push("state", Map::new());
 
         let mut ctx = RhaiContext { ast, scope };
-        providers.setup_all(script_data, &mut ctx);
+        providers.setup_all(script_data, &mut ctx)?;
 
         Ok(ctx)
     }

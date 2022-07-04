@@ -158,7 +158,7 @@ impl<A: LuaArg> ScriptHost for RLuaScriptHost<A> {
         let mut lua = Mutex::new(lua);
 
         providers.attach_all(&mut lua)?;
-        providers.setup_all(script_data, &mut lua);
+        providers.setup_all(script_data, &mut lua)?;
         Ok(lua)
     }
 
