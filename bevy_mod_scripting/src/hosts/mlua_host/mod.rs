@@ -67,7 +67,7 @@ impl<A: LuaArg> ScriptEvent for LuaEvent<A> {
 ///        type APITarget = Mutex<Lua>;
 ///        type DocTarget = LuaDocFragment;
 ///        type ScriptContext = Mutex<Lua>;
-/// 
+///
 ///        fn attach_api(&mut self, ctx: &mut Self::APITarget) -> Result<(),ScriptError> {
 ///            // callbacks can receive any `ToLuaMulti` arguments, here '()' and
 ///            // return any `FromLuaMulti` arguments, here a `usize`

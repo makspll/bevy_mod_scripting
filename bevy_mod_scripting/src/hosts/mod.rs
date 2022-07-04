@@ -1,12 +1,12 @@
 //! All script host related stuff
 
 pub mod docs;
-pub mod rhai_host;
 pub mod mlua_host;
+pub mod rhai_host;
 
 use bevy::{asset::Asset, ecs::system::SystemState, prelude::*, reflect::FromReflect};
 use bevy_event_priority::PriorityEventReader;
-pub use {crate::docs::*, crate::rhai_host::*, crate::mlua_host::*};
+pub use {crate::docs::*, crate::mlua_host::*, crate::rhai_host::*};
 
 use std::{
     collections::{HashMap, HashSet},
@@ -143,7 +143,6 @@ pub trait APIProvider: 'static + Send + Sync {
     /// The type of documentation fragment produced by the APIProvider, must be the same as the DocTarget of the target ScriptHost.
     type DocTarget: DocFragment;
 
-
     /// provide the given script context with the API permamently.
     /// Depending on the host, API's may be attached on a per-script basis
     /// or on a per-engine basis. Rhai for example allows you to decouple the State of each script from the
@@ -156,7 +155,7 @@ pub trait APIProvider: 'static + Send + Sync {
         &mut self,
         _script_data: &ScriptData,
         _ctx: &mut Self::ScriptContext,
-    ) -> Result<(), ScriptError>{
+    ) -> Result<(), ScriptError> {
         Ok(())
     }
 
@@ -195,10 +194,14 @@ impl<T: ScriptHost> APIProviders<T> {
         Ok(())
     }
 
-    pub fn setup_all(&mut self, script_data: &ScriptData, ctx: &mut T::ScriptContext) -> Result<(), ScriptError>{
+    pub fn setup_all(
+        &mut self,
+        script_data: &ScriptData,
+        ctx: &mut T::ScriptContext,
+    ) -> Result<(), ScriptError> {
         for p in self.providers.iter_mut() {
             p.setup_script(script_data, ctx)?;
-        };
+        }
 
         Ok(())
     }
