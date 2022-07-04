@@ -3,7 +3,7 @@ mod docs;
 
 use crate::{
     script_add_synchronizer, script_hot_reload_handler, script_remove_synchronizer, APIProviders,
-    CachedScriptEventState, FlatScriptData, Recipients, Script, ScriptCollection, ScriptContexts,
+    CachedScriptEventState, Recipients, Script, ScriptCollection, ScriptContexts, ScriptData,
     ScriptError, ScriptErrorEvent, ScriptEvent, ScriptHost,
 };
 use bevy::prelude::{
@@ -72,7 +72,7 @@ impl<A: FuncArgs + Send + Clone + Sync + 'static> ScriptHost for RhaiScriptHost<
             .init_asset_loader::<RhaiLoader>()
             .init_resource::<CachedScriptEventState<Self>>()
             .init_resource::<ScriptContexts<Self::ScriptContext>>()
-            .init_resource::<APIProviders<Self::APITarget, Self::DocTarget>>()
+            .init_resource::<APIProviders<Self>>()
             .register_type::<ScriptCollection<Self::ScriptAsset>>()
             .register_type::<Script<Self::ScriptAsset>>()
             .add_system_set_to_stage(
@@ -89,8 +89,7 @@ impl<A: FuncArgs + Send + Clone + Sync + 'static> ScriptHost for RhaiScriptHost<
             )
             // setup engine
             .add_startup_system(
-                |mut providers: ResMut<APIProviders<Self::APITarget, Self::DocTarget>>,
-                 mut host: ResMut<Self>| {
+                |mut providers: ResMut<APIProviders<Self>>, mut host: ResMut<Self>| {
                     providers
                         .attach_all(&mut host.engine)
                         .expect("Error in adding api's for rhai");
@@ -101,35 +100,38 @@ impl<A: FuncArgs + Send + Clone + Sync + 'static> ScriptHost for RhaiScriptHost<
     fn load_script(
         &mut self,
         path: &[u8],
-        script_name: &str,
-        _: &mut APIProviders<Self::APITarget, Self::DocTarget>,
+        script_data: &ScriptData,
+        providers: &mut APIProviders<Self>,
     ) -> Result<Self::ScriptContext, ScriptError> {
         let mut scope = Scope::new();
         let mut ast = self
             .engine
             .compile(
                 std::str::from_utf8(path).map_err(|_| ScriptError::FailedToLoad {
-                    script: script_name.to_owned(),
+                    script: script_data.name.to_owned(),
                 })?,
             )
             .map_err(|e| ScriptError::SyntaxError {
-                script: script_name.to_owned(),
+                script: script_data.name.to_owned(),
                 msg: e.to_string(),
             })?;
 
-        ast.set_source(script_name);
+        ast.set_source(script_data.name);
 
         // persistent state for scripts
         scope.push("state", Map::new());
 
-        Ok(RhaiContext { ast, scope })
+        let mut ctx = RhaiContext { ast, scope };
+        providers.setup_all(script_data, &mut ctx)?;
+
+        Ok(ctx)
     }
 
     fn handle_events<'a>(
         &self,
         world: &mut World,
         events: &[Self::ScriptEvent],
-        ctxs: impl Iterator<Item = (FlatScriptData<'a>, &'a mut Self::ScriptContext)>,
+        ctxs: impl Iterator<Item = (ScriptData<'a>, &'a mut Self::ScriptContext)>,
     ) {
         let world_ptr = world as *mut World as usize;
         world.resource_scope(

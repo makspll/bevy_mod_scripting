@@ -4,8 +4,8 @@ use bevy_event_priority::PriorityEventWriter;
 use bevy_mod_scripting::{
     langs::mlu::{mlua, mlua::prelude::*, mlua::Value, TealData},
     APIProvider, AddScriptApiProvider, AddScriptHost, AddScriptHostHandler, GenDocumentation,
-    LuaDocFragment, LuaEvent, LuaFile, RLuaScriptHost, Recipients, Script, ScriptCollection,
-    ScriptError, ScriptingPlugin,
+    LuaDocFragment, LuaEvent, LuaFile, LuaScriptHost, Recipients, Script, ScriptCollection,
+    ScriptData, ScriptError, ScriptingPlugin,
 };
 use tealr::TypeName;
 
@@ -20,7 +20,7 @@ impl<'lua> ToLua<'lua> for MyLuaArg {
     }
 }
 
-#[derive(Clone, tealr::MluaUserData, TypeName)]
+#[derive(Clone, tealr::mlu::UserData, TypeName)]
 /// This is acts as a documentation and function holder
 /// We can add some general documentation about what it holds
 /// but also specific function level documenation
@@ -64,10 +64,11 @@ pub struct LuaAPIProvider;
 /// the custom Lua api, world is provided via a global pointer,
 /// and callbacks are defined only once at script creation
 impl APIProvider for LuaAPIProvider {
-    type Target = Mutex<Lua>;
+    type APITarget = Mutex<Lua>;
     type DocTarget = LuaDocFragment;
+    type ScriptContext = Mutex<Lua>;
 
-    fn attach_api(&mut self, ctx: &mut Self::Target) -> Result<(), ScriptError> {
+    fn attach_api(&mut self, ctx: &mut Self::APITarget) -> Result<(), ScriptError> {
         // callbacks can receive any `ToLuaMulti` arguments, here '()' and
         // return any `FromLuaMulti` arguments, here a `usize`
         // check the Rlua documentation for more details
@@ -86,6 +87,14 @@ impl APIProvider for LuaAPIProvider {
                     tw.process_type::<APIModule>()
                     .document_global_instance::<Export>().unwrap()))
     }
+
+    fn setup_script(
+        &mut self,
+        _: &ScriptData,
+        _: &mut Self::ScriptContext,
+    ) -> Result<(), ScriptError> {
+        Ok(())
+    }
 }
 
 fn load_our_script(server: Res<AssetServer>, mut commands: Commands) {
@@ -93,7 +102,7 @@ fn load_our_script(server: Res<AssetServer>, mut commands: Commands) {
     let handle = server.load::<LuaFile, &str>(path);
 
     commands.spawn().insert(ScriptCollection::<LuaFile> {
-        scripts: vec![Script::<LuaFile>::new::<RLuaScriptHost<MyLuaArg>>(
+        scripts: vec![Script::<LuaFile>::new::<LuaScriptHost<MyLuaArg>>(
             path.to_string(),
             handle,
         )],
@@ -117,15 +126,15 @@ fn main() -> std::io::Result<()> {
     app.add_plugins(DefaultPlugins)
         .add_plugin(ScriptingPlugin)
         .add_plugin(ConsolePlugin)
-        .add_script_host::<RLuaScriptHost<MyLuaArg>, _>(CoreStage::PostUpdate)
-        .add_api_provider::<RLuaScriptHost<MyLuaArg>>(Box::new(LuaAPIProvider))
+        .add_script_host::<LuaScriptHost<MyLuaArg>, _>(CoreStage::PostUpdate)
+        .add_api_provider::<LuaScriptHost<MyLuaArg>>(Box::new(LuaAPIProvider))
         // this needs to be placed after any `add_api_provider` and `add_script_host` calls
         // it will generate `doc` and `types` folders under `assets/scripts` containing the documentation and teal declaration files
         // respectively. See example asset folder to see how they look like. The `teal_file.tl` script in example assets shows the usage of one of those
         // declaration files, use the teal vscode extension to explore the type hints!
         // Note: This is a noop in optimized builds unless the `doc_always` feature is enabled!
-        .update_documentation::<RLuaScriptHost<MyLuaArg>>()
-        .add_script_handler_stage::<RLuaScriptHost<MyLuaArg>, _, 0, 0>(CoreStage::PostUpdate)
+        .update_documentation::<LuaScriptHost<MyLuaArg>>()
+        .add_script_handler_stage::<LuaScriptHost<MyLuaArg>, _, 0, 0>(CoreStage::PostUpdate)
         .add_startup_system(load_our_script)
         .add_system(fire_our_script);
 

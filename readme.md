@@ -20,7 +20,7 @@ The API will likely change in the future as more scripting support is rolled out
 
 - [x] Script host interface
 - [x] Hot re-loading scripts (on script asset changes, scripts using those assets are re-started)
-- [x] Rlua integration
+- [x] Mlua integration
 - [x] Rhai integration
 - [x] Customisable script API's
 - [x] Event based hooks (i.e. on_update)
@@ -59,14 +59,14 @@ fn main() -> std::io::Result<()> {
         // use any stage AFTER any systems which add/remove/modify script components 
         // in order for your script updates to propagate in a single frame
         .add_script_host::<RhaiScriptHost<MyRhaiArgStruct>,_>(CoreStage::PostUpdate)    
-        .add_script_host::<RLuaScriptHost<MyLuaArgStruct>,_>(CoreStage::PostUpdate)
+        .add_script_host::<LuaScriptHost<MyLuaArgStruct>,_>(CoreStage::PostUpdate)
         
         // the handlers should be placed after any stages which produce script events
         // PostUpdate is okay only if your API doesn't require the core Bevy systems' commands
         // to run beforehand.
         // Note, this setup assumes a single script handler stage with all events having identical
         // priority of zero (see examples for more complex scenarios)
-        .add_script_handler_stage::<RLuaScriptHost<MyLuaArg>, _, 0, 0>(
+        .add_script_handler_stage::<LuaScriptHost<MyLuaArg>, _, 0, 0>(
             CoreStage::PostUpdate,
         )
         .add_script_handler_stage::<RhaiScriptHost<RhaiEventArgs>, _, 0, 0>(
@@ -194,7 +194,7 @@ pub fn load_a_script(
 
 
     commands.spawn().insert(ScriptCollection::<LuaFile> {
-        scripts: vec![Script::<LuaFile>::new::<RLuaScriptHost<MyLuaArg>>(
+        scripts: vec![Script::<LuaFile>::new::<LuaScriptHost<MyLuaArg>>(
             path, handle,
         )],
     });
@@ -215,10 +215,11 @@ pub struct LuaAPI {}
 /// the custom Lua api, world is provided via a global pointer,
 /// and callbacks are defined only once at script creation
 impl APIProvider for LuaAPI {
-    type Target = Mutex<Lua>;
+    type APITarget = Mutex<Lua>;
     type DocTarget = LuaDocFragment;
+    type ScriptContext = Mutex<Lua>;
 
-    fn attach_api(&mut self, ctx: &mut Self::Target) -> Result<(),ScriptError> {
+    fn attach_api(&mut self, ctx: &mut Self::APITarget) -> Result<(),ScriptError> {
         // generate API here
         // world is provided via ctx see examples
         // ...
@@ -230,10 +231,11 @@ impl APIProvider for LuaAPI {
 pub struct RhaiAPI {}
 
 impl APIProvider for RhaiAPI {
-    type Target = Engine;
+    type APITarget = Engine;
     type DocTarget = RhaiDocFragment;
+    type ScriptContext = RhaiContext;
 
-    fn attach_api(&mut self, ctx: &mut Self::Target) -> Result<(),ScriptError> {
+    fn attach_api(&mut self, ctx: &mut Self::APITarget) -> Result<(),ScriptError> {
         // ...
         Ok(())
     }
@@ -246,13 +248,14 @@ Register the API providers like so:
 ```rust,ignore
     app.add_plugins(DefaultPlugins)
         .add_plugin(ScriptingPlugin)
-        .add_script_host::<RLuaScriptHost<MyLuaArg>, _>(CoreStage::PostUpdate)
+        .add_script_host::<LuaScriptHost<MyLuaArg>, _>(CoreStage::PostUpdate)
         .add_script_host::<RhaiScriptHost<MyRhaiArg>, _>(CoreStage::PostUpdate)
-        .add_api_provider::<RLuaScriptHost<MyLuaArg>>(Box::new(LuaAPIProvider))
-        .add_api_provider::<RLuaScriptHost<MyRhaiArg>>(Box::new(RhaiAPIProvider))
+        .add_api_provider::<LuaScriptHost<MyLuaArg>>(Box::new(LuaAPIProvider))
+        .add_api_provider::<LuaScriptHost<MyRhaiArg>>(Box::new(RhaiAPIProvider))
         //...
 ```
 
+Note that the `APIProvider` interface also contains `setup_script` and `get_doc_fragment` methods which are by default no-ops. These can be used to provide documentation (see examples) and guaranteed one-time-per-script setup (such as lua package path setup).
 
 ### Documentation Generation
 Documentation features are exposed at runtime via the `update_documentation` builder trait method for `App`:
@@ -272,12 +275,12 @@ fn main() -> std::io::Result<()> {
 
     app.add_plugins(DefaultPlugins)
         .add_plugin(ScriptingPlugin)
-        .add_script_host::<RLuaScriptHost<MyLuaArg>, _>(CoreStage::PostUpdate)
+        .add_script_host::<LuaScriptHost<MyLuaArg>, _>(CoreStage::PostUpdate)
         // Note: This is a noop in optimized builds unless the `doc_always` feature is enabled!
         // this will pickup any API providers added *BEFOREHAND* like this one
-        // .add_api_provider::<RLuaScriptHost<MyLuaArg>>(Box::new(LuaAPIProvider))
-        .update_documentation::<RLuaScriptHost<MyLuaArg>>()
-        .add_script_handler_stage::<RLuaScriptHost<MyLuaArg>, _, 0, 0>(
+        // .add_api_provider::<LuaScriptHost<MyLuaArg>>(Box::new(LuaAPIProvider))
+        .update_documentation::<LuaScriptHost<MyLuaArg>>()
+        .add_script_handler_stage::<LuaScriptHost<MyLuaArg>, _, 0, 0>(
             CoreStage::PostUpdate,
         );
 
