@@ -5,7 +5,7 @@ use bevy_mod_scripting::{
     langs::mlu::{mlua, mlua::prelude::*, mlua::Value},
     APIProvider, AddScriptApiProvider, AddScriptHost, AddScriptHostHandler, LuaDocFragment,
     LuaEvent, LuaFile, RLuaScriptHost, Recipients, Script, ScriptCollection, ScriptError,
-    ScriptingPlugin,
+    ScriptingPlugin, ScriptData,
 };
 use rand::prelude::SliceRandom;
 use std::sync::atomic::Ordering::Relaxed;
@@ -26,10 +26,11 @@ pub struct LuaAPIProvider;
 /// the custom Lua api, world is provided via a global pointer,
 /// and callbacks are defined only once at script creation
 impl APIProvider for LuaAPIProvider {
-    type Target = Mutex<Lua>;
+    type APITarget = Mutex<Lua>;
     type DocTarget = LuaDocFragment;
+    type ScriptContext = Mutex<Lua>;
 
-    fn attach_api(&mut self, ctx: &mut Self::Target) -> Result<(), ScriptError> {
+    fn attach_api(&mut self, ctx: &mut Self::APITarget) -> Result<(), ScriptError> {
         // callbacks can receive any `ToLuaMulti` arguments, here '()' and
         // return any `FromLuaMulti` arguments, here a `usize`
         // check the Rlua documentation for more details
@@ -46,6 +47,11 @@ impl APIProvider for LuaAPIProvider {
 
         Ok(())
     }
+
+    fn setup_script(&mut self, _: &ScriptData, _: &mut Self::ScriptContext) -> Result<(), ScriptError> {
+        Ok(())
+    }
+    
 }
 
 static COUNTER: AtomicU32 = AtomicU32::new(0);

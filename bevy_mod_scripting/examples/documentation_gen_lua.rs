@@ -5,7 +5,7 @@ use bevy_mod_scripting::{
     langs::mlu::{mlua, mlua::prelude::*, mlua::Value, TealData},
     APIProvider, AddScriptApiProvider, AddScriptHost, AddScriptHostHandler, GenDocumentation,
     LuaDocFragment, LuaEvent, LuaFile, RLuaScriptHost, Recipients, Script, ScriptCollection,
-    ScriptError, ScriptingPlugin,
+    ScriptError, ScriptingPlugin, ScriptData,
 };
 use tealr::TypeName;
 
@@ -20,7 +20,7 @@ impl<'lua> ToLua<'lua> for MyLuaArg {
     }
 }
 
-#[derive(Clone, tealr::MluaUserData, TypeName)]
+#[derive(Clone, tealr::mlu::UserData, TypeName)]
 /// This is acts as a documentation and function holder
 /// We can add some general documentation about what it holds
 /// but also specific function level documenation
@@ -64,10 +64,11 @@ pub struct LuaAPIProvider;
 /// the custom Lua api, world is provided via a global pointer,
 /// and callbacks are defined only once at script creation
 impl APIProvider for LuaAPIProvider {
-    type Target = Mutex<Lua>;
+    type APITarget = Mutex<Lua>;
     type DocTarget = LuaDocFragment;
+    type ScriptContext = Mutex<Lua>;
 
-    fn attach_api(&mut self, ctx: &mut Self::Target) -> Result<(), ScriptError> {
+    fn attach_api(&mut self, ctx: &mut Self::APITarget) -> Result<(), ScriptError> {
         // callbacks can receive any `ToLuaMulti` arguments, here '()' and
         // return any `FromLuaMulti` arguments, here a `usize`
         // check the Rlua documentation for more details
@@ -85,6 +86,10 @@ impl APIProvider for LuaAPIProvider {
                     // we must select items we want included in the documentation
                     tw.process_type::<APIModule>()
                     .document_global_instance::<Export>().unwrap()))
+    }
+
+    fn setup_script(&mut self, _: &ScriptData, _: &mut Self::ScriptContext) -> Result<(), ScriptError> {
+        Ok(())
     }
 }
 

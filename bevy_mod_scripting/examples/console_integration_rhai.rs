@@ -3,7 +3,7 @@ use bevy_console::{AddConsoleCommand, ConsoleCommand, ConsolePlugin, PrintConsol
 use bevy_mod_scripting::{
     events::PriorityEventWriter, langs::rhai::*, APIProvider, AddScriptApiProvider, AddScriptHost,
     AddScriptHostHandler, Recipients, RhaiDocFragment, RhaiEvent, RhaiFile, RhaiScriptHost, Script,
-    ScriptCollection, ScriptError, ScriptErrorEvent, ScriptingPlugin,
+    ScriptCollection, ScriptError, ScriptErrorEvent, ScriptingPlugin, RhaiContext, ScriptData,
 };
 
 /// custom Rhai API, world is provided as a usize (by the script this time), since
@@ -12,10 +12,11 @@ use bevy_mod_scripting::{
 pub struct RhaiAPI;
 
 impl APIProvider for RhaiAPI {
-    type Target = Engine;
+    type APITarget = Engine;
     type DocTarget = RhaiDocFragment;
+    type ScriptContext = RhaiContext;
 
-    fn attach_api(&mut self, engine: &mut Self::Target) -> Result<(), ScriptError> {
+    fn attach_api(&mut self, engine: &mut Self::APITarget) -> Result<(), ScriptError> {
         // rhai allows us to decouple the api from the script context,
         // so here we do not have access to the script scope, but the advantage is that
         // this single engine is shared with all of our scripts.
@@ -36,6 +37,12 @@ impl APIProvider for RhaiAPI {
 
         Ok(())
     }
+
+
+    fn setup_script(&mut self, _: &ScriptData, _: &mut Self::ScriptContext) -> Result<(), ScriptError> {
+        Ok(())
+    }
+
 }
 
 #[derive(Clone)]
