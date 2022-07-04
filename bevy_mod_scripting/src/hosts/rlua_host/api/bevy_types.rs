@@ -304,7 +304,7 @@ mod test {
         // invalid should panic here
         component_ref1.get_mut(|r1,_| {
             component_ref2.get(|r2,_|{
-                *r1.downcast_mut::<TestComponent>().unwrap().mat3 = *r2.downcast_ref::<TestComponent>().unwrap().mat3;
+                r1.downcast_mut::<TestComponent>().unwrap().mat3 = r2.downcast_ref::<TestComponent>().unwrap().mat3;
             })
         });    
     }

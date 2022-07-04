@@ -238,7 +238,7 @@ impl WrapperImplementor for LuaImplementor {
                         let newtype = &new_type.args.wrapper_type;
                         
                         // makes match handlers for the case where v is the union side
-                        let mut make_handlers = |op_exprs : Vec<&&OpExpr>| -> Result<(TokenStream,Ident),syn::Error> {
+                        let mut make_handlers = |op_exprs : Vec<&&OpExpr>, side_name : &str| -> Result<(TokenStream,Ident),syn::Error> {
 
                             let mut union_strings = op_exprs
                                                 .iter()
@@ -291,22 +291,28 @@ impl WrapperImplementor for LuaImplementor {
                                 });
 
                                 Ok(quote!{
-                                    #arg_type::#type_(v) => return Ok(#wrapped),
+                                    #arg_type::#type_(v) => Ok(#wrapped),
                                 })
                             }).collect::<Result<TokenStream,syn::Error>>()?;
 
                             Ok((quote!{
                                 match v {
                                     #match_patterns
-                                    _ => panic!("panic")
+                                    _ => Err(tealr::mlu::mlua::Error::RuntimeError(
+                                        format!("tried to `{}` `{}` with another argument on the `{}` side, but its type is not supported",
+                                            stringify!(#metamethod_name),
+                                            stringify!(#newtype_name),
+                                            #side_name
+                                        )
+                                    ))
                                 }
                             },arg_type))
 
                         };
 
-                        let (mut rhs_ud_handlers, rhs_arg_type) = make_handlers(rhs_union)?;
+                        let (mut rhs_ud_handlers, rhs_arg_type) = make_handlers(rhs_union,"right")?;
 
-                        let (mut lhs_ud_handlers, lhs_arg_type) = make_handlers(lhs_union)?;
+                        let (mut lhs_ud_handlers, lhs_arg_type) = make_handlers(lhs_union,"left")?;
 
 
                         if lhs_arg_type.to_string().contains(&newtype_name.to_string()){
@@ -329,12 +335,18 @@ impl WrapperImplementor for LuaImplementor {
                             fn (mlua::MetaMethod::#metamethod_name) => |ctx, (lhs,rhs) :(#lhs_arg_type,#rhs_arg_type)| {
                             
                                 match (lhs,rhs) {
-                                    #lhs_ud_handlers
+                                    // we always check self is on the left first 
                                     #rhs_ud_handlers
-                                    _ => panic!("Something went wrong")
-                                };
+                                    #lhs_ud_handlers
+                                    _ => Err(tealr::mlu::mlua::Error::RuntimeError(
+                                            format!("tried to `{}` two arguments, none of which are of type `{}` ",
+                                                stringify!(#metamethod_name),
+                                                stringify!(#newtype_name)
+                                            )
+                                        ))
+                                }
 
-                                return Err(tealr::mlu::mlua::Error::RuntimeError("Operation not supported".to_string()))
+                                // return Err(tealr::mlu::mlua::Error::RuntimeError(format!("`{}` not supported between {:?} and {:?}",&metamethod_name,&lhs,&rhs)))
                             }
                         };
                         // panic!("{o}")
@@ -468,7 +480,8 @@ impl WrapperImplementor for LuaImplementor {
                     #from_lua,
                 };
         };
-        let mut userdata_newtype_global_names = Vec::default();
+        let (mut global_proxies,mut global_proxy_keys) = (Vec::default(), Vec::default());
+        
         let global_modules : TokenStream = all_functions.iter()
                 .map(|(newtype_name,methods)| {
                     let static_methods = methods.iter()
@@ -476,11 +489,15 @@ impl WrapperImplementor for LuaImplementor {
                         .map(|f| f.to_call_expr("methods"))
                         .collect::<Punctuated<TokenStream,EmptyToken>>();
     
-                    let ident = format_ident!{"{}Globals",newtype_name};
-    
+
                     if !static_methods.is_empty(){
-                        userdata_newtype_global_names.push(ident.clone());
+                        let ident = format_ident!{"{}Globals",newtype_name};
+                        let key = format_ident!{"{}",newtype_name.starts_with("Lua").then(|| &newtype_name[3..]).unwrap_or(&newtype_name)};
     
+                        global_proxies.push(ident.clone());
+                        global_proxy_keys.push(key);
+
+
                         let global_key = &newtype_name[3..];
     
                         return quote_spanned!{new_types.span()=>
@@ -506,17 +523,17 @@ impl WrapperImplementor for LuaImplementor {
             .collect();
                 
             let external_types = new_types.additional_types.iter();
-                
+
             let api_provider = quote_spanned!{new_types.span()=>
-    
+            
             struct BevyAPIGlobals;
             impl tealr::mlu::ExportInstances for BevyAPIGlobals {
                 fn add_instances<'lua, T: tealr::mlu::InstanceCollector<'lua>>(
                     instance_collector: &mut T,
                 ) -> mlua::Result<()> {
                     #(
-                        instance_collector.document_instance(concat!("Global methods for ", stringify!(#userdata_newtype_global_names)));
-                        instance_collector.add_instance(stringify!(#userdata_newtype_global_names).into(), |_| Ok(#userdata_newtype_global_names))?;
+                        instance_collector.document_instance(concat!("Global methods for ", stringify!(#global_proxy_keys)));
+                        instance_collector.add_instance(stringify!(#global_proxy_keys).into(), |_| Ok(#global_proxies))?;
                     )*
     
                     Ok(())
@@ -547,7 +564,7 @@ impl WrapperImplementor for LuaImplementor {
                                     .process_type::<#userdata_newtype_names>()
                                 )*
                                 #(
-                                    .process_type::<#userdata_newtype_global_names>()  
+                                    .process_type::<#global_proxies>()  
                                 )*
                                 #(
                                     .process_type::<#external_types>()

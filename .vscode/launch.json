@@ -247,7 +247,8 @@
                 "args": [
                     "build",
                     "--example=native_types",
-                    "--package=bevy_mod_scripting"
+                    "--package=bevy_mod_scripting",
+                    "--features=lua54"
                 ],
                 "filter": {
                     "name": "native_types",

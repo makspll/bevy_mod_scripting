@@ -266,7 +266,7 @@ use tealr::{mlu::{mlua,mlua::{prelude::*,Error,MetaMethod,Value}},create_union_m
 {
     
 	///A 2-dimensional vector.
-    glam::vec2::Vec2 : Reflect:
+    glam::f32::vec2::Vec2 : Reflect:
         UnaryOps(
 			Neg self
 			) 
@@ -634,7 +634,7 @@ use tealr::{mlu::{mlua,mlua::{prelude::*,Error,MetaMethod,Value}},create_union_m
 {
     
 	///A 3-dimensional vector without SIMD support.
-    glam::vec3::Vec3 : Reflect:
+    glam::f32::vec3::Vec3 : Reflect:
             Copy(LuaVec2 -> (MetaMethod::Index) (s=LuaVec3),
         LuaVec2 -> mut (MetaMethod::NewIndex) (n=f32))
     
@@ -1034,7 +1034,7 @@ use tealr::{mlu::{mlua,mlua::{prelude::*,Error,MetaMethod,Value}},create_union_m
 	///A 4-dimensional vector.
 	///
 	///This type uses 16 byte aligned SIMD vector type for storage on supported platforms.
-    glam::vec4::Vec4 : Reflect:
+    glam::f32::sse2::vec4::Vec4 : Reflect:
             Copy(LuaVec2 -> (MetaMethod::Index) (s=LuaVec4),
         LuaVec2 -> mut (MetaMethod::NewIndex) (n=f32))
     
@@ -1393,7 +1393,7 @@ use tealr::{mlu::{mlua,mlua::{prelude::*,Error,MetaMethod,Value}},create_union_m
 {
     
 	///A 2-dimensional vector.
-    glam::vec2::DVec2 : Reflect:
+    glam::f64::dvec2::DVec2 : Reflect:
             Copy(LuaVec2 -> (MetaMethod::Index) (s=LuaDVec2),
         LuaVec2 -> mut (MetaMethod::NewIndex) (n=f64))
     
@@ -1760,7 +1760,7 @@ use tealr::{mlu::{mlua,mlua::{prelude::*,Error,MetaMethod,Value}},create_union_m
 {
     
 	///A 3-dimensional vector.
-    glam::vec3::DVec3 : Reflect:
+    glam::f64::dvec3::DVec3 : Reflect:
             Copy(LuaVec2 -> (MetaMethod::Index) (s=LuaDVec3),
         LuaVec2 -> mut (MetaMethod::NewIndex) (n=f64))
     
@@ -2161,7 +2161,7 @@ use tealr::{mlu::{mlua,mlua::{prelude::*,Error,MetaMethod,Value}},create_union_m
 {
     
 	///A 4-dimensional vector.
-    glam::vec4::DVec4 : Reflect:
+    glam::f64::dvec4::DVec4 : Reflect:
             Copy(LuaVec2 -> (MetaMethod::Index) (s=LuaDVec4),
         LuaVec2 -> mut (MetaMethod::NewIndex) (n=f64))
     
@@ -2520,7 +2520,7 @@ use tealr::{mlu::{mlua,mlua::{prelude::*,Error,MetaMethod,Value}},create_union_m
 {
     
 	///A 2-dimensional vector.
-    glam::vec2::IVec2 : Reflect:
+    glam::i32::ivec2::IVec2 : Reflect:
             Copy(LuaVec2 -> (MetaMethod::Index) (s=LuaIVec2),
         LuaVec2 -> mut (MetaMethod::NewIndex) (n=i32))
     
@@ -2703,7 +2703,7 @@ use tealr::{mlu::{mlua,mlua::{prelude::*,Error,MetaMethod,Value}},create_union_m
 {
     
 	///A 3-dimensional vector.
-    glam::vec3::IVec3 : Reflect:
+    glam::i32::ivec3::IVec3 : Reflect:
             Copy(LuaVec2 -> (MetaMethod::Index) (s=LuaIVec3),
         LuaVec2 -> mut (MetaMethod::NewIndex) (n=i32))
     
@@ -2892,7 +2892,7 @@ use tealr::{mlu::{mlua,mlua::{prelude::*,Error,MetaMethod,Value}},create_union_m
 {
     
 	///A 4-dimensional vector.
-    glam::vec4::IVec4 : Reflect:
+    glam::i32::ivec4::IVec4 : Reflect:
             Copy(LuaVec2 -> (MetaMethod::Index) (s=LuaIVec4),
         LuaVec2 -> mut (MetaMethod::NewIndex) (n=i32))
     
@@ -3072,7 +3072,7 @@ use tealr::{mlu::{mlua,mlua::{prelude::*,Error,MetaMethod,Value}},create_union_m
 {
     
 	///A 2-dimensional vector.
-    glam::vec2::UVec2 : Reflect:
+    glam::u32::uvec2::UVec2 : Reflect:
             Copy(LuaVec2 -> (MetaMethod::Index) (s=LuaUVec2),
         LuaVec2 -> mut (MetaMethod::NewIndex) (n=u32))
     
@@ -3238,7 +3238,7 @@ use tealr::{mlu::{mlua,mlua::{prelude::*,Error,MetaMethod,Value}},create_union_m
 {
     
 	///A 3-dimensional vector.
-    glam::vec3::UVec3 : Reflect:
+    glam::u32::uvec3::UVec3 : Reflect:
             Copy(LuaVec2 -> (MetaMethod::Index) (s=LuaUVec3),
         LuaVec2 -> mut (MetaMethod::NewIndex) (n=u32))
     
@@ -3417,7 +3417,7 @@ use tealr::{mlu::{mlua,mlua::{prelude::*,Error,MetaMethod,Value}},create_union_m
 {
     
 	///A 4-dimensional vector.
-    glam::vec4::UVec4 : Reflect:
+    glam::u32::uvec4::UVec4 : Reflect:
             Copy(LuaVec2 -> (MetaMethod::Index) (s=LuaUVec4),
         LuaVec2 -> mut (MetaMethod::NewIndex) (n=u32))
     
@@ -3610,7 +3610,7 @@ use tealr::{mlu::{mlua,mlua::{prelude::*,Error,MetaMethod,Value}},create_union_m
 	///2D inputs as 3D vectors with an implicit `z` value of `1` for points and `0` for
 	///vectors respectively. These methods assume that `Self` contains a valid affine
 	///transform.
-    glam::mat3::Mat3 : Reflect:
+    glam::f32::mat3::Mat3 : Reflect:
         UnaryOps(
 			Neg self
 			) 
@@ -3902,7 +3902,7 @@ mut (MetaMethod::Index) (s=LuaMat3,b=Mat3,v=LuaVec3) => {|_,s,idx : usize| {
 	///
 	///The resulting perspective project can be use to transform 3D vectors as points with
 	///perspective correction using the [`Self::project_point3()`] convenience method.
-    glam::mat4::Mat4 : Reflect:
+    glam::f32::sse2::mat4::Mat4 : Reflect:
         Copy(LuaMat3 -> mut (MetaMethod::Index) (s=LuaMat4,b=Mat4,v=LuaVec4))
 		+ UnaryOps(
 			Neg self
@@ -4301,7 +4301,7 @@ mut (MetaMethod::Index) (s=LuaMat3,b=Mat3,v=LuaVec3) => {|_,s,idx : usize| {
 	///2D inputs as 3D vectors with an implicit `z` value of `1` for points and `0` for
 	///vectors respectively. These methods assume that `Self` contains a valid affine
 	///transform.
-    glam::mat3::DMat3 : Reflect:
+    glam::f64::dmat3::DMat3 : Reflect:
         Copy(LuaMat3 -> mut (MetaMethod::Index) (s=LuaDMat3,b=DMat3,v=LuaDVec3))
 		+ UnaryOps(
 			Neg self
@@ -4564,7 +4564,7 @@ mut (MetaMethod::Index) (s=LuaMat3,b=Mat3,v=LuaVec3) => {|_,s,idx : usize| {
 	///
 	///The resulting perspective project can be use to transform 3D vectors as points with
 	///perspective correction using the [`Self::project_point3()`] convenience method.
-    glam::mat4::DMat4 : Reflect:
+    glam::f64::dmat4::DMat4 : Reflect:
         Copy(LuaMat3 -> mut (MetaMethod::Index) (s=LuaDMat4,b=DMat4,v=LuaDVec4))
 		+ UnaryOps(
 			Neg self
@@ -4932,7 +4932,7 @@ mut (MetaMethod::Index) (s=LuaMat3,b=Mat3,v=LuaVec3) => {|_,s,idx : usize| {
 	///operations are applied.
 	///
 	///This type is 16 byte aligned.
-    glam::quat::Quat : Reflect:
+    glam::f32::sse2::quat::Quat : Reflect:
         UnaryOps(
 			Neg self
 			) 
@@ -5237,7 +5237,7 @@ mut (MetaMethod::Index) (s=LuaMat3,b=Mat3,v=LuaVec3) => {|_,s,idx : usize| {
 	///This quaternion is intended to be of unit length but may denormalize due to
 	///floating point "error creep" which can occur when successive quaternion
 	///operations are applied.
-    glam::quat::DQuat : Reflect:
+    glam::f64::dquat::DQuat : Reflect:
         UnaryOps(
 			Neg self
 			) 

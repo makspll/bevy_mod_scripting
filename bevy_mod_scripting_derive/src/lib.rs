@@ -9,7 +9,6 @@ use indexmap::IndexMap;
 use proc_macro::{TokenStream, token_stream::IntoIter, TokenTree, Delimiter, Group};
 use proc_macro2::{Span,TokenStream as TokenStream2};
 use quote::{quote, ToTokens, TokenStreamExt, format_ident};
-use rlua::MetaMethod;
 use syn::{parse::{ParseStream, Parse, ParseBuffer},Result, punctuated::Punctuated, Token, Ident, Error, parse_macro_input, Field, Visibility, ItemFn, braced, Type, token::{Brace, Token, self, Dot, Paren, Bracket, Bang}, ExprClosure, PatPath, LitStr, Path, ExprMethodCall, Expr, ExprPath, PathSegment, PathArguments, parse_quote, bracketed, parenthesized, parse_quote_spanned, UsePath, UseTree, ItemUse};
 
 pub(crate) use {lua::*,common::*};

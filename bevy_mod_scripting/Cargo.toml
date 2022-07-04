@@ -63,8 +63,8 @@ serde_json = "1.0.81"
 num-traits = "0.2.15"
 
 [dev-dependencies]
-bevy_console = { git = "https://github.com/OnlyGraphs/bevy-console" }
-bevy_asset_loader = {git = "https://github.com/NiklasEi/bevy_asset_loader", features = ["dynamic_assets"]}
+# bevy_console = { git = "https://github.com/OnlyGraphs/bevy-console" }
+# bevy_asset_loader = {git = "https://github.com/NiklasEi/bevy_asset_loader", features = ["dynamic_assets"]}
 rand = "0.8.5"
 serde = "1.0.137"
 criterion = "0.3"
