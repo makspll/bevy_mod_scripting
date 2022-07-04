@@ -2,11 +2,11 @@
 
 pub mod docs;
 pub mod rhai_host;
-pub mod rlua_host;
+pub mod mlua_host;
 
 use bevy::{asset::Asset, ecs::system::SystemState, prelude::*, reflect::FromReflect};
 use bevy_event_priority::PriorityEventReader;
-pub use {crate::docs::*, crate::rhai_host::*, crate::rlua_host::*};
+pub use {crate::docs::*, crate::rhai_host::*, crate::mlua_host::*};
 
 use std::{
     collections::{HashMap, HashSet},
@@ -142,8 +142,7 @@ pub trait APIProvider: 'static + Send + Sync {
     type ScriptContext: Send + Sync + 'static;
     /// The type of documentation fragment produced by the APIProvider, must be the same as the DocTarget of the target ScriptHost.
     type DocTarget: DocFragment;
-    /// The type of script asset, must be the same as the ScriptAsset of the target ScriptHost
-    // type ScriptAsset : CodeAsset;
+
 
     /// provide the given script context with the API permamently.
     /// Depending on the host, API's may be attached on a per-script basis
@@ -155,9 +154,11 @@ pub trait APIProvider: 'static + Send + Sync {
     /// For API's use `Self::attach_api` instead.
     fn setup_script(
         &mut self,
-        script_data: &ScriptData,
-        ctx: &mut Self::ScriptContext,
-    ) -> Result<(), ScriptError>;
+        _script_data: &ScriptData,
+        _ctx: &mut Self::ScriptContext,
+    ) -> Result<(), ScriptError>{
+        Ok(())
+    }
 
     fn get_doc_fragment(&self) -> Option<Self::DocTarget> {
         None

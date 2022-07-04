@@ -4,7 +4,7 @@ use bevy_event_priority::PriorityEventWriter;
 use bevy_mod_scripting::{
     langs::mlu::{mlua, mlua::prelude::*, mlua::Value},
     APIProvider, AddScriptApiProvider, AddScriptHost, AddScriptHostHandler, LuaDocFragment,
-    LuaEvent, LuaFile, RLuaScriptHost, Recipients, Script, ScriptCollection, ScriptData,
+    LuaEvent, LuaFile, LuaScriptHost, Recipients, Script, ScriptCollection, ScriptData,
     ScriptError, ScriptingPlugin,
 };
 use rand::prelude::SliceRandom;
@@ -133,7 +133,7 @@ fn load_our_script(server: Res<AssetServer>, mut commands: Commands) {
     let handle = server.load::<LuaFile, &str>(path);
 
     commands.spawn().insert(ScriptCollection::<LuaFile> {
-        scripts: vec![Script::<LuaFile>::new::<RLuaScriptHost<MyLuaArg>>(
+        scripts: vec![Script::<LuaFile>::new::<LuaScriptHost<MyLuaArg>>(
             path.to_string(),
             handle,
         )],
@@ -178,7 +178,7 @@ fn main() -> std::io::Result<()> {
             PRE_PHYSICS_SCRIPTS,
             SystemStage::single_threaded(),
         )
-        .add_script_handler_stage_with_criteria::<RLuaScriptHost<MyLuaArg>, _, _, _, 0, 10>(
+        .add_script_handler_stage_with_criteria::<LuaScriptHost<MyLuaArg>, _, _, _, 0, 10>(
             PRE_PHYSICS_SCRIPTS,
             FixedTimestep::step(TIMESTEP_2_PER_SECOND),
         )
@@ -189,7 +189,7 @@ fn main() -> std::io::Result<()> {
             POST_PHYSICS_SCRIPTS,
             SystemStage::single_threaded(),
         )
-        .add_script_handler_stage_with_criteria::<RLuaScriptHost<MyLuaArg>, _, _, _, 11, 20>(
+        .add_script_handler_stage_with_criteria::<LuaScriptHost<MyLuaArg>, _, _, _, 11, 20>(
             POST_PHYSICS_SCRIPTS,
             FixedTimestep::step(TIMESTEP_2_PER_SECOND),
         )
@@ -201,10 +201,10 @@ fn main() -> std::io::Result<()> {
             POST_UPDATE_SCRIPTS,
             SystemStage::single_threaded(),
         )
-        .add_script_handler_stage::<RLuaScriptHost<MyLuaArg>, _, 21, 30>(POST_UPDATE_SCRIPTS)
+        .add_script_handler_stage::<LuaScriptHost<MyLuaArg>, _, 21, 30>(POST_UPDATE_SCRIPTS)
         // this stage handles addition and removal of script contexts, we can safely use `CoreStage::PostUpdate`
-        .add_script_host::<RLuaScriptHost<MyLuaArg>, _>(CoreStage::PostUpdate)
-        .add_api_provider::<RLuaScriptHost<MyLuaArg>>(Box::new(LuaAPIProvider));
+        .add_script_host::<LuaScriptHost<MyLuaArg>, _>(CoreStage::PostUpdate)
+        .add_api_provider::<LuaScriptHost<MyLuaArg>>(Box::new(LuaAPIProvider));
     // We have 3 core systems
 
     // PrePhysics (twice per second), fires 5 random events

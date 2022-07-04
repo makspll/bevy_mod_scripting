@@ -4,7 +4,7 @@ use bevy_event_priority::PriorityEventWriter;
 use bevy_mod_scripting::{
     langs::mlu::{mlua, mlua::prelude::*, mlua::Value},
     APIProvider, AddScriptApiProvider, AddScriptHost, AddScriptHostHandler, LuaDocFragment,
-    LuaEvent, LuaFile, RLuaScriptHost, Recipients, Script, ScriptCollection, ScriptData,
+    LuaEvent, LuaFile, LuaScriptHost, Recipients, Script, ScriptCollection, ScriptData,
     ScriptError, ScriptingPlugin,
 };
 use rand::prelude::SliceRandom;
@@ -108,7 +108,7 @@ fn load_our_scripts(server: Res<AssetServer>, mut commands: Commands) {
     let scripts = (0..2)
         .into_iter()
         .map(|_| {
-            Script::<LuaFile>::new::<RLuaScriptHost<MyLuaArg>>(path.to_string(), handle.clone())
+            Script::<LuaFile>::new::<LuaScriptHost<MyLuaArg>>(path.to_string(), handle.clone())
         })
         .collect();
 
@@ -128,9 +128,9 @@ fn main() -> std::io::Result<()> {
         // the script with id 0
         // or the script with id 1
         .add_system(do_update)
-        .add_script_handler_stage::<RLuaScriptHost<MyLuaArg>, _, 0, 0>(CoreStage::PostUpdate)
-        .add_script_host::<RLuaScriptHost<MyLuaArg>, _>(CoreStage::PostUpdate)
-        .add_api_provider::<RLuaScriptHost<MyLuaArg>>(Box::new(LuaAPIProvider));
+        .add_script_handler_stage::<LuaScriptHost<MyLuaArg>, _, 0, 0>(CoreStage::PostUpdate)
+        .add_script_host::<LuaScriptHost<MyLuaArg>, _>(CoreStage::PostUpdate)
+        .add_api_provider::<LuaScriptHost<MyLuaArg>>(Box::new(LuaAPIProvider));
     app.run();
 
     Ok(())

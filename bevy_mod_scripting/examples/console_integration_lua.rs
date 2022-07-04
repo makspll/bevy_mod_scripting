@@ -4,7 +4,7 @@ use bevy_mod_scripting::{
     events::PriorityEventWriter,
     langs::mlu::{mlua, mlua::prelude::*, mlua::Value},
     APIProvider, AddScriptApiProvider, AddScriptHost, AddScriptHostHandler, LuaDocFragment,
-    LuaEvent, LuaFile, RLuaScriptHost, Recipients, Script, ScriptCollection, ScriptData,
+    LuaEvent, LuaFile, LuaScriptHost, Recipients, Script, ScriptCollection, ScriptData,
     ScriptError, ScriptErrorEvent, ScriptingPlugin,
 };
 use std::sync::Mutex;
@@ -95,9 +95,9 @@ fn main() -> std::io::Result<()> {
         .add_console_command::<RunScriptCmd, _, _>(run_script_cmd)
         .add_console_command::<DeleteScriptCmd, _, _>(delete_script_cmd)
         // choose and register the script hosts you want to use
-        .add_script_host::<RLuaScriptHost<MyLuaArg>, _>(CoreStage::PostUpdate)
-        .add_api_provider::<RLuaScriptHost<MyLuaArg>>(Box::new(LuaAPIProvider))
-        .add_script_handler_stage::<RLuaScriptHost<MyLuaArg>, _, 0, 0>(CoreStage::PostUpdate)
+        .add_script_host::<LuaScriptHost<MyLuaArg>, _>(CoreStage::PostUpdate)
+        .add_api_provider::<LuaScriptHost<MyLuaArg>>(Box::new(LuaAPIProvider))
+        .add_script_handler_stage::<LuaScriptHost<MyLuaArg>, _, 0, 0>(CoreStage::PostUpdate)
         // add your systems
         .add_system(trigger_on_update_lua)
         .add_system(forward_script_err_to_console);
@@ -138,7 +138,7 @@ pub fn run_script_cmd(
 
                     scripts
                         .scripts
-                        .push(Script::<LuaFile>::new::<RLuaScriptHost<MyLuaArg>>(
+                        .push(Script::<LuaFile>::new::<LuaScriptHost<MyLuaArg>>(
                             path, handle,
                         ));
                 } else {
@@ -149,7 +149,7 @@ pub fn run_script_cmd(
                 info!("Creating script: scripts/{}", &path);
 
                 commands.spawn().insert(ScriptCollection::<LuaFile> {
-                    scripts: vec![Script::<LuaFile>::new::<RLuaScriptHost<MyLuaArg>>(
+                    scripts: vec![Script::<LuaFile>::new::<LuaScriptHost<MyLuaArg>>(
                         path, handle,
                     )],
                 });

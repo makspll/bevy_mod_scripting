@@ -36,7 +36,7 @@ impl<A: LuaArg> ScriptEvent for LuaEvent<A> {
     }
 }
 
-/// Rlua script host, enables Lua scripting provided by the Rlua library.
+/// Mlua script host, enables Lua scripting provided by the mlua library.
 /// Always provides two global variables to each script by default:
 ///     - `world` - a raw pointer to the `bevy::World` the script lives in
 ///     - `entity` - an `Entity::to_bits` representation of the entity the script is attached to
@@ -64,10 +64,11 @@ impl<A: LuaArg> ScriptEvent for LuaEvent<A> {
 ///    /// the custom Lua api, world is provided via a global pointer,
 ///    /// and callbacks are defined only once at script creation
 ///    impl APIProvider for LuaAPIProvider {
-///        type Target = Mutex<Lua>;
+///        type APITarget = Mutex<Lua>;
 ///        type DocTarget = LuaDocFragment;
-///
-///        fn attach_api(&mut self, ctx: &mut Self::Target) -> Result<(),ScriptError> {
+///        type ScriptContext = Mutex<Lua>;
+/// 
+///        fn attach_api(&mut self, ctx: &mut Self::APITarget) -> Result<(),ScriptError> {
 ///            // callbacks can receive any `ToLuaMulti` arguments, here '()' and
 ///            // return any `FromLuaMulti` arguments, here a `usize`
 ///            // check the Rlua documentation for more details
@@ -90,11 +91,11 @@ impl<A: LuaArg> ScriptEvent for LuaEvent<A> {
 ///        }
 ///    }
 /// ```
-pub struct RLuaScriptHost<A: LuaArg> {
+pub struct LuaScriptHost<A: LuaArg> {
     _ph: PhantomData<A>,
 }
 
-impl<A: LuaArg> Default for RLuaScriptHost<A> {
+impl<A: LuaArg> Default for LuaScriptHost<A> {
     fn default() -> Self {
         Self {
             _ph: Default::default(),
@@ -102,10 +103,10 @@ impl<A: LuaArg> Default for RLuaScriptHost<A> {
     }
 }
 
-unsafe impl<A: LuaArg> Send for RLuaScriptHost<A> {}
-unsafe impl<A: LuaArg> Sync for RLuaScriptHost<A> {}
+unsafe impl<A: LuaArg> Send for LuaScriptHost<A> {}
+unsafe impl<A: LuaArg> Sync for LuaScriptHost<A> {}
 
-impl<A: LuaArg> ScriptHost for RLuaScriptHost<A> {
+impl<A: LuaArg> ScriptHost for LuaScriptHost<A> {
     type ScriptContext = Mutex<Lua>;
     type APITarget = Mutex<Lua>;
     type ScriptEvent = LuaEvent<A>;
