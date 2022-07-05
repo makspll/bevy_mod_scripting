@@ -674,8 +674,9 @@ pub(crate) fn generate_macros(crates: &[Crate], config: Config) -> Result<String
 
     let imports = &config.imports;
     let external_types = &config.external_types.join(",");
+    let macro_path = "bevy_mod_scripting_derive::impl_lua_newtypes";
 
-    let full_macro_invocation = format!("{imports}\n impl_lua_newtypes!([{external_types}][\n{primitives}{macro_list_body}]);");
+    let full_macro_invocation = format!("use {macro_path};\n impl_lua_newtypes!(\n(\n{imports})\n[{external_types}]\n[\n{primitives}{macro_list_body}]);");
 
     Ok(full_macro_invocation)
 }

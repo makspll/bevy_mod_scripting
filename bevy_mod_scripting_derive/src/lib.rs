@@ -30,6 +30,8 @@ impl ToTokens for EmptyToken {
 }
 
 struct NewtypeList {
+    paren : Paren,
+    module_headers : TokenStream2,
     sq_bracket1: Bracket,
     additional_types: Punctuated<Type, Token![,]>,
     sq_bracket2: Bracket,
@@ -39,9 +41,12 @@ struct NewtypeList {
 
 impl Parse for NewtypeList {
     fn parse(input: ParseStream) -> Result<Self> {
+        let h;
         let f;
         let g;
         Ok(Self {
+            paren : parenthesized!(h in input),
+            module_headers : h.parse()?,
             sq_bracket1: bracketed!(f in input),
             additional_types: f.parse_terminated(Type::parse)?,
             sq_bracket2: bracketed!(g in input),
@@ -53,8 +58,12 @@ impl Parse for NewtypeList {
 
 impl ToTokens for NewtypeList {
     fn to_tokens(&self, tokens: &mut TokenStream2) {
+        let module_headers = &self.module_headers;
+        let external_types = &self.additional_types;
         let types = &self.new_types;
         tokens.extend(quote!{
+            (#module_headers)
+            [#external_types]
             [#types]
         })
     }

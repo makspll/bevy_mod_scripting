@@ -36,4 +36,4 @@ generate_api:
 	--json "../api_gen/glam.json" \
 	--json "../api_gen/bevy_ecs.json" \
 	--config "../api_gen/api_gen_config.toml" \
-	> ../bevy_mod_scripting/src/hosts/rlua_host/api/generated.rs
+	> ../bevy_mod_scripting/src/api/generated.rs

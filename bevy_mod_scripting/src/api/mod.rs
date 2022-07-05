@@ -1,6 +1,6 @@
-pub mod bevy_types;
-pub mod wrappers;
-pub mod generated;
+use crate::{PrintableReflect, lua::{BEVY_TO_LUA, APPLY_LUA_TO_BEVY}};
+use anyhow::Result;
+use tealr::mlu::{mlua,mlua::{prelude::*,Value,UserData,MetaMethod}, TealData};
 
 use std::{ops::DerefMut,sync::Weak};
 use parking_lot::{RwLock};
@@ -13,10 +13,13 @@ use std::{
     fmt,
 };
 
-use crate::{PrintableReflect};
-use anyhow::Result;
-use tealr::mlu::{mlua,mlua::{prelude::*,Value,UserData,MetaMethod}, TealData};
-pub use {generated::*,bevy_types::*, wrappers::*,generated::LuaBevyAPIProvider };
+pub mod bevy_types;
+pub mod wrappers;
+
+mod generated;
+
+
+pub use {bevy_types::*, wrappers::*,generated::lua as lua};
 
 #[reflect_trait]
 pub trait CustomUserData {

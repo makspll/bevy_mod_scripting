@@ -1,5 +1,6 @@
+
+
 imports = """
-#![allow(unused_variables,unused_parens)]
 use bevy::{prelude::*};
 use bevy::math::*;
 use std::sync::Weak;

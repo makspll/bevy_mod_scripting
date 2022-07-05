@@ -9,7 +9,7 @@ use phf::{phf_map, Map};
 use crate::LuaRefBase;
 use crate::PrintableReflect;
 use crate::LuaRef;
-use crate::{ReflectPtr,rlua_host::api::generated::LuaEntity};
+use crate::{ReflectPtr,lua::LuaEntity};
 use crate::util::impl_tealr_type;
 
 use bevy_mod_scripting_derive::{impl_lua_newtypes,replace};
@@ -224,7 +224,7 @@ impl TealData for LuaResource {
 #[cfg(test)]
 
 mod test {
-    use crate::{langs::mlu::{mlua,mlua::prelude::*},LuaEntity, LuaEvent, Recipients, LuaComponent, LuaRef, LuaRefBase, get_type_data, ReflectPtr};
+    use crate::{langs::mlu::{mlua,mlua::prelude::*},api::lua::LuaEntity, LuaEvent, Recipients, LuaComponent, LuaRef, LuaRefBase, get_type_data, ReflectPtr};
     use bevy::{prelude::*,reflect::TypeRegistryArc};
     use std::{sync::Arc};
     use parking_lot::RwLock;

@@ -6,9 +6,11 @@ pub mod hosts;
 pub mod langs {
     pub use {rhai, tealr::mlu};
 }
+pub mod api;
+
 
 pub use bevy_event_priority as events;
-pub use {error::*, hosts::*, langs::*};
+pub use {error::*, hosts::*, langs::*, api::*};
 
 #[derive(Default)]
 /// Bevy plugin enabling run-time scripting

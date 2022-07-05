@@ -44,6 +44,10 @@ impl LuaImplementor {
 impl WrapperImplementor for LuaImplementor {
     type Function = LuaMethod;
 
+    fn module_name() -> &'static str {
+        "lua"
+    }
+
     fn generate_newtype_definition(&mut self, newtype : &crate::common::newtype::Newtype) -> std::result::Result<TokenStream, syn::Error> {
         let name = &newtype.args.wrapper_type;
         let base_type = &newtype.args.base_type_ident;
@@ -623,6 +627,7 @@ impl WrapperImplementor for LuaImplementor {
             #additional_globals
         })
     }
+
     
 
 

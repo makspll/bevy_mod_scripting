@@ -1,4 +1,6 @@
-#![allow(unused_variables,unused_parens)]
+use bevy_mod_scripting_derive::impl_lua_newtypes;
+ impl_lua_newtypes!(
+(
 use bevy::{prelude::*};
 use bevy::math::*;
 use std::sync::Weak;
@@ -18,8 +20,9 @@ use crate::util::impl_tealr_type;
 use num_traits::cast::ToPrimitive;
 use bevy_mod_scripting_derive::{impl_lua_newtypes,replace};
 use tealr::{mlu::{mlua,mlua::{prelude::*,Error,MetaMethod,Value}},create_union_mlua};
-
- impl_lua_newtypes!([LuaComponent,LuaResource,LuaWorld][
+)
+[LuaComponent,LuaResource,LuaWorld]
+[
 
     {
             usize : Primitive

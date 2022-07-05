@@ -2,7 +2,6 @@ use bevy::{prelude::*, math::{DMat4, DVec4, DMat3}};
 use bevy_mod_scripting::{ScriptingPlugin, RLuaScriptHost, ScriptHost, AddScriptHost, LuaWrapper, LuaWrappable, LuaVec3, LuaDMat3, LuaDMat4};
 use criterion::{black_box,criterion_group,criterion_main,Criterion, BenchmarkId};
 use parking_lot::RwLock;
-use rlua::{Lua, UserData};
 use std::{sync::Arc,fmt, ops::Add};
 
 criterion_group!(

@@ -2,7 +2,7 @@
 use indexmap::IndexMap;
 use proc_macro2::TokenStream;
 use syn::{parse::Parse, punctuated::Punctuated, Token, spanned::Spanned,Result};
-use quote::{quote, quote_spanned, ToTokens};
+use quote::{quote, quote_spanned, ToTokens, format_ident};
 
 use crate::{common::*, NewtypeList};
 
@@ -18,6 +18,8 @@ pub(crate) trait WrapperFunction : Parse + ToTokens{
 /// Helps avoid alot of boilerplate
 pub(crate) trait WrapperImplementor : 'static {
     type Function : WrapperFunction;
+
+    fn module_name() -> &'static str;
 
     /// Generates the type definition for the given newtype
     fn generate_newtype_definition(&mut self, new_type : &Newtype) -> Result<TokenStream>;
@@ -61,10 +63,15 @@ pub(crate) trait WrapperImplementor : 'static {
         }).collect::<Result<_>>()?;
 
         let globals = self.generate_globals(new_types,methods_so_far)?;
+        let module_name = format_ident!("{}",Self::module_name());
+        let header = &new_types.module_headers;
 
         Ok(quote!{
-            #newtypes
-            #globals
+            pub mod #module_name {
+                #header
+                #newtypes
+                #globals
+            }
         })
     }
 

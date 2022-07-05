@@ -1,13 +1,11 @@
-pub mod api;
 pub mod assets;
 pub mod docs;
 
-use crate::APIProviders;
+use crate::{APIProviders, LuaWorld, api::lua::LuaEntity};
 use crate::{
-    script_add_synchronizer, script_hot_reload_handler, script_remove_synchronizer, APIProvider,
+    script_add_synchronizer, script_hot_reload_handler, script_remove_synchronizer,
     CachedScriptEventState, FlatScriptData, Recipients, Script, ScriptCollection, ScriptContexts,
     ScriptError, ScriptErrorEvent, ScriptEvent, ScriptHost,
-    api::LuaBevyAPIProvider
 };
 use anyhow::Result;
 
@@ -20,7 +18,7 @@ use std::fmt;
 use std::marker::PhantomData;
 use std::sync::{Mutex,Arc};
 
-pub use {docs::*, api::*, assets::*};
+pub use {docs::*, assets::*};
 
 pub trait LuaArg: for<'lua> ToLua<'lua> + Clone + Sync + Send + 'static {}
 
