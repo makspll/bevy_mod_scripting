@@ -13,6 +13,7 @@ function on_update()
         comp.usize = comp.vec2:min_element()
         comp.f32 = comp.f32 + comp.f32 + comp.vec2:min_element()
         comp.vec2 = Vec2.new(2,1)
+        comp.vec3 = Vec3.new(0,1,0):any_orthonormal_vector()
         comp.vec4 = Vec4.splat(3)
         comp.quat = Quat.from_xyzw(3,2,1,4)
         comp.dquat = comp.dquat * 2

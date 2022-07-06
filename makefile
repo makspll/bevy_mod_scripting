@@ -32,8 +32,21 @@ valgrind:
 generate_api:
 	cd bevy_mod_scripting_derive && \
 	cargo run -- \
-	--json "../api_gen/bevy.json" \
-	--json "../api_gen/glam.json" \
-	--json "../api_gen/bevy_ecs.json" \
-	--config "../api_gen/api_gen_config.toml" \
+	--json "../target/doc/bevy_asset.json" \
+	--json "../target/doc/bevy_ecs.json" \
+	--json "../target/doc/bevy_pbr.json" \
+	--json "../target/doc/bevy_render.json" \
+	--json "../target/doc/bevy.json" \
+	--json "../target/doc/uuid.json" \
+	--json "../target/doc/glam.json" \
+	--config "../api_gen_config.toml" \
 	> ../bevy_mod_scripting/src/api/generated.rs
+
+make_json_files:
+	rustup run nightly cargo rustdoc -p bevy_asset@0.8.0-dev  --  -Zunstable-options --output-format json && \
+	rustup run nightly cargo rustdoc -p bevy_ecs@0.8.0-dev --  -Zunstable-options --output-format json && \
+	rustup run nightly cargo rustdoc -p bevy_pbr@0.8.0-dev --  -Zunstable-options --output-format json && \
+	rustup run nightly cargo rustdoc -p bevy_render@0.8.0-dev --  -Zunstable-options --output-format json && \
+	rustup run nightly cargo rustdoc -p uuid --  -Zunstable-options --output-format json && \
+	rustup run nightly cargo rustdoc -p bevy@0.8.0-dev --  -Zunstable-options --output-format json && \
+	rustup run nightly cargo rustdoc -p glam --  -Zunstable-options --output-format json 

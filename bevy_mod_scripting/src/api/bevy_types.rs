@@ -76,7 +76,7 @@ impl TealData for LuaWorld {
     fn add_methods<'lua, T: TealDataMethods<'lua, Self>>(methods: &mut T) {
         methods.add_method("add_component", |_, world, (entity, comp_name): (LuaEntity, String)| {
             // grab this entity before acquiring a lock in case it's a reference
-            let entity = entity.inner();
+            let entity = entity.clone();
             let w = world.upgrade().unwrap();
             let w = &mut w.write();
             let refl: ReflectComponent = get_type_data(w, &comp_name)
@@ -84,7 +84,7 @@ impl TealData for LuaWorld {
             let def = get_type_data::<ReflectDefault>(w, &comp_name)
                 .map_err(|_| Error::RuntimeError(format!("Component does not derive ReflectDefault and cannot be instantiated: {}",comp_name)))?;
             let s = def.default();
-            refl.add_component(w, entity, s.as_ref());
+            refl.add(w, entity, s.as_ref());
             let id = w.components().get_id(s.type_id()).unwrap();
 
             Ok(LuaComponent {
@@ -96,7 +96,7 @@ impl TealData for LuaWorld {
                         world: world.as_ref().clone()
                     }, 
                     path: Some("".to_string()), 
-                    r: ReflectPtr::Const(refl.reflect_component(w,entity).unwrap())
+                    r: ReflectPtr::Const(refl.reflect(w,entity).unwrap())
                 }    
             })
        });
@@ -104,7 +104,7 @@ impl TealData for LuaWorld {
         methods.add_method("get_component", |_, world, (entity, comp_name) : (LuaEntity,String)| {
 
             // grab this entity before acquiring a lock in case it's a reference
-            let entity = entity.inner();
+            let entity = entity.clone();
 
             let w = world.upgrade().unwrap();
             let w = &mut w.write();
@@ -113,7 +113,7 @@ impl TealData for LuaWorld {
                 .map_err(|_| Error::RuntimeError(format!("Not a component {}",comp_name)))?;
 
             let dyn_comp = refl
-                .reflect_component(&w, entity)
+                .reflect(&w, entity)
                 .ok_or_else(|| Error::RuntimeError(format!("Could not find {comp_name} on {:?}",entity),
                 ))?;
 
@@ -270,7 +270,7 @@ mod test {
                             .id();
 
             let refl: ReflectComponent = get_type_data(world, "TestComponent").unwrap();
-            let refl_ref = refl.reflect_component(world,entity).unwrap();
+            let refl_ref = refl.reflect(world,entity).unwrap();
             let ptr : ReflectPtr = ReflectPtr::Const(refl_ref);
             let id = world.components().get_id(refl_ref.type_id()).unwrap();
 

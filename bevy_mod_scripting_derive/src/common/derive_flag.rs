@@ -128,7 +128,9 @@ impl Parse for AutoMethod {
             docstring: Attribute::parse_outer(input)?,
             ident: input.parse()?,
             paren: parenthesized!(f in input),
-            self_: f.parse::<Receiver>().ok().and_then(|v| Some((v,f.parse().ok()))),
+            self_: f.fork().parse::<Receiver>().ok()
+                .and_then(|_| f.parse().ok())
+                .and_then(|v| Some((v,f.parse().ok()?))),
             args: f.parse_terminated(Type::parse)?,
             out: if input.peek(Token![->]) {input.parse::<Token![->]>()?;Some(input.parse()?)} else {None},
         })

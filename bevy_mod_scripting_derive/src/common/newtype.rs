@@ -68,19 +68,9 @@ impl Parse for NewtypeArgs {
 
 impl_parse_enum!(input,ident:
 pub(crate) enum NewtypeVariation {
-    Reflect => {Ok(Self::Reflect {ident})},
+    Value => {Ok(Self::Value{ident})},
+    Ref => {Ok(Self::Ref{ident})},
     Primitive => {Ok(Self::Primitive{ident})},
-    NonReflect{
-        braces: Paren,
-        field: Type
-    } => {
-        let f;
-        Ok(Self::NonReflect{
-            ident,
-            braces: parenthesized!(f in input), 
-            field: f.parse()?,
-        })
-    },
 }
 );
 

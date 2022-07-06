@@ -154,7 +154,7 @@ impl LuaRef {
 
                 let g = g.try_read().expect("Rust safety violation: attempted to borrow data immutably while it was already mutably borrowed");
 
-                comp.reflect_component(&g,*entity).is_some()
+                comp.reflect(&g,*entity).is_some()
             },
             LuaRefBase::LuaOwned { valid } => valid.strong_count() > 0,
         }
@@ -251,7 +251,7 @@ impl LuaRef {
                         
                         // make sure that if this was cached, we also mark the component as changed appropriately
                         // this is necessary if we decide to allow to hold LuaRefs for more than one frame!
-                        comp.reflect_component_mut(&mut g, *entity)
+                        comp.reflect_mut(&mut g, *entity)
                             .unwrap()
                             .set_changed();
 
@@ -263,7 +263,7 @@ impl LuaRef {
                     },
                 }
 
-                let mut ref_mut = comp.reflect_component_mut(&mut g, *entity)
+                let mut ref_mut = comp.reflect_mut(&mut g, *entity)
                     .unwrap();
 
                 let dyn_ref = ref_mut

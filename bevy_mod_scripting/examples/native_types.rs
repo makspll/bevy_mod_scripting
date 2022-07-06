@@ -39,6 +39,7 @@ pub struct MyComponent {
     dquat: DQuat,
     quat: Quat,
     vec2: Vec2,
+    vec3: Vec3,
     uvec2: UVec2,
     usize: usize,
     f32: f32,
@@ -57,6 +58,7 @@ fn load_our_script(server: Res<AssetServer>, mut commands: Commands) {
         })
         .insert(MyComponent {
             vec2: Vec2::new(1.0,2.0),
+            vec3: Vec3::new(1.0,2.0,3.0),
             vec4: Vec4::new(1.0,2.0,3.0,4.0),
             uvec2: UVec2::new(3,4),
             usize: 5,

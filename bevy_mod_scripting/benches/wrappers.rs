@@ -1,5 +1,5 @@
 use bevy::{prelude::*, math::{DMat4, DVec4, DMat3}};
-use bevy_mod_scripting::{ScriptingPlugin, RLuaScriptHost, ScriptHost, AddScriptHost, LuaWrapper, LuaWrappable, LuaVec3, LuaDMat3, LuaDMat4};
+use bevy_mod_scripting::{ScriptingPlugin, RLuaScriptHost, ScriptHost, AddScriptHost, LuaWrapper, LuaValue, LuaVec3, LuaDMat3, LuaDMat4, mlu::mlua::{Lua, UserData}};
 use criterion::{black_box,criterion_group,criterion_main,Criterion, BenchmarkId};
 use parking_lot::RwLock;
 use std::{sync::Arc,fmt, ops::Add};
@@ -13,7 +13,7 @@ criterion_group!(
 );
 criterion_main!(benches);
 
-fn wrap_owned<T : LuaWrappable>(v : T) -> LuaWrapper<T> {
+fn wrap_owned<T : LuaValue>(v : T) -> LuaWrapper<T> {
     black_box(LuaWrapper::Owned(v, Arc::new(RwLock::new(()))))
 }
 

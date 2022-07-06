@@ -53,13 +53,10 @@ impl WrapperImplementor for LuaImplementor {
         let base_type = &newtype.args.base_type_ident;
 
         Ok(match &newtype.args.variation {
-            NewtypeVariation::Reflect{..} => quote_spanned!{newtype.span()=>
+            NewtypeVariation::Value{..} | NewtypeVariation::Ref {..}  => quote_spanned!{newtype.span()=>
                 pub type #name = crate::LuaWrapper<#base_type>;
             },
-            NewtypeVariation::NonReflect { field , ..} => quote_spanned!{newtype.span()=>
-                pub type #name = crate::AnyLuaWrapper<#field>;
-            },
-            NewtypeVariation::Primitive{..} => quote_spanned!{newtype.span()=>}
+            NewtypeVariation::Primitive{..} => quote_spanned!{newtype.span()=>},
         })
     }
 
@@ -125,24 +122,26 @@ impl WrapperImplementor for LuaImplementor {
                         .map(|m| {
                             let ident = &m.ident;
                             let ident_str = ident.to_string();
+                            let mut arg_idents = Vec::default();
+                            let mut args_without_refs = Vec::default();
                             let inner_args : Punctuated<proc_macro2::TokenStream,Token![,]> = m.args.iter().enumerate().map(|(idx,a)| {
-                                let lit = LitInt::new(&idx.to_string(),ident.span());
-                                let lit = if m.args.len() == 1 {
-                                    quote_spanned!{ident.span()=>
-                                        a
-                                    }
+                                let lit = LitInt::new(&idx.to_string(),m.span());
+                                let lit = format_ident!("a_{lit}",span=m.span());
+                                arg_idents.push(lit.clone());
+                                let is_ref = if let Type::Reference(r) = a {
+                                    args_without_refs.push(r.elem.as_ref());
+                                    true
                                 } else {
-                                    quote_spanned!{ident.span()=>
-                                        a.#lit
-                                    }
+                                    args_without_refs.push(&a);
+                                    false
                                 };
 
-                                if a.to_token_stream().to_string().starts_with("Lua"){
-                                    quote_spanned!{ident.span()=>
-                                        #lit.inner()
+                                if a.to_token_stream().to_string().starts_with("Lua") && !is_ref{
+                                    quote_spanned!{m.span()=>
+                                        #lit.clone()
                                     }
                                 } else {
-                                    quote_spanned!{ident.span()=>
+                                    quote_spanned!{m.span()=>
                                         #lit
                                     }
                                 }
@@ -150,44 +149,73 @@ impl WrapperImplementor for LuaImplementor {
 
                             let base_ident = new_type.args.base_type.path.segments.last().unwrap();
 
-                            let (call_expr,static_,fn_,mut_, star) = if let Some((r,v)) = &m.self_ {
-                                (quote_spanned!{ident.span()=>s.inner().#ident},
-                                    None,
-                                    None,
-                                    r.mutability,
-                                    r.reference.as_ref().map(|_| Token![*](Span::call_site())))
-                            } else {
-                                (quote_spanned!{ident.span()=>#base_ident::#ident},
-                                    Some(Token![static](Span::call_site())),
-                                    Some(Token![fn](Span::call_site())),
-                                    None,
-                                    None)
-                            };
 
 
-                            let mut inner_expr = quote_spanned!{ident.span()=> #call_expr(#inner_args)};
+                                                        
+                            let (mut inner_expr,
+                                static_,
+                                fn_,
+                                mut_,
+                                star) = 
+
+                                if let Some((r,v)) = &m.self_ {   
+                                    
+                                    let base = 
+                                        if r.reference.is_some() && r.mutability.is_some(){
+                                            quote_spanned!{m.span()=>s.val_mut(|s| s.#ident(#inner_args))}
+                                        } else if r.reference.is_some(){
+                                            quote_spanned!{m.span()=>s.val(|s| s.#ident(#inner_args))}
+                                        } else {
+                                            quote_spanned!{m.span()=>s.clone().#ident(#inner_args)}
+                                        };
+
+                                    (base,
+                                        None,
+                                        None,
+                                        r.mutability,
+                                        r.reference.as_ref().map(|_| Token![*](Span::call_site())))
+                                } else {
+                                    (quote_spanned!{m.span()=>#base_ident::#ident(#inner_args)},
+                                        Some(Token![static](Span::call_site())),
+                                        Some(Token![fn](Span::call_site())),
+                                        None,
+                                        None)
+                                };
+
                             let out_ident = &m.out;
                             inner_expr = out_ident.as_ref().map(|v| 
                                 if v.into_token_stream().to_string().starts_with("Lua"){
-                                    quote_spanned!{ident.span()=>
+                                    quote_spanned!{m.span()=>
                                         #out_ident::new(#inner_expr)
                                     }
                                 } else {
                                     inner_expr.clone()
                                 }
-                            ).unwrap_or(quote_spanned!{ident.span()=>
+                            ).unwrap_or(quote_spanned!{m.span()=>
                                 #newtype_name::new(#inner_expr)
                             });
 
-                            let self_ident = static_.map(|_| quote_spanned!{ident.span()=>}).unwrap_or(quote!{s,});
+                            // wrap reference variables with val and val mut calls
+                            for (idx,arg) in m.args.iter().enumerate(){
+                                if let Type::Reference(r) = arg {
+                                    let method_call = r.mutability
+                                        .map(|v| format_ident!("val_mut",span=arg.span()))
+                                        .unwrap_or_else(|| format_ident!("val",span=arg.span()));
+                                    let arg_ident = &arg_idents[idx];
+                                    inner_expr = quote_spanned!{m.span()=>
+                                        #arg_ident.#method_call(|#arg_ident| #inner_expr)
+                                    }
+                                }                            
+                            }
+
+
+                            let self_ident = static_.map(|_| quote!{}).unwrap_or(quote_spanned!{m.span()=>s,});
                             let ds : Punctuated<Attribute,EmptyToken> = m.docstring.iter().cloned().collect();
 
-                            // we remove references
-                            let args = &m.args;
 
-                            parse_quote_spanned!{ident.span()=>
+                            parse_quote_spanned!{m.span()=>
                                 #ds
-                                #static_ #mut_ #fn_ #ident_str =>|_,#self_ident a:(#args)| Ok(#inner_expr)
+                                #static_ #mut_ #fn_ #ident_str =>|_,#self_ident (#(#arg_idents),*):(#(#args_without_refs),*)| Ok(#inner_expr)
                             }
                         }).collect::<Vec<_>>())
                 },
@@ -195,7 +223,7 @@ impl WrapperImplementor for LuaImplementor {
                     let mut new_methods = Vec::default();
                     for i in invocations{
                         let key = &i.target;
-                        let key = quote!{#key}.to_string();
+                        let key = quote_spanned!{key.span()=>#key}.to_string();
 
                         let methods = functions_so_far.get(&key).expect(&format!("Target lua wrapper type `{}` not found",key));
 
@@ -266,20 +294,20 @@ impl WrapperImplementor for LuaImplementor {
                                 let mut body = v.map_binary(|t| {
                                     // unpack wrappers
                                     let inner = if is_wrapper{
-                                        quote!{v.inner()}
+                                        quote_spanned!{v.span()=>v.clone()}
                                     } else {
-                                        quote!{v}
+                                        quote_spanned!{v.span()=>v}
                                     };
                                     if let Type::Reference(r) = t{
-                                        quote!{(&#inner)}
+                                        quote_spanned!{v.span()=>(&#inner)}
                                     } else {
                                         inner
                                     }
                                 }, |s| {
                                     if s.reference.is_some(){
-                                        quote!{&ud.inner()}
+                                        quote_spanned!{v.span()=>&ud.clone()}
                                     } else {
-                                        quote!{(ud.inner())}
+                                        quote_spanned!{v.span()=>(ud.clone())}
                                     }
                                 })?;
 
@@ -288,18 +316,18 @@ impl WrapperImplementor for LuaImplementor {
                                     let ident_type = format_ident!("{str_type}");
 
                                     if str_type.starts_with("Lua") {
-                                        body = quote!{#ident_type::new(#body)}
+                                        body = quote_spanned!{v.span()=>#ident_type::new(#body)}
                                     };
 
-                                    quote!{#return_arg_type::#ident_type(#body)}
+                                    quote_spanned!{v.span()=>#return_arg_type::#ident_type(#body)}
                                 });
 
-                                Ok(quote!{
+                                Ok(quote_spanned!{v.span()=>
                                     #arg_type::#type_(v) => Ok(#wrapped),
                                 })
                             }).collect::<Result<TokenStream,syn::Error>>()?;
 
-                            Ok((quote!{
+                            Ok((quote_spanned!{newtype.span()=>
                                 match v {
                                     #match_patterns
                                     _ => Err(tealr::mlu::mlua::Error::RuntimeError(
@@ -320,7 +348,7 @@ impl WrapperImplementor for LuaImplementor {
 
 
                         if lhs_arg_type.to_string().contains(&newtype_name.to_string()){
-                            rhs_ud_handlers = quote!{
+                            rhs_ud_handlers = quote_spanned!{v.span()=>
                                 (#lhs_arg_type::#newtype_name(ud),v) => {#rhs_ud_handlers},
                             };
                         } else {
@@ -328,7 +356,7 @@ impl WrapperImplementor for LuaImplementor {
                         }
 
                         if rhs_arg_type.to_string().contains(&newtype_name.to_string()){
-                            lhs_ud_handlers = quote!{
+                            lhs_ud_handlers = quote_spanned!{v.span()=>
                                 (v,#rhs_arg_type::#newtype_name(ud)) => {#lhs_ud_handlers},
                             };
                         } else {
@@ -349,11 +377,8 @@ impl WrapperImplementor for LuaImplementor {
                                             )
                                         ))
                                 }
-
-                                // return Err(tealr::mlu::mlua::Error::RuntimeError(format!("`{}` not supported between {:?} and {:?}",&metamethod_name,&lhs,&rhs)))
                             }
                         };
-                        // panic!("{o}")
                         out.push(o);
 
 
@@ -366,9 +391,9 @@ impl WrapperImplementor for LuaImplementor {
                         let meta = op.op.to_rlua_metamethod_path();
                         let mut body = op.map_unary(|s| {
                             if s.reference.is_some(){
-                                quote!{(&ud.inner())}
+                                quote_spanned!{op.span()=>(&ud.clone())}
                             } else {
-                                quote!{ud.inner()}
+                                quote_spanned!{op.span()=>ud.clone()}
 
                             }
                         }).expect("Expected unary expression");
@@ -378,7 +403,7 @@ impl WrapperImplementor for LuaImplementor {
                             let ident_type = format_ident!("{str_type}");
 
                             if str_type.starts_with("Lua") {
-                                body = quote!{#ident_type::new(#body)}
+                                body = quote_spanned!{op.span()=>#ident_type::new(#body)}
                             };
                         });
 
@@ -414,13 +439,13 @@ impl WrapperImplementor for LuaImplementor {
     fn generate_globals(&mut self, new_types: &crate::NewtypeList, all_functions : IndexMap<String, Vec<Self::Function>>) -> Result<TokenStream, syn::Error> {
         let from_lua : Punctuated<TokenStream,Token![,]> = new_types.new_types
             .iter()
-            .filter(|base| !base.args.variation.is_non_reflect())
+            // .filter(|base| !base.args.variation.is_non_reflect())
             .filter_map(|base| {
                 let key = stringify_type_path(&base.args.base_type);
                 let wrapper_type = &base.args.wrapper_type;
 
                 let value = 
-                    if base.args.variation.is_reflect(){
+                    if base.args.variation.is_value(){
                         quote_spanned!{base.span()=>
                             |r,c,n| {
                                 if let Value::UserData(v) = n {
@@ -440,18 +465,18 @@ impl WrapperImplementor for LuaImplementor {
                         return None
                     };
 
-                Some(quote!{#key => #value})
+                Some(quote_spanned!{base.span()=>#key => #value})
             }).collect();
 
         let to_lua : Punctuated<TokenStream,Token![,]> = new_types.new_types
             .iter()
-            .filter(|base| !base.args.variation.is_non_reflect())
+            // .filter(|base| !base.args.variation.is_non_reflect())
             .filter_map(|base| {
                 let key = stringify_type_path(&base.args.base_type);
                 let wrapper_type = &base.args.wrapper_type;
 
                 let value = 
-                    if base.args.variation.is_reflect(){
+                    if base.args.variation.is_value(){
                         quote_spanned!{base.span()=>
                             |r,c| {
                                 let usr = c.create_userdata(#wrapper_type::base_to_self(r)).unwrap();

@@ -1,7 +1,7 @@
 
 
 imports = """
-use bevy::{prelude::*};
+use bevy::{prelude::*,asset::HandleId};
 use bevy::math::*;
 use std::sync::Weak;
 use std::ops::*;
@@ -28,15 +28,44 @@ primitives = ["usize","isize","f32","f64","u128","u64","u32","u16","u8","i128","
 
 
 
+# # BEVY_PBR
+# [[types]]
+# type="AlphaMode"
+# source="bevy_pbr"
+
+# # BEVY_RENDER
+# [[types]]
+# type="DepthCalculation"
+# source="bevy_render"
+
+# [[types]]
+# type="CameraRenderGraph"
+# source="bevy_render"
+# wrapper_type="Ref"
+
+# # BEVY_UTILS
+# [[types]]
+# type="Uuid"
+# source="uuid"
+
+# # BEVY_ASSET
+# [[types]]
+# type="HandleId"
+# source="bevy_asset"
+
+
+# BEVY_ECS 
 [[types]]
 type="Entity"
 source="bevy_ecs"
+
+# # GLAM
 
 [[types]]
 type="Vec2"
 source="glam"
 lua_methods=[
-    "(MetaMethod::Index) (s=LuaVec2)=> {|_,s,idx: usize| {Ok(s.inner()[idx-1])}}",
+    "(MetaMethod::Index) (s=LuaVec2)=> {|_,s,idx: usize| {Ok(s.clone()[idx-1])}}",
     "mut (MetaMethod::NewIndex) (n=f32) => {|_,s,(idx,val): (usize,($n))| {Ok(s.val_mut(|s| s[idx-1] = val))}}"
 ]
 import_path="glam::f32::vec2::Vec2"
@@ -230,5 +259,4 @@ import_path="glam::f64::dquat::DQuat"
 [[types]]
 type="EulerRot"
 source="glam"
-wrapper_type="NonReflect"
 import_path="glam::euler::EulerRot"

@@ -40,7 +40,7 @@ pub(crate) struct Config {
 
 
 
-#[derive(Deserialize,Debug)]
+#[derive(Deserialize,Debug, Hash, PartialEq, Eq)]
 pub(crate) struct Newtype {
 
     #[serde(rename="type")]
@@ -65,7 +65,7 @@ pub(crate) struct Newtype {
     pub import_path: String,
 }
 
-#[derive(Deserialize,Debug)]
+#[derive(Deserialize,Debug, PartialEq, Eq, Hash)]
 pub(crate) struct Source(String);
 
 impl Default for Source {
@@ -82,8 +82,8 @@ impl Newtype {
     pub fn matches_result(&self, item : &Item, source : &Crate) -> bool {
         
         match &item.inner {
-            ItemEnum::Struct(s) => {},
-            ItemEnum::Enum(e) => {},
+            ItemEnum::Struct(_) => {},
+            ItemEnum::Enum(_) => {},
             _ => return false
         };
 
@@ -96,12 +96,12 @@ impl Newtype {
 }
 
 
-#[derive(Deserialize, Debug,Clone, Copy)]
+#[derive(Deserialize, Debug,Clone, Copy, PartialEq, Eq, Hash)]
 pub(crate) enum WrapperType {
-    /// things which can be freely assigned to with reflect
-    Reflect,
-    /// For things without reflect impls
-    NonReflect,
+    /// things which have pass by value semantics
+    Value,
+    /// things which have pass by reference semantics
+    Ref,
     /// For primitives
     Primitive
 }
@@ -109,8 +109,8 @@ pub(crate) enum WrapperType {
 impl ToString for WrapperType {
     fn to_string(&self) -> String {
         match self {
-            WrapperType::Reflect => "Reflect".to_string(),
-            WrapperType::NonReflect => "NonReflect".to_string(),
+            WrapperType::Value => "Value".to_string(),
+            WrapperType::Ref => "Ref".to_string(),
             WrapperType::Primitive => "Primitive".to_string(),
         }
     }
@@ -118,7 +118,7 @@ impl ToString for WrapperType {
 
 impl Default for WrapperType {
     fn default() -> Self {
-        Self::Reflect
+        Self::Value
     }
 }
 
@@ -139,13 +139,16 @@ pub(crate) struct WrappedItem<'a> {
 
 
 pub(crate) fn is_valid_lua_fn_arg(str : &str, config : &Config) -> bool{
-    const FROM_PRIMITIVES : [&str;19] = ["bool","StdString","Box<str>","CString","BString","i8","u8","i16","u16","i32","u32","i64","u64","i128","u128","isize","usize","f32","f64"];
+    const FROM_PRIMITIVES : [&str;18] = ["bool","StdString","CString","BString","i8","u8","i16","u16","i32","u32","i64","u64","i128","u128","isize","usize","f32","f64"];
 
     // we also allow references to these, since we can just reference by value
     // but we do not allow mutable versions since that can easilly cause unexpected behaviour
+    // TODO: only allow refs for Ref types ?
     let base_string = 
-        if str.starts_with("&") && &str[1..] == "self"{
+        if str.starts_with("&"){
             &str[1..]
+        } else if str.starts_with("& mut") {
+            &str[4..]
         } else {
             &str[..]
         };
@@ -156,7 +159,6 @@ pub(crate) fn is_valid_lua_fn_arg(str : &str, config : &Config) -> bool{
         config.types.contains_key(&base_string[WRAPPER_PREFIX.len()..])){
         return true
     };
-
 
     false
 }
@@ -408,34 +410,31 @@ impl WrappedItem<'_> {
                                             .enumerate()
                                             .map(|(idx,(_,t))| 
                                                 type_to_string(t, &|b: &String| to_op_argument(b, &self_type, self, &config, idx == 0,false))
-                                                .ok()
-                                                .and_then(|v | (!v.is_empty()).then_some(v))
-                                            ).collect::<Option<Vec<_>>>()
-                                            .and_then(|v| Some(v.join(&format!(" {} ",rep))))
+                                                // .and_then(|v | (!v.is_empty()).then_some(v))
+                                            ).collect::<Result<Vec<_>,_>>()
+                                            .and_then(|v| Ok(v.join(&format!(" {} ",rep))))
                                             .and_then(|mut expr| {
                                                 // then provide return type
                                                 // for these traits that's on associated types within the impl
 
                                                 let out_type = impl_.items.iter().find_map(|v| {
                                                     let item = self.source.index.get(v).unwrap();
-                                                    if let ItemEnum::Typedef(t)= &item.inner{
+                                                    if let ItemEnum::AssocType { default, .. }= &item.inner{
                                                         match item.name.as_ref().map(|v| v.as_str()) {
-                                                            Some("Output") => return Some(&t.type_),
+                                                            Some("Output") => return Some(default.as_ref().unwrap()),
                                                             _ => {}
                                                         }
                                                     }
                                                     None
-                                                })?;
+                                                }).ok_or_else(|| expr.clone())?;
 
-                                                let return_string = type_to_string(out_type, &|b: &String| to_op_argument(b, &self_type, &self, &config, false,true))
-                                                    .ok()?;
+                                                let return_string = type_to_string(out_type, &|b: &String| to_op_argument(b, &self_type, &self, &config, false,true))?;
 
                                                 expr = format!("{expr} -> {return_string}");
 
-                                                Some(expr)
+                                                Ok(expr)
                                             })
-                                            .unwrap_or_else(|| format!("// Error: unsupported type in `{:?}`",m))
-                                        
+                                            .map_or_else(|e| format!("// Error: unsupported type: {e:?}"), |v| v)
                                     },
                                     _ => panic!("ads")
                                 }
@@ -466,6 +465,8 @@ impl WrappedItem<'_> {
 pub(crate) fn generate_macros(crates: &[Crate], config: Config) -> Result<String,io::Error> {
 
     // the items we want to generate macro instantiations for
+    let mut unmatched_types : HashSet<&String> = config.types.iter().map(|(k,v)|k).collect();
+
     let mut wrapped_items : Vec<_> = crates.iter().flat_map(|source| source.index
         .iter()
         .filter(|(_,item)| item.name
@@ -474,7 +475,6 @@ pub(crate) fn generate_macros(crates: &[Crate], config: Config) -> Result<String
                                     .and_then(|k| Some(k.matches_result(item,source)))
                                     .unwrap_or(false))
         .map(|(id,item)| {
-            
             // extract all available associated constants,methods etc available to this item
             
             let mut self_impl : Option<&Impl> = None;
@@ -532,6 +532,14 @@ pub(crate) fn generate_macros(crates: &[Crate], config: Config) -> Result<String
     )
     .collect();
 
+    wrapped_items.iter().for_each(|v| {
+        unmatched_types.remove(&v.wrapped_type);
+    });
+
+    if !unmatched_types.is_empty(){
+        panic!("Some types were not found in the given crates: {unmatched_types:#?}")
+    }
+
     // we want to preserve the original ordering from the config file
     wrapped_items.sort_by_cached_key(|f| config.types.get_index_of(f.wrapped_type).unwrap());
 
@@ -551,16 +559,10 @@ pub(crate) fn generate_macros(crates: &[Crate], config: Config) -> Result<String
             lua_impl_block = format!("\n\timpl {{\n{lua_impl_block}}}");
         }
 
-        let non_reflect_inner = if let WrapperType::NonReflect = v.wrapper_type{
-            format!("({})",v.wrapped_type)
-        } else {
-            Default::default()
-        };
-
         format!(
 "{{
     {type_docstring}
-    {full_path} : {wrapper_type}{non_reflect_inner}{flags} {lua_impl_block}
+    {full_path} : {wrapper_type}{flags} {lua_impl_block}
 }},\n")
     }).collect();
 
@@ -672,11 +674,16 @@ pub(crate) fn generate_macros(crates: &[Crate], config: Config) -> Result<String
     },
     "#;
 
+
+
     let imports = &config.imports;
+    
+
     let external_types = &config.external_types.join(",");
     let macro_path = "bevy_mod_scripting_derive::impl_lua_newtypes";
+    let header_information = "// This file is generated by `bevy_mod_scripting_derive/main.rs` change the template not this file";
 
-    let full_macro_invocation = format!("use {macro_path};\n impl_lua_newtypes!(\n(\n{imports})\n[{external_types}]\n[\n{primitives}{macro_list_body}]);");
+    let full_macro_invocation = format!("{header_information}\nuse {macro_path};\nimpl_lua_newtypes!(\n(\n{imports})\n[{external_types}]\n[\n{primitives}{macro_list_body}]);");
 
     Ok(full_macro_invocation)
 }
