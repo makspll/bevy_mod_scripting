@@ -15,13 +15,12 @@ use std::{
 
 use self::lua::LuaEntity;
 
-pub mod bevy_types;
 pub mod wrappers;
 
 mod generated;
 
 
-pub use {bevy_types::*, wrappers::*,generated::lua as lua};
+pub use {wrappers::*,generated::lua as lua};
 
 #[reflect_trait]
 pub trait CustomUserData {
@@ -742,9 +741,8 @@ impl TealData for LuaWorld {
                     world: world.as_ref().clone()
                 }, 
                 path: Some("".to_string()), 
-                r: ReflectPtr::Const(dyn_comp)
-                     
-                }  
+                r: ReflectPtr::Const(dyn_comp) 
+            }  
             )
         });
 

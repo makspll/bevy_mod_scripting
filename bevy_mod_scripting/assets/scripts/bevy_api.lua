@@ -8,7 +8,7 @@ function on_update()
 
         print(string.format("%s",comp))
         print(string.format("%s",res))
-        res.thing = 69
+        print(string.format("%s",res:custom_resource_method(42)))
 
         comp.vec2 = comp.vec2 + comp.vec2
         comp.uvec2 = comp.uvec2 + comp.uvec2

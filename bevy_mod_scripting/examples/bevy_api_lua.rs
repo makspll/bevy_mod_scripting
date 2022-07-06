@@ -2,7 +2,8 @@ use bevy::math::DQuat;
 use bevy::prelude::*;
 use bevy::render::extract_resource::ExtractResource;
 use bevy_event_priority::PriorityEventWriter;
-use bevy_mod_scripting::{ReflectCustomUserData, LuaDocFragment, ScriptError, AddScriptApiProvider};
+use bevy_mod_scripting::mlu::mlua::UserData;
+use bevy_mod_scripting::{ReflectCustomUserData, LuaDocFragment, ScriptError, AddScriptApiProvider, CustomUserData};
 use bevy_mod_scripting::{
     APIProvider, AddScriptHost, AddScriptHostHandler, LuaEvent, LuaFile, RLuaScriptHost,
     Recipients, Script, ScriptCollection, ScriptingPlugin,
@@ -35,11 +36,26 @@ fn fire_script_update(mut w: PriorityEventWriter<LuaEvent<MyLuaArg>>) {
 }
 
 
-#[derive(Default,Reflect)]
-#[reflect(Resource)]
+#[derive(Default,Clone,Reflect)]
+#[reflect(Resource,CustomUserData)]
 pub struct MyResource{
-    pub thing: f64,
+    pub thing :f64
 }
+
+impl UserData for MyResource {
+    fn add_methods<'lua, M: mlua::UserDataMethods<'lua, Self>>(methods: &mut M) {
+        methods.add_method_mut("custom_resource_method", |_,s,v : f64|{
+            s.thing = v;
+
+            Ok("hello?")
+        });
+
+        methods.add_meta_method(mlua::MetaMethod::ToString, |_,s,()|{
+            Ok(format!("I'm a resource with a custom metatable!: {}",s.thing))
+        });
+    }
+}
+
 
 #[derive(Default,Reflect)]
 pub struct MyReflectThing {
