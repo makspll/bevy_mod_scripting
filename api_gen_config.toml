@@ -1,28 +1,20 @@
 
 
 imports = """
-use bevy::{prelude::*,asset::HandleId};
+use bevy::{prelude::*};
 use bevy::math::*;
-use std::sync::Weak;
 use std::ops::*;
 use phf::{phf_map, Map};
-use crate::LuaFile;
-use crate::LuaRefBase;
 use crate::ReflectPtr;
-use crate::Script;
-use crate::ScriptCollection;
-use crate::LuaRef;
-use crate::get_type_data;
-use crate::{LuaComponent,LuaResource,LuaWorld};
+use crate::{LuaWorld,ScriptRef,ScriptRefBase};
 use std::sync::Arc;
-use parking_lot::RwLock;
 use crate::util::impl_tealr_type;
 use num_traits::cast::ToPrimitive;
-use bevy_mod_scripting_derive::{impl_lua_newtypes,replace};
+use bevy_mod_scripting_derive::{replace};
 use tealr::{mlu::{mlua,mlua::{prelude::*,Error,MetaMethod,Value}},create_union_mlua};
 """
 
-external_types = ["LuaComponent","LuaResource","LuaWorld"]
+external_types = ["LuaWorld"]
 
 primitives = ["usize","isize","f32","f64","u128","u64","u32","u16","u8","i128","i64","i32","i16","i8"]
 
@@ -201,15 +193,15 @@ lua_methods=[
 mut (MetaMethod::Index) (s=LuaMat3,b=Mat3,v=LuaVec3) => {|_,s,idx : usize| {
     match s {
         ($s)::Owned(ref mut v, ref valid) => {
-            Ok(($v)::Ref(LuaRef{
-                root: LuaRefBase::LuaOwned{valid: Arc::downgrade((valid))},
+            Ok(($v)::Ref(ScriptRef{
+                root: ScriptRefBase::ScriptOwned{valid: Arc::downgrade((valid))},
                 r: ReflectPtr::Mut(v.col_mut(idx-1)),
                 path: None
             }))
         },
         ($s)::Ref(ref mut r) => {
             r.get_mut(|s,r| {
-                Ok(($v)::Ref(LuaRef{
+                Ok(($v)::Ref(ScriptRef{
                     root: r.root.clone(),
                     r: ReflectPtr::Mut(s.downcast_mut::<($b)>().unwrap().col_mut(idx-1)),
                     path: None

@@ -498,13 +498,13 @@ impl WrapperImplementor for LuaImplementor {
         let lookup_tables = quote_spanned!{new_types.span()=>
 
             pub static BEVY_TO_LUA: Map<&'static str,
-                for<'l> fn(&crate::LuaRef,&'l Lua) -> tealr::mlu::mlua::Value<'l>
+                for<'l> fn(&crate::ScriptRef,&'l Lua) -> tealr::mlu::mlua::Value<'l>
                 > = phf_map!{
                     #to_lua,
                 };
 
             pub static APPLY_LUA_TO_BEVY: Map<&'static str,
-                for<'l> fn(&mut crate::LuaRef,&'l Lua, tealr::mlu::mlua::Value<'l>) -> Result<(),tealr::mlu::mlua::Error>
+                for<'l> fn(&mut crate::ScriptRef,&'l Lua, tealr::mlu::mlua::Value<'l>) -> Result<(),tealr::mlu::mlua::Error>
                 > = phf_map!{
                     #from_lua,
                 };

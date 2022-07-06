@@ -2,7 +2,7 @@ use bevy::reflect::Reflect;
 use parking_lot::RwLock;
 use tealr::{mlu::{TealData,mlua}, TypeBody};
 use std::{ops::{Deref,DerefMut},sync::Arc, fmt::{Debug,Display, Formatter}, marker::PhantomData};
-use crate::LuaRef;
+use crate::ScriptRef;
 
 
 /// Script representable type with pass-by-value semantics
@@ -10,19 +10,19 @@ pub trait ScriptValue : Reflect + Clone {}
 impl <T : Reflect + Clone> ScriptValue for T {}
 
 /// Script representable type with pass-by-reference semantics
-pub trait ScriptRef : Reflect {}
-impl <T : Reflect> ScriptRef for T {}
+pub trait ScriptReference : Reflect {}
+impl <T : Reflect> ScriptReference for T {}
 
 
 #[derive(Debug,Clone)]
 /// A wrapper for lua pass-by-value types possibly owned by lua itself
-pub enum LuaWrapper<T : ScriptRef> { 
+pub enum LuaWrapper<T : ScriptReference> { 
     Owned(T,Arc<RwLock<()>>),
-    Ref(LuaRef)
+    Ref(ScriptRef)
 }
 
 
-impl <T : ScriptRef>Drop for LuaWrapper<T> {
+impl <T : ScriptReference>Drop for LuaWrapper<T> {
     fn drop(&mut self) {
         match self {
             Self::Owned(_,valid) => {
@@ -35,13 +35,13 @@ impl <T : ScriptRef>Drop for LuaWrapper<T> {
     }
 }
 
-impl <T : ScriptRef + Display> Display for LuaWrapper<T> {
+impl <T : ScriptReference + Display> Display for LuaWrapper<T> {
     fn fmt(&self, f: &mut Formatter<'_>) -> Result<(), std::fmt::Error> { 
         write!(f,"{}", self)
     }
 }
 
-impl <T : ScriptRef>LuaWrapper<T> {
+impl <T : ScriptReference>LuaWrapper<T> {
 
     pub fn new(b : T) -> Self 
     where 
@@ -50,7 +50,7 @@ impl <T : ScriptRef>LuaWrapper<T> {
         Self::Owned(b,Arc::new(RwLock::new(())))
     }
 
-    pub fn new_ref(b : &LuaRef) -> Self {
+    pub fn new_ref(b : &ScriptRef) -> Self {
         Self::Ref(b.clone())
     }
 
@@ -108,13 +108,13 @@ impl <T : ScriptRef>LuaWrapper<T> {
 
 
     /// Converts a LuaRef to Self
-    pub fn base_to_self(b: &LuaRef) -> Self {
+    pub fn base_to_self(b: &ScriptRef) -> Self {
         Self::new_ref(b)
     }
 
     /// Applies Self to a LuaRef.
     /// may require a write lock on the world
-    pub fn apply_self_to_base(&self, b: &mut LuaRef){
+    pub fn apply_self_to_base(&self, b: &mut ScriptRef){
 
         match self {
             Self::Owned(ref v, ..) => {

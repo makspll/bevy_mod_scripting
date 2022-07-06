@@ -1,5 +1,6 @@
 use bevy::math::DQuat;
 use bevy::prelude::*;
+use bevy::render::extract_resource::ExtractResource;
 use bevy_event_priority::PriorityEventWriter;
 use bevy_mod_scripting::{ReflectCustomUserData, LuaDocFragment, ScriptError, AddScriptApiProvider};
 use bevy_mod_scripting::{
@@ -33,6 +34,18 @@ fn fire_script_update(mut w: PriorityEventWriter<LuaEvent<MyLuaArg>>) {
     )
 }
 
+
+#[derive(Default,Reflect)]
+#[reflect(Resource)]
+pub struct MyResource{
+    pub thing: f64,
+}
+
+#[derive(Default,Reflect)]
+pub struct MyReflectThing {
+    pub hello : String,
+}
+
 #[derive(Component, Default, Reflect)]
 #[reflect(Component)]
 pub struct MyComponent {
@@ -45,10 +58,11 @@ pub struct MyComponent {
     f32: f32,
     mat3: Mat3,
     vec4: Vec4,
+    my_reflect_thing: MyReflectThing,
 }
 
 fn load_our_script(server: Res<AssetServer>, mut commands: Commands) {
-    let path = "scripts/native_types.lua";
+    let path = "scripts/bevy_api.lua";
     let handle = server.load::<LuaFile, &str>(path);
 
     commands
@@ -65,7 +79,8 @@ fn load_our_script(server: Res<AssetServer>, mut commands: Commands) {
             f32: 6.7,
             mat3: Mat3::from_cols(Vec3::new(1.0,2.0,3.0),Vec3::new(4.0,5.0,6.0),Vec3::new(7.0,8.0,9.0)),
             quat: Quat::from_xyzw(1.0,2.0,3.0,4.0),
-            dquat: DQuat::from_xyzw(1.0,2.0,3.0,4.0)
+            dquat: DQuat::from_xyzw(1.0,2.0,3.0,4.0),
+            my_reflect_thing: MyReflectThing { hello: "hello world".to_owned() },            
         });
 }
 
@@ -83,6 +98,9 @@ fn main() -> std::io::Result<()> {
         )
         .add_script_handler_stage::<RLuaScriptHost<MyLuaArg>, _, 0, 0>("scripts")
         .register_type::<MyComponent>()
+        .register_type::<MyReflectThing>()
+        .register_type::<MyResource>()
+        .init_resource::<MyResource>()
         // this stage handles addition and removal of script contexts, we can safely use `CoreStage::PostUpdate`
         .add_script_host::<RLuaScriptHost<MyLuaArg>, _>(CoreStage::PostUpdate)
         .add_api_provider::<RLuaScriptHost<MyLuaArg>>(Box::new(LuaBevyAPIProvider));

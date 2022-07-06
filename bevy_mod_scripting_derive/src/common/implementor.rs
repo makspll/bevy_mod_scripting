@@ -67,6 +67,7 @@ pub(crate) trait WrapperImplementor : 'static {
         let header = &new_types.module_headers;
 
         Ok(quote!{
+            #[allow(unused_parens,unreachable_patterns,unused_variables)]
             pub mod #module_name {
                 #header
                 #newtypes

@@ -113,3 +113,9 @@ required-features = ["lua54"]
 name = "documentation_gen_lua"
 path = "examples/documentation_gen_lua.rs"
 required-features = ["lua54","teal"]
+
+
+[[example]]
+name = "bevy_api_lua"
+path = "examples/bevy_api_lua.rs"
+required-features = ["lua54"]
