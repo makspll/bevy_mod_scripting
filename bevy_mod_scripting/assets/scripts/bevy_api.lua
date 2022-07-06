@@ -23,12 +23,9 @@ function on_update()
 
         a = Mat3.from_cols(Vec3.new(1,0,0),Vec3.new(0,1,0),Vec3.new(0,0,-1))
 
-
         comp.mat3[1][1] = 42
 
         print(string.format("%s", comp))
         print(string.format("%s", res))
-
     end
-
 end
