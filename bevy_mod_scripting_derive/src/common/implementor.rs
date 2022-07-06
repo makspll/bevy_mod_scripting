@@ -1,7 +1,7 @@
 
 use indexmap::IndexMap;
 use proc_macro2::TokenStream;
-use syn::{parse::Parse, punctuated::Punctuated, Token, spanned::Spanned,Result};
+use syn::{parse::Parse, spanned::Spanned,Result};
 use quote::{quote, quote_spanned, ToTokens, format_ident};
 
 use crate::{common::*, NewtypeList};

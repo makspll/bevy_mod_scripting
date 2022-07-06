@@ -3,8 +3,8 @@
 use proc_macro2::Span;
 use syn::{*, parse::*, punctuated::*, token::{*},Type};
 
-use crate::{ops::*,lua_method::{LuaMethodType, MethodMacroArg, LuaMethod, LuaClosure},TokenStream2, newtype::NewtypeArgs, utils::impl_parse_enum, EmptyToken};
-use paste::paste;
+use crate::{ops::*,lua_method::{LuaMethodType, MethodMacroArg},TokenStream2, utils::impl_parse_enum};
+
 
 
 use quote::ToTokens;

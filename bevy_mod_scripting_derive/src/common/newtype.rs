@@ -1,12 +1,12 @@
 
 use indexmap::IndexSet;
 use proc_macro2::{TokenStream, Span};
-use syn::{*,Type, punctuated::*, token::*, parse::{ParseStream, Parse}, spanned::Spanned};
+use syn::{*, punctuated::*, token::*, parse::{ParseStream, Parse}, spanned::Spanned};
 
-use crate::{AdditionalImplBlock, lua_method::{LuaMethod,LuaMethodType}, DeriveFlag, utils::impl_parse_enum};
-use quote::{ToTokens, quote_spanned};
+use crate::{lua_method::{LuaMethod}, DeriveFlag, utils::impl_parse_enum};
+use quote::{ToTokens};
 
-use super::{utils::attribute_to_string_lit, WrapperFunction};
+use super::{WrapperFunction};
 
 
 pub(crate)  struct NewtypeArgs {

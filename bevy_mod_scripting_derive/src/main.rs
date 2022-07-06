@@ -1,4 +1,4 @@
-use std::{io::{self, BufReader},fs::{File,read_to_string}, collections::{HashSet, BTreeMap}};
+use std::{io::{self, BufReader},fs::{File,read_to_string}, collections::{HashSet}};
 use clap::Parser;
 use indexmap::IndexMap;
 use serde_json::from_reader;
@@ -465,7 +465,7 @@ impl WrappedItem<'_> {
 pub(crate) fn generate_macros(crates: &[Crate], config: Config) -> Result<String,io::Error> {
 
     // the items we want to generate macro instantiations for
-    let mut unmatched_types : HashSet<&String> = config.types.iter().map(|(k,v)|k).collect();
+    let mut unmatched_types : HashSet<&String> = config.types.iter().map(|(k,_v)|k).collect();
 
     let mut wrapped_items : Vec<_> = crates.iter().flat_map(|source| source.index
         .iter()

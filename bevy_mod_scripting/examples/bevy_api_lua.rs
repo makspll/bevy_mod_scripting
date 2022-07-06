@@ -1,18 +1,18 @@
 use bevy::math::DQuat;
 use bevy::prelude::*;
-use bevy::render::extract_resource::ExtractResource;
+
 use bevy_event_priority::PriorityEventWriter;
 use bevy_mod_scripting::mlu::mlua::UserData;
-use bevy_mod_scripting::{ReflectCustomUserData, LuaDocFragment, ScriptError, AddScriptApiProvider, CustomUserData};
+use bevy_mod_scripting::{ReflectCustomUserData, AddScriptApiProvider};
 use bevy_mod_scripting::{
-    APIProvider, AddScriptHost, AddScriptHostHandler, LuaEvent, LuaFile, RLuaScriptHost,
+    AddScriptHost, AddScriptHostHandler, LuaEvent, LuaFile, RLuaScriptHost,
     Recipients, Script, ScriptCollection, ScriptingPlugin,
     langs::mlu::mlua,
     lua::LuaBevyAPIProvider
 };
 
 
-use std::sync::Mutex;
+
 
 #[derive(Clone)]
 pub struct MyLuaArg;

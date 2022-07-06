@@ -1,11 +1,11 @@
 pub(crate) mod lua_method;
 
-use std::collections::{HashSet};
+
 
 use indexmap::{IndexMap, IndexSet};
 pub(crate) use lua_method::*;
 use proc_macro2::{TokenStream, Span, Ident};
-use syn::{spanned::Spanned, parse_quote_spanned, punctuated::Punctuated, LitInt, Token, Attribute, parse_quote, Type, TypePath, Path};
+use syn::{spanned::Spanned, parse_quote_spanned, punctuated::Punctuated, LitInt, Token, Attribute, parse_quote, Type};
 
 use crate::{common::{WrapperImplementor, WrapperFunction, newtype::NewtypeVariation, attribute_to_string_lit, derive_flag::DeriveFlag, ops::{OpName,OpExpr}, stringify_type_path, type_base_string}, EmptyToken};
 use quote::{quote, quote_spanned, ToTokens, format_ident};

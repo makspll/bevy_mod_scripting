@@ -1,7 +1,7 @@
 use bevy::reflect::Reflect;
 use parking_lot::RwLock;
-use tealr::{mlu::{TealData,mlua}, TypeBody};
-use std::{ops::{Deref,DerefMut},sync::Arc, fmt::{Debug,Display, Formatter}, marker::PhantomData};
+
+use std::{sync::Arc, fmt::{Debug,Display, Formatter}};
 use crate::ScriptRef;
 
 

@@ -1,4 +1,4 @@
-use crate::{PrintableReflect, lua::{BEVY_TO_LUA, APPLY_LUA_TO_BEVY}, impl_tealr_type};
+use crate::{lua::{BEVY_TO_LUA, APPLY_LUA_TO_BEVY}, impl_tealr_type};
 use anyhow::Result;
 use tealr::{mlu::{mlua,mlua::{prelude::*,Value,UserData,MetaMethod}, TealData, TealDataMethods}, TypeName};
 
@@ -285,7 +285,7 @@ impl ScriptRef {
         F : FnOnce(&dyn Reflect, &ScriptRef) -> O 
     {
         match &self.root {
-            ScriptRefBase::Resource { res, world } => {
+            ScriptRefBase::Resource { res: _, world } => {
                 let g = world.upgrade()
                 .expect("Trying to access cached value from previous frame");
                 let g = g.try_read().expect("Rust safety violation: attempted to borrow world while it was already mutably borrowed");
@@ -803,7 +803,7 @@ impl TealData for LuaWorld {
 #[cfg(test)]
 
 mod test {
-    use crate::{langs::mlu::{mlua,mlua::prelude::*},api::lua::LuaEntity, LuaEvent, Recipients, ScriptRef, ScriptRefBase, get_type_data, ReflectPtr};
+    use crate::{langs::mlu::{mlua,mlua::prelude::*},api::lua::LuaEntity, ScriptRef, ScriptRefBase, get_type_data, ReflectPtr};
     use bevy::{prelude::*,reflect::TypeRegistryArc};
     use std::{sync::Arc};
     use parking_lot::RwLock;
