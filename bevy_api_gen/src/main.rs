@@ -1,3 +1,5 @@
+use bevy_api_gen_lib::PrettyWriter;
+
 use std::{io::{self, BufReader},fs::{File,read_to_string}, collections::{HashSet}};
 use clap::Parser;
 use indexmap::IndexMap;
@@ -259,210 +261,273 @@ pub(crate) fn type_to_string<F : Fn(&String) -> Result<String,String>>(t : &Type
             Ok(inner)
             
         },
-        _ => Err(format!("{t:#?}"))
+        _ => Err(format!("{t:?}"))
     }
 }
 
 impl WrappedItem<'_> {
 
-    fn docstringify(s: String,tabs: usize) -> String {
-        s.lines()
-        .map(|l| format!("\n{}///{l}","\t".repeat(tabs)))
-        .collect()
-    }
-
-    pub fn get_full_path(&self) -> String {
+    /// Writes full type path inline corresponding to `Reflect::type_name` of each type
+    /// 
+    /// As: 
+    /// ```rust,ignore
+    /// 
+    /// this
+    /// |
+    /// |..........|
+    /// my_type_path::Type : Value : 
+    ///  UnaryOps( ...
+    /// ```
+    pub fn write_full_path(&self, writer: &mut PrettyWriter) {
         if self.config.import_path.is_empty(){
-            self.path_components.join("::")
+            writer.write_inline(&self.path_components.join("::"));
         } else {
-            self.config.import_path.to_owned()
+            writer.write_inline(&self.config.import_path);
         }
     }
 
-    pub fn get_type_docstring(&self) -> String{
-        Self::docstringify(if let Some(d) = &self.config.doc {
+    /// Writes the docstring for the type over multiple lines
+    /// 
+    /// As:
+    /// ```rust,ignore
+    /// 
+    /// /// generated docstring
+    /// /// here
+    /// my_macro_key : Value : 
+    ///  UnaryOps(
+    ///  ... 
+    ///  )
+    ///  +
+    ///  ...
+    /// ```
+    pub fn write_type_docstring(&self, writer : &mut PrettyWriter){
+        let strings = if let Some(d) = &self.config.doc {
             d.to_string()
         } else {
             self.item.docs
             .as_ref()
             .cloned()
             .unwrap_or_else(||"".to_string())
-        },1)
+        };
+        writer.set_prefix("///".into());
+        strings.lines().for_each(|l| 
+            {writer.write_line(l);}
+        );
+        writer.clear_prefix();
     }
 
-    pub fn get_method_docstring(&self, id : &Id) -> String{
-        Self::docstringify(self.source.index
+    /// Writes the docstring for the given auto method over multiple lines
+    /// 
+    /// As:
+    /// ```rust,ignore
+    /// 
+    ///
+    /// my_macro_key : Value : 
+    ///  AutoMethods(
+    ///        /// generated docstring 
+    ///        /// here
+    ///        my_method(usize) -> u32
+    ///  )
+    ///  +
+    ///  ...
+    /// ```
+    pub fn write_method_docstring(&self, id : &Id, writer : &mut PrettyWriter){
+        writer.set_prefix("///".into());
+        self.source.index
                 .get(id)
                 .unwrap().docs
                 .as_ref()
                 .cloned()
                 .unwrap_or_else(||"".to_owned())
-            ,3)
+                .lines().for_each(|l| {writer.write_line(l);});
+        writer.clear_prefix();
     }
 
-    pub fn get_impl_block_body(&self) -> String {
+    /// Writes the contents of the impl block for this wrapper
+    /// 
+    /// As:
+    /// 
+    /// ```rust,ignore
+    ///     impl {
+    ///     ... // this!
+    ///     }
+    /// ```
+    pub fn write_impl_block_body(&self, writer: &mut PrettyWriter) {
         self.config.lua_methods
             .iter()
-            .map(|v| format!("\n\t\t\t{v};"))
-            .collect::<Vec<_>>().join("")
+            .for_each(|v| {
+                writer.write_postfixed_line(v, ";");
+            })
     }
 
-    pub fn get_derive_flags_body(&self, config: &Config) -> String {
-        let auto_methods : Option<String> = self.self_impl.map(|v| 
-            v.items.iter() 
-            .map(|v|
-                self.source.index.get(v).unwrap()     
-            )
-            .filter_map(|v| { 
+    /// Generates all derive flags for the type
+    /// 
+    /// ```rust,ignore
+    /// my_type::Type : Value: 
+    /// ... // flags go here
+    /// ``` 
+    pub fn write_derive_flags_body(&self, config: &Config, writer: &mut PrettyWriter) {
 
-                let decl = match &v.inner {
-                    ItemEnum::Function(f) => &f.decl,
-                    ItemEnum::Method(m) => &m.decl,
-                    _ => return None,
-                    };
+        // automethods
+        writer.write_no_newline("AutoMethods");
+        writer.open_paren();
+        self.impl_items.iter()
+            .flat_map(|(_,items)| items.iter())
+            .for_each(|(impl_,v)| { 
 
+                let (decl,generics) = match &v.inner {
+                    ItemEnum::Function(f) => (&f.decl,&f.generics),
+                    ItemEnum::Method(m) => (&m.decl,&m.generics),
+                    _ => return,
+                };
 
-                let fn_name = v.name.as_ref().unwrap();
-                let args = decl.inputs
+                let mut errors = Vec::default();
+
+                let mut inner_writer = PrettyWriter::new();
+
+                self.write_method_docstring(&v.id, &mut inner_writer);
+
+                inner_writer.write_inline(v.name.as_ref().unwrap());
+                inner_writer.write_inline("(");
+                decl.inputs
                     .iter()
                     .enumerate()
-                    .map(|(i,(_,tp))| {
-                        let out = type_to_string(tp, &|base_string : &String| to_auto_method_argument(base_string,self,config,i==0))?;
-                        if !is_valid_lua_fn_arg(&out, config){
-                            return Err(format!("{out}"))
-                        }
-                        Ok(out)
-                    })
-                    .collect::<Result<Vec<_>,String>>();
-
-                let return_tp = decl.output
+                    .for_each(|(i,(_,tp))| {
+                        let type_ = 
+                            type_to_string(tp, &|base_string : &String| 
+                                to_auto_method_argument(base_string,self,config,i==0));
+                        if let Ok(type_) = type_ {
+                            if !is_valid_lua_fn_arg(&type_, config){
+                                inner_writer.write_inline(&format!("<invalid: {type_}>"));
+                                errors.push(format!("Unsupported argument {}",type_));
+                                return;
+                            } else {
+                                inner_writer.write_inline(&type_);
+                            }
+                            if !i == decl.inputs.len() {
+                                inner_writer.write_inline(",");
+                            }
+                        } else {
+                            errors.push(format!("Unsupported argument {}",type_.unwrap_err()))
+                        };
+                });
+                inner_writer.write_inline(")");
+                
+                decl.output
                     .as_ref()
                     .map(|tp| {
-                        let out = type_to_string(tp, &|base_string : &String| to_auto_method_argument(base_string,self,config,false))?;
-                        if !is_valid_lua_fn_return_typ(&out, config){
-                            return Err(format!("{out}"))
+                        let type_ = type_to_string(tp, &|base_string : &String| to_auto_method_argument(base_string,self,config,false));
+                        if let Ok(type_) = type_ {
+                            if !is_valid_lua_fn_return_typ(&type_, config){
+                                errors.push(format!("Unsupported argument {}",type_));
+                                inner_writer.write_inline(&format!("<invalid: {type_}>"));
+                            } else {
+                                inner_writer.write_inline(" -> ");
+                                inner_writer.write_inline(&type_);
+                            }
+                        } else {
+                            errors.push(format!("Unsupported argument {}",type_.unwrap_err()))
                         }
-                        Ok(out)
                     });
 
-                let error = 
-                    if args.is_err() {
-                        let typ = args.as_ref().err().unwrap();
-                        Some(format!("Unsupported argument `{typ}` in type: `{:?}`.",self.item.name))
-                    } else if return_tp.as_ref().map(|v| v.is_err()).unwrap_or(false){
-                        let typ = return_tp.as_ref().unwrap().as_ref().err().unwrap();
-                        Some(format!("Unsupported return type `{typ}` in type: `{:?}`.",self.item.name))
-                    } else {
-                        None
-                    };
-
-
-                let args = args.unwrap_or_default().join(",");
-                let return_tp = return_tp.map(|v| format!("-> {}",v.unwrap_or_default()))
-                    .unwrap_or("".to_owned());
-                
-                let docstring = self.get_method_docstring(&v.id);
-
-                let element = format!("\t{docstring}\n\t\t\t{fn_name}({args}) {return_tp} ");
-
-                if error.is_some() {
-                    // comment out for clarity on what's missing in the lua version
-                    Some(element.lines().map(|l| format!("\n//{l}") ).collect::<String>() + &format!("\n//\t\t\tError: {}",&error.unwrap()))
-                } else {
-                    Some(element)
+                if !generics.params.is_empty(){
+                    errors.push("Generics on the method".to_owned());
                 }
 
-            })
-            .collect::<Vec<_>>()
-            .join(",\n\t\t")
-        );
-            
-        
+                if errors.is_empty(){
+                    writer.set_prefix("// ".into());
+                    writer.write_line(&format!("Exclusion reason: {}",errors.join(",")));
+                    writer.extend(inner_writer);
+                    writer.clear_prefix();
+                } else {
+                    writer.extend(inner_writer);
+                }
+                writer.newline();
+        });
+        writer.close_paren();
+
         static BINARY_OPS : [(&str,&str); 5] = [("add","Add"),
                                         ("sub","Sub"),
                                         ("div","Div"),
                                         ("mul","Mul"),
                                         ("rem","Rem")];
+        writer.write_no_newline("+ BinaryOps");
+        writer.open_paren();
+        BINARY_OPS.into_iter().for_each(|(op,rep) |{
+            self.impl_items.get(op).map(|items| {
+                items.iter()
+                .filter_map(|(impl_,item)| Some((impl_,item,type_to_string(&impl_.for_,&|s : &String| Ok(s.to_string())).ok()?)) )
+                .filter(|(_,_, self_type)| 
+                    (self_type == self.wrapped_type && config.types.contains_key(self_type)) 
+                        || config.primitives.contains(self_type))
+                .for_each(|(impl_,item, self_type)| {
+                    match &item.inner {
+                        ItemEnum::Method(m) => {
+                            m.decl.inputs
+                                .iter()
+                                .enumerate()
+                                .map(|(idx,(_,t))| 
+                                    type_to_string(t, &|b: &String| to_op_argument(b, &self_type, self, &config, idx == 0,false))
+                                ).collect::<Result<Vec<_>,_>>()
+                                .and_then(|v| Ok(v.join(&format!(" {} ",rep))))
+                                .and_then(|mut expr| {
+                                    // then provide return type
+                                    // for these traits that's on associated types within the impl
+                                    let out_type = impl_.items.iter().find_map(|v| {
+                                        let item = self.source.index.get(v).unwrap();
+                                        if let ItemEnum::AssocType { default, .. }= &item.inner{
+                                            match item.name.as_ref().map(|v| v.as_str()) {
+                                                Some("Output") => return Some(default.as_ref().unwrap()),
+                                                _ => {}
+                                            }
+                                        }
+                                        None
+                                    }).ok_or_else(|| expr.clone())?;
+
+                                    let return_string = type_to_string(out_type, &|b: &String| to_op_argument(b, &self_type, &self, &config, false,true))?;
+
+                                    expr = format!("{expr} -> {return_string}");
+                                    writer.write_inline(&expr);
+                                    writer.write_inline(" -> ");
+                                    writer.write_inline(&return_string);
+                                    writer.newline();
+                                    Ok(())
+                                })
+                        },
+                        _ => panic!("Expected method")
+                    };
+                })
+            });
+        });
+        writer.close_paren();
 
         static UNARY_OPS : [(&str,&str);1] = [("neg","Neg")];
 
-        let unary_ops = UNARY_OPS.into_iter().flat_map(|(op,rep)|{
+        writer.write_no_newline("+ UnaryOps");
+        writer.open_paren();
+        UNARY_OPS.into_iter().for_each(|(op,rep)|{
             self.impl_items.get(op).map(|items|{
                 items.iter().map(|(_,_)|{
-                    format!("{rep} self")
-                }).collect::<Vec<_>>()
-            }).unwrap_or_default()
-        }).collect::<Vec<_>>()
-            .join(",\n\t\t\t");
+                    writer.write_line(&format!("{rep} self"));
+                });
+            });
+        });
+        writer.close_paren();
 
-        let binary_ops = BINARY_OPS.into_iter().flat_map(|(op,rep) |{
-            self.impl_items.get(op).map(|items| {
-                    items.iter().map(|(impl_,item)| {
-                        let self_type = type_to_string(&impl_.for_,&|s : &String| Ok(s.to_string()));
-                        if let Ok(self_type) = self_type {
+        self.config.derive_flags.iter().for_each(|flag| {
+            writer.write_inline("+ ");
+            flag.lines().for_each(|line| {
+                writer.write_line(line);
+            });
+        });
 
-                            if (&self_type == self.wrapped_type && config.types.contains_key(&self_type)) 
-                                || config.primitives.contains(&self_type) {
-                                return match &item.inner {
-                                    ItemEnum::Method(m) => {
-                                        m.decl.inputs
-                                            .iter()
-                                            .enumerate()
-                                            .map(|(idx,(_,t))| 
-                                                type_to_string(t, &|b: &String| to_op_argument(b, &self_type, self, &config, idx == 0,false))
-                                                // .and_then(|v | (!v.is_empty()).then_some(v))
-                                            ).collect::<Result<Vec<_>,_>>()
-                                            .and_then(|v| Ok(v.join(&format!(" {} ",rep))))
-                                            .and_then(|mut expr| {
-                                                // then provide return type
-                                                // for these traits that's on associated types within the impl
-
-                                                let out_type = impl_.items.iter().find_map(|v| {
-                                                    let item = self.source.index.get(v).unwrap();
-                                                    if let ItemEnum::AssocType { default, .. }= &item.inner{
-                                                        match item.name.as_ref().map(|v| v.as_str()) {
-                                                            Some("Output") => return Some(default.as_ref().unwrap()),
-                                                            _ => {}
-                                                        }
-                                                    }
-                                                    None
-                                                }).ok_or_else(|| expr.clone())?;
-
-                                                let return_string = type_to_string(out_type, &|b: &String| to_op_argument(b, &self_type, &self, &config, false,true))?;
-
-                                                expr = format!("{expr} -> {return_string}");
-
-                                                Ok(expr)
-                                            })
-                                            .map_or_else(|e| format!("// Error: unsupported type: {e:?}"), |v| v)
-                                    },
-                                    _ => panic!("ads")
-                                }
-                            }
-
-                        } 
-
-                        format!("\n//\t\t\t Error: unsupported lhs operator `{:?}` in `{rep}`",impl_.for_)
-                        
-                    }).collect::<Vec<_>>()
-                        .join(",\n\t\t\t")
-            })
-        }).filter(|v| !v.is_empty())
-            .collect::<Vec<_>>()
-            .join(",\n\t\t\t");
-
-        let mut additional = self.config.derive_flags.join("\n\t\t+ ");
-        (!additional.is_empty()).then(|| additional.extend("\n\t\t+ ".chars()));
-
-        let auto_methods = auto_methods.map(|v| format!(" \n\t\t+ AutoMethods(\n\t\t{v}\n\t\t)")).unwrap_or("".to_owned());
-
-        format!("{additional}UnaryOps(\n\t\t\t{unary_ops}\n\t\t\t) \n\t\t+ BinOps(\n\t\t\t{binary_ops}\n\t\t\t){auto_methods}")
     }
 
 
 }
 
 pub(crate) fn generate_macros(crates: &[Crate], config: Config) -> Result<String,io::Error> {
+    let mut writer = PrettyWriter::new();
 
     // the items we want to generate macro instantiations for
     let mut unmatched_types : HashSet<&String> = config.types.iter().map(|(k,_v)|k).collect();
@@ -543,28 +608,43 @@ pub(crate) fn generate_macros(crates: &[Crate], config: Config) -> Result<String
     // we want to preserve the original ordering from the config file
     wrapped_items.sort_by_cached_key(|f| config.types.get_index_of(f.wrapped_type).unwrap());
 
-    let macro_list_body : String = wrapped_items.iter().map(|v| {
+    writer.write_line("// This file is generated by `bevy_mod_scripting_derive/main.rs` change the template not this file");
+    writer.write_line("use bevy_mod_scripting_derive::impl_lua_newtypes;");
 
+    // macro invocation
+    writer.write_no_newline("impl_lua_newtypes!");
+    writer.open_paren();
 
-        let full_path = v.get_full_path();
-        let type_docstring : String = v.get_type_docstring();
-        let wrapper_type = v.wrapper_type.to_string();
-        let mut flags = v.get_derive_flags_body(&config);
-        let mut lua_impl_block = v.get_impl_block_body();
-         
-        if !flags.is_empty(){
-            flags = format!(":\n        {flags}");
-        }
-        if !lua_impl_block.is_empty() {
-            lua_impl_block = format!("\n\timpl {{\n{lua_impl_block}}}");
-        }
+    // additional imports
+    writer.open_paren();
+    config.imports.lines().for_each(|import| {writer.write_line(import);});
+    writer.close_paren();
 
-        format!(
-"{{
-    {type_docstring}
-    {full_path} : {wrapper_type}{flags} {lua_impl_block}
-}},\n")
-    }).collect();
+    // external types
+    writer.open_bracket();
+    let external_types = &config.external_types.join(",");
+    writer.write_line(external_types);
+    writer.close_bracket();
+
+    // list of wrapper types
+    writer.open_bracket();
+    wrapped_items.iter().for_each(|v| {
+        writer.open_brace();
+        v.write_type_docstring(&mut writer);
+        v.write_full_path(&mut writer);
+        writer.write_inline(" : ");
+        writer.write_inline(&v.wrapper_type.to_string());
+        writer.newline();
+        v.write_derive_flags_body(&config, &mut writer);
+
+        writer.write_inline("impl");
+        writer.open_brace();
+        v.write_impl_block_body(&mut writer);
+        writer.close_brace();
+
+        writer.close_brace();
+    });
+    writer.close_bracket();
 
     let primitives = r#"
     {
@@ -675,17 +755,10 @@ pub(crate) fn generate_macros(crates: &[Crate], config: Config) -> Result<String
     "#;
 
 
+    writer.close_paren();
+    writer.write_inline(";");
 
-    let imports = &config.imports;
-    
-
-    let external_types = &config.external_types.join(",");
-    let macro_path = "bevy_mod_scripting_derive::impl_lua_newtypes";
-    let header_information = "// This file is generated by `bevy_mod_scripting_derive/main.rs` change the template not this file";
-
-    let full_macro_invocation = format!("{header_information}\nuse {macro_path};\nimpl_lua_newtypes!(\n(\n{imports})\n[{external_types}]\n[\n{primitives}{macro_list_body}]);");
-
-    Ok(full_macro_invocation)
+    Ok(writer.finish())
 }
 
 pub fn main() -> Result<(),io::Error>{

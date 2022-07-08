@@ -4,4 +4,5 @@ members = [
     "bevy_mod_scripting",
     "bevy_event_priority",
     "bevy_mod_scripting_derive",
+    "bevy_api_gen"
 ]

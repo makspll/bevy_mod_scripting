@@ -1,5 +1,5 @@
 [package]
-name = "bevy_mod_scripting_derive"
+name = "bevy_api_gen"
 version = "0.1.0"
 authors = ["Maksymilian Mozolewski <makspl17@gmail.com>"]
 edition = "2021"
@@ -13,9 +13,12 @@ readme = "../readme.md"
 rust-version = "1.61.0"
 
 [lib]
-name = "bevy_mod_scripting_derive"
-proc-macro = true
+name = "bevy_api_gen_lib"
 path = "src/lib.rs"
+
+[[bin]]
+name = "bevy_api_gen"
+path = "src/main.rs"
 
 
 [dependencies]

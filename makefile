@@ -30,12 +30,13 @@ valgrind:
 			--simulate-cache=yes \
 			${EXEC} --bench  ${T_ID} 
 generate_api:
-	cd bevy_mod_scripting_derive && \
+	cd bevy_api_gen && \
 	cargo run -- \
 	--json "../target/doc/bevy_asset.json" \
 	--json "../target/doc/bevy_ecs.json" \
 	--json "../target/doc/bevy_pbr.json" \
 	--json "../target/doc/bevy_render.json" \
+	--json "../target/doc/bevy_core_pipeline.json" \
 	--json "../target/doc/bevy.json" \
 	--json "../target/doc/uuid.json" \
 	--json "../target/doc/glam.json" \
@@ -47,6 +48,7 @@ make_json_files:
 	rustup run nightly cargo rustdoc -p bevy_ecs@0.8.0-dev --  -Zunstable-options --output-format json && \
 	rustup run nightly cargo rustdoc -p bevy_pbr@0.8.0-dev --  -Zunstable-options --output-format json && \
 	rustup run nightly cargo rustdoc -p bevy_render@0.8.0-dev --  -Zunstable-options --output-format json && \
+	rustup run nightly cargo rustdoc -p bevy_core_pipeline@0.8.0-dev --  -Zunstable-options --output-format json && \
 	rustup run nightly cargo rustdoc -p uuid --  -Zunstable-options --output-format json && \
 	rustup run nightly cargo rustdoc -p bevy@0.8.0-dev --  -Zunstable-options --output-format json && \
 	rustup run nightly cargo rustdoc -p glam --  -Zunstable-options --output-format json 
