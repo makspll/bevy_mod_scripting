@@ -69,1606 +69,1903 @@ impl_lua_newtypes!(
 			///[`EntityMut::id`]: crate::world::EntityMut::id
 			///[`EntityCommands`]: crate::system::EntityCommands
 			///[`Query::get`]: crate::system::Query::get
-bevy_ecs::entity::Entity : Value
-AutoMethods			(
-				// Exclusion reason: 
-				// ///Creates a new entity reference with the specified `id` and a generation of 0.
-				// ///
-				// ///# Note
-				// ///
-				// ///Spawning a specific `entity` value is __rarely the right choice__. Most apps should favor
-				// ///[`Commands::spawn`](crate::system::Commands::spawn). This method should generally
-				// ///only be used for sharing entities across apps, and only when they have a scheme
-				// ///worked out to share an ID space (which doesn't happen by default).
-				// ///
-				// ///In general, one should not try to synchronize the ECS by attempting to ensure that
-				// ///`Entity` lines up between instances, but instead insert a secondary identifier as
-				// ///a component.
-				// ///
-				// ///There are still some use cases where it might be appropriate to use this function
-				// ///externally.
-				// ///
-				// ///## Examples
-				// ///
-				// ///Initializing a collection (e.g. `array` or `Vec`) with a known size:
-				// ///
-				// ///```no_run
-				// ///# use bevy_ecs::prelude::*;
-				// ///// Create a new array of size 10 and initialize it with (invalid) entities.
-				// ///let mut entities: [Entity; 10] = [Entity::from_raw(0); 10];
-				// ///
-				// ///// ... replace the entities with valid ones.
-				// ///```
-				// ///
-				// ///Deriving `Reflect` for a component that has an `Entity` field:
-				// ///
-				// ///```no_run
-				// ///# use bevy_ecs::{prelude::*, component::*};
-				// ///# use bevy_reflect::Reflect;
-				// ///#[derive(Reflect, Component)]
-				// ///#[reflect(Component)]
-				// ///pub struct MyStruct {
-				// ///    pub entity: Entity,
-				// ///}
-				// ///
-				// ///impl FromWorld for MyStruct {
-				// ///    fn from_world(_world: &mut World) -> Self {
-				// ///        Self {
-				// ///            entity: Entity::from_raw(u32::MAX),
-				// ///        }
-				// ///    }
-				// ///}
-				// ///```
-				// from_raw(u32) -> LuaEntity
-
-				// Exclusion reason: 
-				// ///Convert to a form convenient for passing outside of rust.
-				// ///
-				// ///Only useful for identifying entities within the same instance of an application. Do not use
-				// ///for serialization between runs.
-				// ///
-				// ///No particular structure is guaranteed for the returned bits.
-				// to_bits(self) -> u64
-
-				// Exclusion reason: 
-				// ///Reconstruct an `Entity` previously destructured with [`Entity::to_bits`].
-				// ///
-				// ///Only useful when applied to results from `to_bits` in the same instance of an application.
-				// from_bits(u64) -> LuaEntity
-
-				// Exclusion reason: 
-				// ///Return a transiently unique identifier.
-				// ///
-				// ///No two simultaneously-live entities share the same ID, but dead entities' IDs may collide
-				// ///with both live and dead entities. Useful for compactly representing entities within a
-				// ///specific snapshot of the world, such as when serializing.
-				// id(self) -> u32
-
-				// Exclusion reason: 
-				// ///Returns the generation of this Entity's id. The generation is incremented each time an
-				// ///entity with a given id is despawned. This serves as a "count" of the number of times a
-				// ///given id has been reused (id, generation) pairs uniquely identify a given Entity.
-				// generation(self) -> u32
-
-				try_from()
-
-				///Returns the argument unchanged.
-				from()
-
-				///Calls `U::from(self)`.
-				///
-				///That is, this conversion is whatever the implementation of
-				///<code>[From]&lt;T&gt; for U</code> chooses to do.
-				into(self)
-
-				borrow(&self)
-
-				type_id(&self)
-
-				try_into(self)
-
-				borrow_mut(<invalid: &mut self>)
-
-				to_owned(&self)
-
-				clone_into(&self)
-
-				path(<invalid: &''r self><invalid: &''p str>)
-
-				path_mut(<invalid: &''r mut self><invalid: &''p str>)
-
-				clone_type_data(&self)
-
-				as_dyn_eq(&self)
-
-				dyn_hash(&self)
-
-				as_any(&self)
-
-				as_any(&self)
-
-				as_any(&self)
-
-				dyn_eq(&self) -> bool
-
-				get_hash() -> u64
-
-				into_any_arc()
-
-				into_any()
-
-				into_any()
-
-				into_any_rc()
-
-				as_any_mut(<invalid: &mut self>)
-
-				as_any_mut(<invalid: &mut self>)
-
-				erased_serialize(&self)
-
-				serialize(&self)
-
-				deserialize()
-
-				// Exclusion reason: 
-				// clone(&self) -> LuaEntity
-
-				hash(&self)<invalid: ()>
-
-				cmp(&self&LuaEntity)
-
-				// Exclusion reason: 
-				// eq(&self&LuaEntity) -> bool
-
-				// Exclusion reason: 
-				// ne(&self&LuaEntity) -> bool
-
-				partial_cmp(&self&LuaEntity)
-
-				fmt(&self)
-
-				// Exclusion reason: 
-				// sparse_set_index(&self) -> usize
-
-				// Exclusion reason: 
-				// get_sparse_set_index(usize) -> LuaEntity
-
-				shrink()
-
-				get_type_registration()
-
-				type_info()
-
-				// Exclusion reason: 
-				// type_name(&self) -> &str
-
-				get_type_info(&self)
-
-				as_reflect(&self)
-
-				as_reflect_mut(<invalid: &mut self>)
-
-				clone_value(&self)
-
-				apply(<invalid: &mut self>)
-
-				set(<invalid: &mut self>)
-
-				reflect_ref(&self)
-
-				reflect_mut(<invalid: &mut self>)
-
-				reflect_hash(&self)
-
-				reflect_partial_eq(&self)
-
-				from_reflect()
-
-			)
-+ BinaryOps			(
-			)
-+ UnaryOps			(
-			)
-impl			{
+			bevy_ecs::entity::Entity : Value
+:				AutoMethods
+				(
+					///Creates a new entity reference with the specified `id` and a generation of 0.
+					///
+					///# Note
+					///
+					///Spawning a specific `entity` value is __rarely the right choice__. Most apps should favor
+					///[`Commands::spawn`](crate::system::Commands::spawn). This method should generally
+					///only be used for sharing entities across apps, and only when they have a scheme
+					///worked out to share an ID space (which doesn't happen by default).
+					///
+					///In general, one should not try to synchronize the ECS by attempting to ensure that
+					///`Entity` lines up between instances, but instead insert a secondary identifier as
+					///a component.
+					///
+					///There are still some use cases where it might be appropriate to use this function
+					///externally.
+					///
+					///## Examples
+					///
+					///Initializing a collection (e.g. `array` or `Vec`) with a known size:
+					///
+					///```no_run
+					///# use bevy_ecs::prelude::*;
+					///// Create a new array of size 10 and initialize it with (invalid) entities.
+					///let mut entities: [Entity; 10] = [Entity::from_raw(0); 10];
+					///
+					///// ... replace the entities with valid ones.
+					///```
+					///
+					///Deriving `Reflect` for a component that has an `Entity` field:
+					///
+					///```no_run
+					///# use bevy_ecs::{prelude::*, component::*};
+					///# use bevy_reflect::Reflect;
+					///#[derive(Reflect, Component)]
+					///#[reflect(Component)]
+					///pub struct MyStruct {
+					///    pub entity: Entity,
+					///}
+					///
+					///impl FromWorld for MyStruct {
+					///    fn from_world(_world: &mut World) -> Self {
+					///        Self {
+					///            entity: Entity::from_raw(u32::MAX),
+					///        }
+					///    }
+					///}
+					///```
+					from_raw(u32) -> LuaEntity
+,
+					///Convert to a form convenient for passing outside of rust.
+					///
+					///Only useful for identifying entities within the same instance of an application. Do not use
+					///for serialization between runs.
+					///
+					///No particular structure is guaranteed for the returned bits.
+					to_bits(self) -> u64
+,
+					///Reconstruct an `Entity` previously destructured with [`Entity::to_bits`].
+					///
+					///Only useful when applied to results from `to_bits` in the same instance of an application.
+					from_bits(u64) -> LuaEntity
+,
+					///Return a transiently unique identifier.
+					///
+					///No two simultaneously-live entities share the same ID, but dead entities' IDs may collide
+					///with both live and dead entities. Useful for compactly representing entities within a
+					///specific snapshot of the world, such as when serializing.
+					id(self) -> u32
+,
+					///Returns the generation of this Entity's id. The generation is incremented each time an
+					///entity with a given id is despawned. This serves as a "count" of the number of times a
+					///given id has been reused (id, generation) pairs uniquely identify a given Entity.
+					generation(self) -> u32
+,
+					// Exclusion reason: Unsupported argument U,Unsupported argument Result
+					// try_from()
+,
+					// Exclusion reason: Unsupported argument T,Unsupported argument T
+					// ///Returns the argument unchanged.
+					// from()
+,
+					// Exclusion reason: Unsupported argument U
+					// ///Calls `U::from(self)`.
+					// ///
+					// ///That is, this conversion is whatever the implementation of
+					// ///<code>[From]&lt;T&gt; for U</code> chooses to do.
+					// into(self)
+,
+					// Exclusion reason: Unsupported argument T
+					// borrow(&self)
+,
+					// Exclusion reason: Unsupported argument TypeId
+					// type_id(&self)
+,
+					// Exclusion reason: Unsupported argument Result
+					// try_into(self)
+,
+					// Exclusion reason: Unsupported argument &mut self,Unsupported argument T
+					// borrow_mut(<invalid: &mut self>)
+,
+					// Exclusion reason: Unsupported argument T
+					// to_owned(&self)
+,
+					// Exclusion reason: Unsupported argument T
+					// clone_into(&self)
+,
+					// Exclusion reason: Unsupported argument &''r self,Unsupported argument &''p str,Unsupported argument Result
+					// path(<invalid: &''r self><invalid: &''p str>)
+,
+					// Exclusion reason: Unsupported argument &''r mut self,Unsupported argument &''p str,Unsupported argument Result
+					// path_mut(<invalid: &''r mut self><invalid: &''p str>)
+,
+					// Exclusion reason: Unsupported argument Box
+					// clone_type_data(&self)
+,
+					// Exclusion reason: Unsupported argument DynEq
+					// as_dyn_eq(&self)
+,
+					// Exclusion reason: Unsupported argument Hasher
+					// dyn_hash(&self)
+,
+					// Exclusion reason: Unsupported argument Any
+					// as_any(&self)
+,
+					// Exclusion reason: Unsupported argument Any
+					// as_any(&self)
+,
+					// Exclusion reason: Unsupported argument std::any::Any
+					// as_any(&self)
+,
+					// Exclusion reason: Unsupported argument DynEq
+					// dyn_eq(&self) -> bool
+,
+					// Exclusion reason: Unsupported argument H,Unsupported argument B,Generics on the method
+					// get_hash() -> u64
+,
+					// Exclusion reason: Unsupported argument Arc,Unsupported argument Arc
+					// into_any_arc()
+,
+					// Exclusion reason: Unsupported argument Box,Unsupported argument Box
+					// into_any()
+,
+					// Exclusion reason: Unsupported argument Box,Unsupported argument Box
+					// into_any()
+,
+					// Exclusion reason: Unsupported argument Rc,Unsupported argument Rc
+					// into_any_rc()
+,
+					// Exclusion reason: Unsupported argument &mut self,Unsupported argument Any
+					// as_any_mut(<invalid: &mut self>)
+,
+					// Exclusion reason: Unsupported argument &mut self,Unsupported argument std::any::Any
+					// as_any_mut(<invalid: &mut self>)
+,
+					// Exclusion reason: Unsupported argument Serializer,Unsupported argument Result
+					// erased_serialize(&self)
+,
+					// Exclusion reason: Unsupported argument S,Unsupported argument Result,Generics on the method
+					// serialize(&self)
+,
+					// Exclusion reason: Unsupported argument D,Unsupported argument Result,Generics on the method
+					// deserialize()
+,
+					clone(&self) -> LuaEntity
+,
+					// Exclusion reason: Unsupported argument __H,Unsupported argument (),Generics on the method
+					// hash(&self)<invalid: ()>
+,
+					// Exclusion reason: Unsupported argument $crate::cmp::Ordering
+					// cmp(&self&LuaEntity)
+,
+					eq(&self&LuaEntity) -> bool
+,
+					ne(&self&LuaEntity) -> bool
+,
+					// Exclusion reason: Unsupported argument $crate::option::Option
+					// partial_cmp(&self&LuaEntity)
+,
+					// Exclusion reason: Unsupported argument fmt::Formatter,Unsupported argument fmt::Result
+					// fmt(&self)
+,
+					sparse_set_index(&self) -> usize
+,
+					get_sparse_set_index(usize) -> LuaEntity
+,
+					// Exclusion reason: Unsupported argument QueryItem,Unsupported argument QueryItem,Generics on the method
+					// shrink()
+,
+					// Exclusion reason: Unsupported argument bevy_reflect::TypeRegistration
+					// get_type_registration()
+,
+					// Exclusion reason: Unsupported argument bevy_reflect::TypeInfo
+					// type_info()
+,
+					type_name(&self) -> &str
+,
+					// Exclusion reason: Unsupported argument bevy_reflect::TypeInfo
+					// get_type_info(&self)
+,
+					// Exclusion reason: Unsupported argument bevy_reflect::Reflect
+					// as_reflect(&self)
+,
+					// Exclusion reason: Unsupported argument &mut self,Unsupported argument bevy_reflect::Reflect
+					// as_reflect_mut(<invalid: &mut self>)
+,
+					// Exclusion reason: Unsupported argument Box
+					// clone_value(&self)
+,
+					// Exclusion reason: Unsupported argument &mut self,Unsupported argument bevy_reflect::Reflect
+					// apply(<invalid: &mut self>)
+,
+					// Exclusion reason: Unsupported argument &mut self,Unsupported argument Box,Unsupported argument Result
+					// set(<invalid: &mut self>)
+,
+					// Exclusion reason: Unsupported argument bevy_reflect::ReflectRef
+					// reflect_ref(&self)
+,
+					// Exclusion reason: Unsupported argument &mut self,Unsupported argument bevy_reflect::ReflectMut
+					// reflect_mut(<invalid: &mut self>)
+,
+					// Exclusion reason: Unsupported argument Option
+					// reflect_hash(&self)
+,
+					// Exclusion reason: Unsupported argument bevy_reflect::Reflect,Unsupported argument Option
+					// reflect_partial_eq(&self)
+,
+					// Exclusion reason: Unsupported argument bevy_reflect::Reflect,Unsupported argument Option
+					// from_reflect()
+,
+				)
+				+ BinaryOps
+				(
+				)
+				+ UnaryOps
+				(
+				)
+			impl
+			{
 			}
 		}
-		{
+,		{
 			///Alpha mode
-bevy_pbr::AlphaMode : Value
-AutoMethods			(
-				try_from()
-
-				///Returns the argument unchanged.
-				from()
-
-				///Calls `U::from(self)`.
-				///
-				///That is, this conversion is whatever the implementation of
-				///<code>[From]&lt;T&gt; for U</code> chooses to do.
-				into(self)
-
-				borrow(&self)
-
-				type_id(&self)
-
-				try_into(self)
-
-				borrow_mut(<invalid: &mut self>)
-
-				to_owned(&self)
-
-				clone_into(&self)
-
-				from_world()
-
-				path(<invalid: &''r self><invalid: &''p str>)
-
-				path_mut(<invalid: &''r mut self><invalid: &''p str>)
-
-				clone_type_data(&self)
-
-				as_any(&self)
-
-				as_any(&self)
-
-				as_any(&self)
-
-				dyn_eq(&self) -> bool
-
-				into_any_arc()
-
-				into_any()
-
-				into_any()
-
-				into_any_rc()
-
-				as_any_mut(<invalid: &mut self>)
-
-				as_any_mut(<invalid: &mut self>)
-
-				vzip(self)
-
-				as_bind_group_shader_type(&self)
-
-				equivalent(&self) -> bool
-
-				downcast(&self)
-
-				upcast(&self)
-
-				fmt(&self)
-
-				// Exclusion reason: 
-				// default() -> LuaAlphaMode
-
-				get_type_registration()
-
-				type_info()
-
-				// Exclusion reason: 
-				// type_name(&self) -> &str
-
-				get_type_info(&self)
-
-				as_reflect(&self)
-
-				as_reflect_mut(<invalid: &mut self>)
-
-				clone_value(&self)
-
-				apply(<invalid: &mut self>)
-
-				set(<invalid: &mut self>)
-
-				reflect_ref(&self)
-
-				reflect_mut(<invalid: &mut self>)
-
-				// Exclusion reason: 
-				// clone(&self) -> LuaAlphaMode
-
-				// Exclusion reason: 
-				// eq(&self&LuaAlphaMode) -> bool
-
-				// Exclusion reason: 
-				// ne(&self&LuaAlphaMode) -> bool
-
-			)
-+ BinaryOps			(
-			)
-+ UnaryOps			(
-			)
-impl			{
+			bevy_pbr::AlphaMode : Value
+:				AutoMethods
+				(
+					// Exclusion reason: Unsupported argument U,Unsupported argument Result
+					// try_from()
+,
+					// Exclusion reason: Unsupported argument T,Unsupported argument T
+					// ///Returns the argument unchanged.
+					// from()
+,
+					// Exclusion reason: Unsupported argument U
+					// ///Calls `U::from(self)`.
+					// ///
+					// ///That is, this conversion is whatever the implementation of
+					// ///<code>[From]&lt;T&gt; for U</code> chooses to do.
+					// into(self)
+,
+					// Exclusion reason: Unsupported argument T
+					// borrow(&self)
+,
+					// Exclusion reason: Unsupported argument TypeId
+					// type_id(&self)
+,
+					// Exclusion reason: Unsupported argument Result
+					// try_into(self)
+,
+					// Exclusion reason: Unsupported argument &mut self,Unsupported argument T
+					// borrow_mut(<invalid: &mut self>)
+,
+					// Exclusion reason: Unsupported argument T
+					// to_owned(&self)
+,
+					// Exclusion reason: Unsupported argument T
+					// clone_into(&self)
+,
+					// Exclusion reason: Unsupported argument World,Unsupported argument T
+					// from_world()
+,
+					// Exclusion reason: Unsupported argument &''r self,Unsupported argument &''p str,Unsupported argument Result
+					// path(<invalid: &''r self><invalid: &''p str>)
+,
+					// Exclusion reason: Unsupported argument &''r mut self,Unsupported argument &''p str,Unsupported argument Result
+					// path_mut(<invalid: &''r mut self><invalid: &''p str>)
+,
+					// Exclusion reason: Unsupported argument Box
+					// clone_type_data(&self)
+,
+					// Exclusion reason: Unsupported argument Any
+					// as_any(&self)
+,
+					// Exclusion reason: Unsupported argument Any
+					// as_any(&self)
+,
+					// Exclusion reason: Unsupported argument std::any::Any
+					// as_any(&self)
+,
+					// Exclusion reason: Unsupported argument DynEq
+					// dyn_eq(&self) -> bool
+,
+					// Exclusion reason: Unsupported argument Arc,Unsupported argument Arc
+					// into_any_arc()
+,
+					// Exclusion reason: Unsupported argument Box,Unsupported argument Box
+					// into_any()
+,
+					// Exclusion reason: Unsupported argument Box,Unsupported argument Box
+					// into_any()
+,
+					// Exclusion reason: Unsupported argument Rc,Unsupported argument Rc
+					// into_any_rc()
+,
+					// Exclusion reason: Unsupported argument &mut self,Unsupported argument Any
+					// as_any_mut(<invalid: &mut self>)
+,
+					// Exclusion reason: Unsupported argument &mut self,Unsupported argument std::any::Any
+					// as_any_mut(<invalid: &mut self>)
+,
+					// Exclusion reason: Unsupported argument V
+					// vzip(self)
+,
+					// Exclusion reason: Unsupported argument HashMap,Unsupported argument U
+					// as_bind_group_shader_type(&self)
+,
+					// Exclusion reason: Unsupported argument K
+					// equivalent(&self) -> bool
+,
+					// Exclusion reason: Unsupported argument T
+					// downcast(&self)
+,
+					// Exclusion reason: Unsupported argument Option
+					// upcast(&self)
+,
+					// Exclusion reason: Unsupported argument $crate::fmt::Formatter,Unsupported argument $crate::fmt::Result
+					// fmt(&self)
+,
+					default() -> LuaAlphaMode
+,
+					// Exclusion reason: Unsupported argument bevy_reflect::TypeRegistration
+					// get_type_registration()
+,
+					// Exclusion reason: Unsupported argument bevy_reflect::TypeInfo
+					// type_info()
+,
+					type_name(&self) -> &str
+,
+					// Exclusion reason: Unsupported argument bevy_reflect::TypeInfo
+					// get_type_info(&self)
+,
+					// Exclusion reason: Unsupported argument bevy_reflect::Reflect
+					// as_reflect(&self)
+,
+					// Exclusion reason: Unsupported argument &mut self,Unsupported argument bevy_reflect::Reflect
+					// as_reflect_mut(<invalid: &mut self>)
+,
+					// Exclusion reason: Unsupported argument Box
+					// clone_value(&self)
+,
+					// Exclusion reason: Unsupported argument &mut self,Unsupported argument bevy_reflect::Reflect
+					// apply(<invalid: &mut self>)
+,
+					// Exclusion reason: Unsupported argument &mut self,Unsupported argument Box,Unsupported argument Result
+					// set(<invalid: &mut self>)
+,
+					// Exclusion reason: Unsupported argument bevy_reflect::ReflectRef
+					// reflect_ref(&self)
+,
+					// Exclusion reason: Unsupported argument &mut self,Unsupported argument bevy_reflect::ReflectMut
+					// reflect_mut(<invalid: &mut self>)
+,
+					clone(&self) -> LuaAlphaMode
+,
+					eq(&self&LuaAlphaMode) -> bool
+,
+					ne(&self&LuaAlphaMode) -> bool
+,
+				)
+				+ BinaryOps
+				(
+				)
+				+ UnaryOps
+				(
+				)
+			impl
+			{
 			}
 		}
-		{
+,		{
 			///A configurable [`CameraProjection`] that can select its projection type at runtime.
-bevy_render::camera::Projection : Value
-AutoMethods			(
-				try_from()
-
-				///Returns the argument unchanged.
-				from()
-
-				from() -> LuaProjection
-
-				from() -> LuaProjection
-
-				///Calls `U::from(self)`.
-				///
-				///That is, this conversion is whatever the implementation of
-				///<code>[From]&lt;T&gt; for U</code> chooses to do.
-				into(self)
-
-				borrow(&self)
-
-				type_id(&self)
-
-				try_into(self)
-
-				borrow_mut(<invalid: &mut self>)
-
-				to_owned(&self)
-
-				clone_into(&self)
-
-				from_world()
-
-				path(<invalid: &''r self><invalid: &''p str>)
-
-				path_mut(<invalid: &''r mut self><invalid: &''p str>)
-
-				clone_type_data(&self)
-
-				into_any_arc()
-
-				into_any()
-
-				into_any()
-
-				into_any_rc()
-
-				as_any(&self)
-
-				as_any(&self)
-
-				as_any_mut(<invalid: &mut self>)
-
-				as_any_mut(<invalid: &mut self>)
-
-				vzip(self)
-
-				downcast(&self)
-
-				upcast(&self)
-
-				fmt(&self)
-
-				// Exclusion reason: 
-				// clone(&self) -> LuaProjection
-
-				get_type_registration()
-
-				type_info()
-
-				// Exclusion reason: 
-				// type_name(&self) -> &str
-
-				get_type_info(&self)
-
-				as_reflect(&self)
-
-				as_reflect_mut(<invalid: &mut self>)
-
-				clone_value(&self)
-
-				apply(<invalid: &mut self>)
-
-				set(<invalid: &mut self>)
-
-				reflect_ref(&self)
-
-				reflect_mut(<invalid: &mut self>)
-
-				// Exclusion reason: 
-				// get_projection_matrix(&self) -> LuaMat4
-
-				update(<invalid: &mut self>f32f32)
-
-				// Exclusion reason: 
-				// depth_calculation(&self) -> LuaDepthCalculation
-
-				// Exclusion reason: 
-				// far(&self) -> f32
-
-				// Exclusion reason: 
-				// default() -> LuaProjection
-
-			)
-+ BinaryOps			(
-			)
-+ UnaryOps			(
-			)
-impl			{
+			bevy_render::camera::Projection : Value
+:				AutoMethods
+				(
+					// Exclusion reason: Unsupported argument U,Unsupported argument Result
+					// try_from()
+,
+					// Exclusion reason: Unsupported argument T,Unsupported argument T
+					// ///Returns the argument unchanged.
+					// from()
+,
+					// Exclusion reason: Unsupported argument PerspectiveProjection
+					// from() -> LuaProjection
+,
+					// Exclusion reason: Unsupported argument OrthographicProjection
+					// from() -> LuaProjection
+,
+					// Exclusion reason: Unsupported argument U
+					// ///Calls `U::from(self)`.
+					// ///
+					// ///That is, this conversion is whatever the implementation of
+					// ///<code>[From]&lt;T&gt; for U</code> chooses to do.
+					// into(self)
+,
+					// Exclusion reason: Unsupported argument T
+					// borrow(&self)
+,
+					// Exclusion reason: Unsupported argument TypeId
+					// type_id(&self)
+,
+					// Exclusion reason: Unsupported argument Result
+					// try_into(self)
+,
+					// Exclusion reason: Unsupported argument &mut self,Unsupported argument T
+					// borrow_mut(<invalid: &mut self>)
+,
+					// Exclusion reason: Unsupported argument T
+					// to_owned(&self)
+,
+					// Exclusion reason: Unsupported argument T
+					// clone_into(&self)
+,
+					// Exclusion reason: Unsupported argument World,Unsupported argument T
+					// from_world()
+,
+					// Exclusion reason: Unsupported argument &''r self,Unsupported argument &''p str,Unsupported argument Result
+					// path(<invalid: &''r self><invalid: &''p str>)
+,
+					// Exclusion reason: Unsupported argument &''r mut self,Unsupported argument &''p str,Unsupported argument Result
+					// path_mut(<invalid: &''r mut self><invalid: &''p str>)
+,
+					// Exclusion reason: Unsupported argument Box
+					// clone_type_data(&self)
+,
+					// Exclusion reason: Unsupported argument Arc,Unsupported argument Arc
+					// into_any_arc()
+,
+					// Exclusion reason: Unsupported argument Box,Unsupported argument Box
+					// into_any()
+,
+					// Exclusion reason: Unsupported argument Box,Unsupported argument Box
+					// into_any()
+,
+					// Exclusion reason: Unsupported argument Rc,Unsupported argument Rc
+					// into_any_rc()
+,
+					// Exclusion reason: Unsupported argument Any
+					// as_any(&self)
+,
+					// Exclusion reason: Unsupported argument std::any::Any
+					// as_any(&self)
+,
+					// Exclusion reason: Unsupported argument &mut self,Unsupported argument Any
+					// as_any_mut(<invalid: &mut self>)
+,
+					// Exclusion reason: Unsupported argument &mut self,Unsupported argument std::any::Any
+					// as_any_mut(<invalid: &mut self>)
+,
+					// Exclusion reason: Unsupported argument V
+					// vzip(self)
+,
+					// Exclusion reason: Unsupported argument T
+					// downcast(&self)
+,
+					// Exclusion reason: Unsupported argument Option
+					// upcast(&self)
+,
+					// Exclusion reason: Unsupported argument $crate::fmt::Formatter,Unsupported argument $crate::fmt::Result
+					// fmt(&self)
+,
+					clone(&self) -> LuaProjection
+,
+					// Exclusion reason: Unsupported argument bevy_reflect::TypeRegistration
+					// get_type_registration()
+,
+					// Exclusion reason: Unsupported argument bevy_reflect::TypeInfo
+					// type_info()
+,
+					type_name(&self) -> &str
+,
+					// Exclusion reason: Unsupported argument bevy_reflect::TypeInfo
+					// get_type_info(&self)
+,
+					// Exclusion reason: Unsupported argument bevy_reflect::Reflect
+					// as_reflect(&self)
+,
+					// Exclusion reason: Unsupported argument &mut self,Unsupported argument bevy_reflect::Reflect
+					// as_reflect_mut(<invalid: &mut self>)
+,
+					// Exclusion reason: Unsupported argument Box
+					// clone_value(&self)
+,
+					// Exclusion reason: Unsupported argument &mut self,Unsupported argument bevy_reflect::Reflect
+					// apply(<invalid: &mut self>)
+,
+					// Exclusion reason: Unsupported argument &mut self,Unsupported argument Box,Unsupported argument Result
+					// set(<invalid: &mut self>)
+,
+					// Exclusion reason: Unsupported argument bevy_reflect::ReflectRef
+					// reflect_ref(&self)
+,
+					// Exclusion reason: Unsupported argument &mut self,Unsupported argument bevy_reflect::ReflectMut
+					// reflect_mut(<invalid: &mut self>)
+,
+					get_projection_matrix(&self) -> LuaMat4
+,
+					// Exclusion reason: Unsupported argument &mut self
+					// update(<invalid: &mut self>f32f32)
+,
+					depth_calculation(&self) -> LuaDepthCalculation
+,
+					far(&self) -> f32
+,
+					default() -> LuaProjection
+,
+				)
+				+ BinaryOps
+				(
+				)
+				+ UnaryOps
+				(
+				)
+			impl
+			{
 			}
 		}
-		{
+,		{
 			///The "target" that a [`Camera`] will render to. For example, this could be a [`Window`](bevy_window::Window)
 			///swapchain or an [`Image`].
-bevy_render::camera::RenderTarget : Value
-AutoMethods			(
-				get_texture_view(&self)
-
-				get_render_target_info(&self)
-
-				try_from()
-
-				///Returns the argument unchanged.
-				from()
-
-				///Calls `U::from(self)`.
-				///
-				///That is, this conversion is whatever the implementation of
-				///<code>[From]&lt;T&gt; for U</code> chooses to do.
-				into(self)
-
-				borrow(&self)
-
-				type_id(&self)
-
-				try_into(self)
-
-				borrow_mut(<invalid: &mut self>)
-
-				to_owned(&self)
-
-				clone_into(&self)
-
-				from_world()
-
-				path(<invalid: &''r self><invalid: &''p str>)
-
-				path_mut(<invalid: &''r mut self><invalid: &''p str>)
-
-				clone_type_data(&self)
-
-				as_dyn_eq(&self)
-
-				dyn_hash(&self)
-
-				as_any(&self)
-
-				as_any(&self)
-
-				as_any(&self)
-
-				dyn_eq(&self) -> bool
-
-				get_hash() -> u64
-
-				into_any_arc()
-
-				into_any()
-
-				into_any()
-
-				into_any_rc()
-
-				as_any_mut(<invalid: &mut self>)
-
-				as_any_mut(<invalid: &mut self>)
-
-				vzip(self)
-
-				equivalent(&self) -> bool
-
-				downcast(&self)
-
-				upcast(&self)
-
-				fmt(&self)
-
-				// Exclusion reason: 
-				// clone(&self) -> LuaRenderTarget
-
-				get_type_registration()
-
-				type_info()
-
-				// Exclusion reason: 
-				// type_name(&self) -> &str
-
-				get_type_info(&self)
-
-				as_reflect(&self)
-
-				as_reflect_mut(<invalid: &mut self>)
-
-				clone_value(&self)
-
-				apply(<invalid: &mut self>)
-
-				set(<invalid: &mut self>)
-
-				reflect_ref(&self)
-
-				reflect_mut(<invalid: &mut self>)
-
-				// Exclusion reason: 
-				// eq(&self&LuaRenderTarget) -> bool
-
-				// Exclusion reason: 
-				// ne(&self&LuaRenderTarget) -> bool
-
-				hash(&self)<invalid: ()>
-
-				partial_cmp(&self&LuaRenderTarget)
-
-				cmp(&self&LuaRenderTarget)
-
-				// Exclusion reason: 
-				// default() -> LuaRenderTarget
-
-			)
-+ BinaryOps			(
-			)
-+ UnaryOps			(
-			)
-impl			{
+			bevy_render::camera::RenderTarget : Value
+:				AutoMethods
+				(
+					// Exclusion reason: Unsupported argument ExtractedWindows,Unsupported argument RenderAssets,Unsupported argument Option,Generics on the method
+					// get_texture_view(&self)
+,
+					// Exclusion reason: Unsupported argument Windows,Unsupported argument Assets,Unsupported argument Option
+					// get_render_target_info(&self)
+,
+					// Exclusion reason: Unsupported argument U,Unsupported argument Result
+					// try_from()
+,
+					// Exclusion reason: Unsupported argument T,Unsupported argument T
+					// ///Returns the argument unchanged.
+					// from()
+,
+					// Exclusion reason: Unsupported argument U
+					// ///Calls `U::from(self)`.
+					// ///
+					// ///That is, this conversion is whatever the implementation of
+					// ///<code>[From]&lt;T&gt; for U</code> chooses to do.
+					// into(self)
+,
+					// Exclusion reason: Unsupported argument T
+					// borrow(&self)
+,
+					// Exclusion reason: Unsupported argument TypeId
+					// type_id(&self)
+,
+					// Exclusion reason: Unsupported argument Result
+					// try_into(self)
+,
+					// Exclusion reason: Unsupported argument &mut self,Unsupported argument T
+					// borrow_mut(<invalid: &mut self>)
+,
+					// Exclusion reason: Unsupported argument T
+					// to_owned(&self)
+,
+					// Exclusion reason: Unsupported argument T
+					// clone_into(&self)
+,
+					// Exclusion reason: Unsupported argument World,Unsupported argument T
+					// from_world()
+,
+					// Exclusion reason: Unsupported argument &''r self,Unsupported argument &''p str,Unsupported argument Result
+					// path(<invalid: &''r self><invalid: &''p str>)
+,
+					// Exclusion reason: Unsupported argument &''r mut self,Unsupported argument &''p str,Unsupported argument Result
+					// path_mut(<invalid: &''r mut self><invalid: &''p str>)
+,
+					// Exclusion reason: Unsupported argument Box
+					// clone_type_data(&self)
+,
+					// Exclusion reason: Unsupported argument DynEq
+					// as_dyn_eq(&self)
+,
+					// Exclusion reason: Unsupported argument Hasher
+					// dyn_hash(&self)
+,
+					// Exclusion reason: Unsupported argument Any
+					// as_any(&self)
+,
+					// Exclusion reason: Unsupported argument Any
+					// as_any(&self)
+,
+					// Exclusion reason: Unsupported argument std::any::Any
+					// as_any(&self)
+,
+					// Exclusion reason: Unsupported argument DynEq
+					// dyn_eq(&self) -> bool
+,
+					// Exclusion reason: Unsupported argument H,Unsupported argument B,Generics on the method
+					// get_hash() -> u64
+,
+					// Exclusion reason: Unsupported argument Arc,Unsupported argument Arc
+					// into_any_arc()
+,
+					// Exclusion reason: Unsupported argument Box,Unsupported argument Box
+					// into_any()
+,
+					// Exclusion reason: Unsupported argument Box,Unsupported argument Box
+					// into_any()
+,
+					// Exclusion reason: Unsupported argument Rc,Unsupported argument Rc
+					// into_any_rc()
+,
+					// Exclusion reason: Unsupported argument &mut self,Unsupported argument Any
+					// as_any_mut(<invalid: &mut self>)
+,
+					// Exclusion reason: Unsupported argument &mut self,Unsupported argument std::any::Any
+					// as_any_mut(<invalid: &mut self>)
+,
+					// Exclusion reason: Unsupported argument V
+					// vzip(self)
+,
+					// Exclusion reason: Unsupported argument K
+					// equivalent(&self) -> bool
+,
+					// Exclusion reason: Unsupported argument T
+					// downcast(&self)
+,
+					// Exclusion reason: Unsupported argument Option
+					// upcast(&self)
+,
+					// Exclusion reason: Unsupported argument $crate::fmt::Formatter,Unsupported argument $crate::fmt::Result
+					// fmt(&self)
+,
+					clone(&self) -> LuaRenderTarget
+,
+					// Exclusion reason: Unsupported argument bevy_reflect::TypeRegistration
+					// get_type_registration()
+,
+					// Exclusion reason: Unsupported argument bevy_reflect::TypeInfo
+					// type_info()
+,
+					type_name(&self) -> &str
+,
+					// Exclusion reason: Unsupported argument bevy_reflect::TypeInfo
+					// get_type_info(&self)
+,
+					// Exclusion reason: Unsupported argument bevy_reflect::Reflect
+					// as_reflect(&self)
+,
+					// Exclusion reason: Unsupported argument &mut self,Unsupported argument bevy_reflect::Reflect
+					// as_reflect_mut(<invalid: &mut self>)
+,
+					// Exclusion reason: Unsupported argument Box
+					// clone_value(&self)
+,
+					// Exclusion reason: Unsupported argument &mut self,Unsupported argument bevy_reflect::Reflect
+					// apply(<invalid: &mut self>)
+,
+					// Exclusion reason: Unsupported argument &mut self,Unsupported argument Box,Unsupported argument Result
+					// set(<invalid: &mut self>)
+,
+					// Exclusion reason: Unsupported argument bevy_reflect::ReflectRef
+					// reflect_ref(&self)
+,
+					// Exclusion reason: Unsupported argument &mut self,Unsupported argument bevy_reflect::ReflectMut
+					// reflect_mut(<invalid: &mut self>)
+,
+					eq(&self&LuaRenderTarget) -> bool
+,
+					ne(&self&LuaRenderTarget) -> bool
+,
+					// Exclusion reason: Unsupported argument __H,Unsupported argument (),Generics on the method
+					// hash(&self)<invalid: ()>
+,
+					// Exclusion reason: Unsupported argument $crate::option::Option
+					// partial_cmp(&self&LuaRenderTarget)
+,
+					// Exclusion reason: Unsupported argument $crate::cmp::Ordering
+					// cmp(&self&LuaRenderTarget)
+,
+					default() -> LuaRenderTarget
+,
+				)
+				+ BinaryOps
+				(
+				)
+				+ UnaryOps
+				(
+				)
+			impl
+			{
 			}
 		}
-		{
-bevy_render::camera::DepthCalculation : Value
-AutoMethods			(
-				try_from()
-
-				///Returns the argument unchanged.
-				from()
-
-				///Calls `U::from(self)`.
-				///
-				///That is, this conversion is whatever the implementation of
-				///<code>[From]&lt;T&gt; for U</code> chooses to do.
-				into(self)
-
-				borrow(&self)
-
-				type_id(&self)
-
-				try_into(self)
-
-				borrow_mut(<invalid: &mut self>)
-
-				to_owned(&self)
-
-				clone_into(&self)
-
-				from_world()
-
-				path(<invalid: &''r self><invalid: &''p str>)
-
-				path_mut(<invalid: &''r mut self><invalid: &''p str>)
-
-				clone_type_data(&self)
-
-				into_any_arc()
-
-				into_any()
-
-				into_any()
-
-				into_any_rc()
-
-				as_any(&self)
-
-				as_any(&self)
-
-				as_any_mut(<invalid: &mut self>)
-
-				as_any_mut(<invalid: &mut self>)
-
-				erased_serialize(&self)
-
-				vzip(self)
-
-				downcast(&self)
-
-				upcast(&self)
-
-				fmt(&self)
-
-				// Exclusion reason: 
-				// clone(&self) -> LuaDepthCalculation
-
-				// Exclusion reason: 
-				// default() -> LuaDepthCalculation
-
-				get_type_registration()
-
-				type_info()
-
-				// Exclusion reason: 
-				// type_name(&self) -> &str
-
-				get_type_info(&self)
-
-				as_reflect(&self)
-
-				as_reflect_mut(<invalid: &mut self>)
-
-				clone_value(&self)
-
-				apply(<invalid: &mut self>)
-
-				set(<invalid: &mut self>)
-
-				reflect_ref(&self)
-
-				reflect_mut(<invalid: &mut self>)
-
-				serialize(&self)
-
-				deserialize()
-
-			)
-+ BinaryOps			(
-			)
-+ UnaryOps			(
-			)
-impl			{
+,		{
+			bevy_render::camera::DepthCalculation : Value
+:				AutoMethods
+				(
+					// Exclusion reason: Unsupported argument U,Unsupported argument Result
+					// try_from()
+,
+					// Exclusion reason: Unsupported argument T,Unsupported argument T
+					// ///Returns the argument unchanged.
+					// from()
+,
+					// Exclusion reason: Unsupported argument U
+					// ///Calls `U::from(self)`.
+					// ///
+					// ///That is, this conversion is whatever the implementation of
+					// ///<code>[From]&lt;T&gt; for U</code> chooses to do.
+					// into(self)
+,
+					// Exclusion reason: Unsupported argument T
+					// borrow(&self)
+,
+					// Exclusion reason: Unsupported argument TypeId
+					// type_id(&self)
+,
+					// Exclusion reason: Unsupported argument Result
+					// try_into(self)
+,
+					// Exclusion reason: Unsupported argument &mut self,Unsupported argument T
+					// borrow_mut(<invalid: &mut self>)
+,
+					// Exclusion reason: Unsupported argument T
+					// to_owned(&self)
+,
+					// Exclusion reason: Unsupported argument T
+					// clone_into(&self)
+,
+					// Exclusion reason: Unsupported argument World,Unsupported argument T
+					// from_world()
+,
+					// Exclusion reason: Unsupported argument &''r self,Unsupported argument &''p str,Unsupported argument Result
+					// path(<invalid: &''r self><invalid: &''p str>)
+,
+					// Exclusion reason: Unsupported argument &''r mut self,Unsupported argument &''p str,Unsupported argument Result
+					// path_mut(<invalid: &''r mut self><invalid: &''p str>)
+,
+					// Exclusion reason: Unsupported argument Box
+					// clone_type_data(&self)
+,
+					// Exclusion reason: Unsupported argument Arc,Unsupported argument Arc
+					// into_any_arc()
+,
+					// Exclusion reason: Unsupported argument Box,Unsupported argument Box
+					// into_any()
+,
+					// Exclusion reason: Unsupported argument Box,Unsupported argument Box
+					// into_any()
+,
+					// Exclusion reason: Unsupported argument Rc,Unsupported argument Rc
+					// into_any_rc()
+,
+					// Exclusion reason: Unsupported argument Any
+					// as_any(&self)
+,
+					// Exclusion reason: Unsupported argument std::any::Any
+					// as_any(&self)
+,
+					// Exclusion reason: Unsupported argument &mut self,Unsupported argument Any
+					// as_any_mut(<invalid: &mut self>)
+,
+					// Exclusion reason: Unsupported argument &mut self,Unsupported argument std::any::Any
+					// as_any_mut(<invalid: &mut self>)
+,
+					// Exclusion reason: Unsupported argument Serializer,Unsupported argument Result
+					// erased_serialize(&self)
+,
+					// Exclusion reason: Unsupported argument V
+					// vzip(self)
+,
+					// Exclusion reason: Unsupported argument T
+					// downcast(&self)
+,
+					// Exclusion reason: Unsupported argument Option
+					// upcast(&self)
+,
+					// Exclusion reason: Unsupported argument $crate::fmt::Formatter,Unsupported argument $crate::fmt::Result
+					// fmt(&self)
+,
+					clone(&self) -> LuaDepthCalculation
+,
+					default() -> LuaDepthCalculation
+,
+					// Exclusion reason: Unsupported argument bevy_reflect::TypeRegistration
+					// get_type_registration()
+,
+					// Exclusion reason: Unsupported argument bevy_reflect::TypeInfo
+					// type_info()
+,
+					type_name(&self) -> &str
+,
+					// Exclusion reason: Unsupported argument bevy_reflect::TypeInfo
+					// get_type_info(&self)
+,
+					// Exclusion reason: Unsupported argument bevy_reflect::Reflect
+					// as_reflect(&self)
+,
+					// Exclusion reason: Unsupported argument &mut self,Unsupported argument bevy_reflect::Reflect
+					// as_reflect_mut(<invalid: &mut self>)
+,
+					// Exclusion reason: Unsupported argument Box
+					// clone_value(&self)
+,
+					// Exclusion reason: Unsupported argument &mut self,Unsupported argument bevy_reflect::Reflect
+					// apply(<invalid: &mut self>)
+,
+					// Exclusion reason: Unsupported argument &mut self,Unsupported argument Box,Unsupported argument Result
+					// set(<invalid: &mut self>)
+,
+					// Exclusion reason: Unsupported argument bevy_reflect::ReflectRef
+					// reflect_ref(&self)
+,
+					// Exclusion reason: Unsupported argument &mut self,Unsupported argument bevy_reflect::ReflectMut
+					// reflect_mut(<invalid: &mut self>)
+,
+					// Exclusion reason: Unsupported argument __S,Unsupported argument _serde::__private::Result,Generics on the method
+					// serialize(&self)
+,
+					// Exclusion reason: Unsupported argument __D,Unsupported argument _serde::__private::Result,Generics on the method
+					// deserialize()
+,
+				)
+				+ BinaryOps
+				(
+				)
+				+ UnaryOps
+				(
+				)
+			impl
+			{
 			}
 		}
-		{
+,		{
 			///Configures the [`RenderGraph`](crate::render_graph::RenderGraph) name assigned to be run for a given [`Camera`] entity.
-bevy_render::camera::CameraRenderGraph : Value
-AutoMethods			(
-				new() -> LuaCameraRenderGraph
-
-				try_from()
-
-				///Returns the argument unchanged.
-				from()
-
-				///Calls `U::from(self)`.
-				///
-				///That is, this conversion is whatever the implementation of
-				///<code>[From]&lt;T&gt; for U</code> chooses to do.
-				into(self)
-
-				borrow(&self)
-
-				type_id(&self)
-
-				try_into(self)
-
-				borrow_mut(<invalid: &mut self>)
-
-				from_world()
-
-				get_field(&selfusize)
-
-				get_field_mut(<invalid: &mut self>usize)
-
-				path(<invalid: &''r self><invalid: &''p str>)
-
-				path_mut(<invalid: &''r mut self><invalid: &''p str>)
-
-				into_any_arc()
-
-				into_any()
-
-				into_any()
-
-				into_any_rc()
-
-				as_any(&self)
-
-				as_any(&self)
-
-				as_any_mut(<invalid: &mut self>)
-
-				as_any_mut(<invalid: &mut self>)
-
-				vzip(self)
-
-				downcast(&self)
-
-				upcast(&self)
-
-				deref(&self)
-
-				deref_mut(<invalid: &mut self>)
-
-				get_type_registration()
-
-				type_info()
-
-				field(&selfusize)
-
-				field_mut(<invalid: &mut self>usize)
-
-				// Exclusion reason: 
-				// field_len(&self) -> usize
-
-				iter_fields(&self)
-
-				clone_dynamic(&self)
-
-				// Exclusion reason: 
-				// type_name(&self) -> &str
-
-				get_type_info(&self)
-
-				as_reflect(&self)
-
-				as_reflect_mut(<invalid: &mut self>)
-
-				clone_value(&self)
-
-				set(<invalid: &mut self>)
-
-				apply(<invalid: &mut self>)
-
-				reflect_ref(&self)
-
-				reflect_mut(<invalid: &mut self>)
-
-				reflect_partial_eq(&self)
-
-				// Exclusion reason: 
-				// default() -> LuaCameraRenderGraph
-
-			)
-+ BinaryOps			(
-			)
-+ UnaryOps			(
-			)
-impl			{
+			bevy_render::camera::CameraRenderGraph : Value
+:				AutoMethods
+				(
+					// Exclusion reason: Unsupported argument T,Generics on the method
+					// new() -> LuaCameraRenderGraph
+,
+					// Exclusion reason: Unsupported argument U,Unsupported argument Result
+					// try_from()
+,
+					// Exclusion reason: Unsupported argument T,Unsupported argument T
+					// ///Returns the argument unchanged.
+					// from()
+,
+					// Exclusion reason: Unsupported argument U
+					// ///Calls `U::from(self)`.
+					// ///
+					// ///That is, this conversion is whatever the implementation of
+					// ///<code>[From]&lt;T&gt; for U</code> chooses to do.
+					// into(self)
+,
+					// Exclusion reason: Unsupported argument T
+					// borrow(&self)
+,
+					// Exclusion reason: Unsupported argument TypeId
+					// type_id(&self)
+,
+					// Exclusion reason: Unsupported argument Result
+					// try_into(self)
+,
+					// Exclusion reason: Unsupported argument &mut self,Unsupported argument T
+					// borrow_mut(<invalid: &mut self>)
+,
+					// Exclusion reason: Unsupported argument World,Unsupported argument T
+					// from_world()
+,
+					// Exclusion reason: Unsupported argument Option,Generics on the method
+					// get_field(&selfusize)
+,
+					// Exclusion reason: Unsupported argument &mut self,Unsupported argument Option,Generics on the method
+					// get_field_mut(<invalid: &mut self>usize)
+,
+					// Exclusion reason: Unsupported argument &''r self,Unsupported argument &''p str,Unsupported argument Result
+					// path(<invalid: &''r self><invalid: &''p str>)
+,
+					// Exclusion reason: Unsupported argument &''r mut self,Unsupported argument &''p str,Unsupported argument Result
+					// path_mut(<invalid: &''r mut self><invalid: &''p str>)
+,
+					// Exclusion reason: Unsupported argument Arc,Unsupported argument Arc
+					// into_any_arc()
+,
+					// Exclusion reason: Unsupported argument Box,Unsupported argument Box
+					// into_any()
+,
+					// Exclusion reason: Unsupported argument Box,Unsupported argument Box
+					// into_any()
+,
+					// Exclusion reason: Unsupported argument Rc,Unsupported argument Rc
+					// into_any_rc()
+,
+					// Exclusion reason: Unsupported argument Any
+					// as_any(&self)
+,
+					// Exclusion reason: Unsupported argument std::any::Any
+					// as_any(&self)
+,
+					// Exclusion reason: Unsupported argument &mut self,Unsupported argument Any
+					// as_any_mut(<invalid: &mut self>)
+,
+					// Exclusion reason: Unsupported argument &mut self,Unsupported argument std::any::Any
+					// as_any_mut(<invalid: &mut self>)
+,
+					// Exclusion reason: Unsupported argument V
+					// vzip(self)
+,
+					// Exclusion reason: Unsupported argument T
+					// downcast(&self)
+,
+					// Exclusion reason: Unsupported argument Option
+					// upcast(&self)
+,
+					// Exclusion reason: Unsupported argument QualifiedPath { name: "Target", args: AngleBracketed { args: [], bindings: [] }, self_type: Generic("Self"), trait_: ResolvedPath { name: "", id: Id("2:3454:115"), args: None, param_names: [] } }
+					// deref(&self)
+,
+					// Exclusion reason: Unsupported argument &mut self,Unsupported argument QualifiedPath { name: "Target", args: AngleBracketed { args: [], bindings: [] }, self_type: Generic("Self"), trait_: ResolvedPath { name: "", id: Id("2:3454:115"), args: None, param_names: [] } }
+					// deref_mut(<invalid: &mut self>)
+,
+					// Exclusion reason: Unsupported argument bevy_reflect::TypeRegistration
+					// get_type_registration()
+,
+					// Exclusion reason: Unsupported argument bevy_reflect::TypeInfo
+					// type_info()
+,
+					// Exclusion reason: Unsupported argument Option
+					// field(&selfusize)
+,
+					// Exclusion reason: Unsupported argument &mut self,Unsupported argument Option
+					// field_mut(<invalid: &mut self>usize)
+,
+					field_len(&self) -> usize
+,
+					// Exclusion reason: Unsupported argument bevy_reflect::TupleStructFieldIter
+					// iter_fields(&self)
+,
+					// Exclusion reason: Unsupported argument bevy_reflect::DynamicTupleStruct
+					// clone_dynamic(&self)
+,
+					type_name(&self) -> &str
+,
+					// Exclusion reason: Unsupported argument bevy_reflect::TypeInfo
+					// get_type_info(&self)
+,
+					// Exclusion reason: Unsupported argument bevy_reflect::Reflect
+					// as_reflect(&self)
+,
+					// Exclusion reason: Unsupported argument &mut self,Unsupported argument bevy_reflect::Reflect
+					// as_reflect_mut(<invalid: &mut self>)
+,
+					// Exclusion reason: Unsupported argument Box
+					// clone_value(&self)
+,
+					// Exclusion reason: Unsupported argument &mut self,Unsupported argument Box,Unsupported argument Result
+					// set(<invalid: &mut self>)
+,
+					// Exclusion reason: Unsupported argument &mut self,Unsupported argument bevy_reflect::Reflect
+					// apply(<invalid: &mut self>)
+,
+					// Exclusion reason: Unsupported argument bevy_reflect::ReflectRef
+					// reflect_ref(&self)
+,
+					// Exclusion reason: Unsupported argument &mut self,Unsupported argument bevy_reflect::ReflectMut
+					// reflect_mut(<invalid: &mut self>)
+,
+					// Exclusion reason: Unsupported argument bevy_reflect::Reflect,Unsupported argument Option
+					// reflect_partial_eq(&self)
+,
+					default() -> LuaCameraRenderGraph
+,
+				)
+				+ BinaryOps
+				(
+				)
+				+ UnaryOps
+				(
+				)
+			impl
+			{
 			}
 		}
-		{
-bevy_core_pipeline::clear_color::ClearColorConfig : Value
-AutoMethods			(
-				try_from()
-
-				///Returns the argument unchanged.
-				from()
-
-				///Calls `U::from(self)`.
-				///
-				///That is, this conversion is whatever the implementation of
-				///<code>[From]&lt;T&gt; for U</code> chooses to do.
-				into(self)
-
-				borrow(&self)
-
-				type_id(&self)
-
-				try_into(self)
-
-				borrow_mut(<invalid: &mut self>)
-
-				to_owned(&self)
-
-				clone_into(&self)
-
-				from_world()
-
-				path(<invalid: &''r self><invalid: &''p str>)
-
-				path_mut(<invalid: &''r mut self><invalid: &''p str>)
-
-				clone_type_data(&self)
-
-				into_any_arc()
-
-				into_any()
-
-				into_any()
-
-				into_any_rc()
-
-				as_any(&self)
-
-				as_any(&self)
-
-				as_any_mut(<invalid: &mut self>)
-
-				as_any_mut(<invalid: &mut self>)
-
-				erased_serialize(&self)
-
-				as_bind_group_shader_type(&self)
-
-				vzip(self)
-
-				downcast(&self)
-
-				upcast(&self)
-
-				get_type_registration()
-
-				type_info()
-
-				// Exclusion reason: 
-				// type_name(&self) -> &str
-
-				get_type_info(&self)
-
-				as_reflect(&self)
-
-				as_reflect_mut(<invalid: &mut self>)
-
-				clone_value(&self)
-
-				apply(<invalid: &mut self>)
-
-				set(<invalid: &mut self>)
-
-				reflect_ref(&self)
-
-				reflect_mut(<invalid: &mut self>)
-
-				serialize(&self)
-
-				deserialize()
-
-				// Exclusion reason: 
-				// clone(&self) -> LuaClearColorConfig
-
-				fmt(&self)
-
-				// Exclusion reason: 
-				// default() -> LuaClearColorConfig
-
-			)
-+ BinaryOps			(
-			)
-+ UnaryOps			(
-			)
-impl			{
+,		{
+			bevy_core_pipeline::clear_color::ClearColorConfig : Value
+:				AutoMethods
+				(
+					// Exclusion reason: Unsupported argument U,Unsupported argument Result
+					// try_from()
+,
+					// Exclusion reason: Unsupported argument T,Unsupported argument T
+					// ///Returns the argument unchanged.
+					// from()
+,
+					// Exclusion reason: Unsupported argument U
+					// ///Calls `U::from(self)`.
+					// ///
+					// ///That is, this conversion is whatever the implementation of
+					// ///<code>[From]&lt;T&gt; for U</code> chooses to do.
+					// into(self)
+,
+					// Exclusion reason: Unsupported argument T
+					// borrow(&self)
+,
+					// Exclusion reason: Unsupported argument TypeId
+					// type_id(&self)
+,
+					// Exclusion reason: Unsupported argument Result
+					// try_into(self)
+,
+					// Exclusion reason: Unsupported argument &mut self,Unsupported argument T
+					// borrow_mut(<invalid: &mut self>)
+,
+					// Exclusion reason: Unsupported argument T
+					// to_owned(&self)
+,
+					// Exclusion reason: Unsupported argument T
+					// clone_into(&self)
+,
+					// Exclusion reason: Unsupported argument World,Unsupported argument T
+					// from_world()
+,
+					// Exclusion reason: Unsupported argument &''r self,Unsupported argument &''p str,Unsupported argument Result
+					// path(<invalid: &''r self><invalid: &''p str>)
+,
+					// Exclusion reason: Unsupported argument &''r mut self,Unsupported argument &''p str,Unsupported argument Result
+					// path_mut(<invalid: &''r mut self><invalid: &''p str>)
+,
+					// Exclusion reason: Unsupported argument Box
+					// clone_type_data(&self)
+,
+					// Exclusion reason: Unsupported argument Arc,Unsupported argument Arc
+					// into_any_arc()
+,
+					// Exclusion reason: Unsupported argument Box,Unsupported argument Box
+					// into_any()
+,
+					// Exclusion reason: Unsupported argument Box,Unsupported argument Box
+					// into_any()
+,
+					// Exclusion reason: Unsupported argument Rc,Unsupported argument Rc
+					// into_any_rc()
+,
+					// Exclusion reason: Unsupported argument Any
+					// as_any(&self)
+,
+					// Exclusion reason: Unsupported argument std::any::Any
+					// as_any(&self)
+,
+					// Exclusion reason: Unsupported argument &mut self,Unsupported argument Any
+					// as_any_mut(<invalid: &mut self>)
+,
+					// Exclusion reason: Unsupported argument &mut self,Unsupported argument std::any::Any
+					// as_any_mut(<invalid: &mut self>)
+,
+					// Exclusion reason: Unsupported argument Serializer,Unsupported argument Result
+					// erased_serialize(&self)
+,
+					// Exclusion reason: Unsupported argument HashMap,Unsupported argument U
+					// as_bind_group_shader_type(&self)
+,
+					// Exclusion reason: Unsupported argument V
+					// vzip(self)
+,
+					// Exclusion reason: Unsupported argument T
+					// downcast(&self)
+,
+					// Exclusion reason: Unsupported argument Option
+					// upcast(&self)
+,
+					// Exclusion reason: Unsupported argument bevy_reflect::TypeRegistration
+					// get_type_registration()
+,
+					// Exclusion reason: Unsupported argument bevy_reflect::TypeInfo
+					// type_info()
+,
+					type_name(&self) -> &str
+,
+					// Exclusion reason: Unsupported argument bevy_reflect::TypeInfo
+					// get_type_info(&self)
+,
+					// Exclusion reason: Unsupported argument bevy_reflect::Reflect
+					// as_reflect(&self)
+,
+					// Exclusion reason: Unsupported argument &mut self,Unsupported argument bevy_reflect::Reflect
+					// as_reflect_mut(<invalid: &mut self>)
+,
+					// Exclusion reason: Unsupported argument Box
+					// clone_value(&self)
+,
+					// Exclusion reason: Unsupported argument &mut self,Unsupported argument bevy_reflect::Reflect
+					// apply(<invalid: &mut self>)
+,
+					// Exclusion reason: Unsupported argument &mut self,Unsupported argument Box,Unsupported argument Result
+					// set(<invalid: &mut self>)
+,
+					// Exclusion reason: Unsupported argument bevy_reflect::ReflectRef
+					// reflect_ref(&self)
+,
+					// Exclusion reason: Unsupported argument &mut self,Unsupported argument bevy_reflect::ReflectMut
+					// reflect_mut(<invalid: &mut self>)
+,
+					// Exclusion reason: Unsupported argument __S,Unsupported argument _serde::__private::Result,Generics on the method
+					// serialize(&self)
+,
+					// Exclusion reason: Unsupported argument __D,Unsupported argument _serde::__private::Result,Generics on the method
+					// deserialize()
+,
+					clone(&self) -> LuaClearColorConfig
+,
+					// Exclusion reason: Unsupported argument $crate::fmt::Formatter,Unsupported argument $crate::fmt::Result
+					// fmt(&self)
+,
+					default() -> LuaClearColorConfig
+,
+				)
+				+ BinaryOps
+				(
+				)
+				+ UnaryOps
+				(
+				)
+			impl
+			{
 			}
 		}
-		{
+,		{
 			///A unique, stable asset id
-bevy_asset::HandleId : Value
-AutoMethods			(
-				random() -> LuaHandleId
-
-				default() -> LuaHandleId
-
-				new(u64) -> LuaHandleId
-
-				try_from()
-
-				///Returns the argument unchanged.
-				from()
-
-				from() -> LuaHandleId
-
-				from() -> LuaHandleId
-
-				from() -> LuaHandleId
-
-				from() -> LuaHandleId
-
-				from(<invalid: &str>) -> LuaHandleId
-
-				from() -> LuaHandleId
-
-				from() -> LuaHandleId
-
-				from() -> LuaHandleId
-
-				from() -> LuaHandleId
-
-				///Calls `U::from(self)`.
-				///
-				///That is, this conversion is whatever the implementation of
-				///<code>[From]&lt;T&gt; for U</code> chooses to do.
-				into(self)
-
-				borrow(&self)
-
-				type_id(&self)
-
-				try_into(self)
-
-				borrow_mut(<invalid: &mut self>)
-
-				to_owned(&self)
-
-				clone_into(&self)
-
-				path(<invalid: &''r self><invalid: &''p str>)
-
-				path_mut(<invalid: &''r mut self><invalid: &''p str>)
-
-				clone_type_data(&self)
-
-				as_dyn_eq(&self)
-
-				dyn_hash(&self)
-
-				as_any(&self)
-
-				as_any(&self)
-
-				as_any(&self)
-
-				dyn_eq(&self) -> bool
-
-				get_hash() -> u64
-
-				into_any_arc()
-
-				into_any()
-
-				into_any()
-
-				into_any_rc()
-
-				as_any_mut(<invalid: &mut self>)
-
-				as_any_mut(<invalid: &mut self>)
-
-				erased_serialize(&self)
-
-				vzip(self)
-
-				fmt(&self)
-
-				// Exclusion reason: 
-				// clone(&self) -> LuaHandleId
-
-				// Exclusion reason: 
-				// eq(&self&LuaHandleId) -> bool
-
-				// Exclusion reason: 
-				// ne(&self&LuaHandleId) -> bool
-
-				hash(&self)<invalid: ()>
-
-				cmp(&self&LuaHandleId)
-
-				partial_cmp(&self&LuaHandleId)
-
-				serialize(&self)
-
-				deserialize()
-
-				get_type_registration()
-
-				type_info()
-
-				// Exclusion reason: 
-				// type_name(&self) -> &str
-
-				get_type_info(&self)
-
-				as_reflect(&self)
-
-				as_reflect_mut(<invalid: &mut self>)
-
-				clone_value(&self)
-
-				apply(<invalid: &mut self>)
-
-				set(<invalid: &mut self>)
-
-				reflect_ref(&self)
-
-				reflect_mut(<invalid: &mut self>)
-
-				reflect_hash(&self)
-
-				reflect_partial_eq(&self)
-
-				from_reflect()
-
-			)
-+ BinaryOps			(
-			)
-+ UnaryOps			(
-			)
-impl			{
+			bevy_asset::HandleId : Value
+:				AutoMethods
+				(
+					// Exclusion reason: Generics on the method
+					// random() -> LuaHandleId
+,
+					// Exclusion reason: Generics on the method
+					// default() -> LuaHandleId
+,
+					// Exclusion reason: Unsupported argument Uuid
+					// new(u64) -> LuaHandleId
+,
+					// Exclusion reason: Unsupported argument U,Unsupported argument Result
+					// try_from()
+,
+					// Exclusion reason: Unsupported argument T,Unsupported argument T
+					// ///Returns the argument unchanged.
+					// from()
+,
+					// Exclusion reason: Unsupported argument AssetPathId
+					// from() -> LuaHandleId
+,
+					// Exclusion reason: Unsupported argument AssetPath
+					// from() -> LuaHandleId
+,
+					// Exclusion reason: Unsupported argument Handle
+					// from() -> LuaHandleId
+,
+					// Exclusion reason: Unsupported argument HandleUntyped
+					// from() -> LuaHandleId
+,
+					// Exclusion reason: Unsupported argument &str
+					// from(<invalid: &str>) -> LuaHandleId
+,
+					// Exclusion reason: Unsupported argument String
+					// from() -> LuaHandleId
+,
+					// Exclusion reason: Unsupported argument String
+					// from() -> LuaHandleId
+,
+					// Exclusion reason: Unsupported argument Handle
+					// from() -> LuaHandleId
+,
+					// Exclusion reason: Unsupported argument HandleUntyped
+					// from() -> LuaHandleId
+,
+					// Exclusion reason: Unsupported argument U
+					// ///Calls `U::from(self)`.
+					// ///
+					// ///That is, this conversion is whatever the implementation of
+					// ///<code>[From]&lt;T&gt; for U</code> chooses to do.
+					// into(self)
+,
+					// Exclusion reason: Unsupported argument T
+					// borrow(&self)
+,
+					// Exclusion reason: Unsupported argument TypeId
+					// type_id(&self)
+,
+					// Exclusion reason: Unsupported argument Result
+					// try_into(self)
+,
+					// Exclusion reason: Unsupported argument &mut self,Unsupported argument T
+					// borrow_mut(<invalid: &mut self>)
+,
+					// Exclusion reason: Unsupported argument T
+					// to_owned(&self)
+,
+					// Exclusion reason: Unsupported argument T
+					// clone_into(&self)
+,
+					// Exclusion reason: Unsupported argument &''r self,Unsupported argument &''p str,Unsupported argument Result
+					// path(<invalid: &''r self><invalid: &''p str>)
+,
+					// Exclusion reason: Unsupported argument &''r mut self,Unsupported argument &''p str,Unsupported argument Result
+					// path_mut(<invalid: &''r mut self><invalid: &''p str>)
+,
+					// Exclusion reason: Unsupported argument Box
+					// clone_type_data(&self)
+,
+					// Exclusion reason: Unsupported argument DynEq
+					// as_dyn_eq(&self)
+,
+					// Exclusion reason: Unsupported argument Hasher
+					// dyn_hash(&self)
+,
+					// Exclusion reason: Unsupported argument Any
+					// as_any(&self)
+,
+					// Exclusion reason: Unsupported argument Any
+					// as_any(&self)
+,
+					// Exclusion reason: Unsupported argument std::any::Any
+					// as_any(&self)
+,
+					// Exclusion reason: Unsupported argument DynEq
+					// dyn_eq(&self) -> bool
+,
+					// Exclusion reason: Unsupported argument H,Unsupported argument B,Generics on the method
+					// get_hash() -> u64
+,
+					// Exclusion reason: Unsupported argument Arc,Unsupported argument Arc
+					// into_any_arc()
+,
+					// Exclusion reason: Unsupported argument Box,Unsupported argument Box
+					// into_any()
+,
+					// Exclusion reason: Unsupported argument Box,Unsupported argument Box
+					// into_any()
+,
+					// Exclusion reason: Unsupported argument Rc,Unsupported argument Rc
+					// into_any_rc()
+,
+					// Exclusion reason: Unsupported argument &mut self,Unsupported argument Any
+					// as_any_mut(<invalid: &mut self>)
+,
+					// Exclusion reason: Unsupported argument &mut self,Unsupported argument std::any::Any
+					// as_any_mut(<invalid: &mut self>)
+,
+					// Exclusion reason: Unsupported argument Serializer,Unsupported argument Result
+					// erased_serialize(&self)
+,
+					// Exclusion reason: Unsupported argument V
+					// vzip(self)
+,
+					// Exclusion reason: Unsupported argument $crate::fmt::Formatter,Unsupported argument $crate::fmt::Result
+					// fmt(&self)
+,
+					clone(&self) -> LuaHandleId
+,
+					eq(&self&LuaHandleId) -> bool
+,
+					ne(&self&LuaHandleId) -> bool
+,
+					// Exclusion reason: Unsupported argument __H,Unsupported argument (),Generics on the method
+					// hash(&self)<invalid: ()>
+,
+					// Exclusion reason: Unsupported argument $crate::cmp::Ordering
+					// cmp(&self&LuaHandleId)
+,
+					// Exclusion reason: Unsupported argument $crate::option::Option
+					// partial_cmp(&self&LuaHandleId)
+,
+					// Exclusion reason: Unsupported argument __S,Unsupported argument _serde::__private::Result,Generics on the method
+					// serialize(&self)
+,
+					// Exclusion reason: Unsupported argument __D,Unsupported argument _serde::__private::Result,Generics on the method
+					// deserialize()
+,
+					// Exclusion reason: Unsupported argument bevy_reflect::TypeRegistration
+					// get_type_registration()
+,
+					// Exclusion reason: Unsupported argument bevy_reflect::TypeInfo
+					// type_info()
+,
+					type_name(&self) -> &str
+,
+					// Exclusion reason: Unsupported argument bevy_reflect::TypeInfo
+					// get_type_info(&self)
+,
+					// Exclusion reason: Unsupported argument bevy_reflect::Reflect
+					// as_reflect(&self)
+,
+					// Exclusion reason: Unsupported argument &mut self,Unsupported argument bevy_reflect::Reflect
+					// as_reflect_mut(<invalid: &mut self>)
+,
+					// Exclusion reason: Unsupported argument Box
+					// clone_value(&self)
+,
+					// Exclusion reason: Unsupported argument &mut self,Unsupported argument bevy_reflect::Reflect
+					// apply(<invalid: &mut self>)
+,
+					// Exclusion reason: Unsupported argument &mut self,Unsupported argument Box,Unsupported argument Result
+					// set(<invalid: &mut self>)
+,
+					// Exclusion reason: Unsupported argument bevy_reflect::ReflectRef
+					// reflect_ref(&self)
+,
+					// Exclusion reason: Unsupported argument &mut self,Unsupported argument bevy_reflect::ReflectMut
+					// reflect_mut(<invalid: &mut self>)
+,
+					// Exclusion reason: Unsupported argument Option
+					// reflect_hash(&self)
+,
+					// Exclusion reason: Unsupported argument bevy_reflect::Reflect,Unsupported argument Option
+					// reflect_partial_eq(&self)
+,
+					// Exclusion reason: Unsupported argument bevy_reflect::Reflect,Unsupported argument Option
+					// from_reflect()
+,
+				)
+				+ BinaryOps
+				(
+				)
+				+ UnaryOps
+				(
+				)
+			impl
+			{
 			}
 		}
-		{
+,		{
 			///A 2-dimensional vector.
-glam::f32::vec2::Vec2 : Value
-AutoMethods			(
-				// Exclusion reason: 
-				// ///Creates a new vector.
-				// new(f32f32) -> LuaVec2
-
-				// Exclusion reason: 
-				// ///Creates a vector with all elements set to `v`.
-				// splat(f32) -> LuaVec2
-
-				///Creates a vector from the elements in `if_true` and `if_false`, selecting which to use
-				///for each element of `self`.
-				///
-				///A true element in the mask uses the corresponding element from `if_true`, and false
-				///uses the element from `if_false`.
-				select(LuaVec2LuaVec2) -> LuaVec2
-
-				///Creates a new vector from an array.
-				from_array(<invalid: [f32;2]>) -> LuaVec2
-
-				///`[x, y]`
-				to_array(&self)<invalid: [f32;2]>
-
-				///Creates a vector from the first 2 values in `slice`.
-				///
-				///# Panics
-				///
-				///Panics if `slice` is less than 2 elements long.
-				from_slice(<invalid: &[f32]>) -> LuaVec2
-
-				///Writes the elements of `self` to the first 2 elements in `slice`.
-				///
-				///# Panics
-				///
-				///Panics if `slice` is less than 2 elements long.
-				write_to_slice(self<invalid: &mut [f32]>)
-
-				// Exclusion reason: 
-				// ///Creates a 3D vector from `self` and the given `z` value.
-				// extend(selff32) -> LuaVec3
-
-				// Exclusion reason: 
-				// ///Computes the dot product of `self` and `rhs`.
-				// dot(selfLuaVec2) -> f32
-
-				// Exclusion reason: 
-				// ///Returns a vector containing the minimum values for each element of `self` and `rhs`.
-				// ///
-				// ///In other words this computes `[self.x.min(rhs.x), self.y.min(rhs.y), ..]`.
-				// min(selfLuaVec2) -> LuaVec2
-
-				// Exclusion reason: 
-				// ///Returns a vector containing the maximum values for each element of `self` and `rhs`.
-				// ///
-				// ///In other words this computes `[self.x.max(rhs.x), self.y.max(rhs.y), ..]`.
-				// max(selfLuaVec2) -> LuaVec2
-
-				// Exclusion reason: 
-				// ///Component-wise clamping of values, similar to [`f32::clamp`].
-				// ///
-				// ///Each element in `min` must be less-or-equal to the corresponding element in `max`.
-				// ///
-				// ///# Panics
-				// ///
-				// ///Will panic if `min` is greater than `max` when `glam_assert` is enabled.
-				// clamp(selfLuaVec2LuaVec2) -> LuaVec2
-
-				// Exclusion reason: 
-				// ///Returns the horizontal minimum of `self`.
-				// ///
-				// ///In other words this computes `min(x, y, ..)`.
-				// min_element(self) -> f32
-
-				// Exclusion reason: 
-				// ///Returns the horizontal maximum of `self`.
-				// ///
-				// ///In other words this computes `max(x, y, ..)`.
-				// max_element(self) -> f32
-
-				///Returns a vector mask containing the result of a `==` comparison for each element of
-				///`self` and `rhs`.
-				///
-				///In other words, this computes `[self.x == rhs.x, self.y == rhs.y, ..]` for all
-				///elements.
-				cmpeq(selfLuaVec2)
-
-				///Returns a vector mask containing the result of a `!=` comparison for each element of
-				///`self` and `rhs`.
-				///
-				///In other words this computes `[self.x != rhs.x, self.y != rhs.y, ..]` for all
-				///elements.
-				cmpne(selfLuaVec2)
-
-				///Returns a vector mask containing the result of a `>=` comparison for each element of
-				///`self` and `rhs`.
-				///
-				///In other words this computes `[self.x >= rhs.x, self.y >= rhs.y, ..]` for all
-				///elements.
-				cmpge(selfLuaVec2)
-
-				///Returns a vector mask containing the result of a `>` comparison for each element of
-				///`self` and `rhs`.
-				///
-				///In other words this computes `[self.x > rhs.x, self.y > rhs.y, ..]` for all
-				///elements.
-				cmpgt(selfLuaVec2)
-
-				///Returns a vector mask containing the result of a `<=` comparison for each element of
-				///`self` and `rhs`.
-				///
-				///In other words this computes `[self.x <= rhs.x, self.y <= rhs.y, ..]` for all
-				///elements.
-				cmple(selfLuaVec2)
-
-				///Returns a vector mask containing the result of a `<` comparison for each element of
-				///`self` and `rhs`.
-				///
-				///In other words this computes `[self.x < rhs.x, self.y < rhs.y, ..]` for all
-				///elements.
-				cmplt(selfLuaVec2)
-
-				// Exclusion reason: 
-				// ///Returns a vector containing the absolute value of each element of `self`.
-				// abs(self) -> LuaVec2
-
-				// Exclusion reason: 
-				// ///Returns a vector with elements representing the sign of `self`.
-				// ///
-				// ///- `1.0` if the number is positive, `+0.0` or `INFINITY`
-				// ///- `-1.0` if the number is negative, `-0.0` or `NEG_INFINITY`
-				// ///- `NAN` if the number is `NAN`
-				// signum(self) -> LuaVec2
-
-				// Exclusion reason: 
-				// ///Returns `true` if, and only if, all elements are finite.  If any element is either
-				// ///`NaN`, positive or negative infinity, this will return `false`.
-				// is_finite(self) -> bool
-
-				// Exclusion reason: 
-				// ///Returns `true` if any elements are `NaN`.
-				// is_nan(self) -> bool
-
-				///Performs `is_nan` on each element of self, returning a vector mask of the results.
-				///
-				///In other words, this computes `[x.is_nan(), y.is_nan(), z.is_nan(), w.is_nan()]`.
-				is_nan_mask(self)
-
-				// Exclusion reason: 
-				// ///Computes the length of `self`.
-				// length(self) -> f32
-
-				// Exclusion reason: 
-				// ///Computes the squared length of `self`.
-				// ///
-				// ///This is faster than `length()` as it avoids a square root operation.
-				// length_squared(self) -> f32
-
-				// Exclusion reason: 
-				// ///Computes `1.0 / length()`.
-				// ///
-				// ///For valid results, `self` must _not_ be of length zero.
-				// length_recip(self) -> f32
-
-				// Exclusion reason: 
-				// ///Computes the Euclidean distance between two points in space.
-				// distance(selfLuaVec2) -> f32
-
-				// Exclusion reason: 
-				// ///Compute the squared euclidean distance between two points in space.
-				// distance_squared(selfLuaVec2) -> f32
-
-				// Exclusion reason: 
-				// ///Returns `self` normalized to length 1.0.
-				// ///
-				// ///For valid results, `self` must _not_ be of length zero, nor very close to zero.
-				// ///
-				// ///See also [`Self::try_normalize`] and [`Self::normalize_or_zero`].
-				// ///
-				// ///Panics
-				// ///
-				// ///Will panic if `self` is zero length when `glam_assert` is enabled.
-				// normalize(self) -> LuaVec2
-
-				///Returns `self` normalized to length 1.0 if possible, else returns `None`.
-				///
-				///In particular, if the input is zero (or very close to zero), or non-finite,
-				///the result of this operation will be `None`.
-				///
-				///See also [`Self::normalize_or_zero`].
-				try_normalize(self)
-
-				// Exclusion reason: 
-				// ///Returns `self` normalized to length 1.0 if possible, else returns zero.
-				// ///
-				// ///In particular, if the input is zero (or very close to zero), or non-finite,
-				// ///the result of this operation will be zero.
-				// ///
-				// ///See also [`Self::try_normalize`].
-				// normalize_or_zero(self) -> LuaVec2
-
-				// Exclusion reason: 
-				// ///Returns whether `self` is length `1.0` or not.
-				// ///
-				// ///Uses a precision threshold of `1e-6`.
-				// is_normalized(self) -> bool
-
-				// Exclusion reason: 
-				// ///Returns the vector projection of `self` onto `rhs`.
-				// ///
-				// ///`rhs` must be of non-zero length.
-				// ///
-				// ///# Panics
-				// ///
-				// ///Will panic if `rhs` is zero length when `glam_assert` is enabled.
-				// project_onto(selfLuaVec2) -> LuaVec2
-
-				// Exclusion reason: 
-				// ///Returns the vector rejection of `self` from `rhs`.
-				// ///
-				// ///The vector rejection is the vector perpendicular to the projection of `self` onto
-				// ///`rhs`, in rhs words the result of `self - self.project_onto(rhs)`.
-				// ///
-				// ///`rhs` must be of non-zero length.
-				// ///
-				// ///# Panics
-				// ///
-				// ///Will panic if `rhs` has a length of zero when `glam_assert` is enabled.
-				// reject_from(selfLuaVec2) -> LuaVec2
-
-				// Exclusion reason: 
-				// ///Returns the vector projection of `self` onto `rhs`.
-				// ///
-				// ///`rhs` must be normalized.
-				// ///
-				// ///# Panics
-				// ///
-				// ///Will panic if `rhs` is not normalized when `glam_assert` is enabled.
-				// project_onto_normalized(selfLuaVec2) -> LuaVec2
-
-				// Exclusion reason: 
-				// ///Returns the vector rejection of `self` from `rhs`.
-				// ///
-				// ///The vector rejection is the vector perpendicular to the projection of `self` onto
-				// ///`rhs`, in rhs words the result of `self - self.project_onto(rhs)`.
-				// ///
-				// ///`rhs` must be normalized.
-				// ///
-				// ///# Panics
-				// ///
-				// ///Will panic if `rhs` is not normalized when `glam_assert` is enabled.
-				// reject_from_normalized(selfLuaVec2) -> LuaVec2
-
-				// Exclusion reason: 
-				// ///Returns a vector containing the nearest integer to a number for each element of `self`.
-				// ///Round half-way cases away from 0.0.
-				// round(self) -> LuaVec2
-
-				// Exclusion reason: 
-				// ///Returns a vector containing the largest integer less than or equal to a number for each
-				// ///element of `self`.
-				// floor(self) -> LuaVec2
-
-				// Exclusion reason: 
-				// ///Returns a vector containing the smallest integer greater than or equal to a number for
-				// ///each element of `self`.
-				// ceil(self) -> LuaVec2
-
-				// Exclusion reason: 
-				// ///Returns a vector containing the fractional part of the vector, e.g. `self -
-				// ///self.floor()`.
-				// ///
-				// ///Note that this is fast but not precise for large numbers.
-				// fract(self) -> LuaVec2
-
-				// Exclusion reason: 
-				// ///Returns a vector containing `e^self` (the exponential function) for each element of
-				// ///`self`.
-				// exp(self) -> LuaVec2
-
-				// Exclusion reason: 
-				// ///Returns a vector containing each element of `self` raised to the power of `n`.
-				// powf(selff32) -> LuaVec2
-
-				// Exclusion reason: 
-				// ///Returns a vector containing the reciprocal `1.0/n` of each element of `self`.
-				// recip(self) -> LuaVec2
-
-				// Exclusion reason: 
-				// ///Performs a linear interpolation between `self` and `rhs` based on the value `s`.
-				// ///
-				// ///When `s` is `0.0`, the result will be equal to `self`.  When `s` is `1.0`, the result
-				// ///will be equal to `rhs`. When `s` is outside of range `[0, 1]`, the result is linearly
-				// ///extrapolated.
-				// lerp(selfLuaVec2f32) -> LuaVec2
-
-				// Exclusion reason: 
-				// ///Returns true if the absolute difference of all elements between `self` and `rhs` is
-				// ///less than or equal to `max_abs_diff`.
-				// ///
-				// ///This can be used to compare if two vectors contain similar elements. It works best when
-				// ///comparing with a known value. The `max_abs_diff` that should be used used depends on
-				// ///the values being compared against.
-				// ///
-				// ///For more see
-				// ///[comparing floating point numbers](https://randomascii.wordpress.com/2012/02/25/comparing-floating-point-numbers-2012-edition/).
-				// abs_diff_eq(selfLuaVec2f32) -> bool
-
-				// Exclusion reason: 
-				// ///Returns a vector with a length no less than `min` and no more than `max`
-				// ///
-				// ///# Panics
-				// ///
-				// ///Will panic if `min` is greater than `max` when `glam_assert` is enabled.
-				// clamp_length(selff32f32) -> LuaVec2
-
-				// Exclusion reason: 
-				// ///Returns a vector with a length no more than `max`
-				// clamp_length_max(selff32) -> LuaVec2
-
-				// Exclusion reason: 
-				// ///Returns a vector with a length no less than `min`
-				// clamp_length_min(selff32) -> LuaVec2
-
-				// Exclusion reason: 
-				// ///Fused multiply-add. Computes `(self * a) + b` element-wise with only one rounding
-				// ///error, yielding a more accurate result than an unfused multiply-add.
-				// ///
-				// ///Using `mul_add` *may* be more performant than an unfused multiply-add if the target
-				// ///architecture has a dedicated fma CPU instruction. However, this is not always true,
-				// ///and will be heavily dependant on designing algorithms with specific target hardware in
-				// ///mind.
-				// mul_add(selfLuaVec2LuaVec2) -> LuaVec2
-
-				// Exclusion reason: 
-				// ///Creates a 2D vector containing `[angle.cos(), angle.sin()]`. This can be used in
-				// ///conjunction with the `rotate` method, e.g. `Vec2::from_angle(PI).rotate(Vec2::Y)` will
-				// ///create the vector [-1, 0] and rotate `Vec2::Y` around it returning `-Vec2::Y`.
-				// from_angle(f32) -> LuaVec2
-
-				// Exclusion reason: 
-				// ///Returns the angle (in radians) between `self` and `rhs`.
-				// ///
-				// ///The input vectors do not need to be unit length however they must be non-zero.
-				// angle_between(selfLuaVec2) -> f32
-
-				// Exclusion reason: 
-				// ///Returns a vector that is equal to `self` rotated by 90 degrees.
-				// perp(self) -> LuaVec2
-
-				// Exclusion reason: 
-				// ///The perpendicular dot product of `self` and `rhs`.
-				// ///Also known as the wedge product, 2D cross product, and determinant.
-				// perp_dot(selfLuaVec2) -> f32
-
-				// Exclusion reason: 
-				// ///Returns `rhs` rotated by the angle of `self`. If `self` is normalized,
-				// ///then this just rotation. This is what you usually want. Otherwise,
-				// ///it will be like a rotation with a multiplication by `self`'s length.
-				// rotate(selfLuaVec2) -> LuaVec2
-
-				///Casts all elements of `self` to `f64`.
-				as_dvec2(&self)
-
-				///Casts all elements of `self` to `i32`.
-				as_ivec2(&self)
-
-				///Casts all elements of `self` to `u32`.
-				as_uvec2(&self)
-
-				try_from()
-
-				///Returns the argument unchanged.
-				from()
-
-				from(<invalid: [f32;2]>) -> LuaVec2
-
-				// Exclusion reason: 
-				// from(LuaVec2) -> LuaVec2
-
-				from(<invalid: (f32,f32)>) -> LuaVec2
-
-				// Exclusion reason: 
-				// from(LuaVec2) -> LuaVec2
-
-				///Calls `U::from(self)`.
-				///
-				///That is, this conversion is whatever the implementation of
-				///<code>[From]&lt;T&gt; for U</code> chooses to do.
-				into(self)
-
-				borrow(&self)
-
-				type_id(&self)
-
-				try_into(self)
-
-				borrow_mut(<invalid: &mut self>)
-
-				to_string(&self)
-
-				to_owned(&self)
-
-				clone_into(&self)
-
-				is_valid_bit_pattern() -> bool
-
-				serialize(&self)
-
-				deserialize()
-
-				// Exclusion reason: 
-				// clone(&self) -> LuaVec2
-
-				// Exclusion reason: 
-				// default() -> LuaVec2
-
-				// Exclusion reason: 
-				// eq(&self&LuaVec2) -> bool
-
-				// Exclusion reason: 
-				// div(selfLuaVec2) -> LuaVec2
-
-				// Exclusion reason: 
-				// div(selff32) -> LuaVec2
-
-				// Exclusion reason: 
-				// div(selfLuaVec2) -> LuaVec2
-
-				div_assign(<invalid: &mut self>LuaVec2)
-
-				div_assign(<invalid: &mut self>f32)
-
-				// Exclusion reason: 
-				// mul(selfLuaVec2) -> LuaVec2
-
-				// Exclusion reason: 
-				// mul(selff32) -> LuaVec2
-
-				// Exclusion reason: 
-				// mul(selfLuaVec2) -> LuaVec2
-
-				mul(selfLuaVec2)
-
-				mul_assign(<invalid: &mut self>LuaVec2)
-
-				mul_assign(<invalid: &mut self>f32)
-
-				// Exclusion reason: 
-				// add(selfLuaVec2) -> LuaVec2
-
-				// Exclusion reason: 
-				// add(selff32) -> LuaVec2
-
-				// Exclusion reason: 
-				// add(selfLuaVec2) -> LuaVec2
-
-				add_assign(<invalid: &mut self>LuaVec2)
-
-				add_assign(<invalid: &mut self>f32)
-
-				// Exclusion reason: 
-				// sub(selfLuaVec2) -> LuaVec2
-
-				// Exclusion reason: 
-				// sub(selff32) -> LuaVec2
-
-				// Exclusion reason: 
-				// sub(selfLuaVec2) -> LuaVec2
-
-				sub_assign(<invalid: &mut self>LuaVec2)
-
-				sub_assign(<invalid: &mut self>f32)
-
-				// Exclusion reason: 
-				// rem(selfLuaVec2) -> LuaVec2
-
-				// Exclusion reason: 
-				// rem(selff32) -> LuaVec2
-
-				// Exclusion reason: 
-				// rem(selfLuaVec2) -> LuaVec2
-
-				rem_assign(<invalid: &mut self>LuaVec2)
-
-				rem_assign(<invalid: &mut self>f32)
-
-				as_ref(&self)<invalid: &[f32;2]>
-
-				as_mut(<invalid: &mut self>)<invalid: &mut [f32;2]>
-
-				sum() -> LuaVec2
-
-				product() -> LuaVec2
-
-				// Exclusion reason: 
-				// neg(self) -> LuaVec2
-
-				index(&selfusize)
-
-				index_mut(<invalid: &mut self>usize)
-
-				fmt(&self)
-
-				fmt(&self)
-
-				// Exclusion reason: 
-				// xx(self) -> LuaVec2
-
-				// Exclusion reason: 
-				// xy(self) -> LuaVec2
-
-				// Exclusion reason: 
-				// yx(self) -> LuaVec2
-
-				// Exclusion reason: 
-				// yy(self) -> LuaVec2
-
-				// Exclusion reason: 
-				// xxx(self) -> LuaVec3
-
-				// Exclusion reason: 
-				// xxy(self) -> LuaVec3
-
-				// Exclusion reason: 
-				// xyx(self) -> LuaVec3
-
-				// Exclusion reason: 
-				// xyy(self) -> LuaVec3
-
-				// Exclusion reason: 
-				// yxx(self) -> LuaVec3
-
-				// Exclusion reason: 
-				// yxy(self) -> LuaVec3
-
-				// Exclusion reason: 
-				// yyx(self) -> LuaVec3
-
-				// Exclusion reason: 
-				// yyy(self) -> LuaVec3
-
-				// Exclusion reason: 
-				// xxxx(self) -> LuaVec4
-
-				// Exclusion reason: 
-				// xxxy(self) -> LuaVec4
-
-				// Exclusion reason: 
-				// xxyx(self) -> LuaVec4
-
-				// Exclusion reason: 
-				// xxyy(self) -> LuaVec4
-
-				// Exclusion reason: 
-				// xyxx(self) -> LuaVec4
-
-				// Exclusion reason: 
-				// xyxy(self) -> LuaVec4
-
-				// Exclusion reason: 
-				// xyyx(self) -> LuaVec4
-
-				// Exclusion reason: 
-				// xyyy(self) -> LuaVec4
-
-				// Exclusion reason: 
-				// yxxx(self) -> LuaVec4
-
-				// Exclusion reason: 
-				// yxxy(self) -> LuaVec4
-
-				// Exclusion reason: 
-				// yxyx(self) -> LuaVec4
-
-				// Exclusion reason: 
-				// yxyy(self) -> LuaVec4
-
-				// Exclusion reason: 
-				// yyxx(self) -> LuaVec4
-
-				// Exclusion reason: 
-				// yyxy(self) -> LuaVec4
-
-				// Exclusion reason: 
-				// yyyx(self) -> LuaVec4
-
-				// Exclusion reason: 
-				// yyyy(self) -> LuaVec4
-
-			)
-+ BinaryOps			(
+			glam::f32::vec2::Vec2 : Value
+:				AutoMethods
+				(
+					///Creates a new vector.
+					new(f32f32) -> LuaVec2
+,
+					///Creates a vector with all elements set to `v`.
+					splat(f32) -> LuaVec2
+,
+					// Exclusion reason: Unsupported argument BVec2
+					// ///Creates a vector from the elements in `if_true` and `if_false`, selecting which to use
+					// ///for each element of `self`.
+					// ///
+					// ///A true element in the mask uses the corresponding element from `if_true`, and false
+					// ///uses the element from `if_false`.
+					// select(LuaVec2LuaVec2) -> LuaVec2
+,
+					// Exclusion reason: Unsupported argument [f32;2]
+					// ///Creates a new vector from an array.
+					// from_array(<invalid: [f32;2]>) -> LuaVec2
+,
+					// Exclusion reason: Unsupported argument [f32;2]
+					// ///`[x, y]`
+					// to_array(&self)<invalid: [f32;2]>
+,
+					// Exclusion reason: Unsupported argument &[f32]
+					// ///Creates a vector from the first 2 values in `slice`.
+					// ///
+					// ///# Panics
+					// ///
+					// ///Panics if `slice` is less than 2 elements long.
+					// from_slice(<invalid: &[f32]>) -> LuaVec2
+,
+					// Exclusion reason: Unsupported argument &mut [f32]
+					// ///Writes the elements of `self` to the first 2 elements in `slice`.
+					// ///
+					// ///# Panics
+					// ///
+					// ///Panics if `slice` is less than 2 elements long.
+					// write_to_slice(self<invalid: &mut [f32]>)
+,
+					///Creates a 3D vector from `self` and the given `z` value.
+					extend(selff32) -> LuaVec3
+,
+					///Computes the dot product of `self` and `rhs`.
+					dot(selfLuaVec2) -> f32
+,
+					///Returns a vector containing the minimum values for each element of `self` and `rhs`.
+					///
+					///In other words this computes `[self.x.min(rhs.x), self.y.min(rhs.y), ..]`.
+					min(selfLuaVec2) -> LuaVec2
+,
+					///Returns a vector containing the maximum values for each element of `self` and `rhs`.
+					///
+					///In other words this computes `[self.x.max(rhs.x), self.y.max(rhs.y), ..]`.
+					max(selfLuaVec2) -> LuaVec2
+,
+					///Component-wise clamping of values, similar to [`f32::clamp`].
+					///
+					///Each element in `min` must be less-or-equal to the corresponding element in `max`.
+					///
+					///# Panics
+					///
+					///Will panic if `min` is greater than `max` when `glam_assert` is enabled.
+					clamp(selfLuaVec2LuaVec2) -> LuaVec2
+,
+					///Returns the horizontal minimum of `self`.
+					///
+					///In other words this computes `min(x, y, ..)`.
+					min_element(self) -> f32
+,
+					///Returns the horizontal maximum of `self`.
+					///
+					///In other words this computes `max(x, y, ..)`.
+					max_element(self) -> f32
+,
+					// Exclusion reason: Unsupported argument BVec2
+					// ///Returns a vector mask containing the result of a `==` comparison for each element of
+					// ///`self` and `rhs`.
+					// ///
+					// ///In other words, this computes `[self.x == rhs.x, self.y == rhs.y, ..]` for all
+					// ///elements.
+					// cmpeq(selfLuaVec2)
+,
+					// Exclusion reason: Unsupported argument BVec2
+					// ///Returns a vector mask containing the result of a `!=` comparison for each element of
+					// ///`self` and `rhs`.
+					// ///
+					// ///In other words this computes `[self.x != rhs.x, self.y != rhs.y, ..]` for all
+					// ///elements.
+					// cmpne(selfLuaVec2)
+,
+					// Exclusion reason: Unsupported argument BVec2
+					// ///Returns a vector mask containing the result of a `>=` comparison for each element of
+					// ///`self` and `rhs`.
+					// ///
+					// ///In other words this computes `[self.x >= rhs.x, self.y >= rhs.y, ..]` for all
+					// ///elements.
+					// cmpge(selfLuaVec2)
+,
+					// Exclusion reason: Unsupported argument BVec2
+					// ///Returns a vector mask containing the result of a `>` comparison for each element of
+					// ///`self` and `rhs`.
+					// ///
+					// ///In other words this computes `[self.x > rhs.x, self.y > rhs.y, ..]` for all
+					// ///elements.
+					// cmpgt(selfLuaVec2)
+,
+					// Exclusion reason: Unsupported argument BVec2
+					// ///Returns a vector mask containing the result of a `<=` comparison for each element of
+					// ///`self` and `rhs`.
+					// ///
+					// ///In other words this computes `[self.x <= rhs.x, self.y <= rhs.y, ..]` for all
+					// ///elements.
+					// cmple(selfLuaVec2)
+,
+					// Exclusion reason: Unsupported argument BVec2
+					// ///Returns a vector mask containing the result of a `<` comparison for each element of
+					// ///`self` and `rhs`.
+					// ///
+					// ///In other words this computes `[self.x < rhs.x, self.y < rhs.y, ..]` for all
+					// ///elements.
+					// cmplt(selfLuaVec2)
+,
+					///Returns a vector containing the absolute value of each element of `self`.
+					abs(self) -> LuaVec2
+,
+					///Returns a vector with elements representing the sign of `self`.
+					///
+					///- `1.0` if the number is positive, `+0.0` or `INFINITY`
+					///- `-1.0` if the number is negative, `-0.0` or `NEG_INFINITY`
+					///- `NAN` if the number is `NAN`
+					signum(self) -> LuaVec2
+,
+					///Returns `true` if, and only if, all elements are finite.  If any element is either
+					///`NaN`, positive or negative infinity, this will return `false`.
+					is_finite(self) -> bool
+,
+					///Returns `true` if any elements are `NaN`.
+					is_nan(self) -> bool
+,
+					// Exclusion reason: Unsupported argument BVec2
+					// ///Performs `is_nan` on each element of self, returning a vector mask of the results.
+					// ///
+					// ///In other words, this computes `[x.is_nan(), y.is_nan(), z.is_nan(), w.is_nan()]`.
+					// is_nan_mask(self)
+,
+					///Computes the length of `self`.
+					length(self) -> f32
+,
+					///Computes the squared length of `self`.
+					///
+					///This is faster than `length()` as it avoids a square root operation.
+					length_squared(self) -> f32
+,
+					///Computes `1.0 / length()`.
+					///
+					///For valid results, `self` must _not_ be of length zero.
+					length_recip(self) -> f32
+,
+					///Computes the Euclidean distance between two points in space.
+					distance(selfLuaVec2) -> f32
+,
+					///Compute the squared euclidean distance between two points in space.
+					distance_squared(selfLuaVec2) -> f32
+,
+					///Returns `self` normalized to length 1.0.
+					///
+					///For valid results, `self` must _not_ be of length zero, nor very close to zero.
+					///
+					///See also [`Self::try_normalize`] and [`Self::normalize_or_zero`].
+					///
+					///Panics
+					///
+					///Will panic if `self` is zero length when `glam_assert` is enabled.
+					normalize(self) -> LuaVec2
+,
+					// Exclusion reason: Unsupported argument Option
+					// ///Returns `self` normalized to length 1.0 if possible, else returns `None`.
+					// ///
+					// ///In particular, if the input is zero (or very close to zero), or non-finite,
+					// ///the result of this operation will be `None`.
+					// ///
+					// ///See also [`Self::normalize_or_zero`].
+					// try_normalize(self)
+,
+					///Returns `self` normalized to length 1.0 if possible, else returns zero.
+					///
+					///In particular, if the input is zero (or very close to zero), or non-finite,
+					///the result of this operation will be zero.
+					///
+					///See also [`Self::try_normalize`].
+					normalize_or_zero(self) -> LuaVec2
+,
+					///Returns whether `self` is length `1.0` or not.
+					///
+					///Uses a precision threshold of `1e-6`.
+					is_normalized(self) -> bool
+,
+					///Returns the vector projection of `self` onto `rhs`.
+					///
+					///`rhs` must be of non-zero length.
+					///
+					///# Panics
+					///
+					///Will panic if `rhs` is zero length when `glam_assert` is enabled.
+					project_onto(selfLuaVec2) -> LuaVec2
+,
+					///Returns the vector rejection of `self` from `rhs`.
+					///
+					///The vector rejection is the vector perpendicular to the projection of `self` onto
+					///`rhs`, in rhs words the result of `self - self.project_onto(rhs)`.
+					///
+					///`rhs` must be of non-zero length.
+					///
+					///# Panics
+					///
+					///Will panic if `rhs` has a length of zero when `glam_assert` is enabled.
+					reject_from(selfLuaVec2) -> LuaVec2
+,
+					///Returns the vector projection of `self` onto `rhs`.
+					///
+					///`rhs` must be normalized.
+					///
+					///# Panics
+					///
+					///Will panic if `rhs` is not normalized when `glam_assert` is enabled.
+					project_onto_normalized(selfLuaVec2) -> LuaVec2
+,
+					///Returns the vector rejection of `self` from `rhs`.
+					///
+					///The vector rejection is the vector perpendicular to the projection of `self` onto
+					///`rhs`, in rhs words the result of `self - self.project_onto(rhs)`.
+					///
+					///`rhs` must be normalized.
+					///
+					///# Panics
+					///
+					///Will panic if `rhs` is not normalized when `glam_assert` is enabled.
+					reject_from_normalized(selfLuaVec2) -> LuaVec2
+,
+					///Returns a vector containing the nearest integer to a number for each element of `self`.
+					///Round half-way cases away from 0.0.
+					round(self) -> LuaVec2
+,
+					///Returns a vector containing the largest integer less than or equal to a number for each
+					///element of `self`.
+					floor(self) -> LuaVec2
+,
+					///Returns a vector containing the smallest integer greater than or equal to a number for
+					///each element of `self`.
+					ceil(self) -> LuaVec2
+,
+					///Returns a vector containing the fractional part of the vector, e.g. `self -
+					///self.floor()`.
+					///
+					///Note that this is fast but not precise for large numbers.
+					fract(self) -> LuaVec2
+,
+					///Returns a vector containing `e^self` (the exponential function) for each element of
+					///`self`.
+					exp(self) -> LuaVec2
+,
+					///Returns a vector containing each element of `self` raised to the power of `n`.
+					powf(selff32) -> LuaVec2
+,
+					///Returns a vector containing the reciprocal `1.0/n` of each element of `self`.
+					recip(self) -> LuaVec2
+,
+					///Performs a linear interpolation between `self` and `rhs` based on the value `s`.
+					///
+					///When `s` is `0.0`, the result will be equal to `self`.  When `s` is `1.0`, the result
+					///will be equal to `rhs`. When `s` is outside of range `[0, 1]`, the result is linearly
+					///extrapolated.
+					lerp(selfLuaVec2f32) -> LuaVec2
+,
+					///Returns true if the absolute difference of all elements between `self` and `rhs` is
+					///less than or equal to `max_abs_diff`.
+					///
+					///This can be used to compare if two vectors contain similar elements. It works best when
+					///comparing with a known value. The `max_abs_diff` that should be used used depends on
+					///the values being compared against.
+					///
+					///For more see
+					///[comparing floating point numbers](https://randomascii.wordpress.com/2012/02/25/comparing-floating-point-numbers-2012-edition/).
+					abs_diff_eq(selfLuaVec2f32) -> bool
+,
+					///Returns a vector with a length no less than `min` and no more than `max`
+					///
+					///# Panics
+					///
+					///Will panic if `min` is greater than `max` when `glam_assert` is enabled.
+					clamp_length(selff32f32) -> LuaVec2
+,
+					///Returns a vector with a length no more than `max`
+					clamp_length_max(selff32) -> LuaVec2
+,
+					///Returns a vector with a length no less than `min`
+					clamp_length_min(selff32) -> LuaVec2
+,
+					///Fused multiply-add. Computes `(self * a) + b` element-wise with only one rounding
+					///error, yielding a more accurate result than an unfused multiply-add.
+					///
+					///Using `mul_add` *may* be more performant than an unfused multiply-add if the target
+					///architecture has a dedicated fma CPU instruction. However, this is not always true,
+					///and will be heavily dependant on designing algorithms with specific target hardware in
+					///mind.
+					mul_add(selfLuaVec2LuaVec2) -> LuaVec2
+,
+					///Creates a 2D vector containing `[angle.cos(), angle.sin()]`. This can be used in
+					///conjunction with the `rotate` method, e.g. `Vec2::from_angle(PI).rotate(Vec2::Y)` will
+					///create the vector [-1, 0] and rotate `Vec2::Y` around it returning `-Vec2::Y`.
+					from_angle(f32) -> LuaVec2
+,
+					///Returns the angle (in radians) between `self` and `rhs`.
+					///
+					///The input vectors do not need to be unit length however they must be non-zero.
+					angle_between(selfLuaVec2) -> f32
+,
+					///Returns a vector that is equal to `self` rotated by 90 degrees.
+					perp(self) -> LuaVec2
+,
+					///The perpendicular dot product of `self` and `rhs`.
+					///Also known as the wedge product, 2D cross product, and determinant.
+					perp_dot(selfLuaVec2) -> f32
+,
+					///Returns `rhs` rotated by the angle of `self`. If `self` is normalized,
+					///then this just rotation. This is what you usually want. Otherwise,
+					///it will be like a rotation with a multiplication by `self`'s length.
+					rotate(selfLuaVec2) -> LuaVec2
+,
+					// Exclusion reason: Unsupported argument crate::DVec2
+					// ///Casts all elements of `self` to `f64`.
+					// as_dvec2(&self)
+,
+					// Exclusion reason: Unsupported argument crate::IVec2
+					// ///Casts all elements of `self` to `i32`.
+					// as_ivec2(&self)
+,
+					// Exclusion reason: Unsupported argument crate::UVec2
+					// ///Casts all elements of `self` to `u32`.
+					// as_uvec2(&self)
+,
+					// Exclusion reason: Unsupported argument U,Unsupported argument Result
+					// try_from()
+,
+					// Exclusion reason: Unsupported argument T,Unsupported argument T
+					// ///Returns the argument unchanged.
+					// from()
+,
+					// Exclusion reason: Unsupported argument [f32;2]
+					// from(<invalid: [f32;2]>) -> LuaVec2
+,
+					from(LuaVec2) -> LuaVec2
+,
+					// Exclusion reason: Unsupported argument (f32,f32)
+					// from(<invalid: (f32,f32)>) -> LuaVec2
+,
+					from(LuaVec2) -> LuaVec2
+,
+					// Exclusion reason: Unsupported argument U
+					// ///Calls `U::from(self)`.
+					// ///
+					// ///That is, this conversion is whatever the implementation of
+					// ///<code>[From]&lt;T&gt; for U</code> chooses to do.
+					// into(self)
+,
+					// Exclusion reason: Unsupported argument T
+					// borrow(&self)
+,
+					// Exclusion reason: Unsupported argument TypeId
+					// type_id(&self)
+,
+					// Exclusion reason: Unsupported argument Result
+					// try_into(self)
+,
+					// Exclusion reason: Unsupported argument &mut self,Unsupported argument T
+					// borrow_mut(<invalid: &mut self>)
+,
+					// Exclusion reason: Unsupported argument String
+					// to_string(&self)
+,
+					// Exclusion reason: Unsupported argument T
+					// to_owned(&self)
+,
+					// Exclusion reason: Unsupported argument T
+					// clone_into(&self)
+,
+					// Exclusion reason: Unsupported argument T
+					// is_valid_bit_pattern() -> bool
+,
+					// Exclusion reason: Unsupported argument S,Unsupported argument Result,Generics on the method
+					// serialize(&self)
+,
+					// Exclusion reason: Unsupported argument D,Unsupported argument Result,Generics on the method
+					// deserialize()
+,
+					clone(&self) -> LuaVec2
+,
+					default() -> LuaVec2
+,
+					eq(&self&LuaVec2) -> bool
+,
+					div(selfLuaVec2) -> LuaVec2
+,
+					div(selff32) -> LuaVec2
+,
+					div(selfLuaVec2) -> LuaVec2
+,
+					// Exclusion reason: Unsupported argument &mut self
+					// div_assign(<invalid: &mut self>LuaVec2)
+,
+					// Exclusion reason: Unsupported argument &mut self
+					// div_assign(<invalid: &mut self>f32)
+,
+					mul(selfLuaVec2) -> LuaVec2
+,
+					mul(selff32) -> LuaVec2
+,
+					mul(selfLuaVec2) -> LuaVec2
+,
+					// Exclusion reason: Unsupported argument QualifiedPath { name: "Output", args: AngleBracketed { args: [], bindings: [] }, self_type: Generic("Self"), trait_: ResolvedPath { name: "", id: Id("2:3313:2263"), args: None, param_names: [] } }
+					// mul(selfLuaVec2)
+,
+					// Exclusion reason: Unsupported argument &mut self
+					// mul_assign(<invalid: &mut self>LuaVec2)
+,
+					// Exclusion reason: Unsupported argument &mut self
+					// mul_assign(<invalid: &mut self>f32)
+,
+					add(selfLuaVec2) -> LuaVec2
+,
+					add(selff32) -> LuaVec2
+,
+					add(selfLuaVec2) -> LuaVec2
+,
+					// Exclusion reason: Unsupported argument &mut self
+					// add_assign(<invalid: &mut self>LuaVec2)
+,
+					// Exclusion reason: Unsupported argument &mut self
+					// add_assign(<invalid: &mut self>f32)
+,
+					sub(selfLuaVec2) -> LuaVec2
+,
+					sub(selff32) -> LuaVec2
+,
+					sub(selfLuaVec2) -> LuaVec2
+,
+					// Exclusion reason: Unsupported argument &mut self
+					// sub_assign(<invalid: &mut self>LuaVec2)
+,
+					// Exclusion reason: Unsupported argument &mut self
+					// sub_assign(<invalid: &mut self>f32)
+,
+					rem(selfLuaVec2) -> LuaVec2
+,
+					rem(selff32) -> LuaVec2
+,
+					rem(selfLuaVec2) -> LuaVec2
+,
+					// Exclusion reason: Unsupported argument &mut self
+					// rem_assign(<invalid: &mut self>LuaVec2)
+,
+					// Exclusion reason: Unsupported argument &mut self
+					// rem_assign(<invalid: &mut self>f32)
+,
+					// Exclusion reason: Unsupported argument &[f32;2]
+					// as_ref(&self)<invalid: &[f32;2]>
+,
+					// Exclusion reason: Unsupported argument &mut self,Unsupported argument &mut [f32;2]
+					// as_mut(<invalid: &mut self>)<invalid: &mut [f32;2]>
+,
+					// Exclusion reason: Unsupported argument I,Generics on the method
+					// sum() -> LuaVec2
+,
+					// Exclusion reason: Unsupported argument I,Generics on the method
+					// product() -> LuaVec2
+,
+					neg(self) -> LuaVec2
+,
+					// Exclusion reason: Unsupported argument QualifiedPath { name: "Output", args: AngleBracketed { args: [], bindings: [] }, self_type: Generic("Self"), trait_: ResolvedPath { name: "", id: Id("2:3539:2758"), args: None, param_names: [] } }
+					// index(&selfusize)
+,
+					// Exclusion reason: Unsupported argument &mut self,Unsupported argument QualifiedPath { name: "Output", args: AngleBracketed { args: [], bindings: [] }, self_type: Generic("Self"), trait_: ResolvedPath { name: "", id: Id("2:3539:2758"), args: None, param_names: [] } }
+					// index_mut(<invalid: &mut self>usize)
+,
+					// Exclusion reason: Unsupported argument fmt::Formatter,Unsupported argument fmt::Result
+					// fmt(&self)
+,
+					// Exclusion reason: Unsupported argument fmt::Formatter,Unsupported argument fmt::Result
+					// fmt(&self)
+,
+					xx(self) -> LuaVec2
+,
+					xy(self) -> LuaVec2
+,
+					yx(self) -> LuaVec2
+,
+					yy(self) -> LuaVec2
+,
+					xxx(self) -> LuaVec3
+,
+					xxy(self) -> LuaVec3
+,
+					xyx(self) -> LuaVec3
+,
+					xyy(self) -> LuaVec3
+,
+					yxx(self) -> LuaVec3
+,
+					yxy(self) -> LuaVec3
+,
+					yyx(self) -> LuaVec3
+,
+					yyy(self) -> LuaVec3
+,
+					xxxx(self) -> LuaVec4
+,
+					xxxy(self) -> LuaVec4
+,
+					xxyx(self) -> LuaVec4
+,
+					xxyy(self) -> LuaVec4
+,
+					xyxx(self) -> LuaVec4
+,
+					xyxy(self) -> LuaVec4
+,
+					xyyx(self) -> LuaVec4
+,
+					xyyy(self) -> LuaVec4
+,
+					yxxx(self) -> LuaVec4
+,
+					yxxy(self) -> LuaVec4
+,
+					yxyx(self) -> LuaVec4
+,
+					yxyy(self) -> LuaVec4
+,
+					yyxx(self) -> LuaVec4
+,
+					yyxy(self) -> LuaVec4
+,
+					yyyx(self) -> LuaVec4
+,
+					yyyy(self) -> LuaVec4
+,
+				)
+				+ BinaryOps
+				(
 self Add LuaVec2 -> LuaVec2 -> LuaVec2
 self Add f32 -> LuaVec2 -> LuaVec2
 f32 Add self -> LuaVec2 -> LuaVec2
@@ -1684,906 +1981,781 @@ f32 Mul self -> LuaVec2 -> LuaVec2
 self Rem LuaVec2 -> LuaVec2 -> LuaVec2
 self Rem f32 -> LuaVec2 -> LuaVec2
 f32 Rem self -> LuaVec2 -> LuaVec2
-			)
-+ UnaryOps			(
-			)
-impl			{
+				)
+				+ UnaryOps
+				(
+				)
+			impl
+			{
 				(MetaMethod::Index) (s=LuaVec2)=> {|_,s,idx: usize| {Ok(s.clone()[idx-1])}};
 				mut (MetaMethod::NewIndex) (n=f32) => {|_,s,(idx,val): (usize,($n))| {Ok(s.val_mut(|s| s[idx-1] = val))}};
 			}
 		}
-		{
+,		{
 			///A 3-dimensional vector.
-glam::f32::vec3::Vec3 : Value
-AutoMethods			(
-				// Exclusion reason: 
-				// ///Creates a new vector.
-				// new(f32f32f32) -> LuaVec3
-
-				// Exclusion reason: 
-				// ///Creates a vector with all elements set to `v`.
-				// splat(f32) -> LuaVec3
-
-				///Creates a vector from the elements in `if_true` and `if_false`, selecting which to use
-				///for each element of `self`.
-				///
-				///A true element in the mask uses the corresponding element from `if_true`, and false
-				///uses the element from `if_false`.
-				select(LuaVec3LuaVec3) -> LuaVec3
-
-				///Creates a new vector from an array.
-				from_array(<invalid: [f32;3]>) -> LuaVec3
-
-				///`[x, y, z]`
-				to_array(&self)<invalid: [f32;3]>
-
-				///Creates a vector from the first 3 values in `slice`.
-				///
-				///# Panics
-				///
-				///Panics if `slice` is less than 3 elements long.
-				from_slice(<invalid: &[f32]>) -> LuaVec3
-
-				///Writes the elements of `self` to the first 3 elements in `slice`.
-				///
-				///# Panics
-				///
-				///Panics if `slice` is less than 3 elements long.
-				write_to_slice(self<invalid: &mut [f32]>)
-
-				// Exclusion reason: 
-				// ///Creates a 4D vector from `self` and the given `w` value.
-				// extend(selff32) -> LuaVec4
-
-				// Exclusion reason: 
-				// ///Creates a 2D vector from the `x` and `y` elements of `self`, discarding `z`.
-				// ///
-				// ///Truncation may also be performed by using `self.xy()` or `Vec2::from()`.
-				// truncate(self) -> LuaVec2
-
-				// Exclusion reason: 
-				// ///Computes the dot product of `self` and `rhs`.
-				// dot(selfLuaVec3) -> f32
-
-				// Exclusion reason: 
-				// ///Computes the cross product of `self` and `rhs`.
-				// cross(selfLuaVec3) -> LuaVec3
-
-				// Exclusion reason: 
-				// ///Returns a vector containing the minimum values for each element of `self` and `rhs`.
-				// ///
-				// ///In other words this computes `[self.x.min(rhs.x), self.y.min(rhs.y), ..]`.
-				// min(selfLuaVec3) -> LuaVec3
-
-				// Exclusion reason: 
-				// ///Returns a vector containing the maximum values for each element of `self` and `rhs`.
-				// ///
-				// ///In other words this computes `[self.x.max(rhs.x), self.y.max(rhs.y), ..]`.
-				// max(selfLuaVec3) -> LuaVec3
-
-				// Exclusion reason: 
-				// ///Component-wise clamping of values, similar to [`f32::clamp`].
-				// ///
-				// ///Each element in `min` must be less-or-equal to the corresponding element in `max`.
-				// ///
-				// ///# Panics
-				// ///
-				// ///Will panic if `min` is greater than `max` when `glam_assert` is enabled.
-				// clamp(selfLuaVec3LuaVec3) -> LuaVec3
-
-				// Exclusion reason: 
-				// ///Returns the horizontal minimum of `self`.
-				// ///
-				// ///In other words this computes `min(x, y, ..)`.
-				// min_element(self) -> f32
-
-				// Exclusion reason: 
-				// ///Returns the horizontal maximum of `self`.
-				// ///
-				// ///In other words this computes `max(x, y, ..)`.
-				// max_element(self) -> f32
-
-				///Returns a vector mask containing the result of a `==` comparison for each element of
-				///`self` and `rhs`.
-				///
-				///In other words, this computes `[self.x == rhs.x, self.y == rhs.y, ..]` for all
-				///elements.
-				cmpeq(selfLuaVec3)
-
-				///Returns a vector mask containing the result of a `!=` comparison for each element of
-				///`self` and `rhs`.
-				///
-				///In other words this computes `[self.x != rhs.x, self.y != rhs.y, ..]` for all
-				///elements.
-				cmpne(selfLuaVec3)
-
-				///Returns a vector mask containing the result of a `>=` comparison for each element of
-				///`self` and `rhs`.
-				///
-				///In other words this computes `[self.x >= rhs.x, self.y >= rhs.y, ..]` for all
-				///elements.
-				cmpge(selfLuaVec3)
-
-				///Returns a vector mask containing the result of a `>` comparison for each element of
-				///`self` and `rhs`.
-				///
-				///In other words this computes `[self.x > rhs.x, self.y > rhs.y, ..]` for all
-				///elements.
-				cmpgt(selfLuaVec3)
-
-				///Returns a vector mask containing the result of a `<=` comparison for each element of
-				///`self` and `rhs`.
-				///
-				///In other words this computes `[self.x <= rhs.x, self.y <= rhs.y, ..]` for all
-				///elements.
-				cmple(selfLuaVec3)
-
-				///Returns a vector mask containing the result of a `<` comparison for each element of
-				///`self` and `rhs`.
-				///
-				///In other words this computes `[self.x < rhs.x, self.y < rhs.y, ..]` for all
-				///elements.
-				cmplt(selfLuaVec3)
-
-				// Exclusion reason: 
-				// ///Returns a vector containing the absolute value of each element of `self`.
-				// abs(self) -> LuaVec3
-
-				// Exclusion reason: 
-				// ///Returns a vector with elements representing the sign of `self`.
-				// ///
-				// ///- `1.0` if the number is positive, `+0.0` or `INFINITY`
-				// ///- `-1.0` if the number is negative, `-0.0` or `NEG_INFINITY`
-				// ///- `NAN` if the number is `NAN`
-				// signum(self) -> LuaVec3
-
-				// Exclusion reason: 
-				// ///Returns `true` if, and only if, all elements are finite.  If any element is either
-				// ///`NaN`, positive or negative infinity, this will return `false`.
-				// is_finite(self) -> bool
-
-				// Exclusion reason: 
-				// ///Returns `true` if any elements are `NaN`.
-				// is_nan(self) -> bool
-
-				///Performs `is_nan` on each element of self, returning a vector mask of the results.
-				///
-				///In other words, this computes `[x.is_nan(), y.is_nan(), z.is_nan(), w.is_nan()]`.
-				is_nan_mask(self)
-
-				// Exclusion reason: 
-				// ///Computes the length of `self`.
-				// length(self) -> f32
-
-				// Exclusion reason: 
-				// ///Computes the squared length of `self`.
-				// ///
-				// ///This is faster than `length()` as it avoids a square root operation.
-				// length_squared(self) -> f32
-
-				// Exclusion reason: 
-				// ///Computes `1.0 / length()`.
-				// ///
-				// ///For valid results, `self` must _not_ be of length zero.
-				// length_recip(self) -> f32
-
-				// Exclusion reason: 
-				// ///Computes the Euclidean distance between two points in space.
-				// distance(selfLuaVec3) -> f32
-
-				// Exclusion reason: 
-				// ///Compute the squared euclidean distance between two points in space.
-				// distance_squared(selfLuaVec3) -> f32
-
-				// Exclusion reason: 
-				// ///Returns `self` normalized to length 1.0.
-				// ///
-				// ///For valid results, `self` must _not_ be of length zero, nor very close to zero.
-				// ///
-				// ///See also [`Self::try_normalize`] and [`Self::normalize_or_zero`].
-				// ///
-				// ///Panics
-				// ///
-				// ///Will panic if `self` is zero length when `glam_assert` is enabled.
-				// normalize(self) -> LuaVec3
-
-				///Returns `self` normalized to length 1.0 if possible, else returns `None`.
-				///
-				///In particular, if the input is zero (or very close to zero), or non-finite,
-				///the result of this operation will be `None`.
-				///
-				///See also [`Self::normalize_or_zero`].
-				try_normalize(self)
-
-				// Exclusion reason: 
-				// ///Returns `self` normalized to length 1.0 if possible, else returns zero.
-				// ///
-				// ///In particular, if the input is zero (or very close to zero), or non-finite,
-				// ///the result of this operation will be zero.
-				// ///
-				// ///See also [`Self::try_normalize`].
-				// normalize_or_zero(self) -> LuaVec3
-
-				// Exclusion reason: 
-				// ///Returns whether `self` is length `1.0` or not.
-				// ///
-				// ///Uses a precision threshold of `1e-6`.
-				// is_normalized(self) -> bool
-
-				// Exclusion reason: 
-				// ///Returns the vector projection of `self` onto `rhs`.
-				// ///
-				// ///`rhs` must be of non-zero length.
-				// ///
-				// ///# Panics
-				// ///
-				// ///Will panic if `rhs` is zero length when `glam_assert` is enabled.
-				// project_onto(selfLuaVec3) -> LuaVec3
-
-				// Exclusion reason: 
-				// ///Returns the vector rejection of `self` from `rhs`.
-				// ///
-				// ///The vector rejection is the vector perpendicular to the projection of `self` onto
-				// ///`rhs`, in rhs words the result of `self - self.project_onto(rhs)`.
-				// ///
-				// ///`rhs` must be of non-zero length.
-				// ///
-				// ///# Panics
-				// ///
-				// ///Will panic if `rhs` has a length of zero when `glam_assert` is enabled.
-				// reject_from(selfLuaVec3) -> LuaVec3
-
-				// Exclusion reason: 
-				// ///Returns the vector projection of `self` onto `rhs`.
-				// ///
-				// ///`rhs` must be normalized.
-				// ///
-				// ///# Panics
-				// ///
-				// ///Will panic if `rhs` is not normalized when `glam_assert` is enabled.
-				// project_onto_normalized(selfLuaVec3) -> LuaVec3
-
-				// Exclusion reason: 
-				// ///Returns the vector rejection of `self` from `rhs`.
-				// ///
-				// ///The vector rejection is the vector perpendicular to the projection of `self` onto
-				// ///`rhs`, in rhs words the result of `self - self.project_onto(rhs)`.
-				// ///
-				// ///`rhs` must be normalized.
-				// ///
-				// ///# Panics
-				// ///
-				// ///Will panic if `rhs` is not normalized when `glam_assert` is enabled.
-				// reject_from_normalized(selfLuaVec3) -> LuaVec3
-
-				// Exclusion reason: 
-				// ///Returns a vector containing the nearest integer to a number for each element of `self`.
-				// ///Round half-way cases away from 0.0.
-				// round(self) -> LuaVec3
-
-				// Exclusion reason: 
-				// ///Returns a vector containing the largest integer less than or equal to a number for each
-				// ///element of `self`.
-				// floor(self) -> LuaVec3
-
-				// Exclusion reason: 
-				// ///Returns a vector containing the smallest integer greater than or equal to a number for
-				// ///each element of `self`.
-				// ceil(self) -> LuaVec3
-
-				// Exclusion reason: 
-				// ///Returns a vector containing the fractional part of the vector, e.g. `self -
-				// ///self.floor()`.
-				// ///
-				// ///Note that this is fast but not precise for large numbers.
-				// fract(self) -> LuaVec3
-
-				// Exclusion reason: 
-				// ///Returns a vector containing `e^self` (the exponential function) for each element of
-				// ///`self`.
-				// exp(self) -> LuaVec3
-
-				// Exclusion reason: 
-				// ///Returns a vector containing each element of `self` raised to the power of `n`.
-				// powf(selff32) -> LuaVec3
-
-				// Exclusion reason: 
-				// ///Returns a vector containing the reciprocal `1.0/n` of each element of `self`.
-				// recip(self) -> LuaVec3
-
-				// Exclusion reason: 
-				// ///Performs a linear interpolation between `self` and `rhs` based on the value `s`.
-				// ///
-				// ///When `s` is `0.0`, the result will be equal to `self`.  When `s` is `1.0`, the result
-				// ///will be equal to `rhs`. When `s` is outside of range `[0, 1]`, the result is linearly
-				// ///extrapolated.
-				// lerp(selfLuaVec3f32) -> LuaVec3
-
-				// Exclusion reason: 
-				// ///Returns true if the absolute difference of all elements between `self` and `rhs` is
-				// ///less than or equal to `max_abs_diff`.
-				// ///
-				// ///This can be used to compare if two vectors contain similar elements. It works best when
-				// ///comparing with a known value. The `max_abs_diff` that should be used used depends on
-				// ///the values being compared against.
-				// ///
-				// ///For more see
-				// ///[comparing floating point numbers](https://randomascii.wordpress.com/2012/02/25/comparing-floating-point-numbers-2012-edition/).
-				// abs_diff_eq(selfLuaVec3f32) -> bool
-
-				// Exclusion reason: 
-				// ///Returns a vector with a length no less than `min` and no more than `max`
-				// ///
-				// ///# Panics
-				// ///
-				// ///Will panic if `min` is greater than `max` when `glam_assert` is enabled.
-				// clamp_length(selff32f32) -> LuaVec3
-
-				// Exclusion reason: 
-				// ///Returns a vector with a length no more than `max`
-				// clamp_length_max(selff32) -> LuaVec3
-
-				// Exclusion reason: 
-				// ///Returns a vector with a length no less than `min`
-				// clamp_length_min(selff32) -> LuaVec3
-
-				// Exclusion reason: 
-				// ///Fused multiply-add. Computes `(self * a) + b` element-wise with only one rounding
-				// ///error, yielding a more accurate result than an unfused multiply-add.
-				// ///
-				// ///Using `mul_add` *may* be more performant than an unfused multiply-add if the target
-				// ///architecture has a dedicated fma CPU instruction. However, this is not always true,
-				// ///and will be heavily dependant on designing algorithms with specific target hardware in
-				// ///mind.
-				// mul_add(selfLuaVec3LuaVec3) -> LuaVec3
-
-				// Exclusion reason: 
-				// ///Returns the angle (in radians) between two vectors.
-				// ///
-				// ///The input vectors do not need to be unit length however they must be non-zero.
-				// angle_between(selfLuaVec3) -> f32
-
-				// Exclusion reason: 
-				// ///Returns some vector that is orthogonal to the given one.
-				// ///
-				// ///The input vector must be finite and non-zero.
-				// ///
-				// ///The output vector is not necessarily unit-length.
-				// ///For that use [`Self::any_orthonormal_vector`] instead.
-				// any_orthogonal_vector(&self) -> LuaVec3
-
-				// Exclusion reason: 
-				// ///Returns any unit-length vector that is orthogonal to the given one.
-				// ///The input vector must be finite and non-zero.
-				// ///
-				// ///# Panics
-				// ///
-				// ///Will panic if `self` is not normalized when `glam_assert` is enabled.
-				// any_orthonormal_vector(&self) -> LuaVec3
-
-				///Given a unit-length vector return two other vectors that together form an orthonormal
-				///basis.  That is, all three vectors are orthogonal to each other and are normalized.
-				///
-				///# Panics
-				///
-				///Will panic if `self` is not normalized when `glam_assert` is enabled.
-				any_orthonormal_pair(&self)<invalid: (LuaVec3,LuaVec3)>
-
-				///Casts all elements of `self` to `f64`.
-				as_dvec3(&self)
-
-				///Casts all elements of `self` to `i32`.
-				as_ivec3(&self)
-
-				///Casts all elements of `self` to `u32`.
-				as_uvec3(&self)
-
-				try_from()
-
-				///Returns the argument unchanged.
-				from()
-
-				from(<invalid: [f32;3]>) -> LuaVec3
-
-				// Exclusion reason: 
-				// from(LuaVec3) -> LuaVec3
-
-				from(<invalid: (f32,f32,f32)>) -> LuaVec3
-
-				// Exclusion reason: 
-				// from(LuaVec3) -> LuaVec3
-
-				from(<invalid: (LuaVec2,f32)>) -> LuaVec3
-
-				// Exclusion reason: 
-				// from(LuaVec3) -> LuaVec3
-
-				from() -> LuaVec3
-
-				///Calls `U::from(self)`.
-				///
-				///That is, this conversion is whatever the implementation of
-				///<code>[From]&lt;T&gt; for U</code> chooses to do.
-				into(self)
-
-				borrow(&self)
-
-				type_id(&self)
-
-				try_into(self)
-
-				borrow_mut(<invalid: &mut self>)
-
-				to_string(&self)
-
-				to_owned(&self)
-
-				clone_into(&self)
-
-				is_valid_bit_pattern() -> bool
-
-				serialize(&self)
-
-				deserialize()
-
-				mul(selfLuaVec3)
-
-				// Exclusion reason: 
-				// mul(selfLuaVec3) -> LuaVec3
-
-				// Exclusion reason: 
-				// mul(selff32) -> LuaVec3
-
-				// Exclusion reason: 
-				// mul(selfLuaVec3) -> LuaVec3
-
-				// Exclusion reason: 
-				// mul(selfLuaVec3) -> LuaVec3
-
-				///Multiplies a quaternion and a 3D vector, returning the rotated vector.
-				///
-				///# Panics
-				///
-				///Will panic if `self` is not normalized when `glam_assert` is enabled.
-				mul(selfLuaVec3)
-
-				// Exclusion reason: 
-				// clone(&self) -> LuaVec3
-
-				// Exclusion reason: 
-				// default() -> LuaVec3
-
-				// Exclusion reason: 
-				// eq(&self&LuaVec3) -> bool
-
-				// Exclusion reason: 
-				// div(selfLuaVec3) -> LuaVec3
-
-				// Exclusion reason: 
-				// div(selff32) -> LuaVec3
-
-				// Exclusion reason: 
-				// div(selfLuaVec3) -> LuaVec3
-
-				div_assign(<invalid: &mut self>LuaVec3)
-
-				div_assign(<invalid: &mut self>f32)
-
-				mul_assign(<invalid: &mut self>LuaVec3)
-
-				mul_assign(<invalid: &mut self>f32)
-
-				// Exclusion reason: 
-				// add(selfLuaVec3) -> LuaVec3
-
-				// Exclusion reason: 
-				// add(selff32) -> LuaVec3
-
-				// Exclusion reason: 
-				// add(selfLuaVec3) -> LuaVec3
-
-				add_assign(<invalid: &mut self>LuaVec3)
-
-				add_assign(<invalid: &mut self>f32)
-
-				// Exclusion reason: 
-				// sub(selfLuaVec3) -> LuaVec3
-
-				// Exclusion reason: 
-				// sub(selff32) -> LuaVec3
-
-				// Exclusion reason: 
-				// sub(selfLuaVec3) -> LuaVec3
-
-				sub_assign(<invalid: &mut self>LuaVec3)
-
-				sub_assign(<invalid: &mut self>f32)
-
-				// Exclusion reason: 
-				// rem(selfLuaVec3) -> LuaVec3
-
-				// Exclusion reason: 
-				// rem(selff32) -> LuaVec3
-
-				// Exclusion reason: 
-				// rem(selfLuaVec3) -> LuaVec3
-
-				rem_assign(<invalid: &mut self>LuaVec3)
-
-				rem_assign(<invalid: &mut self>f32)
-
-				as_ref(&self)<invalid: &[f32;3]>
-
-				as_mut(<invalid: &mut self>)<invalid: &mut [f32;3]>
-
-				sum() -> LuaVec3
-
-				product() -> LuaVec3
-
-				// Exclusion reason: 
-				// neg(self) -> LuaVec3
-
-				index(&selfusize)
-
-				index_mut(<invalid: &mut self>usize)
-
-				fmt(&self)
-
-				fmt(&self)
-
-				// Exclusion reason: 
-				// xx(self) -> LuaVec2
-
-				// Exclusion reason: 
-				// xy(self) -> LuaVec2
-
-				// Exclusion reason: 
-				// xz(self) -> LuaVec2
-
-				// Exclusion reason: 
-				// yx(self) -> LuaVec2
-
-				// Exclusion reason: 
-				// yy(self) -> LuaVec2
-
-				// Exclusion reason: 
-				// yz(self) -> LuaVec2
-
-				// Exclusion reason: 
-				// zx(self) -> LuaVec2
-
-				// Exclusion reason: 
-				// zy(self) -> LuaVec2
-
-				// Exclusion reason: 
-				// zz(self) -> LuaVec2
-
-				// Exclusion reason: 
-				// xxx(self) -> LuaVec3
-
-				// Exclusion reason: 
-				// xxy(self) -> LuaVec3
-
-				// Exclusion reason: 
-				// xxz(self) -> LuaVec3
-
-				// Exclusion reason: 
-				// xyx(self) -> LuaVec3
-
-				// Exclusion reason: 
-				// xyy(self) -> LuaVec3
-
-				// Exclusion reason: 
-				// xyz(self) -> LuaVec3
-
-				// Exclusion reason: 
-				// xzx(self) -> LuaVec3
-
-				// Exclusion reason: 
-				// xzy(self) -> LuaVec3
-
-				// Exclusion reason: 
-				// xzz(self) -> LuaVec3
-
-				// Exclusion reason: 
-				// yxx(self) -> LuaVec3
-
-				// Exclusion reason: 
-				// yxy(self) -> LuaVec3
-
-				// Exclusion reason: 
-				// yxz(self) -> LuaVec3
-
-				// Exclusion reason: 
-				// yyx(self) -> LuaVec3
-
-				// Exclusion reason: 
-				// yyy(self) -> LuaVec3
-
-				// Exclusion reason: 
-				// yyz(self) -> LuaVec3
-
-				// Exclusion reason: 
-				// yzx(self) -> LuaVec3
-
-				// Exclusion reason: 
-				// yzy(self) -> LuaVec3
-
-				// Exclusion reason: 
-				// yzz(self) -> LuaVec3
-
-				// Exclusion reason: 
-				// zxx(self) -> LuaVec3
-
-				// Exclusion reason: 
-				// zxy(self) -> LuaVec3
-
-				// Exclusion reason: 
-				// zxz(self) -> LuaVec3
-
-				// Exclusion reason: 
-				// zyx(self) -> LuaVec3
-
-				// Exclusion reason: 
-				// zyy(self) -> LuaVec3
-
-				// Exclusion reason: 
-				// zyz(self) -> LuaVec3
-
-				// Exclusion reason: 
-				// zzx(self) -> LuaVec3
-
-				// Exclusion reason: 
-				// zzy(self) -> LuaVec3
-
-				// Exclusion reason: 
-				// zzz(self) -> LuaVec3
-
-				// Exclusion reason: 
-				// xxxx(self) -> LuaVec4
-
-				// Exclusion reason: 
-				// xxxy(self) -> LuaVec4
-
-				// Exclusion reason: 
-				// xxxz(self) -> LuaVec4
-
-				// Exclusion reason: 
-				// xxyx(self) -> LuaVec4
-
-				// Exclusion reason: 
-				// xxyy(self) -> LuaVec4
-
-				// Exclusion reason: 
-				// xxyz(self) -> LuaVec4
-
-				// Exclusion reason: 
-				// xxzx(self) -> LuaVec4
-
-				// Exclusion reason: 
-				// xxzy(self) -> LuaVec4
-
-				// Exclusion reason: 
-				// xxzz(self) -> LuaVec4
-
-				// Exclusion reason: 
-				// xyxx(self) -> LuaVec4
-
-				// Exclusion reason: 
-				// xyxy(self) -> LuaVec4
-
-				// Exclusion reason: 
-				// xyxz(self) -> LuaVec4
-
-				// Exclusion reason: 
-				// xyyx(self) -> LuaVec4
-
-				// Exclusion reason: 
-				// xyyy(self) -> LuaVec4
-
-				// Exclusion reason: 
-				// xyyz(self) -> LuaVec4
-
-				// Exclusion reason: 
-				// xyzx(self) -> LuaVec4
-
-				// Exclusion reason: 
-				// xyzy(self) -> LuaVec4
-
-				// Exclusion reason: 
-				// xyzz(self) -> LuaVec4
-
-				// Exclusion reason: 
-				// xzxx(self) -> LuaVec4
-
-				// Exclusion reason: 
-				// xzxy(self) -> LuaVec4
-
-				// Exclusion reason: 
-				// xzxz(self) -> LuaVec4
-
-				// Exclusion reason: 
-				// xzyx(self) -> LuaVec4
-
-				// Exclusion reason: 
-				// xzyy(self) -> LuaVec4
-
-				// Exclusion reason: 
-				// xzyz(self) -> LuaVec4
-
-				// Exclusion reason: 
-				// xzzx(self) -> LuaVec4
-
-				// Exclusion reason: 
-				// xzzy(self) -> LuaVec4
-
-				// Exclusion reason: 
-				// xzzz(self) -> LuaVec4
-
-				// Exclusion reason: 
-				// yxxx(self) -> LuaVec4
-
-				// Exclusion reason: 
-				// yxxy(self) -> LuaVec4
-
-				// Exclusion reason: 
-				// yxxz(self) -> LuaVec4
-
-				// Exclusion reason: 
-				// yxyx(self) -> LuaVec4
-
-				// Exclusion reason: 
-				// yxyy(self) -> LuaVec4
-
-				// Exclusion reason: 
-				// yxyz(self) -> LuaVec4
-
-				// Exclusion reason: 
-				// yxzx(self) -> LuaVec4
-
-				// Exclusion reason: 
-				// yxzy(self) -> LuaVec4
-
-				// Exclusion reason: 
-				// yxzz(self) -> LuaVec4
-
-				// Exclusion reason: 
-				// yyxx(self) -> LuaVec4
-
-				// Exclusion reason: 
-				// yyxy(self) -> LuaVec4
-
-				// Exclusion reason: 
-				// yyxz(self) -> LuaVec4
-
-				// Exclusion reason: 
-				// yyyx(self) -> LuaVec4
-
-				// Exclusion reason: 
-				// yyyy(self) -> LuaVec4
-
-				// Exclusion reason: 
-				// yyyz(self) -> LuaVec4
-
-				// Exclusion reason: 
-				// yyzx(self) -> LuaVec4
-
-				// Exclusion reason: 
-				// yyzy(self) -> LuaVec4
-
-				// Exclusion reason: 
-				// yyzz(self) -> LuaVec4
-
-				// Exclusion reason: 
-				// yzxx(self) -> LuaVec4
-
-				// Exclusion reason: 
-				// yzxy(self) -> LuaVec4
-
-				// Exclusion reason: 
-				// yzxz(self) -> LuaVec4
-
-				// Exclusion reason: 
-				// yzyx(self) -> LuaVec4
-
-				// Exclusion reason: 
-				// yzyy(self) -> LuaVec4
-
-				// Exclusion reason: 
-				// yzyz(self) -> LuaVec4
-
-				// Exclusion reason: 
-				// yzzx(self) -> LuaVec4
-
-				// Exclusion reason: 
-				// yzzy(self) -> LuaVec4
-
-				// Exclusion reason: 
-				// yzzz(self) -> LuaVec4
-
-				// Exclusion reason: 
-				// zxxx(self) -> LuaVec4
-
-				// Exclusion reason: 
-				// zxxy(self) -> LuaVec4
-
-				// Exclusion reason: 
-				// zxxz(self) -> LuaVec4
-
-				// Exclusion reason: 
-				// zxyx(self) -> LuaVec4
-
-				// Exclusion reason: 
-				// zxyy(self) -> LuaVec4
-
-				// Exclusion reason: 
-				// zxyz(self) -> LuaVec4
-
-				// Exclusion reason: 
-				// zxzx(self) -> LuaVec4
-
-				// Exclusion reason: 
-				// zxzy(self) -> LuaVec4
-
-				// Exclusion reason: 
-				// zxzz(self) -> LuaVec4
-
-				// Exclusion reason: 
-				// zyxx(self) -> LuaVec4
-
-				// Exclusion reason: 
-				// zyxy(self) -> LuaVec4
-
-				// Exclusion reason: 
-				// zyxz(self) -> LuaVec4
-
-				// Exclusion reason: 
-				// zyyx(self) -> LuaVec4
-
-				// Exclusion reason: 
-				// zyyy(self) -> LuaVec4
-
-				// Exclusion reason: 
-				// zyyz(self) -> LuaVec4
-
-				// Exclusion reason: 
-				// zyzx(self) -> LuaVec4
-
-				// Exclusion reason: 
-				// zyzy(self) -> LuaVec4
-
-				// Exclusion reason: 
-				// zyzz(self) -> LuaVec4
-
-				// Exclusion reason: 
-				// zzxx(self) -> LuaVec4
-
-				// Exclusion reason: 
-				// zzxy(self) -> LuaVec4
-
-				// Exclusion reason: 
-				// zzxz(self) -> LuaVec4
-
-				// Exclusion reason: 
-				// zzyx(self) -> LuaVec4
-
-				// Exclusion reason: 
-				// zzyy(self) -> LuaVec4
-
-				// Exclusion reason: 
-				// zzyz(self) -> LuaVec4
-
-				// Exclusion reason: 
-				// zzzx(self) -> LuaVec4
-
-				// Exclusion reason: 
-				// zzzy(self) -> LuaVec4
-
-				// Exclusion reason: 
-				// zzzz(self) -> LuaVec4
-
-			)
-+ BinaryOps			(
+			glam::f32::vec3::Vec3 : Value
+:				AutoMethods
+				(
+					///Creates a new vector.
+					new(f32f32f32) -> LuaVec3
+,
+					///Creates a vector with all elements set to `v`.
+					splat(f32) -> LuaVec3
+,
+					// Exclusion reason: Unsupported argument BVec3
+					// ///Creates a vector from the elements in `if_true` and `if_false`, selecting which to use
+					// ///for each element of `self`.
+					// ///
+					// ///A true element in the mask uses the corresponding element from `if_true`, and false
+					// ///uses the element from `if_false`.
+					// select(LuaVec3LuaVec3) -> LuaVec3
+,
+					// Exclusion reason: Unsupported argument [f32;3]
+					// ///Creates a new vector from an array.
+					// from_array(<invalid: [f32;3]>) -> LuaVec3
+,
+					// Exclusion reason: Unsupported argument [f32;3]
+					// ///`[x, y, z]`
+					// to_array(&self)<invalid: [f32;3]>
+,
+					// Exclusion reason: Unsupported argument &[f32]
+					// ///Creates a vector from the first 3 values in `slice`.
+					// ///
+					// ///# Panics
+					// ///
+					// ///Panics if `slice` is less than 3 elements long.
+					// from_slice(<invalid: &[f32]>) -> LuaVec3
+,
+					// Exclusion reason: Unsupported argument &mut [f32]
+					// ///Writes the elements of `self` to the first 3 elements in `slice`.
+					// ///
+					// ///# Panics
+					// ///
+					// ///Panics if `slice` is less than 3 elements long.
+					// write_to_slice(self<invalid: &mut [f32]>)
+,
+					///Creates a 4D vector from `self` and the given `w` value.
+					extend(selff32) -> LuaVec4
+,
+					///Creates a 2D vector from the `x` and `y` elements of `self`, discarding `z`.
+					///
+					///Truncation may also be performed by using `self.xy()` or `Vec2::from()`.
+					truncate(self) -> LuaVec2
+,
+					///Computes the dot product of `self` and `rhs`.
+					dot(selfLuaVec3) -> f32
+,
+					///Computes the cross product of `self` and `rhs`.
+					cross(selfLuaVec3) -> LuaVec3
+,
+					///Returns a vector containing the minimum values for each element of `self` and `rhs`.
+					///
+					///In other words this computes `[self.x.min(rhs.x), self.y.min(rhs.y), ..]`.
+					min(selfLuaVec3) -> LuaVec3
+,
+					///Returns a vector containing the maximum values for each element of `self` and `rhs`.
+					///
+					///In other words this computes `[self.x.max(rhs.x), self.y.max(rhs.y), ..]`.
+					max(selfLuaVec3) -> LuaVec3
+,
+					///Component-wise clamping of values, similar to [`f32::clamp`].
+					///
+					///Each element in `min` must be less-or-equal to the corresponding element in `max`.
+					///
+					///# Panics
+					///
+					///Will panic if `min` is greater than `max` when `glam_assert` is enabled.
+					clamp(selfLuaVec3LuaVec3) -> LuaVec3
+,
+					///Returns the horizontal minimum of `self`.
+					///
+					///In other words this computes `min(x, y, ..)`.
+					min_element(self) -> f32
+,
+					///Returns the horizontal maximum of `self`.
+					///
+					///In other words this computes `max(x, y, ..)`.
+					max_element(self) -> f32
+,
+					// Exclusion reason: Unsupported argument BVec3
+					// ///Returns a vector mask containing the result of a `==` comparison for each element of
+					// ///`self` and `rhs`.
+					// ///
+					// ///In other words, this computes `[self.x == rhs.x, self.y == rhs.y, ..]` for all
+					// ///elements.
+					// cmpeq(selfLuaVec3)
+,
+					// Exclusion reason: Unsupported argument BVec3
+					// ///Returns a vector mask containing the result of a `!=` comparison for each element of
+					// ///`self` and `rhs`.
+					// ///
+					// ///In other words this computes `[self.x != rhs.x, self.y != rhs.y, ..]` for all
+					// ///elements.
+					// cmpne(selfLuaVec3)
+,
+					// Exclusion reason: Unsupported argument BVec3
+					// ///Returns a vector mask containing the result of a `>=` comparison for each element of
+					// ///`self` and `rhs`.
+					// ///
+					// ///In other words this computes `[self.x >= rhs.x, self.y >= rhs.y, ..]` for all
+					// ///elements.
+					// cmpge(selfLuaVec3)
+,
+					// Exclusion reason: Unsupported argument BVec3
+					// ///Returns a vector mask containing the result of a `>` comparison for each element of
+					// ///`self` and `rhs`.
+					// ///
+					// ///In other words this computes `[self.x > rhs.x, self.y > rhs.y, ..]` for all
+					// ///elements.
+					// cmpgt(selfLuaVec3)
+,
+					// Exclusion reason: Unsupported argument BVec3
+					// ///Returns a vector mask containing the result of a `<=` comparison for each element of
+					// ///`self` and `rhs`.
+					// ///
+					// ///In other words this computes `[self.x <= rhs.x, self.y <= rhs.y, ..]` for all
+					// ///elements.
+					// cmple(selfLuaVec3)
+,
+					// Exclusion reason: Unsupported argument BVec3
+					// ///Returns a vector mask containing the result of a `<` comparison for each element of
+					// ///`self` and `rhs`.
+					// ///
+					// ///In other words this computes `[self.x < rhs.x, self.y < rhs.y, ..]` for all
+					// ///elements.
+					// cmplt(selfLuaVec3)
+,
+					///Returns a vector containing the absolute value of each element of `self`.
+					abs(self) -> LuaVec3
+,
+					///Returns a vector with elements representing the sign of `self`.
+					///
+					///- `1.0` if the number is positive, `+0.0` or `INFINITY`
+					///- `-1.0` if the number is negative, `-0.0` or `NEG_INFINITY`
+					///- `NAN` if the number is `NAN`
+					signum(self) -> LuaVec3
+,
+					///Returns `true` if, and only if, all elements are finite.  If any element is either
+					///`NaN`, positive or negative infinity, this will return `false`.
+					is_finite(self) -> bool
+,
+					///Returns `true` if any elements are `NaN`.
+					is_nan(self) -> bool
+,
+					// Exclusion reason: Unsupported argument BVec3
+					// ///Performs `is_nan` on each element of self, returning a vector mask of the results.
+					// ///
+					// ///In other words, this computes `[x.is_nan(), y.is_nan(), z.is_nan(), w.is_nan()]`.
+					// is_nan_mask(self)
+,
+					///Computes the length of `self`.
+					length(self) -> f32
+,
+					///Computes the squared length of `self`.
+					///
+					///This is faster than `length()` as it avoids a square root operation.
+					length_squared(self) -> f32
+,
+					///Computes `1.0 / length()`.
+					///
+					///For valid results, `self` must _not_ be of length zero.
+					length_recip(self) -> f32
+,
+					///Computes the Euclidean distance between two points in space.
+					distance(selfLuaVec3) -> f32
+,
+					///Compute the squared euclidean distance between two points in space.
+					distance_squared(selfLuaVec3) -> f32
+,
+					///Returns `self` normalized to length 1.0.
+					///
+					///For valid results, `self` must _not_ be of length zero, nor very close to zero.
+					///
+					///See also [`Self::try_normalize`] and [`Self::normalize_or_zero`].
+					///
+					///Panics
+					///
+					///Will panic if `self` is zero length when `glam_assert` is enabled.
+					normalize(self) -> LuaVec3
+,
+					// Exclusion reason: Unsupported argument Option
+					// ///Returns `self` normalized to length 1.0 if possible, else returns `None`.
+					// ///
+					// ///In particular, if the input is zero (or very close to zero), or non-finite,
+					// ///the result of this operation will be `None`.
+					// ///
+					// ///See also [`Self::normalize_or_zero`].
+					// try_normalize(self)
+,
+					///Returns `self` normalized to length 1.0 if possible, else returns zero.
+					///
+					///In particular, if the input is zero (or very close to zero), or non-finite,
+					///the result of this operation will be zero.
+					///
+					///See also [`Self::try_normalize`].
+					normalize_or_zero(self) -> LuaVec3
+,
+					///Returns whether `self` is length `1.0` or not.
+					///
+					///Uses a precision threshold of `1e-6`.
+					is_normalized(self) -> bool
+,
+					///Returns the vector projection of `self` onto `rhs`.
+					///
+					///`rhs` must be of non-zero length.
+					///
+					///# Panics
+					///
+					///Will panic if `rhs` is zero length when `glam_assert` is enabled.
+					project_onto(selfLuaVec3) -> LuaVec3
+,
+					///Returns the vector rejection of `self` from `rhs`.
+					///
+					///The vector rejection is the vector perpendicular to the projection of `self` onto
+					///`rhs`, in rhs words the result of `self - self.project_onto(rhs)`.
+					///
+					///`rhs` must be of non-zero length.
+					///
+					///# Panics
+					///
+					///Will panic if `rhs` has a length of zero when `glam_assert` is enabled.
+					reject_from(selfLuaVec3) -> LuaVec3
+,
+					///Returns the vector projection of `self` onto `rhs`.
+					///
+					///`rhs` must be normalized.
+					///
+					///# Panics
+					///
+					///Will panic if `rhs` is not normalized when `glam_assert` is enabled.
+					project_onto_normalized(selfLuaVec3) -> LuaVec3
+,
+					///Returns the vector rejection of `self` from `rhs`.
+					///
+					///The vector rejection is the vector perpendicular to the projection of `self` onto
+					///`rhs`, in rhs words the result of `self - self.project_onto(rhs)`.
+					///
+					///`rhs` must be normalized.
+					///
+					///# Panics
+					///
+					///Will panic if `rhs` is not normalized when `glam_assert` is enabled.
+					reject_from_normalized(selfLuaVec3) -> LuaVec3
+,
+					///Returns a vector containing the nearest integer to a number for each element of `self`.
+					///Round half-way cases away from 0.0.
+					round(self) -> LuaVec3
+,
+					///Returns a vector containing the largest integer less than or equal to a number for each
+					///element of `self`.
+					floor(self) -> LuaVec3
+,
+					///Returns a vector containing the smallest integer greater than or equal to a number for
+					///each element of `self`.
+					ceil(self) -> LuaVec3
+,
+					///Returns a vector containing the fractional part of the vector, e.g. `self -
+					///self.floor()`.
+					///
+					///Note that this is fast but not precise for large numbers.
+					fract(self) -> LuaVec3
+,
+					///Returns a vector containing `e^self` (the exponential function) for each element of
+					///`self`.
+					exp(self) -> LuaVec3
+,
+					///Returns a vector containing each element of `self` raised to the power of `n`.
+					powf(selff32) -> LuaVec3
+,
+					///Returns a vector containing the reciprocal `1.0/n` of each element of `self`.
+					recip(self) -> LuaVec3
+,
+					///Performs a linear interpolation between `self` and `rhs` based on the value `s`.
+					///
+					///When `s` is `0.0`, the result will be equal to `self`.  When `s` is `1.0`, the result
+					///will be equal to `rhs`. When `s` is outside of range `[0, 1]`, the result is linearly
+					///extrapolated.
+					lerp(selfLuaVec3f32) -> LuaVec3
+,
+					///Returns true if the absolute difference of all elements between `self` and `rhs` is
+					///less than or equal to `max_abs_diff`.
+					///
+					///This can be used to compare if two vectors contain similar elements. It works best when
+					///comparing with a known value. The `max_abs_diff` that should be used used depends on
+					///the values being compared against.
+					///
+					///For more see
+					///[comparing floating point numbers](https://randomascii.wordpress.com/2012/02/25/comparing-floating-point-numbers-2012-edition/).
+					abs_diff_eq(selfLuaVec3f32) -> bool
+,
+					///Returns a vector with a length no less than `min` and no more than `max`
+					///
+					///# Panics
+					///
+					///Will panic if `min` is greater than `max` when `glam_assert` is enabled.
+					clamp_length(selff32f32) -> LuaVec3
+,
+					///Returns a vector with a length no more than `max`
+					clamp_length_max(selff32) -> LuaVec3
+,
+					///Returns a vector with a length no less than `min`
+					clamp_length_min(selff32) -> LuaVec3
+,
+					///Fused multiply-add. Computes `(self * a) + b` element-wise with only one rounding
+					///error, yielding a more accurate result than an unfused multiply-add.
+					///
+					///Using `mul_add` *may* be more performant than an unfused multiply-add if the target
+					///architecture has a dedicated fma CPU instruction. However, this is not always true,
+					///and will be heavily dependant on designing algorithms with specific target hardware in
+					///mind.
+					mul_add(selfLuaVec3LuaVec3) -> LuaVec3
+,
+					///Returns the angle (in radians) between two vectors.
+					///
+					///The input vectors do not need to be unit length however they must be non-zero.
+					angle_between(selfLuaVec3) -> f32
+,
+					///Returns some vector that is orthogonal to the given one.
+					///
+					///The input vector must be finite and non-zero.
+					///
+					///The output vector is not necessarily unit-length.
+					///For that use [`Self::any_orthonormal_vector`] instead.
+					any_orthogonal_vector(&self) -> LuaVec3
+,
+					///Returns any unit-length vector that is orthogonal to the given one.
+					///The input vector must be finite and non-zero.
+					///
+					///# Panics
+					///
+					///Will panic if `self` is not normalized when `glam_assert` is enabled.
+					any_orthonormal_vector(&self) -> LuaVec3
+,
+					// Exclusion reason: Unsupported argument (LuaVec3,LuaVec3)
+					// ///Given a unit-length vector return two other vectors that together form an orthonormal
+					// ///basis.  That is, all three vectors are orthogonal to each other and are normalized.
+					// ///
+					// ///# Panics
+					// ///
+					// ///Will panic if `self` is not normalized when `glam_assert` is enabled.
+					// any_orthonormal_pair(&self)<invalid: (LuaVec3,LuaVec3)>
+,
+					// Exclusion reason: Unsupported argument crate::DVec3
+					// ///Casts all elements of `self` to `f64`.
+					// as_dvec3(&self)
+,
+					// Exclusion reason: Unsupported argument crate::IVec3
+					// ///Casts all elements of `self` to `i32`.
+					// as_ivec3(&self)
+,
+					// Exclusion reason: Unsupported argument crate::UVec3
+					// ///Casts all elements of `self` to `u32`.
+					// as_uvec3(&self)
+,
+					// Exclusion reason: Unsupported argument U,Unsupported argument Result
+					// try_from()
+,
+					// Exclusion reason: Unsupported argument T,Unsupported argument T
+					// ///Returns the argument unchanged.
+					// from()
+,
+					// Exclusion reason: Unsupported argument [f32;3]
+					// from(<invalid: [f32;3]>) -> LuaVec3
+,
+					from(LuaVec3) -> LuaVec3
+,
+					// Exclusion reason: Unsupported argument (f32,f32,f32)
+					// from(<invalid: (f32,f32,f32)>) -> LuaVec3
+,
+					from(LuaVec3) -> LuaVec3
+,
+					// Exclusion reason: Unsupported argument (LuaVec2,f32)
+					// from(<invalid: (LuaVec2,f32)>) -> LuaVec3
+,
+					from(LuaVec3) -> LuaVec3
+,
+					// Exclusion reason: Unsupported argument Vec3A
+					// from() -> LuaVec3
+,
+					// Exclusion reason: Unsupported argument U
+					// ///Calls `U::from(self)`.
+					// ///
+					// ///That is, this conversion is whatever the implementation of
+					// ///<code>[From]&lt;T&gt; for U</code> chooses to do.
+					// into(self)
+,
+					// Exclusion reason: Unsupported argument T
+					// borrow(&self)
+,
+					// Exclusion reason: Unsupported argument TypeId
+					// type_id(&self)
+,
+					// Exclusion reason: Unsupported argument Result
+					// try_into(self)
+,
+					// Exclusion reason: Unsupported argument &mut self,Unsupported argument T
+					// borrow_mut(<invalid: &mut self>)
+,
+					// Exclusion reason: Unsupported argument String
+					// to_string(&self)
+,
+					// Exclusion reason: Unsupported argument T
+					// to_owned(&self)
+,
+					// Exclusion reason: Unsupported argument T
+					// clone_into(&self)
+,
+					// Exclusion reason: Unsupported argument T
+					// is_valid_bit_pattern() -> bool
+,
+					// Exclusion reason: Unsupported argument S,Unsupported argument Result,Generics on the method
+					// serialize(&self)
+,
+					// Exclusion reason: Unsupported argument D,Unsupported argument Result,Generics on the method
+					// deserialize()
+,
+					// Exclusion reason: Unsupported argument QualifiedPath { name: "Output", args: AngleBracketed { args: [], bindings: [] }, self_type: Generic("Self"), trait_: ResolvedPath { name: "", id: Id("2:3313:2263"), args: None, param_names: [] } }
+					// mul(selfLuaVec3)
+,
+					mul(selfLuaVec3) -> LuaVec3
+,
+					mul(selff32) -> LuaVec3
+,
+					mul(selfLuaVec3) -> LuaVec3
+,
+					mul(selfLuaVec3) -> LuaVec3
+,
+					// Exclusion reason: Unsupported argument QualifiedPath { name: "Output", args: AngleBracketed { args: [], bindings: [] }, self_type: Generic("Self"), trait_: ResolvedPath { name: "", id: Id("2:3313:2263"), args: None, param_names: [] } }
+					// ///Multiplies a quaternion and a 3D vector, returning the rotated vector.
+					// ///
+					// ///# Panics
+					// ///
+					// ///Will panic if `self` is not normalized when `glam_assert` is enabled.
+					// mul(selfLuaVec3)
+,
+					clone(&self) -> LuaVec3
+,
+					default() -> LuaVec3
+,
+					eq(&self&LuaVec3) -> bool
+,
+					div(selfLuaVec3) -> LuaVec3
+,
+					div(selff32) -> LuaVec3
+,
+					div(selfLuaVec3) -> LuaVec3
+,
+					// Exclusion reason: Unsupported argument &mut self
+					// div_assign(<invalid: &mut self>LuaVec3)
+,
+					// Exclusion reason: Unsupported argument &mut self
+					// div_assign(<invalid: &mut self>f32)
+,
+					// Exclusion reason: Unsupported argument &mut self
+					// mul_assign(<invalid: &mut self>LuaVec3)
+,
+					// Exclusion reason: Unsupported argument &mut self
+					// mul_assign(<invalid: &mut self>f32)
+,
+					add(selfLuaVec3) -> LuaVec3
+,
+					add(selff32) -> LuaVec3
+,
+					add(selfLuaVec3) -> LuaVec3
+,
+					// Exclusion reason: Unsupported argument &mut self
+					// add_assign(<invalid: &mut self>LuaVec3)
+,
+					// Exclusion reason: Unsupported argument &mut self
+					// add_assign(<invalid: &mut self>f32)
+,
+					sub(selfLuaVec3) -> LuaVec3
+,
+					sub(selff32) -> LuaVec3
+,
+					sub(selfLuaVec3) -> LuaVec3
+,
+					// Exclusion reason: Unsupported argument &mut self
+					// sub_assign(<invalid: &mut self>LuaVec3)
+,
+					// Exclusion reason: Unsupported argument &mut self
+					// sub_assign(<invalid: &mut self>f32)
+,
+					rem(selfLuaVec3) -> LuaVec3
+,
+					rem(selff32) -> LuaVec3
+,
+					rem(selfLuaVec3) -> LuaVec3
+,
+					// Exclusion reason: Unsupported argument &mut self
+					// rem_assign(<invalid: &mut self>LuaVec3)
+,
+					// Exclusion reason: Unsupported argument &mut self
+					// rem_assign(<invalid: &mut self>f32)
+,
+					// Exclusion reason: Unsupported argument &[f32;3]
+					// as_ref(&self)<invalid: &[f32;3]>
+,
+					// Exclusion reason: Unsupported argument &mut self,Unsupported argument &mut [f32;3]
+					// as_mut(<invalid: &mut self>)<invalid: &mut [f32;3]>
+,
+					// Exclusion reason: Unsupported argument I,Generics on the method
+					// sum() -> LuaVec3
+,
+					// Exclusion reason: Unsupported argument I,Generics on the method
+					// product() -> LuaVec3
+,
+					neg(self) -> LuaVec3
+,
+					// Exclusion reason: Unsupported argument QualifiedPath { name: "Output", args: AngleBracketed { args: [], bindings: [] }, self_type: Generic("Self"), trait_: ResolvedPath { name: "", id: Id("2:3539:2758"), args: None, param_names: [] } }
+					// index(&selfusize)
+,
+					// Exclusion reason: Unsupported argument &mut self,Unsupported argument QualifiedPath { name: "Output", args: AngleBracketed { args: [], bindings: [] }, self_type: Generic("Self"), trait_: ResolvedPath { name: "", id: Id("2:3539:2758"), args: None, param_names: [] } }
+					// index_mut(<invalid: &mut self>usize)
+,
+					// Exclusion reason: Unsupported argument fmt::Formatter,Unsupported argument fmt::Result
+					// fmt(&self)
+,
+					// Exclusion reason: Unsupported argument fmt::Formatter,Unsupported argument fmt::Result
+					// fmt(&self)
+,
+					xx(self) -> LuaVec2
+,
+					xy(self) -> LuaVec2
+,
+					xz(self) -> LuaVec2
+,
+					yx(self) -> LuaVec2
+,
+					yy(self) -> LuaVec2
+,
+					yz(self) -> LuaVec2
+,
+					zx(self) -> LuaVec2
+,
+					zy(self) -> LuaVec2
+,
+					zz(self) -> LuaVec2
+,
+					xxx(self) -> LuaVec3
+,
+					xxy(self) -> LuaVec3
+,
+					xxz(self) -> LuaVec3
+,
+					xyx(self) -> LuaVec3
+,
+					xyy(self) -> LuaVec3
+,
+					xyz(self) -> LuaVec3
+,
+					xzx(self) -> LuaVec3
+,
+					xzy(self) -> LuaVec3
+,
+					xzz(self) -> LuaVec3
+,
+					yxx(self) -> LuaVec3
+,
+					yxy(self) -> LuaVec3
+,
+					yxz(self) -> LuaVec3
+,
+					yyx(self) -> LuaVec3
+,
+					yyy(self) -> LuaVec3
+,
+					yyz(self) -> LuaVec3
+,
+					yzx(self) -> LuaVec3
+,
+					yzy(self) -> LuaVec3
+,
+					yzz(self) -> LuaVec3
+,
+					zxx(self) -> LuaVec3
+,
+					zxy(self) -> LuaVec3
+,
+					zxz(self) -> LuaVec3
+,
+					zyx(self) -> LuaVec3
+,
+					zyy(self) -> LuaVec3
+,
+					zyz(self) -> LuaVec3
+,
+					zzx(self) -> LuaVec3
+,
+					zzy(self) -> LuaVec3
+,
+					zzz(self) -> LuaVec3
+,
+					xxxx(self) -> LuaVec4
+,
+					xxxy(self) -> LuaVec4
+,
+					xxxz(self) -> LuaVec4
+,
+					xxyx(self) -> LuaVec4
+,
+					xxyy(self) -> LuaVec4
+,
+					xxyz(self) -> LuaVec4
+,
+					xxzx(self) -> LuaVec4
+,
+					xxzy(self) -> LuaVec4
+,
+					xxzz(self) -> LuaVec4
+,
+					xyxx(self) -> LuaVec4
+,
+					xyxy(self) -> LuaVec4
+,
+					xyxz(self) -> LuaVec4
+,
+					xyyx(self) -> LuaVec4
+,
+					xyyy(self) -> LuaVec4
+,
+					xyyz(self) -> LuaVec4
+,
+					xyzx(self) -> LuaVec4
+,
+					xyzy(self) -> LuaVec4
+,
+					xyzz(self) -> LuaVec4
+,
+					xzxx(self) -> LuaVec4
+,
+					xzxy(self) -> LuaVec4
+,
+					xzxz(self) -> LuaVec4
+,
+					xzyx(self) -> LuaVec4
+,
+					xzyy(self) -> LuaVec4
+,
+					xzyz(self) -> LuaVec4
+,
+					xzzx(self) -> LuaVec4
+,
+					xzzy(self) -> LuaVec4
+,
+					xzzz(self) -> LuaVec4
+,
+					yxxx(self) -> LuaVec4
+,
+					yxxy(self) -> LuaVec4
+,
+					yxxz(self) -> LuaVec4
+,
+					yxyx(self) -> LuaVec4
+,
+					yxyy(self) -> LuaVec4
+,
+					yxyz(self) -> LuaVec4
+,
+					yxzx(self) -> LuaVec4
+,
+					yxzy(self) -> LuaVec4
+,
+					yxzz(self) -> LuaVec4
+,
+					yyxx(self) -> LuaVec4
+,
+					yyxy(self) -> LuaVec4
+,
+					yyxz(self) -> LuaVec4
+,
+					yyyx(self) -> LuaVec4
+,
+					yyyy(self) -> LuaVec4
+,
+					yyyz(self) -> LuaVec4
+,
+					yyzx(self) -> LuaVec4
+,
+					yyzy(self) -> LuaVec4
+,
+					yyzz(self) -> LuaVec4
+,
+					yzxx(self) -> LuaVec4
+,
+					yzxy(self) -> LuaVec4
+,
+					yzxz(self) -> LuaVec4
+,
+					yzyx(self) -> LuaVec4
+,
+					yzyy(self) -> LuaVec4
+,
+					yzyz(self) -> LuaVec4
+,
+					yzzx(self) -> LuaVec4
+,
+					yzzy(self) -> LuaVec4
+,
+					yzzz(self) -> LuaVec4
+,
+					zxxx(self) -> LuaVec4
+,
+					zxxy(self) -> LuaVec4
+,
+					zxxz(self) -> LuaVec4
+,
+					zxyx(self) -> LuaVec4
+,
+					zxyy(self) -> LuaVec4
+,
+					zxyz(self) -> LuaVec4
+,
+					zxzx(self) -> LuaVec4
+,
+					zxzy(self) -> LuaVec4
+,
+					zxzz(self) -> LuaVec4
+,
+					zyxx(self) -> LuaVec4
+,
+					zyxy(self) -> LuaVec4
+,
+					zyxz(self) -> LuaVec4
+,
+					zyyx(self) -> LuaVec4
+,
+					zyyy(self) -> LuaVec4
+,
+					zyyz(self) -> LuaVec4
+,
+					zyzx(self) -> LuaVec4
+,
+					zyzy(self) -> LuaVec4
+,
+					zyzz(self) -> LuaVec4
+,
+					zzxx(self) -> LuaVec4
+,
+					zzxy(self) -> LuaVec4
+,
+					zzxz(self) -> LuaVec4
+,
+					zzyx(self) -> LuaVec4
+,
+					zzyy(self) -> LuaVec4
+,
+					zzyz(self) -> LuaVec4
+,
+					zzzx(self) -> LuaVec4
+,
+					zzzy(self) -> LuaVec4
+,
+					zzzz(self) -> LuaVec4
+,
+				)
+				+ BinaryOps
+				(
 self Add LuaVec3 -> LuaVec3 -> LuaVec3
 self Add f32 -> LuaVec3 -> LuaVec3
 f32 Add self -> LuaVec3 -> LuaVec3
@@ -2599,1541 +2771,1206 @@ f32 Mul self -> LuaVec3 -> LuaVec3
 self Rem LuaVec3 -> LuaVec3 -> LuaVec3
 self Rem f32 -> LuaVec3 -> LuaVec3
 f32 Rem self -> LuaVec3 -> LuaVec3
-			)
-+ UnaryOps			(
-			)
-+ 			    Copy(LuaVec2 -> (MetaMethod::Index) (s=LuaVec3),
-			        LuaVec2 -> mut (MetaMethod::NewIndex) (n=f32))
-			    
-impl			{
+				)
+				+ UnaryOps
+				(
+				)
++ 				    Copy(LuaVec2 -> (MetaMethod::Index) (s=LuaVec3),
+				        LuaVec2 -> mut (MetaMethod::NewIndex) (n=f32))
+				    
+			impl
+			{
 			}
 		}
-		{
+,		{
 			///A 4-dimensional vector with SIMD support.
 			///
 			///This type uses 16 byte aligned SIMD vector type for storage.
-glam::f32::sse2::vec4::Vec4 : Value
-AutoMethods			(
-				// Exclusion reason: 
-				// ///Creates a new vector.
-				// new(f32f32f32f32) -> LuaVec4
-
-				// Exclusion reason: 
-				// ///Creates a vector with all elements set to `v`.
-				// splat(f32) -> LuaVec4
-
-				///Creates a vector from the elements in `if_true` and `if_false`, selecting which to use
-				///for each element of `self`.
-				///
-				///A true element in the mask uses the corresponding element from `if_true`, and false
-				///uses the element from `if_false`.
-				select(LuaVec4LuaVec4) -> LuaVec4
-
-				///Creates a new vector from an array.
-				from_array(<invalid: [f32;4]>) -> LuaVec4
-
-				///`[x, y, z, w]`
-				to_array(&self)<invalid: [f32;4]>
-
-				///Creates a vector from the first 4 values in `slice`.
-				///
-				///# Panics
-				///
-				///Panics if `slice` is less than 4 elements long.
-				from_slice(<invalid: &[f32]>) -> LuaVec4
-
-				///Writes the elements of `self` to the first 4 elements in `slice`.
-				///
-				///# Panics
-				///
-				///Panics if `slice` is less than 4 elements long.
-				write_to_slice(self<invalid: &mut [f32]>)
-
-				// Exclusion reason: 
-				// ///Creates a 2D vector from the `x`, `y` and `z` elements of `self`, discarding `w`.
-				// ///
-				// ///Truncation to `Vec3` may also be performed by using `self.xyz()` or `Vec3::from()`.
-				// ///
-				// ///To truncate to `Vec3A` use `Vec3A::from()`.
-				// truncate(self) -> LuaVec3
-
-				// Exclusion reason: 
-				// ///Computes the dot product of `self` and `rhs`.
-				// dot(selfLuaVec4) -> f32
-
-				// Exclusion reason: 
-				// ///Returns a vector containing the minimum values for each element of `self` and `rhs`.
-				// ///
-				// ///In other words this computes `[self.x.min(rhs.x), self.y.min(rhs.y), ..]`.
-				// min(selfLuaVec4) -> LuaVec4
-
-				// Exclusion reason: 
-				// ///Returns a vector containing the maximum values for each element of `self` and `rhs`.
-				// ///
-				// ///In other words this computes `[self.x.max(rhs.x), self.y.max(rhs.y), ..]`.
-				// max(selfLuaVec4) -> LuaVec4
-
-				// Exclusion reason: 
-				// ///Component-wise clamping of values, similar to [`f32::clamp`].
-				// ///
-				// ///Each element in `min` must be less-or-equal to the corresponding element in `max`.
-				// ///
-				// ///# Panics
-				// ///
-				// ///Will panic if `min` is greater than `max` when `glam_assert` is enabled.
-				// clamp(selfLuaVec4LuaVec4) -> LuaVec4
-
-				// Exclusion reason: 
-				// ///Returns the horizontal minimum of `self`.
-				// ///
-				// ///In other words this computes `min(x, y, ..)`.
-				// min_element(self) -> f32
-
-				// Exclusion reason: 
-				// ///Returns the horizontal maximum of `self`.
-				// ///
-				// ///In other words this computes `max(x, y, ..)`.
-				// max_element(self) -> f32
-
-				///Returns a vector mask containing the result of a `==` comparison for each element of
-				///`self` and `rhs`.
-				///
-				///In other words, this computes `[self.x == rhs.x, self.y == rhs.y, ..]` for all
-				///elements.
-				cmpeq(selfLuaVec4)
-
-				///Returns a vector mask containing the result of a `!=` comparison for each element of
-				///`self` and `rhs`.
-				///
-				///In other words this computes `[self.x != rhs.x, self.y != rhs.y, ..]` for all
-				///elements.
-				cmpne(selfLuaVec4)
-
-				///Returns a vector mask containing the result of a `>=` comparison for each element of
-				///`self` and `rhs`.
-				///
-				///In other words this computes `[self.x >= rhs.x, self.y >= rhs.y, ..]` for all
-				///elements.
-				cmpge(selfLuaVec4)
-
-				///Returns a vector mask containing the result of a `>` comparison for each element of
-				///`self` and `rhs`.
-				///
-				///In other words this computes `[self.x > rhs.x, self.y > rhs.y, ..]` for all
-				///elements.
-				cmpgt(selfLuaVec4)
-
-				///Returns a vector mask containing the result of a `<=` comparison for each element of
-				///`self` and `rhs`.
-				///
-				///In other words this computes `[self.x <= rhs.x, self.y <= rhs.y, ..]` for all
-				///elements.
-				cmple(selfLuaVec4)
-
-				///Returns a vector mask containing the result of a `<` comparison for each element of
-				///`self` and `rhs`.
-				///
-				///In other words this computes `[self.x < rhs.x, self.y < rhs.y, ..]` for all
-				///elements.
-				cmplt(selfLuaVec4)
-
-				// Exclusion reason: 
-				// ///Returns a vector containing the absolute value of each element of `self`.
-				// abs(self) -> LuaVec4
-
-				// Exclusion reason: 
-				// ///Returns a vector with elements representing the sign of `self`.
-				// ///
-				// ///- `1.0` if the number is positive, `+0.0` or `INFINITY`
-				// ///- `-1.0` if the number is negative, `-0.0` or `NEG_INFINITY`
-				// ///- `NAN` if the number is `NAN`
-				// signum(self) -> LuaVec4
-
-				// Exclusion reason: 
-				// ///Returns `true` if, and only if, all elements are finite.  If any element is either
-				// ///`NaN`, positive or negative infinity, this will return `false`.
-				// is_finite(self) -> bool
-
-				// Exclusion reason: 
-				// ///Returns `true` if any elements are `NaN`.
-				// is_nan(self) -> bool
-
-				///Performs `is_nan` on each element of self, returning a vector mask of the results.
-				///
-				///In other words, this computes `[x.is_nan(), y.is_nan(), z.is_nan(), w.is_nan()]`.
-				is_nan_mask(self)
-
-				// Exclusion reason: 
-				// ///Computes the length of `self`.
-				// length(self) -> f32
-
-				// Exclusion reason: 
-				// ///Computes the squared length of `self`.
-				// ///
-				// ///This is faster than `length()` as it avoids a square root operation.
-				// length_squared(self) -> f32
-
-				// Exclusion reason: 
-				// ///Computes `1.0 / length()`.
-				// ///
-				// ///For valid results, `self` must _not_ be of length zero.
-				// length_recip(self) -> f32
-
-				// Exclusion reason: 
-				// ///Computes the Euclidean distance between two points in space.
-				// distance(selfLuaVec4) -> f32
-
-				// Exclusion reason: 
-				// ///Compute the squared euclidean distance between two points in space.
-				// distance_squared(selfLuaVec4) -> f32
-
-				// Exclusion reason: 
-				// ///Returns `self` normalized to length 1.0.
-				// ///
-				// ///For valid results, `self` must _not_ be of length zero, nor very close to zero.
-				// ///
-				// ///See also [`Self::try_normalize`] and [`Self::normalize_or_zero`].
-				// ///
-				// ///Panics
-				// ///
-				// ///Will panic if `self` is zero length when `glam_assert` is enabled.
-				// normalize(self) -> LuaVec4
-
-				///Returns `self` normalized to length 1.0 if possible, else returns `None`.
-				///
-				///In particular, if the input is zero (or very close to zero), or non-finite,
-				///the result of this operation will be `None`.
-				///
-				///See also [`Self::normalize_or_zero`].
-				try_normalize(self)
-
-				// Exclusion reason: 
-				// ///Returns `self` normalized to length 1.0 if possible, else returns zero.
-				// ///
-				// ///In particular, if the input is zero (or very close to zero), or non-finite,
-				// ///the result of this operation will be zero.
-				// ///
-				// ///See also [`Self::try_normalize`].
-				// normalize_or_zero(self) -> LuaVec4
-
-				// Exclusion reason: 
-				// ///Returns whether `self` is length `1.0` or not.
-				// ///
-				// ///Uses a precision threshold of `1e-6`.
-				// is_normalized(self) -> bool
-
-				// Exclusion reason: 
-				// ///Returns the vector projection of `self` onto `rhs`.
-				// ///
-				// ///`rhs` must be of non-zero length.
-				// ///
-				// ///# Panics
-				// ///
-				// ///Will panic if `rhs` is zero length when `glam_assert` is enabled.
-				// project_onto(selfLuaVec4) -> LuaVec4
-
-				// Exclusion reason: 
-				// ///Returns the vector rejection of `self` from `rhs`.
-				// ///
-				// ///The vector rejection is the vector perpendicular to the projection of `self` onto
-				// ///`rhs`, in rhs words the result of `self - self.project_onto(rhs)`.
-				// ///
-				// ///`rhs` must be of non-zero length.
-				// ///
-				// ///# Panics
-				// ///
-				// ///Will panic if `rhs` has a length of zero when `glam_assert` is enabled.
-				// reject_from(selfLuaVec4) -> LuaVec4
-
-				// Exclusion reason: 
-				// ///Returns the vector projection of `self` onto `rhs`.
-				// ///
-				// ///`rhs` must be normalized.
-				// ///
-				// ///# Panics
-				// ///
-				// ///Will panic if `rhs` is not normalized when `glam_assert` is enabled.
-				// project_onto_normalized(selfLuaVec4) -> LuaVec4
-
-				// Exclusion reason: 
-				// ///Returns the vector rejection of `self` from `rhs`.
-				// ///
-				// ///The vector rejection is the vector perpendicular to the projection of `self` onto
-				// ///`rhs`, in rhs words the result of `self - self.project_onto(rhs)`.
-				// ///
-				// ///`rhs` must be normalized.
-				// ///
-				// ///# Panics
-				// ///
-				// ///Will panic if `rhs` is not normalized when `glam_assert` is enabled.
-				// reject_from_normalized(selfLuaVec4) -> LuaVec4
-
-				// Exclusion reason: 
-				// ///Returns a vector containing the nearest integer to a number for each element of `self`.
-				// ///Round half-way cases away from 0.0.
-				// round(self) -> LuaVec4
-
-				// Exclusion reason: 
-				// ///Returns a vector containing the largest integer less than or equal to a number for each
-				// ///element of `self`.
-				// floor(self) -> LuaVec4
-
-				// Exclusion reason: 
-				// ///Returns a vector containing the smallest integer greater than or equal to a number for
-				// ///each element of `self`.
-				// ceil(self) -> LuaVec4
-
-				// Exclusion reason: 
-				// ///Returns a vector containing the fractional part of the vector, e.g. `self -
-				// ///self.floor()`.
-				// ///
-				// ///Note that this is fast but not precise for large numbers.
-				// fract(self) -> LuaVec4
-
-				// Exclusion reason: 
-				// ///Returns a vector containing `e^self` (the exponential function) for each element of
-				// ///`self`.
-				// exp(self) -> LuaVec4
-
-				// Exclusion reason: 
-				// ///Returns a vector containing each element of `self` raised to the power of `n`.
-				// powf(selff32) -> LuaVec4
-
-				// Exclusion reason: 
-				// ///Returns a vector containing the reciprocal `1.0/n` of each element of `self`.
-				// recip(self) -> LuaVec4
-
-				// Exclusion reason: 
-				// ///Performs a linear interpolation between `self` and `rhs` based on the value `s`.
-				// ///
-				// ///When `s` is `0.0`, the result will be equal to `self`.  When `s` is `1.0`, the result
-				// ///will be equal to `rhs`. When `s` is outside of range `[0, 1]`, the result is linearly
-				// ///extrapolated.
-				// lerp(selfLuaVec4f32) -> LuaVec4
-
-				// Exclusion reason: 
-				// ///Returns true if the absolute difference of all elements between `self` and `rhs` is
-				// ///less than or equal to `max_abs_diff`.
-				// ///
-				// ///This can be used to compare if two vectors contain similar elements. It works best when
-				// ///comparing with a known value. The `max_abs_diff` that should be used used depends on
-				// ///the values being compared against.
-				// ///
-				// ///For more see
-				// ///[comparing floating point numbers](https://randomascii.wordpress.com/2012/02/25/comparing-floating-point-numbers-2012-edition/).
-				// abs_diff_eq(selfLuaVec4f32) -> bool
-
-				// Exclusion reason: 
-				// ///Returns a vector with a length no less than `min` and no more than `max`
-				// ///
-				// ///# Panics
-				// ///
-				// ///Will panic if `min` is greater than `max` when `glam_assert` is enabled.
-				// clamp_length(selff32f32) -> LuaVec4
-
-				// Exclusion reason: 
-				// ///Returns a vector with a length no more than `max`
-				// clamp_length_max(selff32) -> LuaVec4
-
-				// Exclusion reason: 
-				// ///Returns a vector with a length no less than `min`
-				// clamp_length_min(selff32) -> LuaVec4
-
-				// Exclusion reason: 
-				// ///Fused multiply-add. Computes `(self * a) + b` element-wise with only one rounding
-				// ///error, yielding a more accurate result than an unfused multiply-add.
-				// ///
-				// ///Using `mul_add` *may* be more performant than an unfused multiply-add if the target
-				// ///architecture has a dedicated fma CPU instruction. However, this is not always true,
-				// ///and will be heavily dependant on designing algorithms with specific target hardware in
-				// ///mind.
-				// mul_add(selfLuaVec4LuaVec4) -> LuaVec4
-
-				///Casts all elements of `self` to `f64`.
-				as_dvec4(&self)
-
-				///Casts all elements of `self` to `i32`.
-				as_ivec4(&self)
-
-				///Casts all elements of `self` to `u32`.
-				as_uvec4(&self)
-
-				try_from()
-
-				///Returns the argument unchanged.
-				from()
-
-				// Exclusion reason: 
-				// from(LuaQuat) -> LuaVec4
-
-				// Exclusion reason: 
-				// ///Creates a `Vec3A` from the `x`, `y` and `z` elements of `self` discarding `w`.
-				// ///
-				// ///On architectures where SIMD is supported such as SSE2 on `x86_64` this conversion is a noop.
-				// from(LuaVec4) -> LuaVec4
-
-				// Exclusion reason: 
-				// from(LuaVec4) -> LuaVec4
-
-				from() -> LuaVec4
-
-				from(<invalid: [f32;4]>) -> LuaVec4
-
-				// Exclusion reason: 
-				// from(LuaVec4) -> LuaVec4
-
-				from(<invalid: (f32,f32,f32,f32)>) -> LuaVec4
-
-				// Exclusion reason: 
-				// from(LuaVec4) -> LuaVec4
-
-				from() -> LuaVec4
-
-				from() -> LuaVec4
-
-				from(<invalid: (LuaVec3,f32)>) -> LuaVec4
-
-				from(<invalid: (f32,LuaVec3)>) -> LuaVec4
-
-				from(<invalid: (LuaVec2,f32,f32)>) -> LuaVec4
-
-				from(<invalid: (LuaVec2,LuaVec2)>) -> LuaVec4
-
-				///Calls `U::from(self)`.
-				///
-				///That is, this conversion is whatever the implementation of
-				///<code>[From]&lt;T&gt; for U</code> chooses to do.
-				into(self)
-
-				borrow(&self)
-
-				type_id(&self)
-
-				try_into(self)
-
-				borrow_mut(<invalid: &mut self>)
-
-				to_string(&self)
-
-				to_owned(&self)
-
-				clone_into(&self)
-
-				is_valid_bit_pattern() -> bool
-
-				serialize(&self)
-
-				deserialize()
-
-				mul(selfLuaVec4)
-
-				// Exclusion reason: 
-				// mul(selfLuaVec4) -> LuaVec4
-
-				// Exclusion reason: 
-				// mul(selff32) -> LuaVec4
-
-				// Exclusion reason: 
-				// mul(selfLuaVec4) -> LuaVec4
-
-				// Exclusion reason: 
-				// clone(&self) -> LuaVec4
-
-				// Exclusion reason: 
-				// default() -> LuaVec4
-
-				// Exclusion reason: 
-				// eq(&self&LuaVec4) -> bool
-
-				// Exclusion reason: 
-				// div(selfLuaVec4) -> LuaVec4
-
-				// Exclusion reason: 
-				// div(selff32) -> LuaVec4
-
-				// Exclusion reason: 
-				// div(selfLuaVec4) -> LuaVec4
-
-				div_assign(<invalid: &mut self>LuaVec4)
-
-				div_assign(<invalid: &mut self>f32)
-
-				mul_assign(<invalid: &mut self>LuaVec4)
-
-				mul_assign(<invalid: &mut self>f32)
-
-				// Exclusion reason: 
-				// add(selfLuaVec4) -> LuaVec4
-
-				// Exclusion reason: 
-				// add(selff32) -> LuaVec4
-
-				// Exclusion reason: 
-				// add(selfLuaVec4) -> LuaVec4
-
-				add_assign(<invalid: &mut self>LuaVec4)
-
-				add_assign(<invalid: &mut self>f32)
-
-				// Exclusion reason: 
-				// sub(selfLuaVec4) -> LuaVec4
-
-				// Exclusion reason: 
-				// sub(selff32) -> LuaVec4
-
-				// Exclusion reason: 
-				// sub(selfLuaVec4) -> LuaVec4
-
-				sub_assign(<invalid: &mut self>LuaVec4)
-
-				sub_assign(<invalid: &mut self>f32)
-
-				// Exclusion reason: 
-				// rem(selfLuaVec4) -> LuaVec4
-
-				// Exclusion reason: 
-				// rem(selff32) -> LuaVec4
-
-				// Exclusion reason: 
-				// rem(selfLuaVec4) -> LuaVec4
-
-				rem_assign(<invalid: &mut self>LuaVec4)
-
-				rem_assign(<invalid: &mut self>f32)
-
-				as_ref(&self)<invalid: &[f32;4]>
-
-				as_mut(<invalid: &mut self>)<invalid: &mut [f32;4]>
-
-				sum() -> LuaVec4
-
-				product() -> LuaVec4
-
-				// Exclusion reason: 
-				// neg(self) -> LuaVec4
-
-				index(&selfusize)
-
-				index_mut(<invalid: &mut self>usize)
-
-				fmt(&self)
-
-				fmt(&self)
-
-				deref(&self)
-
-				deref_mut(<invalid: &mut self>)
-
-				// Exclusion reason: 
-				// xx(self) -> LuaVec2
-
-				// Exclusion reason: 
-				// xy(self) -> LuaVec2
-
-				// Exclusion reason: 
-				// xz(self) -> LuaVec2
-
-				// Exclusion reason: 
-				// xw(self) -> LuaVec2
-
-				// Exclusion reason: 
-				// yx(self) -> LuaVec2
-
-				// Exclusion reason: 
-				// yy(self) -> LuaVec2
-
-				// Exclusion reason: 
-				// yz(self) -> LuaVec2
-
-				// Exclusion reason: 
-				// yw(self) -> LuaVec2
-
-				// Exclusion reason: 
-				// zx(self) -> LuaVec2
-
-				// Exclusion reason: 
-				// zy(self) -> LuaVec2
-
-				// Exclusion reason: 
-				// zz(self) -> LuaVec2
-
-				// Exclusion reason: 
-				// zw(self) -> LuaVec2
-
-				// Exclusion reason: 
-				// wx(self) -> LuaVec2
-
-				// Exclusion reason: 
-				// wy(self) -> LuaVec2
-
-				// Exclusion reason: 
-				// wz(self) -> LuaVec2
-
-				// Exclusion reason: 
-				// ww(self) -> LuaVec2
-
-				// Exclusion reason: 
-				// xxx(self) -> LuaVec3
-
-				// Exclusion reason: 
-				// xxy(self) -> LuaVec3
-
-				// Exclusion reason: 
-				// xxz(self) -> LuaVec3
-
-				// Exclusion reason: 
-				// xxw(self) -> LuaVec3
-
-				// Exclusion reason: 
-				// xyx(self) -> LuaVec3
-
-				// Exclusion reason: 
-				// xyy(self) -> LuaVec3
-
-				// Exclusion reason: 
-				// xyz(self) -> LuaVec3
-
-				// Exclusion reason: 
-				// xyw(self) -> LuaVec3
-
-				// Exclusion reason: 
-				// xzx(self) -> LuaVec3
-
-				// Exclusion reason: 
-				// xzy(self) -> LuaVec3
-
-				// Exclusion reason: 
-				// xzz(self) -> LuaVec3
-
-				// Exclusion reason: 
-				// xzw(self) -> LuaVec3
-
-				// Exclusion reason: 
-				// xwx(self) -> LuaVec3
-
-				// Exclusion reason: 
-				// xwy(self) -> LuaVec3
-
-				// Exclusion reason: 
-				// xwz(self) -> LuaVec3
-
-				// Exclusion reason: 
-				// xww(self) -> LuaVec3
-
-				// Exclusion reason: 
-				// yxx(self) -> LuaVec3
-
-				// Exclusion reason: 
-				// yxy(self) -> LuaVec3
-
-				// Exclusion reason: 
-				// yxz(self) -> LuaVec3
-
-				// Exclusion reason: 
-				// yxw(self) -> LuaVec3
-
-				// Exclusion reason: 
-				// yyx(self) -> LuaVec3
-
-				// Exclusion reason: 
-				// yyy(self) -> LuaVec3
-
-				// Exclusion reason: 
-				// yyz(self) -> LuaVec3
-
-				// Exclusion reason: 
-				// yyw(self) -> LuaVec3
-
-				// Exclusion reason: 
-				// yzx(self) -> LuaVec3
-
-				// Exclusion reason: 
-				// yzy(self) -> LuaVec3
-
-				// Exclusion reason: 
-				// yzz(self) -> LuaVec3
-
-				// Exclusion reason: 
-				// yzw(self) -> LuaVec3
-
-				// Exclusion reason: 
-				// ywx(self) -> LuaVec3
-
-				// Exclusion reason: 
-				// ywy(self) -> LuaVec3
-
-				// Exclusion reason: 
-				// ywz(self) -> LuaVec3
-
-				// Exclusion reason: 
-				// yww(self) -> LuaVec3
-
-				// Exclusion reason: 
-				// zxx(self) -> LuaVec3
-
-				// Exclusion reason: 
-				// zxy(self) -> LuaVec3
-
-				// Exclusion reason: 
-				// zxz(self) -> LuaVec3
-
-				// Exclusion reason: 
-				// zxw(self) -> LuaVec3
-
-				// Exclusion reason: 
-				// zyx(self) -> LuaVec3
-
-				// Exclusion reason: 
-				// zyy(self) -> LuaVec3
-
-				// Exclusion reason: 
-				// zyz(self) -> LuaVec3
-
-				// Exclusion reason: 
-				// zyw(self) -> LuaVec3
-
-				// Exclusion reason: 
-				// zzx(self) -> LuaVec3
-
-				// Exclusion reason: 
-				// zzy(self) -> LuaVec3
-
-				// Exclusion reason: 
-				// zzz(self) -> LuaVec3
-
-				// Exclusion reason: 
-				// zzw(self) -> LuaVec3
-
-				// Exclusion reason: 
-				// zwx(self) -> LuaVec3
-
-				// Exclusion reason: 
-				// zwy(self) -> LuaVec3
-
-				// Exclusion reason: 
-				// zwz(self) -> LuaVec3
-
-				// Exclusion reason: 
-				// zww(self) -> LuaVec3
-
-				// Exclusion reason: 
-				// wxx(self) -> LuaVec3
-
-				// Exclusion reason: 
-				// wxy(self) -> LuaVec3
-
-				// Exclusion reason: 
-				// wxz(self) -> LuaVec3
-
-				// Exclusion reason: 
-				// wxw(self) -> LuaVec3
-
-				// Exclusion reason: 
-				// wyx(self) -> LuaVec3
-
-				// Exclusion reason: 
-				// wyy(self) -> LuaVec3
-
-				// Exclusion reason: 
-				// wyz(self) -> LuaVec3
-
-				// Exclusion reason: 
-				// wyw(self) -> LuaVec3
-
-				// Exclusion reason: 
-				// wzx(self) -> LuaVec3
-
-				// Exclusion reason: 
-				// wzy(self) -> LuaVec3
-
-				// Exclusion reason: 
-				// wzz(self) -> LuaVec3
-
-				// Exclusion reason: 
-				// wzw(self) -> LuaVec3
-
-				// Exclusion reason: 
-				// wwx(self) -> LuaVec3
-
-				// Exclusion reason: 
-				// wwy(self) -> LuaVec3
-
-				// Exclusion reason: 
-				// wwz(self) -> LuaVec3
-
-				// Exclusion reason: 
-				// www(self) -> LuaVec3
-
-				// Exclusion reason: 
-				// xxxx(self) -> LuaVec4
-
-				// Exclusion reason: 
-				// xxxy(self) -> LuaVec4
-
-				// Exclusion reason: 
-				// xxxz(self) -> LuaVec4
-
-				// Exclusion reason: 
-				// xxxw(self) -> LuaVec4
-
-				// Exclusion reason: 
-				// xxyx(self) -> LuaVec4
-
-				// Exclusion reason: 
-				// xxyy(self) -> LuaVec4
-
-				// Exclusion reason: 
-				// xxyz(self) -> LuaVec4
-
-				// Exclusion reason: 
-				// xxyw(self) -> LuaVec4
-
-				// Exclusion reason: 
-				// xxzx(self) -> LuaVec4
-
-				// Exclusion reason: 
-				// xxzy(self) -> LuaVec4
-
-				// Exclusion reason: 
-				// xxzz(self) -> LuaVec4
-
-				// Exclusion reason: 
-				// xxzw(self) -> LuaVec4
-
-				// Exclusion reason: 
-				// xxwx(self) -> LuaVec4
-
-				// Exclusion reason: 
-				// xxwy(self) -> LuaVec4
-
-				// Exclusion reason: 
-				// xxwz(self) -> LuaVec4
-
-				// Exclusion reason: 
-				// xxww(self) -> LuaVec4
-
-				// Exclusion reason: 
-				// xyxx(self) -> LuaVec4
-
-				// Exclusion reason: 
-				// xyxy(self) -> LuaVec4
-
-				// Exclusion reason: 
-				// xyxz(self) -> LuaVec4
-
-				// Exclusion reason: 
-				// xyxw(self) -> LuaVec4
-
-				// Exclusion reason: 
-				// xyyx(self) -> LuaVec4
-
-				// Exclusion reason: 
-				// xyyy(self) -> LuaVec4
-
-				// Exclusion reason: 
-				// xyyz(self) -> LuaVec4
-
-				// Exclusion reason: 
-				// xyyw(self) -> LuaVec4
-
-				// Exclusion reason: 
-				// xyzx(self) -> LuaVec4
-
-				// Exclusion reason: 
-				// xyzy(self) -> LuaVec4
-
-				// Exclusion reason: 
-				// xyzz(self) -> LuaVec4
-
-				// Exclusion reason: 
-				// xyzw(self) -> LuaVec4
-
-				// Exclusion reason: 
-				// xywx(self) -> LuaVec4
-
-				// Exclusion reason: 
-				// xywy(self) -> LuaVec4
-
-				// Exclusion reason: 
-				// xywz(self) -> LuaVec4
-
-				// Exclusion reason: 
-				// xyww(self) -> LuaVec4
-
-				// Exclusion reason: 
-				// xzxx(self) -> LuaVec4
-
-				// Exclusion reason: 
-				// xzxy(self) -> LuaVec4
-
-				// Exclusion reason: 
-				// xzxz(self) -> LuaVec4
-
-				// Exclusion reason: 
-				// xzxw(self) -> LuaVec4
-
-				// Exclusion reason: 
-				// xzyx(self) -> LuaVec4
-
-				// Exclusion reason: 
-				// xzyy(self) -> LuaVec4
-
-				// Exclusion reason: 
-				// xzyz(self) -> LuaVec4
-
-				// Exclusion reason: 
-				// xzyw(self) -> LuaVec4
-
-				// Exclusion reason: 
-				// xzzx(self) -> LuaVec4
-
-				// Exclusion reason: 
-				// xzzy(self) -> LuaVec4
-
-				// Exclusion reason: 
-				// xzzz(self) -> LuaVec4
-
-				// Exclusion reason: 
-				// xzzw(self) -> LuaVec4
-
-				// Exclusion reason: 
-				// xzwx(self) -> LuaVec4
-
-				// Exclusion reason: 
-				// xzwy(self) -> LuaVec4
-
-				// Exclusion reason: 
-				// xzwz(self) -> LuaVec4
-
-				// Exclusion reason: 
-				// xzww(self) -> LuaVec4
-
-				// Exclusion reason: 
-				// xwxx(self) -> LuaVec4
-
-				// Exclusion reason: 
-				// xwxy(self) -> LuaVec4
-
-				// Exclusion reason: 
-				// xwxz(self) -> LuaVec4
-
-				// Exclusion reason: 
-				// xwxw(self) -> LuaVec4
-
-				// Exclusion reason: 
-				// xwyx(self) -> LuaVec4
-
-				// Exclusion reason: 
-				// xwyy(self) -> LuaVec4
-
-				// Exclusion reason: 
-				// xwyz(self) -> LuaVec4
-
-				// Exclusion reason: 
-				// xwyw(self) -> LuaVec4
-
-				// Exclusion reason: 
-				// xwzx(self) -> LuaVec4
-
-				// Exclusion reason: 
-				// xwzy(self) -> LuaVec4
-
-				// Exclusion reason: 
-				// xwzz(self) -> LuaVec4
-
-				// Exclusion reason: 
-				// xwzw(self) -> LuaVec4
-
-				// Exclusion reason: 
-				// xwwx(self) -> LuaVec4
-
-				// Exclusion reason: 
-				// xwwy(self) -> LuaVec4
-
-				// Exclusion reason: 
-				// xwwz(self) -> LuaVec4
-
-				// Exclusion reason: 
-				// xwww(self) -> LuaVec4
-
-				// Exclusion reason: 
-				// yxxx(self) -> LuaVec4
-
-				// Exclusion reason: 
-				// yxxy(self) -> LuaVec4
-
-				// Exclusion reason: 
-				// yxxz(self) -> LuaVec4
-
-				// Exclusion reason: 
-				// yxxw(self) -> LuaVec4
-
-				// Exclusion reason: 
-				// yxyx(self) -> LuaVec4
-
-				// Exclusion reason: 
-				// yxyy(self) -> LuaVec4
-
-				// Exclusion reason: 
-				// yxyz(self) -> LuaVec4
-
-				// Exclusion reason: 
-				// yxyw(self) -> LuaVec4
-
-				// Exclusion reason: 
-				// yxzx(self) -> LuaVec4
-
-				// Exclusion reason: 
-				// yxzy(self) -> LuaVec4
-
-				// Exclusion reason: 
-				// yxzz(self) -> LuaVec4
-
-				// Exclusion reason: 
-				// yxzw(self) -> LuaVec4
-
-				// Exclusion reason: 
-				// yxwx(self) -> LuaVec4
-
-				// Exclusion reason: 
-				// yxwy(self) -> LuaVec4
-
-				// Exclusion reason: 
-				// yxwz(self) -> LuaVec4
-
-				// Exclusion reason: 
-				// yxww(self) -> LuaVec4
-
-				// Exclusion reason: 
-				// yyxx(self) -> LuaVec4
-
-				// Exclusion reason: 
-				// yyxy(self) -> LuaVec4
-
-				// Exclusion reason: 
-				// yyxz(self) -> LuaVec4
-
-				// Exclusion reason: 
-				// yyxw(self) -> LuaVec4
-
-				// Exclusion reason: 
-				// yyyx(self) -> LuaVec4
-
-				// Exclusion reason: 
-				// yyyy(self) -> LuaVec4
-
-				// Exclusion reason: 
-				// yyyz(self) -> LuaVec4
-
-				// Exclusion reason: 
-				// yyyw(self) -> LuaVec4
-
-				// Exclusion reason: 
-				// yyzx(self) -> LuaVec4
-
-				// Exclusion reason: 
-				// yyzy(self) -> LuaVec4
-
-				// Exclusion reason: 
-				// yyzz(self) -> LuaVec4
-
-				// Exclusion reason: 
-				// yyzw(self) -> LuaVec4
-
-				// Exclusion reason: 
-				// yywx(self) -> LuaVec4
-
-				// Exclusion reason: 
-				// yywy(self) -> LuaVec4
-
-				// Exclusion reason: 
-				// yywz(self) -> LuaVec4
-
-				// Exclusion reason: 
-				// yyww(self) -> LuaVec4
-
-				// Exclusion reason: 
-				// yzxx(self) -> LuaVec4
-
-				// Exclusion reason: 
-				// yzxy(self) -> LuaVec4
-
-				// Exclusion reason: 
-				// yzxz(self) -> LuaVec4
-
-				// Exclusion reason: 
-				// yzxw(self) -> LuaVec4
-
-				// Exclusion reason: 
-				// yzyx(self) -> LuaVec4
-
-				// Exclusion reason: 
-				// yzyy(self) -> LuaVec4
-
-				// Exclusion reason: 
-				// yzyz(self) -> LuaVec4
-
-				// Exclusion reason: 
-				// yzyw(self) -> LuaVec4
-
-				// Exclusion reason: 
-				// yzzx(self) -> LuaVec4
-
-				// Exclusion reason: 
-				// yzzy(self) -> LuaVec4
-
-				// Exclusion reason: 
-				// yzzz(self) -> LuaVec4
-
-				// Exclusion reason: 
-				// yzzw(self) -> LuaVec4
-
-				// Exclusion reason: 
-				// yzwx(self) -> LuaVec4
-
-				// Exclusion reason: 
-				// yzwy(self) -> LuaVec4
-
-				// Exclusion reason: 
-				// yzwz(self) -> LuaVec4
-
-				// Exclusion reason: 
-				// yzww(self) -> LuaVec4
-
-				// Exclusion reason: 
-				// ywxx(self) -> LuaVec4
-
-				// Exclusion reason: 
-				// ywxy(self) -> LuaVec4
-
-				// Exclusion reason: 
-				// ywxz(self) -> LuaVec4
-
-				// Exclusion reason: 
-				// ywxw(self) -> LuaVec4
-
-				// Exclusion reason: 
-				// ywyx(self) -> LuaVec4
-
-				// Exclusion reason: 
-				// ywyy(self) -> LuaVec4
-
-				// Exclusion reason: 
-				// ywyz(self) -> LuaVec4
-
-				// Exclusion reason: 
-				// ywyw(self) -> LuaVec4
-
-				// Exclusion reason: 
-				// ywzx(self) -> LuaVec4
-
-				// Exclusion reason: 
-				// ywzy(self) -> LuaVec4
-
-				// Exclusion reason: 
-				// ywzz(self) -> LuaVec4
-
-				// Exclusion reason: 
-				// ywzw(self) -> LuaVec4
-
-				// Exclusion reason: 
-				// ywwx(self) -> LuaVec4
-
-				// Exclusion reason: 
-				// ywwy(self) -> LuaVec4
-
-				// Exclusion reason: 
-				// ywwz(self) -> LuaVec4
-
-				// Exclusion reason: 
-				// ywww(self) -> LuaVec4
-
-				// Exclusion reason: 
-				// zxxx(self) -> LuaVec4
-
-				// Exclusion reason: 
-				// zxxy(self) -> LuaVec4
-
-				// Exclusion reason: 
-				// zxxz(self) -> LuaVec4
-
-				// Exclusion reason: 
-				// zxxw(self) -> LuaVec4
-
-				// Exclusion reason: 
-				// zxyx(self) -> LuaVec4
-
-				// Exclusion reason: 
-				// zxyy(self) -> LuaVec4
-
-				// Exclusion reason: 
-				// zxyz(self) -> LuaVec4
-
-				// Exclusion reason: 
-				// zxyw(self) -> LuaVec4
-
-				// Exclusion reason: 
-				// zxzx(self) -> LuaVec4
-
-				// Exclusion reason: 
-				// zxzy(self) -> LuaVec4
-
-				// Exclusion reason: 
-				// zxzz(self) -> LuaVec4
-
-				// Exclusion reason: 
-				// zxzw(self) -> LuaVec4
-
-				// Exclusion reason: 
-				// zxwx(self) -> LuaVec4
-
-				// Exclusion reason: 
-				// zxwy(self) -> LuaVec4
-
-				// Exclusion reason: 
-				// zxwz(self) -> LuaVec4
-
-				// Exclusion reason: 
-				// zxww(self) -> LuaVec4
-
-				// Exclusion reason: 
-				// zyxx(self) -> LuaVec4
-
-				// Exclusion reason: 
-				// zyxy(self) -> LuaVec4
-
-				// Exclusion reason: 
-				// zyxz(self) -> LuaVec4
-
-				// Exclusion reason: 
-				// zyxw(self) -> LuaVec4
-
-				// Exclusion reason: 
-				// zyyx(self) -> LuaVec4
-
-				// Exclusion reason: 
-				// zyyy(self) -> LuaVec4
-
-				// Exclusion reason: 
-				// zyyz(self) -> LuaVec4
-
-				// Exclusion reason: 
-				// zyyw(self) -> LuaVec4
-
-				// Exclusion reason: 
-				// zyzx(self) -> LuaVec4
-
-				// Exclusion reason: 
-				// zyzy(self) -> LuaVec4
-
-				// Exclusion reason: 
-				// zyzz(self) -> LuaVec4
-
-				// Exclusion reason: 
-				// zyzw(self) -> LuaVec4
-
-				// Exclusion reason: 
-				// zywx(self) -> LuaVec4
-
-				// Exclusion reason: 
-				// zywy(self) -> LuaVec4
-
-				// Exclusion reason: 
-				// zywz(self) -> LuaVec4
-
-				// Exclusion reason: 
-				// zyww(self) -> LuaVec4
-
-				// Exclusion reason: 
-				// zzxx(self) -> LuaVec4
-
-				// Exclusion reason: 
-				// zzxy(self) -> LuaVec4
-
-				// Exclusion reason: 
-				// zzxz(self) -> LuaVec4
-
-				// Exclusion reason: 
-				// zzxw(self) -> LuaVec4
-
-				// Exclusion reason: 
-				// zzyx(self) -> LuaVec4
-
-				// Exclusion reason: 
-				// zzyy(self) -> LuaVec4
-
-				// Exclusion reason: 
-				// zzyz(self) -> LuaVec4
-
-				// Exclusion reason: 
-				// zzyw(self) -> LuaVec4
-
-				// Exclusion reason: 
-				// zzzx(self) -> LuaVec4
-
-				// Exclusion reason: 
-				// zzzy(self) -> LuaVec4
-
-				// Exclusion reason: 
-				// zzzz(self) -> LuaVec4
-
-				// Exclusion reason: 
-				// zzzw(self) -> LuaVec4
-
-				// Exclusion reason: 
-				// zzwx(self) -> LuaVec4
-
-				// Exclusion reason: 
-				// zzwy(self) -> LuaVec4
-
-				// Exclusion reason: 
-				// zzwz(self) -> LuaVec4
-
-				// Exclusion reason: 
-				// zzww(self) -> LuaVec4
-
-				// Exclusion reason: 
-				// zwxx(self) -> LuaVec4
-
-				// Exclusion reason: 
-				// zwxy(self) -> LuaVec4
-
-				// Exclusion reason: 
-				// zwxz(self) -> LuaVec4
-
-				// Exclusion reason: 
-				// zwxw(self) -> LuaVec4
-
-				// Exclusion reason: 
-				// zwyx(self) -> LuaVec4
-
-				// Exclusion reason: 
-				// zwyy(self) -> LuaVec4
-
-				// Exclusion reason: 
-				// zwyz(self) -> LuaVec4
-
-				// Exclusion reason: 
-				// zwyw(self) -> LuaVec4
-
-				// Exclusion reason: 
-				// zwzx(self) -> LuaVec4
-
-				// Exclusion reason: 
-				// zwzy(self) -> LuaVec4
-
-				// Exclusion reason: 
-				// zwzz(self) -> LuaVec4
-
-				// Exclusion reason: 
-				// zwzw(self) -> LuaVec4
-
-				// Exclusion reason: 
-				// zwwx(self) -> LuaVec4
-
-				// Exclusion reason: 
-				// zwwy(self) -> LuaVec4
-
-				// Exclusion reason: 
-				// zwwz(self) -> LuaVec4
-
-				// Exclusion reason: 
-				// zwww(self) -> LuaVec4
-
-				// Exclusion reason: 
-				// wxxx(self) -> LuaVec4
-
-				// Exclusion reason: 
-				// wxxy(self) -> LuaVec4
-
-				// Exclusion reason: 
-				// wxxz(self) -> LuaVec4
-
-				// Exclusion reason: 
-				// wxxw(self) -> LuaVec4
-
-				// Exclusion reason: 
-				// wxyx(self) -> LuaVec4
-
-				// Exclusion reason: 
-				// wxyy(self) -> LuaVec4
-
-				// Exclusion reason: 
-				// wxyz(self) -> LuaVec4
-
-				// Exclusion reason: 
-				// wxyw(self) -> LuaVec4
-
-				// Exclusion reason: 
-				// wxzx(self) -> LuaVec4
-
-				// Exclusion reason: 
-				// wxzy(self) -> LuaVec4
-
-				// Exclusion reason: 
-				// wxzz(self) -> LuaVec4
-
-				// Exclusion reason: 
-				// wxzw(self) -> LuaVec4
-
-				// Exclusion reason: 
-				// wxwx(self) -> LuaVec4
-
-				// Exclusion reason: 
-				// wxwy(self) -> LuaVec4
-
-				// Exclusion reason: 
-				// wxwz(self) -> LuaVec4
-
-				// Exclusion reason: 
-				// wxww(self) -> LuaVec4
-
-				// Exclusion reason: 
-				// wyxx(self) -> LuaVec4
-
-				// Exclusion reason: 
-				// wyxy(self) -> LuaVec4
-
-				// Exclusion reason: 
-				// wyxz(self) -> LuaVec4
-
-				// Exclusion reason: 
-				// wyxw(self) -> LuaVec4
-
-				// Exclusion reason: 
-				// wyyx(self) -> LuaVec4
-
-				// Exclusion reason: 
-				// wyyy(self) -> LuaVec4
-
-				// Exclusion reason: 
-				// wyyz(self) -> LuaVec4
-
-				// Exclusion reason: 
-				// wyyw(self) -> LuaVec4
-
-				// Exclusion reason: 
-				// wyzx(self) -> LuaVec4
-
-				// Exclusion reason: 
-				// wyzy(self) -> LuaVec4
-
-				// Exclusion reason: 
-				// wyzz(self) -> LuaVec4
-
-				// Exclusion reason: 
-				// wyzw(self) -> LuaVec4
-
-				// Exclusion reason: 
-				// wywx(self) -> LuaVec4
-
-				// Exclusion reason: 
-				// wywy(self) -> LuaVec4
-
-				// Exclusion reason: 
-				// wywz(self) -> LuaVec4
-
-				// Exclusion reason: 
-				// wyww(self) -> LuaVec4
-
-				// Exclusion reason: 
-				// wzxx(self) -> LuaVec4
-
-				// Exclusion reason: 
-				// wzxy(self) -> LuaVec4
-
-				// Exclusion reason: 
-				// wzxz(self) -> LuaVec4
-
-				// Exclusion reason: 
-				// wzxw(self) -> LuaVec4
-
-				// Exclusion reason: 
-				// wzyx(self) -> LuaVec4
-
-				// Exclusion reason: 
-				// wzyy(self) -> LuaVec4
-
-				// Exclusion reason: 
-				// wzyz(self) -> LuaVec4
-
-				// Exclusion reason: 
-				// wzyw(self) -> LuaVec4
-
-				// Exclusion reason: 
-				// wzzx(self) -> LuaVec4
-
-				// Exclusion reason: 
-				// wzzy(self) -> LuaVec4
-
-				// Exclusion reason: 
-				// wzzz(self) -> LuaVec4
-
-				// Exclusion reason: 
-				// wzzw(self) -> LuaVec4
-
-				// Exclusion reason: 
-				// wzwx(self) -> LuaVec4
-
-				// Exclusion reason: 
-				// wzwy(self) -> LuaVec4
-
-				// Exclusion reason: 
-				// wzwz(self) -> LuaVec4
-
-				// Exclusion reason: 
-				// wzww(self) -> LuaVec4
-
-				// Exclusion reason: 
-				// wwxx(self) -> LuaVec4
-
-				// Exclusion reason: 
-				// wwxy(self) -> LuaVec4
-
-				// Exclusion reason: 
-				// wwxz(self) -> LuaVec4
-
-				// Exclusion reason: 
-				// wwxw(self) -> LuaVec4
-
-				// Exclusion reason: 
-				// wwyx(self) -> LuaVec4
-
-				// Exclusion reason: 
-				// wwyy(self) -> LuaVec4
-
-				// Exclusion reason: 
-				// wwyz(self) -> LuaVec4
-
-				// Exclusion reason: 
-				// wwyw(self) -> LuaVec4
-
-				// Exclusion reason: 
-				// wwzx(self) -> LuaVec4
-
-				// Exclusion reason: 
-				// wwzy(self) -> LuaVec4
-
-				// Exclusion reason: 
-				// wwzz(self) -> LuaVec4
-
-				// Exclusion reason: 
-				// wwzw(self) -> LuaVec4
-
-				// Exclusion reason: 
-				// wwwx(self) -> LuaVec4
-
-				// Exclusion reason: 
-				// wwwy(self) -> LuaVec4
-
-				// Exclusion reason: 
-				// wwwz(self) -> LuaVec4
-
-				// Exclusion reason: 
-				// wwww(self) -> LuaVec4
-
-			)
-+ BinaryOps			(
+			glam::f32::sse2::vec4::Vec4 : Value
+:				AutoMethods
+				(
+					///Creates a new vector.
+					new(f32f32f32f32) -> LuaVec4
+,
+					///Creates a vector with all elements set to `v`.
+					splat(f32) -> LuaVec4
+,
+					// Exclusion reason: Unsupported argument BVec4A
+					// ///Creates a vector from the elements in `if_true` and `if_false`, selecting which to use
+					// ///for each element of `self`.
+					// ///
+					// ///A true element in the mask uses the corresponding element from `if_true`, and false
+					// ///uses the element from `if_false`.
+					// select(LuaVec4LuaVec4) -> LuaVec4
+,
+					// Exclusion reason: Unsupported argument [f32;4]
+					// ///Creates a new vector from an array.
+					// from_array(<invalid: [f32;4]>) -> LuaVec4
+,
+					// Exclusion reason: Unsupported argument [f32;4]
+					// ///`[x, y, z, w]`
+					// to_array(&self)<invalid: [f32;4]>
+,
+					// Exclusion reason: Unsupported argument &[f32]
+					// ///Creates a vector from the first 4 values in `slice`.
+					// ///
+					// ///# Panics
+					// ///
+					// ///Panics if `slice` is less than 4 elements long.
+					// from_slice(<invalid: &[f32]>) -> LuaVec4
+,
+					// Exclusion reason: Unsupported argument &mut [f32]
+					// ///Writes the elements of `self` to the first 4 elements in `slice`.
+					// ///
+					// ///# Panics
+					// ///
+					// ///Panics if `slice` is less than 4 elements long.
+					// write_to_slice(self<invalid: &mut [f32]>)
+,
+					///Creates a 2D vector from the `x`, `y` and `z` elements of `self`, discarding `w`.
+					///
+					///Truncation to `Vec3` may also be performed by using `self.xyz()` or `Vec3::from()`.
+					///
+					///To truncate to `Vec3A` use `Vec3A::from()`.
+					truncate(self) -> LuaVec3
+,
+					///Computes the dot product of `self` and `rhs`.
+					dot(selfLuaVec4) -> f32
+,
+					///Returns a vector containing the minimum values for each element of `self` and `rhs`.
+					///
+					///In other words this computes `[self.x.min(rhs.x), self.y.min(rhs.y), ..]`.
+					min(selfLuaVec4) -> LuaVec4
+,
+					///Returns a vector containing the maximum values for each element of `self` and `rhs`.
+					///
+					///In other words this computes `[self.x.max(rhs.x), self.y.max(rhs.y), ..]`.
+					max(selfLuaVec4) -> LuaVec4
+,
+					///Component-wise clamping of values, similar to [`f32::clamp`].
+					///
+					///Each element in `min` must be less-or-equal to the corresponding element in `max`.
+					///
+					///# Panics
+					///
+					///Will panic if `min` is greater than `max` when `glam_assert` is enabled.
+					clamp(selfLuaVec4LuaVec4) -> LuaVec4
+,
+					///Returns the horizontal minimum of `self`.
+					///
+					///In other words this computes `min(x, y, ..)`.
+					min_element(self) -> f32
+,
+					///Returns the horizontal maximum of `self`.
+					///
+					///In other words this computes `max(x, y, ..)`.
+					max_element(self) -> f32
+,
+					// Exclusion reason: Unsupported argument BVec4A
+					// ///Returns a vector mask containing the result of a `==` comparison for each element of
+					// ///`self` and `rhs`.
+					// ///
+					// ///In other words, this computes `[self.x == rhs.x, self.y == rhs.y, ..]` for all
+					// ///elements.
+					// cmpeq(selfLuaVec4)
+,
+					// Exclusion reason: Unsupported argument BVec4A
+					// ///Returns a vector mask containing the result of a `!=` comparison for each element of
+					// ///`self` and `rhs`.
+					// ///
+					// ///In other words this computes `[self.x != rhs.x, self.y != rhs.y, ..]` for all
+					// ///elements.
+					// cmpne(selfLuaVec4)
+,
+					// Exclusion reason: Unsupported argument BVec4A
+					// ///Returns a vector mask containing the result of a `>=` comparison for each element of
+					// ///`self` and `rhs`.
+					// ///
+					// ///In other words this computes `[self.x >= rhs.x, self.y >= rhs.y, ..]` for all
+					// ///elements.
+					// cmpge(selfLuaVec4)
+,
+					// Exclusion reason: Unsupported argument BVec4A
+					// ///Returns a vector mask containing the result of a `>` comparison for each element of
+					// ///`self` and `rhs`.
+					// ///
+					// ///In other words this computes `[self.x > rhs.x, self.y > rhs.y, ..]` for all
+					// ///elements.
+					// cmpgt(selfLuaVec4)
+,
+					// Exclusion reason: Unsupported argument BVec4A
+					// ///Returns a vector mask containing the result of a `<=` comparison for each element of
+					// ///`self` and `rhs`.
+					// ///
+					// ///In other words this computes `[self.x <= rhs.x, self.y <= rhs.y, ..]` for all
+					// ///elements.
+					// cmple(selfLuaVec4)
+,
+					// Exclusion reason: Unsupported argument BVec4A
+					// ///Returns a vector mask containing the result of a `<` comparison for each element of
+					// ///`self` and `rhs`.
+					// ///
+					// ///In other words this computes `[self.x < rhs.x, self.y < rhs.y, ..]` for all
+					// ///elements.
+					// cmplt(selfLuaVec4)
+,
+					///Returns a vector containing the absolute value of each element of `self`.
+					abs(self) -> LuaVec4
+,
+					///Returns a vector with elements representing the sign of `self`.
+					///
+					///- `1.0` if the number is positive, `+0.0` or `INFINITY`
+					///- `-1.0` if the number is negative, `-0.0` or `NEG_INFINITY`
+					///- `NAN` if the number is `NAN`
+					signum(self) -> LuaVec4
+,
+					///Returns `true` if, and only if, all elements are finite.  If any element is either
+					///`NaN`, positive or negative infinity, this will return `false`.
+					is_finite(self) -> bool
+,
+					///Returns `true` if any elements are `NaN`.
+					is_nan(self) -> bool
+,
+					// Exclusion reason: Unsupported argument BVec4A
+					// ///Performs `is_nan` on each element of self, returning a vector mask of the results.
+					// ///
+					// ///In other words, this computes `[x.is_nan(), y.is_nan(), z.is_nan(), w.is_nan()]`.
+					// is_nan_mask(self)
+,
+					///Computes the length of `self`.
+					length(self) -> f32
+,
+					///Computes the squared length of `self`.
+					///
+					///This is faster than `length()` as it avoids a square root operation.
+					length_squared(self) -> f32
+,
+					///Computes `1.0 / length()`.
+					///
+					///For valid results, `self` must _not_ be of length zero.
+					length_recip(self) -> f32
+,
+					///Computes the Euclidean distance between two points in space.
+					distance(selfLuaVec4) -> f32
+,
+					///Compute the squared euclidean distance between two points in space.
+					distance_squared(selfLuaVec4) -> f32
+,
+					///Returns `self` normalized to length 1.0.
+					///
+					///For valid results, `self` must _not_ be of length zero, nor very close to zero.
+					///
+					///See also [`Self::try_normalize`] and [`Self::normalize_or_zero`].
+					///
+					///Panics
+					///
+					///Will panic if `self` is zero length when `glam_assert` is enabled.
+					normalize(self) -> LuaVec4
+,
+					// Exclusion reason: Unsupported argument Option
+					// ///Returns `self` normalized to length 1.0 if possible, else returns `None`.
+					// ///
+					// ///In particular, if the input is zero (or very close to zero), or non-finite,
+					// ///the result of this operation will be `None`.
+					// ///
+					// ///See also [`Self::normalize_or_zero`].
+					// try_normalize(self)
+,
+					///Returns `self` normalized to length 1.0 if possible, else returns zero.
+					///
+					///In particular, if the input is zero (or very close to zero), or non-finite,
+					///the result of this operation will be zero.
+					///
+					///See also [`Self::try_normalize`].
+					normalize_or_zero(self) -> LuaVec4
+,
+					///Returns whether `self` is length `1.0` or not.
+					///
+					///Uses a precision threshold of `1e-6`.
+					is_normalized(self) -> bool
+,
+					///Returns the vector projection of `self` onto `rhs`.
+					///
+					///`rhs` must be of non-zero length.
+					///
+					///# Panics
+					///
+					///Will panic if `rhs` is zero length when `glam_assert` is enabled.
+					project_onto(selfLuaVec4) -> LuaVec4
+,
+					///Returns the vector rejection of `self` from `rhs`.
+					///
+					///The vector rejection is the vector perpendicular to the projection of `self` onto
+					///`rhs`, in rhs words the result of `self - self.project_onto(rhs)`.
+					///
+					///`rhs` must be of non-zero length.
+					///
+					///# Panics
+					///
+					///Will panic if `rhs` has a length of zero when `glam_assert` is enabled.
+					reject_from(selfLuaVec4) -> LuaVec4
+,
+					///Returns the vector projection of `self` onto `rhs`.
+					///
+					///`rhs` must be normalized.
+					///
+					///# Panics
+					///
+					///Will panic if `rhs` is not normalized when `glam_assert` is enabled.
+					project_onto_normalized(selfLuaVec4) -> LuaVec4
+,
+					///Returns the vector rejection of `self` from `rhs`.
+					///
+					///The vector rejection is the vector perpendicular to the projection of `self` onto
+					///`rhs`, in rhs words the result of `self - self.project_onto(rhs)`.
+					///
+					///`rhs` must be normalized.
+					///
+					///# Panics
+					///
+					///Will panic if `rhs` is not normalized when `glam_assert` is enabled.
+					reject_from_normalized(selfLuaVec4) -> LuaVec4
+,
+					///Returns a vector containing the nearest integer to a number for each element of `self`.
+					///Round half-way cases away from 0.0.
+					round(self) -> LuaVec4
+,
+					///Returns a vector containing the largest integer less than or equal to a number for each
+					///element of `self`.
+					floor(self) -> LuaVec4
+,
+					///Returns a vector containing the smallest integer greater than or equal to a number for
+					///each element of `self`.
+					ceil(self) -> LuaVec4
+,
+					///Returns a vector containing the fractional part of the vector, e.g. `self -
+					///self.floor()`.
+					///
+					///Note that this is fast but not precise for large numbers.
+					fract(self) -> LuaVec4
+,
+					///Returns a vector containing `e^self` (the exponential function) for each element of
+					///`self`.
+					exp(self) -> LuaVec4
+,
+					///Returns a vector containing each element of `self` raised to the power of `n`.
+					powf(selff32) -> LuaVec4
+,
+					///Returns a vector containing the reciprocal `1.0/n` of each element of `self`.
+					recip(self) -> LuaVec4
+,
+					///Performs a linear interpolation between `self` and `rhs` based on the value `s`.
+					///
+					///When `s` is `0.0`, the result will be equal to `self`.  When `s` is `1.0`, the result
+					///will be equal to `rhs`. When `s` is outside of range `[0, 1]`, the result is linearly
+					///extrapolated.
+					lerp(selfLuaVec4f32) -> LuaVec4
+,
+					///Returns true if the absolute difference of all elements between `self` and `rhs` is
+					///less than or equal to `max_abs_diff`.
+					///
+					///This can be used to compare if two vectors contain similar elements. It works best when
+					///comparing with a known value. The `max_abs_diff` that should be used used depends on
+					///the values being compared against.
+					///
+					///For more see
+					///[comparing floating point numbers](https://randomascii.wordpress.com/2012/02/25/comparing-floating-point-numbers-2012-edition/).
+					abs_diff_eq(selfLuaVec4f32) -> bool
+,
+					///Returns a vector with a length no less than `min` and no more than `max`
+					///
+					///# Panics
+					///
+					///Will panic if `min` is greater than `max` when `glam_assert` is enabled.
+					clamp_length(selff32f32) -> LuaVec4
+,
+					///Returns a vector with a length no more than `max`
+					clamp_length_max(selff32) -> LuaVec4
+,
+					///Returns a vector with a length no less than `min`
+					clamp_length_min(selff32) -> LuaVec4
+,
+					///Fused multiply-add. Computes `(self * a) + b` element-wise with only one rounding
+					///error, yielding a more accurate result than an unfused multiply-add.
+					///
+					///Using `mul_add` *may* be more performant than an unfused multiply-add if the target
+					///architecture has a dedicated fma CPU instruction. However, this is not always true,
+					///and will be heavily dependant on designing algorithms with specific target hardware in
+					///mind.
+					mul_add(selfLuaVec4LuaVec4) -> LuaVec4
+,
+					// Exclusion reason: Unsupported argument crate::DVec4
+					// ///Casts all elements of `self` to `f64`.
+					// as_dvec4(&self)
+,
+					// Exclusion reason: Unsupported argument crate::IVec4
+					// ///Casts all elements of `self` to `i32`.
+					// as_ivec4(&self)
+,
+					// Exclusion reason: Unsupported argument crate::UVec4
+					// ///Casts all elements of `self` to `u32`.
+					// as_uvec4(&self)
+,
+					// Exclusion reason: Unsupported argument U,Unsupported argument Result
+					// try_from()
+,
+					// Exclusion reason: Unsupported argument T,Unsupported argument T
+					// ///Returns the argument unchanged.
+					// from()
+,
+					from(LuaQuat) -> LuaVec4
+,
+					///Creates a `Vec3A` from the `x`, `y` and `z` elements of `self` discarding `w`.
+					///
+					///On architectures where SIMD is supported such as SSE2 on `x86_64` this conversion is a noop.
+					from(LuaVec4) -> LuaVec4
+,
+					from(LuaVec4) -> LuaVec4
+,
+					// Exclusion reason: Unsupported argument __m128
+					// from() -> LuaVec4
+,
+					// Exclusion reason: Unsupported argument [f32;4]
+					// from(<invalid: [f32;4]>) -> LuaVec4
+,
+					from(LuaVec4) -> LuaVec4
+,
+					// Exclusion reason: Unsupported argument (f32,f32,f32,f32)
+					// from(<invalid: (f32,f32,f32,f32)>) -> LuaVec4
+,
+					from(LuaVec4) -> LuaVec4
+,
+					// Exclusion reason: Unsupported argument Vec3A
+					// from() -> LuaVec4
+,
+					// Exclusion reason: Unsupported argument Vec3A
+					// from() -> LuaVec4
+,
+					// Exclusion reason: Unsupported argument (LuaVec3,f32)
+					// from(<invalid: (LuaVec3,f32)>) -> LuaVec4
+,
+					// Exclusion reason: Unsupported argument (f32,LuaVec3)
+					// from(<invalid: (f32,LuaVec3)>) -> LuaVec4
+,
+					// Exclusion reason: Unsupported argument (LuaVec2,f32,f32)
+					// from(<invalid: (LuaVec2,f32,f32)>) -> LuaVec4
+,
+					// Exclusion reason: Unsupported argument (LuaVec2,LuaVec2)
+					// from(<invalid: (LuaVec2,LuaVec2)>) -> LuaVec4
+,
+					// Exclusion reason: Unsupported argument U
+					// ///Calls `U::from(self)`.
+					// ///
+					// ///That is, this conversion is whatever the implementation of
+					// ///<code>[From]&lt;T&gt; for U</code> chooses to do.
+					// into(self)
+,
+					// Exclusion reason: Unsupported argument T
+					// borrow(&self)
+,
+					// Exclusion reason: Unsupported argument TypeId
+					// type_id(&self)
+,
+					// Exclusion reason: Unsupported argument Result
+					// try_into(self)
+,
+					// Exclusion reason: Unsupported argument &mut self,Unsupported argument T
+					// borrow_mut(<invalid: &mut self>)
+,
+					// Exclusion reason: Unsupported argument String
+					// to_string(&self)
+,
+					// Exclusion reason: Unsupported argument T
+					// to_owned(&self)
+,
+					// Exclusion reason: Unsupported argument T
+					// clone_into(&self)
+,
+					// Exclusion reason: Unsupported argument T
+					// is_valid_bit_pattern() -> bool
+,
+					// Exclusion reason: Unsupported argument S,Unsupported argument Result,Generics on the method
+					// serialize(&self)
+,
+					// Exclusion reason: Unsupported argument D,Unsupported argument Result,Generics on the method
+					// deserialize()
+,
+					// Exclusion reason: Unsupported argument QualifiedPath { name: "Output", args: AngleBracketed { args: [], bindings: [] }, self_type: Generic("Self"), trait_: ResolvedPath { name: "", id: Id("2:3313:2263"), args: None, param_names: [] } }
+					// mul(selfLuaVec4)
+,
+					mul(selfLuaVec4) -> LuaVec4
+,
+					mul(selff32) -> LuaVec4
+,
+					mul(selfLuaVec4) -> LuaVec4
+,
+					clone(&self) -> LuaVec4
+,
+					default() -> LuaVec4
+,
+					eq(&self&LuaVec4) -> bool
+,
+					div(selfLuaVec4) -> LuaVec4
+,
+					div(selff32) -> LuaVec4
+,
+					div(selfLuaVec4) -> LuaVec4
+,
+					// Exclusion reason: Unsupported argument &mut self
+					// div_assign(<invalid: &mut self>LuaVec4)
+,
+					// Exclusion reason: Unsupported argument &mut self
+					// div_assign(<invalid: &mut self>f32)
+,
+					// Exclusion reason: Unsupported argument &mut self
+					// mul_assign(<invalid: &mut self>LuaVec4)
+,
+					// Exclusion reason: Unsupported argument &mut self
+					// mul_assign(<invalid: &mut self>f32)
+,
+					add(selfLuaVec4) -> LuaVec4
+,
+					add(selff32) -> LuaVec4
+,
+					add(selfLuaVec4) -> LuaVec4
+,
+					// Exclusion reason: Unsupported argument &mut self
+					// add_assign(<invalid: &mut self>LuaVec4)
+,
+					// Exclusion reason: Unsupported argument &mut self
+					// add_assign(<invalid: &mut self>f32)
+,
+					sub(selfLuaVec4) -> LuaVec4
+,
+					sub(selff32) -> LuaVec4
+,
+					sub(selfLuaVec4) -> LuaVec4
+,
+					// Exclusion reason: Unsupported argument &mut self
+					// sub_assign(<invalid: &mut self>LuaVec4)
+,
+					// Exclusion reason: Unsupported argument &mut self
+					// sub_assign(<invalid: &mut self>f32)
+,
+					rem(selfLuaVec4) -> LuaVec4
+,
+					rem(selff32) -> LuaVec4
+,
+					rem(selfLuaVec4) -> LuaVec4
+,
+					// Exclusion reason: Unsupported argument &mut self
+					// rem_assign(<invalid: &mut self>LuaVec4)
+,
+					// Exclusion reason: Unsupported argument &mut self
+					// rem_assign(<invalid: &mut self>f32)
+,
+					// Exclusion reason: Unsupported argument &[f32;4]
+					// as_ref(&self)<invalid: &[f32;4]>
+,
+					// Exclusion reason: Unsupported argument &mut self,Unsupported argument &mut [f32;4]
+					// as_mut(<invalid: &mut self>)<invalid: &mut [f32;4]>
+,
+					// Exclusion reason: Unsupported argument I,Generics on the method
+					// sum() -> LuaVec4
+,
+					// Exclusion reason: Unsupported argument I,Generics on the method
+					// product() -> LuaVec4
+,
+					neg(self) -> LuaVec4
+,
+					// Exclusion reason: Unsupported argument QualifiedPath { name: "Output", args: AngleBracketed { args: [], bindings: [] }, self_type: Generic("Self"), trait_: ResolvedPath { name: "", id: Id("2:3539:2758"), args: None, param_names: [] } }
+					// index(&selfusize)
+,
+					// Exclusion reason: Unsupported argument &mut self,Unsupported argument QualifiedPath { name: "Output", args: AngleBracketed { args: [], bindings: [] }, self_type: Generic("Self"), trait_: ResolvedPath { name: "", id: Id("2:3539:2758"), args: None, param_names: [] } }
+					// index_mut(<invalid: &mut self>usize)
+,
+					// Exclusion reason: Unsupported argument fmt::Formatter,Unsupported argument fmt::Result
+					// fmt(&self)
+,
+					// Exclusion reason: Unsupported argument fmt::Formatter,Unsupported argument fmt::Result
+					// fmt(&self)
+,
+					// Exclusion reason: Unsupported argument QualifiedPath { name: "Target", args: AngleBracketed { args: [], bindings: [] }, self_type: Generic("Self"), trait_: ResolvedPath { name: "", id: Id("2:3454:115"), args: None, param_names: [] } }
+					// deref(&self)
+,
+					// Exclusion reason: Unsupported argument &mut self,Unsupported argument QualifiedPath { name: "Target", args: AngleBracketed { args: [], bindings: [] }, self_type: Generic("Self"), trait_: ResolvedPath { name: "", id: Id("2:3454:115"), args: None, param_names: [] } }
+					// deref_mut(<invalid: &mut self>)
+,
+					xx(self) -> LuaVec2
+,
+					xy(self) -> LuaVec2
+,
+					xz(self) -> LuaVec2
+,
+					xw(self) -> LuaVec2
+,
+					yx(self) -> LuaVec2
+,
+					yy(self) -> LuaVec2
+,
+					yz(self) -> LuaVec2
+,
+					yw(self) -> LuaVec2
+,
+					zx(self) -> LuaVec2
+,
+					zy(self) -> LuaVec2
+,
+					zz(self) -> LuaVec2
+,
+					zw(self) -> LuaVec2
+,
+					wx(self) -> LuaVec2
+,
+					wy(self) -> LuaVec2
+,
+					wz(self) -> LuaVec2
+,
+					ww(self) -> LuaVec2
+,
+					xxx(self) -> LuaVec3
+,
+					xxy(self) -> LuaVec3
+,
+					xxz(self) -> LuaVec3
+,
+					xxw(self) -> LuaVec3
+,
+					xyx(self) -> LuaVec3
+,
+					xyy(self) -> LuaVec3
+,
+					xyz(self) -> LuaVec3
+,
+					xyw(self) -> LuaVec3
+,
+					xzx(self) -> LuaVec3
+,
+					xzy(self) -> LuaVec3
+,
+					xzz(self) -> LuaVec3
+,
+					xzw(self) -> LuaVec3
+,
+					xwx(self) -> LuaVec3
+,
+					xwy(self) -> LuaVec3
+,
+					xwz(self) -> LuaVec3
+,
+					xww(self) -> LuaVec3
+,
+					yxx(self) -> LuaVec3
+,
+					yxy(self) -> LuaVec3
+,
+					yxz(self) -> LuaVec3
+,
+					yxw(self) -> LuaVec3
+,
+					yyx(self) -> LuaVec3
+,
+					yyy(self) -> LuaVec3
+,
+					yyz(self) -> LuaVec3
+,
+					yyw(self) -> LuaVec3
+,
+					yzx(self) -> LuaVec3
+,
+					yzy(self) -> LuaVec3
+,
+					yzz(self) -> LuaVec3
+,
+					yzw(self) -> LuaVec3
+,
+					ywx(self) -> LuaVec3
+,
+					ywy(self) -> LuaVec3
+,
+					ywz(self) -> LuaVec3
+,
+					yww(self) -> LuaVec3
+,
+					zxx(self) -> LuaVec3
+,
+					zxy(self) -> LuaVec3
+,
+					zxz(self) -> LuaVec3
+,
+					zxw(self) -> LuaVec3
+,
+					zyx(self) -> LuaVec3
+,
+					zyy(self) -> LuaVec3
+,
+					zyz(self) -> LuaVec3
+,
+					zyw(self) -> LuaVec3
+,
+					zzx(self) -> LuaVec3
+,
+					zzy(self) -> LuaVec3
+,
+					zzz(self) -> LuaVec3
+,
+					zzw(self) -> LuaVec3
+,
+					zwx(self) -> LuaVec3
+,
+					zwy(self) -> LuaVec3
+,
+					zwz(self) -> LuaVec3
+,
+					zww(self) -> LuaVec3
+,
+					wxx(self) -> LuaVec3
+,
+					wxy(self) -> LuaVec3
+,
+					wxz(self) -> LuaVec3
+,
+					wxw(self) -> LuaVec3
+,
+					wyx(self) -> LuaVec3
+,
+					wyy(self) -> LuaVec3
+,
+					wyz(self) -> LuaVec3
+,
+					wyw(self) -> LuaVec3
+,
+					wzx(self) -> LuaVec3
+,
+					wzy(self) -> LuaVec3
+,
+					wzz(self) -> LuaVec3
+,
+					wzw(self) -> LuaVec3
+,
+					wwx(self) -> LuaVec3
+,
+					wwy(self) -> LuaVec3
+,
+					wwz(self) -> LuaVec3
+,
+					www(self) -> LuaVec3
+,
+					xxxx(self) -> LuaVec4
+,
+					xxxy(self) -> LuaVec4
+,
+					xxxz(self) -> LuaVec4
+,
+					xxxw(self) -> LuaVec4
+,
+					xxyx(self) -> LuaVec4
+,
+					xxyy(self) -> LuaVec4
+,
+					xxyz(self) -> LuaVec4
+,
+					xxyw(self) -> LuaVec4
+,
+					xxzx(self) -> LuaVec4
+,
+					xxzy(self) -> LuaVec4
+,
+					xxzz(self) -> LuaVec4
+,
+					xxzw(self) -> LuaVec4
+,
+					xxwx(self) -> LuaVec4
+,
+					xxwy(self) -> LuaVec4
+,
+					xxwz(self) -> LuaVec4
+,
+					xxww(self) -> LuaVec4
+,
+					xyxx(self) -> LuaVec4
+,
+					xyxy(self) -> LuaVec4
+,
+					xyxz(self) -> LuaVec4
+,
+					xyxw(self) -> LuaVec4
+,
+					xyyx(self) -> LuaVec4
+,
+					xyyy(self) -> LuaVec4
+,
+					xyyz(self) -> LuaVec4
+,
+					xyyw(self) -> LuaVec4
+,
+					xyzx(self) -> LuaVec4
+,
+					xyzy(self) -> LuaVec4
+,
+					xyzz(self) -> LuaVec4
+,
+					xyzw(self) -> LuaVec4
+,
+					xywx(self) -> LuaVec4
+,
+					xywy(self) -> LuaVec4
+,
+					xywz(self) -> LuaVec4
+,
+					xyww(self) -> LuaVec4
+,
+					xzxx(self) -> LuaVec4
+,
+					xzxy(self) -> LuaVec4
+,
+					xzxz(self) -> LuaVec4
+,
+					xzxw(self) -> LuaVec4
+,
+					xzyx(self) -> LuaVec4
+,
+					xzyy(self) -> LuaVec4
+,
+					xzyz(self) -> LuaVec4
+,
+					xzyw(self) -> LuaVec4
+,
+					xzzx(self) -> LuaVec4
+,
+					xzzy(self) -> LuaVec4
+,
+					xzzz(self) -> LuaVec4
+,
+					xzzw(self) -> LuaVec4
+,
+					xzwx(self) -> LuaVec4
+,
+					xzwy(self) -> LuaVec4
+,
+					xzwz(self) -> LuaVec4
+,
+					xzww(self) -> LuaVec4
+,
+					xwxx(self) -> LuaVec4
+,
+					xwxy(self) -> LuaVec4
+,
+					xwxz(self) -> LuaVec4
+,
+					xwxw(self) -> LuaVec4
+,
+					xwyx(self) -> LuaVec4
+,
+					xwyy(self) -> LuaVec4
+,
+					xwyz(self) -> LuaVec4
+,
+					xwyw(self) -> LuaVec4
+,
+					xwzx(self) -> LuaVec4
+,
+					xwzy(self) -> LuaVec4
+,
+					xwzz(self) -> LuaVec4
+,
+					xwzw(self) -> LuaVec4
+,
+					xwwx(self) -> LuaVec4
+,
+					xwwy(self) -> LuaVec4
+,
+					xwwz(self) -> LuaVec4
+,
+					xwww(self) -> LuaVec4
+,
+					yxxx(self) -> LuaVec4
+,
+					yxxy(self) -> LuaVec4
+,
+					yxxz(self) -> LuaVec4
+,
+					yxxw(self) -> LuaVec4
+,
+					yxyx(self) -> LuaVec4
+,
+					yxyy(self) -> LuaVec4
+,
+					yxyz(self) -> LuaVec4
+,
+					yxyw(self) -> LuaVec4
+,
+					yxzx(self) -> LuaVec4
+,
+					yxzy(self) -> LuaVec4
+,
+					yxzz(self) -> LuaVec4
+,
+					yxzw(self) -> LuaVec4
+,
+					yxwx(self) -> LuaVec4
+,
+					yxwy(self) -> LuaVec4
+,
+					yxwz(self) -> LuaVec4
+,
+					yxww(self) -> LuaVec4
+,
+					yyxx(self) -> LuaVec4
+,
+					yyxy(self) -> LuaVec4
+,
+					yyxz(self) -> LuaVec4
+,
+					yyxw(self) -> LuaVec4
+,
+					yyyx(self) -> LuaVec4
+,
+					yyyy(self) -> LuaVec4
+,
+					yyyz(self) -> LuaVec4
+,
+					yyyw(self) -> LuaVec4
+,
+					yyzx(self) -> LuaVec4
+,
+					yyzy(self) -> LuaVec4
+,
+					yyzz(self) -> LuaVec4
+,
+					yyzw(self) -> LuaVec4
+,
+					yywx(self) -> LuaVec4
+,
+					yywy(self) -> LuaVec4
+,
+					yywz(self) -> LuaVec4
+,
+					yyww(self) -> LuaVec4
+,
+					yzxx(self) -> LuaVec4
+,
+					yzxy(self) -> LuaVec4
+,
+					yzxz(self) -> LuaVec4
+,
+					yzxw(self) -> LuaVec4
+,
+					yzyx(self) -> LuaVec4
+,
+					yzyy(self) -> LuaVec4
+,
+					yzyz(self) -> LuaVec4
+,
+					yzyw(self) -> LuaVec4
+,
+					yzzx(self) -> LuaVec4
+,
+					yzzy(self) -> LuaVec4
+,
+					yzzz(self) -> LuaVec4
+,
+					yzzw(self) -> LuaVec4
+,
+					yzwx(self) -> LuaVec4
+,
+					yzwy(self) -> LuaVec4
+,
+					yzwz(self) -> LuaVec4
+,
+					yzww(self) -> LuaVec4
+,
+					ywxx(self) -> LuaVec4
+,
+					ywxy(self) -> LuaVec4
+,
+					ywxz(self) -> LuaVec4
+,
+					ywxw(self) -> LuaVec4
+,
+					ywyx(self) -> LuaVec4
+,
+					ywyy(self) -> LuaVec4
+,
+					ywyz(self) -> LuaVec4
+,
+					ywyw(self) -> LuaVec4
+,
+					ywzx(self) -> LuaVec4
+,
+					ywzy(self) -> LuaVec4
+,
+					ywzz(self) -> LuaVec4
+,
+					ywzw(self) -> LuaVec4
+,
+					ywwx(self) -> LuaVec4
+,
+					ywwy(self) -> LuaVec4
+,
+					ywwz(self) -> LuaVec4
+,
+					ywww(self) -> LuaVec4
+,
+					zxxx(self) -> LuaVec4
+,
+					zxxy(self) -> LuaVec4
+,
+					zxxz(self) -> LuaVec4
+,
+					zxxw(self) -> LuaVec4
+,
+					zxyx(self) -> LuaVec4
+,
+					zxyy(self) -> LuaVec4
+,
+					zxyz(self) -> LuaVec4
+,
+					zxyw(self) -> LuaVec4
+,
+					zxzx(self) -> LuaVec4
+,
+					zxzy(self) -> LuaVec4
+,
+					zxzz(self) -> LuaVec4
+,
+					zxzw(self) -> LuaVec4
+,
+					zxwx(self) -> LuaVec4
+,
+					zxwy(self) -> LuaVec4
+,
+					zxwz(self) -> LuaVec4
+,
+					zxww(self) -> LuaVec4
+,
+					zyxx(self) -> LuaVec4
+,
+					zyxy(self) -> LuaVec4
+,
+					zyxz(self) -> LuaVec4
+,
+					zyxw(self) -> LuaVec4
+,
+					zyyx(self) -> LuaVec4
+,
+					zyyy(self) -> LuaVec4
+,
+					zyyz(self) -> LuaVec4
+,
+					zyyw(self) -> LuaVec4
+,
+					zyzx(self) -> LuaVec4
+,
+					zyzy(self) -> LuaVec4
+,
+					zyzz(self) -> LuaVec4
+,
+					zyzw(self) -> LuaVec4
+,
+					zywx(self) -> LuaVec4
+,
+					zywy(self) -> LuaVec4
+,
+					zywz(self) -> LuaVec4
+,
+					zyww(self) -> LuaVec4
+,
+					zzxx(self) -> LuaVec4
+,
+					zzxy(self) -> LuaVec4
+,
+					zzxz(self) -> LuaVec4
+,
+					zzxw(self) -> LuaVec4
+,
+					zzyx(self) -> LuaVec4
+,
+					zzyy(self) -> LuaVec4
+,
+					zzyz(self) -> LuaVec4
+,
+					zzyw(self) -> LuaVec4
+,
+					zzzx(self) -> LuaVec4
+,
+					zzzy(self) -> LuaVec4
+,
+					zzzz(self) -> LuaVec4
+,
+					zzzw(self) -> LuaVec4
+,
+					zzwx(self) -> LuaVec4
+,
+					zzwy(self) -> LuaVec4
+,
+					zzwz(self) -> LuaVec4
+,
+					zzww(self) -> LuaVec4
+,
+					zwxx(self) -> LuaVec4
+,
+					zwxy(self) -> LuaVec4
+,
+					zwxz(self) -> LuaVec4
+,
+					zwxw(self) -> LuaVec4
+,
+					zwyx(self) -> LuaVec4
+,
+					zwyy(self) -> LuaVec4
+,
+					zwyz(self) -> LuaVec4
+,
+					zwyw(self) -> LuaVec4
+,
+					zwzx(self) -> LuaVec4
+,
+					zwzy(self) -> LuaVec4
+,
+					zwzz(self) -> LuaVec4
+,
+					zwzw(self) -> LuaVec4
+,
+					zwwx(self) -> LuaVec4
+,
+					zwwy(self) -> LuaVec4
+,
+					zwwz(self) -> LuaVec4
+,
+					zwww(self) -> LuaVec4
+,
+					wxxx(self) -> LuaVec4
+,
+					wxxy(self) -> LuaVec4
+,
+					wxxz(self) -> LuaVec4
+,
+					wxxw(self) -> LuaVec4
+,
+					wxyx(self) -> LuaVec4
+,
+					wxyy(self) -> LuaVec4
+,
+					wxyz(self) -> LuaVec4
+,
+					wxyw(self) -> LuaVec4
+,
+					wxzx(self) -> LuaVec4
+,
+					wxzy(self) -> LuaVec4
+,
+					wxzz(self) -> LuaVec4
+,
+					wxzw(self) -> LuaVec4
+,
+					wxwx(self) -> LuaVec4
+,
+					wxwy(self) -> LuaVec4
+,
+					wxwz(self) -> LuaVec4
+,
+					wxww(self) -> LuaVec4
+,
+					wyxx(self) -> LuaVec4
+,
+					wyxy(self) -> LuaVec4
+,
+					wyxz(self) -> LuaVec4
+,
+					wyxw(self) -> LuaVec4
+,
+					wyyx(self) -> LuaVec4
+,
+					wyyy(self) -> LuaVec4
+,
+					wyyz(self) -> LuaVec4
+,
+					wyyw(self) -> LuaVec4
+,
+					wyzx(self) -> LuaVec4
+,
+					wyzy(self) -> LuaVec4
+,
+					wyzz(self) -> LuaVec4
+,
+					wyzw(self) -> LuaVec4
+,
+					wywx(self) -> LuaVec4
+,
+					wywy(self) -> LuaVec4
+,
+					wywz(self) -> LuaVec4
+,
+					wyww(self) -> LuaVec4
+,
+					wzxx(self) -> LuaVec4
+,
+					wzxy(self) -> LuaVec4
+,
+					wzxz(self) -> LuaVec4
+,
+					wzxw(self) -> LuaVec4
+,
+					wzyx(self) -> LuaVec4
+,
+					wzyy(self) -> LuaVec4
+,
+					wzyz(self) -> LuaVec4
+,
+					wzyw(self) -> LuaVec4
+,
+					wzzx(self) -> LuaVec4
+,
+					wzzy(self) -> LuaVec4
+,
+					wzzz(self) -> LuaVec4
+,
+					wzzw(self) -> LuaVec4
+,
+					wzwx(self) -> LuaVec4
+,
+					wzwy(self) -> LuaVec4
+,
+					wzwz(self) -> LuaVec4
+,
+					wzww(self) -> LuaVec4
+,
+					wwxx(self) -> LuaVec4
+,
+					wwxy(self) -> LuaVec4
+,
+					wwxz(self) -> LuaVec4
+,
+					wwxw(self) -> LuaVec4
+,
+					wwyx(self) -> LuaVec4
+,
+					wwyy(self) -> LuaVec4
+,
+					wwyz(self) -> LuaVec4
+,
+					wwyw(self) -> LuaVec4
+,
+					wwzx(self) -> LuaVec4
+,
+					wwzy(self) -> LuaVec4
+,
+					wwzz(self) -> LuaVec4
+,
+					wwzw(self) -> LuaVec4
+,
+					wwwx(self) -> LuaVec4
+,
+					wwwy(self) -> LuaVec4
+,
+					wwwz(self) -> LuaVec4
+,
+					wwww(self) -> LuaVec4
+,
+				)
+				+ BinaryOps
+				(
 self Add LuaVec4 -> LuaVec4 -> LuaVec4
 self Add f32 -> LuaVec4 -> LuaVec4
 f32 Add self -> LuaVec4 -> LuaVec4
@@ -4149,608 +3986,570 @@ f32 Mul self -> LuaVec4 -> LuaVec4
 self Rem LuaVec4 -> LuaVec4 -> LuaVec4
 self Rem f32 -> LuaVec4 -> LuaVec4
 f32 Rem self -> LuaVec4 -> LuaVec4
-			)
-+ UnaryOps			(
-			)
-+ 			    Copy(LuaVec2 -> (MetaMethod::Index) (s=LuaVec4),
-			        LuaVec2 -> mut (MetaMethod::NewIndex) (n=f32))
-			    
-impl			{
+				)
+				+ UnaryOps
+				(
+				)
++ 				    Copy(LuaVec2 -> (MetaMethod::Index) (s=LuaVec4),
+				        LuaVec2 -> mut (MetaMethod::NewIndex) (n=f32))
+				    
+			impl
+			{
 			}
 		}
-		{
+,		{
 			///A 2-dimensional vector.
-glam::f64::dvec2::DVec2 : Value
-AutoMethods			(
-				// Exclusion reason: 
-				// ///Creates a new vector.
-				// new(f64f64) -> LuaDVec2
-
-				// Exclusion reason: 
-				// ///Creates a vector with all elements set to `v`.
-				// splat(f64) -> LuaDVec2
-
-				///Creates a vector from the elements in `if_true` and `if_false`, selecting which to use
-				///for each element of `self`.
-				///
-				///A true element in the mask uses the corresponding element from `if_true`, and false
-				///uses the element from `if_false`.
-				select(LuaDVec2LuaDVec2) -> LuaDVec2
-
-				///Creates a new vector from an array.
-				from_array(<invalid: [f64;2]>) -> LuaDVec2
-
-				///`[x, y]`
-				to_array(&self)<invalid: [f64;2]>
-
-				///Creates a vector from the first 2 values in `slice`.
-				///
-				///# Panics
-				///
-				///Panics if `slice` is less than 2 elements long.
-				from_slice(<invalid: &[f64]>) -> LuaDVec2
-
-				///Writes the elements of `self` to the first 2 elements in `slice`.
-				///
-				///# Panics
-				///
-				///Panics if `slice` is less than 2 elements long.
-				write_to_slice(self<invalid: &mut [f64]>)
-
-				// Exclusion reason: 
-				// ///Creates a 3D vector from `self` and the given `z` value.
-				// extend(selff64) -> LuaDVec3
-
-				// Exclusion reason: 
-				// ///Computes the dot product of `self` and `rhs`.
-				// dot(selfLuaDVec2) -> f64
-
-				// Exclusion reason: 
-				// ///Returns a vector containing the minimum values for each element of `self` and `rhs`.
-				// ///
-				// ///In other words this computes `[self.x.min(rhs.x), self.y.min(rhs.y), ..]`.
-				// min(selfLuaDVec2) -> LuaDVec2
-
-				// Exclusion reason: 
-				// ///Returns a vector containing the maximum values for each element of `self` and `rhs`.
-				// ///
-				// ///In other words this computes `[self.x.max(rhs.x), self.y.max(rhs.y), ..]`.
-				// max(selfLuaDVec2) -> LuaDVec2
-
-				// Exclusion reason: 
-				// ///Component-wise clamping of values, similar to [`f32::clamp`].
-				// ///
-				// ///Each element in `min` must be less-or-equal to the corresponding element in `max`.
-				// ///
-				// ///# Panics
-				// ///
-				// ///Will panic if `min` is greater than `max` when `glam_assert` is enabled.
-				// clamp(selfLuaDVec2LuaDVec2) -> LuaDVec2
-
-				// Exclusion reason: 
-				// ///Returns the horizontal minimum of `self`.
-				// ///
-				// ///In other words this computes `min(x, y, ..)`.
-				// min_element(self) -> f64
-
-				// Exclusion reason: 
-				// ///Returns the horizontal maximum of `self`.
-				// ///
-				// ///In other words this computes `max(x, y, ..)`.
-				// max_element(self) -> f64
-
-				///Returns a vector mask containing the result of a `==` comparison for each element of
-				///`self` and `rhs`.
-				///
-				///In other words, this computes `[self.x == rhs.x, self.y == rhs.y, ..]` for all
-				///elements.
-				cmpeq(selfLuaDVec2)
-
-				///Returns a vector mask containing the result of a `!=` comparison for each element of
-				///`self` and `rhs`.
-				///
-				///In other words this computes `[self.x != rhs.x, self.y != rhs.y, ..]` for all
-				///elements.
-				cmpne(selfLuaDVec2)
-
-				///Returns a vector mask containing the result of a `>=` comparison for each element of
-				///`self` and `rhs`.
-				///
-				///In other words this computes `[self.x >= rhs.x, self.y >= rhs.y, ..]` for all
-				///elements.
-				cmpge(selfLuaDVec2)
-
-				///Returns a vector mask containing the result of a `>` comparison for each element of
-				///`self` and `rhs`.
-				///
-				///In other words this computes `[self.x > rhs.x, self.y > rhs.y, ..]` for all
-				///elements.
-				cmpgt(selfLuaDVec2)
-
-				///Returns a vector mask containing the result of a `<=` comparison for each element of
-				///`self` and `rhs`.
-				///
-				///In other words this computes `[self.x <= rhs.x, self.y <= rhs.y, ..]` for all
-				///elements.
-				cmple(selfLuaDVec2)
-
-				///Returns a vector mask containing the result of a `<` comparison for each element of
-				///`self` and `rhs`.
-				///
-				///In other words this computes `[self.x < rhs.x, self.y < rhs.y, ..]` for all
-				///elements.
-				cmplt(selfLuaDVec2)
-
-				// Exclusion reason: 
-				// ///Returns a vector containing the absolute value of each element of `self`.
-				// abs(self) -> LuaDVec2
-
-				// Exclusion reason: 
-				// ///Returns a vector with elements representing the sign of `self`.
-				// ///
-				// ///- `1.0` if the number is positive, `+0.0` or `INFINITY`
-				// ///- `-1.0` if the number is negative, `-0.0` or `NEG_INFINITY`
-				// ///- `NAN` if the number is `NAN`
-				// signum(self) -> LuaDVec2
-
-				// Exclusion reason: 
-				// ///Returns `true` if, and only if, all elements are finite.  If any element is either
-				// ///`NaN`, positive or negative infinity, this will return `false`.
-				// is_finite(self) -> bool
-
-				// Exclusion reason: 
-				// ///Returns `true` if any elements are `NaN`.
-				// is_nan(self) -> bool
-
-				///Performs `is_nan` on each element of self, returning a vector mask of the results.
-				///
-				///In other words, this computes `[x.is_nan(), y.is_nan(), z.is_nan(), w.is_nan()]`.
-				is_nan_mask(self)
-
-				// Exclusion reason: 
-				// ///Computes the length of `self`.
-				// length(self) -> f64
-
-				// Exclusion reason: 
-				// ///Computes the squared length of `self`.
-				// ///
-				// ///This is faster than `length()` as it avoids a square root operation.
-				// length_squared(self) -> f64
-
-				// Exclusion reason: 
-				// ///Computes `1.0 / length()`.
-				// ///
-				// ///For valid results, `self` must _not_ be of length zero.
-				// length_recip(self) -> f64
-
-				// Exclusion reason: 
-				// ///Computes the Euclidean distance between two points in space.
-				// distance(selfLuaDVec2) -> f64
-
-				// Exclusion reason: 
-				// ///Compute the squared euclidean distance between two points in space.
-				// distance_squared(selfLuaDVec2) -> f64
-
-				// Exclusion reason: 
-				// ///Returns `self` normalized to length 1.0.
-				// ///
-				// ///For valid results, `self` must _not_ be of length zero, nor very close to zero.
-				// ///
-				// ///See also [`Self::try_normalize`] and [`Self::normalize_or_zero`].
-				// ///
-				// ///Panics
-				// ///
-				// ///Will panic if `self` is zero length when `glam_assert` is enabled.
-				// normalize(self) -> LuaDVec2
-
-				///Returns `self` normalized to length 1.0 if possible, else returns `None`.
-				///
-				///In particular, if the input is zero (or very close to zero), or non-finite,
-				///the result of this operation will be `None`.
-				///
-				///See also [`Self::normalize_or_zero`].
-				try_normalize(self)
-
-				// Exclusion reason: 
-				// ///Returns `self` normalized to length 1.0 if possible, else returns zero.
-				// ///
-				// ///In particular, if the input is zero (or very close to zero), or non-finite,
-				// ///the result of this operation will be zero.
-				// ///
-				// ///See also [`Self::try_normalize`].
-				// normalize_or_zero(self) -> LuaDVec2
-
-				// Exclusion reason: 
-				// ///Returns whether `self` is length `1.0` or not.
-				// ///
-				// ///Uses a precision threshold of `1e-6`.
-				// is_normalized(self) -> bool
-
-				// Exclusion reason: 
-				// ///Returns the vector projection of `self` onto `rhs`.
-				// ///
-				// ///`rhs` must be of non-zero length.
-				// ///
-				// ///# Panics
-				// ///
-				// ///Will panic if `rhs` is zero length when `glam_assert` is enabled.
-				// project_onto(selfLuaDVec2) -> LuaDVec2
-
-				// Exclusion reason: 
-				// ///Returns the vector rejection of `self` from `rhs`.
-				// ///
-				// ///The vector rejection is the vector perpendicular to the projection of `self` onto
-				// ///`rhs`, in rhs words the result of `self - self.project_onto(rhs)`.
-				// ///
-				// ///`rhs` must be of non-zero length.
-				// ///
-				// ///# Panics
-				// ///
-				// ///Will panic if `rhs` has a length of zero when `glam_assert` is enabled.
-				// reject_from(selfLuaDVec2) -> LuaDVec2
-
-				// Exclusion reason: 
-				// ///Returns the vector projection of `self` onto `rhs`.
-				// ///
-				// ///`rhs` must be normalized.
-				// ///
-				// ///# Panics
-				// ///
-				// ///Will panic if `rhs` is not normalized when `glam_assert` is enabled.
-				// project_onto_normalized(selfLuaDVec2) -> LuaDVec2
-
-				// Exclusion reason: 
-				// ///Returns the vector rejection of `self` from `rhs`.
-				// ///
-				// ///The vector rejection is the vector perpendicular to the projection of `self` onto
-				// ///`rhs`, in rhs words the result of `self - self.project_onto(rhs)`.
-				// ///
-				// ///`rhs` must be normalized.
-				// ///
-				// ///# Panics
-				// ///
-				// ///Will panic if `rhs` is not normalized when `glam_assert` is enabled.
-				// reject_from_normalized(selfLuaDVec2) -> LuaDVec2
-
-				// Exclusion reason: 
-				// ///Returns a vector containing the nearest integer to a number for each element of `self`.
-				// ///Round half-way cases away from 0.0.
-				// round(self) -> LuaDVec2
-
-				// Exclusion reason: 
-				// ///Returns a vector containing the largest integer less than or equal to a number for each
-				// ///element of `self`.
-				// floor(self) -> LuaDVec2
-
-				// Exclusion reason: 
-				// ///Returns a vector containing the smallest integer greater than or equal to a number for
-				// ///each element of `self`.
-				// ceil(self) -> LuaDVec2
-
-				// Exclusion reason: 
-				// ///Returns a vector containing the fractional part of the vector, e.g. `self -
-				// ///self.floor()`.
-				// ///
-				// ///Note that this is fast but not precise for large numbers.
-				// fract(self) -> LuaDVec2
-
-				// Exclusion reason: 
-				// ///Returns a vector containing `e^self` (the exponential function) for each element of
-				// ///`self`.
-				// exp(self) -> LuaDVec2
-
-				// Exclusion reason: 
-				// ///Returns a vector containing each element of `self` raised to the power of `n`.
-				// powf(selff64) -> LuaDVec2
-
-				// Exclusion reason: 
-				// ///Returns a vector containing the reciprocal `1.0/n` of each element of `self`.
-				// recip(self) -> LuaDVec2
-
-				// Exclusion reason: 
-				// ///Performs a linear interpolation between `self` and `rhs` based on the value `s`.
-				// ///
-				// ///When `s` is `0.0`, the result will be equal to `self`.  When `s` is `1.0`, the result
-				// ///will be equal to `rhs`. When `s` is outside of range `[0, 1]`, the result is linearly
-				// ///extrapolated.
-				// lerp(selfLuaDVec2f64) -> LuaDVec2
-
-				// Exclusion reason: 
-				// ///Returns true if the absolute difference of all elements between `self` and `rhs` is
-				// ///less than or equal to `max_abs_diff`.
-				// ///
-				// ///This can be used to compare if two vectors contain similar elements. It works best when
-				// ///comparing with a known value. The `max_abs_diff` that should be used used depends on
-				// ///the values being compared against.
-				// ///
-				// ///For more see
-				// ///[comparing floating point numbers](https://randomascii.wordpress.com/2012/02/25/comparing-floating-point-numbers-2012-edition/).
-				// abs_diff_eq(selfLuaDVec2f64) -> bool
-
-				// Exclusion reason: 
-				// ///Returns a vector with a length no less than `min` and no more than `max`
-				// ///
-				// ///# Panics
-				// ///
-				// ///Will panic if `min` is greater than `max` when `glam_assert` is enabled.
-				// clamp_length(selff64f64) -> LuaDVec2
-
-				// Exclusion reason: 
-				// ///Returns a vector with a length no more than `max`
-				// clamp_length_max(selff64) -> LuaDVec2
-
-				// Exclusion reason: 
-				// ///Returns a vector with a length no less than `min`
-				// clamp_length_min(selff64) -> LuaDVec2
-
-				// Exclusion reason: 
-				// ///Fused multiply-add. Computes `(self * a) + b` element-wise with only one rounding
-				// ///error, yielding a more accurate result than an unfused multiply-add.
-				// ///
-				// ///Using `mul_add` *may* be more performant than an unfused multiply-add if the target
-				// ///architecture has a dedicated fma CPU instruction. However, this is not always true,
-				// ///and will be heavily dependant on designing algorithms with specific target hardware in
-				// ///mind.
-				// mul_add(selfLuaDVec2LuaDVec2) -> LuaDVec2
-
-				// Exclusion reason: 
-				// ///Creates a 2D vector containing `[angle.cos(), angle.sin()]`. This can be used in
-				// ///conjunction with the `rotate` method, e.g. `Vec2::from_angle(PI).rotate(Vec2::Y)` will
-				// ///create the vector [-1, 0] and rotate `Vec2::Y` around it returning `-Vec2::Y`.
-				// from_angle(f64) -> LuaDVec2
-
-				// Exclusion reason: 
-				// ///Returns the angle (in radians) between `self` and `rhs`.
-				// ///
-				// ///The input vectors do not need to be unit length however they must be non-zero.
-				// angle_between(selfLuaDVec2) -> f64
-
-				// Exclusion reason: 
-				// ///Returns a vector that is equal to `self` rotated by 90 degrees.
-				// perp(self) -> LuaDVec2
-
-				// Exclusion reason: 
-				// ///The perpendicular dot product of `self` and `rhs`.
-				// ///Also known as the wedge product, 2D cross product, and determinant.
-				// perp_dot(selfLuaDVec2) -> f64
-
-				// Exclusion reason: 
-				// ///Returns `rhs` rotated by the angle of `self`. If `self` is normalized,
-				// ///then this just rotation. This is what you usually want. Otherwise,
-				// ///it will be like a rotation with a multiplication by `self`'s length.
-				// rotate(selfLuaDVec2) -> LuaDVec2
-
-				///Casts all elements of `self` to `f32`.
-				as_vec2(&self)
-
-				///Casts all elements of `self` to `i32`.
-				as_ivec2(&self)
-
-				///Casts all elements of `self` to `u32`.
-				as_uvec2(&self)
-
-				try_from()
-
-				///Returns the argument unchanged.
-				from()
-
-				from(<invalid: [f64;2]>) -> LuaDVec2
-
-				// Exclusion reason: 
-				// from(LuaDVec2) -> LuaDVec2
-
-				from(<invalid: (f64,f64)>) -> LuaDVec2
-
-				// Exclusion reason: 
-				// from(LuaDVec2) -> LuaDVec2
-
-				///Calls `U::from(self)`.
-				///
-				///That is, this conversion is whatever the implementation of
-				///<code>[From]&lt;T&gt; for U</code> chooses to do.
-				into(self)
-
-				borrow(&self)
-
-				type_id(&self)
-
-				try_into(self)
-
-				borrow_mut(<invalid: &mut self>)
-
-				to_string(&self)
-
-				to_owned(&self)
-
-				clone_into(&self)
-
-				is_valid_bit_pattern() -> bool
-
-				serialize(&self)
-
-				deserialize()
-
-				mul(selfLuaDVec2)
-
-				// Exclusion reason: 
-				// mul(selfLuaDVec2) -> LuaDVec2
-
-				// Exclusion reason: 
-				// mul(selff64) -> LuaDVec2
-
-				// Exclusion reason: 
-				// mul(selfLuaDVec2) -> LuaDVec2
-
-				// Exclusion reason: 
-				// clone(&self) -> LuaDVec2
-
-				// Exclusion reason: 
-				// default() -> LuaDVec2
-
-				// Exclusion reason: 
-				// eq(&self&LuaDVec2) -> bool
-
-				// Exclusion reason: 
-				// div(selfLuaDVec2) -> LuaDVec2
-
-				// Exclusion reason: 
-				// div(selff64) -> LuaDVec2
-
-				// Exclusion reason: 
-				// div(selfLuaDVec2) -> LuaDVec2
-
-				div_assign(<invalid: &mut self>LuaDVec2)
-
-				div_assign(<invalid: &mut self>f64)
-
-				mul_assign(<invalid: &mut self>LuaDVec2)
-
-				mul_assign(<invalid: &mut self>f64)
-
-				// Exclusion reason: 
-				// add(selfLuaDVec2) -> LuaDVec2
-
-				// Exclusion reason: 
-				// add(selff64) -> LuaDVec2
-
-				// Exclusion reason: 
-				// add(selfLuaDVec2) -> LuaDVec2
-
-				add_assign(<invalid: &mut self>LuaDVec2)
-
-				add_assign(<invalid: &mut self>f64)
-
-				// Exclusion reason: 
-				// sub(selfLuaDVec2) -> LuaDVec2
-
-				// Exclusion reason: 
-				// sub(selff64) -> LuaDVec2
-
-				// Exclusion reason: 
-				// sub(selfLuaDVec2) -> LuaDVec2
-
-				sub_assign(<invalid: &mut self>LuaDVec2)
-
-				sub_assign(<invalid: &mut self>f64)
-
-				// Exclusion reason: 
-				// rem(selfLuaDVec2) -> LuaDVec2
-
-				// Exclusion reason: 
-				// rem(selff64) -> LuaDVec2
-
-				// Exclusion reason: 
-				// rem(selfLuaDVec2) -> LuaDVec2
-
-				rem_assign(<invalid: &mut self>LuaDVec2)
-
-				rem_assign(<invalid: &mut self>f64)
-
-				as_ref(&self)<invalid: &[f64;2]>
-
-				as_mut(<invalid: &mut self>)<invalid: &mut [f64;2]>
-
-				sum() -> LuaDVec2
-
-				product() -> LuaDVec2
-
-				// Exclusion reason: 
-				// neg(self) -> LuaDVec2
-
-				index(&selfusize)
-
-				index_mut(<invalid: &mut self>usize)
-
-				fmt(&self)
-
-				fmt(&self)
-
-				// Exclusion reason: 
-				// xx(self) -> LuaDVec2
-
-				// Exclusion reason: 
-				// xy(self) -> LuaDVec2
-
-				// Exclusion reason: 
-				// yx(self) -> LuaDVec2
-
-				// Exclusion reason: 
-				// yy(self) -> LuaDVec2
-
-				// Exclusion reason: 
-				// xxx(self) -> LuaDVec3
-
-				// Exclusion reason: 
-				// xxy(self) -> LuaDVec3
-
-				// Exclusion reason: 
-				// xyx(self) -> LuaDVec3
-
-				// Exclusion reason: 
-				// xyy(self) -> LuaDVec3
-
-				// Exclusion reason: 
-				// yxx(self) -> LuaDVec3
-
-				// Exclusion reason: 
-				// yxy(self) -> LuaDVec3
-
-				// Exclusion reason: 
-				// yyx(self) -> LuaDVec3
-
-				// Exclusion reason: 
-				// yyy(self) -> LuaDVec3
-
-				// Exclusion reason: 
-				// xxxx(self) -> LuaDVec4
-
-				// Exclusion reason: 
-				// xxxy(self) -> LuaDVec4
-
-				// Exclusion reason: 
-				// xxyx(self) -> LuaDVec4
-
-				// Exclusion reason: 
-				// xxyy(self) -> LuaDVec4
-
-				// Exclusion reason: 
-				// xyxx(self) -> LuaDVec4
-
-				// Exclusion reason: 
-				// xyxy(self) -> LuaDVec4
-
-				// Exclusion reason: 
-				// xyyx(self) -> LuaDVec4
-
-				// Exclusion reason: 
-				// xyyy(self) -> LuaDVec4
-
-				// Exclusion reason: 
-				// yxxx(self) -> LuaDVec4
-
-				// Exclusion reason: 
-				// yxxy(self) -> LuaDVec4
-
-				// Exclusion reason: 
-				// yxyx(self) -> LuaDVec4
-
-				// Exclusion reason: 
-				// yxyy(self) -> LuaDVec4
-
-				// Exclusion reason: 
-				// yyxx(self) -> LuaDVec4
-
-				// Exclusion reason: 
-				// yyxy(self) -> LuaDVec4
-
-				// Exclusion reason: 
-				// yyyx(self) -> LuaDVec4
-
-				// Exclusion reason: 
-				// yyyy(self) -> LuaDVec4
-
-			)
-+ BinaryOps			(
+			glam::f64::dvec2::DVec2 : Value
+:				AutoMethods
+				(
+					///Creates a new vector.
+					new(f64f64) -> LuaDVec2
+,
+					///Creates a vector with all elements set to `v`.
+					splat(f64) -> LuaDVec2
+,
+					// Exclusion reason: Unsupported argument BVec2
+					// ///Creates a vector from the elements in `if_true` and `if_false`, selecting which to use
+					// ///for each element of `self`.
+					// ///
+					// ///A true element in the mask uses the corresponding element from `if_true`, and false
+					// ///uses the element from `if_false`.
+					// select(LuaDVec2LuaDVec2) -> LuaDVec2
+,
+					// Exclusion reason: Unsupported argument [f64;2]
+					// ///Creates a new vector from an array.
+					// from_array(<invalid: [f64;2]>) -> LuaDVec2
+,
+					// Exclusion reason: Unsupported argument [f64;2]
+					// ///`[x, y]`
+					// to_array(&self)<invalid: [f64;2]>
+,
+					// Exclusion reason: Unsupported argument &[f64]
+					// ///Creates a vector from the first 2 values in `slice`.
+					// ///
+					// ///# Panics
+					// ///
+					// ///Panics if `slice` is less than 2 elements long.
+					// from_slice(<invalid: &[f64]>) -> LuaDVec2
+,
+					// Exclusion reason: Unsupported argument &mut [f64]
+					// ///Writes the elements of `self` to the first 2 elements in `slice`.
+					// ///
+					// ///# Panics
+					// ///
+					// ///Panics if `slice` is less than 2 elements long.
+					// write_to_slice(self<invalid: &mut [f64]>)
+,
+					///Creates a 3D vector from `self` and the given `z` value.
+					extend(selff64) -> LuaDVec3
+,
+					///Computes the dot product of `self` and `rhs`.
+					dot(selfLuaDVec2) -> f64
+,
+					///Returns a vector containing the minimum values for each element of `self` and `rhs`.
+					///
+					///In other words this computes `[self.x.min(rhs.x), self.y.min(rhs.y), ..]`.
+					min(selfLuaDVec2) -> LuaDVec2
+,
+					///Returns a vector containing the maximum values for each element of `self` and `rhs`.
+					///
+					///In other words this computes `[self.x.max(rhs.x), self.y.max(rhs.y), ..]`.
+					max(selfLuaDVec2) -> LuaDVec2
+,
+					///Component-wise clamping of values, similar to [`f32::clamp`].
+					///
+					///Each element in `min` must be less-or-equal to the corresponding element in `max`.
+					///
+					///# Panics
+					///
+					///Will panic if `min` is greater than `max` when `glam_assert` is enabled.
+					clamp(selfLuaDVec2LuaDVec2) -> LuaDVec2
+,
+					///Returns the horizontal minimum of `self`.
+					///
+					///In other words this computes `min(x, y, ..)`.
+					min_element(self) -> f64
+,
+					///Returns the horizontal maximum of `self`.
+					///
+					///In other words this computes `max(x, y, ..)`.
+					max_element(self) -> f64
+,
+					// Exclusion reason: Unsupported argument BVec2
+					// ///Returns a vector mask containing the result of a `==` comparison for each element of
+					// ///`self` and `rhs`.
+					// ///
+					// ///In other words, this computes `[self.x == rhs.x, self.y == rhs.y, ..]` for all
+					// ///elements.
+					// cmpeq(selfLuaDVec2)
+,
+					// Exclusion reason: Unsupported argument BVec2
+					// ///Returns a vector mask containing the result of a `!=` comparison for each element of
+					// ///`self` and `rhs`.
+					// ///
+					// ///In other words this computes `[self.x != rhs.x, self.y != rhs.y, ..]` for all
+					// ///elements.
+					// cmpne(selfLuaDVec2)
+,
+					// Exclusion reason: Unsupported argument BVec2
+					// ///Returns a vector mask containing the result of a `>=` comparison for each element of
+					// ///`self` and `rhs`.
+					// ///
+					// ///In other words this computes `[self.x >= rhs.x, self.y >= rhs.y, ..]` for all
+					// ///elements.
+					// cmpge(selfLuaDVec2)
+,
+					// Exclusion reason: Unsupported argument BVec2
+					// ///Returns a vector mask containing the result of a `>` comparison for each element of
+					// ///`self` and `rhs`.
+					// ///
+					// ///In other words this computes `[self.x > rhs.x, self.y > rhs.y, ..]` for all
+					// ///elements.
+					// cmpgt(selfLuaDVec2)
+,
+					// Exclusion reason: Unsupported argument BVec2
+					// ///Returns a vector mask containing the result of a `<=` comparison for each element of
+					// ///`self` and `rhs`.
+					// ///
+					// ///In other words this computes `[self.x <= rhs.x, self.y <= rhs.y, ..]` for all
+					// ///elements.
+					// cmple(selfLuaDVec2)
+,
+					// Exclusion reason: Unsupported argument BVec2
+					// ///Returns a vector mask containing the result of a `<` comparison for each element of
+					// ///`self` and `rhs`.
+					// ///
+					// ///In other words this computes `[self.x < rhs.x, self.y < rhs.y, ..]` for all
+					// ///elements.
+					// cmplt(selfLuaDVec2)
+,
+					///Returns a vector containing the absolute value of each element of `self`.
+					abs(self) -> LuaDVec2
+,
+					///Returns a vector with elements representing the sign of `self`.
+					///
+					///- `1.0` if the number is positive, `+0.0` or `INFINITY`
+					///- `-1.0` if the number is negative, `-0.0` or `NEG_INFINITY`
+					///- `NAN` if the number is `NAN`
+					signum(self) -> LuaDVec2
+,
+					///Returns `true` if, and only if, all elements are finite.  If any element is either
+					///`NaN`, positive or negative infinity, this will return `false`.
+					is_finite(self) -> bool
+,
+					///Returns `true` if any elements are `NaN`.
+					is_nan(self) -> bool
+,
+					// Exclusion reason: Unsupported argument BVec2
+					// ///Performs `is_nan` on each element of self, returning a vector mask of the results.
+					// ///
+					// ///In other words, this computes `[x.is_nan(), y.is_nan(), z.is_nan(), w.is_nan()]`.
+					// is_nan_mask(self)
+,
+					///Computes the length of `self`.
+					length(self) -> f64
+,
+					///Computes the squared length of `self`.
+					///
+					///This is faster than `length()` as it avoids a square root operation.
+					length_squared(self) -> f64
+,
+					///Computes `1.0 / length()`.
+					///
+					///For valid results, `self` must _not_ be of length zero.
+					length_recip(self) -> f64
+,
+					///Computes the Euclidean distance between two points in space.
+					distance(selfLuaDVec2) -> f64
+,
+					///Compute the squared euclidean distance between two points in space.
+					distance_squared(selfLuaDVec2) -> f64
+,
+					///Returns `self` normalized to length 1.0.
+					///
+					///For valid results, `self` must _not_ be of length zero, nor very close to zero.
+					///
+					///See also [`Self::try_normalize`] and [`Self::normalize_or_zero`].
+					///
+					///Panics
+					///
+					///Will panic if `self` is zero length when `glam_assert` is enabled.
+					normalize(self) -> LuaDVec2
+,
+					// Exclusion reason: Unsupported argument Option
+					// ///Returns `self` normalized to length 1.0 if possible, else returns `None`.
+					// ///
+					// ///In particular, if the input is zero (or very close to zero), or non-finite,
+					// ///the result of this operation will be `None`.
+					// ///
+					// ///See also [`Self::normalize_or_zero`].
+					// try_normalize(self)
+,
+					///Returns `self` normalized to length 1.0 if possible, else returns zero.
+					///
+					///In particular, if the input is zero (or very close to zero), or non-finite,
+					///the result of this operation will be zero.
+					///
+					///See also [`Self::try_normalize`].
+					normalize_or_zero(self) -> LuaDVec2
+,
+					///Returns whether `self` is length `1.0` or not.
+					///
+					///Uses a precision threshold of `1e-6`.
+					is_normalized(self) -> bool
+,
+					///Returns the vector projection of `self` onto `rhs`.
+					///
+					///`rhs` must be of non-zero length.
+					///
+					///# Panics
+					///
+					///Will panic if `rhs` is zero length when `glam_assert` is enabled.
+					project_onto(selfLuaDVec2) -> LuaDVec2
+,
+					///Returns the vector rejection of `self` from `rhs`.
+					///
+					///The vector rejection is the vector perpendicular to the projection of `self` onto
+					///`rhs`, in rhs words the result of `self - self.project_onto(rhs)`.
+					///
+					///`rhs` must be of non-zero length.
+					///
+					///# Panics
+					///
+					///Will panic if `rhs` has a length of zero when `glam_assert` is enabled.
+					reject_from(selfLuaDVec2) -> LuaDVec2
+,
+					///Returns the vector projection of `self` onto `rhs`.
+					///
+					///`rhs` must be normalized.
+					///
+					///# Panics
+					///
+					///Will panic if `rhs` is not normalized when `glam_assert` is enabled.
+					project_onto_normalized(selfLuaDVec2) -> LuaDVec2
+,
+					///Returns the vector rejection of `self` from `rhs`.
+					///
+					///The vector rejection is the vector perpendicular to the projection of `self` onto
+					///`rhs`, in rhs words the result of `self - self.project_onto(rhs)`.
+					///
+					///`rhs` must be normalized.
+					///
+					///# Panics
+					///
+					///Will panic if `rhs` is not normalized when `glam_assert` is enabled.
+					reject_from_normalized(selfLuaDVec2) -> LuaDVec2
+,
+					///Returns a vector containing the nearest integer to a number for each element of `self`.
+					///Round half-way cases away from 0.0.
+					round(self) -> LuaDVec2
+,
+					///Returns a vector containing the largest integer less than or equal to a number for each
+					///element of `self`.
+					floor(self) -> LuaDVec2
+,
+					///Returns a vector containing the smallest integer greater than or equal to a number for
+					///each element of `self`.
+					ceil(self) -> LuaDVec2
+,
+					///Returns a vector containing the fractional part of the vector, e.g. `self -
+					///self.floor()`.
+					///
+					///Note that this is fast but not precise for large numbers.
+					fract(self) -> LuaDVec2
+,
+					///Returns a vector containing `e^self` (the exponential function) for each element of
+					///`self`.
+					exp(self) -> LuaDVec2
+,
+					///Returns a vector containing each element of `self` raised to the power of `n`.
+					powf(selff64) -> LuaDVec2
+,
+					///Returns a vector containing the reciprocal `1.0/n` of each element of `self`.
+					recip(self) -> LuaDVec2
+,
+					///Performs a linear interpolation between `self` and `rhs` based on the value `s`.
+					///
+					///When `s` is `0.0`, the result will be equal to `self`.  When `s` is `1.0`, the result
+					///will be equal to `rhs`. When `s` is outside of range `[0, 1]`, the result is linearly
+					///extrapolated.
+					lerp(selfLuaDVec2f64) -> LuaDVec2
+,
+					///Returns true if the absolute difference of all elements between `self` and `rhs` is
+					///less than or equal to `max_abs_diff`.
+					///
+					///This can be used to compare if two vectors contain similar elements. It works best when
+					///comparing with a known value. The `max_abs_diff` that should be used used depends on
+					///the values being compared against.
+					///
+					///For more see
+					///[comparing floating point numbers](https://randomascii.wordpress.com/2012/02/25/comparing-floating-point-numbers-2012-edition/).
+					abs_diff_eq(selfLuaDVec2f64) -> bool
+,
+					///Returns a vector with a length no less than `min` and no more than `max`
+					///
+					///# Panics
+					///
+					///Will panic if `min` is greater than `max` when `glam_assert` is enabled.
+					clamp_length(selff64f64) -> LuaDVec2
+,
+					///Returns a vector with a length no more than `max`
+					clamp_length_max(selff64) -> LuaDVec2
+,
+					///Returns a vector with a length no less than `min`
+					clamp_length_min(selff64) -> LuaDVec2
+,
+					///Fused multiply-add. Computes `(self * a) + b` element-wise with only one rounding
+					///error, yielding a more accurate result than an unfused multiply-add.
+					///
+					///Using `mul_add` *may* be more performant than an unfused multiply-add if the target
+					///architecture has a dedicated fma CPU instruction. However, this is not always true,
+					///and will be heavily dependant on designing algorithms with specific target hardware in
+					///mind.
+					mul_add(selfLuaDVec2LuaDVec2) -> LuaDVec2
+,
+					///Creates a 2D vector containing `[angle.cos(), angle.sin()]`. This can be used in
+					///conjunction with the `rotate` method, e.g. `Vec2::from_angle(PI).rotate(Vec2::Y)` will
+					///create the vector [-1, 0] and rotate `Vec2::Y` around it returning `-Vec2::Y`.
+					from_angle(f64) -> LuaDVec2
+,
+					///Returns the angle (in radians) between `self` and `rhs`.
+					///
+					///The input vectors do not need to be unit length however they must be non-zero.
+					angle_between(selfLuaDVec2) -> f64
+,
+					///Returns a vector that is equal to `self` rotated by 90 degrees.
+					perp(self) -> LuaDVec2
+,
+					///The perpendicular dot product of `self` and `rhs`.
+					///Also known as the wedge product, 2D cross product, and determinant.
+					perp_dot(selfLuaDVec2) -> f64
+,
+					///Returns `rhs` rotated by the angle of `self`. If `self` is normalized,
+					///then this just rotation. This is what you usually want. Otherwise,
+					///it will be like a rotation with a multiplication by `self`'s length.
+					rotate(selfLuaDVec2) -> LuaDVec2
+,
+					// Exclusion reason: Unsupported argument crate::Vec2
+					// ///Casts all elements of `self` to `f32`.
+					// as_vec2(&self)
+,
+					// Exclusion reason: Unsupported argument crate::IVec2
+					// ///Casts all elements of `self` to `i32`.
+					// as_ivec2(&self)
+,
+					// Exclusion reason: Unsupported argument crate::UVec2
+					// ///Casts all elements of `self` to `u32`.
+					// as_uvec2(&self)
+,
+					// Exclusion reason: Unsupported argument U,Unsupported argument Result
+					// try_from()
+,
+					// Exclusion reason: Unsupported argument T,Unsupported argument T
+					// ///Returns the argument unchanged.
+					// from()
+,
+					// Exclusion reason: Unsupported argument [f64;2]
+					// from(<invalid: [f64;2]>) -> LuaDVec2
+,
+					from(LuaDVec2) -> LuaDVec2
+,
+					// Exclusion reason: Unsupported argument (f64,f64)
+					// from(<invalid: (f64,f64)>) -> LuaDVec2
+,
+					from(LuaDVec2) -> LuaDVec2
+,
+					// Exclusion reason: Unsupported argument U
+					// ///Calls `U::from(self)`.
+					// ///
+					// ///That is, this conversion is whatever the implementation of
+					// ///<code>[From]&lt;T&gt; for U</code> chooses to do.
+					// into(self)
+,
+					// Exclusion reason: Unsupported argument T
+					// borrow(&self)
+,
+					// Exclusion reason: Unsupported argument TypeId
+					// type_id(&self)
+,
+					// Exclusion reason: Unsupported argument Result
+					// try_into(self)
+,
+					// Exclusion reason: Unsupported argument &mut self,Unsupported argument T
+					// borrow_mut(<invalid: &mut self>)
+,
+					// Exclusion reason: Unsupported argument String
+					// to_string(&self)
+,
+					// Exclusion reason: Unsupported argument T
+					// to_owned(&self)
+,
+					// Exclusion reason: Unsupported argument T
+					// clone_into(&self)
+,
+					// Exclusion reason: Unsupported argument T
+					// is_valid_bit_pattern() -> bool
+,
+					// Exclusion reason: Unsupported argument S,Unsupported argument Result,Generics on the method
+					// serialize(&self)
+,
+					// Exclusion reason: Unsupported argument D,Unsupported argument Result,Generics on the method
+					// deserialize()
+,
+					// Exclusion reason: Unsupported argument QualifiedPath { name: "Output", args: AngleBracketed { args: [], bindings: [] }, self_type: Generic("Self"), trait_: ResolvedPath { name: "", id: Id("2:3313:2263"), args: None, param_names: [] } }
+					// mul(selfLuaDVec2)
+,
+					mul(selfLuaDVec2) -> LuaDVec2
+,
+					mul(selff64) -> LuaDVec2
+,
+					mul(selfLuaDVec2) -> LuaDVec2
+,
+					clone(&self) -> LuaDVec2
+,
+					default() -> LuaDVec2
+,
+					eq(&self&LuaDVec2) -> bool
+,
+					div(selfLuaDVec2) -> LuaDVec2
+,
+					div(selff64) -> LuaDVec2
+,
+					div(selfLuaDVec2) -> LuaDVec2
+,
+					// Exclusion reason: Unsupported argument &mut self
+					// div_assign(<invalid: &mut self>LuaDVec2)
+,
+					// Exclusion reason: Unsupported argument &mut self
+					// div_assign(<invalid: &mut self>f64)
+,
+					// Exclusion reason: Unsupported argument &mut self
+					// mul_assign(<invalid: &mut self>LuaDVec2)
+,
+					// Exclusion reason: Unsupported argument &mut self
+					// mul_assign(<invalid: &mut self>f64)
+,
+					add(selfLuaDVec2) -> LuaDVec2
+,
+					add(selff64) -> LuaDVec2
+,
+					add(selfLuaDVec2) -> LuaDVec2
+,
+					// Exclusion reason: Unsupported argument &mut self
+					// add_assign(<invalid: &mut self>LuaDVec2)
+,
+					// Exclusion reason: Unsupported argument &mut self
+					// add_assign(<invalid: &mut self>f64)
+,
+					sub(selfLuaDVec2) -> LuaDVec2
+,
+					sub(selff64) -> LuaDVec2
+,
+					sub(selfLuaDVec2) -> LuaDVec2
+,
+					// Exclusion reason: Unsupported argument &mut self
+					// sub_assign(<invalid: &mut self>LuaDVec2)
+,
+					// Exclusion reason: Unsupported argument &mut self
+					// sub_assign(<invalid: &mut self>f64)
+,
+					rem(selfLuaDVec2) -> LuaDVec2
+,
+					rem(selff64) -> LuaDVec2
+,
+					rem(selfLuaDVec2) -> LuaDVec2
+,
+					// Exclusion reason: Unsupported argument &mut self
+					// rem_assign(<invalid: &mut self>LuaDVec2)
+,
+					// Exclusion reason: Unsupported argument &mut self
+					// rem_assign(<invalid: &mut self>f64)
+,
+					// Exclusion reason: Unsupported argument &[f64;2]
+					// as_ref(&self)<invalid: &[f64;2]>
+,
+					// Exclusion reason: Unsupported argument &mut self,Unsupported argument &mut [f64;2]
+					// as_mut(<invalid: &mut self>)<invalid: &mut [f64;2]>
+,
+					// Exclusion reason: Unsupported argument I,Generics on the method
+					// sum() -> LuaDVec2
+,
+					// Exclusion reason: Unsupported argument I,Generics on the method
+					// product() -> LuaDVec2
+,
+					neg(self) -> LuaDVec2
+,
+					// Exclusion reason: Unsupported argument QualifiedPath { name: "Output", args: AngleBracketed { args: [], bindings: [] }, self_type: Generic("Self"), trait_: ResolvedPath { name: "", id: Id("2:3539:2758"), args: None, param_names: [] } }
+					// index(&selfusize)
+,
+					// Exclusion reason: Unsupported argument &mut self,Unsupported argument QualifiedPath { name: "Output", args: AngleBracketed { args: [], bindings: [] }, self_type: Generic("Self"), trait_: ResolvedPath { name: "", id: Id("2:3539:2758"), args: None, param_names: [] } }
+					// index_mut(<invalid: &mut self>usize)
+,
+					// Exclusion reason: Unsupported argument fmt::Formatter,Unsupported argument fmt::Result
+					// fmt(&self)
+,
+					// Exclusion reason: Unsupported argument fmt::Formatter,Unsupported argument fmt::Result
+					// fmt(&self)
+,
+					xx(self) -> LuaDVec2
+,
+					xy(self) -> LuaDVec2
+,
+					yx(self) -> LuaDVec2
+,
+					yy(self) -> LuaDVec2
+,
+					xxx(self) -> LuaDVec3
+,
+					xxy(self) -> LuaDVec3
+,
+					xyx(self) -> LuaDVec3
+,
+					xyy(self) -> LuaDVec3
+,
+					yxx(self) -> LuaDVec3
+,
+					yxy(self) -> LuaDVec3
+,
+					yyx(self) -> LuaDVec3
+,
+					yyy(self) -> LuaDVec3
+,
+					xxxx(self) -> LuaDVec4
+,
+					xxxy(self) -> LuaDVec4
+,
+					xxyx(self) -> LuaDVec4
+,
+					xxyy(self) -> LuaDVec4
+,
+					xyxx(self) -> LuaDVec4
+,
+					xyxy(self) -> LuaDVec4
+,
+					xyyx(self) -> LuaDVec4
+,
+					xyyy(self) -> LuaDVec4
+,
+					yxxx(self) -> LuaDVec4
+,
+					yxxy(self) -> LuaDVec4
+,
+					yxyx(self) -> LuaDVec4
+,
+					yxyy(self) -> LuaDVec4
+,
+					yyxx(self) -> LuaDVec4
+,
+					yyxy(self) -> LuaDVec4
+,
+					yyyx(self) -> LuaDVec4
+,
+					yyyy(self) -> LuaDVec4
+,
+				)
+				+ BinaryOps
+				(
 self Add LuaDVec2 -> LuaDVec2 -> LuaDVec2
 self Add f64 -> LuaDVec2 -> LuaDVec2
 f64 Add self -> LuaDVec2 -> LuaDVec2
@@ -4766,902 +4565,779 @@ f64 Mul self -> LuaDVec2 -> LuaDVec2
 self Rem LuaDVec2 -> LuaDVec2 -> LuaDVec2
 self Rem f64 -> LuaDVec2 -> LuaDVec2
 f64 Rem self -> LuaDVec2 -> LuaDVec2
-			)
-+ UnaryOps			(
-			)
-+ 			    Copy(LuaVec2 -> (MetaMethod::Index) (s=LuaDVec2),
-			        LuaVec2 -> mut (MetaMethod::NewIndex) (n=f64))
-			    
-impl			{
+				)
+				+ UnaryOps
+				(
+				)
++ 				    Copy(LuaVec2 -> (MetaMethod::Index) (s=LuaDVec2),
+				        LuaVec2 -> mut (MetaMethod::NewIndex) (n=f64))
+				    
+			impl
+			{
 			}
 		}
-		{
+,		{
 			///A 3-dimensional vector.
-glam::f64::dvec3::DVec3 : Value
-AutoMethods			(
-				// Exclusion reason: 
-				// ///Creates a new vector.
-				// new(f64f64f64) -> LuaDVec3
-
-				// Exclusion reason: 
-				// ///Creates a vector with all elements set to `v`.
-				// splat(f64) -> LuaDVec3
-
-				///Creates a vector from the elements in `if_true` and `if_false`, selecting which to use
-				///for each element of `self`.
-				///
-				///A true element in the mask uses the corresponding element from `if_true`, and false
-				///uses the element from `if_false`.
-				select(LuaDVec3LuaDVec3) -> LuaDVec3
-
-				///Creates a new vector from an array.
-				from_array(<invalid: [f64;3]>) -> LuaDVec3
-
-				///`[x, y, z]`
-				to_array(&self)<invalid: [f64;3]>
-
-				///Creates a vector from the first 3 values in `slice`.
-				///
-				///# Panics
-				///
-				///Panics if `slice` is less than 3 elements long.
-				from_slice(<invalid: &[f64]>) -> LuaDVec3
-
-				///Writes the elements of `self` to the first 3 elements in `slice`.
-				///
-				///# Panics
-				///
-				///Panics if `slice` is less than 3 elements long.
-				write_to_slice(self<invalid: &mut [f64]>)
-
-				// Exclusion reason: 
-				// ///Creates a 4D vector from `self` and the given `w` value.
-				// extend(selff64) -> LuaDVec4
-
-				// Exclusion reason: 
-				// ///Creates a 2D vector from the `x` and `y` elements of `self`, discarding `z`.
-				// ///
-				// ///Truncation may also be performed by using `self.xy()` or `DVec2::from()`.
-				// truncate(self) -> LuaDVec2
-
-				// Exclusion reason: 
-				// ///Computes the dot product of `self` and `rhs`.
-				// dot(selfLuaDVec3) -> f64
-
-				// Exclusion reason: 
-				// ///Computes the cross product of `self` and `rhs`.
-				// cross(selfLuaDVec3) -> LuaDVec3
-
-				// Exclusion reason: 
-				// ///Returns a vector containing the minimum values for each element of `self` and `rhs`.
-				// ///
-				// ///In other words this computes `[self.x.min(rhs.x), self.y.min(rhs.y), ..]`.
-				// min(selfLuaDVec3) -> LuaDVec3
-
-				// Exclusion reason: 
-				// ///Returns a vector containing the maximum values for each element of `self` and `rhs`.
-				// ///
-				// ///In other words this computes `[self.x.max(rhs.x), self.y.max(rhs.y), ..]`.
-				// max(selfLuaDVec3) -> LuaDVec3
-
-				// Exclusion reason: 
-				// ///Component-wise clamping of values, similar to [`f32::clamp`].
-				// ///
-				// ///Each element in `min` must be less-or-equal to the corresponding element in `max`.
-				// ///
-				// ///# Panics
-				// ///
-				// ///Will panic if `min` is greater than `max` when `glam_assert` is enabled.
-				// clamp(selfLuaDVec3LuaDVec3) -> LuaDVec3
-
-				// Exclusion reason: 
-				// ///Returns the horizontal minimum of `self`.
-				// ///
-				// ///In other words this computes `min(x, y, ..)`.
-				// min_element(self) -> f64
-
-				// Exclusion reason: 
-				// ///Returns the horizontal maximum of `self`.
-				// ///
-				// ///In other words this computes `max(x, y, ..)`.
-				// max_element(self) -> f64
-
-				///Returns a vector mask containing the result of a `==` comparison for each element of
-				///`self` and `rhs`.
-				///
-				///In other words, this computes `[self.x == rhs.x, self.y == rhs.y, ..]` for all
-				///elements.
-				cmpeq(selfLuaDVec3)
-
-				///Returns a vector mask containing the result of a `!=` comparison for each element of
-				///`self` and `rhs`.
-				///
-				///In other words this computes `[self.x != rhs.x, self.y != rhs.y, ..]` for all
-				///elements.
-				cmpne(selfLuaDVec3)
-
-				///Returns a vector mask containing the result of a `>=` comparison for each element of
-				///`self` and `rhs`.
-				///
-				///In other words this computes `[self.x >= rhs.x, self.y >= rhs.y, ..]` for all
-				///elements.
-				cmpge(selfLuaDVec3)
-
-				///Returns a vector mask containing the result of a `>` comparison for each element of
-				///`self` and `rhs`.
-				///
-				///In other words this computes `[self.x > rhs.x, self.y > rhs.y, ..]` for all
-				///elements.
-				cmpgt(selfLuaDVec3)
-
-				///Returns a vector mask containing the result of a `<=` comparison for each element of
-				///`self` and `rhs`.
-				///
-				///In other words this computes `[self.x <= rhs.x, self.y <= rhs.y, ..]` for all
-				///elements.
-				cmple(selfLuaDVec3)
-
-				///Returns a vector mask containing the result of a `<` comparison for each element of
-				///`self` and `rhs`.
-				///
-				///In other words this computes `[self.x < rhs.x, self.y < rhs.y, ..]` for all
-				///elements.
-				cmplt(selfLuaDVec3)
-
-				// Exclusion reason: 
-				// ///Returns a vector containing the absolute value of each element of `self`.
-				// abs(self) -> LuaDVec3
-
-				// Exclusion reason: 
-				// ///Returns a vector with elements representing the sign of `self`.
-				// ///
-				// ///- `1.0` if the number is positive, `+0.0` or `INFINITY`
-				// ///- `-1.0` if the number is negative, `-0.0` or `NEG_INFINITY`
-				// ///- `NAN` if the number is `NAN`
-				// signum(self) -> LuaDVec3
-
-				// Exclusion reason: 
-				// ///Returns `true` if, and only if, all elements are finite.  If any element is either
-				// ///`NaN`, positive or negative infinity, this will return `false`.
-				// is_finite(self) -> bool
-
-				// Exclusion reason: 
-				// ///Returns `true` if any elements are `NaN`.
-				// is_nan(self) -> bool
-
-				///Performs `is_nan` on each element of self, returning a vector mask of the results.
-				///
-				///In other words, this computes `[x.is_nan(), y.is_nan(), z.is_nan(), w.is_nan()]`.
-				is_nan_mask(self)
-
-				// Exclusion reason: 
-				// ///Computes the length of `self`.
-				// length(self) -> f64
-
-				// Exclusion reason: 
-				// ///Computes the squared length of `self`.
-				// ///
-				// ///This is faster than `length()` as it avoids a square root operation.
-				// length_squared(self) -> f64
-
-				// Exclusion reason: 
-				// ///Computes `1.0 / length()`.
-				// ///
-				// ///For valid results, `self` must _not_ be of length zero.
-				// length_recip(self) -> f64
-
-				// Exclusion reason: 
-				// ///Computes the Euclidean distance between two points in space.
-				// distance(selfLuaDVec3) -> f64
-
-				// Exclusion reason: 
-				// ///Compute the squared euclidean distance between two points in space.
-				// distance_squared(selfLuaDVec3) -> f64
-
-				// Exclusion reason: 
-				// ///Returns `self` normalized to length 1.0.
-				// ///
-				// ///For valid results, `self` must _not_ be of length zero, nor very close to zero.
-				// ///
-				// ///See also [`Self::try_normalize`] and [`Self::normalize_or_zero`].
-				// ///
-				// ///Panics
-				// ///
-				// ///Will panic if `self` is zero length when `glam_assert` is enabled.
-				// normalize(self) -> LuaDVec3
-
-				///Returns `self` normalized to length 1.0 if possible, else returns `None`.
-				///
-				///In particular, if the input is zero (or very close to zero), or non-finite,
-				///the result of this operation will be `None`.
-				///
-				///See also [`Self::normalize_or_zero`].
-				try_normalize(self)
-
-				// Exclusion reason: 
-				// ///Returns `self` normalized to length 1.0 if possible, else returns zero.
-				// ///
-				// ///In particular, if the input is zero (or very close to zero), or non-finite,
-				// ///the result of this operation will be zero.
-				// ///
-				// ///See also [`Self::try_normalize`].
-				// normalize_or_zero(self) -> LuaDVec3
-
-				// Exclusion reason: 
-				// ///Returns whether `self` is length `1.0` or not.
-				// ///
-				// ///Uses a precision threshold of `1e-6`.
-				// is_normalized(self) -> bool
-
-				// Exclusion reason: 
-				// ///Returns the vector projection of `self` onto `rhs`.
-				// ///
-				// ///`rhs` must be of non-zero length.
-				// ///
-				// ///# Panics
-				// ///
-				// ///Will panic if `rhs` is zero length when `glam_assert` is enabled.
-				// project_onto(selfLuaDVec3) -> LuaDVec3
-
-				// Exclusion reason: 
-				// ///Returns the vector rejection of `self` from `rhs`.
-				// ///
-				// ///The vector rejection is the vector perpendicular to the projection of `self` onto
-				// ///`rhs`, in rhs words the result of `self - self.project_onto(rhs)`.
-				// ///
-				// ///`rhs` must be of non-zero length.
-				// ///
-				// ///# Panics
-				// ///
-				// ///Will panic if `rhs` has a length of zero when `glam_assert` is enabled.
-				// reject_from(selfLuaDVec3) -> LuaDVec3
-
-				// Exclusion reason: 
-				// ///Returns the vector projection of `self` onto `rhs`.
-				// ///
-				// ///`rhs` must be normalized.
-				// ///
-				// ///# Panics
-				// ///
-				// ///Will panic if `rhs` is not normalized when `glam_assert` is enabled.
-				// project_onto_normalized(selfLuaDVec3) -> LuaDVec3
-
-				// Exclusion reason: 
-				// ///Returns the vector rejection of `self` from `rhs`.
-				// ///
-				// ///The vector rejection is the vector perpendicular to the projection of `self` onto
-				// ///`rhs`, in rhs words the result of `self - self.project_onto(rhs)`.
-				// ///
-				// ///`rhs` must be normalized.
-				// ///
-				// ///# Panics
-				// ///
-				// ///Will panic if `rhs` is not normalized when `glam_assert` is enabled.
-				// reject_from_normalized(selfLuaDVec3) -> LuaDVec3
-
-				// Exclusion reason: 
-				// ///Returns a vector containing the nearest integer to a number for each element of `self`.
-				// ///Round half-way cases away from 0.0.
-				// round(self) -> LuaDVec3
-
-				// Exclusion reason: 
-				// ///Returns a vector containing the largest integer less than or equal to a number for each
-				// ///element of `self`.
-				// floor(self) -> LuaDVec3
-
-				// Exclusion reason: 
-				// ///Returns a vector containing the smallest integer greater than or equal to a number for
-				// ///each element of `self`.
-				// ceil(self) -> LuaDVec3
-
-				// Exclusion reason: 
-				// ///Returns a vector containing the fractional part of the vector, e.g. `self -
-				// ///self.floor()`.
-				// ///
-				// ///Note that this is fast but not precise for large numbers.
-				// fract(self) -> LuaDVec3
-
-				// Exclusion reason: 
-				// ///Returns a vector containing `e^self` (the exponential function) for each element of
-				// ///`self`.
-				// exp(self) -> LuaDVec3
-
-				// Exclusion reason: 
-				// ///Returns a vector containing each element of `self` raised to the power of `n`.
-				// powf(selff64) -> LuaDVec3
-
-				// Exclusion reason: 
-				// ///Returns a vector containing the reciprocal `1.0/n` of each element of `self`.
-				// recip(self) -> LuaDVec3
-
-				// Exclusion reason: 
-				// ///Performs a linear interpolation between `self` and `rhs` based on the value `s`.
-				// ///
-				// ///When `s` is `0.0`, the result will be equal to `self`.  When `s` is `1.0`, the result
-				// ///will be equal to `rhs`. When `s` is outside of range `[0, 1]`, the result is linearly
-				// ///extrapolated.
-				// lerp(selfLuaDVec3f64) -> LuaDVec3
-
-				// Exclusion reason: 
-				// ///Returns true if the absolute difference of all elements between `self` and `rhs` is
-				// ///less than or equal to `max_abs_diff`.
-				// ///
-				// ///This can be used to compare if two vectors contain similar elements. It works best when
-				// ///comparing with a known value. The `max_abs_diff` that should be used used depends on
-				// ///the values being compared against.
-				// ///
-				// ///For more see
-				// ///[comparing floating point numbers](https://randomascii.wordpress.com/2012/02/25/comparing-floating-point-numbers-2012-edition/).
-				// abs_diff_eq(selfLuaDVec3f64) -> bool
-
-				// Exclusion reason: 
-				// ///Returns a vector with a length no less than `min` and no more than `max`
-				// ///
-				// ///# Panics
-				// ///
-				// ///Will panic if `min` is greater than `max` when `glam_assert` is enabled.
-				// clamp_length(selff64f64) -> LuaDVec3
-
-				// Exclusion reason: 
-				// ///Returns a vector with a length no more than `max`
-				// clamp_length_max(selff64) -> LuaDVec3
-
-				// Exclusion reason: 
-				// ///Returns a vector with a length no less than `min`
-				// clamp_length_min(selff64) -> LuaDVec3
-
-				// Exclusion reason: 
-				// ///Fused multiply-add. Computes `(self * a) + b` element-wise with only one rounding
-				// ///error, yielding a more accurate result than an unfused multiply-add.
-				// ///
-				// ///Using `mul_add` *may* be more performant than an unfused multiply-add if the target
-				// ///architecture has a dedicated fma CPU instruction. However, this is not always true,
-				// ///and will be heavily dependant on designing algorithms with specific target hardware in
-				// ///mind.
-				// mul_add(selfLuaDVec3LuaDVec3) -> LuaDVec3
-
-				// Exclusion reason: 
-				// ///Returns the angle (in radians) between two vectors.
-				// ///
-				// ///The input vectors do not need to be unit length however they must be non-zero.
-				// angle_between(selfLuaDVec3) -> f64
-
-				// Exclusion reason: 
-				// ///Returns some vector that is orthogonal to the given one.
-				// ///
-				// ///The input vector must be finite and non-zero.
-				// ///
-				// ///The output vector is not necessarily unit-length.
-				// ///For that use [`Self::any_orthonormal_vector`] instead.
-				// any_orthogonal_vector(&self) -> LuaDVec3
-
-				// Exclusion reason: 
-				// ///Returns any unit-length vector that is orthogonal to the given one.
-				// ///The input vector must be finite and non-zero.
-				// ///
-				// ///# Panics
-				// ///
-				// ///Will panic if `self` is not normalized when `glam_assert` is enabled.
-				// any_orthonormal_vector(&self) -> LuaDVec3
-
-				///Given a unit-length vector return two other vectors that together form an orthonormal
-				///basis.  That is, all three vectors are orthogonal to each other and are normalized.
-				///
-				///# Panics
-				///
-				///Will panic if `self` is not normalized when `glam_assert` is enabled.
-				any_orthonormal_pair(&self)<invalid: (LuaDVec3,LuaDVec3)>
-
-				///Casts all elements of `self` to `f32`.
-				as_vec3(&self)
-
-				///Casts all elements of `self` to `f32`.
-				as_vec3a(&self)
-
-				///Casts all elements of `self` to `i32`.
-				as_ivec3(&self)
-
-				///Casts all elements of `self` to `u32`.
-				as_uvec3(&self)
-
-				try_from()
-
-				///Returns the argument unchanged.
-				from()
-
-				from(<invalid: [f64;3]>) -> LuaDVec3
-
-				// Exclusion reason: 
-				// from(LuaDVec3) -> LuaDVec3
-
-				from(<invalid: (f64,f64,f64)>) -> LuaDVec3
-
-				// Exclusion reason: 
-				// from(LuaDVec3) -> LuaDVec3
-
-				from(<invalid: (LuaDVec2,f64)>) -> LuaDVec3
-
-				///Calls `U::from(self)`.
-				///
-				///That is, this conversion is whatever the implementation of
-				///<code>[From]&lt;T&gt; for U</code> chooses to do.
-				into(self)
-
-				borrow(&self)
-
-				type_id(&self)
-
-				try_into(self)
-
-				borrow_mut(<invalid: &mut self>)
-
-				to_string(&self)
-
-				to_owned(&self)
-
-				clone_into(&self)
-
-				is_valid_bit_pattern() -> bool
-
-				serialize(&self)
-
-				deserialize()
-
-				mul(selfLuaDVec3)
-
-				///Multiplies a quaternion and a 3D vector, returning the rotated vector.
-				///
-				///# Panics
-				///
-				///Will panic if `self` is not normalized when `glam_assert` is enabled.
-				mul(selfLuaDVec3)
-
-				// Exclusion reason: 
-				// mul(selfLuaDVec3) -> LuaDVec3
-
-				// Exclusion reason: 
-				// mul(selff64) -> LuaDVec3
-
-				// Exclusion reason: 
-				// mul(selfLuaDVec3) -> LuaDVec3
-
-				// Exclusion reason: 
-				// clone(&self) -> LuaDVec3
-
-				// Exclusion reason: 
-				// default() -> LuaDVec3
-
-				// Exclusion reason: 
-				// eq(&self&LuaDVec3) -> bool
-
-				// Exclusion reason: 
-				// div(selfLuaDVec3) -> LuaDVec3
-
-				// Exclusion reason: 
-				// div(selff64) -> LuaDVec3
-
-				// Exclusion reason: 
-				// div(selfLuaDVec3) -> LuaDVec3
-
-				div_assign(<invalid: &mut self>LuaDVec3)
-
-				div_assign(<invalid: &mut self>f64)
-
-				mul_assign(<invalid: &mut self>LuaDVec3)
-
-				mul_assign(<invalid: &mut self>f64)
-
-				// Exclusion reason: 
-				// add(selfLuaDVec3) -> LuaDVec3
-
-				// Exclusion reason: 
-				// add(selff64) -> LuaDVec3
-
-				// Exclusion reason: 
-				// add(selfLuaDVec3) -> LuaDVec3
-
-				add_assign(<invalid: &mut self>LuaDVec3)
-
-				add_assign(<invalid: &mut self>f64)
-
-				// Exclusion reason: 
-				// sub(selfLuaDVec3) -> LuaDVec3
-
-				// Exclusion reason: 
-				// sub(selff64) -> LuaDVec3
-
-				// Exclusion reason: 
-				// sub(selfLuaDVec3) -> LuaDVec3
-
-				sub_assign(<invalid: &mut self>LuaDVec3)
-
-				sub_assign(<invalid: &mut self>f64)
-
-				// Exclusion reason: 
-				// rem(selfLuaDVec3) -> LuaDVec3
-
-				// Exclusion reason: 
-				// rem(selff64) -> LuaDVec3
-
-				// Exclusion reason: 
-				// rem(selfLuaDVec3) -> LuaDVec3
-
-				rem_assign(<invalid: &mut self>LuaDVec3)
-
-				rem_assign(<invalid: &mut self>f64)
-
-				as_ref(&self)<invalid: &[f64;3]>
-
-				as_mut(<invalid: &mut self>)<invalid: &mut [f64;3]>
-
-				sum() -> LuaDVec3
-
-				product() -> LuaDVec3
-
-				// Exclusion reason: 
-				// neg(self) -> LuaDVec3
-
-				index(&selfusize)
-
-				index_mut(<invalid: &mut self>usize)
-
-				fmt(&self)
-
-				fmt(&self)
-
-				// Exclusion reason: 
-				// xx(self) -> LuaDVec2
-
-				// Exclusion reason: 
-				// xy(self) -> LuaDVec2
-
-				// Exclusion reason: 
-				// xz(self) -> LuaDVec2
-
-				// Exclusion reason: 
-				// yx(self) -> LuaDVec2
-
-				// Exclusion reason: 
-				// yy(self) -> LuaDVec2
-
-				// Exclusion reason: 
-				// yz(self) -> LuaDVec2
-
-				// Exclusion reason: 
-				// zx(self) -> LuaDVec2
-
-				// Exclusion reason: 
-				// zy(self) -> LuaDVec2
-
-				// Exclusion reason: 
-				// zz(self) -> LuaDVec2
-
-				// Exclusion reason: 
-				// xxx(self) -> LuaDVec3
-
-				// Exclusion reason: 
-				// xxy(self) -> LuaDVec3
-
-				// Exclusion reason: 
-				// xxz(self) -> LuaDVec3
-
-				// Exclusion reason: 
-				// xyx(self) -> LuaDVec3
-
-				// Exclusion reason: 
-				// xyy(self) -> LuaDVec3
-
-				// Exclusion reason: 
-				// xyz(self) -> LuaDVec3
-
-				// Exclusion reason: 
-				// xzx(self) -> LuaDVec3
-
-				// Exclusion reason: 
-				// xzy(self) -> LuaDVec3
-
-				// Exclusion reason: 
-				// xzz(self) -> LuaDVec3
-
-				// Exclusion reason: 
-				// yxx(self) -> LuaDVec3
-
-				// Exclusion reason: 
-				// yxy(self) -> LuaDVec3
-
-				// Exclusion reason: 
-				// yxz(self) -> LuaDVec3
-
-				// Exclusion reason: 
-				// yyx(self) -> LuaDVec3
-
-				// Exclusion reason: 
-				// yyy(self) -> LuaDVec3
-
-				// Exclusion reason: 
-				// yyz(self) -> LuaDVec3
-
-				// Exclusion reason: 
-				// yzx(self) -> LuaDVec3
-
-				// Exclusion reason: 
-				// yzy(self) -> LuaDVec3
-
-				// Exclusion reason: 
-				// yzz(self) -> LuaDVec3
-
-				// Exclusion reason: 
-				// zxx(self) -> LuaDVec3
-
-				// Exclusion reason: 
-				// zxy(self) -> LuaDVec3
-
-				// Exclusion reason: 
-				// zxz(self) -> LuaDVec3
-
-				// Exclusion reason: 
-				// zyx(self) -> LuaDVec3
-
-				// Exclusion reason: 
-				// zyy(self) -> LuaDVec3
-
-				// Exclusion reason: 
-				// zyz(self) -> LuaDVec3
-
-				// Exclusion reason: 
-				// zzx(self) -> LuaDVec3
-
-				// Exclusion reason: 
-				// zzy(self) -> LuaDVec3
-
-				// Exclusion reason: 
-				// zzz(self) -> LuaDVec3
-
-				// Exclusion reason: 
-				// xxxx(self) -> LuaDVec4
-
-				// Exclusion reason: 
-				// xxxy(self) -> LuaDVec4
-
-				// Exclusion reason: 
-				// xxxz(self) -> LuaDVec4
-
-				// Exclusion reason: 
-				// xxyx(self) -> LuaDVec4
-
-				// Exclusion reason: 
-				// xxyy(self) -> LuaDVec4
-
-				// Exclusion reason: 
-				// xxyz(self) -> LuaDVec4
-
-				// Exclusion reason: 
-				// xxzx(self) -> LuaDVec4
-
-				// Exclusion reason: 
-				// xxzy(self) -> LuaDVec4
-
-				// Exclusion reason: 
-				// xxzz(self) -> LuaDVec4
-
-				// Exclusion reason: 
-				// xyxx(self) -> LuaDVec4
-
-				// Exclusion reason: 
-				// xyxy(self) -> LuaDVec4
-
-				// Exclusion reason: 
-				// xyxz(self) -> LuaDVec4
-
-				// Exclusion reason: 
-				// xyyx(self) -> LuaDVec4
-
-				// Exclusion reason: 
-				// xyyy(self) -> LuaDVec4
-
-				// Exclusion reason: 
-				// xyyz(self) -> LuaDVec4
-
-				// Exclusion reason: 
-				// xyzx(self) -> LuaDVec4
-
-				// Exclusion reason: 
-				// xyzy(self) -> LuaDVec4
-
-				// Exclusion reason: 
-				// xyzz(self) -> LuaDVec4
-
-				// Exclusion reason: 
-				// xzxx(self) -> LuaDVec4
-
-				// Exclusion reason: 
-				// xzxy(self) -> LuaDVec4
-
-				// Exclusion reason: 
-				// xzxz(self) -> LuaDVec4
-
-				// Exclusion reason: 
-				// xzyx(self) -> LuaDVec4
-
-				// Exclusion reason: 
-				// xzyy(self) -> LuaDVec4
-
-				// Exclusion reason: 
-				// xzyz(self) -> LuaDVec4
-
-				// Exclusion reason: 
-				// xzzx(self) -> LuaDVec4
-
-				// Exclusion reason: 
-				// xzzy(self) -> LuaDVec4
-
-				// Exclusion reason: 
-				// xzzz(self) -> LuaDVec4
-
-				// Exclusion reason: 
-				// yxxx(self) -> LuaDVec4
-
-				// Exclusion reason: 
-				// yxxy(self) -> LuaDVec4
-
-				// Exclusion reason: 
-				// yxxz(self) -> LuaDVec4
-
-				// Exclusion reason: 
-				// yxyx(self) -> LuaDVec4
-
-				// Exclusion reason: 
-				// yxyy(self) -> LuaDVec4
-
-				// Exclusion reason: 
-				// yxyz(self) -> LuaDVec4
-
-				// Exclusion reason: 
-				// yxzx(self) -> LuaDVec4
-
-				// Exclusion reason: 
-				// yxzy(self) -> LuaDVec4
-
-				// Exclusion reason: 
-				// yxzz(self) -> LuaDVec4
-
-				// Exclusion reason: 
-				// yyxx(self) -> LuaDVec4
-
-				// Exclusion reason: 
-				// yyxy(self) -> LuaDVec4
-
-				// Exclusion reason: 
-				// yyxz(self) -> LuaDVec4
-
-				// Exclusion reason: 
-				// yyyx(self) -> LuaDVec4
-
-				// Exclusion reason: 
-				// yyyy(self) -> LuaDVec4
-
-				// Exclusion reason: 
-				// yyyz(self) -> LuaDVec4
-
-				// Exclusion reason: 
-				// yyzx(self) -> LuaDVec4
-
-				// Exclusion reason: 
-				// yyzy(self) -> LuaDVec4
-
-				// Exclusion reason: 
-				// yyzz(self) -> LuaDVec4
-
-				// Exclusion reason: 
-				// yzxx(self) -> LuaDVec4
-
-				// Exclusion reason: 
-				// yzxy(self) -> LuaDVec4
-
-				// Exclusion reason: 
-				// yzxz(self) -> LuaDVec4
-
-				// Exclusion reason: 
-				// yzyx(self) -> LuaDVec4
-
-				// Exclusion reason: 
-				// yzyy(self) -> LuaDVec4
-
-				// Exclusion reason: 
-				// yzyz(self) -> LuaDVec4
-
-				// Exclusion reason: 
-				// yzzx(self) -> LuaDVec4
-
-				// Exclusion reason: 
-				// yzzy(self) -> LuaDVec4
-
-				// Exclusion reason: 
-				// yzzz(self) -> LuaDVec4
-
-				// Exclusion reason: 
-				// zxxx(self) -> LuaDVec4
-
-				// Exclusion reason: 
-				// zxxy(self) -> LuaDVec4
-
-				// Exclusion reason: 
-				// zxxz(self) -> LuaDVec4
-
-				// Exclusion reason: 
-				// zxyx(self) -> LuaDVec4
-
-				// Exclusion reason: 
-				// zxyy(self) -> LuaDVec4
-
-				// Exclusion reason: 
-				// zxyz(self) -> LuaDVec4
-
-				// Exclusion reason: 
-				// zxzx(self) -> LuaDVec4
-
-				// Exclusion reason: 
-				// zxzy(self) -> LuaDVec4
-
-				// Exclusion reason: 
-				// zxzz(self) -> LuaDVec4
-
-				// Exclusion reason: 
-				// zyxx(self) -> LuaDVec4
-
-				// Exclusion reason: 
-				// zyxy(self) -> LuaDVec4
-
-				// Exclusion reason: 
-				// zyxz(self) -> LuaDVec4
-
-				// Exclusion reason: 
-				// zyyx(self) -> LuaDVec4
-
-				// Exclusion reason: 
-				// zyyy(self) -> LuaDVec4
-
-				// Exclusion reason: 
-				// zyyz(self) -> LuaDVec4
-
-				// Exclusion reason: 
-				// zyzx(self) -> LuaDVec4
-
-				// Exclusion reason: 
-				// zyzy(self) -> LuaDVec4
-
-				// Exclusion reason: 
-				// zyzz(self) -> LuaDVec4
-
-				// Exclusion reason: 
-				// zzxx(self) -> LuaDVec4
-
-				// Exclusion reason: 
-				// zzxy(self) -> LuaDVec4
-
-				// Exclusion reason: 
-				// zzxz(self) -> LuaDVec4
-
-				// Exclusion reason: 
-				// zzyx(self) -> LuaDVec4
-
-				// Exclusion reason: 
-				// zzyy(self) -> LuaDVec4
-
-				// Exclusion reason: 
-				// zzyz(self) -> LuaDVec4
-
-				// Exclusion reason: 
-				// zzzx(self) -> LuaDVec4
-
-				// Exclusion reason: 
-				// zzzy(self) -> LuaDVec4
-
-				// Exclusion reason: 
-				// zzzz(self) -> LuaDVec4
-
-			)
-+ BinaryOps			(
+			glam::f64::dvec3::DVec3 : Value
+:				AutoMethods
+				(
+					///Creates a new vector.
+					new(f64f64f64) -> LuaDVec3
+,
+					///Creates a vector with all elements set to `v`.
+					splat(f64) -> LuaDVec3
+,
+					// Exclusion reason: Unsupported argument BVec3
+					// ///Creates a vector from the elements in `if_true` and `if_false`, selecting which to use
+					// ///for each element of `self`.
+					// ///
+					// ///A true element in the mask uses the corresponding element from `if_true`, and false
+					// ///uses the element from `if_false`.
+					// select(LuaDVec3LuaDVec3) -> LuaDVec3
+,
+					// Exclusion reason: Unsupported argument [f64;3]
+					// ///Creates a new vector from an array.
+					// from_array(<invalid: [f64;3]>) -> LuaDVec3
+,
+					// Exclusion reason: Unsupported argument [f64;3]
+					// ///`[x, y, z]`
+					// to_array(&self)<invalid: [f64;3]>
+,
+					// Exclusion reason: Unsupported argument &[f64]
+					// ///Creates a vector from the first 3 values in `slice`.
+					// ///
+					// ///# Panics
+					// ///
+					// ///Panics if `slice` is less than 3 elements long.
+					// from_slice(<invalid: &[f64]>) -> LuaDVec3
+,
+					// Exclusion reason: Unsupported argument &mut [f64]
+					// ///Writes the elements of `self` to the first 3 elements in `slice`.
+					// ///
+					// ///# Panics
+					// ///
+					// ///Panics if `slice` is less than 3 elements long.
+					// write_to_slice(self<invalid: &mut [f64]>)
+,
+					///Creates a 4D vector from `self` and the given `w` value.
+					extend(selff64) -> LuaDVec4
+,
+					///Creates a 2D vector from the `x` and `y` elements of `self`, discarding `z`.
+					///
+					///Truncation may also be performed by using `self.xy()` or `DVec2::from()`.
+					truncate(self) -> LuaDVec2
+,
+					///Computes the dot product of `self` and `rhs`.
+					dot(selfLuaDVec3) -> f64
+,
+					///Computes the cross product of `self` and `rhs`.
+					cross(selfLuaDVec3) -> LuaDVec3
+,
+					///Returns a vector containing the minimum values for each element of `self` and `rhs`.
+					///
+					///In other words this computes `[self.x.min(rhs.x), self.y.min(rhs.y), ..]`.
+					min(selfLuaDVec3) -> LuaDVec3
+,
+					///Returns a vector containing the maximum values for each element of `self` and `rhs`.
+					///
+					///In other words this computes `[self.x.max(rhs.x), self.y.max(rhs.y), ..]`.
+					max(selfLuaDVec3) -> LuaDVec3
+,
+					///Component-wise clamping of values, similar to [`f32::clamp`].
+					///
+					///Each element in `min` must be less-or-equal to the corresponding element in `max`.
+					///
+					///# Panics
+					///
+					///Will panic if `min` is greater than `max` when `glam_assert` is enabled.
+					clamp(selfLuaDVec3LuaDVec3) -> LuaDVec3
+,
+					///Returns the horizontal minimum of `self`.
+					///
+					///In other words this computes `min(x, y, ..)`.
+					min_element(self) -> f64
+,
+					///Returns the horizontal maximum of `self`.
+					///
+					///In other words this computes `max(x, y, ..)`.
+					max_element(self) -> f64
+,
+					// Exclusion reason: Unsupported argument BVec3
+					// ///Returns a vector mask containing the result of a `==` comparison for each element of
+					// ///`self` and `rhs`.
+					// ///
+					// ///In other words, this computes `[self.x == rhs.x, self.y == rhs.y, ..]` for all
+					// ///elements.
+					// cmpeq(selfLuaDVec3)
+,
+					// Exclusion reason: Unsupported argument BVec3
+					// ///Returns a vector mask containing the result of a `!=` comparison for each element of
+					// ///`self` and `rhs`.
+					// ///
+					// ///In other words this computes `[self.x != rhs.x, self.y != rhs.y, ..]` for all
+					// ///elements.
+					// cmpne(selfLuaDVec3)
+,
+					// Exclusion reason: Unsupported argument BVec3
+					// ///Returns a vector mask containing the result of a `>=` comparison for each element of
+					// ///`self` and `rhs`.
+					// ///
+					// ///In other words this computes `[self.x >= rhs.x, self.y >= rhs.y, ..]` for all
+					// ///elements.
+					// cmpge(selfLuaDVec3)
+,
+					// Exclusion reason: Unsupported argument BVec3
+					// ///Returns a vector mask containing the result of a `>` comparison for each element of
+					// ///`self` and `rhs`.
+					// ///
+					// ///In other words this computes `[self.x > rhs.x, self.y > rhs.y, ..]` for all
+					// ///elements.
+					// cmpgt(selfLuaDVec3)
+,
+					// Exclusion reason: Unsupported argument BVec3
+					// ///Returns a vector mask containing the result of a `<=` comparison for each element of
+					// ///`self` and `rhs`.
+					// ///
+					// ///In other words this computes `[self.x <= rhs.x, self.y <= rhs.y, ..]` for all
+					// ///elements.
+					// cmple(selfLuaDVec3)
+,
+					// Exclusion reason: Unsupported argument BVec3
+					// ///Returns a vector mask containing the result of a `<` comparison for each element of
+					// ///`self` and `rhs`.
+					// ///
+					// ///In other words this computes `[self.x < rhs.x, self.y < rhs.y, ..]` for all
+					// ///elements.
+					// cmplt(selfLuaDVec3)
+,
+					///Returns a vector containing the absolute value of each element of `self`.
+					abs(self) -> LuaDVec3
+,
+					///Returns a vector with elements representing the sign of `self`.
+					///
+					///- `1.0` if the number is positive, `+0.0` or `INFINITY`
+					///- `-1.0` if the number is negative, `-0.0` or `NEG_INFINITY`
+					///- `NAN` if the number is `NAN`
+					signum(self) -> LuaDVec3
+,
+					///Returns `true` if, and only if, all elements are finite.  If any element is either
+					///`NaN`, positive or negative infinity, this will return `false`.
+					is_finite(self) -> bool
+,
+					///Returns `true` if any elements are `NaN`.
+					is_nan(self) -> bool
+,
+					// Exclusion reason: Unsupported argument BVec3
+					// ///Performs `is_nan` on each element of self, returning a vector mask of the results.
+					// ///
+					// ///In other words, this computes `[x.is_nan(), y.is_nan(), z.is_nan(), w.is_nan()]`.
+					// is_nan_mask(self)
+,
+					///Computes the length of `self`.
+					length(self) -> f64
+,
+					///Computes the squared length of `self`.
+					///
+					///This is faster than `length()` as it avoids a square root operation.
+					length_squared(self) -> f64
+,
+					///Computes `1.0 / length()`.
+					///
+					///For valid results, `self` must _not_ be of length zero.
+					length_recip(self) -> f64
+,
+					///Computes the Euclidean distance between two points in space.
+					distance(selfLuaDVec3) -> f64
+,
+					///Compute the squared euclidean distance between two points in space.
+					distance_squared(selfLuaDVec3) -> f64
+,
+					///Returns `self` normalized to length 1.0.
+					///
+					///For valid results, `self` must _not_ be of length zero, nor very close to zero.
+					///
+					///See also [`Self::try_normalize`] and [`Self::normalize_or_zero`].
+					///
+					///Panics
+					///
+					///Will panic if `self` is zero length when `glam_assert` is enabled.
+					normalize(self) -> LuaDVec3
+,
+					// Exclusion reason: Unsupported argument Option
+					// ///Returns `self` normalized to length 1.0 if possible, else returns `None`.
+					// ///
+					// ///In particular, if the input is zero (or very close to zero), or non-finite,
+					// ///the result of this operation will be `None`.
+					// ///
+					// ///See also [`Self::normalize_or_zero`].
+					// try_normalize(self)
+,
+					///Returns `self` normalized to length 1.0 if possible, else returns zero.
+					///
+					///In particular, if the input is zero (or very close to zero), or non-finite,
+					///the result of this operation will be zero.
+					///
+					///See also [`Self::try_normalize`].
+					normalize_or_zero(self) -> LuaDVec3
+,
+					///Returns whether `self` is length `1.0` or not.
+					///
+					///Uses a precision threshold of `1e-6`.
+					is_normalized(self) -> bool
+,
+					///Returns the vector projection of `self` onto `rhs`.
+					///
+					///`rhs` must be of non-zero length.
+					///
+					///# Panics
+					///
+					///Will panic if `rhs` is zero length when `glam_assert` is enabled.
+					project_onto(selfLuaDVec3) -> LuaDVec3
+,
+					///Returns the vector rejection of `self` from `rhs`.
+					///
+					///The vector rejection is the vector perpendicular to the projection of `self` onto
+					///`rhs`, in rhs words the result of `self - self.project_onto(rhs)`.
+					///
+					///`rhs` must be of non-zero length.
+					///
+					///# Panics
+					///
+					///Will panic if `rhs` has a length of zero when `glam_assert` is enabled.
+					reject_from(selfLuaDVec3) -> LuaDVec3
+,
+					///Returns the vector projection of `self` onto `rhs`.
+					///
+					///`rhs` must be normalized.
+					///
+					///# Panics
+					///
+					///Will panic if `rhs` is not normalized when `glam_assert` is enabled.
+					project_onto_normalized(selfLuaDVec3) -> LuaDVec3
+,
+					///Returns the vector rejection of `self` from `rhs`.
+					///
+					///The vector rejection is the vector perpendicular to the projection of `self` onto
+					///`rhs`, in rhs words the result of `self - self.project_onto(rhs)`.
+					///
+					///`rhs` must be normalized.
+					///
+					///# Panics
+					///
+					///Will panic if `rhs` is not normalized when `glam_assert` is enabled.
+					reject_from_normalized(selfLuaDVec3) -> LuaDVec3
+,
+					///Returns a vector containing the nearest integer to a number for each element of `self`.
+					///Round half-way cases away from 0.0.
+					round(self) -> LuaDVec3
+,
+					///Returns a vector containing the largest integer less than or equal to a number for each
+					///element of `self`.
+					floor(self) -> LuaDVec3
+,
+					///Returns a vector containing the smallest integer greater than or equal to a number for
+					///each element of `self`.
+					ceil(self) -> LuaDVec3
+,
+					///Returns a vector containing the fractional part of the vector, e.g. `self -
+					///self.floor()`.
+					///
+					///Note that this is fast but not precise for large numbers.
+					fract(self) -> LuaDVec3
+,
+					///Returns a vector containing `e^self` (the exponential function) for each element of
+					///`self`.
+					exp(self) -> LuaDVec3
+,
+					///Returns a vector containing each element of `self` raised to the power of `n`.
+					powf(selff64) -> LuaDVec3
+,
+					///Returns a vector containing the reciprocal `1.0/n` of each element of `self`.
+					recip(self) -> LuaDVec3
+,
+					///Performs a linear interpolation between `self` and `rhs` based on the value `s`.
+					///
+					///When `s` is `0.0`, the result will be equal to `self`.  When `s` is `1.0`, the result
+					///will be equal to `rhs`. When `s` is outside of range `[0, 1]`, the result is linearly
+					///extrapolated.
+					lerp(selfLuaDVec3f64) -> LuaDVec3
+,
+					///Returns true if the absolute difference of all elements between `self` and `rhs` is
+					///less than or equal to `max_abs_diff`.
+					///
+					///This can be used to compare if two vectors contain similar elements. It works best when
+					///comparing with a known value. The `max_abs_diff` that should be used used depends on
+					///the values being compared against.
+					///
+					///For more see
+					///[comparing floating point numbers](https://randomascii.wordpress.com/2012/02/25/comparing-floating-point-numbers-2012-edition/).
+					abs_diff_eq(selfLuaDVec3f64) -> bool
+,
+					///Returns a vector with a length no less than `min` and no more than `max`
+					///
+					///# Panics
+					///
+					///Will panic if `min` is greater than `max` when `glam_assert` is enabled.
+					clamp_length(selff64f64) -> LuaDVec3
+,
+					///Returns a vector with a length no more than `max`
+					clamp_length_max(selff64) -> LuaDVec3
+,
+					///Returns a vector with a length no less than `min`
+					clamp_length_min(selff64) -> LuaDVec3
+,
+					///Fused multiply-add. Computes `(self * a) + b` element-wise with only one rounding
+					///error, yielding a more accurate result than an unfused multiply-add.
+					///
+					///Using `mul_add` *may* be more performant than an unfused multiply-add if the target
+					///architecture has a dedicated fma CPU instruction. However, this is not always true,
+					///and will be heavily dependant on designing algorithms with specific target hardware in
+					///mind.
+					mul_add(selfLuaDVec3LuaDVec3) -> LuaDVec3
+,
+					///Returns the angle (in radians) between two vectors.
+					///
+					///The input vectors do not need to be unit length however they must be non-zero.
+					angle_between(selfLuaDVec3) -> f64
+,
+					///Returns some vector that is orthogonal to the given one.
+					///
+					///The input vector must be finite and non-zero.
+					///
+					///The output vector is not necessarily unit-length.
+					///For that use [`Self::any_orthonormal_vector`] instead.
+					any_orthogonal_vector(&self) -> LuaDVec3
+,
+					///Returns any unit-length vector that is orthogonal to the given one.
+					///The input vector must be finite and non-zero.
+					///
+					///# Panics
+					///
+					///Will panic if `self` is not normalized when `glam_assert` is enabled.
+					any_orthonormal_vector(&self) -> LuaDVec3
+,
+					// Exclusion reason: Unsupported argument (LuaDVec3,LuaDVec3)
+					// ///Given a unit-length vector return two other vectors that together form an orthonormal
+					// ///basis.  That is, all three vectors are orthogonal to each other and are normalized.
+					// ///
+					// ///# Panics
+					// ///
+					// ///Will panic if `self` is not normalized when `glam_assert` is enabled.
+					// any_orthonormal_pair(&self)<invalid: (LuaDVec3,LuaDVec3)>
+,
+					// Exclusion reason: Unsupported argument crate::Vec3
+					// ///Casts all elements of `self` to `f32`.
+					// as_vec3(&self)
+,
+					// Exclusion reason: Unsupported argument crate::Vec3A
+					// ///Casts all elements of `self` to `f32`.
+					// as_vec3a(&self)
+,
+					// Exclusion reason: Unsupported argument crate::IVec3
+					// ///Casts all elements of `self` to `i32`.
+					// as_ivec3(&self)
+,
+					// Exclusion reason: Unsupported argument crate::UVec3
+					// ///Casts all elements of `self` to `u32`.
+					// as_uvec3(&self)
+,
+					// Exclusion reason: Unsupported argument U,Unsupported argument Result
+					// try_from()
+,
+					// Exclusion reason: Unsupported argument T,Unsupported argument T
+					// ///Returns the argument unchanged.
+					// from()
+,
+					// Exclusion reason: Unsupported argument [f64;3]
+					// from(<invalid: [f64;3]>) -> LuaDVec3
+,
+					from(LuaDVec3) -> LuaDVec3
+,
+					// Exclusion reason: Unsupported argument (f64,f64,f64)
+					// from(<invalid: (f64,f64,f64)>) -> LuaDVec3
+,
+					from(LuaDVec3) -> LuaDVec3
+,
+					// Exclusion reason: Unsupported argument (LuaDVec2,f64)
+					// from(<invalid: (LuaDVec2,f64)>) -> LuaDVec3
+,
+					// Exclusion reason: Unsupported argument U
+					// ///Calls `U::from(self)`.
+					// ///
+					// ///That is, this conversion is whatever the implementation of
+					// ///<code>[From]&lt;T&gt; for U</code> chooses to do.
+					// into(self)
+,
+					// Exclusion reason: Unsupported argument T
+					// borrow(&self)
+,
+					// Exclusion reason: Unsupported argument TypeId
+					// type_id(&self)
+,
+					// Exclusion reason: Unsupported argument Result
+					// try_into(self)
+,
+					// Exclusion reason: Unsupported argument &mut self,Unsupported argument T
+					// borrow_mut(<invalid: &mut self>)
+,
+					// Exclusion reason: Unsupported argument String
+					// to_string(&self)
+,
+					// Exclusion reason: Unsupported argument T
+					// to_owned(&self)
+,
+					// Exclusion reason: Unsupported argument T
+					// clone_into(&self)
+,
+					// Exclusion reason: Unsupported argument T
+					// is_valid_bit_pattern() -> bool
+,
+					// Exclusion reason: Unsupported argument S,Unsupported argument Result,Generics on the method
+					// serialize(&self)
+,
+					// Exclusion reason: Unsupported argument D,Unsupported argument Result,Generics on the method
+					// deserialize()
+,
+					// Exclusion reason: Unsupported argument QualifiedPath { name: "Output", args: AngleBracketed { args: [], bindings: [] }, self_type: Generic("Self"), trait_: ResolvedPath { name: "", id: Id("2:3313:2263"), args: None, param_names: [] } }
+					// mul(selfLuaDVec3)
+,
+					// Exclusion reason: Unsupported argument QualifiedPath { name: "Output", args: AngleBracketed { args: [], bindings: [] }, self_type: Generic("Self"), trait_: ResolvedPath { name: "", id: Id("2:3313:2263"), args: None, param_names: [] } }
+					// ///Multiplies a quaternion and a 3D vector, returning the rotated vector.
+					// ///
+					// ///# Panics
+					// ///
+					// ///Will panic if `self` is not normalized when `glam_assert` is enabled.
+					// mul(selfLuaDVec3)
+,
+					mul(selfLuaDVec3) -> LuaDVec3
+,
+					mul(selff64) -> LuaDVec3
+,
+					mul(selfLuaDVec3) -> LuaDVec3
+,
+					clone(&self) -> LuaDVec3
+,
+					default() -> LuaDVec3
+,
+					eq(&self&LuaDVec3) -> bool
+,
+					div(selfLuaDVec3) -> LuaDVec3
+,
+					div(selff64) -> LuaDVec3
+,
+					div(selfLuaDVec3) -> LuaDVec3
+,
+					// Exclusion reason: Unsupported argument &mut self
+					// div_assign(<invalid: &mut self>LuaDVec3)
+,
+					// Exclusion reason: Unsupported argument &mut self
+					// div_assign(<invalid: &mut self>f64)
+,
+					// Exclusion reason: Unsupported argument &mut self
+					// mul_assign(<invalid: &mut self>LuaDVec3)
+,
+					// Exclusion reason: Unsupported argument &mut self
+					// mul_assign(<invalid: &mut self>f64)
+,
+					add(selfLuaDVec3) -> LuaDVec3
+,
+					add(selff64) -> LuaDVec3
+,
+					add(selfLuaDVec3) -> LuaDVec3
+,
+					// Exclusion reason: Unsupported argument &mut self
+					// add_assign(<invalid: &mut self>LuaDVec3)
+,
+					// Exclusion reason: Unsupported argument &mut self
+					// add_assign(<invalid: &mut self>f64)
+,
+					sub(selfLuaDVec3) -> LuaDVec3
+,
+					sub(selff64) -> LuaDVec3
+,
+					sub(selfLuaDVec3) -> LuaDVec3
+,
+					// Exclusion reason: Unsupported argument &mut self
+					// sub_assign(<invalid: &mut self>LuaDVec3)
+,
+					// Exclusion reason: Unsupported argument &mut self
+					// sub_assign(<invalid: &mut self>f64)
+,
+					rem(selfLuaDVec3) -> LuaDVec3
+,
+					rem(selff64) -> LuaDVec3
+,
+					rem(selfLuaDVec3) -> LuaDVec3
+,
+					// Exclusion reason: Unsupported argument &mut self
+					// rem_assign(<invalid: &mut self>LuaDVec3)
+,
+					// Exclusion reason: Unsupported argument &mut self
+					// rem_assign(<invalid: &mut self>f64)
+,
+					// Exclusion reason: Unsupported argument &[f64;3]
+					// as_ref(&self)<invalid: &[f64;3]>
+,
+					// Exclusion reason: Unsupported argument &mut self,Unsupported argument &mut [f64;3]
+					// as_mut(<invalid: &mut self>)<invalid: &mut [f64;3]>
+,
+					// Exclusion reason: Unsupported argument I,Generics on the method
+					// sum() -> LuaDVec3
+,
+					// Exclusion reason: Unsupported argument I,Generics on the method
+					// product() -> LuaDVec3
+,
+					neg(self) -> LuaDVec3
+,
+					// Exclusion reason: Unsupported argument QualifiedPath { name: "Output", args: AngleBracketed { args: [], bindings: [] }, self_type: Generic("Self"), trait_: ResolvedPath { name: "", id: Id("2:3539:2758"), args: None, param_names: [] } }
+					// index(&selfusize)
+,
+					// Exclusion reason: Unsupported argument &mut self,Unsupported argument QualifiedPath { name: "Output", args: AngleBracketed { args: [], bindings: [] }, self_type: Generic("Self"), trait_: ResolvedPath { name: "", id: Id("2:3539:2758"), args: None, param_names: [] } }
+					// index_mut(<invalid: &mut self>usize)
+,
+					// Exclusion reason: Unsupported argument fmt::Formatter,Unsupported argument fmt::Result
+					// fmt(&self)
+,
+					// Exclusion reason: Unsupported argument fmt::Formatter,Unsupported argument fmt::Result
+					// fmt(&self)
+,
+					xx(self) -> LuaDVec2
+,
+					xy(self) -> LuaDVec2
+,
+					xz(self) -> LuaDVec2
+,
+					yx(self) -> LuaDVec2
+,
+					yy(self) -> LuaDVec2
+,
+					yz(self) -> LuaDVec2
+,
+					zx(self) -> LuaDVec2
+,
+					zy(self) -> LuaDVec2
+,
+					zz(self) -> LuaDVec2
+,
+					xxx(self) -> LuaDVec3
+,
+					xxy(self) -> LuaDVec3
+,
+					xxz(self) -> LuaDVec3
+,
+					xyx(self) -> LuaDVec3
+,
+					xyy(self) -> LuaDVec3
+,
+					xyz(self) -> LuaDVec3
+,
+					xzx(self) -> LuaDVec3
+,
+					xzy(self) -> LuaDVec3
+,
+					xzz(self) -> LuaDVec3
+,
+					yxx(self) -> LuaDVec3
+,
+					yxy(self) -> LuaDVec3
+,
+					yxz(self) -> LuaDVec3
+,
+					yyx(self) -> LuaDVec3
+,
+					yyy(self) -> LuaDVec3
+,
+					yyz(self) -> LuaDVec3
+,
+					yzx(self) -> LuaDVec3
+,
+					yzy(self) -> LuaDVec3
+,
+					yzz(self) -> LuaDVec3
+,
+					zxx(self) -> LuaDVec3
+,
+					zxy(self) -> LuaDVec3
+,
+					zxz(self) -> LuaDVec3
+,
+					zyx(self) -> LuaDVec3
+,
+					zyy(self) -> LuaDVec3
+,
+					zyz(self) -> LuaDVec3
+,
+					zzx(self) -> LuaDVec3
+,
+					zzy(self) -> LuaDVec3
+,
+					zzz(self) -> LuaDVec3
+,
+					xxxx(self) -> LuaDVec4
+,
+					xxxy(self) -> LuaDVec4
+,
+					xxxz(self) -> LuaDVec4
+,
+					xxyx(self) -> LuaDVec4
+,
+					xxyy(self) -> LuaDVec4
+,
+					xxyz(self) -> LuaDVec4
+,
+					xxzx(self) -> LuaDVec4
+,
+					xxzy(self) -> LuaDVec4
+,
+					xxzz(self) -> LuaDVec4
+,
+					xyxx(self) -> LuaDVec4
+,
+					xyxy(self) -> LuaDVec4
+,
+					xyxz(self) -> LuaDVec4
+,
+					xyyx(self) -> LuaDVec4
+,
+					xyyy(self) -> LuaDVec4
+,
+					xyyz(self) -> LuaDVec4
+,
+					xyzx(self) -> LuaDVec4
+,
+					xyzy(self) -> LuaDVec4
+,
+					xyzz(self) -> LuaDVec4
+,
+					xzxx(self) -> LuaDVec4
+,
+					xzxy(self) -> LuaDVec4
+,
+					xzxz(self) -> LuaDVec4
+,
+					xzyx(self) -> LuaDVec4
+,
+					xzyy(self) -> LuaDVec4
+,
+					xzyz(self) -> LuaDVec4
+,
+					xzzx(self) -> LuaDVec4
+,
+					xzzy(self) -> LuaDVec4
+,
+					xzzz(self) -> LuaDVec4
+,
+					yxxx(self) -> LuaDVec4
+,
+					yxxy(self) -> LuaDVec4
+,
+					yxxz(self) -> LuaDVec4
+,
+					yxyx(self) -> LuaDVec4
+,
+					yxyy(self) -> LuaDVec4
+,
+					yxyz(self) -> LuaDVec4
+,
+					yxzx(self) -> LuaDVec4
+,
+					yxzy(self) -> LuaDVec4
+,
+					yxzz(self) -> LuaDVec4
+,
+					yyxx(self) -> LuaDVec4
+,
+					yyxy(self) -> LuaDVec4
+,
+					yyxz(self) -> LuaDVec4
+,
+					yyyx(self) -> LuaDVec4
+,
+					yyyy(self) -> LuaDVec4
+,
+					yyyz(self) -> LuaDVec4
+,
+					yyzx(self) -> LuaDVec4
+,
+					yyzy(self) -> LuaDVec4
+,
+					yyzz(self) -> LuaDVec4
+,
+					yzxx(self) -> LuaDVec4
+,
+					yzxy(self) -> LuaDVec4
+,
+					yzxz(self) -> LuaDVec4
+,
+					yzyx(self) -> LuaDVec4
+,
+					yzyy(self) -> LuaDVec4
+,
+					yzyz(self) -> LuaDVec4
+,
+					yzzx(self) -> LuaDVec4
+,
+					yzzy(self) -> LuaDVec4
+,
+					yzzz(self) -> LuaDVec4
+,
+					zxxx(self) -> LuaDVec4
+,
+					zxxy(self) -> LuaDVec4
+,
+					zxxz(self) -> LuaDVec4
+,
+					zxyx(self) -> LuaDVec4
+,
+					zxyy(self) -> LuaDVec4
+,
+					zxyz(self) -> LuaDVec4
+,
+					zxzx(self) -> LuaDVec4
+,
+					zxzy(self) -> LuaDVec4
+,
+					zxzz(self) -> LuaDVec4
+,
+					zyxx(self) -> LuaDVec4
+,
+					zyxy(self) -> LuaDVec4
+,
+					zyxz(self) -> LuaDVec4
+,
+					zyyx(self) -> LuaDVec4
+,
+					zyyy(self) -> LuaDVec4
+,
+					zyyz(self) -> LuaDVec4
+,
+					zyzx(self) -> LuaDVec4
+,
+					zyzy(self) -> LuaDVec4
+,
+					zyzz(self) -> LuaDVec4
+,
+					zzxx(self) -> LuaDVec4
+,
+					zzxy(self) -> LuaDVec4
+,
+					zzxz(self) -> LuaDVec4
+,
+					zzyx(self) -> LuaDVec4
+,
+					zzyy(self) -> LuaDVec4
+,
+					zzyz(self) -> LuaDVec4
+,
+					zzzx(self) -> LuaDVec4
+,
+					zzzy(self) -> LuaDVec4
+,
+					zzzz(self) -> LuaDVec4
+,
+				)
+				+ BinaryOps
+				(
 self Add LuaDVec3 -> LuaDVec3 -> LuaDVec3
 self Add f64 -> LuaDVec3 -> LuaDVec3
 f64 Add self -> LuaDVec3 -> LuaDVec3
@@ -5677,1518 +5353,1180 @@ f64 Mul self -> LuaDVec3 -> LuaDVec3
 self Rem LuaDVec3 -> LuaDVec3 -> LuaDVec3
 self Rem f64 -> LuaDVec3 -> LuaDVec3
 f64 Rem self -> LuaDVec3 -> LuaDVec3
-			)
-+ UnaryOps			(
-			)
-+ 			    Copy(LuaVec2 -> (MetaMethod::Index) (s=LuaDVec3),
-			        LuaVec2 -> mut (MetaMethod::NewIndex) (n=f64))
-			    
-impl			{
+				)
+				+ UnaryOps
+				(
+				)
++ 				    Copy(LuaVec2 -> (MetaMethod::Index) (s=LuaDVec3),
+				        LuaVec2 -> mut (MetaMethod::NewIndex) (n=f64))
+				    
+			impl
+			{
 			}
 		}
-		{
+,		{
 			///A 4-dimensional vector.
-glam::f64::dvec4::DVec4 : Value
-AutoMethods			(
-				// Exclusion reason: 
-				// ///Creates a new vector.
-				// new(f64f64f64f64) -> LuaDVec4
-
-				// Exclusion reason: 
-				// ///Creates a vector with all elements set to `v`.
-				// splat(f64) -> LuaDVec4
-
-				///Creates a vector from the elements in `if_true` and `if_false`, selecting which to use
-				///for each element of `self`.
-				///
-				///A true element in the mask uses the corresponding element from `if_true`, and false
-				///uses the element from `if_false`.
-				select(LuaDVec4LuaDVec4) -> LuaDVec4
-
-				///Creates a new vector from an array.
-				from_array(<invalid: [f64;4]>) -> LuaDVec4
-
-				///`[x, y, z, w]`
-				to_array(&self)<invalid: [f64;4]>
-
-				///Creates a vector from the first 4 values in `slice`.
-				///
-				///# Panics
-				///
-				///Panics if `slice` is less than 4 elements long.
-				from_slice(<invalid: &[f64]>) -> LuaDVec4
-
-				///Writes the elements of `self` to the first 4 elements in `slice`.
-				///
-				///# Panics
-				///
-				///Panics if `slice` is less than 4 elements long.
-				write_to_slice(self<invalid: &mut [f64]>)
-
-				// Exclusion reason: 
-				// ///Creates a 2D vector from the `x`, `y` and `z` elements of `self`, discarding `w`.
-				// ///
-				// ///Truncation to `DVec3` may also be performed by using `self.xyz()` or `DVec3::from()`.
-				// truncate(self) -> LuaDVec3
-
-				// Exclusion reason: 
-				// ///Computes the dot product of `self` and `rhs`.
-				// dot(selfLuaDVec4) -> f64
-
-				// Exclusion reason: 
-				// ///Returns a vector containing the minimum values for each element of `self` and `rhs`.
-				// ///
-				// ///In other words this computes `[self.x.min(rhs.x), self.y.min(rhs.y), ..]`.
-				// min(selfLuaDVec4) -> LuaDVec4
-
-				// Exclusion reason: 
-				// ///Returns a vector containing the maximum values for each element of `self` and `rhs`.
-				// ///
-				// ///In other words this computes `[self.x.max(rhs.x), self.y.max(rhs.y), ..]`.
-				// max(selfLuaDVec4) -> LuaDVec4
-
-				// Exclusion reason: 
-				// ///Component-wise clamping of values, similar to [`f32::clamp`].
-				// ///
-				// ///Each element in `min` must be less-or-equal to the corresponding element in `max`.
-				// ///
-				// ///# Panics
-				// ///
-				// ///Will panic if `min` is greater than `max` when `glam_assert` is enabled.
-				// clamp(selfLuaDVec4LuaDVec4) -> LuaDVec4
-
-				// Exclusion reason: 
-				// ///Returns the horizontal minimum of `self`.
-				// ///
-				// ///In other words this computes `min(x, y, ..)`.
-				// min_element(self) -> f64
-
-				// Exclusion reason: 
-				// ///Returns the horizontal maximum of `self`.
-				// ///
-				// ///In other words this computes `max(x, y, ..)`.
-				// max_element(self) -> f64
-
-				///Returns a vector mask containing the result of a `==` comparison for each element of
-				///`self` and `rhs`.
-				///
-				///In other words, this computes `[self.x == rhs.x, self.y == rhs.y, ..]` for all
-				///elements.
-				cmpeq(selfLuaDVec4)
-
-				///Returns a vector mask containing the result of a `!=` comparison for each element of
-				///`self` and `rhs`.
-				///
-				///In other words this computes `[self.x != rhs.x, self.y != rhs.y, ..]` for all
-				///elements.
-				cmpne(selfLuaDVec4)
-
-				///Returns a vector mask containing the result of a `>=` comparison for each element of
-				///`self` and `rhs`.
-				///
-				///In other words this computes `[self.x >= rhs.x, self.y >= rhs.y, ..]` for all
-				///elements.
-				cmpge(selfLuaDVec4)
-
-				///Returns a vector mask containing the result of a `>` comparison for each element of
-				///`self` and `rhs`.
-				///
-				///In other words this computes `[self.x > rhs.x, self.y > rhs.y, ..]` for all
-				///elements.
-				cmpgt(selfLuaDVec4)
-
-				///Returns a vector mask containing the result of a `<=` comparison for each element of
-				///`self` and `rhs`.
-				///
-				///In other words this computes `[self.x <= rhs.x, self.y <= rhs.y, ..]` for all
-				///elements.
-				cmple(selfLuaDVec4)
-
-				///Returns a vector mask containing the result of a `<` comparison for each element of
-				///`self` and `rhs`.
-				///
-				///In other words this computes `[self.x < rhs.x, self.y < rhs.y, ..]` for all
-				///elements.
-				cmplt(selfLuaDVec4)
-
-				// Exclusion reason: 
-				// ///Returns a vector containing the absolute value of each element of `self`.
-				// abs(self) -> LuaDVec4
-
-				// Exclusion reason: 
-				// ///Returns a vector with elements representing the sign of `self`.
-				// ///
-				// ///- `1.0` if the number is positive, `+0.0` or `INFINITY`
-				// ///- `-1.0` if the number is negative, `-0.0` or `NEG_INFINITY`
-				// ///- `NAN` if the number is `NAN`
-				// signum(self) -> LuaDVec4
-
-				// Exclusion reason: 
-				// ///Returns `true` if, and only if, all elements are finite.  If any element is either
-				// ///`NaN`, positive or negative infinity, this will return `false`.
-				// is_finite(self) -> bool
-
-				// Exclusion reason: 
-				// ///Returns `true` if any elements are `NaN`.
-				// is_nan(self) -> bool
-
-				///Performs `is_nan` on each element of self, returning a vector mask of the results.
-				///
-				///In other words, this computes `[x.is_nan(), y.is_nan(), z.is_nan(), w.is_nan()]`.
-				is_nan_mask(self)
-
-				// Exclusion reason: 
-				// ///Computes the length of `self`.
-				// length(self) -> f64
-
-				// Exclusion reason: 
-				// ///Computes the squared length of `self`.
-				// ///
-				// ///This is faster than `length()` as it avoids a square root operation.
-				// length_squared(self) -> f64
-
-				// Exclusion reason: 
-				// ///Computes `1.0 / length()`.
-				// ///
-				// ///For valid results, `self` must _not_ be of length zero.
-				// length_recip(self) -> f64
-
-				// Exclusion reason: 
-				// ///Computes the Euclidean distance between two points in space.
-				// distance(selfLuaDVec4) -> f64
-
-				// Exclusion reason: 
-				// ///Compute the squared euclidean distance between two points in space.
-				// distance_squared(selfLuaDVec4) -> f64
-
-				// Exclusion reason: 
-				// ///Returns `self` normalized to length 1.0.
-				// ///
-				// ///For valid results, `self` must _not_ be of length zero, nor very close to zero.
-				// ///
-				// ///See also [`Self::try_normalize`] and [`Self::normalize_or_zero`].
-				// ///
-				// ///Panics
-				// ///
-				// ///Will panic if `self` is zero length when `glam_assert` is enabled.
-				// normalize(self) -> LuaDVec4
-
-				///Returns `self` normalized to length 1.0 if possible, else returns `None`.
-				///
-				///In particular, if the input is zero (or very close to zero), or non-finite,
-				///the result of this operation will be `None`.
-				///
-				///See also [`Self::normalize_or_zero`].
-				try_normalize(self)
-
-				// Exclusion reason: 
-				// ///Returns `self` normalized to length 1.0 if possible, else returns zero.
-				// ///
-				// ///In particular, if the input is zero (or very close to zero), or non-finite,
-				// ///the result of this operation will be zero.
-				// ///
-				// ///See also [`Self::try_normalize`].
-				// normalize_or_zero(self) -> LuaDVec4
-
-				// Exclusion reason: 
-				// ///Returns whether `self` is length `1.0` or not.
-				// ///
-				// ///Uses a precision threshold of `1e-6`.
-				// is_normalized(self) -> bool
-
-				// Exclusion reason: 
-				// ///Returns the vector projection of `self` onto `rhs`.
-				// ///
-				// ///`rhs` must be of non-zero length.
-				// ///
-				// ///# Panics
-				// ///
-				// ///Will panic if `rhs` is zero length when `glam_assert` is enabled.
-				// project_onto(selfLuaDVec4) -> LuaDVec4
-
-				// Exclusion reason: 
-				// ///Returns the vector rejection of `self` from `rhs`.
-				// ///
-				// ///The vector rejection is the vector perpendicular to the projection of `self` onto
-				// ///`rhs`, in rhs words the result of `self - self.project_onto(rhs)`.
-				// ///
-				// ///`rhs` must be of non-zero length.
-				// ///
-				// ///# Panics
-				// ///
-				// ///Will panic if `rhs` has a length of zero when `glam_assert` is enabled.
-				// reject_from(selfLuaDVec4) -> LuaDVec4
-
-				// Exclusion reason: 
-				// ///Returns the vector projection of `self` onto `rhs`.
-				// ///
-				// ///`rhs` must be normalized.
-				// ///
-				// ///# Panics
-				// ///
-				// ///Will panic if `rhs` is not normalized when `glam_assert` is enabled.
-				// project_onto_normalized(selfLuaDVec4) -> LuaDVec4
-
-				// Exclusion reason: 
-				// ///Returns the vector rejection of `self` from `rhs`.
-				// ///
-				// ///The vector rejection is the vector perpendicular to the projection of `self` onto
-				// ///`rhs`, in rhs words the result of `self - self.project_onto(rhs)`.
-				// ///
-				// ///`rhs` must be normalized.
-				// ///
-				// ///# Panics
-				// ///
-				// ///Will panic if `rhs` is not normalized when `glam_assert` is enabled.
-				// reject_from_normalized(selfLuaDVec4) -> LuaDVec4
-
-				// Exclusion reason: 
-				// ///Returns a vector containing the nearest integer to a number for each element of `self`.
-				// ///Round half-way cases away from 0.0.
-				// round(self) -> LuaDVec4
-
-				// Exclusion reason: 
-				// ///Returns a vector containing the largest integer less than or equal to a number for each
-				// ///element of `self`.
-				// floor(self) -> LuaDVec4
-
-				// Exclusion reason: 
-				// ///Returns a vector containing the smallest integer greater than or equal to a number for
-				// ///each element of `self`.
-				// ceil(self) -> LuaDVec4
-
-				// Exclusion reason: 
-				// ///Returns a vector containing the fractional part of the vector, e.g. `self -
-				// ///self.floor()`.
-				// ///
-				// ///Note that this is fast but not precise for large numbers.
-				// fract(self) -> LuaDVec4
-
-				// Exclusion reason: 
-				// ///Returns a vector containing `e^self` (the exponential function) for each element of
-				// ///`self`.
-				// exp(self) -> LuaDVec4
-
-				// Exclusion reason: 
-				// ///Returns a vector containing each element of `self` raised to the power of `n`.
-				// powf(selff64) -> LuaDVec4
-
-				// Exclusion reason: 
-				// ///Returns a vector containing the reciprocal `1.0/n` of each element of `self`.
-				// recip(self) -> LuaDVec4
-
-				// Exclusion reason: 
-				// ///Performs a linear interpolation between `self` and `rhs` based on the value `s`.
-				// ///
-				// ///When `s` is `0.0`, the result will be equal to `self`.  When `s` is `1.0`, the result
-				// ///will be equal to `rhs`. When `s` is outside of range `[0, 1]`, the result is linearly
-				// ///extrapolated.
-				// lerp(selfLuaDVec4f64) -> LuaDVec4
-
-				// Exclusion reason: 
-				// ///Returns true if the absolute difference of all elements between `self` and `rhs` is
-				// ///less than or equal to `max_abs_diff`.
-				// ///
-				// ///This can be used to compare if two vectors contain similar elements. It works best when
-				// ///comparing with a known value. The `max_abs_diff` that should be used used depends on
-				// ///the values being compared against.
-				// ///
-				// ///For more see
-				// ///[comparing floating point numbers](https://randomascii.wordpress.com/2012/02/25/comparing-floating-point-numbers-2012-edition/).
-				// abs_diff_eq(selfLuaDVec4f64) -> bool
-
-				// Exclusion reason: 
-				// ///Returns a vector with a length no less than `min` and no more than `max`
-				// ///
-				// ///# Panics
-				// ///
-				// ///Will panic if `min` is greater than `max` when `glam_assert` is enabled.
-				// clamp_length(selff64f64) -> LuaDVec4
-
-				// Exclusion reason: 
-				// ///Returns a vector with a length no more than `max`
-				// clamp_length_max(selff64) -> LuaDVec4
-
-				// Exclusion reason: 
-				// ///Returns a vector with a length no less than `min`
-				// clamp_length_min(selff64) -> LuaDVec4
-
-				// Exclusion reason: 
-				// ///Fused multiply-add. Computes `(self * a) + b` element-wise with only one rounding
-				// ///error, yielding a more accurate result than an unfused multiply-add.
-				// ///
-				// ///Using `mul_add` *may* be more performant than an unfused multiply-add if the target
-				// ///architecture has a dedicated fma CPU instruction. However, this is not always true,
-				// ///and will be heavily dependant on designing algorithms with specific target hardware in
-				// ///mind.
-				// mul_add(selfLuaDVec4LuaDVec4) -> LuaDVec4
-
-				///Casts all elements of `self` to `f32`.
-				as_vec4(&self)
-
-				///Casts all elements of `self` to `i32`.
-				as_ivec4(&self)
-
-				///Casts all elements of `self` to `u32`.
-				as_uvec4(&self)
-
-				try_from()
-
-				///Returns the argument unchanged.
-				from()
-
-				// Exclusion reason: 
-				// from(LuaDQuat) -> LuaDVec4
-
-				from(<invalid: [f64;4]>) -> LuaDVec4
-
-				// Exclusion reason: 
-				// from(LuaDVec4) -> LuaDVec4
-
-				from(<invalid: (f64,f64,f64,f64)>) -> LuaDVec4
-
-				// Exclusion reason: 
-				// from(LuaDVec4) -> LuaDVec4
-
-				from(<invalid: (LuaDVec3,f64)>) -> LuaDVec4
-
-				from(<invalid: (f64,LuaDVec3)>) -> LuaDVec4
-
-				from(<invalid: (LuaDVec2,f64,f64)>) -> LuaDVec4
-
-				from(<invalid: (LuaDVec2,LuaDVec2)>) -> LuaDVec4
-
-				///Calls `U::from(self)`.
-				///
-				///That is, this conversion is whatever the implementation of
-				///<code>[From]&lt;T&gt; for U</code> chooses to do.
-				into(self)
-
-				borrow(&self)
-
-				type_id(&self)
-
-				try_into(self)
-
-				borrow_mut(<invalid: &mut self>)
-
-				to_string(&self)
-
-				to_owned(&self)
-
-				clone_into(&self)
-
-				is_valid_bit_pattern() -> bool
-
-				serialize(&self)
-
-				deserialize()
-
-				mul(selfLuaDVec4)
-
-				// Exclusion reason: 
-				// mul(selfLuaDVec4) -> LuaDVec4
-
-				// Exclusion reason: 
-				// mul(selff64) -> LuaDVec4
-
-				// Exclusion reason: 
-				// mul(selfLuaDVec4) -> LuaDVec4
-
-				// Exclusion reason: 
-				// clone(&self) -> LuaDVec4
-
-				// Exclusion reason: 
-				// default() -> LuaDVec4
-
-				// Exclusion reason: 
-				// eq(&self&LuaDVec4) -> bool
-
-				// Exclusion reason: 
-				// div(selfLuaDVec4) -> LuaDVec4
-
-				// Exclusion reason: 
-				// div(selff64) -> LuaDVec4
-
-				// Exclusion reason: 
-				// div(selfLuaDVec4) -> LuaDVec4
-
-				div_assign(<invalid: &mut self>LuaDVec4)
-
-				div_assign(<invalid: &mut self>f64)
-
-				mul_assign(<invalid: &mut self>LuaDVec4)
-
-				mul_assign(<invalid: &mut self>f64)
-
-				// Exclusion reason: 
-				// add(selfLuaDVec4) -> LuaDVec4
-
-				// Exclusion reason: 
-				// add(selff64) -> LuaDVec4
-
-				// Exclusion reason: 
-				// add(selfLuaDVec4) -> LuaDVec4
-
-				add_assign(<invalid: &mut self>LuaDVec4)
-
-				add_assign(<invalid: &mut self>f64)
-
-				// Exclusion reason: 
-				// sub(selfLuaDVec4) -> LuaDVec4
-
-				// Exclusion reason: 
-				// sub(selff64) -> LuaDVec4
-
-				// Exclusion reason: 
-				// sub(selfLuaDVec4) -> LuaDVec4
-
-				sub_assign(<invalid: &mut self>LuaDVec4)
-
-				sub_assign(<invalid: &mut self>f64)
-
-				// Exclusion reason: 
-				// rem(selfLuaDVec4) -> LuaDVec4
-
-				// Exclusion reason: 
-				// rem(selff64) -> LuaDVec4
-
-				// Exclusion reason: 
-				// rem(selfLuaDVec4) -> LuaDVec4
-
-				rem_assign(<invalid: &mut self>LuaDVec4)
-
-				rem_assign(<invalid: &mut self>f64)
-
-				as_ref(&self)<invalid: &[f64;4]>
-
-				as_mut(<invalid: &mut self>)<invalid: &mut [f64;4]>
-
-				sum() -> LuaDVec4
-
-				product() -> LuaDVec4
-
-				// Exclusion reason: 
-				// neg(self) -> LuaDVec4
-
-				index(&selfusize)
-
-				index_mut(<invalid: &mut self>usize)
-
-				fmt(&self)
-
-				fmt(&self)
-
-				// Exclusion reason: 
-				// xx(self) -> LuaDVec2
-
-				// Exclusion reason: 
-				// xy(self) -> LuaDVec2
-
-				// Exclusion reason: 
-				// xz(self) -> LuaDVec2
-
-				// Exclusion reason: 
-				// xw(self) -> LuaDVec2
-
-				// Exclusion reason: 
-				// yx(self) -> LuaDVec2
-
-				// Exclusion reason: 
-				// yy(self) -> LuaDVec2
-
-				// Exclusion reason: 
-				// yz(self) -> LuaDVec2
-
-				// Exclusion reason: 
-				// yw(self) -> LuaDVec2
-
-				// Exclusion reason: 
-				// zx(self) -> LuaDVec2
-
-				// Exclusion reason: 
-				// zy(self) -> LuaDVec2
-
-				// Exclusion reason: 
-				// zz(self) -> LuaDVec2
-
-				// Exclusion reason: 
-				// zw(self) -> LuaDVec2
-
-				// Exclusion reason: 
-				// wx(self) -> LuaDVec2
-
-				// Exclusion reason: 
-				// wy(self) -> LuaDVec2
-
-				// Exclusion reason: 
-				// wz(self) -> LuaDVec2
-
-				// Exclusion reason: 
-				// ww(self) -> LuaDVec2
-
-				// Exclusion reason: 
-				// xxx(self) -> LuaDVec3
-
-				// Exclusion reason: 
-				// xxy(self) -> LuaDVec3
-
-				// Exclusion reason: 
-				// xxz(self) -> LuaDVec3
-
-				// Exclusion reason: 
-				// xxw(self) -> LuaDVec3
-
-				// Exclusion reason: 
-				// xyx(self) -> LuaDVec3
-
-				// Exclusion reason: 
-				// xyy(self) -> LuaDVec3
-
-				// Exclusion reason: 
-				// xyz(self) -> LuaDVec3
-
-				// Exclusion reason: 
-				// xyw(self) -> LuaDVec3
-
-				// Exclusion reason: 
-				// xzx(self) -> LuaDVec3
-
-				// Exclusion reason: 
-				// xzy(self) -> LuaDVec3
-
-				// Exclusion reason: 
-				// xzz(self) -> LuaDVec3
-
-				// Exclusion reason: 
-				// xzw(self) -> LuaDVec3
-
-				// Exclusion reason: 
-				// xwx(self) -> LuaDVec3
-
-				// Exclusion reason: 
-				// xwy(self) -> LuaDVec3
-
-				// Exclusion reason: 
-				// xwz(self) -> LuaDVec3
-
-				// Exclusion reason: 
-				// xww(self) -> LuaDVec3
-
-				// Exclusion reason: 
-				// yxx(self) -> LuaDVec3
-
-				// Exclusion reason: 
-				// yxy(self) -> LuaDVec3
-
-				// Exclusion reason: 
-				// yxz(self) -> LuaDVec3
-
-				// Exclusion reason: 
-				// yxw(self) -> LuaDVec3
-
-				// Exclusion reason: 
-				// yyx(self) -> LuaDVec3
-
-				// Exclusion reason: 
-				// yyy(self) -> LuaDVec3
-
-				// Exclusion reason: 
-				// yyz(self) -> LuaDVec3
-
-				// Exclusion reason: 
-				// yyw(self) -> LuaDVec3
-
-				// Exclusion reason: 
-				// yzx(self) -> LuaDVec3
-
-				// Exclusion reason: 
-				// yzy(self) -> LuaDVec3
-
-				// Exclusion reason: 
-				// yzz(self) -> LuaDVec3
-
-				// Exclusion reason: 
-				// yzw(self) -> LuaDVec3
-
-				// Exclusion reason: 
-				// ywx(self) -> LuaDVec3
-
-				// Exclusion reason: 
-				// ywy(self) -> LuaDVec3
-
-				// Exclusion reason: 
-				// ywz(self) -> LuaDVec3
-
-				// Exclusion reason: 
-				// yww(self) -> LuaDVec3
-
-				// Exclusion reason: 
-				// zxx(self) -> LuaDVec3
-
-				// Exclusion reason: 
-				// zxy(self) -> LuaDVec3
-
-				// Exclusion reason: 
-				// zxz(self) -> LuaDVec3
-
-				// Exclusion reason: 
-				// zxw(self) -> LuaDVec3
-
-				// Exclusion reason: 
-				// zyx(self) -> LuaDVec3
-
-				// Exclusion reason: 
-				// zyy(self) -> LuaDVec3
-
-				// Exclusion reason: 
-				// zyz(self) -> LuaDVec3
-
-				// Exclusion reason: 
-				// zyw(self) -> LuaDVec3
-
-				// Exclusion reason: 
-				// zzx(self) -> LuaDVec3
-
-				// Exclusion reason: 
-				// zzy(self) -> LuaDVec3
-
-				// Exclusion reason: 
-				// zzz(self) -> LuaDVec3
-
-				// Exclusion reason: 
-				// zzw(self) -> LuaDVec3
-
-				// Exclusion reason: 
-				// zwx(self) -> LuaDVec3
-
-				// Exclusion reason: 
-				// zwy(self) -> LuaDVec3
-
-				// Exclusion reason: 
-				// zwz(self) -> LuaDVec3
-
-				// Exclusion reason: 
-				// zww(self) -> LuaDVec3
-
-				// Exclusion reason: 
-				// wxx(self) -> LuaDVec3
-
-				// Exclusion reason: 
-				// wxy(self) -> LuaDVec3
-
-				// Exclusion reason: 
-				// wxz(self) -> LuaDVec3
-
-				// Exclusion reason: 
-				// wxw(self) -> LuaDVec3
-
-				// Exclusion reason: 
-				// wyx(self) -> LuaDVec3
-
-				// Exclusion reason: 
-				// wyy(self) -> LuaDVec3
-
-				// Exclusion reason: 
-				// wyz(self) -> LuaDVec3
-
-				// Exclusion reason: 
-				// wyw(self) -> LuaDVec3
-
-				// Exclusion reason: 
-				// wzx(self) -> LuaDVec3
-
-				// Exclusion reason: 
-				// wzy(self) -> LuaDVec3
-
-				// Exclusion reason: 
-				// wzz(self) -> LuaDVec3
-
-				// Exclusion reason: 
-				// wzw(self) -> LuaDVec3
-
-				// Exclusion reason: 
-				// wwx(self) -> LuaDVec3
-
-				// Exclusion reason: 
-				// wwy(self) -> LuaDVec3
-
-				// Exclusion reason: 
-				// wwz(self) -> LuaDVec3
-
-				// Exclusion reason: 
-				// www(self) -> LuaDVec3
-
-				// Exclusion reason: 
-				// xxxx(self) -> LuaDVec4
-
-				// Exclusion reason: 
-				// xxxy(self) -> LuaDVec4
-
-				// Exclusion reason: 
-				// xxxz(self) -> LuaDVec4
-
-				// Exclusion reason: 
-				// xxxw(self) -> LuaDVec4
-
-				// Exclusion reason: 
-				// xxyx(self) -> LuaDVec4
-
-				// Exclusion reason: 
-				// xxyy(self) -> LuaDVec4
-
-				// Exclusion reason: 
-				// xxyz(self) -> LuaDVec4
-
-				// Exclusion reason: 
-				// xxyw(self) -> LuaDVec4
-
-				// Exclusion reason: 
-				// xxzx(self) -> LuaDVec4
-
-				// Exclusion reason: 
-				// xxzy(self) -> LuaDVec4
-
-				// Exclusion reason: 
-				// xxzz(self) -> LuaDVec4
-
-				// Exclusion reason: 
-				// xxzw(self) -> LuaDVec4
-
-				// Exclusion reason: 
-				// xxwx(self) -> LuaDVec4
-
-				// Exclusion reason: 
-				// xxwy(self) -> LuaDVec4
-
-				// Exclusion reason: 
-				// xxwz(self) -> LuaDVec4
-
-				// Exclusion reason: 
-				// xxww(self) -> LuaDVec4
-
-				// Exclusion reason: 
-				// xyxx(self) -> LuaDVec4
-
-				// Exclusion reason: 
-				// xyxy(self) -> LuaDVec4
-
-				// Exclusion reason: 
-				// xyxz(self) -> LuaDVec4
-
-				// Exclusion reason: 
-				// xyxw(self) -> LuaDVec4
-
-				// Exclusion reason: 
-				// xyyx(self) -> LuaDVec4
-
-				// Exclusion reason: 
-				// xyyy(self) -> LuaDVec4
-
-				// Exclusion reason: 
-				// xyyz(self) -> LuaDVec4
-
-				// Exclusion reason: 
-				// xyyw(self) -> LuaDVec4
-
-				// Exclusion reason: 
-				// xyzx(self) -> LuaDVec4
-
-				// Exclusion reason: 
-				// xyzy(self) -> LuaDVec4
-
-				// Exclusion reason: 
-				// xyzz(self) -> LuaDVec4
-
-				// Exclusion reason: 
-				// xyzw(self) -> LuaDVec4
-
-				// Exclusion reason: 
-				// xywx(self) -> LuaDVec4
-
-				// Exclusion reason: 
-				// xywy(self) -> LuaDVec4
-
-				// Exclusion reason: 
-				// xywz(self) -> LuaDVec4
-
-				// Exclusion reason: 
-				// xyww(self) -> LuaDVec4
-
-				// Exclusion reason: 
-				// xzxx(self) -> LuaDVec4
-
-				// Exclusion reason: 
-				// xzxy(self) -> LuaDVec4
-
-				// Exclusion reason: 
-				// xzxz(self) -> LuaDVec4
-
-				// Exclusion reason: 
-				// xzxw(self) -> LuaDVec4
-
-				// Exclusion reason: 
-				// xzyx(self) -> LuaDVec4
-
-				// Exclusion reason: 
-				// xzyy(self) -> LuaDVec4
-
-				// Exclusion reason: 
-				// xzyz(self) -> LuaDVec4
-
-				// Exclusion reason: 
-				// xzyw(self) -> LuaDVec4
-
-				// Exclusion reason: 
-				// xzzx(self) -> LuaDVec4
-
-				// Exclusion reason: 
-				// xzzy(self) -> LuaDVec4
-
-				// Exclusion reason: 
-				// xzzz(self) -> LuaDVec4
-
-				// Exclusion reason: 
-				// xzzw(self) -> LuaDVec4
-
-				// Exclusion reason: 
-				// xzwx(self) -> LuaDVec4
-
-				// Exclusion reason: 
-				// xzwy(self) -> LuaDVec4
-
-				// Exclusion reason: 
-				// xzwz(self) -> LuaDVec4
-
-				// Exclusion reason: 
-				// xzww(self) -> LuaDVec4
-
-				// Exclusion reason: 
-				// xwxx(self) -> LuaDVec4
-
-				// Exclusion reason: 
-				// xwxy(self) -> LuaDVec4
-
-				// Exclusion reason: 
-				// xwxz(self) -> LuaDVec4
-
-				// Exclusion reason: 
-				// xwxw(self) -> LuaDVec4
-
-				// Exclusion reason: 
-				// xwyx(self) -> LuaDVec4
-
-				// Exclusion reason: 
-				// xwyy(self) -> LuaDVec4
-
-				// Exclusion reason: 
-				// xwyz(self) -> LuaDVec4
-
-				// Exclusion reason: 
-				// xwyw(self) -> LuaDVec4
-
-				// Exclusion reason: 
-				// xwzx(self) -> LuaDVec4
-
-				// Exclusion reason: 
-				// xwzy(self) -> LuaDVec4
-
-				// Exclusion reason: 
-				// xwzz(self) -> LuaDVec4
-
-				// Exclusion reason: 
-				// xwzw(self) -> LuaDVec4
-
-				// Exclusion reason: 
-				// xwwx(self) -> LuaDVec4
-
-				// Exclusion reason: 
-				// xwwy(self) -> LuaDVec4
-
-				// Exclusion reason: 
-				// xwwz(self) -> LuaDVec4
-
-				// Exclusion reason: 
-				// xwww(self) -> LuaDVec4
-
-				// Exclusion reason: 
-				// yxxx(self) -> LuaDVec4
-
-				// Exclusion reason: 
-				// yxxy(self) -> LuaDVec4
-
-				// Exclusion reason: 
-				// yxxz(self) -> LuaDVec4
-
-				// Exclusion reason: 
-				// yxxw(self) -> LuaDVec4
-
-				// Exclusion reason: 
-				// yxyx(self) -> LuaDVec4
-
-				// Exclusion reason: 
-				// yxyy(self) -> LuaDVec4
-
-				// Exclusion reason: 
-				// yxyz(self) -> LuaDVec4
-
-				// Exclusion reason: 
-				// yxyw(self) -> LuaDVec4
-
-				// Exclusion reason: 
-				// yxzx(self) -> LuaDVec4
-
-				// Exclusion reason: 
-				// yxzy(self) -> LuaDVec4
-
-				// Exclusion reason: 
-				// yxzz(self) -> LuaDVec4
-
-				// Exclusion reason: 
-				// yxzw(self) -> LuaDVec4
-
-				// Exclusion reason: 
-				// yxwx(self) -> LuaDVec4
-
-				// Exclusion reason: 
-				// yxwy(self) -> LuaDVec4
-
-				// Exclusion reason: 
-				// yxwz(self) -> LuaDVec4
-
-				// Exclusion reason: 
-				// yxww(self) -> LuaDVec4
-
-				// Exclusion reason: 
-				// yyxx(self) -> LuaDVec4
-
-				// Exclusion reason: 
-				// yyxy(self) -> LuaDVec4
-
-				// Exclusion reason: 
-				// yyxz(self) -> LuaDVec4
-
-				// Exclusion reason: 
-				// yyxw(self) -> LuaDVec4
-
-				// Exclusion reason: 
-				// yyyx(self) -> LuaDVec4
-
-				// Exclusion reason: 
-				// yyyy(self) -> LuaDVec4
-
-				// Exclusion reason: 
-				// yyyz(self) -> LuaDVec4
-
-				// Exclusion reason: 
-				// yyyw(self) -> LuaDVec4
-
-				// Exclusion reason: 
-				// yyzx(self) -> LuaDVec4
-
-				// Exclusion reason: 
-				// yyzy(self) -> LuaDVec4
-
-				// Exclusion reason: 
-				// yyzz(self) -> LuaDVec4
-
-				// Exclusion reason: 
-				// yyzw(self) -> LuaDVec4
-
-				// Exclusion reason: 
-				// yywx(self) -> LuaDVec4
-
-				// Exclusion reason: 
-				// yywy(self) -> LuaDVec4
-
-				// Exclusion reason: 
-				// yywz(self) -> LuaDVec4
-
-				// Exclusion reason: 
-				// yyww(self) -> LuaDVec4
-
-				// Exclusion reason: 
-				// yzxx(self) -> LuaDVec4
-
-				// Exclusion reason: 
-				// yzxy(self) -> LuaDVec4
-
-				// Exclusion reason: 
-				// yzxz(self) -> LuaDVec4
-
-				// Exclusion reason: 
-				// yzxw(self) -> LuaDVec4
-
-				// Exclusion reason: 
-				// yzyx(self) -> LuaDVec4
-
-				// Exclusion reason: 
-				// yzyy(self) -> LuaDVec4
-
-				// Exclusion reason: 
-				// yzyz(self) -> LuaDVec4
-
-				// Exclusion reason: 
-				// yzyw(self) -> LuaDVec4
-
-				// Exclusion reason: 
-				// yzzx(self) -> LuaDVec4
-
-				// Exclusion reason: 
-				// yzzy(self) -> LuaDVec4
-
-				// Exclusion reason: 
-				// yzzz(self) -> LuaDVec4
-
-				// Exclusion reason: 
-				// yzzw(self) -> LuaDVec4
-
-				// Exclusion reason: 
-				// yzwx(self) -> LuaDVec4
-
-				// Exclusion reason: 
-				// yzwy(self) -> LuaDVec4
-
-				// Exclusion reason: 
-				// yzwz(self) -> LuaDVec4
-
-				// Exclusion reason: 
-				// yzww(self) -> LuaDVec4
-
-				// Exclusion reason: 
-				// ywxx(self) -> LuaDVec4
-
-				// Exclusion reason: 
-				// ywxy(self) -> LuaDVec4
-
-				// Exclusion reason: 
-				// ywxz(self) -> LuaDVec4
-
-				// Exclusion reason: 
-				// ywxw(self) -> LuaDVec4
-
-				// Exclusion reason: 
-				// ywyx(self) -> LuaDVec4
-
-				// Exclusion reason: 
-				// ywyy(self) -> LuaDVec4
-
-				// Exclusion reason: 
-				// ywyz(self) -> LuaDVec4
-
-				// Exclusion reason: 
-				// ywyw(self) -> LuaDVec4
-
-				// Exclusion reason: 
-				// ywzx(self) -> LuaDVec4
-
-				// Exclusion reason: 
-				// ywzy(self) -> LuaDVec4
-
-				// Exclusion reason: 
-				// ywzz(self) -> LuaDVec4
-
-				// Exclusion reason: 
-				// ywzw(self) -> LuaDVec4
-
-				// Exclusion reason: 
-				// ywwx(self) -> LuaDVec4
-
-				// Exclusion reason: 
-				// ywwy(self) -> LuaDVec4
-
-				// Exclusion reason: 
-				// ywwz(self) -> LuaDVec4
-
-				// Exclusion reason: 
-				// ywww(self) -> LuaDVec4
-
-				// Exclusion reason: 
-				// zxxx(self) -> LuaDVec4
-
-				// Exclusion reason: 
-				// zxxy(self) -> LuaDVec4
-
-				// Exclusion reason: 
-				// zxxz(self) -> LuaDVec4
-
-				// Exclusion reason: 
-				// zxxw(self) -> LuaDVec4
-
-				// Exclusion reason: 
-				// zxyx(self) -> LuaDVec4
-
-				// Exclusion reason: 
-				// zxyy(self) -> LuaDVec4
-
-				// Exclusion reason: 
-				// zxyz(self) -> LuaDVec4
-
-				// Exclusion reason: 
-				// zxyw(self) -> LuaDVec4
-
-				// Exclusion reason: 
-				// zxzx(self) -> LuaDVec4
-
-				// Exclusion reason: 
-				// zxzy(self) -> LuaDVec4
-
-				// Exclusion reason: 
-				// zxzz(self) -> LuaDVec4
-
-				// Exclusion reason: 
-				// zxzw(self) -> LuaDVec4
-
-				// Exclusion reason: 
-				// zxwx(self) -> LuaDVec4
-
-				// Exclusion reason: 
-				// zxwy(self) -> LuaDVec4
-
-				// Exclusion reason: 
-				// zxwz(self) -> LuaDVec4
-
-				// Exclusion reason: 
-				// zxww(self) -> LuaDVec4
-
-				// Exclusion reason: 
-				// zyxx(self) -> LuaDVec4
-
-				// Exclusion reason: 
-				// zyxy(self) -> LuaDVec4
-
-				// Exclusion reason: 
-				// zyxz(self) -> LuaDVec4
-
-				// Exclusion reason: 
-				// zyxw(self) -> LuaDVec4
-
-				// Exclusion reason: 
-				// zyyx(self) -> LuaDVec4
-
-				// Exclusion reason: 
-				// zyyy(self) -> LuaDVec4
-
-				// Exclusion reason: 
-				// zyyz(self) -> LuaDVec4
-
-				// Exclusion reason: 
-				// zyyw(self) -> LuaDVec4
-
-				// Exclusion reason: 
-				// zyzx(self) -> LuaDVec4
-
-				// Exclusion reason: 
-				// zyzy(self) -> LuaDVec4
-
-				// Exclusion reason: 
-				// zyzz(self) -> LuaDVec4
-
-				// Exclusion reason: 
-				// zyzw(self) -> LuaDVec4
-
-				// Exclusion reason: 
-				// zywx(self) -> LuaDVec4
-
-				// Exclusion reason: 
-				// zywy(self) -> LuaDVec4
-
-				// Exclusion reason: 
-				// zywz(self) -> LuaDVec4
-
-				// Exclusion reason: 
-				// zyww(self) -> LuaDVec4
-
-				// Exclusion reason: 
-				// zzxx(self) -> LuaDVec4
-
-				// Exclusion reason: 
-				// zzxy(self) -> LuaDVec4
-
-				// Exclusion reason: 
-				// zzxz(self) -> LuaDVec4
-
-				// Exclusion reason: 
-				// zzxw(self) -> LuaDVec4
-
-				// Exclusion reason: 
-				// zzyx(self) -> LuaDVec4
-
-				// Exclusion reason: 
-				// zzyy(self) -> LuaDVec4
-
-				// Exclusion reason: 
-				// zzyz(self) -> LuaDVec4
-
-				// Exclusion reason: 
-				// zzyw(self) -> LuaDVec4
-
-				// Exclusion reason: 
-				// zzzx(self) -> LuaDVec4
-
-				// Exclusion reason: 
-				// zzzy(self) -> LuaDVec4
-
-				// Exclusion reason: 
-				// zzzz(self) -> LuaDVec4
-
-				// Exclusion reason: 
-				// zzzw(self) -> LuaDVec4
-
-				// Exclusion reason: 
-				// zzwx(self) -> LuaDVec4
-
-				// Exclusion reason: 
-				// zzwy(self) -> LuaDVec4
-
-				// Exclusion reason: 
-				// zzwz(self) -> LuaDVec4
-
-				// Exclusion reason: 
-				// zzww(self) -> LuaDVec4
-
-				// Exclusion reason: 
-				// zwxx(self) -> LuaDVec4
-
-				// Exclusion reason: 
-				// zwxy(self) -> LuaDVec4
-
-				// Exclusion reason: 
-				// zwxz(self) -> LuaDVec4
-
-				// Exclusion reason: 
-				// zwxw(self) -> LuaDVec4
-
-				// Exclusion reason: 
-				// zwyx(self) -> LuaDVec4
-
-				// Exclusion reason: 
-				// zwyy(self) -> LuaDVec4
-
-				// Exclusion reason: 
-				// zwyz(self) -> LuaDVec4
-
-				// Exclusion reason: 
-				// zwyw(self) -> LuaDVec4
-
-				// Exclusion reason: 
-				// zwzx(self) -> LuaDVec4
-
-				// Exclusion reason: 
-				// zwzy(self) -> LuaDVec4
-
-				// Exclusion reason: 
-				// zwzz(self) -> LuaDVec4
-
-				// Exclusion reason: 
-				// zwzw(self) -> LuaDVec4
-
-				// Exclusion reason: 
-				// zwwx(self) -> LuaDVec4
-
-				// Exclusion reason: 
-				// zwwy(self) -> LuaDVec4
-
-				// Exclusion reason: 
-				// zwwz(self) -> LuaDVec4
-
-				// Exclusion reason: 
-				// zwww(self) -> LuaDVec4
-
-				// Exclusion reason: 
-				// wxxx(self) -> LuaDVec4
-
-				// Exclusion reason: 
-				// wxxy(self) -> LuaDVec4
-
-				// Exclusion reason: 
-				// wxxz(self) -> LuaDVec4
-
-				// Exclusion reason: 
-				// wxxw(self) -> LuaDVec4
-
-				// Exclusion reason: 
-				// wxyx(self) -> LuaDVec4
-
-				// Exclusion reason: 
-				// wxyy(self) -> LuaDVec4
-
-				// Exclusion reason: 
-				// wxyz(self) -> LuaDVec4
-
-				// Exclusion reason: 
-				// wxyw(self) -> LuaDVec4
-
-				// Exclusion reason: 
-				// wxzx(self) -> LuaDVec4
-
-				// Exclusion reason: 
-				// wxzy(self) -> LuaDVec4
-
-				// Exclusion reason: 
-				// wxzz(self) -> LuaDVec4
-
-				// Exclusion reason: 
-				// wxzw(self) -> LuaDVec4
-
-				// Exclusion reason: 
-				// wxwx(self) -> LuaDVec4
-
-				// Exclusion reason: 
-				// wxwy(self) -> LuaDVec4
-
-				// Exclusion reason: 
-				// wxwz(self) -> LuaDVec4
-
-				// Exclusion reason: 
-				// wxww(self) -> LuaDVec4
-
-				// Exclusion reason: 
-				// wyxx(self) -> LuaDVec4
-
-				// Exclusion reason: 
-				// wyxy(self) -> LuaDVec4
-
-				// Exclusion reason: 
-				// wyxz(self) -> LuaDVec4
-
-				// Exclusion reason: 
-				// wyxw(self) -> LuaDVec4
-
-				// Exclusion reason: 
-				// wyyx(self) -> LuaDVec4
-
-				// Exclusion reason: 
-				// wyyy(self) -> LuaDVec4
-
-				// Exclusion reason: 
-				// wyyz(self) -> LuaDVec4
-
-				// Exclusion reason: 
-				// wyyw(self) -> LuaDVec4
-
-				// Exclusion reason: 
-				// wyzx(self) -> LuaDVec4
-
-				// Exclusion reason: 
-				// wyzy(self) -> LuaDVec4
-
-				// Exclusion reason: 
-				// wyzz(self) -> LuaDVec4
-
-				// Exclusion reason: 
-				// wyzw(self) -> LuaDVec4
-
-				// Exclusion reason: 
-				// wywx(self) -> LuaDVec4
-
-				// Exclusion reason: 
-				// wywy(self) -> LuaDVec4
-
-				// Exclusion reason: 
-				// wywz(self) -> LuaDVec4
-
-				// Exclusion reason: 
-				// wyww(self) -> LuaDVec4
-
-				// Exclusion reason: 
-				// wzxx(self) -> LuaDVec4
-
-				// Exclusion reason: 
-				// wzxy(self) -> LuaDVec4
-
-				// Exclusion reason: 
-				// wzxz(self) -> LuaDVec4
-
-				// Exclusion reason: 
-				// wzxw(self) -> LuaDVec4
-
-				// Exclusion reason: 
-				// wzyx(self) -> LuaDVec4
-
-				// Exclusion reason: 
-				// wzyy(self) -> LuaDVec4
-
-				// Exclusion reason: 
-				// wzyz(self) -> LuaDVec4
-
-				// Exclusion reason: 
-				// wzyw(self) -> LuaDVec4
-
-				// Exclusion reason: 
-				// wzzx(self) -> LuaDVec4
-
-				// Exclusion reason: 
-				// wzzy(self) -> LuaDVec4
-
-				// Exclusion reason: 
-				// wzzz(self) -> LuaDVec4
-
-				// Exclusion reason: 
-				// wzzw(self) -> LuaDVec4
-
-				// Exclusion reason: 
-				// wzwx(self) -> LuaDVec4
-
-				// Exclusion reason: 
-				// wzwy(self) -> LuaDVec4
-
-				// Exclusion reason: 
-				// wzwz(self) -> LuaDVec4
-
-				// Exclusion reason: 
-				// wzww(self) -> LuaDVec4
-
-				// Exclusion reason: 
-				// wwxx(self) -> LuaDVec4
-
-				// Exclusion reason: 
-				// wwxy(self) -> LuaDVec4
-
-				// Exclusion reason: 
-				// wwxz(self) -> LuaDVec4
-
-				// Exclusion reason: 
-				// wwxw(self) -> LuaDVec4
-
-				// Exclusion reason: 
-				// wwyx(self) -> LuaDVec4
-
-				// Exclusion reason: 
-				// wwyy(self) -> LuaDVec4
-
-				// Exclusion reason: 
-				// wwyz(self) -> LuaDVec4
-
-				// Exclusion reason: 
-				// wwyw(self) -> LuaDVec4
-
-				// Exclusion reason: 
-				// wwzx(self) -> LuaDVec4
-
-				// Exclusion reason: 
-				// wwzy(self) -> LuaDVec4
-
-				// Exclusion reason: 
-				// wwzz(self) -> LuaDVec4
-
-				// Exclusion reason: 
-				// wwzw(self) -> LuaDVec4
-
-				// Exclusion reason: 
-				// wwwx(self) -> LuaDVec4
-
-				// Exclusion reason: 
-				// wwwy(self) -> LuaDVec4
-
-				// Exclusion reason: 
-				// wwwz(self) -> LuaDVec4
-
-				// Exclusion reason: 
-				// wwww(self) -> LuaDVec4
-
-			)
-+ BinaryOps			(
+			glam::f64::dvec4::DVec4 : Value
+:				AutoMethods
+				(
+					///Creates a new vector.
+					new(f64f64f64f64) -> LuaDVec4
+,
+					///Creates a vector with all elements set to `v`.
+					splat(f64) -> LuaDVec4
+,
+					// Exclusion reason: Unsupported argument BVec4
+					// ///Creates a vector from the elements in `if_true` and `if_false`, selecting which to use
+					// ///for each element of `self`.
+					// ///
+					// ///A true element in the mask uses the corresponding element from `if_true`, and false
+					// ///uses the element from `if_false`.
+					// select(LuaDVec4LuaDVec4) -> LuaDVec4
+,
+					// Exclusion reason: Unsupported argument [f64;4]
+					// ///Creates a new vector from an array.
+					// from_array(<invalid: [f64;4]>) -> LuaDVec4
+,
+					// Exclusion reason: Unsupported argument [f64;4]
+					// ///`[x, y, z, w]`
+					// to_array(&self)<invalid: [f64;4]>
+,
+					// Exclusion reason: Unsupported argument &[f64]
+					// ///Creates a vector from the first 4 values in `slice`.
+					// ///
+					// ///# Panics
+					// ///
+					// ///Panics if `slice` is less than 4 elements long.
+					// from_slice(<invalid: &[f64]>) -> LuaDVec4
+,
+					// Exclusion reason: Unsupported argument &mut [f64]
+					// ///Writes the elements of `self` to the first 4 elements in `slice`.
+					// ///
+					// ///# Panics
+					// ///
+					// ///Panics if `slice` is less than 4 elements long.
+					// write_to_slice(self<invalid: &mut [f64]>)
+,
+					///Creates a 2D vector from the `x`, `y` and `z` elements of `self`, discarding `w`.
+					///
+					///Truncation to `DVec3` may also be performed by using `self.xyz()` or `DVec3::from()`.
+					truncate(self) -> LuaDVec3
+,
+					///Computes the dot product of `self` and `rhs`.
+					dot(selfLuaDVec4) -> f64
+,
+					///Returns a vector containing the minimum values for each element of `self` and `rhs`.
+					///
+					///In other words this computes `[self.x.min(rhs.x), self.y.min(rhs.y), ..]`.
+					min(selfLuaDVec4) -> LuaDVec4
+,
+					///Returns a vector containing the maximum values for each element of `self` and `rhs`.
+					///
+					///In other words this computes `[self.x.max(rhs.x), self.y.max(rhs.y), ..]`.
+					max(selfLuaDVec4) -> LuaDVec4
+,
+					///Component-wise clamping of values, similar to [`f32::clamp`].
+					///
+					///Each element in `min` must be less-or-equal to the corresponding element in `max`.
+					///
+					///# Panics
+					///
+					///Will panic if `min` is greater than `max` when `glam_assert` is enabled.
+					clamp(selfLuaDVec4LuaDVec4) -> LuaDVec4
+,
+					///Returns the horizontal minimum of `self`.
+					///
+					///In other words this computes `min(x, y, ..)`.
+					min_element(self) -> f64
+,
+					///Returns the horizontal maximum of `self`.
+					///
+					///In other words this computes `max(x, y, ..)`.
+					max_element(self) -> f64
+,
+					// Exclusion reason: Unsupported argument BVec4
+					// ///Returns a vector mask containing the result of a `==` comparison for each element of
+					// ///`self` and `rhs`.
+					// ///
+					// ///In other words, this computes `[self.x == rhs.x, self.y == rhs.y, ..]` for all
+					// ///elements.
+					// cmpeq(selfLuaDVec4)
+,
+					// Exclusion reason: Unsupported argument BVec4
+					// ///Returns a vector mask containing the result of a `!=` comparison for each element of
+					// ///`self` and `rhs`.
+					// ///
+					// ///In other words this computes `[self.x != rhs.x, self.y != rhs.y, ..]` for all
+					// ///elements.
+					// cmpne(selfLuaDVec4)
+,
+					// Exclusion reason: Unsupported argument BVec4
+					// ///Returns a vector mask containing the result of a `>=` comparison for each element of
+					// ///`self` and `rhs`.
+					// ///
+					// ///In other words this computes `[self.x >= rhs.x, self.y >= rhs.y, ..]` for all
+					// ///elements.
+					// cmpge(selfLuaDVec4)
+,
+					// Exclusion reason: Unsupported argument BVec4
+					// ///Returns a vector mask containing the result of a `>` comparison for each element of
+					// ///`self` and `rhs`.
+					// ///
+					// ///In other words this computes `[self.x > rhs.x, self.y > rhs.y, ..]` for all
+					// ///elements.
+					// cmpgt(selfLuaDVec4)
+,
+					// Exclusion reason: Unsupported argument BVec4
+					// ///Returns a vector mask containing the result of a `<=` comparison for each element of
+					// ///`self` and `rhs`.
+					// ///
+					// ///In other words this computes `[self.x <= rhs.x, self.y <= rhs.y, ..]` for all
+					// ///elements.
+					// cmple(selfLuaDVec4)
+,
+					// Exclusion reason: Unsupported argument BVec4
+					// ///Returns a vector mask containing the result of a `<` comparison for each element of
+					// ///`self` and `rhs`.
+					// ///
+					// ///In other words this computes `[self.x < rhs.x, self.y < rhs.y, ..]` for all
+					// ///elements.
+					// cmplt(selfLuaDVec4)
+,
+					///Returns a vector containing the absolute value of each element of `self`.
+					abs(self) -> LuaDVec4
+,
+					///Returns a vector with elements representing the sign of `self`.
+					///
+					///- `1.0` if the number is positive, `+0.0` or `INFINITY`
+					///- `-1.0` if the number is negative, `-0.0` or `NEG_INFINITY`
+					///- `NAN` if the number is `NAN`
+					signum(self) -> LuaDVec4
+,
+					///Returns `true` if, and only if, all elements are finite.  If any element is either
+					///`NaN`, positive or negative infinity, this will return `false`.
+					is_finite(self) -> bool
+,
+					///Returns `true` if any elements are `NaN`.
+					is_nan(self) -> bool
+,
+					// Exclusion reason: Unsupported argument BVec4
+					// ///Performs `is_nan` on each element of self, returning a vector mask of the results.
+					// ///
+					// ///In other words, this computes `[x.is_nan(), y.is_nan(), z.is_nan(), w.is_nan()]`.
+					// is_nan_mask(self)
+,
+					///Computes the length of `self`.
+					length(self) -> f64
+,
+					///Computes the squared length of `self`.
+					///
+					///This is faster than `length()` as it avoids a square root operation.
+					length_squared(self) -> f64
+,
+					///Computes `1.0 / length()`.
+					///
+					///For valid results, `self` must _not_ be of length zero.
+					length_recip(self) -> f64
+,
+					///Computes the Euclidean distance between two points in space.
+					distance(selfLuaDVec4) -> f64
+,
+					///Compute the squared euclidean distance between two points in space.
+					distance_squared(selfLuaDVec4) -> f64
+,
+					///Returns `self` normalized to length 1.0.
+					///
+					///For valid results, `self` must _not_ be of length zero, nor very close to zero.
+					///
+					///See also [`Self::try_normalize`] and [`Self::normalize_or_zero`].
+					///
+					///Panics
+					///
+					///Will panic if `self` is zero length when `glam_assert` is enabled.
+					normalize(self) -> LuaDVec4
+,
+					// Exclusion reason: Unsupported argument Option
+					// ///Returns `self` normalized to length 1.0 if possible, else returns `None`.
+					// ///
+					// ///In particular, if the input is zero (or very close to zero), or non-finite,
+					// ///the result of this operation will be `None`.
+					// ///
+					// ///See also [`Self::normalize_or_zero`].
+					// try_normalize(self)
+,
+					///Returns `self` normalized to length 1.0 if possible, else returns zero.
+					///
+					///In particular, if the input is zero (or very close to zero), or non-finite,
+					///the result of this operation will be zero.
+					///
+					///See also [`Self::try_normalize`].
+					normalize_or_zero(self) -> LuaDVec4
+,
+					///Returns whether `self` is length `1.0` or not.
+					///
+					///Uses a precision threshold of `1e-6`.
+					is_normalized(self) -> bool
+,
+					///Returns the vector projection of `self` onto `rhs`.
+					///
+					///`rhs` must be of non-zero length.
+					///
+					///# Panics
+					///
+					///Will panic if `rhs` is zero length when `glam_assert` is enabled.
+					project_onto(selfLuaDVec4) -> LuaDVec4
+,
+					///Returns the vector rejection of `self` from `rhs`.
+					///
+					///The vector rejection is the vector perpendicular to the projection of `self` onto
+					///`rhs`, in rhs words the result of `self - self.project_onto(rhs)`.
+					///
+					///`rhs` must be of non-zero length.
+					///
+					///# Panics
+					///
+					///Will panic if `rhs` has a length of zero when `glam_assert` is enabled.
+					reject_from(selfLuaDVec4) -> LuaDVec4
+,
+					///Returns the vector projection of `self` onto `rhs`.
+					///
+					///`rhs` must be normalized.
+					///
+					///# Panics
+					///
+					///Will panic if `rhs` is not normalized when `glam_assert` is enabled.
+					project_onto_normalized(selfLuaDVec4) -> LuaDVec4
+,
+					///Returns the vector rejection of `self` from `rhs`.
+					///
+					///The vector rejection is the vector perpendicular to the projection of `self` onto
+					///`rhs`, in rhs words the result of `self - self.project_onto(rhs)`.
+					///
+					///`rhs` must be normalized.
+					///
+					///# Panics
+					///
+					///Will panic if `rhs` is not normalized when `glam_assert` is enabled.
+					reject_from_normalized(selfLuaDVec4) -> LuaDVec4
+,
+					///Returns a vector containing the nearest integer to a number for each element of `self`.
+					///Round half-way cases away from 0.0.
+					round(self) -> LuaDVec4
+,
+					///Returns a vector containing the largest integer less than or equal to a number for each
+					///element of `self`.
+					floor(self) -> LuaDVec4
+,
+					///Returns a vector containing the smallest integer greater than or equal to a number for
+					///each element of `self`.
+					ceil(self) -> LuaDVec4
+,
+					///Returns a vector containing the fractional part of the vector, e.g. `self -
+					///self.floor()`.
+					///
+					///Note that this is fast but not precise for large numbers.
+					fract(self) -> LuaDVec4
+,
+					///Returns a vector containing `e^self` (the exponential function) for each element of
+					///`self`.
+					exp(self) -> LuaDVec4
+,
+					///Returns a vector containing each element of `self` raised to the power of `n`.
+					powf(selff64) -> LuaDVec4
+,
+					///Returns a vector containing the reciprocal `1.0/n` of each element of `self`.
+					recip(self) -> LuaDVec4
+,
+					///Performs a linear interpolation between `self` and `rhs` based on the value `s`.
+					///
+					///When `s` is `0.0`, the result will be equal to `self`.  When `s` is `1.0`, the result
+					///will be equal to `rhs`. When `s` is outside of range `[0, 1]`, the result is linearly
+					///extrapolated.
+					lerp(selfLuaDVec4f64) -> LuaDVec4
+,
+					///Returns true if the absolute difference of all elements between `self` and `rhs` is
+					///less than or equal to `max_abs_diff`.
+					///
+					///This can be used to compare if two vectors contain similar elements. It works best when
+					///comparing with a known value. The `max_abs_diff` that should be used used depends on
+					///the values being compared against.
+					///
+					///For more see
+					///[comparing floating point numbers](https://randomascii.wordpress.com/2012/02/25/comparing-floating-point-numbers-2012-edition/).
+					abs_diff_eq(selfLuaDVec4f64) -> bool
+,
+					///Returns a vector with a length no less than `min` and no more than `max`
+					///
+					///# Panics
+					///
+					///Will panic if `min` is greater than `max` when `glam_assert` is enabled.
+					clamp_length(selff64f64) -> LuaDVec4
+,
+					///Returns a vector with a length no more than `max`
+					clamp_length_max(selff64) -> LuaDVec4
+,
+					///Returns a vector with a length no less than `min`
+					clamp_length_min(selff64) -> LuaDVec4
+,
+					///Fused multiply-add. Computes `(self * a) + b` element-wise with only one rounding
+					///error, yielding a more accurate result than an unfused multiply-add.
+					///
+					///Using `mul_add` *may* be more performant than an unfused multiply-add if the target
+					///architecture has a dedicated fma CPU instruction. However, this is not always true,
+					///and will be heavily dependant on designing algorithms with specific target hardware in
+					///mind.
+					mul_add(selfLuaDVec4LuaDVec4) -> LuaDVec4
+,
+					// Exclusion reason: Unsupported argument crate::Vec4
+					// ///Casts all elements of `self` to `f32`.
+					// as_vec4(&self)
+,
+					// Exclusion reason: Unsupported argument crate::IVec4
+					// ///Casts all elements of `self` to `i32`.
+					// as_ivec4(&self)
+,
+					// Exclusion reason: Unsupported argument crate::UVec4
+					// ///Casts all elements of `self` to `u32`.
+					// as_uvec4(&self)
+,
+					// Exclusion reason: Unsupported argument U,Unsupported argument Result
+					// try_from()
+,
+					// Exclusion reason: Unsupported argument T,Unsupported argument T
+					// ///Returns the argument unchanged.
+					// from()
+,
+					from(LuaDQuat) -> LuaDVec4
+,
+					// Exclusion reason: Unsupported argument [f64;4]
+					// from(<invalid: [f64;4]>) -> LuaDVec4
+,
+					from(LuaDVec4) -> LuaDVec4
+,
+					// Exclusion reason: Unsupported argument (f64,f64,f64,f64)
+					// from(<invalid: (f64,f64,f64,f64)>) -> LuaDVec4
+,
+					from(LuaDVec4) -> LuaDVec4
+,
+					// Exclusion reason: Unsupported argument (LuaDVec3,f64)
+					// from(<invalid: (LuaDVec3,f64)>) -> LuaDVec4
+,
+					// Exclusion reason: Unsupported argument (f64,LuaDVec3)
+					// from(<invalid: (f64,LuaDVec3)>) -> LuaDVec4
+,
+					// Exclusion reason: Unsupported argument (LuaDVec2,f64,f64)
+					// from(<invalid: (LuaDVec2,f64,f64)>) -> LuaDVec4
+,
+					// Exclusion reason: Unsupported argument (LuaDVec2,LuaDVec2)
+					// from(<invalid: (LuaDVec2,LuaDVec2)>) -> LuaDVec4
+,
+					// Exclusion reason: Unsupported argument U
+					// ///Calls `U::from(self)`.
+					// ///
+					// ///That is, this conversion is whatever the implementation of
+					// ///<code>[From]&lt;T&gt; for U</code> chooses to do.
+					// into(self)
+,
+					// Exclusion reason: Unsupported argument T
+					// borrow(&self)
+,
+					// Exclusion reason: Unsupported argument TypeId
+					// type_id(&self)
+,
+					// Exclusion reason: Unsupported argument Result
+					// try_into(self)
+,
+					// Exclusion reason: Unsupported argument &mut self,Unsupported argument T
+					// borrow_mut(<invalid: &mut self>)
+,
+					// Exclusion reason: Unsupported argument String
+					// to_string(&self)
+,
+					// Exclusion reason: Unsupported argument T
+					// to_owned(&self)
+,
+					// Exclusion reason: Unsupported argument T
+					// clone_into(&self)
+,
+					// Exclusion reason: Unsupported argument T
+					// is_valid_bit_pattern() -> bool
+,
+					// Exclusion reason: Unsupported argument S,Unsupported argument Result,Generics on the method
+					// serialize(&self)
+,
+					// Exclusion reason: Unsupported argument D,Unsupported argument Result,Generics on the method
+					// deserialize()
+,
+					// Exclusion reason: Unsupported argument QualifiedPath { name: "Output", args: AngleBracketed { args: [], bindings: [] }, self_type: Generic("Self"), trait_: ResolvedPath { name: "", id: Id("2:3313:2263"), args: None, param_names: [] } }
+					// mul(selfLuaDVec4)
+,
+					mul(selfLuaDVec4) -> LuaDVec4
+,
+					mul(selff64) -> LuaDVec4
+,
+					mul(selfLuaDVec4) -> LuaDVec4
+,
+					clone(&self) -> LuaDVec4
+,
+					default() -> LuaDVec4
+,
+					eq(&self&LuaDVec4) -> bool
+,
+					div(selfLuaDVec4) -> LuaDVec4
+,
+					div(selff64) -> LuaDVec4
+,
+					div(selfLuaDVec4) -> LuaDVec4
+,
+					// Exclusion reason: Unsupported argument &mut self
+					// div_assign(<invalid: &mut self>LuaDVec4)
+,
+					// Exclusion reason: Unsupported argument &mut self
+					// div_assign(<invalid: &mut self>f64)
+,
+					// Exclusion reason: Unsupported argument &mut self
+					// mul_assign(<invalid: &mut self>LuaDVec4)
+,
+					// Exclusion reason: Unsupported argument &mut self
+					// mul_assign(<invalid: &mut self>f64)
+,
+					add(selfLuaDVec4) -> LuaDVec4
+,
+					add(selff64) -> LuaDVec4
+,
+					add(selfLuaDVec4) -> LuaDVec4
+,
+					// Exclusion reason: Unsupported argument &mut self
+					// add_assign(<invalid: &mut self>LuaDVec4)
+,
+					// Exclusion reason: Unsupported argument &mut self
+					// add_assign(<invalid: &mut self>f64)
+,
+					sub(selfLuaDVec4) -> LuaDVec4
+,
+					sub(selff64) -> LuaDVec4
+,
+					sub(selfLuaDVec4) -> LuaDVec4
+,
+					// Exclusion reason: Unsupported argument &mut self
+					// sub_assign(<invalid: &mut self>LuaDVec4)
+,
+					// Exclusion reason: Unsupported argument &mut self
+					// sub_assign(<invalid: &mut self>f64)
+,
+					rem(selfLuaDVec4) -> LuaDVec4
+,
+					rem(selff64) -> LuaDVec4
+,
+					rem(selfLuaDVec4) -> LuaDVec4
+,
+					// Exclusion reason: Unsupported argument &mut self
+					// rem_assign(<invalid: &mut self>LuaDVec4)
+,
+					// Exclusion reason: Unsupported argument &mut self
+					// rem_assign(<invalid: &mut self>f64)
+,
+					// Exclusion reason: Unsupported argument &[f64;4]
+					// as_ref(&self)<invalid: &[f64;4]>
+,
+					// Exclusion reason: Unsupported argument &mut self,Unsupported argument &mut [f64;4]
+					// as_mut(<invalid: &mut self>)<invalid: &mut [f64;4]>
+,
+					// Exclusion reason: Unsupported argument I,Generics on the method
+					// sum() -> LuaDVec4
+,
+					// Exclusion reason: Unsupported argument I,Generics on the method
+					// product() -> LuaDVec4
+,
+					neg(self) -> LuaDVec4
+,
+					// Exclusion reason: Unsupported argument QualifiedPath { name: "Output", args: AngleBracketed { args: [], bindings: [] }, self_type: Generic("Self"), trait_: ResolvedPath { name: "", id: Id("2:3539:2758"), args: None, param_names: [] } }
+					// index(&selfusize)
+,
+					// Exclusion reason: Unsupported argument &mut self,Unsupported argument QualifiedPath { name: "Output", args: AngleBracketed { args: [], bindings: [] }, self_type: Generic("Self"), trait_: ResolvedPath { name: "", id: Id("2:3539:2758"), args: None, param_names: [] } }
+					// index_mut(<invalid: &mut self>usize)
+,
+					// Exclusion reason: Unsupported argument fmt::Formatter,Unsupported argument fmt::Result
+					// fmt(&self)
+,
+					// Exclusion reason: Unsupported argument fmt::Formatter,Unsupported argument fmt::Result
+					// fmt(&self)
+,
+					xx(self) -> LuaDVec2
+,
+					xy(self) -> LuaDVec2
+,
+					xz(self) -> LuaDVec2
+,
+					xw(self) -> LuaDVec2
+,
+					yx(self) -> LuaDVec2
+,
+					yy(self) -> LuaDVec2
+,
+					yz(self) -> LuaDVec2
+,
+					yw(self) -> LuaDVec2
+,
+					zx(self) -> LuaDVec2
+,
+					zy(self) -> LuaDVec2
+,
+					zz(self) -> LuaDVec2
+,
+					zw(self) -> LuaDVec2
+,
+					wx(self) -> LuaDVec2
+,
+					wy(self) -> LuaDVec2
+,
+					wz(self) -> LuaDVec2
+,
+					ww(self) -> LuaDVec2
+,
+					xxx(self) -> LuaDVec3
+,
+					xxy(self) -> LuaDVec3
+,
+					xxz(self) -> LuaDVec3
+,
+					xxw(self) -> LuaDVec3
+,
+					xyx(self) -> LuaDVec3
+,
+					xyy(self) -> LuaDVec3
+,
+					xyz(self) -> LuaDVec3
+,
+					xyw(self) -> LuaDVec3
+,
+					xzx(self) -> LuaDVec3
+,
+					xzy(self) -> LuaDVec3
+,
+					xzz(self) -> LuaDVec3
+,
+					xzw(self) -> LuaDVec3
+,
+					xwx(self) -> LuaDVec3
+,
+					xwy(self) -> LuaDVec3
+,
+					xwz(self) -> LuaDVec3
+,
+					xww(self) -> LuaDVec3
+,
+					yxx(self) -> LuaDVec3
+,
+					yxy(self) -> LuaDVec3
+,
+					yxz(self) -> LuaDVec3
+,
+					yxw(self) -> LuaDVec3
+,
+					yyx(self) -> LuaDVec3
+,
+					yyy(self) -> LuaDVec3
+,
+					yyz(self) -> LuaDVec3
+,
+					yyw(self) -> LuaDVec3
+,
+					yzx(self) -> LuaDVec3
+,
+					yzy(self) -> LuaDVec3
+,
+					yzz(self) -> LuaDVec3
+,
+					yzw(self) -> LuaDVec3
+,
+					ywx(self) -> LuaDVec3
+,
+					ywy(self) -> LuaDVec3
+,
+					ywz(self) -> LuaDVec3
+,
+					yww(self) -> LuaDVec3
+,
+					zxx(self) -> LuaDVec3
+,
+					zxy(self) -> LuaDVec3
+,
+					zxz(self) -> LuaDVec3
+,
+					zxw(self) -> LuaDVec3
+,
+					zyx(self) -> LuaDVec3
+,
+					zyy(self) -> LuaDVec3
+,
+					zyz(self) -> LuaDVec3
+,
+					zyw(self) -> LuaDVec3
+,
+					zzx(self) -> LuaDVec3
+,
+					zzy(self) -> LuaDVec3
+,
+					zzz(self) -> LuaDVec3
+,
+					zzw(self) -> LuaDVec3
+,
+					zwx(self) -> LuaDVec3
+,
+					zwy(self) -> LuaDVec3
+,
+					zwz(self) -> LuaDVec3
+,
+					zww(self) -> LuaDVec3
+,
+					wxx(self) -> LuaDVec3
+,
+					wxy(self) -> LuaDVec3
+,
+					wxz(self) -> LuaDVec3
+,
+					wxw(self) -> LuaDVec3
+,
+					wyx(self) -> LuaDVec3
+,
+					wyy(self) -> LuaDVec3
+,
+					wyz(self) -> LuaDVec3
+,
+					wyw(self) -> LuaDVec3
+,
+					wzx(self) -> LuaDVec3
+,
+					wzy(self) -> LuaDVec3
+,
+					wzz(self) -> LuaDVec3
+,
+					wzw(self) -> LuaDVec3
+,
+					wwx(self) -> LuaDVec3
+,
+					wwy(self) -> LuaDVec3
+,
+					wwz(self) -> LuaDVec3
+,
+					www(self) -> LuaDVec3
+,
+					xxxx(self) -> LuaDVec4
+,
+					xxxy(self) -> LuaDVec4
+,
+					xxxz(self) -> LuaDVec4
+,
+					xxxw(self) -> LuaDVec4
+,
+					xxyx(self) -> LuaDVec4
+,
+					xxyy(self) -> LuaDVec4
+,
+					xxyz(self) -> LuaDVec4
+,
+					xxyw(self) -> LuaDVec4
+,
+					xxzx(self) -> LuaDVec4
+,
+					xxzy(self) -> LuaDVec4
+,
+					xxzz(self) -> LuaDVec4
+,
+					xxzw(self) -> LuaDVec4
+,
+					xxwx(self) -> LuaDVec4
+,
+					xxwy(self) -> LuaDVec4
+,
+					xxwz(self) -> LuaDVec4
+,
+					xxww(self) -> LuaDVec4
+,
+					xyxx(self) -> LuaDVec4
+,
+					xyxy(self) -> LuaDVec4
+,
+					xyxz(self) -> LuaDVec4
+,
+					xyxw(self) -> LuaDVec4
+,
+					xyyx(self) -> LuaDVec4
+,
+					xyyy(self) -> LuaDVec4
+,
+					xyyz(self) -> LuaDVec4
+,
+					xyyw(self) -> LuaDVec4
+,
+					xyzx(self) -> LuaDVec4
+,
+					xyzy(self) -> LuaDVec4
+,
+					xyzz(self) -> LuaDVec4
+,
+					xyzw(self) -> LuaDVec4
+,
+					xywx(self) -> LuaDVec4
+,
+					xywy(self) -> LuaDVec4
+,
+					xywz(self) -> LuaDVec4
+,
+					xyww(self) -> LuaDVec4
+,
+					xzxx(self) -> LuaDVec4
+,
+					xzxy(self) -> LuaDVec4
+,
+					xzxz(self) -> LuaDVec4
+,
+					xzxw(self) -> LuaDVec4
+,
+					xzyx(self) -> LuaDVec4
+,
+					xzyy(self) -> LuaDVec4
+,
+					xzyz(self) -> LuaDVec4
+,
+					xzyw(self) -> LuaDVec4
+,
+					xzzx(self) -> LuaDVec4
+,
+					xzzy(self) -> LuaDVec4
+,
+					xzzz(self) -> LuaDVec4
+,
+					xzzw(self) -> LuaDVec4
+,
+					xzwx(self) -> LuaDVec4
+,
+					xzwy(self) -> LuaDVec4
+,
+					xzwz(self) -> LuaDVec4
+,
+					xzww(self) -> LuaDVec4
+,
+					xwxx(self) -> LuaDVec4
+,
+					xwxy(self) -> LuaDVec4
+,
+					xwxz(self) -> LuaDVec4
+,
+					xwxw(self) -> LuaDVec4
+,
+					xwyx(self) -> LuaDVec4
+,
+					xwyy(self) -> LuaDVec4
+,
+					xwyz(self) -> LuaDVec4
+,
+					xwyw(self) -> LuaDVec4
+,
+					xwzx(self) -> LuaDVec4
+,
+					xwzy(self) -> LuaDVec4
+,
+					xwzz(self) -> LuaDVec4
+,
+					xwzw(self) -> LuaDVec4
+,
+					xwwx(self) -> LuaDVec4
+,
+					xwwy(self) -> LuaDVec4
+,
+					xwwz(self) -> LuaDVec4
+,
+					xwww(self) -> LuaDVec4
+,
+					yxxx(self) -> LuaDVec4
+,
+					yxxy(self) -> LuaDVec4
+,
+					yxxz(self) -> LuaDVec4
+,
+					yxxw(self) -> LuaDVec4
+,
+					yxyx(self) -> LuaDVec4
+,
+					yxyy(self) -> LuaDVec4
+,
+					yxyz(self) -> LuaDVec4
+,
+					yxyw(self) -> LuaDVec4
+,
+					yxzx(self) -> LuaDVec4
+,
+					yxzy(self) -> LuaDVec4
+,
+					yxzz(self) -> LuaDVec4
+,
+					yxzw(self) -> LuaDVec4
+,
+					yxwx(self) -> LuaDVec4
+,
+					yxwy(self) -> LuaDVec4
+,
+					yxwz(self) -> LuaDVec4
+,
+					yxww(self) -> LuaDVec4
+,
+					yyxx(self) -> LuaDVec4
+,
+					yyxy(self) -> LuaDVec4
+,
+					yyxz(self) -> LuaDVec4
+,
+					yyxw(self) -> LuaDVec4
+,
+					yyyx(self) -> LuaDVec4
+,
+					yyyy(self) -> LuaDVec4
+,
+					yyyz(self) -> LuaDVec4
+,
+					yyyw(self) -> LuaDVec4
+,
+					yyzx(self) -> LuaDVec4
+,
+					yyzy(self) -> LuaDVec4
+,
+					yyzz(self) -> LuaDVec4
+,
+					yyzw(self) -> LuaDVec4
+,
+					yywx(self) -> LuaDVec4
+,
+					yywy(self) -> LuaDVec4
+,
+					yywz(self) -> LuaDVec4
+,
+					yyww(self) -> LuaDVec4
+,
+					yzxx(self) -> LuaDVec4
+,
+					yzxy(self) -> LuaDVec4
+,
+					yzxz(self) -> LuaDVec4
+,
+					yzxw(self) -> LuaDVec4
+,
+					yzyx(self) -> LuaDVec4
+,
+					yzyy(self) -> LuaDVec4
+,
+					yzyz(self) -> LuaDVec4
+,
+					yzyw(self) -> LuaDVec4
+,
+					yzzx(self) -> LuaDVec4
+,
+					yzzy(self) -> LuaDVec4
+,
+					yzzz(self) -> LuaDVec4
+,
+					yzzw(self) -> LuaDVec4
+,
+					yzwx(self) -> LuaDVec4
+,
+					yzwy(self) -> LuaDVec4
+,
+					yzwz(self) -> LuaDVec4
+,
+					yzww(self) -> LuaDVec4
+,
+					ywxx(self) -> LuaDVec4
+,
+					ywxy(self) -> LuaDVec4
+,
+					ywxz(self) -> LuaDVec4
+,
+					ywxw(self) -> LuaDVec4
+,
+					ywyx(self) -> LuaDVec4
+,
+					ywyy(self) -> LuaDVec4
+,
+					ywyz(self) -> LuaDVec4
+,
+					ywyw(self) -> LuaDVec4
+,
+					ywzx(self) -> LuaDVec4
+,
+					ywzy(self) -> LuaDVec4
+,
+					ywzz(self) -> LuaDVec4
+,
+					ywzw(self) -> LuaDVec4
+,
+					ywwx(self) -> LuaDVec4
+,
+					ywwy(self) -> LuaDVec4
+,
+					ywwz(self) -> LuaDVec4
+,
+					ywww(self) -> LuaDVec4
+,
+					zxxx(self) -> LuaDVec4
+,
+					zxxy(self) -> LuaDVec4
+,
+					zxxz(self) -> LuaDVec4
+,
+					zxxw(self) -> LuaDVec4
+,
+					zxyx(self) -> LuaDVec4
+,
+					zxyy(self) -> LuaDVec4
+,
+					zxyz(self) -> LuaDVec4
+,
+					zxyw(self) -> LuaDVec4
+,
+					zxzx(self) -> LuaDVec4
+,
+					zxzy(self) -> LuaDVec4
+,
+					zxzz(self) -> LuaDVec4
+,
+					zxzw(self) -> LuaDVec4
+,
+					zxwx(self) -> LuaDVec4
+,
+					zxwy(self) -> LuaDVec4
+,
+					zxwz(self) -> LuaDVec4
+,
+					zxww(self) -> LuaDVec4
+,
+					zyxx(self) -> LuaDVec4
+,
+					zyxy(self) -> LuaDVec4
+,
+					zyxz(self) -> LuaDVec4
+,
+					zyxw(self) -> LuaDVec4
+,
+					zyyx(self) -> LuaDVec4
+,
+					zyyy(self) -> LuaDVec4
+,
+					zyyz(self) -> LuaDVec4
+,
+					zyyw(self) -> LuaDVec4
+,
+					zyzx(self) -> LuaDVec4
+,
+					zyzy(self) -> LuaDVec4
+,
+					zyzz(self) -> LuaDVec4
+,
+					zyzw(self) -> LuaDVec4
+,
+					zywx(self) -> LuaDVec4
+,
+					zywy(self) -> LuaDVec4
+,
+					zywz(self) -> LuaDVec4
+,
+					zyww(self) -> LuaDVec4
+,
+					zzxx(self) -> LuaDVec4
+,
+					zzxy(self) -> LuaDVec4
+,
+					zzxz(self) -> LuaDVec4
+,
+					zzxw(self) -> LuaDVec4
+,
+					zzyx(self) -> LuaDVec4
+,
+					zzyy(self) -> LuaDVec4
+,
+					zzyz(self) -> LuaDVec4
+,
+					zzyw(self) -> LuaDVec4
+,
+					zzzx(self) -> LuaDVec4
+,
+					zzzy(self) -> LuaDVec4
+,
+					zzzz(self) -> LuaDVec4
+,
+					zzzw(self) -> LuaDVec4
+,
+					zzwx(self) -> LuaDVec4
+,
+					zzwy(self) -> LuaDVec4
+,
+					zzwz(self) -> LuaDVec4
+,
+					zzww(self) -> LuaDVec4
+,
+					zwxx(self) -> LuaDVec4
+,
+					zwxy(self) -> LuaDVec4
+,
+					zwxz(self) -> LuaDVec4
+,
+					zwxw(self) -> LuaDVec4
+,
+					zwyx(self) -> LuaDVec4
+,
+					zwyy(self) -> LuaDVec4
+,
+					zwyz(self) -> LuaDVec4
+,
+					zwyw(self) -> LuaDVec4
+,
+					zwzx(self) -> LuaDVec4
+,
+					zwzy(self) -> LuaDVec4
+,
+					zwzz(self) -> LuaDVec4
+,
+					zwzw(self) -> LuaDVec4
+,
+					zwwx(self) -> LuaDVec4
+,
+					zwwy(self) -> LuaDVec4
+,
+					zwwz(self) -> LuaDVec4
+,
+					zwww(self) -> LuaDVec4
+,
+					wxxx(self) -> LuaDVec4
+,
+					wxxy(self) -> LuaDVec4
+,
+					wxxz(self) -> LuaDVec4
+,
+					wxxw(self) -> LuaDVec4
+,
+					wxyx(self) -> LuaDVec4
+,
+					wxyy(self) -> LuaDVec4
+,
+					wxyz(self) -> LuaDVec4
+,
+					wxyw(self) -> LuaDVec4
+,
+					wxzx(self) -> LuaDVec4
+,
+					wxzy(self) -> LuaDVec4
+,
+					wxzz(self) -> LuaDVec4
+,
+					wxzw(self) -> LuaDVec4
+,
+					wxwx(self) -> LuaDVec4
+,
+					wxwy(self) -> LuaDVec4
+,
+					wxwz(self) -> LuaDVec4
+,
+					wxww(self) -> LuaDVec4
+,
+					wyxx(self) -> LuaDVec4
+,
+					wyxy(self) -> LuaDVec4
+,
+					wyxz(self) -> LuaDVec4
+,
+					wyxw(self) -> LuaDVec4
+,
+					wyyx(self) -> LuaDVec4
+,
+					wyyy(self) -> LuaDVec4
+,
+					wyyz(self) -> LuaDVec4
+,
+					wyyw(self) -> LuaDVec4
+,
+					wyzx(self) -> LuaDVec4
+,
+					wyzy(self) -> LuaDVec4
+,
+					wyzz(self) -> LuaDVec4
+,
+					wyzw(self) -> LuaDVec4
+,
+					wywx(self) -> LuaDVec4
+,
+					wywy(self) -> LuaDVec4
+,
+					wywz(self) -> LuaDVec4
+,
+					wyww(self) -> LuaDVec4
+,
+					wzxx(self) -> LuaDVec4
+,
+					wzxy(self) -> LuaDVec4
+,
+					wzxz(self) -> LuaDVec4
+,
+					wzxw(self) -> LuaDVec4
+,
+					wzyx(self) -> LuaDVec4
+,
+					wzyy(self) -> LuaDVec4
+,
+					wzyz(self) -> LuaDVec4
+,
+					wzyw(self) -> LuaDVec4
+,
+					wzzx(self) -> LuaDVec4
+,
+					wzzy(self) -> LuaDVec4
+,
+					wzzz(self) -> LuaDVec4
+,
+					wzzw(self) -> LuaDVec4
+,
+					wzwx(self) -> LuaDVec4
+,
+					wzwy(self) -> LuaDVec4
+,
+					wzwz(self) -> LuaDVec4
+,
+					wzww(self) -> LuaDVec4
+,
+					wwxx(self) -> LuaDVec4
+,
+					wwxy(self) -> LuaDVec4
+,
+					wwxz(self) -> LuaDVec4
+,
+					wwxw(self) -> LuaDVec4
+,
+					wwyx(self) -> LuaDVec4
+,
+					wwyy(self) -> LuaDVec4
+,
+					wwyz(self) -> LuaDVec4
+,
+					wwyw(self) -> LuaDVec4
+,
+					wwzx(self) -> LuaDVec4
+,
+					wwzy(self) -> LuaDVec4
+,
+					wwzz(self) -> LuaDVec4
+,
+					wwzw(self) -> LuaDVec4
+,
+					wwwx(self) -> LuaDVec4
+,
+					wwwy(self) -> LuaDVec4
+,
+					wwwz(self) -> LuaDVec4
+,
+					wwww(self) -> LuaDVec4
+,
+				)
+				+ BinaryOps
+				(
 self Add LuaDVec4 -> LuaDVec4 -> LuaDVec4
 self Add f64 -> LuaDVec4 -> LuaDVec4
 f64 Add self -> LuaDVec4 -> LuaDVec4
@@ -7204,446 +6542,460 @@ f64 Mul self -> LuaDVec4 -> LuaDVec4
 self Rem LuaDVec4 -> LuaDVec4 -> LuaDVec4
 self Rem f64 -> LuaDVec4 -> LuaDVec4
 f64 Rem self -> LuaDVec4 -> LuaDVec4
-			)
-+ UnaryOps			(
-			)
-+ 			    Copy(LuaVec2 -> (MetaMethod::Index) (s=LuaDVec4),
-			        LuaVec2 -> mut (MetaMethod::NewIndex) (n=f64))
-			    
-impl			{
+				)
+				+ UnaryOps
+				(
+				)
++ 				    Copy(LuaVec2 -> (MetaMethod::Index) (s=LuaDVec4),
+				        LuaVec2 -> mut (MetaMethod::NewIndex) (n=f64))
+				    
+			impl
+			{
 			}
 		}
-		{
+,		{
 			///A 2-dimensional vector.
-glam::i32::ivec2::IVec2 : Value
-AutoMethods			(
-				// Exclusion reason: 
-				// ///Creates a new vector.
-				// new(i32i32) -> LuaIVec2
-
-				// Exclusion reason: 
-				// ///Creates a vector with all elements set to `v`.
-				// splat(i32) -> LuaIVec2
-
-				///Creates a vector from the elements in `if_true` and `if_false`, selecting which to use
-				///for each element of `self`.
-				///
-				///A true element in the mask uses the corresponding element from `if_true`, and false
-				///uses the element from `if_false`.
-				select(LuaIVec2LuaIVec2) -> LuaIVec2
-
-				///Creates a new vector from an array.
-				from_array(<invalid: [i32;2]>) -> LuaIVec2
-
-				///`[x, y]`
-				to_array(&self)<invalid: [i32;2]>
-
-				///Creates a vector from the first 2 values in `slice`.
-				///
-				///# Panics
-				///
-				///Panics if `slice` is less than 2 elements long.
-				from_slice(<invalid: &[i32]>) -> LuaIVec2
-
-				///Writes the elements of `self` to the first 2 elements in `slice`.
-				///
-				///# Panics
-				///
-				///Panics if `slice` is less than 2 elements long.
-				write_to_slice(self<invalid: &mut [i32]>)
-
-				// Exclusion reason: 
-				// ///Creates a 3D vector from `self` and the given `z` value.
-				// extend(selfi32) -> LuaIVec3
-
-				// Exclusion reason: 
-				// ///Computes the dot product of `self` and `rhs`.
-				// dot(selfLuaIVec2) -> i32
-
-				// Exclusion reason: 
-				// ///Returns a vector containing the minimum values for each element of `self` and `rhs`.
-				// ///
-				// ///In other words this computes `[self.x.min(rhs.x), self.y.min(rhs.y), ..]`.
-				// min(selfLuaIVec2) -> LuaIVec2
-
-				// Exclusion reason: 
-				// ///Returns a vector containing the maximum values for each element of `self` and `rhs`.
-				// ///
-				// ///In other words this computes `[self.x.max(rhs.x), self.y.max(rhs.y), ..]`.
-				// max(selfLuaIVec2) -> LuaIVec2
-
-				// Exclusion reason: 
-				// ///Component-wise clamping of values, similar to [`f32::clamp`].
-				// ///
-				// ///Each element in `min` must be less-or-equal to the corresponding element in `max`.
-				// ///
-				// ///# Panics
-				// ///
-				// ///Will panic if `min` is greater than `max` when `glam_assert` is enabled.
-				// clamp(selfLuaIVec2LuaIVec2) -> LuaIVec2
-
-				// Exclusion reason: 
-				// ///Returns the horizontal minimum of `self`.
-				// ///
-				// ///In other words this computes `min(x, y, ..)`.
-				// min_element(self) -> i32
-
-				// Exclusion reason: 
-				// ///Returns the horizontal maximum of `self`.
-				// ///
-				// ///In other words this computes `max(x, y, ..)`.
-				// max_element(self) -> i32
-
-				///Returns a vector mask containing the result of a `==` comparison for each element of
-				///`self` and `rhs`.
-				///
-				///In other words, this computes `[self.x == rhs.x, self.y == rhs.y, ..]` for all
-				///elements.
-				cmpeq(selfLuaIVec2)
-
-				///Returns a vector mask containing the result of a `!=` comparison for each element of
-				///`self` and `rhs`.
-				///
-				///In other words this computes `[self.x != rhs.x, self.y != rhs.y, ..]` for all
-				///elements.
-				cmpne(selfLuaIVec2)
-
-				///Returns a vector mask containing the result of a `>=` comparison for each element of
-				///`self` and `rhs`.
-				///
-				///In other words this computes `[self.x >= rhs.x, self.y >= rhs.y, ..]` for all
-				///elements.
-				cmpge(selfLuaIVec2)
-
-				///Returns a vector mask containing the result of a `>` comparison for each element of
-				///`self` and `rhs`.
-				///
-				///In other words this computes `[self.x > rhs.x, self.y > rhs.y, ..]` for all
-				///elements.
-				cmpgt(selfLuaIVec2)
-
-				///Returns a vector mask containing the result of a `<=` comparison for each element of
-				///`self` and `rhs`.
-				///
-				///In other words this computes `[self.x <= rhs.x, self.y <= rhs.y, ..]` for all
-				///elements.
-				cmple(selfLuaIVec2)
-
-				///Returns a vector mask containing the result of a `<` comparison for each element of
-				///`self` and `rhs`.
-				///
-				///In other words this computes `[self.x < rhs.x, self.y < rhs.y, ..]` for all
-				///elements.
-				cmplt(selfLuaIVec2)
-
-				// Exclusion reason: 
-				// ///Returns a vector containing the absolute value of each element of `self`.
-				// abs(self) -> LuaIVec2
-
-				// Exclusion reason: 
-				// ///Returns a vector with elements representing the sign of `self`.
-				// ///
-				// ///- `1.0` if the number is positive, `+0.0` or `INFINITY`
-				// ///- `-1.0` if the number is negative, `-0.0` or `NEG_INFINITY`
-				// ///- `NAN` if the number is `NAN`
-				// signum(self) -> LuaIVec2
-
-				// Exclusion reason: 
-				// ///Returns a vector that is equal to `self` rotated by 90 degrees.
-				// perp(self) -> LuaIVec2
-
-				// Exclusion reason: 
-				// ///The perpendicular dot product of `self` and `rhs`.
-				// ///Also known as the wedge product, 2D cross product, and determinant.
-				// perp_dot(selfLuaIVec2) -> i32
-
-				// Exclusion reason: 
-				// ///Returns `rhs` rotated by the angle of `self`. If `self` is normalized,
-				// ///then this just rotation. This is what you usually want. Otherwise,
-				// ///it will be like a rotation with a multiplication by `self`'s length.
-				// rotate(selfLuaIVec2) -> LuaIVec2
-
-				///Casts all elements of `self` to `f32`.
-				as_vec2(&self)
-
-				///Casts all elements of `self` to `f64`.
-				as_dvec2(&self)
-
-				///Casts all elements of `self` to `u32`.
-				as_uvec2(&self)
-
-				try_from()
-
-				///Returns the argument unchanged.
-				from()
-
-				from(<invalid: [i32;2]>) -> LuaIVec2
-
-				// Exclusion reason: 
-				// from(LuaIVec2) -> LuaIVec2
-
-				from(<invalid: (i32,i32)>) -> LuaIVec2
-
-				// Exclusion reason: 
-				// from(LuaIVec2) -> LuaIVec2
-
-				///Calls `U::from(self)`.
-				///
-				///That is, this conversion is whatever the implementation of
-				///<code>[From]&lt;T&gt; for U</code> chooses to do.
-				into(self)
-
-				borrow(&self)
-
-				type_id(&self)
-
-				try_into(self)
-
-				borrow_mut(<invalid: &mut self>)
-
-				to_string(&self)
-
-				to_owned(&self)
-
-				clone_into(&self)
-
-				is_valid_bit_pattern() -> bool
-
-				serialize(&self)
-
-				deserialize()
-
-				// Exclusion reason: 
-				// clone(&self) -> LuaIVec2
-
-				// Exclusion reason: 
-				// default() -> LuaIVec2
-
-				// Exclusion reason: 
-				// eq(&self&LuaIVec2) -> bool
-
-				// Exclusion reason: 
-				// div(selfLuaIVec2) -> LuaIVec2
-
-				// Exclusion reason: 
-				// div(selfi32) -> LuaIVec2
-
-				// Exclusion reason: 
-				// div(selfLuaIVec2) -> LuaIVec2
-
-				div_assign(<invalid: &mut self>LuaIVec2)
-
-				div_assign(<invalid: &mut self>i32)
-
-				// Exclusion reason: 
-				// mul(selfLuaIVec2) -> LuaIVec2
-
-				// Exclusion reason: 
-				// mul(selfi32) -> LuaIVec2
-
-				// Exclusion reason: 
-				// mul(selfLuaIVec2) -> LuaIVec2
-
-				mul_assign(<invalid: &mut self>LuaIVec2)
-
-				mul_assign(<invalid: &mut self>i32)
-
-				// Exclusion reason: 
-				// add(selfLuaIVec2) -> LuaIVec2
-
-				// Exclusion reason: 
-				// add(selfi32) -> LuaIVec2
-
-				// Exclusion reason: 
-				// add(selfLuaIVec2) -> LuaIVec2
-
-				add_assign(<invalid: &mut self>LuaIVec2)
-
-				add_assign(<invalid: &mut self>i32)
-
-				// Exclusion reason: 
-				// sub(selfLuaIVec2) -> LuaIVec2
-
-				// Exclusion reason: 
-				// sub(selfi32) -> LuaIVec2
-
-				// Exclusion reason: 
-				// sub(selfLuaIVec2) -> LuaIVec2
-
-				sub_assign(<invalid: &mut self>LuaIVec2)
-
-				sub_assign(<invalid: &mut self>i32)
-
-				// Exclusion reason: 
-				// rem(selfLuaIVec2) -> LuaIVec2
-
-				// Exclusion reason: 
-				// rem(selfi32) -> LuaIVec2
-
-				// Exclusion reason: 
-				// rem(selfLuaIVec2) -> LuaIVec2
-
-				rem_assign(<invalid: &mut self>LuaIVec2)
-
-				rem_assign(<invalid: &mut self>i32)
-
-				as_ref(&self)<invalid: &[i32;2]>
-
-				as_mut(<invalid: &mut self>)<invalid: &mut [i32;2]>
-
-				sum() -> LuaIVec2
-
-				product() -> LuaIVec2
-
-				// Exclusion reason: 
-				// neg(self) -> LuaIVec2
-
-				hash(&self)
-
-				not(self)
-
-				bitand(selfLuaIVec2)
-
-				bitand(selfi32)
-
-				bitor(selfLuaIVec2)
-
-				bitor(selfi32)
-
-				bitxor(selfLuaIVec2)
-
-				bitxor(selfi32)
-
-				shl(selfi8)
-
-				shl(selfi16)
-
-				shl(selfi32)
-
-				shl(selfu8)
-
-				shl(selfu16)
-
-				shl(selfu32)
-
-				shl(self)
-
-				shl(self)
-
-				shl(self)
-
-				shr(selfi8)
-
-				shr(selfi16)
-
-				shr(selfi32)
-
-				shr(selfu8)
-
-				shr(selfu16)
-
-				shr(selfu32)
-
-				shr(self)
-
-				shr(self)
-
-				shr(self)
-
-				index(&selfusize)
-
-				index_mut(<invalid: &mut self>usize)
-
-				fmt(&self)
-
-				fmt(&self)
-
-				// Exclusion reason: 
-				// xx(self) -> LuaIVec2
-
-				// Exclusion reason: 
-				// xy(self) -> LuaIVec2
-
-				// Exclusion reason: 
-				// yx(self) -> LuaIVec2
-
-				// Exclusion reason: 
-				// yy(self) -> LuaIVec2
-
-				// Exclusion reason: 
-				// xxx(self) -> LuaIVec3
-
-				// Exclusion reason: 
-				// xxy(self) -> LuaIVec3
-
-				// Exclusion reason: 
-				// xyx(self) -> LuaIVec3
-
-				// Exclusion reason: 
-				// xyy(self) -> LuaIVec3
-
-				// Exclusion reason: 
-				// yxx(self) -> LuaIVec3
-
-				// Exclusion reason: 
-				// yxy(self) -> LuaIVec3
-
-				// Exclusion reason: 
-				// yyx(self) -> LuaIVec3
-
-				// Exclusion reason: 
-				// yyy(self) -> LuaIVec3
-
-				// Exclusion reason: 
-				// xxxx(self) -> LuaIVec4
-
-				// Exclusion reason: 
-				// xxxy(self) -> LuaIVec4
-
-				// Exclusion reason: 
-				// xxyx(self) -> LuaIVec4
-
-				// Exclusion reason: 
-				// xxyy(self) -> LuaIVec4
-
-				// Exclusion reason: 
-				// xyxx(self) -> LuaIVec4
-
-				// Exclusion reason: 
-				// xyxy(self) -> LuaIVec4
-
-				// Exclusion reason: 
-				// xyyx(self) -> LuaIVec4
-
-				// Exclusion reason: 
-				// xyyy(self) -> LuaIVec4
-
-				// Exclusion reason: 
-				// yxxx(self) -> LuaIVec4
-
-				// Exclusion reason: 
-				// yxxy(self) -> LuaIVec4
-
-				// Exclusion reason: 
-				// yxyx(self) -> LuaIVec4
-
-				// Exclusion reason: 
-				// yxyy(self) -> LuaIVec4
-
-				// Exclusion reason: 
-				// yyxx(self) -> LuaIVec4
-
-				// Exclusion reason: 
-				// yyxy(self) -> LuaIVec4
-
-				// Exclusion reason: 
-				// yyyx(self) -> LuaIVec4
-
-				// Exclusion reason: 
-				// yyyy(self) -> LuaIVec4
-
-			)
-+ BinaryOps			(
+			glam::i32::ivec2::IVec2 : Value
+:				AutoMethods
+				(
+					///Creates a new vector.
+					new(i32i32) -> LuaIVec2
+,
+					///Creates a vector with all elements set to `v`.
+					splat(i32) -> LuaIVec2
+,
+					// Exclusion reason: Unsupported argument BVec2
+					// ///Creates a vector from the elements in `if_true` and `if_false`, selecting which to use
+					// ///for each element of `self`.
+					// ///
+					// ///A true element in the mask uses the corresponding element from `if_true`, and false
+					// ///uses the element from `if_false`.
+					// select(LuaIVec2LuaIVec2) -> LuaIVec2
+,
+					// Exclusion reason: Unsupported argument [i32;2]
+					// ///Creates a new vector from an array.
+					// from_array(<invalid: [i32;2]>) -> LuaIVec2
+,
+					// Exclusion reason: Unsupported argument [i32;2]
+					// ///`[x, y]`
+					// to_array(&self)<invalid: [i32;2]>
+,
+					// Exclusion reason: Unsupported argument &[i32]
+					// ///Creates a vector from the first 2 values in `slice`.
+					// ///
+					// ///# Panics
+					// ///
+					// ///Panics if `slice` is less than 2 elements long.
+					// from_slice(<invalid: &[i32]>) -> LuaIVec2
+,
+					// Exclusion reason: Unsupported argument &mut [i32]
+					// ///Writes the elements of `self` to the first 2 elements in `slice`.
+					// ///
+					// ///# Panics
+					// ///
+					// ///Panics if `slice` is less than 2 elements long.
+					// write_to_slice(self<invalid: &mut [i32]>)
+,
+					///Creates a 3D vector from `self` and the given `z` value.
+					extend(selfi32) -> LuaIVec3
+,
+					///Computes the dot product of `self` and `rhs`.
+					dot(selfLuaIVec2) -> i32
+,
+					///Returns a vector containing the minimum values for each element of `self` and `rhs`.
+					///
+					///In other words this computes `[self.x.min(rhs.x), self.y.min(rhs.y), ..]`.
+					min(selfLuaIVec2) -> LuaIVec2
+,
+					///Returns a vector containing the maximum values for each element of `self` and `rhs`.
+					///
+					///In other words this computes `[self.x.max(rhs.x), self.y.max(rhs.y), ..]`.
+					max(selfLuaIVec2) -> LuaIVec2
+,
+					///Component-wise clamping of values, similar to [`f32::clamp`].
+					///
+					///Each element in `min` must be less-or-equal to the corresponding element in `max`.
+					///
+					///# Panics
+					///
+					///Will panic if `min` is greater than `max` when `glam_assert` is enabled.
+					clamp(selfLuaIVec2LuaIVec2) -> LuaIVec2
+,
+					///Returns the horizontal minimum of `self`.
+					///
+					///In other words this computes `min(x, y, ..)`.
+					min_element(self) -> i32
+,
+					///Returns the horizontal maximum of `self`.
+					///
+					///In other words this computes `max(x, y, ..)`.
+					max_element(self) -> i32
+,
+					// Exclusion reason: Unsupported argument BVec2
+					// ///Returns a vector mask containing the result of a `==` comparison for each element of
+					// ///`self` and `rhs`.
+					// ///
+					// ///In other words, this computes `[self.x == rhs.x, self.y == rhs.y, ..]` for all
+					// ///elements.
+					// cmpeq(selfLuaIVec2)
+,
+					// Exclusion reason: Unsupported argument BVec2
+					// ///Returns a vector mask containing the result of a `!=` comparison for each element of
+					// ///`self` and `rhs`.
+					// ///
+					// ///In other words this computes `[self.x != rhs.x, self.y != rhs.y, ..]` for all
+					// ///elements.
+					// cmpne(selfLuaIVec2)
+,
+					// Exclusion reason: Unsupported argument BVec2
+					// ///Returns a vector mask containing the result of a `>=` comparison for each element of
+					// ///`self` and `rhs`.
+					// ///
+					// ///In other words this computes `[self.x >= rhs.x, self.y >= rhs.y, ..]` for all
+					// ///elements.
+					// cmpge(selfLuaIVec2)
+,
+					// Exclusion reason: Unsupported argument BVec2
+					// ///Returns a vector mask containing the result of a `>` comparison for each element of
+					// ///`self` and `rhs`.
+					// ///
+					// ///In other words this computes `[self.x > rhs.x, self.y > rhs.y, ..]` for all
+					// ///elements.
+					// cmpgt(selfLuaIVec2)
+,
+					// Exclusion reason: Unsupported argument BVec2
+					// ///Returns a vector mask containing the result of a `<=` comparison for each element of
+					// ///`self` and `rhs`.
+					// ///
+					// ///In other words this computes `[self.x <= rhs.x, self.y <= rhs.y, ..]` for all
+					// ///elements.
+					// cmple(selfLuaIVec2)
+,
+					// Exclusion reason: Unsupported argument BVec2
+					// ///Returns a vector mask containing the result of a `<` comparison for each element of
+					// ///`self` and `rhs`.
+					// ///
+					// ///In other words this computes `[self.x < rhs.x, self.y < rhs.y, ..]` for all
+					// ///elements.
+					// cmplt(selfLuaIVec2)
+,
+					///Returns a vector containing the absolute value of each element of `self`.
+					abs(self) -> LuaIVec2
+,
+					///Returns a vector with elements representing the sign of `self`.
+					///
+					///- `1.0` if the number is positive, `+0.0` or `INFINITY`
+					///- `-1.0` if the number is negative, `-0.0` or `NEG_INFINITY`
+					///- `NAN` if the number is `NAN`
+					signum(self) -> LuaIVec2
+,
+					///Returns a vector that is equal to `self` rotated by 90 degrees.
+					perp(self) -> LuaIVec2
+,
+					///The perpendicular dot product of `self` and `rhs`.
+					///Also known as the wedge product, 2D cross product, and determinant.
+					perp_dot(selfLuaIVec2) -> i32
+,
+					///Returns `rhs` rotated by the angle of `self`. If `self` is normalized,
+					///then this just rotation. This is what you usually want. Otherwise,
+					///it will be like a rotation with a multiplication by `self`'s length.
+					rotate(selfLuaIVec2) -> LuaIVec2
+,
+					// Exclusion reason: Unsupported argument crate::Vec2
+					// ///Casts all elements of `self` to `f32`.
+					// as_vec2(&self)
+,
+					// Exclusion reason: Unsupported argument crate::DVec2
+					// ///Casts all elements of `self` to `f64`.
+					// as_dvec2(&self)
+,
+					// Exclusion reason: Unsupported argument crate::UVec2
+					// ///Casts all elements of `self` to `u32`.
+					// as_uvec2(&self)
+,
+					// Exclusion reason: Unsupported argument U,Unsupported argument Result
+					// try_from()
+,
+					// Exclusion reason: Unsupported argument T,Unsupported argument T
+					// ///Returns the argument unchanged.
+					// from()
+,
+					// Exclusion reason: Unsupported argument [i32;2]
+					// from(<invalid: [i32;2]>) -> LuaIVec2
+,
+					from(LuaIVec2) -> LuaIVec2
+,
+					// Exclusion reason: Unsupported argument (i32,i32)
+					// from(<invalid: (i32,i32)>) -> LuaIVec2
+,
+					from(LuaIVec2) -> LuaIVec2
+,
+					// Exclusion reason: Unsupported argument U
+					// ///Calls `U::from(self)`.
+					// ///
+					// ///That is, this conversion is whatever the implementation of
+					// ///<code>[From]&lt;T&gt; for U</code> chooses to do.
+					// into(self)
+,
+					// Exclusion reason: Unsupported argument T
+					// borrow(&self)
+,
+					// Exclusion reason: Unsupported argument TypeId
+					// type_id(&self)
+,
+					// Exclusion reason: Unsupported argument Result
+					// try_into(self)
+,
+					// Exclusion reason: Unsupported argument &mut self,Unsupported argument T
+					// borrow_mut(<invalid: &mut self>)
+,
+					// Exclusion reason: Unsupported argument String
+					// to_string(&self)
+,
+					// Exclusion reason: Unsupported argument T
+					// to_owned(&self)
+,
+					// Exclusion reason: Unsupported argument T
+					// clone_into(&self)
+,
+					// Exclusion reason: Unsupported argument T
+					// is_valid_bit_pattern() -> bool
+,
+					// Exclusion reason: Unsupported argument S,Unsupported argument Result,Generics on the method
+					// serialize(&self)
+,
+					// Exclusion reason: Unsupported argument D,Unsupported argument Result,Generics on the method
+					// deserialize()
+,
+					clone(&self) -> LuaIVec2
+,
+					default() -> LuaIVec2
+,
+					eq(&self&LuaIVec2) -> bool
+,
+					div(selfLuaIVec2) -> LuaIVec2
+,
+					div(selfi32) -> LuaIVec2
+,
+					div(selfLuaIVec2) -> LuaIVec2
+,
+					// Exclusion reason: Unsupported argument &mut self
+					// div_assign(<invalid: &mut self>LuaIVec2)
+,
+					// Exclusion reason: Unsupported argument &mut self
+					// div_assign(<invalid: &mut self>i32)
+,
+					mul(selfLuaIVec2) -> LuaIVec2
+,
+					mul(selfi32) -> LuaIVec2
+,
+					mul(selfLuaIVec2) -> LuaIVec2
+,
+					// Exclusion reason: Unsupported argument &mut self
+					// mul_assign(<invalid: &mut self>LuaIVec2)
+,
+					// Exclusion reason: Unsupported argument &mut self
+					// mul_assign(<invalid: &mut self>i32)
+,
+					add(selfLuaIVec2) -> LuaIVec2
+,
+					add(selfi32) -> LuaIVec2
+,
+					add(selfLuaIVec2) -> LuaIVec2
+,
+					// Exclusion reason: Unsupported argument &mut self
+					// add_assign(<invalid: &mut self>LuaIVec2)
+,
+					// Exclusion reason: Unsupported argument &mut self
+					// add_assign(<invalid: &mut self>i32)
+,
+					sub(selfLuaIVec2) -> LuaIVec2
+,
+					sub(selfi32) -> LuaIVec2
+,
+					sub(selfLuaIVec2) -> LuaIVec2
+,
+					// Exclusion reason: Unsupported argument &mut self
+					// sub_assign(<invalid: &mut self>LuaIVec2)
+,
+					// Exclusion reason: Unsupported argument &mut self
+					// sub_assign(<invalid: &mut self>i32)
+,
+					rem(selfLuaIVec2) -> LuaIVec2
+,
+					rem(selfi32) -> LuaIVec2
+,
+					rem(selfLuaIVec2) -> LuaIVec2
+,
+					// Exclusion reason: Unsupported argument &mut self
+					// rem_assign(<invalid: &mut self>LuaIVec2)
+,
+					// Exclusion reason: Unsupported argument &mut self
+					// rem_assign(<invalid: &mut self>i32)
+,
+					// Exclusion reason: Unsupported argument &[i32;2]
+					// as_ref(&self)<invalid: &[i32;2]>
+,
+					// Exclusion reason: Unsupported argument &mut self,Unsupported argument &mut [i32;2]
+					// as_mut(<invalid: &mut self>)<invalid: &mut [i32;2]>
+,
+					// Exclusion reason: Unsupported argument I,Generics on the method
+					// sum() -> LuaIVec2
+,
+					// Exclusion reason: Unsupported argument I,Generics on the method
+					// product() -> LuaIVec2
+,
+					neg(self) -> LuaIVec2
+,
+					// Exclusion reason: Unsupported argument H,Generics on the method
+					// hash(&self)
+,
+					// Exclusion reason: Unsupported argument QualifiedPath { name: "Output", args: AngleBracketed { args: [], bindings: [] }, self_type: Generic("Self"), trait_: ResolvedPath { name: "", id: Id("2:3355:2223"), args: None, param_names: [] } }
+					// not(self)
+,
+					// Exclusion reason: Unsupported argument QualifiedPath { name: "Output", args: AngleBracketed { args: [], bindings: [] }, self_type: Generic("Self"), trait_: ResolvedPath { name: "", id: Id("2:3362:2217"), args: None, param_names: [] } }
+					// bitand(selfLuaIVec2)
+,
+					// Exclusion reason: Unsupported argument QualifiedPath { name: "Output", args: AngleBracketed { args: [], bindings: [] }, self_type: Generic("Self"), trait_: ResolvedPath { name: "", id: Id("2:3362:2217"), args: None, param_names: [] } }
+					// bitand(selfi32)
+,
+					// Exclusion reason: Unsupported argument QualifiedPath { name: "Output", args: AngleBracketed { args: [], bindings: [] }, self_type: Generic("Self"), trait_: ResolvedPath { name: "", id: Id("2:3367:2219"), args: None, param_names: [] } }
+					// bitor(selfLuaIVec2)
+,
+					// Exclusion reason: Unsupported argument QualifiedPath { name: "Output", args: AngleBracketed { args: [], bindings: [] }, self_type: Generic("Self"), trait_: ResolvedPath { name: "", id: Id("2:3367:2219"), args: None, param_names: [] } }
+					// bitor(selfi32)
+,
+					// Exclusion reason: Unsupported argument QualifiedPath { name: "Output", args: AngleBracketed { args: [], bindings: [] }, self_type: Generic("Self"), trait_: ResolvedPath { name: "", id: Id("2:3372:2221"), args: None, param_names: [] } }
+					// bitxor(selfLuaIVec2)
+,
+					// Exclusion reason: Unsupported argument QualifiedPath { name: "Output", args: AngleBracketed { args: [], bindings: [] }, self_type: Generic("Self"), trait_: ResolvedPath { name: "", id: Id("2:3372:2221"), args: None, param_names: [] } }
+					// bitxor(selfi32)
+,
+					// Exclusion reason: Unsupported argument QualifiedPath { name: "Output", args: AngleBracketed { args: [], bindings: [] }, self_type: Generic("Self"), trait_: ResolvedPath { name: "", id: Id("2:3377:3424"), args: None, param_names: [] } }
+					// shl(selfi8)
+,
+					// Exclusion reason: Unsupported argument QualifiedPath { name: "Output", args: AngleBracketed { args: [], bindings: [] }, self_type: Generic("Self"), trait_: ResolvedPath { name: "", id: Id("2:3377:3424"), args: None, param_names: [] } }
+					// shl(selfi16)
+,
+					// Exclusion reason: Unsupported argument QualifiedPath { name: "Output", args: AngleBracketed { args: [], bindings: [] }, self_type: Generic("Self"), trait_: ResolvedPath { name: "", id: Id("2:3377:3424"), args: None, param_names: [] } }
+					// shl(selfi32)
+,
+					// Exclusion reason: Unsupported argument QualifiedPath { name: "Output", args: AngleBracketed { args: [], bindings: [] }, self_type: Generic("Self"), trait_: ResolvedPath { name: "", id: Id("2:3377:3424"), args: None, param_names: [] } }
+					// shl(selfu8)
+,
+					// Exclusion reason: Unsupported argument QualifiedPath { name: "Output", args: AngleBracketed { args: [], bindings: [] }, self_type: Generic("Self"), trait_: ResolvedPath { name: "", id: Id("2:3377:3424"), args: None, param_names: [] } }
+					// shl(selfu16)
+,
+					// Exclusion reason: Unsupported argument QualifiedPath { name: "Output", args: AngleBracketed { args: [], bindings: [] }, self_type: Generic("Self"), trait_: ResolvedPath { name: "", id: Id("2:3377:3424"), args: None, param_names: [] } }
+					// shl(selfu32)
+,
+					// Exclusion reason: Unsupported argument crate::IVec2,Unsupported argument QualifiedPath { name: "Output", args: AngleBracketed { args: [], bindings: [] }, self_type: Generic("Self"), trait_: ResolvedPath { name: "", id: Id("2:3377:3424"), args: None, param_names: [] } }
+					// shl(self)
+,
+					// Exclusion reason: Unsupported argument crate::UVec2,Unsupported argument QualifiedPath { name: "Output", args: AngleBracketed { args: [], bindings: [] }, self_type: Generic("Self"), trait_: ResolvedPath { name: "", id: Id("2:3377:3424"), args: None, param_names: [] } }
+					// shl(self)
+,
+					// Exclusion reason: Unsupported argument crate::IVec2,Unsupported argument QualifiedPath { name: "Output", args: AngleBracketed { args: [], bindings: [] }, self_type: Generic("Self"), trait_: ResolvedPath { name: "", id: Id("2:3377:3424"), args: None, param_names: [] } }
+					// shl(self)
+,
+					// Exclusion reason: Unsupported argument QualifiedPath { name: "Output", args: AngleBracketed { args: [], bindings: [] }, self_type: Generic("Self"), trait_: ResolvedPath { name: "", id: Id("2:3383:3425"), args: None, param_names: [] } }
+					// shr(selfi8)
+,
+					// Exclusion reason: Unsupported argument QualifiedPath { name: "Output", args: AngleBracketed { args: [], bindings: [] }, self_type: Generic("Self"), trait_: ResolvedPath { name: "", id: Id("2:3383:3425"), args: None, param_names: [] } }
+					// shr(selfi16)
+,
+					// Exclusion reason: Unsupported argument QualifiedPath { name: "Output", args: AngleBracketed { args: [], bindings: [] }, self_type: Generic("Self"), trait_: ResolvedPath { name: "", id: Id("2:3383:3425"), args: None, param_names: [] } }
+					// shr(selfi32)
+,
+					// Exclusion reason: Unsupported argument QualifiedPath { name: "Output", args: AngleBracketed { args: [], bindings: [] }, self_type: Generic("Self"), trait_: ResolvedPath { name: "", id: Id("2:3383:3425"), args: None, param_names: [] } }
+					// shr(selfu8)
+,
+					// Exclusion reason: Unsupported argument QualifiedPath { name: "Output", args: AngleBracketed { args: [], bindings: [] }, self_type: Generic("Self"), trait_: ResolvedPath { name: "", id: Id("2:3383:3425"), args: None, param_names: [] } }
+					// shr(selfu16)
+,
+					// Exclusion reason: Unsupported argument QualifiedPath { name: "Output", args: AngleBracketed { args: [], bindings: [] }, self_type: Generic("Self"), trait_: ResolvedPath { name: "", id: Id("2:3383:3425"), args: None, param_names: [] } }
+					// shr(selfu32)
+,
+					// Exclusion reason: Unsupported argument crate::IVec2,Unsupported argument QualifiedPath { name: "Output", args: AngleBracketed { args: [], bindings: [] }, self_type: Generic("Self"), trait_: ResolvedPath { name: "", id: Id("2:3383:3425"), args: None, param_names: [] } }
+					// shr(self)
+,
+					// Exclusion reason: Unsupported argument crate::UVec2,Unsupported argument QualifiedPath { name: "Output", args: AngleBracketed { args: [], bindings: [] }, self_type: Generic("Self"), trait_: ResolvedPath { name: "", id: Id("2:3383:3425"), args: None, param_names: [] } }
+					// shr(self)
+,
+					// Exclusion reason: Unsupported argument crate::IVec2,Unsupported argument QualifiedPath { name: "Output", args: AngleBracketed { args: [], bindings: [] }, self_type: Generic("Self"), trait_: ResolvedPath { name: "", id: Id("2:3383:3425"), args: None, param_names: [] } }
+					// shr(self)
+,
+					// Exclusion reason: Unsupported argument QualifiedPath { name: "Output", args: AngleBracketed { args: [], bindings: [] }, self_type: Generic("Self"), trait_: ResolvedPath { name: "", id: Id("2:3539:2758"), args: None, param_names: [] } }
+					// index(&selfusize)
+,
+					// Exclusion reason: Unsupported argument &mut self,Unsupported argument QualifiedPath { name: "Output", args: AngleBracketed { args: [], bindings: [] }, self_type: Generic("Self"), trait_: ResolvedPath { name: "", id: Id("2:3539:2758"), args: None, param_names: [] } }
+					// index_mut(<invalid: &mut self>usize)
+,
+					// Exclusion reason: Unsupported argument fmt::Formatter,Unsupported argument fmt::Result
+					// fmt(&self)
+,
+					// Exclusion reason: Unsupported argument fmt::Formatter,Unsupported argument fmt::Result
+					// fmt(&self)
+,
+					xx(self) -> LuaIVec2
+,
+					xy(self) -> LuaIVec2
+,
+					yx(self) -> LuaIVec2
+,
+					yy(self) -> LuaIVec2
+,
+					xxx(self) -> LuaIVec3
+,
+					xxy(self) -> LuaIVec3
+,
+					xyx(self) -> LuaIVec3
+,
+					xyy(self) -> LuaIVec3
+,
+					yxx(self) -> LuaIVec3
+,
+					yxy(self) -> LuaIVec3
+,
+					yyx(self) -> LuaIVec3
+,
+					yyy(self) -> LuaIVec3
+,
+					xxxx(self) -> LuaIVec4
+,
+					xxxy(self) -> LuaIVec4
+,
+					xxyx(self) -> LuaIVec4
+,
+					xxyy(self) -> LuaIVec4
+,
+					xyxx(self) -> LuaIVec4
+,
+					xyxy(self) -> LuaIVec4
+,
+					xyyx(self) -> LuaIVec4
+,
+					xyyy(self) -> LuaIVec4
+,
+					yxxx(self) -> LuaIVec4
+,
+					yxxy(self) -> LuaIVec4
+,
+					yxyx(self) -> LuaIVec4
+,
+					yxyy(self) -> LuaIVec4
+,
+					yyxx(self) -> LuaIVec4
+,
+					yyxy(self) -> LuaIVec4
+,
+					yyyx(self) -> LuaIVec4
+,
+					yyyy(self) -> LuaIVec4
+,
+				)
+				+ BinaryOps
+				(
 self Add LuaIVec2 -> LuaIVec2 -> LuaIVec2
 self Add i32 -> LuaIVec2 -> LuaIVec2
 i32 Add self -> LuaIVec2 -> LuaIVec2
@@ -7659,713 +7011,641 @@ i32 Mul self -> LuaIVec2 -> LuaIVec2
 self Rem LuaIVec2 -> LuaIVec2 -> LuaIVec2
 self Rem i32 -> LuaIVec2 -> LuaIVec2
 i32 Rem self -> LuaIVec2 -> LuaIVec2
-			)
-+ UnaryOps			(
-			)
-+ 			    Copy(LuaVec2 -> (MetaMethod::Index) (s=LuaIVec2),
-			        LuaVec2 -> mut (MetaMethod::NewIndex) (n=i32))
-			    
-impl			{
+				)
+				+ UnaryOps
+				(
+				)
++ 				    Copy(LuaVec2 -> (MetaMethod::Index) (s=LuaIVec2),
+				        LuaVec2 -> mut (MetaMethod::NewIndex) (n=i32))
+				    
+			impl
+			{
 			}
 		}
-		{
+,		{
 			///A 3-dimensional vector.
-glam::i32::ivec3::IVec3 : Value
-AutoMethods			(
-				// Exclusion reason: 
-				// ///Creates a new vector.
-				// new(i32i32i32) -> LuaIVec3
-
-				// Exclusion reason: 
-				// ///Creates a vector with all elements set to `v`.
-				// splat(i32) -> LuaIVec3
-
-				///Creates a vector from the elements in `if_true` and `if_false`, selecting which to use
-				///for each element of `self`.
-				///
-				///A true element in the mask uses the corresponding element from `if_true`, and false
-				///uses the element from `if_false`.
-				select(LuaIVec3LuaIVec3) -> LuaIVec3
-
-				///Creates a new vector from an array.
-				from_array(<invalid: [i32;3]>) -> LuaIVec3
-
-				///`[x, y, z]`
-				to_array(&self)<invalid: [i32;3]>
-
-				///Creates a vector from the first 3 values in `slice`.
-				///
-				///# Panics
-				///
-				///Panics if `slice` is less than 3 elements long.
-				from_slice(<invalid: &[i32]>) -> LuaIVec3
-
-				///Writes the elements of `self` to the first 3 elements in `slice`.
-				///
-				///# Panics
-				///
-				///Panics if `slice` is less than 3 elements long.
-				write_to_slice(self<invalid: &mut [i32]>)
-
-				// Exclusion reason: 
-				// ///Creates a 4D vector from `self` and the given `w` value.
-				// extend(selfi32) -> LuaIVec4
-
-				// Exclusion reason: 
-				// ///Creates a 2D vector from the `x` and `y` elements of `self`, discarding `z`.
-				// ///
-				// ///Truncation may also be performed by using `self.xy()` or `IVec2::from()`.
-				// truncate(self) -> LuaIVec2
-
-				// Exclusion reason: 
-				// ///Computes the dot product of `self` and `rhs`.
-				// dot(selfLuaIVec3) -> i32
-
-				// Exclusion reason: 
-				// ///Computes the cross product of `self` and `rhs`.
-				// cross(selfLuaIVec3) -> LuaIVec3
-
-				// Exclusion reason: 
-				// ///Returns a vector containing the minimum values for each element of `self` and `rhs`.
-				// ///
-				// ///In other words this computes `[self.x.min(rhs.x), self.y.min(rhs.y), ..]`.
-				// min(selfLuaIVec3) -> LuaIVec3
-
-				// Exclusion reason: 
-				// ///Returns a vector containing the maximum values for each element of `self` and `rhs`.
-				// ///
-				// ///In other words this computes `[self.x.max(rhs.x), self.y.max(rhs.y), ..]`.
-				// max(selfLuaIVec3) -> LuaIVec3
-
-				// Exclusion reason: 
-				// ///Component-wise clamping of values, similar to [`f32::clamp`].
-				// ///
-				// ///Each element in `min` must be less-or-equal to the corresponding element in `max`.
-				// ///
-				// ///# Panics
-				// ///
-				// ///Will panic if `min` is greater than `max` when `glam_assert` is enabled.
-				// clamp(selfLuaIVec3LuaIVec3) -> LuaIVec3
-
-				// Exclusion reason: 
-				// ///Returns the horizontal minimum of `self`.
-				// ///
-				// ///In other words this computes `min(x, y, ..)`.
-				// min_element(self) -> i32
-
-				// Exclusion reason: 
-				// ///Returns the horizontal maximum of `self`.
-				// ///
-				// ///In other words this computes `max(x, y, ..)`.
-				// max_element(self) -> i32
-
-				///Returns a vector mask containing the result of a `==` comparison for each element of
-				///`self` and `rhs`.
-				///
-				///In other words, this computes `[self.x == rhs.x, self.y == rhs.y, ..]` for all
-				///elements.
-				cmpeq(selfLuaIVec3)
-
-				///Returns a vector mask containing the result of a `!=` comparison for each element of
-				///`self` and `rhs`.
-				///
-				///In other words this computes `[self.x != rhs.x, self.y != rhs.y, ..]` for all
-				///elements.
-				cmpne(selfLuaIVec3)
-
-				///Returns a vector mask containing the result of a `>=` comparison for each element of
-				///`self` and `rhs`.
-				///
-				///In other words this computes `[self.x >= rhs.x, self.y >= rhs.y, ..]` for all
-				///elements.
-				cmpge(selfLuaIVec3)
-
-				///Returns a vector mask containing the result of a `>` comparison for each element of
-				///`self` and `rhs`.
-				///
-				///In other words this computes `[self.x > rhs.x, self.y > rhs.y, ..]` for all
-				///elements.
-				cmpgt(selfLuaIVec3)
-
-				///Returns a vector mask containing the result of a `<=` comparison for each element of
-				///`self` and `rhs`.
-				///
-				///In other words this computes `[self.x <= rhs.x, self.y <= rhs.y, ..]` for all
-				///elements.
-				cmple(selfLuaIVec3)
-
-				///Returns a vector mask containing the result of a `<` comparison for each element of
-				///`self` and `rhs`.
-				///
-				///In other words this computes `[self.x < rhs.x, self.y < rhs.y, ..]` for all
-				///elements.
-				cmplt(selfLuaIVec3)
-
-				// Exclusion reason: 
-				// ///Returns a vector containing the absolute value of each element of `self`.
-				// abs(self) -> LuaIVec3
-
-				// Exclusion reason: 
-				// ///Returns a vector with elements representing the sign of `self`.
-				// ///
-				// ///- `1.0` if the number is positive, `+0.0` or `INFINITY`
-				// ///- `-1.0` if the number is negative, `-0.0` or `NEG_INFINITY`
-				// ///- `NAN` if the number is `NAN`
-				// signum(self) -> LuaIVec3
-
-				///Casts all elements of `self` to `f32`.
-				as_vec3(&self)
-
-				///Casts all elements of `self` to `f32`.
-				as_vec3a(&self)
-
-				///Casts all elements of `self` to `f64`.
-				as_dvec3(&self)
-
-				///Casts all elements of `self` to `u32`.
-				as_uvec3(&self)
-
-				try_from()
-
-				///Returns the argument unchanged.
-				from()
-
-				from(<invalid: [i32;3]>) -> LuaIVec3
-
-				// Exclusion reason: 
-				// from(LuaIVec3) -> LuaIVec3
-
-				from(<invalid: (i32,i32,i32)>) -> LuaIVec3
-
-				// Exclusion reason: 
-				// from(LuaIVec3) -> LuaIVec3
-
-				from(<invalid: (LuaIVec2,i32)>) -> LuaIVec3
-
-				///Calls `U::from(self)`.
-				///
-				///That is, this conversion is whatever the implementation of
-				///<code>[From]&lt;T&gt; for U</code> chooses to do.
-				into(self)
-
-				borrow(&self)
-
-				type_id(&self)
-
-				try_into(self)
-
-				borrow_mut(<invalid: &mut self>)
-
-				to_string(&self)
-
-				to_owned(&self)
-
-				clone_into(&self)
-
-				is_valid_bit_pattern() -> bool
-
-				serialize(&self)
-
-				deserialize()
-
-				// Exclusion reason: 
-				// clone(&self) -> LuaIVec3
-
-				// Exclusion reason: 
-				// default() -> LuaIVec3
-
-				// Exclusion reason: 
-				// eq(&self&LuaIVec3) -> bool
-
-				// Exclusion reason: 
-				// div(selfLuaIVec3) -> LuaIVec3
-
-				// Exclusion reason: 
-				// div(selfi32) -> LuaIVec3
-
-				// Exclusion reason: 
-				// div(selfLuaIVec3) -> LuaIVec3
-
-				div_assign(<invalid: &mut self>LuaIVec3)
-
-				div_assign(<invalid: &mut self>i32)
-
-				// Exclusion reason: 
-				// mul(selfLuaIVec3) -> LuaIVec3
-
-				// Exclusion reason: 
-				// mul(selfi32) -> LuaIVec3
-
-				// Exclusion reason: 
-				// mul(selfLuaIVec3) -> LuaIVec3
-
-				mul_assign(<invalid: &mut self>LuaIVec3)
-
-				mul_assign(<invalid: &mut self>i32)
-
-				// Exclusion reason: 
-				// add(selfLuaIVec3) -> LuaIVec3
-
-				// Exclusion reason: 
-				// add(selfi32) -> LuaIVec3
-
-				// Exclusion reason: 
-				// add(selfLuaIVec3) -> LuaIVec3
-
-				add_assign(<invalid: &mut self>LuaIVec3)
-
-				add_assign(<invalid: &mut self>i32)
-
-				// Exclusion reason: 
-				// sub(selfLuaIVec3) -> LuaIVec3
-
-				// Exclusion reason: 
-				// sub(selfi32) -> LuaIVec3
-
-				// Exclusion reason: 
-				// sub(selfLuaIVec3) -> LuaIVec3
-
-				sub_assign(<invalid: &mut self>LuaIVec3)
-
-				sub_assign(<invalid: &mut self>i32)
-
-				// Exclusion reason: 
-				// rem(selfLuaIVec3) -> LuaIVec3
-
-				// Exclusion reason: 
-				// rem(selfi32) -> LuaIVec3
-
-				// Exclusion reason: 
-				// rem(selfLuaIVec3) -> LuaIVec3
-
-				rem_assign(<invalid: &mut self>LuaIVec3)
-
-				rem_assign(<invalid: &mut self>i32)
-
-				as_ref(&self)<invalid: &[i32;3]>
-
-				as_mut(<invalid: &mut self>)<invalid: &mut [i32;3]>
-
-				sum() -> LuaIVec3
-
-				product() -> LuaIVec3
-
-				// Exclusion reason: 
-				// neg(self) -> LuaIVec3
-
-				hash(&self)
-
-				not(self)
-
-				bitand(selfLuaIVec3)
-
-				bitand(selfi32)
-
-				bitor(selfLuaIVec3)
-
-				bitor(selfi32)
-
-				bitxor(selfLuaIVec3)
-
-				bitxor(selfi32)
-
-				shl(selfi8)
-
-				shl(selfi16)
-
-				shl(selfi32)
-
-				shl(selfu8)
-
-				shl(selfu16)
-
-				shl(selfu32)
-
-				shl(self)
-
-				shl(self)
-
-				shl(self)
-
-				shr(selfi8)
-
-				shr(selfi16)
-
-				shr(selfi32)
-
-				shr(selfu8)
-
-				shr(selfu16)
-
-				shr(selfu32)
-
-				shr(self)
-
-				shr(self)
-
-				shr(self)
-
-				index(&selfusize)
-
-				index_mut(<invalid: &mut self>usize)
-
-				fmt(&self)
-
-				fmt(&self)
-
-				// Exclusion reason: 
-				// xx(self) -> LuaIVec2
-
-				// Exclusion reason: 
-				// xy(self) -> LuaIVec2
-
-				// Exclusion reason: 
-				// xz(self) -> LuaIVec2
-
-				// Exclusion reason: 
-				// yx(self) -> LuaIVec2
-
-				// Exclusion reason: 
-				// yy(self) -> LuaIVec2
-
-				// Exclusion reason: 
-				// yz(self) -> LuaIVec2
-
-				// Exclusion reason: 
-				// zx(self) -> LuaIVec2
-
-				// Exclusion reason: 
-				// zy(self) -> LuaIVec2
-
-				// Exclusion reason: 
-				// zz(self) -> LuaIVec2
-
-				// Exclusion reason: 
-				// xxx(self) -> LuaIVec3
-
-				// Exclusion reason: 
-				// xxy(self) -> LuaIVec3
-
-				// Exclusion reason: 
-				// xxz(self) -> LuaIVec3
-
-				// Exclusion reason: 
-				// xyx(self) -> LuaIVec3
-
-				// Exclusion reason: 
-				// xyy(self) -> LuaIVec3
-
-				// Exclusion reason: 
-				// xyz(self) -> LuaIVec3
-
-				// Exclusion reason: 
-				// xzx(self) -> LuaIVec3
-
-				// Exclusion reason: 
-				// xzy(self) -> LuaIVec3
-
-				// Exclusion reason: 
-				// xzz(self) -> LuaIVec3
-
-				// Exclusion reason: 
-				// yxx(self) -> LuaIVec3
-
-				// Exclusion reason: 
-				// yxy(self) -> LuaIVec3
-
-				// Exclusion reason: 
-				// yxz(self) -> LuaIVec3
-
-				// Exclusion reason: 
-				// yyx(self) -> LuaIVec3
-
-				// Exclusion reason: 
-				// yyy(self) -> LuaIVec3
-
-				// Exclusion reason: 
-				// yyz(self) -> LuaIVec3
-
-				// Exclusion reason: 
-				// yzx(self) -> LuaIVec3
-
-				// Exclusion reason: 
-				// yzy(self) -> LuaIVec3
-
-				// Exclusion reason: 
-				// yzz(self) -> LuaIVec3
-
-				// Exclusion reason: 
-				// zxx(self) -> LuaIVec3
-
-				// Exclusion reason: 
-				// zxy(self) -> LuaIVec3
-
-				// Exclusion reason: 
-				// zxz(self) -> LuaIVec3
-
-				// Exclusion reason: 
-				// zyx(self) -> LuaIVec3
-
-				// Exclusion reason: 
-				// zyy(self) -> LuaIVec3
-
-				// Exclusion reason: 
-				// zyz(self) -> LuaIVec3
-
-				// Exclusion reason: 
-				// zzx(self) -> LuaIVec3
-
-				// Exclusion reason: 
-				// zzy(self) -> LuaIVec3
-
-				// Exclusion reason: 
-				// zzz(self) -> LuaIVec3
-
-				// Exclusion reason: 
-				// xxxx(self) -> LuaIVec4
-
-				// Exclusion reason: 
-				// xxxy(self) -> LuaIVec4
-
-				// Exclusion reason: 
-				// xxxz(self) -> LuaIVec4
-
-				// Exclusion reason: 
-				// xxyx(self) -> LuaIVec4
-
-				// Exclusion reason: 
-				// xxyy(self) -> LuaIVec4
-
-				// Exclusion reason: 
-				// xxyz(self) -> LuaIVec4
-
-				// Exclusion reason: 
-				// xxzx(self) -> LuaIVec4
-
-				// Exclusion reason: 
-				// xxzy(self) -> LuaIVec4
-
-				// Exclusion reason: 
-				// xxzz(self) -> LuaIVec4
-
-				// Exclusion reason: 
-				// xyxx(self) -> LuaIVec4
-
-				// Exclusion reason: 
-				// xyxy(self) -> LuaIVec4
-
-				// Exclusion reason: 
-				// xyxz(self) -> LuaIVec4
-
-				// Exclusion reason: 
-				// xyyx(self) -> LuaIVec4
-
-				// Exclusion reason: 
-				// xyyy(self) -> LuaIVec4
-
-				// Exclusion reason: 
-				// xyyz(self) -> LuaIVec4
-
-				// Exclusion reason: 
-				// xyzx(self) -> LuaIVec4
-
-				// Exclusion reason: 
-				// xyzy(self) -> LuaIVec4
-
-				// Exclusion reason: 
-				// xyzz(self) -> LuaIVec4
-
-				// Exclusion reason: 
-				// xzxx(self) -> LuaIVec4
-
-				// Exclusion reason: 
-				// xzxy(self) -> LuaIVec4
-
-				// Exclusion reason: 
-				// xzxz(self) -> LuaIVec4
-
-				// Exclusion reason: 
-				// xzyx(self) -> LuaIVec4
-
-				// Exclusion reason: 
-				// xzyy(self) -> LuaIVec4
-
-				// Exclusion reason: 
-				// xzyz(self) -> LuaIVec4
-
-				// Exclusion reason: 
-				// xzzx(self) -> LuaIVec4
-
-				// Exclusion reason: 
-				// xzzy(self) -> LuaIVec4
-
-				// Exclusion reason: 
-				// xzzz(self) -> LuaIVec4
-
-				// Exclusion reason: 
-				// yxxx(self) -> LuaIVec4
-
-				// Exclusion reason: 
-				// yxxy(self) -> LuaIVec4
-
-				// Exclusion reason: 
-				// yxxz(self) -> LuaIVec4
-
-				// Exclusion reason: 
-				// yxyx(self) -> LuaIVec4
-
-				// Exclusion reason: 
-				// yxyy(self) -> LuaIVec4
-
-				// Exclusion reason: 
-				// yxyz(self) -> LuaIVec4
-
-				// Exclusion reason: 
-				// yxzx(self) -> LuaIVec4
-
-				// Exclusion reason: 
-				// yxzy(self) -> LuaIVec4
-
-				// Exclusion reason: 
-				// yxzz(self) -> LuaIVec4
-
-				// Exclusion reason: 
-				// yyxx(self) -> LuaIVec4
-
-				// Exclusion reason: 
-				// yyxy(self) -> LuaIVec4
-
-				// Exclusion reason: 
-				// yyxz(self) -> LuaIVec4
-
-				// Exclusion reason: 
-				// yyyx(self) -> LuaIVec4
-
-				// Exclusion reason: 
-				// yyyy(self) -> LuaIVec4
-
-				// Exclusion reason: 
-				// yyyz(self) -> LuaIVec4
-
-				// Exclusion reason: 
-				// yyzx(self) -> LuaIVec4
-
-				// Exclusion reason: 
-				// yyzy(self) -> LuaIVec4
-
-				// Exclusion reason: 
-				// yyzz(self) -> LuaIVec4
-
-				// Exclusion reason: 
-				// yzxx(self) -> LuaIVec4
-
-				// Exclusion reason: 
-				// yzxy(self) -> LuaIVec4
-
-				// Exclusion reason: 
-				// yzxz(self) -> LuaIVec4
-
-				// Exclusion reason: 
-				// yzyx(self) -> LuaIVec4
-
-				// Exclusion reason: 
-				// yzyy(self) -> LuaIVec4
-
-				// Exclusion reason: 
-				// yzyz(self) -> LuaIVec4
-
-				// Exclusion reason: 
-				// yzzx(self) -> LuaIVec4
-
-				// Exclusion reason: 
-				// yzzy(self) -> LuaIVec4
-
-				// Exclusion reason: 
-				// yzzz(self) -> LuaIVec4
-
-				// Exclusion reason: 
-				// zxxx(self) -> LuaIVec4
-
-				// Exclusion reason: 
-				// zxxy(self) -> LuaIVec4
-
-				// Exclusion reason: 
-				// zxxz(self) -> LuaIVec4
-
-				// Exclusion reason: 
-				// zxyx(self) -> LuaIVec4
-
-				// Exclusion reason: 
-				// zxyy(self) -> LuaIVec4
-
-				// Exclusion reason: 
-				// zxyz(self) -> LuaIVec4
-
-				// Exclusion reason: 
-				// zxzx(self) -> LuaIVec4
-
-				// Exclusion reason: 
-				// zxzy(self) -> LuaIVec4
-
-				// Exclusion reason: 
-				// zxzz(self) -> LuaIVec4
-
-				// Exclusion reason: 
-				// zyxx(self) -> LuaIVec4
-
-				// Exclusion reason: 
-				// zyxy(self) -> LuaIVec4
-
-				// Exclusion reason: 
-				// zyxz(self) -> LuaIVec4
-
-				// Exclusion reason: 
-				// zyyx(self) -> LuaIVec4
-
-				// Exclusion reason: 
-				// zyyy(self) -> LuaIVec4
-
-				// Exclusion reason: 
-				// zyyz(self) -> LuaIVec4
-
-				// Exclusion reason: 
-				// zyzx(self) -> LuaIVec4
-
-				// Exclusion reason: 
-				// zyzy(self) -> LuaIVec4
-
-				// Exclusion reason: 
-				// zyzz(self) -> LuaIVec4
-
-				// Exclusion reason: 
-				// zzxx(self) -> LuaIVec4
-
-				// Exclusion reason: 
-				// zzxy(self) -> LuaIVec4
-
-				// Exclusion reason: 
-				// zzxz(self) -> LuaIVec4
-
-				// Exclusion reason: 
-				// zzyx(self) -> LuaIVec4
-
-				// Exclusion reason: 
-				// zzyy(self) -> LuaIVec4
-
-				// Exclusion reason: 
-				// zzyz(self) -> LuaIVec4
-
-				// Exclusion reason: 
-				// zzzx(self) -> LuaIVec4
-
-				// Exclusion reason: 
-				// zzzy(self) -> LuaIVec4
-
-				// Exclusion reason: 
-				// zzzz(self) -> LuaIVec4
-
-			)
-+ BinaryOps			(
+			glam::i32::ivec3::IVec3 : Value
+:				AutoMethods
+				(
+					///Creates a new vector.
+					new(i32i32i32) -> LuaIVec3
+,
+					///Creates a vector with all elements set to `v`.
+					splat(i32) -> LuaIVec3
+,
+					// Exclusion reason: Unsupported argument BVec3
+					// ///Creates a vector from the elements in `if_true` and `if_false`, selecting which to use
+					// ///for each element of `self`.
+					// ///
+					// ///A true element in the mask uses the corresponding element from `if_true`, and false
+					// ///uses the element from `if_false`.
+					// select(LuaIVec3LuaIVec3) -> LuaIVec3
+,
+					// Exclusion reason: Unsupported argument [i32;3]
+					// ///Creates a new vector from an array.
+					// from_array(<invalid: [i32;3]>) -> LuaIVec3
+,
+					// Exclusion reason: Unsupported argument [i32;3]
+					// ///`[x, y, z]`
+					// to_array(&self)<invalid: [i32;3]>
+,
+					// Exclusion reason: Unsupported argument &[i32]
+					// ///Creates a vector from the first 3 values in `slice`.
+					// ///
+					// ///# Panics
+					// ///
+					// ///Panics if `slice` is less than 3 elements long.
+					// from_slice(<invalid: &[i32]>) -> LuaIVec3
+,
+					// Exclusion reason: Unsupported argument &mut [i32]
+					// ///Writes the elements of `self` to the first 3 elements in `slice`.
+					// ///
+					// ///# Panics
+					// ///
+					// ///Panics if `slice` is less than 3 elements long.
+					// write_to_slice(self<invalid: &mut [i32]>)
+,
+					///Creates a 4D vector from `self` and the given `w` value.
+					extend(selfi32) -> LuaIVec4
+,
+					///Creates a 2D vector from the `x` and `y` elements of `self`, discarding `z`.
+					///
+					///Truncation may also be performed by using `self.xy()` or `IVec2::from()`.
+					truncate(self) -> LuaIVec2
+,
+					///Computes the dot product of `self` and `rhs`.
+					dot(selfLuaIVec3) -> i32
+,
+					///Computes the cross product of `self` and `rhs`.
+					cross(selfLuaIVec3) -> LuaIVec3
+,
+					///Returns a vector containing the minimum values for each element of `self` and `rhs`.
+					///
+					///In other words this computes `[self.x.min(rhs.x), self.y.min(rhs.y), ..]`.
+					min(selfLuaIVec3) -> LuaIVec3
+,
+					///Returns a vector containing the maximum values for each element of `self` and `rhs`.
+					///
+					///In other words this computes `[self.x.max(rhs.x), self.y.max(rhs.y), ..]`.
+					max(selfLuaIVec3) -> LuaIVec3
+,
+					///Component-wise clamping of values, similar to [`f32::clamp`].
+					///
+					///Each element in `min` must be less-or-equal to the corresponding element in `max`.
+					///
+					///# Panics
+					///
+					///Will panic if `min` is greater than `max` when `glam_assert` is enabled.
+					clamp(selfLuaIVec3LuaIVec3) -> LuaIVec3
+,
+					///Returns the horizontal minimum of `self`.
+					///
+					///In other words this computes `min(x, y, ..)`.
+					min_element(self) -> i32
+,
+					///Returns the horizontal maximum of `self`.
+					///
+					///In other words this computes `max(x, y, ..)`.
+					max_element(self) -> i32
+,
+					// Exclusion reason: Unsupported argument BVec3
+					// ///Returns a vector mask containing the result of a `==` comparison for each element of
+					// ///`self` and `rhs`.
+					// ///
+					// ///In other words, this computes `[self.x == rhs.x, self.y == rhs.y, ..]` for all
+					// ///elements.
+					// cmpeq(selfLuaIVec3)
+,
+					// Exclusion reason: Unsupported argument BVec3
+					// ///Returns a vector mask containing the result of a `!=` comparison for each element of
+					// ///`self` and `rhs`.
+					// ///
+					// ///In other words this computes `[self.x != rhs.x, self.y != rhs.y, ..]` for all
+					// ///elements.
+					// cmpne(selfLuaIVec3)
+,
+					// Exclusion reason: Unsupported argument BVec3
+					// ///Returns a vector mask containing the result of a `>=` comparison for each element of
+					// ///`self` and `rhs`.
+					// ///
+					// ///In other words this computes `[self.x >= rhs.x, self.y >= rhs.y, ..]` for all
+					// ///elements.
+					// cmpge(selfLuaIVec3)
+,
+					// Exclusion reason: Unsupported argument BVec3
+					// ///Returns a vector mask containing the result of a `>` comparison for each element of
+					// ///`self` and `rhs`.
+					// ///
+					// ///In other words this computes `[self.x > rhs.x, self.y > rhs.y, ..]` for all
+					// ///elements.
+					// cmpgt(selfLuaIVec3)
+,
+					// Exclusion reason: Unsupported argument BVec3
+					// ///Returns a vector mask containing the result of a `<=` comparison for each element of
+					// ///`self` and `rhs`.
+					// ///
+					// ///In other words this computes `[self.x <= rhs.x, self.y <= rhs.y, ..]` for all
+					// ///elements.
+					// cmple(selfLuaIVec3)
+,
+					// Exclusion reason: Unsupported argument BVec3
+					// ///Returns a vector mask containing the result of a `<` comparison for each element of
+					// ///`self` and `rhs`.
+					// ///
+					// ///In other words this computes `[self.x < rhs.x, self.y < rhs.y, ..]` for all
+					// ///elements.
+					// cmplt(selfLuaIVec3)
+,
+					///Returns a vector containing the absolute value of each element of `self`.
+					abs(self) -> LuaIVec3
+,
+					///Returns a vector with elements representing the sign of `self`.
+					///
+					///- `1.0` if the number is positive, `+0.0` or `INFINITY`
+					///- `-1.0` if the number is negative, `-0.0` or `NEG_INFINITY`
+					///- `NAN` if the number is `NAN`
+					signum(self) -> LuaIVec3
+,
+					// Exclusion reason: Unsupported argument crate::Vec3
+					// ///Casts all elements of `self` to `f32`.
+					// as_vec3(&self)
+,
+					// Exclusion reason: Unsupported argument crate::Vec3A
+					// ///Casts all elements of `self` to `f32`.
+					// as_vec3a(&self)
+,
+					// Exclusion reason: Unsupported argument crate::DVec3
+					// ///Casts all elements of `self` to `f64`.
+					// as_dvec3(&self)
+,
+					// Exclusion reason: Unsupported argument crate::UVec3
+					// ///Casts all elements of `self` to `u32`.
+					// as_uvec3(&self)
+,
+					// Exclusion reason: Unsupported argument U,Unsupported argument Result
+					// try_from()
+,
+					// Exclusion reason: Unsupported argument T,Unsupported argument T
+					// ///Returns the argument unchanged.
+					// from()
+,
+					// Exclusion reason: Unsupported argument [i32;3]
+					// from(<invalid: [i32;3]>) -> LuaIVec3
+,
+					from(LuaIVec3) -> LuaIVec3
+,
+					// Exclusion reason: Unsupported argument (i32,i32,i32)
+					// from(<invalid: (i32,i32,i32)>) -> LuaIVec3
+,
+					from(LuaIVec3) -> LuaIVec3
+,
+					// Exclusion reason: Unsupported argument (LuaIVec2,i32)
+					// from(<invalid: (LuaIVec2,i32)>) -> LuaIVec3
+,
+					// Exclusion reason: Unsupported argument U
+					// ///Calls `U::from(self)`.
+					// ///
+					// ///That is, this conversion is whatever the implementation of
+					// ///<code>[From]&lt;T&gt; for U</code> chooses to do.
+					// into(self)
+,
+					// Exclusion reason: Unsupported argument T
+					// borrow(&self)
+,
+					// Exclusion reason: Unsupported argument TypeId
+					// type_id(&self)
+,
+					// Exclusion reason: Unsupported argument Result
+					// try_into(self)
+,
+					// Exclusion reason: Unsupported argument &mut self,Unsupported argument T
+					// borrow_mut(<invalid: &mut self>)
+,
+					// Exclusion reason: Unsupported argument String
+					// to_string(&self)
+,
+					// Exclusion reason: Unsupported argument T
+					// to_owned(&self)
+,
+					// Exclusion reason: Unsupported argument T
+					// clone_into(&self)
+,
+					// Exclusion reason: Unsupported argument T
+					// is_valid_bit_pattern() -> bool
+,
+					// Exclusion reason: Unsupported argument S,Unsupported argument Result,Generics on the method
+					// serialize(&self)
+,
+					// Exclusion reason: Unsupported argument D,Unsupported argument Result,Generics on the method
+					// deserialize()
+,
+					clone(&self) -> LuaIVec3
+,
+					default() -> LuaIVec3
+,
+					eq(&self&LuaIVec3) -> bool
+,
+					div(selfLuaIVec3) -> LuaIVec3
+,
+					div(selfi32) -> LuaIVec3
+,
+					div(selfLuaIVec3) -> LuaIVec3
+,
+					// Exclusion reason: Unsupported argument &mut self
+					// div_assign(<invalid: &mut self>LuaIVec3)
+,
+					// Exclusion reason: Unsupported argument &mut self
+					// div_assign(<invalid: &mut self>i32)
+,
+					mul(selfLuaIVec3) -> LuaIVec3
+,
+					mul(selfi32) -> LuaIVec3
+,
+					mul(selfLuaIVec3) -> LuaIVec3
+,
+					// Exclusion reason: Unsupported argument &mut self
+					// mul_assign(<invalid: &mut self>LuaIVec3)
+,
+					// Exclusion reason: Unsupported argument &mut self
+					// mul_assign(<invalid: &mut self>i32)
+,
+					add(selfLuaIVec3) -> LuaIVec3
+,
+					add(selfi32) -> LuaIVec3
+,
+					add(selfLuaIVec3) -> LuaIVec3
+,
+					// Exclusion reason: Unsupported argument &mut self
+					// add_assign(<invalid: &mut self>LuaIVec3)
+,
+					// Exclusion reason: Unsupported argument &mut self
+					// add_assign(<invalid: &mut self>i32)
+,
+					sub(selfLuaIVec3) -> LuaIVec3
+,
+					sub(selfi32) -> LuaIVec3
+,
+					sub(selfLuaIVec3) -> LuaIVec3
+,
+					// Exclusion reason: Unsupported argument &mut self
+					// sub_assign(<invalid: &mut self>LuaIVec3)
+,
+					// Exclusion reason: Unsupported argument &mut self
+					// sub_assign(<invalid: &mut self>i32)
+,
+					rem(selfLuaIVec3) -> LuaIVec3
+,
+					rem(selfi32) -> LuaIVec3
+,
+					rem(selfLuaIVec3) -> LuaIVec3
+,
+					// Exclusion reason: Unsupported argument &mut self
+					// rem_assign(<invalid: &mut self>LuaIVec3)
+,
+					// Exclusion reason: Unsupported argument &mut self
+					// rem_assign(<invalid: &mut self>i32)
+,
+					// Exclusion reason: Unsupported argument &[i32;3]
+					// as_ref(&self)<invalid: &[i32;3]>
+,
+					// Exclusion reason: Unsupported argument &mut self,Unsupported argument &mut [i32;3]
+					// as_mut(<invalid: &mut self>)<invalid: &mut [i32;3]>
+,
+					// Exclusion reason: Unsupported argument I,Generics on the method
+					// sum() -> LuaIVec3
+,
+					// Exclusion reason: Unsupported argument I,Generics on the method
+					// product() -> LuaIVec3
+,
+					neg(self) -> LuaIVec3
+,
+					// Exclusion reason: Unsupported argument H,Generics on the method
+					// hash(&self)
+,
+					// Exclusion reason: Unsupported argument QualifiedPath { name: "Output", args: AngleBracketed { args: [], bindings: [] }, self_type: Generic("Self"), trait_: ResolvedPath { name: "", id: Id("2:3355:2223"), args: None, param_names: [] } }
+					// not(self)
+,
+					// Exclusion reason: Unsupported argument QualifiedPath { name: "Output", args: AngleBracketed { args: [], bindings: [] }, self_type: Generic("Self"), trait_: ResolvedPath { name: "", id: Id("2:3362:2217"), args: None, param_names: [] } }
+					// bitand(selfLuaIVec3)
+,
+					// Exclusion reason: Unsupported argument QualifiedPath { name: "Output", args: AngleBracketed { args: [], bindings: [] }, self_type: Generic("Self"), trait_: ResolvedPath { name: "", id: Id("2:3362:2217"), args: None, param_names: [] } }
+					// bitand(selfi32)
+,
+					// Exclusion reason: Unsupported argument QualifiedPath { name: "Output", args: AngleBracketed { args: [], bindings: [] }, self_type: Generic("Self"), trait_: ResolvedPath { name: "", id: Id("2:3367:2219"), args: None, param_names: [] } }
+					// bitor(selfLuaIVec3)
+,
+					// Exclusion reason: Unsupported argument QualifiedPath { name: "Output", args: AngleBracketed { args: [], bindings: [] }, self_type: Generic("Self"), trait_: ResolvedPath { name: "", id: Id("2:3367:2219"), args: None, param_names: [] } }
+					// bitor(selfi32)
+,
+					// Exclusion reason: Unsupported argument QualifiedPath { name: "Output", args: AngleBracketed { args: [], bindings: [] }, self_type: Generic("Self"), trait_: ResolvedPath { name: "", id: Id("2:3372:2221"), args: None, param_names: [] } }
+					// bitxor(selfLuaIVec3)
+,
+					// Exclusion reason: Unsupported argument QualifiedPath { name: "Output", args: AngleBracketed { args: [], bindings: [] }, self_type: Generic("Self"), trait_: ResolvedPath { name: "", id: Id("2:3372:2221"), args: None, param_names: [] } }
+					// bitxor(selfi32)
+,
+					// Exclusion reason: Unsupported argument QualifiedPath { name: "Output", args: AngleBracketed { args: [], bindings: [] }, self_type: Generic("Self"), trait_: ResolvedPath { name: "", id: Id("2:3377:3424"), args: None, param_names: [] } }
+					// shl(selfi8)
+,
+					// Exclusion reason: Unsupported argument QualifiedPath { name: "Output", args: AngleBracketed { args: [], bindings: [] }, self_type: Generic("Self"), trait_: ResolvedPath { name: "", id: Id("2:3377:3424"), args: None, param_names: [] } }
+					// shl(selfi16)
+,
+					// Exclusion reason: Unsupported argument QualifiedPath { name: "Output", args: AngleBracketed { args: [], bindings: [] }, self_type: Generic("Self"), trait_: ResolvedPath { name: "", id: Id("2:3377:3424"), args: None, param_names: [] } }
+					// shl(selfi32)
+,
+					// Exclusion reason: Unsupported argument QualifiedPath { name: "Output", args: AngleBracketed { args: [], bindings: [] }, self_type: Generic("Self"), trait_: ResolvedPath { name: "", id: Id("2:3377:3424"), args: None, param_names: [] } }
+					// shl(selfu8)
+,
+					// Exclusion reason: Unsupported argument QualifiedPath { name: "Output", args: AngleBracketed { args: [], bindings: [] }, self_type: Generic("Self"), trait_: ResolvedPath { name: "", id: Id("2:3377:3424"), args: None, param_names: [] } }
+					// shl(selfu16)
+,
+					// Exclusion reason: Unsupported argument QualifiedPath { name: "Output", args: AngleBracketed { args: [], bindings: [] }, self_type: Generic("Self"), trait_: ResolvedPath { name: "", id: Id("2:3377:3424"), args: None, param_names: [] } }
+					// shl(selfu32)
+,
+					// Exclusion reason: Unsupported argument crate::IVec3,Unsupported argument QualifiedPath { name: "Output", args: AngleBracketed { args: [], bindings: [] }, self_type: Generic("Self"), trait_: ResolvedPath { name: "", id: Id("2:3377:3424"), args: None, param_names: [] } }
+					// shl(self)
+,
+					// Exclusion reason: Unsupported argument crate::UVec3,Unsupported argument QualifiedPath { name: "Output", args: AngleBracketed { args: [], bindings: [] }, self_type: Generic("Self"), trait_: ResolvedPath { name: "", id: Id("2:3377:3424"), args: None, param_names: [] } }
+					// shl(self)
+,
+					// Exclusion reason: Unsupported argument crate::IVec3,Unsupported argument QualifiedPath { name: "Output", args: AngleBracketed { args: [], bindings: [] }, self_type: Generic("Self"), trait_: ResolvedPath { name: "", id: Id("2:3377:3424"), args: None, param_names: [] } }
+					// shl(self)
+,
+					// Exclusion reason: Unsupported argument QualifiedPath { name: "Output", args: AngleBracketed { args: [], bindings: [] }, self_type: Generic("Self"), trait_: ResolvedPath { name: "", id: Id("2:3383:3425"), args: None, param_names: [] } }
+					// shr(selfi8)
+,
+					// Exclusion reason: Unsupported argument QualifiedPath { name: "Output", args: AngleBracketed { args: [], bindings: [] }, self_type: Generic("Self"), trait_: ResolvedPath { name: "", id: Id("2:3383:3425"), args: None, param_names: [] } }
+					// shr(selfi16)
+,
+					// Exclusion reason: Unsupported argument QualifiedPath { name: "Output", args: AngleBracketed { args: [], bindings: [] }, self_type: Generic("Self"), trait_: ResolvedPath { name: "", id: Id("2:3383:3425"), args: None, param_names: [] } }
+					// shr(selfi32)
+,
+					// Exclusion reason: Unsupported argument QualifiedPath { name: "Output", args: AngleBracketed { args: [], bindings: [] }, self_type: Generic("Self"), trait_: ResolvedPath { name: "", id: Id("2:3383:3425"), args: None, param_names: [] } }
+					// shr(selfu8)
+,
+					// Exclusion reason: Unsupported argument QualifiedPath { name: "Output", args: AngleBracketed { args: [], bindings: [] }, self_type: Generic("Self"), trait_: ResolvedPath { name: "", id: Id("2:3383:3425"), args: None, param_names: [] } }
+					// shr(selfu16)
+,
+					// Exclusion reason: Unsupported argument QualifiedPath { name: "Output", args: AngleBracketed { args: [], bindings: [] }, self_type: Generic("Self"), trait_: ResolvedPath { name: "", id: Id("2:3383:3425"), args: None, param_names: [] } }
+					// shr(selfu32)
+,
+					// Exclusion reason: Unsupported argument crate::IVec3,Unsupported argument QualifiedPath { name: "Output", args: AngleBracketed { args: [], bindings: [] }, self_type: Generic("Self"), trait_: ResolvedPath { name: "", id: Id("2:3383:3425"), args: None, param_names: [] } }
+					// shr(self)
+,
+					// Exclusion reason: Unsupported argument crate::UVec3,Unsupported argument QualifiedPath { name: "Output", args: AngleBracketed { args: [], bindings: [] }, self_type: Generic("Self"), trait_: ResolvedPath { name: "", id: Id("2:3383:3425"), args: None, param_names: [] } }
+					// shr(self)
+,
+					// Exclusion reason: Unsupported argument crate::IVec3,Unsupported argument QualifiedPath { name: "Output", args: AngleBracketed { args: [], bindings: [] }, self_type: Generic("Self"), trait_: ResolvedPath { name: "", id: Id("2:3383:3425"), args: None, param_names: [] } }
+					// shr(self)
+,
+					// Exclusion reason: Unsupported argument QualifiedPath { name: "Output", args: AngleBracketed { args: [], bindings: [] }, self_type: Generic("Self"), trait_: ResolvedPath { name: "", id: Id("2:3539:2758"), args: None, param_names: [] } }
+					// index(&selfusize)
+,
+					// Exclusion reason: Unsupported argument &mut self,Unsupported argument QualifiedPath { name: "Output", args: AngleBracketed { args: [], bindings: [] }, self_type: Generic("Self"), trait_: ResolvedPath { name: "", id: Id("2:3539:2758"), args: None, param_names: [] } }
+					// index_mut(<invalid: &mut self>usize)
+,
+					// Exclusion reason: Unsupported argument fmt::Formatter,Unsupported argument fmt::Result
+					// fmt(&self)
+,
+					// Exclusion reason: Unsupported argument fmt::Formatter,Unsupported argument fmt::Result
+					// fmt(&self)
+,
+					xx(self) -> LuaIVec2
+,
+					xy(self) -> LuaIVec2
+,
+					xz(self) -> LuaIVec2
+,
+					yx(self) -> LuaIVec2
+,
+					yy(self) -> LuaIVec2
+,
+					yz(self) -> LuaIVec2
+,
+					zx(self) -> LuaIVec2
+,
+					zy(self) -> LuaIVec2
+,
+					zz(self) -> LuaIVec2
+,
+					xxx(self) -> LuaIVec3
+,
+					xxy(self) -> LuaIVec3
+,
+					xxz(self) -> LuaIVec3
+,
+					xyx(self) -> LuaIVec3
+,
+					xyy(self) -> LuaIVec3
+,
+					xyz(self) -> LuaIVec3
+,
+					xzx(self) -> LuaIVec3
+,
+					xzy(self) -> LuaIVec3
+,
+					xzz(self) -> LuaIVec3
+,
+					yxx(self) -> LuaIVec3
+,
+					yxy(self) -> LuaIVec3
+,
+					yxz(self) -> LuaIVec3
+,
+					yyx(self) -> LuaIVec3
+,
+					yyy(self) -> LuaIVec3
+,
+					yyz(self) -> LuaIVec3
+,
+					yzx(self) -> LuaIVec3
+,
+					yzy(self) -> LuaIVec3
+,
+					yzz(self) -> LuaIVec3
+,
+					zxx(self) -> LuaIVec3
+,
+					zxy(self) -> LuaIVec3
+,
+					zxz(self) -> LuaIVec3
+,
+					zyx(self) -> LuaIVec3
+,
+					zyy(self) -> LuaIVec3
+,
+					zyz(self) -> LuaIVec3
+,
+					zzx(self) -> LuaIVec3
+,
+					zzy(self) -> LuaIVec3
+,
+					zzz(self) -> LuaIVec3
+,
+					xxxx(self) -> LuaIVec4
+,
+					xxxy(self) -> LuaIVec4
+,
+					xxxz(self) -> LuaIVec4
+,
+					xxyx(self) -> LuaIVec4
+,
+					xxyy(self) -> LuaIVec4
+,
+					xxyz(self) -> LuaIVec4
+,
+					xxzx(self) -> LuaIVec4
+,
+					xxzy(self) -> LuaIVec4
+,
+					xxzz(self) -> LuaIVec4
+,
+					xyxx(self) -> LuaIVec4
+,
+					xyxy(self) -> LuaIVec4
+,
+					xyxz(self) -> LuaIVec4
+,
+					xyyx(self) -> LuaIVec4
+,
+					xyyy(self) -> LuaIVec4
+,
+					xyyz(self) -> LuaIVec4
+,
+					xyzx(self) -> LuaIVec4
+,
+					xyzy(self) -> LuaIVec4
+,
+					xyzz(self) -> LuaIVec4
+,
+					xzxx(self) -> LuaIVec4
+,
+					xzxy(self) -> LuaIVec4
+,
+					xzxz(self) -> LuaIVec4
+,
+					xzyx(self) -> LuaIVec4
+,
+					xzyy(self) -> LuaIVec4
+,
+					xzyz(self) -> LuaIVec4
+,
+					xzzx(self) -> LuaIVec4
+,
+					xzzy(self) -> LuaIVec4
+,
+					xzzz(self) -> LuaIVec4
+,
+					yxxx(self) -> LuaIVec4
+,
+					yxxy(self) -> LuaIVec4
+,
+					yxxz(self) -> LuaIVec4
+,
+					yxyx(self) -> LuaIVec4
+,
+					yxyy(self) -> LuaIVec4
+,
+					yxyz(self) -> LuaIVec4
+,
+					yxzx(self) -> LuaIVec4
+,
+					yxzy(self) -> LuaIVec4
+,
+					yxzz(self) -> LuaIVec4
+,
+					yyxx(self) -> LuaIVec4
+,
+					yyxy(self) -> LuaIVec4
+,
+					yyxz(self) -> LuaIVec4
+,
+					yyyx(self) -> LuaIVec4
+,
+					yyyy(self) -> LuaIVec4
+,
+					yyyz(self) -> LuaIVec4
+,
+					yyzx(self) -> LuaIVec4
+,
+					yyzy(self) -> LuaIVec4
+,
+					yyzz(self) -> LuaIVec4
+,
+					yzxx(self) -> LuaIVec4
+,
+					yzxy(self) -> LuaIVec4
+,
+					yzxz(self) -> LuaIVec4
+,
+					yzyx(self) -> LuaIVec4
+,
+					yzyy(self) -> LuaIVec4
+,
+					yzyz(self) -> LuaIVec4
+,
+					yzzx(self) -> LuaIVec4
+,
+					yzzy(self) -> LuaIVec4
+,
+					yzzz(self) -> LuaIVec4
+,
+					zxxx(self) -> LuaIVec4
+,
+					zxxy(self) -> LuaIVec4
+,
+					zxxz(self) -> LuaIVec4
+,
+					zxyx(self) -> LuaIVec4
+,
+					zxyy(self) -> LuaIVec4
+,
+					zxyz(self) -> LuaIVec4
+,
+					zxzx(self) -> LuaIVec4
+,
+					zxzy(self) -> LuaIVec4
+,
+					zxzz(self) -> LuaIVec4
+,
+					zyxx(self) -> LuaIVec4
+,
+					zyxy(self) -> LuaIVec4
+,
+					zyxz(self) -> LuaIVec4
+,
+					zyyx(self) -> LuaIVec4
+,
+					zyyy(self) -> LuaIVec4
+,
+					zyyz(self) -> LuaIVec4
+,
+					zyzx(self) -> LuaIVec4
+,
+					zyzy(self) -> LuaIVec4
+,
+					zyzz(self) -> LuaIVec4
+,
+					zzxx(self) -> LuaIVec4
+,
+					zzxy(self) -> LuaIVec4
+,
+					zzxz(self) -> LuaIVec4
+,
+					zzyx(self) -> LuaIVec4
+,
+					zzyy(self) -> LuaIVec4
+,
+					zzyz(self) -> LuaIVec4
+,
+					zzzx(self) -> LuaIVec4
+,
+					zzzy(self) -> LuaIVec4
+,
+					zzzz(self) -> LuaIVec4
+,
+				)
+				+ BinaryOps
+				(
 self Add LuaIVec3 -> LuaIVec3 -> LuaIVec3
 self Add i32 -> LuaIVec3 -> LuaIVec3
 i32 Add self -> LuaIVec3 -> LuaIVec3
@@ -8381,1365 +7661,1078 @@ i32 Mul self -> LuaIVec3 -> LuaIVec3
 self Rem LuaIVec3 -> LuaIVec3 -> LuaIVec3
 self Rem i32 -> LuaIVec3 -> LuaIVec3
 i32 Rem self -> LuaIVec3 -> LuaIVec3
-			)
-+ UnaryOps			(
-			)
-+ 			    Copy(LuaVec2 -> (MetaMethod::Index) (s=LuaIVec3),
-			        LuaVec2 -> mut (MetaMethod::NewIndex) (n=i32))
-			    
-impl			{
+				)
+				+ UnaryOps
+				(
+				)
++ 				    Copy(LuaVec2 -> (MetaMethod::Index) (s=LuaIVec3),
+				        LuaVec2 -> mut (MetaMethod::NewIndex) (n=i32))
+				    
+			impl
+			{
 			}
 		}
-		{
+,		{
 			///A 4-dimensional vector.
-glam::i32::ivec4::IVec4 : Value
-AutoMethods			(
-				// Exclusion reason: 
-				// ///Creates a new vector.
-				// new(i32i32i32i32) -> LuaIVec4
-
-				// Exclusion reason: 
-				// ///Creates a vector with all elements set to `v`.
-				// splat(i32) -> LuaIVec4
-
-				///Creates a vector from the elements in `if_true` and `if_false`, selecting which to use
-				///for each element of `self`.
-				///
-				///A true element in the mask uses the corresponding element from `if_true`, and false
-				///uses the element from `if_false`.
-				select(LuaIVec4LuaIVec4) -> LuaIVec4
-
-				///Creates a new vector from an array.
-				from_array(<invalid: [i32;4]>) -> LuaIVec4
-
-				///`[x, y, z, w]`
-				to_array(&self)<invalid: [i32;4]>
-
-				///Creates a vector from the first 4 values in `slice`.
-				///
-				///# Panics
-				///
-				///Panics if `slice` is less than 4 elements long.
-				from_slice(<invalid: &[i32]>) -> LuaIVec4
-
-				///Writes the elements of `self` to the first 4 elements in `slice`.
-				///
-				///# Panics
-				///
-				///Panics if `slice` is less than 4 elements long.
-				write_to_slice(self<invalid: &mut [i32]>)
-
-				// Exclusion reason: 
-				// ///Creates a 2D vector from the `x`, `y` and `z` elements of `self`, discarding `w`.
-				// ///
-				// ///Truncation to `IVec3` may also be performed by using `self.xyz()` or `IVec3::from()`.
-				// truncate(self) -> LuaIVec3
-
-				// Exclusion reason: 
-				// ///Computes the dot product of `self` and `rhs`.
-				// dot(selfLuaIVec4) -> i32
-
-				// Exclusion reason: 
-				// ///Returns a vector containing the minimum values for each element of `self` and `rhs`.
-				// ///
-				// ///In other words this computes `[self.x.min(rhs.x), self.y.min(rhs.y), ..]`.
-				// min(selfLuaIVec4) -> LuaIVec4
-
-				// Exclusion reason: 
-				// ///Returns a vector containing the maximum values for each element of `self` and `rhs`.
-				// ///
-				// ///In other words this computes `[self.x.max(rhs.x), self.y.max(rhs.y), ..]`.
-				// max(selfLuaIVec4) -> LuaIVec4
-
-				// Exclusion reason: 
-				// ///Component-wise clamping of values, similar to [`f32::clamp`].
-				// ///
-				// ///Each element in `min` must be less-or-equal to the corresponding element in `max`.
-				// ///
-				// ///# Panics
-				// ///
-				// ///Will panic if `min` is greater than `max` when `glam_assert` is enabled.
-				// clamp(selfLuaIVec4LuaIVec4) -> LuaIVec4
-
-				// Exclusion reason: 
-				// ///Returns the horizontal minimum of `self`.
-				// ///
-				// ///In other words this computes `min(x, y, ..)`.
-				// min_element(self) -> i32
-
-				// Exclusion reason: 
-				// ///Returns the horizontal maximum of `self`.
-				// ///
-				// ///In other words this computes `max(x, y, ..)`.
-				// max_element(self) -> i32
-
-				///Returns a vector mask containing the result of a `==` comparison for each element of
-				///`self` and `rhs`.
-				///
-				///In other words, this computes `[self.x == rhs.x, self.y == rhs.y, ..]` for all
-				///elements.
-				cmpeq(selfLuaIVec4)
-
-				///Returns a vector mask containing the result of a `!=` comparison for each element of
-				///`self` and `rhs`.
-				///
-				///In other words this computes `[self.x != rhs.x, self.y != rhs.y, ..]` for all
-				///elements.
-				cmpne(selfLuaIVec4)
-
-				///Returns a vector mask containing the result of a `>=` comparison for each element of
-				///`self` and `rhs`.
-				///
-				///In other words this computes `[self.x >= rhs.x, self.y >= rhs.y, ..]` for all
-				///elements.
-				cmpge(selfLuaIVec4)
-
-				///Returns a vector mask containing the result of a `>` comparison for each element of
-				///`self` and `rhs`.
-				///
-				///In other words this computes `[self.x > rhs.x, self.y > rhs.y, ..]` for all
-				///elements.
-				cmpgt(selfLuaIVec4)
-
-				///Returns a vector mask containing the result of a `<=` comparison for each element of
-				///`self` and `rhs`.
-				///
-				///In other words this computes `[self.x <= rhs.x, self.y <= rhs.y, ..]` for all
-				///elements.
-				cmple(selfLuaIVec4)
-
-				///Returns a vector mask containing the result of a `<` comparison for each element of
-				///`self` and `rhs`.
-				///
-				///In other words this computes `[self.x < rhs.x, self.y < rhs.y, ..]` for all
-				///elements.
-				cmplt(selfLuaIVec4)
-
-				// Exclusion reason: 
-				// ///Returns a vector containing the absolute value of each element of `self`.
-				// abs(self) -> LuaIVec4
-
-				// Exclusion reason: 
-				// ///Returns a vector with elements representing the sign of `self`.
-				// ///
-				// ///- `1.0` if the number is positive, `+0.0` or `INFINITY`
-				// ///- `-1.0` if the number is negative, `-0.0` or `NEG_INFINITY`
-				// ///- `NAN` if the number is `NAN`
-				// signum(self) -> LuaIVec4
-
-				///Casts all elements of `self` to `f32`.
-				as_vec4(&self)
-
-				///Casts all elements of `self` to `f64`.
-				as_dvec4(&self)
-
-				///Casts all elements of `self` to `u32`.
-				as_uvec4(&self)
-
-				try_from()
-
-				///Returns the argument unchanged.
-				from()
-
-				from(<invalid: [i32;4]>) -> LuaIVec4
-
-				// Exclusion reason: 
-				// from(LuaIVec4) -> LuaIVec4
-
-				from(<invalid: (i32,i32,i32,i32)>) -> LuaIVec4
-
-				// Exclusion reason: 
-				// from(LuaIVec4) -> LuaIVec4
-
-				from(<invalid: (LuaIVec3,i32)>) -> LuaIVec4
-
-				from(<invalid: (i32,LuaIVec3)>) -> LuaIVec4
-
-				from(<invalid: (LuaIVec2,i32,i32)>) -> LuaIVec4
-
-				from(<invalid: (LuaIVec2,LuaIVec2)>) -> LuaIVec4
-
-				///Calls `U::from(self)`.
-				///
-				///That is, this conversion is whatever the implementation of
-				///<code>[From]&lt;T&gt; for U</code> chooses to do.
-				into(self)
-
-				borrow(&self)
-
-				type_id(&self)
-
-				try_into(self)
-
-				borrow_mut(<invalid: &mut self>)
-
-				to_string(&self)
-
-				to_owned(&self)
-
-				clone_into(&self)
-
-				is_valid_bit_pattern() -> bool
-
-				serialize(&self)
-
-				deserialize()
-
-				// Exclusion reason: 
-				// clone(&self) -> LuaIVec4
-
-				// Exclusion reason: 
-				// default() -> LuaIVec4
-
-				// Exclusion reason: 
-				// eq(&self&LuaIVec4) -> bool
-
-				// Exclusion reason: 
-				// div(selfLuaIVec4) -> LuaIVec4
-
-				// Exclusion reason: 
-				// div(selfi32) -> LuaIVec4
-
-				// Exclusion reason: 
-				// div(selfLuaIVec4) -> LuaIVec4
-
-				div_assign(<invalid: &mut self>LuaIVec4)
-
-				div_assign(<invalid: &mut self>i32)
-
-				// Exclusion reason: 
-				// mul(selfLuaIVec4) -> LuaIVec4
-
-				// Exclusion reason: 
-				// mul(selfi32) -> LuaIVec4
-
-				// Exclusion reason: 
-				// mul(selfLuaIVec4) -> LuaIVec4
-
-				mul_assign(<invalid: &mut self>LuaIVec4)
-
-				mul_assign(<invalid: &mut self>i32)
-
-				// Exclusion reason: 
-				// add(selfLuaIVec4) -> LuaIVec4
-
-				// Exclusion reason: 
-				// add(selfi32) -> LuaIVec4
-
-				// Exclusion reason: 
-				// add(selfLuaIVec4) -> LuaIVec4
-
-				add_assign(<invalid: &mut self>LuaIVec4)
-
-				add_assign(<invalid: &mut self>i32)
-
-				// Exclusion reason: 
-				// sub(selfLuaIVec4) -> LuaIVec4
-
-				// Exclusion reason: 
-				// sub(selfi32) -> LuaIVec4
-
-				// Exclusion reason: 
-				// sub(selfLuaIVec4) -> LuaIVec4
-
-				sub_assign(<invalid: &mut self>LuaIVec4)
-
-				sub_assign(<invalid: &mut self>i32)
-
-				// Exclusion reason: 
-				// rem(selfLuaIVec4) -> LuaIVec4
-
-				// Exclusion reason: 
-				// rem(selfi32) -> LuaIVec4
-
-				// Exclusion reason: 
-				// rem(selfLuaIVec4) -> LuaIVec4
-
-				rem_assign(<invalid: &mut self>LuaIVec4)
-
-				rem_assign(<invalid: &mut self>i32)
-
-				as_ref(&self)<invalid: &[i32;4]>
-
-				as_mut(<invalid: &mut self>)<invalid: &mut [i32;4]>
-
-				sum() -> LuaIVec4
-
-				product() -> LuaIVec4
-
-				// Exclusion reason: 
-				// neg(self) -> LuaIVec4
-
-				hash(&self)
-
-				not(self)
-
-				bitand(selfLuaIVec4)
-
-				bitand(selfi32)
-
-				bitor(selfLuaIVec4)
-
-				bitor(selfi32)
-
-				bitxor(selfLuaIVec4)
-
-				bitxor(selfi32)
-
-				shl(selfi8)
-
-				shl(selfi16)
-
-				shl(selfi32)
-
-				shl(selfu8)
-
-				shl(selfu16)
-
-				shl(selfu32)
-
-				shl(self)
-
-				shl(self)
-
-				shl(self)
-
-				shr(selfi8)
-
-				shr(selfi16)
-
-				shr(selfi32)
-
-				shr(selfu8)
-
-				shr(selfu16)
-
-				shr(selfu32)
-
-				shr(self)
-
-				shr(self)
-
-				shr(self)
-
-				index(&selfusize)
-
-				index_mut(<invalid: &mut self>usize)
-
-				fmt(&self)
-
-				fmt(&self)
-
-				// Exclusion reason: 
-				// xx(self) -> LuaIVec2
-
-				// Exclusion reason: 
-				// xy(self) -> LuaIVec2
-
-				// Exclusion reason: 
-				// xz(self) -> LuaIVec2
-
-				// Exclusion reason: 
-				// xw(self) -> LuaIVec2
-
-				// Exclusion reason: 
-				// yx(self) -> LuaIVec2
-
-				// Exclusion reason: 
-				// yy(self) -> LuaIVec2
-
-				// Exclusion reason: 
-				// yz(self) -> LuaIVec2
-
-				// Exclusion reason: 
-				// yw(self) -> LuaIVec2
-
-				// Exclusion reason: 
-				// zx(self) -> LuaIVec2
-
-				// Exclusion reason: 
-				// zy(self) -> LuaIVec2
-
-				// Exclusion reason: 
-				// zz(self) -> LuaIVec2
-
-				// Exclusion reason: 
-				// zw(self) -> LuaIVec2
-
-				// Exclusion reason: 
-				// wx(self) -> LuaIVec2
-
-				// Exclusion reason: 
-				// wy(self) -> LuaIVec2
-
-				// Exclusion reason: 
-				// wz(self) -> LuaIVec2
-
-				// Exclusion reason: 
-				// ww(self) -> LuaIVec2
-
-				// Exclusion reason: 
-				// xxx(self) -> LuaIVec3
-
-				// Exclusion reason: 
-				// xxy(self) -> LuaIVec3
-
-				// Exclusion reason: 
-				// xxz(self) -> LuaIVec3
-
-				// Exclusion reason: 
-				// xxw(self) -> LuaIVec3
-
-				// Exclusion reason: 
-				// xyx(self) -> LuaIVec3
-
-				// Exclusion reason: 
-				// xyy(self) -> LuaIVec3
-
-				// Exclusion reason: 
-				// xyz(self) -> LuaIVec3
-
-				// Exclusion reason: 
-				// xyw(self) -> LuaIVec3
-
-				// Exclusion reason: 
-				// xzx(self) -> LuaIVec3
-
-				// Exclusion reason: 
-				// xzy(self) -> LuaIVec3
-
-				// Exclusion reason: 
-				// xzz(self) -> LuaIVec3
-
-				// Exclusion reason: 
-				// xzw(self) -> LuaIVec3
-
-				// Exclusion reason: 
-				// xwx(self) -> LuaIVec3
-
-				// Exclusion reason: 
-				// xwy(self) -> LuaIVec3
-
-				// Exclusion reason: 
-				// xwz(self) -> LuaIVec3
-
-				// Exclusion reason: 
-				// xww(self) -> LuaIVec3
-
-				// Exclusion reason: 
-				// yxx(self) -> LuaIVec3
-
-				// Exclusion reason: 
-				// yxy(self) -> LuaIVec3
-
-				// Exclusion reason: 
-				// yxz(self) -> LuaIVec3
-
-				// Exclusion reason: 
-				// yxw(self) -> LuaIVec3
-
-				// Exclusion reason: 
-				// yyx(self) -> LuaIVec3
-
-				// Exclusion reason: 
-				// yyy(self) -> LuaIVec3
-
-				// Exclusion reason: 
-				// yyz(self) -> LuaIVec3
-
-				// Exclusion reason: 
-				// yyw(self) -> LuaIVec3
-
-				// Exclusion reason: 
-				// yzx(self) -> LuaIVec3
-
-				// Exclusion reason: 
-				// yzy(self) -> LuaIVec3
-
-				// Exclusion reason: 
-				// yzz(self) -> LuaIVec3
-
-				// Exclusion reason: 
-				// yzw(self) -> LuaIVec3
-
-				// Exclusion reason: 
-				// ywx(self) -> LuaIVec3
-
-				// Exclusion reason: 
-				// ywy(self) -> LuaIVec3
-
-				// Exclusion reason: 
-				// ywz(self) -> LuaIVec3
-
-				// Exclusion reason: 
-				// yww(self) -> LuaIVec3
-
-				// Exclusion reason: 
-				// zxx(self) -> LuaIVec3
-
-				// Exclusion reason: 
-				// zxy(self) -> LuaIVec3
-
-				// Exclusion reason: 
-				// zxz(self) -> LuaIVec3
-
-				// Exclusion reason: 
-				// zxw(self) -> LuaIVec3
-
-				// Exclusion reason: 
-				// zyx(self) -> LuaIVec3
-
-				// Exclusion reason: 
-				// zyy(self) -> LuaIVec3
-
-				// Exclusion reason: 
-				// zyz(self) -> LuaIVec3
-
-				// Exclusion reason: 
-				// zyw(self) -> LuaIVec3
-
-				// Exclusion reason: 
-				// zzx(self) -> LuaIVec3
-
-				// Exclusion reason: 
-				// zzy(self) -> LuaIVec3
-
-				// Exclusion reason: 
-				// zzz(self) -> LuaIVec3
-
-				// Exclusion reason: 
-				// zzw(self) -> LuaIVec3
-
-				// Exclusion reason: 
-				// zwx(self) -> LuaIVec3
-
-				// Exclusion reason: 
-				// zwy(self) -> LuaIVec3
-
-				// Exclusion reason: 
-				// zwz(self) -> LuaIVec3
-
-				// Exclusion reason: 
-				// zww(self) -> LuaIVec3
-
-				// Exclusion reason: 
-				// wxx(self) -> LuaIVec3
-
-				// Exclusion reason: 
-				// wxy(self) -> LuaIVec3
-
-				// Exclusion reason: 
-				// wxz(self) -> LuaIVec3
-
-				// Exclusion reason: 
-				// wxw(self) -> LuaIVec3
-
-				// Exclusion reason: 
-				// wyx(self) -> LuaIVec3
-
-				// Exclusion reason: 
-				// wyy(self) -> LuaIVec3
-
-				// Exclusion reason: 
-				// wyz(self) -> LuaIVec3
-
-				// Exclusion reason: 
-				// wyw(self) -> LuaIVec3
-
-				// Exclusion reason: 
-				// wzx(self) -> LuaIVec3
-
-				// Exclusion reason: 
-				// wzy(self) -> LuaIVec3
-
-				// Exclusion reason: 
-				// wzz(self) -> LuaIVec3
-
-				// Exclusion reason: 
-				// wzw(self) -> LuaIVec3
-
-				// Exclusion reason: 
-				// wwx(self) -> LuaIVec3
-
-				// Exclusion reason: 
-				// wwy(self) -> LuaIVec3
-
-				// Exclusion reason: 
-				// wwz(self) -> LuaIVec3
-
-				// Exclusion reason: 
-				// www(self) -> LuaIVec3
-
-				// Exclusion reason: 
-				// xxxx(self) -> LuaIVec4
-
-				// Exclusion reason: 
-				// xxxy(self) -> LuaIVec4
-
-				// Exclusion reason: 
-				// xxxz(self) -> LuaIVec4
-
-				// Exclusion reason: 
-				// xxxw(self) -> LuaIVec4
-
-				// Exclusion reason: 
-				// xxyx(self) -> LuaIVec4
-
-				// Exclusion reason: 
-				// xxyy(self) -> LuaIVec4
-
-				// Exclusion reason: 
-				// xxyz(self) -> LuaIVec4
-
-				// Exclusion reason: 
-				// xxyw(self) -> LuaIVec4
-
-				// Exclusion reason: 
-				// xxzx(self) -> LuaIVec4
-
-				// Exclusion reason: 
-				// xxzy(self) -> LuaIVec4
-
-				// Exclusion reason: 
-				// xxzz(self) -> LuaIVec4
-
-				// Exclusion reason: 
-				// xxzw(self) -> LuaIVec4
-
-				// Exclusion reason: 
-				// xxwx(self) -> LuaIVec4
-
-				// Exclusion reason: 
-				// xxwy(self) -> LuaIVec4
-
-				// Exclusion reason: 
-				// xxwz(self) -> LuaIVec4
-
-				// Exclusion reason: 
-				// xxww(self) -> LuaIVec4
-
-				// Exclusion reason: 
-				// xyxx(self) -> LuaIVec4
-
-				// Exclusion reason: 
-				// xyxy(self) -> LuaIVec4
-
-				// Exclusion reason: 
-				// xyxz(self) -> LuaIVec4
-
-				// Exclusion reason: 
-				// xyxw(self) -> LuaIVec4
-
-				// Exclusion reason: 
-				// xyyx(self) -> LuaIVec4
-
-				// Exclusion reason: 
-				// xyyy(self) -> LuaIVec4
-
-				// Exclusion reason: 
-				// xyyz(self) -> LuaIVec4
-
-				// Exclusion reason: 
-				// xyyw(self) -> LuaIVec4
-
-				// Exclusion reason: 
-				// xyzx(self) -> LuaIVec4
-
-				// Exclusion reason: 
-				// xyzy(self) -> LuaIVec4
-
-				// Exclusion reason: 
-				// xyzz(self) -> LuaIVec4
-
-				// Exclusion reason: 
-				// xyzw(self) -> LuaIVec4
-
-				// Exclusion reason: 
-				// xywx(self) -> LuaIVec4
-
-				// Exclusion reason: 
-				// xywy(self) -> LuaIVec4
-
-				// Exclusion reason: 
-				// xywz(self) -> LuaIVec4
-
-				// Exclusion reason: 
-				// xyww(self) -> LuaIVec4
-
-				// Exclusion reason: 
-				// xzxx(self) -> LuaIVec4
-
-				// Exclusion reason: 
-				// xzxy(self) -> LuaIVec4
-
-				// Exclusion reason: 
-				// xzxz(self) -> LuaIVec4
-
-				// Exclusion reason: 
-				// xzxw(self) -> LuaIVec4
-
-				// Exclusion reason: 
-				// xzyx(self) -> LuaIVec4
-
-				// Exclusion reason: 
-				// xzyy(self) -> LuaIVec4
-
-				// Exclusion reason: 
-				// xzyz(self) -> LuaIVec4
-
-				// Exclusion reason: 
-				// xzyw(self) -> LuaIVec4
-
-				// Exclusion reason: 
-				// xzzx(self) -> LuaIVec4
-
-				// Exclusion reason: 
-				// xzzy(self) -> LuaIVec4
-
-				// Exclusion reason: 
-				// xzzz(self) -> LuaIVec4
-
-				// Exclusion reason: 
-				// xzzw(self) -> LuaIVec4
-
-				// Exclusion reason: 
-				// xzwx(self) -> LuaIVec4
-
-				// Exclusion reason: 
-				// xzwy(self) -> LuaIVec4
-
-				// Exclusion reason: 
-				// xzwz(self) -> LuaIVec4
-
-				// Exclusion reason: 
-				// xzww(self) -> LuaIVec4
-
-				// Exclusion reason: 
-				// xwxx(self) -> LuaIVec4
-
-				// Exclusion reason: 
-				// xwxy(self) -> LuaIVec4
-
-				// Exclusion reason: 
-				// xwxz(self) -> LuaIVec4
-
-				// Exclusion reason: 
-				// xwxw(self) -> LuaIVec4
-
-				// Exclusion reason: 
-				// xwyx(self) -> LuaIVec4
-
-				// Exclusion reason: 
-				// xwyy(self) -> LuaIVec4
-
-				// Exclusion reason: 
-				// xwyz(self) -> LuaIVec4
-
-				// Exclusion reason: 
-				// xwyw(self) -> LuaIVec4
-
-				// Exclusion reason: 
-				// xwzx(self) -> LuaIVec4
-
-				// Exclusion reason: 
-				// xwzy(self) -> LuaIVec4
-
-				// Exclusion reason: 
-				// xwzz(self) -> LuaIVec4
-
-				// Exclusion reason: 
-				// xwzw(self) -> LuaIVec4
-
-				// Exclusion reason: 
-				// xwwx(self) -> LuaIVec4
-
-				// Exclusion reason: 
-				// xwwy(self) -> LuaIVec4
-
-				// Exclusion reason: 
-				// xwwz(self) -> LuaIVec4
-
-				// Exclusion reason: 
-				// xwww(self) -> LuaIVec4
-
-				// Exclusion reason: 
-				// yxxx(self) -> LuaIVec4
-
-				// Exclusion reason: 
-				// yxxy(self) -> LuaIVec4
-
-				// Exclusion reason: 
-				// yxxz(self) -> LuaIVec4
-
-				// Exclusion reason: 
-				// yxxw(self) -> LuaIVec4
-
-				// Exclusion reason: 
-				// yxyx(self) -> LuaIVec4
-
-				// Exclusion reason: 
-				// yxyy(self) -> LuaIVec4
-
-				// Exclusion reason: 
-				// yxyz(self) -> LuaIVec4
-
-				// Exclusion reason: 
-				// yxyw(self) -> LuaIVec4
-
-				// Exclusion reason: 
-				// yxzx(self) -> LuaIVec4
-
-				// Exclusion reason: 
-				// yxzy(self) -> LuaIVec4
-
-				// Exclusion reason: 
-				// yxzz(self) -> LuaIVec4
-
-				// Exclusion reason: 
-				// yxzw(self) -> LuaIVec4
-
-				// Exclusion reason: 
-				// yxwx(self) -> LuaIVec4
-
-				// Exclusion reason: 
-				// yxwy(self) -> LuaIVec4
-
-				// Exclusion reason: 
-				// yxwz(self) -> LuaIVec4
-
-				// Exclusion reason: 
-				// yxww(self) -> LuaIVec4
-
-				// Exclusion reason: 
-				// yyxx(self) -> LuaIVec4
-
-				// Exclusion reason: 
-				// yyxy(self) -> LuaIVec4
-
-				// Exclusion reason: 
-				// yyxz(self) -> LuaIVec4
-
-				// Exclusion reason: 
-				// yyxw(self) -> LuaIVec4
-
-				// Exclusion reason: 
-				// yyyx(self) -> LuaIVec4
-
-				// Exclusion reason: 
-				// yyyy(self) -> LuaIVec4
-
-				// Exclusion reason: 
-				// yyyz(self) -> LuaIVec4
-
-				// Exclusion reason: 
-				// yyyw(self) -> LuaIVec4
-
-				// Exclusion reason: 
-				// yyzx(self) -> LuaIVec4
-
-				// Exclusion reason: 
-				// yyzy(self) -> LuaIVec4
-
-				// Exclusion reason: 
-				// yyzz(self) -> LuaIVec4
-
-				// Exclusion reason: 
-				// yyzw(self) -> LuaIVec4
-
-				// Exclusion reason: 
-				// yywx(self) -> LuaIVec4
-
-				// Exclusion reason: 
-				// yywy(self) -> LuaIVec4
-
-				// Exclusion reason: 
-				// yywz(self) -> LuaIVec4
-
-				// Exclusion reason: 
-				// yyww(self) -> LuaIVec4
-
-				// Exclusion reason: 
-				// yzxx(self) -> LuaIVec4
-
-				// Exclusion reason: 
-				// yzxy(self) -> LuaIVec4
-
-				// Exclusion reason: 
-				// yzxz(self) -> LuaIVec4
-
-				// Exclusion reason: 
-				// yzxw(self) -> LuaIVec4
-
-				// Exclusion reason: 
-				// yzyx(self) -> LuaIVec4
-
-				// Exclusion reason: 
-				// yzyy(self) -> LuaIVec4
-
-				// Exclusion reason: 
-				// yzyz(self) -> LuaIVec4
-
-				// Exclusion reason: 
-				// yzyw(self) -> LuaIVec4
-
-				// Exclusion reason: 
-				// yzzx(self) -> LuaIVec4
-
-				// Exclusion reason: 
-				// yzzy(self) -> LuaIVec4
-
-				// Exclusion reason: 
-				// yzzz(self) -> LuaIVec4
-
-				// Exclusion reason: 
-				// yzzw(self) -> LuaIVec4
-
-				// Exclusion reason: 
-				// yzwx(self) -> LuaIVec4
-
-				// Exclusion reason: 
-				// yzwy(self) -> LuaIVec4
-
-				// Exclusion reason: 
-				// yzwz(self) -> LuaIVec4
-
-				// Exclusion reason: 
-				// yzww(self) -> LuaIVec4
-
-				// Exclusion reason: 
-				// ywxx(self) -> LuaIVec4
-
-				// Exclusion reason: 
-				// ywxy(self) -> LuaIVec4
-
-				// Exclusion reason: 
-				// ywxz(self) -> LuaIVec4
-
-				// Exclusion reason: 
-				// ywxw(self) -> LuaIVec4
-
-				// Exclusion reason: 
-				// ywyx(self) -> LuaIVec4
-
-				// Exclusion reason: 
-				// ywyy(self) -> LuaIVec4
-
-				// Exclusion reason: 
-				// ywyz(self) -> LuaIVec4
-
-				// Exclusion reason: 
-				// ywyw(self) -> LuaIVec4
-
-				// Exclusion reason: 
-				// ywzx(self) -> LuaIVec4
-
-				// Exclusion reason: 
-				// ywzy(self) -> LuaIVec4
-
-				// Exclusion reason: 
-				// ywzz(self) -> LuaIVec4
-
-				// Exclusion reason: 
-				// ywzw(self) -> LuaIVec4
-
-				// Exclusion reason: 
-				// ywwx(self) -> LuaIVec4
-
-				// Exclusion reason: 
-				// ywwy(self) -> LuaIVec4
-
-				// Exclusion reason: 
-				// ywwz(self) -> LuaIVec4
-
-				// Exclusion reason: 
-				// ywww(self) -> LuaIVec4
-
-				// Exclusion reason: 
-				// zxxx(self) -> LuaIVec4
-
-				// Exclusion reason: 
-				// zxxy(self) -> LuaIVec4
-
-				// Exclusion reason: 
-				// zxxz(self) -> LuaIVec4
-
-				// Exclusion reason: 
-				// zxxw(self) -> LuaIVec4
-
-				// Exclusion reason: 
-				// zxyx(self) -> LuaIVec4
-
-				// Exclusion reason: 
-				// zxyy(self) -> LuaIVec4
-
-				// Exclusion reason: 
-				// zxyz(self) -> LuaIVec4
-
-				// Exclusion reason: 
-				// zxyw(self) -> LuaIVec4
-
-				// Exclusion reason: 
-				// zxzx(self) -> LuaIVec4
-
-				// Exclusion reason: 
-				// zxzy(self) -> LuaIVec4
-
-				// Exclusion reason: 
-				// zxzz(self) -> LuaIVec4
-
-				// Exclusion reason: 
-				// zxzw(self) -> LuaIVec4
-
-				// Exclusion reason: 
-				// zxwx(self) -> LuaIVec4
-
-				// Exclusion reason: 
-				// zxwy(self) -> LuaIVec4
-
-				// Exclusion reason: 
-				// zxwz(self) -> LuaIVec4
-
-				// Exclusion reason: 
-				// zxww(self) -> LuaIVec4
-
-				// Exclusion reason: 
-				// zyxx(self) -> LuaIVec4
-
-				// Exclusion reason: 
-				// zyxy(self) -> LuaIVec4
-
-				// Exclusion reason: 
-				// zyxz(self) -> LuaIVec4
-
-				// Exclusion reason: 
-				// zyxw(self) -> LuaIVec4
-
-				// Exclusion reason: 
-				// zyyx(self) -> LuaIVec4
-
-				// Exclusion reason: 
-				// zyyy(self) -> LuaIVec4
-
-				// Exclusion reason: 
-				// zyyz(self) -> LuaIVec4
-
-				// Exclusion reason: 
-				// zyyw(self) -> LuaIVec4
-
-				// Exclusion reason: 
-				// zyzx(self) -> LuaIVec4
-
-				// Exclusion reason: 
-				// zyzy(self) -> LuaIVec4
-
-				// Exclusion reason: 
-				// zyzz(self) -> LuaIVec4
-
-				// Exclusion reason: 
-				// zyzw(self) -> LuaIVec4
-
-				// Exclusion reason: 
-				// zywx(self) -> LuaIVec4
-
-				// Exclusion reason: 
-				// zywy(self) -> LuaIVec4
-
-				// Exclusion reason: 
-				// zywz(self) -> LuaIVec4
-
-				// Exclusion reason: 
-				// zyww(self) -> LuaIVec4
-
-				// Exclusion reason: 
-				// zzxx(self) -> LuaIVec4
-
-				// Exclusion reason: 
-				// zzxy(self) -> LuaIVec4
-
-				// Exclusion reason: 
-				// zzxz(self) -> LuaIVec4
-
-				// Exclusion reason: 
-				// zzxw(self) -> LuaIVec4
-
-				// Exclusion reason: 
-				// zzyx(self) -> LuaIVec4
-
-				// Exclusion reason: 
-				// zzyy(self) -> LuaIVec4
-
-				// Exclusion reason: 
-				// zzyz(self) -> LuaIVec4
-
-				// Exclusion reason: 
-				// zzyw(self) -> LuaIVec4
-
-				// Exclusion reason: 
-				// zzzx(self) -> LuaIVec4
-
-				// Exclusion reason: 
-				// zzzy(self) -> LuaIVec4
-
-				// Exclusion reason: 
-				// zzzz(self) -> LuaIVec4
-
-				// Exclusion reason: 
-				// zzzw(self) -> LuaIVec4
-
-				// Exclusion reason: 
-				// zzwx(self) -> LuaIVec4
-
-				// Exclusion reason: 
-				// zzwy(self) -> LuaIVec4
-
-				// Exclusion reason: 
-				// zzwz(self) -> LuaIVec4
-
-				// Exclusion reason: 
-				// zzww(self) -> LuaIVec4
-
-				// Exclusion reason: 
-				// zwxx(self) -> LuaIVec4
-
-				// Exclusion reason: 
-				// zwxy(self) -> LuaIVec4
-
-				// Exclusion reason: 
-				// zwxz(self) -> LuaIVec4
-
-				// Exclusion reason: 
-				// zwxw(self) -> LuaIVec4
-
-				// Exclusion reason: 
-				// zwyx(self) -> LuaIVec4
-
-				// Exclusion reason: 
-				// zwyy(self) -> LuaIVec4
-
-				// Exclusion reason: 
-				// zwyz(self) -> LuaIVec4
-
-				// Exclusion reason: 
-				// zwyw(self) -> LuaIVec4
-
-				// Exclusion reason: 
-				// zwzx(self) -> LuaIVec4
-
-				// Exclusion reason: 
-				// zwzy(self) -> LuaIVec4
-
-				// Exclusion reason: 
-				// zwzz(self) -> LuaIVec4
-
-				// Exclusion reason: 
-				// zwzw(self) -> LuaIVec4
-
-				// Exclusion reason: 
-				// zwwx(self) -> LuaIVec4
-
-				// Exclusion reason: 
-				// zwwy(self) -> LuaIVec4
-
-				// Exclusion reason: 
-				// zwwz(self) -> LuaIVec4
-
-				// Exclusion reason: 
-				// zwww(self) -> LuaIVec4
-
-				// Exclusion reason: 
-				// wxxx(self) -> LuaIVec4
-
-				// Exclusion reason: 
-				// wxxy(self) -> LuaIVec4
-
-				// Exclusion reason: 
-				// wxxz(self) -> LuaIVec4
-
-				// Exclusion reason: 
-				// wxxw(self) -> LuaIVec4
-
-				// Exclusion reason: 
-				// wxyx(self) -> LuaIVec4
-
-				// Exclusion reason: 
-				// wxyy(self) -> LuaIVec4
-
-				// Exclusion reason: 
-				// wxyz(self) -> LuaIVec4
-
-				// Exclusion reason: 
-				// wxyw(self) -> LuaIVec4
-
-				// Exclusion reason: 
-				// wxzx(self) -> LuaIVec4
-
-				// Exclusion reason: 
-				// wxzy(self) -> LuaIVec4
-
-				// Exclusion reason: 
-				// wxzz(self) -> LuaIVec4
-
-				// Exclusion reason: 
-				// wxzw(self) -> LuaIVec4
-
-				// Exclusion reason: 
-				// wxwx(self) -> LuaIVec4
-
-				// Exclusion reason: 
-				// wxwy(self) -> LuaIVec4
-
-				// Exclusion reason: 
-				// wxwz(self) -> LuaIVec4
-
-				// Exclusion reason: 
-				// wxww(self) -> LuaIVec4
-
-				// Exclusion reason: 
-				// wyxx(self) -> LuaIVec4
-
-				// Exclusion reason: 
-				// wyxy(self) -> LuaIVec4
-
-				// Exclusion reason: 
-				// wyxz(self) -> LuaIVec4
-
-				// Exclusion reason: 
-				// wyxw(self) -> LuaIVec4
-
-				// Exclusion reason: 
-				// wyyx(self) -> LuaIVec4
-
-				// Exclusion reason: 
-				// wyyy(self) -> LuaIVec4
-
-				// Exclusion reason: 
-				// wyyz(self) -> LuaIVec4
-
-				// Exclusion reason: 
-				// wyyw(self) -> LuaIVec4
-
-				// Exclusion reason: 
-				// wyzx(self) -> LuaIVec4
-
-				// Exclusion reason: 
-				// wyzy(self) -> LuaIVec4
-
-				// Exclusion reason: 
-				// wyzz(self) -> LuaIVec4
-
-				// Exclusion reason: 
-				// wyzw(self) -> LuaIVec4
-
-				// Exclusion reason: 
-				// wywx(self) -> LuaIVec4
-
-				// Exclusion reason: 
-				// wywy(self) -> LuaIVec4
-
-				// Exclusion reason: 
-				// wywz(self) -> LuaIVec4
-
-				// Exclusion reason: 
-				// wyww(self) -> LuaIVec4
-
-				// Exclusion reason: 
-				// wzxx(self) -> LuaIVec4
-
-				// Exclusion reason: 
-				// wzxy(self) -> LuaIVec4
-
-				// Exclusion reason: 
-				// wzxz(self) -> LuaIVec4
-
-				// Exclusion reason: 
-				// wzxw(self) -> LuaIVec4
-
-				// Exclusion reason: 
-				// wzyx(self) -> LuaIVec4
-
-				// Exclusion reason: 
-				// wzyy(self) -> LuaIVec4
-
-				// Exclusion reason: 
-				// wzyz(self) -> LuaIVec4
-
-				// Exclusion reason: 
-				// wzyw(self) -> LuaIVec4
-
-				// Exclusion reason: 
-				// wzzx(self) -> LuaIVec4
-
-				// Exclusion reason: 
-				// wzzy(self) -> LuaIVec4
-
-				// Exclusion reason: 
-				// wzzz(self) -> LuaIVec4
-
-				// Exclusion reason: 
-				// wzzw(self) -> LuaIVec4
-
-				// Exclusion reason: 
-				// wzwx(self) -> LuaIVec4
-
-				// Exclusion reason: 
-				// wzwy(self) -> LuaIVec4
-
-				// Exclusion reason: 
-				// wzwz(self) -> LuaIVec4
-
-				// Exclusion reason: 
-				// wzww(self) -> LuaIVec4
-
-				// Exclusion reason: 
-				// wwxx(self) -> LuaIVec4
-
-				// Exclusion reason: 
-				// wwxy(self) -> LuaIVec4
-
-				// Exclusion reason: 
-				// wwxz(self) -> LuaIVec4
-
-				// Exclusion reason: 
-				// wwxw(self) -> LuaIVec4
-
-				// Exclusion reason: 
-				// wwyx(self) -> LuaIVec4
-
-				// Exclusion reason: 
-				// wwyy(self) -> LuaIVec4
-
-				// Exclusion reason: 
-				// wwyz(self) -> LuaIVec4
-
-				// Exclusion reason: 
-				// wwyw(self) -> LuaIVec4
-
-				// Exclusion reason: 
-				// wwzx(self) -> LuaIVec4
-
-				// Exclusion reason: 
-				// wwzy(self) -> LuaIVec4
-
-				// Exclusion reason: 
-				// wwzz(self) -> LuaIVec4
-
-				// Exclusion reason: 
-				// wwzw(self) -> LuaIVec4
-
-				// Exclusion reason: 
-				// wwwx(self) -> LuaIVec4
-
-				// Exclusion reason: 
-				// wwwy(self) -> LuaIVec4
-
-				// Exclusion reason: 
-				// wwwz(self) -> LuaIVec4
-
-				// Exclusion reason: 
-				// wwww(self) -> LuaIVec4
-
-			)
-+ BinaryOps			(
+			glam::i32::ivec4::IVec4 : Value
+:				AutoMethods
+				(
+					///Creates a new vector.
+					new(i32i32i32i32) -> LuaIVec4
+,
+					///Creates a vector with all elements set to `v`.
+					splat(i32) -> LuaIVec4
+,
+					// Exclusion reason: Unsupported argument BVec4
+					// ///Creates a vector from the elements in `if_true` and `if_false`, selecting which to use
+					// ///for each element of `self`.
+					// ///
+					// ///A true element in the mask uses the corresponding element from `if_true`, and false
+					// ///uses the element from `if_false`.
+					// select(LuaIVec4LuaIVec4) -> LuaIVec4
+,
+					// Exclusion reason: Unsupported argument [i32;4]
+					// ///Creates a new vector from an array.
+					// from_array(<invalid: [i32;4]>) -> LuaIVec4
+,
+					// Exclusion reason: Unsupported argument [i32;4]
+					// ///`[x, y, z, w]`
+					// to_array(&self)<invalid: [i32;4]>
+,
+					// Exclusion reason: Unsupported argument &[i32]
+					// ///Creates a vector from the first 4 values in `slice`.
+					// ///
+					// ///# Panics
+					// ///
+					// ///Panics if `slice` is less than 4 elements long.
+					// from_slice(<invalid: &[i32]>) -> LuaIVec4
+,
+					// Exclusion reason: Unsupported argument &mut [i32]
+					// ///Writes the elements of `self` to the first 4 elements in `slice`.
+					// ///
+					// ///# Panics
+					// ///
+					// ///Panics if `slice` is less than 4 elements long.
+					// write_to_slice(self<invalid: &mut [i32]>)
+,
+					///Creates a 2D vector from the `x`, `y` and `z` elements of `self`, discarding `w`.
+					///
+					///Truncation to `IVec3` may also be performed by using `self.xyz()` or `IVec3::from()`.
+					truncate(self) -> LuaIVec3
+,
+					///Computes the dot product of `self` and `rhs`.
+					dot(selfLuaIVec4) -> i32
+,
+					///Returns a vector containing the minimum values for each element of `self` and `rhs`.
+					///
+					///In other words this computes `[self.x.min(rhs.x), self.y.min(rhs.y), ..]`.
+					min(selfLuaIVec4) -> LuaIVec4
+,
+					///Returns a vector containing the maximum values for each element of `self` and `rhs`.
+					///
+					///In other words this computes `[self.x.max(rhs.x), self.y.max(rhs.y), ..]`.
+					max(selfLuaIVec4) -> LuaIVec4
+,
+					///Component-wise clamping of values, similar to [`f32::clamp`].
+					///
+					///Each element in `min` must be less-or-equal to the corresponding element in `max`.
+					///
+					///# Panics
+					///
+					///Will panic if `min` is greater than `max` when `glam_assert` is enabled.
+					clamp(selfLuaIVec4LuaIVec4) -> LuaIVec4
+,
+					///Returns the horizontal minimum of `self`.
+					///
+					///In other words this computes `min(x, y, ..)`.
+					min_element(self) -> i32
+,
+					///Returns the horizontal maximum of `self`.
+					///
+					///In other words this computes `max(x, y, ..)`.
+					max_element(self) -> i32
+,
+					// Exclusion reason: Unsupported argument BVec4
+					// ///Returns a vector mask containing the result of a `==` comparison for each element of
+					// ///`self` and `rhs`.
+					// ///
+					// ///In other words, this computes `[self.x == rhs.x, self.y == rhs.y, ..]` for all
+					// ///elements.
+					// cmpeq(selfLuaIVec4)
+,
+					// Exclusion reason: Unsupported argument BVec4
+					// ///Returns a vector mask containing the result of a `!=` comparison for each element of
+					// ///`self` and `rhs`.
+					// ///
+					// ///In other words this computes `[self.x != rhs.x, self.y != rhs.y, ..]` for all
+					// ///elements.
+					// cmpne(selfLuaIVec4)
+,
+					// Exclusion reason: Unsupported argument BVec4
+					// ///Returns a vector mask containing the result of a `>=` comparison for each element of
+					// ///`self` and `rhs`.
+					// ///
+					// ///In other words this computes `[self.x >= rhs.x, self.y >= rhs.y, ..]` for all
+					// ///elements.
+					// cmpge(selfLuaIVec4)
+,
+					// Exclusion reason: Unsupported argument BVec4
+					// ///Returns a vector mask containing the result of a `>` comparison for each element of
+					// ///`self` and `rhs`.
+					// ///
+					// ///In other words this computes `[self.x > rhs.x, self.y > rhs.y, ..]` for all
+					// ///elements.
+					// cmpgt(selfLuaIVec4)
+,
+					// Exclusion reason: Unsupported argument BVec4
+					// ///Returns a vector mask containing the result of a `<=` comparison for each element of
+					// ///`self` and `rhs`.
+					// ///
+					// ///In other words this computes `[self.x <= rhs.x, self.y <= rhs.y, ..]` for all
+					// ///elements.
+					// cmple(selfLuaIVec4)
+,
+					// Exclusion reason: Unsupported argument BVec4
+					// ///Returns a vector mask containing the result of a `<` comparison for each element of
+					// ///`self` and `rhs`.
+					// ///
+					// ///In other words this computes `[self.x < rhs.x, self.y < rhs.y, ..]` for all
+					// ///elements.
+					// cmplt(selfLuaIVec4)
+,
+					///Returns a vector containing the absolute value of each element of `self`.
+					abs(self) -> LuaIVec4
+,
+					///Returns a vector with elements representing the sign of `self`.
+					///
+					///- `1.0` if the number is positive, `+0.0` or `INFINITY`
+					///- `-1.0` if the number is negative, `-0.0` or `NEG_INFINITY`
+					///- `NAN` if the number is `NAN`
+					signum(self) -> LuaIVec4
+,
+					// Exclusion reason: Unsupported argument crate::Vec4
+					// ///Casts all elements of `self` to `f32`.
+					// as_vec4(&self)
+,
+					// Exclusion reason: Unsupported argument crate::DVec4
+					// ///Casts all elements of `self` to `f64`.
+					// as_dvec4(&self)
+,
+					// Exclusion reason: Unsupported argument crate::UVec4
+					// ///Casts all elements of `self` to `u32`.
+					// as_uvec4(&self)
+,
+					// Exclusion reason: Unsupported argument U,Unsupported argument Result
+					// try_from()
+,
+					// Exclusion reason: Unsupported argument T,Unsupported argument T
+					// ///Returns the argument unchanged.
+					// from()
+,
+					// Exclusion reason: Unsupported argument [i32;4]
+					// from(<invalid: [i32;4]>) -> LuaIVec4
+,
+					from(LuaIVec4) -> LuaIVec4
+,
+					// Exclusion reason: Unsupported argument (i32,i32,i32,i32)
+					// from(<invalid: (i32,i32,i32,i32)>) -> LuaIVec4
+,
+					from(LuaIVec4) -> LuaIVec4
+,
+					// Exclusion reason: Unsupported argument (LuaIVec3,i32)
+					// from(<invalid: (LuaIVec3,i32)>) -> LuaIVec4
+,
+					// Exclusion reason: Unsupported argument (i32,LuaIVec3)
+					// from(<invalid: (i32,LuaIVec3)>) -> LuaIVec4
+,
+					// Exclusion reason: Unsupported argument (LuaIVec2,i32,i32)
+					// from(<invalid: (LuaIVec2,i32,i32)>) -> LuaIVec4
+,
+					// Exclusion reason: Unsupported argument (LuaIVec2,LuaIVec2)
+					// from(<invalid: (LuaIVec2,LuaIVec2)>) -> LuaIVec4
+,
+					// Exclusion reason: Unsupported argument U
+					// ///Calls `U::from(self)`.
+					// ///
+					// ///That is, this conversion is whatever the implementation of
+					// ///<code>[From]&lt;T&gt; for U</code> chooses to do.
+					// into(self)
+,
+					// Exclusion reason: Unsupported argument T
+					// borrow(&self)
+,
+					// Exclusion reason: Unsupported argument TypeId
+					// type_id(&self)
+,
+					// Exclusion reason: Unsupported argument Result
+					// try_into(self)
+,
+					// Exclusion reason: Unsupported argument &mut self,Unsupported argument T
+					// borrow_mut(<invalid: &mut self>)
+,
+					// Exclusion reason: Unsupported argument String
+					// to_string(&self)
+,
+					// Exclusion reason: Unsupported argument T
+					// to_owned(&self)
+,
+					// Exclusion reason: Unsupported argument T
+					// clone_into(&self)
+,
+					// Exclusion reason: Unsupported argument T
+					// is_valid_bit_pattern() -> bool
+,
+					// Exclusion reason: Unsupported argument S,Unsupported argument Result,Generics on the method
+					// serialize(&self)
+,
+					// Exclusion reason: Unsupported argument D,Unsupported argument Result,Generics on the method
+					// deserialize()
+,
+					clone(&self) -> LuaIVec4
+,
+					default() -> LuaIVec4
+,
+					eq(&self&LuaIVec4) -> bool
+,
+					div(selfLuaIVec4) -> LuaIVec4
+,
+					div(selfi32) -> LuaIVec4
+,
+					div(selfLuaIVec4) -> LuaIVec4
+,
+					// Exclusion reason: Unsupported argument &mut self
+					// div_assign(<invalid: &mut self>LuaIVec4)
+,
+					// Exclusion reason: Unsupported argument &mut self
+					// div_assign(<invalid: &mut self>i32)
+,
+					mul(selfLuaIVec4) -> LuaIVec4
+,
+					mul(selfi32) -> LuaIVec4
+,
+					mul(selfLuaIVec4) -> LuaIVec4
+,
+					// Exclusion reason: Unsupported argument &mut self
+					// mul_assign(<invalid: &mut self>LuaIVec4)
+,
+					// Exclusion reason: Unsupported argument &mut self
+					// mul_assign(<invalid: &mut self>i32)
+,
+					add(selfLuaIVec4) -> LuaIVec4
+,
+					add(selfi32) -> LuaIVec4
+,
+					add(selfLuaIVec4) -> LuaIVec4
+,
+					// Exclusion reason: Unsupported argument &mut self
+					// add_assign(<invalid: &mut self>LuaIVec4)
+,
+					// Exclusion reason: Unsupported argument &mut self
+					// add_assign(<invalid: &mut self>i32)
+,
+					sub(selfLuaIVec4) -> LuaIVec4
+,
+					sub(selfi32) -> LuaIVec4
+,
+					sub(selfLuaIVec4) -> LuaIVec4
+,
+					// Exclusion reason: Unsupported argument &mut self
+					// sub_assign(<invalid: &mut self>LuaIVec4)
+,
+					// Exclusion reason: Unsupported argument &mut self
+					// sub_assign(<invalid: &mut self>i32)
+,
+					rem(selfLuaIVec4) -> LuaIVec4
+,
+					rem(selfi32) -> LuaIVec4
+,
+					rem(selfLuaIVec4) -> LuaIVec4
+,
+					// Exclusion reason: Unsupported argument &mut self
+					// rem_assign(<invalid: &mut self>LuaIVec4)
+,
+					// Exclusion reason: Unsupported argument &mut self
+					// rem_assign(<invalid: &mut self>i32)
+,
+					// Exclusion reason: Unsupported argument &[i32;4]
+					// as_ref(&self)<invalid: &[i32;4]>
+,
+					// Exclusion reason: Unsupported argument &mut self,Unsupported argument &mut [i32;4]
+					// as_mut(<invalid: &mut self>)<invalid: &mut [i32;4]>
+,
+					// Exclusion reason: Unsupported argument I,Generics on the method
+					// sum() -> LuaIVec4
+,
+					// Exclusion reason: Unsupported argument I,Generics on the method
+					// product() -> LuaIVec4
+,
+					neg(self) -> LuaIVec4
+,
+					// Exclusion reason: Unsupported argument H,Generics on the method
+					// hash(&self)
+,
+					// Exclusion reason: Unsupported argument QualifiedPath { name: "Output", args: AngleBracketed { args: [], bindings: [] }, self_type: Generic("Self"), trait_: ResolvedPath { name: "", id: Id("2:3355:2223"), args: None, param_names: [] } }
+					// not(self)
+,
+					// Exclusion reason: Unsupported argument QualifiedPath { name: "Output", args: AngleBracketed { args: [], bindings: [] }, self_type: Generic("Self"), trait_: ResolvedPath { name: "", id: Id("2:3362:2217"), args: None, param_names: [] } }
+					// bitand(selfLuaIVec4)
+,
+					// Exclusion reason: Unsupported argument QualifiedPath { name: "Output", args: AngleBracketed { args: [], bindings: [] }, self_type: Generic("Self"), trait_: ResolvedPath { name: "", id: Id("2:3362:2217"), args: None, param_names: [] } }
+					// bitand(selfi32)
+,
+					// Exclusion reason: Unsupported argument QualifiedPath { name: "Output", args: AngleBracketed { args: [], bindings: [] }, self_type: Generic("Self"), trait_: ResolvedPath { name: "", id: Id("2:3367:2219"), args: None, param_names: [] } }
+					// bitor(selfLuaIVec4)
+,
+					// Exclusion reason: Unsupported argument QualifiedPath { name: "Output", args: AngleBracketed { args: [], bindings: [] }, self_type: Generic("Self"), trait_: ResolvedPath { name: "", id: Id("2:3367:2219"), args: None, param_names: [] } }
+					// bitor(selfi32)
+,
+					// Exclusion reason: Unsupported argument QualifiedPath { name: "Output", args: AngleBracketed { args: [], bindings: [] }, self_type: Generic("Self"), trait_: ResolvedPath { name: "", id: Id("2:3372:2221"), args: None, param_names: [] } }
+					// bitxor(selfLuaIVec4)
+,
+					// Exclusion reason: Unsupported argument QualifiedPath { name: "Output", args: AngleBracketed { args: [], bindings: [] }, self_type: Generic("Self"), trait_: ResolvedPath { name: "", id: Id("2:3372:2221"), args: None, param_names: [] } }
+					// bitxor(selfi32)
+,
+					// Exclusion reason: Unsupported argument QualifiedPath { name: "Output", args: AngleBracketed { args: [], bindings: [] }, self_type: Generic("Self"), trait_: ResolvedPath { name: "", id: Id("2:3377:3424"), args: None, param_names: [] } }
+					// shl(selfi8)
+,
+					// Exclusion reason: Unsupported argument QualifiedPath { name: "Output", args: AngleBracketed { args: [], bindings: [] }, self_type: Generic("Self"), trait_: ResolvedPath { name: "", id: Id("2:3377:3424"), args: None, param_names: [] } }
+					// shl(selfi16)
+,
+					// Exclusion reason: Unsupported argument QualifiedPath { name: "Output", args: AngleBracketed { args: [], bindings: [] }, self_type: Generic("Self"), trait_: ResolvedPath { name: "", id: Id("2:3377:3424"), args: None, param_names: [] } }
+					// shl(selfi32)
+,
+					// Exclusion reason: Unsupported argument QualifiedPath { name: "Output", args: AngleBracketed { args: [], bindings: [] }, self_type: Generic("Self"), trait_: ResolvedPath { name: "", id: Id("2:3377:3424"), args: None, param_names: [] } }
+					// shl(selfu8)
+,
+					// Exclusion reason: Unsupported argument QualifiedPath { name: "Output", args: AngleBracketed { args: [], bindings: [] }, self_type: Generic("Self"), trait_: ResolvedPath { name: "", id: Id("2:3377:3424"), args: None, param_names: [] } }
+					// shl(selfu16)
+,
+					// Exclusion reason: Unsupported argument QualifiedPath { name: "Output", args: AngleBracketed { args: [], bindings: [] }, self_type: Generic("Self"), trait_: ResolvedPath { name: "", id: Id("2:3377:3424"), args: None, param_names: [] } }
+					// shl(selfu32)
+,
+					// Exclusion reason: Unsupported argument crate::IVec4,Unsupported argument QualifiedPath { name: "Output", args: AngleBracketed { args: [], bindings: [] }, self_type: Generic("Self"), trait_: ResolvedPath { name: "", id: Id("2:3377:3424"), args: None, param_names: [] } }
+					// shl(self)
+,
+					// Exclusion reason: Unsupported argument crate::UVec4,Unsupported argument QualifiedPath { name: "Output", args: AngleBracketed { args: [], bindings: [] }, self_type: Generic("Self"), trait_: ResolvedPath { name: "", id: Id("2:3377:3424"), args: None, param_names: [] } }
+					// shl(self)
+,
+					// Exclusion reason: Unsupported argument crate::IVec4,Unsupported argument QualifiedPath { name: "Output", args: AngleBracketed { args: [], bindings: [] }, self_type: Generic("Self"), trait_: ResolvedPath { name: "", id: Id("2:3377:3424"), args: None, param_names: [] } }
+					// shl(self)
+,
+					// Exclusion reason: Unsupported argument QualifiedPath { name: "Output", args: AngleBracketed { args: [], bindings: [] }, self_type: Generic("Self"), trait_: ResolvedPath { name: "", id: Id("2:3383:3425"), args: None, param_names: [] } }
+					// shr(selfi8)
+,
+					// Exclusion reason: Unsupported argument QualifiedPath { name: "Output", args: AngleBracketed { args: [], bindings: [] }, self_type: Generic("Self"), trait_: ResolvedPath { name: "", id: Id("2:3383:3425"), args: None, param_names: [] } }
+					// shr(selfi16)
+,
+					// Exclusion reason: Unsupported argument QualifiedPath { name: "Output", args: AngleBracketed { args: [], bindings: [] }, self_type: Generic("Self"), trait_: ResolvedPath { name: "", id: Id("2:3383:3425"), args: None, param_names: [] } }
+					// shr(selfi32)
+,
+					// Exclusion reason: Unsupported argument QualifiedPath { name: "Output", args: AngleBracketed { args: [], bindings: [] }, self_type: Generic("Self"), trait_: ResolvedPath { name: "", id: Id("2:3383:3425"), args: None, param_names: [] } }
+					// shr(selfu8)
+,
+					// Exclusion reason: Unsupported argument QualifiedPath { name: "Output", args: AngleBracketed { args: [], bindings: [] }, self_type: Generic("Self"), trait_: ResolvedPath { name: "", id: Id("2:3383:3425"), args: None, param_names: [] } }
+					// shr(selfu16)
+,
+					// Exclusion reason: Unsupported argument QualifiedPath { name: "Output", args: AngleBracketed { args: [], bindings: [] }, self_type: Generic("Self"), trait_: ResolvedPath { name: "", id: Id("2:3383:3425"), args: None, param_names: [] } }
+					// shr(selfu32)
+,
+					// Exclusion reason: Unsupported argument crate::IVec4,Unsupported argument QualifiedPath { name: "Output", args: AngleBracketed { args: [], bindings: [] }, self_type: Generic("Self"), trait_: ResolvedPath { name: "", id: Id("2:3383:3425"), args: None, param_names: [] } }
+					// shr(self)
+,
+					// Exclusion reason: Unsupported argument crate::UVec4,Unsupported argument QualifiedPath { name: "Output", args: AngleBracketed { args: [], bindings: [] }, self_type: Generic("Self"), trait_: ResolvedPath { name: "", id: Id("2:3383:3425"), args: None, param_names: [] } }
+					// shr(self)
+,
+					// Exclusion reason: Unsupported argument crate::IVec4,Unsupported argument QualifiedPath { name: "Output", args: AngleBracketed { args: [], bindings: [] }, self_type: Generic("Self"), trait_: ResolvedPath { name: "", id: Id("2:3383:3425"), args: None, param_names: [] } }
+					// shr(self)
+,
+					// Exclusion reason: Unsupported argument QualifiedPath { name: "Output", args: AngleBracketed { args: [], bindings: [] }, self_type: Generic("Self"), trait_: ResolvedPath { name: "", id: Id("2:3539:2758"), args: None, param_names: [] } }
+					// index(&selfusize)
+,
+					// Exclusion reason: Unsupported argument &mut self,Unsupported argument QualifiedPath { name: "Output", args: AngleBracketed { args: [], bindings: [] }, self_type: Generic("Self"), trait_: ResolvedPath { name: "", id: Id("2:3539:2758"), args: None, param_names: [] } }
+					// index_mut(<invalid: &mut self>usize)
+,
+					// Exclusion reason: Unsupported argument fmt::Formatter,Unsupported argument fmt::Result
+					// fmt(&self)
+,
+					// Exclusion reason: Unsupported argument fmt::Formatter,Unsupported argument fmt::Result
+					// fmt(&self)
+,
+					xx(self) -> LuaIVec2
+,
+					xy(self) -> LuaIVec2
+,
+					xz(self) -> LuaIVec2
+,
+					xw(self) -> LuaIVec2
+,
+					yx(self) -> LuaIVec2
+,
+					yy(self) -> LuaIVec2
+,
+					yz(self) -> LuaIVec2
+,
+					yw(self) -> LuaIVec2
+,
+					zx(self) -> LuaIVec2
+,
+					zy(self) -> LuaIVec2
+,
+					zz(self) -> LuaIVec2
+,
+					zw(self) -> LuaIVec2
+,
+					wx(self) -> LuaIVec2
+,
+					wy(self) -> LuaIVec2
+,
+					wz(self) -> LuaIVec2
+,
+					ww(self) -> LuaIVec2
+,
+					xxx(self) -> LuaIVec3
+,
+					xxy(self) -> LuaIVec3
+,
+					xxz(self) -> LuaIVec3
+,
+					xxw(self) -> LuaIVec3
+,
+					xyx(self) -> LuaIVec3
+,
+					xyy(self) -> LuaIVec3
+,
+					xyz(self) -> LuaIVec3
+,
+					xyw(self) -> LuaIVec3
+,
+					xzx(self) -> LuaIVec3
+,
+					xzy(self) -> LuaIVec3
+,
+					xzz(self) -> LuaIVec3
+,
+					xzw(self) -> LuaIVec3
+,
+					xwx(self) -> LuaIVec3
+,
+					xwy(self) -> LuaIVec3
+,
+					xwz(self) -> LuaIVec3
+,
+					xww(self) -> LuaIVec3
+,
+					yxx(self) -> LuaIVec3
+,
+					yxy(self) -> LuaIVec3
+,
+					yxz(self) -> LuaIVec3
+,
+					yxw(self) -> LuaIVec3
+,
+					yyx(self) -> LuaIVec3
+,
+					yyy(self) -> LuaIVec3
+,
+					yyz(self) -> LuaIVec3
+,
+					yyw(self) -> LuaIVec3
+,
+					yzx(self) -> LuaIVec3
+,
+					yzy(self) -> LuaIVec3
+,
+					yzz(self) -> LuaIVec3
+,
+					yzw(self) -> LuaIVec3
+,
+					ywx(self) -> LuaIVec3
+,
+					ywy(self) -> LuaIVec3
+,
+					ywz(self) -> LuaIVec3
+,
+					yww(self) -> LuaIVec3
+,
+					zxx(self) -> LuaIVec3
+,
+					zxy(self) -> LuaIVec3
+,
+					zxz(self) -> LuaIVec3
+,
+					zxw(self) -> LuaIVec3
+,
+					zyx(self) -> LuaIVec3
+,
+					zyy(self) -> LuaIVec3
+,
+					zyz(self) -> LuaIVec3
+,
+					zyw(self) -> LuaIVec3
+,
+					zzx(self) -> LuaIVec3
+,
+					zzy(self) -> LuaIVec3
+,
+					zzz(self) -> LuaIVec3
+,
+					zzw(self) -> LuaIVec3
+,
+					zwx(self) -> LuaIVec3
+,
+					zwy(self) -> LuaIVec3
+,
+					zwz(self) -> LuaIVec3
+,
+					zww(self) -> LuaIVec3
+,
+					wxx(self) -> LuaIVec3
+,
+					wxy(self) -> LuaIVec3
+,
+					wxz(self) -> LuaIVec3
+,
+					wxw(self) -> LuaIVec3
+,
+					wyx(self) -> LuaIVec3
+,
+					wyy(self) -> LuaIVec3
+,
+					wyz(self) -> LuaIVec3
+,
+					wyw(self) -> LuaIVec3
+,
+					wzx(self) -> LuaIVec3
+,
+					wzy(self) -> LuaIVec3
+,
+					wzz(self) -> LuaIVec3
+,
+					wzw(self) -> LuaIVec3
+,
+					wwx(self) -> LuaIVec3
+,
+					wwy(self) -> LuaIVec3
+,
+					wwz(self) -> LuaIVec3
+,
+					www(self) -> LuaIVec3
+,
+					xxxx(self) -> LuaIVec4
+,
+					xxxy(self) -> LuaIVec4
+,
+					xxxz(self) -> LuaIVec4
+,
+					xxxw(self) -> LuaIVec4
+,
+					xxyx(self) -> LuaIVec4
+,
+					xxyy(self) -> LuaIVec4
+,
+					xxyz(self) -> LuaIVec4
+,
+					xxyw(self) -> LuaIVec4
+,
+					xxzx(self) -> LuaIVec4
+,
+					xxzy(self) -> LuaIVec4
+,
+					xxzz(self) -> LuaIVec4
+,
+					xxzw(self) -> LuaIVec4
+,
+					xxwx(self) -> LuaIVec4
+,
+					xxwy(self) -> LuaIVec4
+,
+					xxwz(self) -> LuaIVec4
+,
+					xxww(self) -> LuaIVec4
+,
+					xyxx(self) -> LuaIVec4
+,
+					xyxy(self) -> LuaIVec4
+,
+					xyxz(self) -> LuaIVec4
+,
+					xyxw(self) -> LuaIVec4
+,
+					xyyx(self) -> LuaIVec4
+,
+					xyyy(self) -> LuaIVec4
+,
+					xyyz(self) -> LuaIVec4
+,
+					xyyw(self) -> LuaIVec4
+,
+					xyzx(self) -> LuaIVec4
+,
+					xyzy(self) -> LuaIVec4
+,
+					xyzz(self) -> LuaIVec4
+,
+					xyzw(self) -> LuaIVec4
+,
+					xywx(self) -> LuaIVec4
+,
+					xywy(self) -> LuaIVec4
+,
+					xywz(self) -> LuaIVec4
+,
+					xyww(self) -> LuaIVec4
+,
+					xzxx(self) -> LuaIVec4
+,
+					xzxy(self) -> LuaIVec4
+,
+					xzxz(self) -> LuaIVec4
+,
+					xzxw(self) -> LuaIVec4
+,
+					xzyx(self) -> LuaIVec4
+,
+					xzyy(self) -> LuaIVec4
+,
+					xzyz(self) -> LuaIVec4
+,
+					xzyw(self) -> LuaIVec4
+,
+					xzzx(self) -> LuaIVec4
+,
+					xzzy(self) -> LuaIVec4
+,
+					xzzz(self) -> LuaIVec4
+,
+					xzzw(self) -> LuaIVec4
+,
+					xzwx(self) -> LuaIVec4
+,
+					xzwy(self) -> LuaIVec4
+,
+					xzwz(self) -> LuaIVec4
+,
+					xzww(self) -> LuaIVec4
+,
+					xwxx(self) -> LuaIVec4
+,
+					xwxy(self) -> LuaIVec4
+,
+					xwxz(self) -> LuaIVec4
+,
+					xwxw(self) -> LuaIVec4
+,
+					xwyx(self) -> LuaIVec4
+,
+					xwyy(self) -> LuaIVec4
+,
+					xwyz(self) -> LuaIVec4
+,
+					xwyw(self) -> LuaIVec4
+,
+					xwzx(self) -> LuaIVec4
+,
+					xwzy(self) -> LuaIVec4
+,
+					xwzz(self) -> LuaIVec4
+,
+					xwzw(self) -> LuaIVec4
+,
+					xwwx(self) -> LuaIVec4
+,
+					xwwy(self) -> LuaIVec4
+,
+					xwwz(self) -> LuaIVec4
+,
+					xwww(self) -> LuaIVec4
+,
+					yxxx(self) -> LuaIVec4
+,
+					yxxy(self) -> LuaIVec4
+,
+					yxxz(self) -> LuaIVec4
+,
+					yxxw(self) -> LuaIVec4
+,
+					yxyx(self) -> LuaIVec4
+,
+					yxyy(self) -> LuaIVec4
+,
+					yxyz(self) -> LuaIVec4
+,
+					yxyw(self) -> LuaIVec4
+,
+					yxzx(self) -> LuaIVec4
+,
+					yxzy(self) -> LuaIVec4
+,
+					yxzz(self) -> LuaIVec4
+,
+					yxzw(self) -> LuaIVec4
+,
+					yxwx(self) -> LuaIVec4
+,
+					yxwy(self) -> LuaIVec4
+,
+					yxwz(self) -> LuaIVec4
+,
+					yxww(self) -> LuaIVec4
+,
+					yyxx(self) -> LuaIVec4
+,
+					yyxy(self) -> LuaIVec4
+,
+					yyxz(self) -> LuaIVec4
+,
+					yyxw(self) -> LuaIVec4
+,
+					yyyx(self) -> LuaIVec4
+,
+					yyyy(self) -> LuaIVec4
+,
+					yyyz(self) -> LuaIVec4
+,
+					yyyw(self) -> LuaIVec4
+,
+					yyzx(self) -> LuaIVec4
+,
+					yyzy(self) -> LuaIVec4
+,
+					yyzz(self) -> LuaIVec4
+,
+					yyzw(self) -> LuaIVec4
+,
+					yywx(self) -> LuaIVec4
+,
+					yywy(self) -> LuaIVec4
+,
+					yywz(self) -> LuaIVec4
+,
+					yyww(self) -> LuaIVec4
+,
+					yzxx(self) -> LuaIVec4
+,
+					yzxy(self) -> LuaIVec4
+,
+					yzxz(self) -> LuaIVec4
+,
+					yzxw(self) -> LuaIVec4
+,
+					yzyx(self) -> LuaIVec4
+,
+					yzyy(self) -> LuaIVec4
+,
+					yzyz(self) -> LuaIVec4
+,
+					yzyw(self) -> LuaIVec4
+,
+					yzzx(self) -> LuaIVec4
+,
+					yzzy(self) -> LuaIVec4
+,
+					yzzz(self) -> LuaIVec4
+,
+					yzzw(self) -> LuaIVec4
+,
+					yzwx(self) -> LuaIVec4
+,
+					yzwy(self) -> LuaIVec4
+,
+					yzwz(self) -> LuaIVec4
+,
+					yzww(self) -> LuaIVec4
+,
+					ywxx(self) -> LuaIVec4
+,
+					ywxy(self) -> LuaIVec4
+,
+					ywxz(self) -> LuaIVec4
+,
+					ywxw(self) -> LuaIVec4
+,
+					ywyx(self) -> LuaIVec4
+,
+					ywyy(self) -> LuaIVec4
+,
+					ywyz(self) -> LuaIVec4
+,
+					ywyw(self) -> LuaIVec4
+,
+					ywzx(self) -> LuaIVec4
+,
+					ywzy(self) -> LuaIVec4
+,
+					ywzz(self) -> LuaIVec4
+,
+					ywzw(self) -> LuaIVec4
+,
+					ywwx(self) -> LuaIVec4
+,
+					ywwy(self) -> LuaIVec4
+,
+					ywwz(self) -> LuaIVec4
+,
+					ywww(self) -> LuaIVec4
+,
+					zxxx(self) -> LuaIVec4
+,
+					zxxy(self) -> LuaIVec4
+,
+					zxxz(self) -> LuaIVec4
+,
+					zxxw(self) -> LuaIVec4
+,
+					zxyx(self) -> LuaIVec4
+,
+					zxyy(self) -> LuaIVec4
+,
+					zxyz(self) -> LuaIVec4
+,
+					zxyw(self) -> LuaIVec4
+,
+					zxzx(self) -> LuaIVec4
+,
+					zxzy(self) -> LuaIVec4
+,
+					zxzz(self) -> LuaIVec4
+,
+					zxzw(self) -> LuaIVec4
+,
+					zxwx(self) -> LuaIVec4
+,
+					zxwy(self) -> LuaIVec4
+,
+					zxwz(self) -> LuaIVec4
+,
+					zxww(self) -> LuaIVec4
+,
+					zyxx(self) -> LuaIVec4
+,
+					zyxy(self) -> LuaIVec4
+,
+					zyxz(self) -> LuaIVec4
+,
+					zyxw(self) -> LuaIVec4
+,
+					zyyx(self) -> LuaIVec4
+,
+					zyyy(self) -> LuaIVec4
+,
+					zyyz(self) -> LuaIVec4
+,
+					zyyw(self) -> LuaIVec4
+,
+					zyzx(self) -> LuaIVec4
+,
+					zyzy(self) -> LuaIVec4
+,
+					zyzz(self) -> LuaIVec4
+,
+					zyzw(self) -> LuaIVec4
+,
+					zywx(self) -> LuaIVec4
+,
+					zywy(self) -> LuaIVec4
+,
+					zywz(self) -> LuaIVec4
+,
+					zyww(self) -> LuaIVec4
+,
+					zzxx(self) -> LuaIVec4
+,
+					zzxy(self) -> LuaIVec4
+,
+					zzxz(self) -> LuaIVec4
+,
+					zzxw(self) -> LuaIVec4
+,
+					zzyx(self) -> LuaIVec4
+,
+					zzyy(self) -> LuaIVec4
+,
+					zzyz(self) -> LuaIVec4
+,
+					zzyw(self) -> LuaIVec4
+,
+					zzzx(self) -> LuaIVec4
+,
+					zzzy(self) -> LuaIVec4
+,
+					zzzz(self) -> LuaIVec4
+,
+					zzzw(self) -> LuaIVec4
+,
+					zzwx(self) -> LuaIVec4
+,
+					zzwy(self) -> LuaIVec4
+,
+					zzwz(self) -> LuaIVec4
+,
+					zzww(self) -> LuaIVec4
+,
+					zwxx(self) -> LuaIVec4
+,
+					zwxy(self) -> LuaIVec4
+,
+					zwxz(self) -> LuaIVec4
+,
+					zwxw(self) -> LuaIVec4
+,
+					zwyx(self) -> LuaIVec4
+,
+					zwyy(self) -> LuaIVec4
+,
+					zwyz(self) -> LuaIVec4
+,
+					zwyw(self) -> LuaIVec4
+,
+					zwzx(self) -> LuaIVec4
+,
+					zwzy(self) -> LuaIVec4
+,
+					zwzz(self) -> LuaIVec4
+,
+					zwzw(self) -> LuaIVec4
+,
+					zwwx(self) -> LuaIVec4
+,
+					zwwy(self) -> LuaIVec4
+,
+					zwwz(self) -> LuaIVec4
+,
+					zwww(self) -> LuaIVec4
+,
+					wxxx(self) -> LuaIVec4
+,
+					wxxy(self) -> LuaIVec4
+,
+					wxxz(self) -> LuaIVec4
+,
+					wxxw(self) -> LuaIVec4
+,
+					wxyx(self) -> LuaIVec4
+,
+					wxyy(self) -> LuaIVec4
+,
+					wxyz(self) -> LuaIVec4
+,
+					wxyw(self) -> LuaIVec4
+,
+					wxzx(self) -> LuaIVec4
+,
+					wxzy(self) -> LuaIVec4
+,
+					wxzz(self) -> LuaIVec4
+,
+					wxzw(self) -> LuaIVec4
+,
+					wxwx(self) -> LuaIVec4
+,
+					wxwy(self) -> LuaIVec4
+,
+					wxwz(self) -> LuaIVec4
+,
+					wxww(self) -> LuaIVec4
+,
+					wyxx(self) -> LuaIVec4
+,
+					wyxy(self) -> LuaIVec4
+,
+					wyxz(self) -> LuaIVec4
+,
+					wyxw(self) -> LuaIVec4
+,
+					wyyx(self) -> LuaIVec4
+,
+					wyyy(self) -> LuaIVec4
+,
+					wyyz(self) -> LuaIVec4
+,
+					wyyw(self) -> LuaIVec4
+,
+					wyzx(self) -> LuaIVec4
+,
+					wyzy(self) -> LuaIVec4
+,
+					wyzz(self) -> LuaIVec4
+,
+					wyzw(self) -> LuaIVec4
+,
+					wywx(self) -> LuaIVec4
+,
+					wywy(self) -> LuaIVec4
+,
+					wywz(self) -> LuaIVec4
+,
+					wyww(self) -> LuaIVec4
+,
+					wzxx(self) -> LuaIVec4
+,
+					wzxy(self) -> LuaIVec4
+,
+					wzxz(self) -> LuaIVec4
+,
+					wzxw(self) -> LuaIVec4
+,
+					wzyx(self) -> LuaIVec4
+,
+					wzyy(self) -> LuaIVec4
+,
+					wzyz(self) -> LuaIVec4
+,
+					wzyw(self) -> LuaIVec4
+,
+					wzzx(self) -> LuaIVec4
+,
+					wzzy(self) -> LuaIVec4
+,
+					wzzz(self) -> LuaIVec4
+,
+					wzzw(self) -> LuaIVec4
+,
+					wzwx(self) -> LuaIVec4
+,
+					wzwy(self) -> LuaIVec4
+,
+					wzwz(self) -> LuaIVec4
+,
+					wzww(self) -> LuaIVec4
+,
+					wwxx(self) -> LuaIVec4
+,
+					wwxy(self) -> LuaIVec4
+,
+					wwxz(self) -> LuaIVec4
+,
+					wwxw(self) -> LuaIVec4
+,
+					wwyx(self) -> LuaIVec4
+,
+					wwyy(self) -> LuaIVec4
+,
+					wwyz(self) -> LuaIVec4
+,
+					wwyw(self) -> LuaIVec4
+,
+					wwzx(self) -> LuaIVec4
+,
+					wwzy(self) -> LuaIVec4
+,
+					wwzz(self) -> LuaIVec4
+,
+					wwzw(self) -> LuaIVec4
+,
+					wwwx(self) -> LuaIVec4
+,
+					wwwy(self) -> LuaIVec4
+,
+					wwwz(self) -> LuaIVec4
+,
+					wwww(self) -> LuaIVec4
+,
+				)
+				+ BinaryOps
+				(
 self Add LuaIVec4 -> LuaIVec4 -> LuaIVec4
 self Add i32 -> LuaIVec4 -> LuaIVec4
 i32 Add self -> LuaIVec4 -> LuaIVec4
@@ -9755,416 +8748,436 @@ i32 Mul self -> LuaIVec4 -> LuaIVec4
 self Rem LuaIVec4 -> LuaIVec4 -> LuaIVec4
 self Rem i32 -> LuaIVec4 -> LuaIVec4
 i32 Rem self -> LuaIVec4 -> LuaIVec4
-			)
-+ UnaryOps			(
-			)
-+ 			    Copy(LuaVec2 -> (MetaMethod::Index) (s=LuaIVec4),
-			        LuaVec2 -> mut (MetaMethod::NewIndex) (n=i32))
-			    
-impl			{
+				)
+				+ UnaryOps
+				(
+				)
++ 				    Copy(LuaVec2 -> (MetaMethod::Index) (s=LuaIVec4),
+				        LuaVec2 -> mut (MetaMethod::NewIndex) (n=i32))
+				    
+			impl
+			{
 			}
 		}
-		{
+,		{
 			///A 2-dimensional vector.
-glam::u32::uvec2::UVec2 : Value
-AutoMethods			(
-				// Exclusion reason: 
-				// ///Creates a new vector.
-				// new(u32u32) -> LuaUVec2
-
-				// Exclusion reason: 
-				// ///Creates a vector with all elements set to `v`.
-				// splat(u32) -> LuaUVec2
-
-				///Creates a vector from the elements in `if_true` and `if_false`, selecting which to use
-				///for each element of `self`.
-				///
-				///A true element in the mask uses the corresponding element from `if_true`, and false
-				///uses the element from `if_false`.
-				select(LuaUVec2LuaUVec2) -> LuaUVec2
-
-				///Creates a new vector from an array.
-				from_array(<invalid: [u32;2]>) -> LuaUVec2
-
-				///`[x, y]`
-				to_array(&self)<invalid: [u32;2]>
-
-				///Creates a vector from the first 2 values in `slice`.
-				///
-				///# Panics
-				///
-				///Panics if `slice` is less than 2 elements long.
-				from_slice(<invalid: &[u32]>) -> LuaUVec2
-
-				///Writes the elements of `self` to the first 2 elements in `slice`.
-				///
-				///# Panics
-				///
-				///Panics if `slice` is less than 2 elements long.
-				write_to_slice(self<invalid: &mut [u32]>)
-
-				// Exclusion reason: 
-				// ///Creates a 3D vector from `self` and the given `z` value.
-				// extend(selfu32) -> LuaUVec3
-
-				// Exclusion reason: 
-				// ///Computes the dot product of `self` and `rhs`.
-				// dot(selfLuaUVec2) -> u32
-
-				// Exclusion reason: 
-				// ///Returns a vector containing the minimum values for each element of `self` and `rhs`.
-				// ///
-				// ///In other words this computes `[self.x.min(rhs.x), self.y.min(rhs.y), ..]`.
-				// min(selfLuaUVec2) -> LuaUVec2
-
-				// Exclusion reason: 
-				// ///Returns a vector containing the maximum values for each element of `self` and `rhs`.
-				// ///
-				// ///In other words this computes `[self.x.max(rhs.x), self.y.max(rhs.y), ..]`.
-				// max(selfLuaUVec2) -> LuaUVec2
-
-				// Exclusion reason: 
-				// ///Component-wise clamping of values, similar to [`f32::clamp`].
-				// ///
-				// ///Each element in `min` must be less-or-equal to the corresponding element in `max`.
-				// ///
-				// ///# Panics
-				// ///
-				// ///Will panic if `min` is greater than `max` when `glam_assert` is enabled.
-				// clamp(selfLuaUVec2LuaUVec2) -> LuaUVec2
-
-				// Exclusion reason: 
-				// ///Returns the horizontal minimum of `self`.
-				// ///
-				// ///In other words this computes `min(x, y, ..)`.
-				// min_element(self) -> u32
-
-				// Exclusion reason: 
-				// ///Returns the horizontal maximum of `self`.
-				// ///
-				// ///In other words this computes `max(x, y, ..)`.
-				// max_element(self) -> u32
-
-				///Returns a vector mask containing the result of a `==` comparison for each element of
-				///`self` and `rhs`.
-				///
-				///In other words, this computes `[self.x == rhs.x, self.y == rhs.y, ..]` for all
-				///elements.
-				cmpeq(selfLuaUVec2)
-
-				///Returns a vector mask containing the result of a `!=` comparison for each element of
-				///`self` and `rhs`.
-				///
-				///In other words this computes `[self.x != rhs.x, self.y != rhs.y, ..]` for all
-				///elements.
-				cmpne(selfLuaUVec2)
-
-				///Returns a vector mask containing the result of a `>=` comparison for each element of
-				///`self` and `rhs`.
-				///
-				///In other words this computes `[self.x >= rhs.x, self.y >= rhs.y, ..]` for all
-				///elements.
-				cmpge(selfLuaUVec2)
-
-				///Returns a vector mask containing the result of a `>` comparison for each element of
-				///`self` and `rhs`.
-				///
-				///In other words this computes `[self.x > rhs.x, self.y > rhs.y, ..]` for all
-				///elements.
-				cmpgt(selfLuaUVec2)
-
-				///Returns a vector mask containing the result of a `<=` comparison for each element of
-				///`self` and `rhs`.
-				///
-				///In other words this computes `[self.x <= rhs.x, self.y <= rhs.y, ..]` for all
-				///elements.
-				cmple(selfLuaUVec2)
-
-				///Returns a vector mask containing the result of a `<` comparison for each element of
-				///`self` and `rhs`.
-				///
-				///In other words this computes `[self.x < rhs.x, self.y < rhs.y, ..]` for all
-				///elements.
-				cmplt(selfLuaUVec2)
-
-				///Casts all elements of `self` to `f32`.
-				as_vec2(&self)
-
-				///Casts all elements of `self` to `f64`.
-				as_dvec2(&self)
-
-				///Casts all elements of `self` to `i32`.
-				as_ivec2(&self)
-
-				try_from()
-
-				///Returns the argument unchanged.
-				from()
-
-				from(<invalid: [u32;2]>) -> LuaUVec2
-
-				// Exclusion reason: 
-				// from(LuaUVec2) -> LuaUVec2
-
-				from(<invalid: (u32,u32)>) -> LuaUVec2
-
-				// Exclusion reason: 
-				// from(LuaUVec2) -> LuaUVec2
-
-				///Calls `U::from(self)`.
-				///
-				///That is, this conversion is whatever the implementation of
-				///<code>[From]&lt;T&gt; for U</code> chooses to do.
-				into(self)
-
-				borrow(&self)
-
-				type_id(&self)
-
-				try_into(self)
-
-				borrow_mut(<invalid: &mut self>)
-
-				to_string(&self)
-
-				to_owned(&self)
-
-				clone_into(&self)
-
-				is_valid_bit_pattern() -> bool
-
-				serialize(&self)
-
-				deserialize()
-
-				shl(self)
-
-				shl(selfi8)
-
-				shl(selfi16)
-
-				shl(selfi32)
-
-				shl(selfu8)
-
-				shl(selfu16)
-
-				shl(selfu32)
-
-				shl(self)
-
-				shl(self)
-
-				shr(self)
-
-				shr(selfi8)
-
-				shr(selfi16)
-
-				shr(selfi32)
-
-				shr(selfu8)
-
-				shr(selfu16)
-
-				shr(selfu32)
-
-				shr(self)
-
-				shr(self)
-
-				// Exclusion reason: 
-				// clone(&self) -> LuaUVec2
-
-				// Exclusion reason: 
-				// default() -> LuaUVec2
-
-				// Exclusion reason: 
-				// eq(&self&LuaUVec2) -> bool
-
-				// Exclusion reason: 
-				// div(selfLuaUVec2) -> LuaUVec2
-
-				// Exclusion reason: 
-				// div(selfu32) -> LuaUVec2
-
-				// Exclusion reason: 
-				// div(selfLuaUVec2) -> LuaUVec2
-
-				div_assign(<invalid: &mut self>LuaUVec2)
-
-				div_assign(<invalid: &mut self>u32)
-
-				// Exclusion reason: 
-				// mul(selfLuaUVec2) -> LuaUVec2
-
-				// Exclusion reason: 
-				// mul(selfu32) -> LuaUVec2
-
-				// Exclusion reason: 
-				// mul(selfLuaUVec2) -> LuaUVec2
-
-				mul_assign(<invalid: &mut self>LuaUVec2)
-
-				mul_assign(<invalid: &mut self>u32)
-
-				// Exclusion reason: 
-				// add(selfLuaUVec2) -> LuaUVec2
-
-				// Exclusion reason: 
-				// add(selfu32) -> LuaUVec2
-
-				// Exclusion reason: 
-				// add(selfLuaUVec2) -> LuaUVec2
-
-				add_assign(<invalid: &mut self>LuaUVec2)
-
-				add_assign(<invalid: &mut self>u32)
-
-				// Exclusion reason: 
-				// sub(selfLuaUVec2) -> LuaUVec2
-
-				// Exclusion reason: 
-				// sub(selfu32) -> LuaUVec2
-
-				// Exclusion reason: 
-				// sub(selfLuaUVec2) -> LuaUVec2
-
-				sub_assign(<invalid: &mut self>LuaUVec2)
-
-				sub_assign(<invalid: &mut self>u32)
-
-				// Exclusion reason: 
-				// rem(selfLuaUVec2) -> LuaUVec2
-
-				// Exclusion reason: 
-				// rem(selfu32) -> LuaUVec2
-
-				// Exclusion reason: 
-				// rem(selfLuaUVec2) -> LuaUVec2
-
-				rem_assign(<invalid: &mut self>LuaUVec2)
-
-				rem_assign(<invalid: &mut self>u32)
-
-				as_ref(&self)<invalid: &[u32;2]>
-
-				as_mut(<invalid: &mut self>)<invalid: &mut [u32;2]>
-
-				sum() -> LuaUVec2
-
-				product() -> LuaUVec2
-
-				hash(&self)
-
-				not(self)
-
-				bitand(selfLuaUVec2)
-
-				bitand(selfu32)
-
-				bitor(selfLuaUVec2)
-
-				bitor(selfu32)
-
-				bitxor(selfLuaUVec2)
-
-				bitxor(selfu32)
-
-				index(&selfusize)
-
-				index_mut(<invalid: &mut self>usize)
-
-				fmt(&self)
-
-				fmt(&self)
-
-				// Exclusion reason: 
-				// xx(self) -> LuaUVec2
-
-				// Exclusion reason: 
-				// xy(self) -> LuaUVec2
-
-				// Exclusion reason: 
-				// yx(self) -> LuaUVec2
-
-				// Exclusion reason: 
-				// yy(self) -> LuaUVec2
-
-				// Exclusion reason: 
-				// xxx(self) -> LuaUVec3
-
-				// Exclusion reason: 
-				// xxy(self) -> LuaUVec3
-
-				// Exclusion reason: 
-				// xyx(self) -> LuaUVec3
-
-				// Exclusion reason: 
-				// xyy(self) -> LuaUVec3
-
-				// Exclusion reason: 
-				// yxx(self) -> LuaUVec3
-
-				// Exclusion reason: 
-				// yxy(self) -> LuaUVec3
-
-				// Exclusion reason: 
-				// yyx(self) -> LuaUVec3
-
-				// Exclusion reason: 
-				// yyy(self) -> LuaUVec3
-
-				// Exclusion reason: 
-				// xxxx(self) -> LuaUVec4
-
-				// Exclusion reason: 
-				// xxxy(self) -> LuaUVec4
-
-				// Exclusion reason: 
-				// xxyx(self) -> LuaUVec4
-
-				// Exclusion reason: 
-				// xxyy(self) -> LuaUVec4
-
-				// Exclusion reason: 
-				// xyxx(self) -> LuaUVec4
-
-				// Exclusion reason: 
-				// xyxy(self) -> LuaUVec4
-
-				// Exclusion reason: 
-				// xyyx(self) -> LuaUVec4
-
-				// Exclusion reason: 
-				// xyyy(self) -> LuaUVec4
-
-				// Exclusion reason: 
-				// yxxx(self) -> LuaUVec4
-
-				// Exclusion reason: 
-				// yxxy(self) -> LuaUVec4
-
-				// Exclusion reason: 
-				// yxyx(self) -> LuaUVec4
-
-				// Exclusion reason: 
-				// yxyy(self) -> LuaUVec4
-
-				// Exclusion reason: 
-				// yyxx(self) -> LuaUVec4
-
-				// Exclusion reason: 
-				// yyxy(self) -> LuaUVec4
-
-				// Exclusion reason: 
-				// yyyx(self) -> LuaUVec4
-
-				// Exclusion reason: 
-				// yyyy(self) -> LuaUVec4
-
-			)
-+ BinaryOps			(
+			glam::u32::uvec2::UVec2 : Value
+:				AutoMethods
+				(
+					///Creates a new vector.
+					new(u32u32) -> LuaUVec2
+,
+					///Creates a vector with all elements set to `v`.
+					splat(u32) -> LuaUVec2
+,
+					// Exclusion reason: Unsupported argument BVec2
+					// ///Creates a vector from the elements in `if_true` and `if_false`, selecting which to use
+					// ///for each element of `self`.
+					// ///
+					// ///A true element in the mask uses the corresponding element from `if_true`, and false
+					// ///uses the element from `if_false`.
+					// select(LuaUVec2LuaUVec2) -> LuaUVec2
+,
+					// Exclusion reason: Unsupported argument [u32;2]
+					// ///Creates a new vector from an array.
+					// from_array(<invalid: [u32;2]>) -> LuaUVec2
+,
+					// Exclusion reason: Unsupported argument [u32;2]
+					// ///`[x, y]`
+					// to_array(&self)<invalid: [u32;2]>
+,
+					// Exclusion reason: Unsupported argument &[u32]
+					// ///Creates a vector from the first 2 values in `slice`.
+					// ///
+					// ///# Panics
+					// ///
+					// ///Panics if `slice` is less than 2 elements long.
+					// from_slice(<invalid: &[u32]>) -> LuaUVec2
+,
+					// Exclusion reason: Unsupported argument &mut [u32]
+					// ///Writes the elements of `self` to the first 2 elements in `slice`.
+					// ///
+					// ///# Panics
+					// ///
+					// ///Panics if `slice` is less than 2 elements long.
+					// write_to_slice(self<invalid: &mut [u32]>)
+,
+					///Creates a 3D vector from `self` and the given `z` value.
+					extend(selfu32) -> LuaUVec3
+,
+					///Computes the dot product of `self` and `rhs`.
+					dot(selfLuaUVec2) -> u32
+,
+					///Returns a vector containing the minimum values for each element of `self` and `rhs`.
+					///
+					///In other words this computes `[self.x.min(rhs.x), self.y.min(rhs.y), ..]`.
+					min(selfLuaUVec2) -> LuaUVec2
+,
+					///Returns a vector containing the maximum values for each element of `self` and `rhs`.
+					///
+					///In other words this computes `[self.x.max(rhs.x), self.y.max(rhs.y), ..]`.
+					max(selfLuaUVec2) -> LuaUVec2
+,
+					///Component-wise clamping of values, similar to [`f32::clamp`].
+					///
+					///Each element in `min` must be less-or-equal to the corresponding element in `max`.
+					///
+					///# Panics
+					///
+					///Will panic if `min` is greater than `max` when `glam_assert` is enabled.
+					clamp(selfLuaUVec2LuaUVec2) -> LuaUVec2
+,
+					///Returns the horizontal minimum of `self`.
+					///
+					///In other words this computes `min(x, y, ..)`.
+					min_element(self) -> u32
+,
+					///Returns the horizontal maximum of `self`.
+					///
+					///In other words this computes `max(x, y, ..)`.
+					max_element(self) -> u32
+,
+					// Exclusion reason: Unsupported argument BVec2
+					// ///Returns a vector mask containing the result of a `==` comparison for each element of
+					// ///`self` and `rhs`.
+					// ///
+					// ///In other words, this computes `[self.x == rhs.x, self.y == rhs.y, ..]` for all
+					// ///elements.
+					// cmpeq(selfLuaUVec2)
+,
+					// Exclusion reason: Unsupported argument BVec2
+					// ///Returns a vector mask containing the result of a `!=` comparison for each element of
+					// ///`self` and `rhs`.
+					// ///
+					// ///In other words this computes `[self.x != rhs.x, self.y != rhs.y, ..]` for all
+					// ///elements.
+					// cmpne(selfLuaUVec2)
+,
+					// Exclusion reason: Unsupported argument BVec2
+					// ///Returns a vector mask containing the result of a `>=` comparison for each element of
+					// ///`self` and `rhs`.
+					// ///
+					// ///In other words this computes `[self.x >= rhs.x, self.y >= rhs.y, ..]` for all
+					// ///elements.
+					// cmpge(selfLuaUVec2)
+,
+					// Exclusion reason: Unsupported argument BVec2
+					// ///Returns a vector mask containing the result of a `>` comparison for each element of
+					// ///`self` and `rhs`.
+					// ///
+					// ///In other words this computes `[self.x > rhs.x, self.y > rhs.y, ..]` for all
+					// ///elements.
+					// cmpgt(selfLuaUVec2)
+,
+					// Exclusion reason: Unsupported argument BVec2
+					// ///Returns a vector mask containing the result of a `<=` comparison for each element of
+					// ///`self` and `rhs`.
+					// ///
+					// ///In other words this computes `[self.x <= rhs.x, self.y <= rhs.y, ..]` for all
+					// ///elements.
+					// cmple(selfLuaUVec2)
+,
+					// Exclusion reason: Unsupported argument BVec2
+					// ///Returns a vector mask containing the result of a `<` comparison for each element of
+					// ///`self` and `rhs`.
+					// ///
+					// ///In other words this computes `[self.x < rhs.x, self.y < rhs.y, ..]` for all
+					// ///elements.
+					// cmplt(selfLuaUVec2)
+,
+					// Exclusion reason: Unsupported argument crate::Vec2
+					// ///Casts all elements of `self` to `f32`.
+					// as_vec2(&self)
+,
+					// Exclusion reason: Unsupported argument crate::DVec2
+					// ///Casts all elements of `self` to `f64`.
+					// as_dvec2(&self)
+,
+					// Exclusion reason: Unsupported argument crate::IVec2
+					// ///Casts all elements of `self` to `i32`.
+					// as_ivec2(&self)
+,
+					// Exclusion reason: Unsupported argument U,Unsupported argument Result
+					// try_from()
+,
+					// Exclusion reason: Unsupported argument T,Unsupported argument T
+					// ///Returns the argument unchanged.
+					// from()
+,
+					// Exclusion reason: Unsupported argument [u32;2]
+					// from(<invalid: [u32;2]>) -> LuaUVec2
+,
+					from(LuaUVec2) -> LuaUVec2
+,
+					// Exclusion reason: Unsupported argument (u32,u32)
+					// from(<invalid: (u32,u32)>) -> LuaUVec2
+,
+					from(LuaUVec2) -> LuaUVec2
+,
+					// Exclusion reason: Unsupported argument U
+					// ///Calls `U::from(self)`.
+					// ///
+					// ///That is, this conversion is whatever the implementation of
+					// ///<code>[From]&lt;T&gt; for U</code> chooses to do.
+					// into(self)
+,
+					// Exclusion reason: Unsupported argument T
+					// borrow(&self)
+,
+					// Exclusion reason: Unsupported argument TypeId
+					// type_id(&self)
+,
+					// Exclusion reason: Unsupported argument Result
+					// try_into(self)
+,
+					// Exclusion reason: Unsupported argument &mut self,Unsupported argument T
+					// borrow_mut(<invalid: &mut self>)
+,
+					// Exclusion reason: Unsupported argument String
+					// to_string(&self)
+,
+					// Exclusion reason: Unsupported argument T
+					// to_owned(&self)
+,
+					// Exclusion reason: Unsupported argument T
+					// clone_into(&self)
+,
+					// Exclusion reason: Unsupported argument T
+					// is_valid_bit_pattern() -> bool
+,
+					// Exclusion reason: Unsupported argument S,Unsupported argument Result,Generics on the method
+					// serialize(&self)
+,
+					// Exclusion reason: Unsupported argument D,Unsupported argument Result,Generics on the method
+					// deserialize()
+,
+					// Exclusion reason: Unsupported argument crate::UVec2,Unsupported argument QualifiedPath { name: "Output", args: AngleBracketed { args: [], bindings: [] }, self_type: Generic("Self"), trait_: ResolvedPath { name: "", id: Id("2:3377:3424"), args: None, param_names: [] } }
+					// shl(self)
+,
+					// Exclusion reason: Unsupported argument QualifiedPath { name: "Output", args: AngleBracketed { args: [], bindings: [] }, self_type: Generic("Self"), trait_: ResolvedPath { name: "", id: Id("2:3377:3424"), args: None, param_names: [] } }
+					// shl(selfi8)
+,
+					// Exclusion reason: Unsupported argument QualifiedPath { name: "Output", args: AngleBracketed { args: [], bindings: [] }, self_type: Generic("Self"), trait_: ResolvedPath { name: "", id: Id("2:3377:3424"), args: None, param_names: [] } }
+					// shl(selfi16)
+,
+					// Exclusion reason: Unsupported argument QualifiedPath { name: "Output", args: AngleBracketed { args: [], bindings: [] }, self_type: Generic("Self"), trait_: ResolvedPath { name: "", id: Id("2:3377:3424"), args: None, param_names: [] } }
+					// shl(selfi32)
+,
+					// Exclusion reason: Unsupported argument QualifiedPath { name: "Output", args: AngleBracketed { args: [], bindings: [] }, self_type: Generic("Self"), trait_: ResolvedPath { name: "", id: Id("2:3377:3424"), args: None, param_names: [] } }
+					// shl(selfu8)
+,
+					// Exclusion reason: Unsupported argument QualifiedPath { name: "Output", args: AngleBracketed { args: [], bindings: [] }, self_type: Generic("Self"), trait_: ResolvedPath { name: "", id: Id("2:3377:3424"), args: None, param_names: [] } }
+					// shl(selfu16)
+,
+					// Exclusion reason: Unsupported argument QualifiedPath { name: "Output", args: AngleBracketed { args: [], bindings: [] }, self_type: Generic("Self"), trait_: ResolvedPath { name: "", id: Id("2:3377:3424"), args: None, param_names: [] } }
+					// shl(selfu32)
+,
+					// Exclusion reason: Unsupported argument crate::IVec2,Unsupported argument QualifiedPath { name: "Output", args: AngleBracketed { args: [], bindings: [] }, self_type: Generic("Self"), trait_: ResolvedPath { name: "", id: Id("2:3377:3424"), args: None, param_names: [] } }
+					// shl(self)
+,
+					// Exclusion reason: Unsupported argument crate::UVec2,Unsupported argument QualifiedPath { name: "Output", args: AngleBracketed { args: [], bindings: [] }, self_type: Generic("Self"), trait_: ResolvedPath { name: "", id: Id("2:3377:3424"), args: None, param_names: [] } }
+					// shl(self)
+,
+					// Exclusion reason: Unsupported argument crate::UVec2,Unsupported argument QualifiedPath { name: "Output", args: AngleBracketed { args: [], bindings: [] }, self_type: Generic("Self"), trait_: ResolvedPath { name: "", id: Id("2:3383:3425"), args: None, param_names: [] } }
+					// shr(self)
+,
+					// Exclusion reason: Unsupported argument QualifiedPath { name: "Output", args: AngleBracketed { args: [], bindings: [] }, self_type: Generic("Self"), trait_: ResolvedPath { name: "", id: Id("2:3383:3425"), args: None, param_names: [] } }
+					// shr(selfi8)
+,
+					// Exclusion reason: Unsupported argument QualifiedPath { name: "Output", args: AngleBracketed { args: [], bindings: [] }, self_type: Generic("Self"), trait_: ResolvedPath { name: "", id: Id("2:3383:3425"), args: None, param_names: [] } }
+					// shr(selfi16)
+,
+					// Exclusion reason: Unsupported argument QualifiedPath { name: "Output", args: AngleBracketed { args: [], bindings: [] }, self_type: Generic("Self"), trait_: ResolvedPath { name: "", id: Id("2:3383:3425"), args: None, param_names: [] } }
+					// shr(selfi32)
+,
+					// Exclusion reason: Unsupported argument QualifiedPath { name: "Output", args: AngleBracketed { args: [], bindings: [] }, self_type: Generic("Self"), trait_: ResolvedPath { name: "", id: Id("2:3383:3425"), args: None, param_names: [] } }
+					// shr(selfu8)
+,
+					// Exclusion reason: Unsupported argument QualifiedPath { name: "Output", args: AngleBracketed { args: [], bindings: [] }, self_type: Generic("Self"), trait_: ResolvedPath { name: "", id: Id("2:3383:3425"), args: None, param_names: [] } }
+					// shr(selfu16)
+,
+					// Exclusion reason: Unsupported argument QualifiedPath { name: "Output", args: AngleBracketed { args: [], bindings: [] }, self_type: Generic("Self"), trait_: ResolvedPath { name: "", id: Id("2:3383:3425"), args: None, param_names: [] } }
+					// shr(selfu32)
+,
+					// Exclusion reason: Unsupported argument crate::IVec2,Unsupported argument QualifiedPath { name: "Output", args: AngleBracketed { args: [], bindings: [] }, self_type: Generic("Self"), trait_: ResolvedPath { name: "", id: Id("2:3383:3425"), args: None, param_names: [] } }
+					// shr(self)
+,
+					// Exclusion reason: Unsupported argument crate::UVec2,Unsupported argument QualifiedPath { name: "Output", args: AngleBracketed { args: [], bindings: [] }, self_type: Generic("Self"), trait_: ResolvedPath { name: "", id: Id("2:3383:3425"), args: None, param_names: [] } }
+					// shr(self)
+,
+					clone(&self) -> LuaUVec2
+,
+					default() -> LuaUVec2
+,
+					eq(&self&LuaUVec2) -> bool
+,
+					div(selfLuaUVec2) -> LuaUVec2
+,
+					div(selfu32) -> LuaUVec2
+,
+					div(selfLuaUVec2) -> LuaUVec2
+,
+					// Exclusion reason: Unsupported argument &mut self
+					// div_assign(<invalid: &mut self>LuaUVec2)
+,
+					// Exclusion reason: Unsupported argument &mut self
+					// div_assign(<invalid: &mut self>u32)
+,
+					mul(selfLuaUVec2) -> LuaUVec2
+,
+					mul(selfu32) -> LuaUVec2
+,
+					mul(selfLuaUVec2) -> LuaUVec2
+,
+					// Exclusion reason: Unsupported argument &mut self
+					// mul_assign(<invalid: &mut self>LuaUVec2)
+,
+					// Exclusion reason: Unsupported argument &mut self
+					// mul_assign(<invalid: &mut self>u32)
+,
+					add(selfLuaUVec2) -> LuaUVec2
+,
+					add(selfu32) -> LuaUVec2
+,
+					add(selfLuaUVec2) -> LuaUVec2
+,
+					// Exclusion reason: Unsupported argument &mut self
+					// add_assign(<invalid: &mut self>LuaUVec2)
+,
+					// Exclusion reason: Unsupported argument &mut self
+					// add_assign(<invalid: &mut self>u32)
+,
+					sub(selfLuaUVec2) -> LuaUVec2
+,
+					sub(selfu32) -> LuaUVec2
+,
+					sub(selfLuaUVec2) -> LuaUVec2
+,
+					// Exclusion reason: Unsupported argument &mut self
+					// sub_assign(<invalid: &mut self>LuaUVec2)
+,
+					// Exclusion reason: Unsupported argument &mut self
+					// sub_assign(<invalid: &mut self>u32)
+,
+					rem(selfLuaUVec2) -> LuaUVec2
+,
+					rem(selfu32) -> LuaUVec2
+,
+					rem(selfLuaUVec2) -> LuaUVec2
+,
+					// Exclusion reason: Unsupported argument &mut self
+					// rem_assign(<invalid: &mut self>LuaUVec2)
+,
+					// Exclusion reason: Unsupported argument &mut self
+					// rem_assign(<invalid: &mut self>u32)
+,
+					// Exclusion reason: Unsupported argument &[u32;2]
+					// as_ref(&self)<invalid: &[u32;2]>
+,
+					// Exclusion reason: Unsupported argument &mut self,Unsupported argument &mut [u32;2]
+					// as_mut(<invalid: &mut self>)<invalid: &mut [u32;2]>
+,
+					// Exclusion reason: Unsupported argument I,Generics on the method
+					// sum() -> LuaUVec2
+,
+					// Exclusion reason: Unsupported argument I,Generics on the method
+					// product() -> LuaUVec2
+,
+					// Exclusion reason: Unsupported argument H,Generics on the method
+					// hash(&self)
+,
+					// Exclusion reason: Unsupported argument QualifiedPath { name: "Output", args: AngleBracketed { args: [], bindings: [] }, self_type: Generic("Self"), trait_: ResolvedPath { name: "", id: Id("2:3355:2223"), args: None, param_names: [] } }
+					// not(self)
+,
+					// Exclusion reason: Unsupported argument QualifiedPath { name: "Output", args: AngleBracketed { args: [], bindings: [] }, self_type: Generic("Self"), trait_: ResolvedPath { name: "", id: Id("2:3362:2217"), args: None, param_names: [] } }
+					// bitand(selfLuaUVec2)
+,
+					// Exclusion reason: Unsupported argument QualifiedPath { name: "Output", args: AngleBracketed { args: [], bindings: [] }, self_type: Generic("Self"), trait_: ResolvedPath { name: "", id: Id("2:3362:2217"), args: None, param_names: [] } }
+					// bitand(selfu32)
+,
+					// Exclusion reason: Unsupported argument QualifiedPath { name: "Output", args: AngleBracketed { args: [], bindings: [] }, self_type: Generic("Self"), trait_: ResolvedPath { name: "", id: Id("2:3367:2219"), args: None, param_names: [] } }
+					// bitor(selfLuaUVec2)
+,
+					// Exclusion reason: Unsupported argument QualifiedPath { name: "Output", args: AngleBracketed { args: [], bindings: [] }, self_type: Generic("Self"), trait_: ResolvedPath { name: "", id: Id("2:3367:2219"), args: None, param_names: [] } }
+					// bitor(selfu32)
+,
+					// Exclusion reason: Unsupported argument QualifiedPath { name: "Output", args: AngleBracketed { args: [], bindings: [] }, self_type: Generic("Self"), trait_: ResolvedPath { name: "", id: Id("2:3372:2221"), args: None, param_names: [] } }
+					// bitxor(selfLuaUVec2)
+,
+					// Exclusion reason: Unsupported argument QualifiedPath { name: "Output", args: AngleBracketed { args: [], bindings: [] }, self_type: Generic("Self"), trait_: ResolvedPath { name: "", id: Id("2:3372:2221"), args: None, param_names: [] } }
+					// bitxor(selfu32)
+,
+					// Exclusion reason: Unsupported argument QualifiedPath { name: "Output", args: AngleBracketed { args: [], bindings: [] }, self_type: Generic("Self"), trait_: ResolvedPath { name: "", id: Id("2:3539:2758"), args: None, param_names: [] } }
+					// index(&selfusize)
+,
+					// Exclusion reason: Unsupported argument &mut self,Unsupported argument QualifiedPath { name: "Output", args: AngleBracketed { args: [], bindings: [] }, self_type: Generic("Self"), trait_: ResolvedPath { name: "", id: Id("2:3539:2758"), args: None, param_names: [] } }
+					// index_mut(<invalid: &mut self>usize)
+,
+					// Exclusion reason: Unsupported argument fmt::Formatter,Unsupported argument fmt::Result
+					// fmt(&self)
+,
+					// Exclusion reason: Unsupported argument fmt::Formatter,Unsupported argument fmt::Result
+					// fmt(&self)
+,
+					xx(self) -> LuaUVec2
+,
+					xy(self) -> LuaUVec2
+,
+					yx(self) -> LuaUVec2
+,
+					yy(self) -> LuaUVec2
+,
+					xxx(self) -> LuaUVec3
+,
+					xxy(self) -> LuaUVec3
+,
+					xyx(self) -> LuaUVec3
+,
+					xyy(self) -> LuaUVec3
+,
+					yxx(self) -> LuaUVec3
+,
+					yxy(self) -> LuaUVec3
+,
+					yyx(self) -> LuaUVec3
+,
+					yyy(self) -> LuaUVec3
+,
+					xxxx(self) -> LuaUVec4
+,
+					xxxy(self) -> LuaUVec4
+,
+					xxyx(self) -> LuaUVec4
+,
+					xxyy(self) -> LuaUVec4
+,
+					xyxx(self) -> LuaUVec4
+,
+					xyxy(self) -> LuaUVec4
+,
+					xyyx(self) -> LuaUVec4
+,
+					xyyy(self) -> LuaUVec4
+,
+					yxxx(self) -> LuaUVec4
+,
+					yxxy(self) -> LuaUVec4
+,
+					yxyx(self) -> LuaUVec4
+,
+					yxyy(self) -> LuaUVec4
+,
+					yyxx(self) -> LuaUVec4
+,
+					yyxy(self) -> LuaUVec4
+,
+					yyyx(self) -> LuaUVec4
+,
+					yyyy(self) -> LuaUVec4
+,
+				)
+				+ BinaryOps
+				(
 self Add LuaUVec2 -> LuaUVec2 -> LuaUVec2
 self Add u32 -> LuaUVec2 -> LuaUVec2
 u32 Add self -> LuaUVec2 -> LuaUVec2
@@ -10180,698 +9193,629 @@ u32 Mul self -> LuaUVec2 -> LuaUVec2
 self Rem LuaUVec2 -> LuaUVec2 -> LuaUVec2
 self Rem u32 -> LuaUVec2 -> LuaUVec2
 u32 Rem self -> LuaUVec2 -> LuaUVec2
-			)
-+ UnaryOps			(
-			)
-+ 			    Copy(LuaVec2 -> (MetaMethod::Index) (s=LuaUVec2),
-			        LuaVec2 -> mut (MetaMethod::NewIndex) (n=u32))
-			    
-impl			{
+				)
+				+ UnaryOps
+				(
+				)
++ 				    Copy(LuaVec2 -> (MetaMethod::Index) (s=LuaUVec2),
+				        LuaVec2 -> mut (MetaMethod::NewIndex) (n=u32))
+				    
+			impl
+			{
 			}
 		}
-		{
+,		{
 			///A 3-dimensional vector.
-glam::u32::uvec3::UVec3 : Value
-AutoMethods			(
-				// Exclusion reason: 
-				// ///Creates a new vector.
-				// new(u32u32u32) -> LuaUVec3
-
-				// Exclusion reason: 
-				// ///Creates a vector with all elements set to `v`.
-				// splat(u32) -> LuaUVec3
-
-				///Creates a vector from the elements in `if_true` and `if_false`, selecting which to use
-				///for each element of `self`.
-				///
-				///A true element in the mask uses the corresponding element from `if_true`, and false
-				///uses the element from `if_false`.
-				select(LuaUVec3LuaUVec3) -> LuaUVec3
-
-				///Creates a new vector from an array.
-				from_array(<invalid: [u32;3]>) -> LuaUVec3
-
-				///`[x, y, z]`
-				to_array(&self)<invalid: [u32;3]>
-
-				///Creates a vector from the first 3 values in `slice`.
-				///
-				///# Panics
-				///
-				///Panics if `slice` is less than 3 elements long.
-				from_slice(<invalid: &[u32]>) -> LuaUVec3
-
-				///Writes the elements of `self` to the first 3 elements in `slice`.
-				///
-				///# Panics
-				///
-				///Panics if `slice` is less than 3 elements long.
-				write_to_slice(self<invalid: &mut [u32]>)
-
-				// Exclusion reason: 
-				// ///Creates a 4D vector from `self` and the given `w` value.
-				// extend(selfu32) -> LuaUVec4
-
-				// Exclusion reason: 
-				// ///Creates a 2D vector from the `x` and `y` elements of `self`, discarding `z`.
-				// ///
-				// ///Truncation may also be performed by using `self.xy()` or `UVec2::from()`.
-				// truncate(self) -> LuaUVec2
-
-				// Exclusion reason: 
-				// ///Computes the dot product of `self` and `rhs`.
-				// dot(selfLuaUVec3) -> u32
-
-				// Exclusion reason: 
-				// ///Computes the cross product of `self` and `rhs`.
-				// cross(selfLuaUVec3) -> LuaUVec3
-
-				// Exclusion reason: 
-				// ///Returns a vector containing the minimum values for each element of `self` and `rhs`.
-				// ///
-				// ///In other words this computes `[self.x.min(rhs.x), self.y.min(rhs.y), ..]`.
-				// min(selfLuaUVec3) -> LuaUVec3
-
-				// Exclusion reason: 
-				// ///Returns a vector containing the maximum values for each element of `self` and `rhs`.
-				// ///
-				// ///In other words this computes `[self.x.max(rhs.x), self.y.max(rhs.y), ..]`.
-				// max(selfLuaUVec3) -> LuaUVec3
-
-				// Exclusion reason: 
-				// ///Component-wise clamping of values, similar to [`f32::clamp`].
-				// ///
-				// ///Each element in `min` must be less-or-equal to the corresponding element in `max`.
-				// ///
-				// ///# Panics
-				// ///
-				// ///Will panic if `min` is greater than `max` when `glam_assert` is enabled.
-				// clamp(selfLuaUVec3LuaUVec3) -> LuaUVec3
-
-				// Exclusion reason: 
-				// ///Returns the horizontal minimum of `self`.
-				// ///
-				// ///In other words this computes `min(x, y, ..)`.
-				// min_element(self) -> u32
-
-				// Exclusion reason: 
-				// ///Returns the horizontal maximum of `self`.
-				// ///
-				// ///In other words this computes `max(x, y, ..)`.
-				// max_element(self) -> u32
-
-				///Returns a vector mask containing the result of a `==` comparison for each element of
-				///`self` and `rhs`.
-				///
-				///In other words, this computes `[self.x == rhs.x, self.y == rhs.y, ..]` for all
-				///elements.
-				cmpeq(selfLuaUVec3)
-
-				///Returns a vector mask containing the result of a `!=` comparison for each element of
-				///`self` and `rhs`.
-				///
-				///In other words this computes `[self.x != rhs.x, self.y != rhs.y, ..]` for all
-				///elements.
-				cmpne(selfLuaUVec3)
-
-				///Returns a vector mask containing the result of a `>=` comparison for each element of
-				///`self` and `rhs`.
-				///
-				///In other words this computes `[self.x >= rhs.x, self.y >= rhs.y, ..]` for all
-				///elements.
-				cmpge(selfLuaUVec3)
-
-				///Returns a vector mask containing the result of a `>` comparison for each element of
-				///`self` and `rhs`.
-				///
-				///In other words this computes `[self.x > rhs.x, self.y > rhs.y, ..]` for all
-				///elements.
-				cmpgt(selfLuaUVec3)
-
-				///Returns a vector mask containing the result of a `<=` comparison for each element of
-				///`self` and `rhs`.
-				///
-				///In other words this computes `[self.x <= rhs.x, self.y <= rhs.y, ..]` for all
-				///elements.
-				cmple(selfLuaUVec3)
-
-				///Returns a vector mask containing the result of a `<` comparison for each element of
-				///`self` and `rhs`.
-				///
-				///In other words this computes `[self.x < rhs.x, self.y < rhs.y, ..]` for all
-				///elements.
-				cmplt(selfLuaUVec3)
-
-				///Casts all elements of `self` to `f32`.
-				as_vec3(&self)
-
-				///Casts all elements of `self` to `f32`.
-				as_vec3a(&self)
-
-				///Casts all elements of `self` to `f64`.
-				as_dvec3(&self)
-
-				///Casts all elements of `self` to `i32`.
-				as_ivec3(&self)
-
-				try_from()
-
-				///Returns the argument unchanged.
-				from()
-
-				from(<invalid: [u32;3]>) -> LuaUVec3
-
-				// Exclusion reason: 
-				// from(LuaUVec3) -> LuaUVec3
-
-				from(<invalid: (u32,u32,u32)>) -> LuaUVec3
-
-				// Exclusion reason: 
-				// from(LuaUVec3) -> LuaUVec3
-
-				from(<invalid: (LuaUVec2,u32)>) -> LuaUVec3
-
-				///Calls `U::from(self)`.
-				///
-				///That is, this conversion is whatever the implementation of
-				///<code>[From]&lt;T&gt; for U</code> chooses to do.
-				into(self)
-
-				borrow(&self)
-
-				type_id(&self)
-
-				try_into(self)
-
-				borrow_mut(<invalid: &mut self>)
-
-				to_string(&self)
-
-				to_owned(&self)
-
-				clone_into(&self)
-
-				is_valid_bit_pattern() -> bool
-
-				serialize(&self)
-
-				deserialize()
-
-				shl(self)
-
-				shl(selfi8)
-
-				shl(selfi16)
-
-				shl(selfi32)
-
-				shl(selfu8)
-
-				shl(selfu16)
-
-				shl(selfu32)
-
-				shl(self)
-
-				shl(self)
-
-				shr(self)
-
-				shr(selfi8)
-
-				shr(selfi16)
-
-				shr(selfi32)
-
-				shr(selfu8)
-
-				shr(selfu16)
-
-				shr(selfu32)
-
-				shr(self)
-
-				shr(self)
-
-				// Exclusion reason: 
-				// clone(&self) -> LuaUVec3
-
-				// Exclusion reason: 
-				// default() -> LuaUVec3
-
-				// Exclusion reason: 
-				// eq(&self&LuaUVec3) -> bool
-
-				// Exclusion reason: 
-				// div(selfLuaUVec3) -> LuaUVec3
-
-				// Exclusion reason: 
-				// div(selfu32) -> LuaUVec3
-
-				// Exclusion reason: 
-				// div(selfLuaUVec3) -> LuaUVec3
-
-				div_assign(<invalid: &mut self>LuaUVec3)
-
-				div_assign(<invalid: &mut self>u32)
-
-				// Exclusion reason: 
-				// mul(selfLuaUVec3) -> LuaUVec3
-
-				// Exclusion reason: 
-				// mul(selfu32) -> LuaUVec3
-
-				// Exclusion reason: 
-				// mul(selfLuaUVec3) -> LuaUVec3
-
-				mul_assign(<invalid: &mut self>LuaUVec3)
-
-				mul_assign(<invalid: &mut self>u32)
-
-				// Exclusion reason: 
-				// add(selfLuaUVec3) -> LuaUVec3
-
-				// Exclusion reason: 
-				// add(selfu32) -> LuaUVec3
-
-				// Exclusion reason: 
-				// add(selfLuaUVec3) -> LuaUVec3
-
-				add_assign(<invalid: &mut self>LuaUVec3)
-
-				add_assign(<invalid: &mut self>u32)
-
-				// Exclusion reason: 
-				// sub(selfLuaUVec3) -> LuaUVec3
-
-				// Exclusion reason: 
-				// sub(selfu32) -> LuaUVec3
-
-				// Exclusion reason: 
-				// sub(selfLuaUVec3) -> LuaUVec3
-
-				sub_assign(<invalid: &mut self>LuaUVec3)
-
-				sub_assign(<invalid: &mut self>u32)
-
-				// Exclusion reason: 
-				// rem(selfLuaUVec3) -> LuaUVec3
-
-				// Exclusion reason: 
-				// rem(selfu32) -> LuaUVec3
-
-				// Exclusion reason: 
-				// rem(selfLuaUVec3) -> LuaUVec3
-
-				rem_assign(<invalid: &mut self>LuaUVec3)
-
-				rem_assign(<invalid: &mut self>u32)
-
-				as_ref(&self)<invalid: &[u32;3]>
-
-				as_mut(<invalid: &mut self>)<invalid: &mut [u32;3]>
-
-				sum() -> LuaUVec3
-
-				product() -> LuaUVec3
-
-				hash(&self)
-
-				not(self)
-
-				bitand(selfLuaUVec3)
-
-				bitand(selfu32)
-
-				bitor(selfLuaUVec3)
-
-				bitor(selfu32)
-
-				bitxor(selfLuaUVec3)
-
-				bitxor(selfu32)
-
-				index(&selfusize)
-
-				index_mut(<invalid: &mut self>usize)
-
-				fmt(&self)
-
-				fmt(&self)
-
-				// Exclusion reason: 
-				// xx(self) -> LuaUVec2
-
-				// Exclusion reason: 
-				// xy(self) -> LuaUVec2
-
-				// Exclusion reason: 
-				// xz(self) -> LuaUVec2
-
-				// Exclusion reason: 
-				// yx(self) -> LuaUVec2
-
-				// Exclusion reason: 
-				// yy(self) -> LuaUVec2
-
-				// Exclusion reason: 
-				// yz(self) -> LuaUVec2
-
-				// Exclusion reason: 
-				// zx(self) -> LuaUVec2
-
-				// Exclusion reason: 
-				// zy(self) -> LuaUVec2
-
-				// Exclusion reason: 
-				// zz(self) -> LuaUVec2
-
-				// Exclusion reason: 
-				// xxx(self) -> LuaUVec3
-
-				// Exclusion reason: 
-				// xxy(self) -> LuaUVec3
-
-				// Exclusion reason: 
-				// xxz(self) -> LuaUVec3
-
-				// Exclusion reason: 
-				// xyx(self) -> LuaUVec3
-
-				// Exclusion reason: 
-				// xyy(self) -> LuaUVec3
-
-				// Exclusion reason: 
-				// xyz(self) -> LuaUVec3
-
-				// Exclusion reason: 
-				// xzx(self) -> LuaUVec3
-
-				// Exclusion reason: 
-				// xzy(self) -> LuaUVec3
-
-				// Exclusion reason: 
-				// xzz(self) -> LuaUVec3
-
-				// Exclusion reason: 
-				// yxx(self) -> LuaUVec3
-
-				// Exclusion reason: 
-				// yxy(self) -> LuaUVec3
-
-				// Exclusion reason: 
-				// yxz(self) -> LuaUVec3
-
-				// Exclusion reason: 
-				// yyx(self) -> LuaUVec3
-
-				// Exclusion reason: 
-				// yyy(self) -> LuaUVec3
-
-				// Exclusion reason: 
-				// yyz(self) -> LuaUVec3
-
-				// Exclusion reason: 
-				// yzx(self) -> LuaUVec3
-
-				// Exclusion reason: 
-				// yzy(self) -> LuaUVec3
-
-				// Exclusion reason: 
-				// yzz(self) -> LuaUVec3
-
-				// Exclusion reason: 
-				// zxx(self) -> LuaUVec3
-
-				// Exclusion reason: 
-				// zxy(self) -> LuaUVec3
-
-				// Exclusion reason: 
-				// zxz(self) -> LuaUVec3
-
-				// Exclusion reason: 
-				// zyx(self) -> LuaUVec3
-
-				// Exclusion reason: 
-				// zyy(self) -> LuaUVec3
-
-				// Exclusion reason: 
-				// zyz(self) -> LuaUVec3
-
-				// Exclusion reason: 
-				// zzx(self) -> LuaUVec3
-
-				// Exclusion reason: 
-				// zzy(self) -> LuaUVec3
-
-				// Exclusion reason: 
-				// zzz(self) -> LuaUVec3
-
-				// Exclusion reason: 
-				// xxxx(self) -> LuaUVec4
-
-				// Exclusion reason: 
-				// xxxy(self) -> LuaUVec4
-
-				// Exclusion reason: 
-				// xxxz(self) -> LuaUVec4
-
-				// Exclusion reason: 
-				// xxyx(self) -> LuaUVec4
-
-				// Exclusion reason: 
-				// xxyy(self) -> LuaUVec4
-
-				// Exclusion reason: 
-				// xxyz(self) -> LuaUVec4
-
-				// Exclusion reason: 
-				// xxzx(self) -> LuaUVec4
-
-				// Exclusion reason: 
-				// xxzy(self) -> LuaUVec4
-
-				// Exclusion reason: 
-				// xxzz(self) -> LuaUVec4
-
-				// Exclusion reason: 
-				// xyxx(self) -> LuaUVec4
-
-				// Exclusion reason: 
-				// xyxy(self) -> LuaUVec4
-
-				// Exclusion reason: 
-				// xyxz(self) -> LuaUVec4
-
-				// Exclusion reason: 
-				// xyyx(self) -> LuaUVec4
-
-				// Exclusion reason: 
-				// xyyy(self) -> LuaUVec4
-
-				// Exclusion reason: 
-				// xyyz(self) -> LuaUVec4
-
-				// Exclusion reason: 
-				// xyzx(self) -> LuaUVec4
-
-				// Exclusion reason: 
-				// xyzy(self) -> LuaUVec4
-
-				// Exclusion reason: 
-				// xyzz(self) -> LuaUVec4
-
-				// Exclusion reason: 
-				// xzxx(self) -> LuaUVec4
-
-				// Exclusion reason: 
-				// xzxy(self) -> LuaUVec4
-
-				// Exclusion reason: 
-				// xzxz(self) -> LuaUVec4
-
-				// Exclusion reason: 
-				// xzyx(self) -> LuaUVec4
-
-				// Exclusion reason: 
-				// xzyy(self) -> LuaUVec4
-
-				// Exclusion reason: 
-				// xzyz(self) -> LuaUVec4
-
-				// Exclusion reason: 
-				// xzzx(self) -> LuaUVec4
-
-				// Exclusion reason: 
-				// xzzy(self) -> LuaUVec4
-
-				// Exclusion reason: 
-				// xzzz(self) -> LuaUVec4
-
-				// Exclusion reason: 
-				// yxxx(self) -> LuaUVec4
-
-				// Exclusion reason: 
-				// yxxy(self) -> LuaUVec4
-
-				// Exclusion reason: 
-				// yxxz(self) -> LuaUVec4
-
-				// Exclusion reason: 
-				// yxyx(self) -> LuaUVec4
-
-				// Exclusion reason: 
-				// yxyy(self) -> LuaUVec4
-
-				// Exclusion reason: 
-				// yxyz(self) -> LuaUVec4
-
-				// Exclusion reason: 
-				// yxzx(self) -> LuaUVec4
-
-				// Exclusion reason: 
-				// yxzy(self) -> LuaUVec4
-
-				// Exclusion reason: 
-				// yxzz(self) -> LuaUVec4
-
-				// Exclusion reason: 
-				// yyxx(self) -> LuaUVec4
-
-				// Exclusion reason: 
-				// yyxy(self) -> LuaUVec4
-
-				// Exclusion reason: 
-				// yyxz(self) -> LuaUVec4
-
-				// Exclusion reason: 
-				// yyyx(self) -> LuaUVec4
-
-				// Exclusion reason: 
-				// yyyy(self) -> LuaUVec4
-
-				// Exclusion reason: 
-				// yyyz(self) -> LuaUVec4
-
-				// Exclusion reason: 
-				// yyzx(self) -> LuaUVec4
-
-				// Exclusion reason: 
-				// yyzy(self) -> LuaUVec4
-
-				// Exclusion reason: 
-				// yyzz(self) -> LuaUVec4
-
-				// Exclusion reason: 
-				// yzxx(self) -> LuaUVec4
-
-				// Exclusion reason: 
-				// yzxy(self) -> LuaUVec4
-
-				// Exclusion reason: 
-				// yzxz(self) -> LuaUVec4
-
-				// Exclusion reason: 
-				// yzyx(self) -> LuaUVec4
-
-				// Exclusion reason: 
-				// yzyy(self) -> LuaUVec4
-
-				// Exclusion reason: 
-				// yzyz(self) -> LuaUVec4
-
-				// Exclusion reason: 
-				// yzzx(self) -> LuaUVec4
-
-				// Exclusion reason: 
-				// yzzy(self) -> LuaUVec4
-
-				// Exclusion reason: 
-				// yzzz(self) -> LuaUVec4
-
-				// Exclusion reason: 
-				// zxxx(self) -> LuaUVec4
-
-				// Exclusion reason: 
-				// zxxy(self) -> LuaUVec4
-
-				// Exclusion reason: 
-				// zxxz(self) -> LuaUVec4
-
-				// Exclusion reason: 
-				// zxyx(self) -> LuaUVec4
-
-				// Exclusion reason: 
-				// zxyy(self) -> LuaUVec4
-
-				// Exclusion reason: 
-				// zxyz(self) -> LuaUVec4
-
-				// Exclusion reason: 
-				// zxzx(self) -> LuaUVec4
-
-				// Exclusion reason: 
-				// zxzy(self) -> LuaUVec4
-
-				// Exclusion reason: 
-				// zxzz(self) -> LuaUVec4
-
-				// Exclusion reason: 
-				// zyxx(self) -> LuaUVec4
-
-				// Exclusion reason: 
-				// zyxy(self) -> LuaUVec4
-
-				// Exclusion reason: 
-				// zyxz(self) -> LuaUVec4
-
-				// Exclusion reason: 
-				// zyyx(self) -> LuaUVec4
-
-				// Exclusion reason: 
-				// zyyy(self) -> LuaUVec4
-
-				// Exclusion reason: 
-				// zyyz(self) -> LuaUVec4
-
-				// Exclusion reason: 
-				// zyzx(self) -> LuaUVec4
-
-				// Exclusion reason: 
-				// zyzy(self) -> LuaUVec4
-
-				// Exclusion reason: 
-				// zyzz(self) -> LuaUVec4
-
-				// Exclusion reason: 
-				// zzxx(self) -> LuaUVec4
-
-				// Exclusion reason: 
-				// zzxy(self) -> LuaUVec4
-
-				// Exclusion reason: 
-				// zzxz(self) -> LuaUVec4
-
-				// Exclusion reason: 
-				// zzyx(self) -> LuaUVec4
-
-				// Exclusion reason: 
-				// zzyy(self) -> LuaUVec4
-
-				// Exclusion reason: 
-				// zzyz(self) -> LuaUVec4
-
-				// Exclusion reason: 
-				// zzzx(self) -> LuaUVec4
-
-				// Exclusion reason: 
-				// zzzy(self) -> LuaUVec4
-
-				// Exclusion reason: 
-				// zzzz(self) -> LuaUVec4
-
-			)
-+ BinaryOps			(
+			glam::u32::uvec3::UVec3 : Value
+:				AutoMethods
+				(
+					///Creates a new vector.
+					new(u32u32u32) -> LuaUVec3
+,
+					///Creates a vector with all elements set to `v`.
+					splat(u32) -> LuaUVec3
+,
+					// Exclusion reason: Unsupported argument BVec3
+					// ///Creates a vector from the elements in `if_true` and `if_false`, selecting which to use
+					// ///for each element of `self`.
+					// ///
+					// ///A true element in the mask uses the corresponding element from `if_true`, and false
+					// ///uses the element from `if_false`.
+					// select(LuaUVec3LuaUVec3) -> LuaUVec3
+,
+					// Exclusion reason: Unsupported argument [u32;3]
+					// ///Creates a new vector from an array.
+					// from_array(<invalid: [u32;3]>) -> LuaUVec3
+,
+					// Exclusion reason: Unsupported argument [u32;3]
+					// ///`[x, y, z]`
+					// to_array(&self)<invalid: [u32;3]>
+,
+					// Exclusion reason: Unsupported argument &[u32]
+					// ///Creates a vector from the first 3 values in `slice`.
+					// ///
+					// ///# Panics
+					// ///
+					// ///Panics if `slice` is less than 3 elements long.
+					// from_slice(<invalid: &[u32]>) -> LuaUVec3
+,
+					// Exclusion reason: Unsupported argument &mut [u32]
+					// ///Writes the elements of `self` to the first 3 elements in `slice`.
+					// ///
+					// ///# Panics
+					// ///
+					// ///Panics if `slice` is less than 3 elements long.
+					// write_to_slice(self<invalid: &mut [u32]>)
+,
+					///Creates a 4D vector from `self` and the given `w` value.
+					extend(selfu32) -> LuaUVec4
+,
+					///Creates a 2D vector from the `x` and `y` elements of `self`, discarding `z`.
+					///
+					///Truncation may also be performed by using `self.xy()` or `UVec2::from()`.
+					truncate(self) -> LuaUVec2
+,
+					///Computes the dot product of `self` and `rhs`.
+					dot(selfLuaUVec3) -> u32
+,
+					///Computes the cross product of `self` and `rhs`.
+					cross(selfLuaUVec3) -> LuaUVec3
+,
+					///Returns a vector containing the minimum values for each element of `self` and `rhs`.
+					///
+					///In other words this computes `[self.x.min(rhs.x), self.y.min(rhs.y), ..]`.
+					min(selfLuaUVec3) -> LuaUVec3
+,
+					///Returns a vector containing the maximum values for each element of `self` and `rhs`.
+					///
+					///In other words this computes `[self.x.max(rhs.x), self.y.max(rhs.y), ..]`.
+					max(selfLuaUVec3) -> LuaUVec3
+,
+					///Component-wise clamping of values, similar to [`f32::clamp`].
+					///
+					///Each element in `min` must be less-or-equal to the corresponding element in `max`.
+					///
+					///# Panics
+					///
+					///Will panic if `min` is greater than `max` when `glam_assert` is enabled.
+					clamp(selfLuaUVec3LuaUVec3) -> LuaUVec3
+,
+					///Returns the horizontal minimum of `self`.
+					///
+					///In other words this computes `min(x, y, ..)`.
+					min_element(self) -> u32
+,
+					///Returns the horizontal maximum of `self`.
+					///
+					///In other words this computes `max(x, y, ..)`.
+					max_element(self) -> u32
+,
+					// Exclusion reason: Unsupported argument BVec3
+					// ///Returns a vector mask containing the result of a `==` comparison for each element of
+					// ///`self` and `rhs`.
+					// ///
+					// ///In other words, this computes `[self.x == rhs.x, self.y == rhs.y, ..]` for all
+					// ///elements.
+					// cmpeq(selfLuaUVec3)
+,
+					// Exclusion reason: Unsupported argument BVec3
+					// ///Returns a vector mask containing the result of a `!=` comparison for each element of
+					// ///`self` and `rhs`.
+					// ///
+					// ///In other words this computes `[self.x != rhs.x, self.y != rhs.y, ..]` for all
+					// ///elements.
+					// cmpne(selfLuaUVec3)
+,
+					// Exclusion reason: Unsupported argument BVec3
+					// ///Returns a vector mask containing the result of a `>=` comparison for each element of
+					// ///`self` and `rhs`.
+					// ///
+					// ///In other words this computes `[self.x >= rhs.x, self.y >= rhs.y, ..]` for all
+					// ///elements.
+					// cmpge(selfLuaUVec3)
+,
+					// Exclusion reason: Unsupported argument BVec3
+					// ///Returns a vector mask containing the result of a `>` comparison for each element of
+					// ///`self` and `rhs`.
+					// ///
+					// ///In other words this computes `[self.x > rhs.x, self.y > rhs.y, ..]` for all
+					// ///elements.
+					// cmpgt(selfLuaUVec3)
+,
+					// Exclusion reason: Unsupported argument BVec3
+					// ///Returns a vector mask containing the result of a `<=` comparison for each element of
+					// ///`self` and `rhs`.
+					// ///
+					// ///In other words this computes `[self.x <= rhs.x, self.y <= rhs.y, ..]` for all
+					// ///elements.
+					// cmple(selfLuaUVec3)
+,
+					// Exclusion reason: Unsupported argument BVec3
+					// ///Returns a vector mask containing the result of a `<` comparison for each element of
+					// ///`self` and `rhs`.
+					// ///
+					// ///In other words this computes `[self.x < rhs.x, self.y < rhs.y, ..]` for all
+					// ///elements.
+					// cmplt(selfLuaUVec3)
+,
+					// Exclusion reason: Unsupported argument crate::Vec3
+					// ///Casts all elements of `self` to `f32`.
+					// as_vec3(&self)
+,
+					// Exclusion reason: Unsupported argument crate::Vec3A
+					// ///Casts all elements of `self` to `f32`.
+					// as_vec3a(&self)
+,
+					// Exclusion reason: Unsupported argument crate::DVec3
+					// ///Casts all elements of `self` to `f64`.
+					// as_dvec3(&self)
+,
+					// Exclusion reason: Unsupported argument crate::IVec3
+					// ///Casts all elements of `self` to `i32`.
+					// as_ivec3(&self)
+,
+					// Exclusion reason: Unsupported argument U,Unsupported argument Result
+					// try_from()
+,
+					// Exclusion reason: Unsupported argument T,Unsupported argument T
+					// ///Returns the argument unchanged.
+					// from()
+,
+					// Exclusion reason: Unsupported argument [u32;3]
+					// from(<invalid: [u32;3]>) -> LuaUVec3
+,
+					from(LuaUVec3) -> LuaUVec3
+,
+					// Exclusion reason: Unsupported argument (u32,u32,u32)
+					// from(<invalid: (u32,u32,u32)>) -> LuaUVec3
+,
+					from(LuaUVec3) -> LuaUVec3
+,
+					// Exclusion reason: Unsupported argument (LuaUVec2,u32)
+					// from(<invalid: (LuaUVec2,u32)>) -> LuaUVec3
+,
+					// Exclusion reason: Unsupported argument U
+					// ///Calls `U::from(self)`.
+					// ///
+					// ///That is, this conversion is whatever the implementation of
+					// ///<code>[From]&lt;T&gt; for U</code> chooses to do.
+					// into(self)
+,
+					// Exclusion reason: Unsupported argument T
+					// borrow(&self)
+,
+					// Exclusion reason: Unsupported argument TypeId
+					// type_id(&self)
+,
+					// Exclusion reason: Unsupported argument Result
+					// try_into(self)
+,
+					// Exclusion reason: Unsupported argument &mut self,Unsupported argument T
+					// borrow_mut(<invalid: &mut self>)
+,
+					// Exclusion reason: Unsupported argument String
+					// to_string(&self)
+,
+					// Exclusion reason: Unsupported argument T
+					// to_owned(&self)
+,
+					// Exclusion reason: Unsupported argument T
+					// clone_into(&self)
+,
+					// Exclusion reason: Unsupported argument T
+					// is_valid_bit_pattern() -> bool
+,
+					// Exclusion reason: Unsupported argument S,Unsupported argument Result,Generics on the method
+					// serialize(&self)
+,
+					// Exclusion reason: Unsupported argument D,Unsupported argument Result,Generics on the method
+					// deserialize()
+,
+					// Exclusion reason: Unsupported argument crate::UVec3,Unsupported argument QualifiedPath { name: "Output", args: AngleBracketed { args: [], bindings: [] }, self_type: Generic("Self"), trait_: ResolvedPath { name: "", id: Id("2:3377:3424"), args: None, param_names: [] } }
+					// shl(self)
+,
+					// Exclusion reason: Unsupported argument QualifiedPath { name: "Output", args: AngleBracketed { args: [], bindings: [] }, self_type: Generic("Self"), trait_: ResolvedPath { name: "", id: Id("2:3377:3424"), args: None, param_names: [] } }
+					// shl(selfi8)
+,
+					// Exclusion reason: Unsupported argument QualifiedPath { name: "Output", args: AngleBracketed { args: [], bindings: [] }, self_type: Generic("Self"), trait_: ResolvedPath { name: "", id: Id("2:3377:3424"), args: None, param_names: [] } }
+					// shl(selfi16)
+,
+					// Exclusion reason: Unsupported argument QualifiedPath { name: "Output", args: AngleBracketed { args: [], bindings: [] }, self_type: Generic("Self"), trait_: ResolvedPath { name: "", id: Id("2:3377:3424"), args: None, param_names: [] } }
+					// shl(selfi32)
+,
+					// Exclusion reason: Unsupported argument QualifiedPath { name: "Output", args: AngleBracketed { args: [], bindings: [] }, self_type: Generic("Self"), trait_: ResolvedPath { name: "", id: Id("2:3377:3424"), args: None, param_names: [] } }
+					// shl(selfu8)
+,
+					// Exclusion reason: Unsupported argument QualifiedPath { name: "Output", args: AngleBracketed { args: [], bindings: [] }, self_type: Generic("Self"), trait_: ResolvedPath { name: "", id: Id("2:3377:3424"), args: None, param_names: [] } }
+					// shl(selfu16)
+,
+					// Exclusion reason: Unsupported argument QualifiedPath { name: "Output", args: AngleBracketed { args: [], bindings: [] }, self_type: Generic("Self"), trait_: ResolvedPath { name: "", id: Id("2:3377:3424"), args: None, param_names: [] } }
+					// shl(selfu32)
+,
+					// Exclusion reason: Unsupported argument crate::IVec3,Unsupported argument QualifiedPath { name: "Output", args: AngleBracketed { args: [], bindings: [] }, self_type: Generic("Self"), trait_: ResolvedPath { name: "", id: Id("2:3377:3424"), args: None, param_names: [] } }
+					// shl(self)
+,
+					// Exclusion reason: Unsupported argument crate::UVec3,Unsupported argument QualifiedPath { name: "Output", args: AngleBracketed { args: [], bindings: [] }, self_type: Generic("Self"), trait_: ResolvedPath { name: "", id: Id("2:3377:3424"), args: None, param_names: [] } }
+					// shl(self)
+,
+					// Exclusion reason: Unsupported argument crate::UVec3,Unsupported argument QualifiedPath { name: "Output", args: AngleBracketed { args: [], bindings: [] }, self_type: Generic("Self"), trait_: ResolvedPath { name: "", id: Id("2:3383:3425"), args: None, param_names: [] } }
+					// shr(self)
+,
+					// Exclusion reason: Unsupported argument QualifiedPath { name: "Output", args: AngleBracketed { args: [], bindings: [] }, self_type: Generic("Self"), trait_: ResolvedPath { name: "", id: Id("2:3383:3425"), args: None, param_names: [] } }
+					// shr(selfi8)
+,
+					// Exclusion reason: Unsupported argument QualifiedPath { name: "Output", args: AngleBracketed { args: [], bindings: [] }, self_type: Generic("Self"), trait_: ResolvedPath { name: "", id: Id("2:3383:3425"), args: None, param_names: [] } }
+					// shr(selfi16)
+,
+					// Exclusion reason: Unsupported argument QualifiedPath { name: "Output", args: AngleBracketed { args: [], bindings: [] }, self_type: Generic("Self"), trait_: ResolvedPath { name: "", id: Id("2:3383:3425"), args: None, param_names: [] } }
+					// shr(selfi32)
+,
+					// Exclusion reason: Unsupported argument QualifiedPath { name: "Output", args: AngleBracketed { args: [], bindings: [] }, self_type: Generic("Self"), trait_: ResolvedPath { name: "", id: Id("2:3383:3425"), args: None, param_names: [] } }
+					// shr(selfu8)
+,
+					// Exclusion reason: Unsupported argument QualifiedPath { name: "Output", args: AngleBracketed { args: [], bindings: [] }, self_type: Generic("Self"), trait_: ResolvedPath { name: "", id: Id("2:3383:3425"), args: None, param_names: [] } }
+					// shr(selfu16)
+,
+					// Exclusion reason: Unsupported argument QualifiedPath { name: "Output", args: AngleBracketed { args: [], bindings: [] }, self_type: Generic("Self"), trait_: ResolvedPath { name: "", id: Id("2:3383:3425"), args: None, param_names: [] } }
+					// shr(selfu32)
+,
+					// Exclusion reason: Unsupported argument crate::IVec3,Unsupported argument QualifiedPath { name: "Output", args: AngleBracketed { args: [], bindings: [] }, self_type: Generic("Self"), trait_: ResolvedPath { name: "", id: Id("2:3383:3425"), args: None, param_names: [] } }
+					// shr(self)
+,
+					// Exclusion reason: Unsupported argument crate::UVec3,Unsupported argument QualifiedPath { name: "Output", args: AngleBracketed { args: [], bindings: [] }, self_type: Generic("Self"), trait_: ResolvedPath { name: "", id: Id("2:3383:3425"), args: None, param_names: [] } }
+					// shr(self)
+,
+					clone(&self) -> LuaUVec3
+,
+					default() -> LuaUVec3
+,
+					eq(&self&LuaUVec3) -> bool
+,
+					div(selfLuaUVec3) -> LuaUVec3
+,
+					div(selfu32) -> LuaUVec3
+,
+					div(selfLuaUVec3) -> LuaUVec3
+,
+					// Exclusion reason: Unsupported argument &mut self
+					// div_assign(<invalid: &mut self>LuaUVec3)
+,
+					// Exclusion reason: Unsupported argument &mut self
+					// div_assign(<invalid: &mut self>u32)
+,
+					mul(selfLuaUVec3) -> LuaUVec3
+,
+					mul(selfu32) -> LuaUVec3
+,
+					mul(selfLuaUVec3) -> LuaUVec3
+,
+					// Exclusion reason: Unsupported argument &mut self
+					// mul_assign(<invalid: &mut self>LuaUVec3)
+,
+					// Exclusion reason: Unsupported argument &mut self
+					// mul_assign(<invalid: &mut self>u32)
+,
+					add(selfLuaUVec3) -> LuaUVec3
+,
+					add(selfu32) -> LuaUVec3
+,
+					add(selfLuaUVec3) -> LuaUVec3
+,
+					// Exclusion reason: Unsupported argument &mut self
+					// add_assign(<invalid: &mut self>LuaUVec3)
+,
+					// Exclusion reason: Unsupported argument &mut self
+					// add_assign(<invalid: &mut self>u32)
+,
+					sub(selfLuaUVec3) -> LuaUVec3
+,
+					sub(selfu32) -> LuaUVec3
+,
+					sub(selfLuaUVec3) -> LuaUVec3
+,
+					// Exclusion reason: Unsupported argument &mut self
+					// sub_assign(<invalid: &mut self>LuaUVec3)
+,
+					// Exclusion reason: Unsupported argument &mut self
+					// sub_assign(<invalid: &mut self>u32)
+,
+					rem(selfLuaUVec3) -> LuaUVec3
+,
+					rem(selfu32) -> LuaUVec3
+,
+					rem(selfLuaUVec3) -> LuaUVec3
+,
+					// Exclusion reason: Unsupported argument &mut self
+					// rem_assign(<invalid: &mut self>LuaUVec3)
+,
+					// Exclusion reason: Unsupported argument &mut self
+					// rem_assign(<invalid: &mut self>u32)
+,
+					// Exclusion reason: Unsupported argument &[u32;3]
+					// as_ref(&self)<invalid: &[u32;3]>
+,
+					// Exclusion reason: Unsupported argument &mut self,Unsupported argument &mut [u32;3]
+					// as_mut(<invalid: &mut self>)<invalid: &mut [u32;3]>
+,
+					// Exclusion reason: Unsupported argument I,Generics on the method
+					// sum() -> LuaUVec3
+,
+					// Exclusion reason: Unsupported argument I,Generics on the method
+					// product() -> LuaUVec3
+,
+					// Exclusion reason: Unsupported argument H,Generics on the method
+					// hash(&self)
+,
+					// Exclusion reason: Unsupported argument QualifiedPath { name: "Output", args: AngleBracketed { args: [], bindings: [] }, self_type: Generic("Self"), trait_: ResolvedPath { name: "", id: Id("2:3355:2223"), args: None, param_names: [] } }
+					// not(self)
+,
+					// Exclusion reason: Unsupported argument QualifiedPath { name: "Output", args: AngleBracketed { args: [], bindings: [] }, self_type: Generic("Self"), trait_: ResolvedPath { name: "", id: Id("2:3362:2217"), args: None, param_names: [] } }
+					// bitand(selfLuaUVec3)
+,
+					// Exclusion reason: Unsupported argument QualifiedPath { name: "Output", args: AngleBracketed { args: [], bindings: [] }, self_type: Generic("Self"), trait_: ResolvedPath { name: "", id: Id("2:3362:2217"), args: None, param_names: [] } }
+					// bitand(selfu32)
+,
+					// Exclusion reason: Unsupported argument QualifiedPath { name: "Output", args: AngleBracketed { args: [], bindings: [] }, self_type: Generic("Self"), trait_: ResolvedPath { name: "", id: Id("2:3367:2219"), args: None, param_names: [] } }
+					// bitor(selfLuaUVec3)
+,
+					// Exclusion reason: Unsupported argument QualifiedPath { name: "Output", args: AngleBracketed { args: [], bindings: [] }, self_type: Generic("Self"), trait_: ResolvedPath { name: "", id: Id("2:3367:2219"), args: None, param_names: [] } }
+					// bitor(selfu32)
+,
+					// Exclusion reason: Unsupported argument QualifiedPath { name: "Output", args: AngleBracketed { args: [], bindings: [] }, self_type: Generic("Self"), trait_: ResolvedPath { name: "", id: Id("2:3372:2221"), args: None, param_names: [] } }
+					// bitxor(selfLuaUVec3)
+,
+					// Exclusion reason: Unsupported argument QualifiedPath { name: "Output", args: AngleBracketed { args: [], bindings: [] }, self_type: Generic("Self"), trait_: ResolvedPath { name: "", id: Id("2:3372:2221"), args: None, param_names: [] } }
+					// bitxor(selfu32)
+,
+					// Exclusion reason: Unsupported argument QualifiedPath { name: "Output", args: AngleBracketed { args: [], bindings: [] }, self_type: Generic("Self"), trait_: ResolvedPath { name: "", id: Id("2:3539:2758"), args: None, param_names: [] } }
+					// index(&selfusize)
+,
+					// Exclusion reason: Unsupported argument &mut self,Unsupported argument QualifiedPath { name: "Output", args: AngleBracketed { args: [], bindings: [] }, self_type: Generic("Self"), trait_: ResolvedPath { name: "", id: Id("2:3539:2758"), args: None, param_names: [] } }
+					// index_mut(<invalid: &mut self>usize)
+,
+					// Exclusion reason: Unsupported argument fmt::Formatter,Unsupported argument fmt::Result
+					// fmt(&self)
+,
+					// Exclusion reason: Unsupported argument fmt::Formatter,Unsupported argument fmt::Result
+					// fmt(&self)
+,
+					xx(self) -> LuaUVec2
+,
+					xy(self) -> LuaUVec2
+,
+					xz(self) -> LuaUVec2
+,
+					yx(self) -> LuaUVec2
+,
+					yy(self) -> LuaUVec2
+,
+					yz(self) -> LuaUVec2
+,
+					zx(self) -> LuaUVec2
+,
+					zy(self) -> LuaUVec2
+,
+					zz(self) -> LuaUVec2
+,
+					xxx(self) -> LuaUVec3
+,
+					xxy(self) -> LuaUVec3
+,
+					xxz(self) -> LuaUVec3
+,
+					xyx(self) -> LuaUVec3
+,
+					xyy(self) -> LuaUVec3
+,
+					xyz(self) -> LuaUVec3
+,
+					xzx(self) -> LuaUVec3
+,
+					xzy(self) -> LuaUVec3
+,
+					xzz(self) -> LuaUVec3
+,
+					yxx(self) -> LuaUVec3
+,
+					yxy(self) -> LuaUVec3
+,
+					yxz(self) -> LuaUVec3
+,
+					yyx(self) -> LuaUVec3
+,
+					yyy(self) -> LuaUVec3
+,
+					yyz(self) -> LuaUVec3
+,
+					yzx(self) -> LuaUVec3
+,
+					yzy(self) -> LuaUVec3
+,
+					yzz(self) -> LuaUVec3
+,
+					zxx(self) -> LuaUVec3
+,
+					zxy(self) -> LuaUVec3
+,
+					zxz(self) -> LuaUVec3
+,
+					zyx(self) -> LuaUVec3
+,
+					zyy(self) -> LuaUVec3
+,
+					zyz(self) -> LuaUVec3
+,
+					zzx(self) -> LuaUVec3
+,
+					zzy(self) -> LuaUVec3
+,
+					zzz(self) -> LuaUVec3
+,
+					xxxx(self) -> LuaUVec4
+,
+					xxxy(self) -> LuaUVec4
+,
+					xxxz(self) -> LuaUVec4
+,
+					xxyx(self) -> LuaUVec4
+,
+					xxyy(self) -> LuaUVec4
+,
+					xxyz(self) -> LuaUVec4
+,
+					xxzx(self) -> LuaUVec4
+,
+					xxzy(self) -> LuaUVec4
+,
+					xxzz(self) -> LuaUVec4
+,
+					xyxx(self) -> LuaUVec4
+,
+					xyxy(self) -> LuaUVec4
+,
+					xyxz(self) -> LuaUVec4
+,
+					xyyx(self) -> LuaUVec4
+,
+					xyyy(self) -> LuaUVec4
+,
+					xyyz(self) -> LuaUVec4
+,
+					xyzx(self) -> LuaUVec4
+,
+					xyzy(self) -> LuaUVec4
+,
+					xyzz(self) -> LuaUVec4
+,
+					xzxx(self) -> LuaUVec4
+,
+					xzxy(self) -> LuaUVec4
+,
+					xzxz(self) -> LuaUVec4
+,
+					xzyx(self) -> LuaUVec4
+,
+					xzyy(self) -> LuaUVec4
+,
+					xzyz(self) -> LuaUVec4
+,
+					xzzx(self) -> LuaUVec4
+,
+					xzzy(self) -> LuaUVec4
+,
+					xzzz(self) -> LuaUVec4
+,
+					yxxx(self) -> LuaUVec4
+,
+					yxxy(self) -> LuaUVec4
+,
+					yxxz(self) -> LuaUVec4
+,
+					yxyx(self) -> LuaUVec4
+,
+					yxyy(self) -> LuaUVec4
+,
+					yxyz(self) -> LuaUVec4
+,
+					yxzx(self) -> LuaUVec4
+,
+					yxzy(self) -> LuaUVec4
+,
+					yxzz(self) -> LuaUVec4
+,
+					yyxx(self) -> LuaUVec4
+,
+					yyxy(self) -> LuaUVec4
+,
+					yyxz(self) -> LuaUVec4
+,
+					yyyx(self) -> LuaUVec4
+,
+					yyyy(self) -> LuaUVec4
+,
+					yyyz(self) -> LuaUVec4
+,
+					yyzx(self) -> LuaUVec4
+,
+					yyzy(self) -> LuaUVec4
+,
+					yyzz(self) -> LuaUVec4
+,
+					yzxx(self) -> LuaUVec4
+,
+					yzxy(self) -> LuaUVec4
+,
+					yzxz(self) -> LuaUVec4
+,
+					yzyx(self) -> LuaUVec4
+,
+					yzyy(self) -> LuaUVec4
+,
+					yzyz(self) -> LuaUVec4
+,
+					yzzx(self) -> LuaUVec4
+,
+					yzzy(self) -> LuaUVec4
+,
+					yzzz(self) -> LuaUVec4
+,
+					zxxx(self) -> LuaUVec4
+,
+					zxxy(self) -> LuaUVec4
+,
+					zxxz(self) -> LuaUVec4
+,
+					zxyx(self) -> LuaUVec4
+,
+					zxyy(self) -> LuaUVec4
+,
+					zxyz(self) -> LuaUVec4
+,
+					zxzx(self) -> LuaUVec4
+,
+					zxzy(self) -> LuaUVec4
+,
+					zxzz(self) -> LuaUVec4
+,
+					zyxx(self) -> LuaUVec4
+,
+					zyxy(self) -> LuaUVec4
+,
+					zyxz(self) -> LuaUVec4
+,
+					zyyx(self) -> LuaUVec4
+,
+					zyyy(self) -> LuaUVec4
+,
+					zyyz(self) -> LuaUVec4
+,
+					zyzx(self) -> LuaUVec4
+,
+					zyzy(self) -> LuaUVec4
+,
+					zyzz(self) -> LuaUVec4
+,
+					zzxx(self) -> LuaUVec4
+,
+					zzxy(self) -> LuaUVec4
+,
+					zzxz(self) -> LuaUVec4
+,
+					zzyx(self) -> LuaUVec4
+,
+					zzyy(self) -> LuaUVec4
+,
+					zzyz(self) -> LuaUVec4
+,
+					zzzx(self) -> LuaUVec4
+,
+					zzzy(self) -> LuaUVec4
+,
+					zzzz(self) -> LuaUVec4
+,
+				)
+				+ BinaryOps
+				(
 self Add LuaUVec3 -> LuaUVec3 -> LuaUVec3
 self Add u32 -> LuaUVec3 -> LuaUVec3
 u32 Add self -> LuaUVec3 -> LuaUVec3
@@ -10887,1350 +9831,1066 @@ u32 Mul self -> LuaUVec3 -> LuaUVec3
 self Rem LuaUVec3 -> LuaUVec3 -> LuaUVec3
 self Rem u32 -> LuaUVec3 -> LuaUVec3
 u32 Rem self -> LuaUVec3 -> LuaUVec3
-			)
-+ UnaryOps			(
-			)
-+ 			    Copy(LuaVec2 -> (MetaMethod::Index) (s=LuaUVec3),
-			        LuaVec2 -> mut (MetaMethod::NewIndex) (n=u32))
-			    
-impl			{
+				)
+				+ UnaryOps
+				(
+				)
++ 				    Copy(LuaVec2 -> (MetaMethod::Index) (s=LuaUVec3),
+				        LuaVec2 -> mut (MetaMethod::NewIndex) (n=u32))
+				    
+			impl
+			{
 			}
 		}
-		{
+,		{
 			///A 4-dimensional vector.
-glam::u32::uvec4::UVec4 : Value
-AutoMethods			(
-				// Exclusion reason: 
-				// ///Creates a new vector.
-				// new(u32u32u32u32) -> LuaUVec4
-
-				// Exclusion reason: 
-				// ///Creates a vector with all elements set to `v`.
-				// splat(u32) -> LuaUVec4
-
-				///Creates a vector from the elements in `if_true` and `if_false`, selecting which to use
-				///for each element of `self`.
-				///
-				///A true element in the mask uses the corresponding element from `if_true`, and false
-				///uses the element from `if_false`.
-				select(LuaUVec4LuaUVec4) -> LuaUVec4
-
-				///Creates a new vector from an array.
-				from_array(<invalid: [u32;4]>) -> LuaUVec4
-
-				///`[x, y, z, w]`
-				to_array(&self)<invalid: [u32;4]>
-
-				///Creates a vector from the first 4 values in `slice`.
-				///
-				///# Panics
-				///
-				///Panics if `slice` is less than 4 elements long.
-				from_slice(<invalid: &[u32]>) -> LuaUVec4
-
-				///Writes the elements of `self` to the first 4 elements in `slice`.
-				///
-				///# Panics
-				///
-				///Panics if `slice` is less than 4 elements long.
-				write_to_slice(self<invalid: &mut [u32]>)
-
-				// Exclusion reason: 
-				// ///Creates a 2D vector from the `x`, `y` and `z` elements of `self`, discarding `w`.
-				// ///
-				// ///Truncation to `UVec3` may also be performed by using `self.xyz()` or `UVec3::from()`.
-				// truncate(self) -> LuaUVec3
-
-				// Exclusion reason: 
-				// ///Computes the dot product of `self` and `rhs`.
-				// dot(selfLuaUVec4) -> u32
-
-				// Exclusion reason: 
-				// ///Returns a vector containing the minimum values for each element of `self` and `rhs`.
-				// ///
-				// ///In other words this computes `[self.x.min(rhs.x), self.y.min(rhs.y), ..]`.
-				// min(selfLuaUVec4) -> LuaUVec4
-
-				// Exclusion reason: 
-				// ///Returns a vector containing the maximum values for each element of `self` and `rhs`.
-				// ///
-				// ///In other words this computes `[self.x.max(rhs.x), self.y.max(rhs.y), ..]`.
-				// max(selfLuaUVec4) -> LuaUVec4
-
-				// Exclusion reason: 
-				// ///Component-wise clamping of values, similar to [`f32::clamp`].
-				// ///
-				// ///Each element in `min` must be less-or-equal to the corresponding element in `max`.
-				// ///
-				// ///# Panics
-				// ///
-				// ///Will panic if `min` is greater than `max` when `glam_assert` is enabled.
-				// clamp(selfLuaUVec4LuaUVec4) -> LuaUVec4
-
-				// Exclusion reason: 
-				// ///Returns the horizontal minimum of `self`.
-				// ///
-				// ///In other words this computes `min(x, y, ..)`.
-				// min_element(self) -> u32
-
-				// Exclusion reason: 
-				// ///Returns the horizontal maximum of `self`.
-				// ///
-				// ///In other words this computes `max(x, y, ..)`.
-				// max_element(self) -> u32
-
-				///Returns a vector mask containing the result of a `==` comparison for each element of
-				///`self` and `rhs`.
-				///
-				///In other words, this computes `[self.x == rhs.x, self.y == rhs.y, ..]` for all
-				///elements.
-				cmpeq(selfLuaUVec4)
-
-				///Returns a vector mask containing the result of a `!=` comparison for each element of
-				///`self` and `rhs`.
-				///
-				///In other words this computes `[self.x != rhs.x, self.y != rhs.y, ..]` for all
-				///elements.
-				cmpne(selfLuaUVec4)
-
-				///Returns a vector mask containing the result of a `>=` comparison for each element of
-				///`self` and `rhs`.
-				///
-				///In other words this computes `[self.x >= rhs.x, self.y >= rhs.y, ..]` for all
-				///elements.
-				cmpge(selfLuaUVec4)
-
-				///Returns a vector mask containing the result of a `>` comparison for each element of
-				///`self` and `rhs`.
-				///
-				///In other words this computes `[self.x > rhs.x, self.y > rhs.y, ..]` for all
-				///elements.
-				cmpgt(selfLuaUVec4)
-
-				///Returns a vector mask containing the result of a `<=` comparison for each element of
-				///`self` and `rhs`.
-				///
-				///In other words this computes `[self.x <= rhs.x, self.y <= rhs.y, ..]` for all
-				///elements.
-				cmple(selfLuaUVec4)
-
-				///Returns a vector mask containing the result of a `<` comparison for each element of
-				///`self` and `rhs`.
-				///
-				///In other words this computes `[self.x < rhs.x, self.y < rhs.y, ..]` for all
-				///elements.
-				cmplt(selfLuaUVec4)
-
-				///Casts all elements of `self` to `f32`.
-				as_vec4(&self)
-
-				///Casts all elements of `self` to `f64`.
-				as_dvec4(&self)
-
-				///Casts all elements of `self` to `i32`.
-				as_ivec4(&self)
-
-				try_from()
-
-				///Returns the argument unchanged.
-				from()
-
-				from(<invalid: [u32;4]>) -> LuaUVec4
-
-				// Exclusion reason: 
-				// from(LuaUVec4) -> LuaUVec4
-
-				from(<invalid: (u32,u32,u32,u32)>) -> LuaUVec4
-
-				// Exclusion reason: 
-				// from(LuaUVec4) -> LuaUVec4
-
-				from(<invalid: (LuaUVec3,u32)>) -> LuaUVec4
-
-				from(<invalid: (u32,LuaUVec3)>) -> LuaUVec4
-
-				from(<invalid: (LuaUVec2,u32,u32)>) -> LuaUVec4
-
-				from(<invalid: (LuaUVec2,LuaUVec2)>) -> LuaUVec4
-
-				///Calls `U::from(self)`.
-				///
-				///That is, this conversion is whatever the implementation of
-				///<code>[From]&lt;T&gt; for U</code> chooses to do.
-				into(self)
-
-				borrow(&self)
-
-				type_id(&self)
-
-				try_into(self)
-
-				borrow_mut(<invalid: &mut self>)
-
-				to_string(&self)
-
-				to_owned(&self)
-
-				clone_into(&self)
-
-				is_valid_bit_pattern() -> bool
-
-				serialize(&self)
-
-				deserialize()
-
-				shl(self)
-
-				shl(selfi8)
-
-				shl(selfi16)
-
-				shl(selfi32)
-
-				shl(selfu8)
-
-				shl(selfu16)
-
-				shl(selfu32)
-
-				shl(self)
-
-				shl(self)
-
-				shr(self)
-
-				shr(selfi8)
-
-				shr(selfi16)
-
-				shr(selfi32)
-
-				shr(selfu8)
-
-				shr(selfu16)
-
-				shr(selfu32)
-
-				shr(self)
-
-				shr(self)
-
-				// Exclusion reason: 
-				// clone(&self) -> LuaUVec4
-
-				// Exclusion reason: 
-				// default() -> LuaUVec4
-
-				// Exclusion reason: 
-				// eq(&self&LuaUVec4) -> bool
-
-				// Exclusion reason: 
-				// div(selfLuaUVec4) -> LuaUVec4
-
-				// Exclusion reason: 
-				// div(selfu32) -> LuaUVec4
-
-				// Exclusion reason: 
-				// div(selfLuaUVec4) -> LuaUVec4
-
-				div_assign(<invalid: &mut self>LuaUVec4)
-
-				div_assign(<invalid: &mut self>u32)
-
-				// Exclusion reason: 
-				// mul(selfLuaUVec4) -> LuaUVec4
-
-				// Exclusion reason: 
-				// mul(selfu32) -> LuaUVec4
-
-				// Exclusion reason: 
-				// mul(selfLuaUVec4) -> LuaUVec4
-
-				mul_assign(<invalid: &mut self>LuaUVec4)
-
-				mul_assign(<invalid: &mut self>u32)
-
-				// Exclusion reason: 
-				// add(selfLuaUVec4) -> LuaUVec4
-
-				// Exclusion reason: 
-				// add(selfu32) -> LuaUVec4
-
-				// Exclusion reason: 
-				// add(selfLuaUVec4) -> LuaUVec4
-
-				add_assign(<invalid: &mut self>LuaUVec4)
-
-				add_assign(<invalid: &mut self>u32)
-
-				// Exclusion reason: 
-				// sub(selfLuaUVec4) -> LuaUVec4
-
-				// Exclusion reason: 
-				// sub(selfu32) -> LuaUVec4
-
-				// Exclusion reason: 
-				// sub(selfLuaUVec4) -> LuaUVec4
-
-				sub_assign(<invalid: &mut self>LuaUVec4)
-
-				sub_assign(<invalid: &mut self>u32)
-
-				// Exclusion reason: 
-				// rem(selfLuaUVec4) -> LuaUVec4
-
-				// Exclusion reason: 
-				// rem(selfu32) -> LuaUVec4
-
-				// Exclusion reason: 
-				// rem(selfLuaUVec4) -> LuaUVec4
-
-				rem_assign(<invalid: &mut self>LuaUVec4)
-
-				rem_assign(<invalid: &mut self>u32)
-
-				as_ref(&self)<invalid: &[u32;4]>
-
-				as_mut(<invalid: &mut self>)<invalid: &mut [u32;4]>
-
-				sum() -> LuaUVec4
-
-				product() -> LuaUVec4
-
-				hash(&self)
-
-				not(self)
-
-				bitand(selfLuaUVec4)
-
-				bitand(selfu32)
-
-				bitor(selfLuaUVec4)
-
-				bitor(selfu32)
-
-				bitxor(selfLuaUVec4)
-
-				bitxor(selfu32)
-
-				index(&selfusize)
-
-				index_mut(<invalid: &mut self>usize)
-
-				fmt(&self)
-
-				fmt(&self)
-
-				// Exclusion reason: 
-				// xx(self) -> LuaUVec2
-
-				// Exclusion reason: 
-				// xy(self) -> LuaUVec2
-
-				// Exclusion reason: 
-				// xz(self) -> LuaUVec2
-
-				// Exclusion reason: 
-				// xw(self) -> LuaUVec2
-
-				// Exclusion reason: 
-				// yx(self) -> LuaUVec2
-
-				// Exclusion reason: 
-				// yy(self) -> LuaUVec2
-
-				// Exclusion reason: 
-				// yz(self) -> LuaUVec2
-
-				// Exclusion reason: 
-				// yw(self) -> LuaUVec2
-
-				// Exclusion reason: 
-				// zx(self) -> LuaUVec2
-
-				// Exclusion reason: 
-				// zy(self) -> LuaUVec2
-
-				// Exclusion reason: 
-				// zz(self) -> LuaUVec2
-
-				// Exclusion reason: 
-				// zw(self) -> LuaUVec2
-
-				// Exclusion reason: 
-				// wx(self) -> LuaUVec2
-
-				// Exclusion reason: 
-				// wy(self) -> LuaUVec2
-
-				// Exclusion reason: 
-				// wz(self) -> LuaUVec2
-
-				// Exclusion reason: 
-				// ww(self) -> LuaUVec2
-
-				// Exclusion reason: 
-				// xxx(self) -> LuaUVec3
-
-				// Exclusion reason: 
-				// xxy(self) -> LuaUVec3
-
-				// Exclusion reason: 
-				// xxz(self) -> LuaUVec3
-
-				// Exclusion reason: 
-				// xxw(self) -> LuaUVec3
-
-				// Exclusion reason: 
-				// xyx(self) -> LuaUVec3
-
-				// Exclusion reason: 
-				// xyy(self) -> LuaUVec3
-
-				// Exclusion reason: 
-				// xyz(self) -> LuaUVec3
-
-				// Exclusion reason: 
-				// xyw(self) -> LuaUVec3
-
-				// Exclusion reason: 
-				// xzx(self) -> LuaUVec3
-
-				// Exclusion reason: 
-				// xzy(self) -> LuaUVec3
-
-				// Exclusion reason: 
-				// xzz(self) -> LuaUVec3
-
-				// Exclusion reason: 
-				// xzw(self) -> LuaUVec3
-
-				// Exclusion reason: 
-				// xwx(self) -> LuaUVec3
-
-				// Exclusion reason: 
-				// xwy(self) -> LuaUVec3
-
-				// Exclusion reason: 
-				// xwz(self) -> LuaUVec3
-
-				// Exclusion reason: 
-				// xww(self) -> LuaUVec3
-
-				// Exclusion reason: 
-				// yxx(self) -> LuaUVec3
-
-				// Exclusion reason: 
-				// yxy(self) -> LuaUVec3
-
-				// Exclusion reason: 
-				// yxz(self) -> LuaUVec3
-
-				// Exclusion reason: 
-				// yxw(self) -> LuaUVec3
-
-				// Exclusion reason: 
-				// yyx(self) -> LuaUVec3
-
-				// Exclusion reason: 
-				// yyy(self) -> LuaUVec3
-
-				// Exclusion reason: 
-				// yyz(self) -> LuaUVec3
-
-				// Exclusion reason: 
-				// yyw(self) -> LuaUVec3
-
-				// Exclusion reason: 
-				// yzx(self) -> LuaUVec3
-
-				// Exclusion reason: 
-				// yzy(self) -> LuaUVec3
-
-				// Exclusion reason: 
-				// yzz(self) -> LuaUVec3
-
-				// Exclusion reason: 
-				// yzw(self) -> LuaUVec3
-
-				// Exclusion reason: 
-				// ywx(self) -> LuaUVec3
-
-				// Exclusion reason: 
-				// ywy(self) -> LuaUVec3
-
-				// Exclusion reason: 
-				// ywz(self) -> LuaUVec3
-
-				// Exclusion reason: 
-				// yww(self) -> LuaUVec3
-
-				// Exclusion reason: 
-				// zxx(self) -> LuaUVec3
-
-				// Exclusion reason: 
-				// zxy(self) -> LuaUVec3
-
-				// Exclusion reason: 
-				// zxz(self) -> LuaUVec3
-
-				// Exclusion reason: 
-				// zxw(self) -> LuaUVec3
-
-				// Exclusion reason: 
-				// zyx(self) -> LuaUVec3
-
-				// Exclusion reason: 
-				// zyy(self) -> LuaUVec3
-
-				// Exclusion reason: 
-				// zyz(self) -> LuaUVec3
-
-				// Exclusion reason: 
-				// zyw(self) -> LuaUVec3
-
-				// Exclusion reason: 
-				// zzx(self) -> LuaUVec3
-
-				// Exclusion reason: 
-				// zzy(self) -> LuaUVec3
-
-				// Exclusion reason: 
-				// zzz(self) -> LuaUVec3
-
-				// Exclusion reason: 
-				// zzw(self) -> LuaUVec3
-
-				// Exclusion reason: 
-				// zwx(self) -> LuaUVec3
-
-				// Exclusion reason: 
-				// zwy(self) -> LuaUVec3
-
-				// Exclusion reason: 
-				// zwz(self) -> LuaUVec3
-
-				// Exclusion reason: 
-				// zww(self) -> LuaUVec3
-
-				// Exclusion reason: 
-				// wxx(self) -> LuaUVec3
-
-				// Exclusion reason: 
-				// wxy(self) -> LuaUVec3
-
-				// Exclusion reason: 
-				// wxz(self) -> LuaUVec3
-
-				// Exclusion reason: 
-				// wxw(self) -> LuaUVec3
-
-				// Exclusion reason: 
-				// wyx(self) -> LuaUVec3
-
-				// Exclusion reason: 
-				// wyy(self) -> LuaUVec3
-
-				// Exclusion reason: 
-				// wyz(self) -> LuaUVec3
-
-				// Exclusion reason: 
-				// wyw(self) -> LuaUVec3
-
-				// Exclusion reason: 
-				// wzx(self) -> LuaUVec3
-
-				// Exclusion reason: 
-				// wzy(self) -> LuaUVec3
-
-				// Exclusion reason: 
-				// wzz(self) -> LuaUVec3
-
-				// Exclusion reason: 
-				// wzw(self) -> LuaUVec3
-
-				// Exclusion reason: 
-				// wwx(self) -> LuaUVec3
-
-				// Exclusion reason: 
-				// wwy(self) -> LuaUVec3
-
-				// Exclusion reason: 
-				// wwz(self) -> LuaUVec3
-
-				// Exclusion reason: 
-				// www(self) -> LuaUVec3
-
-				// Exclusion reason: 
-				// xxxx(self) -> LuaUVec4
-
-				// Exclusion reason: 
-				// xxxy(self) -> LuaUVec4
-
-				// Exclusion reason: 
-				// xxxz(self) -> LuaUVec4
-
-				// Exclusion reason: 
-				// xxxw(self) -> LuaUVec4
-
-				// Exclusion reason: 
-				// xxyx(self) -> LuaUVec4
-
-				// Exclusion reason: 
-				// xxyy(self) -> LuaUVec4
-
-				// Exclusion reason: 
-				// xxyz(self) -> LuaUVec4
-
-				// Exclusion reason: 
-				// xxyw(self) -> LuaUVec4
-
-				// Exclusion reason: 
-				// xxzx(self) -> LuaUVec4
-
-				// Exclusion reason: 
-				// xxzy(self) -> LuaUVec4
-
-				// Exclusion reason: 
-				// xxzz(self) -> LuaUVec4
-
-				// Exclusion reason: 
-				// xxzw(self) -> LuaUVec4
-
-				// Exclusion reason: 
-				// xxwx(self) -> LuaUVec4
-
-				// Exclusion reason: 
-				// xxwy(self) -> LuaUVec4
-
-				// Exclusion reason: 
-				// xxwz(self) -> LuaUVec4
-
-				// Exclusion reason: 
-				// xxww(self) -> LuaUVec4
-
-				// Exclusion reason: 
-				// xyxx(self) -> LuaUVec4
-
-				// Exclusion reason: 
-				// xyxy(self) -> LuaUVec4
-
-				// Exclusion reason: 
-				// xyxz(self) -> LuaUVec4
-
-				// Exclusion reason: 
-				// xyxw(self) -> LuaUVec4
-
-				// Exclusion reason: 
-				// xyyx(self) -> LuaUVec4
-
-				// Exclusion reason: 
-				// xyyy(self) -> LuaUVec4
-
-				// Exclusion reason: 
-				// xyyz(self) -> LuaUVec4
-
-				// Exclusion reason: 
-				// xyyw(self) -> LuaUVec4
-
-				// Exclusion reason: 
-				// xyzx(self) -> LuaUVec4
-
-				// Exclusion reason: 
-				// xyzy(self) -> LuaUVec4
-
-				// Exclusion reason: 
-				// xyzz(self) -> LuaUVec4
-
-				// Exclusion reason: 
-				// xyzw(self) -> LuaUVec4
-
-				// Exclusion reason: 
-				// xywx(self) -> LuaUVec4
-
-				// Exclusion reason: 
-				// xywy(self) -> LuaUVec4
-
-				// Exclusion reason: 
-				// xywz(self) -> LuaUVec4
-
-				// Exclusion reason: 
-				// xyww(self) -> LuaUVec4
-
-				// Exclusion reason: 
-				// xzxx(self) -> LuaUVec4
-
-				// Exclusion reason: 
-				// xzxy(self) -> LuaUVec4
-
-				// Exclusion reason: 
-				// xzxz(self) -> LuaUVec4
-
-				// Exclusion reason: 
-				// xzxw(self) -> LuaUVec4
-
-				// Exclusion reason: 
-				// xzyx(self) -> LuaUVec4
-
-				// Exclusion reason: 
-				// xzyy(self) -> LuaUVec4
-
-				// Exclusion reason: 
-				// xzyz(self) -> LuaUVec4
-
-				// Exclusion reason: 
-				// xzyw(self) -> LuaUVec4
-
-				// Exclusion reason: 
-				// xzzx(self) -> LuaUVec4
-
-				// Exclusion reason: 
-				// xzzy(self) -> LuaUVec4
-
-				// Exclusion reason: 
-				// xzzz(self) -> LuaUVec4
-
-				// Exclusion reason: 
-				// xzzw(self) -> LuaUVec4
-
-				// Exclusion reason: 
-				// xzwx(self) -> LuaUVec4
-
-				// Exclusion reason: 
-				// xzwy(self) -> LuaUVec4
-
-				// Exclusion reason: 
-				// xzwz(self) -> LuaUVec4
-
-				// Exclusion reason: 
-				// xzww(self) -> LuaUVec4
-
-				// Exclusion reason: 
-				// xwxx(self) -> LuaUVec4
-
-				// Exclusion reason: 
-				// xwxy(self) -> LuaUVec4
-
-				// Exclusion reason: 
-				// xwxz(self) -> LuaUVec4
-
-				// Exclusion reason: 
-				// xwxw(self) -> LuaUVec4
-
-				// Exclusion reason: 
-				// xwyx(self) -> LuaUVec4
-
-				// Exclusion reason: 
-				// xwyy(self) -> LuaUVec4
-
-				// Exclusion reason: 
-				// xwyz(self) -> LuaUVec4
-
-				// Exclusion reason: 
-				// xwyw(self) -> LuaUVec4
-
-				// Exclusion reason: 
-				// xwzx(self) -> LuaUVec4
-
-				// Exclusion reason: 
-				// xwzy(self) -> LuaUVec4
-
-				// Exclusion reason: 
-				// xwzz(self) -> LuaUVec4
-
-				// Exclusion reason: 
-				// xwzw(self) -> LuaUVec4
-
-				// Exclusion reason: 
-				// xwwx(self) -> LuaUVec4
-
-				// Exclusion reason: 
-				// xwwy(self) -> LuaUVec4
-
-				// Exclusion reason: 
-				// xwwz(self) -> LuaUVec4
-
-				// Exclusion reason: 
-				// xwww(self) -> LuaUVec4
-
-				// Exclusion reason: 
-				// yxxx(self) -> LuaUVec4
-
-				// Exclusion reason: 
-				// yxxy(self) -> LuaUVec4
-
-				// Exclusion reason: 
-				// yxxz(self) -> LuaUVec4
-
-				// Exclusion reason: 
-				// yxxw(self) -> LuaUVec4
-
-				// Exclusion reason: 
-				// yxyx(self) -> LuaUVec4
-
-				// Exclusion reason: 
-				// yxyy(self) -> LuaUVec4
-
-				// Exclusion reason: 
-				// yxyz(self) -> LuaUVec4
-
-				// Exclusion reason: 
-				// yxyw(self) -> LuaUVec4
-
-				// Exclusion reason: 
-				// yxzx(self) -> LuaUVec4
-
-				// Exclusion reason: 
-				// yxzy(self) -> LuaUVec4
-
-				// Exclusion reason: 
-				// yxzz(self) -> LuaUVec4
-
-				// Exclusion reason: 
-				// yxzw(self) -> LuaUVec4
-
-				// Exclusion reason: 
-				// yxwx(self) -> LuaUVec4
-
-				// Exclusion reason: 
-				// yxwy(self) -> LuaUVec4
-
-				// Exclusion reason: 
-				// yxwz(self) -> LuaUVec4
-
-				// Exclusion reason: 
-				// yxww(self) -> LuaUVec4
-
-				// Exclusion reason: 
-				// yyxx(self) -> LuaUVec4
-
-				// Exclusion reason: 
-				// yyxy(self) -> LuaUVec4
-
-				// Exclusion reason: 
-				// yyxz(self) -> LuaUVec4
-
-				// Exclusion reason: 
-				// yyxw(self) -> LuaUVec4
-
-				// Exclusion reason: 
-				// yyyx(self) -> LuaUVec4
-
-				// Exclusion reason: 
-				// yyyy(self) -> LuaUVec4
-
-				// Exclusion reason: 
-				// yyyz(self) -> LuaUVec4
-
-				// Exclusion reason: 
-				// yyyw(self) -> LuaUVec4
-
-				// Exclusion reason: 
-				// yyzx(self) -> LuaUVec4
-
-				// Exclusion reason: 
-				// yyzy(self) -> LuaUVec4
-
-				// Exclusion reason: 
-				// yyzz(self) -> LuaUVec4
-
-				// Exclusion reason: 
-				// yyzw(self) -> LuaUVec4
-
-				// Exclusion reason: 
-				// yywx(self) -> LuaUVec4
-
-				// Exclusion reason: 
-				// yywy(self) -> LuaUVec4
-
-				// Exclusion reason: 
-				// yywz(self) -> LuaUVec4
-
-				// Exclusion reason: 
-				// yyww(self) -> LuaUVec4
-
-				// Exclusion reason: 
-				// yzxx(self) -> LuaUVec4
-
-				// Exclusion reason: 
-				// yzxy(self) -> LuaUVec4
-
-				// Exclusion reason: 
-				// yzxz(self) -> LuaUVec4
-
-				// Exclusion reason: 
-				// yzxw(self) -> LuaUVec4
-
-				// Exclusion reason: 
-				// yzyx(self) -> LuaUVec4
-
-				// Exclusion reason: 
-				// yzyy(self) -> LuaUVec4
-
-				// Exclusion reason: 
-				// yzyz(self) -> LuaUVec4
-
-				// Exclusion reason: 
-				// yzyw(self) -> LuaUVec4
-
-				// Exclusion reason: 
-				// yzzx(self) -> LuaUVec4
-
-				// Exclusion reason: 
-				// yzzy(self) -> LuaUVec4
-
-				// Exclusion reason: 
-				// yzzz(self) -> LuaUVec4
-
-				// Exclusion reason: 
-				// yzzw(self) -> LuaUVec4
-
-				// Exclusion reason: 
-				// yzwx(self) -> LuaUVec4
-
-				// Exclusion reason: 
-				// yzwy(self) -> LuaUVec4
-
-				// Exclusion reason: 
-				// yzwz(self) -> LuaUVec4
-
-				// Exclusion reason: 
-				// yzww(self) -> LuaUVec4
-
-				// Exclusion reason: 
-				// ywxx(self) -> LuaUVec4
-
-				// Exclusion reason: 
-				// ywxy(self) -> LuaUVec4
-
-				// Exclusion reason: 
-				// ywxz(self) -> LuaUVec4
-
-				// Exclusion reason: 
-				// ywxw(self) -> LuaUVec4
-
-				// Exclusion reason: 
-				// ywyx(self) -> LuaUVec4
-
-				// Exclusion reason: 
-				// ywyy(self) -> LuaUVec4
-
-				// Exclusion reason: 
-				// ywyz(self) -> LuaUVec4
-
-				// Exclusion reason: 
-				// ywyw(self) -> LuaUVec4
-
-				// Exclusion reason: 
-				// ywzx(self) -> LuaUVec4
-
-				// Exclusion reason: 
-				// ywzy(self) -> LuaUVec4
-
-				// Exclusion reason: 
-				// ywzz(self) -> LuaUVec4
-
-				// Exclusion reason: 
-				// ywzw(self) -> LuaUVec4
-
-				// Exclusion reason: 
-				// ywwx(self) -> LuaUVec4
-
-				// Exclusion reason: 
-				// ywwy(self) -> LuaUVec4
-
-				// Exclusion reason: 
-				// ywwz(self) -> LuaUVec4
-
-				// Exclusion reason: 
-				// ywww(self) -> LuaUVec4
-
-				// Exclusion reason: 
-				// zxxx(self) -> LuaUVec4
-
-				// Exclusion reason: 
-				// zxxy(self) -> LuaUVec4
-
-				// Exclusion reason: 
-				// zxxz(self) -> LuaUVec4
-
-				// Exclusion reason: 
-				// zxxw(self) -> LuaUVec4
-
-				// Exclusion reason: 
-				// zxyx(self) -> LuaUVec4
-
-				// Exclusion reason: 
-				// zxyy(self) -> LuaUVec4
-
-				// Exclusion reason: 
-				// zxyz(self) -> LuaUVec4
-
-				// Exclusion reason: 
-				// zxyw(self) -> LuaUVec4
-
-				// Exclusion reason: 
-				// zxzx(self) -> LuaUVec4
-
-				// Exclusion reason: 
-				// zxzy(self) -> LuaUVec4
-
-				// Exclusion reason: 
-				// zxzz(self) -> LuaUVec4
-
-				// Exclusion reason: 
-				// zxzw(self) -> LuaUVec4
-
-				// Exclusion reason: 
-				// zxwx(self) -> LuaUVec4
-
-				// Exclusion reason: 
-				// zxwy(self) -> LuaUVec4
-
-				// Exclusion reason: 
-				// zxwz(self) -> LuaUVec4
-
-				// Exclusion reason: 
-				// zxww(self) -> LuaUVec4
-
-				// Exclusion reason: 
-				// zyxx(self) -> LuaUVec4
-
-				// Exclusion reason: 
-				// zyxy(self) -> LuaUVec4
-
-				// Exclusion reason: 
-				// zyxz(self) -> LuaUVec4
-
-				// Exclusion reason: 
-				// zyxw(self) -> LuaUVec4
-
-				// Exclusion reason: 
-				// zyyx(self) -> LuaUVec4
-
-				// Exclusion reason: 
-				// zyyy(self) -> LuaUVec4
-
-				// Exclusion reason: 
-				// zyyz(self) -> LuaUVec4
-
-				// Exclusion reason: 
-				// zyyw(self) -> LuaUVec4
-
-				// Exclusion reason: 
-				// zyzx(self) -> LuaUVec4
-
-				// Exclusion reason: 
-				// zyzy(self) -> LuaUVec4
-
-				// Exclusion reason: 
-				// zyzz(self) -> LuaUVec4
-
-				// Exclusion reason: 
-				// zyzw(self) -> LuaUVec4
-
-				// Exclusion reason: 
-				// zywx(self) -> LuaUVec4
-
-				// Exclusion reason: 
-				// zywy(self) -> LuaUVec4
-
-				// Exclusion reason: 
-				// zywz(self) -> LuaUVec4
-
-				// Exclusion reason: 
-				// zyww(self) -> LuaUVec4
-
-				// Exclusion reason: 
-				// zzxx(self) -> LuaUVec4
-
-				// Exclusion reason: 
-				// zzxy(self) -> LuaUVec4
-
-				// Exclusion reason: 
-				// zzxz(self) -> LuaUVec4
-
-				// Exclusion reason: 
-				// zzxw(self) -> LuaUVec4
-
-				// Exclusion reason: 
-				// zzyx(self) -> LuaUVec4
-
-				// Exclusion reason: 
-				// zzyy(self) -> LuaUVec4
-
-				// Exclusion reason: 
-				// zzyz(self) -> LuaUVec4
-
-				// Exclusion reason: 
-				// zzyw(self) -> LuaUVec4
-
-				// Exclusion reason: 
-				// zzzx(self) -> LuaUVec4
-
-				// Exclusion reason: 
-				// zzzy(self) -> LuaUVec4
-
-				// Exclusion reason: 
-				// zzzz(self) -> LuaUVec4
-
-				// Exclusion reason: 
-				// zzzw(self) -> LuaUVec4
-
-				// Exclusion reason: 
-				// zzwx(self) -> LuaUVec4
-
-				// Exclusion reason: 
-				// zzwy(self) -> LuaUVec4
-
-				// Exclusion reason: 
-				// zzwz(self) -> LuaUVec4
-
-				// Exclusion reason: 
-				// zzww(self) -> LuaUVec4
-
-				// Exclusion reason: 
-				// zwxx(self) -> LuaUVec4
-
-				// Exclusion reason: 
-				// zwxy(self) -> LuaUVec4
-
-				// Exclusion reason: 
-				// zwxz(self) -> LuaUVec4
-
-				// Exclusion reason: 
-				// zwxw(self) -> LuaUVec4
-
-				// Exclusion reason: 
-				// zwyx(self) -> LuaUVec4
-
-				// Exclusion reason: 
-				// zwyy(self) -> LuaUVec4
-
-				// Exclusion reason: 
-				// zwyz(self) -> LuaUVec4
-
-				// Exclusion reason: 
-				// zwyw(self) -> LuaUVec4
-
-				// Exclusion reason: 
-				// zwzx(self) -> LuaUVec4
-
-				// Exclusion reason: 
-				// zwzy(self) -> LuaUVec4
-
-				// Exclusion reason: 
-				// zwzz(self) -> LuaUVec4
-
-				// Exclusion reason: 
-				// zwzw(self) -> LuaUVec4
-
-				// Exclusion reason: 
-				// zwwx(self) -> LuaUVec4
-
-				// Exclusion reason: 
-				// zwwy(self) -> LuaUVec4
-
-				// Exclusion reason: 
-				// zwwz(self) -> LuaUVec4
-
-				// Exclusion reason: 
-				// zwww(self) -> LuaUVec4
-
-				// Exclusion reason: 
-				// wxxx(self) -> LuaUVec4
-
-				// Exclusion reason: 
-				// wxxy(self) -> LuaUVec4
-
-				// Exclusion reason: 
-				// wxxz(self) -> LuaUVec4
-
-				// Exclusion reason: 
-				// wxxw(self) -> LuaUVec4
-
-				// Exclusion reason: 
-				// wxyx(self) -> LuaUVec4
-
-				// Exclusion reason: 
-				// wxyy(self) -> LuaUVec4
-
-				// Exclusion reason: 
-				// wxyz(self) -> LuaUVec4
-
-				// Exclusion reason: 
-				// wxyw(self) -> LuaUVec4
-
-				// Exclusion reason: 
-				// wxzx(self) -> LuaUVec4
-
-				// Exclusion reason: 
-				// wxzy(self) -> LuaUVec4
-
-				// Exclusion reason: 
-				// wxzz(self) -> LuaUVec4
-
-				// Exclusion reason: 
-				// wxzw(self) -> LuaUVec4
-
-				// Exclusion reason: 
-				// wxwx(self) -> LuaUVec4
-
-				// Exclusion reason: 
-				// wxwy(self) -> LuaUVec4
-
-				// Exclusion reason: 
-				// wxwz(self) -> LuaUVec4
-
-				// Exclusion reason: 
-				// wxww(self) -> LuaUVec4
-
-				// Exclusion reason: 
-				// wyxx(self) -> LuaUVec4
-
-				// Exclusion reason: 
-				// wyxy(self) -> LuaUVec4
-
-				// Exclusion reason: 
-				// wyxz(self) -> LuaUVec4
-
-				// Exclusion reason: 
-				// wyxw(self) -> LuaUVec4
-
-				// Exclusion reason: 
-				// wyyx(self) -> LuaUVec4
-
-				// Exclusion reason: 
-				// wyyy(self) -> LuaUVec4
-
-				// Exclusion reason: 
-				// wyyz(self) -> LuaUVec4
-
-				// Exclusion reason: 
-				// wyyw(self) -> LuaUVec4
-
-				// Exclusion reason: 
-				// wyzx(self) -> LuaUVec4
-
-				// Exclusion reason: 
-				// wyzy(self) -> LuaUVec4
-
-				// Exclusion reason: 
-				// wyzz(self) -> LuaUVec4
-
-				// Exclusion reason: 
-				// wyzw(self) -> LuaUVec4
-
-				// Exclusion reason: 
-				// wywx(self) -> LuaUVec4
-
-				// Exclusion reason: 
-				// wywy(self) -> LuaUVec4
-
-				// Exclusion reason: 
-				// wywz(self) -> LuaUVec4
-
-				// Exclusion reason: 
-				// wyww(self) -> LuaUVec4
-
-				// Exclusion reason: 
-				// wzxx(self) -> LuaUVec4
-
-				// Exclusion reason: 
-				// wzxy(self) -> LuaUVec4
-
-				// Exclusion reason: 
-				// wzxz(self) -> LuaUVec4
-
-				// Exclusion reason: 
-				// wzxw(self) -> LuaUVec4
-
-				// Exclusion reason: 
-				// wzyx(self) -> LuaUVec4
-
-				// Exclusion reason: 
-				// wzyy(self) -> LuaUVec4
-
-				// Exclusion reason: 
-				// wzyz(self) -> LuaUVec4
-
-				// Exclusion reason: 
-				// wzyw(self) -> LuaUVec4
-
-				// Exclusion reason: 
-				// wzzx(self) -> LuaUVec4
-
-				// Exclusion reason: 
-				// wzzy(self) -> LuaUVec4
-
-				// Exclusion reason: 
-				// wzzz(self) -> LuaUVec4
-
-				// Exclusion reason: 
-				// wzzw(self) -> LuaUVec4
-
-				// Exclusion reason: 
-				// wzwx(self) -> LuaUVec4
-
-				// Exclusion reason: 
-				// wzwy(self) -> LuaUVec4
-
-				// Exclusion reason: 
-				// wzwz(self) -> LuaUVec4
-
-				// Exclusion reason: 
-				// wzww(self) -> LuaUVec4
-
-				// Exclusion reason: 
-				// wwxx(self) -> LuaUVec4
-
-				// Exclusion reason: 
-				// wwxy(self) -> LuaUVec4
-
-				// Exclusion reason: 
-				// wwxz(self) -> LuaUVec4
-
-				// Exclusion reason: 
-				// wwxw(self) -> LuaUVec4
-
-				// Exclusion reason: 
-				// wwyx(self) -> LuaUVec4
-
-				// Exclusion reason: 
-				// wwyy(self) -> LuaUVec4
-
-				// Exclusion reason: 
-				// wwyz(self) -> LuaUVec4
-
-				// Exclusion reason: 
-				// wwyw(self) -> LuaUVec4
-
-				// Exclusion reason: 
-				// wwzx(self) -> LuaUVec4
-
-				// Exclusion reason: 
-				// wwzy(self) -> LuaUVec4
-
-				// Exclusion reason: 
-				// wwzz(self) -> LuaUVec4
-
-				// Exclusion reason: 
-				// wwzw(self) -> LuaUVec4
-
-				// Exclusion reason: 
-				// wwwx(self) -> LuaUVec4
-
-				// Exclusion reason: 
-				// wwwy(self) -> LuaUVec4
-
-				// Exclusion reason: 
-				// wwwz(self) -> LuaUVec4
-
-				// Exclusion reason: 
-				// wwww(self) -> LuaUVec4
-
-			)
-+ BinaryOps			(
+			glam::u32::uvec4::UVec4 : Value
+:				AutoMethods
+				(
+					///Creates a new vector.
+					new(u32u32u32u32) -> LuaUVec4
+,
+					///Creates a vector with all elements set to `v`.
+					splat(u32) -> LuaUVec4
+,
+					// Exclusion reason: Unsupported argument BVec4
+					// ///Creates a vector from the elements in `if_true` and `if_false`, selecting which to use
+					// ///for each element of `self`.
+					// ///
+					// ///A true element in the mask uses the corresponding element from `if_true`, and false
+					// ///uses the element from `if_false`.
+					// select(LuaUVec4LuaUVec4) -> LuaUVec4
+,
+					// Exclusion reason: Unsupported argument [u32;4]
+					// ///Creates a new vector from an array.
+					// from_array(<invalid: [u32;4]>) -> LuaUVec4
+,
+					// Exclusion reason: Unsupported argument [u32;4]
+					// ///`[x, y, z, w]`
+					// to_array(&self)<invalid: [u32;4]>
+,
+					// Exclusion reason: Unsupported argument &[u32]
+					// ///Creates a vector from the first 4 values in `slice`.
+					// ///
+					// ///# Panics
+					// ///
+					// ///Panics if `slice` is less than 4 elements long.
+					// from_slice(<invalid: &[u32]>) -> LuaUVec4
+,
+					// Exclusion reason: Unsupported argument &mut [u32]
+					// ///Writes the elements of `self` to the first 4 elements in `slice`.
+					// ///
+					// ///# Panics
+					// ///
+					// ///Panics if `slice` is less than 4 elements long.
+					// write_to_slice(self<invalid: &mut [u32]>)
+,
+					///Creates a 2D vector from the `x`, `y` and `z` elements of `self`, discarding `w`.
+					///
+					///Truncation to `UVec3` may also be performed by using `self.xyz()` or `UVec3::from()`.
+					truncate(self) -> LuaUVec3
+,
+					///Computes the dot product of `self` and `rhs`.
+					dot(selfLuaUVec4) -> u32
+,
+					///Returns a vector containing the minimum values for each element of `self` and `rhs`.
+					///
+					///In other words this computes `[self.x.min(rhs.x), self.y.min(rhs.y), ..]`.
+					min(selfLuaUVec4) -> LuaUVec4
+,
+					///Returns a vector containing the maximum values for each element of `self` and `rhs`.
+					///
+					///In other words this computes `[self.x.max(rhs.x), self.y.max(rhs.y), ..]`.
+					max(selfLuaUVec4) -> LuaUVec4
+,
+					///Component-wise clamping of values, similar to [`f32::clamp`].
+					///
+					///Each element in `min` must be less-or-equal to the corresponding element in `max`.
+					///
+					///# Panics
+					///
+					///Will panic if `min` is greater than `max` when `glam_assert` is enabled.
+					clamp(selfLuaUVec4LuaUVec4) -> LuaUVec4
+,
+					///Returns the horizontal minimum of `self`.
+					///
+					///In other words this computes `min(x, y, ..)`.
+					min_element(self) -> u32
+,
+					///Returns the horizontal maximum of `self`.
+					///
+					///In other words this computes `max(x, y, ..)`.
+					max_element(self) -> u32
+,
+					// Exclusion reason: Unsupported argument BVec4
+					// ///Returns a vector mask containing the result of a `==` comparison for each element of
+					// ///`self` and `rhs`.
+					// ///
+					// ///In other words, this computes `[self.x == rhs.x, self.y == rhs.y, ..]` for all
+					// ///elements.
+					// cmpeq(selfLuaUVec4)
+,
+					// Exclusion reason: Unsupported argument BVec4
+					// ///Returns a vector mask containing the result of a `!=` comparison for each element of
+					// ///`self` and `rhs`.
+					// ///
+					// ///In other words this computes `[self.x != rhs.x, self.y != rhs.y, ..]` for all
+					// ///elements.
+					// cmpne(selfLuaUVec4)
+,
+					// Exclusion reason: Unsupported argument BVec4
+					// ///Returns a vector mask containing the result of a `>=` comparison for each element of
+					// ///`self` and `rhs`.
+					// ///
+					// ///In other words this computes `[self.x >= rhs.x, self.y >= rhs.y, ..]` for all
+					// ///elements.
+					// cmpge(selfLuaUVec4)
+,
+					// Exclusion reason: Unsupported argument BVec4
+					// ///Returns a vector mask containing the result of a `>` comparison for each element of
+					// ///`self` and `rhs`.
+					// ///
+					// ///In other words this computes `[self.x > rhs.x, self.y > rhs.y, ..]` for all
+					// ///elements.
+					// cmpgt(selfLuaUVec4)
+,
+					// Exclusion reason: Unsupported argument BVec4
+					// ///Returns a vector mask containing the result of a `<=` comparison for each element of
+					// ///`self` and `rhs`.
+					// ///
+					// ///In other words this computes `[self.x <= rhs.x, self.y <= rhs.y, ..]` for all
+					// ///elements.
+					// cmple(selfLuaUVec4)
+,
+					// Exclusion reason: Unsupported argument BVec4
+					// ///Returns a vector mask containing the result of a `<` comparison for each element of
+					// ///`self` and `rhs`.
+					// ///
+					// ///In other words this computes `[self.x < rhs.x, self.y < rhs.y, ..]` for all
+					// ///elements.
+					// cmplt(selfLuaUVec4)
+,
+					// Exclusion reason: Unsupported argument crate::Vec4
+					// ///Casts all elements of `self` to `f32`.
+					// as_vec4(&self)
+,
+					// Exclusion reason: Unsupported argument crate::DVec4
+					// ///Casts all elements of `self` to `f64`.
+					// as_dvec4(&self)
+,
+					// Exclusion reason: Unsupported argument crate::IVec4
+					// ///Casts all elements of `self` to `i32`.
+					// as_ivec4(&self)
+,
+					// Exclusion reason: Unsupported argument U,Unsupported argument Result
+					// try_from()
+,
+					// Exclusion reason: Unsupported argument T,Unsupported argument T
+					// ///Returns the argument unchanged.
+					// from()
+,
+					// Exclusion reason: Unsupported argument [u32;4]
+					// from(<invalid: [u32;4]>) -> LuaUVec4
+,
+					from(LuaUVec4) -> LuaUVec4
+,
+					// Exclusion reason: Unsupported argument (u32,u32,u32,u32)
+					// from(<invalid: (u32,u32,u32,u32)>) -> LuaUVec4
+,
+					from(LuaUVec4) -> LuaUVec4
+,
+					// Exclusion reason: Unsupported argument (LuaUVec3,u32)
+					// from(<invalid: (LuaUVec3,u32)>) -> LuaUVec4
+,
+					// Exclusion reason: Unsupported argument (u32,LuaUVec3)
+					// from(<invalid: (u32,LuaUVec3)>) -> LuaUVec4
+,
+					// Exclusion reason: Unsupported argument (LuaUVec2,u32,u32)
+					// from(<invalid: (LuaUVec2,u32,u32)>) -> LuaUVec4
+,
+					// Exclusion reason: Unsupported argument (LuaUVec2,LuaUVec2)
+					// from(<invalid: (LuaUVec2,LuaUVec2)>) -> LuaUVec4
+,
+					// Exclusion reason: Unsupported argument U
+					// ///Calls `U::from(self)`.
+					// ///
+					// ///That is, this conversion is whatever the implementation of
+					// ///<code>[From]&lt;T&gt; for U</code> chooses to do.
+					// into(self)
+,
+					// Exclusion reason: Unsupported argument T
+					// borrow(&self)
+,
+					// Exclusion reason: Unsupported argument TypeId
+					// type_id(&self)
+,
+					// Exclusion reason: Unsupported argument Result
+					// try_into(self)
+,
+					// Exclusion reason: Unsupported argument &mut self,Unsupported argument T
+					// borrow_mut(<invalid: &mut self>)
+,
+					// Exclusion reason: Unsupported argument String
+					// to_string(&self)
+,
+					// Exclusion reason: Unsupported argument T
+					// to_owned(&self)
+,
+					// Exclusion reason: Unsupported argument T
+					// clone_into(&self)
+,
+					// Exclusion reason: Unsupported argument T
+					// is_valid_bit_pattern() -> bool
+,
+					// Exclusion reason: Unsupported argument S,Unsupported argument Result,Generics on the method
+					// serialize(&self)
+,
+					// Exclusion reason: Unsupported argument D,Unsupported argument Result,Generics on the method
+					// deserialize()
+,
+					// Exclusion reason: Unsupported argument crate::UVec4,Unsupported argument QualifiedPath { name: "Output", args: AngleBracketed { args: [], bindings: [] }, self_type: Generic("Self"), trait_: ResolvedPath { name: "", id: Id("2:3377:3424"), args: None, param_names: [] } }
+					// shl(self)
+,
+					// Exclusion reason: Unsupported argument QualifiedPath { name: "Output", args: AngleBracketed { args: [], bindings: [] }, self_type: Generic("Self"), trait_: ResolvedPath { name: "", id: Id("2:3377:3424"), args: None, param_names: [] } }
+					// shl(selfi8)
+,
+					// Exclusion reason: Unsupported argument QualifiedPath { name: "Output", args: AngleBracketed { args: [], bindings: [] }, self_type: Generic("Self"), trait_: ResolvedPath { name: "", id: Id("2:3377:3424"), args: None, param_names: [] } }
+					// shl(selfi16)
+,
+					// Exclusion reason: Unsupported argument QualifiedPath { name: "Output", args: AngleBracketed { args: [], bindings: [] }, self_type: Generic("Self"), trait_: ResolvedPath { name: "", id: Id("2:3377:3424"), args: None, param_names: [] } }
+					// shl(selfi32)
+,
+					// Exclusion reason: Unsupported argument QualifiedPath { name: "Output", args: AngleBracketed { args: [], bindings: [] }, self_type: Generic("Self"), trait_: ResolvedPath { name: "", id: Id("2:3377:3424"), args: None, param_names: [] } }
+					// shl(selfu8)
+,
+					// Exclusion reason: Unsupported argument QualifiedPath { name: "Output", args: AngleBracketed { args: [], bindings: [] }, self_type: Generic("Self"), trait_: ResolvedPath { name: "", id: Id("2:3377:3424"), args: None, param_names: [] } }
+					// shl(selfu16)
+,
+					// Exclusion reason: Unsupported argument QualifiedPath { name: "Output", args: AngleBracketed { args: [], bindings: [] }, self_type: Generic("Self"), trait_: ResolvedPath { name: "", id: Id("2:3377:3424"), args: None, param_names: [] } }
+					// shl(selfu32)
+,
+					// Exclusion reason: Unsupported argument crate::IVec4,Unsupported argument QualifiedPath { name: "Output", args: AngleBracketed { args: [], bindings: [] }, self_type: Generic("Self"), trait_: ResolvedPath { name: "", id: Id("2:3377:3424"), args: None, param_names: [] } }
+					// shl(self)
+,
+					// Exclusion reason: Unsupported argument crate::UVec4,Unsupported argument QualifiedPath { name: "Output", args: AngleBracketed { args: [], bindings: [] }, self_type: Generic("Self"), trait_: ResolvedPath { name: "", id: Id("2:3377:3424"), args: None, param_names: [] } }
+					// shl(self)
+,
+					// Exclusion reason: Unsupported argument crate::UVec4,Unsupported argument QualifiedPath { name: "Output", args: AngleBracketed { args: [], bindings: [] }, self_type: Generic("Self"), trait_: ResolvedPath { name: "", id: Id("2:3383:3425"), args: None, param_names: [] } }
+					// shr(self)
+,
+					// Exclusion reason: Unsupported argument QualifiedPath { name: "Output", args: AngleBracketed { args: [], bindings: [] }, self_type: Generic("Self"), trait_: ResolvedPath { name: "", id: Id("2:3383:3425"), args: None, param_names: [] } }
+					// shr(selfi8)
+,
+					// Exclusion reason: Unsupported argument QualifiedPath { name: "Output", args: AngleBracketed { args: [], bindings: [] }, self_type: Generic("Self"), trait_: ResolvedPath { name: "", id: Id("2:3383:3425"), args: None, param_names: [] } }
+					// shr(selfi16)
+,
+					// Exclusion reason: Unsupported argument QualifiedPath { name: "Output", args: AngleBracketed { args: [], bindings: [] }, self_type: Generic("Self"), trait_: ResolvedPath { name: "", id: Id("2:3383:3425"), args: None, param_names: [] } }
+					// shr(selfi32)
+,
+					// Exclusion reason: Unsupported argument QualifiedPath { name: "Output", args: AngleBracketed { args: [], bindings: [] }, self_type: Generic("Self"), trait_: ResolvedPath { name: "", id: Id("2:3383:3425"), args: None, param_names: [] } }
+					// shr(selfu8)
+,
+					// Exclusion reason: Unsupported argument QualifiedPath { name: "Output", args: AngleBracketed { args: [], bindings: [] }, self_type: Generic("Self"), trait_: ResolvedPath { name: "", id: Id("2:3383:3425"), args: None, param_names: [] } }
+					// shr(selfu16)
+,
+					// Exclusion reason: Unsupported argument QualifiedPath { name: "Output", args: AngleBracketed { args: [], bindings: [] }, self_type: Generic("Self"), trait_: ResolvedPath { name: "", id: Id("2:3383:3425"), args: None, param_names: [] } }
+					// shr(selfu32)
+,
+					// Exclusion reason: Unsupported argument crate::IVec4,Unsupported argument QualifiedPath { name: "Output", args: AngleBracketed { args: [], bindings: [] }, self_type: Generic("Self"), trait_: ResolvedPath { name: "", id: Id("2:3383:3425"), args: None, param_names: [] } }
+					// shr(self)
+,
+					// Exclusion reason: Unsupported argument crate::UVec4,Unsupported argument QualifiedPath { name: "Output", args: AngleBracketed { args: [], bindings: [] }, self_type: Generic("Self"), trait_: ResolvedPath { name: "", id: Id("2:3383:3425"), args: None, param_names: [] } }
+					// shr(self)
+,
+					clone(&self) -> LuaUVec4
+,
+					default() -> LuaUVec4
+,
+					eq(&self&LuaUVec4) -> bool
+,
+					div(selfLuaUVec4) -> LuaUVec4
+,
+					div(selfu32) -> LuaUVec4
+,
+					div(selfLuaUVec4) -> LuaUVec4
+,
+					// Exclusion reason: Unsupported argument &mut self
+					// div_assign(<invalid: &mut self>LuaUVec4)
+,
+					// Exclusion reason: Unsupported argument &mut self
+					// div_assign(<invalid: &mut self>u32)
+,
+					mul(selfLuaUVec4) -> LuaUVec4
+,
+					mul(selfu32) -> LuaUVec4
+,
+					mul(selfLuaUVec4) -> LuaUVec4
+,
+					// Exclusion reason: Unsupported argument &mut self
+					// mul_assign(<invalid: &mut self>LuaUVec4)
+,
+					// Exclusion reason: Unsupported argument &mut self
+					// mul_assign(<invalid: &mut self>u32)
+,
+					add(selfLuaUVec4) -> LuaUVec4
+,
+					add(selfu32) -> LuaUVec4
+,
+					add(selfLuaUVec4) -> LuaUVec4
+,
+					// Exclusion reason: Unsupported argument &mut self
+					// add_assign(<invalid: &mut self>LuaUVec4)
+,
+					// Exclusion reason: Unsupported argument &mut self
+					// add_assign(<invalid: &mut self>u32)
+,
+					sub(selfLuaUVec4) -> LuaUVec4
+,
+					sub(selfu32) -> LuaUVec4
+,
+					sub(selfLuaUVec4) -> LuaUVec4
+,
+					// Exclusion reason: Unsupported argument &mut self
+					// sub_assign(<invalid: &mut self>LuaUVec4)
+,
+					// Exclusion reason: Unsupported argument &mut self
+					// sub_assign(<invalid: &mut self>u32)
+,
+					rem(selfLuaUVec4) -> LuaUVec4
+,
+					rem(selfu32) -> LuaUVec4
+,
+					rem(selfLuaUVec4) -> LuaUVec4
+,
+					// Exclusion reason: Unsupported argument &mut self
+					// rem_assign(<invalid: &mut self>LuaUVec4)
+,
+					// Exclusion reason: Unsupported argument &mut self
+					// rem_assign(<invalid: &mut self>u32)
+,
+					// Exclusion reason: Unsupported argument &[u32;4]
+					// as_ref(&self)<invalid: &[u32;4]>
+,
+					// Exclusion reason: Unsupported argument &mut self,Unsupported argument &mut [u32;4]
+					// as_mut(<invalid: &mut self>)<invalid: &mut [u32;4]>
+,
+					// Exclusion reason: Unsupported argument I,Generics on the method
+					// sum() -> LuaUVec4
+,
+					// Exclusion reason: Unsupported argument I,Generics on the method
+					// product() -> LuaUVec4
+,
+					// Exclusion reason: Unsupported argument H,Generics on the method
+					// hash(&self)
+,
+					// Exclusion reason: Unsupported argument QualifiedPath { name: "Output", args: AngleBracketed { args: [], bindings: [] }, self_type: Generic("Self"), trait_: ResolvedPath { name: "", id: Id("2:3355:2223"), args: None, param_names: [] } }
+					// not(self)
+,
+					// Exclusion reason: Unsupported argument QualifiedPath { name: "Output", args: AngleBracketed { args: [], bindings: [] }, self_type: Generic("Self"), trait_: ResolvedPath { name: "", id: Id("2:3362:2217"), args: None, param_names: [] } }
+					// bitand(selfLuaUVec4)
+,
+					// Exclusion reason: Unsupported argument QualifiedPath { name: "Output", args: AngleBracketed { args: [], bindings: [] }, self_type: Generic("Self"), trait_: ResolvedPath { name: "", id: Id("2:3362:2217"), args: None, param_names: [] } }
+					// bitand(selfu32)
+,
+					// Exclusion reason: Unsupported argument QualifiedPath { name: "Output", args: AngleBracketed { args: [], bindings: [] }, self_type: Generic("Self"), trait_: ResolvedPath { name: "", id: Id("2:3367:2219"), args: None, param_names: [] } }
+					// bitor(selfLuaUVec4)
+,
+					// Exclusion reason: Unsupported argument QualifiedPath { name: "Output", args: AngleBracketed { args: [], bindings: [] }, self_type: Generic("Self"), trait_: ResolvedPath { name: "", id: Id("2:3367:2219"), args: None, param_names: [] } }
+					// bitor(selfu32)
+,
+					// Exclusion reason: Unsupported argument QualifiedPath { name: "Output", args: AngleBracketed { args: [], bindings: [] }, self_type: Generic("Self"), trait_: ResolvedPath { name: "", id: Id("2:3372:2221"), args: None, param_names: [] } }
+					// bitxor(selfLuaUVec4)
+,
+					// Exclusion reason: Unsupported argument QualifiedPath { name: "Output", args: AngleBracketed { args: [], bindings: [] }, self_type: Generic("Self"), trait_: ResolvedPath { name: "", id: Id("2:3372:2221"), args: None, param_names: [] } }
+					// bitxor(selfu32)
+,
+					// Exclusion reason: Unsupported argument QualifiedPath { name: "Output", args: AngleBracketed { args: [], bindings: [] }, self_type: Generic("Self"), trait_: ResolvedPath { name: "", id: Id("2:3539:2758"), args: None, param_names: [] } }
+					// index(&selfusize)
+,
+					// Exclusion reason: Unsupported argument &mut self,Unsupported argument QualifiedPath { name: "Output", args: AngleBracketed { args: [], bindings: [] }, self_type: Generic("Self"), trait_: ResolvedPath { name: "", id: Id("2:3539:2758"), args: None, param_names: [] } }
+					// index_mut(<invalid: &mut self>usize)
+,
+					// Exclusion reason: Unsupported argument fmt::Formatter,Unsupported argument fmt::Result
+					// fmt(&self)
+,
+					// Exclusion reason: Unsupported argument fmt::Formatter,Unsupported argument fmt::Result
+					// fmt(&self)
+,
+					xx(self) -> LuaUVec2
+,
+					xy(self) -> LuaUVec2
+,
+					xz(self) -> LuaUVec2
+,
+					xw(self) -> LuaUVec2
+,
+					yx(self) -> LuaUVec2
+,
+					yy(self) -> LuaUVec2
+,
+					yz(self) -> LuaUVec2
+,
+					yw(self) -> LuaUVec2
+,
+					zx(self) -> LuaUVec2
+,
+					zy(self) -> LuaUVec2
+,
+					zz(self) -> LuaUVec2
+,
+					zw(self) -> LuaUVec2
+,
+					wx(self) -> LuaUVec2
+,
+					wy(self) -> LuaUVec2
+,
+					wz(self) -> LuaUVec2
+,
+					ww(self) -> LuaUVec2
+,
+					xxx(self) -> LuaUVec3
+,
+					xxy(self) -> LuaUVec3
+,
+					xxz(self) -> LuaUVec3
+,
+					xxw(self) -> LuaUVec3
+,
+					xyx(self) -> LuaUVec3
+,
+					xyy(self) -> LuaUVec3
+,
+					xyz(self) -> LuaUVec3
+,
+					xyw(self) -> LuaUVec3
+,
+					xzx(self) -> LuaUVec3
+,
+					xzy(self) -> LuaUVec3
+,
+					xzz(self) -> LuaUVec3
+,
+					xzw(self) -> LuaUVec3
+,
+					xwx(self) -> LuaUVec3
+,
+					xwy(self) -> LuaUVec3
+,
+					xwz(self) -> LuaUVec3
+,
+					xww(self) -> LuaUVec3
+,
+					yxx(self) -> LuaUVec3
+,
+					yxy(self) -> LuaUVec3
+,
+					yxz(self) -> LuaUVec3
+,
+					yxw(self) -> LuaUVec3
+,
+					yyx(self) -> LuaUVec3
+,
+					yyy(self) -> LuaUVec3
+,
+					yyz(self) -> LuaUVec3
+,
+					yyw(self) -> LuaUVec3
+,
+					yzx(self) -> LuaUVec3
+,
+					yzy(self) -> LuaUVec3
+,
+					yzz(self) -> LuaUVec3
+,
+					yzw(self) -> LuaUVec3
+,
+					ywx(self) -> LuaUVec3
+,
+					ywy(self) -> LuaUVec3
+,
+					ywz(self) -> LuaUVec3
+,
+					yww(self) -> LuaUVec3
+,
+					zxx(self) -> LuaUVec3
+,
+					zxy(self) -> LuaUVec3
+,
+					zxz(self) -> LuaUVec3
+,
+					zxw(self) -> LuaUVec3
+,
+					zyx(self) -> LuaUVec3
+,
+					zyy(self) -> LuaUVec3
+,
+					zyz(self) -> LuaUVec3
+,
+					zyw(self) -> LuaUVec3
+,
+					zzx(self) -> LuaUVec3
+,
+					zzy(self) -> LuaUVec3
+,
+					zzz(self) -> LuaUVec3
+,
+					zzw(self) -> LuaUVec3
+,
+					zwx(self) -> LuaUVec3
+,
+					zwy(self) -> LuaUVec3
+,
+					zwz(self) -> LuaUVec3
+,
+					zww(self) -> LuaUVec3
+,
+					wxx(self) -> LuaUVec3
+,
+					wxy(self) -> LuaUVec3
+,
+					wxz(self) -> LuaUVec3
+,
+					wxw(self) -> LuaUVec3
+,
+					wyx(self) -> LuaUVec3
+,
+					wyy(self) -> LuaUVec3
+,
+					wyz(self) -> LuaUVec3
+,
+					wyw(self) -> LuaUVec3
+,
+					wzx(self) -> LuaUVec3
+,
+					wzy(self) -> LuaUVec3
+,
+					wzz(self) -> LuaUVec3
+,
+					wzw(self) -> LuaUVec3
+,
+					wwx(self) -> LuaUVec3
+,
+					wwy(self) -> LuaUVec3
+,
+					wwz(self) -> LuaUVec3
+,
+					www(self) -> LuaUVec3
+,
+					xxxx(self) -> LuaUVec4
+,
+					xxxy(self) -> LuaUVec4
+,
+					xxxz(self) -> LuaUVec4
+,
+					xxxw(self) -> LuaUVec4
+,
+					xxyx(self) -> LuaUVec4
+,
+					xxyy(self) -> LuaUVec4
+,
+					xxyz(self) -> LuaUVec4
+,
+					xxyw(self) -> LuaUVec4
+,
+					xxzx(self) -> LuaUVec4
+,
+					xxzy(self) -> LuaUVec4
+,
+					xxzz(self) -> LuaUVec4
+,
+					xxzw(self) -> LuaUVec4
+,
+					xxwx(self) -> LuaUVec4
+,
+					xxwy(self) -> LuaUVec4
+,
+					xxwz(self) -> LuaUVec4
+,
+					xxww(self) -> LuaUVec4
+,
+					xyxx(self) -> LuaUVec4
+,
+					xyxy(self) -> LuaUVec4
+,
+					xyxz(self) -> LuaUVec4
+,
+					xyxw(self) -> LuaUVec4
+,
+					xyyx(self) -> LuaUVec4
+,
+					xyyy(self) -> LuaUVec4
+,
+					xyyz(self) -> LuaUVec4
+,
+					xyyw(self) -> LuaUVec4
+,
+					xyzx(self) -> LuaUVec4
+,
+					xyzy(self) -> LuaUVec4
+,
+					xyzz(self) -> LuaUVec4
+,
+					xyzw(self) -> LuaUVec4
+,
+					xywx(self) -> LuaUVec4
+,
+					xywy(self) -> LuaUVec4
+,
+					xywz(self) -> LuaUVec4
+,
+					xyww(self) -> LuaUVec4
+,
+					xzxx(self) -> LuaUVec4
+,
+					xzxy(self) -> LuaUVec4
+,
+					xzxz(self) -> LuaUVec4
+,
+					xzxw(self) -> LuaUVec4
+,
+					xzyx(self) -> LuaUVec4
+,
+					xzyy(self) -> LuaUVec4
+,
+					xzyz(self) -> LuaUVec4
+,
+					xzyw(self) -> LuaUVec4
+,
+					xzzx(self) -> LuaUVec4
+,
+					xzzy(self) -> LuaUVec4
+,
+					xzzz(self) -> LuaUVec4
+,
+					xzzw(self) -> LuaUVec4
+,
+					xzwx(self) -> LuaUVec4
+,
+					xzwy(self) -> LuaUVec4
+,
+					xzwz(self) -> LuaUVec4
+,
+					xzww(self) -> LuaUVec4
+,
+					xwxx(self) -> LuaUVec4
+,
+					xwxy(self) -> LuaUVec4
+,
+					xwxz(self) -> LuaUVec4
+,
+					xwxw(self) -> LuaUVec4
+,
+					xwyx(self) -> LuaUVec4
+,
+					xwyy(self) -> LuaUVec4
+,
+					xwyz(self) -> LuaUVec4
+,
+					xwyw(self) -> LuaUVec4
+,
+					xwzx(self) -> LuaUVec4
+,
+					xwzy(self) -> LuaUVec4
+,
+					xwzz(self) -> LuaUVec4
+,
+					xwzw(self) -> LuaUVec4
+,
+					xwwx(self) -> LuaUVec4
+,
+					xwwy(self) -> LuaUVec4
+,
+					xwwz(self) -> LuaUVec4
+,
+					xwww(self) -> LuaUVec4
+,
+					yxxx(self) -> LuaUVec4
+,
+					yxxy(self) -> LuaUVec4
+,
+					yxxz(self) -> LuaUVec4
+,
+					yxxw(self) -> LuaUVec4
+,
+					yxyx(self) -> LuaUVec4
+,
+					yxyy(self) -> LuaUVec4
+,
+					yxyz(self) -> LuaUVec4
+,
+					yxyw(self) -> LuaUVec4
+,
+					yxzx(self) -> LuaUVec4
+,
+					yxzy(self) -> LuaUVec4
+,
+					yxzz(self) -> LuaUVec4
+,
+					yxzw(self) -> LuaUVec4
+,
+					yxwx(self) -> LuaUVec4
+,
+					yxwy(self) -> LuaUVec4
+,
+					yxwz(self) -> LuaUVec4
+,
+					yxww(self) -> LuaUVec4
+,
+					yyxx(self) -> LuaUVec4
+,
+					yyxy(self) -> LuaUVec4
+,
+					yyxz(self) -> LuaUVec4
+,
+					yyxw(self) -> LuaUVec4
+,
+					yyyx(self) -> LuaUVec4
+,
+					yyyy(self) -> LuaUVec4
+,
+					yyyz(self) -> LuaUVec4
+,
+					yyyw(self) -> LuaUVec4
+,
+					yyzx(self) -> LuaUVec4
+,
+					yyzy(self) -> LuaUVec4
+,
+					yyzz(self) -> LuaUVec4
+,
+					yyzw(self) -> LuaUVec4
+,
+					yywx(self) -> LuaUVec4
+,
+					yywy(self) -> LuaUVec4
+,
+					yywz(self) -> LuaUVec4
+,
+					yyww(self) -> LuaUVec4
+,
+					yzxx(self) -> LuaUVec4
+,
+					yzxy(self) -> LuaUVec4
+,
+					yzxz(self) -> LuaUVec4
+,
+					yzxw(self) -> LuaUVec4
+,
+					yzyx(self) -> LuaUVec4
+,
+					yzyy(self) -> LuaUVec4
+,
+					yzyz(self) -> LuaUVec4
+,
+					yzyw(self) -> LuaUVec4
+,
+					yzzx(self) -> LuaUVec4
+,
+					yzzy(self) -> LuaUVec4
+,
+					yzzz(self) -> LuaUVec4
+,
+					yzzw(self) -> LuaUVec4
+,
+					yzwx(self) -> LuaUVec4
+,
+					yzwy(self) -> LuaUVec4
+,
+					yzwz(self) -> LuaUVec4
+,
+					yzww(self) -> LuaUVec4
+,
+					ywxx(self) -> LuaUVec4
+,
+					ywxy(self) -> LuaUVec4
+,
+					ywxz(self) -> LuaUVec4
+,
+					ywxw(self) -> LuaUVec4
+,
+					ywyx(self) -> LuaUVec4
+,
+					ywyy(self) -> LuaUVec4
+,
+					ywyz(self) -> LuaUVec4
+,
+					ywyw(self) -> LuaUVec4
+,
+					ywzx(self) -> LuaUVec4
+,
+					ywzy(self) -> LuaUVec4
+,
+					ywzz(self) -> LuaUVec4
+,
+					ywzw(self) -> LuaUVec4
+,
+					ywwx(self) -> LuaUVec4
+,
+					ywwy(self) -> LuaUVec4
+,
+					ywwz(self) -> LuaUVec4
+,
+					ywww(self) -> LuaUVec4
+,
+					zxxx(self) -> LuaUVec4
+,
+					zxxy(self) -> LuaUVec4
+,
+					zxxz(self) -> LuaUVec4
+,
+					zxxw(self) -> LuaUVec4
+,
+					zxyx(self) -> LuaUVec4
+,
+					zxyy(self) -> LuaUVec4
+,
+					zxyz(self) -> LuaUVec4
+,
+					zxyw(self) -> LuaUVec4
+,
+					zxzx(self) -> LuaUVec4
+,
+					zxzy(self) -> LuaUVec4
+,
+					zxzz(self) -> LuaUVec4
+,
+					zxzw(self) -> LuaUVec4
+,
+					zxwx(self) -> LuaUVec4
+,
+					zxwy(self) -> LuaUVec4
+,
+					zxwz(self) -> LuaUVec4
+,
+					zxww(self) -> LuaUVec4
+,
+					zyxx(self) -> LuaUVec4
+,
+					zyxy(self) -> LuaUVec4
+,
+					zyxz(self) -> LuaUVec4
+,
+					zyxw(self) -> LuaUVec4
+,
+					zyyx(self) -> LuaUVec4
+,
+					zyyy(self) -> LuaUVec4
+,
+					zyyz(self) -> LuaUVec4
+,
+					zyyw(self) -> LuaUVec4
+,
+					zyzx(self) -> LuaUVec4
+,
+					zyzy(self) -> LuaUVec4
+,
+					zyzz(self) -> LuaUVec4
+,
+					zyzw(self) -> LuaUVec4
+,
+					zywx(self) -> LuaUVec4
+,
+					zywy(self) -> LuaUVec4
+,
+					zywz(self) -> LuaUVec4
+,
+					zyww(self) -> LuaUVec4
+,
+					zzxx(self) -> LuaUVec4
+,
+					zzxy(self) -> LuaUVec4
+,
+					zzxz(self) -> LuaUVec4
+,
+					zzxw(self) -> LuaUVec4
+,
+					zzyx(self) -> LuaUVec4
+,
+					zzyy(self) -> LuaUVec4
+,
+					zzyz(self) -> LuaUVec4
+,
+					zzyw(self) -> LuaUVec4
+,
+					zzzx(self) -> LuaUVec4
+,
+					zzzy(self) -> LuaUVec4
+,
+					zzzz(self) -> LuaUVec4
+,
+					zzzw(self) -> LuaUVec4
+,
+					zzwx(self) -> LuaUVec4
+,
+					zzwy(self) -> LuaUVec4
+,
+					zzwz(self) -> LuaUVec4
+,
+					zzww(self) -> LuaUVec4
+,
+					zwxx(self) -> LuaUVec4
+,
+					zwxy(self) -> LuaUVec4
+,
+					zwxz(self) -> LuaUVec4
+,
+					zwxw(self) -> LuaUVec4
+,
+					zwyx(self) -> LuaUVec4
+,
+					zwyy(self) -> LuaUVec4
+,
+					zwyz(self) -> LuaUVec4
+,
+					zwyw(self) -> LuaUVec4
+,
+					zwzx(self) -> LuaUVec4
+,
+					zwzy(self) -> LuaUVec4
+,
+					zwzz(self) -> LuaUVec4
+,
+					zwzw(self) -> LuaUVec4
+,
+					zwwx(self) -> LuaUVec4
+,
+					zwwy(self) -> LuaUVec4
+,
+					zwwz(self) -> LuaUVec4
+,
+					zwww(self) -> LuaUVec4
+,
+					wxxx(self) -> LuaUVec4
+,
+					wxxy(self) -> LuaUVec4
+,
+					wxxz(self) -> LuaUVec4
+,
+					wxxw(self) -> LuaUVec4
+,
+					wxyx(self) -> LuaUVec4
+,
+					wxyy(self) -> LuaUVec4
+,
+					wxyz(self) -> LuaUVec4
+,
+					wxyw(self) -> LuaUVec4
+,
+					wxzx(self) -> LuaUVec4
+,
+					wxzy(self) -> LuaUVec4
+,
+					wxzz(self) -> LuaUVec4
+,
+					wxzw(self) -> LuaUVec4
+,
+					wxwx(self) -> LuaUVec4
+,
+					wxwy(self) -> LuaUVec4
+,
+					wxwz(self) -> LuaUVec4
+,
+					wxww(self) -> LuaUVec4
+,
+					wyxx(self) -> LuaUVec4
+,
+					wyxy(self) -> LuaUVec4
+,
+					wyxz(self) -> LuaUVec4
+,
+					wyxw(self) -> LuaUVec4
+,
+					wyyx(self) -> LuaUVec4
+,
+					wyyy(self) -> LuaUVec4
+,
+					wyyz(self) -> LuaUVec4
+,
+					wyyw(self) -> LuaUVec4
+,
+					wyzx(self) -> LuaUVec4
+,
+					wyzy(self) -> LuaUVec4
+,
+					wyzz(self) -> LuaUVec4
+,
+					wyzw(self) -> LuaUVec4
+,
+					wywx(self) -> LuaUVec4
+,
+					wywy(self) -> LuaUVec4
+,
+					wywz(self) -> LuaUVec4
+,
+					wyww(self) -> LuaUVec4
+,
+					wzxx(self) -> LuaUVec4
+,
+					wzxy(self) -> LuaUVec4
+,
+					wzxz(self) -> LuaUVec4
+,
+					wzxw(self) -> LuaUVec4
+,
+					wzyx(self) -> LuaUVec4
+,
+					wzyy(self) -> LuaUVec4
+,
+					wzyz(self) -> LuaUVec4
+,
+					wzyw(self) -> LuaUVec4
+,
+					wzzx(self) -> LuaUVec4
+,
+					wzzy(self) -> LuaUVec4
+,
+					wzzz(self) -> LuaUVec4
+,
+					wzzw(self) -> LuaUVec4
+,
+					wzwx(self) -> LuaUVec4
+,
+					wzwy(self) -> LuaUVec4
+,
+					wzwz(self) -> LuaUVec4
+,
+					wzww(self) -> LuaUVec4
+,
+					wwxx(self) -> LuaUVec4
+,
+					wwxy(self) -> LuaUVec4
+,
+					wwxz(self) -> LuaUVec4
+,
+					wwxw(self) -> LuaUVec4
+,
+					wwyx(self) -> LuaUVec4
+,
+					wwyy(self) -> LuaUVec4
+,
+					wwyz(self) -> LuaUVec4
+,
+					wwyw(self) -> LuaUVec4
+,
+					wwzx(self) -> LuaUVec4
+,
+					wwzy(self) -> LuaUVec4
+,
+					wwzz(self) -> LuaUVec4
+,
+					wwzw(self) -> LuaUVec4
+,
+					wwwx(self) -> LuaUVec4
+,
+					wwwy(self) -> LuaUVec4
+,
+					wwwz(self) -> LuaUVec4
+,
+					wwww(self) -> LuaUVec4
+,
+				)
+				+ BinaryOps
+				(
 self Add LuaUVec4 -> LuaUVec4 -> LuaUVec4
 self Add u32 -> LuaUVec4 -> LuaUVec4
 u32 Add self -> LuaUVec4 -> LuaUVec4
@@ -12246,16 +10906,18 @@ u32 Mul self -> LuaUVec4 -> LuaUVec4
 self Rem LuaUVec4 -> LuaUVec4 -> LuaUVec4
 self Rem u32 -> LuaUVec4 -> LuaUVec4
 u32 Rem self -> LuaUVec4 -> LuaUVec4
-			)
-+ UnaryOps			(
-			)
-+ 			    Copy(LuaVec2 -> (MetaMethod::Index) (s=LuaUVec4),
-			        LuaVec2 -> mut (MetaMethod::NewIndex) (n=u32))
-			    
-impl			{
+				)
+				+ UnaryOps
+				(
+				)
++ 				    Copy(LuaVec2 -> (MetaMethod::Index) (s=LuaUVec4),
+				        LuaVec2 -> mut (MetaMethod::NewIndex) (n=u32))
+				    
+			impl
+			{
 			}
 		}
-		{
+,		{
 			///A 3x3 column major matrix.
 			///
 			///This 3x3 matrix type features convenience methods for creating and using linear and
@@ -12280,329 +10942,344 @@ impl			{
 			///2D inputs as 3D vectors with an implicit `z` value of `1` for points and `0` for
 			///vectors respectively. These methods assume that `Self` contains a valid affine
 			///transform.
-glam::f32::mat3::Mat3 : Value
-AutoMethods			(
-				// Exclusion reason: 
-				// ///Creates a 3x3 matrix from two column vectors.
-				// from_cols(LuaVec3LuaVec3LuaVec3) -> LuaMat3
-
-				///Creates a 3x3 matrix from a `[f32; 9]` array stored in column major order.
-				///If your data is stored in row major you will need to `transpose` the returned
-				///matrix.
-				from_cols_array(<invalid: &[f32;9]>) -> LuaMat3
-
-				///Creates a `[f32; 9]` array storing data in column major order.
-				///If you require data in row major order `transpose` the matrix first.
-				to_cols_array(&self)<invalid: [f32;9]>
-
-				///Creates a 3x3 matrix from a `[[f32; 3]; 3]` 3D array stored in column major order.
-				///If your data is in row major order you will need to `transpose` the returned
-				///matrix.
-				from_cols_array_2d(<invalid: &[[f32;3];3]>) -> LuaMat3
-
-				///Creates a `[[f32; 3]; 3]` 3D array storing data in column major order.
-				///If you require data in row major order `transpose` the matrix first.
-				to_cols_array_2d(&self)<invalid: [[f32;3];3]>
-
-				// Exclusion reason: 
-				// ///Creates a 3x3 matrix with its diagonal set to `diagonal` and all other entries set to 0.
-				// from_diagonal(LuaVec3) -> LuaMat3
-
-				// Exclusion reason: 
-				// ///Creates a 3x3 matrix from a 4x4 matrix, discarding the 3rd row and column.
-				// from_mat4(LuaMat4) -> LuaMat3
-
-				// Exclusion reason: 
-				// ///Creates a 3D rotation matrix from the given quaternion.
-				// ///
-				// ///# Panics
-				// ///
-				// ///Will panic if `rotation` is not normalized when `glam_assert` is enabled.
-				// from_quat(LuaQuat) -> LuaMat3
-
-				// Exclusion reason: 
-				// ///Creates a 3D rotation matrix from a normalized rotation `axis` and `angle` (in
-				// ///radians).
-				// ///
-				// ///# Panics
-				// ///
-				// ///Will panic if `axis` is not normalized when `glam_assert` is enabled.
-				// from_axis_angle(LuaVec3f32) -> LuaMat3
-
-				// Exclusion reason: 
-				// ///Creates a 3D rotation matrix from the given euler rotation sequence and the angles (in
-				// ///radians).
-				// from_euler(LuaEulerRotf32f32f32) -> LuaMat3
-
-				// Exclusion reason: 
-				// ///Creates a 3D rotation matrix from `angle` (in radians) around the x axis.
-				// from_rotation_x(f32) -> LuaMat3
-
-				// Exclusion reason: 
-				// ///Creates a 3D rotation matrix from `angle` (in radians) around the y axis.
-				// from_rotation_y(f32) -> LuaMat3
-
-				// Exclusion reason: 
-				// ///Creates a 3D rotation matrix from `angle` (in radians) around the z axis.
-				// from_rotation_z(f32) -> LuaMat3
-
-				// Exclusion reason: 
-				// ///Creates an affine transformation matrix from the given 2D `translation`.
-				// ///
-				// ///The resulting matrix can be used to transform 2D points and vectors. See
-				// ///[`Self::transform_point2()`] and [`Self::transform_vector2()`].
-				// from_translation(LuaVec2) -> LuaMat3
-
-				// Exclusion reason: 
-				// ///Creates an affine transformation matrix from the given 2D rotation `angle` (in
-				// ///radians).
-				// ///
-				// ///The resulting matrix can be used to transform 2D points and vectors. See
-				// ///[`Self::transform_point2()`] and [`Self::transform_vector2()`].
-				// from_angle(f32) -> LuaMat3
-
-				// Exclusion reason: 
-				// ///Creates an affine transformation matrix from the given 2D `scale`, rotation `angle` (in
-				// ///radians) and `translation`.
-				// ///
-				// ///The resulting matrix can be used to transform 2D points and vectors. See
-				// ///[`Self::transform_point2()`] and [`Self::transform_vector2()`].
-				// from_scale_angle_translation(LuaVec2f32LuaVec2) -> LuaMat3
-
-				// Exclusion reason: 
-				// ///Creates an affine transformation matrix from the given non-uniform 2D `scale`.
-				// ///
-				// ///The resulting matrix can be used to transform 2D points and vectors. See
-				// ///[`Self::transform_point2()`] and [`Self::transform_vector2()`].
-				// ///
-				// ///# Panics
-				// ///
-				// ///Will panic if all elements of `scale` are zero when `glam_assert` is enabled.
-				// from_scale(LuaVec2) -> LuaMat3
-
-				///Creates an affine transformation matrix from the given 2x2 matrix.
-				///
-				///The resulting matrix can be used to transform 2D points and vectors. See
-				///[`Self::transform_point2()`] and [`Self::transform_vector2()`].
-				from_mat2() -> LuaMat3
-
-				///Creates a 3x3 matrix from the first 9 values in `slice`.
-				///
-				///# Panics
-				///
-				///Panics if `slice` is less than 9 elements long.
-				from_cols_slice(<invalid: &[f32]>) -> LuaMat3
-
-				///Writes the columns of `self` to the first 9 elements in `slice`.
-				///
-				///# Panics
-				///
-				///Panics if `slice` is less than 9 elements long.
-				write_cols_to_slice(self<invalid: &mut [f32]>)
-
-				// Exclusion reason: 
-				// ///Returns the matrix column for the given `index`.
-				// ///
-				// ///# Panics
-				// ///
-				// ///Panics if `index` is greater than 2.
-				// col(&selfusize) -> LuaVec3
-
-				///Returns a mutable reference to the matrix column for the given `index`.
-				///
-				///# Panics
-				///
-				///Panics if `index` is greater than 2.
-				col_mut(<invalid: &mut self>usize)<invalid: &mut LuaVec3>
-
-				// Exclusion reason: 
-				// ///Returns the matrix row for the given `index`.
-				// ///
-				// ///# Panics
-				// ///
-				// ///Panics if `index` is greater than 2.
-				// row(&selfusize) -> LuaVec3
-
-				// Exclusion reason: 
-				// ///Returns `true` if, and only if, all elements are finite.
-				// ///If any element is either `NaN`, positive or negative infinity, this will return `false`.
-				// is_finite(&self) -> bool
-
-				// Exclusion reason: 
-				// ///Returns `true` if any elements are `NaN`.
-				// is_nan(&self) -> bool
-
-				// Exclusion reason: 
-				// ///Returns the transpose of `self`.
-				// transpose(&self) -> LuaMat3
-
-				// Exclusion reason: 
-				// ///Returns the determinant of `self`.
-				// determinant(&self) -> f32
-
-				// Exclusion reason: 
-				// ///Returns the inverse of `self`.
-				// ///
-				// ///If the matrix is not invertible the returned matrix will be invalid.
-				// ///
-				// ///# Panics
-				// ///
-				// ///Will panic if the determinant of `self` is zero when `glam_assert` is enabled.
-				// inverse(&self) -> LuaMat3
-
-				// Exclusion reason: 
-				// ///Transforms the given 2D vector as a point.
-				// ///
-				// ///This is the equivalent of multiplying `rhs` as a 3D vector where `z` is `1`.
-				// ///
-				// ///This method assumes that `self` contains a valid affine transform.
-				// transform_point2(&selfLuaVec2) -> LuaVec2
-
-				// Exclusion reason: 
-				// ///Rotates the given 2D vector.
-				// ///
-				// ///This is the equivalent of multiplying `rhs` as a 3D vector where `z` is `0`.
-				// ///
-				// ///This method assumes that `self` contains a valid affine transform.
-				// transform_vector2(&selfLuaVec2) -> LuaVec2
-
-				// Exclusion reason: 
-				// ///Transforms a 3D vector.
-				// mul_vec3(&selfLuaVec3) -> LuaVec3
-
-				///Transforms a `Vec3A`.
-				mul_vec3a(&self)
-
-				// Exclusion reason: 
-				// ///Multiplies two 3x3 matrices.
-				// mul_mat3(&self&LuaMat3) -> LuaMat3
-
-				// Exclusion reason: 
-				// ///Adds two 3x3 matrices.
-				// add_mat3(&self&LuaMat3) -> LuaMat3
-
-				// Exclusion reason: 
-				// ///Subtracts two 3x3 matrices.
-				// sub_mat3(&self&LuaMat3) -> LuaMat3
-
-				// Exclusion reason: 
-				// ///Multiplies a 3x3 matrix by a scalar.
-				// mul_scalar(&selff32) -> LuaMat3
-
-				// Exclusion reason: 
-				// ///Returns true if the absolute difference of all elements between `self` and `rhs`
-				// ///is less than or equal to `max_abs_diff`.
-				// ///
-				// ///This can be used to compare if two matrices contain similar elements. It works best
-				// ///when comparing with a known value. The `max_abs_diff` that should be used used
-				// ///depends on the values being compared against.
-				// ///
-				// ///For more see
-				// ///[comparing floating point numbers](https://randomascii.wordpress.com/2012/02/25/comparing-floating-point-numbers-2012-edition/).
-				// abs_diff_eq(&selfLuaMat3f32) -> bool
-
-				// Exclusion reason: 
-				// as_dmat3(&self) -> LuaDMat3
-
-				try_from()
-
-				///Returns the argument unchanged.
-				from()
-
-				from() -> LuaMat3
-
-				from() -> LuaMat3
-
-				// Exclusion reason: 
-				// from(LuaMat3) -> LuaMat3
-
-				///Calls `U::from(self)`.
-				///
-				///That is, this conversion is whatever the implementation of
-				///<code>[From]&lt;T&gt; for U</code> chooses to do.
-				into(self)
-
-				borrow(&self)
-
-				type_id(&self)
-
-				try_into(self)
-
-				borrow_mut(<invalid: &mut self>)
-
-				to_string(&self)
-
-				to_owned(&self)
-
-				clone_into(&self)
-
-				is_valid_bit_pattern() -> bool
-
-				serialize(&self)
-
-				deserialize()
-
-				mul(selfLuaMat3)
-
-				mul(self)
-
-				mul(selfLuaMat3)
-
-				mul(selfLuaVec3)
-
-				mul(selfLuaMat3)
-
-				mul(selff32)
-
-				mul(self)
-
-				// Exclusion reason: 
-				// clone(&self) -> LuaMat3
-
-				// Exclusion reason: 
-				// default() -> LuaMat3
-
-				add(selfLuaMat3)
-
-				add_assign(<invalid: &mut self>LuaMat3)
-
-				sub(selfLuaMat3)
-
-				sub_assign(<invalid: &mut self>LuaMat3)
-
-				neg(self)
-
-				mul_assign(<invalid: &mut self>LuaMat3)
-
-				mul_assign(<invalid: &mut self>f32)
-
-				sum() -> LuaMat3
-
-				product() -> LuaMat3
-
-				// Exclusion reason: 
-				// eq(&self&LuaMat3) -> bool
-
-				as_ref(&self)<invalid: &[f32;9]>
-
-				as_mut(<invalid: &mut self>)<invalid: &mut [f32;9]>
-
-				fmt(&self)
-
-				fmt(&self)
-
-			)
-+ BinaryOps			(
+			glam::f32::mat3::Mat3 : Value
+:				AutoMethods
+				(
+					///Creates a 3x3 matrix from two column vectors.
+					from_cols(LuaVec3LuaVec3LuaVec3) -> LuaMat3
+,
+					// Exclusion reason: Unsupported argument &[f32;9]
+					// ///Creates a 3x3 matrix from a `[f32; 9]` array stored in column major order.
+					// ///If your data is stored in row major you will need to `transpose` the returned
+					// ///matrix.
+					// from_cols_array(<invalid: &[f32;9]>) -> LuaMat3
+,
+					// Exclusion reason: Unsupported argument [f32;9]
+					// ///Creates a `[f32; 9]` array storing data in column major order.
+					// ///If you require data in row major order `transpose` the matrix first.
+					// to_cols_array(&self)<invalid: [f32;9]>
+,
+					// Exclusion reason: Unsupported argument &[[f32;3];3]
+					// ///Creates a 3x3 matrix from a `[[f32; 3]; 3]` 3D array stored in column major order.
+					// ///If your data is in row major order you will need to `transpose` the returned
+					// ///matrix.
+					// from_cols_array_2d(<invalid: &[[f32;3];3]>) -> LuaMat3
+,
+					// Exclusion reason: Unsupported argument [[f32;3];3]
+					// ///Creates a `[[f32; 3]; 3]` 3D array storing data in column major order.
+					// ///If you require data in row major order `transpose` the matrix first.
+					// to_cols_array_2d(&self)<invalid: [[f32;3];3]>
+,
+					///Creates a 3x3 matrix with its diagonal set to `diagonal` and all other entries set to 0.
+					from_diagonal(LuaVec3) -> LuaMat3
+,
+					///Creates a 3x3 matrix from a 4x4 matrix, discarding the 3rd row and column.
+					from_mat4(LuaMat4) -> LuaMat3
+,
+					///Creates a 3D rotation matrix from the given quaternion.
+					///
+					///# Panics
+					///
+					///Will panic if `rotation` is not normalized when `glam_assert` is enabled.
+					from_quat(LuaQuat) -> LuaMat3
+,
+					///Creates a 3D rotation matrix from a normalized rotation `axis` and `angle` (in
+					///radians).
+					///
+					///# Panics
+					///
+					///Will panic if `axis` is not normalized when `glam_assert` is enabled.
+					from_axis_angle(LuaVec3f32) -> LuaMat3
+,
+					///Creates a 3D rotation matrix from the given euler rotation sequence and the angles (in
+					///radians).
+					from_euler(LuaEulerRotf32f32f32) -> LuaMat3
+,
+					///Creates a 3D rotation matrix from `angle` (in radians) around the x axis.
+					from_rotation_x(f32) -> LuaMat3
+,
+					///Creates a 3D rotation matrix from `angle` (in radians) around the y axis.
+					from_rotation_y(f32) -> LuaMat3
+,
+					///Creates a 3D rotation matrix from `angle` (in radians) around the z axis.
+					from_rotation_z(f32) -> LuaMat3
+,
+					///Creates an affine transformation matrix from the given 2D `translation`.
+					///
+					///The resulting matrix can be used to transform 2D points and vectors. See
+					///[`Self::transform_point2()`] and [`Self::transform_vector2()`].
+					from_translation(LuaVec2) -> LuaMat3
+,
+					///Creates an affine transformation matrix from the given 2D rotation `angle` (in
+					///radians).
+					///
+					///The resulting matrix can be used to transform 2D points and vectors. See
+					///[`Self::transform_point2()`] and [`Self::transform_vector2()`].
+					from_angle(f32) -> LuaMat3
+,
+					///Creates an affine transformation matrix from the given 2D `scale`, rotation `angle` (in
+					///radians) and `translation`.
+					///
+					///The resulting matrix can be used to transform 2D points and vectors. See
+					///[`Self::transform_point2()`] and [`Self::transform_vector2()`].
+					from_scale_angle_translation(LuaVec2f32LuaVec2) -> LuaMat3
+,
+					///Creates an affine transformation matrix from the given non-uniform 2D `scale`.
+					///
+					///The resulting matrix can be used to transform 2D points and vectors. See
+					///[`Self::transform_point2()`] and [`Self::transform_vector2()`].
+					///
+					///# Panics
+					///
+					///Will panic if all elements of `scale` are zero when `glam_assert` is enabled.
+					from_scale(LuaVec2) -> LuaMat3
+,
+					// Exclusion reason: Unsupported argument Mat2
+					// ///Creates an affine transformation matrix from the given 2x2 matrix.
+					// ///
+					// ///The resulting matrix can be used to transform 2D points and vectors. See
+					// ///[`Self::transform_point2()`] and [`Self::transform_vector2()`].
+					// from_mat2() -> LuaMat3
+,
+					// Exclusion reason: Unsupported argument &[f32]
+					// ///Creates a 3x3 matrix from the first 9 values in `slice`.
+					// ///
+					// ///# Panics
+					// ///
+					// ///Panics if `slice` is less than 9 elements long.
+					// from_cols_slice(<invalid: &[f32]>) -> LuaMat3
+,
+					// Exclusion reason: Unsupported argument &mut [f32]
+					// ///Writes the columns of `self` to the first 9 elements in `slice`.
+					// ///
+					// ///# Panics
+					// ///
+					// ///Panics if `slice` is less than 9 elements long.
+					// write_cols_to_slice(self<invalid: &mut [f32]>)
+,
+					///Returns the matrix column for the given `index`.
+					///
+					///# Panics
+					///
+					///Panics if `index` is greater than 2.
+					col(&selfusize) -> LuaVec3
+,
+					// Exclusion reason: Unsupported argument &mut self,Unsupported argument &mut LuaVec3
+					// ///Returns a mutable reference to the matrix column for the given `index`.
+					// ///
+					// ///# Panics
+					// ///
+					// ///Panics if `index` is greater than 2.
+					// col_mut(<invalid: &mut self>usize)<invalid: &mut LuaVec3>
+,
+					///Returns the matrix row for the given `index`.
+					///
+					///# Panics
+					///
+					///Panics if `index` is greater than 2.
+					row(&selfusize) -> LuaVec3
+,
+					///Returns `true` if, and only if, all elements are finite.
+					///If any element is either `NaN`, positive or negative infinity, this will return `false`.
+					is_finite(&self) -> bool
+,
+					///Returns `true` if any elements are `NaN`.
+					is_nan(&self) -> bool
+,
+					///Returns the transpose of `self`.
+					transpose(&self) -> LuaMat3
+,
+					///Returns the determinant of `self`.
+					determinant(&self) -> f32
+,
+					///Returns the inverse of `self`.
+					///
+					///If the matrix is not invertible the returned matrix will be invalid.
+					///
+					///# Panics
+					///
+					///Will panic if the determinant of `self` is zero when `glam_assert` is enabled.
+					inverse(&self) -> LuaMat3
+,
+					///Transforms the given 2D vector as a point.
+					///
+					///This is the equivalent of multiplying `rhs` as a 3D vector where `z` is `1`.
+					///
+					///This method assumes that `self` contains a valid affine transform.
+					transform_point2(&selfLuaVec2) -> LuaVec2
+,
+					///Rotates the given 2D vector.
+					///
+					///This is the equivalent of multiplying `rhs` as a 3D vector where `z` is `0`.
+					///
+					///This method assumes that `self` contains a valid affine transform.
+					transform_vector2(&selfLuaVec2) -> LuaVec2
+,
+					///Transforms a 3D vector.
+					mul_vec3(&selfLuaVec3) -> LuaVec3
+,
+					// Exclusion reason: Unsupported argument Vec3A,Unsupported argument Vec3A
+					// ///Transforms a `Vec3A`.
+					// mul_vec3a(&self)
+,
+					///Multiplies two 3x3 matrices.
+					mul_mat3(&self&LuaMat3) -> LuaMat3
+,
+					///Adds two 3x3 matrices.
+					add_mat3(&self&LuaMat3) -> LuaMat3
+,
+					///Subtracts two 3x3 matrices.
+					sub_mat3(&self&LuaMat3) -> LuaMat3
+,
+					///Multiplies a 3x3 matrix by a scalar.
+					mul_scalar(&selff32) -> LuaMat3
+,
+					///Returns true if the absolute difference of all elements between `self` and `rhs`
+					///is less than or equal to `max_abs_diff`.
+					///
+					///This can be used to compare if two matrices contain similar elements. It works best
+					///when comparing with a known value. The `max_abs_diff` that should be used used
+					///depends on the values being compared against.
+					///
+					///For more see
+					///[comparing floating point numbers](https://randomascii.wordpress.com/2012/02/25/comparing-floating-point-numbers-2012-edition/).
+					abs_diff_eq(&selfLuaMat3f32) -> bool
+,
+					as_dmat3(&self) -> LuaDMat3
+,
+					// Exclusion reason: Unsupported argument U,Unsupported argument Result
+					// try_from()
+,
+					// Exclusion reason: Unsupported argument T,Unsupported argument T
+					// ///Returns the argument unchanged.
+					// from()
+,
+					// Exclusion reason: Unsupported argument Affine2
+					// from() -> LuaMat3
+,
+					// Exclusion reason: Unsupported argument Mat3A
+					// from() -> LuaMat3
+,
+					from(LuaMat3) -> LuaMat3
+,
+					// Exclusion reason: Unsupported argument U
+					// ///Calls `U::from(self)`.
+					// ///
+					// ///That is, this conversion is whatever the implementation of
+					// ///<code>[From]&lt;T&gt; for U</code> chooses to do.
+					// into(self)
+,
+					// Exclusion reason: Unsupported argument T
+					// borrow(&self)
+,
+					// Exclusion reason: Unsupported argument TypeId
+					// type_id(&self)
+,
+					// Exclusion reason: Unsupported argument Result
+					// try_into(self)
+,
+					// Exclusion reason: Unsupported argument &mut self,Unsupported argument T
+					// borrow_mut(<invalid: &mut self>)
+,
+					// Exclusion reason: Unsupported argument String
+					// to_string(&self)
+,
+					// Exclusion reason: Unsupported argument T
+					// to_owned(&self)
+,
+					// Exclusion reason: Unsupported argument T
+					// clone_into(&self)
+,
+					// Exclusion reason: Unsupported argument T
+					// is_valid_bit_pattern() -> bool
+,
+					// Exclusion reason: Unsupported argument S,Unsupported argument Result,Generics on the method
+					// serialize(&self)
+,
+					// Exclusion reason: Unsupported argument D,Unsupported argument Result,Generics on the method
+					// deserialize()
+,
+					// Exclusion reason: Unsupported argument QualifiedPath { name: "Output", args: AngleBracketed { args: [], bindings: [] }, self_type: Generic("Self"), trait_: ResolvedPath { name: "", id: Id("2:3313:2263"), args: None, param_names: [] } }
+					// mul(selfLuaMat3)
+,
+					// Exclusion reason: Unsupported argument Affine2,Unsupported argument QualifiedPath { name: "Output", args: AngleBracketed { args: [], bindings: [] }, self_type: Generic("Self"), trait_: ResolvedPath { name: "", id: Id("2:3313:2263"), args: None, param_names: [] } }
+					// mul(self)
+,
+					// Exclusion reason: Unsupported argument QualifiedPath { name: "Output", args: AngleBracketed { args: [], bindings: [] }, self_type: Generic("Self"), trait_: ResolvedPath { name: "", id: Id("2:3313:2263"), args: None, param_names: [] } }
+					// mul(selfLuaMat3)
+,
+					// Exclusion reason: Unsupported argument QualifiedPath { name: "Output", args: AngleBracketed { args: [], bindings: [] }, self_type: Generic("Self"), trait_: ResolvedPath { name: "", id: Id("2:3313:2263"), args: None, param_names: [] } }
+					// mul(selfLuaVec3)
+,
+					// Exclusion reason: Unsupported argument QualifiedPath { name: "Output", args: AngleBracketed { args: [], bindings: [] }, self_type: Generic("Self"), trait_: ResolvedPath { name: "", id: Id("2:3313:2263"), args: None, param_names: [] } }
+					// mul(selfLuaMat3)
+,
+					// Exclusion reason: Unsupported argument QualifiedPath { name: "Output", args: AngleBracketed { args: [], bindings: [] }, self_type: Generic("Self"), trait_: ResolvedPath { name: "", id: Id("2:3313:2263"), args: None, param_names: [] } }
+					// mul(selff32)
+,
+					// Exclusion reason: Unsupported argument Vec3A,Unsupported argument Vec3A
+					// mul(self)
+,
+					clone(&self) -> LuaMat3
+,
+					default() -> LuaMat3
+,
+					// Exclusion reason: Unsupported argument QualifiedPath { name: "Output", args: AngleBracketed { args: [], bindings: [] }, self_type: Generic("Self"), trait_: ResolvedPath { name: "", id: Id("2:3303:2261"), args: None, param_names: [] } }
+					// add(selfLuaMat3)
+,
+					// Exclusion reason: Unsupported argument &mut self
+					// add_assign(<invalid: &mut self>LuaMat3)
+,
+					// Exclusion reason: Unsupported argument QualifiedPath { name: "Output", args: AngleBracketed { args: [], bindings: [] }, self_type: Generic("Self"), trait_: ResolvedPath { name: "", id: Id("2:3308:2264"), args: None, param_names: [] } }
+					// sub(selfLuaMat3)
+,
+					// Exclusion reason: Unsupported argument &mut self
+					// sub_assign(<invalid: &mut self>LuaMat3)
+,
+					// Exclusion reason: Unsupported argument QualifiedPath { name: "Output", args: AngleBracketed { args: [], bindings: [] }, self_type: Generic("Self"), trait_: ResolvedPath { name: "", id: Id("2:3330:2438"), args: None, param_names: [] } }
+					// neg(self)
+,
+					// Exclusion reason: Unsupported argument &mut self
+					// mul_assign(<invalid: &mut self>LuaMat3)
+,
+					// Exclusion reason: Unsupported argument &mut self
+					// mul_assign(<invalid: &mut self>f32)
+,
+					// Exclusion reason: Unsupported argument I,Generics on the method
+					// sum() -> LuaMat3
+,
+					// Exclusion reason: Unsupported argument I,Generics on the method
+					// product() -> LuaMat3
+,
+					eq(&self&LuaMat3) -> bool
+,
+					// Exclusion reason: Unsupported argument &[f32;9]
+					// as_ref(&self)<invalid: &[f32;9]>
+,
+					// Exclusion reason: Unsupported argument &mut self,Unsupported argument &mut [f32;9]
+					// as_mut(<invalid: &mut self>)<invalid: &mut [f32;9]>
+,
+					// Exclusion reason: Unsupported argument fmt::Formatter,Unsupported argument fmt::Result
+					// fmt(&self)
+,
+					// Exclusion reason: Unsupported argument fmt::Formatter,Unsupported argument fmt::Result
+					// fmt(&self)
+,
+				)
+				+ BinaryOps
+				(
 self Add LuaMat3 -> LuaMat3 -> LuaMat3
 self Sub LuaMat3 -> LuaMat3 -> LuaMat3
 self Mul LuaMat3 -> LuaMat3 -> LuaMat3
 self Mul LuaVec3 -> LuaVec3 -> LuaVec3
 f32 Mul self -> LuaMat3 -> LuaMat3
 self Mul f32 -> LuaMat3 -> LuaMat3
-			)
-+ UnaryOps			(
-			)
-impl			{
+				)
+				+ UnaryOps
+				(
+				)
+			impl
+			{
 				    
 mut (MetaMethod::Index) (s=LuaMat3,b=Mat3,v=LuaVec3) => {|_,s,idx : usize| {
     match s {
@@ -12627,7 +11304,7 @@ mut (MetaMethod::Index) (s=LuaMat3,b=Mat3,v=LuaVec3) => {|_,s,idx : usize| {
 ;
 			}
 		}
-		{
+,		{
 			///A 4x4 column major matrix.
 			///
 			///This 4x4 matrix type features convenience methods for creating and using affine transforms and
@@ -12657,474 +11334,476 @@ mut (MetaMethod::Index) (s=LuaMat3,b=Mat3,v=LuaVec3) => {|_,s,idx : usize| {
 			///
 			///The resulting perspective project can be use to transform 3D vectors as points with
 			///perspective correction using the [`Self::project_point3()`] convenience method.
-glam::f32::sse2::mat4::Mat4 : Value
-AutoMethods			(
-				// Exclusion reason: 
-				// ///Creates a 4x4 matrix from two column vectors.
-				// from_cols(LuaVec4LuaVec4LuaVec4LuaVec4) -> LuaMat4
-
-				///Creates a 4x4 matrix from a `[f32; 16]` array stored in column major order.
-				///If your data is stored in row major you will need to `transpose` the returned
-				///matrix.
-				from_cols_array(<invalid: &[f32;16]>) -> LuaMat4
-
-				///Creates a `[f32; 16]` array storing data in column major order.
-				///If you require data in row major order `transpose` the matrix first.
-				to_cols_array(&self)<invalid: [f32;16]>
-
-				///Creates a 4x4 matrix from a `[[f32; 4]; 4]` 4D array stored in column major order.
-				///If your data is in row major order you will need to `transpose` the returned
-				///matrix.
-				from_cols_array_2d(<invalid: &[[f32;4];4]>) -> LuaMat4
-
-				///Creates a `[[f32; 4]; 4]` 4D array storing data in column major order.
-				///If you require data in row major order `transpose` the matrix first.
-				to_cols_array_2d(&self)<invalid: [[f32;4];4]>
-
-				// Exclusion reason: 
-				// ///Creates a 4x4 matrix with its diagonal set to `diagonal` and all other entries set to 0.
-				// from_diagonal(LuaVec4) -> LuaMat4
-
-				// Exclusion reason: 
-				// ///Creates an affine transformation matrix from the given 3D `scale`, `rotation` and
-				// ///`translation`.
-				// ///
-				// ///The resulting matrix can be used to transform 3D points and vectors. See
-				// ///[`Self::transform_point3()`] and [`Self::transform_vector3()`].
-				// ///
-				// ///# Panics
-				// ///
-				// ///Will panic if `rotation` is not normalized when `glam_assert` is enabled.
-				// from_scale_rotation_translation(LuaVec3LuaQuatLuaVec3) -> LuaMat4
-
-				// Exclusion reason: 
-				// ///Creates an affine transformation matrix from the given 3D `translation`.
-				// ///
-				// ///The resulting matrix can be used to transform 3D points and vectors. See
-				// ///[`Self::transform_point3()`] and [`Self::transform_vector3()`].
-				// ///
-				// ///# Panics
-				// ///
-				// ///Will panic if `rotation` is not normalized when `glam_assert` is enabled.
-				// from_rotation_translation(LuaQuatLuaVec3) -> LuaMat4
-
-				///Extracts `scale`, `rotation` and `translation` from `self`. The input matrix is
-				///expected to be a 3D affine transformation matrix otherwise the output will be invalid.
-				///
-				///# Panics
-				///
-				///Will panic if the determinant of `self` is zero or if the resulting scale vector
-				///contains any zero elements when `glam_assert` is enabled.
-				to_scale_rotation_translation(&self)<invalid: (LuaVec3,LuaQuat,LuaVec3)>
-
-				// Exclusion reason: 
-				// ///Creates an affine transformation matrix from the given `rotation` quaternion.
-				// ///
-				// ///The resulting matrix can be used to transform 3D points and vectors. See
-				// ///[`Self::transform_point3()`] and [`Self::transform_vector3()`].
-				// ///
-				// ///# Panics
-				// ///
-				// ///Will panic if `rotation` is not normalized when `glam_assert` is enabled.
-				// from_quat(LuaQuat) -> LuaMat4
-
-				// Exclusion reason: 
-				// ///Creates an affine transformation matrix from the given 3x3 linear transformation
-				// ///matrix.
-				// ///
-				// ///The resulting matrix can be used to transform 3D points and vectors. See
-				// ///[`Self::transform_point3()`] and [`Self::transform_vector3()`].
-				// from_mat3(LuaMat3) -> LuaMat4
-
-				// Exclusion reason: 
-				// ///Creates an affine transformation matrix from the given 3D `translation`.
-				// ///
-				// ///The resulting matrix can be used to transform 3D points and vectors. See
-				// ///[`Self::transform_point3()`] and [`Self::transform_vector3()`].
-				// from_translation(LuaVec3) -> LuaMat4
-
-				// Exclusion reason: 
-				// ///Creates an affine transformation matrix containing a 3D rotation around a normalized
-				// ///rotation `axis` of `angle` (in radians).
-				// ///
-				// ///The resulting matrix can be used to transform 3D points and vectors. See
-				// ///[`Self::transform_point3()`] and [`Self::transform_vector3()`].
-				// ///
-				// ///# Panics
-				// ///
-				// ///Will panic if `axis` is not normalized when `glam_assert` is enabled.
-				// from_axis_angle(LuaVec3f32) -> LuaMat4
-
-				// Exclusion reason: 
-				// ///Creates a affine transformation matrix containing a rotation from the given euler
-				// ///rotation sequence and angles (in radians).
-				// ///
-				// ///The resulting matrix can be used to transform 3D points and vectors. See
-				// ///[`Self::transform_point3()`] and [`Self::transform_vector3()`].
-				// from_euler(LuaEulerRotf32f32f32) -> LuaMat4
-
-				// Exclusion reason: 
-				// ///Creates an affine transformation matrix containing a 3D rotation around the x axis of
-				// ///`angle` (in radians).
-				// ///
-				// ///The resulting matrix can be used to transform 3D points and vectors. See
-				// ///[`Self::transform_point3()`] and [`Self::transform_vector3()`].
-				// from_rotation_x(f32) -> LuaMat4
-
-				// Exclusion reason: 
-				// ///Creates an affine transformation matrix containing a 3D rotation around the y axis of
-				// ///`angle` (in radians).
-				// ///
-				// ///The resulting matrix can be used to transform 3D points and vectors. See
-				// ///[`Self::transform_point3()`] and [`Self::transform_vector3()`].
-				// from_rotation_y(f32) -> LuaMat4
-
-				// Exclusion reason: 
-				// ///Creates an affine transformation matrix containing a 3D rotation around the z axis of
-				// ///`angle` (in radians).
-				// ///
-				// ///The resulting matrix can be used to transform 3D points and vectors. See
-				// ///[`Self::transform_point3()`] and [`Self::transform_vector3()`].
-				// from_rotation_z(f32) -> LuaMat4
-
-				// Exclusion reason: 
-				// ///Creates an affine transformation matrix containing the given 3D non-uniform `scale`.
-				// ///
-				// ///The resulting matrix can be used to transform 3D points and vectors. See
-				// ///[`Self::transform_point3()`] and [`Self::transform_vector3()`].
-				// ///
-				// ///# Panics
-				// ///
-				// ///Will panic if all elements of `scale` are zero when `glam_assert` is enabled.
-				// from_scale(LuaVec3) -> LuaMat4
-
-				///Creates a 4x4 matrix from the first 16 values in `slice`.
-				///
-				///# Panics
-				///
-				///Panics if `slice` is less than 16 elements long.
-				from_cols_slice(<invalid: &[f32]>) -> LuaMat4
-
-				///Writes the columns of `self` to the first 16 elements in `slice`.
-				///
-				///# Panics
-				///
-				///Panics if `slice` is less than 16 elements long.
-				write_cols_to_slice(self<invalid: &mut [f32]>)
-
-				// Exclusion reason: 
-				// ///Returns the matrix column for the given `index`.
-				// ///
-				// ///# Panics
-				// ///
-				// ///Panics if `index` is greater than 3.
-				// col(&selfusize) -> LuaVec4
-
-				///Returns a mutable reference to the matrix column for the given `index`.
-				///
-				///# Panics
-				///
-				///Panics if `index` is greater than 3.
-				col_mut(<invalid: &mut self>usize)<invalid: &mut LuaVec4>
-
-				// Exclusion reason: 
-				// ///Returns the matrix row for the given `index`.
-				// ///
-				// ///# Panics
-				// ///
-				// ///Panics if `index` is greater than 3.
-				// row(&selfusize) -> LuaVec4
-
-				// Exclusion reason: 
-				// ///Returns `true` if, and only if, all elements are finite.
-				// ///If any element is either `NaN`, positive or negative infinity, this will return `false`.
-				// is_finite(&self) -> bool
-
-				// Exclusion reason: 
-				// ///Returns `true` if any elements are `NaN`.
-				// is_nan(&self) -> bool
-
-				// Exclusion reason: 
-				// ///Returns the transpose of `self`.
-				// transpose(&self) -> LuaMat4
-
-				// Exclusion reason: 
-				// ///Returns the determinant of `self`.
-				// determinant(&self) -> f32
-
-				// Exclusion reason: 
-				// ///Returns the inverse of `self`.
-				// ///
-				// ///If the matrix is not invertible the returned matrix will be invalid.
-				// ///
-				// ///# Panics
-				// ///
-				// ///Will panic if the determinant of `self` is zero when `glam_assert` is enabled.
-				// inverse(&self) -> LuaMat4
-
-				// Exclusion reason: 
-				// ///Creates a left-handed view matrix using a camera position, an up direction, and a focal
-				// ///point.
-				// ///For a view coordinate system with `+X=right`, `+Y=up` and `+Z=forward`.
-				// ///
-				// ///# Panics
-				// ///
-				// ///Will panic if `up` is not normalized when `glam_assert` is enabled.
-				// look_at_lh(LuaVec3LuaVec3LuaVec3) -> LuaMat4
-
-				// Exclusion reason: 
-				// ///Creates a right-handed view matrix using a camera position, an up direction, and a focal
-				// ///point.
-				// ///For a view coordinate system with `+X=right`, `+Y=up` and `+Z=back`.
-				// ///
-				// ///# Panics
-				// ///
-				// ///Will panic if `up` is not normalized when `glam_assert` is enabled.
-				// look_at_rh(LuaVec3LuaVec3LuaVec3) -> LuaMat4
-
-				// Exclusion reason: 
-				// ///Creates a right-handed perspective projection matrix with [-1,1] depth range.
-				// ///This is the same as the OpenGL `gluPerspective` function.
-				// ///See <https://www.khronos.org/registry/OpenGL-Refpages/gl2.1/xhtml/gluPerspective.xml>
-				// perspective_rh_gl(f32f32f32f32) -> LuaMat4
-
-				// Exclusion reason: 
-				// ///Creates a left-handed perspective projection matrix with `[0,1]` depth range.
-				// ///
-				// ///# Panics
-				// ///
-				// ///Will panic if `z_near` or `z_far` are less than or equal to zero when `glam_assert` is
-				// ///enabled.
-				// perspective_lh(f32f32f32f32) -> LuaMat4
-
-				// Exclusion reason: 
-				// ///Creates a right-handed perspective projection matrix with `[0,1]` depth range.
-				// ///
-				// ///# Panics
-				// ///
-				// ///Will panic if `z_near` or `z_far` are less than or equal to zero when `glam_assert` is
-				// ///enabled.
-				// perspective_rh(f32f32f32f32) -> LuaMat4
-
-				// Exclusion reason: 
-				// ///Creates an infinite left-handed perspective projection matrix with `[0,1]` depth range.
-				// ///
-				// ///# Panics
-				// ///
-				// ///Will panic if `z_near` is less than or equal to zero when `glam_assert` is enabled.
-				// perspective_infinite_lh(f32f32f32) -> LuaMat4
-
-				// Exclusion reason: 
-				// ///Creates an infinite left-handed perspective projection matrix with `[0,1]` depth range.
-				// ///
-				// ///# Panics
-				// ///
-				// ///Will panic if `z_near` is less than or equal to zero when `glam_assert` is enabled.
-				// perspective_infinite_reverse_lh(f32f32f32) -> LuaMat4
-
-				// Exclusion reason: 
-				// ///Creates an infinite right-handed perspective projection matrix with
-				// ///`[0,1]` depth range.
-				// perspective_infinite_rh(f32f32f32) -> LuaMat4
-
-				// Exclusion reason: 
-				// ///Creates an infinite reverse right-handed perspective projection matrix
-				// ///with `[0,1]` depth range.
-				// perspective_infinite_reverse_rh(f32f32f32) -> LuaMat4
-
-				// Exclusion reason: 
-				// ///Creates a right-handed orthographic projection matrix with `[-1,1]` depth
-				// ///range.  This is the same as the OpenGL `glOrtho` function in OpenGL.
-				// ///See
-				// ///<https://www.khronos.org/registry/OpenGL-Refpages/gl2.1/xhtml/glOrtho.xml>
-				// orthographic_rh_gl(f32f32f32f32f32f32) -> LuaMat4
-
-				// Exclusion reason: 
-				// ///Creates a left-handed orthographic projection matrix with `[0,1]` depth range.
-				// orthographic_lh(f32f32f32f32f32f32) -> LuaMat4
-
-				// Exclusion reason: 
-				// ///Creates a right-handed orthographic projection matrix with `[0,1]` depth range.
-				// orthographic_rh(f32f32f32f32f32f32) -> LuaMat4
-
-				// Exclusion reason: 
-				// ///Transforms the given 3D vector as a point, applying perspective correction.
-				// ///
-				// ///This is the equivalent of multiplying the 3D vector as a 4D vector where `w` is `1.0`.
-				// ///The perspective divide is performed meaning the resulting 3D vector is divided by `w`.
-				// ///
-				// ///This method assumes that `self` contains a projective transform.
-				// project_point3(&selfLuaVec3) -> LuaVec3
-
-				// Exclusion reason: 
-				// ///Transforms the given 3D vector as a point.
-				// ///
-				// ///This is the equivalent of multiplying the 3D vector as a 4D vector where `w` is
-				// ///`1.0`.
-				// ///
-				// ///This method assumes that `self` contains a valid affine transform. It does not perform
-				// ///a persective divide, if `self` contains a perspective transform, or if you are unsure,
-				// ///the [`Self::project_point3()`] method should be used instead.
-				// ///
-				// ///# Panics
-				// ///
-				// ///Will panic if the 3rd row of `self` is not `(0, 0, 0, 1)` when `glam_assert` is enabled.
-				// transform_point3(&selfLuaVec3) -> LuaVec3
-
-				// Exclusion reason: 
-				// ///Transforms the give 3D vector as a direction.
-				// ///
-				// ///This is the equivalent of multiplying the 3D vector as a 4D vector where `w` is
-				// ///`0.0`.
-				// ///
-				// ///This method assumes that `self` contains a valid affine transform.
-				// ///
-				// ///# Panics
-				// ///
-				// ///Will panic if the 3rd row of `self` is not `(0, 0, 0, 1)` when `glam_assert` is enabled.
-				// transform_vector3(&selfLuaVec3) -> LuaVec3
-
-				///Transforms the given `Vec3A` as 3D point.
-				///
-				///This is the equivalent of multiplying the `Vec3A` as a 4D vector where `w` is `1.0`.
-				transform_point3a(&self)
-
-				///Transforms the give `Vec3A` as 3D vector.
-				///
-				///This is the equivalent of multiplying the `Vec3A` as a 4D vector where `w` is `0.0`.
-				transform_vector3a(&self)
-
-				// Exclusion reason: 
-				// ///Transforms a 4D vector.
-				// mul_vec4(&selfLuaVec4) -> LuaVec4
-
-				// Exclusion reason: 
-				// ///Multiplies two 4x4 matrices.
-				// mul_mat4(&self&LuaMat4) -> LuaMat4
-
-				// Exclusion reason: 
-				// ///Adds two 4x4 matrices.
-				// add_mat4(&self&LuaMat4) -> LuaMat4
-
-				// Exclusion reason: 
-				// ///Subtracts two 4x4 matrices.
-				// sub_mat4(&self&LuaMat4) -> LuaMat4
-
-				// Exclusion reason: 
-				// ///Multiplies a 4x4 matrix by a scalar.
-				// mul_scalar(&selff32) -> LuaMat4
-
-				// Exclusion reason: 
-				// ///Returns true if the absolute difference of all elements between `self` and `rhs`
-				// ///is less than or equal to `max_abs_diff`.
-				// ///
-				// ///This can be used to compare if two matrices contain similar elements. It works best
-				// ///when comparing with a known value. The `max_abs_diff` that should be used used
-				// ///depends on the values being compared against.
-				// ///
-				// ///For more see
-				// ///[comparing floating point numbers](https://randomascii.wordpress.com/2012/02/25/comparing-floating-point-numbers-2012-edition/).
-				// abs_diff_eq(&selfLuaMat4f32) -> bool
-
-				// Exclusion reason: 
-				// as_dmat4(&self) -> LuaDMat4
-
-				try_from()
-
-				///Returns the argument unchanged.
-				from()
-
-				from() -> LuaMat4
-
-				///Calls `U::from(self)`.
-				///
-				///That is, this conversion is whatever the implementation of
-				///<code>[From]&lt;T&gt; for U</code> chooses to do.
-				into(self)
-
-				borrow(&self)
-
-				type_id(&self)
-
-				try_into(self)
-
-				borrow_mut(<invalid: &mut self>)
-
-				to_string(&self)
-
-				to_owned(&self)
-
-				clone_into(&self)
-
-				is_valid_bit_pattern() -> bool
-
-				serialize(&self)
-
-				deserialize()
-
-				mul(selfLuaMat4)
-
-				mul(self)
-
-				mul(selfLuaMat4)
-
-				mul(selfLuaVec4)
-
-				mul(selfLuaMat4)
-
-				mul(selff32)
-
-				// Exclusion reason: 
-				// clone(&self) -> LuaMat4
-
-				// Exclusion reason: 
-				// default() -> LuaMat4
-
-				add(selfLuaMat4)
-
-				add_assign(<invalid: &mut self>LuaMat4)
-
-				sub(selfLuaMat4)
-
-				sub_assign(<invalid: &mut self>LuaMat4)
-
-				neg(self)
-
-				mul_assign(<invalid: &mut self>LuaMat4)
-
-				mul_assign(<invalid: &mut self>f32)
-
-				sum() -> LuaMat4
-
-				product() -> LuaMat4
-
-				// Exclusion reason: 
-				// eq(&self&LuaMat4) -> bool
-
-				as_ref(&self)<invalid: &[f32;16]>
-
-				as_mut(<invalid: &mut self>)<invalid: &mut [f32;16]>
-
-				fmt(&self)
-
-				fmt(&self)
-
-			)
-+ BinaryOps			(
+			glam::f32::sse2::mat4::Mat4 : Value
+:				AutoMethods
+				(
+					///Creates a 4x4 matrix from two column vectors.
+					from_cols(LuaVec4LuaVec4LuaVec4LuaVec4) -> LuaMat4
+,
+					// Exclusion reason: Unsupported argument &[f32;16]
+					// ///Creates a 4x4 matrix from a `[f32; 16]` array stored in column major order.
+					// ///If your data is stored in row major you will need to `transpose` the returned
+					// ///matrix.
+					// from_cols_array(<invalid: &[f32;16]>) -> LuaMat4
+,
+					// Exclusion reason: Unsupported argument [f32;16]
+					// ///Creates a `[f32; 16]` array storing data in column major order.
+					// ///If you require data in row major order `transpose` the matrix first.
+					// to_cols_array(&self)<invalid: [f32;16]>
+,
+					// Exclusion reason: Unsupported argument &[[f32;4];4]
+					// ///Creates a 4x4 matrix from a `[[f32; 4]; 4]` 4D array stored in column major order.
+					// ///If your data is in row major order you will need to `transpose` the returned
+					// ///matrix.
+					// from_cols_array_2d(<invalid: &[[f32;4];4]>) -> LuaMat4
+,
+					// Exclusion reason: Unsupported argument [[f32;4];4]
+					// ///Creates a `[[f32; 4]; 4]` 4D array storing data in column major order.
+					// ///If you require data in row major order `transpose` the matrix first.
+					// to_cols_array_2d(&self)<invalid: [[f32;4];4]>
+,
+					///Creates a 4x4 matrix with its diagonal set to `diagonal` and all other entries set to 0.
+					from_diagonal(LuaVec4) -> LuaMat4
+,
+					///Creates an affine transformation matrix from the given 3D `scale`, `rotation` and
+					///`translation`.
+					///
+					///The resulting matrix can be used to transform 3D points and vectors. See
+					///[`Self::transform_point3()`] and [`Self::transform_vector3()`].
+					///
+					///# Panics
+					///
+					///Will panic if `rotation` is not normalized when `glam_assert` is enabled.
+					from_scale_rotation_translation(LuaVec3LuaQuatLuaVec3) -> LuaMat4
+,
+					///Creates an affine transformation matrix from the given 3D `translation`.
+					///
+					///The resulting matrix can be used to transform 3D points and vectors. See
+					///[`Self::transform_point3()`] and [`Self::transform_vector3()`].
+					///
+					///# Panics
+					///
+					///Will panic if `rotation` is not normalized when `glam_assert` is enabled.
+					from_rotation_translation(LuaQuatLuaVec3) -> LuaMat4
+,
+					// Exclusion reason: Unsupported argument (LuaVec3,LuaQuat,LuaVec3)
+					// ///Extracts `scale`, `rotation` and `translation` from `self`. The input matrix is
+					// ///expected to be a 3D affine transformation matrix otherwise the output will be invalid.
+					// ///
+					// ///# Panics
+					// ///
+					// ///Will panic if the determinant of `self` is zero or if the resulting scale vector
+					// ///contains any zero elements when `glam_assert` is enabled.
+					// to_scale_rotation_translation(&self)<invalid: (LuaVec3,LuaQuat,LuaVec3)>
+,
+					///Creates an affine transformation matrix from the given `rotation` quaternion.
+					///
+					///The resulting matrix can be used to transform 3D points and vectors. See
+					///[`Self::transform_point3()`] and [`Self::transform_vector3()`].
+					///
+					///# Panics
+					///
+					///Will panic if `rotation` is not normalized when `glam_assert` is enabled.
+					from_quat(LuaQuat) -> LuaMat4
+,
+					///Creates an affine transformation matrix from the given 3x3 linear transformation
+					///matrix.
+					///
+					///The resulting matrix can be used to transform 3D points and vectors. See
+					///[`Self::transform_point3()`] and [`Self::transform_vector3()`].
+					from_mat3(LuaMat3) -> LuaMat4
+,
+					///Creates an affine transformation matrix from the given 3D `translation`.
+					///
+					///The resulting matrix can be used to transform 3D points and vectors. See
+					///[`Self::transform_point3()`] and [`Self::transform_vector3()`].
+					from_translation(LuaVec3) -> LuaMat4
+,
+					///Creates an affine transformation matrix containing a 3D rotation around a normalized
+					///rotation `axis` of `angle` (in radians).
+					///
+					///The resulting matrix can be used to transform 3D points and vectors. See
+					///[`Self::transform_point3()`] and [`Self::transform_vector3()`].
+					///
+					///# Panics
+					///
+					///Will panic if `axis` is not normalized when `glam_assert` is enabled.
+					from_axis_angle(LuaVec3f32) -> LuaMat4
+,
+					///Creates a affine transformation matrix containing a rotation from the given euler
+					///rotation sequence and angles (in radians).
+					///
+					///The resulting matrix can be used to transform 3D points and vectors. See
+					///[`Self::transform_point3()`] and [`Self::transform_vector3()`].
+					from_euler(LuaEulerRotf32f32f32) -> LuaMat4
+,
+					///Creates an affine transformation matrix containing a 3D rotation around the x axis of
+					///`angle` (in radians).
+					///
+					///The resulting matrix can be used to transform 3D points and vectors. See
+					///[`Self::transform_point3()`] and [`Self::transform_vector3()`].
+					from_rotation_x(f32) -> LuaMat4
+,
+					///Creates an affine transformation matrix containing a 3D rotation around the y axis of
+					///`angle` (in radians).
+					///
+					///The resulting matrix can be used to transform 3D points and vectors. See
+					///[`Self::transform_point3()`] and [`Self::transform_vector3()`].
+					from_rotation_y(f32) -> LuaMat4
+,
+					///Creates an affine transformation matrix containing a 3D rotation around the z axis of
+					///`angle` (in radians).
+					///
+					///The resulting matrix can be used to transform 3D points and vectors. See
+					///[`Self::transform_point3()`] and [`Self::transform_vector3()`].
+					from_rotation_z(f32) -> LuaMat4
+,
+					///Creates an affine transformation matrix containing the given 3D non-uniform `scale`.
+					///
+					///The resulting matrix can be used to transform 3D points and vectors. See
+					///[`Self::transform_point3()`] and [`Self::transform_vector3()`].
+					///
+					///# Panics
+					///
+					///Will panic if all elements of `scale` are zero when `glam_assert` is enabled.
+					from_scale(LuaVec3) -> LuaMat4
+,
+					// Exclusion reason: Unsupported argument &[f32]
+					// ///Creates a 4x4 matrix from the first 16 values in `slice`.
+					// ///
+					// ///# Panics
+					// ///
+					// ///Panics if `slice` is less than 16 elements long.
+					// from_cols_slice(<invalid: &[f32]>) -> LuaMat4
+,
+					// Exclusion reason: Unsupported argument &mut [f32]
+					// ///Writes the columns of `self` to the first 16 elements in `slice`.
+					// ///
+					// ///# Panics
+					// ///
+					// ///Panics if `slice` is less than 16 elements long.
+					// write_cols_to_slice(self<invalid: &mut [f32]>)
+,
+					///Returns the matrix column for the given `index`.
+					///
+					///# Panics
+					///
+					///Panics if `index` is greater than 3.
+					col(&selfusize) -> LuaVec4
+,
+					// Exclusion reason: Unsupported argument &mut self,Unsupported argument &mut LuaVec4
+					// ///Returns a mutable reference to the matrix column for the given `index`.
+					// ///
+					// ///# Panics
+					// ///
+					// ///Panics if `index` is greater than 3.
+					// col_mut(<invalid: &mut self>usize)<invalid: &mut LuaVec4>
+,
+					///Returns the matrix row for the given `index`.
+					///
+					///# Panics
+					///
+					///Panics if `index` is greater than 3.
+					row(&selfusize) -> LuaVec4
+,
+					///Returns `true` if, and only if, all elements are finite.
+					///If any element is either `NaN`, positive or negative infinity, this will return `false`.
+					is_finite(&self) -> bool
+,
+					///Returns `true` if any elements are `NaN`.
+					is_nan(&self) -> bool
+,
+					///Returns the transpose of `self`.
+					transpose(&self) -> LuaMat4
+,
+					///Returns the determinant of `self`.
+					determinant(&self) -> f32
+,
+					///Returns the inverse of `self`.
+					///
+					///If the matrix is not invertible the returned matrix will be invalid.
+					///
+					///# Panics
+					///
+					///Will panic if the determinant of `self` is zero when `glam_assert` is enabled.
+					inverse(&self) -> LuaMat4
+,
+					///Creates a left-handed view matrix using a camera position, an up direction, and a focal
+					///point.
+					///For a view coordinate system with `+X=right`, `+Y=up` and `+Z=forward`.
+					///
+					///# Panics
+					///
+					///Will panic if `up` is not normalized when `glam_assert` is enabled.
+					look_at_lh(LuaVec3LuaVec3LuaVec3) -> LuaMat4
+,
+					///Creates a right-handed view matrix using a camera position, an up direction, and a focal
+					///point.
+					///For a view coordinate system with `+X=right`, `+Y=up` and `+Z=back`.
+					///
+					///# Panics
+					///
+					///Will panic if `up` is not normalized when `glam_assert` is enabled.
+					look_at_rh(LuaVec3LuaVec3LuaVec3) -> LuaMat4
+,
+					///Creates a right-handed perspective projection matrix with [-1,1] depth range.
+					///This is the same as the OpenGL `gluPerspective` function.
+					///See <https://www.khronos.org/registry/OpenGL-Refpages/gl2.1/xhtml/gluPerspective.xml>
+					perspective_rh_gl(f32f32f32f32) -> LuaMat4
+,
+					///Creates a left-handed perspective projection matrix with `[0,1]` depth range.
+					///
+					///# Panics
+					///
+					///Will panic if `z_near` or `z_far` are less than or equal to zero when `glam_assert` is
+					///enabled.
+					perspective_lh(f32f32f32f32) -> LuaMat4
+,
+					///Creates a right-handed perspective projection matrix with `[0,1]` depth range.
+					///
+					///# Panics
+					///
+					///Will panic if `z_near` or `z_far` are less than or equal to zero when `glam_assert` is
+					///enabled.
+					perspective_rh(f32f32f32f32) -> LuaMat4
+,
+					///Creates an infinite left-handed perspective projection matrix with `[0,1]` depth range.
+					///
+					///# Panics
+					///
+					///Will panic if `z_near` is less than or equal to zero when `glam_assert` is enabled.
+					perspective_infinite_lh(f32f32f32) -> LuaMat4
+,
+					///Creates an infinite left-handed perspective projection matrix with `[0,1]` depth range.
+					///
+					///# Panics
+					///
+					///Will panic if `z_near` is less than or equal to zero when `glam_assert` is enabled.
+					perspective_infinite_reverse_lh(f32f32f32) -> LuaMat4
+,
+					///Creates an infinite right-handed perspective projection matrix with
+					///`[0,1]` depth range.
+					perspective_infinite_rh(f32f32f32) -> LuaMat4
+,
+					///Creates an infinite reverse right-handed perspective projection matrix
+					///with `[0,1]` depth range.
+					perspective_infinite_reverse_rh(f32f32f32) -> LuaMat4
+,
+					///Creates a right-handed orthographic projection matrix with `[-1,1]` depth
+					///range.  This is the same as the OpenGL `glOrtho` function in OpenGL.
+					///See
+					///<https://www.khronos.org/registry/OpenGL-Refpages/gl2.1/xhtml/glOrtho.xml>
+					orthographic_rh_gl(f32f32f32f32f32f32) -> LuaMat4
+,
+					///Creates a left-handed orthographic projection matrix with `[0,1]` depth range.
+					orthographic_lh(f32f32f32f32f32f32) -> LuaMat4
+,
+					///Creates a right-handed orthographic projection matrix with `[0,1]` depth range.
+					orthographic_rh(f32f32f32f32f32f32) -> LuaMat4
+,
+					///Transforms the given 3D vector as a point, applying perspective correction.
+					///
+					///This is the equivalent of multiplying the 3D vector as a 4D vector where `w` is `1.0`.
+					///The perspective divide is performed meaning the resulting 3D vector is divided by `w`.
+					///
+					///This method assumes that `self` contains a projective transform.
+					project_point3(&selfLuaVec3) -> LuaVec3
+,
+					///Transforms the given 3D vector as a point.
+					///
+					///This is the equivalent of multiplying the 3D vector as a 4D vector where `w` is
+					///`1.0`.
+					///
+					///This method assumes that `self` contains a valid affine transform. It does not perform
+					///a persective divide, if `self` contains a perspective transform, or if you are unsure,
+					///the [`Self::project_point3()`] method should be used instead.
+					///
+					///# Panics
+					///
+					///Will panic if the 3rd row of `self` is not `(0, 0, 0, 1)` when `glam_assert` is enabled.
+					transform_point3(&selfLuaVec3) -> LuaVec3
+,
+					///Transforms the give 3D vector as a direction.
+					///
+					///This is the equivalent of multiplying the 3D vector as a 4D vector where `w` is
+					///`0.0`.
+					///
+					///This method assumes that `self` contains a valid affine transform.
+					///
+					///# Panics
+					///
+					///Will panic if the 3rd row of `self` is not `(0, 0, 0, 1)` when `glam_assert` is enabled.
+					transform_vector3(&selfLuaVec3) -> LuaVec3
+,
+					// Exclusion reason: Unsupported argument Vec3A,Unsupported argument Vec3A
+					// ///Transforms the given `Vec3A` as 3D point.
+					// ///
+					// ///This is the equivalent of multiplying the `Vec3A` as a 4D vector where `w` is `1.0`.
+					// transform_point3a(&self)
+,
+					// Exclusion reason: Unsupported argument Vec3A,Unsupported argument Vec3A
+					// ///Transforms the give `Vec3A` as 3D vector.
+					// ///
+					// ///This is the equivalent of multiplying the `Vec3A` as a 4D vector where `w` is `0.0`.
+					// transform_vector3a(&self)
+,
+					///Transforms a 4D vector.
+					mul_vec4(&selfLuaVec4) -> LuaVec4
+,
+					///Multiplies two 4x4 matrices.
+					mul_mat4(&self&LuaMat4) -> LuaMat4
+,
+					///Adds two 4x4 matrices.
+					add_mat4(&self&LuaMat4) -> LuaMat4
+,
+					///Subtracts two 4x4 matrices.
+					sub_mat4(&self&LuaMat4) -> LuaMat4
+,
+					///Multiplies a 4x4 matrix by a scalar.
+					mul_scalar(&selff32) -> LuaMat4
+,
+					///Returns true if the absolute difference of all elements between `self` and `rhs`
+					///is less than or equal to `max_abs_diff`.
+					///
+					///This can be used to compare if two matrices contain similar elements. It works best
+					///when comparing with a known value. The `max_abs_diff` that should be used used
+					///depends on the values being compared against.
+					///
+					///For more see
+					///[comparing floating point numbers](https://randomascii.wordpress.com/2012/02/25/comparing-floating-point-numbers-2012-edition/).
+					abs_diff_eq(&selfLuaMat4f32) -> bool
+,
+					as_dmat4(&self) -> LuaDMat4
+,
+					// Exclusion reason: Unsupported argument U,Unsupported argument Result
+					// try_from()
+,
+					// Exclusion reason: Unsupported argument T,Unsupported argument T
+					// ///Returns the argument unchanged.
+					// from()
+,
+					// Exclusion reason: Unsupported argument Affine3A
+					// from() -> LuaMat4
+,
+					// Exclusion reason: Unsupported argument U
+					// ///Calls `U::from(self)`.
+					// ///
+					// ///That is, this conversion is whatever the implementation of
+					// ///<code>[From]&lt;T&gt; for U</code> chooses to do.
+					// into(self)
+,
+					// Exclusion reason: Unsupported argument T
+					// borrow(&self)
+,
+					// Exclusion reason: Unsupported argument TypeId
+					// type_id(&self)
+,
+					// Exclusion reason: Unsupported argument Result
+					// try_into(self)
+,
+					// Exclusion reason: Unsupported argument &mut self,Unsupported argument T
+					// borrow_mut(<invalid: &mut self>)
+,
+					// Exclusion reason: Unsupported argument String
+					// to_string(&self)
+,
+					// Exclusion reason: Unsupported argument T
+					// to_owned(&self)
+,
+					// Exclusion reason: Unsupported argument T
+					// clone_into(&self)
+,
+					// Exclusion reason: Unsupported argument T
+					// is_valid_bit_pattern() -> bool
+,
+					// Exclusion reason: Unsupported argument S,Unsupported argument Result,Generics on the method
+					// serialize(&self)
+,
+					// Exclusion reason: Unsupported argument D,Unsupported argument Result,Generics on the method
+					// deserialize()
+,
+					// Exclusion reason: Unsupported argument QualifiedPath { name: "Output", args: AngleBracketed { args: [], bindings: [] }, self_type: Generic("Self"), trait_: ResolvedPath { name: "", id: Id("2:3313:2263"), args: None, param_names: [] } }
+					// mul(selfLuaMat4)
+,
+					// Exclusion reason: Unsupported argument Affine3A,Unsupported argument QualifiedPath { name: "Output", args: AngleBracketed { args: [], bindings: [] }, self_type: Generic("Self"), trait_: ResolvedPath { name: "", id: Id("2:3313:2263"), args: None, param_names: [] } }
+					// mul(self)
+,
+					// Exclusion reason: Unsupported argument QualifiedPath { name: "Output", args: AngleBracketed { args: [], bindings: [] }, self_type: Generic("Self"), trait_: ResolvedPath { name: "", id: Id("2:3313:2263"), args: None, param_names: [] } }
+					// mul(selfLuaMat4)
+,
+					// Exclusion reason: Unsupported argument QualifiedPath { name: "Output", args: AngleBracketed { args: [], bindings: [] }, self_type: Generic("Self"), trait_: ResolvedPath { name: "", id: Id("2:3313:2263"), args: None, param_names: [] } }
+					// mul(selfLuaVec4)
+,
+					// Exclusion reason: Unsupported argument QualifiedPath { name: "Output", args: AngleBracketed { args: [], bindings: [] }, self_type: Generic("Self"), trait_: ResolvedPath { name: "", id: Id("2:3313:2263"), args: None, param_names: [] } }
+					// mul(selfLuaMat4)
+,
+					// Exclusion reason: Unsupported argument QualifiedPath { name: "Output", args: AngleBracketed { args: [], bindings: [] }, self_type: Generic("Self"), trait_: ResolvedPath { name: "", id: Id("2:3313:2263"), args: None, param_names: [] } }
+					// mul(selff32)
+,
+					clone(&self) -> LuaMat4
+,
+					default() -> LuaMat4
+,
+					// Exclusion reason: Unsupported argument QualifiedPath { name: "Output", args: AngleBracketed { args: [], bindings: [] }, self_type: Generic("Self"), trait_: ResolvedPath { name: "", id: Id("2:3303:2261"), args: None, param_names: [] } }
+					// add(selfLuaMat4)
+,
+					// Exclusion reason: Unsupported argument &mut self
+					// add_assign(<invalid: &mut self>LuaMat4)
+,
+					// Exclusion reason: Unsupported argument QualifiedPath { name: "Output", args: AngleBracketed { args: [], bindings: [] }, self_type: Generic("Self"), trait_: ResolvedPath { name: "", id: Id("2:3308:2264"), args: None, param_names: [] } }
+					// sub(selfLuaMat4)
+,
+					// Exclusion reason: Unsupported argument &mut self
+					// sub_assign(<invalid: &mut self>LuaMat4)
+,
+					// Exclusion reason: Unsupported argument QualifiedPath { name: "Output", args: AngleBracketed { args: [], bindings: [] }, self_type: Generic("Self"), trait_: ResolvedPath { name: "", id: Id("2:3330:2438"), args: None, param_names: [] } }
+					// neg(self)
+,
+					// Exclusion reason: Unsupported argument &mut self
+					// mul_assign(<invalid: &mut self>LuaMat4)
+,
+					// Exclusion reason: Unsupported argument &mut self
+					// mul_assign(<invalid: &mut self>f32)
+,
+					// Exclusion reason: Unsupported argument I,Generics on the method
+					// sum() -> LuaMat4
+,
+					// Exclusion reason: Unsupported argument I,Generics on the method
+					// product() -> LuaMat4
+,
+					eq(&self&LuaMat4) -> bool
+,
+					// Exclusion reason: Unsupported argument &[f32;16]
+					// as_ref(&self)<invalid: &[f32;16]>
+,
+					// Exclusion reason: Unsupported argument &mut self,Unsupported argument &mut [f32;16]
+					// as_mut(<invalid: &mut self>)<invalid: &mut [f32;16]>
+,
+					// Exclusion reason: Unsupported argument fmt::Formatter,Unsupported argument fmt::Result
+					// fmt(&self)
+,
+					// Exclusion reason: Unsupported argument fmt::Formatter,Unsupported argument fmt::Result
+					// fmt(&self)
+,
+				)
+				+ BinaryOps
+				(
 self Add LuaMat4 -> LuaMat4 -> LuaMat4
 self Sub LuaMat4 -> LuaMat4 -> LuaMat4
 self Mul LuaMat4 -> LuaMat4 -> LuaMat4
 self Mul LuaVec4 -> LuaVec4 -> LuaVec4
 f32 Mul self -> LuaMat4 -> LuaMat4
 self Mul f32 -> LuaMat4 -> LuaMat4
-			)
-+ UnaryOps			(
-			)
-+ 			Copy(LuaMat3 -> mut (MetaMethod::Index) (s=LuaMat4,b=Mat4,v=LuaVec4))
-impl			{
+				)
+				+ UnaryOps
+				(
+				)
++ 				Copy(LuaMat3 -> mut (MetaMethod::Index) (s=LuaMat4,b=Mat4,v=LuaVec4))
+			impl
+			{
 			}
 		}
-		{
+,		{
 			///A 3x3 column major matrix.
 			///
 			///This 3x3 matrix type features convenience methods for creating and using linear and
@@ -13149,323 +11828,336 @@ impl			{
 			///2D inputs as 3D vectors with an implicit `z` value of `1` for points and `0` for
 			///vectors respectively. These methods assume that `Self` contains a valid affine
 			///transform.
-glam::f64::dmat3::DMat3 : Value
-AutoMethods			(
-				// Exclusion reason: 
-				// ///Creates a 3x3 matrix from two column vectors.
-				// from_cols(LuaDVec3LuaDVec3LuaDVec3) -> LuaDMat3
-
-				///Creates a 3x3 matrix from a `[f64; 9]` array stored in column major order.
-				///If your data is stored in row major you will need to `transpose` the returned
-				///matrix.
-				from_cols_array(<invalid: &[f64;9]>) -> LuaDMat3
-
-				///Creates a `[f64; 9]` array storing data in column major order.
-				///If you require data in row major order `transpose` the matrix first.
-				to_cols_array(&self)<invalid: [f64;9]>
-
-				///Creates a 3x3 matrix from a `[[f64; 3]; 3]` 3D array stored in column major order.
-				///If your data is in row major order you will need to `transpose` the returned
-				///matrix.
-				from_cols_array_2d(<invalid: &[[f64;3];3]>) -> LuaDMat3
-
-				///Creates a `[[f64; 3]; 3]` 3D array storing data in column major order.
-				///If you require data in row major order `transpose` the matrix first.
-				to_cols_array_2d(&self)<invalid: [[f64;3];3]>
-
-				// Exclusion reason: 
-				// ///Creates a 3x3 matrix with its diagonal set to `diagonal` and all other entries set to 0.
-				// from_diagonal(LuaDVec3) -> LuaDMat3
-
-				// Exclusion reason: 
-				// ///Creates a 3x3 matrix from a 4x4 matrix, discarding the 3rd row and column.
-				// from_mat4(LuaDMat4) -> LuaDMat3
-
-				// Exclusion reason: 
-				// ///Creates a 3D rotation matrix from the given quaternion.
-				// ///
-				// ///# Panics
-				// ///
-				// ///Will panic if `rotation` is not normalized when `glam_assert` is enabled.
-				// from_quat(LuaDQuat) -> LuaDMat3
-
-				// Exclusion reason: 
-				// ///Creates a 3D rotation matrix from a normalized rotation `axis` and `angle` (in
-				// ///radians).
-				// ///
-				// ///# Panics
-				// ///
-				// ///Will panic if `axis` is not normalized when `glam_assert` is enabled.
-				// from_axis_angle(LuaDVec3f64) -> LuaDMat3
-
-				// Exclusion reason: 
-				// ///Creates a 3D rotation matrix from the given euler rotation sequence and the angles (in
-				// ///radians).
-				// from_euler(LuaEulerRotf64f64f64) -> LuaDMat3
-
-				// Exclusion reason: 
-				// ///Creates a 3D rotation matrix from `angle` (in radians) around the x axis.
-				// from_rotation_x(f64) -> LuaDMat3
-
-				// Exclusion reason: 
-				// ///Creates a 3D rotation matrix from `angle` (in radians) around the y axis.
-				// from_rotation_y(f64) -> LuaDMat3
-
-				// Exclusion reason: 
-				// ///Creates a 3D rotation matrix from `angle` (in radians) around the z axis.
-				// from_rotation_z(f64) -> LuaDMat3
-
-				// Exclusion reason: 
-				// ///Creates an affine transformation matrix from the given 2D `translation`.
-				// ///
-				// ///The resulting matrix can be used to transform 2D points and vectors. See
-				// ///[`Self::transform_point2()`] and [`Self::transform_vector2()`].
-				// from_translation(LuaDVec2) -> LuaDMat3
-
-				// Exclusion reason: 
-				// ///Creates an affine transformation matrix from the given 2D rotation `angle` (in
-				// ///radians).
-				// ///
-				// ///The resulting matrix can be used to transform 2D points and vectors. See
-				// ///[`Self::transform_point2()`] and [`Self::transform_vector2()`].
-				// from_angle(f64) -> LuaDMat3
-
-				// Exclusion reason: 
-				// ///Creates an affine transformation matrix from the given 2D `scale`, rotation `angle` (in
-				// ///radians) and `translation`.
-				// ///
-				// ///The resulting matrix can be used to transform 2D points and vectors. See
-				// ///[`Self::transform_point2()`] and [`Self::transform_vector2()`].
-				// from_scale_angle_translation(LuaDVec2f64LuaDVec2) -> LuaDMat3
-
-				// Exclusion reason: 
-				// ///Creates an affine transformation matrix from the given non-uniform 2D `scale`.
-				// ///
-				// ///The resulting matrix can be used to transform 2D points and vectors. See
-				// ///[`Self::transform_point2()`] and [`Self::transform_vector2()`].
-				// ///
-				// ///# Panics
-				// ///
-				// ///Will panic if all elements of `scale` are zero when `glam_assert` is enabled.
-				// from_scale(LuaDVec2) -> LuaDMat3
-
-				///Creates an affine transformation matrix from the given 2x2 matrix.
-				///
-				///The resulting matrix can be used to transform 2D points and vectors. See
-				///[`Self::transform_point2()`] and [`Self::transform_vector2()`].
-				from_mat2() -> LuaDMat3
-
-				///Creates a 3x3 matrix from the first 9 values in `slice`.
-				///
-				///# Panics
-				///
-				///Panics if `slice` is less than 9 elements long.
-				from_cols_slice(<invalid: &[f64]>) -> LuaDMat3
-
-				///Writes the columns of `self` to the first 9 elements in `slice`.
-				///
-				///# Panics
-				///
-				///Panics if `slice` is less than 9 elements long.
-				write_cols_to_slice(self<invalid: &mut [f64]>)
-
-				// Exclusion reason: 
-				// ///Returns the matrix column for the given `index`.
-				// ///
-				// ///# Panics
-				// ///
-				// ///Panics if `index` is greater than 2.
-				// col(&selfusize) -> LuaDVec3
-
-				///Returns a mutable reference to the matrix column for the given `index`.
-				///
-				///# Panics
-				///
-				///Panics if `index` is greater than 2.
-				col_mut(<invalid: &mut self>usize)<invalid: &mut LuaDVec3>
-
-				// Exclusion reason: 
-				// ///Returns the matrix row for the given `index`.
-				// ///
-				// ///# Panics
-				// ///
-				// ///Panics if `index` is greater than 2.
-				// row(&selfusize) -> LuaDVec3
-
-				// Exclusion reason: 
-				// ///Returns `true` if, and only if, all elements are finite.
-				// ///If any element is either `NaN`, positive or negative infinity, this will return `false`.
-				// is_finite(&self) -> bool
-
-				// Exclusion reason: 
-				// ///Returns `true` if any elements are `NaN`.
-				// is_nan(&self) -> bool
-
-				// Exclusion reason: 
-				// ///Returns the transpose of `self`.
-				// transpose(&self) -> LuaDMat3
-
-				// Exclusion reason: 
-				// ///Returns the determinant of `self`.
-				// determinant(&self) -> f64
-
-				// Exclusion reason: 
-				// ///Returns the inverse of `self`.
-				// ///
-				// ///If the matrix is not invertible the returned matrix will be invalid.
-				// ///
-				// ///# Panics
-				// ///
-				// ///Will panic if the determinant of `self` is zero when `glam_assert` is enabled.
-				// inverse(&self) -> LuaDMat3
-
-				// Exclusion reason: 
-				// ///Transforms the given 2D vector as a point.
-				// ///
-				// ///This is the equivalent of multiplying `rhs` as a 3D vector where `z` is `1`.
-				// ///
-				// ///This method assumes that `self` contains a valid affine transform.
-				// transform_point2(&selfLuaDVec2) -> LuaDVec2
-
-				// Exclusion reason: 
-				// ///Rotates the given 2D vector.
-				// ///
-				// ///This is the equivalent of multiplying `rhs` as a 3D vector where `z` is `0`.
-				// ///
-				// ///This method assumes that `self` contains a valid affine transform.
-				// transform_vector2(&selfLuaDVec2) -> LuaDVec2
-
-				// Exclusion reason: 
-				// ///Transforms a 3D vector.
-				// mul_vec3(&selfLuaDVec3) -> LuaDVec3
-
-				// Exclusion reason: 
-				// ///Multiplies two 3x3 matrices.
-				// mul_mat3(&self&LuaDMat3) -> LuaDMat3
-
-				// Exclusion reason: 
-				// ///Adds two 3x3 matrices.
-				// add_mat3(&self&LuaDMat3) -> LuaDMat3
-
-				// Exclusion reason: 
-				// ///Subtracts two 3x3 matrices.
-				// sub_mat3(&self&LuaDMat3) -> LuaDMat3
-
-				// Exclusion reason: 
-				// ///Multiplies a 3x3 matrix by a scalar.
-				// mul_scalar(&selff64) -> LuaDMat3
-
-				// Exclusion reason: 
-				// ///Returns true if the absolute difference of all elements between `self` and `rhs`
-				// ///is less than or equal to `max_abs_diff`.
-				// ///
-				// ///This can be used to compare if two matrices contain similar elements. It works best
-				// ///when comparing with a known value. The `max_abs_diff` that should be used used
-				// ///depends on the values being compared against.
-				// ///
-				// ///For more see
-				// ///[comparing floating point numbers](https://randomascii.wordpress.com/2012/02/25/comparing-floating-point-numbers-2012-edition/).
-				// abs_diff_eq(&selfLuaDMat3f64) -> bool
-
-				// Exclusion reason: 
-				// as_mat3(&self) -> LuaMat3
-
-				try_from()
-
-				///Returns the argument unchanged.
-				from()
-
-				from() -> LuaDMat3
-
-				///Calls `U::from(self)`.
-				///
-				///That is, this conversion is whatever the implementation of
-				///<code>[From]&lt;T&gt; for U</code> chooses to do.
-				into(self)
-
-				borrow(&self)
-
-				type_id(&self)
-
-				try_into(self)
-
-				borrow_mut(<invalid: &mut self>)
-
-				to_string(&self)
-
-				to_owned(&self)
-
-				clone_into(&self)
-
-				is_valid_bit_pattern() -> bool
-
-				serialize(&self)
-
-				deserialize()
-
-				mul(selfLuaDMat3)
-
-				mul(self)
-
-				mul(selfLuaDMat3)
-
-				mul(selfLuaDVec3)
-
-				mul(selfLuaDMat3)
-
-				mul(selff64)
-
-				// Exclusion reason: 
-				// clone(&self) -> LuaDMat3
-
-				// Exclusion reason: 
-				// default() -> LuaDMat3
-
-				add(selfLuaDMat3)
-
-				add_assign(<invalid: &mut self>LuaDMat3)
-
-				sub(selfLuaDMat3)
-
-				sub_assign(<invalid: &mut self>LuaDMat3)
-
-				neg(self)
-
-				mul_assign(<invalid: &mut self>LuaDMat3)
-
-				mul_assign(<invalid: &mut self>f64)
-
-				sum() -> LuaDMat3
-
-				product() -> LuaDMat3
-
-				// Exclusion reason: 
-				// eq(&self&LuaDMat3) -> bool
-
-				as_ref(&self)<invalid: &[f64;9]>
-
-				as_mut(<invalid: &mut self>)<invalid: &mut [f64;9]>
-
-				fmt(&self)
-
-				fmt(&self)
-
-			)
-+ BinaryOps			(
+			glam::f64::dmat3::DMat3 : Value
+:				AutoMethods
+				(
+					///Creates a 3x3 matrix from two column vectors.
+					from_cols(LuaDVec3LuaDVec3LuaDVec3) -> LuaDMat3
+,
+					// Exclusion reason: Unsupported argument &[f64;9]
+					// ///Creates a 3x3 matrix from a `[f64; 9]` array stored in column major order.
+					// ///If your data is stored in row major you will need to `transpose` the returned
+					// ///matrix.
+					// from_cols_array(<invalid: &[f64;9]>) -> LuaDMat3
+,
+					// Exclusion reason: Unsupported argument [f64;9]
+					// ///Creates a `[f64; 9]` array storing data in column major order.
+					// ///If you require data in row major order `transpose` the matrix first.
+					// to_cols_array(&self)<invalid: [f64;9]>
+,
+					// Exclusion reason: Unsupported argument &[[f64;3];3]
+					// ///Creates a 3x3 matrix from a `[[f64; 3]; 3]` 3D array stored in column major order.
+					// ///If your data is in row major order you will need to `transpose` the returned
+					// ///matrix.
+					// from_cols_array_2d(<invalid: &[[f64;3];3]>) -> LuaDMat3
+,
+					// Exclusion reason: Unsupported argument [[f64;3];3]
+					// ///Creates a `[[f64; 3]; 3]` 3D array storing data in column major order.
+					// ///If you require data in row major order `transpose` the matrix first.
+					// to_cols_array_2d(&self)<invalid: [[f64;3];3]>
+,
+					///Creates a 3x3 matrix with its diagonal set to `diagonal` and all other entries set to 0.
+					from_diagonal(LuaDVec3) -> LuaDMat3
+,
+					///Creates a 3x3 matrix from a 4x4 matrix, discarding the 3rd row and column.
+					from_mat4(LuaDMat4) -> LuaDMat3
+,
+					///Creates a 3D rotation matrix from the given quaternion.
+					///
+					///# Panics
+					///
+					///Will panic if `rotation` is not normalized when `glam_assert` is enabled.
+					from_quat(LuaDQuat) -> LuaDMat3
+,
+					///Creates a 3D rotation matrix from a normalized rotation `axis` and `angle` (in
+					///radians).
+					///
+					///# Panics
+					///
+					///Will panic if `axis` is not normalized when `glam_assert` is enabled.
+					from_axis_angle(LuaDVec3f64) -> LuaDMat3
+,
+					///Creates a 3D rotation matrix from the given euler rotation sequence and the angles (in
+					///radians).
+					from_euler(LuaEulerRotf64f64f64) -> LuaDMat3
+,
+					///Creates a 3D rotation matrix from `angle` (in radians) around the x axis.
+					from_rotation_x(f64) -> LuaDMat3
+,
+					///Creates a 3D rotation matrix from `angle` (in radians) around the y axis.
+					from_rotation_y(f64) -> LuaDMat3
+,
+					///Creates a 3D rotation matrix from `angle` (in radians) around the z axis.
+					from_rotation_z(f64) -> LuaDMat3
+,
+					///Creates an affine transformation matrix from the given 2D `translation`.
+					///
+					///The resulting matrix can be used to transform 2D points and vectors. See
+					///[`Self::transform_point2()`] and [`Self::transform_vector2()`].
+					from_translation(LuaDVec2) -> LuaDMat3
+,
+					///Creates an affine transformation matrix from the given 2D rotation `angle` (in
+					///radians).
+					///
+					///The resulting matrix can be used to transform 2D points and vectors. See
+					///[`Self::transform_point2()`] and [`Self::transform_vector2()`].
+					from_angle(f64) -> LuaDMat3
+,
+					///Creates an affine transformation matrix from the given 2D `scale`, rotation `angle` (in
+					///radians) and `translation`.
+					///
+					///The resulting matrix can be used to transform 2D points and vectors. See
+					///[`Self::transform_point2()`] and [`Self::transform_vector2()`].
+					from_scale_angle_translation(LuaDVec2f64LuaDVec2) -> LuaDMat3
+,
+					///Creates an affine transformation matrix from the given non-uniform 2D `scale`.
+					///
+					///The resulting matrix can be used to transform 2D points and vectors. See
+					///[`Self::transform_point2()`] and [`Self::transform_vector2()`].
+					///
+					///# Panics
+					///
+					///Will panic if all elements of `scale` are zero when `glam_assert` is enabled.
+					from_scale(LuaDVec2) -> LuaDMat3
+,
+					// Exclusion reason: Unsupported argument DMat2
+					// ///Creates an affine transformation matrix from the given 2x2 matrix.
+					// ///
+					// ///The resulting matrix can be used to transform 2D points and vectors. See
+					// ///[`Self::transform_point2()`] and [`Self::transform_vector2()`].
+					// from_mat2() -> LuaDMat3
+,
+					// Exclusion reason: Unsupported argument &[f64]
+					// ///Creates a 3x3 matrix from the first 9 values in `slice`.
+					// ///
+					// ///# Panics
+					// ///
+					// ///Panics if `slice` is less than 9 elements long.
+					// from_cols_slice(<invalid: &[f64]>) -> LuaDMat3
+,
+					// Exclusion reason: Unsupported argument &mut [f64]
+					// ///Writes the columns of `self` to the first 9 elements in `slice`.
+					// ///
+					// ///# Panics
+					// ///
+					// ///Panics if `slice` is less than 9 elements long.
+					// write_cols_to_slice(self<invalid: &mut [f64]>)
+,
+					///Returns the matrix column for the given `index`.
+					///
+					///# Panics
+					///
+					///Panics if `index` is greater than 2.
+					col(&selfusize) -> LuaDVec3
+,
+					// Exclusion reason: Unsupported argument &mut self,Unsupported argument &mut LuaDVec3
+					// ///Returns a mutable reference to the matrix column for the given `index`.
+					// ///
+					// ///# Panics
+					// ///
+					// ///Panics if `index` is greater than 2.
+					// col_mut(<invalid: &mut self>usize)<invalid: &mut LuaDVec3>
+,
+					///Returns the matrix row for the given `index`.
+					///
+					///# Panics
+					///
+					///Panics if `index` is greater than 2.
+					row(&selfusize) -> LuaDVec3
+,
+					///Returns `true` if, and only if, all elements are finite.
+					///If any element is either `NaN`, positive or negative infinity, this will return `false`.
+					is_finite(&self) -> bool
+,
+					///Returns `true` if any elements are `NaN`.
+					is_nan(&self) -> bool
+,
+					///Returns the transpose of `self`.
+					transpose(&self) -> LuaDMat3
+,
+					///Returns the determinant of `self`.
+					determinant(&self) -> f64
+,
+					///Returns the inverse of `self`.
+					///
+					///If the matrix is not invertible the returned matrix will be invalid.
+					///
+					///# Panics
+					///
+					///Will panic if the determinant of `self` is zero when `glam_assert` is enabled.
+					inverse(&self) -> LuaDMat3
+,
+					///Transforms the given 2D vector as a point.
+					///
+					///This is the equivalent of multiplying `rhs` as a 3D vector where `z` is `1`.
+					///
+					///This method assumes that `self` contains a valid affine transform.
+					transform_point2(&selfLuaDVec2) -> LuaDVec2
+,
+					///Rotates the given 2D vector.
+					///
+					///This is the equivalent of multiplying `rhs` as a 3D vector where `z` is `0`.
+					///
+					///This method assumes that `self` contains a valid affine transform.
+					transform_vector2(&selfLuaDVec2) -> LuaDVec2
+,
+					///Transforms a 3D vector.
+					mul_vec3(&selfLuaDVec3) -> LuaDVec3
+,
+					///Multiplies two 3x3 matrices.
+					mul_mat3(&self&LuaDMat3) -> LuaDMat3
+,
+					///Adds two 3x3 matrices.
+					add_mat3(&self&LuaDMat3) -> LuaDMat3
+,
+					///Subtracts two 3x3 matrices.
+					sub_mat3(&self&LuaDMat3) -> LuaDMat3
+,
+					///Multiplies a 3x3 matrix by a scalar.
+					mul_scalar(&selff64) -> LuaDMat3
+,
+					///Returns true if the absolute difference of all elements between `self` and `rhs`
+					///is less than or equal to `max_abs_diff`.
+					///
+					///This can be used to compare if two matrices contain similar elements. It works best
+					///when comparing with a known value. The `max_abs_diff` that should be used used
+					///depends on the values being compared against.
+					///
+					///For more see
+					///[comparing floating point numbers](https://randomascii.wordpress.com/2012/02/25/comparing-floating-point-numbers-2012-edition/).
+					abs_diff_eq(&selfLuaDMat3f64) -> bool
+,
+					as_mat3(&self) -> LuaMat3
+,
+					// Exclusion reason: Unsupported argument U,Unsupported argument Result
+					// try_from()
+,
+					// Exclusion reason: Unsupported argument T,Unsupported argument T
+					// ///Returns the argument unchanged.
+					// from()
+,
+					// Exclusion reason: Unsupported argument DAffine2
+					// from() -> LuaDMat3
+,
+					// Exclusion reason: Unsupported argument U
+					// ///Calls `U::from(self)`.
+					// ///
+					// ///That is, this conversion is whatever the implementation of
+					// ///<code>[From]&lt;T&gt; for U</code> chooses to do.
+					// into(self)
+,
+					// Exclusion reason: Unsupported argument T
+					// borrow(&self)
+,
+					// Exclusion reason: Unsupported argument TypeId
+					// type_id(&self)
+,
+					// Exclusion reason: Unsupported argument Result
+					// try_into(self)
+,
+					// Exclusion reason: Unsupported argument &mut self,Unsupported argument T
+					// borrow_mut(<invalid: &mut self>)
+,
+					// Exclusion reason: Unsupported argument String
+					// to_string(&self)
+,
+					// Exclusion reason: Unsupported argument T
+					// to_owned(&self)
+,
+					// Exclusion reason: Unsupported argument T
+					// clone_into(&self)
+,
+					// Exclusion reason: Unsupported argument T
+					// is_valid_bit_pattern() -> bool
+,
+					// Exclusion reason: Unsupported argument S,Unsupported argument Result,Generics on the method
+					// serialize(&self)
+,
+					// Exclusion reason: Unsupported argument D,Unsupported argument Result,Generics on the method
+					// deserialize()
+,
+					// Exclusion reason: Unsupported argument QualifiedPath { name: "Output", args: AngleBracketed { args: [], bindings: [] }, self_type: Generic("Self"), trait_: ResolvedPath { name: "", id: Id("2:3313:2263"), args: None, param_names: [] } }
+					// mul(selfLuaDMat3)
+,
+					// Exclusion reason: Unsupported argument DAffine2,Unsupported argument QualifiedPath { name: "Output", args: AngleBracketed { args: [], bindings: [] }, self_type: Generic("Self"), trait_: ResolvedPath { name: "", id: Id("2:3313:2263"), args: None, param_names: [] } }
+					// mul(self)
+,
+					// Exclusion reason: Unsupported argument QualifiedPath { name: "Output", args: AngleBracketed { args: [], bindings: [] }, self_type: Generic("Self"), trait_: ResolvedPath { name: "", id: Id("2:3313:2263"), args: None, param_names: [] } }
+					// mul(selfLuaDMat3)
+,
+					// Exclusion reason: Unsupported argument QualifiedPath { name: "Output", args: AngleBracketed { args: [], bindings: [] }, self_type: Generic("Self"), trait_: ResolvedPath { name: "", id: Id("2:3313:2263"), args: None, param_names: [] } }
+					// mul(selfLuaDVec3)
+,
+					// Exclusion reason: Unsupported argument QualifiedPath { name: "Output", args: AngleBracketed { args: [], bindings: [] }, self_type: Generic("Self"), trait_: ResolvedPath { name: "", id: Id("2:3313:2263"), args: None, param_names: [] } }
+					// mul(selfLuaDMat3)
+,
+					// Exclusion reason: Unsupported argument QualifiedPath { name: "Output", args: AngleBracketed { args: [], bindings: [] }, self_type: Generic("Self"), trait_: ResolvedPath { name: "", id: Id("2:3313:2263"), args: None, param_names: [] } }
+					// mul(selff64)
+,
+					clone(&self) -> LuaDMat3
+,
+					default() -> LuaDMat3
+,
+					// Exclusion reason: Unsupported argument QualifiedPath { name: "Output", args: AngleBracketed { args: [], bindings: [] }, self_type: Generic("Self"), trait_: ResolvedPath { name: "", id: Id("2:3303:2261"), args: None, param_names: [] } }
+					// add(selfLuaDMat3)
+,
+					// Exclusion reason: Unsupported argument &mut self
+					// add_assign(<invalid: &mut self>LuaDMat3)
+,
+					// Exclusion reason: Unsupported argument QualifiedPath { name: "Output", args: AngleBracketed { args: [], bindings: [] }, self_type: Generic("Self"), trait_: ResolvedPath { name: "", id: Id("2:3308:2264"), args: None, param_names: [] } }
+					// sub(selfLuaDMat3)
+,
+					// Exclusion reason: Unsupported argument &mut self
+					// sub_assign(<invalid: &mut self>LuaDMat3)
+,
+					// Exclusion reason: Unsupported argument QualifiedPath { name: "Output", args: AngleBracketed { args: [], bindings: [] }, self_type: Generic("Self"), trait_: ResolvedPath { name: "", id: Id("2:3330:2438"), args: None, param_names: [] } }
+					// neg(self)
+,
+					// Exclusion reason: Unsupported argument &mut self
+					// mul_assign(<invalid: &mut self>LuaDMat3)
+,
+					// Exclusion reason: Unsupported argument &mut self
+					// mul_assign(<invalid: &mut self>f64)
+,
+					// Exclusion reason: Unsupported argument I,Generics on the method
+					// sum() -> LuaDMat3
+,
+					// Exclusion reason: Unsupported argument I,Generics on the method
+					// product() -> LuaDMat3
+,
+					eq(&self&LuaDMat3) -> bool
+,
+					// Exclusion reason: Unsupported argument &[f64;9]
+					// as_ref(&self)<invalid: &[f64;9]>
+,
+					// Exclusion reason: Unsupported argument &mut self,Unsupported argument &mut [f64;9]
+					// as_mut(<invalid: &mut self>)<invalid: &mut [f64;9]>
+,
+					// Exclusion reason: Unsupported argument fmt::Formatter,Unsupported argument fmt::Result
+					// fmt(&self)
+,
+					// Exclusion reason: Unsupported argument fmt::Formatter,Unsupported argument fmt::Result
+					// fmt(&self)
+,
+				)
+				+ BinaryOps
+				(
 self Add LuaDMat3 -> LuaDMat3 -> LuaDMat3
 self Sub LuaDMat3 -> LuaDMat3 -> LuaDMat3
 self Mul LuaDMat3 -> LuaDMat3 -> LuaDMat3
 self Mul LuaDVec3 -> LuaDVec3 -> LuaDVec3
 f64 Mul self -> LuaDMat3 -> LuaDMat3
 self Mul f64 -> LuaDMat3 -> LuaDMat3
-			)
-+ UnaryOps			(
-			)
-+ 			Copy(LuaMat3 -> mut (MetaMethod::Index) (s=LuaDMat3,b=DMat3,v=LuaDVec3))
-impl			{
+				)
+				+ UnaryOps
+				(
+				)
++ 				Copy(LuaMat3 -> mut (MetaMethod::Index) (s=LuaDMat3,b=DMat3,v=LuaDVec3))
+			impl
+			{
 			}
 		}
-		{
+,		{
 			///A 4x4 column major matrix.
 			///
 			///This 4x4 matrix type features convenience methods for creating and using affine transforms and
@@ -13495,464 +12187,464 @@ impl			{
 			///
 			///The resulting perspective project can be use to transform 3D vectors as points with
 			///perspective correction using the [`Self::project_point3()`] convenience method.
-glam::f64::dmat4::DMat4 : Value
-AutoMethods			(
-				// Exclusion reason: 
-				// ///Creates a 4x4 matrix from two column vectors.
-				// from_cols(LuaDVec4LuaDVec4LuaDVec4LuaDVec4) -> LuaDMat4
-
-				///Creates a 4x4 matrix from a `[f64; 16]` array stored in column major order.
-				///If your data is stored in row major you will need to `transpose` the returned
-				///matrix.
-				from_cols_array(<invalid: &[f64;16]>) -> LuaDMat4
-
-				///Creates a `[f64; 16]` array storing data in column major order.
-				///If you require data in row major order `transpose` the matrix first.
-				to_cols_array(&self)<invalid: [f64;16]>
-
-				///Creates a 4x4 matrix from a `[[f64; 4]; 4]` 4D array stored in column major order.
-				///If your data is in row major order you will need to `transpose` the returned
-				///matrix.
-				from_cols_array_2d(<invalid: &[[f64;4];4]>) -> LuaDMat4
-
-				///Creates a `[[f64; 4]; 4]` 4D array storing data in column major order.
-				///If you require data in row major order `transpose` the matrix first.
-				to_cols_array_2d(&self)<invalid: [[f64;4];4]>
-
-				// Exclusion reason: 
-				// ///Creates a 4x4 matrix with its diagonal set to `diagonal` and all other entries set to 0.
-				// from_diagonal(LuaDVec4) -> LuaDMat4
-
-				// Exclusion reason: 
-				// ///Creates an affine transformation matrix from the given 3D `scale`, `rotation` and
-				// ///`translation`.
-				// ///
-				// ///The resulting matrix can be used to transform 3D points and vectors. See
-				// ///[`Self::transform_point3()`] and [`Self::transform_vector3()`].
-				// ///
-				// ///# Panics
-				// ///
-				// ///Will panic if `rotation` is not normalized when `glam_assert` is enabled.
-				// from_scale_rotation_translation(LuaDVec3LuaDQuatLuaDVec3) -> LuaDMat4
-
-				// Exclusion reason: 
-				// ///Creates an affine transformation matrix from the given 3D `translation`.
-				// ///
-				// ///The resulting matrix can be used to transform 3D points and vectors. See
-				// ///[`Self::transform_point3()`] and [`Self::transform_vector3()`].
-				// ///
-				// ///# Panics
-				// ///
-				// ///Will panic if `rotation` is not normalized when `glam_assert` is enabled.
-				// from_rotation_translation(LuaDQuatLuaDVec3) -> LuaDMat4
-
-				///Extracts `scale`, `rotation` and `translation` from `self`. The input matrix is
-				///expected to be a 3D affine transformation matrix otherwise the output will be invalid.
-				///
-				///# Panics
-				///
-				///Will panic if the determinant of `self` is zero or if the resulting scale vector
-				///contains any zero elements when `glam_assert` is enabled.
-				to_scale_rotation_translation(&self)<invalid: (LuaDVec3,LuaDQuat,LuaDVec3)>
-
-				// Exclusion reason: 
-				// ///Creates an affine transformation matrix from the given `rotation` quaternion.
-				// ///
-				// ///The resulting matrix can be used to transform 3D points and vectors. See
-				// ///[`Self::transform_point3()`] and [`Self::transform_vector3()`].
-				// ///
-				// ///# Panics
-				// ///
-				// ///Will panic if `rotation` is not normalized when `glam_assert` is enabled.
-				// from_quat(LuaDQuat) -> LuaDMat4
-
-				// Exclusion reason: 
-				// ///Creates an affine transformation matrix from the given 3x3 linear transformation
-				// ///matrix.
-				// ///
-				// ///The resulting matrix can be used to transform 3D points and vectors. See
-				// ///[`Self::transform_point3()`] and [`Self::transform_vector3()`].
-				// from_mat3(LuaDMat3) -> LuaDMat4
-
-				// Exclusion reason: 
-				// ///Creates an affine transformation matrix from the given 3D `translation`.
-				// ///
-				// ///The resulting matrix can be used to transform 3D points and vectors. See
-				// ///[`Self::transform_point3()`] and [`Self::transform_vector3()`].
-				// from_translation(LuaDVec3) -> LuaDMat4
-
-				// Exclusion reason: 
-				// ///Creates an affine transformation matrix containing a 3D rotation around a normalized
-				// ///rotation `axis` of `angle` (in radians).
-				// ///
-				// ///The resulting matrix can be used to transform 3D points and vectors. See
-				// ///[`Self::transform_point3()`] and [`Self::transform_vector3()`].
-				// ///
-				// ///# Panics
-				// ///
-				// ///Will panic if `axis` is not normalized when `glam_assert` is enabled.
-				// from_axis_angle(LuaDVec3f64) -> LuaDMat4
-
-				// Exclusion reason: 
-				// ///Creates a affine transformation matrix containing a rotation from the given euler
-				// ///rotation sequence and angles (in radians).
-				// ///
-				// ///The resulting matrix can be used to transform 3D points and vectors. See
-				// ///[`Self::transform_point3()`] and [`Self::transform_vector3()`].
-				// from_euler(LuaEulerRotf64f64f64) -> LuaDMat4
-
-				// Exclusion reason: 
-				// ///Creates an affine transformation matrix containing a 3D rotation around the x axis of
-				// ///`angle` (in radians).
-				// ///
-				// ///The resulting matrix can be used to transform 3D points and vectors. See
-				// ///[`Self::transform_point3()`] and [`Self::transform_vector3()`].
-				// from_rotation_x(f64) -> LuaDMat4
-
-				// Exclusion reason: 
-				// ///Creates an affine transformation matrix containing a 3D rotation around the y axis of
-				// ///`angle` (in radians).
-				// ///
-				// ///The resulting matrix can be used to transform 3D points and vectors. See
-				// ///[`Self::transform_point3()`] and [`Self::transform_vector3()`].
-				// from_rotation_y(f64) -> LuaDMat4
-
-				// Exclusion reason: 
-				// ///Creates an affine transformation matrix containing a 3D rotation around the z axis of
-				// ///`angle` (in radians).
-				// ///
-				// ///The resulting matrix can be used to transform 3D points and vectors. See
-				// ///[`Self::transform_point3()`] and [`Self::transform_vector3()`].
-				// from_rotation_z(f64) -> LuaDMat4
-
-				// Exclusion reason: 
-				// ///Creates an affine transformation matrix containing the given 3D non-uniform `scale`.
-				// ///
-				// ///The resulting matrix can be used to transform 3D points and vectors. See
-				// ///[`Self::transform_point3()`] and [`Self::transform_vector3()`].
-				// ///
-				// ///# Panics
-				// ///
-				// ///Will panic if all elements of `scale` are zero when `glam_assert` is enabled.
-				// from_scale(LuaDVec3) -> LuaDMat4
-
-				///Creates a 4x4 matrix from the first 16 values in `slice`.
-				///
-				///# Panics
-				///
-				///Panics if `slice` is less than 16 elements long.
-				from_cols_slice(<invalid: &[f64]>) -> LuaDMat4
-
-				///Writes the columns of `self` to the first 16 elements in `slice`.
-				///
-				///# Panics
-				///
-				///Panics if `slice` is less than 16 elements long.
-				write_cols_to_slice(self<invalid: &mut [f64]>)
-
-				// Exclusion reason: 
-				// ///Returns the matrix column for the given `index`.
-				// ///
-				// ///# Panics
-				// ///
-				// ///Panics if `index` is greater than 3.
-				// col(&selfusize) -> LuaDVec4
-
-				///Returns a mutable reference to the matrix column for the given `index`.
-				///
-				///# Panics
-				///
-				///Panics if `index` is greater than 3.
-				col_mut(<invalid: &mut self>usize)<invalid: &mut LuaDVec4>
-
-				// Exclusion reason: 
-				// ///Returns the matrix row for the given `index`.
-				// ///
-				// ///# Panics
-				// ///
-				// ///Panics if `index` is greater than 3.
-				// row(&selfusize) -> LuaDVec4
-
-				// Exclusion reason: 
-				// ///Returns `true` if, and only if, all elements are finite.
-				// ///If any element is either `NaN`, positive or negative infinity, this will return `false`.
-				// is_finite(&self) -> bool
-
-				// Exclusion reason: 
-				// ///Returns `true` if any elements are `NaN`.
-				// is_nan(&self) -> bool
-
-				// Exclusion reason: 
-				// ///Returns the transpose of `self`.
-				// transpose(&self) -> LuaDMat4
-
-				// Exclusion reason: 
-				// ///Returns the determinant of `self`.
-				// determinant(&self) -> f64
-
-				// Exclusion reason: 
-				// ///Returns the inverse of `self`.
-				// ///
-				// ///If the matrix is not invertible the returned matrix will be invalid.
-				// ///
-				// ///# Panics
-				// ///
-				// ///Will panic if the determinant of `self` is zero when `glam_assert` is enabled.
-				// inverse(&self) -> LuaDMat4
-
-				// Exclusion reason: 
-				// ///Creates a left-handed view matrix using a camera position, an up direction, and a focal
-				// ///point.
-				// ///For a view coordinate system with `+X=right`, `+Y=up` and `+Z=forward`.
-				// ///
-				// ///# Panics
-				// ///
-				// ///Will panic if `up` is not normalized when `glam_assert` is enabled.
-				// look_at_lh(LuaDVec3LuaDVec3LuaDVec3) -> LuaDMat4
-
-				// Exclusion reason: 
-				// ///Creates a right-handed view matrix using a camera position, an up direction, and a focal
-				// ///point.
-				// ///For a view coordinate system with `+X=right`, `+Y=up` and `+Z=back`.
-				// ///
-				// ///# Panics
-				// ///
-				// ///Will panic if `up` is not normalized when `glam_assert` is enabled.
-				// look_at_rh(LuaDVec3LuaDVec3LuaDVec3) -> LuaDMat4
-
-				// Exclusion reason: 
-				// ///Creates a right-handed perspective projection matrix with [-1,1] depth range.
-				// ///This is the same as the OpenGL `gluPerspective` function.
-				// ///See <https://www.khronos.org/registry/OpenGL-Refpages/gl2.1/xhtml/gluPerspective.xml>
-				// perspective_rh_gl(f64f64f64f64) -> LuaDMat4
-
-				// Exclusion reason: 
-				// ///Creates a left-handed perspective projection matrix with `[0,1]` depth range.
-				// ///
-				// ///# Panics
-				// ///
-				// ///Will panic if `z_near` or `z_far` are less than or equal to zero when `glam_assert` is
-				// ///enabled.
-				// perspective_lh(f64f64f64f64) -> LuaDMat4
-
-				// Exclusion reason: 
-				// ///Creates a right-handed perspective projection matrix with `[0,1]` depth range.
-				// ///
-				// ///# Panics
-				// ///
-				// ///Will panic if `z_near` or `z_far` are less than or equal to zero when `glam_assert` is
-				// ///enabled.
-				// perspective_rh(f64f64f64f64) -> LuaDMat4
-
-				// Exclusion reason: 
-				// ///Creates an infinite left-handed perspective projection matrix with `[0,1]` depth range.
-				// ///
-				// ///# Panics
-				// ///
-				// ///Will panic if `z_near` is less than or equal to zero when `glam_assert` is enabled.
-				// perspective_infinite_lh(f64f64f64) -> LuaDMat4
-
-				// Exclusion reason: 
-				// ///Creates an infinite left-handed perspective projection matrix with `[0,1]` depth range.
-				// ///
-				// ///# Panics
-				// ///
-				// ///Will panic if `z_near` is less than or equal to zero when `glam_assert` is enabled.
-				// perspective_infinite_reverse_lh(f64f64f64) -> LuaDMat4
-
-				// Exclusion reason: 
-				// ///Creates an infinite right-handed perspective projection matrix with
-				// ///`[0,1]` depth range.
-				// perspective_infinite_rh(f64f64f64) -> LuaDMat4
-
-				// Exclusion reason: 
-				// ///Creates an infinite reverse right-handed perspective projection matrix
-				// ///with `[0,1]` depth range.
-				// perspective_infinite_reverse_rh(f64f64f64) -> LuaDMat4
-
-				// Exclusion reason: 
-				// ///Creates a right-handed orthographic projection matrix with `[-1,1]` depth
-				// ///range.  This is the same as the OpenGL `glOrtho` function in OpenGL.
-				// ///See
-				// ///<https://www.khronos.org/registry/OpenGL-Refpages/gl2.1/xhtml/glOrtho.xml>
-				// orthographic_rh_gl(f64f64f64f64f64f64) -> LuaDMat4
-
-				// Exclusion reason: 
-				// ///Creates a left-handed orthographic projection matrix with `[0,1]` depth range.
-				// orthographic_lh(f64f64f64f64f64f64) -> LuaDMat4
-
-				// Exclusion reason: 
-				// ///Creates a right-handed orthographic projection matrix with `[0,1]` depth range.
-				// orthographic_rh(f64f64f64f64f64f64) -> LuaDMat4
-
-				// Exclusion reason: 
-				// ///Transforms the given 3D vector as a point, applying perspective correction.
-				// ///
-				// ///This is the equivalent of multiplying the 3D vector as a 4D vector where `w` is `1.0`.
-				// ///The perspective divide is performed meaning the resulting 3D vector is divided by `w`.
-				// ///
-				// ///This method assumes that `self` contains a projective transform.
-				// project_point3(&selfLuaDVec3) -> LuaDVec3
-
-				// Exclusion reason: 
-				// ///Transforms the given 3D vector as a point.
-				// ///
-				// ///This is the equivalent of multiplying the 3D vector as a 4D vector where `w` is
-				// ///`1.0`.
-				// ///
-				// ///This method assumes that `self` contains a valid affine transform. It does not perform
-				// ///a persective divide, if `self` contains a perspective transform, or if you are unsure,
-				// ///the [`Self::project_point3()`] method should be used instead.
-				// ///
-				// ///# Panics
-				// ///
-				// ///Will panic if the 3rd row of `self` is not `(0, 0, 0, 1)` when `glam_assert` is enabled.
-				// transform_point3(&selfLuaDVec3) -> LuaDVec3
-
-				// Exclusion reason: 
-				// ///Transforms the give 3D vector as a direction.
-				// ///
-				// ///This is the equivalent of multiplying the 3D vector as a 4D vector where `w` is
-				// ///`0.0`.
-				// ///
-				// ///This method assumes that `self` contains a valid affine transform.
-				// ///
-				// ///# Panics
-				// ///
-				// ///Will panic if the 3rd row of `self` is not `(0, 0, 0, 1)` when `glam_assert` is enabled.
-				// transform_vector3(&selfLuaDVec3) -> LuaDVec3
-
-				// Exclusion reason: 
-				// ///Transforms a 4D vector.
-				// mul_vec4(&selfLuaDVec4) -> LuaDVec4
-
-				// Exclusion reason: 
-				// ///Multiplies two 4x4 matrices.
-				// mul_mat4(&self&LuaDMat4) -> LuaDMat4
-
-				// Exclusion reason: 
-				// ///Adds two 4x4 matrices.
-				// add_mat4(&self&LuaDMat4) -> LuaDMat4
-
-				// Exclusion reason: 
-				// ///Subtracts two 4x4 matrices.
-				// sub_mat4(&self&LuaDMat4) -> LuaDMat4
-
-				// Exclusion reason: 
-				// ///Multiplies a 4x4 matrix by a scalar.
-				// mul_scalar(&selff64) -> LuaDMat4
-
-				// Exclusion reason: 
-				// ///Returns true if the absolute difference of all elements between `self` and `rhs`
-				// ///is less than or equal to `max_abs_diff`.
-				// ///
-				// ///This can be used to compare if two matrices contain similar elements. It works best
-				// ///when comparing with a known value. The `max_abs_diff` that should be used used
-				// ///depends on the values being compared against.
-				// ///
-				// ///For more see
-				// ///[comparing floating point numbers](https://randomascii.wordpress.com/2012/02/25/comparing-floating-point-numbers-2012-edition/).
-				// abs_diff_eq(&selfLuaDMat4f64) -> bool
-
-				// Exclusion reason: 
-				// as_mat4(&self) -> LuaMat4
-
-				try_from()
-
-				///Returns the argument unchanged.
-				from()
-
-				from() -> LuaDMat4
-
-				///Calls `U::from(self)`.
-				///
-				///That is, this conversion is whatever the implementation of
-				///<code>[From]&lt;T&gt; for U</code> chooses to do.
-				into(self)
-
-				borrow(&self)
-
-				type_id(&self)
-
-				try_into(self)
-
-				borrow_mut(<invalid: &mut self>)
-
-				to_string(&self)
-
-				to_owned(&self)
-
-				clone_into(&self)
-
-				is_valid_bit_pattern() -> bool
-
-				serialize(&self)
-
-				deserialize()
-
-				mul(selfLuaDMat4)
-
-				mul(self)
-
-				mul(selfLuaDMat4)
-
-				mul(selfLuaDVec4)
-
-				mul(selfLuaDMat4)
-
-				mul(selff64)
-
-				// Exclusion reason: 
-				// clone(&self) -> LuaDMat4
-
-				// Exclusion reason: 
-				// default() -> LuaDMat4
-
-				add(selfLuaDMat4)
-
-				add_assign(<invalid: &mut self>LuaDMat4)
-
-				sub(selfLuaDMat4)
-
-				sub_assign(<invalid: &mut self>LuaDMat4)
-
-				neg(self)
-
-				mul_assign(<invalid: &mut self>LuaDMat4)
-
-				mul_assign(<invalid: &mut self>f64)
-
-				sum() -> LuaDMat4
-
-				product() -> LuaDMat4
-
-				// Exclusion reason: 
-				// eq(&self&LuaDMat4) -> bool
-
-				as_ref(&self)<invalid: &[f64;16]>
-
-				as_mut(<invalid: &mut self>)<invalid: &mut [f64;16]>
-
-				fmt(&self)
-
-				fmt(&self)
-
-			)
-+ BinaryOps			(
+			glam::f64::dmat4::DMat4 : Value
+:				AutoMethods
+				(
+					///Creates a 4x4 matrix from two column vectors.
+					from_cols(LuaDVec4LuaDVec4LuaDVec4LuaDVec4) -> LuaDMat4
+,
+					// Exclusion reason: Unsupported argument &[f64;16]
+					// ///Creates a 4x4 matrix from a `[f64; 16]` array stored in column major order.
+					// ///If your data is stored in row major you will need to `transpose` the returned
+					// ///matrix.
+					// from_cols_array(<invalid: &[f64;16]>) -> LuaDMat4
+,
+					// Exclusion reason: Unsupported argument [f64;16]
+					// ///Creates a `[f64; 16]` array storing data in column major order.
+					// ///If you require data in row major order `transpose` the matrix first.
+					// to_cols_array(&self)<invalid: [f64;16]>
+,
+					// Exclusion reason: Unsupported argument &[[f64;4];4]
+					// ///Creates a 4x4 matrix from a `[[f64; 4]; 4]` 4D array stored in column major order.
+					// ///If your data is in row major order you will need to `transpose` the returned
+					// ///matrix.
+					// from_cols_array_2d(<invalid: &[[f64;4];4]>) -> LuaDMat4
+,
+					// Exclusion reason: Unsupported argument [[f64;4];4]
+					// ///Creates a `[[f64; 4]; 4]` 4D array storing data in column major order.
+					// ///If you require data in row major order `transpose` the matrix first.
+					// to_cols_array_2d(&self)<invalid: [[f64;4];4]>
+,
+					///Creates a 4x4 matrix with its diagonal set to `diagonal` and all other entries set to 0.
+					from_diagonal(LuaDVec4) -> LuaDMat4
+,
+					///Creates an affine transformation matrix from the given 3D `scale`, `rotation` and
+					///`translation`.
+					///
+					///The resulting matrix can be used to transform 3D points and vectors. See
+					///[`Self::transform_point3()`] and [`Self::transform_vector3()`].
+					///
+					///# Panics
+					///
+					///Will panic if `rotation` is not normalized when `glam_assert` is enabled.
+					from_scale_rotation_translation(LuaDVec3LuaDQuatLuaDVec3) -> LuaDMat4
+,
+					///Creates an affine transformation matrix from the given 3D `translation`.
+					///
+					///The resulting matrix can be used to transform 3D points and vectors. See
+					///[`Self::transform_point3()`] and [`Self::transform_vector3()`].
+					///
+					///# Panics
+					///
+					///Will panic if `rotation` is not normalized when `glam_assert` is enabled.
+					from_rotation_translation(LuaDQuatLuaDVec3) -> LuaDMat4
+,
+					// Exclusion reason: Unsupported argument (LuaDVec3,LuaDQuat,LuaDVec3)
+					// ///Extracts `scale`, `rotation` and `translation` from `self`. The input matrix is
+					// ///expected to be a 3D affine transformation matrix otherwise the output will be invalid.
+					// ///
+					// ///# Panics
+					// ///
+					// ///Will panic if the determinant of `self` is zero or if the resulting scale vector
+					// ///contains any zero elements when `glam_assert` is enabled.
+					// to_scale_rotation_translation(&self)<invalid: (LuaDVec3,LuaDQuat,LuaDVec3)>
+,
+					///Creates an affine transformation matrix from the given `rotation` quaternion.
+					///
+					///The resulting matrix can be used to transform 3D points and vectors. See
+					///[`Self::transform_point3()`] and [`Self::transform_vector3()`].
+					///
+					///# Panics
+					///
+					///Will panic if `rotation` is not normalized when `glam_assert` is enabled.
+					from_quat(LuaDQuat) -> LuaDMat4
+,
+					///Creates an affine transformation matrix from the given 3x3 linear transformation
+					///matrix.
+					///
+					///The resulting matrix can be used to transform 3D points and vectors. See
+					///[`Self::transform_point3()`] and [`Self::transform_vector3()`].
+					from_mat3(LuaDMat3) -> LuaDMat4
+,
+					///Creates an affine transformation matrix from the given 3D `translation`.
+					///
+					///The resulting matrix can be used to transform 3D points and vectors. See
+					///[`Self::transform_point3()`] and [`Self::transform_vector3()`].
+					from_translation(LuaDVec3) -> LuaDMat4
+,
+					///Creates an affine transformation matrix containing a 3D rotation around a normalized
+					///rotation `axis` of `angle` (in radians).
+					///
+					///The resulting matrix can be used to transform 3D points and vectors. See
+					///[`Self::transform_point3()`] and [`Self::transform_vector3()`].
+					///
+					///# Panics
+					///
+					///Will panic if `axis` is not normalized when `glam_assert` is enabled.
+					from_axis_angle(LuaDVec3f64) -> LuaDMat4
+,
+					///Creates a affine transformation matrix containing a rotation from the given euler
+					///rotation sequence and angles (in radians).
+					///
+					///The resulting matrix can be used to transform 3D points and vectors. See
+					///[`Self::transform_point3()`] and [`Self::transform_vector3()`].
+					from_euler(LuaEulerRotf64f64f64) -> LuaDMat4
+,
+					///Creates an affine transformation matrix containing a 3D rotation around the x axis of
+					///`angle` (in radians).
+					///
+					///The resulting matrix can be used to transform 3D points and vectors. See
+					///[`Self::transform_point3()`] and [`Self::transform_vector3()`].
+					from_rotation_x(f64) -> LuaDMat4
+,
+					///Creates an affine transformation matrix containing a 3D rotation around the y axis of
+					///`angle` (in radians).
+					///
+					///The resulting matrix can be used to transform 3D points and vectors. See
+					///[`Self::transform_point3()`] and [`Self::transform_vector3()`].
+					from_rotation_y(f64) -> LuaDMat4
+,
+					///Creates an affine transformation matrix containing a 3D rotation around the z axis of
+					///`angle` (in radians).
+					///
+					///The resulting matrix can be used to transform 3D points and vectors. See
+					///[`Self::transform_point3()`] and [`Self::transform_vector3()`].
+					from_rotation_z(f64) -> LuaDMat4
+,
+					///Creates an affine transformation matrix containing the given 3D non-uniform `scale`.
+					///
+					///The resulting matrix can be used to transform 3D points and vectors. See
+					///[`Self::transform_point3()`] and [`Self::transform_vector3()`].
+					///
+					///# Panics
+					///
+					///Will panic if all elements of `scale` are zero when `glam_assert` is enabled.
+					from_scale(LuaDVec3) -> LuaDMat4
+,
+					// Exclusion reason: Unsupported argument &[f64]
+					// ///Creates a 4x4 matrix from the first 16 values in `slice`.
+					// ///
+					// ///# Panics
+					// ///
+					// ///Panics if `slice` is less than 16 elements long.
+					// from_cols_slice(<invalid: &[f64]>) -> LuaDMat4
+,
+					// Exclusion reason: Unsupported argument &mut [f64]
+					// ///Writes the columns of `self` to the first 16 elements in `slice`.
+					// ///
+					// ///# Panics
+					// ///
+					// ///Panics if `slice` is less than 16 elements long.
+					// write_cols_to_slice(self<invalid: &mut [f64]>)
+,
+					///Returns the matrix column for the given `index`.
+					///
+					///# Panics
+					///
+					///Panics if `index` is greater than 3.
+					col(&selfusize) -> LuaDVec4
+,
+					// Exclusion reason: Unsupported argument &mut self,Unsupported argument &mut LuaDVec4
+					// ///Returns a mutable reference to the matrix column for the given `index`.
+					// ///
+					// ///# Panics
+					// ///
+					// ///Panics if `index` is greater than 3.
+					// col_mut(<invalid: &mut self>usize)<invalid: &mut LuaDVec4>
+,
+					///Returns the matrix row for the given `index`.
+					///
+					///# Panics
+					///
+					///Panics if `index` is greater than 3.
+					row(&selfusize) -> LuaDVec4
+,
+					///Returns `true` if, and only if, all elements are finite.
+					///If any element is either `NaN`, positive or negative infinity, this will return `false`.
+					is_finite(&self) -> bool
+,
+					///Returns `true` if any elements are `NaN`.
+					is_nan(&self) -> bool
+,
+					///Returns the transpose of `self`.
+					transpose(&self) -> LuaDMat4
+,
+					///Returns the determinant of `self`.
+					determinant(&self) -> f64
+,
+					///Returns the inverse of `self`.
+					///
+					///If the matrix is not invertible the returned matrix will be invalid.
+					///
+					///# Panics
+					///
+					///Will panic if the determinant of `self` is zero when `glam_assert` is enabled.
+					inverse(&self) -> LuaDMat4
+,
+					///Creates a left-handed view matrix using a camera position, an up direction, and a focal
+					///point.
+					///For a view coordinate system with `+X=right`, `+Y=up` and `+Z=forward`.
+					///
+					///# Panics
+					///
+					///Will panic if `up` is not normalized when `glam_assert` is enabled.
+					look_at_lh(LuaDVec3LuaDVec3LuaDVec3) -> LuaDMat4
+,
+					///Creates a right-handed view matrix using a camera position, an up direction, and a focal
+					///point.
+					///For a view coordinate system with `+X=right`, `+Y=up` and `+Z=back`.
+					///
+					///# Panics
+					///
+					///Will panic if `up` is not normalized when `glam_assert` is enabled.
+					look_at_rh(LuaDVec3LuaDVec3LuaDVec3) -> LuaDMat4
+,
+					///Creates a right-handed perspective projection matrix with [-1,1] depth range.
+					///This is the same as the OpenGL `gluPerspective` function.
+					///See <https://www.khronos.org/registry/OpenGL-Refpages/gl2.1/xhtml/gluPerspective.xml>
+					perspective_rh_gl(f64f64f64f64) -> LuaDMat4
+,
+					///Creates a left-handed perspective projection matrix with `[0,1]` depth range.
+					///
+					///# Panics
+					///
+					///Will panic if `z_near` or `z_far` are less than or equal to zero when `glam_assert` is
+					///enabled.
+					perspective_lh(f64f64f64f64) -> LuaDMat4
+,
+					///Creates a right-handed perspective projection matrix with `[0,1]` depth range.
+					///
+					///# Panics
+					///
+					///Will panic if `z_near` or `z_far` are less than or equal to zero when `glam_assert` is
+					///enabled.
+					perspective_rh(f64f64f64f64) -> LuaDMat4
+,
+					///Creates an infinite left-handed perspective projection matrix with `[0,1]` depth range.
+					///
+					///# Panics
+					///
+					///Will panic if `z_near` is less than or equal to zero when `glam_assert` is enabled.
+					perspective_infinite_lh(f64f64f64) -> LuaDMat4
+,
+					///Creates an infinite left-handed perspective projection matrix with `[0,1]` depth range.
+					///
+					///# Panics
+					///
+					///Will panic if `z_near` is less than or equal to zero when `glam_assert` is enabled.
+					perspective_infinite_reverse_lh(f64f64f64) -> LuaDMat4
+,
+					///Creates an infinite right-handed perspective projection matrix with
+					///`[0,1]` depth range.
+					perspective_infinite_rh(f64f64f64) -> LuaDMat4
+,
+					///Creates an infinite reverse right-handed perspective projection matrix
+					///with `[0,1]` depth range.
+					perspective_infinite_reverse_rh(f64f64f64) -> LuaDMat4
+,
+					///Creates a right-handed orthographic projection matrix with `[-1,1]` depth
+					///range.  This is the same as the OpenGL `glOrtho` function in OpenGL.
+					///See
+					///<https://www.khronos.org/registry/OpenGL-Refpages/gl2.1/xhtml/glOrtho.xml>
+					orthographic_rh_gl(f64f64f64f64f64f64) -> LuaDMat4
+,
+					///Creates a left-handed orthographic projection matrix with `[0,1]` depth range.
+					orthographic_lh(f64f64f64f64f64f64) -> LuaDMat4
+,
+					///Creates a right-handed orthographic projection matrix with `[0,1]` depth range.
+					orthographic_rh(f64f64f64f64f64f64) -> LuaDMat4
+,
+					///Transforms the given 3D vector as a point, applying perspective correction.
+					///
+					///This is the equivalent of multiplying the 3D vector as a 4D vector where `w` is `1.0`.
+					///The perspective divide is performed meaning the resulting 3D vector is divided by `w`.
+					///
+					///This method assumes that `self` contains a projective transform.
+					project_point3(&selfLuaDVec3) -> LuaDVec3
+,
+					///Transforms the given 3D vector as a point.
+					///
+					///This is the equivalent of multiplying the 3D vector as a 4D vector where `w` is
+					///`1.0`.
+					///
+					///This method assumes that `self` contains a valid affine transform. It does not perform
+					///a persective divide, if `self` contains a perspective transform, or if you are unsure,
+					///the [`Self::project_point3()`] method should be used instead.
+					///
+					///# Panics
+					///
+					///Will panic if the 3rd row of `self` is not `(0, 0, 0, 1)` when `glam_assert` is enabled.
+					transform_point3(&selfLuaDVec3) -> LuaDVec3
+,
+					///Transforms the give 3D vector as a direction.
+					///
+					///This is the equivalent of multiplying the 3D vector as a 4D vector where `w` is
+					///`0.0`.
+					///
+					///This method assumes that `self` contains a valid affine transform.
+					///
+					///# Panics
+					///
+					///Will panic if the 3rd row of `self` is not `(0, 0, 0, 1)` when `glam_assert` is enabled.
+					transform_vector3(&selfLuaDVec3) -> LuaDVec3
+,
+					///Transforms a 4D vector.
+					mul_vec4(&selfLuaDVec4) -> LuaDVec4
+,
+					///Multiplies two 4x4 matrices.
+					mul_mat4(&self&LuaDMat4) -> LuaDMat4
+,
+					///Adds two 4x4 matrices.
+					add_mat4(&self&LuaDMat4) -> LuaDMat4
+,
+					///Subtracts two 4x4 matrices.
+					sub_mat4(&self&LuaDMat4) -> LuaDMat4
+,
+					///Multiplies a 4x4 matrix by a scalar.
+					mul_scalar(&selff64) -> LuaDMat4
+,
+					///Returns true if the absolute difference of all elements between `self` and `rhs`
+					///is less than or equal to `max_abs_diff`.
+					///
+					///This can be used to compare if two matrices contain similar elements. It works best
+					///when comparing with a known value. The `max_abs_diff` that should be used used
+					///depends on the values being compared against.
+					///
+					///For more see
+					///[comparing floating point numbers](https://randomascii.wordpress.com/2012/02/25/comparing-floating-point-numbers-2012-edition/).
+					abs_diff_eq(&selfLuaDMat4f64) -> bool
+,
+					as_mat4(&self) -> LuaMat4
+,
+					// Exclusion reason: Unsupported argument U,Unsupported argument Result
+					// try_from()
+,
+					// Exclusion reason: Unsupported argument T,Unsupported argument T
+					// ///Returns the argument unchanged.
+					// from()
+,
+					// Exclusion reason: Unsupported argument DAffine3
+					// from() -> LuaDMat4
+,
+					// Exclusion reason: Unsupported argument U
+					// ///Calls `U::from(self)`.
+					// ///
+					// ///That is, this conversion is whatever the implementation of
+					// ///<code>[From]&lt;T&gt; for U</code> chooses to do.
+					// into(self)
+,
+					// Exclusion reason: Unsupported argument T
+					// borrow(&self)
+,
+					// Exclusion reason: Unsupported argument TypeId
+					// type_id(&self)
+,
+					// Exclusion reason: Unsupported argument Result
+					// try_into(self)
+,
+					// Exclusion reason: Unsupported argument &mut self,Unsupported argument T
+					// borrow_mut(<invalid: &mut self>)
+,
+					// Exclusion reason: Unsupported argument String
+					// to_string(&self)
+,
+					// Exclusion reason: Unsupported argument T
+					// to_owned(&self)
+,
+					// Exclusion reason: Unsupported argument T
+					// clone_into(&self)
+,
+					// Exclusion reason: Unsupported argument T
+					// is_valid_bit_pattern() -> bool
+,
+					// Exclusion reason: Unsupported argument S,Unsupported argument Result,Generics on the method
+					// serialize(&self)
+,
+					// Exclusion reason: Unsupported argument D,Unsupported argument Result,Generics on the method
+					// deserialize()
+,
+					// Exclusion reason: Unsupported argument QualifiedPath { name: "Output", args: AngleBracketed { args: [], bindings: [] }, self_type: Generic("Self"), trait_: ResolvedPath { name: "", id: Id("2:3313:2263"), args: None, param_names: [] } }
+					// mul(selfLuaDMat4)
+,
+					// Exclusion reason: Unsupported argument DAffine3,Unsupported argument QualifiedPath { name: "Output", args: AngleBracketed { args: [], bindings: [] }, self_type: Generic("Self"), trait_: ResolvedPath { name: "", id: Id("2:3313:2263"), args: None, param_names: [] } }
+					// mul(self)
+,
+					// Exclusion reason: Unsupported argument QualifiedPath { name: "Output", args: AngleBracketed { args: [], bindings: [] }, self_type: Generic("Self"), trait_: ResolvedPath { name: "", id: Id("2:3313:2263"), args: None, param_names: [] } }
+					// mul(selfLuaDMat4)
+,
+					// Exclusion reason: Unsupported argument QualifiedPath { name: "Output", args: AngleBracketed { args: [], bindings: [] }, self_type: Generic("Self"), trait_: ResolvedPath { name: "", id: Id("2:3313:2263"), args: None, param_names: [] } }
+					// mul(selfLuaDVec4)
+,
+					// Exclusion reason: Unsupported argument QualifiedPath { name: "Output", args: AngleBracketed { args: [], bindings: [] }, self_type: Generic("Self"), trait_: ResolvedPath { name: "", id: Id("2:3313:2263"), args: None, param_names: [] } }
+					// mul(selfLuaDMat4)
+,
+					// Exclusion reason: Unsupported argument QualifiedPath { name: "Output", args: AngleBracketed { args: [], bindings: [] }, self_type: Generic("Self"), trait_: ResolvedPath { name: "", id: Id("2:3313:2263"), args: None, param_names: [] } }
+					// mul(selff64)
+,
+					clone(&self) -> LuaDMat4
+,
+					default() -> LuaDMat4
+,
+					// Exclusion reason: Unsupported argument QualifiedPath { name: "Output", args: AngleBracketed { args: [], bindings: [] }, self_type: Generic("Self"), trait_: ResolvedPath { name: "", id: Id("2:3303:2261"), args: None, param_names: [] } }
+					// add(selfLuaDMat4)
+,
+					// Exclusion reason: Unsupported argument &mut self
+					// add_assign(<invalid: &mut self>LuaDMat4)
+,
+					// Exclusion reason: Unsupported argument QualifiedPath { name: "Output", args: AngleBracketed { args: [], bindings: [] }, self_type: Generic("Self"), trait_: ResolvedPath { name: "", id: Id("2:3308:2264"), args: None, param_names: [] } }
+					// sub(selfLuaDMat4)
+,
+					// Exclusion reason: Unsupported argument &mut self
+					// sub_assign(<invalid: &mut self>LuaDMat4)
+,
+					// Exclusion reason: Unsupported argument QualifiedPath { name: "Output", args: AngleBracketed { args: [], bindings: [] }, self_type: Generic("Self"), trait_: ResolvedPath { name: "", id: Id("2:3330:2438"), args: None, param_names: [] } }
+					// neg(self)
+,
+					// Exclusion reason: Unsupported argument &mut self
+					// mul_assign(<invalid: &mut self>LuaDMat4)
+,
+					// Exclusion reason: Unsupported argument &mut self
+					// mul_assign(<invalid: &mut self>f64)
+,
+					// Exclusion reason: Unsupported argument I,Generics on the method
+					// sum() -> LuaDMat4
+,
+					// Exclusion reason: Unsupported argument I,Generics on the method
+					// product() -> LuaDMat4
+,
+					eq(&self&LuaDMat4) -> bool
+,
+					// Exclusion reason: Unsupported argument &[f64;16]
+					// as_ref(&self)<invalid: &[f64;16]>
+,
+					// Exclusion reason: Unsupported argument &mut self,Unsupported argument &mut [f64;16]
+					// as_mut(<invalid: &mut self>)<invalid: &mut [f64;16]>
+,
+					// Exclusion reason: Unsupported argument fmt::Formatter,Unsupported argument fmt::Result
+					// fmt(&self)
+,
+					// Exclusion reason: Unsupported argument fmt::Formatter,Unsupported argument fmt::Result
+					// fmt(&self)
+,
+				)
+				+ BinaryOps
+				(
 self Add LuaDMat4 -> LuaDMat4 -> LuaDMat4
 self Sub LuaDMat4 -> LuaDMat4 -> LuaDMat4
 self Mul LuaDMat4 -> LuaDMat4 -> LuaDMat4
 self Mul LuaDVec4 -> LuaDVec4 -> LuaDVec4
 f64 Mul self -> LuaDMat4 -> LuaDMat4
 self Mul f64 -> LuaDMat4 -> LuaDMat4
-			)
-+ UnaryOps			(
-			)
-+ 			Copy(LuaMat3 -> mut (MetaMethod::Index) (s=LuaDMat4,b=DMat4,v=LuaDVec4))
-impl			{
+				)
+				+ UnaryOps
+				(
+				)
++ 				Copy(LuaMat3 -> mut (MetaMethod::Index) (s=LuaDMat4,b=DMat4,v=LuaDVec4))
+			impl
+			{
 			}
 		}
-		{
+,		{
 			///A quaternion representing an orientation.
 			///
 			///This quaternion is intended to be of unit length but may denormalize due to
@@ -13960,877 +12652,852 @@ impl			{
 			///operations are applied.
 			///
 			///This type is 16 byte aligned.
-glam::f32::sse2::quat::Quat : Value
-AutoMethods			(
-				// Exclusion reason: 
-				// ///Creates a new rotation quaternion.
-				// ///
-				// ///This should generally not be called manually unless you know what you are doing.
-				// ///Use one of the other constructors instead such as `identity` or `from_axis_angle`.
-				// ///
-				// ///`from_xyzw` is mostly used by unit tests and `serde` deserialization.
-				// ///
-				// ///# Preconditions
-				// ///
-				// ///This function does not check if the input is normalized, it is up to the user to
-				// ///provide normalized input or to normalized the resulting quaternion.
-				// from_xyzw(f32f32f32f32) -> LuaQuat
-
-				///Creates a rotation quaternion from an array.
-				///
-				///# Preconditions
-				///
-				///This function does not check if the input is normalized, it is up to the user to
-				///provide normalized input or to normalized the resulting quaternion.
-				from_array(<invalid: [f32;4]>) -> LuaQuat
-
-				// Exclusion reason: 
-				// ///Creates a new rotation quaternion from a 4D vector.
-				// ///
-				// ///# Preconditions
-				// ///
-				// ///This function does not check if the input is normalized, it is up to the user to
-				// ///provide normalized input or to normalized the resulting quaternion.
-				// from_vec4(LuaVec4) -> LuaQuat
-
-				///Creates a rotation quaternion from a slice.
-				///
-				///# Preconditions
-				///
-				///This function does not check if the input is normalized, it is up to the user to
-				///provide normalized input or to normalized the resulting quaternion.
-				///
-				///# Panics
-				///
-				///Panics if `slice` length is less than 4.
-				from_slice(<invalid: &[f32]>) -> LuaQuat
-
-				///Writes the quaternion to an unaligned slice.
-				///
-				///# Panics
-				///
-				///Panics if `slice` length is less than 4.
-				write_to_slice(self<invalid: &mut [f32]>)
-
-				// Exclusion reason: 
-				// ///Create a quaternion for a normalized rotation `axis` and `angle` (in radians).
-				// ///The axis must be normalized (unit-length).
-				// ///
-				// ///# Panics
-				// ///
-				// ///Will panic if `axis` is not normalized when `glam_assert` is enabled.
-				// from_axis_angle(LuaVec3f32) -> LuaQuat
-
-				// Exclusion reason: 
-				// ///Create a quaternion that rotates `v.length()` radians around `v.normalize()`.
-				// ///
-				// ///`from_scaled_axis(Vec3::ZERO)` results in the identity quaternion.
-				// from_scaled_axis(LuaVec3) -> LuaQuat
-
-				// Exclusion reason: 
-				// ///Creates a quaternion from the `angle` (in radians) around the x axis.
-				// from_rotation_x(f32) -> LuaQuat
-
-				// Exclusion reason: 
-				// ///Creates a quaternion from the `angle` (in radians) around the y axis.
-				// from_rotation_y(f32) -> LuaQuat
-
-				// Exclusion reason: 
-				// ///Creates a quaternion from the `angle` (in radians) around the z axis.
-				// from_rotation_z(f32) -> LuaQuat
-
-				// Exclusion reason: 
-				// ///Creates a quaternion from the given Euler rotation sequence and the angles (in radians).
-				// from_euler(LuaEulerRotf32f32f32) -> LuaQuat
-
-				// Exclusion reason: 
-				// ///Creates a quaternion from a 3x3 rotation matrix.
-				// from_mat3(&LuaMat3) -> LuaQuat
-
-				// Exclusion reason: 
-				// ///Creates a quaternion from a 3x3 rotation matrix inside a homogeneous 4x4 matrix.
-				// from_mat4(&LuaMat4) -> LuaQuat
-
-				// Exclusion reason: 
-				// ///Gets the minimal rotation for transforming `from` to `to`.  The rotation is in the
-				// ///plane spanned by the two vectors.  Will rotate at most 180 degrees.
-				// ///
-				// ///The input vectors must be normalized (unit-length).
-				// ///
-				// ///`from_rotation_arc(from, to) * from ≈ to`.
-				// ///
-				// ///For near-singular cases (from≈to and from≈-to) the current implementation
-				// ///is only accurate to about 0.001 (for `f32`).
-				// ///
-				// ///# Panics
-				// ///
-				// ///Will panic if `from` or `to` are not normalized when `glam_assert` is enabled.
-				// from_rotation_arc(LuaVec3LuaVec3) -> LuaQuat
-
-				// Exclusion reason: 
-				// ///Gets the minimal rotation for transforming `from` to either `to` or `-to`.  This means
-				// ///that the resulting quaternion will rotate `from` so that it is colinear with `to`.
-				// ///
-				// ///The rotation is in the plane spanned by the two vectors.  Will rotate at most 90
-				// ///degrees.
-				// ///
-				// ///The input vectors must be normalized (unit-length).
-				// ///
-				// ///`to.dot(from_rotation_arc_colinear(from, to) * from).abs() ≈ 1`.
-				// ///
-				// ///# Panics
-				// ///
-				// ///Will panic if `from` or `to` are not normalized when `glam_assert` is enabled.
-				// from_rotation_arc_colinear(LuaVec3LuaVec3) -> LuaQuat
-
-				// Exclusion reason: 
-				// ///Gets the minimal rotation for transforming `from` to `to`.  The resulting rotation is
-				// ///around the z axis. Will rotate at most 180 degrees.
-				// ///
-				// ///The input vectors must be normalized (unit-length).
-				// ///
-				// ///`from_rotation_arc_2d(from, to) * from ≈ to`.
-				// ///
-				// ///For near-singular cases (from≈to and from≈-to) the current implementation
-				// ///is only accurate to about 0.001 (for `f32`).
-				// ///
-				// ///# Panics
-				// ///
-				// ///Will panic if `from` or `to` are not normalized when `glam_assert` is enabled.
-				// from_rotation_arc_2d(LuaVec2LuaVec2) -> LuaQuat
-
-				///Returns the rotation axis and angle (in radians) of `self`.
-				to_axis_angle(self)<invalid: (LuaVec3,f32)>
-
-				// Exclusion reason: 
-				// ///Returns the rotation axis scaled by the rotation in radians.
-				// to_scaled_axis(self) -> LuaVec3
-
-				///Returns the rotation angles for the given euler rotation sequence.
-				to_euler(selfLuaEulerRot)<invalid: (f32,f32,f32)>
-
-				///`[x, y, z, w]`
-				to_array(&self)<invalid: [f32;4]>
-
-				// Exclusion reason: 
-				// ///Returns the vector part of the quaternion.
-				// xyz(self) -> LuaVec3
-
-				// Exclusion reason: 
-				// ///Returns the quaternion conjugate of `self`. For a unit quaternion the
-				// ///conjugate is also the inverse.
-				// conjugate(self) -> LuaQuat
-
-				// Exclusion reason: 
-				// ///Returns the inverse of a normalized quaternion.
-				// ///
-				// ///Typically quaternion inverse returns the conjugate of a normalized quaternion.
-				// ///Because `self` is assumed to already be unit length this method *does not* normalize
-				// ///before returning the conjugate.
-				// ///
-				// ///# Panics
-				// ///
-				// ///Will panic if `self` is not normalized when `glam_assert` is enabled.
-				// inverse(self) -> LuaQuat
-
-				// Exclusion reason: 
-				// ///Computes the dot product of `self` and `rhs`. The dot product is
-				// ///equal to the cosine of the angle between two quaternion rotations.
-				// dot(selfLuaQuat) -> f32
-
-				// Exclusion reason: 
-				// ///Computes the length of `self`.
-				// length(self) -> f32
-
-				// Exclusion reason: 
-				// ///Computes the squared length of `self`.
-				// ///
-				// ///This is generally faster than `length()` as it avoids a square
-				// ///root operation.
-				// length_squared(self) -> f32
-
-				// Exclusion reason: 
-				// ///Computes `1.0 / length()`.
-				// ///
-				// ///For valid results, `self` must _not_ be of length zero.
-				// length_recip(self) -> f32
-
-				// Exclusion reason: 
-				// ///Returns `self` normalized to length 1.0.
-				// ///
-				// ///For valid results, `self` must _not_ be of length zero.
-				// ///
-				// ///Panics
-				// ///
-				// ///Will panic if `self` is zero length when `glam_assert` is enabled.
-				// normalize(self) -> LuaQuat
-
-				// Exclusion reason: 
-				// ///Returns `true` if, and only if, all elements are finite.
-				// ///If any element is either `NaN`, positive or negative infinity, this will return `false`.
-				// is_finite(self) -> bool
-
-				// Exclusion reason: 
-				// is_nan(self) -> bool
-
-				// Exclusion reason: 
-				// ///Returns whether `self` of length `1.0` or not.
-				// ///
-				// ///Uses a precision threshold of `1e-6`.
-				// is_normalized(self) -> bool
-
-				// Exclusion reason: 
-				// is_near_identity(self) -> bool
-
-				// Exclusion reason: 
-				// ///Returns the angle (in radians) for the minimal rotation
-				// ///for transforming this quaternion into another.
-				// ///
-				// ///Both quaternions must be normalized.
-				// ///
-				// ///# Panics
-				// ///
-				// ///Will panic if `self` or `rhs` are not normalized when `glam_assert` is enabled.
-				// angle_between(selfLuaQuat) -> f32
-
-				// Exclusion reason: 
-				// ///Returns true if the absolute difference of all elements between `self` and `rhs`
-				// ///is less than or equal to `max_abs_diff`.
-				// ///
-				// ///This can be used to compare if two quaternions contain similar elements. It works
-				// ///best when comparing with a known value. The `max_abs_diff` that should be used used
-				// ///depends on the values being compared against.
-				// ///
-				// ///For more see
-				// ///[comparing floating point numbers](https://randomascii.wordpress.com/2012/02/25/comparing-floating-point-numbers-2012-edition/).
-				// abs_diff_eq(selfLuaQuatf32) -> bool
-
-				// Exclusion reason: 
-				// ///Performs a linear interpolation between `self` and `rhs` based on
-				// ///the value `s`.
-				// ///
-				// ///When `s` is `0.0`, the result will be equal to `self`.  When `s`
-				// ///is `1.0`, the result will be equal to `rhs`.
-				// ///
-				// ///# Panics
-				// ///
-				// ///Will panic if `self` or `end` are not normalized when `glam_assert` is enabled.
-				// lerp(selfLuaQuatf32) -> LuaQuat
-
-				// Exclusion reason: 
-				// ///Performs a spherical linear interpolation between `self` and `end`
-				// ///based on the value `s`.
-				// ///
-				// ///When `s` is `0.0`, the result will be equal to `self`.  When `s`
-				// ///is `1.0`, the result will be equal to `end`.
-				// ///
-				// ///# Panics
-				// ///
-				// ///Will panic if `self` or `end` are not normalized when `glam_assert` is enabled.
-				// slerp(selfLuaQuatf32) -> LuaQuat
-
-				// Exclusion reason: 
-				// ///Multiplies a quaternion and a 3D vector, returning the rotated vector.
-				// ///
-				// ///# Panics
-				// ///
-				// ///Will panic if `self` is not normalized when `glam_assert` is enabled.
-				// mul_vec3(selfLuaVec3) -> LuaVec3
-
-				// Exclusion reason: 
-				// ///Multiplies two quaternions. If they each represent a rotation, the result will
-				// ///represent the combined rotation.
-				// ///
-				// ///Note that due to floating point rounding the result may not be perfectly normalized.
-				// ///
-				// ///# Panics
-				// ///
-				// ///Will panic if `self` or `rhs` are not normalized when `glam_assert` is enabled.
-				// mul_quat(selfLuaQuat) -> LuaQuat
-
-				///Creates a quaternion from a 3x3 rotation matrix inside a 3D affine transform.
-				from_affine3() -> LuaQuat
-
-				///Multiplies a quaternion and a 3D vector, returning the rotated vector.
-				mul_vec3a(self)
-
-				// Exclusion reason: 
-				// as_f64(self) -> LuaDQuat
-
-				try_from()
-
-				///Returns the argument unchanged.
-				from()
-
-				// Exclusion reason: 
-				// from(LuaQuat) -> LuaQuat
-
-				// Exclusion reason: 
-				// from(LuaQuat) -> LuaQuat
-
-				// Exclusion reason: 
-				// from(LuaQuat) -> LuaQuat
-
-				// Exclusion reason: 
-				// from(LuaQuat) -> LuaQuat
-
-				///Calls `U::from(self)`.
-				///
-				///That is, this conversion is whatever the implementation of
-				///<code>[From]&lt;T&gt; for U</code> chooses to do.
-				into(self)
-
-				borrow(&self)
-
-				type_id(&self)
-
-				try_into(self)
-
-				borrow_mut(<invalid: &mut self>)
-
-				to_string(&self)
-
-				to_owned(&self)
-
-				clone_into(&self)
-
-				is_valid_bit_pattern() -> bool
-
-				serialize(&self)
-
-				deserialize()
-
-				// Exclusion reason: 
-				// clone(&self) -> LuaQuat
-
-				fmt(&self)
-
-				fmt(&self)
-
-				// Exclusion reason: 
-				// ///Adds two quaternions.
-				// ///
-				// ///The sum is not guaranteed to be normalized.
-				// ///
-				// ///Note that addition is not the same as combining the rotations represented by the
-				// ///two quaternions! That corresponds to multiplication.
-				// add(selfLuaQuat) -> LuaQuat
-
-				// Exclusion reason: 
-				// ///Subtracts the `rhs` quaternion from `self`.
-				// ///
-				// ///The difference is not guaranteed to be normalized.
-				// sub(selfLuaQuat) -> LuaQuat
-
-				// Exclusion reason: 
-				// ///Multiplies a quaternion by a scalar value.
-				// ///
-				// ///The product is not guaranteed to be normalized.
-				// mul(selff32) -> LuaQuat
-
-				// Exclusion reason: 
-				// ///Multiplies two quaternions. If they each represent a rotation, the result will
-				// ///represent the combined rotation.
-				// ///
-				// ///Note that due to floating point rounding the result may not be perfectly
-				// ///normalized.
-				// ///
-				// ///# Panics
-				// ///
-				// ///Will panic if `self` or `rhs` are not normalized when `glam_assert` is enabled.
-				// mul(selfLuaQuat) -> LuaQuat
-
-				///Multiplies a quaternion and a 3D vector, returning the rotated vector.
-				///
-				///# Panics
-				///
-				///Will panic if `self` is not normalized when `glam_assert` is enabled.
-				mul(selfLuaVec3)
-
-				mul(self)
-
-				// Exclusion reason: 
-				// ///Divides a quaternion by a scalar value.
-				// ///The quotient is not guaranteed to be normalized.
-				// div(selff32) -> LuaQuat
-
-				///Multiplies two quaternions. If they each represent a rotation, the result will
-				///represent the combined rotation.
-				///
-				///Note that due to floating point rounding the result may not be perfectly
-				///normalized.
-				///
-				///# Panics
-				///
-				///Will panic if `self` or `rhs` are not normalized when `glam_assert` is enabled.
-				mul_assign(<invalid: &mut self>LuaQuat)
-
-				// Exclusion reason: 
-				// neg(self) -> LuaQuat
-
-				// Exclusion reason: 
-				// default() -> LuaQuat
-
-				// Exclusion reason: 
-				// eq(&self&LuaQuat) -> bool
-
-				as_ref(&self)<invalid: &[f32;4]>
-
-				sum() -> LuaQuat
-
-				product() -> LuaQuat
-
-				deref(&self)
-
-				deref_mut(<invalid: &mut self>)
-
-			)
-+ BinaryOps			(
+			glam::f32::sse2::quat::Quat : Value
+:				AutoMethods
+				(
+					///Creates a new rotation quaternion.
+					///
+					///This should generally not be called manually unless you know what you are doing.
+					///Use one of the other constructors instead such as `identity` or `from_axis_angle`.
+					///
+					///`from_xyzw` is mostly used by unit tests and `serde` deserialization.
+					///
+					///# Preconditions
+					///
+					///This function does not check if the input is normalized, it is up to the user to
+					///provide normalized input or to normalized the resulting quaternion.
+					from_xyzw(f32f32f32f32) -> LuaQuat
+,
+					// Exclusion reason: Unsupported argument [f32;4]
+					// ///Creates a rotation quaternion from an array.
+					// ///
+					// ///# Preconditions
+					// ///
+					// ///This function does not check if the input is normalized, it is up to the user to
+					// ///provide normalized input or to normalized the resulting quaternion.
+					// from_array(<invalid: [f32;4]>) -> LuaQuat
+,
+					///Creates a new rotation quaternion from a 4D vector.
+					///
+					///# Preconditions
+					///
+					///This function does not check if the input is normalized, it is up to the user to
+					///provide normalized input or to normalized the resulting quaternion.
+					from_vec4(LuaVec4) -> LuaQuat
+,
+					// Exclusion reason: Unsupported argument &[f32]
+					// ///Creates a rotation quaternion from a slice.
+					// ///
+					// ///# Preconditions
+					// ///
+					// ///This function does not check if the input is normalized, it is up to the user to
+					// ///provide normalized input or to normalized the resulting quaternion.
+					// ///
+					// ///# Panics
+					// ///
+					// ///Panics if `slice` length is less than 4.
+					// from_slice(<invalid: &[f32]>) -> LuaQuat
+,
+					// Exclusion reason: Unsupported argument &mut [f32]
+					// ///Writes the quaternion to an unaligned slice.
+					// ///
+					// ///# Panics
+					// ///
+					// ///Panics if `slice` length is less than 4.
+					// write_to_slice(self<invalid: &mut [f32]>)
+,
+					///Create a quaternion for a normalized rotation `axis` and `angle` (in radians).
+					///The axis must be normalized (unit-length).
+					///
+					///# Panics
+					///
+					///Will panic if `axis` is not normalized when `glam_assert` is enabled.
+					from_axis_angle(LuaVec3f32) -> LuaQuat
+,
+					///Create a quaternion that rotates `v.length()` radians around `v.normalize()`.
+					///
+					///`from_scaled_axis(Vec3::ZERO)` results in the identity quaternion.
+					from_scaled_axis(LuaVec3) -> LuaQuat
+,
+					///Creates a quaternion from the `angle` (in radians) around the x axis.
+					from_rotation_x(f32) -> LuaQuat
+,
+					///Creates a quaternion from the `angle` (in radians) around the y axis.
+					from_rotation_y(f32) -> LuaQuat
+,
+					///Creates a quaternion from the `angle` (in radians) around the z axis.
+					from_rotation_z(f32) -> LuaQuat
+,
+					///Creates a quaternion from the given Euler rotation sequence and the angles (in radians).
+					from_euler(LuaEulerRotf32f32f32) -> LuaQuat
+,
+					///Creates a quaternion from a 3x3 rotation matrix.
+					from_mat3(&LuaMat3) -> LuaQuat
+,
+					///Creates a quaternion from a 3x3 rotation matrix inside a homogeneous 4x4 matrix.
+					from_mat4(&LuaMat4) -> LuaQuat
+,
+					///Gets the minimal rotation for transforming `from` to `to`.  The rotation is in the
+					///plane spanned by the two vectors.  Will rotate at most 180 degrees.
+					///
+					///The input vectors must be normalized (unit-length).
+					///
+					///`from_rotation_arc(from, to) * from ≈ to`.
+					///
+					///For near-singular cases (from≈to and from≈-to) the current implementation
+					///is only accurate to about 0.001 (for `f32`).
+					///
+					///# Panics
+					///
+					///Will panic if `from` or `to` are not normalized when `glam_assert` is enabled.
+					from_rotation_arc(LuaVec3LuaVec3) -> LuaQuat
+,
+					///Gets the minimal rotation for transforming `from` to either `to` or `-to`.  This means
+					///that the resulting quaternion will rotate `from` so that it is colinear with `to`.
+					///
+					///The rotation is in the plane spanned by the two vectors.  Will rotate at most 90
+					///degrees.
+					///
+					///The input vectors must be normalized (unit-length).
+					///
+					///`to.dot(from_rotation_arc_colinear(from, to) * from).abs() ≈ 1`.
+					///
+					///# Panics
+					///
+					///Will panic if `from` or `to` are not normalized when `glam_assert` is enabled.
+					from_rotation_arc_colinear(LuaVec3LuaVec3) -> LuaQuat
+,
+					///Gets the minimal rotation for transforming `from` to `to`.  The resulting rotation is
+					///around the z axis. Will rotate at most 180 degrees.
+					///
+					///The input vectors must be normalized (unit-length).
+					///
+					///`from_rotation_arc_2d(from, to) * from ≈ to`.
+					///
+					///For near-singular cases (from≈to and from≈-to) the current implementation
+					///is only accurate to about 0.001 (for `f32`).
+					///
+					///# Panics
+					///
+					///Will panic if `from` or `to` are not normalized when `glam_assert` is enabled.
+					from_rotation_arc_2d(LuaVec2LuaVec2) -> LuaQuat
+,
+					// Exclusion reason: Unsupported argument (LuaVec3,f32)
+					// ///Returns the rotation axis and angle (in radians) of `self`.
+					// to_axis_angle(self)<invalid: (LuaVec3,f32)>
+,
+					///Returns the rotation axis scaled by the rotation in radians.
+					to_scaled_axis(self) -> LuaVec3
+,
+					// Exclusion reason: Unsupported argument (f32,f32,f32)
+					// ///Returns the rotation angles for the given euler rotation sequence.
+					// to_euler(selfLuaEulerRot)<invalid: (f32,f32,f32)>
+,
+					// Exclusion reason: Unsupported argument [f32;4]
+					// ///`[x, y, z, w]`
+					// to_array(&self)<invalid: [f32;4]>
+,
+					///Returns the vector part of the quaternion.
+					xyz(self) -> LuaVec3
+,
+					///Returns the quaternion conjugate of `self`. For a unit quaternion the
+					///conjugate is also the inverse.
+					conjugate(self) -> LuaQuat
+,
+					///Returns the inverse of a normalized quaternion.
+					///
+					///Typically quaternion inverse returns the conjugate of a normalized quaternion.
+					///Because `self` is assumed to already be unit length this method *does not* normalize
+					///before returning the conjugate.
+					///
+					///# Panics
+					///
+					///Will panic if `self` is not normalized when `glam_assert` is enabled.
+					inverse(self) -> LuaQuat
+,
+					///Computes the dot product of `self` and `rhs`. The dot product is
+					///equal to the cosine of the angle between two quaternion rotations.
+					dot(selfLuaQuat) -> f32
+,
+					///Computes the length of `self`.
+					length(self) -> f32
+,
+					///Computes the squared length of `self`.
+					///
+					///This is generally faster than `length()` as it avoids a square
+					///root operation.
+					length_squared(self) -> f32
+,
+					///Computes `1.0 / length()`.
+					///
+					///For valid results, `self` must _not_ be of length zero.
+					length_recip(self) -> f32
+,
+					///Returns `self` normalized to length 1.0.
+					///
+					///For valid results, `self` must _not_ be of length zero.
+					///
+					///Panics
+					///
+					///Will panic if `self` is zero length when `glam_assert` is enabled.
+					normalize(self) -> LuaQuat
+,
+					///Returns `true` if, and only if, all elements are finite.
+					///If any element is either `NaN`, positive or negative infinity, this will return `false`.
+					is_finite(self) -> bool
+,
+					is_nan(self) -> bool
+,
+					///Returns whether `self` of length `1.0` or not.
+					///
+					///Uses a precision threshold of `1e-6`.
+					is_normalized(self) -> bool
+,
+					is_near_identity(self) -> bool
+,
+					///Returns the angle (in radians) for the minimal rotation
+					///for transforming this quaternion into another.
+					///
+					///Both quaternions must be normalized.
+					///
+					///# Panics
+					///
+					///Will panic if `self` or `rhs` are not normalized when `glam_assert` is enabled.
+					angle_between(selfLuaQuat) -> f32
+,
+					///Returns true if the absolute difference of all elements between `self` and `rhs`
+					///is less than or equal to `max_abs_diff`.
+					///
+					///This can be used to compare if two quaternions contain similar elements. It works
+					///best when comparing with a known value. The `max_abs_diff` that should be used used
+					///depends on the values being compared against.
+					///
+					///For more see
+					///[comparing floating point numbers](https://randomascii.wordpress.com/2012/02/25/comparing-floating-point-numbers-2012-edition/).
+					abs_diff_eq(selfLuaQuatf32) -> bool
+,
+					///Performs a linear interpolation between `self` and `rhs` based on
+					///the value `s`.
+					///
+					///When `s` is `0.0`, the result will be equal to `self`.  When `s`
+					///is `1.0`, the result will be equal to `rhs`.
+					///
+					///# Panics
+					///
+					///Will panic if `self` or `end` are not normalized when `glam_assert` is enabled.
+					lerp(selfLuaQuatf32) -> LuaQuat
+,
+					///Performs a spherical linear interpolation between `self` and `end`
+					///based on the value `s`.
+					///
+					///When `s` is `0.0`, the result will be equal to `self`.  When `s`
+					///is `1.0`, the result will be equal to `end`.
+					///
+					///# Panics
+					///
+					///Will panic if `self` or `end` are not normalized when `glam_assert` is enabled.
+					slerp(selfLuaQuatf32) -> LuaQuat
+,
+					///Multiplies a quaternion and a 3D vector, returning the rotated vector.
+					///
+					///# Panics
+					///
+					///Will panic if `self` is not normalized when `glam_assert` is enabled.
+					mul_vec3(selfLuaVec3) -> LuaVec3
+,
+					///Multiplies two quaternions. If they each represent a rotation, the result will
+					///represent the combined rotation.
+					///
+					///Note that due to floating point rounding the result may not be perfectly normalized.
+					///
+					///# Panics
+					///
+					///Will panic if `self` or `rhs` are not normalized when `glam_assert` is enabled.
+					mul_quat(selfLuaQuat) -> LuaQuat
+,
+					// Exclusion reason: Unsupported argument crate::Affine3A
+					// ///Creates a quaternion from a 3x3 rotation matrix inside a 3D affine transform.
+					// from_affine3() -> LuaQuat
+,
+					// Exclusion reason: Unsupported argument Vec3A,Unsupported argument Vec3A
+					// ///Multiplies a quaternion and a 3D vector, returning the rotated vector.
+					// mul_vec3a(self)
+,
+					as_f64(self) -> LuaDQuat
+,
+					// Exclusion reason: Unsupported argument U,Unsupported argument Result
+					// try_from()
+,
+					// Exclusion reason: Unsupported argument T,Unsupported argument T
+					// ///Returns the argument unchanged.
+					// from()
+,
+					from(LuaQuat) -> LuaQuat
+,
+					from(LuaQuat) -> LuaQuat
+,
+					from(LuaQuat) -> LuaQuat
+,
+					from(LuaQuat) -> LuaQuat
+,
+					// Exclusion reason: Unsupported argument U
+					// ///Calls `U::from(self)`.
+					// ///
+					// ///That is, this conversion is whatever the implementation of
+					// ///<code>[From]&lt;T&gt; for U</code> chooses to do.
+					// into(self)
+,
+					// Exclusion reason: Unsupported argument T
+					// borrow(&self)
+,
+					// Exclusion reason: Unsupported argument TypeId
+					// type_id(&self)
+,
+					// Exclusion reason: Unsupported argument Result
+					// try_into(self)
+,
+					// Exclusion reason: Unsupported argument &mut self,Unsupported argument T
+					// borrow_mut(<invalid: &mut self>)
+,
+					// Exclusion reason: Unsupported argument String
+					// to_string(&self)
+,
+					// Exclusion reason: Unsupported argument T
+					// to_owned(&self)
+,
+					// Exclusion reason: Unsupported argument T
+					// clone_into(&self)
+,
+					// Exclusion reason: Unsupported argument T
+					// is_valid_bit_pattern() -> bool
+,
+					// Exclusion reason: Unsupported argument S,Unsupported argument Result,Generics on the method
+					// serialize(&self)
+,
+					// Exclusion reason: Unsupported argument D,Unsupported argument Result,Generics on the method
+					// deserialize()
+,
+					clone(&self) -> LuaQuat
+,
+					// Exclusion reason: Unsupported argument fmt::Formatter,Unsupported argument fmt::Result
+					// fmt(&self)
+,
+					// Exclusion reason: Unsupported argument fmt::Formatter,Unsupported argument fmt::Result
+					// fmt(&self)
+,
+					///Adds two quaternions.
+					///
+					///The sum is not guaranteed to be normalized.
+					///
+					///Note that addition is not the same as combining the rotations represented by the
+					///two quaternions! That corresponds to multiplication.
+					add(selfLuaQuat) -> LuaQuat
+,
+					///Subtracts the `rhs` quaternion from `self`.
+					///
+					///The difference is not guaranteed to be normalized.
+					sub(selfLuaQuat) -> LuaQuat
+,
+					///Multiplies a quaternion by a scalar value.
+					///
+					///The product is not guaranteed to be normalized.
+					mul(selff32) -> LuaQuat
+,
+					///Multiplies two quaternions. If they each represent a rotation, the result will
+					///represent the combined rotation.
+					///
+					///Note that due to floating point rounding the result may not be perfectly
+					///normalized.
+					///
+					///# Panics
+					///
+					///Will panic if `self` or `rhs` are not normalized when `glam_assert` is enabled.
+					mul(selfLuaQuat) -> LuaQuat
+,
+					// Exclusion reason: Unsupported argument QualifiedPath { name: "Output", args: AngleBracketed { args: [], bindings: [] }, self_type: Generic("Self"), trait_: ResolvedPath { name: "", id: Id("2:3313:2263"), args: None, param_names: [] } }
+					// ///Multiplies a quaternion and a 3D vector, returning the rotated vector.
+					// ///
+					// ///# Panics
+					// ///
+					// ///Will panic if `self` is not normalized when `glam_assert` is enabled.
+					// mul(selfLuaVec3)
+,
+					// Exclusion reason: Unsupported argument Vec3A,Unsupported argument QualifiedPath { name: "Output", args: AngleBracketed { args: [], bindings: [] }, self_type: Generic("Self"), trait_: ResolvedPath { name: "", id: Id("2:3313:2263"), args: None, param_names: [] } }
+					// mul(self)
+,
+					///Divides a quaternion by a scalar value.
+					///The quotient is not guaranteed to be normalized.
+					div(selff32) -> LuaQuat
+,
+					// Exclusion reason: Unsupported argument &mut self
+					// ///Multiplies two quaternions. If they each represent a rotation, the result will
+					// ///represent the combined rotation.
+					// ///
+					// ///Note that due to floating point rounding the result may not be perfectly
+					// ///normalized.
+					// ///
+					// ///# Panics
+					// ///
+					// ///Will panic if `self` or `rhs` are not normalized when `glam_assert` is enabled.
+					// mul_assign(<invalid: &mut self>LuaQuat)
+,
+					neg(self) -> LuaQuat
+,
+					default() -> LuaQuat
+,
+					eq(&self&LuaQuat) -> bool
+,
+					// Exclusion reason: Unsupported argument &[f32;4]
+					// as_ref(&self)<invalid: &[f32;4]>
+,
+					// Exclusion reason: Unsupported argument I,Generics on the method
+					// sum() -> LuaQuat
+,
+					// Exclusion reason: Unsupported argument I,Generics on the method
+					// product() -> LuaQuat
+,
+					// Exclusion reason: Unsupported argument QualifiedPath { name: "Target", args: AngleBracketed { args: [], bindings: [] }, self_type: Generic("Self"), trait_: ResolvedPath { name: "", id: Id("2:3454:115"), args: None, param_names: [] } }
+					// deref(&self)
+,
+					// Exclusion reason: Unsupported argument &mut self,Unsupported argument QualifiedPath { name: "Target", args: AngleBracketed { args: [], bindings: [] }, self_type: Generic("Self"), trait_: ResolvedPath { name: "", id: Id("2:3454:115"), args: None, param_names: [] } }
+					// deref_mut(<invalid: &mut self>)
+,
+				)
+				+ BinaryOps
+				(
 self Add LuaQuat -> LuaQuat -> LuaQuat
 self Sub LuaQuat -> LuaQuat -> LuaQuat
 self Div f32 -> LuaQuat -> LuaQuat
 self Mul f32 -> LuaQuat -> LuaQuat
 self Mul LuaQuat -> LuaQuat -> LuaQuat
 self Mul LuaVec3 -> LuaVec3 -> LuaVec3
-			)
-+ UnaryOps			(
-			)
-impl			{
+				)
+				+ UnaryOps
+				(
+				)
+			impl
+			{
 			}
 		}
-		{
+,		{
 			///A quaternion representing an orientation.
 			///
 			///This quaternion is intended to be of unit length but may denormalize due to
 			///floating point "error creep" which can occur when successive quaternion
 			///operations are applied.
-glam::f64::dquat::DQuat : Value
-AutoMethods			(
-				// Exclusion reason: 
-				// ///Creates a new rotation quaternion.
-				// ///
-				// ///This should generally not be called manually unless you know what you are doing.
-				// ///Use one of the other constructors instead such as `identity` or `from_axis_angle`.
-				// ///
-				// ///`from_xyzw` is mostly used by unit tests and `serde` deserialization.
-				// ///
-				// ///# Preconditions
-				// ///
-				// ///This function does not check if the input is normalized, it is up to the user to
-				// ///provide normalized input or to normalized the resulting quaternion.
-				// from_xyzw(f64f64f64f64) -> LuaDQuat
-
-				///Creates a rotation quaternion from an array.
-				///
-				///# Preconditions
-				///
-				///This function does not check if the input is normalized, it is up to the user to
-				///provide normalized input or to normalized the resulting quaternion.
-				from_array(<invalid: [f64;4]>) -> LuaDQuat
-
-				// Exclusion reason: 
-				// ///Creates a new rotation quaternion from a 4D vector.
-				// ///
-				// ///# Preconditions
-				// ///
-				// ///This function does not check if the input is normalized, it is up to the user to
-				// ///provide normalized input or to normalized the resulting quaternion.
-				// from_vec4(LuaDVec4) -> LuaDQuat
-
-				///Creates a rotation quaternion from a slice.
-				///
-				///# Preconditions
-				///
-				///This function does not check if the input is normalized, it is up to the user to
-				///provide normalized input or to normalized the resulting quaternion.
-				///
-				///# Panics
-				///
-				///Panics if `slice` length is less than 4.
-				from_slice(<invalid: &[f64]>) -> LuaDQuat
-
-				///Writes the quaternion to an unaligned slice.
-				///
-				///# Panics
-				///
-				///Panics if `slice` length is less than 4.
-				write_to_slice(self<invalid: &mut [f64]>)
-
-				// Exclusion reason: 
-				// ///Create a quaternion for a normalized rotation `axis` and `angle` (in radians).
-				// ///The axis must be normalized (unit-length).
-				// ///
-				// ///# Panics
-				// ///
-				// ///Will panic if `axis` is not normalized when `glam_assert` is enabled.
-				// from_axis_angle(LuaDVec3f64) -> LuaDQuat
-
-				// Exclusion reason: 
-				// ///Create a quaternion that rotates `v.length()` radians around `v.normalize()`.
-				// ///
-				// ///`from_scaled_axis(Vec3::ZERO)` results in the identity quaternion.
-				// from_scaled_axis(LuaDVec3) -> LuaDQuat
-
-				// Exclusion reason: 
-				// ///Creates a quaternion from the `angle` (in radians) around the x axis.
-				// from_rotation_x(f64) -> LuaDQuat
-
-				// Exclusion reason: 
-				// ///Creates a quaternion from the `angle` (in radians) around the y axis.
-				// from_rotation_y(f64) -> LuaDQuat
-
-				// Exclusion reason: 
-				// ///Creates a quaternion from the `angle` (in radians) around the z axis.
-				// from_rotation_z(f64) -> LuaDQuat
-
-				// Exclusion reason: 
-				// ///Creates a quaternion from the given Euler rotation sequence and the angles (in radians).
-				// from_euler(LuaEulerRotf64f64f64) -> LuaDQuat
-
-				// Exclusion reason: 
-				// ///Creates a quaternion from a 3x3 rotation matrix.
-				// from_mat3(&LuaDMat3) -> LuaDQuat
-
-				// Exclusion reason: 
-				// ///Creates a quaternion from a 3x3 rotation matrix inside a homogeneous 4x4 matrix.
-				// from_mat4(&LuaDMat4) -> LuaDQuat
-
-				// Exclusion reason: 
-				// ///Gets the minimal rotation for transforming `from` to `to`.  The rotation is in the
-				// ///plane spanned by the two vectors.  Will rotate at most 180 degrees.
-				// ///
-				// ///The input vectors must be normalized (unit-length).
-				// ///
-				// ///`from_rotation_arc(from, to) * from ≈ to`.
-				// ///
-				// ///For near-singular cases (from≈to and from≈-to) the current implementation
-				// ///is only accurate to about 0.001 (for `f32`).
-				// ///
-				// ///# Panics
-				// ///
-				// ///Will panic if `from` or `to` are not normalized when `glam_assert` is enabled.
-				// from_rotation_arc(LuaDVec3LuaDVec3) -> LuaDQuat
-
-				// Exclusion reason: 
-				// ///Gets the minimal rotation for transforming `from` to either `to` or `-to`.  This means
-				// ///that the resulting quaternion will rotate `from` so that it is colinear with `to`.
-				// ///
-				// ///The rotation is in the plane spanned by the two vectors.  Will rotate at most 90
-				// ///degrees.
-				// ///
-				// ///The input vectors must be normalized (unit-length).
-				// ///
-				// ///`to.dot(from_rotation_arc_colinear(from, to) * from).abs() ≈ 1`.
-				// ///
-				// ///# Panics
-				// ///
-				// ///Will panic if `from` or `to` are not normalized when `glam_assert` is enabled.
-				// from_rotation_arc_colinear(LuaDVec3LuaDVec3) -> LuaDQuat
-
-				// Exclusion reason: 
-				// ///Gets the minimal rotation for transforming `from` to `to`.  The resulting rotation is
-				// ///around the z axis. Will rotate at most 180 degrees.
-				// ///
-				// ///The input vectors must be normalized (unit-length).
-				// ///
-				// ///`from_rotation_arc_2d(from, to) * from ≈ to`.
-				// ///
-				// ///For near-singular cases (from≈to and from≈-to) the current implementation
-				// ///is only accurate to about 0.001 (for `f32`).
-				// ///
-				// ///# Panics
-				// ///
-				// ///Will panic if `from` or `to` are not normalized when `glam_assert` is enabled.
-				// from_rotation_arc_2d(LuaDVec2LuaDVec2) -> LuaDQuat
-
-				///Returns the rotation axis and angle (in radians) of `self`.
-				to_axis_angle(self)<invalid: (LuaDVec3,f64)>
-
-				// Exclusion reason: 
-				// ///Returns the rotation axis scaled by the rotation in radians.
-				// to_scaled_axis(self) -> LuaDVec3
-
-				///Returns the rotation angles for the given euler rotation sequence.
-				to_euler(selfLuaEulerRot)<invalid: (f64,f64,f64)>
-
-				///`[x, y, z, w]`
-				to_array(&self)<invalid: [f64;4]>
-
-				// Exclusion reason: 
-				// ///Returns the vector part of the quaternion.
-				// xyz(self) -> LuaDVec3
-
-				// Exclusion reason: 
-				// ///Returns the quaternion conjugate of `self`. For a unit quaternion the
-				// ///conjugate is also the inverse.
-				// conjugate(self) -> LuaDQuat
-
-				// Exclusion reason: 
-				// ///Returns the inverse of a normalized quaternion.
-				// ///
-				// ///Typically quaternion inverse returns the conjugate of a normalized quaternion.
-				// ///Because `self` is assumed to already be unit length this method *does not* normalize
-				// ///before returning the conjugate.
-				// ///
-				// ///# Panics
-				// ///
-				// ///Will panic if `self` is not normalized when `glam_assert` is enabled.
-				// inverse(self) -> LuaDQuat
-
-				// Exclusion reason: 
-				// ///Computes the dot product of `self` and `rhs`. The dot product is
-				// ///equal to the cosine of the angle between two quaternion rotations.
-				// dot(selfLuaDQuat) -> f64
-
-				// Exclusion reason: 
-				// ///Computes the length of `self`.
-				// length(self) -> f64
-
-				// Exclusion reason: 
-				// ///Computes the squared length of `self`.
-				// ///
-				// ///This is generally faster than `length()` as it avoids a square
-				// ///root operation.
-				// length_squared(self) -> f64
-
-				// Exclusion reason: 
-				// ///Computes `1.0 / length()`.
-				// ///
-				// ///For valid results, `self` must _not_ be of length zero.
-				// length_recip(self) -> f64
-
-				// Exclusion reason: 
-				// ///Returns `self` normalized to length 1.0.
-				// ///
-				// ///For valid results, `self` must _not_ be of length zero.
-				// ///
-				// ///Panics
-				// ///
-				// ///Will panic if `self` is zero length when `glam_assert` is enabled.
-				// normalize(self) -> LuaDQuat
-
-				// Exclusion reason: 
-				// ///Returns `true` if, and only if, all elements are finite.
-				// ///If any element is either `NaN`, positive or negative infinity, this will return `false`.
-				// is_finite(self) -> bool
-
-				// Exclusion reason: 
-				// is_nan(self) -> bool
-
-				// Exclusion reason: 
-				// ///Returns whether `self` of length `1.0` or not.
-				// ///
-				// ///Uses a precision threshold of `1e-6`.
-				// is_normalized(self) -> bool
-
-				// Exclusion reason: 
-				// is_near_identity(self) -> bool
-
-				// Exclusion reason: 
-				// ///Returns the angle (in radians) for the minimal rotation
-				// ///for transforming this quaternion into another.
-				// ///
-				// ///Both quaternions must be normalized.
-				// ///
-				// ///# Panics
-				// ///
-				// ///Will panic if `self` or `rhs` are not normalized when `glam_assert` is enabled.
-				// angle_between(selfLuaDQuat) -> f64
-
-				// Exclusion reason: 
-				// ///Returns true if the absolute difference of all elements between `self` and `rhs`
-				// ///is less than or equal to `max_abs_diff`.
-				// ///
-				// ///This can be used to compare if two quaternions contain similar elements. It works
-				// ///best when comparing with a known value. The `max_abs_diff` that should be used used
-				// ///depends on the values being compared against.
-				// ///
-				// ///For more see
-				// ///[comparing floating point numbers](https://randomascii.wordpress.com/2012/02/25/comparing-floating-point-numbers-2012-edition/).
-				// abs_diff_eq(selfLuaDQuatf64) -> bool
-
-				// Exclusion reason: 
-				// ///Performs a linear interpolation between `self` and `rhs` based on
-				// ///the value `s`.
-				// ///
-				// ///When `s` is `0.0`, the result will be equal to `self`.  When `s`
-				// ///is `1.0`, the result will be equal to `rhs`.
-				// ///
-				// ///# Panics
-				// ///
-				// ///Will panic if `self` or `end` are not normalized when `glam_assert` is enabled.
-				// lerp(selfLuaDQuatf64) -> LuaDQuat
-
-				// Exclusion reason: 
-				// ///Performs a spherical linear interpolation between `self` and `end`
-				// ///based on the value `s`.
-				// ///
-				// ///When `s` is `0.0`, the result will be equal to `self`.  When `s`
-				// ///is `1.0`, the result will be equal to `end`.
-				// ///
-				// ///# Panics
-				// ///
-				// ///Will panic if `self` or `end` are not normalized when `glam_assert` is enabled.
-				// slerp(selfLuaDQuatf64) -> LuaDQuat
-
-				// Exclusion reason: 
-				// ///Multiplies a quaternion and a 3D vector, returning the rotated vector.
-				// ///
-				// ///# Panics
-				// ///
-				// ///Will panic if `self` is not normalized when `glam_assert` is enabled.
-				// mul_vec3(selfLuaDVec3) -> LuaDVec3
-
-				// Exclusion reason: 
-				// ///Multiplies two quaternions. If they each represent a rotation, the result will
-				// ///represent the combined rotation.
-				// ///
-				// ///Note that due to floating point rounding the result may not be perfectly normalized.
-				// ///
-				// ///# Panics
-				// ///
-				// ///Will panic if `self` or `rhs` are not normalized when `glam_assert` is enabled.
-				// mul_quat(selfLuaDQuat) -> LuaDQuat
-
-				///Creates a quaternion from a 3x3 rotation matrix inside a 3D affine transform.
-				from_affine3() -> LuaDQuat
-
-				// Exclusion reason: 
-				// as_f32(self) -> LuaQuat
-
-				try_from()
-
-				///Returns the argument unchanged.
-				from()
-
-				// Exclusion reason: 
-				// from(LuaDQuat) -> LuaDQuat
-
-				// Exclusion reason: 
-				// from(LuaDQuat) -> LuaDQuat
-
-				// Exclusion reason: 
-				// from(LuaDQuat) -> LuaDQuat
-
-				///Calls `U::from(self)`.
-				///
-				///That is, this conversion is whatever the implementation of
-				///<code>[From]&lt;T&gt; for U</code> chooses to do.
-				into(self)
-
-				borrow(&self)
-
-				type_id(&self)
-
-				try_into(self)
-
-				borrow_mut(<invalid: &mut self>)
-
-				to_string(&self)
-
-				to_owned(&self)
-
-				clone_into(&self)
-
-				is_valid_bit_pattern() -> bool
-
-				serialize(&self)
-
-				deserialize()
-
-				// Exclusion reason: 
-				// clone(&self) -> LuaDQuat
-
-				fmt(&self)
-
-				fmt(&self)
-
-				// Exclusion reason: 
-				// ///Adds two quaternions.
-				// ///
-				// ///The sum is not guaranteed to be normalized.
-				// ///
-				// ///Note that addition is not the same as combining the rotations represented by the
-				// ///two quaternions! That corresponds to multiplication.
-				// add(selfLuaDQuat) -> LuaDQuat
-
-				// Exclusion reason: 
-				// ///Subtracts the `rhs` quaternion from `self`.
-				// ///
-				// ///The difference is not guaranteed to be normalized.
-				// sub(selfLuaDQuat) -> LuaDQuat
-
-				// Exclusion reason: 
-				// ///Multiplies a quaternion by a scalar value.
-				// ///
-				// ///The product is not guaranteed to be normalized.
-				// mul(selff64) -> LuaDQuat
-
-				// Exclusion reason: 
-				// ///Multiplies two quaternions. If they each represent a rotation, the result will
-				// ///represent the combined rotation.
-				// ///
-				// ///Note that due to floating point rounding the result may not be perfectly
-				// ///normalized.
-				// ///
-				// ///# Panics
-				// ///
-				// ///Will panic if `self` or `rhs` are not normalized when `glam_assert` is enabled.
-				// mul(selfLuaDQuat) -> LuaDQuat
-
-				///Multiplies a quaternion and a 3D vector, returning the rotated vector.
-				///
-				///# Panics
-				///
-				///Will panic if `self` is not normalized when `glam_assert` is enabled.
-				mul(selfLuaDVec3)
-
-				// Exclusion reason: 
-				// ///Divides a quaternion by a scalar value.
-				// ///The quotient is not guaranteed to be normalized.
-				// div(selff64) -> LuaDQuat
-
-				///Multiplies two quaternions. If they each represent a rotation, the result will
-				///represent the combined rotation.
-				///
-				///Note that due to floating point rounding the result may not be perfectly
-				///normalized.
-				///
-				///# Panics
-				///
-				///Will panic if `self` or `rhs` are not normalized when `glam_assert` is enabled.
-				mul_assign(<invalid: &mut self>LuaDQuat)
-
-				// Exclusion reason: 
-				// neg(self) -> LuaDQuat
-
-				// Exclusion reason: 
-				// default() -> LuaDQuat
-
-				// Exclusion reason: 
-				// eq(&self&LuaDQuat) -> bool
-
-				as_ref(&self)<invalid: &[f64;4]>
-
-				sum() -> LuaDQuat
-
-				product() -> LuaDQuat
-
-			)
-+ BinaryOps			(
+			glam::f64::dquat::DQuat : Value
+:				AutoMethods
+				(
+					///Creates a new rotation quaternion.
+					///
+					///This should generally not be called manually unless you know what you are doing.
+					///Use one of the other constructors instead such as `identity` or `from_axis_angle`.
+					///
+					///`from_xyzw` is mostly used by unit tests and `serde` deserialization.
+					///
+					///# Preconditions
+					///
+					///This function does not check if the input is normalized, it is up to the user to
+					///provide normalized input or to normalized the resulting quaternion.
+					from_xyzw(f64f64f64f64) -> LuaDQuat
+,
+					// Exclusion reason: Unsupported argument [f64;4]
+					// ///Creates a rotation quaternion from an array.
+					// ///
+					// ///# Preconditions
+					// ///
+					// ///This function does not check if the input is normalized, it is up to the user to
+					// ///provide normalized input or to normalized the resulting quaternion.
+					// from_array(<invalid: [f64;4]>) -> LuaDQuat
+,
+					///Creates a new rotation quaternion from a 4D vector.
+					///
+					///# Preconditions
+					///
+					///This function does not check if the input is normalized, it is up to the user to
+					///provide normalized input or to normalized the resulting quaternion.
+					from_vec4(LuaDVec4) -> LuaDQuat
+,
+					// Exclusion reason: Unsupported argument &[f64]
+					// ///Creates a rotation quaternion from a slice.
+					// ///
+					// ///# Preconditions
+					// ///
+					// ///This function does not check if the input is normalized, it is up to the user to
+					// ///provide normalized input or to normalized the resulting quaternion.
+					// ///
+					// ///# Panics
+					// ///
+					// ///Panics if `slice` length is less than 4.
+					// from_slice(<invalid: &[f64]>) -> LuaDQuat
+,
+					// Exclusion reason: Unsupported argument &mut [f64]
+					// ///Writes the quaternion to an unaligned slice.
+					// ///
+					// ///# Panics
+					// ///
+					// ///Panics if `slice` length is less than 4.
+					// write_to_slice(self<invalid: &mut [f64]>)
+,
+					///Create a quaternion for a normalized rotation `axis` and `angle` (in radians).
+					///The axis must be normalized (unit-length).
+					///
+					///# Panics
+					///
+					///Will panic if `axis` is not normalized when `glam_assert` is enabled.
+					from_axis_angle(LuaDVec3f64) -> LuaDQuat
+,
+					///Create a quaternion that rotates `v.length()` radians around `v.normalize()`.
+					///
+					///`from_scaled_axis(Vec3::ZERO)` results in the identity quaternion.
+					from_scaled_axis(LuaDVec3) -> LuaDQuat
+,
+					///Creates a quaternion from the `angle` (in radians) around the x axis.
+					from_rotation_x(f64) -> LuaDQuat
+,
+					///Creates a quaternion from the `angle` (in radians) around the y axis.
+					from_rotation_y(f64) -> LuaDQuat
+,
+					///Creates a quaternion from the `angle` (in radians) around the z axis.
+					from_rotation_z(f64) -> LuaDQuat
+,
+					///Creates a quaternion from the given Euler rotation sequence and the angles (in radians).
+					from_euler(LuaEulerRotf64f64f64) -> LuaDQuat
+,
+					///Creates a quaternion from a 3x3 rotation matrix.
+					from_mat3(&LuaDMat3) -> LuaDQuat
+,
+					///Creates a quaternion from a 3x3 rotation matrix inside a homogeneous 4x4 matrix.
+					from_mat4(&LuaDMat4) -> LuaDQuat
+,
+					///Gets the minimal rotation for transforming `from` to `to`.  The rotation is in the
+					///plane spanned by the two vectors.  Will rotate at most 180 degrees.
+					///
+					///The input vectors must be normalized (unit-length).
+					///
+					///`from_rotation_arc(from, to) * from ≈ to`.
+					///
+					///For near-singular cases (from≈to and from≈-to) the current implementation
+					///is only accurate to about 0.001 (for `f32`).
+					///
+					///# Panics
+					///
+					///Will panic if `from` or `to` are not normalized when `glam_assert` is enabled.
+					from_rotation_arc(LuaDVec3LuaDVec3) -> LuaDQuat
+,
+					///Gets the minimal rotation for transforming `from` to either `to` or `-to`.  This means
+					///that the resulting quaternion will rotate `from` so that it is colinear with `to`.
+					///
+					///The rotation is in the plane spanned by the two vectors.  Will rotate at most 90
+					///degrees.
+					///
+					///The input vectors must be normalized (unit-length).
+					///
+					///`to.dot(from_rotation_arc_colinear(from, to) * from).abs() ≈ 1`.
+					///
+					///# Panics
+					///
+					///Will panic if `from` or `to` are not normalized when `glam_assert` is enabled.
+					from_rotation_arc_colinear(LuaDVec3LuaDVec3) -> LuaDQuat
+,
+					///Gets the minimal rotation for transforming `from` to `to`.  The resulting rotation is
+					///around the z axis. Will rotate at most 180 degrees.
+					///
+					///The input vectors must be normalized (unit-length).
+					///
+					///`from_rotation_arc_2d(from, to) * from ≈ to`.
+					///
+					///For near-singular cases (from≈to and from≈-to) the current implementation
+					///is only accurate to about 0.001 (for `f32`).
+					///
+					///# Panics
+					///
+					///Will panic if `from` or `to` are not normalized when `glam_assert` is enabled.
+					from_rotation_arc_2d(LuaDVec2LuaDVec2) -> LuaDQuat
+,
+					// Exclusion reason: Unsupported argument (LuaDVec3,f64)
+					// ///Returns the rotation axis and angle (in radians) of `self`.
+					// to_axis_angle(self)<invalid: (LuaDVec3,f64)>
+,
+					///Returns the rotation axis scaled by the rotation in radians.
+					to_scaled_axis(self) -> LuaDVec3
+,
+					// Exclusion reason: Unsupported argument (f64,f64,f64)
+					// ///Returns the rotation angles for the given euler rotation sequence.
+					// to_euler(selfLuaEulerRot)<invalid: (f64,f64,f64)>
+,
+					// Exclusion reason: Unsupported argument [f64;4]
+					// ///`[x, y, z, w]`
+					// to_array(&self)<invalid: [f64;4]>
+,
+					///Returns the vector part of the quaternion.
+					xyz(self) -> LuaDVec3
+,
+					///Returns the quaternion conjugate of `self`. For a unit quaternion the
+					///conjugate is also the inverse.
+					conjugate(self) -> LuaDQuat
+,
+					///Returns the inverse of a normalized quaternion.
+					///
+					///Typically quaternion inverse returns the conjugate of a normalized quaternion.
+					///Because `self` is assumed to already be unit length this method *does not* normalize
+					///before returning the conjugate.
+					///
+					///# Panics
+					///
+					///Will panic if `self` is not normalized when `glam_assert` is enabled.
+					inverse(self) -> LuaDQuat
+,
+					///Computes the dot product of `self` and `rhs`. The dot product is
+					///equal to the cosine of the angle between two quaternion rotations.
+					dot(selfLuaDQuat) -> f64
+,
+					///Computes the length of `self`.
+					length(self) -> f64
+,
+					///Computes the squared length of `self`.
+					///
+					///This is generally faster than `length()` as it avoids a square
+					///root operation.
+					length_squared(self) -> f64
+,
+					///Computes `1.0 / length()`.
+					///
+					///For valid results, `self` must _not_ be of length zero.
+					length_recip(self) -> f64
+,
+					///Returns `self` normalized to length 1.0.
+					///
+					///For valid results, `self` must _not_ be of length zero.
+					///
+					///Panics
+					///
+					///Will panic if `self` is zero length when `glam_assert` is enabled.
+					normalize(self) -> LuaDQuat
+,
+					///Returns `true` if, and only if, all elements are finite.
+					///If any element is either `NaN`, positive or negative infinity, this will return `false`.
+					is_finite(self) -> bool
+,
+					is_nan(self) -> bool
+,
+					///Returns whether `self` of length `1.0` or not.
+					///
+					///Uses a precision threshold of `1e-6`.
+					is_normalized(self) -> bool
+,
+					is_near_identity(self) -> bool
+,
+					///Returns the angle (in radians) for the minimal rotation
+					///for transforming this quaternion into another.
+					///
+					///Both quaternions must be normalized.
+					///
+					///# Panics
+					///
+					///Will panic if `self` or `rhs` are not normalized when `glam_assert` is enabled.
+					angle_between(selfLuaDQuat) -> f64
+,
+					///Returns true if the absolute difference of all elements between `self` and `rhs`
+					///is less than or equal to `max_abs_diff`.
+					///
+					///This can be used to compare if two quaternions contain similar elements. It works
+					///best when comparing with a known value. The `max_abs_diff` that should be used used
+					///depends on the values being compared against.
+					///
+					///For more see
+					///[comparing floating point numbers](https://randomascii.wordpress.com/2012/02/25/comparing-floating-point-numbers-2012-edition/).
+					abs_diff_eq(selfLuaDQuatf64) -> bool
+,
+					///Performs a linear interpolation between `self` and `rhs` based on
+					///the value `s`.
+					///
+					///When `s` is `0.0`, the result will be equal to `self`.  When `s`
+					///is `1.0`, the result will be equal to `rhs`.
+					///
+					///# Panics
+					///
+					///Will panic if `self` or `end` are not normalized when `glam_assert` is enabled.
+					lerp(selfLuaDQuatf64) -> LuaDQuat
+,
+					///Performs a spherical linear interpolation between `self` and `end`
+					///based on the value `s`.
+					///
+					///When `s` is `0.0`, the result will be equal to `self`.  When `s`
+					///is `1.0`, the result will be equal to `end`.
+					///
+					///# Panics
+					///
+					///Will panic if `self` or `end` are not normalized when `glam_assert` is enabled.
+					slerp(selfLuaDQuatf64) -> LuaDQuat
+,
+					///Multiplies a quaternion and a 3D vector, returning the rotated vector.
+					///
+					///# Panics
+					///
+					///Will panic if `self` is not normalized when `glam_assert` is enabled.
+					mul_vec3(selfLuaDVec3) -> LuaDVec3
+,
+					///Multiplies two quaternions. If they each represent a rotation, the result will
+					///represent the combined rotation.
+					///
+					///Note that due to floating point rounding the result may not be perfectly normalized.
+					///
+					///# Panics
+					///
+					///Will panic if `self` or `rhs` are not normalized when `glam_assert` is enabled.
+					mul_quat(selfLuaDQuat) -> LuaDQuat
+,
+					// Exclusion reason: Unsupported argument crate::DAffine3
+					// ///Creates a quaternion from a 3x3 rotation matrix inside a 3D affine transform.
+					// from_affine3() -> LuaDQuat
+,
+					as_f32(self) -> LuaQuat
+,
+					// Exclusion reason: Unsupported argument U,Unsupported argument Result
+					// try_from()
+,
+					// Exclusion reason: Unsupported argument T,Unsupported argument T
+					// ///Returns the argument unchanged.
+					// from()
+,
+					from(LuaDQuat) -> LuaDQuat
+,
+					from(LuaDQuat) -> LuaDQuat
+,
+					from(LuaDQuat) -> LuaDQuat
+,
+					// Exclusion reason: Unsupported argument U
+					// ///Calls `U::from(self)`.
+					// ///
+					// ///That is, this conversion is whatever the implementation of
+					// ///<code>[From]&lt;T&gt; for U</code> chooses to do.
+					// into(self)
+,
+					// Exclusion reason: Unsupported argument T
+					// borrow(&self)
+,
+					// Exclusion reason: Unsupported argument TypeId
+					// type_id(&self)
+,
+					// Exclusion reason: Unsupported argument Result
+					// try_into(self)
+,
+					// Exclusion reason: Unsupported argument &mut self,Unsupported argument T
+					// borrow_mut(<invalid: &mut self>)
+,
+					// Exclusion reason: Unsupported argument String
+					// to_string(&self)
+,
+					// Exclusion reason: Unsupported argument T
+					// to_owned(&self)
+,
+					// Exclusion reason: Unsupported argument T
+					// clone_into(&self)
+,
+					// Exclusion reason: Unsupported argument T
+					// is_valid_bit_pattern() -> bool
+,
+					// Exclusion reason: Unsupported argument S,Unsupported argument Result,Generics on the method
+					// serialize(&self)
+,
+					// Exclusion reason: Unsupported argument D,Unsupported argument Result,Generics on the method
+					// deserialize()
+,
+					clone(&self) -> LuaDQuat
+,
+					// Exclusion reason: Unsupported argument fmt::Formatter,Unsupported argument fmt::Result
+					// fmt(&self)
+,
+					// Exclusion reason: Unsupported argument fmt::Formatter,Unsupported argument fmt::Result
+					// fmt(&self)
+,
+					///Adds two quaternions.
+					///
+					///The sum is not guaranteed to be normalized.
+					///
+					///Note that addition is not the same as combining the rotations represented by the
+					///two quaternions! That corresponds to multiplication.
+					add(selfLuaDQuat) -> LuaDQuat
+,
+					///Subtracts the `rhs` quaternion from `self`.
+					///
+					///The difference is not guaranteed to be normalized.
+					sub(selfLuaDQuat) -> LuaDQuat
+,
+					///Multiplies a quaternion by a scalar value.
+					///
+					///The product is not guaranteed to be normalized.
+					mul(selff64) -> LuaDQuat
+,
+					///Multiplies two quaternions. If they each represent a rotation, the result will
+					///represent the combined rotation.
+					///
+					///Note that due to floating point rounding the result may not be perfectly
+					///normalized.
+					///
+					///# Panics
+					///
+					///Will panic if `self` or `rhs` are not normalized when `glam_assert` is enabled.
+					mul(selfLuaDQuat) -> LuaDQuat
+,
+					// Exclusion reason: Unsupported argument QualifiedPath { name: "Output", args: AngleBracketed { args: [], bindings: [] }, self_type: Generic("Self"), trait_: ResolvedPath { name: "", id: Id("2:3313:2263"), args: None, param_names: [] } }
+					// ///Multiplies a quaternion and a 3D vector, returning the rotated vector.
+					// ///
+					// ///# Panics
+					// ///
+					// ///Will panic if `self` is not normalized when `glam_assert` is enabled.
+					// mul(selfLuaDVec3)
+,
+					///Divides a quaternion by a scalar value.
+					///The quotient is not guaranteed to be normalized.
+					div(selff64) -> LuaDQuat
+,
+					// Exclusion reason: Unsupported argument &mut self
+					// ///Multiplies two quaternions. If they each represent a rotation, the result will
+					// ///represent the combined rotation.
+					// ///
+					// ///Note that due to floating point rounding the result may not be perfectly
+					// ///normalized.
+					// ///
+					// ///# Panics
+					// ///
+					// ///Will panic if `self` or `rhs` are not normalized when `glam_assert` is enabled.
+					// mul_assign(<invalid: &mut self>LuaDQuat)
+,
+					neg(self) -> LuaDQuat
+,
+					default() -> LuaDQuat
+,
+					eq(&self&LuaDQuat) -> bool
+,
+					// Exclusion reason: Unsupported argument &[f64;4]
+					// as_ref(&self)<invalid: &[f64;4]>
+,
+					// Exclusion reason: Unsupported argument I,Generics on the method
+					// sum() -> LuaDQuat
+,
+					// Exclusion reason: Unsupported argument I,Generics on the method
+					// product() -> LuaDQuat
+,
+				)
+				+ BinaryOps
+				(
 self Add LuaDQuat -> LuaDQuat -> LuaDQuat
 self Sub LuaDQuat -> LuaDQuat -> LuaDQuat
 self Div f64 -> LuaDQuat -> LuaDQuat
 self Mul f64 -> LuaDQuat -> LuaDQuat
 self Mul LuaDQuat -> LuaDQuat -> LuaDQuat
 self Mul LuaDVec3 -> LuaDVec3 -> LuaDVec3
-			)
-+ UnaryOps			(
-			)
-impl			{
+				)
+				+ UnaryOps
+				(
+				)
+			impl
+			{
 			}
 		}
-		{
+,		{
 			///Euler rotation sequences.
 			///
 			///The angles are applied starting from the right.
@@ -14839,48 +13506,60 @@ impl			{
 			///YXZ can be used for yaw (y-axis), pitch (x-axis), roll (z-axis).
 			///
 			///The two-axis rotations (e.g. ZYZ) are not fully tested and have to be treated with caution.
-glam::euler::EulerRot : Value
-AutoMethods			(
-				try_from()
-
-				///Returns the argument unchanged.
-				from()
-
-				///Calls `U::from(self)`.
-				///
-				///That is, this conversion is whatever the implementation of
-				///<code>[From]&lt;T&gt; for U</code> chooses to do.
-				into(self)
-
-				borrow(&self)
-
-				type_id(&self)
-
-				try_into(self)
-
-				borrow_mut(<invalid: &mut self>)
-
-				to_owned(&self)
-
-				clone_into(&self)
-
-				fmt(&self)
-
-				// Exclusion reason: 
-				// clone(&self) -> LuaEulerRot
-
-				// Exclusion reason: 
-				// ///Default `YXZ` as yaw (y-axis), pitch (x-axis), roll (z-axis).
-				// default() -> LuaEulerRot
-
-			)
-+ BinaryOps			(
-			)
-+ UnaryOps			(
-			)
-impl			{
+			glam::euler::EulerRot : Value
+:				AutoMethods
+				(
+					// Exclusion reason: Unsupported argument U,Unsupported argument Result
+					// try_from()
+,
+					// Exclusion reason: Unsupported argument T,Unsupported argument T
+					// ///Returns the argument unchanged.
+					// from()
+,
+					// Exclusion reason: Unsupported argument U
+					// ///Calls `U::from(self)`.
+					// ///
+					// ///That is, this conversion is whatever the implementation of
+					// ///<code>[From]&lt;T&gt; for U</code> chooses to do.
+					// into(self)
+,
+					// Exclusion reason: Unsupported argument T
+					// borrow(&self)
+,
+					// Exclusion reason: Unsupported argument TypeId
+					// type_id(&self)
+,
+					// Exclusion reason: Unsupported argument Result
+					// try_into(self)
+,
+					// Exclusion reason: Unsupported argument &mut self,Unsupported argument T
+					// borrow_mut(<invalid: &mut self>)
+,
+					// Exclusion reason: Unsupported argument T
+					// to_owned(&self)
+,
+					// Exclusion reason: Unsupported argument T
+					// clone_into(&self)
+,
+					// Exclusion reason: Unsupported argument $crate::fmt::Formatter,Unsupported argument $crate::fmt::Result
+					// fmt(&self)
+,
+					clone(&self) -> LuaEulerRot
+,
+					///Default `YXZ` as yaw (y-axis), pitch (x-axis), roll (z-axis).
+					default() -> LuaEulerRot
+,
+				)
+				+ BinaryOps
+				(
+				)
+				+ UnaryOps
+				(
+				)
+			impl
+			{
 			}
 		}
-	]
+,	]
 )
 ;

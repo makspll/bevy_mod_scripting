@@ -47,7 +47,7 @@ impl PrettyWriter {
     }
 
     /// Writes indentation and prefix without a newline
-    fn write_prefix(&mut self){
+    fn write_indented_prefix(&mut self){
         (0..self.state.indentation_level).into_iter()
             .for_each(|_| self.output.push('\t'));
         
@@ -58,15 +58,23 @@ impl PrettyWriter {
 
     /// Writes a line at the current indentation level and append a newline at the end
     pub fn write_line(&mut self, line: &str) -> &mut Self {
-        self.write_prefix();
+        self.write_indented_prefix();
         self.output.push_str(line);
         self.output.push('\n');
         self
     }
 
+    /// Writes without adding newline but keeps the indentation
+    pub fn write_no_newline(&mut self, line: &str) -> &mut Self {
+        self.write_indented_prefix();
+        self.output.push_str(line);
+        self
+    }
+    
+
     /// Writes a postfixed (after main text, before newline) line at the current indentation level and append a newline at the end
     pub fn write_postfixed_line(&mut self, line: &str, postfix: &str) -> &mut Self {
-        self.write_prefix();
+        self.write_indented_prefix();
         self.output.push_str(line);
         self.output.push_str(postfix);
         self.output.push('\n');
@@ -79,11 +87,12 @@ impl PrettyWriter {
         self
     }
 
-    /// Writes without adding newline but keeps the indentation
-    pub fn write_no_newline(&mut self, line: &str) -> &mut Self {
-        self.output.push_str(line);
+    /// Writes indentation only, useful if you need to follow this by `write_inline`
+    pub fn write_indentation(&mut self) -> &mut Self {
+        self.write_indented_prefix();
         self
     }
+    
 
     /// Sets a prefix to be appended before every line written
     pub fn set_prefix(&mut self, prefix: Cow<'static, str>) -> &mut Self {

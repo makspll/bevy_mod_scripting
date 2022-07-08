@@ -278,7 +278,7 @@ impl WrappedItem<'_> {
     /// my_type_path::Type : Value : 
     ///  UnaryOps( ...
     /// ```
-    pub fn write_full_path(&self, writer: &mut PrettyWriter) {
+    pub fn write_inline_full_path(&self, writer: &mut PrettyWriter) {
         if self.config.import_path.is_empty(){
             writer.write_inline(&self.path_components.join("::"));
         } else {
@@ -369,7 +369,8 @@ impl WrappedItem<'_> {
     pub fn write_derive_flags_body(&self, config: &Config, writer: &mut PrettyWriter) {
 
         // automethods
-        writer.write_no_newline("AutoMethods");
+        writer.write_inline(":");
+        writer.write_line("AutoMethods");
         writer.open_paren();
         self.impl_items.iter()
             .flat_map(|(_,items)| items.iter())
@@ -434,7 +435,7 @@ impl WrappedItem<'_> {
                     errors.push("Generics on the method".to_owned());
                 }
 
-                if errors.is_empty(){
+                if !errors.is_empty(){
                     writer.set_prefix("// ".into());
                     writer.write_line(&format!("Exclusion reason: {}",errors.join(",")));
                     writer.extend(inner_writer);
@@ -442,6 +443,7 @@ impl WrappedItem<'_> {
                 } else {
                     writer.extend(inner_writer);
                 }
+                writer.write_inline(",");
                 writer.newline();
         });
         writer.close_paren();
@@ -451,7 +453,7 @@ impl WrappedItem<'_> {
                                         ("div","Div"),
                                         ("mul","Mul"),
                                         ("rem","Rem")];
-        writer.write_no_newline("+ BinaryOps");
+        writer.write_line("+ BinaryOps");
         writer.open_paren();
         BINARY_OPS.into_iter().for_each(|(op,rep) |{
             self.impl_items.get(op).map(|items| {
@@ -503,7 +505,7 @@ impl WrappedItem<'_> {
 
         static UNARY_OPS : [(&str,&str);1] = [("neg","Neg")];
 
-        writer.write_no_newline("+ UnaryOps");
+        writer.write_line("+ UnaryOps");
         writer.open_paren();
         UNARY_OPS.into_iter().for_each(|(op,rep)|{
             self.impl_items.get(op).map(|items|{
@@ -630,19 +632,26 @@ pub(crate) fn generate_macros(crates: &[Crate], config: Config) -> Result<String
     writer.open_bracket();
     wrapped_items.iter().for_each(|v| {
         writer.open_brace();
+        
         v.write_type_docstring(&mut writer);
-        v.write_full_path(&mut writer);
+        writer.write_indentation();
+        v.write_inline_full_path(&mut writer);
         writer.write_inline(" : ");
         writer.write_inline(&v.wrapper_type.to_string());
         writer.newline();
-        v.write_derive_flags_body(&config, &mut writer);
 
-        writer.write_inline("impl");
+        writer.indent();
+        v.write_derive_flags_body(&config, &mut writer);
+        writer.dedent();
+
+        writer.write_line("impl");
         writer.open_brace();
         v.write_impl_block_body(&mut writer);
         writer.close_brace();
 
         writer.close_brace();
+        
+        writer.write_inline(",");
     });
     writer.close_bracket();
 
