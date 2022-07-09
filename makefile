@@ -16,6 +16,7 @@ T_ID="Hello/World"
 TIME="10"
 # Have valgrind profile criterion running our benchmark for 10 seconds
 
+ERRORS=
 
 # # valgrind outputs a callgrind.out.<pid>. We can analyze this with kcachegrind
 # kcachegrind
@@ -31,16 +32,18 @@ valgrind:
 			${EXEC} --bench  ${T_ID} 
 generate_api:
 	cd bevy_api_gen && \
-	cargo run -- \
+	cargo run \
+	-- \
 	--json "../target/doc/bevy_asset.json" \
 	--json "../target/doc/bevy_ecs.json" \
 	--json "../target/doc/bevy_pbr.json" \
 	--json "../target/doc/bevy_render.json" \
+	--json "../target/doc/bevy_math.json" \
 	--json "../target/doc/bevy_core_pipeline.json" \
 	--json "../target/doc/bevy.json" \
 	--json "../target/doc/uuid.json" \
 	--json "../target/doc/glam.json" \
-	--config "../api_gen_config.toml" \
+	--config "../api_gen_config.toml" ${ERRORS} \
 	> ../bevy_mod_scripting/src/api/generated.rs
 
 make_json_files:

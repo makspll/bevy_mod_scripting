@@ -2,7 +2,7 @@ use bevy_api_gen_lib::PrettyWriter;
 
 use std::{io::{self, BufReader},fs::{File,read_to_string}, collections::{HashSet}};
 use clap::Parser;
-use indexmap::IndexMap;
+use indexmap::{IndexMap, IndexSet};
 use serde_json::from_reader;
 use rustdoc_types::{Crate, Item, ItemEnum, Id, Impl,Type};
 use serde_derive::Deserialize;
@@ -18,10 +18,13 @@ struct Args {
     #[clap(short, long, value_parser)]
     json: Vec<String>,
     
-
     /// The path to toml config file which contains the types to be wrapped and overrides
     #[clap(short, long, value_parser)]
     config: String,
+
+    /// if true the excluded methods will show up as commented out code with reasons for exclusion
+    #[clap(long)]
+    print_errors: bool
 }
 
 #[derive(Deserialize,Debug)]
@@ -65,6 +68,15 @@ pub(crate) struct Newtype {
 
     #[serde(default)]
     pub import_path: String,
+
+    #[serde(default)]
+    pub traits : Vec<TraitMethods>
+}
+
+#[derive(Deserialize, Debug, PartialEq, Eq, Hash, Default)]
+pub(crate) struct TraitMethods {
+    pub name: String,
+    pub import_path: String
 }
 
 #[derive(Deserialize,Debug, PartialEq, Eq, Hash)]
@@ -135,8 +147,8 @@ pub(crate) struct WrappedItem<'a> {
     item : &'a Item,
     /// The items coming from all trait implementations
     impl_items: IndexMap<&'a str,Vec<(&'a Impl, &'a Item)>>, 
-
     self_impl: Option<&'a Impl>,
+    crates : &'a [Crate],
 }
 
 
@@ -278,7 +290,7 @@ impl WrappedItem<'_> {
     /// my_type_path::Type : Value : 
     ///  UnaryOps( ...
     /// ```
-    pub fn write_inline_full_path(&self, writer: &mut PrettyWriter) {
+    pub fn write_inline_full_path(&self, writer: &mut PrettyWriter, _: &Args) {
         if self.config.import_path.is_empty(){
             writer.write_inline(&self.path_components.join("::"));
         } else {
@@ -300,7 +312,7 @@ impl WrappedItem<'_> {
     ///  +
     ///  ...
     /// ```
-    pub fn write_type_docstring(&self, writer : &mut PrettyWriter){
+    pub fn write_type_docstring(&self, writer : &mut PrettyWriter, _: &Args){
         let strings = if let Some(d) = &self.config.doc {
             d.to_string()
         } else {
@@ -331,7 +343,7 @@ impl WrappedItem<'_> {
     ///  +
     ///  ...
     /// ```
-    pub fn write_method_docstring(&self, id : &Id, writer : &mut PrettyWriter){
+    pub fn write_method_docstring(&self, id : &Id, writer : &mut PrettyWriter, _: &Args){
         writer.set_prefix("///".into());
         self.source.index
                 .get(id)
@@ -352,7 +364,7 @@ impl WrappedItem<'_> {
     ///     ... // this!
     ///     }
     /// ```
-    pub fn write_impl_block_body(&self, writer: &mut PrettyWriter) {
+    pub fn write_impl_block_body(&self, writer: &mut PrettyWriter, _: &Args) {
         self.config.lua_methods
             .iter()
             .for_each(|v| {
@@ -360,21 +372,36 @@ impl WrappedItem<'_> {
             })
     }
 
-    /// Generates all derive flags for the type
+    /// Generates all derive flags for the type,
+    /// 
+    /// Returns additional imports necessary for the generated methods
     /// 
     /// ```rust,ignore
     /// my_type::Type : Value: 
     /// ... // flags go here
     /// ``` 
-    pub fn write_derive_flags_body(&self, config: &Config, writer: &mut PrettyWriter) {
+    pub fn write_derive_flags_body(&self, config: &Config, writer: &mut PrettyWriter, args: &Args) {
 
-        // automethods
-        writer.write_inline(":");
-        writer.write_line("AutoMethods");
+
+        writer.write_line(": AutoMethods");
         writer.open_paren();
         self.impl_items.iter()
             .flat_map(|(_,items)| items.iter())
             .for_each(|(impl_,v)| { 
+
+                // only select trait methods are allowed
+                if let Some(trait_) = &impl_.trait_ {
+                    if self.config.traits.iter().find(|f| 
+                        match type_to_string(trait_, &|s| Ok(s.to_string())).map(|s|&s == &f.name){
+                            Ok(true) => true,
+                            _ => false,
+                        }
+                    ).is_some(){
+                        // keep going
+                    } else {
+                        return
+                    }
+                };
 
                 let (decl,generics) = match &v.inner {
                     ItemEnum::Function(f) => (&f.decl,&f.generics),
@@ -386,7 +413,7 @@ impl WrappedItem<'_> {
 
                 let mut inner_writer = PrettyWriter::new();
 
-                self.write_method_docstring(&v.id, &mut inner_writer);
+                self.write_method_docstring(&v.id, &mut inner_writer,args);
 
                 inner_writer.write_inline(v.name.as_ref().unwrap());
                 inner_writer.write_inline("(");
@@ -405,7 +432,7 @@ impl WrappedItem<'_> {
                             } else {
                                 inner_writer.write_inline(&type_);
                             }
-                            if !i == decl.inputs.len() {
+                            if i + 1 != decl.inputs.len() {
                                 inner_writer.write_inline(",");
                             }
                         } else {
@@ -436,15 +463,18 @@ impl WrappedItem<'_> {
                 }
 
                 if !errors.is_empty(){
-                    writer.set_prefix("// ".into());
-                    writer.write_line(&format!("Exclusion reason: {}",errors.join(",")));
-                    writer.extend(inner_writer);
-                    writer.clear_prefix();
+                    if args.print_errors {
+                        writer.set_prefix("// ".into());
+                        writer.write_line(&format!("Exclusion reason: {}",errors.join(",")));
+                        writer.extend(inner_writer);
+                        writer.clear_prefix();
+                        writer.newline();
+                    }
                 } else {
+                    inner_writer.write_inline(",");
                     writer.extend(inner_writer);
+                    writer.newline();
                 }
-                writer.write_inline(",");
-                writer.newline();
         });
         writer.close_paren();
 
@@ -453,7 +483,7 @@ impl WrappedItem<'_> {
                                         ("div","Div"),
                                         ("mul","Mul"),
                                         ("rem","Rem")];
-        writer.write_line("+ BinaryOps");
+        writer.write_line("+ BinOps");
         writer.open_paren();
         BINARY_OPS.into_iter().for_each(|(op,rep) |{
             self.impl_items.get(op).map(|items| {
@@ -463,7 +493,7 @@ impl WrappedItem<'_> {
                     (self_type == self.wrapped_type && config.types.contains_key(self_type)) 
                         || config.primitives.contains(self_type))
                 .for_each(|(impl_,item, self_type)| {
-                    match &item.inner {
+                    let _ = match &item.inner {
                         ItemEnum::Method(m) => {
                             m.decl.inputs
                                 .iter()
@@ -472,7 +502,7 @@ impl WrappedItem<'_> {
                                     type_to_string(t, &|b: &String| to_op_argument(b, &self_type, self, &config, idx == 0,false))
                                 ).collect::<Result<Vec<_>,_>>()
                                 .and_then(|v| Ok(v.join(&format!(" {} ",rep))))
-                                .and_then(|mut expr| {
+                                .and_then(|expr| {
                                     // then provide return type
                                     // for these traits that's on associated types within the impl
                                     let out_type = impl_.items.iter().find_map(|v| {
@@ -488,10 +518,10 @@ impl WrappedItem<'_> {
 
                                     let return_string = type_to_string(out_type, &|b: &String| to_op_argument(b, &self_type, &self, &config, false,true))?;
 
-                                    expr = format!("{expr} -> {return_string}");
-                                    writer.write_inline(&expr);
+                                    writer.write_no_newline(&expr);
                                     writer.write_inline(" -> ");
                                     writer.write_inline(&return_string);
+                                    writer.write_inline(",");
                                     writer.newline();
                                     Ok(())
                                 })
@@ -509,7 +539,7 @@ impl WrappedItem<'_> {
         writer.open_paren();
         UNARY_OPS.into_iter().for_each(|(op,rep)|{
             self.impl_items.get(op).map(|items|{
-                items.iter().map(|(_,_)|{
+                items.iter().for_each(|(_,_)|{
                     writer.write_line(&format!("{rep} self"));
                 });
             });
@@ -528,8 +558,26 @@ impl WrappedItem<'_> {
 
 }
 
-pub(crate) fn generate_macros(crates: &[Crate], config: Config) -> Result<String,io::Error> {
-    let mut writer = PrettyWriter::new();
+pub(crate) fn write_use_items_from_path(module_name: &str,path_components: &[String], writer: &mut PrettyWriter) {
+    // generate imports for each item
+    writer.write_no_newline("use ");
+
+    if module_name.starts_with("bevy") && module_name.len() > 5{
+        writer.write_inline("bevy::");
+        writer.write_inline(&module_name[5..]);
+    } else {
+        writer.write_inline(&module_name);
+    }
+
+    for item in path_components{
+        writer.write_inline("::");
+        writer.write_inline(item);
+    }
+    writer.write_inline(";");
+    writer.newline();
+}
+
+pub(crate) fn generate_macros(crates: &[Crate], config: Config, args: &Args) -> Result<String,io::Error> {
 
     // the items we want to generate macro instantiations for
     let mut unmatched_types : HashSet<&String> = config.types.iter().map(|(k,_v)|k).collect();
@@ -553,7 +601,6 @@ pub(crate) fn generate_macros(crates: &[Crate], config: Config) -> Result<String
                 _ => panic!("Only structs or enums are allowed!")
             };
 
-
             impls.iter().for_each(|id| 
                 if let ItemEnum::Impl(i) = &source.index.get(id).unwrap().inner {
                     if i.trait_.is_none(){
@@ -573,8 +620,6 @@ pub(crate) fn generate_macros(crates: &[Crate], config: Config) -> Result<String
                 }
             );
             
-            
-            
             let config = config.types.get(item.name.as_ref().unwrap()).unwrap();
 
             let wrapper_type = config.wrapper_type;
@@ -593,6 +638,7 @@ pub(crate) fn generate_macros(crates: &[Crate], config: Config) -> Result<String
                 item,
                 self_impl,
                 impl_items,
+                crates,
             }
         }
         )
@@ -607,6 +653,12 @@ pub(crate) fn generate_macros(crates: &[Crate], config: Config) -> Result<String
         panic!("Some types were not found in the given crates: {unmatched_types:#?}")
     }
 
+
+    let mut writer = PrettyWriter::new();
+
+
+    let mut writer = PrettyWriter::new();
+
     // we want to preserve the original ordering from the config file
     wrapped_items.sort_by_cached_key(|f| config.types.get_index_of(f.wrapped_type).unwrap());
 
@@ -619,41 +671,38 @@ pub(crate) fn generate_macros(crates: &[Crate], config: Config) -> Result<String
 
     // additional imports
     writer.open_paren();
+
+    // user defined 
     config.imports.lines().for_each(|import| {writer.write_line(import);});
+    // automatic
+
+    wrapped_items.iter().for_each(|item| {
+        write_use_items_from_path(&item.config.source.0,&item.path_components[1..],&mut writer);
+    });
+
+    wrapped_items.iter().for_each(|item|{
+        item.config.traits.iter().for_each(|trait_methods|{
+            writer.write_no_newline("use ");
+            writer.write_inline(&trait_methods.import_path);
+            writer.write_inline(";");
+            writer.newline();
+        })
+    });
+
+    // ) import brakcets
     writer.close_paren();
 
-    // external types
     writer.open_bracket();
     let external_types = &config.external_types.join(",");
     writer.write_line(external_types);
     writer.close_bracket();
 
+
+
+
+
     // list of wrapper types
     writer.open_bracket();
-    wrapped_items.iter().for_each(|v| {
-        writer.open_brace();
-        
-        v.write_type_docstring(&mut writer);
-        writer.write_indentation();
-        v.write_inline_full_path(&mut writer);
-        writer.write_inline(" : ");
-        writer.write_inline(&v.wrapper_type.to_string());
-        writer.newline();
-
-        writer.indent();
-        v.write_derive_flags_body(&config, &mut writer);
-        writer.dedent();
-
-        writer.write_line("impl");
-        writer.open_brace();
-        v.write_impl_block_body(&mut writer);
-        writer.close_brace();
-
-        writer.close_brace();
-        
-        writer.write_inline(",");
-    });
-    writer.close_bracket();
 
     let primitives = r#"
     {
@@ -763,7 +812,39 @@ pub(crate) fn generate_macros(crates: &[Crate], config: Config) -> Result<String
     },
     "#;
 
+    for line in primitives.lines(){
+        writer.write_line(line);
+    };
 
+    wrapped_items.iter().for_each(|v| {
+        writer.open_brace();
+        
+        v.write_type_docstring(&mut writer, args);
+        writer.write_indentation();
+        v.write_inline_full_path(&mut writer, args);
+        writer.write_inline(" : ");
+        writer.write_inline(&v.wrapper_type.to_string());
+        writer.newline();
+
+        writer.indent();
+        v.write_derive_flags_body(&config, &mut writer, args);
+        writer.dedent();
+
+        writer.write_line("impl");
+        writer.open_brace();
+        v.write_impl_block_body(&mut writer, args);
+        writer.close_brace();
+
+        writer.close_brace();
+        
+        writer.write_inline(",");
+    });
+
+
+   
+    // close ] wrapper list
+    writer.close_bracket();
+    // close ) macro call
     writer.close_paren();
     writer.write_inline(";");
 
@@ -775,14 +856,14 @@ pub fn main() -> Result<(),io::Error>{
 
 
 
-    let crates : Vec<_> = args.json.into_iter().map(|json| {
+    let crates : Vec<_> = args.json.iter().map(|json| {
         let f = File::open(&json).expect(&format!("Could not open {}", &json));
         let rdr = BufReader::new(f);
         from_reader(rdr)
     }).collect::<Result<Vec<_>,_>>()?;
 
 
-    let f = read_to_string(args.config)?;
+    let f = read_to_string(&args.config)?;
     let mut config: Config = toml::from_str(&f)?;
 
     config.types_.reverse();
@@ -794,7 +875,7 @@ pub fn main() -> Result<(),io::Error>{
 
 
 
-    let out = generate_macros(&crates,config)?;
+    let out = generate_macros(&crates,config, &args)?;
 
     println!("{}",out);
 
