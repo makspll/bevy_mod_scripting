@@ -44,7 +44,7 @@ mlua_macros = ["tealr/mlua_macros"]
 # mlua_parking_lot = ["tealr/mlua_parking_lot"]
 
 [dependencies]
-bevy = { git = "https://github.com/makspll/bevy", branch="more-reflection" }
+bevy = {git="https://github.com/bevyengine/bevy"}
 tealr = { git = "https://github.com/lenscas/tealr", features = ["mlua_vendored","mlua_send"], branch="feature/document_global_instances" }
 rhai = { version = "1.7.0", features = ["sync"] }
 anyhow = "1.0.57"
@@ -68,14 +68,6 @@ num-traits = "0.2.15"
 rand = "0.8.5"
 serde = "1.0.137"
 criterion = "0.3"
-
-# For those that have not specified anything:
-[patch."https://github.com/bevyengine/bevy"]
-bevy = { git = "https://github.com/makspll/bevy", branch="more-reflection" }
-
-[patch.crates-io]
-bevy = { git = "https://github.com/makspll/bevy", branch="more-reflection" }
-
 
 [[bench]]
 name = "wrappers"
