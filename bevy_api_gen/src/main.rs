@@ -178,7 +178,7 @@ pub(crate) fn is_valid_lua_fn_arg(str : &str, config : &Config) -> bool{
 }
 
 pub(crate) fn is_valid_lua_fn_return_typ(str : &str, config : &Config) -> bool{
-    const TO_PRIMITIVES : [&str;22] = ["bool","StdString","&str","Box<str>","CString","&CStr","BString","&BStr","i8","u8","i16","u16","i32","u32","i64","u64","i128","u128","isize","usize","f32","f64"];
+    const TO_PRIMITIVES : [&str;21] = ["bool","StdString","Box<str>","CString","&CStr","BString","&BStr","i8","u8","i16","u16","i32","u32","i64","u64","i128","u128","isize","usize","f32","f64"];
 
     // TODO: support slices of supported types + Cow strings
 
@@ -498,9 +498,17 @@ impl WrappedItem<'_> {
                             m.decl.inputs
                                 .iter()
                                 .enumerate()
-                                .map(|(idx,(_,t))| 
-                                    type_to_string(t, &|b: &String| to_op_argument(b, &self_type, self, &config, idx == 0,false))
-                                ).collect::<Result<Vec<_>,_>>()
+                                .map(|(idx,(_,t))| {
+                                    // check arg is valid
+                                    let type_ = type_to_string(t, &|b: &String| 
+                                        to_op_argument(b, &self_type, self, &config, idx == 0,false));
+
+                                    type_.and_then(|type_| {
+                                        is_valid_lua_fn_arg(&type_, config)
+                                            .then_some(type_.to_string())
+                                            .ok_or(type_)
+                                    })
+                                }).collect::<Result<Vec<_>,_>>()
                                 .and_then(|v| Ok(v.join(&format!(" {} ",rep))))
                                 .and_then(|expr| {
                                     // then provide return type
@@ -517,6 +525,10 @@ impl WrappedItem<'_> {
                                     }).ok_or_else(|| expr.clone())?;
 
                                     let return_string = type_to_string(out_type, &|b: &String| to_op_argument(b, &self_type, &self, &config, false,true))?;
+                                    
+                                    if !is_valid_lua_fn_return_typ(&return_string, config){
+                                        return Err(return_string)
+                                    }
 
                                     writer.write_no_newline(&expr);
                                     writer.write_inline(" -> ");
@@ -656,9 +668,6 @@ pub(crate) fn generate_macros(crates: &[Crate], config: Config, args: &Args) -> 
 
     let mut writer = PrettyWriter::new();
 
-
-    let mut writer = PrettyWriter::new();
-
     // we want to preserve the original ordering from the config file
     wrapped_items.sort_by_cached_key(|f| config.types.get_index_of(f.wrapped_type).unwrap());
 
@@ -680,12 +689,18 @@ pub(crate) fn generate_macros(crates: &[Crate], config: Config, args: &Args) -> 
         write_use_items_from_path(&item.config.source.0,&item.path_components[1..],&mut writer);
     });
 
+    let mut imported = HashSet::<String>::default();
+
     wrapped_items.iter().for_each(|item|{
         item.config.traits.iter().for_each(|trait_methods|{
-            writer.write_no_newline("use ");
-            writer.write_inline(&trait_methods.import_path);
-            writer.write_inline(";");
-            writer.newline();
+            if !imported.contains(&trait_methods.name){
+                writer.write_no_newline("use ");
+                writer.write_inline(&trait_methods.import_path);
+                writer.write_inline(";");
+                writer.newline();
+                imported.insert(trait_methods.name.to_owned());
+            }
+
         })
     });
 

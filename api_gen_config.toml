@@ -17,19 +17,412 @@ external_types = ["LuaWorld"]
 
 primitives = ["usize","isize","f32","f64","u128","u64","u32","u16","u8","i128","i64","i32","i16","i8"]
 
-# BEVY_ECS 
+
+
+
+## BEVY_UI
+
+[[types]]
+type="AlignContent"
+source="bevy_ui"
+
+[[types]]
+type="AlignItems"
+source="bevy_ui"
+
+[[types]]
+type="AlignSelf"
+source="bevy_ui"
+
+[[types]]
+type="Direction"
+source="bevy_ui"
+
+[[types]]
+type="FlexDirection"
+source="bevy_ui"
+
+[[types]]
+type="FlexWrap"
+source="bevy_ui"
+
+[[types]]
+type="FocusPolicy"
+source="bevy_ui"
+
+[[types]]
+type="Interaction"
+source="bevy_ui"
+
+[[types]]
+type="JustifyContent"
+source="bevy_ui"
+
+[[types]]
+type="Overflow"
+source="bevy_ui"
+
+[[types]]
+type="PositionType"
+source="bevy_ui"
+
+[[types]]
+type="Val"
+source="bevy_ui"
+
+[[types]]
+type="CalculatedClip"
+source="bevy_ui"
+
+[[types]]
+type="CalculatedSize"
+source="bevy_ui"
+
+[[types]]
+type="Node"
+source="bevy_ui"
+
+[[types]]
+type="Style"
+source="bevy_ui"
+
+[[types]]
+type="UiColor"
+source="bevy_ui"
+
+[[types]]
+type="UiImage"
+source="bevy_ui"
+
+[[types]]
+type="Button"
+source="bevy_ui"
+
+[[types]]
+type="ImageMode"
+source="bevy_ui"
+
+[[types]]
+type="Display"
+source="bevy_ui"
+
+
+## BEVY_ANIMATION
+
+[[types]]
+type="AnimationPlayer"
+source="bevy_animation"
+
+
+
+## BEVY_CORE
+
+[[types]]
+type="Name"
+source="bevy_core"
+
+
+## BEVY_GLTF
+
+[[types]]
+type="GltfExtras"
+source="bevy_gltf"
+
+
+## BEVY_HIERARCHY
+
+[[types]]
+type="Children"
+source="bevy_hierarchy"
+
+[[types]]
+type="Parent"
+source="bevy_hierarchy"
+
+[[types]]
+type="PreviousParent"
+source="bevy_hierarchy"
+
+
+
+## BEVY_TEXT
+
+[[types]]
+type="Text2dBounds"
+source="bevy_text"
+
+[[types]]
+type="Text2dSize"
+source="bevy_text"
+
+[[types]]
+type="Text"
+source="bevy_text"
+
+[[types]]
+type="TextAlignment"
+source="bevy_text"
+
+[[types]]
+type="TextSection"
+source="bevy_text"
+
+[[types]]
+type="TextStyle"
+source="bevy_text"
+
+[[types]]
+type="HorizontalAlign"
+source="bevy_text"
+
+[[types]]
+type="VerticalAlign"
+source="bevy_text"
+
+
+
+## BEVY_TIME
+
+[[types]]
+type="Stopwatch"
+source="bevy_time"
+
+[[types]]
+type="Timer"
+source="bevy_time"
+
+
+## BEVY_UTILS
+
+# [[types]]
+# type="Duration"
+# source="bevy_utils"
+
+
+
+## BEVY_REFLECT
+
+[[types]]
+type="DynamicArray"
+source="bevy_reflect"
+
+[[types]]
+type="DynamicList"
+source="bevy_reflect"
+
+[[types]]
+type="DynamicMap"
+source="bevy_reflect"
+
+[[types]]
+type="DynamicStruct"
+source="bevy_reflect"
+
+[[types]]
+type="DynamicTuple"
+source="bevy_reflect"
+
+[[types]]
+type="DynamicTupleStruct"
+source="bevy_reflect"
+
+
+
+
+
+
+## BEVY_ECS 
 [[types]]
 type="Entity"
 source="bevy_ecs"
 
-# BEVY_PBR
+## BEVY_TRANSFORM
+
+[[types]]
+type="Transform"
+source="bevy_transform"
+
+[[types]]
+type="GlobalTransform"
+source="bevy_transform"
+
+## BEVY_PBR
+
+[[types]]
+type="AmbientLight"
+source="bevy_pbr"
+
+[[types]]
+type="CubemapVisibleEntities"
+source="bevy_pbr"
+
+[[types]]
+type="DirectionalLight"
+source="bevy_pbr"
+
+[[types]]
+type="DirectionalLightShadowMap"
+source="bevy_pbr"
+
+[[types]]
+type="NotShadowCaster"
+source="bevy_pbr"
+
+[[types]]
+type="NotShadowReceiver"
+source="bevy_pbr"
+
+[[types]]
+type="PointLight"
+source="bevy_pbr"
+
+[[types]]
+type="PointLightShadowMap"
+source="bevy_pbr"
+
+
+
 [[types]]
 type="AlphaMode"
 source="bevy_pbr"
 
-# BEVY_RENDER
+[[types]]
+type="Wireframe"
+source="bevy_pbr"
+
+[[types]]
+type="WireframeConfig"
+source="bevy_pbr"
+
+## BEVY_CORE_PIPELINE
+
+[[types]]
+type="Camera3dDepthLoadOp"
+source="bevy_core_pipeline"
+
+
+
+[[types]]
+type="ClearColor"
+source="bevy_core_pipeline"
+
+[[types]]
+type="ClearColorConfig"
+source="bevy_core_pipeline"
+
+[[types]]
+type="Camera2d"
+source="bevy_core_pipeline"
+
+[[types]]
+type="Camera3d"
+source="bevy_core_pipeline"
+
+## BEVY_SPRITE
+
+[[types]]
+type="Anchor"
+source="bevy_sprite"
+
+[[types]]
+type="Mesh2dHandle"
+source="bevy_sprite"
+
+[[types]]
+type="TextureAtlasSprite"
+source="bevy_sprite"
+
+
+[[types]]
+type="Sprite"
+source="bevy_sprite"
+
+[[types]]
+type="Rect"
+source="bevy_sprite"
+
+## BEVY_RENDER
+
+[[types]]
+type="RenderLayers"
+source="bevy_render"
+
+[[types]]
+type="Visibility"
+source="bevy_render"
+
+[[types]]
+type="VisibleEntities"
+source="bevy_render"
+
+[[types]]
+type="ComputedVisibility"
+source="bevy_render"
+
+[[types]]
+type="SkinnedMesh"
+source="bevy_render"
+
+[[types]]
+type="ScalingMode"
+source="bevy_render"
+
+[[types]]
+type="WindowOrigin"
+source="bevy_render"
+
+[[types]]
+type="Color"
+source="bevy_render"
+
+[[types]]
+type="Aabb"
+source="bevy_render"
+
+[[types]]
+type="CubemapFrusta"
+source="bevy_render"
+
+[[types]]
+type="Frustum"
+source="bevy_render"
+
+[[types]]
+type="Msaa"
+source="bevy_render"
+
+
+
+
+[[types]]
+type="Camera"
+source="bevy_render"
+
+[[types]]
+type="RenderTarget"
+source="bevy_render"
+
+[[types]]
+type="Viewport"
+source="bevy_render"
+
+
 [[types]]
 type="Projection"
+source="bevy_render"
+traits=[
+    {name="CameraProjection", import_path="bevy::render::camera::CameraProjection"}
+]
+
+[[types]]
+type="OrthographicProjection"
+source="bevy_render"
+traits=[
+    {name="CameraProjection", import_path="bevy::render::camera::CameraProjection"}
+]
+
+[[types]]
+type="PerspectiveProjection"
 source="bevy_render"
 traits=[
     {name="CameraProjection", import_path="bevy::render::camera::CameraProjection"}
@@ -47,35 +440,42 @@ source="bevy_render"
 type="CameraRenderGraph"
 source="bevy_render"
 
-[[types]]
-type="ClearColorConfig"
-source="bevy_core_pipeline"
 
-# BEVY_UTILS
+## BEVY_UTILS
 # needs a reflect impl
 # [[types]]
 # type="Uuid"
 # source="uuid"
 
-# BEVY_ASSET
+## BEVY_ASSET
+
+[[types]]
+type="AssetPathId"
+source="bevy_asset"
+
+[[types]]
+type="LabelId"
+source="bevy_asset"
+
+[[types]]
+type="SourcePathId"
+source="bevy_asset"
+
+
 [[types]]
 type="HandleId"
 source="bevy_asset"
 
 
-
-
-# # GLAM
-
+## BEVY_MATH
 [[types]]
 type="Vec2"
 source="bevy_math"
 lua_methods=[
-    "(MetaMethod::Index) (s=LuaVec2)=> {|_,s,idx: usize| {Ok(s.clone()[idx-1])}}",
-    "mut (MetaMethod::NewIndex) (n=f32) => {|_,s,(idx,val): (usize,($n))| {Ok(s.val_mut(|s| s[idx-1] = val))}}"
+    "(MetaMethod::Index) (s=LuaVec2)=> {|_,s,idx: usize| {Ok(s.clone()[idx])}}",
+    "mut (MetaMethod::NewIndex) (n=f32) => {|_,s,(idx,val): (usize,($n))| {Ok(s.val_mut(|s| s[idx] = val))}}"
 ]
 import_path="glam::f32::vec2::Vec2"
-
 
 [[types]]
 type="Vec3"
@@ -88,6 +488,17 @@ derive_flags=[
 ]
 import_path="glam::f32::vec3::Vec3"
 
+[[types]]
+type="Vec3A"
+source="bevy_math"
+derive_flags=[
+    """
+    Copy(LuaVec2 -> (MetaMethod::Index) (s=LuaVec3A),
+        LuaVec2 -> mut (MetaMethod::NewIndex) (n=f32))
+    """
+]
+import_path="glam::f32::sse2::vec3A::Vec3A"
+
 
 [[types]]
 type="Vec4"
@@ -99,6 +510,31 @@ derive_flags=[
     """
 ]
 import_path="glam::f32::sse2::vec4::Vec4"
+
+[[types]]
+type="BVec2"
+source="bevy_math"
+import_path="glam::f32::sse2::vec2::BVec2"
+
+[[types]]
+type="BVec3"
+source="bevy_math"
+import_path="glam::f32::sse2::vec3::BVec3"
+
+[[types]]
+type="BVec4"
+source="bevy_math"
+import_path="glam::f32::sse2::vec4::BVec4"
+
+[[types]]
+type="BVec3A"
+source="bevy_math"
+import_path="glam::f32::sse2::vec3::BVec3A"
+
+[[types]]
+type="BVec4A"
+source="bevy_math"
+import_path="glam::f32::sse2::vec4::BVec4A"
 
 [[types]]
 type="DVec2"
@@ -209,7 +645,7 @@ mut (MetaMethod::Index) (s=LuaMat3,b=Mat3,v=LuaVec3) => {|_,s,idx : usize| {
         ($s)::Owned(ref mut v, ref valid) => {
             Ok(($v)::Ref(ScriptRef{
                 root: ScriptRefBase::ScriptOwned{valid: Arc::downgrade((valid))},
-                r: ReflectPtr::Mut(v.col_mut(idx-1)),
+                r: ReflectPtr::Mut(v.col_mut(idx)),
                 path: None
             }))
         },
@@ -217,7 +653,7 @@ mut (MetaMethod::Index) (s=LuaMat3,b=Mat3,v=LuaVec3) => {|_,s,idx : usize| {
             r.get_mut(|s,r| {
                 Ok(($v)::Ref(ScriptRef{
                     root: r.root.clone(),
-                    r: ReflectPtr::Mut(s.downcast_mut::<($b)>().unwrap().col_mut(idx-1)),
+                    r: ReflectPtr::Mut(s.downcast_mut::<($b)>().unwrap().col_mut(idx)),
                     path: None
                 })) 
             })
@@ -229,12 +665,30 @@ mut (MetaMethod::Index) (s=LuaMat3,b=Mat3,v=LuaVec3) => {|_,s,idx : usize| {
 import_path="glam::f32::mat3::Mat3"
 
 [[types]]
+type="Mat2"
+source="bevy_math"
+derive_flags=[
+    "Copy(LuaMat3 -> mut (MetaMethod::Index) (s=LuaMat2,b=Mat2,v=LuaVec2))"
+]
+import_path="glam::f32::sse2::mat2::Mat2"
+
+
+[[types]]
+type="Mat3A"
+source="bevy_math"
+derive_flags=[
+    "Copy(LuaMat3 -> mut (MetaMethod::Index) (s=LuaMat3A,b=Mat3A,v=LuaVec3A))"
+]
+import_path="glam::f32::sse2::mat3::Mat3A"
+
+[[types]]
 type="Mat4"
 source="bevy_math"
 derive_flags=[
     "Copy(LuaMat3 -> mut (MetaMethod::Index) (s=LuaMat4,b=Mat4,v=LuaVec4))"
 ]
 import_path="glam::f32::sse2::mat4::Mat4"
+
 
 [[types]]
 type="DMat3"
@@ -251,6 +705,26 @@ derive_flags=[
     "Copy(LuaMat3 -> mut (MetaMethod::Index) (s=LuaDMat4,b=DMat4,v=LuaDVec4))"
 ]
 import_path="glam::f64::dmat4::DMat4"
+
+[[types]]
+type="Affine2"
+source="bevy_math"
+import_path="glam::f32::sse2::mat2::Affine2"
+
+[[types]]
+type="Affine3A"
+source="bevy_math"
+import_path="glam::f32::sse2::mat3::Affine3A"
+
+[[types]]
+type="DAffine2"
+source="bevy_math"
+import_path="glam::f64::sse2::mat2::DAffine2"
+
+[[types]]
+type="DAffine3"
+source="bevy_math"
+import_path="glam::f64::sse2::mat3::DAffine3"
 
 [[types]]
 type="Quat"

@@ -12,17 +12,106 @@ impl_lua_newtypes!(
 		use bevy_mod_scripting_derive::{replace};
 		use tealr::{mlu::{mlua,mlua::{prelude::*,Error,MetaMethod,Value}},create_union_mlua};
 		
+		use bevy::ui::AlignContent;
+		use bevy::ui::AlignItems;
+		use bevy::ui::AlignSelf;
+		use bevy::ui::Direction;
+		use bevy::ui::FlexDirection;
+		use bevy::ui::FlexWrap;
+		use bevy::ui::FocusPolicy;
+		use bevy::ui::Interaction;
+		use bevy::ui::JustifyContent;
+		use bevy::ui::Overflow;
+		use bevy::ui::PositionType;
+		use bevy::ui::Val;
+		use bevy::ui::CalculatedClip;
+		use bevy::ui::CalculatedSize;
+		use bevy::ui::Node;
+		use bevy::ui::Style;
+		use bevy::ui::UiColor;
+		use bevy::ui::UiImage;
+		use bevy::ui::widget::Button;
+		use bevy::ui::widget::ImageMode;
+		use bevy::ui::Display;
+		use bevy::animation::AnimationPlayer;
+		use bevy::core::Name;
+		use bevy::gltf::GltfExtras;
+		use bevy::hierarchy::Children;
+		use bevy::hierarchy::Parent;
+		use bevy::hierarchy::PreviousParent;
+		use bevy::text::Text2dBounds;
+		use bevy::text::Text2dSize;
+		use bevy::text::Text;
+		use bevy::text::TextAlignment;
+		use bevy::text::TextSection;
+		use bevy::text::TextStyle;
+		use bevy::text::HorizontalAlign;
+		use bevy::text::VerticalAlign;
+		use bevy::time::Stopwatch;
+		use bevy::time::Timer;
+		use bevy::reflect::DynamicArray;
+		use bevy::reflect::DynamicList;
+		use bevy::reflect::DynamicMap;
+		use bevy::reflect::DynamicStruct;
+		use bevy::reflect::DynamicTuple;
+		use bevy::reflect::DynamicTupleStruct;
 		use bevy::ecs::entity::Entity;
+		use bevy::transform::components::Transform;
+		use bevy::transform::components::GlobalTransform;
+		use bevy::pbr::AmbientLight;
+		use bevy::pbr::CubemapVisibleEntities;
+		use bevy::pbr::DirectionalLight;
+		use bevy::pbr::DirectionalLightShadowMap;
+		use bevy::pbr::NotShadowCaster;
+		use bevy::pbr::NotShadowReceiver;
+		use bevy::pbr::PointLight;
+		use bevy::pbr::PointLightShadowMap;
 		use bevy::pbr::AlphaMode;
-		use bevy::render::camera::Projection;
+		use bevy::pbr::wireframe::Wireframe;
+		use bevy::pbr::wireframe::WireframeConfig;
+		use bevy::core_pipeline::core_3d::Camera3dDepthLoadOp;
+		use bevy::core_pipeline::clear_color::ClearColor;
+		use bevy::core_pipeline::clear_color::ClearColorConfig;
+		use bevy::core_pipeline::core_2d::Camera2d;
+		use bevy::core_pipeline::core_3d::Camera3d;
+		use bevy::sprite::Anchor;
+		use bevy::sprite::Mesh2dHandle;
+		use bevy::sprite::TextureAtlasSprite;
+		use bevy::sprite::Sprite;
+		use bevy::sprite::Rect;
+		use bevy::render::view::visibility::RenderLayers;
+		use bevy::render::view::visibility::Visibility;
+		use bevy::render::view::visibility::VisibleEntities;
+		use bevy::render::view::visibility::ComputedVisibility;
+		use bevy::render::mesh::skinning::SkinnedMesh;
+		use bevy::render::camera::ScalingMode;
+		use bevy::render::camera::WindowOrigin;
+		use bevy::render::color::Color;
+		use bevy::render::primitives::Aabb;
+		use bevy::render::primitives::CubemapFrusta;
+		use bevy::render::primitives::Frustum;
+		use bevy::render::view::Msaa;
+		use bevy::render::camera::Camera;
 		use bevy::render::camera::RenderTarget;
+		use bevy::render::camera::Viewport;
+		use bevy::render::camera::Projection;
+		use bevy::render::camera::OrthographicProjection;
+		use bevy::render::camera::PerspectiveProjection;
 		use bevy::render::camera::DepthCalculation;
 		use bevy::render::camera::CameraRenderGraph;
-		use bevy::core_pipeline::clear_color::ClearColorConfig;
+		use bevy::asset::AssetPathId;
+		use bevy::asset::LabelId;
+		use bevy::asset::SourcePathId;
 		use bevy::asset::HandleId;
 		use bevy::math::f32::Vec2;
 		use bevy::math::f32::Vec3;
+		use bevy::math::f32::Vec3A;
 		use bevy::math::f32::Vec4;
+		use bevy::math::bool::BVec2;
+		use bevy::math::bool::BVec3;
+		use bevy::math::bool::BVec4;
+		use bevy::math::bool::BVec3A;
+		use bevy::math::bool::BVec4A;
 		use bevy::math::f64::DVec2;
 		use bevy::math::f64::DVec3;
 		use bevy::math::f64::DVec4;
@@ -33,9 +122,15 @@ impl_lua_newtypes!(
 		use bevy::math::u32::UVec3;
 		use bevy::math::u32::UVec4;
 		use bevy::math::f32::Mat3;
+		use bevy::math::f32::Mat2;
+		use bevy::math::f32::Mat3A;
 		use bevy::math::f32::Mat4;
 		use bevy::math::f64::DMat3;
 		use bevy::math::f64::DMat4;
+		use bevy::math::f32::Affine2;
+		use bevy::math::f32::Affine3A;
+		use bevy::math::f64::DAffine2;
+		use bevy::math::f64::DAffine3;
 		use bevy::math::f32::Quat;
 		use bevy::math::f64::DQuat;
 		use bevy::math::EulerRot;
@@ -153,6 +248,910 @@ impl_lua_newtypes!(
 		    },
 		    
 		{
+			///Defines how each line is aligned within the flexbox.
+			///
+			///It only applies if [`FlexWrap::Wrap`] is present and if there are multiple lines of items.
+			bevy_ui::AlignContent : Value
+				: AutoMethods
+				(
+				)
+				+ BinOps
+				(
+				)
+				+ UnaryOps
+				(
+				)
+			impl
+			{
+			}
+		}
+,		{
+			///How items are aligned according to the cross axis
+			bevy_ui::AlignItems : Value
+				: AutoMethods
+				(
+				)
+				+ BinOps
+				(
+				)
+				+ UnaryOps
+				(
+				)
+			impl
+			{
+			}
+		}
+,		{
+			///Works like [`AlignItems`] but applies only to a single item
+			bevy_ui::AlignSelf : Value
+				: AutoMethods
+				(
+				)
+				+ BinOps
+				(
+				)
+				+ UnaryOps
+				(
+				)
+			impl
+			{
+			}
+		}
+,		{
+			///Defines the text direction
+			///
+			///For example English is written LTR (left-to-right) while Arabic is written RTL (right-to-left).
+			bevy_ui::Direction : Value
+				: AutoMethods
+				(
+				)
+				+ BinOps
+				(
+				)
+				+ UnaryOps
+				(
+				)
+			impl
+			{
+			}
+		}
+,		{
+			///Defines how flexbox items are ordered within a flexbox
+			bevy_ui::FlexDirection : Value
+				: AutoMethods
+				(
+				)
+				+ BinOps
+				(
+				)
+				+ UnaryOps
+				(
+				)
+			impl
+			{
+			}
+		}
+,		{
+			///Defines if flexbox items appear on a single line or on multiple lines
+			bevy_ui::FlexWrap : Value
+				: AutoMethods
+				(
+				)
+				+ BinOps
+				(
+				)
+				+ UnaryOps
+				(
+				)
+			impl
+			{
+			}
+		}
+,		{
+			///Describes whether the node should block interactions with lower nodes
+			bevy_ui::FocusPolicy : Value
+				: AutoMethods
+				(
+				)
+				+ BinOps
+				(
+				)
+				+ UnaryOps
+				(
+				)
+			impl
+			{
+			}
+		}
+,		{
+			///Describes what type of input interaction has occurred for a UI node.
+			///
+			///This is commonly queried with a `Changed<Interaction>` filter.
+			bevy_ui::Interaction : Value
+				: AutoMethods
+				(
+				)
+				+ BinOps
+				(
+				)
+				+ UnaryOps
+				(
+				)
+			impl
+			{
+			}
+		}
+,		{
+			///Defines how items are aligned according to the main axis
+			bevy_ui::JustifyContent : Value
+				: AutoMethods
+				(
+				)
+				+ BinOps
+				(
+				)
+				+ UnaryOps
+				(
+				)
+			impl
+			{
+			}
+		}
+,		{
+			///Whether to show or hide overflowing items
+			bevy_ui::Overflow : Value
+				: AutoMethods
+				(
+				)
+				+ BinOps
+				(
+				)
+				+ UnaryOps
+				(
+				)
+			impl
+			{
+			}
+		}
+,		{
+			///The strategy used to position this node
+			bevy_ui::PositionType : Value
+				: AutoMethods
+				(
+				)
+				+ BinOps
+				(
+				)
+				+ UnaryOps
+				(
+				)
+			impl
+			{
+			}
+		}
+,		{
+			///An enum that describes possible types of value in flexbox layout options
+			bevy_ui::Val : Value
+				: AutoMethods
+				(
+				)
+				+ BinOps
+				(
+					self Add f32 -> LuaVal,
+				)
+				+ UnaryOps
+				(
+				)
+			impl
+			{
+			}
+		}
+,		{
+			///The calculated clip of the node
+			bevy_ui::CalculatedClip : Value
+				: AutoMethods
+				(
+				)
+				+ BinOps
+				(
+				)
+				+ UnaryOps
+				(
+				)
+			impl
+			{
+			}
+		}
+,		{
+			///The calculated size of the node
+			bevy_ui::CalculatedSize : Value
+				: AutoMethods
+				(
+				)
+				+ BinOps
+				(
+				)
+				+ UnaryOps
+				(
+				)
+			impl
+			{
+			}
+		}
+,		{
+			///Describes the size of a UI node
+			bevy_ui::Node : Value
+				: AutoMethods
+				(
+				)
+				+ BinOps
+				(
+				)
+				+ UnaryOps
+				(
+				)
+			impl
+			{
+			}
+		}
+,		{
+			///Describes the style of a UI node
+			///
+			///It uses the [Flexbox](https://cssreference.io/flexbox/) system.
+			///
+			///**Note:** Bevy's UI is upside down compared to how Flexbox normally works, to stay consistent with engine paradigms about layouting from
+			///the upper left corner of the display
+			bevy_ui::Style : Value
+				: AutoMethods
+				(
+				)
+				+ BinOps
+				(
+				)
+				+ UnaryOps
+				(
+				)
+			impl
+			{
+			}
+		}
+,		{
+			///The color of the node
+			bevy_ui::UiColor : Value
+				: AutoMethods
+				(
+				)
+				+ BinOps
+				(
+				)
+				+ UnaryOps
+				(
+				)
+			impl
+			{
+			}
+		}
+,		{
+			///The image of the node
+			bevy_ui::UiImage : Value
+				: AutoMethods
+				(
+				)
+				+ BinOps
+				(
+				)
+				+ UnaryOps
+				(
+				)
+			impl
+			{
+			}
+		}
+,		{
+			///Marker struct for buttons
+			bevy_ui::widget::Button : Value
+				: AutoMethods
+				(
+				)
+				+ BinOps
+				(
+				)
+				+ UnaryOps
+				(
+				)
+			impl
+			{
+			}
+		}
+,		{
+			///Describes how to resize the Image node
+			bevy_ui::widget::ImageMode : Value
+				: AutoMethods
+				(
+				)
+				+ BinOps
+				(
+				)
+				+ UnaryOps
+				(
+				)
+			impl
+			{
+			}
+		}
+,		{
+			///Whether to use Flexbox layout
+			bevy_ui::Display : Value
+				: AutoMethods
+				(
+				)
+				+ BinOps
+				(
+				)
+				+ UnaryOps
+				(
+				)
+			impl
+			{
+			}
+		}
+,		{
+			///Animation controls
+			bevy_animation::AnimationPlayer : Value
+				: AutoMethods
+				(
+					///Is the animation paused
+					is_paused(&self) -> bool,
+
+					///Speed of the animation playback
+					speed(&self) -> f32,
+
+					///Time elapsed playing the animation
+					elapsed(&self) -> f32,
+
+				)
+				+ BinOps
+				(
+				)
+				+ UnaryOps
+				(
+				)
+			impl
+			{
+			}
+		}
+,		{
+			///Component used to identify an entity. Stores a hash for faster comparisons
+			///The hash is eagerly re-computed upon each update to the name.
+			///
+			///[`Name`] should not be treated as a globally unique identifier for entities,
+			///as multiple entities can have the same name.  [`bevy_ecs::entity::Entity`] should be
+			///used instead as the default unique identifier.
+			bevy_core::Name : Value
+				: AutoMethods
+				(
+				)
+				+ BinOps
+				(
+				)
+				+ UnaryOps
+				(
+				)
+			impl
+			{
+			}
+		}
+,		{
+			bevy_gltf::GltfExtras : Value
+				: AutoMethods
+				(
+				)
+				+ BinOps
+				(
+				)
+				+ UnaryOps
+				(
+				)
+			impl
+			{
+			}
+		}
+,		{
+			///Contains references to the child entities of this entity
+			bevy_hierarchy::Children : Value
+				: AutoMethods
+				(
+				)
+				+ BinOps
+				(
+				)
+				+ UnaryOps
+				(
+				)
+			impl
+			{
+			}
+		}
+,		{
+			///Holds a reference to the parent entity of this entity.
+			///This component should only be present on entities that actually have a parent entity.
+			bevy_hierarchy::Parent : Value
+				: AutoMethods
+				(
+				)
+				+ BinOps
+				(
+				)
+				+ UnaryOps
+				(
+				)
+			impl
+			{
+			}
+		}
+,		{
+			///Component that holds the [`Parent`] this entity had previously
+			bevy_hierarchy::PreviousParent : Value
+				: AutoMethods
+				(
+				)
+				+ BinOps
+				(
+				)
+				+ UnaryOps
+				(
+				)
+			impl
+			{
+			}
+		}
+,		{
+			///The maximum width and height of text. The text will wrap according to the specified size.
+			///Characters out of the bounds after wrapping will be truncated. Text is aligned according to the
+			///specified `TextAlignment`.
+			///
+			///Note: only characters that are completely out of the bounds will be truncated, so this is not a
+			///reliable limit if it is necessary to contain the text strictly in the bounds. Currently this
+			///component is mainly useful for text wrapping only.
+			bevy_text::Text2dBounds : Value
+				: AutoMethods
+				(
+				)
+				+ BinOps
+				(
+				)
+				+ UnaryOps
+				(
+				)
+			impl
+			{
+			}
+		}
+,		{
+			///The calculated size of text drawn in 2D scene.
+			bevy_text::Text2dSize : Value
+				: AutoMethods
+				(
+				)
+				+ BinOps
+				(
+				)
+				+ UnaryOps
+				(
+				)
+			impl
+			{
+			}
+		}
+,		{
+			bevy_text::Text : Value
+				: AutoMethods
+				(
+				)
+				+ BinOps
+				(
+				)
+				+ UnaryOps
+				(
+				)
+			impl
+			{
+			}
+		}
+,		{
+			bevy_text::TextAlignment : Value
+				: AutoMethods
+				(
+				)
+				+ BinOps
+				(
+				)
+				+ UnaryOps
+				(
+				)
+			impl
+			{
+			}
+		}
+,		{
+			bevy_text::TextSection : Value
+				: AutoMethods
+				(
+				)
+				+ BinOps
+				(
+				)
+				+ UnaryOps
+				(
+				)
+			impl
+			{
+			}
+		}
+,		{
+			bevy_text::TextStyle : Value
+				: AutoMethods
+				(
+				)
+				+ BinOps
+				(
+				)
+				+ UnaryOps
+				(
+				)
+			impl
+			{
+			}
+		}
+,		{
+			///Describes horizontal alignment preference for positioning & bounds.
+			bevy_text::HorizontalAlign : Value
+				: AutoMethods
+				(
+				)
+				+ BinOps
+				(
+				)
+				+ UnaryOps
+				(
+				)
+			impl
+			{
+			}
+		}
+,		{
+			///Describes vertical alignment preference for positioning & bounds. Currently a placeholder
+			///for future functionality.
+			bevy_text::VerticalAlign : Value
+				: AutoMethods
+				(
+				)
+				+ BinOps
+				(
+				)
+				+ UnaryOps
+				(
+				)
+			impl
+			{
+			}
+		}
+,		{
+			///A Stopwatch is a struct that track elapsed time when started.
+			///
+			///# Examples
+			///
+			///```
+			///# use bevy_time::*;
+			///use std::time::Duration;
+			///let mut stopwatch = Stopwatch::new();
+			///assert_eq!(stopwatch.elapsed_secs(), 0.0);
+			///
+			///stopwatch.tick(Duration::from_secs_f32(1.0)); // tick one second
+			///assert_eq!(stopwatch.elapsed_secs(), 1.0);
+			///
+			///stopwatch.pause();
+			///stopwatch.tick(Duration::from_secs_f32(1.0)); // paused stopwatches don't tick
+			///assert_eq!(stopwatch.elapsed_secs(), 1.0);
+			///
+			///stopwatch.reset(); // reset the stopwatch
+			///assert!(stopwatch.paused());
+			///assert_eq!(stopwatch.elapsed_secs(), 0.0);
+			///```
+			bevy_time::Stopwatch : Value
+				: AutoMethods
+				(
+					///Create a new unpaused `Stopwatch` with no elapsed time.
+					///
+					///# Examples
+					///```
+					///# use bevy_time::*;
+					///let stopwatch = Stopwatch::new();
+					///assert_eq!(stopwatch.elapsed_secs(), 0.0);
+					///assert_eq!(stopwatch.paused(), false);
+					///```
+					new() -> LuaStopwatch,
+
+					///Returns the elapsed time since the last [`reset`](Stopwatch::reset)
+					///of the stopwatch, in seconds.
+					///
+					///# Examples
+					///```
+					///# use bevy_time::*;
+					///use std::time::Duration;
+					///let mut stopwatch = Stopwatch::new();
+					///stopwatch.tick(Duration::from_secs(1));
+					///assert_eq!(stopwatch.elapsed_secs(), 1.0);
+					///```
+					///
+					///# See Also
+					///
+					///[`elapsed`](Stopwatch::elapsed) - if a `Duration` is desirable instead.
+					elapsed_secs(&self) -> f32,
+
+					///Returns `true` if the stopwatch is paused.
+					///
+					///# Examples
+					///```
+					///# use bevy_time::*;
+					///let mut stopwatch = Stopwatch::new();
+					///assert!(!stopwatch.paused());
+					///stopwatch.pause();
+					///assert!(stopwatch.paused());
+					///stopwatch.unpause();
+					///assert!(!stopwatch.paused());
+					///```
+					paused(&self) -> bool,
+
+				)
+				+ BinOps
+				(
+				)
+				+ UnaryOps
+				(
+				)
+			impl
+			{
+			}
+		}
+,		{
+			///Tracks elapsed time. Enters the finished state once `duration` is reached.
+			///
+			///Non repeating timers will stop tracking and stay in the finished state until reset.
+			///Repeating timers will only be in the finished state on each tick `duration` is reached or
+			///exceeded, and can still be reset at any given point.
+			///
+			///Paused timers will not have elapsed time increased.
+			bevy_time::Timer : Value
+				: AutoMethods
+				(
+					///Creates a new timer with a given duration in seconds.
+					///
+					///# Example
+					///```
+					///# use bevy_time::*;
+					///let mut timer = Timer::from_seconds(1.0, false);
+					///```
+					from_seconds(f32,bool) -> LuaTimer,
+
+					///Returns `true` if the timer has reached its duration.
+					///
+					///# Examples
+					///```
+					///# use bevy_time::*;
+					///use std::time::Duration;
+					///let mut timer = Timer::from_seconds(1.0, false);
+					///timer.tick(Duration::from_secs_f32(1.5));
+					///assert!(timer.finished());
+					///timer.tick(Duration::from_secs_f32(0.5));
+					///assert!(timer.finished());
+					///```
+					finished(&self) -> bool,
+
+					///Returns `true` only on the tick the timer reached its duration.
+					///
+					///# Examples
+					///```
+					///# use bevy_time::*;
+					///use std::time::Duration;
+					///let mut timer = Timer::from_seconds(1.0, false);
+					///timer.tick(Duration::from_secs_f32(1.5));
+					///assert!(timer.just_finished());
+					///timer.tick(Duration::from_secs_f32(0.5));
+					///assert!(!timer.just_finished());
+					///```
+					just_finished(&self) -> bool,
+
+					///Returns the time elapsed on the timer as a `f32`.
+					///See also [`Timer::elapsed`](Timer::elapsed).
+					elapsed_secs(&self) -> f32,
+
+					///Returns `true` if the timer is repeating.
+					///
+					///# Examples
+					///```
+					///# use bevy_time::*;
+					///let mut timer = Timer::from_seconds(1.0, true);
+					///assert!(timer.repeating());
+					///```
+					repeating(&self) -> bool,
+
+					///Returns `true` if the timer is paused.
+					///
+					///See also [`Stopwatch::paused`](Stopwatch::paused).
+					///
+					///# Examples
+					///```
+					///# use bevy_time::*;
+					///let mut timer = Timer::from_seconds(1.0, false);
+					///assert!(!timer.paused());
+					///timer.pause();
+					///assert!(timer.paused());
+					///timer.unpause();
+					///assert!(!timer.paused());
+					///```
+					paused(&self) -> bool,
+
+					///Returns the percentage of the timer elapsed time (goes from 0.0 to 1.0).
+					///
+					///# Examples
+					///```
+					///# use bevy_time::*;
+					///use std::time::Duration;
+					///let mut timer = Timer::from_seconds(2.0, false);
+					///timer.tick(Duration::from_secs_f32(0.5));
+					///assert_eq!(timer.percent(), 0.25);
+					///```
+					percent(&self) -> f32,
+
+					///Returns the percentage of the timer remaining time (goes from 0.0 to 1.0).
+					///
+					///# Examples
+					///```
+					///# use bevy_time::*;
+					///use std::time::Duration;
+					///let mut timer = Timer::from_seconds(2.0, false);
+					///timer.tick(Duration::from_secs_f32(0.5));
+					///assert_eq!(timer.percent_left(), 0.75);
+					///```
+					percent_left(&self) -> f32,
+
+					///Returns the number of times a repeating timer
+					///finished during the last [`tick`](Timer<T>::tick) call.
+					///
+					///For non repeating-timers, this method will only ever
+					///return 0 or 1.
+					///
+					///# Examples
+					///```
+					///# use bevy_time::*;
+					///use std::time::Duration;
+					///let mut timer = Timer::from_seconds(1.0, true);
+					///timer.tick(Duration::from_secs_f32(6.0));
+					///assert_eq!(timer.times_finished_this_tick(), 6);
+					///timer.tick(Duration::from_secs_f32(2.0));
+					///assert_eq!(timer.times_finished_this_tick(), 2);
+					///timer.tick(Duration::from_secs_f32(0.5));
+					///assert_eq!(timer.times_finished_this_tick(), 0);
+					///```
+					times_finished_this_tick(&self) -> u32,
+
+				)
+				+ BinOps
+				(
+				)
+				+ UnaryOps
+				(
+				)
+			impl
+			{
+			}
+		}
+,		{
+			///A fixed-size list of reflected values.
+			///
+			///This differs from [`DynamicList`] in that the size of the [`DynamicArray`]
+			///is constant, whereas a [`DynamicList`] can have items added and removed.
+			///
+			///This isn't to say that a [`DynamicArray`] is immutable— its items
+			///can be mutated— just that the _number_ of items cannot change.
+			///
+			///[`DynamicList`]: crate::DynamicList
+			bevy_reflect::DynamicArray : Value
+				: AutoMethods
+				(
+				)
+				+ BinOps
+				(
+				)
+				+ UnaryOps
+				(
+				)
+			impl
+			{
+			}
+		}
+,		{
+			///A list of reflected values.
+			bevy_reflect::DynamicList : Value
+				: AutoMethods
+				(
+				)
+				+ BinOps
+				(
+				)
+				+ UnaryOps
+				(
+				)
+			impl
+			{
+			}
+		}
+,		{
+			///An ordered mapping between reflected values.
+			bevy_reflect::DynamicMap : Value
+				: AutoMethods
+				(
+				)
+				+ BinOps
+				(
+				)
+				+ UnaryOps
+				(
+				)
+			impl
+			{
+			}
+		}
+,		{
+			///A struct type which allows fields to be added at runtime.
+			bevy_reflect::DynamicStruct : Value
+				: AutoMethods
+				(
+				)
+				+ BinOps
+				(
+				)
+				+ UnaryOps
+				(
+				)
+			impl
+			{
+			}
+		}
+,		{
+			///A tuple which allows fields to be added at runtime.
+			bevy_reflect::DynamicTuple : Value
+				: AutoMethods
+				(
+				)
+				+ BinOps
+				(
+				)
+				+ UnaryOps
+				(
+				)
+			impl
+			{
+			}
+		}
+,		{
+			///A tuple struct which allows fields to be added at runtime.
+			bevy_reflect::DynamicTupleStruct : Value
+				: AutoMethods
+				(
+				)
+				+ BinOps
+				(
+				)
+				+ UnaryOps
+				(
+				)
+			impl
+			{
+			}
+		}
+,		{
 			///Lightweight identifier of an [entity](crate::entity).
 			///
 			///The identifier is implemented using a [generational index]: a combination of an ID and a generation.
@@ -293,8 +1292,943 @@ impl_lua_newtypes!(
 			}
 		}
 ,		{
+			///Describe the position of an entity. If the entity has a parent, the position is relative
+			///to its parent position.
+			///
+			///* To place or move an entity, you should set its [`Transform`].
+			///* To get the global position of an entity, you should get its [`GlobalTransform`].
+			///* To be displayed, an entity must have both a [`Transform`] and a [`GlobalTransform`].
+			///  * You may use the [`TransformBundle`](crate::TransformBundle) to guarantee this.
+			///
+			///## [`Transform`] and [`GlobalTransform`]
+			///
+			///[`Transform`] is the position of an entity relative to its parent position, or the reference
+			///frame if it doesn't have a [`Parent`](bevy_hierarchy::Parent).
+			///
+			///[`GlobalTransform`] is the position of an entity relative to the reference frame.
+			///
+			///[`GlobalTransform`] is updated from [`Transform`] in the system
+			///[`transform_propagate_system`](crate::transform_propagate_system).
+			///
+			///This system runs in stage [`CoreStage::PostUpdate`](crate::CoreStage::PostUpdate). If you
+			///update the[`Transform`] of an entity in this stage or after, you will notice a 1 frame lag
+			///before the [`GlobalTransform`] is updated.
+			bevy_transform::components::Transform : Value
+				: AutoMethods
+				(
+					///Creates a new [`Transform`] at the position `(x, y, z)`. In 2d, the `z` component
+					///is used for z-ordering elements: higher `z`-value will be in front of lower
+					///`z`-value.
+					from_xyz(f32,f32,f32) -> LuaTransform,
+
+					///Creates a new identity [`Transform`], with no translation, rotation, and a scale of 1 on
+					///all axes.
+					identity() -> LuaTransform,
+
+					///Extracts the translation, rotation, and scale from `matrix`. It must be a 3d affine
+					///transformation matrix.
+					from_matrix(LuaMat4) -> LuaTransform,
+
+					///Creates a new [`Transform`], with `translation`. Rotation will be 0 and scale 1 on
+					///all axes.
+					from_translation(LuaVec3) -> LuaTransform,
+
+					///Creates a new [`Transform`], with `rotation`. Translation will be 0 and scale 1 on
+					///all axes.
+					from_rotation(LuaQuat) -> LuaTransform,
+
+					///Creates a new [`Transform`], with `scale`. Translation will be 0 and rotation 0 on
+					///all axes.
+					from_scale(LuaVec3) -> LuaTransform,
+
+					///Updates and returns this [`Transform`] by rotating it so that its unit vector in the
+					///local z direction is toward `target` and its unit vector in the local y direction
+					///is toward `up`.
+					looking_at(self,LuaVec3,LuaVec3) -> LuaTransform,
+
+					///Returns this [`Transform`] with a new translation.
+					with_translation(self,LuaVec3) -> LuaTransform,
+
+					///Returns this [`Transform`] with a new rotation.
+					with_rotation(self,LuaQuat) -> LuaTransform,
+
+					///Returns this [`Transform`] with a new scale.
+					with_scale(self,LuaVec3) -> LuaTransform,
+
+					///Returns the 3d affine transformation matrix from this transforms translation,
+					///rotation, and scale.
+					compute_matrix(&self) -> LuaMat4,
+
+					///Get the unit vector in the local x direction.
+					local_x(&self) -> LuaVec3,
+
+					///Equivalent to [`-local_x()`][Transform::local_x()]
+					left(&self) -> LuaVec3,
+
+					///Equivalent to [`local_x()`][Transform::local_x()]
+					right(&self) -> LuaVec3,
+
+					///Get the unit vector in the local y direction.
+					local_y(&self) -> LuaVec3,
+
+					///Equivalent to [`local_y()`][Transform::local_y]
+					up(&self) -> LuaVec3,
+
+					///Equivalent to [`-local_y()`][Transform::local_y]
+					down(&self) -> LuaVec3,
+
+					///Get the unit vector in the local z direction.
+					local_z(&self) -> LuaVec3,
+
+					///Equivalent to [`-local_z()`][Transform::local_z]
+					forward(&self) -> LuaVec3,
+
+					///Equivalent to [`local_z()`][Transform::local_z]
+					back(&self) -> LuaVec3,
+
+					///Multiplies `self` with `transform` component by component, returning the
+					///resulting [`Transform`]
+					mul_transform(&self,LuaTransform) -> LuaTransform,
+
+					///Returns a [`Vec3`] of this [`Transform`] applied to `value`.
+					mul_vec3(&self,LuaVec3) -> LuaVec3,
+
+				)
+				+ BinOps
+				(
+					self Mul LuaTransform -> LuaTransform,
+					self Mul LuaVec3 -> LuaVec3,
+				)
+				+ UnaryOps
+				(
+				)
+			impl
+			{
+			}
+		}
+,		{
+			///Describe the position of an entity relative to the reference frame.
+			///
+			///* To place or move an entity, you should set its [`Transform`].
+			///* To get the global position of an entity, you should get its [`GlobalTransform`].
+			///* For transform hierarchies to work correctly, you must have both a [`Transform`] and a [`GlobalTransform`].
+			///  * You may use the [`TransformBundle`](crate::TransformBundle) to guarantee this.
+			///
+			///## [`Transform`] and [`GlobalTransform`]
+			///
+			///[`Transform`] is the position of an entity relative to its parent position, or the reference
+			///frame if it doesn't have a [`Parent`](bevy_hierarchy::Parent).
+			///
+			///[`GlobalTransform`] is the position of an entity relative to the reference frame.
+			///
+			///[`GlobalTransform`] is updated from [`Transform`] in the system
+			///[`transform_propagate_system`](crate::transform_propagate_system).
+			///
+			///This system runs in stage [`CoreStage::PostUpdate`](crate::CoreStage::PostUpdate). If you
+			///update the[`Transform`] of an entity in this stage or after, you will notice a 1 frame lag
+			///before the [`GlobalTransform`] is updated.
+			bevy_transform::components::GlobalTransform : Value
+				: AutoMethods
+				(
+					///Creates a new identity [`GlobalTransform`], with no translation, rotation, and a scale of 1
+					///on all axes.
+					identity() -> LuaGlobalTransform,
+
+					///Returns the 3d affine transformation matrix from this transforms translation,
+					///rotation, and scale.
+					compute_matrix(&self) -> LuaMat4,
+
+					///Returns the 3d affine transformation from this transforms translation,
+					///rotation, and scale.
+					compute_affine(&self) -> LuaAffine3A,
+
+					///Get the unit vector in the local x direction
+					local_x(&self) -> LuaVec3,
+
+					///Equivalent to [`-local_x()`][GlobalTransform::local_x]
+					left(&self) -> LuaVec3,
+
+					///Equivalent to [`local_x()`][GlobalTransform::local_x]
+					right(&self) -> LuaVec3,
+
+					///Get the unit vector in the local y direction
+					local_y(&self) -> LuaVec3,
+
+					///Equivalent to [`local_y()`][GlobalTransform::local_y]
+					up(&self) -> LuaVec3,
+
+					///Equivalent to [`-local_y()`][GlobalTransform::local_y]
+					down(&self) -> LuaVec3,
+
+					///Get the unit vector in the local z direction
+					local_z(&self) -> LuaVec3,
+
+					///Equivalent to [`-local_z()`][GlobalTransform::local_z]
+					forward(&self) -> LuaVec3,
+
+					///Equivalent to [`local_z()`][GlobalTransform::local_z]
+					back(&self) -> LuaVec3,
+
+					///Multiplies `self` with `transform` component by component, returning the
+					///resulting [`GlobalTransform`]
+					mul_transform(&self,LuaTransform) -> LuaGlobalTransform,
+
+					///Returns a [`Vec3`] of this [`Transform`] applied to `value`.
+					mul_vec3(&self,LuaVec3) -> LuaVec3,
+
+				)
+				+ BinOps
+				(
+					self Mul LuaGlobalTransform -> LuaGlobalTransform,
+					self Mul LuaTransform -> LuaGlobalTransform,
+					self Mul LuaVec3 -> LuaVec3,
+				)
+				+ UnaryOps
+				(
+				)
+			impl
+			{
+			}
+		}
+,		{
+			///An ambient light, which lights the entire scene equally.
+			bevy_pbr::AmbientLight : Value
+				: AutoMethods
+				(
+				)
+				+ BinOps
+				(
+				)
+				+ UnaryOps
+				(
+				)
+			impl
+			{
+			}
+		}
+,		{
+			bevy_pbr::CubemapVisibleEntities : Value
+				: AutoMethods
+				(
+				)
+				+ BinOps
+				(
+				)
+				+ UnaryOps
+				(
+				)
+			impl
+			{
+			}
+		}
+,		{
+			///A Directional light.
+			///
+			///Directional lights don't exist in reality but they are a good
+			///approximation for light sources VERY far away, like the sun or
+			///the moon.
+			///
+			///Valid values for `illuminance` are:
+			///
+			///| Illuminance (lux) | Surfaces illuminated by                        |
+			///|-------------------|------------------------------------------------|
+			///| 0.0001            | Moonless, overcast night sky (starlight)       |
+			///| 0.002             | Moonless clear night sky with airglow          |
+			///| 0.05–0.3          | Full moon on a clear night                     |
+			///| 3.4               | Dark limit of civil twilight under a clear sky |
+			///| 20–50             | Public areas with dark surroundings            |
+			///| 50                | Family living room lights                      |
+			///| 80                | Office building hallway/toilet lighting        |
+			///| 100               | Very dark overcast day                         |
+			///| 150               | Train station platforms                        |
+			///| 320–500           | Office lighting                                |
+			///| 400               | Sunrise or sunset on a clear day.              |
+			///| 1000              | Overcast day; typical TV studio lighting       |
+			///| 10,000–25,000     | Full daylight (not direct sun)                 |
+			///| 32,000–100,000    | Direct sunlight                                |
+			///
+			///Source: [Wikipedia](https://en.wikipedia.org/wiki/Lux)
+			bevy_pbr::DirectionalLight : Value
+				: AutoMethods
+				(
+				)
+				+ BinOps
+				(
+				)
+				+ UnaryOps
+				(
+				)
+			impl
+			{
+			}
+		}
+,		{
+			bevy_pbr::DirectionalLightShadowMap : Value
+				: AutoMethods
+				(
+				)
+				+ BinOps
+				(
+				)
+				+ UnaryOps
+				(
+				)
+			impl
+			{
+			}
+		}
+,		{
+			///Add this component to make a [`Mesh`](bevy_render::mesh::Mesh) not cast shadows.
+			bevy_pbr::NotShadowCaster : Value
+				: AutoMethods
+				(
+				)
+				+ BinOps
+				(
+				)
+				+ UnaryOps
+				(
+				)
+			impl
+			{
+			}
+		}
+,		{
+			///Add this component to make a [`Mesh`](bevy_render::mesh::Mesh) not receive shadows.
+			bevy_pbr::NotShadowReceiver : Value
+				: AutoMethods
+				(
+				)
+				+ BinOps
+				(
+				)
+				+ UnaryOps
+				(
+				)
+			impl
+			{
+			}
+		}
+,		{
+			///A light that emits light in all directions from a central point.
+			///
+			///Real-world values for `intensity` (luminous power in lumens) based on the electrical power
+			///consumption of the type of real-world light are:
+			///
+			///| Luminous Power (lumen) (i.e. the intensity member) | Incandescent non-halogen (Watts) | Incandescent halogen (Watts) | Compact fluorescent (Watts) | LED (Watts |
+			///|------|-----|----|--------|-------|
+			///| 200  | 25  |    | 3-5    | 3     |
+			///| 450  | 40  | 29 | 9-11   | 5-8   |
+			///| 800  | 60  |    | 13-15  | 8-12  |
+			///| 1100 | 75  | 53 | 18-20  | 10-16 |
+			///| 1600 | 100 | 72 | 24-28  | 14-17 |
+			///| 2400 | 150 |    | 30-52  | 24-30 |
+			///| 3100 | 200 |    | 49-75  | 32    |
+			///| 4000 | 300 |    | 75-100 | 40.5  |
+			///
+			///Source: [Wikipedia](https://en.wikipedia.org/wiki/Lumen_(unit)#Lighting)
+			bevy_pbr::PointLight : Value
+				: AutoMethods
+				(
+				)
+				+ BinOps
+				(
+				)
+				+ UnaryOps
+				(
+				)
+			impl
+			{
+			}
+		}
+,		{
+			bevy_pbr::PointLightShadowMap : Value
+				: AutoMethods
+				(
+				)
+				+ BinOps
+				(
+				)
+				+ UnaryOps
+				(
+				)
+			impl
+			{
+			}
+		}
+,		{
 			///Alpha mode
 			bevy_pbr::AlphaMode : Value
+				: AutoMethods
+				(
+				)
+				+ BinOps
+				(
+				)
+				+ UnaryOps
+				(
+				)
+			impl
+			{
+			}
+		}
+,		{
+			///Controls whether an entity should rendered in wireframe-mode if the [`WireframePlugin`] is enabled
+			bevy_pbr::wireframe::Wireframe : Value
+				: AutoMethods
+				(
+				)
+				+ BinOps
+				(
+				)
+				+ UnaryOps
+				(
+				)
+			impl
+			{
+			}
+		}
+,		{
+			bevy_pbr::wireframe::WireframeConfig : Value
+				: AutoMethods
+				(
+				)
+				+ BinOps
+				(
+				)
+				+ UnaryOps
+				(
+				)
+			impl
+			{
+			}
+		}
+,		{
+			///The depth clear operation to perform for the main 3d pass.
+			bevy_core_pipeline::core_3d::Camera3dDepthLoadOp : Value
+				: AutoMethods
+				(
+				)
+				+ BinOps
+				(
+				)
+				+ UnaryOps
+				(
+				)
+			impl
+			{
+			}
+		}
+,		{
+			///When used as a resource, sets the color that is used to clear the screen between frames.
+			///
+			///This color appears as the "background" color for simple apps, when
+			///there are portions of the screen with nothing rendered.
+			bevy_core_pipeline::clear_color::ClearColor : Value
+				: AutoMethods
+				(
+				)
+				+ BinOps
+				(
+				)
+				+ UnaryOps
+				(
+				)
+			impl
+			{
+			}
+		}
+,		{
+			bevy_core_pipeline::clear_color::ClearColorConfig : Value
+				: AutoMethods
+				(
+				)
+				+ BinOps
+				(
+				)
+				+ UnaryOps
+				(
+				)
+			impl
+			{
+			}
+		}
+,		{
+			bevy_core_pipeline::core_2d::Camera2d : Value
+				: AutoMethods
+				(
+				)
+				+ BinOps
+				(
+				)
+				+ UnaryOps
+				(
+				)
+			impl
+			{
+			}
+		}
+,		{
+			///Configuration for the "main 3d render graph".
+			bevy_core_pipeline::core_3d::Camera3d : Value
+				: AutoMethods
+				(
+				)
+				+ BinOps
+				(
+				)
+				+ UnaryOps
+				(
+				)
+			impl
+			{
+			}
+		}
+,		{
+			///How a sprite is positioned relative to its [`Transform`](bevy_transform::components::Transform).
+			///It defaults to `Anchor::Center`.
+			bevy_sprite::Anchor : Value
+				: AutoMethods
+				(
+					as_vec(&self) -> LuaVec2,
+
+				)
+				+ BinOps
+				(
+				)
+				+ UnaryOps
+				(
+				)
+			impl
+			{
+			}
+		}
+,		{
+			///Component for rendering with meshes in the 2d pipeline, usually with a [2d material](crate::Material2d) such as [`ColorMaterial`](crate::ColorMaterial).
+			///
+			///It wraps a [`Handle<Mesh>`] to differentiate from the 3d pipelines which use the handles directly as components
+			bevy_sprite::Mesh2dHandle : Value
+				: AutoMethods
+				(
+				)
+				+ BinOps
+				(
+				)
+				+ UnaryOps
+				(
+				)
+			impl
+			{
+			}
+		}
+,		{
+			bevy_sprite::TextureAtlasSprite : Value
+				: AutoMethods
+				(
+					new(usize) -> LuaTextureAtlasSprite,
+
+				)
+				+ BinOps
+				(
+				)
+				+ UnaryOps
+				(
+				)
+			impl
+			{
+			}
+		}
+,		{
+			bevy_sprite::Sprite : Value
+				: AutoMethods
+				(
+				)
+				+ BinOps
+				(
+				)
+				+ UnaryOps
+				(
+				)
+			impl
+			{
+			}
+		}
+,		{
+			///A rectangle defined by two points. There is no defined origin, so 0,0 could be anywhere
+			///(top-left, bottom-left, etc)
+			bevy_sprite::Rect : Value
+				: AutoMethods
+				(
+					width(&self) -> f32,
+
+					height(&self) -> f32,
+
+					size(&self) -> LuaVec2,
+
+				)
+				+ BinOps
+				(
+				)
+				+ UnaryOps
+				(
+				)
+			impl
+			{
+			}
+		}
+,		{
+			///Describes which rendering layers an entity belongs to.
+			///
+			///Cameras with this component will only render entities with intersecting
+			///layers.
+			///
+			///There are 32 layers numbered `0` - [`TOTAL_LAYERS`](RenderLayers::TOTAL_LAYERS). Entities may
+			///belong to one or more layers, or no layer at all.
+			///
+			///The [`Default`] instance of `RenderLayers` contains layer `0`, the first layer.
+			///
+			///An entity with this component without any layers is invisible.
+			///
+			///Entities without this component belong to layer `0`.
+			bevy_render::view::visibility::RenderLayers : Value
+				: AutoMethods
+				(
+					///Create a new `RenderLayers` that belongs to all layers.
+					all() -> LuaRenderLayers,
+
+					///Create a new `RenderLayers` that belongs to no layers.
+					none() -> LuaRenderLayers,
+
+					///Determine if a `RenderLayers` intersects another.
+					///
+					///`RenderLayers`s intersect if they share any common layers.
+					///
+					///A `RenderLayers` with no layers will not match any other
+					///`RenderLayers`, even another with no layers.
+					intersects(&self,&LuaRenderLayers) -> bool,
+
+				)
+				+ BinOps
+				(
+				)
+				+ UnaryOps
+				(
+				)
+			impl
+			{
+			}
+		}
+,		{
+			///User indication of whether an entity is visible
+			bevy_render::view::visibility::Visibility : Value
+				: AutoMethods
+				(
+				)
+				+ BinOps
+				(
+				)
+				+ UnaryOps
+				(
+				)
+			impl
+			{
+			}
+		}
+,		{
+			///Collection of entities visible from the current view.
+			///
+			///This component contains all entities which are visible from the currently
+			///rendered view. The collection is updated automatically by the [`check_visibility()`]
+			///system, and renderers can use it to optimize rendering of a particular view, to
+			///prevent drawing items not visible from that view.
+			///
+			///This component is intended to be attached to the same entity as the [`Camera`] and
+			///the [`Frustum`] defining the view.
+			///
+			///Currently this component is ignored by the sprite renderer, so sprite rendering
+			///is not optimized per view.
+			bevy_render::view::visibility::VisibleEntities : Value
+				: AutoMethods
+				(
+					len(&self) -> usize,
+
+					is_empty(&self) -> bool,
+
+				)
+				+ BinOps
+				(
+				)
+				+ UnaryOps
+				(
+				)
+			impl
+			{
+			}
+		}
+,		{
+			///Algorithmically-computed indication of whether an entity is visible and should be extracted for rendering
+			bevy_render::view::visibility::ComputedVisibility : Value
+				: AutoMethods
+				(
+				)
+				+ BinOps
+				(
+				)
+				+ UnaryOps
+				(
+				)
+			impl
+			{
+			}
+		}
+,		{
+			bevy_render::mesh::skinning::SkinnedMesh : Value
+				: AutoMethods
+				(
+				)
+				+ BinOps
+				(
+				)
+				+ UnaryOps
+				(
+				)
+			impl
+			{
+			}
+		}
+,		{
+			bevy_render::camera::ScalingMode : Value
+				: AutoMethods
+				(
+				)
+				+ BinOps
+				(
+				)
+				+ UnaryOps
+				(
+				)
+			impl
+			{
+			}
+		}
+,		{
+			bevy_render::camera::WindowOrigin : Value
+				: AutoMethods
+				(
+				)
+				+ BinOps
+				(
+				)
+				+ UnaryOps
+				(
+				)
+			impl
+			{
+			}
+		}
+,		{
+			bevy_render::color::Color : Value
+				: AutoMethods
+				(
+					///New `Color` from sRGB colorspace.
+					rgb(f32,f32,f32) -> LuaColor,
+
+					///New `Color` from sRGB colorspace.
+					rgba(f32,f32,f32,f32) -> LuaColor,
+
+					///New `Color` from linear RGB colorspace.
+					rgb_linear(f32,f32,f32) -> LuaColor,
+
+					///New `Color` from linear RGB colorspace.
+					rgba_linear(f32,f32,f32,f32) -> LuaColor,
+
+					///New `Color` with HSL representation in sRGB colorspace.
+					hsl(f32,f32,f32) -> LuaColor,
+
+					///New `Color` with HSL representation in sRGB colorspace.
+					hsla(f32,f32,f32,f32) -> LuaColor,
+
+					///New `Color` from sRGB colorspace.
+					rgb_u8(u8,u8,u8) -> LuaColor,
+
+					///New `Color` from sRGB colorspace.
+					rgba_u8(u8,u8,u8,u8) -> LuaColor,
+
+					///Get red in sRGB colorspace.
+					r(&self) -> f32,
+
+					///Get green in sRGB colorspace.
+					g(&self) -> f32,
+
+					///Get blue in sRGB colorspace.
+					b(&self) -> f32,
+
+					///Get alpha.
+					a(&self) -> f32,
+
+					///Converts a `Color` to variant `Color::Rgba`
+					as_rgba(&LuaColor) -> LuaColor,
+
+					///Converts a `Color` to variant `Color::RgbaLinear`
+					as_rgba_linear(&LuaColor) -> LuaColor,
+
+					///Converts a `Color` to variant `Color::Hsla`
+					as_hsla(&LuaColor) -> LuaColor,
+
+					///Converts Color to a u32 from sRGB colorspace.
+					///
+					///Maps the RGBA channels in RGBA order to a little-endian byte array (GPUs are little-endian).
+					///A will be the most significant byte and R the least significant.
+					as_rgba_u32(LuaColor) -> u32,
+
+					///Converts Color to a u32 from linear RGB colorspace.
+					///
+					///Maps the RGBA channels in RGBA order to a little-endian byte array (GPUs are little-endian).
+					///A will be the most significant byte and R the least significant.
+					as_linear_rgba_u32(LuaColor) -> u32,
+
+				)
+				+ BinOps
+				(
+					self Add LuaColor -> LuaColor,
+					self Add LuaVec4 -> LuaColor,
+					self Mul f32 -> LuaColor,
+					self Mul LuaVec4 -> LuaColor,
+					self Mul LuaVec3 -> LuaColor,
+				)
+				+ UnaryOps
+				(
+				)
+			impl
+			{
+			}
+		}
+,		{
+			///An Axis-Aligned Bounding Box
+			bevy_render::primitives::Aabb : Value
+				: AutoMethods
+				(
+					from_min_max(LuaVec3,LuaVec3) -> LuaAabb,
+
+					min(&self) -> LuaVec3A,
+
+					max(&self) -> LuaVec3A,
+
+				)
+				+ BinOps
+				(
+				)
+				+ UnaryOps
+				(
+				)
+			impl
+			{
+			}
+		}
+,		{
+			bevy_render::primitives::CubemapFrusta : Value
+				: AutoMethods
+				(
+				)
+				+ BinOps
+				(
+				)
+				+ UnaryOps
+				(
+				)
+			impl
+			{
+			}
+		}
+,		{
+			///A frustum defined by the 6 containing planes
+			///Planes are ordered left, right, top, bottom, near, far
+			///Normals point into the contained volume
+			bevy_render::primitives::Frustum : Value
+				: AutoMethods
+				(
+					from_view_projection(&LuaMat4,&LuaVec3,&LuaVec3,f32) -> LuaFrustum,
+
+					intersects_obb(&self,&LuaAabb,&LuaMat4,bool) -> bool,
+
+				)
+				+ BinOps
+				(
+				)
+				+ UnaryOps
+				(
+				)
+			impl
+			{
+			}
+		}
+,		{
+			///Configuration resource for [Multi-Sample Anti-Aliasing](https://en.wikipedia.org/wiki/Multisample_anti-aliasing).
+			///
+			///# Example
+			///```
+			///# use bevy_app::prelude::App;
+			///# use bevy_render::prelude::Msaa;
+			///App::new()
+			///    .insert_resource(Msaa { samples: 4 })
+			///    .run();
+			///```
+			bevy_render::view::Msaa : Value
+				: AutoMethods
+				(
+				)
+				+ BinOps
+				(
+				)
+				+ UnaryOps
+				(
+				)
+			impl
+			{
+			}
+		}
+,		{
+			bevy_render::camera::Camera : Value
+				: AutoMethods
+				(
+					///The projection matrix computed using this camera's [`CameraProjection`].
+					projection_matrix(&self) -> LuaMat4,
+
+				)
+				+ BinOps
+				(
+				)
+				+ UnaryOps
+				(
+				)
+			impl
+			{
+			}
+		}
+,		{
+			///The "target" that a [`Camera`] will render to. For example, this could be a [`Window`](bevy_window::Window)
+			///swapchain or an [`Image`].
+			bevy_render::camera::RenderTarget : Value
+				: AutoMethods
+				(
+				)
+				+ BinOps
+				(
+				)
+				+ UnaryOps
+				(
+				)
+			impl
+			{
+			}
+		}
+,		{
+			///Render viewport configuration for the [`Camera`] component.
+			///
+			///The viewport defines the area on the render target to which the camera renders its image.
+			///You can overlay multiple cameras in a single window using viewports to create effects like
+			///split screen, minimaps, and character viewers.
+			bevy_render::camera::Viewport : Value
 				: AutoMethods
 				(
 				)
@@ -331,11 +2265,36 @@ impl_lua_newtypes!(
 			}
 		}
 ,		{
-			///The "target" that a [`Camera`] will render to. For example, this could be a [`Window`](bevy_window::Window)
-			///swapchain or an [`Image`].
-			bevy_render::camera::RenderTarget : Value
+			bevy_render::camera::OrthographicProjection : Value
 				: AutoMethods
 				(
+					get_projection_matrix(&self) -> LuaMat4,
+
+					depth_calculation(&self) -> LuaDepthCalculation,
+
+					far(&self) -> f32,
+
+				)
+				+ BinOps
+				(
+				)
+				+ UnaryOps
+				(
+				)
+			impl
+			{
+			}
+		}
+,		{
+			bevy_render::camera::PerspectiveProjection : Value
+				: AutoMethods
+				(
+					get_projection_matrix(&self) -> LuaMat4,
+
+					depth_calculation(&self) -> LuaDepthCalculation,
+
+					far(&self) -> f32,
+
 				)
 				+ BinOps
 				(
@@ -379,7 +2338,41 @@ impl_lua_newtypes!(
 			}
 		}
 ,		{
-			bevy_core_pipeline::clear_color::ClearColorConfig : Value
+			bevy_asset::AssetPathId : Value
+				: AutoMethods
+				(
+					source_path_id(&self) -> LuaSourcePathId,
+
+					label_id(&self) -> LuaLabelId,
+
+				)
+				+ BinOps
+				(
+				)
+				+ UnaryOps
+				(
+				)
+			impl
+			{
+			}
+		}
+,		{
+			bevy_asset::LabelId : Value
+				: AutoMethods
+				(
+				)
+				+ BinOps
+				(
+				)
+				+ UnaryOps
+				(
+				)
+			impl
+			{
+			}
+		}
+,		{
+			bevy_asset::SourcePathId : Value
 				: AutoMethods
 				(
 				)
@@ -420,6 +2413,13 @@ impl_lua_newtypes!(
 					///Creates a vector with all elements set to `v`.
 					splat(f32) -> LuaVec2,
 
+					///Creates a vector from the elements in `if_true` and `if_false`, selecting which to use
+					///for each element of `self`.
+					///
+					///A true element in the mask uses the corresponding element from `if_true`, and false
+					///uses the element from `if_false`.
+					select(LuaBVec2,LuaVec2,LuaVec2) -> LuaVec2,
+
 					///Creates a 3D vector from `self` and the given `z` value.
 					extend(self,f32) -> LuaVec3,
 
@@ -455,6 +2455,48 @@ impl_lua_newtypes!(
 					///In other words this computes `max(x, y, ..)`.
 					max_element(self) -> f32,
 
+					///Returns a vector mask containing the result of a `==` comparison for each element of
+					///`self` and `rhs`.
+					///
+					///In other words, this computes `[self.x == rhs.x, self.y == rhs.y, ..]` for all
+					///elements.
+					cmpeq(self,LuaVec2) -> LuaBVec2,
+
+					///Returns a vector mask containing the result of a `!=` comparison for each element of
+					///`self` and `rhs`.
+					///
+					///In other words this computes `[self.x != rhs.x, self.y != rhs.y, ..]` for all
+					///elements.
+					cmpne(self,LuaVec2) -> LuaBVec2,
+
+					///Returns a vector mask containing the result of a `>=` comparison for each element of
+					///`self` and `rhs`.
+					///
+					///In other words this computes `[self.x >= rhs.x, self.y >= rhs.y, ..]` for all
+					///elements.
+					cmpge(self,LuaVec2) -> LuaBVec2,
+
+					///Returns a vector mask containing the result of a `>` comparison for each element of
+					///`self` and `rhs`.
+					///
+					///In other words this computes `[self.x > rhs.x, self.y > rhs.y, ..]` for all
+					///elements.
+					cmpgt(self,LuaVec2) -> LuaBVec2,
+
+					///Returns a vector mask containing the result of a `<=` comparison for each element of
+					///`self` and `rhs`.
+					///
+					///In other words this computes `[self.x <= rhs.x, self.y <= rhs.y, ..]` for all
+					///elements.
+					cmple(self,LuaVec2) -> LuaBVec2,
+
+					///Returns a vector mask containing the result of a `<` comparison for each element of
+					///`self` and `rhs`.
+					///
+					///In other words this computes `[self.x < rhs.x, self.y < rhs.y, ..]` for all
+					///elements.
+					cmplt(self,LuaVec2) -> LuaBVec2,
+
 					///Returns a vector containing the absolute value of each element of `self`.
 					abs(self) -> LuaVec2,
 
@@ -471,6 +2513,11 @@ impl_lua_newtypes!(
 
 					///Returns `true` if any elements are `NaN`.
 					is_nan(self) -> bool,
+
+					///Performs `is_nan` on each element of self, returning a vector mask of the results.
+					///
+					///In other words, this computes `[x.is_nan(), y.is_nan(), z.is_nan(), w.is_nan()]`.
+					is_nan_mask(self) -> LuaBVec2,
 
 					///Computes the length of `self`.
 					length(self) -> f32,
@@ -672,8 +2719,8 @@ impl_lua_newtypes!(
 				)
 			impl
 			{
-				(MetaMethod::Index) (s=LuaVec2)=> {|_,s,idx: usize| {Ok(s.clone()[idx-1])}};
-				mut (MetaMethod::NewIndex) (n=f32) => {|_,s,(idx,val): (usize,($n))| {Ok(s.val_mut(|s| s[idx-1] = val))}};
+				(MetaMethod::Index) (s=LuaVec2)=> {|_,s,idx: usize| {Ok(s.clone()[idx])}};
+				mut (MetaMethod::NewIndex) (n=f32) => {|_,s,(idx,val): (usize,($n))| {Ok(s.val_mut(|s| s[idx] = val))}};
 			}
 		}
 ,		{
@@ -686,6 +2733,13 @@ impl_lua_newtypes!(
 
 					///Creates a vector with all elements set to `v`.
 					splat(f32) -> LuaVec3,
+
+					///Creates a vector from the elements in `if_true` and `if_false`, selecting which to use
+					///for each element of `self`.
+					///
+					///A true element in the mask uses the corresponding element from `if_true`, and false
+					///uses the element from `if_false`.
+					select(LuaBVec3,LuaVec3,LuaVec3) -> LuaVec3,
 
 					///Creates a 4D vector from `self` and the given `w` value.
 					extend(self,f32) -> LuaVec4,
@@ -730,6 +2784,48 @@ impl_lua_newtypes!(
 					///In other words this computes `max(x, y, ..)`.
 					max_element(self) -> f32,
 
+					///Returns a vector mask containing the result of a `==` comparison for each element of
+					///`self` and `rhs`.
+					///
+					///In other words, this computes `[self.x == rhs.x, self.y == rhs.y, ..]` for all
+					///elements.
+					cmpeq(self,LuaVec3) -> LuaBVec3,
+
+					///Returns a vector mask containing the result of a `!=` comparison for each element of
+					///`self` and `rhs`.
+					///
+					///In other words this computes `[self.x != rhs.x, self.y != rhs.y, ..]` for all
+					///elements.
+					cmpne(self,LuaVec3) -> LuaBVec3,
+
+					///Returns a vector mask containing the result of a `>=` comparison for each element of
+					///`self` and `rhs`.
+					///
+					///In other words this computes `[self.x >= rhs.x, self.y >= rhs.y, ..]` for all
+					///elements.
+					cmpge(self,LuaVec3) -> LuaBVec3,
+
+					///Returns a vector mask containing the result of a `>` comparison for each element of
+					///`self` and `rhs`.
+					///
+					///In other words this computes `[self.x > rhs.x, self.y > rhs.y, ..]` for all
+					///elements.
+					cmpgt(self,LuaVec3) -> LuaBVec3,
+
+					///Returns a vector mask containing the result of a `<=` comparison for each element of
+					///`self` and `rhs`.
+					///
+					///In other words this computes `[self.x <= rhs.x, self.y <= rhs.y, ..]` for all
+					///elements.
+					cmple(self,LuaVec3) -> LuaBVec3,
+
+					///Returns a vector mask containing the result of a `<` comparison for each element of
+					///`self` and `rhs`.
+					///
+					///In other words this computes `[self.x < rhs.x, self.y < rhs.y, ..]` for all
+					///elements.
+					cmplt(self,LuaVec3) -> LuaBVec3,
+
 					///Returns a vector containing the absolute value of each element of `self`.
 					abs(self) -> LuaVec3,
 
@@ -746,6 +2842,11 @@ impl_lua_newtypes!(
 
 					///Returns `true` if any elements are `NaN`.
 					is_nan(self) -> bool,
+
+					///Performs `is_nan` on each element of self, returning a vector mask of the results.
+					///
+					///In other words, this computes `[x.is_nan(), y.is_nan(), z.is_nan(), w.is_nan()]`.
+					is_nan_mask(self) -> LuaBVec3,
 
 					///Computes the length of `self`.
 					length(self) -> f32,
@@ -952,6 +3053,340 @@ impl_lua_newtypes!(
 			}
 		}
 ,		{
+			///A 3-dimensional vector with SIMD support.
+			///
+			///This type is 16 byte aligned. A SIMD vector type is used for storage on supported platforms for
+			///better performance than the `Vec3` type.
+			///
+			///It is possible to convert between `Vec3` and `Vec3A` types using `From` trait implementations.
+			glam::f32::sse2::vec3A::Vec3A : Value
+				: AutoMethods
+				(
+					///Creates a new vector.
+					new(f32,f32,f32) -> LuaVec3A,
+
+					///Creates a vector with all elements set to `v`.
+					splat(f32) -> LuaVec3A,
+
+					///Creates a vector from the elements in `if_true` and `if_false`, selecting which to use
+					///for each element of `self`.
+					///
+					///A true element in the mask uses the corresponding element from `if_true`, and false
+					///uses the element from `if_false`.
+					select(LuaBVec3A,LuaVec3A,LuaVec3A) -> LuaVec3A,
+
+					///Creates a 4D vector from `self` and the given `w` value.
+					extend(self,f32) -> LuaVec4,
+
+					///Creates a 2D vector from the `x` and `y` elements of `self`, discarding `z`.
+					///
+					///Truncation may also be performed by using `self.xy()` or `Vec2::from()`.
+					truncate(self) -> LuaVec2,
+
+					///Computes the dot product of `self` and `rhs`.
+					dot(self,LuaVec3A) -> f32,
+
+					///Computes the cross product of `self` and `rhs`.
+					cross(self,LuaVec3A) -> LuaVec3A,
+
+					///Returns a vector containing the minimum values for each element of `self` and `rhs`.
+					///
+					///In other words this computes `[self.x.min(rhs.x), self.y.min(rhs.y), ..]`.
+					min(self,LuaVec3A) -> LuaVec3A,
+
+					///Returns a vector containing the maximum values for each element of `self` and `rhs`.
+					///
+					///In other words this computes `[self.x.max(rhs.x), self.y.max(rhs.y), ..]`.
+					max(self,LuaVec3A) -> LuaVec3A,
+
+					///Component-wise clamping of values, similar to [`f32::clamp`].
+					///
+					///Each element in `min` must be less-or-equal to the corresponding element in `max`.
+					///
+					///# Panics
+					///
+					///Will panic if `min` is greater than `max` when `glam_assert` is enabled.
+					clamp(self,LuaVec3A,LuaVec3A) -> LuaVec3A,
+
+					///Returns the horizontal minimum of `self`.
+					///
+					///In other words this computes `min(x, y, ..)`.
+					min_element(self) -> f32,
+
+					///Returns the horizontal maximum of `self`.
+					///
+					///In other words this computes `max(x, y, ..)`.
+					max_element(self) -> f32,
+
+					///Returns a vector mask containing the result of a `==` comparison for each element of
+					///`self` and `rhs`.
+					///
+					///In other words, this computes `[self.x == rhs.x, self.y == rhs.y, ..]` for all
+					///elements.
+					cmpeq(self,LuaVec3A) -> LuaBVec3A,
+
+					///Returns a vector mask containing the result of a `!=` comparison for each element of
+					///`self` and `rhs`.
+					///
+					///In other words this computes `[self.x != rhs.x, self.y != rhs.y, ..]` for all
+					///elements.
+					cmpne(self,LuaVec3A) -> LuaBVec3A,
+
+					///Returns a vector mask containing the result of a `>=` comparison for each element of
+					///`self` and `rhs`.
+					///
+					///In other words this computes `[self.x >= rhs.x, self.y >= rhs.y, ..]` for all
+					///elements.
+					cmpge(self,LuaVec3A) -> LuaBVec3A,
+
+					///Returns a vector mask containing the result of a `>` comparison for each element of
+					///`self` and `rhs`.
+					///
+					///In other words this computes `[self.x > rhs.x, self.y > rhs.y, ..]` for all
+					///elements.
+					cmpgt(self,LuaVec3A) -> LuaBVec3A,
+
+					///Returns a vector mask containing the result of a `<=` comparison for each element of
+					///`self` and `rhs`.
+					///
+					///In other words this computes `[self.x <= rhs.x, self.y <= rhs.y, ..]` for all
+					///elements.
+					cmple(self,LuaVec3A) -> LuaBVec3A,
+
+					///Returns a vector mask containing the result of a `<` comparison for each element of
+					///`self` and `rhs`.
+					///
+					///In other words this computes `[self.x < rhs.x, self.y < rhs.y, ..]` for all
+					///elements.
+					cmplt(self,LuaVec3A) -> LuaBVec3A,
+
+					///Returns a vector containing the absolute value of each element of `self`.
+					abs(self) -> LuaVec3A,
+
+					///Returns a vector with elements representing the sign of `self`.
+					///
+					///- `1.0` if the number is positive, `+0.0` or `INFINITY`
+					///- `-1.0` if the number is negative, `-0.0` or `NEG_INFINITY`
+					///- `NAN` if the number is `NAN`
+					signum(self) -> LuaVec3A,
+
+					///Returns `true` if, and only if, all elements are finite.  If any element is either
+					///`NaN`, positive or negative infinity, this will return `false`.
+					is_finite(self) -> bool,
+
+					///Returns `true` if any elements are `NaN`.
+					is_nan(self) -> bool,
+
+					///Performs `is_nan` on each element of self, returning a vector mask of the results.
+					///
+					///In other words, this computes `[x.is_nan(), y.is_nan(), z.is_nan(), w.is_nan()]`.
+					is_nan_mask(self) -> LuaBVec3A,
+
+					///Computes the length of `self`.
+					length(self) -> f32,
+
+					///Computes the squared length of `self`.
+					///
+					///This is faster than `length()` as it avoids a square root operation.
+					length_squared(self) -> f32,
+
+					///Computes `1.0 / length()`.
+					///
+					///For valid results, `self` must _not_ be of length zero.
+					length_recip(self) -> f32,
+
+					///Computes the Euclidean distance between two points in space.
+					distance(self,LuaVec3A) -> f32,
+
+					///Compute the squared euclidean distance between two points in space.
+					distance_squared(self,LuaVec3A) -> f32,
+
+					///Returns `self` normalized to length 1.0.
+					///
+					///For valid results, `self` must _not_ be of length zero, nor very close to zero.
+					///
+					///See also [`Self::try_normalize`] and [`Self::normalize_or_zero`].
+					///
+					///Panics
+					///
+					///Will panic if `self` is zero length when `glam_assert` is enabled.
+					normalize(self) -> LuaVec3A,
+
+					///Returns `self` normalized to length 1.0 if possible, else returns zero.
+					///
+					///In particular, if the input is zero (or very close to zero), or non-finite,
+					///the result of this operation will be zero.
+					///
+					///See also [`Self::try_normalize`].
+					normalize_or_zero(self) -> LuaVec3A,
+
+					///Returns whether `self` is length `1.0` or not.
+					///
+					///Uses a precision threshold of `1e-6`.
+					is_normalized(self) -> bool,
+
+					///Returns the vector projection of `self` onto `rhs`.
+					///
+					///`rhs` must be of non-zero length.
+					///
+					///# Panics
+					///
+					///Will panic if `rhs` is zero length when `glam_assert` is enabled.
+					project_onto(self,LuaVec3A) -> LuaVec3A,
+
+					///Returns the vector rejection of `self` from `rhs`.
+					///
+					///The vector rejection is the vector perpendicular to the projection of `self` onto
+					///`rhs`, in rhs words the result of `self - self.project_onto(rhs)`.
+					///
+					///`rhs` must be of non-zero length.
+					///
+					///# Panics
+					///
+					///Will panic if `rhs` has a length of zero when `glam_assert` is enabled.
+					reject_from(self,LuaVec3A) -> LuaVec3A,
+
+					///Returns the vector projection of `self` onto `rhs`.
+					///
+					///`rhs` must be normalized.
+					///
+					///# Panics
+					///
+					///Will panic if `rhs` is not normalized when `glam_assert` is enabled.
+					project_onto_normalized(self,LuaVec3A) -> LuaVec3A,
+
+					///Returns the vector rejection of `self` from `rhs`.
+					///
+					///The vector rejection is the vector perpendicular to the projection of `self` onto
+					///`rhs`, in rhs words the result of `self - self.project_onto(rhs)`.
+					///
+					///`rhs` must be normalized.
+					///
+					///# Panics
+					///
+					///Will panic if `rhs` is not normalized when `glam_assert` is enabled.
+					reject_from_normalized(self,LuaVec3A) -> LuaVec3A,
+
+					///Returns a vector containing the nearest integer to a number for each element of `self`.
+					///Round half-way cases away from 0.0.
+					round(self) -> LuaVec3A,
+
+					///Returns a vector containing the largest integer less than or equal to a number for each
+					///element of `self`.
+					floor(self) -> LuaVec3A,
+
+					///Returns a vector containing the smallest integer greater than or equal to a number for
+					///each element of `self`.
+					ceil(self) -> LuaVec3A,
+
+					///Returns a vector containing the fractional part of the vector, e.g. `self -
+					///self.floor()`.
+					///
+					///Note that this is fast but not precise for large numbers.
+					fract(self) -> LuaVec3A,
+
+					///Returns a vector containing `e^self` (the exponential function) for each element of
+					///`self`.
+					exp(self) -> LuaVec3A,
+
+					///Returns a vector containing each element of `self` raised to the power of `n`.
+					powf(self,f32) -> LuaVec3A,
+
+					///Returns a vector containing the reciprocal `1.0/n` of each element of `self`.
+					recip(self) -> LuaVec3A,
+
+					///Performs a linear interpolation between `self` and `rhs` based on the value `s`.
+					///
+					///When `s` is `0.0`, the result will be equal to `self`.  When `s` is `1.0`, the result
+					///will be equal to `rhs`. When `s` is outside of range `[0, 1]`, the result is linearly
+					///extrapolated.
+					lerp(self,LuaVec3A,f32) -> LuaVec3A,
+
+					///Returns true if the absolute difference of all elements between `self` and `rhs` is
+					///less than or equal to `max_abs_diff`.
+					///
+					///This can be used to compare if two vectors contain similar elements. It works best when
+					///comparing with a known value. The `max_abs_diff` that should be used used depends on
+					///the values being compared against.
+					///
+					///For more see
+					///[comparing floating point numbers](https://randomascii.wordpress.com/2012/02/25/comparing-floating-point-numbers-2012-edition/).
+					abs_diff_eq(self,LuaVec3A,f32) -> bool,
+
+					///Returns a vector with a length no less than `min` and no more than `max`
+					///
+					///# Panics
+					///
+					///Will panic if `min` is greater than `max` when `glam_assert` is enabled.
+					clamp_length(self,f32,f32) -> LuaVec3A,
+
+					///Returns a vector with a length no more than `max`
+					clamp_length_max(self,f32) -> LuaVec3A,
+
+					///Returns a vector with a length no less than `min`
+					clamp_length_min(self,f32) -> LuaVec3A,
+
+					///Fused multiply-add. Computes `(self * a) + b` element-wise with only one rounding
+					///error, yielding a more accurate result than an unfused multiply-add.
+					///
+					///Using `mul_add` *may* be more performant than an unfused multiply-add if the target
+					///architecture has a dedicated fma CPU instruction. However, this is not always true,
+					///and will be heavily dependant on designing algorithms with specific target hardware in
+					///mind.
+					mul_add(self,LuaVec3A,LuaVec3A) -> LuaVec3A,
+
+					///Returns the angle (in radians) between two vectors.
+					///
+					///The input vectors do not need to be unit length however they must be non-zero.
+					angle_between(self,LuaVec3A) -> f32,
+
+					///Returns some vector that is orthogonal to the given one.
+					///
+					///The input vector must be finite and non-zero.
+					///
+					///The output vector is not necessarily unit-length.
+					///For that use [`Self::any_orthonormal_vector`] instead.
+					any_orthogonal_vector(&self) -> LuaVec3A,
+
+					///Returns any unit-length vector that is orthogonal to the given one.
+					///The input vector must be finite and non-zero.
+					///
+					///# Panics
+					///
+					///Will panic if `self` is not normalized when `glam_assert` is enabled.
+					any_orthonormal_vector(&self) -> LuaVec3A,
+
+				)
+				+ BinOps
+				(
+					self Add LuaVec3A -> LuaVec3A,
+					self Add f32 -> LuaVec3A,
+					f32 Add self -> LuaVec3A,
+					self Sub LuaVec3A -> LuaVec3A,
+					self Sub f32 -> LuaVec3A,
+					f32 Sub self -> LuaVec3A,
+					self Div LuaVec3A -> LuaVec3A,
+					self Div f32 -> LuaVec3A,
+					f32 Div self -> LuaVec3A,
+					self Mul LuaVec3A -> LuaVec3A,
+					self Mul f32 -> LuaVec3A,
+					f32 Mul self -> LuaVec3A,
+					self Rem LuaVec3A -> LuaVec3A,
+					self Rem f32 -> LuaVec3A,
+					f32 Rem self -> LuaVec3A,
+				)
+				+ UnaryOps
+				(
+					Neg self
+				)
++ 				    Copy(LuaVec2 -> (MetaMethod::Index) (s=LuaVec3A),
+				        LuaVec2 -> mut (MetaMethod::NewIndex) (n=f32))
+				    
+			impl
+			{
+			}
+		}
+,		{
 			///A 4-dimensional vector with SIMD support.
 			///
 			///This type uses 16 byte aligned SIMD vector type for storage.
@@ -963,6 +3398,13 @@ impl_lua_newtypes!(
 
 					///Creates a vector with all elements set to `v`.
 					splat(f32) -> LuaVec4,
+
+					///Creates a vector from the elements in `if_true` and `if_false`, selecting which to use
+					///for each element of `self`.
+					///
+					///A true element in the mask uses the corresponding element from `if_true`, and false
+					///uses the element from `if_false`.
+					select(LuaBVec4A,LuaVec4,LuaVec4) -> LuaVec4,
 
 					///Creates a 2D vector from the `x`, `y` and `z` elements of `self`, discarding `w`.
 					///
@@ -1003,6 +3445,48 @@ impl_lua_newtypes!(
 					///In other words this computes `max(x, y, ..)`.
 					max_element(self) -> f32,
 
+					///Returns a vector mask containing the result of a `==` comparison for each element of
+					///`self` and `rhs`.
+					///
+					///In other words, this computes `[self.x == rhs.x, self.y == rhs.y, ..]` for all
+					///elements.
+					cmpeq(self,LuaVec4) -> LuaBVec4A,
+
+					///Returns a vector mask containing the result of a `!=` comparison for each element of
+					///`self` and `rhs`.
+					///
+					///In other words this computes `[self.x != rhs.x, self.y != rhs.y, ..]` for all
+					///elements.
+					cmpne(self,LuaVec4) -> LuaBVec4A,
+
+					///Returns a vector mask containing the result of a `>=` comparison for each element of
+					///`self` and `rhs`.
+					///
+					///In other words this computes `[self.x >= rhs.x, self.y >= rhs.y, ..]` for all
+					///elements.
+					cmpge(self,LuaVec4) -> LuaBVec4A,
+
+					///Returns a vector mask containing the result of a `>` comparison for each element of
+					///`self` and `rhs`.
+					///
+					///In other words this computes `[self.x > rhs.x, self.y > rhs.y, ..]` for all
+					///elements.
+					cmpgt(self,LuaVec4) -> LuaBVec4A,
+
+					///Returns a vector mask containing the result of a `<=` comparison for each element of
+					///`self` and `rhs`.
+					///
+					///In other words this computes `[self.x <= rhs.x, self.y <= rhs.y, ..]` for all
+					///elements.
+					cmple(self,LuaVec4) -> LuaBVec4A,
+
+					///Returns a vector mask containing the result of a `<` comparison for each element of
+					///`self` and `rhs`.
+					///
+					///In other words this computes `[self.x < rhs.x, self.y < rhs.y, ..]` for all
+					///elements.
+					cmplt(self,LuaVec4) -> LuaBVec4A,
+
 					///Returns a vector containing the absolute value of each element of `self`.
 					abs(self) -> LuaVec4,
 
@@ -1019,6 +3503,11 @@ impl_lua_newtypes!(
 
 					///Returns `true` if any elements are `NaN`.
 					is_nan(self) -> bool,
+
+					///Performs `is_nan` on each element of self, returning a vector mask of the results.
+					///
+					///In other words, this computes `[x.is_nan(), y.is_nan(), z.is_nan(), w.is_nan()]`.
+					is_nan_mask(self) -> LuaBVec4A,
 
 					///Computes the length of `self`.
 					length(self) -> f32,
@@ -1204,6 +3693,167 @@ impl_lua_newtypes!(
 			}
 		}
 ,		{
+			///A 2-dimensional boolean vector.
+			glam::f32::sse2::vec2::BVec2 : Value
+				: AutoMethods
+				(
+					///Creates a new vector mask.
+					new(bool,bool) -> LuaBVec2,
+
+					///Returns a bitmask with the lowest two bits set from the elements of `self`.
+					///
+					///A true element results in a `1` bit and a false element in a `0` bit.  Element `x` goes
+					///into the first lowest bit, element `y` into the second, etc.
+					bitmask(self) -> u32,
+
+					///Returns true if any of the elements are true, false otherwise.
+					any(self) -> bool,
+
+					///Returns true if all the elements are true, false otherwise.
+					all(self) -> bool,
+
+				)
+				+ BinOps
+				(
+				)
+				+ UnaryOps
+				(
+				)
+			impl
+			{
+			}
+		}
+,		{
+			///A 3-dimensional boolean vector.
+			glam::f32::sse2::vec3::BVec3 : Value
+				: AutoMethods
+				(
+					///Creates a new vector mask.
+					new(bool,bool,bool) -> LuaBVec3,
+
+					///Returns a bitmask with the lowest two bits set from the elements of `self`.
+					///
+					///A true element results in a `1` bit and a false element in a `0` bit.  Element `x` goes
+					///into the first lowest bit, element `y` into the second, etc.
+					bitmask(self) -> u32,
+
+					///Returns true if any of the elements are true, false otherwise.
+					any(self) -> bool,
+
+					///Returns true if all the elements are true, false otherwise.
+					all(self) -> bool,
+
+				)
+				+ BinOps
+				(
+				)
+				+ UnaryOps
+				(
+				)
+			impl
+			{
+			}
+		}
+,		{
+			///A 4-dimensional boolean vector.
+			glam::f32::sse2::vec4::BVec4 : Value
+				: AutoMethods
+				(
+					///Creates a new vector mask.
+					new(bool,bool,bool,bool) -> LuaBVec4,
+
+					///Returns a bitmask with the lowest two bits set from the elements of `self`.
+					///
+					///A true element results in a `1` bit and a false element in a `0` bit.  Element `x` goes
+					///into the first lowest bit, element `y` into the second, etc.
+					bitmask(self) -> u32,
+
+					///Returns true if any of the elements are true, false otherwise.
+					any(self) -> bool,
+
+					///Returns true if all the elements are true, false otherwise.
+					all(self) -> bool,
+
+				)
+				+ BinOps
+				(
+				)
+				+ UnaryOps
+				(
+				)
+			impl
+			{
+			}
+		}
+,		{
+			///A 3-dimensional SIMD vector mask.
+			///
+			///This type is 16 byte aligned and is backed by a SIMD vector. If SIMD is not available
+			///`BVec3A` will be a type alias for `BVec3`.
+			glam::f32::sse2::vec3::BVec3A : Value
+				: AutoMethods
+				(
+					///Creates a new vector mask.
+					new(bool,bool,bool) -> LuaBVec3A,
+
+					///Returns a bitmask with the lowest two bits set from the elements of `self`.
+					///
+					///A true element results in a `1` bit and a false element in a `0` bit.  Element `x` goes
+					///into the first lowest bit, element `y` into the second, etc.
+					bitmask(self) -> u32,
+
+					///Returns true if any of the elements are true, false otherwise.
+					any(self) -> bool,
+
+					///Returns true if all the elements are true, false otherwise.
+					all(self) -> bool,
+
+				)
+				+ BinOps
+				(
+				)
+				+ UnaryOps
+				(
+				)
+			impl
+			{
+			}
+		}
+,		{
+			///A 4-dimensional SIMD vector mask.
+			///
+			///This type is 16 byte aligned and is backed by a SIMD vector. If SIMD is not available
+			///`BVec4A` will be a type alias for `BVec4`.
+			glam::f32::sse2::vec4::BVec4A : Value
+				: AutoMethods
+				(
+					///Creates a new vector mask.
+					new(bool,bool,bool,bool) -> LuaBVec4A,
+
+					///Returns a bitmask with the lowest two bits set from the elements of `self`.
+					///
+					///A true element results in a `1` bit and a false element in a `0` bit.  Element `x` goes
+					///into the first lowest bit, element `y` into the second, etc.
+					bitmask(self) -> u32,
+
+					///Returns true if any of the elements are true, false otherwise.
+					any(self) -> bool,
+
+					///Returns true if all the elements are true, false otherwise.
+					all(self) -> bool,
+
+				)
+				+ BinOps
+				(
+				)
+				+ UnaryOps
+				(
+				)
+			impl
+			{
+			}
+		}
+,		{
 			///A 2-dimensional vector.
 			glam::f64::dvec2::DVec2 : Value
 				: AutoMethods
@@ -1213,6 +3863,13 @@ impl_lua_newtypes!(
 
 					///Creates a vector with all elements set to `v`.
 					splat(f64) -> LuaDVec2,
+
+					///Creates a vector from the elements in `if_true` and `if_false`, selecting which to use
+					///for each element of `self`.
+					///
+					///A true element in the mask uses the corresponding element from `if_true`, and false
+					///uses the element from `if_false`.
+					select(LuaBVec2,LuaDVec2,LuaDVec2) -> LuaDVec2,
 
 					///Creates a 3D vector from `self` and the given `z` value.
 					extend(self,f64) -> LuaDVec3,
@@ -1249,6 +3906,48 @@ impl_lua_newtypes!(
 					///In other words this computes `max(x, y, ..)`.
 					max_element(self) -> f64,
 
+					///Returns a vector mask containing the result of a `==` comparison for each element of
+					///`self` and `rhs`.
+					///
+					///In other words, this computes `[self.x == rhs.x, self.y == rhs.y, ..]` for all
+					///elements.
+					cmpeq(self,LuaDVec2) -> LuaBVec2,
+
+					///Returns a vector mask containing the result of a `!=` comparison for each element of
+					///`self` and `rhs`.
+					///
+					///In other words this computes `[self.x != rhs.x, self.y != rhs.y, ..]` for all
+					///elements.
+					cmpne(self,LuaDVec2) -> LuaBVec2,
+
+					///Returns a vector mask containing the result of a `>=` comparison for each element of
+					///`self` and `rhs`.
+					///
+					///In other words this computes `[self.x >= rhs.x, self.y >= rhs.y, ..]` for all
+					///elements.
+					cmpge(self,LuaDVec2) -> LuaBVec2,
+
+					///Returns a vector mask containing the result of a `>` comparison for each element of
+					///`self` and `rhs`.
+					///
+					///In other words this computes `[self.x > rhs.x, self.y > rhs.y, ..]` for all
+					///elements.
+					cmpgt(self,LuaDVec2) -> LuaBVec2,
+
+					///Returns a vector mask containing the result of a `<=` comparison for each element of
+					///`self` and `rhs`.
+					///
+					///In other words this computes `[self.x <= rhs.x, self.y <= rhs.y, ..]` for all
+					///elements.
+					cmple(self,LuaDVec2) -> LuaBVec2,
+
+					///Returns a vector mask containing the result of a `<` comparison for each element of
+					///`self` and `rhs`.
+					///
+					///In other words this computes `[self.x < rhs.x, self.y < rhs.y, ..]` for all
+					///elements.
+					cmplt(self,LuaDVec2) -> LuaBVec2,
+
 					///Returns a vector containing the absolute value of each element of `self`.
 					abs(self) -> LuaDVec2,
 
@@ -1265,6 +3964,11 @@ impl_lua_newtypes!(
 
 					///Returns `true` if any elements are `NaN`.
 					is_nan(self) -> bool,
+
+					///Performs `is_nan` on each element of self, returning a vector mask of the results.
+					///
+					///In other words, this computes `[x.is_nan(), y.is_nan(), z.is_nan(), w.is_nan()]`.
+					is_nan_mask(self) -> LuaBVec2,
 
 					///Computes the length of `self`.
 					length(self) -> f64,
@@ -1482,6 +4186,13 @@ impl_lua_newtypes!(
 					///Creates a vector with all elements set to `v`.
 					splat(f64) -> LuaDVec3,
 
+					///Creates a vector from the elements in `if_true` and `if_false`, selecting which to use
+					///for each element of `self`.
+					///
+					///A true element in the mask uses the corresponding element from `if_true`, and false
+					///uses the element from `if_false`.
+					select(LuaBVec3,LuaDVec3,LuaDVec3) -> LuaDVec3,
+
 					///Creates a 4D vector from `self` and the given `w` value.
 					extend(self,f64) -> LuaDVec4,
 
@@ -1525,6 +4236,48 @@ impl_lua_newtypes!(
 					///In other words this computes `max(x, y, ..)`.
 					max_element(self) -> f64,
 
+					///Returns a vector mask containing the result of a `==` comparison for each element of
+					///`self` and `rhs`.
+					///
+					///In other words, this computes `[self.x == rhs.x, self.y == rhs.y, ..]` for all
+					///elements.
+					cmpeq(self,LuaDVec3) -> LuaBVec3,
+
+					///Returns a vector mask containing the result of a `!=` comparison for each element of
+					///`self` and `rhs`.
+					///
+					///In other words this computes `[self.x != rhs.x, self.y != rhs.y, ..]` for all
+					///elements.
+					cmpne(self,LuaDVec3) -> LuaBVec3,
+
+					///Returns a vector mask containing the result of a `>=` comparison for each element of
+					///`self` and `rhs`.
+					///
+					///In other words this computes `[self.x >= rhs.x, self.y >= rhs.y, ..]` for all
+					///elements.
+					cmpge(self,LuaDVec3) -> LuaBVec3,
+
+					///Returns a vector mask containing the result of a `>` comparison for each element of
+					///`self` and `rhs`.
+					///
+					///In other words this computes `[self.x > rhs.x, self.y > rhs.y, ..]` for all
+					///elements.
+					cmpgt(self,LuaDVec3) -> LuaBVec3,
+
+					///Returns a vector mask containing the result of a `<=` comparison for each element of
+					///`self` and `rhs`.
+					///
+					///In other words this computes `[self.x <= rhs.x, self.y <= rhs.y, ..]` for all
+					///elements.
+					cmple(self,LuaDVec3) -> LuaBVec3,
+
+					///Returns a vector mask containing the result of a `<` comparison for each element of
+					///`self` and `rhs`.
+					///
+					///In other words this computes `[self.x < rhs.x, self.y < rhs.y, ..]` for all
+					///elements.
+					cmplt(self,LuaDVec3) -> LuaBVec3,
+
 					///Returns a vector containing the absolute value of each element of `self`.
 					abs(self) -> LuaDVec3,
 
@@ -1541,6 +4294,11 @@ impl_lua_newtypes!(
 
 					///Returns `true` if any elements are `NaN`.
 					is_nan(self) -> bool,
+
+					///Performs `is_nan` on each element of self, returning a vector mask of the results.
+					///
+					///In other words, this computes `[x.is_nan(), y.is_nan(), z.is_nan(), w.is_nan()]`.
+					is_nan_mask(self) -> LuaBVec3,
 
 					///Computes the length of `self`.
 					length(self) -> f64,
@@ -1757,6 +4515,13 @@ impl_lua_newtypes!(
 					///Creates a vector with all elements set to `v`.
 					splat(f64) -> LuaDVec4,
 
+					///Creates a vector from the elements in `if_true` and `if_false`, selecting which to use
+					///for each element of `self`.
+					///
+					///A true element in the mask uses the corresponding element from `if_true`, and false
+					///uses the element from `if_false`.
+					select(LuaBVec4,LuaDVec4,LuaDVec4) -> LuaDVec4,
+
 					///Creates a 2D vector from the `x`, `y` and `z` elements of `self`, discarding `w`.
 					///
 					///Truncation to `DVec3` may also be performed by using `self.xyz()` or `DVec3::from()`.
@@ -1794,6 +4559,48 @@ impl_lua_newtypes!(
 					///In other words this computes `max(x, y, ..)`.
 					max_element(self) -> f64,
 
+					///Returns a vector mask containing the result of a `==` comparison for each element of
+					///`self` and `rhs`.
+					///
+					///In other words, this computes `[self.x == rhs.x, self.y == rhs.y, ..]` for all
+					///elements.
+					cmpeq(self,LuaDVec4) -> LuaBVec4,
+
+					///Returns a vector mask containing the result of a `!=` comparison for each element of
+					///`self` and `rhs`.
+					///
+					///In other words this computes `[self.x != rhs.x, self.y != rhs.y, ..]` for all
+					///elements.
+					cmpne(self,LuaDVec4) -> LuaBVec4,
+
+					///Returns a vector mask containing the result of a `>=` comparison for each element of
+					///`self` and `rhs`.
+					///
+					///In other words this computes `[self.x >= rhs.x, self.y >= rhs.y, ..]` for all
+					///elements.
+					cmpge(self,LuaDVec4) -> LuaBVec4,
+
+					///Returns a vector mask containing the result of a `>` comparison for each element of
+					///`self` and `rhs`.
+					///
+					///In other words this computes `[self.x > rhs.x, self.y > rhs.y, ..]` for all
+					///elements.
+					cmpgt(self,LuaDVec4) -> LuaBVec4,
+
+					///Returns a vector mask containing the result of a `<=` comparison for each element of
+					///`self` and `rhs`.
+					///
+					///In other words this computes `[self.x <= rhs.x, self.y <= rhs.y, ..]` for all
+					///elements.
+					cmple(self,LuaDVec4) -> LuaBVec4,
+
+					///Returns a vector mask containing the result of a `<` comparison for each element of
+					///`self` and `rhs`.
+					///
+					///In other words this computes `[self.x < rhs.x, self.y < rhs.y, ..]` for all
+					///elements.
+					cmplt(self,LuaDVec4) -> LuaBVec4,
+
 					///Returns a vector containing the absolute value of each element of `self`.
 					abs(self) -> LuaDVec4,
 
@@ -1810,6 +4617,11 @@ impl_lua_newtypes!(
 
 					///Returns `true` if any elements are `NaN`.
 					is_nan(self) -> bool,
+
+					///Performs `is_nan` on each element of self, returning a vector mask of the results.
+					///
+					///In other words, this computes `[x.is_nan(), y.is_nan(), z.is_nan(), w.is_nan()]`.
+					is_nan_mask(self) -> LuaBVec4,
 
 					///Computes the length of `self`.
 					length(self) -> f64,
@@ -2005,6 +4817,13 @@ impl_lua_newtypes!(
 					///Creates a vector with all elements set to `v`.
 					splat(i32) -> LuaIVec2,
 
+					///Creates a vector from the elements in `if_true` and `if_false`, selecting which to use
+					///for each element of `self`.
+					///
+					///A true element in the mask uses the corresponding element from `if_true`, and false
+					///uses the element from `if_false`.
+					select(LuaBVec2,LuaIVec2,LuaIVec2) -> LuaIVec2,
+
 					///Creates a 3D vector from `self` and the given `z` value.
 					extend(self,i32) -> LuaIVec3,
 
@@ -2039,6 +4858,48 @@ impl_lua_newtypes!(
 					///
 					///In other words this computes `max(x, y, ..)`.
 					max_element(self) -> i32,
+
+					///Returns a vector mask containing the result of a `==` comparison for each element of
+					///`self` and `rhs`.
+					///
+					///In other words, this computes `[self.x == rhs.x, self.y == rhs.y, ..]` for all
+					///elements.
+					cmpeq(self,LuaIVec2) -> LuaBVec2,
+
+					///Returns a vector mask containing the result of a `!=` comparison for each element of
+					///`self` and `rhs`.
+					///
+					///In other words this computes `[self.x != rhs.x, self.y != rhs.y, ..]` for all
+					///elements.
+					cmpne(self,LuaIVec2) -> LuaBVec2,
+
+					///Returns a vector mask containing the result of a `>=` comparison for each element of
+					///`self` and `rhs`.
+					///
+					///In other words this computes `[self.x >= rhs.x, self.y >= rhs.y, ..]` for all
+					///elements.
+					cmpge(self,LuaIVec2) -> LuaBVec2,
+
+					///Returns a vector mask containing the result of a `>` comparison for each element of
+					///`self` and `rhs`.
+					///
+					///In other words this computes `[self.x > rhs.x, self.y > rhs.y, ..]` for all
+					///elements.
+					cmpgt(self,LuaIVec2) -> LuaBVec2,
+
+					///Returns a vector mask containing the result of a `<=` comparison for each element of
+					///`self` and `rhs`.
+					///
+					///In other words this computes `[self.x <= rhs.x, self.y <= rhs.y, ..]` for all
+					///elements.
+					cmple(self,LuaIVec2) -> LuaBVec2,
+
+					///Returns a vector mask containing the result of a `<` comparison for each element of
+					///`self` and `rhs`.
+					///
+					///In other words this computes `[self.x < rhs.x, self.y < rhs.y, ..]` for all
+					///elements.
+					cmplt(self,LuaIVec2) -> LuaBVec2,
 
 					///Returns a vector containing the absolute value of each element of `self`.
 					abs(self) -> LuaIVec2,
@@ -2103,6 +4964,13 @@ impl_lua_newtypes!(
 					///Creates a vector with all elements set to `v`.
 					splat(i32) -> LuaIVec3,
 
+					///Creates a vector from the elements in `if_true` and `if_false`, selecting which to use
+					///for each element of `self`.
+					///
+					///A true element in the mask uses the corresponding element from `if_true`, and false
+					///uses the element from `if_false`.
+					select(LuaBVec3,LuaIVec3,LuaIVec3) -> LuaIVec3,
+
 					///Creates a 4D vector from `self` and the given `w` value.
 					extend(self,i32) -> LuaIVec4,
 
@@ -2145,6 +5013,48 @@ impl_lua_newtypes!(
 					///
 					///In other words this computes `max(x, y, ..)`.
 					max_element(self) -> i32,
+
+					///Returns a vector mask containing the result of a `==` comparison for each element of
+					///`self` and `rhs`.
+					///
+					///In other words, this computes `[self.x == rhs.x, self.y == rhs.y, ..]` for all
+					///elements.
+					cmpeq(self,LuaIVec3) -> LuaBVec3,
+
+					///Returns a vector mask containing the result of a `!=` comparison for each element of
+					///`self` and `rhs`.
+					///
+					///In other words this computes `[self.x != rhs.x, self.y != rhs.y, ..]` for all
+					///elements.
+					cmpne(self,LuaIVec3) -> LuaBVec3,
+
+					///Returns a vector mask containing the result of a `>=` comparison for each element of
+					///`self` and `rhs`.
+					///
+					///In other words this computes `[self.x >= rhs.x, self.y >= rhs.y, ..]` for all
+					///elements.
+					cmpge(self,LuaIVec3) -> LuaBVec3,
+
+					///Returns a vector mask containing the result of a `>` comparison for each element of
+					///`self` and `rhs`.
+					///
+					///In other words this computes `[self.x > rhs.x, self.y > rhs.y, ..]` for all
+					///elements.
+					cmpgt(self,LuaIVec3) -> LuaBVec3,
+
+					///Returns a vector mask containing the result of a `<=` comparison for each element of
+					///`self` and `rhs`.
+					///
+					///In other words this computes `[self.x <= rhs.x, self.y <= rhs.y, ..]` for all
+					///elements.
+					cmple(self,LuaIVec3) -> LuaBVec3,
+
+					///Returns a vector mask containing the result of a `<` comparison for each element of
+					///`self` and `rhs`.
+					///
+					///In other words this computes `[self.x < rhs.x, self.y < rhs.y, ..]` for all
+					///elements.
+					cmplt(self,LuaIVec3) -> LuaBVec3,
 
 					///Returns a vector containing the absolute value of each element of `self`.
 					abs(self) -> LuaIVec3,
@@ -2197,6 +5107,13 @@ impl_lua_newtypes!(
 					///Creates a vector with all elements set to `v`.
 					splat(i32) -> LuaIVec4,
 
+					///Creates a vector from the elements in `if_true` and `if_false`, selecting which to use
+					///for each element of `self`.
+					///
+					///A true element in the mask uses the corresponding element from `if_true`, and false
+					///uses the element from `if_false`.
+					select(LuaBVec4,LuaIVec4,LuaIVec4) -> LuaIVec4,
+
 					///Creates a 2D vector from the `x`, `y` and `z` elements of `self`, discarding `w`.
 					///
 					///Truncation to `IVec3` may also be performed by using `self.xyz()` or `IVec3::from()`.
@@ -2233,6 +5150,48 @@ impl_lua_newtypes!(
 					///
 					///In other words this computes `max(x, y, ..)`.
 					max_element(self) -> i32,
+
+					///Returns a vector mask containing the result of a `==` comparison for each element of
+					///`self` and `rhs`.
+					///
+					///In other words, this computes `[self.x == rhs.x, self.y == rhs.y, ..]` for all
+					///elements.
+					cmpeq(self,LuaIVec4) -> LuaBVec4,
+
+					///Returns a vector mask containing the result of a `!=` comparison for each element of
+					///`self` and `rhs`.
+					///
+					///In other words this computes `[self.x != rhs.x, self.y != rhs.y, ..]` for all
+					///elements.
+					cmpne(self,LuaIVec4) -> LuaBVec4,
+
+					///Returns a vector mask containing the result of a `>=` comparison for each element of
+					///`self` and `rhs`.
+					///
+					///In other words this computes `[self.x >= rhs.x, self.y >= rhs.y, ..]` for all
+					///elements.
+					cmpge(self,LuaIVec4) -> LuaBVec4,
+
+					///Returns a vector mask containing the result of a `>` comparison for each element of
+					///`self` and `rhs`.
+					///
+					///In other words this computes `[self.x > rhs.x, self.y > rhs.y, ..]` for all
+					///elements.
+					cmpgt(self,LuaIVec4) -> LuaBVec4,
+
+					///Returns a vector mask containing the result of a `<=` comparison for each element of
+					///`self` and `rhs`.
+					///
+					///In other words this computes `[self.x <= rhs.x, self.y <= rhs.y, ..]` for all
+					///elements.
+					cmple(self,LuaIVec4) -> LuaBVec4,
+
+					///Returns a vector mask containing the result of a `<` comparison for each element of
+					///`self` and `rhs`.
+					///
+					///In other words this computes `[self.x < rhs.x, self.y < rhs.y, ..]` for all
+					///elements.
+					cmplt(self,LuaIVec4) -> LuaBVec4,
 
 					///Returns a vector containing the absolute value of each element of `self`.
 					abs(self) -> LuaIVec4,
@@ -2285,6 +5244,13 @@ impl_lua_newtypes!(
 					///Creates a vector with all elements set to `v`.
 					splat(u32) -> LuaUVec2,
 
+					///Creates a vector from the elements in `if_true` and `if_false`, selecting which to use
+					///for each element of `self`.
+					///
+					///A true element in the mask uses the corresponding element from `if_true`, and false
+					///uses the element from `if_false`.
+					select(LuaBVec2,LuaUVec2,LuaUVec2) -> LuaUVec2,
+
 					///Creates a 3D vector from `self` and the given `z` value.
 					extend(self,u32) -> LuaUVec3,
 
@@ -2319,6 +5285,48 @@ impl_lua_newtypes!(
 					///
 					///In other words this computes `max(x, y, ..)`.
 					max_element(self) -> u32,
+
+					///Returns a vector mask containing the result of a `==` comparison for each element of
+					///`self` and `rhs`.
+					///
+					///In other words, this computes `[self.x == rhs.x, self.y == rhs.y, ..]` for all
+					///elements.
+					cmpeq(self,LuaUVec2) -> LuaBVec2,
+
+					///Returns a vector mask containing the result of a `!=` comparison for each element of
+					///`self` and `rhs`.
+					///
+					///In other words this computes `[self.x != rhs.x, self.y != rhs.y, ..]` for all
+					///elements.
+					cmpne(self,LuaUVec2) -> LuaBVec2,
+
+					///Returns a vector mask containing the result of a `>=` comparison for each element of
+					///`self` and `rhs`.
+					///
+					///In other words this computes `[self.x >= rhs.x, self.y >= rhs.y, ..]` for all
+					///elements.
+					cmpge(self,LuaUVec2) -> LuaBVec2,
+
+					///Returns a vector mask containing the result of a `>` comparison for each element of
+					///`self` and `rhs`.
+					///
+					///In other words this computes `[self.x > rhs.x, self.y > rhs.y, ..]` for all
+					///elements.
+					cmpgt(self,LuaUVec2) -> LuaBVec2,
+
+					///Returns a vector mask containing the result of a `<=` comparison for each element of
+					///`self` and `rhs`.
+					///
+					///In other words this computes `[self.x <= rhs.x, self.y <= rhs.y, ..]` for all
+					///elements.
+					cmple(self,LuaUVec2) -> LuaBVec2,
+
+					///Returns a vector mask containing the result of a `<` comparison for each element of
+					///`self` and `rhs`.
+					///
+					///In other words this computes `[self.x < rhs.x, self.y < rhs.y, ..]` for all
+					///elements.
+					cmplt(self,LuaUVec2) -> LuaBVec2,
 
 				)
 				+ BinOps
@@ -2359,6 +5367,13 @@ impl_lua_newtypes!(
 
 					///Creates a vector with all elements set to `v`.
 					splat(u32) -> LuaUVec3,
+
+					///Creates a vector from the elements in `if_true` and `if_false`, selecting which to use
+					///for each element of `self`.
+					///
+					///A true element in the mask uses the corresponding element from `if_true`, and false
+					///uses the element from `if_false`.
+					select(LuaBVec3,LuaUVec3,LuaUVec3) -> LuaUVec3,
 
 					///Creates a 4D vector from `self` and the given `w` value.
 					extend(self,u32) -> LuaUVec4,
@@ -2403,6 +5418,48 @@ impl_lua_newtypes!(
 					///In other words this computes `max(x, y, ..)`.
 					max_element(self) -> u32,
 
+					///Returns a vector mask containing the result of a `==` comparison for each element of
+					///`self` and `rhs`.
+					///
+					///In other words, this computes `[self.x == rhs.x, self.y == rhs.y, ..]` for all
+					///elements.
+					cmpeq(self,LuaUVec3) -> LuaBVec3,
+
+					///Returns a vector mask containing the result of a `!=` comparison for each element of
+					///`self` and `rhs`.
+					///
+					///In other words this computes `[self.x != rhs.x, self.y != rhs.y, ..]` for all
+					///elements.
+					cmpne(self,LuaUVec3) -> LuaBVec3,
+
+					///Returns a vector mask containing the result of a `>=` comparison for each element of
+					///`self` and `rhs`.
+					///
+					///In other words this computes `[self.x >= rhs.x, self.y >= rhs.y, ..]` for all
+					///elements.
+					cmpge(self,LuaUVec3) -> LuaBVec3,
+
+					///Returns a vector mask containing the result of a `>` comparison for each element of
+					///`self` and `rhs`.
+					///
+					///In other words this computes `[self.x > rhs.x, self.y > rhs.y, ..]` for all
+					///elements.
+					cmpgt(self,LuaUVec3) -> LuaBVec3,
+
+					///Returns a vector mask containing the result of a `<=` comparison for each element of
+					///`self` and `rhs`.
+					///
+					///In other words this computes `[self.x <= rhs.x, self.y <= rhs.y, ..]` for all
+					///elements.
+					cmple(self,LuaUVec3) -> LuaBVec3,
+
+					///Returns a vector mask containing the result of a `<` comparison for each element of
+					///`self` and `rhs`.
+					///
+					///In other words this computes `[self.x < rhs.x, self.y < rhs.y, ..]` for all
+					///elements.
+					cmplt(self,LuaUVec3) -> LuaBVec3,
+
 				)
 				+ BinOps
 				(
@@ -2443,6 +5500,13 @@ impl_lua_newtypes!(
 					///Creates a vector with all elements set to `v`.
 					splat(u32) -> LuaUVec4,
 
+					///Creates a vector from the elements in `if_true` and `if_false`, selecting which to use
+					///for each element of `self`.
+					///
+					///A true element in the mask uses the corresponding element from `if_true`, and false
+					///uses the element from `if_false`.
+					select(LuaBVec4,LuaUVec4,LuaUVec4) -> LuaUVec4,
+
 					///Creates a 2D vector from the `x`, `y` and `z` elements of `self`, discarding `w`.
 					///
 					///Truncation to `UVec3` may also be performed by using `self.xyz()` or `UVec3::from()`.
@@ -2479,6 +5543,48 @@ impl_lua_newtypes!(
 					///
 					///In other words this computes `max(x, y, ..)`.
 					max_element(self) -> u32,
+
+					///Returns a vector mask containing the result of a `==` comparison for each element of
+					///`self` and `rhs`.
+					///
+					///In other words, this computes `[self.x == rhs.x, self.y == rhs.y, ..]` for all
+					///elements.
+					cmpeq(self,LuaUVec4) -> LuaBVec4,
+
+					///Returns a vector mask containing the result of a `!=` comparison for each element of
+					///`self` and `rhs`.
+					///
+					///In other words this computes `[self.x != rhs.x, self.y != rhs.y, ..]` for all
+					///elements.
+					cmpne(self,LuaUVec4) -> LuaBVec4,
+
+					///Returns a vector mask containing the result of a `>=` comparison for each element of
+					///`self` and `rhs`.
+					///
+					///In other words this computes `[self.x >= rhs.x, self.y >= rhs.y, ..]` for all
+					///elements.
+					cmpge(self,LuaUVec4) -> LuaBVec4,
+
+					///Returns a vector mask containing the result of a `>` comparison for each element of
+					///`self` and `rhs`.
+					///
+					///In other words this computes `[self.x > rhs.x, self.y > rhs.y, ..]` for all
+					///elements.
+					cmpgt(self,LuaUVec4) -> LuaBVec4,
+
+					///Returns a vector mask containing the result of a `<=` comparison for each element of
+					///`self` and `rhs`.
+					///
+					///In other words this computes `[self.x <= rhs.x, self.y <= rhs.y, ..]` for all
+					///elements.
+					cmple(self,LuaUVec4) -> LuaBVec4,
+
+					///Returns a vector mask containing the result of a `<` comparison for each element of
+					///`self` and `rhs`.
+					///
+					///In other words this computes `[self.x < rhs.x, self.y < rhs.y, ..]` for all
+					///elements.
+					cmplt(self,LuaUVec4) -> LuaBVec4,
 
 				)
 				+ BinOps
@@ -2604,6 +5710,12 @@ impl_lua_newtypes!(
 					///Will panic if all elements of `scale` are zero when `glam_assert` is enabled.
 					from_scale(LuaVec2) -> LuaMat3,
 
+					///Creates an affine transformation matrix from the given 2x2 matrix.
+					///
+					///The resulting matrix can be used to transform 2D points and vectors. See
+					///[`Self::transform_point2()`] and [`Self::transform_vector2()`].
+					from_mat2(LuaMat2) -> LuaMat3,
+
 					///Returns the matrix column for the given `index`.
 					///
 					///# Panics
@@ -2657,6 +5769,9 @@ impl_lua_newtypes!(
 					///Transforms a 3D vector.
 					mul_vec3(&self,LuaVec3) -> LuaVec3,
 
+					///Transforms a `Vec3A`.
+					mul_vec3a(&self,LuaVec3A) -> LuaVec3A,
+
 					///Multiplies two 3x3 matrices.
 					mul_mat3(&self,&LuaMat3) -> LuaMat3,
 
@@ -2687,10 +5802,12 @@ impl_lua_newtypes!(
 				(
 					self Add LuaMat3 -> LuaMat3,
 					self Sub LuaMat3 -> LuaMat3,
+					self Mul LuaAffine2 -> LuaMat3,
 					self Mul LuaMat3 -> LuaMat3,
 					self Mul LuaVec3 -> LuaVec3,
 					f32 Mul self -> LuaMat3,
 					self Mul f32 -> LuaMat3,
+					self Mul LuaVec3A -> LuaVec3A,
 				)
 				+ UnaryOps
 				(
@@ -2704,7 +5821,7 @@ mut (MetaMethod::Index) (s=LuaMat3,b=Mat3,v=LuaVec3) => {|_,s,idx : usize| {
         ($s)::Owned(ref mut v, ref valid) => {
             Ok(($v)::Ref(ScriptRef{
                 root: ScriptRefBase::ScriptOwned{valid: Arc::downgrade((valid))},
-                r: ReflectPtr::Mut(v.col_mut(idx-1)),
+                r: ReflectPtr::Mut(v.col_mut(idx)),
                 path: None
             }))
         },
@@ -2712,7 +5829,7 @@ mut (MetaMethod::Index) (s=LuaMat3,b=Mat3,v=LuaVec3) => {|_,s,idx : usize| {
             r.get_mut(|s,r| {
                 Ok(($v)::Ref(ScriptRef{
                     root: r.root.clone(),
-                    r: ReflectPtr::Mut(s.downcast_mut::<($b)>().unwrap().col_mut(idx-1)),
+                    r: ReflectPtr::Mut(s.downcast_mut::<($b)>().unwrap().col_mut(idx)),
                     path: None
                 })) 
             })
@@ -2720,6 +5837,311 @@ mut (MetaMethod::Index) (s=LuaMat3,b=Mat3,v=LuaVec3) => {|_,s,idx : usize| {
     }
 }}
 ;
+			}
+		}
+,		{
+			///A 2x2 column major matrix.
+			glam::f32::sse2::mat2::Mat2 : Value
+				: AutoMethods
+				(
+					///Creates a 2x2 matrix from two column vectors.
+					from_cols(LuaVec2,LuaVec2) -> LuaMat2,
+
+					///Creates a 2x2 matrix with its diagonal set to `diagonal` and all other entries set to 0.
+					from_diagonal(LuaVec2) -> LuaMat2,
+
+					///Creates a 2x2 matrix containing the combining non-uniform `scale` and rotation of
+					///`angle` (in radians).
+					from_scale_angle(LuaVec2,f32) -> LuaMat2,
+
+					///Creates a 2x2 matrix containing a rotation of `angle` (in radians).
+					from_angle(f32) -> LuaMat2,
+
+					///Creates a 2x2 matrix from a 3x3 matrix, discarding the 2nd row and column.
+					from_mat3(LuaMat3) -> LuaMat2,
+
+					///Returns the matrix column for the given `index`.
+					///
+					///# Panics
+					///
+					///Panics if `index` is greater than 1.
+					col(&self,usize) -> LuaVec2,
+
+					///Returns the matrix row for the given `index`.
+					///
+					///# Panics
+					///
+					///Panics if `index` is greater than 1.
+					row(&self,usize) -> LuaVec2,
+
+					///Returns `true` if, and only if, all elements are finite.
+					///If any element is either `NaN`, positive or negative infinity, this will return `false`.
+					is_finite(&self) -> bool,
+
+					///Returns `true` if any elements are `NaN`.
+					is_nan(&self) -> bool,
+
+					///Returns the transpose of `self`.
+					transpose(&self) -> LuaMat2,
+
+					///Returns the determinant of `self`.
+					determinant(&self) -> f32,
+
+					///Returns the inverse of `self`.
+					///
+					///If the matrix is not invertible the returned matrix will be invalid.
+					///
+					///# Panics
+					///
+					///Will panic if the determinant of `self` is zero when `glam_assert` is enabled.
+					inverse(&self) -> LuaMat2,
+
+					///Transforms a 2D vector.
+					mul_vec2(&self,LuaVec2) -> LuaVec2,
+
+					///Multiplies two 2x2 matrices.
+					mul_mat2(&self,&LuaMat2) -> LuaMat2,
+
+					///Adds two 2x2 matrices.
+					add_mat2(&self,&LuaMat2) -> LuaMat2,
+
+					///Subtracts two 2x2 matrices.
+					sub_mat2(&self,&LuaMat2) -> LuaMat2,
+
+					///Multiplies a 2x2 matrix by a scalar.
+					mul_scalar(&self,f32) -> LuaMat2,
+
+					///Returns true if the absolute difference of all elements between `self` and `rhs`
+					///is less than or equal to `max_abs_diff`.
+					///
+					///This can be used to compare if two matrices contain similar elements. It works best
+					///when comparing with a known value. The `max_abs_diff` that should be used used
+					///depends on the values being compared against.
+					///
+					///For more see
+					///[comparing floating point numbers](https://randomascii.wordpress.com/2012/02/25/comparing-floating-point-numbers-2012-edition/).
+					abs_diff_eq(&self,LuaMat2,f32) -> bool,
+
+				)
+				+ BinOps
+				(
+					self Add LuaMat2 -> LuaMat2,
+					self Sub LuaMat2 -> LuaMat2,
+					self Mul LuaMat2 -> LuaMat2,
+					self Mul LuaVec2 -> LuaVec2,
+					f32 Mul self -> LuaMat2,
+					self Mul f32 -> LuaMat2,
+				)
+				+ UnaryOps
+				(
+					Neg self
+				)
++ 				Copy(LuaMat3 -> mut (MetaMethod::Index) (s=LuaMat2,b=Mat2,v=LuaVec2))
+			impl
+			{
+			}
+		}
+,		{
+			///A 3x3 column major matrix.
+			///
+			///This 3x3 matrix type features convenience methods for creating and using linear and
+			///affine transformations. If you are primarily dealing with 2D affine transformations the
+			///[`Affine2`](crate::Affine2) type is much faster and more space efficient than
+			///using a 3x3 matrix.
+			///
+			///Linear transformations including 3D rotation and scale can be created using methods
+			///such as [`Self::from_diagonal()`], [`Self::from_quat()`], [`Self::from_axis_angle()`],
+			///[`Self::from_rotation_x()`], [`Self::from_rotation_y()`], or
+			///[`Self::from_rotation_z()`].
+			///
+			///The resulting matrices can be use to transform 3D vectors using regular vector
+			///multiplication.
+			///
+			///Affine transformations including 2D translation, rotation and scale can be created
+			///using methods such as [`Self::from_translation()`], [`Self::from_angle()`],
+			///[`Self::from_scale()`] and [`Self::from_scale_angle_translation()`].
+			///
+			///The [`Self::transform_point2()`] and [`Self::transform_vector2()`] convenience methods
+			///are provided for performing affine transforms on 2D vectors and points. These multiply
+			///2D inputs as 3D vectors with an implicit `z` value of `1` for points and `0` for
+			///vectors respectively. These methods assume that `Self` contains a valid affine
+			///transform.
+			glam::f32::sse2::mat3::Mat3A : Value
+				: AutoMethods
+				(
+					///Creates a 3x3 matrix from two column vectors.
+					from_cols(LuaVec3A,LuaVec3A,LuaVec3A) -> LuaMat3A,
+
+					///Creates a 3x3 matrix with its diagonal set to `diagonal` and all other entries set to 0.
+					from_diagonal(LuaVec3) -> LuaMat3A,
+
+					///Creates a 3x3 matrix from a 4x4 matrix, discarding the 3rd row and column.
+					from_mat4(LuaMat4) -> LuaMat3A,
+
+					///Creates a 3D rotation matrix from the given quaternion.
+					///
+					///# Panics
+					///
+					///Will panic if `rotation` is not normalized when `glam_assert` is enabled.
+					from_quat(LuaQuat) -> LuaMat3A,
+
+					///Creates a 3D rotation matrix from a normalized rotation `axis` and `angle` (in
+					///radians).
+					///
+					///# Panics
+					///
+					///Will panic if `axis` is not normalized when `glam_assert` is enabled.
+					from_axis_angle(LuaVec3,f32) -> LuaMat3A,
+
+					///Creates a 3D rotation matrix from the given euler rotation sequence and the angles (in
+					///radians).
+					from_euler(LuaEulerRot,f32,f32,f32) -> LuaMat3A,
+
+					///Creates a 3D rotation matrix from `angle` (in radians) around the x axis.
+					from_rotation_x(f32) -> LuaMat3A,
+
+					///Creates a 3D rotation matrix from `angle` (in radians) around the y axis.
+					from_rotation_y(f32) -> LuaMat3A,
+
+					///Creates a 3D rotation matrix from `angle` (in radians) around the z axis.
+					from_rotation_z(f32) -> LuaMat3A,
+
+					///Creates an affine transformation matrix from the given 2D `translation`.
+					///
+					///The resulting matrix can be used to transform 2D points and vectors. See
+					///[`Self::transform_point2()`] and [`Self::transform_vector2()`].
+					from_translation(LuaVec2) -> LuaMat3A,
+
+					///Creates an affine transformation matrix from the given 2D rotation `angle` (in
+					///radians).
+					///
+					///The resulting matrix can be used to transform 2D points and vectors. See
+					///[`Self::transform_point2()`] and [`Self::transform_vector2()`].
+					from_angle(f32) -> LuaMat3A,
+
+					///Creates an affine transformation matrix from the given 2D `scale`, rotation `angle` (in
+					///radians) and `translation`.
+					///
+					///The resulting matrix can be used to transform 2D points and vectors. See
+					///[`Self::transform_point2()`] and [`Self::transform_vector2()`].
+					from_scale_angle_translation(LuaVec2,f32,LuaVec2) -> LuaMat3A,
+
+					///Creates an affine transformation matrix from the given non-uniform 2D `scale`.
+					///
+					///The resulting matrix can be used to transform 2D points and vectors. See
+					///[`Self::transform_point2()`] and [`Self::transform_vector2()`].
+					///
+					///# Panics
+					///
+					///Will panic if all elements of `scale` are zero when `glam_assert` is enabled.
+					from_scale(LuaVec2) -> LuaMat3A,
+
+					///Creates an affine transformation matrix from the given 2x2 matrix.
+					///
+					///The resulting matrix can be used to transform 2D points and vectors. See
+					///[`Self::transform_point2()`] and [`Self::transform_vector2()`].
+					from_mat2(LuaMat2) -> LuaMat3A,
+
+					///Returns the matrix column for the given `index`.
+					///
+					///# Panics
+					///
+					///Panics if `index` is greater than 2.
+					col(&self,usize) -> LuaVec3A,
+
+					///Returns the matrix row for the given `index`.
+					///
+					///# Panics
+					///
+					///Panics if `index` is greater than 2.
+					row(&self,usize) -> LuaVec3A,
+
+					///Returns `true` if, and only if, all elements are finite.
+					///If any element is either `NaN`, positive or negative infinity, this will return `false`.
+					is_finite(&self) -> bool,
+
+					///Returns `true` if any elements are `NaN`.
+					is_nan(&self) -> bool,
+
+					///Returns the transpose of `self`.
+					transpose(&self) -> LuaMat3A,
+
+					///Returns the determinant of `self`.
+					determinant(&self) -> f32,
+
+					///Returns the inverse of `self`.
+					///
+					///If the matrix is not invertible the returned matrix will be invalid.
+					///
+					///# Panics
+					///
+					///Will panic if the determinant of `self` is zero when `glam_assert` is enabled.
+					inverse(&self) -> LuaMat3A,
+
+					///Transforms the given 2D vector as a point.
+					///
+					///This is the equivalent of multiplying `rhs` as a 3D vector where `z` is `1`.
+					///
+					///This method assumes that `self` contains a valid affine transform.
+					transform_point2(&self,LuaVec2) -> LuaVec2,
+
+					///Rotates the given 2D vector.
+					///
+					///This is the equivalent of multiplying `rhs` as a 3D vector where `z` is `0`.
+					///
+					///This method assumes that `self` contains a valid affine transform.
+					transform_vector2(&self,LuaVec2) -> LuaVec2,
+
+					///Transforms a 3D vector.
+					mul_vec3(&self,LuaVec3) -> LuaVec3,
+
+					///Transforms a `Vec3A`.
+					mul_vec3a(&self,LuaVec3A) -> LuaVec3A,
+
+					///Multiplies two 3x3 matrices.
+					mul_mat3(&self,&LuaMat3A) -> LuaMat3A,
+
+					///Adds two 3x3 matrices.
+					add_mat3(&self,&LuaMat3A) -> LuaMat3A,
+
+					///Subtracts two 3x3 matrices.
+					sub_mat3(&self,&LuaMat3A) -> LuaMat3A,
+
+					///Multiplies a 3x3 matrix by a scalar.
+					mul_scalar(&self,f32) -> LuaMat3A,
+
+					///Returns true if the absolute difference of all elements between `self` and `rhs`
+					///is less than or equal to `max_abs_diff`.
+					///
+					///This can be used to compare if two matrices contain similar elements. It works best
+					///when comparing with a known value. The `max_abs_diff` that should be used used
+					///depends on the values being compared against.
+					///
+					///For more see
+					///[comparing floating point numbers](https://randomascii.wordpress.com/2012/02/25/comparing-floating-point-numbers-2012-edition/).
+					abs_diff_eq(&self,LuaMat3A,f32) -> bool,
+
+					as_dmat3(&self) -> LuaDMat3,
+
+				)
+				+ BinOps
+				(
+					self Add LuaMat3A -> LuaMat3A,
+					self Sub LuaMat3A -> LuaMat3A,
+					self Mul LuaAffine2 -> LuaMat3A,
+					self Mul LuaMat3A -> LuaMat3A,
+					self Mul LuaVec3A -> LuaVec3A,
+					f32 Mul self -> LuaMat3A,
+					self Mul f32 -> LuaMat3A,
+					self Mul LuaVec3 -> LuaVec3,
+				)
+				+ UnaryOps
+				(
+					Neg self
+				)
++ 				Copy(LuaMat3 -> mut (MetaMethod::Index) (s=LuaMat3A,b=Mat3A,v=LuaVec3A))
+			impl
+			{
 			}
 		}
 ,		{
@@ -2997,6 +6419,16 @@ mut (MetaMethod::Index) (s=LuaMat3,b=Mat3,v=LuaVec3) => {|_,s,idx : usize| {
 					///Will panic if the 3rd row of `self` is not `(0, 0, 0, 1)` when `glam_assert` is enabled.
 					transform_vector3(&self,LuaVec3) -> LuaVec3,
 
+					///Transforms the given `Vec3A` as 3D point.
+					///
+					///This is the equivalent of multiplying the `Vec3A` as a 4D vector where `w` is `1.0`.
+					transform_point3a(&self,LuaVec3A) -> LuaVec3A,
+
+					///Transforms the give `Vec3A` as 3D vector.
+					///
+					///This is the equivalent of multiplying the `Vec3A` as a 4D vector where `w` is `0.0`.
+					transform_vector3a(&self,LuaVec3A) -> LuaVec3A,
+
 					///Transforms a 4D vector.
 					mul_vec4(&self,LuaVec4) -> LuaVec4,
 
@@ -3030,6 +6462,7 @@ mut (MetaMethod::Index) (s=LuaMat3,b=Mat3,v=LuaVec3) => {|_,s,idx : usize| {
 				(
 					self Add LuaMat4 -> LuaMat4,
 					self Sub LuaMat4 -> LuaMat4,
+					self Mul LuaAffine3A -> LuaMat4,
 					self Mul LuaMat4 -> LuaMat4,
 					self Mul LuaVec4 -> LuaVec4,
 					f32 Mul self -> LuaMat4,
@@ -3222,6 +6655,7 @@ mut (MetaMethod::Index) (s=LuaMat3,b=Mat3,v=LuaVec3) => {|_,s,idx : usize| {
 				(
 					self Add LuaDMat3 -> LuaDMat3,
 					self Sub LuaDMat3 -> LuaDMat3,
+					self Mul LuaDAffine2 -> LuaDMat3,
 					self Mul LuaDMat3 -> LuaDMat3,
 					self Mul LuaDVec3 -> LuaDVec3,
 					f64 Mul self -> LuaDMat3,
@@ -3544,6 +6978,7 @@ mut (MetaMethod::Index) (s=LuaMat3,b=Mat3,v=LuaVec3) => {|_,s,idx : usize| {
 				(
 					self Add LuaDMat4 -> LuaDMat4,
 					self Sub LuaDMat4 -> LuaDMat4,
+					self Mul LuaDAffine3 -> LuaDMat4,
 					self Mul LuaDMat4 -> LuaDMat4,
 					self Mul LuaDVec4 -> LuaDVec4,
 					f64 Mul self -> LuaDMat4,
@@ -3554,6 +6989,458 @@ mut (MetaMethod::Index) (s=LuaMat3,b=Mat3,v=LuaVec3) => {|_,s,idx : usize| {
 					Neg self
 				)
 + 				Copy(LuaMat3 -> mut (MetaMethod::Index) (s=LuaDMat4,b=DMat4,v=LuaDVec4))
+			impl
+			{
+			}
+		}
+,		{
+			///A 2D affine transform, which can represent translation, rotation, scaling and shear.
+			glam::f32::sse2::mat2::Affine2 : Value
+				: AutoMethods
+				(
+					///Creates an affine transform from three column vectors.
+					from_cols(LuaVec2,LuaVec2,LuaVec2) -> LuaAffine2,
+
+					///Creates an affine transform that changes scale.
+					///Note that if any scale is zero the transform will be non-invertible.
+					from_scale(LuaVec2) -> LuaAffine2,
+
+					///Creates an affine transform from the given rotation `angle`.
+					from_angle(f32) -> LuaAffine2,
+
+					///Creates an affine transformation from the given 2D `translation`.
+					from_translation(LuaVec2) -> LuaAffine2,
+
+					///Creates an affine transform from a 2x2 matrix (expressing scale, shear and rotation)
+					from_mat2(LuaMat2) -> LuaAffine2,
+
+					///Creates an affine transform from a 2x2 matrix (expressing scale, shear and rotation) and a
+					///translation vector.
+					///
+					///Equivalent to
+					///`Affine2::from_translation(translation) * Affine2::from_mat2(mat2)`
+					from_mat2_translation(LuaMat2,LuaVec2) -> LuaAffine2,
+
+					///Creates an affine transform from the given 2D `scale`, rotation `angle` (in radians) and
+					///`translation`.
+					///
+					///Equivalent to `Affine2::from_translation(translation) *
+					///Affine2::from_angle(angle) * Affine2::from_scale(scale)`
+					from_scale_angle_translation(LuaVec2,f32,LuaVec2) -> LuaAffine2,
+
+					///Creates an affine transform from the given 2D rotation `angle` (in radians) and
+					///`translation`.
+					///
+					///Equivalent to `Affine2::from_translation(translation) * Affine2::from_angle(angle)`
+					from_angle_translation(f32,LuaVec2) -> LuaAffine2,
+
+					///The given `Mat3` must be an affine transform,
+					from_mat3(LuaMat3) -> LuaAffine2,
+
+					///Transforms the given 2D point, applying shear, scale, rotation and translation.
+					transform_point2(&self,LuaVec2) -> LuaVec2,
+
+					///Transforms the given 2D vector, applying shear, scale and rotation (but NOT
+					///translation).
+					///
+					///To also apply translation, use [`Self::transform_point2`] instead.
+					transform_vector2(&self,LuaVec2) -> LuaVec2,
+
+					///Returns `true` if, and only if, all elements are finite.
+					///
+					///If any element is either `NaN`, positive or negative infinity, this will return
+					///`false`.
+					is_finite(&self) -> bool,
+
+					///Returns `true` if any elements are `NaN`.
+					is_nan(&self) -> bool,
+
+					///Returns true if the absolute difference of all elements between `self` and `rhs`
+					///is less than or equal to `max_abs_diff`.
+					///
+					///This can be used to compare if two 3x4 matrices contain similar elements. It works
+					///best when comparing with a known value. The `max_abs_diff` that should be used used
+					///depends on the values being compared against.
+					///
+					///For more see
+					///[comparing floating point numbers](https://randomascii.wordpress.com/2012/02/25/comparing-floating-point-numbers-2012-edition/).
+					abs_diff_eq(&self,LuaAffine2,f32) -> bool,
+
+					///Return the inverse of this transform.
+					///
+					///Note that if the transform is not invertible the result will be invalid.
+					inverse(&self) -> LuaAffine2,
+
+				)
+				+ BinOps
+				(
+					self Add LuaAffine2 -> LuaAffine2,
+					self Sub LuaAffine2 -> LuaAffine2,
+					self Mul LuaAffine2 -> LuaAffine2,
+					f32 Mul self -> LuaAffine2,
+					self Mul f32 -> LuaAffine2,
+					self Mul LuaMat3 -> LuaMat3,
+					self Mul LuaMat3A -> LuaMat3A,
+				)
+				+ UnaryOps
+				(
+				)
+			impl
+			{
+			}
+		}
+,		{
+			///A 3D affine transform, which can represent translation, rotation, scaling and shear.
+			glam::f32::sse2::mat3::Affine3A : Value
+				: AutoMethods
+				(
+					///Creates an affine transform from three column vectors.
+					from_cols(LuaVec3A,LuaVec3A,LuaVec3A,LuaVec3A) -> LuaAffine3A,
+
+					///Creates an affine transform that changes scale.
+					///Note that if any scale is zero the transform will be non-invertible.
+					from_scale(LuaVec3) -> LuaAffine3A,
+
+					///Creates an affine transform from the given `rotation` quaternion.
+					from_quat(LuaQuat) -> LuaAffine3A,
+
+					///Creates an affine transform containing a 3D rotation around a normalized
+					///rotation `axis` of `angle` (in radians).
+					from_axis_angle(LuaVec3,f32) -> LuaAffine3A,
+
+					///Creates an affine transform containing a 3D rotation around the x axis of
+					///`angle` (in radians).
+					from_rotation_x(f32) -> LuaAffine3A,
+
+					///Creates an affine transform containing a 3D rotation around the y axis of
+					///`angle` (in radians).
+					from_rotation_y(f32) -> LuaAffine3A,
+
+					///Creates an affine transform containing a 3D rotation around the z axis of
+					///`angle` (in radians).
+					from_rotation_z(f32) -> LuaAffine3A,
+
+					///Creates an affine transformation from the given 3D `translation`.
+					from_translation(LuaVec3) -> LuaAffine3A,
+
+					///Creates an affine transform from a 3x3 matrix (expressing scale, shear and
+					///rotation)
+					from_mat3(LuaMat3) -> LuaAffine3A,
+
+					///Creates an affine transform from a 3x3 matrix (expressing scale, shear and rotation)
+					///and a translation vector.
+					///
+					///Equivalent to `Affine3A::from_translation(translation) * Affine3A::from_mat3(mat3)`
+					from_mat3_translation(LuaMat3,LuaVec3) -> LuaAffine3A,
+
+					///Creates an affine transform from the given 3D `scale`, `rotation` and
+					///`translation`.
+					///
+					///Equivalent to `Affine3A::from_translation(translation) *
+					///Affine3A::from_quat(rotation) * Affine3A::from_scale(scale)`
+					from_scale_rotation_translation(LuaVec3,LuaQuat,LuaVec3) -> LuaAffine3A,
+
+					///Creates an affine transform from the given 3D `rotation` and `translation`.
+					///
+					///Equivalent to `Affine3A::from_translation(translation) * Affine3A::from_quat(rotation)`
+					from_rotation_translation(LuaQuat,LuaVec3) -> LuaAffine3A,
+
+					///The given `Mat4` must be an affine transform,
+					///i.e. contain no perspective transform.
+					from_mat4(LuaMat4) -> LuaAffine3A,
+
+					///Creates a left-handed view transform using a camera position, an up direction, and
+					///a focal point.
+					///
+					///For a view coordinate system with `+X=right`, `+Y=up` and `+Z=forward`.
+					///
+					///# Panics
+					///
+					///Will panic if `up` is not normalized when `glam_assert` is enabled.
+					look_at_lh(LuaVec3,LuaVec3,LuaVec3) -> LuaAffine3A,
+
+					///Creates a right-handed view transform using a camera position, an up direction, and
+					///a focal point.
+					///
+					///For a view coordinate system with `+X=right`, `+Y=up` and `+Z=back`.
+					///
+					///# Panics
+					///
+					///Will panic if `up` is not normalized when `glam_assert` is enabled.
+					look_at_rh(LuaVec3,LuaVec3,LuaVec3) -> LuaAffine3A,
+
+					///Transforms the given 3D points, applying shear, scale, rotation and translation.
+					transform_point3(&self,LuaVec3) -> LuaVec3,
+
+					///Transforms the given 3D vector, applying shear, scale and rotation (but NOT
+					///translation).
+					///
+					///To also apply translation, use [`Self::transform_point3`] instead.
+					transform_vector3(&self,LuaVec3) -> LuaVec3,
+
+					///Transforms the given `Vec3A`, applying shear, scale, rotation and translation.
+					transform_point3a(&self,LuaVec3A) -> LuaVec3A,
+
+					///Transforms the given `Vec3A`, applying shear, scale and rotation (but NOT
+					///translation).
+					///
+					///To also apply translation, use [`Self::transform_point3`] instead.
+					transform_vector3a(&self,LuaVec3A) -> LuaVec3A,
+
+					///Returns `true` if, and only if, all elements are finite.
+					///
+					///If any element is either `NaN`, positive or negative infinity, this will return
+					///`false`.
+					is_finite(&self) -> bool,
+
+					///Returns `true` if any elements are `NaN`.
+					is_nan(&self) -> bool,
+
+					///Returns true if the absolute difference of all elements between `self` and `rhs`
+					///is less than or equal to `max_abs_diff`.
+					///
+					///This can be used to compare if two 3x4 matrices contain similar elements. It works
+					///best when comparing with a known value. The `max_abs_diff` that should be used used
+					///depends on the values being compared against.
+					///
+					///For more see
+					///[comparing floating point numbers](https://randomascii.wordpress.com/2012/02/25/comparing-floating-point-numbers-2012-edition/).
+					abs_diff_eq(&self,LuaAffine3A,f32) -> bool,
+
+					///Return the inverse of this transform.
+					///
+					///Note that if the transform is not invertible the result will be invalid.
+					inverse(&self) -> LuaAffine3A,
+
+				)
+				+ BinOps
+				(
+					self Add LuaAffine3A -> LuaAffine3A,
+					self Sub LuaAffine3A -> LuaAffine3A,
+					self Mul LuaAffine3A -> LuaAffine3A,
+					f32 Mul self -> LuaAffine3A,
+					self Mul f32 -> LuaAffine3A,
+					self Mul LuaMat4 -> LuaMat4,
+				)
+				+ UnaryOps
+				(
+				)
+			impl
+			{
+			}
+		}
+,		{
+			///A 2D affine transform, which can represent translation, rotation, scaling and shear.
+			glam::f64::sse2::mat2::DAffine2 : Value
+				: AutoMethods
+				(
+					///Creates an affine transform from three column vectors.
+					from_cols(LuaDVec2,LuaDVec2,LuaDVec2) -> LuaDAffine2,
+
+					///Creates an affine transform that changes scale.
+					///Note that if any scale is zero the transform will be non-invertible.
+					from_scale(LuaDVec2) -> LuaDAffine2,
+
+					///Creates an affine transform from the given rotation `angle`.
+					from_angle(f64) -> LuaDAffine2,
+
+					///Creates an affine transformation from the given 2D `translation`.
+					from_translation(LuaDVec2) -> LuaDAffine2,
+
+					///Creates an affine transform from the given 2D `scale`, rotation `angle` (in radians) and
+					///`translation`.
+					///
+					///Equivalent to `DAffine2::from_translation(translation) *
+					///DAffine2::from_angle(angle) * DAffine2::from_scale(scale)`
+					from_scale_angle_translation(LuaDVec2,f64,LuaDVec2) -> LuaDAffine2,
+
+					///Creates an affine transform from the given 2D rotation `angle` (in radians) and
+					///`translation`.
+					///
+					///Equivalent to `DAffine2::from_translation(translation) * DAffine2::from_angle(angle)`
+					from_angle_translation(f64,LuaDVec2) -> LuaDAffine2,
+
+					///The given `DMat3` must be an affine transform,
+					from_mat3(LuaDMat3) -> LuaDAffine2,
+
+					///Transforms the given 2D point, applying shear, scale, rotation and translation.
+					transform_point2(&self,LuaDVec2) -> LuaDVec2,
+
+					///Transforms the given 2D vector, applying shear, scale and rotation (but NOT
+					///translation).
+					///
+					///To also apply translation, use [`Self::transform_point2`] instead.
+					transform_vector2(&self,LuaDVec2) -> LuaDVec2,
+
+					///Returns `true` if, and only if, all elements are finite.
+					///
+					///If any element is either `NaN`, positive or negative infinity, this will return
+					///`false`.
+					is_finite(&self) -> bool,
+
+					///Returns `true` if any elements are `NaN`.
+					is_nan(&self) -> bool,
+
+					///Returns true if the absolute difference of all elements between `self` and `rhs`
+					///is less than or equal to `max_abs_diff`.
+					///
+					///This can be used to compare if two 3x4 matrices contain similar elements. It works
+					///best when comparing with a known value. The `max_abs_diff` that should be used used
+					///depends on the values being compared against.
+					///
+					///For more see
+					///[comparing floating point numbers](https://randomascii.wordpress.com/2012/02/25/comparing-floating-point-numbers-2012-edition/).
+					abs_diff_eq(&self,LuaDAffine2,f64) -> bool,
+
+					///Return the inverse of this transform.
+					///
+					///Note that if the transform is not invertible the result will be invalid.
+					inverse(&self) -> LuaDAffine2,
+
+				)
+				+ BinOps
+				(
+					self Add LuaDAffine2 -> LuaDAffine2,
+					self Sub LuaDAffine2 -> LuaDAffine2,
+					self Mul LuaDAffine2 -> LuaDAffine2,
+					f64 Mul self -> LuaDAffine2,
+					self Mul f64 -> LuaDAffine2,
+					self Mul LuaDMat3 -> LuaDMat3,
+				)
+				+ UnaryOps
+				(
+				)
+			impl
+			{
+			}
+		}
+,		{
+			///A 3D affine transform, which can represent translation, rotation, scaling and shear.
+			glam::f64::sse2::mat3::DAffine3 : Value
+				: AutoMethods
+				(
+					///Creates an affine transform from three column vectors.
+					from_cols(LuaDVec3,LuaDVec3,LuaDVec3,LuaDVec3) -> LuaDAffine3,
+
+					///Creates an affine transform that changes scale.
+					///Note that if any scale is zero the transform will be non-invertible.
+					from_scale(LuaDVec3) -> LuaDAffine3,
+
+					///Creates an affine transform from the given `rotation` quaternion.
+					from_quat(LuaDQuat) -> LuaDAffine3,
+
+					///Creates an affine transform containing a 3D rotation around a normalized
+					///rotation `axis` of `angle` (in radians).
+					from_axis_angle(LuaDVec3,f64) -> LuaDAffine3,
+
+					///Creates an affine transform containing a 3D rotation around the x axis of
+					///`angle` (in radians).
+					from_rotation_x(f64) -> LuaDAffine3,
+
+					///Creates an affine transform containing a 3D rotation around the y axis of
+					///`angle` (in radians).
+					from_rotation_y(f64) -> LuaDAffine3,
+
+					///Creates an affine transform containing a 3D rotation around the z axis of
+					///`angle` (in radians).
+					from_rotation_z(f64) -> LuaDAffine3,
+
+					///Creates an affine transformation from the given 3D `translation`.
+					from_translation(LuaDVec3) -> LuaDAffine3,
+
+					///Creates an affine transform from a 3x3 matrix (expressing scale, shear and
+					///rotation)
+					from_mat3(LuaDMat3) -> LuaDAffine3,
+
+					///Creates an affine transform from a 3x3 matrix (expressing scale, shear and rotation)
+					///and a translation vector.
+					///
+					///Equivalent to `DAffine3::from_translation(translation) * DAffine3::from_mat3(mat3)`
+					from_mat3_translation(LuaDMat3,LuaDVec3) -> LuaDAffine3,
+
+					///Creates an affine transform from the given 3D `scale`, `rotation` and
+					///`translation`.
+					///
+					///Equivalent to `DAffine3::from_translation(translation) *
+					///DAffine3::from_quat(rotation) * DAffine3::from_scale(scale)`
+					from_scale_rotation_translation(LuaDVec3,LuaDQuat,LuaDVec3) -> LuaDAffine3,
+
+					///Creates an affine transform from the given 3D `rotation` and `translation`.
+					///
+					///Equivalent to `DAffine3::from_translation(translation) * DAffine3::from_quat(rotation)`
+					from_rotation_translation(LuaDQuat,LuaDVec3) -> LuaDAffine3,
+
+					///The given `DMat4` must be an affine transform,
+					///i.e. contain no perspective transform.
+					from_mat4(LuaDMat4) -> LuaDAffine3,
+
+					///Creates a left-handed view transform using a camera position, an up direction, and
+					///a focal point.
+					///
+					///For a view coordinate system with `+X=right`, `+Y=up` and `+Z=forward`.
+					///
+					///# Panics
+					///
+					///Will panic if `up` is not normalized when `glam_assert` is enabled.
+					look_at_lh(LuaDVec3,LuaDVec3,LuaDVec3) -> LuaDAffine3,
+
+					///Creates a right-handed view transform using a camera position, an up direction, and
+					///a focal point.
+					///
+					///For a view coordinate system with `+X=right`, `+Y=up` and `+Z=back`.
+					///
+					///# Panics
+					///
+					///Will panic if `up` is not normalized when `glam_assert` is enabled.
+					look_at_rh(LuaDVec3,LuaDVec3,LuaDVec3) -> LuaDAffine3,
+
+					///Transforms the given 3D points, applying shear, scale, rotation and translation.
+					transform_point3(&self,LuaDVec3) -> LuaDVec3,
+
+					///Transforms the given 3D vector, applying shear, scale and rotation (but NOT
+					///translation).
+					///
+					///To also apply translation, use [`Self::transform_point3`] instead.
+					transform_vector3(&self,LuaDVec3) -> LuaDVec3,
+
+					///Returns `true` if, and only if, all elements are finite.
+					///
+					///If any element is either `NaN`, positive or negative infinity, this will return
+					///`false`.
+					is_finite(&self) -> bool,
+
+					///Returns `true` if any elements are `NaN`.
+					is_nan(&self) -> bool,
+
+					///Returns true if the absolute difference of all elements between `self` and `rhs`
+					///is less than or equal to `max_abs_diff`.
+					///
+					///This can be used to compare if two 3x4 matrices contain similar elements. It works
+					///best when comparing with a known value. The `max_abs_diff` that should be used used
+					///depends on the values being compared against.
+					///
+					///For more see
+					///[comparing floating point numbers](https://randomascii.wordpress.com/2012/02/25/comparing-floating-point-numbers-2012-edition/).
+					abs_diff_eq(&self,LuaDAffine3,f64) -> bool,
+
+					///Return the inverse of this transform.
+					///
+					///Note that if the transform is not invertible the result will be invalid.
+					inverse(&self) -> LuaDAffine3,
+
+				)
+				+ BinOps
+				(
+					self Add LuaDAffine3 -> LuaDAffine3,
+					self Sub LuaDAffine3 -> LuaDAffine3,
+					self Mul LuaDAffine3 -> LuaDAffine3,
+					f64 Mul self -> LuaDAffine3,
+					self Mul f64 -> LuaDAffine3,
+					self Mul LuaDMat4 -> LuaDMat4,
+				)
+				+ UnaryOps
+				(
+				)
 			impl
 			{
 			}
@@ -3787,6 +7674,9 @@ mut (MetaMethod::Index) (s=LuaMat3,b=Mat3,v=LuaVec3) => {|_,s,idx : usize| {
 					///Will panic if `self` or `rhs` are not normalized when `glam_assert` is enabled.
 					mul_quat(self,LuaQuat) -> LuaQuat,
 
+					///Multiplies a quaternion and a 3D vector, returning the rotated vector.
+					mul_vec3a(self,LuaVec3A) -> LuaVec3A,
+
 					as_f64(self) -> LuaDQuat,
 
 				)
@@ -3798,6 +7688,7 @@ mut (MetaMethod::Index) (s=LuaMat3,b=Mat3,v=LuaVec3) => {|_,s,idx : usize| {
 					self Mul f32 -> LuaQuat,
 					self Mul LuaQuat -> LuaQuat,
 					self Mul LuaVec3 -> LuaVec3,
+					self Mul LuaVec3A -> LuaVec3A,
 				)
 				+ UnaryOps
 				(
