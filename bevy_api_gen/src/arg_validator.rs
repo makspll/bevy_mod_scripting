@@ -102,8 +102,10 @@ pub(crate) fn to_op_argument(base_string: &String, self_type : &String, wrapped 
 /// Converts an arbitary type to its simple string representation while converting the base type identifier with the given function
 pub(crate) fn type_to_string<F : Fn(&String) -> Result<String,String>>(t : &Type, f : &F) -> Result<String,String> {
     match t {
-        Type::ResolvedPath { name, .. } | 
-        Type::Generic(name) => f(name),
+        Type::ResolvedPath { name, .. } |
+        Type::Generic(name) =>{
+            f(name)
+        },
         Type::Primitive(v) => Ok(v.to_string()),
         Type::Tuple(v) => Ok(format!("({})",v.iter().map(|t| type_to_string(t,f.clone())).collect::<Result<Vec<_>,_>>()?.join(","))),
         Type::Slice(v) => Ok(format!("[{}]",type_to_string(v,f)?)),

@@ -35,7 +35,6 @@ impl_lua_newtypes!(
 		use bevy::ui::Display;
 		use bevy::animation::AnimationPlayer;
 		use bevy::core::Name;
-		use bevy::gltf::GltfExtras;
 		use bevy::hierarchy::Children;
 		use bevy::hierarchy::Parent;
 		use bevy::hierarchy::PreviousParent;
@@ -724,24 +723,6 @@ impl_lua_newtypes!(
 			///as multiple entities can have the same name.  [`bevy_ecs::entity::Entity`] should be
 			///used instead as the default unique identifier.
 			bevy_core::Name : Value
-			: Fields
-			(
-			)
-			+ AutoMethods
-			(
-			)
-			+ BinOps
-			(
-			)
-			+ UnaryOps
-			(
-			)
-			impl
-			{
-			}
-		}
-,		{
-			bevy_gltf::GltfExtras : Value
 			: Fields
 			(
 			)

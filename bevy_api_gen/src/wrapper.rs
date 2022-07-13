@@ -174,6 +174,7 @@ impl WrappedItem<'_> {
                         if is_valid_parameter(&type_string, config, WRAPPER_PREFIX) &&
                             is_valid_return_type(&type_string, config, WRAPPER_PREFIX)    
                         {
+                            eprintln!("{type_string}");
                             field_.docs.as_ref().map(|docs| {
                                 writer.set_prefix("/// ".into());
                                 docs.lines().for_each(|line|{

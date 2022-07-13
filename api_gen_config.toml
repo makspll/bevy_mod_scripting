@@ -122,11 +122,11 @@ type="Name"
 source="bevy_core"
 
 
-## BEVY_GLTF
+# ## BEVY_GLTF
 
-[[types]]
-type="GltfExtras"
-source="bevy_gltf"
+# [[types]]
+# type="GltfExtras"
+# source="bevy_gltf"
 
 
 ## BEVY_HIERARCHY
