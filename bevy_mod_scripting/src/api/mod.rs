@@ -2,7 +2,7 @@ use crate::{lua::{BEVY_TO_LUA, APPLY_LUA_TO_BEVY}, impl_tealr_type};
 use anyhow::Result;
 use tealr::{mlu::{mlua,mlua::{prelude::*,Value,UserData,MetaMethod}, TealData, TealDataMethods}, TypeName};
 
-use std::{ops::{Deref,DerefMut, Index},sync::Weak};
+use std::{ops::{Deref,DerefMut, Index},sync::Weak, borrow::Cow};
 use parking_lot::{RwLock};
 use bevy::{
     prelude::*,
@@ -200,53 +200,8 @@ pub struct ScriptRef{
     r: ReflectPtr
 }
 
-impl TypeName for ScriptRef {
-    /// We represent LuaRef types as `any` wildcards, since they can convert to literally anything 
-    fn get_type_parts() -> std::borrow::Cow<'static, [tealr::NamePart]> {
-        std::borrow::Cow::Borrowed(&[tealr::NamePart::Type(tealr::TealType {
-            name: std::borrow::Cow::Borrowed("any"),
-            generics: None,
-            type_kind: tealr::KindOfType::Builtin,
-        })])     
-    }
-}
-
-impl <'lua>ToLua<'lua> for ScriptRef {
-    /// Converts the LuaRef to the most convenient representation
-    /// checking conversions in this order:
-    /// - A primitive or bevy type which has a reflect interface is converted to a custom UserData exposing its API to lua conveniently
-    /// - A type implementing CustomUserData is converted with its `ref_to_lua` method
-    /// - Finally the method is represented as a `ReflectedValue` which exposes the Reflect interface 
-    fn to_lua(self, ctx: &'lua Lua) -> LuaResult<Value<'lua>> {
-        self.get(|s,_| {
-
-            if let Some(f) = BEVY_TO_LUA.get(s.type_name()){
-                Ok(f(&self,ctx))
-            } else {
-
-                let luaworld = ctx.globals()
-                    .get::<_, LuaWorld>("world")
-                    .unwrap();
-
-                let world = luaworld.upgrade().unwrap();
-                let world = &mut world.read();
-    
-                let typedata = world.resource::<TypeRegistry>();
-                let g = typedata.read();
-    
-                if let Some(v) = g.get_type_data::<ReflectCustomUserData>(s.type_id()) {
-                    Ok(v.get(s).unwrap().ref_to_lua(ctx).unwrap())
-                } else {
-                    Ok(Value::UserData(ctx.create_userdata(ReflectedValue{ref_: self.clone()}).unwrap()))
-                }
-            } 
-        })
-    }
-}
-
-
-
 impl ScriptRef {
+
     /// Checks that the cached pointer is valid 
     /// by checking that the root reference is valid
     fn is_valid(&self) -> bool {
@@ -282,7 +237,7 @@ impl ScriptRef {
     /// # Safety
     /// The caller must ensure the root reference has not been deleted or moved 
     pub unsafe fn get_unsafe<O,F>(&self, f: F) -> O  where 
-        F : FnOnce(&dyn Reflect, &ScriptRef) -> O 
+        F : FnOnce(&dyn Reflect, &ScriptRef) -> O
     {
         match &self.root {
             ScriptRefBase::Resource { res: _, world } => {
@@ -347,7 +302,7 @@ impl ScriptRef {
     /// Panics if the reference is invalid or world is already borrowed mutably.
     #[inline(always)]    
     pub fn get<O,F>(&self, f: F) -> O  where 
-        F : FnOnce(&dyn Reflect, &ScriptRef) -> O
+        F : FnOnce(&dyn Reflect, &ScriptRef) -> O,
     {
 
         // check the cached pointer is dangling
@@ -487,21 +442,107 @@ impl ScriptRef {
     }
 
 
-    /// applies another luaref to self by carefuly acquiring locks and cloning.
-    /// This is semantically equivalent to the `bevy_reflect::Reflect::apply` method. 
-    pub fn apply_luaref(&mut self, o : &ScriptRef){
+    /// applies another [`ScriptRef`] to self by carefuly acquiring locks and cloning if necessary.
+    /// 
+    /// This is semantically equivalent to the [`Reflect::apply`] method.
+    /// If you know the type of this value use [`Self::apply_luaref_typed`] since it avoids double cloning and allocating
+    pub fn apply(&mut self, other : &ScriptRef){
         // sadly apply already performs a clone for value types, so this incurs
         // a double clone in some cases TODO: is there another way ?
         // can we avoid the box ?
-        let cloned = o.get(|s,_| s.clone_value());
+        let cloned = other.get(|s,_| s.clone_value());
 
-        // safety: we already called get so reference must be valid
+        // safety: we already called `get` so reference must be valid
         unsafe {
-            self.get_mut_unsafe(|s,_| s.apply(&*cloned));
+            self.get_mut_unsafe(|s,_| 
+                s.apply(&*cloned)
+            )
+        }
+    }
+
+    /// applies another [`ScriptRef`] to self by carefuly acquiring locks and cloning if necessary.
+    /// 
+    /// This is semantically equivalent to the [`Reflect::apply`] method. The type of other and self (`O`) must be known to avoid boxing.
+    /// This will Return an error if the value is of the wrong type
+    pub fn apply_typed<T : ScriptValue>(&mut self, other : &ScriptRef) -> Result<(),mlua::Error>{
+        // sadly apply already performs a clone for value types, so this incurs
+        // a double clone in some cases TODO: is there another way ?
+        // can we avoid the box ?
+        let other: T = other.get(|o,_| o.downcast_ref().cloned())
+            .ok_or_else(|| 
+                self.get(|s,_| 
+                mlua::Error::RuntimeError(
+                    format!("Tried to apply/set type {} to type {}",
+                        std::any::type_name::<T>(),
+                        s.type_name()
+                    )
+                )
+            ))?;
+
+        // safety: we already called `get` so reference must be valid
+        unsafe {
+            self.get_mut_unsafe(|s,_| 
+                s.downcast_mut::<T>()
+                    .and_then(|s| Some(*s = other))
+            )
+            .ok_or_else(|| 
+                self.get(|s,_| 
+                mlua::Error::RuntimeError(
+                    format!("Tried to apply/set type {} to type {}",
+                        std::any::type_name::<T>(),
+                        s.type_name()
+                    )
+                )
+            ))
         }
     }
 
 }
+
+impl TypeName for ScriptRef {
+    /// We represent LuaRef types as `any` wildcards, since they can convert to literally anything 
+    fn get_type_parts() -> std::borrow::Cow<'static, [tealr::NamePart]> {
+        std::borrow::Cow::Borrowed(&[tealr::NamePart::Type(tealr::TealType {
+            name: std::borrow::Cow::Borrowed("any"),
+            generics: None,
+            type_kind: tealr::KindOfType::Builtin,
+        })])     
+    }
+}
+
+impl <'lua>ToLua<'lua> for ScriptRef {
+    /// Converts the LuaRef to the most convenient representation
+    /// checking conversions in this order:
+    /// - A primitive or bevy type which has a reflect interface is converted to a custom UserData exposing its API to lua conveniently
+    /// - A type implementing CustomUserData is converted with its `ref_to_lua` method
+    /// - Finally the method is represented as a `ReflectedValue` which exposes the Reflect interface 
+    fn to_lua(self, ctx: &'lua Lua) -> LuaResult<Value<'lua>> {
+        self.get(|s,_| {
+
+            if let Some(f) = BEVY_TO_LUA.get(s.type_name()){
+                Ok(f(&self,ctx))
+            } else {
+
+                let luaworld = ctx.globals()
+                    .get::<_, LuaWorld>("world")
+                    .unwrap();
+
+                let world = luaworld.upgrade().unwrap();
+                let world = &mut world.read();
+    
+                let typedata = world.resource::<TypeRegistry>();
+                let g = typedata.read();
+    
+                if let Some(v) = g.get_type_data::<ReflectCustomUserData>(s.type_id()) {
+                    Ok(v.get(s).unwrap().ref_to_lua(ctx).unwrap())
+                } else {
+                    Ok(Value::UserData(ctx.create_userdata(ReflectedValue{ref_: self.clone()}).unwrap()))
+                }
+            } 
+        })
+    }
+}
+
 
 
 
@@ -539,7 +580,6 @@ impl ApplyLua for ScriptRef{
         let v = unsafe {
             match self.get_mut_unsafe(|mut s,_| {
                 if let Some(ud) = g.get_type_data::<ReflectCustomUserData>(s.type_id()){
-
                     ud.get_mut(s.deref_mut())
                         .unwrap()
                         .apply_lua(ctx, v)
@@ -572,7 +612,7 @@ impl ApplyLua for ScriptRef{
         if let Value::UserData(v) = v{
             if v.is::<ReflectedValue>() {
                 let b = v.take::<ReflectedValue>().unwrap();
-                self.apply_luaref(&b.into());
+                self.apply(&b.into());
                 return Ok(())
             }
         }
@@ -588,47 +628,67 @@ pub trait ValueIndex<Idx> {
     fn index(&self, index: Idx) -> Self::Output;
 }
 
+impl ValueIndex<Cow<'static,str>> for ScriptRef {
+    type Output=Result<Self,mlua::Error>;
+
+    fn index(&self, index: Cow<'static,str>) -> Self::Output {
+        self.get(|s,_| {
+            let field = match s.reflect_ref() {
+                ReflectRef::Map(v) => v.get(&index).unwrap(),
+                ReflectRef::Struct(v) => v.field(&index).unwrap(),
+                _ => return Err(mlua::Error::RuntimeError(format!("Tried to index a primitive rust type {:#?}", self))),
+            };
+
+            Ok(ScriptRef{ 
+                root: self.root.clone(), 
+                path: Some(format!("{}.{index}",self.path.as_ref().unwrap())), 
+                r: ReflectPtr::Const(field)
+            })
+        })
+    }
+}
+
+impl ValueIndex<usize> for ScriptRef {
+    type Output=Result<Self,mlua::Error>;
+
+    fn index(&self, index: usize) -> Self::Output {
+        self.get(|s,_| {
+            let field = match s.reflect_ref() {
+                ReflectRef::Tuple(v) => v.field(index).unwrap(),
+                ReflectRef::TupleStruct(v) => v.field(index).unwrap(),
+                ReflectRef::List(v) => v.get(index).unwrap(),
+                ReflectRef::Map(v) => v.get(&(index)).unwrap(),
+                _ => return Err(mlua::Error::RuntimeError(format!("Tried to index a primitive rust type {:#?}", self))),
+            };
+
+            Ok(ScriptRef{ 
+                root: self.root.clone(), 
+                path: Some(format!("{}[{index}]",self.path.as_ref().unwrap())), 
+                r: ReflectPtr::Const(field)
+            })
+        })
+    }
+}
+
 impl ValueIndex<Value<'_>> for ScriptRef {
     type Output=Result<Self,mlua::Error>;
 
     fn index(&self, index: Value<'_>) -> Self::Output {
-        self.get(|s,_| {
-            let r = s.reflect_ref();
-
-            let (path,subfield) = match index {
-                Value::Integer(idx) => {
-                    let idx = idx as usize - 1;
-                    let field = match r {
-                        ReflectRef::Tuple(v) => v.field(idx).unwrap(),
-                        ReflectRef::TupleStruct(v) => v.field(idx).unwrap(),
-                        ReflectRef::List(v) => v.get(idx).unwrap(),
-                        ReflectRef::Map(v) => v.get(&(idx)).unwrap(),
-                        _ => return Err(mlua::Error::RuntimeError(format!("Tried to index a primitive rust type {:#?}", self))),
-                    };
-    
-                    (format!("[{idx}]"),field)
-                }
-                Value::String(field) => {
-                    let path_str = field.to_str().unwrap().to_string();
-                    let field = match r {
-                        ReflectRef::Map(v) => v.get(&path_str.to_owned()).unwrap(),
-                        ReflectRef::Struct(v) => v.field(&path_str).unwrap(),
-                        _ => return Err(mlua::Error::RuntimeError(format!("Tried to index a primitive rust type {:#?}", self))),
-                    };
-    
-                    (format!(".{path_str}"),field)
-                }
-                _ => return Err(mlua::Error::RuntimeError(format!("Cannot index a rust object with {:?}", index))),
-            };
-    
-            Ok(ScriptRef{ 
-                root: self.root.clone(), 
-                path: Some(format!("{}{}",self.path.as_ref().unwrap(),path)), 
-                r: ReflectPtr::Const(subfield)
-            })
-        })    
+        match index {
+            Value::Integer(idx) => {
+                self.index(idx  as usize)
+            }
+            Value::String(field) => {
+                let str_ = field.to_str()?.to_string();
+                // TODO: hopefully possible to use a &'_ str here
+                // but this requires Reflect implementation for &str 
+                <Self as ValueIndex<Cow<'static,str>>>::index(self,str_.into())
+            }
+            _ => return Err(mlua::Error::RuntimeError(format!("Cannot index a rust object with {:?}", index))),
+        }
     }
 }
+
 
 
 

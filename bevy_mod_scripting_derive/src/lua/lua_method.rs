@@ -49,6 +49,10 @@ pub(crate) struct LuaMethodType {
     pub is_meta: bool,
     /// does it take self as first parameter?
     pub is_function: bool,
+    /// is it a field setter
+    pub is_field_getter: bool,
+    /// is it a field getter
+    pub is_field_setter: bool,
 
     /// if is_meta this will be Some
     meta_method: Option<TypePath>,
@@ -57,6 +61,11 @@ pub(crate) struct LuaMethodType {
 }
 
 impl LuaMethodType {
+
+    pub fn is_field(&self) -> bool {
+        self.is_field_setter || self.is_field_getter
+    }
+    
     pub fn get_inner_tokens(&self) -> TokenStream {
         if self.is_meta {
             return self.meta_method.as_ref().unwrap().into_token_stream()
@@ -68,6 +77,12 @@ impl LuaMethodType {
 
 impl Parse for LuaMethodType {
     fn parse(input: ParseStream) -> Result<Self> {
+
+        let (is_field_setter,is_field_getter) = input.peek(Ident).then(|| {
+            let ident_str = input.parse::<Ident>().unwrap().to_string();
+
+            (ident_str == "set",ident_str == "get")
+        }).unwrap_or((false,false));
 
         let is_static = input.peek(Token![static]).then(|| input.parse::<Token![static]>().unwrap()).is_some();
         let is_mut = input.peek(Token![mut]).then(|| input.parse::<Token![mut]>().unwrap()).is_some();
@@ -95,6 +110,8 @@ impl Parse for LuaMethodType {
             is_function,
             meta_method,
             method_name,
+            is_field_getter,
+            is_field_setter
         })
     
     }
@@ -106,13 +123,18 @@ impl ToTokens for LuaMethodType {
         let is_mut = self.is_mut.then(|| Token![mut](tokens.span()));
         let is_function = self.is_function.then(|| Token![fn](tokens.span()));
         let mut inner = self.get_inner_tokens();
+        let field_ident = self.is_field_setter
+            .then(|| format_ident!("set"))
+            .or(self.is_field_getter
+                .then(|| format_ident!("get")));
+        
         if self.is_meta {
             inner = quote::quote!{
                 (#inner)
             }
         };
         tokens.extend(quote::quote!{
-           #is_static #is_mut #is_function #inner
+           #field_ident #is_static #is_mut #is_function #inner
         })
     }
 }
@@ -285,6 +307,11 @@ impl LuaMethod {
         })
     }
 
+    /// Generates the function call expression corresponding to the mlua 
+    /// UserData method which implements the given method or field
+    /// 
+    /// For field setters and getters teh receiver must be an instance of 
+    /// [`UserDataFields`] and [`UserDataMethods`] otherwise
     pub fn to_call_expr(&self,receiver : &'static str) -> TokenStream{
 
 
@@ -298,11 +325,20 @@ impl LuaMethod {
                 }
             }).collect();
         
-        let call_ident = format_ident!("add{}{}{}",
-            self.method_type.is_meta.then(|| "_meta").unwrap_or(""),
-            self.method_type.is_function.then(|| "_function").unwrap_or("_method"),
-            self.method_type.is_mut.then(|| "_mut").unwrap_or(""),
-        );
+        let call_ident;
+        if self.method_type.is_field_getter || self.method_type.is_field_setter {
+            call_ident = format_ident!("add_field_method_{}",
+                self.method_type.is_field_getter.then(|| "get")
+                    .or(self.method_type.is_field_setter.then(|| "set"))
+                    .unwrap())
+        } else {
+            call_ident = format_ident!("add{}{}{}",
+                self.method_type.is_meta.then(|| "_meta").unwrap_or(""),
+                self.method_type.is_function.then(|| "_function").unwrap_or("_method"),
+                self.method_type.is_mut.then(|| "_mut").unwrap_or(""),
+            );
+        }
+
 
         let inner_tokens = self.method_type.get_inner_tokens();
 

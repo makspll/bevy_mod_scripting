@@ -5,7 +5,7 @@ impl_lua_newtypes!(
 		use std::ops::*;
 		use phf::{phf_map, Map};
 		use crate::ReflectPtr;
-		use crate::{LuaWorld,ScriptRef,ScriptRefBase};
+		use crate::{LuaWorld,ScriptRef,ScriptRefBase,api::ValueIndex};
 		use std::sync::Arc;
 		use crate::util::impl_tealr_type;
 		use num_traits::cast::ToPrimitive;
@@ -347,810 +347,810 @@ impl_lua_newtypes!(
 			{
 			}
 		}
-,		{
-			///Describes whether the node should block interactions with lower nodes
-			bevy_ui::FocusPolicy : Value
-				: AutoMethods
-				(
-				)
-				+ BinOps
-				(
-				)
-				+ UnaryOps
-				(
-				)
-			impl
-			{
-			}
-		}
-,		{
-			///Describes what type of input interaction has occurred for a UI node.
-			///
-			///This is commonly queried with a `Changed<Interaction>` filter.
-			bevy_ui::Interaction : Value
-				: AutoMethods
-				(
-				)
-				+ BinOps
-				(
-				)
-				+ UnaryOps
-				(
-				)
-			impl
-			{
-			}
-		}
-,		{
-			///Defines how items are aligned according to the main axis
-			bevy_ui::JustifyContent : Value
-				: AutoMethods
-				(
-				)
-				+ BinOps
-				(
-				)
-				+ UnaryOps
-				(
-				)
-			impl
-			{
-			}
-		}
-,		{
-			///Whether to show or hide overflowing items
-			bevy_ui::Overflow : Value
-				: AutoMethods
-				(
-				)
-				+ BinOps
-				(
-				)
-				+ UnaryOps
-				(
-				)
-			impl
-			{
-			}
-		}
-,		{
-			///The strategy used to position this node
-			bevy_ui::PositionType : Value
-				: AutoMethods
-				(
-				)
-				+ BinOps
-				(
-				)
-				+ UnaryOps
-				(
-				)
-			impl
-			{
-			}
-		}
-,		{
-			///An enum that describes possible types of value in flexbox layout options
-			bevy_ui::Val : Value
-				: AutoMethods
-				(
-				)
-				+ BinOps
-				(
-					self Add f32 -> LuaVal,
-				)
-				+ UnaryOps
-				(
-				)
-			impl
-			{
-			}
-		}
-,		{
-			///The calculated clip of the node
-			bevy_ui::CalculatedClip : Value
-				: AutoMethods
-				(
-				)
-				+ BinOps
-				(
-				)
-				+ UnaryOps
-				(
-				)
-			impl
-			{
-			}
-		}
-,		{
-			///The calculated size of the node
-			bevy_ui::CalculatedSize : Value
-				: AutoMethods
-				(
-				)
-				+ BinOps
-				(
-				)
-				+ UnaryOps
-				(
-				)
-			impl
-			{
-			}
-		}
-,		{
-			///Describes the size of a UI node
-			bevy_ui::Node : Value
-				: AutoMethods
-				(
-				)
-				+ BinOps
-				(
-				)
-				+ UnaryOps
-				(
-				)
-			impl
-			{
-			}
-		}
-,		{
-			///Describes the style of a UI node
-			///
-			///It uses the [Flexbox](https://cssreference.io/flexbox/) system.
-			///
-			///**Note:** Bevy's UI is upside down compared to how Flexbox normally works, to stay consistent with engine paradigms about layouting from
-			///the upper left corner of the display
-			bevy_ui::Style : Value
-				: AutoMethods
-				(
-				)
-				+ BinOps
-				(
-				)
-				+ UnaryOps
-				(
-				)
-			impl
-			{
-			}
-		}
-,		{
-			///The color of the node
-			bevy_ui::UiColor : Value
-				: AutoMethods
-				(
-				)
-				+ BinOps
-				(
-				)
-				+ UnaryOps
-				(
-				)
-			impl
-			{
-			}
-		}
-,		{
-			///The image of the node
-			bevy_ui::UiImage : Value
-				: AutoMethods
-				(
-				)
-				+ BinOps
-				(
-				)
-				+ UnaryOps
-				(
-				)
-			impl
-			{
-			}
-		}
-,		{
-			///Marker struct for buttons
-			bevy_ui::widget::Button : Value
-				: AutoMethods
-				(
-				)
-				+ BinOps
-				(
-				)
-				+ UnaryOps
-				(
-				)
-			impl
-			{
-			}
-		}
-,		{
-			///Describes how to resize the Image node
-			bevy_ui::widget::ImageMode : Value
-				: AutoMethods
-				(
-				)
-				+ BinOps
-				(
-				)
-				+ UnaryOps
-				(
-				)
-			impl
-			{
-			}
-		}
-,		{
-			///Whether to use Flexbox layout
-			bevy_ui::Display : Value
-				: AutoMethods
-				(
-				)
-				+ BinOps
-				(
-				)
-				+ UnaryOps
-				(
-				)
-			impl
-			{
-			}
-		}
-,		{
-			///Animation controls
-			bevy_animation::AnimationPlayer : Value
-				: AutoMethods
-				(
-					///Is the animation paused
-					is_paused(&self) -> bool,
+// ,		{
+// 			///Describes whether the node should block interactions with lower nodes
+// 			bevy_ui::FocusPolicy : Value
+// 				: AutoMethods
+// 				(
+// 				)
+// 				+ BinOps
+// 				(
+// 				)
+// 				+ UnaryOps
+// 				(
+// 				)
+// 			impl
+// 			{
+// 			}
+// 		}
+// ,		{
+// 			///Describes what type of input interaction has occurred for a UI node.
+// 			///
+// 			///This is commonly queried with a `Changed<Interaction>` filter.
+// 			bevy_ui::Interaction : Value
+// 				: AutoMethods
+// 				(
+// 				)
+// 				+ BinOps
+// 				(
+// 				)
+// 				+ UnaryOps
+// 				(
+// 				)
+// 			impl
+// 			{
+// 			}
+// 		}
+// ,		{
+// 			///Defines how items are aligned according to the main axis
+// 			bevy_ui::JustifyContent : Value
+// 				: AutoMethods
+// 				(
+// 				)
+// 				+ BinOps
+// 				(
+// 				)
+// 				+ UnaryOps
+// 				(
+// 				)
+// 			impl
+// 			{
+// 			}
+// 		}
+// ,		{
+// 			///Whether to show or hide overflowing items
+// 			bevy_ui::Overflow : Value
+// 				: AutoMethods
+// 				(
+// 				)
+// 				+ BinOps
+// 				(
+// 				)
+// 				+ UnaryOps
+// 				(
+// 				)
+// 			impl
+// 			{
+// 			}
+// 		}
+// ,		{
+// 			///The strategy used to position this node
+// 			bevy_ui::PositionType : Value
+// 				: AutoMethods
+// 				(
+// 				)
+// 				+ BinOps
+// 				(
+// 				)
+// 				+ UnaryOps
+// 				(
+// 				)
+// 			impl
+// 			{
+// 			}
+// 		}
+// ,		{
+// 			///An enum that describes possible types of value in flexbox layout options
+// 			bevy_ui::Val : Value
+// 				: AutoMethods
+// 				(
+// 				)
+// 				+ BinOps
+// 				(
+// 					self Add f32 -> LuaVal,
+// 				)
+// 				+ UnaryOps
+// 				(
+// 				)
+// 			impl
+// 			{
+// 			}
+// 		}
+// ,		{
+// 			///The calculated clip of the node
+// 			bevy_ui::CalculatedClip : Value
+// 				: AutoMethods
+// 				(
+// 				)
+// 				+ BinOps
+// 				(
+// 				)
+// 				+ UnaryOps
+// 				(
+// 				)
+// 			impl
+// 			{
+// 			}
+// 		}
+// ,		{
+// 			///The calculated size of the node
+// 			bevy_ui::CalculatedSize : Value
+// 				: AutoMethods
+// 				(
+// 				)
+// 				+ BinOps
+// 				(
+// 				)
+// 				+ UnaryOps
+// 				(
+// 				)
+// 			impl
+// 			{
+// 			}
+// 		}
+// ,		{
+// 			///Describes the size of a UI node
+// 			bevy_ui::Node : Value
+// 				: AutoMethods
+// 				(
+// 				)
+// 				+ BinOps
+// 				(
+// 				)
+// 				+ UnaryOps
+// 				(
+// 				)
+// 			impl
+// 			{
+// 			}
+// 		}
+// ,		{
+// 			///Describes the style of a UI node
+// 			///
+// 			///It uses the [Flexbox](https://cssreference.io/flexbox/) system.
+// 			///
+// 			///**Note:** Bevy's UI is upside down compared to how Flexbox normally works, to stay consistent with engine paradigms about layouting from
+// 			///the upper left corner of the display
+// 			bevy_ui::Style : Value
+// 				: AutoMethods
+// 				(
+// 				)
+// 				+ BinOps
+// 				(
+// 				)
+// 				+ UnaryOps
+// 				(
+// 				)
+// 			impl
+// 			{
+// 			}
+// 		}
+// ,		{
+// 			///The color of the node
+// 			bevy_ui::UiColor : Value
+// 				: AutoMethods
+// 				(
+// 				)
+// 				+ BinOps
+// 				(
+// 				)
+// 				+ UnaryOps
+// 				(
+// 				)
+// 			impl
+// 			{
+// 			}
+// 		}
+// ,		{
+// 			///The image of the node
+// 			bevy_ui::UiImage : Value
+// 				: AutoMethods
+// 				(
+// 				)
+// 				+ BinOps
+// 				(
+// 				)
+// 				+ UnaryOps
+// 				(
+// 				)
+// 			impl
+// 			{
+// 			}
+// 		}
+// ,		{
+// 			///Marker struct for buttons
+// 			bevy_ui::widget::Button : Value
+// 				: AutoMethods
+// 				(
+// 				)
+// 				+ BinOps
+// 				(
+// 				)
+// 				+ UnaryOps
+// 				(
+// 				)
+// 			impl
+// 			{
+// 			}
+// 		}
+// ,		{
+// 			///Describes how to resize the Image node
+// 			bevy_ui::widget::ImageMode : Value
+// 				: AutoMethods
+// 				(
+// 				)
+// 				+ BinOps
+// 				(
+// 				)
+// 				+ UnaryOps
+// 				(
+// 				)
+// 			impl
+// 			{
+// 			}
+// 		}
+// ,		{
+// 			///Whether to use Flexbox layout
+// 			bevy_ui::Display : Value
+// 				: AutoMethods
+// 				(
+// 				)
+// 				+ BinOps
+// 				(
+// 				)
+// 				+ UnaryOps
+// 				(
+// 				)
+// 			impl
+// 			{
+// 			}
+// 		}
+// ,		{
+// 			///Animation controls
+// 			bevy_animation::AnimationPlayer : Value
+// 				: AutoMethods
+// 				(
+// 					///Is the animation paused
+// 					is_paused(&self) -> bool,
 
-					///Speed of the animation playback
-					speed(&self) -> f32,
+// 					///Speed of the animation playback
+// 					speed(&self) -> f32,
 
-					///Time elapsed playing the animation
-					elapsed(&self) -> f32,
+// 					///Time elapsed playing the animation
+// 					elapsed(&self) -> f32,
 
-				)
-				+ BinOps
-				(
-				)
-				+ UnaryOps
-				(
-				)
-			impl
-			{
-			}
-		}
-,		{
-			///Component used to identify an entity. Stores a hash for faster comparisons
-			///The hash is eagerly re-computed upon each update to the name.
-			///
-			///[`Name`] should not be treated as a globally unique identifier for entities,
-			///as multiple entities can have the same name.  [`bevy_ecs::entity::Entity`] should be
-			///used instead as the default unique identifier.
-			bevy_core::Name : Value
-				: AutoMethods
-				(
-				)
-				+ BinOps
-				(
-				)
-				+ UnaryOps
-				(
-				)
-			impl
-			{
-			}
-		}
-,		{
-			bevy_gltf::GltfExtras : Value
-				: AutoMethods
-				(
-				)
-				+ BinOps
-				(
-				)
-				+ UnaryOps
-				(
-				)
-			impl
-			{
-			}
-		}
-,		{
-			///Contains references to the child entities of this entity
-			bevy_hierarchy::Children : Value
-				: AutoMethods
-				(
-				)
-				+ BinOps
-				(
-				)
-				+ UnaryOps
-				(
-				)
-			impl
-			{
-			}
-		}
-,		{
-			///Holds a reference to the parent entity of this entity.
-			///This component should only be present on entities that actually have a parent entity.
-			bevy_hierarchy::Parent : Value
-				: AutoMethods
-				(
-				)
-				+ BinOps
-				(
-				)
-				+ UnaryOps
-				(
-				)
-			impl
-			{
-			}
-		}
-,		{
-			///Component that holds the [`Parent`] this entity had previously
-			bevy_hierarchy::PreviousParent : Value
-				: AutoMethods
-				(
-				)
-				+ BinOps
-				(
-				)
-				+ UnaryOps
-				(
-				)
-			impl
-			{
-			}
-		}
-,		{
-			///The maximum width and height of text. The text will wrap according to the specified size.
-			///Characters out of the bounds after wrapping will be truncated. Text is aligned according to the
-			///specified `TextAlignment`.
-			///
-			///Note: only characters that are completely out of the bounds will be truncated, so this is not a
-			///reliable limit if it is necessary to contain the text strictly in the bounds. Currently this
-			///component is mainly useful for text wrapping only.
-			bevy_text::Text2dBounds : Value
-				: AutoMethods
-				(
-				)
-				+ BinOps
-				(
-				)
-				+ UnaryOps
-				(
-				)
-			impl
-			{
-			}
-		}
-,		{
-			///The calculated size of text drawn in 2D scene.
-			bevy_text::Text2dSize : Value
-				: AutoMethods
-				(
-				)
-				+ BinOps
-				(
-				)
-				+ UnaryOps
-				(
-				)
-			impl
-			{
-			}
-		}
-,		{
-			bevy_text::Text : Value
-				: AutoMethods
-				(
-				)
-				+ BinOps
-				(
-				)
-				+ UnaryOps
-				(
-				)
-			impl
-			{
-			}
-		}
-,		{
-			bevy_text::TextAlignment : Value
-				: AutoMethods
-				(
-				)
-				+ BinOps
-				(
-				)
-				+ UnaryOps
-				(
-				)
-			impl
-			{
-			}
-		}
-,		{
-			bevy_text::TextSection : Value
-				: AutoMethods
-				(
-				)
-				+ BinOps
-				(
-				)
-				+ UnaryOps
-				(
-				)
-			impl
-			{
-			}
-		}
-,		{
-			bevy_text::TextStyle : Value
-				: AutoMethods
-				(
-				)
-				+ BinOps
-				(
-				)
-				+ UnaryOps
-				(
-				)
-			impl
-			{
-			}
-		}
-,		{
-			///Describes horizontal alignment preference for positioning & bounds.
-			bevy_text::HorizontalAlign : Value
-				: AutoMethods
-				(
-				)
-				+ BinOps
-				(
-				)
-				+ UnaryOps
-				(
-				)
-			impl
-			{
-			}
-		}
-,		{
-			///Describes vertical alignment preference for positioning & bounds. Currently a placeholder
-			///for future functionality.
-			bevy_text::VerticalAlign : Value
-				: AutoMethods
-				(
-				)
-				+ BinOps
-				(
-				)
-				+ UnaryOps
-				(
-				)
-			impl
-			{
-			}
-		}
-,		{
-			///A Stopwatch is a struct that track elapsed time when started.
-			///
-			///# Examples
-			///
-			///```
-			///# use bevy_time::*;
-			///use std::time::Duration;
-			///let mut stopwatch = Stopwatch::new();
-			///assert_eq!(stopwatch.elapsed_secs(), 0.0);
-			///
-			///stopwatch.tick(Duration::from_secs_f32(1.0)); // tick one second
-			///assert_eq!(stopwatch.elapsed_secs(), 1.0);
-			///
-			///stopwatch.pause();
-			///stopwatch.tick(Duration::from_secs_f32(1.0)); // paused stopwatches don't tick
-			///assert_eq!(stopwatch.elapsed_secs(), 1.0);
-			///
-			///stopwatch.reset(); // reset the stopwatch
-			///assert!(stopwatch.paused());
-			///assert_eq!(stopwatch.elapsed_secs(), 0.0);
-			///```
-			bevy_time::Stopwatch : Value
-				: AutoMethods
-				(
-					///Create a new unpaused `Stopwatch` with no elapsed time.
-					///
-					///# Examples
-					///```
-					///# use bevy_time::*;
-					///let stopwatch = Stopwatch::new();
-					///assert_eq!(stopwatch.elapsed_secs(), 0.0);
-					///assert_eq!(stopwatch.paused(), false);
-					///```
-					new() -> LuaStopwatch,
+// 				)
+// 				+ BinOps
+// 				(
+// 				)
+// 				+ UnaryOps
+// 				(
+// 				)
+// 			impl
+// 			{
+// 			}
+// 		}
+// ,		{
+// 			///Component used to identify an entity. Stores a hash for faster comparisons
+// 			///The hash is eagerly re-computed upon each update to the name.
+// 			///
+// 			///[`Name`] should not be treated as a globally unique identifier for entities,
+// 			///as multiple entities can have the same name.  [`bevy_ecs::entity::Entity`] should be
+// 			///used instead as the default unique identifier.
+// 			bevy_core::Name : Value
+// 				: AutoMethods
+// 				(
+// 				)
+// 				+ BinOps
+// 				(
+// 				)
+// 				+ UnaryOps
+// 				(
+// 				)
+// 			impl
+// 			{
+// 			}
+// 		}
+// ,		{
+// 			bevy_gltf::GltfExtras : Value
+// 				: AutoMethods
+// 				(
+// 				)
+// 				+ BinOps
+// 				(
+// 				)
+// 				+ UnaryOps
+// 				(
+// 				)
+// 			impl
+// 			{
+// 			}
+// 		}
+// ,		{
+// 			///Contains references to the child entities of this entity
+// 			bevy_hierarchy::Children : Value
+// 				: AutoMethods
+// 				(
+// 				)
+// 				+ BinOps
+// 				(
+// 				)
+// 				+ UnaryOps
+// 				(
+// 				)
+// 			impl
+// 			{
+// 			}
+// 		}
+// ,		{
+// 			///Holds a reference to the parent entity of this entity.
+// 			///This component should only be present on entities that actually have a parent entity.
+// 			bevy_hierarchy::Parent : Value
+// 				: AutoMethods
+// 				(
+// 				)
+// 				+ BinOps
+// 				(
+// 				)
+// 				+ UnaryOps
+// 				(
+// 				)
+// 			impl
+// 			{
+// 			}
+// 		}
+// ,		{
+// 			///Component that holds the [`Parent`] this entity had previously
+// 			bevy_hierarchy::PreviousParent : Value
+// 				: AutoMethods
+// 				(
+// 				)
+// 				+ BinOps
+// 				(
+// 				)
+// 				+ UnaryOps
+// 				(
+// 				)
+// 			impl
+// 			{
+// 			}
+// 		}
+// ,		{
+// 			///The maximum width and height of text. The text will wrap according to the specified size.
+// 			///Characters out of the bounds after wrapping will be truncated. Text is aligned according to the
+// 			///specified `TextAlignment`.
+// 			///
+// 			///Note: only characters that are completely out of the bounds will be truncated, so this is not a
+// 			///reliable limit if it is necessary to contain the text strictly in the bounds. Currently this
+// 			///component is mainly useful for text wrapping only.
+// 			bevy_text::Text2dBounds : Value
+// 				: AutoMethods
+// 				(
+// 				)
+// 				+ BinOps
+// 				(
+// 				)
+// 				+ UnaryOps
+// 				(
+// 				)
+// 			impl
+// 			{
+// 			}
+// 		}
+// ,		{
+// 			///The calculated size of text drawn in 2D scene.
+// 			bevy_text::Text2dSize : Value
+// 				: AutoMethods
+// 				(
+// 				)
+// 				+ BinOps
+// 				(
+// 				)
+// 				+ UnaryOps
+// 				(
+// 				)
+// 			impl
+// 			{
+// 			}
+// 		}
+// ,		{
+// 			bevy_text::Text : Value
+// 				: AutoMethods
+// 				(
+// 				)
+// 				+ BinOps
+// 				(
+// 				)
+// 				+ UnaryOps
+// 				(
+// 				)
+// 			impl
+// 			{
+// 			}
+// 		}
+// ,		{
+// 			bevy_text::TextAlignment : Value
+// 				: AutoMethods
+// 				(
+// 				)
+// 				+ BinOps
+// 				(
+// 				)
+// 				+ UnaryOps
+// 				(
+// 				)
+// 			impl
+// 			{
+// 			}
+// 		}
+// ,		{
+// 			bevy_text::TextSection : Value
+// 				: AutoMethods
+// 				(
+// 				)
+// 				+ BinOps
+// 				(
+// 				)
+// 				+ UnaryOps
+// 				(
+// 				)
+// 			impl
+// 			{
+// 			}
+// 		}
+// ,		{
+// 			bevy_text::TextStyle : Value
+// 				: AutoMethods
+// 				(
+// 				)
+// 				+ BinOps
+// 				(
+// 				)
+// 				+ UnaryOps
+// 				(
+// 				)
+// 			impl
+// 			{
+// 			}
+// 		}
+// ,		{
+// 			///Describes horizontal alignment preference for positioning & bounds.
+// 			bevy_text::HorizontalAlign : Value
+// 				: AutoMethods
+// 				(
+// 				)
+// 				+ BinOps
+// 				(
+// 				)
+// 				+ UnaryOps
+// 				(
+// 				)
+// 			impl
+// 			{
+// 			}
+// 		}
+// ,		{
+// 			///Describes vertical alignment preference for positioning & bounds. Currently a placeholder
+// 			///for future functionality.
+// 			bevy_text::VerticalAlign : Value
+// 				: AutoMethods
+// 				(
+// 				)
+// 				+ BinOps
+// 				(
+// 				)
+// 				+ UnaryOps
+// 				(
+// 				)
+// 			impl
+// 			{
+// 			}
+// 		}
+// ,		{
+// 			///A Stopwatch is a struct that track elapsed time when started.
+// 			///
+// 			///# Examples
+// 			///
+// 			///```
+// 			///# use bevy_time::*;
+// 			///use std::time::Duration;
+// 			///let mut stopwatch = Stopwatch::new();
+// 			///assert_eq!(stopwatch.elapsed_secs(), 0.0);
+// 			///
+// 			///stopwatch.tick(Duration::from_secs_f32(1.0)); // tick one second
+// 			///assert_eq!(stopwatch.elapsed_secs(), 1.0);
+// 			///
+// 			///stopwatch.pause();
+// 			///stopwatch.tick(Duration::from_secs_f32(1.0)); // paused stopwatches don't tick
+// 			///assert_eq!(stopwatch.elapsed_secs(), 1.0);
+// 			///
+// 			///stopwatch.reset(); // reset the stopwatch
+// 			///assert!(stopwatch.paused());
+// 			///assert_eq!(stopwatch.elapsed_secs(), 0.0);
+// 			///```
+// 			bevy_time::Stopwatch : Value
+// 				: AutoMethods
+// 				(
+// 					///Create a new unpaused `Stopwatch` with no elapsed time.
+// 					///
+// 					///# Examples
+// 					///```
+// 					///# use bevy_time::*;
+// 					///let stopwatch = Stopwatch::new();
+// 					///assert_eq!(stopwatch.elapsed_secs(), 0.0);
+// 					///assert_eq!(stopwatch.paused(), false);
+// 					///```
+// 					new() -> LuaStopwatch,
 
-					///Returns the elapsed time since the last [`reset`](Stopwatch::reset)
-					///of the stopwatch, in seconds.
-					///
-					///# Examples
-					///```
-					///# use bevy_time::*;
-					///use std::time::Duration;
-					///let mut stopwatch = Stopwatch::new();
-					///stopwatch.tick(Duration::from_secs(1));
-					///assert_eq!(stopwatch.elapsed_secs(), 1.0);
-					///```
-					///
-					///# See Also
-					///
-					///[`elapsed`](Stopwatch::elapsed) - if a `Duration` is desirable instead.
-					elapsed_secs(&self) -> f32,
+// 					///Returns the elapsed time since the last [`reset`](Stopwatch::reset)
+// 					///of the stopwatch, in seconds.
+// 					///
+// 					///# Examples
+// 					///```
+// 					///# use bevy_time::*;
+// 					///use std::time::Duration;
+// 					///let mut stopwatch = Stopwatch::new();
+// 					///stopwatch.tick(Duration::from_secs(1));
+// 					///assert_eq!(stopwatch.elapsed_secs(), 1.0);
+// 					///```
+// 					///
+// 					///# See Also
+// 					///
+// 					///[`elapsed`](Stopwatch::elapsed) - if a `Duration` is desirable instead.
+// 					elapsed_secs(&self) -> f32,
 
-					///Returns `true` if the stopwatch is paused.
-					///
-					///# Examples
-					///```
-					///# use bevy_time::*;
-					///let mut stopwatch = Stopwatch::new();
-					///assert!(!stopwatch.paused());
-					///stopwatch.pause();
-					///assert!(stopwatch.paused());
-					///stopwatch.unpause();
-					///assert!(!stopwatch.paused());
-					///```
-					paused(&self) -> bool,
+// 					///Returns `true` if the stopwatch is paused.
+// 					///
+// 					///# Examples
+// 					///```
+// 					///# use bevy_time::*;
+// 					///let mut stopwatch = Stopwatch::new();
+// 					///assert!(!stopwatch.paused());
+// 					///stopwatch.pause();
+// 					///assert!(stopwatch.paused());
+// 					///stopwatch.unpause();
+// 					///assert!(!stopwatch.paused());
+// 					///```
+// 					paused(&self) -> bool,
 
-				)
-				+ BinOps
-				(
-				)
-				+ UnaryOps
-				(
-				)
-			impl
-			{
-			}
-		}
-,		{
-			///Tracks elapsed time. Enters the finished state once `duration` is reached.
-			///
-			///Non repeating timers will stop tracking and stay in the finished state until reset.
-			///Repeating timers will only be in the finished state on each tick `duration` is reached or
-			///exceeded, and can still be reset at any given point.
-			///
-			///Paused timers will not have elapsed time increased.
-			bevy_time::Timer : Value
-				: AutoMethods
-				(
-					///Creates a new timer with a given duration in seconds.
-					///
-					///# Example
-					///```
-					///# use bevy_time::*;
-					///let mut timer = Timer::from_seconds(1.0, false);
-					///```
-					from_seconds(f32,bool) -> LuaTimer,
+// 				)
+// 				+ BinOps
+// 				(
+// 				)
+// 				+ UnaryOps
+// 				(
+// 				)
+// 			impl
+// 			{
+// 			}
+// 		}
+// ,		{
+// 			///Tracks elapsed time. Enters the finished state once `duration` is reached.
+// 			///
+// 			///Non repeating timers will stop tracking and stay in the finished state until reset.
+// 			///Repeating timers will only be in the finished state on each tick `duration` is reached or
+// 			///exceeded, and can still be reset at any given point.
+// 			///
+// 			///Paused timers will not have elapsed time increased.
+// 			bevy_time::Timer : Value
+// 				: AutoMethods
+// 				(
+// 					///Creates a new timer with a given duration in seconds.
+// 					///
+// 					///# Example
+// 					///```
+// 					///# use bevy_time::*;
+// 					///let mut timer = Timer::from_seconds(1.0, false);
+// 					///```
+// 					from_seconds(f32,bool) -> LuaTimer,
 
-					///Returns `true` if the timer has reached its duration.
-					///
-					///# Examples
-					///```
-					///# use bevy_time::*;
-					///use std::time::Duration;
-					///let mut timer = Timer::from_seconds(1.0, false);
-					///timer.tick(Duration::from_secs_f32(1.5));
-					///assert!(timer.finished());
-					///timer.tick(Duration::from_secs_f32(0.5));
-					///assert!(timer.finished());
-					///```
-					finished(&self) -> bool,
+// 					///Returns `true` if the timer has reached its duration.
+// 					///
+// 					///# Examples
+// 					///```
+// 					///# use bevy_time::*;
+// 					///use std::time::Duration;
+// 					///let mut timer = Timer::from_seconds(1.0, false);
+// 					///timer.tick(Duration::from_secs_f32(1.5));
+// 					///assert!(timer.finished());
+// 					///timer.tick(Duration::from_secs_f32(0.5));
+// 					///assert!(timer.finished());
+// 					///```
+// 					finished(&self) -> bool,
 
-					///Returns `true` only on the tick the timer reached its duration.
-					///
-					///# Examples
-					///```
-					///# use bevy_time::*;
-					///use std::time::Duration;
-					///let mut timer = Timer::from_seconds(1.0, false);
-					///timer.tick(Duration::from_secs_f32(1.5));
-					///assert!(timer.just_finished());
-					///timer.tick(Duration::from_secs_f32(0.5));
-					///assert!(!timer.just_finished());
-					///```
-					just_finished(&self) -> bool,
+// 					///Returns `true` only on the tick the timer reached its duration.
+// 					///
+// 					///# Examples
+// 					///```
+// 					///# use bevy_time::*;
+// 					///use std::time::Duration;
+// 					///let mut timer = Timer::from_seconds(1.0, false);
+// 					///timer.tick(Duration::from_secs_f32(1.5));
+// 					///assert!(timer.just_finished());
+// 					///timer.tick(Duration::from_secs_f32(0.5));
+// 					///assert!(!timer.just_finished());
+// 					///```
+// 					just_finished(&self) -> bool,
 
-					///Returns the time elapsed on the timer as a `f32`.
-					///See also [`Timer::elapsed`](Timer::elapsed).
-					elapsed_secs(&self) -> f32,
+// 					///Returns the time elapsed on the timer as a `f32`.
+// 					///See also [`Timer::elapsed`](Timer::elapsed).
+// 					elapsed_secs(&self) -> f32,
 
-					///Returns `true` if the timer is repeating.
-					///
-					///# Examples
-					///```
-					///# use bevy_time::*;
-					///let mut timer = Timer::from_seconds(1.0, true);
-					///assert!(timer.repeating());
-					///```
-					repeating(&self) -> bool,
+// 					///Returns `true` if the timer is repeating.
+// 					///
+// 					///# Examples
+// 					///```
+// 					///# use bevy_time::*;
+// 					///let mut timer = Timer::from_seconds(1.0, true);
+// 					///assert!(timer.repeating());
+// 					///```
+// 					repeating(&self) -> bool,
 
-					///Returns `true` if the timer is paused.
-					///
-					///See also [`Stopwatch::paused`](Stopwatch::paused).
-					///
-					///# Examples
-					///```
-					///# use bevy_time::*;
-					///let mut timer = Timer::from_seconds(1.0, false);
-					///assert!(!timer.paused());
-					///timer.pause();
-					///assert!(timer.paused());
-					///timer.unpause();
-					///assert!(!timer.paused());
-					///```
-					paused(&self) -> bool,
+// 					///Returns `true` if the timer is paused.
+// 					///
+// 					///See also [`Stopwatch::paused`](Stopwatch::paused).
+// 					///
+// 					///# Examples
+// 					///```
+// 					///# use bevy_time::*;
+// 					///let mut timer = Timer::from_seconds(1.0, false);
+// 					///assert!(!timer.paused());
+// 					///timer.pause();
+// 					///assert!(timer.paused());
+// 					///timer.unpause();
+// 					///assert!(!timer.paused());
+// 					///```
+// 					paused(&self) -> bool,
 
-					///Returns the percentage of the timer elapsed time (goes from 0.0 to 1.0).
-					///
-					///# Examples
-					///```
-					///# use bevy_time::*;
-					///use std::time::Duration;
-					///let mut timer = Timer::from_seconds(2.0, false);
-					///timer.tick(Duration::from_secs_f32(0.5));
-					///assert_eq!(timer.percent(), 0.25);
-					///```
-					percent(&self) -> f32,
+// 					///Returns the percentage of the timer elapsed time (goes from 0.0 to 1.0).
+// 					///
+// 					///# Examples
+// 					///```
+// 					///# use bevy_time::*;
+// 					///use std::time::Duration;
+// 					///let mut timer = Timer::from_seconds(2.0, false);
+// 					///timer.tick(Duration::from_secs_f32(0.5));
+// 					///assert_eq!(timer.percent(), 0.25);
+// 					///```
+// 					percent(&self) -> f32,
 
-					///Returns the percentage of the timer remaining time (goes from 0.0 to 1.0).
-					///
-					///# Examples
-					///```
-					///# use bevy_time::*;
-					///use std::time::Duration;
-					///let mut timer = Timer::from_seconds(2.0, false);
-					///timer.tick(Duration::from_secs_f32(0.5));
-					///assert_eq!(timer.percent_left(), 0.75);
-					///```
-					percent_left(&self) -> f32,
+// 					///Returns the percentage of the timer remaining time (goes from 0.0 to 1.0).
+// 					///
+// 					///# Examples
+// 					///```
+// 					///# use bevy_time::*;
+// 					///use std::time::Duration;
+// 					///let mut timer = Timer::from_seconds(2.0, false);
+// 					///timer.tick(Duration::from_secs_f32(0.5));
+// 					///assert_eq!(timer.percent_left(), 0.75);
+// 					///```
+// 					percent_left(&self) -> f32,
 
-					///Returns the number of times a repeating timer
-					///finished during the last [`tick`](Timer<T>::tick) call.
-					///
-					///For non repeating-timers, this method will only ever
-					///return 0 or 1.
-					///
-					///# Examples
-					///```
-					///# use bevy_time::*;
-					///use std::time::Duration;
-					///let mut timer = Timer::from_seconds(1.0, true);
-					///timer.tick(Duration::from_secs_f32(6.0));
-					///assert_eq!(timer.times_finished_this_tick(), 6);
-					///timer.tick(Duration::from_secs_f32(2.0));
-					///assert_eq!(timer.times_finished_this_tick(), 2);
-					///timer.tick(Duration::from_secs_f32(0.5));
-					///assert_eq!(timer.times_finished_this_tick(), 0);
-					///```
-					times_finished_this_tick(&self) -> u32,
+// 					///Returns the number of times a repeating timer
+// 					///finished during the last [`tick`](Timer<T>::tick) call.
+// 					///
+// 					///For non repeating-timers, this method will only ever
+// 					///return 0 or 1.
+// 					///
+// 					///# Examples
+// 					///```
+// 					///# use bevy_time::*;
+// 					///use std::time::Duration;
+// 					///let mut timer = Timer::from_seconds(1.0, true);
+// 					///timer.tick(Duration::from_secs_f32(6.0));
+// 					///assert_eq!(timer.times_finished_this_tick(), 6);
+// 					///timer.tick(Duration::from_secs_f32(2.0));
+// 					///assert_eq!(timer.times_finished_this_tick(), 2);
+// 					///timer.tick(Duration::from_secs_f32(0.5));
+// 					///assert_eq!(timer.times_finished_this_tick(), 0);
+// 					///```
+// 					times_finished_this_tick(&self) -> u32,
 
-				)
-				+ BinOps
-				(
-				)
-				+ UnaryOps
-				(
-				)
-			impl
-			{
-			}
-		}
-,		{
-			///A fixed-size list of reflected values.
-			///
-			///This differs from [`DynamicList`] in that the size of the [`DynamicArray`]
-			///is constant, whereas a [`DynamicList`] can have items added and removed.
-			///
-			///This isn't to say that a [`DynamicArray`] is immutable— its items
-			///can be mutated— just that the _number_ of items cannot change.
-			///
-			///[`DynamicList`]: crate::DynamicList
-			bevy_reflect::DynamicArray : Value
-				: AutoMethods
-				(
-				)
-				+ BinOps
-				(
-				)
-				+ UnaryOps
-				(
-				)
-			impl
-			{
-			}
-		}
-,		{
-			///A list of reflected values.
-			bevy_reflect::DynamicList : Value
-				: AutoMethods
-				(
-				)
-				+ BinOps
-				(
-				)
-				+ UnaryOps
-				(
-				)
-			impl
-			{
-			}
-		}
-,		{
-			///An ordered mapping between reflected values.
-			bevy_reflect::DynamicMap : Value
-				: AutoMethods
-				(
-				)
-				+ BinOps
-				(
-				)
-				+ UnaryOps
-				(
-				)
-			impl
-			{
-			}
-		}
-,		{
-			///A struct type which allows fields to be added at runtime.
-			bevy_reflect::DynamicStruct : Value
-				: AutoMethods
-				(
-				)
-				+ BinOps
-				(
-				)
-				+ UnaryOps
-				(
-				)
-			impl
-			{
-			}
-		}
-,		{
-			///A tuple which allows fields to be added at runtime.
-			bevy_reflect::DynamicTuple : Value
-				: AutoMethods
-				(
-				)
-				+ BinOps
-				(
-				)
-				+ UnaryOps
-				(
-				)
-			impl
-			{
-			}
-		}
-,		{
-			///A tuple struct which allows fields to be added at runtime.
-			bevy_reflect::DynamicTupleStruct : Value
-				: AutoMethods
-				(
-				)
-				+ BinOps
-				(
-				)
-				+ UnaryOps
-				(
-				)
-			impl
-			{
-			}
-		}
+// 				)
+// 				+ BinOps
+// 				(
+// 				)
+// 				+ UnaryOps
+// 				(
+// 				)
+// 			impl
+// 			{
+// 			}
+// 		}
+// ,		{
+// 			///A fixed-size list of reflected values.
+// 			///
+// 			///This differs from [`DynamicList`] in that the size of the [`DynamicArray`]
+// 			///is constant, whereas a [`DynamicList`] can have items added and removed.
+// 			///
+// 			///This isn't to say that a [`DynamicArray`] is immutable— its items
+// 			///can be mutated— just that the _number_ of items cannot change.
+// 			///
+// 			///[`DynamicList`]: crate::DynamicList
+// 			bevy_reflect::DynamicArray : Value
+// 				: AutoMethods
+// 				(
+// 				)
+// 				+ BinOps
+// 				(
+// 				)
+// 				+ UnaryOps
+// 				(
+// 				)
+// 			impl
+// 			{
+// 			}
+// 		}
+// ,		{
+// 			///A list of reflected values.
+// 			bevy_reflect::DynamicList : Value
+// 				: AutoMethods
+// 				(
+// 				)
+// 				+ BinOps
+// 				(
+// 				)
+// 				+ UnaryOps
+// 				(
+// 				)
+// 			impl
+// 			{
+// 			}
+// 		}
+// ,		{
+// 			///An ordered mapping between reflected values.
+// 			bevy_reflect::DynamicMap : Value
+// 				: AutoMethods
+// 				(
+// 				)
+// 				+ BinOps
+// 				(
+// 				)
+// 				+ UnaryOps
+// 				(
+// 				)
+// 			impl
+// 			{
+// 			}
+// 		}
+// ,		{
+// 			///A struct type which allows fields to be added at runtime.
+// 			bevy_reflect::DynamicStruct : Value
+// 				: AutoMethods
+// 				(
+// 				)
+// 				+ BinOps
+// 				(
+// 				)
+// 				+ UnaryOps
+// 				(
+// 				)
+// 			impl
+// 			{
+// 			}
+// 		}
+// ,		{
+// 			///A tuple which allows fields to be added at runtime.
+// 			bevy_reflect::DynamicTuple : Value
+// 				: AutoMethods
+// 				(
+// 				)
+// 				+ BinOps
+// 				(
+// 				)
+// 				+ UnaryOps
+// 				(
+// 				)
+// 			impl
+// 			{
+// 			}
+// 		}
+// ,		{
+// 			///A tuple struct which allows fields to be added at runtime.
+// 			bevy_reflect::DynamicTupleStruct : Value
+// 				: AutoMethods
+// 				(
+// 				)
+// 				+ BinOps
+// 				(
+// 				)
+// 				+ UnaryOps
+// 				(
+// 				)
+// 			impl
+// 			{
+// 			}
+// 		}
 ,		{
 			///Lightweight identifier of an [entity](crate::entity).
 			///
@@ -1290,1119 +1290,1119 @@ impl_lua_newtypes!(
 			impl
 			{
 			}
-		}
-,		{
-			///Describe the position of an entity. If the entity has a parent, the position is relative
-			///to its parent position.
-			///
-			///* To place or move an entity, you should set its [`Transform`].
-			///* To get the global position of an entity, you should get its [`GlobalTransform`].
-			///* To be displayed, an entity must have both a [`Transform`] and a [`GlobalTransform`].
-			///  * You may use the [`TransformBundle`](crate::TransformBundle) to guarantee this.
-			///
-			///## [`Transform`] and [`GlobalTransform`]
-			///
-			///[`Transform`] is the position of an entity relative to its parent position, or the reference
-			///frame if it doesn't have a [`Parent`](bevy_hierarchy::Parent).
-			///
-			///[`GlobalTransform`] is the position of an entity relative to the reference frame.
-			///
-			///[`GlobalTransform`] is updated from [`Transform`] in the system
-			///[`transform_propagate_system`](crate::transform_propagate_system).
-			///
-			///This system runs in stage [`CoreStage::PostUpdate`](crate::CoreStage::PostUpdate). If you
-			///update the[`Transform`] of an entity in this stage or after, you will notice a 1 frame lag
-			///before the [`GlobalTransform`] is updated.
-			bevy_transform::components::Transform : Value
-				: AutoMethods
-				(
-					///Creates a new [`Transform`] at the position `(x, y, z)`. In 2d, the `z` component
-					///is used for z-ordering elements: higher `z`-value will be in front of lower
-					///`z`-value.
-					from_xyz(f32,f32,f32) -> LuaTransform,
-
-					///Creates a new identity [`Transform`], with no translation, rotation, and a scale of 1 on
-					///all axes.
-					identity() -> LuaTransform,
-
-					///Extracts the translation, rotation, and scale from `matrix`. It must be a 3d affine
-					///transformation matrix.
-					from_matrix(LuaMat4) -> LuaTransform,
-
-					///Creates a new [`Transform`], with `translation`. Rotation will be 0 and scale 1 on
-					///all axes.
-					from_translation(LuaVec3) -> LuaTransform,
-
-					///Creates a new [`Transform`], with `rotation`. Translation will be 0 and scale 1 on
-					///all axes.
-					from_rotation(LuaQuat) -> LuaTransform,
-
-					///Creates a new [`Transform`], with `scale`. Translation will be 0 and rotation 0 on
-					///all axes.
-					from_scale(LuaVec3) -> LuaTransform,
-
-					///Updates and returns this [`Transform`] by rotating it so that its unit vector in the
-					///local z direction is toward `target` and its unit vector in the local y direction
-					///is toward `up`.
-					looking_at(self,LuaVec3,LuaVec3) -> LuaTransform,
-
-					///Returns this [`Transform`] with a new translation.
-					with_translation(self,LuaVec3) -> LuaTransform,
-
-					///Returns this [`Transform`] with a new rotation.
-					with_rotation(self,LuaQuat) -> LuaTransform,
-
-					///Returns this [`Transform`] with a new scale.
-					with_scale(self,LuaVec3) -> LuaTransform,
-
-					///Returns the 3d affine transformation matrix from this transforms translation,
-					///rotation, and scale.
-					compute_matrix(&self) -> LuaMat4,
-
-					///Get the unit vector in the local x direction.
-					local_x(&self) -> LuaVec3,
-
-					///Equivalent to [`-local_x()`][Transform::local_x()]
-					left(&self) -> LuaVec3,
-
-					///Equivalent to [`local_x()`][Transform::local_x()]
-					right(&self) -> LuaVec3,
-
-					///Get the unit vector in the local y direction.
-					local_y(&self) -> LuaVec3,
-
-					///Equivalent to [`local_y()`][Transform::local_y]
-					up(&self) -> LuaVec3,
-
-					///Equivalent to [`-local_y()`][Transform::local_y]
-					down(&self) -> LuaVec3,
-
-					///Get the unit vector in the local z direction.
-					local_z(&self) -> LuaVec3,
-
-					///Equivalent to [`-local_z()`][Transform::local_z]
-					forward(&self) -> LuaVec3,
-
-					///Equivalent to [`local_z()`][Transform::local_z]
-					back(&self) -> LuaVec3,
-
-					///Multiplies `self` with `transform` component by component, returning the
-					///resulting [`Transform`]
-					mul_transform(&self,LuaTransform) -> LuaTransform,
-
-					///Returns a [`Vec3`] of this [`Transform`] applied to `value`.
-					mul_vec3(&self,LuaVec3) -> LuaVec3,
-
-				)
-				+ BinOps
-				(
-					self Mul LuaTransform -> LuaTransform,
-					self Mul LuaVec3 -> LuaVec3,
-				)
-				+ UnaryOps
-				(
-				)
-			impl
-			{
-			}
-		}
-,		{
-			///Describe the position of an entity relative to the reference frame.
-			///
-			///* To place or move an entity, you should set its [`Transform`].
-			///* To get the global position of an entity, you should get its [`GlobalTransform`].
-			///* For transform hierarchies to work correctly, you must have both a [`Transform`] and a [`GlobalTransform`].
-			///  * You may use the [`TransformBundle`](crate::TransformBundle) to guarantee this.
-			///
-			///## [`Transform`] and [`GlobalTransform`]
-			///
-			///[`Transform`] is the position of an entity relative to its parent position, or the reference
-			///frame if it doesn't have a [`Parent`](bevy_hierarchy::Parent).
-			///
-			///[`GlobalTransform`] is the position of an entity relative to the reference frame.
-			///
-			///[`GlobalTransform`] is updated from [`Transform`] in the system
-			///[`transform_propagate_system`](crate::transform_propagate_system).
-			///
-			///This system runs in stage [`CoreStage::PostUpdate`](crate::CoreStage::PostUpdate). If you
-			///update the[`Transform`] of an entity in this stage or after, you will notice a 1 frame lag
-			///before the [`GlobalTransform`] is updated.
-			bevy_transform::components::GlobalTransform : Value
-				: AutoMethods
-				(
-					///Creates a new identity [`GlobalTransform`], with no translation, rotation, and a scale of 1
-					///on all axes.
-					identity() -> LuaGlobalTransform,
-
-					///Returns the 3d affine transformation matrix from this transforms translation,
-					///rotation, and scale.
-					compute_matrix(&self) -> LuaMat4,
-
-					///Returns the 3d affine transformation from this transforms translation,
-					///rotation, and scale.
-					compute_affine(&self) -> LuaAffine3A,
-
-					///Get the unit vector in the local x direction
-					local_x(&self) -> LuaVec3,
-
-					///Equivalent to [`-local_x()`][GlobalTransform::local_x]
-					left(&self) -> LuaVec3,
-
-					///Equivalent to [`local_x()`][GlobalTransform::local_x]
-					right(&self) -> LuaVec3,
-
-					///Get the unit vector in the local y direction
-					local_y(&self) -> LuaVec3,
-
-					///Equivalent to [`local_y()`][GlobalTransform::local_y]
-					up(&self) -> LuaVec3,
-
-					///Equivalent to [`-local_y()`][GlobalTransform::local_y]
-					down(&self) -> LuaVec3,
-
-					///Get the unit vector in the local z direction
-					local_z(&self) -> LuaVec3,
-
-					///Equivalent to [`-local_z()`][GlobalTransform::local_z]
-					forward(&self) -> LuaVec3,
-
-					///Equivalent to [`local_z()`][GlobalTransform::local_z]
-					back(&self) -> LuaVec3,
-
-					///Multiplies `self` with `transform` component by component, returning the
-					///resulting [`GlobalTransform`]
-					mul_transform(&self,LuaTransform) -> LuaGlobalTransform,
-
-					///Returns a [`Vec3`] of this [`Transform`] applied to `value`.
-					mul_vec3(&self,LuaVec3) -> LuaVec3,
-
-				)
-				+ BinOps
-				(
-					self Mul LuaGlobalTransform -> LuaGlobalTransform,
-					self Mul LuaTransform -> LuaGlobalTransform,
-					self Mul LuaVec3 -> LuaVec3,
-				)
-				+ UnaryOps
-				(
-				)
-			impl
-			{
-			}
-		}
-,		{
-			///An ambient light, which lights the entire scene equally.
-			bevy_pbr::AmbientLight : Value
-				: AutoMethods
-				(
-				)
-				+ BinOps
-				(
-				)
-				+ UnaryOps
-				(
-				)
-			impl
-			{
-			}
-		}
-,		{
-			bevy_pbr::CubemapVisibleEntities : Value
-				: AutoMethods
-				(
-				)
-				+ BinOps
-				(
-				)
-				+ UnaryOps
-				(
-				)
-			impl
-			{
-			}
-		}
-,		{
-			///A Directional light.
-			///
-			///Directional lights don't exist in reality but they are a good
-			///approximation for light sources VERY far away, like the sun or
-			///the moon.
-			///
-			///Valid values for `illuminance` are:
-			///
-			///| Illuminance (lux) | Surfaces illuminated by                        |
-			///|-------------------|------------------------------------------------|
-			///| 0.0001            | Moonless, overcast night sky (starlight)       |
-			///| 0.002             | Moonless clear night sky with airglow          |
-			///| 0.05–0.3          | Full moon on a clear night                     |
-			///| 3.4               | Dark limit of civil twilight under a clear sky |
-			///| 20–50             | Public areas with dark surroundings            |
-			///| 50                | Family living room lights                      |
-			///| 80                | Office building hallway/toilet lighting        |
-			///| 100               | Very dark overcast day                         |
-			///| 150               | Train station platforms                        |
-			///| 320–500           | Office lighting                                |
-			///| 400               | Sunrise or sunset on a clear day.              |
-			///| 1000              | Overcast day; typical TV studio lighting       |
-			///| 10,000–25,000     | Full daylight (not direct sun)                 |
-			///| 32,000–100,000    | Direct sunlight                                |
-			///
-			///Source: [Wikipedia](https://en.wikipedia.org/wiki/Lux)
-			bevy_pbr::DirectionalLight : Value
-				: AutoMethods
-				(
-				)
-				+ BinOps
-				(
-				)
-				+ UnaryOps
-				(
-				)
-			impl
-			{
-			}
-		}
-,		{
-			bevy_pbr::DirectionalLightShadowMap : Value
-				: AutoMethods
-				(
-				)
-				+ BinOps
-				(
-				)
-				+ UnaryOps
-				(
-				)
-			impl
-			{
-			}
-		}
-,		{
-			///Add this component to make a [`Mesh`](bevy_render::mesh::Mesh) not cast shadows.
-			bevy_pbr::NotShadowCaster : Value
-				: AutoMethods
-				(
-				)
-				+ BinOps
-				(
-				)
-				+ UnaryOps
-				(
-				)
-			impl
-			{
-			}
-		}
-,		{
-			///Add this component to make a [`Mesh`](bevy_render::mesh::Mesh) not receive shadows.
-			bevy_pbr::NotShadowReceiver : Value
-				: AutoMethods
-				(
-				)
-				+ BinOps
-				(
-				)
-				+ UnaryOps
-				(
-				)
-			impl
-			{
-			}
-		}
-,		{
-			///A light that emits light in all directions from a central point.
-			///
-			///Real-world values for `intensity` (luminous power in lumens) based on the electrical power
-			///consumption of the type of real-world light are:
-			///
-			///| Luminous Power (lumen) (i.e. the intensity member) | Incandescent non-halogen (Watts) | Incandescent halogen (Watts) | Compact fluorescent (Watts) | LED (Watts |
-			///|------|-----|----|--------|-------|
-			///| 200  | 25  |    | 3-5    | 3     |
-			///| 450  | 40  | 29 | 9-11   | 5-8   |
-			///| 800  | 60  |    | 13-15  | 8-12  |
-			///| 1100 | 75  | 53 | 18-20  | 10-16 |
-			///| 1600 | 100 | 72 | 24-28  | 14-17 |
-			///| 2400 | 150 |    | 30-52  | 24-30 |
-			///| 3100 | 200 |    | 49-75  | 32    |
-			///| 4000 | 300 |    | 75-100 | 40.5  |
-			///
-			///Source: [Wikipedia](https://en.wikipedia.org/wiki/Lumen_(unit)#Lighting)
-			bevy_pbr::PointLight : Value
-				: AutoMethods
-				(
-				)
-				+ BinOps
-				(
-				)
-				+ UnaryOps
-				(
-				)
-			impl
-			{
-			}
-		}
-,		{
-			bevy_pbr::PointLightShadowMap : Value
-				: AutoMethods
-				(
-				)
-				+ BinOps
-				(
-				)
-				+ UnaryOps
-				(
-				)
-			impl
-			{
-			}
-		}
-,		{
-			///Alpha mode
-			bevy_pbr::AlphaMode : Value
-				: AutoMethods
-				(
-				)
-				+ BinOps
-				(
-				)
-				+ UnaryOps
-				(
-				)
-			impl
-			{
-			}
-		}
-,		{
-			///Controls whether an entity should rendered in wireframe-mode if the [`WireframePlugin`] is enabled
-			bevy_pbr::wireframe::Wireframe : Value
-				: AutoMethods
-				(
-				)
-				+ BinOps
-				(
-				)
-				+ UnaryOps
-				(
-				)
-			impl
-			{
-			}
-		}
-,		{
-			bevy_pbr::wireframe::WireframeConfig : Value
-				: AutoMethods
-				(
-				)
-				+ BinOps
-				(
-				)
-				+ UnaryOps
-				(
-				)
-			impl
-			{
-			}
-		}
-,		{
-			///The depth clear operation to perform for the main 3d pass.
-			bevy_core_pipeline::core_3d::Camera3dDepthLoadOp : Value
-				: AutoMethods
-				(
-				)
-				+ BinOps
-				(
-				)
-				+ UnaryOps
-				(
-				)
-			impl
-			{
-			}
-		}
-,		{
-			///When used as a resource, sets the color that is used to clear the screen between frames.
-			///
-			///This color appears as the "background" color for simple apps, when
-			///there are portions of the screen with nothing rendered.
-			bevy_core_pipeline::clear_color::ClearColor : Value
-				: AutoMethods
-				(
-				)
-				+ BinOps
-				(
-				)
-				+ UnaryOps
-				(
-				)
-			impl
-			{
-			}
-		}
-,		{
-			bevy_core_pipeline::clear_color::ClearColorConfig : Value
-				: AutoMethods
-				(
-				)
-				+ BinOps
-				(
-				)
-				+ UnaryOps
-				(
-				)
-			impl
-			{
-			}
-		}
-,		{
-			bevy_core_pipeline::core_2d::Camera2d : Value
-				: AutoMethods
-				(
-				)
-				+ BinOps
-				(
-				)
-				+ UnaryOps
-				(
-				)
-			impl
-			{
-			}
-		}
-,		{
-			///Configuration for the "main 3d render graph".
-			bevy_core_pipeline::core_3d::Camera3d : Value
-				: AutoMethods
-				(
-				)
-				+ BinOps
-				(
-				)
-				+ UnaryOps
-				(
-				)
-			impl
-			{
-			}
-		}
-,		{
-			///How a sprite is positioned relative to its [`Transform`](bevy_transform::components::Transform).
-			///It defaults to `Anchor::Center`.
-			bevy_sprite::Anchor : Value
-				: AutoMethods
-				(
-					as_vec(&self) -> LuaVec2,
-
-				)
-				+ BinOps
-				(
-				)
-				+ UnaryOps
-				(
-				)
-			impl
-			{
-			}
-		}
-,		{
-			///Component for rendering with meshes in the 2d pipeline, usually with a [2d material](crate::Material2d) such as [`ColorMaterial`](crate::ColorMaterial).
-			///
-			///It wraps a [`Handle<Mesh>`] to differentiate from the 3d pipelines which use the handles directly as components
-			bevy_sprite::Mesh2dHandle : Value
-				: AutoMethods
-				(
-				)
-				+ BinOps
-				(
-				)
-				+ UnaryOps
-				(
-				)
-			impl
-			{
-			}
-		}
-,		{
-			bevy_sprite::TextureAtlasSprite : Value
-				: AutoMethods
-				(
-					new(usize) -> LuaTextureAtlasSprite,
-
-				)
-				+ BinOps
-				(
-				)
-				+ UnaryOps
-				(
-				)
-			impl
-			{
-			}
-		}
-,		{
-			bevy_sprite::Sprite : Value
-				: AutoMethods
-				(
-				)
-				+ BinOps
-				(
-				)
-				+ UnaryOps
-				(
-				)
-			impl
-			{
-			}
-		}
-,		{
-			///A rectangle defined by two points. There is no defined origin, so 0,0 could be anywhere
-			///(top-left, bottom-left, etc)
-			bevy_sprite::Rect : Value
-				: AutoMethods
-				(
-					width(&self) -> f32,
-
-					height(&self) -> f32,
-
-					size(&self) -> LuaVec2,
-
-				)
-				+ BinOps
-				(
-				)
-				+ UnaryOps
-				(
-				)
-			impl
-			{
-			}
-		}
-,		{
-			///Describes which rendering layers an entity belongs to.
-			///
-			///Cameras with this component will only render entities with intersecting
-			///layers.
-			///
-			///There are 32 layers numbered `0` - [`TOTAL_LAYERS`](RenderLayers::TOTAL_LAYERS). Entities may
-			///belong to one or more layers, or no layer at all.
-			///
-			///The [`Default`] instance of `RenderLayers` contains layer `0`, the first layer.
-			///
-			///An entity with this component without any layers is invisible.
-			///
-			///Entities without this component belong to layer `0`.
-			bevy_render::view::visibility::RenderLayers : Value
-				: AutoMethods
-				(
-					///Create a new `RenderLayers` that belongs to all layers.
-					all() -> LuaRenderLayers,
-
-					///Create a new `RenderLayers` that belongs to no layers.
-					none() -> LuaRenderLayers,
-
-					///Determine if a `RenderLayers` intersects another.
-					///
-					///`RenderLayers`s intersect if they share any common layers.
-					///
-					///A `RenderLayers` with no layers will not match any other
-					///`RenderLayers`, even another with no layers.
-					intersects(&self,&LuaRenderLayers) -> bool,
-
-				)
-				+ BinOps
-				(
-				)
-				+ UnaryOps
-				(
-				)
-			impl
-			{
-			}
-		}
-,		{
-			///User indication of whether an entity is visible
-			bevy_render::view::visibility::Visibility : Value
-				: AutoMethods
-				(
-				)
-				+ BinOps
-				(
-				)
-				+ UnaryOps
-				(
-				)
-			impl
-			{
-			}
-		}
-,		{
-			///Collection of entities visible from the current view.
-			///
-			///This component contains all entities which are visible from the currently
-			///rendered view. The collection is updated automatically by the [`check_visibility()`]
-			///system, and renderers can use it to optimize rendering of a particular view, to
-			///prevent drawing items not visible from that view.
-			///
-			///This component is intended to be attached to the same entity as the [`Camera`] and
-			///the [`Frustum`] defining the view.
-			///
-			///Currently this component is ignored by the sprite renderer, so sprite rendering
-			///is not optimized per view.
-			bevy_render::view::visibility::VisibleEntities : Value
-				: AutoMethods
-				(
-					len(&self) -> usize,
-
-					is_empty(&self) -> bool,
-
-				)
-				+ BinOps
-				(
-				)
-				+ UnaryOps
-				(
-				)
-			impl
-			{
-			}
-		}
-,		{
-			///Algorithmically-computed indication of whether an entity is visible and should be extracted for rendering
-			bevy_render::view::visibility::ComputedVisibility : Value
-				: AutoMethods
-				(
-				)
-				+ BinOps
-				(
-				)
-				+ UnaryOps
-				(
-				)
-			impl
-			{
-			}
-		}
-,		{
-			bevy_render::mesh::skinning::SkinnedMesh : Value
-				: AutoMethods
-				(
-				)
-				+ BinOps
-				(
-				)
-				+ UnaryOps
-				(
-				)
-			impl
-			{
-			}
-		}
-,		{
-			bevy_render::camera::ScalingMode : Value
-				: AutoMethods
-				(
-				)
-				+ BinOps
-				(
-				)
-				+ UnaryOps
-				(
-				)
-			impl
-			{
-			}
-		}
-,		{
-			bevy_render::camera::WindowOrigin : Value
-				: AutoMethods
-				(
-				)
-				+ BinOps
-				(
-				)
-				+ UnaryOps
-				(
-				)
-			impl
-			{
-			}
-		}
-,		{
-			bevy_render::color::Color : Value
-				: AutoMethods
-				(
-					///New `Color` from sRGB colorspace.
-					rgb(f32,f32,f32) -> LuaColor,
-
-					///New `Color` from sRGB colorspace.
-					rgba(f32,f32,f32,f32) -> LuaColor,
-
-					///New `Color` from linear RGB colorspace.
-					rgb_linear(f32,f32,f32) -> LuaColor,
-
-					///New `Color` from linear RGB colorspace.
-					rgba_linear(f32,f32,f32,f32) -> LuaColor,
-
-					///New `Color` with HSL representation in sRGB colorspace.
-					hsl(f32,f32,f32) -> LuaColor,
-
-					///New `Color` with HSL representation in sRGB colorspace.
-					hsla(f32,f32,f32,f32) -> LuaColor,
-
-					///New `Color` from sRGB colorspace.
-					rgb_u8(u8,u8,u8) -> LuaColor,
-
-					///New `Color` from sRGB colorspace.
-					rgba_u8(u8,u8,u8,u8) -> LuaColor,
-
-					///Get red in sRGB colorspace.
-					r(&self) -> f32,
-
-					///Get green in sRGB colorspace.
-					g(&self) -> f32,
-
-					///Get blue in sRGB colorspace.
-					b(&self) -> f32,
-
-					///Get alpha.
-					a(&self) -> f32,
-
-					///Converts a `Color` to variant `Color::Rgba`
-					as_rgba(&LuaColor) -> LuaColor,
-
-					///Converts a `Color` to variant `Color::RgbaLinear`
-					as_rgba_linear(&LuaColor) -> LuaColor,
-
-					///Converts a `Color` to variant `Color::Hsla`
-					as_hsla(&LuaColor) -> LuaColor,
-
-					///Converts Color to a u32 from sRGB colorspace.
-					///
-					///Maps the RGBA channels in RGBA order to a little-endian byte array (GPUs are little-endian).
-					///A will be the most significant byte and R the least significant.
-					as_rgba_u32(LuaColor) -> u32,
-
-					///Converts Color to a u32 from linear RGB colorspace.
-					///
-					///Maps the RGBA channels in RGBA order to a little-endian byte array (GPUs are little-endian).
-					///A will be the most significant byte and R the least significant.
-					as_linear_rgba_u32(LuaColor) -> u32,
-
-				)
-				+ BinOps
-				(
-					self Add LuaColor -> LuaColor,
-					self Add LuaVec4 -> LuaColor,
-					self Mul f32 -> LuaColor,
-					self Mul LuaVec4 -> LuaColor,
-					self Mul LuaVec3 -> LuaColor,
-				)
-				+ UnaryOps
-				(
-				)
-			impl
-			{
-			}
-		}
-,		{
-			///An Axis-Aligned Bounding Box
-			bevy_render::primitives::Aabb : Value
-				: AutoMethods
-				(
-					from_min_max(LuaVec3,LuaVec3) -> LuaAabb,
-
-					min(&self) -> LuaVec3A,
-
-					max(&self) -> LuaVec3A,
-
-				)
-				+ BinOps
-				(
-				)
-				+ UnaryOps
-				(
-				)
-			impl
-			{
-			}
-		}
-,		{
-			bevy_render::primitives::CubemapFrusta : Value
-				: AutoMethods
-				(
-				)
-				+ BinOps
-				(
-				)
-				+ UnaryOps
-				(
-				)
-			impl
-			{
-			}
-		}
-,		{
-			///A frustum defined by the 6 containing planes
-			///Planes are ordered left, right, top, bottom, near, far
-			///Normals point into the contained volume
-			bevy_render::primitives::Frustum : Value
-				: AutoMethods
-				(
-					from_view_projection(&LuaMat4,&LuaVec3,&LuaVec3,f32) -> LuaFrustum,
-
-					intersects_obb(&self,&LuaAabb,&LuaMat4,bool) -> bool,
-
-				)
-				+ BinOps
-				(
-				)
-				+ UnaryOps
-				(
-				)
-			impl
-			{
-			}
-		}
-,		{
-			///Configuration resource for [Multi-Sample Anti-Aliasing](https://en.wikipedia.org/wiki/Multisample_anti-aliasing).
-			///
-			///# Example
-			///```
-			///# use bevy_app::prelude::App;
-			///# use bevy_render::prelude::Msaa;
-			///App::new()
-			///    .insert_resource(Msaa { samples: 4 })
-			///    .run();
-			///```
-			bevy_render::view::Msaa : Value
-				: AutoMethods
-				(
-				)
-				+ BinOps
-				(
-				)
-				+ UnaryOps
-				(
-				)
-			impl
-			{
-			}
-		}
-,		{
-			bevy_render::camera::Camera : Value
-				: AutoMethods
-				(
-					///The projection matrix computed using this camera's [`CameraProjection`].
-					projection_matrix(&self) -> LuaMat4,
-
-				)
-				+ BinOps
-				(
-				)
-				+ UnaryOps
-				(
-				)
-			impl
-			{
-			}
-		}
-,		{
-			///The "target" that a [`Camera`] will render to. For example, this could be a [`Window`](bevy_window::Window)
-			///swapchain or an [`Image`].
-			bevy_render::camera::RenderTarget : Value
-				: AutoMethods
-				(
-				)
-				+ BinOps
-				(
-				)
-				+ UnaryOps
-				(
-				)
-			impl
-			{
-			}
-		}
-,		{
-			///Render viewport configuration for the [`Camera`] component.
-			///
-			///The viewport defines the area on the render target to which the camera renders its image.
-			///You can overlay multiple cameras in a single window using viewports to create effects like
-			///split screen, minimaps, and character viewers.
-			bevy_render::camera::Viewport : Value
-				: AutoMethods
-				(
-				)
-				+ BinOps
-				(
-				)
-				+ UnaryOps
-				(
-				)
-			impl
-			{
-			}
-		}
-,		{
-			///A configurable [`CameraProjection`] that can select its projection type at runtime.
-			bevy_render::camera::Projection : Value
-				: AutoMethods
-				(
-					get_projection_matrix(&self) -> LuaMat4,
-
-					depth_calculation(&self) -> LuaDepthCalculation,
-
-					far(&self) -> f32,
-
-				)
-				+ BinOps
-				(
-				)
-				+ UnaryOps
-				(
-				)
-			impl
-			{
-			}
-		}
-,		{
-			bevy_render::camera::OrthographicProjection : Value
-				: AutoMethods
-				(
-					get_projection_matrix(&self) -> LuaMat4,
-
-					depth_calculation(&self) -> LuaDepthCalculation,
-
-					far(&self) -> f32,
-
-				)
-				+ BinOps
-				(
-				)
-				+ UnaryOps
-				(
-				)
-			impl
-			{
-			}
-		}
-,		{
-			bevy_render::camera::PerspectiveProjection : Value
-				: AutoMethods
-				(
-					get_projection_matrix(&self) -> LuaMat4,
-
-					depth_calculation(&self) -> LuaDepthCalculation,
-
-					far(&self) -> f32,
-
-				)
-				+ BinOps
-				(
-				)
-				+ UnaryOps
-				(
-				)
-			impl
-			{
-			}
-		}
-,		{
-			bevy_render::camera::DepthCalculation : Value
-				: AutoMethods
-				(
-				)
-				+ BinOps
-				(
-				)
-				+ UnaryOps
-				(
-				)
-			impl
-			{
-			}
-		}
-,		{
-			///Configures the [`RenderGraph`](crate::render_graph::RenderGraph) name assigned to be run for a given [`Camera`] entity.
-			bevy_render::camera::CameraRenderGraph : Value
-				: AutoMethods
-				(
-				)
-				+ BinOps
-				(
-				)
-				+ UnaryOps
-				(
-				)
-			impl
-			{
-			}
-		}
-,		{
-			bevy_asset::AssetPathId : Value
-				: AutoMethods
-				(
-					source_path_id(&self) -> LuaSourcePathId,
-
-					label_id(&self) -> LuaLabelId,
-
-				)
-				+ BinOps
-				(
-				)
-				+ UnaryOps
-				(
-				)
-			impl
-			{
-			}
-		}
-,		{
-			bevy_asset::LabelId : Value
-				: AutoMethods
-				(
-				)
-				+ BinOps
-				(
-				)
-				+ UnaryOps
-				(
-				)
-			impl
-			{
-			}
-		}
-,		{
-			bevy_asset::SourcePathId : Value
-				: AutoMethods
-				(
-				)
-				+ BinOps
-				(
-				)
-				+ UnaryOps
-				(
-				)
-			impl
-			{
-			}
-		}
-,		{
-			///A unique, stable asset id
-			bevy_asset::HandleId : Value
-				: AutoMethods
-				(
-				)
-				+ BinOps
-				(
-				)
-				+ UnaryOps
-				(
-				)
-			impl
-			{
-			}
-		}
-,		{
+		},
+// ,		{
+// 			///Describe the position of an entity. If the entity has a parent, the position is relative
+// 			///to its parent position.
+// 			///
+// 			///* To place or move an entity, you should set its [`Transform`].
+// 			///* To get the global position of an entity, you should get its [`GlobalTransform`].
+// 			///* To be displayed, an entity must have both a [`Transform`] and a [`GlobalTransform`].
+// 			///  * You may use the [`TransformBundle`](crate::TransformBundle) to guarantee this.
+// 			///
+// 			///## [`Transform`] and [`GlobalTransform`]
+// 			///
+// 			///[`Transform`] is the position of an entity relative to its parent position, or the reference
+// 			///frame if it doesn't have a [`Parent`](bevy_hierarchy::Parent).
+// 			///
+// 			///[`GlobalTransform`] is the position of an entity relative to the reference frame.
+// 			///
+// 			///[`GlobalTransform`] is updated from [`Transform`] in the system
+// 			///[`transform_propagate_system`](crate::transform_propagate_system).
+// 			///
+// 			///This system runs in stage [`CoreStage::PostUpdate`](crate::CoreStage::PostUpdate). If you
+// 			///update the[`Transform`] of an entity in this stage or after, you will notice a 1 frame lag
+// 			///before the [`GlobalTransform`] is updated.
+// 			bevy_transform::components::Transform : Value
+// 				: AutoMethods
+// 				(
+// 					///Creates a new [`Transform`] at the position `(x, y, z)`. In 2d, the `z` component
+// 					///is used for z-ordering elements: higher `z`-value will be in front of lower
+// 					///`z`-value.
+// 					from_xyz(f32,f32,f32) -> LuaTransform,
+
+// 					///Creates a new identity [`Transform`], with no translation, rotation, and a scale of 1 on
+// 					///all axes.
+// 					identity() -> LuaTransform,
+
+// 					///Extracts the translation, rotation, and scale from `matrix`. It must be a 3d affine
+// 					///transformation matrix.
+// 					from_matrix(LuaMat4) -> LuaTransform,
+
+// 					///Creates a new [`Transform`], with `translation`. Rotation will be 0 and scale 1 on
+// 					///all axes.
+// 					from_translation(LuaVec3) -> LuaTransform,
+
+// 					///Creates a new [`Transform`], with `rotation`. Translation will be 0 and scale 1 on
+// 					///all axes.
+// 					from_rotation(LuaQuat) -> LuaTransform,
+
+// 					///Creates a new [`Transform`], with `scale`. Translation will be 0 and rotation 0 on
+// 					///all axes.
+// 					from_scale(LuaVec3) -> LuaTransform,
+
+// 					///Updates and returns this [`Transform`] by rotating it so that its unit vector in the
+// 					///local z direction is toward `target` and its unit vector in the local y direction
+// 					///is toward `up`.
+// 					looking_at(self,LuaVec3,LuaVec3) -> LuaTransform,
+
+// 					///Returns this [`Transform`] with a new translation.
+// 					with_translation(self,LuaVec3) -> LuaTransform,
+
+// 					///Returns this [`Transform`] with a new rotation.
+// 					with_rotation(self,LuaQuat) -> LuaTransform,
+
+// 					///Returns this [`Transform`] with a new scale.
+// 					with_scale(self,LuaVec3) -> LuaTransform,
+
+// 					///Returns the 3d affine transformation matrix from this transforms translation,
+// 					///rotation, and scale.
+// 					compute_matrix(&self) -> LuaMat4,
+
+// 					///Get the unit vector in the local x direction.
+// 					local_x(&self) -> LuaVec3,
+
+// 					///Equivalent to [`-local_x()`][Transform::local_x()]
+// 					left(&self) -> LuaVec3,
+
+// 					///Equivalent to [`local_x()`][Transform::local_x()]
+// 					right(&self) -> LuaVec3,
+
+// 					///Get the unit vector in the local y direction.
+// 					local_y(&self) -> LuaVec3,
+
+// 					///Equivalent to [`local_y()`][Transform::local_y]
+// 					up(&self) -> LuaVec3,
+
+// 					///Equivalent to [`-local_y()`][Transform::local_y]
+// 					down(&self) -> LuaVec3,
+
+// 					///Get the unit vector in the local z direction.
+// 					local_z(&self) -> LuaVec3,
+
+// 					///Equivalent to [`-local_z()`][Transform::local_z]
+// 					forward(&self) -> LuaVec3,
+
+// 					///Equivalent to [`local_z()`][Transform::local_z]
+// 					back(&self) -> LuaVec3,
+
+// 					///Multiplies `self` with `transform` component by component, returning the
+// 					///resulting [`Transform`]
+// 					mul_transform(&self,LuaTransform) -> LuaTransform,
+
+// 					///Returns a [`Vec3`] of this [`Transform`] applied to `value`.
+// 					mul_vec3(&self,LuaVec3) -> LuaVec3,
+
+// 				)
+// 				+ BinOps
+// 				(
+// 					self Mul LuaTransform -> LuaTransform,
+// 					self Mul LuaVec3 -> LuaVec3,
+// 				)
+// 				+ UnaryOps
+// 				(
+// 				)
+// 			impl
+// 			{
+// 			}
+// 		}
+// ,		{
+// 			///Describe the position of an entity relative to the reference frame.
+// 			///
+// 			///* To place or move an entity, you should set its [`Transform`].
+// 			///* To get the global position of an entity, you should get its [`GlobalTransform`].
+// 			///* For transform hierarchies to work correctly, you must have both a [`Transform`] and a [`GlobalTransform`].
+// 			///  * You may use the [`TransformBundle`](crate::TransformBundle) to guarantee this.
+// 			///
+// 			///## [`Transform`] and [`GlobalTransform`]
+// 			///
+// 			///[`Transform`] is the position of an entity relative to its parent position, or the reference
+// 			///frame if it doesn't have a [`Parent`](bevy_hierarchy::Parent).
+// 			///
+// 			///[`GlobalTransform`] is the position of an entity relative to the reference frame.
+// 			///
+// 			///[`GlobalTransform`] is updated from [`Transform`] in the system
+// 			///[`transform_propagate_system`](crate::transform_propagate_system).
+// 			///
+// 			///This system runs in stage [`CoreStage::PostUpdate`](crate::CoreStage::PostUpdate). If you
+// 			///update the[`Transform`] of an entity in this stage or after, you will notice a 1 frame lag
+// 			///before the [`GlobalTransform`] is updated.
+// 			bevy_transform::components::GlobalTransform : Value
+// 				: AutoMethods
+// 				(
+// 					///Creates a new identity [`GlobalTransform`], with no translation, rotation, and a scale of 1
+// 					///on all axes.
+// 					identity() -> LuaGlobalTransform,
+
+// 					///Returns the 3d affine transformation matrix from this transforms translation,
+// 					///rotation, and scale.
+// 					compute_matrix(&self) -> LuaMat4,
+
+// 					///Returns the 3d affine transformation from this transforms translation,
+// 					///rotation, and scale.
+// 					compute_affine(&self) -> LuaAffine3A,
+
+// 					///Get the unit vector in the local x direction
+// 					local_x(&self) -> LuaVec3,
+
+// 					///Equivalent to [`-local_x()`][GlobalTransform::local_x]
+// 					left(&self) -> LuaVec3,
+
+// 					///Equivalent to [`local_x()`][GlobalTransform::local_x]
+// 					right(&self) -> LuaVec3,
+
+// 					///Get the unit vector in the local y direction
+// 					local_y(&self) -> LuaVec3,
+
+// 					///Equivalent to [`local_y()`][GlobalTransform::local_y]
+// 					up(&self) -> LuaVec3,
+
+// 					///Equivalent to [`-local_y()`][GlobalTransform::local_y]
+// 					down(&self) -> LuaVec3,
+
+// 					///Get the unit vector in the local z direction
+// 					local_z(&self) -> LuaVec3,
+
+// 					///Equivalent to [`-local_z()`][GlobalTransform::local_z]
+// 					forward(&self) -> LuaVec3,
+
+// 					///Equivalent to [`local_z()`][GlobalTransform::local_z]
+// 					back(&self) -> LuaVec3,
+
+// 					///Multiplies `self` with `transform` component by component, returning the
+// 					///resulting [`GlobalTransform`]
+// 					mul_transform(&self,LuaTransform) -> LuaGlobalTransform,
+
+// 					///Returns a [`Vec3`] of this [`Transform`] applied to `value`.
+// 					mul_vec3(&self,LuaVec3) -> LuaVec3,
+
+// 				)
+// 				+ BinOps
+// 				(
+// 					self Mul LuaGlobalTransform -> LuaGlobalTransform,
+// 					self Mul LuaTransform -> LuaGlobalTransform,
+// 					self Mul LuaVec3 -> LuaVec3,
+// 				)
+// 				+ UnaryOps
+// 				(
+// 				)
+// 			impl
+// 			{
+// 			}
+// 		}
+// ,		{
+// 			///An ambient light, which lights the entire scene equally.
+// 			bevy_pbr::AmbientLight : Value
+// 				: AutoMethods
+// 				(
+// 				)
+// 				+ BinOps
+// 				(
+// 				)
+// 				+ UnaryOps
+// 				(
+// 				)
+// 			impl
+// 			{
+// 			}
+// 		}
+// ,		{
+// 			bevy_pbr::CubemapVisibleEntities : Value
+// 				: AutoMethods
+// 				(
+// 				)
+// 				+ BinOps
+// 				(
+// 				)
+// 				+ UnaryOps
+// 				(
+// 				)
+// 			impl
+// 			{
+// 			}
+// 		}
+// ,		{
+// 			///A Directional light.
+// 			///
+// 			///Directional lights don't exist in reality but they are a good
+// 			///approximation for light sources VERY far away, like the sun or
+// 			///the moon.
+// 			///
+// 			///Valid values for `illuminance` are:
+// 			///
+// 			///| Illuminance (lux) | Surfaces illuminated by                        |
+// 			///|-------------------|------------------------------------------------|
+// 			///| 0.0001            | Moonless, overcast night sky (starlight)       |
+// 			///| 0.002             | Moonless clear night sky with airglow          |
+// 			///| 0.05–0.3          | Full moon on a clear night                     |
+// 			///| 3.4               | Dark limit of civil twilight under a clear sky |
+// 			///| 20–50             | Public areas with dark surroundings            |
+// 			///| 50                | Family living room lights                      |
+// 			///| 80                | Office building hallway/toilet lighting        |
+// 			///| 100               | Very dark overcast day                         |
+// 			///| 150               | Train station platforms                        |
+// 			///| 320–500           | Office lighting                                |
+// 			///| 400               | Sunrise or sunset on a clear day.              |
+// 			///| 1000              | Overcast day; typical TV studio lighting       |
+// 			///| 10,000–25,000     | Full daylight (not direct sun)                 |
+// 			///| 32,000–100,000    | Direct sunlight                                |
+// 			///
+// 			///Source: [Wikipedia](https://en.wikipedia.org/wiki/Lux)
+// 			bevy_pbr::DirectionalLight : Value
+// 				: AutoMethods
+// 				(
+// 				)
+// 				+ BinOps
+// 				(
+// 				)
+// 				+ UnaryOps
+// 				(
+// 				)
+// 			impl
+// 			{
+// 			}
+// 		}
+// ,		{
+// 			bevy_pbr::DirectionalLightShadowMap : Value
+// 				: AutoMethods
+// 				(
+// 				)
+// 				+ BinOps
+// 				(
+// 				)
+// 				+ UnaryOps
+// 				(
+// 				)
+// 			impl
+// 			{
+// 			}
+// 		}
+// ,		{
+// 			///Add this component to make a [`Mesh`](bevy_render::mesh::Mesh) not cast shadows.
+// 			bevy_pbr::NotShadowCaster : Value
+// 				: AutoMethods
+// 				(
+// 				)
+// 				+ BinOps
+// 				(
+// 				)
+// 				+ UnaryOps
+// 				(
+// 				)
+// 			impl
+// 			{
+// 			}
+// 		}
+// ,		{
+// 			///Add this component to make a [`Mesh`](bevy_render::mesh::Mesh) not receive shadows.
+// 			bevy_pbr::NotShadowReceiver : Value
+// 				: AutoMethods
+// 				(
+// 				)
+// 				+ BinOps
+// 				(
+// 				)
+// 				+ UnaryOps
+// 				(
+// 				)
+// 			impl
+// 			{
+// 			}
+// 		}
+// ,		{
+// 			///A light that emits light in all directions from a central point.
+// 			///
+// 			///Real-world values for `intensity` (luminous power in lumens) based on the electrical power
+// 			///consumption of the type of real-world light are:
+// 			///
+// 			///| Luminous Power (lumen) (i.e. the intensity member) | Incandescent non-halogen (Watts) | Incandescent halogen (Watts) | Compact fluorescent (Watts) | LED (Watts |
+// 			///|------|-----|----|--------|-------|
+// 			///| 200  | 25  |    | 3-5    | 3     |
+// 			///| 450  | 40  | 29 | 9-11   | 5-8   |
+// 			///| 800  | 60  |    | 13-15  | 8-12  |
+// 			///| 1100 | 75  | 53 | 18-20  | 10-16 |
+// 			///| 1600 | 100 | 72 | 24-28  | 14-17 |
+// 			///| 2400 | 150 |    | 30-52  | 24-30 |
+// 			///| 3100 | 200 |    | 49-75  | 32    |
+// 			///| 4000 | 300 |    | 75-100 | 40.5  |
+// 			///
+// 			///Source: [Wikipedia](https://en.wikipedia.org/wiki/Lumen_(unit)#Lighting)
+// 			bevy_pbr::PointLight : Value
+// 				: AutoMethods
+// 				(
+// 				)
+// 				+ BinOps
+// 				(
+// 				)
+// 				+ UnaryOps
+// 				(
+// 				)
+// 			impl
+// 			{
+// 			}
+// 		}
+// ,		{
+// 			bevy_pbr::PointLightShadowMap : Value
+// 				: AutoMethods
+// 				(
+// 				)
+// 				+ BinOps
+// 				(
+// 				)
+// 				+ UnaryOps
+// 				(
+// 				)
+// 			impl
+// 			{
+// 			}
+// 		}
+// ,		{
+// 			///Alpha mode
+// 			bevy_pbr::AlphaMode : Value
+// 				: AutoMethods
+// 				(
+// 				)
+// 				+ BinOps
+// 				(
+// 				)
+// 				+ UnaryOps
+// 				(
+// 				)
+// 			impl
+// 			{
+// 			}
+// 		}
+// ,		{
+// 			///Controls whether an entity should rendered in wireframe-mode if the [`WireframePlugin`] is enabled
+// 			bevy_pbr::wireframe::Wireframe : Value
+// 				: AutoMethods
+// 				(
+// 				)
+// 				+ BinOps
+// 				(
+// 				)
+// 				+ UnaryOps
+// 				(
+// 				)
+// 			impl
+// 			{
+// 			}
+// 		}
+// ,		{
+// 			bevy_pbr::wireframe::WireframeConfig : Value
+// 				: AutoMethods
+// 				(
+// 				)
+// 				+ BinOps
+// 				(
+// 				)
+// 				+ UnaryOps
+// 				(
+// 				)
+// 			impl
+// 			{
+// 			}
+// 		}
+// ,		{
+// 			///The depth clear operation to perform for the main 3d pass.
+// 			bevy_core_pipeline::core_3d::Camera3dDepthLoadOp : Value
+// 				: AutoMethods
+// 				(
+// 				)
+// 				+ BinOps
+// 				(
+// 				)
+// 				+ UnaryOps
+// 				(
+// 				)
+// 			impl
+// 			{
+// 			}
+// 		}
+// ,		{
+// 			///When used as a resource, sets the color that is used to clear the screen between frames.
+// 			///
+// 			///This color appears as the "background" color for simple apps, when
+// 			///there are portions of the screen with nothing rendered.
+// 			bevy_core_pipeline::clear_color::ClearColor : Value
+// 				: AutoMethods
+// 				(
+// 				)
+// 				+ BinOps
+// 				(
+// 				)
+// 				+ UnaryOps
+// 				(
+// 				)
+// 			impl
+// 			{
+// 			}
+// 		}
+// ,		{
+// 			bevy_core_pipeline::clear_color::ClearColorConfig : Value
+// 				: AutoMethods
+// 				(
+// 				)
+// 				+ BinOps
+// 				(
+// 				)
+// 				+ UnaryOps
+// 				(
+// 				)
+// 			impl
+// 			{
+// 			}
+// 		}
+// ,		{
+// 			bevy_core_pipeline::core_2d::Camera2d : Value
+// 				: AutoMethods
+// 				(
+// 				)
+// 				+ BinOps
+// 				(
+// 				)
+// 				+ UnaryOps
+// 				(
+// 				)
+// 			impl
+// 			{
+// 			}
+// 		}
+// ,		{
+// 			///Configuration for the "main 3d render graph".
+// 			bevy_core_pipeline::core_3d::Camera3d : Value
+// 				: AutoMethods
+// 				(
+// 				)
+// 				+ BinOps
+// 				(
+// 				)
+// 				+ UnaryOps
+// 				(
+// 				)
+// 			impl
+// 			{
+// 			}
+// 		}
+// ,		{
+// 			///How a sprite is positioned relative to its [`Transform`](bevy_transform::components::Transform).
+// 			///It defaults to `Anchor::Center`.
+// 			bevy_sprite::Anchor : Value
+// 				: AutoMethods
+// 				(
+// 					as_vec(&self) -> LuaVec2,
+
+// 				)
+// 				+ BinOps
+// 				(
+// 				)
+// 				+ UnaryOps
+// 				(
+// 				)
+// 			impl
+// 			{
+// 			}
+// 		}
+// ,		{
+// 			///Component for rendering with meshes in the 2d pipeline, usually with a [2d material](crate::Material2d) such as [`ColorMaterial`](crate::ColorMaterial).
+// 			///
+// 			///It wraps a [`Handle<Mesh>`] to differentiate from the 3d pipelines which use the handles directly as components
+// 			bevy_sprite::Mesh2dHandle : Value
+// 				: AutoMethods
+// 				(
+// 				)
+// 				+ BinOps
+// 				(
+// 				)
+// 				+ UnaryOps
+// 				(
+// 				)
+// 			impl
+// 			{
+// 			}
+// 		}
+// ,		{
+// 			bevy_sprite::TextureAtlasSprite : Value
+// 				: AutoMethods
+// 				(
+// 					new(usize) -> LuaTextureAtlasSprite,
+
+// 				)
+// 				+ BinOps
+// 				(
+// 				)
+// 				+ UnaryOps
+// 				(
+// 				)
+// 			impl
+// 			{
+// 			}
+// 		}
+// ,		{
+// 			bevy_sprite::Sprite : Value
+// 				: AutoMethods
+// 				(
+// 				)
+// 				+ BinOps
+// 				(
+// 				)
+// 				+ UnaryOps
+// 				(
+// 				)
+// 			impl
+// 			{
+// 			}
+// 		}
+// ,		{
+// 			///A rectangle defined by two points. There is no defined origin, so 0,0 could be anywhere
+// 			///(top-left, bottom-left, etc)
+// 			bevy_sprite::Rect : Value
+// 				: AutoMethods
+// 				(
+// 					width(&self) -> f32,
+
+// 					height(&self) -> f32,
+
+// 					size(&self) -> LuaVec2,
+
+// 				)
+// 				+ BinOps
+// 				(
+// 				)
+// 				+ UnaryOps
+// 				(
+// 				)
+// 			impl
+// 			{
+// 			}
+// 		}
+// ,		{
+// 			///Describes which rendering layers an entity belongs to.
+// 			///
+// 			///Cameras with this component will only render entities with intersecting
+// 			///layers.
+// 			///
+// 			///There are 32 layers numbered `0` - [`TOTAL_LAYERS`](RenderLayers::TOTAL_LAYERS). Entities may
+// 			///belong to one or more layers, or no layer at all.
+// 			///
+// 			///The [`Default`] instance of `RenderLayers` contains layer `0`, the first layer.
+// 			///
+// 			///An entity with this component without any layers is invisible.
+// 			///
+// 			///Entities without this component belong to layer `0`.
+// 			bevy_render::view::visibility::RenderLayers : Value
+// 				: AutoMethods
+// 				(
+// 					///Create a new `RenderLayers` that belongs to all layers.
+// 					all() -> LuaRenderLayers,
+
+// 					///Create a new `RenderLayers` that belongs to no layers.
+// 					none() -> LuaRenderLayers,
+
+// 					///Determine if a `RenderLayers` intersects another.
+// 					///
+// 					///`RenderLayers`s intersect if they share any common layers.
+// 					///
+// 					///A `RenderLayers` with no layers will not match any other
+// 					///`RenderLayers`, even another with no layers.
+// 					intersects(&self,&LuaRenderLayers) -> bool,
+
+// 				)
+// 				+ BinOps
+// 				(
+// 				)
+// 				+ UnaryOps
+// 				(
+// 				)
+// 			impl
+// 			{
+// 			}
+// 		}
+// ,		{
+// 			///User indication of whether an entity is visible
+// 			bevy_render::view::visibility::Visibility : Value
+// 				: AutoMethods
+// 				(
+// 				)
+// 				+ BinOps
+// 				(
+// 				)
+// 				+ UnaryOps
+// 				(
+// 				)
+// 			impl
+// 			{
+// 			}
+// 		}
+// ,		{
+// 			///Collection of entities visible from the current view.
+// 			///
+// 			///This component contains all entities which are visible from the currently
+// 			///rendered view. The collection is updated automatically by the [`check_visibility()`]
+// 			///system, and renderers can use it to optimize rendering of a particular view, to
+// 			///prevent drawing items not visible from that view.
+// 			///
+// 			///This component is intended to be attached to the same entity as the [`Camera`] and
+// 			///the [`Frustum`] defining the view.
+// 			///
+// 			///Currently this component is ignored by the sprite renderer, so sprite rendering
+// 			///is not optimized per view.
+// 			bevy_render::view::visibility::VisibleEntities : Value
+// 				: AutoMethods
+// 				(
+// 					len(&self) -> usize,
+
+// 					is_empty(&self) -> bool,
+
+// 				)
+// 				+ BinOps
+// 				(
+// 				)
+// 				+ UnaryOps
+// 				(
+// 				)
+// 			impl
+// 			{
+// 			}
+// 		}
+// ,		{
+// 			///Algorithmically-computed indication of whether an entity is visible and should be extracted for rendering
+// 			bevy_render::view::visibility::ComputedVisibility : Value
+// 				: AutoMethods
+// 				(
+// 				)
+// 				+ BinOps
+// 				(
+// 				)
+// 				+ UnaryOps
+// 				(
+// 				)
+// 			impl
+// 			{
+// 			}
+// 		}
+// ,		{
+// 			bevy_render::mesh::skinning::SkinnedMesh : Value
+// 				: AutoMethods
+// 				(
+// 				)
+// 				+ BinOps
+// 				(
+// 				)
+// 				+ UnaryOps
+// 				(
+// 				)
+// 			impl
+// 			{
+// 			}
+// 		}
+// ,		{
+// 			bevy_render::camera::ScalingMode : Value
+// 				: AutoMethods
+// 				(
+// 				)
+// 				+ BinOps
+// 				(
+// 				)
+// 				+ UnaryOps
+// 				(
+// 				)
+// 			impl
+// 			{
+// 			}
+// 		}
+// ,		{
+// 			bevy_render::camera::WindowOrigin : Value
+// 				: AutoMethods
+// 				(
+// 				)
+// 				+ BinOps
+// 				(
+// 				)
+// 				+ UnaryOps
+// 				(
+// 				)
+// 			impl
+// 			{
+// 			}
+// 		}
+// ,		{
+// 			bevy_render::color::Color : Value
+// 				: AutoMethods
+// 				(
+// 					///New `Color` from sRGB colorspace.
+// 					rgb(f32,f32,f32) -> LuaColor,
+
+// 					///New `Color` from sRGB colorspace.
+// 					rgba(f32,f32,f32,f32) -> LuaColor,
+
+// 					///New `Color` from linear RGB colorspace.
+// 					rgb_linear(f32,f32,f32) -> LuaColor,
+
+// 					///New `Color` from linear RGB colorspace.
+// 					rgba_linear(f32,f32,f32,f32) -> LuaColor,
+
+// 					///New `Color` with HSL representation in sRGB colorspace.
+// 					hsl(f32,f32,f32) -> LuaColor,
+
+// 					///New `Color` with HSL representation in sRGB colorspace.
+// 					hsla(f32,f32,f32,f32) -> LuaColor,
+
+// 					///New `Color` from sRGB colorspace.
+// 					rgb_u8(u8,u8,u8) -> LuaColor,
+
+// 					///New `Color` from sRGB colorspace.
+// 					rgba_u8(u8,u8,u8,u8) -> LuaColor,
+
+// 					///Get red in sRGB colorspace.
+// 					r(&self) -> f32,
+
+// 					///Get green in sRGB colorspace.
+// 					g(&self) -> f32,
+
+// 					///Get blue in sRGB colorspace.
+// 					b(&self) -> f32,
+
+// 					///Get alpha.
+// 					a(&self) -> f32,
+
+// 					///Converts a `Color` to variant `Color::Rgba`
+// 					as_rgba(&LuaColor) -> LuaColor,
+
+// 					///Converts a `Color` to variant `Color::RgbaLinear`
+// 					as_rgba_linear(&LuaColor) -> LuaColor,
+
+// 					///Converts a `Color` to variant `Color::Hsla`
+// 					as_hsla(&LuaColor) -> LuaColor,
+
+// 					///Converts Color to a u32 from sRGB colorspace.
+// 					///
+// 					///Maps the RGBA channels in RGBA order to a little-endian byte array (GPUs are little-endian).
+// 					///A will be the most significant byte and R the least significant.
+// 					as_rgba_u32(LuaColor) -> u32,
+
+// 					///Converts Color to a u32 from linear RGB colorspace.
+// 					///
+// 					///Maps the RGBA channels in RGBA order to a little-endian byte array (GPUs are little-endian).
+// 					///A will be the most significant byte and R the least significant.
+// 					as_linear_rgba_u32(LuaColor) -> u32,
+
+// 				)
+// 				+ BinOps
+// 				(
+// 					self Add LuaColor -> LuaColor,
+// 					self Add LuaVec4 -> LuaColor,
+// 					self Mul f32 -> LuaColor,
+// 					self Mul LuaVec4 -> LuaColor,
+// 					self Mul LuaVec3 -> LuaColor,
+// 				)
+// 				+ UnaryOps
+// 				(
+// 				)
+// 			impl
+// 			{
+// 			}
+// 		}
+// ,		{
+// 			///An Axis-Aligned Bounding Box
+// 			bevy_render::primitives::Aabb : Value
+// 				: AutoMethods
+// 				(
+// 					from_min_max(LuaVec3,LuaVec3) -> LuaAabb,
+
+// 					min(&self) -> LuaVec3A,
+
+// 					max(&self) -> LuaVec3A,
+
+// 				)
+// 				+ BinOps
+// 				(
+// 				)
+// 				+ UnaryOps
+// 				(
+// 				)
+// 			impl
+// 			{
+// 			}
+// 		}
+// ,		{
+// 			bevy_render::primitives::CubemapFrusta : Value
+// 				: AutoMethods
+// 				(
+// 				)
+// 				+ BinOps
+// 				(
+// 				)
+// 				+ UnaryOps
+// 				(
+// 				)
+// 			impl
+// 			{
+// 			}
+// 		}
+// ,		{
+// 			///A frustum defined by the 6 containing planes
+// 			///Planes are ordered left, right, top, bottom, near, far
+// 			///Normals point into the contained volume
+// 			bevy_render::primitives::Frustum : Value
+// 				: AutoMethods
+// 				(
+// 					from_view_projection(&LuaMat4,&LuaVec3,&LuaVec3,f32) -> LuaFrustum,
+
+// 					intersects_obb(&self,&LuaAabb,&LuaMat4,bool) -> bool,
+
+// 				)
+// 				+ BinOps
+// 				(
+// 				)
+// 				+ UnaryOps
+// 				(
+// 				)
+// 			impl
+// 			{
+// 			}
+// 		}
+// ,		{
+// 			///Configuration resource for [Multi-Sample Anti-Aliasing](https://en.wikipedia.org/wiki/Multisample_anti-aliasing).
+// 			///
+// 			///# Example
+// 			///```
+// 			///# use bevy_app::prelude::App;
+// 			///# use bevy_render::prelude::Msaa;
+// 			///App::new()
+// 			///    .insert_resource(Msaa { samples: 4 })
+// 			///    .run();
+// 			///```
+// 			bevy_render::view::Msaa : Value
+// 				: AutoMethods
+// 				(
+// 				)
+// 				+ BinOps
+// 				(
+// 				)
+// 				+ UnaryOps
+// 				(
+// 				)
+// 			impl
+// 			{
+// 			}
+// 		}
+// ,		{
+// 			bevy_render::camera::Camera : Value
+// 				: AutoMethods
+// 				(
+// 					///The projection matrix computed using this camera's [`CameraProjection`].
+// 					projection_matrix(&self) -> LuaMat4,
+
+// 				)
+// 				+ BinOps
+// 				(
+// 				)
+// 				+ UnaryOps
+// 				(
+// 				)
+// 			impl
+// 			{
+// 			}
+// 		}
+// ,		{
+// 			///The "target" that a [`Camera`] will render to. For example, this could be a [`Window`](bevy_window::Window)
+// 			///swapchain or an [`Image`].
+// 			bevy_render::camera::RenderTarget : Value
+// 				: AutoMethods
+// 				(
+// 				)
+// 				+ BinOps
+// 				(
+// 				)
+// 				+ UnaryOps
+// 				(
+// 				)
+// 			impl
+// 			{
+// 			}
+// 		}
+// ,		{
+// 			///Render viewport configuration for the [`Camera`] component.
+// 			///
+// 			///The viewport defines the area on the render target to which the camera renders its image.
+// 			///You can overlay multiple cameras in a single window using viewports to create effects like
+// 			///split screen, minimaps, and character viewers.
+// 			bevy_render::camera::Viewport : Value
+// 				: AutoMethods
+// 				(
+// 				)
+// 				+ BinOps
+// 				(
+// 				)
+// 				+ UnaryOps
+// 				(
+// 				)
+// 			impl
+// 			{
+// 			}
+// 		}
+// ,		{
+// 			///A configurable [`CameraProjection`] that can select its projection type at runtime.
+// 			bevy_render::camera::Projection : Value
+// 				: AutoMethods
+// 				(
+// 					get_projection_matrix(&self) -> LuaMat4,
+
+// 					depth_calculation(&self) -> LuaDepthCalculation,
+
+// 					far(&self) -> f32,
+
+// 				)
+// 				+ BinOps
+// 				(
+// 				)
+// 				+ UnaryOps
+// 				(
+// 				)
+// 			impl
+// 			{
+// 			}
+// 		}
+// ,		{
+// 			bevy_render::camera::OrthographicProjection : Value
+// 				: AutoMethods
+// 				(
+// 					get_projection_matrix(&self) -> LuaMat4,
+
+// 					depth_calculation(&self) -> LuaDepthCalculation,
+
+// 					far(&self) -> f32,
+
+// 				)
+// 				+ BinOps
+// 				(
+// 				)
+// 				+ UnaryOps
+// 				(
+// 				)
+// 			impl
+// 			{
+// 			}
+// 		}
+// ,		{
+// 			bevy_render::camera::PerspectiveProjection : Value
+// 				: AutoMethods
+// 				(
+// 					get_projection_matrix(&self) -> LuaMat4,
+
+// 					depth_calculation(&self) -> LuaDepthCalculation,
+
+// 					far(&self) -> f32,
+
+// 				)
+// 				+ BinOps
+// 				(
+// 				)
+// 				+ UnaryOps
+// 				(
+// 				)
+// 			impl
+// 			{
+// 			}
+// 		}
+// ,		{
+// 			bevy_render::camera::DepthCalculation : Value
+// 				: AutoMethods
+// 				(
+// 				)
+// 				+ BinOps
+// 				(
+// 				)
+// 				+ UnaryOps
+// 				(
+// 				)
+// 			impl
+// 			{
+// 			}
+// 		}
+// ,		{
+// 			///Configures the [`RenderGraph`](crate::render_graph::RenderGraph) name assigned to be run for a given [`Camera`] entity.
+// 			bevy_render::camera::CameraRenderGraph : Value
+// 				: AutoMethods
+// 				(
+// 				)
+// 				+ BinOps
+// 				(
+// 				)
+// 				+ UnaryOps
+// 				(
+// 				)
+// 			impl
+// 			{
+// 			}
+// 		}
+// ,		{
+// 			bevy_asset::AssetPathId : Value
+// 				: AutoMethods
+// 				(
+// 					source_path_id(&self) -> LuaSourcePathId,
+
+// 					label_id(&self) -> LuaLabelId,
+
+// 				)
+// 				+ BinOps
+// 				(
+// 				)
+// 				+ UnaryOps
+// 				(
+// 				)
+// 			impl
+// 			{
+// 			}
+// 		}
+// ,		{
+// 			bevy_asset::LabelId : Value
+// 				: AutoMethods
+// 				(
+// 				)
+// 				+ BinOps
+// 				(
+// 				)
+// 				+ UnaryOps
+// 				(
+// 				)
+// 			impl
+// 			{
+// 			}
+// 		}
+// ,		{
+// 			bevy_asset::SourcePathId : Value
+// 				: AutoMethods
+// 				(
+// 				)
+// 				+ BinOps
+// 				(
+// 				)
+// 				+ UnaryOps
+// 				(
+// 				)
+// 			impl
+// 			{
+// 			}
+// 		}
+// ,		{
+// 			///A unique, stable asset id
+// 			bevy_asset::HandleId : Value
+// 				: AutoMethods
+// 				(
+// 				)
+// 				+ BinOps
+// 				(
+// 				)
+// 				+ UnaryOps
+// 				(
+// 				)
+// 			impl
+// 			{
+// 			}
+// 		}
+		{
 			///A 2-dimensional vector.
 			glam::f32::vec2::Vec2 : Value
 				: AutoMethods
@@ -2726,7 +2726,8 @@ impl_lua_newtypes!(
 ,		{
 			///A 3-dimensional vector.
 			glam::f32::vec3::Vec3 : Value
-				: AutoMethods
+				: 
+				AutoMethods
 				(
 					///Creates a new vector.
 					new(f32,f32,f32) -> LuaVec3,
@@ -5641,7 +5642,13 @@ impl_lua_newtypes!(
 			///vectors respectively. These methods assume that `Self` contains a valid affine
 			///transform.
 			glam::f32::mat3::Mat3 : Value
-				: AutoMethods
+				: 
+				 
+				Fields(
+					x_axis : LuaVec3,
+				) 
+				+ 
+				AutoMethods
 				(
 					///Creates a 3x3 matrix from two column vectors.
 					from_cols(LuaVec3,LuaVec3,LuaVec3) -> LuaMat3,
@@ -5817,24 +5824,27 @@ impl_lua_newtypes!(
 			{
 				    
 mut (MetaMethod::Index) (s=LuaMat3,b=Mat3,v=LuaVec3) => {|_,s,idx : usize| {
-    match s {
-        ($s)::Owned(ref mut v, ref valid) => {
-            Ok(($v)::Ref(ScriptRef{
-                root: ScriptRefBase::ScriptOwned{valid: Arc::downgrade((valid))},
-                r: ReflectPtr::Mut(v.col_mut(idx)),
-                path: None
-            }))
-        },
-        ($s)::Ref(ref mut r) => {
-            r.get_mut(|s,r| {
-                Ok(($v)::Ref(ScriptRef{
-                    root: r.root.clone(),
-                    r: ReflectPtr::Mut(s.downcast_mut::<($b)>().unwrap().col_mut(idx)),
-                    path: None
-                })) 
-            })
-        }
-    }
+	panic!("asd");
+	Ok(2)
+    // match s {
+    //     ($s)::Owned(ref mut v, ref valid) => {
+    //         Ok(($v)::Ref(ScriptRef{
+    //             root: ScriptRefBase::ScriptOwned{valid: Arc::downgrade((valid))},
+    //             r: ReflectPtr::Mut(v.get_mut().col_mut(idx)),
+    //             path: None
+    //         }))
+    //     },
+    //     ($s)::Ref(ref mut r) => {
+	// 		panic!("asd")
+    //         // r.get_mut(|s,r| {
+    //         //     Ok(($v)::Ref(ScriptRef{
+    //         //         root: r.root.clone(),
+    //         //         r: ReflectPtr::Mut(s.downcast_mut::<($b)>().unwrap().col_mut(idx)),
+    //         //         path: None
+    //         //     })) 
+    //         // })
+    //     }
+    // }
 }}
 ;
 			}

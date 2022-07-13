@@ -15,15 +15,15 @@ function on_update()
         comp.usize = comp.vec2:min_element()
         comp.f32 = comp.f32 + comp.f32 + comp.vec2:min_element()
         comp.vec2 = Vec2.new(2,1)
-        comp.vec3 = Vec3.new(0,1,0):any_orthonormal_vector()
+        comp.vec3 = Vec3.new(0,1,0):any_orthonormal_vector() + comp.mat3.x_axis
         comp.vec4 = Vec4.splat(3)
         comp.quat = Quat.from_xyzw(3,2,1,4)
         comp.dquat = comp.dquat * 2
         comp.my_reflect_thing.hello = "bye world!"
-
         a = Mat3.from_cols(Vec3.new(1,0,0),Vec3.new(0,1,0),Vec3.new(0,0,-1))
 
-        comp.mat3[1][1] = 42
+        -- comp.mat3[1][1] = 42
+        comp.mat3.x_axis = Vec3.new(69,69,69)
 
         print(string.format("%s", comp))
         print(string.format("%s", res))

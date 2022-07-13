@@ -1,8 +1,8 @@
 use bevy::reflect::Reflect;
 use parking_lot::RwLock;
 
-use std::{sync::Arc, fmt::{Debug,Display, Formatter}};
-use crate::ScriptRef;
+use std::{sync::Arc, fmt::{Debug,Display, Formatter}, cell::UnsafeCell};
+use crate::{ScriptRef, ScriptRefBase, ReflectPtr};
 
 
 /// Script representable type with pass-by-value semantics
@@ -14,11 +14,24 @@ pub trait ScriptReference : Reflect {}
 impl <T : Reflect> ScriptReference for T {}
 
 
-#[derive(Debug,Clone)]
+#[derive(Debug)]
 /// A wrapper for lua pass-by-value types possibly owned by lua itself
 pub enum LuaWrapper<T : ScriptReference> { 
-    Owned(T,Arc<RwLock<()>>),
+    Owned(UnsafeCell<T>,Arc<RwLock<()>>),
     Ref(ScriptRef)
+}
+
+impl <T : ScriptValue> Clone for LuaWrapper<T> {
+    fn clone(&self) -> Self {
+        match self {
+            Self::Owned(arg0, arg1) => Self::Owned(
+                // Safety: fine since we are explicitly not derefing into &mut but into &
+                UnsafeCell::new(unsafe {&*(arg0.get() as *const T)}.clone()), 
+                arg1.clone()
+            ),
+            Self::Ref(arg0) => Self::Ref(arg0.clone()),
+        }
+    }
 }
 
 
@@ -43,11 +56,29 @@ impl <T : ScriptReference + Display> Display for LuaWrapper<T> {
 
 impl <T : ScriptReference>LuaWrapper<T> {
 
+    /// Creates a script reference pointing to this wrapper.
+    /// 
+    /// Depending on this value it may be a lua owned or reflect relative reference
+    pub fn script_ref(&self) -> ScriptRef {
+        match self {
+            LuaWrapper::Owned(val, valid) => {
+                ScriptRef {
+                    root: ScriptRefBase::ScriptOwned { valid: Arc::downgrade(valid) },
+                    path: None,
+                    r: ReflectPtr::Mut(val.get()),
+                }
+            },
+            LuaWrapper::Ref(ref_) => {
+                ref_.clone()
+            },
+        }
+    }
+
     pub fn new(b : T) -> Self 
     where 
         T : ScriptValue
     {
-        Self::Owned(b,Arc::new(RwLock::new(())))
+        Self::Owned(UnsafeCell::new(b),Arc::new(RwLock::new(())))
     }
 
     pub fn new_ref(b : &ScriptRef) -> Self {
@@ -64,7 +95,7 @@ impl <T : ScriptReference>LuaWrapper<T> {
             Self::Owned(ref v, valid) => {
                 // we lock here in case the accessor has a luaref holding reference to us
                 let lock = valid.read();
-                let o = accessor(v);
+                let o = accessor(unsafe{&*(v.get() as *const T)});
                 drop(lock);
 
                 o
@@ -82,7 +113,7 @@ impl <T : ScriptReference>LuaWrapper<T> {
         match self {
             Self::Owned(ref mut v, valid) => {
                 let lock = valid.read();
-                let o = accessor(v);
+                let o = accessor(v.get_mut());
                 drop(lock);
 
                 o
@@ -99,7 +130,8 @@ impl <T : ScriptReference>LuaWrapper<T> {
         T : ScriptValue
     {
         match self {
-            Self::Owned(ref v, ..) => v.clone(),//no need to lock here
+            //no need to lock here
+            Self::Owned(ref v, ..) => unsafe{&*(v.get() as *const T)}.clone(),
             Self::Ref(v) => {
                 v.get(|s,_| s.downcast_ref::<T>().unwrap().clone())
             },
@@ -107,26 +139,35 @@ impl <T : ScriptReference>LuaWrapper<T> {
     }
 
 
-    /// Converts a LuaRef to Self
+    /// Converts a ScriptRef to Self
     pub fn base_to_self(b: &ScriptRef) -> Self {
         Self::new_ref(b)
     }
 
-    /// Applies Self to a LuaRef.
+    /// Applies Self to another ScriptRef.
     /// may require a write lock on the world
-    pub fn apply_self_to_base(&self, b: &mut ScriptRef){
-
+    pub fn apply_self_to_base(&self, other: &mut ScriptRef) -> Result<(),tealr::mlu::mlua::Error>
+    where 
+        T : ScriptValue
+    {
         match self {
-            Self::Owned(ref v, ..) => {
+            Self::Owned(v, ..) => {
                 // if we own the value, we are not borrowing from the world
                 // we're good to just apply, yeet
-                b.get_mut(|b,_| b.apply(v))
+                // TODO: we use apply here due to the fact we implement `Drop`
+                // if we didn't or if ScriptRef itself owned the value we could just consume the cell and assign
+                other.get_mut(|other,_| other.apply(unsafe {&*(v.get() as *const T)}))
             },
             Self::Ref(v) => {
-                // if we are a luaref, we have to be careful with borrows
-                b.apply_luaref(v)
+                // if we are a ScriptRef, we have to be careful with borrows
+                // to avoid deadlock
+                // we take advantage of the fact we know the expected type
+                other.apply_typed::<T>(v)?
             }
-        }
+        };
+
+        Ok(())
     }
+
 }
 

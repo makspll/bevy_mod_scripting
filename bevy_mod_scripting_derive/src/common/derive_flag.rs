@@ -18,6 +18,17 @@ pub(crate) enum DeriveFlag {
     
     DebugToString => {Ok(Self::DebugToString{ident})},
     DisplayToString => {Ok(Self::DisplayToString{ident})},
+    Fields {
+        paren: Paren,
+        fields: Punctuated<AutoField,Token![,]>
+    } => {
+        let f;
+        Ok(Self::Fields { 
+            ident,
+            paren: parenthesized!(f in input), 
+            fields: f.parse_terminated(AutoField::parse)?
+        })
+    },
     AutoMethods {
         paren: Paren,
         methods: Punctuated<AutoMethod,Token![,]>
@@ -100,7 +111,6 @@ pub(crate) struct AutoMethod {
     pub out: Option<Type>,
 }
 
-
 impl ToTokens for AutoMethod {
     fn to_tokens(&self, tokens: &mut TokenStream2) {
         let docstring = self.docstring.iter();
@@ -137,4 +147,34 @@ impl Parse for AutoMethod {
     }
 }
 
+#[derive(PartialEq,Eq,Hash)]
+pub(crate) struct AutoField {
+    pub docstring: Vec<Attribute>,
+    pub ident: Ident,
+    pub colon: Token![:],
+    pub type_: Type,
+}
 
+impl Parse for AutoField {
+    fn parse(input: ParseStream) -> Result<Self> {
+        Ok(Self{
+            docstring:  Attribute::parse_outer(input)?,
+            ident: input.parse()?,
+            colon: input.parse()?,
+            type_: input.parse()?,
+        })
+    }
+}
+
+impl ToTokens for AutoField {
+    fn to_tokens(&self, tokens: &mut TokenStream2) {
+        let docstring = self.docstring.iter();
+        let id = &self.ident;
+        let type_ = &self.type_;
+       
+        tokens.extend(quote::quote!{
+            #(#docstring)*
+            #id : #type_
+        })    
+    }
+}

@@ -4,7 +4,7 @@ imports = """
 use std::ops::*;
 use phf::{phf_map, Map};
 use crate::ReflectPtr;
-use crate::{LuaWorld,ScriptRef,ScriptRefBase};
+use crate::{LuaWorld,ScriptRef,ScriptRefBase, api::ValueIndex};
 use std::sync::Arc;
 use crate::util::impl_tealr_type;
 use num_traits::cast::ToPrimitive;
@@ -645,7 +645,7 @@ mut (MetaMethod::Index) (s=LuaMat3,b=Mat3,v=LuaVec3) => {|_,s,idx : usize| {
         ($s)::Owned(ref mut v, ref valid) => {
             Ok(($v)::Ref(ScriptRef{
                 root: ScriptRefBase::ScriptOwned{valid: Arc::downgrade((valid))},
-                r: ReflectPtr::Mut(v.col_mut(idx)),
+                r: ReflectPtr::Mut(v.get_mut().col_mut(idx)),
                 path: None
             }))
         },
