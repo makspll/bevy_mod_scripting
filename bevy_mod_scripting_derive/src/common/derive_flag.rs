@@ -150,7 +150,7 @@ impl Parse for AutoMethod {
 #[derive(PartialEq,Eq,Hash)]
 pub(crate) struct AutoField {
     pub docstring: Vec<Attribute>,
-    pub ident: Ident,
+    pub member: Member,
     pub colon: Token![:],
     pub type_: Type,
 }
@@ -159,7 +159,7 @@ impl Parse for AutoField {
     fn parse(input: ParseStream) -> Result<Self> {
         Ok(Self{
             docstring:  Attribute::parse_outer(input)?,
-            ident: input.parse()?,
+            member: input.parse()?,
             colon: input.parse()?,
             type_: input.parse()?,
         })
@@ -169,7 +169,7 @@ impl Parse for AutoField {
 impl ToTokens for AutoField {
     fn to_tokens(&self, tokens: &mut TokenStream2) {
         let docstring = self.docstring.iter();
-        let id = &self.ident;
+        let id = &self.member;
         let type_ = &self.type_;
        
         tokens.extend(quote::quote!{

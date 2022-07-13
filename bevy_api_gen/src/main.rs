@@ -280,9 +280,7 @@ pub(crate) fn generate_macros(crates: &[Crate], config: Config, args: &Args) -> 
         writer.write_inline(&v.wrapper_type.to_string());
         writer.newline();
 
-        // writer.indent();
         v.write_derive_flags_body(&config, &mut writer, args);
-        // writer.dedent();
 
         writer.write_line("impl");
         writer.open_brace();
@@ -293,8 +291,6 @@ pub(crate) fn generate_macros(crates: &[Crate], config: Config, args: &Args) -> 
         
         writer.write_inline(",");
     });
-
-
    
     // close ] wrapper list
     writer.close_bracket();
@@ -308,14 +304,11 @@ pub(crate) fn generate_macros(crates: &[Crate], config: Config, args: &Args) -> 
 pub fn main() -> Result<(),io::Error>{
     let args = Args::parse();
 
-
-
     let crates : Vec<_> = args.json.iter().map(|json| {
         let f = File::open(&json).expect(&format!("Could not open {}", &json));
         let rdr = BufReader::new(f);
         from_reader(rdr)
     }).collect::<Result<Vec<_>,_>>()?;
-
 
     let f = read_to_string(&args.config)?;
     let mut config: Config = toml::from_str(&f)?;
@@ -326,8 +319,6 @@ pub fn main() -> Result<(),io::Error>{
         let t = config.types_.remove(config.types_.len() - 1);
         config.types.insert(t.type_.to_string(),t);
     }
-
-
 
     let out = generate_macros(&crates,config, &args)?;
 

@@ -146,7 +146,28 @@ impl <T : ScriptReference>LuaWrapper<T> {
 
     /// Applies Self to another ScriptRef.
     /// may require a write lock on the world
-    pub fn apply_self_to_base(&self, other: &mut ScriptRef) -> Result<(),tealr::mlu::mlua::Error>
+    pub fn apply_self_to_base(&self, other: &mut ScriptRef)
+    {
+        match self {
+            Self::Owned(v, ..) => {
+                // if we own the value, we are not borrowing from the world
+                // we're good to just apply, yeet
+                // TODO: we use apply here due to the fact we implement `Drop`
+                // if we didn't or if ScriptRef itself owned the value we could just consume the cell and assign
+                other.get_mut(|other,_| other.apply(unsafe {&*(v.get() as *const T)}))
+            },
+            Self::Ref(v) => {
+                // if we are a ScriptRef, we have to be careful with borrows
+                // to avoid deadlock
+                // we take advantage of the fact we know the expected type
+                other.apply(v)
+            }
+        }
+    }
+
+    /// Applies Self to another ScriptRef.
+    /// may require a write lock on the world
+    pub fn apply_self_to_base_typed(&self, other: &mut ScriptRef) -> Result<(),tealr::mlu::mlua::Error>
     where 
         T : ScriptValue
     {

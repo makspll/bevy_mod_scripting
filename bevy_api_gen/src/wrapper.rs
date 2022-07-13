@@ -155,7 +155,48 @@ impl WrappedItem<'_> {
     pub fn write_derive_flags_body(&self, config: &Config, writer: &mut PrettyWriter, args: &Args) {
 
 
-        writer.write_line(": AutoMethods");
+        writer.write_line(": Fields");
+        writer.open_paren();
+        match &self.item.inner{
+            ItemEnum::Struct(struct_) => {
+                struct_.fields.iter()
+                    .map(|field_| self.source.index.get(field_).unwrap())
+                    .filter_map(|field_| match &field_.inner{
+                        ItemEnum::StructField(type_) => Some((field_.name.as_ref().unwrap(),type_,field_)),
+                        _ => None
+                    })
+                    .filter_map(|(name,type_, field_)|{
+                        let type_string = type_to_string(type_, &|b| {
+                            to_auto_method_argument(b, &self.wrapped_type, config, false, WRAPPER_PREFIX)
+                        }).ok()?;
+                        
+
+                        if is_valid_parameter(&type_string, config, WRAPPER_PREFIX) &&
+                            is_valid_return_type(&type_string, config, WRAPPER_PREFIX)    
+                        {
+                            field_.docs.as_ref().map(|docs| {
+                                writer.set_prefix("/// ".into());
+                                docs.lines().for_each(|line|{
+                                    writer.write_line(line);
+                                });
+                                writer.clear_prefix();
+                            });
+                            writer.write_no_newline(name);
+                            writer.write_inline(": ");
+                            writer.write_inline(&type_string);
+                            writer.write_inline(",");
+                            writer.newline();
+                        }
+
+                        Some(())
+                    }).for_each(drop);
+            },
+            _ => {}
+        };
+
+        writer.close_paren();
+
+        writer.write_line("+ AutoMethods");
         writer.open_paren();
         self.impl_items.iter()
             .flat_map(|(_,items)| items.iter())
@@ -195,7 +236,7 @@ impl WrappedItem<'_> {
                     .for_each(|(i,(_,tp))| {
                         let type_ = 
                             type_to_string(tp, &|base_string : &String| 
-                                to_auto_method_argument(base_string,self,config,i==0,WRAPPER_PREFIX));
+                                to_auto_method_argument(base_string,&self.wrapped_type,config,i==0,WRAPPER_PREFIX));
                         if let Ok(type_) = type_ {
                             if !is_valid_parameter(&type_, config, WRAPPER_PREFIX){
                                 inner_writer.write_inline(&format!("<invalid: {type_}>"));
@@ -216,7 +257,8 @@ impl WrappedItem<'_> {
                 decl.output
                     .as_ref()
                     .map(|tp| {
-                        let type_ = type_to_string(tp, &|base_string : &String| to_auto_method_argument(base_string,self,config,false, WRAPPER_PREFIX));
+                        let type_ = type_to_string(tp, &|base_string : &String| 
+                            to_auto_method_argument(base_string,&self.wrapped_type,config,false, WRAPPER_PREFIX));
                         if let Ok(type_) = type_ {
                             if !is_valid_return_type(&type_, config, WRAPPER_PREFIX){
                                 errors.push(format!("Unsupported argument {}",type_));

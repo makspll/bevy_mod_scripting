@@ -45,13 +45,13 @@ pub(crate) fn is_valid_return_type(str : &str, config : &Config, wrapper_prefix:
 }
 
 /// standardizes simple function arguments identifiers to auto method macro format
-pub(crate) fn to_auto_method_argument(base_string : &String, wrapped: &WrappedItem, config : &Config, is_first_arg : bool, wrapper_prefix: &str) -> Result<String,String>{
+pub(crate) fn to_auto_method_argument(base_string : &String, self_type: &str, config : &Config, is_first_arg : bool, wrapper_prefix: &str) -> Result<String,String>{
     let underlying_type = 
         if base_string == "Self"{
             if is_first_arg {
                 return Ok("self".to_owned())
             } else {
-                wrapped.wrapped_type
+                self_type
             }
         } else {
             base_string

@@ -20,9 +20,9 @@ pub(crate) fn make_fields<'a>(flag: &DeriveFlag,new_type : &'a Newtype, out : &m
         if let Type::Reference(r) = &f.type_ {
             return Err(syn::Error::new_spanned(f, "Reference fields are not supported"))
         }
-
-        let id = &f.ident;
-        let id_string = &f.ident.to_string();
+        let ds : Punctuated<Attribute,EmptyToken> = f.docstring.iter().cloned().collect();
+        let id = &f.member;
+        let id_string = &f.member.to_token_stream().to_string();
         let type_ = &f.type_;
         
         let type_string = type_.to_token_stream()
@@ -36,6 +36,7 @@ pub(crate) fn make_fields<'a>(flag: &DeriveFlag,new_type : &'a Newtype, out : &m
             });
 
         out.push(parse_quote_spanned! {f.span()=>
+            #ds
             get #id_string => |_,s : &#newtype_name| {
                 #expr_getter
             }
@@ -43,9 +44,9 @@ pub(crate) fn make_fields<'a>(flag: &DeriveFlag,new_type : &'a Newtype, out : &m
 
         let expr_setter = type_string.starts_with("Lua")
             .then(|| {quote_spanned!{f.span()=>
-                o.apply_self_to_base(&mut s.script_ref().index(std::borrow::Cow::Borrowed(#id_string))?)
+                Ok(o.apply_self_to_base(&mut s.script_ref().index(std::borrow::Cow::Borrowed(#id_string))?))
             }}).unwrap_or_else(|| quote_spanned!{f.span()=>
-                s.val(|s| Ok(s.#id = o))
+                s.val_mut(|s| Ok(s.#id = o))
             });
 
         out.push(parse_quote_spanned! {f.span()=>

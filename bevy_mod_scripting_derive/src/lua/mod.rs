@@ -178,7 +178,7 @@ impl WrapperImplementor for LuaImplementor {
                             |r,c,n| {
                                 if let Value::UserData(v) = n {
                                     let mut v = v.borrow_mut::<#wrapper_type>()?;
-                                    #wrapper_type::apply_self_to_base(v.deref_mut(),r)?;
+                                    #wrapper_type::apply_self_to_base(v.deref_mut(),r);
                                     Ok(())
                                 } else {
                                     Err(Error::RuntimeError("Invalid type".to_owned()))
