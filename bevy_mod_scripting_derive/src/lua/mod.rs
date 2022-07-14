@@ -60,7 +60,7 @@ impl WrapperImplementor for LuaImplementor {
                 pub type #name = crate::LuaWrapper<#base_type>;
             },
             NewtypeVariation::Ref {..} => quote_spanned!{newtype.span()=>
-                // these don't support clone so gotta do a special FromLua impl TODO
+                // TODO these don't support clone so gotta do a special FromLua impl 
                 pub type #name = crate::LuaWrapper<#base_type>;
             },
             NewtypeVariation::Primitive{..} => quote_spanned!{newtype.span()=>},
