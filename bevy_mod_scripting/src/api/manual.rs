@@ -6,7 +6,7 @@ use std::{ops::{Deref,DerefMut, Index},sync::Weak, borrow::Cow};
 use parking_lot::{RwLock};
 use bevy::{
     prelude::*,
-    reflect::{ReflectRef, TypeRegistry, GetPath, TypeData, TypeRegistration, DynamicStruct, DynamicTupleStruct, DynamicTuple, DynamicList, DynamicArray, DynamicMap}, ecs::component::ComponentId,
+    reflect::{ReflectRef, TypeRegistry, GetPath, TypeData, TypeRegistration, DynamicStruct, DynamicTupleStruct, DynamicTuple, DynamicList, DynamicArray, DynamicMap}, ecs::{component::ComponentId, system::Command},
 };
 use std::{
     sync::Arc,
@@ -78,6 +78,72 @@ impl TealData for LuaWorld {
         methods.document_type("Provides ways to interact with and modify the world.");
 
 
+        methods.document("Attaches children entities to the given parent entity.");
+        methods.add_method("push_children", |_,world, (parent,children) : (LuaEntity,Vec<LuaEntity>)| {
+            let w = world.upgrade().unwrap();
+            let w = &mut w.write();
+            let children = children.iter().map(|e| e.clone()).collect::<Vec<_>>();
+            
+            w.get_entity_mut(parent.clone())
+                .map(|mut entity| {entity.push_children(&children);});
+
+            Ok(())
+        });
+
+        methods.document("Removes children entities from the given parent entity.");
+        methods.add_method("remove_children", |_,world, (parent,children) : (LuaEntity,Vec<LuaEntity>)| {
+            let w = world.upgrade().unwrap();
+            let w = &mut w.write();
+            let children = children.iter().map(|e| e.clone()).collect::<Vec<_>>();
+
+            w.get_entity_mut(parent.clone())
+                .map(|mut entity| {entity.remove_children(&children);});
+
+            Ok(())
+        });
+
+        methods.document("Inserts children entities to the given parent entity at the given index.");
+        methods.add_method("insert_children", |_,world, (parent,index,children) : (LuaEntity,usize,Vec<LuaEntity>)| {
+            let w = world.upgrade().unwrap();
+            let w = &mut w.write();
+            let children = children.iter().map(|e| e.clone()).collect::<Vec<_>>();
+
+            w.get_entity_mut(parent.clone())
+                .map(|mut entity| {entity.insert_children(index, &children);});
+
+            Ok(())
+        });
+
+        methods.document("Despawns the given entity's children recursively");
+        methods.add_method("despawn_children_recursive", |_,world, entity : LuaEntity| {
+            let w = world.upgrade().unwrap();
+            let w = &mut w.write();
+
+            Ok(DespawnChildrenRecursive{
+                entity: entity.clone(),
+            }.write(w))
+        });
+
+        methods.document("Despawns the given entity and the entity's children recursively");
+        methods.add_method("despawn_recursive", |_,world, entity : LuaEntity| {
+            let w = world.upgrade().unwrap();
+            let w = &mut w.write();
+
+            Ok(DespawnRecursive{
+                entity: entity.clone(),
+            }.write(w))
+        });
+
+        methods.document("Despawns the given entity and the entity's children recursively");
+        methods.add_method("insert_children", |_,world, entity : LuaEntity| {
+            let w = world.upgrade().unwrap();
+            let w = &mut w.write();
+
+            Ok(DespawnRecursive{
+                entity: entity.clone(),
+            }.write(w))
+        });
+    
         methods.document("Retrieves type information given either a short (`MyType`) or fully qualified rust type name (`MyModule::MyType`).");
         methods.document("Returns `nil` if no such type exists or if one wasn't registered on the rust side.");
         methods.document("\n");
