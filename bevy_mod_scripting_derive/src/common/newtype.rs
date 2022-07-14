@@ -67,9 +67,16 @@ impl Parse for NewtypeArgs {
 
 
 impl_parse_enum!(input,ident:
+/// What kind of lua wrapper to implement for the newtype
 pub(crate) enum NewtypeVariation {
+    /// Value types refer to types which implement clone and are
+    /// copied when received as lua paramters to a function
     Value => {Ok(Self::Value{ident})},
+    /// Ref types do not implement clone and must be passed by value
+    /// hence destructuring their original value when they're passed to a lua function.
+    /// Use for expensive to copy types.
     Ref => {Ok(Self::Ref{ident})},
+    /// Things which have built-in support
     Primitive => {Ok(Self::Primitive{ident})},
 }
 );

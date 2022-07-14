@@ -3,10 +3,18 @@
 macro_rules! impl_parse_enum {
     (
         $input_stream:ident,$parsed_ident:ident:
-        $(#[$($meta:meta)*])?
+        $($(#[$($meta:meta)*])+)?
         $vis:vis enum $name:ident {
             $(
-                $field:ident $({$($arg_name:ident : $arg_type:ty),*})? => {$($parser:tt)*}
+                $($(#[$($meta_inner:meta)*])+)?
+                $field:ident $(
+                    {
+                        $(
+                            $arg_name:ident : $arg_type:ty
+                        ),*
+                    }
+                    
+                )? => {$($parser:tt)*}
             ),*
             $(,)?
         }
@@ -17,12 +25,18 @@ macro_rules! impl_parse_enum {
             }  
         )?
     ) => { 
-        $(#[$($meta)*])?
+        $($(#[$($meta)*])+)?
         $vis enum $name {
             $(
+                $($(#[$($meta_inner)*])+)?
                 $field {
+                    /// The identifier of the enum variant
                     ident: Ident,
-                    $($($arg_name :  $arg_type),*)?
+                    $(
+                        $(
+                            $arg_name :  $arg_type
+                        ),*
+                    )?
                 }
             ),*
             

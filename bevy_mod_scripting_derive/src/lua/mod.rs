@@ -56,7 +56,11 @@ impl WrapperImplementor for LuaImplementor {
         let base_type = &newtype.args.base_type_ident;
 
         Ok(match &newtype.args.variation {
-            NewtypeVariation::Value{..} | NewtypeVariation::Ref {..}  => quote_spanned!{newtype.span()=>
+            NewtypeVariation::Value{..} => quote_spanned!{newtype.span()=>
+                pub type #name = crate::LuaWrapper<#base_type>;
+            },
+            NewtypeVariation::Ref {..} => quote_spanned!{newtype.span()=>
+                // these don't support clone so gotta do a special FromLua impl TODO
                 pub type #name = crate::LuaWrapper<#base_type>;
             },
             NewtypeVariation::Primitive{..} => quote_spanned!{newtype.span()=>},
@@ -198,7 +202,6 @@ impl WrapperImplementor for LuaImplementor {
 
         let to_lua : Punctuated<TokenStream,Token![,]> = new_types.new_types
             .iter()
-            // .filter(|base| !base.args.variation.is_non_reflect())
             .filter_map(|base| {
                 let key = stringify_type_path(&base.args.base_type);
                 let wrapper_type = &base.args.wrapper_type;

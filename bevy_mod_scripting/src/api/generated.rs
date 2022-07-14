@@ -2703,7 +2703,7 @@ impl_lua_newtypes!(
 		}
 ,		{
 			///Configures the [`RenderGraph`](crate::render_graph::RenderGraph) name assigned to be run for a given [`Camera`] entity.
-			bevy_render::camera::CameraRenderGraph : Value
+			bevy_render::camera::CameraRenderGraph : Ref
 			: Fields
 			(
 			)

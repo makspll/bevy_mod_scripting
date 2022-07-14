@@ -2,7 +2,7 @@ use bevy::reflect::Reflect;
 use parking_lot::RwLock;
 
 use std::{sync::Arc, fmt::{Debug,Display, Formatter}, cell::UnsafeCell};
-use crate::{ScriptRef, ScriptRefBase, ReflectPtr};
+use crate::{ScriptRef, ScriptRefBase, ReflectPtr, api::FromLua};
 
 
 /// Script representable type with pass-by-value semantics
@@ -21,6 +21,7 @@ pub enum LuaWrapper<T : ScriptReference> {
     Ref(ScriptRef)
 }
 
+
 impl <T : ScriptValue> Clone for LuaWrapper<T> {
     fn clone(&self) -> Self {
         match self {
@@ -33,6 +34,36 @@ impl <T : ScriptValue> Clone for LuaWrapper<T> {
         }
     }
 }
+
+
+
+// TODO: look at this when rust gets better
+// Oh boy, there is no way in current rust to implement this
+// We need trait specialization.
+// This isn't even possible if implemented without generics since then 
+// we get a compile error from mlua about how `Clone` may be implemented on the wrapped type in the feature
+// :C
+// impl <'lua, T : ScriptReference + !Clone> FromLua<'lua> for LuaWrapper<T> {
+//     fn from_lua(lua_value: tealr::mlu::mlua::Value<'lua>, lua: &'lua tealr::mlu::mlua::Lua) -> tealr::mlu::mlua::Result<Self> {
+//         match lua_value {
+//             tealr::mlu::mlua::Value::UserData(ud) => {
+                
+//             match ud.borrow::<LuaWrapper<T>>()?{
+//                 // here we need to move out of the value in the lua world
+//                 LuaWrapper::Owned(_, _) => ud.take(),
+//                 // we can copy fine here
+//                 LuaWrapper::Ref(ref_) => Ok(LuaWrapper::new_ref(&ref_)),
+//             }
+//         }
+//             _ => Err(tealr::mlu::mlua::Error::FromLuaConversionError {
+//                 from: lua_value.type_name(),
+//                 to: "userdata",
+//                 message: None,
+//             })
+//         }
+//     }
+// }
+
 
 
 impl <T : ScriptReference>Drop for LuaWrapper<T> {
@@ -53,6 +84,7 @@ impl <T : ScriptReference + Display> Display for LuaWrapper<T> {
         write!(f,"{}", self)
     }
 }
+
 
 impl <T : ScriptReference>LuaWrapper<T> {
 

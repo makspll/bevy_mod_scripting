@@ -16,11 +16,12 @@ use std::{
 use self::lua::LuaEntity;
 
 pub mod wrappers;
+pub mod manual;
 
 mod generated;
 
 
-pub use {wrappers::*,generated::lua as lua};
+pub use {wrappers::*,generated::lua as lua, manual::*};
 
 #[reflect_trait]
 pub trait CustomUserData {
@@ -75,7 +76,6 @@ pub enum ScriptRefBase {
     /// A bevy component reference
     Component{
         comp: ReflectComponent,
-        id: ComponentId,
         entity: Entity,
         world: Weak<RwLock<World>>,
     },
@@ -183,6 +183,9 @@ impl TealData for ReflectedValue {
 /// References can be either to rust or script managed values (created either on the bevy or script side).
 /// but also to any subfield of those values (All pointed to values must support `reflect`).
 /// Each reference holds a reflection path from the root.
+/// 
+/// Automatically converts to most convenient lua representation.
+/// See [`ScriptRef::to_lua`]
 #[derive(Clone,Debug)]
 pub struct ScriptRef{
     /// The underlying top-level value 
@@ -690,171 +693,30 @@ impl ValueIndex<Value<'_>> for ScriptRef {
 }
 
 
+// pub fn get_type_data<T: TypeData + ToOwned<Owned = T>>(w: &mut World, name: &str) -> Result<T,mlua::Error> {
+//     let registry: &TypeRegistry = w.get_resource().unwrap();
 
+//     let registry = registry.read();
 
+//     let reg = registry
+//         .get_with_short_name(&name)
+//         .or(registry.get_with_name(&name))
+//         .ok_or_else(|| mlua::Error::RuntimeError(format!(
+//             "Invalid component name {name}"
+//         )))
+//         .unwrap();
 
+//     let refl: T = reg
+//         .data::<T>()
+//         .ok_or_else(|| mlua::Error::RuntimeError(format!(
+//             "Invalid component name {name}"
+//         )))
+//         .unwrap()
+//         .to_owned();
 
+//     Ok(refl)
+// }
 
-
-pub fn get_type_data<T: TypeData + ToOwned<Owned = T>>(w: &mut World, name: &str) -> Result<T,mlua::Error> {
-    let registry: &TypeRegistry = w.get_resource().unwrap();
-
-    let registry = registry.read();
-
-    let reg = registry
-        .get_with_short_name(&name)
-        .or(registry.get_with_name(&name))
-        .ok_or_else(|| mlua::Error::RuntimeError(format!(
-            "Invalid component name {name}"
-        )))
-        .unwrap();
-
-    let refl: T = reg
-        .data::<T>()
-        .ok_or_else(|| mlua::Error::RuntimeError(format!(
-            "Invalid component name {name}"
-        )))
-        .unwrap()
-        .to_owned();
-
-    Ok(refl)
-}
-
-
-#[derive(Clone)]
-pub struct LuaWorld(Weak<RwLock<World>>);
-
-
-impl Deref for LuaWorld {
-    type Target = Weak<RwLock<World>>;
-
-    fn deref(&self) -> &Self::Target {
-        &self.0
-    }
-}
-
-impl AsRef<Weak<RwLock<World>>> for LuaWorld {
-    fn as_ref(&self) -> &Weak<RwLock<World>> {
-        &self.0
-    }
-}
-
-impl LuaWorld {
-    pub fn new(w : Weak<RwLock<World>>) -> Self {
-        Self(w)
-    }
-}
-
-impl_tealr_type!(LuaWorld);
-
-impl TealData for LuaWorld {
-    fn add_methods<'lua, T: TealDataMethods<'lua, Self>>(methods: &mut T) {
-        methods.add_method("add_component", |_, world, (entity, comp_name): (LuaEntity, String)| {
-            // grab this entity before acquiring a lock in case it's a reference
-            let entity = entity.clone();
-            let w = world.upgrade().unwrap();
-            let w = &mut w.write();
-            let refl: ReflectComponent = get_type_data(w, &comp_name)
-                .map_err(|_| mlua::Error::RuntimeError(format!("Not a component {}",comp_name)))?;
-            let def = get_type_data::<ReflectDefault>(w, &comp_name)
-                .map_err(|_| mlua::Error::RuntimeError(format!("Component does not derive ReflectDefault and cannot be instantiated: {}",comp_name)))?;
-            let s = def.default();
-            refl.add(w, entity, s.as_ref());
-            let id = w.components().get_id(s.type_id()).unwrap();
-
-            Ok(ScriptRef{
-                    root: ScriptRefBase::Component{ 
-                        comp: refl.clone(), 
-                        id,
-                        entity: entity,
-                        world: world.as_ref().clone()
-                    }, 
-                    path: Some("".to_string()), 
-                    r: ReflectPtr::Const(refl.reflect(w,entity).unwrap())
-                }
-            )
-       });
-    
-        methods.add_method("get_component", |_, world, (entity, comp_name) : (LuaEntity,String)| {
-
-            // grab this entity before acquiring a lock in case it's a reference
-            let entity = entity.clone();
-
-            let w = world.upgrade().unwrap();
-            let w = &mut w.write();
-
-            let refl: ReflectComponent = get_type_data(w, &comp_name)
-                .map_err(|_| mlua::Error::RuntimeError(format!("Not a component {}",comp_name)))?;
-
-            let dyn_comp = refl
-                .reflect(&w, entity)
-                .ok_or_else(|| mlua::Error::RuntimeError(format!("Could not find {comp_name} on {:?}",entity),
-                ))?;
-
-            let id = w.components().get_id(dyn_comp.type_id()).unwrap();
-
-            Ok(ScriptRef{
-                root: ScriptRefBase::Component{ 
-                    comp: refl, 
-                    id,
-                    entity,
-                    world: world.as_ref().clone()
-                }, 
-                path: Some("".to_string()), 
-                r: ReflectPtr::Const(dyn_comp) 
-            }  
-            )
-        });
-
-        methods.add_method("get_resource", |_, world, res_name : String| {
-
-            let w = world.upgrade().unwrap();
-            let w = &mut w.write();
-
-            let refl: ReflectResource = get_type_data(w, &res_name)
-                .map_err(|_| mlua::Error::RuntimeError(format!("Not a resource {}",res_name)))?;
-
-            let dyn_comp = refl
-                .reflect(&w)
-                .ok_or_else(|| mlua::Error::RuntimeError(format!("Could not find {res_name} in the world"),
-                ))?;
-
-            Ok(ScriptRef{
-                root: ScriptRefBase::Resource{ 
-                    res: refl, 
-                    world: world.as_ref().clone()
-                }, 
-                path: Some("".to_string()), 
-                r: ReflectPtr::Const(dyn_comp)
-                }  
-            )
-        });
-
-        // "spawn" => |_, world, ()| {
-        //     let w = world.upgrade().unwrap();
-        //     let w = &mut w.write();                
-            
-        //     Ok(LuaEntity::new(w.spawn().id()))
-        // };
-
-        // "new_script_entity" => |_, world, name: String| {
-        //     let w = world.upgrade().unwrap();
-        //     let w = &mut w.write();
-
-        //     w.resource_scope(|w, r: Mut<AssetServer>| {
-        //         let handle = r.load::<LuaFile, _>(&name);
-        //         Ok(LuaEntity::new(
-        //             w.spawn()
-        //                 .insert(ScriptCollection::<crate::LuaFile> {
-        //                     scripts: vec![Script::<LuaFile>::new(name, handle)],
-        //                 })
-        //                 .id(),
-        //         ))
-        //     })
-        // };
-       
-    }   
-}
 
 
 
@@ -863,7 +725,7 @@ impl TealData for LuaWorld {
 #[cfg(test)]
 
 mod test {
-    use crate::{langs::mlu::{mlua,mlua::prelude::*},api::lua::LuaEntity, ScriptRef, ScriptRefBase, get_type_data, ReflectPtr};
+    use crate::{langs::mlu::{mlua,mlua::prelude::*},api::lua::LuaEntity, ScriptRef, ScriptRefBase, ReflectPtr};
     use bevy::{prelude::*,reflect::TypeRegistryArc};
     use std::{sync::Arc};
     use parking_lot::RwLock;
@@ -908,16 +770,19 @@ mod test {
                             .insert(tst_comp)
                             .id();
 
-            let refl: ReflectComponent = get_type_data(world, "TestComponent").unwrap();
+            let refl = registry.read()
+                .get_with_short_name("TestComponent")
+                .and_then(|registration| registration.data::<ReflectComponent>())
+                .unwrap()
+                .clone();
+
             let refl_ref = refl.reflect(world,entity).unwrap();
             let ptr : ReflectPtr = ReflectPtr::Const(refl_ref);
-            let id = world.components().get_id(refl_ref.type_id()).unwrap();
 
             component_ref1 = ScriptRef{
                 r: ptr,
                 root: ScriptRefBase::Component{ 
                     comp: refl, 
-                    id,
                     entity,
                     world: Arc::downgrade(&world_arc),
                 }, 

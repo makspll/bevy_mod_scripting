@@ -36,11 +36,6 @@ impl<A: FuncArgs + Send> Default for RhaiScriptHost<A> {
     }
 }
 
-// <<<<<<< HEAD
-// =======
-// unsafe impl<A: FuncArgs + Send> Send for RhaiScriptHost<A> {}
-// unsafe impl<A: FuncArgs + Send> Sync for RhaiScriptHost<A> {}
-// >>>>>>> c0eb34e0625fb495a95d9602680d73712d85120c
 
 pub struct RhaiContext {
     pub ast: AST,
@@ -143,7 +138,7 @@ impl<A: FuncArgs + Send + Clone + Sync + 'static> ScriptHost for RhaiScriptHost<
                     ctx.scope.set_value("world", world_ptr);
                     ctx.scope.set_value("entity", fd.entity);
                     ctx.scope.set_value("script", fd.sid);
-
+                    
                     for event in events.iter() {
                         // check if this script should handle this event
                         if !event.recipients().is_recipient(&fd) {
