@@ -4,7 +4,7 @@ imports = """
 use std::ops::*;
 use phf::{phf_map, Map};
 use crate::ReflectPtr;
-use crate::{LuaWorld,ScriptRef,ScriptRefBase, api::ValueIndex};
+use crate::{LuaWorld,ScriptRef,ScriptRefBase,ReflectedValue, api::ValueIndex};
 use std::sync::Arc;
 use crate::util::impl_tealr_type;
 use num_traits::cast::ToPrimitive;
@@ -16,8 +16,6 @@ use tealr::{mlu::{mlua,mlua::{prelude::*,Error,MetaMethod,Value}},create_union_m
 external_types = ["LuaWorld"]
 
 primitives = ["usize","isize","f32","f64","u128","u64","u32","u16","u8","i128","i64","i32","i16","i8"]
-
-
 
 
 ## BEVY_UI
@@ -124,9 +122,9 @@ source="bevy_core"
 
 # ## BEVY_GLTF
 
-# [[types]]
-# type="GltfExtras"
-# source="bevy_gltf"
+[[types]]
+type="GltfExtras"
+source="bevy_gltf"
 
 
 ## BEVY_HIERARCHY
@@ -689,6 +687,14 @@ derive_flags=[
 ]
 import_path="glam::f32::sse2::mat4::Mat4"
 
+
+[[types]]
+type="DMat2"
+source="bevy_math"
+derive_flags=[
+    "Copy(LuaMat3 -> mut (MetaMethod::Index) (s=LuaDMat2,b=DMat2,v=LuaDVec2))"
+]
+import_path="glam::f64::dmat2::DMat2"
 
 [[types]]
 type="DMat3"

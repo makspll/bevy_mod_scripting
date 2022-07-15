@@ -3,8 +3,11 @@ local comp
 
 function on_update()
     if comp == nil then
-        comp = world:get_component(entity,"MyComponent")
-        res = world:get_resource("MyResource")
+
+        my_component_type = world:get_type_by_name("MyComponent")
+        my_resource_type = world:get_type_by_name("MyResource")
+        comp = world:get_component(entity,my_component_type)
+        res = world:get_resource(my_resource_type)
 
         print(string.format("%s",comp))
         print(string.format("%s",res))

@@ -2,7 +2,7 @@ use std::collections::HashSet;
 
 use clap::Parser;
 use indexmap::IndexMap;
-use rustdoc_types::{Item, Crate, ItemEnum};
+use rustdoc_types::{Item, Crate, ItemEnum, Visibility};
 use serde::Deserialize;
 
 use crate::WrapperType;
@@ -90,18 +90,28 @@ impl Newtype {
     /// - describes the given item element
     /// - if the element is fully described in the source crate
     /// - if the element is a struct or enum
+    /// - if the element has no generics
     pub fn matches_result(&self, item : &Item, source : &Crate) -> bool {
         
         match &item.inner {
-            ItemEnum::Struct(_) => {},
+            ItemEnum::Struct(s) => {
+                if !s.generics.params.is_empty() {
+                    return false
+                }
+            },
             ItemEnum::Enum(_) => {},
             _ => return false
         };
+
 
         if source.external_crates.contains_key(&item.crate_id){
             return false
         };
 
-        true
+        if let Visibility::Public = item.visibility{
+            true
+        } else {
+            false
+        }    
     }
 }

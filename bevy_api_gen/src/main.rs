@@ -4,7 +4,7 @@ use std::{io::{self, BufReader},fs::{File,read_to_string}, collections::{HashSet
 use clap::Parser;
 use indexmap::{IndexMap, IndexSet};
 use serde_json::from_reader;
-use rustdoc_types::{Crate, Item, ItemEnum, Id, Impl,Type};
+use rustdoc_types::{Crate, Item, ItemEnum, Id, Impl,Type, Visibility};
 use serde_derive::Deserialize;
 
 
@@ -42,7 +42,6 @@ pub(crate) fn generate_macros(crates: &[Crate], config: Config, args: &Args) -> 
                                     .unwrap_or(false))
         .map(|(id,item)| {
             // extract all available associated constants,methods etc available to this item
-            
             let mut self_impl : Option<&Impl> = None;
             let mut impl_items: IndexMap<&str,Vec<(&Impl,&Item)>> = Default::default();
 
@@ -150,10 +149,6 @@ pub(crate) fn generate_macros(crates: &[Crate], config: Config, args: &Args) -> 
     let external_types = &config.external_types.join(",");
     writer.write_line(external_types);
     writer.close_bracket();
-
-
-
-
 
     // list of wrapper types
     writer.open_bracket();
@@ -270,27 +265,28 @@ pub(crate) fn generate_macros(crates: &[Crate], config: Config, args: &Args) -> 
         writer.write_line(line);
     };
 
-    wrapped_items.iter().for_each(|v| {
-        writer.open_brace();
-        
-        v.write_type_docstring(&mut writer, args);
-        writer.write_indentation();
-        v.write_inline_full_path(&mut writer, args);
-        writer.write_inline(" : ");
-        writer.write_inline(&v.wrapper_type.to_string());
-        writer.newline();
+    wrapped_items.iter()
+        .for_each(|v| {
+            writer.open_brace();
+            
+            v.write_type_docstring(&mut writer, args);
+            writer.write_indentation();
+            v.write_inline_full_path(&mut writer, args);
+            writer.write_inline(" : ");
+            writer.write_inline(&v.wrapper_type.to_string());
+            writer.newline();
 
-        v.write_derive_flags_body(&config, &mut writer, args);
+            v.write_derive_flags_body(&config, &mut writer, args);
 
-        writer.write_line("impl");
-        writer.open_brace();
-        v.write_impl_block_body(&mut writer, args);
-        writer.close_brace();
+            writer.write_line("impl");
+            writer.open_brace();
+            v.write_impl_block_body(&mut writer, args);
+            writer.close_brace();
 
-        writer.close_brace();
-        
-        writer.write_inline(",");
-    });
+            writer.close_brace();
+            
+            writer.write_inline(",");
+        });
    
     // close ] wrapper list
     writer.close_bracket();

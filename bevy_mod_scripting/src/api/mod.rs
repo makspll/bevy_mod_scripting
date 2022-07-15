@@ -127,6 +127,7 @@ unsafe impl Sync for ReflectPtr {}
 
 /// A value representing a type which has no special UserData implementation,
 /// It exposes the much less convenient reflect interface of the underlying type.
+#[derive(Clone)]
 pub struct ReflectedValue {
     ref_: ScriptRef
 }

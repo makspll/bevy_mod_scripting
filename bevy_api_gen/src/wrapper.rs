@@ -154,9 +154,9 @@ impl WrappedItem<'_> {
     /// ``` 
     pub fn write_derive_flags_body(&self, config: &Config, writer: &mut PrettyWriter, args: &Args) {
 
-
         writer.write_line(": Fields");
         writer.open_paren();
+
         match &self.item.inner{
             ItemEnum::Struct(struct_) => {
                 struct_.fields.iter()
@@ -166,35 +166,50 @@ impl WrappedItem<'_> {
                         _ => None
                     })
                     .filter_map(|(name,type_, field_)|{
+
+
                         let type_string = type_to_string(type_, &|b| {
-                            to_auto_method_argument(b, &self.wrapped_type, config, false, WRAPPER_PREFIX)
+                            Ok(to_auto_method_argument(b, &self.wrapped_type, config, false, WRAPPER_PREFIX))
                         }).ok()?;
                         
+                        let mut reflectable_type = type_string.as_str();
 
-                        if is_valid_parameter(&type_string, config, WRAPPER_PREFIX) &&
-                            is_valid_return_type(&type_string, config, WRAPPER_PREFIX)    
+                        let is_public = match field_.visibility{
+                            rustdoc_types::Visibility::Public => true,
+                            _ => false
+                        };
+                        // if we do not have an appropriate wrapper and this is not a primitive or it's not public
+                        // we need to go back to the reflection API
+                        if (!is_valid_parameter(&type_string, config, WRAPPER_PREFIX) &&
+                            !is_valid_return_type(&type_string, config, WRAPPER_PREFIX)) ||
+                            !is_public   
                         {
-                            eprintln!("{type_string}");
-                            field_.docs.as_ref().map(|docs| {
-                                writer.set_prefix("/// ".into());
-                                docs.lines().for_each(|line|{
-                                    writer.write_line(line);
-                                });
-                                writer.clear_prefix();
+                            if field_.attrs.iter().find(|attr| attr == &"#[reflect(ignore)]").is_some(){
+                                return None
+                            }
+
+                            reflectable_type = "ReflectedValue";
+                        } 
+
+                        field_.docs.as_ref().map(|docs| {
+                            writer.set_prefix("/// ".into());
+                            docs.lines().for_each(|line|{
+                                writer.write_line(line);
                             });
-                            writer.write_no_newline(name);
-                            writer.write_inline(": ");
-                            writer.write_inline(&type_string);
-                            writer.write_inline(",");
-                            writer.newline();
-                        }
+                            writer.clear_prefix();
+                        });
+                        writer.write_no_newline(name);
+                        writer.write_inline(": ");
+                        writer.write_inline(reflectable_type);
+                        writer.write_inline(",");
+                        writer.newline();
+                        
 
                         Some(())
                     }).for_each(drop);
             },
             _ => {}
         };
-
         writer.close_paren();
 
         writer.write_line("+ AutoMethods");
@@ -237,7 +252,7 @@ impl WrappedItem<'_> {
                     .for_each(|(i,(_,tp))| {
                         let type_ = 
                             type_to_string(tp, &|base_string : &String| 
-                                to_auto_method_argument(base_string,&self.wrapped_type,config,i==0,WRAPPER_PREFIX));
+                                Ok(to_auto_method_argument(base_string,&self.wrapped_type,config,i==0,WRAPPER_PREFIX)));
                         if let Ok(type_) = type_ {
                             if !is_valid_parameter(&type_, config, WRAPPER_PREFIX){
                                 inner_writer.write_inline(&format!("<invalid: {type_}>"));
@@ -259,7 +274,7 @@ impl WrappedItem<'_> {
                     .as_ref()
                     .map(|tp| {
                         let type_ = type_to_string(tp, &|base_string : &String| 
-                            to_auto_method_argument(base_string,&self.wrapped_type,config,false, WRAPPER_PREFIX));
+                            Ok(to_auto_method_argument(base_string,&self.wrapped_type,config,false, WRAPPER_PREFIX)));
                         if let Ok(type_) = type_ {
                             if !is_valid_return_type(&type_, config, WRAPPER_PREFIX){
                                 errors.push(format!("Unsupported argument {}",type_));
@@ -316,7 +331,7 @@ impl WrappedItem<'_> {
                                 .map(|(idx,(_,t))| {
                                     // check arg is valid
                                     let type_ = type_to_string(t, &|b: &String| 
-                                        to_op_argument(b, &self_type, self, &config, idx == 0,false, WRAPPER_PREFIX));
+                                        Ok(to_op_argument(b, &self_type, self, &config, idx == 0,false, WRAPPER_PREFIX)));
 
                                     type_.and_then(|type_| {
                                         is_valid_parameter(&type_, config, WRAPPER_PREFIX)
@@ -339,7 +354,8 @@ impl WrappedItem<'_> {
                                         None
                                     }).ok_or_else(|| expr.clone())?;
 
-                                    let return_string = type_to_string(out_type, &|b: &String| to_op_argument(b, &self_type, &self, &config, false,true, WRAPPER_PREFIX))?;
+                                    let return_string = type_to_string(out_type, &|b: &String| 
+                                        Ok(to_op_argument(b, &self_type, &self, &config, false,true, WRAPPER_PREFIX)))?;
                                     
                                     if !is_valid_return_type(&return_string, config, WRAPPER_PREFIX){
                                         return Err(return_string)

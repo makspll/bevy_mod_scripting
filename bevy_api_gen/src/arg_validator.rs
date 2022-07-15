@@ -1,4 +1,4 @@
-use rustdoc_types::Type;
+use rustdoc_types::{Type, GenericArgs};
 
 use crate::{Config, WrappedItem};
 
@@ -45,11 +45,11 @@ pub(crate) fn is_valid_return_type(str : &str, config : &Config, wrapper_prefix:
 }
 
 /// standardizes simple function arguments identifiers to auto method macro format
-pub(crate) fn to_auto_method_argument(base_string : &String, self_type: &str, config : &Config, is_first_arg : bool, wrapper_prefix: &str) -> Result<String,String>{
+pub(crate) fn to_auto_method_argument(base_string : &String, self_type: &str, config : &Config, is_first_arg : bool, wrapper_prefix: &str) -> String{
     let underlying_type = 
         if base_string == "Self"{
             if is_first_arg {
-                return Ok("self".to_owned())
+                return "self".to_owned()
             } else {
                 self_type
             }
@@ -59,16 +59,16 @@ pub(crate) fn to_auto_method_argument(base_string : &String, self_type: &str, co
 
     if config.types.contains_key(underlying_type){
         // wrap things that need wrapped
-        Ok(format!("{wrapper_prefix}{underlying_type}"))
+        format!("{wrapper_prefix}{underlying_type}")
     } else if config.primitives.contains(underlying_type) {
-        Ok(underlying_type.to_string())
+        underlying_type.to_string()
     } else {
-        Err(underlying_type.to_owned())
+        underlying_type.to_owned()
     }
     
 }
 
-pub(crate) fn to_op_argument(base_string: &String, self_type : &String, wrapped : &WrappedItem, config : &Config, is_first_arg : bool, is_return_type : bool, wrapper_prefix: &str) -> Result<String,String>{
+pub(crate) fn to_op_argument(base_string: &String, self_type : &String, wrapped : &WrappedItem, config : &Config, is_first_arg : bool, is_return_type : bool, wrapper_prefix: &str) -> String{
         // first of all deal with Self arguments
     // return if needs to just be self
     // otherwise get unwrapped type name
@@ -77,12 +77,12 @@ pub(crate) fn to_op_argument(base_string: &String, self_type : &String, wrapped 
 
     let underlying_type = 
         if base_string == "Self" && self_on_lhs && is_first_arg{
-            return Ok("self".to_owned())
+            return "self".to_owned()
         } else if base_string == "Self"{
             &self_type
         } else {
             if !self_on_lhs && !is_return_type{
-                return Ok("self".to_owned())
+                return "self".to_owned()
             } else{
                 base_string
             }
@@ -90,11 +90,11 @@ pub(crate) fn to_op_argument(base_string: &String, self_type : &String, wrapped 
 
     if config.types.contains_key(underlying_type){
         // wrap things that need wrapped
-        Ok(format!("{wrapper_prefix}{underlying_type}"))
+        format!("{wrapper_prefix}{underlying_type}")
     } else if config.primitives.contains(underlying_type) {
-        Ok(underlying_type.to_string())
+        underlying_type.to_string()
     } else {
-        Err(underlying_type.to_owned())
+        underlying_type.to_owned()
     }
 }
 
@@ -102,7 +102,20 @@ pub(crate) fn to_op_argument(base_string: &String, self_type : &String, wrapped 
 /// Converts an arbitary type to its simple string representation while converting the base type identifier with the given function
 pub(crate) fn type_to_string<F : Fn(&String) -> Result<String,String>>(t : &Type, f : &F) -> Result<String,String> {
     match t {
-        Type::ResolvedPath { name, .. } |
+        Type::ResolvedPath { name, args , .. } => {
+            if let Some(args) = args {
+                let has_args = match args.as_ref() {
+                    GenericArgs::AngleBracketed { args, .. } => !args.is_empty(),
+                    _ => panic!("asd")
+                };
+                if has_args {
+                    return Ok(format!("{}<>",f(name)?))
+                }
+            } 
+            
+            f(name)
+            
+        }
         Type::Generic(name) =>{
             f(name)
         },

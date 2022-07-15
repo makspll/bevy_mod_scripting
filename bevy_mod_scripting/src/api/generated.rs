@@ -5,7 +5,7 @@ impl_lua_newtypes!(
 		use std::ops::*;
 		use phf::{phf_map, Map};
 		use crate::ReflectPtr;
-		use crate::{LuaWorld,ScriptRef,ScriptRefBase, api::ValueIndex};
+		use crate::{LuaWorld,ScriptRef,ScriptRefBase,ReflectedValue, api::ValueIndex};
 		use std::sync::Arc;
 		use crate::util::impl_tealr_type;
 		use num_traits::cast::ToPrimitive;
@@ -35,6 +35,7 @@ impl_lua_newtypes!(
 		use bevy::ui::Display;
 		use bevy::animation::AnimationPlayer;
 		use bevy::core::Name;
+		use bevy::gltf::GltfExtras;
 		use bevy::hierarchy::Children;
 		use bevy::hierarchy::Parent;
 		use bevy::hierarchy::PreviousParent;
@@ -124,6 +125,7 @@ impl_lua_newtypes!(
 		use bevy::math::f32::Mat2;
 		use bevy::math::f32::Mat3A;
 		use bevy::math::f32::Mat4;
+		use bevy::math::f64::DMat2;
 		use bevy::math::f64::DMat3;
 		use bevy::math::f64::DMat4;
 		use bevy::math::f32::Affine2;
@@ -486,6 +488,8 @@ impl_lua_newtypes!(
 			bevy_ui::CalculatedClip : Value
 			: Fields
 			(
+				/// The rect of the clip
+				clip: ReflectedValue,
 			)
 			+ AutoMethods
 			(
@@ -505,6 +509,8 @@ impl_lua_newtypes!(
 			bevy_ui::CalculatedSize : Value
 			: Fields
 			(
+				/// The size of the node
+				size: ReflectedValue,
 			)
 			+ AutoMethods
 			(
@@ -569,12 +575,28 @@ impl_lua_newtypes!(
 				align_content: LuaAlignContent,
 				/// How items align according to the main axis
 				justify_content: LuaJustifyContent,
+				/// The position of the node as descrided by its Rect
+				position: ReflectedValue,
+				/// The margin of the node
+				margin: ReflectedValue,
+				/// The padding of the node
+				padding: ReflectedValue,
+				/// The border of the node
+				border: ReflectedValue,
 				/// Defines how much a flexbox item should grow if there's space available
 				flex_grow: f32,
 				/// How to shrink if there's not enough space available
 				flex_shrink: f32,
 				/// The initial size of the item
 				flex_basis: LuaVal,
+				/// The size of the flexbox
+				size: ReflectedValue,
+				/// The minimum size of the flexbox
+				min_size: ReflectedValue,
+				/// The maximum size of the flexbox
+				max_size: ReflectedValue,
+				/// The aspect ratio of the flexbox
+				aspect_ratio: ReflectedValue,
 				/// How to handle overflow
 				overflow: LuaOverflow,
 			)
@@ -616,6 +638,7 @@ impl_lua_newtypes!(
 			bevy_ui::UiImage : Value
 			: Fields
 			(
+				0: ReflectedValue,
 			)
 			+ AutoMethods
 			(
@@ -740,6 +763,25 @@ impl_lua_newtypes!(
 			}
 		}
 ,		{
+			bevy_gltf::GltfExtras : Value
+			: Fields
+			(
+				value: ReflectedValue,
+			)
+			+ AutoMethods
+			(
+			)
+			+ BinOps
+			(
+			)
+			+ UnaryOps
+			(
+			)
+			impl
+			{
+			}
+		}
+,		{
 			///Contains references to the child entities of this entity
 			bevy_hierarchy::Children : Value
 			: Fields
@@ -848,6 +890,7 @@ impl_lua_newtypes!(
 			bevy_text::Text : Value
 			: Fields
 			(
+				sections: ReflectedValue,
 				alignment: LuaTextAlignment,
 			)
 			+ AutoMethods
@@ -887,6 +930,7 @@ impl_lua_newtypes!(
 			bevy_text::TextSection : Value
 			: Fields
 			(
+				value: ReflectedValue,
 				style: LuaTextStyle,
 			)
 			+ AutoMethods
@@ -906,6 +950,7 @@ impl_lua_newtypes!(
 			bevy_text::TextStyle : Value
 			: Fields
 			(
+				font: ReflectedValue,
 				font_size: f32,
 				color: LuaColor,
 			)
@@ -2063,6 +2108,7 @@ impl_lua_newtypes!(
 			bevy_sprite::Mesh2dHandle : Value
 			: Fields
 			(
+				0: ReflectedValue,
 			)
 			+ AutoMethods
 			(
@@ -2085,6 +2131,9 @@ impl_lua_newtypes!(
 				index: usize,
 				flip_x: bool,
 				flip_y: bool,
+				/// An optional custom size for the sprite that will be used when rendering, instead of the size
+				/// of the sprite's image in the atlas
+				custom_size: ReflectedValue,
 				anchor: LuaAnchor,
 			)
 			+ AutoMethods
@@ -2112,6 +2161,9 @@ impl_lua_newtypes!(
 				flip_x: bool,
 				/// Flip the sprite along the Y axis
 				flip_y: bool,
+				/// An optional custom size for the sprite that will be used when rendering, instead of the size
+				/// of the sprite's image
+				custom_size: ReflectedValue,
 				/// [`Anchor`] point of the sprite in the world
 				anchor: LuaAnchor,
 			)
@@ -2281,6 +2333,8 @@ impl_lua_newtypes!(
 			bevy_render::mesh::skinning::SkinnedMesh : Value
 			: Fields
 			(
+				inverse_bindposes: ReflectedValue,
+				joints: ReflectedValue,
 			)
 			+ AutoMethods
 			(
@@ -2521,6 +2575,8 @@ impl_lua_newtypes!(
 			bevy_render::camera::Camera : Value
 			: Fields
 			(
+				/// If set, this camera will render to the given [`Viewport`] rectangle within the configured [`RenderTarget`].
+				viewport: ReflectedValue,
 				/// Cameras with a lower priority will be rendered before cameras with a higher priority.
 				priority: isize,
 				/// If this is set to true, this camera will be rendered to its specified [`RenderTarget`]. If false, this
@@ -2582,6 +2638,8 @@ impl_lua_newtypes!(
 				/// The physical size of the viewport rectangle to render to within the [`RenderTarget`] of this [`Camera`].
 				/// The origin of the rectangle is in the top-left corner.
 				physical_size: LuaUVec2,
+				/// The minimum and maximum depth to render (on a scale from 0.0 to 1.0).
+				depth: ReflectedValue,
 			)
 			+ AutoMethods
 			(
@@ -2703,7 +2761,7 @@ impl_lua_newtypes!(
 		}
 ,		{
 			///Configures the [`RenderGraph`](crate::render_graph::RenderGraph) name assigned to be run for a given [`Camera`] entity.
-			bevy_render::camera::CameraRenderGraph : Ref
+			bevy_render::camera::CameraRenderGraph : Value
 			: Fields
 			(
 			)
@@ -6421,6 +6479,8 @@ mut (MetaMethod::Index) (s=LuaMat3,b=Mat3,v=LuaVec3) => {|_,s,idx : usize| {
 				///[comparing floating point numbers](https://randomascii.wordpress.com/2012/02/25/comparing-floating-point-numbers-2012-edition/).
 				abs_diff_eq(&self,LuaMat2,f32) -> bool,
 
+				as_dmat2(&self) -> LuaDMat2,
+
 			)
 			+ BinOps
 			(
@@ -6990,6 +7050,115 @@ mut (MetaMethod::Index) (s=LuaMat3,b=Mat3,v=LuaVec3) => {|_,s,idx : usize| {
 			}
 		}
 ,		{
+			///A 2x2 column major matrix.
+			glam::f64::dmat2::DMat2 : Value
+			: Fields
+			(
+				x_axis: LuaDVec2,
+				y_axis: LuaDVec2,
+			)
+			+ AutoMethods
+			(
+				///Creates a 2x2 matrix from two column vectors.
+				from_cols(LuaDVec2,LuaDVec2) -> LuaDMat2,
+
+				///Creates a 2x2 matrix with its diagonal set to `diagonal` and all other entries set to 0.
+				from_diagonal(LuaDVec2) -> LuaDMat2,
+
+				///Creates a 2x2 matrix containing the combining non-uniform `scale` and rotation of
+				///`angle` (in radians).
+				from_scale_angle(LuaDVec2,f64) -> LuaDMat2,
+
+				///Creates a 2x2 matrix containing a rotation of `angle` (in radians).
+				from_angle(f64) -> LuaDMat2,
+
+				///Creates a 2x2 matrix from a 3x3 matrix, discarding the 2nd row and column.
+				from_mat3(LuaDMat3) -> LuaDMat2,
+
+				///Returns the matrix column for the given `index`.
+				///
+				///# Panics
+				///
+				///Panics if `index` is greater than 1.
+				col(&self,usize) -> LuaDVec2,
+
+				///Returns the matrix row for the given `index`.
+				///
+				///# Panics
+				///
+				///Panics if `index` is greater than 1.
+				row(&self,usize) -> LuaDVec2,
+
+				///Returns `true` if, and only if, all elements are finite.
+				///If any element is either `NaN`, positive or negative infinity, this will return `false`.
+				is_finite(&self) -> bool,
+
+				///Returns `true` if any elements are `NaN`.
+				is_nan(&self) -> bool,
+
+				///Returns the transpose of `self`.
+				transpose(&self) -> LuaDMat2,
+
+				///Returns the determinant of `self`.
+				determinant(&self) -> f64,
+
+				///Returns the inverse of `self`.
+				///
+				///If the matrix is not invertible the returned matrix will be invalid.
+				///
+				///# Panics
+				///
+				///Will panic if the determinant of `self` is zero when `glam_assert` is enabled.
+				inverse(&self) -> LuaDMat2,
+
+				///Transforms a 2D vector.
+				mul_vec2(&self,LuaDVec2) -> LuaDVec2,
+
+				///Multiplies two 2x2 matrices.
+				mul_mat2(&self,&LuaDMat2) -> LuaDMat2,
+
+				///Adds two 2x2 matrices.
+				add_mat2(&self,&LuaDMat2) -> LuaDMat2,
+
+				///Subtracts two 2x2 matrices.
+				sub_mat2(&self,&LuaDMat2) -> LuaDMat2,
+
+				///Multiplies a 2x2 matrix by a scalar.
+				mul_scalar(&self,f64) -> LuaDMat2,
+
+				///Returns true if the absolute difference of all elements between `self` and `rhs`
+				///is less than or equal to `max_abs_diff`.
+				///
+				///This can be used to compare if two matrices contain similar elements. It works best
+				///when comparing with a known value. The `max_abs_diff` that should be used used
+				///depends on the values being compared against.
+				///
+				///For more see
+				///[comparing floating point numbers](https://randomascii.wordpress.com/2012/02/25/comparing-floating-point-numbers-2012-edition/).
+				abs_diff_eq(&self,LuaDMat2,f64) -> bool,
+
+				as_mat2(&self) -> LuaMat2,
+
+			)
+			+ BinOps
+			(
+				self Add LuaDMat2 -> LuaDMat2,
+				self Sub LuaDMat2 -> LuaDMat2,
+				self Mul LuaDMat2 -> LuaDMat2,
+				self Mul LuaDVec2 -> LuaDVec2,
+				f64 Mul self -> LuaDMat2,
+				self Mul f64 -> LuaDMat2,
+			)
+			+ UnaryOps
+			(
+				Neg self
+			)
++ 			Copy(LuaMat3 -> mut (MetaMethod::Index) (s=LuaDMat2,b=DMat2,v=LuaDVec2))
+			impl
+			{
+			}
+		}
+,		{
 			///A 3x3 column major matrix.
 			///
 			///This 3x3 matrix type features convenience methods for creating and using linear and
@@ -7089,6 +7258,12 @@ mut (MetaMethod::Index) (s=LuaMat3,b=Mat3,v=LuaVec3) => {|_,s,idx : usize| {
 				///
 				///Will panic if all elements of `scale` are zero when `glam_assert` is enabled.
 				from_scale(LuaDVec2) -> LuaDMat3,
+
+				///Creates an affine transformation matrix from the given 2x2 matrix.
+				///
+				///The resulting matrix can be used to transform 2D points and vectors. See
+				///[`Self::transform_point2()`] and [`Self::transform_vector2()`].
+				from_mat2(LuaDMat2) -> LuaDMat3,
 
 				///Returns the matrix column for the given `index`.
 				///
@@ -7769,6 +7944,7 @@ mut (MetaMethod::Index) (s=LuaMat3,b=Mat3,v=LuaVec3) => {|_,s,idx : usize| {
 			glam::f64::sse2::mat2::DAffine2 : Value
 			: Fields
 			(
+				matrix2: LuaDMat2,
 				translation: LuaDVec2,
 			)
 			+ AutoMethods
@@ -7785,6 +7961,16 @@ mut (MetaMethod::Index) (s=LuaMat3,b=Mat3,v=LuaVec3) => {|_,s,idx : usize| {
 
 				///Creates an affine transformation from the given 2D `translation`.
 				from_translation(LuaDVec2) -> LuaDAffine2,
+
+				///Creates an affine transform from a 2x2 matrix (expressing scale, shear and rotation)
+				from_mat2(LuaDMat2) -> LuaDAffine2,
+
+				///Creates an affine transform from a 2x2 matrix (expressing scale, shear and rotation) and a
+				///translation vector.
+				///
+				///Equivalent to
+				///`DAffine2::from_translation(translation) * DAffine2::from_mat2(mat2)`
+				from_mat2_translation(LuaDMat2,LuaDVec2) -> LuaDAffine2,
 
 				///Creates an affine transform from the given 2D `scale`, rotation `angle` (in radians) and
 				///`translation`.
