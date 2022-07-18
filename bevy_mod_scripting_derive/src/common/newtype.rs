@@ -111,7 +111,6 @@ impl <T: WrapperFunction>Parse for WrapperFunctionList<T> {
 }
 
 pub(crate) struct Newtype {
-    pub braces: Brace,
     pub args: NewtypeArgs,
     pub additional_lua_functions: Option<WrapperFunctionList<LuaMethod>>
 }
@@ -128,13 +127,10 @@ impl ToTokens for Newtype {
 
 impl Parse for Newtype {
     fn parse(input: ParseStream) -> Result<Self> {
-        let f;
-
         Ok(Self {
-            braces: braced!(f in input),
-            args: f.parse()?,
-            additional_lua_functions: if f.peek(Token![impl]) && !f.peek2(Token![fn]){
-                    Some(f.parse()?)
+            args: input.parse()?,
+            additional_lua_functions: if input.peek(Token![impl]) && !input.peek2(Token![fn]){
+                    Some(input.parse()?)
                 } else {
                     None
                 }

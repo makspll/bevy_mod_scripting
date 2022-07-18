@@ -139,15 +139,24 @@ pub trait CodeAsset: Asset {
 /// Implementers can modify a script context in order to enable
 /// API access. ScriptHosts call `attach_api` when creating scripts
 pub trait APIProvider: 'static + Send + Sync {
-    // the type of script engine/context this api provider operates on
+    /// the type of script engine/context this api provider operates on
     type Target;
+    /// the type of documentation fragments this provider operates on
     type DocTarget: DocFragment;
 
     /// provide the given script context with the API permamently
     fn attach_api(&mut self, ctx: &mut Self::Target) -> Result<(), ScriptError>;
 
+    /// Generate a piece of documentation to be merged with the other documentation fragments
+    /// provided by other API providers
     fn get_doc_fragment(&self) -> Option<Self::DocTarget> {
         None
+    }
+
+    /// Some providers might provide additional types which need to be registered
+    /// with the reflection API to work.
+    fn register_with_app(&self, _app: &mut App){
+
     }
 }
 

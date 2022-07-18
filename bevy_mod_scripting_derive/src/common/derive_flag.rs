@@ -40,17 +40,17 @@ pub(crate) enum DeriveFlag {
             methods: f.parse_terminated(AutoMethod::parse)? 
         })
     },
-    Copy{
-        paren : Paren,
-        invocations: Punctuated<MethodMacroInvokation,Token![,]>
-    } => {
-        let f;
-        Ok(Self::Copy{
-            ident,
-            paren: parenthesized!(f in input),
-            invocations: f.parse_terminated(MethodMacroInvokation::parse)?,
-        })
-    },
+    // Copy{
+    //     paren : Paren,
+    //     invocations: Punctuated<MethodMacroInvokation,Token![,]>
+    // } => {
+    //     let f;
+    //     Ok(Self::Copy{
+    //         ident,
+    //         paren: parenthesized!(f in input),
+    //         invocations: f.parse_terminated(MethodMacroInvokation::parse)?,
+    //     })
+    // },
     UnaryOps{
         paren : Paren,
         ops: Punctuated<OpExpr,Token![,]>

@@ -3,7 +3,7 @@ use bevy::prelude::*;
 
 use bevy_event_priority::PriorityEventWriter;
 use bevy_mod_scripting::mlu::mlua::UserData;
-use bevy_mod_scripting::{ReflectCustomUserData, AddScriptApiProvider};
+use bevy_mod_scripting::{ReflectLuaProxyable, AddScriptApiProvider, ValueLuaType};
 use bevy_mod_scripting::{
     AddScriptHost, AddScriptHostHandler, LuaEvent, LuaFile, RLuaScriptHost,
     Recipients, Script, ScriptCollection, ScriptingPlugin,
@@ -37,10 +37,12 @@ fn fire_script_update(mut w: PriorityEventWriter<LuaEvent<MyLuaArg>>) {
 
 
 #[derive(Default,Clone,Reflect)]
-#[reflect(Resource,CustomUserData)]
+#[reflect(Resource,LuaProxyable)]
 pub struct MyResource{
-    pub thing :f64
+    pub thing: f64
 }
+
+impl ValueLuaType for MyResource {}
 
 impl UserData for MyResource {
     fn add_methods<'lua, M: mlua::UserDataMethods<'lua, Self>>(methods: &mut M) {
@@ -74,6 +76,7 @@ pub struct MyComponent {
     f32: f32,
     mat3: Mat3,
     vec4: Vec4,
+    u8: u8,
     my_reflect_thing: MyReflectThing,
 }
 
@@ -96,6 +99,7 @@ fn load_our_script(server: Res<AssetServer>, mut commands: Commands) {
             mat3: Mat3::from_cols(Vec3::new(1.0,2.0,3.0),Vec3::new(4.0,5.0,6.0),Vec3::new(7.0,8.0,9.0)),
             quat: Quat::from_xyzw(1.0,2.0,3.0,4.0),
             dquat: DQuat::from_xyzw(1.0,2.0,3.0,4.0),
+            u8: 240,
             my_reflect_thing: MyReflectThing { hello: "hello world".to_owned() },            
         });
 }

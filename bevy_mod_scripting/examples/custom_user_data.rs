@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 use bevy_event_priority::PriorityEventWriter;
-use bevy_mod_scripting::{ReflectCustomUserData, LuaDocFragment, ScriptError};
+use bevy_mod_scripting::{ReflectLuaProxyable, LuaDocFragment, ScriptError, ValueLuaType};
 use bevy_mod_scripting::{
     APIProvider, AddScriptHost, AddScriptHostHandler, LuaEvent, LuaFile, RLuaScriptHost,
     Recipients, Script, ScriptCollection, ScriptingPlugin,
@@ -55,11 +55,12 @@ fn fire_script_update(mut w: PriorityEventWriter<LuaEvent<MyLuaArg>>) {
 }
 
 #[derive(Clone, Reflect, Default)]
-#[reflect(CustomUserData)]
+#[reflect(LuaProxyable)]
 pub struct MyUserData {
     x: u32,
     y: u32,
 }
+impl ValueLuaType for MyUserData {}
 
 impl mlua::UserData for MyUserData {
     fn add_methods<'lua, T: mlua::UserDataMethods<'lua, Self>>(methods: &mut T) {

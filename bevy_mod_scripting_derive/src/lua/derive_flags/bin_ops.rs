@@ -33,7 +33,7 @@ pub(crate) fn make_bin_ops<'a>(implementor: &mut LuaImplementor,flag: &DeriveFla
             })
         ).collect::<IndexSet<_>>();
         let return_union_strings = return_union.iter().map(type_base_string).map(Option::unwrap).collect::<Vec<_>>();
-        let return_arg_type = implementor.generate_register_union(&return_union_strings);
+        let return_arg_type = implementor.generate_register_union(&return_union_strings,&newtype_name.to_string()[3..]);
 
         let newtype = &new_type.args.wrapper_type;
         
@@ -49,9 +49,9 @@ pub(crate) fn make_bin_ops<'a>(implementor: &mut LuaImplementor,flag: &DeriveFla
 
             if implementor_appears {
                 union_strings.push(newtype_name.to_string());
-                arg_type = implementor.generate_register_union(&union_strings);
+                arg_type = implementor.generate_register_union(&union_strings,&newtype_name.to_string()[3..]);
             } else {
-                arg_type = implementor.generate_register_union(&union_strings);
+                arg_type = implementor.generate_register_union(&union_strings,&newtype_name.to_string()[3..]);
             };
 
             let match_patterns = op_exprs.iter()

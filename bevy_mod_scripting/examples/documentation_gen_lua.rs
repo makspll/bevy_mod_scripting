@@ -21,7 +21,7 @@ impl<'lua> ToLua<'lua> for MyLuaArg {
 }
 
 
-#[derive(Clone, tealr::MluaUserData, TypeName)]
+#[derive(Clone, tealr::mlu::UserData, TypeName)]
 /// This is acts as a documentation and function holder
 /// We can add some general documentation about what it holds
 /// but also specific function level documenation

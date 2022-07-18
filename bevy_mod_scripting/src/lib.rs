@@ -1,5 +1,7 @@
 #![doc=include_str!("../../readme.md")]
-use bevy::{ecs::schedule::IntoRunCriteria, prelude::*};
+use std::any::TypeId;
+
+use bevy::{ecs::schedule::IntoRunCriteria, prelude::*, reflect::{TypeRegistryArc, FromType, GetTypeRegistration}};
 
 pub mod error;
 pub mod hosts;
@@ -19,6 +21,38 @@ pub struct ScriptingPlugin;
 impl Plugin for ScriptingPlugin {
     fn build(&self, app: &mut bevy::prelude::App) {
         app.add_event::<ScriptErrorEvent>();
+    }
+}
+
+/// A trait allowing to register the [`LuaProxyable`] trait with the type registry for foreign types
+/// 
+/// If you have access to the type you should prefer to use `#[reflect(LuaProxyable)]` instead.
+/// This is exactly equivalent.
+pub trait RegisterForeignLuaType {
+    /// Register an instance of `ReflecLuaProxyable` type data on this type's registration, 
+    /// if a registration does not yet exist, creates one. 
+    fn register_foreign_lua_type<T : LuaProxyable + Reflect + GetTypeRegistration>(&mut self) -> &mut Self;
+}
+
+impl RegisterForeignLuaType for App {
+    fn register_foreign_lua_type<T : LuaProxyable + Reflect + GetTypeRegistration>(&mut self) -> &mut Self {
+        
+        {
+            let registry = self.world.resource_mut::<TypeRegistryArc>();
+            let mut registry = registry.write();
+            
+            let user_data = <ReflectLuaProxyable as FromType<T>>::from_type();
+            
+            if let Some(registration) = registry.get_mut(TypeId::of::<T>()){
+                registration.insert(user_data)
+            } else {
+                let mut registration = T::get_type_registration();
+                registration.insert(user_data);
+                registry.add_registration(registration);
+            }
+        }
+        
+        self
     }
 }
 
@@ -76,6 +110,7 @@ impl AddScriptApiProvider for App {
         &mut self,
         provider: Box<dyn APIProvider<Target = T::APITarget, DocTarget = T::DocTarget>>,
     ) -> &mut Self {
+        provider.register_with_app(self);
         let w = &mut self.world;
         let providers: &mut APIProviders<T::APITarget, T::DocTarget> = &mut w.resource_mut();
         providers.providers.push(provider);

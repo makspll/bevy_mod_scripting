@@ -1,8 +1,8 @@
-use crate::{lua::{BEVY_TO_LUA, APPLY_LUA_TO_BEVY}, impl_tealr_type};
+use crate::{impl_tealr_type};
 use anyhow::Result;
 use tealr::{mlu::{mlua,mlua::{prelude::*,Value,UserData,MetaMethod}, TealData, TealDataMethods}, TypeName};
 
-use std::{ops::{Deref,DerefMut, Index},sync::Weak, borrow::Cow};
+use std::{ops::{Deref,DerefMut, Index},sync::Weak, borrow::Cow, marker::PhantomData};
 use parking_lot::{RwLock};
 use bevy::{
     prelude::*,
@@ -13,61 +13,13 @@ use std::{
     fmt,
 };
 
-use self::lua::LuaEntity;
-
+pub mod generated;
 pub mod wrappers;
-pub mod manual;
-
-mod generated;
+pub mod lua;
 
 
-pub use {wrappers::*,generated::lua as lua, manual::*};
 
-#[reflect_trait]
-pub trait CustomUserData {
-    /// a version of `mlua::to_lua` which does not consume the object
-    fn ref_to_lua<'lua>(&self, lua: &'lua Lua) -> mlua::Result<Value<'lua>>;
-
-    fn apply_lua<'lua>(&mut self, lua: &'lua Lua, new_val: Value<'lua>) -> mlua::Result<()>;
-}
-
-impl<T: Clone + UserData + Send + 'static> CustomUserData for T {
-    fn ref_to_lua<'lua>(&self, lua: &'lua Lua) -> mlua::Result<Value<'lua>> {
-        Ok(Value::UserData(lua.create_userdata(self.clone())?))
-    }
-
-    fn apply_lua<'lua>(&mut self, _lua: &'lua Lua, new_val: Value<'lua>) -> mlua::Result<()> {
-        if let Value::UserData(v) = new_val {
-            let s: Ref<T> = v.borrow::<T>()?;
-            *self = s.clone();
-            Ok(())
-        } else {
-            Err(mlua::Error::RuntimeError(
-                "Error in assigning to custom user data".to_owned(),
-            ))
-        }
-    }
-}
-
-
-pub struct LuaCustomUserData {
-    val: ScriptRef,
-    refl: ReflectCustomUserData,
-}
-
-impl<'lua> ToLua<'lua> for LuaCustomUserData {
-    fn to_lua(self, lua: &'lua Lua) -> mlua::Result<Value<'lua>> where {
-        self.val.get(|s,_| {
-            let usrdata = self.refl.get(s);
-            match usrdata {
-                Some(v) => v.ref_to_lua(lua),
-                None => panic!("Invalid userdata type for custom user data"),
-            }
-        })
-    }
-}
-
-
+pub use {wrappers::*,lua::*};
 
 
 /// The base of a reference, i.e. the top-level object which owns the underlying value
@@ -143,7 +95,7 @@ impl_tealr_type!(ReflectedValue);
 impl TealData for ReflectedValue {
     fn add_methods<'lua, T: TealDataMethods<'lua, Self>>(methods: &mut T) {
         methods.add_meta_method(MetaMethod::ToString, |_, val, ()| {
-            val.ref_.get(|s,_| 
+            val.ref_.get(|s| 
                 Ok(format!("{:#?}", &s)
                 ))
         });
@@ -162,7 +114,7 @@ impl TealData for ReflectedValue {
         );
 
         methods.add_meta_method(MetaMethod::Len, |_, val, ()| {
-            val.ref_.get(|s,_| {
+            val.ref_.get(|s| {
                 let r = s.reflect_ref();
                 if let ReflectRef::List(v) = r {
                     Ok(v.len())
@@ -179,6 +131,91 @@ impl TealData for ReflectedValue {
     }
 
 }
+
+
+/// A typed version of ScriptRef, each function automatically downcasts to `T`, due to necessity with the Reflection API, T is selected on a per function basis
+/// TODO: If we ever get generic closures use this wherever possible and enforce T at type level,
+/// 
+/// panics if it ever doesn't, and exposes a more convenient interface
+pub trait TypedScriptRef{
+
+     /// Typed version of [`ScriptRef::get_unsafe`](ScriptRef)
+    unsafe fn get_unsafe_typed<T,O,F>(&self, f: F) -> O  where 
+        F : FnOnce(&T) -> O,
+        T : ScriptReference;
+
+    /// Typed version of [`ScriptRef::get`](ScriptRef)
+    fn get_typed<T,O,F>(&self, f: F) -> O  where 
+        F : FnOnce(&T) -> O,
+        T : ScriptReference;
+
+    /// Typed version of [`ScriptRef::get_mut_unsafe`](ScriptRef)
+    unsafe fn get_mut_unsafe_typed<T,O,F>(&mut self, f: F) -> O  where 
+        F : FnOnce(&mut T, &mut ScriptRef) -> O,
+        T : ScriptReference;
+
+    /// Typed version of [`ScriptRef::get_mut`](ScriptRef)
+    fn get_mut_typed<T,O,F>(&mut self, f: F) -> O  where 
+        F : FnOnce(&mut T, &mut ScriptRef) -> O,
+        T : ScriptReference;
+
+    /// Unlike apply this method expects the other type to be identical. Does not allocate so is likely to be faster than apply, uses direct assignment.
+    /// If you have a concrete value use [`Self::set_val`](TypedScriptRef) unstead
+    fn set<T>(&mut self, other : &Self) where T : ScriptValue;
+
+    /// Version of [`Self::set`](TypedScriptRef) which directly accepts a `T` value
+    fn set_val<T>(&mut self, other : T) where T : ScriptReference;
+
+}
+
+impl TypedScriptRef for ScriptRef {
+
+    /// Typed version of [`ScriptRef::get_unsafe`](ScriptRef)
+    unsafe fn get_unsafe_typed<T,O,F>(&self, f: F) -> O  where 
+        F : FnOnce(&T) -> O,
+        T : ScriptReference
+    {
+        self.get_unsafe(|reflect| (f)(reflect.downcast_ref().unwrap()))
+    }
+
+    /// Typed version of [`ScriptRef::get`](ScriptRef)
+    fn get_typed<T,O,F>(&self, f: F) -> O  where 
+        F : FnOnce(&T) -> O,
+        T : ScriptReference
+    {
+        self.get(|reflect| (f)(reflect.downcast_ref().unwrap()))
+    }
+
+    /// Typed version of [`ScriptRef::get_mut_unsafe`](ScriptRef)
+    unsafe fn get_mut_unsafe_typed<T,O,F>(&mut self, f: F) -> O  where 
+        F : FnOnce(&mut T, &mut ScriptRef) -> O,
+        T : ScriptReference
+    {
+        self.get_mut_unsafe(|reflect,ref_| (f)(reflect.downcast_mut().unwrap(),ref_))
+    }
+
+    /// Typed version of [`ScriptRef::get_mut`](ScriptRef)
+    fn get_mut_typed<T,O,F>(&mut self, f: F) -> O  where 
+        F : FnOnce(&mut T, &mut ScriptRef) -> O,
+        T : ScriptReference
+    {
+        self.get_mut(|reflect,ref_| (f)(reflect.downcast_mut().unwrap(),ref_))
+    }
+
+    /// Unlike apply this method expects the other type to be identical. Does not allocate so is likely to be faster than apply, uses direct assignment.
+    /// If you have a concrete value use [`Self::set_val`](TypedScriptRef) unstead
+    fn set<T>(&mut self, other : &Self) where T : ScriptValue {
+        let other : T = other.get_typed(|s : &T| s.clone());
+        self.get_mut_typed(|s,_| *s = other);
+    }
+
+    /// Version of [`Self::set`](TypedScriptRef) which directly accepts a `T` value
+    fn set_val<T>(&mut self, other : T) where T : ScriptReference  {
+        self.get_mut_typed(|s,_| *s = other);
+    }
+
+}
+ 
 
 /// A reference to a rust type available from some script language.
 /// References can be either to rust or script managed values (created either on the bevy or script side).
@@ -205,7 +242,6 @@ pub struct ScriptRef{
 }
 
 impl ScriptRef {
-
     /// Checks that the cached pointer is valid 
     /// by checking that the root reference is valid
     fn is_valid(&self) -> bool {
@@ -241,7 +277,7 @@ impl ScriptRef {
     /// # Safety
     /// The caller must ensure the root reference has not been deleted or moved 
     pub unsafe fn get_unsafe<O,F>(&self, f: F) -> O  where 
-        F : FnOnce(&dyn Reflect, &ScriptRef) -> O
+        F : FnOnce(&dyn Reflect) -> O
     {
         match &self.root {
             ScriptRefBase::Resource { res: _, world } => {
@@ -255,7 +291,7 @@ impl ScriptRef {
                     ReflectPtr::Mut(r) => &*r,
                 };
 
-                let o = f(dyn_ref,self);
+                let o = f(dyn_ref);
 
                 drop(g);
 
@@ -273,7 +309,7 @@ impl ScriptRef {
                     ReflectPtr::Mut(r) => &*r,
                 };
 
-                let o = f(dyn_ref,self);
+                let o = f(dyn_ref);
 
                 drop(g);
 
@@ -292,7 +328,7 @@ impl ScriptRef {
                     ReflectPtr::Mut(r) => &*r,
                 };
 
-                let o = f(dyn_ref,self);
+                let o = f(dyn_ref);
 
                 // important
                 drop(g);
@@ -306,7 +342,7 @@ impl ScriptRef {
     /// Panics if the reference is invalid or world is already borrowed mutably.
     #[inline(always)]    
     pub fn get<O,F>(&self, f: F) -> O  where 
-        F : FnOnce(&dyn Reflect, &ScriptRef) -> O,
+        F : FnOnce(&dyn Reflect) -> O,
     {
 
         // check the cached pointer is dangling
@@ -454,7 +490,7 @@ impl ScriptRef {
         // sadly apply already performs a clone for value types, so this incurs
         // a double clone in some cases TODO: is there another way ?
         // can we avoid the box ?
-        let cloned = other.get(|s,_| s.clone_value());
+        let cloned = other.get(|s| s.clone_value());
 
         // safety: we already called `get` so reference must be valid
         unsafe {
@@ -464,44 +500,9 @@ impl ScriptRef {
         }
     }
 
-    /// applies another [`ScriptRef`] to self by carefuly acquiring locks and cloning if necessary.
-    /// 
-    /// This is semantically equivalent to the [`Reflect::apply`] method. The type of other and self (`O`) must be known to avoid boxing.
-    /// This will Return an error if the value is of the wrong type
-    pub fn apply_typed<T : ScriptValue>(&mut self, other : &ScriptRef) -> Result<(),mlua::Error>{
-        // sadly apply already performs a clone for value types, so this incurs
-        // a double clone in some cases TODO: is there another way ?
-        // can we avoid the box ?
-        let other: T = other.get(|o,_| o.downcast_ref().cloned())
-            .ok_or_else(|| 
-                self.get(|s,_| 
-                mlua::Error::RuntimeError(
-                    format!("Tried to apply/set type {} to type {}",
-                        std::any::type_name::<T>(),
-                        s.type_name()
-                    )
-                )
-            ))?;
-
-        // safety: we already called `get` so reference must be valid
-        unsafe {
-            self.get_mut_unsafe(|s,_| 
-                s.downcast_mut::<T>()
-                    .and_then(|s| Some(*s = other))
-            )
-            .ok_or_else(|| 
-                self.get(|s,_| 
-                mlua::Error::RuntimeError(
-                    format!("Tried to apply/set type {} to type {}",
-                        std::any::type_name::<T>(),
-                        s.type_name()
-                    )
-                )
-            ))
-        }
-    }
-
 }
+
+
 
 impl TypeName for ScriptRef {
     /// We represent LuaRef types as `any` wildcards, since they can convert to literally anything 
@@ -521,109 +522,24 @@ impl <'lua>ToLua<'lua> for ScriptRef {
     /// - A type implementing CustomUserData is converted with its `ref_to_lua` method
     /// - Finally the method is represented as a `ReflectedValue` which exposes the Reflect interface 
     fn to_lua(self, ctx: &'lua Lua) -> LuaResult<Value<'lua>> {
-        self.get(|s,_| {
-
-            if let Some(f) = BEVY_TO_LUA.get(s.type_name()){
-                Ok(f(&self,ctx))
-            } else {
-
-                let luaworld = ctx.globals()
-                    .get::<_, LuaWorld>("world")
-                    .unwrap();
-
-                let world = luaworld.upgrade().unwrap();
-                let world = &mut world.read();
-    
-                let typedata = world.resource::<TypeRegistry>();
-                let g = typedata.read();
-    
-                if let Some(v) = g.get_type_data::<ReflectCustomUserData>(s.type_id()) {
-                    Ok(v.get(s).unwrap().ref_to_lua(ctx).unwrap())
-                } else {
-                    Ok(Value::UserData(ctx.create_userdata(ReflectedValue{ref_: self.clone()}).unwrap()))
-                }
-            } 
-        })
-    }
-}
-
-
-
-
-/// Types implementing this, are proxies, which can set the proxied type with a lua type
-pub trait ApplyLua {
-
-    /// set the proxied object with the given lua value
-    fn apply_lua<'lua>(&mut self, ctx: &'lua Lua, v: Value<'lua>) -> Result<(),mlua::Error>;
-}
-
-impl ApplyLua for ScriptRef{
-    /// Applies the given lua value to the proxied reflect type. Semantically equivalent to `Reflect::apply`
-    fn apply_lua<'lua>(&mut self, ctx: &'lua Lua, v: Value<'lua>) -> Result<(),mlua::Error> {
-        let type_name = self.get(|s,_| s.type_name().to_owned());
-
-        if let Some(f) = APPLY_LUA_TO_BEVY.get(&type_name) {
-            return f(self,ctx,v)
-        };
-            
-
         let luaworld = ctx.globals()
-                        .get::<_, LuaWorld>("world")
-                        .unwrap();
+            .get::<_, LuaWorld>("world")
+            .unwrap();
 
-        // remove typedata from the world to be able to manipulate world 
-        let typedata = {
-            let world = luaworld.upgrade().unwrap();
-            let world = &mut world.write();
-            world.remove_resource::<TypeRegistry>().unwrap()
-        };
-
-        let g = typedata.read();
-
-        // safety we already called `get` so reference must be valid
-        let v = unsafe {
-            match self.get_mut_unsafe(|mut s,_| {
-                if let Some(ud) = g.get_type_data::<ReflectCustomUserData>(s.type_id()){
-                    ud.get_mut(s.deref_mut())
-                        .unwrap()
-                        .apply_lua(ctx, v)
-                        .unwrap();
-                    Ok(Ok(()))
-                } else {
-                    Err(v)
-                }
-        })
-         {
-            Ok(o) => {
-                drop(g);
-
-                let world = luaworld.upgrade().unwrap();
-                let world = &mut world.write();
-                world.insert_resource(typedata);
-
-                return o
-            },
-            Err(o) => o,
-        }};
-
-        drop(g);
         let world = luaworld.upgrade().unwrap();
-        let world = &mut world.write();
-        world.insert_resource(typedata);
+        let world = &mut world.read();
 
-        
-
-        if let Value::UserData(v) = v{
-            if v.is::<ReflectedValue>() {
-                let b = v.take::<ReflectedValue>().unwrap();
-                self.apply(&b.into());
-                return Ok(())
-            }
+        let typedata = world.resource::<TypeRegistry>();
+        let g = typedata.read();
+        if let Some(v) = g.get_type_data::<ReflectLuaProxyable>(self.get(|s| s.type_id())) {
+            Ok(v.ref_to_lua(&self,ctx)?)
+        } else {
+            ReflectedValue{ref_: self.clone()}.to_lua(ctx)
         }
-
-        Err(mlua::Error::RuntimeError("Invalid assignment".to_owned()))
     }
 }
+
+
 
 /// A version of index for returning values instead of references
 pub trait ValueIndex<Idx> {
@@ -636,7 +552,7 @@ impl ValueIndex<Cow<'static,str>> for ScriptRef {
     type Output=Result<Self,mlua::Error>;
 
     fn index(&self, index: Cow<'static,str>) -> Self::Output {
-        self.get(|s,_| {
+        self.get(|s| {
             let field = match s.reflect_ref() {
                 ReflectRef::Map(v) => v.get(&index).unwrap(),
                 ReflectRef::Struct(v) => v.field(&index).unwrap(),
@@ -656,7 +572,7 @@ impl ValueIndex<usize> for ScriptRef {
     type Output=Result<Self,mlua::Error>;
 
     fn index(&self, index: usize) -> Self::Output {
-        self.get(|s,_| {
+        self.get(|s| {
             let field = match s.reflect_ref() {
                 ReflectRef::Tuple(v) => v.field(index).unwrap(),
                 ReflectRef::TupleStruct(v) => v.field(index).unwrap(),
@@ -692,34 +608,6 @@ impl ValueIndex<Value<'_>> for ScriptRef {
         }
     }
 }
-
-
-// pub fn get_type_data<T: TypeData + ToOwned<Owned = T>>(w: &mut World, name: &str) -> Result<T,mlua::Error> {
-//     let registry: &TypeRegistry = w.get_resource().unwrap();
-
-//     let registry = registry.read();
-
-//     let reg = registry
-//         .get_with_short_name(&name)
-//         .or(registry.get_with_name(&name))
-//         .ok_or_else(|| mlua::Error::RuntimeError(format!(
-//             "Invalid component name {name}"
-//         )))
-//         .unwrap();
-
-//     let refl: T = reg
-//         .data::<T>()
-//         .ok_or_else(|| mlua::Error::RuntimeError(format!(
-//             "Invalid component name {name}"
-//         )))
-//         .unwrap()
-//         .to_owned();
-
-//     Ok(refl)
-// }
-
-
-
 
 
 
@@ -767,15 +655,16 @@ mod test {
                                     Vec3::new(7.0,8.0,9.0))
             };
 
-            let entity = world.spawn()
-                            .insert(tst_comp)
-                            .id();
-
             let refl = registry.read()
                 .get_with_short_name("TestComponent")
                 .and_then(|registration| registration.data::<ReflectComponent>())
                 .unwrap()
                 .clone();
+                
+            let entity = world.spawn()
+                            .insert(tst_comp)
+                            .id();
+
 
             let refl_ref = refl.reflect(world,entity).unwrap();
             let ptr : ReflectPtr = ReflectPtr::Const(refl_ref);
@@ -792,8 +681,8 @@ mod test {
             component_ref2 = component_ref1.clone();
         }
 
-        component_ref1.get(|r1,_| {
-            component_ref2.get(|r2,_|{
+        component_ref1.get(|r1| {
+            component_ref2.get(|r2|{
                 let _ = r1.downcast_ref::<TestComponent>().unwrap().mat3 + r2.downcast_ref::<TestComponent>().unwrap().mat3;
             })
         });
@@ -808,7 +697,7 @@ mod test {
 
         // invalid should panic here
         component_ref1.get_mut(|r1,_| {
-            component_ref2.get(|r2,_|{
+            component_ref2.get(|r2|{
                 r1.downcast_mut::<TestComponent>().unwrap().mat3 = r2.downcast_ref::<TestComponent>().unwrap().mat3;
             })
         });    
@@ -832,8 +721,8 @@ mod test {
         };
         let mut ref2 = ref1.clone();
 
-        ref1.get(|r1,_| {
-            ref2.get(|r2,_|{
+        ref1.get(|r1| {
+            ref2.get(|r2|{
                 let _ = *r1.downcast_ref::<Vec3>().unwrap() + *r2.downcast_ref::<Vec3>().unwrap();
             })
         });

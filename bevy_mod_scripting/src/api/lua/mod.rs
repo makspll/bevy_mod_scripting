@@ -1,20 +1,214 @@
-use crate::{lua::{BEVY_TO_LUA, APPLY_LUA_TO_BEVY}, impl_tealr_type, ScriptRef, ScriptRefBase, ReflectPtr};
-use anyhow::Result;
-use tealr::{mlu::{mlua,mlua::{prelude::*,Value,UserData,MetaMethod,Error}, TealData, TealDataMethods}, TypeName};
+use std::marker::PhantomData;
+use std::mem::MaybeUninit;
+use std::sync::{Weak,Arc};
+use std::convert::AsRef;
+use std::ops::{Deref,DerefMut};
+use crate::{ScriptRef, ReflectedValue, impl_tealr_type, ScriptRefBase, ReflectPtr, TypedScriptRef};
+use bevy::ecs::system::Command;
+use bevy::hierarchy::BuildWorldChildren;
+use bevy::{reflect::{reflect_trait, Reflect, TypeRegistry, TypeRegistration, DynamicStruct, DynamicTupleStruct, DynamicTuple, DynamicList, DynamicArray, DynamicMap}, prelude::{World, ReflectComponent, ReflectDefault, ReflectResource}, hierarchy::{Children, Parent, DespawnChildrenRecursive, DespawnRecursive}};
 
-use std::{ops::{Deref,DerefMut, Index},sync::Weak, borrow::Cow};
-use parking_lot::{RwLock};
-use bevy::{
-    prelude::*,
-    reflect::{ReflectRef, TypeRegistry, GetPath, TypeData, TypeRegistration, DynamicStruct, DynamicTupleStruct, DynamicTuple, DynamicList, DynamicArray, DynamicMap}, ecs::{component::ComponentId, system::Command},
-};
-use std::{
-    sync::Arc,
-    cell::Ref,
-    fmt,
-};
+use parking_lot::RwLock;
+use tealr::mlu::{mlua::{Lua, Value,self, UserData, ToLua,FromLua}, TealData, TealDataMethods};
 
-use crate::{lua::LuaEntity};
+pub use crate::api::generated::*;
+
+
+/// A higher level trait for allowing types to be interpreted as custom lua proxy types (or just normal types, this interface is flexible).
+/// Types implementing this trait can have [`ReflectLuaReflect`] type data registrations inserted into the reflection API.
+/// 
+/// Types registered via the reflection API this way can be accessed from Lua via [`ScriptRef`] objects (via field access).
+pub trait LuaProxyable : {
+    type Proxy;
+    // TODO: once any types can be used for self, we could remove self here completely and enable a typed
+    // version of ScriptRef to be passed as self, this would allow for assigning from the same reference `(i.e. comp.vec2 = comp.vec2)`
+
+    /// a version of [`mlua::ToLua::to_lua`] which does not consume the object.
+    /// 
+    /// Note: The self reference is sourced from the given ScriptRef, attempting to get another mutable reference from the ScriptRef might
+    /// cause a runtime error to prevent breaking of aliasing rules
+    fn ref_to_lua<'lua>(self_ : &ScriptRef, lua: &'lua Lua) -> mlua::Result<Value<'lua>>;
+
+    /// similar to [`Reflect::apply`]
+    /// 
+    /// Note: 
+    /// The self reference is sourced from the given ScriptRef, attempting to get another reference from the ScriptRef might
+    /// cause a runtime error to prevent breaking of aliasing rules
+    fn apply_lua<'lua>(self_ : &mut ScriptRef, lua: &'lua Lua, new_val: Value<'lua>) -> mlua::Result<()>;
+}
+
+/// A struct providing type data for the `LuaProxyable` trait.
+/// 
+/// This allows casting static methods from the `LuaProxyable trait`.
+#[derive(Clone)]
+pub struct ReflectLuaProxyable {
+    ref_to_lua: for<'lua> fn(ref_ : &ScriptRef, lua: &'lua Lua) -> mlua::Result<Value<'lua>>,
+    apply_lua: for<'lua> fn(ref_ : &mut ScriptRef, lua: &'lua Lua, new_val: Value<'lua>) -> mlua::Result<()>,
+}
+
+impl ReflectLuaProxyable {
+    pub fn ref_to_lua<'lua>(
+        &self,
+        ref_ : &ScriptRef, lua: &'lua Lua
+    ) -> mlua::Result<Value<'lua>> {
+        (self.ref_to_lua)(ref_,lua)
+    }
+
+    pub fn apply_lua<'lua>(
+        &self,
+        ref_ : &mut ScriptRef, lua: &'lua Lua, new_val: Value<'lua>
+    ) -> mlua::Result<()> {
+        (self.apply_lua)(ref_, lua, new_val)
+    }
+}
+
+
+impl<T: LuaProxyable + bevy::reflect::Reflect> bevy::reflect::FromType<T> for ReflectLuaProxyable {
+    fn from_type() -> Self {
+        Self {
+            ref_to_lua: T::ref_to_lua,
+            apply_lua: T::apply_lua
+        }
+    }
+}
+
+/// A dummy trait used to combat rust's orphan rules 
+/// 
+/// In the future when trait specialization is a thing, this might be a companion trait
+/// to `RefLuaType` which allows non Clone types to be used
+pub trait ValueLuaType {}
+
+impl<T: Clone + UserData + Send + ValueLuaType + Reflect + 'static> LuaProxyable for T {
+    type Proxy = Self;
+
+    fn ref_to_lua<'lua>(self_ : &ScriptRef, lua: &'lua Lua) -> mlua::Result<Value<'lua>>{
+        self_.get_typed(|s: &Self| s.clone().to_lua(lua))
+    }
+
+    fn apply_lua<'lua>(self_ : &mut ScriptRef, _: &'lua Lua, new_val: Value<'lua>) -> mlua::Result<()>{
+        if let Value::UserData(v) = new_val {
+            let o = v.borrow::<T>()?;
+
+            self_.get_mut_typed(|s,_| {
+                *s = o.clone()
+            });
+            
+            Ok(())
+        } else {
+            Err(mlua::Error::RuntimeError(
+                "Error in assigning to custom user data".to_owned(),
+            ))
+        }
+    }
+}
+
+
+use paste::paste;
+
+
+/// Implements custom user data for simple copy types which implement to and from lua
+macro_rules! impl_copy_custom_user_data(
+    ( $($num_ty:ty),*) => {
+        paste! {
+            $(
+                impl LuaProxyable for $num_ty {
+                    type Proxy = Self;
+                    fn ref_to_lua< 'lua>(self_: &crate::ScriptRef,lua: & 'lua tealr::mlu::mlua::Lua) -> tealr::mlu::mlua::Result<tealr::mlu::mlua::Value< 'lua> >  {
+                        self_.get_typed(|self_ : &Self| self_.to_lua(lua))
+                    }
+                
+                    fn apply_lua< 'lua>(self_: &mut crate::ScriptRef,lua: & 'lua tealr::mlu::mlua::Lua,new_val:tealr::mlu::mlua::Value< 'lua>) -> tealr::mlu::mlua::Result<()>  {
+                        self_.set_val(Self::from_lua(new_val,lua)?);
+                        Ok(())
+                    }
+                }
+            )*
+        }
+    }  
+);
+
+
+impl_copy_custom_user_data!(f32,f64);
+impl_copy_custom_user_data!(i8,i16,i32,i64,i128,isize);
+impl_copy_custom_user_data!(u8,u16,u32,u64,u128,usize);
+
+impl LuaProxyable for String {
+    type Proxy = Self;
+
+    fn ref_to_lua<'lua>(self_: &ScriptRef,lua: & 'lua Lua) -> mlua::Result<Value< 'lua> >  {
+        self_.get_typed(|self_ : &String| self_.as_str().to_lua(lua))
+    }
+
+    fn apply_lua<'lua>(self_: &mut ScriptRef,lua: & 'lua Lua,new_val:Value< 'lua>) -> mlua::Result<()>  {
+        self_.get_mut_typed(|self_,_| Ok(*self_ = Self::from_lua(new_val,lua)?))
+    }
+}
+
+// impl <T : LuaProxyable + Default>LuaProxyable for Option<T>{
+//     fn ref_to_lua< 'lua>(&self,ref_: &ScriptRef,lua: & 'lua Lua) -> mlua::Result<Value< 'lua> >  {
+//         match self {
+//             Some(v) => v.ref_to_lua(ref_, lua),
+//             None => Ok(Value::Nil),
+//         }
+//     }
+
+//     fn apply_lua< 'lua>(&mut self,ref_: &mut ScriptRef,lua: & 'lua Lua,new_val:Value< 'lua>) -> mlua::Result<()>  {
+//         if let Value::Nil = new_val {
+//             Ok(*self = None)
+//         } else {
+//             let mut dummy = T::default();
+//             T::apply_lua(&mut dummy, ref_, lua, new_val)?;
+//             *self = Some(dummy);
+//             Ok(())
+//         }
+//     }
+// }
+
+
+/// For internal use only.
+/// 
+/// Mainly necessary for separation of concerns on the [`ScriptRef`] type, but might have other uses potentially.
+/// 
+/// This is not the same as [`LuaProxyable`], internally this in fact will use [`LuaProxyable`] so treating it like so will cause inifnite loops.
+pub(crate) trait ApplyLua {
+    /// set the proxied object with the given lua value
+    fn apply_lua<'lua>(&mut self, ctx: &'lua Lua, v: Value<'lua>) -> mlua::Result<()>;
+}
+impl ApplyLua for ScriptRef{
+    /// Applies the given lua value to the proxied reflect type. Semantically equivalent to `Reflect::apply`
+    fn apply_lua<'lua>(&mut self, ctx: &'lua Lua, v: Value<'lua>) -> Result<(),mlua::Error> {
+        let luaworld = ctx.globals()
+                        .get::<_, LuaWorld>("world")
+                        .unwrap();
+
+        // remove typedata from the world to be able to manipulate world 
+        let proxyable = {
+            let world = luaworld.upgrade().unwrap();
+            let world = &world.read();
+            let type_registry = world.resource::<TypeRegistry>().read();
+            type_registry.get_type_data::<ReflectLuaProxyable>(self.get(|s| s.type_id())).cloned()
+        };
+
+        if let Some(ud) = proxyable{
+            return ud.apply_lua(self,ctx, v.clone());
+        } else if let Value::UserData(v) = &v{
+            if v.is::<ReflectedValue>() {
+                let b = v.take::<ReflectedValue>().unwrap();
+                self.apply(&b.into());
+                return Ok(())
+            }
+        }
+
+        Err(mlua::Error::RuntimeError(self.get(|s| 
+            format!("Attempted to assign {v:?} to {:?} at path: `{}`. Did you forget to call `app.register_lua_type::<{}>`?",
+                s,
+                self.path.as_ref().map(|p| p.as_str()).unwrap_or("\"\""),
+                s.type_name()
+            )))
+        )
+
+    }
+}
 
 #[derive(Clone)]
 pub struct LuaTypeRegistration(Arc<TypeRegistration>);
@@ -43,8 +237,6 @@ impl Deref for LuaTypeRegistration {
         &self.0
     }
 }
-
-
 
 #[derive(Clone)]
 pub struct LuaWorld(Weak<RwLock<World>>);
@@ -229,7 +421,7 @@ impl TealData for LuaWorld {
             let w = &mut w.write();
 
             let component_data = comp_type.data::<ReflectComponent>()
-                .ok_or_else(|| Error::RuntimeError(format!("Not a component {}",comp_type.short_name())))?;
+                .ok_or_else(|| mlua::Error::RuntimeError(format!("Not a component {}",comp_type.short_name())))?;
 
             // this is just a formality
             // TODO: maybe get an add_default impl added to ReflectComponent
@@ -244,7 +436,7 @@ impl TealData for LuaWorld {
                 bevy::reflect::TypeInfo::Value(_) | 
                 bevy::reflect::TypeInfo::Dynamic(_) => component_data.add(w, entity, 
                     comp_type.data::<ReflectDefault>().ok_or_else(|| 
-                        Error::RuntimeError(format!("Component {} is a value or dynamic type with no `ReflectDefault` type_data, cannot instantiate sensible value",comp_type.short_name())))?
+                        mlua::Error::RuntimeError(format!("Component {} is a value or dynamic type with no `ReflectDefault` type_data, cannot instantiate sensible value",comp_type.short_name())))?
                         .default()
                         .as_ref())
             };
@@ -271,7 +463,7 @@ impl TealData for LuaWorld {
             let w = &w.read();
 
             let component_data = comp_type.data::<ReflectComponent>()
-                .ok_or_else(|| Error::RuntimeError(format!("Not a component {}",comp_type.short_name())))?;
+                .ok_or_else(|| mlua::Error::RuntimeError(format!("Not a component {}",comp_type.short_name())))?;
 
             Ok(component_data
                 .reflect(w, entity)
@@ -297,7 +489,7 @@ impl TealData for LuaWorld {
             let w = &w.read();
 
             let component_data = comp_type.data::<ReflectComponent>()
-                .ok_or_else(|| Error::RuntimeError(format!("Not a component {}",comp_type.short_name())))?;
+                .ok_or_else(|| mlua::Error::RuntimeError(format!("Not a component {}",comp_type.short_name())))?;
 
             Ok(component_data.reflect(w, entity).is_some())
         });
@@ -311,7 +503,7 @@ impl TealData for LuaWorld {
             let w = &mut w.write();
             
             let component_data = comp_type.data::<ReflectComponent>()
-                .ok_or_else(|| Error::RuntimeError(format!("Not a component {}",comp_type.short_name())))?;
+                .ok_or_else(|| mlua::Error::RuntimeError(format!("Not a component {}",comp_type.short_name())))?;
 
             Ok(component_data.remove(w, entity))
         });
@@ -326,7 +518,7 @@ impl TealData for LuaWorld {
 
 
             let resource_data = res_type.data::<ReflectResource>()
-                .ok_or_else(|| Error::RuntimeError(format!("Not a resource {}",res_type.short_name())))?;
+                .ok_or_else(|| mlua::Error::RuntimeError(format!("Not a resource {}",res_type.short_name())))?;
 
             Ok(resource_data
                 .reflect(&w)
@@ -348,7 +540,7 @@ impl TealData for LuaWorld {
             let w = &mut w.write();
 
             let resource_data = res_type.data::<ReflectResource>()
-                .ok_or_else(|| Error::RuntimeError(format!("Not a resource {}",res_type.short_name())))?;
+                .ok_or_else(|| mlua::Error::RuntimeError(format!("Not a resource {}",res_type.short_name())))?;
 
             Ok(resource_data.remove(w))
         });
@@ -360,7 +552,7 @@ impl TealData for LuaWorld {
             let w = &w.read();
 
             let resource_data = res_type.data::<ReflectResource>()
-                .ok_or_else(|| Error::RuntimeError(format!("Not a resource {}",res_type.short_name())))?;
+                .ok_or_else(|| mlua::Error::RuntimeError(format!("Not a resource {}",res_type.short_name())))?;
 
             Ok(resource_data.reflect(w).is_some())
         });

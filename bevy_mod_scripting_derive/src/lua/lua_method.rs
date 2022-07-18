@@ -140,83 +140,36 @@ impl ToTokens for LuaMethodType {
 }
 
 #[derive(Clone,Debug)]
-pub(crate) enum LuaClosure {
-    MetaClosure{
-        paren: Paren,
-        args: Punctuated<MethodMacroArg,Token![,]>,
-        arrow: Token![=>],
-        brace: Brace,
-        expr: TokenStream,
-    },
-    PureClosure{
-        arrow: Token![=>],
-        expr: ExprClosure
-    },
+pub(crate) struct LuaClosure {
+    arrow: Token![=>],
+    expr: ExprClosure
 }
 
 impl Parse for LuaClosure {
     fn parse(input: ParseStream) -> Result<Self> {
-        if input.peek(token::Paren){
-            let f;
-            let g;
-            Ok(Self::MetaClosure{
-                paren: parenthesized!(f in input),
-                args: f.parse_terminated(MethodMacroArg::parse)?,
-                arrow: input.parse()?,
-                brace: braced!(g in input),
-                expr: g.parse()?,
-            })
-        } else {
-            
-            Ok(Self::PureClosure{
-                arrow: input.parse()?,
-                expr: input.parse()?
-            })
-        }
+        Ok(Self{
+            arrow: input.parse()?,
+            expr: input.parse()?
+        })
     }
 } 
 
 impl LuaClosure {
     pub fn to_applied_closure(&self) -> TokenStream{
-        match self {
-            LuaClosure::MetaClosure { 
-                paren, 
-                args, 
-                expr,
-                .. } => {
-                    
-                quote_spanned!{self.span()=>
-                    replace!{#args : #expr}
-                }
-            },
-            LuaClosure::PureClosure { expr, .. } => {
-                quote_spanned!{self.span()=>
-                    #expr
-                }
-            },
+        let expr = &self.expr;
+        quote_spanned!{self.span()=>
+            #expr
         }
-    }
+    }   
+    
 }
 
 impl ToTokens for LuaClosure {
     fn to_tokens(&self, tokens: &mut TokenStream) {
-        match self {
-            LuaClosure::MetaClosure { 
-                paren, 
-                args, 
-                expr,
-                .. } => {
-                    
-                tokens.extend(quote::quote!{
-                    (#args) => {#expr} 
-                })
-            },
-            LuaClosure::PureClosure { expr, .. } => {
-                tokens.extend(quote::quote!{
-                    => #expr
-                })
-            },
-        }
+        let expr = &self.expr;
+        tokens.extend(quote::quote!{
+            => #expr
+        });
     }
 }
 
@@ -295,15 +248,8 @@ impl LuaMethod {
                 newtype_name.to_case(Case::Snake)
             },Span::call_site()); 
 
-            match &self.closure{
-                LuaClosure::MetaClosure { args, .. } => {
-                    quote_spanned!{self.span()=>
-                        replace!{#args : #fun}
-                    }},
-                LuaClosure::PureClosure {..} => {
-                    fun.clone().into_token_stream()
-                },
-            }
+           
+            fun.clone().into_token_stream()
         })
     }
 
@@ -346,22 +292,6 @@ impl LuaMethod {
         quote_spanned!{self.span()=>
             #ds
             #receiver.#call_ident(#inner_tokens,#closure);
-        }
-    }
-
-    pub fn rebind_macro_args<'a,I: Iterator<Item = &'a MethodMacroArg> + Clone>(&mut self, o : I) -> Result<()>{
-        if let LuaClosure::MetaClosure { ref mut args, ..}  = self.closure {
-            for other_arg in o{
-                // validate the argument
-                let corresponding = args.iter_mut()
-                    .find(|oa| oa.ident.to_string() == other_arg.ident.to_string())
-                    .ok_or(Error::new(Span::call_site(),format!("Invalid argument in macro invocation `{}`. No corresponding variable.",other_arg.ident)))?;
-
-                *corresponding = other_arg.clone()
-            }
-            Ok(())
-        } else {
-            Err(Error::new(Span::call_site(),"Attempted to invoke macro args on non-meta closure"))
         }
     }
 

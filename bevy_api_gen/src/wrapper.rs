@@ -45,6 +45,8 @@ pub struct WrappedItem<'a> {
     pub impl_items: IndexMap<&'a str,Vec<(&'a Impl, &'a Item)>>, 
     pub self_impl: Option<&'a Impl>,
     pub crates : &'a [Crate],
+    /// If this type has some things which are "static" this is set to true later
+    pub has_global_methods: bool,
 }
 
 
@@ -152,7 +154,7 @@ impl WrappedItem<'_> {
     /// my_type::Type : Value: 
     /// ... // flags go here
     /// ``` 
-    pub fn write_derive_flags_body(&self, config: &Config, writer: &mut PrettyWriter, args: &Args) {
+    pub fn write_derive_flags_body(&mut self, config: &Config, writer: &mut PrettyWriter, args: &Args) {
 
         writer.write_line(": Fields");
         writer.open_paren();
@@ -168,7 +170,7 @@ impl WrappedItem<'_> {
                     .filter_map(|(name,type_, field_)|{
 
 
-                        let type_string = type_to_string(type_, &|b| {
+                        let type_string = type_to_string(type_, &mut |b| {
                             Ok(to_auto_method_argument(b, &self.wrapped_type, config, false, WRAPPER_PREFIX))
                         }).ok()?;
                         
@@ -214,6 +216,7 @@ impl WrappedItem<'_> {
 
         writer.write_line("+ AutoMethods");
         writer.open_paren();
+        let mut is_global = false;
         self.impl_items.iter()
             .flat_map(|(_,items)| items.iter())
             .for_each(|(impl_,v)| { 
@@ -221,7 +224,7 @@ impl WrappedItem<'_> {
                 // only select trait methods are allowed
                 if let Some(trait_) = &impl_.trait_ {
                     if self.config.traits.iter().find(|f| 
-                        match type_to_string(trait_, &|s| Ok(s.to_string())).map(|s|&s == &f.name){
+                        match type_to_string(trait_, &mut |s| Ok(s.to_string())).map(|s|&s == &f.name){
                             Ok(true) => true,
                             _ => false,
                         }
@@ -250,9 +253,15 @@ impl WrappedItem<'_> {
                     .iter()
                     .enumerate()
                     .for_each(|(i,(_,tp))| {
+
                         let type_ = 
-                            type_to_string(tp, &|base_string : &String| 
-                                Ok(to_auto_method_argument(base_string,&self.wrapped_type,config,i==0,WRAPPER_PREFIX)));
+                            type_to_string(tp, &mut |base_string : &String| {
+                                let processed = to_auto_method_argument(base_string,&self.wrapped_type,config,i==0,WRAPPER_PREFIX);
+                                if processed == "self" {
+                                    is_global = true;
+                                }
+                                Ok(processed)
+                            });
                         if let Ok(type_) = type_ {
                             if !is_valid_parameter(&type_, config, WRAPPER_PREFIX){
                                 inner_writer.write_inline(&format!("<invalid: {type_}>"));
@@ -273,7 +282,7 @@ impl WrappedItem<'_> {
                 decl.output
                     .as_ref()
                     .map(|tp| {
-                        let type_ = type_to_string(tp, &|base_string : &String| 
+                        let type_ = type_to_string(tp, &mut |base_string : &String| 
                             Ok(to_auto_method_argument(base_string,&self.wrapped_type,config,false, WRAPPER_PREFIX)));
                         if let Ok(type_) = type_ {
                             if !is_valid_return_type(&type_, config, WRAPPER_PREFIX){
@@ -306,6 +315,7 @@ impl WrappedItem<'_> {
                     writer.newline();
                 }
         });
+        self.has_global_methods = is_global;
         writer.close_paren();
 
         static BINARY_OPS : [(&str,&str); 5] = [("add","Add"),
@@ -318,7 +328,7 @@ impl WrappedItem<'_> {
         BINARY_OPS.into_iter().for_each(|(op,rep) |{
             self.impl_items.get(op).map(|items| {
                 items.iter()
-                .filter_map(|(impl_,item)| Some((impl_,item,type_to_string(&impl_.for_,&|s : &String| Ok(s.to_string())).ok()?)) )
+                .filter_map(|(impl_,item)| Some((impl_,item,type_to_string(&impl_.for_,&mut |s : &String| Ok(s.to_string())).ok()?)) )
                 .filter(|(_,_, self_type)| 
                     (self_type == self.wrapped_type && config.types.contains_key(self_type)) 
                         || config.primitives.contains(self_type))
@@ -330,7 +340,7 @@ impl WrappedItem<'_> {
                                 .enumerate()
                                 .map(|(idx,(_,t))| {
                                     // check arg is valid
-                                    let type_ = type_to_string(t, &|b: &String| 
+                                    let type_ = type_to_string(t, &mut |b: &String| 
                                         Ok(to_op_argument(b, &self_type, self, &config, idx == 0,false, WRAPPER_PREFIX)));
 
                                     type_.and_then(|type_| {
@@ -354,7 +364,7 @@ impl WrappedItem<'_> {
                                         None
                                     }).ok_or_else(|| expr.clone())?;
 
-                                    let return_string = type_to_string(out_type, &|b: &String| 
+                                    let return_string = type_to_string(out_type, &mut |b: &String| 
                                         Ok(to_op_argument(b, &self_type, &self, &config, false,true, WRAPPER_PREFIX)))?;
                                     
                                     if !is_valid_return_type(&return_string, config, WRAPPER_PREFIX){

@@ -100,7 +100,7 @@ pub(crate) fn to_op_argument(base_string: &String, self_type : &String, wrapped 
 
 
 /// Converts an arbitary type to its simple string representation while converting the base type identifier with the given function
-pub(crate) fn type_to_string<F : Fn(&String) -> Result<String,String>>(t : &Type, f : &F) -> Result<String,String> {
+pub(crate) fn type_to_string<F : FnMut(&String) -> Result<String,String>>(t : &Type, f : &mut F) -> Result<String,String> {
     match t {
         Type::ResolvedPath { name, args , .. } => {
             if let Some(args) = args {
@@ -120,7 +120,7 @@ pub(crate) fn type_to_string<F : Fn(&String) -> Result<String,String>>(t : &Type
             f(name)
         },
         Type::Primitive(v) => Ok(v.to_string()),
-        Type::Tuple(v) => Ok(format!("({})",v.iter().map(|t| type_to_string(t,f.clone())).collect::<Result<Vec<_>,_>>()?.join(","))),
+        Type::Tuple(v) => Ok(format!("({})",v.iter().map(|t| type_to_string(t,f)).collect::<Result<Vec<_>,_>>()?.join(","))),
         Type::Slice(v) => Ok(format!("[{}]",type_to_string(v,f)?)),
         Type::Array { type_, len } => Ok(format!("[{};{}]",type_to_string(type_,f)?,len)),
         Type::BorrowedRef { lifetime, mutable, type_ } => {

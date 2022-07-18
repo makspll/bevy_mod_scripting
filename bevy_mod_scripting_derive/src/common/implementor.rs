@@ -28,53 +28,47 @@ pub(crate) trait WrapperImplementor : 'static {
     fn generate_newtype_implementation<'a,I : Iterator<Item=&'a Self::Function>>(&mut self, new_type: &'a Newtype, functions : I) -> Result<TokenStream>;
 
     /// Generate methods from derive flags and newtype implementation blocks 
-    fn generate_derive_flag_functions<'a, I : Iterator<Item=&'a DeriveFlag>>(&mut self, new_type : &'a Newtype, derive_flags : I, functions_so_far : & IndexMap<String, Vec<Self::Function>>) -> Result<Vec<Self::Function>>;
+    fn generate_derive_flag_functions<'a, I : Iterator<Item=&'a DeriveFlag>>(&mut self, new_type : &'a Newtype, derive_flags : I) -> Result<Vec<Self::Function>>;
     
     /// Generate methods from newtype
     fn generate_newtype_functions(&mut self, new_type : &Newtype) -> Result<Vec<Self::Function>>;
 
-    /// generate implementations that require all newtypes to be generated to construct
-    fn generate_globals(&mut self, new_types: &NewtypeList, all_functions : IndexMap<String, Vec<Self::Function>>) -> Result<TokenStream>;
-
     /// Turns newtype list into fully implemented wrapper types
-    fn generate(&mut self, new_type : &Newtype, all_functions : &mut IndexMap<String, Vec<Self::Function>>) -> Result<TokenStream> {
+    fn generate(&mut self, new_type : &Newtype) -> Result<TokenStream> {
         let definition = self.generate_newtype_definition(new_type)?;
     
-        let mut functions = self.generate_derive_flag_functions(new_type,new_type.args.flags.iter(),all_functions)?;
+        let mut functions = self.generate_derive_flag_functions(new_type,new_type.args.flags.iter())?;
         
-        // panic!("{:?}",functions.len());
         functions.extend(self.generate_newtype_functions(new_type)?);
 
         let implementation = self.generate_newtype_implementation(new_type, functions.iter())?;
         
-        all_functions.insert(new_type.args.wrapper_type.to_string(),functions);
-
         Ok(quote_spanned!{new_type.span()=>
             #definition
             #implementation
         })
     }
 
-    fn generate_all(&mut self, new_types: &NewtypeList) -> Result<TokenStream> {
-        let mut methods_so_far = IndexMap::default();
+    // fn generate_all(&mut self, new_types: &NewtypeList) -> Result<TokenStream> {
+    //     let mut methods_so_far = IndexMap::default();
 
-        let newtypes : TokenStream = new_types.new_types.iter().map(|v| {
-            self.generate(v, &mut methods_so_far)
-        }).collect::<Result<_>>()?;
+    //     let newtypes : TokenStream = new_types.new_types.iter().map(|v| {
+    //         self.generate(v, &mut methods_so_far)
+    //     }).collect::<Result<_>>()?;
 
-        let globals = self.generate_globals(new_types,methods_so_far)?;
-        let module_name = format_ident!("{}",Self::module_name());
-        let header = &new_types.module_headers;
+    //     let globals = self.generate_globals(new_types,methods_so_far)?;
+    //     let module_name = format_ident!("{}",Self::module_name());
+    //     let header = &new_types.module_headers;
 
-        Ok(quote!{
-            #[allow(unused_parens,unreachable_patterns,unused_variables)]
-            pub mod #module_name {
-                #header
-                #newtypes
-                #globals
-            }
-        })
-    }
+    //     Ok(quote!{
+    //         #[allow(unused_parens,unreachable_patterns,unused_variables)]
+    //         pub mod #module_name {
+    //             #header
+    //             #newtypes
+    //             #globals
+    //         }
+    //     })
+    // }
 
 }
 

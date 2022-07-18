@@ -92,13 +92,13 @@ impl Parse for AdditionalImplBlock {
 
 
 #[proc_macro]
-pub fn impl_lua_newtypes(input: TokenStream) -> TokenStream {
+pub fn impl_lua_newtype(input: TokenStream) -> TokenStream {
 
-    let new_types = parse_macro_input!(input as NewtypeList);
+    let new_type = parse_macro_input!(input as Newtype);
 
     let mut lua = LuaImplementor::default();
 
-    match lua.generate_all(&new_types){
+    match lua.generate(&new_type){
         Ok(v) => v.into(),
         Err(e) => e.into_compile_error().into(),
     }
@@ -106,88 +106,3 @@ pub fn impl_lua_newtypes(input: TokenStream) -> TokenStream {
 
 
 
-
-
-pub(crate) struct ReplaceArgs {
-    replacements: Punctuated<MethodMacroArg,Token![,]>,
-}
-
-impl Parse for ReplaceArgs {
-    fn parse(input: ParseStream) -> Result<Self> {
-        let replacements = Punctuated::<MethodMacroArg,Token![,]>::parse_separated_nonempty(input)?;
-
-        Ok(Self{
-            replacements,
-        })
-    }
-}
-
-impl Into<IndexMap<String,MethodMacroArg>> for &ReplaceArgs {
-    fn into(self) -> IndexMap<String,MethodMacroArg> {
-        self.replacements.iter().map(|i| (i.ident.to_string(),i.clone())).collect()
-    }
-}
-
-
-
-#[proc_macro]
-pub fn replace(input: TokenStream) -> TokenStream {
-    // Get first parameters
-
-
-    let mut found_colon = false;
-
-    // skip past till end of replacements
-    let (args,rest) = input.into_iter().partition(|tt| {
-        match tt {
-            TokenTree::Punct(p) => {
-                if p.as_char() == ':' {
-                    found_colon = true;
-                }
-            }
-            _ => {}
-        };
-
-        !found_colon
-    });
-
-    
-    let args = parse_macro_input!(args as ReplaceArgs);
-    let replacements: IndexMap<String, MethodMacroArg> = (&args).into();
-    // Return the remaining tokens, but replace identifiers.
-    let mut remaining_iter = rest.into_iter();
-    // skip colon
-    remaining_iter.next();
-
-    remaining_iter.map(|tt| {
-        replace_helper(tt,&replacements)
-    }).collect()
-}
-
-
-fn replace_helper(tt : TokenTree, replacements: &IndexMap<String, MethodMacroArg>) -> TokenTree{
-    if let TokenTree::Group(g) = tt{
-        let key = g.stream().to_string();
-
-        if key.starts_with('$'){
-            let key = &key[1..];
-
-            if let Some(v) = replacements.get(key){
-                    let r = &v.replacement;
-                    return proc_macro::TokenTree::Ident(
-                        proc_macro::Ident::new(&r.to_token_stream().to_string(),g.span()))
-            }
-        }
-        
-
-        let inner = g.stream().into_iter();
-
-        let inner = inner.map(|t| {
-            replace_helper(t,replacements)
-        }).collect();
-
-        proc_macro::TokenTree::Group(Group::new(g.delimiter(),inner))
-    } else {
-        tt
-    }
-}

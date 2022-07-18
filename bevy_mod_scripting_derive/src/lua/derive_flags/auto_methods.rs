@@ -1,4 +1,3 @@
-use indexmap::IndexMap;
 use proc_macro2::Span;
 use quote::{format_ident, ToTokens, quote_spanned};
 use syn::{punctuated::Punctuated, Token, LitInt, Type, spanned::Spanned, parse_quote_spanned, Attribute};
