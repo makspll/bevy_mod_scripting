@@ -114,8 +114,6 @@ impl WrapperImplementor for LuaImplementor {
             }
 
             impl LuaProxyable for #wrapped_type {
-                type Proxy = #wrapper_type;
-
                 fn ref_to_lua<'lua>(self_ : &ScriptRef, lua: &'lua Lua) -> mlua::Result<Value<'lua>> {
                     #wrapper_type::new_ref(self_).to_lua(lua)
                 }

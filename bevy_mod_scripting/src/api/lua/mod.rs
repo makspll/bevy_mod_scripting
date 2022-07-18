@@ -6,23 +6,91 @@ use std::ops::{Deref,DerefMut};
 use crate::{ScriptRef, ReflectedValue, impl_tealr_type, ScriptRefBase, ReflectPtr, TypedScriptRef};
 use bevy::ecs::system::Command;
 use bevy::hierarchy::BuildWorldChildren;
+use bevy::reflect::erased_serde::Serialize;
 use bevy::{reflect::{reflect_trait, Reflect, TypeRegistry, TypeRegistration, DynamicStruct, DynamicTupleStruct, DynamicTuple, DynamicList, DynamicArray, DynamicMap}, prelude::{World, ReflectComponent, ReflectDefault, ReflectResource}, hierarchy::{Children, Parent, DespawnChildrenRecursive, DespawnRecursive}};
 
 use parking_lot::RwLock;
+use serde::Deserialize;
 use tealr::mlu::{mlua::{Lua, Value,self, UserData, ToLua,FromLua}, TealData, TealDataMethods};
 
 pub use crate::api::generated::*;
 
 
+/// For internal use only.
+/// 
+/// Mainly necessary for separation of concerns on the [`ScriptRef`] type, but might have other uses potentially.
+/// 
+/// This is not the same as [`LuaProxyable`], internally this in fact will use [`LuaProxyable`] so treating it like so will cause inifnite loops.
+pub(crate) trait ApplyLua {
+    /// set the proxied object with the given lua value
+    fn apply_lua<'lua>(&mut self, ctx: &'lua Lua, v: Value<'lua>) -> mlua::Result<()>;
+}
+impl ApplyLua for ScriptRef{
+    /// Applies the given lua value to the proxied reflect type. Semantically equivalent to `Reflect::apply`
+    fn apply_lua<'lua>(&mut self, ctx: &'lua Lua, v: Value<'lua>) -> Result<(),mlua::Error> {
+        let luaworld = ctx.globals()
+                        .get::<_, LuaWorld>("world")
+                        .unwrap();
+
+        // remove typedata from the world to be able to manipulate world 
+        let proxyable = {
+            let world = luaworld.upgrade().unwrap();
+            let world = &world.read();
+            let type_registry = world.resource::<TypeRegistry>().read();
+            type_registry.get_type_data::<ReflectLuaProxyable>(self.get(|s| s.type_id())).cloned()
+        };
+
+        if let Some(ud) = proxyable{
+            return ud.apply_lua(self,ctx, v.clone());
+        } else if let Value::UserData(v) = &v{
+            if v.is::<ReflectedValue>() {
+                let b = v.take::<ReflectedValue>().unwrap();
+                self.apply(&b.into());
+                return Ok(())
+            }
+        }
+
+        Err(mlua::Error::RuntimeError(self.get(|s| 
+            format!("Attempted to assign {v:?} to {:?} at path: `{}`. Did you forget to call `app.register_foreign_lua_type::<{}>`?",
+                s,
+                self.path.as_ref().map(|p| p.as_str()).unwrap_or("\"\""),
+                s.type_name()
+            )))
+        )
+
+    }
+}
+
+impl <'lua>ToLua<'lua> for ScriptRef {
+    /// Converts the LuaRef to the most convenient representation
+    /// checking conversions in this order:
+    /// - A primitive or bevy type which has a reflect interface is converted to a custom UserData exposing its API to lua conveniently
+    /// - A type implementing CustomUserData is converted with its `ref_to_lua` method
+    /// - Finally the method is represented as a `ReflectedValue` which exposes the Reflect interface 
+    fn to_lua(self, ctx: &'lua Lua) -> mlua::Result<Value<'lua>> {
+        let luaworld = ctx.globals()
+            .get::<_, LuaWorld>("world")
+            .unwrap();
+
+        let world = luaworld.upgrade().unwrap();
+        let world = &mut world.read();
+
+        let typedata = world.resource::<TypeRegistry>();
+        let g = typedata.read();
+        if let Some(v) = g.get_type_data::<ReflectLuaProxyable>(self.get(|s| s.type_id())) {
+            Ok(v.ref_to_lua(&self,ctx)?)
+        } else {
+            ReflectedValue{ref_: self.clone()}.to_lua(ctx)
+        }
+    }
+}
+
+
 /// A higher level trait for allowing types to be interpreted as custom lua proxy types (or just normal types, this interface is flexible).
-/// Types implementing this trait can have [`ReflectLuaReflect`] type data registrations inserted into the reflection API.
+/// Types implementing this trait can have [`ReflectLuaProxyable`] type data registrations inserted into the reflection API.
 /// 
 /// Types registered via the reflection API this way can be accessed from Lua via [`ScriptRef`] objects (via field access).
 pub trait LuaProxyable : {
-    type Proxy;
-    // TODO: once any types can be used for self, we could remove self here completely and enable a typed
-    // version of ScriptRef to be passed as self, this would allow for assigning from the same reference `(i.e. comp.vec2 = comp.vec2)`
-
     /// a version of [`mlua::ToLua::to_lua`] which does not consume the object.
     /// 
     /// Note: The self reference is sourced from the given ScriptRef, attempting to get another mutable reference from the ScriptRef might
@@ -79,8 +147,6 @@ impl<T: LuaProxyable + bevy::reflect::Reflect> bevy::reflect::FromType<T> for Re
 pub trait ValueLuaType {}
 
 impl<T: Clone + UserData + Send + ValueLuaType + Reflect + 'static> LuaProxyable for T {
-    type Proxy = Self;
-
     fn ref_to_lua<'lua>(self_ : &ScriptRef, lua: &'lua Lua) -> mlua::Result<Value<'lua>>{
         self_.get_typed(|s: &Self| s.clone().to_lua(lua))
     }
@@ -112,7 +178,6 @@ macro_rules! impl_copy_custom_user_data(
         paste! {
             $(
                 impl LuaProxyable for $num_ty {
-                    type Proxy = Self;
                     fn ref_to_lua< 'lua>(self_: &crate::ScriptRef,lua: & 'lua tealr::mlu::mlua::Lua) -> tealr::mlu::mlua::Result<tealr::mlu::mlua::Value< 'lua> >  {
                         self_.get_typed(|self_ : &Self| self_.to_lua(lua))
                     }
@@ -128,13 +193,12 @@ macro_rules! impl_copy_custom_user_data(
 );
 
 
+impl_copy_custom_user_data!(bool);
 impl_copy_custom_user_data!(f32,f64);
 impl_copy_custom_user_data!(i8,i16,i32,i64,i128,isize);
 impl_copy_custom_user_data!(u8,u16,u32,u64,u128,usize);
 
 impl LuaProxyable for String {
-    type Proxy = Self;
-
     fn ref_to_lua<'lua>(self_: &ScriptRef,lua: & 'lua Lua) -> mlua::Result<Value< 'lua> >  {
         self_.get_typed(|self_ : &String| self_.as_str().to_lua(lua))
     }
@@ -144,71 +208,23 @@ impl LuaProxyable for String {
     }
 }
 
-// impl <T : LuaProxyable + Default>LuaProxyable for Option<T>{
-//     fn ref_to_lua< 'lua>(&self,ref_: &ScriptRef,lua: & 'lua Lua) -> mlua::Result<Value< 'lua> >  {
-//         match self {
-//             Some(v) => v.ref_to_lua(ref_, lua),
-//             None => Ok(Value::Nil),
-//         }
-//     }
+impl <T : for<'a> ToLua<'a> + for<'a> FromLua<'a> + Reflect + for <'a> Deserialize<'a> + serde::Serialize + Clone>LuaProxyable for Option<T>{
+    fn ref_to_lua< 'lua>(self_: &ScriptRef,lua: & 'lua Lua) -> mlua::Result<Value< 'lua>>  {
+        self_.get_typed(|s : &Option<T>| match  s {
+            Some(v) => v.clone().to_lua(lua),
+            None => Ok(Value::Nil),
+        })
+    }
 
-//     fn apply_lua< 'lua>(&mut self,ref_: &mut ScriptRef,lua: & 'lua Lua,new_val:Value< 'lua>) -> mlua::Result<()>  {
-//         if let Value::Nil = new_val {
-//             Ok(*self = None)
-//         } else {
-//             let mut dummy = T::default();
-//             T::apply_lua(&mut dummy, ref_, lua, new_val)?;
-//             *self = Some(dummy);
-//             Ok(())
-//         }
-//     }
-// }
-
-
-/// For internal use only.
-/// 
-/// Mainly necessary for separation of concerns on the [`ScriptRef`] type, but might have other uses potentially.
-/// 
-/// This is not the same as [`LuaProxyable`], internally this in fact will use [`LuaProxyable`] so treating it like so will cause inifnite loops.
-pub(crate) trait ApplyLua {
-    /// set the proxied object with the given lua value
-    fn apply_lua<'lua>(&mut self, ctx: &'lua Lua, v: Value<'lua>) -> mlua::Result<()>;
-}
-impl ApplyLua for ScriptRef{
-    /// Applies the given lua value to the proxied reflect type. Semantically equivalent to `Reflect::apply`
-    fn apply_lua<'lua>(&mut self, ctx: &'lua Lua, v: Value<'lua>) -> Result<(),mlua::Error> {
-        let luaworld = ctx.globals()
-                        .get::<_, LuaWorld>("world")
-                        .unwrap();
-
-        // remove typedata from the world to be able to manipulate world 
-        let proxyable = {
-            let world = luaworld.upgrade().unwrap();
-            let world = &world.read();
-            let type_registry = world.resource::<TypeRegistry>().read();
-            type_registry.get_type_data::<ReflectLuaProxyable>(self.get(|s| s.type_id())).cloned()
-        };
-
-        if let Some(ud) = proxyable{
-            return ud.apply_lua(self,ctx, v.clone());
-        } else if let Value::UserData(v) = &v{
-            if v.is::<ReflectedValue>() {
-                let b = v.take::<ReflectedValue>().unwrap();
-                self.apply(&b.into());
-                return Ok(())
-            }
+    fn apply_lua< 'lua>(self_: &mut ScriptRef,lua: & 'lua Lua,new_val:Value< 'lua>) -> mlua::Result<()>  {
+        if let Value::Nil = new_val {
+            self_.get_mut_typed(|s : &mut Option<T>,_| Ok(*s = None))
+        } else {
+            self_.get_mut_typed(|s,_| Ok(*s = Some(T::from_lua(new_val, lua)?)))
         }
-
-        Err(mlua::Error::RuntimeError(self.get(|s| 
-            format!("Attempted to assign {v:?} to {:?} at path: `{}`. Did you forget to call `app.register_lua_type::<{}>`?",
-                s,
-                self.path.as_ref().map(|p| p.as_str()).unwrap_or("\"\""),
-                s.type_name()
-            )))
-        )
-
     }
 }
+
 
 #[derive(Clone)]
 pub struct LuaTypeRegistration(Arc<TypeRegistration>);

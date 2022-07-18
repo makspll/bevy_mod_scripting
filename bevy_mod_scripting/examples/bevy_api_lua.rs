@@ -3,7 +3,7 @@ use bevy::prelude::*;
 
 use bevy_event_priority::PriorityEventWriter;
 use bevy_mod_scripting::mlu::mlua::UserData;
-use bevy_mod_scripting::{ReflectLuaProxyable, AddScriptApiProvider, ValueLuaType};
+use bevy_mod_scripting::{ReflectLuaProxyable, AddScriptApiProvider, ValueLuaType, RegisterForeignLuaType};
 use bevy_mod_scripting::{
     AddScriptHost, AddScriptHostHandler, LuaEvent, LuaFile, RLuaScriptHost,
     Recipients, Script, ScriptCollection, ScriptingPlugin,
@@ -77,6 +77,7 @@ pub struct MyComponent {
     mat3: Mat3,
     vec4: Vec4,
     u8: u8,
+    option: Option<bool>,
     my_reflect_thing: MyReflectThing,
 }
 
@@ -100,6 +101,7 @@ fn load_our_script(server: Res<AssetServer>, mut commands: Commands) {
             quat: Quat::from_xyzw(1.0,2.0,3.0,4.0),
             dquat: DQuat::from_xyzw(1.0,2.0,3.0,4.0),
             u8: 240,
+            option: None,
             my_reflect_thing: MyReflectThing { hello: "hello world".to_owned() },            
         });
 }
@@ -120,11 +122,13 @@ fn main() -> std::io::Result<()> {
         .register_type::<MyComponent>()
         .register_type::<MyReflectThing>()
         .register_type::<MyResource>()
+        // note the implementation for Option is there, but we must register `LuaProxyable` for it, otherwise 
+        .register_foreign_lua_type::<Option<bool>>()
         .init_resource::<MyResource>()
         // this stage handles addition and removal of script contexts, we can safely use `CoreStage::PostUpdate`
         .add_script_host::<RLuaScriptHost<MyLuaArg>, _>(CoreStage::PostUpdate)
         .add_api_provider::<RLuaScriptHost<MyLuaArg>>(Box::new(LuaBevyAPIProvider));
-
+    
     app.run();
 
     Ok(())

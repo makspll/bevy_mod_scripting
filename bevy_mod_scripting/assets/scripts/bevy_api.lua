@@ -18,6 +18,15 @@ function on_update()
         -- assert(not ok)
 
         comp.u8 = 2
+        if comp.option == nil then
+            print("option was nil")
+            comp.option = true
+        end
+        if comp.option == true then
+            print("option was true")
+            comp.option = nil
+        end
+
         comp.vec2 = comp.vec2 + comp.vec2
 
         comp.uvec2 = comp.uvec2 + comp.uvec2

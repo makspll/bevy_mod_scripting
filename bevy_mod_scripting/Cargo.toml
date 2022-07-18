@@ -61,6 +61,7 @@ ouroboros = "0.15.0"
 bevy_mod_scripting_derive = {path = "../bevy_mod_scripting_derive"}
 serde_json = "1.0.81"
 num-traits = "0.2.15"
+serde = { version = "1", features = ["derive"] }
 
 [dev-dependencies]
 # bevy_console = { git = "https://github.com/OnlyGraphs/bevy-console" }

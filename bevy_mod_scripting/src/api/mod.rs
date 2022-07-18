@@ -181,9 +181,9 @@ impl TypedScriptRef for ScriptRef {
     /// Typed version of [`ScriptRef::get`](ScriptRef)
     fn get_typed<T,O,F>(&self, f: F) -> O  where 
         F : FnOnce(&T) -> O,
-        T : ScriptReference
+        T : ScriptReference 
     {
-        self.get(|reflect| (f)(reflect.downcast_ref().unwrap()))
+        self.get(|reflect| (f)(reflect.downcast_ref::<T>().unwrap()))
     }
 
     /// Typed version of [`ScriptRef::get_mut_unsafe`](ScriptRef)
@@ -515,29 +515,6 @@ impl TypeName for ScriptRef {
     }
 }
 
-impl <'lua>ToLua<'lua> for ScriptRef {
-    /// Converts the LuaRef to the most convenient representation
-    /// checking conversions in this order:
-    /// - A primitive or bevy type which has a reflect interface is converted to a custom UserData exposing its API to lua conveniently
-    /// - A type implementing CustomUserData is converted with its `ref_to_lua` method
-    /// - Finally the method is represented as a `ReflectedValue` which exposes the Reflect interface 
-    fn to_lua(self, ctx: &'lua Lua) -> LuaResult<Value<'lua>> {
-        let luaworld = ctx.globals()
-            .get::<_, LuaWorld>("world")
-            .unwrap();
-
-        let world = luaworld.upgrade().unwrap();
-        let world = &mut world.read();
-
-        let typedata = world.resource::<TypeRegistry>();
-        let g = typedata.read();
-        if let Some(v) = g.get_type_data::<ReflectLuaProxyable>(self.get(|s| s.type_id())) {
-            Ok(v.ref_to_lua(&self,ctx)?)
-        } else {
-            ReflectedValue{ref_: self.clone()}.to_lua(ctx)
-        }
-    }
-}
 
 
 
