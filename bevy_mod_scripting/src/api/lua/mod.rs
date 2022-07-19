@@ -1,16 +1,20 @@
+use std::borrow::Cow;
 use std::marker::PhantomData;
 use std::mem::MaybeUninit;
 use std::sync::{Weak,Arc};
 use std::convert::AsRef;
 use std::ops::{Deref,DerefMut};
-use crate::{ScriptRef, ReflectedValue, impl_tealr_type, ScriptRefBase, ReflectPtr, TypedScriptRef};
+use crate::{ScriptRef, ReflectedValue, impl_tealr_type, ScriptRefBase, ReflectPtr, ValueIndex, IdentitySubReflect, SubReflect};
 use bevy::ecs::system::Command;
 use bevy::hierarchy::BuildWorldChildren;
+use bevy::reflect::ReflectRef;
 use bevy::reflect::erased_serde::Serialize;
 use bevy::{reflect::{reflect_trait, Reflect, TypeRegistry, TypeRegistration, DynamicStruct, DynamicTupleStruct, DynamicTuple, DynamicList, DynamicArray, DynamicMap}, prelude::{World, ReflectComponent, ReflectDefault, ReflectResource}, hierarchy::{Children, Parent, DespawnChildrenRecursive, DespawnRecursive}};
 
 use parking_lot::RwLock;
 use serde::Deserialize;
+use tealr::TypeName;
+use tealr::mlu::mlua::MetaMethod;
 use tealr::mlu::{mlua::{Lua, Value,self, UserData, ToLua,FromLua}, TealData, TealDataMethods};
 
 pub use crate::api::generated::*;
@@ -41,7 +45,7 @@ impl ApplyLua for ScriptRef{
         };
 
         if let Some(ud) = proxyable{
-            return ud.apply_lua(self,ctx, v.clone());
+            return ud.apply_lua(self,ctx, v)
         } else if let Value::UserData(v) = &v{
             if v.is::<ReflectedValue>() {
                 let b = v.take::<ReflectedValue>().unwrap();
@@ -85,7 +89,46 @@ impl <'lua>ToLua<'lua> for ScriptRef {
     }
 }
 
+impl_tealr_type!(ReflectedValue);
+impl TealData for ReflectedValue {
+    fn add_methods<'lua, T: TealDataMethods<'lua, Self>>(methods: &mut T) {
+        methods.add_meta_method(MetaMethod::ToString, |_, val, ()| {
+            val.ref_.get(|s| 
+                Ok(format!("{:#?}", &s)
+                ))
+        });
 
+        methods.add_meta_method_mut(MetaMethod::Index, |_, val, field: Value| {
+            let r = val.ref_.index(field).unwrap();
+            Ok(r)
+        });
+
+        methods.add_meta_method_mut(
+            MetaMethod::NewIndex,
+            |ctx, val, (field, new_val): (Value, Value)| {
+                val.ref_.index(field).unwrap().apply_lua(ctx, new_val).unwrap();
+                Ok(())
+            },
+        );
+
+        methods.add_meta_method(MetaMethod::Len, |_, val, ()| {
+            val.ref_.get(|s| {
+                let r = s.reflect_ref();
+                if let ReflectRef::List(v) = r {
+                    Ok(v.len())
+                } else if let ReflectRef::Map(v) = r {
+                    Ok(v.len())
+                } else if let ReflectRef::Tuple(v) = r {
+                    Ok(v.field_len())
+                } else {
+                    panic!("No length on this type");
+                }
+            })
+        });
+
+    }
+
+}
 /// A higher level trait for allowing types to be interpreted as custom lua proxy types (or just normal types, this interface is flexible).
 /// Types implementing this trait can have [`ReflectLuaProxyable`] type data registrations inserted into the reflection API.
 /// 
@@ -457,14 +500,17 @@ impl TealData for LuaWorld {
                         .as_ref())
             };
 
-            Ok(ScriptRef{
-                    root: ScriptRefBase::Component{ 
-                        comp: component_data.clone(), 
-                        entity: entity,
-                        world: world.as_ref().clone()
-                    }, 
-                    path: Some("".to_string()), 
-                    r: ReflectPtr::Const(component_data.reflect(w,entity).unwrap())
+            Ok(
+                unsafe{ 
+                    ScriptRef::new(
+                        ScriptRefBase::Component{ 
+                            comp: component_data.clone(), 
+                            entity: entity,
+                            world: world.as_ref().clone()
+                        }, 
+                        Some("".to_string()), 
+                        ReflectPtr::Const(component_data.reflect(w,entity).unwrap()).into(),
+                    )
                 }
             )
         });
@@ -484,15 +530,17 @@ impl TealData for LuaWorld {
             Ok(component_data
                 .reflect(w, entity)
                 .map(|component| 
-                    ScriptRef{
-                        root: ScriptRefBase::Component{ 
-                            comp: component_data.clone(), 
-                            entity,
-                            world: world.as_ref().clone()
-                        }, 
-                        path: Some("".to_string()), 
-                        r: ReflectPtr::Const(component) 
-                    }  
+                    unsafe{
+                        ScriptRef::new(
+                            ScriptRefBase::Component{ 
+                                comp: component_data.clone(), 
+                                entity,
+                                world: world.as_ref().clone()
+                            }, 
+                            Some("".to_string()), 
+                            ReflectPtr::Const(component),
+                        )
+                    }
                 ))
         });
 
@@ -539,14 +587,16 @@ impl TealData for LuaWorld {
             Ok(resource_data
                 .reflect(&w)
                 .map(|component| 
-                    ScriptRef{
-                        root: ScriptRefBase::Resource{ 
-                            res: resource_data.clone(), 
-                            world: world.as_ref().clone()
-                        }, 
-                        path: Some("".to_string()), 
-                        r: ReflectPtr::Const(component) 
-                    }  
+                    unsafe{ 
+                        ScriptRef::new(
+                            ScriptRefBase::Resource{ 
+                                res: resource_data.clone(), 
+                                world: world.as_ref().clone()
+                            }, 
+                            Some("".to_string()), 
+                            ReflectPtr::Const(component),
+                        )
+                    }
                 ))
         });
 

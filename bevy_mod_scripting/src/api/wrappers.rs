@@ -2,7 +2,7 @@ use bevy::reflect::Reflect;
 use parking_lot::RwLock;
 
 use std::{sync::Arc, fmt::{Debug,Display, Formatter}, cell::UnsafeCell};
-use crate::{ScriptRef, ScriptRefBase, ReflectPtr, api::FromLua};
+use crate::{ScriptRef, ScriptRefBase, ReflectPtr, api::FromLua, IdentitySubReflect, SubReflect};
 
 
 /// Script representable type with pass-by-value semantics
@@ -94,11 +94,11 @@ impl <T : ScriptReference>LuaWrapper<T> {
     pub fn script_ref(&self) -> ScriptRef {
         match self {
             LuaWrapper::Owned(val, valid) => {
-                ScriptRef {
-                    root: ScriptRefBase::ScriptOwned { valid: Arc::downgrade(valid) },
-                    path: None,
-                    r: ReflectPtr::Mut(val.get()),
-                }
+                unsafe{ScriptRef::new(
+                    ScriptRefBase::ScriptOwned { valid: Arc::downgrade(valid) },
+                    None,
+                    ReflectPtr::Mut(val.get()),
+                )}
             },
             LuaWrapper::Ref(ref_) => {
                 ref_.clone()

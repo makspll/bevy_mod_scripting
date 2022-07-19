@@ -1,6 +1,9 @@
+use std::marker::PhantomData;
+
 use bevy::math::DQuat;
 use bevy::prelude::*;
 
+use bevy::reflect::FromType;
 use bevy_event_priority::PriorityEventWriter;
 use bevy_mod_scripting::mlu::mlua::UserData;
 use bevy_mod_scripting::{ReflectLuaProxyable, AddScriptApiProvider, ValueLuaType, RegisterForeignLuaType};
@@ -77,7 +80,7 @@ pub struct MyComponent {
     mat3: Mat3,
     vec4: Vec4,
     u8: u8,
-    option: Option<bool>,
+    option: Option<Vec3>,
     my_reflect_thing: MyReflectThing,
 }
 
@@ -123,7 +126,7 @@ fn main() -> std::io::Result<()> {
         .register_type::<MyReflectThing>()
         .register_type::<MyResource>()
         // note the implementation for Option is there, but we must register `LuaProxyable` for it, otherwise 
-        .register_foreign_lua_type::<Option<bool>>()
+        .register_foreign_lua_type::<Option<Vec3>>()
         .init_resource::<MyResource>()
         // this stage handles addition and removal of script contexts, we can safely use `CoreStage::PostUpdate`
         .add_script_host::<RLuaScriptHost<MyLuaArg>, _>(CoreStage::PostUpdate)

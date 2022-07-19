@@ -18,14 +18,15 @@ function on_update()
         -- assert(not ok)
 
         comp.u8 = 2
-        if comp.option == nil then
-            print("option was nil")
-            comp.option = true
-        end
-        if comp.option == true then
-            print("option was true")
-            comp.option = nil
-        end
+        -- if comp.option == nil then
+        --     print(string.format("option was %s", comp.option))
+        --     comp.option = Vec3.new(2,1,3)
+        --     print(string.format("option[1] is now %s", comp.option[1]))
+        --     comp.option[1] = 5
+        --     -- print(string.format("and now option[1] is %s", comp.option[1]))
+
+        -- end
+
 
         comp.vec2 = comp.vec2 + comp.vec2
 

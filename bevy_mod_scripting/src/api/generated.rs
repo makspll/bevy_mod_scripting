@@ -2,7 +2,7 @@
 use bevy_mod_scripting_derive::impl_lua_newtype;
 use std::ops::*;
 use crate::ReflectPtr;
-use crate::{RegisterForeignLuaType,LuaProxyable,ScriptRef,ScriptRefBase,ReflectedValue, api::ValueIndex, APIProvider, LuaDocFragment};
+use crate::{SubReflect,IdentitySubReflect,RegisterForeignLuaType,LuaProxyable,ScriptRef,ScriptRefBase,ReflectedValue, api::ValueIndex, APIProvider, LuaDocFragment};
 use std::sync::{Arc, Mutex};
 use crate::util::impl_tealr_type;
 use tealr::{mlu::{mlua,mlua::{prelude::*,MetaMethod,Value}},create_union_mlua};
@@ -6117,19 +6117,23 @@ impl_lua_newtype!{
 mut (MetaMethod::Index) => |_,s,idx : usize| {
     match s {
         LuaMat3::Owned(ref mut v, ref valid) => {
-            Ok(LuaVec3::Ref(ScriptRef{
-                root: ScriptRefBase::ScriptOwned{valid: Arc::downgrade((valid))},
-                r: ReflectPtr::Mut(v.get_mut().col_mut(idx)),
-                path: None
-            }))
+            Ok(LuaVec3::Ref(unsafe{
+                ScriptRef::new(
+                    ScriptRefBase::ScriptOwned{valid: Arc::downgrade((valid))},
+                    None,
+                    ReflectPtr::Mut(v.get_mut().col_mut(idx)),
+                    )}
+            ))
         },
         LuaMat3::Ref(ref mut r) => {
             r.get_mut(|s,r| {
-                Ok(LuaVec3::Ref(ScriptRef{
-                    root: r.root.clone(),
-                    r: ReflectPtr::Mut(s.downcast_mut::<Mat3>().unwrap().col_mut(idx)),
-                    path: None
-                })) 
+                Ok(LuaVec3::Ref(unsafe{
+                    ScriptRef::new(
+                        r.root.clone(),
+                        None,
+                        ReflectPtr::Mut(s.downcast_mut::<Mat3>().unwrap().col_mut(idx)),
+                    )}
+                )) 
             })
         }
     }
@@ -6245,19 +6249,23 @@ impl_lua_newtype!{
 mut (MetaMethod::Index) => |_,s,idx : usize| {
     match s {
         LuaMat2::Owned(ref mut v, ref valid) => {
-            Ok(LuaVec2::Ref(ScriptRef{
-                root: ScriptRefBase::ScriptOwned{valid: Arc::downgrade((valid))},
-                r: ReflectPtr::Mut(v.get_mut().col_mut(idx)),
-                path: None
-            }))
+            Ok(LuaVec2::Ref(unsafe{
+                ScriptRef::new(
+                    ScriptRefBase::ScriptOwned{valid: Arc::downgrade((valid))},
+                    None,
+                    ReflectPtr::Mut(v.get_mut().col_mut(idx)),
+                )}    
+            ))
         },
         LuaMat2::Ref(ref mut r) => {
             r.get_mut(|s,r| {
-                Ok(LuaVec2::Ref(ScriptRef{
-                    root: r.root.clone(),
-                    r: ReflectPtr::Mut(s.downcast_mut::<Mat2>().unwrap().col_mut(idx)),
-                    path: None
-                })) 
+                Ok(LuaVec2::Ref(unsafe{
+                    ScriptRef::new(
+                        r.root.clone(),
+                        None,
+                        ReflectPtr::Mut(s.downcast_mut::<Mat2>().unwrap().col_mut(idx)),
+                    )}
+                )) 
             })
         }
     }
@@ -6475,19 +6483,23 @@ impl_lua_newtype!{
 mut (MetaMethod::Index) => |_,s,idx : usize| {
     match s {
         LuaMat3A::Owned(ref mut v, ref valid) => {
-            Ok(LuaVec3A::Ref(ScriptRef{
-                root: ScriptRefBase::ScriptOwned{valid: Arc::downgrade((valid))},
-                r: ReflectPtr::Mut(v.get_mut().col_mut(idx)),
-                path: None
-            }))
+            Ok(LuaVec3A::Ref(unsafe{
+                ScriptRef::new(
+                    ScriptRefBase::ScriptOwned{valid: Arc::downgrade((valid))},
+                    None,
+                    ReflectPtr::Mut(v.get_mut().col_mut(idx)),
+                )}    
+            ))
         },
         LuaMat3A::Ref(ref mut r) => {
             r.get_mut(|s,r| {
-                Ok(LuaVec3A::Ref(ScriptRef{
-                    root: r.root.clone(),
-                    r: ReflectPtr::Mut(s.downcast_mut::<Mat3A>().unwrap().col_mut(idx)),
-                    path: None
-                })) 
+                Ok(LuaVec3A::Ref(unsafe{
+                    ScriptRef::new(
+                        r.root.clone(),
+                        None,
+                        ReflectPtr::Mut(s.downcast_mut::<Mat3A>().unwrap().col_mut(idx)),
+                    )}
+                )) 
             })
         }
     }
@@ -6836,19 +6848,23 @@ impl_lua_newtype!{
 mut (MetaMethod::Index) => |_,s,idx : usize| {
     match s {
         LuaMat4::Owned(ref mut v, ref valid) => {
-            Ok(LuaVec4::Ref(ScriptRef{
-                root: ScriptRefBase::ScriptOwned{valid: Arc::downgrade((valid))},
-                r: ReflectPtr::Mut(v.get_mut().col_mut(idx)),
-                path: None
-            }))
+            Ok(LuaVec4::Ref(unsafe{
+                ScriptRef::new(
+                    ScriptRefBase::ScriptOwned{valid: Arc::downgrade((valid))},
+                    None,
+                    ReflectPtr::Mut(v.get_mut().col_mut(idx)),
+                )}    
+            ))
         },
         LuaMat4::Ref(ref mut r) => {
             r.get_mut(|s,r| {
-                Ok(LuaVec4::Ref(ScriptRef{
-                    root: r.root.clone(),
-                    r: ReflectPtr::Mut(s.downcast_mut::<Mat4>().unwrap().col_mut(idx)),
-                    path: None
-                })) 
+                Ok(LuaVec4::Ref(unsafe{
+                    ScriptRef::new(
+                        r.root.clone(),
+                        None,
+                        ReflectPtr::Mut(s.downcast_mut::<Mat4>().unwrap().col_mut(idx)),
+                    )}
+                )) 
             })
         }
     }
@@ -6966,19 +6982,23 @@ impl_lua_newtype!{
 mut (MetaMethod::Index) => |_,s,idx : usize| {
     match s {
         LuaDMat2::Owned(ref mut v, ref valid) => {
-            Ok(LuaDVec2::Ref(ScriptRef{
-                root: ScriptRefBase::ScriptOwned{valid: Arc::downgrade((valid))},
-                r: ReflectPtr::Mut(v.get_mut().col_mut(idx)),
-                path: None
-            }))
+            Ok(LuaDVec2::Ref(unsafe{
+                ScriptRef::new(
+                    ScriptRefBase::ScriptOwned{valid: Arc::downgrade((valid))},
+                    None,
+                    ReflectPtr::Mut(v.get_mut().col_mut(idx)),
+                )}
+            ))
         },
         LuaDMat2::Ref(ref mut r) => {
             r.get_mut(|s,r| {
-                Ok(LuaDVec2::Ref(ScriptRef{
-                    root: r.root.clone(),
-                    r: ReflectPtr::Mut(s.downcast_mut::<DMat2>().unwrap().col_mut(idx)),
-                    path: None
-                })) 
+                Ok(LuaDVec2::Ref(unsafe{
+                    ScriptRef::new(
+                        r.root.clone(),
+                        None,
+                        ReflectPtr::Mut(s.downcast_mut::<DMat2>().unwrap().col_mut(idx)),
+                    )}
+                )) 
             })
         }
     }
@@ -7192,19 +7212,23 @@ impl_lua_newtype!{
 mut (MetaMethod::Index) => |_,s,idx : usize| {
     match s {
         LuaDMat3::Owned(ref mut v, ref valid) => {
-            Ok(LuaDVec3::Ref(ScriptRef{
-                root: ScriptRefBase::ScriptOwned{valid: Arc::downgrade((valid))},
-                r: ReflectPtr::Mut(v.get_mut().col_mut(idx)),
-                path: None
-            }))
+            Ok(LuaDVec3::Ref(unsafe{
+                ScriptRef::new(
+                    ScriptRefBase::ScriptOwned{valid: Arc::downgrade((valid))},
+                    None,
+                    ReflectPtr::Mut(v.get_mut().col_mut(idx)),
+                )}    
+            ))
         },
         LuaDMat3::Ref(ref mut r) => {
             r.get_mut(|s,r| {
-                Ok(LuaDVec3::Ref(ScriptRef{
-                    root: r.root.clone(),
-                    r: ReflectPtr::Mut(s.downcast_mut::<DMat3>().unwrap().col_mut(idx)),
-                    path: None
-                })) 
+                Ok(LuaDVec3::Ref(unsafe{
+                    ScriptRef::new(
+                        r.root.clone(),
+                        None,
+                        ReflectPtr::Mut(s.downcast_mut::<DMat3>().unwrap().col_mut(idx)),
+                    )}    
+                )) 
             })
         }
     }
@@ -7543,19 +7567,23 @@ impl_lua_newtype!{
 mut (MetaMethod::Index) => |_,s,idx : usize| {
     match s {
         LuaDMat4::Owned(ref mut v, ref valid) => {
-            Ok(LuaDVec4::Ref(ScriptRef{
-                root: ScriptRefBase::ScriptOwned{valid: Arc::downgrade((valid))},
-                r: ReflectPtr::Mut(v.get_mut().col_mut(idx)),
-                path: None
-            }))
+            Ok(LuaDVec4::Ref(unsafe{
+                ScriptRef::new(
+                    ScriptRefBase::ScriptOwned{valid: Arc::downgrade((valid))},
+                    None,
+                    ReflectPtr::Mut(v.get_mut().col_mut(idx)),
+                )}
+            ))
         },
         LuaDMat4::Ref(ref mut r) => {
             r.get_mut(|s,r| {
-                Ok(LuaDVec4::Ref(ScriptRef{
-                    root: r.root.clone(),
-                    r: ReflectPtr::Mut(s.downcast_mut::<DMat4>().unwrap().col_mut(idx)),
-                    path: None
-                })) 
+                Ok(LuaDVec4::Ref(unsafe{
+                    ScriptRef::new(
+                        r.root.clone(),
+                        None,      
+                        ReflectPtr::Mut(s.downcast_mut::<DMat4>().unwrap().col_mut(idx)),
+                    )}
+                )) 
             })
         }
     }
@@ -8945,21 +8973,21 @@ impl APIProvider for LuaBevyAPIProvider{
 		app.register_foreign_lua_type::<Quat>();
 		app.register_foreign_lua_type::<DQuat>();
 		app.register_foreign_lua_type::<EulerRot>();
-		app.register_foreign_lua_type::<f32>();
-		app.register_foreign_lua_type::<usize>();
-		app.register_foreign_lua_type::<u16>();
-		app.register_foreign_lua_type::<i64>();
-		app.register_foreign_lua_type::<u64>();
 		app.register_foreign_lua_type::<isize>();
-		app.register_foreign_lua_type::<i8>();
-		app.register_foreign_lua_type::<u32>();
-		app.register_foreign_lua_type::<u128>();
-		app.register_foreign_lua_type::<i16>();
+		app.register_foreign_lua_type::<u8>();
 		app.register_foreign_lua_type::<String>();
 		app.register_foreign_lua_type::<f64>();
-		app.register_foreign_lua_type::<u8>();
-		app.register_foreign_lua_type::<i32>();
+		app.register_foreign_lua_type::<u64>();
 		app.register_foreign_lua_type::<i128>();
+		app.register_foreign_lua_type::<u32>();
+		app.register_foreign_lua_type::<f32>();
+		app.register_foreign_lua_type::<i32>();
+		app.register_foreign_lua_type::<i64>();
+		app.register_foreign_lua_type::<i8>();
+		app.register_foreign_lua_type::<u128>();
+		app.register_foreign_lua_type::<i16>();
+		app.register_foreign_lua_type::<u16>();
+		app.register_foreign_lua_type::<usize>();
 	}
 }
 

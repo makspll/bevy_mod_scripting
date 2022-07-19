@@ -613,19 +613,23 @@ lua_methods=[
 mut (MetaMethod::Index) => |_,s,idx : usize| {
     match s {
         LuaMat3::Owned(ref mut v, ref valid) => {
-            Ok(LuaVec3::Ref(ScriptRef{
-                root: ScriptRefBase::ScriptOwned{valid: Arc::downgrade((valid))},
-                r: ReflectPtr::Mut(v.get_mut().col_mut(idx)),
-                path: None
-            }))
+            Ok(LuaVec3::Ref(unsafe{
+                ScriptRef::new(
+                    ScriptRefBase::ScriptOwned{valid: Arc::downgrade((valid))},
+                    None,
+                    ReflectPtr::Mut(v.get_mut().col_mut(idx)),
+                    )}
+            ))
         },
         LuaMat3::Ref(ref mut r) => {
             r.get_mut(|s,r| {
-                Ok(LuaVec3::Ref(ScriptRef{
-                    root: r.root.clone(),
-                    r: ReflectPtr::Mut(s.downcast_mut::<Mat3>().unwrap().col_mut(idx)),
-                    path: None
-                })) 
+                Ok(LuaVec3::Ref(unsafe{
+                    ScriptRef::new(
+                        r.root.clone(),
+                        None,
+                        ReflectPtr::Mut(s.downcast_mut::<Mat3>().unwrap().col_mut(idx)),
+                    )}
+                )) 
             })
         }
     }
@@ -642,19 +646,23 @@ lua_methods=[
 mut (MetaMethod::Index) => |_,s,idx : usize| {
     match s {
         LuaMat2::Owned(ref mut v, ref valid) => {
-            Ok(LuaVec2::Ref(ScriptRef{
-                root: ScriptRefBase::ScriptOwned{valid: Arc::downgrade((valid))},
-                r: ReflectPtr::Mut(v.get_mut().col_mut(idx)),
-                path: None
-            }))
+            Ok(LuaVec2::Ref(unsafe{
+                ScriptRef::new(
+                    ScriptRefBase::ScriptOwned{valid: Arc::downgrade((valid))},
+                    None,
+                    ReflectPtr::Mut(v.get_mut().col_mut(idx)),
+                )}    
+            ))
         },
         LuaMat2::Ref(ref mut r) => {
             r.get_mut(|s,r| {
-                Ok(LuaVec2::Ref(ScriptRef{
-                    root: r.root.clone(),
-                    r: ReflectPtr::Mut(s.downcast_mut::<Mat2>().unwrap().col_mut(idx)),
-                    path: None
-                })) 
+                Ok(LuaVec2::Ref(unsafe{
+                    ScriptRef::new(
+                        r.root.clone(),
+                        None,
+                        ReflectPtr::Mut(s.downcast_mut::<Mat2>().unwrap().col_mut(idx)),
+                    )}
+                )) 
             })
         }
     }
@@ -672,19 +680,23 @@ lua_methods=[
 mut (MetaMethod::Index) => |_,s,idx : usize| {
     match s {
         LuaMat3A::Owned(ref mut v, ref valid) => {
-            Ok(LuaVec3A::Ref(ScriptRef{
-                root: ScriptRefBase::ScriptOwned{valid: Arc::downgrade((valid))},
-                r: ReflectPtr::Mut(v.get_mut().col_mut(idx)),
-                path: None
-            }))
+            Ok(LuaVec3A::Ref(unsafe{
+                ScriptRef::new(
+                    ScriptRefBase::ScriptOwned{valid: Arc::downgrade((valid))},
+                    None,
+                    ReflectPtr::Mut(v.get_mut().col_mut(idx)),
+                )}    
+            ))
         },
         LuaMat3A::Ref(ref mut r) => {
             r.get_mut(|s,r| {
-                Ok(LuaVec3A::Ref(ScriptRef{
-                    root: r.root.clone(),
-                    r: ReflectPtr::Mut(s.downcast_mut::<Mat3A>().unwrap().col_mut(idx)),
-                    path: None
-                })) 
+                Ok(LuaVec3A::Ref(unsafe{
+                    ScriptRef::new(
+                        r.root.clone(),
+                        None,
+                        ReflectPtr::Mut(s.downcast_mut::<Mat3A>().unwrap().col_mut(idx)),
+                    )}
+                )) 
             })
         }
     }
@@ -701,19 +713,23 @@ lua_methods=[
 mut (MetaMethod::Index) => |_,s,idx : usize| {
     match s {
         LuaMat4::Owned(ref mut v, ref valid) => {
-            Ok(LuaVec4::Ref(ScriptRef{
-                root: ScriptRefBase::ScriptOwned{valid: Arc::downgrade((valid))},
-                r: ReflectPtr::Mut(v.get_mut().col_mut(idx)),
-                path: None
-            }))
+            Ok(LuaVec4::Ref(unsafe{
+                ScriptRef::new(
+                    ScriptRefBase::ScriptOwned{valid: Arc::downgrade((valid))},
+                    None,
+                    ReflectPtr::Mut(v.get_mut().col_mut(idx)),
+                )}    
+            ))
         },
         LuaMat4::Ref(ref mut r) => {
             r.get_mut(|s,r| {
-                Ok(LuaVec4::Ref(ScriptRef{
-                    root: r.root.clone(),
-                    r: ReflectPtr::Mut(s.downcast_mut::<Mat4>().unwrap().col_mut(idx)),
-                    path: None
-                })) 
+                Ok(LuaVec4::Ref(unsafe{
+                    ScriptRef::new(
+                        r.root.clone(),
+                        None,
+                        ReflectPtr::Mut(s.downcast_mut::<Mat4>().unwrap().col_mut(idx)),
+                    )}
+                )) 
             })
         }
     }
@@ -731,19 +747,23 @@ lua_methods=[
 mut (MetaMethod::Index) => |_,s,idx : usize| {
     match s {
         LuaDMat2::Owned(ref mut v, ref valid) => {
-            Ok(LuaDVec2::Ref(ScriptRef{
-                root: ScriptRefBase::ScriptOwned{valid: Arc::downgrade((valid))},
-                r: ReflectPtr::Mut(v.get_mut().col_mut(idx)),
-                path: None
-            }))
+            Ok(LuaDVec2::Ref(unsafe{
+                ScriptRef::new(
+                    ScriptRefBase::ScriptOwned{valid: Arc::downgrade((valid))},
+                    None,
+                    ReflectPtr::Mut(v.get_mut().col_mut(idx)),
+                )}
+            ))
         },
         LuaDMat2::Ref(ref mut r) => {
             r.get_mut(|s,r| {
-                Ok(LuaDVec2::Ref(ScriptRef{
-                    root: r.root.clone(),
-                    r: ReflectPtr::Mut(s.downcast_mut::<DMat2>().unwrap().col_mut(idx)),
-                    path: None
-                })) 
+                Ok(LuaDVec2::Ref(unsafe{
+                    ScriptRef::new(
+                        r.root.clone(),
+                        None,
+                        ReflectPtr::Mut(s.downcast_mut::<DMat2>().unwrap().col_mut(idx)),
+                    )}
+                )) 
             })
         }
     }
@@ -760,19 +780,23 @@ lua_methods=[
 mut (MetaMethod::Index) => |_,s,idx : usize| {
     match s {
         LuaDMat3::Owned(ref mut v, ref valid) => {
-            Ok(LuaDVec3::Ref(ScriptRef{
-                root: ScriptRefBase::ScriptOwned{valid: Arc::downgrade((valid))},
-                r: ReflectPtr::Mut(v.get_mut().col_mut(idx)),
-                path: None
-            }))
+            Ok(LuaDVec3::Ref(unsafe{
+                ScriptRef::new(
+                    ScriptRefBase::ScriptOwned{valid: Arc::downgrade((valid))},
+                    None,
+                    ReflectPtr::Mut(v.get_mut().col_mut(idx)),
+                )}    
+            ))
         },
         LuaDMat3::Ref(ref mut r) => {
             r.get_mut(|s,r| {
-                Ok(LuaDVec3::Ref(ScriptRef{
-                    root: r.root.clone(),
-                    r: ReflectPtr::Mut(s.downcast_mut::<DMat3>().unwrap().col_mut(idx)),
-                    path: None
-                })) 
+                Ok(LuaDVec3::Ref(unsafe{
+                    ScriptRef::new(
+                        r.root.clone(),
+                        None,
+                        ReflectPtr::Mut(s.downcast_mut::<DMat3>().unwrap().col_mut(idx)),
+                    )}    
+                )) 
             })
         }
     }
@@ -789,19 +813,23 @@ lua_methods=[
 mut (MetaMethod::Index) => |_,s,idx : usize| {
     match s {
         LuaDMat4::Owned(ref mut v, ref valid) => {
-            Ok(LuaDVec4::Ref(ScriptRef{
-                root: ScriptRefBase::ScriptOwned{valid: Arc::downgrade((valid))},
-                r: ReflectPtr::Mut(v.get_mut().col_mut(idx)),
-                path: None
-            }))
+            Ok(LuaDVec4::Ref(unsafe{
+                ScriptRef::new(
+                    ScriptRefBase::ScriptOwned{valid: Arc::downgrade((valid))},
+                    None,
+                    ReflectPtr::Mut(v.get_mut().col_mut(idx)),
+                )}
+            ))
         },
         LuaDMat4::Ref(ref mut r) => {
             r.get_mut(|s,r| {
-                Ok(LuaDVec4::Ref(ScriptRef{
-                    root: r.root.clone(),
-                    r: ReflectPtr::Mut(s.downcast_mut::<DMat4>().unwrap().col_mut(idx)),
-                    path: None
-                })) 
+                Ok(LuaDVec4::Ref(unsafe{
+                    ScriptRef::new(
+                        r.root.clone(),
+                        None,      
+                        ReflectPtr::Mut(s.downcast_mut::<DMat4>().unwrap().col_mut(idx)),
+                    )}
+                )) 
             })
         }
     }
