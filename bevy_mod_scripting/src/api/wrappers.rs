@@ -97,7 +97,7 @@ impl <T : ScriptReference>LuaWrapper<T> {
                 unsafe{ScriptRef::new(
                     ScriptRefBase::ScriptOwned { valid: Arc::downgrade(valid) },
                     None,
-                    ReflectPtr::Mut(val.get()),
+                    (val.get() as *mut dyn Reflect).into(),
                 )}
             },
             LuaWrapper::Ref(ref_) => {
@@ -113,8 +113,8 @@ impl <T : ScriptReference>LuaWrapper<T> {
         Self::Owned(UnsafeCell::new(b),Arc::new(RwLock::new(())))
     }
 
-    pub fn new_ref(b : &ScriptRef) -> Self {
-        Self::Ref(b.clone())
+    pub fn new_ref(b : ScriptRef) -> Self {
+        Self::Ref(b)
     }
 
     /// Perform an operation on the base type and optionally retrieve something by value

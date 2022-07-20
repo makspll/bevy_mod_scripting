@@ -1,4 +1,4 @@
-use crate::{impl_tealr_type, SubReflect};
+use crate::{impl_tealr_type, SubReflect, IdentitySubReflect, CompositeSubReflect};
 use anyhow::Result;
 use tealr::{mlu::{mlua,mlua::{prelude::*,Value,UserData,MetaMethod}, TealData, TealDataMethods}, TypeName};
 use std::{fmt::Debug, cell::{RefCell, Cell}};
@@ -32,9 +32,6 @@ pub struct ScriptRef{
     /// - Script owned value
     pub(crate) root: ScriptRefBase,
 
-    /// The reflection path from the root
-    pub(crate) path: Option<String>,
-
     /// A ptr caching the last reflection
     /// it's only safe to deref when we have appropriate world access..
     /// 
@@ -43,7 +40,17 @@ pub struct ScriptRef{
     /// the script ref will attempt to either retrieve a new reference from the root if it's a component or resource,
     /// or simply panick if there is no way to do that safely.
     pub(crate) r: Cell<ReflectPtr>,
+
+    /// The reflection path from the root
+    pub(crate) path: Option<String>,
+
+    /// A recipe to access some sub-component of the pointed to "object".
+    /// 
+    /// Allows us to do more than the standard Reflect API allows!
+    sub_reflect: CompositeSubReflect
 }
+
+
 
 impl ScriptRef {
 
@@ -62,7 +69,22 @@ impl ScriptRef {
             root,
             path,
             r: ptr.into(),
+            sub_reflect: CompositeSubReflect::default(),
         }
+    }
+
+    pub fn sub_ref(&self, get: fn(&dyn Reflect) -> &dyn Reflect,get_mut: fn(&mut dyn Reflect) -> &mut dyn Reflect) -> ScriptRef {
+        Self {
+            sub_reflect: self.sub_reflect.new_sub(get,get_mut),
+            ..self.clone()
+        }
+    }
+
+    fn get_sub_reflect<'a>(&self, ref_: &'a dyn Reflect) -> &'a dyn Reflect{
+        self.sub_reflect.sub_ref(ref_)
+    }
+    fn get_sub_reflect_mut<'a>(&self, ref_: &'a mut dyn Reflect) -> &'a mut dyn Reflect {
+        self.sub_reflect.sub_ref_mut(ref_)
     }
 
     /// Checks that the cached pointer is valid 
@@ -109,7 +131,7 @@ impl ScriptRef {
                 let g = g. try_read().expect("Rust safety violation: attempted to borrow world while it was already mutably borrowed");
                 
                 // unsafe since pointer may be dangling
-                let dyn_ref = self.r.get().const_ref();
+                let dyn_ref = self.get_sub_reflect(self.r.get().const_ref());
 
                 let o = f(dyn_ref);
 
@@ -124,7 +146,7 @@ impl ScriptRef {
                 let g = g.try_read().expect("Rust safety violation: attempted to borrow world while it was already mutably borrowed");
 
                 // unsafe since pointer may be dangling
-                let dyn_ref = self.r.get().const_ref();
+                let dyn_ref = self.get_sub_reflect(self.r.get().const_ref());
 
                 let o = f(dyn_ref);
 
@@ -140,7 +162,7 @@ impl ScriptRef {
 
                 let g = g.try_read().expect("Rust safety violation: attempted to borrow value {self:?} while it was already mutably borrowed");
 
-                let dyn_ref = self.r.get().const_ref();
+                let dyn_ref = self.get_sub_reflect(self.r.get().const_ref());
 
                 let o = f(dyn_ref);
 
@@ -150,7 +172,7 @@ impl ScriptRef {
                 o
             },
             ScriptRefBase::Stack => {
-                let dyn_ref = self.r.get().const_ref();
+                let dyn_ref = self.get_sub_reflect(self.r.get().const_ref());
                 f(dyn_ref)
             },
         }
@@ -205,22 +227,19 @@ impl ScriptRef {
 
                 // check we cached the mutable reference already
                 // safety: if we have mutable access to the world, no other reference to this value or world exists
-                match self.r.get() {
-                    ReflectPtr::Const(_) => {},
-                    ReflectPtr::Mut(r) => {
-                        
-                        // make sure that if this was cached, we also mark the component as changed appropriately
-                        // this is necessary if we decide to allow to hold LuaRefs for more than one frame!
-                        res.reflect_mut(&mut g)
-                            .unwrap()
-                            .set_changed();
+                let ptr = self.r.get();
+                if ptr.is_mut{
+                    // make sure that if this was cached, we also mark the component as changed appropriately
+                    // this is necessary if we decide to allow to hold LuaRefs for more than one frame!
+                    res.reflect_mut(&mut g)
+                        .unwrap()
+                        .set_changed();
 
-                        // this is safe since &mut g is now out of scope
-                        // the lock itself is not an active &mut reference
-                        let o = f(&mut *r,self);
-                        drop(g);
-                        return o
-                    },
+                    // this is safe since &mut g is now out of scope
+                    // the lock itself is not an active &mut reference
+                    let o = f(self.get_sub_reflect_mut(ptr.mut_ref().unwrap()),self);
+                    drop(g);
+                    return o
                 }
 
                 let mut ref_mut = res.reflect_mut(&mut g)
@@ -231,9 +250,9 @@ impl ScriptRef {
                     .unwrap();
 
                 // cache this pointer for future use
-                self.r = ReflectPtr::Mut(dyn_ref).into();
+                self.r.set((dyn_ref as *mut dyn Reflect).into());
 
-                let o = f(dyn_ref,self);
+                let o = f(self.get_sub_reflect_mut(dyn_ref),self);
                 drop(g);
                 o
             },
@@ -246,25 +265,20 @@ impl ScriptRef {
 
                 // check we cached the mutable reference already
                 // safety: if we have mutable access to the world, no other reference to this value or world exists
-                match self.r.get() {
-                    ReflectPtr::Const(_) => {},
-                    ReflectPtr::Mut(r) => {
-                        
-                        // make sure that if this was cached, we also mark the component as changed appropriately
-                        // this is necessary if we decide to allow to hold LuaRefs for more than one frame!
-                        comp.reflect_mut(&mut g, *entity)
-                            .unwrap()
-                            .set_changed();
+                let ptr = self.r.get();
+                if ptr.is_mut{
+                    // make sure that if this was cached, we also mark the component as changed appropriately
+                    // this is necessary if we decide to allow to hold LuaRefs for more than one frame!
+                    comp.reflect_mut(&mut g, *entity)
+                        .unwrap()
+                        .set_changed();
 
-                        // this is safe since &mut g is now out of scope
-                        // the lock itself is not an active &mut reference
-                        let o = f(&mut *r,self);
-                        drop(g);
-                        return o
-                    },
+                    // this is safe since &mut g is now out of scope
+                    // the lock itself is not an active &mut reference
+                    let o = f(self.get_sub_reflect_mut(ptr.mut_ref().unwrap()),self);
+                    drop(g);
+                    return o
                 }
-
-                println!("Pointer was {:?} recomputing",self.r);
 
                 let mut ref_mut = comp.reflect_mut(&mut g, *entity)
                     .unwrap();
@@ -274,9 +288,9 @@ impl ScriptRef {
                     .unwrap();
 
                 // cache this pointer for future use
-                self.r = ReflectPtr::Mut(dyn_ref).into();
+                self.r.set((dyn_ref as *mut dyn Reflect).into());
 
-                let o = f(dyn_ref,self);
+                let o = f(self.get_sub_reflect_mut(dyn_ref),self);
                 drop(g);
                 o
             },
@@ -286,7 +300,7 @@ impl ScriptRef {
            
                 let dyn_ref = self.r.get().mut_ref().expect("Mutable pointer not available!");
 
-                let o = f(dyn_ref,self);
+                let o = f(self.get_sub_reflect_mut(dyn_ref),self);
                 
                 // important
                 drop(g);
@@ -295,7 +309,7 @@ impl ScriptRef {
             },
             ScriptRefBase::Stack => {
                 let dyn_ref = self.r.get().mut_ref().expect("Mutable pointer not available!");
-                f(dyn_ref,self)
+                f(self.get_sub_reflect_mut(dyn_ref),self)
             },
             
         }    
@@ -397,7 +411,7 @@ impl ValueIndex<Cow<'static,str>> for ScriptRef {
                 ScriptRef::new(
                     self.root.clone(), 
                     Some(format!("{}.{index}",self.path.as_ref().unwrap())), 
-                    ReflectPtr::Const(field).into())
+                    (field as *const dyn Reflect).into())
             })
         })
     }
@@ -427,7 +441,7 @@ impl ValueIndex<usize> for ScriptRef{
                 ScriptRef::new( 
                     self.root.clone(), 
                     Some(format!("{}[{index}]",self.path.as_ref().unwrap())), 
-                    ReflectPtr::Const(field).into(),
+                    (field as *const dyn Reflect).into()
             )})
         })
     }
@@ -505,29 +519,42 @@ impl fmt::Debug for ScriptRefBase {
 }
 
 
+/// A pointer wrapper with some extra safety information about mutability.
 #[derive(Clone,Copy,Debug)]
-pub enum ReflectPtr {
-    Const(*const dyn Reflect),
-    Mut(*mut dyn Reflect),
+pub struct ReflectPtr {
+   /// the pointer to the data
+   ptr: *const dyn Reflect,
+   /// a safety bit, if false, cannot cast as mutable pointer
+   is_mut: bool,
+}
+
+impl From<*const dyn Reflect> for ReflectPtr {
+    fn from(ptr: *const dyn Reflect) -> Self {
+        Self { ptr, is_mut: false }
+    }
+}
+
+impl From<*mut dyn Reflect> for ReflectPtr {
+    fn from(ptr: *mut dyn Reflect) -> Self {
+        Self { ptr, is_mut: true }
+    }
 }
 
 impl ReflectPtr {
     /// dereference the pointer as an immutable reference.
     /// The caller must ensure the pointer is valid. 
     pub unsafe fn const_ref<'a>(self) -> &'a dyn Reflect {
-        match self {
-            ReflectPtr::Const(c) => &*c,
-            ReflectPtr::Mut(c) => &*c,
-        }
+        &*self.ptr
     }
 
     /// Dereference the pointer as a mutable reference,
     /// 
     /// The caller must ensure the pointer is valid. Returns None if the underlying pointer is const
     pub unsafe fn mut_ref<'a>(self) -> Option<&'a mut dyn Reflect> {
-        match self {
-            ReflectPtr::Const(_) => None,
-            ReflectPtr::Mut(c) => Some(&mut *c),
+        if self.is_mut {
+            Some(&mut *(self.ptr as *mut dyn Reflect))
+        } else {
+            None
         }
     }
 }
@@ -607,7 +634,7 @@ mod test {
 
 
             let refl_ref = refl.reflect(world,entity).unwrap();
-            let ptr : ReflectPtr = ReflectPtr::Const(refl_ref);
+            let ptr : ReflectPtr = (refl_ref as *const dyn Reflect).into();
 
             component_ref1 =unsafe{
                 ScriptRef::new(
@@ -652,7 +679,7 @@ mod test {
                                 Vec3::new(4.0,5.0,6.0),
                                 Vec3::new(7.0,8.0,9.0));
         
-        let ptr : ReflectPtr = ReflectPtr::Mut(mat.col_mut(0));
+        let ptr : ReflectPtr = (mat.col_mut(0) as *mut dyn Reflect).into();
         let valid = Arc::new(RwLock::new(()));
 
         let mut ref1 = unsafe{ ScriptRef::new(

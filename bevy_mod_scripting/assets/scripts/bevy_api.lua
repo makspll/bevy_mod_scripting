@@ -18,14 +18,14 @@ function on_update()
         -- assert(not ok)
 
         comp.u8 = 2
-        -- if comp.option == nil then
-        --     print(string.format("option was %s", comp.option))
-        --     comp.option = Vec3.new(2,1,3)
-        --     print(string.format("option[1] is now %s", comp.option[1]))
-        --     comp.option[1] = 5
-        --     -- print(string.format("and now option[1] is %s", comp.option[1]))
 
-        -- end
+        if comp.option == nil then
+            print(string.format("option was %s", comp.option))
+            comp.option = Vec3.new(2,1,3)
+            print(string.format("option[1] is now %s", comp.option[1]))
+            comp.option[1] = 5
+            print(string.format("and now option[1] is %s", comp.option[1]))
+        end
 
 
         comp.vec2 = comp.vec2 + comp.vec2
@@ -34,7 +34,7 @@ function on_update()
         comp.usize = comp.vec2:min_element()
         comp.f32 = comp.f32 + comp.f32 + comp.vec2:min_element()
         comp.vec2 = Vec2.new(2,1)
-        comp.vec3 = Vec3.new(0,1,0):any_orthonormal_vector() + comp.mat3.x_axis
+        comp.vec3 = Vec3.new(0,1,0):any_orthonormal_vector() + comp.mat3.x_axis + comp.option
         comp.vec4 = Vec4.splat(3)
         comp.quat = Quat.from_xyzw(3,2,1,4)
         -- comp.dquat = comp.dquat * 2

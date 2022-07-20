@@ -30,7 +30,7 @@ pub(crate) fn make_fields<'a>(flag: &DeriveFlag,new_type : &'a Newtype, out : &m
 
         let expr_getter = type_string.starts_with("Lua") 
             .then(|| {quote_spanned!{f.span()=>
-                Ok(#type_::new_ref(&s.script_ref().index(std::borrow::Cow::Borrowed(#id_string))?))
+                Ok(#type_::new_ref(s.script_ref().index(std::borrow::Cow::Borrowed(#id_string))?))
             }}).unwrap_or_else(|| {
                 if type_string == "ReflectedValue" {
                     return quote_spanned!{f.span()=>

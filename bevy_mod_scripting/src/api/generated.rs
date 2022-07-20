@@ -2,7 +2,7 @@
 use bevy_mod_scripting_derive::impl_lua_newtype;
 use std::ops::*;
 use crate::ReflectPtr;
-use crate::{SubReflect,IdentitySubReflect,RegisterForeignLuaType,LuaProxyable,ScriptRef,ScriptRefBase,ReflectedValue, api::ValueIndex, APIProvider, LuaDocFragment};
+use crate::{RegisterForeignLuaType,LuaProxyable,ScriptRef,ScriptRefBase,ReflectedValue, api::ValueIndex, APIProvider, LuaDocFragment};
 use std::sync::{Arc, Mutex};
 use crate::util::impl_tealr_type;
 use tealr::{mlu::{mlua,mlua::{prelude::*,MetaMethod,Value}},create_union_mlua};
@@ -6121,7 +6121,7 @@ mut (MetaMethod::Index) => |_,s,idx : usize| {
                 ScriptRef::new(
                     ScriptRefBase::ScriptOwned{valid: Arc::downgrade((valid))},
                     None,
-                    ReflectPtr::Mut(v.get_mut().col_mut(idx)),
+                    (v.get_mut().col_mut(idx) as *mut dyn Reflect).into(),
                     )}
             ))
         },
@@ -6131,7 +6131,7 @@ mut (MetaMethod::Index) => |_,s,idx : usize| {
                     ScriptRef::new(
                         r.root.clone(),
                         None,
-                        ReflectPtr::Mut(s.downcast_mut::<Mat3>().unwrap().col_mut(idx)),
+                        (s.downcast_mut::<Mat3>().unwrap().col_mut(idx) as *mut dyn Reflect).into(),
                     )}
                 )) 
             })
@@ -6253,7 +6253,7 @@ mut (MetaMethod::Index) => |_,s,idx : usize| {
                 ScriptRef::new(
                     ScriptRefBase::ScriptOwned{valid: Arc::downgrade((valid))},
                     None,
-                    ReflectPtr::Mut(v.get_mut().col_mut(idx)),
+                    (v.get_mut().col_mut(idx) as *mut dyn Reflect).into(),
                 )}    
             ))
         },
@@ -6263,7 +6263,7 @@ mut (MetaMethod::Index) => |_,s,idx : usize| {
                     ScriptRef::new(
                         r.root.clone(),
                         None,
-                        ReflectPtr::Mut(s.downcast_mut::<Mat2>().unwrap().col_mut(idx)),
+                        (s.downcast_mut::<Mat2>().unwrap().col_mut(idx) as *mut dyn Reflect).into(),
                     )}
                 )) 
             })
@@ -6487,7 +6487,7 @@ mut (MetaMethod::Index) => |_,s,idx : usize| {
                 ScriptRef::new(
                     ScriptRefBase::ScriptOwned{valid: Arc::downgrade((valid))},
                     None,
-                    ReflectPtr::Mut(v.get_mut().col_mut(idx)),
+                    (v.get_mut().col_mut(idx) as *mut dyn Reflect).into(),
                 )}    
             ))
         },
@@ -6497,7 +6497,7 @@ mut (MetaMethod::Index) => |_,s,idx : usize| {
                     ScriptRef::new(
                         r.root.clone(),
                         None,
-                        ReflectPtr::Mut(s.downcast_mut::<Mat3A>().unwrap().col_mut(idx)),
+                        (s.downcast_mut::<Mat3A>().unwrap().col_mut(idx) as *mut dyn Reflect).into(),
                     )}
                 )) 
             })
@@ -6852,7 +6852,7 @@ mut (MetaMethod::Index) => |_,s,idx : usize| {
                 ScriptRef::new(
                     ScriptRefBase::ScriptOwned{valid: Arc::downgrade((valid))},
                     None,
-                    ReflectPtr::Mut(v.get_mut().col_mut(idx)),
+                    (v.get_mut().col_mut(idx) as *mut dyn Reflect).into(),
                 )}    
             ))
         },
@@ -6862,7 +6862,7 @@ mut (MetaMethod::Index) => |_,s,idx : usize| {
                     ScriptRef::new(
                         r.root.clone(),
                         None,
-                        ReflectPtr::Mut(s.downcast_mut::<Mat4>().unwrap().col_mut(idx)),
+                        (s.downcast_mut::<Mat4>().unwrap().col_mut(idx) as *mut dyn Reflect).into(),
                     )}
                 )) 
             })
@@ -6986,7 +6986,7 @@ mut (MetaMethod::Index) => |_,s,idx : usize| {
                 ScriptRef::new(
                     ScriptRefBase::ScriptOwned{valid: Arc::downgrade((valid))},
                     None,
-                    ReflectPtr::Mut(v.get_mut().col_mut(idx)),
+                    (v.get_mut().col_mut(idx) as *mut dyn Reflect).into(),
                 )}
             ))
         },
@@ -6996,7 +6996,7 @@ mut (MetaMethod::Index) => |_,s,idx : usize| {
                     ScriptRef::new(
                         r.root.clone(),
                         None,
-                        ReflectPtr::Mut(s.downcast_mut::<DMat2>().unwrap().col_mut(idx)),
+                        (s.downcast_mut::<DMat2>().unwrap().col_mut(idx) as *mut dyn Reflect).into(),
                     )}
                 )) 
             })
@@ -7216,7 +7216,7 @@ mut (MetaMethod::Index) => |_,s,idx : usize| {
                 ScriptRef::new(
                     ScriptRefBase::ScriptOwned{valid: Arc::downgrade((valid))},
                     None,
-                    ReflectPtr::Mut(v.get_mut().col_mut(idx)),
+                    (v.get_mut().col_mut(idx) as *mut dyn Reflect).into(),
                 )}    
             ))
         },
@@ -7226,7 +7226,7 @@ mut (MetaMethod::Index) => |_,s,idx : usize| {
                     ScriptRef::new(
                         r.root.clone(),
                         None,
-                        ReflectPtr::Mut(s.downcast_mut::<DMat3>().unwrap().col_mut(idx)),
+                        (s.downcast_mut::<DMat3>().unwrap().col_mut(idx) as *mut dyn Reflect).into(),
                     )}    
                 )) 
             })
@@ -7571,7 +7571,7 @@ mut (MetaMethod::Index) => |_,s,idx : usize| {
                 ScriptRef::new(
                     ScriptRefBase::ScriptOwned{valid: Arc::downgrade((valid))},
                     None,
-                    ReflectPtr::Mut(v.get_mut().col_mut(idx)),
+                    (v.get_mut().col_mut(idx) as *mut dyn Reflect).into(),
                 )}
             ))
         },
@@ -7581,7 +7581,7 @@ mut (MetaMethod::Index) => |_,s,idx : usize| {
                     ScriptRef::new(
                         r.root.clone(),
                         None,      
-                        ReflectPtr::Mut(s.downcast_mut::<DMat4>().unwrap().col_mut(idx)),
+                        (s.downcast_mut::<DMat4>().unwrap().col_mut(idx) as *mut dyn Reflect).into(),
                     )}
                 )) 
             })
@@ -8973,21 +8973,21 @@ impl APIProvider for LuaBevyAPIProvider{
 		app.register_foreign_lua_type::<Quat>();
 		app.register_foreign_lua_type::<DQuat>();
 		app.register_foreign_lua_type::<EulerRot>();
-		app.register_foreign_lua_type::<isize>();
-		app.register_foreign_lua_type::<u8>();
-		app.register_foreign_lua_type::<String>();
-		app.register_foreign_lua_type::<f64>();
-		app.register_foreign_lua_type::<u64>();
-		app.register_foreign_lua_type::<i128>();
-		app.register_foreign_lua_type::<u32>();
-		app.register_foreign_lua_type::<f32>();
-		app.register_foreign_lua_type::<i32>();
-		app.register_foreign_lua_type::<i64>();
 		app.register_foreign_lua_type::<i8>();
-		app.register_foreign_lua_type::<u128>();
 		app.register_foreign_lua_type::<i16>();
-		app.register_foreign_lua_type::<u16>();
+		app.register_foreign_lua_type::<u32>();
 		app.register_foreign_lua_type::<usize>();
+		app.register_foreign_lua_type::<u16>();
+		app.register_foreign_lua_type::<u8>();
+		app.register_foreign_lua_type::<f64>();
+		app.register_foreign_lua_type::<i128>();
+		app.register_foreign_lua_type::<String>();
+		app.register_foreign_lua_type::<i32>();
+		app.register_foreign_lua_type::<u128>();
+		app.register_foreign_lua_type::<u64>();
+		app.register_foreign_lua_type::<i64>();
+		app.register_foreign_lua_type::<f32>();
+		app.register_foreign_lua_type::<isize>();
 	}
 }
 

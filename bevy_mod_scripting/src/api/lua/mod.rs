@@ -82,7 +82,7 @@ impl <'lua>ToLua<'lua> for ScriptRef {
         let typedata = world.resource::<TypeRegistry>();
         let g = typedata.read();
         if let Some(v) = g.get_type_data::<ReflectLuaProxyable>(self.get(|s| s.type_id())) {
-            Ok(v.ref_to_lua(&self,ctx)?)
+            Ok(v.ref_to_lua(self,ctx)?)
         } else {
             ReflectedValue{ref_: self.clone()}.to_lua(ctx)
         }
@@ -138,7 +138,7 @@ pub trait LuaProxyable : {
     /// 
     /// Note: The self reference is sourced from the given ScriptRef, attempting to get another mutable reference from the ScriptRef might
     /// cause a runtime error to prevent breaking of aliasing rules
-    fn ref_to_lua<'lua>(self_ : &ScriptRef, lua: &'lua Lua) -> mlua::Result<Value<'lua>>;
+    fn ref_to_lua<'lua>(self_ : ScriptRef, lua: &'lua Lua) -> mlua::Result<Value<'lua>>;
 
     /// similar to [`Reflect::apply`]
     /// 
@@ -153,14 +153,14 @@ pub trait LuaProxyable : {
 /// This allows casting static methods from the `LuaProxyable trait`.
 #[derive(Clone)]
 pub struct ReflectLuaProxyable {
-    ref_to_lua: for<'lua> fn(ref_ : &ScriptRef, lua: &'lua Lua) -> mlua::Result<Value<'lua>>,
+    ref_to_lua: for<'lua> fn(ref_ : ScriptRef, lua: &'lua Lua) -> mlua::Result<Value<'lua>>,
     apply_lua: for<'lua> fn(ref_ : &mut ScriptRef, lua: &'lua Lua, new_val: Value<'lua>) -> mlua::Result<()>,
 }
 
 impl ReflectLuaProxyable {
     pub fn ref_to_lua<'lua>(
         &self,
-        ref_ : &ScriptRef, lua: &'lua Lua
+        ref_ : ScriptRef, lua: &'lua Lua
     ) -> mlua::Result<Value<'lua>> {
         (self.ref_to_lua)(ref_,lua)
     }
@@ -190,7 +190,7 @@ impl<T: LuaProxyable + bevy::reflect::Reflect> bevy::reflect::FromType<T> for Re
 pub trait ValueLuaType {}
 
 impl<T: Clone + UserData + Send + ValueLuaType + Reflect + 'static> LuaProxyable for T {
-    fn ref_to_lua<'lua>(self_ : &ScriptRef, lua: &'lua Lua) -> mlua::Result<Value<'lua>>{
+    fn ref_to_lua<'lua>(self_ : ScriptRef, lua: &'lua Lua) -> mlua::Result<Value<'lua>>{
         self_.get_typed(|s: &Self| s.clone().to_lua(lua))
     }
 
@@ -221,7 +221,7 @@ macro_rules! impl_copy_custom_user_data(
         paste! {
             $(
                 impl LuaProxyable for $num_ty {
-                    fn ref_to_lua< 'lua>(self_: &crate::ScriptRef,lua: & 'lua tealr::mlu::mlua::Lua) -> tealr::mlu::mlua::Result<tealr::mlu::mlua::Value< 'lua> >  {
+                    fn ref_to_lua< 'lua>(self_: crate::ScriptRef,lua: & 'lua tealr::mlu::mlua::Lua) -> tealr::mlu::mlua::Result<tealr::mlu::mlua::Value< 'lua> >  {
                         self_.get_typed(|self_ : &Self| self_.to_lua(lua))
                     }
                 
@@ -242,7 +242,7 @@ impl_copy_custom_user_data!(i8,i16,i32,i64,i128,isize);
 impl_copy_custom_user_data!(u8,u16,u32,u64,u128,usize);
 
 impl LuaProxyable for String {
-    fn ref_to_lua<'lua>(self_: &ScriptRef,lua: & 'lua Lua) -> mlua::Result<Value< 'lua> >  {
+    fn ref_to_lua<'lua>(self_: ScriptRef,lua: & 'lua Lua) -> mlua::Result<Value< 'lua> >  {
         self_.get_typed(|self_ : &String| self_.as_str().to_lua(lua))
     }
 
@@ -251,10 +251,22 @@ impl LuaProxyable for String {
     }
 }
 
-impl <T : for<'a> ToLua<'a> + for<'a> FromLua<'a> + Reflect + for <'a> Deserialize<'a> + serde::Serialize + Clone>LuaProxyable for Option<T>{
-    fn ref_to_lua< 'lua>(self_: &ScriptRef,lua: & 'lua Lua) -> mlua::Result<Value< 'lua>>  {
+impl <T : LuaProxyable + Reflect + for <'a> Deserialize<'a> + serde::Serialize + Default + Clone>LuaProxyable for Option<T>{
+    fn ref_to_lua< 'lua>(self_: ScriptRef,lua: & 'lua Lua) -> mlua::Result<Value< 'lua>>  {
         self_.get_typed(|s : &Option<T>| match  s {
-            Some(v) => v.clone().to_lua(lua),
+            Some(v) => T::ref_to_lua(self_.sub_ref(
+                    |ref_| 
+                        ref_.downcast_ref::<Option<T>>()
+                            .unwrap()
+                            .as_ref()
+                            .unwrap(),
+                    |ref_| 
+                        ref_.downcast_mut::<Option<T>>()
+                            .unwrap()
+                            .as_mut()
+                            .unwrap()
+                    )
+                ,lua ),
             None => Ok(Value::Nil),
         })
     }
@@ -263,10 +275,34 @@ impl <T : for<'a> ToLua<'a> + for<'a> FromLua<'a> + Reflect + for <'a> Deseriali
         if let Value::Nil = new_val {
             self_.get_mut_typed(|s : &mut Option<T>,_| Ok(*s = None))
         } else {
-            self_.get_mut_typed(|s,_| Ok(*s = Some(T::from_lua(new_val, lua)?)))
+            // we need to do this in two passes, first 
+            // ensure that the target type is the 'some' variant to allow a sub reference
+            self_.get_mut_typed(|s : &mut Option<T>,_| {
+                if s.is_none() {
+                    *s = Some(T::default());
+                }
+            });
+
+            T::apply_lua(
+                &mut self_.sub_ref(
+                    |ref_| 
+                        ref_.downcast_ref::<Option<T>>()
+                            .unwrap()
+                            .as_ref()
+                            .unwrap(),
+                    |ref_| 
+                        ref_.downcast_mut::<Option<T>>()
+                            .unwrap()
+                            .as_mut()
+                            .unwrap()
+                    )
+                ,lua, 
+                new_val)
+            
         }
     }
 }
+
 
 
 #[derive(Clone)]
@@ -509,7 +545,7 @@ impl TealData for LuaWorld {
                             world: world.as_ref().clone()
                         }, 
                         Some("".to_string()), 
-                        ReflectPtr::Const(component_data.reflect(w,entity).unwrap()).into(),
+                        (component_data.reflect(w,entity).unwrap() as *const dyn Reflect).into(),
                     )
                 }
             )
@@ -538,7 +574,7 @@ impl TealData for LuaWorld {
                                 world: world.as_ref().clone()
                             }, 
                             Some("".to_string()), 
-                            ReflectPtr::Const(component),
+                            (component as *const dyn Reflect).into(),
                         )
                     }
                 ))
@@ -594,7 +630,7 @@ impl TealData for LuaWorld {
                                 world: world.as_ref().clone()
                             }, 
                             Some("".to_string()), 
-                            ReflectPtr::Const(component),
+                            (component as *const dyn Reflect).into(),
                         )
                     }
                 ))
