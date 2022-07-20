@@ -37,7 +37,7 @@ function on_update()
         comp.vec3 = Vec3.new(0,1,0):any_orthonormal_vector() + comp.mat3.x_axis + comp.option
         comp.vec4 = Vec4.splat(3)
         comp.quat = Quat.from_xyzw(3,2,1,4)
-        -- comp.dquat = comp.dquat * 2
+        comp.dquat = comp.dquat * 2
         comp.my_reflect_thing.hello = "bye world!"
         a = Mat3.from_cols(Vec3.new(1,0,0),Vec3.new(0,1,0),Vec3.new(0,0,-1))
 

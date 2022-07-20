@@ -11,7 +11,7 @@ use bevy_mod_scripting::{
     AddScriptHost, AddScriptHostHandler, LuaEvent, LuaFile, RLuaScriptHost,
     Recipients, Script, ScriptCollection, ScriptingPlugin,
     langs::mlu::mlua,
-    lua::LuaBevyAPIProvider
+    lua::bevy::LuaBevyAPIProvider
 };
 
 

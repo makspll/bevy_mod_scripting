@@ -22,9 +22,9 @@ pub trait PrintReflect {
 macro_rules! impl_tealr_type {
     ($v:ty) => {
         impl tealr::TypeName for $v {
-            fn get_type_parts() -> std::borrow::Cow<'static, [tealr::NamePart]> {
-                std::borrow::Cow::Borrowed(&[tealr::NamePart::Type(tealr::TealType {
-                    name: std::borrow::Cow::Borrowed(stringify!($v)),
+            fn get_type_parts() -> ::std::borrow::Cow<'static, [tealr::NamePart]> {
+                ::std::borrow::Cow::Borrowed(&[tealr::NamePart::Type(tealr::TealType {
+                    name: ::std::borrow::Cow::Borrowed(stringify!($v)),
                     generics: None,
                     type_kind: tealr::KindOfType::External,
                 })]) 

@@ -1,0 +1,394 @@
+use ::std::borrow::Cow;
+use ::std::marker::PhantomData;
+use ::std::mem::MaybeUninit;
+use ::std::sync::{Weak,Arc};
+use ::std::convert::AsRef;
+use ::std::ops::{Deref,DerefMut};
+use crate::{ScriptRef, ReflectedValue, impl_tealr_type, ScriptRefBase, ReflectPtr, ValueIndex, IdentitySubReflect, SubReflect, LuaWrapper};
+use ::bevy::ecs::system::Command;
+use ::bevy::hierarchy::BuildWorldChildren;
+use ::bevy::reflect::{ReflectRef, FromReflect};
+use ::bevy::reflect::erased_serde::Serialize;
+use ::bevy::{reflect::{reflect_trait, Reflect, TypeRegistry, TypeRegistration, DynamicStruct, DynamicTupleStruct, DynamicTuple, DynamicList, DynamicArray, DynamicMap}, prelude::{World, ReflectComponent, ReflectDefault, ReflectResource}, hierarchy::{Children, Parent, DespawnChildrenRecursive, DespawnRecursive}};
+
+use parking_lot::RwLock;
+use serde::Deserialize;
+use tealr::TypeName;
+use tealr::mlu::mlua::MetaMethod;
+use tealr::mlu::{mlua::{Lua, Value,self, UserData, ToLua,FromLua}, TealData, TealDataMethods};
+pub use crate::api::generated::*;
+
+
+#[derive(Clone)]
+pub struct LuaTypeRegistration(Arc<TypeRegistration>);
+impl_tealr_type!(LuaTypeRegistration);
+
+
+impl TealData for LuaTypeRegistration {
+    fn add_methods<'lua, T: TealDataMethods<'lua, Self>>(methods: &mut T) {
+        methods.document_type("An object representing an existing and registered rust type.");
+        methods.document_type("Can be obtained via [`LuaWorld::get_type_by_name`].");
+    }
+
+    fn add_fields<'lua, F: tealr::mlu::TealDataFields<'lua, Self>>(fields: &mut F) {
+        fields.document("The [short name](https://docs.rs/bevy/latest/bevy/reflect/struct.TypeRegistration.html#method.get_short_name) of a type");
+        fields.add_field_method_get("short_name", |_,s| Ok(s.0.short_name().to_string()));
+        
+        fields.document("The full name of the type");
+        fields.add_field_method_get("type_name", |_,s| Ok(s.0.type_name()));
+    }
+}
+
+impl Deref for LuaTypeRegistration {
+    type Target=TypeRegistration;
+
+    fn deref(&self) -> &Self::Target {
+        &self.0
+    }
+}
+
+#[derive(Clone)]
+pub struct LuaWorld(Weak<RwLock<World>>);
+
+impl Deref for LuaWorld {
+    type Target = Weak<RwLock<World>>;
+
+    fn deref(&self) -> &Self::Target {
+        &self.0
+    }
+}
+
+impl AsRef<Weak<RwLock<World>>> for LuaWorld {
+    fn as_ref(&self) -> &Weak<RwLock<World>> {
+        &self.0
+    }
+}
+
+impl LuaWorld {
+    pub fn new(w : Weak<RwLock<World>>) -> Self {
+        Self(w)
+    }
+}
+
+impl_tealr_type!(LuaWorld);
+
+impl TealData for LuaWorld {
+    fn add_methods<'lua, T: TealDataMethods<'lua, Self>>(methods: &mut T) {
+
+        methods.document_type("Represents the bevy world all scripts live in.");
+        methods.document_type("Provides ways to interact with and modify the world.");
+
+
+        methods.document("Retrieves children entities of the parent entity if it has any.");
+        methods.add_method("get_children", |_,world, parent : LuaEntity| {
+            let w = world.upgrade().unwrap();
+            let w = &mut w.write();
+            
+            let children : Option<Vec<LuaEntity>> = w.get::<Children>(parent.clone())
+                .map(|children| children.iter().map(|e| LuaEntity::new(*e)).collect::<Vec<_>>());
+
+            Ok(children)
+        });
+
+        methods.document("Retrieves the parent entity of the given entity if it has any.");
+        methods.add_method("get_parent", |_,world, parent : LuaEntity| {
+            let w = world.upgrade().unwrap();
+            let w = &mut w.write();
+            
+            let parent : Option<LuaEntity> = w.get::<Parent>(parent.clone())
+                .map(|parent| LuaEntity::new(parent.0));
+
+            Ok(parent)
+        });
+
+        methods.document("Attaches children entities to the given parent entity.");
+        methods.add_method("push_children", |_,world, (parent,children) : (LuaEntity,Vec<LuaEntity>)| {
+            let w = world.upgrade().unwrap();
+            let w = &mut w.write();
+            let children = children.iter().map(|e| e.clone()).collect::<Vec<_>>();
+            
+            w.get_entity_mut(parent.clone())
+                .map(|mut entity| {entity.push_children(&children);});
+
+            Ok(())
+        });
+
+        methods.document("Attaches child entity to the given parent entity.");
+        methods.add_method("push_child", |_,world, (parent,child) : (LuaEntity,LuaEntity)| {
+            let w = world.upgrade().unwrap();
+            let w = &mut w.write();
+            
+            w.get_entity_mut(parent.clone())
+                .map(|mut entity| {entity.push_children(&[child.clone()]);});
+
+            Ok(())
+        });
+
+        methods.document("Removes children entities from the given parent entity.");
+        methods.add_method("remove_children", |_,world, (parent,children) : (LuaEntity,Vec<LuaEntity>)| {
+            let w = world.upgrade().unwrap();
+            let w = &mut w.write();
+            let children = children.iter().map(|e| e.clone()).collect::<Vec<_>>();
+
+            w.get_entity_mut(parent.clone())
+                .map(|mut entity| {entity.remove_children(&children);});
+
+            Ok(())
+        });
+
+        methods.document("Removes child entity from the given parent entity.");
+        methods.add_method("remove_child", |_,world, (parent,child) : (LuaEntity,LuaEntity)| {
+            let w = world.upgrade().unwrap();
+            let w = &mut w.write();
+
+            w.get_entity_mut(parent.clone())
+                .map(|mut entity| {entity.remove_children(&[child.clone()]);});
+
+            Ok(())
+        });
+
+        methods.document("Inserts children entities to the given parent entity at the given index.");
+        methods.add_method("insert_children", |_,world, (parent,index,children) : (LuaEntity,usize,Vec<LuaEntity>)| {
+            let w = world.upgrade().unwrap();
+            let w = &mut w.write();
+            let children = children.iter().map(|e| e.clone()).collect::<Vec<_>>();
+
+            w.get_entity_mut(parent.clone())
+                .map(|mut entity| {entity.insert_children(index, &children);});
+
+            Ok(())
+        });
+
+        methods.document("Inserts child entity to the given parent entity at the given index.");
+        methods.add_method("insert_child", |_,world, (parent,index,children) : (LuaEntity,usize,LuaEntity)| {
+            let w = world.upgrade().unwrap();
+            let w = &mut w.write();
+
+            w.get_entity_mut(parent.clone())
+                .map(|mut entity| {entity.insert_children(index, &[children.clone()]);});
+
+            Ok(())
+        });
+
+        methods.document("Despawns the given entity's children recursively");
+        methods.add_method("despawn_children_recursive", |_,world, entity : LuaEntity| {
+            let w = world.upgrade().unwrap();
+            let w = &mut w.write();
+
+            Ok(DespawnChildrenRecursive{
+                entity: entity.clone(),
+            }.write(w))
+        });
+
+        methods.document("Despawns the given entity and the entity's children recursively");
+        methods.add_method("despawn_recursive", |_,world, entity : LuaEntity| {
+            let w = world.upgrade().unwrap();
+            let w = &mut w.write();
+
+            Ok(DespawnRecursive{
+                entity: entity.clone(),
+            }.write(w))
+        });
+
+        methods.document("Despawns the given entity and the entity's children recursively");
+        methods.add_method("insert_children", |_,world, entity : LuaEntity| {
+            let w = world.upgrade().unwrap();
+            let w = &mut w.write();
+
+            Ok(DespawnRecursive{
+                entity: entity.clone(),
+            }.write(w))
+        });
+    
+        methods.document("Retrieves type information given either a short (`MyType`) or fully qualified rust type name (`MyModule::MyType`).");
+        methods.document("Returns `nil` if no such type exists or if one wasn't registered on the rust side.");
+        methods.document("\n");
+        methods.document("This is used extensively in [`LuaWorld`]");
+        methods.add_method("get_type_by_name", |_,world,type_name: String| {
+            let w = world.upgrade().unwrap();
+            let w = &w.read();
+
+            let registry: &TypeRegistry = w.get_resource().unwrap();
+
+            let registry = registry.read();     
+            
+            Ok(registry
+                .get_with_short_name(&type_name)
+                .or(
+                    registry.get_with_name(&type_name)   
+                )
+                .map(|registration| LuaTypeRegistration(Arc::new(registration.clone())))
+            )
+        });
+
+        methods.document("Inserts a component of the given type to the given entity by instantiating a default version of it.");
+        methods.document("The component can then be modified using field access.");
+        methods.add_method("add_default_component", |_, world, (entity, comp_type): (LuaEntity, LuaTypeRegistration)| {
+            // grab this entity before acquiring a lock in case it's a reference
+            let entity = entity.clone();
+            let w = world.upgrade().unwrap();
+            let w = &mut w.write();
+
+            let component_data = comp_type.data::<ReflectComponent>()
+                .ok_or_else(|| mlua::Error::RuntimeError(format!("Not a component {}",comp_type.short_name())))?;
+
+            // this is just a formality
+            // TODO: maybe get an add_default impl added to ReflectComponent
+            // this means that we don't require ReflectDefault for adding components!
+            match comp_type.0.type_info(){
+                bevy::reflect::TypeInfo::Struct(_) => component_data.add(w, entity, &DynamicStruct::default()),
+                bevy::reflect::TypeInfo::TupleStruct(_) => component_data.add(w, entity, &DynamicTupleStruct::default()),
+                bevy::reflect::TypeInfo::Tuple(_) => component_data.add(w, entity, &DynamicTuple::default()),
+                bevy::reflect::TypeInfo::List(_) => component_data.add(w, entity, &DynamicList::default()),
+                bevy::reflect::TypeInfo::Array(_) => component_data.add(w, entity, &DynamicArray::new(Box::new([]))),
+                bevy::reflect::TypeInfo::Map(_) => component_data.add(w, entity, &DynamicMap::default()),
+                bevy::reflect::TypeInfo::Value(_) | 
+                bevy::reflect::TypeInfo::Dynamic(_) => component_data.add(w, entity, 
+                    comp_type.data::<ReflectDefault>().ok_or_else(|| 
+                        mlua::Error::RuntimeError(format!("Component {} is a value or dynamic type with no `ReflectDefault` type_data, cannot instantiate sensible value",comp_type.short_name())))?
+                        .default()
+                        .as_ref())
+            };
+
+            Ok(
+                unsafe{ 
+                    ScriptRef::new(
+                        ScriptRefBase::Component{ 
+                            comp: component_data.clone(), 
+                            entity: entity,
+                            world: world.as_ref().clone()
+                        }, 
+                        Some("".to_string()), 
+                        (component_data.reflect(w,entity).unwrap() as *const dyn Reflect).into(),
+                    )
+                }
+            )
+        });
+    
+        methods.document("Retrieves a component of the given type from the given entity.");
+        methods.document("If such a component does not exist returns `nil`.");
+        methods.add_method("get_component", |_, world, (entity, comp_type) : (LuaEntity,LuaTypeRegistration)| {
+
+            // grab this entity before acquiring a lock in case it's a reference
+            let entity = entity.clone();
+            let w = world.upgrade().unwrap();
+            let w = &w.read();
+
+            let component_data = comp_type.data::<ReflectComponent>()
+                .ok_or_else(|| mlua::Error::RuntimeError(format!("Not a component {}",comp_type.short_name())))?;
+
+            Ok(component_data
+                .reflect(w, entity)
+                .map(|component| 
+                    unsafe{
+                        ScriptRef::new(
+                            ScriptRefBase::Component{ 
+                                comp: component_data.clone(), 
+                                entity,
+                                world: world.as_ref().clone()
+                            }, 
+                            Some("".to_string()), 
+                            (component as *const dyn Reflect).into(),
+                        )
+                    }
+                ))
+        });
+
+        methods.document("Returns `true` if the given entity contains a component of the given type.");
+        methods.add_method("has_component", |_, world, (entity, comp_type) : (LuaEntity,LuaTypeRegistration)| {
+
+            // grab this entity before acquiring a lock in case it's a reference
+            let entity = entity.clone();
+            let w = world.upgrade().unwrap();
+            let w = &w.read();
+
+            let component_data = comp_type.data::<ReflectComponent>()
+                .ok_or_else(|| mlua::Error::RuntimeError(format!("Not a component {}",comp_type.short_name())))?;
+
+            Ok(component_data.reflect(w, entity).is_some())
+        });
+
+
+        methods.document("Removes the given component from the given entity, does nothing if it doesn't exist on the entity.");
+        methods.add_method("remove_component", |_, world, (entity, comp_type) : (LuaEntity, LuaTypeRegistration)| {
+            // grab this entity before acquiring a lock in case it's a reference
+            let entity = entity.clone();
+            let w = world.upgrade().unwrap();
+            let w = &mut w.write();
+            
+            let component_data = comp_type.data::<ReflectComponent>()
+                .ok_or_else(|| mlua::Error::RuntimeError(format!("Not a component {}",comp_type.short_name())))?;
+
+            Ok(component_data.remove(w, entity))
+        });
+
+
+        methods.document("Retrieves a resource of the given type from the world.");
+        methods.document("If such a resource does not exist returns `nil`.");
+        methods.add_method("get_resource", |_, world, res_type : LuaTypeRegistration| {
+
+            let w = world.upgrade().unwrap();
+            let w = &mut w.write();
+
+
+            let resource_data = res_type.data::<ReflectResource>()
+                .ok_or_else(|| mlua::Error::RuntimeError(format!("Not a resource {}",res_type.short_name())))?;
+
+            Ok(resource_data
+                .reflect(&w)
+                .map(|component| 
+                    unsafe{ 
+                        ScriptRef::new(
+                            ScriptRefBase::Resource{ 
+                                res: resource_data.clone(), 
+                                world: world.as_ref().clone()
+                            }, 
+                            Some("".to_string()), 
+                            (component as *const dyn Reflect).into(),
+                        )
+                    }
+                ))
+        });
+
+        methods.document("Removes the given resource from the world, if one doesn't exist it does nothing.");
+        methods.add_method("remove_resource", |_, world, res_type : LuaTypeRegistration| {
+            let w = world.upgrade().unwrap();
+            let w = &mut w.write();
+
+            let resource_data = res_type.data::<ReflectResource>()
+                .ok_or_else(|| mlua::Error::RuntimeError(format!("Not a resource {}",res_type.short_name())))?;
+
+            Ok(resource_data.remove(w))
+        });
+
+        methods.document("Returns `true` if the world contains a resource of the given type.");
+        methods.add_method("has_resource", |_, world, res_type : LuaTypeRegistration| {
+
+            let w = world.upgrade().unwrap();
+            let w = &w.read();
+
+            let resource_data = res_type.data::<ReflectResource>()
+                .ok_or_else(|| mlua::Error::RuntimeError(format!("Not a resource {}",res_type.short_name())))?;
+
+            Ok(resource_data.reflect(w).is_some())
+        });
+
+        methods.document("Spawns a new entity and returns its Entity ID");
+        methods.add_method("spawn", |_, world, ()| {
+            let w = world.upgrade().unwrap();
+            let w = &mut w.write();                
+            
+            Ok(LuaEntity::new(w.spawn().id()))
+        });
+
+        methods.document("Despawns the given entity if it exists, returns true if deletion was successfull");
+        methods.add_method("despawn", |_, world, entity: LuaEntity| {
+            let w = world.upgrade().unwrap();
+            let w = &mut w.write();                
+            
+            Ok(w.despawn(entity.clone()))
+        });
+       
+    }   
+}
+

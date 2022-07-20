@@ -1,15 +1,17 @@
+extern crate bevy;
+
 use crate::{impl_tealr_type};
 use anyhow::Result;
 use tealr::{mlu::{mlua,mlua::{prelude::*,Value,UserData,MetaMethod}, TealData, TealDataMethods}, TypeName};
-use std::fmt::Debug;
+use ::std::fmt::Debug;
 
-use std::{ops::{Deref,DerefMut, Index},sync::Weak, borrow::Cow, marker::PhantomData};
+use ::std::{ops::{Deref,DerefMut, Index},sync::Weak, borrow::Cow, marker::PhantomData};
 use parking_lot::{RwLock};
 use bevy::{
     prelude::*,
     reflect::{ReflectRef, TypeRegistry, GetPath, TypeData}, ecs::component::ComponentId,
 };
-use std::{
+use ::std::{
     sync::Arc,
     cell::Ref,
     fmt,

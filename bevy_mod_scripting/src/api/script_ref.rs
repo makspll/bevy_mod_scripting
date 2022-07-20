@@ -581,7 +581,7 @@ impl Into<ScriptRef> for ReflectedValue {
 #[cfg(test)]
 
 mod test {
-    use crate::{langs::mlu::{mlua,mlua::prelude::*},api::lua::LuaEntity, ScriptRef, ScriptRefBase, ReflectPtr};
+    use crate::{langs::mlu::{mlua,mlua::prelude::*},api::lua::bevy::LuaEntity, ScriptRef, ScriptRefBase, ReflectPtr};
     use bevy::{prelude::*,reflect::TypeRegistryArc};
     use std::{sync::Arc};
     use parking_lot::RwLock;

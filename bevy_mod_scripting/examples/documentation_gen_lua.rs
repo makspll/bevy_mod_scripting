@@ -5,7 +5,7 @@ use bevy_mod_scripting::{
     APIProvider, AddScriptApiProvider, AddScriptHost, AddScriptHostHandler, GenDocumentation,
     LuaDocFragment, LuaEvent, LuaFile, RLuaScriptHost, Recipients, Script, ScriptCollection,
     ScriptError, ScriptingPlugin,
-    api::lua::LuaBevyAPIProvider
+    api::lua::bevy::LuaBevyAPIProvider
 };
 use tealr::TypeName;
 

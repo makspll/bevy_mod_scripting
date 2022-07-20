@@ -1,7 +1,7 @@
 pub mod assets;
 pub mod docs;
 
-use crate::{APIProviders, LuaWorld, api::lua::LuaEntity};
+use crate::{APIProviders, api::lua::bevy::{LuaEntity,LuaWorld}};
 use crate::{
     script_add_synchronizer, script_hot_reload_handler, script_remove_synchronizer,
     CachedScriptEventState, FlatScriptData, Recipients, Script, ScriptCollection, ScriptContexts,

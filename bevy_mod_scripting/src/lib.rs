@@ -1,5 +1,5 @@
 #![doc=include_str!("../../readme.md")]
-use std::any::TypeId;
+use ::std::any::TypeId;
 
 use bevy::{ecs::schedule::IntoRunCriteria, prelude::*, reflect::{TypeRegistryArc, FromType, GetTypeRegistration}};
 
