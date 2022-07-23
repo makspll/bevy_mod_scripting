@@ -46,8 +46,8 @@ macro_rules! impl_tealr_type {
 /// impl_user_data!(MyType<'a,T : Debug>);
 /// ```
 macro_rules! impl_user_data {
-    ($v:ident $(< $( $lt:tt $( : $clt:tt $(+ $dlt:tt )* )? ),+ >)? ) => {
-        impl $(< $( $lt $( : $clt $(+ $dlt )* )? ),+ >)? ::tealr::mlu::mlua::UserData for $v $(< $( $lt ),+ >)?  {
+    ($v:ident $(< $( $lt:tt $( : $clt:tt $(+ $dlt:tt $(<'a>)? )* )? ),+ >)? ) => {
+        impl $(< $( $lt $( : $clt $(+ $dlt $(<'a>)?)* )? ),+ >)? ::tealr::mlu::mlua::UserData for $v $(< $( $lt ),+ >)?  {
             fn add_methods<'lua, M: ::tealr::mlu::mlua::UserDataMethods<'lua, Self>>(methods: &mut M) {
                 let mut x = ::tealr::mlu::UserDataWrapper::from_user_data_methods(methods);
                 <Self as ::tealr::mlu::TealData>::add_methods(&mut x);

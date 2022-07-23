@@ -164,14 +164,26 @@ impl <T : FromReflect>TypeName for LuaVec<T> {
 }
 
 
-impl_user_data!(LuaVec<T : FromReflect + LuaProxyable>);
-impl <T : FromReflect + LuaProxyable>TealData for LuaVec<T> {
+impl<T: FromReflect + LuaProxyable + for<'a>FromLuaProxy<'a>> UserData for LuaVec<T>
+{
+    fn add_methods<'lua, M: ::tealr::mlu::mlua::UserDataMethods<'lua, Self>>(methods: &mut M) {
+        let mut x = ::tealr::mlu::UserDataWrapper::from_user_data_methods(methods);
+        <Self as ::tealr::mlu::TealData>::add_methods(&mut x);
+    }
+    fn add_fields<'lua, F: ::tealr::mlu::mlua::UserDataFields<'lua, Self>>(fields: &mut F) {
+        let mut wrapper = ::tealr::mlu::UserDataWrapper::from_user_data_fields(fields);
+        <Self as ::tealr::mlu::TealData>::add_fields(&mut wrapper)
+    }
+}
+
+
+impl <T : FromReflect + LuaProxyable + for<'a> FromLuaProxy<'a>>TealData for LuaVec<T> {
     fn add_methods<'lua, M: TealDataMethods<'lua, Self>>(methods: &mut M) {
         methods.add_meta_method(MetaMethod::Index, |_,s,index : usize|{
            Ok(s.ref_.index(index)?)
         });
 
-        methods.add_meta_method(MetaMethod::NewIndex, |ctx,s,(index,value) : (usize, Value)|{
+        methods.add_meta_method_mut(MetaMethod::NewIndex, |ctx,s,(index,value) : (usize, Value)|{
             Ok(s.ref_.index(index)?.apply_lua(ctx, value)?)
         });
 
@@ -192,12 +204,17 @@ impl <T : FromReflect + LuaProxyable>TealData for LuaVec<T> {
         });
 
         methods.add_meta_method(MetaMethod::Len, |_, s, ()| {
-            Ok(s.ref_.get_typed(|s : &Vec<T>| s.len()))
-        })
+            s.ref_.get_typed(|s : &Vec<T>| Ok(s.len()))
+        });
+
+        methods.add_method_mut("push", |ctx,s,v : Value|{
+            s.ref_.get_mut_typed(|s : &mut Vec<T>| Ok(s.push(T::from_lua_proxy(v, ctx)?)))
+        });
+        
     }
 }
 
-impl <T : FromReflect + LuaProxyable + for<'a>FromLuaProxy<'a>>LuaProxyable for Vec<T> {
+impl <T : FromReflect + LuaProxyable + for<'a>FromLuaProxy<'a> >LuaProxyable for Vec<T> {
     fn ref_to_lua<'lua>(self_ : ScriptRef, lua: &'lua Lua) -> mlua::Result<Value<'lua>> {
         LuaVec::<T>::new_ref(self_).to_lua(lua)
     }

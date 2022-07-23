@@ -29,10 +29,12 @@ function on_update()
 
         comp.vec_of_option_bools = {true,false,true}
         comp.vec_of_option_bools[0] = false
+        comp.vec_of_option_bools:push(false)
 
         comp.option_vec_of_bools = {false,true,false}
         comp.option_vec_of_bools[2] = true
-        
+        comp.option_vec_of_bools:push(true)
+
         comp.vec2 = comp.vec2 + comp.vec2
 
         comp.uvec2 = comp.uvec2 + comp.uvec2
