@@ -10,7 +10,7 @@ use indexmap::{IndexMap, IndexSet};
 use proc_macro2::{TokenStream, Span, Ident};
 use syn::{spanned::Spanned, parse_quote_spanned, punctuated::Punctuated, LitInt, Token, Attribute, parse_quote, Type};
 
-use crate::{common::{WrapperImplementor, WrapperFunction, newtype::NewtypeVariation, attribute_to_string_lit, derive_flag::DeriveFlag, ops::{OpName,OpExpr}, stringify_type_path, type_base_string}, EmptyToken};
+use crate::{common::{WrapperImplementor, WrapperFunction, attribute_to_string_lit, derive_flag::DeriveFlag, ops::{OpName,OpExpr}, stringify_type_path, type_base_string}, EmptyToken};
 use quote::{quote, quote_spanned, ToTokens, format_ident};
 
 impl WrapperFunction for LuaMethod {}
@@ -55,23 +55,12 @@ impl WrapperImplementor for LuaImplementor {
         let name = &newtype.args.wrapper_type;
         let base_type = &newtype.args.base_type_ident;
 
-        Ok(match &newtype.args.variation {
-            NewtypeVariation::Value{..} => quote_spanned!{newtype.span()=>
+        Ok(quote_spanned!{newtype.span()=>
                 pub type #name = crate::LuaWrapper<#base_type>;
-            },
-            NewtypeVariation::Ref {..} => quote_spanned!{newtype.span()=>
-                // TODO these don't support clone so gotta do a special FromLua impl 
-                pub type #name = crate::LuaWrapper<#base_type>;
-            },
-            NewtypeVariation::Primitive{..} => quote_spanned!{newtype.span()=>},
         })
     }
 
     fn generate_newtype_implementation<'a,I : Iterator<Item=&'a Self::Function>>(&mut self, newtype: &'a crate::common::newtype::Newtype, functions : I) -> std::result::Result<TokenStream, syn::Error> {
-        
-        if newtype.args.variation.is_primitive(){
-            return Ok(Default::default())
-        }
 
         let wrapper_type = &newtype.args.wrapper_type;
         let wrapped_type = &newtype.args.base_type_ident;
@@ -150,7 +139,8 @@ impl WrapperImplementor for LuaImplementor {
     fn generate_derive_flag_functions<'a, I : Iterator<Item=&'a crate::common::derive_flag::DeriveFlag>>(&mut self, new_type : &'a crate::common::newtype::Newtype, mut derive_flags : I) -> Result<Vec<LuaMethod>, syn::Error> {
         
         let mut out : Vec<Self::Function> = Default::default();
-        let newtype_name = &new_type.args.wrapper_type;
+        let wrapper_type = &new_type.args.wrapper_type;
+        let wrapped_type = &new_type.args.base_type_ident;
 
         derive_flags.try_for_each(|v| {
             Ok::<(),syn::Error>(match v {
@@ -160,6 +150,27 @@ impl WrapperImplementor for LuaImplementor {
                 DeriveFlag::DisplayToString{ident} => out.push(parse_quote_spanned!{ident.span()=>
                     (mlua::MetaMethod::ToString) => |_,s,()| Ok(format!("{}",s))
                 }),
+                DeriveFlag::FromLuaProxy{ident} => {
+                    self.additional_globals.extend(
+                        quote_spanned!{ident.span()=>
+                            impl FromLuaProxy<'_> for #wrapped_type {
+                                fn from_lua_proxy<'lua>(lua_value: Value<'lua>, _: &'lua Lua) -> mlua::Result<Self> {
+                                    if let mlua::Value::UserData(ud) = lua_value{
+                                        let wrapper = ud.borrow::<#wrapper_type>()?;
+                                        Ok(wrapper.deref().clone())
+                                    } else {
+                                        Err(mlua::Error::FromLuaConversionError{
+                                            from: "",
+                                            to: "",
+                                            message: None
+                                        })
+                                    }
+                                }
+                            }
+                        }
+                    );
+
+                }
                 flag @ DeriveFlag::AutoMethods {..} => {
                     make_auto_methods(flag,new_type,&mut out);
                 },
@@ -180,10 +191,6 @@ impl WrapperImplementor for LuaImplementor {
     }
 
     fn generate_newtype_functions(&mut self, new_type : &crate::common::newtype::Newtype) -> Result<Vec<LuaMethod>, syn::Error> {
-        
-        if new_type.args.variation.is_primitive() {
-            return Ok(Vec::default())
-        };
 
         Ok(new_type.additional_lua_functions
             .as_ref()

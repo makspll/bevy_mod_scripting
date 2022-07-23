@@ -5,8 +5,6 @@ use indexmap::IndexMap;
 use rustdoc_types::{Item, Crate, ItemEnum, Visibility};
 use serde::Deserialize;
 
-use crate::WrapperType;
-
 #[derive(Parser, Debug)]
 #[clap(author, version, about, long_about = None)]
 pub struct Args {
@@ -53,9 +51,6 @@ pub struct Newtype {
 
     #[serde(default)]
     pub source : Source,
-
-    #[serde(default)]
-    pub wrapper_type : WrapperType,
 
     #[serde(default)]
     pub lua_methods: Vec<String>,

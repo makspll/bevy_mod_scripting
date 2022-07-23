@@ -45,6 +45,12 @@ pub struct MyResource{
     pub thing: f64
 }
 
+/// NOTE: this is a marker enabling an automatic implementation of LuaProxyable
+/// By default, because this type implements Clone as well,
+/// It will be passed BY VALUE
+/// meaning that calling these methods will result in changes to the cloned value on lua side only
+/// untill the resource is assigned back to the original component to make the changes on the original type.
+/// To have "pass by reference" semantics use a  [`bevy_mod_scripting::api::lua::LuaWrapper`] and implement LuaProxyable yourself
 impl ValueLuaType for MyResource {}
 
 impl UserData for MyResource {
@@ -81,6 +87,8 @@ pub struct MyComponent {
     vec4: Vec4,
     u8: u8,
     option: Option<Vec3>,
+    vec_of_option_bools: Vec<Option<bool>>,
+    option_vec_of_bools: Option<Vec<bool>>,
     my_reflect_thing: MyReflectThing,
 }
 
@@ -105,6 +113,8 @@ fn load_our_script(server: Res<AssetServer>, mut commands: Commands) {
             dquat: DQuat::from_xyzw(1.0,2.0,3.0,4.0),
             u8: 240,
             option: None,
+            vec_of_option_bools: vec![Some(true),None,Some(false)],
+            option_vec_of_bools: Some(vec![true,true,true]),
             my_reflect_thing: MyReflectThing { hello: "hello world".to_owned() },            
         });
 }
@@ -127,6 +137,9 @@ fn main() -> std::io::Result<()> {
         .register_type::<MyResource>()
         // note the implementation for Option is there, but we must register `LuaProxyable` for it, otherwise 
         .register_foreign_lua_type::<Option<Vec3>>()
+        .register_foreign_lua_type::<Vec<Option<bool>>>()
+        .register_foreign_lua_type::<Option<bool>>()
+        .register_foreign_lua_type::<Option<Vec<bool>>>()
         .init_resource::<MyResource>()
         // this stage handles addition and removal of script contexts, we can safely use `CoreStage::PostUpdate`
         .add_script_host::<RLuaScriptHost<MyLuaArg>, _>(CoreStage::PostUpdate)

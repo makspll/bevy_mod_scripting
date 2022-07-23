@@ -3,7 +3,6 @@
 pub mod docs;
 pub mod rhai_host;
 pub mod rlua_host;
-pub mod util;
 
 use bevy::{asset::Asset, ecs::system::SystemState, prelude::*, reflect::FromReflect};
 use bevy_event_priority::PriorityEventReader;

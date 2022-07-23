@@ -100,7 +100,7 @@ pub(crate) fn to_op_argument(base_string: &String, self_type : &String, wrapped 
 
 
 /// Converts an arbitary type to its simple string representation while converting the base type identifier with the given function
-pub(crate) fn type_to_string<F : FnMut(&String) -> Result<String,String>>(t : &Type, f : &mut F) -> Result<String,String> {
+pub fn type_to_string<F : FnMut(&String) -> Result<String,String>>(t : &Type, f : &mut F) -> Result<String,String> {
     match t {
         Type::ResolvedPath { name, args , .. } => {
             if let Some(args) = args {

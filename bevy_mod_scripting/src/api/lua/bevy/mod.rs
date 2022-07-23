@@ -4,7 +4,7 @@ use ::std::mem::MaybeUninit;
 use ::std::sync::{Weak,Arc};
 use ::std::convert::AsRef;
 use ::std::ops::{Deref,DerefMut};
-use crate::{ScriptRef, ReflectedValue, impl_tealr_type, ScriptRefBase, ReflectPtr, ValueIndex, IdentitySubReflect, SubReflect, LuaWrapper};
+use crate::{ScriptRef, ReflectedValue, impl_tealr_type, ReflectBase, ReflectPtr, ValueIndex, LuaWrapper};
 use ::bevy::ecs::system::Command;
 use ::bevy::hierarchy::BuildWorldChildren;
 use ::bevy::reflect::{ReflectRef, FromReflect};
@@ -96,7 +96,7 @@ impl TealData for LuaWorld {
             let w = &mut w.write();
             
             let parent : Option<LuaEntity> = w.get::<Parent>(parent.clone())
-                .map(|parent| LuaEntity::new(parent.0));
+                .map(|parent| LuaEntity::new(parent.get()));
 
             Ok(parent)
         });
@@ -236,33 +236,21 @@ impl TealData for LuaWorld {
             // TODO: maybe get an add_default impl added to ReflectComponent
             // this means that we don't require ReflectDefault for adding components!
             match comp_type.0.type_info(){
-                bevy::reflect::TypeInfo::Struct(_) => component_data.add(w, entity, &DynamicStruct::default()),
-                bevy::reflect::TypeInfo::TupleStruct(_) => component_data.add(w, entity, &DynamicTupleStruct::default()),
-                bevy::reflect::TypeInfo::Tuple(_) => component_data.add(w, entity, &DynamicTuple::default()),
-                bevy::reflect::TypeInfo::List(_) => component_data.add(w, entity, &DynamicList::default()),
-                bevy::reflect::TypeInfo::Array(_) => component_data.add(w, entity, &DynamicArray::new(Box::new([]))),
-                bevy::reflect::TypeInfo::Map(_) => component_data.add(w, entity, &DynamicMap::default()),
+                bevy::reflect::TypeInfo::Struct(_) => component_data.insert(w, entity, &DynamicStruct::default()),
+                bevy::reflect::TypeInfo::TupleStruct(_) => component_data.insert(w, entity, &DynamicTupleStruct::default()),
+                bevy::reflect::TypeInfo::Tuple(_) => component_data.insert(w, entity, &DynamicTuple::default()),
+                bevy::reflect::TypeInfo::List(_) => component_data.insert(w, entity, &DynamicList::default()),
+                bevy::reflect::TypeInfo::Array(_) => component_data.insert(w, entity, &DynamicArray::new(Box::new([]))),
+                bevy::reflect::TypeInfo::Map(_) => component_data.insert(w, entity, &DynamicMap::default()),
                 bevy::reflect::TypeInfo::Value(_) | 
-                bevy::reflect::TypeInfo::Dynamic(_) => component_data.add(w, entity, 
+                bevy::reflect::TypeInfo::Dynamic(_) => component_data.insert(w, entity, 
                     comp_type.data::<ReflectDefault>().ok_or_else(|| 
                         mlua::Error::RuntimeError(format!("Component {} is a value or dynamic type with no `ReflectDefault` type_data, cannot instantiate sensible value",comp_type.short_name())))?
                         .default()
                         .as_ref())
             };
 
-            Ok(
-                unsafe{ 
-                    ScriptRef::new(
-                        ScriptRefBase::Component{ 
-                            comp: component_data.clone(), 
-                            entity: entity,
-                            world: world.as_ref().clone()
-                        }, 
-                        Some("".to_string()), 
-                        (component_data.reflect(w,entity).unwrap() as *const dyn Reflect).into(),
-                    )
-                }
-            )
+            Ok(ScriptRef::new_component_ref(component_data.clone(), entity, world.as_ref().clone()))
         });
     
         methods.document("Retrieves a component of the given type from the given entity.");
@@ -280,17 +268,7 @@ impl TealData for LuaWorld {
             Ok(component_data
                 .reflect(w, entity)
                 .map(|component| 
-                    unsafe{
-                        ScriptRef::new(
-                            ScriptRefBase::Component{ 
-                                comp: component_data.clone(), 
-                                entity,
-                                world: world.as_ref().clone()
-                            }, 
-                            Some("".to_string()), 
-                            (component as *const dyn Reflect).into(),
-                        )
-                    }
+                    ScriptRef::new_component_ref(component_data.clone(), entity, world.as_ref().clone())
                 ))
         });
 
@@ -336,17 +314,8 @@ impl TealData for LuaWorld {
 
             Ok(resource_data
                 .reflect(&w)
-                .map(|component| 
-                    unsafe{ 
-                        ScriptRef::new(
-                            ScriptRefBase::Resource{ 
-                                res: resource_data.clone(), 
-                                world: world.as_ref().clone()
-                            }, 
-                            Some("".to_string()), 
-                            (component as *const dyn Reflect).into(),
-                        )
-                    }
+                .map(|res|
+                    ScriptRef::new_resource_ref(resource_data.clone(), world.as_ref().clone())
                 ))
         });
 

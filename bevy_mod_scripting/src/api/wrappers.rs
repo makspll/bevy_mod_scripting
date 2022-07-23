@@ -2,7 +2,7 @@ use bevy::reflect::Reflect;
 use parking_lot::RwLock;
 
 use std::{sync::Arc, fmt::{Debug,Display, Formatter}, cell::UnsafeCell};
-use crate::{ScriptRef, ScriptRefBase, ReflectPtr, api::FromLua, IdentitySubReflect, SubReflect};
+use crate::{ScriptRef, ReflectBase, ReflectPtr, api::FromLua};
 
 
 /// Script representable type with pass-by-value semantics
@@ -88,18 +88,21 @@ impl <T : ScriptReference + Display> Display for LuaWrapper<T> {
 
 impl <T : ScriptReference>LuaWrapper<T> {
 
-    /// Creates a script reference pointing to this wrapper.
+    /// Creates a script reference pointing to the wrapped value.
     /// 
     /// Depending on this value it may be a lua owned or reflect relative reference
     pub fn script_ref(&self) -> ScriptRef {
         match self {
-            LuaWrapper::Owned(val, valid) => {
-                unsafe{ScriptRef::new(
-                    ScriptRefBase::ScriptOwned { valid: Arc::downgrade(valid) },
-                    None,
-                    (val.get() as *mut dyn Reflect).into(),
-                )}
-            },
+            LuaWrapper::Owned(val, valid) => 
+                unsafe{
+                    // safety:
+                    // - valid is dropped when the value goes out of scope, so won't be dangling
+                    // - using the valid lock means no incorrect aliasing may occur
+                    // - the pointer points to base of the reference 
+                    // invariants are upheld
+                    ScriptRef::new_script_ref((val.get() as *mut dyn Reflect).into(), Arc::downgrade(valid))
+                }
+            ,
             LuaWrapper::Ref(ref_) => {
                 ref_.clone()
             },
@@ -151,7 +154,7 @@ impl <T : ScriptReference>LuaWrapper<T> {
                 o
             },
             Self::Ref(v) => {
-                v.get_mut(|s,_| accessor(s.downcast_mut::<T>().unwrap()))
+                v.get_mut(|s| accessor(s.downcast_mut::<T>().unwrap()))
             },
         }
     }
@@ -164,12 +167,10 @@ impl <T : ScriptReference>LuaWrapper<T> {
         match self {
             //no need to lock here
             Self::Owned(ref v, ..) => unsafe{&*(v.get() as *const T)}.clone(),
-            Self::Ref(v) => {
-                v.get(|s| s.downcast_ref::<T>().unwrap().clone())
-            },
+            Self::Ref(v) => v.get(|s| s.downcast_ref::<T>().unwrap().clone())
+            ,
         }
     }
-
 
     /// Applies Self to another ScriptRef.
     /// may require a write lock on the world
@@ -181,7 +182,7 @@ impl <T : ScriptReference>LuaWrapper<T> {
                 // we're good to just apply, yeet
                 // TODO: we use apply here due to the fact we implement `Drop`
                 // if we didn't or if ScriptRef itself owned the value we could just consume the cell and assign
-                other.get_mut(|other,_| other.apply(unsafe {&*(v.get() as *const T)}))
+                other.get_mut(|other| other.apply(unsafe {&*(v.get() as *const T)}))
             },
             Self::Ref(v) => {
                 // if we are a ScriptRef, we have to be careful with borrows
@@ -192,30 +193,6 @@ impl <T : ScriptReference>LuaWrapper<T> {
         }
     }
 
-    // /// Applies Self to another ScriptRef.
-    // /// may require a write lock on the world
-    // pub fn apply_self_to_base_typed(&self, other: &mut ScriptRef) -> Result<(),tealr::mlu::mlua::Error>
-    // where 
-    //     T : ScriptValue
-    // {
-    //     match self {
-    //         Self::Owned(v, ..) => {
-    //             // if we own the value, we are not borrowing from the world
-    //             // we're good to just apply, yeet
-    //             // TODO: we use apply here due to the fact we implement `Drop`
-    //             // if we didn't or if ScriptRef itself owned the value we could just consume the cell and assign
-    //             other.get_mut(|other,_| other.apply(unsafe {&*(v.get() as *const T)}))
-    //         },
-    //         Self::Ref(v) => {
-    //             // if we are a ScriptRef, we have to be careful with borrows
-    //             // to avoid deadlock
-    //             // we take advantage of the fact we know the expected type
-    //             other.apply_typed::<T>(v)?
-    //         }
-    //     };
-
-    //     Ok(())
-    // }
 
 }
 

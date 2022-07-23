@@ -76,14 +76,14 @@ macro_rules! impl_parse_enum {
                 pub fn to_str(&self) -> &'static str {
                     match self {
                         $(
-                            Self::$field{$($($arg_name),*,)? ..} => stringify!($field)
+                            Self::$field{ident,$($($arg_name),*)?} => stringify!($field)
                         ),*
                     }
                 }
 
                 $(
                 pub fn [<is_ $field:snake>](&self) -> bool{
-                    if let Self::$field{$($($arg_name),*,)? ..} = self{
+                    if let Self::$field{ident,$($($arg_name),*)?} = self{
                         return true
                     } else {
                         return false

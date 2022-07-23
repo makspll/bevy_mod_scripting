@@ -15,8 +15,6 @@ pub(crate)  struct NewtypeArgs {
     pub type_colon : Token![:],
     pub base_type_ident: Ident,
     pub wrapper_type: Ident,
-    pub variation: NewtypeVariation,
-    pub colon: Option<Token![:]>,
     pub flags: IndexSet<DeriveFlag>
 }
 
@@ -24,12 +22,11 @@ impl ToTokens for NewtypeArgs {
     fn to_tokens(&self, tokens: &mut TokenStream) {
         let docstrings = self.docstring.iter();
         let base_type = &self.base_type;
-        let variation = &self.variation;
         let colon = (self.flags.len() != 0).then(|| quote::quote!{:}).unwrap_or_default();
         let flags = self.flags.iter();
         tokens.extend(quote::quote!{
             #(#docstrings)*
-            #base_type : #variation #(#flags)+*
+            #base_type : #(#flags)+*
         })
     }
 }
@@ -43,43 +40,19 @@ impl Parse for NewtypeArgs {
         let short_wrapper_type : String = format!("Lua{}",short_base_type);
         let sbt_ident = Ident::new(&short_base_type,base_type.span());
         let swt_ident = Ident::new(&short_wrapper_type, base_type.span());
-        let mut colon : Option<Token![:]> = None;
         Ok(Self {
             docstring,
             wrapper_type:swt_ident,
             base_type_ident: sbt_ident,
             base_type,
             type_colon: input.parse()?,
-            variation: input.parse()?,
-            colon: if input.peek(Token![:]){colon = Some(input.parse()?); colon} else {None},
-            flags: {
-                if colon.is_some(){
-                    Punctuated::<DeriveFlag, Token![+]>::parse_separated_nonempty(input)?
+            flags: Punctuated::<DeriveFlag, Token![+]>::parse_separated_nonempty(input)?
                     .into_iter()
                     .collect::<IndexSet<DeriveFlag>>()
-                } else {
-                    IndexSet::default()
-                }
-            },
+            ,
         })
     }
 }
-
-
-impl_parse_enum!(input,ident:
-/// What kind of lua wrapper to implement for the newtype
-pub(crate) enum NewtypeVariation {
-    /// Value types refer to types which implement clone and are
-    /// copied when received as lua paramters to a function
-    Value => {Ok(Self::Value{ident})},
-    /// Ref types do not implement clone and must be passed by value
-    /// hence destructuring their original value when they're passed to a lua function.
-    /// Use for expensive to copy types.
-    Ref => {Ok(Self::Ref{ident})},
-    /// Things which have built-in support
-    Primitive => {Ok(Self::Primitive{ident})},
-}
-);
 
 
 pub(crate) struct WrapperFunctionList<T : WrapperFunction>{

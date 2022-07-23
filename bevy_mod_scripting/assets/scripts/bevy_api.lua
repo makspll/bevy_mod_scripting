@@ -27,7 +27,12 @@ function on_update()
             print(string.format("and now option[1] is %s", comp.option[1]))
         end
 
+        comp.vec_of_option_bools = {true,false,true}
+        comp.vec_of_option_bools[1] = true
 
+        comp.option_vec_of_bools = {true,false,true}
+        comp.option_vec_of_bools[1] = true
+        
         comp.vec2 = comp.vec2 + comp.vec2
 
         comp.uvec2 = comp.uvec2 + comp.uvec2
@@ -44,7 +49,13 @@ function on_update()
         comp.mat3[1][1] = 42
         comp.mat3.x_axis = Vec3.new(69,69,69)
 
+        comp = world:get_component(entity,my_component_type)
+        res = world:get_resource(my_resource_type)
+
         print(string.format("%s", comp))
         print(string.format("%s", res))
+        print(string.format("%s %s %s", comp.vec_of_option_bools[0],comp.vec_of_option_bools[1],comp.vec_of_option_bools[2]))
+        print(string.format("%s %s %s", comp.option_vec_of_bools[0],comp.option_vec_of_bools[1],comp.option_vec_of_bools[2]))
+
     end
 end

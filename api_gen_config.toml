@@ -2,8 +2,8 @@
 
 imports = """
 use std::ops::*;
-use crate::ReflectPtr;
-use crate::{RegisterForeignLuaType,LuaProxyable,ScriptRef,ScriptRefBase,ReflectedValue, api::ValueIndex, APIProvider, LuaDocFragment};
+use crate::{FromLuaProxy};
+use crate::{ReflectPathElem,RegisterForeignLuaType,LuaProxyable,ScriptRef,ScriptRefBase,ReflectedValue, api::ValueIndex, APIProvider, LuaDocFragment};
 use std::sync::{Arc, Mutex};
 use crate::util::impl_tealr_type;
 use tealr::{mlu::{mlua,mlua::{prelude::*,MetaMethod,Value}},create_union_mlua};
@@ -11,7 +11,7 @@ use bevy::reflect::Reflect;
 use bevy::prelude::App;
 """
 
-primitives = ["usize","isize","f32","f64","u128","u64","u32","u16","u8","i128","i64","i32","i16","i8","String"]
+primitives = ["usize","isize","f32","f64","u128","u64","u32","u16","u8","i128","i64","i32","i16","i8","String","bool"]
 
 
 ## BEVY_UI
@@ -132,12 +132,6 @@ source="bevy_hierarchy"
 [[types]]
 type="Parent"
 source="bevy_hierarchy"
-
-[[types]]
-type="PreviousParent"
-source="bevy_hierarchy"
-
-
 
 ## BEVY_TEXT
 
@@ -611,28 +605,15 @@ source="bevy_math"
 lua_methods=[
 """    
 mut (MetaMethod::Index) => |_,s,idx : usize| {
-    match s {
-        LuaMat3::Owned(ref mut v, ref valid) => {
-            Ok(LuaVec3::Ref(unsafe{
-                ScriptRef::new(
-                    ScriptRefBase::ScriptOwned{valid: Arc::downgrade((valid))},
-                    None,
-                    (v.get_mut().col_mut(idx) as *mut dyn Reflect).into(),
-                    )}
-            ))
-        },
-        LuaMat3::Ref(ref mut r) => {
-            r.get_mut(|s,r| {
-                Ok(LuaVec3::Ref(unsafe{
-                    ScriptRef::new(
-                        r.root.clone(),
-                        None,
-                        (s.downcast_mut::<Mat3>().unwrap().col_mut(idx) as *mut dyn Reflect).into(),
-                    )}
-                )) 
-            })
-        }
-    }
+	Ok(LuaVec3::new_ref(
+			s.script_ref().sub_ref(ReflectPathElem::IndexedSubReflection{
+				label:"col", 
+				index: idx,
+				get: |idx,ref_| panic!("Cannot get mutable column reference given immutable matrix reference"),
+				get_mut: |idx, ref_| ref_.downcast_mut::<Mat3>().unwrap().col_mut(idx)
+			})
+		)
+	)
 }
 """
 ]
@@ -644,28 +625,15 @@ source="bevy_math"
 lua_methods=[
 """    
 mut (MetaMethod::Index) => |_,s,idx : usize| {
-    match s {
-        LuaMat2::Owned(ref mut v, ref valid) => {
-            Ok(LuaVec2::Ref(unsafe{
-                ScriptRef::new(
-                    ScriptRefBase::ScriptOwned{valid: Arc::downgrade((valid))},
-                    None,
-                    (v.get_mut().col_mut(idx) as *mut dyn Reflect).into(),
-                )}    
-            ))
-        },
-        LuaMat2::Ref(ref mut r) => {
-            r.get_mut(|s,r| {
-                Ok(LuaVec2::Ref(unsafe{
-                    ScriptRef::new(
-                        r.root.clone(),
-                        None,
-                        (s.downcast_mut::<Mat2>().unwrap().col_mut(idx) as *mut dyn Reflect).into(),
-                    )}
-                )) 
-            })
-        }
-    }
+	Ok(LuaVec2::new_ref(
+			s.script_ref().sub_ref(ReflectPathElem::IndexedSubReflection{
+				label:"col", 
+				index: idx,
+				get: |idx,ref_| panic!("Cannot get mutable column reference given immutable matrix reference"),
+				get_mut: |idx, ref_| ref_.downcast_mut::<Mat2>().unwrap().col_mut(idx)
+			})
+		)
+	)
 }
 """
 ]
@@ -678,28 +646,15 @@ source="bevy_math"
 lua_methods=[
 """    
 mut (MetaMethod::Index) => |_,s,idx : usize| {
-    match s {
-        LuaMat3A::Owned(ref mut v, ref valid) => {
-            Ok(LuaVec3A::Ref(unsafe{
-                ScriptRef::new(
-                    ScriptRefBase::ScriptOwned{valid: Arc::downgrade((valid))},
-                    None,
-                    (v.get_mut().col_mut(idx) as *mut dyn Reflect).into(),
-                )}    
-            ))
-        },
-        LuaMat3A::Ref(ref mut r) => {
-            r.get_mut(|s,r| {
-                Ok(LuaVec3A::Ref(unsafe{
-                    ScriptRef::new(
-                        r.root.clone(),
-                        None,
-                        (s.downcast_mut::<Mat3A>().unwrap().col_mut(idx) as *mut dyn Reflect).into(),
-                    )}
-                )) 
-            })
-        }
-    }
+	Ok(LuaVec3A::new_ref(
+			s.script_ref().sub_ref(ReflectPathElem::IndexedSubReflection{
+				label:"col", 
+				index: idx,
+				get: |idx,ref_| panic!("Cannot get mutable column reference given immutable matrix reference"),
+				get_mut: |idx, ref_| ref_.downcast_mut::<Mat3A>().unwrap().col_mut(idx)
+			})
+		)
+	)
 }
 """
 ]
@@ -711,28 +666,15 @@ source="bevy_math"
 lua_methods=[
 """    
 mut (MetaMethod::Index) => |_,s,idx : usize| {
-    match s {
-        LuaMat4::Owned(ref mut v, ref valid) => {
-            Ok(LuaVec4::Ref(unsafe{
-                ScriptRef::new(
-                    ScriptRefBase::ScriptOwned{valid: Arc::downgrade((valid))},
-                    None,
-                    (v.get_mut().col_mut(idx) as *mut dyn Reflect).into(),
-                )}    
-            ))
-        },
-        LuaMat4::Ref(ref mut r) => {
-            r.get_mut(|s,r| {
-                Ok(LuaVec4::Ref(unsafe{
-                    ScriptRef::new(
-                        r.root.clone(),
-                        None,
-                        (s.downcast_mut::<Mat4>().unwrap().col_mut(idx) as *mut dyn Reflect).into(),
-                    )}
-                )) 
-            })
-        }
-    }
+	Ok(LuaVec4::new_ref(
+			s.script_ref().sub_ref(ReflectPathElem::IndexedSubReflection{
+				label:"col", 
+				index: idx,
+				get: |idx,ref_| panic!("Cannot get mutable column reference given immutable matrix reference"),
+				get_mut: |idx, ref_| ref_.downcast_mut::<Mat4>().unwrap().col_mut(idx)
+			})
+		)
+	)
 }
 """
 ]
@@ -745,28 +687,15 @@ source="bevy_math"
 lua_methods=[
 """    
 mut (MetaMethod::Index) => |_,s,idx : usize| {
-    match s {
-        LuaDMat2::Owned(ref mut v, ref valid) => {
-            Ok(LuaDVec2::Ref(unsafe{
-                ScriptRef::new(
-                    ScriptRefBase::ScriptOwned{valid: Arc::downgrade((valid))},
-                    None,
-                    (v.get_mut().col_mut(idx) as *mut dyn Reflect).into(),
-                )}
-            ))
-        },
-        LuaDMat2::Ref(ref mut r) => {
-            r.get_mut(|s,r| {
-                Ok(LuaDVec2::Ref(unsafe{
-                    ScriptRef::new(
-                        r.root.clone(),
-                        None,
-                        (s.downcast_mut::<DMat2>().unwrap().col_mut(idx) as *mut dyn Reflect).into(),
-                    )}
-                )) 
-            })
-        }
-    }
+	Ok(LuaDVec2::new_ref(
+			s.script_ref().sub_ref(ReflectPathElem::IndexedSubReflection{
+				label:"col", 
+				index: idx,
+				get: |idx,ref_| panic!("Cannot get mutable column reference given immutable matrix reference"),
+				get_mut: |idx, ref_| ref_.downcast_mut::<DMat2>().unwrap().col_mut(idx)
+			})
+		)
+	)
 }
 """
 ]
@@ -778,28 +707,15 @@ source="bevy_math"
 lua_methods=[
 """    
 mut (MetaMethod::Index) => |_,s,idx : usize| {
-    match s {
-        LuaDMat3::Owned(ref mut v, ref valid) => {
-            Ok(LuaDVec3::Ref(unsafe{
-                ScriptRef::new(
-                    ScriptRefBase::ScriptOwned{valid: Arc::downgrade((valid))},
-                    None,
-                    (v.get_mut().col_mut(idx) as *mut dyn Reflect).into(),
-                )}    
-            ))
-        },
-        LuaDMat3::Ref(ref mut r) => {
-            r.get_mut(|s,r| {
-                Ok(LuaDVec3::Ref(unsafe{
-                    ScriptRef::new(
-                        r.root.clone(),
-                        None,
-                        (s.downcast_mut::<DMat3>().unwrap().col_mut(idx) as *mut dyn Reflect).into(),
-                    )}    
-                )) 
-            })
-        }
-    }
+	Ok(LuaDVec3::new_ref(
+			s.script_ref().sub_ref(ReflectPathElem::IndexedSubReflection{
+				label:"col", 
+				index: idx,
+				get: |idx,ref_| panic!("Cannot get mutable column reference given immutable matrix reference"),
+				get_mut: |idx, ref_| ref_.downcast_mut::<DMat3>().unwrap().col_mut(idx)
+			})
+		)
+	)
 }
 """
 ]
@@ -811,28 +727,15 @@ source="bevy_math"
 lua_methods=[
 """    
 mut (MetaMethod::Index) => |_,s,idx : usize| {
-    match s {
-        LuaDMat4::Owned(ref mut v, ref valid) => {
-            Ok(LuaDVec4::Ref(unsafe{
-                ScriptRef::new(
-                    ScriptRefBase::ScriptOwned{valid: Arc::downgrade((valid))},
-                    None,
-                    (v.get_mut().col_mut(idx) as *mut dyn Reflect).into(),
-                )}
-            ))
-        },
-        LuaDMat4::Ref(ref mut r) => {
-            r.get_mut(|s,r| {
-                Ok(LuaDVec4::Ref(unsafe{
-                    ScriptRef::new(
-                        r.root.clone(),
-                        None,      
-                        (s.downcast_mut::<DMat4>().unwrap().col_mut(idx) as *mut dyn Reflect).into(),
-                    )}
-                )) 
-            })
-        }
-    }
+	Ok(LuaDVec4::new_ref(
+			s.script_ref().sub_ref(ReflectPathElem::IndexedSubReflection{
+				label:"col", 
+				index: idx,
+				get: |idx,ref_| panic!("Cannot get mutable column reference given immutable matrix reference"),
+				get_mut: |idx, ref_| ref_.downcast_mut::<DMat4>().unwrap().col_mut(idx)
+			})
+		)
+	)
 }
 """
 ]

@@ -41,11 +41,11 @@ impl AssetLoader for LuaLoader {
         match load_context.path().extension().map(|s| s.to_str().unwrap()) {
             #[cfg(all(feature = "teal", debug_assertions))]
             Some("tl") => {
-                let scripts_dir = &FileAssetIo::get_root_path().join("assets").join("scripts");
+                let scripts_dir = &FileAssetIo::get_base_path().join("assets").join("scripts");
 
                 let temp_file_path = &std::env::temp_dir().join("bevy_mod_scripting.temp.lua");
 
-                let full_path = &FileAssetIo::get_root_path()
+                let full_path = &FileAssetIo::get_base_path()
                     .join("assets")
                     .join(load_context.path());
 

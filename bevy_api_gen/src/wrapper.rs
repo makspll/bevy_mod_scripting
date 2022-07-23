@@ -1,4 +1,4 @@
-use indexmap::IndexMap;
+use indexmap::{IndexMap, IndexSet};
 use rustdoc_types::{Impl, Crate, Item, Id, ItemEnum};
 use serde::Deserialize;
 
@@ -6,35 +6,10 @@ use crate::{Newtype, PrettyWriter,Args, Config,type_to_string,is_valid_parameter
 
 pub static WRAPPER_PREFIX : &str = "Lua";
 
-#[derive(Deserialize, Debug,Clone, Copy, PartialEq, Eq, Hash)]
-pub enum WrapperType {
-    /// things which have pass by value semantics
-    Value,
-    /// things which have pass by reference semantics
-    Ref,
-    /// For primitives
-    Primitive
-}
 
-impl ToString for WrapperType {
-    fn to_string(&self) -> String {
-        match self {
-            WrapperType::Value => "Value".to_string(),
-            WrapperType::Ref => "Ref".to_string(),
-            WrapperType::Primitive => "Primitive".to_string(),
-        }
-    }
-}
-
-impl Default for WrapperType {
-    fn default() -> Self {
-        Self::Value
-    }
-}
 
 #[derive(Debug)]
 pub struct WrappedItem<'a> {
-    pub wrapper_type : WrapperType,
     pub wrapper_name : String,
     pub wrapped_type: &'a String,
     pub path_components: &'a [String],
@@ -43,6 +18,7 @@ pub struct WrappedItem<'a> {
     pub item : &'a Item,
     /// The items coming from all trait implementations
     pub impl_items: IndexMap<&'a str,Vec<(&'a Impl, &'a Item)>>, 
+    pub implemented_traits: IndexSet<String>,
     pub self_impl: Option<&'a Impl>,
     pub crates : &'a [Crate],
     /// If this type has some things which are "static" this is set to true later
@@ -156,7 +132,13 @@ impl WrappedItem<'_> {
     /// ``` 
     pub fn write_derive_flags_body(&mut self, config: &Config, writer: &mut PrettyWriter, args: &Args) {
 
-        writer.write_line(": Fields");
+        if self.implemented_traits.contains("Clone"){
+            // this flag requires cloning
+            writer.write_line("FromLuaProxy +");
+        }
+        
+
+        writer.write_line("Fields");
         writer.open_paren();
 
         match &self.item.inner{

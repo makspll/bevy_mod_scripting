@@ -1,4 +1,4 @@
-use bevy_api_gen_lib::{PrettyWriter, WrappedItem, Config, Args, WRAPPER_PREFIX};
+use bevy_api_gen_lib::{PrettyWriter, WrappedItem, Config, Args, WRAPPER_PREFIX, type_to_string};
 
 use std::{io::{self, BufReader},fs::{File,read_to_string}, collections::{HashSet}, borrow::Cow};
 use clap::Parser;
@@ -44,6 +44,7 @@ pub(crate) fn generate_macros(crates: &[Crate], config: Config, args: &Args) -> 
             // extract all available associated constants,methods etc available to this item
             let mut self_impl : Option<&Impl> = None;
             let mut impl_items: IndexMap<&str,Vec<(&Impl,&Item)>> = Default::default();
+            let mut implemented_traits : IndexSet<String> = Default::default();
 
             let impls = match &item.inner{
                 ItemEnum::Struct(s) => &s.impls,
@@ -53,9 +54,10 @@ pub(crate) fn generate_macros(crates: &[Crate], config: Config, args: &Args) -> 
 
             impls.iter().for_each(|id| 
                 if let ItemEnum::Impl(i) = &source.index.get(id).unwrap().inner {
-                    if i.trait_.is_none(){
-                        self_impl = Some(i);
-                    }
+                    match &i.trait_{
+                        Some(t) => {type_to_string(t, &mut |s| Ok(s.to_owned())).and_then(|str_| Ok(implemented_traits.insert(str_)));},
+                        None => self_impl = Some(i),
+                    } 
                     i.items.iter().for_each(|id| {
                         let it = source.index.get(id).unwrap();
 
@@ -72,14 +74,12 @@ pub(crate) fn generate_macros(crates: &[Crate], config: Config, args: &Args) -> 
             
             let config = config.types.get(item.name.as_ref().unwrap()).unwrap();
 
-            let wrapper_type = config.wrapper_type;
             
             let path_components = &source.paths.get(id).unwrap().path;
 
             let wrapper_name = format!("{WRAPPER_PREFIX}{}",item.name.as_ref().unwrap());
             let wrapped_type = item.name.as_ref().unwrap();
             WrappedItem {
-                wrapper_type,
                 wrapper_name,
                 wrapped_type,
                 path_components,
@@ -90,6 +90,7 @@ pub(crate) fn generate_macros(crates: &[Crate], config: Config, args: &Args) -> 
                 impl_items,
                 crates,
                 has_global_methods: false,
+                implemented_traits,
             }
         }
         )
@@ -147,7 +148,6 @@ pub(crate) fn generate_macros(crates: &[Crate], config: Config, args: &Args) -> 
             writer.write_indentation();
             v.write_inline_full_path(&mut writer, args);
             writer.write_inline(" : ");
-            writer.write_inline(&v.wrapper_type.to_string());
             writer.newline();
 
             v.write_derive_flags_body(&config, &mut writer, args);

@@ -4,7 +4,7 @@ use ::std::mem::MaybeUninit;
 use ::std::sync::{Weak,Arc};
 use ::std::convert::AsRef;
 use ::std::ops::{Deref,DerefMut};
-use crate::{ScriptRef, ReflectedValue, impl_tealr_type, ScriptRefBase, ReflectPtr, ValueIndex, IdentitySubReflect, SubReflect, LuaWrapper};
+use crate::{ScriptRef, ReflectedValue, impl_tealr_type, ReflectBase, ReflectPtr, ValueIndex, LuaWrapper};
 use ::bevy::ecs::system::Command;
 use ::bevy::hierarchy::BuildWorldChildren;
 use ::bevy::reflect::{ReflectRef, FromReflect};
@@ -58,9 +58,8 @@ impl ApplyLua for ScriptRef{
         }
 
         Err(mlua::Error::RuntimeError(self.get(|s| 
-            format!("Attempted to assign {v:?} to {:?} at path: `{}`. Did you forget to call `app.register_foreign_lua_type::<{}>`?",
-                s,
-                self.path.as_ref().map(|p| p.as_str()).unwrap_or("\"\""),
+            format!("Attempted to assign `{}` = {v:?}. Did you forget to call `app.register_foreign_lua_type::<{}>`?",
+                self.path.to_string(),
                 s.type_name()
             )))
         )
@@ -151,6 +150,10 @@ pub trait LuaProxyable : {
     fn apply_lua<'lua>(self_ : &mut ScriptRef, lua: &'lua Lua, new_val: Value<'lua>) -> mlua::Result<()>;
 }
 
+pub trait FromLuaProxy<'lua> : Sized{
+    fn from_lua_proxy(new_val : Value<'lua>, lua: &'lua Lua) -> mlua::Result<Self>;
+}
+
 /// A struct providing type data for the `LuaProxyable` trait.
 /// 
 /// This allows casting static methods from the `LuaProxyable trait`.
@@ -201,7 +204,7 @@ impl<T: Clone + UserData + Send + ValueLuaType + Reflect + 'static> LuaProxyable
         if let Value::UserData(v) = new_val {
             let o = v.borrow::<T>()?;
 
-            self_.get_mut_typed(|s,_| {
+            self_.get_mut_typed(|s| {
                 *s = o.clone()
             });
             

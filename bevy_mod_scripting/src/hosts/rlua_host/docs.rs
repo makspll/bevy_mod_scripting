@@ -37,7 +37,7 @@ impl DocFragment for LuaDocFragment {
     }
 
     fn gen_docs(self) -> Result<(), ScriptError> {
-        let script_asset_path = &FileAssetIo::get_root_path().join("assets").join("scripts");
+        let script_asset_path = &FileAssetIo::get_base_path().join("assets").join("scripts");
 
         let script_doc_dir = &env::var("SCRIPT_DOC_DIR")
             .map(|v| v.into())
