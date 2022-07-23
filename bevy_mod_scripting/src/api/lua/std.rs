@@ -9,13 +9,12 @@ use crate::{LuaProxyable,ScriptRef, ReflectedValue, impl_tealr_type, ReflectBase
 use bevy::ecs::system::Command;
 use bevy::hierarchy::BuildWorldChildren;
 use bevy::reflect::{ReflectRef, FromReflect};
-use bevy::reflect::erased_serde::Serialize;
 use bevy::{reflect::{reflect_trait, Reflect, TypeRegistry, TypeRegistration, DynamicStruct, DynamicTupleStruct, DynamicTuple, DynamicList, DynamicArray, DynamicMap}, prelude::{World, ReflectComponent, ReflectDefault, ReflectResource}, hierarchy::{Children, Parent, DespawnChildrenRecursive, DespawnRecursive}};
 
 use parking_lot::RwLock;
-use serde::Deserialize;
 use tealr::TypeName;
-use tealr::mlu::mlua::MetaMethod;
+use tealr::mlu::TypedFunction;
+use tealr::mlu::mlua::{MetaMethod, ToLuaMulti};
 use tealr::mlu::{mlua::{Lua, Value,self, UserData, ToLua,FromLua}, TealData, TealDataMethods};
 
 
@@ -71,8 +70,7 @@ impl <'lua>FromLuaProxy<'lua> for String {
     }
 }
 
-use std::fmt::Debug;
-impl <T : LuaProxyable + Reflect + for <'a> Deserialize<'a> + serde::Serialize + Debug+ for<'a>FromLuaProxy<'a> + Clone>LuaProxyable for Option<T>{
+impl <T : LuaProxyable + Reflect + for<'a>FromLuaProxy<'a> + Clone>LuaProxyable for Option<T>{
     fn ref_to_lua< 'lua>(self_: ScriptRef,lua: & 'lua Lua) -> mlua::Result<Value< 'lua>>  {
         self_.get_typed(|s : &Option<T>| match  s {
             Some(_) => T::ref_to_lua(self_.sub_ref(ReflectPathElem::SubReflection{
@@ -165,6 +163,7 @@ impl <T : FromReflect>TypeName for LuaVec<T> {
     }
 }
 
+
 impl_user_data!(LuaVec<T : FromReflect + LuaProxyable>);
 impl <T : FromReflect + LuaProxyable>TealData for LuaVec<T> {
     fn add_methods<'lua, M: TealDataMethods<'lua, Self>>(methods: &mut M) {
@@ -174,11 +173,31 @@ impl <T : FromReflect + LuaProxyable>TealData for LuaVec<T> {
 
         methods.add_meta_method(MetaMethod::NewIndex, |ctx,s,(index,value) : (usize, Value)|{
             Ok(s.ref_.index(index)?.apply_lua(ctx, value)?)
-         });
+        });
+
+        methods.add_meta_method(MetaMethod::Pairs, |ctx, s, _ : ()|{
+            let len = s.ref_.get_typed(|s : &Vec<T>| s.len());
+            let mut curr_idx = 0;
+            let ref_ = s.ref_.clone();
+            TypedFunction::from_rust_mut(move |ctx,()|{
+                    let o = 
+                    if curr_idx < len {
+                        (curr_idx.to_lua(ctx)?,ref_.index(curr_idx)?.to_lua(ctx)?)
+                    } else {
+                        (Value::Nil,Value::Nil)
+                    };
+                    curr_idx += 1;
+                    Ok(o)
+            },ctx)
+        });
+
+        methods.add_meta_method(MetaMethod::Len, |_, s, ()| {
+            Ok(s.ref_.get_typed(|s : &Vec<T>| s.len()))
+        })
     }
 }
 
-impl <T : FromReflect + LuaProxyable + for<'a>FromLuaProxy<'a> + Debug>LuaProxyable for Vec<T> {
+impl <T : FromReflect + LuaProxyable + for<'a>FromLuaProxy<'a>>LuaProxyable for Vec<T> {
     fn ref_to_lua<'lua>(self_ : ScriptRef, lua: &'lua Lua) -> mlua::Result<Value<'lua>> {
         LuaVec::<T>::new_ref(self_).to_lua(lua)
     }
