@@ -37,7 +37,7 @@ pub(crate) fn make_auto_methods<'a>(flag: &DeriveFlag,new_type : &'a Newtype, ou
 
                 if a.to_token_stream().to_string().starts_with("Lua") && !is_ref{
                     quote_spanned!{m.span()=>
-                        #lit.clone()
+                        #lit.inner()?
                     }
                 } else {
                     quote_spanned!{m.span()=>
@@ -46,52 +46,39 @@ pub(crate) fn make_auto_methods<'a>(flag: &DeriveFlag,new_type : &'a Newtype, ou
                 }
         }).collect();
 
-        let base_ident = new_type.args.base_type.path.segments.last().unwrap();
-
-        let (mut inner_expr,
-            static_,
-            fn_,
-            mut_,
-            star) = 
-
-            if let Some((r,v)) = &m.self_ {   
-                
-                let base = 
-                    if r.reference.is_some() && r.mutability.is_some(){
-                        quote_spanned!{m.span()=>s.val_mut(|s| s.#ident(#inner_args))}
-                    } else if r.reference.is_some(){
-                        quote_spanned!{m.span()=>s.val(|s| s.#ident(#inner_args))}
-                    } else {
-                        quote_spanned!{m.span()=>s.clone().#ident(#inner_args)}
-                    };
-
-                (base,
-                    None,
-                    None,
-                    r.mutability,
-                    r.reference.as_ref().map(|_| Token![*](Span::call_site())))
-            } else {
-                (quote_spanned!{m.span()=>#base_ident::#ident(#inner_args)},
-                    Some(Token![static](Span::call_site())),
-                    Some(Token![fn](Span::call_site())),
-                    None,
-                    None)
-            };
+        let base_ident = &new_type.args.base_type_ident;
 
         let out_ident = &m.out;
-        inner_expr = out_ident.as_ref().map(|v| 
-            if v.into_token_stream().to_string().starts_with("Lua"){
-                quote_spanned!{m.span()=>
-                    #out_ident::new(#inner_expr)
-                }
-            } else {
-                inner_expr.clone()
-            }
-        ).unwrap_or(quote_spanned!{m.span()=>
-            #newtype_name::new(#inner_expr)
-        });
 
-        // wrap reference variables with val and val mut calls
+        // create function call first
+        let mut inner_expr =  if let Some((r,v)) = &m.self_ {
+            if r.reference.is_some() || r.mutability.is_some(){
+                // the s will come from a val or val_mut call
+                quote_spanned!(m.span()=>s.#ident(#inner_args))
+            } else  {
+                quote_spanned!(m.span()=>s.inner()?.#ident(#inner_args))
+            }
+        } else {
+            quote_spanned!(m.span()=>#base_ident::#ident(#inner_args))
+        };
+
+        // then wrap it in constructor if necessary
+        if let Some(out_ident) = out_ident{
+            if out_ident.into_token_stream().to_string().starts_with("Lua"){
+                inner_expr = quote_spanned!{m.span()=>
+                    #out_ident::new(#inner_expr)
+                };
+            } 
+        } else {
+            inner_expr = quote_spanned!{m.span()=>
+                #newtype_name::new(#inner_expr)
+            };
+        }
+
+        // wrap in ok 
+        inner_expr = quote_spanned!(m.span()=>Ok(#inner_expr));
+
+        // and then wrap in getters for every argument which is a reference
         for (idx,arg) in m.args.iter().enumerate(){
             if let Type::Reference(r) = arg {
                 let method_call = r.mutability
@@ -99,11 +86,34 @@ pub(crate) fn make_auto_methods<'a>(flag: &DeriveFlag,new_type : &'a Newtype, ou
                     .unwrap_or_else(|| format_ident!("val",span=arg.span()));
                 let arg_ident = &arg_idents[idx];
                 inner_expr = quote_spanned!{m.span()=>
-                    #arg_ident.#method_call(|#arg_ident| #inner_expr)
+                    #arg_ident.#method_call(|#arg_ident| #inner_expr)?
                 }
             }                            
         }
 
+        // then figure out other details and optionally wrap in self getter if &self or &mut self are the first args
+        let (static_,
+            fn_,
+            mut_,
+            star) = 
+
+            if let Some((r,v)) = &m.self_ {   
+                if r.reference.is_some() && r.mutability.is_some(){
+                    inner_expr = quote_spanned!{m.span()=>s.val_mut(|s| #inner_expr)?}
+                } else if r.reference.is_some(){
+                    inner_expr = quote_spanned!{m.span()=>s.val(|s| #inner_expr)?}
+                } 
+
+                (None,
+                    None,
+                    r.mutability,
+                    r.reference.as_ref().map(|_| Token![*](Span::call_site())))
+            } else {
+                (Some(Token![static](Span::call_site())),
+                    Some(Token![fn](Span::call_site())),
+                    None,
+                    None)
+            };
 
         let self_ident = static_.map(|_| quote::quote!{}).unwrap_or(quote_spanned!{m.span()=>s,});
         let ds : Punctuated<Attribute,EmptyToken> = m.docstring.iter().cloned().collect();
@@ -111,7 +121,7 @@ pub(crate) fn make_auto_methods<'a>(flag: &DeriveFlag,new_type : &'a Newtype, ou
 
         parse_quote_spanned!{m.span()=>
             #ds
-            #static_ #mut_ #fn_ #ident_str =>|_,#self_ident (#(#arg_idents),*):(#(#args_without_refs),*)| Ok(#inner_expr)
+            #static_ #mut_ #fn_ #ident_str =>|_,#self_ident (#(#arg_idents),*):(#(#args_without_refs),*)| #inner_expr
         }
     }).collect::<Vec<_>>())
 }

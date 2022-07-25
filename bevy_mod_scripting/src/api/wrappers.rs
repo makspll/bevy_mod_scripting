@@ -2,7 +2,7 @@ use bevy::reflect::Reflect;
 use parking_lot::RwLock;
 
 use std::{sync::Arc, fmt::{Debug,Display, Formatter}, cell::UnsafeCell};
-use crate::{ScriptRef, ReflectBase, ReflectPtr, api::FromLua};
+use crate::{ScriptRef, ReflectBase, ReflectPtr, api::FromLua, ReflectionError};
 
 
 /// Script representable type with pass-by-value semantics
@@ -122,7 +122,7 @@ impl <T : ScriptReference>LuaWrapper<T> {
 
     /// Perform an operation on the base type and optionally retrieve something by value
     /// may require a read lock on the world in case this is a reference
-    pub fn val<G,F>(&self, accessor: F) -> G
+    pub fn val<G,F>(&self, accessor: F) -> Result<G,ReflectionError>
         where 
         F: FnOnce(&T) -> G
     {
@@ -133,7 +133,7 @@ impl <T : ScriptReference>LuaWrapper<T> {
                 let o = accessor(unsafe{&*(v.get() as *const T)});
                 drop(lock);
 
-                o
+                Ok(o)
             },
             Self::Ref(v) => {
                 v.get(|s| accessor(s.downcast_ref::<T>().unwrap()))
@@ -141,7 +141,7 @@ impl <T : ScriptReference>LuaWrapper<T> {
         }
     }
 
-    pub fn val_mut<G,F>(&mut self, accessor: F) -> G
+    pub fn val_mut<G,F>(&mut self, accessor: F) -> Result<G,ReflectionError>
         where 
         F: FnOnce(&mut T) -> G
     {
@@ -151,7 +151,7 @@ impl <T : ScriptReference>LuaWrapper<T> {
                 let o = accessor(v.get_mut());
                 drop(lock);
 
-                o
+                Ok(o)
             },
             Self::Ref(v) => {
                 v.get_mut(|s| accessor(s.downcast_mut::<T>().unwrap()))
@@ -160,13 +160,13 @@ impl <T : ScriptReference>LuaWrapper<T> {
     }
 
     /// retrieves the underlying value by cloning it 
-    pub fn clone(&self) -> T
+    pub fn inner(&self) -> Result<T,ReflectionError>
     where 
         T : ScriptValue
     {
         match self {
             //no need to lock here
-            Self::Owned(ref v, ..) => unsafe{&*(v.get() as *const T)}.clone(),
+            Self::Owned(ref v, ..) => Ok(unsafe{&*(v.get() as *const T)}.clone()),
             Self::Ref(v) => v.get(|s| s.downcast_ref::<T>().unwrap().clone())
             ,
         }
@@ -174,7 +174,7 @@ impl <T : ScriptReference>LuaWrapper<T> {
 
     /// Applies Self to another ScriptRef.
     /// may require a write lock on the world
-    pub fn apply_self_to_base(&self, other: &mut ScriptRef)
+    pub fn apply_self_to_base(&self, other: &mut ScriptRef) -> Result<(), ReflectionError>
     {
         match self {
             Self::Owned(v, ..) => {

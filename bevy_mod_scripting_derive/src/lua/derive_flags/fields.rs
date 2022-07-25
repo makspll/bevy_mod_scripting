@@ -30,15 +30,15 @@ pub(crate) fn make_fields<'a>(flag: &DeriveFlag,new_type : &'a Newtype, out : &m
 
         let expr_getter = type_string.starts_with("Lua") 
             .then(|| {quote_spanned!{f.span()=>
-                Ok(#type_::new_ref(s.script_ref().index(std::borrow::Cow::Borrowed(#id_string))?))
+                Ok(#type_::new_ref(s.script_ref().index(std::borrow::Cow::Borrowed(#id_string))))
             }}).unwrap_or_else(|| {
                 if type_string == "ReflectedValue" {
                     return quote_spanned!{f.span()=>
-                        s.script_ref().index(std::borrow::Cow::Borrowed(#id_string))
+                        Ok(s.script_ref().index(std::borrow::Cow::Borrowed(#id_string)))
                     }
                 }
                 quote_spanned!{f.span()=>{}
-                    s.val(|s| Ok(s.#id))
+                    s.val(|s| Ok(s.#id))?
                 }
             });
         
@@ -52,15 +52,15 @@ pub(crate) fn make_fields<'a>(flag: &DeriveFlag,new_type : &'a Newtype, out : &m
 
         let expr_setter = (type_string.starts_with("Lua") || type_string == "reflect_only")
             .then(|| {quote_spanned!{f.span()=>
-                Ok(o.apply_self_to_base(&mut s.script_ref().index(std::borrow::Cow::Borrowed(#id_string))?))
+                Ok(o.apply_self_to_base(&mut s.script_ref().index(std::borrow::Cow::Borrowed(#id_string)))?)
             }}).unwrap_or_else(|| {
                 if type_string == "ReflectedValue" {
                     return quote_spanned!{f.span()=>
-                        Ok(s.script_ref().index(std::borrow::Cow::Borrowed(#id_string))?.apply(&o.ref_))
+                        Ok(s.script_ref().index(std::borrow::Cow::Borrowed(#id_string)).apply(&o.ref_)?)
                     }
                 }
                 quote_spanned!{f.span()=>
-                    s.val_mut(|s| Ok(s.#id = o))
+                    s.val_mut(|s| Ok(s.#id = o))?
                 }
             });
 

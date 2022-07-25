@@ -62,7 +62,7 @@ pub(crate) fn make_bin_ops<'a>(implementor: &mut LuaImplementor,flag: &DeriveFla
                     let mut body = v.map_binary(|t| {
                         // unpack wrappers
                         let inner = if is_wrapper{
-                            quote_spanned!{v.span()=>v.clone()}
+                            quote_spanned!{v.span()=>v.inner()?}
                         } else {
                             quote_spanned!{v.span()=>v}
                         };
@@ -73,9 +73,9 @@ pub(crate) fn make_bin_ops<'a>(implementor: &mut LuaImplementor,flag: &DeriveFla
                         }
                     }, |s| {
                         if s.reference.is_some(){
-                            quote_spanned!{v.span()=>&ud.clone()}
+                            quote_spanned!{v.span()=>&ud.inner()?}
                         } else {
-                            quote_spanned!{v.span()=>(ud.clone())}
+                            quote_spanned!{v.span()=>ud.inner()?}
                         }
                     })?;
 

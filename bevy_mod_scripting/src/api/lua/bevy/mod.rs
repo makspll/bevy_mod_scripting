@@ -84,7 +84,7 @@ impl TealData for LuaWorld {
             let w = world.upgrade().unwrap();
             let w = &mut w.write();
             
-            let children : Option<Vec<LuaEntity>> = w.get::<Children>(parent.clone())
+            let children : Option<Vec<LuaEntity>> = w.get::<Children>(parent.inner()?)
                 .map(|children| children.iter().map(|e| LuaEntity::new(*e)).collect::<Vec<_>>());
 
             Ok(children)
@@ -95,7 +95,7 @@ impl TealData for LuaWorld {
             let w = world.upgrade().unwrap();
             let w = &mut w.write();
             
-            let parent : Option<LuaEntity> = w.get::<Parent>(parent.clone())
+            let parent : Option<LuaEntity> = w.get::<Parent>(parent.inner()?)
                 .map(|parent| LuaEntity::new(parent.get()));
 
             Ok(parent)
@@ -105,9 +105,9 @@ impl TealData for LuaWorld {
         methods.add_method("push_children", |_,world, (parent,children) : (LuaEntity,Vec<LuaEntity>)| {
             let w = world.upgrade().unwrap();
             let w = &mut w.write();
-            let children = children.iter().map(|e| e.clone()).collect::<Vec<_>>();
+            let children = children.iter().map(|e| e.inner()).collect::<Result<Vec<_>,_>>()?;
             
-            w.get_entity_mut(parent.clone())
+            w.get_entity_mut(parent.inner()?)
                 .map(|mut entity| {entity.push_children(&children);});
 
             Ok(())
@@ -117,9 +117,9 @@ impl TealData for LuaWorld {
         methods.add_method("push_child", |_,world, (parent,child) : (LuaEntity,LuaEntity)| {
             let w = world.upgrade().unwrap();
             let w = &mut w.write();
-            
-            w.get_entity_mut(parent.clone())
-                .map(|mut entity| {entity.push_children(&[child.clone()]);});
+            let child = child.inner()?;
+            w.get_entity_mut(parent.inner()?)
+                .map(|mut entity| {entity.push_children(&[child]);});
 
             Ok(())
         });
@@ -128,9 +128,9 @@ impl TealData for LuaWorld {
         methods.add_method("remove_children", |_,world, (parent,children) : (LuaEntity,Vec<LuaEntity>)| {
             let w = world.upgrade().unwrap();
             let w = &mut w.write();
-            let children = children.iter().map(|e| e.clone()).collect::<Vec<_>>();
+            let children = children.iter().map(|e| e.inner()).collect::<Result<Vec<_>,_>>()?;
 
-            w.get_entity_mut(parent.clone())
+            w.get_entity_mut(parent.inner()?)
                 .map(|mut entity| {entity.remove_children(&children);});
 
             Ok(())
@@ -140,9 +140,9 @@ impl TealData for LuaWorld {
         methods.add_method("remove_child", |_,world, (parent,child) : (LuaEntity,LuaEntity)| {
             let w = world.upgrade().unwrap();
             let w = &mut w.write();
-
-            w.get_entity_mut(parent.clone())
-                .map(|mut entity| {entity.remove_children(&[child.clone()]);});
+            let child = child.inner()?;
+            w.get_entity_mut(parent.inner()?)
+                .map(|mut entity| {entity.remove_children(&[child]);});
 
             Ok(())
         });
@@ -151,21 +151,21 @@ impl TealData for LuaWorld {
         methods.add_method("insert_children", |_,world, (parent,index,children) : (LuaEntity,usize,Vec<LuaEntity>)| {
             let w = world.upgrade().unwrap();
             let w = &mut w.write();
-            let children = children.iter().map(|e| e.clone()).collect::<Vec<_>>();
+            let children = children.iter().map(|e| e.inner()).collect::<Result<Vec<_>,_>>()?;
 
-            w.get_entity_mut(parent.clone())
+            w.get_entity_mut(parent.inner()?)
                 .map(|mut entity| {entity.insert_children(index, &children);});
 
             Ok(())
         });
 
         methods.document("Inserts child entity to the given parent entity at the given index.");
-        methods.add_method("insert_child", |_,world, (parent,index,children) : (LuaEntity,usize,LuaEntity)| {
+        methods.add_method("insert_child", |_,world, (parent,index,child) : (LuaEntity,usize,LuaEntity)| {
             let w = world.upgrade().unwrap();
             let w = &mut w.write();
-
-            w.get_entity_mut(parent.clone())
-                .map(|mut entity| {entity.insert_children(index, &[children.clone()]);});
+            let child = child.inner()?;
+            w.get_entity_mut(parent.inner()?)
+                .map(|mut entity| {entity.insert_children(index, &[child]);});
 
             Ok(())
         });
@@ -176,7 +176,7 @@ impl TealData for LuaWorld {
             let w = &mut w.write();
 
             Ok(DespawnChildrenRecursive{
-                entity: entity.clone(),
+                entity: entity.inner()?,
             }.write(w))
         });
 
@@ -186,7 +186,7 @@ impl TealData for LuaWorld {
             let w = &mut w.write();
 
             Ok(DespawnRecursive{
-                entity: entity.clone(),
+                entity: entity.inner()?,
             }.write(w))
         });
 
@@ -196,7 +196,7 @@ impl TealData for LuaWorld {
             let w = &mut w.write();
 
             Ok(DespawnRecursive{
-                entity: entity.clone(),
+                entity: entity.inner()?,
             }.write(w))
         });
     
@@ -225,7 +225,7 @@ impl TealData for LuaWorld {
         methods.document("The component can then be modified using field access.");
         methods.add_method("add_default_component", |_, world, (entity, comp_type): (LuaEntity, LuaTypeRegistration)| {
             // grab this entity before acquiring a lock in case it's a reference
-            let entity = entity.clone();
+            let entity = entity.inner()?;
             let w = world.upgrade().unwrap();
             let w = &mut w.write();
 
@@ -258,7 +258,7 @@ impl TealData for LuaWorld {
         methods.add_method("get_component", |_, world, (entity, comp_type) : (LuaEntity,LuaTypeRegistration)| {
 
             // grab this entity before acquiring a lock in case it's a reference
-            let entity = entity.clone();
+            let entity = entity.inner()?;
             let w = world.upgrade().unwrap();
             let w = &w.read();
 
@@ -276,7 +276,7 @@ impl TealData for LuaWorld {
         methods.add_method("has_component", |_, world, (entity, comp_type) : (LuaEntity,LuaTypeRegistration)| {
 
             // grab this entity before acquiring a lock in case it's a reference
-            let entity = entity.clone();
+            let entity = entity.inner()?;
             let w = world.upgrade().unwrap();
             let w = &w.read();
 
@@ -290,7 +290,7 @@ impl TealData for LuaWorld {
         methods.document("Removes the given component from the given entity, does nothing if it doesn't exist on the entity.");
         methods.add_method("remove_component", |_, world, (entity, comp_type) : (LuaEntity, LuaTypeRegistration)| {
             // grab this entity before acquiring a lock in case it's a reference
-            let entity = entity.clone();
+            let entity = entity.inner()?;
             let w = world.upgrade().unwrap();
             let w = &mut w.write();
             
@@ -355,7 +355,7 @@ impl TealData for LuaWorld {
             let w = world.upgrade().unwrap();
             let w = &mut w.write();                
             
-            Ok(w.despawn(entity.clone()))
+            Ok(w.despawn(entity.inner()?))
         });
        
     }   

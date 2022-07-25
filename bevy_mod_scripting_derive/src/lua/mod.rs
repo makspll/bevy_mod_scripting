@@ -112,7 +112,7 @@ impl WrapperImplementor for LuaImplementor {
                         let other = v.borrow::<#wrapper_type>()?;
                         let other = &other;
 
-                        other.apply_self_to_base(self_);
+                        other.apply_self_to_base(self_)?;
                         Ok(()) 
                     } else {
                         Err(mlua::Error::RuntimeError(
@@ -157,7 +157,7 @@ impl WrapperImplementor for LuaImplementor {
                                 fn from_lua_proxy<'lua>(lua_value: Value<'lua>, _: &'lua Lua) -> mlua::Result<Self> {
                                     if let mlua::Value::UserData(ud) = lua_value{
                                         let wrapper = ud.borrow::<#wrapper_type>()?;
-                                        Ok(wrapper.deref().clone())
+                                        Ok(wrapper.deref().inner()?)
                                     } else {
                                         Err(mlua::Error::FromLuaConversionError{
                                             from: "",

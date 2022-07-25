@@ -22,6 +22,24 @@ use self::bevy::LuaWorld;
 pub mod std;
 pub mod bevy;
 
+impl ValueIndex<Value<'_>> for ScriptRef {
+    type Output=Result<Self,mlua::Error>;
+
+    fn index(&self, index: Value<'_>) -> Self::Output {
+        match index {
+            Value::Integer(idx) => {
+                Ok(self.index(idx  as usize))
+            }
+            Value::String(field) => {
+                let str_ = field.to_str()?.to_string();
+                // TODO: hopefully possible to use a &'_ str here
+                // but this requires Reflect implementation for &str 
+                Ok(<Self as ValueIndex<Cow<'static,str>>>::index(self,str_.into()))
+            }
+            _ => return Err(mlua::Error::RuntimeError(format!("Cannot index a rust object with {:?}", index))),
+        }
+    }
+}
 
 /// For internal use only.
 /// 
@@ -44,7 +62,7 @@ impl ApplyLua for ScriptRef{
             let world = luaworld.upgrade().unwrap();
             let world = &world.read();
             let type_registry = world.resource::<TypeRegistry>().read();
-            type_registry.get_type_data::<ReflectLuaProxyable>(self.get(|s| s.type_id())).cloned()
+            type_registry.get_type_data::<ReflectLuaProxyable>(self.get(|s| s.type_id())?).cloned()
         };
 
         if let Some(ud) = proxyable{
@@ -61,7 +79,7 @@ impl ApplyLua for ScriptRef{
             format!("Attempted to assign `{}` = {v:?}. Did you forget to call `app.register_foreign_lua_type::<{}>`?",
                 self.path.to_string(),
                 s.type_name()
-            )))
+            ))?)
         )
 
     }
@@ -83,11 +101,24 @@ impl <'lua>ToLua<'lua> for ScriptRef {
 
         let typedata = world.resource::<TypeRegistry>();
         let g = typedata.read();
-        if let Some(v) = g.get_type_data::<ReflectLuaProxyable>(self.get(|s| s.type_id())) {
+
+        let type_id = self.get(|s| s.type_id())?;
+        if let Some(v) = g.get_type_data::<ReflectLuaProxyable>(type_id) {
             Ok(v.ref_to_lua(self,ctx)?)
         } else {
             ReflectedValue{ref_: self.clone()}.to_lua(ctx)
         }
+    }
+}
+
+impl TypeName for ScriptRef {
+    /// We represent LuaRef types as `any` wildcards, since they can convert to literally anything 
+    fn get_type_parts() -> Cow<'static, [tealr::NamePart]> {
+        Cow::Borrowed(&[tealr::NamePart::Type(tealr::TealType {
+            name: Cow::Borrowed("any"),
+            generics: None,
+            type_kind: tealr::KindOfType::Builtin,
+        })])     
     }
 }
 
@@ -96,8 +127,8 @@ impl TealData for ReflectedValue {
     fn add_methods<'lua, T: TealDataMethods<'lua, Self>>(methods: &mut T) {
         methods.add_meta_method(MetaMethod::ToString, |_, val, ()| {
             val.ref_.get(|s| 
-                Ok(format!("{:#?}", &s)
-                ))
+                Ok(format!("{:#?}", &s))
+            )?
         });
 
         methods.add_meta_method_mut(MetaMethod::Index, |_, val, field: Value| {
@@ -125,7 +156,7 @@ impl TealData for ReflectedValue {
                 } else {
                     panic!("No length on this type");
                 }
-            })
+            })?
         });
 
     }
@@ -197,7 +228,7 @@ pub trait ValueLuaType {}
 
 impl<T: Clone + UserData + Send + ValueLuaType + Reflect + 'static> LuaProxyable for T {
     fn ref_to_lua<'lua>(self_ : ScriptRef, lua: &'lua Lua) -> mlua::Result<Value<'lua>>{
-        self_.get_typed(|s: &Self| s.clone().to_lua(lua))
+        self_.get_typed(|s: &Self| s.clone().to_lua(lua))?
     }
 
     fn apply_lua<'lua>(self_ : &mut ScriptRef, _: &'lua Lua, new_val: Value<'lua>) -> mlua::Result<()>{

@@ -3,7 +3,7 @@
 imports = """
 use std::ops::*;
 use crate::{FromLuaProxy};
-use crate::{ReflectPathElem,RegisterForeignLuaType,LuaProxyable,ScriptRef,ScriptRefBase,ReflectedValue, api::ValueIndex, APIProvider, LuaDocFragment};
+use crate::{ReflectionError,ReflectPathElem,RegisterForeignLuaType,LuaProxyable,ScriptRef,ScriptRefBase,ReflectedValue, api::ValueIndex, APIProvider, LuaDocFragment};
 use std::sync::{Arc, Mutex};
 use crate::util::impl_tealr_type;
 use tealr::{mlu::{mlua,mlua::{prelude::*,MetaMethod,Value}},create_union_mlua};
@@ -460,8 +460,8 @@ source="bevy_asset"
 type="Vec2"
 source="bevy_math"
 lua_methods=[
-    "(MetaMethod::Index) => |_,s,idx: usize| {Ok(s.clone()[idx])}",
-    "mut (MetaMethod::NewIndex) => |_,s,(idx,val): (usize,f32)| {Ok(s.val_mut(|s| s[idx] = val))}"
+    "(MetaMethod::Index) => |_,s,idx: usize| {Ok(s.inner()?[idx])}",
+    "mut (MetaMethod::NewIndex) => |_,s,(idx,val): (usize,f32)| {s.val_mut(|s| Ok(s[idx] = val))?}"
 ]
 import_path="glam::f32::vec2::Vec2"
 
@@ -469,8 +469,8 @@ import_path="glam::f32::vec2::Vec2"
 type="Vec3"
 source="bevy_math"
 lua_methods=[
-    "(MetaMethod::Index) => |_,s,idx: usize| {Ok(s.clone()[idx])}",
-    "mut (MetaMethod::NewIndex) => |_,s,(idx,val): (usize,f32)| {Ok(s.val_mut(|s| s[idx] = val))}"
+    "(MetaMethod::Index) => |_,s,idx: usize| {Ok(s.inner()?[idx])}",
+    "mut (MetaMethod::NewIndex) => |_,s,(idx,val): (usize,f32)| {s.val_mut(|s| Ok(s[idx] = val))?}"
 ]
 import_path="glam::f32::vec3::Vec3"
 
@@ -478,8 +478,8 @@ import_path="glam::f32::vec3::Vec3"
 type="Vec3A"
 source="bevy_math"
 lua_methods=[
-    "(MetaMethod::Index) => |_,s,idx: usize| {Ok(s.clone()[idx])}",
-    "mut (MetaMethod::NewIndex) => |_,s,(idx,val): (usize,f32)| {Ok(s.val_mut(|s| s[idx] = val))}"
+    "(MetaMethod::Index) => |_,s,idx: usize| {Ok(s.inner()?[idx])}",
+    "mut (MetaMethod::NewIndex) => |_,s,(idx,val): (usize,f32)| {s.val_mut(|s| Ok(s[idx] = val))?}"
 ]
 import_path="glam::f32::sse2::vec3A::Vec3A"
 
@@ -488,8 +488,8 @@ import_path="glam::f32::sse2::vec3A::Vec3A"
 type="Vec4"
 source="bevy_math"
 lua_methods=[
-    "(MetaMethod::Index) => |_,s,idx: usize| {Ok(s.clone()[idx])}",
-    "mut (MetaMethod::NewIndex) => |_,s,(idx,val): (usize,f32)| {Ok(s.val_mut(|s| s[idx] = val))}"
+    "(MetaMethod::Index) => |_,s,idx: usize| {Ok(s.inner()?[idx])}",
+    "mut (MetaMethod::NewIndex) => |_,s,(idx,val): (usize,f32)| {s.val_mut(|s| Ok(s[idx] = val))?}"
 ]
 import_path="glam::f32::sse2::vec4::Vec4"
 
@@ -522,8 +522,8 @@ import_path="glam::f32::sse2::vec4::BVec4A"
 type="DVec2"
 source="bevy_math"
 lua_methods=[
-    "(MetaMethod::Index) => |_,s,idx: usize| {Ok(s.clone()[idx])}",
-    "mut (MetaMethod::NewIndex) => |_,s,(idx,val): (usize,f64)| {Ok(s.val_mut(|s| s[idx] = val))}"
+    "(MetaMethod::Index) => |_,s,idx: usize| {Ok(s.inner()?[idx])}",
+    "mut (MetaMethod::NewIndex) => |_,s,(idx,val): (usize,f64)| {s.val_mut(|s| Ok(s[idx] = val))?}"
 ]
 import_path="glam::f64::dvec2::DVec2"
 
@@ -531,8 +531,8 @@ import_path="glam::f64::dvec2::DVec2"
 type="DVec3"
 source="bevy_math"
 lua_methods=[
-    "(MetaMethod::Index) => |_,s,idx: usize| {Ok(s.clone()[idx])}",
-    "mut (MetaMethod::NewIndex) => |_,s,(idx,val): (usize,f64)| {Ok(s.val_mut(|s| s[idx] = val))}"
+    "(MetaMethod::Index) => |_,s,idx: usize| {Ok(s.inner()?[idx])}",
+    "mut (MetaMethod::NewIndex) => |_,s,(idx,val): (usize,f64)| {s.val_mut(|s| Ok(s[idx] = val))?}"
 ]
 import_path="glam::f64::dvec3::DVec3"
 
@@ -540,8 +540,8 @@ import_path="glam::f64::dvec3::DVec3"
 type="DVec4"
 source="bevy_math"
 lua_methods=[
-    "(MetaMethod::Index) => |_,s,idx: usize| {Ok(s.clone()[idx])}",
-    "mut (MetaMethod::NewIndex) => |_,s,(idx,val): (usize,f64)| {Ok(s.val_mut(|s| s[idx] = val))}"
+    "(MetaMethod::Index) => |_,s,idx: usize| {Ok(s.inner()?[idx])}",
+    "mut (MetaMethod::NewIndex) => |_,s,(idx,val): (usize,f64)| {s.val_mut(|s| Ok(s[idx] = val))?}"
 ]
 import_path="glam::f64::dvec4::DVec4"
 
@@ -549,8 +549,8 @@ import_path="glam::f64::dvec4::DVec4"
 type="IVec2"
 source="bevy_math"
 lua_methods=[
-    "(MetaMethod::Index) => |_,s,idx: usize| {Ok(s.clone()[idx])}",
-    "mut (MetaMethod::NewIndex) => |_,s,(idx,val): (usize,i32)| {Ok(s.val_mut(|s| s[idx] = val))}"
+    "(MetaMethod::Index) => |_,s,idx: usize| {Ok(s.inner()?[idx])}",
+    "mut (MetaMethod::NewIndex) => |_,s,(idx,val): (usize,i32)| {s.val_mut(|s| Ok(s[idx] = val))?}"
 ]
 import_path="glam::i32::ivec2::IVec2"
 
@@ -558,8 +558,8 @@ import_path="glam::i32::ivec2::IVec2"
 type="IVec3"
 source="bevy_math"
 lua_methods=[
-    "(MetaMethod::Index) => |_,s,idx: usize| {Ok(s.clone()[idx])}",
-    "mut (MetaMethod::NewIndex) => |_,s,(idx,val): (usize,i32)| {Ok(s.val_mut(|s| s[idx] = val))}"
+    "(MetaMethod::Index) => |_,s,idx: usize| {Ok(s.inner()?[idx])}",
+    "mut (MetaMethod::NewIndex) => |_,s,(idx,val): (usize,i32)| {s.val_mut(|s| Ok(s[idx] = val))?}"
 ]
 import_path="glam::i32::ivec3::IVec3"
 
@@ -567,8 +567,8 @@ import_path="glam::i32::ivec3::IVec3"
 type="IVec4"
 source="bevy_math"
 lua_methods=[
-    "(MetaMethod::Index) => |_,s,idx: usize| {Ok(s.clone()[idx])}",
-    "mut (MetaMethod::NewIndex) => |_,s,(idx,val): (usize,i32)| {Ok(s.val_mut(|s| s[idx] = val))}"
+    "(MetaMethod::Index) => |_,s,idx: usize| {Ok(s.inner()?[idx])}",
+    "mut (MetaMethod::NewIndex) => |_,s,(idx,val): (usize,i32)| {s.val_mut(|s| Ok(s[idx] = val))?}"
 ]
 import_path="glam::i32::ivec4::IVec4"
 
@@ -576,8 +576,8 @@ import_path="glam::i32::ivec4::IVec4"
 type="UVec2"
 source="bevy_math"
 lua_methods=[
-    "(MetaMethod::Index) => |_,s,idx: usize| {Ok(s.clone()[idx])}",
-    "mut (MetaMethod::NewIndex) => |_,s,(idx,val): (usize,u32)| {Ok(s.val_mut(|s| s[idx] = val))}"
+    "(MetaMethod::Index) => |_,s,idx: usize| {Ok(s.inner()?[idx])}",
+    "mut (MetaMethod::NewIndex) => |_,s,(idx,val): (usize,u32)| {s.val_mut(|s| Ok(s[idx] = val))?}"
 ]
 import_path="glam::u32::uvec2::UVec2"
 
@@ -585,8 +585,8 @@ import_path="glam::u32::uvec2::UVec2"
 type="UVec3"
 source="bevy_math"
 lua_methods=[
-    "(MetaMethod::Index) => |_,s,idx: usize| {Ok(s.clone()[idx])}",
-    "mut (MetaMethod::NewIndex) => |_,s,(idx,val): (usize,u32)| {Ok(s.val_mut(|s| s[idx] = val))}"
+    "(MetaMethod::Index) => |_,s,idx: usize| {Ok(s.inner()?[idx])}",
+    "mut (MetaMethod::NewIndex) => |_,s,(idx,val): (usize,u32)| {s.val_mut(|s| Ok(s[idx] = val))?}"
 ]
 import_path="glam::u32::uvec3::UVec3"
 
@@ -594,8 +594,8 @@ import_path="glam::u32::uvec3::UVec3"
 type="UVec4"
 source="bevy_math"
 lua_methods=[
-    "(MetaMethod::Index) => |_,s,idx: usize| {Ok(s.clone()[idx])}",
-    "mut (MetaMethod::NewIndex) => |_,s,(idx,val): (usize,u32)| {Ok(s.val_mut(|s| s[idx] = val))}"
+    "(MetaMethod::Index) => |_,s,idx: usize| {Ok(s.inner()?[idx])}",
+    "mut (MetaMethod::NewIndex) => |_,s,(idx,val): (usize,u32)| {s.val_mut(|s| Ok(s[idx] = val))?}"
 ]
 import_path="glam::u32::uvec4::UVec4"
 
@@ -604,17 +604,28 @@ type="Mat3"
 source="bevy_math"
 lua_methods=[
 """    
-mut (MetaMethod::Index) => |_,s,idx : usize| {
-	Ok(LuaVec3::new_ref(
-			s.script_ref().sub_ref(ReflectPathElem::IndexedSubReflection{
-				label:"col", 
-				index: idx,
-				get: |idx,ref_| panic!("Cannot get mutable column reference given immutable matrix reference"),
-				get_mut: |idx, ref_| ref_.downcast_mut::<Mat3>().unwrap().col_mut(idx)
-			})
+	mut (MetaMethod::Index) => |_,s,idx : usize| {
+		Ok(LuaVec3::new_ref(
+				s.script_ref().sub_ref(ReflectPathElem::SubReflectionIndexed{
+					label:"col", 
+					index: idx,
+					get: |idx,ref_| Err(ReflectionError::InsufficientProvenance{
+						path: "".to_owned(), 
+						msg: "Cannot get column of matrix with immutable reference".to_owned()
+					}),
+					get_mut: |idx, ref_| {
+						if ref_.is::<Mat3>(){
+							Ok(ref_.downcast_mut::<Mat3>()
+								.unwrap()
+								.col_mut(idx))
+						} else {
+							Err(ReflectionError::CannotDowncast{from: ref_.type_name().to_owned().into(), to:"Mat3".into()})
+						}	
+					}
+				})
+			)
 		)
-	)
-}
+	}
 """
 ]
 import_path="glam::f32::mat3::Mat3"
@@ -624,17 +635,28 @@ type="Mat2"
 source="bevy_math"
 lua_methods=[
 """    
-mut (MetaMethod::Index) => |_,s,idx : usize| {
-	Ok(LuaVec2::new_ref(
-			s.script_ref().sub_ref(ReflectPathElem::IndexedSubReflection{
-				label:"col", 
-				index: idx,
-				get: |idx,ref_| panic!("Cannot get mutable column reference given immutable matrix reference"),
-				get_mut: |idx, ref_| ref_.downcast_mut::<Mat2>().unwrap().col_mut(idx)
-			})
+	mut (MetaMethod::Index) => |_,s,idx : usize| {
+		Ok(LuaVec2::new_ref(
+				s.script_ref().sub_ref(ReflectPathElem::SubReflectionIndexed{
+					label:"col", 
+					index: idx,
+					get: |idx,ref_| Err(ReflectionError::InsufficientProvenance{
+						path: "".to_owned(), 
+						msg: "Cannot get column of matrix with immutable reference".to_owned()
+					}),
+					get_mut: |idx, ref_| {
+						if ref_.is::<Mat2>(){
+							Ok(ref_.downcast_mut::<Mat2>()
+								.unwrap()
+								.col_mut(idx))
+						} else {
+							Err(ReflectionError::CannotDowncast{from: ref_.type_name().to_owned().into(), to:"Mat2".into()})
+						}	
+					}
+				})
+			)
 		)
-	)
-}
+	}
 """
 ]
 import_path="glam::f32::sse2::mat2::Mat2"
@@ -645,17 +667,28 @@ type="Mat3A"
 source="bevy_math"
 lua_methods=[
 """    
-mut (MetaMethod::Index) => |_,s,idx : usize| {
-	Ok(LuaVec3A::new_ref(
-			s.script_ref().sub_ref(ReflectPathElem::IndexedSubReflection{
-				label:"col", 
-				index: idx,
-				get: |idx,ref_| panic!("Cannot get mutable column reference given immutable matrix reference"),
-				get_mut: |idx, ref_| ref_.downcast_mut::<Mat3A>().unwrap().col_mut(idx)
-			})
+	mut (MetaMethod::Index) => |_,s,idx : usize| {
+		Ok(LuaVec3A::new_ref(
+				s.script_ref().sub_ref(ReflectPathElem::SubReflectionIndexed{
+					label:"col", 
+					index: idx,
+					get: |idx,ref_| Err(ReflectionError::InsufficientProvenance{
+						path: "".to_owned(), 
+						msg: "Cannot get column of matrix with immutable reference".to_owned()
+					}),
+					get_mut: |idx, ref_| {
+						if ref_.is::<Mat3A>(){
+							Ok(ref_.downcast_mut::<Mat3A>()
+								.unwrap()
+								.col_mut(idx))
+						} else {
+							Err(ReflectionError::CannotDowncast{from: ref_.type_name().to_owned().into(), to:"Mat3A".into()})
+						}	
+					}
+				})
+			)
 		)
-	)
-}
+	}
 """
 ]
 import_path="glam::f32::sse2::mat3::Mat3A"
@@ -665,17 +698,28 @@ type="Mat4"
 source="bevy_math"
 lua_methods=[
 """    
-mut (MetaMethod::Index) => |_,s,idx : usize| {
-	Ok(LuaVec4::new_ref(
-			s.script_ref().sub_ref(ReflectPathElem::IndexedSubReflection{
-				label:"col", 
-				index: idx,
-				get: |idx,ref_| panic!("Cannot get mutable column reference given immutable matrix reference"),
-				get_mut: |idx, ref_| ref_.downcast_mut::<Mat4>().unwrap().col_mut(idx)
-			})
+	mut (MetaMethod::Index) => |_,s,idx : usize| {
+		Ok(LuaVec4::new_ref(
+				s.script_ref().sub_ref(ReflectPathElem::SubReflectionIndexed{
+					label:"col", 
+					index: idx,
+					get: |idx,ref_| Err(ReflectionError::InsufficientProvenance{
+						path: "".to_owned(), 
+						msg: "Cannot get column of matrix with immutable reference".to_owned()
+					}),
+					get_mut: |idx, ref_| {
+						if ref_.is::<Mat4>(){
+							Ok(ref_.downcast_mut::<Mat4>()
+								.unwrap()
+								.col_mut(idx))
+						} else {
+							Err(ReflectionError::CannotDowncast{from: ref_.type_name().to_owned().into(), to:"Mat4".into()})
+						}	
+					}
+				})
+			)
 		)
-	)
-}
+	}
 """
 ]
 import_path="glam::f32::sse2::mat4::Mat4"
@@ -686,17 +730,28 @@ type="DMat2"
 source="bevy_math"
 lua_methods=[
 """    
-mut (MetaMethod::Index) => |_,s,idx : usize| {
-	Ok(LuaDVec2::new_ref(
-			s.script_ref().sub_ref(ReflectPathElem::IndexedSubReflection{
-				label:"col", 
-				index: idx,
-				get: |idx,ref_| panic!("Cannot get mutable column reference given immutable matrix reference"),
-				get_mut: |idx, ref_| ref_.downcast_mut::<DMat2>().unwrap().col_mut(idx)
-			})
+	mut (MetaMethod::Index) => |_,s,idx : usize| {
+		Ok(LuaDVec2::new_ref(
+				s.script_ref().sub_ref(ReflectPathElem::SubReflectionIndexed{
+					label:"col", 
+					index: idx,
+					get: |idx,ref_| Err(ReflectionError::InsufficientProvenance{
+						path: "".to_owned(), 
+						msg: "Cannot get column of matrix with immutable reference".to_owned()
+					}),
+					get_mut: |idx, ref_| {
+						if ref_.is::<DMat2>(){
+							Ok(ref_.downcast_mut::<DMat2>()
+								.unwrap()
+								.col_mut(idx))
+						} else {
+							Err(ReflectionError::CannotDowncast{from: ref_.type_name().to_owned().into(), to:"DMat2".into()})
+						}	
+					}
+				})
+			)
 		)
-	)
-}
+	}
 """
 ]
 import_path="glam::f64::dmat2::DMat2"
@@ -706,17 +761,28 @@ type="DMat3"
 source="bevy_math"
 lua_methods=[
 """    
-mut (MetaMethod::Index) => |_,s,idx : usize| {
-	Ok(LuaDVec3::new_ref(
-			s.script_ref().sub_ref(ReflectPathElem::IndexedSubReflection{
-				label:"col", 
-				index: idx,
-				get: |idx,ref_| panic!("Cannot get mutable column reference given immutable matrix reference"),
-				get_mut: |idx, ref_| ref_.downcast_mut::<DMat3>().unwrap().col_mut(idx)
-			})
+	mut (MetaMethod::Index) => |_,s,idx : usize| {
+		Ok(LuaDVec3::new_ref(
+				s.script_ref().sub_ref(ReflectPathElem::SubReflectionIndexed{
+					label:"col", 
+					index: idx,
+					get: |idx,ref_| Err(ReflectionError::InsufficientProvenance{
+						path: "".to_owned(), 
+						msg: "Cannot get column of matrix with immutable reference".to_owned()
+					}),
+					get_mut: |idx, ref_| {
+						if ref_.is::<DMat3>(){
+							Ok(ref_.downcast_mut::<DMat3>()
+								.unwrap()
+								.col_mut(idx))
+						} else {
+							Err(ReflectionError::CannotDowncast{from: ref_.type_name().to_owned().into(), to:"DMat3".into()})
+						}	
+					}
+				})
+			)
 		)
-	)
-}
+	}
 """
 ]
 import_path="glam::f64::dmat3::DMat3"
@@ -726,17 +792,28 @@ type="DMat4"
 source="bevy_math"
 lua_methods=[
 """    
-mut (MetaMethod::Index) => |_,s,idx : usize| {
-	Ok(LuaDVec4::new_ref(
-			s.script_ref().sub_ref(ReflectPathElem::IndexedSubReflection{
-				label:"col", 
-				index: idx,
-				get: |idx,ref_| panic!("Cannot get mutable column reference given immutable matrix reference"),
-				get_mut: |idx, ref_| ref_.downcast_mut::<DMat4>().unwrap().col_mut(idx)
-			})
+	mut (MetaMethod::Index) => |_,s,idx : usize| {
+		Ok(LuaDVec4::new_ref(
+				s.script_ref().sub_ref(ReflectPathElem::SubReflectionIndexed{
+					label:"col", 
+					index: idx,
+					get: |idx,ref_| Err(ReflectionError::InsufficientProvenance{
+						path: "".to_owned(), 
+						msg: "Cannot get column of matrix with immutable reference".to_owned()
+					}),
+					get_mut: |idx, ref_| {
+						if ref_.is::<DMat4>(){
+							Ok(ref_.downcast_mut::<DMat4>()
+								.unwrap()
+								.col_mut(idx))
+						} else {
+							Err(ReflectionError::CannotDowncast{from: ref_.type_name().to_owned().into(), to:"DMat4".into()})
+						}	
+					}
+				})
+			)
 		)
-	)
-}
+	}
 """
 ]
 import_path="glam::f64::dmat4::DMat4"

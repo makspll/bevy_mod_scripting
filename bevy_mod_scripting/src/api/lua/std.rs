@@ -5,7 +5,7 @@ use ::std::mem::MaybeUninit;
 use ::std::sync::{Weak,Arc};
 use ::std::convert::AsRef;
 use ::std::ops::{Deref,DerefMut};
-use crate::{LuaProxyable,ScriptRef, ReflectedValue, impl_tealr_type, ReflectBase, ReflectPtr, ValueIndex, LuaWrapper, impl_user_data, FromLuaProxy, ApplyLua, ReflectPathElem};
+use crate::{LuaProxyable,ScriptRef, ReflectedValue, impl_tealr_type, ReflectBase, ReflectPtr, ValueIndex, LuaWrapper, impl_user_data, FromLuaProxy, ApplyLua, ReflectPathElem, ReflectionError, SubReflectGet};
 use bevy::ecs::system::Command;
 use bevy::hierarchy::BuildWorldChildren;
 use bevy::reflect::{ReflectRef, FromReflect};
@@ -28,7 +28,7 @@ macro_rules! impl_proxyable_by_copy(
             $(
                 impl LuaProxyable for $num_ty {
                     fn ref_to_lua< 'lua>(self_: crate::ScriptRef,lua: & 'lua tealr::mlu::mlua::Lua) -> tealr::mlu::mlua::Result<tealr::mlu::mlua::Value< 'lua> >  {
-                        self_.get_typed(|self_ : &Self| self_.to_lua(lua))
+                        self_.get_typed(|self_ : &Self| self_.to_lua(lua))?
                     }
                 
                     fn apply_lua< 'lua>(self_: &mut crate::ScriptRef,lua: & 'lua tealr::mlu::mlua::Lua,new_val:tealr::mlu::mlua::Value< 'lua>) -> tealr::mlu::mlua::Result<()>  {
@@ -56,11 +56,11 @@ impl_proxyable_by_copy!(u8,u16,u32,u64,u128,usize);
 
 impl LuaProxyable for String {
     fn ref_to_lua<'lua>(self_: ScriptRef,lua: & 'lua Lua) -> mlua::Result<Value< 'lua> >  {
-        self_.get_typed(|self_ : &String| self_.as_str().to_lua(lua))
+        self_.get_typed(|self_ : &String| self_.as_str().to_lua(lua))?
     }
 
     fn apply_lua<'lua>(self_: &mut ScriptRef,lua: & 'lua Lua,new_val:Value< 'lua>) -> mlua::Result<()>  {
-        self_.get_mut_typed(|self_| Ok(*self_ = Self::from_lua(new_val,lua)?))
+        self_.get_mut_typed(|self_| Ok(*self_ = Self::from_lua(new_val,lua)?))?
     }
 }
 
@@ -77,23 +77,28 @@ impl <T : LuaProxyable + Reflect + for<'a>FromLuaProxy<'a> + Clone>LuaProxyable 
                     label: "as_ref",
                     get: |ref_| 
                         ref_.downcast_ref::<Option<T>>()
-                            .unwrap()
+                            .ok_or_else(|| ReflectionError::CannotDowncast{from:ref_.type_name().to_owned().into(),to:stringify!(Option<T>).into()})?
                             .as_ref()
-                            .unwrap(),
+                            .map(|t| t as &dyn Reflect)
+                            .ok_or_else(|| ReflectionError::Other("Stale reference to Option. Cannot sub reflect.".to_owned())),
                     get_mut: |ref_| 
                         ref_.downcast_mut::<Option<T>>()
-                            .unwrap()
+                            // TODO: there is some weird borrow checker fuckery going on here
+                            // i tried having from: ref_.type_name().to_owned().into() instead of "Reflect"
+                            // and lying this out in an if let expression, but nothing will satisfy the borrow checker here, so leaving this for now
+                            .ok_or_else(|| ReflectionError::CannotDowncast{from:"Reflect".into(),to:stringify!(Option<T>).into()})?
                             .as_mut()
-                            .unwrap()
+                            .map(|t| t as &mut dyn Reflect)
+                            .ok_or_else(|| ReflectionError::Other("Stale reference to Option. Cannot sub reflect.".to_owned())),
                     })
                 ,lua ),
             None => Ok(Value::Nil),
-        })
+        })?
     }
 
     fn apply_lua< 'lua>(self_: &mut ScriptRef,lua: & 'lua Lua,new_val:Value< 'lua>) -> mlua::Result<()>  {
         if let Value::Nil = new_val {
-            self_.get_mut_typed(|s : &mut Option<T>| Ok(*s = None))
+            self_.get_mut_typed(|s : &mut Option<T>| Ok(*s = None))?
         } else {
             // we need to do this in two passes, first 
             // ensure that the target type is the 'some' variant to allow a sub reference
@@ -104,7 +109,7 @@ impl <T : LuaProxyable + Reflect + for<'a>FromLuaProxy<'a> + Clone>LuaProxyable 
                 } else {
                     Ok(false)
                 }
-            }){
+            })?{
                 Ok(true) => return Ok(()),
                 Ok(false) => {},
                 Err(e) => return Err(e),
@@ -115,14 +120,20 @@ impl <T : LuaProxyable + Reflect + for<'a>FromLuaProxy<'a> + Clone>LuaProxyable 
                     label: "",
                     get: |ref_| 
                         ref_.downcast_ref::<Option<T>>()
-                            .unwrap()
+                            .ok_or_else(|| ReflectionError::CannotDowncast{from:ref_.type_name().to_owned().into(),to:stringify!(Option<T>).into()})?
                             .as_ref()
-                            .unwrap(),
+                            .map(|t| t as &dyn Reflect)
+                            .ok_or_else(|| ReflectionError::Other("Stale reference to Option. Cannot sub reflect.".to_owned())),
                     get_mut: |ref_| 
-                        ref_.downcast_mut::<Option<T>>()
-                            .unwrap()
-                            .as_mut()
-                            .unwrap()
+                        if ref_.is::<Option<T>>(){
+                            ref_.downcast_mut::<Option<T>>()
+                                .unwrap()
+                                .as_mut()
+                                .map(|t| t as &mut dyn Reflect)
+                                .ok_or_else(|| ReflectionError::Other("Stale reference to Option. Cannot sub reflect.".to_owned()))
+                        } else {
+                            Err(ReflectionError::CannotDowncast{from:ref_.type_name().to_owned().into(),to:stringify!(Option<T>).into()})
+                        }
                 })
                 ,lua, 
                 new_val)
@@ -180,21 +191,21 @@ impl<T: FromReflect + LuaProxyable + for<'a>FromLuaProxy<'a>> UserData for LuaVe
 impl <T : FromReflect + LuaProxyable + for<'a> FromLuaProxy<'a>>TealData for LuaVec<T> {
     fn add_methods<'lua, M: TealDataMethods<'lua, Self>>(methods: &mut M) {
         methods.add_meta_method(MetaMethod::Index, |_,s,index : usize|{
-           Ok(s.ref_.index(index)?)
+           Ok(s.ref_.index(index))
         });
 
         methods.add_meta_method_mut(MetaMethod::NewIndex, |ctx,s,(index,value) : (usize, Value)|{
-            Ok(s.ref_.index(index)?.apply_lua(ctx, value)?)
+            Ok(s.ref_.index(index).apply_lua(ctx, value)?)
         });
 
         methods.add_meta_method(MetaMethod::Pairs, |ctx, s, _ : ()|{
-            let len = s.ref_.get_typed(|s : &Vec<T>| s.len());
+            let len = s.ref_.get_typed(|s : &Vec<T>| s.len())?;
             let mut curr_idx = 0;
             let ref_ = s.ref_.clone();
             TypedFunction::from_rust_mut(move |ctx,()|{
                     let o = 
                     if curr_idx < len {
-                        (curr_idx.to_lua(ctx)?,ref_.index(curr_idx)?.to_lua(ctx)?)
+                        (curr_idx.to_lua(ctx)?,ref_.index(curr_idx).to_lua(ctx)?)
                     } else {
                         (Value::Nil,Value::Nil)
                     };
@@ -204,13 +215,14 @@ impl <T : FromReflect + LuaProxyable + for<'a> FromLuaProxy<'a>>TealData for Lua
         });
 
         methods.add_meta_method(MetaMethod::Len, |_, s, ()| {
-            s.ref_.get_typed(|s : &Vec<T>| Ok(s.len()))
+            s.ref_.get_typed(|s : &Vec<T>| Ok(s.len()))?
         });
 
         methods.add_method_mut("push", |ctx,s,v : Value|{
-            s.ref_.get_mut_typed(|s : &mut Vec<T>| Ok(s.push(T::from_lua_proxy(v, ctx)?)))
+            let new_val = T::from_lua_proxy(v, ctx)?;
+            s.ref_.get_mut_typed(|s : &mut Vec<T>| Ok(s.push(new_val)))?
         });
-        
+
     }
 }
 
@@ -229,7 +241,7 @@ impl <T : FromReflect + LuaProxyable + for<'a>FromLuaProxy<'a> >LuaProxyable for
             },
             Value::Table(table) => {    
 
-                let target_len = self_.get_typed(|s : &Vec<T>| s.len());
+                let target_len = self_.get_typed(|s : &Vec<T>| s.len())?;
                 // there is also another case to consider, Vec has a lua representation available as well (table)
                 // if we receive one of those, we should also apply it
                 for entry in table.clone().pairs::<usize,Value>() {
@@ -237,7 +249,7 @@ impl <T : FromReflect + LuaProxyable + for<'a>FromLuaProxy<'a> >LuaProxyable for
                     let idx = lua_idx - 1;
                     if lua_idx > target_len {
                         // here we don't need to do anything special just use LuaProxyable impl
-                        T::apply_lua(&mut self_.index(idx)?, lua, v)?;
+                        T::apply_lua(&mut self_.index(idx), lua, v)?;
                     } else {
                         // here we don't have anything to apply this to
                         // use FromLua impl
@@ -263,7 +275,7 @@ impl <'lua,T : for<'a>FromLuaProxy<'a> + Clone + FromReflect + LuaProxyable>From
         match &new_val {
             Value::UserData(ud) => {
                 let lua_vec = ud.borrow::<LuaVec<T>>()?;
-                Ok(lua_vec.ref_.get_typed(|s : &Vec<T>| s.clone()))
+                lua_vec.ref_.get_typed(|s : &Vec<T>| Ok(s.clone()))?
             },
             Value::Table(table) => {    
 

@@ -1,4 +1,4 @@
-use crate::{impl_tealr_type, ReflectPath,ReflectPathElem, SubReflectGet, SubReflectGetMut, ReflectBase};
+use crate::{impl_tealr_type, ReflectPath,ReflectPathElem, SubReflectGet, SubReflectGetMut, ReflectBase, ReflectionError};
 use anyhow::Result;
 use tealr::{mlu::{mlua,mlua::{prelude::*,Value,UserData,MetaMethod}, TealData, TealDataMethods}, TypeName};
 use std::{fmt::Debug, cell::{RefCell, Cell}, f32::consts::E};
@@ -87,13 +87,13 @@ impl ScriptRef {
     /// Retrieves the underlying `dyn Reflect` reference and applies function which can retrieve a value.
     /// Panics if the reference is invalid or world is already borrowed mutably.
     #[inline(always)]    
-    pub fn get<O,F>(&self, f: F) -> O  where 
+    pub fn get<O,F>(&self, f: F) -> Result<O,ReflectionError>  where 
         F : FnOnce(&dyn Reflect) -> O,
     {
         self.path.get(f)
     }
 
-    pub fn get_typed<T,O,F>(&self, f: F) -> O  where 
+    pub fn get_typed<T,O,F>(&self, f: F) -> Result<O,ReflectionError>  where 
         F : FnOnce(&T) -> O,
         T : Reflect 
     {
@@ -104,14 +104,14 @@ impl ScriptRef {
     /// If this is a component it is marked as changed.
     /// Panics if the reference is invalid or if the world/value is already borrowed or if r is not a mutable pointer.
     #[inline(always)]
-    pub fn get_mut<O,F>(&mut self, f: F) -> O  where 
+    pub fn get_mut<O,F>(&mut self, f: F) -> Result<O,ReflectionError>  where 
         F : FnOnce(&mut dyn Reflect) -> O
     {
         self.path.get_mut(f)
     }
 
 
-    pub fn get_mut_typed<T,O,F>(&mut self, f: F) -> O  where 
+    pub fn get_mut_typed<T,O,F>(&mut self, f: F) -> Result<O,ReflectionError>  where 
         F : FnOnce(&mut T) -> O,
         T : Reflect
     {
@@ -122,46 +122,31 @@ impl ScriptRef {
     /// 
     /// This is semantically equivalent to the [`Reflect::apply`] method.
     /// If you know the type of this value use [`Self::apply_luaref_typed`] since it avoids double cloning and allocating
-    pub fn apply(&mut self, other : &ScriptRef){
+    pub fn apply(&mut self, other : &ScriptRef) -> Result<(),ReflectionError>{
         // sadly apply already performs a clone for value types, so this incurs
         // a double clone in some cases TODO: is there another way ?
         // can we avoid the box ?
-        let cloned = other.get(|s| s.clone_value());
+        let cloned = other.get(|s| s.clone_value())?;
 
         // safety: we already called `get` so reference must be valid
         self.get_mut(|s| 
             s.apply(&*cloned)
         )
-        
     }
 
     /// Unlike apply this method expects the other type to be identical. Does not allocate so is likely to be faster than apply, uses direct assignment.
     /// If you have a concrete value use [`Self::set_val`](TypedScriptRef) unstead
-    pub fn set<T>(&mut self, other : &Self) where T : Reflect + Clone {
-        let other : T = other.get_typed(|s : &T| s.clone());
-        self.get_mut_typed(|s| *s = other);
+    pub fn set<T>(&mut self, other : &Self) -> Result<(),ReflectionError> where T : Reflect + Clone {
+        let other : T = other.get_typed(|s : &T| s.clone())?;
+        self.get_mut_typed(|s| *s = other)
     }
 
     /// Version of [`Self::set`](TypedScriptRef) which directly accepts a `T` value
-    pub fn set_val<T>(&mut self, other : T) where T : Reflect  {
-        self.get_mut_typed(|s| *s = other);
+    pub fn set_val<T>(&mut self, other : T) -> Result<(), ReflectionError> where T : Reflect  {
+        self.get_mut_typed(|s| *s = other)
     }
 
 }
-
-
-impl TypeName for ScriptRef {
-    /// We represent LuaRef types as `any` wildcards, since they can convert to literally anything 
-    fn get_type_parts() -> std::borrow::Cow<'static, [tealr::NamePart]> {
-        std::borrow::Cow::Borrowed(&[tealr::NamePart::Type(tealr::TealType {
-            name: std::borrow::Cow::Borrowed("any"),
-            generics: None,
-            type_kind: tealr::KindOfType::Builtin,
-        })])     
-    }
-}
-
-
 
 
 /// A version of index for returning values instead of references
@@ -172,39 +157,22 @@ pub trait ValueIndex<Idx> {
 }
 
 impl ValueIndex<usize> for ScriptRef{
-    type Output=Result<Self,mlua::Error>;
+    type Output=Self;
 
     fn index(&self, index: usize) -> Self::Output {
-        Ok(self.sub_ref(ReflectPathElem::IndexAccess(index)))
+        self.sub_ref(ReflectPathElem::IndexAccess(index))
     }
 }
 
 impl ValueIndex<Cow<'static,str>> for ScriptRef {
-    type Output=Result<Self,mlua::Error>;
+    type Output=Self;
 
     fn index(&self, index: Cow<'static,str>) -> Self::Output {
-        Ok(self.sub_ref(ReflectPathElem::FieldAccess(index)))
+        self.sub_ref(ReflectPathElem::FieldAccess(index))
     }
 }
 
-impl ValueIndex<Value<'_>> for ScriptRef {
-    type Output=Result<Self,mlua::Error>;
 
-    fn index(&self, index: Value<'_>) -> Self::Output {
-        match index {
-            Value::Integer(idx) => {
-                self.index(idx  as usize)
-            }
-            Value::String(field) => {
-                let str_ = field.to_str()?.to_string();
-                // TODO: hopefully possible to use a &'_ str here
-                // but this requires Reflect implementation for &str 
-                <Self as ValueIndex<Cow<'static,str>>>::index(self,str_.into())
-            }
-            _ => return Err(mlua::Error::RuntimeError(format!("Cannot index a rust object with {:?}", index))),
-        }
-    }
-}
 
 
 

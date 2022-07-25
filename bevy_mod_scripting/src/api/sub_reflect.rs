@@ -5,12 +5,6 @@ use parking_lot::RwLock;
 
 use std::fmt;
 
-pub type SubReflectGet = fn(&dyn Reflect) -> &dyn Reflect;
-pub type SubReflectGetMut = fn(&mut dyn Reflect) -> &mut dyn Reflect;
-pub type SubReflectIndexedGet = fn(usize,&dyn Reflect) -> &dyn Reflect;
-pub type SubReflectIndexedGetMut = fn(usize,&mut dyn Reflect) -> &mut dyn Reflect;
-
-
 
 /// The base of a reflect path, i.e. the top-level object or source. Reflections paths are always relative to some reflect base
 #[derive(Clone)]
@@ -48,14 +42,42 @@ pub enum ReflectBase {
 impl fmt::Debug for ReflectBase {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
-            Self::Component { entity, world , ..} => f.debug_struct("Component").field("entity", entity).field("world", world).finish(),
+            Self::Component { entity, world , ..} => 
+                f.debug_struct("Component")
+                    .field("entity", entity)
+                    .field("world", world)
+                    .finish(),
             Self::ScriptOwned {..} => write!(f, "ScriptOwned"),
-            Self::Resource {  world , ..} => f.debug_struct("Resource").field("world",world).finish(),
+            Self::Resource {  world , ..} => 
+                f.debug_struct("Resource")
+                .field("world",world)
+                .finish(),
         }
     }
 }
 
+impl fmt::Display for ReflectBase {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            ReflectBase::Component { comp, entity, world } =>{
+                f.write_str("(Component on ")?;
+                f.write_str(&entity.id().to_string())?;
+                f.write_str(")")
+            },
+            ReflectBase::Resource { res, world } => {
+                f.write_str("(Resource")
+            },
+            ReflectBase::ScriptOwned { ptr, valid } => {
+                f.write_str("(ScriptOwned)")
+            },
+        }
+    }
+}
 
+pub type SubReflectGet = fn(&dyn Reflect) -> Result<&dyn Reflect,ReflectionError>;
+pub type SubReflectGetMut = fn(&mut dyn Reflect) -> Result<&mut dyn Reflect, ReflectionError>;
+pub type SubReflectIndexedGet = fn(usize,&dyn Reflect) -> Result<&dyn Reflect,ReflectionError>;
+pub type SubReflectIndexedGetMut = fn(usize,&mut dyn Reflect) -> Result<&mut dyn Reflect, ReflectionError>;
 
 /// Stores the path of reflection + sub reflection from a root reflect reference.
 /// 
@@ -67,7 +89,7 @@ pub enum ReflectPathElem {
         get: SubReflectGet,
         get_mut: SubReflectGetMut
     },
-    IndexedSubReflection{
+    SubReflectionIndexed{
         label: &'static str,
         index: usize,
         get: SubReflectIndexedGet,
@@ -81,13 +103,13 @@ pub enum ReflectPathElem {
 }
 use std::fmt::{Debug,Display};
 
-use crate::ReflectPtr;
+use crate::{ReflectPtr, ReflectionError};
 
 impl Debug for ReflectPathElem{
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
             Self::SubReflection { label, .. } => f.debug_struct("SubReflection").field("label", label).finish(),
-            Self::IndexedSubReflection { label, index , .. } => f.debug_struct("SubReflection").field("label", label).field("index", index).finish(),
+            Self::SubReflectionIndexed { label, index , .. } => f.debug_struct("SubReflection").field("label", label).field("index", index).finish(),
             Self::FieldAccess(arg0) => f.debug_tuple("FieldAccess").field(arg0).finish(),
             Self::IndexAccess(arg0) => f.debug_tuple("IndexAccess").field(arg0).finish(),
             
@@ -103,7 +125,7 @@ impl Display for ReflectPathElem{
                 f.write_str(label)?;
                 f.write_str("()")
             },
-            ReflectPathElem::IndexedSubReflection { label, index, .. } => {
+            ReflectPathElem::SubReflectionIndexed { label, index, .. } => {
                 f.write_str(".")?;
                 f.write_str(label)?;
                 f.write_str("(")?;
@@ -124,38 +146,48 @@ impl Display for ReflectPathElem{
 }
 
 impl ReflectPathElem{
-    pub fn sub_ref<'a>(&self, base: &'a dyn Reflect) -> &'a dyn Reflect {
+    pub fn sub_ref<'a>(&self, base: &'a dyn Reflect) -> Result<&'a dyn Reflect, ReflectionError> {
         match self {
             ReflectPathElem::SubReflection { get, .. } => get(base),
-            ReflectPathElem::IndexedSubReflection { get, index, .. } => get(*index ,base),
+            ReflectPathElem::SubReflectionIndexed { get, index, .. } => get(*index ,base),
             ReflectPathElem::FieldAccess(field) => match base.reflect_ref() {
-                ReflectRef::Struct(s) => s.field(field).unwrap(),
-                _ => panic!("Invalid indexing")
+                ReflectRef::Struct(s) => s.field(field).ok_or_else(|| 
+                    ReflectionError::InvalidReflectionPath { path: self.to_string(), msg: "No such field".to_owned() }),
+                _ => Err(ReflectionError::InvalidReflectionPath { path: self.to_string(), msg: "No such field".to_owned() })
             },
             ReflectPathElem::IndexAccess(index) => match base.reflect_ref(){
-                ReflectRef::TupleStruct(s) => s.field(*index).unwrap(),
-                ReflectRef::Tuple(s) => s.field(*index).unwrap(),
-                ReflectRef::List(s) => s.get(*index).unwrap(),
-                ReflectRef::Array(s) => s.get(*index).unwrap(),
-                _ => panic!("Invalid Indexing")
+                ReflectRef::TupleStruct(s) => s.field(*index).ok_or_else(|| 
+                    ReflectionError::InvalidReflectionPath { path: self.to_string(), msg: "No such element".to_owned() }),
+                ReflectRef::Tuple(s) => s.field(*index).ok_or_else(|| 
+                    ReflectionError::InvalidReflectionPath { path: self.to_string(), msg: "No such element".to_owned() }),
+                ReflectRef::List(s) => s.get(*index).ok_or_else(|| 
+                    ReflectionError::InvalidReflectionPath { path: self.to_string(), msg: "No such element".to_owned() }),
+                ReflectRef::Array(s) => s.get(*index).ok_or_else(|| 
+                    ReflectionError::InvalidReflectionPath { path: self.to_string(), msg: "No such element".to_owned() }),
+                _ => Err(ReflectionError::InvalidReflectionPath { path: self.to_string(), msg: "No such element".to_owned() })
             },
         }
     }
 
-    pub fn sub_ref_mut<'a>(&self, base: &'a mut dyn Reflect) -> &'a mut dyn Reflect {
+    pub fn sub_ref_mut<'a>(&self, base: &'a mut dyn Reflect) -> Result<&'a mut dyn Reflect, ReflectionError> {
         match self {
             ReflectPathElem::SubReflection { get_mut, .. } => get_mut(base),
-            ReflectPathElem::IndexedSubReflection { get_mut, index, .. } => get_mut(*index ,base),
+            ReflectPathElem::SubReflectionIndexed { get_mut, index, .. } => get_mut(*index ,base),
             ReflectPathElem::FieldAccess(field) => match base.reflect_mut() {
-                ReflectMut::Struct(s) => s.field_mut(field).unwrap(),
-                _ => panic!("Invalid indexing")
+                ReflectMut::Struct(s) => s.field_mut(field).ok_or_else(|| 
+                    ReflectionError::InvalidReflectionPath { path: self.to_string(), msg: "No such field".to_owned() }),
+                _ => Err(ReflectionError::InvalidReflectionPath { path: self.to_string(), msg: "No such field".to_owned() })
             },
             ReflectPathElem::IndexAccess(index) => match base.reflect_mut(){
-                ReflectMut::TupleStruct(s) => s.field_mut(*index).unwrap(),
-                ReflectMut::Tuple(s) => s.field_mut(*index).unwrap(),
-                ReflectMut::List(s) => s.get_mut(*index).unwrap(),
-                ReflectMut::Array(s) => s.get_mut(*index).unwrap(),
-                _ => panic!("Invalid Indexing")
+                ReflectMut::TupleStruct(s) => s.field_mut(*index).ok_or_else(|| 
+                    ReflectionError::InvalidReflectionPath { path: self.to_string(), msg: "No such element".to_owned() }),
+                ReflectMut::Tuple(s) => s.field_mut(*index).ok_or_else(|| 
+                    ReflectionError::InvalidReflectionPath { path: self.to_string(), msg: "No such element".to_owned() }),
+                ReflectMut::List(s) => s.get_mut(*index).ok_or_else(|| 
+                    ReflectionError::InvalidReflectionPath { path: self.to_string(), msg: "No such element".to_owned() }),
+                ReflectMut::Array(s) => s.get_mut(*index).ok_or_else(|| 
+                    ReflectionError::InvalidReflectionPath { path: self.to_string(), msg: "No such element".to_owned() }),
+                _ => Err(ReflectionError::InvalidReflectionPath { path: self.to_string(), msg: "No such element".to_owned() })
             },
         }
     }
@@ -172,7 +204,7 @@ pub struct ReflectPath {
 
 impl Display for ReflectPath {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        f.write_str("(Base)");
+        f.write_str(&self.base.to_string())?;
         for access in &self.accesses {
             f.write_str(&access.to_string())?
         }
@@ -211,35 +243,36 @@ impl ReflectPath {
 
 
     /// Walks the path with the given reference as the base
-    fn walk_path<'a>(&self, ref_ : &'a dyn Reflect) -> &'a dyn Reflect { 
+    fn walk_path<'a>(&self, ref_ : &'a dyn Reflect) -> Result<&'a dyn Reflect, ReflectionError> { 
+
         let first = self.accesses.first().map(|s| s.sub_ref(ref_));
 
         if let Some(first) = first {
             if self.accesses.len() > 1{
-                self.accesses[1..].iter().fold(first, |a,access| {
+                self.accesses[1..].iter().try_fold(first?, |a,access| {
                     access.sub_ref(a)
                 }) 
             } else {
                 first
             }
         } else {
-            ref_
+            Ok(ref_)
         }
 
     }
 
     /// Walks the path with the given mutable reference as the base.
-    fn walk_path_mut<'a>(&self, ref_ : &'a mut dyn Reflect) -> &'a mut dyn Reflect {
+    fn walk_path_mut<'a>(&self, ref_ : &'a mut dyn Reflect) -> Result<&'a mut dyn Reflect,ReflectionError> {
         if let Some(first) = self.accesses.first(){
             if self.accesses.len() > 1{
-                return self.accesses[1..].iter().fold(first.sub_ref_mut(ref_), |a,access| {
+                return self.accesses[1..].iter().try_fold(first.sub_ref_mut(ref_)?, |a,access| {
                     access.sub_ref_mut(a)
                 }) 
             } else {
                 first.sub_ref_mut(ref_)
             }
         } else {
-            ref_
+            Ok(ref_)
         }
     }
 
@@ -248,7 +281,7 @@ impl ReflectPath {
     }
 
 
-    pub fn get<O,F>(&self, f: F) -> O  where 
+    pub fn get<O,F>(&self, f: F) -> Result<O,ReflectionError>  where 
         F : FnOnce(&dyn Reflect) -> O
     {
         match &self.base {
@@ -257,22 +290,29 @@ impl ReflectPath {
                 .expect("Trying to access cached value from previous frame");
                 let g = g.try_read().expect("Rust safety violation: attempted to borrow world while it was already mutably borrowed");
                 
-                let ref_ = self.walk_path(comp.reflect(&g, *entity).unwrap());
+                let ref_ = self.walk_path(comp.reflect(&g, *entity)
+                    .ok_or_else(|| 
+                        ReflectionError::InvalidBaseReference { base: self.base.to_string(), reason: "Given component does not exist on this entity".to_owned() }
+                    )?)?;
                 // unsafe since pointer may be dangling
                 let o = f(ref_);
                 drop(g);
-                o
+                Ok(o)
             },
             ReflectBase::Resource { res, world } => {
                 let g = world.upgrade()
                 .expect("Trying to access cached value from previous frame");
                 let g = g.try_read().expect("Rust safety violation: attempted to borrow world while it was already mutably borrowed");
                 
-                let ref_ = self.walk_path(res.reflect(&g).unwrap());
+                let ref_ = self.walk_path(
+                    res.reflect(&g).ok_or_else(||
+                        ReflectionError::InvalidBaseReference { base: self.base.to_string(), reason: "Given resource does not exist in this world".to_owned() }
+                    )?
+                )?;
                 // unsafe since pointer may be dangling
                 let o = f(ref_);
                 drop(g);
-                o
+                Ok(o)
             },
             ReflectBase::ScriptOwned { ptr, valid } => {
                 let g = valid.upgrade()
@@ -280,15 +320,15 @@ impl ReflectPath {
 
                 let g = g.try_read().expect("Rust safety violation: attempted to borrow value {self:?} while it was already mutably borrowed");
                 
-                let ref_ = self.walk_path(unsafe{ptr.const_ref()});
+                let ref_ = self.walk_path(unsafe{ptr.const_ref()})?;
                 let o = f(ref_);
                 drop(g);
-                o
+                Ok(o)
             },
         }
     }
 
-    pub fn get_mut<O,F>(&mut self, f: F) -> O  
+    pub fn get_mut<O,F>(&mut self, f: F) -> Result<O,ReflectionError>  
     where 
         F : FnOnce(&mut dyn Reflect) -> O 
     {
@@ -298,22 +338,34 @@ impl ReflectPath {
                 .expect("Trying to access cached value from previous frame");
                 let mut g = g.try_write().expect("Rust safety violation: attempted to borrow world while it was already mutably borrowed");
                 
-                let ref_ = self.walk_path_mut(comp.reflect_mut(&mut g, *entity).unwrap().into_inner());
+                let ref_ = self.walk_path_mut(
+                    comp.reflect_mut(&mut g, *entity)
+                        .ok_or_else(|| 
+                            ReflectionError::InvalidBaseReference { base: self.base.to_string(), reason: "Given component does not exist on this entity".to_owned() }
+                        )?
+                        .into_inner()
+                )?;
                 // unsafe since pointer may be dangling
                 let o = f(ref_);
                 drop(g);
-                o
+                Ok(o)
             },
             ReflectBase::Resource { res, world } => {
                 let g = world.upgrade()
                 .expect("Trying to access cached value from previous frame");
                 let mut g = g.try_write().expect("Rust safety violation: attempted to borrow world while it was already mutably borrowed");
                 
-                let ref_ = self.walk_path_mut(res.reflect_mut(&mut g).unwrap().into_inner());
+                let ref_ = self.walk_path_mut(
+                    res.reflect_mut(&mut g)
+                        .ok_or_else(|| 
+                            ReflectionError::InvalidBaseReference { base: self.base.to_string(), reason: "Given resource does not exist in this world".to_owned() }
+                        )?
+                        .into_inner()
+                    )?;
                 // unsafe since pointer may be dangling
                 let o = f(ref_);
                 drop(g);
-                o
+                Ok(o)
             },
             ReflectBase::ScriptOwned { ptr, valid } => {
                 let g = valid.upgrade()
@@ -321,10 +373,14 @@ impl ReflectPath {
 
                 let g = g.try_write().expect("Rust safety violation: attempted to borrow value {self:?} while it was already mutably borrowed");
                 
-                let ref_ = self.walk_path_mut(unsafe{ptr.mut_ref().expect("Expected mutable pointer")});
+                let ref_ = self.walk_path_mut(
+                    unsafe{ptr.mut_ref()}
+                        .ok_or_else(|| 
+                            ReflectionError::InsufficientProvenance { path: self.to_string(), msg: "Script owned value was initialized with only an immutable reference, cannot produce mutable access".to_owned() }
+                        )?)?;
                 let o = f(ref_);
                 drop(g);
-                o
+                Ok(o)
             },
         }
     }

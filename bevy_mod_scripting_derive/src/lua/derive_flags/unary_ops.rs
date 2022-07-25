@@ -21,9 +21,9 @@ pub(crate) fn make_unary_ops<'a>(flag: &DeriveFlag,new_type : &'a Newtype, out :
         let meta = op.op.to_rlua_metamethod_path();
         let mut body = op.map_unary(|s| {
             if s.reference.is_some(){
-                quote_spanned!{op.span()=>(&ud.clone())}
+                quote_spanned!{op.span()=>(&ud.inner()?)}
             } else {
-                quote_spanned!{op.span()=>ud.clone()}
+                quote_spanned!{op.span()=>ud.inner()?}
 
             }
         }).expect("Expected unary expression");
