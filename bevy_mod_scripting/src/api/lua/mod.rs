@@ -181,8 +181,15 @@ pub trait LuaProxyable : {
     fn apply_lua<'lua>(self_ : &mut ScriptRef, lua: &'lua Lua, new_val: Value<'lua>) -> mlua::Result<()>;
 }
 
+
+/// Exactly alike to [`mlua::ToLua`] 
 pub trait FromLuaProxy<'lua> : Sized{
     fn from_lua_proxy(new_val : Value<'lua>, lua: &'lua Lua) -> mlua::Result<Self>;
+}
+
+/// Exactly alike to [`mlua::FromLua`]
+pub trait ToLuaProxy<'lua>  {
+    fn to_lua_proxy(self, lua: &'lua Lua) -> mlua::Result<Value<'lua>>;
 }
 
 /// A struct providing type data for the `LuaProxyable` trait.
@@ -247,3 +254,18 @@ impl<T: Clone + UserData + Send + ValueLuaType + Reflect + 'static> LuaProxyable
         }
     }
 }
+
+impl<'lua,T: Clone + UserData + Send + ValueLuaType + Reflect + 'static> FromLuaProxy<'lua> for T {
+    fn from_lua_proxy(new_val : Value<'lua>, lua: &'lua Lua) -> mlua::Result<Self> {
+        T::from_lua(new_val,lua)
+    }
+}
+
+
+impl<'lua,T: Clone + UserData + Send + ValueLuaType + Reflect + 'static> ToLuaProxy<'lua> for T {
+    fn to_lua_proxy(self, lua: &'lua Lua) -> mlua::Result<Value<'lua>> {
+        self.to_lua(lua)
+    }
+}
+
+

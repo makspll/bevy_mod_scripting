@@ -14,9 +14,6 @@ function on_update()
         print(string.format("%s",res:custom_resource_method(42)))
         print(string.format("%s",comp.vec2))
 
-        -- local ok = pcall(function () comp.vec2 = comp.vec2 end) 
-        -- assert(not ok)
-
         comp.u8 = 2
 
         if comp.option == nil then
@@ -29,10 +26,12 @@ function on_update()
 
         comp.vec_of_option_bools = {true,false,true}
         comp.vec_of_option_bools[0] = false
+        comp.vec_of_option_bools:insert(1,nil)
         comp.vec_of_option_bools:push(false)
 
         comp.option_vec_of_bools = {false,true,false}
         comp.option_vec_of_bools[2] = true
+        comp.option_vec_of_bools:insert(1,false)
         comp.option_vec_of_bools:push(true)
 
         comp.vec2 = comp.vec2 + comp.vec2
@@ -56,8 +55,10 @@ function on_update()
 
         print(string.format("%s", comp))
         print(string.format("%s", res))
-        print({true,false,true})
+
         print(#comp.vec_of_option_bools)
+        print(comp.vec_of_option_bools:pop())
+        print(comp.option_vec_of_bools:pop())
         for k,v in pairs(comp.vec_of_option_bools) do
             print(string.format("%s:%s",k,v))
         end
@@ -65,5 +66,12 @@ function on_update()
         for k,v in pairs(comp.option_vec_of_bools) do
             print(string.format("%s:%s",k,v))
         end
+
+        comp.vec_of_option_bools:clear()
+        print(#comp.vec_of_option_bools)
+
+        -- print(comp.option_vec_of_bools:remove(1))
+        -- print(#comp.option_vec_of_bools)
+
     end
 end

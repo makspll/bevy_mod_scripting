@@ -5,7 +5,7 @@ use ::std::mem::MaybeUninit;
 use ::std::sync::{Weak,Arc};
 use ::std::convert::AsRef;
 use ::std::ops::{Deref,DerefMut};
-use crate::{LuaProxyable,ScriptRef, ReflectedValue, impl_tealr_type, ReflectBase, ReflectPtr, ValueIndex, LuaWrapper, impl_user_data, FromLuaProxy, ApplyLua, ReflectPathElem, ReflectionError, SubReflectGet};
+use crate::{LuaProxyable,ToLuaProxy,ScriptRef, ReflectedValue, impl_tealr_type, ReflectBase, ReflectPtr, ValueIndex, LuaWrapper, impl_user_data, FromLuaProxy, ApplyLua, ReflectPathElem, ReflectionError, SubReflectGet};
 use bevy::ecs::system::Command;
 use bevy::hierarchy::BuildWorldChildren;
 use bevy::reflect::{ReflectRef, FromReflect};
@@ -32,7 +32,7 @@ macro_rules! impl_proxyable_by_copy(
                     }
                 
                     fn apply_lua< 'lua>(self_: &mut crate::ScriptRef,lua: & 'lua tealr::mlu::mlua::Lua,new_val:tealr::mlu::mlua::Value< 'lua>) -> tealr::mlu::mlua::Result<()>  {
-                        self_.set_val(Self::from_lua(new_val,lua)?);
+                        self_.set_val(Self::from_lua(new_val,lua)?)?;
                         Ok(())
                     }
                 }
@@ -41,6 +41,13 @@ macro_rules! impl_proxyable_by_copy(
                     #[inline(always)]
                     fn from_lua_proxy(new_value: Value<'lua>, lua: &'lua Lua) -> tealr::mlu::mlua::Result<Self> {
                         Self::from_lua(new_value,lua)
+                    }
+                }
+
+                impl <'lua>ToLuaProxy<'lua> for $num_ty {
+                    #[inline(always)]
+                    fn to_lua_proxy(self, lua: &'lua Lua) -> tealr::mlu::mlua::Result<Value<'lua>> {
+                        self.to_lua(lua)
                     }
                 }
             )*
@@ -67,6 +74,12 @@ impl LuaProxyable for String {
 impl <'lua>FromLuaProxy<'lua> for String {
     fn from_lua_proxy(new_val : Value<'lua>, lua: &'lua Lua) -> mlua::Result<Self> {
         Self::from_lua(new_val, lua)
+    }
+}
+
+impl <'lua>ToLuaProxy<'lua> for String {
+    fn to_lua_proxy(self, lua: &'lua Lua) -> mlua::Result<Value<'lua>> {
+        self.to_lua(lua)
     }
 }
 
@@ -152,6 +165,15 @@ impl <'lua,T : for<'a>FromLuaProxy<'a>>FromLuaProxy<'lua> for Option<T> {
     }
 }
 
+impl <'lua,T : for<'a>ToLuaProxy<'a>>ToLuaProxy<'lua> for Option<T> {
+    fn to_lua_proxy(self, lua: &'lua Lua) -> mlua::Result<Value<'lua>> {
+        match self {
+            Some(v) => v.to_lua_proxy(lua),
+            None => Ok(Value::Nil),
+        }
+    }
+}
+
 /// A reference to a rust vec, does not need an owned variant since 
 /// lua can natively represent lists of things
 pub struct LuaVec<T>{
@@ -175,7 +197,7 @@ impl <T : FromReflect>TypeName for LuaVec<T> {
 }
 
 
-impl<T: FromReflect + LuaProxyable + for<'a>FromLuaProxy<'a>> UserData for LuaVec<T>
+impl<T: FromReflect + LuaProxyable + for<'a>FromLuaProxy<'a> + for<'a>ToLuaProxy<'a>> UserData for LuaVec<T>
 {
     fn add_methods<'lua, M: ::tealr::mlu::mlua::UserDataMethods<'lua, Self>>(methods: &mut M) {
         let mut x = ::tealr::mlu::UserDataWrapper::from_user_data_methods(methods);
@@ -188,7 +210,7 @@ impl<T: FromReflect + LuaProxyable + for<'a>FromLuaProxy<'a>> UserData for LuaVe
 }
 
 
-impl <T : FromReflect + LuaProxyable + for<'a> FromLuaProxy<'a>>TealData for LuaVec<T> {
+impl <T : FromReflect + LuaProxyable + for<'a> FromLuaProxy<'a> + for<'a>ToLuaProxy<'a> >TealData for LuaVec<T> {
     fn add_methods<'lua, M: TealDataMethods<'lua, Self>>(methods: &mut M) {
         methods.add_meta_method(MetaMethod::Index, |_,s,index : usize|{
            Ok(s.ref_.index(index))
@@ -223,10 +245,35 @@ impl <T : FromReflect + LuaProxyable + for<'a> FromLuaProxy<'a>>TealData for Lua
             s.ref_.get_mut_typed(|s : &mut Vec<T>| Ok(s.push(new_val)))?
         });
 
+        methods.add_method_mut("pop", |ctx,s,()|{
+            s.ref_.get_mut_typed(|s : &mut Vec<T>| {
+                s.pop().to_lua_proxy(ctx)
+            })?
+        });
+
+        methods.add_method_mut("clear", |_, s, ()| {
+            s.ref_.get_mut_typed(|s : &mut Vec<T>| {
+                Ok(s.clear())
+            })?
+        });
+
+        methods.add_method_mut("insert", |ctx, s, (idx,v) : (usize,Value<'lua>)| {
+            s.ref_.get_mut_typed(|s : &mut Vec<T>| {
+                let v = T::from_lua_proxy(v, ctx)?;
+                Ok(s.insert(idx,v))
+            })?
+        });
+
+        methods.add_method_mut("remove", |ctx, s, idx : usize| {
+            s.ref_.get_mut_typed(|s : &mut Vec<T>| {
+                Ok(s.remove(idx).to_lua_proxy(ctx)?)
+            })?
+        });
+
     }
 }
 
-impl <T : FromReflect + LuaProxyable + for<'a>FromLuaProxy<'a> >LuaProxyable for Vec<T> {
+impl <T : FromReflect + LuaProxyable + for<'a>FromLuaProxy<'a> + for<'a>ToLuaProxy<'a>>LuaProxyable for Vec<T> {
     fn ref_to_lua<'lua>(self_ : ScriptRef, lua: &'lua Lua) -> mlua::Result<Value<'lua>> {
         LuaVec::<T>::new_ref(self_).to_lua(lua)
     }
@@ -237,7 +284,7 @@ impl <T : FromReflect + LuaProxyable + for<'a>FromLuaProxy<'a> >LuaProxyable for
         match &new_val {
             Value::UserData(ud) => {
                 let lua_vec = ud.borrow::<LuaVec<T>>()?;
-                self_.apply(&lua_vec.ref_);
+                self_.apply(&lua_vec.ref_)?;
             },
             Value::Table(table) => {    
 
@@ -255,7 +302,7 @@ impl <T : FromReflect + LuaProxyable + for<'a>FromLuaProxy<'a> >LuaProxyable for
                         // use FromLua impl
                         self_.get_mut_typed(|s : &mut Vec<T>| 
                             Ok::<_,mlua::Error>(s[idx] = T::from_lua_proxy(v, lua)?)
-                        )?;
+                        )??;
                     }
                 }
             }
@@ -270,7 +317,7 @@ impl <T : FromReflect + LuaProxyable + for<'a>FromLuaProxy<'a> >LuaProxyable for
     }
 } 
 
-impl <'lua,T : for<'a>FromLuaProxy<'a> + Clone + FromReflect + LuaProxyable>FromLuaProxy<'lua> for Vec<T> {
+impl <'lua,T : for<'a>FromLuaProxy<'a> + for<'a>ToLuaProxy<'a> + Clone + FromReflect + LuaProxyable>FromLuaProxy<'lua> for Vec<T> {
     fn from_lua_proxy(new_val : Value<'lua>, lua: &'lua Lua) -> mlua::Result<Self> {
         match &new_val {
             Value::UserData(ud) => {
@@ -296,5 +343,17 @@ impl <'lua,T : for<'a>FromLuaProxy<'a> + Clone + FromReflect + LuaProxyable>From
                 message: Some("LuaVec can only be assigned with itself or a table".to_owned()) 
             })
         }
+    }
+}
+
+impl <'lua,T : for<'a>ToLuaProxy<'a> + Clone + FromReflect + LuaProxyable>ToLuaProxy<'lua> for Vec<T> {
+    fn to_lua_proxy(self, lua: &'lua Lua) -> mlua::Result<Value<'lua>> {
+
+        let proxies = lua.create_table()?;
+        for (idx,elem) in self.into_iter().enumerate() {
+            proxies.raw_set(idx, elem.to_lua_proxy(lua)?)?;
+        }
+
+        proxies.to_lua(lua)
     }
 }
