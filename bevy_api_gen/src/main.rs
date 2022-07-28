@@ -1,4 +1,4 @@
-use bevy_api_gen_lib::{PrettyWriter, WrappedItem, Config, Args, WRAPPER_PREFIX, type_to_string};
+use bevy_api_gen_lib::{PrettyWriter, WrappedItem, Config, Args, WRAPPER_PREFIX, stringify_type};
 
 use std::{io::{self, BufReader},fs::{File,read_to_string}, collections::{HashSet}, borrow::Cow};
 use clap::Parser;
@@ -55,7 +55,7 @@ pub(crate) fn generate_macros(crates: &[Crate], config: Config, args: &Args) -> 
             impls.iter().for_each(|id| 
                 if let ItemEnum::Impl(i) = &source.index.get(id).unwrap().inner {
                     match &i.trait_{
-                        Some(t) => {type_to_string(t, &mut |s| Ok(s.to_owned())).and_then(|str_| Ok(implemented_traits.insert(str_)));},
+                        Some(t) => {stringify_type(t).and_then(|str_| Some(implemented_traits.insert(str_)));},
                         None => self_impl = Some(i),
                     } 
                     i.items.iter().for_each(|id| {

@@ -3,140 +3,163 @@ use rustdoc_types::{Type, GenericArgs};
 use crate::{Config, WrappedItem};
 
 
-pub(crate) fn is_valid_parameter(str : &str, config : &Config, wrapper_prefix: &str) -> bool{
-    const FROM_PRIMITIVES : [&str;18] = ["bool","StdString","CString","BString","i8","u8","i16","u16","i32","u32","i64","u64","i128","u128","isize","usize","f32","f64"];
 
-    // we also allow references to these, since we can just reference by value
-    // but we do not allow mutable versions since that can easilly cause unexpected behaviour
-    let base_string = 
-        if str.starts_with("&"){
-            &str[1..]
-        } else if str.starts_with("& mut") {
-            &str[4..]
-        } else {
-            &str[..]
-        };
-    
-    if  base_string == "self" ||
-        FROM_PRIMITIVES.contains(&base_string) ||
-        (base_string.starts_with("Lua") &&
-        config.types.contains_key(&base_string[wrapper_prefix.len()..])){
-        return true
-    };
 
-    false
-}
-
-pub(crate) fn is_valid_return_type(str : &str, config : &Config, wrapper_prefix: &str) -> bool{
-    const TO_PRIMITIVES : [&str;21] = ["bool","StdString","Box<str>","CString","&CStr","BString","&BStr","i8","u8","i16","u16","i32","u32","i64","u64","i128","u128","isize","usize","f32","f64"];
-
-    // TODO: support slices of supported types + Cow strings
-
-    // we also allow references to these, since we can just reference by value
-    // but we do not allow mutable versions since that can easilly cause unexpected behaviour
-    
-    if TO_PRIMITIVES.contains(&str) ||
-        (str.starts_with("Lua") &&
-        config.types.contains_key(&str[wrapper_prefix.len()..])){
-        return true
-    };
-
-    false
-}
-
-/// standardizes simple function arguments identifiers to auto method macro format
-pub(crate) fn to_auto_method_argument(base_string : &String, self_type: &str, config : &Config, is_first_arg : bool, wrapper_prefix: &str) -> String{
-    let underlying_type = 
-        if base_string == "Self"{
-            if is_first_arg {
-                return "self".to_owned()
-            } else {
-                self_type
-            }
-        } else {
-            base_string
-        };
-
-    if config.types.contains_key(underlying_type){
-        // wrap things that need wrapped
-        format!("{wrapper_prefix}{underlying_type}")
-    } else if config.primitives.contains(underlying_type) {
-        underlying_type.to_string()
-    } else {
-        underlying_type.to_owned()
-    }
-    
-}
-
-pub(crate) fn to_op_argument(base_string: &String, self_type : &String, wrapped : &WrappedItem, config : &Config, is_first_arg : bool, is_return_type : bool, wrapper_prefix: &str) -> String{
-        // first of all deal with Self arguments
-    // return if needs to just be self
-    // otherwise get unwrapped type name
-
-    let self_on_lhs = self_type == wrapped.wrapped_type;
-
-    let underlying_type = 
-        if base_string == "Self" && self_on_lhs && is_first_arg{
-            return "self".to_owned()
-        } else if base_string == "Self"{
-            &self_type
-        } else {
-            if !self_on_lhs && !is_return_type{
-                return "self".to_owned()
-            } else{
-                base_string
-            }
-        };
-
-    if config.types.contains_key(underlying_type){
-        // wrap things that need wrapped
-        format!("{wrapper_prefix}{underlying_type}")
-    } else if config.primitives.contains(underlying_type) {
-        underlying_type.to_string()
-    } else {
-        underlying_type.to_owned()
+/// A representation of valid argument types
+#[derive(Debug)]
+pub enum ArgType{
+    /// The primary identifier of the type 
+    /// 
+    /// Valid types right now follow the following syntax:
+    /// `(&)? (mut)? ident:ident`
+    Self_,
+    Base(String),
+    Ref{
+        is_mut: bool,
+        ref_ : Box<ArgType>
     }
 }
 
-
-/// Converts an arbitary type to its simple string representation while converting the base type identifier with the given function
-pub fn type_to_string<F : FnMut(&String) -> Result<String,String>>(t : &Type, f : &mut F) -> Result<String,String> {
-    match t {
-        Type::ResolvedPath { name, args , .. } => {
-            if let Some(args) = args {
-                let has_args = match args.as_ref() {
-                    GenericArgs::AngleBracketed { args, .. } => !args.is_empty(),
-                    _ => panic!("asd")
-                };
-                if has_args {
-                    return Ok(format!("{}<>",f(name)?))
+impl fmt::Display for ArgType {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            ArgType::Base(b) => {
+                if b == "Self"{
+                    f.write_str("self")
+                } else {
+                    f.write_str(b)
                 }
-            } 
-            
-            f(name)
+            },
+            ArgType::Ref { is_mut, ref_ } => {
+                if *is_mut{
+                    f.write_str("&mut ")?;
+                }else {
+                    f.write_str("&")?;
+                }
+
+                ref_.fmt(f)
+            },
+            ArgType::Self_ => f.write_str("self"),
             
         }
-        Type::Generic(name) =>{
-            f(name)
-        },
-        Type::Primitive(v) => Ok(v.to_string()),
-        Type::Tuple(v) => Ok(format!("({})",v.iter().map(|t| type_to_string(t,f)).collect::<Result<Vec<_>,_>>()?.join(","))),
-        Type::Slice(v) => Ok(format!("[{}]",type_to_string(v,f)?)),
-        Type::Array { type_, len } => Ok(format!("[{};{}]",type_to_string(type_,f)?,len)),
-        Type::BorrowedRef { lifetime, mutable, type_ } => {
+    }
+}
+
+
+impl TryFrom<Type> for ArgType {
+    type Error=String;
+
+    fn try_from(value: Type) -> Result<Self, Self::Error> {
+        Self::try_from(&value)
+    }
+}
+
+impl TryFrom<&Type> for ArgType {
+    type Error=String;
+
+    fn try_from(value: &Type) -> Result<Self, Self::Error> {
+        match value {
+            Type::Primitive(name) |
+            Type::Generic(name) |
+            Type::ResolvedPath { name, .. } => {
+                if name == "Self" {
+                    Ok(Self::Self_)
+                } else {
+                    Ok(Self::Base(name.split("::").last().unwrap().to_owned()))
+                }
+            },
+            Type::BorrowedRef { mutable, type_, .. } => Ok(Self::Ref { is_mut: *mutable, ref_: Box::new(type_.as_ref().try_into()?) }),
+            _ => Err("".to_owned())
+        }
+    }
+}
+
+impl ArgType {
+    /// Produce an arbitrary output given the base identifier of this type or err if this is the base is a self receiver
+    pub fn map_base<F,O>(&self,f : F) -> O where 
+        F : FnOnce(Result<&String,()>) -> O,
+    {
+        match self 
+        {
+            ArgType::Base(b) => f(Ok(b)),
+            ArgType::Ref { is_mut, ref_ } => ref_.map_base(f),
+            ArgType::Self_ => f(Err(())),
             
-            let base = type_to_string(type_,f)?;
-            let inner = format!("&{}{}{}",
-                lifetime.as_ref()
-                        .map(|v| format!("'{v} "))
-                        .unwrap_or_default(),
-                mutable.then(|| "mut ")
-                    .unwrap_or_default(),
-                base
-            );
-            Ok(inner)
+        }
+    }
+
+    /// Produce an arbitrary output given the base identifier of this type, and optionally modify it
+    pub fn map_base_mut<F,O>(&mut self,f : F) -> O where 
+    F : FnOnce(Result<&mut String,()>) -> O
+    {
+        match self 
+        {
+            ArgType::Base(b) => f(Ok(b)),
+            ArgType::Ref { is_mut, ref_ } => ref_.map_base_mut(f),
+            ArgType::Self_ => f(Err(())),
             
-        },
-        _ => Err(format!("{t:?}"))
+        }
+    }
+
+    pub fn is_self(&self) -> bool {
+        self.map_base(|b| b.is_err())
+    }
+
+    /// Retrieves the base ident if this type is resolved otherwise returns Err(()) (i.e. in the case of a self receiver)
+    pub fn base_ident(&self) -> Result<&str,()> {
+        match self {
+            ArgType::Base(b) => Ok(b),
+            ArgType::Ref { is_mut, ref_ } => ref_.base_ident(),
+            ArgType::Self_ => Err(()),
+        }
+    }
+}
+
+#[derive(PartialEq,Eq)]
+pub enum ArgWrapperType{
+    Raw,
+    Wrapped,
+    /// in case of `self` argument
+    None
+}
+
+
+impl fmt::Display for ArgWrapperType {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            ArgWrapperType::Raw => f.write_str("Raw"),
+            ArgWrapperType::Wrapped => f.write_str("Wrapped"),
+            ArgWrapperType::None => f.write_str("None"),
+        }
+    }
+}
+
+
+pub struct Arg{
+    pub type_ : ArgType,
+    pub wrapper: ArgWrapperType
+}
+
+impl Arg {
+    pub fn new(type_: ArgType, wrapper: ArgWrapperType) -> Self{
+        Self {
+            type_,
+            wrapper,
+        }
+    }
+
+}
+
+use std::fmt;
+impl fmt::Display for Arg {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        
+        let inner = self.type_.to_string();
+
+        match self.wrapper {
+            ArgWrapperType::Raw |
+            ArgWrapperType::Wrapped => write!(f,"{}({inner})",self.wrapper.to_string()),
+            ArgWrapperType::None => f.write_str(&inner),
+        }
     }
 }

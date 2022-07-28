@@ -134,7 +134,7 @@ impl_lua_newtype!{
 	Fields
 	(
 	)
-	+ AutoMethods
+	+ Methods
 	(
 	)
 	+ BinOps
@@ -154,7 +154,7 @@ impl_lua_newtype!{
 	Fields
 	(
 	)
-	+ AutoMethods
+	+ Methods
 	(
 	)
 	+ BinOps
@@ -174,7 +174,7 @@ impl_lua_newtype!{
 	Fields
 	(
 	)
-	+ AutoMethods
+	+ Methods
 	(
 	)
 	+ BinOps
@@ -196,7 +196,7 @@ impl_lua_newtype!{
 	Fields
 	(
 	)
-	+ AutoMethods
+	+ Methods
 	(
 	)
 	+ BinOps
@@ -216,7 +216,7 @@ impl_lua_newtype!{
 	Fields
 	(
 	)
-	+ AutoMethods
+	+ Methods
 	(
 	)
 	+ BinOps
@@ -236,7 +236,7 @@ impl_lua_newtype!{
 	Fields
 	(
 	)
-	+ AutoMethods
+	+ Methods
 	(
 	)
 	+ BinOps
@@ -256,7 +256,7 @@ impl_lua_newtype!{
 	Fields
 	(
 	)
-	+ AutoMethods
+	+ Methods
 	(
 	)
 	+ BinOps
@@ -289,7 +289,7 @@ impl_lua_newtype!{
 	Fields
 	(
 	)
-	+ AutoMethods
+	+ Methods
 	(
 	)
 	+ BinOps
@@ -309,7 +309,7 @@ impl_lua_newtype!{
 	Fields
 	(
 	)
-	+ AutoMethods
+	+ Methods
 	(
 	)
 	+ BinOps
@@ -329,7 +329,7 @@ impl_lua_newtype!{
 	Fields
 	(
 	)
-	+ AutoMethods
+	+ Methods
 	(
 	)
 	+ BinOps
@@ -349,7 +349,7 @@ impl_lua_newtype!{
 	Fields
 	(
 	)
-	+ AutoMethods
+	+ Methods
 	(
 	)
 	+ BinOps
@@ -369,12 +369,11 @@ impl_lua_newtype!{
 	Fields
 	(
 	)
-	+ AutoMethods
+	+ Methods
 	(
 	)
 	+ BinOps
 	(
-		self Add f32 -> LuaVal,
 	)
 	+ UnaryOps
 	(
@@ -390,9 +389,9 @@ impl_lua_newtype!{
 	Fields
 	(
 		/// The rect of the clip
-		clip: ReflectedValue,
+		clip: Wrapped(Rect),
 	)
-	+ AutoMethods
+	+ Methods
 	(
 	)
 	+ BinOps
@@ -412,9 +411,9 @@ impl_lua_newtype!{
 	Fields
 	(
 		/// The size of the node
-		size: ReflectedValue,
+		size: Raw(ReflectedValue),
 	)
-	+ AutoMethods
+	+ Methods
 	(
 	)
 	+ BinOps
@@ -434,9 +433,9 @@ impl_lua_newtype!{
 	Fields
 	(
 		/// The size of the node as width and height in pixels
-		size: LuaVec2,
+		size: Wrapped(Vec2),
 	)
-	+ AutoMethods
+	+ Methods
 	(
 	)
 	+ BinOps
@@ -463,50 +462,50 @@ impl_lua_newtype!{
 		/// Whether to arrange this node and its children with flexbox layout
 		/// 
 		/// If this is set to [`Display::None`], this node will be collapsed.
-		display: LuaDisplay,
+		display: Wrapped(Display),
 		/// Whether to arrange this node relative to other nodes, or positioned absolutely
-		position_type: LuaPositionType,
+		position_type: Wrapped(PositionType),
 		/// Which direction the content of this node should go
-		direction: LuaDirection,
+		direction: Wrapped(Direction),
 		/// Whether to use column or row layout
-		flex_direction: LuaFlexDirection,
+		flex_direction: Wrapped(FlexDirection),
 		/// How to wrap nodes
-		flex_wrap: LuaFlexWrap,
+		flex_wrap: Wrapped(FlexWrap),
 		/// How items are aligned according to the cross axis
-		align_items: LuaAlignItems,
+		align_items: Wrapped(AlignItems),
 		/// Like align_items but for only this item
-		align_self: LuaAlignSelf,
+		align_self: Wrapped(AlignSelf),
 		/// How to align each line, only applies if flex_wrap is set to
 		/// [`FlexWrap::Wrap`] and there are multiple lines of items
-		align_content: LuaAlignContent,
+		align_content: Wrapped(AlignContent),
 		/// How items align according to the main axis
-		justify_content: LuaJustifyContent,
+		justify_content: Wrapped(JustifyContent),
 		/// The position of the node as described by its Rect
-		position: ReflectedValue,
+		position: Raw(ReflectedValue),
 		/// The margin of the node
-		margin: ReflectedValue,
+		margin: Raw(ReflectedValue),
 		/// The padding of the node
-		padding: ReflectedValue,
+		padding: Raw(ReflectedValue),
 		/// The border of the node
-		border: ReflectedValue,
+		border: Raw(ReflectedValue),
 		/// Defines how much a flexbox item should grow if there's space available
-		flex_grow: f32,
+		flex_grow: Raw(f32),
 		/// How to shrink if there's not enough space available
-		flex_shrink: f32,
+		flex_shrink: Raw(f32),
 		/// The initial size of the item
-		flex_basis: LuaVal,
+		flex_basis: Wrapped(Val),
 		/// The size of the flexbox
-		size: ReflectedValue,
+		size: Raw(ReflectedValue),
 		/// The minimum size of the flexbox
-		min_size: ReflectedValue,
+		min_size: Raw(ReflectedValue),
 		/// The maximum size of the flexbox
-		max_size: ReflectedValue,
+		max_size: Raw(ReflectedValue),
 		/// The aspect ratio of the flexbox
-		aspect_ratio: ReflectedValue,
+		aspect_ratio: Raw(ReflectedValue),
 		/// How to handle overflow
-		overflow: LuaOverflow,
+		overflow: Wrapped(Overflow),
 	)
-	+ AutoMethods
+	+ Methods
 	(
 	)
 	+ BinOps
@@ -525,9 +524,9 @@ impl_lua_newtype!{
 	FromLuaProxy +
 	Fields
 	(
-		0: LuaColor,
+		0: Wrapped(Color),
 	)
-	+ AutoMethods
+	+ Methods
 	(
 	)
 	+ BinOps
@@ -546,9 +545,9 @@ impl_lua_newtype!{
 	FromLuaProxy +
 	Fields
 	(
-		0: ReflectedValue,
+		0: Raw(ReflectedValue),
 	)
-	+ AutoMethods
+	+ Methods
 	(
 	)
 	+ BinOps
@@ -568,7 +567,7 @@ impl_lua_newtype!{
 	Fields
 	(
 	)
-	+ AutoMethods
+	+ Methods
 	(
 	)
 	+ BinOps
@@ -588,7 +587,7 @@ impl_lua_newtype!{
 	Fields
 	(
 	)
-	+ AutoMethods
+	+ Methods
 	(
 	)
 	+ BinOps
@@ -610,7 +609,7 @@ impl_lua_newtype!{
 	Fields
 	(
 	)
-	+ AutoMethods
+	+ Methods
 	(
 	)
 	+ BinOps
@@ -629,16 +628,34 @@ impl_lua_newtype!{
 	Fields
 	(
 	)
-	+ AutoMethods
+	+ Methods
 	(
+		// ///Set the animation to repeat
+		// repeat(&mut self:) -> &mut self,
+
+		// ///Stop the animation from repeating
+		// stop_repeating(&mut self:) -> &mut self,
+
+		///Pause the animation
+		pause(&mut self:),
+
+		///Unpause the animation
+		resume(&mut self:),
+
 		///Is the animation paused
-		is_paused(&self) -> bool,
+		is_paused(&self:) -> Raw(bool),
 
 		///Speed of the animation playback
-		speed(&self) -> f32,
+		speed(&self:) -> Raw(f32),
+
+		// ///Set the speed of the animation playback
+		// set_speed(&mut self:Raw(f32)) -> &mut self,
 
 		///Time elapsed playing the animation
-		elapsed(&self) -> f32,
+		elapsed(&self:) -> Raw(f32),
+
+		// ///Seek to a specific time in the animation
+		// set_elapsed(&mut self:Raw(f32)) -> &mut self,
 
 	)
 	+ BinOps
@@ -663,7 +680,7 @@ impl_lua_newtype!{
 	Fields
 	(
 	)
-	+ AutoMethods
+	+ Methods
 	(
 	)
 	+ BinOps
@@ -681,9 +698,9 @@ impl_lua_newtype!{
 	FromLuaProxy +
 	Fields
 	(
-		value: ReflectedValue,
+		// value: Raw(String),
 	)
-	+ AutoMethods
+	+ Methods
 	(
 	)
 	+ BinOps
@@ -702,8 +719,11 @@ impl_lua_newtype!{
 	Fields
 	(
 	)
-	+ AutoMethods
+	+ Methods
 	(
+		///Swaps the child at `a_index` with the child at `b_index`
+		swap(&mut self:Raw(usize),Raw(usize)),
+
 	)
 	+ BinOps
 	(
@@ -722,10 +742,10 @@ impl_lua_newtype!{
 	Fields
 	(
 	)
-	+ AutoMethods
+	+ Methods
 	(
 		///Gets the [`Entity`] ID of the parent.
-		get(&self) -> LuaEntity,
+		get(&self:) -> Wrapped(Entity),
 
 	)
 	+ BinOps
@@ -750,9 +770,9 @@ impl_lua_newtype!{
 	FromLuaProxy +
 	Fields
 	(
-		size: LuaVec2,
+		size: Wrapped(Vec2),
 	)
-	+ AutoMethods
+	+ Methods
 	(
 	)
 	+ BinOps
@@ -771,9 +791,9 @@ impl_lua_newtype!{
 	FromLuaProxy +
 	Fields
 	(
-		size: LuaVec2,
+		size: Wrapped(Vec2),
 	)
-	+ AutoMethods
+	+ Methods
 	(
 	)
 	+ BinOps
@@ -791,13 +811,13 @@ impl_lua_newtype!{
 	FromLuaProxy +
 	Fields
 	(
-		sections: ReflectedValue,
-		alignment: LuaTextAlignment,
+		sections: Raw(ReflectedValue),
+		alignment: Wrapped(TextAlignment),
 	)
-	+ AutoMethods
+	+ Methods
 	(
 		///Returns this [`Text`] with a new [`TextAlignment`].
-		with_alignment(self,LuaTextAlignment) -> LuaText,
+		with_alignment(self:Wrapped(TextAlignment)) -> self,
 
 	)
 	+ BinOps
@@ -815,10 +835,10 @@ impl_lua_newtype!{
 	FromLuaProxy +
 	Fields
 	(
-		vertical: LuaVerticalAlign,
-		horizontal: LuaHorizontalAlign,
+		vertical: Wrapped(VerticalAlign),
+		horizontal: Wrapped(HorizontalAlign),
 	)
-	+ AutoMethods
+	+ Methods
 	(
 	)
 	+ BinOps
@@ -836,13 +856,13 @@ impl_lua_newtype!{
 	FromLuaProxy +
 	Fields
 	(
-		value: ReflectedValue,
-		style: LuaTextStyle,
+		// value: Raw(String),
+		style: Wrapped(TextStyle),
 	)
-	+ AutoMethods
+	+ Methods
 	(
 		///Create an empty [`TextSection`] from a style. Useful when the value will be set dynamically.
-		from_style(LuaTextStyle) -> LuaTextSection,
+		from_style(Wrapped(TextStyle)) -> self,
 
 	)
 	+ BinOps
@@ -860,11 +880,11 @@ impl_lua_newtype!{
 	FromLuaProxy +
 	Fields
 	(
-		font: ReflectedValue,
-		font_size: f32,
-		color: LuaColor,
+		font: Raw(ReflectedValue),
+		font_size: Raw(f32),
+		color: Wrapped(Color),
 	)
-	+ AutoMethods
+	+ Methods
 	(
 	)
 	+ BinOps
@@ -884,7 +904,7 @@ impl_lua_newtype!{
 	Fields
 	(
 	)
-	+ AutoMethods
+	+ Methods
 	(
 	)
 	+ BinOps
@@ -905,7 +925,7 @@ impl_lua_newtype!{
 	Fields
 	(
 	)
-	+ AutoMethods
+	+ Methods
 	(
 	)
 	+ BinOps
@@ -945,7 +965,7 @@ impl_lua_newtype!{
 	Fields
 	(
 	)
-	+ AutoMethods
+	+ Methods
 	(
 		///Create a new unpaused `Stopwatch` with no elapsed time.
 		///
@@ -956,7 +976,7 @@ impl_lua_newtype!{
 		///assert_eq!(stopwatch.elapsed_secs(), 0.0);
 		///assert_eq!(stopwatch.paused(), false);
 		///```
-		new() -> LuaStopwatch,
+		new() -> self,
 
 		///Returns the elapsed time since the last [`reset`](Stopwatch::reset)
 		///of the stopwatch, in seconds.
@@ -973,7 +993,38 @@ impl_lua_newtype!{
 		///# See Also
 		///
 		///[`elapsed`](Stopwatch::elapsed) - if a `Duration` is desirable instead.
-		elapsed_secs(&self) -> f32,
+		elapsed_secs(&self:) -> Raw(f32),
+
+		///Pauses the stopwatch. Any call to [`tick`](Stopwatch::tick) while
+		///paused will not have any effect on the elapsed time.
+		///
+		///# Examples
+		///```
+		///# use bevy_time::*;
+		///use std::time::Duration;
+		///let mut stopwatch = Stopwatch::new();
+		///stopwatch.pause();
+		///stopwatch.tick(Duration::from_secs_f32(1.5));
+		///assert!(stopwatch.paused());
+		///assert_eq!(stopwatch.elapsed_secs(), 0.0);
+		///```
+		pause(&mut self:),
+
+		///Unpauses the stopwatch. Resume the effect of ticking on elapsed time.
+		///
+		///# Examples
+		///```
+		///# use bevy_time::*;
+		///use std::time::Duration;
+		///let mut stopwatch = Stopwatch::new();
+		///stopwatch.pause();
+		///stopwatch.tick(Duration::from_secs_f32(1.0));
+		///stopwatch.unpause();
+		///stopwatch.tick(Duration::from_secs_f32(1.0));
+		///assert!(!stopwatch.paused());
+		///assert_eq!(stopwatch.elapsed_secs(), 1.0);
+		///```
+		unpause(&mut self:),
 
 		///Returns `true` if the stopwatch is paused.
 		///
@@ -987,7 +1038,20 @@ impl_lua_newtype!{
 		///stopwatch.unpause();
 		///assert!(!stopwatch.paused());
 		///```
-		paused(&self) -> bool,
+		paused(&self:) -> Raw(bool),
+
+		///Resets the stopwatch.
+		///
+		///# Examples
+		///```
+		///# use bevy_time::*;
+		///use std::time::Duration;
+		///let mut stopwatch = Stopwatch::new();
+		///stopwatch.tick(Duration::from_secs_f32(1.5));
+		///stopwatch.reset();
+		///assert_eq!(stopwatch.elapsed_secs(), 0.0);
+		///```
+		reset(&mut self:),
 
 	)
 	+ BinOps
@@ -1013,7 +1077,7 @@ impl_lua_newtype!{
 	Fields
 	(
 	)
-	+ AutoMethods
+	+ Methods
 	(
 		///Creates a new timer with a given duration in seconds.
 		///
@@ -1022,7 +1086,7 @@ impl_lua_newtype!{
 		///# use bevy_time::*;
 		///let mut timer = Timer::from_seconds(1.0, false);
 		///```
-		from_seconds(f32,bool) -> LuaTimer,
+		from_seconds(Raw(f32),Raw(bool)) -> self,
 
 		///Returns `true` if the timer has reached its duration.
 		///
@@ -1036,7 +1100,7 @@ impl_lua_newtype!{
 		///timer.tick(Duration::from_secs_f32(0.5));
 		///assert!(timer.finished());
 		///```
-		finished(&self) -> bool,
+		finished(&self:) -> Raw(bool),
 
 		///Returns `true` only on the tick the timer reached its duration.
 		///
@@ -1050,11 +1114,11 @@ impl_lua_newtype!{
 		///timer.tick(Duration::from_secs_f32(0.5));
 		///assert!(!timer.just_finished());
 		///```
-		just_finished(&self) -> bool,
+		just_finished(&self:) -> Raw(bool),
 
 		///Returns the time elapsed on the timer as a `f32`.
 		///See also [`Timer::elapsed`](Timer::elapsed).
-		elapsed_secs(&self) -> f32,
+		elapsed_secs(&self:) -> Raw(f32),
 
 		///Returns `true` if the timer is repeating.
 		///
@@ -1064,7 +1128,50 @@ impl_lua_newtype!{
 		///let mut timer = Timer::from_seconds(1.0, true);
 		///assert!(timer.repeating());
 		///```
-		repeating(&self) -> bool,
+		repeating(&self:) -> Raw(bool),
+
+		///Sets whether the timer is repeating or not.
+		///
+		///# Examples
+		///```
+		///# use bevy_time::*;
+		///let mut timer = Timer::from_seconds(1.0, true);
+		///timer.set_repeating(false);
+		///assert!(!timer.repeating());
+		///```
+		set_repeating(&mut self:Raw(bool)),
+
+		///Pauses the Timer. Disables the ticking of the timer.
+		///
+		///See also [`Stopwatch::pause`](Stopwatch::pause).
+		///
+		///# Examples
+		///```
+		///# use bevy_time::*;
+		///use std::time::Duration;
+		///let mut timer = Timer::from_seconds(1.0, false);
+		///timer.pause();
+		///timer.tick(Duration::from_secs_f32(0.5));
+		///assert_eq!(timer.elapsed_secs(), 0.0);
+		///```
+		pause(&mut self:),
+
+		///Unpauses the Timer. Resumes the ticking of the timer.
+		///
+		///See also [`Stopwatch::unpause()`](Stopwatch::unpause).
+		///
+		///# Examples
+		///```
+		///# use bevy_time::*;
+		///use std::time::Duration;
+		///let mut timer = Timer::from_seconds(1.0, false);
+		///timer.pause();
+		///timer.tick(Duration::from_secs_f32(0.5));
+		///timer.unpause();
+		///timer.tick(Duration::from_secs_f32(0.5));
+		///assert_eq!(timer.elapsed_secs(), 0.5);
+		///```
+		unpause(&mut self:),
 
 		///Returns `true` if the timer is paused.
 		///
@@ -1080,7 +1187,24 @@ impl_lua_newtype!{
 		///timer.unpause();
 		///assert!(!timer.paused());
 		///```
-		paused(&self) -> bool,
+		paused(&self:) -> Raw(bool),
+
+		///Resets the timer. the reset doesn't affect the `paused` state of the timer.
+		///
+		///See also [`Stopwatch::reset`](Stopwatch::reset).
+		///
+		///Examples
+		///```
+		///# use bevy_time::*;
+		///use std::time::Duration;
+		///let mut timer = Timer::from_seconds(1.0, false);
+		///timer.tick(Duration::from_secs_f32(1.5));
+		///timer.reset();
+		///assert!(!timer.finished());
+		///assert!(!timer.just_finished());
+		///assert_eq!(timer.elapsed_secs(), 0.0);
+		///```
+		reset(&mut self:),
 
 		///Returns the percentage of the timer elapsed time (goes from 0.0 to 1.0).
 		///
@@ -1092,7 +1216,7 @@ impl_lua_newtype!{
 		///timer.tick(Duration::from_secs_f32(0.5));
 		///assert_eq!(timer.percent(), 0.25);
 		///```
-		percent(&self) -> f32,
+		percent(&self:) -> Raw(f32),
 
 		///Returns the percentage of the timer remaining time (goes from 0.0 to 1.0).
 		///
@@ -1104,7 +1228,7 @@ impl_lua_newtype!{
 		///timer.tick(Duration::from_secs_f32(0.5));
 		///assert_eq!(timer.percent_left(), 0.75);
 		///```
-		percent_left(&self) -> f32,
+		percent_left(&self:) -> Raw(f32),
 
 		///Returns the number of times a repeating timer
 		///finished during the last [`tick`](Timer<T>::tick) call.
@@ -1124,7 +1248,7 @@ impl_lua_newtype!{
 		///timer.tick(Duration::from_secs_f32(0.5));
 		///assert_eq!(timer.times_finished_this_tick(), 0);
 		///```
-		times_finished_this_tick(&self) -> u32,
+		times_finished_this_tick(&self:) -> Raw(u32),
 
 	)
 	+ BinOps
@@ -1194,7 +1318,7 @@ impl_lua_newtype!{
 	Fields
 	(
 	)
-	+ AutoMethods
+	+ Methods
 	(
 		///Creates a new entity reference with the specified `id` and a generation of 0.
 		///
@@ -1243,7 +1367,7 @@ impl_lua_newtype!{
 		///    }
 		///}
 		///```
-		from_raw(u32) -> LuaEntity,
+		from_raw(Raw(u32)) -> Wrapped(Entity),
 
 		///Convert to a form convenient for passing outside of rust.
 		///
@@ -1251,24 +1375,24 @@ impl_lua_newtype!{
 		///for serialization between runs.
 		///
 		///No particular structure is guaranteed for the returned bits.
-		to_bits(self) -> u64,
+		to_bits(self:) -> Raw(u64),
 
 		///Reconstruct an `Entity` previously destructured with [`Entity::to_bits`].
 		///
 		///Only useful when applied to results from `to_bits` in the same instance of an application.
-		from_bits(u64) -> LuaEntity,
+		from_bits(Raw(u64)) -> self,
 
 		///Return a transiently unique identifier.
 		///
 		///No two simultaneously-live entities share the same ID, but dead entities' IDs may collide
 		///with both live and dead entities. Useful for compactly representing entities within a
 		///specific snapshot of the world, such as when serializing.
-		id(self) -> u32,
+		id(self:) -> Raw(u32),
 
 		///Returns the generation of this Entity's id. The generation is incremented each time an
 		///entity with a given id is despawned. This serves as a "count" of the number of times a
 		///given id has been reused (id, generation) pairs uniquely identify a given Entity.
-		generation(self) -> u32,
+		generation(self:) -> Raw(u32),
 
 	)
 	+ BinOps
@@ -1308,100 +1432,158 @@ impl_lua_newtype!{
 	Fields
 	(
 		/// Position of the entity. In 2d, the last value of the `Vec3` is used for z-ordering.
-		translation: LuaVec3,
+		translation: Wrapped(Vec3),
 		/// Rotation of the entity.
-		rotation: LuaQuat,
+		rotation: Wrapped(Quat),
 		/// Scale of the entity.
-		scale: LuaVec3,
+		scale: Wrapped(Vec3),
 	)
-	+ AutoMethods
+	+ Methods
 	(
 		///Creates a new [`Transform`] at the position `(x, y, z)`. In 2d, the `z` component
 		///is used for z-ordering elements: higher `z`-value will be in front of lower
 		///`z`-value.
-		from_xyz(f32,f32,f32) -> LuaTransform,
+		from_xyz(Raw(f32),Raw(f32),Raw(f32)) -> self,
 
 		///Creates a new identity [`Transform`], with no translation, rotation, and a scale of 1 on
 		///all axes.
-		identity() -> LuaTransform,
+		identity() -> self,
 
 		///Extracts the translation, rotation, and scale from `matrix`. It must be a 3d affine
 		///transformation matrix.
-		from_matrix(LuaMat4) -> LuaTransform,
+		from_matrix(Wrapped(Mat4)) -> self,
 
 		///Creates a new [`Transform`], with `translation`. Rotation will be 0 and scale 1 on
 		///all axes.
-		from_translation(LuaVec3) -> LuaTransform,
+		from_translation(Wrapped(Vec3)) -> self,
 
 		///Creates a new [`Transform`], with `rotation`. Translation will be 0 and scale 1 on
 		///all axes.
-		from_rotation(LuaQuat) -> LuaTransform,
+		from_rotation(Wrapped(Quat)) -> self,
 
 		///Creates a new [`Transform`], with `scale`. Translation will be 0 and rotation 0 on
 		///all axes.
-		from_scale(LuaVec3) -> LuaTransform,
+		from_scale(Wrapped(Vec3)) -> self,
 
 		///Updates and returns this [`Transform`] by rotating it so that its unit vector in the
 		///local `Z` direction is toward `target` and its unit vector in the local `Y` direction
 		///is toward `up`.
-		looking_at(self,LuaVec3,LuaVec3) -> LuaTransform,
+		looking_at(self:Wrapped(Vec3),Wrapped(Vec3)) -> self,
 
 		///Returns this [`Transform`] with a new translation.
-		with_translation(self,LuaVec3) -> LuaTransform,
+		with_translation(self:Wrapped(Vec3)) -> self,
 
 		///Returns this [`Transform`] with a new rotation.
-		with_rotation(self,LuaQuat) -> LuaTransform,
+		with_rotation(self:Wrapped(Quat)) -> self,
 
 		///Returns this [`Transform`] with a new scale.
-		with_scale(self,LuaVec3) -> LuaTransform,
+		with_scale(self:Wrapped(Vec3)) -> self,
 
 		///Returns the 3d affine transformation matrix from this transforms translation,
 		///rotation, and scale.
-		compute_matrix(&self) -> LuaMat4,
+		compute_matrix(&self:) -> Wrapped(Mat4),
 
 		///Returns the 3d affine transformation matrix from this transforms translation,
 		///rotation, and scale.
-		compute_affine(&self) -> LuaAffine3A,
+		compute_affine(&self:) -> Wrapped(Affine3A),
 
 		///Get the unit vector in the local `X` direction.
-		local_x(&self) -> LuaVec3,
+		local_x(&self:) -> Wrapped(Vec3),
 
 		///Equivalent to [`-local_x()`][Transform::local_x()]
-		left(&self) -> LuaVec3,
+		left(&self:) -> Wrapped(Vec3),
 
 		///Equivalent to [`local_x()`][Transform::local_x()]
-		right(&self) -> LuaVec3,
+		right(&self:) -> Wrapped(Vec3),
 
 		///Get the unit vector in the local `Y` direction.
-		local_y(&self) -> LuaVec3,
+		local_y(&self:) -> Wrapped(Vec3),
 
 		///Equivalent to [`local_y()`][Transform::local_y]
-		up(&self) -> LuaVec3,
+		up(&self:) -> Wrapped(Vec3),
 
 		///Equivalent to [`-local_y()`][Transform::local_y]
-		down(&self) -> LuaVec3,
+		down(&self:) -> Wrapped(Vec3),
 
 		///Get the unit vector in the local `Z` direction.
-		local_z(&self) -> LuaVec3,
+		local_z(&self:) -> Wrapped(Vec3),
 
 		///Equivalent to [`-local_z()`][Transform::local_z]
-		forward(&self) -> LuaVec3,
+		forward(&self:) -> Wrapped(Vec3),
 
 		///Equivalent to [`local_z()`][Transform::local_z]
-		back(&self) -> LuaVec3,
+		back(&self:) -> Wrapped(Vec3),
+
+		///Rotates this [`Transform`] by the given rotation.
+		///
+		///If this [`Transform`] has a parent, the `rotation` is relative to the rotation of the parent.
+		rotate(&mut self:Wrapped(Quat)),
+
+		///Rotates this [`Transform`] around the given `axis` by `angle` (in radians).
+		///
+		///If this [`Transform`] has a parent, the `axis` is relative to the rotation of the parent.
+		rotate_axis(&mut self:Wrapped(Vec3),Raw(f32)),
+
+		///Rotates this [`Transform`] around the `X` axis by `angle` (in radians).
+		///
+		///If this [`Transform`] has a parent, the axis is relative to the rotation of the parent.
+		rotate_x(&mut self:Raw(f32)),
+
+		///Rotates this [`Transform`] around the `Y` axis by `angle` (in radians).
+		///
+		///If this [`Transform`] has a parent, the axis is relative to the rotation of the parent.
+		rotate_y(&mut self:Raw(f32)),
+
+		///Rotates this [`Transform`] around the `Z` axis by `angle` (in radians).
+		///
+		///If this [`Transform`] has a parent, the axis is relative to the rotation of the parent.
+		rotate_z(&mut self:Raw(f32)),
+
+		///Rotates this [`Transform`] by the given `rotation`.
+		///
+		///The `rotation` is relative to this [`Transform`]'s current rotation.
+		rotate_local(&mut self:Wrapped(Quat)),
+
+		///Rotates this [`Transform`] around its local `axis` by `angle` (in radians).
+		rotate_local_axis(&mut self:Wrapped(Vec3),Raw(f32)),
+
+		///Rotates this [`Transform`] around its local `X` axis by `angle` (in radians).
+		rotate_local_x(&mut self:Raw(f32)),
+
+		///Rotates this [`Transform`] around its local `Y` axis by `angle` (in radians).
+		rotate_local_y(&mut self:Raw(f32)),
+
+		///Rotates this [`Transform`] around its local `Z` axis by `angle` (in radians).
+		rotate_local_z(&mut self:Raw(f32)),
+
+		///Translates this [`Transform`] around a `point` in space.
+		///
+		///If this [`Transform`] has a parent, the `point` is relative to the [`Transform`] of the parent.
+		translate_around(&mut self:Wrapped(Vec3),Wrapped(Quat)),
+
+		///Rotates this [`Transform`] around a `point` in space.
+		///
+		///If this [`Transform`] has a parent, the `point` is relative to the [`Transform`] of the parent.
+		rotate_around(&mut self:Wrapped(Vec3),Wrapped(Quat)),
+
+		///Rotates this [`Transform`] so that its local negative `Z` direction is toward
+		///`target` and its local `Y` direction is toward `up`.
+		look_at(&mut self:Wrapped(Vec3),Wrapped(Vec3)),
 
 		///Multiplies `self` with `transform` component by component, returning the
 		///resulting [`Transform`]
-		mul_transform(&self,LuaTransform) -> LuaTransform,
+		mul_transform(&self:Wrapped(Transform)) -> self,
 
 		///Returns a [`Vec3`] of this [`Transform`] applied to `value`.
-		mul_vec3(&self,LuaVec3) -> LuaVec3,
+		mul_vec3(&self:Wrapped(Vec3)) -> Wrapped(Vec3),
+
+		///Changes the `scale` of this [`Transform`], multiplying the current `scale` by
+		///`scale_factor`.
+		apply_non_uniform_scale(&mut self:Wrapped(Vec3)),
 
 	)
 	+ BinOps
 	(
-		self Mul LuaTransform -> LuaTransform,
-		self Mul LuaVec3 -> LuaVec3,
 	)
 	+ UnaryOps
 	(
@@ -1436,63 +1618,63 @@ impl_lua_newtype!{
 	Fields
 	(
 	)
-	+ AutoMethods
+	+ Methods
 	(
 		///Returns the 3d affine transformation matrix as a [`Mat4`].
-		compute_matrix(&self) -> LuaMat4,
+		compute_matrix(&self:) -> Wrapped(Mat4),
 
 		///Returns the 3d affine transformation matrix as an [`Affine3A`].
-		affine(&self) -> LuaAffine3A,
+		affine(&self:) -> Wrapped(Affine3A),
 
 		///Returns the transformation as a [`Transform`].
 		///
 		///The transform is expected to be non-degenerate and without shearing, or the output
 		///will be invalid.
-		compute_transform(&self) -> LuaTransform,
+		compute_transform(&self:) -> Wrapped(Transform),
 
 		///Creates a new identity [`GlobalTransform`], that maps all points in space to themselves.
-		identity() -> LuaGlobalTransform,
+		identity() -> self,
 
 		///Return the local right vector (X).
-		right(&self) -> LuaVec3,
+		right(&self:) -> Wrapped(Vec3),
 
 		///Return the local left vector (-X).
-		left(&self) -> LuaVec3,
+		left(&self:) -> Wrapped(Vec3),
 
 		///Return the local up vector (Y).
-		up(&self) -> LuaVec3,
+		up(&self:) -> Wrapped(Vec3),
 
 		///Return the local down vector (-Y).
-		down(&self) -> LuaVec3,
+		down(&self:) -> Wrapped(Vec3),
 
 		///Return the local back vector (Z).
-		back(&self) -> LuaVec3,
+		back(&self:) -> Wrapped(Vec3),
 
 		///Return the local forward vector (-Z).
-		forward(&self) -> LuaVec3,
+		forward(&self:) -> Wrapped(Vec3),
 
 		///Get the translation as a [`Vec3`].
-		translation(&self) -> LuaVec3,
+		translation(&self:) -> Wrapped(Vec3),
+
+		// ///Mutably access the internal translation.
+		// translation_mut(&mut self:) -> Wrapped(&mut Vec3A),
 
 		///Get the translation as a [`Vec3A`].
-		translation_vec3a(&self) -> LuaVec3A,
+		translation_vec3a(&self:) -> Wrapped(Vec3A),
 
 		///Get an upper bound of the radius from the given `extents`.
-		radius_vec3a(&self,LuaVec3A) -> f32,
+		radius_vec3a(&self:Wrapped(Vec3A)) -> Raw(f32),
 
 		///Returns a [`Vec3`] of this [`Transform`] applied to `value`.
-		mul_vec3(&self,LuaVec3) -> LuaVec3,
+		mul_vec3(&self:Wrapped(Vec3)) -> Wrapped(Vec3),
 
 		///Multiplies `self` with `transform` component by component, returning the
 		///resulting [`GlobalTransform`]
-		mul_transform(&self,LuaTransform) -> LuaGlobalTransform,
+		mul_transform(&self:Wrapped(Transform)) -> self,
 
 	)
 	+ BinOps
 	(
-		self Mul LuaGlobalTransform -> LuaGlobalTransform,
-		self Mul LuaTransform -> LuaGlobalTransform,
-		self Mul LuaVec3 -> LuaVec3,
 	)
 	+ UnaryOps
 	(
@@ -1507,11 +1689,11 @@ impl_lua_newtype!{
 	FromLuaProxy +
 	Fields
 	(
-		color: LuaColor,
+		color: Wrapped(Color),
 		/// A direct scale factor multiplied with `color` before being passed to the shader.
-		brightness: f32,
+		brightness: Raw(f32),
 	)
-	+ AutoMethods
+	+ Methods
 	(
 	)
 	+ BinOps
@@ -1530,8 +1712,12 @@ impl_lua_newtype!{
 	Fields
 	(
 	)
-	+ AutoMethods
+	+ Methods
 	(
+		// get(&self:Raw(usize)) -> Wrapped(&VisibleEntities),
+
+		// get_mut(&mut self:Raw(usize)) -> Wrapped(&mut VisibleEntities),
+
 	)
 	+ BinOps
 	(
@@ -1574,17 +1760,17 @@ impl_lua_newtype!{
 	FromLuaProxy +
 	Fields
 	(
-		color: LuaColor,
+		color: Wrapped(Color),
 		/// Illuminance in lux
-		illuminance: f32,
-		shadows_enabled: bool,
-		shadow_projection: LuaOrthographicProjection,
-		shadow_depth_bias: f32,
+		illuminance: Raw(f32),
+		shadows_enabled: Raw(bool),
+		shadow_projection: Wrapped(OrthographicProjection),
+		shadow_depth_bias: Raw(f32),
 		/// A bias applied along the direction of the fragment's surface normal. It is scaled to the
 		/// shadow map's texel size so that it is automatically adjusted to the orthographic projection.
-		shadow_normal_bias: f32,
+		shadow_normal_bias: Raw(f32),
 	)
-	+ AutoMethods
+	+ Methods
 	(
 	)
 	+ BinOps
@@ -1602,9 +1788,9 @@ impl_lua_newtype!{
 	FromLuaProxy +
 	Fields
 	(
-		size: usize,
+		size: Raw(usize),
 	)
-	+ AutoMethods
+	+ Methods
 	(
 	)
 	+ BinOps
@@ -1623,7 +1809,7 @@ impl_lua_newtype!{
 	Fields
 	(
 	)
-	+ AutoMethods
+	+ Methods
 	(
 	)
 	+ BinOps
@@ -1642,7 +1828,7 @@ impl_lua_newtype!{
 	Fields
 	(
 	)
-	+ AutoMethods
+	+ Methods
 	(
 	)
 	+ BinOps
@@ -1677,18 +1863,18 @@ impl_lua_newtype!{
 	FromLuaProxy +
 	Fields
 	(
-		color: LuaColor,
-		intensity: f32,
-		range: f32,
-		radius: f32,
-		shadows_enabled: bool,
-		shadow_depth_bias: f32,
+		color: Wrapped(Color),
+		intensity: Raw(f32),
+		range: Raw(f32),
+		radius: Raw(f32),
+		shadows_enabled: Raw(bool),
+		shadow_depth_bias: Raw(f32),
 		/// A bias applied along the direction of the fragment's surface normal. It is scaled to the
 		/// shadow map's texel size so that it can be small close to the camera and gets larger further
 		/// away.
-		shadow_normal_bias: f32,
+		shadow_normal_bias: Raw(f32),
 	)
-	+ AutoMethods
+	+ Methods
 	(
 	)
 	+ BinOps
@@ -1706,9 +1892,9 @@ impl_lua_newtype!{
 	FromLuaProxy +
 	Fields
 	(
-		size: usize,
+		size: Raw(usize),
 	)
-	+ AutoMethods
+	+ Methods
 	(
 	)
 	+ BinOps
@@ -1728,7 +1914,7 @@ impl_lua_newtype!{
 	Fields
 	(
 	)
-	+ AutoMethods
+	+ Methods
 	(
 	)
 	+ BinOps
@@ -1748,7 +1934,7 @@ impl_lua_newtype!{
 	Fields
 	(
 	)
-	+ AutoMethods
+	+ Methods
 	(
 	)
 	+ BinOps
@@ -1767,9 +1953,9 @@ impl_lua_newtype!{
 	Fields
 	(
 		/// Whether to show wireframes for all meshes. If `false`, only meshes with a [Wireframe] component will be rendered.
-		global: bool,
+		global: Raw(bool),
 	)
-	+ AutoMethods
+	+ Methods
 	(
 	)
 	+ BinOps
@@ -1789,7 +1975,7 @@ impl_lua_newtype!{
 	Fields
 	(
 	)
-	+ AutoMethods
+	+ Methods
 	(
 	)
 	+ BinOps
@@ -1811,9 +1997,9 @@ impl_lua_newtype!{
 	FromLuaProxy +
 	Fields
 	(
-		0: LuaColor,
+		0: Wrapped(Color),
 	)
-	+ AutoMethods
+	+ Methods
 	(
 	)
 	+ BinOps
@@ -1832,7 +2018,7 @@ impl_lua_newtype!{
 	Fields
 	(
 	)
-	+ AutoMethods
+	+ Methods
 	(
 	)
 	+ BinOps
@@ -1850,9 +2036,9 @@ impl_lua_newtype!{
 	FromLuaProxy +
 	Fields
 	(
-		clear_color: LuaClearColorConfig,
+		clear_color: Wrapped(ClearColorConfig),
 	)
-	+ AutoMethods
+	+ Methods
 	(
 	)
 	+ BinOps
@@ -1872,11 +2058,11 @@ impl_lua_newtype!{
 	Fields
 	(
 		/// The clear color operation to perform for the main 3d pass.
-		clear_color: LuaClearColorConfig,
+		clear_color: Wrapped(ClearColorConfig),
 		/// The depth clear operation to perform for the main 3d pass.
-		depth_load_op: LuaCamera3dDepthLoadOp,
+		depth_load_op: Wrapped(Camera3dDepthLoadOp),
 	)
-	+ AutoMethods
+	+ Methods
 	(
 	)
 	+ BinOps
@@ -1897,9 +2083,9 @@ impl_lua_newtype!{
 	Fields
 	(
 	)
-	+ AutoMethods
+	+ Methods
 	(
-		as_vec(&self) -> LuaVec2,
+		as_vec(&self:) -> Wrapped(Vec2),
 
 	)
 	+ BinOps
@@ -1920,9 +2106,9 @@ impl_lua_newtype!{
 	FromLuaProxy +
 	Fields
 	(
-		0: ReflectedValue,
+		0: Raw(ReflectedValue),
 	)
-	+ AutoMethods
+	+ Methods
 	(
 	)
 	+ BinOps
@@ -1940,18 +2126,18 @@ impl_lua_newtype!{
 	FromLuaProxy +
 	Fields
 	(
-		color: LuaColor,
-		index: usize,
-		flip_x: bool,
-		flip_y: bool,
+		color: Wrapped(Color),
+		index: Raw(usize),
+		flip_x: Raw(bool),
+		flip_y: Raw(bool),
 		/// An optional custom size for the sprite that will be used when rendering, instead of the size
 		/// of the sprite's image in the atlas
-		custom_size: ReflectedValue,
-		anchor: LuaAnchor,
+		custom_size: Raw(ReflectedValue),
+		anchor: Wrapped(Anchor),
 	)
-	+ AutoMethods
+	+ Methods
 	(
-		new(usize) -> LuaTextureAtlasSprite,
+		new(Raw(usize)) -> Wrapped(TextureAtlasSprite),
 
 	)
 	+ BinOps
@@ -1970,18 +2156,18 @@ impl_lua_newtype!{
 	Fields
 	(
 		/// The sprite's color tint
-		color: LuaColor,
+		color: Wrapped(Color),
 		/// Flip the sprite along the `X` axis
-		flip_x: bool,
+		flip_x: Raw(bool),
 		/// Flip the sprite along the `Y` axis
-		flip_y: bool,
+		flip_y: Raw(bool),
 		/// An optional custom size for the sprite that will be used when rendering, instead of the size
 		/// of the sprite's image
-		custom_size: ReflectedValue,
+		custom_size: Raw(ReflectedValue),
 		/// [`Anchor`] point of the sprite in the world
-		anchor: LuaAnchor,
+		anchor: Wrapped(Anchor),
 	)
-	+ AutoMethods
+	+ Methods
 	(
 	)
 	+ BinOps
@@ -2002,17 +2188,17 @@ impl_lua_newtype!{
 	Fields
 	(
 		/// The beginning point of the rect
-		min: LuaVec2,
+		min: Wrapped(Vec2),
 		/// The ending point of the rect
-		max: LuaVec2,
+		max: Wrapped(Vec2),
 	)
-	+ AutoMethods
+	+ Methods
 	(
-		width(&self) -> f32,
+		width(&self:) -> Raw(f32),
 
-		height(&self) -> f32,
+		height(&self:) -> Raw(f32),
 
-		size(&self) -> LuaVec2,
+		size(&self:) -> Wrapped(Vec2),
 
 	)
 	+ BinOps
@@ -2044,13 +2230,13 @@ impl_lua_newtype!{
 	Fields
 	(
 	)
-	+ AutoMethods
+	+ Methods
 	(
-		///Create a new `RenderLayers` that belongs to all layers.
-		all() -> LuaRenderLayers,
+		// ///Create a new `RenderLayers` that belongs to all layers.
+		// all() -> self,
 
-		///Create a new `RenderLayers` that belongs to no layers.
-		none() -> LuaRenderLayers,
+		// ///Create a new `RenderLayers` that belongs to no layers.
+		// none() -> self,
 
 		///Determine if a `RenderLayers` intersects another.
 		///
@@ -2058,7 +2244,7 @@ impl_lua_newtype!{
 		///
 		///A `RenderLayers` with no layers will not match any other
 		///`RenderLayers`, even another with no layers.
-		intersects(&self,&LuaRenderLayers) -> bool,
+		intersects(&self:Wrapped(&RenderLayers)) -> Raw(bool),
 
 	)
 	+ BinOps
@@ -2082,12 +2268,12 @@ impl_lua_newtype!{
 		/// Indicates whether this entity is visible. Hidden values will propagate down the entity hierarchy.
 		/// If this entity is hidden, all of its descendants will be hidden as well. See [`Children`] and [`Parent`] for
 		/// hierarchy info.
-		is_visible: bool,
+		is_visible: Raw(bool),
 	)
-	+ AutoMethods
+	+ Methods
 	(
 		///Creates a new [`Visibility`], set as visible
-		visible() -> LuaVisibility,
+		visible() -> self,
 
 	)
 	+ BinOps
@@ -2118,11 +2304,11 @@ impl_lua_newtype!{
 	Fields
 	(
 	)
-	+ AutoMethods
+	+ Methods
 	(
-		len(&self) -> usize,
+		len(&self:) -> Raw(usize),
 
-		is_empty(&self) -> bool,
+		is_empty(&self:) -> Raw(bool),
 
 	)
 	+ BinOps
@@ -2142,22 +2328,22 @@ impl_lua_newtype!{
 	Fields
 	(
 	)
-	+ AutoMethods
+	+ Methods
 	(
 		///Creates a new [`ComputedVisibility`], set as not visible
-		not_visible() -> LuaComputedVisibility,
+		not_visible() -> self,
 
 		///Whether this entity is visible to something this frame. This is true if and only if [`Self::is_visible_in_hierarchy`] and [`Self::is_visible_in_view`]
 		///are true. This is the canonical method to call to determine if an entity should be drawn.
 		///This value is updated in [`CoreStage::PostUpdate`] during the [`VisibilitySystems::CheckVisibility`] system label. Reading it from the
 		///[`CoreStage::Update`] stage will yield the value from the previous frame.
-		is_visible(&self) -> bool,
+		is_visible(&self:) -> Raw(bool),
 
 		///Whether this entity is visible in the entity hierarchy, which is determined by the [`Visibility`] component.
 		///This takes into account "visibility inheritance". If any of this entity's ancestors (see [`Parent`]) are hidden, this entity
 		///will be hidden as well. This value is updated in the [`CoreStage::PostUpdate`] stage in the
 		///[`VisibilitySystems::VisibilityPropagate`] system label.
-		is_visible_in_hierarchy(&self) -> bool,
+		is_visible_in_hierarchy(&self:) -> Raw(bool),
 
 		///Whether this entity is visible in _any_ view (Cameras, Lights, etc). Each entity type (and view type) should choose how to set this
 		///value. For cameras and drawn entities, this will take into account [`RenderLayers`].
@@ -2166,7 +2352,13 @@ impl_lua_newtype!{
 		///Each entity type then chooses how to set this field in the [`CoreStage::PostUpdate`] stage in the
 		///[`VisibilitySystems::CheckVisibility`] system label. Meshes might use frustum culling to decide if they are visible in a view.
 		///Other entities might just set this to `true` every frame.
-		is_visible_in_view(&self) -> bool,
+		is_visible_in_view(&self:) -> Raw(bool),
+
+		///Sets `is_visible_in_view` to `true`. This is not reversible for a given frame, as it encodes whether or not this is visible in
+		///_any_ view. This will be automatically reset to `false` every frame in [`VisibilitySystems::VisibilityPropagate`] and then set
+		///to the proper value in [`VisibilitySystems::CheckVisibility`]. This should _only_ be set in systems with the [`VisibilitySystems::CheckVisibility`]
+		///label. Don't call this unless you are defining a custom visibility system. For normal user-defined entity visibility, see [`Visibility`].
+		set_visible_in_view(&mut self:),
 
 	)
 	+ BinOps
@@ -2184,10 +2376,10 @@ impl_lua_newtype!{
 	FromLuaProxy +
 	Fields
 	(
-		inverse_bindposes: ReflectedValue,
-		joints: ReflectedValue,
+		inverse_bindposes: Raw(ReflectedValue),
+		joints: Raw(ReflectedValue),
 	)
-	+ AutoMethods
+	+ Methods
 	(
 	)
 	+ BinOps
@@ -2206,7 +2398,7 @@ impl_lua_newtype!{
 	Fields
 	(
 	)
-	+ AutoMethods
+	+ Methods
 	(
 	)
 	+ BinOps
@@ -2225,7 +2417,7 @@ impl_lua_newtype!{
 	Fields
 	(
 	)
-	+ AutoMethods
+	+ Methods
 	(
 	)
 	+ BinOps
@@ -2244,73 +2436,80 @@ impl_lua_newtype!{
 	Fields
 	(
 	)
-	+ AutoMethods
+	+ Methods
 	(
 		///New `Color` from sRGB colorspace.
-		rgb(f32,f32,f32) -> LuaColor,
+		rgb(Raw(f32),Raw(f32),Raw(f32)) -> Wrapped(Color),
 
 		///New `Color` from sRGB colorspace.
-		rgba(f32,f32,f32,f32) -> LuaColor,
+		rgba(Raw(f32),Raw(f32),Raw(f32),Raw(f32)) -> Wrapped(Color),
 
 		///New `Color` from linear RGB colorspace.
-		rgb_linear(f32,f32,f32) -> LuaColor,
+		rgb_linear(Raw(f32),Raw(f32),Raw(f32)) -> Wrapped(Color),
 
 		///New `Color` from linear RGB colorspace.
-		rgba_linear(f32,f32,f32,f32) -> LuaColor,
+		rgba_linear(Raw(f32),Raw(f32),Raw(f32),Raw(f32)) -> Wrapped(Color),
 
 		///New `Color` with HSL representation in sRGB colorspace.
-		hsl(f32,f32,f32) -> LuaColor,
+		hsl(Raw(f32),Raw(f32),Raw(f32)) -> Wrapped(Color),
 
 		///New `Color` with HSL representation in sRGB colorspace.
-		hsla(f32,f32,f32,f32) -> LuaColor,
+		hsla(Raw(f32),Raw(f32),Raw(f32),Raw(f32)) -> Wrapped(Color),
 
 		///New `Color` from sRGB colorspace.
-		rgb_u8(u8,u8,u8) -> LuaColor,
+		rgb_u8(Raw(u8),Raw(u8),Raw(u8)) -> Wrapped(Color),
 
 		///New `Color` from sRGB colorspace.
-		rgba_u8(u8,u8,u8,u8) -> LuaColor,
+		rgba_u8(Raw(u8),Raw(u8),Raw(u8),Raw(u8)) -> Wrapped(Color),
 
 		///Get red in sRGB colorspace.
-		r(&self) -> f32,
+		r(&self:) -> Raw(f32),
 
 		///Get green in sRGB colorspace.
-		g(&self) -> f32,
+		g(&self:) -> Raw(f32),
 
 		///Get blue in sRGB colorspace.
-		b(&self) -> f32,
+		b(&self:) -> Raw(f32),
+
+		// ///Set red in sRGB colorspace.
+		// set_r(&mut self:Raw(f32)) -> &mut self,
+
+		// ///Set green in sRGB colorspace.
+		// set_g(&mut self:Raw(f32)) -> &mut self,
+
+		// ///Set blue in sRGB colorspace.
+		// set_b(&mut self:Raw(f32)) -> &mut self,
 
 		///Get alpha.
-		a(&self) -> f32,
+		a(&self:) -> Raw(f32),
+
+		// /Set alpha.
+		// set_a(&mut self:Raw(f32)) -> &mut self,
 
 		///Converts a `Color` to variant `Color::Rgba`
-		as_rgba(&LuaColor) -> LuaColor,
+		as_rgba(Wrapped(&Color):) -> Wrapped(Color),
 
 		///Converts a `Color` to variant `Color::RgbaLinear`
-		as_rgba_linear(&LuaColor) -> LuaColor,
+		as_rgba_linear(Wrapped(&Color):) -> Wrapped(Color),
 
 		///Converts a `Color` to variant `Color::Hsla`
-		as_hsla(&LuaColor) -> LuaColor,
+		as_hsla(Wrapped(&Color):) -> Wrapped(Color),
 
 		///Converts `Color` to a `u32` from sRGB colorspace.
 		///
 		///Maps the RGBA channels in RGBA order to a little-endian byte array (GPUs are little-endian).
 		///`A` will be the most significant byte and `R` the least significant.
-		as_rgba_u32(LuaColor) -> u32,
+		as_rgba_u32(Wrapped(Color):) -> Raw(u32),
 
 		///Converts Color to a u32 from linear RGB colorspace.
 		///
 		///Maps the RGBA channels in RGBA order to a little-endian byte array (GPUs are little-endian).
 		///`A` will be the most significant byte and `R` the least significant.
-		as_linear_rgba_u32(LuaColor) -> u32,
+		as_linear_rgba_u32(Wrapped(Color):) -> Raw(u32),
 
 	)
 	+ BinOps
 	(
-		self Add LuaColor -> LuaColor,
-		self Add LuaVec4 -> LuaColor,
-		self Mul f32 -> LuaColor,
-		self Mul LuaVec4 -> LuaColor,
-		self Mul LuaVec3 -> LuaColor,
 	)
 	+ UnaryOps
 	(
@@ -2325,16 +2524,16 @@ impl_lua_newtype!{
 	FromLuaProxy +
 	Fields
 	(
-		center: LuaVec3A,
-		half_extents: LuaVec3A,
+		center: Wrapped(Vec3A),
+		half_extents: Wrapped(Vec3A),
 	)
-	+ AutoMethods
+	+ Methods
 	(
-		from_min_max(LuaVec3,LuaVec3) -> LuaAabb,
+		from_min_max(Wrapped(Vec3),Wrapped(Vec3)) -> self,
 
-		min(&self) -> LuaVec3A,
+		min(&self:) -> Wrapped(Vec3A),
 
-		max(&self) -> LuaVec3A,
+		max(&self:) -> Wrapped(Vec3A),
 
 	)
 	+ BinOps
@@ -2352,7 +2551,7 @@ impl_lua_newtype!{
 	Fields
 	(
 	)
-	+ AutoMethods
+	+ Methods
 	(
 	)
 	+ BinOps
@@ -2374,11 +2573,11 @@ impl_lua_newtype!{
 	Fields
 	(
 	)
-	+ AutoMethods
+	+ Methods
 	(
-		from_view_projection(&LuaMat4,&LuaVec3,&LuaVec3,f32) -> LuaFrustum,
+		from_view_projection(Wrapped(&Mat4),Wrapped(&Vec3),Wrapped(&Vec3),Raw(f32)) -> self,
 
-		intersects_obb(&self,&LuaAabb,&LuaMat4,bool) -> bool,
+		intersects_obb(&self:Wrapped(&Aabb),Wrapped(&Mat4),Raw(bool)) -> Raw(bool),
 
 	)
 	+ BinOps
@@ -2413,9 +2612,9 @@ impl_lua_newtype!{
 		/// Note that WGPU currently only supports 1 or 4 samples.
 		/// Ultimately we plan on supporting whatever is natively supported on a given device.
 		/// Check out this issue for more info: <https://github.com/gfx-rs/wgpu/issues/1832>
-		samples: u32,
+		samples: Raw(u32),
 	)
-	+ AutoMethods
+	+ Methods
 	(
 	)
 	+ BinOps
@@ -2434,21 +2633,21 @@ impl_lua_newtype!{
 	Fields
 	(
 		/// If set, this camera will render to the given [`Viewport`] rectangle within the configured [`RenderTarget`].
-		viewport: ReflectedValue,
+		viewport: Raw(ReflectedValue),
 		/// Cameras with a lower priority will be rendered before cameras with a higher priority.
-		priority: isize,
+		priority: Raw(isize),
 		/// If this is set to true, this camera will be rendered to its specified [`RenderTarget`]. If false, this
 		/// camera will not be rendered.
-		is_active: bool,
+		is_active: Raw(bool),
 		/// The method used to calculate this camera's depth. This will be used for projections and visibility.
-		depth_calculation: LuaDepthCalculation,
+		depth_calculation: Wrapped(DepthCalculation),
 		/// The "target" that this camera will render to.
-		target: LuaRenderTarget,
+		target: Wrapped(RenderTarget),
 	)
-	+ AutoMethods
+	+ Methods
 	(
 		///The projection matrix computed using this camera's [`CameraProjection`].
-		projection_matrix(&self) -> LuaMat4,
+		projection_matrix(&self:) -> Wrapped(Mat4),
 
 	)
 	+ BinOps
@@ -2469,7 +2668,7 @@ impl_lua_newtype!{
 	Fields
 	(
 	)
-	+ AutoMethods
+	+ Methods
 	(
 	)
 	+ BinOps
@@ -2494,14 +2693,14 @@ impl_lua_newtype!{
 	(
 		/// The physical position to render this viewport to within the [`RenderTarget`] of this [`Camera`].
 		/// (0,0) corresponds to the top-left corner
-		physical_position: LuaUVec2,
+		physical_position: Wrapped(UVec2),
 		/// The physical size of the viewport rectangle to render to within the [`RenderTarget`] of this [`Camera`].
 		/// The origin of the rectangle is in the top-left corner.
-		physical_size: LuaUVec2,
+		physical_size: Wrapped(UVec2),
 		/// The minimum and maximum depth to render (on a scale from 0.0 to 1.0).
-		depth: ReflectedValue,
+		depth: Raw(ReflectedValue),
 	)
-	+ AutoMethods
+	+ Methods
 	(
 	)
 	+ BinOps
@@ -2521,13 +2720,15 @@ impl_lua_newtype!{
 	Fields
 	(
 	)
-	+ AutoMethods
+	+ Methods
 	(
-		get_projection_matrix(&self) -> LuaMat4,
+		get_projection_matrix(&self:) -> Wrapped(Mat4),
 
-		depth_calculation(&self) -> LuaDepthCalculation,
+		update(&mut self:Raw(f32),Raw(f32)),
 
-		far(&self) -> f32,
+		depth_calculation(&self:) -> Wrapped(DepthCalculation),
+
+		far(&self:) -> Raw(f32),
 
 	)
 	+ BinOps
@@ -2545,24 +2746,26 @@ impl_lua_newtype!{
 	FromLuaProxy +
 	Fields
 	(
-		left: f32,
-		right: f32,
-		bottom: f32,
-		top: f32,
-		near: f32,
-		far: f32,
-		window_origin: LuaWindowOrigin,
-		scaling_mode: LuaScalingMode,
-		scale: f32,
-		depth_calculation: LuaDepthCalculation,
+		left: Raw(f32),
+		right: Raw(f32),
+		bottom: Raw(f32),
+		top: Raw(f32),
+		near: Raw(f32),
+		far: Raw(f32),
+		window_origin: Wrapped(WindowOrigin),
+		scaling_mode: Wrapped(ScalingMode),
+		scale: Raw(f32),
+		depth_calculation: Wrapped(DepthCalculation),
 	)
-	+ AutoMethods
+	+ Methods
 	(
-		get_projection_matrix(&self) -> LuaMat4,
+		get_projection_matrix(&self:) -> Wrapped(Mat4),
 
-		depth_calculation(&self) -> LuaDepthCalculation,
+		update(&mut self:Raw(f32),Raw(f32)),
 
-		far(&self) -> f32,
+		depth_calculation(&self:) -> Wrapped(DepthCalculation),
+
+		far(&self:) -> Raw(f32),
 
 	)
 	+ BinOps
@@ -2580,18 +2783,20 @@ impl_lua_newtype!{
 	FromLuaProxy +
 	Fields
 	(
-		fov: f32,
-		aspect_ratio: f32,
-		near: f32,
-		far: f32,
+		fov: Raw(f32),
+		aspect_ratio: Raw(f32),
+		near: Raw(f32),
+		far: Raw(f32),
 	)
-	+ AutoMethods
+	+ Methods
 	(
-		get_projection_matrix(&self) -> LuaMat4,
+		get_projection_matrix(&self:) -> Wrapped(Mat4),
 
-		depth_calculation(&self) -> LuaDepthCalculation,
+		update(&mut self:Raw(f32),Raw(f32)),
 
-		far(&self) -> f32,
+		depth_calculation(&self:) -> Wrapped(DepthCalculation),
+
+		far(&self:) -> Raw(f32),
 
 	)
 	+ BinOps
@@ -2610,7 +2815,7 @@ impl_lua_newtype!{
 	Fields
 	(
 	)
-	+ AutoMethods
+	+ Methods
 	(
 	)
 	+ BinOps
@@ -2629,7 +2834,7 @@ impl_lua_newtype!{
 	Fields
 	(
 	)
-	+ AutoMethods
+	+ Methods
 	(
 	)
 	+ BinOps
@@ -2649,13 +2854,13 @@ impl_lua_newtype!{
 	Fields
 	(
 	)
-	+ AutoMethods
+	+ Methods
 	(
 		///Gets the id of the source path.
-		source_path_id(&self) -> LuaSourcePathId,
+		source_path_id(&self:) -> Wrapped(SourcePathId),
 
 		///Gets the id of the sub-asset label.
-		label_id(&self) -> LuaLabelId,
+		label_id(&self:) -> Wrapped(LabelId),
 
 	)
 	+ BinOps
@@ -2675,7 +2880,7 @@ impl_lua_newtype!{
 	Fields
 	(
 	)
-	+ AutoMethods
+	+ Methods
 	(
 	)
 	+ BinOps
@@ -2695,7 +2900,7 @@ impl_lua_newtype!{
 	Fields
 	(
 	)
-	+ AutoMethods
+	+ Methods
 	(
 	)
 	+ BinOps
@@ -2715,7 +2920,7 @@ impl_lua_newtype!{
 	Fields
 	(
 	)
-	+ AutoMethods
+	+ Methods
 	(
 	)
 	+ BinOps
@@ -2734,39 +2939,39 @@ impl_lua_newtype!{
 	FromLuaProxy +
 	Fields
 	(
-		x: f32,
-		y: f32,
+		x: Raw(f32),
+		y: Raw(f32),
 	)
-	+ AutoMethods
+	+ Methods
 	(
 		///Creates a new vector.
-		new(f32,f32) -> LuaVec2,
+		new(Raw(f32),Raw(f32)) -> self,
 
 		///Creates a vector with all elements set to `v`.
-		splat(f32) -> LuaVec2,
+		splat(Raw(f32)) -> self,
 
 		///Creates a vector from the elements in `if_true` and `if_false`, selecting which to use
 		///for each element of `self`.
 		///
 		///A true element in the mask uses the corresponding element from `if_true`, and false
 		///uses the element from `if_false`.
-		select(LuaBVec2,LuaVec2,LuaVec2) -> LuaVec2,
+		select(Wrapped(BVec2),self,self) -> self,
 
 		///Creates a 3D vector from `self` and the given `z` value.
-		extend(self,f32) -> LuaVec3,
+		extend(self:Raw(f32)) -> Wrapped(Vec3),
 
 		///Computes the dot product of `self` and `rhs`.
-		dot(self,LuaVec2) -> f32,
+		dot(self:self) -> Raw(f32),
 
 		///Returns a vector containing the minimum values for each element of `self` and `rhs`.
 		///
 		///In other words this computes `[self.x.min(rhs.x), self.y.min(rhs.y), ..]`.
-		min(self,LuaVec2) -> LuaVec2,
+		min(self:self) -> self,
 
 		///Returns a vector containing the maximum values for each element of `self` and `rhs`.
 		///
 		///In other words this computes `[self.x.max(rhs.x), self.y.max(rhs.y), ..]`.
-		max(self,LuaVec2) -> LuaVec2,
+		max(self:self) -> self,
 
 		///Component-wise clamping of values, similar to [`f32::clamp`].
 		///
@@ -2775,100 +2980,100 @@ impl_lua_newtype!{
 		///# Panics
 		///
 		///Will panic if `min` is greater than `max` when `glam_assert` is enabled.
-		clamp(self,LuaVec2,LuaVec2) -> LuaVec2,
+		clamp(self:self,self) -> self,
 
 		///Returns the horizontal minimum of `self`.
 		///
 		///In other words this computes `min(x, y, ..)`.
-		min_element(self) -> f32,
+		min_element(self:) -> Raw(f32),
 
 		///Returns the horizontal maximum of `self`.
 		///
 		///In other words this computes `max(x, y, ..)`.
-		max_element(self) -> f32,
+		max_element(self:) -> Raw(f32),
 
 		///Returns a vector mask containing the result of a `==` comparison for each element of
 		///`self` and `rhs`.
 		///
 		///In other words, this computes `[self.x == rhs.x, self.y == rhs.y, ..]` for all
 		///elements.
-		cmpeq(self,LuaVec2) -> LuaBVec2,
+		cmpeq(self:self) -> Wrapped(BVec2),
 
 		///Returns a vector mask containing the result of a `!=` comparison for each element of
 		///`self` and `rhs`.
 		///
 		///In other words this computes `[self.x != rhs.x, self.y != rhs.y, ..]` for all
 		///elements.
-		cmpne(self,LuaVec2) -> LuaBVec2,
+		cmpne(self:self) -> Wrapped(BVec2),
 
 		///Returns a vector mask containing the result of a `>=` comparison for each element of
 		///`self` and `rhs`.
 		///
 		///In other words this computes `[self.x >= rhs.x, self.y >= rhs.y, ..]` for all
 		///elements.
-		cmpge(self,LuaVec2) -> LuaBVec2,
+		cmpge(self:self) -> Wrapped(BVec2),
 
 		///Returns a vector mask containing the result of a `>` comparison for each element of
 		///`self` and `rhs`.
 		///
 		///In other words this computes `[self.x > rhs.x, self.y > rhs.y, ..]` for all
 		///elements.
-		cmpgt(self,LuaVec2) -> LuaBVec2,
+		cmpgt(self:self) -> Wrapped(BVec2),
 
 		///Returns a vector mask containing the result of a `<=` comparison for each element of
 		///`self` and `rhs`.
 		///
 		///In other words this computes `[self.x <= rhs.x, self.y <= rhs.y, ..]` for all
 		///elements.
-		cmple(self,LuaVec2) -> LuaBVec2,
+		cmple(self:self) -> Wrapped(BVec2),
 
 		///Returns a vector mask containing the result of a `<` comparison for each element of
 		///`self` and `rhs`.
 		///
 		///In other words this computes `[self.x < rhs.x, self.y < rhs.y, ..]` for all
 		///elements.
-		cmplt(self,LuaVec2) -> LuaBVec2,
+		cmplt(self:self) -> Wrapped(BVec2),
 
 		///Returns a vector containing the absolute value of each element of `self`.
-		abs(self) -> LuaVec2,
+		abs(self:) -> self,
 
 		///Returns a vector with elements representing the sign of `self`.
 		///
 		///- `1.0` if the number is positive, `+0.0` or `INFINITY`
 		///- `-1.0` if the number is negative, `-0.0` or `NEG_INFINITY`
 		///- `NAN` if the number is `NAN`
-		signum(self) -> LuaVec2,
+		signum(self:) -> self,
 
 		///Returns `true` if, and only if, all elements are finite.  If any element is either
 		///`NaN`, positive or negative infinity, this will return `false`.
-		is_finite(self) -> bool,
+		is_finite(self:) -> Raw(bool),
 
 		///Returns `true` if any elements are `NaN`.
-		is_nan(self) -> bool,
+		is_nan(self:) -> Raw(bool),
 
 		///Performs `is_nan` on each element of self, returning a vector mask of the results.
 		///
 		///In other words, this computes `[x.is_nan(), y.is_nan(), z.is_nan(), w.is_nan()]`.
-		is_nan_mask(self) -> LuaBVec2,
+		is_nan_mask(self:) -> Wrapped(BVec2),
 
 		///Computes the length of `self`.
-		length(self) -> f32,
+		length(self:) -> Raw(f32),
 
 		///Computes the squared length of `self`.
 		///
 		///This is faster than `length()` as it avoids a square root operation.
-		length_squared(self) -> f32,
+		length_squared(self:) -> Raw(f32),
 
 		///Computes `1.0 / length()`.
 		///
 		///For valid results, `self` must _not_ be of length zero.
-		length_recip(self) -> f32,
+		length_recip(self:) -> Raw(f32),
 
 		///Computes the Euclidean distance between two points in space.
-		distance(self,LuaVec2) -> f32,
+		distance(self:self) -> Raw(f32),
 
 		///Compute the squared euclidean distance between two points in space.
-		distance_squared(self,LuaVec2) -> f32,
+		distance_squared(self:self) -> Raw(f32),
 
 		///Returns `self` normalized to length 1.0.
 		///
@@ -2879,7 +3084,7 @@ impl_lua_newtype!{
 		///Panics
 		///
 		///Will panic if `self` is zero length when `glam_assert` is enabled.
-		normalize(self) -> LuaVec2,
+		normalize(self:) -> self,
 
 		///Returns `self` normalized to length 1.0 if possible, else returns zero.
 		///
@@ -2887,12 +3092,12 @@ impl_lua_newtype!{
 		///the result of this operation will be zero.
 		///
 		///See also [`Self::try_normalize`].
-		normalize_or_zero(self) -> LuaVec2,
+		normalize_or_zero(self:) -> self,
 
 		///Returns whether `self` is length `1.0` or not.
 		///
 		///Uses a precision threshold of `1e-6`.
-		is_normalized(self) -> bool,
+		is_normalized(self:) -> Raw(bool),
 
 		///Returns the vector projection of `self` onto `rhs`.
 		///
@@ -2901,7 +3106,7 @@ impl_lua_newtype!{
 		///# Panics
 		///
 		///Will panic if `rhs` is zero length when `glam_assert` is enabled.
-		project_onto(self,LuaVec2) -> LuaVec2,
+		project_onto(self:self) -> self,
 
 		///Returns the vector rejection of `self` from `rhs`.
 		///
@@ -2913,7 +3118,7 @@ impl_lua_newtype!{
 		///# Panics
 		///
 		///Will panic if `rhs` has a length of zero when `glam_assert` is enabled.
-		reject_from(self,LuaVec2) -> LuaVec2,
+		reject_from(self:self) -> self,
 
 		///Returns the vector projection of `self` onto `rhs`.
 		///
@@ -2922,7 +3127,7 @@ impl_lua_newtype!{
 		///# Panics
 		///
 		///Will panic if `rhs` is not normalized when `glam_assert` is enabled.
-		project_onto_normalized(self,LuaVec2) -> LuaVec2,
+		project_onto_normalized(self:self) -> self,
 
 		///Returns the vector rejection of `self` from `rhs`.
 		///
@@ -2934,42 +3139,42 @@ impl_lua_newtype!{
 		///# Panics
 		///
 		///Will panic if `rhs` is not normalized when `glam_assert` is enabled.
-		reject_from_normalized(self,LuaVec2) -> LuaVec2,
+		reject_from_normalized(self:self) -> self,
 
 		///Returns a vector containing the nearest integer to a number for each element of `self`.
 		///Round half-way cases away from 0.0.
-		round(self) -> LuaVec2,
+		round(self:) -> self,
 
 		///Returns a vector containing the largest integer less than or equal to a number for each
 		///element of `self`.
-		floor(self) -> LuaVec2,
+		floor(self:) -> self,
 
 		///Returns a vector containing the smallest integer greater than or equal to a number for
 		///each element of `self`.
-		ceil(self) -> LuaVec2,
+		ceil(self:) -> self,
 
 		///Returns a vector containing the fractional part of the vector, e.g. `self -
 		///self.floor()`.
 		///
 		///Note that this is fast but not precise for large numbers.
-		fract(self) -> LuaVec2,
+		fract(self:) -> self,
 
 		///Returns a vector containing `e^self` (the exponential function) for each element of
 		///`self`.
-		exp(self) -> LuaVec2,
+		exp(self:) -> self,
 
 		///Returns a vector containing each element of `self` raised to the power of `n`.
-		powf(self,f32) -> LuaVec2,
+		powf(self:Raw(f32)) -> self,
 
 		///Returns a vector containing the reciprocal `1.0/n` of each element of `self`.
-		recip(self) -> LuaVec2,
+		recip(self:) -> self,
 
 		///Performs a linear interpolation between `self` and `rhs` based on the value `s`.
 		///
 		///When `s` is `0.0`, the result will be equal to `self`.  When `s` is `1.0`, the result
 		///will be equal to `rhs`. When `s` is outside of range `[0, 1]`, the result is linearly
 		///extrapolated.
-		lerp(self,LuaVec2,f32) -> LuaVec2,
+		lerp(self:self,Raw(f32)) -> self,
 
 		///Returns true if the absolute difference of all elements between `self` and `rhs` is
 		///less than or equal to `max_abs_diff`.
@@ -2980,20 +3185,20 @@ impl_lua_newtype!{
 		///
 		///For more see
 		///[comparing floating point numbers](https://randomascii.wordpress.com/2012/02/25/comparing-floating-point-numbers-2012-edition/).
-		abs_diff_eq(self,LuaVec2,f32) -> bool,
+		abs_diff_eq(self:self,Raw(f32)) -> Raw(bool),
 
 		///Returns a vector with a length no less than `min` and no more than `max`
 		///
 		///# Panics
 		///
 		///Will panic if `min` is greater than `max` when `glam_assert` is enabled.
-		clamp_length(self,f32,f32) -> LuaVec2,
+		clamp_length(self:Raw(f32),Raw(f32)) -> self,
 
 		///Returns a vector with a length no more than `max`
-		clamp_length_max(self,f32) -> LuaVec2,
+		clamp_length_max(self:Raw(f32)) -> self,
 
 		///Returns a vector with a length no less than `min`
-		clamp_length_min(self,f32) -> LuaVec2,
+		clamp_length_min(self:Raw(f32)) -> self,
 
 		///Fused multiply-add. Computes `(self * a) + b` element-wise with only one rounding
 		///error, yielding a more accurate result than an unfused multiply-add.
@@ -3002,48 +3207,42 @@ impl_lua_newtype!{
 		///architecture has a dedicated fma CPU instruction. However, this is not always true,
 		///and will be heavily dependant on designing algorithms with specific target hardware in
 		///mind.
-		mul_add(self,LuaVec2,LuaVec2) -> LuaVec2,
+		mul_add(self:self,self) -> self,
 
 		///Creates a 2D vector containing `[angle.cos(), angle.sin()]`. This can be used in
 		///conjunction with the `rotate` method, e.g. `Vec2::from_angle(PI).rotate(Vec2::Y)` will
 		///create the vector [-1, 0] and rotate `Vec2::Y` around it returning `-Vec2::Y`.
-		from_angle(f32) -> LuaVec2,
+		from_angle(Raw(f32)) -> self,
 
 		///Returns the angle (in radians) between `self` and `rhs`.
 		///
 		///The input vectors do not need to be unit length however they must be non-zero.
-		angle_between(self,LuaVec2) -> f32,
+		angle_between(self:self) -> Raw(f32),
 
 		///Returns a vector that is equal to `self` rotated by 90 degrees.
-		perp(self) -> LuaVec2,
+		perp(self:) -> self,
 
 		///The perpendicular dot product of `self` and `rhs`.
 		///Also known as the wedge product, 2D cross product, and determinant.
-		perp_dot(self,LuaVec2) -> f32,
+		perp_dot(self:self) -> Raw(f32),
 
 		///Returns `rhs` rotated by the angle of `self`. If `self` is normalized,
 		///then this just rotation. This is what you usually want. Otherwise,
 		///it will be like a rotation with a multiplication by `self`'s length.
-		rotate(self,LuaVec2) -> LuaVec2,
+		rotate(self:self) -> self,
+
+		///Casts all elements of `self` to `f64`.
+		as_dvec2(&self:) -> Wrapped(DVec2),
+
+		///Casts all elements of `self` to `i32`.
+		as_ivec2(&self:) -> Wrapped(IVec2),
+
+		///Casts all elements of `self` to `u32`.
+		as_uvec2(&self:) -> Wrapped(UVec2),
 
 	)
 	+ BinOps
 	(
-		self Add LuaVec2 -> LuaVec2,
-		self Add f32 -> LuaVec2,
-		f32 Add self -> LuaVec2,
-		self Sub LuaVec2 -> LuaVec2,
-		self Sub f32 -> LuaVec2,
-		f32 Sub self -> LuaVec2,
-		self Div LuaVec2 -> LuaVec2,
-		self Div f32 -> LuaVec2,
-		f32 Div self -> LuaVec2,
-		self Mul LuaVec2 -> LuaVec2,
-		self Mul f32 -> LuaVec2,
-		f32 Mul self -> LuaVec2,
-		self Rem LuaVec2 -> LuaVec2,
-		self Rem f32 -> LuaVec2,
-		f32 Rem self -> LuaVec2,
 	)
 	+ UnaryOps
 	(
@@ -3061,48 +3260,48 @@ impl_lua_newtype!{
 	FromLuaProxy +
 	Fields
 	(
-		x: f32,
-		y: f32,
-		z: f32,
+		x: Raw(f32),
+		y: Raw(f32),
+		z: Raw(f32),
 	)
-	+ AutoMethods
+	+ Methods
 	(
 		///Creates a new vector.
-		new(f32,f32,f32) -> LuaVec3,
+		new(Raw(f32),Raw(f32),Raw(f32)) -> self,
 
 		///Creates a vector with all elements set to `v`.
-		splat(f32) -> LuaVec3,
+		splat(Raw(f32)) -> self,
 
 		///Creates a vector from the elements in `if_true` and `if_false`, selecting which to use
 		///for each element of `self`.
 		///
 		///A true element in the mask uses the corresponding element from `if_true`, and false
 		///uses the element from `if_false`.
-		select(LuaBVec3,LuaVec3,LuaVec3) -> LuaVec3,
+		select(Wrapped(BVec3),self,self) -> self,
 
 		///Creates a 4D vector from `self` and the given `w` value.
-		extend(self,f32) -> LuaVec4,
+		extend(self:Raw(f32)) -> Wrapped(Vec4),
 
 		///Creates a 2D vector from the `x` and `y` elements of `self`, discarding `z`.
 		///
 		///Truncation may also be performed by using `self.xy()` or `Vec2::from()`.
-		truncate(self) -> LuaVec2,
+		truncate(self:) -> Wrapped(Vec2),
 
 		///Computes the dot product of `self` and `rhs`.
-		dot(self,LuaVec3) -> f32,
+		dot(self:self) -> Raw(f32),
 
 		///Computes the cross product of `self` and `rhs`.
-		cross(self,LuaVec3) -> LuaVec3,
+		cross(self:self) -> self,
 
 		///Returns a vector containing the minimum values for each element of `self` and `rhs`.
 		///
 		///In other words this computes `[self.x.min(rhs.x), self.y.min(rhs.y), ..]`.
-		min(self,LuaVec3) -> LuaVec3,
+		min(self:self) -> self,
 
 		///Returns a vector containing the maximum values for each element of `self` and `rhs`.
 		///
 		///In other words this computes `[self.x.max(rhs.x), self.y.max(rhs.y), ..]`.
-		max(self,LuaVec3) -> LuaVec3,
+		max(self:self) -> self,
 
 		///Component-wise clamping of values, similar to [`f32::clamp`].
 		///
@@ -3111,100 +3310,100 @@ impl_lua_newtype!{
 		///# Panics
 		///
 		///Will panic if `min` is greater than `max` when `glam_assert` is enabled.
-		clamp(self,LuaVec3,LuaVec3) -> LuaVec3,
+		clamp(self:self,self) -> self,
 
 		///Returns the horizontal minimum of `self`.
 		///
 		///In other words this computes `min(x, y, ..)`.
-		min_element(self) -> f32,
+		min_element(self:) -> Raw(f32),
 
 		///Returns the horizontal maximum of `self`.
 		///
 		///In other words this computes `max(x, y, ..)`.
-		max_element(self) -> f32,
+		max_element(self:) -> Raw(f32),
 
 		///Returns a vector mask containing the result of a `==` comparison for each element of
 		///`self` and `rhs`.
 		///
 		///In other words, this computes `[self.x == rhs.x, self.y == rhs.y, ..]` for all
 		///elements.
-		cmpeq(self,LuaVec3) -> LuaBVec3,
+		cmpeq(self:self) -> Wrapped(BVec3),
 
 		///Returns a vector mask containing the result of a `!=` comparison for each element of
 		///`self` and `rhs`.
 		///
 		///In other words this computes `[self.x != rhs.x, self.y != rhs.y, ..]` for all
 		///elements.
-		cmpne(self,LuaVec3) -> LuaBVec3,
+		cmpne(self:self) -> Wrapped(BVec3),
 
 		///Returns a vector mask containing the result of a `>=` comparison for each element of
 		///`self` and `rhs`.
 		///
 		///In other words this computes `[self.x >= rhs.x, self.y >= rhs.y, ..]` for all
 		///elements.
-		cmpge(self,LuaVec3) -> LuaBVec3,
+		cmpge(self:self) -> Wrapped(BVec3),
 
 		///Returns a vector mask containing the result of a `>` comparison for each element of
 		///`self` and `rhs`.
 		///
 		///In other words this computes `[self.x > rhs.x, self.y > rhs.y, ..]` for all
 		///elements.
-		cmpgt(self,LuaVec3) -> LuaBVec3,
+		cmpgt(self:self) -> Wrapped(BVec3),
 
 		///Returns a vector mask containing the result of a `<=` comparison for each element of
 		///`self` and `rhs`.
 		///
 		///In other words this computes `[self.x <= rhs.x, self.y <= rhs.y, ..]` for all
 		///elements.
-		cmple(self,LuaVec3) -> LuaBVec3,
+		cmple(self:self) -> Wrapped(BVec3),
 
 		///Returns a vector mask containing the result of a `<` comparison for each element of
 		///`self` and `rhs`.
 		///
 		///In other words this computes `[self.x < rhs.x, self.y < rhs.y, ..]` for all
 		///elements.
-		cmplt(self,LuaVec3) -> LuaBVec3,
+		cmplt(self:self) -> Wrapped(BVec3),
 
 		///Returns a vector containing the absolute value of each element of `self`.
-		abs(self) -> LuaVec3,
+		abs(self:) -> self,
 
 		///Returns a vector with elements representing the sign of `self`.
 		///
 		///- `1.0` if the number is positive, `+0.0` or `INFINITY`
 		///- `-1.0` if the number is negative, `-0.0` or `NEG_INFINITY`
 		///- `NAN` if the number is `NAN`
-		signum(self) -> LuaVec3,
+		signum(self:) -> self,
 
 		///Returns `true` if, and only if, all elements are finite.  If any element is either
 		///`NaN`, positive or negative infinity, this will return `false`.
-		is_finite(self) -> bool,
+		is_finite(self:) -> Raw(bool),
 
 		///Returns `true` if any elements are `NaN`.
-		is_nan(self) -> bool,
+		is_nan(self:) -> Raw(bool),
 
 		///Performs `is_nan` on each element of self, returning a vector mask of the results.
 		///
 		///In other words, this computes `[x.is_nan(), y.is_nan(), z.is_nan(), w.is_nan()]`.
-		is_nan_mask(self) -> LuaBVec3,
+		is_nan_mask(self:) -> Wrapped(BVec3),
 
 		///Computes the length of `self`.
-		length(self) -> f32,
+		length(self:) -> Raw(f32),
 
 		///Computes the squared length of `self`.
 		///
 		///This is faster than `length()` as it avoids a square root operation.
-		length_squared(self) -> f32,
+		length_squared(self:) -> Raw(f32),
 
 		///Computes `1.0 / length()`.
 		///
 		///For valid results, `self` must _not_ be of length zero.
-		length_recip(self) -> f32,
+		length_recip(self:) -> Raw(f32),
 
 		///Computes the Euclidean distance between two points in space.
-		distance(self,LuaVec3) -> f32,
+		distance(self:self) -> Raw(f32),
 
 		///Compute the squared euclidean distance between two points in space.
-		distance_squared(self,LuaVec3) -> f32,
+		distance_squared(self:self) -> Raw(f32),
 
 		///Returns `self` normalized to length 1.0.
 		///
@@ -3215,7 +3414,7 @@ impl_lua_newtype!{
 		///Panics
 		///
 		///Will panic if `self` is zero length when `glam_assert` is enabled.
-		normalize(self) -> LuaVec3,
+		normalize(self:) -> self,
 
 		///Returns `self` normalized to length 1.0 if possible, else returns zero.
 		///
@@ -3223,12 +3422,12 @@ impl_lua_newtype!{
 		///the result of this operation will be zero.
 		///
 		///See also [`Self::try_normalize`].
-		normalize_or_zero(self) -> LuaVec3,
+		normalize_or_zero(self:) -> self,
 
 		///Returns whether `self` is length `1.0` or not.
 		///
 		///Uses a precision threshold of `1e-6`.
-		is_normalized(self) -> bool,
+		is_normalized(self:) -> Raw(bool),
 
 		///Returns the vector projection of `self` onto `rhs`.
 		///
@@ -3237,7 +3436,7 @@ impl_lua_newtype!{
 		///# Panics
 		///
 		///Will panic if `rhs` is zero length when `glam_assert` is enabled.
-		project_onto(self,LuaVec3) -> LuaVec3,
+		project_onto(self:self) -> self,
 
 		///Returns the vector rejection of `self` from `rhs`.
 		///
@@ -3249,7 +3448,7 @@ impl_lua_newtype!{
 		///# Panics
 		///
 		///Will panic if `rhs` has a length of zero when `glam_assert` is enabled.
-		reject_from(self,LuaVec3) -> LuaVec3,
+		reject_from(self:self) -> self,
 
 		///Returns the vector projection of `self` onto `rhs`.
 		///
@@ -3258,7 +3457,7 @@ impl_lua_newtype!{
 		///# Panics
 		///
 		///Will panic if `rhs` is not normalized when `glam_assert` is enabled.
-		project_onto_normalized(self,LuaVec3) -> LuaVec3,
+		project_onto_normalized(self:self) -> self,
 
 		///Returns the vector rejection of `self` from `rhs`.
 		///
@@ -3270,42 +3469,42 @@ impl_lua_newtype!{
 		///# Panics
 		///
 		///Will panic if `rhs` is not normalized when `glam_assert` is enabled.
-		reject_from_normalized(self,LuaVec3) -> LuaVec3,
+		reject_from_normalized(self:self) -> self,
 
 		///Returns a vector containing the nearest integer to a number for each element of `self`.
 		///Round half-way cases away from 0.0.
-		round(self) -> LuaVec3,
+		round(self:) -> self,
 
 		///Returns a vector containing the largest integer less than or equal to a number for each
 		///element of `self`.
-		floor(self) -> LuaVec3,
+		floor(self:) -> self,
 
 		///Returns a vector containing the smallest integer greater than or equal to a number for
 		///each element of `self`.
-		ceil(self) -> LuaVec3,
+		ceil(self:) -> self,
 
 		///Returns a vector containing the fractional part of the vector, e.g. `self -
 		///self.floor()`.
 		///
 		///Note that this is fast but not precise for large numbers.
-		fract(self) -> LuaVec3,
+		fract(self:) -> self,
 
 		///Returns a vector containing `e^self` (the exponential function) for each element of
 		///`self`.
-		exp(self) -> LuaVec3,
+		exp(self:) -> self,
 
 		///Returns a vector containing each element of `self` raised to the power of `n`.
-		powf(self,f32) -> LuaVec3,
+		powf(self:Raw(f32)) -> self,
 
 		///Returns a vector containing the reciprocal `1.0/n` of each element of `self`.
-		recip(self) -> LuaVec3,
+		recip(self:) -> self,
 
 		///Performs a linear interpolation between `self` and `rhs` based on the value `s`.
 		///
 		///When `s` is `0.0`, the result will be equal to `self`.  When `s` is `1.0`, the result
 		///will be equal to `rhs`. When `s` is outside of range `[0, 1]`, the result is linearly
 		///extrapolated.
-		lerp(self,LuaVec3,f32) -> LuaVec3,
+		lerp(self:self,Raw(f32)) -> self,
 
 		///Returns true if the absolute difference of all elements between `self` and `rhs` is
 		///less than or equal to `max_abs_diff`.
@@ -3316,20 +3515,20 @@ impl_lua_newtype!{
 		///
 		///For more see
 		///[comparing floating point numbers](https://randomascii.wordpress.com/2012/02/25/comparing-floating-point-numbers-2012-edition/).
-		abs_diff_eq(self,LuaVec3,f32) -> bool,
+		abs_diff_eq(self:self,Raw(f32)) -> Raw(bool),
 
 		///Returns a vector with a length no less than `min` and no more than `max`
 		///
 		///# Panics
 		///
 		///Will panic if `min` is greater than `max` when `glam_assert` is enabled.
-		clamp_length(self,f32,f32) -> LuaVec3,
+		clamp_length(self:Raw(f32),Raw(f32)) -> self,
 
 		///Returns a vector with a length no more than `max`
-		clamp_length_max(self,f32) -> LuaVec3,
+		clamp_length_max(self:Raw(f32)) -> self,
 
 		///Returns a vector with a length no less than `min`
-		clamp_length_min(self,f32) -> LuaVec3,
+		clamp_length_min(self:Raw(f32)) -> self,
 
 		///Fused multiply-add. Computes `(self * a) + b` element-wise with only one rounding
 		///error, yielding a more accurate result than an unfused multiply-add.
@@ -3338,12 +3537,12 @@ impl_lua_newtype!{
 		///architecture has a dedicated fma CPU instruction. However, this is not always true,
 		///and will be heavily dependant on designing algorithms with specific target hardware in
 		///mind.
-		mul_add(self,LuaVec3,LuaVec3) -> LuaVec3,
+		mul_add(self:self,self) -> self,
 
 		///Returns the angle (in radians) between two vectors.
 		///
 		///The input vectors do not need to be unit length however they must be non-zero.
-		angle_between(self,LuaVec3) -> f32,
+		angle_between(self:self) -> Raw(f32),
 
 		///Returns some vector that is orthogonal to the given one.
 		///
@@ -3351,7 +3550,7 @@ impl_lua_newtype!{
 		///
 		///The output vector is not necessarily unit-length.
 		///For that use [`Self::any_orthonormal_vector`] instead.
-		any_orthogonal_vector(&self) -> LuaVec3,
+		any_orthogonal_vector(&self:) -> self,
 
 		///Returns any unit-length vector that is orthogonal to the given one.
 		///The input vector must be finite and non-zero.
@@ -3359,26 +3558,20 @@ impl_lua_newtype!{
 		///# Panics
 		///
 		///Will panic if `self` is not normalized when `glam_assert` is enabled.
-		any_orthonormal_vector(&self) -> LuaVec3,
+		any_orthonormal_vector(&self:) -> self,
+
+		///Casts all elements of `self` to `f64`.
+		as_dvec3(&self:) -> Wrapped(DVec3),
+
+		///Casts all elements of `self` to `i32`.
+		as_ivec3(&self:) -> Wrapped(IVec3),
+
+		///Casts all elements of `self` to `u32`.
+		as_uvec3(&self:) -> Wrapped(UVec3),
 
 	)
 	+ BinOps
 	(
-		self Add LuaVec3 -> LuaVec3,
-		self Add f32 -> LuaVec3,
-		f32 Add self -> LuaVec3,
-		self Sub LuaVec3 -> LuaVec3,
-		self Sub f32 -> LuaVec3,
-		f32 Sub self -> LuaVec3,
-		self Div LuaVec3 -> LuaVec3,
-		self Div f32 -> LuaVec3,
-		f32 Div self -> LuaVec3,
-		self Mul LuaVec3 -> LuaVec3,
-		self Mul f32 -> LuaVec3,
-		f32 Mul self -> LuaVec3,
-		self Rem LuaVec3 -> LuaVec3,
-		self Rem f32 -> LuaVec3,
-		f32 Rem self -> LuaVec3,
 	)
 	+ UnaryOps
 	(
@@ -3402,44 +3595,44 @@ impl_lua_newtype!{
 	Fields
 	(
 	)
-	+ AutoMethods
+	+ Methods
 	(
 		///Creates a new vector.
-		new(f32,f32,f32) -> LuaVec3A,
+		new(Raw(f32),Raw(f32),Raw(f32)) -> self,
 
 		///Creates a vector with all elements set to `v`.
-		splat(f32) -> LuaVec3A,
+		splat(Raw(f32)) -> self,
 
 		///Creates a vector from the elements in `if_true` and `if_false`, selecting which to use
 		///for each element of `self`.
 		///
 		///A true element in the mask uses the corresponding element from `if_true`, and false
 		///uses the element from `if_false`.
-		select(LuaBVec3A,LuaVec3A,LuaVec3A) -> LuaVec3A,
+		select(Wrapped(BVec3A),self,self) -> self,
 
 		///Creates a 4D vector from `self` and the given `w` value.
-		extend(self,f32) -> LuaVec4,
+		extend(self:Raw(f32)) -> Wrapped(Vec4),
 
 		///Creates a 2D vector from the `x` and `y` elements of `self`, discarding `z`.
 		///
 		///Truncation may also be performed by using `self.xy()` or `Vec2::from()`.
-		truncate(self) -> LuaVec2,
+		truncate(self:) -> Wrapped(Vec2),
 
 		///Computes the dot product of `self` and `rhs`.
-		dot(self,LuaVec3A) -> f32,
+		dot(self:self) -> Raw(f32),
 
 		///Computes the cross product of `self` and `rhs`.
-		cross(self,LuaVec3A) -> LuaVec3A,
+		cross(self:self) -> self,
 
 		///Returns a vector containing the minimum values for each element of `self` and `rhs`.
 		///
 		///In other words this computes `[self.x.min(rhs.x), self.y.min(rhs.y), ..]`.
-		min(self,LuaVec3A) -> LuaVec3A,
+		min(self:self) -> self,
 
 		///Returns a vector containing the maximum values for each element of `self` and `rhs`.
 		///
 		///In other words this computes `[self.x.max(rhs.x), self.y.max(rhs.y), ..]`.
-		max(self,LuaVec3A) -> LuaVec3A,
+		max(self:self) -> self,
 
 		///Component-wise clamping of values, similar to [`f32::clamp`].
 		///
@@ -3448,100 +3641,100 @@ impl_lua_newtype!{
 		///# Panics
 		///
 		///Will panic if `min` is greater than `max` when `glam_assert` is enabled.
-		clamp(self,LuaVec3A,LuaVec3A) -> LuaVec3A,
+		clamp(self:self,self) -> self,
 
 		///Returns the horizontal minimum of `self`.
 		///
 		///In other words this computes `min(x, y, ..)`.
-		min_element(self) -> f32,
+		min_element(self:) -> Raw(f32),
 
 		///Returns the horizontal maximum of `self`.
 		///
 		///In other words this computes `max(x, y, ..)`.
-		max_element(self) -> f32,
+		max_element(self:) -> Raw(f32),
 
 		///Returns a vector mask containing the result of a `==` comparison for each element of
 		///`self` and `rhs`.
 		///
 		///In other words, this computes `[self.x == rhs.x, self.y == rhs.y, ..]` for all
 		///elements.
-		cmpeq(self,LuaVec3A) -> LuaBVec3A,
+		cmpeq(self:self) -> Wrapped(BVec3A),
 
 		///Returns a vector mask containing the result of a `!=` comparison for each element of
 		///`self` and `rhs`.
 		///
 		///In other words this computes `[self.x != rhs.x, self.y != rhs.y, ..]` for all
 		///elements.
-		cmpne(self,LuaVec3A) -> LuaBVec3A,
+		cmpne(self:self) -> Wrapped(BVec3A),
 
 		///Returns a vector mask containing the result of a `>=` comparison for each element of
 		///`self` and `rhs`.
 		///
 		///In other words this computes `[self.x >= rhs.x, self.y >= rhs.y, ..]` for all
 		///elements.
-		cmpge(self,LuaVec3A) -> LuaBVec3A,
+		cmpge(self:self) -> Wrapped(BVec3A),
 
 		///Returns a vector mask containing the result of a `>` comparison for each element of
 		///`self` and `rhs`.
 		///
 		///In other words this computes `[self.x > rhs.x, self.y > rhs.y, ..]` for all
 		///elements.
-		cmpgt(self,LuaVec3A) -> LuaBVec3A,
+		cmpgt(self:self) -> Wrapped(BVec3A),
 
 		///Returns a vector mask containing the result of a `<=` comparison for each element of
 		///`self` and `rhs`.
 		///
 		///In other words this computes `[self.x <= rhs.x, self.y <= rhs.y, ..]` for all
 		///elements.
-		cmple(self,LuaVec3A) -> LuaBVec3A,
+		cmple(self:self) -> Wrapped(BVec3A),
 
 		///Returns a vector mask containing the result of a `<` comparison for each element of
 		///`self` and `rhs`.
 		///
 		///In other words this computes `[self.x < rhs.x, self.y < rhs.y, ..]` for all
 		///elements.
-		cmplt(self,LuaVec3A) -> LuaBVec3A,
+		cmplt(self:self) -> Wrapped(BVec3A),
 
 		///Returns a vector containing the absolute value of each element of `self`.
-		abs(self) -> LuaVec3A,
+		abs(self:) -> self,
 
 		///Returns a vector with elements representing the sign of `self`.
 		///
 		///- `1.0` if the number is positive, `+0.0` or `INFINITY`
 		///- `-1.0` if the number is negative, `-0.0` or `NEG_INFINITY`
 		///- `NAN` if the number is `NAN`
-		signum(self) -> LuaVec3A,
+		signum(self:) -> self,
 
 		///Returns `true` if, and only if, all elements are finite.  If any element is either
 		///`NaN`, positive or negative infinity, this will return `false`.
-		is_finite(self) -> bool,
+		is_finite(self:) -> Raw(bool),
 
 		///Returns `true` if any elements are `NaN`.
-		is_nan(self) -> bool,
+		is_nan(self:) -> Raw(bool),
 
 		///Performs `is_nan` on each element of self, returning a vector mask of the results.
 		///
 		///In other words, this computes `[x.is_nan(), y.is_nan(), z.is_nan(), w.is_nan()]`.
-		is_nan_mask(self) -> LuaBVec3A,
+		is_nan_mask(self:) -> Wrapped(BVec3A),
 
 		///Computes the length of `self`.
-		length(self) -> f32,
+		length(self:) -> Raw(f32),
 
 		///Computes the squared length of `self`.
 		///
 		///This is faster than `length()` as it avoids a square root operation.
-		length_squared(self) -> f32,
+		length_squared(self:) -> Raw(f32),
 
 		///Computes `1.0 / length()`.
 		///
 		///For valid results, `self` must _not_ be of length zero.
-		length_recip(self) -> f32,
+		length_recip(self:) -> Raw(f32),
 
 		///Computes the Euclidean distance between two points in space.
-		distance(self,LuaVec3A) -> f32,
+		distance(self:self) -> Raw(f32),
 
 		///Compute the squared euclidean distance between two points in space.
-		distance_squared(self,LuaVec3A) -> f32,
+		distance_squared(self:self) -> Raw(f32),
 
 		///Returns `self` normalized to length 1.0.
 		///
@@ -3552,7 +3745,7 @@ impl_lua_newtype!{
 		///Panics
 		///
 		///Will panic if `self` is zero length when `glam_assert` is enabled.
-		normalize(self) -> LuaVec3A,
+		normalize(self:) -> self,
 
 		///Returns `self` normalized to length 1.0 if possible, else returns zero.
 		///
@@ -3560,12 +3753,12 @@ impl_lua_newtype!{
 		///the result of this operation will be zero.
 		///
 		///See also [`Self::try_normalize`].
-		normalize_or_zero(self) -> LuaVec3A,
+		normalize_or_zero(self:) -> self,
 
 		///Returns whether `self` is length `1.0` or not.
 		///
 		///Uses a precision threshold of `1e-6`.
-		is_normalized(self) -> bool,
+		is_normalized(self:) -> Raw(bool),
 
 		///Returns the vector projection of `self` onto `rhs`.
 		///
@@ -3574,7 +3767,7 @@ impl_lua_newtype!{
 		///# Panics
 		///
 		///Will panic if `rhs` is zero length when `glam_assert` is enabled.
-		project_onto(self,LuaVec3A) -> LuaVec3A,
+		project_onto(self:self) -> self,
 
 		///Returns the vector rejection of `self` from `rhs`.
 		///
@@ -3586,7 +3779,7 @@ impl_lua_newtype!{
 		///# Panics
 		///
 		///Will panic if `rhs` has a length of zero when `glam_assert` is enabled.
-		reject_from(self,LuaVec3A) -> LuaVec3A,
+		reject_from(self:self) -> self,
 
 		///Returns the vector projection of `self` onto `rhs`.
 		///
@@ -3595,7 +3788,7 @@ impl_lua_newtype!{
 		///# Panics
 		///
 		///Will panic if `rhs` is not normalized when `glam_assert` is enabled.
-		project_onto_normalized(self,LuaVec3A) -> LuaVec3A,
+		project_onto_normalized(self:self) -> self,
 
 		///Returns the vector rejection of `self` from `rhs`.
 		///
@@ -3607,42 +3800,42 @@ impl_lua_newtype!{
 		///# Panics
 		///
 		///Will panic if `rhs` is not normalized when `glam_assert` is enabled.
-		reject_from_normalized(self,LuaVec3A) -> LuaVec3A,
+		reject_from_normalized(self:self) -> self,
 
 		///Returns a vector containing the nearest integer to a number for each element of `self`.
 		///Round half-way cases away from 0.0.
-		round(self) -> LuaVec3A,
+		round(self:) -> self,
 
 		///Returns a vector containing the largest integer less than or equal to a number for each
 		///element of `self`.
-		floor(self) -> LuaVec3A,
+		floor(self:) -> self,
 
 		///Returns a vector containing the smallest integer greater than or equal to a number for
 		///each element of `self`.
-		ceil(self) -> LuaVec3A,
+		ceil(self:) -> self,
 
 		///Returns a vector containing the fractional part of the vector, e.g. `self -
 		///self.floor()`.
 		///
 		///Note that this is fast but not precise for large numbers.
-		fract(self) -> LuaVec3A,
+		fract(self:) -> self,
 
 		///Returns a vector containing `e^self` (the exponential function) for each element of
 		///`self`.
-		exp(self) -> LuaVec3A,
+		exp(self:) -> self,
 
 		///Returns a vector containing each element of `self` raised to the power of `n`.
-		powf(self,f32) -> LuaVec3A,
+		powf(self:Raw(f32)) -> self,
 
 		///Returns a vector containing the reciprocal `1.0/n` of each element of `self`.
-		recip(self) -> LuaVec3A,
+		recip(self:) -> self,
 
 		///Performs a linear interpolation between `self` and `rhs` based on the value `s`.
 		///
 		///When `s` is `0.0`, the result will be equal to `self`.  When `s` is `1.0`, the result
 		///will be equal to `rhs`. When `s` is outside of range `[0, 1]`, the result is linearly
 		///extrapolated.
-		lerp(self,LuaVec3A,f32) -> LuaVec3A,
+		lerp(self:self,Raw(f32)) -> self,
 
 		///Returns true if the absolute difference of all elements between `self` and `rhs` is
 		///less than or equal to `max_abs_diff`.
@@ -3653,20 +3846,20 @@ impl_lua_newtype!{
 		///
 		///For more see
 		///[comparing floating point numbers](https://randomascii.wordpress.com/2012/02/25/comparing-floating-point-numbers-2012-edition/).
-		abs_diff_eq(self,LuaVec3A,f32) -> bool,
+		abs_diff_eq(self:self,Raw(f32)) -> Raw(bool),
 
 		///Returns a vector with a length no less than `min` and no more than `max`
 		///
 		///# Panics
 		///
 		///Will panic if `min` is greater than `max` when `glam_assert` is enabled.
-		clamp_length(self,f32,f32) -> LuaVec3A,
+		clamp_length(self:Raw(f32),Raw(f32)) -> self,
 
 		///Returns a vector with a length no more than `max`
-		clamp_length_max(self,f32) -> LuaVec3A,
+		clamp_length_max(self:Raw(f32)) -> self,
 
 		///Returns a vector with a length no less than `min`
-		clamp_length_min(self,f32) -> LuaVec3A,
+		clamp_length_min(self:Raw(f32)) -> self,
 
 		///Fused multiply-add. Computes `(self * a) + b` element-wise with only one rounding
 		///error, yielding a more accurate result than an unfused multiply-add.
@@ -3675,12 +3868,12 @@ impl_lua_newtype!{
 		///architecture has a dedicated fma CPU instruction. However, this is not always true,
 		///and will be heavily dependant on designing algorithms with specific target hardware in
 		///mind.
-		mul_add(self,LuaVec3A,LuaVec3A) -> LuaVec3A,
+		mul_add(self:self,self) -> self,
 
 		///Returns the angle (in radians) between two vectors.
 		///
 		///The input vectors do not need to be unit length however they must be non-zero.
-		angle_between(self,LuaVec3A) -> f32,
+		angle_between(self:self) -> Raw(f32),
 
 		///Returns some vector that is orthogonal to the given one.
 		///
@@ -3688,7 +3881,7 @@ impl_lua_newtype!{
 		///
 		///The output vector is not necessarily unit-length.
 		///For that use [`Self::any_orthonormal_vector`] instead.
-		any_orthogonal_vector(&self) -> LuaVec3A,
+		any_orthogonal_vector(&self:) -> self,
 
 		///Returns any unit-length vector that is orthogonal to the given one.
 		///The input vector must be finite and non-zero.
@@ -3696,26 +3889,20 @@ impl_lua_newtype!{
 		///# Panics
 		///
 		///Will panic if `self` is not normalized when `glam_assert` is enabled.
-		any_orthonormal_vector(&self) -> LuaVec3A,
+		any_orthonormal_vector(&self:) -> self,
+
+		///Casts all elements of `self` to `f64`.
+		as_dvec3(&self:) -> Wrapped(DVec3),
+
+		///Casts all elements of `self` to `i32`.
+		as_ivec3(&self:) -> Wrapped(IVec3),
+
+		///Casts all elements of `self` to `u32`.
+		as_uvec3(&self:) -> Wrapped(UVec3),
 
 	)
 	+ BinOps
 	(
-		self Add LuaVec3A -> LuaVec3A,
-		self Add f32 -> LuaVec3A,
-		f32 Add self -> LuaVec3A,
-		self Sub LuaVec3A -> LuaVec3A,
-		self Sub f32 -> LuaVec3A,
-		f32 Sub self -> LuaVec3A,
-		self Div LuaVec3A -> LuaVec3A,
-		self Div f32 -> LuaVec3A,
-		f32 Div self -> LuaVec3A,
-		self Mul LuaVec3A -> LuaVec3A,
-		self Mul f32 -> LuaVec3A,
-		f32 Mul self -> LuaVec3A,
-		self Rem LuaVec3A -> LuaVec3A,
-		self Rem f32 -> LuaVec3A,
-		f32 Rem self -> LuaVec3A,
 	)
 	+ UnaryOps
 	(
@@ -3736,40 +3923,40 @@ impl_lua_newtype!{
 	Fields
 	(
 	)
-	+ AutoMethods
+	+ Methods
 	(
 		///Creates a new vector.
-		new(f32,f32,f32,f32) -> LuaVec4,
+		new(Raw(f32),Raw(f32),Raw(f32),Raw(f32)) -> self,
 
 		///Creates a vector with all elements set to `v`.
-		splat(f32) -> LuaVec4,
+		splat(Raw(f32)) -> self,
 
 		///Creates a vector from the elements in `if_true` and `if_false`, selecting which to use
 		///for each element of `self`.
 		///
 		///A true element in the mask uses the corresponding element from `if_true`, and false
 		///uses the element from `if_false`.
-		select(LuaBVec4A,LuaVec4,LuaVec4) -> LuaVec4,
+		select(Wrapped(BVec4A),self,self) -> self,
 
 		///Creates a 2D vector from the `x`, `y` and `z` elements of `self`, discarding `w`.
 		///
 		///Truncation to `Vec3` may also be performed by using `self.xyz()` or `Vec3::from()`.
 		///
 		///To truncate to `Vec3A` use `Vec3A::from()`.
-		truncate(self) -> LuaVec3,
+		truncate(self:) -> Wrapped(Vec3),
 
 		///Computes the dot product of `self` and `rhs`.
-		dot(self,LuaVec4) -> f32,
+		dot(self:self) -> Raw(f32),
 
 		///Returns a vector containing the minimum values for each element of `self` and `rhs`.
 		///
 		///In other words this computes `[self.x.min(rhs.x), self.y.min(rhs.y), ..]`.
-		min(self,LuaVec4) -> LuaVec4,
+		min(self:self) -> self,
 
 		///Returns a vector containing the maximum values for each element of `self` and `rhs`.
 		///
 		///In other words this computes `[self.x.max(rhs.x), self.y.max(rhs.y), ..]`.
-		max(self,LuaVec4) -> LuaVec4,
+		max(self:self) -> self,
 
 		///Component-wise clamping of values, similar to [`f32::clamp`].
 		///
@@ -3778,100 +3965,100 @@ impl_lua_newtype!{
 		///# Panics
 		///
 		///Will panic if `min` is greater than `max` when `glam_assert` is enabled.
-		clamp(self,LuaVec4,LuaVec4) -> LuaVec4,
+		clamp(self:self,self) -> self,
 
 		///Returns the horizontal minimum of `self`.
 		///
 		///In other words this computes `min(x, y, ..)`.
-		min_element(self) -> f32,
+		min_element(self:) -> Raw(f32),
 
 		///Returns the horizontal maximum of `self`.
 		///
 		///In other words this computes `max(x, y, ..)`.
-		max_element(self) -> f32,
+		max_element(self:) -> Raw(f32),
 
 		///Returns a vector mask containing the result of a `==` comparison for each element of
 		///`self` and `rhs`.
 		///
 		///In other words, this computes `[self.x == rhs.x, self.y == rhs.y, ..]` for all
 		///elements.
-		cmpeq(self,LuaVec4) -> LuaBVec4A,
+		cmpeq(self:self) -> Wrapped(BVec4A),
 
 		///Returns a vector mask containing the result of a `!=` comparison for each element of
 		///`self` and `rhs`.
 		///
 		///In other words this computes `[self.x != rhs.x, self.y != rhs.y, ..]` for all
 		///elements.
-		cmpne(self,LuaVec4) -> LuaBVec4A,
+		cmpne(self:self) -> Wrapped(BVec4A),
 
 		///Returns a vector mask containing the result of a `>=` comparison for each element of
 		///`self` and `rhs`.
 		///
 		///In other words this computes `[self.x >= rhs.x, self.y >= rhs.y, ..]` for all
 		///elements.
-		cmpge(self,LuaVec4) -> LuaBVec4A,
+		cmpge(self:self) -> Wrapped(BVec4A),
 
 		///Returns a vector mask containing the result of a `>` comparison for each element of
 		///`self` and `rhs`.
 		///
 		///In other words this computes `[self.x > rhs.x, self.y > rhs.y, ..]` for all
 		///elements.
-		cmpgt(self,LuaVec4) -> LuaBVec4A,
+		cmpgt(self:self) -> Wrapped(BVec4A),
 
 		///Returns a vector mask containing the result of a `<=` comparison for each element of
 		///`self` and `rhs`.
 		///
 		///In other words this computes `[self.x <= rhs.x, self.y <= rhs.y, ..]` for all
 		///elements.
-		cmple(self,LuaVec4) -> LuaBVec4A,
+		cmple(self:self) -> Wrapped(BVec4A),
 
 		///Returns a vector mask containing the result of a `<` comparison for each element of
 		///`self` and `rhs`.
 		///
 		///In other words this computes `[self.x < rhs.x, self.y < rhs.y, ..]` for all
 		///elements.
-		cmplt(self,LuaVec4) -> LuaBVec4A,
+		cmplt(self:self) -> Wrapped(BVec4A),
 
 		///Returns a vector containing the absolute value of each element of `self`.
-		abs(self) -> LuaVec4,
+		abs(self:) -> self,
 
 		///Returns a vector with elements representing the sign of `self`.
 		///
 		///- `1.0` if the number is positive, `+0.0` or `INFINITY`
 		///- `-1.0` if the number is negative, `-0.0` or `NEG_INFINITY`
 		///- `NAN` if the number is `NAN`
-		signum(self) -> LuaVec4,
+		signum(self:) -> self,
 
 		///Returns `true` if, and only if, all elements are finite.  If any element is either
 		///`NaN`, positive or negative infinity, this will return `false`.
-		is_finite(self) -> bool,
+		is_finite(self:) -> Raw(bool),
 
 		///Returns `true` if any elements are `NaN`.
-		is_nan(self) -> bool,
+		is_nan(self:) -> Raw(bool),
 
 		///Performs `is_nan` on each element of self, returning a vector mask of the results.
 		///
 		///In other words, this computes `[x.is_nan(), y.is_nan(), z.is_nan(), w.is_nan()]`.
-		is_nan_mask(self) -> LuaBVec4A,
+		is_nan_mask(self:) -> Wrapped(BVec4A),
 
 		///Computes the length of `self`.
-		length(self) -> f32,
+		length(self:) -> Raw(f32),
 
 		///Computes the squared length of `self`.
 		///
 		///This is faster than `length()` as it avoids a square root operation.
-		length_squared(self) -> f32,
+		length_squared(self:) -> Raw(f32),
 
 		///Computes `1.0 / length()`.
 		///
 		///For valid results, `self` must _not_ be of length zero.
-		length_recip(self) -> f32,
+		length_recip(self:) -> Raw(f32),
 
 		///Computes the Euclidean distance between two points in space.
-		distance(self,LuaVec4) -> f32,
+		distance(self:self) -> Raw(f32),
 
 		///Compute the squared euclidean distance between two points in space.
-		distance_squared(self,LuaVec4) -> f32,
+		distance_squared(self:self) -> Raw(f32),
 
 		///Returns `self` normalized to length 1.0.
 		///
@@ -3882,7 +4069,7 @@ impl_lua_newtype!{
 		///Panics
 		///
 		///Will panic if `self` is zero length when `glam_assert` is enabled.
-		normalize(self) -> LuaVec4,
+		normalize(self:) -> self,
 
 		///Returns `self` normalized to length 1.0 if possible, else returns zero.
 		///
@@ -3890,12 +4077,12 @@ impl_lua_newtype!{
 		///the result of this operation will be zero.
 		///
 		///See also [`Self::try_normalize`].
-		normalize_or_zero(self) -> LuaVec4,
+		normalize_or_zero(self:) -> self,
 
 		///Returns whether `self` is length `1.0` or not.
 		///
 		///Uses a precision threshold of `1e-6`.
-		is_normalized(self) -> bool,
+		is_normalized(self:) -> Raw(bool),
 
 		///Returns the vector projection of `self` onto `rhs`.
 		///
@@ -3904,7 +4091,7 @@ impl_lua_newtype!{
 		///# Panics
 		///
 		///Will panic if `rhs` is zero length when `glam_assert` is enabled.
-		project_onto(self,LuaVec4) -> LuaVec4,
+		project_onto(self:self) -> self,
 
 		///Returns the vector rejection of `self` from `rhs`.
 		///
@@ -3916,7 +4103,7 @@ impl_lua_newtype!{
 		///# Panics
 		///
 		///Will panic if `rhs` has a length of zero when `glam_assert` is enabled.
-		reject_from(self,LuaVec4) -> LuaVec4,
+		reject_from(self:self) -> self,
 
 		///Returns the vector projection of `self` onto `rhs`.
 		///
@@ -3925,7 +4112,7 @@ impl_lua_newtype!{
 		///# Panics
 		///
 		///Will panic if `rhs` is not normalized when `glam_assert` is enabled.
-		project_onto_normalized(self,LuaVec4) -> LuaVec4,
+		project_onto_normalized(self:self) -> self,
 
 		///Returns the vector rejection of `self` from `rhs`.
 		///
@@ -3937,42 +4124,42 @@ impl_lua_newtype!{
 		///# Panics
 		///
 		///Will panic if `rhs` is not normalized when `glam_assert` is enabled.
-		reject_from_normalized(self,LuaVec4) -> LuaVec4,
+		reject_from_normalized(self:self) -> self,
 
 		///Returns a vector containing the nearest integer to a number for each element of `self`.
 		///Round half-way cases away from 0.0.
-		round(self) -> LuaVec4,
+		round(self:) -> self,
 
 		///Returns a vector containing the largest integer less than or equal to a number for each
 		///element of `self`.
-		floor(self) -> LuaVec4,
+		floor(self:) -> self,
 
 		///Returns a vector containing the smallest integer greater than or equal to a number for
 		///each element of `self`.
-		ceil(self) -> LuaVec4,
+		ceil(self:) -> self,
 
 		///Returns a vector containing the fractional part of the vector, e.g. `self -
 		///self.floor()`.
 		///
 		///Note that this is fast but not precise for large numbers.
-		fract(self) -> LuaVec4,
+		fract(self:) -> self,
 
 		///Returns a vector containing `e^self` (the exponential function) for each element of
 		///`self`.
-		exp(self) -> LuaVec4,
+		exp(self:) -> self,
 
 		///Returns a vector containing each element of `self` raised to the power of `n`.
-		powf(self,f32) -> LuaVec4,
+		powf(self:Raw(f32)) -> self,
 
 		///Returns a vector containing the reciprocal `1.0/n` of each element of `self`.
-		recip(self) -> LuaVec4,
+		recip(self:) -> self,
 
 		///Performs a linear interpolation between `self` and `rhs` based on the value `s`.
 		///
 		///When `s` is `0.0`, the result will be equal to `self`.  When `s` is `1.0`, the result
 		///will be equal to `rhs`. When `s` is outside of range `[0, 1]`, the result is linearly
 		///extrapolated.
-		lerp(self,LuaVec4,f32) -> LuaVec4,
+		lerp(self:self,Raw(f32)) -> self,
 
 		///Returns true if the absolute difference of all elements between `self` and `rhs` is
 		///less than or equal to `max_abs_diff`.
@@ -3983,20 +4170,20 @@ impl_lua_newtype!{
 		///
 		///For more see
 		///[comparing floating point numbers](https://randomascii.wordpress.com/2012/02/25/comparing-floating-point-numbers-2012-edition/).
-		abs_diff_eq(self,LuaVec4,f32) -> bool,
+		abs_diff_eq(self:self,Raw(f32)) -> Raw(bool),
 
 		///Returns a vector with a length no less than `min` and no more than `max`
 		///
 		///# Panics
 		///
 		///Will panic if `min` is greater than `max` when `glam_assert` is enabled.
-		clamp_length(self,f32,f32) -> LuaVec4,
+		clamp_length(self:Raw(f32),Raw(f32)) -> self,
 
 		///Returns a vector with a length no more than `max`
-		clamp_length_max(self,f32) -> LuaVec4,
+		clamp_length_max(self:Raw(f32)) -> self,
 
 		///Returns a vector with a length no less than `min`
-		clamp_length_min(self,f32) -> LuaVec4,
+		clamp_length_min(self:Raw(f32)) -> self,
 
 		///Fused multiply-add. Computes `(self * a) + b` element-wise with only one rounding
 		///error, yielding a more accurate result than an unfused multiply-add.
@@ -4005,26 +4192,20 @@ impl_lua_newtype!{
 		///architecture has a dedicated fma CPU instruction. However, this is not always true,
 		///and will be heavily dependant on designing algorithms with specific target hardware in
 		///mind.
-		mul_add(self,LuaVec4,LuaVec4) -> LuaVec4,
+		mul_add(self:self,self) -> self,
+
+		///Casts all elements of `self` to `f64`.
+		as_dvec4(&self:) -> Wrapped(DVec4),
+
+		///Casts all elements of `self` to `i32`.
+		as_ivec4(&self:) -> Wrapped(IVec4),
+
+		///Casts all elements of `self` to `u32`.
+		as_uvec4(&self:) -> Wrapped(UVec4),
 
 	)
 	+ BinOps
 	(
-		self Add LuaVec4 -> LuaVec4,
-		self Add f32 -> LuaVec4,
-		f32 Add self -> LuaVec4,
-		self Sub LuaVec4 -> LuaVec4,
-		self Sub f32 -> LuaVec4,
-		f32 Sub self -> LuaVec4,
-		self Div LuaVec4 -> LuaVec4,
-		self Div f32 -> LuaVec4,
-		f32 Div self -> LuaVec4,
-		self Mul LuaVec4 -> LuaVec4,
-		self Mul f32 -> LuaVec4,
-		f32 Mul self -> LuaVec4,
-		self Rem LuaVec4 -> LuaVec4,
-		self Rem f32 -> LuaVec4,
-		f32 Rem self -> LuaVec4,
 	)
 	+ UnaryOps
 	(
@@ -4042,25 +4223,25 @@ impl_lua_newtype!{
 	FromLuaProxy +
 	Fields
 	(
-		x: bool,
-		y: bool,
+		x: Raw(bool),
+		y: Raw(bool),
 	)
-	+ AutoMethods
+	+ Methods
 	(
 		///Creates a new vector mask.
-		new(bool,bool) -> LuaBVec2,
+		new(Raw(bool),Raw(bool)) -> self,
 
 		///Returns a bitmask with the lowest two bits set from the elements of `self`.
 		///
 		///A true element results in a `1` bit and a false element in a `0` bit.  Element `x` goes
 		///into the first lowest bit, element `y` into the second, etc.
-		bitmask(self) -> u32,
+		bitmask(self:) -> Raw(u32),
 
 		///Returns true if any of the elements are true, false otherwise.
-		any(self) -> bool,
+		any(self:) -> Raw(bool),
 
 		///Returns true if all the elements are true, false otherwise.
-		all(self) -> bool,
+		all(self:) -> Raw(bool),
 
 	)
 	+ BinOps
@@ -4079,26 +4260,26 @@ impl_lua_newtype!{
 	FromLuaProxy +
 	Fields
 	(
-		x: bool,
-		y: bool,
-		z: bool,
+		x: Raw(bool),
+		y: Raw(bool),
+		z: Raw(bool),
 	)
-	+ AutoMethods
+	+ Methods
 	(
 		///Creates a new vector mask.
-		new(bool,bool,bool) -> LuaBVec3,
+		new(Raw(bool),Raw(bool),Raw(bool)) -> self,
 
 		///Returns a bitmask with the lowest two bits set from the elements of `self`.
 		///
 		///A true element results in a `1` bit and a false element in a `0` bit.  Element `x` goes
 		///into the first lowest bit, element `y` into the second, etc.
-		bitmask(self) -> u32,
+		bitmask(self:) -> Raw(u32),
 
 		///Returns true if any of the elements are true, false otherwise.
-		any(self) -> bool,
+		any(self:) -> Raw(bool),
 
 		///Returns true if all the elements are true, false otherwise.
-		all(self) -> bool,
+		all(self:) -> Raw(bool),
 
 	)
 	+ BinOps
@@ -4117,27 +4298,27 @@ impl_lua_newtype!{
 	FromLuaProxy +
 	Fields
 	(
-		x: bool,
-		y: bool,
-		z: bool,
-		w: bool,
+		x: Raw(bool),
+		y: Raw(bool),
+		z: Raw(bool),
+		w: Raw(bool),
 	)
-	+ AutoMethods
+	+ Methods
 	(
 		///Creates a new vector mask.
-		new(bool,bool,bool,bool) -> LuaBVec4,
+		new(Raw(bool),Raw(bool),Raw(bool),Raw(bool)) -> self,
 
 		///Returns a bitmask with the lowest two bits set from the elements of `self`.
 		///
 		///A true element results in a `1` bit and a false element in a `0` bit.  Element `x` goes
 		///into the first lowest bit, element `y` into the second, etc.
-		bitmask(self) -> u32,
+		bitmask(self:) -> Raw(u32),
 
 		///Returns true if any of the elements are true, false otherwise.
-		any(self) -> bool,
+		any(self:) -> Raw(bool),
 
 		///Returns true if all the elements are true, false otherwise.
-		all(self) -> bool,
+		all(self:) -> Raw(bool),
 
 	)
 	+ BinOps
@@ -4160,22 +4341,22 @@ impl_lua_newtype!{
 	Fields
 	(
 	)
-	+ AutoMethods
+	+ Methods
 	(
 		///Creates a new vector mask.
-		new(bool,bool,bool) -> LuaBVec3A,
+		new(Raw(bool),Raw(bool),Raw(bool)) -> self,
 
 		///Returns a bitmask with the lowest two bits set from the elements of `self`.
 		///
 		///A true element results in a `1` bit and a false element in a `0` bit.  Element `x` goes
 		///into the first lowest bit, element `y` into the second, etc.
-		bitmask(self) -> u32,
+		bitmask(self:) -> Raw(u32),
 
 		///Returns true if any of the elements are true, false otherwise.
-		any(self) -> bool,
+		any(self:) -> Raw(bool),
 
 		///Returns true if all the elements are true, false otherwise.
-		all(self) -> bool,
+		all(self:) -> Raw(bool),
 
 	)
 	+ BinOps
@@ -4198,22 +4379,22 @@ impl_lua_newtype!{
 	Fields
 	(
 	)
-	+ AutoMethods
+	+ Methods
 	(
 		///Creates a new vector mask.
-		new(bool,bool,bool,bool) -> LuaBVec4A,
+		new(Raw(bool),Raw(bool),Raw(bool),Raw(bool)) -> self,
 
 		///Returns a bitmask with the lowest two bits set from the elements of `self`.
 		///
 		///A true element results in a `1` bit and a false element in a `0` bit.  Element `x` goes
 		///into the first lowest bit, element `y` into the second, etc.
-		bitmask(self) -> u32,
+		bitmask(self:) -> Raw(u32),
 
 		///Returns true if any of the elements are true, false otherwise.
-		any(self) -> bool,
+		any(self:) -> Raw(bool),
 
 		///Returns true if all the elements are true, false otherwise.
-		all(self) -> bool,
+		all(self:) -> Raw(bool),
 
 	)
 	+ BinOps
@@ -4232,39 +4413,39 @@ impl_lua_newtype!{
 	FromLuaProxy +
 	Fields
 	(
-		x: f64,
-		y: f64,
+		x: Raw(f64),
+		y: Raw(f64),
 	)
-	+ AutoMethods
+	+ Methods
 	(
 		///Creates a new vector.
-		new(f64,f64) -> LuaDVec2,
+		new(Raw(f64),Raw(f64)) -> self,
 
 		///Creates a vector with all elements set to `v`.
-		splat(f64) -> LuaDVec2,
+		splat(Raw(f64)) -> self,
 
 		///Creates a vector from the elements in `if_true` and `if_false`, selecting which to use
 		///for each element of `self`.
 		///
 		///A true element in the mask uses the corresponding element from `if_true`, and false
 		///uses the element from `if_false`.
-		select(LuaBVec2,LuaDVec2,LuaDVec2) -> LuaDVec2,
+		select(Wrapped(BVec2),self,self) -> self,
 
 		///Creates a 3D vector from `self` and the given `z` value.
-		extend(self,f64) -> LuaDVec3,
+		extend(self:Raw(f64)) -> Wrapped(DVec3),
 
 		///Computes the dot product of `self` and `rhs`.
-		dot(self,LuaDVec2) -> f64,
+		dot(self:self) -> Raw(f64),
 
 		///Returns a vector containing the minimum values for each element of `self` and `rhs`.
 		///
 		///In other words this computes `[self.x.min(rhs.x), self.y.min(rhs.y), ..]`.
-		min(self,LuaDVec2) -> LuaDVec2,
+		min(self:self) -> self,
 
 		///Returns a vector containing the maximum values for each element of `self` and `rhs`.
 		///
 		///In other words this computes `[self.x.max(rhs.x), self.y.max(rhs.y), ..]`.
-		max(self,LuaDVec2) -> LuaDVec2,
+		max(self:self) -> self,
 
 		///Component-wise clamping of values, similar to [`f32::clamp`].
 		///
@@ -4273,100 +4454,100 @@ impl_lua_newtype!{
 		///# Panics
 		///
 		///Will panic if `min` is greater than `max` when `glam_assert` is enabled.
-		clamp(self,LuaDVec2,LuaDVec2) -> LuaDVec2,
+		clamp(self:self,self) -> self,
 
 		///Returns the horizontal minimum of `self`.
 		///
 		///In other words this computes `min(x, y, ..)`.
-		min_element(self) -> f64,
+		min_element(self:) -> Raw(f64),
 
 		///Returns the horizontal maximum of `self`.
 		///
 		///In other words this computes `max(x, y, ..)`.
-		max_element(self) -> f64,
+		max_element(self:) -> Raw(f64),
 
 		///Returns a vector mask containing the result of a `==` comparison for each element of
 		///`self` and `rhs`.
 		///
 		///In other words, this computes `[self.x == rhs.x, self.y == rhs.y, ..]` for all
 		///elements.
-		cmpeq(self,LuaDVec2) -> LuaBVec2,
+		cmpeq(self:self) -> Wrapped(BVec2),
 
 		///Returns a vector mask containing the result of a `!=` comparison for each element of
 		///`self` and `rhs`.
 		///
 		///In other words this computes `[self.x != rhs.x, self.y != rhs.y, ..]` for all
 		///elements.
-		cmpne(self,LuaDVec2) -> LuaBVec2,
+		cmpne(self:self) -> Wrapped(BVec2),
 
 		///Returns a vector mask containing the result of a `>=` comparison for each element of
 		///`self` and `rhs`.
 		///
 		///In other words this computes `[self.x >= rhs.x, self.y >= rhs.y, ..]` for all
 		///elements.
-		cmpge(self,LuaDVec2) -> LuaBVec2,
+		cmpge(self:self) -> Wrapped(BVec2),
 
 		///Returns a vector mask containing the result of a `>` comparison for each element of
 		///`self` and `rhs`.
 		///
 		///In other words this computes `[self.x > rhs.x, self.y > rhs.y, ..]` for all
 		///elements.
-		cmpgt(self,LuaDVec2) -> LuaBVec2,
+		cmpgt(self:self) -> Wrapped(BVec2),
 
 		///Returns a vector mask containing the result of a `<=` comparison for each element of
 		///`self` and `rhs`.
 		///
 		///In other words this computes `[self.x <= rhs.x, self.y <= rhs.y, ..]` for all
 		///elements.
-		cmple(self,LuaDVec2) -> LuaBVec2,
+		cmple(self:self) -> Wrapped(BVec2),
 
 		///Returns a vector mask containing the result of a `<` comparison for each element of
 		///`self` and `rhs`.
 		///
 		///In other words this computes `[self.x < rhs.x, self.y < rhs.y, ..]` for all
 		///elements.
-		cmplt(self,LuaDVec2) -> LuaBVec2,
+		cmplt(self:self) -> Wrapped(BVec2),
 
 		///Returns a vector containing the absolute value of each element of `self`.
-		abs(self) -> LuaDVec2,
+		abs(self:) -> self,
 
 		///Returns a vector with elements representing the sign of `self`.
 		///
 		///- `1.0` if the number is positive, `+0.0` or `INFINITY`
 		///- `-1.0` if the number is negative, `-0.0` or `NEG_INFINITY`
 		///- `NAN` if the number is `NAN`
-		signum(self) -> LuaDVec2,
+		signum(self:) -> self,
 
 		///Returns `true` if, and only if, all elements are finite.  If any element is either
 		///`NaN`, positive or negative infinity, this will return `false`.
-		is_finite(self) -> bool,
+		is_finite(self:) -> Raw(bool),
 
 		///Returns `true` if any elements are `NaN`.
-		is_nan(self) -> bool,
+		is_nan(self:) -> Raw(bool),
 
 		///Performs `is_nan` on each element of self, returning a vector mask of the results.
 		///
 		///In other words, this computes `[x.is_nan(), y.is_nan(), z.is_nan(), w.is_nan()]`.
-		is_nan_mask(self) -> LuaBVec2,
+		is_nan_mask(self:) -> Wrapped(BVec2),
 
 		///Computes the length of `self`.
-		length(self) -> f64,
+		length(self:) -> Raw(f64),
 
 		///Computes the squared length of `self`.
 		///
 		///This is faster than `length()` as it avoids a square root operation.
-		length_squared(self) -> f64,
+		length_squared(self:) -> Raw(f64),
 
 		///Computes `1.0 / length()`.
 		///
 		///For valid results, `self` must _not_ be of length zero.
-		length_recip(self) -> f64,
+		length_recip(self:) -> Raw(f64),
 
 		///Computes the Euclidean distance between two points in space.
-		distance(self,LuaDVec2) -> f64,
+		distance(self:self) -> Raw(f64),
 
 		///Compute the squared euclidean distance between two points in space.
-		distance_squared(self,LuaDVec2) -> f64,
+		distance_squared(self:self) -> Raw(f64),
 
 		///Returns `self` normalized to length 1.0.
 		///
@@ -4377,7 +4558,7 @@ impl_lua_newtype!{
 		///Panics
 		///
 		///Will panic if `self` is zero length when `glam_assert` is enabled.
-		normalize(self) -> LuaDVec2,
+		normalize(self:) -> self,
 
 		///Returns `self` normalized to length 1.0 if possible, else returns zero.
 		///
@@ -4385,12 +4566,12 @@ impl_lua_newtype!{
 		///the result of this operation will be zero.
 		///
 		///See also [`Self::try_normalize`].
-		normalize_or_zero(self) -> LuaDVec2,
+		normalize_or_zero(self:) -> self,
 
 		///Returns whether `self` is length `1.0` or not.
 		///
 		///Uses a precision threshold of `1e-6`.
-		is_normalized(self) -> bool,
+		is_normalized(self:) -> Raw(bool),
 
 		///Returns the vector projection of `self` onto `rhs`.
 		///
@@ -4399,7 +4580,7 @@ impl_lua_newtype!{
 		///# Panics
 		///
 		///Will panic if `rhs` is zero length when `glam_assert` is enabled.
-		project_onto(self,LuaDVec2) -> LuaDVec2,
+		project_onto(self:self) -> self,
 
 		///Returns the vector rejection of `self` from `rhs`.
 		///
@@ -4411,7 +4592,7 @@ impl_lua_newtype!{
 		///# Panics
 		///
 		///Will panic if `rhs` has a length of zero when `glam_assert` is enabled.
-		reject_from(self,LuaDVec2) -> LuaDVec2,
+		reject_from(self:self) -> self,
 
 		///Returns the vector projection of `self` onto `rhs`.
 		///
@@ -4420,7 +4601,7 @@ impl_lua_newtype!{
 		///# Panics
 		///
 		///Will panic if `rhs` is not normalized when `glam_assert` is enabled.
-		project_onto_normalized(self,LuaDVec2) -> LuaDVec2,
+		project_onto_normalized(self:self) -> self,
 
 		///Returns the vector rejection of `self` from `rhs`.
 		///
@@ -4432,42 +4613,42 @@ impl_lua_newtype!{
 		///# Panics
 		///
 		///Will panic if `rhs` is not normalized when `glam_assert` is enabled.
-		reject_from_normalized(self,LuaDVec2) -> LuaDVec2,
+		reject_from_normalized(self:self) -> self,
 
 		///Returns a vector containing the nearest integer to a number for each element of `self`.
 		///Round half-way cases away from 0.0.
-		round(self) -> LuaDVec2,
+		round(self:) -> self,
 
 		///Returns a vector containing the largest integer less than or equal to a number for each
 		///element of `self`.
-		floor(self) -> LuaDVec2,
+		floor(self:) -> self,
 
 		///Returns a vector containing the smallest integer greater than or equal to a number for
 		///each element of `self`.
-		ceil(self) -> LuaDVec2,
+		ceil(self:) -> self,
 
 		///Returns a vector containing the fractional part of the vector, e.g. `self -
 		///self.floor()`.
 		///
 		///Note that this is fast but not precise for large numbers.
-		fract(self) -> LuaDVec2,
+		fract(self:) -> self,
 
 		///Returns a vector containing `e^self` (the exponential function) for each element of
 		///`self`.
-		exp(self) -> LuaDVec2,
+		exp(self:) -> self,
 
 		///Returns a vector containing each element of `self` raised to the power of `n`.
-		powf(self,f64) -> LuaDVec2,
+		powf(self:Raw(f64)) -> self,
 
 		///Returns a vector containing the reciprocal `1.0/n` of each element of `self`.
-		recip(self) -> LuaDVec2,
+		recip(self:) -> self,
 
 		///Performs a linear interpolation between `self` and `rhs` based on the value `s`.
 		///
 		///When `s` is `0.0`, the result will be equal to `self`.  When `s` is `1.0`, the result
 		///will be equal to `rhs`. When `s` is outside of range `[0, 1]`, the result is linearly
 		///extrapolated.
-		lerp(self,LuaDVec2,f64) -> LuaDVec2,
+		lerp(self:self,Raw(f64)) -> self,
 
 		///Returns true if the absolute difference of all elements between `self` and `rhs` is
 		///less than or equal to `max_abs_diff`.
@@ -4478,20 +4659,20 @@ impl_lua_newtype!{
 		///
 		///For more see
 		///[comparing floating point numbers](https://randomascii.wordpress.com/2012/02/25/comparing-floating-point-numbers-2012-edition/).
-		abs_diff_eq(self,LuaDVec2,f64) -> bool,
+		abs_diff_eq(self:self,Raw(f64)) -> Raw(bool),
 
 		///Returns a vector with a length no less than `min` and no more than `max`
 		///
 		///# Panics
 		///
 		///Will panic if `min` is greater than `max` when `glam_assert` is enabled.
-		clamp_length(self,f64,f64) -> LuaDVec2,
+		clamp_length(self:Raw(f64),Raw(f64)) -> self,
 
 		///Returns a vector with a length no more than `max`
-		clamp_length_max(self,f64) -> LuaDVec2,
+		clamp_length_max(self:Raw(f64)) -> self,
 
 		///Returns a vector with a length no less than `min`
-		clamp_length_min(self,f64) -> LuaDVec2,
+		clamp_length_min(self:Raw(f64)) -> self,
 
 		///Fused multiply-add. Computes `(self * a) + b` element-wise with only one rounding
 		///error, yielding a more accurate result than an unfused multiply-add.
@@ -4500,48 +4681,42 @@ impl_lua_newtype!{
 		///architecture has a dedicated fma CPU instruction. However, this is not always true,
 		///and will be heavily dependant on designing algorithms with specific target hardware in
 		///mind.
-		mul_add(self,LuaDVec2,LuaDVec2) -> LuaDVec2,
+		mul_add(self:self,self) -> self,
 
 		///Creates a 2D vector containing `[angle.cos(), angle.sin()]`. This can be used in
 		///conjunction with the `rotate` method, e.g. `Vec2::from_angle(PI).rotate(Vec2::Y)` will
 		///create the vector [-1, 0] and rotate `Vec2::Y` around it returning `-Vec2::Y`.
-		from_angle(f64) -> LuaDVec2,
+		from_angle(Raw(f64)) -> self,
 
 		///Returns the angle (in radians) between `self` and `rhs`.
 		///
 		///The input vectors do not need to be unit length however they must be non-zero.
-		angle_between(self,LuaDVec2) -> f64,
+		angle_between(self:self) -> Raw(f64),
 
 		///Returns a vector that is equal to `self` rotated by 90 degrees.
-		perp(self) -> LuaDVec2,
+		perp(self:) -> self,
 
 		///The perpendicular dot product of `self` and `rhs`.
 		///Also known as the wedge product, 2D cross product, and determinant.
-		perp_dot(self,LuaDVec2) -> f64,
+		perp_dot(self:self) -> Raw(f64),
 
 		///Returns `rhs` rotated by the angle of `self`. If `self` is normalized,
 		///then this just rotation. This is what you usually want. Otherwise,
 		///it will be like a rotation with a multiplication by `self`'s length.
-		rotate(self,LuaDVec2) -> LuaDVec2,
+		rotate(self:self) -> self,
+
+		///Casts all elements of `self` to `f32`.
+		as_vec2(&self:) -> Wrapped(Vec2),
+
+		///Casts all elements of `self` to `i32`.
+		as_ivec2(&self:) -> Wrapped(IVec2),
+
+		///Casts all elements of `self` to `u32`.
+		as_uvec2(&self:) -> Wrapped(UVec2),
 
 	)
 	+ BinOps
 	(
-		self Add LuaDVec2 -> LuaDVec2,
-		self Add f64 -> LuaDVec2,
-		f64 Add self -> LuaDVec2,
-		self Sub LuaDVec2 -> LuaDVec2,
-		self Sub f64 -> LuaDVec2,
-		f64 Sub self -> LuaDVec2,
-		self Div LuaDVec2 -> LuaDVec2,
-		self Div f64 -> LuaDVec2,
-		f64 Div self -> LuaDVec2,
-		self Mul LuaDVec2 -> LuaDVec2,
-		self Mul f64 -> LuaDVec2,
-		f64 Mul self -> LuaDVec2,
-		self Rem LuaDVec2 -> LuaDVec2,
-		self Rem f64 -> LuaDVec2,
-		f64 Rem self -> LuaDVec2,
 	)
 	+ UnaryOps
 	(
@@ -4559,48 +4734,48 @@ impl_lua_newtype!{
 	FromLuaProxy +
 	Fields
 	(
-		x: f64,
-		y: f64,
-		z: f64,
+		x: Raw(f64),
+		y: Raw(f64),
+		z: Raw(f64),
 	)
-	+ AutoMethods
+	+ Methods
 	(
 		///Creates a new vector.
-		new(f64,f64,f64) -> LuaDVec3,
+		new(Raw(f64),Raw(f64),Raw(f64)) -> self,
 
 		///Creates a vector with all elements set to `v`.
-		splat(f64) -> LuaDVec3,
+		splat(Raw(f64)) -> self,
 
 		///Creates a vector from the elements in `if_true` and `if_false`, selecting which to use
 		///for each element of `self`.
 		///
 		///A true element in the mask uses the corresponding element from `if_true`, and false
 		///uses the element from `if_false`.
-		select(LuaBVec3,LuaDVec3,LuaDVec3) -> LuaDVec3,
+		select(Wrapped(BVec3),self,self) -> self,
 
 		///Creates a 4D vector from `self` and the given `w` value.
-		extend(self,f64) -> LuaDVec4,
+		extend(self:Raw(f64)) -> Wrapped(DVec4),
 
 		///Creates a 2D vector from the `x` and `y` elements of `self`, discarding `z`.
 		///
 		///Truncation may also be performed by using `self.xy()` or `DVec2::from()`.
-		truncate(self) -> LuaDVec2,
+		truncate(self:) -> Wrapped(DVec2),
 
 		///Computes the dot product of `self` and `rhs`.
-		dot(self,LuaDVec3) -> f64,
+		dot(self:self) -> Raw(f64),
 
 		///Computes the cross product of `self` and `rhs`.
-		cross(self,LuaDVec3) -> LuaDVec3,
+		cross(self:self) -> self,
 
 		///Returns a vector containing the minimum values for each element of `self` and `rhs`.
 		///
 		///In other words this computes `[self.x.min(rhs.x), self.y.min(rhs.y), ..]`.
-		min(self,LuaDVec3) -> LuaDVec3,
+		min(self:self) -> self,
 
 		///Returns a vector containing the maximum values for each element of `self` and `rhs`.
 		///
 		///In other words this computes `[self.x.max(rhs.x), self.y.max(rhs.y), ..]`.
-		max(self,LuaDVec3) -> LuaDVec3,
+		max(self:self) -> self,
 
 		///Component-wise clamping of values, similar to [`f32::clamp`].
 		///
@@ -4609,100 +4784,100 @@ impl_lua_newtype!{
 		///# Panics
 		///
 		///Will panic if `min` is greater than `max` when `glam_assert` is enabled.
-		clamp(self,LuaDVec3,LuaDVec3) -> LuaDVec3,
+		clamp(self:self,self) -> self,
 
 		///Returns the horizontal minimum of `self`.
 		///
 		///In other words this computes `min(x, y, ..)`.
-		min_element(self) -> f64,
+		min_element(self:) -> Raw(f64),
 
 		///Returns the horizontal maximum of `self`.
 		///
 		///In other words this computes `max(x, y, ..)`.
-		max_element(self) -> f64,
+		max_element(self:) -> Raw(f64),
 
 		///Returns a vector mask containing the result of a `==` comparison for each element of
 		///`self` and `rhs`.
 		///
 		///In other words, this computes `[self.x == rhs.x, self.y == rhs.y, ..]` for all
 		///elements.
-		cmpeq(self,LuaDVec3) -> LuaBVec3,
+		cmpeq(self:self) -> Wrapped(BVec3),
 
 		///Returns a vector mask containing the result of a `!=` comparison for each element of
 		///`self` and `rhs`.
 		///
 		///In other words this computes `[self.x != rhs.x, self.y != rhs.y, ..]` for all
 		///elements.
-		cmpne(self,LuaDVec3) -> LuaBVec3,
+		cmpne(self:self) -> Wrapped(BVec3),
 
 		///Returns a vector mask containing the result of a `>=` comparison for each element of
 		///`self` and `rhs`.
 		///
 		///In other words this computes `[self.x >= rhs.x, self.y >= rhs.y, ..]` for all
 		///elements.
-		cmpge(self,LuaDVec3) -> LuaBVec3,
+		cmpge(self:self) -> Wrapped(BVec3),
 
 		///Returns a vector mask containing the result of a `>` comparison for each element of
 		///`self` and `rhs`.
 		///
 		///In other words this computes `[self.x > rhs.x, self.y > rhs.y, ..]` for all
 		///elements.
-		cmpgt(self,LuaDVec3) -> LuaBVec3,
+		cmpgt(self:self) -> Wrapped(BVec3),
 
 		///Returns a vector mask containing the result of a `<=` comparison for each element of
 		///`self` and `rhs`.
 		///
 		///In other words this computes `[self.x <= rhs.x, self.y <= rhs.y, ..]` for all
 		///elements.
-		cmple(self,LuaDVec3) -> LuaBVec3,
+		cmple(self:self) -> Wrapped(BVec3),
 
 		///Returns a vector mask containing the result of a `<` comparison for each element of
 		///`self` and `rhs`.
 		///
 		///In other words this computes `[self.x < rhs.x, self.y < rhs.y, ..]` for all
 		///elements.
-		cmplt(self,LuaDVec3) -> LuaBVec3,
+		cmplt(self:self) -> Wrapped(BVec3),
 
 		///Returns a vector containing the absolute value of each element of `self`.
-		abs(self) -> LuaDVec3,
+		abs(self:) -> self,
 
 		///Returns a vector with elements representing the sign of `self`.
 		///
 		///- `1.0` if the number is positive, `+0.0` or `INFINITY`
 		///- `-1.0` if the number is negative, `-0.0` or `NEG_INFINITY`
 		///- `NAN` if the number is `NAN`
-		signum(self) -> LuaDVec3,
+		signum(self:) -> self,
 
 		///Returns `true` if, and only if, all elements are finite.  If any element is either
 		///`NaN`, positive or negative infinity, this will return `false`.
-		is_finite(self) -> bool,
+		is_finite(self:) -> Raw(bool),
 
 		///Returns `true` if any elements are `NaN`.
-		is_nan(self) -> bool,
+		is_nan(self:) -> Raw(bool),
 
 		///Performs `is_nan` on each element of self, returning a vector mask of the results.
 		///
 		///In other words, this computes `[x.is_nan(), y.is_nan(), z.is_nan(), w.is_nan()]`.
-		is_nan_mask(self) -> LuaBVec3,
+		is_nan_mask(self:) -> Wrapped(BVec3),
 
 		///Computes the length of `self`.
-		length(self) -> f64,
+		length(self:) -> Raw(f64),
 
 		///Computes the squared length of `self`.
 		///
 		///This is faster than `length()` as it avoids a square root operation.
-		length_squared(self) -> f64,
+		length_squared(self:) -> Raw(f64),
 
 		///Computes `1.0 / length()`.
 		///
 		///For valid results, `self` must _not_ be of length zero.
-		length_recip(self) -> f64,
+		length_recip(self:) -> Raw(f64),
 
 		///Computes the Euclidean distance between two points in space.
-		distance(self,LuaDVec3) -> f64,
+		distance(self:self) -> Raw(f64),
 
 		///Compute the squared euclidean distance between two points in space.
-		distance_squared(self,LuaDVec3) -> f64,
+		distance_squared(self:self) -> Raw(f64),
 
 		///Returns `self` normalized to length 1.0.
 		///
@@ -4713,7 +4888,7 @@ impl_lua_newtype!{
 		///Panics
 		///
 		///Will panic if `self` is zero length when `glam_assert` is enabled.
-		normalize(self) -> LuaDVec3,
+		normalize(self:) -> self,
 
 		///Returns `self` normalized to length 1.0 if possible, else returns zero.
 		///
@@ -4721,12 +4896,12 @@ impl_lua_newtype!{
 		///the result of this operation will be zero.
 		///
 		///See also [`Self::try_normalize`].
-		normalize_or_zero(self) -> LuaDVec3,
+		normalize_or_zero(self:) -> self,
 
 		///Returns whether `self` is length `1.0` or not.
 		///
 		///Uses a precision threshold of `1e-6`.
-		is_normalized(self) -> bool,
+		is_normalized(self:) -> Raw(bool),
 
 		///Returns the vector projection of `self` onto `rhs`.
 		///
@@ -4735,7 +4910,7 @@ impl_lua_newtype!{
 		///# Panics
 		///
 		///Will panic if `rhs` is zero length when `glam_assert` is enabled.
-		project_onto(self,LuaDVec3) -> LuaDVec3,
+		project_onto(self:self) -> self,
 
 		///Returns the vector rejection of `self` from `rhs`.
 		///
@@ -4747,7 +4922,7 @@ impl_lua_newtype!{
 		///# Panics
 		///
 		///Will panic if `rhs` has a length of zero when `glam_assert` is enabled.
-		reject_from(self,LuaDVec3) -> LuaDVec3,
+		reject_from(self:self) -> self,
 
 		///Returns the vector projection of `self` onto `rhs`.
 		///
@@ -4756,7 +4931,7 @@ impl_lua_newtype!{
 		///# Panics
 		///
 		///Will panic if `rhs` is not normalized when `glam_assert` is enabled.
-		project_onto_normalized(self,LuaDVec3) -> LuaDVec3,
+		project_onto_normalized(self:self) -> self,
 
 		///Returns the vector rejection of `self` from `rhs`.
 		///
@@ -4768,42 +4943,42 @@ impl_lua_newtype!{
 		///# Panics
 		///
 		///Will panic if `rhs` is not normalized when `glam_assert` is enabled.
-		reject_from_normalized(self,LuaDVec3) -> LuaDVec3,
+		reject_from_normalized(self:self) -> self,
 
 		///Returns a vector containing the nearest integer to a number for each element of `self`.
 		///Round half-way cases away from 0.0.
-		round(self) -> LuaDVec3,
+		round(self:) -> self,
 
 		///Returns a vector containing the largest integer less than or equal to a number for each
 		///element of `self`.
-		floor(self) -> LuaDVec3,
+		floor(self:) -> self,
 
 		///Returns a vector containing the smallest integer greater than or equal to a number for
 		///each element of `self`.
-		ceil(self) -> LuaDVec3,
+		ceil(self:) -> self,
 
 		///Returns a vector containing the fractional part of the vector, e.g. `self -
 		///self.floor()`.
 		///
 		///Note that this is fast but not precise for large numbers.
-		fract(self) -> LuaDVec3,
+		fract(self:) -> self,
 
 		///Returns a vector containing `e^self` (the exponential function) for each element of
 		///`self`.
-		exp(self) -> LuaDVec3,
+		exp(self:) -> self,
 
 		///Returns a vector containing each element of `self` raised to the power of `n`.
-		powf(self,f64) -> LuaDVec3,
+		powf(self:Raw(f64)) -> self,
 
 		///Returns a vector containing the reciprocal `1.0/n` of each element of `self`.
-		recip(self) -> LuaDVec3,
+		recip(self:) -> self,
 
 		///Performs a linear interpolation between `self` and `rhs` based on the value `s`.
 		///
 		///When `s` is `0.0`, the result will be equal to `self`.  When `s` is `1.0`, the result
 		///will be equal to `rhs`. When `s` is outside of range `[0, 1]`, the result is linearly
 		///extrapolated.
-		lerp(self,LuaDVec3,f64) -> LuaDVec3,
+		lerp(self:self,Raw(f64)) -> self,
 
 		///Returns true if the absolute difference of all elements between `self` and `rhs` is
 		///less than or equal to `max_abs_diff`.
@@ -4814,20 +4989,20 @@ impl_lua_newtype!{
 		///
 		///For more see
 		///[comparing floating point numbers](https://randomascii.wordpress.com/2012/02/25/comparing-floating-point-numbers-2012-edition/).
-		abs_diff_eq(self,LuaDVec3,f64) -> bool,
+		abs_diff_eq(self:self,Raw(f64)) -> Raw(bool),
 
 		///Returns a vector with a length no less than `min` and no more than `max`
 		///
 		///# Panics
 		///
 		///Will panic if `min` is greater than `max` when `glam_assert` is enabled.
-		clamp_length(self,f64,f64) -> LuaDVec3,
+		clamp_length(self:Raw(f64),Raw(f64)) -> self,
 
 		///Returns a vector with a length no more than `max`
-		clamp_length_max(self,f64) -> LuaDVec3,
+		clamp_length_max(self:Raw(f64)) -> self,
 
 		///Returns a vector with a length no less than `min`
-		clamp_length_min(self,f64) -> LuaDVec3,
+		clamp_length_min(self:Raw(f64)) -> self,
 
 		///Fused multiply-add. Computes `(self * a) + b` element-wise with only one rounding
 		///error, yielding a more accurate result than an unfused multiply-add.
@@ -4836,12 +5011,12 @@ impl_lua_newtype!{
 		///architecture has a dedicated fma CPU instruction. However, this is not always true,
 		///and will be heavily dependant on designing algorithms with specific target hardware in
 		///mind.
-		mul_add(self,LuaDVec3,LuaDVec3) -> LuaDVec3,
+		mul_add(self:self,self) -> self,
 
 		///Returns the angle (in radians) between two vectors.
 		///
 		///The input vectors do not need to be unit length however they must be non-zero.
-		angle_between(self,LuaDVec3) -> f64,
+		angle_between(self:self) -> Raw(f64),
 
 		///Returns some vector that is orthogonal to the given one.
 		///
@@ -4849,7 +5024,7 @@ impl_lua_newtype!{
 		///
 		///The output vector is not necessarily unit-length.
 		///For that use [`Self::any_orthonormal_vector`] instead.
-		any_orthogonal_vector(&self) -> LuaDVec3,
+		any_orthogonal_vector(&self:) -> self,
 
 		///Returns any unit-length vector that is orthogonal to the given one.
 		///The input vector must be finite and non-zero.
@@ -4857,26 +5032,23 @@ impl_lua_newtype!{
 		///# Panics
 		///
 		///Will panic if `self` is not normalized when `glam_assert` is enabled.
-		any_orthonormal_vector(&self) -> LuaDVec3,
+		any_orthonormal_vector(&self:) -> self,
+
+		///Casts all elements of `self` to `f32`.
+		as_vec3(&self:) -> Wrapped(Vec3),
+
+		///Casts all elements of `self` to `f32`.
+		as_vec3a(&self:) -> Wrapped(Vec3A),
+
+		///Casts all elements of `self` to `i32`.
+		as_ivec3(&self:) -> Wrapped(IVec3),
+
+		///Casts all elements of `self` to `u32`.
+		as_uvec3(&self:) -> Wrapped(UVec3),
 
 	)
 	+ BinOps
 	(
-		self Add LuaDVec3 -> LuaDVec3,
-		self Add f64 -> LuaDVec3,
-		f64 Add self -> LuaDVec3,
-		self Sub LuaDVec3 -> LuaDVec3,
-		self Sub f64 -> LuaDVec3,
-		f64 Sub self -> LuaDVec3,
-		self Div LuaDVec3 -> LuaDVec3,
-		self Div f64 -> LuaDVec3,
-		f64 Div self -> LuaDVec3,
-		self Mul LuaDVec3 -> LuaDVec3,
-		self Mul f64 -> LuaDVec3,
-		f64 Mul self -> LuaDVec3,
-		self Rem LuaDVec3 -> LuaDVec3,
-		self Rem f64 -> LuaDVec3,
-		f64 Rem self -> LuaDVec3,
 	)
 	+ UnaryOps
 	(
@@ -4894,43 +5066,43 @@ impl_lua_newtype!{
 	FromLuaProxy +
 	Fields
 	(
-		x: f64,
-		y: f64,
-		z: f64,
-		w: f64,
+		x: Raw(f64),
+		y: Raw(f64),
+		z: Raw(f64),
+		w: Raw(f64),
 	)
-	+ AutoMethods
+	+ Methods
 	(
 		///Creates a new vector.
-		new(f64,f64,f64,f64) -> LuaDVec4,
+		new(Raw(f64),Raw(f64),Raw(f64),Raw(f64)) -> self,
 
 		///Creates a vector with all elements set to `v`.
-		splat(f64) -> LuaDVec4,
+		splat(Raw(f64)) -> self,
 
 		///Creates a vector from the elements in `if_true` and `if_false`, selecting which to use
 		///for each element of `self`.
 		///
 		///A true element in the mask uses the corresponding element from `if_true`, and false
 		///uses the element from `if_false`.
-		select(LuaBVec4,LuaDVec4,LuaDVec4) -> LuaDVec4,
+		select(Wrapped(BVec4),self,self) -> self,
 
 		///Creates a 2D vector from the `x`, `y` and `z` elements of `self`, discarding `w`.
 		///
 		///Truncation to `DVec3` may also be performed by using `self.xyz()` or `DVec3::from()`.
-		truncate(self) -> LuaDVec3,
+		truncate(self:) -> Wrapped(DVec3),
 
 		///Computes the dot product of `self` and `rhs`.
-		dot(self,LuaDVec4) -> f64,
+		dot(self:self) -> Raw(f64),
 
 		///Returns a vector containing the minimum values for each element of `self` and `rhs`.
 		///
 		///In other words this computes `[self.x.min(rhs.x), self.y.min(rhs.y), ..]`.
-		min(self,LuaDVec4) -> LuaDVec4,
+		min(self:self) -> self,
 
 		///Returns a vector containing the maximum values for each element of `self` and `rhs`.
 		///
 		///In other words this computes `[self.x.max(rhs.x), self.y.max(rhs.y), ..]`.
-		max(self,LuaDVec4) -> LuaDVec4,
+		max(self:self) -> self,
 
 		///Component-wise clamping of values, similar to [`f32::clamp`].
 		///
@@ -4939,100 +5111,100 @@ impl_lua_newtype!{
 		///# Panics
 		///
 		///Will panic if `min` is greater than `max` when `glam_assert` is enabled.
-		clamp(self,LuaDVec4,LuaDVec4) -> LuaDVec4,
+		clamp(self:self,self) -> self,
 
 		///Returns the horizontal minimum of `self`.
 		///
 		///In other words this computes `min(x, y, ..)`.
-		min_element(self) -> f64,
+		min_element(self:) -> Raw(f64),
 
 		///Returns the horizontal maximum of `self`.
 		///
 		///In other words this computes `max(x, y, ..)`.
-		max_element(self) -> f64,
+		max_element(self:) -> Raw(f64),
 
 		///Returns a vector mask containing the result of a `==` comparison for each element of
 		///`self` and `rhs`.
 		///
 		///In other words, this computes `[self.x == rhs.x, self.y == rhs.y, ..]` for all
 		///elements.
-		cmpeq(self,LuaDVec4) -> LuaBVec4,
+		cmpeq(self:self) -> Wrapped(BVec4),
 
 		///Returns a vector mask containing the result of a `!=` comparison for each element of
 		///`self` and `rhs`.
 		///
 		///In other words this computes `[self.x != rhs.x, self.y != rhs.y, ..]` for all
 		///elements.
-		cmpne(self,LuaDVec4) -> LuaBVec4,
+		cmpne(self:self) -> Wrapped(BVec4),
 
 		///Returns a vector mask containing the result of a `>=` comparison for each element of
 		///`self` and `rhs`.
 		///
 		///In other words this computes `[self.x >= rhs.x, self.y >= rhs.y, ..]` for all
 		///elements.
-		cmpge(self,LuaDVec4) -> LuaBVec4,
+		cmpge(self:self) -> Wrapped(BVec4),
 
 		///Returns a vector mask containing the result of a `>` comparison for each element of
 		///`self` and `rhs`.
 		///
 		///In other words this computes `[self.x > rhs.x, self.y > rhs.y, ..]` for all
 		///elements.
-		cmpgt(self,LuaDVec4) -> LuaBVec4,
+		cmpgt(self:self) -> Wrapped(BVec4),
 
 		///Returns a vector mask containing the result of a `<=` comparison for each element of
 		///`self` and `rhs`.
 		///
 		///In other words this computes `[self.x <= rhs.x, self.y <= rhs.y, ..]` for all
 		///elements.
-		cmple(self,LuaDVec4) -> LuaBVec4,
+		cmple(self:self) -> Wrapped(BVec4),
 
 		///Returns a vector mask containing the result of a `<` comparison for each element of
 		///`self` and `rhs`.
 		///
 		///In other words this computes `[self.x < rhs.x, self.y < rhs.y, ..]` for all
 		///elements.
-		cmplt(self,LuaDVec4) -> LuaBVec4,
+		cmplt(self:self) -> Wrapped(BVec4),
 
 		///Returns a vector containing the absolute value of each element of `self`.
-		abs(self) -> LuaDVec4,
+		abs(self:) -> self,
 
 		///Returns a vector with elements representing the sign of `self`.
 		///
 		///- `1.0` if the number is positive, `+0.0` or `INFINITY`
 		///- `-1.0` if the number is negative, `-0.0` or `NEG_INFINITY`
 		///- `NAN` if the number is `NAN`
-		signum(self) -> LuaDVec4,
+		signum(self:) -> self,
 
 		///Returns `true` if, and only if, all elements are finite.  If any element is either
 		///`NaN`, positive or negative infinity, this will return `false`.
-		is_finite(self) -> bool,
+		is_finite(self:) -> Raw(bool),
 
 		///Returns `true` if any elements are `NaN`.
-		is_nan(self) -> bool,
+		is_nan(self:) -> Raw(bool),
 
 		///Performs `is_nan` on each element of self, returning a vector mask of the results.
 		///
 		///In other words, this computes `[x.is_nan(), y.is_nan(), z.is_nan(), w.is_nan()]`.
-		is_nan_mask(self) -> LuaBVec4,
+		is_nan_mask(self:) -> Wrapped(BVec4),
 
 		///Computes the length of `self`.
-		length(self) -> f64,
+		length(self:) -> Raw(f64),
 
 		///Computes the squared length of `self`.
 		///
 		///This is faster than `length()` as it avoids a square root operation.
-		length_squared(self) -> f64,
+		length_squared(self:) -> Raw(f64),
 
 		///Computes `1.0 / length()`.
 		///
 		///For valid results, `self` must _not_ be of length zero.
-		length_recip(self) -> f64,
+		length_recip(self:) -> Raw(f64),
 
 		///Computes the Euclidean distance between two points in space.
-		distance(self,LuaDVec4) -> f64,
+		distance(self:self) -> Raw(f64),
 
 		///Compute the squared euclidean distance between two points in space.
-		distance_squared(self,LuaDVec4) -> f64,
+		distance_squared(self:self) -> Raw(f64),
 
 		///Returns `self` normalized to length 1.0.
 		///
@@ -5043,7 +5215,7 @@ impl_lua_newtype!{
 		///Panics
 		///
 		///Will panic if `self` is zero length when `glam_assert` is enabled.
-		normalize(self) -> LuaDVec4,
+		normalize(self:) -> self,
 
 		///Returns `self` normalized to length 1.0 if possible, else returns zero.
 		///
@@ -5051,12 +5223,12 @@ impl_lua_newtype!{
 		///the result of this operation will be zero.
 		///
 		///See also [`Self::try_normalize`].
-		normalize_or_zero(self) -> LuaDVec4,
+		normalize_or_zero(self:) -> self,
 
 		///Returns whether `self` is length `1.0` or not.
 		///
 		///Uses a precision threshold of `1e-6`.
-		is_normalized(self) -> bool,
+		is_normalized(self:) -> Raw(bool),
 
 		///Returns the vector projection of `self` onto `rhs`.
 		///
@@ -5065,7 +5237,7 @@ impl_lua_newtype!{
 		///# Panics
 		///
 		///Will panic if `rhs` is zero length when `glam_assert` is enabled.
-		project_onto(self,LuaDVec4) -> LuaDVec4,
+		project_onto(self:self) -> self,
 
 		///Returns the vector rejection of `self` from `rhs`.
 		///
@@ -5077,7 +5249,7 @@ impl_lua_newtype!{
 		///# Panics
 		///
 		///Will panic if `rhs` has a length of zero when `glam_assert` is enabled.
-		reject_from(self,LuaDVec4) -> LuaDVec4,
+		reject_from(self:self) -> self,
 
 		///Returns the vector projection of `self` onto `rhs`.
 		///
@@ -5086,7 +5258,7 @@ impl_lua_newtype!{
 		///# Panics
 		///
 		///Will panic if `rhs` is not normalized when `glam_assert` is enabled.
-		project_onto_normalized(self,LuaDVec4) -> LuaDVec4,
+		project_onto_normalized(self:self) -> self,
 
 		///Returns the vector rejection of `self` from `rhs`.
 		///
@@ -5098,42 +5270,42 @@ impl_lua_newtype!{
 		///# Panics
 		///
 		///Will panic if `rhs` is not normalized when `glam_assert` is enabled.
-		reject_from_normalized(self,LuaDVec4) -> LuaDVec4,
+		reject_from_normalized(self:self) -> self,
 
 		///Returns a vector containing the nearest integer to a number for each element of `self`.
 		///Round half-way cases away from 0.0.
-		round(self) -> LuaDVec4,
+		round(self:) -> self,
 
 		///Returns a vector containing the largest integer less than or equal to a number for each
 		///element of `self`.
-		floor(self) -> LuaDVec4,
+		floor(self:) -> self,
 
 		///Returns a vector containing the smallest integer greater than or equal to a number for
 		///each element of `self`.
-		ceil(self) -> LuaDVec4,
+		ceil(self:) -> self,
 
 		///Returns a vector containing the fractional part of the vector, e.g. `self -
 		///self.floor()`.
 		///
 		///Note that this is fast but not precise for large numbers.
-		fract(self) -> LuaDVec4,
+		fract(self:) -> self,
 
 		///Returns a vector containing `e^self` (the exponential function) for each element of
 		///`self`.
-		exp(self) -> LuaDVec4,
+		exp(self:) -> self,
 
 		///Returns a vector containing each element of `self` raised to the power of `n`.
-		powf(self,f64) -> LuaDVec4,
+		powf(self:Raw(f64)) -> self,
 
 		///Returns a vector containing the reciprocal `1.0/n` of each element of `self`.
-		recip(self) -> LuaDVec4,
+		recip(self:) -> self,
 
 		///Performs a linear interpolation between `self` and `rhs` based on the value `s`.
 		///
 		///When `s` is `0.0`, the result will be equal to `self`.  When `s` is `1.0`, the result
 		///will be equal to `rhs`. When `s` is outside of range `[0, 1]`, the result is linearly
 		///extrapolated.
-		lerp(self,LuaDVec4,f64) -> LuaDVec4,
+		lerp(self:self,Raw(f64)) -> self,
 
 		///Returns true if the absolute difference of all elements between `self` and `rhs` is
 		///less than or equal to `max_abs_diff`.
@@ -5144,20 +5316,20 @@ impl_lua_newtype!{
 		///
 		///For more see
 		///[comparing floating point numbers](https://randomascii.wordpress.com/2012/02/25/comparing-floating-point-numbers-2012-edition/).
-		abs_diff_eq(self,LuaDVec4,f64) -> bool,
+		abs_diff_eq(self:self,Raw(f64)) -> Raw(bool),
 
 		///Returns a vector with a length no less than `min` and no more than `max`
 		///
 		///# Panics
 		///
 		///Will panic if `min` is greater than `max` when `glam_assert` is enabled.
-		clamp_length(self,f64,f64) -> LuaDVec4,
+		clamp_length(self:Raw(f64),Raw(f64)) -> self,
 
 		///Returns a vector with a length no more than `max`
-		clamp_length_max(self,f64) -> LuaDVec4,
+		clamp_length_max(self:Raw(f64)) -> self,
 
 		///Returns a vector with a length no less than `min`
-		clamp_length_min(self,f64) -> LuaDVec4,
+		clamp_length_min(self:Raw(f64)) -> self,
 
 		///Fused multiply-add. Computes `(self * a) + b` element-wise with only one rounding
 		///error, yielding a more accurate result than an unfused multiply-add.
@@ -5166,26 +5338,20 @@ impl_lua_newtype!{
 		///architecture has a dedicated fma CPU instruction. However, this is not always true,
 		///and will be heavily dependant on designing algorithms with specific target hardware in
 		///mind.
-		mul_add(self,LuaDVec4,LuaDVec4) -> LuaDVec4,
+		mul_add(self:self,self) -> self,
+
+		///Casts all elements of `self` to `f32`.
+		as_vec4(&self:) -> Wrapped(Vec4),
+
+		///Casts all elements of `self` to `i32`.
+		as_ivec4(&self:) -> Wrapped(IVec4),
+
+		///Casts all elements of `self` to `u32`.
+		as_uvec4(&self:) -> Wrapped(UVec4),
 
 	)
 	+ BinOps
 	(
-		self Add LuaDVec4 -> LuaDVec4,
-		self Add f64 -> LuaDVec4,
-		f64 Add self -> LuaDVec4,
-		self Sub LuaDVec4 -> LuaDVec4,
-		self Sub f64 -> LuaDVec4,
-		f64 Sub self -> LuaDVec4,
-		self Div LuaDVec4 -> LuaDVec4,
-		self Div f64 -> LuaDVec4,
-		f64 Div self -> LuaDVec4,
-		self Mul LuaDVec4 -> LuaDVec4,
-		self Mul f64 -> LuaDVec4,
-		f64 Mul self -> LuaDVec4,
-		self Rem LuaDVec4 -> LuaDVec4,
-		self Rem f64 -> LuaDVec4,
-		f64 Rem self -> LuaDVec4,
 	)
 	+ UnaryOps
 	(
@@ -5203,39 +5369,39 @@ impl_lua_newtype!{
 	FromLuaProxy +
 	Fields
 	(
-		x: i32,
-		y: i32,
+		x: Raw(i32),
+		y: Raw(i32),
 	)
-	+ AutoMethods
+	+ Methods
 	(
 		///Creates a new vector.
-		new(i32,i32) -> LuaIVec2,
+		new(Raw(i32),Raw(i32)) -> self,
 
 		///Creates a vector with all elements set to `v`.
-		splat(i32) -> LuaIVec2,
+		splat(Raw(i32)) -> self,
 
 		///Creates a vector from the elements in `if_true` and `if_false`, selecting which to use
 		///for each element of `self`.
 		///
 		///A true element in the mask uses the corresponding element from `if_true`, and false
 		///uses the element from `if_false`.
-		select(LuaBVec2,LuaIVec2,LuaIVec2) -> LuaIVec2,
+		select(Wrapped(BVec2),self,self) -> self,
 
 		///Creates a 3D vector from `self` and the given `z` value.
-		extend(self,i32) -> LuaIVec3,
+		extend(self:Raw(i32)) -> Wrapped(IVec3),
 
 		///Computes the dot product of `self` and `rhs`.
-		dot(self,LuaIVec2) -> i32,
+		dot(self:self) -> Raw(i32),
 
 		///Returns a vector containing the minimum values for each element of `self` and `rhs`.
 		///
 		///In other words this computes `[self.x.min(rhs.x), self.y.min(rhs.y), ..]`.
-		min(self,LuaIVec2) -> LuaIVec2,
+		min(self:self) -> self,
 
 		///Returns a vector containing the maximum values for each element of `self` and `rhs`.
 		///
 		///In other words this computes `[self.x.max(rhs.x), self.y.max(rhs.y), ..]`.
-		max(self,LuaIVec2) -> LuaIVec2,
+		max(self:self) -> self,
 
 		///Component-wise clamping of values, similar to [`f32::clamp`].
 		///
@@ -5244,100 +5410,94 @@ impl_lua_newtype!{
 		///# Panics
 		///
 		///Will panic if `min` is greater than `max` when `glam_assert` is enabled.
-		clamp(self,LuaIVec2,LuaIVec2) -> LuaIVec2,
+		clamp(self:self,self) -> self,
 
 		///Returns the horizontal minimum of `self`.
 		///
 		///In other words this computes `min(x, y, ..)`.
-		min_element(self) -> i32,
+		min_element(self:) -> Raw(i32),
 
 		///Returns the horizontal maximum of `self`.
 		///
 		///In other words this computes `max(x, y, ..)`.
-		max_element(self) -> i32,
+		max_element(self:) -> Raw(i32),
 
 		///Returns a vector mask containing the result of a `==` comparison for each element of
 		///`self` and `rhs`.
 		///
 		///In other words, this computes `[self.x == rhs.x, self.y == rhs.y, ..]` for all
 		///elements.
-		cmpeq(self,LuaIVec2) -> LuaBVec2,
+		cmpeq(self:self) -> Wrapped(BVec2),
 
 		///Returns a vector mask containing the result of a `!=` comparison for each element of
 		///`self` and `rhs`.
 		///
 		///In other words this computes `[self.x != rhs.x, self.y != rhs.y, ..]` for all
 		///elements.
-		cmpne(self,LuaIVec2) -> LuaBVec2,
+		cmpne(self:self) -> Wrapped(BVec2),
 
 		///Returns a vector mask containing the result of a `>=` comparison for each element of
 		///`self` and `rhs`.
 		///
 		///In other words this computes `[self.x >= rhs.x, self.y >= rhs.y, ..]` for all
 		///elements.
-		cmpge(self,LuaIVec2) -> LuaBVec2,
+		cmpge(self:self) -> Wrapped(BVec2),
 
 		///Returns a vector mask containing the result of a `>` comparison for each element of
 		///`self` and `rhs`.
 		///
 		///In other words this computes `[self.x > rhs.x, self.y > rhs.y, ..]` for all
 		///elements.
-		cmpgt(self,LuaIVec2) -> LuaBVec2,
+		cmpgt(self:self) -> Wrapped(BVec2),
 
 		///Returns a vector mask containing the result of a `<=` comparison for each element of
 		///`self` and `rhs`.
 		///
 		///In other words this computes `[self.x <= rhs.x, self.y <= rhs.y, ..]` for all
 		///elements.
-		cmple(self,LuaIVec2) -> LuaBVec2,
+		cmple(self:self) -> Wrapped(BVec2),
 
 		///Returns a vector mask containing the result of a `<` comparison for each element of
 		///`self` and `rhs`.
 		///
 		///In other words this computes `[self.x < rhs.x, self.y < rhs.y, ..]` for all
 		///elements.
-		cmplt(self,LuaIVec2) -> LuaBVec2,
+		cmplt(self:self) -> Wrapped(BVec2),
 
 		///Returns a vector containing the absolute value of each element of `self`.
-		abs(self) -> LuaIVec2,
+		abs(self:) -> self,
 
 		///Returns a vector with elements representing the sign of `self`.
 		///
 		///- `1.0` if the number is positive, `+0.0` or `INFINITY`
 		///- `-1.0` if the number is negative, `-0.0` or `NEG_INFINITY`
 		///- `NAN` if the number is `NAN`
-		signum(self) -> LuaIVec2,
+		signum(self:) -> self,
 
 		///Returns a vector that is equal to `self` rotated by 90 degrees.
-		perp(self) -> LuaIVec2,
+		perp(self:) -> self,
 
 		///The perpendicular dot product of `self` and `rhs`.
 		///Also known as the wedge product, 2D cross product, and determinant.
-		perp_dot(self,LuaIVec2) -> i32,
+		perp_dot(self:self) -> Raw(i32),
 
 		///Returns `rhs` rotated by the angle of `self`. If `self` is normalized,
 		///then this just rotation. This is what you usually want. Otherwise,
 		///it will be like a rotation with a multiplication by `self`'s length.
-		rotate(self,LuaIVec2) -> LuaIVec2,
+		rotate(self:self) -> self,
+
+		///Casts all elements of `self` to `f32`.
+		as_vec2(&self:) -> Wrapped(Vec2),
+
+		///Casts all elements of `self` to `f64`.
+		as_dvec2(&self:) -> Wrapped(DVec2),
+
+		///Casts all elements of `self` to `u32`.
+		as_uvec2(&self:) -> Wrapped(UVec2),
 
 	)
 	+ BinOps
 	(
-		self Add LuaIVec2 -> LuaIVec2,
-		self Add i32 -> LuaIVec2,
-		i32 Add self -> LuaIVec2,
-		self Sub LuaIVec2 -> LuaIVec2,
-		self Sub i32 -> LuaIVec2,
-		i32 Sub self -> LuaIVec2,
-		self Div LuaIVec2 -> LuaIVec2,
-		self Div i32 -> LuaIVec2,
-		i32 Div self -> LuaIVec2,
-		self Mul LuaIVec2 -> LuaIVec2,
-		self Mul i32 -> LuaIVec2,
-		i32 Mul self -> LuaIVec2,
-		self Rem LuaIVec2 -> LuaIVec2,
-		self Rem i32 -> LuaIVec2,
-		i32 Rem self -> LuaIVec2,
 	)
 	+ UnaryOps
 	(
@@ -5355,48 +5515,48 @@ impl_lua_newtype!{
 	FromLuaProxy +
 	Fields
 	(
-		x: i32,
-		y: i32,
-		z: i32,
+		x: Raw(i32),
+		y: Raw(i32),
+		z: Raw(i32),
 	)
-	+ AutoMethods
+	+ Methods
 	(
 		///Creates a new vector.
-		new(i32,i32,i32) -> LuaIVec3,
+		new(Raw(i32),Raw(i32),Raw(i32)) -> self,
 
 		///Creates a vector with all elements set to `v`.
-		splat(i32) -> LuaIVec3,
+		splat(Raw(i32)) -> self,
 
 		///Creates a vector from the elements in `if_true` and `if_false`, selecting which to use
 		///for each element of `self`.
 		///
 		///A true element in the mask uses the corresponding element from `if_true`, and false
 		///uses the element from `if_false`.
-		select(LuaBVec3,LuaIVec3,LuaIVec3) -> LuaIVec3,
+		select(Wrapped(BVec3),self,self) -> self,
 
 		///Creates a 4D vector from `self` and the given `w` value.
-		extend(self,i32) -> LuaIVec4,
+		extend(self:Raw(i32)) -> Wrapped(IVec4),
 
 		///Creates a 2D vector from the `x` and `y` elements of `self`, discarding `z`.
 		///
 		///Truncation may also be performed by using `self.xy()` or `IVec2::from()`.
-		truncate(self) -> LuaIVec2,
+		truncate(self:) -> Wrapped(IVec2),
 
 		///Computes the dot product of `self` and `rhs`.
-		dot(self,LuaIVec3) -> i32,
+		dot(self:self) -> Raw(i32),
 
 		///Computes the cross product of `self` and `rhs`.
-		cross(self,LuaIVec3) -> LuaIVec3,
+		cross(self:self) -> self,
 
 		///Returns a vector containing the minimum values for each element of `self` and `rhs`.
 		///
 		///In other words this computes `[self.x.min(rhs.x), self.y.min(rhs.y), ..]`.
-		min(self,LuaIVec3) -> LuaIVec3,
+		min(self:self) -> self,
 
 		///Returns a vector containing the maximum values for each element of `self` and `rhs`.
 		///
 		///In other words this computes `[self.x.max(rhs.x), self.y.max(rhs.y), ..]`.
-		max(self,LuaIVec3) -> LuaIVec3,
+		max(self:self) -> self,
 
 		///Component-wise clamping of values, similar to [`f32::clamp`].
 		///
@@ -5405,88 +5565,85 @@ impl_lua_newtype!{
 		///# Panics
 		///
 		///Will panic if `min` is greater than `max` when `glam_assert` is enabled.
-		clamp(self,LuaIVec3,LuaIVec3) -> LuaIVec3,
+		clamp(self:self,self) -> self,
 
 		///Returns the horizontal minimum of `self`.
 		///
 		///In other words this computes `min(x, y, ..)`.
-		min_element(self) -> i32,
+		min_element(self:) -> Raw(i32),
 
 		///Returns the horizontal maximum of `self`.
 		///
 		///In other words this computes `max(x, y, ..)`.
-		max_element(self) -> i32,
+		max_element(self:) -> Raw(i32),
 
 		///Returns a vector mask containing the result of a `==` comparison for each element of
 		///`self` and `rhs`.
 		///
 		///In other words, this computes `[self.x == rhs.x, self.y == rhs.y, ..]` for all
 		///elements.
-		cmpeq(self,LuaIVec3) -> LuaBVec3,
+		cmpeq(self:self) -> Wrapped(BVec3),
 
 		///Returns a vector mask containing the result of a `!=` comparison for each element of
 		///`self` and `rhs`.
 		///
 		///In other words this computes `[self.x != rhs.x, self.y != rhs.y, ..]` for all
 		///elements.
-		cmpne(self,LuaIVec3) -> LuaBVec3,
+		cmpne(self:self) -> Wrapped(BVec3),
 
 		///Returns a vector mask containing the result of a `>=` comparison for each element of
 		///`self` and `rhs`.
 		///
 		///In other words this computes `[self.x >= rhs.x, self.y >= rhs.y, ..]` for all
 		///elements.
-		cmpge(self,LuaIVec3) -> LuaBVec3,
+		cmpge(self:self) -> Wrapped(BVec3),
 
 		///Returns a vector mask containing the result of a `>` comparison for each element of
 		///`self` and `rhs`.
 		///
 		///In other words this computes `[self.x > rhs.x, self.y > rhs.y, ..]` for all
 		///elements.
-		cmpgt(self,LuaIVec3) -> LuaBVec3,
+		cmpgt(self:self) -> Wrapped(BVec3),
 
 		///Returns a vector mask containing the result of a `<=` comparison for each element of
 		///`self` and `rhs`.
 		///
 		///In other words this computes `[self.x <= rhs.x, self.y <= rhs.y, ..]` for all
 		///elements.
-		cmple(self,LuaIVec3) -> LuaBVec3,
+		cmple(self:self) -> Wrapped(BVec3),
 
 		///Returns a vector mask containing the result of a `<` comparison for each element of
 		///`self` and `rhs`.
 		///
 		///In other words this computes `[self.x < rhs.x, self.y < rhs.y, ..]` for all
 		///elements.
-		cmplt(self,LuaIVec3) -> LuaBVec3,
+		cmplt(self:self) -> Wrapped(BVec3),
 
 		///Returns a vector containing the absolute value of each element of `self`.
-		abs(self) -> LuaIVec3,
+		abs(self:) -> self,
 
 		///Returns a vector with elements representing the sign of `self`.
 		///
 		///- `1.0` if the number is positive, `+0.0` or `INFINITY`
 		///- `-1.0` if the number is negative, `-0.0` or `NEG_INFINITY`
 		///- `NAN` if the number is `NAN`
-		signum(self) -> LuaIVec3,
+		signum(self:) -> self,
+
+		///Casts all elements of `self` to `f32`.
+		as_vec3(&self:) -> Wrapped(Vec3),
+
+		///Casts all elements of `self` to `f32`.
+		as_vec3a(&self:) -> Wrapped(Vec3A),
+
+		///Casts all elements of `self` to `f64`.
+		as_dvec3(&self:) -> Wrapped(DVec3),
+
+		///Casts all elements of `self` to `u32`.
+		as_uvec3(&self:) -> Wrapped(UVec3),
 
 	)
 	+ BinOps
 	(
-		self Add LuaIVec3 -> LuaIVec3,
-		self Add i32 -> LuaIVec3,
-		i32 Add self -> LuaIVec3,
-		self Sub LuaIVec3 -> LuaIVec3,
-		self Sub i32 -> LuaIVec3,
-		i32 Sub self -> LuaIVec3,
-		self Div LuaIVec3 -> LuaIVec3,
-		self Div i32 -> LuaIVec3,
-		i32 Div self -> LuaIVec3,
-		self Mul LuaIVec3 -> LuaIVec3,
-		self Mul i32 -> LuaIVec3,
-		i32 Mul self -> LuaIVec3,
-		self Rem LuaIVec3 -> LuaIVec3,
-		self Rem i32 -> LuaIVec3,
-		i32 Rem self -> LuaIVec3,
 	)
 	+ UnaryOps
 	(
@@ -5504,43 +5661,43 @@ impl_lua_newtype!{
 	FromLuaProxy +
 	Fields
 	(
-		x: i32,
-		y: i32,
-		z: i32,
-		w: i32,
+		x: Raw(i32),
+		y: Raw(i32),
+		z: Raw(i32),
+		w: Raw(i32),
 	)
-	+ AutoMethods
+	+ Methods
 	(
 		///Creates a new vector.
-		new(i32,i32,i32,i32) -> LuaIVec4,
+		new(Raw(i32),Raw(i32),Raw(i32),Raw(i32)) -> self,
 
 		///Creates a vector with all elements set to `v`.
-		splat(i32) -> LuaIVec4,
+		splat(Raw(i32)) -> self,
 
 		///Creates a vector from the elements in `if_true` and `if_false`, selecting which to use
 		///for each element of `self`.
 		///
 		///A true element in the mask uses the corresponding element from `if_true`, and false
 		///uses the element from `if_false`.
-		select(LuaBVec4,LuaIVec4,LuaIVec4) -> LuaIVec4,
+		select(Wrapped(BVec4),self,self) -> self,
 
 		///Creates a 2D vector from the `x`, `y` and `z` elements of `self`, discarding `w`.
 		///
 		///Truncation to `IVec3` may also be performed by using `self.xyz()` or `IVec3::from()`.
-		truncate(self) -> LuaIVec3,
+		truncate(self:) -> Wrapped(IVec3),
 
 		///Computes the dot product of `self` and `rhs`.
-		dot(self,LuaIVec4) -> i32,
+		dot(self:self) -> Raw(i32),
 
 		///Returns a vector containing the minimum values for each element of `self` and `rhs`.
 		///
 		///In other words this computes `[self.x.min(rhs.x), self.y.min(rhs.y), ..]`.
-		min(self,LuaIVec4) -> LuaIVec4,
+		min(self:self) -> self,
 
 		///Returns a vector containing the maximum values for each element of `self` and `rhs`.
 		///
 		///In other words this computes `[self.x.max(rhs.x), self.y.max(rhs.y), ..]`.
-		max(self,LuaIVec4) -> LuaIVec4,
+		max(self:self) -> self,
 
 		///Component-wise clamping of values, similar to [`f32::clamp`].
 		///
@@ -5549,88 +5706,82 @@ impl_lua_newtype!{
 		///# Panics
 		///
 		///Will panic if `min` is greater than `max` when `glam_assert` is enabled.
-		clamp(self,LuaIVec4,LuaIVec4) -> LuaIVec4,
+		clamp(self:self,self) -> self,
 
 		///Returns the horizontal minimum of `self`.
 		///
 		///In other words this computes `min(x, y, ..)`.
-		min_element(self) -> i32,
+		min_element(self:) -> Raw(i32),
 
 		///Returns the horizontal maximum of `self`.
 		///
 		///In other words this computes `max(x, y, ..)`.
-		max_element(self) -> i32,
+		max_element(self:) -> Raw(i32),
 
 		///Returns a vector mask containing the result of a `==` comparison for each element of
 		///`self` and `rhs`.
 		///
 		///In other words, this computes `[self.x == rhs.x, self.y == rhs.y, ..]` for all
 		///elements.
-		cmpeq(self,LuaIVec4) -> LuaBVec4,
+		cmpeq(self:self) -> Wrapped(BVec4),
 
 		///Returns a vector mask containing the result of a `!=` comparison for each element of
 		///`self` and `rhs`.
 		///
 		///In other words this computes `[self.x != rhs.x, self.y != rhs.y, ..]` for all
 		///elements.
-		cmpne(self,LuaIVec4) -> LuaBVec4,
+		cmpne(self:self) -> Wrapped(BVec4),
 
 		///Returns a vector mask containing the result of a `>=` comparison for each element of
 		///`self` and `rhs`.
 		///
 		///In other words this computes `[self.x >= rhs.x, self.y >= rhs.y, ..]` for all
 		///elements.
-		cmpge(self,LuaIVec4) -> LuaBVec4,
+		cmpge(self:self) -> Wrapped(BVec4),
 
 		///Returns a vector mask containing the result of a `>` comparison for each element of
 		///`self` and `rhs`.
 		///
 		///In other words this computes `[self.x > rhs.x, self.y > rhs.y, ..]` for all
 		///elements.
-		cmpgt(self,LuaIVec4) -> LuaBVec4,
+		cmpgt(self:self) -> Wrapped(BVec4),
 
 		///Returns a vector mask containing the result of a `<=` comparison for each element of
 		///`self` and `rhs`.
 		///
 		///In other words this computes `[self.x <= rhs.x, self.y <= rhs.y, ..]` for all
 		///elements.
-		cmple(self,LuaIVec4) -> LuaBVec4,
+		cmple(self:self) -> Wrapped(BVec4),
 
 		///Returns a vector mask containing the result of a `<` comparison for each element of
 		///`self` and `rhs`.
 		///
 		///In other words this computes `[self.x < rhs.x, self.y < rhs.y, ..]` for all
 		///elements.
-		cmplt(self,LuaIVec4) -> LuaBVec4,
+		cmplt(self:self) -> Wrapped(BVec4),
 
 		///Returns a vector containing the absolute value of each element of `self`.
-		abs(self) -> LuaIVec4,
+		abs(self:) -> self,
 
 		///Returns a vector with elements representing the sign of `self`.
 		///
 		///- `1.0` if the number is positive, `+0.0` or `INFINITY`
 		///- `-1.0` if the number is negative, `-0.0` or `NEG_INFINITY`
 		///- `NAN` if the number is `NAN`
-		signum(self) -> LuaIVec4,
+		signum(self:) -> self,
+
+		///Casts all elements of `self` to `f32`.
+		as_vec4(&self:) -> Wrapped(Vec4),
+
+		///Casts all elements of `self` to `f64`.
+		as_dvec4(&self:) -> Wrapped(DVec4),
+
+		///Casts all elements of `self` to `u32`.
+		as_uvec4(&self:) -> Wrapped(UVec4),
 
 	)
 	+ BinOps
 	(
-		self Add LuaIVec4 -> LuaIVec4,
-		self Add i32 -> LuaIVec4,
-		i32 Add self -> LuaIVec4,
-		self Sub LuaIVec4 -> LuaIVec4,
-		self Sub i32 -> LuaIVec4,
-		i32 Sub self -> LuaIVec4,
-		self Div LuaIVec4 -> LuaIVec4,
-		self Div i32 -> LuaIVec4,
-		i32 Div self -> LuaIVec4,
-		self Mul LuaIVec4 -> LuaIVec4,
-		self Mul i32 -> LuaIVec4,
-		i32 Mul self -> LuaIVec4,
-		self Rem LuaIVec4 -> LuaIVec4,
-		self Rem i32 -> LuaIVec4,
-		i32 Rem self -> LuaIVec4,
 	)
 	+ UnaryOps
 	(
@@ -5648,39 +5799,39 @@ impl_lua_newtype!{
 	FromLuaProxy +
 	Fields
 	(
-		x: u32,
-		y: u32,
+		x: Raw(u32),
+		y: Raw(u32),
 	)
-	+ AutoMethods
+	+ Methods
 	(
 		///Creates a new vector.
-		new(u32,u32) -> LuaUVec2,
+		new(Raw(u32),Raw(u32)) -> self,
 
 		///Creates a vector with all elements set to `v`.
-		splat(u32) -> LuaUVec2,
+		splat(Raw(u32)) -> self,
 
 		///Creates a vector from the elements in `if_true` and `if_false`, selecting which to use
 		///for each element of `self`.
 		///
 		///A true element in the mask uses the corresponding element from `if_true`, and false
 		///uses the element from `if_false`.
-		select(LuaBVec2,LuaUVec2,LuaUVec2) -> LuaUVec2,
+		select(Wrapped(BVec2),self,self) -> self,
 
 		///Creates a 3D vector from `self` and the given `z` value.
-		extend(self,u32) -> LuaUVec3,
+		extend(self:Raw(u32)) -> Wrapped(UVec3),
 
 		///Computes the dot product of `self` and `rhs`.
-		dot(self,LuaUVec2) -> u32,
+		dot(self:self) -> Raw(u32),
 
 		///Returns a vector containing the minimum values for each element of `self` and `rhs`.
 		///
 		///In other words this computes `[self.x.min(rhs.x), self.y.min(rhs.y), ..]`.
-		min(self,LuaUVec2) -> LuaUVec2,
+		min(self:self) -> self,
 
 		///Returns a vector containing the maximum values for each element of `self` and `rhs`.
 		///
 		///In other words this computes `[self.x.max(rhs.x), self.y.max(rhs.y), ..]`.
-		max(self,LuaUVec2) -> LuaUVec2,
+		max(self:self) -> self,
 
 		///Component-wise clamping of values, similar to [`f32::clamp`].
 		///
@@ -5689,78 +5840,72 @@ impl_lua_newtype!{
 		///# Panics
 		///
 		///Will panic if `min` is greater than `max` when `glam_assert` is enabled.
-		clamp(self,LuaUVec2,LuaUVec2) -> LuaUVec2,
+		clamp(self:self,self) -> self,
 
 		///Returns the horizontal minimum of `self`.
 		///
 		///In other words this computes `min(x, y, ..)`.
-		min_element(self) -> u32,
+		min_element(self:) -> Raw(u32),
 
 		///Returns the horizontal maximum of `self`.
 		///
 		///In other words this computes `max(x, y, ..)`.
-		max_element(self) -> u32,
+		max_element(self:) -> Raw(u32),
 
 		///Returns a vector mask containing the result of a `==` comparison for each element of
 		///`self` and `rhs`.
 		///
 		///In other words, this computes `[self.x == rhs.x, self.y == rhs.y, ..]` for all
 		///elements.
-		cmpeq(self,LuaUVec2) -> LuaBVec2,
+		cmpeq(self:self) -> Wrapped(BVec2),
 
 		///Returns a vector mask containing the result of a `!=` comparison for each element of
 		///`self` and `rhs`.
 		///
 		///In other words this computes `[self.x != rhs.x, self.y != rhs.y, ..]` for all
 		///elements.
-		cmpne(self,LuaUVec2) -> LuaBVec2,
+		cmpne(self:self) -> Wrapped(BVec2),
 
 		///Returns a vector mask containing the result of a `>=` comparison for each element of
 		///`self` and `rhs`.
 		///
 		///In other words this computes `[self.x >= rhs.x, self.y >= rhs.y, ..]` for all
 		///elements.
-		cmpge(self,LuaUVec2) -> LuaBVec2,
+		cmpge(self:self) -> Wrapped(BVec2),
 
 		///Returns a vector mask containing the result of a `>` comparison for each element of
 		///`self` and `rhs`.
 		///
 		///In other words this computes `[self.x > rhs.x, self.y > rhs.y, ..]` for all
 		///elements.
-		cmpgt(self,LuaUVec2) -> LuaBVec2,
+		cmpgt(self:self) -> Wrapped(BVec2),
 
 		///Returns a vector mask containing the result of a `<=` comparison for each element of
 		///`self` and `rhs`.
 		///
 		///In other words this computes `[self.x <= rhs.x, self.y <= rhs.y, ..]` for all
 		///elements.
-		cmple(self,LuaUVec2) -> LuaBVec2,
+		cmple(self:self) -> Wrapped(BVec2),
 
 		///Returns a vector mask containing the result of a `<` comparison for each element of
 		///`self` and `rhs`.
 		///
 		///In other words this computes `[self.x < rhs.x, self.y < rhs.y, ..]` for all
 		///elements.
-		cmplt(self,LuaUVec2) -> LuaBVec2,
+		cmplt(self:self) -> Wrapped(BVec2),
+
+		///Casts all elements of `self` to `f32`.
+		as_vec2(&self:) -> Wrapped(Vec2),
+
+		///Casts all elements of `self` to `f64`.
+		as_dvec2(&self:) -> Wrapped(DVec2),
+
+		///Casts all elements of `self` to `i32`.
+		as_ivec2(&self:) -> Wrapped(IVec2),
 
 	)
 	+ BinOps
 	(
-		self Add LuaUVec2 -> LuaUVec2,
-		self Add u32 -> LuaUVec2,
-		u32 Add self -> LuaUVec2,
-		self Sub LuaUVec2 -> LuaUVec2,
-		self Sub u32 -> LuaUVec2,
-		u32 Sub self -> LuaUVec2,
-		self Div LuaUVec2 -> LuaUVec2,
-		self Div u32 -> LuaUVec2,
-		u32 Div self -> LuaUVec2,
-		self Mul LuaUVec2 -> LuaUVec2,
-		self Mul u32 -> LuaUVec2,
-		u32 Mul self -> LuaUVec2,
-		self Rem LuaUVec2 -> LuaUVec2,
-		self Rem u32 -> LuaUVec2,
-		u32 Rem self -> LuaUVec2,
 	)
 	+ UnaryOps
 	(
@@ -5777,48 +5922,48 @@ impl_lua_newtype!{
 	FromLuaProxy +
 	Fields
 	(
-		x: u32,
-		y: u32,
-		z: u32,
+		x: Raw(u32),
+		y: Raw(u32),
+		z: Raw(u32),
 	)
-	+ AutoMethods
+	+ Methods
 	(
 		///Creates a new vector.
-		new(u32,u32,u32) -> LuaUVec3,
+		new(Raw(u32),Raw(u32),Raw(u32)) -> self,
 
 		///Creates a vector with all elements set to `v`.
-		splat(u32) -> LuaUVec3,
+		splat(Raw(u32)) -> self,
 
 		///Creates a vector from the elements in `if_true` and `if_false`, selecting which to use
 		///for each element of `self`.
 		///
 		///A true element in the mask uses the corresponding element from `if_true`, and false
 		///uses the element from `if_false`.
-		select(LuaBVec3,LuaUVec3,LuaUVec3) -> LuaUVec3,
+		select(Wrapped(BVec3),self,self) -> self,
 
 		///Creates a 4D vector from `self` and the given `w` value.
-		extend(self,u32) -> LuaUVec4,
+		extend(self:Raw(u32)) -> Wrapped(UVec4),
 
 		///Creates a 2D vector from the `x` and `y` elements of `self`, discarding `z`.
 		///
 		///Truncation may also be performed by using `self.xy()` or `UVec2::from()`.
-		truncate(self) -> LuaUVec2,
+		truncate(self:) -> Wrapped(UVec2),
 
 		///Computes the dot product of `self` and `rhs`.
-		dot(self,LuaUVec3) -> u32,
+		dot(self:self) -> Raw(u32),
 
 		///Computes the cross product of `self` and `rhs`.
-		cross(self,LuaUVec3) -> LuaUVec3,
+		cross(self:self) -> self,
 
 		///Returns a vector containing the minimum values for each element of `self` and `rhs`.
 		///
 		///In other words this computes `[self.x.min(rhs.x), self.y.min(rhs.y), ..]`.
-		min(self,LuaUVec3) -> LuaUVec3,
+		min(self:self) -> self,
 
 		///Returns a vector containing the maximum values for each element of `self` and `rhs`.
 		///
 		///In other words this computes `[self.x.max(rhs.x), self.y.max(rhs.y), ..]`.
-		max(self,LuaUVec3) -> LuaUVec3,
+		max(self:self) -> self,
 
 		///Component-wise clamping of values, similar to [`f32::clamp`].
 		///
@@ -5827,78 +5972,75 @@ impl_lua_newtype!{
 		///# Panics
 		///
 		///Will panic if `min` is greater than `max` when `glam_assert` is enabled.
-		clamp(self,LuaUVec3,LuaUVec3) -> LuaUVec3,
+		clamp(self:self,self) -> self,
 
 		///Returns the horizontal minimum of `self`.
 		///
 		///In other words this computes `min(x, y, ..)`.
-		min_element(self) -> u32,
+		min_element(self:) -> Raw(u32),
 
 		///Returns the horizontal maximum of `self`.
 		///
 		///In other words this computes `max(x, y, ..)`.
-		max_element(self) -> u32,
+		max_element(self:) -> Raw(u32),
 
 		///Returns a vector mask containing the result of a `==` comparison for each element of
 		///`self` and `rhs`.
 		///
 		///In other words, this computes `[self.x == rhs.x, self.y == rhs.y, ..]` for all
 		///elements.
-		cmpeq(self,LuaUVec3) -> LuaBVec3,
+		cmpeq(self:self) -> Wrapped(BVec3),
 
 		///Returns a vector mask containing the result of a `!=` comparison for each element of
 		///`self` and `rhs`.
 		///
 		///In other words this computes `[self.x != rhs.x, self.y != rhs.y, ..]` for all
 		///elements.
-		cmpne(self,LuaUVec3) -> LuaBVec3,
+		cmpne(self:self) -> Wrapped(BVec3),
 
 		///Returns a vector mask containing the result of a `>=` comparison for each element of
 		///`self` and `rhs`.
 		///
 		///In other words this computes `[self.x >= rhs.x, self.y >= rhs.y, ..]` for all
 		///elements.
-		cmpge(self,LuaUVec3) -> LuaBVec3,
+		cmpge(self:self) -> Wrapped(BVec3),
 
 		///Returns a vector mask containing the result of a `>` comparison for each element of
 		///`self` and `rhs`.
 		///
 		///In other words this computes `[self.x > rhs.x, self.y > rhs.y, ..]` for all
 		///elements.
-		cmpgt(self,LuaUVec3) -> LuaBVec3,
+		cmpgt(self:self) -> Wrapped(BVec3),
 
 		///Returns a vector mask containing the result of a `<=` comparison for each element of
 		///`self` and `rhs`.
 		///
 		///In other words this computes `[self.x <= rhs.x, self.y <= rhs.y, ..]` for all
 		///elements.
-		cmple(self,LuaUVec3) -> LuaBVec3,
+		cmple(self:self) -> Wrapped(BVec3),
 
 		///Returns a vector mask containing the result of a `<` comparison for each element of
 		///`self` and `rhs`.
 		///
 		///In other words this computes `[self.x < rhs.x, self.y < rhs.y, ..]` for all
 		///elements.
-		cmplt(self,LuaUVec3) -> LuaBVec3,
+		cmplt(self:self) -> Wrapped(BVec3),
+
+		///Casts all elements of `self` to `f32`.
+		as_vec3(&self:) -> Wrapped(Vec3),
+
+		///Casts all elements of `self` to `f32`.
+		as_vec3a(&self:) -> Wrapped(Vec3A),
+
+		///Casts all elements of `self` to `f64`.
+		as_dvec3(&self:) -> Wrapped(DVec3),
+
+		///Casts all elements of `self` to `i32`.
+		as_ivec3(&self:) -> Wrapped(IVec3),
 
 	)
 	+ BinOps
 	(
-		self Add LuaUVec3 -> LuaUVec3,
-		self Add u32 -> LuaUVec3,
-		u32 Add self -> LuaUVec3,
-		self Sub LuaUVec3 -> LuaUVec3,
-		self Sub u32 -> LuaUVec3,
-		u32 Sub self -> LuaUVec3,
-		self Div LuaUVec3 -> LuaUVec3,
-		self Div u32 -> LuaUVec3,
-		u32 Div self -> LuaUVec3,
-		self Mul LuaUVec3 -> LuaUVec3,
-		self Mul u32 -> LuaUVec3,
-		u32 Mul self -> LuaUVec3,
-		self Rem LuaUVec3 -> LuaUVec3,
-		self Rem u32 -> LuaUVec3,
-		u32 Rem self -> LuaUVec3,
 	)
 	+ UnaryOps
 	(
@@ -5915,43 +6057,43 @@ impl_lua_newtype!{
 	FromLuaProxy +
 	Fields
 	(
-		x: u32,
-		y: u32,
-		z: u32,
-		w: u32,
+		x: Raw(u32),
+		y: Raw(u32),
+		z: Raw(u32),
+		w: Raw(u32),
 	)
-	+ AutoMethods
+	+ Methods
 	(
 		///Creates a new vector.
-		new(u32,u32,u32,u32) -> LuaUVec4,
+		new(Raw(u32),Raw(u32),Raw(u32),Raw(u32)) -> self,
 
 		///Creates a vector with all elements set to `v`.
-		splat(u32) -> LuaUVec4,
+		splat(Raw(u32)) -> self,
 
 		///Creates a vector from the elements in `if_true` and `if_false`, selecting which to use
 		///for each element of `self`.
 		///
 		///A true element in the mask uses the corresponding element from `if_true`, and false
 		///uses the element from `if_false`.
-		select(LuaBVec4,LuaUVec4,LuaUVec4) -> LuaUVec4,
+		select(Wrapped(BVec4),self,self) -> self,
 
 		///Creates a 2D vector from the `x`, `y` and `z` elements of `self`, discarding `w`.
 		///
 		///Truncation to `UVec3` may also be performed by using `self.xyz()` or `UVec3::from()`.
-		truncate(self) -> LuaUVec3,
+		truncate(self:) -> Wrapped(UVec3),
 
 		///Computes the dot product of `self` and `rhs`.
-		dot(self,LuaUVec4) -> u32,
+		dot(self:self) -> Raw(u32),
 
 		///Returns a vector containing the minimum values for each element of `self` and `rhs`.
 		///
 		///In other words this computes `[self.x.min(rhs.x), self.y.min(rhs.y), ..]`.
-		min(self,LuaUVec4) -> LuaUVec4,
+		min(self:self) -> self,
 
 		///Returns a vector containing the maximum values for each element of `self` and `rhs`.
 		///
 		///In other words this computes `[self.x.max(rhs.x), self.y.max(rhs.y), ..]`.
-		max(self,LuaUVec4) -> LuaUVec4,
+		max(self:self) -> self,
 
 		///Component-wise clamping of values, similar to [`f32::clamp`].
 		///
@@ -5960,78 +6102,72 @@ impl_lua_newtype!{
 		///# Panics
 		///
 		///Will panic if `min` is greater than `max` when `glam_assert` is enabled.
-		clamp(self,LuaUVec4,LuaUVec4) -> LuaUVec4,
+		clamp(self:self,self) -> self,
 
 		///Returns the horizontal minimum of `self`.
 		///
 		///In other words this computes `min(x, y, ..)`.
-		min_element(self) -> u32,
+		min_element(self:) -> Raw(u32),
 
 		///Returns the horizontal maximum of `self`.
 		///
 		///In other words this computes `max(x, y, ..)`.
-		max_element(self) -> u32,
+		max_element(self:) -> Raw(u32),
 
 		///Returns a vector mask containing the result of a `==` comparison for each element of
 		///`self` and `rhs`.
 		///
 		///In other words, this computes `[self.x == rhs.x, self.y == rhs.y, ..]` for all
 		///elements.
-		cmpeq(self,LuaUVec4) -> LuaBVec4,
+		cmpeq(self:self) -> Wrapped(BVec4),
 
 		///Returns a vector mask containing the result of a `!=` comparison for each element of
 		///`self` and `rhs`.
 		///
 		///In other words this computes `[self.x != rhs.x, self.y != rhs.y, ..]` for all
 		///elements.
-		cmpne(self,LuaUVec4) -> LuaBVec4,
+		cmpne(self:self) -> Wrapped(BVec4),
 
 		///Returns a vector mask containing the result of a `>=` comparison for each element of
 		///`self` and `rhs`.
 		///
 		///In other words this computes `[self.x >= rhs.x, self.y >= rhs.y, ..]` for all
 		///elements.
-		cmpge(self,LuaUVec4) -> LuaBVec4,
+		cmpge(self:self) -> Wrapped(BVec4),
 
 		///Returns a vector mask containing the result of a `>` comparison for each element of
 		///`self` and `rhs`.
 		///
 		///In other words this computes `[self.x > rhs.x, self.y > rhs.y, ..]` for all
 		///elements.
-		cmpgt(self,LuaUVec4) -> LuaBVec4,
+		cmpgt(self:self) -> Wrapped(BVec4),
 
 		///Returns a vector mask containing the result of a `<=` comparison for each element of
 		///`self` and `rhs`.
 		///
 		///In other words this computes `[self.x <= rhs.x, self.y <= rhs.y, ..]` for all
 		///elements.
-		cmple(self,LuaUVec4) -> LuaBVec4,
+		cmple(self:self) -> Wrapped(BVec4),
 
 		///Returns a vector mask containing the result of a `<` comparison for each element of
 		///`self` and `rhs`.
 		///
 		///In other words this computes `[self.x < rhs.x, self.y < rhs.y, ..]` for all
 		///elements.
-		cmplt(self,LuaUVec4) -> LuaBVec4,
+		cmplt(self:self) -> Wrapped(BVec4),
+
+		///Casts all elements of `self` to `f32`.
+		as_vec4(&self:) -> Wrapped(Vec4),
+
+		///Casts all elements of `self` to `f64`.
+		as_dvec4(&self:) -> Wrapped(DVec4),
+
+		///Casts all elements of `self` to `i32`.
+		as_ivec4(&self:) -> Wrapped(IVec4),
 
 	)
 	+ BinOps
 	(
-		self Add LuaUVec4 -> LuaUVec4,
-		self Add u32 -> LuaUVec4,
-		u32 Add self -> LuaUVec4,
-		self Sub LuaUVec4 -> LuaUVec4,
-		self Sub u32 -> LuaUVec4,
-		u32 Sub self -> LuaUVec4,
-		self Div LuaUVec4 -> LuaUVec4,
-		self Div u32 -> LuaUVec4,
-		u32 Div self -> LuaUVec4,
-		self Mul LuaUVec4 -> LuaUVec4,
-		self Mul u32 -> LuaUVec4,
-		u32 Mul self -> LuaUVec4,
-		self Rem LuaUVec4 -> LuaUVec4,
-		self Rem u32 -> LuaUVec4,
-		u32 Rem self -> LuaUVec4,
 	)
 	+ UnaryOps
 	(
@@ -6071,27 +6207,27 @@ impl_lua_newtype!{
 	FromLuaProxy +
 	Fields
 	(
-		x_axis: LuaVec3,
-		y_axis: LuaVec3,
-		z_axis: LuaVec3,
+		x_axis: Wrapped(Vec3),
+		y_axis: Wrapped(Vec3),
+		z_axis: Wrapped(Vec3),
 	)
-	+ AutoMethods
+	+ Methods
 	(
 		///Creates a 3x3 matrix from two column vectors.
-		from_cols(LuaVec3,LuaVec3,LuaVec3) -> LuaMat3,
+		from_cols(Wrapped(Vec3),Wrapped(Vec3),Wrapped(Vec3)) -> self,
 
 		///Creates a 3x3 matrix with its diagonal set to `diagonal` and all other entries set to 0.
-		from_diagonal(LuaVec3) -> LuaMat3,
+		from_diagonal(Wrapped(Vec3)) -> self,
 
 		///Creates a 3x3 matrix from a 4x4 matrix, discarding the 3rd row and column.
-		from_mat4(LuaMat4) -> LuaMat3,
+		from_mat4(Wrapped(Mat4)) -> self,
 
 		///Creates a 3D rotation matrix from the given quaternion.
 		///
 		///# Panics
 		///
 		///Will panic if `rotation` is not normalized when `glam_assert` is enabled.
-		from_quat(LuaQuat) -> LuaMat3,
+		from_quat(Wrapped(Quat)) -> self,
 
 		///Creates a 3D rotation matrix from a normalized rotation `axis` and `angle` (in
 		///radians).
@@ -6099,40 +6235,40 @@ impl_lua_newtype!{
 		///# Panics
 		///
 		///Will panic if `axis` is not normalized when `glam_assert` is enabled.
-		from_axis_angle(LuaVec3,f32) -> LuaMat3,
+		from_axis_angle(Wrapped(Vec3),Raw(f32)) -> self,
 
 		///Creates a 3D rotation matrix from the given euler rotation sequence and the angles (in
 		///radians).
-		from_euler(LuaEulerRot,f32,f32,f32) -> LuaMat3,
+		from_euler(Wrapped(EulerRot),Raw(f32),Raw(f32),Raw(f32)) -> self,
 
 		///Creates a 3D rotation matrix from `angle` (in radians) around the x axis.
-		from_rotation_x(f32) -> LuaMat3,
+		from_rotation_x(Raw(f32)) -> self,
 
 		///Creates a 3D rotation matrix from `angle` (in radians) around the y axis.
-		from_rotation_y(f32) -> LuaMat3,
+		from_rotation_y(Raw(f32)) -> self,
 
 		///Creates a 3D rotation matrix from `angle` (in radians) around the z axis.
-		from_rotation_z(f32) -> LuaMat3,
+		from_rotation_z(Raw(f32)) -> self,
 
 		///Creates an affine transformation matrix from the given 2D `translation`.
 		///
 		///The resulting matrix can be used to transform 2D points and vectors. See
 		///[`Self::transform_point2()`] and [`Self::transform_vector2()`].
-		from_translation(LuaVec2) -> LuaMat3,
+		from_translation(Wrapped(Vec2)) -> self,
 
 		///Creates an affine transformation matrix from the given 2D rotation `angle` (in
 		///radians).
 		///
 		///The resulting matrix can be used to transform 2D points and vectors. See
 		///[`Self::transform_point2()`] and [`Self::transform_vector2()`].
-		from_angle(f32) -> LuaMat3,
+		from_angle(Raw(f32)) -> self,
 
 		///Creates an affine transformation matrix from the given 2D `scale`, rotation `angle` (in
 		///radians) and `translation`.
 		///
 		///The resulting matrix can be used to transform 2D points and vectors. See
 		///[`Self::transform_point2()`] and [`Self::transform_vector2()`].
-		from_scale_angle_translation(LuaVec2,f32,LuaVec2) -> LuaMat3,
+		from_scale_angle_translation(Wrapped(Vec2),Raw(f32),Wrapped(Vec2)) -> self,
 
 		///Creates an affine transformation matrix from the given non-uniform 2D `scale`.
 		///
@@ -6142,40 +6278,47 @@ impl_lua_newtype!{
 		///# Panics
 		///
 		///Will panic if all elements of `scale` are zero when `glam_assert` is enabled.
-		from_scale(LuaVec2) -> LuaMat3,
+		from_scale(Wrapped(Vec2)) -> self,
 
 		///Creates an affine transformation matrix from the given 2x2 matrix.
 		///
 		///The resulting matrix can be used to transform 2D points and vectors. See
 		///[`Self::transform_point2()`] and [`Self::transform_vector2()`].
-		from_mat2(LuaMat2) -> LuaMat3,
+		from_mat2(Wrapped(Mat2)) -> self,
 
 		///Returns the matrix column for the given `index`.
 		///
 		///# Panics
 		///
 		///Panics if `index` is greater than 2.
-		col(&self,usize) -> LuaVec3,
+		col(&self:Raw(usize)) -> Wrapped(Vec3),
+
+		// ///Returns a mutable reference to the matrix column for the given `index`.
+		// ///
+		// ///# Panics
+		// ///
+		// ///Panics if `index` is greater than 2.
+		// col_mut(&mut self:Raw(usize)) -> Wrapped(&mut Vec3),
 
 		///Returns the matrix row for the given `index`.
 		///
 		///# Panics
 		///
 		///Panics if `index` is greater than 2.
-		row(&self,usize) -> LuaVec3,
+		row(&self:Raw(usize)) -> Wrapped(Vec3),
 
 		///Returns `true` if, and only if, all elements are finite.
 		///If any element is either `NaN`, positive or negative infinity, this will return `false`.
-		is_finite(&self) -> bool,
+		is_finite(&self:) -> Raw(bool),
 
 		///Returns `true` if any elements are `NaN`.
-		is_nan(&self) -> bool,
+		is_nan(&self:) -> Raw(bool),
 
 		///Returns the transpose of `self`.
-		transpose(&self) -> LuaMat3,
+		transpose(&self:) -> self,
 
 		///Returns the determinant of `self`.
-		determinant(&self) -> f32,
+		determinant(&self:) -> Raw(f32),
 
 		///Returns the inverse of `self`.
 		///
@@ -6184,39 +6327,39 @@ impl_lua_newtype!{
 		///# Panics
 		///
 		///Will panic if the determinant of `self` is zero when `glam_assert` is enabled.
-		inverse(&self) -> LuaMat3,
+		inverse(&self:) -> self,
 
 		///Transforms the given 2D vector as a point.
 		///
 		///This is the equivalent of multiplying `rhs` as a 3D vector where `z` is `1`.
 		///
 		///This method assumes that `self` contains a valid affine transform.
-		transform_point2(&self,LuaVec2) -> LuaVec2,
+		transform_point2(&self:Wrapped(Vec2)) -> Wrapped(Vec2),
 
 		///Rotates the given 2D vector.
 		///
 		///This is the equivalent of multiplying `rhs` as a 3D vector where `z` is `0`.
 		///
 		///This method assumes that `self` contains a valid affine transform.
-		transform_vector2(&self,LuaVec2) -> LuaVec2,
+		transform_vector2(&self:Wrapped(Vec2)) -> Wrapped(Vec2),
 
 		///Transforms a 3D vector.
-		mul_vec3(&self,LuaVec3) -> LuaVec3,
+		mul_vec3(&self:Wrapped(Vec3)) -> Wrapped(Vec3),
 
 		///Transforms a `Vec3A`.
-		mul_vec3a(&self,LuaVec3A) -> LuaVec3A,
+		mul_vec3a(&self:Wrapped(Vec3A)) -> Wrapped(Vec3A),
 
 		///Multiplies two 3x3 matrices.
-		mul_mat3(&self,&LuaMat3) -> LuaMat3,
+		mul_mat3(&self:&self) -> self,
 
 		///Adds two 3x3 matrices.
-		add_mat3(&self,&LuaMat3) -> LuaMat3,
+		add_mat3(&self:&self) -> self,
 
 		///Subtracts two 3x3 matrices.
-		sub_mat3(&self,&LuaMat3) -> LuaMat3,
+		sub_mat3(&self:&self) -> self,
 
 		///Multiplies a 3x3 matrix by a scalar.
-		mul_scalar(&self,f32) -> LuaMat3,
+		mul_scalar(&self:Raw(f32)) -> self,
 
 		///Returns true if the absolute difference of all elements between `self` and `rhs`
 		///is less than or equal to `max_abs_diff`.
@@ -6227,21 +6370,13 @@ impl_lua_newtype!{
 		///
 		///For more see
 		///[comparing floating point numbers](https://randomascii.wordpress.com/2012/02/25/comparing-floating-point-numbers-2012-edition/).
-		abs_diff_eq(&self,LuaMat3,f32) -> bool,
+		abs_diff_eq(&self:self,Raw(f32)) -> Raw(bool),
 
-		as_dmat3(&self) -> LuaDMat3,
+		as_dmat3(&self:) -> Wrapped(DMat3),
 
 	)
 	+ BinOps
 	(
-		self Add LuaMat3 -> LuaMat3,
-		self Sub LuaMat3 -> LuaMat3,
-		self Mul LuaAffine2 -> LuaMat3,
-		self Mul LuaMat3 -> LuaMat3,
-		self Mul LuaVec3 -> LuaVec3,
-		f32 Mul self -> LuaMat3,
-		self Mul f32 -> LuaMat3,
-		self Mul LuaVec3A -> LuaVec3A,
 	)
 	+ UnaryOps
 	(
@@ -6282,50 +6417,57 @@ impl_lua_newtype!{
 	Fields
 	(
 	)
-	+ AutoMethods
+	+ Methods
 	(
 		///Creates a 2x2 matrix from two column vectors.
-		from_cols(LuaVec2,LuaVec2) -> LuaMat2,
+		from_cols(Wrapped(Vec2),Wrapped(Vec2)) -> self,
 
 		///Creates a 2x2 matrix with its diagonal set to `diagonal` and all other entries set to 0.
-		from_diagonal(LuaVec2) -> LuaMat2,
+		from_diagonal(Wrapped(Vec2)) -> self,
 
 		///Creates a 2x2 matrix containing the combining non-uniform `scale` and rotation of
 		///`angle` (in radians).
-		from_scale_angle(LuaVec2,f32) -> LuaMat2,
+		from_scale_angle(Wrapped(Vec2),Raw(f32)) -> self,
 
 		///Creates a 2x2 matrix containing a rotation of `angle` (in radians).
-		from_angle(f32) -> LuaMat2,
+		from_angle(Raw(f32)) -> self,
 
 		///Creates a 2x2 matrix from a 3x3 matrix, discarding the 2nd row and column.
-		from_mat3(LuaMat3) -> LuaMat2,
+		from_mat3(Wrapped(Mat3)) -> self,
 
 		///Returns the matrix column for the given `index`.
 		///
 		///# Panics
 		///
 		///Panics if `index` is greater than 1.
-		col(&self,usize) -> LuaVec2,
+		col(&self:Raw(usize)) -> Wrapped(Vec2),
+
+		// ///Returns a mutable reference to the matrix column for the given `index`.
+		// ///
+		// ///# Panics
+		// ///
+		// ///Panics if `index` is greater than 1.
+		// col_mut(&mut self:Raw(usize)) -> Wrapped(&mut Vec2),
 
 		///Returns the matrix row for the given `index`.
 		///
 		///# Panics
 		///
 		///Panics if `index` is greater than 1.
-		row(&self,usize) -> LuaVec2,
+		row(&self:Raw(usize)) -> Wrapped(Vec2),
 
 		///Returns `true` if, and only if, all elements are finite.
 		///If any element is either `NaN`, positive or negative infinity, this will return `false`.
-		is_finite(&self) -> bool,
+		is_finite(&self:) -> Raw(bool),
 
 		///Returns `true` if any elements are `NaN`.
-		is_nan(&self) -> bool,
+		is_nan(&self:) -> Raw(bool),
 
 		///Returns the transpose of `self`.
-		transpose(&self) -> LuaMat2,
+		transpose(&self:) -> self,
 
 		///Returns the determinant of `self`.
-		determinant(&self) -> f32,
+		determinant(&self:) -> Raw(f32),
 
 		///Returns the inverse of `self`.
 		///
@@ -6334,22 +6476,22 @@ impl_lua_newtype!{
 		///# Panics
 		///
 		///Will panic if the determinant of `self` is zero when `glam_assert` is enabled.
-		inverse(&self) -> LuaMat2,
+		inverse(&self:) -> self,
 
 		///Transforms a 2D vector.
-		mul_vec2(&self,LuaVec2) -> LuaVec2,
+		mul_vec2(&self:Wrapped(Vec2)) -> Wrapped(Vec2),
 
 		///Multiplies two 2x2 matrices.
-		mul_mat2(&self,&LuaMat2) -> LuaMat2,
+		mul_mat2(&self:&self) -> self,
 
 		///Adds two 2x2 matrices.
-		add_mat2(&self,&LuaMat2) -> LuaMat2,
+		add_mat2(&self:&self) -> self,
 
 		///Subtracts two 2x2 matrices.
-		sub_mat2(&self,&LuaMat2) -> LuaMat2,
+		sub_mat2(&self:&self) -> self,
 
 		///Multiplies a 2x2 matrix by a scalar.
-		mul_scalar(&self,f32) -> LuaMat2,
+		mul_scalar(&self:Raw(f32)) -> self,
 
 		///Returns true if the absolute difference of all elements between `self` and `rhs`
 		///is less than or equal to `max_abs_diff`.
@@ -6360,19 +6502,13 @@ impl_lua_newtype!{
 		///
 		///For more see
 		///[comparing floating point numbers](https://randomascii.wordpress.com/2012/02/25/comparing-floating-point-numbers-2012-edition/).
-		abs_diff_eq(&self,LuaMat2,f32) -> bool,
+		abs_diff_eq(&self:self,Raw(f32)) -> Raw(bool),
 
-		as_dmat2(&self) -> LuaDMat2,
+		as_dmat2(&self:) -> Wrapped(DMat2),
 
 	)
 	+ BinOps
 	(
-		self Add LuaMat2 -> LuaMat2,
-		self Sub LuaMat2 -> LuaMat2,
-		self Mul LuaMat2 -> LuaMat2,
-		self Mul LuaVec2 -> LuaVec2,
-		f32 Mul self -> LuaMat2,
-		self Mul f32 -> LuaMat2,
 	)
 	+ UnaryOps
 	(
@@ -6435,27 +6571,27 @@ impl_lua_newtype!{
 	FromLuaProxy +
 	Fields
 	(
-		x_axis: LuaVec3A,
-		y_axis: LuaVec3A,
-		z_axis: LuaVec3A,
+		x_axis: Wrapped(Vec3A),
+		y_axis: Wrapped(Vec3A),
+		z_axis: Wrapped(Vec3A),
 	)
-	+ AutoMethods
+	+ Methods
 	(
 		///Creates a 3x3 matrix from two column vectors.
-		from_cols(LuaVec3A,LuaVec3A,LuaVec3A) -> LuaMat3A,
+		from_cols(Wrapped(Vec3A),Wrapped(Vec3A),Wrapped(Vec3A)) -> self,
 
 		///Creates a 3x3 matrix with its diagonal set to `diagonal` and all other entries set to 0.
-		from_diagonal(LuaVec3) -> LuaMat3A,
+		from_diagonal(Wrapped(Vec3)) -> self,
 
 		///Creates a 3x3 matrix from a 4x4 matrix, discarding the 3rd row and column.
-		from_mat4(LuaMat4) -> LuaMat3A,
+		from_mat4(Wrapped(Mat4)) -> self,
 
 		///Creates a 3D rotation matrix from the given quaternion.
 		///
 		///# Panics
 		///
 		///Will panic if `rotation` is not normalized when `glam_assert` is enabled.
-		from_quat(LuaQuat) -> LuaMat3A,
+		from_quat(Wrapped(Quat)) -> self,
 
 		///Creates a 3D rotation matrix from a normalized rotation `axis` and `angle` (in
 		///radians).
@@ -6463,40 +6599,40 @@ impl_lua_newtype!{
 		///# Panics
 		///
 		///Will panic if `axis` is not normalized when `glam_assert` is enabled.
-		from_axis_angle(LuaVec3,f32) -> LuaMat3A,
+		from_axis_angle(Wrapped(Vec3),Raw(f32)) -> self,
 
 		///Creates a 3D rotation matrix from the given euler rotation sequence and the angles (in
 		///radians).
-		from_euler(LuaEulerRot,f32,f32,f32) -> LuaMat3A,
+		from_euler(Wrapped(EulerRot),Raw(f32),Raw(f32),Raw(f32)) -> self,
 
 		///Creates a 3D rotation matrix from `angle` (in radians) around the x axis.
-		from_rotation_x(f32) -> LuaMat3A,
+		from_rotation_x(Raw(f32)) -> self,
 
 		///Creates a 3D rotation matrix from `angle` (in radians) around the y axis.
-		from_rotation_y(f32) -> LuaMat3A,
+		from_rotation_y(Raw(f32)) -> self,
 
 		///Creates a 3D rotation matrix from `angle` (in radians) around the z axis.
-		from_rotation_z(f32) -> LuaMat3A,
+		from_rotation_z(Raw(f32)) -> self,
 
 		///Creates an affine transformation matrix from the given 2D `translation`.
 		///
 		///The resulting matrix can be used to transform 2D points and vectors. See
 		///[`Self::transform_point2()`] and [`Self::transform_vector2()`].
-		from_translation(LuaVec2) -> LuaMat3A,
+		from_translation(Wrapped(Vec2)) -> self,
 
 		///Creates an affine transformation matrix from the given 2D rotation `angle` (in
 		///radians).
 		///
 		///The resulting matrix can be used to transform 2D points and vectors. See
 		///[`Self::transform_point2()`] and [`Self::transform_vector2()`].
-		from_angle(f32) -> LuaMat3A,
+		from_angle(Raw(f32)) -> self,
 
 		///Creates an affine transformation matrix from the given 2D `scale`, rotation `angle` (in
 		///radians) and `translation`.
 		///
 		///The resulting matrix can be used to transform 2D points and vectors. See
 		///[`Self::transform_point2()`] and [`Self::transform_vector2()`].
-		from_scale_angle_translation(LuaVec2,f32,LuaVec2) -> LuaMat3A,
+		from_scale_angle_translation(Wrapped(Vec2),Raw(f32),Wrapped(Vec2)) -> self,
 
 		///Creates an affine transformation matrix from the given non-uniform 2D `scale`.
 		///
@@ -6506,40 +6642,47 @@ impl_lua_newtype!{
 		///# Panics
 		///
 		///Will panic if all elements of `scale` are zero when `glam_assert` is enabled.
-		from_scale(LuaVec2) -> LuaMat3A,
+		from_scale(Wrapped(Vec2)) -> self,
 
 		///Creates an affine transformation matrix from the given 2x2 matrix.
 		///
 		///The resulting matrix can be used to transform 2D points and vectors. See
 		///[`Self::transform_point2()`] and [`Self::transform_vector2()`].
-		from_mat2(LuaMat2) -> LuaMat3A,
+		from_mat2(Wrapped(Mat2)) -> self,
 
 		///Returns the matrix column for the given `index`.
 		///
 		///# Panics
 		///
 		///Panics if `index` is greater than 2.
-		col(&self,usize) -> LuaVec3A,
+		col(&self:Raw(usize)) -> Wrapped(Vec3A),
+
+		// ///Returns a mutable reference to the matrix column for the given `index`.
+		// ///
+		// ///# Panics
+		// ///
+		// ///Panics if `index` is greater than 2.
+		// col_mut(&mut self:Raw(usize)) -> Wrapped(&mut Vec3A),
 
 		///Returns the matrix row for the given `index`.
 		///
 		///# Panics
 		///
 		///Panics if `index` is greater than 2.
-		row(&self,usize) -> LuaVec3A,
+		row(&self:Raw(usize)) -> Wrapped(Vec3A),
 
 		///Returns `true` if, and only if, all elements are finite.
 		///If any element is either `NaN`, positive or negative infinity, this will return `false`.
-		is_finite(&self) -> bool,
+		is_finite(&self:) -> Raw(bool),
 
 		///Returns `true` if any elements are `NaN`.
-		is_nan(&self) -> bool,
+		is_nan(&self:) -> Raw(bool),
 
 		///Returns the transpose of `self`.
-		transpose(&self) -> LuaMat3A,
+		transpose(&self:) -> self,
 
 		///Returns the determinant of `self`.
-		determinant(&self) -> f32,
+		determinant(&self:) -> Raw(f32),
 
 		///Returns the inverse of `self`.
 		///
@@ -6548,39 +6691,39 @@ impl_lua_newtype!{
 		///# Panics
 		///
 		///Will panic if the determinant of `self` is zero when `glam_assert` is enabled.
-		inverse(&self) -> LuaMat3A,
+		inverse(&self:) -> self,
 
 		///Transforms the given 2D vector as a point.
 		///
 		///This is the equivalent of multiplying `rhs` as a 3D vector where `z` is `1`.
 		///
 		///This method assumes that `self` contains a valid affine transform.
-		transform_point2(&self,LuaVec2) -> LuaVec2,
+		transform_point2(&self:Wrapped(Vec2)) -> Wrapped(Vec2),
 
 		///Rotates the given 2D vector.
 		///
 		///This is the equivalent of multiplying `rhs` as a 3D vector where `z` is `0`.
 		///
 		///This method assumes that `self` contains a valid affine transform.
-		transform_vector2(&self,LuaVec2) -> LuaVec2,
+		transform_vector2(&self:Wrapped(Vec2)) -> Wrapped(Vec2),
 
 		///Transforms a 3D vector.
-		mul_vec3(&self,LuaVec3) -> LuaVec3,
+		mul_vec3(&self:Wrapped(Vec3)) -> Wrapped(Vec3),
 
 		///Transforms a `Vec3A`.
-		mul_vec3a(&self,LuaVec3A) -> LuaVec3A,
+		mul_vec3a(&self:Wrapped(Vec3A)) -> Wrapped(Vec3A),
 
 		///Multiplies two 3x3 matrices.
-		mul_mat3(&self,&LuaMat3A) -> LuaMat3A,
+		mul_mat3(&self:&self) -> self,
 
 		///Adds two 3x3 matrices.
-		add_mat3(&self,&LuaMat3A) -> LuaMat3A,
+		add_mat3(&self:&self) -> self,
 
 		///Subtracts two 3x3 matrices.
-		sub_mat3(&self,&LuaMat3A) -> LuaMat3A,
+		sub_mat3(&self:&self) -> self,
 
 		///Multiplies a 3x3 matrix by a scalar.
-		mul_scalar(&self,f32) -> LuaMat3A,
+		mul_scalar(&self:Raw(f32)) -> self,
 
 		///Returns true if the absolute difference of all elements between `self` and `rhs`
 		///is less than or equal to `max_abs_diff`.
@@ -6591,21 +6734,13 @@ impl_lua_newtype!{
 		///
 		///For more see
 		///[comparing floating point numbers](https://randomascii.wordpress.com/2012/02/25/comparing-floating-point-numbers-2012-edition/).
-		abs_diff_eq(&self,LuaMat3A,f32) -> bool,
+		abs_diff_eq(&self:self,Raw(f32)) -> Raw(bool),
 
-		as_dmat3(&self) -> LuaDMat3,
+		as_dmat3(&self:) -> Wrapped(DMat3),
 
 	)
 	+ BinOps
 	(
-		self Add LuaMat3A -> LuaMat3A,
-		self Sub LuaMat3A -> LuaMat3A,
-		self Mul LuaAffine2 -> LuaMat3A,
-		self Mul LuaMat3A -> LuaMat3A,
-		self Mul LuaVec3A -> LuaVec3A,
-		f32 Mul self -> LuaMat3A,
-		self Mul f32 -> LuaMat3A,
-		self Mul LuaVec3 -> LuaVec3,
 	)
 	+ UnaryOps
 	(
@@ -6673,18 +6808,18 @@ impl_lua_newtype!{
 	FromLuaProxy +
 	Fields
 	(
-		x_axis: LuaVec4,
-		y_axis: LuaVec4,
-		z_axis: LuaVec4,
-		w_axis: LuaVec4,
+		x_axis: Wrapped(Vec4),
+		y_axis: Wrapped(Vec4),
+		z_axis: Wrapped(Vec4),
+		w_axis: Wrapped(Vec4),
 	)
-	+ AutoMethods
+	+ Methods
 	(
 		///Creates a 4x4 matrix from two column vectors.
-		from_cols(LuaVec4,LuaVec4,LuaVec4,LuaVec4) -> LuaMat4,
+		from_cols(Wrapped(Vec4),Wrapped(Vec4),Wrapped(Vec4),Wrapped(Vec4)) -> self,
 
 		///Creates a 4x4 matrix with its diagonal set to `diagonal` and all other entries set to 0.
-		from_diagonal(LuaVec4) -> LuaMat4,
+		from_diagonal(Wrapped(Vec4)) -> self,
 
 		///Creates an affine transformation matrix from the given 3D `scale`, `rotation` and
 		///`translation`.
@@ -6695,7 +6830,7 @@ impl_lua_newtype!{
 		///# Panics
 		///
 		///Will panic if `rotation` is not normalized when `glam_assert` is enabled.
-		from_scale_rotation_translation(LuaVec3,LuaQuat,LuaVec3) -> LuaMat4,
+		from_scale_rotation_translation(Wrapped(Vec3),Wrapped(Quat),Wrapped(Vec3)) -> self,
 
 		///Creates an affine transformation matrix from the given 3D `translation`.
 		///
@@ -6705,7 +6840,7 @@ impl_lua_newtype!{
 		///# Panics
 		///
 		///Will panic if `rotation` is not normalized when `glam_assert` is enabled.
-		from_rotation_translation(LuaQuat,LuaVec3) -> LuaMat4,
+		from_rotation_translation(Wrapped(Quat),Wrapped(Vec3)) -> self,
 
 		///Creates an affine transformation matrix from the given `rotation` quaternion.
 		///
@@ -6715,20 +6850,20 @@ impl_lua_newtype!{
 		///# Panics
 		///
 		///Will panic if `rotation` is not normalized when `glam_assert` is enabled.
-		from_quat(LuaQuat) -> LuaMat4,
+		from_quat(Wrapped(Quat)) -> self,
 
 		///Creates an affine transformation matrix from the given 3x3 linear transformation
 		///matrix.
 		///
 		///The resulting matrix can be used to transform 3D points and vectors. See
 		///[`Self::transform_point3()`] and [`Self::transform_vector3()`].
-		from_mat3(LuaMat3) -> LuaMat4,
+		from_mat3(Wrapped(Mat3)) -> self,
 
 		///Creates an affine transformation matrix from the given 3D `translation`.
 		///
 		///The resulting matrix can be used to transform 3D points and vectors. See
 		///[`Self::transform_point3()`] and [`Self::transform_vector3()`].
-		from_translation(LuaVec3) -> LuaMat4,
+		from_translation(Wrapped(Vec3)) -> self,
 
 		///Creates an affine transformation matrix containing a 3D rotation around a normalized
 		///rotation `axis` of `angle` (in radians).
@@ -6739,35 +6874,35 @@ impl_lua_newtype!{
 		///# Panics
 		///
 		///Will panic if `axis` is not normalized when `glam_assert` is enabled.
-		from_axis_angle(LuaVec3,f32) -> LuaMat4,
+		from_axis_angle(Wrapped(Vec3),Raw(f32)) -> self,
 
 		///Creates a affine transformation matrix containing a rotation from the given euler
 		///rotation sequence and angles (in radians).
 		///
 		///The resulting matrix can be used to transform 3D points and vectors. See
 		///[`Self::transform_point3()`] and [`Self::transform_vector3()`].
-		from_euler(LuaEulerRot,f32,f32,f32) -> LuaMat4,
+		from_euler(Wrapped(EulerRot),Raw(f32),Raw(f32),Raw(f32)) -> self,
 
 		///Creates an affine transformation matrix containing a 3D rotation around the x axis of
 		///`angle` (in radians).
 		///
 		///The resulting matrix can be used to transform 3D points and vectors. See
 		///[`Self::transform_point3()`] and [`Self::transform_vector3()`].
-		from_rotation_x(f32) -> LuaMat4,
+		from_rotation_x(Raw(f32)) -> self,
 
 		///Creates an affine transformation matrix containing a 3D rotation around the y axis of
 		///`angle` (in radians).
 		///
 		///The resulting matrix can be used to transform 3D points and vectors. See
 		///[`Self::transform_point3()`] and [`Self::transform_vector3()`].
-		from_rotation_y(f32) -> LuaMat4,
+		from_rotation_y(Raw(f32)) -> self,
 
 		///Creates an affine transformation matrix containing a 3D rotation around the z axis of
 		///`angle` (in radians).
 		///
 		///The resulting matrix can be used to transform 3D points and vectors. See
 		///[`Self::transform_point3()`] and [`Self::transform_vector3()`].
-		from_rotation_z(f32) -> LuaMat4,
+		from_rotation_z(Raw(f32)) -> self,
 
 		///Creates an affine transformation matrix containing the given 3D non-uniform `scale`.
 		///
@@ -6777,34 +6912,41 @@ impl_lua_newtype!{
 		///# Panics
 		///
 		///Will panic if all elements of `scale` are zero when `glam_assert` is enabled.
-		from_scale(LuaVec3) -> LuaMat4,
+		from_scale(Wrapped(Vec3)) -> self,
 
 		///Returns the matrix column for the given `index`.
 		///
 		///# Panics
 		///
 		///Panics if `index` is greater than 3.
-		col(&self,usize) -> LuaVec4,
+		col(&self:Raw(usize)) -> Wrapped(Vec4),
+
+		// ///Returns a mutable reference to the matrix column for the given `index`.
+		// ///
+		// ///# Panics
+		// ///
+		// ///Panics if `index` is greater than 3.
+		// col_mut(&mut self:Raw(usize)) -> Wrapped(&mut Vec4),
 
 		///Returns the matrix row for the given `index`.
 		///
 		///# Panics
 		///
 		///Panics if `index` is greater than 3.
-		row(&self,usize) -> LuaVec4,
+		row(&self:Raw(usize)) -> Wrapped(Vec4),
 
 		///Returns `true` if, and only if, all elements are finite.
 		///If any element is either `NaN`, positive or negative infinity, this will return `false`.
-		is_finite(&self) -> bool,
+		is_finite(&self:) -> Raw(bool),
 
 		///Returns `true` if any elements are `NaN`.
-		is_nan(&self) -> bool,
+		is_nan(&self:) -> Raw(bool),
 
 		///Returns the transpose of `self`.
-		transpose(&self) -> LuaMat4,
+		transpose(&self:) -> self,
 
 		///Returns the determinant of `self`.
-		determinant(&self) -> f32,
+		determinant(&self:) -> Raw(f32),
 
 		///Returns the inverse of `self`.
 		///
@@ -6813,7 +6955,7 @@ impl_lua_newtype!{
 		///# Panics
 		///
 		///Will panic if the determinant of `self` is zero when `glam_assert` is enabled.
-		inverse(&self) -> LuaMat4,
+		inverse(&self:) -> self,
 
 		///Creates a left-handed view matrix using a camera position, an up direction, and a focal
 		///point.
@@ -6822,7 +6964,7 @@ impl_lua_newtype!{
 		///# Panics
 		///
 		///Will panic if `up` is not normalized when `glam_assert` is enabled.
-		look_at_lh(LuaVec3,LuaVec3,LuaVec3) -> LuaMat4,
+		look_at_lh(Wrapped(Vec3),Wrapped(Vec3),Wrapped(Vec3)) -> self,
 
 		///Creates a right-handed view matrix using a camera position, an up direction, and a focal
 		///point.
@@ -6831,12 +6973,12 @@ impl_lua_newtype!{
 		///# Panics
 		///
 		///Will panic if `up` is not normalized when `glam_assert` is enabled.
-		look_at_rh(LuaVec3,LuaVec3,LuaVec3) -> LuaMat4,
+		look_at_rh(Wrapped(Vec3),Wrapped(Vec3),Wrapped(Vec3)) -> self,
 
 		///Creates a right-handed perspective projection matrix with [-1,1] depth range.
 		///This is the same as the OpenGL `gluPerspective` function.
 		///See <https://www.khronos.org/registry/OpenGL-Refpages/gl2.1/xhtml/gluPerspective.xml>
-		perspective_rh_gl(f32,f32,f32,f32) -> LuaMat4,
+		perspective_rh_gl(Raw(f32),Raw(f32),Raw(f32),Raw(f32)) -> self,
 
 		///Creates a left-handed perspective projection matrix with `[0,1]` depth range.
 		///
@@ -6844,7 +6986,7 @@ impl_lua_newtype!{
 		///
 		///Will panic if `z_near` or `z_far` are less than or equal to zero when `glam_assert` is
 		///enabled.
-		perspective_lh(f32,f32,f32,f32) -> LuaMat4,
+		perspective_lh(Raw(f32),Raw(f32),Raw(f32),Raw(f32)) -> self,
 
 		///Creates a right-handed perspective projection matrix with `[0,1]` depth range.
 		///
@@ -6852,41 +6994,41 @@ impl_lua_newtype!{
 		///
 		///Will panic if `z_near` or `z_far` are less than or equal to zero when `glam_assert` is
 		///enabled.
-		perspective_rh(f32,f32,f32,f32) -> LuaMat4,
+		perspective_rh(Raw(f32),Raw(f32),Raw(f32),Raw(f32)) -> self,
 
 		///Creates an infinite left-handed perspective projection matrix with `[0,1]` depth range.
 		///
 		///# Panics
 		///
 		///Will panic if `z_near` is less than or equal to zero when `glam_assert` is enabled.
-		perspective_infinite_lh(f32,f32,f32) -> LuaMat4,
+		perspective_infinite_lh(Raw(f32),Raw(f32),Raw(f32)) -> self,
 
 		///Creates an infinite left-handed perspective projection matrix with `[0,1]` depth range.
 		///
 		///# Panics
 		///
 		///Will panic if `z_near` is less than or equal to zero when `glam_assert` is enabled.
-		perspective_infinite_reverse_lh(f32,f32,f32) -> LuaMat4,
+		perspective_infinite_reverse_lh(Raw(f32),Raw(f32),Raw(f32)) -> self,
 
 		///Creates an infinite right-handed perspective projection matrix with
 		///`[0,1]` depth range.
-		perspective_infinite_rh(f32,f32,f32) -> LuaMat4,
+		perspective_infinite_rh(Raw(f32),Raw(f32),Raw(f32)) -> self,
 
 		///Creates an infinite reverse right-handed perspective projection matrix
 		///with `[0,1]` depth range.
-		perspective_infinite_reverse_rh(f32,f32,f32) -> LuaMat4,
+		perspective_infinite_reverse_rh(Raw(f32),Raw(f32),Raw(f32)) -> self,
 
 		///Creates a right-handed orthographic projection matrix with `[-1,1]` depth
 		///range.  This is the same as the OpenGL `glOrtho` function in OpenGL.
 		///See
 		///<https://www.khronos.org/registry/OpenGL-Refpages/gl2.1/xhtml/glOrtho.xml>
-		orthographic_rh_gl(f32,f32,f32,f32,f32,f32) -> LuaMat4,
+		orthographic_rh_gl(Raw(f32),Raw(f32),Raw(f32),Raw(f32),Raw(f32),Raw(f32)) -> self,
 
 		///Creates a left-handed orthographic projection matrix with `[0,1]` depth range.
-		orthographic_lh(f32,f32,f32,f32,f32,f32) -> LuaMat4,
+		orthographic_lh(Raw(f32),Raw(f32),Raw(f32),Raw(f32),Raw(f32),Raw(f32)) -> self,
 
 		///Creates a right-handed orthographic projection matrix with `[0,1]` depth range.
-		orthographic_rh(f32,f32,f32,f32,f32,f32) -> LuaMat4,
+		orthographic_rh(Raw(f32),Raw(f32),Raw(f32),Raw(f32),Raw(f32),Raw(f32)) -> self,
 
 		///Transforms the given 3D vector as a point, applying perspective correction.
 		///
@@ -6894,7 +7036,7 @@ impl_lua_newtype!{
 		///The perspective divide is performed meaning the resulting 3D vector is divided by `w`.
 		///
 		///This method assumes that `self` contains a projective transform.
-		project_point3(&self,LuaVec3) -> LuaVec3,
+		project_point3(&self:Wrapped(Vec3)) -> Wrapped(Vec3),
 
 		///Transforms the given 3D vector as a point.
 		///
@@ -6908,7 +7050,7 @@ impl_lua_newtype!{
 		///# Panics
 		///
 		///Will panic if the 3rd row of `self` is not `(0, 0, 0, 1)` when `glam_assert` is enabled.
-		transform_point3(&self,LuaVec3) -> LuaVec3,
+		transform_point3(&self:Wrapped(Vec3)) -> Wrapped(Vec3),
 
 		///Transforms the give 3D vector as a direction.
 		///
@@ -6920,32 +7062,32 @@ impl_lua_newtype!{
 		///# Panics
 		///
 		///Will panic if the 3rd row of `self` is not `(0, 0, 0, 1)` when `glam_assert` is enabled.
-		transform_vector3(&self,LuaVec3) -> LuaVec3,
+		transform_vector3(&self:Wrapped(Vec3)) -> Wrapped(Vec3),
 
 		///Transforms the given `Vec3A` as 3D point.
 		///
 		///This is the equivalent of multiplying the `Vec3A` as a 4D vector where `w` is `1.0`.
-		transform_point3a(&self,LuaVec3A) -> LuaVec3A,
+		transform_point3a(&self:Wrapped(Vec3A)) -> Wrapped(Vec3A),
 
 		///Transforms the give `Vec3A` as 3D vector.
 		///
 		///This is the equivalent of multiplying the `Vec3A` as a 4D vector where `w` is `0.0`.
-		transform_vector3a(&self,LuaVec3A) -> LuaVec3A,
+		transform_vector3a(&self:Wrapped(Vec3A)) -> Wrapped(Vec3A),
 
 		///Transforms a 4D vector.
-		mul_vec4(&self,LuaVec4) -> LuaVec4,
+		mul_vec4(&self:Wrapped(Vec4)) -> Wrapped(Vec4),
 
 		///Multiplies two 4x4 matrices.
-		mul_mat4(&self,&LuaMat4) -> LuaMat4,
+		mul_mat4(&self:&self) -> self,
 
 		///Adds two 4x4 matrices.
-		add_mat4(&self,&LuaMat4) -> LuaMat4,
+		add_mat4(&self:&self) -> self,
 
 		///Subtracts two 4x4 matrices.
-		sub_mat4(&self,&LuaMat4) -> LuaMat4,
+		sub_mat4(&self:&self) -> self,
 
 		///Multiplies a 4x4 matrix by a scalar.
-		mul_scalar(&self,f32) -> LuaMat4,
+		mul_scalar(&self:Raw(f32)) -> self,
 
 		///Returns true if the absolute difference of all elements between `self` and `rhs`
 		///is less than or equal to `max_abs_diff`.
@@ -6956,20 +7098,13 @@ impl_lua_newtype!{
 		///
 		///For more see
 		///[comparing floating point numbers](https://randomascii.wordpress.com/2012/02/25/comparing-floating-point-numbers-2012-edition/).
-		abs_diff_eq(&self,LuaMat4,f32) -> bool,
+		abs_diff_eq(&self:self,Raw(f32)) -> Raw(bool),
 
-		as_dmat4(&self) -> LuaDMat4,
+		as_dmat4(&self:) -> Wrapped(DMat4),
 
 	)
 	+ BinOps
 	(
-		self Add LuaMat4 -> LuaMat4,
-		self Sub LuaMat4 -> LuaMat4,
-		self Mul LuaAffine3A -> LuaMat4,
-		self Mul LuaMat4 -> LuaMat4,
-		self Mul LuaVec4 -> LuaVec4,
-		f32 Mul self -> LuaMat4,
-		self Mul f32 -> LuaMat4,
 	)
 	+ UnaryOps
 	(
@@ -7009,53 +7144,60 @@ impl_lua_newtype!{
 	FromLuaProxy +
 	Fields
 	(
-		x_axis: LuaDVec2,
-		y_axis: LuaDVec2,
+		x_axis: Wrapped(DVec2),
+		y_axis: Wrapped(DVec2),
 	)
-	+ AutoMethods
+	+ Methods
 	(
 		///Creates a 2x2 matrix from two column vectors.
-		from_cols(LuaDVec2,LuaDVec2) -> LuaDMat2,
+		from_cols(Wrapped(DVec2),Wrapped(DVec2)) -> self,
 
 		///Creates a 2x2 matrix with its diagonal set to `diagonal` and all other entries set to 0.
-		from_diagonal(LuaDVec2) -> LuaDMat2,
+		from_diagonal(Wrapped(DVec2)) -> self,
 
 		///Creates a 2x2 matrix containing the combining non-uniform `scale` and rotation of
 		///`angle` (in radians).
-		from_scale_angle(LuaDVec2,f64) -> LuaDMat2,
+		from_scale_angle(Wrapped(DVec2),Raw(f64)) -> self,
 
 		///Creates a 2x2 matrix containing a rotation of `angle` (in radians).
-		from_angle(f64) -> LuaDMat2,
+		from_angle(Raw(f64)) -> self,
 
 		///Creates a 2x2 matrix from a 3x3 matrix, discarding the 2nd row and column.
-		from_mat3(LuaDMat3) -> LuaDMat2,
+		from_mat3(Wrapped(DMat3)) -> self,
 
 		///Returns the matrix column for the given `index`.
 		///
 		///# Panics
 		///
 		///Panics if `index` is greater than 1.
-		col(&self,usize) -> LuaDVec2,
+		col(&self:Raw(usize)) -> Wrapped(DVec2),
+
+		// ///Returns a mutable reference to the matrix column for the given `index`.
+		// ///
+		// ///# Panics
+		// ///
+		// ///Panics if `index` is greater than 1.
+		// col_mut(&mut self:Raw(usize)) -> Wrapped(&mut DVec2),
 
 		///Returns the matrix row for the given `index`.
 		///
 		///# Panics
 		///
 		///Panics if `index` is greater than 1.
-		row(&self,usize) -> LuaDVec2,
+		row(&self:Raw(usize)) -> Wrapped(DVec2),
 
 		///Returns `true` if, and only if, all elements are finite.
 		///If any element is either `NaN`, positive or negative infinity, this will return `false`.
-		is_finite(&self) -> bool,
+		is_finite(&self:) -> Raw(bool),
 
 		///Returns `true` if any elements are `NaN`.
-		is_nan(&self) -> bool,
+		is_nan(&self:) -> Raw(bool),
 
 		///Returns the transpose of `self`.
-		transpose(&self) -> LuaDMat2,
+		transpose(&self:) -> self,
 
 		///Returns the determinant of `self`.
-		determinant(&self) -> f64,
+		determinant(&self:) -> Raw(f64),
 
 		///Returns the inverse of `self`.
 		///
@@ -7064,22 +7206,22 @@ impl_lua_newtype!{
 		///# Panics
 		///
 		///Will panic if the determinant of `self` is zero when `glam_assert` is enabled.
-		inverse(&self) -> LuaDMat2,
+		inverse(&self:) -> self,
 
 		///Transforms a 2D vector.
-		mul_vec2(&self,LuaDVec2) -> LuaDVec2,
+		mul_vec2(&self:Wrapped(DVec2)) -> Wrapped(DVec2),
 
 		///Multiplies two 2x2 matrices.
-		mul_mat2(&self,&LuaDMat2) -> LuaDMat2,
+		mul_mat2(&self:&self) -> self,
 
 		///Adds two 2x2 matrices.
-		add_mat2(&self,&LuaDMat2) -> LuaDMat2,
+		add_mat2(&self:&self) -> self,
 
 		///Subtracts two 2x2 matrices.
-		sub_mat2(&self,&LuaDMat2) -> LuaDMat2,
+		sub_mat2(&self:&self) -> self,
 
 		///Multiplies a 2x2 matrix by a scalar.
-		mul_scalar(&self,f64) -> LuaDMat2,
+		mul_scalar(&self:Raw(f64)) -> self,
 
 		///Returns true if the absolute difference of all elements between `self` and `rhs`
 		///is less than or equal to `max_abs_diff`.
@@ -7090,19 +7232,13 @@ impl_lua_newtype!{
 		///
 		///For more see
 		///[comparing floating point numbers](https://randomascii.wordpress.com/2012/02/25/comparing-floating-point-numbers-2012-edition/).
-		abs_diff_eq(&self,LuaDMat2,f64) -> bool,
+		abs_diff_eq(&self:self,Raw(f64)) -> Raw(bool),
 
-		as_mat2(&self) -> LuaMat2,
+		as_mat2(&self:) -> Wrapped(Mat2),
 
 	)
 	+ BinOps
 	(
-		self Add LuaDMat2 -> LuaDMat2,
-		self Sub LuaDMat2 -> LuaDMat2,
-		self Mul LuaDMat2 -> LuaDMat2,
-		self Mul LuaDVec2 -> LuaDVec2,
-		f64 Mul self -> LuaDMat2,
-		self Mul f64 -> LuaDMat2,
 	)
 	+ UnaryOps
 	(
@@ -7165,27 +7301,27 @@ impl_lua_newtype!{
 	FromLuaProxy +
 	Fields
 	(
-		x_axis: LuaDVec3,
-		y_axis: LuaDVec3,
-		z_axis: LuaDVec3,
+		x_axis: Wrapped(DVec3),
+		y_axis: Wrapped(DVec3),
+		z_axis: Wrapped(DVec3),
 	)
-	+ AutoMethods
+	+ Methods
 	(
 		///Creates a 3x3 matrix from two column vectors.
-		from_cols(LuaDVec3,LuaDVec3,LuaDVec3) -> LuaDMat3,
+		from_cols(Wrapped(DVec3),Wrapped(DVec3),Wrapped(DVec3)) -> self,
 
 		///Creates a 3x3 matrix with its diagonal set to `diagonal` and all other entries set to 0.
-		from_diagonal(LuaDVec3) -> LuaDMat3,
+		from_diagonal(Wrapped(DVec3)) -> self,
 
 		///Creates a 3x3 matrix from a 4x4 matrix, discarding the 3rd row and column.
-		from_mat4(LuaDMat4) -> LuaDMat3,
+		from_mat4(Wrapped(DMat4)) -> self,
 
 		///Creates a 3D rotation matrix from the given quaternion.
 		///
 		///# Panics
 		///
 		///Will panic if `rotation` is not normalized when `glam_assert` is enabled.
-		from_quat(LuaDQuat) -> LuaDMat3,
+		from_quat(Wrapped(DQuat)) -> self,
 
 		///Creates a 3D rotation matrix from a normalized rotation `axis` and `angle` (in
 		///radians).
@@ -7193,40 +7329,40 @@ impl_lua_newtype!{
 		///# Panics
 		///
 		///Will panic if `axis` is not normalized when `glam_assert` is enabled.
-		from_axis_angle(LuaDVec3,f64) -> LuaDMat3,
+		from_axis_angle(Wrapped(DVec3),Raw(f64)) -> self,
 
 		///Creates a 3D rotation matrix from the given euler rotation sequence and the angles (in
 		///radians).
-		from_euler(LuaEulerRot,f64,f64,f64) -> LuaDMat3,
+		from_euler(Wrapped(EulerRot),Raw(f64),Raw(f64),Raw(f64)) -> self,
 
 		///Creates a 3D rotation matrix from `angle` (in radians) around the x axis.
-		from_rotation_x(f64) -> LuaDMat3,
+		from_rotation_x(Raw(f64)) -> self,
 
 		///Creates a 3D rotation matrix from `angle` (in radians) around the y axis.
-		from_rotation_y(f64) -> LuaDMat3,
+		from_rotation_y(Raw(f64)) -> self,
 
 		///Creates a 3D rotation matrix from `angle` (in radians) around the z axis.
-		from_rotation_z(f64) -> LuaDMat3,
+		from_rotation_z(Raw(f64)) -> self,
 
 		///Creates an affine transformation matrix from the given 2D `translation`.
 		///
 		///The resulting matrix can be used to transform 2D points and vectors. See
 		///[`Self::transform_point2()`] and [`Self::transform_vector2()`].
-		from_translation(LuaDVec2) -> LuaDMat3,
+		from_translation(Wrapped(DVec2)) -> self,
 
 		///Creates an affine transformation matrix from the given 2D rotation `angle` (in
 		///radians).
 		///
 		///The resulting matrix can be used to transform 2D points and vectors. See
 		///[`Self::transform_point2()`] and [`Self::transform_vector2()`].
-		from_angle(f64) -> LuaDMat3,
+		from_angle(Raw(f64)) -> self,
 
 		///Creates an affine transformation matrix from the given 2D `scale`, rotation `angle` (in
 		///radians) and `translation`.
 		///
 		///The resulting matrix can be used to transform 2D points and vectors. See
 		///[`Self::transform_point2()`] and [`Self::transform_vector2()`].
-		from_scale_angle_translation(LuaDVec2,f64,LuaDVec2) -> LuaDMat3,
+		from_scale_angle_translation(Wrapped(DVec2),Raw(f64),Wrapped(DVec2)) -> self,
 
 		///Creates an affine transformation matrix from the given non-uniform 2D `scale`.
 		///
@@ -7236,40 +7372,47 @@ impl_lua_newtype!{
 		///# Panics
 		///
 		///Will panic if all elements of `scale` are zero when `glam_assert` is enabled.
-		from_scale(LuaDVec2) -> LuaDMat3,
+		from_scale(Wrapped(DVec2)) -> self,
 
 		///Creates an affine transformation matrix from the given 2x2 matrix.
 		///
 		///The resulting matrix can be used to transform 2D points and vectors. See
 		///[`Self::transform_point2()`] and [`Self::transform_vector2()`].
-		from_mat2(LuaDMat2) -> LuaDMat3,
+		from_mat2(Wrapped(DMat2)) -> self,
 
 		///Returns the matrix column for the given `index`.
 		///
 		///# Panics
 		///
 		///Panics if `index` is greater than 2.
-		col(&self,usize) -> LuaDVec3,
+		col(&self:Raw(usize)) -> Wrapped(DVec3),
+
+		// ///Returns a mutable reference to the matrix column for the given `index`.
+		// ///
+		// ///# Panics
+		// ///
+		// ///Panics if `index` is greater than 2.
+		// col_mut(&mut self:Raw(usize)) -> Wrapped(&mut DVec3),
 
 		///Returns the matrix row for the given `index`.
 		///
 		///# Panics
 		///
 		///Panics if `index` is greater than 2.
-		row(&self,usize) -> LuaDVec3,
+		row(&self:Raw(usize)) -> Wrapped(DVec3),
 
 		///Returns `true` if, and only if, all elements are finite.
 		///If any element is either `NaN`, positive or negative infinity, this will return `false`.
-		is_finite(&self) -> bool,
+		is_finite(&self:) -> Raw(bool),
 
 		///Returns `true` if any elements are `NaN`.
-		is_nan(&self) -> bool,
+		is_nan(&self:) -> Raw(bool),
 
 		///Returns the transpose of `self`.
-		transpose(&self) -> LuaDMat3,
+		transpose(&self:) -> self,
 
 		///Returns the determinant of `self`.
-		determinant(&self) -> f64,
+		determinant(&self:) -> Raw(f64),
 
 		///Returns the inverse of `self`.
 		///
@@ -7278,36 +7421,36 @@ impl_lua_newtype!{
 		///# Panics
 		///
 		///Will panic if the determinant of `self` is zero when `glam_assert` is enabled.
-		inverse(&self) -> LuaDMat3,
+		inverse(&self:) -> self,
 
 		///Transforms the given 2D vector as a point.
 		///
 		///This is the equivalent of multiplying `rhs` as a 3D vector where `z` is `1`.
 		///
 		///This method assumes that `self` contains a valid affine transform.
-		transform_point2(&self,LuaDVec2) -> LuaDVec2,
+		transform_point2(&self:Wrapped(DVec2)) -> Wrapped(DVec2),
 
 		///Rotates the given 2D vector.
 		///
 		///This is the equivalent of multiplying `rhs` as a 3D vector where `z` is `0`.
 		///
 		///This method assumes that `self` contains a valid affine transform.
-		transform_vector2(&self,LuaDVec2) -> LuaDVec2,
+		transform_vector2(&self:Wrapped(DVec2)) -> Wrapped(DVec2),
 
 		///Transforms a 3D vector.
-		mul_vec3(&self,LuaDVec3) -> LuaDVec3,
+		mul_vec3(&self:Wrapped(DVec3)) -> Wrapped(DVec3),
 
 		///Multiplies two 3x3 matrices.
-		mul_mat3(&self,&LuaDMat3) -> LuaDMat3,
+		mul_mat3(&self:&self) -> self,
 
 		///Adds two 3x3 matrices.
-		add_mat3(&self,&LuaDMat3) -> LuaDMat3,
+		add_mat3(&self:&self) -> self,
 
 		///Subtracts two 3x3 matrices.
-		sub_mat3(&self,&LuaDMat3) -> LuaDMat3,
+		sub_mat3(&self:&self) -> self,
 
 		///Multiplies a 3x3 matrix by a scalar.
-		mul_scalar(&self,f64) -> LuaDMat3,
+		mul_scalar(&self:Raw(f64)) -> self,
 
 		///Returns true if the absolute difference of all elements between `self` and `rhs`
 		///is less than or equal to `max_abs_diff`.
@@ -7318,20 +7461,13 @@ impl_lua_newtype!{
 		///
 		///For more see
 		///[comparing floating point numbers](https://randomascii.wordpress.com/2012/02/25/comparing-floating-point-numbers-2012-edition/).
-		abs_diff_eq(&self,LuaDMat3,f64) -> bool,
+		abs_diff_eq(&self:self,Raw(f64)) -> Raw(bool),
 
-		as_mat3(&self) -> LuaMat3,
+		as_mat3(&self:) -> Wrapped(Mat3),
 
 	)
 	+ BinOps
 	(
-		self Add LuaDMat3 -> LuaDMat3,
-		self Sub LuaDMat3 -> LuaDMat3,
-		self Mul LuaDAffine2 -> LuaDMat3,
-		self Mul LuaDMat3 -> LuaDMat3,
-		self Mul LuaDVec3 -> LuaDVec3,
-		f64 Mul self -> LuaDMat3,
-		self Mul f64 -> LuaDMat3,
 	)
 	+ UnaryOps
 	(
@@ -7399,18 +7535,18 @@ impl_lua_newtype!{
 	FromLuaProxy +
 	Fields
 	(
-		x_axis: LuaDVec4,
-		y_axis: LuaDVec4,
-		z_axis: LuaDVec4,
-		w_axis: LuaDVec4,
+		x_axis: Wrapped(DVec4),
+		y_axis: Wrapped(DVec4),
+		z_axis: Wrapped(DVec4),
+		w_axis: Wrapped(DVec4),
 	)
-	+ AutoMethods
+	+ Methods
 	(
 		///Creates a 4x4 matrix from two column vectors.
-		from_cols(LuaDVec4,LuaDVec4,LuaDVec4,LuaDVec4) -> LuaDMat4,
+		from_cols(Wrapped(DVec4),Wrapped(DVec4),Wrapped(DVec4),Wrapped(DVec4)) -> self,
 
 		///Creates a 4x4 matrix with its diagonal set to `diagonal` and all other entries set to 0.
-		from_diagonal(LuaDVec4) -> LuaDMat4,
+		from_diagonal(Wrapped(DVec4)) -> self,
 
 		///Creates an affine transformation matrix from the given 3D `scale`, `rotation` and
 		///`translation`.
@@ -7421,7 +7557,7 @@ impl_lua_newtype!{
 		///# Panics
 		///
 		///Will panic if `rotation` is not normalized when `glam_assert` is enabled.
-		from_scale_rotation_translation(LuaDVec3,LuaDQuat,LuaDVec3) -> LuaDMat4,
+		from_scale_rotation_translation(Wrapped(DVec3),Wrapped(DQuat),Wrapped(DVec3)) -> self,
 
 		///Creates an affine transformation matrix from the given 3D `translation`.
 		///
@@ -7431,7 +7567,7 @@ impl_lua_newtype!{
 		///# Panics
 		///
 		///Will panic if `rotation` is not normalized when `glam_assert` is enabled.
-		from_rotation_translation(LuaDQuat,LuaDVec3) -> LuaDMat4,
+		from_rotation_translation(Wrapped(DQuat),Wrapped(DVec3)) -> self,
 
 		///Creates an affine transformation matrix from the given `rotation` quaternion.
 		///
@@ -7441,20 +7577,20 @@ impl_lua_newtype!{
 		///# Panics
 		///
 		///Will panic if `rotation` is not normalized when `glam_assert` is enabled.
-		from_quat(LuaDQuat) -> LuaDMat4,
+		from_quat(Wrapped(DQuat)) -> self,
 
 		///Creates an affine transformation matrix from the given 3x3 linear transformation
 		///matrix.
 		///
 		///The resulting matrix can be used to transform 3D points and vectors. See
 		///[`Self::transform_point3()`] and [`Self::transform_vector3()`].
-		from_mat3(LuaDMat3) -> LuaDMat4,
+		from_mat3(Wrapped(DMat3)) -> self,
 
 		///Creates an affine transformation matrix from the given 3D `translation`.
 		///
 		///The resulting matrix can be used to transform 3D points and vectors. See
 		///[`Self::transform_point3()`] and [`Self::transform_vector3()`].
-		from_translation(LuaDVec3) -> LuaDMat4,
+		from_translation(Wrapped(DVec3)) -> self,
 
 		///Creates an affine transformation matrix containing a 3D rotation around a normalized
 		///rotation `axis` of `angle` (in radians).
@@ -7465,35 +7601,35 @@ impl_lua_newtype!{
 		///# Panics
 		///
 		///Will panic if `axis` is not normalized when `glam_assert` is enabled.
-		from_axis_angle(LuaDVec3,f64) -> LuaDMat4,
+		from_axis_angle(Wrapped(DVec3),Raw(f64)) -> self,
 
 		///Creates a affine transformation matrix containing a rotation from the given euler
 		///rotation sequence and angles (in radians).
 		///
 		///The resulting matrix can be used to transform 3D points and vectors. See
 		///[`Self::transform_point3()`] and [`Self::transform_vector3()`].
-		from_euler(LuaEulerRot,f64,f64,f64) -> LuaDMat4,
+		from_euler(Wrapped(EulerRot),Raw(f64),Raw(f64),Raw(f64)) -> self,
 
 		///Creates an affine transformation matrix containing a 3D rotation around the x axis of
 		///`angle` (in radians).
 		///
 		///The resulting matrix can be used to transform 3D points and vectors. See
 		///[`Self::transform_point3()`] and [`Self::transform_vector3()`].
-		from_rotation_x(f64) -> LuaDMat4,
+		from_rotation_x(Raw(f64)) -> self,
 
 		///Creates an affine transformation matrix containing a 3D rotation around the y axis of
 		///`angle` (in radians).
 		///
 		///The resulting matrix can be used to transform 3D points and vectors. See
 		///[`Self::transform_point3()`] and [`Self::transform_vector3()`].
-		from_rotation_y(f64) -> LuaDMat4,
+		from_rotation_y(Raw(f64)) -> self,
 
 		///Creates an affine transformation matrix containing a 3D rotation around the z axis of
 		///`angle` (in radians).
 		///
 		///The resulting matrix can be used to transform 3D points and vectors. See
 		///[`Self::transform_point3()`] and [`Self::transform_vector3()`].
-		from_rotation_z(f64) -> LuaDMat4,
+		from_rotation_z(Raw(f64)) -> self,
 
 		///Creates an affine transformation matrix containing the given 3D non-uniform `scale`.
 		///
@@ -7503,34 +7639,41 @@ impl_lua_newtype!{
 		///# Panics
 		///
 		///Will panic if all elements of `scale` are zero when `glam_assert` is enabled.
-		from_scale(LuaDVec3) -> LuaDMat4,
+		from_scale(Wrapped(DVec3)) -> self,
 
 		///Returns the matrix column for the given `index`.
 		///
 		///# Panics
 		///
 		///Panics if `index` is greater than 3.
-		col(&self,usize) -> LuaDVec4,
+		col(&self:Raw(usize)) -> Wrapped(DVec4),
+
+		// ///Returns a mutable reference to the matrix column for the given `index`.
+		// ///
+		// ///# Panics
+		// ///
+		// ///Panics if `index` is greater than 3.
+		// col_mut(&mut self:Raw(usize)) -> Wrapped(&mut DVec4),
 
 		///Returns the matrix row for the given `index`.
 		///
 		///# Panics
 		///
 		///Panics if `index` is greater than 3.
-		row(&self,usize) -> LuaDVec4,
+		row(&self:Raw(usize)) -> Wrapped(DVec4),
 
 		///Returns `true` if, and only if, all elements are finite.
 		///If any element is either `NaN`, positive or negative infinity, this will return `false`.
-		is_finite(&self) -> bool,
+		is_finite(&self:) -> Raw(bool),
 
 		///Returns `true` if any elements are `NaN`.
-		is_nan(&self) -> bool,
+		is_nan(&self:) -> Raw(bool),
 
 		///Returns the transpose of `self`.
-		transpose(&self) -> LuaDMat4,
+		transpose(&self:) -> self,
 
 		///Returns the determinant of `self`.
-		determinant(&self) -> f64,
+		determinant(&self:) -> Raw(f64),
 
 		///Returns the inverse of `self`.
 		///
@@ -7539,7 +7682,7 @@ impl_lua_newtype!{
 		///# Panics
 		///
 		///Will panic if the determinant of `self` is zero when `glam_assert` is enabled.
-		inverse(&self) -> LuaDMat4,
+		inverse(&self:) -> self,
 
 		///Creates a left-handed view matrix using a camera position, an up direction, and a focal
 		///point.
@@ -7548,7 +7691,7 @@ impl_lua_newtype!{
 		///# Panics
 		///
 		///Will panic if `up` is not normalized when `glam_assert` is enabled.
-		look_at_lh(LuaDVec3,LuaDVec3,LuaDVec3) -> LuaDMat4,
+		look_at_lh(Wrapped(DVec3),Wrapped(DVec3),Wrapped(DVec3)) -> self,
 
 		///Creates a right-handed view matrix using a camera position, an up direction, and a focal
 		///point.
@@ -7557,12 +7700,12 @@ impl_lua_newtype!{
 		///# Panics
 		///
 		///Will panic if `up` is not normalized when `glam_assert` is enabled.
-		look_at_rh(LuaDVec3,LuaDVec3,LuaDVec3) -> LuaDMat4,
+		look_at_rh(Wrapped(DVec3),Wrapped(DVec3),Wrapped(DVec3)) -> self,
 
 		///Creates a right-handed perspective projection matrix with [-1,1] depth range.
 		///This is the same as the OpenGL `gluPerspective` function.
 		///See <https://www.khronos.org/registry/OpenGL-Refpages/gl2.1/xhtml/gluPerspective.xml>
-		perspective_rh_gl(f64,f64,f64,f64) -> LuaDMat4,
+		perspective_rh_gl(Raw(f64),Raw(f64),Raw(f64),Raw(f64)) -> self,
 
 		///Creates a left-handed perspective projection matrix with `[0,1]` depth range.
 		///
@@ -7570,7 +7713,7 @@ impl_lua_newtype!{
 		///
 		///Will panic if `z_near` or `z_far` are less than or equal to zero when `glam_assert` is
 		///enabled.
-		perspective_lh(f64,f64,f64,f64) -> LuaDMat4,
+		perspective_lh(Raw(f64),Raw(f64),Raw(f64),Raw(f64)) -> self,
 
 		///Creates a right-handed perspective projection matrix with `[0,1]` depth range.
 		///
@@ -7578,41 +7721,41 @@ impl_lua_newtype!{
 		///
 		///Will panic if `z_near` or `z_far` are less than or equal to zero when `glam_assert` is
 		///enabled.
-		perspective_rh(f64,f64,f64,f64) -> LuaDMat4,
+		perspective_rh(Raw(f64),Raw(f64),Raw(f64),Raw(f64)) -> self,
 
 		///Creates an infinite left-handed perspective projection matrix with `[0,1]` depth range.
 		///
 		///# Panics
 		///
 		///Will panic if `z_near` is less than or equal to zero when `glam_assert` is enabled.
-		perspective_infinite_lh(f64,f64,f64) -> LuaDMat4,
+		perspective_infinite_lh(Raw(f64),Raw(f64),Raw(f64)) -> self,
 
 		///Creates an infinite left-handed perspective projection matrix with `[0,1]` depth range.
 		///
 		///# Panics
 		///
 		///Will panic if `z_near` is less than or equal to zero when `glam_assert` is enabled.
-		perspective_infinite_reverse_lh(f64,f64,f64) -> LuaDMat4,
+		perspective_infinite_reverse_lh(Raw(f64),Raw(f64),Raw(f64)) -> self,
 
 		///Creates an infinite right-handed perspective projection matrix with
 		///`[0,1]` depth range.
-		perspective_infinite_rh(f64,f64,f64) -> LuaDMat4,
+		perspective_infinite_rh(Raw(f64),Raw(f64),Raw(f64)) -> self,
 
 		///Creates an infinite reverse right-handed perspective projection matrix
 		///with `[0,1]` depth range.
-		perspective_infinite_reverse_rh(f64,f64,f64) -> LuaDMat4,
+		perspective_infinite_reverse_rh(Raw(f64),Raw(f64),Raw(f64)) -> self,
 
 		///Creates a right-handed orthographic projection matrix with `[-1,1]` depth
 		///range.  This is the same as the OpenGL `glOrtho` function in OpenGL.
 		///See
 		///<https://www.khronos.org/registry/OpenGL-Refpages/gl2.1/xhtml/glOrtho.xml>
-		orthographic_rh_gl(f64,f64,f64,f64,f64,f64) -> LuaDMat4,
+		orthographic_rh_gl(Raw(f64),Raw(f64),Raw(f64),Raw(f64),Raw(f64),Raw(f64)) -> self,
 
 		///Creates a left-handed orthographic projection matrix with `[0,1]` depth range.
-		orthographic_lh(f64,f64,f64,f64,f64,f64) -> LuaDMat4,
+		orthographic_lh(Raw(f64),Raw(f64),Raw(f64),Raw(f64),Raw(f64),Raw(f64)) -> self,
 
 		///Creates a right-handed orthographic projection matrix with `[0,1]` depth range.
-		orthographic_rh(f64,f64,f64,f64,f64,f64) -> LuaDMat4,
+		orthographic_rh(Raw(f64),Raw(f64),Raw(f64),Raw(f64),Raw(f64),Raw(f64)) -> self,
 
 		///Transforms the given 3D vector as a point, applying perspective correction.
 		///
@@ -7620,7 +7763,7 @@ impl_lua_newtype!{
 		///The perspective divide is performed meaning the resulting 3D vector is divided by `w`.
 		///
 		///This method assumes that `self` contains a projective transform.
-		project_point3(&self,LuaDVec3) -> LuaDVec3,
+		project_point3(&self:Wrapped(DVec3)) -> Wrapped(DVec3),
 
 		///Transforms the given 3D vector as a point.
 		///
@@ -7634,7 +7777,7 @@ impl_lua_newtype!{
 		///# Panics
 		///
 		///Will panic if the 3rd row of `self` is not `(0, 0, 0, 1)` when `glam_assert` is enabled.
-		transform_point3(&self,LuaDVec3) -> LuaDVec3,
+		transform_point3(&self:Wrapped(DVec3)) -> Wrapped(DVec3),
 
 		///Transforms the give 3D vector as a direction.
 		///
@@ -7646,22 +7789,22 @@ impl_lua_newtype!{
 		///# Panics
 		///
 		///Will panic if the 3rd row of `self` is not `(0, 0, 0, 1)` when `glam_assert` is enabled.
-		transform_vector3(&self,LuaDVec3) -> LuaDVec3,
+		transform_vector3(&self:Wrapped(DVec3)) -> Wrapped(DVec3),
 
 		///Transforms a 4D vector.
-		mul_vec4(&self,LuaDVec4) -> LuaDVec4,
+		mul_vec4(&self:Wrapped(DVec4)) -> Wrapped(DVec4),
 
 		///Multiplies two 4x4 matrices.
-		mul_mat4(&self,&LuaDMat4) -> LuaDMat4,
+		mul_mat4(&self:&self) -> self,
 
 		///Adds two 4x4 matrices.
-		add_mat4(&self,&LuaDMat4) -> LuaDMat4,
+		add_mat4(&self:&self) -> self,
 
 		///Subtracts two 4x4 matrices.
-		sub_mat4(&self,&LuaDMat4) -> LuaDMat4,
+		sub_mat4(&self:&self) -> self,
 
 		///Multiplies a 4x4 matrix by a scalar.
-		mul_scalar(&self,f64) -> LuaDMat4,
+		mul_scalar(&self:Raw(f64)) -> self,
 
 		///Returns true if the absolute difference of all elements between `self` and `rhs`
 		///is less than or equal to `max_abs_diff`.
@@ -7672,20 +7815,13 @@ impl_lua_newtype!{
 		///
 		///For more see
 		///[comparing floating point numbers](https://randomascii.wordpress.com/2012/02/25/comparing-floating-point-numbers-2012-edition/).
-		abs_diff_eq(&self,LuaDMat4,f64) -> bool,
+		abs_diff_eq(&self:self,Raw(f64)) -> Raw(bool),
 
-		as_mat4(&self) -> LuaMat4,
+		as_mat4(&self:) -> Wrapped(Mat4),
 
 	)
 	+ BinOps
 	(
-		self Add LuaDMat4 -> LuaDMat4,
-		self Sub LuaDMat4 -> LuaDMat4,
-		self Mul LuaDAffine3 -> LuaDMat4,
-		self Mul LuaDMat4 -> LuaDMat4,
-		self Mul LuaDVec4 -> LuaDVec4,
-		f64 Mul self -> LuaDMat4,
-		self Mul f64 -> LuaDMat4,
 	)
 	+ UnaryOps
 	(
@@ -7725,67 +7861,67 @@ impl_lua_newtype!{
 	FromLuaProxy +
 	Fields
 	(
-		matrix2: LuaMat2,
-		translation: LuaVec2,
+		matrix2: Wrapped(Mat2),
+		translation: Wrapped(Vec2),
 	)
-	+ AutoMethods
+	+ Methods
 	(
 		///Creates an affine transform from three column vectors.
-		from_cols(LuaVec2,LuaVec2,LuaVec2) -> LuaAffine2,
+		from_cols(Wrapped(Vec2),Wrapped(Vec2),Wrapped(Vec2)) -> self,
 
 		///Creates an affine transform that changes scale.
 		///Note that if any scale is zero the transform will be non-invertible.
-		from_scale(LuaVec2) -> LuaAffine2,
+		from_scale(Wrapped(Vec2)) -> self,
 
 		///Creates an affine transform from the given rotation `angle`.
-		from_angle(f32) -> LuaAffine2,
+		from_angle(Raw(f32)) -> self,
 
 		///Creates an affine transformation from the given 2D `translation`.
-		from_translation(LuaVec2) -> LuaAffine2,
+		from_translation(Wrapped(Vec2)) -> self,
 
 		///Creates an affine transform from a 2x2 matrix (expressing scale, shear and rotation)
-		from_mat2(LuaMat2) -> LuaAffine2,
+		from_mat2(Wrapped(Mat2)) -> self,
 
 		///Creates an affine transform from a 2x2 matrix (expressing scale, shear and rotation) and a
 		///translation vector.
 		///
 		///Equivalent to
 		///`Affine2::from_translation(translation) * Affine2::from_mat2(mat2)`
-		from_mat2_translation(LuaMat2,LuaVec2) -> LuaAffine2,
+		from_mat2_translation(Wrapped(Mat2),Wrapped(Vec2)) -> self,
 
 		///Creates an affine transform from the given 2D `scale`, rotation `angle` (in radians) and
 		///`translation`.
 		///
 		///Equivalent to `Affine2::from_translation(translation) *
 		///Affine2::from_angle(angle) * Affine2::from_scale(scale)`
-		from_scale_angle_translation(LuaVec2,f32,LuaVec2) -> LuaAffine2,
+		from_scale_angle_translation(Wrapped(Vec2),Raw(f32),Wrapped(Vec2)) -> self,
 
 		///Creates an affine transform from the given 2D rotation `angle` (in radians) and
 		///`translation`.
 		///
 		///Equivalent to `Affine2::from_translation(translation) * Affine2::from_angle(angle)`
-		from_angle_translation(f32,LuaVec2) -> LuaAffine2,
+		from_angle_translation(Raw(f32),Wrapped(Vec2)) -> self,
 
 		///The given `Mat3` must be an affine transform,
-		from_mat3(LuaMat3) -> LuaAffine2,
+		from_mat3(Wrapped(Mat3)) -> self,
 
 		///Transforms the given 2D point, applying shear, scale, rotation and translation.
-		transform_point2(&self,LuaVec2) -> LuaVec2,
+		transform_point2(&self:Wrapped(Vec2)) -> Wrapped(Vec2),
 
 		///Transforms the given 2D vector, applying shear, scale and rotation (but NOT
 		///translation).
 		///
 		///To also apply translation, use [`Self::transform_point2`] instead.
-		transform_vector2(&self,LuaVec2) -> LuaVec2,
+		transform_vector2(&self:Wrapped(Vec2)) -> Wrapped(Vec2),
 
 		///Returns `true` if, and only if, all elements are finite.
 		///
 		///If any element is either `NaN`, positive or negative infinity, this will return
 		///`false`.
-		is_finite(&self) -> bool,
+		is_finite(&self:) -> Raw(bool),
 
 		///Returns `true` if any elements are `NaN`.
-		is_nan(&self) -> bool,
+		is_nan(&self:) -> Raw(bool),
 
 		///Returns true if the absolute difference of all elements between `self` and `rhs`
 		///is less than or equal to `max_abs_diff`.
@@ -7796,23 +7932,16 @@ impl_lua_newtype!{
 		///
 		///For more see
 		///[comparing floating point numbers](https://randomascii.wordpress.com/2012/02/25/comparing-floating-point-numbers-2012-edition/).
-		abs_diff_eq(&self,LuaAffine2,f32) -> bool,
+		abs_diff_eq(&self:self,Raw(f32)) -> Raw(bool),
 
 		///Return the inverse of this transform.
 		///
 		///Note that if the transform is not invertible the result will be invalid.
-		inverse(&self) -> LuaAffine2,
+		inverse(&self:) -> self,
 
 	)
 	+ BinOps
 	(
-		self Add LuaAffine2 -> LuaAffine2,
-		self Sub LuaAffine2 -> LuaAffine2,
-		self Mul LuaAffine2 -> LuaAffine2,
-		f32 Mul self -> LuaAffine2,
-		self Mul f32 -> LuaAffine2,
-		self Mul LuaMat3 -> LuaMat3,
-		self Mul LuaMat3A -> LuaMat3A,
 	)
 	+ UnaryOps
 	(
@@ -7827,65 +7956,65 @@ impl_lua_newtype!{
 	FromLuaProxy +
 	Fields
 	(
-		matrix3: LuaMat3A,
-		translation: LuaVec3A,
+		matrix3: Wrapped(Mat3A),
+		translation: Wrapped(Vec3A),
 	)
-	+ AutoMethods
+	+ Methods
 	(
 		///Creates an affine transform from three column vectors.
-		from_cols(LuaVec3A,LuaVec3A,LuaVec3A,LuaVec3A) -> LuaAffine3A,
+		from_cols(Wrapped(Vec3A),Wrapped(Vec3A),Wrapped(Vec3A),Wrapped(Vec3A)) -> self,
 
 		///Creates an affine transform that changes scale.
 		///Note that if any scale is zero the transform will be non-invertible.
-		from_scale(LuaVec3) -> LuaAffine3A,
+		from_scale(Wrapped(Vec3)) -> self,
 
 		///Creates an affine transform from the given `rotation` quaternion.
-		from_quat(LuaQuat) -> LuaAffine3A,
+		from_quat(Wrapped(Quat)) -> self,
 
 		///Creates an affine transform containing a 3D rotation around a normalized
 		///rotation `axis` of `angle` (in radians).
-		from_axis_angle(LuaVec3,f32) -> LuaAffine3A,
+		from_axis_angle(Wrapped(Vec3),Raw(f32)) -> self,
 
 		///Creates an affine transform containing a 3D rotation around the x axis of
 		///`angle` (in radians).
-		from_rotation_x(f32) -> LuaAffine3A,
+		from_rotation_x(Raw(f32)) -> self,
 
 		///Creates an affine transform containing a 3D rotation around the y axis of
 		///`angle` (in radians).
-		from_rotation_y(f32) -> LuaAffine3A,
+		from_rotation_y(Raw(f32)) -> self,
 
 		///Creates an affine transform containing a 3D rotation around the z axis of
 		///`angle` (in radians).
-		from_rotation_z(f32) -> LuaAffine3A,
+		from_rotation_z(Raw(f32)) -> self,
 
 		///Creates an affine transformation from the given 3D `translation`.
-		from_translation(LuaVec3) -> LuaAffine3A,
+		from_translation(Wrapped(Vec3)) -> self,
 
 		///Creates an affine transform from a 3x3 matrix (expressing scale, shear and
 		///rotation)
-		from_mat3(LuaMat3) -> LuaAffine3A,
+		from_mat3(Wrapped(Mat3)) -> self,
 
 		///Creates an affine transform from a 3x3 matrix (expressing scale, shear and rotation)
 		///and a translation vector.
 		///
 		///Equivalent to `Affine3A::from_translation(translation) * Affine3A::from_mat3(mat3)`
-		from_mat3_translation(LuaMat3,LuaVec3) -> LuaAffine3A,
+		from_mat3_translation(Wrapped(Mat3),Wrapped(Vec3)) -> self,
 
 		///Creates an affine transform from the given 3D `scale`, `rotation` and
 		///`translation`.
 		///
 		///Equivalent to `Affine3A::from_translation(translation) *
 		///Affine3A::from_quat(rotation) * Affine3A::from_scale(scale)`
-		from_scale_rotation_translation(LuaVec3,LuaQuat,LuaVec3) -> LuaAffine3A,
+		from_scale_rotation_translation(Wrapped(Vec3),Wrapped(Quat),Wrapped(Vec3)) -> self,
 
 		///Creates an affine transform from the given 3D `rotation` and `translation`.
 		///
 		///Equivalent to `Affine3A::from_translation(translation) * Affine3A::from_quat(rotation)`
-		from_rotation_translation(LuaQuat,LuaVec3) -> LuaAffine3A,
+		from_rotation_translation(Wrapped(Quat),Wrapped(Vec3)) -> self,
 
 		///The given `Mat4` must be an affine transform,
 		///i.e. contain no perspective transform.
-		from_mat4(LuaMat4) -> LuaAffine3A,
+		from_mat4(Wrapped(Mat4)) -> self,
 
 		///Creates a left-handed view transform using a camera position, an up direction, and
 		///a focal point.
@@ -7895,7 +8024,7 @@ impl_lua_newtype!{
 		///# Panics
 		///
 		///Will panic if `up` is not normalized when `glam_assert` is enabled.
-		look_at_lh(LuaVec3,LuaVec3,LuaVec3) -> LuaAffine3A,
+		look_at_lh(Wrapped(Vec3),Wrapped(Vec3),Wrapped(Vec3)) -> self,
 
 		///Creates a right-handed view transform using a camera position, an up direction, and
 		///a focal point.
@@ -7905,34 +8034,34 @@ impl_lua_newtype!{
 		///# Panics
 		///
 		///Will panic if `up` is not normalized when `glam_assert` is enabled.
-		look_at_rh(LuaVec3,LuaVec3,LuaVec3) -> LuaAffine3A,
+		look_at_rh(Wrapped(Vec3),Wrapped(Vec3),Wrapped(Vec3)) -> self,
 
 		///Transforms the given 3D points, applying shear, scale, rotation and translation.
-		transform_point3(&self,LuaVec3) -> LuaVec3,
+		transform_point3(&self:Wrapped(Vec3)) -> Wrapped(Vec3),
 
 		///Transforms the given 3D vector, applying shear, scale and rotation (but NOT
 		///translation).
 		///
 		///To also apply translation, use [`Self::transform_point3`] instead.
-		transform_vector3(&self,LuaVec3) -> LuaVec3,
+		transform_vector3(&self:Wrapped(Vec3)) -> Wrapped(Vec3),
 
 		///Transforms the given `Vec3A`, applying shear, scale, rotation and translation.
-		transform_point3a(&self,LuaVec3A) -> LuaVec3A,
+		transform_point3a(&self:Wrapped(Vec3A)) -> Wrapped(Vec3A),
 
 		///Transforms the given `Vec3A`, applying shear, scale and rotation (but NOT
 		///translation).
 		///
 		///To also apply translation, use [`Self::transform_point3`] instead.
-		transform_vector3a(&self,LuaVec3A) -> LuaVec3A,
+		transform_vector3a(&self:Wrapped(Vec3A)) -> Wrapped(Vec3A),
 
 		///Returns `true` if, and only if, all elements are finite.
 		///
 		///If any element is either `NaN`, positive or negative infinity, this will return
 		///`false`.
-		is_finite(&self) -> bool,
+		is_finite(&self:) -> Raw(bool),
 
 		///Returns `true` if any elements are `NaN`.
-		is_nan(&self) -> bool,
+		is_nan(&self:) -> Raw(bool),
 
 		///Returns true if the absolute difference of all elements between `self` and `rhs`
 		///is less than or equal to `max_abs_diff`.
@@ -7943,22 +8072,16 @@ impl_lua_newtype!{
 		///
 		///For more see
 		///[comparing floating point numbers](https://randomascii.wordpress.com/2012/02/25/comparing-floating-point-numbers-2012-edition/).
-		abs_diff_eq(&self,LuaAffine3A,f32) -> bool,
+		abs_diff_eq(&self:self,Raw(f32)) -> Raw(bool),
 
 		///Return the inverse of this transform.
 		///
 		///Note that if the transform is not invertible the result will be invalid.
-		inverse(&self) -> LuaAffine3A,
+		inverse(&self:) -> self,
 
 	)
 	+ BinOps
 	(
-		self Add LuaAffine3A -> LuaAffine3A,
-		self Sub LuaAffine3A -> LuaAffine3A,
-		self Mul LuaAffine3A -> LuaAffine3A,
-		f32 Mul self -> LuaAffine3A,
-		self Mul f32 -> LuaAffine3A,
-		self Mul LuaMat4 -> LuaMat4,
 	)
 	+ UnaryOps
 	(
@@ -7973,67 +8096,67 @@ impl_lua_newtype!{
 	FromLuaProxy +
 	Fields
 	(
-		matrix2: LuaDMat2,
-		translation: LuaDVec2,
+		matrix2: Wrapped(DMat2),
+		translation: Wrapped(DVec2),
 	)
-	+ AutoMethods
+	+ Methods
 	(
 		///Creates an affine transform from three column vectors.
-		from_cols(LuaDVec2,LuaDVec2,LuaDVec2) -> LuaDAffine2,
+		from_cols(Wrapped(DVec2),Wrapped(DVec2),Wrapped(DVec2)) -> self,
 
 		///Creates an affine transform that changes scale.
 		///Note that if any scale is zero the transform will be non-invertible.
-		from_scale(LuaDVec2) -> LuaDAffine2,
+		from_scale(Wrapped(DVec2)) -> self,
 
 		///Creates an affine transform from the given rotation `angle`.
-		from_angle(f64) -> LuaDAffine2,
+		from_angle(Raw(f64)) -> self,
 
 		///Creates an affine transformation from the given 2D `translation`.
-		from_translation(LuaDVec2) -> LuaDAffine2,
+		from_translation(Wrapped(DVec2)) -> self,
 
 		///Creates an affine transform from a 2x2 matrix (expressing scale, shear and rotation)
-		from_mat2(LuaDMat2) -> LuaDAffine2,
+		from_mat2(Wrapped(DMat2)) -> self,
 
 		///Creates an affine transform from a 2x2 matrix (expressing scale, shear and rotation) and a
 		///translation vector.
 		///
 		///Equivalent to
 		///`DAffine2::from_translation(translation) * DAffine2::from_mat2(mat2)`
-		from_mat2_translation(LuaDMat2,LuaDVec2) -> LuaDAffine2,
+		from_mat2_translation(Wrapped(DMat2),Wrapped(DVec2)) -> self,
 
 		///Creates an affine transform from the given 2D `scale`, rotation `angle` (in radians) and
 		///`translation`.
 		///
 		///Equivalent to `DAffine2::from_translation(translation) *
 		///DAffine2::from_angle(angle) * DAffine2::from_scale(scale)`
-		from_scale_angle_translation(LuaDVec2,f64,LuaDVec2) -> LuaDAffine2,
+		from_scale_angle_translation(Wrapped(DVec2),Raw(f64),Wrapped(DVec2)) -> self,
 
 		///Creates an affine transform from the given 2D rotation `angle` (in radians) and
 		///`translation`.
 		///
 		///Equivalent to `DAffine2::from_translation(translation) * DAffine2::from_angle(angle)`
-		from_angle_translation(f64,LuaDVec2) -> LuaDAffine2,
+		from_angle_translation(Raw(f64),Wrapped(DVec2)) -> self,
 
 		///The given `DMat3` must be an affine transform,
-		from_mat3(LuaDMat3) -> LuaDAffine2,
+		from_mat3(Wrapped(DMat3)) -> self,
 
 		///Transforms the given 2D point, applying shear, scale, rotation and translation.
-		transform_point2(&self,LuaDVec2) -> LuaDVec2,
+		transform_point2(&self:Wrapped(DVec2)) -> Wrapped(DVec2),
 
 		///Transforms the given 2D vector, applying shear, scale and rotation (but NOT
 		///translation).
 		///
 		///To also apply translation, use [`Self::transform_point2`] instead.
-		transform_vector2(&self,LuaDVec2) -> LuaDVec2,
+		transform_vector2(&self:Wrapped(DVec2)) -> Wrapped(DVec2),
 
 		///Returns `true` if, and only if, all elements are finite.
 		///
 		///If any element is either `NaN`, positive or negative infinity, this will return
 		///`false`.
-		is_finite(&self) -> bool,
+		is_finite(&self:) -> Raw(bool),
 
 		///Returns `true` if any elements are `NaN`.
-		is_nan(&self) -> bool,
+		is_nan(&self:) -> Raw(bool),
 
 		///Returns true if the absolute difference of all elements between `self` and `rhs`
 		///is less than or equal to `max_abs_diff`.
@@ -8044,22 +8167,16 @@ impl_lua_newtype!{
 		///
 		///For more see
 		///[comparing floating point numbers](https://randomascii.wordpress.com/2012/02/25/comparing-floating-point-numbers-2012-edition/).
-		abs_diff_eq(&self,LuaDAffine2,f64) -> bool,
+		abs_diff_eq(&self:self,Raw(f64)) -> Raw(bool),
 
 		///Return the inverse of this transform.
 		///
 		///Note that if the transform is not invertible the result will be invalid.
-		inverse(&self) -> LuaDAffine2,
+		inverse(&self:) -> self,
 
 	)
 	+ BinOps
 	(
-		self Add LuaDAffine2 -> LuaDAffine2,
-		self Sub LuaDAffine2 -> LuaDAffine2,
-		self Mul LuaDAffine2 -> LuaDAffine2,
-		f64 Mul self -> LuaDAffine2,
-		self Mul f64 -> LuaDAffine2,
-		self Mul LuaDMat3 -> LuaDMat3,
 	)
 	+ UnaryOps
 	(
@@ -8074,65 +8191,65 @@ impl_lua_newtype!{
 	FromLuaProxy +
 	Fields
 	(
-		matrix3: LuaDMat3,
-		translation: LuaDVec3,
+		matrix3: Wrapped(DMat3),
+		translation: Wrapped(DVec3),
 	)
-	+ AutoMethods
+	+ Methods
 	(
 		///Creates an affine transform from three column vectors.
-		from_cols(LuaDVec3,LuaDVec3,LuaDVec3,LuaDVec3) -> LuaDAffine3,
+		from_cols(Wrapped(DVec3),Wrapped(DVec3),Wrapped(DVec3),Wrapped(DVec3)) -> self,
 
 		///Creates an affine transform that changes scale.
 		///Note that if any scale is zero the transform will be non-invertible.
-		from_scale(LuaDVec3) -> LuaDAffine3,
+		from_scale(Wrapped(DVec3)) -> self,
 
 		///Creates an affine transform from the given `rotation` quaternion.
-		from_quat(LuaDQuat) -> LuaDAffine3,
+		from_quat(Wrapped(DQuat)) -> self,
 
 		///Creates an affine transform containing a 3D rotation around a normalized
 		///rotation `axis` of `angle` (in radians).
-		from_axis_angle(LuaDVec3,f64) -> LuaDAffine3,
+		from_axis_angle(Wrapped(DVec3),Raw(f64)) -> self,
 
 		///Creates an affine transform containing a 3D rotation around the x axis of
 		///`angle` (in radians).
-		from_rotation_x(f64) -> LuaDAffine3,
+		from_rotation_x(Raw(f64)) -> self,
 
 		///Creates an affine transform containing a 3D rotation around the y axis of
 		///`angle` (in radians).
-		from_rotation_y(f64) -> LuaDAffine3,
+		from_rotation_y(Raw(f64)) -> self,
 
 		///Creates an affine transform containing a 3D rotation around the z axis of
 		///`angle` (in radians).
-		from_rotation_z(f64) -> LuaDAffine3,
+		from_rotation_z(Raw(f64)) -> self,
 
 		///Creates an affine transformation from the given 3D `translation`.
-		from_translation(LuaDVec3) -> LuaDAffine3,
+		from_translation(Wrapped(DVec3)) -> self,
 
 		///Creates an affine transform from a 3x3 matrix (expressing scale, shear and
 		///rotation)
-		from_mat3(LuaDMat3) -> LuaDAffine3,
+		from_mat3(Wrapped(DMat3)) -> self,
 
 		///Creates an affine transform from a 3x3 matrix (expressing scale, shear and rotation)
 		///and a translation vector.
 		///
 		///Equivalent to `DAffine3::from_translation(translation) * DAffine3::from_mat3(mat3)`
-		from_mat3_translation(LuaDMat3,LuaDVec3) -> LuaDAffine3,
+		from_mat3_translation(Wrapped(DMat3),Wrapped(DVec3)) -> self,
 
 		///Creates an affine transform from the given 3D `scale`, `rotation` and
 		///`translation`.
 		///
 		///Equivalent to `DAffine3::from_translation(translation) *
 		///DAffine3::from_quat(rotation) * DAffine3::from_scale(scale)`
-		from_scale_rotation_translation(LuaDVec3,LuaDQuat,LuaDVec3) -> LuaDAffine3,
+		from_scale_rotation_translation(Wrapped(DVec3),Wrapped(DQuat),Wrapped(DVec3)) -> self,
 
 		///Creates an affine transform from the given 3D `rotation` and `translation`.
 		///
 		///Equivalent to `DAffine3::from_translation(translation) * DAffine3::from_quat(rotation)`
-		from_rotation_translation(LuaDQuat,LuaDVec3) -> LuaDAffine3,
+		from_rotation_translation(Wrapped(DQuat),Wrapped(DVec3)) -> self,
 
 		///The given `DMat4` must be an affine transform,
 		///i.e. contain no perspective transform.
-		from_mat4(LuaDMat4) -> LuaDAffine3,
+		from_mat4(Wrapped(DMat4)) -> self,
 
 		///Creates a left-handed view transform using a camera position, an up direction, and
 		///a focal point.
@@ -8142,7 +8259,7 @@ impl_lua_newtype!{
 		///# Panics
 		///
 		///Will panic if `up` is not normalized when `glam_assert` is enabled.
-		look_at_lh(LuaDVec3,LuaDVec3,LuaDVec3) -> LuaDAffine3,
+		look_at_lh(Wrapped(DVec3),Wrapped(DVec3),Wrapped(DVec3)) -> self,
 
 		///Creates a right-handed view transform using a camera position, an up direction, and
 		///a focal point.
@@ -8152,25 +8269,25 @@ impl_lua_newtype!{
 		///# Panics
 		///
 		///Will panic if `up` is not normalized when `glam_assert` is enabled.
-		look_at_rh(LuaDVec3,LuaDVec3,LuaDVec3) -> LuaDAffine3,
+		look_at_rh(Wrapped(DVec3),Wrapped(DVec3),Wrapped(DVec3)) -> self,
 
 		///Transforms the given 3D points, applying shear, scale, rotation and translation.
-		transform_point3(&self,LuaDVec3) -> LuaDVec3,
+		transform_point3(&self:Wrapped(DVec3)) -> Wrapped(DVec3),
 
 		///Transforms the given 3D vector, applying shear, scale and rotation (but NOT
 		///translation).
 		///
 		///To also apply translation, use [`Self::transform_point3`] instead.
-		transform_vector3(&self,LuaDVec3) -> LuaDVec3,
+		transform_vector3(&self:Wrapped(DVec3)) -> Wrapped(DVec3),
 
 		///Returns `true` if, and only if, all elements are finite.
 		///
 		///If any element is either `NaN`, positive or negative infinity, this will return
 		///`false`.
-		is_finite(&self) -> bool,
+		is_finite(&self:) -> Raw(bool),
 
 		///Returns `true` if any elements are `NaN`.
-		is_nan(&self) -> bool,
+		is_nan(&self:) -> Raw(bool),
 
 		///Returns true if the absolute difference of all elements between `self` and `rhs`
 		///is less than or equal to `max_abs_diff`.
@@ -8181,22 +8298,16 @@ impl_lua_newtype!{
 		///
 		///For more see
 		///[comparing floating point numbers](https://randomascii.wordpress.com/2012/02/25/comparing-floating-point-numbers-2012-edition/).
-		abs_diff_eq(&self,LuaDAffine3,f64) -> bool,
+		abs_diff_eq(&self:self,Raw(f64)) -> Raw(bool),
 
 		///Return the inverse of this transform.
 		///
 		///Note that if the transform is not invertible the result will be invalid.
-		inverse(&self) -> LuaDAffine3,
+		inverse(&self:) -> self,
 
 	)
 	+ BinOps
 	(
-		self Add LuaDAffine3 -> LuaDAffine3,
-		self Sub LuaDAffine3 -> LuaDAffine3,
-		self Mul LuaDAffine3 -> LuaDAffine3,
-		f64 Mul self -> LuaDAffine3,
-		self Mul f64 -> LuaDAffine3,
-		self Mul LuaDMat4 -> LuaDMat4,
 	)
 	+ UnaryOps
 	(
@@ -8218,7 +8329,7 @@ impl_lua_newtype!{
 	Fields
 	(
 	)
-	+ AutoMethods
+	+ Methods
 	(
 		///Creates a new rotation quaternion.
 		///
@@ -8231,7 +8342,7 @@ impl_lua_newtype!{
 		///
 		///This function does not check if the input is normalized, it is up to the user to
 		///provide normalized input or to normalized the resulting quaternion.
-		from_xyzw(f32,f32,f32,f32) -> LuaQuat,
+		from_xyzw(Raw(f32),Raw(f32),Raw(f32),Raw(f32)) -> self,
 
 		///Creates a new rotation quaternion from a 4D vector.
 		///
@@ -8239,7 +8350,7 @@ impl_lua_newtype!{
 		///
 		///This function does not check if the input is normalized, it is up to the user to
 		///provide normalized input or to normalized the resulting quaternion.
-		from_vec4(LuaVec4) -> LuaQuat,
+		from_vec4(Wrapped(Vec4)) -> self,
 
 		///Create a quaternion for a normalized rotation `axis` and `angle` (in radians).
 		///The axis must be normalized (unit-length).
@@ -8247,30 +8358,30 @@ impl_lua_newtype!{
 		///# Panics
 		///
 		///Will panic if `axis` is not normalized when `glam_assert` is enabled.
-		from_axis_angle(LuaVec3,f32) -> LuaQuat,
+		from_axis_angle(Wrapped(Vec3),Raw(f32)) -> self,
 
 		///Create a quaternion that rotates `v.length()` radians around `v.normalize()`.
 		///
 		///`from_scaled_axis(Vec3::ZERO)` results in the identity quaternion.
-		from_scaled_axis(LuaVec3) -> LuaQuat,
+		from_scaled_axis(Wrapped(Vec3)) -> self,
 
 		///Creates a quaternion from the `angle` (in radians) around the x axis.
-		from_rotation_x(f32) -> LuaQuat,
+		from_rotation_x(Raw(f32)) -> self,
 
 		///Creates a quaternion from the `angle` (in radians) around the y axis.
-		from_rotation_y(f32) -> LuaQuat,
+		from_rotation_y(Raw(f32)) -> self,
 
 		///Creates a quaternion from the `angle` (in radians) around the z axis.
-		from_rotation_z(f32) -> LuaQuat,
+		from_rotation_z(Raw(f32)) -> self,
 
 		///Creates a quaternion from the given Euler rotation sequence and the angles (in radians).
-		from_euler(LuaEulerRot,f32,f32,f32) -> LuaQuat,
+		from_euler(Wrapped(EulerRot),Raw(f32),Raw(f32),Raw(f32)) -> self,
 
 		///Creates a quaternion from a 3x3 rotation matrix.
-		from_mat3(&LuaMat3) -> LuaQuat,
+		from_mat3(Wrapped(&Mat3)) -> self,
 
 		///Creates a quaternion from a 3x3 rotation matrix inside a homogeneous 4x4 matrix.
-		from_mat4(&LuaMat4) -> LuaQuat,
+		from_mat4(Wrapped(&Mat4)) -> self,
 
 		///Gets the minimal rotation for transforming `from` to `to`.  The rotation is in the
 		///plane spanned by the two vectors.  Will rotate at most 180 degrees.
@@ -8285,7 +8396,7 @@ impl_lua_newtype!{
 		///# Panics
 		///
 		///Will panic if `from` or `to` are not normalized when `glam_assert` is enabled.
-		from_rotation_arc(LuaVec3,LuaVec3) -> LuaQuat,
+		from_rotation_arc(Wrapped(Vec3),Wrapped(Vec3)) -> self,
 
 		///Gets the minimal rotation for transforming `from` to either `to` or `-to`.  This means
 		///that the resulting quaternion will rotate `from` so that it is colinear with `to`.
@@ -8300,7 +8411,7 @@ impl_lua_newtype!{
 		///# Panics
 		///
 		///Will panic if `from` or `to` are not normalized when `glam_assert` is enabled.
-		from_rotation_arc_colinear(LuaVec3,LuaVec3) -> LuaQuat,
+		from_rotation_arc_colinear(Wrapped(Vec3),Wrapped(Vec3)) -> self,
 
 		///Gets the minimal rotation for transforming `from` to `to`.  The resulting rotation is
 		///around the z axis. Will rotate at most 180 degrees.
@@ -8315,17 +8426,17 @@ impl_lua_newtype!{
 		///# Panics
 		///
 		///Will panic if `from` or `to` are not normalized when `glam_assert` is enabled.
-		from_rotation_arc_2d(LuaVec2,LuaVec2) -> LuaQuat,
+		from_rotation_arc_2d(Wrapped(Vec2),Wrapped(Vec2)) -> self,
 
 		///Returns the rotation axis scaled by the rotation in radians.
-		to_scaled_axis(self) -> LuaVec3,
+		to_scaled_axis(self:) -> Wrapped(Vec3),
 
 		///Returns the vector part of the quaternion.
-		xyz(self) -> LuaVec3,
+		xyz(self:) -> Wrapped(Vec3),
 
 		///Returns the quaternion conjugate of `self`. For a unit quaternion the
 		///conjugate is also the inverse.
-		conjugate(self) -> LuaQuat,
+		conjugate(self:) -> self,
 
 		///Returns the inverse of a normalized quaternion.
 		///
@@ -8336,25 +8447,25 @@ impl_lua_newtype!{
 		///# Panics
 		///
 		///Will panic if `self` is not normalized when `glam_assert` is enabled.
-		inverse(self) -> LuaQuat,
+		inverse(self:) -> self,
 
 		///Computes the dot product of `self` and `rhs`. The dot product is
 		///equal to the cosine of the angle between two quaternion rotations.
-		dot(self,LuaQuat) -> f32,
+		dot(self:self) -> Raw(f32),
 
 		///Computes the length of `self`.
-		length(self) -> f32,
+		length(self:) -> Raw(f32),
 
 		///Computes the squared length of `self`.
 		///
 		///This is generally faster than `length()` as it avoids a square
 		///root operation.
-		length_squared(self) -> f32,
+		length_squared(self:) -> Raw(f32),
 
 		///Computes `1.0 / length()`.
 		///
 		///For valid results, `self` must _not_ be of length zero.
-		length_recip(self) -> f32,
+		length_recip(self:) -> Raw(f32),
 
 		///Returns `self` normalized to length 1.0.
 		///
@@ -8363,20 +8474,20 @@ impl_lua_newtype!{
 		///Panics
 		///
 		///Will panic if `self` is zero length when `glam_assert` is enabled.
-		normalize(self) -> LuaQuat,
+		normalize(self:) -> self,
 
 		///Returns `true` if, and only if, all elements are finite.
 		///If any element is either `NaN`, positive or negative infinity, this will return `false`.
-		is_finite(self) -> bool,
+		is_finite(self:) -> Raw(bool),
 
-		is_nan(self) -> bool,
+		is_nan(self:) -> Raw(bool),
 
 		///Returns whether `self` of length `1.0` or not.
 		///
 		///Uses a precision threshold of `1e-6`.
-		is_normalized(self) -> bool,
+		is_normalized(self:) -> Raw(bool),
 
-		is_near_identity(self) -> bool,
+		is_near_identity(self:) -> Raw(bool),
 
 		///Returns the angle (in radians) for the minimal rotation
 		///for transforming this quaternion into another.
@@ -8386,7 +8497,7 @@ impl_lua_newtype!{
 		///# Panics
 		///
 		///Will panic if `self` or `rhs` are not normalized when `glam_assert` is enabled.
-		angle_between(self,LuaQuat) -> f32,
+		angle_between(self:self) -> Raw(f32),
 
 		///Returns true if the absolute difference of all elements between `self` and `rhs`
 		///is less than or equal to `max_abs_diff`.
@@ -8397,7 +8508,7 @@ impl_lua_newtype!{
 		///
 		///For more see
 		///[comparing floating point numbers](https://randomascii.wordpress.com/2012/02/25/comparing-floating-point-numbers-2012-edition/).
-		abs_diff_eq(self,LuaQuat,f32) -> bool,
+		abs_diff_eq(self:self,Raw(f32)) -> Raw(bool),
 
 		///Performs a linear interpolation between `self` and `rhs` based on
 		///the value `s`.
@@ -8408,7 +8519,7 @@ impl_lua_newtype!{
 		///# Panics
 		///
 		///Will panic if `self` or `end` are not normalized when `glam_assert` is enabled.
-		lerp(self,LuaQuat,f32) -> LuaQuat,
+		lerp(self:self,Raw(f32)) -> self,
 
 		///Performs a spherical linear interpolation between `self` and `end`
 		///based on the value `s`.
@@ -8419,14 +8530,14 @@ impl_lua_newtype!{
 		///# Panics
 		///
 		///Will panic if `self` or `end` are not normalized when `glam_assert` is enabled.
-		slerp(self,LuaQuat,f32) -> LuaQuat,
+		slerp(self:self,Raw(f32)) -> self,
 
 		///Multiplies a quaternion and a 3D vector, returning the rotated vector.
 		///
 		///# Panics
 		///
 		///Will panic if `self` is not normalized when `glam_assert` is enabled.
-		mul_vec3(self,LuaVec3) -> LuaVec3,
+		mul_vec3(self:Wrapped(Vec3)) -> Wrapped(Vec3),
 
 		///Multiplies two quaternions. If they each represent a rotation, the result will
 		///represent the combined rotation.
@@ -8436,23 +8547,19 @@ impl_lua_newtype!{
 		///# Panics
 		///
 		///Will panic if `self` or `rhs` are not normalized when `glam_assert` is enabled.
-		mul_quat(self,LuaQuat) -> LuaQuat,
+		mul_quat(self:self) -> self,
+
+		///Creates a quaternion from a 3x3 rotation matrix inside a 3D affine transform.
+		from_affine3(Wrapped(&Affine3A)) -> self,
 
 		///Multiplies a quaternion and a 3D vector, returning the rotated vector.
-		mul_vec3a(self,LuaVec3A) -> LuaVec3A,
+		mul_vec3a(self:Wrapped(Vec3A)) -> Wrapped(Vec3A),
 
-		as_f64(self) -> LuaDQuat,
+		as_f64(self:) -> Wrapped(DQuat),
 
 	)
 	+ BinOps
 	(
-		self Add LuaQuat -> LuaQuat,
-		self Sub LuaQuat -> LuaQuat,
-		self Div f32 -> LuaQuat,
-		self Mul f32 -> LuaQuat,
-		self Mul LuaQuat -> LuaQuat,
-		self Mul LuaVec3 -> LuaVec3,
-		self Mul LuaVec3A -> LuaVec3A,
 	)
 	+ UnaryOps
 	(
@@ -8472,12 +8579,12 @@ impl_lua_newtype!{
 	FromLuaProxy +
 	Fields
 	(
-		x: f64,
-		y: f64,
-		z: f64,
-		w: f64,
+		x: Raw(f64),
+		y: Raw(f64),
+		z: Raw(f64),
+		w: Raw(f64),
 	)
-	+ AutoMethods
+	+ Methods
 	(
 		///Creates a new rotation quaternion.
 		///
@@ -8490,7 +8597,7 @@ impl_lua_newtype!{
 		///
 		///This function does not check if the input is normalized, it is up to the user to
 		///provide normalized input or to normalized the resulting quaternion.
-		from_xyzw(f64,f64,f64,f64) -> LuaDQuat,
+		from_xyzw(Raw(f64),Raw(f64),Raw(f64),Raw(f64)) -> self,
 
 		///Creates a new rotation quaternion from a 4D vector.
 		///
@@ -8498,7 +8605,7 @@ impl_lua_newtype!{
 		///
 		///This function does not check if the input is normalized, it is up to the user to
 		///provide normalized input or to normalized the resulting quaternion.
-		from_vec4(LuaDVec4) -> LuaDQuat,
+		from_vec4(Wrapped(DVec4)) -> self,
 
 		///Create a quaternion for a normalized rotation `axis` and `angle` (in radians).
 		///The axis must be normalized (unit-length).
@@ -8506,30 +8613,30 @@ impl_lua_newtype!{
 		///# Panics
 		///
 		///Will panic if `axis` is not normalized when `glam_assert` is enabled.
-		from_axis_angle(LuaDVec3,f64) -> LuaDQuat,
+		from_axis_angle(Wrapped(DVec3),Raw(f64)) -> self,
 
 		///Create a quaternion that rotates `v.length()` radians around `v.normalize()`.
 		///
 		///`from_scaled_axis(Vec3::ZERO)` results in the identity quaternion.
-		from_scaled_axis(LuaDVec3) -> LuaDQuat,
+		from_scaled_axis(Wrapped(DVec3)) -> self,
 
 		///Creates a quaternion from the `angle` (in radians) around the x axis.
-		from_rotation_x(f64) -> LuaDQuat,
+		from_rotation_x(Raw(f64)) -> self,
 
 		///Creates a quaternion from the `angle` (in radians) around the y axis.
-		from_rotation_y(f64) -> LuaDQuat,
+		from_rotation_y(Raw(f64)) -> self,
 
 		///Creates a quaternion from the `angle` (in radians) around the z axis.
-		from_rotation_z(f64) -> LuaDQuat,
+		from_rotation_z(Raw(f64)) -> self,
 
 		///Creates a quaternion from the given Euler rotation sequence and the angles (in radians).
-		from_euler(LuaEulerRot,f64,f64,f64) -> LuaDQuat,
+		from_euler(Wrapped(EulerRot),Raw(f64),Raw(f64),Raw(f64)) -> self,
 
 		///Creates a quaternion from a 3x3 rotation matrix.
-		from_mat3(&LuaDMat3) -> LuaDQuat,
+		from_mat3(Wrapped(&DMat3)) -> self,
 
 		///Creates a quaternion from a 3x3 rotation matrix inside a homogeneous 4x4 matrix.
-		from_mat4(&LuaDMat4) -> LuaDQuat,
+		from_mat4(Wrapped(&DMat4)) -> self,
 
 		///Gets the minimal rotation for transforming `from` to `to`.  The rotation is in the
 		///plane spanned by the two vectors.  Will rotate at most 180 degrees.
@@ -8544,7 +8651,7 @@ impl_lua_newtype!{
 		///# Panics
 		///
 		///Will panic if `from` or `to` are not normalized when `glam_assert` is enabled.
-		from_rotation_arc(LuaDVec3,LuaDVec3) -> LuaDQuat,
+		from_rotation_arc(Wrapped(DVec3),Wrapped(DVec3)) -> self,
 
 		///Gets the minimal rotation for transforming `from` to either `to` or `-to`.  This means
 		///that the resulting quaternion will rotate `from` so that it is colinear with `to`.
@@ -8559,7 +8666,7 @@ impl_lua_newtype!{
 		///# Panics
 		///
 		///Will panic if `from` or `to` are not normalized when `glam_assert` is enabled.
-		from_rotation_arc_colinear(LuaDVec3,LuaDVec3) -> LuaDQuat,
+		from_rotation_arc_colinear(Wrapped(DVec3),Wrapped(DVec3)) -> self,
 
 		///Gets the minimal rotation for transforming `from` to `to`.  The resulting rotation is
 		///around the z axis. Will rotate at most 180 degrees.
@@ -8574,17 +8681,17 @@ impl_lua_newtype!{
 		///# Panics
 		///
 		///Will panic if `from` or `to` are not normalized when `glam_assert` is enabled.
-		from_rotation_arc_2d(LuaDVec2,LuaDVec2) -> LuaDQuat,
+		from_rotation_arc_2d(Wrapped(DVec2),Wrapped(DVec2)) -> self,
 
 		///Returns the rotation axis scaled by the rotation in radians.
-		to_scaled_axis(self) -> LuaDVec3,
+		to_scaled_axis(self:) -> Wrapped(DVec3),
 
 		///Returns the vector part of the quaternion.
-		xyz(self) -> LuaDVec3,
+		xyz(self:) -> Wrapped(DVec3),
 
 		///Returns the quaternion conjugate of `self`. For a unit quaternion the
 		///conjugate is also the inverse.
-		conjugate(self) -> LuaDQuat,
+		conjugate(self:) -> self,
 
 		///Returns the inverse of a normalized quaternion.
 		///
@@ -8595,25 +8702,25 @@ impl_lua_newtype!{
 		///# Panics
 		///
 		///Will panic if `self` is not normalized when `glam_assert` is enabled.
-		inverse(self) -> LuaDQuat,
+		inverse(self:) -> self,
 
 		///Computes the dot product of `self` and `rhs`. The dot product is
 		///equal to the cosine of the angle between two quaternion rotations.
-		dot(self,LuaDQuat) -> f64,
+		dot(self:self) -> Raw(f64),
 
 		///Computes the length of `self`.
-		length(self) -> f64,
+		length(self:) -> Raw(f64),
 
 		///Computes the squared length of `self`.
 		///
 		///This is generally faster than `length()` as it avoids a square
 		///root operation.
-		length_squared(self) -> f64,
+		length_squared(self:) -> Raw(f64),
 
 		///Computes `1.0 / length()`.
 		///
 		///For valid results, `self` must _not_ be of length zero.
-		length_recip(self) -> f64,
+		length_recip(self:) -> Raw(f64),
 
 		///Returns `self` normalized to length 1.0.
 		///
@@ -8622,20 +8729,20 @@ impl_lua_newtype!{
 		///Panics
 		///
 		///Will panic if `self` is zero length when `glam_assert` is enabled.
-		normalize(self) -> LuaDQuat,
+		normalize(self:) -> self,
 
 		///Returns `true` if, and only if, all elements are finite.
 		///If any element is either `NaN`, positive or negative infinity, this will return `false`.
-		is_finite(self) -> bool,
+		is_finite(self:) -> Raw(bool),
 
-		is_nan(self) -> bool,
+		is_nan(self:) -> Raw(bool),
 
 		///Returns whether `self` of length `1.0` or not.
 		///
 		///Uses a precision threshold of `1e-6`.
-		is_normalized(self) -> bool,
+		is_normalized(self:) -> Raw(bool),
 
-		is_near_identity(self) -> bool,
+		is_near_identity(self:) -> Raw(bool),
 
 		///Returns the angle (in radians) for the minimal rotation
 		///for transforming this quaternion into another.
@@ -8645,7 +8752,7 @@ impl_lua_newtype!{
 		///# Panics
 		///
 		///Will panic if `self` or `rhs` are not normalized when `glam_assert` is enabled.
-		angle_between(self,LuaDQuat) -> f64,
+		angle_between(self:self) -> Raw(f64),
 
 		///Returns true if the absolute difference of all elements between `self` and `rhs`
 		///is less than or equal to `max_abs_diff`.
@@ -8656,7 +8763,7 @@ impl_lua_newtype!{
 		///
 		///For more see
 		///[comparing floating point numbers](https://randomascii.wordpress.com/2012/02/25/comparing-floating-point-numbers-2012-edition/).
-		abs_diff_eq(self,LuaDQuat,f64) -> bool,
+		abs_diff_eq(self:self,Raw(f64)) -> Raw(bool),
 
 		///Performs a linear interpolation between `self` and `rhs` based on
 		///the value `s`.
@@ -8667,7 +8774,7 @@ impl_lua_newtype!{
 		///# Panics
 		///
 		///Will panic if `self` or `end` are not normalized when `glam_assert` is enabled.
-		lerp(self,LuaDQuat,f64) -> LuaDQuat,
+		lerp(self:self,Raw(f64)) -> self,
 
 		///Performs a spherical linear interpolation between `self` and `end`
 		///based on the value `s`.
@@ -8678,14 +8785,14 @@ impl_lua_newtype!{
 		///# Panics
 		///
 		///Will panic if `self` or `end` are not normalized when `glam_assert` is enabled.
-		slerp(self,LuaDQuat,f64) -> LuaDQuat,
+		slerp(self:self,Raw(f64)) -> self,
 
 		///Multiplies a quaternion and a 3D vector, returning the rotated vector.
 		///
 		///# Panics
 		///
 		///Will panic if `self` is not normalized when `glam_assert` is enabled.
-		mul_vec3(self,LuaDVec3) -> LuaDVec3,
+		mul_vec3(self:Wrapped(DVec3)) -> Wrapped(DVec3),
 
 		///Multiplies two quaternions. If they each represent a rotation, the result will
 		///represent the combined rotation.
@@ -8695,19 +8802,16 @@ impl_lua_newtype!{
 		///# Panics
 		///
 		///Will panic if `self` or `rhs` are not normalized when `glam_assert` is enabled.
-		mul_quat(self,LuaDQuat) -> LuaDQuat,
+		mul_quat(self:self) -> self,
 
-		as_f32(self) -> LuaQuat,
+		///Creates a quaternion from a 3x3 rotation matrix inside a 3D affine transform.
+		from_affine3(Wrapped(&DAffine3)) -> self,
+
+		as_f32(self:) -> Wrapped(Quat),
 
 	)
 	+ BinOps
 	(
-		self Add LuaDQuat -> LuaDQuat,
-		self Sub LuaDQuat -> LuaDQuat,
-		self Div f64 -> LuaDQuat,
-		self Mul f64 -> LuaDQuat,
-		self Mul LuaDQuat -> LuaDQuat,
-		self Mul LuaDVec3 -> LuaDVec3,
 	)
 	+ UnaryOps
 	(
@@ -8731,7 +8835,7 @@ impl_lua_newtype!{
 	Fields
 	(
 	)
-	+ AutoMethods
+	+ Methods
 	(
 	)
 	+ BinOps
@@ -9112,22 +9216,22 @@ impl APIProvider for LuaBevyAPIProvider{
 		app.register_foreign_lua_type::<Quat>();
 		app.register_foreign_lua_type::<DQuat>();
 		app.register_foreign_lua_type::<EulerRot>();
-		app.register_foreign_lua_type::<u8>();
-		app.register_foreign_lua_type::<f64>();
-		app.register_foreign_lua_type::<i16>();
-		app.register_foreign_lua_type::<u128>();
-		app.register_foreign_lua_type::<f32>();
-		app.register_foreign_lua_type::<u64>();
-		app.register_foreign_lua_type::<u32>();
-		app.register_foreign_lua_type::<bool>();
-		app.register_foreign_lua_type::<i32>();
 		app.register_foreign_lua_type::<usize>();
-		app.register_foreign_lua_type::<u16>();
-		app.register_foreign_lua_type::<i128>();
-		app.register_foreign_lua_type::<isize>();
+		app.register_foreign_lua_type::<bool>();
 		app.register_foreign_lua_type::<i8>();
-		app.register_foreign_lua_type::<String>();
+		app.register_foreign_lua_type::<isize>();
+		app.register_foreign_lua_type::<u8>();
+		app.register_foreign_lua_type::<i32>();
+		app.register_foreign_lua_type::<i128>();
+		app.register_foreign_lua_type::<u64>();
+		app.register_foreign_lua_type::<u128>();
+		app.register_foreign_lua_type::<f64>();
+		app.register_foreign_lua_type::<u32>();
+		app.register_foreign_lua_type::<f32>();
 		app.register_foreign_lua_type::<i64>();
+		app.register_foreign_lua_type::<i16>();
+		app.register_foreign_lua_type::<u16>();
+		app.register_foreign_lua_type::<String>();
 	}
 }
 

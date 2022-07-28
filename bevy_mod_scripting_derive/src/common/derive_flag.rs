@@ -9,6 +9,8 @@ use crate::{ops::*,lua_method::{LuaMethodType, MethodMacroArg},TokenStream2, uti
 
 use quote::ToTokens;
 
+use super::arg::ArgType;
+
 
 
 
@@ -29,12 +31,12 @@ pub(crate) enum DeriveFlag {
             fields: f.parse_terminated(AutoField::parse)?
         })
     },
-    AutoMethods {
+    Methods {
         paren: Paren,
         methods: Punctuated<AutoMethod,Token![,]>
     } => {
         let f; 
-        Ok(Self::AutoMethods{
+        Ok(Self::Methods{
             ident, 
             paren: parenthesized!(f in input), 
             methods: f.parse_terminated(AutoMethod::parse)? 
@@ -96,21 +98,17 @@ pub(crate) struct AutoMethod {
     pub docstring: Vec<Attribute>,
     pub ident: Ident,
     pub paren: Paren,
-    pub self_: Option<(Receiver,Option<Token![,]>)>,
-    pub args: Punctuated<Type,Token![,]>,
-    pub out: Option<Type>,
+    pub self_: Option<(ArgType,Token![:])>,
+    pub args: Punctuated<ArgType,Token![,]>,
+    pub out: Option<ArgType>,
 }
 
 impl ToTokens for AutoMethod {
     fn to_tokens(&self, tokens: &mut TokenStream2) {
         let docstring = self.docstring.iter();
         let id = &self.ident;
-        let self_ = self.self_.as_ref().map(|(r,c)| 
-            quote::quote!{
-                #r #c
-            }
-        );
         let args = &self.args;
+        let self_ = self.self_.as_ref().map(|(a,_)| quote::quote!(#a:));
         let out = self.out.as_ref().map(|t| quote::quote!{-> #t});
         tokens.extend(quote::quote!{
             #(#docstring)*
@@ -124,16 +122,24 @@ impl ToTokens for AutoMethod {
 impl Parse for AutoMethod {
     fn parse(input: ParseStream) -> Result<Self> {
         let f;
-        Ok(Self{
+        let o = Ok(Self{
             docstring: Attribute::parse_outer(input)?,
             ident: input.parse()?,
             paren: parenthesized!(f in input),
-            self_: f.fork().parse::<Receiver>().ok()
-                .and_then(|_| f.parse().ok())
-                .and_then(|v| Some((v,f.parse().ok()?))),
-            args: f.parse_terminated(Type::parse)?,
-            out: if input.peek(Token![->]) {input.parse::<Token![->]>()?;Some(input.parse()?)} else {None},
-        })
+            self_: {
+                let parser = |p : ParseStream| 
+                    Ok::<_,syn::Error>((p.parse::<ArgType>()?,p.parse::<Token![:]>()?));  
+                let fork = f.fork();
+                if let Ok(_) = parser(&fork) {
+                    Some(parser(&f).expect("Something went wrong"))
+                } else {
+                    None
+                }
+            },
+            args: f.parse_terminated(ArgType::parse)?,
+            out: if input.peek(Token![->]) {input.parse::<Token![->]>()?;Some(input.parse()?)} else {None}
+        });
+        o
     }
 }
 
@@ -142,7 +148,7 @@ pub(crate) struct AutoField {
     pub docstring: Vec<Attribute>,
     pub member: Member,
     pub colon: Token![:],
-    pub type_: Type,
+    pub type_: ArgType,
 }
 
 impl Parse for AutoField {

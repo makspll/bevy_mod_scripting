@@ -111,8 +111,8 @@ pub fn attribute_to_string_lit(attrs: &Attribute) -> TokenStream{
 }
 
 
-/// Removes whitespace from TypePath and converts it to string
-pub fn stringify_type_path(t : &TypePath) -> String{
+/// Converts the given ToTokens into token stream, stringifies it and removes whitespace
+pub fn stringify_token_group<T : ToTokens>(t : &T) -> String{
         let mut k = t.into_token_stream().to_string();
         k.retain(|c| !c.is_whitespace());
         k

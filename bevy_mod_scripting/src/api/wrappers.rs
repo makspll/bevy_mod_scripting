@@ -111,7 +111,7 @@ impl <T : ScriptReference>LuaWrapper<T> {
 
     pub fn new(b : T) -> Self 
     where 
-        T : ScriptValue
+        T : ScriptReference
     {
         Self::Owned(UnsafeCell::new(b),Arc::new(RwLock::new(())))
     }

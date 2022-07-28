@@ -1,9 +1,9 @@
 use indexmap::IndexMap;
 use proc_macro2::Span;
 use quote::{format_ident, ToTokens, quote_spanned};
-use syn::{punctuated::Punctuated, Token, LitInt, Type, spanned::Spanned, parse_quote_spanned, Attribute};
+use syn::{punctuated::Punctuated, Token, LitInt, Type, spanned::Spanned, parse_quote_spanned, Attribute, parse_quote};
 
-use crate::{lua::lua_method::LuaMethod, common::{derive_flag::DeriveFlag, newtype::Newtype}, EmptyToken};
+use crate::{lua::lua_method::LuaMethod, common::{derive_flag::DeriveFlag, newtype::Newtype, arg::SimpleType}, EmptyToken};
 
 
 
@@ -17,21 +17,33 @@ pub(crate) fn make_fields<'a>(flag: &DeriveFlag,new_type : &'a Newtype, out : &m
     };
 
     for f in fields {
-        if let Type::Reference(r) = &f.type_ {
+        // resolve the type of this field
+        let field_type = f.type_
+            .type_()
+            .cloned()
+            .unwrap_or_else(|self_|  self_.resolve_as(parse_quote!(#newtype_name)));
+
+        if let SimpleType::Ref{..} = field_type{
             return Err(syn::Error::new_spanned(f, "Reference fields are not supported"))
         }
+
         let ds : Punctuated<Attribute,EmptyToken> = f.docstring.iter().cloned().collect();
         let id = &f.member;
         let id_string = &f.member.to_token_stream().to_string();
-        let type_ = &f.type_;
+        let type_string = field_type.base_ident().to_string();
         
-        let type_string = type_.to_token_stream()
-            .to_string();
+        let field_type_ident = f.type_.is_wrapped()
+            .then(|| format_ident!("Lua{}",field_type.base_ident()))
+            .unwrap_or_else(|| field_type.base_ident().clone());
 
-        let expr_getter = type_string.starts_with("Lua") 
-            .then(|| {quote_spanned!{f.span()=>
-                Ok(#type_::new_ref(s.script_ref().index(std::borrow::Cow::Borrowed(#id_string))))
-            }}).unwrap_or_else(|| {
+
+        let expr_getter = f.type_.is_wrapped()
+            .then(|| {
+                let field_type_ident = format_ident!("Lua{}",field_type.base_ident());
+                quote_spanned!{f.span()=>
+                    Ok(#field_type_ident::new_ref(s.script_ref().index(std::borrow::Cow::Borrowed(#id_string))))
+                }
+            }).unwrap_or_else(|| {
                 if type_string == "ReflectedValue" {
                     return quote_spanned!{f.span()=>
                         Ok(s.script_ref().index(std::borrow::Cow::Borrowed(#id_string)))
@@ -50,7 +62,7 @@ pub(crate) fn make_fields<'a>(flag: &DeriveFlag,new_type : &'a Newtype, out : &m
             }
         });
 
-        let expr_setter = (type_string.starts_with("Lua") || type_string == "reflect_only")
+        let expr_setter = f.type_.is_wrapped()
             .then(|| {quote_spanned!{f.span()=>
                 Ok(o.apply_self_to_base(&mut s.script_ref().index(std::borrow::Cow::Borrowed(#id_string)))?)
             }}).unwrap_or_else(|| {
@@ -65,7 +77,7 @@ pub(crate) fn make_fields<'a>(flag: &DeriveFlag,new_type : &'a Newtype, out : &m
             });
 
         out.push(parse_quote_spanned! {f.span()=>
-            set #id_string => |_,s: &mut #newtype_name, o: #type_| {
+            set #id_string => |_,s: &mut #newtype_name, o: #field_type_ident| {
                 #expr_setter
             }
         });

@@ -10,7 +10,7 @@ use indexmap::{IndexMap, IndexSet};
 use proc_macro2::{TokenStream, Span, Ident};
 use syn::{spanned::Spanned, parse_quote_spanned, punctuated::Punctuated, LitInt, Token, Attribute, parse_quote, Type};
 
-use crate::{common::{WrapperImplementor, WrapperFunction, attribute_to_string_lit, derive_flag::DeriveFlag, ops::{OpName,OpExpr}, stringify_type_path, type_base_string}, EmptyToken};
+use crate::{common::{WrapperImplementor, WrapperFunction, attribute_to_string_lit, derive_flag::DeriveFlag, ops::{OpName,OpExpr}, stringify_token_group, type_base_string}, EmptyToken};
 use quote::{quote, quote_spanned, ToTokens, format_ident};
 
 impl WrapperFunction for LuaMethod {}
@@ -24,9 +24,12 @@ pub(crate) struct LuaImplementor{
 impl LuaImplementor {
 
     /// Generates a union registers it, and makes sure no two identical unions exist, while removing duplicate entries in the enum
-    fn generate_register_union(&mut self, type_idents : &Vec<String>, unique_ident : &str) -> Ident{
+    /// 
+    /// The given unique type idents must be unique (i.e. come from a HashSet)
+    fn generate_register_union<'a,I : Iterator<Item=String>>(&mut self, unique_type_idents : I, unique_ident : &str) -> Ident{
 
-        let unique_idents : Vec<String> = type_idents.iter().cloned().collect::<IndexSet<_>>().into_iter().collect::<Vec<_>>();
+        let unique_idents : Vec<String> = unique_type_idents
+            .collect::<Vec<_>>();
 
         let return_arg_type = format_ident!("{unique_ident}Union{}",unique_idents.join(""));
 
@@ -171,7 +174,7 @@ impl WrapperImplementor for LuaImplementor {
                     );
 
                 }
-                flag @ DeriveFlag::AutoMethods {..} => {
+                flag @ DeriveFlag::Methods {..} => {
                     make_auto_methods(flag,new_type,&mut out);
                 },
                 flag @ DeriveFlag::BinOps {..} =>  {  

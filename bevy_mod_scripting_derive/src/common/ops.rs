@@ -1,8 +1,8 @@
 use proc_macro2::{Span,TokenStream};
-use syn::{*,Type,parse::*, spanned::Spanned};
+use syn::{*,Type,parse::*, spanned::Spanned, token::Paren};
 use quote::{quote_spanned,ToTokens};
 
-use super::impl_parse_enum;
+use super::{impl_parse_enum, arg::ArgType};
 
 
 
@@ -50,43 +50,46 @@ impl_parse_enum!(input,ident:
 
     
 
-
-#[derive(PartialEq,Eq,Hash,Debug)]
-pub(crate) enum  OpArg {
-    Self_(Receiver),
-    Arg(Type)
+/// Left or Right
+#[derive(Clone,Copy, PartialEq, Eq)]
+pub(crate) enum Side {
+    Left,
+    Right
 }
 
-impl Parse for OpArg {
-    fn parse(input: ParseStream) -> Result<Self> {
-        Ok(if Receiver::parse(&input.fork()).is_ok(){
-            Self::Self_(input.parse()?)
-        } else {
-            Self::Arg(Type::parse(input)?)
-        })
-    }
-}
-
-impl ToTokens for OpArg {
-    fn to_tokens(&self, tokens: &mut TokenStream) {
+impl Side {
+    pub fn opposite(&self) -> Self {
         match self {
-            OpArg::Self_(s) => tokens.extend(quote::quote!{
-                #s
-            }),
-            OpArg::Arg(s) => tokens.extend(quote::quote!{
-                #s
-            }),
+            Side::Left => Self::Right,
+            Side::Right => Self::Left,
         }
     }
 }
 
-
+/// Represents either a unary or binary expression, where at least one side has the receiver (self) type
 #[derive(PartialEq,Eq,Hash,Debug)]
 pub(crate) struct OpExpr {
-    pub left : Option<OpArg>,
+    pub left : Option<ArgType>,
     pub op : OpName,
-    pub right : OpArg,
-    pub return_type : Option<(Token![->],Type)>
+    pub right : ArgType,
+    pub return_type : Option<(Token![->],ArgType)>
+}
+
+impl Parse for OpExpr {
+    fn parse(input: ParseStream) -> Result<Self> {
+        let s = Self{
+            left: (&input.fork()).parse::<OpName>().is_err().then(|| Ok::<_,syn::Error>(Some(input.parse()?))).unwrap_or(Ok(None))?,
+            op: input.parse()?,
+            right: input.parse()?,
+            return_type: input.parse::<Token![->]>().and_then(|v| Ok((v,input.parse()?))).ok(),
+        };
+
+        if s.has_receiver(){
+            Ok(s)
+        } else {
+            Err(Error::new_spanned(s, "Invalid expression, binary/unary expressions expect at least one side to be one of: [self,&self,&mut self]"))
+        }
+    }
 }
 
 impl ToTokens for OpExpr {
@@ -103,16 +106,7 @@ impl ToTokens for OpExpr {
 }
 
 
-impl Parse for OpExpr {
-    fn parse(input: ParseStream) -> Result<Self> {
-        Ok(Self{
-            left: (&input.fork()).parse::<OpName>().is_err().then(|| Some(input.parse().unwrap())).unwrap_or(None),
-            op: input.parse()?,
-            right: input.parse()?,
-            return_type: input.parse::<Token![->]>().and_then(|v| Ok((v,input.parse()?))).ok(),
-        })
-    }
-}
+
 
 impl OpExpr {
     pub fn is_binary(&self) -> bool {
@@ -120,62 +114,54 @@ impl OpExpr {
     }
 
     pub fn has_receiver_on_lhs(&self) -> bool {
-        if let Some(OpArg::Self_(_)) = self.left {
+        if let Some(ArgType::Self_(_)) = self.left {
            true 
         } else {
             false
         }
     }
 
-    /// maps on return type if it is some otherwise returns none
-    pub fn map_return_type<O,F : FnOnce(&Type) -> O>(&self, f : F) -> Option<O>{
-        self.return_type.as_ref().map(|(_,v)| f(v))
-    }
-
-    /// Maps the return type and if none is present maps the given default instead
-    pub fn map_return_type_with_default<O,F : FnOnce(&Type) -> O>(&self,def: Type,  f : F) -> O{
-        f(self.return_type.as_ref().map(|(_,t)| t).unwrap_or(&def))
-    }
-
-    /// checks which side has type of Arg(Type) and maps over it or returns err
-    pub fn map_type_side<O,F : FnOnce(&Type) -> O>(&self, f : F) -> Result<O>{
-        if let Some(OpArg::Arg(v)) = &self.left {
-            Ok(f(v))
-        } else if let OpArg::Arg(v) = &self.right{
-            Ok(f(v))
+    fn has_receiver(&self) -> bool {
+        if let Some(ArgType::Self_(_)) = self.left {
+            return true 
+        } else if let ArgType::Self_(_) = self.right {
+            return true
         } else {
-            Err(Error::new(self.span(), "Invalid OpExpr, expected one side to have type"))
+            return true
         }
     }
 
-    /// maps both sides at the same time and combine into token stream preserving order, assumes this has 2 operators.
-    /// The operator is converted to a rust operator call expression
-    pub fn map_binary<T: FnOnce(&Type) -> TokenStream, S: FnOnce( &Receiver) -> TokenStream> (&self,t_f : T,s_f : S) -> Result<TokenStream>{
-        let (l,r) = match (self.left.as_ref(),&self.right){
-            (Some(OpArg::Self_(s)),OpArg::Arg(a)) => (s_f(s),t_f(a)),
-            (Some(OpArg::Arg(s)),OpArg::Self_(a)) => (t_f(s),s_f(a)),
-            _ => return Err(Error::new(self.span(), "Invalid OpExpr, expected binary expression"))
-        };
-
-        let operator = self.op.to_rust_method_ident();
-
-        Ok(quote::quote!{
-            #l.#operator(#r)
-        })
+    // True if self argument is present on all sides of the expression, assuming it's binary
+    pub fn has_receiver_on_both(&self) -> bool {
+        if let ArgType::Self_(_) = self.right {
+            self.has_receiver_on_lhs()
+        } else {
+            false
+        }
     }
 
-    pub fn map_unary<F: FnOnce(&Receiver) -> TokenStream>(&self, f : F) -> Result<TokenStream>{
+    /// maps on return type if it is some otherwise returns none
+    pub fn map_return_type<O,F : FnOnce(&ArgType) -> O>(&self, f : F) -> Option<O>{
+        self.return_type.as_ref().map(|(_,v)| f(v))
+    }
 
-        let l = match &self.right {
-            OpArg::Self_(s) => f(s),
-            _ => return Err(Error::new(self.span(), "Invalid OpExpr, expected unary expression"))
-        };
+    /// Maps the given side if it exists (right is guaranteed to exist, left is not)
+    pub fn map_side<O,F: FnOnce(&ArgType) -> O>(&self,side: Side , f :F) -> Option<O>{
+        match side {
+            Side::Left => self.left.as_ref().map(f),
+            Side::Right => Some(f(&self.right)),
+        }
+    }
 
-        let operator = self.op.to_rust_method_ident();
+    /// call map_side on both Left and Right sides and return the results as a tuple
+    pub fn map_both<O, F : FnMut(&ArgType, Side) -> O>(&self, mut f : F) -> (Option<O>,O) {
+        (self.map_side(Side::Left, |a| f(a,Side::Left)),
+        self.map_side(Side::Right,|a|f(a,Side::Right)).expect("Cannot happen"))
+    }
 
-        Ok(quote::quote!{
-            #l.#operator()
-        })
+    /// Maps the return type and if none is present maps the given default instead
+    pub fn map_return_type_with_default<O,F : FnMut(&ArgType) -> O>(&self,def: ArgType, mut f : F) -> O{
+        f(self.return_type.as_ref().map(|(_,t)| t).unwrap_or(&def))
     }
 
 }
