@@ -57,6 +57,17 @@ pub(crate) enum Side {
     Right
 }
 
+use std::fmt;
+impl fmt::Display for Side {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            Side::Left => f.write_str("Left"),
+            Side::Right => f.write_str("Right"),
+        }
+    }
+}
+
+
 impl Side {
     pub fn opposite(&self) -> Self {
         match self {
@@ -113,14 +124,6 @@ impl OpExpr {
         return self.left.is_some()
     }
 
-    pub fn has_receiver_on_lhs(&self) -> bool {
-        if let Some(ArgType::Self_(_)) = self.left {
-           true 
-        } else {
-            false
-        }
-    }
-
     fn has_receiver(&self) -> bool {
         if let Some(ArgType::Self_(_)) = self.left {
             return true 
@@ -131,12 +134,11 @@ impl OpExpr {
         }
     }
 
-    // True if self argument is present on all sides of the expression, assuming it's binary
-    pub fn has_receiver_on_both(&self) -> bool {
-        if let ArgType::Self_(_) = self.right {
-            self.has_receiver_on_lhs()
-        } else {
-            false
+
+    pub fn has_receiver_on_side(&self, side: Side) -> bool {
+        match side {
+            Side::Left => self.left.as_ref().map(|t| t.is_self()).unwrap_or_default(),
+            Side::Right => self.right.is_self(),
         }
     }
 

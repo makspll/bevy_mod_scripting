@@ -50,7 +50,7 @@ pub(crate) fn make_fields<'a>(flag: &DeriveFlag,new_type : &'a Newtype, out : &m
                     }
                 }
                 quote_spanned!{f.span()=>{}
-                    s.val(|s| Ok(s.#id))?
+                    s.val(|s| Ok(s.#id.clone()))?
                 }
             });
         

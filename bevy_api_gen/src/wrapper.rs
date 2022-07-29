@@ -280,14 +280,16 @@ impl WrappedItem<'_> {
                 decl.output
                     .as_ref()
                     .map(|tp| {
-                        // let type_ = type_to_arg(tp, &mut |base_string : &String| 
-                        //     Ok(to_auto_method_argument(base_string,&self.wrapped_type,config,false, WRAPPER_PREFIX)));
                         let arg_type : Result<ArgType,_> = tp.try_into();
                         if let Ok(arg_type) = arg_type {
+                            if let ArgType::Ref {..} = arg_type {
+                                errors.push("references are not supported as return types".to_owned());
+                                return
+                            }
                             let base_ident = arg_type
                                 .base_ident()// resolve self for lookup
                                 .unwrap_or_else(|_| self.wrapped_type.as_str());
-
+                            
                             // if the underlying ident is self, we shouldn't wrap it when printing it
                             // if type is unknown, no wrapper type exists
                             let wrapper_type : Option<ArgWrapperType> = arg_type.is_self().then(|| ArgWrapperType::None)
@@ -345,9 +347,8 @@ impl WrappedItem<'_> {
                     let base_ident = self_type
                         .base_ident()
                         .unwrap_or_else(|_| self.wrapped_type.as_str());
-                    let is_self_type_the_wrapper = base_ident == self.wrapped_type && config.types.contains_key(base_ident);
+                    let is_self_type_the_wrapper = (base_ident == self.wrapped_type) && config.types.contains_key(base_ident);
                     let is_primitive = config.primitives.contains(base_ident);
-
                     is_self_type_the_wrapper || is_primitive
                 })
                 .for_each(|(impl_,item, self_type)| {
@@ -355,8 +356,7 @@ impl WrappedItem<'_> {
                         ItemEnum::Method(m) => {
                             m.decl.inputs
                                 .iter()
-                                .enumerate()
-                                .map(|(idx,(_,t))| {
+                                .map(|(_,t)| {
                                     // check arg is valid
                                     let arg_type : ArgType = t.try_into()?;
                                     let base_ident = arg_type
@@ -365,15 +365,13 @@ impl WrappedItem<'_> {
 
                                     // if the underlying ident is self, we shouldn't wrap it when printing it
                                     let wrapper_type : ArgWrapperType = arg_type.is_self().then(|| ArgWrapperType::None)
+                                        .or_else(|| config.types.contains_key(base_ident).then_some(ArgWrapperType::Wrapped))    
                                         .or_else(|| config.primitives.contains(base_ident).then_some(ArgWrapperType::Raw))
-                                        .or_else(|| config.types.contains_key(base_ident).then_some(ArgWrapperType::Wrapped))
                                         .unwrap();
 
-                                    if wrapper_type != ArgWrapperType::None {
-                                        Ok(Arg::new(arg_type,wrapper_type).to_string())
-                                    } else {
-                                        Err("asd".to_owned())
-                                    }
+                                    // eprintln!("{base_ident}, {wrapper_type}, {}",config.types.contains_key(base_ident));
+
+                                    Ok(Arg::new(arg_type,wrapper_type).to_string())
                                 }).collect::<Result<Vec<_>,_>>()
                                 .and_then(|v| Ok(v.join(&format!(" {} ",rep))))
                                 .and_then(|expr| {

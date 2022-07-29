@@ -374,6 +374,7 @@ impl_lua_newtype!{
 	)
 	+ BinOps
 	(
+		self Add Raw(f32) -> Wrapped(Val),
 	)
 	+ UnaryOps
 	(
@@ -630,12 +631,6 @@ impl_lua_newtype!{
 	)
 	+ Methods
 	(
-		// ///Set the animation to repeat
-		// repeat(&mut self:) -> &mut self,
-
-		// ///Stop the animation from repeating
-		// stop_repeating(&mut self:) -> &mut self,
-
 		///Pause the animation
 		pause(&mut self:),
 
@@ -648,14 +643,8 @@ impl_lua_newtype!{
 		///Speed of the animation playback
 		speed(&self:) -> Raw(f32),
 
-		// ///Set the speed of the animation playback
-		// set_speed(&mut self:Raw(f32)) -> &mut self,
-
 		///Time elapsed playing the animation
 		elapsed(&self:) -> Raw(f32),
-
-		// ///Seek to a specific time in the animation
-		// set_elapsed(&mut self:Raw(f32)) -> &mut self,
 
 	)
 	+ BinOps
@@ -698,7 +687,7 @@ impl_lua_newtype!{
 	FromLuaProxy +
 	Fields
 	(
-		// value: Raw(String),
+		value: Raw(String),
 	)
 	+ Methods
 	(
@@ -856,7 +845,7 @@ impl_lua_newtype!{
 	FromLuaProxy +
 	Fields
 	(
-		// value: Raw(String),
+		value: Raw(String),
 		style: Wrapped(TextStyle),
 	)
 	+ Methods
@@ -1584,6 +1573,8 @@ impl_lua_newtype!{
 	)
 	+ BinOps
 	(
+		self Mul Wrapped(Transform) -> Wrapped(Transform),
+		self Mul Wrapped(Vec3) -> Wrapped(Vec3),
 	)
 	+ UnaryOps
 	(
@@ -1656,9 +1647,6 @@ impl_lua_newtype!{
 		///Get the translation as a [`Vec3`].
 		translation(&self:) -> Wrapped(Vec3),
 
-		// ///Mutably access the internal translation.
-		// translation_mut(&mut self:) -> Wrapped(&mut Vec3A),
-
 		///Get the translation as a [`Vec3A`].
 		translation_vec3a(&self:) -> Wrapped(Vec3A),
 
@@ -1675,6 +1663,9 @@ impl_lua_newtype!{
 	)
 	+ BinOps
 	(
+		self Mul Wrapped(GlobalTransform) -> Wrapped(GlobalTransform),
+		self Mul Wrapped(Transform) -> Wrapped(GlobalTransform),
+		self Mul Wrapped(Vec3) -> Wrapped(Vec3),
 	)
 	+ UnaryOps
 	(
@@ -1714,10 +1705,6 @@ impl_lua_newtype!{
 	)
 	+ Methods
 	(
-		// get(&self:Raw(usize)) -> Wrapped(&VisibleEntities),
-
-		// get_mut(&mut self:Raw(usize)) -> Wrapped(&mut VisibleEntities),
-
 	)
 	+ BinOps
 	(
@@ -2232,11 +2219,11 @@ impl_lua_newtype!{
 	)
 	+ Methods
 	(
-		// ///Create a new `RenderLayers` that belongs to all layers.
-		// all() -> self,
+		///Create a new `RenderLayers` that belongs to all layers.
+		all() -> self,
 
-		// ///Create a new `RenderLayers` that belongs to no layers.
-		// none() -> self,
+		///Create a new `RenderLayers` that belongs to no layers.
+		none() -> self,
 
 		///Determine if a `RenderLayers` intersects another.
 		///
@@ -2471,20 +2458,8 @@ impl_lua_newtype!{
 		///Get blue in sRGB colorspace.
 		b(&self:) -> Raw(f32),
 
-		// ///Set red in sRGB colorspace.
-		// set_r(&mut self:Raw(f32)) -> &mut self,
-
-		// ///Set green in sRGB colorspace.
-		// set_g(&mut self:Raw(f32)) -> &mut self,
-
-		// ///Set blue in sRGB colorspace.
-		// set_b(&mut self:Raw(f32)) -> &mut self,
-
 		///Get alpha.
 		a(&self:) -> Raw(f32),
-
-		// /Set alpha.
-		// set_a(&mut self:Raw(f32)) -> &mut self,
 
 		///Converts a `Color` to variant `Color::Rgba`
 		as_rgba(Wrapped(&Color):) -> Wrapped(Color),
@@ -2510,6 +2485,11 @@ impl_lua_newtype!{
 	)
 	+ BinOps
 	(
+		self Add Wrapped(Color) -> Wrapped(Color),
+		self Add Wrapped(Vec4) -> Wrapped(Color),
+		self Mul Raw(f32) -> Wrapped(Color),
+		self Mul Wrapped(Vec4) -> Wrapped(Color),
+		self Mul Wrapped(Vec3) -> Wrapped(Color),
 	)
 	+ UnaryOps
 	(
@@ -3243,6 +3223,21 @@ impl_lua_newtype!{
 	)
 	+ BinOps
 	(
+		self Add self -> Wrapped(Vec2),
+		self Add Raw(f32) -> Wrapped(Vec2),
+		self Add Wrapped(Vec2) -> Wrapped(Vec2),
+		self Sub self -> Wrapped(Vec2),
+		self Sub Raw(f32) -> Wrapped(Vec2),
+		self Sub Wrapped(Vec2) -> Wrapped(Vec2),
+		self Div self -> Wrapped(Vec2),
+		self Div Raw(f32) -> Wrapped(Vec2),
+		self Div Wrapped(Vec2) -> Wrapped(Vec2),
+		self Mul self -> Wrapped(Vec2),
+		self Mul Raw(f32) -> Wrapped(Vec2),
+		self Mul Wrapped(Vec2) -> Wrapped(Vec2),
+		self Rem self -> Wrapped(Vec2),
+		self Rem Raw(f32) -> Wrapped(Vec2),
+		self Rem Wrapped(Vec2) -> Wrapped(Vec2),
 	)
 	+ UnaryOps
 	(
@@ -3572,6 +3567,21 @@ impl_lua_newtype!{
 	)
 	+ BinOps
 	(
+		self Add self -> Wrapped(Vec3),
+		self Add Raw(f32) -> Wrapped(Vec3),
+		self Add Wrapped(Vec3) -> Wrapped(Vec3),
+		self Sub self -> Wrapped(Vec3),
+		self Sub Raw(f32) -> Wrapped(Vec3),
+		self Sub Wrapped(Vec3) -> Wrapped(Vec3),
+		self Div self -> Wrapped(Vec3),
+		self Div Raw(f32) -> Wrapped(Vec3),
+		self Div Wrapped(Vec3) -> Wrapped(Vec3),
+		self Mul self -> Wrapped(Vec3),
+		self Mul Raw(f32) -> Wrapped(Vec3),
+		self Mul Wrapped(Vec3) -> Wrapped(Vec3),
+		self Rem self -> Wrapped(Vec3),
+		self Rem Raw(f32) -> Wrapped(Vec3),
+		self Rem Wrapped(Vec3) -> Wrapped(Vec3),
 	)
 	+ UnaryOps
 	(
@@ -3903,6 +3913,21 @@ impl_lua_newtype!{
 	)
 	+ BinOps
 	(
+		self Add self -> Wrapped(Vec3A),
+		self Add Raw(f32) -> Wrapped(Vec3A),
+		self Add Wrapped(Vec3A) -> Wrapped(Vec3A),
+		self Sub self -> Wrapped(Vec3A),
+		self Sub Raw(f32) -> Wrapped(Vec3A),
+		self Sub Wrapped(Vec3A) -> Wrapped(Vec3A),
+		self Div self -> Wrapped(Vec3A),
+		self Div Raw(f32) -> Wrapped(Vec3A),
+		self Div Wrapped(Vec3A) -> Wrapped(Vec3A),
+		self Mul self -> Wrapped(Vec3A),
+		self Mul Raw(f32) -> Wrapped(Vec3A),
+		self Mul Wrapped(Vec3A) -> Wrapped(Vec3A),
+		self Rem self -> Wrapped(Vec3A),
+		self Rem Raw(f32) -> Wrapped(Vec3A),
+		self Rem Wrapped(Vec3A) -> Wrapped(Vec3A),
 	)
 	+ UnaryOps
 	(
@@ -4206,6 +4231,21 @@ impl_lua_newtype!{
 	)
 	+ BinOps
 	(
+		self Add self -> Wrapped(Vec4),
+		self Add Raw(f32) -> Wrapped(Vec4),
+		self Add Wrapped(Vec4) -> Wrapped(Vec4),
+		self Sub self -> Wrapped(Vec4),
+		self Sub Raw(f32) -> Wrapped(Vec4),
+		self Sub Wrapped(Vec4) -> Wrapped(Vec4),
+		self Div self -> Wrapped(Vec4),
+		self Div Raw(f32) -> Wrapped(Vec4),
+		self Div Wrapped(Vec4) -> Wrapped(Vec4),
+		self Mul self -> Wrapped(Vec4),
+		self Mul Raw(f32) -> Wrapped(Vec4),
+		self Mul Wrapped(Vec4) -> Wrapped(Vec4),
+		self Rem self -> Wrapped(Vec4),
+		self Rem Raw(f32) -> Wrapped(Vec4),
+		self Rem Wrapped(Vec4) -> Wrapped(Vec4),
 	)
 	+ UnaryOps
 	(
@@ -4717,6 +4757,21 @@ impl_lua_newtype!{
 	)
 	+ BinOps
 	(
+		self Add self -> Wrapped(DVec2),
+		self Add Raw(f64) -> Wrapped(DVec2),
+		self Add Wrapped(DVec2) -> Wrapped(DVec2),
+		self Sub self -> Wrapped(DVec2),
+		self Sub Raw(f64) -> Wrapped(DVec2),
+		self Sub Wrapped(DVec2) -> Wrapped(DVec2),
+		self Div self -> Wrapped(DVec2),
+		self Div Raw(f64) -> Wrapped(DVec2),
+		self Div Wrapped(DVec2) -> Wrapped(DVec2),
+		self Mul self -> Wrapped(DVec2),
+		self Mul Raw(f64) -> Wrapped(DVec2),
+		self Mul Wrapped(DVec2) -> Wrapped(DVec2),
+		self Rem self -> Wrapped(DVec2),
+		self Rem Raw(f64) -> Wrapped(DVec2),
+		self Rem Wrapped(DVec2) -> Wrapped(DVec2),
 	)
 	+ UnaryOps
 	(
@@ -5049,6 +5104,21 @@ impl_lua_newtype!{
 	)
 	+ BinOps
 	(
+		self Add self -> Wrapped(DVec3),
+		self Add Raw(f64) -> Wrapped(DVec3),
+		self Add Wrapped(DVec3) -> Wrapped(DVec3),
+		self Sub self -> Wrapped(DVec3),
+		self Sub Raw(f64) -> Wrapped(DVec3),
+		self Sub Wrapped(DVec3) -> Wrapped(DVec3),
+		self Div self -> Wrapped(DVec3),
+		self Div Raw(f64) -> Wrapped(DVec3),
+		self Div Wrapped(DVec3) -> Wrapped(DVec3),
+		self Mul self -> Wrapped(DVec3),
+		self Mul Raw(f64) -> Wrapped(DVec3),
+		self Mul Wrapped(DVec3) -> Wrapped(DVec3),
+		self Rem self -> Wrapped(DVec3),
+		self Rem Raw(f64) -> Wrapped(DVec3),
+		self Rem Wrapped(DVec3) -> Wrapped(DVec3),
 	)
 	+ UnaryOps
 	(
@@ -5352,6 +5422,21 @@ impl_lua_newtype!{
 	)
 	+ BinOps
 	(
+		self Add self -> Wrapped(DVec4),
+		self Add Raw(f64) -> Wrapped(DVec4),
+		self Add Wrapped(DVec4) -> Wrapped(DVec4),
+		self Sub self -> Wrapped(DVec4),
+		self Sub Raw(f64) -> Wrapped(DVec4),
+		self Sub Wrapped(DVec4) -> Wrapped(DVec4),
+		self Div self -> Wrapped(DVec4),
+		self Div Raw(f64) -> Wrapped(DVec4),
+		self Div Wrapped(DVec4) -> Wrapped(DVec4),
+		self Mul self -> Wrapped(DVec4),
+		self Mul Raw(f64) -> Wrapped(DVec4),
+		self Mul Wrapped(DVec4) -> Wrapped(DVec4),
+		self Rem self -> Wrapped(DVec4),
+		self Rem Raw(f64) -> Wrapped(DVec4),
+		self Rem Wrapped(DVec4) -> Wrapped(DVec4),
 	)
 	+ UnaryOps
 	(
@@ -5498,6 +5583,21 @@ impl_lua_newtype!{
 	)
 	+ BinOps
 	(
+		self Add self -> Wrapped(IVec2),
+		self Add Raw(i32) -> Wrapped(IVec2),
+		self Add Wrapped(IVec2) -> Wrapped(IVec2),
+		self Sub self -> Wrapped(IVec2),
+		self Sub Raw(i32) -> Wrapped(IVec2),
+		self Sub Wrapped(IVec2) -> Wrapped(IVec2),
+		self Div self -> Wrapped(IVec2),
+		self Div Raw(i32) -> Wrapped(IVec2),
+		self Div Wrapped(IVec2) -> Wrapped(IVec2),
+		self Mul self -> Wrapped(IVec2),
+		self Mul Raw(i32) -> Wrapped(IVec2),
+		self Mul Wrapped(IVec2) -> Wrapped(IVec2),
+		self Rem self -> Wrapped(IVec2),
+		self Rem Raw(i32) -> Wrapped(IVec2),
+		self Rem Wrapped(IVec2) -> Wrapped(IVec2),
 	)
 	+ UnaryOps
 	(
@@ -5644,6 +5744,21 @@ impl_lua_newtype!{
 	)
 	+ BinOps
 	(
+		self Add self -> Wrapped(IVec3),
+		self Add Raw(i32) -> Wrapped(IVec3),
+		self Add Wrapped(IVec3) -> Wrapped(IVec3),
+		self Sub self -> Wrapped(IVec3),
+		self Sub Raw(i32) -> Wrapped(IVec3),
+		self Sub Wrapped(IVec3) -> Wrapped(IVec3),
+		self Div self -> Wrapped(IVec3),
+		self Div Raw(i32) -> Wrapped(IVec3),
+		self Div Wrapped(IVec3) -> Wrapped(IVec3),
+		self Mul self -> Wrapped(IVec3),
+		self Mul Raw(i32) -> Wrapped(IVec3),
+		self Mul Wrapped(IVec3) -> Wrapped(IVec3),
+		self Rem self -> Wrapped(IVec3),
+		self Rem Raw(i32) -> Wrapped(IVec3),
+		self Rem Wrapped(IVec3) -> Wrapped(IVec3),
 	)
 	+ UnaryOps
 	(
@@ -5782,6 +5897,21 @@ impl_lua_newtype!{
 	)
 	+ BinOps
 	(
+		self Add self -> Wrapped(IVec4),
+		self Add Raw(i32) -> Wrapped(IVec4),
+		self Add Wrapped(IVec4) -> Wrapped(IVec4),
+		self Sub self -> Wrapped(IVec4),
+		self Sub Raw(i32) -> Wrapped(IVec4),
+		self Sub Wrapped(IVec4) -> Wrapped(IVec4),
+		self Div self -> Wrapped(IVec4),
+		self Div Raw(i32) -> Wrapped(IVec4),
+		self Div Wrapped(IVec4) -> Wrapped(IVec4),
+		self Mul self -> Wrapped(IVec4),
+		self Mul Raw(i32) -> Wrapped(IVec4),
+		self Mul Wrapped(IVec4) -> Wrapped(IVec4),
+		self Rem self -> Wrapped(IVec4),
+		self Rem Raw(i32) -> Wrapped(IVec4),
+		self Rem Wrapped(IVec4) -> Wrapped(IVec4),
 	)
 	+ UnaryOps
 	(
@@ -5906,6 +6036,21 @@ impl_lua_newtype!{
 	)
 	+ BinOps
 	(
+		self Add self -> Wrapped(UVec2),
+		self Add Raw(u32) -> Wrapped(UVec2),
+		self Add Wrapped(UVec2) -> Wrapped(UVec2),
+		self Sub self -> Wrapped(UVec2),
+		self Sub Raw(u32) -> Wrapped(UVec2),
+		self Sub Wrapped(UVec2) -> Wrapped(UVec2),
+		self Div self -> Wrapped(UVec2),
+		self Div Raw(u32) -> Wrapped(UVec2),
+		self Div Wrapped(UVec2) -> Wrapped(UVec2),
+		self Mul self -> Wrapped(UVec2),
+		self Mul Raw(u32) -> Wrapped(UVec2),
+		self Mul Wrapped(UVec2) -> Wrapped(UVec2),
+		self Rem self -> Wrapped(UVec2),
+		self Rem Raw(u32) -> Wrapped(UVec2),
+		self Rem Wrapped(UVec2) -> Wrapped(UVec2),
 	)
 	+ UnaryOps
 	(
@@ -6041,6 +6186,21 @@ impl_lua_newtype!{
 	)
 	+ BinOps
 	(
+		self Add self -> Wrapped(UVec3),
+		self Add Raw(u32) -> Wrapped(UVec3),
+		self Add Wrapped(UVec3) -> Wrapped(UVec3),
+		self Sub self -> Wrapped(UVec3),
+		self Sub Raw(u32) -> Wrapped(UVec3),
+		self Sub Wrapped(UVec3) -> Wrapped(UVec3),
+		self Div self -> Wrapped(UVec3),
+		self Div Raw(u32) -> Wrapped(UVec3),
+		self Div Wrapped(UVec3) -> Wrapped(UVec3),
+		self Mul self -> Wrapped(UVec3),
+		self Mul Raw(u32) -> Wrapped(UVec3),
+		self Mul Wrapped(UVec3) -> Wrapped(UVec3),
+		self Rem self -> Wrapped(UVec3),
+		self Rem Raw(u32) -> Wrapped(UVec3),
+		self Rem Wrapped(UVec3) -> Wrapped(UVec3),
 	)
 	+ UnaryOps
 	(
@@ -6168,6 +6328,21 @@ impl_lua_newtype!{
 	)
 	+ BinOps
 	(
+		self Add self -> Wrapped(UVec4),
+		self Add Raw(u32) -> Wrapped(UVec4),
+		self Add Wrapped(UVec4) -> Wrapped(UVec4),
+		self Sub self -> Wrapped(UVec4),
+		self Sub Raw(u32) -> Wrapped(UVec4),
+		self Sub Wrapped(UVec4) -> Wrapped(UVec4),
+		self Div self -> Wrapped(UVec4),
+		self Div Raw(u32) -> Wrapped(UVec4),
+		self Div Wrapped(UVec4) -> Wrapped(UVec4),
+		self Mul self -> Wrapped(UVec4),
+		self Mul Raw(u32) -> Wrapped(UVec4),
+		self Mul Wrapped(UVec4) -> Wrapped(UVec4),
+		self Rem self -> Wrapped(UVec4),
+		self Rem Raw(u32) -> Wrapped(UVec4),
+		self Rem Wrapped(UVec4) -> Wrapped(UVec4),
 	)
 	+ UnaryOps
 	(
@@ -6293,13 +6468,6 @@ impl_lua_newtype!{
 		///Panics if `index` is greater than 2.
 		col(&self:Raw(usize)) -> Wrapped(Vec3),
 
-		// ///Returns a mutable reference to the matrix column for the given `index`.
-		// ///
-		// ///# Panics
-		// ///
-		// ///Panics if `index` is greater than 2.
-		// col_mut(&mut self:Raw(usize)) -> Wrapped(&mut Vec3),
-
 		///Returns the matrix row for the given `index`.
 		///
 		///# Panics
@@ -6377,6 +6545,14 @@ impl_lua_newtype!{
 	)
 	+ BinOps
 	(
+		self Add self -> Wrapped(Mat3),
+		self Sub self -> Wrapped(Mat3),
+		self Mul Wrapped(Affine2) -> Wrapped(Mat3),
+		self Mul self -> Wrapped(Mat3),
+		self Mul Wrapped(Vec3) -> Wrapped(Vec3),
+		self Mul Wrapped(Mat3) -> Wrapped(Mat3),
+		self Mul Raw(f32) -> Wrapped(Mat3),
+		self Mul Wrapped(Vec3A) -> Wrapped(Vec3A),
 	)
 	+ UnaryOps
 	(
@@ -6442,13 +6618,6 @@ impl_lua_newtype!{
 		///Panics if `index` is greater than 1.
 		col(&self:Raw(usize)) -> Wrapped(Vec2),
 
-		// ///Returns a mutable reference to the matrix column for the given `index`.
-		// ///
-		// ///# Panics
-		// ///
-		// ///Panics if `index` is greater than 1.
-		// col_mut(&mut self:Raw(usize)) -> Wrapped(&mut Vec2),
-
 		///Returns the matrix row for the given `index`.
 		///
 		///# Panics
@@ -6509,6 +6678,12 @@ impl_lua_newtype!{
 	)
 	+ BinOps
 	(
+		self Add self -> Wrapped(Mat2),
+		self Sub self -> Wrapped(Mat2),
+		self Mul self -> Wrapped(Mat2),
+		self Mul Wrapped(Vec2) -> Wrapped(Vec2),
+		self Mul Wrapped(Mat2) -> Wrapped(Mat2),
+		self Mul Raw(f32) -> Wrapped(Mat2),
 	)
 	+ UnaryOps
 	(
@@ -6657,13 +6832,6 @@ impl_lua_newtype!{
 		///Panics if `index` is greater than 2.
 		col(&self:Raw(usize)) -> Wrapped(Vec3A),
 
-		// ///Returns a mutable reference to the matrix column for the given `index`.
-		// ///
-		// ///# Panics
-		// ///
-		// ///Panics if `index` is greater than 2.
-		// col_mut(&mut self:Raw(usize)) -> Wrapped(&mut Vec3A),
-
 		///Returns the matrix row for the given `index`.
 		///
 		///# Panics
@@ -6741,6 +6909,14 @@ impl_lua_newtype!{
 	)
 	+ BinOps
 	(
+		self Add self -> Wrapped(Mat3A),
+		self Sub self -> Wrapped(Mat3A),
+		self Mul Wrapped(Affine2) -> Wrapped(Mat3A),
+		self Mul self -> Wrapped(Mat3A),
+		self Mul Wrapped(Vec3A) -> Wrapped(Vec3A),
+		self Mul Wrapped(Mat3A) -> Wrapped(Mat3A),
+		self Mul Raw(f32) -> Wrapped(Mat3A),
+		self Mul Wrapped(Vec3) -> Wrapped(Vec3),
 	)
 	+ UnaryOps
 	(
@@ -6921,13 +7097,6 @@ impl_lua_newtype!{
 		///Panics if `index` is greater than 3.
 		col(&self:Raw(usize)) -> Wrapped(Vec4),
 
-		// ///Returns a mutable reference to the matrix column for the given `index`.
-		// ///
-		// ///# Panics
-		// ///
-		// ///Panics if `index` is greater than 3.
-		// col_mut(&mut self:Raw(usize)) -> Wrapped(&mut Vec4),
-
 		///Returns the matrix row for the given `index`.
 		///
 		///# Panics
@@ -7105,6 +7274,13 @@ impl_lua_newtype!{
 	)
 	+ BinOps
 	(
+		self Add self -> Wrapped(Mat4),
+		self Sub self -> Wrapped(Mat4),
+		self Mul Wrapped(Affine3A) -> Wrapped(Mat4),
+		self Mul self -> Wrapped(Mat4),
+		self Mul Wrapped(Vec4) -> Wrapped(Vec4),
+		self Mul Wrapped(Mat4) -> Wrapped(Mat4),
+		self Mul Raw(f32) -> Wrapped(Mat4),
 	)
 	+ UnaryOps
 	(
@@ -7172,13 +7348,6 @@ impl_lua_newtype!{
 		///Panics if `index` is greater than 1.
 		col(&self:Raw(usize)) -> Wrapped(DVec2),
 
-		// ///Returns a mutable reference to the matrix column for the given `index`.
-		// ///
-		// ///# Panics
-		// ///
-		// ///Panics if `index` is greater than 1.
-		// col_mut(&mut self:Raw(usize)) -> Wrapped(&mut DVec2),
-
 		///Returns the matrix row for the given `index`.
 		///
 		///# Panics
@@ -7239,6 +7408,12 @@ impl_lua_newtype!{
 	)
 	+ BinOps
 	(
+		self Add self -> Wrapped(DMat2),
+		self Sub self -> Wrapped(DMat2),
+		self Mul self -> Wrapped(DMat2),
+		self Mul Wrapped(DVec2) -> Wrapped(DVec2),
+		self Mul Wrapped(DMat2) -> Wrapped(DMat2),
+		self Mul Raw(f64) -> Wrapped(DMat2),
 	)
 	+ UnaryOps
 	(
@@ -7387,13 +7562,6 @@ impl_lua_newtype!{
 		///Panics if `index` is greater than 2.
 		col(&self:Raw(usize)) -> Wrapped(DVec3),
 
-		// ///Returns a mutable reference to the matrix column for the given `index`.
-		// ///
-		// ///# Panics
-		// ///
-		// ///Panics if `index` is greater than 2.
-		// col_mut(&mut self:Raw(usize)) -> Wrapped(&mut DVec3),
-
 		///Returns the matrix row for the given `index`.
 		///
 		///# Panics
@@ -7468,6 +7636,13 @@ impl_lua_newtype!{
 	)
 	+ BinOps
 	(
+		self Add self -> Wrapped(DMat3),
+		self Sub self -> Wrapped(DMat3),
+		self Mul Wrapped(DAffine2) -> Wrapped(DMat3),
+		self Mul self -> Wrapped(DMat3),
+		self Mul Wrapped(DVec3) -> Wrapped(DVec3),
+		self Mul Wrapped(DMat3) -> Wrapped(DMat3),
+		self Mul Raw(f64) -> Wrapped(DMat3),
 	)
 	+ UnaryOps
 	(
@@ -7648,13 +7823,6 @@ impl_lua_newtype!{
 		///Panics if `index` is greater than 3.
 		col(&self:Raw(usize)) -> Wrapped(DVec4),
 
-		// ///Returns a mutable reference to the matrix column for the given `index`.
-		// ///
-		// ///# Panics
-		// ///
-		// ///Panics if `index` is greater than 3.
-		// col_mut(&mut self:Raw(usize)) -> Wrapped(&mut DVec4),
-
 		///Returns the matrix row for the given `index`.
 		///
 		///# Panics
@@ -7822,6 +7990,13 @@ impl_lua_newtype!{
 	)
 	+ BinOps
 	(
+		self Add self -> Wrapped(DMat4),
+		self Sub self -> Wrapped(DMat4),
+		self Mul Wrapped(DAffine3) -> Wrapped(DMat4),
+		self Mul self -> Wrapped(DMat4),
+		self Mul Wrapped(DVec4) -> Wrapped(DVec4),
+		self Mul Wrapped(DMat4) -> Wrapped(DMat4),
+		self Mul Raw(f64) -> Wrapped(DMat4),
 	)
 	+ UnaryOps
 	(
@@ -7942,6 +8117,13 @@ impl_lua_newtype!{
 	)
 	+ BinOps
 	(
+		self Add self -> Wrapped(Affine2),
+		self Sub self -> Wrapped(Affine2),
+		self Mul Wrapped(Affine2) -> Wrapped(Affine2),
+		self Mul Wrapped(Affine2) -> Wrapped(Affine2),
+		self Mul Raw(f32) -> Wrapped(Affine2),
+		self Mul Wrapped(Mat3) -> Wrapped(Mat3),
+		self Mul Wrapped(Mat3A) -> Wrapped(Mat3A),
 	)
 	+ UnaryOps
 	(
@@ -8082,6 +8264,12 @@ impl_lua_newtype!{
 	)
 	+ BinOps
 	(
+		self Add self -> Wrapped(Affine3A),
+		self Sub self -> Wrapped(Affine3A),
+		self Mul Wrapped(Affine3A) -> Wrapped(Affine3A),
+		self Mul Wrapped(Affine3A) -> Wrapped(Affine3A),
+		self Mul Raw(f32) -> Wrapped(Affine3A),
+		self Mul Wrapped(Mat4) -> Wrapped(Mat4),
 	)
 	+ UnaryOps
 	(
@@ -8177,6 +8365,12 @@ impl_lua_newtype!{
 	)
 	+ BinOps
 	(
+		self Add self -> Wrapped(DAffine2),
+		self Sub self -> Wrapped(DAffine2),
+		self Mul Wrapped(DAffine2) -> Wrapped(DAffine2),
+		self Mul Wrapped(DAffine2) -> Wrapped(DAffine2),
+		self Mul Raw(f64) -> Wrapped(DAffine2),
+		self Mul Wrapped(DMat3) -> Wrapped(DMat3),
 	)
 	+ UnaryOps
 	(
@@ -8308,6 +8502,12 @@ impl_lua_newtype!{
 	)
 	+ BinOps
 	(
+		self Add self -> Wrapped(DAffine3),
+		self Sub self -> Wrapped(DAffine3),
+		self Mul Wrapped(DAffine3) -> Wrapped(DAffine3),
+		self Mul Wrapped(DAffine3) -> Wrapped(DAffine3),
+		self Mul Raw(f64) -> Wrapped(DAffine3),
+		self Mul Wrapped(DMat4) -> Wrapped(DMat4),
 	)
 	+ UnaryOps
 	(
@@ -8560,6 +8760,13 @@ impl_lua_newtype!{
 	)
 	+ BinOps
 	(
+		self Add self -> Wrapped(Quat),
+		self Sub self -> Wrapped(Quat),
+		self Div Raw(f32) -> Wrapped(Quat),
+		self Mul Raw(f32) -> Wrapped(Quat),
+		self Mul self -> Wrapped(Quat),
+		self Mul Wrapped(Vec3) -> Wrapped(Vec3),
+		self Mul Wrapped(Vec3A) -> Wrapped(Vec3A),
 	)
 	+ UnaryOps
 	(
@@ -8812,6 +9019,12 @@ impl_lua_newtype!{
 	)
 	+ BinOps
 	(
+		self Add self -> Wrapped(DQuat),
+		self Sub self -> Wrapped(DQuat),
+		self Div Raw(f64) -> Wrapped(DQuat),
+		self Mul Raw(f64) -> Wrapped(DQuat),
+		self Mul self -> Wrapped(DQuat),
+		self Mul Wrapped(DVec3) -> Wrapped(DVec3),
 	)
 	+ UnaryOps
 	(
@@ -9216,22 +9429,22 @@ impl APIProvider for LuaBevyAPIProvider{
 		app.register_foreign_lua_type::<Quat>();
 		app.register_foreign_lua_type::<DQuat>();
 		app.register_foreign_lua_type::<EulerRot>();
-		app.register_foreign_lua_type::<usize>();
-		app.register_foreign_lua_type::<bool>();
-		app.register_foreign_lua_type::<i8>();
+		app.register_foreign_lua_type::<u32>();
 		app.register_foreign_lua_type::<isize>();
-		app.register_foreign_lua_type::<u8>();
-		app.register_foreign_lua_type::<i32>();
-		app.register_foreign_lua_type::<i128>();
+		app.register_foreign_lua_type::<String>();
+		app.register_foreign_lua_type::<f64>();
 		app.register_foreign_lua_type::<u64>();
 		app.register_foreign_lua_type::<u128>();
-		app.register_foreign_lua_type::<f64>();
-		app.register_foreign_lua_type::<u32>();
+		app.register_foreign_lua_type::<bool>();
+		app.register_foreign_lua_type::<i128>();
+		app.register_foreign_lua_type::<i8>();
 		app.register_foreign_lua_type::<f32>();
-		app.register_foreign_lua_type::<i64>();
+		app.register_foreign_lua_type::<u8>();
 		app.register_foreign_lua_type::<i16>();
+		app.register_foreign_lua_type::<i32>();
 		app.register_foreign_lua_type::<u16>();
-		app.register_foreign_lua_type::<String>();
+		app.register_foreign_lua_type::<i64>();
+		app.register_foreign_lua_type::<usize>();
 	}
 }
 
