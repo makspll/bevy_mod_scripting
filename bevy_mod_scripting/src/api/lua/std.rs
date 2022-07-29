@@ -2,8 +2,6 @@ use ::std::borrow::Cow;
 
 use ::std::marker::PhantomData;
 
-use ::std::convert::AsRef;
-
 use crate::{
     ApplyLua, FromLuaProxy, LuaProxyable, ReflectPathElem, ReflectionError, ScriptRef, ToLuaProxy,
     ValueIndex,

@@ -37,23 +37,24 @@ macro_rules! impl_tealr_type {
     };
 }
 
-/// Implements UserData for type which implements TealData, can handle generics after the type name:
-/// ```rust,ignore
-/// impl_user_data!(MyType<'a,T : Debug>);
-/// ```
-macro_rules! impl_user_data {
-    ($v:ident $(< $( $lt:tt $( : $clt:tt $(+ $dlt:tt $(<'a>)? )* )? ),+ >)? ) => {
-        impl $(< $( $lt $( : $clt $(+ $dlt $(<'a>)?)* )? ),+ >)? ::tealr::mlu::mlua::UserData for $v $(< $( $lt ),+ >)?  {
-            fn add_methods<'lua, M: ::tealr::mlu::mlua::UserDataMethods<'lua, Self>>(methods: &mut M) {
-                let mut x = ::tealr::mlu::UserDataWrapper::from_user_data_methods(methods);
-                <Self as ::tealr::mlu::TealData>::add_methods(&mut x);
-            }
-            fn add_fields<'lua, F: ::tealr::mlu::mlua::UserDataFields<'lua, Self>>(fields: &mut F) {
-                let mut wrapper = ::tealr::mlu::UserDataWrapper::from_user_data_fields(fields);
-                <Self as ::tealr::mlu::TealData>::add_fields(&mut wrapper)
-            }
-        }
+// /// Implements UserData for type which implements TealData, can handle generics after the type name:
+// /// ```rust,ignore
+// /// impl_user_data!(MyType<'a,T : Debug>);
+// /// ```
+// macro_rules! impl_user_data {
+//     ($v:ident $(< $( $lt:tt $( : $clt:tt $(+ $dlt:tt $(<'a>)? )* )? ),+ >)? ) => {
+//         impl $(< $( $lt $( : $clt $(+ $dlt $(<'a>)?)* )? ),+ >)? ::tealr::mlu::mlua::UserData for $v $(< $( $lt ),+ >)?  {
+//             fn add_methods<'lua, M: ::tealr::mlu::mlua::UserDataMethods<'lua, Self>>(methods: &mut M) {
+//                 let mut x = ::tealr::mlu::UserDataWrapper::from_user_data_methods(methods);
+//                 <Self as ::tealr::mlu::TealData>::add_methods(&mut x);
+//             }
+//             fn add_fields<'lua, F: ::tealr::mlu::mlua::UserDataFields<'lua, Self>>(fields: &mut F) {
+//                 let mut wrapper = ::tealr::mlu::UserDataWrapper::from_user_data_fields(fields);
+//                 <Self as ::tealr::mlu::TealData>::add_fields(&mut wrapper)
+//             }
+//         }
 
-    }
-}
+//     }
+// }
 pub(crate) use impl_tealr_type;
+// pub(crate) use impl_user_data;

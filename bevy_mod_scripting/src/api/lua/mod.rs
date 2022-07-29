@@ -1,6 +1,6 @@
 use ::std::borrow::Cow;
 
-use crate::{impl_tealr_type, ReflectedValue, ScriptRef, ValueIndex};
+use crate::{util::impl_tealr_type, ReflectedValue, ScriptRef, ValueIndex};
 
 use ::bevy::reflect::ReflectRef;
 
@@ -72,7 +72,7 @@ impl ApplyLua for ScriptRef {
         } else if let Value::UserData(v) = &v {
             if v.is::<ReflectedValue>() {
                 let b = v.take::<ReflectedValue>().unwrap();
-                self.apply(&b.into());
+                self.apply(&b.into())?;
                 return Ok(());
             }
         }
@@ -252,7 +252,7 @@ impl<T: Clone + UserData + Send + ValueLuaType + Reflect + 'static> LuaProxyable
         if let Value::UserData(v) = new_val {
             let o = v.borrow::<T>()?;
 
-            self_.get_mut_typed(|s| *s = o.clone());
+            self_.get_mut_typed(|s| *s = o.clone())?;
 
             Ok(())
         } else {

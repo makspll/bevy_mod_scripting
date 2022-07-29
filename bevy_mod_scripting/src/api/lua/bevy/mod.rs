@@ -1,4 +1,4 @@
-use crate::{impl_tealr_type, ScriptRef};
+use crate::{util::impl_tealr_type, ScriptRef};
 use ::bevy::ecs::system::Command;
 use ::bevy::hierarchy::BuildWorldChildren;
 use ::std::convert::AsRef;
@@ -10,7 +10,7 @@ use ::bevy::{
     prelude::{ReflectComponent, ReflectDefault, ReflectResource, World},
     reflect::{
         DynamicArray, DynamicList, DynamicMap, DynamicStruct, DynamicTuple, DynamicTupleStruct,
-        Reflect, TypeRegistration, TypeRegistry,
+        TypeRegistration, TypeRegistry,
     },
 };
 

@@ -6,7 +6,7 @@ pub mod rlua_host;
 
 use bevy::{asset::Asset, ecs::system::SystemState, prelude::*, reflect::FromReflect};
 use bevy_event_priority::PriorityEventReader;
-pub use {crate::docs::*, crate::rhai_host::*, crate::rlua_host::*, crate::util::*};
+pub use {crate::docs::*, crate::rhai_host::*, crate::rlua_host::*};
 
 use std::{
     collections::{HashMap, HashSet},
