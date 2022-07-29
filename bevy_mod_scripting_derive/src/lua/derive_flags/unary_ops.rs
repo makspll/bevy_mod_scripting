@@ -20,19 +20,16 @@ pub(crate) fn make_unary_ops<'a>(flag: &DeriveFlag,new_type : &'a Newtype, out :
 
         let meta = op.op.to_rlua_metamethod_path();
         let mut body = op.map_side(Side::Right,|s| {
-            if s.type_().unwrap_err().is_any_ref(){
+            if s.is_any_ref(){
                 quote_spanned!{op.span()=>(&ud.inner()?)}
             } else {
                 quote_spanned!{op.span()=>ud.inner()?}
             }
         }).expect("Expected unary expression");
-        op.map_return_type_with_default(parse_quote!{Wrapped(#newtype)},|v| {
-            if v.is_wrapped() {
-                let resolved_type = v.type_().cloned()
-                    .unwrap_or_else(|self_| self_.resolve_as(parse_quote!(#newtype)));
-                body = quote_spanned!{op.span()=>#resolved_type::new(#body)}
-            }
-
+        op.map_return_type_with_default(parse_quote!{self},|v| {
+            // return has to be self due to how OpExpr works
+            let resolved_type = v.self_().unwrap().resolve_as(parse_quote!(#newtype));
+            body = quote_spanned!{op.span()=>#resolved_type::new(#body)}
         });
 
         out.push(parse_quote_spanned! {ident.span()=>

@@ -65,9 +65,7 @@ pub(crate) fn make_auto_methods<'a>(flag: &DeriveFlag,new_type : &'a Newtype, ou
                 arg_idents.push(lit.clone());
                 arg_types.push(arg_type.clone());
 
-                let is_ref = arg_type.type_()
-                    .map(|type_| if let SimpleType::Ref{..} = type_ {true} else{false})
-                    .unwrap_or_else(|self_| self_.is_any_ref());
+                let is_ref = arg_type.is_any_ref();
 
                 if (arg_type.is_wrapped() || arg_type.is_self()) && !is_ref{
                     quote_spanned!{m.span()=>

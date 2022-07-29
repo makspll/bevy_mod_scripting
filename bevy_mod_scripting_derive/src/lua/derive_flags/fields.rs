@@ -18,20 +18,24 @@ pub(crate) fn make_fields<'a>(flag: &DeriveFlag,new_type : &'a Newtype, out : &m
 
     for f in fields {
         // resolve the type of this field
-        let field_type = f.type_
-            .type_()
-            .cloned()
-            .unwrap_or_else(|self_|  self_.resolve_as(parse_quote!(#newtype_name)));
-
-        if let SimpleType::Ref{..} = field_type{
+        let field_type = f.type_.type_or_resolve(|| SimpleType::BaseIdent(new_type.args.base_type_ident.clone()));
+        if field_type.is_any_ref(){
             return Err(syn::Error::new_spanned(f, "Reference fields are not supported"))
         }
 
-        let ds : Punctuated<Attribute,EmptyToken> = f.docstring.iter().cloned().collect();
+        let type_string;
+        if f.type_.is_wrapped() || f.type_.is_self() {
+            type_string = format_ident!("Lua{}",field_type.base_ident()).to_string();
+        } else {
+            type_string = field_type.base_ident().to_string();
+        }
+
+
         let id = &f.member;
         let id_string = &f.member.to_token_stream().to_string();
-        let type_string = field_type.base_ident().to_string();
         
+        let ds : Punctuated<Attribute,EmptyToken> = f.docstring.iter().cloned().collect();
+
         let field_type_ident = f.type_.is_wrapped()
             .then(|| format_ident!("Lua{}",field_type.base_ident()))
             .unwrap_or_else(|| field_type.base_ident().clone());

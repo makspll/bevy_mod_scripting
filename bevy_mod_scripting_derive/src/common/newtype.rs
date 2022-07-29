@@ -9,7 +9,7 @@ use quote::{ToTokens};
 use super::{WrapperFunction};
 
 
-pub(crate)  struct NewtypeArgs {
+pub(crate) struct NewtypeArgs {
     pub docstring : Vec<Attribute>,
     pub base_type: TypePath,
     pub type_colon : Token![:],
