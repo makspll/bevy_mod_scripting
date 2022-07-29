@@ -34,34 +34,26 @@ pub(crate) fn make_auto_methods<'a>(
         let ident_str = ident.to_string();
 
         let self_arg_ident = format_ident!("s");
-        let has_self_arg;
         let static_;
         let fn_;
         let mut_;
-        let star;
-
         let self_type = if let Some((self_,_)) = &m.self_ {
-            has_self_arg = true;
             static_ = None;
             fn_ = None;            
             if self_.is_any_ref(){
-                star = Some(Token![*](Span::call_site()));
                 if self_.is_mut_ref(){
                     mut_ = Some(Token![mut](Span::call_site()));
                 } else {
                     mut_ = None;
                 }
             } else {
-                star = None;
                 mut_ = None;
             }
             Some(self_)
         } else {
-            has_self_arg = false;
             static_ = Some(Token![static](Span::call_site()));
             fn_ = Some(Token![fn](Span::call_site()));
             mut_ = None;
-            star = None;
             None
         };
 
