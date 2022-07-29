@@ -2,7 +2,7 @@ use bevy::reflect::Reflect;
 use parking_lot::RwLock;
 
 use std::{sync::Arc, fmt::{Debug,Display, Formatter}, cell::UnsafeCell};
-use crate::{ScriptRef, ReflectBase, ReflectPtr, api::FromLua, ReflectionError};
+use crate::{ScriptRef, ReflectionError};
 
 
 /// Script representable type with pass-by-value semantics

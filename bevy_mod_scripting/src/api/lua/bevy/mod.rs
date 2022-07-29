@@ -1,21 +1,21 @@
-use ::std::borrow::Cow;
-use ::std::marker::PhantomData;
-use ::std::mem::MaybeUninit;
+
+
+
 use ::std::sync::{Weak,Arc};
 use ::std::convert::AsRef;
-use ::std::ops::{Deref,DerefMut};
-use crate::{ScriptRef, ReflectedValue, impl_tealr_type, ReflectBase, ReflectPtr, ValueIndex, LuaWrapper};
+use ::std::ops::{Deref};
+use crate::{ScriptRef, impl_tealr_type};
 use ::bevy::ecs::system::Command;
 use ::bevy::hierarchy::BuildWorldChildren;
-use ::bevy::reflect::{ReflectRef, FromReflect};
-use ::bevy::reflect::erased_serde::Serialize;
-use ::bevy::{reflect::{reflect_trait, Reflect, TypeRegistry, TypeRegistration, DynamicStruct, DynamicTupleStruct, DynamicTuple, DynamicList, DynamicArray, DynamicMap}, prelude::{World, ReflectComponent, ReflectDefault, ReflectResource}, hierarchy::{Children, Parent, DespawnChildrenRecursive, DespawnRecursive}};
+
+
+use ::bevy::{reflect::{Reflect, TypeRegistry, TypeRegistration, DynamicStruct, DynamicTupleStruct, DynamicTuple, DynamicList, DynamicArray, DynamicMap}, prelude::{World, ReflectComponent, ReflectDefault, ReflectResource}, hierarchy::{Children, Parent, DespawnChildrenRecursive, DespawnRecursive}};
 
 use parking_lot::RwLock;
-use serde::Deserialize;
-use tealr::TypeName;
-use tealr::mlu::mlua::MetaMethod;
-use tealr::mlu::{mlua::{Lua, Value,self, UserData, ToLua,FromLua}, TealData, TealDataMethods};
+
+
+
+use tealr::mlu::{mlua::{self}, TealData, TealDataMethods};
 pub use crate::api::generated::*;
 
 
@@ -267,7 +267,7 @@ impl TealData for LuaWorld {
 
             Ok(component_data
                 .reflect(w, entity)
-                .map(|component| 
+                .map(|_component| 
                     ScriptRef::new_component_ref(component_data.clone(), entity, world.as_ref().clone())
                 ))
         });
@@ -314,7 +314,7 @@ impl TealData for LuaWorld {
 
             Ok(resource_data
                 .reflect(&w)
-                .map(|res|
+                .map(|_res|
                     ScriptRef::new_resource_ref(resource_data.clone(), world.as_ref().clone())
                 ))
         });

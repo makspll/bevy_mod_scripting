@@ -99,7 +99,7 @@ macro_rules! impl_parse_enum {
 pub(crate) use impl_parse_enum;
 use proc_macro2::TokenStream;
 use quote::ToTokens;
-use syn::{Attribute, TypePath, Type};
+use syn::{Attribute, Type};
 
 
 

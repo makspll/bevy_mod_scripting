@@ -1,9 +1,9 @@
-use indexmap::{IndexMap, IndexSet};
-use proc_macro2::{Span, TokenStream};
-use quote::{format_ident, ToTokens, quote_spanned};
-use syn::{punctuated::Punctuated, Token, LitInt, Type, spanned::Spanned, parse_quote_spanned, Attribute, parse_quote, Ident};
 
-use crate::{lua::{lua_method::LuaMethod, LuaImplementor}, common::{derive_flag::DeriveFlag, newtype::Newtype, ops::{OpName, OpExpr, Side}, type_base_string}, EmptyToken};
+
+use quote::{quote_spanned};
+use syn::{spanned::Spanned, parse_quote_spanned, parse_quote};
+
+use crate::{lua::{lua_method::LuaMethod}, common::{derive_flag::DeriveFlag, newtype::Newtype, ops::{Side}}};
 
 pub(crate) fn make_unary_ops<'a>(flag: &DeriveFlag,new_type : &'a Newtype, out : &mut Vec<LuaMethod>) -> Result<(), syn::Error> {
 

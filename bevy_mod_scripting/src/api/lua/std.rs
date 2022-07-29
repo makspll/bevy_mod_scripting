@@ -1,20 +1,20 @@
 use ::std::borrow::Cow;
-use std::iter;
-use ::std::marker::PhantomData;
-use ::std::mem::MaybeUninit;
-use ::std::sync::{Weak,Arc};
-use ::std::convert::AsRef;
-use ::std::ops::{Deref,DerefMut};
-use crate::{LuaProxyable,ToLuaProxy,ScriptRef, ReflectedValue, impl_tealr_type, ReflectBase, ReflectPtr, ValueIndex, LuaWrapper, impl_user_data, FromLuaProxy, ApplyLua, ReflectPathElem, ReflectionError, SubReflectGet};
-use bevy::ecs::system::Command;
-use bevy::hierarchy::BuildWorldChildren;
-use bevy::reflect::{ReflectRef, FromReflect};
-use bevy::{reflect::{reflect_trait, Reflect, TypeRegistry, TypeRegistration, DynamicStruct, DynamicTupleStruct, DynamicTuple, DynamicList, DynamicArray, DynamicMap}, prelude::{World, ReflectComponent, ReflectDefault, ReflectResource}, hierarchy::{Children, Parent, DespawnChildrenRecursive, DespawnRecursive}};
 
-use parking_lot::RwLock;
+use ::std::marker::PhantomData;
+
+
+use ::std::convert::AsRef;
+
+use crate::{LuaProxyable,ToLuaProxy,ScriptRef, ValueIndex, FromLuaProxy, ApplyLua, ReflectPathElem, ReflectionError};
+
+
+use bevy::reflect::{FromReflect};
+use bevy::{reflect::{Reflect}};
+
+
 use tealr::TypeName;
 use tealr::mlu::TypedFunction;
-use tealr::mlu::mlua::{MetaMethod, ToLuaMulti};
+use tealr::mlu::mlua::{MetaMethod};
 use tealr::mlu::{mlua::{Lua, Value,self, UserData, ToLua,FromLua}, TealData, TealDataMethods};
 
 

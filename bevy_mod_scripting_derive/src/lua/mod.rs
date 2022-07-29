@@ -6,12 +6,12 @@ pub(crate) mod derive_flags;
 pub(crate) use {lua_method::*, derive_flags::*};
 
 
-use indexmap::{IndexMap, IndexSet};
-use proc_macro2::{TokenStream, Span, Ident};
-use syn::{spanned::Spanned, parse_quote_spanned, punctuated::Punctuated, LitInt, Token, Attribute, parse_quote, Type};
+use indexmap::{IndexSet};
+use proc_macro2::{TokenStream, Ident};
+use syn::{spanned::Spanned, parse_quote_spanned, punctuated::Punctuated, Token};
 
-use crate::{common::{WrapperImplementor, WrapperFunction, attribute_to_string_lit, derive_flag::DeriveFlag, ops::{OpName,OpExpr}, stringify_token_group, type_base_string}, EmptyToken};
-use quote::{quote, quote_spanned, ToTokens, format_ident};
+use crate::{common::{WrapperImplementor, WrapperFunction, attribute_to_string_lit, derive_flag::DeriveFlag}};
+use quote::{quote, quote_spanned, format_ident};
 
 impl WrapperFunction for LuaMethod {}
 

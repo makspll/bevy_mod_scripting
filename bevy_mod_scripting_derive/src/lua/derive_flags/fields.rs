@@ -1,7 +1,7 @@
-use indexmap::IndexMap;
-use proc_macro2::Span;
+
+
 use quote::{format_ident, ToTokens, quote_spanned};
-use syn::{punctuated::Punctuated, Token, LitInt, Type, spanned::Spanned, parse_quote_spanned, Attribute, parse_quote};
+use syn::{punctuated::Punctuated, spanned::Spanned, parse_quote_spanned, Attribute};
 
 use crate::{lua::lua_method::LuaMethod, common::{derive_flag::DeriveFlag, newtype::Newtype, arg::SimpleType}, EmptyToken};
 

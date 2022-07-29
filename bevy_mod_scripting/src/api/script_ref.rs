@@ -1,19 +1,15 @@
-use crate::{impl_tealr_type, ReflectPath,ReflectPathElem, SubReflectGet, SubReflectGetMut, ReflectBase, ReflectionError};
+use crate::{ReflectPath,ReflectPathElem, ReflectBase, ReflectionError};
 use anyhow::Result;
-use tealr::{mlu::{mlua,mlua::{prelude::*,Value,UserData,MetaMethod}, TealData, TealDataMethods}, TypeName};
-use std::{fmt::Debug, cell::{RefCell, Cell}, f32::consts::E};
 
-use std::{ops::{Deref,DerefMut, Index},sync::Weak, borrow::Cow, marker::PhantomData};
+use std::{fmt::Debug};
+
+use std::{sync::Weak, borrow::Cow};
 use parking_lot::{RwLock};
 use bevy::{
     prelude::*,
-    reflect::{ReflectRef, TypeRegistry, GetPath, TypeData}, ecs::{component::ComponentId, change_detection::ReflectMut},
+    reflect::{GetPath},
 };
-use std::{
-    sync::Arc,
-    cell::Ref,
-    fmt,
-};
+
 
 pub enum ScriptRefBase {
 
@@ -250,7 +246,7 @@ impl Into<ScriptRef> for ReflectedValue {
 #[cfg(test)]
 
 mod test {
-    use crate::{langs::mlu::{mlua,mlua::prelude::*},api::lua::bevy::LuaEntity, ScriptRef, ReflectBase, ReflectPtr};
+    use crate::{langs::mlu::{mlua,mlua::prelude::*},api::lua::bevy::LuaEntity, ScriptRef, ReflectPtr};
     use bevy::{prelude::*,reflect::TypeRegistryArc};
     use std::{sync::Arc};
     use parking_lot::RwLock;
@@ -303,7 +299,7 @@ mod test {
 
 
             let refl_ref = refl.reflect(world,entity).unwrap();
-            let ptr : ReflectPtr = (refl_ref as *const dyn Reflect).into();
+            let _ptr : ReflectPtr = (refl_ref as *const dyn Reflect).into();
 
             component_ref1 = ScriptRef::new_component_ref(refl,entity,Arc::downgrade(&world_arc));
             component_ref2 = component_ref1.clone();

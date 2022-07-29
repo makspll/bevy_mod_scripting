@@ -1,10 +1,10 @@
 
-use indexmap::IndexMap;
+
 use proc_macro2::TokenStream;
 use syn::{parse::Parse, spanned::Spanned,Result};
-use quote::{quote, quote_spanned, ToTokens, format_ident};
+use quote::{quote_spanned, ToTokens};
 
-use crate::{common::*, NewtypeList};
+use crate::{common::*};
 
 
 /// A function on the wrapped type either wrapping an existing function or providing

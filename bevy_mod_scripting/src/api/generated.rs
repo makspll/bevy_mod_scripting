@@ -2,8 +2,8 @@
 use bevy_mod_scripting_derive::impl_lua_newtype;
 use std::ops::*;
 use crate::{FromLuaProxy};
-use crate::{ReflectionError,ReflectPathElem,RegisterForeignLuaType,LuaProxyable,ScriptRef,ScriptRefBase,ReflectedValue, api::ValueIndex, APIProvider, LuaDocFragment};
-use std::sync::{Arc, Mutex};
+use crate::{ReflectionError,ReflectPathElem,RegisterForeignLuaType,LuaProxyable,ScriptRef,ReflectedValue, api::ValueIndex, APIProvider, LuaDocFragment};
+use std::sync::{Mutex};
 use crate::util::impl_tealr_type;
 use tealr::{mlu::{mlua,mlua::{prelude::*,MetaMethod,Value}},create_union_mlua};
 use bevy::reflect::Reflect;

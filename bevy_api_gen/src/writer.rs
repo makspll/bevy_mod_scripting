@@ -1,4 +1,4 @@
-use std::{cmp::max, borrow::Cow};
+use std::{borrow::Cow};
 
 
 #[derive(Default)]

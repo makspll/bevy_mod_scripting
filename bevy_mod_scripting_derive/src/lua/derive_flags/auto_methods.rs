@@ -1,8 +1,8 @@
-use std::{iter::{Once, once}, borrow::Cow};
+use std::{iter::{once}};
 
 use proc_macro2::Span;
-use quote::{format_ident, ToTokens, quote_spanned};
-use syn::{punctuated::Punctuated, Token, LitInt, Type, spanned::Spanned, parse_quote_spanned, Attribute, parse_quote};
+use quote::{format_ident, quote_spanned};
+use syn::{punctuated::Punctuated, Token, LitInt, spanned::Spanned, parse_quote_spanned, Attribute};
 
 use crate::{lua::lua_method::LuaMethod, common::{derive_flag::DeriveFlag, newtype::Newtype, arg::SimpleType}, EmptyToken};
 

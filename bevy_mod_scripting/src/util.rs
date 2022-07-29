@@ -1,6 +1,6 @@
-use std::fmt;
 
-use bevy::reflect::{Reflect, ReflectRef};
+
+
 
 
 /// Implements tealr::TypeName,tealr::TypeBody and mlua::Userdata based on non-generic single token type name implementing TealData
@@ -61,4 +61,4 @@ macro_rules! impl_user_data {
     }
 }
 pub(crate) use impl_tealr_type;
-pub(crate) use impl_user_data;
+

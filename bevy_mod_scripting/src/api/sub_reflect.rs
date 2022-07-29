@@ -1,6 +1,6 @@
-use std::{marker::PhantomData, borrow::Cow, sync::Weak};
+use std::{borrow::Cow, sync::Weak};
 
-use bevy::{reflect::{Reflect, GetPath, ReflectRef, ReflectMut}, prelude::{ReflectComponent, Entity, World, ReflectResource}};
+use bevy::{reflect::{Reflect, ReflectRef, ReflectMut}, prelude::{ReflectComponent, Entity, World, ReflectResource}};
 use parking_lot::RwLock;
 
 use std::fmt;
@@ -59,15 +59,15 @@ impl fmt::Debug for ReflectBase {
 impl fmt::Display for ReflectBase {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
-            ReflectBase::Component { comp, entity, world } =>{
+            ReflectBase::Component { comp: _, entity, world: _ } =>{
                 f.write_str("(Component on ")?;
                 f.write_str(&entity.id().to_string())?;
                 f.write_str(")")
             },
-            ReflectBase::Resource { res, world } => {
+            ReflectBase::Resource { res: _, world: _ } => {
                 f.write_str("(Resource")
             },
-            ReflectBase::ScriptOwned { ptr, valid } => {
+            ReflectBase::ScriptOwned { ptr: _, valid: _ } => {
                 f.write_str("(ScriptOwned)")
             },
         }

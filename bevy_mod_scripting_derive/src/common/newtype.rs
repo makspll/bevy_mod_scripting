@@ -1,9 +1,9 @@
 
 use indexmap::IndexSet;
-use proc_macro2::{TokenStream, Span};
+use proc_macro2::{TokenStream};
 use syn::{*, punctuated::*, token::*, parse::{ParseStream, Parse}, spanned::Spanned};
 
-use crate::{lua_method::{LuaMethod}, DeriveFlag, utils::impl_parse_enum};
+use crate::{lua_method::{LuaMethod}, DeriveFlag};
 use quote::{ToTokens};
 
 use super::{WrapperFunction};

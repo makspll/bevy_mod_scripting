@@ -1,9 +1,9 @@
 use indexmap::{IndexMap, IndexSet};
-use proc_macro2::{Span, TokenStream};
+use proc_macro2::{TokenStream};
 use quote::{format_ident, ToTokens, quote_spanned};
-use syn::{punctuated::Punctuated, Token, LitInt, Type, spanned::Spanned, parse_quote_spanned, Attribute, parse_quote, Ident};
+use syn::{spanned::Spanned, parse_quote_spanned, parse_quote};
 
-use crate::{lua::{lua_method::LuaMethod, LuaImplementor}, common::{derive_flag::DeriveFlag, newtype::Newtype, ops::{OpName, OpExpr, Side}, type_base_string, stringify_token_group, arg::SimpleType}, EmptyToken};
+use crate::{lua::{lua_method::LuaMethod, LuaImplementor}, common::{derive_flag::DeriveFlag, newtype::Newtype, ops::{OpName, OpExpr, Side}, arg::SimpleType}};
 
 pub(crate) fn make_bin_ops<'a>(implementor: &mut LuaImplementor,flag: &DeriveFlag,new_type : &'a Newtype, out : &mut Vec<LuaMethod>) -> Result<(), syn::Error> {
 

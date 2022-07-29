@@ -1,11 +1,11 @@
 use bevy_api_gen_lib::{PrettyWriter, WrappedItem, Config, Args, WRAPPER_PREFIX, stringify_type};
 
-use std::{io::{self, BufReader},fs::{File,read_to_string}, collections::{HashSet}, borrow::Cow};
+use std::{io::{self, BufReader},fs::{File,read_to_string}, collections::{HashSet}};
 use clap::Parser;
 use indexmap::{IndexMap, IndexSet};
 use serde_json::from_reader;
-use rustdoc_types::{Crate, Item, ItemEnum, Id, Impl,Type, Visibility};
-use serde_derive::Deserialize;
+use rustdoc_types::{Crate, Item, ItemEnum, Impl};
+
 
 
 

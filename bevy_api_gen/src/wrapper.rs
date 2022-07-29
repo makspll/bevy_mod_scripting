@@ -1,6 +1,6 @@
 use indexmap::{IndexMap, IndexSet};
 use rustdoc_types::{Impl, Crate, Item, Id, ItemEnum};
-use serde::Deserialize;
+
 
 use crate::{Newtype, PrettyWriter,Args, Config, Arg, ArgWrapperType, ArgType, stringify_type};
 
@@ -351,7 +351,7 @@ impl WrappedItem<'_> {
                     let is_primitive = config.primitives.contains(base_ident);
                     is_self_type_the_wrapper || is_primitive
                 })
-                .for_each(|(impl_,item, self_type)| {
+                .for_each(|(impl_,item, _self_type)| {
                     let _ = match &item.inner {
                         ItemEnum::Method(m) => {
                             m.decl.inputs

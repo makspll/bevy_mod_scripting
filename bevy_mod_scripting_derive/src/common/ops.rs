@@ -1,5 +1,5 @@
 use proc_macro2::{Span,TokenStream};
-use syn::{*,Type,parse::*, spanned::Spanned, token::Paren};
+use syn::{*,parse::*, spanned::Spanned};
 use quote::{quote_spanned,ToTokens};
 
 use super::{impl_parse_enum, arg::ArgType};

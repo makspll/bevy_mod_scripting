@@ -1,6 +1,6 @@
-use rustdoc_types::{Type, GenericArgs};
+use rustdoc_types::{Type};
 
-use crate::{Config, WrappedItem};
+
 
 
 
@@ -82,7 +82,7 @@ impl ArgType {
         match self 
         {
             ArgType::Base(b) => f(Ok(b)),
-            ArgType::Ref { is_mut, ref_ } => ref_.map_base(f),
+            ArgType::Ref { is_mut: _, ref_ } => ref_.map_base(f),
             ArgType::Self_ => f(Err(())),
             
         }
@@ -95,7 +95,7 @@ impl ArgType {
         match self 
         {
             ArgType::Base(b) => f(Ok(b)),
-            ArgType::Ref { is_mut, ref_ } => ref_.map_base_mut(f),
+            ArgType::Ref { is_mut: _, ref_ } => ref_.map_base_mut(f),
             ArgType::Self_ => f(Err(())),
             
         }
@@ -109,7 +109,7 @@ impl ArgType {
     pub fn base_ident(&self) -> Result<&str,()> {
         match self {
             ArgType::Base(b) => Ok(b),
-            ArgType::Ref { is_mut, ref_ } => ref_.base_ident(),
+            ArgType::Ref { is_mut: _, ref_ } => ref_.base_ident(),
             ArgType::Self_ => Err(()),
         }
     }
