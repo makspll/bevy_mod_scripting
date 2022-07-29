@@ -88,26 +88,6 @@ impl APIProvider for LuaAPIProvider {
     }
 }
 
-fn load_our_script(server: Res<AssetServer>, mut commands: Commands) {
-    let path = "scripts/teal_file.tl";
-    let handle = server.load::<LuaFile, &str>(path);
-
-    commands.spawn().insert(ScriptCollection::<LuaFile> {
-        scripts: vec![Script::<LuaFile>::new(path.to_string(), handle)],
-    });
-}
-
-fn fire_our_script(mut w: PriorityEventWriter<LuaEvent<MyLuaArg>>) {
-    w.send(
-        LuaEvent::<MyLuaArg> {
-            hook_name: "on_update".to_string(),
-            args: vec![MyLuaArg],
-            recipients: Recipients::All,
-        },
-        0,
-    )
-}
-
 fn main() -> std::io::Result<()> {
     let mut app = App::new();
 
@@ -122,11 +102,9 @@ fn main() -> std::io::Result<()> {
         // declaration files, use the teal vscode extension to explore the type hints!
         // Note: This is a noop in optimized builds unless the `doc_always` feature is enabled!
         .update_documentation::<RLuaScriptHost<MyLuaArg>>()
-        .add_script_handler_stage::<RLuaScriptHost<MyLuaArg>, _, 0, 0>(CoreStage::PostUpdate)
-        .add_startup_system(load_our_script)
-        .add_system(fire_our_script);
+        .add_script_handler_stage::<RLuaScriptHost<MyLuaArg>, _, 0, 0>(CoreStage::PostUpdate);
 
-    app.run();
+    // app.run(); no need, documentation gets generated before the app even starts
 
     Ok(())
 }
