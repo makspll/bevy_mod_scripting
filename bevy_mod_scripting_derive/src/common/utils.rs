@@ -1,4 +1,3 @@
-
 /// Utility for parsing enums based on the variant identifier first
 macro_rules! impl_parse_enum {
     (
@@ -13,7 +12,7 @@ macro_rules! impl_parse_enum {
                             $arg_name:ident : $arg_type:ty
                         ),*
                     }
-                    
+
                 )? => {$($parser:tt)*}
             ),*
             $(,)?
@@ -22,9 +21,9 @@ macro_rules! impl_parse_enum {
         $(
             impl $_:ident {
                 $($other_impls:tt)*
-            }  
+            }
         )?
-    ) => { 
+    ) => {
         $($(#[$($meta)*])+)?
         $vis enum $name {
             $(
@@ -39,7 +38,7 @@ macro_rules! impl_parse_enum {
                     )?
                 }
             ),*
-            
+
         }
 
         impl Parse for $name {
@@ -56,7 +55,7 @@ macro_rules! impl_parse_enum {
         }
 
         impl ToTokens for $name {
-            fn to_tokens(&self, ts: &mut proc_macro2::TokenStream) { 
+            fn to_tokens(&self, ts: &mut proc_macro2::TokenStream) {
                 let ident = Ident::new(self.to_str(),Span::call_site());
                 ts.extend(quote::quote_spanned!{syn::spanned::Spanned::span(ts)=> #ident});
             }
@@ -101,27 +100,19 @@ use proc_macro2::TokenStream;
 use quote::ToTokens;
 use syn::{Attribute, Type};
 
-
-
-pub fn attribute_to_string_lit(attrs: &Attribute) -> TokenStream{
-    attrs.tokens.clone()
-        .into_iter()
-        .skip(1)
-        .collect()
+pub fn attribute_to_string_lit(attrs: &Attribute) -> TokenStream {
+    attrs.tokens.clone().into_iter().skip(1).collect()
 }
-
 
 /// Converts the given ToTokens into token stream, stringifies it and removes whitespace
-pub fn stringify_token_group<T : ToTokens>(t : &T) -> String{
-        let mut k = t.into_token_stream().to_string();
-        k.retain(|c| !c.is_whitespace());
-        k
+pub fn stringify_token_group<T: ToTokens>(t: &T) -> String {
+    let mut k = t.into_token_stream().to_string();
+    k.retain(|c| !c.is_whitespace());
+    k
 }
 
-
-
 /// Converts simple type to base string (i.e. one which has a single type identifier)
-pub fn type_base_string(t : &Type) -> Option<String> {
+pub fn type_base_string(t: &Type) -> Option<String> {
     match t {
         Type::Paren(v) => type_base_string(&v.elem),
         Type::Path(p) => Some(p.path.segments.last()?.ident.to_string()),

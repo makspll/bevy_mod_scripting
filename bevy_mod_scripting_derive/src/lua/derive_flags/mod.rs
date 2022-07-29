@@ -1,6 +1,6 @@
 pub mod auto_methods;
 pub mod bin_ops;
-pub mod unary_ops;
 pub mod fields;
+pub mod unary_ops;
 
-pub use {auto_methods::*, bin_ops::*, unary_ops::*, fields::*};
+pub use {auto_methods::*, bin_ops::*, fields::*, unary_ops::*};

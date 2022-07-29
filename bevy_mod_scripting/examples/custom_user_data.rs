@@ -1,12 +1,10 @@
 use bevy::prelude::*;
 use bevy_event_priority::PriorityEventWriter;
-use bevy_mod_scripting::{ReflectLuaProxyable, LuaDocFragment, ScriptError, ValueLuaType};
 use bevy_mod_scripting::{
-    APIProvider, AddScriptHost, AddScriptHostHandler, LuaEvent, LuaFile, RLuaScriptHost,
-    Recipients, Script, ScriptCollection, ScriptingPlugin,
-    langs::mlu::mlua
+    langs::mlu::mlua, APIProvider, AddScriptHost, AddScriptHostHandler, LuaEvent, LuaFile,
+    RLuaScriptHost, Recipients, Script, ScriptCollection, ScriptingPlugin,
 };
-
+use bevy_mod_scripting::{LuaDocFragment, ReflectLuaProxyable, ScriptError, ValueLuaType};
 
 use std::sync::Mutex;
 
@@ -28,17 +26,20 @@ impl APIProvider for LuaAPIProvider {
     type Target = Mutex<mlua::Lua>;
     type DocTarget = LuaDocFragment;
 
-    fn attach_api(&mut self, ctx: &mut Self::Target) -> Result<(),ScriptError> {
+    fn attach_api(&mut self, ctx: &mut Self::Target) -> Result<(), ScriptError> {
         // callbacks can receive any `ToLuaMulti` arguments, here '()' and
         // return any `FromLuaMulti` arguments, here a `usize`
         // check the Rlua documentation for more details
         let ctx = ctx.lock().unwrap();
 
-        ctx.globals().set("print", ctx.create_function(|_, msg: String| {
-            info!("{}", msg);
-            Ok(())
-        })?)?;
-        
+        ctx.globals().set(
+            "print",
+            ctx.create_function(|_, msg: String| {
+                info!("{}", msg);
+                Ok(())
+            })?,
+        )?;
+
         Ok(())
     }
 }

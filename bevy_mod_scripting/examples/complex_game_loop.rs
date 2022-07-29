@@ -1,5 +1,5 @@
+use bevy::prelude::*;
 use bevy::time::FixedTimestep;
-use bevy::{ prelude::*};
 use bevy_event_priority::PriorityEventWriter;
 use bevy_mod_scripting::{
     langs::mlu::{mlua, mlua::prelude::*, mlua::Value},
@@ -124,10 +124,7 @@ fn load_our_script(server: Res<AssetServer>, mut commands: Commands) {
     let handle = server.load::<LuaFile, &str>(path);
 
     commands.spawn().insert(ScriptCollection::<LuaFile> {
-        scripts: vec![Script::<LuaFile>::new(
-            path.to_string(),
-            handle,
-        )],
+        scripts: vec![Script::<LuaFile>::new(path.to_string(), handle)],
     });
 }
 

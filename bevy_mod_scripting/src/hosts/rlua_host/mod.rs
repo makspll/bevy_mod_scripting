@@ -1,7 +1,10 @@
 pub mod assets;
 pub mod docs;
 
-use crate::{APIProviders, api::lua::bevy::{LuaEntity,LuaWorld}};
+use crate::{
+    api::lua::bevy::{LuaEntity, LuaWorld},
+    APIProviders,
+};
 use crate::{
     script_add_synchronizer, script_hot_reload_handler, script_remove_synchronizer,
     CachedScriptEventState, FlatScriptData, Recipients, Script, ScriptCollection, ScriptContexts,
@@ -16,9 +19,9 @@ use tealr::mlu::mlua::{prelude::*, Function};
 
 use std::fmt;
 use std::marker::PhantomData;
-use std::sync::{Mutex,Arc};
+use std::sync::{Arc, Mutex};
 
-pub use {docs::*, assets::*};
+pub use {assets::*, docs::*};
 
 pub trait LuaArg: for<'lua> ToLua<'lua> + Clone + Sync + Send + 'static {}
 
@@ -181,10 +184,8 @@ impl<A: LuaArg> ScriptHost for RLuaScriptHost<A> {
         events: &[Self::ScriptEvent],
         ctxs: impl Iterator<Item = (FlatScriptData<'a>, &'a mut Self::ScriptContext)>,
     ) {
-
         world.resource_scope(
             |world_orig, mut cached_state: Mut<CachedScriptEventState<Self>>| {
-                
                 let world_arc = Arc::new(RwLock::new(std::mem::take(world_orig)));
 
                 ctxs.for_each(|(fd, ctx)| {
@@ -237,7 +238,7 @@ impl<A: LuaArg> ScriptHost for RLuaScriptHost<A> {
 
                     success
                         .map_err(|e| {
-                            let mut guard = world_arc.write() ;
+                            let mut guard = world_arc.write();
                             let (_, mut error_wrt) = cached_state.event_state.get_mut(&mut guard);
 
                             error!("{}", e);
@@ -247,7 +248,6 @@ impl<A: LuaArg> ScriptHost for RLuaScriptHost<A> {
                 });
 
                 *world_orig = Arc::try_unwrap(world_arc).unwrap().into_inner();
-
             },
         );
     }

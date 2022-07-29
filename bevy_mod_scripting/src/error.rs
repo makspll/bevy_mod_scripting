@@ -1,4 +1,4 @@
-use std::{fmt::Debug, borrow::Cow};
+use std::{borrow::Cow, fmt::Debug};
 use tealr::mlu::mlua;
 use thiserror::Error;
 
@@ -24,18 +24,21 @@ pub enum ScriptError {
     Other(String),
 }
 
-#[derive(Error,Debug)]
+#[derive(Error, Debug)]
 pub enum ReflectionError {
     #[error("Base reference `{base}` is invalid. {reason}")]
     InvalidBaseReference { base: String, reason: String },
     #[error("Insuficient provenance error while accessing `{path}`. {msg}")]
     InsufficientProvenance { path: String, msg: String },
     #[error("Invalid reflection path: `{path}`. {msg}")]
-    InvalidReflectionPath {path : String, msg: String},
+    InvalidReflectionPath { path: String, msg: String },
     #[error("Cannot downcast from `{from}` to `{to}`")]
-    CannotDowncast{from: Cow<'static,str>, to: Cow<'static,str>},
+    CannotDowncast {
+        from: Cow<'static, str>,
+        to: Cow<'static, str>,
+    },
     #[error("{0}")]
-    Other(String)
+    Other(String),
 }
 
 // impl Into<mlua::Error> for ReflectionError {

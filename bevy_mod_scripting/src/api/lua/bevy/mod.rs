@@ -1,28 +1,30 @@
-
-
-
-use ::std::sync::{Weak,Arc};
-use ::std::convert::AsRef;
-use ::std::ops::{Deref};
-use crate::{ScriptRef, impl_tealr_type};
+use crate::{impl_tealr_type, ScriptRef};
 use ::bevy::ecs::system::Command;
 use ::bevy::hierarchy::BuildWorldChildren;
+use ::std::convert::AsRef;
+use ::std::ops::Deref;
+use ::std::sync::{Arc, Weak};
 
-
-use ::bevy::{reflect::{Reflect, TypeRegistry, TypeRegistration, DynamicStruct, DynamicTupleStruct, DynamicTuple, DynamicList, DynamicArray, DynamicMap}, prelude::{World, ReflectComponent, ReflectDefault, ReflectResource}, hierarchy::{Children, Parent, DespawnChildrenRecursive, DespawnRecursive}};
+use ::bevy::{
+    hierarchy::{Children, DespawnChildrenRecursive, DespawnRecursive, Parent},
+    prelude::{ReflectComponent, ReflectDefault, ReflectResource, World},
+    reflect::{
+        DynamicArray, DynamicList, DynamicMap, DynamicStruct, DynamicTuple, DynamicTupleStruct,
+        Reflect, TypeRegistration, TypeRegistry,
+    },
+};
 
 use parking_lot::RwLock;
 
-
-
-use tealr::mlu::{mlua::{self}, TealData, TealDataMethods};
 pub use crate::api::generated::*;
-
+use tealr::mlu::{
+    mlua::{self},
+    TealData, TealDataMethods,
+};
 
 #[derive(Clone)]
 pub struct LuaTypeRegistration(Arc<TypeRegistration>);
 impl_tealr_type!(LuaTypeRegistration);
-
 
 impl TealData for LuaTypeRegistration {
     fn add_methods<'lua, T: TealDataMethods<'lua, Self>>(methods: &mut T) {
@@ -32,15 +34,15 @@ impl TealData for LuaTypeRegistration {
 
     fn add_fields<'lua, F: tealr::mlu::TealDataFields<'lua, Self>>(fields: &mut F) {
         fields.document("The [short name](https://docs.rs/bevy/latest/bevy/reflect/struct.TypeRegistration.html#method.get_short_name) of a type");
-        fields.add_field_method_get("short_name", |_,s| Ok(s.0.short_name().to_string()));
-        
+        fields.add_field_method_get("short_name", |_, s| Ok(s.0.short_name().to_string()));
+
         fields.document("The full name of the type");
-        fields.add_field_method_get("type_name", |_,s| Ok(s.0.type_name()));
+        fields.add_field_method_get("type_name", |_, s| Ok(s.0.type_name()));
     }
 }
 
 impl Deref for LuaTypeRegistration {
-    type Target=TypeRegistration;
+    type Target = TypeRegistration;
 
     fn deref(&self) -> &Self::Target {
         &self.0
@@ -65,7 +67,7 @@ impl AsRef<Weak<RwLock<World>>> for LuaWorld {
 }
 
 impl LuaWorld {
-    pub fn new(w : Weak<RwLock<World>>) -> Self {
+    pub fn new(w: Weak<RwLock<World>>) -> Self {
         Self(w)
     }
 }
@@ -74,151 +76,194 @@ impl_tealr_type!(LuaWorld);
 
 impl TealData for LuaWorld {
     fn add_methods<'lua, T: TealDataMethods<'lua, Self>>(methods: &mut T) {
-
         methods.document_type("Represents the bevy world all scripts live in.");
         methods.document_type("Provides ways to interact with and modify the world.");
 
-
         methods.document("Retrieves children entities of the parent entity if it has any.");
-        methods.add_method("get_children", |_,world, parent : LuaEntity| {
+        methods.add_method("get_children", |_, world, parent: LuaEntity| {
             let w = world.upgrade().unwrap();
             let w = &mut w.write();
-            
-            let children : Option<Vec<LuaEntity>> = w.get::<Children>(parent.inner()?)
-                .map(|children| children.iter().map(|e| LuaEntity::new(*e)).collect::<Vec<_>>());
+
+            let children: Option<Vec<LuaEntity>> =
+                w.get::<Children>(parent.inner()?).map(|children| {
+                    children
+                        .iter()
+                        .map(|e| LuaEntity::new(*e))
+                        .collect::<Vec<_>>()
+                });
 
             Ok(children)
         });
 
         methods.document("Retrieves the parent entity of the given entity if it has any.");
-        methods.add_method("get_parent", |_,world, parent : LuaEntity| {
+        methods.add_method("get_parent", |_, world, parent: LuaEntity| {
             let w = world.upgrade().unwrap();
             let w = &mut w.write();
-            
-            let parent : Option<LuaEntity> = w.get::<Parent>(parent.inner()?)
+
+            let parent: Option<LuaEntity> = w
+                .get::<Parent>(parent.inner()?)
                 .map(|parent| LuaEntity::new(parent.get()));
 
             Ok(parent)
         });
 
         methods.document("Attaches children entities to the given parent entity.");
-        methods.add_method("push_children", |_,world, (parent,children) : (LuaEntity,Vec<LuaEntity>)| {
-            let w = world.upgrade().unwrap();
-            let w = &mut w.write();
-            let children = children.iter().map(|e| e.inner()).collect::<Result<Vec<_>,_>>()?;
-            
-            w.get_entity_mut(parent.inner()?)
-                .map(|mut entity| {entity.push_children(&children);});
+        methods.add_method(
+            "push_children",
+            |_, world, (parent, children): (LuaEntity, Vec<LuaEntity>)| {
+                let w = world.upgrade().unwrap();
+                let w = &mut w.write();
+                let children = children
+                    .iter()
+                    .map(|e| e.inner())
+                    .collect::<Result<Vec<_>, _>>()?;
 
-            Ok(())
-        });
+                w.get_entity_mut(parent.inner()?).map(|mut entity| {
+                    entity.push_children(&children);
+                });
+
+                Ok(())
+            },
+        );
 
         methods.document("Attaches child entity to the given parent entity.");
-        methods.add_method("push_child", |_,world, (parent,child) : (LuaEntity,LuaEntity)| {
-            let w = world.upgrade().unwrap();
-            let w = &mut w.write();
-            let child = child.inner()?;
-            w.get_entity_mut(parent.inner()?)
-                .map(|mut entity| {entity.push_children(&[child]);});
+        methods.add_method(
+            "push_child",
+            |_, world, (parent, child): (LuaEntity, LuaEntity)| {
+                let w = world.upgrade().unwrap();
+                let w = &mut w.write();
+                let child = child.inner()?;
+                w.get_entity_mut(parent.inner()?).map(|mut entity| {
+                    entity.push_children(&[child]);
+                });
 
-            Ok(())
-        });
+                Ok(())
+            },
+        );
 
         methods.document("Removes children entities from the given parent entity.");
-        methods.add_method("remove_children", |_,world, (parent,children) : (LuaEntity,Vec<LuaEntity>)| {
-            let w = world.upgrade().unwrap();
-            let w = &mut w.write();
-            let children = children.iter().map(|e| e.inner()).collect::<Result<Vec<_>,_>>()?;
+        methods.add_method(
+            "remove_children",
+            |_, world, (parent, children): (LuaEntity, Vec<LuaEntity>)| {
+                let w = world.upgrade().unwrap();
+                let w = &mut w.write();
+                let children = children
+                    .iter()
+                    .map(|e| e.inner())
+                    .collect::<Result<Vec<_>, _>>()?;
 
-            w.get_entity_mut(parent.inner()?)
-                .map(|mut entity| {entity.remove_children(&children);});
+                w.get_entity_mut(parent.inner()?).map(|mut entity| {
+                    entity.remove_children(&children);
+                });
 
-            Ok(())
-        });
+                Ok(())
+            },
+        );
 
         methods.document("Removes child entity from the given parent entity.");
-        methods.add_method("remove_child", |_,world, (parent,child) : (LuaEntity,LuaEntity)| {
-            let w = world.upgrade().unwrap();
-            let w = &mut w.write();
-            let child = child.inner()?;
-            w.get_entity_mut(parent.inner()?)
-                .map(|mut entity| {entity.remove_children(&[child]);});
+        methods.add_method(
+            "remove_child",
+            |_, world, (parent, child): (LuaEntity, LuaEntity)| {
+                let w = world.upgrade().unwrap();
+                let w = &mut w.write();
+                let child = child.inner()?;
+                w.get_entity_mut(parent.inner()?).map(|mut entity| {
+                    entity.remove_children(&[child]);
+                });
 
-            Ok(())
-        });
+                Ok(())
+            },
+        );
 
-        methods.document("Inserts children entities to the given parent entity at the given index.");
-        methods.add_method("insert_children", |_,world, (parent,index,children) : (LuaEntity,usize,Vec<LuaEntity>)| {
-            let w = world.upgrade().unwrap();
-            let w = &mut w.write();
-            let children = children.iter().map(|e| e.inner()).collect::<Result<Vec<_>,_>>()?;
+        methods
+            .document("Inserts children entities to the given parent entity at the given index.");
+        methods.add_method(
+            "insert_children",
+            |_, world, (parent, index, children): (LuaEntity, usize, Vec<LuaEntity>)| {
+                let w = world.upgrade().unwrap();
+                let w = &mut w.write();
+                let children = children
+                    .iter()
+                    .map(|e| e.inner())
+                    .collect::<Result<Vec<_>, _>>()?;
 
-            w.get_entity_mut(parent.inner()?)
-                .map(|mut entity| {entity.insert_children(index, &children);});
+                w.get_entity_mut(parent.inner()?).map(|mut entity| {
+                    entity.insert_children(index, &children);
+                });
 
-            Ok(())
-        });
+                Ok(())
+            },
+        );
 
         methods.document("Inserts child entity to the given parent entity at the given index.");
-        methods.add_method("insert_child", |_,world, (parent,index,child) : (LuaEntity,usize,LuaEntity)| {
-            let w = world.upgrade().unwrap();
-            let w = &mut w.write();
-            let child = child.inner()?;
-            w.get_entity_mut(parent.inner()?)
-                .map(|mut entity| {entity.insert_children(index, &[child]);});
+        methods.add_method(
+            "insert_child",
+            |_, world, (parent, index, child): (LuaEntity, usize, LuaEntity)| {
+                let w = world.upgrade().unwrap();
+                let w = &mut w.write();
+                let child = child.inner()?;
+                w.get_entity_mut(parent.inner()?).map(|mut entity| {
+                    entity.insert_children(index, &[child]);
+                });
 
-            Ok(())
-        });
+                Ok(())
+            },
+        );
 
         methods.document("Despawns the given entity's children recursively");
-        methods.add_method("despawn_children_recursive", |_,world, entity : LuaEntity| {
+        methods.add_method(
+            "despawn_children_recursive",
+            |_, world, entity: LuaEntity| {
+                let w = world.upgrade().unwrap();
+                let w = &mut w.write();
+
+                Ok(DespawnChildrenRecursive {
+                    entity: entity.inner()?,
+                }
+                .write(w))
+            },
+        );
+
+        methods.document("Despawns the given entity and the entity's children recursively");
+        methods.add_method("despawn_recursive", |_, world, entity: LuaEntity| {
             let w = world.upgrade().unwrap();
             let w = &mut w.write();
 
-            Ok(DespawnChildrenRecursive{
+            Ok(DespawnRecursive {
                 entity: entity.inner()?,
-            }.write(w))
+            }
+            .write(w))
         });
 
         methods.document("Despawns the given entity and the entity's children recursively");
-        methods.add_method("despawn_recursive", |_,world, entity : LuaEntity| {
+        methods.add_method("insert_children", |_, world, entity: LuaEntity| {
             let w = world.upgrade().unwrap();
             let w = &mut w.write();
 
-            Ok(DespawnRecursive{
+            Ok(DespawnRecursive {
                 entity: entity.inner()?,
-            }.write(w))
+            }
+            .write(w))
         });
 
-        methods.document("Despawns the given entity and the entity's children recursively");
-        methods.add_method("insert_children", |_,world, entity : LuaEntity| {
-            let w = world.upgrade().unwrap();
-            let w = &mut w.write();
-
-            Ok(DespawnRecursive{
-                entity: entity.inner()?,
-            }.write(w))
-        });
-    
         methods.document("Retrieves type information given either a short (`MyType`) or fully qualified rust type name (`MyModule::MyType`).");
-        methods.document("Returns `nil` if no such type exists or if one wasn't registered on the rust side.");
+        methods.document(
+            "Returns `nil` if no such type exists or if one wasn't registered on the rust side.",
+        );
         methods.document("\n");
         methods.document("This is used extensively in [`LuaWorld`]");
-        methods.add_method("get_type_by_name", |_,world,type_name: String| {
+        methods.add_method("get_type_by_name", |_, world, type_name: String| {
             let w = world.upgrade().unwrap();
             let w = &w.read();
 
             let registry: &TypeRegistry = w.get_resource().unwrap();
 
-            let registry = registry.read();     
-            
+            let registry = registry.read();
+
             Ok(registry
                 .get_with_short_name(&type_name)
-                .or(
-                    registry.get_with_name(&type_name)   
-                )
-                .map(|registration| LuaTypeRegistration(Arc::new(registration.clone())))
-            )
+                .or(registry.get_with_name(&type_name))
+                .map(|registration| LuaTypeRegistration(Arc::new(registration.clone()))))
         });
 
         methods.document("Inserts a component of the given type to the given entity by instantiating a default version of it.");
@@ -252,92 +297,106 @@ impl TealData for LuaWorld {
 
             Ok(ScriptRef::new_component_ref(component_data.clone(), entity, world.as_ref().clone()))
         });
-    
+
         methods.document("Retrieves a component of the given type from the given entity.");
         methods.document("If such a component does not exist returns `nil`.");
-        methods.add_method("get_component", |_, world, (entity, comp_type) : (LuaEntity,LuaTypeRegistration)| {
+        methods.add_method(
+            "get_component",
+            |_, world, (entity, comp_type): (LuaEntity, LuaTypeRegistration)| {
+                // grab this entity before acquiring a lock in case it's a reference
+                let entity = entity.inner()?;
+                let w = world.upgrade().unwrap();
+                let w = &w.read();
 
-            // grab this entity before acquiring a lock in case it's a reference
-            let entity = entity.inner()?;
-            let w = world.upgrade().unwrap();
-            let w = &w.read();
+                let component_data = comp_type.data::<ReflectComponent>().ok_or_else(|| {
+                    mlua::Error::RuntimeError(format!("Not a component {}", comp_type.short_name()))
+                })?;
 
-            let component_data = comp_type.data::<ReflectComponent>()
-                .ok_or_else(|| mlua::Error::RuntimeError(format!("Not a component {}",comp_type.short_name())))?;
+                Ok(component_data.reflect(w, entity).map(|_component| {
+                    ScriptRef::new_component_ref(
+                        component_data.clone(),
+                        entity,
+                        world.as_ref().clone(),
+                    )
+                }))
+            },
+        );
 
-            Ok(component_data
-                .reflect(w, entity)
-                .map(|_component| 
-                    ScriptRef::new_component_ref(component_data.clone(), entity, world.as_ref().clone())
-                ))
-        });
+        methods
+            .document("Returns `true` if the given entity contains a component of the given type.");
+        methods.add_method(
+            "has_component",
+            |_, world, (entity, comp_type): (LuaEntity, LuaTypeRegistration)| {
+                // grab this entity before acquiring a lock in case it's a reference
+                let entity = entity.inner()?;
+                let w = world.upgrade().unwrap();
+                let w = &w.read();
 
-        methods.document("Returns `true` if the given entity contains a component of the given type.");
-        methods.add_method("has_component", |_, world, (entity, comp_type) : (LuaEntity,LuaTypeRegistration)| {
+                let component_data = comp_type.data::<ReflectComponent>().ok_or_else(|| {
+                    mlua::Error::RuntimeError(format!("Not a component {}", comp_type.short_name()))
+                })?;
 
-            // grab this entity before acquiring a lock in case it's a reference
-            let entity = entity.inner()?;
-            let w = world.upgrade().unwrap();
-            let w = &w.read();
-
-            let component_data = comp_type.data::<ReflectComponent>()
-                .ok_or_else(|| mlua::Error::RuntimeError(format!("Not a component {}",comp_type.short_name())))?;
-
-            Ok(component_data.reflect(w, entity).is_some())
-        });
-
+                Ok(component_data.reflect(w, entity).is_some())
+            },
+        );
 
         methods.document("Removes the given component from the given entity, does nothing if it doesn't exist on the entity.");
-        methods.add_method("remove_component", |_, world, (entity, comp_type) : (LuaEntity, LuaTypeRegistration)| {
-            // grab this entity before acquiring a lock in case it's a reference
-            let entity = entity.inner()?;
-            let w = world.upgrade().unwrap();
-            let w = &mut w.write();
-            
-            let component_data = comp_type.data::<ReflectComponent>()
-                .ok_or_else(|| mlua::Error::RuntimeError(format!("Not a component {}",comp_type.short_name())))?;
+        methods.add_method(
+            "remove_component",
+            |_, world, (entity, comp_type): (LuaEntity, LuaTypeRegistration)| {
+                // grab this entity before acquiring a lock in case it's a reference
+                let entity = entity.inner()?;
+                let w = world.upgrade().unwrap();
+                let w = &mut w.write();
 
-            Ok(component_data.remove(w, entity))
-        });
+                let component_data = comp_type.data::<ReflectComponent>().ok_or_else(|| {
+                    mlua::Error::RuntimeError(format!("Not a component {}", comp_type.short_name()))
+                })?;
 
+                Ok(component_data.remove(w, entity))
+            },
+        );
 
         methods.document("Retrieves a resource of the given type from the world.");
         methods.document("If such a resource does not exist returns `nil`.");
-        methods.add_method("get_resource", |_, world, res_type : LuaTypeRegistration| {
-
+        methods.add_method("get_resource", |_, world, res_type: LuaTypeRegistration| {
             let w = world.upgrade().unwrap();
             let w = &mut w.write();
 
+            let resource_data = res_type.data::<ReflectResource>().ok_or_else(|| {
+                mlua::Error::RuntimeError(format!("Not a resource {}", res_type.short_name()))
+            })?;
 
-            let resource_data = res_type.data::<ReflectResource>()
-                .ok_or_else(|| mlua::Error::RuntimeError(format!("Not a resource {}",res_type.short_name())))?;
-
-            Ok(resource_data
-                .reflect(&w)
-                .map(|_res|
-                    ScriptRef::new_resource_ref(resource_data.clone(), world.as_ref().clone())
-                ))
+            Ok(resource_data.reflect(&w).map(|_res| {
+                ScriptRef::new_resource_ref(resource_data.clone(), world.as_ref().clone())
+            }))
         });
 
-        methods.document("Removes the given resource from the world, if one doesn't exist it does nothing.");
-        methods.add_method("remove_resource", |_, world, res_type : LuaTypeRegistration| {
-            let w = world.upgrade().unwrap();
-            let w = &mut w.write();
+        methods.document(
+            "Removes the given resource from the world, if one doesn't exist it does nothing.",
+        );
+        methods.add_method(
+            "remove_resource",
+            |_, world, res_type: LuaTypeRegistration| {
+                let w = world.upgrade().unwrap();
+                let w = &mut w.write();
 
-            let resource_data = res_type.data::<ReflectResource>()
-                .ok_or_else(|| mlua::Error::RuntimeError(format!("Not a resource {}",res_type.short_name())))?;
+                let resource_data = res_type.data::<ReflectResource>().ok_or_else(|| {
+                    mlua::Error::RuntimeError(format!("Not a resource {}", res_type.short_name()))
+                })?;
 
-            Ok(resource_data.remove(w))
-        });
+                Ok(resource_data.remove(w))
+            },
+        );
 
         methods.document("Returns `true` if the world contains a resource of the given type.");
-        methods.add_method("has_resource", |_, world, res_type : LuaTypeRegistration| {
-
+        methods.add_method("has_resource", |_, world, res_type: LuaTypeRegistration| {
             let w = world.upgrade().unwrap();
             let w = &w.read();
 
-            let resource_data = res_type.data::<ReflectResource>()
-                .ok_or_else(|| mlua::Error::RuntimeError(format!("Not a resource {}",res_type.short_name())))?;
+            let resource_data = res_type.data::<ReflectResource>().ok_or_else(|| {
+                mlua::Error::RuntimeError(format!("Not a resource {}", res_type.short_name()))
+            })?;
 
             Ok(resource_data.reflect(w).is_some())
         });
@@ -345,19 +404,19 @@ impl TealData for LuaWorld {
         methods.document("Spawns a new entity and returns its Entity ID");
         methods.add_method("spawn", |_, world, ()| {
             let w = world.upgrade().unwrap();
-            let w = &mut w.write();                
-            
+            let w = &mut w.write();
+
             Ok(LuaEntity::new(w.spawn().id()))
         });
 
-        methods.document("Despawns the given entity if it exists, returns true if deletion was successfull");
+        methods.document(
+            "Despawns the given entity if it exists, returns true if deletion was successfull",
+        );
         methods.add_method("despawn", |_, world, entity: LuaEntity| {
             let w = world.upgrade().unwrap();
-            let w = &mut w.write();                
-            
+            let w = &mut w.write();
+
             Ok(w.despawn(entity.inner()?))
         });
-       
-    }   
+    }
 }
-

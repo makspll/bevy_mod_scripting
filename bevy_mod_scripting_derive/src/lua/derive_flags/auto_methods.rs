@@ -1,20 +1,32 @@
-use std::{iter::{once}};
+use std::iter::once;
 
 use proc_macro2::Span;
 use quote::{format_ident, quote_spanned};
-use syn::{punctuated::Punctuated, Token, LitInt, spanned::Spanned, parse_quote_spanned, Attribute};
+use syn::{
+    parse_quote_spanned, punctuated::Punctuated, spanned::Spanned, Attribute, LitInt, Token,
+};
 
-use crate::{lua::lua_method::LuaMethod, common::{derive_flag::DeriveFlag, newtype::Newtype, arg::SimpleType}, EmptyToken};
+use crate::{
+    common::{arg::SimpleType, derive_flag::DeriveFlag, newtype::Newtype},
+    lua::lua_method::LuaMethod,
+    EmptyToken,
+};
 
-
-
-pub(crate) fn make_auto_methods<'a>(flag: &DeriveFlag,new_type : &'a Newtype, out : &mut Vec<LuaMethod>) {
+pub(crate) fn make_auto_methods<'a>(
+    flag: &DeriveFlag,
+    new_type: &'a Newtype,
+    out: &mut Vec<LuaMethod>,
+) {
     let newtype_name = &new_type.args.wrapper_type;
     let wrapped_type = &new_type.args.base_type_ident;
 
-    let (ident,paren,methods) = match flag {
-        DeriveFlag::Methods { ident, paren, methods } => (ident,paren,methods),
-        _ => panic!("Expected AutoMethods flag")
+    let (ident, paren, methods) = match flag {
+        DeriveFlag::Methods {
+            ident,
+            paren,
+            methods,
+        } => (ident, paren, methods),
+        _ => panic!("Expected AutoMethods flag"),
     };
     out.extend(methods.iter()
     .map(|m| {

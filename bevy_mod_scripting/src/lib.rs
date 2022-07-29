@@ -1,7 +1,11 @@
 #![doc=include_str!("../../readme.md")]
 use ::std::any::TypeId;
 
-use bevy::{ecs::schedule::IntoRunCriteria, prelude::*, reflect::{TypeRegistryArc, FromType, GetTypeRegistration}};
+use bevy::{
+    ecs::schedule::IntoRunCriteria,
+    prelude::*,
+    reflect::{FromType, GetTypeRegistration, TypeRegistryArc},
+};
 
 pub mod error;
 pub mod hosts;
@@ -11,9 +15,8 @@ pub mod langs {
 }
 pub mod api;
 
-
 pub use bevy_event_priority as events;
-pub use {error::*, hosts::*, langs::*, api::*, util::*};
+pub use {api::*, error::*, hosts::*, langs::*, util::*};
 
 #[derive(Default)]
 /// Bevy plugin enabling run-time scripting
@@ -26,25 +29,28 @@ impl Plugin for ScriptingPlugin {
 }
 
 /// A trait allowing to register the [`LuaProxyable`] trait with the type registry for foreign types
-/// 
+///
 /// If you have access to the type you should prefer to use `#[reflect(LuaProxyable)]` instead.
 /// This is exactly equivalent.
 pub trait RegisterForeignLuaType {
-    /// Register an instance of `ReflecLuaProxyable` type data on this type's registration, 
-    /// if a registration does not yet exist, creates one. 
-    fn register_foreign_lua_type<T : LuaProxyable + Reflect + GetTypeRegistration>(&mut self) -> &mut Self;
+    /// Register an instance of `ReflecLuaProxyable` type data on this type's registration,
+    /// if a registration does not yet exist, creates one.
+    fn register_foreign_lua_type<T: LuaProxyable + Reflect + GetTypeRegistration>(
+        &mut self,
+    ) -> &mut Self;
 }
 
 impl RegisterForeignLuaType for App {
-    fn register_foreign_lua_type<T : LuaProxyable + Reflect + GetTypeRegistration>(&mut self) -> &mut Self {
-        
+    fn register_foreign_lua_type<T: LuaProxyable + Reflect + GetTypeRegistration>(
+        &mut self,
+    ) -> &mut Self {
         {
             let registry = self.world.resource_mut::<TypeRegistryArc>();
             let mut registry = registry.write();
-            
+
             let user_data = <ReflectLuaProxyable as FromType<T>>::from_type();
-            
-            if let Some(registration) = registry.get_mut(TypeId::of::<T>()){
+
+            if let Some(registration) = registry.get_mut(TypeId::of::<T>()) {
                 registration.insert(user_data)
             } else {
                 let mut registration = T::get_type_registration();
@@ -52,7 +58,7 @@ impl RegisterForeignLuaType for App {
                 registry.add_registration(registration);
             }
         }
-        
+
         self
     }
 }

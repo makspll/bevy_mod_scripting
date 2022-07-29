@@ -1,11 +1,11 @@
 use bevy::prelude::*;
 use bevy_event_priority::PriorityEventWriter;
 use bevy_mod_scripting::{
+    api::lua::bevy::LuaBevyAPIProvider,
     langs::mlu::{mlua, mlua::prelude::*, mlua::Value, TealData},
     APIProvider, AddScriptApiProvider, AddScriptHost, AddScriptHostHandler, GenDocumentation,
     LuaDocFragment, LuaEvent, LuaFile, RLuaScriptHost, Recipients, Script, ScriptCollection,
     ScriptError, ScriptingPlugin,
-    api::lua::bevy::LuaBevyAPIProvider
 };
 use tealr::TypeName;
 
@@ -19,7 +19,6 @@ impl<'lua> ToLua<'lua> for MyLuaArg {
         Ok(Value::Nil)
     }
 }
-
 
 #[derive(Clone, tealr::mlu::UserData, TypeName)]
 /// This is acts as a documentation and function holder
@@ -55,11 +54,7 @@ impl tealr::mlu::ExportInstances for Export {
         instance_collector: &mut T,
     ) -> mlua::Result<()> {
         instance_collector.document_instance("Documentation for the exposed global variable");
-        instance_collector.add_instance("my_api".into(), |_| {
-        
-            Ok(APIModule)
-        
-        })
+        instance_collector.add_instance("my_api".into(), |_| Ok(APIModule))
     }
 }
 
@@ -98,10 +93,7 @@ fn load_our_script(server: Res<AssetServer>, mut commands: Commands) {
     let handle = server.load::<LuaFile, &str>(path);
 
     commands.spawn().insert(ScriptCollection::<LuaFile> {
-        scripts: vec![Script::<LuaFile>::new(
-            path.to_string(),
-            handle,
-        )],
+        scripts: vec![Script::<LuaFile>::new(path.to_string(), handle)],
     });
 }
 

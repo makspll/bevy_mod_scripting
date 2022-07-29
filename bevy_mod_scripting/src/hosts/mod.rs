@@ -6,7 +6,7 @@ pub mod rlua_host;
 
 use bevy::{asset::Asset, ecs::system::SystemState, prelude::*, reflect::FromReflect};
 use bevy_event_priority::PriorityEventReader;
-pub use {crate::docs::*,crate::rhai_host::*, crate::rlua_host::*, crate::util::*};
+pub use {crate::docs::*, crate::rhai_host::*, crate::rlua_host::*, crate::util::*};
 
 use std::{
     collections::{HashMap, HashSet},
@@ -154,9 +154,7 @@ pub trait APIProvider: 'static + Send + Sync {
 
     /// Some providers might provide additional types which need to be registered
     /// with the reflection API to work.
-    fn register_with_app(&self, _app: &mut App){
-
-    }
+    fn register_with_app(&self, _app: &mut App) {}
 }
 
 /// Stores many API providers

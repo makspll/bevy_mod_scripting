@@ -1,50 +1,52 @@
-pub(crate) mod lua_method;
 pub(crate) mod derive_flags;
+pub(crate) mod lua_method;
 
+pub(crate) use {derive_flags::*, lua_method::*};
 
+use indexmap::IndexSet;
+use proc_macro2::{Ident, TokenStream};
+use syn::{parse_quote_spanned, punctuated::Punctuated, spanned::Spanned, Token};
 
-pub(crate) use {lua_method::*, derive_flags::*};
-
-
-use indexmap::{IndexSet};
-use proc_macro2::{TokenStream, Ident};
-use syn::{spanned::Spanned, parse_quote_spanned, punctuated::Punctuated, Token};
-
-use crate::{common::{WrapperImplementor, WrapperFunction, attribute_to_string_lit, derive_flag::DeriveFlag}};
-use quote::{quote, quote_spanned, format_ident};
+use crate::common::{
+    attribute_to_string_lit, derive_flag::DeriveFlag, WrapperFunction, WrapperImplementor,
+};
+use quote::{format_ident, quote, quote_spanned};
 
 impl WrapperFunction for LuaMethod {}
 
 #[derive(Default)]
-pub(crate) struct LuaImplementor{
-    implemented_unions : IndexSet<Ident>,
-    additional_globals : TokenStream
+pub(crate) struct LuaImplementor {
+    implemented_unions: IndexSet<Ident>,
+    additional_globals: TokenStream,
 }
 
 impl LuaImplementor {
-
     /// Generates a union registers it, and makes sure no two identical unions exist, while removing duplicate entries in the enum
-    /// 
+    ///
     /// The given unique type idents must be unique (i.e. come from a HashSet)
-    fn generate_register_union<'a,I : Iterator<Item=String>>(&mut self, unique_type_idents : I, unique_ident : &str) -> Ident{
+    fn generate_register_union<'a, I: Iterator<Item = String>>(
+        &mut self,
+        unique_type_idents: I,
+        unique_ident: &str,
+    ) -> Ident {
+        let unique_idents: Vec<String> = unique_type_idents.collect::<Vec<_>>();
 
-        let unique_idents : Vec<String> = unique_type_idents
-            .collect::<Vec<_>>();
+        let return_arg_type = format_ident!("{unique_ident}Union{}", unique_idents.join(""));
 
-        let return_arg_type = format_ident!("{unique_ident}Union{}",unique_idents.join(""));
-
-        if !self.implemented_unions.contains(&return_arg_type){
+        if !self.implemented_unions.contains(&return_arg_type) {
             self.implemented_unions.insert(return_arg_type.clone());
-            let return_arg = unique_idents.iter().map(|v| format_ident!("{v}")).collect::<Punctuated<Ident,Token![|]>>();
-            
-            self.additional_globals.extend(quote!{
+            let return_arg = unique_idents
+                .iter()
+                .map(|v| format_ident!("{v}"))
+                .collect::<Punctuated<Ident, Token![|]>>();
+
+            self.additional_globals.extend(quote! {
                 create_union_mlua!(pub enum #return_arg_type = #return_arg);
             });
         }
 
         return_arg_type
     }
-
 }
 
 impl WrapperImplementor for LuaImplementor {
@@ -54,45 +56,52 @@ impl WrapperImplementor for LuaImplementor {
         "lua"
     }
 
-    fn generate_newtype_definition(&mut self, newtype : &crate::common::newtype::Newtype) -> std::result::Result<TokenStream, syn::Error> {
+    fn generate_newtype_definition(
+        &mut self,
+        newtype: &crate::common::newtype::Newtype,
+    ) -> std::result::Result<TokenStream, syn::Error> {
         let name = &newtype.args.wrapper_type;
         let base_type = &newtype.args.base_type_ident;
 
-        Ok(quote_spanned!{newtype.span()=>
+        Ok(quote_spanned! {newtype.span()=>
                 pub type #name = crate::LuaWrapper<#base_type>;
         })
     }
 
-    fn generate_newtype_implementation<'a,I : Iterator<Item=&'a Self::Function>>(&mut self, newtype: &'a crate::common::newtype::Newtype, functions : I) -> std::result::Result<TokenStream, syn::Error> {
-
+    fn generate_newtype_implementation<'a, I: Iterator<Item = &'a Self::Function>>(
+        &mut self,
+        newtype: &'a crate::common::newtype::Newtype,
+        functions: I,
+    ) -> std::result::Result<TokenStream, syn::Error> {
         let wrapper_type = &newtype.args.wrapper_type;
         let wrapped_type = &newtype.args.base_type_ident;
 
         // provide documentation generation implementations
-        let tealr_implementations = quote_spanned!{newtype.span()=>
+        let tealr_implementations = quote_spanned! {newtype.span()=>
             impl_tealr_type!(#wrapper_type);
         };
 
         // generate documentation calls on type level
-        let type_documentator : TokenStream = newtype.args.docstring.iter()
-                                                .map(attribute_to_string_lit)
-                                                .map(|ts| quote_spanned!{ts.span()=>
-                                                    methods.document_type(#ts);
-                                                }).collect();
-        
-        let (fields,methods) = functions
-            .partition::<Vec<_>,_>(|f| f.method_type.is_field());
-
-        let methods = methods
+        let type_documentator: TokenStream = newtype
+            .args
+            .docstring
             .iter()
-            .map(|f| f.to_call_expr("methods"));
+            .map(attribute_to_string_lit)
+            .map(|ts| {
+                quote_spanned! {ts.span()=>
+                    methods.document_type(#ts);
+                }
+            })
+            .collect();
 
-        let fields = fields
-            .iter()
-            .map(|f| f.to_call_expr("fields"));
+        let (fields, methods) = functions.partition::<Vec<_>, _>(|f| f.method_type.is_field());
+
+        let methods = methods.iter().map(|f| f.to_call_expr("methods"));
+
+        let fields = fields.iter().map(|f| f.to_call_expr("fields"));
 
         // expose to lua
-        let user_data_implementation = quote_spanned!{newtype.span()=>
+        let user_data_implementation = quote_spanned! {newtype.span()=>
             #[allow(unused_parens,unreachable_patterns,unused_variables)]
             impl tealr::mlu::TealData for #wrapper_type {
                 fn add_methods<'lua, T: tealr::mlu::TealDataMethods<'lua, Self>>(methods: &mut T) {
@@ -116,7 +125,7 @@ impl WrapperImplementor for LuaImplementor {
                         let other = &other;
 
                         other.apply_self_to_base(self_)?;
-                        Ok(()) 
+                        Ok(())
                     } else {
                         Err(mlua::Error::RuntimeError(
                             "Error in assigning to custom user data".to_owned(),
@@ -126,22 +135,25 @@ impl WrapperImplementor for LuaImplementor {
             }
         };
 
-
         let additional_globals = &self.additional_globals;
 
         // group everything together
-        Ok(quote_spanned!{newtype.span()=>
+        Ok(quote_spanned! {newtype.span()=>
             #user_data_implementation
             #tealr_implementations
             #additional_globals
         })
     }
 
-
-
-    fn generate_derive_flag_functions<'a, I : Iterator<Item=&'a crate::common::derive_flag::DeriveFlag>>(&mut self, new_type : &'a crate::common::newtype::Newtype, mut derive_flags : I) -> Result<Vec<LuaMethod>, syn::Error> {
-        
-        let mut out : Vec<Self::Function> = Default::default();
+    fn generate_derive_flag_functions<
+        'a,
+        I: Iterator<Item = &'a crate::common::derive_flag::DeriveFlag>,
+    >(
+        &mut self,
+        new_type: &'a crate::common::newtype::Newtype,
+        mut derive_flags: I,
+    ) -> Result<Vec<LuaMethod>, syn::Error> {
+        let mut out: Vec<Self::Function> = Default::default();
         let wrapper_type = &new_type.args.wrapper_type;
         let wrapped_type = &new_type.args.base_type_ident;
 
@@ -193,12 +205,14 @@ impl WrapperImplementor for LuaImplementor {
         Ok(out)
     }
 
-    fn generate_newtype_functions(&mut self, new_type : &crate::common::newtype::Newtype) -> Result<Vec<LuaMethod>, syn::Error> {
-
-        Ok(new_type.additional_lua_functions
+    fn generate_newtype_functions(
+        &mut self,
+        new_type: &crate::common::newtype::Newtype,
+    ) -> Result<Vec<LuaMethod>, syn::Error> {
+        Ok(new_type
+            .additional_lua_functions
             .as_ref()
             .map(|v| v.functions.iter().cloned().collect())
-            .unwrap_or_default())    
+            .unwrap_or_default())
     }
-
 }
