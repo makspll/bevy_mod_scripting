@@ -1,5 +1,5 @@
 use quote::{format_ident, quote_spanned, ToTokens};
-use syn::{parse_quote_spanned, punctuated::Punctuated, spanned::Spanned, Attribute};
+use syn::{parse_quote_spanned, punctuated::Punctuated, spanned::Spanned, Attribute, parse_quote};
 
 use crate::{
     common::{arg::SimpleType, derive_flag::DeriveFlag, newtype::Newtype},
@@ -38,13 +38,16 @@ pub(crate) fn make_fields<'a>(
         }
 
         let id = &f.member;
-        let (lua_id_string,rust_id_string) = match id {
+        let (mut lua_id_string,rust_id_string) = match id {
             syn::Member::Named(string_id) => (string_id.to_string(),string_id.to_string()),
             syn::Member::Unnamed(index) => (format!("_{}",index.index),index.index.to_string()),
         };
 
-        let ds: Punctuated<Attribute, EmptyToken> = f.docstring.iter().cloned().collect();
+        if let Some(new_name) = &f.parsed_attrs.script_name {
+            lua_id_string = new_name.to_string();
+        }
 
+        let docstring = f.docstring.iter();
         let field_type_ident = resolved_field_type.base_ident();
         let field_type_string = field_type_ident.to_string();
 
@@ -65,8 +68,9 @@ pub(crate) fn make_fields<'a>(
                 }
             });
 
+        
         out.push(parse_quote_spanned! {f.span()=>
-            #ds
+            #(#docstring)*
             get #lua_id_string => |_,s : &#newtype_name| {
                 #expr_getter
             }

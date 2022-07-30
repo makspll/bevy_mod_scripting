@@ -48,9 +48,12 @@ impl TealData for APIModule {
 
 /// This is tealr's way to export global items
 /// Here `my_api` will be available globally in the lua script
+
+#[derive(Default)]
 struct Export;
 impl tealr::mlu::ExportInstances for Export {
     fn add_instances<'lua, T: tealr::mlu::InstanceCollector<'lua>>(
+        self,
         instance_collector: &mut T,
     ) -> mlua::Result<()> {
         instance_collector.document_instance("Documentation for the exposed global variable");
@@ -75,7 +78,7 @@ impl APIProvider for LuaAPIProvider {
         let ctx = ctx.lock().unwrap();
 
         // equivalent to ctx.globals().set() but for multiple items
-        tealr::mlu::set_global_env::<Export>(&ctx)?;
+        tealr::mlu::set_global_env(Export,&ctx)?;
 
         Ok(())
     }

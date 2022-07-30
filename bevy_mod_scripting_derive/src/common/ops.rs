@@ -1,6 +1,6 @@
 use proc_macro2::{Span, TokenStream};
 use quote::{quote_spanned, ToTokens};
-use syn::{parse::*, *};
+use syn::{Token, parse::{Parse, ParseStream}};
 
 use super::{arg::ArgType, impl_parse_enum};
 
@@ -80,7 +80,7 @@ pub(crate) struct OpExpr {
 }
 
 impl Parse for OpExpr {
-    fn parse(input: ParseStream) -> Result<Self> {
+    fn parse(input: ParseStream) -> Result<Self,syn::Error> {
         let s = Self {
             left: (&input.fork())
                 .parse::<OpName>()
@@ -96,7 +96,7 @@ impl Parse for OpExpr {
         if s.has_receiver() {
             Ok(s)
         } else {
-            Err(Error::new_spanned(s, "Invalid expression, binary/unary expressions expect at least one side to be one of: [self,&self,&mut self]"))
+            Err(syn::Error::new_spanned(s, "Invalid expression, binary/unary expressions expect at least one side to be one of: [self,&self,&mut self]"))
         }
     }
 }

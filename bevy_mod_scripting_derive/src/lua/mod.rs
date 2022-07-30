@@ -41,7 +41,7 @@ impl LuaImplementor {
                 .collect::<Punctuated<Ident, Token![|]>>();
 
             self.additional_globals.extend(quote! {
-                create_union_mlua!(pub enum #return_arg_type = #return_arg);
+                impl_tealr_any_union!(pub enum #return_arg_type = #return_arg);
             });
         }
 

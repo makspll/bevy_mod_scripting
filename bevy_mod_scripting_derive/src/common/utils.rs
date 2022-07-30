@@ -30,7 +30,7 @@ macro_rules! impl_parse_enum {
                 $($(#[$($meta_inner)*])+)?
                 $field {
                     /// The identifier of the enum variant
-                    ident: Ident,
+                    ident: syn::Ident,
                     $(
                         $(
                             $arg_name :  $arg_type
@@ -42,21 +42,21 @@ macro_rules! impl_parse_enum {
         }
 
         impl Parse for $name {
-            fn parse($input_stream: ParseStream) -> Result<Self> {
-                let $parsed_ident : Ident = $input_stream.parse()?;
+            fn parse($input_stream: ParseStream) -> Result<Self,syn::Error> {
+                let $parsed_ident : syn::Ident = $input_stream.parse()?;
 
                 match $parsed_ident.to_string().as_str() {
                     $(
                      stringify!($field) => {$($parser)*},
                     )*
-                    _ => Err(Error::new_spanned($parsed_ident, format!("Invalid derive flag, try one of [{}]",Self::variants()))),
+                    _ => Err(syn::Error::new_spanned($parsed_ident, format!("Invalid derive flag, try one of [{}]",Self::variants()))),
                 }
             }
         }
 
         impl ToTokens for $name {
             fn to_tokens(&self, ts: &mut proc_macro2::TokenStream) {
-                let ident = Ident::new(self.to_str(),Span::call_site());
+                let ident = syn::Ident::new(self.to_str(),Span::call_site());
                 ts.extend(quote::quote_spanned!{syn::spanned::Spanned::span(ts)=> #ident});
             }
         }

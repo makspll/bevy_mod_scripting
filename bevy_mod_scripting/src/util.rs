@@ -37,6 +37,54 @@ macro_rules! impl_tealr_type {
     };
 }
 
+
+/// like create_tealr_union but translates to `any` in the lua declaration file,
+/// a fill in to allow multiple userdata types 
+#[macro_export]
+macro_rules! impl_tealr_any_union {
+    ($visibility:vis $(Derives($($derives:ident), +))? enum $type_name:ident = $($sub_types:ident) | +) => {
+        #[derive(Clone,$($($derives ,)*)*)]
+        #[allow(non_camel_case_types)]
+        $visibility enum $type_name {
+            $($sub_types($sub_types) ,)*
+        }
+        impl<'lua> ::tealr::mlu::mlua::ToLua<'lua> for $type_name {
+            fn to_lua(self, lua: &'lua ::tealr::mlu::mlua::Lua) -> ::std::result::Result<::tealr::mlu::mlua::Value<'lua>, ::tealr::mlu::mlua::Error> {
+                match self {
+                    $($type_name::$sub_types(x) => x.to_lua(lua),)*
+                }
+            }
+        }
+        impl<'lua> ::tealr::mlu::mlua::FromLua<'lua> for $type_name {
+            fn from_lua(value: ::tealr::mlu::mlua::Value<'lua>, lua: &'lua ::tealr::mlu::mlua::Lua) -> ::std::result::Result<Self, ::tealr::mlu::mlua::Error> {
+                $(match $sub_types::from_lua(value.clone(),lua) {
+                    Ok(x) => return Ok($type_name::$sub_types(x)),
+                    Err(::tealr::mlu::mlua::Error::FromLuaConversionError{from:_,to:_,message:_}) => {}
+                    Err(x) => return Err(x)
+                };)*
+                Err(::tealr::mlu::mlua::Error::FromLuaConversionError{
+                    to: stringify!( $($sub_types)|* ),
+                    from: value.type_name(),
+                    message: None
+                })
+            }
+        }
+        impl ::tealr::TypeName for $type_name {
+            fn get_type_parts() -> ::std::borrow::Cow<'static,[::tealr::NamePart]> {
+                ::std::borrow::Cow::Borrowed(&[::tealr::NamePart::Type(::tealr::TealType {
+                    name: ::std::borrow::Cow::Borrowed("any"),
+                    generics: None,
+                    type_kind: ::tealr::KindOfType::Builtin,
+                })])
+            }
+
+            fn get_type_kind() -> ::tealr::KindOfType {
+                ::tealr::KindOfType::Builtin
+            }
+        }
+    };
+}
+
 // /// Implements UserData for type which implements TealData, can handle generics after the type name:
 // /// ```rust,ignore
 // /// impl_user_data!(MyType<'a,T : Debug>);
@@ -57,4 +105,5 @@ macro_rules! impl_tealr_type {
 //     }
 // }
 pub(crate) use impl_tealr_type;
+pub(crate) use impl_tealr_any_union;
 // pub(crate) use impl_user_data;

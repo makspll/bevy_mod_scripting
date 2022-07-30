@@ -44,8 +44,8 @@ mlua_macros = ["tealr/mlua_macros"]
 # mlua_parking_lot = ["tealr/mlua_parking_lot"]
 
 [dependencies]
-bevy = {git="https://github.com/bevyengine/bevy"}
-tealr = { git = "https://github.com/makspll/tealr", features = ["mlua_vendored","mlua_send"]}
+bevy = { version = "0.8.0"}
+tealr = { version = "0.9.0-alpha1", features=["mlua_vendored","mlua_send"]}
 rhai = { version = "1.7.0", features = ["sync"] }
 anyhow = "1.0.57"
 beau_collector = "0.2.1"

@@ -1,5 +1,5 @@
 use proc_macro2::Span;
-use syn::{parse::*, punctuated::*, token::*, *};
+use syn::{Token, parenthesized, TypePath, Attribute, Ident, Member, token::Paren, punctuated::Punctuated, parse::{ParseStream, Parse}};
 
 use crate::{
     lua_method::{LuaMethodType, MethodMacroArg},
@@ -77,7 +77,7 @@ pub(crate) struct MethodMacroInvokation {
 }
 
 impl Parse for MethodMacroInvokation {
-    fn parse(input: ParseStream) -> Result<Self> {
+    fn parse(input: ParseStream) -> Result<Self,syn::Error> {
         let f;
         Ok(Self {
             target: input.parse()?,
@@ -114,7 +114,7 @@ impl ToTokens for AutoMethod {
 }
 
 impl Parse for AutoMethod {
-    fn parse(input: ParseStream) -> Result<Self> {
+    fn parse(input: ParseStream) -> Result<Self,syn::Error> {
         let f;
         let o = Ok(Self {
             docstring: Attribute::parse_outer(input)?,
@@ -143,18 +143,67 @@ impl Parse for AutoMethod {
     }
 }
 
+
+
+#[derive(PartialEq,Eq,Hash)]
+pub(crate) struct AutoFieldAttributes {
+    pub script_name: Option<Ident>
+}
+
+impl TryFrom<&[Attribute]> for AutoFieldAttributes {
+    type Error=syn::Error;
+
+    fn try_from(value: &[Attribute]) -> Result<Self, Self::Error> {
+        let mut out = Self {
+            script_name: None,
+        };
+
+        for v in value {
+            let meta = v.parse_meta()?;
+
+            if let Some(ident) = meta.path().get_ident() {
+                if ident.to_string() == "rename"{
+                    match &meta {
+                        syn::Meta::List(l) => {
+                            for nested in &l.nested {
+                                match nested{
+                                    syn::NestedMeta::Lit(lit) => match lit {
+                                        syn::Lit::Str(s) => out.script_name = Some(s.parse()?),
+                                        _ => {}
+                                    },
+                                    _ => {}
+                                }
+                            }   
+                        },
+                        _ => {}
+                    }
+                }
+
+            }
+        }
+
+        Ok(out)
+    }
+}
+
 #[derive(PartialEq, Eq, Hash)]
 pub(crate) struct AutoField {
     pub docstring: Vec<Attribute>,
+    pub attrs: Vec<Attribute>,
+    pub parsed_attrs: AutoFieldAttributes,
     pub member: Member,
     pub colon: Token![:],
     pub type_: ArgType,
 }
 
 impl Parse for AutoField {
-    fn parse(input: ParseStream) -> Result<Self> {
+    fn parse(input: ParseStream) -> Result<Self,syn::Error> {
+        let attrs = Attribute::parse_outer(input)?;
+        let split_idx = attrs.partition_point(|attr| attr.path.get_ident().unwrap().to_string() == "doc");
         Ok(Self {
-            docstring: Attribute::parse_outer(input)?,
+            docstring: attrs[0..split_idx].to_owned(),
+            attrs: attrs[split_idx..].to_owned(),
+            parsed_attrs: attrs[split_idx..].try_into()?,
             member: input.parse()?,
             colon: input.parse()?,
             type_: input.parse()?,
@@ -165,11 +214,13 @@ impl Parse for AutoField {
 impl ToTokens for AutoField {
     fn to_tokens(&self, tokens: &mut TokenStream2) {
         let docstring = self.docstring.iter();
+        let attrs = self.attrs.iter();
         let id = &self.member;
         let type_ = &self.type_;
 
         tokens.extend(quote::quote! {
             #(#docstring)*
+            #(#attrs)*
             #id : #type_
         })
     }

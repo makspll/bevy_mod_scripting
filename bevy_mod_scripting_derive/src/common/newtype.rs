@@ -1,11 +1,14 @@
+use std::collections::HashSet;
+
 use indexmap::IndexSet;
-use proc_macro2::TokenStream;
+use proc_macro2::{TokenStream, Span};
 use syn::{
     parse::{Parse, ParseStream},
     punctuated::*,
     spanned::Spanned,
-    token::*,
-    *,
+    token::*, Attribute, TypePath,
+    Token,
+    Ident, braced, parse_quote
 };
 
 use crate::{lua_method::LuaMethod, DeriveFlag};
@@ -20,6 +23,56 @@ pub(crate) struct NewtypeArgs {
     pub base_type_ident: Ident,
     pub wrapper_type: Ident,
     pub flags: IndexSet<DeriveFlag>,
+}
+
+
+impl NewtypeArgs {
+    /// Verify the given derive flags 
+    pub fn verify(self) -> Result<Self,syn::Error>{
+
+        let mut fields = None;
+        let mut methods = None;
+
+        self.flags.iter().for_each(|f| {
+            match f {
+                DeriveFlag::Fields { .. } => fields = Some(f),
+                DeriveFlag::Methods { .. } => methods = Some(f),
+                _ => {}
+            }
+        });
+
+        let mut seen_identifiers : HashSet<&Ident> = HashSet::default();
+        // verify there aren't any name clashes
+        if let (Some(DeriveFlag::Fields{fields, ..}),
+            Some(DeriveFlag::Methods{methods, ..})) = (fields,methods){
+
+            for m in methods {
+                if seen_identifiers.contains(&m.ident) {
+                    return Err(syn::Error::new_spanned(m, format!("Method name `{}` clashes with another field or method",&m.ident)));
+                }
+                seen_identifiers.insert(&m.ident);
+            }
+
+            for f in fields {
+                match &f.member {
+                    syn::Member::Named(n) => {
+                        let contains = if let Some(v) = &f.parsed_attrs.script_name {
+                            seen_identifiers.contains(v)
+                        } else {
+                            seen_identifiers.contains(n)
+                        };
+                        if contains {
+                            return Err(syn::Error::new_spanned(n, format!("Field name `{}` clashes with another field or method",n)));
+                        }
+                        seen_identifiers.insert(n);
+                    },
+                    syn::Member::Unnamed(u) => {},
+                }
+            }
+        }
+
+        Ok(self)
+    }
 }
 
 impl ToTokens for NewtypeArgs {
@@ -38,7 +91,7 @@ impl ToTokens for NewtypeArgs {
 }
 
 impl Parse for NewtypeArgs {
-    fn parse(input: ParseStream) -> Result<Self> {
+    fn parse(input: ParseStream) -> Result<Self,syn::Error> {
         let docstring = Attribute::parse_outer(input)?;
         let base_type: TypePath = input.parse()?;
         let short_base_type: String = base_type
@@ -51,7 +104,7 @@ impl Parse for NewtypeArgs {
         let short_wrapper_type: String = format!("Lua{}", short_base_type);
         let sbt_ident = Ident::new(&short_base_type, base_type.span());
         let swt_ident = Ident::new(&short_wrapper_type, base_type.span());
-        Ok(Self {
+        let out = Self {
             docstring,
             wrapper_type: swt_ident,
             base_type_ident: sbt_ident,
@@ -60,7 +113,8 @@ impl Parse for NewtypeArgs {
             flags: Punctuated::<DeriveFlag, Token![+]>::parse_separated_nonempty(input)?
                 .into_iter()
                 .collect::<IndexSet<DeriveFlag>>(),
-        })
+        };
+        out.verify()
     }
 }
 
@@ -82,7 +136,7 @@ impl<T: WrapperFunction> ToTokens for WrapperFunctionList<T> {
 }
 
 impl<T: WrapperFunction> Parse for WrapperFunctionList<T> {
-    fn parse(input: ParseStream) -> Result<Self> {
+    fn parse(input: ParseStream) -> Result<Self,syn::Error> {
         let f;
         Ok(Self {
             impl_: input.parse()?,
@@ -108,7 +162,7 @@ impl ToTokens for Newtype {
 }
 
 impl Parse for Newtype {
-    fn parse(input: ParseStream) -> Result<Self> {
+    fn parse(input: ParseStream) -> Result<Self,syn::Error> {
         Ok(Self {
             args: input.parse()?,
             additional_lua_functions: if input.peek(Token![impl]) && !input.peek2(Token![fn]) {

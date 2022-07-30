@@ -17,7 +17,7 @@ use syn::{
 
 pub(crate) use {common::*, lua::*};
 
-#[derive(Default)]
+#[derive(Default,Debug,Clone)]
 struct EmptyToken;
 
 impl Parse for EmptyToken {

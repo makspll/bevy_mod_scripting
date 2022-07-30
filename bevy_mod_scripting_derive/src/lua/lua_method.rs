@@ -216,8 +216,9 @@ pub(crate) struct LuaMethod {
 
 impl Parse for LuaMethod {
     fn parse(input: ParseStream) -> Result<Self> {
+        let docstring = Attribute::parse_outer(input)?;
         Ok(Self {
-            docstring: Attribute::parse_outer(input)?,
+            docstring,
             method_type: input.parse()?,
             closure: input.parse()?,
             test: if input.peek(Token![=>]) {
@@ -276,12 +277,16 @@ impl LuaMethod {
             .iter()
             .map(|v| {
                 let ts: TokenStream = attribute_to_string_lit(v);
-                quote_spanned! {self.span()=>
-                    #receiver.document(#ts);
+                if ts.is_empty(){
+                    Default::default()
+                } else {
+                    quote_spanned! {self.span()=>
+                        #receiver.document(#ts);
+                    }
                 }
+
             })
             .collect();
-
         let call_ident;
         if self.method_type.is_field_getter || self.method_type.is_field_setter {
             call_ident = format_ident!(

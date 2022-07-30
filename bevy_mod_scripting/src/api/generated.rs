@@ -2,7 +2,7 @@
 use bevy_mod_scripting_derive::impl_lua_newtype;
 use std::ops::*;
 use crate::FromLuaProxy;
-use crate::{ReflectionError,ReflectPathElem,RegisterForeignLuaType,LuaProxyable,ScriptRef,ReflectedValue, api::ValueIndex, APIProvider, LuaDocFragment};
+use crate::{impl_tealr_any_union,ReflectionError,ReflectPathElem,RegisterForeignLuaType,LuaProxyable,ScriptRef,ReflectedValue, api::ValueIndex, APIProvider, LuaDocFragment};
 use std::sync::Mutex;
 use crate::util::impl_tealr_type;
 use tealr::{mlu::{mlua,mlua::{prelude::*,MetaMethod,Value}},create_union_mlua};
@@ -130,10 +130,10 @@ impl_lua_newtype!{
 	///It only applies if [`FlexWrap::Wrap`] is present and if there are multiple lines of items.
 	bevy_ui::AlignContent : 
 	FromLuaProxy +
-	Fields
+	Methods
 	(
 	)
-	+ Methods
+	+ Fields
 	(
 	)
 	+ BinOps
@@ -150,10 +150,10 @@ impl_lua_newtype!{
 	///How items are aligned according to the cross axis
 	bevy_ui::AlignItems : 
 	FromLuaProxy +
-	Fields
+	Methods
 	(
 	)
-	+ Methods
+	+ Fields
 	(
 	)
 	+ BinOps
@@ -170,10 +170,10 @@ impl_lua_newtype!{
 	///Works like [`AlignItems`] but applies only to a single item
 	bevy_ui::AlignSelf : 
 	FromLuaProxy +
-	Fields
+	Methods
 	(
 	)
-	+ Methods
+	+ Fields
 	(
 	)
 	+ BinOps
@@ -192,10 +192,10 @@ impl_lua_newtype!{
 	///For example English is written LTR (left-to-right) while Arabic is written RTL (right-to-left).
 	bevy_ui::Direction : 
 	FromLuaProxy +
-	Fields
+	Methods
 	(
 	)
-	+ Methods
+	+ Fields
 	(
 	)
 	+ BinOps
@@ -212,10 +212,10 @@ impl_lua_newtype!{
 	///Defines how flexbox items are ordered within a flexbox
 	bevy_ui::FlexDirection : 
 	FromLuaProxy +
-	Fields
+	Methods
 	(
 	)
-	+ Methods
+	+ Fields
 	(
 	)
 	+ BinOps
@@ -232,10 +232,10 @@ impl_lua_newtype!{
 	///Defines if flexbox items appear on a single line or on multiple lines
 	bevy_ui::FlexWrap : 
 	FromLuaProxy +
-	Fields
+	Methods
 	(
 	)
-	+ Methods
+	+ Fields
 	(
 	)
 	+ BinOps
@@ -252,10 +252,10 @@ impl_lua_newtype!{
 	///Describes whether the node should block interactions with lower nodes
 	bevy_ui::FocusPolicy : 
 	FromLuaProxy +
-	Fields
+	Methods
 	(
 	)
-	+ Methods
+	+ Fields
 	(
 	)
 	+ BinOps
@@ -285,10 +285,10 @@ impl_lua_newtype!{
 	///which fully collapses it during layout calculations.
 	bevy_ui::Interaction : 
 	FromLuaProxy +
-	Fields
+	Methods
 	(
 	)
-	+ Methods
+	+ Fields
 	(
 	)
 	+ BinOps
@@ -305,10 +305,10 @@ impl_lua_newtype!{
 	///Defines how items are aligned according to the main axis
 	bevy_ui::JustifyContent : 
 	FromLuaProxy +
-	Fields
+	Methods
 	(
 	)
-	+ Methods
+	+ Fields
 	(
 	)
 	+ BinOps
@@ -325,10 +325,10 @@ impl_lua_newtype!{
 	///Whether to show or hide overflowing items
 	bevy_ui::Overflow : 
 	FromLuaProxy +
-	Fields
+	Methods
 	(
 	)
-	+ Methods
+	+ Fields
 	(
 	)
 	+ BinOps
@@ -345,10 +345,10 @@ impl_lua_newtype!{
 	///The strategy used to position this node
 	bevy_ui::PositionType : 
 	FromLuaProxy +
-	Fields
+	Methods
 	(
 	)
-	+ Methods
+	+ Fields
 	(
 	)
 	+ BinOps
@@ -365,10 +365,10 @@ impl_lua_newtype!{
 	///An enum that describes possible types of value in flexbox layout options
 	bevy_ui::Val : 
 	FromLuaProxy +
-	Fields
+	Methods
 	(
 	)
-	+ Methods
+	+ Fields
 	(
 	)
 	+ BinOps
@@ -386,13 +386,13 @@ impl_lua_newtype!{
 	///The calculated clip of the node
 	bevy_ui::CalculatedClip : 
 	FromLuaProxy +
-	Fields
+	Methods
+	(
+	)
+	+ Fields
 	(
 		/// The rect of the clip
 		clip: Wrapped(Rect),
-	)
-	+ Methods
-	(
 	)
 	+ BinOps
 	(
@@ -408,13 +408,13 @@ impl_lua_newtype!{
 	///The calculated size of the node
 	bevy_ui::CalculatedSize : 
 	FromLuaProxy +
-	Fields
+	Methods
+	(
+	)
+	+ Fields
 	(
 		/// The size of the node
 		size: Raw(ReflectedValue),
-	)
-	+ Methods
-	(
 	)
 	+ BinOps
 	(
@@ -430,13 +430,13 @@ impl_lua_newtype!{
 	///Describes the size of a UI node
 	bevy_ui::Node : 
 	FromLuaProxy +
-	Fields
+	Methods
+	(
+	)
+	+ Fields
 	(
 		/// The size of the node as width and height in pixels
 		size: Wrapped(Vec2),
-	)
-	+ Methods
-	(
 	)
 	+ BinOps
 	(
@@ -457,7 +457,10 @@ impl_lua_newtype!{
 	///the upper left corner of the display
 	bevy_ui::Style : 
 	FromLuaProxy +
-	Fields
+	Methods
+	(
+	)
+	+ Fields
 	(
 		/// Whether to arrange this node and its children with flexbox layout
 		/// 
@@ -505,9 +508,6 @@ impl_lua_newtype!{
 		/// How to handle overflow
 		overflow: Wrapped(Overflow),
 	)
-	+ Methods
-	(
-	)
 	+ BinOps
 	(
 	)
@@ -522,12 +522,12 @@ impl_lua_newtype!{
 	///The color of the node
 	bevy_ui::UiColor : 
 	FromLuaProxy +
-	Fields
+	Methods
+	(
+	)
+	+ Fields
 	(
 		0: Wrapped(Color),
-	)
-	+ Methods
-	(
 	)
 	+ BinOps
 	(
@@ -543,12 +543,12 @@ impl_lua_newtype!{
 	///The image of the node
 	bevy_ui::UiImage : 
 	FromLuaProxy +
-	Fields
+	Methods
+	(
+	)
+	+ Fields
 	(
 		0: Raw(ReflectedValue),
-	)
-	+ Methods
-	(
 	)
 	+ BinOps
 	(
@@ -564,10 +564,10 @@ impl_lua_newtype!{
 	///Marker struct for buttons
 	bevy_ui::widget::Button : 
 	FromLuaProxy +
-	Fields
+	Methods
 	(
 	)
-	+ Methods
+	+ Fields
 	(
 	)
 	+ BinOps
@@ -584,10 +584,10 @@ impl_lua_newtype!{
 	///Describes how to resize the Image node
 	bevy_ui::widget::ImageMode : 
 	FromLuaProxy +
-	Fields
+	Methods
 	(
 	)
-	+ Methods
+	+ Fields
 	(
 	)
 	+ BinOps
@@ -606,10 +606,10 @@ impl_lua_newtype!{
 	///Part of the [`Style`] component.
 	bevy_ui::Display : 
 	FromLuaProxy +
-	Fields
+	Methods
 	(
 	)
-	+ Methods
+	+ Fields
 	(
 	)
 	+ BinOps
@@ -625,10 +625,7 @@ impl_lua_newtype!{
 impl_lua_newtype!{
 	///Animation controls
 	bevy_animation::AnimationPlayer : 
-	Fields
-	(
-	)
-	+ Methods
+	Methods
 	(
 		///Pause the animation
 		pause(&mut self:),
@@ -645,6 +642,9 @@ impl_lua_newtype!{
 		///Time elapsed playing the animation
 		elapsed(&self:) -> Raw(f32),
 
+	)
+	+ Fields
+	(
 	)
 	+ BinOps
 	(
@@ -665,10 +665,10 @@ impl_lua_newtype!{
 	///used instead as the default unique identifier.
 	bevy_core::Name : 
 	FromLuaProxy +
-	Fields
+	Methods
 	(
 	)
-	+ Methods
+	+ Fields
 	(
 	)
 	+ BinOps
@@ -684,12 +684,12 @@ impl_lua_newtype!{
 impl_lua_newtype!{
 	bevy_gltf::GltfExtras : 
 	FromLuaProxy +
-	Fields
+	Methods
+	(
+	)
+	+ Fields
 	(
 		value: Raw(String),
-	)
-	+ Methods
-	(
 	)
 	+ BinOps
 	(
@@ -704,14 +704,14 @@ impl_lua_newtype!{
 impl_lua_newtype!{
 	///Contains references to the child entities of this entity
 	bevy_hierarchy::Children : 
-	Fields
-	(
-	)
-	+ Methods
+	Methods
 	(
 		///Swaps the child at `a_index` with the child at `b_index`
 		swap(&mut self:Raw(usize),Raw(usize)),
 
+	)
+	+ Fields
+	(
 	)
 	+ BinOps
 	(
@@ -727,14 +727,14 @@ impl_lua_newtype!{
 	///Holds a reference to the parent entity of this entity.
 	///This component should only be present on entities that actually have a parent entity.
 	bevy_hierarchy::Parent : 
-	Fields
-	(
-	)
-	+ Methods
+	Methods
 	(
 		///Gets the [`Entity`] ID of the parent.
 		get(&self:) -> Wrapped(Entity),
 
+	)
+	+ Fields
+	(
 	)
 	+ BinOps
 	(
@@ -756,12 +756,12 @@ impl_lua_newtype!{
 	///component is mainly useful for text wrapping only.
 	bevy_text::Text2dBounds : 
 	FromLuaProxy +
-	Fields
+	Methods
+	(
+	)
+	+ Fields
 	(
 		size: Wrapped(Vec2),
-	)
-	+ Methods
-	(
 	)
 	+ BinOps
 	(
@@ -777,12 +777,12 @@ impl_lua_newtype!{
 	///The calculated size of text drawn in 2D scene.
 	bevy_text::Text2dSize : 
 	FromLuaProxy +
-	Fields
+	Methods
+	(
+	)
+	+ Fields
 	(
 		size: Wrapped(Vec2),
-	)
-	+ Methods
-	(
 	)
 	+ BinOps
 	(
@@ -797,16 +797,16 @@ impl_lua_newtype!{
 impl_lua_newtype!{
 	bevy_text::Text : 
 	FromLuaProxy +
-	Fields
-	(
-		sections: Raw(ReflectedValue),
-		alignment: Wrapped(TextAlignment),
-	)
-	+ Methods
+	Methods
 	(
 		///Returns this [`Text`] with a new [`TextAlignment`].
 		with_alignment(self:Wrapped(TextAlignment)) -> self,
 
+	)
+	+ Fields
+	(
+		sections: Raw(ReflectedValue),
+		alignment: Wrapped(TextAlignment),
 	)
 	+ BinOps
 	(
@@ -821,13 +821,13 @@ impl_lua_newtype!{
 impl_lua_newtype!{
 	bevy_text::TextAlignment : 
 	FromLuaProxy +
-	Fields
+	Methods
+	(
+	)
+	+ Fields
 	(
 		vertical: Wrapped(VerticalAlign),
 		horizontal: Wrapped(HorizontalAlign),
-	)
-	+ Methods
-	(
 	)
 	+ BinOps
 	(
@@ -842,16 +842,16 @@ impl_lua_newtype!{
 impl_lua_newtype!{
 	bevy_text::TextSection : 
 	FromLuaProxy +
-	Fields
-	(
-		value: Raw(String),
-		style: Wrapped(TextStyle),
-	)
-	+ Methods
+	Methods
 	(
 		///Create an empty [`TextSection`] from a style. Useful when the value will be set dynamically.
 		from_style(Wrapped(TextStyle)) -> self,
 
+	)
+	+ Fields
+	(
+		value: Raw(String),
+		style: Wrapped(TextStyle),
 	)
 	+ BinOps
 	(
@@ -866,14 +866,14 @@ impl_lua_newtype!{
 impl_lua_newtype!{
 	bevy_text::TextStyle : 
 	FromLuaProxy +
-	Fields
+	Methods
+	(
+	)
+	+ Fields
 	(
 		font: Raw(ReflectedValue),
 		font_size: Raw(f32),
 		color: Wrapped(Color),
-	)
-	+ Methods
-	(
 	)
 	+ BinOps
 	(
@@ -889,10 +889,10 @@ impl_lua_newtype!{
 	///Describes horizontal alignment preference for positioning & bounds.
 	bevy_text::HorizontalAlign : 
 	FromLuaProxy +
-	Fields
+	Methods
 	(
 	)
-	+ Methods
+	+ Fields
 	(
 	)
 	+ BinOps
@@ -910,10 +910,10 @@ impl_lua_newtype!{
 	///for future functionality.
 	bevy_text::VerticalAlign : 
 	FromLuaProxy +
-	Fields
+	Methods
 	(
 	)
-	+ Methods
+	+ Fields
 	(
 	)
 	+ BinOps
@@ -950,10 +950,7 @@ impl_lua_newtype!{
 	///```
 	bevy_time::Stopwatch : 
 	FromLuaProxy +
-	Fields
-	(
-	)
-	+ Methods
+	Methods
 	(
 		///Create a new unpaused `Stopwatch` with no elapsed time.
 		///
@@ -1042,6 +1039,9 @@ impl_lua_newtype!{
 		reset(&mut self:),
 
 	)
+	+ Fields
+	(
+	)
 	+ BinOps
 	(
 	)
@@ -1062,10 +1062,7 @@ impl_lua_newtype!{
 	///Paused timers will not have elapsed time increased.
 	bevy_time::Timer : 
 	FromLuaProxy +
-	Fields
-	(
-	)
-	+ Methods
+	Methods
 	(
 		///Creates a new timer with a given duration in seconds.
 		///
@@ -1239,6 +1236,9 @@ impl_lua_newtype!{
 		times_finished_this_tick(&self:) -> Raw(u32),
 
 	)
+	+ Fields
+	(
+	)
 	+ BinOps
 	(
 	)
@@ -1303,10 +1303,7 @@ impl_lua_newtype!{
 	///[`Query::get`]: crate::system::Query::get
 	bevy_ecs::entity::Entity : 
 	FromLuaProxy +
-	Fields
-	(
-	)
-	+ Methods
+	Methods
 	(
 		///Creates a new entity reference with the specified `id` and a generation of 0.
 		///
@@ -1383,6 +1380,9 @@ impl_lua_newtype!{
 		generation(self:) -> Raw(u32),
 
 	)
+	+ Fields
+	(
+	)
 	+ BinOps
 	(
 	)
@@ -1417,16 +1417,7 @@ impl_lua_newtype!{
 	///before the [`GlobalTransform`] is updated.
 	bevy_transform::components::Transform : 
 	FromLuaProxy +
-	Fields
-	(
-		/// Position of the entity. In 2d, the last value of the `Vec3` is used for z-ordering.
-		translation: Wrapped(Vec3),
-		/// Rotation of the entity.
-		rotation: Wrapped(Quat),
-		/// Scale of the entity.
-		scale: Wrapped(Vec3),
-	)
-	+ Methods
+	Methods
 	(
 		///Creates a new [`Transform`] at the position `(x, y, z)`. In 2d, the `z` component
 		///is used for z-ordering elements: higher `z`-value will be in front of lower
@@ -1570,6 +1561,15 @@ impl_lua_newtype!{
 		apply_non_uniform_scale(&mut self:Wrapped(Vec3)),
 
 	)
+	+ Fields
+	(
+		/// Position of the entity. In 2d, the last value of the `Vec3` is used for z-ordering.
+		translation: Wrapped(Vec3),
+		/// Rotation of the entity.
+		rotation: Wrapped(Quat),
+		/// Scale of the entity.
+		scale: Wrapped(Vec3),
+	)
 	+ BinOps
 	(
 		self Mul Wrapped(Transform) -> Wrapped(Transform),
@@ -1605,10 +1605,7 @@ impl_lua_newtype!{
 	///before the [`GlobalTransform`] is updated.
 	bevy_transform::components::GlobalTransform : 
 	FromLuaProxy +
-	Fields
-	(
-	)
-	+ Methods
+	Methods
 	(
 		///Returns the 3d affine transformation matrix as a [`Mat4`].
 		compute_matrix(&self:) -> Wrapped(Mat4),
@@ -1660,6 +1657,9 @@ impl_lua_newtype!{
 		mul_transform(&self:Wrapped(Transform)) -> self,
 
 	)
+	+ Fields
+	(
+	)
 	+ BinOps
 	(
 		self Mul Wrapped(GlobalTransform) -> Wrapped(GlobalTransform),
@@ -1677,14 +1677,14 @@ impl_lua_newtype!{
 	///An ambient light, which lights the entire scene equally.
 	bevy_pbr::AmbientLight : 
 	FromLuaProxy +
-	Fields
+	Methods
+	(
+	)
+	+ Fields
 	(
 		color: Wrapped(Color),
 		/// A direct scale factor multiplied with `color` before being passed to the shader.
 		brightness: Raw(f32),
-	)
-	+ Methods
-	(
 	)
 	+ BinOps
 	(
@@ -1699,10 +1699,10 @@ impl_lua_newtype!{
 impl_lua_newtype!{
 	bevy_pbr::CubemapVisibleEntities : 
 	FromLuaProxy +
-	Fields
+	Methods
 	(
 	)
-	+ Methods
+	+ Fields
 	(
 	)
 	+ BinOps
@@ -1744,7 +1744,10 @@ impl_lua_newtype!{
 	///Source: [Wikipedia](https://en.wikipedia.org/wiki/Lux)
 	bevy_pbr::DirectionalLight : 
 	FromLuaProxy +
-	Fields
+	Methods
+	(
+	)
+	+ Fields
 	(
 		color: Wrapped(Color),
 		/// Illuminance in lux
@@ -1755,9 +1758,6 @@ impl_lua_newtype!{
 		/// A bias applied along the direction of the fragment's surface normal. It is scaled to the
 		/// shadow map's texel size so that it is automatically adjusted to the orthographic projection.
 		shadow_normal_bias: Raw(f32),
-	)
-	+ Methods
-	(
 	)
 	+ BinOps
 	(
@@ -1772,12 +1772,12 @@ impl_lua_newtype!{
 impl_lua_newtype!{
 	bevy_pbr::DirectionalLightShadowMap : 
 	FromLuaProxy +
-	Fields
+	Methods
+	(
+	)
+	+ Fields
 	(
 		size: Raw(usize),
-	)
-	+ Methods
-	(
 	)
 	+ BinOps
 	(
@@ -1792,10 +1792,10 @@ impl_lua_newtype!{
 impl_lua_newtype!{
 	///Add this component to make a [`Mesh`](bevy_render::mesh::Mesh) not cast shadows.
 	bevy_pbr::NotShadowCaster : 
-	Fields
+	Methods
 	(
 	)
-	+ Methods
+	+ Fields
 	(
 	)
 	+ BinOps
@@ -1811,10 +1811,10 @@ impl_lua_newtype!{
 impl_lua_newtype!{
 	///Add this component to make a [`Mesh`](bevy_render::mesh::Mesh) not receive shadows.
 	bevy_pbr::NotShadowReceiver : 
-	Fields
+	Methods
 	(
 	)
-	+ Methods
+	+ Fields
 	(
 	)
 	+ BinOps
@@ -1847,7 +1847,10 @@ impl_lua_newtype!{
 	///Source: [Wikipedia](https://en.wikipedia.org/wiki/Lumen_(unit)#Lighting)
 	bevy_pbr::PointLight : 
 	FromLuaProxy +
-	Fields
+	Methods
+	(
+	)
+	+ Fields
 	(
 		color: Wrapped(Color),
 		intensity: Raw(f32),
@@ -1859,9 +1862,6 @@ impl_lua_newtype!{
 		/// shadow map's texel size so that it can be small close to the camera and gets larger further
 		/// away.
 		shadow_normal_bias: Raw(f32),
-	)
-	+ Methods
-	(
 	)
 	+ BinOps
 	(
@@ -1876,12 +1876,12 @@ impl_lua_newtype!{
 impl_lua_newtype!{
 	bevy_pbr::PointLightShadowMap : 
 	FromLuaProxy +
-	Fields
+	Methods
+	(
+	)
+	+ Fields
 	(
 		size: Raw(usize),
-	)
-	+ Methods
-	(
 	)
 	+ BinOps
 	(
@@ -1897,10 +1897,10 @@ impl_lua_newtype!{
 	///Alpha mode
 	bevy_pbr::AlphaMode : 
 	FromLuaProxy +
-	Fields
+	Methods
 	(
 	)
-	+ Methods
+	+ Fields
 	(
 	)
 	+ BinOps
@@ -1917,10 +1917,10 @@ impl_lua_newtype!{
 	///Controls whether an entity should rendered in wireframe-mode if the [`WireframePlugin`] is enabled
 	bevy_pbr::wireframe::Wireframe : 
 	FromLuaProxy +
-	Fields
+	Methods
 	(
 	)
-	+ Methods
+	+ Fields
 	(
 	)
 	+ BinOps
@@ -1936,13 +1936,13 @@ impl_lua_newtype!{
 impl_lua_newtype!{
 	bevy_pbr::wireframe::WireframeConfig : 
 	FromLuaProxy +
-	Fields
+	Methods
+	(
+	)
+	+ Fields
 	(
 		/// Whether to show wireframes for all meshes. If `false`, only meshes with a [Wireframe] component will be rendered.
 		global: Raw(bool),
-	)
-	+ Methods
-	(
 	)
 	+ BinOps
 	(
@@ -1958,10 +1958,10 @@ impl_lua_newtype!{
 	///The depth clear operation to perform for the main 3d pass.
 	bevy_core_pipeline::core_3d::Camera3dDepthLoadOp : 
 	FromLuaProxy +
-	Fields
+	Methods
 	(
 	)
-	+ Methods
+	+ Fields
 	(
 	)
 	+ BinOps
@@ -1981,12 +1981,12 @@ impl_lua_newtype!{
 	///there are portions of the screen with nothing rendered.
 	bevy_core_pipeline::clear_color::ClearColor : 
 	FromLuaProxy +
-	Fields
+	Methods
+	(
+	)
+	+ Fields
 	(
 		0: Wrapped(Color),
-	)
-	+ Methods
-	(
 	)
 	+ BinOps
 	(
@@ -2001,10 +2001,10 @@ impl_lua_newtype!{
 impl_lua_newtype!{
 	bevy_core_pipeline::clear_color::ClearColorConfig : 
 	FromLuaProxy +
-	Fields
+	Methods
 	(
 	)
-	+ Methods
+	+ Fields
 	(
 	)
 	+ BinOps
@@ -2020,12 +2020,12 @@ impl_lua_newtype!{
 impl_lua_newtype!{
 	bevy_core_pipeline::core_2d::Camera2d : 
 	FromLuaProxy +
-	Fields
+	Methods
+	(
+	)
+	+ Fields
 	(
 		clear_color: Wrapped(ClearColorConfig),
-	)
-	+ Methods
-	(
 	)
 	+ BinOps
 	(
@@ -2041,15 +2041,15 @@ impl_lua_newtype!{
 	///Configuration for the "main 3d render graph".
 	bevy_core_pipeline::core_3d::Camera3d : 
 	FromLuaProxy +
-	Fields
+	Methods
+	(
+	)
+	+ Fields
 	(
 		/// The clear color operation to perform for the main 3d pass.
 		clear_color: Wrapped(ClearColorConfig),
 		/// The depth clear operation to perform for the main 3d pass.
 		depth_load_op: Wrapped(Camera3dDepthLoadOp),
-	)
-	+ Methods
-	(
 	)
 	+ BinOps
 	(
@@ -2066,13 +2066,13 @@ impl_lua_newtype!{
 	///It defaults to `Anchor::Center`.
 	bevy_sprite::Anchor : 
 	FromLuaProxy +
-	Fields
-	(
-	)
-	+ Methods
+	Methods
 	(
 		as_vec(&self:) -> Wrapped(Vec2),
 
+	)
+	+ Fields
+	(
 	)
 	+ BinOps
 	(
@@ -2090,12 +2090,12 @@ impl_lua_newtype!{
 	///It wraps a [`Handle<Mesh>`] to differentiate from the 3d pipelines which use the handles directly as components
 	bevy_sprite::Mesh2dHandle : 
 	FromLuaProxy +
-	Fields
+	Methods
+	(
+	)
+	+ Fields
 	(
 		0: Raw(ReflectedValue),
-	)
-	+ Methods
-	(
 	)
 	+ BinOps
 	(
@@ -2110,7 +2110,12 @@ impl_lua_newtype!{
 impl_lua_newtype!{
 	bevy_sprite::TextureAtlasSprite : 
 	FromLuaProxy +
-	Fields
+	Methods
+	(
+		new(Raw(usize)) -> Wrapped(TextureAtlasSprite),
+
+	)
+	+ Fields
 	(
 		color: Wrapped(Color),
 		index: Raw(usize),
@@ -2120,11 +2125,6 @@ impl_lua_newtype!{
 		/// of the sprite's image in the atlas
 		custom_size: Raw(ReflectedValue),
 		anchor: Wrapped(Anchor),
-	)
-	+ Methods
-	(
-		new(Raw(usize)) -> Wrapped(TextureAtlasSprite),
-
 	)
 	+ BinOps
 	(
@@ -2139,7 +2139,10 @@ impl_lua_newtype!{
 impl_lua_newtype!{
 	bevy_sprite::Sprite : 
 	FromLuaProxy +
-	Fields
+	Methods
+	(
+	)
+	+ Fields
 	(
 		/// The sprite's color tint
 		color: Wrapped(Color),
@@ -2152,9 +2155,6 @@ impl_lua_newtype!{
 		custom_size: Raw(ReflectedValue),
 		/// [`Anchor`] point of the sprite in the world
 		anchor: Wrapped(Anchor),
-	)
-	+ Methods
-	(
 	)
 	+ BinOps
 	(
@@ -2171,14 +2171,7 @@ impl_lua_newtype!{
 	///(top-left, bottom-left, etc)
 	bevy_sprite::Rect : 
 	FromLuaProxy +
-	Fields
-	(
-		/// The beginning point of the rect
-		min: Wrapped(Vec2),
-		/// The ending point of the rect
-		max: Wrapped(Vec2),
-	)
-	+ Methods
+	Methods
 	(
 		width(&self:) -> Raw(f32),
 
@@ -2186,6 +2179,13 @@ impl_lua_newtype!{
 
 		size(&self:) -> Wrapped(Vec2),
 
+	)
+	+ Fields
+	(
+		/// The beginning point of the rect
+		min: Wrapped(Vec2),
+		/// The ending point of the rect
+		max: Wrapped(Vec2),
 	)
 	+ BinOps
 	(
@@ -2213,10 +2213,7 @@ impl_lua_newtype!{
 	///Entities without this component belong to layer `0`.
 	bevy_render::view::visibility::RenderLayers : 
 	FromLuaProxy +
-	Fields
-	(
-	)
-	+ Methods
+	Methods
 	(
 		///Create a new `RenderLayers` that belongs to all layers.
 		all() -> self,
@@ -2232,6 +2229,9 @@ impl_lua_newtype!{
 		///`RenderLayers`, even another with no layers.
 		intersects(&self:Wrapped(&RenderLayers)) -> Raw(bool),
 
+	)
+	+ Fields
+	(
 	)
 	+ BinOps
 	(
@@ -2249,18 +2249,18 @@ impl_lua_newtype!{
 	///This is done by setting the values of their [`ComputedVisibility`] component.
 	bevy_render::view::visibility::Visibility : 
 	FromLuaProxy +
-	Fields
+	Methods
+	(
+		///Creates a new [`Visibility`], set as visible
+		visible() -> self,
+
+	)
+	+ Fields
 	(
 		/// Indicates whether this entity is visible. Hidden values will propagate down the entity hierarchy.
 		/// If this entity is hidden, all of its descendants will be hidden as well. See [`Children`] and [`Parent`] for
 		/// hierarchy info.
 		is_visible: Raw(bool),
-	)
-	+ Methods
-	(
-		///Creates a new [`Visibility`], set as visible
-		visible() -> self,
-
 	)
 	+ BinOps
 	(
@@ -2287,15 +2287,15 @@ impl_lua_newtype!{
 	///is not optimized per view.
 	bevy_render::view::visibility::VisibleEntities : 
 	FromLuaProxy +
-	Fields
-	(
-	)
-	+ Methods
+	Methods
 	(
 		len(&self:) -> Raw(usize),
 
 		is_empty(&self:) -> Raw(bool),
 
+	)
+	+ Fields
+	(
 	)
 	+ BinOps
 	(
@@ -2311,10 +2311,7 @@ impl_lua_newtype!{
 	///Algorithmically-computed indication of whether an entity is visible and should be extracted for rendering
 	bevy_render::view::visibility::ComputedVisibility : 
 	FromLuaProxy +
-	Fields
-	(
-	)
-	+ Methods
+	Methods
 	(
 		///Creates a new [`ComputedVisibility`], set as not visible
 		not_visible() -> self,
@@ -2347,6 +2344,9 @@ impl_lua_newtype!{
 		set_visible_in_view(&mut self:),
 
 	)
+	+ Fields
+	(
+	)
 	+ BinOps
 	(
 	)
@@ -2360,13 +2360,13 @@ impl_lua_newtype!{
 impl_lua_newtype!{
 	bevy_render::mesh::skinning::SkinnedMesh : 
 	FromLuaProxy +
-	Fields
+	Methods
+	(
+	)
+	+ Fields
 	(
 		inverse_bindposes: Raw(ReflectedValue),
 		joints: Raw(ReflectedValue),
-	)
-	+ Methods
-	(
 	)
 	+ BinOps
 	(
@@ -2381,10 +2381,10 @@ impl_lua_newtype!{
 impl_lua_newtype!{
 	bevy_render::camera::ScalingMode : 
 	FromLuaProxy +
-	Fields
+	Methods
 	(
 	)
-	+ Methods
+	+ Fields
 	(
 	)
 	+ BinOps
@@ -2400,10 +2400,10 @@ impl_lua_newtype!{
 impl_lua_newtype!{
 	bevy_render::camera::WindowOrigin : 
 	FromLuaProxy +
-	Fields
+	Methods
 	(
 	)
-	+ Methods
+	+ Fields
 	(
 	)
 	+ BinOps
@@ -2419,10 +2419,7 @@ impl_lua_newtype!{
 impl_lua_newtype!{
 	bevy_render::color::Color : 
 	FromLuaProxy +
-	Fields
-	(
-	)
-	+ Methods
+	Methods
 	(
 		///New `Color` from sRGB colorspace.
 		rgb(Raw(f32),Raw(f32),Raw(f32)) -> Wrapped(Color),
@@ -2482,6 +2479,9 @@ impl_lua_newtype!{
 		as_linear_rgba_u32(Wrapped(Color):) -> Raw(u32),
 
 	)
+	+ Fields
+	(
+	)
 	+ BinOps
 	(
 		self Add Wrapped(Color) -> Wrapped(Color),
@@ -2501,12 +2501,7 @@ impl_lua_newtype!{
 	///An Axis-Aligned Bounding Box
 	bevy_render::primitives::Aabb : 
 	FromLuaProxy +
-	Fields
-	(
-		center: Wrapped(Vec3A),
-		half_extents: Wrapped(Vec3A),
-	)
-	+ Methods
+	Methods
 	(
 		from_min_max(Wrapped(Vec3),Wrapped(Vec3)) -> self,
 
@@ -2514,6 +2509,11 @@ impl_lua_newtype!{
 
 		max(&self:) -> Wrapped(Vec3A),
 
+	)
+	+ Fields
+	(
+		center: Wrapped(Vec3A),
+		half_extents: Wrapped(Vec3A),
 	)
 	+ BinOps
 	(
@@ -2527,10 +2527,10 @@ impl_lua_newtype!{
 }
 impl_lua_newtype!{
 	bevy_render::primitives::CubemapFrusta : 
-	Fields
+	Methods
 	(
 	)
-	+ Methods
+	+ Fields
 	(
 	)
 	+ BinOps
@@ -2549,15 +2549,15 @@ impl_lua_newtype!{
 	///Normals point into the contained volume
 	bevy_render::primitives::Frustum : 
 	FromLuaProxy +
-	Fields
-	(
-	)
-	+ Methods
+	Methods
 	(
 		from_view_projection(Wrapped(&Mat4),Wrapped(&Vec3),Wrapped(&Vec3),Raw(f32)) -> self,
 
 		intersects_obb(&self:Wrapped(&Aabb),Wrapped(&Mat4),Raw(bool)) -> Raw(bool),
 
+	)
+	+ Fields
+	(
 	)
 	+ BinOps
 	(
@@ -2582,7 +2582,10 @@ impl_lua_newtype!{
 	///```
 	bevy_render::view::Msaa : 
 	FromLuaProxy +
-	Fields
+	Methods
+	(
+	)
+	+ Fields
 	(
 		/// The number of samples to run for Multi-Sample Anti-Aliasing. Higher numbers result in
 		/// smoother edges.
@@ -2592,9 +2595,6 @@ impl_lua_newtype!{
 		/// Ultimately we plan on supporting whatever is natively supported on a given device.
 		/// Check out this issue for more info: <https://github.com/gfx-rs/wgpu/issues/1832>
 		samples: Raw(u32),
-	)
-	+ Methods
-	(
 	)
 	+ BinOps
 	(
@@ -2609,7 +2609,13 @@ impl_lua_newtype!{
 impl_lua_newtype!{
 	bevy_render::camera::Camera : 
 	FromLuaProxy +
-	Fields
+	Methods
+	(
+		///The projection matrix computed using this camera's [`CameraProjection`].
+		projection_matrix(&self:) -> Wrapped(Mat4),
+
+	)
+	+ Fields
 	(
 		/// If set, this camera will render to the given [`Viewport`] rectangle within the configured [`RenderTarget`].
 		viewport: Raw(ReflectedValue),
@@ -2622,12 +2628,6 @@ impl_lua_newtype!{
 		depth_calculation: Wrapped(DepthCalculation),
 		/// The "target" that this camera will render to.
 		target: Wrapped(RenderTarget),
-	)
-	+ Methods
-	(
-		///The projection matrix computed using this camera's [`CameraProjection`].
-		projection_matrix(&self:) -> Wrapped(Mat4),
-
 	)
 	+ BinOps
 	(
@@ -2644,10 +2644,10 @@ impl_lua_newtype!{
 	///swapchain or an [`Image`].
 	bevy_render::camera::RenderTarget : 
 	FromLuaProxy +
-	Fields
+	Methods
 	(
 	)
-	+ Methods
+	+ Fields
 	(
 	)
 	+ BinOps
@@ -2668,7 +2668,10 @@ impl_lua_newtype!{
 	///split screen, minimaps, and character viewers.
 	bevy_render::camera::Viewport : 
 	FromLuaProxy +
-	Fields
+	Methods
+	(
+	)
+	+ Fields
 	(
 		/// The physical position to render this viewport to within the [`RenderTarget`] of this [`Camera`].
 		/// (0,0) corresponds to the top-left corner
@@ -2678,9 +2681,6 @@ impl_lua_newtype!{
 		physical_size: Wrapped(UVec2),
 		/// The minimum and maximum depth to render (on a scale from 0.0 to 1.0).
 		depth: Raw(ReflectedValue),
-	)
-	+ Methods
-	(
 	)
 	+ BinOps
 	(
@@ -2696,10 +2696,7 @@ impl_lua_newtype!{
 	///A configurable [`CameraProjection`] that can select its projection type at runtime.
 	bevy_render::camera::Projection : 
 	FromLuaProxy +
-	Fields
-	(
-	)
-	+ Methods
+	Methods
 	(
 		get_projection_matrix(&self:) -> Wrapped(Mat4),
 
@@ -2709,6 +2706,9 @@ impl_lua_newtype!{
 
 		far(&self:) -> Raw(f32),
 
+	)
+	+ Fields
+	(
 	)
 	+ BinOps
 	(
@@ -2723,20 +2723,7 @@ impl_lua_newtype!{
 impl_lua_newtype!{
 	bevy_render::camera::OrthographicProjection : 
 	FromLuaProxy +
-	Fields
-	(
-		left: Raw(f32),
-		right: Raw(f32),
-		bottom: Raw(f32),
-		top: Raw(f32),
-		near: Raw(f32),
-		far: Raw(f32),
-		window_origin: Wrapped(WindowOrigin),
-		scaling_mode: Wrapped(ScalingMode),
-		scale: Raw(f32),
-		depth_calculation: Wrapped(DepthCalculation),
-	)
-	+ Methods
+	Methods
 	(
 		get_projection_matrix(&self:) -> Wrapped(Mat4),
 
@@ -2746,6 +2733,21 @@ impl_lua_newtype!{
 
 		far(&self:) -> Raw(f32),
 
+	)
+	+ Fields
+	(
+		left: Raw(f32),
+		right: Raw(f32),
+		bottom: Raw(f32),
+		top: Raw(f32),
+		near: Raw(f32),
+		#[rename("_far")]
+		far: Raw(f32),
+		window_origin: Wrapped(WindowOrigin),
+		scaling_mode: Wrapped(ScalingMode),
+		scale: Raw(f32),
+		#[rename("_depth_calculation")]
+		depth_calculation: Wrapped(DepthCalculation),
 	)
 	+ BinOps
 	(
@@ -2760,14 +2762,7 @@ impl_lua_newtype!{
 impl_lua_newtype!{
 	bevy_render::camera::PerspectiveProjection : 
 	FromLuaProxy +
-	Fields
-	(
-		fov: Raw(f32),
-		aspect_ratio: Raw(f32),
-		near: Raw(f32),
-		far: Raw(f32),
-	)
-	+ Methods
+	Methods
 	(
 		get_projection_matrix(&self:) -> Wrapped(Mat4),
 
@@ -2777,6 +2772,14 @@ impl_lua_newtype!{
 
 		far(&self:) -> Raw(f32),
 
+	)
+	+ Fields
+	(
+		fov: Raw(f32),
+		aspect_ratio: Raw(f32),
+		near: Raw(f32),
+		#[rename("_far")]
+		far: Raw(f32),
 	)
 	+ BinOps
 	(
@@ -2791,10 +2794,10 @@ impl_lua_newtype!{
 impl_lua_newtype!{
 	bevy_render::camera::DepthCalculation : 
 	FromLuaProxy +
-	Fields
+	Methods
 	(
 	)
-	+ Methods
+	+ Fields
 	(
 	)
 	+ BinOps
@@ -2810,10 +2813,10 @@ impl_lua_newtype!{
 impl_lua_newtype!{
 	///Configures the [`RenderGraph`](crate::render_graph::RenderGraph) name assigned to be run for a given [`Camera`] entity.
 	bevy_render::camera::CameraRenderGraph : 
-	Fields
+	Methods
 	(
 	)
-	+ Methods
+	+ Fields
 	(
 	)
 	+ BinOps
@@ -2830,10 +2833,7 @@ impl_lua_newtype!{
 	///An unique identifier to an asset path.
 	bevy_asset::AssetPathId : 
 	FromLuaProxy +
-	Fields
-	(
-	)
-	+ Methods
+	Methods
 	(
 		///Gets the id of the source path.
 		source_path_id(&self:) -> Wrapped(SourcePathId),
@@ -2841,6 +2841,9 @@ impl_lua_newtype!{
 		///Gets the id of the sub-asset label.
 		label_id(&self:) -> Wrapped(LabelId),
 
+	)
+	+ Fields
+	(
 	)
 	+ BinOps
 	(
@@ -2856,10 +2859,10 @@ impl_lua_newtype!{
 	///An unique identifier to a sub-asset label.
 	bevy_asset::LabelId : 
 	FromLuaProxy +
-	Fields
+	Methods
 	(
 	)
-	+ Methods
+	+ Fields
 	(
 	)
 	+ BinOps
@@ -2876,10 +2879,10 @@ impl_lua_newtype!{
 	///An unique identifier to the source path of an asset.
 	bevy_asset::SourcePathId : 
 	FromLuaProxy +
-	Fields
+	Methods
 	(
 	)
-	+ Methods
+	+ Fields
 	(
 	)
 	+ BinOps
@@ -2896,10 +2899,10 @@ impl_lua_newtype!{
 	///A unique, stable asset id.
 	bevy_asset::HandleId : 
 	FromLuaProxy +
-	Fields
+	Methods
 	(
 	)
-	+ Methods
+	+ Fields
 	(
 	)
 	+ BinOps
@@ -2916,12 +2919,7 @@ impl_lua_newtype!{
 	///A 2-dimensional vector.
 	glam::f32::vec2::Vec2 : 
 	FromLuaProxy +
-	Fields
-	(
-		x: Raw(f32),
-		y: Raw(f32),
-	)
-	+ Methods
+	Methods
 	(
 		///Creates a new vector.
 		new(Raw(f32),Raw(f32)) -> self,
@@ -3220,6 +3218,11 @@ impl_lua_newtype!{
 		as_uvec2(&self:) -> Wrapped(UVec2),
 
 	)
+	+ Fields
+	(
+		x: Raw(f32),
+		y: Raw(f32),
+	)
 	+ BinOps
 	(
 		self Add self -> Wrapped(Vec2),
@@ -3252,13 +3255,7 @@ impl_lua_newtype!{
 	///A 3-dimensional vector.
 	glam::f32::vec3::Vec3 : 
 	FromLuaProxy +
-	Fields
-	(
-		x: Raw(f32),
-		y: Raw(f32),
-		z: Raw(f32),
-	)
-	+ Methods
+	Methods
 	(
 		///Creates a new vector.
 		new(Raw(f32),Raw(f32),Raw(f32)) -> self,
@@ -3564,6 +3561,12 @@ impl_lua_newtype!{
 		as_uvec3(&self:) -> Wrapped(UVec3),
 
 	)
+	+ Fields
+	(
+		x: Raw(f32),
+		y: Raw(f32),
+		z: Raw(f32),
+	)
 	+ BinOps
 	(
 		self Add self -> Wrapped(Vec3),
@@ -3601,10 +3604,7 @@ impl_lua_newtype!{
 	///It is possible to convert between `Vec3` and `Vec3A` types using `From` trait implementations.
 	glam::f32::sse2::vec3A::Vec3A : 
 	FromLuaProxy +
-	Fields
-	(
-	)
-	+ Methods
+	Methods
 	(
 		///Creates a new vector.
 		new(Raw(f32),Raw(f32),Raw(f32)) -> self,
@@ -3910,6 +3910,9 @@ impl_lua_newtype!{
 		as_uvec3(&self:) -> Wrapped(UVec3),
 
 	)
+	+ Fields
+	(
+	)
 	+ BinOps
 	(
 		self Add self -> Wrapped(Vec3A),
@@ -3944,10 +3947,7 @@ impl_lua_newtype!{
 	///This type uses 16 byte aligned SIMD vector type for storage.
 	glam::f32::sse2::vec4::Vec4 : 
 	FromLuaProxy +
-	Fields
-	(
-	)
-	+ Methods
+	Methods
 	(
 		///Creates a new vector.
 		new(Raw(f32),Raw(f32),Raw(f32),Raw(f32)) -> self,
@@ -4228,6 +4228,9 @@ impl_lua_newtype!{
 		as_uvec4(&self:) -> Wrapped(UVec4),
 
 	)
+	+ Fields
+	(
+	)
 	+ BinOps
 	(
 		self Add self -> Wrapped(Vec4),
@@ -4260,12 +4263,7 @@ impl_lua_newtype!{
 	///A 2-dimensional boolean vector.
 	glam::f32::sse2::vec2::BVec2 : 
 	FromLuaProxy +
-	Fields
-	(
-		x: Raw(bool),
-		y: Raw(bool),
-	)
-	+ Methods
+	Methods
 	(
 		///Creates a new vector mask.
 		new(Raw(bool),Raw(bool)) -> self,
@@ -4283,6 +4281,11 @@ impl_lua_newtype!{
 		all(self:) -> Raw(bool),
 
 	)
+	+ Fields
+	(
+		x: Raw(bool),
+		y: Raw(bool),
+	)
 	+ BinOps
 	(
 	)
@@ -4297,13 +4300,7 @@ impl_lua_newtype!{
 	///A 3-dimensional boolean vector.
 	glam::f32::sse2::vec3::BVec3 : 
 	FromLuaProxy +
-	Fields
-	(
-		x: Raw(bool),
-		y: Raw(bool),
-		z: Raw(bool),
-	)
-	+ Methods
+	Methods
 	(
 		///Creates a new vector mask.
 		new(Raw(bool),Raw(bool),Raw(bool)) -> self,
@@ -4321,6 +4318,12 @@ impl_lua_newtype!{
 		all(self:) -> Raw(bool),
 
 	)
+	+ Fields
+	(
+		x: Raw(bool),
+		y: Raw(bool),
+		z: Raw(bool),
+	)
 	+ BinOps
 	(
 	)
@@ -4335,14 +4338,7 @@ impl_lua_newtype!{
 	///A 4-dimensional boolean vector.
 	glam::f32::sse2::vec4::BVec4 : 
 	FromLuaProxy +
-	Fields
-	(
-		x: Raw(bool),
-		y: Raw(bool),
-		z: Raw(bool),
-		w: Raw(bool),
-	)
-	+ Methods
+	Methods
 	(
 		///Creates a new vector mask.
 		new(Raw(bool),Raw(bool),Raw(bool),Raw(bool)) -> self,
@@ -4359,6 +4355,13 @@ impl_lua_newtype!{
 		///Returns true if all the elements are true, false otherwise.
 		all(self:) -> Raw(bool),
 
+	)
+	+ Fields
+	(
+		x: Raw(bool),
+		y: Raw(bool),
+		z: Raw(bool),
+		w: Raw(bool),
 	)
 	+ BinOps
 	(
@@ -4377,10 +4380,7 @@ impl_lua_newtype!{
 	///`BVec3A` will be a type alias for `BVec3`.
 	glam::f32::sse2::vec3::BVec3A : 
 	FromLuaProxy +
-	Fields
-	(
-	)
-	+ Methods
+	Methods
 	(
 		///Creates a new vector mask.
 		new(Raw(bool),Raw(bool),Raw(bool)) -> self,
@@ -4397,6 +4397,9 @@ impl_lua_newtype!{
 		///Returns true if all the elements are true, false otherwise.
 		all(self:) -> Raw(bool),
 
+	)
+	+ Fields
+	(
 	)
 	+ BinOps
 	(
@@ -4415,10 +4418,7 @@ impl_lua_newtype!{
 	///`BVec4A` will be a type alias for `BVec4`.
 	glam::f32::sse2::vec4::BVec4A : 
 	FromLuaProxy +
-	Fields
-	(
-	)
-	+ Methods
+	Methods
 	(
 		///Creates a new vector mask.
 		new(Raw(bool),Raw(bool),Raw(bool),Raw(bool)) -> self,
@@ -4436,6 +4436,9 @@ impl_lua_newtype!{
 		all(self:) -> Raw(bool),
 
 	)
+	+ Fields
+	(
+	)
 	+ BinOps
 	(
 	)
@@ -4450,12 +4453,7 @@ impl_lua_newtype!{
 	///A 2-dimensional vector.
 	glam::f64::dvec2::DVec2 : 
 	FromLuaProxy +
-	Fields
-	(
-		x: Raw(f64),
-		y: Raw(f64),
-	)
-	+ Methods
+	Methods
 	(
 		///Creates a new vector.
 		new(Raw(f64),Raw(f64)) -> self,
@@ -4754,6 +4752,11 @@ impl_lua_newtype!{
 		as_uvec2(&self:) -> Wrapped(UVec2),
 
 	)
+	+ Fields
+	(
+		x: Raw(f64),
+		y: Raw(f64),
+	)
 	+ BinOps
 	(
 		self Add self -> Wrapped(DVec2),
@@ -4786,13 +4789,7 @@ impl_lua_newtype!{
 	///A 3-dimensional vector.
 	glam::f64::dvec3::DVec3 : 
 	FromLuaProxy +
-	Fields
-	(
-		x: Raw(f64),
-		y: Raw(f64),
-		z: Raw(f64),
-	)
-	+ Methods
+	Methods
 	(
 		///Creates a new vector.
 		new(Raw(f64),Raw(f64),Raw(f64)) -> self,
@@ -5101,6 +5098,12 @@ impl_lua_newtype!{
 		as_uvec3(&self:) -> Wrapped(UVec3),
 
 	)
+	+ Fields
+	(
+		x: Raw(f64),
+		y: Raw(f64),
+		z: Raw(f64),
+	)
 	+ BinOps
 	(
 		self Add self -> Wrapped(DVec3),
@@ -5133,14 +5136,7 @@ impl_lua_newtype!{
 	///A 4-dimensional vector.
 	glam::f64::dvec4::DVec4 : 
 	FromLuaProxy +
-	Fields
-	(
-		x: Raw(f64),
-		y: Raw(f64),
-		z: Raw(f64),
-		w: Raw(f64),
-	)
-	+ Methods
+	Methods
 	(
 		///Creates a new vector.
 		new(Raw(f64),Raw(f64),Raw(f64),Raw(f64)) -> self,
@@ -5419,6 +5415,13 @@ impl_lua_newtype!{
 		as_uvec4(&self:) -> Wrapped(UVec4),
 
 	)
+	+ Fields
+	(
+		x: Raw(f64),
+		y: Raw(f64),
+		z: Raw(f64),
+		w: Raw(f64),
+	)
 	+ BinOps
 	(
 		self Add self -> Wrapped(DVec4),
@@ -5451,12 +5454,7 @@ impl_lua_newtype!{
 	///A 2-dimensional vector.
 	glam::i32::ivec2::IVec2 : 
 	FromLuaProxy +
-	Fields
-	(
-		x: Raw(i32),
-		y: Raw(i32),
-	)
-	+ Methods
+	Methods
 	(
 		///Creates a new vector.
 		new(Raw(i32),Raw(i32)) -> self,
@@ -5580,6 +5578,11 @@ impl_lua_newtype!{
 		as_uvec2(&self:) -> Wrapped(UVec2),
 
 	)
+	+ Fields
+	(
+		x: Raw(i32),
+		y: Raw(i32),
+	)
 	+ BinOps
 	(
 		self Add self -> Wrapped(IVec2),
@@ -5612,13 +5615,7 @@ impl_lua_newtype!{
 	///A 3-dimensional vector.
 	glam::i32::ivec3::IVec3 : 
 	FromLuaProxy +
-	Fields
-	(
-		x: Raw(i32),
-		y: Raw(i32),
-		z: Raw(i32),
-	)
-	+ Methods
+	Methods
 	(
 		///Creates a new vector.
 		new(Raw(i32),Raw(i32),Raw(i32)) -> self,
@@ -5741,6 +5738,12 @@ impl_lua_newtype!{
 		as_uvec3(&self:) -> Wrapped(UVec3),
 
 	)
+	+ Fields
+	(
+		x: Raw(i32),
+		y: Raw(i32),
+		z: Raw(i32),
+	)
 	+ BinOps
 	(
 		self Add self -> Wrapped(IVec3),
@@ -5773,14 +5776,7 @@ impl_lua_newtype!{
 	///A 4-dimensional vector.
 	glam::i32::ivec4::IVec4 : 
 	FromLuaProxy +
-	Fields
-	(
-		x: Raw(i32),
-		y: Raw(i32),
-		z: Raw(i32),
-		w: Raw(i32),
-	)
-	+ Methods
+	Methods
 	(
 		///Creates a new vector.
 		new(Raw(i32),Raw(i32),Raw(i32),Raw(i32)) -> self,
@@ -5894,6 +5890,13 @@ impl_lua_newtype!{
 		as_uvec4(&self:) -> Wrapped(UVec4),
 
 	)
+	+ Fields
+	(
+		x: Raw(i32),
+		y: Raw(i32),
+		z: Raw(i32),
+		w: Raw(i32),
+	)
 	+ BinOps
 	(
 		self Add self -> Wrapped(IVec4),
@@ -5926,12 +5929,7 @@ impl_lua_newtype!{
 	///A 2-dimensional vector.
 	glam::u32::uvec2::UVec2 : 
 	FromLuaProxy +
-	Fields
-	(
-		x: Raw(u32),
-		y: Raw(u32),
-	)
-	+ Methods
+	Methods
 	(
 		///Creates a new vector.
 		new(Raw(u32),Raw(u32)) -> self,
@@ -6033,6 +6031,11 @@ impl_lua_newtype!{
 		as_ivec2(&self:) -> Wrapped(IVec2),
 
 	)
+	+ Fields
+	(
+		x: Raw(u32),
+		y: Raw(u32),
+	)
 	+ BinOps
 	(
 		self Add self -> Wrapped(UVec2),
@@ -6064,13 +6067,7 @@ impl_lua_newtype!{
 	///A 3-dimensional vector.
 	glam::u32::uvec3::UVec3 : 
 	FromLuaProxy +
-	Fields
-	(
-		x: Raw(u32),
-		y: Raw(u32),
-		z: Raw(u32),
-	)
-	+ Methods
+	Methods
 	(
 		///Creates a new vector.
 		new(Raw(u32),Raw(u32),Raw(u32)) -> self,
@@ -6183,6 +6180,12 @@ impl_lua_newtype!{
 		as_ivec3(&self:) -> Wrapped(IVec3),
 
 	)
+	+ Fields
+	(
+		x: Raw(u32),
+		y: Raw(u32),
+		z: Raw(u32),
+	)
 	+ BinOps
 	(
 		self Add self -> Wrapped(UVec3),
@@ -6214,14 +6217,7 @@ impl_lua_newtype!{
 	///A 4-dimensional vector.
 	glam::u32::uvec4::UVec4 : 
 	FromLuaProxy +
-	Fields
-	(
-		x: Raw(u32),
-		y: Raw(u32),
-		z: Raw(u32),
-		w: Raw(u32),
-	)
-	+ Methods
+	Methods
 	(
 		///Creates a new vector.
 		new(Raw(u32),Raw(u32),Raw(u32),Raw(u32)) -> self,
@@ -6325,6 +6321,13 @@ impl_lua_newtype!{
 		as_ivec4(&self:) -> Wrapped(IVec4),
 
 	)
+	+ Fields
+	(
+		x: Raw(u32),
+		y: Raw(u32),
+		z: Raw(u32),
+		w: Raw(u32),
+	)
 	+ BinOps
 	(
 		self Add self -> Wrapped(UVec4),
@@ -6379,13 +6382,7 @@ impl_lua_newtype!{
 	///transform.
 	glam::f32::mat3::Mat3 : 
 	FromLuaProxy +
-	Fields
-	(
-		x_axis: Wrapped(Vec3),
-		y_axis: Wrapped(Vec3),
-		z_axis: Wrapped(Vec3),
-	)
-	+ Methods
+	Methods
 	(
 		///Creates a 3x3 matrix from two column vectors.
 		from_cols(Wrapped(Vec3),Wrapped(Vec3),Wrapped(Vec3)) -> self,
@@ -6542,12 +6539,18 @@ impl_lua_newtype!{
 		as_dmat3(&self:) -> Wrapped(DMat3),
 
 	)
+	+ Fields
+	(
+		x_axis: Wrapped(Vec3),
+		y_axis: Wrapped(Vec3),
+		z_axis: Wrapped(Vec3),
+	)
 	+ BinOps
 	(
-		self Add Wrapped(Mat3) -> Wrapped(Mat3),
-		self Sub Wrapped(Mat3) -> Wrapped(Mat3),
+		self Add self -> Wrapped(Mat3),
+		self Sub self -> Wrapped(Mat3),
 		self Mul Wrapped(Affine2) -> Wrapped(Mat3),
-		self Mul Wrapped(Mat3) -> Wrapped(Mat3),
+		self Mul self -> Wrapped(Mat3),
 		self Mul Wrapped(Vec3) -> Wrapped(Vec3),
 		self Mul Wrapped(Mat3) -> Wrapped(Mat3),
 		self Mul Raw(f32) -> Wrapped(Mat3),
@@ -6589,10 +6592,7 @@ impl_lua_newtype!{
 	///A 2x2 column major matrix.
 	glam::f32::sse2::mat2::Mat2 : 
 	FromLuaProxy +
-	Fields
-	(
-	)
-	+ Methods
+	Methods
 	(
 		///Creates a 2x2 matrix from two column vectors.
 		from_cols(Wrapped(Vec2),Wrapped(Vec2)) -> self,
@@ -6675,6 +6675,9 @@ impl_lua_newtype!{
 		as_dmat2(&self:) -> Wrapped(DMat2),
 
 	)
+	+ Fields
+	(
+	)
 	+ BinOps
 	(
 		self Add self -> Wrapped(Mat2),
@@ -6743,13 +6746,7 @@ impl_lua_newtype!{
 	///transform.
 	glam::f32::sse2::mat3::Mat3A : 
 	FromLuaProxy +
-	Fields
-	(
-		x_axis: Wrapped(Vec3A),
-		y_axis: Wrapped(Vec3A),
-		z_axis: Wrapped(Vec3A),
-	)
-	+ Methods
+	Methods
 	(
 		///Creates a 3x3 matrix from two column vectors.
 		from_cols(Wrapped(Vec3A),Wrapped(Vec3A),Wrapped(Vec3A)) -> self,
@@ -6906,6 +6903,12 @@ impl_lua_newtype!{
 		as_dmat3(&self:) -> Wrapped(DMat3),
 
 	)
+	+ Fields
+	(
+		x_axis: Wrapped(Vec3A),
+		y_axis: Wrapped(Vec3A),
+		z_axis: Wrapped(Vec3A),
+	)
 	+ BinOps
 	(
 		self Add self -> Wrapped(Mat3A),
@@ -6981,14 +6984,7 @@ impl_lua_newtype!{
 	///perspective correction using the [`Self::project_point3()`] convenience method.
 	glam::f32::sse2::mat4::Mat4 : 
 	FromLuaProxy +
-	Fields
-	(
-		x_axis: Wrapped(Vec4),
-		y_axis: Wrapped(Vec4),
-		z_axis: Wrapped(Vec4),
-		w_axis: Wrapped(Vec4),
-	)
-	+ Methods
+	Methods
 	(
 		///Creates a 4x4 matrix from two column vectors.
 		from_cols(Wrapped(Vec4),Wrapped(Vec4),Wrapped(Vec4),Wrapped(Vec4)) -> self,
@@ -7271,6 +7267,13 @@ impl_lua_newtype!{
 		as_dmat4(&self:) -> Wrapped(DMat4),
 
 	)
+	+ Fields
+	(
+		x_axis: Wrapped(Vec4),
+		y_axis: Wrapped(Vec4),
+		z_axis: Wrapped(Vec4),
+		w_axis: Wrapped(Vec4),
+	)
 	+ BinOps
 	(
 		self Add self -> Wrapped(Mat4),
@@ -7317,12 +7320,7 @@ impl_lua_newtype!{
 	///A 2x2 column major matrix.
 	glam::f64::dmat2::DMat2 : 
 	FromLuaProxy +
-	Fields
-	(
-		x_axis: Wrapped(DVec2),
-		y_axis: Wrapped(DVec2),
-	)
-	+ Methods
+	Methods
 	(
 		///Creates a 2x2 matrix from two column vectors.
 		from_cols(Wrapped(DVec2),Wrapped(DVec2)) -> self,
@@ -7405,6 +7403,11 @@ impl_lua_newtype!{
 		as_mat2(&self:) -> Wrapped(Mat2),
 
 	)
+	+ Fields
+	(
+		x_axis: Wrapped(DVec2),
+		y_axis: Wrapped(DVec2),
+	)
 	+ BinOps
 	(
 		self Add self -> Wrapped(DMat2),
@@ -7473,13 +7476,7 @@ impl_lua_newtype!{
 	///transform.
 	glam::f64::dmat3::DMat3 : 
 	FromLuaProxy +
-	Fields
-	(
-		x_axis: Wrapped(DVec3),
-		y_axis: Wrapped(DVec3),
-		z_axis: Wrapped(DVec3),
-	)
-	+ Methods
+	Methods
 	(
 		///Creates a 3x3 matrix from two column vectors.
 		from_cols(Wrapped(DVec3),Wrapped(DVec3),Wrapped(DVec3)) -> self,
@@ -7633,6 +7630,12 @@ impl_lua_newtype!{
 		as_mat3(&self:) -> Wrapped(Mat3),
 
 	)
+	+ Fields
+	(
+		x_axis: Wrapped(DVec3),
+		y_axis: Wrapped(DVec3),
+		z_axis: Wrapped(DVec3),
+	)
 	+ BinOps
 	(
 		self Add self -> Wrapped(DMat3),
@@ -7707,14 +7710,7 @@ impl_lua_newtype!{
 	///perspective correction using the [`Self::project_point3()`] convenience method.
 	glam::f64::dmat4::DMat4 : 
 	FromLuaProxy +
-	Fields
-	(
-		x_axis: Wrapped(DVec4),
-		y_axis: Wrapped(DVec4),
-		z_axis: Wrapped(DVec4),
-		w_axis: Wrapped(DVec4),
-	)
-	+ Methods
+	Methods
 	(
 		///Creates a 4x4 matrix from two column vectors.
 		from_cols(Wrapped(DVec4),Wrapped(DVec4),Wrapped(DVec4),Wrapped(DVec4)) -> self,
@@ -7987,6 +7983,13 @@ impl_lua_newtype!{
 		as_mat4(&self:) -> Wrapped(Mat4),
 
 	)
+	+ Fields
+	(
+		x_axis: Wrapped(DVec4),
+		y_axis: Wrapped(DVec4),
+		z_axis: Wrapped(DVec4),
+		w_axis: Wrapped(DVec4),
+	)
 	+ BinOps
 	(
 		self Add self -> Wrapped(DMat4),
@@ -8033,12 +8036,7 @@ impl_lua_newtype!{
 	///A 2D affine transform, which can represent translation, rotation, scaling and shear.
 	glam::f32::sse2::mat2::Affine2 : 
 	FromLuaProxy +
-	Fields
-	(
-		matrix2: Wrapped(Mat2),
-		translation: Wrapped(Vec2),
-	)
-	+ Methods
+	Methods
 	(
 		///Creates an affine transform from three column vectors.
 		from_cols(Wrapped(Vec2),Wrapped(Vec2),Wrapped(Vec2)) -> self,
@@ -8114,6 +8112,11 @@ impl_lua_newtype!{
 		inverse(&self:) -> self,
 
 	)
+	+ Fields
+	(
+		matrix2: Wrapped(Mat2),
+		translation: Wrapped(Vec2),
+	)
 	+ BinOps
 	(
 		self Add self -> Wrapped(Affine2),
@@ -8135,12 +8138,7 @@ impl_lua_newtype!{
 	///A 3D affine transform, which can represent translation, rotation, scaling and shear.
 	glam::f32::sse2::mat3::Affine3A : 
 	FromLuaProxy +
-	Fields
-	(
-		matrix3: Wrapped(Mat3A),
-		translation: Wrapped(Vec3A),
-	)
-	+ Methods
+	Methods
 	(
 		///Creates an affine transform from three column vectors.
 		from_cols(Wrapped(Vec3A),Wrapped(Vec3A),Wrapped(Vec3A),Wrapped(Vec3A)) -> self,
@@ -8261,6 +8259,11 @@ impl_lua_newtype!{
 		inverse(&self:) -> self,
 
 	)
+	+ Fields
+	(
+		matrix3: Wrapped(Mat3A),
+		translation: Wrapped(Vec3A),
+	)
 	+ BinOps
 	(
 		self Add self -> Wrapped(Affine3A),
@@ -8281,12 +8284,7 @@ impl_lua_newtype!{
 	///A 2D affine transform, which can represent translation, rotation, scaling and shear.
 	glam::f64::sse2::mat2::DAffine2 : 
 	FromLuaProxy +
-	Fields
-	(
-		matrix2: Wrapped(DMat2),
-		translation: Wrapped(DVec2),
-	)
-	+ Methods
+	Methods
 	(
 		///Creates an affine transform from three column vectors.
 		from_cols(Wrapped(DVec2),Wrapped(DVec2),Wrapped(DVec2)) -> self,
@@ -8362,6 +8360,11 @@ impl_lua_newtype!{
 		inverse(&self:) -> self,
 
 	)
+	+ Fields
+	(
+		matrix2: Wrapped(DMat2),
+		translation: Wrapped(DVec2),
+	)
 	+ BinOps
 	(
 		self Add self -> Wrapped(DAffine2),
@@ -8382,12 +8385,7 @@ impl_lua_newtype!{
 	///A 3D affine transform, which can represent translation, rotation, scaling and shear.
 	glam::f64::sse2::mat3::DAffine3 : 
 	FromLuaProxy +
-	Fields
-	(
-		matrix3: Wrapped(DMat3),
-		translation: Wrapped(DVec3),
-	)
-	+ Methods
+	Methods
 	(
 		///Creates an affine transform from three column vectors.
 		from_cols(Wrapped(DVec3),Wrapped(DVec3),Wrapped(DVec3),Wrapped(DVec3)) -> self,
@@ -8499,6 +8497,11 @@ impl_lua_newtype!{
 		inverse(&self:) -> self,
 
 	)
+	+ Fields
+	(
+		matrix3: Wrapped(DMat3),
+		translation: Wrapped(DVec3),
+	)
 	+ BinOps
 	(
 		self Add self -> Wrapped(DAffine3),
@@ -8525,10 +8528,7 @@ impl_lua_newtype!{
 	///This type is 16 byte aligned.
 	glam::f32::sse2::quat::Quat : 
 	FromLuaProxy +
-	Fields
-	(
-	)
-	+ Methods
+	Methods
 	(
 		///Creates a new rotation quaternion.
 		///
@@ -8757,6 +8757,9 @@ impl_lua_newtype!{
 		as_f64(self:) -> Wrapped(DQuat),
 
 	)
+	+ Fields
+	(
+	)
 	+ BinOps
 	(
 		self Add self -> Wrapped(Quat),
@@ -8783,14 +8786,7 @@ impl_lua_newtype!{
 	///operations are applied.
 	glam::f64::dquat::DQuat : 
 	FromLuaProxy +
-	Fields
-	(
-		x: Raw(f64),
-		y: Raw(f64),
-		z: Raw(f64),
-		w: Raw(f64),
-	)
-	+ Methods
+	Methods
 	(
 		///Creates a new rotation quaternion.
 		///
@@ -9016,6 +9012,13 @@ impl_lua_newtype!{
 		as_f32(self:) -> Wrapped(Quat),
 
 	)
+	+ Fields
+	(
+		x: Raw(f64),
+		y: Raw(f64),
+		z: Raw(f64),
+		w: Raw(f64),
+	)
 	+ BinOps
 	(
 		self Add self -> Wrapped(DQuat),
@@ -9044,10 +9047,10 @@ impl_lua_newtype!{
 	///The two-axis rotations (e.g. ZYZ) are not fully tested and have to be treated with caution.
 	glam::euler::EulerRot : 
 	FromLuaProxy +
-	Fields
+	Methods
 	(
 	)
-	+ Methods
+	+ Fields
 	(
 	)
 	+ BinOps
@@ -9060,9 +9063,10 @@ impl_lua_newtype!{
 	{
 	}
 }
-pub(crate) struct BevyAPIGlobals {}
+#[derive(Default)]
+pub(crate) struct BevyAPIGlobals;
 impl tealr::mlu::ExportInstances for BevyAPIGlobals{
-	fn add_instances<'lua, T: tealr::mlu::InstanceCollector<'lua>>(instances: &mut T) -> LuaResult<()>
+	fn add_instances<'lua, T: tealr::mlu::InstanceCollector<'lua>>(self, instances: &mut T) -> LuaResult<()>
 	{
 		instances.add_instance("AnimationPlayer".into(), tealr::mlu::UserDataProxy::<LuaAnimationPlayer>::new)?;
 		instances.add_instance("Name".into(), tealr::mlu::UserDataProxy::<LuaName>::new)?;
@@ -9130,11 +9134,12 @@ impl APIProvider for LuaBevyAPIProvider{
 	type DocTarget = LuaDocFragment;
 	fn attach_api(&mut self, ctx: &mut Self::Target) -> Result<(), crate::ScriptError>	{
 		let ctx = ctx.lock().expect("Unable to acquire lock on Lua context");
-		Ok(tealr::mlu::set_global_env::<BevyAPIGlobals>(&ctx)?)
+		Ok(tealr::mlu::set_global_env(BevyAPIGlobals,&ctx)?)
 	}
 	fn get_doc_fragment(&self) -> Option<Self::DocTarget>	{
 		Some(LuaDocFragment::new(|tw|		{
 			tw
+			.document_global_instance::<BevyAPIGlobals>().expect("Something went wrong documenting globals")
 			.process_type::<LuaAlignContent>()
 			.process_type::<LuaAlignItems>()
 			.process_type::<LuaAlignSelf>()
@@ -9428,22 +9433,22 @@ impl APIProvider for LuaBevyAPIProvider{
 		app.register_foreign_lua_type::<Quat>();
 		app.register_foreign_lua_type::<DQuat>();
 		app.register_foreign_lua_type::<EulerRot>();
-		app.register_foreign_lua_type::<bool>();
-		app.register_foreign_lua_type::<f32>();
-		app.register_foreign_lua_type::<i8>();
-		app.register_foreign_lua_type::<f64>();
-		app.register_foreign_lua_type::<u64>();
-		app.register_foreign_lua_type::<u8>();
-		app.register_foreign_lua_type::<i128>();
-		app.register_foreign_lua_type::<u16>();
-		app.register_foreign_lua_type::<i16>();
 		app.register_foreign_lua_type::<u32>();
-		app.register_foreign_lua_type::<String>();
-		app.register_foreign_lua_type::<u128>();
-		app.register_foreign_lua_type::<i32>();
+		app.register_foreign_lua_type::<u16>();
+		app.register_foreign_lua_type::<i128>();
 		app.register_foreign_lua_type::<usize>();
-		app.register_foreign_lua_type::<isize>();
+		app.register_foreign_lua_type::<u64>();
 		app.register_foreign_lua_type::<i64>();
+		app.register_foreign_lua_type::<f32>();
+		app.register_foreign_lua_type::<f64>();
+		app.register_foreign_lua_type::<u8>();
+		app.register_foreign_lua_type::<String>();
+		app.register_foreign_lua_type::<bool>();
+		app.register_foreign_lua_type::<isize>();
+		app.register_foreign_lua_type::<i32>();
+		app.register_foreign_lua_type::<i8>();
+		app.register_foreign_lua_type::<i16>();
+		app.register_foreign_lua_type::<u128>();
 	}
 }
 

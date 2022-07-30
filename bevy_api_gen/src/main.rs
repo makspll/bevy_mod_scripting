@@ -179,10 +179,11 @@ pub(crate) fn generate_macros(
 
     // now create the BevyAPIProvider
     // first the globals
-    writer.write_line("pub(crate) struct BevyAPIGlobals {}");
+    writer.write_line("#[derive(Default)]");
+    writer.write_line("pub(crate) struct BevyAPIGlobals;");
     writer.write_no_newline("impl tealr::mlu::ExportInstances for BevyAPIGlobals");
     writer.open_brace();
-    writer.write_line("fn add_instances<'lua, T: tealr::mlu::InstanceCollector<'lua>>(instances: &mut T) -> LuaResult<()>");
+    writer.write_line("fn add_instances<'lua, T: tealr::mlu::InstanceCollector<'lua>>(self, instances: &mut T) -> LuaResult<()>");
     writer.open_brace();
     for item in &wrapped_items {
         if !item.has_global_methods {
@@ -221,7 +222,7 @@ pub(crate) fn generate_macros(
     );
     writer.open_brace();
     writer.write_line("let ctx = ctx.lock().expect(\"Unable to acquire lock on Lua context\");");
-    writer.write_line("Ok(tealr::mlu::set_global_env::<BevyAPIGlobals>(&ctx)?)");
+    writer.write_line("Ok(tealr::mlu::set_global_env(BevyAPIGlobals,&ctx)?)");
     writer.close_brace();
     // } attach_api
 
@@ -231,6 +232,7 @@ pub(crate) fn generate_macros(
     writer.write_no_newline("Some(LuaDocFragment::new(|tw|");
     writer.open_brace();
     writer.write_line("tw");
+    writer.write_line(".document_global_instance::<BevyAPIGlobals>().expect(\"Something went wrong documenting globals\")");
     for item in &wrapped_items {
         writer.write_no_newline(".process_type::<");
         writer.write_inline(&item.wrapper_name);
