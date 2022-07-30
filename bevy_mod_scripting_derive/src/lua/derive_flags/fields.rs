@@ -38,7 +38,10 @@ pub(crate) fn make_fields<'a>(
         }
 
         let id = &f.member;
-        let id_string = &f.member.to_token_stream().to_string();
+        let (lua_id_string,rust_id_string) = match id {
+            syn::Member::Named(string_id) => (string_id.to_string(),string_id.to_string()),
+            syn::Member::Unnamed(index) => (format!("_{}",index.index),index.index.to_string()),
+        };
 
         let ds: Punctuated<Attribute, EmptyToken> = f.docstring.iter().cloned().collect();
 
@@ -49,12 +52,12 @@ pub(crate) fn make_fields<'a>(
         let expr_getter = f.type_.is_wrapped()
             .then(|| {
                 quote_spanned!{f.span()=>
-                    Ok(#field_type_ident::new_ref(s.script_ref().index(std::borrow::Cow::Borrowed(#id_string))))
+                    Ok(#field_type_ident::new_ref(s.script_ref().index(std::borrow::Cow::Borrowed(#rust_id_string))))
                 }
             }).unwrap_or_else(|| {
                 if field_type_string == "ReflectedValue" {
                     return quote_spanned!{f.span()=>
-                        Ok(s.script_ref().index(std::borrow::Cow::Borrowed(#id_string)))
+                        Ok(s.script_ref().index(std::borrow::Cow::Borrowed(#rust_id_string)))
                     }
                 }
                 quote_spanned!{f.span()=>{}
@@ -64,7 +67,7 @@ pub(crate) fn make_fields<'a>(
 
         out.push(parse_quote_spanned! {f.span()=>
             #ds
-            get #id_string => |_,s : &#newtype_name| {
+            get #lua_id_string => |_,s : &#newtype_name| {
                 #expr_getter
             }
         });
@@ -72,11 +75,11 @@ pub(crate) fn make_fields<'a>(
         // make the setter method
         let expr_setter = f.type_.is_wrapped()
             .then(|| {quote_spanned!{f.span()=>
-                Ok(o.apply_self_to_base(&mut s.script_ref().index(std::borrow::Cow::Borrowed(#id_string)))?)
+                Ok(o.apply_self_to_base(&mut s.script_ref().index(std::borrow::Cow::Borrowed(#rust_id_string)))?)
             }}).unwrap_or_else(|| {
                 if field_type_string == "ReflectedValue" {
                     return quote_spanned!{f.span()=>
-                        Ok(s.script_ref().index(std::borrow::Cow::Borrowed(#id_string)).apply(&o.ref_)?)
+                        Ok(s.script_ref().index(std::borrow::Cow::Borrowed(#rust_id_string)).apply(&o.ref_)?)
                     }
                 }
                 quote_spanned!{f.span()=>
@@ -85,7 +88,7 @@ pub(crate) fn make_fields<'a>(
             });
 
         out.push(parse_quote_spanned! {f.span()=>
-            set #id_string => |_,s: &mut #newtype_name, o: #field_type_ident| {
+            set #lua_id_string => |_,s: &mut #newtype_name, o: #field_type_ident| {
                 #expr_setter
             }
         });
