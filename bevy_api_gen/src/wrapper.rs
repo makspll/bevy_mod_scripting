@@ -145,7 +145,7 @@ impl WrappedItem<'_> {
 
         writer.write_line("Methods");
         writer.open_paren();
-        let mut is_global = false;
+        let mut has_global_methods = false;
         self.impl_items
             .iter()
             .flat_map(|(_, items)| items.iter())
@@ -183,6 +183,7 @@ impl WrappedItem<'_> {
 
                 inner_writer.write_inline(v.name.as_ref().unwrap());
                 inner_writer.write_inline("(");
+                let mut is_global_method = true;
                 decl.inputs
                     .iter()
                     .enumerate()
@@ -212,9 +213,7 @@ impl WrappedItem<'_> {
                                         .then_some(ArgWrapperType::Wrapped)
                                 });
 
-                            if arg_type.is_self() {
-                                is_global = true;
-                            }
+
                             match wrapper_type {
                                 Some(w) => {
                                     inner_writer.write_inline(&Arg::new(arg_type, w).to_string())
@@ -229,6 +228,7 @@ impl WrappedItem<'_> {
                             if declaration_name != "self" && i + 1 != decl.inputs.len() {
                                 inner_writer.write_inline(",");
                             } else if declaration_name == "self" {
+                                is_global_method = false;
                                 // macro needs to recognize the self receiver
                                 inner_writer.write_inline(":");
                             }
@@ -236,6 +236,11 @@ impl WrappedItem<'_> {
                             errors.push(format!("Unsupported argument {}", arg_type.unwrap_err()))
                         };
                     });
+
+                if is_global_method {
+                    has_global_methods = true;
+                }
+
                 inner_writer.write_inline(")");
 
                 decl.output.as_ref().map(|tp| {
@@ -300,7 +305,8 @@ impl WrappedItem<'_> {
                     writer.newline();
                 }
             });
-        self.has_global_methods = is_global;
+
+        self.has_global_methods = has_global_methods;
         writer.close_paren();
 
         writer.write_line("+ Fields");
@@ -441,8 +447,6 @@ impl WrappedItem<'_> {
                                                     .then_some(ArgWrapperType::Raw)
                                             })
                                             .unwrap();
-
-                                        // eprintln!("{base_ident}, {wrapper_type}, {}",config.types.contains_key(base_ident));
 
                                         Ok(Arg::new(arg_type, wrapper_type).to_string())
                                     })

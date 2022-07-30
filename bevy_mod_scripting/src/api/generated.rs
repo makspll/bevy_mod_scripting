@@ -9068,32 +9068,24 @@ pub(crate) struct BevyAPIGlobals;
 impl tealr::mlu::ExportInstances for BevyAPIGlobals{
 	fn add_instances<'lua, T: tealr::mlu::InstanceCollector<'lua>>(self, instances: &mut T) -> LuaResult<()>
 	{
-		instances.add_instance("AnimationPlayer".into(), tealr::mlu::UserDataProxy::<LuaAnimationPlayer>::new)?;
 		instances.add_instance("Name".into(), tealr::mlu::UserDataProxy::<LuaName>::new)?;
 		instances.add_instance("Children".into(), tealr::mlu::UserDataProxy::<LuaChildren>::new)?;
-		instances.add_instance("Parent".into(), tealr::mlu::UserDataProxy::<LuaParent>::new)?;
 		instances.add_instance("Text".into(), tealr::mlu::UserDataProxy::<LuaText>::new)?;
+		instances.add_instance("TextSection".into(), tealr::mlu::UserDataProxy::<LuaTextSection>::new)?;
 		instances.add_instance("Stopwatch".into(), tealr::mlu::UserDataProxy::<LuaStopwatch>::new)?;
 		instances.add_instance("Timer".into(), tealr::mlu::UserDataProxy::<LuaTimer>::new)?;
 		instances.add_instance("Entity".into(), tealr::mlu::UserDataProxy::<LuaEntity>::new)?;
 		instances.add_instance("Transform".into(), tealr::mlu::UserDataProxy::<LuaTransform>::new)?;
 		instances.add_instance("GlobalTransform".into(), tealr::mlu::UserDataProxy::<LuaGlobalTransform>::new)?;
-		instances.add_instance("CubemapVisibleEntities".into(), tealr::mlu::UserDataProxy::<LuaCubemapVisibleEntities>::new)?;
-		instances.add_instance("Anchor".into(), tealr::mlu::UserDataProxy::<LuaAnchor>::new)?;
-		instances.add_instance("Rect".into(), tealr::mlu::UserDataProxy::<LuaRect>::new)?;
+		instances.add_instance("TextureAtlasSprite".into(), tealr::mlu::UserDataProxy::<LuaTextureAtlasSprite>::new)?;
 		instances.add_instance("RenderLayers".into(), tealr::mlu::UserDataProxy::<LuaRenderLayers>::new)?;
-		instances.add_instance("VisibleEntities".into(), tealr::mlu::UserDataProxy::<LuaVisibleEntities>::new)?;
+		instances.add_instance("Visibility".into(), tealr::mlu::UserDataProxy::<LuaVisibility>::new)?;
 		instances.add_instance("ComputedVisibility".into(), tealr::mlu::UserDataProxy::<LuaComputedVisibility>::new)?;
 		instances.add_instance("Color".into(), tealr::mlu::UserDataProxy::<LuaColor>::new)?;
 		instances.add_instance("Aabb".into(), tealr::mlu::UserDataProxy::<LuaAabb>::new)?;
-		instances.add_instance("CubemapFrusta".into(), tealr::mlu::UserDataProxy::<LuaCubemapFrusta>::new)?;
 		instances.add_instance("Frustum".into(), tealr::mlu::UserDataProxy::<LuaFrustum>::new)?;
-		instances.add_instance("Camera".into(), tealr::mlu::UserDataProxy::<LuaCamera>::new)?;
-		instances.add_instance("RenderTarget".into(), tealr::mlu::UserDataProxy::<LuaRenderTarget>::new)?;
-		instances.add_instance("Projection".into(), tealr::mlu::UserDataProxy::<LuaProjection>::new)?;
-		instances.add_instance("OrthographicProjection".into(), tealr::mlu::UserDataProxy::<LuaOrthographicProjection>::new)?;
-		instances.add_instance("PerspectiveProjection".into(), tealr::mlu::UserDataProxy::<LuaPerspectiveProjection>::new)?;
-		instances.add_instance("AssetPathId".into(), tealr::mlu::UserDataProxy::<LuaAssetPathId>::new)?;
+		instances.add_instance("CameraRenderGraph".into(), tealr::mlu::UserDataProxy::<LuaCameraRenderGraph>::new)?;
+		instances.add_instance("HandleId".into(), tealr::mlu::UserDataProxy::<LuaHandleId>::new)?;
 		instances.add_instance("Vec2".into(), tealr::mlu::UserDataProxy::<LuaVec2>::new)?;
 		instances.add_instance("Vec3".into(), tealr::mlu::UserDataProxy::<LuaVec3>::new)?;
 		instances.add_instance("Vec3A".into(), tealr::mlu::UserDataProxy::<LuaVec3A>::new)?;
@@ -9162,20 +9154,19 @@ impl APIProvider for LuaBevyAPIProvider{
 			.process_type::<LuaImageMode>()
 			.process_type::<LuaDisplay>()
 			.process_type::<LuaAnimationPlayer>()
-			.process_type::<tealr::mlu::UserDataProxy<LuaAnimationPlayer>>()
 			.process_type::<LuaName>()
 			.process_type::<tealr::mlu::UserDataProxy<LuaName>>()
 			.process_type::<LuaGltfExtras>()
 			.process_type::<LuaChildren>()
 			.process_type::<tealr::mlu::UserDataProxy<LuaChildren>>()
 			.process_type::<LuaParent>()
-			.process_type::<tealr::mlu::UserDataProxy<LuaParent>>()
 			.process_type::<LuaText2dBounds>()
 			.process_type::<LuaText2dSize>()
 			.process_type::<LuaText>()
 			.process_type::<tealr::mlu::UserDataProxy<LuaText>>()
 			.process_type::<LuaTextAlignment>()
 			.process_type::<LuaTextSection>()
+			.process_type::<tealr::mlu::UserDataProxy<LuaTextSection>>()
 			.process_type::<LuaTextStyle>()
 			.process_type::<LuaHorizontalAlign>()
 			.process_type::<LuaVerticalAlign>()
@@ -9191,7 +9182,6 @@ impl APIProvider for LuaBevyAPIProvider{
 			.process_type::<tealr::mlu::UserDataProxy<LuaGlobalTransform>>()
 			.process_type::<LuaAmbientLight>()
 			.process_type::<LuaCubemapVisibleEntities>()
-			.process_type::<tealr::mlu::UserDataProxy<LuaCubemapVisibleEntities>>()
 			.process_type::<LuaDirectionalLight>()
 			.process_type::<LuaDirectionalLightShadowMap>()
 			.process_type::<LuaNotShadowCaster>()
@@ -9207,17 +9197,16 @@ impl APIProvider for LuaBevyAPIProvider{
 			.process_type::<LuaCamera2d>()
 			.process_type::<LuaCamera3d>()
 			.process_type::<LuaAnchor>()
-			.process_type::<tealr::mlu::UserDataProxy<LuaAnchor>>()
 			.process_type::<LuaMesh2dHandle>()
 			.process_type::<LuaTextureAtlasSprite>()
+			.process_type::<tealr::mlu::UserDataProxy<LuaTextureAtlasSprite>>()
 			.process_type::<LuaSprite>()
 			.process_type::<LuaRect>()
-			.process_type::<tealr::mlu::UserDataProxy<LuaRect>>()
 			.process_type::<LuaRenderLayers>()
 			.process_type::<tealr::mlu::UserDataProxy<LuaRenderLayers>>()
 			.process_type::<LuaVisibility>()
+			.process_type::<tealr::mlu::UserDataProxy<LuaVisibility>>()
 			.process_type::<LuaVisibleEntities>()
-			.process_type::<tealr::mlu::UserDataProxy<LuaVisibleEntities>>()
 			.process_type::<LuaComputedVisibility>()
 			.process_type::<tealr::mlu::UserDataProxy<LuaComputedVisibility>>()
 			.process_type::<LuaSkinnedMesh>()
@@ -9228,28 +9217,23 @@ impl APIProvider for LuaBevyAPIProvider{
 			.process_type::<LuaAabb>()
 			.process_type::<tealr::mlu::UserDataProxy<LuaAabb>>()
 			.process_type::<LuaCubemapFrusta>()
-			.process_type::<tealr::mlu::UserDataProxy<LuaCubemapFrusta>>()
 			.process_type::<LuaFrustum>()
 			.process_type::<tealr::mlu::UserDataProxy<LuaFrustum>>()
 			.process_type::<LuaMsaa>()
 			.process_type::<LuaCamera>()
-			.process_type::<tealr::mlu::UserDataProxy<LuaCamera>>()
 			.process_type::<LuaRenderTarget>()
-			.process_type::<tealr::mlu::UserDataProxy<LuaRenderTarget>>()
 			.process_type::<LuaViewport>()
 			.process_type::<LuaProjection>()
-			.process_type::<tealr::mlu::UserDataProxy<LuaProjection>>()
 			.process_type::<LuaOrthographicProjection>()
-			.process_type::<tealr::mlu::UserDataProxy<LuaOrthographicProjection>>()
 			.process_type::<LuaPerspectiveProjection>()
-			.process_type::<tealr::mlu::UserDataProxy<LuaPerspectiveProjection>>()
 			.process_type::<LuaDepthCalculation>()
 			.process_type::<LuaCameraRenderGraph>()
+			.process_type::<tealr::mlu::UserDataProxy<LuaCameraRenderGraph>>()
 			.process_type::<LuaAssetPathId>()
-			.process_type::<tealr::mlu::UserDataProxy<LuaAssetPathId>>()
 			.process_type::<LuaLabelId>()
 			.process_type::<LuaSourcePathId>()
 			.process_type::<LuaHandleId>()
+			.process_type::<tealr::mlu::UserDataProxy<LuaHandleId>>()
 			.process_type::<LuaVec2>()
 			.process_type::<tealr::mlu::UserDataProxy<LuaVec2>>()
 			.process_type::<LuaVec3>()
@@ -9433,22 +9417,22 @@ impl APIProvider for LuaBevyAPIProvider{
 		app.register_foreign_lua_type::<Quat>();
 		app.register_foreign_lua_type::<DQuat>();
 		app.register_foreign_lua_type::<EulerRot>();
-		app.register_foreign_lua_type::<u32>();
+		app.register_foreign_lua_type::<f64>();
+		app.register_foreign_lua_type::<i8>();
+		app.register_foreign_lua_type::<bool>();
 		app.register_foreign_lua_type::<u16>();
 		app.register_foreign_lua_type::<i128>();
-		app.register_foreign_lua_type::<usize>();
+		app.register_foreign_lua_type::<isize>();
+		app.register_foreign_lua_type::<f32>();
+		app.register_foreign_lua_type::<i32>();
 		app.register_foreign_lua_type::<u64>();
 		app.register_foreign_lua_type::<i64>();
-		app.register_foreign_lua_type::<f32>();
-		app.register_foreign_lua_type::<f64>();
-		app.register_foreign_lua_type::<u8>();
-		app.register_foreign_lua_type::<String>();
-		app.register_foreign_lua_type::<bool>();
-		app.register_foreign_lua_type::<isize>();
-		app.register_foreign_lua_type::<i32>();
-		app.register_foreign_lua_type::<i8>();
+		app.register_foreign_lua_type::<u32>();
 		app.register_foreign_lua_type::<i16>();
 		app.register_foreign_lua_type::<u128>();
+		app.register_foreign_lua_type::<u8>();
+		app.register_foreign_lua_type::<String>();
+		app.register_foreign_lua_type::<usize>();
 	}
 }
 

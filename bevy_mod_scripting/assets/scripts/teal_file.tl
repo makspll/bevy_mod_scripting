@@ -12,5 +12,6 @@
 -- but you might decide to to provide your modders with a level playing ground!
 function on_update()
     local lol : string = my_api.my_function()
+    
     print(lol)
 end
