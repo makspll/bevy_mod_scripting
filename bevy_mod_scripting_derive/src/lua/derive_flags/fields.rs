@@ -19,23 +19,22 @@ pub(crate) fn make_fields<'a>(
         _ => panic!("Expected Fields flag"),
     };
 
+    // each field is mapped to a getter + setter function
     for f in fields {
-        // resolve the type of this field
-        let field_type = f
-            .type_
-            .type_or_resolve(|| SimpleType::BaseIdent(new_type.args.base_type_ident.clone()));
-        if field_type.is_any_ref() {
+        if f.type_.is_any_ref() {
             return Err(syn::Error::new_spanned(
                 f,
                 "Reference fields are not supported",
             ));
         }
 
-        let type_string;
+        // resolve the type of this field
+        let mut resolved_field_type = f.type_
+            .type_or_resolve(|| SimpleType::BaseIdent(new_type.args.base_type_ident.clone()))
+            .into_owned();
+
         if f.type_.is_wrapped() || f.type_.is_self() {
-            type_string = format_ident!("Lua{}", field_type.base_ident()).to_string();
-        } else {
-            type_string = field_type.base_ident().to_string();
+            resolved_field_type.mutate_base_ident(|ident| *ident = format_ident!("Lua{ident}"));
         }
 
         let id = &f.member;
@@ -43,20 +42,17 @@ pub(crate) fn make_fields<'a>(
 
         let ds: Punctuated<Attribute, EmptyToken> = f.docstring.iter().cloned().collect();
 
-        let field_type_ident = f
-            .type_
-            .is_wrapped()
-            .then(|| format_ident!("Lua{}", field_type.base_ident()))
-            .unwrap_or_else(|| field_type.base_ident().clone());
+        let field_type_ident = resolved_field_type.base_ident();
+        let field_type_string = field_type_ident.to_string();
 
+        // make the getter method
         let expr_getter = f.type_.is_wrapped()
             .then(|| {
-                let field_type_ident = format_ident!("Lua{}",field_type.base_ident());
                 quote_spanned!{f.span()=>
                     Ok(#field_type_ident::new_ref(s.script_ref().index(std::borrow::Cow::Borrowed(#id_string))))
                 }
             }).unwrap_or_else(|| {
-                if type_string == "ReflectedValue" {
+                if field_type_string == "ReflectedValue" {
                     return quote_spanned!{f.span()=>
                         Ok(s.script_ref().index(std::borrow::Cow::Borrowed(#id_string)))
                     }
@@ -73,11 +69,12 @@ pub(crate) fn make_fields<'a>(
             }
         });
 
+        // make the setter method
         let expr_setter = f.type_.is_wrapped()
             .then(|| {quote_spanned!{f.span()=>
                 Ok(o.apply_self_to_base(&mut s.script_ref().index(std::borrow::Cow::Borrowed(#id_string)))?)
             }}).unwrap_or_else(|| {
-                if type_string == "ReflectedValue" {
+                if field_type_string == "ReflectedValue" {
                     return quote_spanned!{f.span()=>
                         Ok(s.script_ref().index(std::borrow::Cow::Borrowed(#id_string)).apply(&o.ref_)?)
                     }

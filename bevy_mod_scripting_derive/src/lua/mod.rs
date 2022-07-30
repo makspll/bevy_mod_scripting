@@ -187,7 +187,7 @@ impl WrapperImplementor for LuaImplementor {
 
                 }
                 flag @ DeriveFlag::Methods {..} => {
-                    make_auto_methods(flag,new_type,&mut out);
+                    make_methods(flag,new_type,&mut out);
                 },
                 flag @ DeriveFlag::BinOps {..} =>  {  
                     make_bin_ops(self, flag, new_type, &mut out)?;

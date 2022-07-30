@@ -75,7 +75,8 @@ pub(crate) struct OpExpr {
     pub left: Option<ArgType>,
     pub op: OpName,
     pub right: ArgType,
-    pub return_type: Option<(Token![->], ArgType)>,
+    pub arrow: Token![->],
+    pub return_type: ArgType,
 }
 
 impl Parse for OpExpr {
@@ -88,10 +89,8 @@ impl Parse for OpExpr {
                 .unwrap_or(Ok(None))?,
             op: input.parse()?,
             right: input.parse()?,
-            return_type: input
-                .parse::<Token![->]>()
-                .and_then(|v| Ok((v, input.parse()?)))
-                .ok(),
+            arrow: input.parse()?,
+            return_type: input.parse()?
         };
 
         if s.has_receiver() {
@@ -107,13 +106,10 @@ impl ToTokens for OpExpr {
         let left = &self.left;
         let op = &self.op;
         let right = &self.right;
-        let return_ = self
-            .return_type
-            .as_ref()
-            .map(|(a, t)| quote::quote! {#a #t});
+        let return_type = &self.return_type;
 
         tokens.extend(quote::quote! {
-            #left #op #right #return_
+            #left #op #right -> #return_type
         })
     }
 }
@@ -140,10 +136,6 @@ impl OpExpr {
         }
     }
 
-    /// maps on return type if it is some otherwise returns none
-    pub fn map_return_type<O, F: FnOnce(&ArgType) -> O>(&self, f: F) -> Option<O> {
-        self.return_type.as_ref().map(|(_, v)| f(v))
-    }
 
     /// Maps the given side if it exists (right is guaranteed to exist, left is not)
     pub fn map_side<O, F: FnOnce(&ArgType) -> O>(&self, side: Side, f: F) -> Option<O> {
@@ -162,12 +154,4 @@ impl OpExpr {
         )
     }
 
-    /// Maps the return type and if none is present maps the given default instead
-    pub fn map_return_type_with_default<O, F: FnMut(&ArgType) -> O>(
-        &self,
-        def: ArgType,
-        mut f: F,
-    ) -> O {
-        f(self.return_type.as_ref().map(|(_, t)| t).unwrap_or(&def))
-    }
 }

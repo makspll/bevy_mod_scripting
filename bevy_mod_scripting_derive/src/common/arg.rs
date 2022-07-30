@@ -114,6 +114,14 @@ impl SimpleType {
         }
     }
 
+    /// consumes self and produces the base ident
+    pub fn into_base_ident(self) -> Ident {
+        match self {
+            SimpleType::BaseIdent(b) => b,
+            SimpleType::Ref {type_,..} => type_.into_base_ident(),
+        }
+    }
+
     pub fn mutate_base_ident<F: FnMut(&mut Ident)>(&mut self, mut f: F) {
         match self {
             SimpleType::BaseIdent(b) => f(b),

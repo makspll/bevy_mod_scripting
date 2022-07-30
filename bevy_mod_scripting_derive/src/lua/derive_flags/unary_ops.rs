@@ -29,11 +29,11 @@ pub(crate) fn make_unary_ops<'a>(
                 }
             })
             .expect("Expected unary expression");
-        op.map_return_type_with_default(parse_quote! {self}, |v| {
-            // return has to be self due to how OpExpr works
-            let resolved_type = v.self_().unwrap().resolve_as(parse_quote!(#newtype));
-            body = quote_spanned! {op.span()=>#resolved_type::new(#body)}
-        });
+
+        // return has to be self due to how OpExpr works
+        // wrap in constructor
+        let resolved_type = op.right.self_().unwrap().resolve_as(parse_quote!(#newtype));
+        body = quote_spanned! {op.span()=>#resolved_type::new(#body)};
 
         out.push(parse_quote_spanned! {ident.span()=>
             (mlua::MetaMethod::#meta) => |_,ud,()|{

@@ -12,12 +12,12 @@ use crate::{
     EmptyToken,
 };
 
-pub(crate) fn make_auto_methods<'a>(
+pub(crate) fn make_methods<'a>(
     flag: &DeriveFlag,
     new_type: &'a Newtype,
     out: &mut Vec<LuaMethod>,
 ) {
-    let newtype_name = &new_type.args.wrapper_type;
+    let wrapper_type = &new_type.args.wrapper_type;
     let wrapped_type = &new_type.args.base_type_ident;
 
     let (ident, paren, methods) = match flag {
@@ -26,8 +26,9 @@ pub(crate) fn make_auto_methods<'a>(
             paren,
             methods,
         } => (ident, paren, methods),
-        _ => panic!("Expected AutoMethods flag"),
+        _ => panic!("Expected Methods flag"),
     };
+    
     out.extend(methods.iter()
     .map(|m| {
 

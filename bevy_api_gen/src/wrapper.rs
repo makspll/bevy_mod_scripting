@@ -511,7 +511,7 @@ impl WrappedItem<'_> {
         UNARY_OPS.into_iter().for_each(|(op, rep)| {
             self.impl_items.get(op).map(|items| {
                 items.iter().for_each(|(_, _)| {
-                    writer.write_line(&format!("{rep} self"));
+                    writer.write_line(&format!("{rep} self -> self"));
                 });
             });
         });
