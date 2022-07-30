@@ -121,6 +121,15 @@ impl SimpleType {
         }
     }
 
+    /// Consumes self and produces a simple type without any outer references
+    /// e.g. `&MyType` -> `MyType`
+    pub fn strip_outer_refs(self) -> Self {
+        match self {
+            SimpleType::BaseIdent(_) => self,
+            SimpleType::Ref { ampersand, mut_, type_ } => *type_,
+        }
+    }
+
     pub fn is_any_ref(&self) -> bool {
         if let Self::Ref { .. } = self {
             true

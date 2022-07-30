@@ -3,7 +3,7 @@ use std::iter::once;
 use proc_macro2::Span;
 use quote::{format_ident, quote_spanned};
 use syn::{
-    parse_quote_spanned, punctuated::Punctuated, spanned::Spanned, Attribute, LitInt, Token,
+    parse_quote_spanned, punctuated::Punctuated, spanned::Spanned, LitInt, Token,
 };
 
 use crate::{
@@ -30,48 +30,30 @@ pub(crate) fn make_auto_methods<'a>(
     };
     out.extend(methods.iter()
     .map(|m| {
-        let ident = &m.ident;
-        let ident_str = ident.to_string();
 
-        let self_arg_ident = format_ident!("s");
-        let static_;
-        let fn_;
-        let mut_;
-        let self_type = if let Some((self_,_)) = &m.self_ {
-            static_ = None;
-            fn_ = None;            
-            if self_.is_any_ref(){
-                if self_.is_mut_ref(){
-                    mut_ = Some(Token![mut](Span::call_site()));
-                } else {
-                    mut_ = None;
-                }
-            } else {
-                mut_ = None;
-            }
-            Some(self_)
-        } else {
-            static_ = Some(Token![static](Span::call_site()));
-            fn_ = Some(Token![fn](Span::call_site()));
-            mut_ = None;
-            None
-        };
+        // first go through each parameter and remember identifiers + types of each
+        let mut parameter_identifiers = Vec::default();
+        let mut parameter_types = Vec::default();
 
-        let mut arg_idents = Vec::default();
-        let mut arg_types = Vec::default();
-
-        let inner_args : Punctuated<proc_macro2::TokenStream,Token![,]> = m.args.iter()
+        let parameters : Punctuated<proc_macro2::TokenStream,Token![,]> = m.args.iter()
             .enumerate()
             .map(|(idx,arg_type)| {
                 let lit = LitInt::new(&idx.to_string(),m.span());
                 let lit = format_ident!("a_{lit}",span=m.span());
 
-                arg_idents.push(lit.clone());
-                arg_types.push(arg_type.clone());
+                // store the identifier and type
+                parameter_identifiers.push(lit.clone());
 
-                let is_ref = arg_type.is_any_ref();
-
-                if (arg_type.is_wrapped() || arg_type.is_self()) && !is_ref{
+                // the paramter type must be stripped of outermost references
+                // and also a prefix for wrapper types must be addded
+                let mut resolved_parameter_type = arg_type.type_or_resolve(|| SimpleType::BaseIdent(wrapped_type.clone())).into_owned();
+                if arg_type.is_wrapped() || arg_type.is_self() {
+                    resolved_parameter_type.mutate_base_ident(|ident| *ident = format_ident!("Lua{ident}"));
+                }
+                parameter_types.push(resolved_parameter_type.strip_outer_refs());
+                
+                // finally produce an expression to be used as parameter to the method/function call
+                if (arg_type.is_wrapped() || arg_type.is_self()) && !arg_type.is_any_ref(){
                     quote_spanned!{m.span()=>
                         #lit.inner()?
                     }
@@ -82,83 +64,84 @@ pub(crate) fn make_auto_methods<'a>(
                 }
         }).collect();
 
+        // we build final closure body in steps, first
+        // create the function call, either static or from the receiver.
+        let method_identifier = &m.ident;
         let base_ident = &new_type.args.base_type_ident;
 
-        let out_type = &m.out;
-
-        // create function call first
-        let mut inner_expr =  if let Some(self_) = self_type {        
+        let receiver_argument_identifier = format_ident!("s");
+        let static_;
+        let fn_;
+        let mut_;
+        let mut body;
+        if let Some((self_,_)) = &m.self_ {
+         
             if self_.is_any_ref(){
-                // the s will come from a val or val_mut call
-                quote_spanned!(m.span()=>#self_arg_ident.#ident(#inner_args))
-            } else  {
-                quote_spanned!(m.span()=>#self_arg_ident.inner()?.#ident(#inner_args))
+                body = quote_spanned!(m.span()=>#receiver_argument_identifier.#method_identifier(#parameters));
+                if self_.is_mut_ref(){
+                    mut_ = Some(Token![mut](Span::call_site()));
+                } else {
+                    mut_ = None;
+                }
+            } else{
+                body = quote_spanned!(m.span()=>#receiver_argument_identifier.inner()?.#method_identifier(#parameters));
+                mut_ = None;
             }
+
+            static_ = None;
+            fn_ = None;  
         } else {
-            quote_spanned!(m.span()=>#base_ident::#ident(#inner_args))
+            body = quote_spanned!(m.span()=>#base_ident::#method_identifier(#parameters));
+            static_ = Some(Token![static](Span::call_site()));
+            fn_ = Some(Token![fn](Span::call_site()));
+            mut_ = None;
         };
 
-        // then wrap it in constructor if necessary
-        if let Some(out_type) = out_type{
+        // call wrapper constructor on produced value if necessary (if output is also wrapped)
+        m.out.as_ref().map(|out_type| {
             if out_type.is_wrapped() || out_type.is_self(){
                 let resolved_out_type = out_type.type_or_resolve(|| SimpleType::BaseIdent(wrapped_type.clone()));
                 let wrapper_out_type = format_ident!("Lua{}",resolved_out_type.base_ident());
-                inner_expr = quote_spanned!{m.span()=>
-                    #wrapper_out_type::new(#inner_expr)
+                body = quote_spanned!{m.span()=>
+                    #wrapper_out_type::new(#body)
                 };
             } 
-        }
-
-        // wrap in ok 
-        inner_expr = quote_spanned!(m.span()=>Ok(#inner_expr));
-
-
-        // and then wrap in getters for every argument which is a reference including self if it exists
-        let all_ref_iter = m.args
-                .iter()
-                .zip(arg_idents.iter())
-                .map(|(a,b)| (a.is_any_ref().then_some(a),b))
-                .chain(once((self_type,&self_arg_ident)))
-                .filter_map(|(a,b)| Some((a?,b)));
-        
-        for (arg,arg_ident) in all_ref_iter
-        {
-            if arg.is_any_ref() {
-                let method_call = arg.is_mut_ref()
-                .then(|| format_ident!("val_mut",span=arg.span()))
-                .unwrap_or_else(|| format_ident!("val",span=arg.span()));
-                inner_expr = quote_spanned!{m.span()=>
-                    #arg_ident.#method_call(|#arg_ident| #inner_expr)?
-                }            
-            }
-         
-        }
-
-        let self_ident = static_.map(|_| quote::quote!{})
-            .unwrap_or(quote_spanned!{m.span()=>#self_arg_ident,});
-        let ds : Punctuated<Attribute,EmptyToken> = m.docstring.iter().cloned().collect();
-
-        let args_without_refs = arg_types.iter().map(|type_| {
-            let mut t = type_.type_or_resolve(|| SimpleType::BaseIdent(wrapped_type.clone())).into_owned();
-            
-            if type_.is_wrapped() || type_.is_self() {
-                t.mutate_base_ident(|i| *i = format_ident!("Lua{i}"));
-            }
-
-            if let SimpleType::Ref{ type_, .. } = t{
-                *type_
-            } else {
-                t
-            }
         });
 
-        // now if our output is &self or &mut self, and the only other self reference is the receiver
-        // we can just return the wrapper
+        // we must output a result so wrap in Ok.
+        body = quote_spanned!(m.span()=>Ok(#body));
+
+        // for every wrapper involved as a parameter (and possibly the `self` receiver) which is a reference,
+        // wrap the expression in a val/val_mut call, to allow references as parameters
+        m.args
+            .iter()
+            .zip(parameter_identifiers.iter())
+            .map(|(a,b)| (a.is_any_ref().then_some(a),b))
+            .chain(once((m.self_.as_ref().map(|(v,_)|v),&receiver_argument_identifier)))
+            .filter_map(|(a,b)| Some((a?,b)))
+            .for_each(|(arg,arg_ident)| {
+                if arg.is_any_ref() {
+                    let method_call = arg.is_mut_ref()
+                    .then(|| format_ident!("val_mut",span=arg.span()))
+                    .unwrap_or_else(|| format_ident!("val",span=arg.span()));
+                    body = quote_spanned!{m.span()=>
+                        #arg_ident.#method_call(|#arg_ident| #body)?
+                    }            
+                }
+            });
 
 
+        // finally generate the full method definition
+
+        let docstrings = m.docstring.iter().collect::<Punctuated<_,EmptyToken>>();
+        let method_identifier_string = method_identifier.to_string();
+        let self_ident = m.self_.as_ref()
+            .map(|_| quote_spanned!(m.span()=>#receiver_argument_identifier,))
+            .unwrap_or_else(|| Default::default());
+        
         parse_quote_spanned!{m.span()=>            
-            #ds
-            #static_ #mut_ #fn_ #ident_str =>|_,#self_ident (#(#arg_idents),*):(#(#args_without_refs),*)| #inner_expr
+            #docstrings
+            #static_ #mut_ #fn_ #method_identifier_string =>|_,#self_ident (#(#parameter_identifiers),*):(#(#parameter_types),*)| #body
         }
     }).collect::<Vec<_>>())
 }
