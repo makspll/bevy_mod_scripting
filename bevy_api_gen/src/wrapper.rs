@@ -191,28 +191,9 @@ impl WrappedItem<'_> {
                         let arg_type: Result<ArgType, _> = tp.try_into();
 
                         if let Ok(arg_type) = arg_type {
-                            let base_ident = arg_type
-                                .base_ident() // resolve self for lookup, print actual `self` tho
-                                .unwrap_or_else(|_| self.wrapped_type.as_str());
-
                             // if the underlying ident is self, we shouldn't wrap it when printing it
                             // if type is unknown no wrapper exists
-                            let wrapper_type: Option<ArgWrapperType> = arg_type
-                                .is_self()
-                                .then(|| ArgWrapperType::None)
-                                .or_else(|| {
-                                    config
-                                        .primitives
-                                        .contains(base_ident)
-                                        .then_some(ArgWrapperType::Raw)
-                                })
-                                .or_else(|| {
-                                    config
-                                        .types
-                                        .contains_key(base_ident)
-                                        .then_some(ArgWrapperType::Wrapped)
-                                });
-
+                            let wrapper_type: Option<ArgWrapperType> = ArgWrapperType::with_config(&self.wrapped_type, &arg_type, config);
 
                             match wrapper_type {
                                 Some(w) => {
@@ -220,7 +201,7 @@ impl WrappedItem<'_> {
                                 }
                                 None => {
                                     inner_writer.write_inline(&format!("<invalid: {arg_type}>"));
-                                    errors.push(format!("Unsupported argument {}", arg_type));
+                                    errors.push(format!("Unsupported argument {}, not a wrapped type or primitive", arg_type));
                                     return;
                                 }
                             };
@@ -233,7 +214,7 @@ impl WrappedItem<'_> {
                                 inner_writer.write_inline(":");
                             }
                         } else {
-                            errors.push(format!("Unsupported argument {}", arg_type.unwrap_err()))
+                            errors.push(format!("Unsupported argument, Not a simple type: {}.", arg_type.unwrap_err()))
                         };
                     });
 
@@ -250,39 +231,23 @@ impl WrappedItem<'_> {
                             errors.push("references are not supported as return types".to_owned());
                             return;
                         }
-                        let base_ident = arg_type
-                            .base_ident() // resolve self for lookup
-                            .unwrap_or_else(|_| self.wrapped_type.as_str());
 
                         // if the underlying ident is self, we shouldn't wrap it when printing it
                         // if type is unknown, no wrapper type exists
-                        let wrapper_type: Option<ArgWrapperType> = arg_type
-                            .is_self()
-                            .then(|| ArgWrapperType::None)
-                            .or_else(|| {
-                                config
-                                    .primitives
-                                    .contains(base_ident)
-                                    .then_some(ArgWrapperType::Raw)
-                            })
-                            .or_else(|| {
-                                config
-                                    .types
-                                    .contains_key(base_ident)
-                                    .then_some(ArgWrapperType::Wrapped)
-                            });
+                        let wrapper_type: Option<ArgWrapperType> = ArgWrapperType::with_config(&self.wrapped_type, &arg_type, config);
+                        
                         match wrapper_type {
                             Some(w) => {
                                 inner_writer.write_inline(" -> ");
                                 inner_writer.write_inline(&Arg::new(arg_type, w).to_string());
                             }
                             None => {
-                                errors.push(format!("Unsupported argument {arg_type}"));
+                                errors.push(format!("Unsupported argument, not a wrapped type or primitive {arg_type}"));
                                 inner_writer.write_inline(&format!("<invalid: {arg_type}>"));
                             }
                         }
                     } else {
-                        errors.push(format!("Unsupported argument {}", arg_type.unwrap_err()))
+                        errors.push(format!("Unsupported argument, not a simple type: {}", arg_type.unwrap_err()))
                     }
                 });
 
@@ -426,27 +391,9 @@ impl WrappedItem<'_> {
                                     .map(|(_, t)| {
                                         // check arg is valid
                                         let arg_type: ArgType = t.try_into()?;
-                                        let base_ident = arg_type
-                                            .base_ident() // resolve self for lookup
-                                            .unwrap_or_else(|_| self.wrapped_type.as_str());
 
                                         // if the underlying ident is self, we shouldn't wrap it when printing it
-                                        let wrapper_type: ArgWrapperType = arg_type
-                                            .is_self()
-                                            .then(|| ArgWrapperType::None)
-                                            .or_else(|| {
-                                                config
-                                                    .types
-                                                    .contains_key(base_ident)
-                                                    .then_some(ArgWrapperType::Wrapped)
-                                            })
-                                            .or_else(|| {
-                                                config
-                                                    .primitives
-                                                    .contains(base_ident)
-                                                    .then_some(ArgWrapperType::Raw)
-                                            })
-                                            .unwrap();
+                                        let wrapper_type = ArgWrapperType::with_config(&self.wrapped_type, &arg_type, config).unwrap();
 
                                         Ok(Arg::new(arg_type, wrapper_type).to_string())
                                     })
@@ -475,27 +422,8 @@ impl WrappedItem<'_> {
                                             .ok_or_else(|| expr.clone())?;
 
                                         let arg_type: ArgType = out_type.try_into()?;
-                                        let base_ident = arg_type
-                                            .base_ident() // resolve self for lookup
-                                            .unwrap_or_else(|_| self.wrapped_type.as_str());
-
                                         // if the underlying ident is self, we shouldn't wrap it when printing it
-                                        let wrapper_type: ArgWrapperType = arg_type
-                                            .is_self()
-                                            .then(|| ArgWrapperType::None)
-                                            .or_else(|| {
-                                                config
-                                                    .primitives
-                                                    .contains(base_ident)
-                                                    .then_some(ArgWrapperType::Raw)
-                                            })
-                                            .or_else(|| {
-                                                config
-                                                    .types
-                                                    .contains_key(base_ident)
-                                                    .then_some(ArgWrapperType::Wrapped)
-                                            })
-                                            .unwrap();
+                                        let wrapper_type: ArgWrapperType = ArgWrapperType::with_config(&self.wrapped_type, &arg_type, config).unwrap();
 
                                         if wrapper_type == ArgWrapperType::None {
                                             return Err(arg_type.to_string());

@@ -1,6 +1,6 @@
 use ::std::borrow::Cow;
 
-use crate::{util::impl_tealr_type, ReflectedValue, ScriptRef, ValueIndex};
+use crate::{impl_tealr_type, ReflectedValue, ScriptRef, ValueIndex};
 
 use ::bevy::reflect::ReflectRef;
 

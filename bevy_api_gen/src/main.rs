@@ -177,6 +177,11 @@ pub(crate) fn generate_macros(
         writer.close_brace();
     });
 
+    // write other code
+    for line in config.other.lines() {
+        writer.write_line(line);
+    }
+
     // now create the BevyAPIProvider
     // first the globals
     writer.write_line("#[derive(Default)]");
@@ -246,6 +251,15 @@ pub(crate) fn generate_macros(
             writer.newline();
         }
     }
+
+    // additional type registrations for lua
+    for external_type in &config.manual_lua_types {
+        writer.write_no_newline(".process_type::<");
+        writer.write_inline(external_type);
+        writer.write_inline(">()");
+        writer.newline();
+    }
+    
     writer.close_brace();
     writer.write_line("))");
 

@@ -16,7 +16,7 @@ pub mod langs {
 pub mod api;
 
 pub use bevy_event_priority as events;
-pub use {api::*, error::*, hosts::*, langs::*};
+pub use {api::*, error::*, hosts::*, langs::*, util::*};
 
 #[derive(Default)]
 /// Bevy plugin enabling run-time scripting

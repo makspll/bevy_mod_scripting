@@ -1,4 +1,4 @@
-use crate::{util::impl_tealr_type, ScriptRef};
+use crate::{impl_tealr_type, ScriptRef};
 use ::bevy::ecs::system::Command;
 use ::bevy::hierarchy::BuildWorldChildren;
 use ::std::convert::AsRef;

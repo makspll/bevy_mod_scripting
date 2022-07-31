@@ -16,7 +16,7 @@ T_ID="Hello/World"
 TIME="10"
 # Have valgrind profile criterion running our benchmark for 10 seconds
 
-ERRORS=
+FLAGS=
 
 # # valgrind outputs a callgrind.out.<pid>. We can analyze this with kcachegrind
 # kcachegrind
@@ -53,7 +53,7 @@ generate_api:
 	--json "../target/doc/bevy_reflect.json" \
 	--json "../target/doc/bevy.json" \
 	--json "../target/doc/glam.json" \
-	--config "../api_gen_config.toml" ${ERRORS} \
+	--config "../api_gen_config.toml" ${FLAGS} \
 	> ../bevy_mod_scripting/src/api/generated.rs
 
 make_json_files:

@@ -1,4 +1,5 @@
 /// Implements tealr::TypeName,tealr::TypeBody and mlua::Userdata based on non-generic single token type name implementing TealData
+#[macro_export]
 macro_rules! impl_tealr_type {
     ($v:ty) => {
         impl tealr::TypeName for $v {
@@ -85,6 +86,81 @@ macro_rules! impl_tealr_any_union {
     };
 }
 
+#[macro_export]
+macro_rules! impl_tealr_generic{
+    {
+        $vis:vis struct $name:ident
+    } => {
+        #[derive(Default,Clone,Debug)]
+        $vis struct $name;
+        
+        impl $crate::ValueLuaType for $name {}
+
+        impl ::tealr::mlu::TealData for $name {
+
+        }
+
+        impl ::bevy::reflect::Reflect for $name {
+            fn type_name(&self) -> &str {
+                panic!("This should never be called, I am a dummy implementation");
+            }
+
+            fn get_type_info(&self) -> &'static bevy::reflect::TypeInfo {
+                panic!("This should never be called, I am a dummy implementation");
+            }
+
+            fn into_any(self: Box<Self>) -> Box<dyn std::any::Any> {
+                panic!("This should never be called, I am a dummy implementation");
+            }
+
+            fn as_any(&self) -> &dyn std::any::Any {
+                panic!("This should never be called, I am a dummy implementation");
+            }
+
+            fn as_any_mut(&mut self) -> &mut dyn std::any::Any {
+                panic!("This should never be called, I am a dummy implementation");
+            }
+
+            fn as_reflect(&self) -> &dyn ::bevy::reflect::Reflect {
+                panic!("This should never be called, I am a dummy implementation");
+            }
+
+            fn as_reflect_mut(&mut self) -> &mut dyn ::bevy::reflect::Reflect {
+                panic!("This should never be called, I am a dummy implementation");
+            }
+
+            fn apply(&mut self, _: &dyn ::bevy::reflect::Reflect) {
+                panic!("This should never be called, I am a dummy implementation");
+            }
+
+            fn set(&mut self, _: Box<dyn ::bevy::reflect::Reflect>) -> Result<(), Box<dyn ::bevy::reflect::Reflect>> {
+                panic!("This should never be called, I am a dummy implementation");
+            }
+
+            fn reflect_ref(&self) -> bevy::reflect::ReflectRef {
+                panic!("This should never be called, I am a dummy implementation");
+            }
+
+            fn reflect_mut(&mut self) -> bevy::reflect::ReflectMut {
+                panic!("This should never be called, I am a dummy implementation");
+            }
+
+            fn clone_value(&self) -> Box<dyn ::bevy::reflect::Reflect> {
+                panic!("This should never be called, I am a dummy implementation");
+            }
+        }
+
+        impl ::bevy::reflect::FromReflect for $name {
+            fn from_reflect(_: &dyn ::bevy::reflect::Reflect) -> Option<Self> {
+                panic!("This should never be called, I am a dummy implementation");
+            }
+        }
+
+        $crate::impl_tealr_type!($name);
+    }
+}
+
+
 // /// Implements UserData for type which implements TealData, can handle generics after the type name:
 // /// ```rust,ignore
 // /// impl_user_data!(MyType<'a,T : Debug>);
@@ -104,6 +180,5 @@ macro_rules! impl_tealr_any_union {
 
 //     }
 // }
-pub(crate) use impl_tealr_type;
-pub(crate) use impl_tealr_any_union;
+
 // pub(crate) use impl_user_data;

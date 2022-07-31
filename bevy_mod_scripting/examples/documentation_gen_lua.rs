@@ -1,11 +1,11 @@
-use bevy::prelude::*;
+use bevy::{prelude::*, reflect::FromReflect};
 use bevy_event_priority::PriorityEventWriter;
 use bevy_mod_scripting::{
     api::lua::bevy::LuaBevyAPIProvider,
     langs::mlu::{mlua, mlua::prelude::*, mlua::Value, TealData},
     APIProvider, AddScriptApiProvider, AddScriptHost, AddScriptHostHandler, GenDocumentation,
     LuaDocFragment, LuaEvent, LuaFile, RLuaScriptHost, Recipients, Script, ScriptCollection,
-    ScriptError, ScriptingPlugin,
+    ScriptError, ScriptingPlugin, std::LuaVec, ScriptRef, RegisterForeignLuaType, impl_tealr_generic, ValueLuaType,
 };
 use tealr::TypeName;
 
@@ -24,12 +24,14 @@ impl<'lua> ToLua<'lua> for MyLuaArg {
 /// This is acts as a documentation and function holder
 /// We can add some general documentation about what it holds
 /// but also specific function level documenation
-pub struct APIModule;
+pub struct APIModule{
+    my_vec: Vec<usize>,
+}
 
 impl TealData for APIModule {
     fn add_methods<'lua, T: tealr::mlu::TealDataMethods<'lua, Self>>(methods: &mut T) {
         methods.document_type(
-            "This is module level documentation for our api, it will be shown first",
+            "This is type level documentation for our api, it will be shown first",
         );
         methods.document_type("");
 
@@ -41,7 +43,6 @@ impl TealData for APIModule {
             \n```",
         );
         methods.add_function("my_function", |_, ()| Ok("hello world!"));
-
         methods.generate_help();
     }
 }
@@ -57,7 +58,7 @@ impl tealr::mlu::ExportInstances for Export {
         instance_collector: &mut T,
     ) -> mlua::Result<()> {
         instance_collector.document_instance("Documentation for the exposed global variable");
-        instance_collector.add_instance("my_api".into(), |_| Ok(APIModule))
+        instance_collector.add_instance("my_api".into(), |_| Ok(APIModule{my_vec: vec![1,2,3]}))
     }
 }
 
@@ -89,6 +90,17 @@ impl APIProvider for LuaAPIProvider {
                     tw.process_type::<APIModule>()
                     .document_global_instance::<Export>().unwrap()))
     }
+
+    fn register_with_app(&self, _app: &mut App) {}
+    
+}
+
+
+// we use this to demonstrate documenting more complex types
+#[derive(Component, Default, Reflect)]
+#[reflect(Component)]
+pub struct MyComponent {
+    vec: Vec<usize>
 }
 
 fn main() -> std::io::Result<()> {
@@ -96,6 +108,13 @@ fn main() -> std::io::Result<()> {
 
     app.add_plugins(DefaultPlugins)
         .add_plugin(ScriptingPlugin)
+
+        // these are not necessary for documentation generation, but are put here as a reminder
+        // that types need to be registered appropriately to be reachable from scripts
+        .register_type::<MyComponent>()
+        .register_foreign_lua_type::<Vec<usize>>()
+
+        // add the providers and script host
         .add_script_host::<RLuaScriptHost<MyLuaArg>, _>(CoreStage::PostUpdate)
         .add_api_provider::<RLuaScriptHost<MyLuaArg>>(Box::new(LuaAPIProvider))
         .add_api_provider::<RLuaScriptHost<MyLuaArg>>(Box::new(LuaBevyAPIProvider))

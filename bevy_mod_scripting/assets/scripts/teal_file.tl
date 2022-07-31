@@ -1,3 +1,5 @@
+
+local bevy = require("types/global_types")
 -- this is a teal file!
 -- the recommended way of developing with teal is 
 -- opening a new vscode window with the top directory 
@@ -12,6 +14,7 @@
 -- but you might decide to to provide your modders with a level playing ground!
 function on_update()
     local lol : string = my_api.my_function()
-    
+    local hello : bevy.LuaVec<integer>
+
     print(lol)
 end

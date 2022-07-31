@@ -1,4 +1,4 @@
-use rustdoc_types::Type;
+use rustdoc_types::{Type, GenericArg, GenericArgs};
 
 /// A representation of valid argument types
 #[derive(Debug)]
@@ -9,6 +9,10 @@ pub enum ArgType {
     /// `(&)? (mut)? ident:ident`
     Self_,
     Base(String),
+    Generic{
+        base: Box<ArgType>,
+        args: Vec<ArgType>
+    },
     Ref {
         is_mut: bool,
         ref_: Box<ArgType>,
@@ -35,6 +39,18 @@ impl fmt::Display for ArgType {
                 ref_.fmt(f)
             }
             ArgType::Self_ => f.write_str("self"),
+            ArgType::Generic { base, args } => {
+                base.fmt(f)?;
+                f.write_str("<");
+                for (a,i) in args.iter().zip(1..) {
+                    a.fmt(f)?;
+                    if i != args.len() {
+                        f.write_str(",");
+                    }
+                }
+                f.write_str(">")
+            },
+            
         }
     }
 }
@@ -52,13 +68,44 @@ impl TryFrom<&Type> for ArgType {
 
     fn try_from(value: &Type) -> Result<Self, Self::Error> {
         match value {
-            Type::Primitive(name) | Type::Generic(name) | Type::ResolvedPath { name, .. } => {
+            Type::ResolvedPath { name, args, .. } => {
+                let mut processed_args = Vec::default();
+
+                for a in args {
+                    if let GenericArgs::AngleBracketed { args, bindings } = a.as_ref() {
+                        for generic in args {
+                            match generic {
+                                GenericArg::Type(type_) => processed_args.push(type_.try_into()?),
+                                _ => return Err("Only types are allowed as generic arguments".to_owned())
+                            }
+                        }
+                        if !bindings.is_empty(){
+                            return Err("Type bindings are not supported".to_owned())
+                        }
+                    } else {
+                        return Err("Parenthesised generics are not supported".to_owned())
+                    }
+                }
+                let base = Type::Primitive(name.to_string()).try_into()?;
+                if let base@ArgType::Base(_) = base {
+                    if !processed_args.is_empty() {
+                        Ok(Self::Generic { base: Box::new(base), args: processed_args })
+                    } else {
+                        Ok(base)
+                    }
+                } else {
+                    return Err("Base is invalid".to_owned())
+                }
+
+
+            },
+            Type::Primitive(name) | Type::Generic(name) => {
                 if name == "Self" {
                     Ok(Self::Self_)
                 } else {
                     Ok(Self::Base(name.split("::").last().unwrap().to_owned()))
                 }
-            }
+            },
             Type::BorrowedRef { mutable, type_, .. } => Ok(Self::Ref {
                 is_mut: *mutable,
                 ref_: Box::new(type_.as_ref().try_into()?),
@@ -78,6 +125,7 @@ impl ArgType {
             ArgType::Base(b) => f(Ok(b)),
             ArgType::Ref { is_mut: _, ref_ } => ref_.map_base(f),
             ArgType::Self_ => f(Err(())),
+            ArgType::Generic { base, .. } => base.map_base(f),
         }
     }
 
@@ -90,6 +138,8 @@ impl ArgType {
             ArgType::Base(b) => f(Ok(b)),
             ArgType::Ref { is_mut: _, ref_ } => ref_.map_base_mut(f),
             ArgType::Self_ => f(Err(())),
+            ArgType::Generic { base, ..} => base.map_base_mut(f),
+            
         }
     }
 
@@ -103,6 +153,8 @@ impl ArgType {
             ArgType::Base(b) => Ok(b),
             ArgType::Ref { is_mut: _, ref_ } => ref_.base_ident(),
             ArgType::Self_ => Err(()),
+            ArgType::Generic { base, .. } => base.base_ident(),
+            
         }
     }
 }
@@ -113,6 +165,29 @@ pub enum ArgWrapperType {
     Wrapped,
     /// in case of `self` argument
     None,
+}
+
+impl ArgWrapperType {
+    pub fn with_config(self_type: &str, type_: &ArgType,config: &Config) -> Option<Self>{
+        let base_ident = type_.base_ident()
+                            .unwrap_or_else(|_| self_type);
+        type_
+            .is_self()
+            .then(|| ArgWrapperType::None)
+            .or_else(|| {
+                config
+                    .primitives
+                    .contains(base_ident)
+                    .then_some(ArgWrapperType::Raw)
+            })
+            .or_else(|| {
+                config
+                    .types
+                    .contains_key(base_ident)
+                    .then_some(ArgWrapperType::Wrapped)
+            })
+    }
+
 }
 
 impl fmt::Display for ArgWrapperType {
@@ -137,6 +212,8 @@ impl Arg {
 }
 
 use std::fmt;
+
+use crate::Config;
 impl fmt::Display for Arg {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         let inner = self.type_.to_string();

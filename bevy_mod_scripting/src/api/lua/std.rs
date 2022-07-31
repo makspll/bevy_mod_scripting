@@ -10,6 +10,7 @@ use crate::{
 use bevy::reflect::FromReflect;
 use bevy::reflect::Reflect;
 
+use tealr::TypeBody;
 use tealr::mlu::mlua::MetaMethod;
 use tealr::mlu::TypedFunction;
 use tealr::mlu::{
@@ -214,11 +215,17 @@ impl<'lua, T: for<'a> ToLuaProxy<'a>> ToLuaProxy<'lua> for Option<T> {
     }
 }
 
-/// A reference to a rust vec, does not need an owned variant since
+/// A reference to a rust vec (vec reference proxy), does not need an owned variant since
 /// lua can natively represent lists of things
 pub struct LuaVec<T> {
     ref_: ScriptRef,
     _ph: PhantomData<T>,
+}
+
+impl <T>Clone for LuaVec<T> {
+    fn clone(&self) -> Self {
+        Self { ref_: self.ref_.clone(), _ph: self._ph.clone() }
+    }
 }
 
 impl<T> LuaVec<T> {
@@ -230,13 +237,9 @@ impl<T> LuaVec<T> {
     }
 }
 
-impl<T: FromReflect> TypeName for LuaVec<T> {
-    fn get_type_parts() -> Cow<'static, [tealr::NamePart]> {
-        Default::default()
-    }
-}
 
-impl<T: FromReflect + LuaProxyable + for<'a> FromLuaProxy<'a> + for<'a> ToLuaProxy<'a>> UserData
+
+impl<T: TypeName + FromReflect + LuaProxyable + for<'a> FromLuaProxy<'a> + for<'a> ToLuaProxy<'a>> UserData
     for LuaVec<T>
 {
     fn add_methods<'lua, M: ::tealr::mlu::mlua::UserDataMethods<'lua, Self>>(methods: &mut M) {
@@ -249,7 +252,34 @@ impl<T: FromReflect + LuaProxyable + for<'a> FromLuaProxy<'a> + for<'a> ToLuaPro
     }
 }
 
-impl<T: FromReflect + LuaProxyable + for<'a> FromLuaProxy<'a> + for<'a> ToLuaProxy<'a>> TealData
+
+impl<T: TypeName> TypeName for LuaVec<T> {
+    fn get_type_parts() -> Cow<'static, [tealr::NamePart]> {
+        let mut parts = Vec::default();
+        parts.push(tealr::NamePart::Type(tealr::TealType{
+            name: Cow::Borrowed("LuaVec"),
+            type_kind: tealr::KindOfType::External,
+            generics: None
+        }));
+        parts.push(tealr::NamePart::Symbol("<".into()));
+        parts.extend(T::get_type_parts().iter().cloned());
+        parts.push(tealr::NamePart::Symbol(">".into()));
+        parts.into()
+    }
+}
+
+impl<T: TypeName + FromReflect + LuaProxyable + for<'a> FromLuaProxy<'a> + for<'a> ToLuaProxy<'a>> TypeBody for LuaVec<T> 
+{
+    fn get_type_body() -> tealr::TypeGenerator {
+        let mut gen = tealr::RecordGenerator::new::<Self>(false);
+        gen.is_user_data = true;
+        <Self as TealData>::add_fields(&mut gen);
+        <Self as TealData>::add_methods(&mut gen);
+        gen.into()    
+    }
+}
+
+impl<T: TypeName + FromReflect + LuaProxyable + for<'a> FromLuaProxy<'a> + for<'a> ToLuaProxy<'a>> TealData
     for LuaVec<T>
 {
     fn add_methods<'lua, M: TealDataMethods<'lua, Self>>(methods: &mut M) {
@@ -314,7 +344,7 @@ impl<T: FromReflect + LuaProxyable + for<'a> FromLuaProxy<'a> + for<'a> ToLuaPro
     }
 }
 
-impl<T: FromReflect + LuaProxyable + for<'a> FromLuaProxy<'a> + for<'a> ToLuaProxy<'a>> LuaProxyable
+impl<T: TypeName + FromReflect + LuaProxyable + for<'a> FromLuaProxy<'a> + for<'a> ToLuaProxy<'a>> LuaProxyable
     for Vec<T>
 {
     fn ref_to_lua<'lua>(self_: ScriptRef, lua: &'lua Lua) -> mlua::Result<Value<'lua>> {
@@ -326,7 +356,6 @@ impl<T: FromReflect + LuaProxyable + for<'a> FromLuaProxy<'a> + for<'a> ToLuaPro
         lua: &'lua Lua,
         new_val: Value<'lua>,
     ) -> mlua::Result<()> {
-        // general idea TODO: in case two script refs are identical we don't need to go through this method at all
 
         match &new_val {
             Value::UserData(ud) => {
@@ -365,10 +394,7 @@ impl<T: FromReflect + LuaProxyable + for<'a> FromLuaProxy<'a> + for<'a> ToLuaPro
     }
 }
 
-impl<
-        'lua,
-        T: for<'a> FromLuaProxy<'a> + for<'a> ToLuaProxy<'a> + Clone + FromReflect + LuaProxyable,
-    > FromLuaProxy<'lua> for Vec<T>
+impl<'lua, T: TypeName + for<'a> FromLuaProxy<'a> + for<'a> ToLuaProxy<'a> + Clone + FromReflect + LuaProxyable> FromLuaProxy<'lua> for Vec<T>
 {
     fn from_lua_proxy(new_val: Value<'lua>, lua: &'lua Lua) -> mlua::Result<Self> {
         match &new_val {

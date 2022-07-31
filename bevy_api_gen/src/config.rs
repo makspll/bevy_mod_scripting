@@ -30,6 +30,8 @@ pub struct Config {
     pub types_: Vec<Newtype>,
 
     pub imports: String,
+    pub other: String,
+    pub manual_lua_types: Vec<String>,
 
     /// Describes the set of non generic things which are representible
     /// as simple lua types and don't need UserData proxies
