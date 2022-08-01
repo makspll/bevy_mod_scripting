@@ -8,8 +8,8 @@ fn main() -> std::io::Result<()> {
 //     events::PriorityEventWriter,
 //     langs::mlu::{mlua, mlua::prelude::*, mlua::Value},
 //     APIProvider, AddScriptApiProvider, AddScriptHost, AddScriptHostHandler, LuaDocFragment,
-//     LuaEvent, LuaFile, RLuaScriptHost, Recipients, Script, ScriptCollection, ScriptError,
-//     ScriptErrorEvent, ScriptingPlugin,
+//     LuaEvent, LuaFile, LuaScriptHost, Recipients, Script, ScriptCollection, ScriptData,
+//     ScriptError, ScriptErrorEvent, ScriptingPlugin,
 // };
 // use std::sync::Mutex;
 
@@ -28,10 +28,11 @@ fn main() -> std::io::Result<()> {
 // /// the custom Lua api, world is provided via a global pointer,
 // /// and callbacks are defined only once at script creation
 // impl APIProvider for LuaAPIProvider {
-//     type Target = Mutex<Lua>;
+//     type APITarget = Mutex<Lua>;
 //     type DocTarget = LuaDocFragment;
+//     type ScriptContext = Mutex<Lua>;
 
-//     fn attach_api(&mut self, ctx: &mut Self::Target) -> Result<(), ScriptError> {
+//     fn attach_api(&mut self, ctx: &mut Self::APITarget) -> Result<(), ScriptError> {
 //         // callbacks can receive any `ToLuaMulti` arguments, here '()' and
 //         // return any `FromLuaMulti` arguments, here a `usize`
 //         // check the Rlua documentation for more details
@@ -53,6 +54,14 @@ fn main() -> std::io::Result<()> {
 //             })?,
 //         )?;
 
+//         Ok(())
+//     }
+
+//     fn setup_script(
+//         &mut self,
+//         _: &ScriptData,
+//         _: &mut Self::ScriptContext,
+//     ) -> Result<(), ScriptError> {
 //         Ok(())
 //     }
 // }
@@ -90,9 +99,9 @@ fn main() -> std::io::Result<()> {
 //         .add_console_command::<RunScriptCmd, _, _>(run_script_cmd)
 //         .add_console_command::<DeleteScriptCmd, _, _>(delete_script_cmd)
 //         // choose and register the script hosts you want to use
-//         .add_script_host::<RLuaScriptHost<MyLuaArg>, _>(CoreStage::PostUpdate)
-//         .add_api_provider::<RLuaScriptHost<MyLuaArg>>(Box::new(LuaAPIProvider))
-//         .add_script_handler_stage::<RLuaScriptHost<MyLuaArg>, _, 0, 0>(CoreStage::PostUpdate)
+//         .add_script_host::<LuaScriptHost<MyLuaArg>, _>(CoreStage::PostUpdate)
+//         .add_api_provider::<LuaScriptHost<MyLuaArg>>(Box::new(LuaAPIProvider))
+//         .add_script_handler_stage::<LuaScriptHost<MyLuaArg>, _, 0, 0>(CoreStage::PostUpdate)
 //         // add your systems
 //         .add_system(trigger_on_update_lua)
 //         .add_system(forward_script_err_to_console);
@@ -133,7 +142,7 @@ fn main() -> std::io::Result<()> {
 
 //                     scripts
 //                         .scripts
-//                         .push(Script::<LuaFile>::new::<RLuaScriptHost<MyLuaArg>>(
+//                         .push(Script::<LuaFile>::new::<LuaScriptHost<MyLuaArg>>(
 //                             path, handle,
 //                         ));
 //                 } else {
@@ -144,7 +153,7 @@ fn main() -> std::io::Result<()> {
 //                 info!("Creating script: scripts/{}", &path);
 
 //                 commands.spawn().insert(ScriptCollection::<LuaFile> {
-//                     scripts: vec![Script::<LuaFile>::new::<RLuaScriptHost<MyLuaArg>>(
+//                     scripts: vec![Script::<LuaFile>::new::<LuaScriptHost<MyLuaArg>>(
 //                         path, handle,
 //                     )],
 //                 });

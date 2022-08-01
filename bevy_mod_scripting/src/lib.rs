@@ -80,7 +80,7 @@ impl GenDocumentation for App {
         {
             info!("Generating documentation");
             let w = &mut self.world;
-            let providers: &APIProviders<T::APITarget, T::DocTarget> = w.resource();
+            let providers: &APIProviders<T> = w.resource();
             if let Err(e) = providers.gen_all() {
                 error!("{}", e);
             }
@@ -108,18 +108,30 @@ impl AddScriptHost for App {
 pub trait AddScriptApiProvider {
     fn add_api_provider<T: ScriptHost>(
         &mut self,
-        provider: Box<dyn APIProvider<Target = T::APITarget, DocTarget = T::DocTarget>>,
+        provider: Box<
+            dyn APIProvider<
+                APITarget = T::APITarget,
+                DocTarget = T::DocTarget,
+                ScriptContext = T::ScriptContext,
+            >,
+        >,
     ) -> &mut Self;
 }
 
 impl AddScriptApiProvider for App {
     fn add_api_provider<T: ScriptHost>(
         &mut self,
-        provider: Box<dyn APIProvider<Target = T::APITarget, DocTarget = T::DocTarget>>,
+        provider: Box<
+            dyn APIProvider<
+                APITarget = T::APITarget,
+                DocTarget = T::DocTarget,
+                ScriptContext = T::ScriptContext,
+            >,
+        >,
     ) -> &mut Self {
         provider.register_with_app(self);
         let w = &mut self.world;
-        let providers: &mut APIProviders<T::APITarget, T::DocTarget> = &mut w.resource_mut();
+        let providers: &mut APIProviders<T> = &mut w.resource_mut();
         providers.providers.push(provider);
         self
     }

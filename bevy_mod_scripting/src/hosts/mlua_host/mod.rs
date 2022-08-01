@@ -3,11 +3,11 @@ pub mod docs;
 
 use crate::{
     api::lua::bevy::{LuaEntity, LuaWorld},
-    APIProviders,
+    APIProviders, ScriptData,
 };
 use crate::{
     script_add_synchronizer, script_hot_reload_handler, script_remove_synchronizer,
-    CachedScriptEventState, FlatScriptData, Recipients, Script, ScriptCollection, ScriptContexts,
+    CachedScriptEventState, Recipients, Script, ScriptCollection, ScriptContexts,
     ScriptError, ScriptErrorEvent, ScriptEvent, ScriptHost,
 };
 use anyhow::Result;
@@ -51,7 +51,7 @@ impl<A: LuaArg> ScriptEvent for LuaEvent<A> {
     }
 }
 
-/// Rlua script host, enables Lua scripting provided by the Rlua library.
+/// Mlua script host, enables Lua scripting provided by the mlua library.
 /// Always provides two global variables to each script by default:
 ///     - `world` - a reference to the `bevy::ecs::World` the script lives in via [`LuaWorld`]
 ///     - `entity` - an `Entity::to_bits` representation of the entity the script is attached to
@@ -79,10 +79,11 @@ impl<A: LuaArg> ScriptEvent for LuaEvent<A> {
 ///    /// the custom Lua api, world is provided via a global pointer,
 ///    /// and callbacks are defined only once at script creation
 ///    impl APIProvider for LuaAPIProvider {
-///        type Target = Mutex<Lua>;
+///        type APITarget = Mutex<Lua>;
 ///        type DocTarget = LuaDocFragment;
+///        type ScriptContext = Mutex<Lua>;
 ///
-///        fn attach_api(&mut self, ctx: &mut Self::Target) -> Result<(),ScriptError> {
+///        fn attach_api(&mut self, ctx: &mut Self::APITarget) -> Result<(),ScriptError> {
 ///            // callbacks can receive any `ToLuaMulti` arguments, here '()' and
 ///            // return any `FromLuaMulti` arguments, here a `usize`
 ///            // check the Rlua documentation for more details
@@ -105,11 +106,11 @@ impl<A: LuaArg> ScriptEvent for LuaEvent<A> {
 ///        }
 ///    }
 /// ```
-pub struct RLuaScriptHost<A: LuaArg> {
+pub struct LuaScriptHost<A: LuaArg> {
     _ph: PhantomData<A>,
 }
 
-impl<A: LuaArg> Default for RLuaScriptHost<A> {
+impl<A: LuaArg> Default for LuaScriptHost<A> {
     fn default() -> Self {
         Self {
             _ph: Default::default(),
@@ -117,10 +118,7 @@ impl<A: LuaArg> Default for RLuaScriptHost<A> {
     }
 }
 
-// unsafe impl<A: LuaArg> Send for RLuaScriptHost<A> {}
-// unsafe impl<A: LuaArg> Sync for RLuaScriptHost<A> {}
-
-impl<A: LuaArg> ScriptHost for RLuaScriptHost<A> {
+impl<A: LuaArg> ScriptHost for LuaScriptHost<A> {
     type ScriptContext = Mutex<Lua>;
     type APITarget = Mutex<Lua>;
     type ScriptEvent = LuaEvent<A>;
@@ -133,7 +131,7 @@ impl<A: LuaArg> ScriptHost for RLuaScriptHost<A> {
             .init_asset_loader::<LuaLoader>()
             .init_resource::<CachedScriptEventState<Self>>()
             .init_resource::<ScriptContexts<Self::ScriptContext>>()
-            .init_resource::<APIProviders<Self::APITarget, Self::DocTarget>>()
+            .init_resource::<APIProviders<Self>>()
             .register_type::<ScriptCollection<Self::ScriptAsset>>()
             .register_type::<Script<Self::ScriptAsset>>()
             .register_type::<Handle<LuaFile>>()
@@ -156,8 +154,8 @@ impl<A: LuaArg> ScriptHost for RLuaScriptHost<A> {
     fn load_script(
         &mut self,
         script: &[u8],
-        script_name: &str,
-        providers: &mut APIProviders<Self::APITarget, Self::DocTarget>,
+        script_data: &ScriptData,
+        providers: &mut APIProviders<Self>,
     ) -> Result<Self::ScriptContext, ScriptError> {
         #[cfg(feature = "unsafe_lua_modules")]
         let lua = unsafe { Lua::unsafe_new() };
@@ -165,16 +163,16 @@ impl<A: LuaArg> ScriptHost for RLuaScriptHost<A> {
         let lua = Lua::new();
 
         lua.load(script)
-            .set_name(script_name)
+            .set_name(script_data.name)
             .map(|c| c.exec())
             .map_err(|_e| ScriptError::FailedToLoad {
-                script: script_name.to_owned(),
+                script: script_data.name.to_owned(),
             })??;
 
         let mut lua = Mutex::new(lua);
 
         providers.attach_all(&mut lua)?;
-
+        providers.setup_all(script_data, &mut lua)?;
         Ok(lua)
     }
 
@@ -182,7 +180,7 @@ impl<A: LuaArg> ScriptHost for RLuaScriptHost<A> {
         &self,
         world: &mut World,
         events: &[Self::ScriptEvent],
-        ctxs: impl Iterator<Item = (FlatScriptData<'a>, &'a mut Self::ScriptContext)>,
+        ctxs: impl Iterator<Item = (ScriptData<'a>, &'a mut Self::ScriptContext)>,
     ) {
         world.resource_scope(
             |world_orig, mut cached_state: Mut<CachedScriptEventState<Self>>| {

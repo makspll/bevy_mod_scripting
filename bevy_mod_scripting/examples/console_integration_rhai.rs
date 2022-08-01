@@ -1,3 +1,83 @@
+// use bevy::{ecs::event::Events, prelude::*};
+// use bevy_console::{AddConsoleCommand, ConsoleCommand, ConsolePlugin, PrintConsoleLine};
+// use bevy_mod_scripting::{
+//     events::PriorityEventWriter, langs::rhai::*, APIProvider, AddScriptApiProvider, AddScriptHost,
+//     AddScriptHostHandler, Recipients, RhaiContext, RhaiDocFragment, RhaiEvent, RhaiFile,
+//     RhaiScriptHost, Script, ScriptCollection, ScriptData, ScriptError, ScriptErrorEvent,
+//     ScriptingPlugin,
+// };
+
+// /// custom Rhai API, world is provided as a usize (by the script this time), since
+// /// Rhai does not allow global/local variable access from a callback
+// #[derive(Default)]
+// pub struct RhaiAPI;
+
+// impl APIProvider for RhaiAPI {
+//     type APITarget = Engine;
+//     type DocTarget = RhaiDocFragment;
+//     type ScriptContext = RhaiContext;
+
+//     fn attach_api(&mut self, engine: &mut Self::APITarget) -> Result<(), ScriptError> {
+//         // rhai allows us to decouple the api from the script context,
+//         // so here we do not have access to the script scope, but the advantage is that
+//         // this single engine is shared with all of our scripts.
+//         // we can also set script wide settings here like this one for all our scripts.
+
+//         engine.set_max_expr_depths(0, 0);
+
+//         engine.register_fn("print_to_console", |shared_world: usize, msg: String| {
+//             let world: &mut World = unsafe { &mut *(shared_world as *mut World) };
+
+//             let mut events: Mut<Events<PrintConsoleLine>> = world.get_resource_mut().unwrap();
+//             events.send(PrintConsoleLine { line: msg });
+
+//             ()
+//         });
+
+//         engine.register_fn("entity_id", |entity: Entity| entity.id());
+
+//         Ok(())
+//     }
+
+//     fn setup_script(
+//         &mut self,
+//         _: &ScriptData,
+//         _: &mut Self::ScriptContext,
+//     ) -> Result<(), ScriptError> {
+//         Ok(())
+//     }
+// }
+
+// #[derive(Clone)]
+// pub struct RhaiEventArgs {}
+
+// impl FuncArgs for RhaiEventArgs {
+//     fn parse<ARGS: Extend<rhai::Dynamic>>(self, _args: &mut ARGS) {}
+// }
+
+// /// sends updates to script host which are then handled by the scripts
+// /// in the designated stage
+// pub fn trigger_on_update_rhai(mut w: PriorityEventWriter<RhaiEvent<RhaiEventArgs>>) {
+//     let event = RhaiEvent {
+//         hook_name: "on_update".to_string(),
+//         args: RhaiEventArgs {},
+//         recipients: Recipients::All,
+//     };
+
+//     w.send(event, 0);
+// }
+
+// pub fn forward_script_err_to_console(
+//     mut r: EventReader<ScriptErrorEvent>,
+//     mut w: EventWriter<PrintConsoleLine>,
+// ) {
+//     for e in r.iter() {
+//         w.send(PrintConsoleLine {
+//             line: format!("ERROR:{}", e.err),
+//         });
+//     }
+// }
+
 fn main() -> std::io::Result<()> {
     Ok(())
 }
