@@ -34,6 +34,10 @@ impl MyThing {
 // - references to something in the world (or script) via ::new_ref() and the ScriptRef API 
 //   (however this is only really accessible given the world provided to the script via the script host)
 // Script references can also be made to subfields (even non reflectable ones) of types via sub reflection
+//
+// Note: this step is not fully necessary, if your value is reflectable, you'll be able to reach it via
+// The bevy API, however doing this means your provide static typing for your scripts in languages which support it,
+
 impl_script_newtype!(
     MyThing:
         Debug + Clone 

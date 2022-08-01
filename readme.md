@@ -322,9 +322,13 @@ Rhai currently does not have any utilities existing for generating documentation
 
 To see more complex applications of this library have a look at the examples:
 
-- [lua - bevy console integration](bevy_mod_scripting/examples/console_integration_lua.rs)
-- [rhai - bevy console integration](bevy_mod_scripting/examples/console_integration_rhai.rs)
 - [lua - complex game loop](bevy_mod_scripting/examples/complex_game_loop.rs)
 - [lua - event recipients](bevy_mod_scripting/examples/event_recipients.rs)
+- [lua - bevy API](bevy_mod_scripting/examples/bevy_api_lua.rs)
+- [generating statically typed wrappers + ScriptRef system](bevy_mod_scripting/examples/wrappers.rs)
 - [lua - documentation generation + lua static typing](bevy_mod_scripting/examples/documentation_gen_lua.rs)
+- [lua - bevy console integration](bevy_mod_scripting/examples/console_integration_lua.rs)
+- [rhai - bevy console integration](bevy_mod_scripting/examples/console_integration_rhai.rs)
+
+
 
