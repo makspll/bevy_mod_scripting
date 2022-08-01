@@ -46,7 +46,7 @@ pub(crate) fn make_methods<'a>(flag: &DeriveFlag, new_type: &'a Newtype, out: &m
                     resolved_parameter_type.mutate_base_ident(|ident| *ident = format_ident!("Lua{ident}"));
                 }
                 parameter_types.push(resolved_parameter_type.strip_outer_refs());
-                
+
                 // finally produce an expression to be used as parameter to the method/function call
                 if (arg_type.is_wrapped() || arg_type.is_self()) && !arg_type.is_any_ref(){
                     quote_spanned!{m.span()=>
@@ -70,7 +70,6 @@ pub(crate) fn make_methods<'a>(flag: &DeriveFlag, new_type: &'a Newtype, out: &m
         let mut_;
         let mut body;
         if let Some((self_,_)) = &m.self_ {
-         
             if self_.is_any_ref(){
                 body = quote_spanned!(m.span()=>#receiver_argument_identifier.#method_identifier(#parameters));
                 if self_.is_mut_ref(){
@@ -84,7 +83,7 @@ pub(crate) fn make_methods<'a>(flag: &DeriveFlag, new_type: &'a Newtype, out: &m
             }
 
             static_ = None;
-            fn_ = None;  
+            fn_ = None;
         } else {
             body = quote_spanned!(m.span()=>#base_ident::#method_identifier(#parameters));
             static_ = Some(Token![static](Span::call_site()));
@@ -100,7 +99,7 @@ pub(crate) fn make_methods<'a>(flag: &DeriveFlag, new_type: &'a Newtype, out: &m
                 body = quote_spanned!{m.span()=>
                     #wrapper_out_type::new(#body)
                 };
-            } 
+            }
         });
 
         // we must output a result so wrap in Ok.
@@ -121,7 +120,7 @@ pub(crate) fn make_methods<'a>(flag: &DeriveFlag, new_type: &'a Newtype, out: &m
                     .unwrap_or_else(|| format_ident!("val",span=arg.span()));
                     body = quote_spanned!{m.span()=>
                         #arg_ident.#method_call(|#arg_ident| #body)?
-                    }            
+                    }
                 }
             });
 
@@ -133,8 +132,7 @@ pub(crate) fn make_methods<'a>(flag: &DeriveFlag, new_type: &'a Newtype, out: &m
         let self_ident = m.self_.as_ref()
             .map(|_| quote_spanned!(m.span()=>#receiver_argument_identifier,))
             .unwrap_or_else(|| Default::default());
-        
-        parse_quote_spanned!{m.span()=>            
+        parse_quote_spanned!{m.span()=>
             #docstrings
             #static_ #mut_ #fn_ #method_identifier_string =>|_,#self_ident (#(#parameter_identifiers),*):(#(#parameter_types),*)| #body
         }

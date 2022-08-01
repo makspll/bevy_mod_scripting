@@ -240,7 +240,7 @@ impl WrappedItem<'_> {
                         // if the underlying ident is self, we shouldn't wrap it when printing it
                         // if type is unknown, no wrapper type exists
                         let wrapper_type: Option<ArgWrapperType> = ArgWrapperType::with_config(&self.wrapped_type, &arg_type, config);
-                        
+
                         match wrapper_type {
                             Some(w) => {
                                 inner_writer.write_inline(" -> ");

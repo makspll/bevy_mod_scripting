@@ -127,7 +127,6 @@ pub(crate) fn make_bin_ops<'a>(
                     // combine into one expression
                     let rust_operator = op_expr.op.to_rust_method_ident();
                     let mut expression_body = quote_spanned!(op_expr.span()=>#l_exp.#rust_operator(#r_exp));
-                    
                     // then resolve return type and wrap in constructor if need be
                     let mut resolved_type = op_expr.return_type
                         .type_or_resolve(|| SimpleType::BaseIdent(wrapped_type.clone())).into_owned();
@@ -135,11 +134,9 @@ pub(crate) fn make_bin_ops<'a>(
                     if op_expr.return_type.is_wrapped() || op_expr.return_type.is_self() {
                         resolved_type.mutate_base_ident(|ident| *ident = format_ident!("Lua{ident}"));
                         expression_body = quote_spanned! {op_expr.span()=>#resolved_type::new(#expression_body)}
-                    } 
-                    
+                    }
                     let type_ident = resolved_type.base_ident();
                     expression_body = quote_spanned! {op_expr.span()=>#return_arg_type::#type_ident(#expression_body)};
-                    
                     // resolve the type opposite to the receiver side (still could be another receiver)
                     let matched_identifier = op_expr
                         .map_side(receiver_side.opposite(), |t| {
@@ -147,7 +144,7 @@ pub(crate) fn make_bin_ops<'a>(
                                 t.type_or_resolve(|| SimpleType::BaseIdent(wrapped_type.clone())).into_owned();
                             if t.is_wrapped() || t.is_self() {
                                 resolved_type.mutate_base_ident(|ident| *ident = format_ident!("Lua{ident}"))
-                            } 
+                            }
                             resolved_type.into_base_ident()
                         })
                         .unwrap();

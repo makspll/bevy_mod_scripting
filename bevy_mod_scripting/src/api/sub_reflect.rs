@@ -461,7 +461,7 @@ impl ReflectPath {
 
                 let ref_ = self.walk_path_mut(
                     unsafe{ptr.mut_ref()}
-                        .ok_or_else(|| 
+                        .ok_or_else(||
                             ReflectionError::InsufficientProvenance { path: self.to_string(), msg: "Script owned value was initialized with only an immutable reference, cannot produce mutable access".to_owned() }
                         )?)?;
                 let o = f(ref_);

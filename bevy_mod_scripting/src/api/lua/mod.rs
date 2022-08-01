@@ -77,7 +77,7 @@ impl ApplyLua for ScriptRef {
             }
         }
 
-        Err(mlua::Error::RuntimeError(self.get(|s| 
+        Err(mlua::Error::RuntimeError(self.get(|s|
             format!("Attempted to assign `{}` = {v:?}. Did you forget to call `app.register_foreign_lua_type::<{}>`?",
                 self.path.to_string(),
                 s.type_name()

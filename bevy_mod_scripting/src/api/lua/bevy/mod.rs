@@ -287,9 +287,9 @@ impl TealData for LuaWorld {
                 bevy::reflect::TypeInfo::List(_) => component_data.insert(w, entity, &DynamicList::default()),
                 bevy::reflect::TypeInfo::Array(_) => component_data.insert(w, entity, &DynamicArray::new(Box::new([]))),
                 bevy::reflect::TypeInfo::Map(_) => component_data.insert(w, entity, &DynamicMap::default()),
-                bevy::reflect::TypeInfo::Value(_) | 
-                bevy::reflect::TypeInfo::Dynamic(_) => component_data.insert(w, entity, 
-                    comp_type.data::<ReflectDefault>().ok_or_else(|| 
+                bevy::reflect::TypeInfo::Value(_) |
+                bevy::reflect::TypeInfo::Dynamic(_) => component_data.insert(w, entity,
+                    comp_type.data::<ReflectDefault>().ok_or_else(||
                         mlua::Error::RuntimeError(format!("Component {} is a value or dynamic type with no `ReflectDefault` type_data, cannot instantiate sensible value",comp_type.short_name())))?
                         .default()
                         .as_ref())
