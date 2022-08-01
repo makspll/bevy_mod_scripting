@@ -22,8 +22,13 @@ impl_parse_enum!(input,ident:
 #[derive(PartialEq,Eq,Hash)]
 pub(crate) enum DeriveFlag {
 
+    /// Tells the implementors this type supports `Debug`
     Debug => {Ok(Self::Debug{ident})},
+    /// Tells the implementors this type supports `Display`
     Display => {Ok(Self::Display{ident})},
+    /// Tells the implementors this type supports `Clone`
+    Clone{} => {Ok(Self::Clone{ident})},
+    /// Tells the implementors what fields are available on this type
     Fields {
         paren: Paren,
         fields: Punctuated<AutoField,Token![,]>
@@ -35,6 +40,7 @@ pub(crate) enum DeriveFlag {
             fields: f.parse_terminated(AutoField::parse)?
         })
     },
+    /// Tells the implementors which methods are available on this type
     Methods {
         paren: Paren,
         methods: Punctuated<AutoMethod,Token![,]>
@@ -46,7 +52,7 @@ pub(crate) enum DeriveFlag {
             methods: f.parse_terminated(AutoMethod::parse)?
         })
     },
-    Clone{} => {Ok(Self::Clone{ident})},
+    /// Tells the implementors which unary operations this type supports
     UnaryOps{
         paren : Paren,
         ops: Punctuated<OpExpr,Token![,]>
@@ -59,6 +65,7 @@ pub(crate) enum DeriveFlag {
             ops : f.parse_terminated(OpExpr::parse)?
         })
     },
+    /// Tells the implementors which binary operations this type supports
     BinOps {
         paren: Paren,
         ops: Punctuated<OpExpr,Token![,]>

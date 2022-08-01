@@ -68,7 +68,7 @@ impl NewtypeArgs {
                         if contains {
                             return Err(syn::Error::new_spanned(
                                 n,
-                                format!("Field name `{}` clashes with another field or method", n),
+                                format!("Field name `{}` clashes with another field or method, use #[rename(\"new_name\")] to rename the field on script side", n),
                             ));
                         }
                         seen_identifiers.insert(n);
