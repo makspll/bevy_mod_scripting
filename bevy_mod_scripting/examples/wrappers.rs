@@ -116,10 +116,10 @@ fn main() -> std::io::Result<()> {
                         world,
                         LuaEvent {
                             hook_name: "once".to_owned(),
-                            args: vec![LuaMyThing::new(MyThing {
+                            args: LuaMyThing::new(MyThing {
                                 usize: 42,
                                 string: "Haha! Yes I can!!!!".to_owned(),
-                            })],
+                            }),
                             recipients: Recipients::All,
                         },
                     )

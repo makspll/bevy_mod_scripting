@@ -91,12 +91,6 @@ required-features = ["lua54"]
 name = "event_recipients"
 path = "examples/event_recipients.rs"
 
-
-[[example]]
-name = "custom_user_data"
-path = "examples/custom_user_data.rs"
-required-features = ["lua54"]
-
 [[example]]
 name = "documentation_gen_lua"
 path = "examples/documentation_gen_lua.rs"

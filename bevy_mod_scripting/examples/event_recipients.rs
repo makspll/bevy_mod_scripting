@@ -67,7 +67,7 @@ fn fire_random_event(w: &mut PriorityEventWriter<LuaEvent<MyLuaArg>>, events: &[
         .choose(&mut rng)
         .map(|v| LuaEvent {
             hook_name: v.0.to_string(),
-            args: vec![arg],
+            args: arg,
             recipients: v.1.clone(),
         })
         .unwrap();

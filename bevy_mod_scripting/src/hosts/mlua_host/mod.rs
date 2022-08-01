@@ -23,16 +23,16 @@ use std::sync::{Arc, Mutex};
 
 pub use {assets::*, docs::*};
 
-pub trait LuaArg: for<'lua> ToLua<'lua> + Clone + Sync + Send + 'static {}
+pub trait LuaArg: for<'lua> ToLuaMulti<'lua> + Clone + Sync + Send + 'static {}
 
-impl<T: for<'lua> ToLua<'lua> + Clone + Sync + Send + 'static> LuaArg for T {}
+impl<T: for<'lua> ToLuaMulti<'lua> + Clone + Sync + Send + 'static> LuaArg for T {}
 
 #[derive(Clone)]
 /// A Lua Hook. The result of creating this event will be
 /// a call to the lua script with the hook_name and the given arguments
 pub struct LuaEvent<A: LuaArg> {
     pub hook_name: String,
-    pub args: Vec<A>,
+    pub args: A,
     pub recipients: Recipients,
 }
 
@@ -211,17 +211,14 @@ impl<A: LuaArg> ScriptHost for LuaScriptHost<A> {
                                     Err(_) => continue, // not subscribed to this event
                                 };
 
-                                let ags = event.args.clone();
                                 // bind arguments and catch any errors
-                                for a in ags {
-                                    f = f.bind(a.to_lua(ctx)).map_err(|e| {
-                                        ScriptError::InvalidCallback {
-                                            script: fd.name.to_owned(),
-                                            callback: event.hook_name.to_owned(),
-                                            msg: e.to_string(),
-                                        }
-                                    })?
-                                }
+                                f = f.bind(event.args.clone().to_lua_multi(ctx)?).map_err(|e| {
+                                    ScriptError::InvalidCallback {
+                                        script: fd.name.to_owned(),
+                                        callback: event.hook_name.to_owned(),
+                                        msg: e.to_string(),
+                                    }
+                                })?;
 
                                 f.call::<(), ()>(())
                                     .map_err(|e| ScriptError::RuntimeError {
