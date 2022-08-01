@@ -118,9 +118,9 @@ impl TealData for LuaWorld {
                     .map(|e| e.inner())
                     .collect::<Result<Vec<_>, _>>()?;
 
-                w.get_entity_mut(parent.inner()?).map(|mut entity| {
-                    entity.push_children(&children);
-                });
+                if let Some(mut entity) = w.get_entity_mut(parent.inner()?) { 
+                    entity.push_children(&children); 
+                }
 
                 Ok(())
             },
@@ -133,9 +133,9 @@ impl TealData for LuaWorld {
                 let w = world.upgrade().unwrap();
                 let w = &mut w.write();
                 let child = child.inner()?;
-                w.get_entity_mut(parent.inner()?).map(|mut entity| {
-                    entity.push_children(&[child]);
-                });
+                if let Some(mut entity) = w.get_entity_mut(parent.inner()?) { 
+                    entity.push_children(&[child]); 
+                }
 
                 Ok(())
             },
@@ -152,9 +152,9 @@ impl TealData for LuaWorld {
                     .map(|e| e.inner())
                     .collect::<Result<Vec<_>, _>>()?;
 
-                w.get_entity_mut(parent.inner()?).map(|mut entity| {
-                    entity.remove_children(&children);
-                });
+                if let Some(mut entity) = w.get_entity_mut(parent.inner()?) { 
+                    entity.remove_children(&children); 
+                }
 
                 Ok(())
             },
@@ -167,9 +167,9 @@ impl TealData for LuaWorld {
                 let w = world.upgrade().unwrap();
                 let w = &mut w.write();
                 let child = child.inner()?;
-                w.get_entity_mut(parent.inner()?).map(|mut entity| {
+                if let Some(mut entity) = w.get_entity_mut(parent.inner()?) { 
                     entity.remove_children(&[child]);
-                });
+                }
 
                 Ok(())
             },
@@ -187,9 +187,9 @@ impl TealData for LuaWorld {
                     .map(|e| e.inner())
                     .collect::<Result<Vec<_>, _>>()?;
 
-                w.get_entity_mut(parent.inner()?).map(|mut entity| {
-                    entity.insert_children(index, &children);
-                });
+                if let Some(mut entity) = w.get_entity_mut(parent.inner()?) { 
+                    entity.insert_children(index, &children); 
+                }
 
                 Ok(())
             },
@@ -202,9 +202,9 @@ impl TealData for LuaWorld {
                 let w = world.upgrade().unwrap();
                 let w = &mut w.write();
                 let child = child.inner()?;
-                w.get_entity_mut(parent.inner()?).map(|mut entity| {
-                    entity.insert_children(index, &[child]);
-                });
+                if let Some(mut entity) = w.get_entity_mut(parent.inner()?) { 
+                    entity.insert_children(index, &[child]); 
+                }
 
                 Ok(())
             },
@@ -216,11 +216,10 @@ impl TealData for LuaWorld {
             |_, world, entity: LuaEntity| {
                 let w = world.upgrade().unwrap();
                 let w = &mut w.write();
-
-                Ok(DespawnChildrenRecursive {
+                DespawnChildrenRecursive {
                     entity: entity.inner()?,
-                }
-                .write(w))
+                }.write(w);
+                Ok(())
             },
         );
 
@@ -228,22 +227,20 @@ impl TealData for LuaWorld {
         methods.add_method("despawn_recursive", |_, world, entity: LuaEntity| {
             let w = world.upgrade().unwrap();
             let w = &mut w.write();
-
-            Ok(DespawnRecursive {
+            DespawnRecursive {
                 entity: entity.inner()?,
-            }
-            .write(w))
+            }.write(w);
+            Ok(())
         });
 
         methods.document("Despawns the given entity and the entity's children recursively");
         methods.add_method("insert_children", |_, world, entity: LuaEntity| {
             let w = world.upgrade().unwrap();
             let w = &mut w.write();
-
-            Ok(DespawnRecursive {
+            DespawnRecursive {
                 entity: entity.inner()?,
-            }
-            .write(w))
+            }.write(w);
+            Ok(())
         });
 
         methods.document("Retrieves type information given either a short (`MyType`) or fully qualified rust type name (`MyModule::MyType`).");
@@ -262,7 +259,7 @@ impl TealData for LuaWorld {
 
             Ok(registry
                 .get_with_short_name(&type_name)
-                .or(registry.get_with_name(&type_name))
+                .or_else(|| registry.get_with_name(&type_name))
                 .map(|registration| LuaTypeRegistration(Arc::new(registration.clone()))))
         });
 
@@ -352,8 +349,8 @@ impl TealData for LuaWorld {
                 let component_data = comp_type.data::<ReflectComponent>().ok_or_else(|| {
                     mlua::Error::RuntimeError(format!("Not a component {}", comp_type.short_name()))
                 })?;
-
-                Ok(component_data.remove(w, entity))
+                component_data.remove(w, entity);
+                Ok(())
             },
         );
 
@@ -361,13 +358,13 @@ impl TealData for LuaWorld {
         methods.document("If such a resource does not exist returns `nil`.");
         methods.add_method("get_resource", |_, world, res_type: LuaTypeRegistration| {
             let w = world.upgrade().unwrap();
-            let w = &mut w.write();
+            let w = &w.read();
 
             let resource_data = res_type.data::<ReflectResource>().ok_or_else(|| {
                 mlua::Error::RuntimeError(format!("Not a resource {}", res_type.short_name()))
             })?;
 
-            Ok(resource_data.reflect(&w).map(|_res| {
+            Ok(resource_data.reflect(w).map(|_res| {
                 ScriptRef::new_resource_ref(resource_data.clone(), world.as_ref().clone())
             }))
         });
@@ -384,8 +381,8 @@ impl TealData for LuaWorld {
                 let resource_data = res_type.data::<ReflectResource>().ok_or_else(|| {
                     mlua::Error::RuntimeError(format!("Not a resource {}", res_type.short_name()))
                 })?;
-
-                Ok(resource_data.remove(w))
+                resource_data.remove(w);
+                Ok(())
             },
         );
 

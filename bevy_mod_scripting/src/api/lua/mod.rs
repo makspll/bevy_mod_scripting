@@ -81,7 +81,7 @@ impl ApplyLua for ScriptRef {
 
         Err(mlua::Error::RuntimeError(self.get(|s|
             format!("Attempted to assign `{}` = {v:?}. Did you forget to call `app.register_foreign_lua_type::<{}>`?",
-                self.path.to_string(),
+                self.path,
                 s.type_name()
             ))?)
         )
@@ -107,7 +107,7 @@ impl<'lua> ToLua<'lua> for ScriptRef {
         if let Some(v) = g.get_type_data::<ReflectLuaProxyable>(type_id) {
             Ok(v.ref_to_lua(self, ctx)?)
         } else {
-            ReflectedValue { ref_: self.clone() }.to_lua(ctx)
+            ReflectedValue { ref_: self }.to_lua(ctx)
         }
     }
 }
@@ -172,7 +172,7 @@ pub trait LuaProxyable {
     ///
     /// Note: The self reference is sourced from the given ScriptRef, attempting to get another mutable reference from the ScriptRef might
     /// cause a runtime error to prevent breaking of aliasing rules
-    fn ref_to_lua<'lua>(self_: ScriptRef, lua: &'lua Lua) -> mlua::Result<Value<'lua>>;
+    fn ref_to_lua(self_: ScriptRef, lua: &Lua) -> mlua::Result<Value>;
 
     /// similar to [`Reflect::apply`]
     ///
@@ -242,7 +242,7 @@ impl<T: LuaProxyable + ::bevy::reflect::Reflect> ::bevy::reflect::FromType<T>
 pub trait ValueLuaType {}
 
 impl<T: Clone + UserData + Send + ValueLuaType + Reflect + 'static> LuaProxyable for T {
-    fn ref_to_lua<'lua>(self_: ScriptRef, lua: &'lua Lua) -> mlua::Result<Value<'lua>> {
+    fn ref_to_lua(self_: ScriptRef, lua: &Lua) -> mlua::Result<Value> {
         self_.get_typed(|s: &Self| s.clone().to_lua(lua))?
     }
 

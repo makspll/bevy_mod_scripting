@@ -161,12 +161,11 @@ impl WrappedItem<'_> {
                         .config
                         .traits
                         .iter()
-                        .find(|f| {
+                        .any(|f| {
                             stringify_type(trait_)
-                                .and_then(|s| (&s == &f.name).then_some(()))
+                                .and_then(|s| (s == f.name).then_some(()))
                                 .is_some()
                         })
-                        .is_some()
                     {
                         // keep going
                     } else {
@@ -229,7 +228,7 @@ impl WrappedItem<'_> {
 
                 inner_writer.write_inline(")");
 
-                decl.output.as_ref().map(|tp| {
+                if let Some(tp) = &decl.output{
                     let arg_type: Result<ArgType, _> = tp.try_into();
                     if let Ok(arg_type) = arg_type {
                         if let ArgType::Ref { .. } = arg_type {
@@ -254,7 +253,7 @@ impl WrappedItem<'_> {
                     } else {
                         errors.push(format!("Unsupported argument, not a simple type: {}", arg_type.unwrap_err()))
                     }
-                });
+                };
 
                 if !generics.params.is_empty() {
                     errors.push("Generics on the method".to_owned());
@@ -282,83 +281,80 @@ impl WrappedItem<'_> {
         writer.write_line("+ Fields");
         writer.open_paren();
 
-        match &self.item.inner {
-            ItemEnum::Struct(struct_) => {
-                struct_
-                    .fields
-                    .iter()
-                    .map(|field_| self.source.index.get(field_).unwrap())
-                    .filter_map(|field_| match &field_.inner {
-                        ItemEnum::StructField(type_) => {
-                            Some((field_.name.as_ref().unwrap(), type_, field_))
-                        }
-                        _ => None,
-                    })
-                    .filter_map(|(name, type_, field_)| {
-                        let arg_type: ArgType = type_.try_into().ok()?;
-                        let base_ident = arg_type
-                            .base_ident() // resolve self
-                            .unwrap_or_else(|()| self.wrapped_type.as_str());
+        if let ItemEnum::Struct(struct_) = &self.item.inner {
+            struct_
+                .fields
+                .iter()
+                .map(|field_| self.source.index.get(field_).unwrap())
+                .filter_map(|field_| match &field_.inner {
+                    ItemEnum::StructField(type_) => {
+                        Some((field_.name.as_ref().unwrap(), type_, field_))
+                    }
+                    _ => None,
+                })
+                .filter_map(|(name, type_, field_)| {
+                    let arg_type: ArgType = type_.try_into().ok()?;
+                    let base_ident = arg_type
+                        .base_ident() // resolve self
+                        .unwrap_or(self.wrapped_type.as_str());
 
-                        // if the underlying ident is self, we shouldn't wrap it when printing it
-                        let wrapper: ArgWrapperType = arg_type
-                            .is_self()
-                            .then(|| ArgWrapperType::None)
-                            .or_else(|| {
-                                config
-                                    .primitives
-                                    .contains(base_ident)
-                                    .then_some(ArgWrapperType::Raw)
-                            })
-                            .or_else(|| {
-                                config
-                                    .types
-                                    .contains_key(base_ident)
-                                    .then_some(ArgWrapperType::Wrapped)
-                            })
-                            // we allow this since we later resolve unknown types to be resolved as ReflectedValues
-                            .unwrap_or(ArgWrapperType::None);
+                    // if the underlying ident is self, we shouldn't wrap it when printing it
+                    let wrapper: ArgWrapperType = arg_type
+                        .is_self()
+                        .then(|| ArgWrapperType::None)
+                        .or_else(|| {
+                            config
+                                .primitives
+                                .contains(base_ident)
+                                .then_some(ArgWrapperType::Raw)
+                        })
+                        .or_else(|| {
+                            config
+                                .types
+                                .contains_key(base_ident)
+                                .then_some(ArgWrapperType::Wrapped)
+                        })
+                        // we allow this since we later resolve unknown types to be resolved as ReflectedValues
+                        .unwrap_or(ArgWrapperType::None);
 
-                        let arg = Arg::new(arg_type, wrapper);
-                        let mut reflectable_type = arg.to_string();
+                    let arg = Arg::new(arg_type, wrapper);
+                    let mut reflectable_type = arg.to_string();
 
-                        // if we do not have an appropriate wrapper and this is not a primitive or it's not public
-                        // we need to go back to the reflection API
-                        if arg.wrapper == ArgWrapperType::None {
-                            if field_
-                                .attrs
-                                .iter()
-                                .any(|attr| &attr == &"#[reflect(ignore)]")
-                            {
-                                return None;
-                            }
-
-                            reflectable_type = "Raw(ReflectedValue)".to_owned();
+                    // if we do not have an appropriate wrapper and this is not a primitive or it's not public
+                    // we need to go back to the reflection API
+                    if arg.wrapper == ArgWrapperType::None {
+                        if field_
+                            .attrs
+                            .iter()
+                            .any(|attr| attr == "#[reflect(ignore)]")
+                        {
+                            return None;
                         }
 
-                        field_.docs.as_ref().map(|docs| {
-                            writer.set_prefix("/// ".into());
-                            docs.lines().for_each(|line| {
-                                writer.write_line(line);
-                            });
-                            writer.clear_prefix();
+                        reflectable_type = "Raw(ReflectedValue)".to_owned();
+                    }
+
+                    if let Some(docs) = &field_.docs{
+                        writer.set_prefix("/// ".into());
+                        docs.lines().for_each(|line| {
+                            writer.write_line(line);
                         });
+                        writer.clear_prefix();
+                    };
 
-                        // add underscore if a method with same name exists
-                        used_method_identifiers
-                            .contains(name.as_str())
-                            .then(|| writer.write_line(&format!("#[rename(\"_{name}\")]")));
-                        writer.write_no_newline(name);
-                        writer.write_inline(": ");
-                        writer.write_inline(&reflectable_type);
-                        writer.write_inline(",");
-                        writer.newline();
+                    // add underscore if a method with same name exists
+                    used_method_identifiers
+                        .contains(name.as_str())
+                        .then(|| writer.write_line(&format!("#[rename(\"_{name}\")]")));
+                    writer.write_no_newline(name);
+                    writer.write_inline(": ");
+                    writer.write_inline(&reflectable_type);
+                    writer.write_inline(",");
+                    writer.newline();
 
-                        Some(())
-                    })
-                    .for_each(drop);
-            }
-            _ => {}
+                    Some(())
+                })
+                .for_each(drop);
         };
         writer.close_paren();
 
@@ -416,11 +412,8 @@ impl WrappedItem<'_> {
                                                 if let ItemEnum::AssocType { default, .. } =
                                                     &item.inner
                                                 {
-                                                    match item.name.as_deref() {
-                                                        Some("Output") => {
-                                                            return Some(default.as_ref().unwrap())
-                                                        }
-                                                        _ => {}
+                                                    if let Some("Output") = item.name.as_deref() {
+                                                        return Some(default.as_ref().unwrap())
                                                     }
                                                 }
                                                 None

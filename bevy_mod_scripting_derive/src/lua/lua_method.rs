@@ -135,7 +135,7 @@ impl ToTokens for LuaMethodType {
         let field_ident = self
             .is_field_setter
             .then(|| format_ident!("set"))
-            .or(self.is_field_getter.then(|| format_ident!("get")));
+            .or_else(|| self.is_field_getter.then(|| format_ident!("get")));
 
         if self.is_meta {
             inner = quote::quote! {
@@ -187,6 +187,7 @@ pub(crate) struct Test {
     pub ts: TokenStream,
 }
 
+#[allow(clippy::eval_order_dependence)]
 impl Parse for Test {
     fn parse(input: ParseStream) -> Result<Self> {
         let f;
@@ -253,13 +254,11 @@ impl LuaMethod {
         self.test.as_ref().map(|v| {
             let fun = v.ts.clone();
             let test_ident = Ident::new(
-                &format! {"{}",
-                    newtype_name.to_case(Case::Snake)
-                },
+                &newtype_name.to_case(Case::Snake),
                 Span::call_site(),
             );
 
-            fun.clone().into_token_stream()
+            fun.into_token_stream()
         })
     }
 
@@ -286,18 +285,17 @@ impl LuaMethod {
                 }
             })
             .collect();
-        let call_ident;
-        if self.method_type.is_field_getter || self.method_type.is_field_setter {
-            call_ident = format_ident!(
+        let call_ident= if self.method_type.is_field_getter || self.method_type.is_field_setter {
+            format_ident!(
                 "add_field_method_{}",
                 self.method_type
                     .is_field_getter
                     .then(|| "get")
-                    .or(self.method_type.is_field_setter.then(|| "set"))
+                    .or_else(|| self.method_type.is_field_setter.then(|| "set"))
                     .unwrap()
             )
         } else {
-            call_ident = format_ident!(
+            format_ident!(
                 "add{}{}{}",
                 self.method_type.is_meta.then(|| "_meta").unwrap_or(""),
                 self.method_type
@@ -305,8 +303,8 @@ impl LuaMethod {
                     .then(|| "_function")
                     .unwrap_or("_method"),
                 self.method_type.is_mut.then(|| "_mut").unwrap_or(""),
-            );
-        }
+            )
+        };
 
         let inner_tokens = self.method_type.get_inner_tokens();
 

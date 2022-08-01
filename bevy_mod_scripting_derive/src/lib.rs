@@ -37,7 +37,7 @@ struct NewtypeList {
     sq_bracket2: Bracket,
     new_types: Punctuated<Newtype, Token![,]>,
 }
-
+#[allow(clippy::eval_order_dependence)]
 impl Parse for NewtypeList {
     fn parse(input: ParseStream) -> Result<Self> {
         let h;
@@ -74,6 +74,7 @@ struct AdditionalImplBlock {
     functions: Punctuated<ItemFn, Token![;]>,
 }
 
+#[allow(clippy::eval_order_dependence)]
 impl Parse for AdditionalImplBlock {
     fn parse(input: ParseStream) -> Result<Self> {
         let f;

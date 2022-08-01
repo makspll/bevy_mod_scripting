@@ -98,10 +98,6 @@ impl Newtype {
             return false;
         };
 
-        if let Visibility::Public = item.visibility {
-            true
-        } else {
-            false
-        }
+        matches!(item.visibility, Visibility::Public)
     }
 }

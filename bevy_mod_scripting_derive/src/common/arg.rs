@@ -143,19 +143,11 @@ impl SimpleType {
     }
 
     pub fn is_any_ref(&self) -> bool {
-        if let Self::Ref { .. } = self {
-            true
-        } else {
-            false
-        }
+        matches!(self, Self::Ref { .. })
     }
 
     pub fn is_mut_ref(&self) -> bool {
-        if let Self::Ref { mut_, .. } = self {
-            mut_.is_some()
-        } else {
-            false
-        }
+        matches!(self, Self::Ref { mut_, .. } if mut_.is_some())
     }
 }
 
@@ -194,6 +186,7 @@ pub(crate) enum ArgType {
     Self_(SelfType),
 }
 
+#[allow(clippy::eval_order_dependence)]
 impl Parse for ArgType {
     fn parse(input: ParseStream) -> Result<Self, syn::Error> {
         if input.peek(Ident) {
@@ -237,12 +230,12 @@ impl ArgType {
     }
 
     /// Retrieves the simple type or generates one  using [`SelfType::resolve_as`](`SelfType`) if this is a self type
-    pub fn type_or_resolve<'a, F: FnMut() -> SimpleType>(
-        &'a self,
+    pub fn type_or_resolve<F: FnMut() -> SimpleType>(
+        &self,
         mut f: F,
-    ) -> Cow<'a, SimpleType> {
+    ) -> Cow<SimpleType> {
         self.type_()
-            .map(|t| Cow::Borrowed(t))
+            .map(Cow::Borrowed)
             .unwrap_or_else(|self_| Cow::Owned(self_.resolve_as(f())))
     }
 
@@ -263,26 +256,14 @@ impl ArgType {
     }
 
     pub fn is_wrapped(&self) -> bool {
-        if let Self::Wrapped { .. } = self {
-            true
-        } else {
-            false
-        }
+        matches!(self, Self::Wrapped { .. })
     }
 
     pub fn is_raw(&self) -> bool {
-        if let Self::Raw { .. } = self {
-            true
-        } else {
-            false
-        }
+        matches!(self, Self::Raw { .. })
     }
 
     pub fn is_self(&self) -> bool {
-        if let Self::Self_ { .. } = self {
-            true
-        } else {
-            false
-        }
+        matches!(self, Self::Self_ { .. })
     }
 }

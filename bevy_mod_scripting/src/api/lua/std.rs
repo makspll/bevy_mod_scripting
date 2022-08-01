@@ -61,7 +61,7 @@ impl_proxyable_by_copy!(i8, i16, i32, i64, i128, isize);
 impl_proxyable_by_copy!(u8, u16, u32, u64, u128, usize);
 
 impl LuaProxyable for String {
-    fn ref_to_lua<'lua>(self_: ScriptRef, lua: &'lua Lua) -> mlua::Result<Value<'lua>> {
+    fn ref_to_lua(self_: ScriptRef, lua: &Lua) -> mlua::Result<Value> {
         self_.get_typed(|self_: &String| self_.as_str().to_lua(lua))?
     }
 
@@ -70,7 +70,7 @@ impl LuaProxyable for String {
         lua: &'lua Lua,
         new_val: Value<'lua>,
     ) -> mlua::Result<()> {
-        self_.get_mut_typed(|self_| Ok(*self_ = Self::from_lua(new_val, lua)?))?
+        self_.get_mut_typed(|self_| {*self_ = Self::from_lua(new_val, lua)?;Ok(())})?
     }
 }
 
@@ -87,7 +87,7 @@ impl<'lua> ToLuaProxy<'lua> for String {
 }
 
 impl<T: LuaProxyable + Reflect + for<'a> FromLuaProxy<'a> + Clone> LuaProxyable for Option<T> {
-    fn ref_to_lua<'lua>(self_: ScriptRef, lua: &'lua Lua) -> mlua::Result<Value<'lua>> {
+    fn ref_to_lua(self_: ScriptRef, lua: &Lua) -> mlua::Result<Value> {
         self_.get_typed(|s: &Option<T>| match s {
             Some(_) => T::ref_to_lua(
                 self_.sub_ref(ReflectPathElem::SubReflection {
@@ -136,7 +136,7 @@ impl<T: LuaProxyable + Reflect + for<'a> FromLuaProxy<'a> + Clone> LuaProxyable 
         new_val: Value<'lua>,
     ) -> mlua::Result<()> {
         if let Value::Nil = new_val {
-            self_.get_mut_typed(|s: &mut Option<T>| Ok(*s = None))?
+            self_.get_mut_typed(|s: &mut Option<T>| {*s = None; Ok(())})?
         } else {
             // we need to do this in two passes, first
             // ensure that the target type is the 'some' variant to allow a sub reference
@@ -226,7 +226,7 @@ impl<T> Clone for LuaVec<T> {
     fn clone(&self) -> Self {
         Self {
             ref_: self.ref_.clone(),
-            _ph: self._ph.clone(),
+            _ph: self._ph,
         }
     }
 }
@@ -256,13 +256,14 @@ impl<
 
 impl<T: TypeName> TypeName for LuaVec<T> {
     fn get_type_parts() -> Cow<'static, [tealr::NamePart]> {
-        let mut parts = Vec::default();
-        parts.push(tealr::NamePart::Type(tealr::TealType {
-            name: Cow::Borrowed("LuaVec"),
-            type_kind: tealr::KindOfType::External,
-            generics: None,
-        }));
-        parts.push(tealr::NamePart::Symbol("<".into()));
+        let mut parts = vec![
+            tealr::NamePart::Type(tealr::TealType {
+                name: Cow::Borrowed("LuaVec"),
+                type_kind: tealr::KindOfType::External,
+                generics: None,
+            }),
+            tealr::NamePart::Symbol("<".into())
+        ];
         parts.extend(T::get_type_parts().iter().cloned());
         parts.push(tealr::NamePart::Symbol(">".into()));
         parts.into()
@@ -294,7 +295,7 @@ impl<
         methods.add_meta_method_mut(
             MetaMethod::NewIndex,
             |ctx, s, (index, value): (usize, Value)| {
-                Ok(s.ref_.index(index).apply_lua(ctx, value)?)
+                s.ref_.index(index).apply_lua(ctx, value)
             },
         );
 
@@ -322,7 +323,7 @@ impl<
 
         methods.add_method_mut("push", |ctx, s, v: Value| {
             let new_val = T::from_lua_proxy(v, ctx)?;
-            s.ref_.get_mut_typed(|s: &mut Vec<T>| Ok(s.push(new_val)))?
+            s.ref_.get_mut_typed(|s: &mut Vec<T>| {s.push(new_val); Ok(())})?
         });
 
         methods.add_method_mut("pop", |ctx, s, ()| {
@@ -331,19 +332,20 @@ impl<
         });
 
         methods.add_method_mut("clear", |_, s, ()| {
-            s.ref_.get_mut_typed(|s: &mut Vec<T>| Ok(s.clear()))?
+            s.ref_.get_mut_typed(|s: &mut Vec<T>| {s.clear();Ok(())})?
         });
 
         methods.add_method_mut("insert", |ctx, s, (idx, v): (usize, Value<'lua>)| {
             s.ref_.get_mut_typed(|s: &mut Vec<T>| {
                 let v = T::from_lua_proxy(v, ctx)?;
-                Ok(s.insert(idx, v))
+                s.insert(idx, v);
+                Ok(())
             })?
         });
 
         methods.add_method_mut("remove", |ctx, s, idx: usize| {
             s.ref_
-                .get_mut_typed(|s: &mut Vec<T>| Ok(s.remove(idx).to_lua_proxy(ctx)?))?
+                .get_mut_typed(|s: &mut Vec<T>| s.remove(idx).to_lua_proxy(ctx))?
         });
     }
 }
@@ -352,7 +354,7 @@ impl<
         T: TypeName + FromReflect + LuaProxyable + for<'a> FromLuaProxy<'a> + for<'a> ToLuaProxy<'a>,
     > LuaProxyable for Vec<T>
 {
-    fn ref_to_lua<'lua>(self_: ScriptRef, lua: &'lua Lua) -> mlua::Result<Value<'lua>> {
+    fn ref_to_lua(self_: ScriptRef, lua: &Lua) -> mlua::Result<Value> {
         LuaVec::<T>::new_ref(self_).to_lua(lua)
     }
 
@@ -380,7 +382,8 @@ impl<
                         // here we don't have anything to apply this to
                         // use FromLua impl
                         self_.get_mut_typed(|s: &mut Vec<T>| {
-                            Ok::<_, mlua::Error>(s[idx] = T::from_lua_proxy(v, lua)?)
+                            s[idx] = T::from_lua_proxy(v, lua)?;
+                            Ok::<_, mlua::Error>(())
                         })??;
                     }
                 }

@@ -82,6 +82,7 @@ pub(crate) struct MethodMacroInvokation {
     pub args: Punctuated<MethodMacroArg, Token![,]>,
 }
 
+#[allow(clippy::eval_order_dependence)]
 impl Parse for MethodMacroInvokation {
     fn parse(input: ParseStream) -> Result<Self, syn::Error> {
         let f;
@@ -119,6 +120,7 @@ impl ToTokens for AutoMethod {
     }
 }
 
+#[allow(clippy::eval_order_dependence)]
 impl Parse for AutoMethod {
     fn parse(input: ParseStream) -> Result<Self, syn::Error> {
         let f;
@@ -131,7 +133,7 @@ impl Parse for AutoMethod {
                     Ok::<_, syn::Error>((p.parse::<ArgType>()?, p.parse::<Token![:]>()?))
                 };
                 let fork = f.fork();
-                if let Ok(_) = parser(&fork) {
+                if parser(&fork).is_ok() {
                     Some(parser(&f).expect("Something went wrong"))
                 } else {
                     None
@@ -164,20 +166,13 @@ impl TryFrom<&[Attribute]> for AutoFieldAttributes {
             let meta = v.parse_meta()?;
 
             if let Some(ident) = meta.path().get_ident() {
-                if ident.to_string() == "rename" {
-                    match &meta {
-                        syn::Meta::List(l) => {
-                            for nested in &l.nested {
-                                match nested {
-                                    syn::NestedMeta::Lit(lit) => match lit {
-                                        syn::Lit::Str(s) => out.script_name = Some(s.parse()?),
-                                        _ => {}
-                                    },
-                                    _ => {}
-                                }
+                if *ident == "rename" {
+                    if let syn::Meta::List(l) = &meta {
+                        for nested in &l.nested {
+                            if let syn::NestedMeta::Lit(syn::Lit::Str(s)) = nested {
+                                out.script_name = Some(s.parse()?)
                             }
                         }
-                        _ => {}
                     }
                 }
             }
@@ -201,7 +196,7 @@ impl Parse for AutoField {
     fn parse(input: ParseStream) -> Result<Self, syn::Error> {
         let attrs = Attribute::parse_outer(input)?;
         let split_idx =
-            attrs.partition_point(|attr| attr.path.get_ident().unwrap().to_string() == "doc");
+            attrs.partition_point(|attr| *attr.path.get_ident().unwrap() == "doc");
         Ok(Self {
             docstring: attrs[0..split_idx].to_owned(),
             attrs: attrs[split_idx..].to_owned(),

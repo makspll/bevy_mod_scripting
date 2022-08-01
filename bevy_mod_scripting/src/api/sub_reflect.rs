@@ -347,6 +347,10 @@ impl ReflectPath {
         self.accesses.len() as u8
     }
 
+    pub fn is_empty(&self) -> bool{
+        self.len() == 0
+    }
+
     pub fn get<O, F>(&self, f: F) -> Result<O, ReflectionError>
     where
         F: FnOnce(&dyn Reflect) -> O,

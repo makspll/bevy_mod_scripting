@@ -24,7 +24,7 @@ impl LuaImplementor {
     /// Generates a union registers it, and makes sure no two identical unions exist, while removing duplicate entries in the enum
     ///
     /// The given unique type idents must be unique (i.e. come from a HashSet)
-    fn generate_register_union<'a, I: Iterator<Item = String>>(
+    fn generate_register_union<I: Iterator<Item = String>>(
         &mut self,
         unique_type_idents: I,
         unique_ident: &str,
@@ -189,7 +189,7 @@ impl WrapperImplementor for LuaImplementor {
         let wrapped_type = &new_type.args.base_type_ident;
 
         derive_flags.try_for_each(|v| {
-            Ok::<(),syn::Error>(match v {
+            match v {
                 DeriveFlag::Debug{ident} => out.push(parse_quote_spanned!{ident.span()=>
                     (mlua::MetaMethod::ToString) => |_,s,()| Ok(format!("{:?}",s))
                 }),
@@ -229,8 +229,8 @@ impl WrapperImplementor for LuaImplementor {
                 flag @ DeriveFlag::Fields {..} => {
                     make_fields(flag,new_type,&mut out)?;
                 },
-
-            })
+            };
+            Ok::<(),syn::Error>(())
         })?;
 
         Ok(out)

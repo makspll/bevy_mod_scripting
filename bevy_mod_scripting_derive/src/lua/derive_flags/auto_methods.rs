@@ -92,7 +92,7 @@ pub(crate) fn make_methods<'a>(flag: &DeriveFlag, new_type: &'a Newtype, out: &m
         };
 
         // call wrapper constructor on produced value if necessary (if output is also wrapped)
-        m.out.as_ref().map(|out_type| {
+        if let Some(out_type) = &m.out{
             if out_type.is_wrapped() || out_type.is_self(){
                 let resolved_out_type = out_type.type_or_resolve(|| SimpleType::BaseIdent(wrapped_type.clone()));
                 let wrapper_out_type = format_ident!("Lua{}",resolved_out_type.base_ident());
@@ -100,7 +100,7 @@ pub(crate) fn make_methods<'a>(flag: &DeriveFlag, new_type: &'a Newtype, out: &m
                     #wrapper_out_type::new(#body)
                 };
             }
-        });
+        };
 
         // we must output a result so wrap in Ok.
         body = quote_spanned!(m.span()=>Ok(#body));
@@ -131,7 +131,7 @@ pub(crate) fn make_methods<'a>(flag: &DeriveFlag, new_type: &'a Newtype, out: &m
         let method_identifier_string = method_identifier.to_string();
         let self_ident = m.self_.as_ref()
             .map(|_| quote_spanned!(m.span()=>#receiver_argument_identifier,))
-            .unwrap_or_else(|| Default::default());
+            .unwrap_or_else(Default::default);
         parse_quote_spanned!{m.span()=>
             #docstrings
             #static_ #mut_ #fn_ #method_identifier_string =>|_,#self_ident (#(#parameter_identifiers),*):(#(#parameter_types),*)| #body

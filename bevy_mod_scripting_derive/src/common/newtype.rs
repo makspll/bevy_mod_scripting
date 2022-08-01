@@ -86,7 +86,7 @@ impl ToTokens for NewtypeArgs {
     fn to_tokens(&self, tokens: &mut TokenStream) {
         let docstrings = self.docstring.iter();
         let base_type = &self.base_type;
-        let colon = (self.flags.len() != 0)
+        let colon = (!self.flags.is_empty())
             .then(|| quote::quote! {:})
             .unwrap_or_default();
         let flags = self.flags.iter();
@@ -105,7 +105,7 @@ impl Parse for NewtypeArgs {
             .path
             .segments
             .last()
-            .ok_or(input.error("Path does not have identifier"))?
+            .ok_or_else(|| input.error("Path does not have identifier"))?
             .ident
             .to_string();
         let short_wrapper_type: String = format!("Lua{}", short_base_type);
@@ -142,6 +142,7 @@ impl<T: WrapperFunction> ToTokens for WrapperFunctionList<T> {
     }
 }
 
+#[allow(clippy::eval_order_dependence)]
 impl<T: WrapperFunction> Parse for WrapperFunctionList<T> {
     fn parse(input: ParseStream) -> Result<Self, syn::Error> {
         let f;

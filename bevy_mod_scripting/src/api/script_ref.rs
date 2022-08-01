@@ -46,7 +46,7 @@ impl ScriptRef {
 
     /// Creates a reference to a script owned value
     ///
-    /// # Safety:
+    /// # Safety
     /// You must ensure that the following holds:
     /// - base_ptr can be dereferenced
     pub unsafe fn new_script_ref(ptr: ReflectPtr, valid: Weak<RwLock<()>>) -> Self {
@@ -62,7 +62,6 @@ impl ScriptRef {
 
         Self {
             path,
-            ..self.clone()
         }
     }
 
@@ -185,6 +184,8 @@ impl From<*mut dyn Reflect> for ReflectPtr {
 impl ReflectPtr {
     /// dereference the pointer as an immutable reference.
     /// The caller must ensure the pointer is valid.
+    /// # Safety
+    /// pointer must point to valid non-dangling data, aliasing rules must be upheld
     #[inline(always)]
     pub unsafe fn const_ref<'a>(self) -> &'a dyn Reflect {
         &*self.ptr
@@ -193,6 +194,8 @@ impl ReflectPtr {
     /// Dereference the pointer as a mutable reference,
     ///
     /// The caller must ensure the pointer is valid. Returns None if the underlying pointer is const
+    /// # Safety
+    /// pointer must point to valid non-dangling data, aliasing rules must be upheld
     pub unsafe fn mut_ref<'a>(self) -> Option<&'a mut dyn Reflect> {
         if self.is_mut {
             Some(&mut *(self.ptr as *mut dyn Reflect))
@@ -202,6 +205,8 @@ impl ReflectPtr {
     }
 
     /// Maps this pointer to another one with one of two funtions depending on if mutable access is available
+    /// # Safety
+    /// pointer must point to valid non-dangling data, aliasing rules must be upheld
     pub unsafe fn map(
         self,
         get: fn(&dyn Reflect) -> &dyn Reflect,
@@ -227,9 +232,9 @@ pub struct ReflectedValue {
     pub(crate) ref_: ScriptRef,
 }
 
-impl Into<ScriptRef> for ReflectedValue {
-    fn into(self) -> ScriptRef {
-        self.ref_
+impl From<ReflectedValue> for ScriptRef {
+    fn from(ref_: ReflectedValue) -> Self {
+        ref_.ref_
     }
 }
 

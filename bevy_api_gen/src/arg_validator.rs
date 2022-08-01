@@ -41,11 +41,11 @@ impl fmt::Display for ArgType {
             ArgType::Self_ => f.write_str("self"),
             ArgType::Generic { base, args } => {
                 base.fmt(f)?;
-                f.write_str("<");
+                f.write_str("<")?;
                 for (a, i) in args.iter().zip(1..) {
                     a.fmt(f)?;
                     if i != args.len() {
-                        f.write_str(",");
+                        f.write_str(",")?;
                     }
                 }
                 f.write_str(">")
@@ -150,12 +150,12 @@ impl ArgType {
         self.map_base(|b| b.is_err())
     }
 
-    /// Retrieves the base ident if this type is resolved otherwise returns Err(()) (i.e. in the case of a self receiver)
-    pub fn base_ident(&self) -> Result<&str, ()> {
+    /// Retrieves the base ident if this type is resolved otherwise returns None (i.e. in the case of a self receiver)
+    pub fn base_ident(&self) -> Option<&str> {
         match self {
-            ArgType::Base(b) => Ok(b),
+            ArgType::Base(b) => Some(b),
             ArgType::Ref { is_mut: _, ref_ } => ref_.base_ident(),
-            ArgType::Self_ => Err(()),
+            ArgType::Self_ => None,
             ArgType::Generic { base, .. } => base.base_ident(),
         }
     }

@@ -40,7 +40,7 @@ macro_rules! impl_parse_enum {
             ),*
 
         }
-
+        #[allow(clippy::eval_order_dependence)]
         impl Parse for $name {
             fn parse($input_stream: ParseStream) -> Result<Self,syn::Error> {
                 let $parsed_ident : syn::Ident = $input_stream.parse()?;

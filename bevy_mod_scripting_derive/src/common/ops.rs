@@ -119,16 +119,16 @@ impl ToTokens for OpExpr {
 
 impl OpExpr {
     pub fn is_binary(&self) -> bool {
-        return self.left.is_some();
+        self.left.is_some()
     }
 
     fn has_receiver(&self) -> bool {
         if let Some(ArgType::Self_(_)) = self.left {
-            return true;
+            true
         } else if let ArgType::Self_(_) = self.right {
-            return true;
+            true
         } else {
-            return true;
+            true
         }
     }
 
