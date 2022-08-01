@@ -34,7 +34,7 @@ impl APIProvider for LuaAPIProvider {
         // return any `FromLuaMulti` arguments, here a `usize`
         // check the Rlua documentation for more details
 
-        let ctx = ctx.lock().unwrap();
+        let ctx = ctx.get_mut().unwrap();
 
         ctx.globals().set(
             "print",

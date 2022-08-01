@@ -127,7 +127,7 @@ impl WrapperImplementor for LuaImplementor {
 
         // expose to lua
         let user_data_implementation = quote_spanned! {newtype.span()=>
-            #[allow(unused_parens,unreachable_patterns,unused_variables)]
+            #[allow(unused_parens,unreachable_patterns,unused_variables,clippy::all)]
             impl tealr::mlu::TealData for #wrapper_type {
                 fn add_methods<'lua, T: tealr::mlu::TealDataMethods<'lua, Self>>(methods: &mut T) {
                     #type_documentator
