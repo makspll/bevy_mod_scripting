@@ -206,21 +206,12 @@ impl<A: LuaArg> ScriptHost for LuaScriptHost<A> {
                                     continue;
                                 }
 
-                                let mut f: Function = match globals.get(event.hook_name.clone()) {
+                                let f: Function = match globals.get(event.hook_name.clone()) {
                                     Ok(f) => f,
                                     Err(_) => continue, // not subscribed to this event
                                 };
 
-                                // bind arguments and catch any errors
-                                f = f.bind(event.args.clone().to_lua_multi(ctx)?).map_err(|e| {
-                                    ScriptError::InvalidCallback {
-                                        script: fd.name.to_owned(),
-                                        callback: event.hook_name.to_owned(),
-                                        msg: e.to_string(),
-                                    }
-                                })?;
-
-                                f.call::<(), ()>(())
+                                f.call::<_, ()>(event.args.clone())
                                     .map_err(|e| ScriptError::RuntimeError {
                                         script: fd.name.to_owned(),
                                         msg: e.to_string(),

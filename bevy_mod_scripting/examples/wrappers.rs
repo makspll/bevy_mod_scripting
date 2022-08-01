@@ -11,7 +11,8 @@ use bevy_mod_scripting_derive::impl_script_newtype;
 // Step 1. Rust representation
 // construct all our types and functionality
 // Reflect is neccessary to allow access from scripts
-// Clone makes deriving everything we need much easier, mainly ToLua and FromLua are missing for UserData/TealData with no Clone
+// Clone allows receiving our wrapper as a function parameter (derives FromLua via UserData through mlua's traits)
+// We can still use references to NonClone wrappers via AnyUserData in lua methods.
 // Even though we are implementing Clone we are still able to reference the original data in script thanks to the script wrapper we are about to implement
 // Debug is nice to have, we can forward that implementation to Lua's ToString via our macro
 #[derive(Reflect, Default, Clone, Debug)]

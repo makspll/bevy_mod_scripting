@@ -158,6 +158,12 @@ impl WrapperImplementor for LuaImplementor {
                     }
                 }
             }
+
+            impl bevy_mod_scripting::ToLuaProxy<'_> for #wrapped_type {
+                fn to_lua_proxy<'lua>(self, lua: &'lua mlua::Lua) -> mlua::Result<mlua::Value<'lua>>{
+                    <#wrapper_type as mlua::ToLua>::to_lua(#wrapper_type::new(self),lua)
+                }
+            }
         };
 
         let additional_globals = &self.additional_globals;

@@ -84,12 +84,11 @@ macro_rules! ref_only_wrapper_methods {
             other: &mut $crate::ScriptRef,
         ) -> Result<(), $crate::ReflectionError> {
             match self {
-                Self::Owned(v, ..) => {
-                    // if we own the value, we are not borrowing from the world
-                    // we're good to just apply
-                    // TODO: we use apply here due to the fact we implement `Drop`
-                    // if we didn't or if ScriptRef itself owned the value we could just consume the cell and assign
-                    other.get_mut(|other| other.apply(unsafe { &*(v.get() as *const $type_) }))
+                Self::Owned(v, valid) => {
+                    let lock = valid.read();
+                    other.get_mut(|other| other.apply(unsafe { &*(v.get() as *const $type_) }))?;
+                    drop(lock);
+                    Ok(())
                 }
                 Self::Ref(v) => {
                     // if we are a ScriptRef, we have to be careful with borrows

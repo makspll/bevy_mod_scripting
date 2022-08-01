@@ -86,6 +86,29 @@ impl Parse for AdditionalImplBlock {
     }
 }
 
+/// A convenience macro which derives a lotta things to make your type work in all supported/enabled scripting languages.
+/// 
+/// # Example
+/// ```rust
+/// 
+/// pub struct MyStruct{
+///     my_field: bool
+/// }
+/// 
+/// impl MyStruct {
+///     pub fn do_something(&self) -> bool {
+///         self.my_field
+///     }
+/// }
+/// impl_script_newtype!(
+///     MyStruct:
+///       Fields(
+///         my_field: Raw(bool)
+///       ) + Methods(
+///         do_something(&self:) -> Raw(bool)
+///       ) 
+/// )
+/// ```
 #[proc_macro]
 pub fn impl_script_newtype(input: TokenStream) -> TokenStream {
     let new_type = parse_macro_input!(input as Newtype);

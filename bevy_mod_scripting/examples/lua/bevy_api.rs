@@ -76,8 +76,8 @@ fn main() -> std::io::Result<()> {
         .register_foreign_lua_type::<Option<Vec<bool>>>()
         .init_resource::<MyResource>()
         // this stage handles addition and removal of script contexts, we can safely use `CoreStage::PostUpdate`
-        .add_script_host::<LuaScriptHost<bool>, _>(CoreStage::PostUpdate)
-        .add_api_provider::<LuaScriptHost<bool>>(Box::new(LuaBevyAPIProvider))
+        .add_script_host::<LuaScriptHost<()>, _>(CoreStage::PostUpdate)
+        .add_api_provider::<LuaScriptHost<()>>(Box::new(LuaBevyAPIProvider))
         .add_system(
             (|world: &mut World| {
 
@@ -103,7 +103,7 @@ fn main() -> std::io::Result<()> {
                     });
 
                 // run script
-                world.resource_scope(|world, mut host: Mut<LuaScriptHost<bool>>| {
+                world.resource_scope(|world, mut host: Mut<LuaScriptHost<()>>| {
                     host.run_one_shot(
                         r#"
                         function once()
@@ -216,7 +216,7 @@ fn main() -> std::io::Result<()> {
                         world,
                         LuaEvent {
                             hook_name: "once".to_owned(),
-                            args: true,
+                            args: (),
                             recipients: Recipients::All,
                         },
                     )
