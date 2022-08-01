@@ -18,6 +18,26 @@ pub mod api;
 pub use bevy_event_priority as events;
 pub use {api::*, error::*, hosts::*, langs::*, util::*};
 
+pub mod prelude {
+    // general
+    pub use {
+        crate::{ScriptingPlugin,ScriptErrorEvent,ScriptError,GenDocumentation,
+        AddScriptHost,AddScriptApiProvider,AddScriptHostHandler},
+        bevy_mod_scripting_derive::impl_script_newtype,
+        bevy_event_priority::{AddPriorityEvent,PriorityEvent,PriorityEventReader,PriorityEventWriter,PriorityEvents,PriorityIterator},
+        crate::hosts::{
+            APIProvider,APIProviders,Recipients,ScriptData,ScriptEvent,
+            ScriptHost,CodeAsset,ScriptContexts,Script,ScriptCollection
+        }};
+
+    // lua
+    pub use crate::{RegisterForeignLuaType,LuaScriptHost,LuaDocFragment,LuaFile,LuaEvent};
+    
+    // rhai
+    pub use crate::{langs::rhai::Engine,RhaiDocFragment,RhaiContext,RhaiFile,RhaiEvent};
+}
+
+
 #[derive(Default)]
 /// Bevy plugin enabling run-time scripting
 pub struct ScriptingPlugin;

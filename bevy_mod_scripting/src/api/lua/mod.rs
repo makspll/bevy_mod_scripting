@@ -13,10 +13,12 @@ use tealr::mlu::{
 };
 use tealr::TypeName;
 
-use self::bevy::LuaWorld;
+use crate::api::lua::bevy::LuaWorld;
 
 pub mod bevy;
 pub mod std;
+
+
 
 impl ValueIndex<Value<'_>> for ScriptRef {
     type Output = Result<Self, mlua::Error>;

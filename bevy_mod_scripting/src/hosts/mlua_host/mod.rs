@@ -60,22 +60,13 @@ impl<A: LuaArg> ScriptEvent for LuaEvent<A> {
 ///
 /// You can use these variables in your APIProviders like so:
 /// ```
-///    use std::sync::Mutex;
+///    use ::std::sync::Mutex;
 ///    use bevy::prelude::*;
 ///    use bevy_mod_scripting::{*, langs::mlu::{mlua,mlua::prelude::*}};
 ///    
 ///    #[derive(Default)]
-///    pub struct LuaAPIProvider {}
+///    pub struct LuaAPIProvider;
 ///
-///    #[derive(Clone)]
-///    pub struct MyLuaArg;
-///
-///    impl<'lua> ToLua<'lua> for MyLuaArg {
-///        fn to_lua(self, _lua: &'lua mlua::Lua) -> mlua::Result<mlua::Value<'lua>> {
-///            Ok(mlua::Value::Nil)
-///        }
-///    }
-
 ///    /// the custom Lua api, world is provided via a global pointer,
 ///    /// and callbacks are defined only once at script creation
 ///    impl APIProvider for LuaAPIProvider {

@@ -7,6 +7,7 @@ license = "MIT"
 description = "Bevy plugin for enabling scripting"
 repository = "https://github.com/makspll/bevy_scripting"
 homepage = "https://github.com/makspll/bevy_scripting"
+documentation = "https://docs.rs/bevy_mod_scripting"
 keywords = ["bevy", "gamedev", "scripting", "lua"]
 categories = ["game-development"]
 readme = "../readme.md"
@@ -89,7 +90,7 @@ path = "examples/lua/event_recipients.rs"
 
 [[example]]
 name = "documentation_gen_lua"
-path = "examples/lua/documentation_gen_lua.rs"
+path = "examples/lua/documentation_gen.rs"
 required-features = ["lua54"]
 
 

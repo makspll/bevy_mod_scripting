@@ -103,23 +103,14 @@ Any types implementing the `mlua::ToLua` trait can be used.
 
 ``` rust
 use bevy::prelude::*;
-use bevy_mod_scripting::{*,events::*,langs::mlu::{mlua,mlua::prelude::*}};
+use bevy_mod_scripting::{prelude::*,events::*,langs::mlu::{mlua,mlua::prelude::*}};
 
-
-#[derive(Clone)]
-pub struct MyLuaArg;
-
-impl<'lua> ToLua<'lua> for MyLuaArg {
-    fn to_lua(self, _lua: &'lua mlua::Lua) -> mlua::Result<mlua::Value<'lua>> {
-        Ok(mlua::Value::Nil)
-    }
-}
 
 // event callback generator for lua
-pub fn trigger_on_update_lua(mut w: PriorityEventWriter<LuaEvent<MyLuaArg>>) {
-    let event = LuaEvent::<MyLuaArg> {
+pub fn trigger_on_update_lua(mut w: PriorityEventWriter<LuaEvent<()>>) {
+    let event = LuaEvent::<()> {
         hook_name: "on_update".to_string(), 
-        args: Vec::default(),
+        args: (),
         recipients: Recipients::All
     };
 
@@ -133,7 +124,7 @@ Rhai supports any rust types implementing FuncArgs as function arguments.
 
 ``` rust
 use bevy::prelude::*;
-use bevy_mod_scripting::{*,events::*,langs::rhai::FuncArgs};
+use bevy_mod_scripting::{prelude::*,langs::rhai::FuncArgs};
 
 #[derive(Clone)]
 pub struct MyRhaiArgStruct {
@@ -170,17 +161,7 @@ Scripts are attached to entities in the form of `bevy_mod_scripting::ScriptColle
 ``` rust
 use std::sync::Mutex;
 use bevy::prelude::*;
-use bevy_mod_scripting::{*,langs::mlu::mlua};
-
-#[derive(Clone)]
-pub struct MyLuaArg;
-
-impl<'lua> mlua::ToLua<'lua> for MyLuaArg {
-    fn to_lua(self, _lua: &'lua mlua::Lua) -> mlua::Result<mlua::Value<'lua>> {
-        // ...
-        Ok(mlua::Value::Nil)
-    }
-}
+use bevy_mod_scripting::prelude::*;
 
 // An example of a startup system which loads the lua script "console_integration.lua" 
 // placed in "assets/scripts/" and attaches it to a new entity
@@ -194,7 +175,7 @@ pub fn load_a_script(
 
 
     commands.spawn().insert(ScriptCollection::<LuaFile> {
-        scripts: vec![Script::<LuaFile>::new::<LuaScriptHost<MyLuaArg>>(
+        scripts: vec![Script::<LuaFile>::new(
             path, handle,
         )],
     });
@@ -203,14 +184,14 @@ pub fn load_a_script(
 
 
 ### Defining an API
-To expose an API to your scripts, implement the APIProvider trait. To register this API with your script host use the `add_api_provider` of `App`:
+To expose an API to your scripts, implement the APIProvider trait. To register this API with your script host use the `add_api_provider` of `App`. APIProviders are a little bit like plugins, since they can also have access to the bevy App via one of the methods provided, and 
 
 ``` rust
-use std::sync::Mutex;
-use bevy_mod_scripting::{*,langs::{mlu::mlua::prelude::*,rhai::*}};
+use ::std::sync::Mutex;
+use bevy_mod_scripting::{prelude::*,langs::{mlu::mlua::prelude::*,rhai::*}};
 
 #[derive(Default)]
-pub struct LuaAPI {}
+pub struct LuaAPI;
 
 /// the custom Lua api, world is provided via a global pointer,
 /// and callbacks are defined only once at script creation
@@ -262,25 +243,19 @@ Documentation features are exposed at runtime via the `update_documentation` bui
 
 ```rust
 use bevy::prelude::*;
-use bevy_mod_scripting::{*,langs::mlu::mlua};
-
-#[derive(Clone)]
-pub struct MyLuaArg;
-impl<'lua> mlua::ToLua<'lua> for MyLuaArg {
-    fn to_lua(self, lua: &'lua mlua::Lua) -> mlua::Result<mlua::Value<'lua>> {Ok(mlua::Value::Nil)}
-}
+use bevy_mod_scripting::prelude::*;
 
 fn main() -> std::io::Result<()> {
     let mut app = App::new();
 
     app.add_plugins(DefaultPlugins)
         .add_plugin(ScriptingPlugin)
-        .add_script_host::<LuaScriptHost<MyLuaArg>, _>(CoreStage::PostUpdate)
+        .add_script_host::<LuaScriptHost<()>, _>(CoreStage::PostUpdate)
         // Note: This is a noop in optimized builds unless the `doc_always` feature is enabled!
         // this will pickup any API providers added *BEFOREHAND* like this one
-        // .add_api_provider::<LuaScriptHost<MyLuaArg>>(Box::new(LuaAPIProvider))
-        .update_documentation::<LuaScriptHost<MyLuaArg>>()
-        .add_script_handler_stage::<LuaScriptHost<MyLuaArg>, _, 0, 0>(
+        // .add_api_provider::<LuaScriptHost<()>>(Box::new(LuaAPIProvider))
+        .update_documentation::<LuaScriptHost<()>>()
+        .add_script_handler_stage::<LuaScriptHost<()>, _, 0, 0>(
             CoreStage::PostUpdate,
         );
 

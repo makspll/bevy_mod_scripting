@@ -37,7 +37,7 @@ impl MyThing {
 //
 // Note: this step is not fully necessary, if your value is reflectable, you'll be able to reach it via
 // The bevy API, however doing this means your provide static typing for your scripts in languages which support it,
-
+// To see what else this macro can do see `src/api/generated.rs` 
 impl_script_newtype!(
     MyThing:
         Debug + Clone
