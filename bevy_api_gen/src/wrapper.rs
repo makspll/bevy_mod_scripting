@@ -198,7 +198,7 @@ impl WrappedItem<'_> {
                         if let Ok(arg_type) = arg_type {
                             // if the underlying ident is self, we shouldn't wrap it when printing it
                             // if type is unknown no wrapper exists
-                            let wrapper_type: Option<ArgWrapperType> = ArgWrapperType::with_config(&self.wrapped_type, &arg_type, config);
+                            let wrapper_type: Option<ArgWrapperType> = ArgWrapperType::with_config(self.wrapped_type, &arg_type, config);
 
                             match wrapper_type {
                                 Some(w) => {
@@ -239,7 +239,7 @@ impl WrappedItem<'_> {
 
                         // if the underlying ident is self, we shouldn't wrap it when printing it
                         // if type is unknown, no wrapper type exists
-                        let wrapper_type: Option<ArgWrapperType> = ArgWrapperType::with_config(&self.wrapped_type, &arg_type, config);
+                        let wrapper_type: Option<ArgWrapperType> = ArgWrapperType::with_config(self.wrapped_type, &arg_type, config);
 
                         match wrapper_type {
                             Some(w) => {
@@ -269,7 +269,7 @@ impl WrappedItem<'_> {
                         writer.newline();
                     }
                 } else {
-                    used_method_identifiers.insert(v.name.as_ref().map(String::as_str).unwrap());
+                    used_method_identifiers.insert(v.name.as_deref().unwrap());
                     inner_writer.write_inline(",");
                     writer.extend(inner_writer);
                     writer.newline();
@@ -328,8 +328,7 @@ impl WrappedItem<'_> {
                             if field_
                                 .attrs
                                 .iter()
-                                .find(|attr| attr == &"#[reflect(ignore)]")
-                                .is_some()
+                                .any(|attr| &attr == &"#[reflect(ignore)]")
                             {
                                 return None;
                             }
@@ -349,7 +348,7 @@ impl WrappedItem<'_> {
                         used_method_identifiers
                             .contains(name.as_str())
                             .then(|| writer.write_line(&format!("#[rename(\"_{name}\")]")));
-                        writer.write_no_newline(&name);
+                        writer.write_no_newline(name);
                         writer.write_inline(": ");
                         writer.write_inline(&reflectable_type);
                         writer.write_inline(",");
@@ -373,14 +372,13 @@ impl WrappedItem<'_> {
         writer.write_line("+ BinOps");
         writer.open_paren();
         BINARY_OPS.into_iter().for_each(|(op, rep)| {
-            self.impl_items.get(op).map(|items| {
-                items
+            if let Some(items) = self.impl_items.get(op) { items
                     .iter()
                     .filter_map(|(impl_, item)| Some((impl_, item, (&impl_.for_).try_into().ok()?)))
                     .filter(|(_, _, self_type): &(&&Impl, &&Item, ArgType)| {
                         let base_ident = self_type
                             .base_ident()
-                            .unwrap_or_else(|_| self.wrapped_type.as_str());
+                            .unwrap_or(self.wrapped_type.as_str());
                         let is_self_type_the_wrapper = (base_ident == self.wrapped_type)
                             && config.types.contains_key(base_ident);
                         let is_primitive = config.primitives.contains(base_ident);
@@ -398,7 +396,7 @@ impl WrappedItem<'_> {
 
                                         // if the underlying ident is self, we shouldn't wrap it when printing it
                                         let wrapper_type = ArgWrapperType::with_config(
-                                            &self.wrapped_type,
+                                            self.wrapped_type,
                                             &arg_type,
                                             config,
                                         )
@@ -406,8 +404,7 @@ impl WrappedItem<'_> {
 
                                         Ok(Arg::new(arg_type, wrapper_type).to_string())
                                     })
-                                    .collect::<Result<Vec<_>, _>>()
-                                    .and_then(|v| Ok(v.join(&format!(" {} ", rep))))
+                                    .collect::<Result<Vec<_>, _>>().map(|v| v.join(&format!(" {} ", rep)))
                                     .and_then(|expr| {
                                         // then provide return type
                                         // for these traits that's on associated types within the impl
@@ -419,7 +416,7 @@ impl WrappedItem<'_> {
                                                 if let ItemEnum::AssocType { default, .. } =
                                                     &item.inner
                                                 {
-                                                    match item.name.as_ref().map(|v| v.as_str()) {
+                                                    match item.name.as_deref() {
                                                         Some("Output") => {
                                                             return Some(default.as_ref().unwrap())
                                                         }
@@ -434,7 +431,7 @@ impl WrappedItem<'_> {
                                         // if the underlying ident is self, we shouldn't wrap it when printing it
                                         let wrapper_type: ArgWrapperType =
                                             ArgWrapperType::with_config(
-                                                &self.wrapped_type,
+                                                self.wrapped_type,
                                                 &arg_type,
                                                 config,
                                             )
@@ -457,8 +454,7 @@ impl WrappedItem<'_> {
                             }
                             _ => panic!("Expected method"),
                         };
-                    })
-            });
+                    }) }
         });
         writer.close_paren();
 
@@ -467,11 +463,9 @@ impl WrappedItem<'_> {
         writer.write_line("+ UnaryOps");
         writer.open_paren();
         UNARY_OPS.into_iter().for_each(|(op, rep)| {
-            self.impl_items.get(op).map(|items| {
-                items.iter().for_each(|(_, _)| {
+            if let Some(items) = self.impl_items.get(op) { items.iter().for_each(|(_, _)| {
                     writer.write_line(&format!("{rep} self -> self"));
-                });
-            });
+                }); }
         });
         writer.close_paren();
 

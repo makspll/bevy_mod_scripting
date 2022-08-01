@@ -100,7 +100,7 @@ impl TryFrom<&Type> for ArgType {
                         Ok(base)
                     }
                 } else {
-                    return Err("Base is invalid".to_owned());
+                    Err("Base is invalid".to_owned())
                 }
             }
             Type::Primitive(name) | Type::Generic(name) => {
@@ -171,7 +171,7 @@ pub enum ArgWrapperType {
 
 impl ArgWrapperType {
     pub fn with_config(self_type: &str, type_: &ArgType, config: &Config) -> Option<Self> {
-        let base_ident = type_.base_ident().unwrap_or_else(|_| self_type);
+        let base_ident = type_.base_ident().unwrap_or(self_type);
         type_
             .is_self()
             .then(|| ArgWrapperType::None)
@@ -220,7 +220,7 @@ impl fmt::Display for Arg {
 
         match self.wrapper {
             ArgWrapperType::Raw | ArgWrapperType::Wrapped => {
-                write!(f, "{}({inner})", self.wrapper.to_string())
+                write!(f, "{}({inner})", self.wrapper)
             }
             ArgWrapperType::None => f.write_str(&inner),
         }

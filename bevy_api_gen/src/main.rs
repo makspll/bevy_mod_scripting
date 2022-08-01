@@ -22,7 +22,7 @@ pub(crate) fn write_use_items_from_path(
         writer.write_inline("bevy::");
         writer.write_inline(&module_name[5..]);
     } else {
-        writer.write_inline(&module_name);
+        writer.write_inline(module_name);
     }
 
     for item in path_components {
@@ -50,8 +50,7 @@ pub(crate) fn generate_macros(
                 .filter(|(_, item)| {
                     item.name
                         .as_ref()
-                        .and_then(|k| config.types.get(k))
-                        .and_then(|k| Some(k.matches_result(item, source)))
+                        .and_then(|k| config.types.get(k)).map(|k| k.matches_result(item, source))
                         .unwrap_or(false)
                 })
                 .map(|(id, item)| {
@@ -70,8 +69,7 @@ pub(crate) fn generate_macros(
                         if let ItemEnum::Impl(i) = &source.index.get(id).unwrap().inner {
                             match &i.trait_ {
                                 Some(t) => {
-                                    stringify_type(t)
-                                        .and_then(|str_| Some(implemented_traits.insert(str_)));
+                                    stringify_type(t).map(|str_| implemented_traits.insert(str_));
                                 }
                                 None => self_impl = Some(i),
                             }
@@ -296,7 +294,7 @@ pub fn main() -> Result<(), io::Error> {
         .json
         .iter()
         .map(|json| {
-            let f = File::open(&json).expect(&format!("Could not open {}", &json));
+            let f = File::open(&json).unwrap_or_else(|_| panic!("Could not open {}", &json));
             let rdr = BufReader::new(f);
             from_reader(rdr)
         })
