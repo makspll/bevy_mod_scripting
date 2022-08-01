@@ -12,13 +12,12 @@ use syn::{
     parse_macro_input,
     punctuated::Punctuated,
     token::{Brace, Bracket, Paren},
-    ItemFn, Result, Token, Type, Path,
+    ItemFn, Result, Token, Type,
 };
 
 pub(crate) use {common::*, lua::*};
 
-
-#[derive(Default,Debug,Clone)]
+#[derive(Default, Debug, Clone)]
 struct EmptyToken;
 
 impl Parse for EmptyToken {

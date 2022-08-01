@@ -1,14 +1,14 @@
 use std::collections::HashSet;
 
 use indexmap::IndexSet;
-use proc_macro2::{TokenStream, Span};
+use proc_macro2::TokenStream;
 use syn::{
+    braced,
     parse::{Parse, ParseStream},
     punctuated::*,
     spanned::Spanned,
-    token::*, Attribute, TypePath,
-    Token,
-    Ident, braced, parse_quote
+    token::*,
+    Attribute, Ident, Token, TypePath,
 };
 
 use crate::{lua_method::LuaMethod, DeriveFlag};
@@ -25,30 +25,34 @@ pub(crate) struct NewtypeArgs {
     pub flags: IndexSet<DeriveFlag>,
 }
 
-
 impl NewtypeArgs {
-    /// Verify the given derive flags 
-    pub fn verify(self) -> Result<Self,syn::Error>{
-
+    /// Verify the given derive flags
+    pub fn verify(self) -> Result<Self, syn::Error> {
         let mut fields = None;
         let mut methods = None;
 
-        self.flags.iter().for_each(|f| {
-            match f {
-                DeriveFlag::Fields { .. } => fields = Some(f),
-                DeriveFlag::Methods { .. } => methods = Some(f),
-                _ => {}
-            }
+        self.flags.iter().for_each(|f| match f {
+            DeriveFlag::Fields { .. } => fields = Some(f),
+            DeriveFlag::Methods { .. } => methods = Some(f),
+            _ => {}
         });
 
-        let mut seen_identifiers : HashSet<&Ident> = HashSet::default();
+        let mut seen_identifiers: HashSet<&Ident> = HashSet::default();
         // verify there aren't any name clashes
-        if let (Some(DeriveFlag::Fields{fields, ..}),
-            Some(DeriveFlag::Methods{methods, ..})) = (fields,methods){
-
+        if let (
+            Some(DeriveFlag::Fields { fields, .. }),
+            Some(DeriveFlag::Methods { methods, .. }),
+        ) = (fields, methods)
+        {
             for m in methods {
                 if seen_identifiers.contains(&m.ident) {
-                    return Err(syn::Error::new_spanned(m, format!("Method name `{}` clashes with another field or method",&m.ident)));
+                    return Err(syn::Error::new_spanned(
+                        m,
+                        format!(
+                            "Method name `{}` clashes with another field or method",
+                            &m.ident
+                        ),
+                    ));
                 }
                 seen_identifiers.insert(&m.ident);
             }
@@ -62,11 +66,14 @@ impl NewtypeArgs {
                             seen_identifiers.contains(n)
                         };
                         if contains {
-                            return Err(syn::Error::new_spanned(n, format!("Field name `{}` clashes with another field or method",n)));
+                            return Err(syn::Error::new_spanned(
+                                n,
+                                format!("Field name `{}` clashes with another field or method", n),
+                            ));
                         }
                         seen_identifiers.insert(n);
-                    },
-                    syn::Member::Unnamed(u) => {},
+                    }
+                    syn::Member::Unnamed(u) => {}
                 }
             }
         }
@@ -91,7 +98,7 @@ impl ToTokens for NewtypeArgs {
 }
 
 impl Parse for NewtypeArgs {
-    fn parse(input: ParseStream) -> Result<Self,syn::Error> {
+    fn parse(input: ParseStream) -> Result<Self, syn::Error> {
         let docstring = Attribute::parse_outer(input)?;
         let base_type: TypePath = input.parse()?;
         let short_base_type: String = base_type
@@ -136,7 +143,7 @@ impl<T: WrapperFunction> ToTokens for WrapperFunctionList<T> {
 }
 
 impl<T: WrapperFunction> Parse for WrapperFunctionList<T> {
-    fn parse(input: ParseStream) -> Result<Self,syn::Error> {
+    fn parse(input: ParseStream) -> Result<Self, syn::Error> {
         let f;
         Ok(Self {
             impl_: input.parse()?,
@@ -162,7 +169,7 @@ impl ToTokens for Newtype {
 }
 
 impl Parse for Newtype {
-    fn parse(input: ParseStream) -> Result<Self,syn::Error> {
+    fn parse(input: ParseStream) -> Result<Self, syn::Error> {
         Ok(Self {
             args: input.parse()?,
             additional_lua_functions: if input.peek(Token![impl]) && !input.peek2(Token![fn]) {

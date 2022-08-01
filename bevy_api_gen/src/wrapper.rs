@@ -146,7 +146,7 @@ impl WrappedItem<'_> {
             writer.write_line("Debug +");
         }
 
-        let mut used_method_identifiers : HashSet<&str> = HashSet::default();
+        let mut used_method_identifiers: HashSet<&str> = HashSet::default();
 
         writer.write_line("Methods");
         writer.open_paren();
@@ -346,9 +346,9 @@ impl WrappedItem<'_> {
                         });
 
                         // add underscore if a method with same name exists
-                        used_method_identifiers.contains(name.as_str()).then(|| {
-                            writer.write_line(&format!("#[rename(\"_{name}\")]"))
-                        });
+                        used_method_identifiers
+                            .contains(name.as_str())
+                            .then(|| writer.write_line(&format!("#[rename(\"_{name}\")]")));
                         writer.write_no_newline(&name);
                         writer.write_inline(": ");
                         writer.write_inline(&reflectable_type);
@@ -362,7 +362,6 @@ impl WrappedItem<'_> {
             _ => {}
         };
         writer.close_paren();
-
 
         static BINARY_OPS: [(&str, &str); 5] = [
             ("add", "Add"),
@@ -398,7 +397,12 @@ impl WrappedItem<'_> {
                                         let arg_type: ArgType = t.try_into()?;
 
                                         // if the underlying ident is self, we shouldn't wrap it when printing it
-                                        let wrapper_type = ArgWrapperType::with_config(&self.wrapped_type, &arg_type, config).unwrap();
+                                        let wrapper_type = ArgWrapperType::with_config(
+                                            &self.wrapped_type,
+                                            &arg_type,
+                                            config,
+                                        )
+                                        .unwrap();
 
                                         Ok(Arg::new(arg_type, wrapper_type).to_string())
                                     })
@@ -428,7 +432,13 @@ impl WrappedItem<'_> {
 
                                         let arg_type: ArgType = out_type.try_into()?;
                                         // if the underlying ident is self, we shouldn't wrap it when printing it
-                                        let wrapper_type: ArgWrapperType = ArgWrapperType::with_config(&self.wrapped_type, &arg_type, config).unwrap();
+                                        let wrapper_type: ArgWrapperType =
+                                            ArgWrapperType::with_config(
+                                                &self.wrapped_type,
+                                                &arg_type,
+                                                config,
+                                            )
+                                            .unwrap();
 
                                         if wrapper_type == ArgWrapperType::None {
                                             return Err(arg_type.to_string());

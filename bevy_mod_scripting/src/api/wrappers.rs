@@ -1,12 +1,4 @@
 use bevy::reflect::Reflect;
-use parking_lot::RwLock;
-
-use crate::{ReflectionError, ScriptRef};
-use std::{
-    cell::UnsafeCell,
-    fmt::{Debug, Display, Formatter},
-    sync::Arc,
-};
 
 /// Script representable type with pass-by-value semantics
 pub trait ScriptValue: Reflect + Clone {}
@@ -16,11 +8,10 @@ impl<T: Reflect + Clone> ScriptValue for T {}
 pub trait ScriptReference: Reflect {}
 impl<T: Reflect> ScriptReference for T {}
 
-
 #[macro_export]
-macro_rules! ref_only_wrapper_methods{
+macro_rules! ref_only_wrapper_methods {
     ($type_:ident, $wrapper_name: ident) => {
-       /// Creates a script reference pointing to the wrapped value.
+        /// Creates a script reference pointing to the wrapped value.
         ///
         /// Depending on this value it may be a lua owned or reflect relative reference
         pub fn script_ref(&self) -> $crate::ScriptRef {
@@ -39,15 +30,18 @@ macro_rules! ref_only_wrapper_methods{
                 Self::Ref(ref_) => ref_.clone(),
             }
         }
-    
-        pub fn new(b: $type_) -> Self{
-            Self::Owned(::std::cell::UnsafeCell::new(b), ::std::sync::Arc::new(::parking_lot::RwLock::new(())))
+
+        pub fn new(b: $type_) -> Self {
+            Self::Owned(
+                ::std::cell::UnsafeCell::new(b),
+                ::std::sync::Arc::new(::parking_lot::RwLock::new(())),
+            )
         }
-    
+
         pub fn new_ref(b: $crate::ScriptRef) -> Self {
             Self::Ref(b)
         }
-    
+
         /// Perform an operation on the base type and optionally retrieve something by value
         /// may require a read lock on the world in case this is a reference
         pub fn val<G, F>(&self, accessor: F) -> Result<G, $crate::ReflectionError>
@@ -60,13 +54,13 @@ macro_rules! ref_only_wrapper_methods{
                     let lock = valid.read();
                     let o = accessor(unsafe { &*(v.get() as *const $type_) });
                     drop(lock);
-    
+
                     Ok(o)
                 }
                 Self::Ref(v) => v.get(|s| accessor(s.downcast_ref::<$type_>().unwrap())),
             }
         }
-    
+
         pub fn val_mut<G, F>(&mut self, accessor: F) -> Result<G, $crate::ReflectionError>
         where
             F: FnOnce(&mut $type_) -> G,
@@ -76,7 +70,7 @@ macro_rules! ref_only_wrapper_methods{
                     let lock = valid.read();
                     let o = accessor(v.get_mut());
                     drop(lock);
-    
+
                     Ok(o)
                 }
                 Self::Ref(v) => v.get_mut(|s| accessor(s.downcast_mut::<$type_>().unwrap())),
@@ -85,7 +79,10 @@ macro_rules! ref_only_wrapper_methods{
 
         /// Applies Self to another ScriptRef.
         /// may require a write lock on the world
-        pub fn apply_self_to_base(&self, other: &mut $crate::ScriptRef) -> Result<(), $crate::ReflectionError> {
+        pub fn apply_self_to_base(
+            &self,
+            other: &mut $crate::ScriptRef,
+        ) -> Result<(), $crate::ReflectionError> {
             match self {
                 Self::Owned(v, ..) => {
                     // if we own the value, we are not borrowing from the world
@@ -102,7 +99,7 @@ macro_rules! ref_only_wrapper_methods{
                 }
             }
         }
-    }
+    };
 }
 
 #[macro_export]
@@ -130,46 +127,48 @@ macro_rules! define_wrapper{
                     Self::Ref(_) => {}
                 }
             }
-        }    
+        }
     }
 }
 
 #[macro_export]
-macro_rules! make_script_wrapper{
+macro_rules! make_script_wrapper {
     ($type_:ident as $wrapper_name:ident with Clone) => {
-        $crate::define_wrapper!($type_,$wrapper_name);
+        $crate::define_wrapper!($type_, $wrapper_name);
         impl $wrapper_name {
-            $crate::ref_only_wrapper_methods!($type_,$wrapper_name);
+            $crate::ref_only_wrapper_methods!($type_, $wrapper_name);
 
             /// retrieves the underlying value by cloning it
-            pub fn inner(&self) -> Result<$type_, $crate::ReflectionError> where 
-                $type_: Clone
+            pub fn inner(&self) -> Result<$type_, $crate::ReflectionError>
+            where
+                $type_: Clone,
             {
                 self.val(|s| s.clone())
             }
-
         }
 
         impl Clone for $wrapper_name {
             fn clone(&self) -> Self {
                 match self {
-                    Self::Owned(_, _) => {
-                        Self::Owned(::std::cell::UnsafeCell::new(self.val(|s| s.clone()).expect("Rust aliasing rules broken in cloning wrapper")),
-                         ::std::sync::Arc::new(::parking_lot::RwLock::new(())))
-                    },
-                    Self::Ref(v) => Self::Ref(v.clone()), 
+                    Self::Owned(_, _) => Self::Owned(
+                        ::std::cell::UnsafeCell::new(
+                            self.val(|s| s.clone())
+                                .expect("Rust aliasing rules broken in cloning wrapper"),
+                        ),
+                        ::std::sync::Arc::new(::parking_lot::RwLock::new(())),
+                    ),
+                    Self::Ref(v) => Self::Ref(v.clone()),
                 }
             }
         }
     };
     ($type_:ident as $wrapper_name:ident) => {
-        $crate::define_wrapper!($type_,$wrapper_name);
+        $crate::define_wrapper!($type_, $wrapper_name);
         impl $wrapper_name {
-            $crate::ref_only_wrapper_methods!($type_,$wrapper_name);
+            $crate::ref_only_wrapper_methods!($type_, $wrapper_name);
         }
-    }
+    };
 }
-
 
 // // TODO: look at this when rust gets better
 // // Oh boy, there is no way in current rust to implement this
@@ -197,8 +196,3 @@ macro_rules! make_script_wrapper{
 // //         }
 // //     }
 // // }
-
-
-
-
-

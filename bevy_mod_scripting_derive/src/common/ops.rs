@@ -1,6 +1,9 @@
 use proc_macro2::{Span, TokenStream};
 use quote::{quote_spanned, ToTokens};
-use syn::{Token, parse::{Parse, ParseStream}};
+use syn::{
+    parse::{Parse, ParseStream},
+    Token,
+};
 
 use super::{arg::ArgType, impl_parse_enum};
 
@@ -80,7 +83,7 @@ pub(crate) struct OpExpr {
 }
 
 impl Parse for OpExpr {
-    fn parse(input: ParseStream) -> Result<Self,syn::Error> {
+    fn parse(input: ParseStream) -> Result<Self, syn::Error> {
         let s = Self {
             left: (&input.fork())
                 .parse::<OpName>()
@@ -90,7 +93,7 @@ impl Parse for OpExpr {
             op: input.parse()?,
             right: input.parse()?,
             arrow: input.parse()?,
-            return_type: input.parse()?
+            return_type: input.parse()?,
         };
 
         if s.has_receiver() {
@@ -136,7 +139,6 @@ impl OpExpr {
         }
     }
 
-
     /// Maps the given side if it exists (right is guaranteed to exist, left is not)
     pub fn map_side<O, F: FnOnce(&ArgType) -> O>(&self, side: Side, f: F) -> Option<O> {
         match side {
@@ -153,5 +155,4 @@ impl OpExpr {
                 .expect("Cannot happen"),
         )
     }
-
 }

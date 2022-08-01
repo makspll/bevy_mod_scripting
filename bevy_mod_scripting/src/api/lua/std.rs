@@ -10,13 +10,13 @@ use crate::{
 use bevy::reflect::FromReflect;
 use bevy::reflect::Reflect;
 
-use tealr::TypeBody;
 use tealr::mlu::mlua::MetaMethod;
 use tealr::mlu::TypedFunction;
 use tealr::mlu::{
     mlua::{self, FromLua, Lua, ToLua, UserData, Value},
     TealData, TealDataMethods,
 };
+use tealr::TypeBody;
 use tealr::TypeName;
 
 use paste::paste;
@@ -222,9 +222,12 @@ pub struct LuaVec<T> {
     _ph: PhantomData<T>,
 }
 
-impl <T>Clone for LuaVec<T> {
+impl<T> Clone for LuaVec<T> {
     fn clone(&self) -> Self {
-        Self { ref_: self.ref_.clone(), _ph: self._ph.clone() }
+        Self {
+            ref_: self.ref_.clone(),
+            _ph: self._ph.clone(),
+        }
     }
 }
 
@@ -237,10 +240,9 @@ impl<T> LuaVec<T> {
     }
 }
 
-
-
-impl<T: TypeName + FromReflect + LuaProxyable + for<'a> FromLuaProxy<'a> + for<'a> ToLuaProxy<'a>> UserData
-    for LuaVec<T>
+impl<
+        T: TypeName + FromReflect + LuaProxyable + for<'a> FromLuaProxy<'a> + for<'a> ToLuaProxy<'a>,
+    > UserData for LuaVec<T>
 {
     fn add_methods<'lua, M: ::tealr::mlu::mlua::UserDataMethods<'lua, Self>>(methods: &mut M) {
         let mut x = ::tealr::mlu::UserDataWrapper::from_user_data_methods(methods);
@@ -252,14 +254,13 @@ impl<T: TypeName + FromReflect + LuaProxyable + for<'a> FromLuaProxy<'a> + for<'
     }
 }
 
-
 impl<T: TypeName> TypeName for LuaVec<T> {
     fn get_type_parts() -> Cow<'static, [tealr::NamePart]> {
         let mut parts = Vec::default();
-        parts.push(tealr::NamePart::Type(tealr::TealType{
+        parts.push(tealr::NamePart::Type(tealr::TealType {
             name: Cow::Borrowed("LuaVec"),
             type_kind: tealr::KindOfType::External,
-            generics: None
+            generics: None,
         }));
         parts.push(tealr::NamePart::Symbol("<".into()));
         parts.extend(T::get_type_parts().iter().cloned());
@@ -268,19 +269,22 @@ impl<T: TypeName> TypeName for LuaVec<T> {
     }
 }
 
-impl<T: TypeName + FromReflect + LuaProxyable + for<'a> FromLuaProxy<'a> + for<'a> ToLuaProxy<'a>> TypeBody for LuaVec<T> 
+impl<
+        T: TypeName + FromReflect + LuaProxyable + for<'a> FromLuaProxy<'a> + for<'a> ToLuaProxy<'a>,
+    > TypeBody for LuaVec<T>
 {
     fn get_type_body() -> tealr::TypeGenerator {
         let mut gen = tealr::RecordGenerator::new::<Self>(false);
         gen.is_user_data = true;
         <Self as TealData>::add_fields(&mut gen);
         <Self as TealData>::add_methods(&mut gen);
-        gen.into()    
+        gen.into()
     }
 }
 
-impl<T: TypeName + FromReflect + LuaProxyable + for<'a> FromLuaProxy<'a> + for<'a> ToLuaProxy<'a>> TealData
-    for LuaVec<T>
+impl<
+        T: TypeName + FromReflect + LuaProxyable + for<'a> FromLuaProxy<'a> + for<'a> ToLuaProxy<'a>,
+    > TealData for LuaVec<T>
 {
     fn add_methods<'lua, M: TealDataMethods<'lua, Self>>(methods: &mut M) {
         methods.add_meta_method(MetaMethod::Index, |_, s, index: usize| {
@@ -344,8 +348,9 @@ impl<T: TypeName + FromReflect + LuaProxyable + for<'a> FromLuaProxy<'a> + for<'
     }
 }
 
-impl<T: TypeName + FromReflect + LuaProxyable + for<'a> FromLuaProxy<'a> + for<'a> ToLuaProxy<'a>> LuaProxyable
-    for Vec<T>
+impl<
+        T: TypeName + FromReflect + LuaProxyable + for<'a> FromLuaProxy<'a> + for<'a> ToLuaProxy<'a>,
+    > LuaProxyable for Vec<T>
 {
     fn ref_to_lua<'lua>(self_: ScriptRef, lua: &'lua Lua) -> mlua::Result<Value<'lua>> {
         LuaVec::<T>::new_ref(self_).to_lua(lua)
@@ -356,7 +361,6 @@ impl<T: TypeName + FromReflect + LuaProxyable + for<'a> FromLuaProxy<'a> + for<'
         lua: &'lua Lua,
         new_val: Value<'lua>,
     ) -> mlua::Result<()> {
-
         match &new_val {
             Value::UserData(ud) => {
                 let lua_vec = ud.borrow::<LuaVec<T>>()?;
@@ -394,7 +398,15 @@ impl<T: TypeName + FromReflect + LuaProxyable + for<'a> FromLuaProxy<'a> + for<'
     }
 }
 
-impl<'lua, T: TypeName + for<'a> FromLuaProxy<'a> + for<'a> ToLuaProxy<'a> + Clone + FromReflect + LuaProxyable> FromLuaProxy<'lua> for Vec<T>
+impl<
+        'lua,
+        T: TypeName
+            + for<'a> FromLuaProxy<'a>
+            + for<'a> ToLuaProxy<'a>
+            + Clone
+            + FromReflect
+            + LuaProxyable,
+    > FromLuaProxy<'lua> for Vec<T>
 {
     fn from_lua_proxy(new_val: Value<'lua>, lua: &'lua Lua) -> mlua::Result<Self> {
         match &new_val {

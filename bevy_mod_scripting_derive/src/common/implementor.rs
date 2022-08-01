@@ -37,7 +37,6 @@ pub(crate) trait WrapperImplementor: 'static {
 
     /// Turns newtype list into fully implemented wrapper types
     fn generate(&mut self, new_type: &Newtype) -> Result<TokenStream> {
-
         let definition = self.generate_newtype_definition(new_type)?;
 
         let mut functions =

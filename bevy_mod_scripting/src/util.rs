@@ -38,9 +38,8 @@ macro_rules! impl_tealr_type {
     };
 }
 
-
 /// like create_tealr_union but translates to `any` in the lua declaration file,
-/// a fill in to allow multiple userdata types 
+/// a fill in to allow multiple userdata types
 #[macro_export]
 macro_rules! impl_tealr_any_union {
     ($visibility:vis $(Derives($($derives:ident), +))? enum $type_name:ident = $($sub_types:ident) | +) => {
@@ -93,7 +92,7 @@ macro_rules! impl_tealr_generic{
     } => {
         #[derive(Default,Clone,Debug)]
         $vis struct $name;
-        
+
         impl $crate::ValueLuaType for $name {}
 
         impl ::tealr::mlu::TealData for $name {
@@ -159,7 +158,6 @@ macro_rules! impl_tealr_generic{
         $crate::impl_tealr_type!($name);
     }
 }
-
 
 // /// Implements UserData for type which implements TealData, can handle generics after the type name:
 // /// ```rust,ignore

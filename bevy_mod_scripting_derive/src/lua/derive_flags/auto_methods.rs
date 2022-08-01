@@ -2,9 +2,7 @@ use std::iter::once;
 
 use proc_macro2::Span;
 use quote::{format_ident, quote_spanned};
-use syn::{
-    parse_quote_spanned, punctuated::Punctuated, spanned::Spanned, LitInt, Token,
-};
+use syn::{parse_quote_spanned, punctuated::Punctuated, spanned::Spanned, LitInt, Token};
 
 use crate::{
     common::{arg::SimpleType, derive_flag::DeriveFlag, newtype::Newtype},
@@ -12,11 +10,7 @@ use crate::{
     EmptyToken,
 };
 
-pub(crate) fn make_methods<'a>(
-    flag: &DeriveFlag,
-    new_type: &'a Newtype,
-    out: &mut Vec<LuaMethod>,
-) {
+pub(crate) fn make_methods<'a>(flag: &DeriveFlag, new_type: &'a Newtype, out: &mut Vec<LuaMethod>) {
     let wrapper_type = &new_type.args.wrapper_type;
     let wrapped_type = &new_type.args.base_type_ident;
 
@@ -28,7 +22,7 @@ pub(crate) fn make_methods<'a>(
         } => (ident, paren, methods),
         _ => panic!("Expected Methods flag"),
     };
-    
+
     out.extend(methods.iter()
     .map(|m| {
 

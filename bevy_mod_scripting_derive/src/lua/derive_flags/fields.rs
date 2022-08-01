@@ -1,10 +1,9 @@
-use quote::{format_ident, quote_spanned, ToTokens};
-use syn::{parse_quote_spanned, punctuated::Punctuated, spanned::Spanned, Attribute, parse_quote};
+use quote::{format_ident, quote_spanned};
+use syn::{parse_quote_spanned, spanned::Spanned};
 
 use crate::{
     common::{arg::SimpleType, derive_flag::DeriveFlag, newtype::Newtype},
     lua::lua_method::LuaMethod,
-    EmptyToken,
 };
 
 pub(crate) fn make_fields<'a>(
@@ -29,7 +28,8 @@ pub(crate) fn make_fields<'a>(
         }
 
         // resolve the type of this field
-        let mut resolved_field_type = f.type_
+        let mut resolved_field_type = f
+            .type_
             .type_or_resolve(|| SimpleType::BaseIdent(new_type.args.base_type_ident.clone()))
             .into_owned();
 
@@ -38,9 +38,9 @@ pub(crate) fn make_fields<'a>(
         }
 
         let id = &f.member;
-        let (mut lua_id_string,rust_id_string) = match id {
-            syn::Member::Named(string_id) => (string_id.to_string(),string_id.to_string()),
-            syn::Member::Unnamed(index) => (format!("_{}",index.index),index.index.to_string()),
+        let (mut lua_id_string, rust_id_string) = match id {
+            syn::Member::Named(string_id) => (string_id.to_string(), string_id.to_string()),
+            syn::Member::Unnamed(index) => (format!("_{}", index.index), index.index.to_string()),
         };
 
         if let Some(new_name) = &f.parsed_attrs.script_name {
@@ -68,7 +68,6 @@ pub(crate) fn make_fields<'a>(
                 }
             });
 
-        
         out.push(parse_quote_spanned! {f.span()=>
             #(#docstring)*
             get #lua_id_string => |_,s : &#newtype_name| {

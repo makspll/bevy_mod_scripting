@@ -118,7 +118,7 @@ impl SimpleType {
     pub fn into_base_ident(self) -> Ident {
         match self {
             SimpleType::BaseIdent(b) => b,
-            SimpleType::Ref {type_,..} => type_.into_base_ident(),
+            SimpleType::Ref { type_, .. } => type_.into_base_ident(),
         }
     }
 
@@ -134,7 +134,11 @@ impl SimpleType {
     pub fn strip_outer_refs(self) -> Self {
         match self {
             SimpleType::BaseIdent(_) => self,
-            SimpleType::Ref { ampersand, mut_, type_ } => *type_,
+            SimpleType::Ref {
+                ampersand,
+                mut_,
+                type_,
+            } => *type_,
         }
     }
 

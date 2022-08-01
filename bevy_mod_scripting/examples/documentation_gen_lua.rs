@@ -1,11 +1,10 @@
-use bevy::{prelude::*, reflect::FromReflect};
-use bevy_event_priority::PriorityEventWriter;
+use bevy::prelude::*;
+
 use bevy_mod_scripting::{
     api::lua::bevy::LuaBevyAPIProvider,
     langs::mlu::{mlua, mlua::prelude::*, mlua::Value, TealData},
     APIProvider, AddScriptApiProvider, AddScriptHost, AddScriptHostHandler, GenDocumentation,
-    LuaDocFragment, LuaEvent, LuaFile, RLuaScriptHost, Recipients, Script, ScriptCollection,
-    ScriptError, ScriptingPlugin, std::LuaVec, ScriptRef, RegisterForeignLuaType, impl_tealr_generic, ValueLuaType,
+    LuaDocFragment, RLuaScriptHost, ScriptError, ScriptingPlugin,
 };
 use tealr::TypeName;
 
@@ -24,15 +23,14 @@ impl<'lua> ToLua<'lua> for MyLuaArg {
 /// This is acts as a documentation and function holder
 /// We can add some general documentation about what it holds
 /// but also specific function level documenation
-pub struct APIModule{
+pub struct APIModule {
     my_vec: Vec<usize>,
 }
 
 impl TealData for APIModule {
     fn add_methods<'lua, T: tealr::mlu::TealDataMethods<'lua, Self>>(methods: &mut T) {
-        methods.document_type(
-            "This is type level documentation for our api, it will be shown first",
-        );
+        methods
+            .document_type("This is type level documentation for our api, it will be shown first");
         methods.document_type("");
 
         methods.document("Here we document the next function");
@@ -58,7 +56,11 @@ impl tealr::mlu::ExportInstances for Export {
         instance_collector: &mut T,
     ) -> mlua::Result<()> {
         instance_collector.document_instance("Documentation for the exposed global variable");
-        instance_collector.add_instance("my_api".into(), |_| Ok(APIModule{my_vec: vec![1,2,3]}))
+        instance_collector.add_instance("my_api".into(), |_| {
+            Ok(APIModule {
+                my_vec: vec![1, 2, 3],
+            })
+        })
     }
 }
 
@@ -79,7 +81,7 @@ impl APIProvider for LuaAPIProvider {
         let ctx = ctx.lock().unwrap();
 
         // equivalent to ctx.globals().set() but for multiple items
-        tealr::mlu::set_global_env(Export,&ctx)?;
+        tealr::mlu::set_global_env(Export, &ctx)?;
 
         Ok(())
     }
@@ -92,9 +94,7 @@ impl APIProvider for LuaAPIProvider {
     }
 
     fn register_with_app(&self, _app: &mut App) {}
-    
 }
-
 
 fn main() -> std::io::Result<()> {
     let mut app = App::new();

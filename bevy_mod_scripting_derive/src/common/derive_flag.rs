@@ -1,5 +1,11 @@
 use proc_macro2::Span;
-use syn::{Token, parenthesized, TypePath, Attribute, Ident, Member, token::Paren, punctuated::Punctuated, parse::{ParseStream, Parse}};
+use syn::{
+    parenthesized,
+    parse::{Parse, ParseStream},
+    punctuated::Punctuated,
+    token::Paren,
+    Attribute, Ident, Member, Token, TypePath,
+};
 
 use crate::{
     lua_method::{LuaMethodType, MethodMacroArg},
@@ -77,7 +83,7 @@ pub(crate) struct MethodMacroInvokation {
 }
 
 impl Parse for MethodMacroInvokation {
-    fn parse(input: ParseStream) -> Result<Self,syn::Error> {
+    fn parse(input: ParseStream) -> Result<Self, syn::Error> {
         let f;
         Ok(Self {
             target: input.parse()?,
@@ -114,7 +120,7 @@ impl ToTokens for AutoMethod {
 }
 
 impl Parse for AutoMethod {
-    fn parse(input: ParseStream) -> Result<Self,syn::Error> {
+    fn parse(input: ParseStream) -> Result<Self, syn::Error> {
         let f;
         let o = Ok(Self {
             docstring: Attribute::parse_outer(input)?,
@@ -143,42 +149,37 @@ impl Parse for AutoMethod {
     }
 }
 
-
-
-#[derive(PartialEq,Eq,Hash)]
+#[derive(PartialEq, Eq, Hash)]
 pub(crate) struct AutoFieldAttributes {
-    pub script_name: Option<Ident>
+    pub script_name: Option<Ident>,
 }
 
 impl TryFrom<&[Attribute]> for AutoFieldAttributes {
-    type Error=syn::Error;
+    type Error = syn::Error;
 
     fn try_from(value: &[Attribute]) -> Result<Self, Self::Error> {
-        let mut out = Self {
-            script_name: None,
-        };
+        let mut out = Self { script_name: None };
 
         for v in value {
             let meta = v.parse_meta()?;
 
             if let Some(ident) = meta.path().get_ident() {
-                if ident.to_string() == "rename"{
+                if ident.to_string() == "rename" {
                     match &meta {
                         syn::Meta::List(l) => {
                             for nested in &l.nested {
-                                match nested{
+                                match nested {
                                     syn::NestedMeta::Lit(lit) => match lit {
                                         syn::Lit::Str(s) => out.script_name = Some(s.parse()?),
                                         _ => {}
                                     },
                                     _ => {}
                                 }
-                            }   
-                        },
+                            }
+                        }
                         _ => {}
                     }
                 }
-
             }
         }
 
@@ -197,9 +198,10 @@ pub(crate) struct AutoField {
 }
 
 impl Parse for AutoField {
-    fn parse(input: ParseStream) -> Result<Self,syn::Error> {
+    fn parse(input: ParseStream) -> Result<Self, syn::Error> {
         let attrs = Attribute::parse_outer(input)?;
-        let split_idx = attrs.partition_point(|attr| attr.path.get_ident().unwrap().to_string() == "doc");
+        let split_idx =
+            attrs.partition_point(|attr| attr.path.get_ident().unwrap().to_string() == "doc");
         Ok(Self {
             docstring: attrs[0..split_idx].to_owned(),
             attrs: attrs[split_idx..].to_owned(),

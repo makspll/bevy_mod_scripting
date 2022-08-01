@@ -36,7 +36,6 @@ pub(crate) fn make_bin_ops<'a>(
 
     // each operator maps to a single metamethod so we must do some runtime thinking
     for (op_name, ops) in op_expressions.into_iter() {
-
         let metamethod_name = op_name.to_rlua_metamethod_path();
 
         // the return type is the union of expression return types
@@ -44,12 +43,15 @@ pub(crate) fn make_bin_ops<'a>(
         let return_union = ops
             .iter()
             .map(|v| {
-                let mut resolved_return_type = v.return_type.type_or_resolve(|| SimpleType::BaseIdent(wrapped_type.clone())).into_owned();
+                let mut resolved_return_type = v
+                    .return_type
+                    .type_or_resolve(|| SimpleType::BaseIdent(wrapped_type.clone()))
+                    .into_owned();
                 if v.return_type.is_wrapped() || v.return_type.is_self() {
-                    resolved_return_type.mutate_base_ident(|ident| *ident = format_ident!("Lua{}", ident));
-                } 
+                    resolved_return_type
+                        .mutate_base_ident(|ident| *ident = format_ident!("Lua{}", ident));
+                }
                 resolved_return_type.into_base_ident()
-                
             })
             .collect::<IndexSet<_>>();
 
@@ -74,10 +76,13 @@ pub(crate) fn make_bin_ops<'a>(
                 .map(|v| {
                     v.map_side(receiver_side.opposite(), |arg_type| {
                         union_has_receiver = true;
-                        let mut resolved_arg_type = arg_type.type_or_resolve(|| SimpleType::BaseIdent(wrapped_type.clone())).into_owned();
+                        let mut resolved_arg_type = arg_type
+                            .type_or_resolve(|| SimpleType::BaseIdent(wrapped_type.clone()))
+                            .into_owned();
                         if arg_type.is_wrapped() || arg_type.is_self() {
-                            resolved_arg_type.mutate_base_ident(|ident| *ident = format_ident!("Lua{}", ident));
-                        } 
+                            resolved_arg_type
+                                .mutate_base_ident(|ident| *ident = format_ident!("Lua{}", ident));
+                        }
                         resolved_arg_type.into_base_ident()
                     })
                     .expect("Expected binary expression!")

@@ -4,7 +4,7 @@ pub(crate) mod lua_method;
 pub(crate) use {derive_flags::*, lua_method::*};
 
 use indexmap::IndexSet;
-use proc_macro2::{Ident, TokenStream, Span};
+use proc_macro2::{Ident, Span, TokenStream};
 use syn::{parse_quote_spanned, punctuated::Punctuated, spanned::Spanned, Token};
 
 use crate::common::{
@@ -63,8 +63,10 @@ impl WrapperImplementor for LuaImplementor {
         let newtype_name = &newtype.args.wrapper_type;
         let base_type = &newtype.args.base_type_ident;
 
-        let mut definition = Default::default(); 
-        if newtype.args.flags.contains(&DeriveFlag::Clone { ident: Ident::new("Clone", Span::call_site()) }){
+        let mut definition = Default::default();
+        if newtype.args.flags.contains(&DeriveFlag::Clone {
+            ident: Ident::new("Clone", Span::call_site()),
+        }) {
             definition = quote_spanned! {newtype.span()=>
                 #definition
                 bevy_mod_scripting::make_script_wrapper!(#base_type as #newtype_name with Clone);
@@ -76,14 +78,16 @@ impl WrapperImplementor for LuaImplementor {
             };
         }
 
-        if newtype.args.flags.contains(&DeriveFlag::Debug { ident: Ident::new("Debug", Span::call_site()) }){
-            definition = quote_spanned!{newtype.span()=>
+        if newtype.args.flags.contains(&DeriveFlag::Debug {
+            ident: Ident::new("Debug", Span::call_site()),
+        }) {
+            definition = quote_spanned! {newtype.span()=>
                 #definition
                 impl std::fmt::Debug for #newtype_name {
-                    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> Result<(), std::fmt::Error> { 
+                    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> Result<(), std::fmt::Error> {
                         self.val(|s| s.fmt(f)).unwrap_or_else(|_| f.write_str("Error while retrieving reference in `std::fmt::Debug`."))                    }
                 }
-            } 
+            }
         }
 
         Ok(definition)

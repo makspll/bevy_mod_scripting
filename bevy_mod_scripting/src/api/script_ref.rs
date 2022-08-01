@@ -3,7 +3,7 @@ use anyhow::Result;
 
 use std::fmt::Debug;
 
-use bevy::{prelude::*};
+use bevy::prelude::*;
 use parking_lot::RwLock;
 use std::{borrow::Cow, sync::Weak};
 
@@ -299,28 +299,40 @@ mod test {
             component_ref2 = component_ref1.clone();
         }
         // TODO: reformat this test now that we return results instead of panicking
-        component_ref1.get(|r1| {
-            component_ref2.get(|r2| {
-                let _ = r1.downcast_ref::<TestComponent>().unwrap().mat3
-                    + r2.downcast_ref::<TestComponent>().unwrap().mat3;
-            }).unwrap()
-        }).unwrap();
+        component_ref1
+            .get(|r1| {
+                component_ref2
+                    .get(|r2| {
+                        let _ = r1.downcast_ref::<TestComponent>().unwrap().mat3
+                            + r2.downcast_ref::<TestComponent>().unwrap().mat3;
+                    })
+                    .unwrap()
+            })
+            .unwrap();
 
-        component_ref1.get_mut(|r1| {
-            let _ = r1.downcast_ref::<TestComponent>().unwrap().mat3 * 2.0;
-        }).unwrap();
+        component_ref1
+            .get_mut(|r1| {
+                let _ = r1.downcast_ref::<TestComponent>().unwrap().mat3 * 2.0;
+            })
+            .unwrap();
 
-        component_ref2.get_mut(|r2| {
-            let _ = r2.downcast_ref::<TestComponent>().unwrap().mat3 * 2.0;
-        }).unwrap();
+        component_ref2
+            .get_mut(|r2| {
+                let _ = r2.downcast_ref::<TestComponent>().unwrap().mat3 * 2.0;
+            })
+            .unwrap();
 
         // invalid should panic here
-        component_ref1.get_mut(|r1| {
-            component_ref2.get(|r2| {
-                r1.downcast_mut::<TestComponent>().unwrap().mat3 =
-                    r2.downcast_ref::<TestComponent>().unwrap().mat3;
-            }).unwrap()
-        }).unwrap();
+        component_ref1
+            .get_mut(|r1| {
+                component_ref2
+                    .get(|r2| {
+                        r1.downcast_mut::<TestComponent>().unwrap().mat3 =
+                            r2.downcast_ref::<TestComponent>().unwrap().mat3;
+                    })
+                    .unwrap()
+            })
+            .unwrap();
     }
 
     // #[test]

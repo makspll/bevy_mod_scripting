@@ -277,14 +277,13 @@ impl LuaMethod {
             .iter()
             .map(|v| {
                 let ts: TokenStream = attribute_to_string_lit(v);
-                if ts.is_empty(){
+                if ts.is_empty() {
                     Default::default()
                 } else {
                     quote_spanned! {self.span()=>
                         #receiver.document(#ts);
                     }
                 }
-
             })
             .collect();
         let call_ident;
