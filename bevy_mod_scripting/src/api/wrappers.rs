@@ -16,170 +16,189 @@ impl<T: Reflect + Clone> ScriptValue for T {}
 pub trait ScriptReference: Reflect {}
 impl<T: Reflect> ScriptReference for T {}
 
-#[derive(Debug)]
-/// A wrapper for lua pass-by-value types possibly owned by lua itself
-pub enum LuaWrapper<T: ScriptReference> {
-    Owned(UnsafeCell<T>, Arc<RwLock<()>>),
-    Ref(ScriptRef),
-}
 
-impl<T: ScriptValue> Clone for LuaWrapper<T> {
-    fn clone(&self) -> Self {
-        match self {
-            Self::Owned(arg0, arg1) => Self::Owned(
-                // Safety: fine since we are explicitly not derefing into &mut but into &
-                UnsafeCell::new(unsafe { &*(arg0.get() as *const T) }.clone()),
-                arg1.clone(),
-            ),
-            Self::Ref(arg0) => Self::Ref(arg0.clone()),
+#[macro_export]
+macro_rules! ref_only_wrapper_methods{
+    ($type_:ident, $wrapper_name: ident) => {
+       /// Creates a script reference pointing to the wrapped value.
+        ///
+        /// Depending on this value it may be a lua owned or reflect relative reference
+        pub fn script_ref(&self) -> $crate::ScriptRef {
+            match self {
+                Self::Owned(val, valid) => unsafe {
+                    // safety:
+                    // - valid is dropped when the value goes out of scope, so won't be dangling
+                    // - using the valid lock means no incorrect aliasing may occur
+                    // - the pointer points to base of the reference
+                    // invariants are upheld
+                    $crate::ScriptRef::new_script_ref(
+                        (val.get() as *mut dyn ::bevy::reflect::Reflect).into(),
+                        ::std::sync::Arc::downgrade(valid),
+                    )
+                },
+                Self::Ref(ref_) => ref_.clone(),
+            }
         }
-    }
-}
+    
+        pub fn new(b: $type_) -> Self{
+            Self::Owned(::std::cell::UnsafeCell::new(b), ::std::sync::Arc::new(::parking_lot::RwLock::new(())))
+        }
+    
+        pub fn new_ref(b: $crate::ScriptRef) -> Self {
+            Self::Ref(b)
+        }
+    
+        /// Perform an operation on the base type and optionally retrieve something by value
+        /// may require a read lock on the world in case this is a reference
+        pub fn val<G, F>(&self, accessor: F) -> Result<G, $crate::ReflectionError>
+        where
+            F: FnOnce(&$type_) -> G,
+        {
+            match self {
+                Self::Owned(ref v, valid) => {
+                    // we lock here in case the accessor has a luaref holding reference to us
+                    let lock = valid.read();
+                    let o = accessor(unsafe { &*(v.get() as *const $type_) });
+                    drop(lock);
+    
+                    Ok(o)
+                }
+                Self::Ref(v) => v.get(|s| accessor(s.downcast_ref::<$type_>().unwrap())),
+            }
+        }
+    
+        pub fn val_mut<G, F>(&mut self, accessor: F) -> Result<G, $crate::ReflectionError>
+        where
+            F: FnOnce(&mut $type_) -> G,
+        {
+            match self {
+                Self::Owned(ref mut v, valid) => {
+                    let lock = valid.read();
+                    let o = accessor(v.get_mut());
+                    drop(lock);
+    
+                    Ok(o)
+                }
+                Self::Ref(v) => v.get_mut(|s| accessor(s.downcast_mut::<$type_>().unwrap())),
+            }
+        }
 
-// TODO: look at this when rust gets better
-// Oh boy, there is no way in current rust to implement this
-// We need trait specialization.
-// This isn't even possible if implemented without generics since then
-// we get a compile error from mlua about how `Clone` may be implemented on the wrapped type in the feature
-// :C
-// impl <'lua, T : ScriptReference + !Clone> FromLua<'lua> for LuaWrapper<T> {
-//     fn from_lua(lua_value: tealr::mlu::mlua::Value<'lua>, lua: &'lua tealr::mlu::mlua::Lua) -> tealr::mlu::mlua::Result<Self> {
-//         match lua_value {
-//             tealr::mlu::mlua::Value::UserData(ud) => {
-
-//             match ud.borrow::<LuaWrapper<T>>()?{
-//                 // here we need to move out of the value in the lua world
-//                 LuaWrapper::Owned(_, _) => ud.take(),
-//                 // we can copy fine here
-//                 LuaWrapper::Ref(ref_) => Ok(LuaWrapper::new_ref(&ref_)),
-//             }
-//         }
-//             _ => Err(tealr::mlu::mlua::Error::FromLuaConversionError {
-//                 from: lua_value.type_name(),
-//                 to: "userdata",
-//                 message: None,
-//             })
-//         }
-//     }
-// }
-
-impl<T: ScriptReference> Drop for LuaWrapper<T> {
-    fn drop(&mut self) {
-        match self {
-            Self::Owned(_, valid) => {
-                if valid.is_locked() {
-                    panic!(
-                        "Something is referencing a lua value and it's about to go out of scope!"
-                    );
+        /// Applies Self to another ScriptRef.
+        /// may require a write lock on the world
+        pub fn apply_self_to_base(&self, other: &mut $crate::ScriptRef) -> Result<(), $crate::ReflectionError> {
+            match self {
+                Self::Owned(v, ..) => {
+                    // if we own the value, we are not borrowing from the world
+                    // we're good to just apply
+                    // TODO: we use apply here due to the fact we implement `Drop`
+                    // if we didn't or if ScriptRef itself owned the value we could just consume the cell and assign
+                    other.get_mut(|other| other.apply(unsafe { &*(v.get() as *const $type_) }))
+                }
+                Self::Ref(v) => {
+                    // if we are a ScriptRef, we have to be careful with borrows
+                    // to avoid deadlock
+                    // we take advantage of the fact we know the expected type
+                    other.apply(v)
                 }
             }
-            Self::Ref(_) => {}
         }
     }
 }
 
-impl<T: ScriptReference + Display> Display for LuaWrapper<T> {
-    fn fmt(&self, f: &mut Formatter<'_>) -> Result<(), std::fmt::Error> {
-        write!(f, "{}", self)
+#[macro_export]
+macro_rules! define_wrapper{
+    ($type_:ident, $wrapper_name:ident) => {
+        #[doc=concat!("A script wrapper for the type `",stringify!($type_),"`")]
+        pub enum $wrapper_name{
+            Owned(::std::cell::UnsafeCell<$type_>, ::std::sync::Arc<::parking_lot::RwLock<()>>),
+            Ref($crate::ScriptRef),
+        }
+
+        /// Safety: we make this sync via RwLock<()> assuming invariants are upheld
+        unsafe impl Sync for $wrapper_name {}
+
+        impl Drop for $wrapper_name {
+            fn drop(&mut self) {
+                match self {
+                    Self::Owned(_, valid) => {
+                        if valid.is_locked() {
+                            panic!(
+                                "Something is referencing a lua value and it's about to go out of scope!"
+                            );
+                        }
+                    }
+                    Self::Ref(_) => {}
+                }
+            }
+        }    
     }
 }
 
-impl<T: ScriptReference> LuaWrapper<T> {
-    /// Creates a script reference pointing to the wrapped value.
-    ///
-    /// Depending on this value it may be a lua owned or reflect relative reference
-    pub fn script_ref(&self) -> ScriptRef {
-        match self {
-            LuaWrapper::Owned(val, valid) => unsafe {
-                // safety:
-                // - valid is dropped when the value goes out of scope, so won't be dangling
-                // - using the valid lock means no incorrect aliasing may occur
-                // - the pointer points to base of the reference
-                // invariants are upheld
-                ScriptRef::new_script_ref(
-                    (val.get() as *mut dyn Reflect).into(),
-                    Arc::downgrade(valid),
-                )
-            },
-            LuaWrapper::Ref(ref_) => ref_.clone(),
-        }
-    }
+#[macro_export]
+macro_rules! make_script_wrapper{
+    ($type_:ident as $wrapper_name:ident with Clone) => {
+        $crate::define_wrapper!($type_,$wrapper_name);
+        impl $wrapper_name {
+            $crate::ref_only_wrapper_methods!($type_,$wrapper_name);
 
-    pub fn new(b: T) -> Self
-    where
-        T: ScriptReference,
-    {
-        Self::Owned(UnsafeCell::new(b), Arc::new(RwLock::new(())))
-    }
-
-    pub fn new_ref(b: ScriptRef) -> Self {
-        Self::Ref(b)
-    }
-
-    /// Perform an operation on the base type and optionally retrieve something by value
-    /// may require a read lock on the world in case this is a reference
-    pub fn val<G, F>(&self, accessor: F) -> Result<G, ReflectionError>
-    where
-        F: FnOnce(&T) -> G,
-    {
-        match self {
-            Self::Owned(ref v, valid) => {
-                // we lock here in case the accessor has a luaref holding reference to us
-                let lock = valid.read();
-                let o = accessor(unsafe { &*(v.get() as *const T) });
-                drop(lock);
-
-                Ok(o)
+            /// retrieves the underlying value by cloning it
+            pub fn inner(&self) -> Result<$type_, $crate::ReflectionError> where 
+                $type_: Clone
+            {
+                self.val(|s| s.clone())
             }
-            Self::Ref(v) => v.get(|s| accessor(s.downcast_ref::<T>().unwrap())),
+
         }
-    }
 
-    pub fn val_mut<G, F>(&mut self, accessor: F) -> Result<G, ReflectionError>
-    where
-        F: FnOnce(&mut T) -> G,
-    {
-        match self {
-            Self::Owned(ref mut v, valid) => {
-                let lock = valid.read();
-                let o = accessor(v.get_mut());
-                drop(lock);
-
-                Ok(o)
+        impl Clone for $wrapper_name {
+            fn clone(&self) -> Self {
+                match self {
+                    Self::Owned(_, _) => {
+                        Self::Owned(::std::cell::UnsafeCell::new(self.val(|s| s.clone()).expect("Rust aliasing rules broken in cloning wrapper")),
+                         ::std::sync::Arc::new(::parking_lot::RwLock::new(())))
+                    },
+                    Self::Ref(v) => Self::Ref(v.clone()), 
+                }
             }
-            Self::Ref(v) => v.get_mut(|s| accessor(s.downcast_mut::<T>().unwrap())),
         }
-    }
-
-    /// retrieves the underlying value by cloning it
-    pub fn inner(&self) -> Result<T, ReflectionError>
-    where
-        T: ScriptValue,
-    {
-        match self {
-            //no need to lock here
-            Self::Owned(ref v, ..) => Ok(unsafe { &*(v.get() as *const T) }.clone()),
-            Self::Ref(v) => v.get(|s| s.downcast_ref::<T>().unwrap().clone()),
-        }
-    }
-
-    /// Applies Self to another ScriptRef.
-    /// may require a write lock on the world
-    pub fn apply_self_to_base(&self, other: &mut ScriptRef) -> Result<(), ReflectionError> {
-        match self {
-            Self::Owned(v, ..) => {
-                // if we own the value, we are not borrowing from the world
-                // we're good to just apply, yeet
-                // TODO: we use apply here due to the fact we implement `Drop`
-                // if we didn't or if ScriptRef itself owned the value we could just consume the cell and assign
-                other.get_mut(|other| other.apply(unsafe { &*(v.get() as *const T) }))
-            }
-            Self::Ref(v) => {
-                // if we are a ScriptRef, we have to be careful with borrows
-                // to avoid deadlock
-                // we take advantage of the fact we know the expected type
-                other.apply(v)
-            }
+    };
+    ($type_:ident as $wrapper_name:ident) => {
+        $crate::define_wrapper!($type_,$wrapper_name);
+        impl $wrapper_name {
+            $crate::ref_only_wrapper_methods!($type_,$wrapper_name);
         }
     }
 }
+
+
+// // TODO: look at this when rust gets better
+// // Oh boy, there is no way in current rust to implement this
+// // We need trait specialization.
+// // This isn't even possible if implemented without generics since then
+// // we get a compile error from mlua about how `Clone` may be implemented on the wrapped type in the feature
+// // :C
+// // impl <'lua, T : ScriptReference + !Clone> FromLua<'lua> for LuaWrapper<T> {
+// //     fn from_lua(lua_value: tealr::mlu::mlua::Value<'lua>, lua: &'lua tealr::mlu::mlua::Lua) -> tealr::mlu::mlua::Result<Self> {
+// //         match lua_value {
+// //             tealr::mlu::mlua::Value::UserData(ud) => {
+
+// //             match ud.borrow::<LuaWrapper<T>>()?{
+// //                 // here we need to move out of the value in the lua world
+// //                 LuaWrapper::Owned(_, _) => ud.take(),
+// //                 // we can copy fine here
+// //                 LuaWrapper::Ref(ref_) => Ok(LuaWrapper::new_ref(&ref_)),
+// //             }
+// //         }
+// //             _ => Err(tealr::mlu::mlua::Error::FromLuaConversionError {
+// //                 from: lua_value.type_name(),
+// //                 to: "userdata",
+// //                 message: None,
+// //             })
+// //         }
+// //     }
+// // }
+
+
+
+
+

@@ -4,7 +4,7 @@ pub(crate) mod lua_method;
 pub(crate) use {derive_flags::*, lua_method::*};
 
 use indexmap::IndexSet;
-use proc_macro2::{Ident, TokenStream};
+use proc_macro2::{Ident, TokenStream, Span};
 use syn::{parse_quote_spanned, punctuated::Punctuated, spanned::Spanned, Token};
 
 use crate::common::{
@@ -60,12 +60,33 @@ impl WrapperImplementor for LuaImplementor {
         &mut self,
         newtype: &crate::common::newtype::Newtype,
     ) -> std::result::Result<TokenStream, syn::Error> {
-        let name = &newtype.args.wrapper_type;
+        let newtype_name = &newtype.args.wrapper_type;
         let base_type = &newtype.args.base_type_ident;
 
-        Ok(quote_spanned! {newtype.span()=>
-                pub type #name = crate::LuaWrapper<#base_type>;
-        })
+        let mut definition = Default::default(); 
+        if newtype.args.flags.contains(&DeriveFlag::Clone { ident: Ident::new("Clone", Span::call_site()) }){
+            definition = quote_spanned! {newtype.span()=>
+                #definition
+                bevy_mod_scripting::make_script_wrapper!(#base_type as #newtype_name with Clone);
+            };
+        } else {
+            definition = quote_spanned! {newtype.span()=>
+                #definition
+                bevy_mod_scripting::make_script_wrapper!(#base_type as #newtype_name);
+            };
+        }
+
+        if newtype.args.flags.contains(&DeriveFlag::Debug { ident: Ident::new("Debug", Span::call_site()) }){
+            definition = quote_spanned!{newtype.span()=>
+                #definition
+                impl std::fmt::Debug for #newtype_name {
+                    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> Result<(), std::fmt::Error> { 
+                        self.val(|s| s.fmt(f)).unwrap_or_else(|_| f.write_str("Error while retrieving reference in `std::fmt::Debug`."))                    }
+                }
+            } 
+        }
+
+        Ok(definition)
     }
 
     fn generate_newtype_implementation<'a, I: Iterator<Item = &'a Self::Function>>(
@@ -78,7 +99,7 @@ impl WrapperImplementor for LuaImplementor {
 
         // provide documentation generation implementations
         let tealr_implementations = quote_spanned! {newtype.span()=>
-            impl_tealr_type!(#wrapper_type);
+            bevy_mod_scripting::impl_tealr_type!(#wrapper_type);
         };
 
         // generate documentation calls on type level
@@ -114,13 +135,13 @@ impl WrapperImplementor for LuaImplementor {
                 }
             }
 
-            impl LuaProxyable for #wrapped_type {
-                fn ref_to_lua<'lua>(self_ : ScriptRef, lua: &'lua Lua) -> mlua::Result<Value<'lua>> {
-                    #wrapper_type::new_ref(self_).to_lua(lua)
+            impl bevy_mod_scripting::LuaProxyable for #wrapped_type {
+                fn ref_to_lua<'lua>(self_ : bevy_mod_scripting::ScriptRef, lua: &'lua mlua::Lua) -> mlua::Result<mlua::Value<'lua>> {
+                    <#wrapper_type as mlua::ToLua>::to_lua(#wrapper_type::new_ref(self_),lua)
                 }
 
-                fn apply_lua<'lua>(self_ : &mut ScriptRef, lua: &'lua Lua, new_val: Value<'lua>) -> mlua::Result<()> {
-                    if let Value::UserData(v) = new_val {
+                fn apply_lua<'lua>(self_ : &mut bevy_mod_scripting::ScriptRef, lua: &'lua mlua::Lua, new_val: mlua::Value<'lua>) -> mlua::Result<()> {
+                    if let mlua::Value::UserData(v) = new_val {
                         let other = v.borrow::<#wrapper_type>()?;
                         let other = &other;
 
@@ -159,20 +180,20 @@ impl WrapperImplementor for LuaImplementor {
 
         derive_flags.try_for_each(|v| {
             Ok::<(),syn::Error>(match v {
-                DeriveFlag::DebugToString{ident} => out.push(parse_quote_spanned!{ident.span()=>
+                DeriveFlag::Debug{ident} => out.push(parse_quote_spanned!{ident.span()=>
                     (mlua::MetaMethod::ToString) => |_,s,()| Ok(format!("{:?}",s))
                 }),
-                DeriveFlag::DisplayToString{ident} => out.push(parse_quote_spanned!{ident.span()=>
+                DeriveFlag::Display{ident} => out.push(parse_quote_spanned!{ident.span()=>
                     (mlua::MetaMethod::ToString) => |_,s,()| Ok(format!("{}",s))
                 }),
-                DeriveFlag::FromLuaProxy{ident} => {
+                DeriveFlag::Clone{ident} => {
                     self.additional_globals.extend(
                         quote_spanned!{ident.span()=>
-                            impl FromLuaProxy<'_> for #wrapped_type {
-                                fn from_lua_proxy<'lua>(lua_value: Value<'lua>, _: &'lua Lua) -> mlua::Result<Self> {
+                            impl bevy_mod_scripting::FromLuaProxy<'_> for #wrapped_type {
+                                fn from_lua_proxy<'lua>(lua_value: mlua::Value<'lua>, _: &'lua mlua::Lua) -> mlua::Result<Self> {
                                     if let mlua::Value::UserData(ud) = lua_value{
                                         let wrapper = ud.borrow::<#wrapper_type>()?;
-                                        Ok(wrapper.deref().inner()?)
+                                        Ok(std::ops::Deref::deref(&wrapper).inner()?)
                                     } else {
                                         Err(mlua::Error::FromLuaConversionError{
                                             from: "",

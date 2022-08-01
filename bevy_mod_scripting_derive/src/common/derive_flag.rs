@@ -16,8 +16,8 @@ impl_parse_enum!(input,ident:
 #[derive(PartialEq,Eq,Hash)]
 pub(crate) enum DeriveFlag {
 
-    DebugToString => {Ok(Self::DebugToString{ident})},
-    DisplayToString => {Ok(Self::DisplayToString{ident})},
+    Debug => {Ok(Self::Debug{ident})},
+    Display => {Ok(Self::Display{ident})},
     Fields {
         paren: Paren,
         fields: Punctuated<AutoField,Token![,]>
@@ -40,7 +40,7 @@ pub(crate) enum DeriveFlag {
             methods: f.parse_terminated(AutoMethod::parse)?
         })
     },
-    FromLuaProxy{} => {Ok(Self::FromLuaProxy{ident})},
+    Clone{} => {Ok(Self::Clone{ident})},
     UnaryOps{
         paren : Paren,
         ops: Punctuated<OpExpr,Token![,]>

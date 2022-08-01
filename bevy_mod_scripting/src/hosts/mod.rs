@@ -101,10 +101,10 @@ pub trait ScriptHost: Send + Sync + 'static + Default {
         script_name: &str,
         world: &mut World,
         event: Self::ScriptEvent,
-    ) {
+    ) -> Result<(), ScriptError>{
         let providers: &mut APIProviders<Self::APITarget, Self::DocTarget> =
             &mut world.resource_mut();
-        let mut ctx = self.load_script(script, script_name, providers).unwrap();
+        let mut ctx = self.load_script(script, script_name, providers)?;
 
         let entity = Entity::from_bits(u64::MAX);
 
@@ -119,7 +119,8 @@ pub trait ScriptHost: Send + Sync + 'static + Default {
         ); 1]
             .into_iter();
 
-        self.handle_events(world, &events, ctx_iter)
+        self.handle_events(world, &events, ctx_iter);
+        Ok(())
     }
 
     /// Registers the script host with the given app, and attaches handlers to deal with spawning/removing scripts at the given stage.

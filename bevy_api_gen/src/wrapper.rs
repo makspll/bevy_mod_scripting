@@ -138,7 +138,12 @@ impl WrappedItem<'_> {
     ) {
         if self.implemented_traits.contains("Clone") {
             // this flag requires cloning
-            writer.write_line("FromLuaProxy +");
+            writer.write_line("Clone +");
+        }
+
+        if self.implemented_traits.contains("Debug") {
+            // this flag requires cloning
+            writer.write_line("Debug +");
         }
 
         let mut used_method_identifiers : HashSet<&str> = HashSet::default();

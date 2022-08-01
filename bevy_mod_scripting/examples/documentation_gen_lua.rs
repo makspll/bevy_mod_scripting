@@ -96,24 +96,11 @@ impl APIProvider for LuaAPIProvider {
 }
 
 
-// we use this to demonstrate documenting more complex types
-#[derive(Component, Default, Reflect)]
-#[reflect(Component)]
-pub struct MyComponent {
-    vec: Vec<usize>
-}
-
 fn main() -> std::io::Result<()> {
     let mut app = App::new();
 
     app.add_plugins(DefaultPlugins)
         .add_plugin(ScriptingPlugin)
-
-        // these are not necessary for documentation generation, but are put here as a reminder
-        // that types need to be registered appropriately to be reachable from scripts
-        .register_type::<MyComponent>()
-        .register_foreign_lua_type::<Vec<usize>>()
-
         // add the providers and script host
         .add_script_host::<RLuaScriptHost<MyLuaArg>, _>(CoreStage::PostUpdate)
         .add_api_provider::<RLuaScriptHost<MyLuaArg>>(Box::new(LuaAPIProvider))

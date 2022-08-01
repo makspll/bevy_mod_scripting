@@ -53,7 +53,7 @@ impl<A: LuaArg> ScriptEvent for LuaEvent<A> {
 
 /// Rlua script host, enables Lua scripting provided by the Rlua library.
 /// Always provides two global variables to each script by default:
-///     - `world` - a raw pointer to the `bevy::World` the script lives in
+///     - `world` - a reference to the `bevy::ecs::World` the script lives in via [`LuaWorld`]
 ///     - `entity` - an `Entity::to_bits` representation of the entity the script is attached to
 ///
 /// # Examples

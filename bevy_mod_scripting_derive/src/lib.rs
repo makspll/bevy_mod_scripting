@@ -12,10 +12,11 @@ use syn::{
     parse_macro_input,
     punctuated::Punctuated,
     token::{Brace, Bracket, Paren},
-    ItemFn, Result, Token, Type,
+    ItemFn, Result, Token, Type, Path,
 };
 
 pub(crate) use {common::*, lua::*};
+
 
 #[derive(Default,Debug,Clone)]
 struct EmptyToken;
@@ -87,7 +88,7 @@ impl Parse for AdditionalImplBlock {
 }
 
 #[proc_macro]
-pub fn impl_lua_newtype(input: TokenStream) -> TokenStream {
+pub fn impl_script_newtype(input: TokenStream) -> TokenStream {
     let new_type = parse_macro_input!(input as Newtype);
 
     let mut lua = LuaImplementor::default();
