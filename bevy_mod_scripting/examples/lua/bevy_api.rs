@@ -1,14 +1,9 @@
 use bevy::app::AppExit;
 use bevy::math::DQuat;
 use bevy::prelude::*;
-
-use bevy_event_priority::PriorityEventWriter;
-use bevy_mod_scripting::mlu::mlua::UserData;
 use bevy_mod_scripting::{
-    langs::mlu::mlua, lua::bevy::LuaBevyAPIProvider, AddScriptHost, AddScriptHostHandler, LuaEvent,
-    LuaFile, LuaScriptHost, Recipients, Script, ScriptCollection, ScriptingPlugin,
-};
-use bevy_mod_scripting::{
+    langs::mlu::mlua::{self,UserData}, lua::bevy::LuaBevyAPIProvider, AddScriptHost, LuaEvent,
+    LuaScriptHost, Recipients, ScriptingPlugin,
     AddScriptApiProvider, ReflectLuaProxyable, RegisterForeignLuaType, ValueLuaType, ScriptHost,
 };
 
