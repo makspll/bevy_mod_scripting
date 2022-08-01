@@ -9182,9 +9182,11 @@ impl tealr::mlu::ExportInstances for BevyAPIGlobals {
 }
 pub struct LuaBevyAPIProvider;
 impl APIProvider for LuaBevyAPIProvider {
-    type Target = Mutex<Lua>;
+    type APITarget = Mutex<Lua>;
+    type ScriptContext = Mutex<Lua>;
     type DocTarget = LuaDocFragment;
-    fn attach_api(&mut self, ctx: &mut Self::Target) -> Result<(), crate::ScriptError> {
+
+    fn attach_api(&mut self, ctx: &mut Self::APITarget) -> Result<(), crate::ScriptError> {
         let ctx = ctx.lock().expect("Unable to acquire lock on Lua context");
         Ok(tealr::mlu::set_global_env(BevyAPIGlobals, &ctx)?)
     }
@@ -9495,4 +9497,5 @@ impl APIProvider for LuaBevyAPIProvider {
         app.register_foreign_lua_type::<usize>();
         app.register_foreign_lua_type::<u64>();
     }
+
 }

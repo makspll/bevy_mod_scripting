@@ -103,16 +103,10 @@ pub trait ScriptHost: Send + Sync + 'static + Default {
         world: &mut World,
         event: Self::ScriptEvent,
     ) -> Result<(), ScriptError> {
-        let providers: &mut APIProviders<Self::APITarget, Self::DocTarget> =
-            &mut world.resource_mut();
-        let mut ctx = self.load_script(script, script_name, providers)?;
-
-        let entity = Entity::from_bits(u64::MAX);
-
         let fd = ScriptData {
             name: script_name,
             sid: u32::MAX,
-            entity,
+            entity: Entity::from_bits(u64::MAX),
         };
 
         let providers: &mut APIProviders<Self> = &mut world.resource_mut();

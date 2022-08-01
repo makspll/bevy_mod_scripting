@@ -5,7 +5,7 @@ use bevy_event_priority::PriorityEventWriter;
 use bevy_mod_scripting::mlu::mlua::UserData;
 use bevy_mod_scripting::{
     langs::mlu::mlua, lua::bevy::LuaBevyAPIProvider, AddScriptHost, AddScriptHostHandler, LuaEvent,
-    LuaFile, RLuaScriptHost, Recipients, Script, ScriptCollection, ScriptingPlugin,
+    LuaFile, LuaScriptHost, Recipients, Script, ScriptCollection, ScriptingPlugin,
 };
 use bevy_mod_scripting::{
     AddScriptApiProvider, ReflectLuaProxyable, RegisterForeignLuaType, ValueLuaType,
@@ -131,7 +131,7 @@ fn main() -> std::io::Result<()> {
             "scripts",
             SystemStage::single_threaded(),
         )
-        .add_script_handler_stage::<RLuaScriptHost<MyLuaArg>, _, 0, 0>("scripts")
+        .add_script_handler_stage::<LuaScriptHost<MyLuaArg>, _, 0, 0>("scripts")
         .register_type::<MyComponent>()
         .register_type::<MyReflectThing>()
         .register_type::<MyResource>()
@@ -142,8 +142,8 @@ fn main() -> std::io::Result<()> {
         .register_foreign_lua_type::<Option<Vec<bool>>>()
         .init_resource::<MyResource>()
         // this stage handles addition and removal of script contexts, we can safely use `CoreStage::PostUpdate`
-        .add_script_host::<RLuaScriptHost<MyLuaArg>, _>(CoreStage::PostUpdate)
-        .add_api_provider::<RLuaScriptHost<MyLuaArg>>(Box::new(LuaBevyAPIProvider));
+        .add_script_host::<LuaScriptHost<MyLuaArg>, _>(CoreStage::PostUpdate)
+        .add_api_provider::<LuaScriptHost<MyLuaArg>>(Box::new(LuaBevyAPIProvider));
 
     app.run();
 

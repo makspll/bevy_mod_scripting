@@ -1,9 +1,10 @@
 use bevy::app::AppExit;
 use bevy::prelude::*;
 use bevy::reflect::TypeRegistryArc;
-use bevy_mod_scripting::{api::lua::bevy::LuaWorld, ScriptHost, ScriptRef};
+use bevy_mod_scripting::{LuaScriptHost, ScriptHost};
+use bevy_mod_scripting::{api::lua::bevy::LuaWorld, ScriptRef};
 use bevy_mod_scripting::{
-    langs::mlu::mlua, AddScriptHost, LuaEvent, RLuaScriptHost, Recipients, ScriptingPlugin,
+    langs::mlu::mlua, AddScriptHost, LuaEvent, Recipients, ScriptingPlugin,
 };
 use bevy_mod_scripting_derive::impl_script_newtype;
 
@@ -83,7 +84,7 @@ fn main() -> std::io::Result<()> {
 
     app.add_plugins(DefaultPlugins)
         .add_plugin(ScriptingPlugin)
-        .add_script_host::<RLuaScriptHost<LuaMyThing>, _>(CoreStage::PostUpdate)
+        .add_script_host::<LuaScriptHost<LuaMyThing>, _>(CoreStage::PostUpdate)
         .register_type::<MyThing>()
         .init_resource::<MyThing>()
         .add_system(
@@ -94,7 +95,7 @@ fn main() -> std::io::Result<()> {
                 });
 
                 // run script
-                world.resource_scope(|world, mut host: Mut<RLuaScriptHost<LuaMyThing>>| {
+                world.resource_scope(|world, mut host: Mut<LuaScriptHost<LuaMyThing>>| {
                     host.run_one_shot(
                         r#"
                     function once(my_thing)
