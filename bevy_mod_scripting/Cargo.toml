@@ -82,24 +82,24 @@ criterion = "0.3"
 # path = "examples/console_integration_rhai.rs"
 
 [[example]]
-name = "complex_game_loop"
-path = "examples/complex_game_loop.rs"
+name = "complex_game_loop_lua"
+path = "examples/lua/complex_game_loop.rs"
 required-features = ["lua54"]
 
 
 [[example]]
-name = "event_recipients"
-path = "examples/event_recipients.rs"
+name = "event_recipients_lua"
+path = "examples/lua/event_recipients.rs"
 
 [[example]]
 name = "documentation_gen_lua"
-path = "examples/documentation_gen_lua.rs"
+path = "examples/lua/documentation_gen_lua.rs"
 required-features = ["lua54"]
 
 
 [[example]]
 name = "bevy_api_lua"
-path = "examples/bevy_api_lua.rs"
+path = "examples/lua/bevy_api.rs"
 required-features = ["lua54"]
 
 [[example]]
