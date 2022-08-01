@@ -23,9 +23,7 @@ impl<'lua> ToLua<'lua> for MyLuaArg {
 /// This is acts as a documentation and function holder
 /// We can add some general documentation about what it holds
 /// but also specific function level documenation
-pub struct APIModule {
-    my_vec: Vec<usize>,
-}
+pub struct APIModule;
 
 impl TealData for APIModule {
     fn add_methods<'lua, T: tealr::mlu::TealDataMethods<'lua, Self>>(methods: &mut T) {
@@ -57,9 +55,7 @@ impl tealr::mlu::ExportInstances for Export {
     ) -> mlua::Result<()> {
         instance_collector.document_instance("Documentation for the exposed global variable");
         instance_collector.add_instance("my_api".into(), |_| {
-            Ok(APIModule {
-                my_vec: vec![1, 2, 3],
-            })
+            Ok(APIModule)
         })
     }
 }
