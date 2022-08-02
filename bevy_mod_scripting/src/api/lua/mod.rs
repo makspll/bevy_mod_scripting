@@ -2,8 +2,6 @@ use ::std::borrow::Cow;
 
 use crate::{impl_tealr_type, ReflectedValue, ScriptRef, ValueIndex};
 
-
-
 use ::bevy::reflect::{Reflect, TypeRegistry};
 
 use tealr::mlu::mlua::MetaMethod;

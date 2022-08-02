@@ -9,7 +9,7 @@ use bevy::{
         texture::ImageSampler,
     },
     time::FixedTimestep,
-    window::{WindowResized},
+    window::WindowResized,
 };
 use bevy_mod_scripting::{
     api::lua::bevy::LuaBevyAPIProvider, langs::mlu::mlua, lua_path, prelude::*, std::LuaVec,
