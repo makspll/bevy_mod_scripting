@@ -1,5 +1,5 @@
 use std::marker::PhantomData;
-use tealr::{mlu::mlua::ToLua, TypeName};
+use tealr::{TypeName};
 
 /// forwards the TypeName implementation of T, useful for internal 'fake' global instances
 pub struct DummyTypeName<T> {

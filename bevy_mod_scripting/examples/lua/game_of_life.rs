@@ -5,11 +5,11 @@ use bevy::{
     prelude::*,
     reflect::Reflect,
     render::{
-        render_resource::{Extent3d, SamplerDescriptor, Texture, TextureDimension, TextureFormat},
+        render_resource::{Extent3d, TextureDimension, TextureFormat},
         texture::ImageSampler,
     },
     time::FixedTimestep,
-    window::{WindowCreated, WindowResized},
+    window::{WindowResized},
 };
 use bevy_mod_scripting::{
     api::lua::bevy::LuaBevyAPIProvider, langs::mlu::mlua, lua_path, prelude::*, std::LuaVec,
