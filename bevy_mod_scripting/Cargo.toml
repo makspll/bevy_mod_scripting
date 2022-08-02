@@ -10,6 +10,7 @@ homepage = "https://github.com/makspll/bevy_mod_scripting"
 keywords = ["bevy", "gamedev", "scripting", "lua"]
 categories = ["game-development"]
 readme = "../readme.md"
+include= ["../readme.md","/src","/examples","/assets"]
 
 [lib]
 name = "bevy_mod_scripting"

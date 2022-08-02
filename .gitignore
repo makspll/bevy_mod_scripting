@@ -11,8 +11,8 @@ Cargo.lock
 
 .vscode/
 
-**global_types.d.tl
+**types/
 **/doc
 **tlconfig.lua
 **.log
-**build
+**build/
