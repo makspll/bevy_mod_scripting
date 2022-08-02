@@ -104,6 +104,7 @@ macro_rules! ref_only_wrapper_methods {
 #[macro_export]
 macro_rules! define_wrapper{
     ($type_:ident, $wrapper_name:ident) => {
+        #[allow(clippy::large_enum_variant)]
         #[doc=concat!("A script wrapper for the type `",stringify!($type_),"`")]
         pub enum $wrapper_name{
             Owned(::std::cell::UnsafeCell<$type_>, ::std::sync::Arc<::parking_lot::RwLock<()>>),

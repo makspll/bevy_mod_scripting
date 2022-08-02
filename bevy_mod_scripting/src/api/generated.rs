@@ -9306,7 +9306,7 @@ impl APIProvider for LuaBevyAPIProvider {
         let ctx = ctx
             .get_mut()
             .expect("Unable to acquire lock on Lua context");
-        Ok(tealr::mlu::set_global_env(BevyAPIGlobals, &ctx)?)
+        Ok(tealr::mlu::set_global_env(BevyAPIGlobals, ctx)?)
     }
     fn get_doc_fragment(&self) -> Option<Self::DocTarget> {
         Some(LuaDocFragment::new(|tw| {
