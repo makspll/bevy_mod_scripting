@@ -34,27 +34,27 @@ generate_api:
 	cd bevy_api_gen && \
 	cargo run \
 	-- \
-	--json "../target/doc/bevy_asset.json" \
-	--json "../target/doc/bevy_ecs.json" \
-	--json "../target/doc/bevy_pbr.json" \
-	--json "../target/doc/bevy_render.json" \
-	--json "../target/doc/bevy_math.json" \
-	--json "../target/doc/bevy_transform.json" \
-	--json "../target/doc/bevy_sprite.json" \
-	--json "../target/doc/bevy_ui.json" \
-	--json "../target/doc/bevy_animation.json" \
-	--json "../target/doc/bevy_core.json" \
-	--json "../target/doc/bevy_core_pipeline.json" \
-	--json "../target/doc/bevy_gltf.json" \
-	--json "../target/doc/bevy_hierarchy.json" \
-	--json "../target/doc/bevy_text.json" \
-	--json "../target/doc/bevy_time.json" \
-	--json "../target/doc/bevy_utils.json" \
-	--json "../target/doc/bevy_reflect.json" \
-	--json "../target/doc/bevy.json" \
-	--json "../target/doc/glam.json" \
-	--config "../api_gen_config.toml" ${FLAGS} \
-	> ../bevy_mod_scripting/src/api/generated.rs
+	--json "target/doc/bevy_asset.json" \
+	--json "target/doc/bevy_ecs.json" \
+	--json "target/doc/bevy_pbr.json" \
+	--json "target/doc/bevy_render.json" \
+	--json "target/doc/bevy_math.json" \
+	--json "target/doc/bevy_transform.json" \
+	--json "target/doc/bevy_sprite.json" \
+	--json "target/doc/bevy_ui.json" \
+	--json "target/doc/bevy_animation.json" \
+	--json "target/doc/bevy_core.json" \
+	--json "target/doc/bevy_core_pipeline.json" \
+	--json "target/doc/bevy_gltf.json" \
+	--json "target/doc/bevy_hierarchy.json" \
+	--json "target/doc/bevy_text.json" \
+	--json "target/doc/bevy_time.json" \
+	--json "target/doc/bevy_utils.json" \
+	--json "target/doc/bevy_reflect.json" \
+	--json "target/doc/bevy.json" \
+	--json "target/doc/glam.json" \
+	--config "api_gen_config.toml" ${FLAGS} \
+	> /src/api/generated.rs
 
 make_json_files:
 	rustup run nightly cargo rustdoc -p bevy_asset@0.8.0  --  -Zunstable-options --output-format json && \
