@@ -316,8 +316,8 @@ To see more complex applications of this library have a look at the examples:
 - [lua - bevy API](bevy_mod_scripting/examples/lua/bevy_api.rs)
 - [generating statically typed wrappers + ScriptRef system](bevy_mod_scripting/examples/wrappers.rs)
 - [lua - documentation generation + lua static typing](bevy_mod_scripting/examples/lua/documentation_gen.rs)
-- [lua - bevy console integration](bevy_mod_scripting/examples/lua/console_integration.rs)
-- [rhai - bevy console integration](bevy_mod_scripting/examples/rhai/console_integration.rs)
+- ~~[lua - bevy console integration](bevy_mod_scripting/examples/lua/console_integration.rs)~~ not up to date with bevy 0.8
+- ~~[rhai - bevy console integration](bevy_mod_scripting/examples/rhai/console_integration.rs)~~ not up to date with bevy 0.8
 - [lua - game of life with teal](bevy_mod_scripting/examples/lua/game_of_life.rs)
 
 Below is a video showcasing the game_of_life example:
