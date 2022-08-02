@@ -318,4 +318,4 @@ To see more complex applications of this library have a look at the examples:
 - [lua - game of life with teal](bevy_mod_scripting/examples/lua/game_of_life.rs)
 
 Below is a video showcasing the game_of_life example:
-[![Watch the video](https://i3.ytimg.com/vi/Mo9gh2g3ZHw/maxresdefault.jpg)](https://www.youtube.com/watch?v=Mo9gh2g3ZHw)
+[![Watch the video](https://img.youtube.com/vi/Mo9gh2g3ZHw/maxresdefault.jpg)](https://www.youtube.com/watch?v=Mo9gh2g3ZHw)
