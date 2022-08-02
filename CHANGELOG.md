@@ -3,6 +3,7 @@
 ## v0.1.1
 ### Added 
 - Added `CHANGELOG.md`
+- Incorporated `cargo release`
 ### Changed
 - Fixed broken example links in `readme.md`
 
