@@ -7,5 +7,9 @@
     "rust-analyzer.cargo.features": [
         "lua54",
         "teal",
-    ]
+    ],
+    "rust-analyzer.server.extraEnv": {
+        "RUSTUP_TOOLCHAIN": "stable"
+    }
 }
+

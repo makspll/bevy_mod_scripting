@@ -2,6 +2,13 @@
 resolver = "2"
 members = [
     "bevy_mod_scripting",
-    "bevy_event_priority"
+    "bevy_event_priority",
+    "bevy_mod_scripting_derive",
+    "bevy_api_gen"
 ]
 
+[profile.dev]
+opt-level = 1
+
+[profile.dev.package."*"]
+opt-level = 3

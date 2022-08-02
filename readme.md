@@ -103,23 +103,14 @@ Any types implementing the `mlua::ToLua` trait can be used.
 
 ``` rust
 use bevy::prelude::*;
-use bevy_mod_scripting::{*,events::*,langs::mlu::{mlua,mlua::prelude::*}};
+use bevy_mod_scripting::{prelude::*,events::*,langs::mlu::{mlua,mlua::prelude::*}};
 
-
-#[derive(Clone)]
-pub struct MyLuaArg;
-
-impl<'lua> ToLua<'lua> for MyLuaArg {
-    fn to_lua(self, _lua: &'lua mlua::Lua) -> mlua::Result<mlua::Value<'lua>> {
-        Ok(mlua::Value::Nil)
-    }
-}
 
 // event callback generator for lua
-pub fn trigger_on_update_lua(mut w: PriorityEventWriter<LuaEvent<MyLuaArg>>) {
-    let event = LuaEvent::<MyLuaArg> {
+pub fn trigger_on_update_lua(mut w: PriorityEventWriter<LuaEvent<()>>) {
+    let event = LuaEvent::<()> {
         hook_name: "on_update".to_string(), 
-        args: Vec::default(),
+        args: (),
         recipients: Recipients::All
     };
 
@@ -133,7 +124,7 @@ Rhai supports any rust types implementing FuncArgs as function arguments.
 
 ``` rust
 use bevy::prelude::*;
-use bevy_mod_scripting::{*,events::*,langs::rhai::FuncArgs};
+use bevy_mod_scripting::{prelude::*,langs::rhai::FuncArgs};
 
 #[derive(Clone)]
 pub struct MyRhaiArgStruct {
@@ -170,17 +161,7 @@ Scripts are attached to entities in the form of `bevy_mod_scripting::ScriptColle
 ``` rust
 use std::sync::Mutex;
 use bevy::prelude::*;
-use bevy_mod_scripting::{*,langs::mlu::mlua};
-
-#[derive(Clone)]
-pub struct MyLuaArg;
-
-impl<'lua> mlua::ToLua<'lua> for MyLuaArg {
-    fn to_lua(self, _lua: &'lua mlua::Lua) -> mlua::Result<mlua::Value<'lua>> {
-        // ...
-        Ok(mlua::Value::Nil)
-    }
-}
+use bevy_mod_scripting::prelude::*;
 
 // An example of a startup system which loads the lua script "console_integration.lua" 
 // placed in "assets/scripts/" and attaches it to a new entity
@@ -194,7 +175,7 @@ pub fn load_a_script(
 
 
     commands.spawn().insert(ScriptCollection::<LuaFile> {
-        scripts: vec![Script::<LuaFile>::new::<LuaScriptHost<MyLuaArg>>(
+        scripts: vec![Script::<LuaFile>::new(
             path, handle,
         )],
     });
@@ -203,14 +184,14 @@ pub fn load_a_script(
 
 
 ### Defining an API
-To expose an API to your scripts, implement the APIProvider trait. To register this API with your script host use the `add_api_provider` of `App`:
+To expose an API to your scripts, implement the APIProvider trait. To register this API with your script host use the `add_api_provider` of `App`. APIProviders are a little bit like plugins, since they can also have access to the bevy App via one of the methods provided, and 
 
 ``` rust
-use std::sync::Mutex;
-use bevy_mod_scripting::{*,langs::{mlu::mlua::prelude::*,rhai::*}};
+use ::std::sync::Mutex;
+use bevy_mod_scripting::{prelude::*,langs::{mlu::mlua::prelude::*,rhai::*}};
 
 #[derive(Default)]
-pub struct LuaAPI {}
+pub struct LuaAPI;
 
 /// the custom Lua api, world is provided via a global pointer,
 /// and callbacks are defined only once at script creation
@@ -262,25 +243,19 @@ Documentation features are exposed at runtime via the `update_documentation` bui
 
 ```rust
 use bevy::prelude::*;
-use bevy_mod_scripting::{*,langs::mlu::mlua};
-
-#[derive(Clone)]
-pub struct MyLuaArg;
-impl<'lua> mlua::ToLua<'lua> for MyLuaArg {
-    fn to_lua(self, lua: &'lua mlua::Lua) -> mlua::Result<mlua::Value<'lua>> {Ok(mlua::Value::Nil)}
-}
+use bevy_mod_scripting::prelude::*;
 
 fn main() -> std::io::Result<()> {
     let mut app = App::new();
 
     app.add_plugins(DefaultPlugins)
         .add_plugin(ScriptingPlugin)
-        .add_script_host::<LuaScriptHost<MyLuaArg>, _>(CoreStage::PostUpdate)
+        .add_script_host::<LuaScriptHost<()>, _>(CoreStage::PostUpdate)
         // Note: This is a noop in optimized builds unless the `doc_always` feature is enabled!
         // this will pickup any API providers added *BEFOREHAND* like this one
-        // .add_api_provider::<LuaScriptHost<MyLuaArg>>(Box::new(LuaAPIProvider))
-        .update_documentation::<LuaScriptHost<MyLuaArg>>()
-        .add_script_handler_stage::<LuaScriptHost<MyLuaArg>, _, 0, 0>(
+        // .add_api_provider::<LuaScriptHost<()>>(Box::new(LuaAPIProvider))
+        .update_documentation::<LuaScriptHost<()>>()
+        .add_script_handler_stage::<LuaScriptHost<()>, _, 0, 0>(
             CoreStage::PostUpdate,
         );
 
@@ -300,9 +275,9 @@ This can all be seen at work in the [this example](bevy_mod_scripting/examples/d
 
 ##### Teal - Lua static typing
 
-Teal is the reccomended way of introducing lua to your bevy game. This functionality is locked behind the `teal` cargo feature however, since it's quite opinionanted when it comes to your asset structure, and also requires `lua` + `teal` to be installed (see https://github.com/teal-language/tl).
+Teal is the reccomended way of introducing lua to your bevy game. This functionality is locked behind the `teal` cargo feature however, since it's quite opinionanted when it comes to your asset structure (`script` and `scripts/build`, folders under `assets`), and also requires `lua` + `teal` + `cargo tealr_doc_gen` to be installed (see https://github.com/teal-language/tl and `tealr`).
 
-Once enabled, `.tl` files can be loaded as lua scripts in addition to `.lua` files and compiled on the fly. With full hot-reloading support. When you're ready to release your game, you just need to run `tl build` from the `assets/scripts` directory to compile your teal files.
+Once enabled, `.tl` files can be loaded as lua scripts in addition to `.lua` files and compiled on the fly. With full hot-reloading support. When you're ready to release your game, you just need to run `tl build` from the `assets/scripts` directory to compile your teal files. This will generate `.lua` files under `assets/scripts/build`. You can manage loading scripts using the [`bevy_mod_scripting::lua_path`] macro.
 
 If `teal` is enabled and you've added the `update_documentation` step to your app, every time you run/build your app in development the following will be generated/synced:
     - a `scripts/doc` directory containing documentation for your lua exposed API
@@ -311,7 +286,15 @@ If `teal` is enabled and you've added the `update_documentation` step to your ap
     - any scripts with a `.tl` extension will be compiled to lua code and type checked
 On optimized release builds none of this happens (no debug_asserts).
 
-The reccomended workflow is to use vscode and the official teal extension, with the script directory as the root of your workspace (as a second window to your main project), this will ensure your environment is properly configured out of the box.
+The reccomended workflow is to use vscode and the official teal extension with an additional `tlconfig.lua` file at the **root** of your workspace with the 
+following content:
+```lua
+return {
+    include_dir = {
+        "path_to_your_lib/",
+    }
+}
+```
 
 #### Rhai
 
@@ -325,9 +308,14 @@ Rhai currently does not have any utilities existing for generating documentation
 
 To see more complex applications of this library have a look at the examples:
 
-- [lua - bevy console integration](bevy_mod_scripting/examples/console_integration_lua.rs)
-- [rhai - bevy console integration](bevy_mod_scripting/examples/console_integration_rhai.rs)
-- [lua - complex game loop](bevy_mod_scripting/examples/complex_game_loop.rs)
-- [lua - event recipients](bevy_mod_scripting/examples/event_recipients.rs)
-- [lua - documentation generation + lua static typing](bevy_mod_scripting/examples/documentation_gen_lua.rs)
+- [lua - complex game loop](bevy_mod_scripting/examples/lua/complex_game_loop.rs)
+- [lua - event recipients](bevy_mod_scripting/examples/lua/event_recipients.rs)
+- [lua - bevy API](bevy_mod_scripting/examples/lua/bevy_api.rs)
+- [generating statically typed wrappers + ScriptRef system](bevy_mod_scripting/examples/wrappers.rs)
+- [lua - documentation generation + lua static typing](bevy_mod_scripting/examples/lua/documentation_gen.rs)
+- [lua - bevy console integration](bevy_mod_scripting/examples/lua/console_integration.rs)
+- [rhai - bevy console integration](bevy_mod_scripting/examples/rhai/console_integration.rs)
+- [lua - game of life with teal](bevy_mod_scripting/examples/lua/game_of_life.rs)
 
+Below is a video showcasing the game_of_life example:
+[![Watch the video](https://img.youtube.com/vi/Mo9gh2g3ZHw/maxresdefault.jpg)](https://www.youtube.com/watch?v=Mo9gh2g3ZHw)

@@ -1,11 +1,10 @@
 use bevy::prelude::*;
-use bevy_console::ConsolePlugin;
-use bevy_event_priority::PriorityEventWriter;
+
 use bevy_mod_scripting::{
+    api::lua::bevy::LuaBevyAPIProvider,
     langs::mlu::{mlua, mlua::prelude::*, mlua::Value, TealData},
     APIProvider, AddScriptApiProvider, AddScriptHost, AddScriptHostHandler, GenDocumentation,
-    LuaDocFragment, LuaEvent, LuaFile, LuaScriptHost, Recipients, Script, ScriptCollection,
-    ScriptData, ScriptError, ScriptingPlugin,
+    LuaDocFragment, LuaScriptHost, ScriptError, ScriptingPlugin,
 };
 use tealr::TypeName;
 
@@ -28,9 +27,8 @@ pub struct APIModule;
 
 impl TealData for APIModule {
     fn add_methods<'lua, T: tealr::mlu::TealDataMethods<'lua, Self>>(methods: &mut T) {
-        methods.document_type(
-            "This is module level documentation for our api, it will be shown first",
-        );
+        methods
+            .document_type("This is type level documentation for our api, it will be shown first");
         methods.document_type("");
 
         methods.document("Here we document the next function");
@@ -41,16 +39,18 @@ impl TealData for APIModule {
             \n```",
         );
         methods.add_function("my_function", |_, ()| Ok("hello world!"));
-
         methods.generate_help();
     }
 }
 
 /// This is tealr's way to export global items
 /// Here `my_api` will be available globally in the lua script
+
+#[derive(Default)]
 struct Export;
 impl tealr::mlu::ExportInstances for Export {
     fn add_instances<'lua, T: tealr::mlu::InstanceCollector<'lua>>(
+        self,
         instance_collector: &mut T,
     ) -> mlua::Result<()> {
         instance_collector.document_instance("Documentation for the exposed global variable");
@@ -73,10 +73,10 @@ impl APIProvider for LuaAPIProvider {
         // return any `FromLuaMulti` arguments, here a `usize`
         // check the Rlua documentation for more details
 
-        let ctx = ctx.lock().unwrap();
+        let ctx = ctx.get_mut().unwrap();
 
         // equivalent to ctx.globals().set() but for multiple items
-        tealr::mlu::set_global_env::<Export>(&ctx).unwrap();
+        tealr::mlu::set_global_env(Export, ctx)?;
 
         Ok(())
     }
@@ -88,36 +88,7 @@ impl APIProvider for LuaAPIProvider {
                     .document_global_instance::<Export>().unwrap()))
     }
 
-    fn setup_script(
-        &mut self,
-        _: &ScriptData,
-        _: &mut Self::ScriptContext,
-    ) -> Result<(), ScriptError> {
-        Ok(())
-    }
-}
-
-fn load_our_script(server: Res<AssetServer>, mut commands: Commands) {
-    let path = "scripts/teal_file.tl";
-    let handle = server.load::<LuaFile, &str>(path);
-
-    commands.spawn().insert(ScriptCollection::<LuaFile> {
-        scripts: vec![Script::<LuaFile>::new::<LuaScriptHost<MyLuaArg>>(
-            path.to_string(),
-            handle,
-        )],
-    });
-}
-
-fn fire_our_script(mut w: PriorityEventWriter<LuaEvent<MyLuaArg>>) {
-    w.send(
-        LuaEvent::<MyLuaArg> {
-            hook_name: "on_update".to_string(),
-            args: vec![MyLuaArg],
-            recipients: Recipients::All,
-        },
-        0,
-    )
+    fn register_with_app(&self, _app: &mut App) {}
 }
 
 fn main() -> std::io::Result<()> {
@@ -125,20 +96,19 @@ fn main() -> std::io::Result<()> {
 
     app.add_plugins(DefaultPlugins)
         .add_plugin(ScriptingPlugin)
-        .add_plugin(ConsolePlugin)
+        // add the providers and script host
         .add_script_host::<LuaScriptHost<MyLuaArg>, _>(CoreStage::PostUpdate)
         .add_api_provider::<LuaScriptHost<MyLuaArg>>(Box::new(LuaAPIProvider))
+        .add_api_provider::<LuaScriptHost<MyLuaArg>>(Box::new(LuaBevyAPIProvider))
         // this needs to be placed after any `add_api_provider` and `add_script_host` calls
         // it will generate `doc` and `types` folders under `assets/scripts` containing the documentation and teal declaration files
         // respectively. See example asset folder to see how they look like. The `teal_file.tl` script in example assets shows the usage of one of those
         // declaration files, use the teal vscode extension to explore the type hints!
         // Note: This is a noop in optimized builds unless the `doc_always` feature is enabled!
         .update_documentation::<LuaScriptHost<MyLuaArg>>()
-        .add_script_handler_stage::<LuaScriptHost<MyLuaArg>, _, 0, 0>(CoreStage::PostUpdate)
-        .add_startup_system(load_our_script)
-        .add_system(fire_our_script);
+        .add_script_handler_stage::<LuaScriptHost<MyLuaArg>, _, 0, 0>(CoreStage::PostUpdate);
 
-    app.run();
+    // app.run(); no need, documentation gets generated before the app even starts
 
     Ok(())
 }

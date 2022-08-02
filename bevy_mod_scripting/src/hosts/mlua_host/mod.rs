@@ -2,32 +2,48 @@ pub mod assets;
 pub mod docs;
 
 use crate::{
-    script_add_synchronizer, script_hot_reload_handler, script_remove_synchronizer, APIProviders,
-    CachedScriptEventState, Recipients, Script, ScriptCollection, ScriptContexts, ScriptData,
-    ScriptError, ScriptErrorEvent, ScriptEvent, ScriptHost,
+    api::lua::bevy::{LuaEntity, LuaWorld},
+    lua::bevy::LuaScriptData,
+    APIProviders, ScriptData,
+};
+use crate::{
+    script_add_synchronizer, script_hot_reload_handler, script_remove_synchronizer,
+    CachedScriptEventState, Recipients, Script, ScriptCollection, ScriptContexts, ScriptError,
+    ScriptErrorEvent, ScriptEvent, ScriptHost,
 };
 use anyhow::Result;
 
 use bevy::prelude::*;
 use bevy_event_priority::AddPriorityEvent;
+use parking_lot::RwLock;
 use tealr::mlu::mlua::{prelude::*, Function};
 
+use std::fmt;
 use std::marker::PhantomData;
-use std::sync::Mutex;
+use std::sync::{Arc, Mutex};
 
 pub use {assets::*, docs::*};
 
-pub trait LuaArg: for<'lua> ToLua<'lua> + Clone + Sync + Send + 'static {}
+pub trait LuaArg: for<'lua> ToLuaMulti<'lua> + Clone + Sync + Send + 'static {}
 
-impl<T: for<'lua> ToLua<'lua> + Clone + Sync + Send + 'static> LuaArg for T {}
+impl<T: for<'lua> ToLuaMulti<'lua> + Clone + Sync + Send + 'static> LuaArg for T {}
 
 #[derive(Clone)]
 /// A Lua Hook. The result of creating this event will be
 /// a call to the lua script with the hook_name and the given arguments
 pub struct LuaEvent<A: LuaArg> {
     pub hook_name: String,
-    pub args: Vec<A>,
+    pub args: A,
     pub recipients: Recipients,
+}
+
+impl<A: LuaArg> fmt::Debug for LuaEvent<A> {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.debug_struct("LuaEvent")
+            .field("hook_name", &self.hook_name)
+            .field("recipients", &self.recipients)
+            .finish()
+    }
 }
 
 impl<A: LuaArg> ScriptEvent for LuaEvent<A> {
@@ -38,29 +54,21 @@ impl<A: LuaArg> ScriptEvent for LuaEvent<A> {
 
 /// Mlua script host, enables Lua scripting provided by the mlua library.
 /// Always provides two global variables to each script by default:
-///     - `world` - a raw pointer to the `bevy::World` the script lives in
+///     - `world` - a reference to the `bevy::ecs::World` the script lives in via [`LuaWorld`]
 ///     - `entity` - an `Entity::to_bits` representation of the entity the script is attached to
+///     - `script` - an `LuaScriptData` object containing the unique id of this script
 ///
 /// # Examples
 ///
 /// You can use these variables in your APIProviders like so:
 /// ```
-///    use std::sync::Mutex;
+///    use ::std::sync::Mutex;
 ///    use bevy::prelude::*;
 ///    use bevy_mod_scripting::{*, langs::mlu::{mlua,mlua::prelude::*}};
 ///    
 ///    #[derive(Default)]
-///    pub struct LuaAPIProvider {}
+///    pub struct LuaAPIProvider;
 ///
-///    #[derive(Clone)]
-///    pub struct MyLuaArg;
-///
-///    impl<'lua> ToLua<'lua> for MyLuaArg {
-///        fn to_lua(self, _lua: &'lua mlua::Lua) -> mlua::Result<mlua::Value<'lua>> {
-///            Ok(mlua::Value::Nil)
-///        }
-///    }
-
 ///    /// the custom Lua api, world is provided via a global pointer,
 ///    /// and callbacks are defined only once at script creation
 ///    impl APIProvider for LuaAPIProvider {
@@ -103,9 +111,6 @@ impl<A: LuaArg> Default for LuaScriptHost<A> {
     }
 }
 
-unsafe impl<A: LuaArg> Send for LuaScriptHost<A> {}
-unsafe impl<A: LuaArg> Sync for LuaScriptHost<A> {}
-
 impl<A: LuaArg> ScriptHost for LuaScriptHost<A> {
     type ScriptContext = Mutex<Lua>;
     type APITarget = Mutex<Lua>;
@@ -122,6 +127,7 @@ impl<A: LuaArg> ScriptHost for LuaScriptHost<A> {
             .init_resource::<APIProviders<Self>>()
             .register_type::<ScriptCollection<Self::ScriptAsset>>()
             .register_type::<Script<Self::ScriptAsset>>()
+            .register_type::<Handle<LuaFile>>()
             .add_system_set_to_stage(
                 stage,
                 SystemSet::new()
@@ -169,11 +175,9 @@ impl<A: LuaArg> ScriptHost for LuaScriptHost<A> {
         events: &[Self::ScriptEvent],
         ctxs: impl Iterator<Item = (ScriptData<'a>, &'a mut Self::ScriptContext)>,
     ) {
-        let world_ptr = world as *mut World as usize;
-
         world.resource_scope(
-            |world, mut cached_state: Mut<CachedScriptEventState<Self>>| {
-                let (_, mut error_wrt) = cached_state.event_state.get_mut(world);
+            |world_orig, mut cached_state: Mut<CachedScriptEventState<Self>>| {
+                let world_arc = Arc::new(RwLock::new(std::mem::take(world_orig)));
 
                 ctxs.for_each(|(fd, ctx)| {
                     let success = ctx
@@ -181,9 +185,9 @@ impl<A: LuaArg> ScriptHost for LuaScriptHost<A> {
                         .map_err(|e| ScriptError::Other(e.to_string()))
                         .and_then(|ctx| {
                             let globals = ctx.globals();
-                            globals.set("world", world_ptr)?;
-                            globals.set("entity", fd.entity.to_bits())?;
-                            globals.set("script", fd.sid)?;
+                            globals.set("world", LuaWorld::new(Arc::downgrade(&world_arc)))?;
+                            globals.set("entity", LuaEntity::new(fd.entity))?;
+                            globals.set::<_, LuaScriptData>("script", (&fd).into())?;
 
                             // event order is preserved, but scripts can't rely on any temporal
                             // guarantees when it comes to other scripts callbacks,
@@ -195,40 +199,35 @@ impl<A: LuaArg> ScriptHost for LuaScriptHost<A> {
                                     continue;
                                 }
 
-                                let mut f: Function = match globals.get(event.hook_name.clone()) {
+                                let f: Function = match globals.get(event.hook_name.clone()) {
                                     Ok(f) => f,
                                     Err(_) => continue, // not subscribed to this event
                                 };
 
-                                let ags = event.args.clone();
-                                // bind arguments and catch any errors
-                                for a in ags {
-                                    f = f.bind(a.to_lua(ctx)).map_err(|e| {
-                                        ScriptError::InvalidCallback {
-                                            script: fd.name.to_owned(),
-                                            callback: event.hook_name.to_owned(),
-                                            msg: e.to_string(),
-                                        }
-                                    })?
-                                }
-
-                                f.call::<(), ()>(())
-                                    .map_err(|e| ScriptError::RuntimeError {
+                                f.call::<_, ()>(event.args.clone()).map_err(|e| {
+                                    ScriptError::RuntimeError {
                                         script: fd.name.to_owned(),
                                         msg: e.to_string(),
-                                    })?
+                                    }
+                                })?
                             }
 
+                            // we must clear the world in order to free the Arc pointer
                             Ok(())
                         });
 
                     success
                         .map_err(|e| {
+                            let mut guard = world_arc.write();
+                            let (_, mut error_wrt) = cached_state.event_state.get_mut(&mut guard);
+
                             error!("{}", e);
                             error_wrt.send(ScriptErrorEvent { err: e })
                         })
                         .ok();
                 });
+
+                *world_orig = Arc::try_unwrap(world_arc).unwrap().into_inner();
             },
         );
     }

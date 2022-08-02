@@ -1,0 +1,30 @@
+[package]
+name = "bevy_api_gen"
+version = "0.1.0"
+authors = ["Maksymilian Mozolewski <makspl17@gmail.com>"]
+edition = "2021"
+license = "MIT"
+description = "Derive macros for bevy_mod_scripting"
+repository = "https://github.com/makspll/bevy_scripting"
+homepage = "https://github.com/makspll/bevy_scripting"
+keywords = ["bevy", "gamedev", "scripting", "lua"]
+categories = ["game-development"]
+readme = "../readme.md"
+
+[lib]
+name = "bevy_api_gen_lib"
+path = "src/lib.rs"
+
+[[bin]]
+name = "bevy_api_gen"
+path = "src/main.rs"
+
+
+[dependencies]
+rustdoc-types = "0.11.0"
+clap = { version = "3.2.6", features = ["derive"] }
+serde_json = "1.0.81"
+toml = "0.5.9"
+serde = { version = "1.0", features = ["derive"] }
+serde_derive = "1.0.137"
+indexmap = {version= "1.9.1", features= ["serde"]}

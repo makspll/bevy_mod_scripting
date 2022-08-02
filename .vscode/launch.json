@@ -242,15 +242,16 @@
         {
             "type": "lldb",
             "request": "launch",
-            "name": "Debug example 'native_types'",
+            "name": "Debug example 'bevy_api'",
             "cargo": {
                 "args": [
                     "build",
-                    "--example=native_types",
-                    "--package=bevy_mod_scripting"
+                    "--example=bevy_api_lua",
+                    "--package=bevy_mod_scripting",
+                    "--features=lua54"
                 ],
                 "filter": {
-                    "name": "native_types",
+                    "name": "bevy_api_lua",
                     "kind": "example"
                 }
             },

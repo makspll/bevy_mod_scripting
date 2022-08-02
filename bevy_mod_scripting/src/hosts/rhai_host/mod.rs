@@ -36,9 +36,6 @@ impl<A: FuncArgs + Send> Default for RhaiScriptHost<A> {
     }
 }
 
-unsafe impl<A: FuncArgs + Send> Send for RhaiScriptHost<A> {}
-unsafe impl<A: FuncArgs + Send> Sync for RhaiScriptHost<A> {}
-
 pub struct RhaiContext {
     pub ast: AST,
     pub scope: Scope<'static>,

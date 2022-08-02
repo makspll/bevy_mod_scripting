@@ -1,5 +1,4 @@
 use bevy::prelude::*;
-use bevy_console::ConsolePlugin;
 use bevy_event_priority::PriorityEventWriter;
 use bevy_mod_scripting::{
     langs::mlu::{mlua, mlua::prelude::*, mlua::Value},
@@ -35,7 +34,7 @@ impl APIProvider for LuaAPIProvider {
         // return any `FromLuaMulti` arguments, here a `usize`
         // check the Rlua documentation for more details
 
-        let ctx = ctx.lock().unwrap();
+        let ctx = ctx.get_mut().unwrap();
 
         ctx.globals().set(
             "print",
@@ -68,7 +67,7 @@ fn fire_random_event(w: &mut PriorityEventWriter<LuaEvent<MyLuaArg>>, events: &[
         .choose(&mut rng)
         .map(|v| LuaEvent {
             hook_name: v.0.to_string(),
-            args: vec![arg],
+            args: arg,
             recipients: v.1.clone(),
         })
         .unwrap();
@@ -107,9 +106,7 @@ fn load_our_scripts(server: Res<AssetServer>, mut commands: Commands) {
     let handle = server.load::<LuaFile, &str>(path);
     let scripts = (0..2)
         .into_iter()
-        .map(|_| {
-            Script::<LuaFile>::new::<LuaScriptHost<MyLuaArg>>(path.to_string(), handle.clone())
-        })
+        .map(|_| Script::<LuaFile>::new(path.to_string(), handle.clone()))
         .collect();
 
     commands
@@ -122,7 +119,6 @@ fn main() -> std::io::Result<()> {
 
     app.add_plugins(DefaultPlugins)
         .add_plugin(ScriptingPlugin)
-        .add_plugin(ConsolePlugin)
         .add_startup_system(load_our_scripts)
         // randomly fire events for either all scripts,
         // the script with id 0
