@@ -6,8 +6,6 @@ use bevy::{
 
 use std::sync::Arc;
 
-
-
 #[derive(Debug, TypeUuid)]
 #[uuid = "39cadc56-aa9c-4543-8640-a018b74b5052"]
 /// A lua code file in bytes
@@ -32,10 +30,8 @@ impl AssetLoader for LuaLoader {
         load_context: &'a mut bevy::asset::LoadContext,
     ) -> bevy::asset::BoxedFuture<'a, Result<(), anyhow::Error>> {
         match load_context.path().extension().map(|s| s.to_str().unwrap()) {
-            
             #[cfg(all(feature = "teal", debug_assertions))]
             Some("tl") => {
-
                 use anyhow::anyhow;
                 use bevy::asset::FileAssetIo;
                 use std::fs;

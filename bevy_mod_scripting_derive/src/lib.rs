@@ -88,9 +88,9 @@ impl Parse for AdditionalImplBlock {
 }
 
 /// A convenience macro which derives a lotta things to make your type work in all supported/enabled scripting languages, and provide static typing where possible.
-/// 
+///
 /// This macro is used extensively in `bevy_mod_scripting/src/generated.rs`, for extensive usage examples see those macro invocations.
-/// 
+///
 /// Right now the macro supports:
 /// - primitive types surrounded in `Raw()`
 ///   - usize
@@ -117,11 +117,11 @@ impl Parse for AdditionalImplBlock {
 /// # Example
 /// ```rust,ignore
 /// use bevy_mod_scripting_derive::impl_script_newtype;
-/// 
+///
 /// pub struct MyStruct{
 ///     my_field: bool
 /// }
-/// 
+///
 /// impl MyStruct {
 ///     pub fn do_something(&self) -> bool {
 ///         self.my_field
@@ -133,7 +133,7 @@ impl Parse for AdditionalImplBlock {
 ///         my_field: Raw(bool)
 ///       ) + Methods(
 ///         do_something(&self:) -> Raw(bool)
-///       ) 
+///       )
 /// );
 /// // a new type is created
 /// // with all neccessary traits implemented

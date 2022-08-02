@@ -1,4 +1,4 @@
-use crate::{impl_tealr_type, ScriptRef, ScriptData};
+use crate::{impl_tealr_type, ScriptData, ScriptRef};
 use ::bevy::ecs::system::Command;
 use ::bevy::hierarchy::BuildWorldChildren;
 use ::std::convert::AsRef;
@@ -49,9 +49,8 @@ impl Deref for LuaTypeRegistration {
     }
 }
 
-
 pub struct LuaScriptData {
-    sid: u32
+    sid: u32,
 }
 
 impl From<&ScriptData<'_>> for LuaScriptData {
@@ -65,7 +64,7 @@ impl_tealr_type!(LuaScriptData);
 impl TealData for LuaScriptData {
     fn add_fields<'lua, F: tealr::mlu::TealDataFields<'lua, Self>>(fields: &mut F) {
         fields.document("The unique ID of this script");
-        fields.add_field_method_get("sid", |_,s| Ok(s.sid))
+        fields.add_field_method_get("sid", |_, s| Ok(s.sid))
     }
 }
 
@@ -138,8 +137,8 @@ impl TealData for LuaWorld {
                     .map(|e| e.inner())
                     .collect::<Result<Vec<_>, _>>()?;
 
-                if let Some(mut entity) = w.get_entity_mut(parent.inner()?) { 
-                    entity.push_children(&children); 
+                if let Some(mut entity) = w.get_entity_mut(parent.inner()?) {
+                    entity.push_children(&children);
                 }
 
                 Ok(())
@@ -153,8 +152,8 @@ impl TealData for LuaWorld {
                 let w = world.upgrade().unwrap();
                 let w = &mut w.write();
                 let child = child.inner()?;
-                if let Some(mut entity) = w.get_entity_mut(parent.inner()?) { 
-                    entity.push_children(&[child]); 
+                if let Some(mut entity) = w.get_entity_mut(parent.inner()?) {
+                    entity.push_children(&[child]);
                 }
 
                 Ok(())
@@ -172,8 +171,8 @@ impl TealData for LuaWorld {
                     .map(|e| e.inner())
                     .collect::<Result<Vec<_>, _>>()?;
 
-                if let Some(mut entity) = w.get_entity_mut(parent.inner()?) { 
-                    entity.remove_children(&children); 
+                if let Some(mut entity) = w.get_entity_mut(parent.inner()?) {
+                    entity.remove_children(&children);
                 }
 
                 Ok(())
@@ -187,7 +186,7 @@ impl TealData for LuaWorld {
                 let w = world.upgrade().unwrap();
                 let w = &mut w.write();
                 let child = child.inner()?;
-                if let Some(mut entity) = w.get_entity_mut(parent.inner()?) { 
+                if let Some(mut entity) = w.get_entity_mut(parent.inner()?) {
                     entity.remove_children(&[child]);
                 }
 
@@ -207,8 +206,8 @@ impl TealData for LuaWorld {
                     .map(|e| e.inner())
                     .collect::<Result<Vec<_>, _>>()?;
 
-                if let Some(mut entity) = w.get_entity_mut(parent.inner()?) { 
-                    entity.insert_children(index, &children); 
+                if let Some(mut entity) = w.get_entity_mut(parent.inner()?) {
+                    entity.insert_children(index, &children);
                 }
 
                 Ok(())
@@ -222,8 +221,8 @@ impl TealData for LuaWorld {
                 let w = world.upgrade().unwrap();
                 let w = &mut w.write();
                 let child = child.inner()?;
-                if let Some(mut entity) = w.get_entity_mut(parent.inner()?) { 
-                    entity.insert_children(index, &[child]); 
+                if let Some(mut entity) = w.get_entity_mut(parent.inner()?) {
+                    entity.insert_children(index, &[child]);
                 }
 
                 Ok(())
@@ -238,7 +237,8 @@ impl TealData for LuaWorld {
                 let w = &mut w.write();
                 DespawnChildrenRecursive {
                     entity: entity.inner()?,
-                }.write(w);
+                }
+                .write(w);
                 Ok(())
             },
         );
@@ -249,7 +249,8 @@ impl TealData for LuaWorld {
             let w = &mut w.write();
             DespawnRecursive {
                 entity: entity.inner()?,
-            }.write(w);
+            }
+            .write(w);
             Ok(())
         });
 
@@ -259,7 +260,8 @@ impl TealData for LuaWorld {
             let w = &mut w.write();
             DespawnRecursive {
                 entity: entity.inner()?,
-            }.write(w);
+            }
+            .write(w);
             Ok(())
         });
 

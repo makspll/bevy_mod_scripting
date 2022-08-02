@@ -202,8 +202,7 @@ pub(crate) struct AutoField {
 impl Parse for AutoField {
     fn parse(input: ParseStream) -> Result<Self, syn::Error> {
         let attrs = Attribute::parse_outer(input)?;
-        let split_idx =
-            attrs.partition_point(|attr| *attr.path.get_ident().unwrap() == "doc");
+        let split_idx = attrs.partition_point(|attr| *attr.path.get_ident().unwrap() == "doc");
         Ok(Self {
             docstring: attrs[0..split_idx].to_owned(),
             attrs: attrs[split_idx..].to_owned(),

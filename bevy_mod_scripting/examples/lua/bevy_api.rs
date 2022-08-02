@@ -2,12 +2,11 @@ use bevy::app::AppExit;
 use bevy::math::DQuat;
 use bevy::prelude::*;
 use bevy_mod_scripting::{
-    langs::mlu::mlua::{self,UserData}, lua::bevy::LuaBevyAPIProvider, AddScriptHost, LuaEvent,
-    LuaScriptHost, Recipients, ScriptingPlugin,
-    AddScriptApiProvider, ReflectLuaProxyable, RegisterForeignLuaType, ValueLuaType, ScriptHost,
+    langs::mlu::mlua::{self, UserData},
+    lua::bevy::LuaBevyAPIProvider,
+    AddScriptApiProvider, AddScriptHost, LuaEvent, LuaScriptHost, Recipients, ReflectLuaProxyable,
+    RegisterForeignLuaType, ScriptHost, ScriptingPlugin, ValueLuaType,
 };
-
-
 
 /// Let's define a resource, we want it to be "assignable" via lua so we derive `ReflectLuaProxyable`
 /// This allows us to reach this value when it's a field under any other Reflectable type
@@ -42,7 +41,6 @@ impl UserData for MyResource {
         });
     }
 }
-
 
 #[derive(Component, Default, Reflect)]
 #[reflect(Component)]

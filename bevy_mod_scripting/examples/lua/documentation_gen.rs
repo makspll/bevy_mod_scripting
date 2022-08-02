@@ -54,9 +54,7 @@ impl tealr::mlu::ExportInstances for Export {
         instance_collector: &mut T,
     ) -> mlua::Result<()> {
         instance_collector.document_instance("Documentation for the exposed global variable");
-        instance_collector.add_instance("my_api".into(), |_| {
-            Ok(APIModule)
-        })
+        instance_collector.add_instance("my_api".into(), |_| Ok(APIModule))
     }
 }
 

@@ -347,7 +347,7 @@ impl ReflectPath {
         self.accesses.len() as u8
     }
 
-    pub fn is_empty(&self) -> bool{
+    pub fn is_empty(&self) -> bool {
         self.len() == 0
     }
 

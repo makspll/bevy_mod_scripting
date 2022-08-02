@@ -323,18 +323,14 @@ impl WrappedItem<'_> {
                     // if we do not have an appropriate wrapper and this is not a primitive or it's not public
                     // we need to go back to the reflection API
                     if arg.wrapper == ArgWrapperType::None {
-                        if field_
-                            .attrs
-                            .iter()
-                            .any(|attr| attr == "#[reflect(ignore)]")
-                        {
+                        if field_.attrs.iter().any(|attr| attr == "#[reflect(ignore)]") {
                             return None;
                         }
 
                         reflectable_type = "Raw(ReflectedValue)".to_owned();
                     }
 
-                    if let Some(docs) = &field_.docs{
+                    if let Some(docs) = &field_.docs {
                         writer.set_prefix("/// ".into());
                         docs.lines().for_each(|line| {
                             writer.write_line(line);
@@ -368,13 +364,13 @@ impl WrappedItem<'_> {
         writer.write_line("+ BinOps");
         writer.open_paren();
         BINARY_OPS.into_iter().for_each(|(op, rep)| {
-            if let Some(items) = self.impl_items.get(op) { items
+            if let Some(items) = self.impl_items.get(op) {
+                items
                     .iter()
                     .filter_map(|(impl_, item)| Some((impl_, item, (&impl_.for_).try_into().ok()?)))
                     .filter(|(_, _, self_type): &(&&Impl, &&Item, ArgType)| {
-                        let base_ident = self_type
-                            .base_ident()
-                            .unwrap_or(self.wrapped_type.as_str());
+                        let base_ident =
+                            self_type.base_ident().unwrap_or(self.wrapped_type.as_str());
                         let is_self_type_the_wrapper = (base_ident == self.wrapped_type)
                             && config.types.contains_key(base_ident);
                         let is_primitive = config.primitives.contains(base_ident);
@@ -400,7 +396,8 @@ impl WrappedItem<'_> {
 
                                         Ok(Arg::new(arg_type, wrapper_type).to_string())
                                     })
-                                    .collect::<Result<Vec<_>, _>>().map(|v| v.join(&format!(" {} ", rep)))
+                                    .collect::<Result<Vec<_>, _>>()
+                                    .map(|v| v.join(&format!(" {} ", rep)))
                                     .and_then(|expr| {
                                         // then provide return type
                                         // for these traits that's on associated types within the impl
@@ -413,7 +410,7 @@ impl WrappedItem<'_> {
                                                     &item.inner
                                                 {
                                                     if let Some("Output") = item.name.as_deref() {
-                                                        return Some(default.as_ref().unwrap())
+                                                        return Some(default.as_ref().unwrap());
                                                     }
                                                 }
                                                 None
@@ -447,7 +444,8 @@ impl WrappedItem<'_> {
                             }
                             _ => panic!("Expected method"),
                         };
-                    }) }
+                    })
+            }
         });
         writer.close_paren();
 
@@ -456,9 +454,11 @@ impl WrappedItem<'_> {
         writer.write_line("+ UnaryOps");
         writer.open_paren();
         UNARY_OPS.into_iter().for_each(|(op, rep)| {
-            if let Some(items) = self.impl_items.get(op) { items.iter().for_each(|(_, _)| {
+            if let Some(items) = self.impl_items.get(op) {
+                items.iter().for_each(|(_, _)| {
                     writer.write_line(&format!("{rep} self -> self"));
-                }); }
+                });
+            }
         });
         writer.close_paren();
 

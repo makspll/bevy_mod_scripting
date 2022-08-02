@@ -3,12 +3,13 @@ pub mod docs;
 
 use crate::{
     api::lua::bevy::{LuaEntity, LuaWorld},
-    APIProviders, ScriptData, lua::bevy::LuaScriptData,
+    lua::bevy::LuaScriptData,
+    APIProviders, ScriptData,
 };
 use crate::{
     script_add_synchronizer, script_hot_reload_handler, script_remove_synchronizer,
-    CachedScriptEventState, Recipients, Script, ScriptCollection, ScriptContexts,
-    ScriptError, ScriptErrorEvent, ScriptEvent, ScriptHost,
+    CachedScriptEventState, Recipients, Script, ScriptCollection, ScriptContexts, ScriptError,
+    ScriptErrorEvent, ScriptEvent, ScriptHost,
 };
 use anyhow::Result;
 
@@ -186,7 +187,7 @@ impl<A: LuaArg> ScriptHost for LuaScriptHost<A> {
                             let globals = ctx.globals();
                             globals.set("world", LuaWorld::new(Arc::downgrade(&world_arc)))?;
                             globals.set("entity", LuaEntity::new(fd.entity))?;
-                            globals.set::<_,LuaScriptData>("script", (&fd).into())?;
+                            globals.set::<_, LuaScriptData>("script", (&fd).into())?;
 
                             // event order is preserved, but scripts can't rely on any temporal
                             // guarantees when it comes to other scripts callbacks,
@@ -203,11 +204,12 @@ impl<A: LuaArg> ScriptHost for LuaScriptHost<A> {
                                     Err(_) => continue, // not subscribed to this event
                                 };
 
-                                f.call::<_, ()>(event.args.clone())
-                                    .map_err(|e| ScriptError::RuntimeError {
+                                f.call::<_, ()>(event.args.clone()).map_err(|e| {
+                                    ScriptError::RuntimeError {
                                         script: fd.name.to_owned(),
                                         msg: e.to_string(),
-                                    })?
+                                    }
+                                })?
                             }
 
                             // we must clear the world in order to free the Arc pointer

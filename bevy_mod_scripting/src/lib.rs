@@ -21,34 +21,30 @@ pub use {api::*, error::*, hosts::*, langs::*, util::*};
 pub mod prelude {
     // general
     pub use {
+        crate::hosts::{
+            APIProvider, APIProviders, CodeAsset, Recipients, Script, ScriptCollection,
+            ScriptContexts, ScriptData, ScriptEvent, ScriptHost,
+        },
         crate::{
-            ScriptingPlugin,ScriptErrorEvent,ScriptError,GenDocumentation,
-            AddScriptHost,AddScriptApiProvider,AddScriptHostHandler,
-            ReflectPathElem,ScriptRef,ValueIndex
+            AddScriptApiProvider, AddScriptHost, AddScriptHostHandler, GenDocumentation,
+            ReflectPathElem, ScriptError, ScriptErrorEvent, ScriptRef, ScriptingPlugin, ValueIndex,
+        },
+        bevy_event_priority::{
+            AddPriorityEvent, PriorityEvent, PriorityEventReader, PriorityEventWriter,
+            PriorityEvents, PriorityIterator,
         },
         bevy_mod_scripting_derive::impl_script_newtype,
-        bevy_event_priority::{AddPriorityEvent,PriorityEvent,PriorityEventReader,PriorityEventWriter,PriorityEvents,PriorityIterator},
-        crate::hosts::{
-            APIProvider,APIProviders,Recipients,ScriptData,ScriptEvent,
-            ScriptHost,CodeAsset,ScriptContexts,Script,ScriptCollection
-        }};
+    };
 
     // lua
     pub use crate::{
-        langs::mlu::mlua::Lua,
-        RegisterForeignLuaType,LuaScriptHost,LuaDocFragment,
-        LuaFile,LuaEvent,LuaProxyable,ReflectLuaProxyable,
-        FromLuaProxy,ToLuaProxy
+        langs::mlu::mlua::Lua, FromLuaProxy, LuaDocFragment, LuaEvent, LuaFile, LuaProxyable,
+        LuaScriptHost, ReflectLuaProxyable, RegisterForeignLuaType, ToLuaProxy,
     };
-    
-    // rhai
-    pub use crate::{
-        langs::rhai::Engine,
-        RhaiDocFragment,RhaiContext,
-        RhaiFile,RhaiEvent
-    };
-}
 
+    // rhai
+    pub use crate::{langs::rhai::Engine, RhaiContext, RhaiDocFragment, RhaiEvent, RhaiFile};
+}
 
 #[derive(Default)]
 /// Bevy plugin enabling run-time scripting

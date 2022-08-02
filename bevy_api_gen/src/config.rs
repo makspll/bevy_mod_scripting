@@ -37,8 +37,6 @@ pub struct Config {
     pub primitives: HashSet<String>,
 
     pub manual_lua_types: Vec<ManualLuaType>,
-
-
 }
 
 #[derive(Deserialize, Debug)]

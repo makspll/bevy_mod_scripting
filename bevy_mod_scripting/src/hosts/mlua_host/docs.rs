@@ -80,7 +80,6 @@ impl DocFragment for LuaDocFragment {
 
         fs::remove_file(&temp_dir).unwrap();
 
-
         #[cfg(feature = "teal")]
         {
             // now generate teal declaration (d.tl) file

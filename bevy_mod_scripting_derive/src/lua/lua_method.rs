@@ -253,10 +253,7 @@ impl LuaMethod {
     pub fn gen_tests(&self, newtype_name: &str) -> Option<TokenStream> {
         self.test.as_ref().map(|v| {
             let fun = v.ts.clone();
-            let test_ident = Ident::new(
-                &newtype_name.to_case(Case::Snake),
-                Span::call_site(),
-            );
+            let test_ident = Ident::new(&newtype_name.to_case(Case::Snake), Span::call_site());
 
             fun.into_token_stream()
         })
@@ -285,7 +282,7 @@ impl LuaMethod {
                 }
             })
             .collect();
-        let call_ident= if self.method_type.is_field_getter || self.method_type.is_field_setter {
+        let call_ident = if self.method_type.is_field_getter || self.method_type.is_field_setter {
             format_ident!(
                 "add_field_method_{}",
                 self.method_type

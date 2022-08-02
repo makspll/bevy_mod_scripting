@@ -1,11 +1,9 @@
 use bevy::app::AppExit;
 use bevy::prelude::*;
 use bevy::reflect::TypeRegistryArc;
-use bevy_mod_scripting::{LuaScriptHost, ScriptHost};
 use bevy_mod_scripting::{api::lua::bevy::LuaWorld, ScriptRef};
-use bevy_mod_scripting::{
-    langs::mlu::mlua, AddScriptHost, LuaEvent, Recipients, ScriptingPlugin,
-};
+use bevy_mod_scripting::{langs::mlu::mlua, AddScriptHost, LuaEvent, Recipients, ScriptingPlugin};
+use bevy_mod_scripting::{LuaScriptHost, ScriptHost};
 use bevy_mod_scripting_derive::impl_script_newtype;
 
 // Step 1. Rust representation
@@ -37,7 +35,7 @@ impl MyThing {
 //
 // Note: this step is not fully necessary, if your value is reflectable, you'll be able to reach it via
 // The bevy API, however doing this means your provide static typing for your scripts in languages which support it,
-// To see what else this macro can do see `src/api/generated.rs` 
+// To see what else this macro can do see `src/api/generated.rs`
 impl_script_newtype!(
     MyThing:
         Debug + Clone

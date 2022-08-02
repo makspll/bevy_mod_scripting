@@ -230,10 +230,7 @@ impl ArgType {
     }
 
     /// Retrieves the simple type or generates one  using [`SelfType::resolve_as`](`SelfType`) if this is a self type
-    pub fn type_or_resolve<F: FnMut() -> SimpleType>(
-        &self,
-        mut f: F,
-    ) -> Cow<SimpleType> {
+    pub fn type_or_resolve<F: FnMut() -> SimpleType>(&self, mut f: F) -> Cow<SimpleType> {
         self.type_()
             .map(Cow::Borrowed)
             .unwrap_or_else(|self_| Cow::Owned(self_.resolve_as(f())))

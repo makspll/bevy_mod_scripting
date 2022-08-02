@@ -60,9 +60,7 @@ impl ScriptRef {
     pub fn sub_ref(&self, elem: ReflectPathElem) -> ScriptRef {
         let path = self.path.new_sub(elem);
 
-        Self {
-            path,
-        }
+        Self { path }
     }
 
     /// Retrieves the underlying `dyn Reflect` reference and applies function which can retrieve a value.
@@ -80,12 +78,15 @@ impl ScriptRef {
         F: FnOnce(&T) -> O,
         T: Reflect,
     {
-        self.path
-            .get(|reflect| (f)(
-                reflect.downcast_ref::<T>()
-                    .unwrap_or_else(|| panic!("Expected `{}` found `{}`",::std::any::type_name::<T>(),reflect.type_name()))
+        self.path.get(|reflect| {
+            (f)(reflect.downcast_ref::<T>().unwrap_or_else(|| {
+                panic!(
+                    "Expected `{}` found `{}`",
+                    ::std::any::type_name::<T>(),
+                    reflect.type_name()
                 )
-            )
+            }))
+        })
     }
 
     /// Retrieves the underlying `dyn Reflect` reference and applies function which can retrieve a value.

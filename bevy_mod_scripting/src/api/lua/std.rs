@@ -70,7 +70,10 @@ impl LuaProxyable for String {
         lua: &'lua Lua,
         new_val: Value<'lua>,
     ) -> mlua::Result<()> {
-        self_.get_mut_typed(|self_| {*self_ = Self::from_lua(new_val, lua)?;Ok(())})?
+        self_.get_mut_typed(|self_| {
+            *self_ = Self::from_lua(new_val, lua)?;
+            Ok(())
+        })?
     }
 }
 
@@ -136,7 +139,10 @@ impl<T: LuaProxyable + Reflect + for<'a> FromLuaProxy<'a> + Clone> LuaProxyable 
         new_val: Value<'lua>,
     ) -> mlua::Result<()> {
         if let Value::Nil = new_val {
-            self_.get_mut_typed(|s: &mut Option<T>| {*s = None; Ok(())})?
+            self_.get_mut_typed(|s: &mut Option<T>| {
+                *s = None;
+                Ok(())
+            })?
         } else {
             // we need to do this in two passes, first
             // ensure that the target type is the 'some' variant to allow a sub reference
@@ -241,7 +247,12 @@ impl<T> LuaVec<T> {
 }
 
 impl<
-        T: TypeName + FromReflect + LuaProxyable + for<'a> FromLuaProxy<'a> + for<'a> ToLuaProxy<'a> + std::fmt::Debug,
+        T: TypeName
+            + FromReflect
+            + LuaProxyable
+            + for<'a> FromLuaProxy<'a>
+            + for<'a> ToLuaProxy<'a>
+            + std::fmt::Debug,
     > UserData for LuaVec<T>
 {
     fn add_methods<'lua, M: ::tealr::mlu::mlua::UserDataMethods<'lua, Self>>(methods: &mut M) {
@@ -262,7 +273,7 @@ impl<T: TypeName> TypeName for LuaVec<T> {
                 type_kind: tealr::KindOfType::External,
                 generics: None,
             }),
-            tealr::NamePart::Symbol("<".into())
+            tealr::NamePart::Symbol("<".into()),
         ];
         parts.extend(T::get_type_parts().iter().cloned());
         parts.push(tealr::NamePart::Symbol(">".into()));
@@ -271,7 +282,12 @@ impl<T: TypeName> TypeName for LuaVec<T> {
 }
 
 impl<
-        T: TypeName + FromReflect + LuaProxyable + for<'a> FromLuaProxy<'a> + for<'a> ToLuaProxy<'a> + std::fmt::Debug,
+        T: TypeName
+            + FromReflect
+            + LuaProxyable
+            + for<'a> FromLuaProxy<'a>
+            + for<'a> ToLuaProxy<'a>
+            + std::fmt::Debug,
     > TypeBody for LuaVec<T>
 {
     fn get_type_body() -> tealr::TypeGenerator {
@@ -284,7 +300,12 @@ impl<
 }
 
 impl<
-        T: TypeName + FromReflect + LuaProxyable + for<'a> FromLuaProxy<'a> + for<'a> ToLuaProxy<'a> + std::fmt::Debug,
+        T: TypeName
+            + FromReflect
+            + LuaProxyable
+            + for<'a> FromLuaProxy<'a>
+            + for<'a> ToLuaProxy<'a>
+            + std::fmt::Debug,
     > TealData for LuaVec<T>
 {
     fn add_methods<'lua, M: TealDataMethods<'lua, Self>>(methods: &mut M) {
@@ -301,9 +322,7 @@ impl<
 
         methods.add_meta_method_mut(
             MetaMethod::NewIndex,
-            |ctx, s, (index, value): (usize, Value)| {
-                s.ref_.index(index - 1).apply_lua(ctx, value)
-            },
+            |ctx, s, (index, value): (usize, Value)| s.ref_.index(index - 1).apply_lua(ctx, value),
         );
 
         methods.add_meta_method(MetaMethod::Pairs, |ctx, s, _: ()| {
@@ -328,10 +347,12 @@ impl<
             s.ref_.get_typed(|s: &Vec<T>| Ok(s.len()))?
         });
 
-
         methods.add_method_mut("push", |ctx, s, v: Value| {
             let new_val = T::from_lua_proxy(v, ctx)?;
-            s.ref_.get_mut_typed(|s: &mut Vec<T>| {s.push(new_val); Ok(())})?
+            s.ref_.get_mut_typed(|s: &mut Vec<T>| {
+                s.push(new_val);
+                Ok(())
+            })?
         });
 
         methods.add_method_mut("pop", |ctx, s, ()| {
@@ -340,7 +361,10 @@ impl<
         });
 
         methods.add_method_mut("clear", |_, s, ()| {
-            s.ref_.get_mut_typed(|s: &mut Vec<T>| {s.clear();Ok(())})?
+            s.ref_.get_mut_typed(|s: &mut Vec<T>| {
+                s.clear();
+                Ok(())
+            })?
         });
 
         methods.add_method_mut("insert", |ctx, s, (idx, v): (usize, Value<'lua>)| {
@@ -358,7 +382,13 @@ impl<
     }
 }
 
-impl< T: TypeName + FromReflect + LuaProxyable + for<'a> FromLuaProxy<'a> + for<'a> ToLuaProxy<'a> + std::fmt::Debug,
+impl<
+        T: TypeName
+            + FromReflect
+            + LuaProxyable
+            + for<'a> FromLuaProxy<'a>
+            + for<'a> ToLuaProxy<'a>
+            + std::fmt::Debug,
     > LuaProxyable for Vec<T>
 {
     fn ref_to_lua(self_: ScriptRef, lua: &Lua) -> mlua::Result<Value> {
@@ -408,7 +438,8 @@ impl< T: TypeName + FromReflect + LuaProxyable + for<'a> FromLuaProxy<'a> + for<
     }
 }
 
-impl<'lua,
+impl<
+        'lua,
         T: TypeName
             + for<'a> FromLuaProxy<'a>
             + for<'a> ToLuaProxy<'a>

@@ -3,9 +3,10 @@ use bevy::time::FixedTimestep;
 use bevy_event_priority::PriorityEventWriter;
 use bevy_mod_scripting::{
     langs::mlu::{mlua, mlua::prelude::*, mlua::Value},
+    mlu::mlua::Variadic,
     APIProvider, AddScriptApiProvider, AddScriptHost, AddScriptHostHandler, LuaDocFragment,
     LuaEvent, LuaFile, LuaScriptHost, Recipients, Script, ScriptCollection, ScriptData,
-    ScriptError, ScriptingPlugin, mlu::mlua::Variadic,
+    ScriptError, ScriptingPlugin,
 };
 use rand::prelude::SliceRandom;
 use std::sync::atomic::Ordering::Relaxed;
@@ -60,7 +61,10 @@ impl APIProvider for LuaAPIProvider {
 static COUNTER: AtomicU32 = AtomicU32::new(0);
 
 /// utility for generating random events from a list
-fn fire_random_event(w: &mut PriorityEventWriter<LuaEvent<Variadic<MyLuaArg>>>, events: &[ScriptEventData]) {
+fn fire_random_event(
+    w: &mut PriorityEventWriter<LuaEvent<Variadic<MyLuaArg>>>,
+    events: &[ScriptEventData],
+) {
     let mut rng = rand::thread_rng();
     let id = COUNTER.fetch_add(1, Relaxed);
     let arg = MyLuaArg(id as usize);
