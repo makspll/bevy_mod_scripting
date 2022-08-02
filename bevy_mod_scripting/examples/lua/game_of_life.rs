@@ -11,17 +11,17 @@ use bevy_mod_scripting::{
 #[derive(Debug,Default,Reflect,Component)]
 #[reflect(Component,LuaProxyable)]
 pub struct LifeState {
-    pub cells: Vec<bool>
+    pub cells: Vec<u8>
 }
 
 impl_script_newtype!(
     LifeState : Debug
     impl {
         get "cells" => |lua,s: &LuaLifeState| {
-            Ok(LuaVec::<bool>::new_ref(s.script_ref().index(Cow::Borrowed("cells"))))
+            Ok(LuaVec::<u8>::new_ref(s.script_ref().index(Cow::Borrowed("cells"))))
         };
         set "cells" => |lua,s,o| {
-            Vec::<bool>::apply_lua(&mut s.script_ref().index(Cow::Borrowed("cells")),lua,o)
+            Vec::<u8>::apply_lua(&mut s.script_ref().index(Cow::Borrowed("cells")),lua,o)
         };
     }
 );
@@ -62,18 +62,16 @@ pub struct Settings {
     physical_grid_dimensions: (u32,u32),
     display_grid_dimensions: (u32,u32),
     border_thickness: u32,
-    live_color: Color,
-    dead_color: Color,
-    border_color: Color,
+    live_color: u8,
+    dead_color: u8,
 }
 
 impl Default for Settings {
     fn default() -> Self {
         Self { 
             border_thickness: 1,
-            live_color: Color::TOMATO, 
-            dead_color: Color::BLACK,
-            border_color: Color::GRAY,
+            live_color: 255u8, 
+            dead_color: 0u8,
             physical_grid_dimensions: (88,50),
             display_grid_dimensions: (0,0)
         }
@@ -94,8 +92,8 @@ pub fn setup(
             depth_or_array_layers: 1,
         },
         TextureDimension::D2, 
-        &[255u8,0u8,0u8,255u8], 
-        TextureFormat::Rgba8UnormSrgb
+        &[0u8], 
+        TextureFormat::R8Unorm
     );
 
     image.sampler_descriptor = ImageSampler::nearest();
@@ -108,12 +106,13 @@ pub fn setup(
         texture: assets.add(image),
         sprite: Sprite {
             custom_size: Some(Vec2::new(settings.display_grid_dimensions.0 as f32,settings.display_grid_dimensions.1 as f32)),
+            color: Color::TOMATO,
             ..Default::default()
         },
         ..Default::default()
     })
     .insert(LifeState{
-        cells: vec![false; (settings.physical_grid_dimensions.0 * settings.physical_grid_dimensions.1) as usize],
+        cells: vec![0u8; (settings.physical_grid_dimensions.0 * settings.physical_grid_dimensions.1) as usize],
     })
     .insert(ScriptCollection::<LuaFile>{
         scripts: vec![
@@ -136,9 +135,17 @@ pub fn sync_window_size(
         let primary_window = windows.get_primary().unwrap();
         settings.display_grid_dimensions = (primary_window.physical_width(),primary_window.physical_height());
 
-        // resize all game's of life
+        // resize all game's of life, retain aspect ratio and fit the entire game in the window
         for mut sprite in query.iter_mut(){
-            sprite.custom_size = Some(Vec2::new(settings.display_grid_dimensions.0 as f32,settings.display_grid_dimensions.1 as f32));
+            let scale = if settings.physical_grid_dimensions.0 > settings.physical_grid_dimensions.1 {
+                // horizontal is longer
+                settings.display_grid_dimensions.1 as f32 / settings.physical_grid_dimensions.1 as f32
+            } else {
+                // vertical is longer
+                settings.display_grid_dimensions.0 as f32 / settings.physical_grid_dimensions.0 as f32
+            };
+
+            sprite.custom_size = Some(Vec2::new((settings.physical_grid_dimensions.0 as f32) * scale,(settings.physical_grid_dimensions.1 as f32) * scale));
         }
     }
 }
@@ -147,20 +154,13 @@ pub fn sync_window_size(
 /// Runs after LifeState components are updated, updates their rendered representation
 pub fn update_rendered_state(
     mut assets: ResMut<Assets<Image>>,
-    settings: Res<Settings>,
     query: Query<(&LifeState, &Handle<Image>)>
 )
 {
     for (new_state,old_rendered_state) in query.iter() {
         let old_rendered_state = assets.get_mut(old_rendered_state).expect("World is not setup correctly");
 
-        for (new_cell_state,rgba) in new_state.cells.iter().zip(old_rendered_state.data.chunks_exact_mut(4)){
-            let new_color = new_cell_state.then_some(settings.live_color).unwrap_or(settings.dead_color) * 255.0;
-            rgba[0] = new_color.r() as u8;
-            rgba[1] = new_color.g() as u8;
-            rgba[2] = new_color.b() as u8;
-            rgba[3] = (new_color.a() * 255.0) as u8;
-        }
+        old_rendered_state.data = new_state.cells.clone();
     }
 }
 
@@ -195,8 +195,7 @@ impl StageLabel for LifeStages {
 }
 
 /// how often to step the simulation
-/// this frequency seems to be in lockstep with the rendering world as it gets much higher FPS than others
-const UPDATE_FREQUENCY: f64 = 1.0/30.0;
+const UPDATE_FREQUENCY: f64 = 1.0/20.0;
 
 fn main() -> std::io::Result<()> {
     let mut app = App::new();
@@ -209,7 +208,7 @@ fn main() -> std::io::Result<()> {
         .add_startup_system(setup)
         .add_startup_system(send_init)
         .add_system(sync_window_size.before(update_rendered_state))
-        // .add_startup_system(|asset_server: ResMut<AssetServer>| asset_server.watch_for_changes().unwrap())
+        .add_startup_system(|asset_server: ResMut<AssetServer>| asset_server.watch_for_changes().unwrap())
         .add_system_set(SystemSet::new()
             .with_run_criteria(FixedTimestep::step(UPDATE_FREQUENCY))
             .with_system(update_rendered_state)

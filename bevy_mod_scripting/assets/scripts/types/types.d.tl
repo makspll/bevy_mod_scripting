@@ -13590,7 +13590,7 @@ global record types
 		userdata
 
 		-- Fields
-		cells : LuaVec<boolean>
+		cells : LuaVec<integer>
 
 		-- Meta methods
 		metamethod __tostring: function(LuaLifeState):(string)

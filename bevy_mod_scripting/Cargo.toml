@@ -106,4 +106,3 @@ required-features = ["lua54"]
 name = "wrappers"
 path = "examples/wrappers.rs"
 required-features = ["lua54"]
-
