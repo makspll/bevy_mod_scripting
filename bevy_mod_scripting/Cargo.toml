@@ -42,7 +42,7 @@ mlua_serialize = ["tealr/mlua_serialize"]
 mlua_macros = ["tealr/mlua_macros"]
 
 [dependencies]
-bevy = { version = "0.8.0"}
+bevy = { version = "0.8.0", default-features = false, features=["bevy_asset","bevy_gltf","bevy_animation","bevy_core_pipeline","bevy_ui","bevy_pbr","bevy_render","bevy_text","bevy_sprite","filesystem_watcher"]}
 tealr = { version = "0.9.0-alpha1", features=["mlua_vendored","mlua_send"]}
 rhai = { version = "1.7.0", features = ["sync"] }
 anyhow = "1.0.57"
@@ -61,6 +61,7 @@ smallvec = "1.9.0"
 [dev-dependencies]
 # bevy_console = { git = "https://github.com/OnlyGraphs/bevy-console" }
 # bevy_asset_loader = {git = "https://github.com/NiklasEi/bevy_asset_loader", features = ["dynamic_assets"]}
+bevy = { version = "0.8.0"}
 rand = "0.8.5"
 serde = "1.0.137"
 criterion = "0.3"
