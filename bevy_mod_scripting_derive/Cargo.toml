@@ -10,7 +10,6 @@ homepage = "https://github.com/makspll/bevy_scripting"
 keywords = ["bevy", "gamedev", "scripting", "lua"]
 categories = ["game-development"]
 readme = "../readme.md"
-rust-version = "1.61.0"
 
 [lib]
 name = "bevy_mod_scripting_derive"

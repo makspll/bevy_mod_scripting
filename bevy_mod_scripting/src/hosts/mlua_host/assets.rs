@@ -6,14 +6,7 @@ use bevy::{
 
 use std::sync::Arc;
 
-#[cfg(all(feature = "teal", debug_assertions))]
-use anyhow::anyhow;
-#[cfg(all(feature = "teal", debug_assertions))]
-use bevy::asset::FileAssetIo;
-#[cfg(all(feature = "teal", debug_assertions))]
-use std::fs;
-#[cfg(all(feature = "teal", debug_assertions))]
-use std::process::Command;
+
 
 #[derive(Debug, TypeUuid)]
 #[uuid = "39cadc56-aa9c-4543-8640-a018b74b5052"]
@@ -39,8 +32,15 @@ impl AssetLoader for LuaLoader {
         load_context: &'a mut bevy::asset::LoadContext,
     ) -> bevy::asset::BoxedFuture<'a, Result<(), anyhow::Error>> {
         match load_context.path().extension().map(|s| s.to_str().unwrap()) {
+            
             #[cfg(all(feature = "teal", debug_assertions))]
             Some("tl") => {
+
+                use anyhow::anyhow;
+                use bevy::asset::FileAssetIo;
+                use std::fs;
+                use std::process::Command;
+
                 let scripts_dir = &FileAssetIo::get_base_path().join("assets").join("scripts");
 
                 let temp_file_path = &std::env::temp_dir().join("bevy_mod_scripting.temp.lua");

@@ -113,10 +113,13 @@ impl<'lua> ToLua<'lua> for ScriptRef {
 }
 
 impl TypeName for ScriptRef {
-    /// We represent LuaRef types as `any` wildcards, since they can convert to literally anything
+    /// ReflectedValue represents the "lowest common denominator" across the possible returned types
+    /// people can always use 'as' to cast to the right type
+    /// but the static analysis will be conservative, i.e. the compiler will assume the smallest set of functionality
+    /// by default
     fn get_type_parts() -> Cow<'static, [tealr::NamePart]> {
         Cow::Borrowed(&[tealr::NamePart::Type(tealr::TealType {
-            name: Cow::Borrowed("any"),
+            name: Cow::Borrowed("ReflectedValue"),
             generics: None,
             type_kind: tealr::KindOfType::Builtin,
         })])
@@ -126,6 +129,9 @@ impl TypeName for ScriptRef {
 impl_tealr_type!(ReflectedValue);
 impl TealData for ReflectedValue {
     fn add_methods<'lua, T: TealDataMethods<'lua, Self>>(methods: &mut T) {
+        methods.document_type("This type represents a generic reflected value.");
+        methods.document_type("If you know the reflected value converts to a LuaType (via LuaProxyable), use the `as` operator to convert to said type.");
+
         methods.add_meta_method(MetaMethod::ToString, |_, val, ()| {
             val.ref_.get(|s| Ok(format!("{:#?}", &s)))?
         });
@@ -146,21 +152,6 @@ impl TealData for ReflectedValue {
                 Ok(())
             },
         );
-
-        methods.add_meta_method(MetaMethod::Len, |_, val, ()| {
-            val.ref_.get(|s| {
-                let r = s.reflect_ref();
-                if let ReflectRef::List(v) = r {
-                    Ok(v.len())
-                } else if let ReflectRef::Map(v) = r {
-                    Ok(v.len())
-                } else if let ReflectRef::Tuple(v) = r {
-                    Ok(v.field_len())
-                } else {
-                    panic!("No length on this type");
-                }
-            })?
-        });
     }
 }
 /// A higher level trait for allowing types to be interpreted as custom lua proxy types (or just normal types, this interface is flexible).

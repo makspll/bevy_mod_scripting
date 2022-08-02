@@ -11,7 +11,6 @@ documentation = "https://docs.rs/bevy_mod_scripting"
 keywords = ["bevy", "gamedev", "scripting", "lua"]
 categories = ["game-development"]
 readme = "../readme.md"
-rust-version = "1.61.0"
 
 [lib]
 name = "bevy_mod_scripting"
@@ -83,6 +82,10 @@ name = "complex_game_loop_lua"
 path = "examples/lua/complex_game_loop.rs"
 required-features = ["lua54"]
 
+[[example]]
+name = "game_of_life_lua"
+path = "examples/lua/game_of_life.rs"
+required-features = ["lua54","teal"]
 
 [[example]]
 name = "event_recipients_lua"

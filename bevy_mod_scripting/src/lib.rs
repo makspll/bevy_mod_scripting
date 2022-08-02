@@ -21,8 +21,11 @@ pub use {api::*, error::*, hosts::*, langs::*, util::*};
 pub mod prelude {
     // general
     pub use {
-        crate::{ScriptingPlugin,ScriptErrorEvent,ScriptError,GenDocumentation,
-        AddScriptHost,AddScriptApiProvider,AddScriptHostHandler},
+        crate::{
+            ScriptingPlugin,ScriptErrorEvent,ScriptError,GenDocumentation,
+            AddScriptHost,AddScriptApiProvider,AddScriptHostHandler,
+            ReflectPathElem,ScriptRef,ValueIndex
+        },
         bevy_mod_scripting_derive::impl_script_newtype,
         bevy_event_priority::{AddPriorityEvent,PriorityEvent,PriorityEventReader,PriorityEventWriter,PriorityEvents,PriorityIterator},
         crate::hosts::{
@@ -31,10 +34,19 @@ pub mod prelude {
         }};
 
     // lua
-    pub use crate::{RegisterForeignLuaType,LuaScriptHost,LuaDocFragment,LuaFile,LuaEvent};
+    pub use crate::{
+        langs::mlu::mlua::Lua,
+        RegisterForeignLuaType,LuaScriptHost,LuaDocFragment,
+        LuaFile,LuaEvent,LuaProxyable,ReflectLuaProxyable,
+        FromLuaProxy,ToLuaProxy
+    };
     
     // rhai
-    pub use crate::{langs::rhai::Engine,RhaiDocFragment,RhaiContext,RhaiFile,RhaiEvent};
+    pub use crate::{
+        langs::rhai::Engine,
+        RhaiDocFragment,RhaiContext,
+        RhaiFile,RhaiEvent
+    };
 }
 
 

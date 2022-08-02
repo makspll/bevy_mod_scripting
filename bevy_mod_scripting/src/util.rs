@@ -1,3 +1,61 @@
+use std::marker::PhantomData;
+use tealr::{TypeName, mlu::mlua::ToLua};
+
+/// forwards the TypeName implementation of T, useful for internal 'fake' global instances
+pub struct DummyTypeName<T>{
+    _ph: PhantomData<T>
+}
+
+impl <T>DummyTypeName<T>{
+    pub fn new(_: &tealr::mlu::mlua::Lua) -> tealr::mlu::mlua::Result<Self>{
+        Ok(Self { _ph: PhantomData::<T> })
+    }
+}
+
+impl <'lua,T>tealr::mlu::mlua::ToLua<'lua> for DummyTypeName<T>{
+    fn to_lua(self, _: &'lua tealr::mlu::mlua::Lua) -> tealr::mlu::mlua::Result<tealr::mlu::mlua::Value<'lua>> {
+        Ok(tealr::mlu::mlua::Value::Nil)
+    }
+}
+
+impl <T: TypeName>tealr::TypeName for DummyTypeName<T> {
+    fn get_type_parts() -> std::borrow::Cow<'static, [tealr::NamePart]> {
+        T::get_type_parts()
+    }
+}
+
+
+
+/// generates path to the given script depending on build configuration.
+/// (optimized builds don't have the teal compiler available)
+/// 
+/// Current configuration will provide ".tl" paths
+/// ```rust
+/// use bevy_mod_scripting::lua_path;
+/// assert_eq!("scripts/my_script.tl",lua_path!("my_script"))
+/// ```
+#[cfg(all(feature = "teal", debug_assertions))]
+#[macro_export]
+macro_rules! lua_path {
+    ($v:literal) => {concat!("scripts/",$v,".tl")}
+}
+
+/// generates path to the given script depending on build configuration.
+/// (optimized builds don't have the teal compiler available)
+/// 
+/// Current configuration will provide ".lua" paths
+/// ```rust
+/// use bevy_mod_scripting::lua_path;
+/// assert_eq!("scripts/build/my_script.lua",lua_path!("my_script"))
+/// ```
+#[cfg(all(feature = "teal", not(debug_assertions)))]
+#[macro_export]
+macro_rules! lua_path {
+    ($v:literal) => {concat!("scripts/build/",$v,".lua")}
+}
+
+
+
 /// Implements tealr::TypeName,tealr::TypeBody and mlua::Userdata based on non-generic single token type name implementing TealData
 #[macro_export]
 macro_rules! impl_tealr_type {

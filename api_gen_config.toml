@@ -2,11 +2,11 @@
 
 imports = """
 use std::ops::*;
-use crate::{FromLuaProxy,lua::bevy::LuaWorld, std::LuaVec};
-use crate::{impl_tealr_any_union,ReflectionError,ReflectPathElem,RegisterForeignLuaType,LuaProxyable,ScriptRef,ReflectedValue, api::ValueIndex, APIProvider, LuaDocFragment};
+use crate::{lua::bevy::{LuaWorld,LuaTypeRegistration,LuaScriptData}, std::LuaVec, DummyTypeName};
+use crate::{impl_tealr_any_union,ReflectionError,ReflectPathElem,RegisterForeignLuaType,ReflectedValue, api::ValueIndex, APIProvider, LuaDocFragment};
 use std::sync::Mutex;
-use crate::{impl_tealr_type,impl_tealr_generic};
-use tealr::{mlu::{mlua,mlua::{prelude::*,MetaMethod,Value}}};
+use crate::{impl_tealr_generic};
+use tealr::{mlu::{mlua,mlua::{prelude::*,MetaMethod}}};
 use bevy::prelude::App;
 """
 
@@ -16,9 +16,36 @@ impl_tealr_generic!(pub(crate) struct K);
 impl_tealr_generic!(pub(crate) struct V);
 """
 
-manual_lua_types = ["LuaWorld","LuaVec<T>"] 
-
 primitives = ["usize","isize","f32","f64","u128","u64","u32","u16","u8","i128","i64","i32","i16","i8","String","bool"]
+
+
+[[manual_lua_types]]
+name="ReflectedValue"
+
+[[manual_lua_types]]
+name="LuaWorld"
+proxy_name="world"
+include_global_proxy=true
+use_dummy_proxy=true
+
+[[manual_lua_types]]
+name="LuaScriptData"
+proxy_name="script"
+include_global_proxy=true
+use_dummy_proxy=true
+
+[[manual_lua_types]]
+name="LuaEntity"
+proxy_name="entity"
+include_global_proxy=true
+use_dummy_proxy=true
+dont_process=true
+
+[[manual_lua_types]]
+name="LuaTypeRegistration"
+
+[[manual_lua_types]]
+name="LuaVec<T>"
 
 
 ## BEVY_UI

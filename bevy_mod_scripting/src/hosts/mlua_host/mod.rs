@@ -3,7 +3,7 @@ pub mod docs;
 
 use crate::{
     api::lua::bevy::{LuaEntity, LuaWorld},
-    APIProviders, ScriptData,
+    APIProviders, ScriptData, lua::bevy::LuaScriptData,
 };
 use crate::{
     script_add_synchronizer, script_hot_reload_handler, script_remove_synchronizer,
@@ -55,6 +55,7 @@ impl<A: LuaArg> ScriptEvent for LuaEvent<A> {
 /// Always provides two global variables to each script by default:
 ///     - `world` - a reference to the `bevy::ecs::World` the script lives in via [`LuaWorld`]
 ///     - `entity` - an `Entity::to_bits` representation of the entity the script is attached to
+///     - `script` - an `LuaScriptData` object containing the unique id of this script
 ///
 /// # Examples
 ///
@@ -185,7 +186,7 @@ impl<A: LuaArg> ScriptHost for LuaScriptHost<A> {
                             let globals = ctx.globals();
                             globals.set("world", LuaWorld::new(Arc::downgrade(&world_arc)))?;
                             globals.set("entity", LuaEntity::new(fd.entity))?;
-                            globals.set("script", fd.sid)?;
+                            globals.set::<_,LuaScriptData>("script", (&fd).into())?;
 
                             // event order is preserved, but scripts can't rely on any temporal
                             // guarantees when it comes to other scripts callbacks,

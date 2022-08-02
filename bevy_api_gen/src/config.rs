@@ -31,11 +31,35 @@ pub struct Config {
 
     pub imports: String,
     pub other: String,
-    pub manual_lua_types: Vec<String>,
 
     /// Describes the set of non generic things which are representible
     /// as simple lua types and don't need UserData proxies
     pub primitives: HashSet<String>,
+
+    pub manual_lua_types: Vec<ManualLuaType>,
+
+
+}
+
+#[derive(Deserialize, Debug)]
+pub struct ManualLuaType {
+    pub name: String,
+
+    /// whether or not to exclude this type from the type walker list
+    #[serde(default)]
+    pub dont_process: bool,
+
+    /// the name exposed to scripts as global
+    #[serde(default)]
+    pub proxy_name: String,
+
+    /// whether or not to include global proxy
+    #[serde(default)]
+    pub include_global_proxy: bool,
+
+    /// whether or not to use a dummy instance (DummyTypeName)
+    #[serde(default)]
+    pub use_dummy_proxy: bool,
 }
 
 #[derive(Deserialize, Debug, Hash, PartialEq, Eq)]

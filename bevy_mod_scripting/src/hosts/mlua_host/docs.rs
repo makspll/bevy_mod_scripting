@@ -80,17 +80,18 @@ impl DocFragment for LuaDocFragment {
 
         fs::remove_file(&temp_dir).unwrap();
 
-        // now generate teal declaration (d.tl) file
 
         #[cfg(feature = "teal")]
         {
+            // now generate teal declaration (d.tl) file
+
             let script_types_dir = &script_asset_path.join("types");
             fs::create_dir_all(script_types_dir)
                 .expect("Could not create `.../assets/scripts/types` directories");
 
-            let decl_path = &script_types_dir.join("global_types.d.tl");
+            let decl_path = &script_types_dir.join("types.d.tl");
             // generate declaration file
-            let decl_file_contents = tw.generate("global_types", false).unwrap();
+            let decl_file_contents = tw.generate("types", true).unwrap();
 
             let mut decl_file =
                 File::create(decl_path).map_err(|e| ScriptError::DocGenError(e.to_string()))?;
@@ -111,8 +112,8 @@ impl DocFragment for LuaDocFragment {
                     .write_all(
                         r#"
 return {
-    global_env_def="types/global_types",
-    build_dir="."
+    global_env_def="types/types",
+    build_dir="build/"
 }
 "#
                         .as_bytes(),

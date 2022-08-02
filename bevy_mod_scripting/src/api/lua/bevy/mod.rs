@@ -1,4 +1,4 @@
-use crate::{impl_tealr_type, ScriptRef};
+use crate::{impl_tealr_type, ScriptRef, ScriptData};
 use ::bevy::ecs::system::Command;
 use ::bevy::hierarchy::BuildWorldChildren;
 use ::std::convert::AsRef;
@@ -46,6 +46,26 @@ impl Deref for LuaTypeRegistration {
 
     fn deref(&self) -> &Self::Target {
         &self.0
+    }
+}
+
+
+pub struct LuaScriptData {
+    sid: u32
+}
+
+impl From<&ScriptData<'_>> for LuaScriptData {
+    fn from(sd: &ScriptData) -> Self {
+        Self { sid: sd.sid }
+    }
+}
+
+impl_tealr_type!(LuaScriptData);
+
+impl TealData for LuaScriptData {
+    fn add_fields<'lua, F: tealr::mlu::TealDataFields<'lua, Self>>(fields: &mut F) {
+        fields.document("The unique ID of this script");
+        fields.add_field_method_get("sid", |_,s| Ok(s.sid))
     }
 }
 

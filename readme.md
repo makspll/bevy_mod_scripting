@@ -286,7 +286,15 @@ If `teal` is enabled and you've added the `update_documentation` step to your ap
     - any scripts with a `.tl` extension will be compiled to lua code and type checked
 On optimized release builds none of this happens (no debug_asserts).
 
-The reccomended workflow is to use vscode and the official teal extension, with the script directory as the root of your workspace (as a second window to your main project), this will ensure your environment is properly configured out of the box.
+The reccomended workflow is to use vscode and the official teal extension with an additional `tlconfig.lua` file at the **root** of your workspace with the 
+following content:
+```lua
+return {
+    include_dir = {
+        "path_to_your_lib/",
+    }
+}
+```
 
 #### Rhai
 
@@ -307,6 +315,8 @@ To see more complex applications of this library have a look at the examples:
 - [lua - documentation generation + lua static typing](bevy_mod_scripting/examples/lua/documentation_gen.rs)
 - [lua - bevy console integration](bevy_mod_scripting/examples/lua/console_integration.rs)
 - [rhai - bevy console integration](bevy_mod_scripting/examples/rhai/console_integration.rs)
+- [lua - game of life with teal](bevy_mod_scripting/examples/lua/game_of_life.rs)
+
 
 
 

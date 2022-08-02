@@ -145,9 +145,10 @@ fn main() -> std::io::Result<()> {
 
                             comp.vec_of_option_bools = {true,false,true}
                             
-                            -- everything on the bevy side indexes from 0! (I am open to changing this though)
-                            
-                            comp.vec_of_option_bools[0] = false
+                            -- everything on the bevy side which uses Lua constructs as "Owned" variants
+                            -- indexes from 1, other types map one to one with the bevy implementations and index from zero
+
+                            comp.vec_of_option_bools[1] = false
                             -- there are some additional methods available on LuaVec
 
                             comp.vec_of_option_bools:insert(1,nil)
@@ -157,7 +158,7 @@ fn main() -> std::io::Result<()> {
                             -- a custom magical SubReflection system allowing us to do this!
 
                             comp.option_vec_of_bools = {false,true,false}
-                            comp.option_vec_of_bools[2] = true
+                            comp.option_vec_of_bools[1] = true
                             comp.option_vec_of_bools:insert(1,false)
                             comp.option_vec_of_bools:push(true)
                     
