@@ -16,22 +16,22 @@ The API will likely change in the future as more scripting support is rolled out
 - If your game logic is encapsulated with scripts it becomes easilly moddable
 - Allows writing game logic/UI in a smaller language, making development more accessible to non-coders on your team
 
-## State of this crate
+## Features
 
-- [x] Script host interface
-- [x] Hot re-loading scripts (on script asset changes, scripts using those assets are re-started)
-- [x] Mlua integration
-- [x] Rhai integration
-- [x] Customisable script API's
-- [x] Event based hooks (i.e. on_update)
-- [x] Flexible event scheduling (i.e. allow handling events at different stages rather than a single stage based on the event) 
-- [x] Multiple scripts per entity
-- [x] Multiple instances of the same script on one entity
-- [x] Extensive callback argument type support 
-- [ ] General Bevy API for all script hosts (i.e. Add component, remove component etc.). On track for Bevy 0.8
-- [x] Utilities for generating script native documentation 
-- [ ] Tests
-- [x] Optionally loading external lua libraries via `require` (enabled with `unsafe_lua_modules` cargo feature due to potential unsafety)
+- Script host interface
+- Hot re-loading scripts (on script asset changes, scripts using those assets are re-started)
+- Mlua integration
+- Rhai integration
+- Customisable script API's
+- Event based hooks (i.e. on_update)
+- Flexible event scheduling (i.e. allow handling events at different stages rather than a single stage based on the event) 
+- Multiple scripts per entity
+- Multiple instances of the same script on one entity
+- Extensive callback argument type support 
+- General Bevy API.
+- Lua implementation of Bevy API (and support for more langauges incoming)
+- Utilities for generating script native documentation 
+- Loading external lua libraries via `require` (enabled with `unsafe_lua_modules` cargo feature due to potential unsafety)
 
 ## Usage
 
@@ -303,6 +303,9 @@ Rhai currently does not have any utilities existing for generating documentation
 ## Configuration
 
 - `SCRIPT_DOC_DIR` - documentation is generated in `assets/scripts/docs` or to the path in this ENV variable if it's set.
+
+## Scenes
+The `Script` components will persist a scene load, but their script contexts won't, after a scene load you must manually reload the scripts using `Script::reload_script`
 
 ## Examples 
 
