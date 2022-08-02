@@ -55,7 +55,6 @@ impl DocFragment for LuaDocFragment {
         // generate temporary json file
         let json = serde_json::to_string_pretty(&tw)
             .map_err(|e| ScriptError::DocGenError(e.to_string()))?;
-
         let temp_dir = &std::env::temp_dir().join("bevy_mod_scripting.temp.json");
 
         let mut json_file =
@@ -79,7 +78,6 @@ impl DocFragment for LuaDocFragment {
             .map_err(|e| ScriptError::DocGenError(e.to_string()))?;
 
         fs::remove_file(&temp_dir).unwrap();
-
         #[cfg(feature = "teal")]
         {
             // now generate teal declaration (d.tl) file

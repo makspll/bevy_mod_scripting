@@ -216,7 +216,7 @@ global record types
 		-- Fields
 		-- Whether to arrange this node and its children with flexbox layout
 		--
-		-- 
+		--
 		--
 		-- If this is set to [`Display::None`], this node will be collapsed.
 		display : LuaDisplay
@@ -2771,7 +2771,7 @@ global record types
 		--
 		-- Defaults to 4.
 		--
-		-- 
+		--
 		--
 		-- Note that WGPU currently only supports 1 or 4 samples.
 		--

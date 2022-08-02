@@ -1,10 +1,10 @@
 use crate::CodeAsset;
 use bevy::{
     asset::{AssetLoader, LoadedAsset},
-    reflect::TypeUuid,
+    reflect::TypeUuid
 };
 
-use std::sync::Arc;
+use std::{sync::Arc};
 
 #[derive(Debug, TypeUuid)]
 #[uuid = "39cadc56-aa9c-4543-8640-a018b74b5052"]
@@ -36,10 +36,21 @@ impl AssetLoader for LuaLoader {
                 use bevy::asset::FileAssetIo;
                 use std::fs;
                 use std::process::Command;
-
+                use std::path::PathBuf;
+                
                 let scripts_dir = &FileAssetIo::get_base_path().join("assets").join("scripts");
 
                 let temp_file_path = &std::env::temp_dir().join("bevy_mod_scripting.temp.lua");
+
+                // optionally put the output in the /build folder
+                let build_dir_path : Option<PathBuf> =
+                    if load_context.path().starts_with("scripts/build/") {
+                        Some(load_context.path().strip_prefix("scripts/").unwrap().to_owned())
+                    } else if load_context.path().starts_with("scripts/") {
+                        Some(PathBuf::from("build/").join(load_context.path().strip_prefix("scripts/").unwrap()))
+                    } else {
+                        None
+                    };
 
                 let full_path = &FileAssetIo::get_base_path()
                     .join("assets")
@@ -85,6 +96,12 @@ impl AssetLoader for LuaLoader {
                 } else {
                     fs::remove_file(temp_file_path).expect("Something went wrong running `tl gen`");
                     panic!("Something went wrong running `tl gen`")
+                }
+
+                if let Some(mut build_dir_path) = build_dir_path{
+                    build_dir_path = scripts_dir.join(build_dir_path); 
+                    let _ = fs::create_dir_all(build_dir_path.parent().unwrap());
+                    let _ = fs::copy(temp_file_path, build_dir_path.with_extension("lua"));
                 }
 
                 let lua_code =
