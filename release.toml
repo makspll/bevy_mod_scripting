@@ -1,4 +1,3 @@
-push=false
 enable-features=["lua54"]
 pre-release-replacements = [
     {file="bevy_mod_scripting_derive/Cargo.toml", search="version = .*\nauthors", replace="version = \"{{version}}\"\nauthors", exactly=1},
