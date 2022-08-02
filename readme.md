@@ -311,14 +311,14 @@ The `Script` components will persist a scene load, but their script contexts won
 
 To see more complex applications of this library have a look at the examples:
 
-- [lua - complex game loop](bevy_mod_scripting/examples/lua/complex_game_loop.rs)
-- [lua - event recipients](bevy_mod_scripting/examples/lua/event_recipients.rs)
-- [lua - bevy API](bevy_mod_scripting/examples/lua/bevy_api.rs)
-- [generating statically typed wrappers + ScriptRef system](bevy_mod_scripting/examples/wrappers.rs)
-- [lua - documentation generation + lua static typing](bevy_mod_scripting/examples/lua/documentation_gen.rs)
-- ~~[lua - bevy console integration](bevy_mod_scripting/examples/lua/console_integration.rs)~~ not up to date with bevy 0.8
-- ~~[rhai - bevy console integration](bevy_mod_scripting/examples/rhai/console_integration.rs)~~ not up to date with bevy 0.8
-- [lua - game of life with teal](bevy_mod_scripting/examples/lua/game_of_life.rs)
+- [lua - complex game loop](examples/lua/complex_game_loop.rs)
+- [lua - event recipients](examples/lua/event_recipients.rs)
+- [lua - bevy API](examples/lua/bevy_api.rs)
+- [generating statically typed wrappers + ScriptRef system](examples/wrappers.rs)
+- [lua - documentation generation + lua static typing](examples/lua/documentation_gen.rs)
+- ~~[lua - bevy console integration](examples/lua/console_integration.rs)~~ not up to date with bevy 0.8
+- ~~[rhai - bevy console integration](examples/rhai/console_integration.rs)~~ not up to date with bevy 0.8
+- [lua - game of life with teal](examples/lua/game_of_life.rs)
 
 Below is a video showcasing the game_of_life example:
 [![Watch the video](https://img.youtube.com/vi/Mo9gh2g3ZHw/maxresdefault.jpg)](https://www.youtube.com/watch?v=Mo9gh2g3ZHw)
