@@ -13,6 +13,6 @@ Cargo.lock
 
 **types/
 **/doc
-**tlconfig.lua
+assets/scripts/tlconfig.lua
 **.log
 **build/
