@@ -19,6 +19,9 @@ path = "src/lib.rs"
 [package.metadata.docs.rs]
 features = ["lua54","teal","unsafe_lua_modules"]
 
+[package.metadata.release]
+enable-features=["lua54"]
+
 [features]
 
 # if enabled enables documentation updating in optimized builds
