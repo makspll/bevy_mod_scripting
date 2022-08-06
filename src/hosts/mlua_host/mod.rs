@@ -4,7 +4,7 @@ pub mod docs;
 use crate::{
     api::lua::bevy::{LuaEntity, LuaWorld},
     lua::bevy::LuaScriptData,
-    APIProviders, ScriptData,
+    APIProviders, ScriptData, common::bevy::WorldPointer,
 };
 use crate::{
     script_add_synchronizer, script_hot_reload_handler, script_remove_synchronizer,
@@ -177,15 +177,15 @@ impl<A: LuaArg> ScriptHost for LuaScriptHost<A> {
     ) {
         world.resource_scope(
             |world_orig, mut cached_state: Mut<CachedScriptEventState<Self>>| {
-                let world_arc = Arc::new(RwLock::new(std::mem::take(world_orig)));
-
+                // safety: we know the world will be live in this call, and we do not drop it manually
+                let ptr = unsafe{WorldPointer::new(world_orig)};
                 ctxs.for_each(|(fd, ctx)| {
                     let success = ctx
                         .get_mut()
                         .map_err(|e| ScriptError::Other(e.to_string()))
                         .and_then(|ctx| {
                             let globals = ctx.globals();
-                            globals.set("world", LuaWorld::new(Arc::downgrade(&world_arc)))?;
+                            globals.set("world", LuaWorld::new(ptr.clone()))?;
                             globals.set("entity", LuaEntity::new(fd.entity))?;
                             globals.set::<_, LuaScriptData>("script", (&fd).into())?;
 
@@ -218,7 +218,7 @@ impl<A: LuaArg> ScriptHost for LuaScriptHost<A> {
 
                     success
                         .map_err(|e| {
-                            let mut guard = world_arc.write();
+                            let mut guard = ptr.write();
                             let (_, mut error_wrt) = cached_state.event_state.get_mut(&mut guard);
 
                             error!("{}", e);
@@ -226,8 +226,6 @@ impl<A: LuaArg> ScriptHost for LuaScriptHost<A> {
                         })
                         .ok();
                 });
-
-                *world_orig = Arc::try_unwrap(world_arc).unwrap().into_inner();
             },
         );
     }

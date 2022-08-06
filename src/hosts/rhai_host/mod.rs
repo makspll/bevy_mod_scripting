@@ -4,7 +4,8 @@ mod docs;
 use crate::{
     script_add_synchronizer, script_hot_reload_handler, script_remove_synchronizer, APIProviders,
     CachedScriptEventState, Recipients, Script, ScriptCollection, ScriptContexts, ScriptData,
-    ScriptError, ScriptErrorEvent, ScriptEvent, ScriptHost,
+    ScriptError, ScriptErrorEvent, ScriptEvent, ScriptHost, common::bevy::WorldPointer,
+    api::rhai::bevy::RhaiWorld
 };
 use bevy::prelude::{
     error, AddAsset, Mut, ParallelSystemDescriptorCoercion, ResMut, SystemSet, World,
@@ -130,13 +131,12 @@ impl<A: FuncArgs + Send + Clone + Sync + 'static> ScriptHost for RhaiScriptHost<
         events: &[Self::ScriptEvent],
         ctxs: impl Iterator<Item = (ScriptData<'a>, &'a mut Self::ScriptContext)>,
     ) {
-        let world_ptr = world as *mut World as usize;
         world.resource_scope(
             |world, mut cached_state: Mut<CachedScriptEventState<Self>>| {
-                let (_, mut error_wrt) = cached_state.event_state.get_mut(world);
-
+                // safety, world is not going to be dangling for the duration of this function
+                let world_ptr = unsafe{WorldPointer::new(world)};
                 ctxs.for_each(|(fd, ctx)| {
-                    ctx.scope.set_value("world", world_ptr);
+                    ctx.scope.set_value("world", RhaiWorld::new(world_ptr.clone()));
                     ctx.scope.set_value("entity", fd.entity);
                     ctx.scope.set_value("script", fd.sid);
 
@@ -154,6 +154,8 @@ impl<A: FuncArgs + Send + Clone + Sync + 'static> ScriptHost for RhaiScriptHost<
                         ) {
                             Ok(v) => v,
                             Err(e) => {
+                                let mut w = world_ptr.write();
+                                let (_, mut error_wrt) = cached_state.event_state.get_mut(&mut w);
                                 let err = ScriptError::RuntimeError {
                                     script: fd.name.to_string(),
                                     msg: e.to_string(),

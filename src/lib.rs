@@ -1,5 +1,6 @@
 #![doc=include_str!("../readme.md")]
 use ::std::any::TypeId;
+extern crate bevy;
 
 use bevy::{
     ecs::schedule::IntoRunCriteria,

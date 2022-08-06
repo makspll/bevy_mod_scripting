@@ -107,6 +107,11 @@ path = "examples/lua/bevy_api.rs"
 required-features = ["lua54"]
 
 [[example]]
+name = "bevy_api_rhai"
+path = "examples/rhai/bevy_api.rs"
+
+
+[[example]]
 name = "wrappers"
 path = "examples/wrappers.rs"
 required-features = ["lua54"]

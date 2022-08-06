@@ -57,8 +57,7 @@ impl ApplyLua for ScriptRef {
 
         // remove typedata from the world to be able to manipulate world
         let proxyable = {
-            let world = luaworld.upgrade().unwrap();
-            let world = &world.read();
+            let world = luaworld.read();
             let type_registry = world.resource::<TypeRegistry>().read();
             type_registry
                 .get_type_data::<ReflectLuaProxyable>(self.get(|s| s.type_id())?)
@@ -93,8 +92,7 @@ impl<'lua> ToLua<'lua> for ScriptRef {
     fn to_lua(self, ctx: &'lua Lua) -> mlua::Result<Value<'lua>> {
         let luaworld = ctx.globals().get::<_, LuaWorld>("world").unwrap();
 
-        let world = luaworld.upgrade().unwrap();
-        let world = &mut world.read();
+        let world = luaworld.read();
 
         let typedata = world.resource::<TypeRegistry>();
         let g = typedata.read();
