@@ -43,7 +43,7 @@ smallvec = "1.9.0"
 [dev-dependencies]
 # bevy_console = { git = "https://github.com/OnlyGraphs/bevy-console" }
 # bevy_asset_loader = {git = "https://github.com/NiklasEi/bevy_asset_loader", features = ["dynamic_assets"]}
-bevy_script_api= {path="./bevy_script_api", version="0.1.1"}
+bevy_script_api= {path="./bevy_script_api", version="0.1.1", features=["lua","rhai"]}
 bevy_mod_scripting_rhai = {path="languages/bevy_mod_scripting_rhai", version="0.1.1"}
 bevy_mod_scripting_lua = {path="languages/bevy_mod_scripting_lua", version="0.1.1"}
 bevy_mod_scripting_lua_derive = {path="languages/bevy_mod_scripting_lua_derive", version="0.1.1"}
