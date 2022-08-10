@@ -18,4 +18,4 @@ path="src/lib.rs"
 [dependencies]
 bevy= { version = "0.8.0", default-features = false}
 rhai = { version = "1.8.0", features = ["sync"] }
-bevy_mod_scripting = {path="../../", version="0.1.1"}
+bevy_mod_scripting_core = {path="../../bevy_mod_scripting_core", version="0.1.1"}

@@ -1,0 +1,42 @@
+[package]
+name = "bevy_mod_scripting_core"
+version = "0.1.1"
+authors = ["Maksymilian Mozolewski <makspl17@gmail.com>"]
+edition = "2021"
+license = "MIT"
+description = "Core traits and structures required for other parts of bevy_mod_scripting"
+repository = "https://github.com/makspll/bevy_mod_scripting"
+homepage = "https://github.com/makspll/bevy_mod_scripting"
+keywords = ["bevy", "gamedev", "scripting", "lua"]
+categories = ["game-development"]
+readme = "readme.md"
+
+[lib]
+name = "bevy_mod_scripting_core"
+path = "src/lib.rs"
+
+# [package.metadata.docs.rs]
+# features = []
+
+# [package.metadata.release]
+# enable-features=[]
+
+[features]
+
+# if enabled enables documentation updating in optimized builds
+doc_always = []
+
+
+[dependencies]
+bevy = { version = "0.8.0", default-features = false, features=["bevy_asset","bevy_gltf","bevy_animation","bevy_core_pipeline","bevy_ui","bevy_pbr","bevy_render","bevy_text","bevy_sprite","filesystem_watcher"]}
+once_cell = "1.10.0"
+bevy_event_priority = {path = "../bevy_event_priority", version = "0.1.1"}
+thiserror = "1.0.31"
+lazy_static = "1.4.0"
+paste = "1.0.7"
+parking_lot = "0.12.1"
+num-traits = "0.2.15"
+smallvec = "1.9.0"
+
+
+

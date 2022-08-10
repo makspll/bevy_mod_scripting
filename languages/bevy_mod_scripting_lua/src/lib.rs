@@ -3,7 +3,7 @@ use crate::{
     docs::LuaDocFragment,
 };
 use bevy::prelude::*;
-use bevy_mod_scripting::{
+use bevy_mod_scripting_core::{
     prelude::*, script_add_synchronizer, script_hot_reload_handler, script_remove_synchronizer,
     CachedScriptEventState,
 };

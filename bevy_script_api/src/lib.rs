@@ -9,4 +9,9 @@ pub mod wrappers;
 
 pub use {script_ref::*, sub_reflect::*};
 
+// re-export derive macros from other langs
+#[cfg(feature="lua")]
+pub use bevy_mod_scripting_lua_derive::impl_lua_newtype;
+pub use bevy_mod_scripting_derive::impl_script_newtype;
+
 pub(crate) mod generated;

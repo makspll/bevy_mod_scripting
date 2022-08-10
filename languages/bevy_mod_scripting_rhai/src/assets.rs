@@ -3,7 +3,7 @@ use bevy::{
     asset::{AssetLoader, LoadedAsset},
     reflect::TypeUuid,
 };
-use bevy_mod_scripting::CodeAsset;
+use bevy_mod_scripting_core::CodeAsset;
 use std::sync::Arc;
 
 #[derive(Debug, TypeUuid)]

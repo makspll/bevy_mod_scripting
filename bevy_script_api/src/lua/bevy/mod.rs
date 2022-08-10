@@ -4,7 +4,7 @@ use ::bevy::hierarchy::BuildWorldChildren;
 use ::std::convert::AsRef;
 use ::std::ops::Deref;
 use ::std::sync::{Arc, Weak};
-use bevy_mod_scripting::ScriptData;
+use bevy_mod_scripting_core::ScriptData;
 
 use ::bevy::{
     hierarchy::{Children, DespawnChildrenRecursive, DespawnRecursive, Parent},

@@ -16,7 +16,7 @@ use crate::{script_ref::{ReflectedValue,ValueIndex},
 	error::ReflectionError
 };
 use std::sync::Mutex;
-use bevy_mod_scripting::{ScriptError,APIProvider};
+use bevy_mod_scripting_core::{ScriptError,APIProvider};
 use bevy::prelude::App;
 """
 

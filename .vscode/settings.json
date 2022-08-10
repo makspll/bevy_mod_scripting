@@ -6,9 +6,10 @@
 
     "rust-analyzer.cargo.features": [
         "lua54",
-        "teal",
-        "lua",
-        "rhai"
+        "lua_bevy_api",
+        "rhai",
+        "rhai_bevy_api",
+        "teal"
     ],
     "rust-analyzer.server.extraEnv": {
         "RUSTUP_TOOLCHAIN": "stable"

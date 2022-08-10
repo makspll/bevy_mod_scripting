@@ -124,7 +124,7 @@ use bevy::ui::Style;
 use bevy::ui::UiColor;
 use bevy::ui::UiImage;
 use bevy::ui::Val;
-use bevy_mod_scripting::{APIProvider, ScriptError};
+use bevy_mod_scripting_core::{APIProvider, ScriptError};
 use bevy_mod_scripting_derive::impl_script_newtype;
 use std::ops::*;
 use std::sync::Mutex;
