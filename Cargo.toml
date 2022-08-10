@@ -32,7 +32,7 @@ luajit = ["bevy_mod_scripting_lua/luajit", "lua"]
 luajit52 = ["bevy_mod_scripting_lua/luajit52", "lua"]
 
 # optional
-lua_bevy_api=["bevy_script_api/lua"]
+lua_script_api=["bevy_script_api/lua"]
 unsafe_lua_modules=["bevy_mod_scripting_lua/unsafe_lua_modules"]
 teal = ["bevy_mod_scripting_lua/teal"]
 mlua_serialize = ["bevy_mod_scripting_lua/mlua_serialize"]
@@ -40,7 +40,7 @@ mlua_macros = ["bevy_mod_scripting_lua/mlua_macros"]
 
 ## rhai
 rhai = ["bevy_mod_scripting_rhai"]
-rhai_bevy_api=["bevy_script_api/rhai"]
+rhai_script_api=["bevy_script_api/rhai"]
 
 [dependencies]
 bevy_mod_scripting_core = { path = "bevy_mod_scripting_core", version = "0.1.1" }
@@ -122,7 +122,7 @@ required-features=["lua54","teal"]
 [[example]]
 name = "bevy_api_lua"
 path = "examples/lua/bevy_api.rs"
-required-features=["lua54","lua_bevy_api"]
+required-features=["lua54","lua_script_api"]
 
 [[example]]
 name = "bevy_api_rhai"
