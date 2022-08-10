@@ -1,91 +1,16 @@
 #![allow(dead_code, unused_variables, unused_features)]
-
-pub(crate) mod common;
-pub(crate) mod lua;
-
 use proc_macro::TokenStream;
-use proc_macro2::TokenStream as TokenStream2;
-use quote::{quote, ToTokens};
+use proc_macro2::Span;
+use quote::{ToTokens, quote_spanned, format_ident};
 use syn::{
-    braced, bracketed, parenthesized,
-    parse::{Parse, ParseStream},
-    parse_macro_input,
-    punctuated::Punctuated,
-    token::{Brace, Bracket, Paren},
-    ItemFn, Result, Token, Type,
+    parse_macro_input, Attribute, parse::Parse, spanned::Spanned, Ident,
 };
 
-pub(crate) use {common::*, lua::*};
 
-#[derive(Default, Debug, Clone)]
-struct EmptyToken;
 
-impl Parse for EmptyToken {
-    fn parse(input: ParseStream) -> Result<Self> {
-        Ok(Self)
-    }
-}
-impl ToTokens for EmptyToken {
-    fn to_tokens(&self, tokens: &mut TokenStream2) {}
-}
 
-struct NewtypeList {
-    paren: Paren,
-    module_headers: TokenStream2,
-    sq_bracket1: Bracket,
-    additional_types: Punctuated<Type, Token![,]>,
-    sq_bracket2: Bracket,
-    new_types: Punctuated<Newtype, Token![,]>,
-}
-#[allow(clippy::eval_order_dependence)]
-impl Parse for NewtypeList {
-    fn parse(input: ParseStream) -> Result<Self> {
-        let h;
-        let f;
-        let g;
-        Ok(Self {
-            paren: parenthesized!(h in input),
-            module_headers: h.parse()?,
-            sq_bracket1: bracketed!(f in input),
-            additional_types: f.parse_terminated(Type::parse)?,
-            sq_bracket2: bracketed!(g in input),
-            new_types: g.parse_terminated(Newtype::parse)?,
-        })
-    }
-}
 
-impl ToTokens for NewtypeList {
-    fn to_tokens(&self, tokens: &mut TokenStream2) {
-        let module_headers = &self.module_headers;
-        let external_types = &self.additional_types;
-        let types = &self.new_types;
-        tokens.extend(quote! {
-            (#module_headers)
-            [#external_types]
-            [#types]
-        })
-    }
-}
 
-struct AdditionalImplBlock {
-    impl_token: Token![impl],
-    fn_token: Token![fn],
-    impl_braces: Brace,
-    functions: Punctuated<ItemFn, Token![;]>,
-}
-
-#[allow(clippy::eval_order_dependence)]
-impl Parse for AdditionalImplBlock {
-    fn parse(input: ParseStream) -> Result<Self> {
-        let f;
-        Ok(Self {
-            impl_token: input.parse()?,
-            fn_token: input.parse()?,
-            impl_braces: braced!(f in input),
-            functions: f.parse_terminated(ItemFn::parse)?,
-        })
-    }
-}
 
 /// A convenience macro which derives a lotta things to make your type work in all supported/enabled scripting languages, and provide static typing where possible.
 ///
@@ -128,6 +53,7 @@ impl Parse for AdditionalImplBlock {
 ///     }
 /// }
 /// impl_script_newtype!(
+///     #[languages(lua,rhai)]
 ///     MyStruct:
 ///       Fields(
 ///         my_field: Raw(bool)
@@ -141,12 +67,84 @@ impl Parse for AdditionalImplBlock {
 /// ```
 #[proc_macro]
 pub fn impl_script_newtype(input: TokenStream) -> TokenStream {
-    let new_type = parse_macro_input!(input as Newtype);
+    let invocation = parse_macro_input!(input as MacroInvocation);
+    let mut output: proc_macro2::TokenStream = Default::default();
+    // find the language implementor macro id's 
+    match invocation.languages.parse_meta(){
+        Ok(syn::Meta::List(list)) => {
+            
+            if !list.path.is_ident("languages"){
+                return syn::Error::new_spanned(list,"Expected `langauges(..)` meta list").to_compile_error().into()
+            }
+            
+            // now create an invocation per language specified
+            for language in &list.nested {
 
-    let mut lua = LuaImplementor::default();
+                let mut feature_gate = false;
+                let mut inner_language = None;
+                if let syn::NestedMeta::Meta(syn::Meta::List(sub_list)) = language{
+                    if sub_list.path.is_ident("on_feature"){
+                        if let Some(syn::NestedMeta::Meta(syn::Meta::Path(path))) = sub_list.nested.first() {
+                            if let Some(ident) = path.get_ident(){
+                                inner_language = Some(ident);
+                                feature_gate = true;
+                            }
+                        }
+                    }
 
-    match lua.generate(&new_type) {
-        Ok(v) => v.into(),
-        Err(e) => e.into_compile_error().into(),
+                } else if let syn::NestedMeta::Meta(syn::Meta::Path(path)) = language{
+                    if let Some(ident) = path.get_ident(){
+                        inner_language = Some(ident)
+                    }
+                }
+
+                let inner_language = match inner_language {
+                    Some(v) => v,
+                    None => return syn::Error::new_spanned(language,"Expected `on_feature(x)` or `x` attribute where x is a valid language").to_compile_error().into()
+                };
+
+                let lang_str = inner_language.to_string();
+                let macro_ident = format_ident!("impl_{}_newtype",inner_language);
+                let inner = invocation.inner.clone();
+                let feature_gate = feature_gate.then_some(quote::quote!(#[cfg(feature=#lang_str)]));
+                output.extend(quote_spanned!{language.span()=>
+                    #feature_gate
+                    #macro_ident!{
+                        #inner
+                    }
+                });
+            }
+
+        },
+        _ => return syn::Error::new(invocation.span(), "Expected attribute of the form #[languages(..)]").to_compile_error().into(),
+    };
+
+    output.into()
+}
+
+
+
+pub(crate) struct MacroInvocation {
+    pub languages: Attribute,
+    pub inner: proc_macro2::TokenStream
+}
+
+impl Parse for MacroInvocation {
+    fn parse(input: syn::parse::ParseStream) -> syn::Result<Self> {
+        Ok(Self{
+            languages: Attribute::parse_outer(input)?.into_iter().next().ok_or_else(|| syn::Error::new(input.span(),"Expected meta attribute selecting language implementors"))?,
+            inner: input.parse()?
+        })
+    }
+}
+
+impl ToTokens for MacroInvocation {
+    fn to_tokens(&self, tokens: &mut proc_macro2::TokenStream) {
+        let languages = &self.languages;
+        let inner = &self.inner;
+        tokens.extend(quote::quote!{
+            #languages 
+            #inner
+        });
     }
 }

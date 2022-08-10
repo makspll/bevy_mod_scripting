@@ -1,14 +1,10 @@
-use bevy::prelude::*;
-use bevy_event_priority::PriorityEventWriter;
-use bevy_mod_scripting::{
-    langs::mlu::{mlua, mlua::prelude::*, mlua::Value},
-    APIProvider, AddScriptApiProvider, AddScriptHost, AddScriptHostHandler, LuaDocFragment,
-    LuaEvent, LuaFile, LuaScriptHost, Recipients, Script, ScriptCollection, ScriptData,
-    ScriptError, ScriptingPlugin,
-};
 use rand::prelude::SliceRandom;
 use std::sync::atomic::Ordering::Relaxed;
 use std::sync::{atomic::AtomicU32, Mutex};
+use bevy::prelude::*;
+use bevy_event_priority::PriorityEventWriter;
+use bevy_mod_scripting::prelude::*;
+use bevy_mod_scripting_lua::prelude::*;
 
 #[derive(Clone)]
 pub struct MyLuaArg(usize);
@@ -41,8 +37,8 @@ impl APIProvider for LuaAPIProvider {
             ctx.create_function(|_ctx, msg: String| {
                 info!("{}", msg);
                 Ok(())
-            })?,
-        )?;
+            }).map_err(ScriptError::new_other)?,
+        ).map_err(ScriptError::new_other)?;
 
         Ok(())
     }

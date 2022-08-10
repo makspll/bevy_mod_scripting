@@ -1,9 +1,10 @@
 use bevy::app::AppExit;
 use bevy::prelude::*;
 use bevy::reflect::TypeRegistryArc;
-use bevy_mod_scripting::{api::lua::bevy::LuaWorld, ScriptRef};
-use bevy_mod_scripting::{langs::mlu::mlua, AddScriptHost, LuaEvent, Recipients, ScriptingPlugin};
-use bevy_mod_scripting::{LuaScriptHost, ScriptHost};
+use bevy_script_api::{lua::bevy::LuaWorld, ScriptRef};
+use bevy_mod_scripting::prelude::*;
+use bevy_mod_scripting_lua::prelude::*;
+use bevy_mod_scripting_lua_derive::impl_lua_newtype;
 use bevy_mod_scripting_derive::impl_script_newtype;
 
 // Step 1. Rust representation
@@ -37,6 +38,7 @@ impl MyThing {
 // The bevy API, however doing this means your provide static typing for your scripts in languages which support it,
 // To see what else this macro can do see `src/api/generated.rs`
 impl_script_newtype!(
+    #[languages(lua)]
     MyThing:
         Debug + Clone
         + Fields(
@@ -51,7 +53,7 @@ impl_script_newtype!(
             do_something_cool(&self:)
         )
 
-    impl {
+    lua impl {
         // we can also directly add methods to the underlying script traits using their specific syntax
         // note that in this case you need to provide an implementation for every language you want to support,
         // the flags above automatically do this for you.

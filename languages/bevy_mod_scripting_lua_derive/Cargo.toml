@@ -1,24 +1,22 @@
 [package]
-name = "bevy_mod_scripting_derive"
+name = "bevy_mod_scripting_lua_derive"
 version = "0.1.1"
 authors = ["Maksymilian Mozolewski <makspl17@gmail.com>"]
 edition = "2021"
 license = "MIT"
-description = "Derive macros for bevy_mod_scripting"
+description = "Necessary functionality for Lua support with bevy_mod_scripting"
 repository = "https://github.com/makspll/bevy_mod_scripting"
 homepage = "https://github.com/makspll/bevy_mod_scripting"
-keywords = ["bevy", "gamedev", "scripting", "lua"]
+keywords = ["bevy", "gamedev", "scripting", "rhai"]
 categories = ["game-development"]
-readme = "../readme.md"
 
 [lib]
-name = "bevy_mod_scripting_derive"
-proc-macro = true
-path = "src/lib.rs"
-
+name="bevy_mod_scripting_lua_derive"
+path="src/lib.rs"
+proc-macro=true
 
 [dependencies]
-bevy_mod_scripting_common = {path = "../bevy_mod_scripting_common", version = "0.1.1"}
+bevy_mod_scripting_common = {path = "../../bevy_mod_scripting_common", version = "0.1.1"}
 paste = "1.0.7"
 syn = {version="1.0.57",features=["full","fold","extra-traits"]}
 quote = "1.0.8"

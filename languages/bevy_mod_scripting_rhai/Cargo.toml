@@ -1,0 +1,21 @@
+[package]
+name = "bevy_mod_scripting_rhai"
+version = "0.1.1"
+authors = ["Maksymilian Mozolewski <makspl17@gmail.com>"]
+edition = "2021"
+license = "MIT"
+description = "Necessary functionality for Rhai support with bevy_mod_scripting"
+repository = "https://github.com/makspll/bevy_mod_scripting"
+homepage = "https://github.com/makspll/bevy_mod_scripting"
+keywords = ["bevy", "gamedev", "scripting", "rhai"]
+categories = ["game-development"]
+
+
+[lib]
+name="bevy_mod_scripting_rhai"
+path="src/lib.rs"
+
+[dependencies]
+bevy= { version = "0.8.0", default-features = false}
+rhai = { version = "1.8.0", features = ["sync"] }
+bevy_mod_scripting = {path="../../", version="0.1.1"}

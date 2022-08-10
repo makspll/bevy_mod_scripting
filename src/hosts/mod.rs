@@ -1,12 +1,10 @@
 //! All script host related stuff
 
 pub mod docs;
-pub mod mlua_host;
-pub mod rhai_host;
 
 use bevy::{asset::Asset, ecs::system::SystemState, prelude::*, reflect::FromReflect};
 use bevy_event_priority::PriorityEventReader;
-pub use {crate::docs::*, crate::mlua_host::*, crate::rhai_host::*};
+pub use {crate::docs::*};
 
 use std::{
     collections::{HashMap, HashSet},
@@ -402,8 +400,8 @@ impl<T: Asset> Default for ScriptCollection<T> {
 }
 
 /// system state for exclusive systems dealing with script events
-pub(crate) struct CachedScriptEventState<'w, 's, H: ScriptHost> {
-    event_state: SystemState<(
+pub struct CachedScriptEventState<'w, 's, H: ScriptHost> {
+    pub event_state: SystemState<(
         PriorityEventReader<'w, 's, H::ScriptEvent>,
         EventWriter<'w, 's, ScriptErrorEvent>,
     )>,
@@ -420,7 +418,7 @@ impl<'w, 's, H: ScriptHost> FromWorld for CachedScriptEventState<'w, 's, H> {
 /// Handles creating contexts for new/modified scripts
 /// Scripts are likely not loaded instantly at this point, so most of the time
 /// this system simply inserts an empty context
-pub(crate) fn script_add_synchronizer<H: ScriptHost + 'static>(
+pub fn script_add_synchronizer<H: ScriptHost + 'static>(
     query: Query<
         (
             Entity,
@@ -489,7 +487,7 @@ pub(crate) fn script_add_synchronizer<H: ScriptHost + 'static>(
 }
 
 /// Handles the removal of script components and their contexts
-pub(crate) fn script_remove_synchronizer<H: ScriptHost>(
+pub fn script_remove_synchronizer<H: ScriptHost>(
     query: RemovedComponents<ScriptCollection<H::ScriptAsset>>,
     mut contexts: ResMut<ScriptContexts<H::ScriptContext>>,
 ) {
@@ -501,7 +499,7 @@ pub(crate) fn script_remove_synchronizer<H: ScriptHost>(
 }
 
 /// Reloads hot-reloaded scripts, or loads missing contexts for scripts which were added but not loaded
-pub(crate) fn script_hot_reload_handler<H: ScriptHost>(
+pub fn script_hot_reload_handler<H: ScriptHost>(
     mut events: EventReader<AssetEvent<H::ScriptAsset>>,
     mut host: ResMut<H>,
     scripts: Query<&ScriptCollection<H::ScriptAsset>>,
@@ -540,7 +538,7 @@ pub(crate) fn script_hot_reload_handler<H: ScriptHost>(
 }
 
 /// Lets the script host handle all script events
-pub(crate) fn script_event_handler<H: ScriptHost, const MAX: u32, const MIN: u32>(
+pub fn script_event_handler<H: ScriptHost, const MAX: u32, const MIN: u32>(
     world: &mut World,
 ) {
     // we need to collect the events to drop the borrow of the world

@@ -1,22 +1,15 @@
 #![doc=include_str!("../readme.md")]
-use ::std::any::TypeId;
 
 use bevy::{
     ecs::schedule::IntoRunCriteria,
     prelude::*,
-    reflect::{FromType, GetTypeRegistration, TypeRegistryArc},
 };
 
 pub mod error;
 pub mod hosts;
-pub mod util;
-pub mod langs {
-    pub use {rhai, tealr::mlu};
-}
-pub mod api;
 
 pub use bevy_event_priority as events;
-pub use {api::*, error::*, hosts::*, langs::*, util::*};
+pub use {error::*, hosts::*};
 
 pub mod prelude {
     // general
@@ -27,7 +20,7 @@ pub mod prelude {
         },
         crate::{
             AddScriptApiProvider, AddScriptHost, AddScriptHostHandler, GenDocumentation,
-            ReflectPathElem, ScriptError, ScriptErrorEvent, ScriptRef, ScriptingPlugin, ValueIndex,
+            ScriptError, ScriptErrorEvent, ScriptingPlugin,
         },
         bevy_event_priority::{
             AddPriorityEvent, PriorityEvent, PriorityEventReader, PriorityEventWriter,
@@ -35,15 +28,6 @@ pub mod prelude {
         },
         bevy_mod_scripting_derive::impl_script_newtype,
     };
-
-    // lua
-    pub use crate::{
-        langs::mlu::mlua::Lua, FromLuaProxy, LuaDocFragment, LuaEvent, LuaFile, LuaProxyable,
-        LuaScriptHost, ReflectLuaProxyable, RegisterForeignLuaType, ToLuaProxy,
-    };
-
-    // rhai
-    pub use crate::{langs::rhai::Engine, RhaiContext, RhaiDocFragment, RhaiEvent, RhaiFile};
 }
 
 #[derive(Default)]
@@ -56,40 +40,6 @@ impl Plugin for ScriptingPlugin {
     }
 }
 
-/// A trait allowing to register the [`LuaProxyable`] trait with the type registry for foreign types
-///
-/// If you have access to the type you should prefer to use `#[reflect(LuaProxyable)]` instead.
-/// This is exactly equivalent.
-pub trait RegisterForeignLuaType {
-    /// Register an instance of `ReflecLuaProxyable` type data on this type's registration,
-    /// if a registration does not yet exist, creates one.
-    fn register_foreign_lua_type<T: LuaProxyable + Reflect + GetTypeRegistration>(
-        &mut self,
-    ) -> &mut Self;
-}
-
-impl RegisterForeignLuaType for App {
-    fn register_foreign_lua_type<T: LuaProxyable + Reflect + GetTypeRegistration>(
-        &mut self,
-    ) -> &mut Self {
-        {
-            let registry = self.world.resource_mut::<TypeRegistryArc>();
-            let mut registry = registry.write();
-
-            let user_data = <ReflectLuaProxyable as FromType<T>>::from_type();
-
-            if let Some(registration) = registry.get_mut(TypeId::of::<T>()) {
-                registration.insert(user_data)
-            } else {
-                let mut registration = T::get_type_registration();
-                registration.insert(user_data);
-                registry.add_registration(registration);
-            }
-        }
-
-        self
-    }
-}
 
 /// An error coming from a script
 #[derive(Debug)]
