@@ -1,11 +1,8 @@
 use bevy::prelude::*;
 
 use bevy_mod_scripting::{
+    api::{impl_tealr_type, lua::bevy::LuaBevyAPIProvider},
     prelude::*,
-    api::{
-        impl_tealr_type,
-        lua::bevy::LuaBevyAPIProvider
-    }
 };
 
 use std::sync::Mutex;

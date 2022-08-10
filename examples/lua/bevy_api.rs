@@ -3,7 +3,9 @@ use bevy::math::DQuat;
 use bevy::prelude::*;
 use bevy_mod_scripting::prelude::*;
 use bevy_mod_scripting_lua::tealr::mlu::mlua::UserData;
-use bevy_script_api::lua::{ValueLuaType,ReflectLuaProxyable, RegisterForeignLuaType, bevy::LuaBevyAPIProvider};
+use bevy_script_api::lua::{
+    bevy::LuaBevyAPIProvider, ReflectLuaProxyable, RegisterForeignLuaType, ValueLuaType,
+};
 
 /// Let's define a resource, we want it to be "assignable" via lua so we derive `ReflectLuaProxyable`
 /// This allows us to reach this value when it's a field under any other Reflectable type

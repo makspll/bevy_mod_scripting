@@ -13,9 +13,7 @@ pub(crate) fn make_methods<'a>(flag: &DeriveFlag, new_type: &'a Newtype, out: &m
     let wrapped_type = &new_type.args.base_type_ident;
 
     let methods = match flag {
-        DeriveFlag::Methods {
-            methods, ..
-        } => methods,
+        DeriveFlag::Methods { methods, .. } => methods,
         _ => panic!("Expected Methods flag"),
     };
 

@@ -1,11 +1,6 @@
 use indexmap::IndexSet;
 use proc_macro2::{Ident, Span, TokenStream};
-use syn::{
-    parse_quote_spanned,
-    punctuated::Punctuated,
-    spanned::Spanned,
-    Token,
-};
+use syn::{parse_quote_spanned, punctuated::Punctuated, spanned::Spanned, Token};
 
 use bevy_mod_scripting_common::{
     derive_flag::DeriveFlag,

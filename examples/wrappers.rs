@@ -1,15 +1,8 @@
-use bevy::{
-    prelude::*,
-    app::AppExit,
-    reflect::TypeRegistryArc
-};
+use bevy::{app::AppExit, prelude::*, reflect::TypeRegistryArc};
 
 use bevy_mod_scripting::{
+    api::{impl_lua_newtype, impl_script_newtype, lua::bevy::LuaWorld, ScriptRef},
     prelude::*,
-    api::{
-        lua::bevy::LuaWorld, ScriptRef,
-        impl_script_newtype,impl_lua_newtype
-    }
 };
 
 // Step 1. Rust representation
