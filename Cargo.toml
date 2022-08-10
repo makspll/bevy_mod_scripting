@@ -73,7 +73,7 @@ required-features=["bevy_script_api/lua","bevy_mod_scripting_lua/lua54"]
 [[example]]
 name = "game_of_life_lua"
 path = "examples/lua/game_of_life.rs"
-required-features=["bevy_script_api/lua","bevy_mod_scripting_lua/lua54"]
+required-features=["bevy_script_api/lua","bevy_mod_scripting_lua/lua54","bevy_mod_scripting_lua/teal"]
 
 [[example]]
 name = "event_recipients_lua"
