@@ -34,7 +34,7 @@ macro_rules! ref_only_wrapper_methods {
         pub fn new(b: $type_) -> Self {
             Self::Owned(
                 ::std::cell::UnsafeCell::new(b),
-                ::std::sync::Arc::new(::parking_lot::RwLock::new(())),
+                ::std::sync::Arc::new($crate::parking_lot::RwLock::new(())),
             )
         }
 
@@ -107,7 +107,7 @@ macro_rules! define_wrapper{
         #[allow(clippy::large_enum_variant)]
         #[doc=concat!("A script wrapper for the type `",stringify!($type_),"`")]
         pub enum $wrapper_name{
-            Owned(::std::cell::UnsafeCell<$type_>, ::std::sync::Arc<::parking_lot::RwLock<()>>),
+            Owned(::std::cell::UnsafeCell<$type_>, ::std::sync::Arc<$crate::parking_lot::RwLock<()>>),
             Ref($crate::script_ref::ScriptRef),
         }
 
@@ -155,7 +155,7 @@ macro_rules! make_script_wrapper {
                             self.val(|s| s.clone())
                                 .expect("Rust aliasing rules broken in cloning wrapper"),
                         ),
-                        ::std::sync::Arc::new(::parking_lot::RwLock::new(())),
+                        ::std::sync::Arc::new($crate::parking_lot::RwLock::new(())),
                     ),
                     Self::Ref(v) => Self::Ref(v.clone()),
                 }

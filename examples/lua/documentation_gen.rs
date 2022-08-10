@@ -1,8 +1,13 @@
 use bevy::prelude::*;
 
-use bevy_mod_scripting::prelude::*;
-use bevy_mod_scripting_lua::prelude::*;
-use bevy_script_api::{impl_tealr_type, lua::bevy::LuaBevyAPIProvider};
+use bevy_mod_scripting::{
+    prelude::*,
+    api::{
+        impl_tealr_type,
+        lua::bevy::LuaBevyAPIProvider
+    }
+};
+
 use std::sync::Mutex;
 
 #[derive(Clone)]

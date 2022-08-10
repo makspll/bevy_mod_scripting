@@ -11,13 +11,15 @@ use bevy::{
     time::FixedTimestep,
     window::WindowResized,
 };
-use bevy_mod_scripting::prelude::*;
-use bevy_mod_scripting_lua::prelude::*;
-use bevy_mod_scripting_lua_derive::impl_lua_newtype;
-use bevy_script_api::{
-    lua::{bevy::LuaBevyAPIProvider, std::LuaVec, LuaProxyable, ReflectLuaProxyable},
-    ValueIndex,
+
+use bevy_mod_scripting::{
+    prelude::*,
+    api::{
+        lua::{bevy::LuaBevyAPIProvider, std::LuaVec, LuaProxyable, ReflectLuaProxyable},
+        ValueIndex,impl_script_newtype,impl_lua_newtype
+    }
 };
+
 
 #[derive(Debug, Default, Reflect, Component)]
 #[reflect(Component, LuaProxyable)]

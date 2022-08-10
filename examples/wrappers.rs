@@ -1,11 +1,16 @@
-use bevy::app::AppExit;
-use bevy::prelude::*;
-use bevy::reflect::TypeRegistryArc;
-use bevy_mod_scripting::prelude::*;
-use bevy_mod_scripting_derive::impl_script_newtype;
-use bevy_mod_scripting_lua::prelude::*;
-use bevy_mod_scripting_lua_derive::impl_lua_newtype;
-use bevy_script_api::{lua::bevy::LuaWorld, ScriptRef};
+use bevy::{
+    prelude::*,
+    app::AppExit,
+    reflect::TypeRegistryArc
+};
+
+use bevy_mod_scripting::{
+    prelude::*,
+    api::{
+        lua::bevy::LuaWorld, ScriptRef,
+        impl_script_newtype,impl_lua_newtype
+    }
+};
 
 // Step 1. Rust representation
 // construct all our types and functionality

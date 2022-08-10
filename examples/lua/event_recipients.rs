@@ -1,7 +1,5 @@
 use bevy::prelude::*;
-use bevy_event_priority::PriorityEventWriter;
 use bevy_mod_scripting::prelude::*;
-use bevy_mod_scripting_lua::prelude::*;
 use rand::prelude::SliceRandom;
 use std::sync::atomic::Ordering::Relaxed;
 use std::sync::{atomic::AtomicU32, Mutex};

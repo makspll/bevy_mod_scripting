@@ -15,3 +15,5 @@ pub use bevy_mod_scripting_lua_derive::impl_lua_newtype;
 pub use bevy_mod_scripting_derive::impl_script_newtype;
 
 pub(crate) mod generated;
+
+pub use parking_lot;

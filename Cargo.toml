@@ -50,6 +50,7 @@ bevy_script_api = { path = "bevy_script_api", version = "0.1.1", optional = true
 
 [dev-dependencies]
 bevy = { version = "0.8.0"}
+rand = "0.8.5"
 
 
 # bevy_console = { git = "https://github.com/OnlyGraphs/bevy-console" }
@@ -60,7 +61,6 @@ bevy = { version = "0.8.0"}
 # bevy_mod_scripting_lua_derive = {path="languages/bevy_mod_scripting_lua_derive", version="0.1.1"}
 
 # bevy = { version = "0.8.0"}
-# rand = "0.8.5"
 # serde = "1.0.137"
 # criterion = "0.3"
 
