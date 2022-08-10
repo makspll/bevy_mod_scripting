@@ -10,15 +10,12 @@ use syn::{parse_quote_spanned, punctuated::Punctuated, spanned::Spanned, LitInt,
 use crate::lua_method::LuaMethod;
 
 pub(crate) fn make_methods<'a>(flag: &DeriveFlag, new_type: &'a Newtype, out: &mut Vec<LuaMethod>) {
-    let wrapper_type = &new_type.args.wrapper_type;
     let wrapped_type = &new_type.args.base_type_ident;
 
-    let (ident, paren, methods) = match flag {
+    let methods = match flag {
         DeriveFlag::Methods {
-            ident,
-            paren,
-            methods,
-        } => (ident, paren, methods),
+            methods, ..
+        } => methods,
         _ => panic!("Expected Methods flag"),
     };
 
