@@ -47,7 +47,7 @@ pub(crate) fn generate_macros(
             source
                 .index
                 .iter()
-                .filter(|(id, item)| {
+                .filter(|(_id, item)| {
                     item.name
                         .as_ref()
                         .and_then(|k| config.types.get(k))

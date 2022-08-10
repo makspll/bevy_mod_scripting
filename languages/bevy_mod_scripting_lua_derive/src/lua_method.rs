@@ -250,7 +250,7 @@ impl LuaMethod {
     pub fn gen_tests(&self, newtype_name: &str) -> Option<TokenStream> {
         self.test.as_ref().map(|v| {
             let fun = v.ts.clone();
-            let test_ident = Ident::new(&newtype_name.to_case(Case::Snake), Span::call_site());
+            let _test_ident = Ident::new(&newtype_name.to_case(Case::Snake), Span::call_site());
 
             fun.into_token_stream()
         })

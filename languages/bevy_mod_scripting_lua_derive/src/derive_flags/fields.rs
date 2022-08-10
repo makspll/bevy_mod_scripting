@@ -11,7 +11,7 @@ pub(crate) fn make_fields<'a>(
 ) -> Result<(), syn::Error> {
     let newtype_name = &new_type.args.wrapper_type;
 
-    let (ident, fields) = match flag {
+    let (_ident, fields) = match flag {
         DeriveFlag::Fields { ident, fields, .. } => (ident, fields),
         _ => panic!("Expected Fields flag"),
     };

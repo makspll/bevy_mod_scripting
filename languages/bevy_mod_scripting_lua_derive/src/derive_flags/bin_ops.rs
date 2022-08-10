@@ -105,7 +105,7 @@ pub(crate) fn make_bin_ops<'a>(
                 .filter(|v| v.has_receiver_on_side(receiver_side))
                 .map(|op_expr| {
                     // first of all resolve both sides of the expression 
-                    let (l_exp, r_exp) = op_expr.map_both(|arg_type, side| {
+                    let (l_exp, r_exp) = op_expr.map_both(|arg_type, _side| {
                         // receiver is always a lua wrapper by definition
                         let arg_ident = arg_type
                             .is_self()

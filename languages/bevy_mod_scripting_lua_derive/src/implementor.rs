@@ -1,8 +1,7 @@
 use indexmap::IndexSet;
 use proc_macro2::{Ident, Span, TokenStream};
 use syn::{
-    parse::{ParseBuffer, ParseStream},
-    parse_quote, parse_quote_spanned,
+    parse_quote_spanned,
     punctuated::Punctuated,
     spanned::Spanned,
     Token,
