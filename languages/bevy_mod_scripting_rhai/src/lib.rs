@@ -1,29 +1,26 @@
-use bevy::prelude::*;
-use rhai::*;
-use std::marker::PhantomData;
-use bevy_mod_scripting::{
-    prelude::*,
-    CachedScriptEventState,
-    script_add_synchronizer, script_hot_reload_handler, script_remove_synchronizer, APIProviders,
-};
 use crate::{
     assets::{RhaiFile, RhaiLoader},
-    docs::RhaiDocFragment
+    docs::RhaiDocFragment,
 };
+use bevy::prelude::*;
+use bevy_mod_scripting::{
+    prelude::*, script_add_synchronizer, script_hot_reload_handler, script_remove_synchronizer,
+    APIProviders, CachedScriptEventState,
+};
+use rhai::*;
+use std::marker::PhantomData;
 
 pub mod assets;
 pub mod docs;
 pub use rhai;
 pub mod prelude {
-    pub use rhai;
     pub use crate::{
-        assets::{RhaiFile,RhaiLoader},
+        assets::{RhaiFile, RhaiLoader},
         docs::RhaiDocFragment,
-        RhaiContext,RhaiEvent,RhaiScriptHost,
+        RhaiContext, RhaiEvent, RhaiScriptHost,
     };
+    pub use rhai;
 }
-
-
 
 pub struct RhaiScriptHost<A: FuncArgs + Send> {
     pub engine: Engine,

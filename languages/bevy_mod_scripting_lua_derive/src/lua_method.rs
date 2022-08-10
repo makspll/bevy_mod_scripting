@@ -1,4 +1,4 @@
-use bevy_mod_scripting_common::utils::{EmptyToken, attribute_to_string_lit};
+use bevy_mod_scripting_common::utils::{attribute_to_string_lit, EmptyToken};
 use convert_case::{Case, Casing};
 use proc_macro2::{Span, TokenStream};
 use quote::{format_ident, quote_spanned, ToTokens};
@@ -9,8 +9,6 @@ use syn::{
     token::{Brace, Paren},
     *,
 };
-
-
 
 #[derive(Clone, PartialEq, Eq, Hash, Debug)]
 pub(crate) struct MethodMacroArg {

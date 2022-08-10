@@ -2,7 +2,6 @@ use ::std::borrow::Cow;
 
 use ::std::marker::PhantomData;
 
-
 use bevy::reflect::FromReflect;
 use bevy::reflect::Reflect;
 
@@ -19,7 +18,11 @@ use tealr::TypeName;
 
 use paste::paste;
 
-use crate::{script_ref::{ScriptRef,ValueIndex},sub_reflect::ReflectPathElem, error::ReflectionError};
+use crate::{
+    error::ReflectionError,
+    script_ref::{ScriptRef, ValueIndex},
+    sub_reflect::ReflectPathElem,
+};
 
 use super::ApplyLua;
 use super::FromLuaProxy;

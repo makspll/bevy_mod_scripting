@@ -1,13 +1,13 @@
 use std::iter::once;
 
-use bevy_mod_scripting_common::{derive_flag::DeriveFlag, newtype::Newtype, arg::SimpleType, utils::EmptyToken};
+use bevy_mod_scripting_common::{
+    arg::SimpleType, derive_flag::DeriveFlag, newtype::Newtype, utils::EmptyToken,
+};
 use proc_macro2::Span;
 use quote::{format_ident, quote_spanned};
 use syn::{parse_quote_spanned, punctuated::Punctuated, spanned::Spanned, LitInt, Token};
 
-use crate::{
-    lua_method::LuaMethod,
-};
+use crate::lua_method::LuaMethod;
 
 pub(crate) fn make_methods<'a>(flag: &DeriveFlag, new_type: &'a Newtype, out: &mut Vec<LuaMethod>) {
     let wrapper_type = &new_type.args.wrapper_type;

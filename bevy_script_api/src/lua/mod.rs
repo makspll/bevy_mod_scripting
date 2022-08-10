@@ -1,10 +1,10 @@
 use ::std::any::TypeId;
 use ::std::borrow::Cow;
 
+use crate::impl_tealr_type;
 use ::bevy::prelude::App;
-use crate::{impl_tealr_type};
 
-use ::bevy::reflect::{Reflect, TypeRegistry,GetTypeRegistration, FromType, TypeRegistryArc};
+use ::bevy::reflect::{FromType, GetTypeRegistration, Reflect, TypeRegistry, TypeRegistryArc};
 
 use bevy_mod_scripting_lua::tealr;
 
@@ -15,7 +15,7 @@ use tealr::mlu::{
 };
 use tealr::TypeName;
 
-use crate::script_ref::{ValueIndex, ScriptRef, ReflectedValue};
+use crate::script_ref::{ReflectedValue, ScriptRef, ValueIndex};
 
 use self::bevy::LuaWorld;
 
@@ -57,7 +57,6 @@ impl RegisterForeignLuaType for App {
         self
     }
 }
-
 
 impl ValueIndex<Value<'_>> for ScriptRef {
     type Output = Result<Self, mlua::Error>;

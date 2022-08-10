@@ -2,9 +2,7 @@ use bevy_mod_scripting_common::{derive_flag::DeriveFlag, newtype::Newtype, ops::
 use quote::quote_spanned;
 use syn::{parse_quote, parse_quote_spanned, spanned::Spanned};
 
-use crate::{
-    lua_method::LuaMethod,
-};
+use crate::lua_method::LuaMethod;
 
 pub(crate) fn make_unary_ops<'a>(
     flag: &DeriveFlag,

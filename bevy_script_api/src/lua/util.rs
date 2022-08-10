@@ -1,8 +1,7 @@
-use std::marker::PhantomData;
 use bevy_mod_scripting_lua::tealr;
+use std::marker::PhantomData;
 
 use tealr::TypeName;
-
 
 /// forwards the TypeName implementation of T, useful for internal 'fake' global instances
 pub struct DummyTypeName<T> {
@@ -10,7 +9,9 @@ pub struct DummyTypeName<T> {
 }
 
 impl<T> DummyTypeName<T> {
-    pub fn new(_: &bevy_mod_scripting_lua::tealr::mlu::mlua::Lua) -> bevy_mod_scripting_lua::tealr::mlu::mlua::Result<Self> {
+    pub fn new(
+        _: &bevy_mod_scripting_lua::tealr::mlu::mlua::Lua,
+    ) -> bevy_mod_scripting_lua::tealr::mlu::mlua::Result<Self> {
         Ok(Self {
             _ph: PhantomData::<T>,
         })
@@ -21,7 +22,9 @@ impl<'lua, T> bevy_mod_scripting_lua::tealr::mlu::mlua::ToLua<'lua> for DummyTyp
     fn to_lua(
         self,
         _: &'lua bevy_mod_scripting_lua::tealr::mlu::mlua::Lua,
-    ) -> bevy_mod_scripting_lua::tealr::mlu::mlua::Result<bevy_mod_scripting_lua::tealr::mlu::mlua::Value<'lua>> {
+    ) -> bevy_mod_scripting_lua::tealr::mlu::mlua::Result<
+        bevy_mod_scripting_lua::tealr::mlu::mlua::Value<'lua>,
+    > {
         Ok(bevy_mod_scripting_lua::tealr::mlu::mlua::Value::Nil)
     }
 }

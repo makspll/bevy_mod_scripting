@@ -24,7 +24,7 @@ pub enum ScriptError {
 
 impl ScriptError {
     /// Create new `ScriptError::Other` from another error
-    pub fn new_other<T : std::error::Error>(other: T) -> Self {
+    pub fn new_other<T: std::error::Error>(other: T) -> Self {
         Self::Other(other.to_string())
     }
 }

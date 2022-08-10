@@ -1,9 +1,6 @@
 #![doc=include_str!("../readme.md")]
 
-use bevy::{
-    ecs::schedule::IntoRunCriteria,
-    prelude::*,
-};
+use bevy::{ecs::schedule::IntoRunCriteria, prelude::*};
 
 pub mod error;
 pub mod hosts;
@@ -39,7 +36,6 @@ impl Plugin for ScriptingPlugin {
         app.add_event::<ScriptErrorEvent>();
     }
 }
-
 
 /// An error coming from a script
 #[derive(Debug)]

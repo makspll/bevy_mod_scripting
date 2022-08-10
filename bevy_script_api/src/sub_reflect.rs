@@ -1,10 +1,10 @@
 use std::{borrow::Cow, sync::Weak};
 
+use crate::error::ReflectionError;
 use bevy::{
     prelude::{Entity, ReflectComponent, ReflectResource, World},
     reflect::{Reflect, ReflectMut, ReflectRef},
 };
-use crate::error::ReflectionError;
 use parking_lot::RwLock;
 
 use std::fmt;

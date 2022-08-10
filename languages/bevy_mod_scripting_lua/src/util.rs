@@ -29,5 +29,3 @@ macro_rules! lua_path {
         concat!("scripts/build/", $v, ".lua")
     };
 }
-
-

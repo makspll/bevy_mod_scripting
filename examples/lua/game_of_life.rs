@@ -13,16 +13,11 @@ use bevy::{
 };
 use bevy_mod_scripting::prelude::*;
 use bevy_mod_scripting_lua::prelude::*;
-use bevy_script_api::{
-    lua::{
-        bevy::LuaBevyAPIProvider, 
-        std::LuaVec, 
-        ReflectLuaProxyable, 
-        LuaProxyable
-    }, 
-    ValueIndex
-};
 use bevy_mod_scripting_lua_derive::impl_lua_newtype;
+use bevy_script_api::{
+    lua::{bevy::LuaBevyAPIProvider, std::LuaVec, LuaProxyable, ReflectLuaProxyable},
+    ValueIndex,
+};
 
 #[derive(Debug, Default, Reflect, Component)]
 #[reflect(Component, LuaProxyable)]

@@ -1,10 +1,10 @@
-use rand::prelude::SliceRandom;
-use std::sync::atomic::Ordering::Relaxed;
-use std::sync::{atomic::AtomicU32, Mutex};
 use bevy::prelude::*;
 use bevy_event_priority::PriorityEventWriter;
 use bevy_mod_scripting::prelude::*;
 use bevy_mod_scripting_lua::prelude::*;
+use rand::prelude::SliceRandom;
+use std::sync::atomic::Ordering::Relaxed;
+use std::sync::{atomic::AtomicU32, Mutex};
 
 #[derive(Clone)]
 pub struct MyLuaArg(usize);
@@ -32,13 +32,16 @@ impl APIProvider for LuaAPIProvider {
 
         let ctx = ctx.get_mut().unwrap();
 
-        ctx.globals().set(
-            "print",
-            ctx.create_function(|_ctx, msg: String| {
-                info!("{}", msg);
-                Ok(())
-            }).map_err(ScriptError::new_other)?,
-        ).map_err(ScriptError::new_other)?;
+        ctx.globals()
+            .set(
+                "print",
+                ctx.create_function(|_ctx, msg: String| {
+                    info!("{}", msg);
+                    Ok(())
+                })
+                .map_err(ScriptError::new_other)?,
+            )
+            .map_err(ScriptError::new_other)?;
 
         Ok(())
     }

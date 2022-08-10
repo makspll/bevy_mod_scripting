@@ -1,9 +1,9 @@
-use bevy_mod_scripting::CodeAsset;
 use bevy::{
+    asset::Error,
     asset::{AssetLoader, LoadedAsset},
     reflect::TypeUuid,
-    asset::Error
 };
+use bevy_mod_scripting::CodeAsset;
 use std::sync::Arc;
 
 #[derive(Debug, TypeUuid)]
@@ -28,7 +28,7 @@ impl AssetLoader for RhaiLoader {
         &'a self,
         bytes: &'a [u8],
         load_context: &'a mut bevy::asset::LoadContext,
-    ) -> bevy::asset::BoxedFuture<'a, Result<(),Error>> {
+    ) -> bevy::asset::BoxedFuture<'a, Result<(), Error>> {
         load_context.set_default_asset(LoadedAsset::new(RhaiFile {
             bytes: bytes.into(),
         }));

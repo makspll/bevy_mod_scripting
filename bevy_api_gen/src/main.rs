@@ -162,7 +162,7 @@ pub(crate) fn generate_macros(
         writer.write_no_newline("impl_script_newtype!");
         writer.open_brace();
         writer.write_line("#[languages(on_feature(lua))]");
-        
+
         v.write_type_docstring(&mut writer, args);
         writer.write_indentation();
         v.write_inline_full_path(&mut writer, args);
@@ -189,9 +189,11 @@ pub(crate) fn generate_macros(
     writer.write_line("#[cfg(feature=\"lua\")]");
     writer.write_line("#[derive(Default)]");
     writer.write_line("pub(crate) struct BevyAPIGlobals;");
-    
+
     writer.write_line("#[cfg(feature=\"lua\")]");
-    writer.write_no_newline("impl bevy_mod_scripting_lua::tealr::mlu::ExportInstances for BevyAPIGlobals");
+    writer.write_no_newline(
+        "impl bevy_mod_scripting_lua::tealr::mlu::ExportInstances for BevyAPIGlobals",
+    );
     writer.open_brace();
     writer.write_line("fn add_instances<'lua, T: bevy_mod_scripting_lua::tealr::mlu::InstanceCollector<'lua>>(self, instances: &mut T) -> bevy_mod_scripting_lua::tealr::mlu::mlua::Result<()>");
     writer.open_brace();
@@ -283,7 +285,9 @@ pub(crate) fn generate_macros(
         writer.newline();
 
         if include_proxy {
-            writer.write_no_newline(".process_type::<bevy_mod_scripting_lua::tealr::mlu::UserDataProxy<");
+            writer.write_no_newline(
+                ".process_type::<bevy_mod_scripting_lua::tealr::mlu::UserDataProxy<",
+            );
             writer.write_inline(type_);
             writer.write_inline(">>()");
             writer.newline();

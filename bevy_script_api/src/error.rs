@@ -19,9 +19,8 @@ pub enum ReflectionError {
     Other(String),
 }
 
-
-#[cfg(feature="lua")]
-impl From<ReflectionError> for bevy_mod_scripting_lua::tealr::mlu::mlua::Error{
+#[cfg(feature = "lua")]
+impl From<ReflectionError> for bevy_mod_scripting_lua::tealr::mlu::mlua::Error {
     fn from(e: ReflectionError) -> Self {
         bevy_mod_scripting_lua::tealr::mlu::mlua::Error::RuntimeError(e.to_string())
     }

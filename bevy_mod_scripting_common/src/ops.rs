@@ -7,7 +7,7 @@ use syn::{
 
 use crate::utils::impl_parse_enum;
 
-use super::{arg::ArgType};
+use super::arg::ArgType;
 
 impl_parse_enum!(input,ident:
 #[derive(PartialEq,Eq,Hash,Clone,Debug)]

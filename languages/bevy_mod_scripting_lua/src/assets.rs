@@ -1,8 +1,8 @@
-use bevy_mod_scripting::CodeAsset;
 use bevy::{
-    asset::{AssetLoader, LoadedAsset,Error},
+    asset::{AssetLoader, Error, LoadedAsset},
     reflect::TypeUuid,
 };
+use bevy_mod_scripting::CodeAsset;
 
 use std::sync::Arc;
 

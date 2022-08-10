@@ -1,7 +1,7 @@
 use bevy::app::AppExit;
 use bevy::prelude::*;
 use bevy_mod_scripting::prelude::*;
-use bevy_mod_scripting_rhai::{RhaiScriptHost,RhaiEvent};
+use bevy_mod_scripting_rhai::{RhaiEvent, RhaiScriptHost};
 /// Let's define a resource, we want it to be "assignable" via lua so we derive `ReflectLuaProxyable`
 /// This allows us to reach this value when it's a field under any other Reflectable type
 
@@ -13,7 +13,6 @@ fn main() -> std::io::Result<()> {
         .add_script_host::<RhaiScriptHost<()>, _>(CoreStage::PostUpdate)
         .add_system(
             (|world: &mut World| {
-
                 // run script
                 world.resource_scope(|world, mut host: Mut<RhaiScriptHost<()>>| {
                     host.run_one_shot(

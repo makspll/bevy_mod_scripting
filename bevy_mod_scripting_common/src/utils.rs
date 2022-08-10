@@ -98,7 +98,10 @@ macro_rules! impl_parse_enum {
 pub(crate) use impl_parse_enum;
 use proc_macro2::TokenStream;
 use quote::ToTokens;
-use syn::{Attribute, Type, parse::{Parse, ParseStream}};
+use syn::{
+    parse::{Parse, ParseStream},
+    Attribute, Type,
+};
 
 pub fn attribute_to_string_lit(attrs: &Attribute) -> TokenStream {
     attrs.tokens.clone().into_iter().skip(1).collect()
@@ -123,12 +126,11 @@ pub fn type_base_string(t: &Type) -> Option<String> {
     }
 }
 
-
 #[derive(Default, Debug, Clone)]
 pub struct EmptyToken;
 
 impl Parse for EmptyToken {
-    fn parse(input: ParseStream) -> Result<Self,syn::Error> {
+    fn parse(input: ParseStream) -> Result<Self, syn::Error> {
         Ok(Self)
     }
 }

@@ -1,10 +1,10 @@
+use crate::impl_tealr_type;
 use ::bevy::ecs::system::Command;
 use ::bevy::hierarchy::BuildWorldChildren;
-use bevy_mod_scripting::ScriptData;
-use crate::impl_tealr_type;
 use ::std::convert::AsRef;
 use ::std::ops::Deref;
 use ::std::sync::{Arc, Weak};
+use bevy_mod_scripting::ScriptData;
 
 use ::bevy::{
     hierarchy::{Children, DespawnChildrenRecursive, DespawnRecursive, Parent},
@@ -19,7 +19,7 @@ use parking_lot::RwLock;
 
 pub use crate::generated::*;
 use crate::script_ref::ScriptRef;
-use bevy_mod_scripting_lua::tealr as tealr;
+use bevy_mod_scripting_lua::tealr;
 use tealr::mlu::{
     mlua::{self},
     TealData, TealDataMethods,

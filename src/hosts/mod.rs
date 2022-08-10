@@ -2,9 +2,9 @@
 
 pub mod docs;
 
+pub use crate::docs::*;
 use bevy::{asset::Asset, ecs::system::SystemState, prelude::*, reflect::FromReflect};
 use bevy_event_priority::PriorityEventReader;
-pub use {crate::docs::*};
 
 use std::{
     collections::{HashMap, HashSet},
@@ -538,9 +538,7 @@ pub fn script_hot_reload_handler<H: ScriptHost>(
 }
 
 /// Lets the script host handle all script events
-pub fn script_event_handler<H: ScriptHost, const MAX: u32, const MIN: u32>(
-    world: &mut World,
-) {
+pub fn script_event_handler<H: ScriptHost, const MAX: u32, const MIN: u32>(world: &mut World) {
     // we need to collect the events to drop the borrow of the world
     let events = world.resource_scope(|world, mut cached_state: Mut<CachedScriptEventState<H>>| {
         let (mut cached_state, _) = cached_state.event_state.get_mut(world);

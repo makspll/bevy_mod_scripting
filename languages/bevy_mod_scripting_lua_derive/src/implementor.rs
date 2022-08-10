@@ -1,11 +1,25 @@
 use indexmap::IndexSet;
 use proc_macro2::{Ident, Span, TokenStream};
-use syn::{parse_quote_spanned, punctuated::Punctuated, spanned::Spanned, Token, parse::{ParseBuffer, ParseStream}, parse_quote};
+use syn::{
+    parse::{ParseBuffer, ParseStream},
+    parse_quote, parse_quote_spanned,
+    punctuated::Punctuated,
+    spanned::Spanned,
+    Token,
+};
 
+use bevy_mod_scripting_common::{
+    derive_flag::DeriveFlag,
+    implementor::{WrapperFunction, WrapperImplementor},
+    newtype::Newtype,
+    utils::attribute_to_string_lit,
+};
 use quote::{format_ident, quote, quote_spanned};
-use bevy_mod_scripting_common::{implementor::{WrapperFunction, WrapperImplementor}, newtype::Newtype, derive_flag::DeriveFlag, utils::attribute_to_string_lit};
 
-use crate::{lua_method::LuaMethod, derive_flags::{make_methods, make_bin_ops, make_unary_ops, make_fields}};
+use crate::{
+    derive_flags::{make_bin_ops, make_fields, make_methods, make_unary_ops},
+    lua_method::LuaMethod,
+};
 
 impl WrapperFunction for LuaMethod {}
 
@@ -96,7 +110,7 @@ impl WrapperImplementor for LuaImplementor {
         let wrapper_type = &newtype.args.wrapper_type;
         let wrapped_type = &newtype.args.base_type_ident;
         let tealr = quote::quote!(bevy_mod_scripting_lua::tealr);
-         
+
         // provide documentation generation implementations
         let tealr_implementations = quote_spanned! {newtype.span()=>
             bevy_script_api::impl_tealr_type!(#wrapper_type);
@@ -172,10 +186,7 @@ impl WrapperImplementor for LuaImplementor {
         })
     }
 
-    fn generate_derive_flag_functions<
-        'a,
-        I: Iterator<Item = &'a DeriveFlag>,
-    >(
+    fn generate_derive_flag_functions<'a, I: Iterator<Item = &'a DeriveFlag>>(
         &mut self,
         new_type: &'a Newtype,
         mut derive_flags: I,
@@ -244,7 +255,8 @@ impl WrapperImplementor for LuaImplementor {
 
         if let Some(block) = lua_block {
             let functions = &block.functions;
-            let tokens : Punctuated::<LuaMethod,Token![;]> = parse_quote_spanned!(block.span()=>#functions);
+            let tokens: Punctuated<LuaMethod, Token![;]> =
+                parse_quote_spanned!(block.span()=>#functions);
 
             Ok(tokens.into_iter().collect())
         } else {
@@ -252,4 +264,3 @@ impl WrapperImplementor for LuaImplementor {
         }
     }
 }
-

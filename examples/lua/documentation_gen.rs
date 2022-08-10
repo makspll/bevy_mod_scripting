@@ -73,8 +73,7 @@ impl APIProvider for LuaAPIProvider {
         let ctx = ctx.get_mut().unwrap();
 
         // equivalent to ctx.globals().set() but for multiple items
-        tealr::mlu::set_global_env(Export, ctx)
-            .map_err(ScriptError::new_other)?;
+        tealr::mlu::set_global_env(Export, ctx).map_err(ScriptError::new_other)?;
 
         Ok(())
     }

@@ -7,10 +7,7 @@ use syn::{
     Attribute, Ident, Member, Token, TypePath,
 };
 
-use crate::{
-    ops::*,
-    utils::impl_parse_enum,
-};
+use crate::{ops::*, utils::impl_parse_enum};
 
 use quote::ToTokens;
 

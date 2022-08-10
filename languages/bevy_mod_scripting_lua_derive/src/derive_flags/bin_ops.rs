@@ -1,12 +1,15 @@
-use bevy_mod_scripting_common::{derive_flag::DeriveFlag, newtype::Newtype, ops::{OpName, OpExpr, Side}, arg::SimpleType};
+use bevy_mod_scripting_common::{
+    arg::SimpleType,
+    derive_flag::DeriveFlag,
+    newtype::Newtype,
+    ops::{OpExpr, OpName, Side},
+};
 use indexmap::{IndexMap, IndexSet};
 use proc_macro2::TokenStream;
 use quote::{format_ident, quote_spanned, ToTokens};
 use syn::{parse_quote_spanned, spanned::Spanned, Token};
 
-use crate::{
-    lua_method::LuaMethod, implementor::LuaImplementor,
-};
+use crate::{implementor::LuaImplementor, lua_method::LuaMethod};
 
 pub(crate) fn make_bin_ops<'a>(
     implementor: &mut LuaImplementor,

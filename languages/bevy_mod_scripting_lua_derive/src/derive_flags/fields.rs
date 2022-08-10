@@ -1,10 +1,8 @@
-use bevy_mod_scripting_common::{derive_flag::DeriveFlag, newtype::Newtype, arg::SimpleType};
+use bevy_mod_scripting_common::{arg::SimpleType, derive_flag::DeriveFlag, newtype::Newtype};
 use quote::{format_ident, quote_spanned};
 use syn::{parse_quote_spanned, spanned::Spanned};
 
-use crate::{
-    lua_method::LuaMethod,
-};
+use crate::lua_method::LuaMethod;
 
 pub(crate) fn make_fields<'a>(
     flag: &DeriveFlag,

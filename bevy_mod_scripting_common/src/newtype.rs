@@ -4,7 +4,7 @@ use indexmap::IndexSet;
 use proc_macro2::TokenStream;
 use syn::{
     braced,
-    parse::{Parse, ParseStream, Nothing},
+    parse::{Nothing, Parse, ParseStream},
     punctuated::*,
     spanned::Spanned,
     token::*,
@@ -13,7 +13,6 @@ use syn::{
 
 use crate::{derive_flag::DeriveFlag, implementor::WrapperFunction, utils::EmptyToken};
 use quote::ToTokens;
-
 
 pub struct NewtypeArgs {
     pub docstring: Vec<Attribute>,
@@ -125,7 +124,7 @@ impl Parse for NewtypeArgs {
 }
 
 pub struct WrapperFunctionList {
-    pub label : Ident,
+    pub label: Ident,
     pub impl_: Token![impl],
     pub braces: Brace,
     pub functions: TokenStream,
@@ -158,7 +157,7 @@ impl Parse for WrapperFunctionList {
 
 pub struct Newtype {
     pub args: NewtypeArgs,
-    pub impl_blocks: Punctuated<WrapperFunctionList,EmptyToken>,
+    pub impl_blocks: Punctuated<WrapperFunctionList, EmptyToken>,
 }
 
 impl ToTokens for Newtype {
@@ -175,7 +174,7 @@ impl Parse for Newtype {
     fn parse(input: ParseStream) -> Result<Self, syn::Error> {
         Ok(Self {
             args: input.parse()?,
-            impl_blocks: Punctuated::parse_terminated(input)?
+            impl_blocks: Punctuated::parse_terminated(input)?,
         })
     }
 }

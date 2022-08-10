@@ -2,7 +2,7 @@ use proc_macro2::TokenStream;
 use quote::{quote_spanned, ToTokens};
 use syn::{parse::Parse, spanned::Spanned, Result};
 
-use crate::{newtype::Newtype, derive_flag::DeriveFlag};
+use crate::{derive_flag::DeriveFlag, newtype::Newtype};
 
 /// A function on the wrapped type either wrapping an existing function or providing
 /// additional functionality

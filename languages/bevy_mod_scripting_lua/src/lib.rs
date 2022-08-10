@@ -1,39 +1,34 @@
+use crate::{
+    assets::{LuaFile, LuaLoader},
+    docs::LuaDocFragment,
+};
+use bevy::prelude::*;
+use bevy_mod_scripting::{
+    prelude::*, script_add_synchronizer, script_hot_reload_handler, script_remove_synchronizer,
+    CachedScriptEventState,
+};
 use parking_lot::RwLock;
 use std::fmt;
 use std::marker::PhantomData;
 use std::sync::{Arc, Mutex};
-use bevy::prelude::*;
 use tealr::mlu::mlua::{prelude::*, Function};
-use bevy_mod_scripting::{
-    prelude::*,
-    script_add_synchronizer, script_hot_reload_handler, script_remove_synchronizer,
-    CachedScriptEventState
-};
-use crate::{
-    assets::{LuaFile, LuaLoader},
-    docs::LuaDocFragment
-};
 
 pub mod assets;
 pub mod docs;
 pub mod util;
 pub use tealr;
-pub mod prelude{
+pub mod prelude {
     pub use crate::{
-        assets::{
-            LuaLoader,
-            LuaFile
-        },
-        docs::{
-            LuaDocFragment,TypeWalkerBuilder
-        },
-        tealr::{self,
+        assets::{LuaFile, LuaLoader},
+        docs::{LuaDocFragment, TypeWalkerBuilder},
+        tealr::{
+            self,
             mlu::{
-                mlua::{self,prelude::*,Value},
-                TealData
-            }
+                mlua::{self, prelude::*, Value},
+                TealData,
+            },
         },
-        LuaEvent,LuaScriptHost,
+        LuaEvent, LuaScriptHost,
     };
 }
 

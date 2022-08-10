@@ -33,13 +33,16 @@ impl APIProvider for LuaAPIProvider {
 
         let ctx = ctx.get_mut().unwrap();
 
-        ctx.globals().set(
-            "print",
-            ctx.create_function(|_ctx, msg: String| {
-                info!("{}", msg);
-                Ok(())
-            }).map_err(ScriptError::new_other)?,
-        ).map_err(ScriptError::new_other)?;
+        ctx.globals()
+            .set(
+                "print",
+                ctx.create_function(|_ctx, msg: String| {
+                    info!("{}", msg);
+                    Ok(())
+                })
+                .map_err(ScriptError::new_other)?,
+            )
+            .map_err(ScriptError::new_other)?;
 
         Ok(())
     }
