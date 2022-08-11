@@ -9,7 +9,7 @@ repository = "https://github.com/makspll/bevy_mod_scripting"
 homepage = "https://github.com/makspll/bevy_mod_scripting"
 keywords = ["bevy", "gamedev", "scripting", "lua","rhai"]
 categories = ["game-development"]
-readme = "../readme.md"
+readme = "readme.md"
 
 [features]
 lua = ["bevy_mod_scripting_lua","bevy_mod_scripting_lua_derive"]
