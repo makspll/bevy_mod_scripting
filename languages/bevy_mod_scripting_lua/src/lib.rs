@@ -65,48 +65,6 @@ impl<A: LuaArg> ScriptEvent for LuaEvent<A> {
 ///     - `world` - a reference to the `bevy::ecs::World` the script lives in via [`LuaWorld`]
 ///     - `entity` - an `Entity::to_bits` representation of the entity the script is attached to
 ///     - `script` - an `LuaScriptData` object containing the unique id of this script
-///
-/// # Examples
-///
-/// You can use these variables in your APIProviders like so:
-/// ```
-///    use ::std::sync::Mutex;
-///    use bevy::prelude::*;
-///    use bevy_mod_scripting::{*, langs::mlu::{mlua,mlua::prelude::*}};
-///    
-///    #[derive(Default)]
-///    pub struct LuaAPIProvider;
-///
-///    /// the custom Lua api, world is provided via a global pointer,
-///    /// and callbacks are defined only once at script creation
-///    impl APIProvider for LuaAPIProvider {
-///        type APITarget = Mutex<Lua>;
-///        type DocTarget = LuaDocFragment;
-///        type ScriptContext = Mutex<Lua>;
-///
-///        fn attach_api(&mut self, ctx: &mut Self::APITarget) -> Result<(),ScriptError> {
-///            // callbacks can receive any `ToLuaMulti` arguments, here '()' and
-///            // return any `FromLuaMulti` arguments, here a `usize`
-///            // check the Rlua documentation for more details
-///            let ctx = ctx.lock().unwrap();
-///
-///            ctx.globals().set("your_callback", ctx.create_function(|ctx, ()| {
-///                 let globals = ctx.globals();
-///                 // retrieve the world pointer
-///                 let world_data: usize = globals.get("world").unwrap();
-///                 let world: &mut World = unsafe { &mut *(world_data as *mut World) };
-///                 // retrieve script entity
-///                 let entity_id : u64 = globals.get("entity").unwrap();
-///                 let entity : Entity = Entity::from_bits(entity_id);
-///
-///                 Ok(())
-///            })?)?;
-///
-///                    
-///            Ok(())
-///        }
-///    }
-/// ```
 pub struct LuaScriptHost<A: LuaArg> {
     _ph: PhantomData<A>,
 }

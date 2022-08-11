@@ -28,14 +28,6 @@ jobs:
         with:
           command: check
           args: --features=lua54,rhai,teal,lua_script_api,rhai_script_api
-      - uses: actions-rs/cargo@v1
-        with:
-          command: check
-          args: --features=rhai,rhai_script_api
-      - uses: actions-rs/cargo@v1
-        with:
-          command: check
-          args: --features=lua54,lua_script_api,teal
 
   fmt:
     name: Rustfmt
