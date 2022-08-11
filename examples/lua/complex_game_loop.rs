@@ -1,13 +1,6 @@
 use bevy::prelude::*;
 use bevy::time::FixedTimestep;
-use bevy_event_priority::PriorityEventWriter;
-use bevy_mod_scripting::{
-    langs::mlu::{mlua, mlua::prelude::*, mlua::Value},
-    mlu::mlua::Variadic,
-    APIProvider, AddScriptApiProvider, AddScriptHost, AddScriptHostHandler, LuaDocFragment,
-    LuaEvent, LuaFile, LuaScriptHost, Recipients, Script, ScriptCollection, ScriptData,
-    ScriptError, ScriptingPlugin,
-};
+use bevy_mod_scripting::prelude::*;
 use rand::prelude::SliceRandom;
 use std::sync::atomic::Ordering::Relaxed;
 use std::sync::{atomic::AtomicU32, Mutex};
@@ -38,13 +31,16 @@ impl APIProvider for LuaAPIProvider {
 
         let ctx = ctx.get_mut().unwrap();
 
-        ctx.globals().set(
-            "print",
-            ctx.create_function(|_ctx, msg: String| {
-                info!("{}", msg);
-                Ok(())
-            })?,
-        )?;
+        ctx.globals()
+            .set(
+                "print",
+                ctx.create_function(|_ctx, msg: String| {
+                    info!("{}", msg);
+                    Ok(())
+                })
+                .map_err(ScriptError::new_other)?,
+            )
+            .map_err(ScriptError::new_other)?;
 
         Ok(())
     }
@@ -62,7 +58,7 @@ static COUNTER: AtomicU32 = AtomicU32::new(0);
 
 /// utility for generating random events from a list
 fn fire_random_event(
-    w: &mut PriorityEventWriter<LuaEvent<Variadic<MyLuaArg>>>,
+    w: &mut PriorityEventWriter<LuaEvent<mlua::Variadic<MyLuaArg>>>,
     events: &[ScriptEventData],
 ) {
     let mut rng = rand::thread_rng();
@@ -71,7 +67,7 @@ fn fire_random_event(
     let (event, prio) = events
         .choose(&mut rng)
         .map(|v| {
-            let mut args = Variadic::new();
+            let mut args = mlua::Variadic::new();
             args.push(arg);
             (
                 LuaEvent {
@@ -91,7 +87,7 @@ fn fire_random_event(
     w.send(event, prio);
 }
 
-fn do_some_shit_before_physics(mut w: PriorityEventWriter<LuaEvent<Variadic<MyLuaArg>>>) {
+fn do_some_shit_before_physics(mut w: PriorityEventWriter<LuaEvent<mlua::Variadic<MyLuaArg>>>) {
     info!("PrePhysics, firing:");
 
     for _ in 0..5 {
@@ -100,7 +96,7 @@ fn do_some_shit_before_physics(mut w: PriorityEventWriter<LuaEvent<Variadic<MyLu
     }
 }
 
-fn do_physics(mut w: PriorityEventWriter<LuaEvent<Variadic<MyLuaArg>>>) {
+fn do_physics(mut w: PriorityEventWriter<LuaEvent<mlua::Variadic<MyLuaArg>>>) {
     info!("Physics, firing:");
 
     for _ in 0..5 {
@@ -109,7 +105,7 @@ fn do_physics(mut w: PriorityEventWriter<LuaEvent<Variadic<MyLuaArg>>>) {
     }
 }
 
-fn do_update(mut w: PriorityEventWriter<LuaEvent<Variadic<MyLuaArg>>>) {
+fn do_update(mut w: PriorityEventWriter<LuaEvent<mlua::Variadic<MyLuaArg>>>) {
     info!("Update, firing:");
 
     // fire random event, for any stages
@@ -180,7 +176,7 @@ fn main() -> std::io::Result<()> {
             PRE_PHYSICS_SCRIPTS,
             SystemStage::single_threaded(),
         )
-        .add_script_handler_stage_with_criteria::<LuaScriptHost<Variadic<MyLuaArg>>, _, _, _, 0, 10>(
+        .add_script_handler_stage_with_criteria::<LuaScriptHost<mlua::Variadic<MyLuaArg>>, _, _, _, 0, 10>(
             PRE_PHYSICS_SCRIPTS,
             FixedTimestep::step(TIMESTEP_2_PER_SECOND),
         )
@@ -191,7 +187,7 @@ fn main() -> std::io::Result<()> {
             POST_PHYSICS_SCRIPTS,
             SystemStage::single_threaded(),
         )
-        .add_script_handler_stage_with_criteria::<LuaScriptHost<Variadic<MyLuaArg>>, _, _, _, 11, 20>(
+        .add_script_handler_stage_with_criteria::<LuaScriptHost<mlua::Variadic<MyLuaArg>>, _, _, _, 11, 20>(
             POST_PHYSICS_SCRIPTS,
             FixedTimestep::step(TIMESTEP_2_PER_SECOND),
         )
@@ -203,10 +199,10 @@ fn main() -> std::io::Result<()> {
             POST_UPDATE_SCRIPTS,
             SystemStage::single_threaded(),
         )
-        .add_script_handler_stage::<LuaScriptHost<Variadic<MyLuaArg>>, _, 21, 30>(POST_UPDATE_SCRIPTS)
+        .add_script_handler_stage::<LuaScriptHost<mlua::Variadic<MyLuaArg>>, _, 21, 30>(POST_UPDATE_SCRIPTS)
         // this stage handles addition and removal of script contexts, we can safely use `CoreStage::PostUpdate`
-        .add_script_host::<LuaScriptHost<Variadic<MyLuaArg>>, _>(CoreStage::PostUpdate)
-        .add_api_provider::<LuaScriptHost<Variadic<MyLuaArg>>>(Box::new(LuaAPIProvider));
+        .add_script_host::<LuaScriptHost<mlua::Variadic<MyLuaArg>>, _>(CoreStage::PostUpdate)
+        .add_api_provider::<LuaScriptHost<mlua::Variadic<MyLuaArg>>>(Box::new(LuaAPIProvider));
     // We have 3 core systems
 
     // PrePhysics (twice per second), fires 5 random events

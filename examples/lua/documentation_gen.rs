@@ -1,12 +1,9 @@
 use bevy::prelude::*;
 
 use bevy_mod_scripting::{
-    api::lua::bevy::LuaBevyAPIProvider,
-    langs::mlu::{mlua, mlua::prelude::*, mlua::Value, TealData},
-    APIProvider, AddScriptApiProvider, AddScriptHost, AddScriptHostHandler, GenDocumentation,
-    LuaDocFragment, LuaScriptHost, ScriptError, ScriptingPlugin,
+    api::{impl_tealr_type, lua::bevy::LuaBevyAPIProvider},
+    prelude::*,
 };
-use tealr::TypeName;
 
 use std::sync::Mutex;
 
@@ -19,11 +16,13 @@ impl<'lua> ToLua<'lua> for MyLuaArg {
     }
 }
 
-#[derive(Clone, tealr::mlu::UserData, TypeName)]
+#[derive(Clone)]
 /// This is acts as a documentation and function holder
 /// We can add some general documentation about what it holds
 /// but also specific function level documenation
 pub struct APIModule;
+
+impl_tealr_type!(APIModule);
 
 impl TealData for APIModule {
     fn add_methods<'lua, T: tealr::mlu::TealDataMethods<'lua, Self>>(methods: &mut T) {
@@ -76,7 +75,7 @@ impl APIProvider for LuaAPIProvider {
         let ctx = ctx.get_mut().unwrap();
 
         // equivalent to ctx.globals().set() but for multiple items
-        tealr::mlu::set_global_env(Export, ctx)?;
+        tealr::mlu::set_global_env(Export, ctx).map_err(ScriptError::new_other)?;
 
         Ok(())
     }

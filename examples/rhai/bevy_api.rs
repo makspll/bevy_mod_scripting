@@ -1,7 +1,7 @@
 use bevy::app::AppExit;
 use bevy::math::DQuat;
 use bevy::prelude::*;
-use bevy_mod_scripting::{prelude::*, RhaiScriptHost, api::rhai::bevy::RhaiBevyAPIProvider};
+use bevy_mod_scripting::{prelude::*, api::rhai::bevy::RhaiBevyAPIProvider};
 
 /// Let's define a resource, we want it to be "assignable" via lua so we derive `ReflectLuaProxyable`
 /// This allows us to reach this value when it's a field under any other Reflectable type
