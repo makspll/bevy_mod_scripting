@@ -16,6 +16,8 @@ include= ["readme.md","/src","/examples","/assets","LICENSE"]
 name = "bevy_mod_scripting"
 path = "src/lib.rs"
 
+[package.metadata."docs.rs"]
+features = ["lua","rhai","lua_script_api","rhai_script_api","teal"]
 
 [features]
 ## core

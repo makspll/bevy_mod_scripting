@@ -103,10 +103,11 @@ Any types implementing the `mlua::ToLua` trait can be used.
 
 ``` rust
 use bevy::prelude::*;
-use bevy_mod_scripting::{prelude::*,events::*,langs::mlu::{mlua,mlua::prelude::*}};
+use bevy_mod_scripting::prelude::*;
 
 
 // event callback generator for lua
+#[cfg(feature = "lua")]
 pub fn trigger_on_update_lua(mut w: PriorityEventWriter<LuaEvent<()>>) {
     let event = LuaEvent::<()> {
         hook_name: "on_update".to_string(), 
@@ -124,13 +125,15 @@ Rhai supports any rust types implementing FuncArgs as function arguments.
 
 ``` rust
 use bevy::prelude::*;
-use bevy_mod_scripting::{prelude::*,langs::rhai::FuncArgs};
+use bevy_mod_scripting::prelude::*;
 
+#[cfg(feature = "rhai")]
 #[derive(Clone)]
 pub struct MyRhaiArgStruct {
     // ...
 }
 
+#[cfg(feature = "rhai")]
 impl FuncArgs for MyRhaiArgStruct {
     fn parse<ARGS: Extend<rhai::Dynamic>>(self, _args: &mut ARGS) {
         // ... 
@@ -139,6 +142,7 @@ impl FuncArgs for MyRhaiArgStruct {
 
 // event callback generator for rhai
 // rhai event arguments can be any rust type implementing FuncArgs
+#[cfg(feature = "rhai")]
 pub fn trigger_on_update_rhai(mut w: PriorityEventWriter<RhaiEvent<MyRhaiArgStruct>>) {
     let event = RhaiEvent {
         hook_name: "on_update".to_string(),
@@ -165,6 +169,7 @@ use bevy_mod_scripting::prelude::*;
 
 // An example of a startup system which loads the lua script "console_integration.lua" 
 // placed in "assets/scripts/" and attaches it to a new entity
+#[cfg(feature = "lua")]
 pub fn load_a_script(
     server: Res<AssetServer>,
     mut commands: Commands,
@@ -188,13 +193,15 @@ To expose an API to your scripts, implement the APIProvider trait. To register t
 
 ``` rust
 use ::std::sync::Mutex;
-use bevy_mod_scripting::{prelude::*,langs::{mlu::mlua::prelude::*,rhai::*}};
+use bevy_mod_scripting::prelude::*;
 
+#[cfg(feature = "lua")]
 #[derive(Default)]
 pub struct LuaAPI;
 
 /// the custom Lua api, world is provided via a global pointer,
 /// and callbacks are defined only once at script creation
+#[cfg(feature = "lua")]
 impl APIProvider for LuaAPI {
     type APITarget = Mutex<Lua>;
     type DocTarget = LuaDocFragment;
@@ -208,9 +215,11 @@ impl APIProvider for LuaAPI {
     }
 }
 
+#[cfg(feature = "rhai")]
 #[derive(Default)]
 pub struct RhaiAPI {}
 
+#[cfg(feature = "rhai")]
 impl APIProvider for RhaiAPI {
     type APITarget = Engine;
     type DocTarget = RhaiDocFragment;
@@ -245,6 +254,7 @@ Documentation features are exposed at runtime via the `update_documentation` bui
 use bevy::prelude::*;
 use bevy_mod_scripting::prelude::*;
 
+#[cfg(feature = "lua")]
 fn main() -> std::io::Result<()> {
     let mut app = App::new();
 
