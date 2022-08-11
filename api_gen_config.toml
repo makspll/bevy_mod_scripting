@@ -1,19 +1,28 @@
 
 
 imports = """
+#[cfg(feature="lua")]
+use {
+	bevy_mod_scripting_lua_derive::impl_lua_newtype,
+	bevy_mod_scripting_lua::{
+		tealr::mlu::mlua::MetaMethod, 
+		docs::LuaDocFragment
+	},
+	crate::lua::RegisterForeignLuaType,
+};
 use std::ops::*;
-use crate::{lua::bevy::{LuaWorld,LuaTypeRegistration,LuaScriptData}, std::LuaVec, DummyTypeName};
-use crate::{impl_tealr_any_union,ReflectionError,ReflectPathElem,RegisterForeignLuaType,ReflectedValue, api::ValueIndex, APIProvider, LuaDocFragment};
+use crate::{script_ref::{ReflectedValue,ValueIndex},
+	sub_reflect::ReflectPathElem,
+	error::ReflectionError
+};
 use std::sync::Mutex;
-use crate::{impl_tealr_generic};
-use tealr::{mlu::{mlua,mlua::{prelude::*,MetaMethod}}};
+use bevy_mod_scripting_core::prelude::*;
 use bevy::prelude::App;
 """
 
 other = """
-impl_tealr_generic!(pub(crate) struct T);
-impl_tealr_generic!(pub(crate) struct K);
-impl_tealr_generic!(pub(crate) struct V);
+#[cfg(feature="lua")]
+crate::impl_tealr_generic!(pub(crate) struct T);
 """
 
 primitives = ["usize","isize","f32","f64","u128","u64","u32","u16","u8","i128","i64","i32","i16","i8","String","bool"]
@@ -23,29 +32,29 @@ primitives = ["usize","isize","f32","f64","u128","u64","u32","u16","u8","i128","
 name="ReflectedValue"
 
 [[manual_lua_types]]
-name="LuaWorld"
+name="crate::lua::bevy::LuaWorld"
 proxy_name="world"
 include_global_proxy=true
 use_dummy_proxy=true
 
 [[manual_lua_types]]
-name="LuaScriptData"
+name="crate::lua::bevy::LuaScriptData"
 proxy_name="script"
 include_global_proxy=true
 use_dummy_proxy=true
 
 [[manual_lua_types]]
-name="LuaEntity"
+name="crate::lua::bevy::LuaEntity"
 proxy_name="entity"
 include_global_proxy=true
 use_dummy_proxy=true
 dont_process=true
 
 [[manual_lua_types]]
-name="LuaTypeRegistration"
+name="crate::lua::bevy::LuaTypeRegistration"
 
 [[manual_lua_types]]
-name="LuaVec<T>"
+name="crate::lua::std::LuaVec<T>"
 
 
 ## BEVY_UI
@@ -140,7 +149,6 @@ source="bevy_ui"
 [[types]]
 type="AnimationPlayer"
 source="bevy_animation"
-
 
 
 ## BEVY_CORE
@@ -303,7 +311,6 @@ type="PointLightShadowMap"
 source="bevy_pbr"
 
 
-
 [[types]]
 type="AlphaMode"
 source="bevy_pbr"
@@ -321,7 +328,6 @@ source="bevy_pbr"
 [[types]]
 type="Camera3dDepthLoadOp"
 source="bevy_core_pipeline"
-
 
 
 [[types]]
@@ -413,9 +419,6 @@ source="bevy_render"
 type="Msaa"
 source="bevy_render"
 
-
-
-
 [[types]]
 type="Camera"
 source="bevy_render"
@@ -451,10 +454,6 @@ traits=[
 ]
 
 [[types]]
-type="RenderTarget"
-source="bevy_render"
-
-[[types]]
 type="DepthCalculation"
 source="bevy_render"
 
@@ -483,11 +482,9 @@ source="bevy_asset"
 type="SourcePathId"
 source="bevy_asset"
 
-
 [[types]]
 type="HandleId"
 source="bevy_asset"
-
 
 ## BEVY_MATH
 [[types]]
@@ -497,7 +494,7 @@ lua_methods=[
     "(MetaMethod::Index) => |_,s,idx: usize| {Ok(s.inner()?[idx])}",
     "mut (MetaMethod::NewIndex) => |_,s,(idx,val): (usize,f32)| {s.val_mut(|s| Ok(s[idx] = val))?}"
 ]
-import_path="glam::f32::vec2::Vec2"
+import_path="glam::f32::Vec2"
 
 [[types]]
 type="Vec3"
@@ -506,7 +503,7 @@ lua_methods=[
     "(MetaMethod::Index) => |_,s,idx: usize| {Ok(s.inner()?[idx])}",
     "mut (MetaMethod::NewIndex) => |_,s,(idx,val): (usize,f32)| {s.val_mut(|s| Ok(s[idx] = val))?}"
 ]
-import_path="glam::f32::vec3::Vec3"
+import_path="glam::f32::Vec3"
 
 [[types]]
 type="Vec3A"
@@ -515,7 +512,7 @@ lua_methods=[
     "(MetaMethod::Index) => |_,s,idx: usize| {Ok(s.inner()?[idx])}",
     "mut (MetaMethod::NewIndex) => |_,s,(idx,val): (usize,f32)| {s.val_mut(|s| Ok(s[idx] = val))?}"
 ]
-import_path="glam::f32::sse2::vec3A::Vec3A"
+import_path="glam::f32::Vec3A"
 
 
 [[types]]
@@ -525,32 +522,32 @@ lua_methods=[
     "(MetaMethod::Index) => |_,s,idx: usize| {Ok(s.inner()?[idx])}",
     "mut (MetaMethod::NewIndex) => |_,s,(idx,val): (usize,f32)| {s.val_mut(|s| Ok(s[idx] = val))?}"
 ]
-import_path="glam::f32::sse2::vec4::Vec4"
+import_path="glam::f32::Vec4"
 
 [[types]]
 type="BVec2"
 source="bevy_math"
-import_path="glam::f32::sse2::vec2::BVec2"
+import_path="glam::bool::BVec2"
 
 [[types]]
 type="BVec3"
 source="bevy_math"
-import_path="glam::f32::sse2::vec3::BVec3"
+import_path="glam::bool::BVec3"
 
 [[types]]
 type="BVec4"
 source="bevy_math"
-import_path="glam::f32::sse2::vec4::BVec4"
+import_path="glam::bool::BVec4"
 
 [[types]]
 type="BVec3A"
 source="bevy_math"
-import_path="glam::f32::sse2::vec3::BVec3A"
+import_path="glam::bool::BVec3A"
 
 [[types]]
 type="BVec4A"
 source="bevy_math"
-import_path="glam::f32::sse2::vec4::BVec4A"
+import_path="glam::bool::BVec4A"
 
 [[types]]
 type="DVec2"
@@ -559,7 +556,7 @@ lua_methods=[
     "(MetaMethod::Index) => |_,s,idx: usize| {Ok(s.inner()?[idx])}",
     "mut (MetaMethod::NewIndex) => |_,s,(idx,val): (usize,f64)| {s.val_mut(|s| Ok(s[idx] = val))?}"
 ]
-import_path="glam::f64::dvec2::DVec2"
+import_path="glam::f64::DVec2"
 
 [[types]]
 type="DVec3"
@@ -568,7 +565,7 @@ lua_methods=[
     "(MetaMethod::Index) => |_,s,idx: usize| {Ok(s.inner()?[idx])}",
     "mut (MetaMethod::NewIndex) => |_,s,(idx,val): (usize,f64)| {s.val_mut(|s| Ok(s[idx] = val))?}"
 ]
-import_path="glam::f64::dvec3::DVec3"
+import_path="glam::f64::DVec3"
 
 [[types]]
 type="DVec4"
@@ -577,7 +574,7 @@ lua_methods=[
     "(MetaMethod::Index) => |_,s,idx: usize| {Ok(s.inner()?[idx])}",
     "mut (MetaMethod::NewIndex) => |_,s,(idx,val): (usize,f64)| {s.val_mut(|s| Ok(s[idx] = val))?}"
 ]
-import_path="glam::f64::dvec4::DVec4"
+import_path="glam::f64::DVec4"
 
 [[types]]
 type="IVec2"
@@ -586,7 +583,7 @@ lua_methods=[
     "(MetaMethod::Index) => |_,s,idx: usize| {Ok(s.inner()?[idx])}",
     "mut (MetaMethod::NewIndex) => |_,s,(idx,val): (usize,i32)| {s.val_mut(|s| Ok(s[idx] = val))?}"
 ]
-import_path="glam::i32::ivec2::IVec2"
+import_path="glam::i32::IVec2"
 
 [[types]]
 type="IVec3"
@@ -595,7 +592,7 @@ lua_methods=[
     "(MetaMethod::Index) => |_,s,idx: usize| {Ok(s.inner()?[idx])}",
     "mut (MetaMethod::NewIndex) => |_,s,(idx,val): (usize,i32)| {s.val_mut(|s| Ok(s[idx] = val))?}"
 ]
-import_path="glam::i32::ivec3::IVec3"
+import_path="glam::i32::IVec3"
 
 [[types]]
 type="IVec4"
@@ -604,7 +601,7 @@ lua_methods=[
     "(MetaMethod::Index) => |_,s,idx: usize| {Ok(s.inner()?[idx])}",
     "mut (MetaMethod::NewIndex) => |_,s,(idx,val): (usize,i32)| {s.val_mut(|s| Ok(s[idx] = val))?}"
 ]
-import_path="glam::i32::ivec4::IVec4"
+import_path="glam::i32::IVec4"
 
 [[types]]
 type="UVec2"
@@ -613,7 +610,7 @@ lua_methods=[
     "(MetaMethod::Index) => |_,s,idx: usize| {Ok(s.inner()?[idx])}",
     "mut (MetaMethod::NewIndex) => |_,s,(idx,val): (usize,u32)| {s.val_mut(|s| Ok(s[idx] = val))?}"
 ]
-import_path="glam::u32::uvec2::UVec2"
+import_path="glam::u32::UVec2"
 
 [[types]]
 type="UVec3"
@@ -622,7 +619,7 @@ lua_methods=[
     "(MetaMethod::Index) => |_,s,idx: usize| {Ok(s.inner()?[idx])}",
     "mut (MetaMethod::NewIndex) => |_,s,(idx,val): (usize,u32)| {s.val_mut(|s| Ok(s[idx] = val))?}"
 ]
-import_path="glam::u32::uvec3::UVec3"
+import_path="glam::u32::UVec3"
 
 [[types]]
 type="UVec4"
@@ -631,7 +628,7 @@ lua_methods=[
     "(MetaMethod::Index) => |_,s,idx: usize| {Ok(s.inner()?[idx])}",
     "mut (MetaMethod::NewIndex) => |_,s,(idx,val): (usize,u32)| {s.val_mut(|s| Ok(s[idx] = val))?}"
 ]
-import_path="glam::u32::uvec4::UVec4"
+import_path="glam::u32::UVec4"
 
 [[types]]
 type="Mat3"
@@ -662,7 +659,7 @@ lua_methods=[
 	}
 """
 ]
-import_path="glam::f32::mat3::Mat3"
+import_path="glam::f32::Mat3"
 
 [[types]]
 type="Mat2"
@@ -693,7 +690,7 @@ lua_methods=[
 	}
 """
 ]
-import_path="glam::f32::sse2::mat2::Mat2"
+import_path="glam::f32::Mat2"
 
 
 [[types]]
@@ -725,7 +722,7 @@ lua_methods=[
 	}
 """
 ]
-import_path="glam::f32::sse2::mat3::Mat3A"
+import_path="glam::f32::Mat3A"
 
 [[types]]
 type="Mat4"
@@ -756,7 +753,7 @@ lua_methods=[
 	}
 """
 ]
-import_path="glam::f32::sse2::mat4::Mat4"
+import_path="glam::f32::Mat4"
 
 
 [[types]]
@@ -788,7 +785,7 @@ lua_methods=[
 	}
 """
 ]
-import_path="glam::f64::dmat2::DMat2"
+import_path="glam::f64::DMat2"
 
 [[types]]
 type="DMat3"
@@ -819,7 +816,7 @@ lua_methods=[
 	}
 """
 ]
-import_path="glam::f64::dmat3::DMat3"
+import_path="glam::f64::DMat3"
 
 [[types]]
 type="DMat4"
@@ -850,39 +847,39 @@ lua_methods=[
 	}
 """
 ]
-import_path="glam::f64::dmat4::DMat4"
+import_path="glam::f64::DMat4"
 
 [[types]]
 type="Affine2"
 source="bevy_math"
-import_path="glam::f32::sse2::mat2::Affine2"
+import_path="glam::f32::Affine2"
 
 [[types]]
 type="Affine3A"
 source="bevy_math"
-import_path="glam::f32::sse2::mat3::Affine3A"
+import_path="glam::f32::Affine3A"
 
 [[types]]
 type="DAffine2"
 source="bevy_math"
-import_path="glam::f64::sse2::mat2::DAffine2"
+import_path="glam::f64::DAffine2"
 
 [[types]]
 type="DAffine3"
 source="bevy_math"
-import_path="glam::f64::sse2::mat3::DAffine3"
+import_path="glam::f64::DAffine3"
 
 [[types]]
 type="Quat"
 source="bevy_math"
-import_path="glam::f32::sse2::quat::Quat"
+import_path="glam::f32::Quat"
 
 [[types]]
 type="DQuat"
 source="bevy_math"
-import_path="glam::f64::dquat::DQuat"
+import_path="glam::f64::DQuat"
 
 [[types]]
 type="EulerRot"
 source="bevy_math"
-import_path="glam::euler::EulerRot"
+import_path="glam::EulerRot"

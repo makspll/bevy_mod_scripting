@@ -10,10 +10,14 @@ name: Check and Lint
 jobs:
   check:
     name: Check
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+       os: [windows-latest, ubuntu-latest, macOS-latest]
     steps:
       - name: Install alsa and udev
         run: sudo apt-get update; sudo apt-get install --no-install-recommends libasound2-dev libudev-dev
+        if: runner.os == 'linux'
       - uses: actions/checkout@v2
       - uses: actions-rs/toolchain@v1
         with:
@@ -24,7 +28,7 @@ jobs:
       - uses: actions-rs/cargo@v1
         with:
           command: check
-          args: --features=lua54,teal
+          args: --workspace --features=lua54,rhai,teal,lua_script_api,rhai_script_api
 
   fmt:
     name: Rustfmt
@@ -61,4 +65,4 @@ jobs:
       - uses: actions-rs/cargo@v1
         with:
           command: clippy
-          args: --features=lua54,teal -- -D warnings 
+          args: --features=lua54,rhai,teal,lua_script_api,rhai_script_api -- -D warnings 

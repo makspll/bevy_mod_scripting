@@ -4,12 +4,12 @@ version = "0.1.1"
 authors = ["Maksymilian Mozolewski <makspl17@gmail.com>"]
 edition = "2021"
 license = "MIT"
-description = "Derive macros for bevy_mod_scripting"
-repository = "https://github.com/makspll/bevy_scripting"
-homepage = "https://github.com/makspll/bevy_scripting"
-keywords = ["bevy", "gamedev", "scripting", "lua"]
+description = "A code generator creating macro invocations to support the changing bevy API"
+repository = "https://github.com/makspll/bevy_mod_scripting"
+homepage = "https://github.com/makspll/bevy_mod_scripting"
+keywords = ["bevy", "gamedev", "scripting", "lua","code-generation"]
 categories = ["game-development"]
-readme = "../readme.md"
+readme = "readme.md"
 
 [lib]
 name = "bevy_api_gen_lib"

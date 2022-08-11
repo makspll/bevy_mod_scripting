@@ -4,7 +4,7 @@ version = "0.1.1"
 authors = ["Maksymilian Mozolewski <makspl17@gmail.com>"]
 edition = "2021"
 license = "MIT"
-description = "Bevy plugin for enabling scripting"
+description = "Multi language scripting in Bevy"
 repository = "https://github.com/makspll/bevy_mod_scripting"
 homepage = "https://github.com/makspll/bevy_mod_scripting"
 keywords = ["bevy", "gamedev", "scripting", "lua"]
@@ -16,58 +16,77 @@ include= ["readme.md","/src","/examples","/assets","LICENSE"]
 name = "bevy_mod_scripting"
 path = "src/lib.rs"
 
-[package.metadata.docs.rs]
-features = ["lua54","teal","unsafe_lua_modules"]
-
-[package.metadata.release]
-enable-features=["lua54"]
+[package.metadata."docs.rs"]
+features = ["lua","rhai","lua_script_api","rhai_script_api","teal"]
 
 [features]
+## core
+doc_always = ["bevy_mod_scripting_core/doc_always"]
 
-# if enabled enables documentation updating in optimized builds
-doc_always = []
+## lua
+lua = ["bevy_mod_scripting_lua"]
+# one of these must be selected
+lua51 = ["bevy_mod_scripting_lua/lua51", "lua"]
+lua52 = ["bevy_mod_scripting_lua/lua52", "lua"]
+lua53 = ["bevy_mod_scripting_lua/lua53", "lua"]
+lua54 = ["bevy_mod_scripting_lua/lua54", "lua"]
+luajit = ["bevy_mod_scripting_lua/luajit", "lua"]
+luajit52 = ["bevy_mod_scripting_lua/luajit52", "lua"]
 
-# enables loading possibly unsafe lua modules by lua scripts
-unsafe_lua_modules = []
+# optional
+lua_script_api=["bevy_script_api/lua"]
+unsafe_lua_modules=["bevy_mod_scripting_lua/unsafe_lua_modules"]
+teal = ["bevy_mod_scripting_lua/teal"]
+mlua_serialize = ["bevy_mod_scripting_lua/mlua_serialize"]
+mlua_macros = ["bevy_mod_scripting_lua/mlua_macros"]
 
-# enable teal utilities
-teal = []
-
-
-lua51 = ["tealr/mlua_lua51"]
-lua52 = ["tealr/mlua_lua52"]
-lua53 = ["tealr/mlua_lua53"]
-lua54 = ["tealr/mlua_lua54"]
-luajit = ["tealr/mlua_luajit"]
-luajit52 = ["tealr/mlua_luajit52"]
-
-mlua_serialize = ["tealr/mlua_serialize"]
-mlua_macros = ["tealr/mlua_macros"]
+## rhai
+rhai = ["bevy_mod_scripting_rhai"]
+rhai_script_api=["bevy_script_api/rhai"]
 
 [dependencies]
-bevy = { version = "0.8.0", default-features = false, features=["bevy_asset","bevy_gltf","bevy_animation","bevy_core_pipeline","bevy_ui","bevy_pbr","bevy_render","bevy_text","bevy_sprite","filesystem_watcher"]}
-tealr = { version = "0.9.0-alpha1", features=["mlua_vendored","mlua_send"]}
-rhai = { version = "1.7.0", features = ["sync"] }
-anyhow = "1.0.57"
-once_cell = "1.10.0"
-bevy_event_priority = {path = "bevy_event_priority", version = "0.1.1"}
-bevy_mod_scripting_derive = {path = "bevy_mod_scripting_derive", version = "0.1.1"}
-thiserror = "1.0.31"
-lazy_static = "1.4.0"
-paste = "1.0.7"
-parking_lot = "0.12.1"
-serde_json = "1.0.81"
-num-traits = "0.2.15"
-serde = { version = "1", features = ["derive"] }
-smallvec = "1.9.0"
+bevy_mod_scripting_core = { path = "bevy_mod_scripting_core", version = "0.1.1" }
+bevy_mod_scripting_lua = { path = "languages/bevy_mod_scripting_lua", version = "0.1.1", optional = true }
+bevy_mod_scripting_rhai = { path = "languages/bevy_mod_scripting_rhai", version = "0.1.1", optional = true}
+bevy_script_api = { path = "bevy_script_api", version = "0.1.1", optional = true }
 
 [dev-dependencies]
-# bevy_console = { git = "https://github.com/OnlyGraphs/bevy-console" }
-# bevy_asset_loader = {git = "https://github.com/NiklasEi/bevy_asset_loader", features = ["dynamic_assets"]}
 bevy = { version = "0.8.0"}
 rand = "0.8.5"
-serde = "1.0.137"
-criterion = "0.3"
+
+
+# bevy_console = { git = "https://github.com/OnlyGraphs/bevy-console" }
+# bevy_asset_loader = {git = "https://github.com/NiklasEi/bevy_asset_loader", features = ["dynamic_assets"]}
+# bevy_script_api= {path="./bevy_script_api", version="0.1.1", features=["lua","rhai"]}
+# bevy_mod_scripting_rhai = {path="languages/bevy_mod_scripting_rhai", version="0.1.1"}
+# bevy_mod_scripting_lua = {path="languages/bevy_mod_scripting_lua", version="0.1.1", features=["lua54"]}
+# bevy_mod_scripting_lua_derive = {path="languages/bevy_mod_scripting_lua_derive", version="0.1.1"}
+
+# bevy = { version = "0.8.0"}
+# serde = "1.0.137"
+# criterion = "0.3"
+
+
+[workspace]
+resolver = "2"
+members = [
+    "bevy_mod_scripting_core",
+    "bevy_event_priority",
+    "bevy_mod_scripting_derive",
+    "bevy_api_gen",
+    "bevy_script_api",
+    "languages/bevy_mod_scripting_lua",
+    "languages/bevy_mod_scripting_lua_derive",
+    "languages/bevy_mod_scripting_rhai",
+    # "languages/rhai/derive",
+    "bevy_mod_scripting_common"
+]
+
+[profile.dev]
+opt-level = 1
+
+[profile.dev.package."*"]
+opt-level = 3
 
 
 # needs bevy 0.8 support from console
@@ -84,45 +103,38 @@ criterion = "0.3"
 [[example]]
 name = "complex_game_loop_lua"
 path = "examples/lua/complex_game_loop.rs"
-required-features = ["lua54"]
+required-features=["lua54"]
 
 [[example]]
 name = "game_of_life_lua"
 path = "examples/lua/game_of_life.rs"
-required-features = ["lua54","teal"]
+required-features=["lua54","teal","lua_script_api"]
 
 [[example]]
 name = "event_recipients_lua"
 path = "examples/lua/event_recipients.rs"
+required-features=["lua54"]
 
 [[example]]
 name = "documentation_gen_lua"
 path = "examples/lua/documentation_gen.rs"
-required-features = ["lua54"]
+required-features=["lua54","teal","lua_script_api"]
 
 
 [[example]]
 name = "bevy_api_lua"
 path = "examples/lua/bevy_api.rs"
-required-features = ["lua54"]
+required-features=["lua54","lua_script_api"]
+
+[[example]]
+name = "bevy_api_rhai"
+path = "examples/rhai/bevy_api.rs"
+required-features=["rhai"]
 
 [[example]]
 name = "wrappers"
 path = "examples/wrappers.rs"
-required-features = ["lua54"]
+required-features=["lua54","lua_script_api"]
 
 
-[workspace]
-resolver = "2"
-members = [
-    "bevy_event_priority",
-    "bevy_mod_scripting_derive",
-    "bevy_api_gen"
-]
-
-[profile.dev]
-opt-level = 1
-
-[profile.dev.package."*"]
-opt-level = 3
 

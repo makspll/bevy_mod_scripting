@@ -11,9 +11,14 @@ use bevy::{
     time::FixedTimestep,
     window::WindowResized,
 };
+
 use bevy_mod_scripting::{
-    api::lua::bevy::LuaBevyAPIProvider, langs::mlu::mlua, lua_path, prelude::*, std::LuaVec,
-    ReflectLuaProxyable,
+    api::{
+        impl_lua_newtype, impl_script_newtype,
+        lua::{bevy::LuaBevyAPIProvider, std::LuaVec, LuaProxyable, ReflectLuaProxyable},
+        ValueIndex,
+    },
+    prelude::*,
 };
 
 #[derive(Debug, Default, Reflect, Component)]
@@ -23,8 +28,9 @@ pub struct LifeState {
 }
 
 impl_script_newtype!(
+    #[languages(lua)]
     LifeState : Debug
-    impl {
+    lua impl {
         get "cells" => |lua,s: &LuaLifeState| {
             Ok(LuaVec::<u8>::new_ref(s.script_ref().index(Cow::Borrowed("cells"))))
         };
@@ -102,7 +108,7 @@ pub fn setup(
     image.sampler_descriptor = ImageSampler::nearest();
 
     // in release builds we want to fetch ".lua" files over ".tl" files
-    let script_path = lua_path!("game_of_life");
+    let script_path = bevy_mod_scripting_lua::lua_path!("game_of_life");
 
     commands.spawn_bundle(Camera2dBundle::default());
     commands
