@@ -1,4 +1,4 @@
-use bevy_mod_scripting_core::{DocFragment, ScriptError};
+use bevy_mod_scripting_core::prelude::*;
 
 pub struct RhaiDocFragment;
 

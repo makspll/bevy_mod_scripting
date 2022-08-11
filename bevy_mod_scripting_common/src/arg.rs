@@ -135,9 +135,7 @@ impl SimpleType {
         match self {
             SimpleType::BaseIdent(_) => self,
             SimpleType::Ref {
-                ampersand,
-                mut_,
-                type_,
+                type_, ..
             } => *type_,
         }
     }
@@ -206,8 +204,8 @@ impl Parse for ArgType {
 impl ToTokens for ArgType {
     fn to_tokens(&self, tokens: &mut TokenStream) {
         match self {
-            ArgType::Raw { paren, type_ } => tokens.extend(quote::quote!(Raw(#type_))),
-            ArgType::Wrapped { paren, type_ } => tokens.extend(quote::quote!(Wrapped(#type_))),
+            ArgType::Raw { type_, ..} => tokens.extend(quote::quote!(Raw(#type_))),
+            ArgType::Wrapped { type_, .. } => tokens.extend(quote::quote!(Wrapped(#type_))),
             ArgType::Self_(s) => s.to_tokens(tokens),
         };
     }
@@ -238,16 +236,16 @@ impl ArgType {
 
     pub fn is_any_ref(&self) -> bool {
         match self {
-            ArgType::Raw { paren, type_ } => type_.is_any_ref(),
-            ArgType::Wrapped { paren, type_ } => type_.is_any_ref(),
+            ArgType::Raw { type_, .. } => type_.is_any_ref(),
+            ArgType::Wrapped { type_, .. } => type_.is_any_ref(),
             ArgType::Self_(s) => s.is_any_ref(),
         }
     }
 
     pub fn is_mut_ref(&self) -> bool {
         match self {
-            ArgType::Raw { paren, type_ } => type_.is_mut_ref(),
-            ArgType::Wrapped { paren, type_ } => type_.is_mut_ref(),
+            ArgType::Raw { type_, .. } => type_.is_mut_ref(),
+            ArgType::Wrapped { type_, .. } => type_.is_mut_ref(),
             ArgType::Self_(s) => s.is_mut_ref(),
         }
     }

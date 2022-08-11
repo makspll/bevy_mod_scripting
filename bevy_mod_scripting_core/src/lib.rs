@@ -1,21 +1,28 @@
 use bevy::{ecs::schedule::IntoRunCriteria, prelude::*};
+use systems::script_event_handler;
+use crate::{
+    error::ScriptError,
+    hosts::{APIProvider,APIProviders,ScriptHost}
+};
 
 pub mod error;
 pub mod hosts;
-
-pub use bevy_event_priority as events;
-pub use {error::*, hosts::*};
-
+pub mod docs;
+pub mod systems;
+pub mod asset;
 pub mod prelude {
     // general
     pub use {
         crate::hosts::{
-            APIProvider, APIProviders, CodeAsset, Recipients, Script, ScriptCollection,
+            APIProvider, APIProviders, Recipients, Script, ScriptCollection,
             ScriptContexts, ScriptData, ScriptEvent, ScriptHost,
         },
+        crate::docs::DocFragment,
+        crate::asset::CodeAsset,
+        crate::error::ScriptError,
         crate::{
             AddScriptApiProvider, AddScriptHost, AddScriptHostHandler, GenDocumentation,
-            ScriptError, ScriptErrorEvent, ScriptingPlugin,
+            ScriptErrorEvent, ScriptingPlugin,
         },
         bevy_event_priority::{
             AddPriorityEvent, PriorityEvent, PriorityEventReader, PriorityEventWriter,
@@ -23,6 +30,7 @@ pub mod prelude {
         },
     };
 }
+pub use bevy_event_priority as events;
 
 #[derive(Default)]
 /// Bevy plugin enabling run-time scripting

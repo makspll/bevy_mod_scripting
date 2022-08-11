@@ -1,12 +1,11 @@
 use crate::impl_tealr_type;
-use ::bevy::ecs::system::Command;
-use ::bevy::hierarchy::BuildWorldChildren;
-use ::std::convert::AsRef;
-use ::std::ops::Deref;
-use ::std::sync::{Arc, Weak};
-use bevy_mod_scripting_core::ScriptData;
+use std::convert::AsRef;
+use std::ops::Deref;
+use std::sync::{Arc, Weak};
 
-use ::bevy::{
+use bevy::ecs::system::Command;
+use bevy::hierarchy::BuildWorldChildren;
+use bevy::{
     hierarchy::{Children, DespawnChildrenRecursive, DespawnRecursive, Parent},
     prelude::{ReflectComponent, ReflectDefault, ReflectResource, World},
     reflect::{
@@ -14,16 +13,17 @@ use ::bevy::{
         TypeRegistration, TypeRegistry,
     },
 };
-
 use parking_lot::RwLock;
-
-pub use crate::generated::*;
-use crate::script_ref::ScriptRef;
-use bevy_mod_scripting_lua::tealr;
 use tealr::mlu::{
     mlua::{self},
     TealData, TealDataMethods,
 };
+use bevy_mod_scripting_core::prelude::*;
+use bevy_mod_scripting_lua::tealr;
+use crate::script_ref::ScriptRef;
+
+pub use crate::generated::*;
+
 
 #[derive(Clone)]
 pub struct LuaTypeRegistration(Arc<TypeRegistration>);

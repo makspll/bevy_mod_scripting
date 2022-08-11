@@ -4,7 +4,7 @@ use syn::{
     parse::{Parse, ParseStream},
     punctuated::Punctuated,
     token::Paren,
-    Attribute, Ident, Member, Token, TypePath,
+    Attribute, Ident, Member, Token,
 };
 
 use crate::{ops::*, utils::impl_parse_enum};

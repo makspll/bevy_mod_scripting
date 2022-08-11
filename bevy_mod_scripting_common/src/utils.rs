@@ -61,6 +61,7 @@ macro_rules! impl_parse_enum {
             }
         }
 
+        #[allow(unused_variables)]
         impl $name {
             paste::paste!{
                 $($($other_impls)*)?
@@ -130,10 +131,10 @@ pub fn type_base_string(t: &Type) -> Option<String> {
 pub struct EmptyToken;
 
 impl Parse for EmptyToken {
-    fn parse(input: ParseStream) -> Result<Self, syn::Error> {
+    fn parse(_: ParseStream) -> Result<Self, syn::Error> {
         Ok(Self)
     }
 }
 impl ToTokens for EmptyToken {
-    fn to_tokens(&self, tokens: &mut TokenStream) {}
+    fn to_tokens(&self, _: &mut TokenStream) {}
 }

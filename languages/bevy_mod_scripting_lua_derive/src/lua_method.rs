@@ -1,12 +1,11 @@
 use bevy_mod_scripting_common::utils::{attribute_to_string_lit, EmptyToken};
-use convert_case::{Case, Casing};
 use proc_macro2::{Span, TokenStream};
 use quote::{format_ident, quote_spanned, ToTokens};
 use syn::{
     parse::{Parse, ParseStream},
     punctuated::Punctuated,
     spanned::Spanned,
-    token::{Brace, Paren},
+    token::{Paren},
     *,
 };
 
@@ -145,7 +144,6 @@ impl ToTokens for LuaMethodType {
     }
 }
 
-#[derive(Clone, Debug)]
 pub(crate) struct LuaClosure {
     arrow: Token![=>],
     expr: ExprClosure,
@@ -171,45 +169,19 @@ impl LuaClosure {
 
 impl ToTokens for LuaClosure {
     fn to_tokens(&self, tokens: &mut TokenStream) {
+        let arrow = &self.arrow;
         let expr = &self.expr;
         tokens.extend(quote::quote! {
-            => #expr
+            #arrow #expr
         });
     }
 }
 
-#[derive(Clone, Debug)]
-pub(crate) struct Test {
-    pub brace: Brace,
-    pub ts: TokenStream,
-}
 
-#[allow(clippy::eval_order_dependence)]
-impl Parse for Test {
-    fn parse(input: ParseStream) -> Result<Self> {
-        let f;
-        Ok(Self {
-            brace: braced!(f in input),
-            ts: f.parse()?,
-        })
-    }
-}
-
-impl ToTokens for Test {
-    fn to_tokens(&self, tokens: &mut TokenStream) {
-        let ts = &self.ts;
-        tokens.extend(quote::quote! {
-            {#ts}
-        })
-    }
-}
-
-#[derive(Clone, Debug)]
 pub(crate) struct LuaMethod {
     pub docstring: Vec<Attribute>,
     pub method_type: LuaMethodType,
     pub closure: LuaClosure,
-    pub test: Option<Test>,
 }
 
 impl Parse for LuaMethod {
@@ -219,12 +191,6 @@ impl Parse for LuaMethod {
             docstring,
             method_type: input.parse()?,
             closure: input.parse()?,
-            test: if input.peek(Token![=>]) {
-                input.parse::<Token![=>]>()?;
-                Some(input.parse()?)
-            } else {
-                None
-            },
         })
     }
 }
@@ -235,27 +201,13 @@ impl ToTokens for LuaMethod {
 
         let mt = &self.method_type;
         let closure = &self.closure;
-        let test = self.test.as_ref().map(|t| {
-            quote::quote! {
-                => #t
-            }
-        });
         tokens.extend(quote::quote! {
-            #ds #mt #closure #test
+            #ds #mt #closure
         })
     }
 }
 
 impl LuaMethod {
-    pub fn gen_tests(&self, newtype_name: &str) -> Option<TokenStream> {
-        self.test.as_ref().map(|v| {
-            let fun = v.ts.clone();
-            let _test_ident = Ident::new(&newtype_name.to_case(Case::Snake), Span::call_site());
-
-            fun.into_token_stream()
-        })
-    }
-
     /// Generates the function call expression corresponding to the mlua
     /// UserData method which implements the given method or field
     ///

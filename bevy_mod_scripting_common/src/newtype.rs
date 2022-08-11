@@ -4,14 +4,14 @@ use indexmap::IndexSet;
 use proc_macro2::TokenStream;
 use syn::{
     braced,
-    parse::{Nothing, Parse, ParseStream},
+    parse::{Parse, ParseStream},
     punctuated::*,
     spanned::Spanned,
     token::*,
     Attribute, Ident, Token, TypePath,
 };
 
-use crate::{derive_flag::DeriveFlag, implementor::WrapperFunction, utils::EmptyToken};
+use crate::{derive_flag::DeriveFlag,utils::EmptyToken};
 use quote::ToTokens;
 
 pub struct NewtypeArgs {
@@ -71,7 +71,7 @@ impl NewtypeArgs {
                         }
                         seen_identifiers.insert(n);
                     }
-                    syn::Member::Unnamed(u) => {}
+                    syn::Member::Unnamed(_) => {}
                 }
             }
         }
@@ -84,9 +84,6 @@ impl ToTokens for NewtypeArgs {
     fn to_tokens(&self, tokens: &mut TokenStream) {
         let docstrings = self.docstring.iter();
         let base_type = &self.base_type;
-        let colon = (!self.flags.is_empty())
-            .then(|| quote::quote! {:})
-            .unwrap_or_default();
         let flags = self.flags.iter();
         tokens.extend(quote::quote! {
             #(#docstrings)*

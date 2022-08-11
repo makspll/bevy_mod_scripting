@@ -2,7 +2,7 @@ use bevy::{
     asset::{AssetLoader, Error, LoadedAsset},
     reflect::TypeUuid,
 };
-use bevy_mod_scripting_core::CodeAsset;
+use bevy_mod_scripting_core::asset::CodeAsset;
 
 use std::sync::Arc;
 
