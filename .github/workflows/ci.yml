@@ -27,7 +27,7 @@ jobs:
       - uses: actions-rs/cargo@v1
         with:
           command: check
-          args: --features=lua54,rhai,teal,lua_script_api,rhai_script_api
+          args: --workspace --features=lua54,rhai,teal,lua_script_api,rhai_script_api
 
   fmt:
     name: Rustfmt
