@@ -38,10 +38,6 @@ fn main() -> std::io::Result<()> {
         .register_type::<MyComponent>()
         .register_type::<MyResource>()
         // note the implementation for Option is there, but we must register `LuaProxyable` for it
-        .register_foreign_lua_type::<Option<Vec3>>()
-        .register_foreign_lua_type::<Vec<Option<bool>>>()
-        .register_foreign_lua_type::<Option<bool>>()
-        .register_foreign_lua_type::<Option<Vec<bool>>>()
         .init_resource::<MyResource>()
         // this stage handles addition and removal of script contexts, we can safely use `CoreStage::PostUpdate`
         .add_script_host::<RhaiScriptHost<()>, _>(CoreStage::PostUpdate)
