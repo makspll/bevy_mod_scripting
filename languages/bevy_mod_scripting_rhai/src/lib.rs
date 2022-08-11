@@ -3,7 +3,7 @@ use crate::{
     docs::RhaiDocFragment,
 };
 use bevy::prelude::*;
-use bevy_mod_scripting_core::{prelude::*, systems::*};
+use bevy_mod_scripting_core::{prelude::*, systems::*, world::WorldPointer};
 use rhai::*;
 use std::marker::PhantomData;
 
@@ -139,9 +139,9 @@ impl<A: FuncArgs + Send + Clone + Sync + 'static> ScriptHost for RhaiScriptHost<
                 // safety, world is not going to be dangling for the duration of this function
                 let world_ptr = unsafe{WorldPointer::new(world)};
                 ctxs.for_each(|(fd, ctx)| {
-                    ctx.scope.set_value("world", RhaiWorld::new(world_ptr.clone()));
-                    ctx.scope.set_value("entity", fd.entity);
-                    ctx.scope.set_value("script", fd.sid);
+                    // ctx.scope.set_value("world", RhaiWorld::new(world_ptr.clone()));
+                    // ctx.scope.set_value("entity", fd.entity);
+                    // ctx.scope.set_value("script", fd.sid);
 
                     for event in events.iter() {
                         // check if this script should handle this event

@@ -10,6 +10,7 @@ pub mod docs;
 pub mod error;
 pub mod hosts;
 pub mod systems;
+pub mod world;
 pub mod prelude {
     // general
     pub use {

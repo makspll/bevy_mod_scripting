@@ -129,11 +129,7 @@ required-features=["lua54","lua_script_api"]
 [[example]]
 name = "bevy_api_rhai"
 path = "examples/rhai/bevy_api.rs"
-required-features=["rhai"]
-
-[[example]]
-name = "bevy_api_rhai"
-path = "examples/rhai/bevy_api.rs"
+required-features=["rhai","rhai_script_api"]
 
 
 [[example]]

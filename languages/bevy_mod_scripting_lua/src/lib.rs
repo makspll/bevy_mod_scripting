@@ -3,7 +3,7 @@ use crate::{
     docs::LuaDocFragment,
 };
 use bevy::prelude::*;
-use bevy_mod_scripting_core::{prelude::*, systems::*};
+use bevy_mod_scripting_core::{prelude::*, systems::*, world::WorldPointer};
 use parking_lot::RwLock;
 use std::fmt;
 use std::marker::PhantomData;

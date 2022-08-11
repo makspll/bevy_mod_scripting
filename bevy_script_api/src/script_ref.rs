@@ -1,14 +1,14 @@
+use std::fmt::Debug;
+use std::{borrow::Cow, sync::Weak};
+use bevy::prelude::*;
+use parking_lot::RwLock;
+
+use bevy_mod_scripting_core::world::WorldPointer;
+
 use crate::{
     error::ReflectionError,
     sub_reflect::{ReflectBase, ReflectPath, ReflectPathElem},
-    common::bevy::WorldPointer
 };
-
-use std::fmt::Debug;
-
-use bevy::prelude::*;
-use parking_lot::RwLock;
-use std::{borrow::Cow, sync::Weak};
 
 pub enum ScriptRefBase {}
 

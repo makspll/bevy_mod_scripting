@@ -20,7 +20,7 @@ pub mod rhai {
 
     #[cfg(feature = "rhai_script_api")]
     pub mod api {
-        //     pub use bevy_script_api::rhai::*;
+        pub use bevy_script_api::rhai::*;
     }
 }
 
