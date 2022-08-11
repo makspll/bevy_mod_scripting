@@ -3,10 +3,7 @@ use crate::{
     docs::RhaiDocFragment,
 };
 use bevy::prelude::*;
-use bevy_mod_scripting_core::{
-    prelude::*, 
-    systems::*
-};
+use bevy_mod_scripting_core::{prelude::*, systems::*};
 use rhai::*;
 use std::marker::PhantomData;
 

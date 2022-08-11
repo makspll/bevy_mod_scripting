@@ -5,7 +5,7 @@ use syn::{
     parse::{Parse, ParseStream},
     punctuated::Punctuated,
     spanned::Spanned,
-    token::{Paren},
+    token::Paren,
     *,
 };
 
@@ -176,7 +176,6 @@ impl ToTokens for LuaClosure {
         });
     }
 }
-
 
 pub(crate) struct LuaMethod {
     pub docstring: Vec<Attribute>,

@@ -3,6 +3,7 @@ use std::convert::AsRef;
 use std::ops::Deref;
 use std::sync::{Arc, Weak};
 
+use crate::script_ref::ScriptRef;
 use bevy::ecs::system::Command;
 use bevy::hierarchy::BuildWorldChildren;
 use bevy::{
@@ -13,17 +14,15 @@ use bevy::{
         TypeRegistration, TypeRegistry,
     },
 };
+use bevy_mod_scripting_core::prelude::*;
+use bevy_mod_scripting_lua::tealr;
 use parking_lot::RwLock;
 use tealr::mlu::{
     mlua::{self},
     TealData, TealDataMethods,
 };
-use bevy_mod_scripting_core::prelude::*;
-use bevy_mod_scripting_lua::tealr;
-use crate::script_ref::ScriptRef;
 
 pub use crate::generated::*;
-
 
 #[derive(Clone)]
 pub struct LuaTypeRegistration(Arc<TypeRegistration>);

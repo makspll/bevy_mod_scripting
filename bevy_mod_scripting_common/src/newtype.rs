@@ -11,7 +11,7 @@ use syn::{
     Attribute, Ident, Token, TypePath,
 };
 
-use crate::{derive_flag::DeriveFlag,utils::EmptyToken};
+use crate::{derive_flag::DeriveFlag, utils::EmptyToken};
 use quote::ToTokens;
 
 pub struct NewtypeArgs {

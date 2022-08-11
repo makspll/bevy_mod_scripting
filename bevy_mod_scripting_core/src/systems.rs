@@ -1,10 +1,18 @@
 use std::collections::HashSet;
 
-use bevy::{prelude::{Query, Entity, ChangeTrackers, Changed, ResMut, Assets, Res, debug, RemovedComponents, EventReader, AssetEvent, Mut, World, EventWriter, FromWorld}, ecs::system::SystemState};
+use bevy::{
+    ecs::system::SystemState,
+    prelude::{
+        debug, AssetEvent, Assets, ChangeTrackers, Changed, Entity, EventReader, EventWriter,
+        FromWorld, Mut, Query, RemovedComponents, Res, ResMut, World,
+    },
+};
 use bevy_event_priority::PriorityEventReader;
 
-use crate::{prelude::{ScriptHost, ScriptCollection, APIProviders, ScriptContexts, Script, ScriptData}, ScriptErrorEvent};
-
+use crate::{
+    prelude::{APIProviders, Script, ScriptCollection, ScriptContexts, ScriptData, ScriptHost},
+    ScriptErrorEvent,
+};
 
 /// Handles creating contexts for new/modified scripts
 /// Scripts are likely not loaded instantly at this point, so most of the time
@@ -165,7 +173,6 @@ pub fn script_event_handler<H: ScriptHost, const MAX: u32, const MIN: u32>(world
         world.resource_scope(|world, host: Mut<H>| host.handle_events(world, &events, ctx_iter));
     });
 }
-
 
 /// system state for exclusive systems dealing with script events
 pub struct CachedScriptEventState<'w, 's, H: ScriptHost> {

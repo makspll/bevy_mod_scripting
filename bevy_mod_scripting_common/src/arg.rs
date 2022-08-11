@@ -134,9 +134,7 @@ impl SimpleType {
     pub fn strip_outer_refs(self) -> Self {
         match self {
             SimpleType::BaseIdent(_) => self,
-            SimpleType::Ref {
-                type_, ..
-            } => *type_,
+            SimpleType::Ref { type_, .. } => *type_,
         }
     }
 
@@ -204,7 +202,7 @@ impl Parse for ArgType {
 impl ToTokens for ArgType {
     fn to_tokens(&self, tokens: &mut TokenStream) {
         match self {
-            ArgType::Raw { type_, ..} => tokens.extend(quote::quote!(Raw(#type_))),
+            ArgType::Raw { type_, .. } => tokens.extend(quote::quote!(Raw(#type_))),
             ArgType::Wrapped { type_, .. } => tokens.extend(quote::quote!(Wrapped(#type_))),
             ArgType::Self_(s) => s.to_tokens(tokens),
         };

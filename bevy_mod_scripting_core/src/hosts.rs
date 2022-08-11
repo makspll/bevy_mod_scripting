@@ -1,15 +1,11 @@
 //! All script host related stuff
 use bevy::{asset::Asset, prelude::*, reflect::FromReflect};
 use std::{
-    collections::{HashMap},
+    collections::HashMap,
     sync::atomic::{AtomicU32, Ordering},
 };
 
-use crate::{
-    error::ScriptError, 
-    docs::DocFragment,
-    asset::CodeAsset
-};
+use crate::{asset::CodeAsset, docs::DocFragment, error::ScriptError};
 
 /// Describes the target set of scripts this event should
 /// be handled by
@@ -120,8 +116,6 @@ pub trait ScriptHost: Send + Sync + 'static + Default {
     /// Ideally place after any game logic which can spawn/remove/modify scripts to avoid frame lag. (typically `CoreStage::Post_Update`)
     fn register_with_app(app: &mut App, stage: impl StageLabel);
 }
-
-
 
 /// Implementors can modify a script context in order to enable
 /// API access. ScriptHosts call `attach_api` when creating scripts
@@ -391,4 +385,3 @@ impl<T: Asset> Default for ScriptCollection<T> {
         }
     }
 }
-

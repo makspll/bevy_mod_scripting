@@ -1,25 +1,25 @@
-use bevy::{ecs::schedule::IntoRunCriteria, prelude::*};
-use systems::script_event_handler;
 use crate::{
     error::ScriptError,
-    hosts::{APIProvider,APIProviders,ScriptHost}
+    hosts::{APIProvider, APIProviders, ScriptHost},
 };
+use bevy::{ecs::schedule::IntoRunCriteria, prelude::*};
+use systems::script_event_handler;
 
+pub mod asset;
+pub mod docs;
 pub mod error;
 pub mod hosts;
-pub mod docs;
 pub mod systems;
-pub mod asset;
 pub mod prelude {
     // general
     pub use {
-        crate::hosts::{
-            APIProvider, APIProviders, Recipients, Script, ScriptCollection,
-            ScriptContexts, ScriptData, ScriptEvent, ScriptHost,
-        },
-        crate::docs::DocFragment,
         crate::asset::CodeAsset,
+        crate::docs::DocFragment,
         crate::error::ScriptError,
+        crate::hosts::{
+            APIProvider, APIProviders, Recipients, Script, ScriptCollection, ScriptContexts,
+            ScriptData, ScriptEvent, ScriptHost,
+        },
         crate::{
             AddScriptApiProvider, AddScriptHost, AddScriptHostHandler, GenDocumentation,
             ScriptErrorEvent, ScriptingPlugin,
