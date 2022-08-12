@@ -1,14 +1,14 @@
 use crate::impl_tealr_type;
 use std::convert::AsRef;
 use std::ops::Deref;
-use std::sync::{Arc, Weak};
+use std::sync::Arc;
 
 use crate::script_ref::ScriptRef;
 use bevy::ecs::system::Command;
 use bevy::hierarchy::BuildWorldChildren;
 use bevy::{
     hierarchy::{Children, DespawnChildrenRecursive, DespawnRecursive, Parent},
-    prelude::{ReflectComponent, ReflectDefault, ReflectResource, World},
+    prelude::{ReflectComponent, ReflectDefault, ReflectResource},
     reflect::{
         DynamicArray, DynamicList, DynamicMap, DynamicStruct, DynamicTuple, DynamicTupleStruct,
         TypeRegistration, TypeRegistry,
@@ -17,7 +17,7 @@ use bevy::{
 use bevy_mod_scripting_core::prelude::*;
 use bevy_mod_scripting_core::world::WorldPointer;
 use bevy_mod_scripting_lua::tealr;
-use parking_lot::RwLock;
+
 use tealr::mlu::{
     mlua::{self},
     TealData, TealDataMethods,
