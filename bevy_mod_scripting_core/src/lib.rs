@@ -1,5 +1,4 @@
 use crate::{
-    error::ScriptError,
     event::ScriptErrorEvent,
     hosts::{APIProvider, APIProviders, ScriptHost},
 };
