@@ -6,6 +6,7 @@ use crate::{
 use std::fmt::Debug;
 
 use bevy::prelude::*;
+use bevy_mod_scripting_core::world::WorldPointer;
 use parking_lot::RwLock;
 use std::{borrow::Cow, sync::Weak};
 
@@ -26,11 +27,7 @@ pub struct ScriptRef {
 
 impl ScriptRef {
     /// Safely creates a new base component reference
-    pub fn new_component_ref(
-        comp: ReflectComponent,
-        entity: Entity,
-        world: Weak<RwLock<World>>,
-    ) -> Self {
+    pub fn new_component_ref(comp: ReflectComponent, entity: Entity, world: WorldPointer) -> Self {
         Self {
             path: ReflectPath::new(ReflectBase::Component {
                 comp,
@@ -40,7 +37,7 @@ impl ScriptRef {
         }
     }
 
-    pub fn new_resource_ref(res: ReflectResource, world: Weak<RwLock<World>>) -> Self {
+    pub fn new_resource_ref(res: ReflectResource, world: WorldPointer) -> Self {
         Self {
             path: ReflectPath::new(ReflectBase::Resource { res, world }),
         }

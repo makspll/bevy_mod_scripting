@@ -32,6 +32,8 @@ pub struct Config {
     pub imports: String,
     pub other: String,
 
+    pub lua_api_setup: String,
+
     /// Describes the set of non generic things which are representible
     /// as simple lua types and don't need UserData proxies
     pub primitives: HashSet<String>,

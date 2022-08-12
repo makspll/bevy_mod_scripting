@@ -3,11 +3,10 @@ use crate::{
     docs::LuaDocFragment,
 };
 use bevy::prelude::*;
-use bevy_mod_scripting_core::{prelude::*, systems::*};
-use parking_lot::RwLock;
+use bevy_mod_scripting_core::{prelude::*, systems::*, world::WorldPointer};
 use std::fmt;
 use std::marker::PhantomData;
-use std::sync::{Arc, Mutex};
+use std::sync::Mutex;
 use tealr::mlu::mlua::{prelude::*, Function};
 
 pub mod assets;
@@ -85,7 +84,7 @@ impl<A: LuaArg> ScriptHost for LuaScriptHost<A> {
         app.add_priority_event::<Self::ScriptEvent>()
             .add_asset::<LuaFile>()
             .init_asset_loader::<LuaLoader>()
-            .init_resource::<CachedScriptEventState<Self>>()
+            .init_resource::<CachedScriptState<Self>>()
             .init_resource::<ScriptContexts<Self::ScriptContext>>()
             .init_resource::<APIProviders<Self>>()
             .register_type::<ScriptCollection<Self::ScriptAsset>>()
@@ -103,7 +102,8 @@ impl<A: LuaArg> ScriptHost for LuaScriptHost<A> {
                         script_remove_synchronizer::<Self>
                             .before(script_hot_reload_handler::<Self>),
                     )
-                    .with_system(script_hot_reload_handler::<Self>),
+                    .with_system(script_hot_reload_handler::<Self>)
+                    .with_system(script_setup_handler::<Self>.exclusive_system().at_end()),
             );
     }
 
@@ -128,70 +128,67 @@ impl<A: LuaArg> ScriptHost for LuaScriptHost<A> {
         let mut lua = Mutex::new(lua);
 
         providers.attach_all(&mut lua)?;
-        providers.setup_all(script_data, &mut lua)?;
         Ok(lua)
+    }
+
+    fn setup_script(
+        &mut self,
+        world: WorldPointer,
+        script_data: &ScriptData,
+        ctx: &mut Self::ScriptContext,
+        providers: &mut APIProviders<Self>,
+    ) -> Result<(), ScriptError> {
+        // safety: this is fine, world will only ever be accessed
+        providers.setup_all(world, script_data, ctx)
     }
 
     fn handle_events<'a>(
         &self,
-        world: &mut World,
+        world_ptr: WorldPointer,
         events: &[Self::ScriptEvent],
         ctxs: impl Iterator<Item = (ScriptData<'a>, &'a mut Self::ScriptContext)>,
     ) {
-        world.resource_scope(
-            |world_orig, mut cached_state: Mut<CachedScriptEventState<Self>>| {
-                let world_arc = Arc::new(RwLock::new(std::mem::take(world_orig)));
+        let mut world = world_ptr.write();
+        let mut state: CachedScriptState<Self> = world.remove_resource().unwrap();
 
-                ctxs.for_each(|(fd, ctx)| {
-                    let success = ctx
-                        .get_mut()
-                        .map_err(|e| ScriptError::Other(e.to_string()))
-                        .and_then(|ctx| {
-                            let globals = ctx.globals();
-                            // globals.set("world", LuaWorld::new(Arc::downgrade(&world_arc)))?;
-                            // globals.set("entity", LuaEntity::new(fd.entity))?;
-                            // globals.set::<_, LuaScriptData>("script", (&fd).into())?;
+        // this is important, the scripts might have access to the world pointer
+        // not unlocking this would prevent them from accessing the world
+        drop(world);
 
-                            // event order is preserved, but scripts can't rely on any temporal
-                            // guarantees when it comes to other scripts callbacks,
-                            // at least for now.
-                            // we stop on the first error encountered
-                            for event in events {
-                                // check if this script should handle this event
-                                if !event.recipients().is_recipient(&fd) {
-                                    continue;
-                                }
+        ctxs.for_each(|(fd, ctx)| {
+            let ctx = ctx.get_mut().expect("Poison error in context");
+            // event order is preserved, but scripts can't rely on any temporal
+            // guarantees when it comes to other scripts callbacks,
+            // at least for now.
+            let globals = ctx.globals();
 
-                                let f: Function = match globals.get(event.hook_name.clone()) {
-                                    Ok(f) => f,
-                                    Err(_) => continue, // not subscribed to this event
-                                };
+            for event in events {
+                // check if this script should handle this event
+                if !event.recipients().is_recipient(&fd) {
+                    continue;
+                }
 
-                                f.call::<_, ()>(event.args.clone()).map_err(|e| {
-                                    ScriptError::RuntimeError {
-                                        script: fd.name.to_owned(),
-                                        msg: e.to_string(),
-                                    }
-                                })?
-                            }
+                let f: Function = match globals.raw_get(event.hook_name.clone()) {
+                    Ok(f) => f,
+                    Err(_) => continue, // not subscribed to this event
+                };
 
-                            // we must clear the world in order to free the Arc pointer
-                            Ok(())
-                        });
+                if let Err(error) = f.call::<_, ()>(event.args.clone()) {
+                    let error = ScriptError::RuntimeError {
+                        script: fd.name.to_owned(),
+                        msg: error.to_string(),
+                    };
 
-                    success
-                        .map_err(|e| {
-                            let mut guard = world_arc.write();
-                            let (_, mut error_wrt) = cached_state.event_state.get_mut(&mut guard);
+                    let mut world = world_ptr.write();
+                    let (_, mut error_wrt, _) = state.event_state.get_mut(&mut world);
 
-                            error!("{}", e);
-                            error_wrt.send(ScriptErrorEvent { err: e })
-                        })
-                        .ok();
-                });
+                    error!("{}", error);
+                    error_wrt.send(ScriptErrorEvent { error })
+                }
+            }
+        });
 
-                *world_orig = Arc::try_unwrap(world_arc).unwrap().into_inner();
-            },
-        );
+        let mut world = world_ptr.write();
+        world.insert_resource(state);
     }
 }

@@ -4,15 +4,24 @@ use bevy::{
     ecs::system::SystemState,
     prelude::{
         debug, AssetEvent, Assets, ChangeTrackers, Changed, Entity, EventReader, EventWriter,
-        FromWorld, Mut, Query, RemovedComponents, Res, ResMut, World,
+        FromWorld, Mut, Query, RemovedComponents, Res, ResMut, SystemLabel, World,
     },
 };
 use bevy_event_priority::PriorityEventReader;
 
 use crate::{
+    event::ScriptLoaded,
     prelude::{APIProviders, Script, ScriptCollection, ScriptContexts, ScriptData, ScriptHost},
+    world::WorldPointer,
     ScriptErrorEvent,
 };
+
+/// Labels for scripting related systems
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, SystemLabel)]
+pub enum ScriptSystemLabel {
+    /// event handling systems are always marked with this label
+    EventHandling,
+}
 
 /// Handles creating contexts for new/modified scripts
 /// Scripts are likely not loaded instantly at this point, so most of the time
@@ -30,6 +39,7 @@ pub fn script_add_synchronizer<H: ScriptHost + 'static>(
     mut providers: ResMut<APIProviders<H>>,
     script_assets: Res<Assets<H::ScriptAsset>>,
     mut contexts: ResMut<ScriptContexts<H::ScriptContext>>,
+    mut event_writer: EventWriter<ScriptLoaded>,
 ) {
     debug!("Handling addition/modification of scripts");
 
@@ -43,6 +53,7 @@ pub fn script_add_synchronizer<H: ScriptHost + 'static>(
                     &script_assets,
                     &mut providers,
                     &mut contexts,
+                    &mut event_writer,
                 )
             })
         } else {
@@ -79,6 +90,7 @@ pub fn script_add_synchronizer<H: ScriptHost + 'static>(
                     &script_assets,
                     &mut providers,
                     &mut contexts,
+                    &mut event_writer,
                 )
             }
         }
@@ -97,6 +109,47 @@ pub fn script_remove_synchronizer<H: ScriptHost>(
     })
 }
 
+/// Handles the setup of all scripts which were just loaded or reloaded
+pub fn script_setup_handler<H: ScriptHost>(world: &mut World) {
+    let mut state: CachedScriptState<H> = world.remove_resource().unwrap();
+    let mut host: H = world.remove_resource().unwrap();
+    let mut ctxts: ScriptContexts<H::ScriptContext> = world.remove_resource().unwrap();
+    let mut providers: APIProviders<H> = world.remove_resource().unwrap();
+
+    let events = state
+        .event_state
+        .get_mut(world)
+        .2
+        .iter()
+        .cloned()
+        .collect::<Vec<_>>();
+
+    for ScriptLoaded { sid } in events {
+        let (entity, ctx, name) = ctxts
+            .context_entities
+            .get_mut(&sid)
+            .expect("Script context was removed before it was fully loaded");
+
+        host.setup_script(
+            unsafe { WorldPointer::new(world) },
+            &ScriptData {
+                sid,
+                entity: *entity,
+                name,
+            },
+            ctx.as_mut()
+                .expect("Loaded event was sent but context is missing"),
+            &mut providers,
+        )
+        .expect("Failed to setup script");
+    }
+
+    world.insert_resource(state);
+    world.insert_resource(host);
+    world.insert_resource(ctxts);
+    world.insert_resource(providers);
+}
+
 /// Reloads hot-reloaded scripts, or loads missing contexts for scripts which were added but not loaded
 pub fn script_hot_reload_handler<H: ScriptHost>(
     mut events: EventReader<AssetEvent<H::ScriptAsset>>,
@@ -105,6 +158,7 @@ pub fn script_hot_reload_handler<H: ScriptHost>(
     script_assets: Res<Assets<H::ScriptAsset>>,
     mut providers: ResMut<APIProviders<H>>,
     mut contexts: ResMut<ScriptContexts<H::ScriptContext>>,
+    mut event_writer: EventWriter<ScriptLoaded>,
 ) {
     for e in events.iter() {
         let (handle, created) = match e {
@@ -129,6 +183,7 @@ pub fn script_hot_reload_handler<H: ScriptHost>(
                         &script_assets,
                         &mut providers,
                         &mut contexts,
+                        &mut event_writer,
                     );
                 }
             }
@@ -139,12 +194,17 @@ pub fn script_hot_reload_handler<H: ScriptHost>(
 /// Lets the script host handle all script events
 pub fn script_event_handler<H: ScriptHost, const MAX: u32, const MIN: u32>(world: &mut World) {
     // we need to collect the events to drop the borrow of the world
-    let events = world.resource_scope(|world, mut cached_state: Mut<CachedScriptEventState<H>>| {
-        let (mut cached_state, _) = cached_state.event_state.get_mut(world);
+    let events = world.resource_scope(|world, mut cached_state: Mut<CachedScriptState<H>>| {
+        let (mut cached_state, _, _) = cached_state.event_state.get_mut(world);
         cached_state
             .iter_prio_range(MAX, MIN)
             .collect::<Vec<H::ScriptEvent>>()
     });
+
+    // should help a lot with performance on frames where no events are fired
+    if events.is_empty() {
+        return;
+    }
 
     // we need a resource scope to be able to simultaneously access the contexts as well
     // as provide world access to scripts
@@ -170,19 +230,24 @@ pub fn script_event_handler<H: ScriptHost, const MAX: u32, const MIN: u32>(world
                         ctx,
                     ))
                 });
-        world.resource_scope(|world, host: Mut<H>| host.handle_events(world, &events, ctx_iter));
+        // safety: we have unique access to world, future accesses are protected
+        // by the lock in the pointer
+        world.resource_scope(|world, host: Mut<H>| {
+            host.handle_events(unsafe { WorldPointer::new(world) }, &events, ctx_iter)
+        });
     });
 }
 
 /// system state for exclusive systems dealing with script events
-pub struct CachedScriptEventState<'w, 's, H: ScriptHost> {
+pub struct CachedScriptState<'w, 's, H: ScriptHost> {
     pub event_state: SystemState<(
         PriorityEventReader<'w, 's, H::ScriptEvent>,
         EventWriter<'w, 's, ScriptErrorEvent>,
+        EventReader<'w, 's, ScriptLoaded>,
     )>,
 }
 
-impl<'w, 's, H: ScriptHost> FromWorld for CachedScriptEventState<'w, 's, H> {
+impl<'w, 's, H: ScriptHost> FromWorld for CachedScriptState<'w, 's, H> {
     fn from_world(world: &mut World) -> Self {
         Self {
             event_state: SystemState::new(world),

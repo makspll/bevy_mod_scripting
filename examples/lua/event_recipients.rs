@@ -46,9 +46,15 @@ impl APIProvider for LuaAPIProvider {
 
     fn setup_script(
         &mut self,
-        _: &ScriptData,
-        _: &mut Self::ScriptContext,
+        _world_ptr: bevy_mod_scripting_core::world::WorldPointer,
+        script_data: &ScriptData,
+        ctx: &mut Self::ScriptContext,
     ) -> Result<(), ScriptError> {
+        let ctx = ctx.get_mut().unwrap();
+        let globals = ctx.globals();
+        globals
+            .set("script_id", script_data.sid)
+            .map_err(ScriptError::new_other)?;
         Ok(())
     }
 }

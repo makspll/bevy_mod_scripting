@@ -2,9 +2,10 @@ use std::{borrow::Cow, sync::Weak};
 
 use crate::error::ReflectionError;
 use bevy::{
-    prelude::{Entity, ReflectComponent, ReflectResource, World},
+    prelude::{Entity, ReflectComponent, ReflectResource},
     reflect::{Reflect, ReflectMut, ReflectRef},
 };
+use bevy_mod_scripting_core::world::WorldPointer;
 use parking_lot::RwLock;
 
 use std::fmt;
@@ -16,12 +17,12 @@ pub enum ReflectBase {
     Component {
         comp: ReflectComponent,
         entity: Entity,
-        world: Weak<RwLock<World>>,
+        world: WorldPointer,
     },
     /// A bevy resource reference
     Resource {
         res: ReflectResource,
-        world: Weak<RwLock<World>>,
+        world: WorldPointer,
     },
 
     /// A script owned reflect type (for example a vector constructed in lua)
@@ -362,10 +363,7 @@ impl ReflectPath {
                 entity,
                 world,
             } => {
-                let g = world
-                    .upgrade()
-                    .expect("Trying to access cached value from previous frame");
-                let g = g.try_read().expect("Rust safety violation: attempted to borrow world while it was already mutably borrowed");
+                let g = world.read();
 
                 let ref_ = self.walk_path(comp.reflect(&g, *entity).ok_or_else(|| {
                     ReflectionError::InvalidBaseReference {
@@ -379,10 +377,7 @@ impl ReflectPath {
                 Ok(o)
             }
             ReflectBase::Resource { res, world } => {
-                let g = world
-                    .upgrade()
-                    .expect("Trying to access cached value from previous frame");
-                let g = g.try_read().expect("Rust safety violation: attempted to borrow world while it was already mutably borrowed");
+                let g = world.read();
 
                 let ref_ = self.walk_path(res.reflect(&g).ok_or_else(|| {
                     ReflectionError::InvalidBaseReference {
@@ -420,10 +415,7 @@ impl ReflectPath {
                 entity,
                 world,
             } => {
-                let g = world
-                    .upgrade()
-                    .expect("Trying to access cached value from previous frame");
-                let mut g = g.try_write().expect("Rust safety violation: attempted to borrow world while it was already mutably borrowed");
+                let mut g = world.write();
 
                 let ref_ = self.walk_path_mut(
                     comp.reflect_mut(&mut g, *entity)
@@ -439,10 +431,7 @@ impl ReflectPath {
                 Ok(o)
             }
             ReflectBase::Resource { res, world } => {
-                let g = world
-                    .upgrade()
-                    .expect("Trying to access cached value from previous frame");
-                let mut g = g.try_write().expect("Rust safety violation: attempted to borrow world while it was already mutably borrowed");
+                let mut g = world.write();
 
                 let ref_ = self.walk_path_mut(
                     res.reflect_mut(&mut g)

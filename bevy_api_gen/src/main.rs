@@ -300,6 +300,25 @@ pub(crate) fn generate_macros(
     writer.close_brace();
     // } get_doc_fragment
 
+    // fn setup_script{
+    writer.write_no_newline("fn setup_script");
+    writer.open_paren();
+
+    writer.write_line("&mut self,");
+    writer.write_line("world_ptr: bevy_mod_scripting_core::world::WorldPointer,");
+    writer.write_line("script_data: &ScriptData,");
+    writer.write_line("ctx: &mut Self::ScriptContext");
+    writer.close_paren();
+    writer.write_line("-> Result<(), ScriptError>");
+
+    // fn setup_script{
+    writer.open_brace();
+    for l in config.lua_api_setup.lines() {
+        writer.write_line(l);
+    }
+    // fn setup_script }
+    writer.close_brace();
+
     // register_with_app {
     writer.write_no_newline("fn register_with_app(&self, app: &mut App)");
     writer.open_brace();

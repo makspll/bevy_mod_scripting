@@ -2,10 +2,17 @@
 use bevy::{asset::Asset, prelude::*, reflect::FromReflect};
 use std::{
     collections::HashMap,
+    iter::once,
     sync::atomic::{AtomicU32, Ordering},
 };
 
-use crate::{asset::CodeAsset, docs::DocFragment, error::ScriptError};
+use crate::{
+    asset::CodeAsset,
+    docs::DocFragment,
+    error::ScriptError,
+    event::{ScriptEvent, ScriptLoaded},
+    world::WorldPointer,
+};
 
 /// Describes the target set of scripts this event should
 /// be handled by
@@ -30,7 +37,7 @@ pub struct ScriptData<'a> {
 }
 
 impl Recipients {
-    /// Returns true if the given script should
+    /// Returns true if the given script is a recipient
     pub fn is_recipient(&self, c: &ScriptData) -> bool {
         match self {
             Recipients::All => true,
@@ -45,11 +52,6 @@ impl Default for Recipients {
     fn default() -> Self {
         Self::All
     }
-}
-
-pub trait ScriptEvent: Send + Sync + Clone + 'static {
-    /// Retrieves the recipient scripts for this event
-    fn recipients(&self) -> &Recipients;
 }
 
 /// A script host is the interface between your rust application
@@ -76,18 +78,27 @@ pub trait ScriptHost: Send + Sync + 'static + Default {
         providers: &mut APIProviders<Self>,
     ) -> Result<Self::ScriptContext, ScriptError>;
 
+    /// Hook for one-time initialization of scripts which needs exclusive access to the world
+    fn setup_script(
+        &mut self,
+        world_ptr: WorldPointer,
+        script_data: &ScriptData,
+        ctx: &mut Self::ScriptContext,
+        providers: &mut APIProviders<Self>,
+    ) -> Result<(), ScriptError>;
+
     /// the main point of contact with the bevy world.
     /// Scripts are called with appropriate events in the event order
     fn handle_events<'a>(
         &self,
-        world: &mut World,
+        world_ptr: WorldPointer,
         events: &[Self::ScriptEvent],
         ctxs: impl Iterator<Item = (ScriptData<'a>, &'a mut Self::ScriptContext)>,
     );
 
     /// Loads and runs script instantaneously without storing any script data into the world.
-    /// The script receives the `world` global as normal, but `entity` is set to `u64::MAX`.
-    /// The script id is set to `u32::MAX`.
+    /// The host receives a fake script with `entity` set to `u64::MAX`
+    /// and where the script id is set to `u32::MAX`.
     fn run_one_shot(
         &mut self,
         script: &[u8],
@@ -101,13 +112,23 @@ pub trait ScriptHost: Send + Sync + 'static + Default {
             entity: Entity::from_bits(u64::MAX),
         };
 
-        let providers: &mut APIProviders<Self> = &mut world.resource_mut();
-        let mut ctx = self.load_script(script, &fd, providers).unwrap();
+        let mut providers: APIProviders<Self> = world.remove_resource().unwrap();
+        let mut ctx = self.load_script(script, &fd, &mut providers).unwrap();
 
         let events = [event; 1];
-        let ctx_iter = [(fd, &mut ctx); 1].into_iter();
 
-        self.handle_events(world, &events, ctx_iter);
+        // safety: we have exclusive access to world, so no other references exist
+        // references from the world pointer are protected with the lock
+
+        let world_ptr = unsafe { WorldPointer::new(world) };
+        // SAFETY: cannot use original world reference after this!
+
+        self.setup_script(world_ptr.clone(), &fd, &mut ctx, &mut providers)?;
+        self.handle_events(world_ptr.clone(), &events, once((fd, &mut ctx)));
+
+        let mut world = world_ptr.write();
+        world.insert_resource(providers);
+
         Ok(())
     }
 
@@ -137,6 +158,7 @@ pub trait APIProvider: 'static + Send + Sync {
     /// For API's use `Self::attach_api` instead.
     fn setup_script(
         &mut self,
+        _world_ptr: WorldPointer,
         _script_data: &ScriptData,
         _ctx: &mut Self::ScriptContext,
     ) -> Result<(), ScriptError> {
@@ -186,11 +208,12 @@ impl<T: ScriptHost> APIProviders<T> {
 
     pub fn setup_all(
         &mut self,
+        world_ptr: WorldPointer,
         script_data: &ScriptData,
         ctx: &mut T::ScriptContext,
     ) -> Result<(), ScriptError> {
         for p in self.providers.iter_mut() {
-            p.setup_script(script_data, ctx)?;
+            p.setup_script(world_ptr.clone(), script_data, ctx)?;
         }
 
         Ok(())
@@ -309,6 +332,7 @@ impl<T: Asset> Script<T> {
         script_assets: &Assets<H::ScriptAsset>,
         providers: &mut APIProviders<H>,
         contexts: &mut ScriptContexts<H::ScriptContext>,
+        event_writer: &mut EventWriter<ScriptLoaded>,
     ) {
         debug!("reloading script {}", script.id);
         // retrieve owning entity
@@ -325,10 +349,12 @@ impl<T: Asset> Script<T> {
             script_assets,
             providers,
             contexts,
+            event_writer,
         );
     }
 
-    /// inserts a new script context for the given script
+    /// checks if a script has loaded, and if so loads and inserts its new context into the contexts resource
+    /// otherwise inserts None. Sends ScriptLoaded event if the script was loaded
     pub(crate) fn insert_new_script_context<H: ScriptHost>(
         host: &mut H,
         new_script: &Script<H::ScriptAsset>,
@@ -336,6 +362,7 @@ impl<T: Asset> Script<T> {
         script_assets: &Assets<H::ScriptAsset>,
         providers: &mut APIProviders<H>,
         contexts: &mut ScriptContexts<H::ScriptContext>,
+        event_writer: &mut EventWriter<ScriptLoaded>,
     ) {
         let fd = ScriptData {
             sid: new_script.id(),
@@ -357,12 +384,15 @@ impl<T: Asset> Script<T> {
         match host.load_script(script.bytes(), &fd, providers) {
             Ok(ctx) => {
                 contexts.insert_context(fd, Some(ctx));
+                event_writer.send(ScriptLoaded {
+                    sid: new_script.id(),
+                })
             }
             Err(e) => {
                 warn! {"Error in loading script {}:\n{}", &new_script.name,e}
                 // this script will now never execute, unless manually reloaded
                 // but contexts are left in a valid state
-                contexts.insert_context(fd, None)
+                contexts.insert_context(fd, None);
             }
         }
     }

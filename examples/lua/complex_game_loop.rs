@@ -44,14 +44,6 @@ impl APIProvider for LuaAPIProvider {
 
         Ok(())
     }
-
-    fn setup_script(
-        &mut self,
-        _: &ScriptData,
-        _: &mut Self::ScriptContext,
-    ) -> Result<(), ScriptError> {
-        Ok(())
-    }
 }
 
 static COUNTER: AtomicU32 = AtomicU32::new(0);

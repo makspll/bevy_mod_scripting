@@ -15,6 +15,7 @@ use bevy::{
     },
 };
 use bevy_mod_scripting_core::prelude::*;
+use bevy_mod_scripting_core::world::WorldPointer;
 use bevy_mod_scripting_lua::tealr;
 use parking_lot::RwLock;
 use tealr::mlu::{
@@ -71,24 +72,24 @@ impl TealData for LuaScriptData {
 }
 
 #[derive(Clone)]
-pub struct LuaWorld(Weak<RwLock<World>>);
+pub struct LuaWorld(WorldPointer);
 
 impl Deref for LuaWorld {
-    type Target = Weak<RwLock<World>>;
+    type Target = WorldPointer;
 
     fn deref(&self) -> &Self::Target {
         &self.0
     }
 }
 
-impl AsRef<Weak<RwLock<World>>> for LuaWorld {
-    fn as_ref(&self) -> &Weak<RwLock<World>> {
+impl AsRef<WorldPointer> for LuaWorld {
+    fn as_ref(&self) -> &WorldPointer {
         &self.0
     }
 }
 
 impl LuaWorld {
-    pub fn new(w: Weak<RwLock<World>>) -> Self {
+    pub fn new(w: WorldPointer) -> Self {
         Self(w)
     }
 }
@@ -102,8 +103,7 @@ impl TealData for LuaWorld {
 
         methods.document("Retrieves children entities of the parent entity if it has any.");
         methods.add_method("get_children", |_, world, parent: LuaEntity| {
-            let w = world.upgrade().unwrap();
-            let w = &mut w.write();
+            let w = world.read();
 
             let children: Option<Vec<LuaEntity>> =
                 w.get::<Children>(parent.inner()?).map(|children| {
@@ -118,8 +118,7 @@ impl TealData for LuaWorld {
 
         methods.document("Retrieves the parent entity of the given entity if it has any.");
         methods.add_method("get_parent", |_, world, parent: LuaEntity| {
-            let w = world.upgrade().unwrap();
-            let w = &mut w.write();
+            let w = world.read();
 
             let parent: Option<LuaEntity> = w
                 .get::<Parent>(parent.inner()?)
@@ -132,8 +131,7 @@ impl TealData for LuaWorld {
         methods.add_method(
             "push_children",
             |_, world, (parent, children): (LuaEntity, Vec<LuaEntity>)| {
-                let w = world.upgrade().unwrap();
-                let w = &mut w.write();
+                let mut w = world.write();
                 let children = children
                     .iter()
                     .map(|e| e.inner())
@@ -151,8 +149,7 @@ impl TealData for LuaWorld {
         methods.add_method(
             "push_child",
             |_, world, (parent, child): (LuaEntity, LuaEntity)| {
-                let w = world.upgrade().unwrap();
-                let w = &mut w.write();
+                let mut w = world.write();
                 let child = child.inner()?;
                 if let Some(mut entity) = w.get_entity_mut(parent.inner()?) {
                     entity.push_children(&[child]);
@@ -166,8 +163,7 @@ impl TealData for LuaWorld {
         methods.add_method(
             "remove_children",
             |_, world, (parent, children): (LuaEntity, Vec<LuaEntity>)| {
-                let w = world.upgrade().unwrap();
-                let w = &mut w.write();
+                let mut w = world.write();
                 let children = children
                     .iter()
                     .map(|e| e.inner())
@@ -185,8 +181,7 @@ impl TealData for LuaWorld {
         methods.add_method(
             "remove_child",
             |_, world, (parent, child): (LuaEntity, LuaEntity)| {
-                let w = world.upgrade().unwrap();
-                let w = &mut w.write();
+                let mut w = world.write();
                 let child = child.inner()?;
                 if let Some(mut entity) = w.get_entity_mut(parent.inner()?) {
                     entity.remove_children(&[child]);
@@ -201,8 +196,7 @@ impl TealData for LuaWorld {
         methods.add_method(
             "insert_children",
             |_, world, (parent, index, children): (LuaEntity, usize, Vec<LuaEntity>)| {
-                let w = world.upgrade().unwrap();
-                let w = &mut w.write();
+                let mut w = world.write();
                 let children = children
                     .iter()
                     .map(|e| e.inner())
@@ -220,8 +214,7 @@ impl TealData for LuaWorld {
         methods.add_method(
             "insert_child",
             |_, world, (parent, index, child): (LuaEntity, usize, LuaEntity)| {
-                let w = world.upgrade().unwrap();
-                let w = &mut w.write();
+                let mut w = world.write();
                 let child = child.inner()?;
                 if let Some(mut entity) = w.get_entity_mut(parent.inner()?) {
                     entity.insert_children(index, &[child]);
@@ -235,35 +228,32 @@ impl TealData for LuaWorld {
         methods.add_method(
             "despawn_children_recursive",
             |_, world, entity: LuaEntity| {
-                let w = world.upgrade().unwrap();
-                let w = &mut w.write();
+                let mut w = world.write();
                 DespawnChildrenRecursive {
                     entity: entity.inner()?,
                 }
-                .write(w);
+                .write(&mut w);
                 Ok(())
             },
         );
 
         methods.document("Despawns the given entity and the entity's children recursively");
         methods.add_method("despawn_recursive", |_, world, entity: LuaEntity| {
-            let w = world.upgrade().unwrap();
-            let w = &mut w.write();
+            let mut w = world.write();
             DespawnRecursive {
                 entity: entity.inner()?,
             }
-            .write(w);
+            .write(&mut w);
             Ok(())
         });
 
         methods.document("Despawns the given entity and the entity's children recursively");
         methods.add_method("insert_children", |_, world, entity: LuaEntity| {
-            let w = world.upgrade().unwrap();
-            let w = &mut w.write();
+            let mut w = world.write();
             DespawnRecursive {
                 entity: entity.inner()?,
             }
-            .write(w);
+            .write(&mut w);
             Ok(())
         });
 
@@ -274,8 +264,7 @@ impl TealData for LuaWorld {
         methods.document("\n");
         methods.document("This is used extensively in [`LuaWorld`]");
         methods.add_method("get_type_by_name", |_, world, type_name: String| {
-            let w = world.upgrade().unwrap();
-            let w = &w.read();
+            let w = world.read();
 
             let registry: &TypeRegistry = w.get_resource().unwrap();
 
@@ -292,8 +281,7 @@ impl TealData for LuaWorld {
         methods.add_method("add_default_component", |_, world, (entity, comp_type): (LuaEntity, LuaTypeRegistration)| {
             // grab this entity before acquiring a lock in case it's a reference
             let entity = entity.inner()?;
-            let w = world.upgrade().unwrap();
-            let w = &mut w.write();
+            let mut w = world.write();
 
             let component_data = comp_type.data::<ReflectComponent>()
                 .ok_or_else(|| mlua::Error::RuntimeError(format!("Not a component {}",comp_type.short_name())))?;
@@ -302,21 +290,21 @@ impl TealData for LuaWorld {
             // TODO: maybe get an add_default impl added to ReflectComponent
             // this means that we don't require ReflectDefault for adding components!
             match comp_type.0.type_info(){
-                bevy::reflect::TypeInfo::Struct(_) => component_data.insert(w, entity, &DynamicStruct::default()),
-                bevy::reflect::TypeInfo::TupleStruct(_) => component_data.insert(w, entity, &DynamicTupleStruct::default()),
-                bevy::reflect::TypeInfo::Tuple(_) => component_data.insert(w, entity, &DynamicTuple::default()),
-                bevy::reflect::TypeInfo::List(_) => component_data.insert(w, entity, &DynamicList::default()),
-                bevy::reflect::TypeInfo::Array(_) => component_data.insert(w, entity, &DynamicArray::new(Box::new([]))),
-                bevy::reflect::TypeInfo::Map(_) => component_data.insert(w, entity, &DynamicMap::default()),
+                bevy::reflect::TypeInfo::Struct(_) => component_data.insert(&mut w, entity, &DynamicStruct::default()),
+                bevy::reflect::TypeInfo::TupleStruct(_) => component_data.insert(&mut w, entity, &DynamicTupleStruct::default()),
+                bevy::reflect::TypeInfo::Tuple(_) => component_data.insert(&mut w, entity, &DynamicTuple::default()),
+                bevy::reflect::TypeInfo::List(_) => component_data.insert(&mut w, entity, &DynamicList::default()),
+                bevy::reflect::TypeInfo::Array(_) => component_data.insert(&mut w, entity, &DynamicArray::new(Box::new([]))),
+                bevy::reflect::TypeInfo::Map(_) => component_data.insert(&mut w, entity, &DynamicMap::default()),
                 bevy::reflect::TypeInfo::Value(_) |
-                bevy::reflect::TypeInfo::Dynamic(_) => component_data.insert(w, entity,
+                bevy::reflect::TypeInfo::Dynamic(_) => component_data.insert(&mut w, entity,
                     comp_type.data::<ReflectDefault>().ok_or_else(||
                         mlua::Error::RuntimeError(format!("Component {} is a value or dynamic type with no `ReflectDefault` type_data, cannot instantiate sensible value",comp_type.short_name())))?
                         .default()
                         .as_ref())
             };
 
-            Ok(ScriptRef::new_component_ref(component_data.clone(), entity, world.as_ref().clone()))
+            Ok(ScriptRef::new_component_ref(component_data.clone(), entity, world.0.clone()))
         });
 
         methods.document("Retrieves a component of the given type from the given entity.");
@@ -326,14 +314,13 @@ impl TealData for LuaWorld {
             |_, world, (entity, comp_type): (LuaEntity, LuaTypeRegistration)| {
                 // grab this entity before acquiring a lock in case it's a reference
                 let entity = entity.inner()?;
-                let w = world.upgrade().unwrap();
-                let w = &w.read();
+                let w = world.read();
 
                 let component_data = comp_type.data::<ReflectComponent>().ok_or_else(|| {
                     mlua::Error::RuntimeError(format!("Not a component {}", comp_type.short_name()))
                 })?;
 
-                Ok(component_data.reflect(w, entity).map(|_component| {
+                Ok(component_data.reflect(&w, entity).map(|_component| {
                     ScriptRef::new_component_ref(
                         component_data.clone(),
                         entity,
@@ -350,14 +337,13 @@ impl TealData for LuaWorld {
             |_, world, (entity, comp_type): (LuaEntity, LuaTypeRegistration)| {
                 // grab this entity before acquiring a lock in case it's a reference
                 let entity = entity.inner()?;
-                let w = world.upgrade().unwrap();
-                let w = &w.read();
+                let w = world.read();
 
                 let component_data = comp_type.data::<ReflectComponent>().ok_or_else(|| {
                     mlua::Error::RuntimeError(format!("Not a component {}", comp_type.short_name()))
                 })?;
 
-                Ok(component_data.reflect(w, entity).is_some())
+                Ok(component_data.reflect(&w, entity).is_some())
             },
         );
 
@@ -367,13 +353,12 @@ impl TealData for LuaWorld {
             |_, world, (entity, comp_type): (LuaEntity, LuaTypeRegistration)| {
                 // grab this entity before acquiring a lock in case it's a reference
                 let entity = entity.inner()?;
-                let w = world.upgrade().unwrap();
-                let w = &mut w.write();
+                let mut w = world.write();
 
                 let component_data = comp_type.data::<ReflectComponent>().ok_or_else(|| {
                     mlua::Error::RuntimeError(format!("Not a component {}", comp_type.short_name()))
                 })?;
-                component_data.remove(w, entity);
+                component_data.remove(&mut w, entity);
                 Ok(())
             },
         );
@@ -381,14 +366,13 @@ impl TealData for LuaWorld {
         methods.document("Retrieves a resource of the given type from the world.");
         methods.document("If such a resource does not exist returns `nil`.");
         methods.add_method("get_resource", |_, world, res_type: LuaTypeRegistration| {
-            let w = world.upgrade().unwrap();
-            let w = &w.read();
+            let w = world.read();
 
             let resource_data = res_type.data::<ReflectResource>().ok_or_else(|| {
                 mlua::Error::RuntimeError(format!("Not a resource {}", res_type.short_name()))
             })?;
 
-            Ok(resource_data.reflect(w).map(|_res| {
+            Ok(resource_data.reflect(&w).map(|_res| {
                 ScriptRef::new_resource_ref(resource_data.clone(), world.as_ref().clone())
             }))
         });
@@ -399,33 +383,30 @@ impl TealData for LuaWorld {
         methods.add_method(
             "remove_resource",
             |_, world, res_type: LuaTypeRegistration| {
-                let w = world.upgrade().unwrap();
-                let w = &mut w.write();
+                let mut w = world.write();
 
                 let resource_data = res_type.data::<ReflectResource>().ok_or_else(|| {
                     mlua::Error::RuntimeError(format!("Not a resource {}", res_type.short_name()))
                 })?;
-                resource_data.remove(w);
+                resource_data.remove(&mut w);
                 Ok(())
             },
         );
 
         methods.document("Returns `true` if the world contains a resource of the given type.");
         methods.add_method("has_resource", |_, world, res_type: LuaTypeRegistration| {
-            let w = world.upgrade().unwrap();
-            let w = &w.read();
+            let w = world.read();
 
             let resource_data = res_type.data::<ReflectResource>().ok_or_else(|| {
                 mlua::Error::RuntimeError(format!("Not a resource {}", res_type.short_name()))
             })?;
 
-            Ok(resource_data.reflect(w).is_some())
+            Ok(resource_data.reflect(&w).is_some())
         });
 
         methods.document("Spawns a new entity and returns its Entity ID");
         methods.add_method("spawn", |_, world, ()| {
-            let w = world.upgrade().unwrap();
-            let w = &mut w.write();
+            let mut w = world.write();
 
             Ok(LuaEntity::new(w.spawn().id()))
         });
@@ -434,8 +415,7 @@ impl TealData for LuaWorld {
             "Despawns the given entity if it exists, returns true if deletion was successfull",
         );
         methods.add_method("despawn", |_, world, entity: LuaEntity| {
-            let w = world.upgrade().unwrap();
-            let w = &mut w.write();
+            let mut w = world.write();
 
             Ok(w.despawn(entity.inner()?))
         });
