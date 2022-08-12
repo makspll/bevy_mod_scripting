@@ -1,7 +1,3 @@
-
-
-
-
 use crate::{error::ScriptError, hosts::Recipients};
 
 /// An error coming from a script
