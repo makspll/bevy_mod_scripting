@@ -139,7 +139,7 @@ impl ToTokens for WrapperFunctionList {
     }
 }
 
-#[allow(clippy::eval_order_dependence)]
+#[allow(clippy::mixed_read_write_in_expression)]
 impl Parse for WrapperFunctionList {
     fn parse(input: ParseStream) -> Result<Self, syn::Error> {
         let f;

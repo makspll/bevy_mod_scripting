@@ -62,8 +62,7 @@ impl_script_newtype!(
         fn "make_ref_to_my_resource" => |ctx,()| {
             let globals = ctx.globals();
             let lua_world : LuaWorld = globals.get("world")?;
-            let world = lua_world.upgrade().expect("World is gone! we're doomed!");
-            let mut world = world.write();
+            let mut world = lua_world.write();
 
             let reflect_resource_data = world.resource_scope(|world, type_registry: Mut<TypeRegistryArc>| {
                 let type_registry = type_registry.read();

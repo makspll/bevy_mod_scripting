@@ -74,6 +74,7 @@ fn main() -> std::io::Result<()> {
         .init_resource::<MyResource>()
         // this stage handles addition and removal of script contexts, we can safely use `CoreStage::PostUpdate`
         .add_script_host::<LuaScriptHost<()>, _>(CoreStage::PostUpdate)
+        .add_script_handler_stage::<LuaScriptHost<()>,_,0,0>(CoreStage::PostUpdate)
         .add_api_provider::<LuaScriptHost<()>>(Box::new(LuaBevyAPIProvider))
         .add_system(
             (|world: &mut World| {
@@ -104,6 +105,12 @@ fn main() -> std::io::Result<()> {
                     host.run_one_shot(
                         r#"
                         function once()
+                            
+                            -- the api provides us with 3 globals
+                            print(entity)
+                            print(script)
+                            print(world)
+
                             -- we first retrieve ID's for our component and resource by their short name (long name/full path also work)
                             
                             local my_component_type = world:get_type_by_name("MyComponent")
@@ -205,8 +212,8 @@ fn main() -> std::io::Result<()> {
                             -- notet that our custom resource's value has not affected the original
                             -- this is because it is a by-value proxy, see wrappers.rs for an alternative
                             print("After script:")
-                            print(string.format("%s", comp))
-                            print(string.format("%s", res))
+                            print(comp)
+                            print(res)
                         end
                         "#
                         .as_bytes(),

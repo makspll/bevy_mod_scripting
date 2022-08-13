@@ -300,6 +300,11 @@ pub(crate) fn generate_macros(
     writer.close_brace();
     // } get_doc_fragment
 
+    // impl default members
+    for line in config.lua_api_defaults.lines() {
+        writer.write_line(line);
+    }
+
     // register_with_app {
     writer.write_no_newline("fn register_with_app(&self, app: &mut App)");
     writer.open_brace();
