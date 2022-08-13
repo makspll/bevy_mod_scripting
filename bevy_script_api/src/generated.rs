@@ -9714,16 +9714,11 @@ impl APIProvider for LuaBevyAPIProvider {
     }
     fn setup_script(
         &mut self,
-        world_ptr: bevy_mod_scripting_core::world::WorldPointer,
         script_data: &ScriptData,
         ctx: &mut Self::ScriptContext,
     ) -> Result<(), ScriptError> {
         let ctx = ctx.get_mut().expect("Could not get context");
-
         let globals = ctx.globals();
-        globals
-            .set("world", crate::lua::bevy::LuaWorld::new(world_ptr))
-            .map_err(ScriptError::new_other)?;
         globals
             .set(
                 "entity",
@@ -9735,6 +9730,19 @@ impl APIProvider for LuaBevyAPIProvider {
             .map_err(ScriptError::new_other)?;
 
         Ok(())
+    }
+
+    fn setup_script_runtime(
+        &mut self,
+        world_ptr: bevy_mod_scripting_core::world::WorldPointer,
+        _script_data: &ScriptData,
+        ctx: &mut Self::ScriptContext,
+    ) -> Result<(), ScriptError> {
+        let ctx = ctx.get_mut().expect("Could not get context");
+        let globals = ctx.globals();
+        globals
+            .set("world", crate::lua::bevy::LuaWorld::new(world_ptr))
+            .map_err(ScriptError::new_other)
     }
     fn register_with_app(&self, app: &mut App) {
         app.register_foreign_lua_type::<AlignContent>();
@@ -9853,21 +9861,21 @@ impl APIProvider for LuaBevyAPIProvider {
         app.register_foreign_lua_type::<Quat>();
         app.register_foreign_lua_type::<DQuat>();
         app.register_foreign_lua_type::<EulerRot>();
-        app.register_foreign_lua_type::<u8>();
-        app.register_foreign_lua_type::<i8>();
-        app.register_foreign_lua_type::<isize>();
-        app.register_foreign_lua_type::<u128>();
-        app.register_foreign_lua_type::<u16>();
-        app.register_foreign_lua_type::<String>();
-        app.register_foreign_lua_type::<usize>();
-        app.register_foreign_lua_type::<bool>();
-        app.register_foreign_lua_type::<i64>();
-        app.register_foreign_lua_type::<i32>();
         app.register_foreign_lua_type::<f64>();
         app.register_foreign_lua_type::<u32>();
-        app.register_foreign_lua_type::<i128>();
         app.register_foreign_lua_type::<i16>();
-        app.register_foreign_lua_type::<u64>();
+        app.register_foreign_lua_type::<u128>();
         app.register_foreign_lua_type::<f32>();
+        app.register_foreign_lua_type::<u16>();
+        app.register_foreign_lua_type::<i32>();
+        app.register_foreign_lua_type::<i8>();
+        app.register_foreign_lua_type::<isize>();
+        app.register_foreign_lua_type::<bool>();
+        app.register_foreign_lua_type::<u64>();
+        app.register_foreign_lua_type::<u8>();
+        app.register_foreign_lua_type::<i64>();
+        app.register_foreign_lua_type::<String>();
+        app.register_foreign_lua_type::<i128>();
+        app.register_foreign_lua_type::<usize>();
     }
 }

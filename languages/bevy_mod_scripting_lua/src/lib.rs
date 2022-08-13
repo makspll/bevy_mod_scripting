@@ -56,11 +56,7 @@ impl<A: LuaArg> ScriptEvent for LuaEvent<A> {
     }
 }
 
-/// Mlua script host, enables Lua scripting provided by the mlua library.
-/// Always provides two global variables to each script by default:
-///     - `world` - a reference to the `bevy::ecs::World` the script lives in via [`LuaWorld`]
-///     - `entity` - an `Entity::to_bits` representation of the entity the script is attached to
-///     - `script` - an `LuaScriptData` object containing the unique id of this script
+/// Lua script host, enables Lua scripting.
 pub struct LuaScriptHost<A: LuaArg> {
     _ph: PhantomData<A>,
 }
@@ -102,8 +98,7 @@ impl<A: LuaArg> ScriptHost for LuaScriptHost<A> {
                         script_remove_synchronizer::<Self>
                             .before(script_hot_reload_handler::<Self>),
                     )
-                    .with_system(script_hot_reload_handler::<Self>)
-                    .with_system(script_setup_handler::<Self>.exclusive_system().at_end()),
+                    .with_system(script_hot_reload_handler::<Self>),
             );
     }
 
@@ -133,30 +128,33 @@ impl<A: LuaArg> ScriptHost for LuaScriptHost<A> {
 
     fn setup_script(
         &mut self,
-        world: WorldPointer,
         script_data: &ScriptData,
         ctx: &mut Self::ScriptContext,
         providers: &mut APIProviders<Self>,
     ) -> Result<(), ScriptError> {
         // safety: this is fine, world will only ever be accessed
-        providers.setup_all(world, script_data, ctx)
+        providers.setup_all(script_data, ctx)
     }
 
     fn handle_events<'a>(
         &self,
-        world_ptr: WorldPointer,
+        world: &mut World,
         events: &[Self::ScriptEvent],
         ctxs: impl Iterator<Item = (ScriptData<'a>, &'a mut Self::ScriptContext)>,
+        providers: &mut APIProviders<Self>,
     ) {
-        let mut world = world_ptr.write();
-        let mut state: CachedScriptState<Self> = world.remove_resource().unwrap();
+        // safety:
+        // - we have &mut World access
+        // - we do not use world_ptr after using the world reference which it's derived from
+        let world_ptr = unsafe { WorldPointer::new(world) };
 
-        // this is important, the scripts might have access to the world pointer
-        // not unlocking this would prevent them from accessing the world
-        drop(world);
+        ctxs.for_each(|(script_data, ctx)| {
+            providers
+                .setup_runtime_all(world_ptr.clone(), &script_data, ctx)
+                .expect("Could not setup script runtime");
 
-        ctxs.for_each(|(fd, ctx)| {
             let ctx = ctx.get_mut().expect("Poison error in context");
+
             // event order is preserved, but scripts can't rely on any temporal
             // guarantees when it comes to other scripts callbacks,
             // at least for now.
@@ -164,7 +162,7 @@ impl<A: LuaArg> ScriptHost for LuaScriptHost<A> {
 
             for event in events {
                 // check if this script should handle this event
-                if !event.recipients().is_recipient(&fd) {
+                if !event.recipients().is_recipient(&script_data) {
                     continue;
                 }
 
@@ -175,20 +173,22 @@ impl<A: LuaArg> ScriptHost for LuaScriptHost<A> {
 
                 if let Err(error) = f.call::<_, ()>(event.args.clone()) {
                     let error = ScriptError::RuntimeError {
-                        script: fd.name.to_owned(),
+                        script: script_data.name.to_owned(),
                         msg: error.to_string(),
                     };
 
                     let mut world = world_ptr.write();
+                    let mut state: CachedScriptState<Self> = world.remove_resource().unwrap();
+
                     let (_, mut error_wrt, _) = state.event_state.get_mut(&mut world);
 
                     error!("{}", error);
-                    error_wrt.send(ScriptErrorEvent { error })
+                    error_wrt.send(ScriptErrorEvent { error });
+                    world.insert_resource(state);
                 }
             }
         });
 
-        let mut world = world_ptr.write();
-        world.insert_resource(state);
+        // safety: this invalidates world_ptr, but we are never using it again, so we're off the hook
     }
 }

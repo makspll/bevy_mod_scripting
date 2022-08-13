@@ -86,13 +86,7 @@ impl<A: FuncArgs + Send + Clone + Sync + 'static> ScriptHost for RhaiScriptHost<
                         script_remove_synchronizer::<Self>
                             .before(script_hot_reload_handler::<Self>),
                     )
-                    .with_system(script_hot_reload_handler::<Self>)
-                    .with_system(
-                        script_setup_handler::<Self>
-                            .exclusive_system()
-                            .at_end()
-                            .before(ScriptSystemLabel::EventHandling),
-                    ),
+                    .with_system(script_hot_reload_handler::<Self>),
             )
             // setup engine
             .add_startup_system(
@@ -106,12 +100,11 @@ impl<A: FuncArgs + Send + Clone + Sync + 'static> ScriptHost for RhaiScriptHost<
 
     fn setup_script(
         &mut self,
-        world_ptr: WorldPointer,
         script_data: &ScriptData,
         ctx: &mut Self::ScriptContext,
         providers: &mut APIProviders<Self>,
     ) -> Result<(), ScriptError> {
-        providers.setup_all(world_ptr, script_data, ctx)
+        providers.setup_all(script_data, ctx)
     }
 
     fn load_script(
@@ -143,18 +136,20 @@ impl<A: FuncArgs + Send + Clone + Sync + 'static> ScriptHost for RhaiScriptHost<
 
     fn handle_events<'a>(
         &self,
-        world_ptr: WorldPointer,
+        world: &mut World,
         events: &[Self::ScriptEvent],
         ctxs: impl Iterator<Item = (ScriptData<'a>, &'a mut Self::ScriptContext)>,
+        providers: &mut APIProviders<Self>,
     ) {
-        let mut world = world_ptr.write();
-        let mut state: CachedScriptState<Self> = world.remove_resource().unwrap();
-
-        // this is important, the scripts might have access to the world pointer
-        // not unlocking this would prevent them from accessing the world
-        drop(world);
-
         ctxs.for_each(|(fd, ctx)| {
+            // safety:
+            // - we have &mut World access
+            // - we do not use world_ptr after we use the original reference again anywhere in this function
+            let world_ptr = unsafe { WorldPointer::new(world) };
+            providers
+                .setup_runtime_all(world_ptr.clone(), &fd, ctx)
+                .expect("Failed to setup script runtime");
+
             for event in events.iter() {
                 // check if this script should handle this event
                 if !event.recipients().is_recipient(&fd) {
@@ -170,6 +165,9 @@ impl<A: FuncArgs + Send + Clone + Sync + 'static> ScriptHost for RhaiScriptHost<
                     Ok(v) => v,
                     Err(e) => {
                         let mut world = world_ptr.write();
+
+                        let mut state: CachedScriptState<Self> = world.remove_resource().unwrap();
+
                         let (_, mut error_wrt, _) = state.event_state.get_mut(&mut world);
 
                         let err = ScriptError::RuntimeError {
@@ -178,12 +176,11 @@ impl<A: FuncArgs + Send + Clone + Sync + 'static> ScriptHost for RhaiScriptHost<
                         };
                         error!("{}", err);
                         error_wrt.send(ScriptErrorEvent { error: err });
+
+                        world.insert_resource(state);
                     }
                 };
             }
         });
-
-        let mut world = world_ptr.write();
-        world.insert_resource(state);
     }
 }

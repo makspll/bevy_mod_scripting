@@ -52,6 +52,7 @@ impl Deref for LuaTypeRegistration {
     }
 }
 
+#[derive(Debug)]
 pub struct LuaScriptData {
     sid: u32,
 }
@@ -69,9 +70,15 @@ impl TealData for LuaScriptData {
         fields.document("The unique ID of this script");
         fields.add_field_method_get("sid", |_, s| Ok(s.sid))
     }
+
+    fn add_methods<'lua, T: TealDataMethods<'lua, Self>>(methods: &mut T) {
+        methods.add_meta_method(tealr::mlu::mlua::MetaMethod::ToString, |_, s, ()| {
+            Ok(format!("{:?}", s))
+        });
+    }
 }
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct LuaWorld(WorldPointer);
 
 impl Deref for LuaWorld {
@@ -100,6 +107,10 @@ impl TealData for LuaWorld {
     fn add_methods<'lua, T: TealDataMethods<'lua, Self>>(methods: &mut T) {
         methods.document_type("Represents the bevy world all scripts live in.");
         methods.document_type("Provides ways to interact with and modify the world.");
+
+        methods.add_meta_method(tealr::mlu::mlua::MetaMethod::ToString, |_, s, ()| {
+            Ok(format!("{s:?}"))
+        });
 
         methods.document("Retrieves children entities of the parent entity if it has any.");
         methods.add_method("get_children", |_, world, parent: LuaEntity| {

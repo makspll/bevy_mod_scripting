@@ -4,7 +4,7 @@ use bevy::{
     ecs::system::SystemState,
     prelude::{
         debug, AssetEvent, Assets, ChangeTrackers, Changed, Entity, EventReader, EventWriter,
-        FromWorld, Mut, Query, RemovedComponents, Res, ResMut, SystemLabel, World,
+        FromWorld, Query, RemovedComponents, Res, ResMut, SystemLabel, World,
     },
 };
 use bevy_event_priority::PriorityEventReader;
@@ -12,7 +12,6 @@ use bevy_event_priority::PriorityEventReader;
 use crate::{
     event::ScriptLoaded,
     prelude::{APIProviders, Script, ScriptCollection, ScriptContexts, ScriptData, ScriptHost},
-    world::WorldPointer,
     ScriptErrorEvent,
 };
 
@@ -109,47 +108,6 @@ pub fn script_remove_synchronizer<H: ScriptHost>(
     })
 }
 
-/// Handles the setup of all scripts which were just loaded or reloaded
-pub fn script_setup_handler<H: ScriptHost>(world: &mut World) {
-    let mut state: CachedScriptState<H> = world.remove_resource().unwrap();
-    let mut host: H = world.remove_resource().unwrap();
-    let mut ctxts: ScriptContexts<H::ScriptContext> = world.remove_resource().unwrap();
-    let mut providers: APIProviders<H> = world.remove_resource().unwrap();
-
-    let events = state
-        .event_state
-        .get_mut(world)
-        .2
-        .iter()
-        .cloned()
-        .collect::<Vec<_>>();
-
-    for ScriptLoaded { sid } in events {
-        let (entity, ctx, name) = ctxts
-            .context_entities
-            .get_mut(&sid)
-            .expect("Script context was removed before it was fully loaded");
-
-        host.setup_script(
-            unsafe { WorldPointer::new(world) },
-            &ScriptData {
-                sid,
-                entity: *entity,
-                name,
-            },
-            ctx.as_mut()
-                .expect("Loaded event was sent but context is missing"),
-            &mut providers,
-        )
-        .expect("Failed to setup script");
-    }
-
-    world.insert_resource(state);
-    world.insert_resource(host);
-    world.insert_resource(ctxts);
-    world.insert_resource(providers);
-}
-
 /// Reloads hot-reloaded scripts, or loads missing contexts for scripts which were added but not loaded
 pub fn script_hot_reload_handler<H: ScriptHost>(
     mut events: EventReader<AssetEvent<H::ScriptAsset>>,
@@ -194,48 +152,57 @@ pub fn script_hot_reload_handler<H: ScriptHost>(
 /// Lets the script host handle all script events
 pub fn script_event_handler<H: ScriptHost, const MAX: u32, const MIN: u32>(world: &mut World) {
     // we need to collect the events to drop the borrow of the world
-    let events = world.resource_scope(|world, mut cached_state: Mut<CachedScriptState<H>>| {
-        let (mut cached_state, _, _) = cached_state.event_state.get_mut(world);
-        cached_state
-            .iter_prio_range(MAX, MIN)
-            .collect::<Vec<H::ScriptEvent>>()
-    });
+
+    let mut state: CachedScriptState<H> = world.remove_resource().unwrap();
+
+    let events = state
+        .event_state
+        .get_mut(world)
+        .0
+        .iter_prio_range(MAX, MIN)
+        .collect::<Vec<H::ScriptEvent>>();
 
     // should help a lot with performance on frames where no events are fired
     if events.is_empty() {
+        world.insert_resource(state);
         return;
     }
+
+    let mut ctxts: ScriptContexts<H::ScriptContext> = world.remove_resource().unwrap();
+
+    let host: H = world.remove_resource().unwrap();
+    let mut providers: APIProviders<H> = world.remove_resource().unwrap();
 
     // we need a resource scope to be able to simultaneously access the contexts as well
     // as provide world access to scripts
     // afaik there is not really a better way to do this in bevy just now
-    world.resource_scope(|world, mut ctxts: Mut<ScriptContexts<H::ScriptContext>>| {
-        let ctx_iter =
-            ctxts
-                .as_mut()
-                .context_entities
-                .iter_mut()
-                .filter_map(|(sid, (entity, o, name))| {
-                    let ctx = match o {
-                        Some(v) => v,
-                        None => return None,
-                    };
+    let ctx_iter = ctxts
+        .context_entities
+        .iter_mut()
+        .filter_map(|(sid, (entity, o, name))| {
+            let ctx = match o {
+                Some(v) => v,
+                None => return None,
+            };
 
-                    Some((
-                        ScriptData {
-                            sid: *sid,
-                            entity: *entity,
-                            name,
-                        },
-                        ctx,
-                    ))
-                });
-        // safety: we have unique access to world, future accesses are protected
-        // by the lock in the pointer
-        world.resource_scope(|world, host: Mut<H>| {
-            host.handle_events(unsafe { WorldPointer::new(world) }, &events, ctx_iter)
+            Some((
+                ScriptData {
+                    sid: *sid,
+                    entity: *entity,
+                    name,
+                },
+                ctx,
+            ))
         });
-    });
+
+    // safety: we have unique access to world, future accesses are protected
+    // by the lock in the pointer
+    host.handle_events(world, &events, ctx_iter, &mut providers);
+
+    world.insert_resource(state);
+    world.insert_resource(ctxts);
+    world.insert_resource(host);
+    world.insert_resource(providers);
 }
 
 /// system state for exclusive systems dealing with script events

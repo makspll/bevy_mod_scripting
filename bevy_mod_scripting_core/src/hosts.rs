@@ -78,10 +78,9 @@ pub trait ScriptHost: Send + Sync + 'static + Default {
         providers: &mut APIProviders<Self>,
     ) -> Result<Self::ScriptContext, ScriptError>;
 
-    /// Hook for one-time initialization of scripts which needs exclusive access to the world
+    /// Perform one-off initialization of scripts (happens for every new or re-loaded script)
     fn setup_script(
         &mut self,
-        world_ptr: WorldPointer,
         script_data: &ScriptData,
         ctx: &mut Self::ScriptContext,
         providers: &mut APIProviders<Self>,
@@ -91,9 +90,10 @@ pub trait ScriptHost: Send + Sync + 'static + Default {
     /// Scripts are called with appropriate events in the event order
     fn handle_events<'a>(
         &self,
-        world_ptr: WorldPointer,
+        world_ptr: &mut World,
         events: &[Self::ScriptEvent],
         ctxs: impl Iterator<Item = (ScriptData<'a>, &'a mut Self::ScriptContext)>,
+        providers: &mut APIProviders<Self>,
     );
 
     /// Loads and runs script instantaneously without storing any script data into the world.
@@ -114,19 +114,11 @@ pub trait ScriptHost: Send + Sync + 'static + Default {
 
         let mut providers: APIProviders<Self> = world.remove_resource().unwrap();
         let mut ctx = self.load_script(script, &fd, &mut providers).unwrap();
-
+        self.setup_script(&fd, &mut ctx, &mut providers)?;
         let events = [event; 1];
 
-        // safety: we have exclusive access to world, so no other references exist
-        // references from the world pointer are protected with the lock
+        self.handle_events(world, &events, once((fd, &mut ctx)), &mut providers);
 
-        let world_ptr = unsafe { WorldPointer::new(world) };
-        // SAFETY: cannot use original world reference after this!
-
-        self.setup_script(world_ptr.clone(), &fd, &mut ctx, &mut providers)?;
-        self.handle_events(world_ptr.clone(), &events, once((fd, &mut ctx)));
-
-        let mut world = world_ptr.write();
         world.insert_resource(providers);
 
         Ok(())
@@ -154,11 +146,20 @@ pub trait APIProvider: 'static + Send + Sync {
     /// engine. For one-time setup use `Self::setup_script`
     fn attach_api(&mut self, ctx: &mut Self::APITarget) -> Result<(), ScriptError>;
 
+    /// Hook executed every time a script is about to handle events, most notably used to "refresh" world pointers
+    fn setup_script_runtime(
+        &mut self,
+        _world_ptr: WorldPointer,
+        _script_data: &ScriptData,
+        _ctx: &mut Self::ScriptContext,
+    ) -> Result<(), ScriptError> {
+        Ok(())
+    }
+
     /// Setup meant to be executed once for every single script. Use this if you need to consistently setup scripts.
     /// For API's use `Self::attach_api` instead.
     fn setup_script(
         &mut self,
-        _world_ptr: WorldPointer,
         _script_data: &ScriptData,
         _ctx: &mut Self::ScriptContext,
     ) -> Result<(), ScriptError> {
@@ -206,14 +207,26 @@ impl<T: ScriptHost> APIProviders<T> {
         Ok(())
     }
 
-    pub fn setup_all(
+    pub fn setup_runtime_all(
         &mut self,
         world_ptr: WorldPointer,
         script_data: &ScriptData,
         ctx: &mut T::ScriptContext,
     ) -> Result<(), ScriptError> {
         for p in self.providers.iter_mut() {
-            p.setup_script(world_ptr.clone(), script_data, ctx)?;
+            p.setup_script_runtime(world_ptr.clone(), script_data, ctx)?;
+        }
+
+        Ok(())
+    }
+
+    pub fn setup_all(
+        &mut self,
+        script_data: &ScriptData,
+        ctx: &mut T::ScriptContext,
+    ) -> Result<(), ScriptError> {
+        for p in self.providers.iter_mut() {
+            p.setup_script(script_data, ctx)?;
         }
 
         Ok(())
@@ -275,6 +288,10 @@ impl<C> ScriptContexts<C> {
         self.context_entities
             .get(&script_id)
             .map_or(false, |(_, c, _)| c.is_some())
+    }
+
+    pub fn is_empty(&self) -> bool {
+        self.context_entities.is_empty()
     }
 }
 
@@ -353,7 +370,8 @@ impl<T: Asset> Script<T> {
         );
     }
 
-    /// checks if a script has loaded, and if so loads and inserts its new context into the contexts resource
+    /// checks if a script has loaded, and if so loads (`ScriptHost::load_script`),
+    /// sets up (`ScriptHost::setup_script`) and inserts its new context into the contexts resource
     /// otherwise inserts None. Sends ScriptLoaded event if the script was loaded
     pub(crate) fn insert_new_script_context<H: ScriptHost>(
         host: &mut H,
@@ -382,11 +400,13 @@ impl<T: Asset> Script<T> {
         debug!("Inserted script {:?}", fd);
 
         match host.load_script(script.bytes(), &fd, providers) {
-            Ok(ctx) => {
+            Ok(mut ctx) => {
+                host.setup_script(&fd, &mut ctx, providers)
+                    .expect("Failed to setup script");
                 contexts.insert_context(fd, Some(ctx));
                 event_writer.send(ScriptLoaded {
                     sid: new_script.id(),
-                })
+                });
             }
             Err(e) => {
                 warn! {"Error in loading script {}:\n{}", &new_script.name,e}
