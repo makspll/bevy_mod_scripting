@@ -1,7 +1,7 @@
-use std::fmt::Debug;
-use std::{borrow::Cow, sync::Weak};
 use bevy::prelude::*;
 use parking_lot::RwLock;
+use std::fmt::Debug;
+use std::{borrow::Cow, sync::Weak};
 
 use bevy_mod_scripting_core::world::WorldPointer;
 
@@ -27,11 +27,7 @@ pub struct ScriptRef {
 
 impl ScriptRef {
     /// Safely creates a new base component reference
-    pub fn new_component_ref(
-        comp: ReflectComponent,
-        entity: Entity,
-        world: WorldPointer,
-    ) -> Self {
+    pub fn new_component_ref(comp: ReflectComponent, entity: Entity, world: WorldPointer) -> Self {
         Self {
             path: ReflectPath::new(ReflectBase::Component {
                 comp,

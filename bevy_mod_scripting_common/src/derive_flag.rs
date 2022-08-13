@@ -84,7 +84,7 @@ pub enum DeriveFlag {
 //     pub args: Punctuated<MethodMacroArg, Token![,]>,
 // }
 
-// #[allow(clippy::eval_order_dependence)]
+// #[allow(clippy::mixed_read_write_in_expression)]
 // impl Parse for MethodMacroInvokation {
 //     fn parse(input: ParseStream) -> Result<Self, syn::Error> {
 //         let f;
@@ -122,7 +122,7 @@ impl ToTokens for AutoMethod {
     }
 }
 
-#[allow(clippy::eval_order_dependence)]
+#[allow(clippy::mixed_read_write_in_expression)]
 impl Parse for AutoMethod {
     fn parse(input: ParseStream) -> Result<Self, syn::Error> {
         let f;

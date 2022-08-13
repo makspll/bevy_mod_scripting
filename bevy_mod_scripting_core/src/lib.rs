@@ -1,13 +1,15 @@
 use crate::{
-    error::ScriptError,
+    event::ScriptErrorEvent,
     hosts::{APIProvider, APIProviders, ScriptHost},
 };
 use bevy::{ecs::schedule::IntoRunCriteria, prelude::*};
-use systems::script_event_handler;
+use event::ScriptLoaded;
+use systems::{script_event_handler, ScriptSystemLabel};
 
 pub mod asset;
 pub mod docs;
 pub mod error;
+pub mod event;
 pub mod hosts;
 pub mod systems;
 pub mod world;
@@ -17,13 +19,14 @@ pub mod prelude {
         crate::asset::CodeAsset,
         crate::docs::DocFragment,
         crate::error::ScriptError,
+        crate::event::{ScriptErrorEvent, ScriptEvent},
         crate::hosts::{
             APIProvider, APIProviders, Recipients, Script, ScriptCollection, ScriptContexts,
-            ScriptData, ScriptEvent, ScriptHost,
+            ScriptData, ScriptHost,
         },
         crate::{
             AddScriptApiProvider, AddScriptHost, AddScriptHostHandler, GenDocumentation,
-            ScriptErrorEvent, ScriptingPlugin,
+            ScriptingPlugin,
         },
         bevy_event_priority::{
             AddPriorityEvent, PriorityEvent, PriorityEventReader, PriorityEventWriter,
@@ -41,12 +44,6 @@ impl Plugin for ScriptingPlugin {
     fn build(&self, app: &mut bevy::prelude::App) {
         app.add_event::<ScriptErrorEvent>();
     }
-}
-
-/// An error coming from a script
-#[derive(Debug)]
-pub struct ScriptErrorEvent {
-    pub err: ScriptError,
 }
 
 pub trait GenDocumentation {
@@ -73,7 +70,10 @@ impl GenDocumentation for App {
 
 /// Trait for app builder notation
 pub trait AddScriptHost {
-    /// registers the given script host with your app
+    /// registers the given script host with your app,
+    /// the given stage will contain systems handling script loading,re-loading, removal etc.
+    /// This stage will also send events related to the script lifecycle.
+    /// Any systems which need to run the same frame a script is loaded must run after this stage.
     fn add_script_host<T: ScriptHost, S: StageLabel>(&mut self, stage: S) -> &mut Self;
 }
 
@@ -81,6 +81,7 @@ impl AddScriptHost for App {
     fn add_script_host<T: ScriptHost, S: StageLabel>(&mut self, stage: S) -> &mut Self {
         T::register_with_app(self, stage);
         self.init_resource::<T>();
+        self.add_event::<ScriptLoaded>();
         self
     }
 }
@@ -170,6 +171,7 @@ impl AddScriptHostHandler for App {
             stage,
             script_event_handler::<T, MAX, MIN>
                 .exclusive_system()
+                .label(ScriptSystemLabel::EventHandling)
                 .at_end(),
         );
         self
@@ -191,6 +193,7 @@ impl AddScriptHostHandler for App {
             stage,
             script_event_handler::<T, MAX, MIN>
                 .exclusive_system()
+                .label(ScriptSystemLabel::EventHandling)
                 .at_end()
                 .with_run_criteria(criteria),
         );

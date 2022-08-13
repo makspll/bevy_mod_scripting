@@ -71,7 +71,7 @@ impl<A: FuncArgs + Send + Clone + Sync + 'static> ScriptHost for RhaiScriptHost<
         app.add_priority_event::<Self::ScriptEvent>()
             .add_asset::<RhaiFile>()
             .init_asset_loader::<RhaiLoader>()
-            .init_resource::<CachedScriptEventState<Self>>()
+            .init_resource::<CachedScriptState<Self>>()
             .init_resource::<ScriptContexts<Self::ScriptContext>>()
             .init_resource::<APIProviders<Self>>()
             .register_type::<ScriptCollection<Self::ScriptAsset>>()
@@ -98,11 +98,20 @@ impl<A: FuncArgs + Send + Clone + Sync + 'static> ScriptHost for RhaiScriptHost<
             );
     }
 
+    fn setup_script(
+        &mut self,
+        script_data: &ScriptData,
+        ctx: &mut Self::ScriptContext,
+        providers: &mut APIProviders<Self>,
+    ) -> Result<(), ScriptError> {
+        providers.setup_all(script_data, ctx)
+    }
+
     fn load_script(
         &mut self,
         path: &[u8],
         script_data: &ScriptData,
-        providers: &mut APIProviders<Self>,
+        _: &mut APIProviders<Self>,
     ) -> Result<Self::ScriptContext, ScriptError> {
         let mut scope = Scope::new();
         let mut ast = self
@@ -122,10 +131,7 @@ impl<A: FuncArgs + Send + Clone + Sync + 'static> ScriptHost for RhaiScriptHost<
         // persistent state for scripts
         scope.push("state", Map::new());
 
-        let mut ctx = RhaiContext { ast, scope };
-        providers.setup_all(script_data, &mut ctx)?;
-
-        Ok(ctx)
+        Ok(RhaiContext { ast, scope })
     }
 
     fn handle_events<'a>(
@@ -133,43 +139,48 @@ impl<A: FuncArgs + Send + Clone + Sync + 'static> ScriptHost for RhaiScriptHost<
         world: &mut World,
         events: &[Self::ScriptEvent],
         ctxs: impl Iterator<Item = (ScriptData<'a>, &'a mut Self::ScriptContext)>,
+        providers: &mut APIProviders<Self>,
     ) {
-        world.resource_scope(
-            |world, mut cached_state: Mut<CachedScriptEventState<Self>>| {
-                // safety, world is not going to be dangling for the duration of this function
-                let world_ptr = unsafe{WorldPointer::new(world)};
-                ctxs.for_each(|(fd, ctx)| {
-                    // ctx.scope.set_value("world", RhaiWorld::new(world_ptr.clone()));
-                    // ctx.scope.set_value("entity", fd.entity);
-                    // ctx.scope.set_value("script", fd.sid);
+        ctxs.for_each(|(fd, ctx)| {
+            // safety:
+            // - we have &mut World access
+            // - we do not use world_ptr after we use the original reference again anywhere in this function
+            let world_ptr = unsafe { WorldPointer::new(world) };
+            providers
+                .setup_runtime_all(world_ptr.clone(), &fd, ctx)
+                .expect("Failed to setup script runtime");
 
-                    for event in events.iter() {
-                        // check if this script should handle this event
-                        if !event.recipients().is_recipient(&fd) {
-                            return;
-                        };
+            for event in events.iter() {
+                // check if this script should handle this event
+                if !event.recipients().is_recipient(&fd) {
+                    return;
+                };
 
-                        match self.engine.call_fn(
-                            &mut ctx.scope,
-                            &ctx.ast,
-                            &event.hook_name,
-                            event.args.clone(),
-                        ) {
-                            Ok(v) => v,
-                            Err(e) => {
-                                let mut w = world_ptr.write();
-                                let (_, mut error_wrt) = cached_state.event_state.get_mut(&mut w);
-                                let err = ScriptError::RuntimeError {
-                                    script: fd.name.to_string(),
-                                    msg: e.to_string(),
-                                };
-                                error!("{}", err);
-                                error_wrt.send(ScriptErrorEvent { err });
-                            }
+                match self.engine.call_fn(
+                    &mut ctx.scope,
+                    &ctx.ast,
+                    &event.hook_name,
+                    event.args.clone(),
+                ) {
+                    Ok(v) => v,
+                    Err(e) => {
+                        let mut world = world_ptr.write();
+
+                        let mut state: CachedScriptState<Self> = world.remove_resource().unwrap();
+
+                        let (_, mut error_wrt, _) = state.event_state.get_mut(&mut world);
+
+                        let err = ScriptError::RuntimeError {
+                            script: fd.name.to_string(),
+                            msg: e.to_string(),
                         };
+                        error!("{}", err);
+                        error_wrt.send(ScriptErrorEvent { error: err });
+
+                        world.insert_resource(state);
                     }
-                })
-            },
-        );
+                };
+            }
+        });
     }
 }

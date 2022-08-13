@@ -1,18 +1,17 @@
-use std::{borrow::Cow, sync::Weak};
+use parking_lot::RwLock;
 use std::fmt;
 use std::fmt::{Debug, Display};
-use parking_lot::RwLock;
+use std::{borrow::Cow, sync::Weak};
 
 use bevy::{
-    prelude::{Entity, ReflectComponent, ReflectResource, World},
+    prelude::{Entity, ReflectComponent, ReflectResource},
     reflect::{Reflect, ReflectMut, ReflectRef},
 };
 
-use bevy_mod_scripting_core::error::ScriptError;
-use crate::{script_ref::ReflectPtr};
 use crate::error::ReflectionError;
+use crate::script_ref::ReflectPtr;
+use bevy_mod_scripting_core::error::ScriptError;
 use bevy_mod_scripting_core::world::WorldPointer;
-
 
 /// The base of a reflect path, i.e. the top-level object or source. Reflections paths are always relative to some reflect base
 #[derive(Clone)]
@@ -107,7 +106,6 @@ pub enum ReflectPathElem {
     /// Access to a TupleStruct, Tuple, List or Array element
     IndexAccess(usize), // TODO: Map access
 }
-
 
 impl Debug for ReflectPathElem {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {

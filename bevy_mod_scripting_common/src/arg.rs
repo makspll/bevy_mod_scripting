@@ -182,7 +182,7 @@ pub enum ArgType {
     Self_(SelfType),
 }
 
-#[allow(clippy::eval_order_dependence)]
+#[allow(clippy::mixed_read_write_in_expression)]
 impl Parse for ArgType {
     fn parse(input: ParseStream) -> Result<Self, syn::Error> {
         if input.peek(Ident) {

@@ -73,12 +73,10 @@ impl ValueIndex<Value<'_>> for ScriptRef {
                     str_.into(),
                 ))
             }
-            _ => {
-                return Err(mlua::Error::RuntimeError(format!(
-                    "Cannot index a rust object with {:?}",
-                    index
-                )))
-            }
+            _ => Err(mlua::Error::RuntimeError(format!(
+                "Cannot index a rust object with {:?}",
+                index
+            ))),
         }
     }
 }
