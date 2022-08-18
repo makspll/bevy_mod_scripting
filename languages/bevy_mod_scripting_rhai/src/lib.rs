@@ -109,7 +109,7 @@ impl<A: FuncArgs + Send + Clone + Sync + 'static> ScriptHost for RhaiScriptHost<
 
     fn load_script(
         &mut self,
-        path: &[u8],
+        script: &[u8],
         script_data: &ScriptData,
         _: &mut APIProviders<Self>,
     ) -> Result<Self::ScriptContext, ScriptError> {
@@ -117,7 +117,7 @@ impl<A: FuncArgs + Send + Clone + Sync + 'static> ScriptHost for RhaiScriptHost<
         let mut ast = self
             .engine
             .compile(
-                std::str::from_utf8(path).map_err(|_| ScriptError::FailedToLoad {
+                std::str::from_utf8(script).map_err(|_| ScriptError::FailedToLoad {
                     script: script_data.name.to_owned(),
                 })?,
             )

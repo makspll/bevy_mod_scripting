@@ -130,7 +130,7 @@ use std::ops::*;
 use std::sync::Mutex;
 #[cfg(feature = "lua")]
 use {
-    crate::lua::RegisterForeignLuaType,
+    crate::lua::{GetWorld, RegisterForeignLuaType},
     bevy_mod_scripting_lua::{docs::LuaDocFragment, tealr::mlu::mlua::MetaMethod},
     bevy_mod_scripting_lua_derive::impl_lua_newtype,
 };
@@ -6772,9 +6772,9 @@ impl_script_newtype! {
     lua impl
     {
 
-    mut (MetaMethod::Index) => |_,s,idx : usize| {
+    mut (MetaMethod::Index) => |ctx,s,idx : usize| {
         Ok(LuaVec3::new_ref(
-                s.script_ref().sub_ref(ReflectPathElem::SubReflectionIndexed{
+                s.script_ref(ctx.get_world()?).sub_ref(ReflectPathElem::SubReflectionIndexed{
                     label:"col",
                     index: idx,
                     get: |idx,ref_| Err(ReflectionError::InsufficientProvenance{
@@ -6905,9 +6905,9 @@ impl_script_newtype! {
     lua impl
     {
 
-    mut (MetaMethod::Index) => |_,s,idx : usize| {
+    mut (MetaMethod::Index) => |ctx,s,idx : usize| {
         Ok(LuaVec2::new_ref(
-                s.script_ref().sub_ref(ReflectPathElem::SubReflectionIndexed{
+                s.script_ref(ctx.get_world()?).sub_ref(ReflectPathElem::SubReflectionIndexed{
                     label:"col",
                     index: idx,
                     get: |idx,ref_| Err(ReflectionError::InsufficientProvenance{
@@ -7140,9 +7140,9 @@ impl_script_newtype! {
     lua impl
     {
 
-    mut (MetaMethod::Index) => |_,s,idx : usize| {
+    mut (MetaMethod::Index) => |ctx,s,idx : usize| {
         Ok(LuaVec3A::new_ref(
-                s.script_ref().sub_ref(ReflectPathElem::SubReflectionIndexed{
+                s.script_ref(ctx.get_world()?).sub_ref(ReflectPathElem::SubReflectionIndexed{
                     label:"col",
                     index: idx,
                     get: |idx,ref_| Err(ReflectionError::InsufficientProvenance{
@@ -7506,9 +7506,9 @@ impl_script_newtype! {
     lua impl
     {
 
-    mut (MetaMethod::Index) => |_,s,idx : usize| {
+    mut (MetaMethod::Index) => |ctx,s,idx : usize| {
         Ok(LuaVec4::new_ref(
-                s.script_ref().sub_ref(ReflectPathElem::SubReflectionIndexed{
+                s.script_ref(ctx.get_world()?).sub_ref(ReflectPathElem::SubReflectionIndexed{
                     label:"col",
                     index: idx,
                     get: |idx,ref_| Err(ReflectionError::InsufficientProvenance{
@@ -7641,9 +7641,9 @@ impl_script_newtype! {
     lua impl
     {
 
-    mut (MetaMethod::Index) => |_,s,idx : usize| {
+    mut (MetaMethod::Index) => |ctx,s,idx : usize| {
         Ok(LuaDVec2::new_ref(
-                s.script_ref().sub_ref(ReflectPathElem::SubReflectionIndexed{
+                s.script_ref(ctx.get_world()?).sub_ref(ReflectPathElem::SubReflectionIndexed{
                     label:"col",
                     index: idx,
                     get: |idx,ref_| Err(ReflectionError::InsufficientProvenance{
@@ -7872,9 +7872,9 @@ impl_script_newtype! {
     lua impl
     {
 
-    mut (MetaMethod::Index) => |_,s,idx : usize| {
+    mut (MetaMethod::Index) => |ctx,s,idx : usize| {
         Ok(LuaDVec3::new_ref(
-                s.script_ref().sub_ref(ReflectPathElem::SubReflectionIndexed{
+                s.script_ref(ctx.get_world()?).sub_ref(ReflectPathElem::SubReflectionIndexed{
                     label:"col",
                     index: idx,
                     get: |idx,ref_| Err(ReflectionError::InsufficientProvenance{
@@ -8228,9 +8228,9 @@ impl_script_newtype! {
     lua impl
     {
 
-    mut (MetaMethod::Index) => |_,s,idx : usize| {
+    mut (MetaMethod::Index) => |ctx,s,idx : usize| {
         Ok(LuaDVec4::new_ref(
-                s.script_ref().sub_ref(ReflectPathElem::SubReflectionIndexed{
+                s.script_ref(ctx.get_world()?).sub_ref(ReflectPathElem::SubReflectionIndexed{
                     label:"col",
                     index: idx,
                     get: |idx,ref_| Err(ReflectionError::InsufficientProvenance{
@@ -9861,21 +9861,21 @@ impl APIProvider for LuaBevyAPIProvider {
         app.register_foreign_lua_type::<Quat>();
         app.register_foreign_lua_type::<DQuat>();
         app.register_foreign_lua_type::<EulerRot>();
-        app.register_foreign_lua_type::<f64>();
-        app.register_foreign_lua_type::<u32>();
-        app.register_foreign_lua_type::<i16>();
-        app.register_foreign_lua_type::<u128>();
-        app.register_foreign_lua_type::<f32>();
-        app.register_foreign_lua_type::<u16>();
-        app.register_foreign_lua_type::<i32>();
         app.register_foreign_lua_type::<i8>();
-        app.register_foreign_lua_type::<isize>();
-        app.register_foreign_lua_type::<bool>();
+        app.register_foreign_lua_type::<i32>();
+        app.register_foreign_lua_type::<usize>();
         app.register_foreign_lua_type::<u64>();
         app.register_foreign_lua_type::<u8>();
-        app.register_foreign_lua_type::<i64>();
+        app.register_foreign_lua_type::<isize>();
+        app.register_foreign_lua_type::<u32>();
+        app.register_foreign_lua_type::<f64>();
+        app.register_foreign_lua_type::<i16>();
         app.register_foreign_lua_type::<String>();
+        app.register_foreign_lua_type::<bool>();
+        app.register_foreign_lua_type::<u128>();
+        app.register_foreign_lua_type::<f32>();
         app.register_foreign_lua_type::<i128>();
-        app.register_foreign_lua_type::<usize>();
+        app.register_foreign_lua_type::<i64>();
+        app.register_foreign_lua_type::<u16>();
     }
 }

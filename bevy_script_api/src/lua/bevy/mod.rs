@@ -1,8 +1,9 @@
+use crate::common::bevy::{ScriptTypeRegistration, ScriptWorld};
 use crate::impl_tealr_type;
 use bevy_mod_scripting_core::world::WorldPointer;
 use std::convert::AsRef;
-use std::ops::{Deref, DerefMut};
-use std::sync::{Arc, Weak};
+use std::ops::Deref;
+use std::sync::Arc;
 
 use crate::script_ref::ScriptRef;
 use bevy::ecs::system::Command;
@@ -25,8 +26,7 @@ use tealr::mlu::{
 
 pub use crate::generated::*;
 
-#[derive(Clone)]
-pub struct LuaTypeRegistration(Arc<TypeRegistration>);
+pub type LuaTypeRegistration = ScriptTypeRegistration;
 impl_tealr_type!(LuaTypeRegistration);
 
 impl TealData for LuaTypeRegistration {
@@ -37,18 +37,10 @@ impl TealData for LuaTypeRegistration {
 
     fn add_fields<'lua, F: tealr::mlu::TealDataFields<'lua, Self>>(fields: &mut F) {
         fields.document("The [short name](https://docs.rs/bevy/latest/bevy/reflect/struct.TypeRegistration.html#method.get_short_name) of a type");
-        fields.add_field_method_get("short_name", |_, s| Ok(s.0.short_name().to_string()));
+        fields.add_field_method_get("short_name", |_, s| Ok(s.short_name().to_string()));
 
         fields.document("The full name of the type");
-        fields.add_field_method_get("type_name", |_, s| Ok(s.0.type_name()));
-    }
-}
-
-impl Deref for LuaTypeRegistration {
-    type Target = TypeRegistration;
-
-    fn deref(&self) -> &Self::Target {
-        &self.0
+        fields.add_field_method_get("type_name", |_, s| Ok(s.type_name()));
     }
 }
 
@@ -78,28 +70,7 @@ impl TealData for LuaScriptData {
     }
 }
 
-#[derive(Clone, Debug)]
-pub struct LuaWorld(WorldPointer);
-
-impl Deref for LuaWorld {
-    type Target = WorldPointer;
-
-    fn deref(&self) -> &Self::Target {
-        &self.0
-    }
-}
-
-impl AsRef<WorldPointer> for LuaWorld {
-    fn as_ref(&self) -> &WorldPointer {
-        &self.0
-    }
-}
-
-impl LuaWorld {
-    pub fn new(w: WorldPointer) -> Self {
-        Self(w)
-    }
-}
+pub type LuaWorld = ScriptWorld;
 
 impl_tealr_type!(LuaWorld);
 
@@ -112,19 +83,128 @@ impl TealData for LuaWorld {
             Ok(format!("{s:?}"))
         });
 
-        methods.document("Retrieves children entities of the parent entity if it has any.");
-        methods.add_method("get_children", |_, world, parent: LuaEntity| {
+        methods.document("Retrieves type information given either a short (`MyType`) or fully qualified rust type name (`MyModule::MyType`).");
+        methods.document(
+            "Returns `nil` if no such type exists or if one wasn't registered on the rust side.",
+        );
+        methods.document("\n");
+        methods.document("This is used extensively in [`LuaWorld`]");
+        methods.add_method("get_type_by_name", |_, world, type_name: String| {
             let w = world.read();
 
-            let children: Option<Vec<LuaEntity>> =
-                w.get::<Children>(parent.inner()?).map(|children| {
-                    children
-                        .iter()
-                        .map(|e| LuaEntity::new(*e))
-                        .collect::<Vec<_>>()
-                });
+            let registry: &TypeRegistry = w.get_resource().unwrap();
 
-            Ok(children)
+            let registry = registry.read();
+
+            Ok(registry
+                .get_with_short_name(&type_name)
+                .or_else(|| registry.get_with_name(&type_name))
+                .map(|registration| LuaTypeRegistration::new(Arc::new(registration.clone()))))
+        });
+
+        methods.document("Inserts a component of the given type to the given entity by instantiating a default version of it.");
+        methods.document("The component can then be modified using field access.");
+        methods.add_method(
+            "add_default_component",
+            |_, world, (entity, comp_type): (LuaEntity, LuaTypeRegistration)| {
+                world
+                    .add_default_component(entity.inner()?, comp_type)
+                    .map_err(|e| mlua::Error::RuntimeError(e.to_string()))
+            },
+        );
+
+        methods.document("Retrieves a component of the given type from the given entity.");
+        methods.document("If such a component does not exist returns `nil`.");
+        methods.add_method(
+            "get_component",
+            |_, world, (entity, comp_type): (LuaEntity, LuaTypeRegistration)| {
+                world
+                    .get_component(entity.inner()?, comp_type)
+                    .map_err(|e| mlua::Error::RuntimeError(e.to_string()))
+            },
+        );
+
+        methods
+            .document("Returns `true` if the given entity contains a component of the given type.");
+        methods.add_method(
+            "has_component",
+            |_, world, (entity, comp_type): (LuaEntity, LuaTypeRegistration)| {
+                // grab this entity before acquiring a lock in case it's a reference
+                let entity = entity.inner()?;
+                let w = world.read();
+
+                let component_data = comp_type.data::<ReflectComponent>().ok_or_else(|| {
+                    mlua::Error::RuntimeError(format!("Not a component {}", comp_type.short_name()))
+                })?;
+
+                Ok(component_data.reflect(&w, entity).is_some())
+            },
+        );
+
+        methods.document("Removes the given component from the given entity, does nothing if it doesn't exist on the entity.");
+        methods.add_method(
+            "remove_component",
+            |_, world, (entity, comp_type): (LuaEntity, LuaTypeRegistration)| {
+                // grab this entity before acquiring a lock in case it's a reference
+                let entity = entity.inner()?;
+                let mut w = world.write();
+
+                let component_data = comp_type.data::<ReflectComponent>().ok_or_else(|| {
+                    mlua::Error::RuntimeError(format!("Not a component {}", comp_type.short_name()))
+                })?;
+                component_data.remove(&mut w, entity);
+                Ok(())
+            },
+        );
+
+        methods.document("Retrieves a resource of the given type from the world.");
+        methods.document("If such a resource does not exist returns `nil`.");
+        methods.add_method("get_resource", |_, world, res_type: LuaTypeRegistration| {
+            let w = world.read();
+
+            let resource_data = res_type.data::<ReflectResource>().ok_or_else(|| {
+                mlua::Error::RuntimeError(format!("Not a resource {}", res_type.short_name()))
+            })?;
+
+            Ok(resource_data.reflect(&w).map(|_res| {
+                ScriptRef::new_resource_ref(resource_data.clone(), world.as_ref().clone())
+            }))
+        });
+
+        methods.document(
+            "Removes the given resource from the world, if one doesn't exist it does nothing.",
+        );
+        methods.add_method(
+            "remove_resource",
+            |_, world, res_type: LuaTypeRegistration| {
+                let mut w = world.write();
+
+                let resource_data = res_type.data::<ReflectResource>().ok_or_else(|| {
+                    mlua::Error::RuntimeError(format!("Not a resource {}", res_type.short_name()))
+                })?;
+                resource_data.remove(&mut w);
+                Ok(())
+            },
+        );
+
+        methods.document("Returns `true` if the world contains a resource of the given type.");
+        methods.add_method("has_resource", |_, world, res_type: LuaTypeRegistration| {
+            let w = world.read();
+
+            let resource_data = res_type.data::<ReflectResource>().ok_or_else(|| {
+                mlua::Error::RuntimeError(format!("Not a resource {}", res_type.short_name()))
+            })?;
+
+            Ok(resource_data.reflect(&w).is_some())
+        });
+
+        methods.document("Retrieves children entities of the parent entity if it has any.");
+        methods.add_method("get_children", |_, world, parent: LuaEntity| {
+            Ok(world
+                .get_children(parent.inner()?)
+                .into_iter()
+                .map(LuaEntity::new)
+                .collect::<Vec<LuaEntity>>())
         });
 
         methods.document("Retrieves the parent entity of the given entity if it has any.");
@@ -266,153 +346,6 @@ impl TealData for LuaWorld {
             }
             .write(&mut w);
             Ok(())
-        });
-
-        methods.document("Retrieves type information given either a short (`MyType`) or fully qualified rust type name (`MyModule::MyType`).");
-        methods.document(
-            "Returns `nil` if no such type exists or if one wasn't registered on the rust side.",
-        );
-        methods.document("\n");
-        methods.document("This is used extensively in [`LuaWorld`]");
-        methods.add_method("get_type_by_name", |_, world, type_name: String| {
-            let w = world.read();
-
-            let registry: &TypeRegistry = w.get_resource().unwrap();
-
-            let registry = registry.read();
-
-            Ok(registry
-                .get_with_short_name(&type_name)
-                .or_else(|| registry.get_with_name(&type_name))
-                .map(|registration| LuaTypeRegistration(Arc::new(registration.clone()))))
-        });
-
-        methods.document("Inserts a component of the given type to the given entity by instantiating a default version of it.");
-        methods.document("The component can then be modified using field access.");
-        methods.add_method("add_default_component", |_, world, (entity, comp_type): (LuaEntity, LuaTypeRegistration)| {
-            // grab this entity before acquiring a lock in case it's a reference
-            let entity = entity.inner()?;
-            let mut w = world.write();
-
-            let component_data = comp_type.data::<ReflectComponent>()
-                .ok_or_else(|| mlua::Error::RuntimeError(format!("Not a component {}",comp_type.short_name())))?;
-
-            // this is just a formality
-            // TODO: maybe get an add_default impl added to ReflectComponent
-            // this means that we don't require ReflectDefault for adding components!
-            match comp_type.0.type_info(){
-                bevy::reflect::TypeInfo::Struct(_) => component_data.insert(&mut w, entity, &DynamicStruct::default()),
-                bevy::reflect::TypeInfo::TupleStruct(_) => component_data.insert(&mut w, entity, &DynamicTupleStruct::default()),
-                bevy::reflect::TypeInfo::Tuple(_) => component_data.insert(&mut w, entity, &DynamicTuple::default()),
-                bevy::reflect::TypeInfo::List(_) => component_data.insert(&mut w, entity, &DynamicList::default()),
-                bevy::reflect::TypeInfo::Array(_) => component_data.insert(&mut w, entity, &DynamicArray::new(Box::new([]))),
-                bevy::reflect::TypeInfo::Map(_) => component_data.insert(&mut w, entity, &DynamicMap::default()),
-                bevy::reflect::TypeInfo::Value(_) |
-                bevy::reflect::TypeInfo::Dynamic(_) => component_data.insert(&mut w, entity,
-                    comp_type.data::<ReflectDefault>().ok_or_else(||
-                        mlua::Error::RuntimeError(format!("Component {} is a value or dynamic type with no `ReflectDefault` type_data, cannot instantiate sensible value",comp_type.short_name())))?
-                        .default()
-                        .as_ref())
-            };
-
-            Ok(ScriptRef::new_component_ref(component_data.clone(), entity, world.0.clone()))
-        });
-
-        methods.document("Retrieves a component of the given type from the given entity.");
-        methods.document("If such a component does not exist returns `nil`.");
-        methods.add_method(
-            "get_component",
-            |_, world, (entity, comp_type): (LuaEntity, LuaTypeRegistration)| {
-                // grab this entity before acquiring a lock in case it's a reference
-                let entity = entity.inner()?;
-                let w = world.read();
-
-                let component_data = comp_type.data::<ReflectComponent>().ok_or_else(|| {
-                    mlua::Error::RuntimeError(format!("Not a component {}", comp_type.short_name()))
-                })?;
-
-                Ok(component_data.reflect(&w, entity).map(|_component| {
-                    ScriptRef::new_component_ref(
-                        component_data.clone(),
-                        entity,
-                        world.as_ref().clone(),
-                    )
-                }))
-            },
-        );
-
-        methods
-            .document("Returns `true` if the given entity contains a component of the given type.");
-        methods.add_method(
-            "has_component",
-            |_, world, (entity, comp_type): (LuaEntity, LuaTypeRegistration)| {
-                // grab this entity before acquiring a lock in case it's a reference
-                let entity = entity.inner()?;
-                let w = world.read();
-
-                let component_data = comp_type.data::<ReflectComponent>().ok_or_else(|| {
-                    mlua::Error::RuntimeError(format!("Not a component {}", comp_type.short_name()))
-                })?;
-
-                Ok(component_data.reflect(&w, entity).is_some())
-            },
-        );
-
-        methods.document("Removes the given component from the given entity, does nothing if it doesn't exist on the entity.");
-        methods.add_method(
-            "remove_component",
-            |_, world, (entity, comp_type): (LuaEntity, LuaTypeRegistration)| {
-                // grab this entity before acquiring a lock in case it's a reference
-                let entity = entity.inner()?;
-                let mut w = world.write();
-
-                let component_data = comp_type.data::<ReflectComponent>().ok_or_else(|| {
-                    mlua::Error::RuntimeError(format!("Not a component {}", comp_type.short_name()))
-                })?;
-                component_data.remove(&mut w, entity);
-                Ok(())
-            },
-        );
-
-        methods.document("Retrieves a resource of the given type from the world.");
-        methods.document("If such a resource does not exist returns `nil`.");
-        methods.add_method("get_resource", |_, world, res_type: LuaTypeRegistration| {
-            let w = world.read();
-
-            let resource_data = res_type.data::<ReflectResource>().ok_or_else(|| {
-                mlua::Error::RuntimeError(format!("Not a resource {}", res_type.short_name()))
-            })?;
-
-            Ok(resource_data.reflect(&w).map(|_res| {
-                ScriptRef::new_resource_ref(resource_data.clone(), world.as_ref().clone())
-            }))
-        });
-
-        methods.document(
-            "Removes the given resource from the world, if one doesn't exist it does nothing.",
-        );
-        methods.add_method(
-            "remove_resource",
-            |_, world, res_type: LuaTypeRegistration| {
-                let mut w = world.write();
-
-                let resource_data = res_type.data::<ReflectResource>().ok_or_else(|| {
-                    mlua::Error::RuntimeError(format!("Not a resource {}", res_type.short_name()))
-                })?;
-                resource_data.remove(&mut w);
-                Ok(())
-            },
-        );
-
-        methods.document("Returns `true` if the world contains a resource of the given type.");
-        methods.add_method("has_resource", |_, world, res_type: LuaTypeRegistration| {
-            let w = world.read();
-
-            let resource_data = res_type.data::<ReflectResource>().ok_or_else(|| {
-                mlua::Error::RuntimeError(format!("Not a resource {}", res_type.short_name()))
-            })?;
-
-            Ok(resource_data.reflect(&w).is_some())
         });
 
         methods.document("Spawns a new entity and returns its Entity ID");

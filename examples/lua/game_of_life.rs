@@ -15,7 +15,7 @@ use bevy::{
 use bevy_mod_scripting::{
     api::{
         impl_lua_newtype, impl_script_newtype,
-        lua::{bevy::LuaBevyAPIProvider, std::LuaVec, LuaProxyable, ReflectLuaProxyable},
+        lua::{bevy::LuaBevyAPIProvider, std::LuaVec, GetWorld, LuaProxyable, ReflectLuaProxyable},
         ValueIndex,
     },
     prelude::*,
@@ -32,10 +32,10 @@ impl_script_newtype!(
     LifeState : Debug
     lua impl {
         get "cells" => |lua,s: &LuaLifeState| {
-            Ok(LuaVec::<u8>::new_ref(s.script_ref().index(Cow::Borrowed("cells"))))
+            Ok(LuaVec::<u8>::new_ref(s.script_ref(lua.get_world()?).index(Cow::Borrowed("cells"))))
         };
         set "cells" => |lua,s,o| {
-            Vec::<u8>::apply_lua(&mut s.script_ref().index(Cow::Borrowed("cells")),lua,o)
+            Vec::<u8>::apply_lua(&mut s.script_ref(lua.get_world()?).index(Cow::Borrowed("cells")),lua,o)
         };
     }
 );

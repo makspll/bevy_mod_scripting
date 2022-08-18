@@ -97,19 +97,19 @@ pub trait ScriptHost: Send + Sync + 'static + Default {
     );
 
     /// Loads and runs script instantaneously without storing any script data into the world.
-    /// The host receives a fake script with `entity` set to `u64::MAX`
-    /// and where the script id is set to `u32::MAX`.
+    /// The script id is set to `u32::MAX`.
     fn run_one_shot(
         &mut self,
         script: &[u8],
         script_name: &str,
+        entity: Entity,
         world: &mut World,
         event: Self::ScriptEvent,
     ) -> Result<(), ScriptError> {
         let fd = ScriptData {
             name: script_name,
             sid: u32::MAX,
-            entity: Entity::from_bits(u64::MAX),
+            entity,
         };
 
         let mut providers: APIProviders<Self> = world.remove_resource().unwrap();

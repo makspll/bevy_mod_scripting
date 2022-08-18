@@ -3,8 +3,10 @@ extern crate bevy;
 pub mod error;
 #[cfg(feature = "lua")]
 pub mod lua;
-#[cfg(feature= "rhai")]
+#[cfg(feature = "rhai")]
 pub mod rhai;
+
+pub mod common;
 
 pub mod script_ref;
 pub mod sub_reflect;

@@ -25,3 +25,13 @@ impl From<ReflectionError> for bevy_mod_scripting_lua::tealr::mlu::mlua::Error {
         bevy_mod_scripting_lua::tealr::mlu::mlua::Error::RuntimeError(e.to_string())
     }
 }
+
+impl From<ReflectionError> for Box<bevy_mod_scripting_rhai::rhai::EvalAltResult> {
+    fn from(e: ReflectionError) -> Self {
+        bevy_mod_scripting_rhai::rhai::EvalAltResult::ErrorRuntime(
+            e.to_string().into(),
+            bevy_mod_scripting_rhai::rhai::Position::NONE,
+        )
+        .into()
+    }
+}

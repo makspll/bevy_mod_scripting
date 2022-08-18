@@ -1,6 +1,6 @@
 use thiserror::Error;
 
-#[derive(Error, Debug)]
+#[derive(Error, Debug, Clone)]
 pub enum ScriptError {
     #[error("Runtime error in script `{script}` {msg}")]
     RuntimeError { script: String, msg: String },
