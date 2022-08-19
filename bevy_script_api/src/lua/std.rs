@@ -154,17 +154,13 @@ impl<T: LuaProxyable + Reflect + for<'a> FromLuaProxy<'a> + Clone> LuaProxyable 
         } else {
             // we need to do this in two passes, first
             // ensure that the target type is the 'some' variant to allow a sub reference
-            match self_.get_mut_typed(|s: &mut Option<T>| {
-                if s.is_none() {
-                    *s = Some(T::from_lua_proxy(new_val.clone(), lua)?);
-                    Ok::<_, mlua::Error>(true)
-                } else {
-                    Ok(false)
-                }
-            })? {
-                Ok(true) => return Ok(()),
-                Ok(false) => {}
-                Err(e) => return Err(e),
+            let is_none = self_.get_typed(|s: &Option<T>| s.is_none())?;
+
+            if is_none {
+                return self_.get_mut_typed(|s: &mut Option<T>| {
+                    *s = Some(T::from_lua_proxy(new_val, lua)?);
+                    Ok::<_, mlua::Error>(())
+                })?;
             }
 
             T::apply_lua(

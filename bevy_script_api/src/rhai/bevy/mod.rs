@@ -166,5 +166,6 @@ impl APIProvider for RhaiBevyAPIProvider {
         app.register_foreign_rhai_type::<u64>();
         app.register_foreign_rhai_type::<u128>();
         app.register_foreign_rhai_type::<usize>();
+        app.register_foreign_rhai_type::<String>();
     }
 }

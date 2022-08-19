@@ -54,6 +54,14 @@ pub trait RhaiProxyable {
     ) -> Result<(), Box<EvalAltResult>>;
 }
 
+pub trait FromRhaiProxy: Sized {
+    fn from_rhai_proxy(self_: Dynamic, ctx: NativeCallContext) -> Result<Self, Box<EvalAltResult>>;
+}
+
+pub trait ToRhaiProxy {
+    fn to_rhai_proxy(self, ctx: NativeCallContext) -> Result<Dynamic, Box<EvalAltResult>>;
+}
+
 #[derive(Clone)]
 pub struct ReflectRhaiProxyable {
     ref_to_rhai: fn(ref_: ScriptRef, ctx: NativeCallContext) -> Result<Dynamic, Box<EvalAltResult>>,
