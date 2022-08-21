@@ -2,7 +2,8 @@ use bevy::app::AppExit;
 use bevy::math::DQuat;
 use bevy::prelude::*;
 use bevy_mod_scripting::{api::rhai::bevy::RhaiBevyAPIProvider, prelude::*};
-use bevy_script_api::rhai::RegisterForeignRhaiType;
+use bevy_mod_scripting_rhai::rhai::Engine;
+use bevy_script_api::rhai::{std::RegisterVecType, RegisterForeignRhaiType};
 
 /// Let's define a resource, we want it to be "assignable" via lua so we derive `ReflectLuaProxyable`
 /// This allows us to reach this value when it's a field under any other Reflectable type
@@ -34,6 +35,25 @@ pub struct MyComponent {
     option_vec_of_bools: Option<Vec<bool>>,
 }
 
+pub struct MyAPIProvider;
+// unlike mlua, rhai does not have the concept of generic types, all functionality is based around
+// registering monomorphized functions, therefore we must register functions of generic types for every type we want
+// to use them with, it's less convenient and is what the compiler would do anyway but hey it works!
+impl APIProvider for MyAPIProvider {
+    type APITarget = Engine;
+
+    type ScriptContext = RhaiContext;
+
+    type DocTarget = RhaiDocFragment;
+
+    fn attach_api(&mut self, api: &mut Self::APITarget) -> Result<(), ScriptError> {
+        api.set_max_expr_depths(999, 999);
+        api.register_vec_functions::<Option<bool>>();
+        api.register_vec_functions::<bool>();
+        Ok(())
+    }
+}
+
 fn main() -> std::io::Result<()> {
     let mut app = App::new();
 
@@ -42,11 +62,14 @@ fn main() -> std::io::Result<()> {
         .register_type::<MyComponent>()
         .register_type::<MyResource>()
         .register_foreign_rhai_type::<Option<bool>>()
+        .register_foreign_rhai_type::<Vec<Option<bool>>>()
+        .register_foreign_rhai_type::<Option<Vec<bool>>>()
         // note the implementation for Option is there, but we must register `LuaProxyable` for it
         .init_resource::<MyResource>()
         // this stage handles addition and removal of script contexts, we can safely use `CoreStage::PostUpdate`
         .add_script_host::<RhaiScriptHost<()>, _>(CoreStage::PostUpdate)
         .add_api_provider::<RhaiScriptHost<()>>(Box::new(RhaiBevyAPIProvider))
+        .add_api_provider::<RhaiScriptHost<()>>(Box::new(MyAPIProvider))
         .add_system(
             (|world: &mut World| {
                 let entity = world
@@ -99,7 +122,19 @@ fn main() -> std::io::Result<()> {
                             print(my_component.bool_option);
                             my_component.bool_option = true;
                             print(my_component.bool_option);
+                            
+                            for i in 0..my_component.vec_of_option_bools.len() {
+                                print(`${i}: ${my_component.vec_of_option_bools[i]}`)
+                            }
 
+                            my_component.vec_of_option_bools = [true,false,true];
+                            my_component.vec_of_option_bools[0] = false;
+                            my_component.vec_of_option_bools.insert(1,());
+                            my_component.vec_of_option_bools.push(false);
+
+                            for i in 0..my_component.vec_of_option_bools.len() {
+                                print(`${i}: ${my_component.vec_of_option_bools[i]}`)
+                            }
                         }
                         "#
                         .as_bytes(),

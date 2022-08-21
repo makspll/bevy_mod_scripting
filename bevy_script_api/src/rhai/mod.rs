@@ -45,29 +45,33 @@ impl RegisterForeignRhaiType for App {
 }
 
 pub trait RhaiProxyable {
-    fn ref_to_rhai(self_: ScriptRef, ctx: NativeCallContext)
-        -> Result<Dynamic, Box<EvalAltResult>>;
+    fn ref_to_rhai(
+        self_: ScriptRef,
+        ctx: &NativeCallContext,
+    ) -> Result<Dynamic, Box<EvalAltResult>>;
     fn apply_rhai(
         self_: &mut ScriptRef,
-        ctx: NativeCallContext,
+        ctx: &NativeCallContext,
         new_val: Dynamic,
     ) -> Result<(), Box<EvalAltResult>>;
 }
 
 pub trait FromRhaiProxy: Sized {
-    fn from_rhai_proxy(self_: Dynamic, ctx: NativeCallContext) -> Result<Self, Box<EvalAltResult>>;
+    fn from_rhai_proxy(self_: Dynamic, ctx: &NativeCallContext)
+        -> Result<Self, Box<EvalAltResult>>;
 }
 
 pub trait ToRhaiProxy {
-    fn to_rhai_proxy(self, ctx: NativeCallContext) -> Result<Dynamic, Box<EvalAltResult>>;
+    fn to_rhai_proxy(self, ctx: &NativeCallContext) -> Result<Dynamic, Box<EvalAltResult>>;
 }
 
 #[derive(Clone)]
 pub struct ReflectRhaiProxyable {
-    ref_to_rhai: fn(ref_: ScriptRef, ctx: NativeCallContext) -> Result<Dynamic, Box<EvalAltResult>>,
+    ref_to_rhai:
+        fn(ref_: ScriptRef, ctx: &NativeCallContext) -> Result<Dynamic, Box<EvalAltResult>>,
     apply_rhai: fn(
         ref_: &mut ScriptRef,
-        lua: NativeCallContext,
+        lua: &NativeCallContext,
         new_val: Dynamic,
     ) -> Result<(), Box<EvalAltResult>>,
 }
@@ -76,7 +80,7 @@ impl ReflectRhaiProxyable {
     pub fn ref_to_rhai(
         &self,
         ref_: ScriptRef,
-        ctx: NativeCallContext,
+        ctx: &NativeCallContext,
     ) -> Result<Dynamic, Box<EvalAltResult>> {
         (self.ref_to_rhai)(ref_, ctx)
     }
@@ -84,7 +88,7 @@ impl ReflectRhaiProxyable {
     pub fn apply_rhai(
         &self,
         ref_: &mut ScriptRef,
-        ctx: NativeCallContext,
+        ctx: &NativeCallContext,
         new_val: Dynamic,
     ) -> Result<(), Box<EvalAltResult>> {
         (self.apply_rhai)(ref_, ctx, new_val)
@@ -122,7 +126,7 @@ impl ToDynamic for ScriptRef {
         let type_id = self.get(|s| s.type_id())?;
 
         if let Some(v) = g.get_type_data::<ReflectRhaiProxyable>(type_id) {
-            v.ref_to_rhai(self, ctx)
+            v.ref_to_rhai(self, &ctx)
         } else {
             ReflectedValue { ref_: self }.to_dynamic(ctx)
         }
@@ -155,7 +159,7 @@ impl ApplyRhai for ScriptRef {
         };
 
         if let Some(ud) = proxyable {
-            return ud.apply_rhai(self, ctx, value);
+            return ud.apply_rhai(self, &ctx, value);
         } else if value.is::<ReflectedValue>() {
             let b = value.cast::<ReflectedValue>();
             self.apply(&b.into())?;

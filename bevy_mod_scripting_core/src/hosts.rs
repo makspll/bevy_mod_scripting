@@ -144,7 +144,7 @@ pub trait APIProvider: 'static + Send + Sync {
     /// Depending on the host, API's may be attached on a per-script basis
     /// or on a per-engine basis. Rhai for example allows you to decouple the State of each script from the
     /// engine. For one-time setup use `Self::setup_script`
-    fn attach_api(&mut self, ctx: &mut Self::APITarget) -> Result<(), ScriptError>;
+    fn attach_api(&mut self, api: &mut Self::APITarget) -> Result<(), ScriptError>;
 
     /// Hook executed every time a script is about to handle events, most notably used to "refresh" world pointers
     fn setup_script_runtime(
