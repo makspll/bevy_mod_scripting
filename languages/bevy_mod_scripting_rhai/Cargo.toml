@@ -17,5 +17,5 @@ path="src/lib.rs"
 
 [dependencies]
 bevy= { version = "0.8.0", default-features = false}
-rhai = { version = "1.8.0", features = ["sync"] }
+rhai = { git="https://github.com/rhaiscript/rhai", features = ["sync"] }
 bevy_mod_scripting_core = {path="../../bevy_mod_scripting_core", version="0.1.1"}

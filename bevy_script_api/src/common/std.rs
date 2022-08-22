@@ -107,9 +107,6 @@ impl<T> From<ScriptVec<T>> for ScriptRef {
 
 pub struct ScriptVecIterator<T> {
     current: usize,
-    /// why is this an option? well we lazily initialize this field
-    /// we don't want to store the length in the ScriptVec itself
-    /// but if the element is about to be accessed it makes sense to throw an error there
     end: usize,
     base: ScriptVec<T>,
 }
@@ -118,7 +115,9 @@ impl<T: FromReflect> Iterator for ScriptVecIterator<T> {
     type Item = ScriptRef;
 
     fn next(&mut self) -> Option<Self::Item> {
-        (self.current <= self.end).then(|| self.base.index(self.current))
+        let nxt = (self.current <= self.end).then(|| self.base.index(self.current));
+        self.current += 1;
+        nxt
     }
 }
 
@@ -134,8 +133,12 @@ impl<T: FromReflect> IntoIterator for ScriptVec<T> {
     fn into_iter(self) -> Self::IntoIter {
         ScriptVecIterator {
             current: 0,
+            // TODO?: end used to be an Option, and this check moved into the next method but
+            // I am not sure if this will ever realistically fail, so if you do get this exception happening
+            // hit me with an issue
             end: self
                 .len()
+                .map(|v| v - 1)
                 .expect("Could not access length when creating iterator"),
             base: self,
         }

@@ -65,7 +65,6 @@ pub(crate) mod bevy_plugin {
 
         #[rhai_fn(global, return_raw)]
         pub fn add_default_component(
-            ctx: NativeCallContext,
             self_: World,
             entity: Entity,
             type_registration: super::type_registration::TypeRegistration,
@@ -78,12 +77,11 @@ pub(crate) mod bevy_plugin {
                         Position::NONE,
                     ))
                 })
-                .and_then(|ok| ok.to_dynamic(ctx))
+                .and_then(|ok| ok.to_dynamic())
         }
 
         #[rhai_fn(global, return_raw)]
         pub fn get_component(
-            ctx: NativeCallContext,
             self_: World,
             entity: Entity,
             comp_type: super::type_registration::TypeRegistration,
@@ -96,7 +94,7 @@ pub(crate) mod bevy_plugin {
             })?;
 
             if let Some(c) = component {
-                c.to_dynamic(ctx)
+                c.to_dynamic()
             } else {
                 Ok(Default::default())
             }

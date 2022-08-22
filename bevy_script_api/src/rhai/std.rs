@@ -10,16 +10,12 @@ use crate::{
 use super::{ApplyRhai, FromRhaiProxy, RhaiProxyable, ToDynamic, ToRhaiProxy};
 
 impl<T: Clone + RhaiCopy + Reflect> RhaiProxyable for T {
-    fn ref_to_rhai(
-        self_: crate::ScriptRef,
-        _: &NativeCallContext,
-    ) -> Result<Dynamic, Box<EvalAltResult>> {
+    fn ref_to_rhai(self_: crate::ScriptRef) -> Result<Dynamic, Box<EvalAltResult>> {
         self_.get_typed(|self_: &T| Ok(Dynamic::from(self_.clone())))?
     }
 
     fn apply_rhai(
         self_: &mut crate::ScriptRef,
-        _: &NativeCallContext,
         new_val: Dynamic,
     ) -> Result<(), Box<EvalAltResult>> {
         let other = if new_val.is::<T>() {
@@ -56,24 +52,22 @@ macro_rules! impl_rhai_proxy {
         impl RhaiProxyable for $type {
             fn ref_to_rhai(
                 self_: crate::ScriptRef,
-                _: &NativeCallContext,
             ) -> Result<Dynamic, Box<EvalAltResult>> {
                 self_.get_typed(|$self_to_rhai: &$type| Ok($($proxy_expr_to_rhai)*))?
             }
 
             fn apply_rhai(
                 self_: &mut crate::ScriptRef,
-                ctx: &NativeCallContext,
                 new_val: Dynamic,
             ) -> Result<(), Box<EvalAltResult>> {
-                self_.set_val(Self::from_rhai_proxy(new_val,ctx)?)?;
+                self_.set_val(Self::from_rhai_proxy(new_val)?)?;
                 Ok(())
             }
         }
 
         impl FromRhaiProxy for $type {
             #[inline(always)]
-            fn from_rhai_proxy(self_: Dynamic, _: &NativeCallContext) -> Result<Self, Box<EvalAltResult>> {
+            fn from_rhai_proxy(self_: Dynamic) -> Result<Self, Box<EvalAltResult>> {
                 if self_.is::<$proxy_type>(){
                     Ok(self_.cast::<$proxy_type>() as $type)
                 } else {
@@ -89,7 +83,7 @@ macro_rules! impl_rhai_proxy {
 
         impl ToRhaiProxy for $type {
             #[inline(always)]
-            fn to_rhai_proxy($self, _ : &NativeCallContext) -> Result<Dynamic, Box<EvalAltResult>> {
+            fn to_rhai_proxy($self) -> Result<Dynamic, Box<EvalAltResult>> {
                 Ok($($proxy_expr)*)
             }
         }
@@ -115,55 +109,48 @@ impl_rhai_proxy!(bool as bool);
 impl_rhai_proxy!(String as Into);
 
 impl<T: RhaiProxyable + Reflect + Clone + FromRhaiProxy> RhaiProxyable for Option<T> {
-    fn ref_to_rhai(
-        self_: crate::ScriptRef,
-        ctx: &NativeCallContext,
-    ) -> Result<Dynamic, Box<EvalAltResult>> {
+    fn ref_to_rhai(self_: crate::ScriptRef) -> Result<Dynamic, Box<EvalAltResult>> {
         self_.get_typed(|s: &Option<T>| match s {
-            Some(_) => T::ref_to_rhai(
-                self_.sub_ref(ReflectPathElem::SubReflection {
-                    label: "as_ref",
-                    get: |ref_| {
-                        ref_.downcast_ref::<Option<T>>()
-                            .ok_or_else(|| ReflectionError::CannotDowncast {
-                                from: ref_.type_name().to_owned().into(),
-                                to: stringify!(Option<T>).into(),
-                            })?
-                            .as_ref()
-                            .map(|t| t as &dyn Reflect)
-                            .ok_or_else(|| {
-                                ReflectionError::Other(
-                                    "Stale reference to Option. Cannot sub reflect.".to_owned(),
-                                )
-                            })
-                    },
-                    get_mut: |ref_| {
-                        ref_.downcast_mut::<Option<T>>()
-                            // TODO: there is some weird borrow checker fuckery going on here
-                            // i tried having from: ref_.type_name().to_owned().into() instead of "Reflect"
-                            // and lying this out in an if let expression, but nothing will satisfy the borrow checker here, so leaving this for now
-                            .ok_or_else(|| ReflectionError::CannotDowncast {
-                                from: "Reflect".into(),
-                                to: stringify!(Option<T>).into(),
-                            })?
-                            .as_mut()
-                            .map(|t| t as &mut dyn Reflect)
-                            .ok_or_else(|| {
-                                ReflectionError::Other(
-                                    "Stale reference to Option. Cannot sub reflect.".to_owned(),
-                                )
-                            })
-                    },
-                }),
-                ctx,
-            ),
+            Some(_) => T::ref_to_rhai(self_.sub_ref(ReflectPathElem::SubReflection {
+                label: "as_ref",
+                get: |ref_| {
+                    ref_.downcast_ref::<Option<T>>()
+                        .ok_or_else(|| ReflectionError::CannotDowncast {
+                            from: ref_.type_name().to_owned().into(),
+                            to: stringify!(Option<T>).into(),
+                        })?
+                        .as_ref()
+                        .map(|t| t as &dyn Reflect)
+                        .ok_or_else(|| {
+                            ReflectionError::Other(
+                                "Stale reference to Option. Cannot sub reflect.".to_owned(),
+                            )
+                        })
+                },
+                get_mut: |ref_| {
+                    ref_.downcast_mut::<Option<T>>()
+                        // TODO: there is some weird borrow checker fuckery going on here
+                        // i tried having from: ref_.type_name().to_owned().into() instead of "Reflect"
+                        // and lying this out in an if let expression, but nothing will satisfy the borrow checker here, so leaving this for now
+                        .ok_or_else(|| ReflectionError::CannotDowncast {
+                            from: "Reflect".into(),
+                            to: stringify!(Option<T>).into(),
+                        })?
+                        .as_mut()
+                        .map(|t| t as &mut dyn Reflect)
+                        .ok_or_else(|| {
+                            ReflectionError::Other(
+                                "Stale reference to Option. Cannot sub reflect.".to_owned(),
+                            )
+                        })
+                },
+            })),
             None => Ok(Dynamic::UNIT),
         })?
     }
 
     fn apply_rhai(
         self_: &mut crate::ScriptRef,
-        ctx: &NativeCallContext,
         new_val: Dynamic,
     ) -> Result<(), Box<EvalAltResult>> {
         if new_val.is::<()>() {
@@ -179,7 +166,7 @@ impl<T: RhaiProxyable + Reflect + Clone + FromRhaiProxy> RhaiProxyable for Optio
 
             if is_none {
                 return self_.get_mut_typed(|s: &mut Option<T>| {
-                    *s = Some(T::from_rhai_proxy(new_val, ctx)?);
+                    *s = Some(T::from_rhai_proxy(new_val)?);
                     Ok::<_, Box<EvalAltResult>>(())
                 })?;
             }
@@ -220,7 +207,6 @@ impl<T: RhaiProxyable + Reflect + Clone + FromRhaiProxy> RhaiProxyable for Optio
                         }
                     },
                 }),
-                ctx,
                 new_val,
             )
         }
@@ -228,22 +214,19 @@ impl<T: RhaiProxyable + Reflect + Clone + FromRhaiProxy> RhaiProxyable for Optio
 }
 
 impl<T: FromRhaiProxy> FromRhaiProxy for Option<T> {
-    fn from_rhai_proxy(
-        self_: Dynamic,
-        ctx: &NativeCallContext,
-    ) -> Result<Self, Box<EvalAltResult>> {
+    fn from_rhai_proxy(self_: Dynamic) -> Result<Self, Box<EvalAltResult>> {
         if self_.is::<()>() {
             Ok(None)
         } else {
-            T::from_rhai_proxy(self_, ctx).map(Option::Some)
+            T::from_rhai_proxy(self_).map(Option::Some)
         }
     }
 }
 
 impl<T: ToRhaiProxy> ToRhaiProxy for Option<T> {
-    fn to_rhai_proxy(self, ctx: &NativeCallContext) -> Result<Dynamic, Box<EvalAltResult>> {
+    fn to_rhai_proxy(self) -> Result<Dynamic, Box<EvalAltResult>> {
         match self {
-            Some(v) => v.to_rhai_proxy(ctx),
+            Some(v) => v.to_rhai_proxy(),
             None => Ok(Dynamic::UNIT),
         }
     }
@@ -281,17 +264,23 @@ impl<T: RhaiVecElem> std::ops::DerefMut for RhaiVec<T> {
     }
 }
 
+impl<T: RhaiVecElem> IntoIterator for RhaiVec<T> {
+    type Item = Result<Dynamic, Box<EvalAltResult>>;
+
+    type IntoIter = Map<<ScriptVec<T> as IntoIterator>::IntoIter, fn(ScriptRef) -> Self::Item>;
+
+    fn into_iter(self) -> Self::IntoIter {
+        self.0.into_iter().map(|v| v.to_dynamic())
+    }
+}
+
 impl<T: RhaiVecElem> RhaiProxyable for Vec<T> {
-    fn ref_to_rhai(
-        self_: crate::ScriptRef,
-        _: &NativeCallContext,
-    ) -> Result<Dynamic, Box<EvalAltResult>> {
+    fn ref_to_rhai(self_: crate::ScriptRef) -> Result<Dynamic, Box<EvalAltResult>> {
         Ok(Dynamic::from(RhaiVec::<T>::new_ref(self_)))
     }
 
     fn apply_rhai(
         self_: &mut crate::ScriptRef,
-        ctx: &NativeCallContext,
         new_val: Dynamic,
     ) -> Result<(), Box<EvalAltResult>> {
         if new_val.is::<Vec<Dynamic>>() {
@@ -301,12 +290,12 @@ impl<T: RhaiVecElem> RhaiProxyable for Vec<T> {
             for (idx, entry) in new_val.cast::<Vec<Dynamic>>().into_iter().enumerate() {
                 if idx > last_target_idx {
                     // here we don't need to do anything special just use LuaProxyable impl
-                    T::apply_rhai(&mut self_.index(idx), ctx, entry)?;
+                    T::apply_rhai(&mut self_.index(idx), entry)?;
                 } else {
                     // here we don't have anything to apply this to
                     // use FromLua impl
                     self_.get_mut_typed(|s: &mut Vec<T>| {
-                        s[idx] = T::from_rhai_proxy(entry, ctx)?;
+                        s[idx] = T::from_rhai_proxy(entry)?;
                         Ok::<_, Box<EvalAltResult>>(())
                     })??;
                 }
@@ -327,10 +316,7 @@ impl<T: RhaiVecElem> RhaiProxyable for Vec<T> {
 }
 
 impl<T: RhaiVecElem> FromRhaiProxy for Vec<T> {
-    fn from_rhai_proxy(
-        self_: Dynamic,
-        ctx: &NativeCallContext,
-    ) -> Result<Self, Box<EvalAltResult>> {
+    fn from_rhai_proxy(self_: Dynamic) -> Result<Self, Box<EvalAltResult>> {
         if self_.is::<RhaiVec<T>>() {
             let vec = self_.cast::<RhaiVec<T>>();
             vec.ref_.get_typed(|s: &Vec<T>| Ok(s.clone()))?
@@ -338,7 +324,7 @@ impl<T: RhaiVecElem> FromRhaiProxy for Vec<T> {
             self_
                 .cast::<Vec<Dynamic>>()
                 .into_iter()
-                .map(|v| T::from_rhai_proxy(v, ctx))
+                .map(|v| T::from_rhai_proxy(v))
                 .collect::<Result<Vec<_>, _>>()
         } else {
             Err(Box::new(EvalAltResult::ErrorMismatchDataType(
@@ -351,9 +337,9 @@ impl<T: RhaiVecElem> FromRhaiProxy for Vec<T> {
 }
 
 impl<T: RhaiVecElem + ToRhaiProxy> ToRhaiProxy for Vec<T> {
-    fn to_rhai_proxy(self, ctx: &NativeCallContext) -> Result<Dynamic, Box<EvalAltResult>> {
+    fn to_rhai_proxy(self) -> Result<Dynamic, Box<EvalAltResult>> {
         self.into_iter()
-            .map(|v| T::to_rhai_proxy(v, ctx))
+            .map(|v| T::to_rhai_proxy(v))
             .collect::<Result<Vec<_>, _>>()
             .map(Dynamic::from)
     }
@@ -376,40 +362,30 @@ impl RegisterVecType for Engine {
         self.register_result_fn("len", |vec: &mut RhaiVec<T>| {
             vec.len().map(|v| v as INT).map_err(Into::into)
         });
-        self.register_result_fn(
-            "push",
-            |ctx: NativeCallContext, vec: &mut RhaiVec<T>, val: Dynamic| {
-                vec.push(T::from_rhai_proxy(val, &ctx)?).map_err(Into::into)
-            },
-        );
+        self.register_result_fn("push", |vec: &mut RhaiVec<T>, val: Dynamic| {
+            vec.push(T::from_rhai_proxy(val)?).map_err(Into::into)
+        });
         self.register_result_fn("pop", |vec: &mut RhaiVec<T>| vec.pop().map_err(Into::into));
         self.register_result_fn("clear", |vec: &mut RhaiVec<T>| {
             vec.clear().map_err(Into::into)
         });
-        self.register_result_fn(
-            "insert",
-            |ctx: NativeCallContext, vec: &mut RhaiVec<T>, idx: INT, val: Dynamic| {
-                vec.insert(idx as usize, T::from_rhai_proxy(val, &ctx)?)
-                    .map_err(Into::into)
-            },
-        );
+        self.register_result_fn("insert", |vec: &mut RhaiVec<T>, idx: INT, val: Dynamic| {
+            vec.insert(idx as usize, T::from_rhai_proxy(val)?)
+                .map_err(Into::into)
+        });
         self.register_result_fn("remove", |vec: &mut RhaiVec<T>, idx: INT| {
             vec.remove(idx as usize).map_err(Into::into)
         });
-        self.register_result_fn(
-            "index$get$",
-            |ctx: NativeCallContext, vec: &mut RhaiVec<T>, idx: INT| {
-                vec.index(idx as usize).to_dynamic(ctx)
-            },
-        );
+        self.register_result_fn("index$get$", |vec: &mut RhaiVec<T>, idx: INT| {
+            vec.index(idx as usize).to_dynamic()
+        });
         self.register_result_fn(
             "index$set$",
-            |ctx: NativeCallContext, vec: &mut RhaiVec<T>, idx: INT, value: Dynamic| {
-                vec.index(idx as usize).apply_rhai(ctx, value)
+            |vec: &mut RhaiVec<T>, idx: INT, value: Dynamic| {
+                vec.index(idx as usize).apply_rhai(value)
             },
         );
-        // TODO: once rhai supports fallible iterators implement this
-        // self.register_iterator::<RhaiVec<T>>();
+        self.register_iterator_result::<RhaiVec<T>, _>();
         self
     }
 }

@@ -123,8 +123,8 @@ fn main() -> std::io::Result<()> {
                             my_component.bool_option = true;
                             print(my_component.bool_option);
                             
-                            for i in 0..my_component.vec_of_option_bools.len() {
-                                print(`${i}: ${my_component.vec_of_option_bools[i]}`)
+                            for e in my_component.vec_of_option_bools {
+                                print(`elem: ${e}`)
                             }
 
                             my_component.vec_of_option_bools = [true,false,true];
@@ -132,9 +132,10 @@ fn main() -> std::io::Result<()> {
                             my_component.vec_of_option_bools.insert(1,());
                             my_component.vec_of_option_bools.push(false);
 
-                            for i in 0..my_component.vec_of_option_bools.len() {
-                                print(`${i}: ${my_component.vec_of_option_bools[i]}`)
+                            for e in my_component.vec_of_option_bools {
+                                print(`elem: ${e}`)
                             }
+
                         }
                         "#
                         .as_bytes(),
