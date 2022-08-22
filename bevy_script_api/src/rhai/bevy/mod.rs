@@ -1,114 +1,53 @@
-use std::{
-    ops::{Deref, DerefMut},
-    sync::Arc,
-};
-
-use bevy::reflect::{TypeRegistration, TypeRegistry};
+use bevy::prelude::Entity;
 use bevy_mod_scripting_core::{prelude::*, world::WorldPointer};
-use bevy_mod_scripting_rhai::{prelude::*, rhai};
+
+use bevy_mod_scripting_rhai::{
+    prelude::*,
+    rhai::{self, CustomType},
+};
 use rhai::plugin::*;
 
-use crate::common::bevy::{ScriptTypeRegistration, ScriptWorld};
-use crate::rhai::ToDynamic;
+use crate::{
+    common::bevy::{ScriptTypeRegistration, ScriptWorld},
+    ReflectedValue,
+};
 
-use super::{base_rhai_plugin, RegisterForeignRhaiType};
+use super::RegisterForeignRhaiType;
 
-#[export_module]
-#[allow(dead_code)]
-pub(crate) mod bevy_plugin {
-    use crate::common::bevy::ScriptWorld;
-    use bevy::prelude::Entity;
-
-    pub mod type_registration {
-        pub type TypeRegistration = ScriptTypeRegistration;
-
-        #[rhai_fn(global)]
-        pub fn short_name(self_: &mut TypeRegistration) -> ImmutableString {
-            self_.short_name().into()
-        }
-
-        #[rhai_fn(global)]
-        pub fn type_name(self_: &mut TypeRegistration) -> ImmutableString {
-            self_.type_name().into()
-        }
-
-        #[rhai_fn(global)]
-        pub fn to_string(self_: &mut TypeRegistration) -> String {
-            self_.to_string()
-        }
-
-        #[rhai_fn(global)]
-        pub fn to_debug(self_: &mut TypeRegistration) -> String {
-            format!("{:?}", self_)
-        }
+#[allow(deprecated)]
+impl CustomType for ScriptTypeRegistration {
+    fn build(mut builder: rhai::TypeBuilder<Self>) {
+        builder
+            .with_name("TypeRegistration")
+            .with_fn("short_name", |self_: &mut Self| {
+                ImmutableString::from(self_.short_name())
+            })
+            .with_fn("type_name", |self_: &mut Self| self_.type_name())
+            .with_fn("to_string", |self_: &mut Self| self_.to_string())
+            .with_fn("to_debug", |self_: &mut Self| format!("{:?}", self_));
     }
+}
 
-    pub mod world {
-        pub type World = ScriptWorld;
-
-        #[rhai_fn(global)]
-        pub fn get_type_by_name(self_: World, type_name: &str) -> Dynamic {
-            self_
-                .get_type_by_name(type_name)
-                .map(Dynamic::from)
-                .unwrap_or_default()
-        }
-
-        #[rhai_fn(global)]
-        pub fn get_children(self_: World, parent: Entity) -> Vec<Dynamic> {
-            self_
-                .get_children(parent)
-                .into_iter()
-                .map(Dynamic::from)
-                .collect()
-        }
-
-        #[rhai_fn(global, return_raw)]
-        pub fn add_default_component(
-            self_: World,
-            entity: Entity,
-            type_registration: super::type_registration::TypeRegistration,
-        ) -> Result<Dynamic, Box<EvalAltResult>> {
-            self_
-                .add_default_component(entity, type_registration)
-                .map_err(|e| {
-                    Box::new(EvalAltResult::ErrorRuntime(
-                        Dynamic::from(e.to_string()),
-                        Position::NONE,
-                    ))
-                })
-                .and_then(|ok| ok.to_dynamic())
-        }
-
-        #[rhai_fn(global, return_raw)]
-        pub fn get_component(
-            self_: World,
-            entity: Entity,
-            comp_type: super::type_registration::TypeRegistration,
-        ) -> Result<Dynamic, Box<EvalAltResult>> {
-            let component = self_.get_component(entity, comp_type).map_err(|e| {
-                Box::new(EvalAltResult::ErrorRuntime(
-                    e.to_string().into(),
-                    Position::NONE,
-                ))
-            })?;
-
-            if let Some(c) = component {
-                c.to_dynamic()
-            } else {
-                Ok(Default::default())
-            }
-        }
-
-        #[rhai_fn(global)]
-        pub fn to_string(self_: &mut World) -> String {
-            self_.to_string()
-        }
-
-        #[rhai_fn(global)]
-        pub fn to_debug(self_: &mut World) -> String {
-            format!("{:?}", self_)
-        }
+#[allow(deprecated)]
+impl CustomType for ScriptWorld {
+    fn build(mut builder: rhai::TypeBuilder<Self>) {
+        builder
+            .with_name("World")
+            .with_fn("get_type_by_name", |self_: ScriptWorld, type_name: &str| {
+                self_
+                    .get_type_by_name(type_name)
+                    .map(Dynamic::from)
+                    .unwrap_or_default()
+            })
+            .with_fn("get_children", |self_: ScriptWorld, parent: Entity| {
+                self_
+                    .get_children(parent)
+                    .into_iter()
+                    .map(Dynamic::from)
+                    .collect::<Vec<_>>()
+            })
+            .with_fn("to_string", |self_: &mut ScriptWorld| self_.to_string())
+            .with_fn("to_debug", |self_: &mut ScriptWorld| format!("{:?}", self_));
     }
 }
 
@@ -120,8 +59,9 @@ impl APIProvider for RhaiBevyAPIProvider {
     type DocTarget = RhaiDocFragment;
 
     fn attach_api(&mut self, engine: &mut Self::APITarget) -> Result<(), ScriptError> {
-        engine.register_static_module("bevy", exported_module!(bevy_plugin).into());
-        engine.register_static_module("base", exported_module!(base_rhai_plugin).into());
+        engine.build_type::<ReflectedValue>();
+        engine.build_type::<ScriptTypeRegistration>();
+        engine.build_type::<ScriptWorld>();
         Ok(())
     }
 

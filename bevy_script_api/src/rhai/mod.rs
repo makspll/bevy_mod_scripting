@@ -4,7 +4,7 @@ use ::bevy::{
     prelude::App,
     reflect::{FromType, GetTypeRegistration, Reflect, TypeRegistry, TypeRegistryArc},
 };
-use bevy_mod_scripting_rhai::rhai::{export_module, Dynamic, EvalAltResult, INT};
+use bevy_mod_scripting_rhai::rhai::{export_module, CustomType, Dynamic, EvalAltResult, INT};
 
 use crate::{ReflectedValue, ScriptRef, ValueIndex};
 
@@ -169,29 +169,18 @@ impl ValueIndex<Dynamic> for ScriptRef {
 
 use bevy_mod_scripting_rhai::rhai::plugin::*;
 
-#[export_module]
-pub(crate) mod base_rhai_plugin {
-    // This is an index getter for 'TestStruct'.
-
-    #[rhai_fn(global, index_get, return_raw)]
-    pub fn get_index(
-        obj: &mut ReflectedValue,
-        index: Dynamic,
-    ) -> Result<Dynamic, Box<EvalAltResult>> {
-        obj.ref_.index(index)?.to_dynamic()
-    }
-
-    #[rhai_fn(global, index_set, return_raw)]
-    pub fn set_index(
-        obj: &mut ReflectedValue,
-        index: Dynamic,
-        value: Dynamic,
-    ) -> Result<(), Box<EvalAltResult>> {
-        obj.ref_.index(index)?.apply_rhai(value)
-    }
-
-    #[rhai_fn(global)]
-    pub fn to_debug(self_: &mut ReflectedValue) -> String {
-        format!("{self_:?}")
+#[allow(deprecated)]
+impl CustomType for ReflectedValue {
+    fn build(mut builder: bevy_mod_scripting_rhai::rhai::TypeBuilder<Self>) {
+        builder
+            .with_indexer_get_result(|obj: &mut ReflectedValue, index: Dynamic| {
+                obj.ref_.index(index)?.to_dynamic()
+            })
+            .with_indexer_set_result(|obj: &mut ReflectedValue, index: Dynamic, value: Dynamic| {
+                obj.ref_.index(index)?.apply_rhai(value)
+            })
+            .with_fn("to_debug", |self_: &mut ReflectedValue| {
+                format!("{self_:?}")
+            });
     }
 }

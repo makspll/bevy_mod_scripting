@@ -1,7 +1,9 @@
 use std::{any::type_name, iter::Map};
 
 use bevy::reflect::{FromReflect, Reflect};
-use bevy_mod_scripting_rhai::rhai::{Dynamic, Engine, EvalAltResult, NativeCallContext, Position};
+use bevy_mod_scripting_rhai::rhai::{
+    CustomType, Dynamic, Engine, EvalAltResult, NativeCallContext, Position,
+};
 
 use crate::{
     common::std::ScriptVec, error::ReflectionError, ReflectPathElem, ScriptRef, ValueIndex,
@@ -345,6 +347,43 @@ impl<T: RhaiVecElem + ToRhaiProxy> ToRhaiProxy for Vec<T> {
     }
 }
 
+#[allow(deprecated)]
+impl<T: RhaiVecElem> CustomType for RhaiVec<T> {
+    fn build(mut builder: bevy_mod_scripting_rhai::rhai::TypeBuilder<Self>) {
+        builder
+            .with_name(type_name::<Vec<T>>())
+            .with_result_fn("is_empty", |vec: &mut RhaiVec<T>| {
+                vec.is_empty().map_err(Into::into)
+            })
+            .with_result_fn("len", |vec: &mut RhaiVec<T>| {
+                vec.len().map(|v| v as INT).map_err(Into::into)
+            })
+            .with_result_fn("push", |vec: &mut RhaiVec<T>, val: Dynamic| {
+                vec.push(T::from_rhai_proxy(val)?).map_err(Into::into)
+            })
+            .with_result_fn("pop", |vec: &mut RhaiVec<T>| vec.pop().map_err(Into::into))
+            .with_result_fn("clear", |vec: &mut RhaiVec<T>| {
+                vec.clear().map_err(Into::into)
+            })
+            .with_result_fn("insert", |vec: &mut RhaiVec<T>, idx: INT, val: Dynamic| {
+                vec.insert(idx as usize, T::from_rhai_proxy(val)?)
+                    .map_err(Into::into)
+            })
+            .with_result_fn("remove", |vec: &mut RhaiVec<T>, idx: INT| {
+                vec.remove(idx as usize).map_err(Into::into)
+            })
+            .with_result_fn("index$get$", |vec: &mut RhaiVec<T>, idx: INT| {
+                vec.index(idx as usize).to_dynamic()
+            })
+            .with_result_fn(
+                "index$set$",
+                |vec: &mut RhaiVec<T>, idx: INT, value: Dynamic| {
+                    vec.index(idx as usize).apply_rhai(value)
+                },
+            );
+    }
+}
+
 /// A trait for making monomorphization of Vec<T> implementations for any T easier.
 ///
 /// Rhai does not support the idea of generic types, instead every function is a standalone thing, and hence
@@ -355,36 +394,7 @@ pub trait RegisterVecType {
 
 impl RegisterVecType for Engine {
     fn register_vec_functions<T: RhaiVecElem>(&mut self) -> &mut Self {
-        self.register_type_with_name::<RhaiVec<T>>(&format!("Vec<{}>", type_name::<T>()));
-        self.register_result_fn("is_empty", |vec: &mut RhaiVec<T>| {
-            vec.is_empty().map_err(Into::into)
-        });
-        self.register_result_fn("len", |vec: &mut RhaiVec<T>| {
-            vec.len().map(|v| v as INT).map_err(Into::into)
-        });
-        self.register_result_fn("push", |vec: &mut RhaiVec<T>, val: Dynamic| {
-            vec.push(T::from_rhai_proxy(val)?).map_err(Into::into)
-        });
-        self.register_result_fn("pop", |vec: &mut RhaiVec<T>| vec.pop().map_err(Into::into));
-        self.register_result_fn("clear", |vec: &mut RhaiVec<T>| {
-            vec.clear().map_err(Into::into)
-        });
-        self.register_result_fn("insert", |vec: &mut RhaiVec<T>, idx: INT, val: Dynamic| {
-            vec.insert(idx as usize, T::from_rhai_proxy(val)?)
-                .map_err(Into::into)
-        });
-        self.register_result_fn("remove", |vec: &mut RhaiVec<T>, idx: INT| {
-            vec.remove(idx as usize).map_err(Into::into)
-        });
-        self.register_result_fn("index$get$", |vec: &mut RhaiVec<T>, idx: INT| {
-            vec.index(idx as usize).to_dynamic()
-        });
-        self.register_result_fn(
-            "index$set$",
-            |vec: &mut RhaiVec<T>, idx: INT, value: Dynamic| {
-                vec.index(idx as usize).apply_rhai(value)
-            },
-        );
+        self.build_type::<RhaiVec<T>>();
         self.register_iterator_result::<RhaiVec<T>, _>();
         self
     }
