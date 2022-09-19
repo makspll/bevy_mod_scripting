@@ -78,7 +78,7 @@ members = [
     "languages/bevy_mod_scripting_lua",
     "languages/bevy_mod_scripting_lua_derive",
     "languages/bevy_mod_scripting_rhai",
-    # "languages/rhai/derive",
+    "languages/bevy_mod_scripting_rhai_derive",
     "bevy_mod_scripting_common"
 ]
 

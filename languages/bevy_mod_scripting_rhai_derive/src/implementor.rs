@@ -3,19 +3,15 @@ use proc_macro2::{Ident, Span, TokenStream};
 use syn::{parse_quote_spanned, punctuated::Punctuated, spanned::Spanned, Token};
 
 use bevy_mod_scripting_common::{
-    derive_flag::DeriveFlag,
-    implementor::{WrapperFunction, WrapperImplementor},
-    newtype::Newtype,
+    derive_flag::DeriveFlag, implementor::WrapperImplementor, newtype::Newtype,
     utils::attribute_to_string_lit,
 };
 use quote::{format_ident, quote, quote_spanned};
 
 use crate::{
     derive_flags::{make_bin_ops, make_fields, make_methods, make_unary_ops},
-    lua_method::LuaMethod,
+    rhai_method::RhaiMethod,
 };
-
-impl WrapperFunction for LuaMethod {}
 
 #[derive(Default)]
 pub(crate) struct LuaImplementor {
@@ -53,10 +49,10 @@ impl LuaImplementor {
 }
 
 impl WrapperImplementor for LuaImplementor {
-    type Function = LuaMethod;
+    type Function = RhaiMethod;
 
     fn module_name() -> &'static str {
-        "lua"
+        "rhai"
     }
 
     fn generate_newtype_definition(
@@ -184,7 +180,7 @@ impl WrapperImplementor for LuaImplementor {
         &mut self,
         new_type: &'a Newtype,
         mut derive_flags: I,
-    ) -> Result<Vec<LuaMethod>, syn::Error> {
+    ) -> Result<Vec<Self::Function>, syn::Error> {
         let mut out: Vec<Self::Function> = Default::default();
         let wrapper_type = &new_type.args.wrapper_type;
         let wrapped_type = &new_type.args.base_type_ident;
@@ -241,7 +237,7 @@ impl WrapperImplementor for LuaImplementor {
     fn generate_newtype_functions(
         &mut self,
         new_type: &Newtype,
-    ) -> Result<Vec<LuaMethod>, syn::Error> {
+    ) -> Result<Vec<Self::Function>, syn::Error> {
         let lua_block = new_type
             .impl_blocks
             .iter()

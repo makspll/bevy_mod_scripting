@@ -1,7 +1,7 @@
 use bevy_mod_scripting_common::{implementor::WrapperImplementor, newtype::Newtype};
 use implementor::LuaImplementor;
 use proc_macro::TokenStream;
-use syn::parse_macro_input;
+use syn::{parse_macro_input, DeriveInput};
 
 pub(crate) mod derive_flags;
 pub(crate) mod implementor;
@@ -17,4 +17,9 @@ pub fn impl_lua_newtype(tokens: TokenStream) -> TokenStream {
         .map_err(|e| e.to_compile_error())
         .unwrap_or_else(core::convert::identity)
         .into()
+}
+
+#[proc_macro_derive(Lua, attributes(Lua))]
+pub fn lua_derive(input: TokenStream) -> TokenStream {
+    impl_lua_newtype(input)
 }

@@ -5,7 +5,7 @@ use syn::parse_macro_input;
 
 pub(crate) mod derive_flags;
 pub(crate) mod implementor;
-pub(crate) mod lua_method;
+pub(crate) mod rhai_method;
 
 #[proc_macro]
 pub fn impl_lua_newtype(tokens: TokenStream) -> TokenStream {
