@@ -219,7 +219,6 @@ pub(crate) fn generate_macros(
         writer.write_inline("\"");
         writer.write_inline(global_name);
         writer.write_inline("\"");
-        writer.write_inline(".into()");
         // corresponding proxy
         if dummy_proxy {
             writer.write_inline(", crate::lua::util::DummyTypeName::<");
