@@ -1,7 +1,13 @@
 use std::marker::PhantomData;
 
 use indexmap::IndexSet;
-use syn::{Attribute, DeriveInput, Field, Fields, Generics, Ident, Meta, MetaList};
+use proc_macro2::TokenStream;
+use syn::{
+    parenthesized,
+    parse::{Parse, ParseBuffer, ParseStream},
+    punctuated::Punctuated,
+    token, Attribute, DeriveInput, Field, Fields, Generics, Ident, Meta, MetaList, Token,
+};
 
 pub const ATTRIBUTE_NAME: &str = "scripting";
 
@@ -26,6 +32,17 @@ pub enum ProxyFlag {
     Methods,
     UnaryOps,
     BinaryOps,
+}
+impl ProxyFlag {
+    pub fn from_name_and_tokens(
+        name: &str,
+        tokens: Option<TokenStream>,
+    ) -> Result<Self, syn::Error> {
+        match name {
+            "Clone" => Ok(Self::Clone),
+            _ => Err(syn::Error::new_spanned(tokens, "Unknown proxy flag")),
+        }
+    }
 }
 
 pub struct ProxyMeta<'a> {
@@ -122,9 +139,32 @@ impl ProxyFlags {
         flags
     }
 
+    /// Parses a single proxy flag
+    pub fn parse_one(input: ParseStream) -> Result<ProxyFlag, syn::Error> {
+        let attr_name: String = input.parse::<Ident>()?.to_string();
+
+        // work out if there is a payload in the token
+        if input.peek(token::Paren) {
+            let tokens;
+            parenthesized!(tokens in input);
+            ProxyFlag::from_name_and_tokens(&attr_name, Some(tokens.parse()?))
+        } else {
+            ProxyFlag::from_name_and_tokens(&attr_name, None)
+        }
+    }
+
+    /// Parses proxy flags separated by the given separator
+    pub fn parse_separated<S: Parse>(
+        input: ParseStream,
+    ) -> Result<Punctuated<ProxyFlag, S>, syn::Error> {
+        Punctuated::<_, S>::parse_terminated_with(input, Self::parse_one)
+    }
+
+    /// Parses a whole attribute with proxy flag annotations
     pub fn from_attribure(attr: &Attribute) -> Result<Self, syn::Error> {
-        let parser = |input: &ParseBuffer| {};
-        attr.parse_args_with(parser)
+        attr.parse_args_with(Self::parse_separated::<Token![,]>)
+            .map(IntoIterator::into_iter)
+            .map(Iterator::collect)
     }
 
     pub fn contains(&self, flag: &ProxyFlag) -> bool {
@@ -133,5 +173,13 @@ impl ProxyFlags {
 
     pub fn merge(&mut self, o: Self) {
         self.flags.extend(o.flags.into_iter())
+    }
+}
+
+impl FromIterator<ProxyFlag> for ProxyFlags {
+    fn from_iter<T: IntoIterator<Item = ProxyFlag>>(iter: T) -> Self {
+        Self {
+            flags: FromIterator::from_iter(iter),
+        }
     }
 }
