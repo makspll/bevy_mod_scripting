@@ -116,6 +116,11 @@ path = "examples/lua/event_recipients.rs"
 required-features=["lua54"]
 
 [[example]]
+name = "coroutines_lua"
+path = "examples/lua/coroutines.rs"
+required-features=["lua54"]
+
+[[example]]
 name = "documentation_gen_lua"
 path = "examples/lua/documentation_gen.rs"
 required-features=["lua54","teal","lua_script_api"]
