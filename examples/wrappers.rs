@@ -14,7 +14,14 @@ use bevy_mod_scripting::{
 // Debug is nice to have, we can forward that implementation to Lua's ToString via our macro
 #[derive(Reflect, Default, Clone, Debug, LuaProxy)]
 #[reflect(Resource)]
-#[scripting(Clone)]
+#[scripting(Methods(
+    /// hello
+    fn hello(&self) -> bool {
+        let a : str;
+    }
+))]
+/// Hello asdasd as `asdasd`
+/// asdasd
 pub struct MyThing {
     usize: usize,
     string: String,
@@ -26,6 +33,9 @@ impl MyThing {
     }
 }
 
+impl MyThing {
+    pub fn hello(&self) {}
+}
 // Step 2. Script representation
 // this macro does some magic and provides you with a `LuaMyThing` (and possibly more for other enabled languages) type with which you can create:
 // - owned values of your type via ::new()
@@ -81,61 +91,61 @@ impl MyThing {
 fn main() -> std::io::Result<()> {
     let mut app = App::new();
 
-    app.add_plugins(DefaultPlugins)
-        .add_plugin(ScriptingPlugin)
-        .add_script_host::<LuaScriptHost<LuaMyThing>, _>(CoreStage::PostUpdate)
-        .register_type::<MyThing>()
-        .init_resource::<MyThing>()
-        .add_system(
-            (|world: &mut World| {
-                world.insert_resource(MyThing {
-                    usize: 420,
-                    string: "I live in the bevy world, you can't touch me!".to_owned(),
-                });
+    // app.add_plugins(DefaultPlugins)
+    //     .add_plugin(ScriptingPlugin)
+    //     .add_script_host::<LuaScriptHost<LuaMyThing>, _>(CoreStage::PostUpdate)
+    //     .register_type::<MyThing>()
+    //     .init_resource::<MyThing>()
+    //     .add_system(
+    //         (|world: &mut World| {
+    //             world.insert_resource(MyThing {
+    //                 usize: 420,
+    //                 string: "I live in the bevy world, you can't touch me!".to_owned(),
+    //             });
 
-                // run script
-                world.resource_scope(|world, mut host: Mut<LuaScriptHost<LuaMyThing>>| {
-                    host.run_one_shot(
-                        r#"
-                    function once(my_thing)
-                        local my_thing2 = my_thing.make_ref_to_my_resource()
-                        print(my_thing2)
-                        print(my_thing2.usize)
-                        print(my_thing2.string)
-                        print(my_thing2:do_something_cool())
+    //             // run script
+    //             world.resource_scope(|world, mut host: Mut<LuaScriptHost<LuaMyThing>>| {
+    //                 host.run_one_shot(
+    //                     r#"
+    //                 function once(my_thing)
+    //                     local my_thing2 = my_thing.make_ref_to_my_resource()
+    //                     print(my_thing2)
+    //                     print(my_thing2.usize)
+    //                     print(my_thing2.string)
+    //                     print(my_thing2:do_something_cool())
 
-                        my_thing2.usize = my_thing.usize
-                        my_thing2.string = my_thing.string
+    //                     my_thing2.usize = my_thing.usize
+    //                     my_thing2.string = my_thing.string
 
-                        print(my_thing2:do_something_cool())
-                    end
-                "#
-                        .as_bytes(),
-                        "script.lua",
-                        Entity::from_raw(0),
-                        world,
-                        LuaEvent {
-                            hook_name: "once".to_owned(),
-                            args: LuaMyThing::new(MyThing {
-                                usize: 42,
-                                string: "Haha! Yes I can!!!!".to_owned(),
-                            }),
-                            recipients: Recipients::All,
-                        },
-                    )
-                    .expect("Something went wrong in the script!");
-                });
+    //                     print(my_thing2:do_something_cool())
+    //                 end
+    //             "#
+    //                     .as_bytes(),
+    //                     "script.lua",
+    //                     Entity::from_raw(0),
+    //                     world,
+    //                     LuaEvent {
+    //                         hook_name: "once".to_owned(),
+    //                         args: LuaMyThing::new(MyThing {
+    //                             usize: 42,
+    //                             string: "Haha! Yes I can!!!!".to_owned(),
+    //                         }),
+    //                         recipients: Recipients::All,
+    //                     },
+    //                 )
+    //                 .expect("Something went wrong in the script!");
+    //             });
 
-                // print current state of MyThing
-                let my_thing = world
-                    .get_resource::<MyThing>()
-                    .expect("Could not find MyThing Resource");
-                println!("After script run: {my_thing:#?}");
-                // exit app
-                world.send_event(AppExit)
-            })
-            .exclusive_system(),
-        );
+    //             // print current state of MyThing
+    //             let my_thing = world
+    //                 .get_resource::<MyThing>()
+    //                 .expect("Could not find MyThing Resource");
+    //             println!("After script run: {my_thing:#?}");
+    //             // exit app
+    //             world.send_event(AppExit)
+    //         })
+    //         .exclusive_system(),
+    //     );
 
     app.run();
 

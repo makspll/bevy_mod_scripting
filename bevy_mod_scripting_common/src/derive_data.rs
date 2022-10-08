@@ -6,7 +6,9 @@ use syn::{
     parenthesized,
     parse::{Parse, ParseBuffer, ParseStream},
     punctuated::Punctuated,
-    token, Attribute, DeriveInput, Field, Fields, Generics, Ident, Meta, MetaList, Token,
+    spanned::Spanned,
+    token, Attribute, Block, DeriveInput, Field, Fields, Generics, Ident, Lit, LitStr, Meta,
+    MetaList, MetaNameValue, Signature, Token,
 };
 
 pub const ATTRIBUTE_NAME: &str = "scripting";
@@ -29,18 +31,82 @@ pub enum ProxyFlag {
     Display,
     Clone,
     Fields,
-    Methods,
+    Methods(Punctuated<ProxyMethod, Token![,]>),
     UnaryOps,
     BinaryOps,
 }
+
+#[derive(Hash, Debug, PartialEq, Eq)]
+/// A representation of a proxied method, has the potential to define a full blown method as well,
+/// it is up to each individual language to interpret the meaning of the attributes and method signatures.
+///
+/// For example some function names may be reserved (`to_string` in lua for example) for operators.
+pub struct ProxyMethod {
+    pub attrs: Vec<Attribute>,
+    pub sig: Signature,
+    pub body: Option<Block>,
+}
+
+impl Parse for ProxyMethod {
+    fn parse(input: ParseStream) -> syn::Result<Self> {
+        Ok(Self {
+            attrs: input.call(Attribute::parse_outer)?,
+            sig: input.parse()?,
+            body: {
+                if input.peek(token::Brace) {
+                    Some(input.parse()?)
+                } else {
+                    None
+                }
+            },
+        })
+    }
+}
+
 impl ProxyFlag {
-    pub fn from_name_and_tokens(
-        name: &str,
-        tokens: Option<TokenStream>,
+    pub fn from_ident_and_tokens(
+        ident: &Ident,
+        tokens: Option<ParseStream>,
     ) -> Result<Self, syn::Error> {
-        match name {
-            "Clone" => Ok(Self::Clone),
-            _ => Err(syn::Error::new_spanned(tokens, "Unknown proxy flag")),
+        let name = ident.to_string();
+
+        let parse_ident_only = |f: fn() -> Self| {
+            if let Some(tokens) = &tokens {
+                let span = {
+                    if tokens.is_empty() {
+                        ident.span()
+                    } else {
+                        tokens.span()
+                    }
+                };
+
+                Err(syn::Error::new(
+                    span,
+                    format!("'{name}' does not expect any arguments. Remove `({tokens})`"),
+                ))
+            } else {
+                Ok(f())
+            }
+        };
+
+        let parse_with_body = |f: fn(ParseStream) -> Result<Self, _>| {
+            if let Some(tokens) = tokens {
+                f(tokens)
+            } else {
+                Err(syn::Error::new(
+                    ident.span(),
+                    format!("`{name}` expects arguments. Add `(<arguments>)`"),
+                ))
+            }
+        };
+
+        match name.as_str() {
+            "Clone" => parse_ident_only(|| Self::Clone),
+            "Debug" => parse_ident_only(|| Self::Debug),
+            "Methods" => parse_with_body(|input| {
+                Ok(Self::Methods(input.call(Punctuated::parse_terminated)?))
+            }),
+            _ => Err(syn::Error::new_spanned(ident, "Unknown proxy flag")),
         }
     }
 }
@@ -52,6 +118,8 @@ pub struct ProxyMeta<'a> {
     pub proxy_flags: ProxyFlags,
     /// The generics defined on the base type
     pub generics: &'a Generics,
+    /// type docstring
+    pub docstrings: Vec<LitStr>,
 }
 
 pub struct StructData<'a> {
@@ -75,16 +143,35 @@ impl<'a> TryFrom<&'a DeriveInput> for ProxyData<'a> {
         let flags = input
             .attrs
             .iter()
-            .filter_map(|attr| ProxyFlags::from_attribure(attr).ok())
+            .filter_map(ProxyFlags::from_attribure)
+            .collect::<Result<Vec<_>, _>>()?
+            .into_iter()
             .fold(ProxyFlags::default(), |mut a, b| {
                 a.merge(b);
                 a
             });
 
+        let docstrings = input
+            .attrs
+            .iter()
+            .filter_map(|attr| {
+                if attr.path.is_ident("doc") {
+                    match attr.parse_meta().unwrap() {
+                        Meta::NameValue(MetaNameValue {
+                            lit: Lit::Str(str), ..
+                        }) => Some(str),
+                        _ => unreachable!(),
+                    }
+                } else {
+                    None
+                }
+            })
+            .collect::<Vec<_>>();
         let meta = ProxyMeta {
             base_type_name: &input.ident,
             proxy_flags: flags,
             generics: &input.generics,
+            docstrings,
         };
 
         match &input.data {
@@ -115,41 +202,17 @@ impl ProxyData<'_> {
 }
 
 impl ProxyFlags {
-    pub fn from_nested_metas(list: MetaList) -> Self {
-        let mut flags = Self::default();
-        for nested_meta in list.nested.iter() {
-            match nested_meta {
-                syn::NestedMeta::Meta(Meta::Path(path)) => {
-                    let ident = if let Some(segment) = path.segments.first() {
-                        segment.ident.to_string()
-                    } else {
-                        continue;
-                    };
-
-                    let flag = match ident.as_str() {
-                        "Clone" => ProxyFlag::Clone,
-                        _ => continue,
-                    };
-
-                    flags.flags.insert(flag);
-                }
-                _ => continue,
-            }
-        }
-        flags
-    }
-
     /// Parses a single proxy flag
     pub fn parse_one(input: ParseStream) -> Result<ProxyFlag, syn::Error> {
-        let attr_name: String = input.parse::<Ident>()?.to_string();
+        let attr_ident = input.parse::<Ident>()?;
 
         // work out if there is a payload in the token
         if input.peek(token::Paren) {
             let tokens;
             parenthesized!(tokens in input);
-            ProxyFlag::from_name_and_tokens(&attr_name, Some(tokens.parse()?))
+            ProxyFlag::from_ident_and_tokens(&attr_ident, Some(&tokens))
         } else {
-            ProxyFlag::from_name_and_tokens(&attr_name, None)
+            ProxyFlag::from_ident_and_tokens(&attr_ident, None)
         }
     }
 
@@ -160,11 +223,17 @@ impl ProxyFlags {
         Punctuated::<_, S>::parse_terminated_with(input, Self::parse_one)
     }
 
-    /// Parses a whole attribute with proxy flag annotations
-    pub fn from_attribure(attr: &Attribute) -> Result<Self, syn::Error> {
-        attr.parse_args_with(Self::parse_separated::<Token![,]>)
-            .map(IntoIterator::into_iter)
-            .map(Iterator::collect)
+    /// Parses a whole attribute with proxy flag annotations. Returns Some value if the attribute has a valid path, and None otherwise
+    pub fn from_attribure(attr: &Attribute) -> Option<Result<Self, syn::Error>> {
+        if !attr.path.is_ident(ATTRIBUTE_NAME) {
+            return None;
+        }
+
+        Some(
+            attr.parse_args_with(Self::parse_separated::<Token![,]>)
+                .map(IntoIterator::into_iter)
+                .map(Iterator::collect),
+        )
     }
 
     pub fn contains(&self, flag: &ProxyFlag) -> bool {

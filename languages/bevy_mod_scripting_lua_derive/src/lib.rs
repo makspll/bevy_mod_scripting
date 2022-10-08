@@ -26,11 +26,15 @@ pub fn impl_lua_newtype(tokens: TokenStream) -> TokenStream {
 #[proc_macro_derive(LuaProxy, attributes(lua, scripting))]
 pub fn lua_derive(input: TokenStream) -> TokenStream {
     let input = parse_macro_input!(input as DeriveInput);
-    let data: ProxyData = (&input).try_into().unwrap();
+    let data: Result<ProxyData, _> = (&input).try_into();
+
     TokenStream::from(match data {
-        ProxyData::Struct(data) | ProxyData::TupleStruct(data) | ProxyData::UnitStruct(data) => {
-            impl_struct(data)
-        }
-        ProxyData::Enum(data) => impl_enum(data),
+        Ok(data) => match data {
+            ProxyData::Struct(data)
+            | ProxyData::TupleStruct(data)
+            | ProxyData::UnitStruct(data) => impl_struct(data),
+            ProxyData::Enum(data) => impl_enum(data),
+        },
+        Err(error) => error.to_compile_error(),
     })
 }

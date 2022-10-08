@@ -122,7 +122,6 @@ impl WrapperImplementor for LuaImplementor {
                 }
             })
             .collect();
-
         let (fields, methods) = functions.partition::<Vec<_>, _>(|f| f.method_type.is_field());
 
         let methods = methods.iter().map(|f| f.to_call_expr("methods"));
@@ -190,50 +189,50 @@ impl WrapperImplementor for LuaImplementor {
         let wrapped_type = &new_type.args.base_type_ident;
         let tealr = quote::quote!(bevy_mod_scripting_lua::tealr);
 
-        derive_flags.try_for_each(|v| {
-            match v {
-                DeriveFlag::Debug{ident} => out.push(parse_quote_spanned!{ident.span()=>
-                    (#tealr::mlu::mlua::MetaMethod::ToString) => |_,s,()| Ok(format!("{:?}",s))
-                }),
-                DeriveFlag::Display{ident} => out.push(parse_quote_spanned!{ident.span()=>
-                    (#tealr::mlu::mlua::MetaMethod::ToString) => |_,s,()| Ok(format!("{}",s))
-                }),
-                DeriveFlag::Clone{ident} => {
-                    self.additional_globals.extend(
-                        quote_spanned!{ident.span()=>
-                            impl bevy_script_api::lua::FromLuaProxy<'_> for #wrapped_type {
-                                fn from_lua_proxy<'lua>(lua_value: #tealr::mlu::mlua::Value<'lua>, _: &'lua #tealr::mlu::mlua::Lua) -> #tealr::mlu::mlua::Result<Self> {
-                                    if let #tealr::mlu::mlua::Value::UserData(ud) = lua_value{
-                                        let wrapper = ud.borrow::<#wrapper_type>()?;
-                                        Ok(std::ops::Deref::deref(&wrapper).inner()?)
-                                    } else {
-                                        Err(#tealr::mlu::mlua::Error::FromLuaConversionError{
-                                            from: "",
-                                            to: "",
-                                            message: None
-                                        })
-                                    }
-                                }
-                            }
-                        }
-                    );
+        // derive_flags.try_for_each(|v    `| {
+        //     match v {
+        //         DeriveFlag::Debug{ident} => out.push(parse_quote_spanned!{ident.span()=>
+        //             (#tealr::mlu::mlua::MetaMethod::ToString) => |_,s,()| Ok(format!("{:?}",s))
+        //         }),
+        //         DeriveFlag::Display{ident} => out.push(parse_quote_spanned!{ident.span()=>
+        //             (#tealr::mlu::mlua::MetaMethod::ToString) => |_,s,()| Ok(format!("{}",s))
+        //         }),
+        //         DeriveFlag::Clone{ident} => {
+        //             self.additional_globals.extend(
+        //                 quote_spanned!{ident.span()=>
+        //                     impl bevy_script_api::lua::FromLuaProxy<'_> for #wrapped_type {
+        //                         fn from_lua_proxy<'lua>(lua_value: #tealr::mlu::mlua::Value<'lua>, _: &'lua #tealr::mlu::mlua::Lua) -> #tealr::mlu::mlua::Result<Self> {
+        //                             if let #tealr::mlu::mlua::Value::UserData(ud) = lua_value{
+        //                                 let wrapper = ud.borrow::<#wrapper_type>()?;
+        //                                 Ok(std::ops::Deref::deref(&wrapper).inner()?)
+        //                             } else {
+        //                                 Err(#tealr::mlu::mlua::Error::FromLuaConversionError{
+        //                                     from: "",
+        //                                     to: "",
+        //                                     message: None
+        //                                 })
+        //                             }
+        //                         }
+        //                     }
+        //                 }
+        //             );
 
-                }
-                flag @ DeriveFlag::Methods {..} => {
-                    make_methods(flag,new_type,&mut out);
-                },
-                flag @ DeriveFlag::BinOps {..} =>  {
-                    make_bin_ops(self, flag, new_type, &mut out)?;
-                },
-                flag @ DeriveFlag::UnaryOps {..} => {
-                    make_unary_ops(flag, new_type, &mut out)?;
-                },
-                flag @ DeriveFlag::Fields {..} => {
-                    make_fields(flag,new_type,&mut out)?;
-                },
-            };
-            Ok::<(),syn::Error>(())
-        })?;
+        //         }
+        //         flag @ DeriveFlag::Methods {..} => {
+        //             make_methods(flag,new_type,&mut out);
+        //         },
+        //         flag @ DeriveFlag::BinOps {..} =>  {
+        //             make_bin_ops(self, flag, new_type, &mut out)?;
+        //         },
+        //         flag @ DeriveFlag::UnaryOps {..} => {
+        //             make_unary_ops(flag, new_type, &mut out)?;
+        //         },
+        //         flag @ DeriveFlag::Fields {..} => {
+        //             make_fields(flag,new_type,&mut out)?;
+        //         },
+        //     };
+        //     Ok::<(),syn::Error>(())
+        // })?;
 
         Ok(out)
     }
