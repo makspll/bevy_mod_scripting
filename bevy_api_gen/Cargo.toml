@@ -19,6 +19,10 @@ path = "src/lib.rs"
 name = "bevy_api_gen"
 path = "src/main.rs"
 
+[package.metadata.release]
+pre-release-replacements = [
+    {file="Cargo.toml", search="version = .*\nauthors", replace="version = \"{{version}}\"\nauthors", exactly=1},
+] 
 
 [dependencies]
 rustdoc-types = "0.11.0"

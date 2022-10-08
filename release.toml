@@ -1,8 +1,0 @@
-pre-release-replacements = [
-    {file="bevy_mod_scripting_derive/Cargo.toml", search="version = .*\nauthors", replace="version = \"{{version}}\"\nauthors", exactly=1},
-    {file="bevy_api_gen/Cargo.toml", search="version = .*\nauthors", replace="version = \"{{version}}\"\nauthors", exactly=1},
-    {file="bevy_event_priority/Cargo.toml", search="version = .*\nauthors", replace="version = \"{{version}}\"\nauthors", exactly=1},
-    {file="Cargo.toml", search="version = .*\nauthors", replace="version = \"{{version}}\"\nauthors", exactly=1},
-    {file="Cargo.toml", search="bevy_event_priority = .*", replace="bevy_event_priority = {path = \"bevy_event_priority\", version = \"{{version}}\"}", exactly=1},
-    {file="Cargo.toml", search="bevy_mod_scripting_derive = .*", replace="bevy_mod_scripting_derive = {path = \"bevy_mod_scripting_derive\", version = \"{{version}}\"}", exactly=1},
-]

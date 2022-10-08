@@ -15,6 +15,11 @@ readme = "../readme.md"
 name = "bevy_event_priority"
 path = "src/lib.rs"
 
+[package.metadata.release]
+pre-release-replacements = [
+    {file="Cargo.toml", search="version = .*\nauthors", replace="version = \"{{version}}\"\nauthors", exactly=1},
+] 
+
 [dependencies]
 bevy = { version = "0.8.0", default-features = false}
 

@@ -21,6 +21,11 @@ features = ["lua54","teal","unsafe_lua_modules"]
 
 [package.metadata.release]
 enable-features=["lua54"]
+pre-release-replacements = [
+    {file="Cargo.toml", search="version = .*\nauthors", replace="version = \"{{version}}\"\nauthors", exactly=1},
+    {file="Cargo.toml", search="\nbevy_event_priority = .*", replace="\nbevy_event_priority = {path = \"bevy_event_priority\", version = \"{{version}}\"}", exactly=1},
+    {file="Cargo.toml", search="\nbevy_mod_scripting_derive = .*", replace="\nbevy_mod_scripting_derive = {path = \"bevy_mod_scripting_derive\", version = \"{{version}}\"}", exactly=1},
+]
 
 [features]
 

@@ -16,6 +16,10 @@ name = "bevy_mod_scripting_derive"
 proc-macro = true
 path = "src/lib.rs"
 
+[package.metadata.release]
+pre-release-replacements = [
+    {file="Cargo.toml", search="version = .*\nauthors", replace="version = \"{{version}}\"\nauthors", exactly=1},
+] 
 
 [dependencies]
 paste = "1.0.7"
