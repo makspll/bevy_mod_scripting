@@ -46,7 +46,7 @@ mlua_macros = ["tealr/mlua_macros"]
 
 [dependencies]
 bevy = { version = "0.8.0", default-features = false, features=["bevy_asset","bevy_gltf","bevy_animation","bevy_core_pipeline","bevy_ui","bevy_pbr","bevy_render","bevy_text","bevy_sprite","filesystem_watcher"]}
-tealr = { version = "0.9.0-alpha1", features=["mlua_vendored","mlua_send"]}
+tealr = { version = "0.9.0-alpha3", features=["mlua_vendored","mlua_send"]}
 rhai = { version = "1.7.0", features = ["sync"] }
 anyhow = "1.0.57"
 once_cell = "1.10.0"

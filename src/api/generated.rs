@@ -4583,7 +4583,7 @@ impl_script_newtype! {
         ///In other words this computes `[self.x.max(rhs.x), self.y.max(rhs.y), ..]`.
         max(self:self) -> self,
 
-        ///Component-wise clamping of values, similar to [`f32::clamp`].
+        ///Component-wise clamping of values, similar to [`f64::clamp`].
         ///
         ///Each element in `min` must be less-or-equal to the corresponding element in `max`.
         ///
@@ -4928,7 +4928,7 @@ impl_script_newtype! {
         ///In other words this computes `[self.x.max(rhs.x), self.y.max(rhs.y), ..]`.
         max(self:self) -> self,
 
-        ///Component-wise clamping of values, similar to [`f32::clamp`].
+        ///Component-wise clamping of values, similar to [`f64::clamp`].
         ///
         ///Each element in `min` must be less-or-equal to the corresponding element in `max`.
         ///
@@ -5270,7 +5270,7 @@ impl_script_newtype! {
         ///In other words this computes `[self.x.max(rhs.x), self.y.max(rhs.y), ..]`.
         max(self:self) -> self,
 
-        ///Component-wise clamping of values, similar to [`f32::clamp`].
+        ///Component-wise clamping of values, similar to [`f64::clamp`].
         ///
         ///Each element in `min` must be less-or-equal to the corresponding element in `max`.
         ///
@@ -5587,7 +5587,7 @@ impl_script_newtype! {
         ///In other words this computes `[self.x.max(rhs.x), self.y.max(rhs.y), ..]`.
         max(self:self) -> self,
 
-        ///Component-wise clamping of values, similar to [`f32::clamp`].
+        ///Component-wise clamping of values, similar to [`i32::clamp`].
         ///
         ///Each element in `min` must be less-or-equal to the corresponding element in `max`.
         ///
@@ -5757,7 +5757,7 @@ impl_script_newtype! {
         ///In other words this computes `[self.x.max(rhs.x), self.y.max(rhs.y), ..]`.
         max(self:self) -> self,
 
-        ///Component-wise clamping of values, similar to [`f32::clamp`].
+        ///Component-wise clamping of values, similar to [`i32::clamp`].
         ///
         ///Each element in `min` must be less-or-equal to the corresponding element in `max`.
         ///
@@ -5913,7 +5913,7 @@ impl_script_newtype! {
         ///In other words this computes `[self.x.max(rhs.x), self.y.max(rhs.y), ..]`.
         max(self:self) -> self,
 
-        ///Component-wise clamping of values, similar to [`f32::clamp`].
+        ///Component-wise clamping of values, similar to [`i32::clamp`].
         ///
         ///Each element in `min` must be less-or-equal to the corresponding element in `max`.
         ///
@@ -6065,7 +6065,7 @@ impl_script_newtype! {
         ///In other words this computes `[self.x.max(rhs.x), self.y.max(rhs.y), ..]`.
         max(self:self) -> self,
 
-        ///Component-wise clamping of values, similar to [`f32::clamp`].
+        ///Component-wise clamping of values, similar to [`u32::clamp`].
         ///
         ///Each element in `min` must be less-or-equal to the corresponding element in `max`.
         ///
@@ -6212,7 +6212,7 @@ impl_script_newtype! {
         ///In other words this computes `[self.x.max(rhs.x), self.y.max(rhs.y), ..]`.
         max(self:self) -> self,
 
-        ///Component-wise clamping of values, similar to [`f32::clamp`].
+        ///Component-wise clamping of values, similar to [`u32::clamp`].
         ///
         ///Each element in `min` must be less-or-equal to the corresponding element in `max`.
         ///
@@ -6357,7 +6357,7 @@ impl_script_newtype! {
         ///In other words this computes `[self.x.max(rhs.x), self.y.max(rhs.y), ..]`.
         max(self:self) -> self,
 
-        ///Component-wise clamping of values, similar to [`f32::clamp`].
+        ///Component-wise clamping of values, similar to [`u32::clamp`].
         ///
         ///Each element in `min` must be less-or-equal to the corresponding element in `max`.
         ///
@@ -6498,7 +6498,7 @@ impl_script_newtype! {
         ///Creates a 3x3 matrix with its diagonal set to `diagonal` and all other entries set to 0.
         from_diagonal(Wrapped(Vec3)) -> self,
 
-        ///Creates a 3x3 matrix from a 4x4 matrix, discarding the 3rd row and column.
+        ///Creates a 3x3 matrix from a 4x4 matrix, discarding the 4th row and column.
         from_mat4(Wrapped(Mat4)) -> self,
 
         ///Creates a 3D rotation matrix from the given quaternion.
@@ -6606,6 +6606,10 @@ impl_script_newtype! {
         ///This is the equivalent of multiplying `rhs` as a 3D vector where `z` is `1`.
         ///
         ///This method assumes that `self` contains a valid affine transform.
+        ///
+        ///# Panics
+        ///
+        ///Will panic if the 2nd row of `self` is not `(0, 0, 1)` when `glam_assert` is enabled.
         transform_point2(&self:Wrapped(Vec2)) -> Wrapped(Vec2),
 
         ///Rotates the given 2D vector.
@@ -6613,6 +6617,10 @@ impl_script_newtype! {
         ///This is the equivalent of multiplying `rhs` as a 3D vector where `z` is `0`.
         ///
         ///This method assumes that `self` contains a valid affine transform.
+        ///
+        ///# Panics
+        ///
+        ///Will panic if the 2nd row of `self` is not `(0, 0, 1)` when `glam_assert` is enabled.
         transform_vector2(&self:Wrapped(Vec2)) -> Wrapped(Vec2),
 
         ///Transforms a 3D vector.
@@ -6864,7 +6872,7 @@ impl_script_newtype! {
         ///Creates a 3x3 matrix with its diagonal set to `diagonal` and all other entries set to 0.
         from_diagonal(Wrapped(Vec3)) -> self,
 
-        ///Creates a 3x3 matrix from a 4x4 matrix, discarding the 3rd row and column.
+        ///Creates a 3x3 matrix from a 4x4 matrix, discarding the 4th row and column.
         from_mat4(Wrapped(Mat4)) -> self,
 
         ///Creates a 3D rotation matrix from the given quaternion.
@@ -6972,6 +6980,10 @@ impl_script_newtype! {
         ///This is the equivalent of multiplying `rhs` as a 3D vector where `z` is `1`.
         ///
         ///This method assumes that `self` contains a valid affine transform.
+        ///
+        ///# Panics
+        ///
+        ///Will panic if the 2nd row of `self` is not `(0, 0, 1)` when `glam_assert` is enabled.
         transform_point2(&self:Wrapped(Vec2)) -> Wrapped(Vec2),
 
         ///Rotates the given 2D vector.
@@ -6979,6 +6991,10 @@ impl_script_newtype! {
         ///This is the equivalent of multiplying `rhs` as a 3D vector where `z` is `0`.
         ///
         ///This method assumes that `self` contains a valid affine transform.
+        ///
+        ///# Panics
+        ///
+        ///Will panic if the 2nd row of `self` is not `(0, 0, 1)` when `glam_assert` is enabled.
         transform_vector2(&self:Wrapped(Vec2)) -> Wrapped(Vec2),
 
         ///Transforms a 3D vector.
@@ -7597,7 +7613,7 @@ impl_script_newtype! {
         ///Creates a 3x3 matrix with its diagonal set to `diagonal` and all other entries set to 0.
         from_diagonal(Wrapped(DVec3)) -> self,
 
-        ///Creates a 3x3 matrix from a 4x4 matrix, discarding the 3rd row and column.
+        ///Creates a 3x3 matrix from a 4x4 matrix, discarding the 4th row and column.
         from_mat4(Wrapped(DMat4)) -> self,
 
         ///Creates a 3D rotation matrix from the given quaternion.
@@ -7705,6 +7721,10 @@ impl_script_newtype! {
         ///This is the equivalent of multiplying `rhs` as a 3D vector where `z` is `1`.
         ///
         ///This method assumes that `self` contains a valid affine transform.
+        ///
+        ///# Panics
+        ///
+        ///Will panic if the 2nd row of `self` is not `(0, 0, 1)` when `glam_assert` is enabled.
         transform_point2(&self:Wrapped(DVec2)) -> Wrapped(DVec2),
 
         ///Rotates the given 2D vector.
@@ -7712,6 +7732,10 @@ impl_script_newtype! {
         ///This is the equivalent of multiplying `rhs` as a 3D vector where `z` is `0`.
         ///
         ///This method assumes that `self` contains a valid affine transform.
+        ///
+        ///# Panics
+        ///
+        ///Will panic if the 2nd row of `self` is not `(0, 0, 1)` when `glam_assert` is enabled.
         transform_vector2(&self:Wrapped(DVec2)) -> Wrapped(DVec2),
 
         ///Transforms a 3D vector.
@@ -8346,7 +8370,7 @@ impl_script_newtype! {
         ///Transforms the given `Vec3A`, applying shear, scale and rotation (but NOT
         ///translation).
         ///
-        ///To also apply translation, use [`Self::transform_point3`] instead.
+        ///To also apply translation, use [`Self::transform_point3a`] instead.
         transform_vector3a(&self:Wrapped(Vec3A)) -> Wrapped(Vec3A),
 
         ///Returns `true` if, and only if, all elements are finite.
@@ -9194,106 +9218,79 @@ impl tealr::mlu::ExportInstances for BevyAPIGlobals {
         self,
         instances: &mut T,
     ) -> LuaResult<()> {
-        instances.add_instance("Name".into(), tealr::mlu::UserDataProxy::<LuaName>::new)?;
+        instances.add_instance("Name", tealr::mlu::UserDataProxy::<LuaName>::new)?;
+        instances.add_instance("Children", tealr::mlu::UserDataProxy::<LuaChildren>::new)?;
+        instances.add_instance("Text", tealr::mlu::UserDataProxy::<LuaText>::new)?;
         instances.add_instance(
-            "Children".into(),
-            tealr::mlu::UserDataProxy::<LuaChildren>::new,
-        )?;
-        instances.add_instance("Text".into(), tealr::mlu::UserDataProxy::<LuaText>::new)?;
-        instances.add_instance(
-            "TextSection".into(),
+            "TextSection",
             tealr::mlu::UserDataProxy::<LuaTextSection>::new,
         )?;
+        instances.add_instance("Stopwatch", tealr::mlu::UserDataProxy::<LuaStopwatch>::new)?;
+        instances.add_instance("Timer", tealr::mlu::UserDataProxy::<LuaTimer>::new)?;
+        instances.add_instance("Entity", tealr::mlu::UserDataProxy::<LuaEntity>::new)?;
+        instances.add_instance("Transform", tealr::mlu::UserDataProxy::<LuaTransform>::new)?;
         instances.add_instance(
-            "Stopwatch".into(),
-            tealr::mlu::UserDataProxy::<LuaStopwatch>::new,
-        )?;
-        instances.add_instance("Timer".into(), tealr::mlu::UserDataProxy::<LuaTimer>::new)?;
-        instances.add_instance("Entity".into(), tealr::mlu::UserDataProxy::<LuaEntity>::new)?;
-        instances.add_instance(
-            "Transform".into(),
-            tealr::mlu::UserDataProxy::<LuaTransform>::new,
-        )?;
-        instances.add_instance(
-            "GlobalTransform".into(),
+            "GlobalTransform",
             tealr::mlu::UserDataProxy::<LuaGlobalTransform>::new,
         )?;
         instances.add_instance(
-            "TextureAtlasSprite".into(),
+            "TextureAtlasSprite",
             tealr::mlu::UserDataProxy::<LuaTextureAtlasSprite>::new,
         )?;
         instances.add_instance(
-            "RenderLayers".into(),
+            "RenderLayers",
             tealr::mlu::UserDataProxy::<LuaRenderLayers>::new,
         )?;
         instances.add_instance(
-            "Visibility".into(),
+            "Visibility",
             tealr::mlu::UserDataProxy::<LuaVisibility>::new,
         )?;
         instances.add_instance(
-            "ComputedVisibility".into(),
+            "ComputedVisibility",
             tealr::mlu::UserDataProxy::<LuaComputedVisibility>::new,
         )?;
-        instances.add_instance("Color".into(), tealr::mlu::UserDataProxy::<LuaColor>::new)?;
-        instances.add_instance("Aabb".into(), tealr::mlu::UserDataProxy::<LuaAabb>::new)?;
+        instances.add_instance("Color", tealr::mlu::UserDataProxy::<LuaColor>::new)?;
+        instances.add_instance("Aabb", tealr::mlu::UserDataProxy::<LuaAabb>::new)?;
+        instances.add_instance("Frustum", tealr::mlu::UserDataProxy::<LuaFrustum>::new)?;
         instances.add_instance(
-            "Frustum".into(),
-            tealr::mlu::UserDataProxy::<LuaFrustum>::new,
-        )?;
-        instances.add_instance(
-            "CameraRenderGraph".into(),
+            "CameraRenderGraph",
             tealr::mlu::UserDataProxy::<LuaCameraRenderGraph>::new,
         )?;
-        instances.add_instance(
-            "HandleId".into(),
-            tealr::mlu::UserDataProxy::<LuaHandleId>::new,
-        )?;
-        instances.add_instance("Vec2".into(), tealr::mlu::UserDataProxy::<LuaVec2>::new)?;
-        instances.add_instance("Vec3".into(), tealr::mlu::UserDataProxy::<LuaVec3>::new)?;
-        instances.add_instance("Vec3A".into(), tealr::mlu::UserDataProxy::<LuaVec3A>::new)?;
-        instances.add_instance("Vec4".into(), tealr::mlu::UserDataProxy::<LuaVec4>::new)?;
-        instances.add_instance("BVec2".into(), tealr::mlu::UserDataProxy::<LuaBVec2>::new)?;
-        instances.add_instance("BVec3".into(), tealr::mlu::UserDataProxy::<LuaBVec3>::new)?;
-        instances.add_instance("BVec4".into(), tealr::mlu::UserDataProxy::<LuaBVec4>::new)?;
-        instances.add_instance("BVec3A".into(), tealr::mlu::UserDataProxy::<LuaBVec3A>::new)?;
-        instances.add_instance("BVec4A".into(), tealr::mlu::UserDataProxy::<LuaBVec4A>::new)?;
-        instances.add_instance("DVec2".into(), tealr::mlu::UserDataProxy::<LuaDVec2>::new)?;
-        instances.add_instance("DVec3".into(), tealr::mlu::UserDataProxy::<LuaDVec3>::new)?;
-        instances.add_instance("DVec4".into(), tealr::mlu::UserDataProxy::<LuaDVec4>::new)?;
-        instances.add_instance("IVec2".into(), tealr::mlu::UserDataProxy::<LuaIVec2>::new)?;
-        instances.add_instance("IVec3".into(), tealr::mlu::UserDataProxy::<LuaIVec3>::new)?;
-        instances.add_instance("IVec4".into(), tealr::mlu::UserDataProxy::<LuaIVec4>::new)?;
-        instances.add_instance("UVec2".into(), tealr::mlu::UserDataProxy::<LuaUVec2>::new)?;
-        instances.add_instance("UVec3".into(), tealr::mlu::UserDataProxy::<LuaUVec3>::new)?;
-        instances.add_instance("UVec4".into(), tealr::mlu::UserDataProxy::<LuaUVec4>::new)?;
-        instances.add_instance("Mat3".into(), tealr::mlu::UserDataProxy::<LuaMat3>::new)?;
-        instances.add_instance("Mat2".into(), tealr::mlu::UserDataProxy::<LuaMat2>::new)?;
-        instances.add_instance("Mat3A".into(), tealr::mlu::UserDataProxy::<LuaMat3A>::new)?;
-        instances.add_instance("Mat4".into(), tealr::mlu::UserDataProxy::<LuaMat4>::new)?;
-        instances.add_instance("DMat2".into(), tealr::mlu::UserDataProxy::<LuaDMat2>::new)?;
-        instances.add_instance("DMat3".into(), tealr::mlu::UserDataProxy::<LuaDMat3>::new)?;
-        instances.add_instance("DMat4".into(), tealr::mlu::UserDataProxy::<LuaDMat4>::new)?;
-        instances.add_instance(
-            "Affine2".into(),
-            tealr::mlu::UserDataProxy::<LuaAffine2>::new,
-        )?;
-        instances.add_instance(
-            "Affine3A".into(),
-            tealr::mlu::UserDataProxy::<LuaAffine3A>::new,
-        )?;
-        instances.add_instance(
-            "DAffine2".into(),
-            tealr::mlu::UserDataProxy::<LuaDAffine2>::new,
-        )?;
-        instances.add_instance(
-            "DAffine3".into(),
-            tealr::mlu::UserDataProxy::<LuaDAffine3>::new,
-        )?;
-        instances.add_instance("Quat".into(), tealr::mlu::UserDataProxy::<LuaQuat>::new)?;
-        instances.add_instance("DQuat".into(), tealr::mlu::UserDataProxy::<LuaDQuat>::new)?;
-        instances.add_instance("world".into(), DummyTypeName::<LuaWorld>::new)?;
-        instances.add_instance("script".into(), DummyTypeName::<LuaScriptData>::new)?;
-        instances.add_instance("entity".into(), DummyTypeName::<LuaEntity>::new)?;
+        instances.add_instance("HandleId", tealr::mlu::UserDataProxy::<LuaHandleId>::new)?;
+        instances.add_instance("Vec2", tealr::mlu::UserDataProxy::<LuaVec2>::new)?;
+        instances.add_instance("Vec3", tealr::mlu::UserDataProxy::<LuaVec3>::new)?;
+        instances.add_instance("Vec3A", tealr::mlu::UserDataProxy::<LuaVec3A>::new)?;
+        instances.add_instance("Vec4", tealr::mlu::UserDataProxy::<LuaVec4>::new)?;
+        instances.add_instance("BVec2", tealr::mlu::UserDataProxy::<LuaBVec2>::new)?;
+        instances.add_instance("BVec3", tealr::mlu::UserDataProxy::<LuaBVec3>::new)?;
+        instances.add_instance("BVec4", tealr::mlu::UserDataProxy::<LuaBVec4>::new)?;
+        instances.add_instance("BVec3A", tealr::mlu::UserDataProxy::<LuaBVec3A>::new)?;
+        instances.add_instance("BVec4A", tealr::mlu::UserDataProxy::<LuaBVec4A>::new)?;
+        instances.add_instance("DVec2", tealr::mlu::UserDataProxy::<LuaDVec2>::new)?;
+        instances.add_instance("DVec3", tealr::mlu::UserDataProxy::<LuaDVec3>::new)?;
+        instances.add_instance("DVec4", tealr::mlu::UserDataProxy::<LuaDVec4>::new)?;
+        instances.add_instance("IVec2", tealr::mlu::UserDataProxy::<LuaIVec2>::new)?;
+        instances.add_instance("IVec3", tealr::mlu::UserDataProxy::<LuaIVec3>::new)?;
+        instances.add_instance("IVec4", tealr::mlu::UserDataProxy::<LuaIVec4>::new)?;
+        instances.add_instance("UVec2", tealr::mlu::UserDataProxy::<LuaUVec2>::new)?;
+        instances.add_instance("UVec3", tealr::mlu::UserDataProxy::<LuaUVec3>::new)?;
+        instances.add_instance("UVec4", tealr::mlu::UserDataProxy::<LuaUVec4>::new)?;
+        instances.add_instance("Mat3", tealr::mlu::UserDataProxy::<LuaMat3>::new)?;
+        instances.add_instance("Mat2", tealr::mlu::UserDataProxy::<LuaMat2>::new)?;
+        instances.add_instance("Mat3A", tealr::mlu::UserDataProxy::<LuaMat3A>::new)?;
+        instances.add_instance("Mat4", tealr::mlu::UserDataProxy::<LuaMat4>::new)?;
+        instances.add_instance("DMat2", tealr::mlu::UserDataProxy::<LuaDMat2>::new)?;
+        instances.add_instance("DMat3", tealr::mlu::UserDataProxy::<LuaDMat3>::new)?;
+        instances.add_instance("DMat4", tealr::mlu::UserDataProxy::<LuaDMat4>::new)?;
+        instances.add_instance("Affine2", tealr::mlu::UserDataProxy::<LuaAffine2>::new)?;
+        instances.add_instance("Affine3A", tealr::mlu::UserDataProxy::<LuaAffine3A>::new)?;
+        instances.add_instance("DAffine2", tealr::mlu::UserDataProxy::<LuaDAffine2>::new)?;
+        instances.add_instance("DAffine3", tealr::mlu::UserDataProxy::<LuaDAffine3>::new)?;
+        instances.add_instance("Quat", tealr::mlu::UserDataProxy::<LuaQuat>::new)?;
+        instances.add_instance("DQuat", tealr::mlu::UserDataProxy::<LuaDQuat>::new)?;
+        instances.add_instance("world", DummyTypeName::<LuaWorld>::new)?;
+        instances.add_instance("script", DummyTypeName::<LuaScriptData>::new)?;
+        instances.add_instance("entity", DummyTypeName::<LuaEntity>::new)?;
         Ok(())
     }
 }
@@ -9306,7 +9303,7 @@ impl APIProvider for LuaBevyAPIProvider {
         let ctx = ctx
             .get_mut()
             .expect("Unable to acquire lock on Lua context");
-        Ok(tealr::mlu::set_global_env(BevyAPIGlobals, ctx)?)
+        Ok(tealr::mlu::set_global_env(BevyAPIGlobals, &ctx)?)
     }
     fn get_doc_fragment(&self) -> Option<Self::DocTarget> {
         Some(LuaDocFragment::new(|tw| {
@@ -9603,21 +9600,21 @@ impl APIProvider for LuaBevyAPIProvider {
         app.register_foreign_lua_type::<Quat>();
         app.register_foreign_lua_type::<DQuat>();
         app.register_foreign_lua_type::<EulerRot>();
-        app.register_foreign_lua_type::<String>();
-        app.register_foreign_lua_type::<u8>();
-        app.register_foreign_lua_type::<i8>();
-        app.register_foreign_lua_type::<i64>();
-        app.register_foreign_lua_type::<isize>();
-        app.register_foreign_lua_type::<u64>();
-        app.register_foreign_lua_type::<i16>();
-        app.register_foreign_lua_type::<u16>();
-        app.register_foreign_lua_type::<u128>();
-        app.register_foreign_lua_type::<i128>();
-        app.register_foreign_lua_type::<bool>();
         app.register_foreign_lua_type::<f64>();
-        app.register_foreign_lua_type::<i32>();
-        app.register_foreign_lua_type::<u32>();
-        app.register_foreign_lua_type::<usize>();
         app.register_foreign_lua_type::<f32>();
+        app.register_foreign_lua_type::<u32>();
+        app.register_foreign_lua_type::<u16>();
+        app.register_foreign_lua_type::<isize>();
+        app.register_foreign_lua_type::<i16>();
+        app.register_foreign_lua_type::<i32>();
+        app.register_foreign_lua_type::<i8>();
+        app.register_foreign_lua_type::<u128>();
+        app.register_foreign_lua_type::<u8>();
+        app.register_foreign_lua_type::<i128>();
+        app.register_foreign_lua_type::<i64>();
+        app.register_foreign_lua_type::<usize>();
+        app.register_foreign_lua_type::<bool>();
+        app.register_foreign_lua_type::<String>();
+        app.register_foreign_lua_type::<u64>();
     }
 }
