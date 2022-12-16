@@ -86,17 +86,16 @@ fn main() -> std::io::Result<()> {
         .add_script_host::<LuaScriptHost<LuaMyThing>, _>(CoreStage::PostUpdate)
         .register_type::<MyThing>()
         .init_resource::<MyThing>()
-        .add_system(
-            |world: &mut World| {
-                world.insert_resource(MyThing {
-                    usize: 420,
-                    string: "I live in the bevy world, you can't touch me!".to_owned(),
-                });
+        .add_system(|world: &mut World| {
+            world.insert_resource(MyThing {
+                usize: 420,
+                string: "I live in the bevy world, you can't touch me!".to_owned(),
+            });
 
-                // run script
-                world.resource_scope(|world, mut host: Mut<LuaScriptHost<LuaMyThing>>| {
-                    host.run_one_shot(
-                        r#"
+            // run script
+            world.resource_scope(|world, mut host: Mut<LuaScriptHost<LuaMyThing>>| {
+                host.run_one_shot(
+                    r#"
                     function once(my_thing)
                         local my_thing2 = my_thing.make_ref_to_my_resource()
                         print(my_thing2)
@@ -110,30 +109,29 @@ fn main() -> std::io::Result<()> {
                         print(my_thing2:do_something_cool())
                     end
                 "#
-                        .as_bytes(),
-                        "script.lua",
-                        world,
-                        LuaEvent {
-                            hook_name: "once".to_owned(),
-                            args: LuaMyThing::new(MyThing {
-                                usize: 42,
-                                string: "Haha! Yes I can!!!!".to_owned(),
-                            }),
-                            recipients: Recipients::All,
-                        },
-                    )
-                    .expect("Something went wrong in the script!");
-                });
+                    .as_bytes(),
+                    "script.lua",
+                    world,
+                    LuaEvent {
+                        hook_name: "once".to_owned(),
+                        args: LuaMyThing::new(MyThing {
+                            usize: 42,
+                            string: "Haha! Yes I can!!!!".to_owned(),
+                        }),
+                        recipients: Recipients::All,
+                    },
+                )
+                .expect("Something went wrong in the script!");
+            });
 
-                // print current state of MyThing
-                let my_thing = world
-                    .get_resource::<MyThing>()
-                    .expect("Could not find MyThing Resource");
-                println!("After script run: {my_thing:#?}");
-                // exit app
-                world.send_event(AppExit)
-            },
-        );
+            // print current state of MyThing
+            let my_thing = world
+                .get_resource::<MyThing>()
+                .expect("Could not find MyThing Resource");
+            println!("After script run: {my_thing:#?}");
+            // exit app
+            world.send_event(AppExit)
+        });
 
     app.run();
 

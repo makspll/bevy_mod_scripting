@@ -43,24 +43,22 @@ impl RegisterForeignLuaType for App {
         {
             let (registry, t) = match self.world.get_resource_mut::<TypeRegistryWrapper>() {
                 Some(r) => (r.to_owned(), None),
-                None => {
-                    (TypeRegistryWrapper(TypeRegistry::default()),Some(()))
-                },
+                None => (TypeRegistryWrapper(TypeRegistry::default()), Some(())),
             };
 
             {
-            let mut registry = registry.0.write();
+                let mut registry = registry.0.write();
 
-            let user_data = <ReflectLuaProxyable as FromType<T>>::from_type();
+                let user_data = <ReflectLuaProxyable as FromType<T>>::from_type();
 
-            if let Some(registration) = registry.get_mut(TypeId::of::<T>()) {
-                registration.insert(user_data)
-            } else {
-                let mut registration = T::get_type_registration();
-                registration.insert(user_data);
-                registry.add_registration(registration);
+                if let Some(registration) = registry.get_mut(TypeId::of::<T>()) {
+                    registration.insert(user_data)
+                } else {
+                    let mut registration = T::get_type_registration();
+                    registration.insert(user_data);
+                    registry.add_registration(registration);
+                }
             }
-        }
             if let Some(()) = t {
                 self.world.insert_resource(registry);
             }

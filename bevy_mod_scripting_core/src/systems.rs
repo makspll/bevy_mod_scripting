@@ -4,7 +4,7 @@ use bevy::{
     ecs::system::SystemState,
     prelude::{
         debug, AssetEvent, Assets, ChangeTrackers, Changed, Entity, EventReader, EventWriter,
-        FromWorld, Query, RemovedComponents, Res, ResMut, SystemLabel, World, Resource,
+        FromWorld, Query, RemovedComponents, Res, ResMut, Resource, SystemLabel, World,
     },
 };
 use bevy_event_priority::PriorityEventReader;
@@ -150,7 +150,9 @@ pub fn script_hot_reload_handler<H: ScriptHost + Resource>(
 }
 
 /// Lets the script host handle all script events
-pub fn script_event_handler<H: ScriptHost + Resource, const MAX: u32, const MIN: u32>(world: &mut World) {
+pub fn script_event_handler<H: ScriptHost + Resource, const MAX: u32, const MIN: u32>(
+    world: &mut World,
+) {
     // we need to collect the events to drop the borrow of the world
 
     let mut state: CachedScriptState<H> = world.remove_resource().unwrap();
@@ -207,7 +209,7 @@ pub fn script_event_handler<H: ScriptHost + Resource, const MAX: u32, const MIN:
 
 #[derive(Resource)]
 /// system state for exclusive systems dealing with script events
-pub struct CachedScriptState<'w : 'static, 's : 'static, H: ScriptHost> {
+pub struct CachedScriptState<'w: 'static, 's: 'static, H: ScriptHost> {
     pub event_state: SystemState<(
         PriorityEventReader<'w, 's, H::ScriptEvent>,
         EventWriter<'w, 's, ScriptErrorEvent>,

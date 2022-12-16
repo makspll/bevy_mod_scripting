@@ -11,31 +11,29 @@ fn main() -> std::io::Result<()> {
     app.add_plugins(DefaultPlugins)
         .add_plugin(ScriptingPlugin)
         .add_script_host::<RhaiScriptHost<()>, _>(CoreStage::PostUpdate)
-        .add_system(
-            |world: &mut World| {
-                // run script
-                world.resource_scope(|world, mut host: Mut<RhaiScriptHost<()>>| {
-                    host.run_one_shot(
-                        r#"
+        .add_system(|world: &mut World| {
+            // run script
+            world.resource_scope(|world, mut host: Mut<RhaiScriptHost<()>>| {
+                host.run_one_shot(
+                    r#"
                         fn once(){
                             print("hello")   
                         }
                         "#
-                        .as_bytes(),
-                        "script.rhai",
-                        world,
-                        RhaiEvent {
-                            hook_name: "once".to_owned(),
-                            args: (),
-                            recipients: Recipients::All,
-                        },
-                    )
-                    .expect("Something went wrong in the script!");
-                });
+                    .as_bytes(),
+                    "script.rhai",
+                    world,
+                    RhaiEvent {
+                        hook_name: "once".to_owned(),
+                        args: (),
+                        recipients: Recipients::All,
+                    },
+                )
+                .expect("Something went wrong in the script!");
+            });
 
-                world.send_event(AppExit)
-            },
-        );
+            world.send_event(AppExit)
+        });
 
     app.run();
 

@@ -1,4 +1,7 @@
-use bevy::{prelude::{Resource, ReflectResource}, reflect::{Reflect, TypeRegistry}};
+use bevy::{
+    prelude::{ReflectResource, Resource},
+    reflect::{Reflect, TypeRegistry},
+};
 use bevy_mod_scripting_lua::tealr;
 use std::marker::PhantomData;
 
@@ -229,7 +232,4 @@ macro_rules! impl_tealr_generic{
 
 #[derive(Resource, Default, Clone, Reflect)]
 #[reflect(Resource)]
-pub struct TypeRegistryWrapper(
-    #[reflect(ignore)]
-    pub TypeRegistry
-);
+pub struct TypeRegistryWrapper(#[reflect(ignore)] pub TypeRegistry);
