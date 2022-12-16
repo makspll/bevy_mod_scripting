@@ -6,12 +6,13 @@ use std::sync::Arc;
 use crate::script_ref::ScriptRef;
 use bevy::ecs::system::Command;
 use bevy::hierarchy::BuildWorldChildren;
+use bevy::reflect::DynamicEnum;
 use bevy::{
     hierarchy::{Children, DespawnChildrenRecursive, DespawnRecursive, Parent},
     prelude::{ReflectComponent, ReflectDefault, ReflectResource},
     reflect::{
         DynamicArray, DynamicList, DynamicMap, DynamicStruct, DynamicTuple, DynamicTupleStruct,
-        TypeRegistration, TypeRegistry,
+        TypeRegistration,
     },
 };
 use bevy_mod_scripting_core::prelude::*;
@@ -24,6 +25,8 @@ use tealr::mlu::{
 };
 
 pub use crate::generated::*;
+
+use super::util::TypeRegistryWrapper;
 
 #[derive(Clone)]
 pub struct LuaTypeRegistration(Arc<TypeRegistration>);
@@ -277,9 +280,9 @@ impl TealData for LuaWorld {
         methods.add_method("get_type_by_name", |_, world, type_name: String| {
             let w = world.read();
 
-            let registry: &TypeRegistry = w.get_resource().unwrap();
+            let registry: &TypeRegistryWrapper = w.get_resource().unwrap();
 
-            let registry = registry.read();
+            let registry = registry.0.read();
 
             Ok(registry
                 .get_with_short_name(&type_name)
@@ -312,7 +315,8 @@ impl TealData for LuaWorld {
                     comp_type.data::<ReflectDefault>().ok_or_else(||
                         mlua::Error::RuntimeError(format!("Component {} is a value or dynamic type with no `ReflectDefault` type_data, cannot instantiate sensible value",comp_type.short_name())))?
                         .default()
-                        .as_ref())
+                        .as_ref()),
+                bevy::reflect::TypeInfo::Enum(_) => component_data.insert(&mut w, entity, &DynamicEnum::default()),
             };
 
             Ok(ScriptRef::new_component_ref(component_data.clone(), entity, world.0.clone()))
@@ -419,7 +423,7 @@ impl TealData for LuaWorld {
         methods.add_method("spawn", |_, world, ()| {
             let mut w = world.write();
 
-            Ok(LuaEntity::new(w.spawn().id()))
+            Ok(LuaEntity::new(w.spawn(()).id()))
         });
 
         methods.document(

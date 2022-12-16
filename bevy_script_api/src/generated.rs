@@ -53,6 +53,7 @@ use bevy::math::u32::UVec2;
 use bevy::math::u32::UVec3;
 use bevy::math::u32::UVec4;
 use bevy::math::EulerRot;
+use bevy::math::Rect;
 use bevy::pbr::wireframe::Wireframe;
 use bevy::pbr::wireframe::WireframeConfig;
 use bevy::pbr::AlphaMode;
@@ -68,7 +69,6 @@ use bevy::prelude::App;
 use bevy::render::camera::Camera;
 use bevy::render::camera::CameraProjection;
 use bevy::render::camera::CameraRenderGraph;
-use bevy::render::camera::DepthCalculation;
 use bevy::render::camera::OrthographicProjection;
 use bevy::render::camera::PerspectiveProjection;
 use bevy::render::camera::Projection;
@@ -88,7 +88,6 @@ use bevy::render::view::visibility::VisibleEntities;
 use bevy::render::view::Msaa;
 use bevy::sprite::Anchor;
 use bevy::sprite::Mesh2dHandle;
-use bevy::sprite::Rect;
 use bevy::sprite::Sprite;
 use bevy::sprite::TextureAtlasSprite;
 use bevy::text::HorizontalAlign;
@@ -101,6 +100,7 @@ use bevy::text::TextStyle;
 use bevy::text::VerticalAlign;
 use bevy::time::Stopwatch;
 use bevy::time::Timer;
+use bevy::time::TimerMode;
 use bevy::transform::components::GlobalTransform;
 use bevy::transform::components::Transform;
 use bevy::ui::widget::Button;
@@ -121,7 +121,6 @@ use bevy::ui::Node;
 use bevy::ui::Overflow;
 use bevy::ui::PositionType;
 use bevy::ui::Style;
-use bevy::ui::UiColor;
 use bevy::ui::UiImage;
 use bevy::ui::Val;
 use bevy_mod_scripting_core::prelude::*;
@@ -407,7 +406,6 @@ impl_script_newtype! {
     )
     + BinOps
     (
-        self Add Raw(f32) -> Wrapped(Val),
     )
     + UnaryOps
     (
@@ -549,29 +547,6 @@ impl_script_newtype! {
         aspect_ratio: Raw(ReflectedValue),
         /// How to handle overflow
         overflow: Wrapped(Overflow),
-    )
-    + BinOps
-    (
-    )
-    + UnaryOps
-    (
-    )
-    lua impl
-    {
-    }
-}
-impl_script_newtype! {
-    #[languages(on_feature(lua))]
-    ///The color of the node
-    bevy_ui::UiColor :
-    Clone +
-    Debug +
-    Methods
-    (
-    )
-    + Fields
-    (
-        0: Wrapped(Color),
     )
     + BinOps
     (
@@ -1133,6 +1108,27 @@ impl_script_newtype! {
 }
 impl_script_newtype! {
     #[languages(on_feature(lua))]
+    bevy_time::timer::TimerMode :
+    Clone +
+    Debug +
+    Methods
+    (
+    )
+    + Fields
+    (
+    )
+    + BinOps
+    (
+    )
+    + UnaryOps
+    (
+    )
+    lua impl
+    {
+    }
+}
+impl_script_newtype! {
+    #[languages(on_feature(lua))]
     ///Tracks elapsed time. Enters the finished state once `duration` is reached.
     ///
     ///Non repeating timers will stop tracking and stay in the finished state until reset.
@@ -1152,7 +1148,7 @@ impl_script_newtype! {
         ///# use bevy_time::*;
         ///let mut timer = Timer::from_seconds(1.0, false);
         ///```
-        from_seconds(Raw(f32),Raw(bool)) -> self,
+        from_seconds(Raw(f32),Wrapped(TimerMode)) -> self,
 
         ///Returns `true` if the timer has reached its duration.
         ///
@@ -1186,26 +1182,26 @@ impl_script_newtype! {
         ///See also [`Timer::elapsed`](Timer::elapsed).
         elapsed_secs(&self:) -> Raw(f32),
 
-        ///Returns `true` if the timer is repeating.
+        ///Returns the mode the timer is using
         ///
         ///# Examples
         ///```
         ///# use bevy_time::*;
-        ///let mut timer = Timer::from_seconds(1.0, true);
-        ///assert!(timer.repeating());
+        ///let mut timer = Timer::from_seconds(1.0, TimerMode::Repeating);
+        ///asserteq!(timer.mode(), TimerMode::Repeating);
         ///```
-        repeating(&self:) -> Raw(bool),
+        mode(&self:) -> Wrapped(TimerMode),
 
         ///Sets whether the timer is repeating or not.
         ///
         ///# Examples
         ///```
         ///# use bevy_time::*;
-        ///let mut timer = Timer::from_seconds(1.0, true);
-        ///timer.set_repeating(false);
-        ///assert!(!timer.repeating());
+        ///let mut timer = Timer::from_seconds(1.0, TimerMode::Repeating);
+        ///timer.set_mode(TimerMode::Once);
+        ///asserteq!(timer.mode(), TimerMode::Once);
         ///```
-        set_repeating(&mut self:Raw(bool)),
+        set_mode(&mut self:Wrapped(TimerMode)),
 
         ///Pauses the Timer. Disables the ticking of the timer.
         ///
@@ -1455,7 +1451,7 @@ impl_script_newtype! {
         ///No two simultaneously-live entities share the same ID, but dead entities' IDs may collide
         ///with both live and dead entities. Useful for compactly representing entities within a
         ///specific snapshot of the world, such as when serializing.
-        id(self:) -> Raw(u32),
+        index(self:) -> Raw(u32),
 
         ///Returns the generation of this Entity's id. The generation is incremented each time an
         ///entity with a given id is despawned. This serves as a "count" of the number of times a
@@ -1511,7 +1507,7 @@ impl_script_newtype! {
 
         ///Creates a new identity [`Transform`], with no translation, rotation, and a scale of 1 on
         ///all axes.
-        identity() -> self,
+        default() -> self,
 
         ///Extracts the translation, rotation, and scale from `matrix`. It must be a 3d affine
         ///transformation matrix.
@@ -1638,13 +1634,6 @@ impl_script_newtype! {
         ///resulting [`Transform`]
         mul_transform(&self:Wrapped(Transform)) -> self,
 
-        ///Returns a [`Vec3`] of this [`Transform`] applied to `value`.
-        mul_vec3(&self:Wrapped(Vec3)) -> Wrapped(Vec3),
-
-        ///Changes the `scale` of this [`Transform`], multiplying the current `scale` by
-        ///`scale_factor`.
-        apply_non_uniform_scale(&mut self:Wrapped(Vec3)),
-
     )
     + Fields
     (
@@ -1707,7 +1696,7 @@ impl_script_newtype! {
         compute_transform(&self:) -> Wrapped(Transform),
 
         ///Creates a new identity [`GlobalTransform`], that maps all points in space to themselves.
-        identity() -> self,
+        default() -> self,
 
         ///Return the local right vector (X).
         right(&self:) -> Wrapped(Vec3),
@@ -1735,9 +1724,6 @@ impl_script_newtype! {
 
         ///Get an upper bound of the radius from the given `extents`.
         radius_vec3a(&self:Wrapped(Vec3A)) -> Raw(f32),
-
-        ///Returns a [`Vec3`] of this [`Transform`] applied to `value`.
-        mul_vec3(&self:Wrapped(Vec3)) -> Wrapped(Vec3),
 
         ///Multiplies `self` with `transform` component by component, returning the
         ///resulting [`GlobalTransform`]
@@ -2293,7 +2279,7 @@ impl_script_newtype! {
     #[languages(on_feature(lua))]
     ///A rectangle defined by two points. There is no defined origin, so 0,0 could be anywhere
     ///(top-left, bottom-left, etc)
-    bevy_sprite::Rect :
+    bevy::math::Rect :
     Clone +
     Debug +
     Methods
@@ -2381,7 +2367,7 @@ impl_script_newtype! {
     Methods
     (
         ///Creates a new [`Visibility`], set as visible
-        visible() -> self,
+        default() -> self,
 
     )
     + Fields
@@ -2447,7 +2433,7 @@ impl_script_newtype! {
     Methods
     (
         ///Creates a new [`ComputedVisibility`], set as not visible
-        not_visible() -> self,
+        default() -> self,
 
         ///Whether this entity is visible to something this frame. This is true if and only if [`Self::is_visible_in_hierarchy`] and [`Self::is_visible_in_view`]
         ///are true. This is the canonical method to call to determine if an entity should be drawn.
@@ -2774,8 +2760,6 @@ impl_script_newtype! {
         /// If this is set to true, this camera will be rendered to its specified [`RenderTarget`]. If false, this
         /// camera will not be rendered.
         is_active: Raw(bool),
-        /// The method used to calculate this camera's depth. This will be used for projections and visibility.
-        depth_calculation: Wrapped(DepthCalculation),
         /// The "target" that this camera will render to.
         target: Wrapped(RenderTarget),
     )
@@ -2858,8 +2842,6 @@ impl_script_newtype! {
 
         update(&mut self:Raw(f32),Raw(f32)),
 
-        depth_calculation(&self:) -> Wrapped(DepthCalculation),
-
         far(&self:) -> Raw(f32),
 
     )
@@ -2887,8 +2869,6 @@ impl_script_newtype! {
 
         update(&mut self:Raw(f32),Raw(f32)),
 
-        depth_calculation(&self:) -> Wrapped(DepthCalculation),
-
         far(&self:) -> Raw(f32),
 
     )
@@ -2904,8 +2884,6 @@ impl_script_newtype! {
         window_origin: Wrapped(WindowOrigin),
         scaling_mode: Wrapped(ScalingMode),
         scale: Raw(f32),
-        #[rename("_depth_calculation")]
-        depth_calculation: Wrapped(DepthCalculation),
     )
     + BinOps
     (
@@ -2928,8 +2906,6 @@ impl_script_newtype! {
 
         update(&mut self:Raw(f32),Raw(f32)),
 
-        depth_calculation(&self:) -> Wrapped(DepthCalculation),
-
         far(&self:) -> Raw(f32),
 
     )
@@ -2940,27 +2916,6 @@ impl_script_newtype! {
         near: Raw(f32),
         #[rename("_far")]
         far: Raw(f32),
-    )
-    + BinOps
-    (
-    )
-    + UnaryOps
-    (
-    )
-    lua impl
-    {
-    }
-}
-impl_script_newtype! {
-    #[languages(on_feature(lua))]
-    bevy_render::camera::DepthCalculation :
-    Clone +
-    Debug +
-    Methods
-    (
-    )
-    + Fields
-    (
     )
     + BinOps
     (
@@ -8366,11 +8321,8 @@ impl_script_newtype! {
     )
     + BinOps
     (
-        self Add self -> Wrapped(Affine2),
-        self Sub self -> Wrapped(Affine2),
         self Mul Wrapped(Affine2) -> Wrapped(Affine2),
         self Mul Wrapped(Affine2) -> Wrapped(Affine2),
-        self Mul Raw(f32) -> Wrapped(Affine2),
         self Mul Wrapped(Mat3) -> Wrapped(Mat3),
         self Mul Wrapped(Mat3A) -> Wrapped(Mat3A),
     )
@@ -8515,11 +8467,8 @@ impl_script_newtype! {
     )
     + BinOps
     (
-        self Add self -> Wrapped(Affine3A),
-        self Sub self -> Wrapped(Affine3A),
         self Mul Wrapped(Affine3A) -> Wrapped(Affine3A),
         self Mul Wrapped(Affine3A) -> Wrapped(Affine3A),
-        self Mul Raw(f32) -> Wrapped(Affine3A),
         self Mul Wrapped(Mat4) -> Wrapped(Mat4),
     )
     + UnaryOps
@@ -8618,11 +8567,8 @@ impl_script_newtype! {
     )
     + BinOps
     (
-        self Add self -> Wrapped(DAffine2),
-        self Sub self -> Wrapped(DAffine2),
         self Mul Wrapped(DAffine2) -> Wrapped(DAffine2),
         self Mul Wrapped(DAffine2) -> Wrapped(DAffine2),
-        self Mul Raw(f64) -> Wrapped(DAffine2),
         self Mul Wrapped(DMat3) -> Wrapped(DMat3),
     )
     + UnaryOps
@@ -8757,11 +8703,8 @@ impl_script_newtype! {
     )
     + BinOps
     (
-        self Add self -> Wrapped(DAffine3),
-        self Sub self -> Wrapped(DAffine3),
         self Mul Wrapped(DAffine3) -> Wrapped(DAffine3),
         self Mul Wrapped(DAffine3) -> Wrapped(DAffine3),
-        self Mul Raw(f64) -> Wrapped(DAffine3),
         self Mul Wrapped(DMat4) -> Wrapped(DMat4),
     )
     + UnaryOps
@@ -9578,7 +9521,6 @@ impl APIProvider for LuaBevyAPIProvider {
 			.process_type::<LuaCalculatedSize>()
 			.process_type::<LuaNode>()
 			.process_type::<LuaStyle>()
-			.process_type::<LuaUiColor>()
 			.process_type::<LuaUiImage>()
 			.process_type::<LuaButton>()
 			.process_type::<LuaImageMode>()
@@ -9656,7 +9598,6 @@ impl APIProvider for LuaBevyAPIProvider {
 			.process_type::<LuaProjection>()
 			.process_type::<LuaOrthographicProjection>()
 			.process_type::<LuaPerspectiveProjection>()
-			.process_type::<LuaDepthCalculation>()
 			.process_type::<LuaCameraRenderGraph>()
 			.process_type::<bevy_mod_scripting_lua::tealr::mlu::UserDataProxy<LuaCameraRenderGraph>>()
 			.process_type::<LuaAssetPathId>()
@@ -9785,7 +9726,6 @@ impl APIProvider for LuaBevyAPIProvider {
         app.register_foreign_lua_type::<CalculatedSize>();
         app.register_foreign_lua_type::<Node>();
         app.register_foreign_lua_type::<Style>();
-        app.register_foreign_lua_type::<UiColor>();
         app.register_foreign_lua_type::<UiImage>();
         app.register_foreign_lua_type::<Button>();
         app.register_foreign_lua_type::<ImageMode>();
@@ -9847,7 +9787,6 @@ impl APIProvider for LuaBevyAPIProvider {
         app.register_foreign_lua_type::<Projection>();
         app.register_foreign_lua_type::<OrthographicProjection>();
         app.register_foreign_lua_type::<PerspectiveProjection>();
-        app.register_foreign_lua_type::<DepthCalculation>();
         app.register_foreign_lua_type::<CameraRenderGraph>();
         app.register_foreign_lua_type::<AssetPathId>();
         app.register_foreign_lua_type::<LabelId>();

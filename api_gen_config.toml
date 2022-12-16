@@ -487,10 +487,6 @@ traits=[
 ]
 
 [[types]]
-type="DepthCalculation"
-source="bevy_render"
-
-[[types]]
 type="CameraRenderGraph"
 source="bevy_render"
 

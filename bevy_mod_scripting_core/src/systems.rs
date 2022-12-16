@@ -4,7 +4,7 @@ use bevy::{
     ecs::system::SystemState,
     prelude::{
         debug, AssetEvent, Assets, ChangeTrackers, Changed, Entity, EventReader, EventWriter,
-        FromWorld, Query, RemovedComponents, Res, ResMut, SystemLabel, World,
+        FromWorld, Query, RemovedComponents, Res, ResMut, SystemLabel, World, Resource,
     },
 };
 use bevy_event_priority::PriorityEventReader;
@@ -25,7 +25,7 @@ pub enum ScriptSystemLabel {
 /// Handles creating contexts for new/modified scripts
 /// Scripts are likely not loaded instantly at this point, so most of the time
 /// this system simply inserts an empty context
-pub fn script_add_synchronizer<H: ScriptHost + 'static>(
+pub fn script_add_synchronizer<H: ScriptHost + Resource + 'static>(
     query: Query<
         (
             Entity,
@@ -104,12 +104,12 @@ pub fn script_remove_synchronizer<H: ScriptHost>(
     query.iter().for_each(|v| {
         // we know that this entity used to have a script component
         // ergo a script context must exist in ctxts, remove all scripts on the entity
-        contexts.remove_context(v.id());
+        contexts.remove_context(v.index());
     })
 }
 
 /// Reloads hot-reloaded scripts, or loads missing contexts for scripts which were added but not loaded
-pub fn script_hot_reload_handler<H: ScriptHost>(
+pub fn script_hot_reload_handler<H: ScriptHost + Resource>(
     mut events: EventReader<AssetEvent<H::ScriptAsset>>,
     mut host: ResMut<H>,
     scripts: Query<&ScriptCollection<H::ScriptAsset>>,
@@ -150,7 +150,7 @@ pub fn script_hot_reload_handler<H: ScriptHost>(
 }
 
 /// Lets the script host handle all script events
-pub fn script_event_handler<H: ScriptHost, const MAX: u32, const MIN: u32>(world: &mut World) {
+pub fn script_event_handler<H: ScriptHost + Resource, const MAX: u32, const MIN: u32>(world: &mut World) {
     // we need to collect the events to drop the borrow of the world
 
     let mut state: CachedScriptState<H> = world.remove_resource().unwrap();
@@ -205,8 +205,9 @@ pub fn script_event_handler<H: ScriptHost, const MAX: u32, const MIN: u32>(world
     world.insert_resource(providers);
 }
 
+#[derive(Resource)]
 /// system state for exclusive systems dealing with script events
-pub struct CachedScriptState<'w, 's, H: ScriptHost> {
+pub struct CachedScriptState<'w : 'static, 's : 'static, H: ScriptHost> {
     pub event_state: SystemState<(
         PriorityEventReader<'w, 's, H::ScriptEvent>,
         EventWriter<'w, 's, ScriptErrorEvent>,

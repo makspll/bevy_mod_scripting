@@ -4,7 +4,7 @@ use ::std::borrow::Cow;
 use crate::impl_tealr_type;
 use ::bevy::prelude::App;
 
-use ::bevy::reflect::{FromType, GetTypeRegistration, Reflect, TypeRegistry, TypeRegistryArc};
+use ::bevy::reflect::{FromType, GetTypeRegistration, Reflect, TypeRegistry};
 
 use bevy_mod_scripting_lua::tealr;
 
@@ -18,6 +18,7 @@ use tealr::TypeName;
 use crate::script_ref::{ReflectedValue, ScriptRef, ValueIndex};
 
 use self::bevy::LuaWorld;
+use self::util::TypeRegistryWrapper;
 
 pub mod bevy;
 pub mod std;
@@ -40,8 +41,15 @@ impl RegisterForeignLuaType for App {
         &mut self,
     ) -> &mut Self {
         {
-            let registry = self.world.resource_mut::<TypeRegistryArc>();
-            let mut registry = registry.write();
+            let (registry, t) = match self.world.get_resource_mut::<TypeRegistryWrapper>() {
+                Some(r) => (r.to_owned(), None),
+                None => {
+                    (TypeRegistryWrapper(TypeRegistry::default()),Some(()))
+                },
+            };
+
+            {
+            let mut registry = registry.0.write();
 
             let user_data = <ReflectLuaProxyable as FromType<T>>::from_type();
 
@@ -51,6 +59,10 @@ impl RegisterForeignLuaType for App {
                 let mut registration = T::get_type_registration();
                 registration.insert(user_data);
                 registry.add_registration(registration);
+            }
+        }
+            if let Some(()) = t {
+                self.world.insert_resource(registry);
             }
         }
 
@@ -98,7 +110,7 @@ impl ApplyLua for ScriptRef {
         // remove typedata from the world to be able to manipulate world
         let proxyable = {
             let world = luaworld.read();
-            let type_registry = world.resource::<TypeRegistry>().read();
+            let type_registry = world.resource::<TypeRegistryWrapper>().0.read();
             type_registry
                 .get_type_data::<ReflectLuaProxyable>(self.get(|s| s.type_id())?)
                 .cloned()
@@ -134,7 +146,7 @@ impl<'lua> ToLua<'lua> for ScriptRef {
 
         let world = luaworld.read();
 
-        let typedata = world.resource::<TypeRegistry>();
+        let typedata = &world.resource::<TypeRegistryWrapper>().0;
         let g = typedata.read();
 
         let type_id = self.get(|s| s.type_id())?;

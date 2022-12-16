@@ -12,7 +12,7 @@ fn main() -> std::io::Result<()> {
         .add_plugin(ScriptingPlugin)
         .add_script_host::<RhaiScriptHost<()>, _>(CoreStage::PostUpdate)
         .add_system(
-            (|world: &mut World| {
+            |world: &mut World| {
                 // run script
                 world.resource_scope(|world, mut host: Mut<RhaiScriptHost<()>>| {
                     host.run_one_shot(
@@ -34,8 +34,7 @@ fn main() -> std::io::Result<()> {
                 });
 
                 world.send_event(AppExit)
-            })
-            .exclusive_system(),
+            },
         );
 
     app.run();

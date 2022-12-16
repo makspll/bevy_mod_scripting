@@ -19,6 +19,7 @@ pub mod prelude {
     pub use rhai;
 }
 
+#[derive(Resource)]
 pub struct RhaiScriptHost<A: FuncArgs + Send> {
     pub engine: Engine,
     _ph: PhantomData<A>,

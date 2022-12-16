@@ -1,9 +1,10 @@
-use bevy::{app::AppExit, prelude::*, reflect::TypeRegistryArc};
+use bevy::{app::AppExit, prelude::*};
 
 use bevy_mod_scripting::{
     api::{impl_lua_newtype, impl_script_newtype, lua::bevy::LuaWorld, ScriptRef},
     prelude::*,
 };
+use bevy_script_api::lua::util::TypeRegistryWrapper;
 
 // Step 1. Rust representation
 // construct all our types and functionality
@@ -12,7 +13,7 @@ use bevy_mod_scripting::{
 // We can still use references to NonClone wrappers via AnyUserData in lua methods.
 // Even though we are implementing Clone we are still able to reference the original data in script thanks to the script wrapper we are about to implement
 // Debug is nice to have, we can forward that implementation to Lua's ToString via our macro
-#[derive(Reflect, Default, Clone, Debug)]
+#[derive(Resource, Reflect, Default, Clone, Debug)]
 #[reflect(Resource)]
 pub struct MyThing {
     usize: usize,
@@ -64,8 +65,8 @@ impl_script_newtype!(
             let lua_world : LuaWorld = globals.get("world")?;
             let mut world = lua_world.write();
 
-            let reflect_resource_data = world.resource_scope(|world, type_registry: Mut<TypeRegistryArc>| {
-                let type_registry = type_registry.read();
+            let reflect_resource_data = world.resource_scope(|world, type_registry: Mut<TypeRegistryWrapper>| {
+                let type_registry = type_registry.0.read();
                 let data = type_registry.get_type_data::<ReflectResource>(std::any::TypeId::of::<MyThing>()).expect("Type not registered properly");
                 data.clone()
             });
@@ -86,7 +87,7 @@ fn main() -> std::io::Result<()> {
         .register_type::<MyThing>()
         .init_resource::<MyThing>()
         .add_system(
-            (|world: &mut World| {
+            |world: &mut World| {
                 world.insert_resource(MyThing {
                     usize: 420,
                     string: "I live in the bevy world, you can't touch me!".to_owned(),
@@ -131,8 +132,7 @@ fn main() -> std::io::Result<()> {
                 println!("After script run: {my_thing:#?}");
                 // exit app
                 world.send_event(AppExit)
-            })
-            .exclusive_system(),
+            },
         );
 
     app.run();

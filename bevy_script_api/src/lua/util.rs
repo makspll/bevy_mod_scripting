@@ -1,3 +1,4 @@
+use bevy::{prelude::{Resource, ReflectResource}, reflect::{Reflect, TypeRegistry}};
 use bevy_mod_scripting_lua::tealr;
 use std::marker::PhantomData;
 
@@ -184,6 +185,14 @@ macro_rules! impl_tealr_generic{
             fn clone_value(&self) -> Box<dyn ::bevy::reflect::Reflect> {
                 panic!("This should never be called, I am a dummy implementation");
             }
+
+            fn into_reflect(self: Box<Self>) -> Box<dyn ::bevy::reflect::Reflect> {
+                panic!("This should never be called, I am a dummy implementation");
+            }
+
+            fn reflect_owned(self: Box<Self>) -> ::bevy::reflect::ReflectOwned {
+                panic!("This should never be called, I am a dummy implementation");
+            }
         }
 
         impl ::bevy::reflect::FromReflect for $name {
@@ -217,3 +226,10 @@ macro_rules! impl_tealr_generic{
 // }
 
 // pub(crate) use impl_user_data;
+
+#[derive(Resource, Default, Clone, Reflect)]
+#[reflect(Resource)]
+pub struct TypeRegistryWrapper(
+    #[reflect(ignore)]
+    pub TypeRegistry
+);
