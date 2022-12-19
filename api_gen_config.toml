@@ -157,10 +157,6 @@ type="Style"
 source="bevy_ui"
 
 [[types]]
-type="UiColor"
-source="bevy_ui"
-
-[[types]]
 type="UiImage"
 source="bevy_ui"
 

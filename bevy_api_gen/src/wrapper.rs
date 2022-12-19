@@ -1,7 +1,7 @@
 use std::collections::HashSet;
 
 use indexmap::{IndexMap, IndexSet};
-use rustdoc_types::{Crate, Id, Impl, Item, ItemEnum};
+use rustdoc_types::{Crate, Id, Impl, Item, ItemEnum, StructKind};
 
 use crate::{stringify_type, Arg, ArgType, ArgWrapperType, Args, Config, Newtype, PrettyWriter};
 
@@ -11,7 +11,7 @@ pub static WRAPPER_PREFIX: &str = "Lua";
 pub struct WrappedItem<'a> {
     pub wrapper_name: String,
     pub wrapped_type: &'a String,
-    pub path_components: &'a [String],
+    pub path_components: Vec<String>,
     pub source: &'a Crate,
     pub config: &'a Newtype,
     pub item: &'a Item,
@@ -156,7 +156,7 @@ impl WrappedItem<'_> {
             .flat_map(|(_, items)| items.iter())
             .for_each(|(impl_, v)| {
                 // only select trait methods are allowed
-                if let Some(trait_) = &impl_.trait_ {
+                if let Some(trait_) = &impl_.blanket_impl {
                     if self
                         .config
                         .traits
@@ -175,7 +175,6 @@ impl WrappedItem<'_> {
 
                 let (decl, generics) = match &v.inner {
                     ItemEnum::Function(f) => (&f.decl, &f.generics),
-                    ItemEnum::Method(m) => (&m.decl, &m.generics),
                     _ => return,
                 };
 
@@ -282,8 +281,8 @@ impl WrappedItem<'_> {
         writer.open_paren();
 
         if let ItemEnum::Struct(struct_) = &self.item.inner {
-            struct_
-                .fields
+            if let StructKind::Plain{fields, fields_stripped: _ } = &struct_.kind {
+                fields
                 .iter()
                 .map(|field_| self.source.index.get(field_).unwrap())
                 .filter_map(|field_| match &field_.inner {
@@ -351,7 +350,8 @@ impl WrappedItem<'_> {
                     Some(())
                 })
                 .for_each(drop);
-        };
+        }
+    };
         writer.close_paren();
 
         static BINARY_OPS: [(&str, &str); 5] = [
@@ -378,7 +378,7 @@ impl WrappedItem<'_> {
                     })
                     .for_each(|(impl_, item, _self_type)| {
                         let _ = match &item.inner {
-                            ItemEnum::Method(m) => {
+                            ItemEnum::Function(m) => {
                                 m.decl
                                     .inputs
                                     .iter()

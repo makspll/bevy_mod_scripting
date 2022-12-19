@@ -67,10 +67,10 @@ impl TryFrom<&Type> for ArgType {
 
     fn try_from(value: &Type) -> Result<Self, Self::Error> {
         match value {
-            Type::ResolvedPath { name, args, .. } => {
+            Type::ResolvedPath (path) => {
                 let mut processed_args = Vec::default();
 
-                for a in args {
+                for a in &path.args {
                     if let GenericArgs::AngleBracketed { args, bindings } = a.as_ref() {
                         for generic in args {
                             match generic {
@@ -89,7 +89,7 @@ impl TryFrom<&Type> for ArgType {
                         return Err("Parenthesised generics are not supported".to_owned());
                     }
                 }
-                let base = Type::Primitive(name.to_string()).try_into()?;
+                let base = Type::Primitive(path.name.to_string()).try_into()?;
                 if let base @ ArgType::Base(_) = base {
                     if !processed_args.is_empty() {
                         Ok(Self::Generic {

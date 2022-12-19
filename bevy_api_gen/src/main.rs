@@ -1,6 +1,9 @@
+pub mod cratepath;
+
 use bevy_api_gen_lib::{stringify_type, Args, Config, PrettyWriter, WrappedItem, WRAPPER_PREFIX};
 
 use clap::Parser;
+use cratepath::get_path;
 use indexmap::{IndexMap, IndexSet};
 use rustdoc_types::{Crate, Impl, Item, ItemEnum};
 use serde_json::from_reader;
@@ -9,6 +12,7 @@ use std::{
     fs::{read_to_string, File},
     io::{self, BufReader},
 };
+
 
 pub(crate) fn write_use_items_from_path(
     module_name: &str,
@@ -68,7 +72,7 @@ pub(crate) fn generate_macros(
 
                     impls.iter().for_each(|id| {
                         if let ItemEnum::Impl(i) = &source.index.get(id).unwrap().inner {
-                            match &i.trait_ {
+                            match &i.blanket_impl {
                                 Some(t) => {
                                     stringify_type(t).map(|str_| implemented_traits.insert(str_));
                                 }
@@ -89,7 +93,13 @@ pub(crate) fn generate_macros(
 
                     let config = config.types.get(item.name.as_ref().unwrap()).unwrap();
 
-                    let path_components = &source.paths.get(id).unwrap().path;
+                    //let path_components = &source.paths.get(id).unwrap().path;
+                    let mut path_components = get_path(id, source, false).expect(&*format!("path not found for {:?} in {:?}", id, source.root));
+                    //path_components.remove(0);
+                    if !path_components.ends_with(&[item.name.to_owned().unwrap()]) {
+                        path_components.push(item.name.to_owned().unwrap());
+                    }
+                    //eprintln!("{:?}", path_components);
 
                     let wrapper_name = format!("{WRAPPER_PREFIX}{}", item.name.as_ref().unwrap());
                     let wrapped_type = item.name.as_ref().unwrap();
