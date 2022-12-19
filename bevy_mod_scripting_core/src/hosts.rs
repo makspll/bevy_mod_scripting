@@ -56,7 +56,7 @@ impl Default for Recipients {
 
 /// A script host is the interface between your rust application
 /// and the scripts in some interpreted language.
-pub trait ScriptHost: Send + Sync + 'static + Default {
+pub trait ScriptHost: Send + Sync + 'static + Default + Resource {
     /// the type of the persistent script context, representing the execution context of the script
     type ScriptContext: Send + Sync + 'static;
     /// the type of events picked up by lua callbacks

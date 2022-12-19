@@ -25,7 +25,7 @@ pub enum ScriptSystemLabel {
 /// Handles creating contexts for new/modified scripts
 /// Scripts are likely not loaded instantly at this point, so most of the time
 /// this system simply inserts an empty context
-pub fn script_add_synchronizer<H: ScriptHost + Resource + 'static>(
+pub fn script_add_synchronizer<H: ScriptHost + 'static>(
     query: Query<
         (
             Entity,
@@ -109,7 +109,7 @@ pub fn script_remove_synchronizer<H: ScriptHost>(
 }
 
 /// Reloads hot-reloaded scripts, or loads missing contexts for scripts which were added but not loaded
-pub fn script_hot_reload_handler<H: ScriptHost + Resource>(
+pub fn script_hot_reload_handler<H: ScriptHost>(
     mut events: EventReader<AssetEvent<H::ScriptAsset>>,
     mut host: ResMut<H>,
     scripts: Query<&ScriptCollection<H::ScriptAsset>>,
@@ -150,7 +150,7 @@ pub fn script_hot_reload_handler<H: ScriptHost + Resource>(
 }
 
 /// Lets the script host handle all script events
-pub fn script_event_handler<H: ScriptHost + Resource, const MAX: u32, const MIN: u32>(
+pub fn script_event_handler<H: ScriptHost, const MAX: u32, const MIN: u32>(
     world: &mut World,
 ) {
     // we need to collect the events to drop the borrow of the world
@@ -209,15 +209,15 @@ pub fn script_event_handler<H: ScriptHost + Resource, const MAX: u32, const MIN:
 
 #[derive(Resource)]
 /// system state for exclusive systems dealing with script events
-pub struct CachedScriptState<'w: 'static, 's: 'static, H: ScriptHost> {
+pub struct CachedScriptState<H: ScriptHost> {
     pub event_state: SystemState<(
-        PriorityEventReader<'w, 's, H::ScriptEvent>,
-        EventWriter<'w, 's, ScriptErrorEvent>,
-        EventReader<'w, 's, ScriptLoaded>,
+        PriorityEventReader<'static, 'static, H::ScriptEvent>,
+        EventWriter<'static, 'static, ScriptErrorEvent>,
+        EventReader<'static, 'static, ScriptLoaded>,
     )>,
 }
 
-impl<'w, 's, H: ScriptHost> FromWorld for CachedScriptState<'w, 's, H> {
+impl<H: ScriptHost> FromWorld for CachedScriptState<H> {
     fn from_world(world: &mut World) -> Self {
         Self {
             event_state: SystemState::new(world),

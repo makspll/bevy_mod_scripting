@@ -75,13 +75,13 @@ pub trait AddScriptHost {
     /// the given stage will contain systems handling script loading,re-loading, removal etc.
     /// This stage will also send events related to the script lifecycle.
     /// Any systems which need to run the same frame a script is loaded must run after this stage.
-    fn add_script_host<T: ScriptHost + Resource, S: StageLabel>(&mut self, stage: S) -> &mut Self;
+    fn add_script_host<T: ScriptHost, S: StageLabel>(&mut self, stage: S) -> &mut Self;
 }
 
 impl AddScriptHost for App {
     fn add_script_host<T, S>(&mut self, stage: S) -> &mut Self
     where
-        T: ScriptHost + Resource,
+        T: ScriptHost,
         S: StageLabel,
     {
         T::register_with_app(self, stage);
@@ -148,7 +148,7 @@ pub trait AddScriptHostHandler {
     /// The *frequency* of running these events, is controlled by your systems, if the event is not emitted, it cannot not handled.
     /// Of course there is nothing stopping your from emitting a single event type at varying priorities.
     fn add_script_handler_stage<
-        T: ScriptHost + Resource,
+        T: ScriptHost,
         S: StageLabel,
         const MAX: u32,
         const MIN: u32,
@@ -159,7 +159,7 @@ pub trait AddScriptHostHandler {
 
     /// Like `add_script_handler_stage` but with additional run criteria
     fn add_script_handler_stage_with_criteria<
-        T: ScriptHost + Resource,
+        T: ScriptHost,
         S: StageLabel,
         M,
         C: IntoRunCriteria<M>,
@@ -174,7 +174,7 @@ pub trait AddScriptHostHandler {
 
 impl AddScriptHostHandler for App {
     fn add_script_handler_stage<
-        T: ScriptHost + Resource,
+        T: ScriptHost,
         S: StageLabel,
         const MAX: u32,
         const MIN: u32,
@@ -192,7 +192,7 @@ impl AddScriptHostHandler for App {
     }
 
     fn add_script_handler_stage_with_criteria<
-        T: ScriptHost + Resource,
+        T: ScriptHost,
         S: StageLabel,
         M,
         C: IntoRunCriteria<M>,
