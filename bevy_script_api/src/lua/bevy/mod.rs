@@ -6,6 +6,7 @@ use std::sync::Arc;
 use crate::script_ref::ScriptRef;
 use bevy::ecs::system::Command;
 use bevy::hierarchy::BuildWorldChildren;
+use bevy::prelude::AppTypeRegistry;
 use bevy::reflect::DynamicEnum;
 use bevy::{
     hierarchy::{Children, DespawnChildrenRecursive, DespawnRecursive, Parent},
@@ -25,8 +26,6 @@ use tealr::mlu::{
 };
 
 pub use crate::generated::*;
-
-use super::util::TypeRegistryWrapper;
 
 #[derive(Clone)]
 pub struct LuaTypeRegistration(Arc<TypeRegistration>);
@@ -280,7 +279,7 @@ impl TealData for LuaWorld {
         methods.add_method("get_type_by_name", |_, world, type_name: String| {
             let w = world.read();
 
-            let registry: &TypeRegistryWrapper = w.get_resource().unwrap();
+            let registry: &AppTypeRegistry = w.get_resource().unwrap();
 
             let registry = registry.0.read();
 

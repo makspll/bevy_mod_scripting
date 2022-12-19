@@ -4,7 +4,6 @@ use bevy_mod_scripting::{
     api::{impl_lua_newtype, impl_script_newtype, lua::bevy::LuaWorld, ScriptRef},
     prelude::*,
 };
-use bevy_script_api::lua::util::TypeRegistryWrapper;
 
 // Step 1. Rust representation
 // construct all our types and functionality
@@ -65,8 +64,8 @@ impl_script_newtype!(
             let lua_world : LuaWorld = globals.get("world")?;
             let mut world = lua_world.write();
 
-            let reflect_resource_data = world.resource_scope(|world, type_registry: Mut<TypeRegistryWrapper>| {
-                let type_registry = type_registry.0.read();
+            let reflect_resource_data = world.resource_scope(|world, type_registry: Mut<AppTypeRegistry>| {
+                let type_registry = type_registry.read();
                 let data = type_registry.get_type_data::<ReflectResource>(std::any::TypeId::of::<MyThing>()).expect("Type not registered properly");
                 data.clone()
             });

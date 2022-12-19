@@ -229,7 +229,3 @@ macro_rules! impl_tealr_generic{
 // }
 
 // pub(crate) use impl_user_data;
-
-#[derive(Resource, Default, Clone, Reflect)]
-#[reflect(Resource)]
-pub struct TypeRegistryWrapper(#[reflect(ignore)] pub TypeRegistry);
