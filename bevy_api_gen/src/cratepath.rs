@@ -1,24 +1,17 @@
 use rustdoc_types::{Crate, Id, ItemEnum, Visibility};
 
-pub(crate) fn get_path(id: &Id, source: &Crate, verbose: bool) -> Option<Vec<String>> {
-    let verbose = verbose || (id == &Id(String::from("0:6568:5720")));
+pub(crate) fn get_path(id: &Id, source: &Crate, verbose: bool) -> Option<Vec<Id>> {
+    let verbose = verbose;// || (id == &Id(String::from("0:6568:5720")));
     if verbose {
         eprintln!("Search for {:?}", id);
     }
     match source.paths.get(id) {
-        Some(p) => return Some(p.path.clone()),
+        Some(_) => return Some(vec![id.to_owned()]),
         None => {
             let ind = source.index.get(id)?;
-            if let Visibility::Restricted { parent, path } = &ind.visibility {
-                if let Some(mut p_path) = get_path(parent, source, verbose) {
-                    let path_parse: Vec<String> = path[2..]
-                        .to_string()
-                        .split("::")
-                        .map(|s| s.to_string())
-                        .collect();
-                    if !p_path.ends_with(path_parse.as_slice()) {
-                        p_path.extend(path_parse);
-                    }
+            if let Visibility::Restricted { parent, path: _ } = &ind.visibility {
+                if let Some(p_path) = get_path(parent, source, verbose) {
+                    
                     if verbose {
                         eprintln!("restrict: {:?}", p_path);
                     }
@@ -46,21 +39,13 @@ pub(crate) fn get_path(id: &Id, source: &Crate, verbose: bool) -> Option<Vec<Str
                         return p_mod.items.contains(id);
                     }
                     return false;
-                })
-                .map(|(p_id, p_item)| {
-                    if let ItemEnum::Module(_) = &p_item.inner {
-                        return (p_id, None);
-                    }
-                    return (p_id, None);
                 });
 
-            for (parent, additional) in parents {
+            for (parent, _) in parents {
                 if verbose {}
                 let path_o = get_path(parent, source, verbose);
                 if let Some(mut path) = path_o {
-                    if let Some(in_path) = additional {
-                        path.push(in_path);
-                    }
+                    path.push(id.to_owned());
                     return Some(path);
                 } else if verbose {
                     eprintln!("{:?}", parent);
@@ -72,4 +57,38 @@ pub(crate) fn get_path(id: &Id, source: &Crate, verbose: bool) -> Option<Vec<Str
         }
     };
     None
+}
+
+pub(crate) fn path_to_import(path: Vec<Id>, source: &Crate) -> Vec<String> {
+    /* 
+    for i in path {
+        eprintln!("{:?}", source.index.get(&i).unwrap());
+    }
+    eprintln!();
+    
+    if path.last().unwrap().0 == String::from("0:3728:1594") {
+        eprintln!("{:?}",path);
+        eprintln!("{:?}", source.index.get(path.last().unwrap()).unwrap());
+    }
+    */
+    path.iter().rev().enumerate().rev().enumerate().map(|(starti, (endi, id))| {
+        let ind = source.index.get(id).unwrap();
+        if starti == 0 {
+            return source.paths.get(id).unwrap().path.clone();
+        }
+        else if endi==0 {
+            if let Some(name) = &ind.name {
+                return vec![name.to_owned()];
+            }
+        }
+        else if let Visibility::Restricted { parent: _, path } = &ind.visibility {
+            return path[2..].split("::").map(|x| x.to_string()).collect();
+        }
+        else if let ItemEnum::Module(_) = &ind.inner {
+            //eprintln!("{:?}\n", ind);
+            //return vec![ind.name.to_owned().unwrap()];
+            return vec![];
+        }
+        vec![]
+    }).reduce(|mut x,y| {x.extend(y); x}).unwrap()
 }

@@ -394,9 +394,10 @@ source="bevy_sprite"
 type="Sprite"
 source="bevy_sprite"
 
-[[types]]
-type="Rect"
-source="bevy_sprite"
+#TODO re-add
+#[[types]]
+#type="Rect"
+#source="bevy_sprite"
 
 ## BEVY_RENDER
 
@@ -416,9 +417,10 @@ source="bevy_render"
 type="ComputedVisibility"
 source="bevy_render"
 
-[[types]]
-type="SkinnedMesh"
-source="bevy_render"
+#TODO re-add
+#[[types]]
+#type="SkinnedMesh"
+#source="bevy_render"
 
 [[types]]
 type="ScalingMode"
