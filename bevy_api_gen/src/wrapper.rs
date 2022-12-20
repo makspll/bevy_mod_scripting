@@ -3,7 +3,7 @@ use std::collections::HashSet;
 use indexmap::{IndexMap, IndexSet};
 use rustdoc_types::{Crate, Id, Impl, Item, ItemEnum, StructKind};
 
-use crate::{stringify_type, Arg, ArgType, ArgWrapperType, Args, Config, Newtype, PrettyWriter};
+use crate::{Arg, ArgType, ArgWrapperType, Args, Config, Newtype, PrettyWriter};
 
 pub static WRAPPER_PREFIX: &str = "Lua";
 
@@ -156,15 +156,13 @@ impl WrappedItem<'_> {
             .flat_map(|(_, items)| items.iter())
             .for_each(|(impl_, v)| {
                 // only select trait methods are allowed
-                if let Some(trait_) = &impl_.blanket_impl {
+                if let Some(trait_) = &impl_.trait_ {
                     if self
                         .config
                         .traits
                         .iter()
                         .any(|f| {
-                            stringify_type(trait_)
-                                .and_then(|s| (s == f.name).then_some(()))
-                                .is_some()
+                            trait_.name == f.name
                         })
                     {
                         // keep going

@@ -139,20 +139,10 @@ impl_script_newtype!{
 	///
 	///It only applies if [`FlexWrap::Wrap`] is present and if there are multiple lines of items.
 	bevy_ui::AlignContent : 
+	Clone +
+	Debug +
 	Methods
 	(
-		from(Wrapped(AlignContent)) -> self,
-
-		clone(&self:) -> Wrapped(AlignContent),
-
-		eq(&self:Wrapped(&AlignContent)) -> Raw(bool),
-
-		default() -> Wrapped(AlignContent),
-
-		field_len(&self:) -> Raw(usize),
-
-		variant_index(&self:) -> Raw(usize),
-
 	)
 	+ Fields
 	(
@@ -171,20 +161,10 @@ impl_script_newtype!{
 	#[languages(on_feature(lua))]
 	///How items are aligned according to the cross axis
 	bevy_ui::AlignItems : 
+	Clone +
+	Debug +
 	Methods
 	(
-		from(Wrapped(AlignItems)) -> self,
-
-		clone(&self:) -> Wrapped(AlignItems),
-
-		eq(&self:Wrapped(&AlignItems)) -> Raw(bool),
-
-		default() -> Wrapped(AlignItems),
-
-		field_len(&self:) -> Raw(usize),
-
-		variant_index(&self:) -> Raw(usize),
-
 	)
 	+ Fields
 	(
@@ -203,20 +183,10 @@ impl_script_newtype!{
 	#[languages(on_feature(lua))]
 	///Works like [`AlignItems`] but applies only to a single item
 	bevy_ui::AlignSelf : 
+	Clone +
+	Debug +
 	Methods
 	(
-		from(Wrapped(AlignSelf)) -> self,
-
-		clone(&self:) -> Wrapped(AlignSelf),
-
-		eq(&self:Wrapped(&AlignSelf)) -> Raw(bool),
-
-		default() -> Wrapped(AlignSelf),
-
-		field_len(&self:) -> Raw(usize),
-
-		variant_index(&self:) -> Raw(usize),
-
 	)
 	+ Fields
 	(
@@ -237,18 +207,10 @@ impl_script_newtype!{
 	///
 	///For example English is written LTR (left-to-right) while Arabic is written RTL (right-to-left).
 	bevy_ui::Direction : 
+	Clone +
+	Debug +
 	Methods
 	(
-		clone(&self:) -> Wrapped(Direction),
-
-		eq(&self:Wrapped(&Direction)) -> Raw(bool),
-
-		default() -> Wrapped(Direction),
-
-		field_len(&self:) -> Raw(usize),
-
-		variant_index(&self:) -> Raw(usize),
-
 	)
 	+ Fields
 	(
@@ -267,20 +229,10 @@ impl_script_newtype!{
 	#[languages(on_feature(lua))]
 	///Defines how flexbox items are ordered within a flexbox
 	bevy_ui::FlexDirection : 
+	Clone +
+	Debug +
 	Methods
 	(
-		from(Wrapped(FlexDirection)) -> self,
-
-		clone(&self:) -> Wrapped(FlexDirection),
-
-		eq(&self:Wrapped(&FlexDirection)) -> Raw(bool),
-
-		default() -> Wrapped(FlexDirection),
-
-		field_len(&self:) -> Raw(usize),
-
-		variant_index(&self:) -> Raw(usize),
-
 	)
 	+ Fields
 	(
@@ -299,20 +251,10 @@ impl_script_newtype!{
 	#[languages(on_feature(lua))]
 	///Defines if flexbox items appear on a single line or on multiple lines
 	bevy_ui::FlexWrap : 
+	Clone +
+	Debug +
 	Methods
 	(
-		from(Wrapped(FlexWrap)) -> self,
-
-		clone(&self:) -> Wrapped(FlexWrap),
-
-		eq(&self:Wrapped(&FlexWrap)) -> Raw(bool),
-
-		default() -> Wrapped(FlexWrap),
-
-		field_len(&self:) -> Raw(usize),
-
-		variant_index(&self:) -> Raw(usize),
-
 	)
 	+ Fields
 	(
@@ -331,18 +273,10 @@ impl_script_newtype!{
 	#[languages(on_feature(lua))]
 	///Describes whether the node should block interactions with lower nodes
 	bevy_ui::FocusPolicy : 
+	Clone +
+	Debug +
 	Methods
 	(
-		clone(&self:) -> Wrapped(FocusPolicy),
-
-		default() -> Wrapped(FocusPolicy),
-
-		eq(&self:Wrapped(&FocusPolicy)) -> Raw(bool),
-
-		field_len(&self:) -> Raw(usize),
-
-		variant_index(&self:) -> Raw(usize),
-
 	)
 	+ Fields
 	(
@@ -374,18 +308,10 @@ impl_script_newtype!{
 	///Note that you can also control the visibility of a node using the [`Display`](crate::ui_node::Display) property,
 	///which fully collapses it during layout calculations.
 	bevy_ui::Interaction : 
+	Clone +
+	Debug +
 	Methods
 	(
-		clone(&self:) -> Wrapped(Interaction),
-
-		default() -> Wrapped(Interaction),
-
-		eq(&self:Wrapped(&Interaction)) -> Raw(bool),
-
-		field_len(&self:) -> Raw(usize),
-
-		variant_index(&self:) -> Raw(usize),
-
 	)
 	+ Fields
 	(
@@ -404,20 +330,10 @@ impl_script_newtype!{
 	#[languages(on_feature(lua))]
 	///Defines how items are aligned according to the main axis
 	bevy_ui::JustifyContent : 
+	Clone +
+	Debug +
 	Methods
 	(
-		from(Wrapped(JustifyContent)) -> self,
-
-		clone(&self:) -> Wrapped(JustifyContent),
-
-		eq(&self:Wrapped(&JustifyContent)) -> Raw(bool),
-
-		default() -> Wrapped(JustifyContent),
-
-		field_len(&self:) -> Raw(usize),
-
-		variant_index(&self:) -> Raw(usize),
-
 	)
 	+ Fields
 	(
@@ -436,18 +352,10 @@ impl_script_newtype!{
 	#[languages(on_feature(lua))]
 	///Whether to show or hide overflowing items
 	bevy_ui::Overflow : 
+	Clone +
+	Debug +
 	Methods
 	(
-		clone(&self:) -> Wrapped(Overflow),
-
-		eq(&self:Wrapped(&Overflow)) -> Raw(bool),
-
-		default() -> Wrapped(Overflow),
-
-		field_len(&self:) -> Raw(usize),
-
-		variant_index(&self:) -> Raw(usize),
-
 	)
 	+ Fields
 	(
@@ -466,20 +374,10 @@ impl_script_newtype!{
 	#[languages(on_feature(lua))]
 	///The strategy used to position this node
 	bevy_ui::PositionType : 
+	Clone +
+	Debug +
 	Methods
 	(
-		from(Wrapped(PositionType)) -> self,
-
-		clone(&self:) -> Wrapped(PositionType),
-
-		eq(&self:Wrapped(&PositionType)) -> Raw(bool),
-
-		default() -> Wrapped(PositionType),
-
-		field_len(&self:) -> Raw(usize),
-
-		variant_index(&self:) -> Raw(usize),
-
 	)
 	+ Fields
 	(
@@ -498,22 +396,10 @@ impl_script_newtype!{
 	#[languages(on_feature(lua))]
 	///An enum that describes possible types of value in flexbox layout options
 	bevy_ui::Val : 
+	Clone +
+	Debug +
 	Methods
 	(
-		clone(&self:) -> Wrapped(Val),
-
-		eq(&self:Wrapped(&Val)) -> Raw(bool),
-
-		default() -> Wrapped(Val),
-
-		field_len(&self:) -> Raw(usize),
-
-		variant_index(&self:) -> Raw(usize),
-
-		mul_assign(&mut self:Raw(f32)),
-
-		div_assign(&mut self:Raw(f32)),
-
 	)
 	+ Fields
 	(
@@ -534,14 +420,10 @@ impl_script_newtype!{
 	#[languages(on_feature(lua))]
 	///The calculated clip of the node
 	bevy_ui::CalculatedClip : 
+	Clone +
+	Debug +
 	Methods
 	(
-		default() -> Wrapped(CalculatedClip),
-
-		clone(&self:) -> Wrapped(CalculatedClip),
-
-		field_len(&self:) -> Raw(usize),
-
 	)
 	+ Fields
 	(
@@ -562,14 +444,10 @@ impl_script_newtype!{
 	#[languages(on_feature(lua))]
 	///The calculated size of the node
 	bevy_ui::CalculatedSize : 
+	Clone +
+	Debug +
 	Methods
 	(
-		default() -> Wrapped(CalculatedSize),
-
-		clone(&self:) -> Wrapped(CalculatedSize),
-
-		field_len(&self:) -> Raw(usize),
-
 	)
 	+ Fields
 	(
@@ -590,17 +468,13 @@ impl_script_newtype!{
 	#[languages(on_feature(lua))]
 	///Describes the size of a UI node
 	bevy_ui::Node : 
+	Clone +
+	Debug +
 	Methods
 	(
 		///The calculated node size as width and height in pixels
 		///automatically calculated by [`super::flex::flex_node_system`]
 		size(&self:) -> Wrapped(Vec2),
-
-		clone(&self:) -> Wrapped(Node),
-
-		default() -> Wrapped(Node),
-
-		field_len(&self:) -> Raw(usize),
 
 	)
 	+ Fields
@@ -625,16 +499,10 @@ impl_script_newtype!{
 	///**Note:** Bevy's UI is upside down compared to how Flexbox normally works, to stay consistent with engine paradigms about layouting from
 	///the upper left corner of the display
 	bevy_ui::Style : 
+	Clone +
+	Debug +
 	Methods
 	(
-		clone(&self:) -> Wrapped(Style),
-
-		eq(&self:Wrapped(&Style)) -> Raw(bool),
-
-		field_len(&self:) -> Raw(usize),
-
-		default() -> self,
-
 	)
 	+ Fields
 	(
@@ -698,14 +566,10 @@ impl_script_newtype!{
 	#[languages(on_feature(lua))]
 	///The 2D texture displayed for this UI node
 	bevy_ui::UiImage : 
+	Clone +
+	Debug +
 	Methods
 	(
-		clone(&self:) -> Wrapped(UiImage),
-
-		field_len(&self:) -> Raw(usize),
-
-		default() -> self,
-
 	)
 	+ Fields
 	(
@@ -724,14 +588,10 @@ impl_script_newtype!{
 	#[languages(on_feature(lua))]
 	///Marker struct for buttons
 	bevy_ui::widget::Button : 
+	Clone +
+	Debug +
 	Methods
 	(
-		default() -> Wrapped(Button),
-
-		clone(&self:) -> Wrapped(Button),
-
-		field_len(&self:) -> Raw(usize),
-
 	)
 	+ Fields
 	(
@@ -750,16 +610,10 @@ impl_script_newtype!{
 	#[languages(on_feature(lua))]
 	///Describes how to resize the Image node
 	bevy_ui::widget::ImageMode : 
+	Clone +
+	Debug +
 	Methods
 	(
-		default() -> Wrapped(ImageMode),
-
-		clone(&self:) -> Wrapped(ImageMode),
-
-		field_len(&self:) -> Raw(usize),
-
-		variant_index(&self:) -> Raw(usize),
-
 	)
 	+ Fields
 	(
@@ -780,20 +634,10 @@ impl_script_newtype!{
 	///
 	///Part of the [`Style`] component.
 	bevy_ui::Display : 
+	Clone +
+	Debug +
 	Methods
 	(
-		from(Wrapped(Display)) -> self,
-
-		clone(&self:) -> Wrapped(Display),
-
-		eq(&self:Wrapped(&Display)) -> Raw(bool),
-
-		default() -> Wrapped(Display),
-
-		field_len(&self:) -> Raw(usize),
-
-		variant_index(&self:) -> Raw(usize),
-
 	)
 	+ Fields
 	(
@@ -829,10 +673,6 @@ impl_script_newtype!{
 		///Time elapsed playing the animation
 		elapsed(&self:) -> Raw(f32),
 
-		field_len(&self:) -> Raw(usize),
-
-		default() -> self,
-
 	)
 	+ Fields
 	(
@@ -856,22 +696,10 @@ impl_script_newtype!{
 	///as multiple entities can have the same name.  [`bevy_ecs::entity::Entity`] should be
 	///used instead as the default unique identifier.
 	bevy_core::Name : 
+	Clone +
+	Debug +
 	Methods
 	(
-		from(Raw(String)) -> self,
-
-		from(Wrapped(&Name)) -> Raw(String),
-
-		from(Wrapped(Name)) -> Raw(String),
-
-		field_len(&self:) -> Raw(usize),
-
-		clone(&self:) -> Wrapped(Name),
-
-		default() -> self,
-
-		eq(&self:&self) -> Raw(bool),
-
 	)
 	+ Fields
 	(
@@ -889,14 +717,10 @@ impl_script_newtype!{
 impl_script_newtype!{
 	#[languages(on_feature(lua))]
 	bevy_gltf::GltfExtras : 
+	Clone +
+	Debug +
 	Methods
 	(
-		clone(&self:) -> Wrapped(GltfExtras),
-
-		field_len(&self:) -> Raw(usize),
-
-		default() -> Wrapped(GltfExtras),
-
 	)
 	+ Fields
 	(
@@ -921,12 +745,11 @@ impl_script_newtype!{
 	///[`HierarchyQueryExt`]: crate::query_extension::HierarchyQueryExt
 	///[`Query`]: bevy_ecs::system::Query
 	bevy_hierarchy::Children : 
+	Debug +
 	Methods
 	(
 		///Swaps the child at `a_index` with the child at `b_index`.
 		swap(&mut self:Raw(usize),Raw(usize)),
-
-		field_len(&self:) -> Raw(usize),
 
 	)
 	+ Fields
@@ -952,14 +775,11 @@ impl_script_newtype!{
 	///[`HierarchyQueryExt`]: crate::query_extension::HierarchyQueryExt
 	///[`Query`]: bevy_ecs::system::Query
 	bevy_hierarchy::Parent : 
+	Debug +
 	Methods
 	(
 		///Gets the [`Entity`] ID of the parent.
 		get(&self:) -> Wrapped(Entity),
-
-		eq(&self:Wrapped(&Parent)) -> Raw(bool),
-
-		field_len(&self:) -> Raw(usize),
 
 	)
 	+ Fields
@@ -985,14 +805,10 @@ impl_script_newtype!{
 	///reliable limit if it is necessary to contain the text strictly in the bounds. Currently this
 	///component is mainly useful for text wrapping only.
 	bevy_text::Text2dBounds : 
+	Clone +
+	Debug +
 	Methods
 	(
-		clone(&self:) -> Wrapped(Text2dBounds),
-
-		field_len(&self:) -> Raw(usize),
-
-		default() -> self,
-
 	)
 	+ Fields
 	(
@@ -1012,14 +828,10 @@ impl_script_newtype!{
 	#[languages(on_feature(lua))]
 	///The calculated size of text drawn in 2D scene.
 	bevy_text::Text2dSize : 
+	Clone +
+	Debug +
 	Methods
 	(
-		default() -> Wrapped(Text2dSize),
-
-		clone(&self:) -> Wrapped(Text2dSize),
-
-		field_len(&self:) -> Raw(usize),
-
 	)
 	+ Fields
 	(
@@ -1038,16 +850,12 @@ impl_script_newtype!{
 impl_script_newtype!{
 	#[languages(on_feature(lua))]
 	bevy_text::Text : 
+	Clone +
+	Debug +
 	Methods
 	(
 		///Returns this [`Text`] with a new [`TextAlignment`].
 		with_alignment(self:Wrapped(TextAlignment)) -> self,
-
-		default() -> Wrapped(Text),
-
-		clone(&self:) -> Wrapped(Text),
-
-		field_len(&self:) -> Raw(usize),
 
 	)
 	+ Fields
@@ -1068,14 +876,10 @@ impl_script_newtype!{
 impl_script_newtype!{
 	#[languages(on_feature(lua))]
 	bevy_text::TextAlignment : 
+	Clone +
+	Debug +
 	Methods
 	(
-		clone(&self:) -> Wrapped(TextAlignment),
-
-		field_len(&self:) -> Raw(usize),
-
-		default() -> self,
-
 	)
 	+ Fields
 	(
@@ -1095,16 +899,12 @@ impl_script_newtype!{
 impl_script_newtype!{
 	#[languages(on_feature(lua))]
 	bevy_text::TextSection : 
+	Clone +
+	Debug +
 	Methods
 	(
 		///Create an empty [`TextSection`] from a style. Useful when the value will be set dynamically.
 		from_style(Wrapped(TextStyle)) -> self,
-
-		default() -> Wrapped(TextSection),
-
-		clone(&self:) -> Wrapped(TextSection),
-
-		field_len(&self:) -> Raw(usize),
 
 	)
 	+ Fields
@@ -1125,14 +925,10 @@ impl_script_newtype!{
 impl_script_newtype!{
 	#[languages(on_feature(lua))]
 	bevy_text::TextStyle : 
+	Clone +
+	Debug +
 	Methods
 	(
-		clone(&self:) -> Wrapped(TextStyle),
-
-		field_len(&self:) -> Raw(usize),
-
-		default() -> self,
-
 	)
 	+ Fields
 	(
@@ -1154,18 +950,10 @@ impl_script_newtype!{
 	#[languages(on_feature(lua))]
 	///Describes horizontal alignment preference for positioning & bounds.
 	bevy_text::HorizontalAlign : 
+	Clone +
+	Debug +
 	Methods
 	(
-		from(Wrapped(HorizontalAlign)) -> self,
-
-		clone(&self:) -> Wrapped(HorizontalAlign),
-
-		eq(&self:Wrapped(&HorizontalAlign)) -> Raw(bool),
-
-		field_len(&self:) -> Raw(usize),
-
-		variant_index(&self:) -> Raw(usize),
-
 	)
 	+ Fields
 	(
@@ -1185,18 +973,10 @@ impl_script_newtype!{
 	///Describes vertical alignment preference for positioning & bounds. Currently a placeholder
 	///for future functionality.
 	bevy_text::VerticalAlign : 
+	Clone +
+	Debug +
 	Methods
 	(
-		from(Wrapped(VerticalAlign)) -> self,
-
-		clone(&self:) -> Wrapped(VerticalAlign),
-
-		eq(&self:Wrapped(&VerticalAlign)) -> Raw(bool),
-
-		field_len(&self:) -> Raw(usize),
-
-		variant_index(&self:) -> Raw(usize),
-
 	)
 	+ Fields
 	(
@@ -1235,6 +1015,8 @@ impl_script_newtype!{
 	///assert_eq!(stopwatch.elapsed_secs(), 0.0);
 	///```
 	bevy_time::Stopwatch : 
+	Clone +
+	Debug +
 	Methods
 	(
 		///Create a new unpaused `Stopwatch` with no elapsed time.
@@ -1333,12 +1115,6 @@ impl_script_newtype!{
 		///```
 		reset(&mut self:),
 
-		clone(&self:) -> Wrapped(Stopwatch),
-
-		default() -> Wrapped(Stopwatch),
-
-		field_len(&self:) -> Raw(usize),
-
 	)
 	+ Fields
 	(
@@ -1363,6 +1139,8 @@ impl_script_newtype!{
 	///
 	///Paused timers will not have elapsed time increased.
 	bevy_time::Timer : 
+	Clone +
+	Debug +
 	Methods
 	(
 		///Returns `true` if the timer has reached its duration at least once.
@@ -1521,12 +1299,6 @@ impl_script_newtype!{
 		///```
 		times_finished_this_tick(&self:) -> Raw(u32),
 
-		clone(&self:) -> Wrapped(Timer),
-
-		default() -> Wrapped(Timer),
-
-		field_len(&self:) -> Raw(usize),
-
 	)
 	+ Fields
 	(
@@ -1596,6 +1368,8 @@ impl_script_newtype!{
 	///[`EntityCommands`]: crate::system::EntityCommands
 	///[`Query::get`]: crate::system::Query::get
 	bevy_ecs::entity::Entity : 
+	Clone +
+	Debug +
 	Methods
 	(
 		///Creates a new entity reference with the specified `index` and a generation of 0.
@@ -1672,14 +1446,6 @@ impl_script_newtype!{
 		///given index has been reused (index, generation) pairs uniquely identify a given Entity.
 		generation(self:) -> Raw(u32),
 
-		clone(&self:) -> Wrapped(Entity),
-
-		eq(&self:Wrapped(&Entity)) -> Raw(bool),
-
-		sparse_set_index(&self:) -> Raw(usize),
-
-		get_sparse_set_index(Raw(usize)) -> self,
-
 	)
 	+ Fields
 	(
@@ -1726,6 +1492,8 @@ impl_script_newtype!{
 	///[`global_vs_local_translation`]: https://github.com/bevyengine/bevy/blob/latest/examples/transforms/global_vs_local_translation.rs
 	///[`transform`]: https://github.com/bevyengine/bevy/blob/latest/examples/transforms/transform.rs
 	bevy_transform::components::Transform : 
+	Clone +
+	Debug +
 	Methods
 	(
 		///Creates a new [`Transform`] at the position `(x, y, z)`. In 2d, the `z` component
@@ -1876,20 +1644,6 @@ impl_script_newtype!{
 		///consider using [`GlobalTransform::transform_point()`] instead.
 		transform_point(&self:Wrapped(Vec3)) -> Wrapped(Vec3),
 
-		from(Wrapped(Transform)) -> self,
-
-		from(Wrapped(GlobalTransform)) -> self,
-
-		from(Wrapped(Transform)) -> self,
-
-		eq(&self:Wrapped(&Transform)) -> Raw(bool),
-
-		clone(&self:) -> Wrapped(Transform),
-
-		field_len(&self:) -> Raw(usize),
-
-		default() -> self,
-
 	)
 	+ Fields
 	(
@@ -1953,6 +1707,8 @@ impl_script_newtype!{
 	///
 	///[`global_vs_local_translation`]: https://github.com/bevyengine/bevy/blob/latest/examples/transforms/global_vs_local_translation.rs
 	bevy_transform::components::GlobalTransform : 
+	Clone +
+	Debug +
 	Methods
 	(
 		///Returns the 3d affine transformation matrix as a [`Mat4`].
@@ -2003,22 +1759,6 @@ impl_script_newtype!{
 		///resulting [`GlobalTransform`]
 		mul_transform(&self:Wrapped(Transform)) -> self,
 
-		from(Wrapped(Transform)) -> self,
-
-		from(Wrapped(Affine3A)) -> self,
-
-		from(Wrapped(Mat4)) -> self,
-
-		from(Wrapped(GlobalTransform)) -> self,
-
-		eq(&self:Wrapped(&GlobalTransform)) -> Raw(bool),
-
-		clone(&self:) -> Wrapped(GlobalTransform),
-
-		field_len(&self:) -> Raw(usize),
-
-		default() -> self,
-
 	)
 	+ Fields
 	(
@@ -2040,14 +1780,10 @@ impl_script_newtype!{
 	#[languages(on_feature(lua))]
 	///An ambient light, which lights the entire scene equally.
 	bevy_pbr::AmbientLight : 
+	Clone +
+	Debug +
 	Methods
 	(
-		clone(&self:) -> Wrapped(AmbientLight),
-
-		field_len(&self:) -> Raw(usize),
-
-		default() -> self,
-
 	)
 	+ Fields
 	(
@@ -2068,14 +1804,10 @@ impl_script_newtype!{
 impl_script_newtype!{
 	#[languages(on_feature(lua))]
 	bevy_pbr::CubemapVisibleEntities : 
+	Clone +
+	Debug +
 	Methods
 	(
-		clone(&self:) -> Wrapped(CubemapVisibleEntities),
-
-		default() -> Wrapped(CubemapVisibleEntities),
-
-		field_len(&self:) -> Raw(usize),
-
 	)
 	+ Fields
 	(
@@ -2159,14 +1891,10 @@ impl_script_newtype!{
 	///left/right/top/bottom to a scene-appropriate size, before ramping up the shadow map
 	///resolution.
 	bevy_pbr::DirectionalLight : 
+	Clone +
+	Debug +
 	Methods
 	(
-		clone(&self:) -> Wrapped(DirectionalLight),
-
-		field_len(&self:) -> Raw(usize),
-
-		default() -> self,
-
 	)
 	+ Fields
 	(
@@ -2195,14 +1923,10 @@ impl_script_newtype!{
 	#[languages(on_feature(lua))]
 	///Controls the resolution of [`DirectionalLight`] shadow maps.
 	bevy_pbr::DirectionalLightShadowMap : 
+	Clone +
+	Debug +
 	Methods
 	(
-		clone(&self:) -> Wrapped(DirectionalLightShadowMap),
-
-		field_len(&self:) -> Raw(usize),
-
-		default() -> self,
-
 	)
 	+ Fields
 	(
@@ -2224,10 +1948,6 @@ impl_script_newtype!{
 	bevy_pbr::NotShadowCaster : 
 	Methods
 	(
-		field_len(&self:) -> Raw(usize),
-
-		default() -> Wrapped(NotShadowCaster),
-
 	)
 	+ Fields
 	(
@@ -2248,10 +1968,6 @@ impl_script_newtype!{
 	bevy_pbr::NotShadowReceiver : 
 	Methods
 	(
-		field_len(&self:) -> Raw(usize),
-
-		default() -> Wrapped(NotShadowReceiver),
-
 	)
 	+ Fields
 	(
@@ -2286,14 +2002,10 @@ impl_script_newtype!{
 	///
 	///Source: [Wikipedia](https://en.wikipedia.org/wiki/Lumen_(unit)#Lighting)
 	bevy_pbr::PointLight : 
+	Clone +
+	Debug +
 	Methods
 	(
-		clone(&self:) -> Wrapped(PointLight),
-
-		field_len(&self:) -> Raw(usize),
-
-		default() -> self,
-
 	)
 	+ Fields
 	(
@@ -2321,14 +2033,10 @@ impl_script_newtype!{
 impl_script_newtype!{
 	#[languages(on_feature(lua))]
 	bevy_pbr::PointLightShadowMap : 
+	Clone +
+	Debug +
 	Methods
 	(
-		clone(&self:) -> Wrapped(PointLightShadowMap),
-
-		field_len(&self:) -> Raw(usize),
-
-		default() -> self,
-
 	)
 	+ Fields
 	(
@@ -2348,18 +2056,10 @@ impl_script_newtype!{
 	#[languages(on_feature(lua))]
 	///Sets how a material's base color alpha channel is used for transparency.
 	bevy_pbr::AlphaMode : 
+	Clone +
+	Debug +
 	Methods
 	(
-		default() -> Wrapped(AlphaMode),
-
-		field_len(&self:) -> Raw(usize),
-
-		variant_index(&self:) -> Raw(usize),
-
-		clone(&self:) -> Wrapped(AlphaMode),
-
-		eq(&self:Wrapped(&AlphaMode)) -> Raw(bool),
-
 	)
 	+ Fields
 	(
@@ -2378,14 +2078,10 @@ impl_script_newtype!{
 	#[languages(on_feature(lua))]
 	///Controls whether an entity should rendered in wireframe-mode if the [`WireframePlugin`] is enabled
 	bevy_pbr::wireframe::Wireframe : 
+	Clone +
+	Debug +
 	Methods
 	(
-		clone(&self:) -> Wrapped(Wireframe),
-
-		default() -> Wrapped(Wireframe),
-
-		field_len(&self:) -> Raw(usize),
-
 	)
 	+ Fields
 	(
@@ -2403,14 +2099,10 @@ impl_script_newtype!{
 impl_script_newtype!{
 	#[languages(on_feature(lua))]
 	bevy_pbr::wireframe::WireframeConfig : 
+	Clone +
+	Debug +
 	Methods
 	(
-		clone(&self:) -> Wrapped(WireframeConfig),
-
-		default() -> Wrapped(WireframeConfig),
-
-		field_len(&self:) -> Raw(usize),
-
 	)
 	+ Fields
 	(
@@ -2431,18 +2123,10 @@ impl_script_newtype!{
 	#[languages(on_feature(lua))]
 	///The depth clear operation to perform for the main 3d pass.
 	bevy_core_pipeline::core_3d::Camera3dDepthLoadOp : 
+	Clone +
+	Debug +
 	Methods
 	(
-		from(Wrapped(Camera3dDepthLoadOp)) -> self,
-
-		field_len(&self:) -> Raw(usize),
-
-		variant_index(&self:) -> Raw(usize),
-
-		clone(&self:) -> Wrapped(Camera3dDepthLoadOp),
-
-		default() -> self,
-
 	)
 	+ Fields
 	(
@@ -2464,14 +2148,10 @@ impl_script_newtype!{
 	///This color appears as the "background" color for simple apps,
 	///when there are portions of the screen with nothing rendered.
 	bevy_core_pipeline::clear_color::ClearColor : 
+	Clone +
+	Debug +
 	Methods
 	(
-		clone(&self:) -> Wrapped(ClearColor),
-
-		field_len(&self:) -> Raw(usize),
-
-		default() -> self,
-
 	)
 	+ Fields
 	(
@@ -2489,16 +2169,10 @@ impl_script_newtype!{
 impl_script_newtype!{
 	#[languages(on_feature(lua))]
 	bevy_core_pipeline::clear_color::ClearColorConfig : 
+	Clone +
+	Debug +
 	Methods
 	(
-		field_len(&self:) -> Raw(usize),
-
-		variant_index(&self:) -> Raw(usize),
-
-		clone(&self:) -> Wrapped(ClearColorConfig),
-
-		default() -> Wrapped(ClearColorConfig),
-
 	)
 	+ Fields
 	(
@@ -2516,14 +2190,9 @@ impl_script_newtype!{
 impl_script_newtype!{
 	#[languages(on_feature(lua))]
 	bevy_core_pipeline::core_2d::Camera2d : 
+	Clone +
 	Methods
 	(
-		default() -> Wrapped(Camera2d),
-
-		field_len(&self:) -> Raw(usize),
-
-		clone(&self:) -> Wrapped(Camera2d),
-
 	)
 	+ Fields
 	(
@@ -2543,14 +2212,9 @@ impl_script_newtype!{
 	#[languages(on_feature(lua))]
 	///Configuration for the "main 3d render graph".
 	bevy_core_pipeline::core_3d::Camera3d : 
+	Clone +
 	Methods
 	(
-		field_len(&self:) -> Raw(usize),
-
-		clone(&self:) -> Wrapped(Camera3d),
-
-		default() -> Wrapped(Camera3d),
-
 	)
 	+ Fields
 	(
@@ -2574,17 +2238,11 @@ impl_script_newtype!{
 	///How a sprite is positioned relative to its [`Transform`](bevy_transform::components::Transform).
 	///It defaults to `Anchor::Center`.
 	bevy_sprite::Anchor : 
+	Clone +
+	Debug +
 	Methods
 	(
 		as_vec(&self:) -> Wrapped(Vec2),
-
-		clone(&self:) -> Wrapped(Anchor),
-
-		default() -> Wrapped(Anchor),
-
-		field_len(&self:) -> Raw(usize),
-
-		variant_index(&self:) -> Raw(usize),
 
 	)
 	+ Fields
@@ -2606,14 +2264,10 @@ impl_script_newtype!{
 	///
 	///It wraps a [`Handle<Mesh>`] to differentiate from the 3d pipelines which use the handles directly as components
 	bevy_sprite::Mesh2dHandle : 
+	Clone +
+	Debug +
 	Methods
 	(
-		default() -> Wrapped(Mesh2dHandle),
-
-		clone(&self:) -> Wrapped(Mesh2dHandle),
-
-		field_len(&self:) -> Raw(usize),
-
 	)
 	+ Fields
 	(
@@ -2631,15 +2285,11 @@ impl_script_newtype!{
 impl_script_newtype!{
 	#[languages(on_feature(lua))]
 	bevy_sprite::TextureAtlasSprite : 
+	Clone +
+	Debug +
 	Methods
 	(
 		new(Raw(usize)) -> Wrapped(TextureAtlasSprite),
-
-		clone(&self:) -> Wrapped(TextureAtlasSprite),
-
-		field_len(&self:) -> Raw(usize),
-
-		default() -> self,
 
 	)
 	+ Fields
@@ -2666,14 +2316,10 @@ impl_script_newtype!{
 impl_script_newtype!{
 	#[languages(on_feature(lua))]
 	bevy_sprite::Sprite : 
+	Clone +
+	Debug +
 	Methods
 	(
-		default() -> Wrapped(Sprite),
-
-		clone(&self:) -> Wrapped(Sprite),
-
-		field_len(&self:) -> Raw(usize),
-
 	)
 	+ Fields
 	(
@@ -2718,6 +2364,8 @@ impl_script_newtype!{
 	///
 	///Entities without this component belong to layer `0`.
 	bevy_render::view::visibility::RenderLayers : 
+	Clone +
+	Debug +
 	Methods
 	(
 		///Create a new `RenderLayers` that belongs to all layers.
@@ -2733,14 +2381,6 @@ impl_script_newtype!{
 		///A `RenderLayers` with no layers will not match any other
 		///`RenderLayers`, even another with no layers.
 		intersects(&self:Wrapped(&RenderLayers)) -> Raw(bool),
-
-		clone(&self:) -> Wrapped(RenderLayers),
-
-		field_len(&self:) -> Raw(usize),
-
-		eq(&self:Wrapped(&RenderLayers)) -> Raw(bool),
-
-		default() -> self,
 
 	)
 	+ Fields
@@ -2762,16 +2402,12 @@ impl_script_newtype!{
 	///If an entity is hidden in this way,  all [`Children`] (and all of their children and so on) will also be hidden.
 	///This is done by setting the values of their [`ComputedVisibility`] component.
 	bevy_render::view::visibility::Visibility : 
+	Clone +
+	Debug +
 	Methods
 	(
 		///Toggle the visibility.
 		toggle(&mut self:),
-
-		clone(&self:) -> Wrapped(Visibility),
-
-		field_len(&self:) -> Raw(usize),
-
-		default() -> self,
 
 	)
 	+ Fields
@@ -2806,17 +2442,13 @@ impl_script_newtype!{
 	///Currently this component is ignored by the sprite renderer, so sprite rendering
 	///is not optimized per view.
 	bevy_render::view::visibility::VisibleEntities : 
+	Clone +
+	Debug +
 	Methods
 	(
 		len(&self:) -> Raw(usize),
 
 		is_empty(&self:) -> Raw(bool),
-
-		clone(&self:) -> Wrapped(VisibleEntities),
-
-		default() -> Wrapped(VisibleEntities),
-
-		field_len(&self:) -> Raw(usize),
 
 	)
 	+ Fields
@@ -2836,6 +2468,8 @@ impl_script_newtype!{
 	#[languages(on_feature(lua))]
 	///Algorithmically-computed indication of whether an entity is visible and should be extracted for rendering
 	bevy_render::view::visibility::ComputedVisibility : 
+	Clone +
+	Debug +
 	Methods
 	(
 		///Whether this entity is visible to something this frame. This is true if and only if [`Self::is_visible_in_hierarchy`] and [`Self::is_visible_in_view`]
@@ -2865,14 +2499,6 @@ impl_script_newtype!{
 		///label. Don't call this unless you are defining a custom visibility system. For normal user-defined entity visibility, see [`Visibility`].
 		set_visible_in_view(&mut self:),
 
-		clone(&self:) -> Wrapped(ComputedVisibility),
-
-		field_len(&self:) -> Raw(usize),
-
-		eq(&self:Wrapped(&ComputedVisibility)) -> Raw(bool),
-
-		default() -> self,
-
 	)
 	+ Fields
 	(
@@ -2890,14 +2516,10 @@ impl_script_newtype!{
 impl_script_newtype!{
 	#[languages(on_feature(lua))]
 	bevy_render::camera::ScalingMode : 
+	Clone +
+	Debug +
 	Methods
 	(
-		clone(&self:) -> Wrapped(ScalingMode),
-
-		field_len(&self:) -> Raw(usize),
-
-		variant_index(&self:) -> Raw(usize),
-
 	)
 	+ Fields
 	(
@@ -2915,14 +2537,10 @@ impl_script_newtype!{
 impl_script_newtype!{
 	#[languages(on_feature(lua))]
 	bevy_render::camera::WindowOrigin : 
+	Clone +
+	Debug +
 	Methods
 	(
-		clone(&self:) -> Wrapped(WindowOrigin),
-
-		field_len(&self:) -> Raw(usize),
-
-		variant_index(&self:) -> Raw(usize),
-
 	)
 	+ Fields
 	(
@@ -2940,6 +2558,8 @@ impl_script_newtype!{
 impl_script_newtype!{
 	#[languages(on_feature(lua))]
 	bevy_render::color::Color : 
+	Clone +
+	Debug +
 	Methods
 	(
 		///New `Color` from sRGB colorspace.
@@ -3067,34 +2687,6 @@ impl_script_newtype!{
 		///`A` will be the most significant byte and `R` the least significant.
 		as_linear_rgba_u32(Wrapped(Color):) -> Raw(u32),
 
-		from(Wrapped(Color)) -> self,
-
-		from(Wrapped(Color)) -> self,
-
-		from(Wrapped(Vec4)) -> self,
-
-		from(Wrapped(Color)) -> self,
-
-		clone(&self:) -> Wrapped(Color),
-
-		eq(&self:Wrapped(&Color)) -> Raw(bool),
-
-		field_len(&self:) -> Raw(usize),
-
-		variant_index(&self:) -> Raw(usize),
-
-		default() -> self,
-
-		add_assign(&mut self:Wrapped(Color)),
-
-		add_assign(&mut self:Wrapped(Vec4)),
-
-		mul_assign(&mut self:Raw(f32)),
-
-		mul_assign(&mut self:Wrapped(Vec4)),
-
-		mul_assign(&mut self:Wrapped(Vec3)),
-
 	)
 	+ Fields
 	(
@@ -3118,6 +2710,8 @@ impl_script_newtype!{
 	#[languages(on_feature(lua))]
 	///An Axis-Aligned Bounding Box
 	bevy_render::primitives::Aabb : 
+	Clone +
+	Debug +
 	Methods
 	(
 		from_min_max(Wrapped(Vec3),Wrapped(Vec3)) -> self,
@@ -3125,12 +2719,6 @@ impl_script_newtype!{
 		min(&self:) -> Wrapped(Vec3A),
 
 		max(&self:) -> Wrapped(Vec3A),
-
-		clone(&self:) -> Wrapped(Aabb),
-
-		default() -> Wrapped(Aabb),
-
-		field_len(&self:) -> Raw(usize),
 
 	)
 	+ Fields
@@ -3151,12 +2739,9 @@ impl_script_newtype!{
 impl_script_newtype!{
 	#[languages(on_feature(lua))]
 	bevy_render::primitives::CubemapFrusta : 
+	Debug +
 	Methods
 	(
-		default() -> Wrapped(CubemapFrusta),
-
-		field_len(&self:) -> Raw(usize),
-
 	)
 	+ Fields
 	(
@@ -3177,17 +2762,13 @@ impl_script_newtype!{
 	///Planes are ordered left, right, top, bottom, near, far
 	///Normals point into the contained volume
 	bevy_render::primitives::Frustum : 
+	Clone +
+	Debug +
 	Methods
 	(
 		from_view_projection(Wrapped(&Mat4),Wrapped(&Vec3),Wrapped(&Vec3),Raw(f32)) -> self,
 
 		intersects_obb(&self:Wrapped(&Aabb),Wrapped(&Mat4),Raw(bool)) -> Raw(bool),
-
-		clone(&self:) -> Wrapped(Frustum),
-
-		default() -> Wrapped(Frustum),
-
-		field_len(&self:) -> Raw(usize),
 
 	)
 	+ Fields
@@ -3216,14 +2797,9 @@ impl_script_newtype!{
 	///    .run();
 	///```
 	bevy_render::view::Msaa : 
+	Clone +
 	Methods
 	(
-		clone(&self:) -> Wrapped(Msaa),
-
-		field_len(&self:) -> Raw(usize),
-
-		default() -> self,
-
 	)
 	+ Fields
 	(
@@ -3259,16 +2835,12 @@ impl_script_newtype!{
 	///Adding a camera is typically done by adding a bundle, either the `Camera2dBundle` or the
 	///`Camera3dBundle`.
 	bevy_render::camera::Camera : 
+	Clone +
+	Debug +
 	Methods
 	(
 		///The projection matrix computed using this camera's [`CameraProjection`].
 		projection_matrix(&self:) -> Wrapped(Mat4),
-
-		field_len(&self:) -> Raw(usize),
-
-		clone(&self:) -> Wrapped(Camera),
-
-		default() -> self,
 
 	)
 	+ Fields
@@ -3303,18 +2875,10 @@ impl_script_newtype!{
 	///The "target" that a [`Camera`] will render to. For example, this could be a [`Window`](bevy_window::Window)
 	///swapchain or an [`Image`].
 	bevy_render::camera::RenderTarget : 
+	Clone +
+	Debug +
 	Methods
 	(
-		clone(&self:) -> Wrapped(RenderTarget),
-
-		field_len(&self:) -> Raw(usize),
-
-		variant_index(&self:) -> Raw(usize),
-
-		eq(&self:Wrapped(&RenderTarget)) -> Raw(bool),
-
-		default() -> self,
-
 	)
 	+ Fields
 	(
@@ -3337,14 +2901,10 @@ impl_script_newtype!{
 	///You can overlay multiple cameras in a single window using viewports to create effects like
 	///split screen, minimaps, and character viewers.
 	bevy_render::camera::Viewport : 
+	Clone +
+	Debug +
 	Methods
 	(
-		field_len(&self:) -> Raw(usize),
-
-		clone(&self:) -> Wrapped(Viewport),
-
-		default() -> self,
-
 	)
 	+ Fields
 	(
@@ -3371,25 +2931,15 @@ impl_script_newtype!{
 	#[languages(on_feature(lua))]
 	///A configurable [`CameraProjection`] that can select its projection type at runtime.
 	bevy_render::camera::Projection : 
+	Clone +
+	Debug +
 	Methods
 	(
-		from(Wrapped(PerspectiveProjection)) -> self,
-
-		from(Wrapped(OrthographicProjection)) -> self,
-
-		clone(&self:) -> Wrapped(Projection),
-
-		field_len(&self:) -> Raw(usize),
-
-		variant_index(&self:) -> Raw(usize),
-
 		get_projection_matrix(&self:) -> Wrapped(Mat4),
 
 		update(&mut self:Raw(f32),Raw(f32)),
 
 		far(&self:) -> Raw(f32),
-
-		default() -> self,
 
 	)
 	+ Fields
@@ -3408,21 +2958,15 @@ impl_script_newtype!{
 impl_script_newtype!{
 	#[languages(on_feature(lua))]
 	bevy_render::camera::OrthographicProjection : 
+	Clone +
+	Debug +
 	Methods
 	(
-		from(Wrapped(OrthographicProjection)) -> self,
-
-		clone(&self:) -> Wrapped(OrthographicProjection),
-
-		field_len(&self:) -> Raw(usize),
-
 		get_projection_matrix(&self:) -> Wrapped(Mat4),
 
 		update(&mut self:Raw(f32),Raw(f32)),
 
 		far(&self:) -> Raw(f32),
-
-		default() -> self,
 
 	)
 	+ Fields
@@ -3452,21 +2996,15 @@ impl_script_newtype!{
 	#[languages(on_feature(lua))]
 	///A 3D camera projection in which distant objects appear smaller than close objects.
 	bevy_render::camera::PerspectiveProjection : 
+	Clone +
+	Debug +
 	Methods
 	(
-		from(Wrapped(PerspectiveProjection)) -> self,
-
-		clone(&self:) -> Wrapped(PerspectiveProjection),
-
-		field_len(&self:) -> Raw(usize),
-
 		get_projection_matrix(&self:) -> Wrapped(Mat4),
 
 		update(&mut self:Raw(f32),Raw(f32)),
 
 		far(&self:) -> Raw(f32),
-
-		default() -> self,
 
 	)
 	+ Fields
@@ -3512,10 +3050,6 @@ impl_script_newtype!{
 	bevy_render::camera::CameraRenderGraph : 
 	Methods
 	(
-		field_len(&self:) -> Raw(usize),
-
-		default() -> Wrapped(CameraRenderGraph),
-
 	)
 	+ Fields
 	(
@@ -3534,6 +3068,8 @@ impl_script_newtype!{
 	#[languages(on_feature(lua))]
 	///An unique identifier to an asset path.
 	bevy_asset::AssetPathId : 
+	Clone +
+	Debug +
 	Methods
 	(
 		///Gets the id of the source path.
@@ -3541,14 +3077,6 @@ impl_script_newtype!{
 
 		///Gets the id of the sub-asset label.
 		label_id(&self:) -> Wrapped(LabelId),
-
-		from(Wrapped(AssetPathId)) -> self,
-
-		from(Wrapped(AssetPathId)) -> self,
-
-		clone(&self:) -> Wrapped(AssetPathId),
-
-		eq(&self:Wrapped(&AssetPathId)) -> Raw(bool),
 
 	)
 	+ Fields
@@ -3568,12 +3096,10 @@ impl_script_newtype!{
 	#[languages(on_feature(lua))]
 	///An unique identifier to a sub-asset label.
 	bevy_asset::LabelId : 
+	Clone +
+	Debug +
 	Methods
 	(
-		clone(&self:) -> Wrapped(LabelId),
-
-		eq(&self:Wrapped(&LabelId)) -> Raw(bool),
-
 	)
 	+ Fields
 	(
@@ -3592,14 +3118,10 @@ impl_script_newtype!{
 	#[languages(on_feature(lua))]
 	///An unique identifier to the source path of an asset.
 	bevy_asset::SourcePathId : 
+	Clone +
+	Debug +
 	Methods
 	(
-		from(Wrapped(AssetPathId)) -> self,
-
-		clone(&self:) -> Wrapped(SourcePathId),
-
-		eq(&self:Wrapped(&SourcePathId)) -> Raw(bool),
-
 	)
 	+ Fields
 	(
@@ -3618,18 +3140,10 @@ impl_script_newtype!{
 	#[languages(on_feature(lua))]
 	///A unique, stable asset id.
 	bevy_asset::HandleId : 
+	Clone +
+	Debug +
 	Methods
 	(
-		from(Wrapped(AssetPathId)) -> self,
-
-		from(Raw(&String)) -> self,
-
-		from(Raw(String)) -> self,
-
-		clone(&self:) -> Wrapped(HandleId),
-
-		eq(&self:Wrapped(&HandleId)) -> Raw(bool),
-
 	)
 	+ Fields
 	(
@@ -3648,6 +3162,8 @@ impl_script_newtype!{
 	#[languages(on_feature(lua))]
 	///A 2-dimensional vector.
 	glam::f32::Vec2 : 
+	Clone +
+	Debug +
 	Methods
 	(
 		///Creates a new vector.
@@ -3955,124 +3471,6 @@ impl_script_newtype!{
 		///Casts all elements of `self` to `u32`.
 		as_uvec2(&self:) -> Wrapped(UVec2),
 
-		from(Wrapped(Vec2)) -> self,
-
-		from(Wrapped(Vec2)) -> self,
-
-		clone(&self:) -> Wrapped(Vec2),
-
-		eq(&self:Wrapped(&Vec2)) -> Raw(bool),
-
-		default() -> self,
-
-		div(self:self) -> self,
-
-		div(self:Raw(f32)) -> self,
-
-		div(self:Wrapped(Vec2)) -> Wrapped(Vec2),
-
-		div_assign(&mut self:self),
-
-		div_assign(&mut self:Raw(f32)),
-
-		mul(self:self) -> self,
-
-		mul(self:Raw(f32)) -> self,
-
-		mul(self:Wrapped(Vec2)) -> Wrapped(Vec2),
-
-		mul_assign(&mut self:self),
-
-		mul_assign(&mut self:Raw(f32)),
-
-		add(self:self) -> self,
-
-		add(self:Raw(f32)) -> self,
-
-		add(self:Wrapped(Vec2)) -> Wrapped(Vec2),
-
-		add_assign(&mut self:self),
-
-		add_assign(&mut self:Raw(f32)),
-
-		sub(self:self) -> self,
-
-		sub(self:Raw(f32)) -> self,
-
-		sub(self:Wrapped(Vec2)) -> Wrapped(Vec2),
-
-		sub_assign(&mut self:Wrapped(Vec2)),
-
-		sub_assign(&mut self:Raw(f32)),
-
-		rem(self:self) -> self,
-
-		rem(self:Raw(f32)) -> self,
-
-		rem(self:Wrapped(Vec2)) -> Wrapped(Vec2),
-
-		rem_assign(&mut self:self),
-
-		rem_assign(&mut self:Raw(f32)),
-
-		neg(self:) -> self,
-
-		xx(self:) -> Wrapped(Vec2),
-
-		xy(self:) -> Wrapped(Vec2),
-
-		yx(self:) -> Wrapped(Vec2),
-
-		yy(self:) -> Wrapped(Vec2),
-
-		xxx(self:) -> Wrapped(Vec3),
-
-		xxy(self:) -> Wrapped(Vec3),
-
-		xyx(self:) -> Wrapped(Vec3),
-
-		xyy(self:) -> Wrapped(Vec3),
-
-		yxx(self:) -> Wrapped(Vec3),
-
-		yxy(self:) -> Wrapped(Vec3),
-
-		yyx(self:) -> Wrapped(Vec3),
-
-		yyy(self:) -> Wrapped(Vec3),
-
-		xxxx(self:) -> Wrapped(Vec4),
-
-		xxxy(self:) -> Wrapped(Vec4),
-
-		xxyx(self:) -> Wrapped(Vec4),
-
-		xxyy(self:) -> Wrapped(Vec4),
-
-		xyxx(self:) -> Wrapped(Vec4),
-
-		xyxy(self:) -> Wrapped(Vec4),
-
-		xyyx(self:) -> Wrapped(Vec4),
-
-		xyyy(self:) -> Wrapped(Vec4),
-
-		yxxx(self:) -> Wrapped(Vec4),
-
-		yxxy(self:) -> Wrapped(Vec4),
-
-		yxyx(self:) -> Wrapped(Vec4),
-
-		yxyy(self:) -> Wrapped(Vec4),
-
-		yyxx(self:) -> Wrapped(Vec4),
-
-		yyxy(self:) -> Wrapped(Vec4),
-
-		yyyx(self:) -> Wrapped(Vec4),
-
-		yyyy(self:) -> Wrapped(Vec4),
-
 	)
 	+ Fields
 	(
@@ -4111,6 +3509,8 @@ impl_script_newtype!{
 	#[languages(on_feature(lua))]
 	///A 3-dimensional vector.
 	glam::f32::Vec3 : 
+	Clone +
+	Debug +
 	Methods
 	(
 		///Creates a new vector.
@@ -4425,308 +3825,6 @@ impl_script_newtype!{
 		///Casts all elements of `self` to `u32`.
 		as_uvec3(&self:) -> Wrapped(UVec3),
 
-		from(Wrapped(Vec3)) -> self,
-
-		from(Wrapped(Vec3)) -> self,
-
-		from(Wrapped(Vec3)) -> self,
-
-		from(Wrapped(Vec3A)) -> self,
-
-		mul(self:self) -> self,
-
-		mul(self:Raw(f32)) -> self,
-
-		mul(self:Wrapped(Vec3)) -> Wrapped(Vec3),
-
-		mul(self:Wrapped(Vec3)) -> Wrapped(Vec3),
-
-		clone(&self:) -> Wrapped(Vec3),
-
-		eq(&self:Wrapped(&Vec3)) -> Raw(bool),
-
-		default() -> self,
-
-		div(self:self) -> self,
-
-		div(self:Raw(f32)) -> self,
-
-		div(self:Wrapped(Vec3)) -> Wrapped(Vec3),
-
-		div_assign(&mut self:self),
-
-		div_assign(&mut self:Raw(f32)),
-
-		mul_assign(&mut self:self),
-
-		mul_assign(&mut self:Raw(f32)),
-
-		add(self:self) -> self,
-
-		add(self:Raw(f32)) -> self,
-
-		add(self:Wrapped(Vec3)) -> Wrapped(Vec3),
-
-		add_assign(&mut self:self),
-
-		add_assign(&mut self:Raw(f32)),
-
-		sub(self:self) -> self,
-
-		sub(self:Raw(f32)) -> self,
-
-		sub(self:Wrapped(Vec3)) -> Wrapped(Vec3),
-
-		sub_assign(&mut self:Wrapped(Vec3)),
-
-		sub_assign(&mut self:Raw(f32)),
-
-		rem(self:self) -> self,
-
-		rem(self:Raw(f32)) -> self,
-
-		rem(self:Wrapped(Vec3)) -> Wrapped(Vec3),
-
-		rem_assign(&mut self:self),
-
-		rem_assign(&mut self:Raw(f32)),
-
-		neg(self:) -> self,
-
-		xx(self:) -> Wrapped(Vec2),
-
-		xy(self:) -> Wrapped(Vec2),
-
-		xz(self:) -> Wrapped(Vec2),
-
-		yx(self:) -> Wrapped(Vec2),
-
-		yy(self:) -> Wrapped(Vec2),
-
-		yz(self:) -> Wrapped(Vec2),
-
-		zx(self:) -> Wrapped(Vec2),
-
-		zy(self:) -> Wrapped(Vec2),
-
-		zz(self:) -> Wrapped(Vec2),
-
-		xxx(self:) -> Wrapped(Vec3),
-
-		xxy(self:) -> Wrapped(Vec3),
-
-		xxz(self:) -> Wrapped(Vec3),
-
-		xyx(self:) -> Wrapped(Vec3),
-
-		xyy(self:) -> Wrapped(Vec3),
-
-		xyz(self:) -> Wrapped(Vec3),
-
-		xzx(self:) -> Wrapped(Vec3),
-
-		xzy(self:) -> Wrapped(Vec3),
-
-		xzz(self:) -> Wrapped(Vec3),
-
-		yxx(self:) -> Wrapped(Vec3),
-
-		yxy(self:) -> Wrapped(Vec3),
-
-		yxz(self:) -> Wrapped(Vec3),
-
-		yyx(self:) -> Wrapped(Vec3),
-
-		yyy(self:) -> Wrapped(Vec3),
-
-		yyz(self:) -> Wrapped(Vec3),
-
-		yzx(self:) -> Wrapped(Vec3),
-
-		yzy(self:) -> Wrapped(Vec3),
-
-		yzz(self:) -> Wrapped(Vec3),
-
-		zxx(self:) -> Wrapped(Vec3),
-
-		zxy(self:) -> Wrapped(Vec3),
-
-		zxz(self:) -> Wrapped(Vec3),
-
-		zyx(self:) -> Wrapped(Vec3),
-
-		zyy(self:) -> Wrapped(Vec3),
-
-		zyz(self:) -> Wrapped(Vec3),
-
-		zzx(self:) -> Wrapped(Vec3),
-
-		zzy(self:) -> Wrapped(Vec3),
-
-		zzz(self:) -> Wrapped(Vec3),
-
-		xxxx(self:) -> Wrapped(Vec4),
-
-		xxxy(self:) -> Wrapped(Vec4),
-
-		xxxz(self:) -> Wrapped(Vec4),
-
-		xxyx(self:) -> Wrapped(Vec4),
-
-		xxyy(self:) -> Wrapped(Vec4),
-
-		xxyz(self:) -> Wrapped(Vec4),
-
-		xxzx(self:) -> Wrapped(Vec4),
-
-		xxzy(self:) -> Wrapped(Vec4),
-
-		xxzz(self:) -> Wrapped(Vec4),
-
-		xyxx(self:) -> Wrapped(Vec4),
-
-		xyxy(self:) -> Wrapped(Vec4),
-
-		xyxz(self:) -> Wrapped(Vec4),
-
-		xyyx(self:) -> Wrapped(Vec4),
-
-		xyyy(self:) -> Wrapped(Vec4),
-
-		xyyz(self:) -> Wrapped(Vec4),
-
-		xyzx(self:) -> Wrapped(Vec4),
-
-		xyzy(self:) -> Wrapped(Vec4),
-
-		xyzz(self:) -> Wrapped(Vec4),
-
-		xzxx(self:) -> Wrapped(Vec4),
-
-		xzxy(self:) -> Wrapped(Vec4),
-
-		xzxz(self:) -> Wrapped(Vec4),
-
-		xzyx(self:) -> Wrapped(Vec4),
-
-		xzyy(self:) -> Wrapped(Vec4),
-
-		xzyz(self:) -> Wrapped(Vec4),
-
-		xzzx(self:) -> Wrapped(Vec4),
-
-		xzzy(self:) -> Wrapped(Vec4),
-
-		xzzz(self:) -> Wrapped(Vec4),
-
-		yxxx(self:) -> Wrapped(Vec4),
-
-		yxxy(self:) -> Wrapped(Vec4),
-
-		yxxz(self:) -> Wrapped(Vec4),
-
-		yxyx(self:) -> Wrapped(Vec4),
-
-		yxyy(self:) -> Wrapped(Vec4),
-
-		yxyz(self:) -> Wrapped(Vec4),
-
-		yxzx(self:) -> Wrapped(Vec4),
-
-		yxzy(self:) -> Wrapped(Vec4),
-
-		yxzz(self:) -> Wrapped(Vec4),
-
-		yyxx(self:) -> Wrapped(Vec4),
-
-		yyxy(self:) -> Wrapped(Vec4),
-
-		yyxz(self:) -> Wrapped(Vec4),
-
-		yyyx(self:) -> Wrapped(Vec4),
-
-		yyyy(self:) -> Wrapped(Vec4),
-
-		yyyz(self:) -> Wrapped(Vec4),
-
-		yyzx(self:) -> Wrapped(Vec4),
-
-		yyzy(self:) -> Wrapped(Vec4),
-
-		yyzz(self:) -> Wrapped(Vec4),
-
-		yzxx(self:) -> Wrapped(Vec4),
-
-		yzxy(self:) -> Wrapped(Vec4),
-
-		yzxz(self:) -> Wrapped(Vec4),
-
-		yzyx(self:) -> Wrapped(Vec4),
-
-		yzyy(self:) -> Wrapped(Vec4),
-
-		yzyz(self:) -> Wrapped(Vec4),
-
-		yzzx(self:) -> Wrapped(Vec4),
-
-		yzzy(self:) -> Wrapped(Vec4),
-
-		yzzz(self:) -> Wrapped(Vec4),
-
-		zxxx(self:) -> Wrapped(Vec4),
-
-		zxxy(self:) -> Wrapped(Vec4),
-
-		zxxz(self:) -> Wrapped(Vec4),
-
-		zxyx(self:) -> Wrapped(Vec4),
-
-		zxyy(self:) -> Wrapped(Vec4),
-
-		zxyz(self:) -> Wrapped(Vec4),
-
-		zxzx(self:) -> Wrapped(Vec4),
-
-		zxzy(self:) -> Wrapped(Vec4),
-
-		zxzz(self:) -> Wrapped(Vec4),
-
-		zyxx(self:) -> Wrapped(Vec4),
-
-		zyxy(self:) -> Wrapped(Vec4),
-
-		zyxz(self:) -> Wrapped(Vec4),
-
-		zyyx(self:) -> Wrapped(Vec4),
-
-		zyyy(self:) -> Wrapped(Vec4),
-
-		zyyz(self:) -> Wrapped(Vec4),
-
-		zyzx(self:) -> Wrapped(Vec4),
-
-		zyzy(self:) -> Wrapped(Vec4),
-
-		zyzz(self:) -> Wrapped(Vec4),
-
-		zzxx(self:) -> Wrapped(Vec4),
-
-		zzxy(self:) -> Wrapped(Vec4),
-
-		zzxz(self:) -> Wrapped(Vec4),
-
-		zzyx(self:) -> Wrapped(Vec4),
-
-		zzyy(self:) -> Wrapped(Vec4),
-
-		zzyz(self:) -> Wrapped(Vec4),
-
-		zzzx(self:) -> Wrapped(Vec4),
-
-		zzzy(self:) -> Wrapped(Vec4),
-
-		zzzz(self:) -> Wrapped(Vec4),
-
 	)
 	+ Fields
 	(
@@ -4771,6 +3869,8 @@ impl_script_newtype!{
 	///
 	///It is possible to convert between `Vec3` and `Vec3A` types using `From` trait implementations.
 	glam::f32::Vec3A : 
+	Clone +
+	Debug +
 	Methods
 	(
 		///Creates a new vector.
@@ -5085,315 +4185,6 @@ impl_script_newtype!{
 		///Casts all elements of `self` to `u32`.
 		as_uvec3(&self:) -> Wrapped(UVec3),
 
-		from(Wrapped(Vec3A)) -> self,
-
-		from(Wrapped(Vec3A)) -> self,
-
-		from(Wrapped(Vec3A)) -> self,
-
-		from(Wrapped(Vec3)) -> self,
-
-		///Creates a `Vec3A` from the `x`, `y` and `z` elements of `self` discarding `w`.
-		///
-		///On architectures where SIMD is supported such as SSE2 on `x86_64` this conversion is a noop.
-		from(Wrapped(Vec4)) -> self,
-
-		from(Wrapped(Vec3A)) -> self,
-
-		mul(self:Wrapped(Vec3A)) -> Wrapped(Vec3A),
-
-		mul(self:self) -> self,
-
-		mul(self:Raw(f32)) -> self,
-
-		mul(self:Wrapped(Vec3A)) -> Wrapped(Vec3A),
-
-		clone(&self:) -> Wrapped(Vec3A),
-
-		default() -> self,
-
-		eq(&self:&self) -> Raw(bool),
-
-		div(self:self) -> self,
-
-		div(self:Raw(f32)) -> self,
-
-		div(self:Wrapped(Vec3A)) -> Wrapped(Vec3A),
-
-		div_assign(&mut self:self),
-
-		div_assign(&mut self:Raw(f32)),
-
-		mul_assign(&mut self:self),
-
-		mul_assign(&mut self:Raw(f32)),
-
-		add(self:self) -> self,
-
-		add(self:Raw(f32)) -> self,
-
-		add(self:Wrapped(Vec3A)) -> Wrapped(Vec3A),
-
-		add_assign(&mut self:self),
-
-		add_assign(&mut self:Raw(f32)),
-
-		sub(self:self) -> self,
-
-		sub(self:Raw(f32)) -> self,
-
-		sub(self:Wrapped(Vec3A)) -> Wrapped(Vec3A),
-
-		sub_assign(&mut self:Wrapped(Vec3A)),
-
-		sub_assign(&mut self:Raw(f32)),
-
-		rem(self:self) -> self,
-
-		rem(self:Raw(f32)) -> self,
-
-		rem(self:Wrapped(Vec3A)) -> Wrapped(Vec3A),
-
-		rem_assign(&mut self:self),
-
-		rem_assign(&mut self:Raw(f32)),
-
-		neg(self:) -> self,
-
-		xx(self:) -> Wrapped(Vec2),
-
-		xy(self:) -> Wrapped(Vec2),
-
-		xz(self:) -> Wrapped(Vec2),
-
-		yx(self:) -> Wrapped(Vec2),
-
-		yy(self:) -> Wrapped(Vec2),
-
-		yz(self:) -> Wrapped(Vec2),
-
-		zx(self:) -> Wrapped(Vec2),
-
-		zy(self:) -> Wrapped(Vec2),
-
-		zz(self:) -> Wrapped(Vec2),
-
-		xxx(self:) -> Wrapped(Vec3A),
-
-		xxy(self:) -> Wrapped(Vec3A),
-
-		xxz(self:) -> Wrapped(Vec3A),
-
-		xyx(self:) -> Wrapped(Vec3A),
-
-		xyy(self:) -> Wrapped(Vec3A),
-
-		xyz(self:) -> Wrapped(Vec3A),
-
-		xzx(self:) -> Wrapped(Vec3A),
-
-		xzy(self:) -> Wrapped(Vec3A),
-
-		xzz(self:) -> Wrapped(Vec3A),
-
-		yxx(self:) -> Wrapped(Vec3A),
-
-		yxy(self:) -> Wrapped(Vec3A),
-
-		yxz(self:) -> Wrapped(Vec3A),
-
-		yyx(self:) -> Wrapped(Vec3A),
-
-		yyy(self:) -> Wrapped(Vec3A),
-
-		yyz(self:) -> Wrapped(Vec3A),
-
-		yzx(self:) -> Wrapped(Vec3A),
-
-		yzy(self:) -> Wrapped(Vec3A),
-
-		yzz(self:) -> Wrapped(Vec3A),
-
-		zxx(self:) -> Wrapped(Vec3A),
-
-		zxy(self:) -> Wrapped(Vec3A),
-
-		zxz(self:) -> Wrapped(Vec3A),
-
-		zyx(self:) -> Wrapped(Vec3A),
-
-		zyy(self:) -> Wrapped(Vec3A),
-
-		zyz(self:) -> Wrapped(Vec3A),
-
-		zzx(self:) -> Wrapped(Vec3A),
-
-		zzy(self:) -> Wrapped(Vec3A),
-
-		zzz(self:) -> Wrapped(Vec3A),
-
-		xxxx(self:) -> Wrapped(Vec4),
-
-		xxxy(self:) -> Wrapped(Vec4),
-
-		xxxz(self:) -> Wrapped(Vec4),
-
-		xxyx(self:) -> Wrapped(Vec4),
-
-		xxyy(self:) -> Wrapped(Vec4),
-
-		xxyz(self:) -> Wrapped(Vec4),
-
-		xxzx(self:) -> Wrapped(Vec4),
-
-		xxzy(self:) -> Wrapped(Vec4),
-
-		xxzz(self:) -> Wrapped(Vec4),
-
-		xyxx(self:) -> Wrapped(Vec4),
-
-		xyxy(self:) -> Wrapped(Vec4),
-
-		xyxz(self:) -> Wrapped(Vec4),
-
-		xyyx(self:) -> Wrapped(Vec4),
-
-		xyyy(self:) -> Wrapped(Vec4),
-
-		xyyz(self:) -> Wrapped(Vec4),
-
-		xyzx(self:) -> Wrapped(Vec4),
-
-		xyzy(self:) -> Wrapped(Vec4),
-
-		xyzz(self:) -> Wrapped(Vec4),
-
-		xzxx(self:) -> Wrapped(Vec4),
-
-		xzxy(self:) -> Wrapped(Vec4),
-
-		xzxz(self:) -> Wrapped(Vec4),
-
-		xzyx(self:) -> Wrapped(Vec4),
-
-		xzyy(self:) -> Wrapped(Vec4),
-
-		xzyz(self:) -> Wrapped(Vec4),
-
-		xzzx(self:) -> Wrapped(Vec4),
-
-		xzzy(self:) -> Wrapped(Vec4),
-
-		xzzz(self:) -> Wrapped(Vec4),
-
-		yxxx(self:) -> Wrapped(Vec4),
-
-		yxxy(self:) -> Wrapped(Vec4),
-
-		yxxz(self:) -> Wrapped(Vec4),
-
-		yxyx(self:) -> Wrapped(Vec4),
-
-		yxyy(self:) -> Wrapped(Vec4),
-
-		yxyz(self:) -> Wrapped(Vec4),
-
-		yxzx(self:) -> Wrapped(Vec4),
-
-		yxzy(self:) -> Wrapped(Vec4),
-
-		yxzz(self:) -> Wrapped(Vec4),
-
-		yyxx(self:) -> Wrapped(Vec4),
-
-		yyxy(self:) -> Wrapped(Vec4),
-
-		yyxz(self:) -> Wrapped(Vec4),
-
-		yyyx(self:) -> Wrapped(Vec4),
-
-		yyyy(self:) -> Wrapped(Vec4),
-
-		yyyz(self:) -> Wrapped(Vec4),
-
-		yyzx(self:) -> Wrapped(Vec4),
-
-		yyzy(self:) -> Wrapped(Vec4),
-
-		yyzz(self:) -> Wrapped(Vec4),
-
-		yzxx(self:) -> Wrapped(Vec4),
-
-		yzxy(self:) -> Wrapped(Vec4),
-
-		yzxz(self:) -> Wrapped(Vec4),
-
-		yzyx(self:) -> Wrapped(Vec4),
-
-		yzyy(self:) -> Wrapped(Vec4),
-
-		yzyz(self:) -> Wrapped(Vec4),
-
-		yzzx(self:) -> Wrapped(Vec4),
-
-		yzzy(self:) -> Wrapped(Vec4),
-
-		yzzz(self:) -> Wrapped(Vec4),
-
-		zxxx(self:) -> Wrapped(Vec4),
-
-		zxxy(self:) -> Wrapped(Vec4),
-
-		zxxz(self:) -> Wrapped(Vec4),
-
-		zxyx(self:) -> Wrapped(Vec4),
-
-		zxyy(self:) -> Wrapped(Vec4),
-
-		zxyz(self:) -> Wrapped(Vec4),
-
-		zxzx(self:) -> Wrapped(Vec4),
-
-		zxzy(self:) -> Wrapped(Vec4),
-
-		zxzz(self:) -> Wrapped(Vec4),
-
-		zyxx(self:) -> Wrapped(Vec4),
-
-		zyxy(self:) -> Wrapped(Vec4),
-
-		zyxz(self:) -> Wrapped(Vec4),
-
-		zyyx(self:) -> Wrapped(Vec4),
-
-		zyyy(self:) -> Wrapped(Vec4),
-
-		zyyz(self:) -> Wrapped(Vec4),
-
-		zyzx(self:) -> Wrapped(Vec4),
-
-		zyzy(self:) -> Wrapped(Vec4),
-
-		zyzz(self:) -> Wrapped(Vec4),
-
-		zzxx(self:) -> Wrapped(Vec4),
-
-		zzxy(self:) -> Wrapped(Vec4),
-
-		zzxz(self:) -> Wrapped(Vec4),
-
-		zzyx(self:) -> Wrapped(Vec4),
-
-		zzyy(self:) -> Wrapped(Vec4),
-
-		zzyz(self:) -> Wrapped(Vec4),
-
-		zzzx(self:) -> Wrapped(Vec4),
-
-		zzzy(self:) -> Wrapped(Vec4),
-
-		zzzz(self:) -> Wrapped(Vec4),
-
 	)
 	+ Fields
 	(
@@ -5432,6 +4223,8 @@ impl_script_newtype!{
 	///
 	///This type uses 16 byte aligned SIMD vector type for storage.
 	glam::f32::Vec4 : 
+	Clone +
+	Debug +
 	Methods
 	(
 		///Creates a new vector.
@@ -5721,749 +4514,6 @@ impl_script_newtype!{
 		///Casts all elements of `self` to `u32`.
 		as_uvec4(&self:) -> Wrapped(UVec4),
 
-		from(Wrapped(Quat)) -> self,
-
-		///Creates a `Vec3A` from the `x`, `y` and `z` elements of `self` discarding `w`.
-		///
-		///On architectures where SIMD is supported such as SSE2 on `x86_64` this conversion is a noop.
-		from(Wrapped(Vec4)) -> self,
-
-		from(Wrapped(Vec4)) -> self,
-
-		from(Wrapped(Vec4)) -> self,
-
-		from(Wrapped(Vec4)) -> self,
-
-		mul(self:self) -> self,
-
-		mul(self:Raw(f32)) -> self,
-
-		mul(self:Wrapped(Vec4)) -> Wrapped(Vec4),
-
-		clone(&self:) -> Wrapped(Vec4),
-
-		default() -> self,
-
-		eq(&self:&self) -> Raw(bool),
-
-		div(self:self) -> self,
-
-		div(self:Raw(f32)) -> self,
-
-		div(self:Wrapped(Vec4)) -> Wrapped(Vec4),
-
-		div_assign(&mut self:self),
-
-		div_assign(&mut self:Raw(f32)),
-
-		mul_assign(&mut self:self),
-
-		mul_assign(&mut self:Raw(f32)),
-
-		add(self:self) -> self,
-
-		add(self:Raw(f32)) -> self,
-
-		add(self:Wrapped(Vec4)) -> Wrapped(Vec4),
-
-		add_assign(&mut self:self),
-
-		add_assign(&mut self:Raw(f32)),
-
-		sub(self:self) -> self,
-
-		sub(self:Raw(f32)) -> self,
-
-		sub(self:Wrapped(Vec4)) -> Wrapped(Vec4),
-
-		sub_assign(&mut self:Wrapped(Vec4)),
-
-		sub_assign(&mut self:Raw(f32)),
-
-		rem(self:self) -> self,
-
-		rem(self:Raw(f32)) -> self,
-
-		rem(self:Wrapped(Vec4)) -> Wrapped(Vec4),
-
-		rem_assign(&mut self:self),
-
-		rem_assign(&mut self:Raw(f32)),
-
-		neg(self:) -> self,
-
-		xx(self:) -> Wrapped(Vec2),
-
-		xy(self:) -> Wrapped(Vec2),
-
-		xz(self:) -> Wrapped(Vec2),
-
-		xw(self:) -> Wrapped(Vec2),
-
-		yx(self:) -> Wrapped(Vec2),
-
-		yy(self:) -> Wrapped(Vec2),
-
-		yz(self:) -> Wrapped(Vec2),
-
-		yw(self:) -> Wrapped(Vec2),
-
-		zx(self:) -> Wrapped(Vec2),
-
-		zy(self:) -> Wrapped(Vec2),
-
-		zz(self:) -> Wrapped(Vec2),
-
-		zw(self:) -> Wrapped(Vec2),
-
-		wx(self:) -> Wrapped(Vec2),
-
-		wy(self:) -> Wrapped(Vec2),
-
-		wz(self:) -> Wrapped(Vec2),
-
-		ww(self:) -> Wrapped(Vec2),
-
-		xxx(self:) -> Wrapped(Vec3),
-
-		xxy(self:) -> Wrapped(Vec3),
-
-		xxz(self:) -> Wrapped(Vec3),
-
-		xxw(self:) -> Wrapped(Vec3),
-
-		xyx(self:) -> Wrapped(Vec3),
-
-		xyy(self:) -> Wrapped(Vec3),
-
-		xyz(self:) -> Wrapped(Vec3),
-
-		xyw(self:) -> Wrapped(Vec3),
-
-		xzx(self:) -> Wrapped(Vec3),
-
-		xzy(self:) -> Wrapped(Vec3),
-
-		xzz(self:) -> Wrapped(Vec3),
-
-		xzw(self:) -> Wrapped(Vec3),
-
-		xwx(self:) -> Wrapped(Vec3),
-
-		xwy(self:) -> Wrapped(Vec3),
-
-		xwz(self:) -> Wrapped(Vec3),
-
-		xww(self:) -> Wrapped(Vec3),
-
-		yxx(self:) -> Wrapped(Vec3),
-
-		yxy(self:) -> Wrapped(Vec3),
-
-		yxz(self:) -> Wrapped(Vec3),
-
-		yxw(self:) -> Wrapped(Vec3),
-
-		yyx(self:) -> Wrapped(Vec3),
-
-		yyy(self:) -> Wrapped(Vec3),
-
-		yyz(self:) -> Wrapped(Vec3),
-
-		yyw(self:) -> Wrapped(Vec3),
-
-		yzx(self:) -> Wrapped(Vec3),
-
-		yzy(self:) -> Wrapped(Vec3),
-
-		yzz(self:) -> Wrapped(Vec3),
-
-		yzw(self:) -> Wrapped(Vec3),
-
-		ywx(self:) -> Wrapped(Vec3),
-
-		ywy(self:) -> Wrapped(Vec3),
-
-		ywz(self:) -> Wrapped(Vec3),
-
-		yww(self:) -> Wrapped(Vec3),
-
-		zxx(self:) -> Wrapped(Vec3),
-
-		zxy(self:) -> Wrapped(Vec3),
-
-		zxz(self:) -> Wrapped(Vec3),
-
-		zxw(self:) -> Wrapped(Vec3),
-
-		zyx(self:) -> Wrapped(Vec3),
-
-		zyy(self:) -> Wrapped(Vec3),
-
-		zyz(self:) -> Wrapped(Vec3),
-
-		zyw(self:) -> Wrapped(Vec3),
-
-		zzx(self:) -> Wrapped(Vec3),
-
-		zzy(self:) -> Wrapped(Vec3),
-
-		zzz(self:) -> Wrapped(Vec3),
-
-		zzw(self:) -> Wrapped(Vec3),
-
-		zwx(self:) -> Wrapped(Vec3),
-
-		zwy(self:) -> Wrapped(Vec3),
-
-		zwz(self:) -> Wrapped(Vec3),
-
-		zww(self:) -> Wrapped(Vec3),
-
-		wxx(self:) -> Wrapped(Vec3),
-
-		wxy(self:) -> Wrapped(Vec3),
-
-		wxz(self:) -> Wrapped(Vec3),
-
-		wxw(self:) -> Wrapped(Vec3),
-
-		wyx(self:) -> Wrapped(Vec3),
-
-		wyy(self:) -> Wrapped(Vec3),
-
-		wyz(self:) -> Wrapped(Vec3),
-
-		wyw(self:) -> Wrapped(Vec3),
-
-		wzx(self:) -> Wrapped(Vec3),
-
-		wzy(self:) -> Wrapped(Vec3),
-
-		wzz(self:) -> Wrapped(Vec3),
-
-		wzw(self:) -> Wrapped(Vec3),
-
-		wwx(self:) -> Wrapped(Vec3),
-
-		wwy(self:) -> Wrapped(Vec3),
-
-		wwz(self:) -> Wrapped(Vec3),
-
-		www(self:) -> Wrapped(Vec3),
-
-		xxxx(self:) -> Wrapped(Vec4),
-
-		xxxy(self:) -> Wrapped(Vec4),
-
-		xxxz(self:) -> Wrapped(Vec4),
-
-		xxxw(self:) -> Wrapped(Vec4),
-
-		xxyx(self:) -> Wrapped(Vec4),
-
-		xxyy(self:) -> Wrapped(Vec4),
-
-		xxyz(self:) -> Wrapped(Vec4),
-
-		xxyw(self:) -> Wrapped(Vec4),
-
-		xxzx(self:) -> Wrapped(Vec4),
-
-		xxzy(self:) -> Wrapped(Vec4),
-
-		xxzz(self:) -> Wrapped(Vec4),
-
-		xxzw(self:) -> Wrapped(Vec4),
-
-		xxwx(self:) -> Wrapped(Vec4),
-
-		xxwy(self:) -> Wrapped(Vec4),
-
-		xxwz(self:) -> Wrapped(Vec4),
-
-		xxww(self:) -> Wrapped(Vec4),
-
-		xyxx(self:) -> Wrapped(Vec4),
-
-		xyxy(self:) -> Wrapped(Vec4),
-
-		xyxz(self:) -> Wrapped(Vec4),
-
-		xyxw(self:) -> Wrapped(Vec4),
-
-		xyyx(self:) -> Wrapped(Vec4),
-
-		xyyy(self:) -> Wrapped(Vec4),
-
-		xyyz(self:) -> Wrapped(Vec4),
-
-		xyyw(self:) -> Wrapped(Vec4),
-
-		xyzx(self:) -> Wrapped(Vec4),
-
-		xyzy(self:) -> Wrapped(Vec4),
-
-		xyzz(self:) -> Wrapped(Vec4),
-
-		xyzw(self:) -> Wrapped(Vec4),
-
-		xywx(self:) -> Wrapped(Vec4),
-
-		xywy(self:) -> Wrapped(Vec4),
-
-		xywz(self:) -> Wrapped(Vec4),
-
-		xyww(self:) -> Wrapped(Vec4),
-
-		xzxx(self:) -> Wrapped(Vec4),
-
-		xzxy(self:) -> Wrapped(Vec4),
-
-		xzxz(self:) -> Wrapped(Vec4),
-
-		xzxw(self:) -> Wrapped(Vec4),
-
-		xzyx(self:) -> Wrapped(Vec4),
-
-		xzyy(self:) -> Wrapped(Vec4),
-
-		xzyz(self:) -> Wrapped(Vec4),
-
-		xzyw(self:) -> Wrapped(Vec4),
-
-		xzzx(self:) -> Wrapped(Vec4),
-
-		xzzy(self:) -> Wrapped(Vec4),
-
-		xzzz(self:) -> Wrapped(Vec4),
-
-		xzzw(self:) -> Wrapped(Vec4),
-
-		xzwx(self:) -> Wrapped(Vec4),
-
-		xzwy(self:) -> Wrapped(Vec4),
-
-		xzwz(self:) -> Wrapped(Vec4),
-
-		xzww(self:) -> Wrapped(Vec4),
-
-		xwxx(self:) -> Wrapped(Vec4),
-
-		xwxy(self:) -> Wrapped(Vec4),
-
-		xwxz(self:) -> Wrapped(Vec4),
-
-		xwxw(self:) -> Wrapped(Vec4),
-
-		xwyx(self:) -> Wrapped(Vec4),
-
-		xwyy(self:) -> Wrapped(Vec4),
-
-		xwyz(self:) -> Wrapped(Vec4),
-
-		xwyw(self:) -> Wrapped(Vec4),
-
-		xwzx(self:) -> Wrapped(Vec4),
-
-		xwzy(self:) -> Wrapped(Vec4),
-
-		xwzz(self:) -> Wrapped(Vec4),
-
-		xwzw(self:) -> Wrapped(Vec4),
-
-		xwwx(self:) -> Wrapped(Vec4),
-
-		xwwy(self:) -> Wrapped(Vec4),
-
-		xwwz(self:) -> Wrapped(Vec4),
-
-		xwww(self:) -> Wrapped(Vec4),
-
-		yxxx(self:) -> Wrapped(Vec4),
-
-		yxxy(self:) -> Wrapped(Vec4),
-
-		yxxz(self:) -> Wrapped(Vec4),
-
-		yxxw(self:) -> Wrapped(Vec4),
-
-		yxyx(self:) -> Wrapped(Vec4),
-
-		yxyy(self:) -> Wrapped(Vec4),
-
-		yxyz(self:) -> Wrapped(Vec4),
-
-		yxyw(self:) -> Wrapped(Vec4),
-
-		yxzx(self:) -> Wrapped(Vec4),
-
-		yxzy(self:) -> Wrapped(Vec4),
-
-		yxzz(self:) -> Wrapped(Vec4),
-
-		yxzw(self:) -> Wrapped(Vec4),
-
-		yxwx(self:) -> Wrapped(Vec4),
-
-		yxwy(self:) -> Wrapped(Vec4),
-
-		yxwz(self:) -> Wrapped(Vec4),
-
-		yxww(self:) -> Wrapped(Vec4),
-
-		yyxx(self:) -> Wrapped(Vec4),
-
-		yyxy(self:) -> Wrapped(Vec4),
-
-		yyxz(self:) -> Wrapped(Vec4),
-
-		yyxw(self:) -> Wrapped(Vec4),
-
-		yyyx(self:) -> Wrapped(Vec4),
-
-		yyyy(self:) -> Wrapped(Vec4),
-
-		yyyz(self:) -> Wrapped(Vec4),
-
-		yyyw(self:) -> Wrapped(Vec4),
-
-		yyzx(self:) -> Wrapped(Vec4),
-
-		yyzy(self:) -> Wrapped(Vec4),
-
-		yyzz(self:) -> Wrapped(Vec4),
-
-		yyzw(self:) -> Wrapped(Vec4),
-
-		yywx(self:) -> Wrapped(Vec4),
-
-		yywy(self:) -> Wrapped(Vec4),
-
-		yywz(self:) -> Wrapped(Vec4),
-
-		yyww(self:) -> Wrapped(Vec4),
-
-		yzxx(self:) -> Wrapped(Vec4),
-
-		yzxy(self:) -> Wrapped(Vec4),
-
-		yzxz(self:) -> Wrapped(Vec4),
-
-		yzxw(self:) -> Wrapped(Vec4),
-
-		yzyx(self:) -> Wrapped(Vec4),
-
-		yzyy(self:) -> Wrapped(Vec4),
-
-		yzyz(self:) -> Wrapped(Vec4),
-
-		yzyw(self:) -> Wrapped(Vec4),
-
-		yzzx(self:) -> Wrapped(Vec4),
-
-		yzzy(self:) -> Wrapped(Vec4),
-
-		yzzz(self:) -> Wrapped(Vec4),
-
-		yzzw(self:) -> Wrapped(Vec4),
-
-		yzwx(self:) -> Wrapped(Vec4),
-
-		yzwy(self:) -> Wrapped(Vec4),
-
-		yzwz(self:) -> Wrapped(Vec4),
-
-		yzww(self:) -> Wrapped(Vec4),
-
-		ywxx(self:) -> Wrapped(Vec4),
-
-		ywxy(self:) -> Wrapped(Vec4),
-
-		ywxz(self:) -> Wrapped(Vec4),
-
-		ywxw(self:) -> Wrapped(Vec4),
-
-		ywyx(self:) -> Wrapped(Vec4),
-
-		ywyy(self:) -> Wrapped(Vec4),
-
-		ywyz(self:) -> Wrapped(Vec4),
-
-		ywyw(self:) -> Wrapped(Vec4),
-
-		ywzx(self:) -> Wrapped(Vec4),
-
-		ywzy(self:) -> Wrapped(Vec4),
-
-		ywzz(self:) -> Wrapped(Vec4),
-
-		ywzw(self:) -> Wrapped(Vec4),
-
-		ywwx(self:) -> Wrapped(Vec4),
-
-		ywwy(self:) -> Wrapped(Vec4),
-
-		ywwz(self:) -> Wrapped(Vec4),
-
-		ywww(self:) -> Wrapped(Vec4),
-
-		zxxx(self:) -> Wrapped(Vec4),
-
-		zxxy(self:) -> Wrapped(Vec4),
-
-		zxxz(self:) -> Wrapped(Vec4),
-
-		zxxw(self:) -> Wrapped(Vec4),
-
-		zxyx(self:) -> Wrapped(Vec4),
-
-		zxyy(self:) -> Wrapped(Vec4),
-
-		zxyz(self:) -> Wrapped(Vec4),
-
-		zxyw(self:) -> Wrapped(Vec4),
-
-		zxzx(self:) -> Wrapped(Vec4),
-
-		zxzy(self:) -> Wrapped(Vec4),
-
-		zxzz(self:) -> Wrapped(Vec4),
-
-		zxzw(self:) -> Wrapped(Vec4),
-
-		zxwx(self:) -> Wrapped(Vec4),
-
-		zxwy(self:) -> Wrapped(Vec4),
-
-		zxwz(self:) -> Wrapped(Vec4),
-
-		zxww(self:) -> Wrapped(Vec4),
-
-		zyxx(self:) -> Wrapped(Vec4),
-
-		zyxy(self:) -> Wrapped(Vec4),
-
-		zyxz(self:) -> Wrapped(Vec4),
-
-		zyxw(self:) -> Wrapped(Vec4),
-
-		zyyx(self:) -> Wrapped(Vec4),
-
-		zyyy(self:) -> Wrapped(Vec4),
-
-		zyyz(self:) -> Wrapped(Vec4),
-
-		zyyw(self:) -> Wrapped(Vec4),
-
-		zyzx(self:) -> Wrapped(Vec4),
-
-		zyzy(self:) -> Wrapped(Vec4),
-
-		zyzz(self:) -> Wrapped(Vec4),
-
-		zyzw(self:) -> Wrapped(Vec4),
-
-		zywx(self:) -> Wrapped(Vec4),
-
-		zywy(self:) -> Wrapped(Vec4),
-
-		zywz(self:) -> Wrapped(Vec4),
-
-		zyww(self:) -> Wrapped(Vec4),
-
-		zzxx(self:) -> Wrapped(Vec4),
-
-		zzxy(self:) -> Wrapped(Vec4),
-
-		zzxz(self:) -> Wrapped(Vec4),
-
-		zzxw(self:) -> Wrapped(Vec4),
-
-		zzyx(self:) -> Wrapped(Vec4),
-
-		zzyy(self:) -> Wrapped(Vec4),
-
-		zzyz(self:) -> Wrapped(Vec4),
-
-		zzyw(self:) -> Wrapped(Vec4),
-
-		zzzx(self:) -> Wrapped(Vec4),
-
-		zzzy(self:) -> Wrapped(Vec4),
-
-		zzzz(self:) -> Wrapped(Vec4),
-
-		zzzw(self:) -> Wrapped(Vec4),
-
-		zzwx(self:) -> Wrapped(Vec4),
-
-		zzwy(self:) -> Wrapped(Vec4),
-
-		zzwz(self:) -> Wrapped(Vec4),
-
-		zzww(self:) -> Wrapped(Vec4),
-
-		zwxx(self:) -> Wrapped(Vec4),
-
-		zwxy(self:) -> Wrapped(Vec4),
-
-		zwxz(self:) -> Wrapped(Vec4),
-
-		zwxw(self:) -> Wrapped(Vec4),
-
-		zwyx(self:) -> Wrapped(Vec4),
-
-		zwyy(self:) -> Wrapped(Vec4),
-
-		zwyz(self:) -> Wrapped(Vec4),
-
-		zwyw(self:) -> Wrapped(Vec4),
-
-		zwzx(self:) -> Wrapped(Vec4),
-
-		zwzy(self:) -> Wrapped(Vec4),
-
-		zwzz(self:) -> Wrapped(Vec4),
-
-		zwzw(self:) -> Wrapped(Vec4),
-
-		zwwx(self:) -> Wrapped(Vec4),
-
-		zwwy(self:) -> Wrapped(Vec4),
-
-		zwwz(self:) -> Wrapped(Vec4),
-
-		zwww(self:) -> Wrapped(Vec4),
-
-		wxxx(self:) -> Wrapped(Vec4),
-
-		wxxy(self:) -> Wrapped(Vec4),
-
-		wxxz(self:) -> Wrapped(Vec4),
-
-		wxxw(self:) -> Wrapped(Vec4),
-
-		wxyx(self:) -> Wrapped(Vec4),
-
-		wxyy(self:) -> Wrapped(Vec4),
-
-		wxyz(self:) -> Wrapped(Vec4),
-
-		wxyw(self:) -> Wrapped(Vec4),
-
-		wxzx(self:) -> Wrapped(Vec4),
-
-		wxzy(self:) -> Wrapped(Vec4),
-
-		wxzz(self:) -> Wrapped(Vec4),
-
-		wxzw(self:) -> Wrapped(Vec4),
-
-		wxwx(self:) -> Wrapped(Vec4),
-
-		wxwy(self:) -> Wrapped(Vec4),
-
-		wxwz(self:) -> Wrapped(Vec4),
-
-		wxww(self:) -> Wrapped(Vec4),
-
-		wyxx(self:) -> Wrapped(Vec4),
-
-		wyxy(self:) -> Wrapped(Vec4),
-
-		wyxz(self:) -> Wrapped(Vec4),
-
-		wyxw(self:) -> Wrapped(Vec4),
-
-		wyyx(self:) -> Wrapped(Vec4),
-
-		wyyy(self:) -> Wrapped(Vec4),
-
-		wyyz(self:) -> Wrapped(Vec4),
-
-		wyyw(self:) -> Wrapped(Vec4),
-
-		wyzx(self:) -> Wrapped(Vec4),
-
-		wyzy(self:) -> Wrapped(Vec4),
-
-		wyzz(self:) -> Wrapped(Vec4),
-
-		wyzw(self:) -> Wrapped(Vec4),
-
-		wywx(self:) -> Wrapped(Vec4),
-
-		wywy(self:) -> Wrapped(Vec4),
-
-		wywz(self:) -> Wrapped(Vec4),
-
-		wyww(self:) -> Wrapped(Vec4),
-
-		wzxx(self:) -> Wrapped(Vec4),
-
-		wzxy(self:) -> Wrapped(Vec4),
-
-		wzxz(self:) -> Wrapped(Vec4),
-
-		wzxw(self:) -> Wrapped(Vec4),
-
-		wzyx(self:) -> Wrapped(Vec4),
-
-		wzyy(self:) -> Wrapped(Vec4),
-
-		wzyz(self:) -> Wrapped(Vec4),
-
-		wzyw(self:) -> Wrapped(Vec4),
-
-		wzzx(self:) -> Wrapped(Vec4),
-
-		wzzy(self:) -> Wrapped(Vec4),
-
-		wzzz(self:) -> Wrapped(Vec4),
-
-		wzzw(self:) -> Wrapped(Vec4),
-
-		wzwx(self:) -> Wrapped(Vec4),
-
-		wzwy(self:) -> Wrapped(Vec4),
-
-		wzwz(self:) -> Wrapped(Vec4),
-
-		wzww(self:) -> Wrapped(Vec4),
-
-		wwxx(self:) -> Wrapped(Vec4),
-
-		wwxy(self:) -> Wrapped(Vec4),
-
-		wwxz(self:) -> Wrapped(Vec4),
-
-		wwxw(self:) -> Wrapped(Vec4),
-
-		wwyx(self:) -> Wrapped(Vec4),
-
-		wwyy(self:) -> Wrapped(Vec4),
-
-		wwyz(self:) -> Wrapped(Vec4),
-
-		wwyw(self:) -> Wrapped(Vec4),
-
-		wwzx(self:) -> Wrapped(Vec4),
-
-		wwzy(self:) -> Wrapped(Vec4),
-
-		wwzz(self:) -> Wrapped(Vec4),
-
-		wwzw(self:) -> Wrapped(Vec4),
-
-		wwwx(self:) -> Wrapped(Vec4),
-
-		wwwy(self:) -> Wrapped(Vec4),
-
-		wwwz(self:) -> Wrapped(Vec4),
-
-		wwww(self:) -> Wrapped(Vec4),
-
 	)
 	+ Fields
 	(
@@ -6500,6 +4550,8 @@ impl_script_newtype!{
 	#[languages(on_feature(lua))]
 	///A 2-dimensional `bool` vector mask.
 	glam::bool::BVec2 : 
+	Clone +
+	Debug +
 	Methods
 	(
 		///Creates a new vector mask.
@@ -6519,30 +4571,6 @@ impl_script_newtype!{
 
 		///Returns true if all the elements are true, false otherwise.
 		all(self:) -> Raw(bool),
-
-		from(Wrapped(BVec2)) -> self,
-
-		from(Wrapped(BVec2)) -> self,
-
-		clone(&self:) -> Wrapped(BVec2),
-
-		eq(&self:Wrapped(&BVec2)) -> Raw(bool),
-
-		default() -> self,
-
-		bitand(self:self) -> self,
-
-		bitand_assign(&mut self:self),
-
-		bitor(self:self) -> self,
-
-		bitor_assign(&mut self:self),
-
-		bitxor(self:self) -> self,
-
-		bitxor_assign(&mut self:self),
-
-		not(self:) -> self,
 
 	)
 	+ Fields
@@ -6564,6 +4592,8 @@ impl_script_newtype!{
 	#[languages(on_feature(lua))]
 	///A 3-dimensional `bool` vector mask.
 	glam::bool::BVec3 : 
+	Clone +
+	Debug +
 	Methods
 	(
 		///Creates a new vector mask.
@@ -6583,30 +4613,6 @@ impl_script_newtype!{
 
 		///Returns true if all the elements are true, false otherwise.
 		all(self:) -> Raw(bool),
-
-		from(Wrapped(BVec3)) -> self,
-
-		from(Wrapped(BVec3)) -> self,
-
-		clone(&self:) -> Wrapped(BVec3),
-
-		eq(&self:Wrapped(&BVec3)) -> Raw(bool),
-
-		default() -> self,
-
-		bitand(self:self) -> self,
-
-		bitand_assign(&mut self:self),
-
-		bitor(self:self) -> self,
-
-		bitor_assign(&mut self:self),
-
-		bitxor(self:self) -> self,
-
-		bitxor_assign(&mut self:self),
-
-		not(self:) -> self,
 
 	)
 	+ Fields
@@ -6629,6 +4635,8 @@ impl_script_newtype!{
 	#[languages(on_feature(lua))]
 	///A 4-dimensional `bool` vector mask.
 	glam::bool::BVec4 : 
+	Clone +
+	Debug +
 	Methods
 	(
 		///Creates a new vector mask.
@@ -6648,30 +4656,6 @@ impl_script_newtype!{
 
 		///Returns true if all the elements are true, false otherwise.
 		all(self:) -> Raw(bool),
-
-		from(Wrapped(BVec4)) -> self,
-
-		from(Wrapped(BVec4)) -> self,
-
-		clone(&self:) -> Wrapped(BVec4),
-
-		eq(&self:Wrapped(&BVec4)) -> Raw(bool),
-
-		default() -> self,
-
-		bitand(self:self) -> self,
-
-		bitand_assign(&mut self:self),
-
-		bitor(self:self) -> self,
-
-		bitor_assign(&mut self:self),
-
-		bitxor(self:self) -> self,
-
-		bitxor_assign(&mut self:self),
-
-		not(self:) -> self,
 
 	)
 	+ Fields
@@ -6698,6 +4682,8 @@ impl_script_newtype!{
 	///This type is 16 byte aligned and is backed by a SIMD vector. If SIMD is not available
 	///`BVec3A` will be a type alias for `BVec3`.
 	glam::bool::BVec3A : 
+	Clone +
+	Debug +
 	Methods
 	(
 		///Creates a new vector mask.
@@ -6717,32 +4703,6 @@ impl_script_newtype!{
 
 		///Returns true if all the elements are true, false otherwise.
 		all(self:) -> Raw(bool),
-
-		from(Wrapped(BVec3A)) -> self,
-
-		from(Wrapped(BVec3A)) -> self,
-
-		from(Wrapped(BVec3A)) -> self,
-
-		clone(&self:) -> Wrapped(BVec3A),
-
-		default() -> self,
-
-		eq(&self:&self) -> Raw(bool),
-
-		bitand(self:self) -> self,
-
-		bitand_assign(&mut self:self),
-
-		bitor(self:self) -> self,
-
-		bitor_assign(&mut self:self),
-
-		bitxor(self:self) -> self,
-
-		bitxor_assign(&mut self:self),
-
-		not(self:) -> self,
 
 	)
 	+ Fields
@@ -6765,6 +4725,8 @@ impl_script_newtype!{
 	///This type is 16 byte aligned and is backed by a SIMD vector. If SIMD is not available
 	///`BVec4A` will be a type alias for `BVec4`.
 	glam::bool::BVec4A : 
+	Clone +
+	Debug +
 	Methods
 	(
 		///Creates a new vector mask.
@@ -6785,32 +4747,6 @@ impl_script_newtype!{
 		///Returns true if all the elements are true, false otherwise.
 		all(self:) -> Raw(bool),
 
-		from(Wrapped(BVec4A)) -> self,
-
-		from(Wrapped(BVec4A)) -> self,
-
-		from(Wrapped(BVec4A)) -> self,
-
-		clone(&self:) -> Wrapped(BVec4A),
-
-		default() -> self,
-
-		eq(&self:&self) -> Raw(bool),
-
-		bitand(self:self) -> self,
-
-		bitand_assign(&mut self:self),
-
-		bitor(self:self) -> self,
-
-		bitor_assign(&mut self:self),
-
-		bitxor(self:self) -> self,
-
-		bitxor_assign(&mut self:self),
-
-		not(self:) -> self,
-
 	)
 	+ Fields
 	(
@@ -6829,6 +4765,8 @@ impl_script_newtype!{
 	#[languages(on_feature(lua))]
 	///A 2-dimensional vector.
 	glam::f64::DVec2 : 
+	Clone +
+	Debug +
 	Methods
 	(
 		///Creates a new vector.
@@ -7136,124 +5074,6 @@ impl_script_newtype!{
 		///Casts all elements of `self` to `u32`.
 		as_uvec2(&self:) -> Wrapped(UVec2),
 
-		from(Wrapped(DVec2)) -> self,
-
-		from(Wrapped(DVec2)) -> self,
-
-		mul(self:self) -> self,
-
-		mul(self:Raw(f64)) -> self,
-
-		mul(self:Wrapped(DVec2)) -> Wrapped(DVec2),
-
-		clone(&self:) -> Wrapped(DVec2),
-
-		eq(&self:Wrapped(&DVec2)) -> Raw(bool),
-
-		default() -> self,
-
-		div(self:self) -> self,
-
-		div(self:Raw(f64)) -> self,
-
-		div(self:Wrapped(DVec2)) -> Wrapped(DVec2),
-
-		div_assign(&mut self:self),
-
-		div_assign(&mut self:Raw(f64)),
-
-		mul_assign(&mut self:self),
-
-		mul_assign(&mut self:Raw(f64)),
-
-		add(self:self) -> self,
-
-		add(self:Raw(f64)) -> self,
-
-		add(self:Wrapped(DVec2)) -> Wrapped(DVec2),
-
-		add_assign(&mut self:self),
-
-		add_assign(&mut self:Raw(f64)),
-
-		sub(self:self) -> self,
-
-		sub(self:Raw(f64)) -> self,
-
-		sub(self:Wrapped(DVec2)) -> Wrapped(DVec2),
-
-		sub_assign(&mut self:Wrapped(DVec2)),
-
-		sub_assign(&mut self:Raw(f64)),
-
-		rem(self:self) -> self,
-
-		rem(self:Raw(f64)) -> self,
-
-		rem(self:Wrapped(DVec2)) -> Wrapped(DVec2),
-
-		rem_assign(&mut self:self),
-
-		rem_assign(&mut self:Raw(f64)),
-
-		neg(self:) -> self,
-
-		xx(self:) -> Wrapped(DVec2),
-
-		xy(self:) -> Wrapped(DVec2),
-
-		yx(self:) -> Wrapped(DVec2),
-
-		yy(self:) -> Wrapped(DVec2),
-
-		xxx(self:) -> Wrapped(DVec3),
-
-		xxy(self:) -> Wrapped(DVec3),
-
-		xyx(self:) -> Wrapped(DVec3),
-
-		xyy(self:) -> Wrapped(DVec3),
-
-		yxx(self:) -> Wrapped(DVec3),
-
-		yxy(self:) -> Wrapped(DVec3),
-
-		yyx(self:) -> Wrapped(DVec3),
-
-		yyy(self:) -> Wrapped(DVec3),
-
-		xxxx(self:) -> Wrapped(DVec4),
-
-		xxxy(self:) -> Wrapped(DVec4),
-
-		xxyx(self:) -> Wrapped(DVec4),
-
-		xxyy(self:) -> Wrapped(DVec4),
-
-		xyxx(self:) -> Wrapped(DVec4),
-
-		xyxy(self:) -> Wrapped(DVec4),
-
-		xyyx(self:) -> Wrapped(DVec4),
-
-		xyyy(self:) -> Wrapped(DVec4),
-
-		yxxx(self:) -> Wrapped(DVec4),
-
-		yxxy(self:) -> Wrapped(DVec4),
-
-		yxyx(self:) -> Wrapped(DVec4),
-
-		yxyy(self:) -> Wrapped(DVec4),
-
-		yyxx(self:) -> Wrapped(DVec4),
-
-		yyxy(self:) -> Wrapped(DVec4),
-
-		yyyx(self:) -> Wrapped(DVec4),
-
-		yyyy(self:) -> Wrapped(DVec4),
-
 	)
 	+ Fields
 	(
@@ -7292,6 +5112,8 @@ impl_script_newtype!{
 	#[languages(on_feature(lua))]
 	///A 3-dimensional vector.
 	glam::f64::DVec3 : 
+	Clone +
+	Debug +
 	Methods
 	(
 		///Creates a new vector.
@@ -7609,302 +5431,6 @@ impl_script_newtype!{
 		///Casts all elements of `self` to `u32`.
 		as_uvec3(&self:) -> Wrapped(UVec3),
 
-		from(Wrapped(DVec3)) -> self,
-
-		from(Wrapped(DVec3)) -> self,
-
-		mul(self:self) -> self,
-
-		mul(self:Raw(f64)) -> self,
-
-		mul(self:Wrapped(DVec3)) -> Wrapped(DVec3),
-
-		clone(&self:) -> Wrapped(DVec3),
-
-		eq(&self:Wrapped(&DVec3)) -> Raw(bool),
-
-		default() -> self,
-
-		div(self:self) -> self,
-
-		div(self:Raw(f64)) -> self,
-
-		div(self:Wrapped(DVec3)) -> Wrapped(DVec3),
-
-		div_assign(&mut self:self),
-
-		div_assign(&mut self:Raw(f64)),
-
-		mul_assign(&mut self:self),
-
-		mul_assign(&mut self:Raw(f64)),
-
-		add(self:self) -> self,
-
-		add(self:Raw(f64)) -> self,
-
-		add(self:Wrapped(DVec3)) -> Wrapped(DVec3),
-
-		add_assign(&mut self:self),
-
-		add_assign(&mut self:Raw(f64)),
-
-		sub(self:self) -> self,
-
-		sub(self:Raw(f64)) -> self,
-
-		sub(self:Wrapped(DVec3)) -> Wrapped(DVec3),
-
-		sub_assign(&mut self:Wrapped(DVec3)),
-
-		sub_assign(&mut self:Raw(f64)),
-
-		rem(self:self) -> self,
-
-		rem(self:Raw(f64)) -> self,
-
-		rem(self:Wrapped(DVec3)) -> Wrapped(DVec3),
-
-		rem_assign(&mut self:self),
-
-		rem_assign(&mut self:Raw(f64)),
-
-		neg(self:) -> self,
-
-		xx(self:) -> Wrapped(DVec2),
-
-		xy(self:) -> Wrapped(DVec2),
-
-		xz(self:) -> Wrapped(DVec2),
-
-		yx(self:) -> Wrapped(DVec2),
-
-		yy(self:) -> Wrapped(DVec2),
-
-		yz(self:) -> Wrapped(DVec2),
-
-		zx(self:) -> Wrapped(DVec2),
-
-		zy(self:) -> Wrapped(DVec2),
-
-		zz(self:) -> Wrapped(DVec2),
-
-		xxx(self:) -> Wrapped(DVec3),
-
-		xxy(self:) -> Wrapped(DVec3),
-
-		xxz(self:) -> Wrapped(DVec3),
-
-		xyx(self:) -> Wrapped(DVec3),
-
-		xyy(self:) -> Wrapped(DVec3),
-
-		xyz(self:) -> Wrapped(DVec3),
-
-		xzx(self:) -> Wrapped(DVec3),
-
-		xzy(self:) -> Wrapped(DVec3),
-
-		xzz(self:) -> Wrapped(DVec3),
-
-		yxx(self:) -> Wrapped(DVec3),
-
-		yxy(self:) -> Wrapped(DVec3),
-
-		yxz(self:) -> Wrapped(DVec3),
-
-		yyx(self:) -> Wrapped(DVec3),
-
-		yyy(self:) -> Wrapped(DVec3),
-
-		yyz(self:) -> Wrapped(DVec3),
-
-		yzx(self:) -> Wrapped(DVec3),
-
-		yzy(self:) -> Wrapped(DVec3),
-
-		yzz(self:) -> Wrapped(DVec3),
-
-		zxx(self:) -> Wrapped(DVec3),
-
-		zxy(self:) -> Wrapped(DVec3),
-
-		zxz(self:) -> Wrapped(DVec3),
-
-		zyx(self:) -> Wrapped(DVec3),
-
-		zyy(self:) -> Wrapped(DVec3),
-
-		zyz(self:) -> Wrapped(DVec3),
-
-		zzx(self:) -> Wrapped(DVec3),
-
-		zzy(self:) -> Wrapped(DVec3),
-
-		zzz(self:) -> Wrapped(DVec3),
-
-		xxxx(self:) -> Wrapped(DVec4),
-
-		xxxy(self:) -> Wrapped(DVec4),
-
-		xxxz(self:) -> Wrapped(DVec4),
-
-		xxyx(self:) -> Wrapped(DVec4),
-
-		xxyy(self:) -> Wrapped(DVec4),
-
-		xxyz(self:) -> Wrapped(DVec4),
-
-		xxzx(self:) -> Wrapped(DVec4),
-
-		xxzy(self:) -> Wrapped(DVec4),
-
-		xxzz(self:) -> Wrapped(DVec4),
-
-		xyxx(self:) -> Wrapped(DVec4),
-
-		xyxy(self:) -> Wrapped(DVec4),
-
-		xyxz(self:) -> Wrapped(DVec4),
-
-		xyyx(self:) -> Wrapped(DVec4),
-
-		xyyy(self:) -> Wrapped(DVec4),
-
-		xyyz(self:) -> Wrapped(DVec4),
-
-		xyzx(self:) -> Wrapped(DVec4),
-
-		xyzy(self:) -> Wrapped(DVec4),
-
-		xyzz(self:) -> Wrapped(DVec4),
-
-		xzxx(self:) -> Wrapped(DVec4),
-
-		xzxy(self:) -> Wrapped(DVec4),
-
-		xzxz(self:) -> Wrapped(DVec4),
-
-		xzyx(self:) -> Wrapped(DVec4),
-
-		xzyy(self:) -> Wrapped(DVec4),
-
-		xzyz(self:) -> Wrapped(DVec4),
-
-		xzzx(self:) -> Wrapped(DVec4),
-
-		xzzy(self:) -> Wrapped(DVec4),
-
-		xzzz(self:) -> Wrapped(DVec4),
-
-		yxxx(self:) -> Wrapped(DVec4),
-
-		yxxy(self:) -> Wrapped(DVec4),
-
-		yxxz(self:) -> Wrapped(DVec4),
-
-		yxyx(self:) -> Wrapped(DVec4),
-
-		yxyy(self:) -> Wrapped(DVec4),
-
-		yxyz(self:) -> Wrapped(DVec4),
-
-		yxzx(self:) -> Wrapped(DVec4),
-
-		yxzy(self:) -> Wrapped(DVec4),
-
-		yxzz(self:) -> Wrapped(DVec4),
-
-		yyxx(self:) -> Wrapped(DVec4),
-
-		yyxy(self:) -> Wrapped(DVec4),
-
-		yyxz(self:) -> Wrapped(DVec4),
-
-		yyyx(self:) -> Wrapped(DVec4),
-
-		yyyy(self:) -> Wrapped(DVec4),
-
-		yyyz(self:) -> Wrapped(DVec4),
-
-		yyzx(self:) -> Wrapped(DVec4),
-
-		yyzy(self:) -> Wrapped(DVec4),
-
-		yyzz(self:) -> Wrapped(DVec4),
-
-		yzxx(self:) -> Wrapped(DVec4),
-
-		yzxy(self:) -> Wrapped(DVec4),
-
-		yzxz(self:) -> Wrapped(DVec4),
-
-		yzyx(self:) -> Wrapped(DVec4),
-
-		yzyy(self:) -> Wrapped(DVec4),
-
-		yzyz(self:) -> Wrapped(DVec4),
-
-		yzzx(self:) -> Wrapped(DVec4),
-
-		yzzy(self:) -> Wrapped(DVec4),
-
-		yzzz(self:) -> Wrapped(DVec4),
-
-		zxxx(self:) -> Wrapped(DVec4),
-
-		zxxy(self:) -> Wrapped(DVec4),
-
-		zxxz(self:) -> Wrapped(DVec4),
-
-		zxyx(self:) -> Wrapped(DVec4),
-
-		zxyy(self:) -> Wrapped(DVec4),
-
-		zxyz(self:) -> Wrapped(DVec4),
-
-		zxzx(self:) -> Wrapped(DVec4),
-
-		zxzy(self:) -> Wrapped(DVec4),
-
-		zxzz(self:) -> Wrapped(DVec4),
-
-		zyxx(self:) -> Wrapped(DVec4),
-
-		zyxy(self:) -> Wrapped(DVec4),
-
-		zyxz(self:) -> Wrapped(DVec4),
-
-		zyyx(self:) -> Wrapped(DVec4),
-
-		zyyy(self:) -> Wrapped(DVec4),
-
-		zyyz(self:) -> Wrapped(DVec4),
-
-		zyzx(self:) -> Wrapped(DVec4),
-
-		zyzy(self:) -> Wrapped(DVec4),
-
-		zyzz(self:) -> Wrapped(DVec4),
-
-		zzxx(self:) -> Wrapped(DVec4),
-
-		zzxy(self:) -> Wrapped(DVec4),
-
-		zzxz(self:) -> Wrapped(DVec4),
-
-		zzyx(self:) -> Wrapped(DVec4),
-
-		zzyy(self:) -> Wrapped(DVec4),
-
-		zzyz(self:) -> Wrapped(DVec4),
-
-		zzzx(self:) -> Wrapped(DVec4),
-
-		zzzy(self:) -> Wrapped(DVec4),
-
-		zzzz(self:) -> Wrapped(DVec4),
-
 	)
 	+ Fields
 	(
@@ -7944,6 +5470,8 @@ impl_script_newtype!{
 	#[languages(on_feature(lua))]
 	///A 4-dimensional vector.
 	glam::f64::DVec4 : 
+	Clone +
+	Debug +
 	Methods
 	(
 		///Creates a new vector.
@@ -8231,742 +5759,6 @@ impl_script_newtype!{
 		///Casts all elements of `self` to `u32`.
 		as_uvec4(&self:) -> Wrapped(UVec4),
 
-		from(Wrapped(DQuat)) -> self,
-
-		from(Wrapped(DVec4)) -> self,
-
-		from(Wrapped(DVec4)) -> self,
-
-		mul(self:self) -> self,
-
-		mul(self:Raw(f64)) -> self,
-
-		mul(self:Wrapped(DVec4)) -> Wrapped(DVec4),
-
-		clone(&self:) -> Wrapped(DVec4),
-
-		eq(&self:Wrapped(&DVec4)) -> Raw(bool),
-
-		default() -> self,
-
-		div(self:self) -> self,
-
-		div(self:Raw(f64)) -> self,
-
-		div(self:Wrapped(DVec4)) -> Wrapped(DVec4),
-
-		div_assign(&mut self:self),
-
-		div_assign(&mut self:Raw(f64)),
-
-		mul_assign(&mut self:self),
-
-		mul_assign(&mut self:Raw(f64)),
-
-		add(self:self) -> self,
-
-		add(self:Raw(f64)) -> self,
-
-		add(self:Wrapped(DVec4)) -> Wrapped(DVec4),
-
-		add_assign(&mut self:self),
-
-		add_assign(&mut self:Raw(f64)),
-
-		sub(self:self) -> self,
-
-		sub(self:Raw(f64)) -> self,
-
-		sub(self:Wrapped(DVec4)) -> Wrapped(DVec4),
-
-		sub_assign(&mut self:Wrapped(DVec4)),
-
-		sub_assign(&mut self:Raw(f64)),
-
-		rem(self:self) -> self,
-
-		rem(self:Raw(f64)) -> self,
-
-		rem(self:Wrapped(DVec4)) -> Wrapped(DVec4),
-
-		rem_assign(&mut self:self),
-
-		rem_assign(&mut self:Raw(f64)),
-
-		neg(self:) -> self,
-
-		xx(self:) -> Wrapped(DVec2),
-
-		xy(self:) -> Wrapped(DVec2),
-
-		xz(self:) -> Wrapped(DVec2),
-
-		xw(self:) -> Wrapped(DVec2),
-
-		yx(self:) -> Wrapped(DVec2),
-
-		yy(self:) -> Wrapped(DVec2),
-
-		yz(self:) -> Wrapped(DVec2),
-
-		yw(self:) -> Wrapped(DVec2),
-
-		zx(self:) -> Wrapped(DVec2),
-
-		zy(self:) -> Wrapped(DVec2),
-
-		zz(self:) -> Wrapped(DVec2),
-
-		zw(self:) -> Wrapped(DVec2),
-
-		wx(self:) -> Wrapped(DVec2),
-
-		wy(self:) -> Wrapped(DVec2),
-
-		wz(self:) -> Wrapped(DVec2),
-
-		ww(self:) -> Wrapped(DVec2),
-
-		xxx(self:) -> Wrapped(DVec3),
-
-		xxy(self:) -> Wrapped(DVec3),
-
-		xxz(self:) -> Wrapped(DVec3),
-
-		xxw(self:) -> Wrapped(DVec3),
-
-		xyx(self:) -> Wrapped(DVec3),
-
-		xyy(self:) -> Wrapped(DVec3),
-
-		xyz(self:) -> Wrapped(DVec3),
-
-		xyw(self:) -> Wrapped(DVec3),
-
-		xzx(self:) -> Wrapped(DVec3),
-
-		xzy(self:) -> Wrapped(DVec3),
-
-		xzz(self:) -> Wrapped(DVec3),
-
-		xzw(self:) -> Wrapped(DVec3),
-
-		xwx(self:) -> Wrapped(DVec3),
-
-		xwy(self:) -> Wrapped(DVec3),
-
-		xwz(self:) -> Wrapped(DVec3),
-
-		xww(self:) -> Wrapped(DVec3),
-
-		yxx(self:) -> Wrapped(DVec3),
-
-		yxy(self:) -> Wrapped(DVec3),
-
-		yxz(self:) -> Wrapped(DVec3),
-
-		yxw(self:) -> Wrapped(DVec3),
-
-		yyx(self:) -> Wrapped(DVec3),
-
-		yyy(self:) -> Wrapped(DVec3),
-
-		yyz(self:) -> Wrapped(DVec3),
-
-		yyw(self:) -> Wrapped(DVec3),
-
-		yzx(self:) -> Wrapped(DVec3),
-
-		yzy(self:) -> Wrapped(DVec3),
-
-		yzz(self:) -> Wrapped(DVec3),
-
-		yzw(self:) -> Wrapped(DVec3),
-
-		ywx(self:) -> Wrapped(DVec3),
-
-		ywy(self:) -> Wrapped(DVec3),
-
-		ywz(self:) -> Wrapped(DVec3),
-
-		yww(self:) -> Wrapped(DVec3),
-
-		zxx(self:) -> Wrapped(DVec3),
-
-		zxy(self:) -> Wrapped(DVec3),
-
-		zxz(self:) -> Wrapped(DVec3),
-
-		zxw(self:) -> Wrapped(DVec3),
-
-		zyx(self:) -> Wrapped(DVec3),
-
-		zyy(self:) -> Wrapped(DVec3),
-
-		zyz(self:) -> Wrapped(DVec3),
-
-		zyw(self:) -> Wrapped(DVec3),
-
-		zzx(self:) -> Wrapped(DVec3),
-
-		zzy(self:) -> Wrapped(DVec3),
-
-		zzz(self:) -> Wrapped(DVec3),
-
-		zzw(self:) -> Wrapped(DVec3),
-
-		zwx(self:) -> Wrapped(DVec3),
-
-		zwy(self:) -> Wrapped(DVec3),
-
-		zwz(self:) -> Wrapped(DVec3),
-
-		zww(self:) -> Wrapped(DVec3),
-
-		wxx(self:) -> Wrapped(DVec3),
-
-		wxy(self:) -> Wrapped(DVec3),
-
-		wxz(self:) -> Wrapped(DVec3),
-
-		wxw(self:) -> Wrapped(DVec3),
-
-		wyx(self:) -> Wrapped(DVec3),
-
-		wyy(self:) -> Wrapped(DVec3),
-
-		wyz(self:) -> Wrapped(DVec3),
-
-		wyw(self:) -> Wrapped(DVec3),
-
-		wzx(self:) -> Wrapped(DVec3),
-
-		wzy(self:) -> Wrapped(DVec3),
-
-		wzz(self:) -> Wrapped(DVec3),
-
-		wzw(self:) -> Wrapped(DVec3),
-
-		wwx(self:) -> Wrapped(DVec3),
-
-		wwy(self:) -> Wrapped(DVec3),
-
-		wwz(self:) -> Wrapped(DVec3),
-
-		www(self:) -> Wrapped(DVec3),
-
-		xxxx(self:) -> Wrapped(DVec4),
-
-		xxxy(self:) -> Wrapped(DVec4),
-
-		xxxz(self:) -> Wrapped(DVec4),
-
-		xxxw(self:) -> Wrapped(DVec4),
-
-		xxyx(self:) -> Wrapped(DVec4),
-
-		xxyy(self:) -> Wrapped(DVec4),
-
-		xxyz(self:) -> Wrapped(DVec4),
-
-		xxyw(self:) -> Wrapped(DVec4),
-
-		xxzx(self:) -> Wrapped(DVec4),
-
-		xxzy(self:) -> Wrapped(DVec4),
-
-		xxzz(self:) -> Wrapped(DVec4),
-
-		xxzw(self:) -> Wrapped(DVec4),
-
-		xxwx(self:) -> Wrapped(DVec4),
-
-		xxwy(self:) -> Wrapped(DVec4),
-
-		xxwz(self:) -> Wrapped(DVec4),
-
-		xxww(self:) -> Wrapped(DVec4),
-
-		xyxx(self:) -> Wrapped(DVec4),
-
-		xyxy(self:) -> Wrapped(DVec4),
-
-		xyxz(self:) -> Wrapped(DVec4),
-
-		xyxw(self:) -> Wrapped(DVec4),
-
-		xyyx(self:) -> Wrapped(DVec4),
-
-		xyyy(self:) -> Wrapped(DVec4),
-
-		xyyz(self:) -> Wrapped(DVec4),
-
-		xyyw(self:) -> Wrapped(DVec4),
-
-		xyzx(self:) -> Wrapped(DVec4),
-
-		xyzy(self:) -> Wrapped(DVec4),
-
-		xyzz(self:) -> Wrapped(DVec4),
-
-		xyzw(self:) -> Wrapped(DVec4),
-
-		xywx(self:) -> Wrapped(DVec4),
-
-		xywy(self:) -> Wrapped(DVec4),
-
-		xywz(self:) -> Wrapped(DVec4),
-
-		xyww(self:) -> Wrapped(DVec4),
-
-		xzxx(self:) -> Wrapped(DVec4),
-
-		xzxy(self:) -> Wrapped(DVec4),
-
-		xzxz(self:) -> Wrapped(DVec4),
-
-		xzxw(self:) -> Wrapped(DVec4),
-
-		xzyx(self:) -> Wrapped(DVec4),
-
-		xzyy(self:) -> Wrapped(DVec4),
-
-		xzyz(self:) -> Wrapped(DVec4),
-
-		xzyw(self:) -> Wrapped(DVec4),
-
-		xzzx(self:) -> Wrapped(DVec4),
-
-		xzzy(self:) -> Wrapped(DVec4),
-
-		xzzz(self:) -> Wrapped(DVec4),
-
-		xzzw(self:) -> Wrapped(DVec4),
-
-		xzwx(self:) -> Wrapped(DVec4),
-
-		xzwy(self:) -> Wrapped(DVec4),
-
-		xzwz(self:) -> Wrapped(DVec4),
-
-		xzww(self:) -> Wrapped(DVec4),
-
-		xwxx(self:) -> Wrapped(DVec4),
-
-		xwxy(self:) -> Wrapped(DVec4),
-
-		xwxz(self:) -> Wrapped(DVec4),
-
-		xwxw(self:) -> Wrapped(DVec4),
-
-		xwyx(self:) -> Wrapped(DVec4),
-
-		xwyy(self:) -> Wrapped(DVec4),
-
-		xwyz(self:) -> Wrapped(DVec4),
-
-		xwyw(self:) -> Wrapped(DVec4),
-
-		xwzx(self:) -> Wrapped(DVec4),
-
-		xwzy(self:) -> Wrapped(DVec4),
-
-		xwzz(self:) -> Wrapped(DVec4),
-
-		xwzw(self:) -> Wrapped(DVec4),
-
-		xwwx(self:) -> Wrapped(DVec4),
-
-		xwwy(self:) -> Wrapped(DVec4),
-
-		xwwz(self:) -> Wrapped(DVec4),
-
-		xwww(self:) -> Wrapped(DVec4),
-
-		yxxx(self:) -> Wrapped(DVec4),
-
-		yxxy(self:) -> Wrapped(DVec4),
-
-		yxxz(self:) -> Wrapped(DVec4),
-
-		yxxw(self:) -> Wrapped(DVec4),
-
-		yxyx(self:) -> Wrapped(DVec4),
-
-		yxyy(self:) -> Wrapped(DVec4),
-
-		yxyz(self:) -> Wrapped(DVec4),
-
-		yxyw(self:) -> Wrapped(DVec4),
-
-		yxzx(self:) -> Wrapped(DVec4),
-
-		yxzy(self:) -> Wrapped(DVec4),
-
-		yxzz(self:) -> Wrapped(DVec4),
-
-		yxzw(self:) -> Wrapped(DVec4),
-
-		yxwx(self:) -> Wrapped(DVec4),
-
-		yxwy(self:) -> Wrapped(DVec4),
-
-		yxwz(self:) -> Wrapped(DVec4),
-
-		yxww(self:) -> Wrapped(DVec4),
-
-		yyxx(self:) -> Wrapped(DVec4),
-
-		yyxy(self:) -> Wrapped(DVec4),
-
-		yyxz(self:) -> Wrapped(DVec4),
-
-		yyxw(self:) -> Wrapped(DVec4),
-
-		yyyx(self:) -> Wrapped(DVec4),
-
-		yyyy(self:) -> Wrapped(DVec4),
-
-		yyyz(self:) -> Wrapped(DVec4),
-
-		yyyw(self:) -> Wrapped(DVec4),
-
-		yyzx(self:) -> Wrapped(DVec4),
-
-		yyzy(self:) -> Wrapped(DVec4),
-
-		yyzz(self:) -> Wrapped(DVec4),
-
-		yyzw(self:) -> Wrapped(DVec4),
-
-		yywx(self:) -> Wrapped(DVec4),
-
-		yywy(self:) -> Wrapped(DVec4),
-
-		yywz(self:) -> Wrapped(DVec4),
-
-		yyww(self:) -> Wrapped(DVec4),
-
-		yzxx(self:) -> Wrapped(DVec4),
-
-		yzxy(self:) -> Wrapped(DVec4),
-
-		yzxz(self:) -> Wrapped(DVec4),
-
-		yzxw(self:) -> Wrapped(DVec4),
-
-		yzyx(self:) -> Wrapped(DVec4),
-
-		yzyy(self:) -> Wrapped(DVec4),
-
-		yzyz(self:) -> Wrapped(DVec4),
-
-		yzyw(self:) -> Wrapped(DVec4),
-
-		yzzx(self:) -> Wrapped(DVec4),
-
-		yzzy(self:) -> Wrapped(DVec4),
-
-		yzzz(self:) -> Wrapped(DVec4),
-
-		yzzw(self:) -> Wrapped(DVec4),
-
-		yzwx(self:) -> Wrapped(DVec4),
-
-		yzwy(self:) -> Wrapped(DVec4),
-
-		yzwz(self:) -> Wrapped(DVec4),
-
-		yzww(self:) -> Wrapped(DVec4),
-
-		ywxx(self:) -> Wrapped(DVec4),
-
-		ywxy(self:) -> Wrapped(DVec4),
-
-		ywxz(self:) -> Wrapped(DVec4),
-
-		ywxw(self:) -> Wrapped(DVec4),
-
-		ywyx(self:) -> Wrapped(DVec4),
-
-		ywyy(self:) -> Wrapped(DVec4),
-
-		ywyz(self:) -> Wrapped(DVec4),
-
-		ywyw(self:) -> Wrapped(DVec4),
-
-		ywzx(self:) -> Wrapped(DVec4),
-
-		ywzy(self:) -> Wrapped(DVec4),
-
-		ywzz(self:) -> Wrapped(DVec4),
-
-		ywzw(self:) -> Wrapped(DVec4),
-
-		ywwx(self:) -> Wrapped(DVec4),
-
-		ywwy(self:) -> Wrapped(DVec4),
-
-		ywwz(self:) -> Wrapped(DVec4),
-
-		ywww(self:) -> Wrapped(DVec4),
-
-		zxxx(self:) -> Wrapped(DVec4),
-
-		zxxy(self:) -> Wrapped(DVec4),
-
-		zxxz(self:) -> Wrapped(DVec4),
-
-		zxxw(self:) -> Wrapped(DVec4),
-
-		zxyx(self:) -> Wrapped(DVec4),
-
-		zxyy(self:) -> Wrapped(DVec4),
-
-		zxyz(self:) -> Wrapped(DVec4),
-
-		zxyw(self:) -> Wrapped(DVec4),
-
-		zxzx(self:) -> Wrapped(DVec4),
-
-		zxzy(self:) -> Wrapped(DVec4),
-
-		zxzz(self:) -> Wrapped(DVec4),
-
-		zxzw(self:) -> Wrapped(DVec4),
-
-		zxwx(self:) -> Wrapped(DVec4),
-
-		zxwy(self:) -> Wrapped(DVec4),
-
-		zxwz(self:) -> Wrapped(DVec4),
-
-		zxww(self:) -> Wrapped(DVec4),
-
-		zyxx(self:) -> Wrapped(DVec4),
-
-		zyxy(self:) -> Wrapped(DVec4),
-
-		zyxz(self:) -> Wrapped(DVec4),
-
-		zyxw(self:) -> Wrapped(DVec4),
-
-		zyyx(self:) -> Wrapped(DVec4),
-
-		zyyy(self:) -> Wrapped(DVec4),
-
-		zyyz(self:) -> Wrapped(DVec4),
-
-		zyyw(self:) -> Wrapped(DVec4),
-
-		zyzx(self:) -> Wrapped(DVec4),
-
-		zyzy(self:) -> Wrapped(DVec4),
-
-		zyzz(self:) -> Wrapped(DVec4),
-
-		zyzw(self:) -> Wrapped(DVec4),
-
-		zywx(self:) -> Wrapped(DVec4),
-
-		zywy(self:) -> Wrapped(DVec4),
-
-		zywz(self:) -> Wrapped(DVec4),
-
-		zyww(self:) -> Wrapped(DVec4),
-
-		zzxx(self:) -> Wrapped(DVec4),
-
-		zzxy(self:) -> Wrapped(DVec4),
-
-		zzxz(self:) -> Wrapped(DVec4),
-
-		zzxw(self:) -> Wrapped(DVec4),
-
-		zzyx(self:) -> Wrapped(DVec4),
-
-		zzyy(self:) -> Wrapped(DVec4),
-
-		zzyz(self:) -> Wrapped(DVec4),
-
-		zzyw(self:) -> Wrapped(DVec4),
-
-		zzzx(self:) -> Wrapped(DVec4),
-
-		zzzy(self:) -> Wrapped(DVec4),
-
-		zzzz(self:) -> Wrapped(DVec4),
-
-		zzzw(self:) -> Wrapped(DVec4),
-
-		zzwx(self:) -> Wrapped(DVec4),
-
-		zzwy(self:) -> Wrapped(DVec4),
-
-		zzwz(self:) -> Wrapped(DVec4),
-
-		zzww(self:) -> Wrapped(DVec4),
-
-		zwxx(self:) -> Wrapped(DVec4),
-
-		zwxy(self:) -> Wrapped(DVec4),
-
-		zwxz(self:) -> Wrapped(DVec4),
-
-		zwxw(self:) -> Wrapped(DVec4),
-
-		zwyx(self:) -> Wrapped(DVec4),
-
-		zwyy(self:) -> Wrapped(DVec4),
-
-		zwyz(self:) -> Wrapped(DVec4),
-
-		zwyw(self:) -> Wrapped(DVec4),
-
-		zwzx(self:) -> Wrapped(DVec4),
-
-		zwzy(self:) -> Wrapped(DVec4),
-
-		zwzz(self:) -> Wrapped(DVec4),
-
-		zwzw(self:) -> Wrapped(DVec4),
-
-		zwwx(self:) -> Wrapped(DVec4),
-
-		zwwy(self:) -> Wrapped(DVec4),
-
-		zwwz(self:) -> Wrapped(DVec4),
-
-		zwww(self:) -> Wrapped(DVec4),
-
-		wxxx(self:) -> Wrapped(DVec4),
-
-		wxxy(self:) -> Wrapped(DVec4),
-
-		wxxz(self:) -> Wrapped(DVec4),
-
-		wxxw(self:) -> Wrapped(DVec4),
-
-		wxyx(self:) -> Wrapped(DVec4),
-
-		wxyy(self:) -> Wrapped(DVec4),
-
-		wxyz(self:) -> Wrapped(DVec4),
-
-		wxyw(self:) -> Wrapped(DVec4),
-
-		wxzx(self:) -> Wrapped(DVec4),
-
-		wxzy(self:) -> Wrapped(DVec4),
-
-		wxzz(self:) -> Wrapped(DVec4),
-
-		wxzw(self:) -> Wrapped(DVec4),
-
-		wxwx(self:) -> Wrapped(DVec4),
-
-		wxwy(self:) -> Wrapped(DVec4),
-
-		wxwz(self:) -> Wrapped(DVec4),
-
-		wxww(self:) -> Wrapped(DVec4),
-
-		wyxx(self:) -> Wrapped(DVec4),
-
-		wyxy(self:) -> Wrapped(DVec4),
-
-		wyxz(self:) -> Wrapped(DVec4),
-
-		wyxw(self:) -> Wrapped(DVec4),
-
-		wyyx(self:) -> Wrapped(DVec4),
-
-		wyyy(self:) -> Wrapped(DVec4),
-
-		wyyz(self:) -> Wrapped(DVec4),
-
-		wyyw(self:) -> Wrapped(DVec4),
-
-		wyzx(self:) -> Wrapped(DVec4),
-
-		wyzy(self:) -> Wrapped(DVec4),
-
-		wyzz(self:) -> Wrapped(DVec4),
-
-		wyzw(self:) -> Wrapped(DVec4),
-
-		wywx(self:) -> Wrapped(DVec4),
-
-		wywy(self:) -> Wrapped(DVec4),
-
-		wywz(self:) -> Wrapped(DVec4),
-
-		wyww(self:) -> Wrapped(DVec4),
-
-		wzxx(self:) -> Wrapped(DVec4),
-
-		wzxy(self:) -> Wrapped(DVec4),
-
-		wzxz(self:) -> Wrapped(DVec4),
-
-		wzxw(self:) -> Wrapped(DVec4),
-
-		wzyx(self:) -> Wrapped(DVec4),
-
-		wzyy(self:) -> Wrapped(DVec4),
-
-		wzyz(self:) -> Wrapped(DVec4),
-
-		wzyw(self:) -> Wrapped(DVec4),
-
-		wzzx(self:) -> Wrapped(DVec4),
-
-		wzzy(self:) -> Wrapped(DVec4),
-
-		wzzz(self:) -> Wrapped(DVec4),
-
-		wzzw(self:) -> Wrapped(DVec4),
-
-		wzwx(self:) -> Wrapped(DVec4),
-
-		wzwy(self:) -> Wrapped(DVec4),
-
-		wzwz(self:) -> Wrapped(DVec4),
-
-		wzww(self:) -> Wrapped(DVec4),
-
-		wwxx(self:) -> Wrapped(DVec4),
-
-		wwxy(self:) -> Wrapped(DVec4),
-
-		wwxz(self:) -> Wrapped(DVec4),
-
-		wwxw(self:) -> Wrapped(DVec4),
-
-		wwyx(self:) -> Wrapped(DVec4),
-
-		wwyy(self:) -> Wrapped(DVec4),
-
-		wwyz(self:) -> Wrapped(DVec4),
-
-		wwyw(self:) -> Wrapped(DVec4),
-
-		wwzx(self:) -> Wrapped(DVec4),
-
-		wwzy(self:) -> Wrapped(DVec4),
-
-		wwzz(self:) -> Wrapped(DVec4),
-
-		wwzw(self:) -> Wrapped(DVec4),
-
-		wwwx(self:) -> Wrapped(DVec4),
-
-		wwwy(self:) -> Wrapped(DVec4),
-
-		wwwz(self:) -> Wrapped(DVec4),
-
-		wwww(self:) -> Wrapped(DVec4),
-
 	)
 	+ Fields
 	(
@@ -9007,6 +5799,8 @@ impl_script_newtype!{
 	#[languages(on_feature(lua))]
 	///A 2-dimensional vector.
 	glam::i32::IVec2 : 
+	Clone +
+	Debug +
 	Methods
 	(
 		///Creates a new vector.
@@ -9139,124 +5933,6 @@ impl_script_newtype!{
 		///Casts all elements of `self` to `u32`.
 		as_uvec2(&self:) -> Wrapped(UVec2),
 
-		from(Wrapped(IVec2)) -> self,
-
-		from(Wrapped(IVec2)) -> self,
-
-		clone(&self:) -> Wrapped(IVec2),
-
-		eq(&self:Wrapped(&IVec2)) -> Raw(bool),
-
-		default() -> self,
-
-		div(self:self) -> self,
-
-		div(self:Raw(i32)) -> self,
-
-		div(self:Wrapped(IVec2)) -> Wrapped(IVec2),
-
-		div_assign(&mut self:self),
-
-		div_assign(&mut self:Raw(i32)),
-
-		mul(self:self) -> self,
-
-		mul(self:Raw(i32)) -> self,
-
-		mul(self:Wrapped(IVec2)) -> Wrapped(IVec2),
-
-		mul_assign(&mut self:self),
-
-		mul_assign(&mut self:Raw(i32)),
-
-		add(self:self) -> self,
-
-		add(self:Raw(i32)) -> self,
-
-		add(self:Wrapped(IVec2)) -> Wrapped(IVec2),
-
-		add_assign(&mut self:self),
-
-		add_assign(&mut self:Raw(i32)),
-
-		sub(self:self) -> self,
-
-		sub(self:Raw(i32)) -> self,
-
-		sub(self:Wrapped(IVec2)) -> Wrapped(IVec2),
-
-		sub_assign(&mut self:Wrapped(IVec2)),
-
-		sub_assign(&mut self:Raw(i32)),
-
-		rem(self:self) -> self,
-
-		rem(self:Raw(i32)) -> self,
-
-		rem(self:Wrapped(IVec2)) -> Wrapped(IVec2),
-
-		rem_assign(&mut self:self),
-
-		rem_assign(&mut self:Raw(i32)),
-
-		neg(self:) -> self,
-
-		xx(self:) -> Wrapped(IVec2),
-
-		xy(self:) -> Wrapped(IVec2),
-
-		yx(self:) -> Wrapped(IVec2),
-
-		yy(self:) -> Wrapped(IVec2),
-
-		xxx(self:) -> Wrapped(IVec3),
-
-		xxy(self:) -> Wrapped(IVec3),
-
-		xyx(self:) -> Wrapped(IVec3),
-
-		xyy(self:) -> Wrapped(IVec3),
-
-		yxx(self:) -> Wrapped(IVec3),
-
-		yxy(self:) -> Wrapped(IVec3),
-
-		yyx(self:) -> Wrapped(IVec3),
-
-		yyy(self:) -> Wrapped(IVec3),
-
-		xxxx(self:) -> Wrapped(IVec4),
-
-		xxxy(self:) -> Wrapped(IVec4),
-
-		xxyx(self:) -> Wrapped(IVec4),
-
-		xxyy(self:) -> Wrapped(IVec4),
-
-		xyxx(self:) -> Wrapped(IVec4),
-
-		xyxy(self:) -> Wrapped(IVec4),
-
-		xyyx(self:) -> Wrapped(IVec4),
-
-		xyyy(self:) -> Wrapped(IVec4),
-
-		yxxx(self:) -> Wrapped(IVec4),
-
-		yxxy(self:) -> Wrapped(IVec4),
-
-		yxyx(self:) -> Wrapped(IVec4),
-
-		yxyy(self:) -> Wrapped(IVec4),
-
-		yyxx(self:) -> Wrapped(IVec4),
-
-		yyxy(self:) -> Wrapped(IVec4),
-
-		yyyx(self:) -> Wrapped(IVec4),
-
-		yyyy(self:) -> Wrapped(IVec4),
-
 	)
 	+ Fields
 	(
@@ -9295,6 +5971,8 @@ impl_script_newtype!{
 	#[languages(on_feature(lua))]
 	///A 3-dimensional vector.
 	glam::i32::IVec3 : 
+	Clone +
+	Debug +
 	Methods
 	(
 		///Creates a new vector.
@@ -9426,302 +6104,6 @@ impl_script_newtype!{
 		///Casts all elements of `self` to `u32`.
 		as_uvec3(&self:) -> Wrapped(UVec3),
 
-		from(Wrapped(IVec3)) -> self,
-
-		from(Wrapped(IVec3)) -> self,
-
-		clone(&self:) -> Wrapped(IVec3),
-
-		eq(&self:Wrapped(&IVec3)) -> Raw(bool),
-
-		default() -> self,
-
-		div(self:self) -> self,
-
-		div(self:Raw(i32)) -> self,
-
-		div(self:Wrapped(IVec3)) -> Wrapped(IVec3),
-
-		div_assign(&mut self:self),
-
-		div_assign(&mut self:Raw(i32)),
-
-		mul(self:self) -> self,
-
-		mul(self:Raw(i32)) -> self,
-
-		mul(self:Wrapped(IVec3)) -> Wrapped(IVec3),
-
-		mul_assign(&mut self:self),
-
-		mul_assign(&mut self:Raw(i32)),
-
-		add(self:self) -> self,
-
-		add(self:Raw(i32)) -> self,
-
-		add(self:Wrapped(IVec3)) -> Wrapped(IVec3),
-
-		add_assign(&mut self:self),
-
-		add_assign(&mut self:Raw(i32)),
-
-		sub(self:self) -> self,
-
-		sub(self:Raw(i32)) -> self,
-
-		sub(self:Wrapped(IVec3)) -> Wrapped(IVec3),
-
-		sub_assign(&mut self:Wrapped(IVec3)),
-
-		sub_assign(&mut self:Raw(i32)),
-
-		rem(self:self) -> self,
-
-		rem(self:Raw(i32)) -> self,
-
-		rem(self:Wrapped(IVec3)) -> Wrapped(IVec3),
-
-		rem_assign(&mut self:self),
-
-		rem_assign(&mut self:Raw(i32)),
-
-		neg(self:) -> self,
-
-		xx(self:) -> Wrapped(IVec2),
-
-		xy(self:) -> Wrapped(IVec2),
-
-		xz(self:) -> Wrapped(IVec2),
-
-		yx(self:) -> Wrapped(IVec2),
-
-		yy(self:) -> Wrapped(IVec2),
-
-		yz(self:) -> Wrapped(IVec2),
-
-		zx(self:) -> Wrapped(IVec2),
-
-		zy(self:) -> Wrapped(IVec2),
-
-		zz(self:) -> Wrapped(IVec2),
-
-		xxx(self:) -> Wrapped(IVec3),
-
-		xxy(self:) -> Wrapped(IVec3),
-
-		xxz(self:) -> Wrapped(IVec3),
-
-		xyx(self:) -> Wrapped(IVec3),
-
-		xyy(self:) -> Wrapped(IVec3),
-
-		xyz(self:) -> Wrapped(IVec3),
-
-		xzx(self:) -> Wrapped(IVec3),
-
-		xzy(self:) -> Wrapped(IVec3),
-
-		xzz(self:) -> Wrapped(IVec3),
-
-		yxx(self:) -> Wrapped(IVec3),
-
-		yxy(self:) -> Wrapped(IVec3),
-
-		yxz(self:) -> Wrapped(IVec3),
-
-		yyx(self:) -> Wrapped(IVec3),
-
-		yyy(self:) -> Wrapped(IVec3),
-
-		yyz(self:) -> Wrapped(IVec3),
-
-		yzx(self:) -> Wrapped(IVec3),
-
-		yzy(self:) -> Wrapped(IVec3),
-
-		yzz(self:) -> Wrapped(IVec3),
-
-		zxx(self:) -> Wrapped(IVec3),
-
-		zxy(self:) -> Wrapped(IVec3),
-
-		zxz(self:) -> Wrapped(IVec3),
-
-		zyx(self:) -> Wrapped(IVec3),
-
-		zyy(self:) -> Wrapped(IVec3),
-
-		zyz(self:) -> Wrapped(IVec3),
-
-		zzx(self:) -> Wrapped(IVec3),
-
-		zzy(self:) -> Wrapped(IVec3),
-
-		zzz(self:) -> Wrapped(IVec3),
-
-		xxxx(self:) -> Wrapped(IVec4),
-
-		xxxy(self:) -> Wrapped(IVec4),
-
-		xxxz(self:) -> Wrapped(IVec4),
-
-		xxyx(self:) -> Wrapped(IVec4),
-
-		xxyy(self:) -> Wrapped(IVec4),
-
-		xxyz(self:) -> Wrapped(IVec4),
-
-		xxzx(self:) -> Wrapped(IVec4),
-
-		xxzy(self:) -> Wrapped(IVec4),
-
-		xxzz(self:) -> Wrapped(IVec4),
-
-		xyxx(self:) -> Wrapped(IVec4),
-
-		xyxy(self:) -> Wrapped(IVec4),
-
-		xyxz(self:) -> Wrapped(IVec4),
-
-		xyyx(self:) -> Wrapped(IVec4),
-
-		xyyy(self:) -> Wrapped(IVec4),
-
-		xyyz(self:) -> Wrapped(IVec4),
-
-		xyzx(self:) -> Wrapped(IVec4),
-
-		xyzy(self:) -> Wrapped(IVec4),
-
-		xyzz(self:) -> Wrapped(IVec4),
-
-		xzxx(self:) -> Wrapped(IVec4),
-
-		xzxy(self:) -> Wrapped(IVec4),
-
-		xzxz(self:) -> Wrapped(IVec4),
-
-		xzyx(self:) -> Wrapped(IVec4),
-
-		xzyy(self:) -> Wrapped(IVec4),
-
-		xzyz(self:) -> Wrapped(IVec4),
-
-		xzzx(self:) -> Wrapped(IVec4),
-
-		xzzy(self:) -> Wrapped(IVec4),
-
-		xzzz(self:) -> Wrapped(IVec4),
-
-		yxxx(self:) -> Wrapped(IVec4),
-
-		yxxy(self:) -> Wrapped(IVec4),
-
-		yxxz(self:) -> Wrapped(IVec4),
-
-		yxyx(self:) -> Wrapped(IVec4),
-
-		yxyy(self:) -> Wrapped(IVec4),
-
-		yxyz(self:) -> Wrapped(IVec4),
-
-		yxzx(self:) -> Wrapped(IVec4),
-
-		yxzy(self:) -> Wrapped(IVec4),
-
-		yxzz(self:) -> Wrapped(IVec4),
-
-		yyxx(self:) -> Wrapped(IVec4),
-
-		yyxy(self:) -> Wrapped(IVec4),
-
-		yyxz(self:) -> Wrapped(IVec4),
-
-		yyyx(self:) -> Wrapped(IVec4),
-
-		yyyy(self:) -> Wrapped(IVec4),
-
-		yyyz(self:) -> Wrapped(IVec4),
-
-		yyzx(self:) -> Wrapped(IVec4),
-
-		yyzy(self:) -> Wrapped(IVec4),
-
-		yyzz(self:) -> Wrapped(IVec4),
-
-		yzxx(self:) -> Wrapped(IVec4),
-
-		yzxy(self:) -> Wrapped(IVec4),
-
-		yzxz(self:) -> Wrapped(IVec4),
-
-		yzyx(self:) -> Wrapped(IVec4),
-
-		yzyy(self:) -> Wrapped(IVec4),
-
-		yzyz(self:) -> Wrapped(IVec4),
-
-		yzzx(self:) -> Wrapped(IVec4),
-
-		yzzy(self:) -> Wrapped(IVec4),
-
-		yzzz(self:) -> Wrapped(IVec4),
-
-		zxxx(self:) -> Wrapped(IVec4),
-
-		zxxy(self:) -> Wrapped(IVec4),
-
-		zxxz(self:) -> Wrapped(IVec4),
-
-		zxyx(self:) -> Wrapped(IVec4),
-
-		zxyy(self:) -> Wrapped(IVec4),
-
-		zxyz(self:) -> Wrapped(IVec4),
-
-		zxzx(self:) -> Wrapped(IVec4),
-
-		zxzy(self:) -> Wrapped(IVec4),
-
-		zxzz(self:) -> Wrapped(IVec4),
-
-		zyxx(self:) -> Wrapped(IVec4),
-
-		zyxy(self:) -> Wrapped(IVec4),
-
-		zyxz(self:) -> Wrapped(IVec4),
-
-		zyyx(self:) -> Wrapped(IVec4),
-
-		zyyy(self:) -> Wrapped(IVec4),
-
-		zyyz(self:) -> Wrapped(IVec4),
-
-		zyzx(self:) -> Wrapped(IVec4),
-
-		zyzy(self:) -> Wrapped(IVec4),
-
-		zyzz(self:) -> Wrapped(IVec4),
-
-		zzxx(self:) -> Wrapped(IVec4),
-
-		zzxy(self:) -> Wrapped(IVec4),
-
-		zzxz(self:) -> Wrapped(IVec4),
-
-		zzyx(self:) -> Wrapped(IVec4),
-
-		zzyy(self:) -> Wrapped(IVec4),
-
-		zzyz(self:) -> Wrapped(IVec4),
-
-		zzzx(self:) -> Wrapped(IVec4),
-
-		zzzy(self:) -> Wrapped(IVec4),
-
-		zzzz(self:) -> Wrapped(IVec4),
-
 	)
 	+ Fields
 	(
@@ -9761,6 +6143,8 @@ impl_script_newtype!{
 	#[languages(on_feature(lua))]
 	///A 4-dimensional vector.
 	glam::i32::IVec4 : 
+	Clone +
+	Debug +
 	Methods
 	(
 		///Creates a new vector.
@@ -9883,740 +6267,6 @@ impl_script_newtype!{
 		///Casts all elements of `self` to `u32`.
 		as_uvec4(&self:) -> Wrapped(UVec4),
 
-		from(Wrapped(IVec4)) -> self,
-
-		from(Wrapped(IVec4)) -> self,
-
-		clone(&self:) -> Wrapped(IVec4),
-
-		eq(&self:Wrapped(&IVec4)) -> Raw(bool),
-
-		default() -> self,
-
-		div(self:self) -> self,
-
-		div(self:Raw(i32)) -> self,
-
-		div(self:Wrapped(IVec4)) -> Wrapped(IVec4),
-
-		div_assign(&mut self:self),
-
-		div_assign(&mut self:Raw(i32)),
-
-		mul(self:self) -> self,
-
-		mul(self:Raw(i32)) -> self,
-
-		mul(self:Wrapped(IVec4)) -> Wrapped(IVec4),
-
-		mul_assign(&mut self:self),
-
-		mul_assign(&mut self:Raw(i32)),
-
-		add(self:self) -> self,
-
-		add(self:Raw(i32)) -> self,
-
-		add(self:Wrapped(IVec4)) -> Wrapped(IVec4),
-
-		add_assign(&mut self:self),
-
-		add_assign(&mut self:Raw(i32)),
-
-		sub(self:self) -> self,
-
-		sub(self:Raw(i32)) -> self,
-
-		sub(self:Wrapped(IVec4)) -> Wrapped(IVec4),
-
-		sub_assign(&mut self:Wrapped(IVec4)),
-
-		sub_assign(&mut self:Raw(i32)),
-
-		rem(self:self) -> self,
-
-		rem(self:Raw(i32)) -> self,
-
-		rem(self:Wrapped(IVec4)) -> Wrapped(IVec4),
-
-		rem_assign(&mut self:self),
-
-		rem_assign(&mut self:Raw(i32)),
-
-		neg(self:) -> self,
-
-		xx(self:) -> Wrapped(IVec2),
-
-		xy(self:) -> Wrapped(IVec2),
-
-		xz(self:) -> Wrapped(IVec2),
-
-		xw(self:) -> Wrapped(IVec2),
-
-		yx(self:) -> Wrapped(IVec2),
-
-		yy(self:) -> Wrapped(IVec2),
-
-		yz(self:) -> Wrapped(IVec2),
-
-		yw(self:) -> Wrapped(IVec2),
-
-		zx(self:) -> Wrapped(IVec2),
-
-		zy(self:) -> Wrapped(IVec2),
-
-		zz(self:) -> Wrapped(IVec2),
-
-		zw(self:) -> Wrapped(IVec2),
-
-		wx(self:) -> Wrapped(IVec2),
-
-		wy(self:) -> Wrapped(IVec2),
-
-		wz(self:) -> Wrapped(IVec2),
-
-		ww(self:) -> Wrapped(IVec2),
-
-		xxx(self:) -> Wrapped(IVec3),
-
-		xxy(self:) -> Wrapped(IVec3),
-
-		xxz(self:) -> Wrapped(IVec3),
-
-		xxw(self:) -> Wrapped(IVec3),
-
-		xyx(self:) -> Wrapped(IVec3),
-
-		xyy(self:) -> Wrapped(IVec3),
-
-		xyz(self:) -> Wrapped(IVec3),
-
-		xyw(self:) -> Wrapped(IVec3),
-
-		xzx(self:) -> Wrapped(IVec3),
-
-		xzy(self:) -> Wrapped(IVec3),
-
-		xzz(self:) -> Wrapped(IVec3),
-
-		xzw(self:) -> Wrapped(IVec3),
-
-		xwx(self:) -> Wrapped(IVec3),
-
-		xwy(self:) -> Wrapped(IVec3),
-
-		xwz(self:) -> Wrapped(IVec3),
-
-		xww(self:) -> Wrapped(IVec3),
-
-		yxx(self:) -> Wrapped(IVec3),
-
-		yxy(self:) -> Wrapped(IVec3),
-
-		yxz(self:) -> Wrapped(IVec3),
-
-		yxw(self:) -> Wrapped(IVec3),
-
-		yyx(self:) -> Wrapped(IVec3),
-
-		yyy(self:) -> Wrapped(IVec3),
-
-		yyz(self:) -> Wrapped(IVec3),
-
-		yyw(self:) -> Wrapped(IVec3),
-
-		yzx(self:) -> Wrapped(IVec3),
-
-		yzy(self:) -> Wrapped(IVec3),
-
-		yzz(self:) -> Wrapped(IVec3),
-
-		yzw(self:) -> Wrapped(IVec3),
-
-		ywx(self:) -> Wrapped(IVec3),
-
-		ywy(self:) -> Wrapped(IVec3),
-
-		ywz(self:) -> Wrapped(IVec3),
-
-		yww(self:) -> Wrapped(IVec3),
-
-		zxx(self:) -> Wrapped(IVec3),
-
-		zxy(self:) -> Wrapped(IVec3),
-
-		zxz(self:) -> Wrapped(IVec3),
-
-		zxw(self:) -> Wrapped(IVec3),
-
-		zyx(self:) -> Wrapped(IVec3),
-
-		zyy(self:) -> Wrapped(IVec3),
-
-		zyz(self:) -> Wrapped(IVec3),
-
-		zyw(self:) -> Wrapped(IVec3),
-
-		zzx(self:) -> Wrapped(IVec3),
-
-		zzy(self:) -> Wrapped(IVec3),
-
-		zzz(self:) -> Wrapped(IVec3),
-
-		zzw(self:) -> Wrapped(IVec3),
-
-		zwx(self:) -> Wrapped(IVec3),
-
-		zwy(self:) -> Wrapped(IVec3),
-
-		zwz(self:) -> Wrapped(IVec3),
-
-		zww(self:) -> Wrapped(IVec3),
-
-		wxx(self:) -> Wrapped(IVec3),
-
-		wxy(self:) -> Wrapped(IVec3),
-
-		wxz(self:) -> Wrapped(IVec3),
-
-		wxw(self:) -> Wrapped(IVec3),
-
-		wyx(self:) -> Wrapped(IVec3),
-
-		wyy(self:) -> Wrapped(IVec3),
-
-		wyz(self:) -> Wrapped(IVec3),
-
-		wyw(self:) -> Wrapped(IVec3),
-
-		wzx(self:) -> Wrapped(IVec3),
-
-		wzy(self:) -> Wrapped(IVec3),
-
-		wzz(self:) -> Wrapped(IVec3),
-
-		wzw(self:) -> Wrapped(IVec3),
-
-		wwx(self:) -> Wrapped(IVec3),
-
-		wwy(self:) -> Wrapped(IVec3),
-
-		wwz(self:) -> Wrapped(IVec3),
-
-		www(self:) -> Wrapped(IVec3),
-
-		xxxx(self:) -> Wrapped(IVec4),
-
-		xxxy(self:) -> Wrapped(IVec4),
-
-		xxxz(self:) -> Wrapped(IVec4),
-
-		xxxw(self:) -> Wrapped(IVec4),
-
-		xxyx(self:) -> Wrapped(IVec4),
-
-		xxyy(self:) -> Wrapped(IVec4),
-
-		xxyz(self:) -> Wrapped(IVec4),
-
-		xxyw(self:) -> Wrapped(IVec4),
-
-		xxzx(self:) -> Wrapped(IVec4),
-
-		xxzy(self:) -> Wrapped(IVec4),
-
-		xxzz(self:) -> Wrapped(IVec4),
-
-		xxzw(self:) -> Wrapped(IVec4),
-
-		xxwx(self:) -> Wrapped(IVec4),
-
-		xxwy(self:) -> Wrapped(IVec4),
-
-		xxwz(self:) -> Wrapped(IVec4),
-
-		xxww(self:) -> Wrapped(IVec4),
-
-		xyxx(self:) -> Wrapped(IVec4),
-
-		xyxy(self:) -> Wrapped(IVec4),
-
-		xyxz(self:) -> Wrapped(IVec4),
-
-		xyxw(self:) -> Wrapped(IVec4),
-
-		xyyx(self:) -> Wrapped(IVec4),
-
-		xyyy(self:) -> Wrapped(IVec4),
-
-		xyyz(self:) -> Wrapped(IVec4),
-
-		xyyw(self:) -> Wrapped(IVec4),
-
-		xyzx(self:) -> Wrapped(IVec4),
-
-		xyzy(self:) -> Wrapped(IVec4),
-
-		xyzz(self:) -> Wrapped(IVec4),
-
-		xyzw(self:) -> Wrapped(IVec4),
-
-		xywx(self:) -> Wrapped(IVec4),
-
-		xywy(self:) -> Wrapped(IVec4),
-
-		xywz(self:) -> Wrapped(IVec4),
-
-		xyww(self:) -> Wrapped(IVec4),
-
-		xzxx(self:) -> Wrapped(IVec4),
-
-		xzxy(self:) -> Wrapped(IVec4),
-
-		xzxz(self:) -> Wrapped(IVec4),
-
-		xzxw(self:) -> Wrapped(IVec4),
-
-		xzyx(self:) -> Wrapped(IVec4),
-
-		xzyy(self:) -> Wrapped(IVec4),
-
-		xzyz(self:) -> Wrapped(IVec4),
-
-		xzyw(self:) -> Wrapped(IVec4),
-
-		xzzx(self:) -> Wrapped(IVec4),
-
-		xzzy(self:) -> Wrapped(IVec4),
-
-		xzzz(self:) -> Wrapped(IVec4),
-
-		xzzw(self:) -> Wrapped(IVec4),
-
-		xzwx(self:) -> Wrapped(IVec4),
-
-		xzwy(self:) -> Wrapped(IVec4),
-
-		xzwz(self:) -> Wrapped(IVec4),
-
-		xzww(self:) -> Wrapped(IVec4),
-
-		xwxx(self:) -> Wrapped(IVec4),
-
-		xwxy(self:) -> Wrapped(IVec4),
-
-		xwxz(self:) -> Wrapped(IVec4),
-
-		xwxw(self:) -> Wrapped(IVec4),
-
-		xwyx(self:) -> Wrapped(IVec4),
-
-		xwyy(self:) -> Wrapped(IVec4),
-
-		xwyz(self:) -> Wrapped(IVec4),
-
-		xwyw(self:) -> Wrapped(IVec4),
-
-		xwzx(self:) -> Wrapped(IVec4),
-
-		xwzy(self:) -> Wrapped(IVec4),
-
-		xwzz(self:) -> Wrapped(IVec4),
-
-		xwzw(self:) -> Wrapped(IVec4),
-
-		xwwx(self:) -> Wrapped(IVec4),
-
-		xwwy(self:) -> Wrapped(IVec4),
-
-		xwwz(self:) -> Wrapped(IVec4),
-
-		xwww(self:) -> Wrapped(IVec4),
-
-		yxxx(self:) -> Wrapped(IVec4),
-
-		yxxy(self:) -> Wrapped(IVec4),
-
-		yxxz(self:) -> Wrapped(IVec4),
-
-		yxxw(self:) -> Wrapped(IVec4),
-
-		yxyx(self:) -> Wrapped(IVec4),
-
-		yxyy(self:) -> Wrapped(IVec4),
-
-		yxyz(self:) -> Wrapped(IVec4),
-
-		yxyw(self:) -> Wrapped(IVec4),
-
-		yxzx(self:) -> Wrapped(IVec4),
-
-		yxzy(self:) -> Wrapped(IVec4),
-
-		yxzz(self:) -> Wrapped(IVec4),
-
-		yxzw(self:) -> Wrapped(IVec4),
-
-		yxwx(self:) -> Wrapped(IVec4),
-
-		yxwy(self:) -> Wrapped(IVec4),
-
-		yxwz(self:) -> Wrapped(IVec4),
-
-		yxww(self:) -> Wrapped(IVec4),
-
-		yyxx(self:) -> Wrapped(IVec4),
-
-		yyxy(self:) -> Wrapped(IVec4),
-
-		yyxz(self:) -> Wrapped(IVec4),
-
-		yyxw(self:) -> Wrapped(IVec4),
-
-		yyyx(self:) -> Wrapped(IVec4),
-
-		yyyy(self:) -> Wrapped(IVec4),
-
-		yyyz(self:) -> Wrapped(IVec4),
-
-		yyyw(self:) -> Wrapped(IVec4),
-
-		yyzx(self:) -> Wrapped(IVec4),
-
-		yyzy(self:) -> Wrapped(IVec4),
-
-		yyzz(self:) -> Wrapped(IVec4),
-
-		yyzw(self:) -> Wrapped(IVec4),
-
-		yywx(self:) -> Wrapped(IVec4),
-
-		yywy(self:) -> Wrapped(IVec4),
-
-		yywz(self:) -> Wrapped(IVec4),
-
-		yyww(self:) -> Wrapped(IVec4),
-
-		yzxx(self:) -> Wrapped(IVec4),
-
-		yzxy(self:) -> Wrapped(IVec4),
-
-		yzxz(self:) -> Wrapped(IVec4),
-
-		yzxw(self:) -> Wrapped(IVec4),
-
-		yzyx(self:) -> Wrapped(IVec4),
-
-		yzyy(self:) -> Wrapped(IVec4),
-
-		yzyz(self:) -> Wrapped(IVec4),
-
-		yzyw(self:) -> Wrapped(IVec4),
-
-		yzzx(self:) -> Wrapped(IVec4),
-
-		yzzy(self:) -> Wrapped(IVec4),
-
-		yzzz(self:) -> Wrapped(IVec4),
-
-		yzzw(self:) -> Wrapped(IVec4),
-
-		yzwx(self:) -> Wrapped(IVec4),
-
-		yzwy(self:) -> Wrapped(IVec4),
-
-		yzwz(self:) -> Wrapped(IVec4),
-
-		yzww(self:) -> Wrapped(IVec4),
-
-		ywxx(self:) -> Wrapped(IVec4),
-
-		ywxy(self:) -> Wrapped(IVec4),
-
-		ywxz(self:) -> Wrapped(IVec4),
-
-		ywxw(self:) -> Wrapped(IVec4),
-
-		ywyx(self:) -> Wrapped(IVec4),
-
-		ywyy(self:) -> Wrapped(IVec4),
-
-		ywyz(self:) -> Wrapped(IVec4),
-
-		ywyw(self:) -> Wrapped(IVec4),
-
-		ywzx(self:) -> Wrapped(IVec4),
-
-		ywzy(self:) -> Wrapped(IVec4),
-
-		ywzz(self:) -> Wrapped(IVec4),
-
-		ywzw(self:) -> Wrapped(IVec4),
-
-		ywwx(self:) -> Wrapped(IVec4),
-
-		ywwy(self:) -> Wrapped(IVec4),
-
-		ywwz(self:) -> Wrapped(IVec4),
-
-		ywww(self:) -> Wrapped(IVec4),
-
-		zxxx(self:) -> Wrapped(IVec4),
-
-		zxxy(self:) -> Wrapped(IVec4),
-
-		zxxz(self:) -> Wrapped(IVec4),
-
-		zxxw(self:) -> Wrapped(IVec4),
-
-		zxyx(self:) -> Wrapped(IVec4),
-
-		zxyy(self:) -> Wrapped(IVec4),
-
-		zxyz(self:) -> Wrapped(IVec4),
-
-		zxyw(self:) -> Wrapped(IVec4),
-
-		zxzx(self:) -> Wrapped(IVec4),
-
-		zxzy(self:) -> Wrapped(IVec4),
-
-		zxzz(self:) -> Wrapped(IVec4),
-
-		zxzw(self:) -> Wrapped(IVec4),
-
-		zxwx(self:) -> Wrapped(IVec4),
-
-		zxwy(self:) -> Wrapped(IVec4),
-
-		zxwz(self:) -> Wrapped(IVec4),
-
-		zxww(self:) -> Wrapped(IVec4),
-
-		zyxx(self:) -> Wrapped(IVec4),
-
-		zyxy(self:) -> Wrapped(IVec4),
-
-		zyxz(self:) -> Wrapped(IVec4),
-
-		zyxw(self:) -> Wrapped(IVec4),
-
-		zyyx(self:) -> Wrapped(IVec4),
-
-		zyyy(self:) -> Wrapped(IVec4),
-
-		zyyz(self:) -> Wrapped(IVec4),
-
-		zyyw(self:) -> Wrapped(IVec4),
-
-		zyzx(self:) -> Wrapped(IVec4),
-
-		zyzy(self:) -> Wrapped(IVec4),
-
-		zyzz(self:) -> Wrapped(IVec4),
-
-		zyzw(self:) -> Wrapped(IVec4),
-
-		zywx(self:) -> Wrapped(IVec4),
-
-		zywy(self:) -> Wrapped(IVec4),
-
-		zywz(self:) -> Wrapped(IVec4),
-
-		zyww(self:) -> Wrapped(IVec4),
-
-		zzxx(self:) -> Wrapped(IVec4),
-
-		zzxy(self:) -> Wrapped(IVec4),
-
-		zzxz(self:) -> Wrapped(IVec4),
-
-		zzxw(self:) -> Wrapped(IVec4),
-
-		zzyx(self:) -> Wrapped(IVec4),
-
-		zzyy(self:) -> Wrapped(IVec4),
-
-		zzyz(self:) -> Wrapped(IVec4),
-
-		zzyw(self:) -> Wrapped(IVec4),
-
-		zzzx(self:) -> Wrapped(IVec4),
-
-		zzzy(self:) -> Wrapped(IVec4),
-
-		zzzz(self:) -> Wrapped(IVec4),
-
-		zzzw(self:) -> Wrapped(IVec4),
-
-		zzwx(self:) -> Wrapped(IVec4),
-
-		zzwy(self:) -> Wrapped(IVec4),
-
-		zzwz(self:) -> Wrapped(IVec4),
-
-		zzww(self:) -> Wrapped(IVec4),
-
-		zwxx(self:) -> Wrapped(IVec4),
-
-		zwxy(self:) -> Wrapped(IVec4),
-
-		zwxz(self:) -> Wrapped(IVec4),
-
-		zwxw(self:) -> Wrapped(IVec4),
-
-		zwyx(self:) -> Wrapped(IVec4),
-
-		zwyy(self:) -> Wrapped(IVec4),
-
-		zwyz(self:) -> Wrapped(IVec4),
-
-		zwyw(self:) -> Wrapped(IVec4),
-
-		zwzx(self:) -> Wrapped(IVec4),
-
-		zwzy(self:) -> Wrapped(IVec4),
-
-		zwzz(self:) -> Wrapped(IVec4),
-
-		zwzw(self:) -> Wrapped(IVec4),
-
-		zwwx(self:) -> Wrapped(IVec4),
-
-		zwwy(self:) -> Wrapped(IVec4),
-
-		zwwz(self:) -> Wrapped(IVec4),
-
-		zwww(self:) -> Wrapped(IVec4),
-
-		wxxx(self:) -> Wrapped(IVec4),
-
-		wxxy(self:) -> Wrapped(IVec4),
-
-		wxxz(self:) -> Wrapped(IVec4),
-
-		wxxw(self:) -> Wrapped(IVec4),
-
-		wxyx(self:) -> Wrapped(IVec4),
-
-		wxyy(self:) -> Wrapped(IVec4),
-
-		wxyz(self:) -> Wrapped(IVec4),
-
-		wxyw(self:) -> Wrapped(IVec4),
-
-		wxzx(self:) -> Wrapped(IVec4),
-
-		wxzy(self:) -> Wrapped(IVec4),
-
-		wxzz(self:) -> Wrapped(IVec4),
-
-		wxzw(self:) -> Wrapped(IVec4),
-
-		wxwx(self:) -> Wrapped(IVec4),
-
-		wxwy(self:) -> Wrapped(IVec4),
-
-		wxwz(self:) -> Wrapped(IVec4),
-
-		wxww(self:) -> Wrapped(IVec4),
-
-		wyxx(self:) -> Wrapped(IVec4),
-
-		wyxy(self:) -> Wrapped(IVec4),
-
-		wyxz(self:) -> Wrapped(IVec4),
-
-		wyxw(self:) -> Wrapped(IVec4),
-
-		wyyx(self:) -> Wrapped(IVec4),
-
-		wyyy(self:) -> Wrapped(IVec4),
-
-		wyyz(self:) -> Wrapped(IVec4),
-
-		wyyw(self:) -> Wrapped(IVec4),
-
-		wyzx(self:) -> Wrapped(IVec4),
-
-		wyzy(self:) -> Wrapped(IVec4),
-
-		wyzz(self:) -> Wrapped(IVec4),
-
-		wyzw(self:) -> Wrapped(IVec4),
-
-		wywx(self:) -> Wrapped(IVec4),
-
-		wywy(self:) -> Wrapped(IVec4),
-
-		wywz(self:) -> Wrapped(IVec4),
-
-		wyww(self:) -> Wrapped(IVec4),
-
-		wzxx(self:) -> Wrapped(IVec4),
-
-		wzxy(self:) -> Wrapped(IVec4),
-
-		wzxz(self:) -> Wrapped(IVec4),
-
-		wzxw(self:) -> Wrapped(IVec4),
-
-		wzyx(self:) -> Wrapped(IVec4),
-
-		wzyy(self:) -> Wrapped(IVec4),
-
-		wzyz(self:) -> Wrapped(IVec4),
-
-		wzyw(self:) -> Wrapped(IVec4),
-
-		wzzx(self:) -> Wrapped(IVec4),
-
-		wzzy(self:) -> Wrapped(IVec4),
-
-		wzzz(self:) -> Wrapped(IVec4),
-
-		wzzw(self:) -> Wrapped(IVec4),
-
-		wzwx(self:) -> Wrapped(IVec4),
-
-		wzwy(self:) -> Wrapped(IVec4),
-
-		wzwz(self:) -> Wrapped(IVec4),
-
-		wzww(self:) -> Wrapped(IVec4),
-
-		wwxx(self:) -> Wrapped(IVec4),
-
-		wwxy(self:) -> Wrapped(IVec4),
-
-		wwxz(self:) -> Wrapped(IVec4),
-
-		wwxw(self:) -> Wrapped(IVec4),
-
-		wwyx(self:) -> Wrapped(IVec4),
-
-		wwyy(self:) -> Wrapped(IVec4),
-
-		wwyz(self:) -> Wrapped(IVec4),
-
-		wwyw(self:) -> Wrapped(IVec4),
-
-		wwzx(self:) -> Wrapped(IVec4),
-
-		wwzy(self:) -> Wrapped(IVec4),
-
-		wwzz(self:) -> Wrapped(IVec4),
-
-		wwzw(self:) -> Wrapped(IVec4),
-
-		wwwx(self:) -> Wrapped(IVec4),
-
-		wwwy(self:) -> Wrapped(IVec4),
-
-		wwwz(self:) -> Wrapped(IVec4),
-
-		wwww(self:) -> Wrapped(IVec4),
-
 	)
 	+ Fields
 	(
@@ -10657,6 +6307,8 @@ impl_script_newtype!{
 	#[languages(on_feature(lua))]
 	///A 2-dimensional vector.
 	glam::u32::UVec2 : 
+	Clone +
+	Debug +
 	Methods
 	(
 		///Creates a new vector.
@@ -10761,122 +6413,6 @@ impl_script_newtype!{
 		///Casts all elements of `self` to `i32`.
 		as_ivec2(&self:) -> Wrapped(IVec2),
 
-		from(Wrapped(UVec2)) -> self,
-
-		from(Wrapped(UVec2)) -> self,
-
-		clone(&self:) -> Wrapped(UVec2),
-
-		eq(&self:Wrapped(&UVec2)) -> Raw(bool),
-
-		default() -> self,
-
-		div(self:self) -> self,
-
-		div(self:Raw(u32)) -> self,
-
-		div(self:Wrapped(UVec2)) -> Wrapped(UVec2),
-
-		div_assign(&mut self:self),
-
-		div_assign(&mut self:Raw(u32)),
-
-		mul(self:self) -> self,
-
-		mul(self:Raw(u32)) -> self,
-
-		mul(self:Wrapped(UVec2)) -> Wrapped(UVec2),
-
-		mul_assign(&mut self:self),
-
-		mul_assign(&mut self:Raw(u32)),
-
-		add(self:self) -> self,
-
-		add(self:Raw(u32)) -> self,
-
-		add(self:Wrapped(UVec2)) -> Wrapped(UVec2),
-
-		add_assign(&mut self:self),
-
-		add_assign(&mut self:Raw(u32)),
-
-		sub(self:self) -> self,
-
-		sub(self:Raw(u32)) -> self,
-
-		sub(self:Wrapped(UVec2)) -> Wrapped(UVec2),
-
-		sub_assign(&mut self:Wrapped(UVec2)),
-
-		sub_assign(&mut self:Raw(u32)),
-
-		rem(self:self) -> self,
-
-		rem(self:Raw(u32)) -> self,
-
-		rem(self:Wrapped(UVec2)) -> Wrapped(UVec2),
-
-		rem_assign(&mut self:self),
-
-		rem_assign(&mut self:Raw(u32)),
-
-		xx(self:) -> Wrapped(UVec2),
-
-		xy(self:) -> Wrapped(UVec2),
-
-		yx(self:) -> Wrapped(UVec2),
-
-		yy(self:) -> Wrapped(UVec2),
-
-		xxx(self:) -> Wrapped(UVec3),
-
-		xxy(self:) -> Wrapped(UVec3),
-
-		xyx(self:) -> Wrapped(UVec3),
-
-		xyy(self:) -> Wrapped(UVec3),
-
-		yxx(self:) -> Wrapped(UVec3),
-
-		yxy(self:) -> Wrapped(UVec3),
-
-		yyx(self:) -> Wrapped(UVec3),
-
-		yyy(self:) -> Wrapped(UVec3),
-
-		xxxx(self:) -> Wrapped(UVec4),
-
-		xxxy(self:) -> Wrapped(UVec4),
-
-		xxyx(self:) -> Wrapped(UVec4),
-
-		xxyy(self:) -> Wrapped(UVec4),
-
-		xyxx(self:) -> Wrapped(UVec4),
-
-		xyxy(self:) -> Wrapped(UVec4),
-
-		xyyx(self:) -> Wrapped(UVec4),
-
-		xyyy(self:) -> Wrapped(UVec4),
-
-		yxxx(self:) -> Wrapped(UVec4),
-
-		yxxy(self:) -> Wrapped(UVec4),
-
-		yxyx(self:) -> Wrapped(UVec4),
-
-		yxyy(self:) -> Wrapped(UVec4),
-
-		yyxx(self:) -> Wrapped(UVec4),
-
-		yyxy(self:) -> Wrapped(UVec4),
-
-		yyyx(self:) -> Wrapped(UVec4),
-
-		yyyy(self:) -> Wrapped(UVec4),
-
 	)
 	+ Fields
 	(
@@ -10914,6 +6450,8 @@ impl_script_newtype!{
 	#[languages(on_feature(lua))]
 	///A 3-dimensional vector.
 	glam::u32::UVec3 : 
+	Clone +
+	Debug +
 	Methods
 	(
 		///Creates a new vector.
@@ -11029,300 +6567,6 @@ impl_script_newtype!{
 		///Casts all elements of `self` to `i32`.
 		as_ivec3(&self:) -> Wrapped(IVec3),
 
-		from(Wrapped(UVec3)) -> self,
-
-		from(Wrapped(UVec3)) -> self,
-
-		clone(&self:) -> Wrapped(UVec3),
-
-		eq(&self:Wrapped(&UVec3)) -> Raw(bool),
-
-		default() -> self,
-
-		div(self:self) -> self,
-
-		div(self:Raw(u32)) -> self,
-
-		div(self:Wrapped(UVec3)) -> Wrapped(UVec3),
-
-		div_assign(&mut self:self),
-
-		div_assign(&mut self:Raw(u32)),
-
-		mul(self:self) -> self,
-
-		mul(self:Raw(u32)) -> self,
-
-		mul(self:Wrapped(UVec3)) -> Wrapped(UVec3),
-
-		mul_assign(&mut self:self),
-
-		mul_assign(&mut self:Raw(u32)),
-
-		add(self:self) -> self,
-
-		add(self:Raw(u32)) -> self,
-
-		add(self:Wrapped(UVec3)) -> Wrapped(UVec3),
-
-		add_assign(&mut self:self),
-
-		add_assign(&mut self:Raw(u32)),
-
-		sub(self:self) -> self,
-
-		sub(self:Raw(u32)) -> self,
-
-		sub(self:Wrapped(UVec3)) -> Wrapped(UVec3),
-
-		sub_assign(&mut self:Wrapped(UVec3)),
-
-		sub_assign(&mut self:Raw(u32)),
-
-		rem(self:self) -> self,
-
-		rem(self:Raw(u32)) -> self,
-
-		rem(self:Wrapped(UVec3)) -> Wrapped(UVec3),
-
-		rem_assign(&mut self:self),
-
-		rem_assign(&mut self:Raw(u32)),
-
-		xx(self:) -> Wrapped(UVec2),
-
-		xy(self:) -> Wrapped(UVec2),
-
-		xz(self:) -> Wrapped(UVec2),
-
-		yx(self:) -> Wrapped(UVec2),
-
-		yy(self:) -> Wrapped(UVec2),
-
-		yz(self:) -> Wrapped(UVec2),
-
-		zx(self:) -> Wrapped(UVec2),
-
-		zy(self:) -> Wrapped(UVec2),
-
-		zz(self:) -> Wrapped(UVec2),
-
-		xxx(self:) -> Wrapped(UVec3),
-
-		xxy(self:) -> Wrapped(UVec3),
-
-		xxz(self:) -> Wrapped(UVec3),
-
-		xyx(self:) -> Wrapped(UVec3),
-
-		xyy(self:) -> Wrapped(UVec3),
-
-		xyz(self:) -> Wrapped(UVec3),
-
-		xzx(self:) -> Wrapped(UVec3),
-
-		xzy(self:) -> Wrapped(UVec3),
-
-		xzz(self:) -> Wrapped(UVec3),
-
-		yxx(self:) -> Wrapped(UVec3),
-
-		yxy(self:) -> Wrapped(UVec3),
-
-		yxz(self:) -> Wrapped(UVec3),
-
-		yyx(self:) -> Wrapped(UVec3),
-
-		yyy(self:) -> Wrapped(UVec3),
-
-		yyz(self:) -> Wrapped(UVec3),
-
-		yzx(self:) -> Wrapped(UVec3),
-
-		yzy(self:) -> Wrapped(UVec3),
-
-		yzz(self:) -> Wrapped(UVec3),
-
-		zxx(self:) -> Wrapped(UVec3),
-
-		zxy(self:) -> Wrapped(UVec3),
-
-		zxz(self:) -> Wrapped(UVec3),
-
-		zyx(self:) -> Wrapped(UVec3),
-
-		zyy(self:) -> Wrapped(UVec3),
-
-		zyz(self:) -> Wrapped(UVec3),
-
-		zzx(self:) -> Wrapped(UVec3),
-
-		zzy(self:) -> Wrapped(UVec3),
-
-		zzz(self:) -> Wrapped(UVec3),
-
-		xxxx(self:) -> Wrapped(UVec4),
-
-		xxxy(self:) -> Wrapped(UVec4),
-
-		xxxz(self:) -> Wrapped(UVec4),
-
-		xxyx(self:) -> Wrapped(UVec4),
-
-		xxyy(self:) -> Wrapped(UVec4),
-
-		xxyz(self:) -> Wrapped(UVec4),
-
-		xxzx(self:) -> Wrapped(UVec4),
-
-		xxzy(self:) -> Wrapped(UVec4),
-
-		xxzz(self:) -> Wrapped(UVec4),
-
-		xyxx(self:) -> Wrapped(UVec4),
-
-		xyxy(self:) -> Wrapped(UVec4),
-
-		xyxz(self:) -> Wrapped(UVec4),
-
-		xyyx(self:) -> Wrapped(UVec4),
-
-		xyyy(self:) -> Wrapped(UVec4),
-
-		xyyz(self:) -> Wrapped(UVec4),
-
-		xyzx(self:) -> Wrapped(UVec4),
-
-		xyzy(self:) -> Wrapped(UVec4),
-
-		xyzz(self:) -> Wrapped(UVec4),
-
-		xzxx(self:) -> Wrapped(UVec4),
-
-		xzxy(self:) -> Wrapped(UVec4),
-
-		xzxz(self:) -> Wrapped(UVec4),
-
-		xzyx(self:) -> Wrapped(UVec4),
-
-		xzyy(self:) -> Wrapped(UVec4),
-
-		xzyz(self:) -> Wrapped(UVec4),
-
-		xzzx(self:) -> Wrapped(UVec4),
-
-		xzzy(self:) -> Wrapped(UVec4),
-
-		xzzz(self:) -> Wrapped(UVec4),
-
-		yxxx(self:) -> Wrapped(UVec4),
-
-		yxxy(self:) -> Wrapped(UVec4),
-
-		yxxz(self:) -> Wrapped(UVec4),
-
-		yxyx(self:) -> Wrapped(UVec4),
-
-		yxyy(self:) -> Wrapped(UVec4),
-
-		yxyz(self:) -> Wrapped(UVec4),
-
-		yxzx(self:) -> Wrapped(UVec4),
-
-		yxzy(self:) -> Wrapped(UVec4),
-
-		yxzz(self:) -> Wrapped(UVec4),
-
-		yyxx(self:) -> Wrapped(UVec4),
-
-		yyxy(self:) -> Wrapped(UVec4),
-
-		yyxz(self:) -> Wrapped(UVec4),
-
-		yyyx(self:) -> Wrapped(UVec4),
-
-		yyyy(self:) -> Wrapped(UVec4),
-
-		yyyz(self:) -> Wrapped(UVec4),
-
-		yyzx(self:) -> Wrapped(UVec4),
-
-		yyzy(self:) -> Wrapped(UVec4),
-
-		yyzz(self:) -> Wrapped(UVec4),
-
-		yzxx(self:) -> Wrapped(UVec4),
-
-		yzxy(self:) -> Wrapped(UVec4),
-
-		yzxz(self:) -> Wrapped(UVec4),
-
-		yzyx(self:) -> Wrapped(UVec4),
-
-		yzyy(self:) -> Wrapped(UVec4),
-
-		yzyz(self:) -> Wrapped(UVec4),
-
-		yzzx(self:) -> Wrapped(UVec4),
-
-		yzzy(self:) -> Wrapped(UVec4),
-
-		yzzz(self:) -> Wrapped(UVec4),
-
-		zxxx(self:) -> Wrapped(UVec4),
-
-		zxxy(self:) -> Wrapped(UVec4),
-
-		zxxz(self:) -> Wrapped(UVec4),
-
-		zxyx(self:) -> Wrapped(UVec4),
-
-		zxyy(self:) -> Wrapped(UVec4),
-
-		zxyz(self:) -> Wrapped(UVec4),
-
-		zxzx(self:) -> Wrapped(UVec4),
-
-		zxzy(self:) -> Wrapped(UVec4),
-
-		zxzz(self:) -> Wrapped(UVec4),
-
-		zyxx(self:) -> Wrapped(UVec4),
-
-		zyxy(self:) -> Wrapped(UVec4),
-
-		zyxz(self:) -> Wrapped(UVec4),
-
-		zyyx(self:) -> Wrapped(UVec4),
-
-		zyyy(self:) -> Wrapped(UVec4),
-
-		zyyz(self:) -> Wrapped(UVec4),
-
-		zyzx(self:) -> Wrapped(UVec4),
-
-		zyzy(self:) -> Wrapped(UVec4),
-
-		zyzz(self:) -> Wrapped(UVec4),
-
-		zzxx(self:) -> Wrapped(UVec4),
-
-		zzxy(self:) -> Wrapped(UVec4),
-
-		zzxz(self:) -> Wrapped(UVec4),
-
-		zzyx(self:) -> Wrapped(UVec4),
-
-		zzyy(self:) -> Wrapped(UVec4),
-
-		zzyz(self:) -> Wrapped(UVec4),
-
-		zzzx(self:) -> Wrapped(UVec4),
-
-		zzzy(self:) -> Wrapped(UVec4),
-
-		zzzz(self:) -> Wrapped(UVec4),
-
 	)
 	+ Fields
 	(
@@ -11361,6 +6605,8 @@ impl_script_newtype!{
 	#[languages(on_feature(lua))]
 	///A 4-dimensional vector.
 	glam::u32::UVec4 : 
+	Clone +
+	Debug +
 	Methods
 	(
 		///Creates a new vector.
@@ -11467,738 +6713,6 @@ impl_script_newtype!{
 		///Casts all elements of `self` to `i32`.
 		as_ivec4(&self:) -> Wrapped(IVec4),
 
-		from(Wrapped(UVec4)) -> self,
-
-		from(Wrapped(UVec4)) -> self,
-
-		clone(&self:) -> Wrapped(UVec4),
-
-		eq(&self:Wrapped(&UVec4)) -> Raw(bool),
-
-		default() -> self,
-
-		div(self:self) -> self,
-
-		div(self:Raw(u32)) -> self,
-
-		div(self:Wrapped(UVec4)) -> Wrapped(UVec4),
-
-		div_assign(&mut self:self),
-
-		div_assign(&mut self:Raw(u32)),
-
-		mul(self:self) -> self,
-
-		mul(self:Raw(u32)) -> self,
-
-		mul(self:Wrapped(UVec4)) -> Wrapped(UVec4),
-
-		mul_assign(&mut self:self),
-
-		mul_assign(&mut self:Raw(u32)),
-
-		add(self:self) -> self,
-
-		add(self:Raw(u32)) -> self,
-
-		add(self:Wrapped(UVec4)) -> Wrapped(UVec4),
-
-		add_assign(&mut self:self),
-
-		add_assign(&mut self:Raw(u32)),
-
-		sub(self:self) -> self,
-
-		sub(self:Raw(u32)) -> self,
-
-		sub(self:Wrapped(UVec4)) -> Wrapped(UVec4),
-
-		sub_assign(&mut self:Wrapped(UVec4)),
-
-		sub_assign(&mut self:Raw(u32)),
-
-		rem(self:self) -> self,
-
-		rem(self:Raw(u32)) -> self,
-
-		rem(self:Wrapped(UVec4)) -> Wrapped(UVec4),
-
-		rem_assign(&mut self:self),
-
-		rem_assign(&mut self:Raw(u32)),
-
-		xx(self:) -> Wrapped(UVec2),
-
-		xy(self:) -> Wrapped(UVec2),
-
-		xz(self:) -> Wrapped(UVec2),
-
-		xw(self:) -> Wrapped(UVec2),
-
-		yx(self:) -> Wrapped(UVec2),
-
-		yy(self:) -> Wrapped(UVec2),
-
-		yz(self:) -> Wrapped(UVec2),
-
-		yw(self:) -> Wrapped(UVec2),
-
-		zx(self:) -> Wrapped(UVec2),
-
-		zy(self:) -> Wrapped(UVec2),
-
-		zz(self:) -> Wrapped(UVec2),
-
-		zw(self:) -> Wrapped(UVec2),
-
-		wx(self:) -> Wrapped(UVec2),
-
-		wy(self:) -> Wrapped(UVec2),
-
-		wz(self:) -> Wrapped(UVec2),
-
-		ww(self:) -> Wrapped(UVec2),
-
-		xxx(self:) -> Wrapped(UVec3),
-
-		xxy(self:) -> Wrapped(UVec3),
-
-		xxz(self:) -> Wrapped(UVec3),
-
-		xxw(self:) -> Wrapped(UVec3),
-
-		xyx(self:) -> Wrapped(UVec3),
-
-		xyy(self:) -> Wrapped(UVec3),
-
-		xyz(self:) -> Wrapped(UVec3),
-
-		xyw(self:) -> Wrapped(UVec3),
-
-		xzx(self:) -> Wrapped(UVec3),
-
-		xzy(self:) -> Wrapped(UVec3),
-
-		xzz(self:) -> Wrapped(UVec3),
-
-		xzw(self:) -> Wrapped(UVec3),
-
-		xwx(self:) -> Wrapped(UVec3),
-
-		xwy(self:) -> Wrapped(UVec3),
-
-		xwz(self:) -> Wrapped(UVec3),
-
-		xww(self:) -> Wrapped(UVec3),
-
-		yxx(self:) -> Wrapped(UVec3),
-
-		yxy(self:) -> Wrapped(UVec3),
-
-		yxz(self:) -> Wrapped(UVec3),
-
-		yxw(self:) -> Wrapped(UVec3),
-
-		yyx(self:) -> Wrapped(UVec3),
-
-		yyy(self:) -> Wrapped(UVec3),
-
-		yyz(self:) -> Wrapped(UVec3),
-
-		yyw(self:) -> Wrapped(UVec3),
-
-		yzx(self:) -> Wrapped(UVec3),
-
-		yzy(self:) -> Wrapped(UVec3),
-
-		yzz(self:) -> Wrapped(UVec3),
-
-		yzw(self:) -> Wrapped(UVec3),
-
-		ywx(self:) -> Wrapped(UVec3),
-
-		ywy(self:) -> Wrapped(UVec3),
-
-		ywz(self:) -> Wrapped(UVec3),
-
-		yww(self:) -> Wrapped(UVec3),
-
-		zxx(self:) -> Wrapped(UVec3),
-
-		zxy(self:) -> Wrapped(UVec3),
-
-		zxz(self:) -> Wrapped(UVec3),
-
-		zxw(self:) -> Wrapped(UVec3),
-
-		zyx(self:) -> Wrapped(UVec3),
-
-		zyy(self:) -> Wrapped(UVec3),
-
-		zyz(self:) -> Wrapped(UVec3),
-
-		zyw(self:) -> Wrapped(UVec3),
-
-		zzx(self:) -> Wrapped(UVec3),
-
-		zzy(self:) -> Wrapped(UVec3),
-
-		zzz(self:) -> Wrapped(UVec3),
-
-		zzw(self:) -> Wrapped(UVec3),
-
-		zwx(self:) -> Wrapped(UVec3),
-
-		zwy(self:) -> Wrapped(UVec3),
-
-		zwz(self:) -> Wrapped(UVec3),
-
-		zww(self:) -> Wrapped(UVec3),
-
-		wxx(self:) -> Wrapped(UVec3),
-
-		wxy(self:) -> Wrapped(UVec3),
-
-		wxz(self:) -> Wrapped(UVec3),
-
-		wxw(self:) -> Wrapped(UVec3),
-
-		wyx(self:) -> Wrapped(UVec3),
-
-		wyy(self:) -> Wrapped(UVec3),
-
-		wyz(self:) -> Wrapped(UVec3),
-
-		wyw(self:) -> Wrapped(UVec3),
-
-		wzx(self:) -> Wrapped(UVec3),
-
-		wzy(self:) -> Wrapped(UVec3),
-
-		wzz(self:) -> Wrapped(UVec3),
-
-		wzw(self:) -> Wrapped(UVec3),
-
-		wwx(self:) -> Wrapped(UVec3),
-
-		wwy(self:) -> Wrapped(UVec3),
-
-		wwz(self:) -> Wrapped(UVec3),
-
-		www(self:) -> Wrapped(UVec3),
-
-		xxxx(self:) -> Wrapped(UVec4),
-
-		xxxy(self:) -> Wrapped(UVec4),
-
-		xxxz(self:) -> Wrapped(UVec4),
-
-		xxxw(self:) -> Wrapped(UVec4),
-
-		xxyx(self:) -> Wrapped(UVec4),
-
-		xxyy(self:) -> Wrapped(UVec4),
-
-		xxyz(self:) -> Wrapped(UVec4),
-
-		xxyw(self:) -> Wrapped(UVec4),
-
-		xxzx(self:) -> Wrapped(UVec4),
-
-		xxzy(self:) -> Wrapped(UVec4),
-
-		xxzz(self:) -> Wrapped(UVec4),
-
-		xxzw(self:) -> Wrapped(UVec4),
-
-		xxwx(self:) -> Wrapped(UVec4),
-
-		xxwy(self:) -> Wrapped(UVec4),
-
-		xxwz(self:) -> Wrapped(UVec4),
-
-		xxww(self:) -> Wrapped(UVec4),
-
-		xyxx(self:) -> Wrapped(UVec4),
-
-		xyxy(self:) -> Wrapped(UVec4),
-
-		xyxz(self:) -> Wrapped(UVec4),
-
-		xyxw(self:) -> Wrapped(UVec4),
-
-		xyyx(self:) -> Wrapped(UVec4),
-
-		xyyy(self:) -> Wrapped(UVec4),
-
-		xyyz(self:) -> Wrapped(UVec4),
-
-		xyyw(self:) -> Wrapped(UVec4),
-
-		xyzx(self:) -> Wrapped(UVec4),
-
-		xyzy(self:) -> Wrapped(UVec4),
-
-		xyzz(self:) -> Wrapped(UVec4),
-
-		xyzw(self:) -> Wrapped(UVec4),
-
-		xywx(self:) -> Wrapped(UVec4),
-
-		xywy(self:) -> Wrapped(UVec4),
-
-		xywz(self:) -> Wrapped(UVec4),
-
-		xyww(self:) -> Wrapped(UVec4),
-
-		xzxx(self:) -> Wrapped(UVec4),
-
-		xzxy(self:) -> Wrapped(UVec4),
-
-		xzxz(self:) -> Wrapped(UVec4),
-
-		xzxw(self:) -> Wrapped(UVec4),
-
-		xzyx(self:) -> Wrapped(UVec4),
-
-		xzyy(self:) -> Wrapped(UVec4),
-
-		xzyz(self:) -> Wrapped(UVec4),
-
-		xzyw(self:) -> Wrapped(UVec4),
-
-		xzzx(self:) -> Wrapped(UVec4),
-
-		xzzy(self:) -> Wrapped(UVec4),
-
-		xzzz(self:) -> Wrapped(UVec4),
-
-		xzzw(self:) -> Wrapped(UVec4),
-
-		xzwx(self:) -> Wrapped(UVec4),
-
-		xzwy(self:) -> Wrapped(UVec4),
-
-		xzwz(self:) -> Wrapped(UVec4),
-
-		xzww(self:) -> Wrapped(UVec4),
-
-		xwxx(self:) -> Wrapped(UVec4),
-
-		xwxy(self:) -> Wrapped(UVec4),
-
-		xwxz(self:) -> Wrapped(UVec4),
-
-		xwxw(self:) -> Wrapped(UVec4),
-
-		xwyx(self:) -> Wrapped(UVec4),
-
-		xwyy(self:) -> Wrapped(UVec4),
-
-		xwyz(self:) -> Wrapped(UVec4),
-
-		xwyw(self:) -> Wrapped(UVec4),
-
-		xwzx(self:) -> Wrapped(UVec4),
-
-		xwzy(self:) -> Wrapped(UVec4),
-
-		xwzz(self:) -> Wrapped(UVec4),
-
-		xwzw(self:) -> Wrapped(UVec4),
-
-		xwwx(self:) -> Wrapped(UVec4),
-
-		xwwy(self:) -> Wrapped(UVec4),
-
-		xwwz(self:) -> Wrapped(UVec4),
-
-		xwww(self:) -> Wrapped(UVec4),
-
-		yxxx(self:) -> Wrapped(UVec4),
-
-		yxxy(self:) -> Wrapped(UVec4),
-
-		yxxz(self:) -> Wrapped(UVec4),
-
-		yxxw(self:) -> Wrapped(UVec4),
-
-		yxyx(self:) -> Wrapped(UVec4),
-
-		yxyy(self:) -> Wrapped(UVec4),
-
-		yxyz(self:) -> Wrapped(UVec4),
-
-		yxyw(self:) -> Wrapped(UVec4),
-
-		yxzx(self:) -> Wrapped(UVec4),
-
-		yxzy(self:) -> Wrapped(UVec4),
-
-		yxzz(self:) -> Wrapped(UVec4),
-
-		yxzw(self:) -> Wrapped(UVec4),
-
-		yxwx(self:) -> Wrapped(UVec4),
-
-		yxwy(self:) -> Wrapped(UVec4),
-
-		yxwz(self:) -> Wrapped(UVec4),
-
-		yxww(self:) -> Wrapped(UVec4),
-
-		yyxx(self:) -> Wrapped(UVec4),
-
-		yyxy(self:) -> Wrapped(UVec4),
-
-		yyxz(self:) -> Wrapped(UVec4),
-
-		yyxw(self:) -> Wrapped(UVec4),
-
-		yyyx(self:) -> Wrapped(UVec4),
-
-		yyyy(self:) -> Wrapped(UVec4),
-
-		yyyz(self:) -> Wrapped(UVec4),
-
-		yyyw(self:) -> Wrapped(UVec4),
-
-		yyzx(self:) -> Wrapped(UVec4),
-
-		yyzy(self:) -> Wrapped(UVec4),
-
-		yyzz(self:) -> Wrapped(UVec4),
-
-		yyzw(self:) -> Wrapped(UVec4),
-
-		yywx(self:) -> Wrapped(UVec4),
-
-		yywy(self:) -> Wrapped(UVec4),
-
-		yywz(self:) -> Wrapped(UVec4),
-
-		yyww(self:) -> Wrapped(UVec4),
-
-		yzxx(self:) -> Wrapped(UVec4),
-
-		yzxy(self:) -> Wrapped(UVec4),
-
-		yzxz(self:) -> Wrapped(UVec4),
-
-		yzxw(self:) -> Wrapped(UVec4),
-
-		yzyx(self:) -> Wrapped(UVec4),
-
-		yzyy(self:) -> Wrapped(UVec4),
-
-		yzyz(self:) -> Wrapped(UVec4),
-
-		yzyw(self:) -> Wrapped(UVec4),
-
-		yzzx(self:) -> Wrapped(UVec4),
-
-		yzzy(self:) -> Wrapped(UVec4),
-
-		yzzz(self:) -> Wrapped(UVec4),
-
-		yzzw(self:) -> Wrapped(UVec4),
-
-		yzwx(self:) -> Wrapped(UVec4),
-
-		yzwy(self:) -> Wrapped(UVec4),
-
-		yzwz(self:) -> Wrapped(UVec4),
-
-		yzww(self:) -> Wrapped(UVec4),
-
-		ywxx(self:) -> Wrapped(UVec4),
-
-		ywxy(self:) -> Wrapped(UVec4),
-
-		ywxz(self:) -> Wrapped(UVec4),
-
-		ywxw(self:) -> Wrapped(UVec4),
-
-		ywyx(self:) -> Wrapped(UVec4),
-
-		ywyy(self:) -> Wrapped(UVec4),
-
-		ywyz(self:) -> Wrapped(UVec4),
-
-		ywyw(self:) -> Wrapped(UVec4),
-
-		ywzx(self:) -> Wrapped(UVec4),
-
-		ywzy(self:) -> Wrapped(UVec4),
-
-		ywzz(self:) -> Wrapped(UVec4),
-
-		ywzw(self:) -> Wrapped(UVec4),
-
-		ywwx(self:) -> Wrapped(UVec4),
-
-		ywwy(self:) -> Wrapped(UVec4),
-
-		ywwz(self:) -> Wrapped(UVec4),
-
-		ywww(self:) -> Wrapped(UVec4),
-
-		zxxx(self:) -> Wrapped(UVec4),
-
-		zxxy(self:) -> Wrapped(UVec4),
-
-		zxxz(self:) -> Wrapped(UVec4),
-
-		zxxw(self:) -> Wrapped(UVec4),
-
-		zxyx(self:) -> Wrapped(UVec4),
-
-		zxyy(self:) -> Wrapped(UVec4),
-
-		zxyz(self:) -> Wrapped(UVec4),
-
-		zxyw(self:) -> Wrapped(UVec4),
-
-		zxzx(self:) -> Wrapped(UVec4),
-
-		zxzy(self:) -> Wrapped(UVec4),
-
-		zxzz(self:) -> Wrapped(UVec4),
-
-		zxzw(self:) -> Wrapped(UVec4),
-
-		zxwx(self:) -> Wrapped(UVec4),
-
-		zxwy(self:) -> Wrapped(UVec4),
-
-		zxwz(self:) -> Wrapped(UVec4),
-
-		zxww(self:) -> Wrapped(UVec4),
-
-		zyxx(self:) -> Wrapped(UVec4),
-
-		zyxy(self:) -> Wrapped(UVec4),
-
-		zyxz(self:) -> Wrapped(UVec4),
-
-		zyxw(self:) -> Wrapped(UVec4),
-
-		zyyx(self:) -> Wrapped(UVec4),
-
-		zyyy(self:) -> Wrapped(UVec4),
-
-		zyyz(self:) -> Wrapped(UVec4),
-
-		zyyw(self:) -> Wrapped(UVec4),
-
-		zyzx(self:) -> Wrapped(UVec4),
-
-		zyzy(self:) -> Wrapped(UVec4),
-
-		zyzz(self:) -> Wrapped(UVec4),
-
-		zyzw(self:) -> Wrapped(UVec4),
-
-		zywx(self:) -> Wrapped(UVec4),
-
-		zywy(self:) -> Wrapped(UVec4),
-
-		zywz(self:) -> Wrapped(UVec4),
-
-		zyww(self:) -> Wrapped(UVec4),
-
-		zzxx(self:) -> Wrapped(UVec4),
-
-		zzxy(self:) -> Wrapped(UVec4),
-
-		zzxz(self:) -> Wrapped(UVec4),
-
-		zzxw(self:) -> Wrapped(UVec4),
-
-		zzyx(self:) -> Wrapped(UVec4),
-
-		zzyy(self:) -> Wrapped(UVec4),
-
-		zzyz(self:) -> Wrapped(UVec4),
-
-		zzyw(self:) -> Wrapped(UVec4),
-
-		zzzx(self:) -> Wrapped(UVec4),
-
-		zzzy(self:) -> Wrapped(UVec4),
-
-		zzzz(self:) -> Wrapped(UVec4),
-
-		zzzw(self:) -> Wrapped(UVec4),
-
-		zzwx(self:) -> Wrapped(UVec4),
-
-		zzwy(self:) -> Wrapped(UVec4),
-
-		zzwz(self:) -> Wrapped(UVec4),
-
-		zzww(self:) -> Wrapped(UVec4),
-
-		zwxx(self:) -> Wrapped(UVec4),
-
-		zwxy(self:) -> Wrapped(UVec4),
-
-		zwxz(self:) -> Wrapped(UVec4),
-
-		zwxw(self:) -> Wrapped(UVec4),
-
-		zwyx(self:) -> Wrapped(UVec4),
-
-		zwyy(self:) -> Wrapped(UVec4),
-
-		zwyz(self:) -> Wrapped(UVec4),
-
-		zwyw(self:) -> Wrapped(UVec4),
-
-		zwzx(self:) -> Wrapped(UVec4),
-
-		zwzy(self:) -> Wrapped(UVec4),
-
-		zwzz(self:) -> Wrapped(UVec4),
-
-		zwzw(self:) -> Wrapped(UVec4),
-
-		zwwx(self:) -> Wrapped(UVec4),
-
-		zwwy(self:) -> Wrapped(UVec4),
-
-		zwwz(self:) -> Wrapped(UVec4),
-
-		zwww(self:) -> Wrapped(UVec4),
-
-		wxxx(self:) -> Wrapped(UVec4),
-
-		wxxy(self:) -> Wrapped(UVec4),
-
-		wxxz(self:) -> Wrapped(UVec4),
-
-		wxxw(self:) -> Wrapped(UVec4),
-
-		wxyx(self:) -> Wrapped(UVec4),
-
-		wxyy(self:) -> Wrapped(UVec4),
-
-		wxyz(self:) -> Wrapped(UVec4),
-
-		wxyw(self:) -> Wrapped(UVec4),
-
-		wxzx(self:) -> Wrapped(UVec4),
-
-		wxzy(self:) -> Wrapped(UVec4),
-
-		wxzz(self:) -> Wrapped(UVec4),
-
-		wxzw(self:) -> Wrapped(UVec4),
-
-		wxwx(self:) -> Wrapped(UVec4),
-
-		wxwy(self:) -> Wrapped(UVec4),
-
-		wxwz(self:) -> Wrapped(UVec4),
-
-		wxww(self:) -> Wrapped(UVec4),
-
-		wyxx(self:) -> Wrapped(UVec4),
-
-		wyxy(self:) -> Wrapped(UVec4),
-
-		wyxz(self:) -> Wrapped(UVec4),
-
-		wyxw(self:) -> Wrapped(UVec4),
-
-		wyyx(self:) -> Wrapped(UVec4),
-
-		wyyy(self:) -> Wrapped(UVec4),
-
-		wyyz(self:) -> Wrapped(UVec4),
-
-		wyyw(self:) -> Wrapped(UVec4),
-
-		wyzx(self:) -> Wrapped(UVec4),
-
-		wyzy(self:) -> Wrapped(UVec4),
-
-		wyzz(self:) -> Wrapped(UVec4),
-
-		wyzw(self:) -> Wrapped(UVec4),
-
-		wywx(self:) -> Wrapped(UVec4),
-
-		wywy(self:) -> Wrapped(UVec4),
-
-		wywz(self:) -> Wrapped(UVec4),
-
-		wyww(self:) -> Wrapped(UVec4),
-
-		wzxx(self:) -> Wrapped(UVec4),
-
-		wzxy(self:) -> Wrapped(UVec4),
-
-		wzxz(self:) -> Wrapped(UVec4),
-
-		wzxw(self:) -> Wrapped(UVec4),
-
-		wzyx(self:) -> Wrapped(UVec4),
-
-		wzyy(self:) -> Wrapped(UVec4),
-
-		wzyz(self:) -> Wrapped(UVec4),
-
-		wzyw(self:) -> Wrapped(UVec4),
-
-		wzzx(self:) -> Wrapped(UVec4),
-
-		wzzy(self:) -> Wrapped(UVec4),
-
-		wzzz(self:) -> Wrapped(UVec4),
-
-		wzzw(self:) -> Wrapped(UVec4),
-
-		wzwx(self:) -> Wrapped(UVec4),
-
-		wzwy(self:) -> Wrapped(UVec4),
-
-		wzwz(self:) -> Wrapped(UVec4),
-
-		wzww(self:) -> Wrapped(UVec4),
-
-		wwxx(self:) -> Wrapped(UVec4),
-
-		wwxy(self:) -> Wrapped(UVec4),
-
-		wwxz(self:) -> Wrapped(UVec4),
-
-		wwxw(self:) -> Wrapped(UVec4),
-
-		wwyx(self:) -> Wrapped(UVec4),
-
-		wwyy(self:) -> Wrapped(UVec4),
-
-		wwyz(self:) -> Wrapped(UVec4),
-
-		wwyw(self:) -> Wrapped(UVec4),
-
-		wwzx(self:) -> Wrapped(UVec4),
-
-		wwzy(self:) -> Wrapped(UVec4),
-
-		wwzz(self:) -> Wrapped(UVec4),
-
-		wwzw(self:) -> Wrapped(UVec4),
-
-		wwwx(self:) -> Wrapped(UVec4),
-
-		wwwy(self:) -> Wrapped(UVec4),
-
-		wwwz(self:) -> Wrapped(UVec4),
-
-		wwww(self:) -> Wrapped(UVec4),
-
 	)
 	+ Fields
 	(
@@ -12261,6 +6775,8 @@ impl_script_newtype!{
 	///vectors respectively. These methods assume that `Self` contains a valid affine
 	///transform.
 	glam::f32::Mat3 : 
+	Clone +
+	Debug +
 	Methods
 	(
 		///Creates a 3x3 matrix from two column vectors.
@@ -12425,28 +6941,6 @@ impl_script_newtype!{
 
 		as_dmat3(&self:) -> Wrapped(DMat3),
 
-		from(Wrapped(Affine2)) -> Wrapped(Mat3),
-
-		from(Wrapped(Mat3A)) -> self,
-
-		from(Wrapped(Mat3)) -> self,
-
-		mul(self:Wrapped(Vec3A)) -> Wrapped(Vec3A),
-
-		clone(&self:) -> Wrapped(Mat3),
-
-		default() -> self,
-
-		add_assign(&mut self:self),
-
-		sub_assign(&mut self:self),
-
-		mul_assign(&mut self:self),
-
-		mul_assign(&mut self:Raw(f32)),
-
-		eq(&self:&self) -> Raw(bool),
-
 	)
 	+ Fields
 	(
@@ -12501,6 +6995,8 @@ impl_script_newtype!{
 	#[languages(on_feature(lua))]
 	///A 2x2 column major matrix.
 	glam::f32::Mat2 : 
+	Clone +
+	Debug +
 	Methods
 	(
 		///Creates a 2x2 matrix from two column vectors.
@@ -12586,20 +7082,6 @@ impl_script_newtype!{
 
 		as_dmat2(&self:) -> Wrapped(DMat2),
 
-		clone(&self:) -> Wrapped(Mat2),
-
-		default() -> self,
-
-		add_assign(&mut self:self),
-
-		sub_assign(&mut self:self),
-
-		mul_assign(&mut self:self),
-
-		mul_assign(&mut self:Raw(f32)),
-
-		eq(&self:&self) -> Raw(bool),
-
 	)
 	+ Fields
 	(
@@ -12672,6 +7154,8 @@ impl_script_newtype!{
 	///vectors respectively. These methods assume that `Self` contains a valid affine
 	///transform.
 	glam::f32::Mat3A : 
+	Clone +
+	Debug +
 	Methods
 	(
 		///Creates a 3x3 matrix from two column vectors.
@@ -12836,28 +7320,6 @@ impl_script_newtype!{
 
 		as_dmat3(&self:) -> Wrapped(DMat3),
 
-		from(Wrapped(Affine2)) -> Wrapped(Mat3A),
-
-		from(Wrapped(Mat3A)) -> self,
-
-		from(Wrapped(Mat3)) -> self,
-
-		mul(self:Wrapped(Vec3)) -> Wrapped(Vec3),
-
-		clone(&self:) -> Wrapped(Mat3A),
-
-		default() -> self,
-
-		add_assign(&mut self:self),
-
-		sub_assign(&mut self:self),
-
-		mul_assign(&mut self:self),
-
-		mul_assign(&mut self:Raw(f32)),
-
-		eq(&self:&self) -> Raw(bool),
-
 	)
 	+ Fields
 	(
@@ -12940,6 +7402,8 @@ impl_script_newtype!{
 	///The resulting perspective project can be use to transform 3D vectors as points with
 	///perspective correction using the [`Self::project_point3()`] convenience method.
 	glam::f32::Mat4 : 
+	Clone +
+	Debug +
 	Methods
 	(
 		///Creates a 4x4 matrix from two column vectors.
@@ -13241,22 +7705,6 @@ impl_script_newtype!{
 
 		as_dmat4(&self:) -> Wrapped(DMat4),
 
-		from(Wrapped(Affine3A)) -> Wrapped(Mat4),
-
-		clone(&self:) -> Wrapped(Mat4),
-
-		default() -> self,
-
-		add_assign(&mut self:self),
-
-		sub_assign(&mut self:self),
-
-		mul_assign(&mut self:self),
-
-		mul_assign(&mut self:Raw(f32)),
-
-		eq(&self:&self) -> Raw(bool),
-
 	)
 	+ Fields
 	(
@@ -13311,6 +7759,8 @@ impl_script_newtype!{
 	#[languages(on_feature(lua))]
 	///A 2x2 column major matrix.
 	glam::f64::DMat2 : 
+	Clone +
+	Debug +
 	Methods
 	(
 		///Creates a 2x2 matrix from two column vectors.
@@ -13393,20 +7843,6 @@ impl_script_newtype!{
 
 		as_mat2(&self:) -> Wrapped(Mat2),
 
-		clone(&self:) -> Wrapped(DMat2),
-
-		default() -> self,
-
-		add_assign(&mut self:self),
-
-		sub_assign(&mut self:self),
-
-		mul_assign(&mut self:self),
-
-		mul_assign(&mut self:Raw(f64)),
-
-		eq(&self:&self) -> Raw(bool),
-
 	)
 	+ Fields
 	(
@@ -13481,6 +7917,8 @@ impl_script_newtype!{
 	///vectors respectively. These methods assume that `Self` contains a valid affine
 	///transform.
 	glam::f64::DMat3 : 
+	Clone +
+	Debug +
 	Methods
 	(
 		///Creates a 3x3 matrix from two column vectors.
@@ -13642,22 +8080,6 @@ impl_script_newtype!{
 
 		as_mat3(&self:) -> Wrapped(Mat3),
 
-		from(Wrapped(DAffine2)) -> Wrapped(DMat3),
-
-		clone(&self:) -> Wrapped(DMat3),
-
-		default() -> self,
-
-		add_assign(&mut self:self),
-
-		sub_assign(&mut self:self),
-
-		mul_assign(&mut self:self),
-
-		mul_assign(&mut self:Raw(f64)),
-
-		eq(&self:&self) -> Raw(bool),
-
 	)
 	+ Fields
 	(
@@ -13739,6 +8161,8 @@ impl_script_newtype!{
 	///The resulting perspective project can be use to transform 3D vectors as points with
 	///perspective correction using the [`Self::project_point3()`] convenience method.
 	glam::f64::DMat4 : 
+	Clone +
+	Debug +
 	Methods
 	(
 		///Creates a 4x4 matrix from two column vectors.
@@ -14023,22 +8447,6 @@ impl_script_newtype!{
 
 		as_mat4(&self:) -> Wrapped(Mat4),
 
-		from(Wrapped(DAffine3)) -> Wrapped(DMat4),
-
-		clone(&self:) -> Wrapped(DMat4),
-
-		default() -> self,
-
-		add_assign(&mut self:self),
-
-		sub_assign(&mut self:self),
-
-		mul_assign(&mut self:self),
-
-		mul_assign(&mut self:Raw(f64)),
-
-		eq(&self:&self) -> Raw(bool),
-
 	)
 	+ Fields
 	(
@@ -14093,6 +8501,8 @@ impl_script_newtype!{
 	#[languages(on_feature(lua))]
 	///A 2D affine transform, which can represent translation, rotation, scaling and shear.
 	glam::f32::Affine2 : 
+	Clone +
+	Debug +
 	Methods
 	(
 		///Creates an affine transform from three column vectors.
@@ -14171,16 +8581,6 @@ impl_script_newtype!{
 		///Note that if the transform is not invertible the result will be invalid.
 		inverse(&self:) -> self,
 
-		from(Wrapped(Affine2)) -> Wrapped(Mat3),
-
-		from(Wrapped(Affine2)) -> Wrapped(Mat3A),
-
-		clone(&self:) -> Wrapped(Affine2),
-
-		default() -> self,
-
-		eq(&self:&self) -> Raw(bool),
-
 	)
 	+ Fields
 	(
@@ -14204,6 +8604,8 @@ impl_script_newtype!{
 	#[languages(on_feature(lua))]
 	///A 3D affine transform, which can represent translation, rotation, scaling and shear.
 	glam::f32::Affine3A : 
+	Clone +
+	Debug +
 	Methods
 	(
 		///Creates an affine transform from three column vectors.
@@ -14334,14 +8736,6 @@ impl_script_newtype!{
 		///Note that if the transform is not invertible the result will be invalid.
 		inverse(&self:) -> self,
 
-		from(Wrapped(Affine3A)) -> Wrapped(Mat4),
-
-		clone(&self:) -> Wrapped(Affine3A),
-
-		default() -> self,
-
-		eq(&self:&self) -> Raw(bool),
-
 	)
 	+ Fields
 	(
@@ -14364,6 +8758,8 @@ impl_script_newtype!{
 	#[languages(on_feature(lua))]
 	///A 2D affine transform, which can represent translation, rotation, scaling and shear.
 	glam::f64::DAffine2 : 
+	Clone +
+	Debug +
 	Methods
 	(
 		///Creates an affine transform from three column vectors.
@@ -14439,14 +8835,6 @@ impl_script_newtype!{
 		///Note that if the transform is not invertible the result will be invalid.
 		inverse(&self:) -> self,
 
-		from(Wrapped(DAffine2)) -> Wrapped(DMat3),
-
-		clone(&self:) -> Wrapped(DAffine2),
-
-		default() -> self,
-
-		eq(&self:&self) -> Raw(bool),
-
 	)
 	+ Fields
 	(
@@ -14469,6 +8857,8 @@ impl_script_newtype!{
 	#[languages(on_feature(lua))]
 	///A 3D affine transform, which can represent translation, rotation, scaling and shear.
 	glam::f64::DAffine3 : 
+	Clone +
+	Debug +
 	Methods
 	(
 		///Creates an affine transform from three column vectors.
@@ -14590,14 +8980,6 @@ impl_script_newtype!{
 		///Note that if the transform is not invertible the result will be invalid.
 		inverse(&self:) -> self,
 
-		from(Wrapped(DAffine3)) -> Wrapped(DMat4),
-
-		clone(&self:) -> Wrapped(DAffine3),
-
-		default() -> self,
-
-		eq(&self:&self) -> Raw(bool),
-
 	)
 	+ Fields
 	(
@@ -14626,6 +9008,8 @@ impl_script_newtype!{
 	///
 	///This type is 16 byte aligned.
 	glam::f32::Quat : 
+	Clone +
+	Debug +
 	Methods
 	(
 		///Creates a new rotation quaternion.
@@ -14857,66 +9241,6 @@ impl_script_newtype!{
 
 		as_f64(self:) -> Wrapped(DQuat),
 
-		from(Wrapped(Quat)) -> self,
-
-		from(Wrapped(Quat)) -> self,
-
-		from(Wrapped(Quat)) -> self,
-
-		from(Wrapped(Quat)) -> self,
-
-		clone(&self:) -> Wrapped(Quat),
-
-		///Adds two quaternions.
-		///
-		///The sum is not guaranteed to be normalized.
-		///
-		///Note that addition is not the same as combining the rotations represented by the
-		///two quaternions! That corresponds to multiplication.
-		add(self:self) -> self,
-
-		///Subtracts the `rhs` quaternion from `self`.
-		///
-		///The difference is not guaranteed to be normalized.
-		sub(self:self) -> self,
-
-		///Multiplies a quaternion by a scalar value.
-		///
-		///The product is not guaranteed to be normalized.
-		mul(self:Raw(f32)) -> self,
-
-		///Multiplies two quaternions. If they each represent a rotation, the result will
-		///represent the combined rotation.
-		///
-		///Note that due to floating point rounding the result may not be perfectly
-		///normalized.
-		///
-		///# Panics
-		///
-		///Will panic if `self` or `rhs` are not normalized when `glam_assert` is enabled.
-		mul(self:self) -> self,
-
-		///Divides a quaternion by a scalar value.
-		///The quotient is not guaranteed to be normalized.
-		div(self:Raw(f32)) -> self,
-
-		///Multiplies two quaternions. If they each represent a rotation, the result will
-		///represent the combined rotation.
-		///
-		///Note that due to floating point rounding the result may not be perfectly
-		///normalized.
-		///
-		///# Panics
-		///
-		///Will panic if `self` or `rhs` are not normalized when `glam_assert` is enabled.
-		mul_assign(&mut self:self),
-
-		neg(self:) -> self,
-
-		default() -> self,
-
-		eq(&self:&self) -> Raw(bool),
-
 	)
 	+ Fields
 	(
@@ -14947,6 +9271,8 @@ impl_script_newtype!{
 	///floating point "error creep" which can occur when successive quaternion
 	///operations are applied.
 	glam::f64::DQuat : 
+	Clone +
+	Debug +
 	Methods
 	(
 		///Creates a new rotation quaternion.
@@ -15172,64 +9498,6 @@ impl_script_newtype!{
 
 		as_f32(self:) -> Wrapped(Quat),
 
-		from(Wrapped(DQuat)) -> self,
-
-		from(Wrapped(DQuat)) -> self,
-
-		from(Wrapped(DQuat)) -> self,
-
-		clone(&self:) -> Wrapped(DQuat),
-
-		///Adds two quaternions.
-		///
-		///The sum is not guaranteed to be normalized.
-		///
-		///Note that addition is not the same as combining the rotations represented by the
-		///two quaternions! That corresponds to multiplication.
-		add(self:self) -> self,
-
-		///Subtracts the `rhs` quaternion from `self`.
-		///
-		///The difference is not guaranteed to be normalized.
-		sub(self:self) -> self,
-
-		///Multiplies a quaternion by a scalar value.
-		///
-		///The product is not guaranteed to be normalized.
-		mul(self:Raw(f64)) -> self,
-
-		///Multiplies two quaternions. If they each represent a rotation, the result will
-		///represent the combined rotation.
-		///
-		///Note that due to floating point rounding the result may not be perfectly
-		///normalized.
-		///
-		///# Panics
-		///
-		///Will panic if `self` or `rhs` are not normalized when `glam_assert` is enabled.
-		mul(self:self) -> self,
-
-		///Divides a quaternion by a scalar value.
-		///The quotient is not guaranteed to be normalized.
-		div(self:Raw(f64)) -> self,
-
-		///Multiplies two quaternions. If they each represent a rotation, the result will
-		///represent the combined rotation.
-		///
-		///Note that due to floating point rounding the result may not be perfectly
-		///normalized.
-		///
-		///# Panics
-		///
-		///Will panic if `self` or `rhs` are not normalized when `glam_assert` is enabled.
-		mul_assign(&mut self:self),
-
-		neg(self:) -> self,
-
-		default() -> self,
-
-		eq(&self:&self) -> Raw(bool),
-
 	)
 	+ Fields
 	(
@@ -15264,15 +9532,10 @@ impl_script_newtype!{
 	///
 	///YXZ can be used for yaw (y-axis), pitch (x-axis), roll (z-axis).
 	glam::EulerRot : 
+	Clone +
+	Debug +
 	Methods
 	(
-		clone(&self:) -> Wrapped(EulerRot),
-
-		eq(&self:Wrapped(&EulerRot)) -> Raw(bool),
-
-		///Default `YXZ` as yaw (y-axis), pitch (x-axis), roll (z-axis).
-		default() -> self,
-
 	)
 	+ Fields
 	(
@@ -15296,85 +9559,19 @@ pub(crate) struct BevyAPIGlobals;
 impl bevy_mod_scripting_lua::tealr::mlu::ExportInstances for BevyAPIGlobals{
 	fn add_instances<'lua, T: bevy_mod_scripting_lua::tealr::mlu::InstanceCollector<'lua>>(self, instances: &mut T) -> bevy_mod_scripting_lua::tealr::mlu::mlua::Result<()>
 	{
-		instances.add_instance("AlignContent", bevy_mod_scripting_lua::tealr::mlu::UserDataProxy::<LuaAlignContent>::new)?;
-		instances.add_instance("AlignItems", bevy_mod_scripting_lua::tealr::mlu::UserDataProxy::<LuaAlignItems>::new)?;
-		instances.add_instance("AlignSelf", bevy_mod_scripting_lua::tealr::mlu::UserDataProxy::<LuaAlignSelf>::new)?;
-		instances.add_instance("Direction", bevy_mod_scripting_lua::tealr::mlu::UserDataProxy::<LuaDirection>::new)?;
-		instances.add_instance("FlexDirection", bevy_mod_scripting_lua::tealr::mlu::UserDataProxy::<LuaFlexDirection>::new)?;
-		instances.add_instance("FlexWrap", bevy_mod_scripting_lua::tealr::mlu::UserDataProxy::<LuaFlexWrap>::new)?;
-		instances.add_instance("FocusPolicy", bevy_mod_scripting_lua::tealr::mlu::UserDataProxy::<LuaFocusPolicy>::new)?;
-		instances.add_instance("Interaction", bevy_mod_scripting_lua::tealr::mlu::UserDataProxy::<LuaInteraction>::new)?;
-		instances.add_instance("JustifyContent", bevy_mod_scripting_lua::tealr::mlu::UserDataProxy::<LuaJustifyContent>::new)?;
-		instances.add_instance("Overflow", bevy_mod_scripting_lua::tealr::mlu::UserDataProxy::<LuaOverflow>::new)?;
-		instances.add_instance("PositionType", bevy_mod_scripting_lua::tealr::mlu::UserDataProxy::<LuaPositionType>::new)?;
-		instances.add_instance("Val", bevy_mod_scripting_lua::tealr::mlu::UserDataProxy::<LuaVal>::new)?;
-		instances.add_instance("CalculatedClip", bevy_mod_scripting_lua::tealr::mlu::UserDataProxy::<LuaCalculatedClip>::new)?;
-		instances.add_instance("CalculatedSize", bevy_mod_scripting_lua::tealr::mlu::UserDataProxy::<LuaCalculatedSize>::new)?;
-		instances.add_instance("Node", bevy_mod_scripting_lua::tealr::mlu::UserDataProxy::<LuaNode>::new)?;
-		instances.add_instance("Style", bevy_mod_scripting_lua::tealr::mlu::UserDataProxy::<LuaStyle>::new)?;
-		instances.add_instance("UiImage", bevy_mod_scripting_lua::tealr::mlu::UserDataProxy::<LuaUiImage>::new)?;
-		instances.add_instance("Button", bevy_mod_scripting_lua::tealr::mlu::UserDataProxy::<LuaButton>::new)?;
-		instances.add_instance("ImageMode", bevy_mod_scripting_lua::tealr::mlu::UserDataProxy::<LuaImageMode>::new)?;
-		instances.add_instance("Display", bevy_mod_scripting_lua::tealr::mlu::UserDataProxy::<LuaDisplay>::new)?;
-		instances.add_instance("AnimationPlayer", bevy_mod_scripting_lua::tealr::mlu::UserDataProxy::<LuaAnimationPlayer>::new)?;
 		instances.add_instance("Name", bevy_mod_scripting_lua::tealr::mlu::UserDataProxy::<LuaName>::new)?;
-		instances.add_instance("GltfExtras", bevy_mod_scripting_lua::tealr::mlu::UserDataProxy::<LuaGltfExtras>::new)?;
-		instances.add_instance("Children", bevy_mod_scripting_lua::tealr::mlu::UserDataProxy::<LuaChildren>::new)?;
-		instances.add_instance("Parent", bevy_mod_scripting_lua::tealr::mlu::UserDataProxy::<LuaParent>::new)?;
-		instances.add_instance("Text2dBounds", bevy_mod_scripting_lua::tealr::mlu::UserDataProxy::<LuaText2dBounds>::new)?;
-		instances.add_instance("Text2dSize", bevy_mod_scripting_lua::tealr::mlu::UserDataProxy::<LuaText2dSize>::new)?;
 		instances.add_instance("Text", bevy_mod_scripting_lua::tealr::mlu::UserDataProxy::<LuaText>::new)?;
-		instances.add_instance("TextAlignment", bevy_mod_scripting_lua::tealr::mlu::UserDataProxy::<LuaTextAlignment>::new)?;
 		instances.add_instance("TextSection", bevy_mod_scripting_lua::tealr::mlu::UserDataProxy::<LuaTextSection>::new)?;
-		instances.add_instance("TextStyle", bevy_mod_scripting_lua::tealr::mlu::UserDataProxy::<LuaTextStyle>::new)?;
-		instances.add_instance("HorizontalAlign", bevy_mod_scripting_lua::tealr::mlu::UserDataProxy::<LuaHorizontalAlign>::new)?;
-		instances.add_instance("VerticalAlign", bevy_mod_scripting_lua::tealr::mlu::UserDataProxy::<LuaVerticalAlign>::new)?;
 		instances.add_instance("Stopwatch", bevy_mod_scripting_lua::tealr::mlu::UserDataProxy::<LuaStopwatch>::new)?;
 		instances.add_instance("Timer", bevy_mod_scripting_lua::tealr::mlu::UserDataProxy::<LuaTimer>::new)?;
 		instances.add_instance("Entity", bevy_mod_scripting_lua::tealr::mlu::UserDataProxy::<LuaEntity>::new)?;
 		instances.add_instance("Transform", bevy_mod_scripting_lua::tealr::mlu::UserDataProxy::<LuaTransform>::new)?;
-		instances.add_instance("GlobalTransform", bevy_mod_scripting_lua::tealr::mlu::UserDataProxy::<LuaGlobalTransform>::new)?;
-		instances.add_instance("AmbientLight", bevy_mod_scripting_lua::tealr::mlu::UserDataProxy::<LuaAmbientLight>::new)?;
-		instances.add_instance("CubemapVisibleEntities", bevy_mod_scripting_lua::tealr::mlu::UserDataProxy::<LuaCubemapVisibleEntities>::new)?;
-		instances.add_instance("DirectionalLight", bevy_mod_scripting_lua::tealr::mlu::UserDataProxy::<LuaDirectionalLight>::new)?;
-		instances.add_instance("DirectionalLightShadowMap", bevy_mod_scripting_lua::tealr::mlu::UserDataProxy::<LuaDirectionalLightShadowMap>::new)?;
-		instances.add_instance("NotShadowCaster", bevy_mod_scripting_lua::tealr::mlu::UserDataProxy::<LuaNotShadowCaster>::new)?;
-		instances.add_instance("NotShadowReceiver", bevy_mod_scripting_lua::tealr::mlu::UserDataProxy::<LuaNotShadowReceiver>::new)?;
-		instances.add_instance("PointLight", bevy_mod_scripting_lua::tealr::mlu::UserDataProxy::<LuaPointLight>::new)?;
-		instances.add_instance("PointLightShadowMap", bevy_mod_scripting_lua::tealr::mlu::UserDataProxy::<LuaPointLightShadowMap>::new)?;
-		instances.add_instance("AlphaMode", bevy_mod_scripting_lua::tealr::mlu::UserDataProxy::<LuaAlphaMode>::new)?;
-		instances.add_instance("Wireframe", bevy_mod_scripting_lua::tealr::mlu::UserDataProxy::<LuaWireframe>::new)?;
-		instances.add_instance("WireframeConfig", bevy_mod_scripting_lua::tealr::mlu::UserDataProxy::<LuaWireframeConfig>::new)?;
-		instances.add_instance("Camera3dDepthLoadOp", bevy_mod_scripting_lua::tealr::mlu::UserDataProxy::<LuaCamera3dDepthLoadOp>::new)?;
-		instances.add_instance("ClearColor", bevy_mod_scripting_lua::tealr::mlu::UserDataProxy::<LuaClearColor>::new)?;
-		instances.add_instance("ClearColorConfig", bevy_mod_scripting_lua::tealr::mlu::UserDataProxy::<LuaClearColorConfig>::new)?;
-		instances.add_instance("Camera2d", bevy_mod_scripting_lua::tealr::mlu::UserDataProxy::<LuaCamera2d>::new)?;
-		instances.add_instance("Camera3d", bevy_mod_scripting_lua::tealr::mlu::UserDataProxy::<LuaCamera3d>::new)?;
-		instances.add_instance("Anchor", bevy_mod_scripting_lua::tealr::mlu::UserDataProxy::<LuaAnchor>::new)?;
-		instances.add_instance("Mesh2dHandle", bevy_mod_scripting_lua::tealr::mlu::UserDataProxy::<LuaMesh2dHandle>::new)?;
 		instances.add_instance("TextureAtlasSprite", bevy_mod_scripting_lua::tealr::mlu::UserDataProxy::<LuaTextureAtlasSprite>::new)?;
-		instances.add_instance("Sprite", bevy_mod_scripting_lua::tealr::mlu::UserDataProxy::<LuaSprite>::new)?;
 		instances.add_instance("RenderLayers", bevy_mod_scripting_lua::tealr::mlu::UserDataProxy::<LuaRenderLayers>::new)?;
-		instances.add_instance("Visibility", bevy_mod_scripting_lua::tealr::mlu::UserDataProxy::<LuaVisibility>::new)?;
-		instances.add_instance("VisibleEntities", bevy_mod_scripting_lua::tealr::mlu::UserDataProxy::<LuaVisibleEntities>::new)?;
-		instances.add_instance("ComputedVisibility", bevy_mod_scripting_lua::tealr::mlu::UserDataProxy::<LuaComputedVisibility>::new)?;
-		instances.add_instance("ScalingMode", bevy_mod_scripting_lua::tealr::mlu::UserDataProxy::<LuaScalingMode>::new)?;
-		instances.add_instance("WindowOrigin", bevy_mod_scripting_lua::tealr::mlu::UserDataProxy::<LuaWindowOrigin>::new)?;
 		instances.add_instance("Color", bevy_mod_scripting_lua::tealr::mlu::UserDataProxy::<LuaColor>::new)?;
 		instances.add_instance("Aabb", bevy_mod_scripting_lua::tealr::mlu::UserDataProxy::<LuaAabb>::new)?;
-		instances.add_instance("CubemapFrusta", bevy_mod_scripting_lua::tealr::mlu::UserDataProxy::<LuaCubemapFrusta>::new)?;
 		instances.add_instance("Frustum", bevy_mod_scripting_lua::tealr::mlu::UserDataProxy::<LuaFrustum>::new)?;
-		instances.add_instance("Msaa", bevy_mod_scripting_lua::tealr::mlu::UserDataProxy::<LuaMsaa>::new)?;
-		instances.add_instance("Camera", bevy_mod_scripting_lua::tealr::mlu::UserDataProxy::<LuaCamera>::new)?;
-		instances.add_instance("RenderTarget", bevy_mod_scripting_lua::tealr::mlu::UserDataProxy::<LuaRenderTarget>::new)?;
-		instances.add_instance("Viewport", bevy_mod_scripting_lua::tealr::mlu::UserDataProxy::<LuaViewport>::new)?;
-		instances.add_instance("Projection", bevy_mod_scripting_lua::tealr::mlu::UserDataProxy::<LuaProjection>::new)?;
-		instances.add_instance("OrthographicProjection", bevy_mod_scripting_lua::tealr::mlu::UserDataProxy::<LuaOrthographicProjection>::new)?;
-		instances.add_instance("PerspectiveProjection", bevy_mod_scripting_lua::tealr::mlu::UserDataProxy::<LuaPerspectiveProjection>::new)?;
 		instances.add_instance("CameraRenderGraph", bevy_mod_scripting_lua::tealr::mlu::UserDataProxy::<LuaCameraRenderGraph>::new)?;
-		instances.add_instance("AssetPathId", bevy_mod_scripting_lua::tealr::mlu::UserDataProxy::<LuaAssetPathId>::new)?;
-		instances.add_instance("LabelId", bevy_mod_scripting_lua::tealr::mlu::UserDataProxy::<LuaLabelId>::new)?;
-		instances.add_instance("SourcePathId", bevy_mod_scripting_lua::tealr::mlu::UserDataProxy::<LuaSourcePathId>::new)?;
 		instances.add_instance("HandleId", bevy_mod_scripting_lua::tealr::mlu::UserDataProxy::<LuaHandleId>::new)?;
 		instances.add_instance("Vec2", bevy_mod_scripting_lua::tealr::mlu::UserDataProxy::<LuaVec2>::new)?;
 		instances.add_instance("Vec3", bevy_mod_scripting_lua::tealr::mlu::UserDataProxy::<LuaVec3>::new)?;
@@ -15407,7 +9604,6 @@ impl bevy_mod_scripting_lua::tealr::mlu::ExportInstances for BevyAPIGlobals{
 		instances.add_instance("DAffine3", bevy_mod_scripting_lua::tealr::mlu::UserDataProxy::<LuaDAffine3>::new)?;
 		instances.add_instance("Quat", bevy_mod_scripting_lua::tealr::mlu::UserDataProxy::<LuaQuat>::new)?;
 		instances.add_instance("DQuat", bevy_mod_scripting_lua::tealr::mlu::UserDataProxy::<LuaDQuat>::new)?;
-		instances.add_instance("EulerRot", bevy_mod_scripting_lua::tealr::mlu::UserDataProxy::<LuaEulerRot>::new)?;
 		instances.add_instance("world", crate::lua::util::DummyTypeName::<crate::lua::bevy::LuaWorld>::new)?;
 		instances.add_instance("script", crate::lua::util::DummyTypeName::<crate::lua::bevy::LuaScriptData>::new)?;
 		instances.add_instance("entity", crate::lua::util::DummyTypeName::<crate::lua::bevy::LuaEntity>::new)?;
@@ -15430,71 +9626,41 @@ impl APIProvider for LuaBevyAPIProvider{
 			tw
 			.document_global_instance::<BevyAPIGlobals>().expect("Something went wrong documenting globals")
 			.process_type::<LuaAlignContent>()
-			.process_type::<bevy_mod_scripting_lua::tealr::mlu::UserDataProxy<LuaAlignContent>>()
 			.process_type::<LuaAlignItems>()
-			.process_type::<bevy_mod_scripting_lua::tealr::mlu::UserDataProxy<LuaAlignItems>>()
 			.process_type::<LuaAlignSelf>()
-			.process_type::<bevy_mod_scripting_lua::tealr::mlu::UserDataProxy<LuaAlignSelf>>()
 			.process_type::<LuaDirection>()
-			.process_type::<bevy_mod_scripting_lua::tealr::mlu::UserDataProxy<LuaDirection>>()
 			.process_type::<LuaFlexDirection>()
-			.process_type::<bevy_mod_scripting_lua::tealr::mlu::UserDataProxy<LuaFlexDirection>>()
 			.process_type::<LuaFlexWrap>()
-			.process_type::<bevy_mod_scripting_lua::tealr::mlu::UserDataProxy<LuaFlexWrap>>()
 			.process_type::<LuaFocusPolicy>()
-			.process_type::<bevy_mod_scripting_lua::tealr::mlu::UserDataProxy<LuaFocusPolicy>>()
 			.process_type::<LuaInteraction>()
-			.process_type::<bevy_mod_scripting_lua::tealr::mlu::UserDataProxy<LuaInteraction>>()
 			.process_type::<LuaJustifyContent>()
-			.process_type::<bevy_mod_scripting_lua::tealr::mlu::UserDataProxy<LuaJustifyContent>>()
 			.process_type::<LuaOverflow>()
-			.process_type::<bevy_mod_scripting_lua::tealr::mlu::UserDataProxy<LuaOverflow>>()
 			.process_type::<LuaPositionType>()
-			.process_type::<bevy_mod_scripting_lua::tealr::mlu::UserDataProxy<LuaPositionType>>()
 			.process_type::<LuaVal>()
-			.process_type::<bevy_mod_scripting_lua::tealr::mlu::UserDataProxy<LuaVal>>()
 			.process_type::<LuaCalculatedClip>()
-			.process_type::<bevy_mod_scripting_lua::tealr::mlu::UserDataProxy<LuaCalculatedClip>>()
 			.process_type::<LuaCalculatedSize>()
-			.process_type::<bevy_mod_scripting_lua::tealr::mlu::UserDataProxy<LuaCalculatedSize>>()
 			.process_type::<LuaNode>()
-			.process_type::<bevy_mod_scripting_lua::tealr::mlu::UserDataProxy<LuaNode>>()
 			.process_type::<LuaStyle>()
-			.process_type::<bevy_mod_scripting_lua::tealr::mlu::UserDataProxy<LuaStyle>>()
 			.process_type::<LuaUiImage>()
-			.process_type::<bevy_mod_scripting_lua::tealr::mlu::UserDataProxy<LuaUiImage>>()
 			.process_type::<LuaButton>()
-			.process_type::<bevy_mod_scripting_lua::tealr::mlu::UserDataProxy<LuaButton>>()
 			.process_type::<LuaImageMode>()
-			.process_type::<bevy_mod_scripting_lua::tealr::mlu::UserDataProxy<LuaImageMode>>()
 			.process_type::<LuaDisplay>()
-			.process_type::<bevy_mod_scripting_lua::tealr::mlu::UserDataProxy<LuaDisplay>>()
 			.process_type::<LuaAnimationPlayer>()
-			.process_type::<bevy_mod_scripting_lua::tealr::mlu::UserDataProxy<LuaAnimationPlayer>>()
 			.process_type::<LuaName>()
 			.process_type::<bevy_mod_scripting_lua::tealr::mlu::UserDataProxy<LuaName>>()
 			.process_type::<LuaGltfExtras>()
-			.process_type::<bevy_mod_scripting_lua::tealr::mlu::UserDataProxy<LuaGltfExtras>>()
 			.process_type::<LuaChildren>()
-			.process_type::<bevy_mod_scripting_lua::tealr::mlu::UserDataProxy<LuaChildren>>()
 			.process_type::<LuaParent>()
-			.process_type::<bevy_mod_scripting_lua::tealr::mlu::UserDataProxy<LuaParent>>()
 			.process_type::<LuaText2dBounds>()
-			.process_type::<bevy_mod_scripting_lua::tealr::mlu::UserDataProxy<LuaText2dBounds>>()
 			.process_type::<LuaText2dSize>()
-			.process_type::<bevy_mod_scripting_lua::tealr::mlu::UserDataProxy<LuaText2dSize>>()
 			.process_type::<LuaText>()
 			.process_type::<bevy_mod_scripting_lua::tealr::mlu::UserDataProxy<LuaText>>()
 			.process_type::<LuaTextAlignment>()
-			.process_type::<bevy_mod_scripting_lua::tealr::mlu::UserDataProxy<LuaTextAlignment>>()
 			.process_type::<LuaTextSection>()
 			.process_type::<bevy_mod_scripting_lua::tealr::mlu::UserDataProxy<LuaTextSection>>()
 			.process_type::<LuaTextStyle>()
-			.process_type::<bevy_mod_scripting_lua::tealr::mlu::UserDataProxy<LuaTextStyle>>()
 			.process_type::<LuaHorizontalAlign>()
-			.process_type::<bevy_mod_scripting_lua::tealr::mlu::UserDataProxy<LuaHorizontalAlign>>()
 			.process_type::<LuaVerticalAlign>()
-			.process_type::<bevy_mod_scripting_lua::tealr::mlu::UserDataProxy<LuaVerticalAlign>>()
 			.process_type::<LuaStopwatch>()
 			.process_type::<bevy_mod_scripting_lua::tealr::mlu::UserDataProxy<LuaStopwatch>>()
 			.process_type::<LuaTimer>()
@@ -15504,89 +9670,53 @@ impl APIProvider for LuaBevyAPIProvider{
 			.process_type::<LuaTransform>()
 			.process_type::<bevy_mod_scripting_lua::tealr::mlu::UserDataProxy<LuaTransform>>()
 			.process_type::<LuaGlobalTransform>()
-			.process_type::<bevy_mod_scripting_lua::tealr::mlu::UserDataProxy<LuaGlobalTransform>>()
 			.process_type::<LuaAmbientLight>()
-			.process_type::<bevy_mod_scripting_lua::tealr::mlu::UserDataProxy<LuaAmbientLight>>()
 			.process_type::<LuaCubemapVisibleEntities>()
-			.process_type::<bevy_mod_scripting_lua::tealr::mlu::UserDataProxy<LuaCubemapVisibleEntities>>()
 			.process_type::<LuaDirectionalLight>()
-			.process_type::<bevy_mod_scripting_lua::tealr::mlu::UserDataProxy<LuaDirectionalLight>>()
 			.process_type::<LuaDirectionalLightShadowMap>()
-			.process_type::<bevy_mod_scripting_lua::tealr::mlu::UserDataProxy<LuaDirectionalLightShadowMap>>()
 			.process_type::<LuaNotShadowCaster>()
-			.process_type::<bevy_mod_scripting_lua::tealr::mlu::UserDataProxy<LuaNotShadowCaster>>()
 			.process_type::<LuaNotShadowReceiver>()
-			.process_type::<bevy_mod_scripting_lua::tealr::mlu::UserDataProxy<LuaNotShadowReceiver>>()
 			.process_type::<LuaPointLight>()
-			.process_type::<bevy_mod_scripting_lua::tealr::mlu::UserDataProxy<LuaPointLight>>()
 			.process_type::<LuaPointLightShadowMap>()
-			.process_type::<bevy_mod_scripting_lua::tealr::mlu::UserDataProxy<LuaPointLightShadowMap>>()
 			.process_type::<LuaAlphaMode>()
-			.process_type::<bevy_mod_scripting_lua::tealr::mlu::UserDataProxy<LuaAlphaMode>>()
 			.process_type::<LuaWireframe>()
-			.process_type::<bevy_mod_scripting_lua::tealr::mlu::UserDataProxy<LuaWireframe>>()
 			.process_type::<LuaWireframeConfig>()
-			.process_type::<bevy_mod_scripting_lua::tealr::mlu::UserDataProxy<LuaWireframeConfig>>()
 			.process_type::<LuaCamera3dDepthLoadOp>()
-			.process_type::<bevy_mod_scripting_lua::tealr::mlu::UserDataProxy<LuaCamera3dDepthLoadOp>>()
 			.process_type::<LuaClearColor>()
-			.process_type::<bevy_mod_scripting_lua::tealr::mlu::UserDataProxy<LuaClearColor>>()
 			.process_type::<LuaClearColorConfig>()
-			.process_type::<bevy_mod_scripting_lua::tealr::mlu::UserDataProxy<LuaClearColorConfig>>()
 			.process_type::<LuaCamera2d>()
-			.process_type::<bevy_mod_scripting_lua::tealr::mlu::UserDataProxy<LuaCamera2d>>()
 			.process_type::<LuaCamera3d>()
-			.process_type::<bevy_mod_scripting_lua::tealr::mlu::UserDataProxy<LuaCamera3d>>()
 			.process_type::<LuaAnchor>()
-			.process_type::<bevy_mod_scripting_lua::tealr::mlu::UserDataProxy<LuaAnchor>>()
 			.process_type::<LuaMesh2dHandle>()
-			.process_type::<bevy_mod_scripting_lua::tealr::mlu::UserDataProxy<LuaMesh2dHandle>>()
 			.process_type::<LuaTextureAtlasSprite>()
 			.process_type::<bevy_mod_scripting_lua::tealr::mlu::UserDataProxy<LuaTextureAtlasSprite>>()
 			.process_type::<LuaSprite>()
-			.process_type::<bevy_mod_scripting_lua::tealr::mlu::UserDataProxy<LuaSprite>>()
 			.process_type::<LuaRenderLayers>()
 			.process_type::<bevy_mod_scripting_lua::tealr::mlu::UserDataProxy<LuaRenderLayers>>()
 			.process_type::<LuaVisibility>()
-			.process_type::<bevy_mod_scripting_lua::tealr::mlu::UserDataProxy<LuaVisibility>>()
 			.process_type::<LuaVisibleEntities>()
-			.process_type::<bevy_mod_scripting_lua::tealr::mlu::UserDataProxy<LuaVisibleEntities>>()
 			.process_type::<LuaComputedVisibility>()
-			.process_type::<bevy_mod_scripting_lua::tealr::mlu::UserDataProxy<LuaComputedVisibility>>()
 			.process_type::<LuaScalingMode>()
-			.process_type::<bevy_mod_scripting_lua::tealr::mlu::UserDataProxy<LuaScalingMode>>()
 			.process_type::<LuaWindowOrigin>()
-			.process_type::<bevy_mod_scripting_lua::tealr::mlu::UserDataProxy<LuaWindowOrigin>>()
 			.process_type::<LuaColor>()
 			.process_type::<bevy_mod_scripting_lua::tealr::mlu::UserDataProxy<LuaColor>>()
 			.process_type::<LuaAabb>()
 			.process_type::<bevy_mod_scripting_lua::tealr::mlu::UserDataProxy<LuaAabb>>()
 			.process_type::<LuaCubemapFrusta>()
-			.process_type::<bevy_mod_scripting_lua::tealr::mlu::UserDataProxy<LuaCubemapFrusta>>()
 			.process_type::<LuaFrustum>()
 			.process_type::<bevy_mod_scripting_lua::tealr::mlu::UserDataProxy<LuaFrustum>>()
 			.process_type::<LuaMsaa>()
-			.process_type::<bevy_mod_scripting_lua::tealr::mlu::UserDataProxy<LuaMsaa>>()
 			.process_type::<LuaCamera>()
-			.process_type::<bevy_mod_scripting_lua::tealr::mlu::UserDataProxy<LuaCamera>>()
 			.process_type::<LuaRenderTarget>()
-			.process_type::<bevy_mod_scripting_lua::tealr::mlu::UserDataProxy<LuaRenderTarget>>()
 			.process_type::<LuaViewport>()
-			.process_type::<bevy_mod_scripting_lua::tealr::mlu::UserDataProxy<LuaViewport>>()
 			.process_type::<LuaProjection>()
-			.process_type::<bevy_mod_scripting_lua::tealr::mlu::UserDataProxy<LuaProjection>>()
 			.process_type::<LuaOrthographicProjection>()
-			.process_type::<bevy_mod_scripting_lua::tealr::mlu::UserDataProxy<LuaOrthographicProjection>>()
 			.process_type::<LuaPerspectiveProjection>()
-			.process_type::<bevy_mod_scripting_lua::tealr::mlu::UserDataProxy<LuaPerspectiveProjection>>()
 			.process_type::<LuaCameraRenderGraph>()
 			.process_type::<bevy_mod_scripting_lua::tealr::mlu::UserDataProxy<LuaCameraRenderGraph>>()
 			.process_type::<LuaAssetPathId>()
-			.process_type::<bevy_mod_scripting_lua::tealr::mlu::UserDataProxy<LuaAssetPathId>>()
 			.process_type::<LuaLabelId>()
-			.process_type::<bevy_mod_scripting_lua::tealr::mlu::UserDataProxy<LuaLabelId>>()
 			.process_type::<LuaSourcePathId>()
-			.process_type::<bevy_mod_scripting_lua::tealr::mlu::UserDataProxy<LuaSourcePathId>>()
 			.process_type::<LuaHandleId>()
 			.process_type::<bevy_mod_scripting_lua::tealr::mlu::UserDataProxy<LuaHandleId>>()
 			.process_type::<LuaVec2>()
@@ -15652,7 +9782,6 @@ impl APIProvider for LuaBevyAPIProvider{
 			.process_type::<LuaDQuat>()
 			.process_type::<bevy_mod_scripting_lua::tealr::mlu::UserDataProxy<LuaDQuat>>()
 			.process_type::<LuaEulerRot>()
-			.process_type::<bevy_mod_scripting_lua::tealr::mlu::UserDataProxy<LuaEulerRot>>()
 			.process_type::<ReflectedValue>()
 			.process_type::<crate::lua::bevy::LuaWorld>()
 			.process_type::<bevy_mod_scripting_lua::tealr::mlu::UserDataProxy<crate::lua::bevy::LuaWorld>>()
@@ -15808,22 +9937,22 @@ impl APIProvider for LuaBevyAPIProvider{
 		app.register_foreign_lua_type::<Quat>();
 		app.register_foreign_lua_type::<DQuat>();
 		app.register_foreign_lua_type::<EulerRot>();
-		app.register_foreign_lua_type::<bool>();
-		app.register_foreign_lua_type::<String>();
-		app.register_foreign_lua_type::<usize>();
-		app.register_foreign_lua_type::<f64>();
-		app.register_foreign_lua_type::<i64>();
-		app.register_foreign_lua_type::<i128>();
 		app.register_foreign_lua_type::<i32>();
-		app.register_foreign_lua_type::<u128>();
-		app.register_foreign_lua_type::<i16>();
-		app.register_foreign_lua_type::<u64>();
 		app.register_foreign_lua_type::<isize>();
-		app.register_foreign_lua_type::<u32>();
-		app.register_foreign_lua_type::<u16>();
 		app.register_foreign_lua_type::<u8>();
-		app.register_foreign_lua_type::<i8>();
+		app.register_foreign_lua_type::<String>();
+		app.register_foreign_lua_type::<u16>();
 		app.register_foreign_lua_type::<f32>();
+		app.register_foreign_lua_type::<i16>();
+		app.register_foreign_lua_type::<i128>();
+		app.register_foreign_lua_type::<usize>();
+		app.register_foreign_lua_type::<u32>();
+		app.register_foreign_lua_type::<f64>();
+		app.register_foreign_lua_type::<bool>();
+		app.register_foreign_lua_type::<i64>();
+		app.register_foreign_lua_type::<u128>();
+		app.register_foreign_lua_type::<i8>();
+		app.register_foreign_lua_type::<u64>();
 	}
 }
 

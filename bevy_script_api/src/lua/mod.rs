@@ -4,7 +4,7 @@ use ::std::borrow::Cow;
 use crate::impl_tealr_type;
 use ::bevy::prelude::{App, AppTypeRegistry};
 
-use ::bevy::reflect::{FromType, GetTypeRegistration, Reflect, TypeRegistry};
+use ::bevy::reflect::{FromType, GetTypeRegistration, Reflect};
 
 use bevy_mod_scripting_lua::tealr;
 

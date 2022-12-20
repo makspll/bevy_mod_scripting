@@ -1,6 +1,6 @@
 pub mod cratepath;
 
-use bevy_api_gen_lib::{stringify_type, Args, Config, PrettyWriter, WrappedItem, WRAPPER_PREFIX};
+use bevy_api_gen_lib::{Args, Config, PrettyWriter, WrappedItem, WRAPPER_PREFIX};
 
 use clap::Parser;
 use cratepath::{get_path, path_to_import};
@@ -72,9 +72,9 @@ pub(crate) fn generate_macros(
 
                     impls.iter().for_each(|id| {
                         if let ItemEnum::Impl(i) = &source.index.get(id).unwrap().inner {
-                            match &i.blanket_impl {
+                            match &i.trait_ {
                                 Some(t) => {
-                                    stringify_type(t).map(|str_| implemented_traits.insert(str_));
+                                    implemented_traits.insert(t.name.to_owned());
                                 }
                                 None => self_impl = Some(i),
                             }
