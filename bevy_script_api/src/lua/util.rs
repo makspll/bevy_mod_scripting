@@ -1,4 +1,3 @@
-
 use bevy_mod_scripting_lua::tealr;
 use std::marker::PhantomData;
 

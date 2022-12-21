@@ -67,7 +67,7 @@ impl TryFrom<&Type> for ArgType {
 
     fn try_from(value: &Type) -> Result<Self, Self::Error> {
         match value {
-            Type::ResolvedPath (path) => {
+            Type::ResolvedPath(path) => {
                 let mut processed_args = Vec::default();
 
                 for a in &path.args {

@@ -147,12 +147,7 @@ pub trait AddScriptHostHandler {
     ///
     /// The *frequency* of running these events, is controlled by your systems, if the event is not emitted, it cannot not handled.
     /// Of course there is nothing stopping your from emitting a single event type at varying priorities.
-    fn add_script_handler_stage<
-        T: ScriptHost,
-        S: StageLabel,
-        const MAX: u32,
-        const MIN: u32,
-    >(
+    fn add_script_handler_stage<T: ScriptHost, S: StageLabel, const MAX: u32, const MIN: u32>(
         &mut self,
         stage: S,
     ) -> &mut Self;
@@ -173,12 +168,7 @@ pub trait AddScriptHostHandler {
 }
 
 impl AddScriptHostHandler for App {
-    fn add_script_handler_stage<
-        T: ScriptHost,
-        S: StageLabel,
-        const MAX: u32,
-        const MIN: u32,
-    >(
+    fn add_script_handler_stage<T: ScriptHost, S: StageLabel, const MAX: u32, const MIN: u32>(
         &mut self,
         stage: S,
     ) -> &mut Self {
