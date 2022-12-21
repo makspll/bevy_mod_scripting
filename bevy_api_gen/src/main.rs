@@ -343,7 +343,7 @@ pub fn main() -> Result<(), io::Error> {
         .json
         .iter()
         .map(|json| {
-            let f = File::open(&json).unwrap_or_else(|_| panic!("Could not open {}", &json));
+            let f = File::open(json).unwrap_or_else(|_| panic!("Could not open {}", &json));
             let rdr = BufReader::new(f);
             from_reader(rdr)
         })

@@ -174,7 +174,7 @@ impl ArgWrapperType {
         let base_ident = type_.base_ident().unwrap_or(self_type);
         type_
             .is_self()
-            .then(|| ArgWrapperType::None)
+            .then_some(ArgWrapperType::None)
             .or_else(|| {
                 config
                     .primitives

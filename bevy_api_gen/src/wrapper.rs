@@ -62,11 +62,7 @@ impl WrappedItem<'_> {
         let strings = if let Some(d) = &self.config.doc {
             d.to_string()
         } else {
-            self.item
-                .docs
-                .as_ref()
-                .cloned()
-                .unwrap_or_else(|| "".to_string())
+            self.item.docs.as_ref().cloned().unwrap_or_default()
         };
         writer.set_prefix("///".into());
         strings.lines().for_each(|l| {
@@ -302,7 +298,7 @@ impl WrappedItem<'_> {
                         // if the underlying ident is self, we shouldn't wrap it when printing it
                         let wrapper: ArgWrapperType = arg_type
                             .is_self()
-                            .then(|| ArgWrapperType::None)
+                            .then_some(ArgWrapperType::None)
                             .or_else(|| {
                                 config
                                     .primitives

@@ -10,7 +10,7 @@ pub(crate) fn get_path(id: &Id, source: &Crate) -> Option<Vec<Id>> {
                     return Some(p_path);
                 }
             }
-            let parents = (&source.index).into_iter().filter(|(_, p_item)| {
+            let parents = source.index.iter().filter(|(_, p_item)| {
                 if let Some(name) = &ind.name {
                     if p_item.links.contains_key(name) {
                         return true;
