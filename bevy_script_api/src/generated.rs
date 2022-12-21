@@ -129,7 +129,7 @@ use std::ops::*;
 use std::sync::Mutex;
 #[cfg(feature = "lua")]
 use {
-    crate::lua::{GetWorld, RegisterForeignLuaType},
+    crate::{common::bevy::GetWorld, lua::RegisterForeignLuaType},
     bevy_mod_scripting_lua::{docs::LuaDocFragment, tealr::mlu::mlua::MetaMethod},
     bevy_mod_scripting_lua_derive::impl_lua_newtype,
 };
@@ -10358,21 +10358,21 @@ impl APIProvider for LuaBevyAPIProvider {
         app.register_foreign_lua_type::<DQuat>();
         app.register_foreign_lua_type::<EulerRot>();
         app.register_foreign_lua_type::<Rect>();
-        app.register_foreign_lua_type::<i32>();
-        app.register_foreign_lua_type::<u8>();
-        app.register_foreign_lua_type::<isize>();
-        app.register_foreign_lua_type::<u16>();
-        app.register_foreign_lua_type::<usize>();
-        app.register_foreign_lua_type::<i64>();
-        app.register_foreign_lua_type::<i16>();
         app.register_foreign_lua_type::<u64>();
-        app.register_foreign_lua_type::<bool>();
-        app.register_foreign_lua_type::<f32>();
-        app.register_foreign_lua_type::<u128>();
-        app.register_foreign_lua_type::<i8>();
-        app.register_foreign_lua_type::<u32>();
-        app.register_foreign_lua_type::<i128>();
-        app.register_foreign_lua_type::<String>();
         app.register_foreign_lua_type::<f64>();
+        app.register_foreign_lua_type::<i32>();
+        app.register_foreign_lua_type::<u32>();
+        app.register_foreign_lua_type::<u16>();
+        app.register_foreign_lua_type::<String>();
+        app.register_foreign_lua_type::<f32>();
+        app.register_foreign_lua_type::<bool>();
+        app.register_foreign_lua_type::<i16>();
+        app.register_foreign_lua_type::<isize>();
+        app.register_foreign_lua_type::<u128>();
+        app.register_foreign_lua_type::<u8>();
+        app.register_foreign_lua_type::<i64>();
+        app.register_foreign_lua_type::<usize>();
+        app.register_foreign_lua_type::<i128>();
+        app.register_foreign_lua_type::<i8>();
     }
 }

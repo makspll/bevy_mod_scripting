@@ -12,14 +12,7 @@ use bevy::{
     window::WindowResized,
 };
 
-use bevy_mod_scripting::{
-    api::{
-        impl_lua_newtype, impl_script_newtype,
-        lua::{bevy::LuaBevyAPIProvider, std::LuaVec, GetWorld, LuaProxyable, ReflectLuaProxyable},
-        ValueIndex,
-    },
-    prelude::*,
-};
+use bevy_mod_scripting::prelude::*;
 
 #[derive(Debug, Default, Reflect, Component)]
 #[reflect(Component, LuaProxyable)]

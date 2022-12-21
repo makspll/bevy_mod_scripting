@@ -8,7 +8,7 @@ use bevy_script_api::rhai::{std::RegisterVecType, RegisterForeignRhaiType};
 /// Let's define a resource, we want it to be "assignable" via lua so we derive `ReflectLuaProxyable`
 /// This allows us to reach this value when it's a field under any other Reflectable type
 
-#[derive(Default, Clone, Reflect)]
+#[derive(Resource, Default, Clone, Reflect)]
 #[reflect(Resource)]
 pub struct MyResource {
     pub thing: f64,
@@ -70,38 +70,37 @@ fn main() -> std::io::Result<()> {
         .add_script_host::<RhaiScriptHost<()>, _>(CoreStage::PostUpdate)
         .add_api_provider::<RhaiScriptHost<()>>(Box::new(RhaiBevyAPIProvider))
         .add_api_provider::<RhaiScriptHost<()>>(Box::new(MyAPIProvider))
-        .add_system(
-            (|world: &mut World| {
-                let entity = world
-                    .spawn()
-                    .insert(MyComponent {
-                        vec2: Vec2::new(1.0, 2.0),
-                        vec3: Vec3::new(1.0, 2.0, 3.0),
-                        vec4: Vec4::new(1.0, 2.0, 3.0, 4.0),
-                        uvec2: UVec2::new(1, 2),
-                        usize: 5,
-                        f32: 6.7,
-                        mat3: Mat3::from_cols(
-                            Vec3::new(1.0, 2.0, 3.0),
-                            Vec3::new(4.0, 5.0, 6.0),
-                            Vec3::new(7.0, 8.0, 9.0),
-                        ),
-                        quat: Quat::from_xyzw(1.0, 2.0, 3.0, 4.0),
-                        dquat: DQuat::from_xyzw(1.0, 2.0, 3.0, 4.0),
-                        bool: true,
-                        string: "hello".to_owned(),
-                        u8: 240,
-                        bool_option: Some(true),
-                        option: None,
-                        vec_of_option_bools: vec![Some(true), None, Some(false)],
-                        option_vec_of_bools: Some(vec![true, true, true]),
-                    })
-                    .id();
+        .add_system(|world: &mut World| {
+            let entity = world
+                .spawn(())
+                .insert(MyComponent {
+                    vec2: Vec2::new(1.0, 2.0),
+                    vec3: Vec3::new(1.0, 2.0, 3.0),
+                    vec4: Vec4::new(1.0, 2.0, 3.0, 4.0),
+                    uvec2: UVec2::new(1, 2),
+                    usize: 5,
+                    f32: 6.7,
+                    mat3: Mat3::from_cols(
+                        Vec3::new(1.0, 2.0, 3.0),
+                        Vec3::new(4.0, 5.0, 6.0),
+                        Vec3::new(7.0, 8.0, 9.0),
+                    ),
+                    quat: Quat::from_xyzw(1.0, 2.0, 3.0, 4.0),
+                    dquat: DQuat::from_xyzw(1.0, 2.0, 3.0, 4.0),
+                    bool: true,
+                    string: "hello".to_owned(),
+                    u8: 240,
+                    bool_option: Some(true),
+                    option: None,
+                    vec_of_option_bools: vec![Some(true), None, Some(false)],
+                    option_vec_of_bools: Some(vec![true, true, true]),
+                })
+                .id();
 
-                // run script
-                world.resource_scope(|world, mut host: Mut<RhaiScriptHost<()>>| {
-                    host.run_one_shot(
-                        r#"
+            // run script
+            world.resource_scope(|world, mut host: Mut<RhaiScriptHost<()>>| {
+                host.run_one_shot(
+                    r#"
                         fn once() {
                             print(world);
                             print(world.get_children(entity));
@@ -112,7 +111,7 @@ fn main() -> std::io::Result<()> {
                             debug(my_component_type);
                             debug(my_component);
                             print(my_component.u8);
-                            my_component.u8 = 257;
+                            my_component.u8 = 255; 
                             my_component.bool = false;
                             my_component.string = "bye";
                             my_component.bool_option = ();
@@ -138,18 +137,18 @@ fn main() -> std::io::Result<()> {
 
                         }
                         "#
-                        .as_bytes(),
-                        "script.lua",
-                        entity,
-                        world,
-                        RhaiEvent {
-                            hook_name: "once".to_owned(),
-                            args: (),
-                            recipients: Recipients::All,
-                        },
-                    )
-                    .expect("Something went wrong in the script!");
-                });
+                    .as_bytes(),
+                    "script.lua",
+                    entity,
+                    world,
+                    RhaiEvent {
+                        hook_name: "once".to_owned(),
+                        args: (),
+                        recipients: Recipients::All,
+                    },
+                )
+                .expect("Something went wrong in the script!");
+            });
 
             world.send_event(AppExit)
         });

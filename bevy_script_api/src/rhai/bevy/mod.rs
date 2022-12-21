@@ -12,7 +12,7 @@ use crate::{
     ReflectedValue,
 };
 
-use super::RegisterForeignRhaiType;
+use super::{RegisterForeignRhaiType, ToDynamic};
 
 #[allow(deprecated)]
 impl CustomType for ScriptTypeRegistration {
@@ -46,6 +46,36 @@ impl CustomType for ScriptWorld {
                     .map(Dynamic::from)
                     .collect::<Vec<_>>()
             })
+            .with_fn(
+                "add_default_component",
+                |self_: ScriptWorld, entity: Entity, type_registration: ScriptTypeRegistration| {
+                    self_
+                        .add_default_component(entity, type_registration)
+                        .map_err(|e| {
+                            Box::new(EvalAltResult::ErrorRuntime(
+                                Dynamic::from(e.to_string()),
+                                Position::NONE,
+                            ))
+                        })
+                        .and_then(|ok| ok.to_dynamic())
+                },
+            )
+            .with_fn(
+                "get_component",
+                |self_: ScriptWorld, entity: Entity, comp_type: ScriptTypeRegistration| {
+                    let component = self_.get_component(entity, comp_type).map_err(|e| {
+                        Box::new(EvalAltResult::ErrorRuntime(
+                            e.to_string().into(),
+                            Position::NONE,
+                        ))
+                    })?;
+                    if let Some(c) = component {
+                        c.to_dynamic()
+                    } else {
+                        Ok(Default::default())
+                    }
+                },
+            )
             .with_fn("to_string", |self_: &mut ScriptWorld| self_.to_string())
             .with_fn("to_debug", |self_: &mut ScriptWorld| format!("{:?}", self_));
     }

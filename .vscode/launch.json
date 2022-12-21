@@ -21,7 +21,9 @@
                 }
             },
             "args": [],
-            "env": {"CARGO_MANIFEST_DIR": "${workspaceFolder}/bevy_mod_scripting"},
+            "env": {
+                "CARGO_MANIFEST_DIR": "${workspaceFolder}/bevy_mod_scripting"
+            },
             "cwd": "${workspaceFolder}"
         },
         {
@@ -41,7 +43,9 @@
                 }
             },
             "args": [],
-            "env": {"CARGO_MANIFEST_DIR": "${workspaceFolder}/bevy_mod_scripting"},
+            "env": {
+                "CARGO_MANIFEST_DIR": "${workspaceFolder}/bevy_mod_scripting"
+            },
             "cwd": "${workspaceFolder}"
         },
         {
@@ -60,8 +64,32 @@
                 }
             },
             "args": [],
-            "env": {"CARGO_MANIFEST_DIR": "${workspaceFolder}/bevy_mod_scripting"},
+            "env": {
+                "CARGO_MANIFEST_DIR": "${workspaceFolder}/bevy_mod_scripting"
+            },
             "cwd": "${workspaceFolder}"
+        },
+        {
+            "name": "Debug example 'game_of_life_lua'",
+            "type": "lldb",
+            "request": "launch",
+            "cargo": {
+                "args": [
+                    "build",
+                    "--example=game_of_life_lua",
+                    "--package=bevy_mod_scripting",
+                    "--features=lua54,teal,lua_script_api",
+                ],
+                "filter": {
+                    "name": "game_of_life_lua",
+                    "kind": "example"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}",
+            "env": {
+                "CARGO_MANIFEST_DIR": "${workspaceFolder}"
+            }
         },
         {
             "type": "lldb",
@@ -80,7 +108,9 @@
                 }
             },
             "args": [],
-            "env": {"CARGO_MANIFEST_DIR": "${workspaceFolder}/bevy_mod_scripting"},
+            "env": {
+                "CARGO_MANIFEST_DIR": "${workspaceFolder}/bevy_mod_scripting"
+            },
             "cwd": "${workspaceFolder}"
         },
         {
@@ -99,7 +129,9 @@
                 }
             },
             "args": [],
-            "env": {"CARGO_MANIFEST_DIR": "${workspaceFolder}/bevy_mod_scripting"},
+            "env": {
+                "CARGO_MANIFEST_DIR": "${workspaceFolder}/bevy_mod_scripting"
+            },
             "cwd": "${workspaceFolder}"
         },
         {
@@ -119,7 +151,9 @@
                 }
             },
             "args": [],
-            "env": {"CARGO_MANIFEST_DIR": "${workspaceFolder}/bevy_mod_scripting"},
+            "env": {
+                "CARGO_MANIFEST_DIR": "${workspaceFolder}/bevy_mod_scripting"
+            },
             "cwd": "${workspaceFolder}"
         },
         {
@@ -138,7 +172,9 @@
                 }
             },
             "args": [],
-            "env": {"CARGO_MANIFEST_DIR": "${workspaceFolder}/bevy_mod_scripting"},
+            "env": {
+                "CARGO_MANIFEST_DIR": "${workspaceFolder}/bevy_mod_scripting"
+            },
             "cwd": "${workspaceFolder}"
         },
         {
@@ -158,7 +194,9 @@
                 }
             },
             "args": [],
-            "env": {"CARGO_MANIFEST_DIR": "${workspaceFolder}/bevy_mod_scripting"},
+            "env": {
+                "CARGO_MANIFEST_DIR": "${workspaceFolder}/bevy_mod_scripting"
+            },
             "cwd": "${workspaceFolder}"
         },
         {
@@ -177,7 +215,9 @@
                 }
             },
             "args": [],
-            "env": {"CARGO_MANIFEST_DIR": "${workspaceFolder}/bevy_mod_scripting"},
+            "env": {
+                "CARGO_MANIFEST_DIR": "${workspaceFolder}/bevy_mod_scripting"
+            },
             "cwd": "${workspaceFolder}"
         },
         {
@@ -197,7 +237,9 @@
                 }
             },
             "args": [],
-            "env": {"CARGO_MANIFEST_DIR": "${workspaceFolder}/bevy_mod_scripting"},
+            "env": {
+                "CARGO_MANIFEST_DIR": "${workspaceFolder}/bevy_mod_scripting"
+            },
             "cwd": "${workspaceFolder}"
         },
         {
@@ -208,15 +250,16 @@
                 "args": [
                     "build",
                     "--example=console_integration_lua",
-                    "--package=bevy_mod_scripting"
+                    "--package=bevy_mod_scripting",
                 ],
                 "filter": {
                     "name": "console_integration_lua",
                     "kind": "example"
                 }
             },
-            "args": [],
-            "env": {"CARGO_MANIFEST_DIR": "${workspaceFolder}/bevy_mod_scripting"},
+            "env": {
+                "CARGO_MANIFEST_DIR": "${workspaceFolder}/bevy_mod_scripting"
+            },
             "cwd": "${workspaceFolder}"
         },
         {
@@ -236,7 +279,9 @@
                 }
             },
             "args": [],
-            "env": {"CARGO_MANIFEST_DIR": "${workspaceFolder}/bevy_mod_scripting"},
+            "env": {
+                "CARGO_MANIFEST_DIR": "${workspaceFolder}/bevy_mod_scripting"
+            },
             "cwd": "${workspaceFolder}"
         },
         {
@@ -255,7 +300,9 @@
                     "kind": "example"
                 }
             },
-            "env": {"CARGO_MANIFEST_DIR": "${workspaceFolder}/bevy_mod_scripting"},
+            "env": {
+                "CARGO_MANIFEST_DIR": "${workspaceFolder}/bevy_mod_scripting"
+            },
             "args": [],
             "cwd": "${workspaceFolder}"
         },
@@ -276,7 +323,9 @@
                 }
             },
             "args": [],
-            "env": {"CARGO_MANIFEST_DIR": "${workspaceFolder}/bevy_mod_scripting"},
+            "env": {
+                "CARGO_MANIFEST_DIR": "${workspaceFolder}/bevy_mod_scripting"
+            },
             "cwd": "${workspaceFolder}"
         },
         {
@@ -296,7 +345,9 @@
                 }
             },
             "args": [],
-            "env": {"CARGO_MANIFEST_DIR": "${workspaceFolder}/bevy_mod_scripting"},
+            "env": {
+                "CARGO_MANIFEST_DIR": "${workspaceFolder}/bevy_mod_scripting"
+            },
             "cwd": "${workspaceFolder}"
         }
     ]

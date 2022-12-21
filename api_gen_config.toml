@@ -6,7 +6,7 @@ use {
 		tealr::mlu::mlua::MetaMethod, 
 		docs::LuaDocFragment
 	},
-	crate::lua::{RegisterForeignLuaType,GetWorld},
+	crate::{common::bevy::GetWorld, lua::{RegisterForeignLuaType}},
 };
 use std::ops::*;
 use crate::{script_ref::{ReflectedValue,ValueIndex},

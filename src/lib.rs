@@ -37,4 +37,7 @@ pub mod prelude {
 
     #[cfg(feature = "rhai")]
     pub use bevy_mod_scripting_rhai::prelude::*;
+
+    #[cfg(any(feature = "lua_script_api", feature = "rhai_script_api"))]
+    pub use bevy_script_api::prelude::*;
 }

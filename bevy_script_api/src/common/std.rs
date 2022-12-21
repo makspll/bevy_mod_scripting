@@ -3,9 +3,7 @@ use std::{
     ops::{Index, Range},
 };
 
-use bevy::reflect::{FromReflect, Reflect};
-use bevy_mod_scripting_core::prelude::Script;
-use bevy_mod_scripting_rhai::rhai::EvalAltResult;
+use bevy::reflect::FromReflect;
 
 use crate::{error::ReflectionError, ScriptRef, ValueIndex};
 

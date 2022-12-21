@@ -69,7 +69,7 @@ pub(crate) fn make_fields<'a>(
         out.push(parse_quote_spanned! {f.span()=>
             #(#docstring)*
             get #lua_id_string => |ctx,s : &#newtype_name| {
-                let world_ptr = <bevy_mod_scripting_lua::tealr::mlu::mlua::Lua as bevy_script_api::lua::GetWorld>::get_world(ctx)?;
+                let world_ptr = <bevy_mod_scripting_lua::tealr::mlu::mlua::Lua as bevy_script_api::common::bevy::GetWorld>::get_world(ctx)?;
                 #expr_getter
             }
         });
@@ -91,7 +91,7 @@ pub(crate) fn make_fields<'a>(
 
         out.push(parse_quote_spanned! {f.span()=>
             set #lua_id_string => |ctx,s: &mut #newtype_name, o: #field_type_ident| {
-                let world_ptr = <bevy_mod_scripting_lua::tealr::mlu::mlua::Lua as bevy_script_api::lua::GetWorld>::get_world(ctx)?;
+                let world_ptr = <bevy_mod_scripting_lua::tealr::mlu::mlua::Lua as bevy_script_api::common::bevy::GetWorld>::get_world(ctx)?;
                 #expr_setter
             }
         });

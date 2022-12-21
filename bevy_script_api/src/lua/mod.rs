@@ -1,6 +1,7 @@
 use ::std::any::TypeId;
 use ::std::borrow::Cow;
 
+use crate::common::bevy::GetWorld;
 use crate::impl_tealr_type;
 use ::bevy::prelude::{App, AppTypeRegistry};
 
@@ -298,14 +299,9 @@ impl<'lua, T: Clone + UserData + Send + ValueLuaType + Reflect + 'static> ToLuaP
     }
 }
 
-/// Helper trait for retrieving a world pointer from a lua context,
-/// This assumes Lua Bevy API is attached to the context instance, if not retrieval will fail
-pub trait GetWorld {
-    fn get_world(&self) -> Result<WorldPointer, mlua::Error>;
-}
-
 impl GetWorld for Lua {
-    fn get_world(&self) -> Result<WorldPointer, mlua::Error> {
+    type Error = mlua::Error;
+    fn get_world(&self) -> Result<WorldPointer, Self::Error> {
         self.globals().get::<_, LuaWorld>("world").map(Into::into)
     }
 }
