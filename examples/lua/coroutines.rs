@@ -11,7 +11,7 @@ fn do_update(mut w: PriorityEventWriter<LuaEvent<()>>, time: Res<Time>) {
     info!(
         "\t - event: {}, time: {:?}",
         event.hook_name,
-        (time.startup() + time.time_since_startup())
+        (time.startup() + time.elapsed())
     );
     w.send(event, 0);
 }
@@ -21,7 +21,7 @@ fn load_our_scripts(server: Res<AssetServer>, mut commands: Commands) {
     let handle = server.load::<LuaFile, &str>(path);
     let script = Script::<LuaFile>::new(path.to_string(), handle);
 
-    commands.spawn().insert(ScriptCollection::<LuaFile> {
+    commands.spawn(()).insert(ScriptCollection::<LuaFile> {
         scripts: vec![script],
     });
 }

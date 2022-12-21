@@ -16,5 +16,5 @@ name = "bevy_event_priority"
 path = "src/lib.rs"
 
 [dependencies]
-bevy = { version = "0.8.0", default-features = false}
+bevy = { version = "0.9.1", default-features = false}
 

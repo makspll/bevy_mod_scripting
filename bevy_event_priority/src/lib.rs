@@ -63,7 +63,7 @@ impl<E: Clone> Clone for EventInstance<E> {
 /// This implementation does NOT provide double buffering.
 /// Writers and readers are expected to remove events as soon as they are read,
 /// this implies a one to one mapping between events and event handlers.
-#[derive(Debug)]
+#[derive(Debug, Resource)]
 pub struct PriorityEvents<E> {
     events: BinaryHeap<EventInstance<E>>,
 }

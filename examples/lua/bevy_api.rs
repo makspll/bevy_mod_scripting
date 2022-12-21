@@ -10,7 +10,7 @@ use bevy_script_api::lua::{
 /// Let's define a resource, we want it to be "assignable" via lua so we derive `ReflectLuaProxyable`
 /// This allows us to reach this value when it's a field under any other Reflectable type
 
-#[derive(Default, Clone, Reflect)]
+#[derive(Default, Clone, Resource, Reflect)]
 #[reflect(Resource, LuaProxyable)]
 pub struct MyResource {
     pub thing: f64,
@@ -77,9 +77,9 @@ fn main() -> std::io::Result<()> {
         .add_script_handler_stage::<LuaScriptHost<()>,_,0,0>(CoreStage::PostUpdate)
         .add_api_provider::<LuaScriptHost<()>>(Box::new(LuaBevyAPIProvider))
         .add_system(
-            (|world: &mut World| {
+            |world: &mut World| {
 
-                world.spawn()
+                world.spawn(())
                     .insert(MyComponent {
                         vec2: Vec2::new(1.0, 2.0),
                         vec3: Vec3::new(1.0, 2.0, 3.0),
@@ -229,8 +229,7 @@ fn main() -> std::io::Result<()> {
                 });
 
                 world.send_event(AppExit)
-            })
-            .exclusive_system(),
+            },
         );
 
     app.run();

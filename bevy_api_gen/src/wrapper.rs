@@ -1,9 +1,9 @@
-use std::collections::HashSet;
+use std::{borrow::Cow, collections::HashSet};
 
 use indexmap::{IndexMap, IndexSet};
-use rustdoc_types::{Crate, Id, Impl, Item, ItemEnum};
+use rustdoc_types::{Crate, Id, Impl, Item, ItemEnum, StructKind};
 
-use crate::{stringify_type, Arg, ArgType, ArgWrapperType, Args, Config, Newtype, PrettyWriter};
+use crate::{Arg, ArgType, ArgWrapperType, Args, Config, Newtype, PrettyWriter};
 
 pub static WRAPPER_PREFIX: &str = "Lua";
 
@@ -11,7 +11,7 @@ pub static WRAPPER_PREFIX: &str = "Lua";
 pub struct WrappedItem<'a> {
     pub wrapper_name: String,
     pub wrapped_type: &'a String,
-    pub path_components: &'a [String],
+    pub path_components: Cow<'a, [String]>,
     pub source: &'a Crate,
     pub config: &'a Newtype,
     pub item: &'a Item,
@@ -62,11 +62,7 @@ impl WrappedItem<'_> {
         let strings = if let Some(d) = &self.config.doc {
             d.to_string()
         } else {
-            self.item
-                .docs
-                .as_ref()
-                .cloned()
-                .unwrap_or_else(|| "".to_string())
+            self.item.docs.as_ref().cloned().unwrap_or_default()
         };
         writer.set_prefix("///".into());
         strings.lines().for_each(|l| {
@@ -162,9 +158,7 @@ impl WrappedItem<'_> {
                         .traits
                         .iter()
                         .any(|f| {
-                            stringify_type(trait_)
-                                .and_then(|s| (s == f.name).then_some(()))
-                                .is_some()
+                            trait_.name == f.name
                         })
                     {
                         // keep going
@@ -175,7 +169,6 @@ impl WrappedItem<'_> {
 
                 let (decl, generics) = match &v.inner {
                     ItemEnum::Function(f) => (&f.decl, &f.generics),
-                    ItemEnum::Method(m) => (&m.decl, &m.generics),
                     _ => return,
                 };
 
@@ -282,75 +275,80 @@ impl WrappedItem<'_> {
         writer.open_paren();
 
         if let ItemEnum::Struct(struct_) = &self.item.inner {
-            struct_
-                .fields
-                .iter()
-                .map(|field_| self.source.index.get(field_).unwrap())
-                .filter_map(|field_| match &field_.inner {
-                    ItemEnum::StructField(type_) => {
-                        Some((field_.name.as_ref().unwrap(), type_, field_))
-                    }
-                    _ => None,
-                })
-                .filter_map(|(name, type_, field_)| {
-                    let arg_type: ArgType = type_.try_into().ok()?;
-                    let base_ident = arg_type
-                        .base_ident() // resolve self
-                        .unwrap_or(self.wrapped_type.as_str());
+            if let StructKind::Plain {
+                fields,
+                fields_stripped: _,
+            } = &struct_.kind
+            {
+                fields
+                    .iter()
+                    .map(|field_| self.source.index.get(field_).unwrap())
+                    .filter_map(|field_| match &field_.inner {
+                        ItemEnum::StructField(type_) => {
+                            Some((field_.name.as_ref().unwrap(), type_, field_))
+                        }
+                        _ => None,
+                    })
+                    .filter_map(|(name, type_, field_)| {
+                        let arg_type: ArgType = type_.try_into().ok()?;
+                        let base_ident = arg_type
+                            .base_ident() // resolve self
+                            .unwrap_or(self.wrapped_type.as_str());
 
-                    // if the underlying ident is self, we shouldn't wrap it when printing it
-                    let wrapper: ArgWrapperType = arg_type
-                        .is_self()
-                        .then(|| ArgWrapperType::None)
-                        .or_else(|| {
-                            config
-                                .primitives
-                                .contains(base_ident)
-                                .then_some(ArgWrapperType::Raw)
-                        })
-                        .or_else(|| {
-                            config
-                                .types
-                                .contains_key(base_ident)
-                                .then_some(ArgWrapperType::Wrapped)
-                        })
-                        // we allow this since we later resolve unknown types to be resolved as ReflectedValues
-                        .unwrap_or(ArgWrapperType::None);
+                        // if the underlying ident is self, we shouldn't wrap it when printing it
+                        let wrapper: ArgWrapperType = arg_type
+                            .is_self()
+                            .then_some(ArgWrapperType::None)
+                            .or_else(|| {
+                                config
+                                    .primitives
+                                    .contains(base_ident)
+                                    .then_some(ArgWrapperType::Raw)
+                            })
+                            .or_else(|| {
+                                config
+                                    .types
+                                    .contains_key(base_ident)
+                                    .then_some(ArgWrapperType::Wrapped)
+                            })
+                            // we allow this since we later resolve unknown types to be resolved as ReflectedValues
+                            .unwrap_or(ArgWrapperType::None);
 
-                    let arg = Arg::new(arg_type, wrapper);
-                    let mut reflectable_type = arg.to_string();
+                        let arg = Arg::new(arg_type, wrapper);
+                        let mut reflectable_type = arg.to_string();
 
-                    // if we do not have an appropriate wrapper and this is not a primitive or it's not public
-                    // we need to go back to the reflection API
-                    if arg.wrapper == ArgWrapperType::None {
-                        if field_.attrs.iter().any(|attr| attr == "#[reflect(ignore)]") {
-                            return None;
+                        // if we do not have an appropriate wrapper and this is not a primitive or it's not public
+                        // we need to go back to the reflection API
+                        if arg.wrapper == ArgWrapperType::None {
+                            if field_.attrs.iter().any(|attr| attr == "#[reflect(ignore)]") {
+                                return None;
+                            }
+
+                            reflectable_type = "Raw(ReflectedValue)".to_owned();
                         }
 
-                        reflectable_type = "Raw(ReflectedValue)".to_owned();
-                    }
+                        if let Some(docs) = &field_.docs {
+                            writer.set_prefix("/// ".into());
+                            docs.lines().for_each(|line| {
+                                writer.write_line(line);
+                            });
+                            writer.clear_prefix();
+                        };
 
-                    if let Some(docs) = &field_.docs {
-                        writer.set_prefix("/// ".into());
-                        docs.lines().for_each(|line| {
-                            writer.write_line(line);
-                        });
-                        writer.clear_prefix();
-                    };
+                        // add underscore if a method with same name exists
+                        used_method_identifiers
+                            .contains(name.as_str())
+                            .then(|| writer.write_line(&format!("#[rename(\"_{name}\")]")));
+                        writer.write_no_newline(name);
+                        writer.write_inline(": ");
+                        writer.write_inline(&reflectable_type);
+                        writer.write_inline(",");
+                        writer.newline();
 
-                    // add underscore if a method with same name exists
-                    used_method_identifiers
-                        .contains(name.as_str())
-                        .then(|| writer.write_line(&format!("#[rename(\"_{name}\")]")));
-                    writer.write_no_newline(name);
-                    writer.write_inline(": ");
-                    writer.write_inline(&reflectable_type);
-                    writer.write_inline(",");
-                    writer.newline();
-
-                    Some(())
-                })
-                .for_each(drop);
+                        Some(())
+                    })
+                    .for_each(drop);
+            }
         };
         writer.close_paren();
 
@@ -378,7 +376,7 @@ impl WrappedItem<'_> {
                     })
                     .for_each(|(impl_, item, _self_type)| {
                         let _ = match &item.inner {
-                            ItemEnum::Method(m) => {
+                            ItemEnum::Function(m) => {
                                 m.decl
                                     .inputs
                                     .iter()

@@ -1,10 +1,14 @@
-use bevy_api_gen_lib::{stringify_type, Args, Config, PrettyWriter, WrappedItem, WRAPPER_PREFIX};
+pub mod cratepath;
+
+use bevy_api_gen_lib::{Args, Config, PrettyWriter, WrappedItem, WRAPPER_PREFIX};
 
 use clap::Parser;
+use cratepath::{get_path, path_to_import};
 use indexmap::{IndexMap, IndexSet};
 use rustdoc_types::{Crate, Impl, Item, ItemEnum};
 use serde_json::from_reader;
 use std::{
+    borrow::Cow,
     collections::HashSet,
     fs::{read_to_string, File},
     io::{self, BufReader},
@@ -70,7 +74,7 @@ pub(crate) fn generate_macros(
                         if let ItemEnum::Impl(i) = &source.index.get(id).unwrap().inner {
                             match &i.trait_ {
                                 Some(t) => {
-                                    stringify_type(t).map(|str_| implemented_traits.insert(str_));
+                                    implemented_traits.insert(t.name.to_owned());
                                 }
                                 None => self_impl = Some(i),
                             }
@@ -89,14 +93,20 @@ pub(crate) fn generate_macros(
 
                     let config = config.types.get(item.name.as_ref().unwrap()).unwrap();
 
-                    let path_components = &source.paths.get(id).unwrap().path;
+                    //let path_components = &source.paths.get(id).unwrap().path;
+                    let path_components = get_path(id, source).unwrap_or_else(|| {
+                        panic!("path not found for {:?} in {:?}", id, source.root)
+                    });
+                    //eprintln!("{:?}", path_components);
+                    let path_components = path_to_import(path_components, source);
+                    //eprintln!("{:?}", path_components);
 
                     let wrapper_name = format!("{WRAPPER_PREFIX}{}", item.name.as_ref().unwrap());
                     let wrapped_type = item.name.as_ref().unwrap();
                     WrappedItem {
                         wrapper_name,
                         wrapped_type,
-                        path_components,
+                        path_components: Cow::Owned(path_components),
                         source,
                         config,
                         item,
@@ -333,7 +343,7 @@ pub fn main() -> Result<(), io::Error> {
         .json
         .iter()
         .map(|json| {
-            let f = File::open(&json).unwrap_or_else(|_| panic!("Could not open {}", &json));
+            let f = File::open(json).unwrap_or_else(|_| panic!("Could not open {}", &json));
             let rdr = BufReader::new(f);
             from_reader(rdr)
         })

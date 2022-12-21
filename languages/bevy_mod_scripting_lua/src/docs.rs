@@ -77,7 +77,7 @@ impl DocFragment for LuaDocFragment {
             .status()
             .map_err(|e| ScriptError::DocGenError(e.to_string()))?;
 
-        fs::remove_file(&temp_dir).unwrap();
+        fs::remove_file(temp_dir).unwrap();
         #[cfg(feature = "teal")]
         {
             // now generate teal declaration (d.tl) file

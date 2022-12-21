@@ -4,7 +4,7 @@ use bevy::{
     ecs::system::SystemState,
     prelude::{
         debug, AssetEvent, Assets, ChangeTrackers, Changed, Entity, EventReader, EventWriter,
-        FromWorld, Query, RemovedComponents, Res, ResMut, SystemLabel, World,
+        FromWorld, Query, RemovedComponents, Res, ResMut, Resource, SystemLabel, World,
     },
 };
 use bevy_event_priority::PriorityEventReader;
@@ -104,7 +104,7 @@ pub fn script_remove_synchronizer<H: ScriptHost>(
     query.iter().for_each(|v| {
         // we know that this entity used to have a script component
         // ergo a script context must exist in ctxts, remove all scripts on the entity
-        contexts.remove_context(v.id());
+        contexts.remove_context(v.index());
     })
 }
 
@@ -205,16 +205,17 @@ pub fn script_event_handler<H: ScriptHost, const MAX: u32, const MIN: u32>(world
     world.insert_resource(providers);
 }
 
+#[derive(Resource)]
 /// system state for exclusive systems dealing with script events
-pub struct CachedScriptState<'w, 's, H: ScriptHost> {
+pub struct CachedScriptState<H: ScriptHost> {
     pub event_state: SystemState<(
-        PriorityEventReader<'w, 's, H::ScriptEvent>,
-        EventWriter<'w, 's, ScriptErrorEvent>,
-        EventReader<'w, 's, ScriptLoaded>,
+        PriorityEventReader<'static, 'static, H::ScriptEvent>,
+        EventWriter<'static, 'static, ScriptErrorEvent>,
+        EventReader<'static, 'static, ScriptLoaded>,
     )>,
 }
 
-impl<'w, 's, H: ScriptHost> FromWorld for CachedScriptState<'w, 's, H> {
+impl<H: ScriptHost> FromWorld for CachedScriptState<H> {
     fn from_world(world: &mut World) -> Self {
         Self {
             event_state: SystemState::new(world),

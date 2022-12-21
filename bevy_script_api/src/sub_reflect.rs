@@ -67,7 +67,7 @@ impl fmt::Display for ReflectBase {
                 world: _,
             } => {
                 f.write_str("(Component on ")?;
-                f.write_str(&entity.id().to_string())?;
+                f.write_str(&entity.index().to_string())?;
                 f.write_str(")")
             }
             ReflectBase::Resource { res: _, world: _ } => f.write_str("(Resource"),

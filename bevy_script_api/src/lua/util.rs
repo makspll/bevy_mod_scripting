@@ -184,6 +184,14 @@ macro_rules! impl_tealr_generic{
             fn clone_value(&self) -> Box<dyn ::bevy::reflect::Reflect> {
                 panic!("This should never be called, I am a dummy implementation");
             }
+
+            fn into_reflect(self: Box<Self>) -> Box<dyn ::bevy::reflect::Reflect> {
+                panic!("This should never be called, I am a dummy implementation");
+            }
+
+            fn reflect_owned(self: Box<Self>) -> ::bevy::reflect::ReflectOwned {
+                panic!("This should never be called, I am a dummy implementation");
+            }
         }
 
         impl ::bevy::reflect::FromReflect for $name {

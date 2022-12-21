@@ -79,7 +79,11 @@ pub trait AddScriptHost {
 }
 
 impl AddScriptHost for App {
-    fn add_script_host<T: ScriptHost, S: StageLabel>(&mut self, stage: S) -> &mut Self {
+    fn add_script_host<T, S>(&mut self, stage: S) -> &mut Self
+    where
+        T: ScriptHost,
+        S: StageLabel,
+    {
         T::register_with_app(self, stage);
         self.init_resource::<T>();
         self.add_event::<ScriptLoaded>();
@@ -171,7 +175,6 @@ impl AddScriptHostHandler for App {
         self.add_system_to_stage(
             stage,
             script_event_handler::<T, MAX, MIN>
-                .exclusive_system()
                 .label(ScriptSystemLabel::EventHandling)
                 .at_end(),
         );
@@ -193,7 +196,6 @@ impl AddScriptHostHandler for App {
         self.add_system_to_stage(
             stage,
             script_event_handler::<T, MAX, MIN>
-                .exclusive_system()
                 .label(ScriptSystemLabel::EventHandling)
                 .at_end()
                 .with_run_criteria(criteria),
