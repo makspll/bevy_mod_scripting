@@ -17,6 +17,7 @@ pub mod prelude {
         RhaiContext, RhaiEvent, RhaiScriptHost,
     };
     pub use rhai;
+    pub use rhai::{Engine, FuncArgs};
 }
 
 #[derive(Resource)]

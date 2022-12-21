@@ -281,7 +281,7 @@ impl TealData for LuaWorld {
 
             let registry: &AppTypeRegistry = w.get_resource().unwrap();
 
-            let registry = registry.0.read();
+            let registry = registry.read();
 
             Ok(registry
                 .get_with_short_name(&type_name)

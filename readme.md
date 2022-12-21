@@ -179,7 +179,7 @@ pub fn load_a_script(
     let handle = server.load::<LuaFile, &str>(&path);
 
 
-    commands.spawn().insert(ScriptCollection::<LuaFile> {
+    commands.spawn(()).insert(ScriptCollection::<LuaFile> {
         scripts: vec![Script::<LuaFile>::new(
             path, handle,
         )],
