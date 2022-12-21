@@ -16,6 +16,7 @@ use crate::{script_ref::{ReflectedValue,ValueIndex},
 use std::sync::Mutex;
 use bevy_mod_scripting_core::prelude::*;
 use bevy::prelude::App;
+use bevy::reflect::Enum;
 """
 
 other = """
@@ -394,10 +395,7 @@ source="bevy_sprite"
 type="Sprite"
 source="bevy_sprite"
 
-#TODO re-add
-#[[types]]
-#type="Rect"
-#source="bevy_sprite"
+
 
 ## BEVY_RENDER
 
@@ -417,10 +415,9 @@ source="bevy_render"
 type="ComputedVisibility"
 source="bevy_render"
 
-#TODO re-add
-#[[types]]
-#type="SkinnedMesh"
-#source="bevy_render"
+[[types]]
+type="SkinnedMesh"
+source="bevy_render"
 
 [[types]]
 type="ScalingMode"
@@ -910,3 +907,7 @@ import_path="glam::f64::DQuat"
 type="EulerRot"
 source="bevy_math"
 import_path="glam::EulerRot"
+
+[[types]]
+type="Rect"
+source="bevy_math"
