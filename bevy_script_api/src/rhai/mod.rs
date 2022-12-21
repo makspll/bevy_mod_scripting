@@ -1,7 +1,7 @@
 use ::std::borrow::Cow;
 
 use ::bevy::{
-    prelude::App,
+    prelude::{App, AppTypeRegistry},
     reflect::{FromType, GetTypeRegistration, Reflect, TypeRegistry, TypeRegistryArc},
 };
 use bevy_mod_scripting_rhai::rhai::{export_module, CustomType, Dynamic, EvalAltResult, INT};
@@ -26,7 +26,7 @@ impl RegisterForeignRhaiType for App {
         &mut self,
     ) -> &mut Self {
         {
-            let registry = self.world.resource_mut::<TypeRegistryArc>();
+            let registry = self.world.resource_mut::<AppTypeRegistry>();
             let mut registry = registry.write();
 
             let rhai_data = <ReflectRhaiProxyable as FromType<T>>::from_type();
@@ -102,7 +102,7 @@ impl ToDynamic for ScriptRef {
         let world = self.world_ptr.clone();
         let world = world.read();
 
-        let type_data = world.resource::<TypeRegistry>();
+        let type_data = world.resource::<AppTypeRegistry>();
         let g = type_data.read();
 
         let type_id = self.get(|s| s.type_id())?;
@@ -126,7 +126,7 @@ impl ApplyRhai for ScriptRef {
         // remove typedata from the world to be able to manipulate world
         let proxyable = {
             let world = world_ptr.read();
-            let type_registry = world.resource::<TypeRegistry>().read();
+            let type_registry = world.resource::<AppTypeRegistry>().read();
             type_registry
                 .get_type_data::<ReflectRhaiProxyable>(self.get(|s| s.type_id())?)
                 .cloned()

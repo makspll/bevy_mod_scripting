@@ -7,10 +7,12 @@ use std::{
 use crate::ScriptRef;
 /// Common functionality for all script hosts
 use bevy::{
-    prelude::{Children, Entity, ReflectComponent, ReflectDefault, ReflectResource, World},
+    prelude::{
+        AppTypeRegistry, Children, Entity, ReflectComponent, ReflectDefault, ReflectResource, World,
+    },
     reflect::{
-        DynamicArray, DynamicList, DynamicMap, DynamicStruct, DynamicTuple, DynamicTupleStruct,
-        TypeInfo, TypeRegistration, TypeRegistry,
+        DynamicArray, DynamicEnum, DynamicList, DynamicMap, DynamicStruct, DynamicTuple,
+        DynamicTupleStruct, TypeInfo, TypeRegistration, TypeRegistry,
     },
 };
 use bevy_mod_scripting_core::{prelude::ScriptError, world::WorldPointer};
@@ -108,7 +110,7 @@ impl ScriptWorld {
     pub fn get_type_by_name(&self, type_name: &str) -> Option<ScriptTypeRegistration> {
         let w = self.read();
 
-        let registry: &TypeRegistry = w.get_resource().unwrap();
+        let registry: &AppTypeRegistry = w.get_resource().unwrap();
 
         let registry = registry.read();
 
@@ -144,7 +146,8 @@ impl ScriptWorld {
                 comp_type.data::<ReflectDefault>().ok_or_else(||
                     ScriptError::Other(format!("Component {} is a value or dynamic type with no `ReflectDefault` type_data, cannot instantiate sensible value",comp_type.short_name())))?
                     .default()
-                    .as_ref())
+                    .as_ref()),
+            bevy::reflect::TypeInfo::Enum(_) => component_data.insert(&mut w, entity, &DynamicEnum::default())
         };
 
         Ok(ScriptRef::new_component_ref(

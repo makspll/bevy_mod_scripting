@@ -94,7 +94,7 @@ impl TealData for LuaWorld {
         methods.add_method("get_type_by_name", |_, world, type_name: String| {
             let w = world.read();
 
-            let registry: &TypeRegistry = w.get_resource().unwrap();
+            let registry: &AppTypeRegistry = w.get_resource().unwrap();
 
             let registry = registry.read();
 

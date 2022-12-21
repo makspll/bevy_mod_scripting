@@ -110,7 +110,7 @@ impl_rhai_proxy!(f64 as FLOAT);
 impl_rhai_proxy!(bool as bool);
 impl_rhai_proxy!(String as Into);
 
-impl<T: RhaiProxyable + Reflect + Clone + FromRhaiProxy> RhaiProxyable for Option<T> {
+impl<T: RhaiProxyable + Reflect + FromReflect + Clone + FromRhaiProxy> RhaiProxyable for Option<T> {
     fn ref_to_rhai(self_: crate::ScriptRef) -> Result<Dynamic, Box<EvalAltResult>> {
         self_.get_typed(|s: &Option<T>| match s {
             Some(_) => T::ref_to_rhai(self_.sub_ref(ReflectPathElem::SubReflection {
