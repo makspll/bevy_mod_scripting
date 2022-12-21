@@ -1,4 +1,4 @@
-[project]
+[package]
 name = "bevy_mod_scripting_common"
 version = "0.1.1"
 authors = ["Maksymilian Mozolewski <makspl17@gmail.com>"]

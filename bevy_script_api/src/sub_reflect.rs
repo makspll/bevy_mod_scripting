@@ -57,7 +57,7 @@ impl fmt::Display for ReflectBase {
         match self {
             ReflectBase::Component { comp: _, entity } => {
                 f.write_str("(Component on ")?;
-                f.write_str(&entity.id().to_string())?;
+                f.write_str(&entity.index().to_string())?;
                 f.write_str(")")
             }
             ReflectBase::Resource { res: _ } => f.write_str("(Resource"),

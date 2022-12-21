@@ -2,9 +2,9 @@ use ::std::any::TypeId;
 use ::std::borrow::Cow;
 
 use crate::impl_tealr_type;
-use ::bevy::prelude::App;
+use ::bevy::prelude::{App, AppTypeRegistry};
 
-use ::bevy::reflect::{FromType, GetTypeRegistration, Reflect, TypeRegistry, TypeRegistryArc};
+use ::bevy::reflect::{FromType, GetTypeRegistration, Reflect};
 
 use bevy_mod_scripting_core::world::WorldPointer;
 use bevy_mod_scripting_lua::tealr;
@@ -41,7 +41,7 @@ impl RegisterForeignLuaType for App {
         &mut self,
     ) -> &mut Self {
         {
-            let registry = self.world.resource_mut::<TypeRegistryArc>();
+            let registry = self.world.resource_mut::<AppTypeRegistry>();
             let mut registry = registry.write();
 
             let user_data = <ReflectLuaProxyable as FromType<T>>::from_type();
@@ -99,7 +99,7 @@ impl ApplyLua for ScriptRef {
         // remove typedata from the world to be able to manipulate world
         let proxyable = {
             let world = luaworld.read();
-            let type_registry = world.resource::<TypeRegistry>().read();
+            let type_registry = world.resource::<AppTypeRegistry>().read();
             type_registry
                 .get_type_data::<ReflectLuaProxyable>(self.get(|s| s.type_id())?)
                 .cloned()
@@ -134,7 +134,7 @@ impl<'lua> ToLua<'lua> for ScriptRef {
         let world = self.world_ptr.clone();
         let world = world.read();
 
-        let typedata = world.resource::<TypeRegistry>();
+        let typedata = &world.resource::<AppTypeRegistry>();
         let g = typedata.read();
 
         let type_id = self.get(|s| s.type_id())?;

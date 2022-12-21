@@ -1,6 +1,6 @@
 math.randomseed(os.time())
 
-function init()
+global function init()
 
     local LifeState = world:get_type_by_name("LifeState")
     local life_state = world:get_component(entity,LifeState) as types.LuaLifeState
@@ -13,7 +13,7 @@ function init()
     end
 end
 
-function on_update()
+global function on_update()
     local LifeState = world:get_type_by_name("LifeState")
     local Settings = world:get_type_by_name("Settings")
 

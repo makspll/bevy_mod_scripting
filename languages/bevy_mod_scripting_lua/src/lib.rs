@@ -57,6 +57,7 @@ impl<A: LuaArg> ScriptEvent for LuaEvent<A> {
     }
 }
 
+#[derive(Resource)]
 /// Lua script host, enables Lua scripting.
 pub struct LuaScriptHost<A: LuaArg> {
     _ph: PhantomData<A>,

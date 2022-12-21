@@ -1,4 +1,4 @@
-use bevy::{app::AppExit, prelude::*, reflect::TypeRegistryArc};
+use bevy::{app::AppExit, prelude::*};
 
 use bevy_mod_scripting::{
     api::{impl_lua_newtype, impl_script_newtype, lua::bevy::LuaWorld, LuaProxy, ScriptRef},
@@ -12,7 +12,7 @@ use bevy_mod_scripting::{
 // We can still use references to NonClone wrappers via AnyUserData in lua methods.
 // Even though we are implementing Clone we are still able to reference the original data in script thanks to the script wrapper we are about to implement
 // Debug is nice to have, we can forward that implementation to Lua's ToString via our macro
-#[derive(Reflect, Default, Clone, Debug, LuaProxy)]
+#[derive(Resource, Reflect, Default, Clone, Debug)]
 #[reflect(Resource)]
 #[scripting(Methods(
     /// hello
@@ -75,7 +75,7 @@ impl MyThing {
 //             let lua_world : LuaWorld = globals.get("world")?;
 //             let mut world = lua_world.write();
 
-//             let reflect_resource_data = world.resource_scope(|world, type_registry: Mut<TypeRegistryArc>| {
+//             let reflect_resource_data = world.resource_scope(|world, type_registry: Mut<AppTypeRegistry>| {
 //                 let type_registry = type_registry.read();
 //                 let data = type_registry.get_type_data::<ReflectResource>(std::any::TypeId::of::<MyThing>()).expect("Type not registered properly");
 //                 data.clone()

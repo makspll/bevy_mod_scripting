@@ -8,12 +8,14 @@ use std::sync::Arc;
 use crate::script_ref::ScriptRef;
 use bevy::ecs::system::Command;
 use bevy::hierarchy::BuildWorldChildren;
+use bevy::prelude::AppTypeRegistry;
+use bevy::reflect::DynamicEnum;
 use bevy::{
     hierarchy::{Children, DespawnChildrenRecursive, DespawnRecursive, Parent},
     prelude::{ReflectComponent, ReflectDefault, ReflectResource},
     reflect::{
         DynamicArray, DynamicList, DynamicMap, DynamicStruct, DynamicTuple, DynamicTupleStruct,
-        TypeRegistration, TypeRegistry,
+        TypeRegistration,
     },
 };
 use bevy_mod_scripting_core::prelude::*;
@@ -352,7 +354,7 @@ impl TealData for LuaWorld {
         methods.add_method("spawn", |_, world, ()| {
             let mut w = world.write();
 
-            Ok(LuaEntity::new(w.spawn().id()))
+            Ok(LuaEntity::new(w.spawn(()).id()))
         });
 
         methods.document(

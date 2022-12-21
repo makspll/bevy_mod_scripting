@@ -56,7 +56,7 @@ impl Default for Recipients {
 
 /// A script host is the interface between your rust application
 /// and the scripts in some interpreted language.
-pub trait ScriptHost: Send + Sync + 'static + Default {
+pub trait ScriptHost: Send + Sync + 'static + Default + Resource {
     /// the type of the persistent script context, representing the execution context of the script
     type ScriptContext: Send + Sync + 'static;
     /// the type of events picked up by lua callbacks
@@ -177,6 +177,7 @@ pub trait APIProvider: 'static + Send + Sync {
     fn register_with_app(&self, _app: &mut App) {}
 }
 
+#[derive(Resource)]
 /// Stores many API providers
 pub struct APIProviders<T: ScriptHost> {
     pub providers: Vec<
@@ -256,6 +257,7 @@ impl<T: ScriptHost> APIProviders<T> {
 ///
 /// We keep this public for now since there is no API for communicating with scripts
 /// outside of events. Later this might change.
+#[derive(Resource)]
 pub struct ScriptContexts<C> {
     /// holds script contexts for all scripts given their instance ids.
     /// This also stores contexts which are not fully loaded hence the Option

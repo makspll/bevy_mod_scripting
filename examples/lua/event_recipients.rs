@@ -112,7 +112,7 @@ fn load_our_scripts(server: Res<AssetServer>, mut commands: Commands) {
         .collect();
 
     commands
-        .spawn()
+        .spawn(())
         .insert(ScriptCollection::<LuaFile> { scripts });
 }
 

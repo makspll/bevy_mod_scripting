@@ -98,7 +98,9 @@ impl<'lua> ToLuaProxy<'lua> for String {
     }
 }
 
-impl<T: LuaProxyable + Reflect + for<'a> FromLuaProxy<'a> + Clone> LuaProxyable for Option<T> {
+impl<T: LuaProxyable + Reflect + FromReflect + for<'a> FromLuaProxy<'a> + Clone> LuaProxyable
+    for Option<T>
+{
     fn ref_to_lua(self_: ScriptRef, lua: &Lua) -> mlua::Result<Value> {
         self_.get_typed(|s: &Option<T>| match s {
             Some(_) => T::ref_to_lua(

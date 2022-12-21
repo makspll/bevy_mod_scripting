@@ -65,7 +65,7 @@ impl AssetLoader for LuaLoader {
                     .join(load_context.path());
 
                 if let Ok(e) = Command::new("tl")
-                    .args(&["check", full_path.to_str().unwrap()])
+                    .args(["check", full_path.to_str().unwrap()])
                     .current_dir(scripts_dir)
                     .status()
                 {
@@ -84,7 +84,7 @@ impl AssetLoader for LuaLoader {
                 }
 
                 if let Ok(e) = Command::new("tl")
-                    .args(&[
+                    .args([
                         "gen",
                         full_path.to_str().unwrap(),
                         "-o",

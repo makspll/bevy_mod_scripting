@@ -51,7 +51,7 @@ bevy_mod_scripting_rhai = { path = "languages/bevy_mod_scripting_rhai", version 
 bevy_script_api = { path = "bevy_script_api", version = "0.1.1", optional = true }
 
 [dev-dependencies]
-bevy = { version = "0.8.0"}
+bevy = { version = "0.9.1"}
 rand = "0.8.5"
 
 
@@ -62,7 +62,7 @@ rand = "0.8.5"
 # bevy_mod_scripting_lua = {path="languages/bevy_mod_scripting_lua", version="0.1.1", features=["lua54"]}
 # bevy_mod_scripting_lua_derive = {path="languages/bevy_mod_scripting_lua_derive", version="0.1.1"}
 
-# bevy = { version = "0.8.0"}
+# bevy = { version = "0.9.1"}
 # serde = "1.0.137"
 # criterion = "0.3"
 
@@ -89,7 +89,7 @@ opt-level = 1
 opt-level = 3
 
 
-# needs bevy 0.8 support from console
+# needs bevy 0.9 support from console
 # [[example]]
 # name = "console_integration_lua"
 # path = "examples/console_integration_lua.rs"

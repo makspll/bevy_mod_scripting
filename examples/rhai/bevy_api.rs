@@ -151,10 +151,8 @@ fn main() -> std::io::Result<()> {
                     .expect("Something went wrong in the script!");
                 });
 
-                world.send_event(AppExit)
-            })
-            .exclusive_system(),
-        );
+            world.send_event(AppExit)
+        });
 
     app.run();
 

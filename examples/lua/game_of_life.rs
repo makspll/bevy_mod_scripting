@@ -66,7 +66,7 @@ impl APIProvider for LifeAPI {
     }
 }
 
-#[derive(Reflect)]
+#[derive(Reflect, Resource)]
 #[reflect(Resource)]
 pub struct Settings {
     physical_grid_dimensions: (u32, u32),
@@ -110,9 +110,9 @@ pub fn setup(
     // in release builds we want to fetch ".lua" files over ".tl" files
     let script_path = bevy_mod_scripting_lua::lua_path!("game_of_life");
 
-    commands.spawn_bundle(Camera2dBundle::default());
+    commands.spawn(Camera2dBundle::default());
     commands
-        .spawn_bundle(SpriteBundle {
+        .spawn(SpriteBundle {
             texture: assets.add(image),
             sprite: Sprite {
                 custom_size: Some(Vec2::new(
@@ -243,7 +243,7 @@ fn main() -> std::io::Result<()> {
         .add_startup_system(send_init)
         .add_system(sync_window_size.before(update_rendered_state))
         .add_startup_system(|asset_server: ResMut<AssetServer>| {
-            asset_server.watch_for_changes().unwrap()
+            asset_server.asset_io().watch_for_changes().unwrap()
         })
         .add_system_set(
             SystemSet::new()

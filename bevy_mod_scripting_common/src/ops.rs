@@ -87,7 +87,7 @@ pub struct OpExpr {
 impl Parse for OpExpr {
     fn parse(input: ParseStream) -> Result<Self, syn::Error> {
         let s = Self {
-            left: (&input.fork())
+            left: (input.fork())
                 .parse::<OpName>()
                 .is_err()
                 .then(|| Ok::<_, syn::Error>(Some(input.parse()?)))

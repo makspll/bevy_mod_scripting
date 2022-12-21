@@ -126,7 +126,7 @@ fn load_our_script(server: Res<AssetServer>, mut commands: Commands) {
     let path = "scripts/complex_game_loop.lua";
     let handle = server.load::<LuaFile, &str>(path);
 
-    commands.spawn().insert(ScriptCollection::<LuaFile> {
+    commands.spawn(()).insert(ScriptCollection::<LuaFile> {
         scripts: vec![Script::<LuaFile>::new(path.to_string(), handle)],
     });
 }

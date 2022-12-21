@@ -28,7 +28,7 @@ doc_always = []
 
 
 [dependencies]
-bevy = { version = "0.8.0", default-features = false, features=["bevy_asset","bevy_gltf","bevy_animation","bevy_core_pipeline","bevy_ui","bevy_pbr","bevy_render","bevy_text","bevy_sprite","filesystem_watcher"]}
+bevy = { version = "0.9.1", default-features = false, features=["bevy_asset","bevy_gltf","bevy_animation","bevy_core_pipeline","bevy_ui","bevy_pbr","bevy_render","bevy_text","bevy_sprite","filesystem_watcher"]}
 bevy_event_priority = {path = "../bevy_event_priority", version = "0.1.1"}
 thiserror = "1.0.31"
 paste = "1.0.7"

@@ -235,19 +235,24 @@ impl LuaMethod {
                 "add_field_method_{}",
                 self.method_type
                     .is_field_getter
-                    .then(|| "get")
-                    .or_else(|| self.method_type.is_field_setter.then(|| "set"))
+                    .then_some("get")
+                    .or_else(|| self.method_type.is_field_setter.then_some("set"))
                     .unwrap()
             )
         } else {
             format_ident!(
                 "add{}{}{}",
-                self.method_type.is_meta.then(|| "_meta").unwrap_or(""),
-                self.method_type
-                    .is_function
-                    .then(|| "_function")
-                    .unwrap_or("_method"),
-                self.method_type.is_mut.then(|| "_mut").unwrap_or(""),
+                if self.method_type.is_meta {
+                    "_meta"
+                } else {
+                    ""
+                },
+                if self.method_type.is_function {
+                    "_function"
+                } else {
+                    "_method"
+                },
+                if self.method_type.is_mut { "_mut" } else { "" },
             )
         };
 

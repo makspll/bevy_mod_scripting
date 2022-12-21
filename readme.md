@@ -179,7 +179,7 @@ pub fn load_a_script(
     let handle = server.load::<LuaFile, &str>(&path);
 
 
-    commands.spawn().insert(ScriptCollection::<LuaFile> {
+    commands.spawn(()).insert(ScriptCollection::<LuaFile> {
         scripts: vec![Script::<LuaFile>::new(
             path, handle,
         )],
@@ -326,8 +326,8 @@ To see more complex applications of this library have a look at the examples:
 - [lua - bevy API](examples/lua/bevy_api.rs)
 - [generating statically typed wrappers + ScriptRef system](examples/wrappers.rs)
 - [lua - documentation generation + lua static typing](examples/lua/documentation_gen.rs)
-- ~~[lua - bevy console integration](examples/lua/console_integration.rs)~~ not up to date with bevy 0.8
-- ~~[rhai - bevy console integration](examples/rhai/console_integration.rs)~~ not up to date with bevy 0.8
+- ~~[lua - bevy console integration](examples/lua/console_integration.rs)~~ not up to date with bevy 0.9
+- ~~[rhai - bevy console integration](examples/rhai/console_integration.rs)~~ not up to date with bevy 0.9
 - [lua - game of life with teal](examples/lua/game_of_life.rs)
 
 Below is a video showcasing the game_of_life example:

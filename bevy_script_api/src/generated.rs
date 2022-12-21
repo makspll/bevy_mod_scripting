@@ -53,6 +53,7 @@ use bevy::math::u32::UVec2;
 use bevy::math::u32::UVec3;
 use bevy::math::u32::UVec4;
 use bevy::math::EulerRot;
+use bevy::math::Rect;
 use bevy::pbr::wireframe::Wireframe;
 use bevy::pbr::wireframe::WireframeConfig;
 use bevy::pbr::AlphaMode;
@@ -65,10 +66,10 @@ use bevy::pbr::NotShadowReceiver;
 use bevy::pbr::PointLight;
 use bevy::pbr::PointLightShadowMap;
 use bevy::prelude::App;
+use bevy::reflect::Enum;
 use bevy::render::camera::Camera;
 use bevy::render::camera::CameraProjection;
 use bevy::render::camera::CameraRenderGraph;
-use bevy::render::camera::DepthCalculation;
 use bevy::render::camera::OrthographicProjection;
 use bevy::render::camera::PerspectiveProjection;
 use bevy::render::camera::Projection;
@@ -88,7 +89,6 @@ use bevy::render::view::visibility::VisibleEntities;
 use bevy::render::view::Msaa;
 use bevy::sprite::Anchor;
 use bevy::sprite::Mesh2dHandle;
-use bevy::sprite::Rect;
 use bevy::sprite::Sprite;
 use bevy::sprite::TextureAtlasSprite;
 use bevy::text::HorizontalAlign;
@@ -121,7 +121,6 @@ use bevy::ui::Node;
 use bevy::ui::Overflow;
 use bevy::ui::PositionType;
 use bevy::ui::Style;
-use bevy::ui::UiColor;
 use bevy::ui::UiImage;
 use bevy::ui::Val;
 use bevy_mod_scripting_core::prelude::*;
@@ -407,7 +406,8 @@ impl_script_newtype! {
     )
     + BinOps
     (
-        self Add Raw(f32) -> Wrapped(Val),
+        self Div Raw(f32) -> Wrapped(Val),
+        self Mul Raw(f32) -> Wrapped(Val),
     )
     + UnaryOps
     (
@@ -472,11 +472,13 @@ impl_script_newtype! {
     Debug +
     Methods
     (
+        ///The calculated node size as width and height in pixels
+        ///automatically calculated by [`super::flex::flex_node_system`]
+        size(&self:) -> Wrapped(Vec2),
+
     )
     + Fields
     (
-        /// The size of the node as width and height in pixels
-        size: Wrapped(Vec2),
     )
     + BinOps
     (
@@ -562,30 +564,7 @@ impl_script_newtype! {
 }
 impl_script_newtype! {
     #[languages(on_feature(lua))]
-    ///The color of the node
-    bevy_ui::UiColor :
-    Clone +
-    Debug +
-    Methods
-    (
-    )
-    + Fields
-    (
-        0: Wrapped(Color),
-    )
-    + BinOps
-    (
-    )
-    + UnaryOps
-    (
-    )
-    lua impl
-    {
-    }
-}
-impl_script_newtype! {
-    #[languages(on_feature(lua))]
-    ///The image of the node
+    ///The 2D texture displayed for this UI node
     bevy_ui::UiImage :
     Clone +
     Debug +
@@ -594,7 +573,6 @@ impl_script_newtype! {
     )
     + Fields
     (
-        0: Raw(ReflectedValue),
     )
     + BinOps
     (
@@ -760,12 +738,17 @@ impl_script_newtype! {
 }
 impl_script_newtype! {
     #[languages(on_feature(lua))]
-    ///Contains references to the child entities of this entity
+    ///Contains references to the child entities of this entity.
+    ///
+    ///See [`HierarchyQueryExt`] for hierarchy related methods on [`Query`].
+    ///
+    ///[`HierarchyQueryExt`]: crate::query_extension::HierarchyQueryExt
+    ///[`Query`]: bevy_ecs::system::Query
     bevy_hierarchy::Children :
     Debug +
     Methods
     (
-        ///Swaps the child at `a_index` with the child at `b_index`
+        ///Swaps the child at `a_index` with the child at `b_index`.
         swap(&mut self:Raw(usize),Raw(usize)),
 
     )
@@ -786,6 +769,11 @@ impl_script_newtype! {
     #[languages(on_feature(lua))]
     ///Holds a reference to the parent entity of this entity.
     ///This component should only be present on entities that actually have a parent entity.
+    ///
+    ///See [`HierarchyQueryExt`] for hierarchy related methods on [`Query`].
+    ///
+    ///[`HierarchyQueryExt`]: crate::query_extension::HierarchyQueryExt
+    ///[`Query`]: bevy_ecs::system::Query
     bevy_hierarchy::Parent :
     Debug +
     Methods
@@ -1057,7 +1045,17 @@ impl_script_newtype! {
         ///# See Also
         ///
         ///[`elapsed`](Stopwatch::elapsed) - if a `Duration` is desirable instead.
+        ///[`elapsed_secs_f64`](Stopwatch::elapsed_secs_f64) - if an `f64` is desirable instead.
         elapsed_secs(&self:) -> Raw(f32),
+
+        ///Returns the elapsed time since the last [`reset`](Stopwatch::reset)
+        ///of the stopwatch, in seconds, as f64.
+        ///
+        ///# See Also
+        ///
+        ///[`elapsed`](Stopwatch::elapsed) - if a `Duration` is desirable instead.
+        ///[`elapsed_secs`](Stopwatch::elapsed_secs) - if an `f32` is desirable instead.
+        elapsed_secs_f64(&self:) -> Raw(f64),
 
         ///Pauses the stopwatch. Any call to [`tick`](Stopwatch::tick) while
         ///paused will not have any effect on the elapsed time.
@@ -1104,7 +1102,7 @@ impl_script_newtype! {
         ///```
         paused(&self:) -> Raw(bool),
 
-        ///Resets the stopwatch.
+        ///Resets the stopwatch. The reset doesn’t affect the paused state of the stopwatch.
         ///
         ///# Examples
         ///```
@@ -1145,22 +1143,14 @@ impl_script_newtype! {
     Debug +
     Methods
     (
-        ///Creates a new timer with a given duration in seconds.
-        ///
-        ///# Example
-        ///```
-        ///# use bevy_time::*;
-        ///let mut timer = Timer::from_seconds(1.0, false);
-        ///```
-        from_seconds(Raw(f32),Raw(bool)) -> self,
-
-        ///Returns `true` if the timer has reached its duration.
+        ///Returns `true` if the timer has reached its duration at least once.
+        ///See also [`Timer::just_finished`](Timer::just_finished).
         ///
         ///# Examples
         ///```
         ///# use bevy_time::*;
         ///use std::time::Duration;
-        ///let mut timer = Timer::from_seconds(1.0, false);
+        ///let mut timer = Timer::from_seconds(1.0, TimerMode::Once);
         ///timer.tick(Duration::from_secs_f32(1.5));
         ///assert!(timer.finished());
         ///timer.tick(Duration::from_secs_f32(0.5));
@@ -1174,7 +1164,7 @@ impl_script_newtype! {
         ///```
         ///# use bevy_time::*;
         ///use std::time::Duration;
-        ///let mut timer = Timer::from_seconds(1.0, false);
+        ///let mut timer = Timer::from_seconds(1.0, TimerMode::Once);
         ///timer.tick(Duration::from_secs_f32(1.5));
         ///assert!(timer.just_finished());
         ///timer.tick(Duration::from_secs_f32(0.5));
@@ -1182,30 +1172,9 @@ impl_script_newtype! {
         ///```
         just_finished(&self:) -> Raw(bool),
 
-        ///Returns the time elapsed on the timer as a `f32`.
+        ///Returns the time elapsed on the timer as an `f32`.
         ///See also [`Timer::elapsed`](Timer::elapsed).
         elapsed_secs(&self:) -> Raw(f32),
-
-        ///Returns `true` if the timer is repeating.
-        ///
-        ///# Examples
-        ///```
-        ///# use bevy_time::*;
-        ///let mut timer = Timer::from_seconds(1.0, true);
-        ///assert!(timer.repeating());
-        ///```
-        repeating(&self:) -> Raw(bool),
-
-        ///Sets whether the timer is repeating or not.
-        ///
-        ///# Examples
-        ///```
-        ///# use bevy_time::*;
-        ///let mut timer = Timer::from_seconds(1.0, true);
-        ///timer.set_repeating(false);
-        ///assert!(!timer.repeating());
-        ///```
-        set_repeating(&mut self:Raw(bool)),
 
         ///Pauses the Timer. Disables the ticking of the timer.
         ///
@@ -1215,7 +1184,7 @@ impl_script_newtype! {
         ///```
         ///# use bevy_time::*;
         ///use std::time::Duration;
-        ///let mut timer = Timer::from_seconds(1.0, false);
+        ///let mut timer = Timer::from_seconds(1.0, TimerMode::Once);
         ///timer.pause();
         ///timer.tick(Duration::from_secs_f32(0.5));
         ///assert_eq!(timer.elapsed_secs(), 0.0);
@@ -1230,7 +1199,7 @@ impl_script_newtype! {
         ///```
         ///# use bevy_time::*;
         ///use std::time::Duration;
-        ///let mut timer = Timer::from_seconds(1.0, false);
+        ///let mut timer = Timer::from_seconds(1.0, TimerMode::Once);
         ///timer.pause();
         ///timer.tick(Duration::from_secs_f32(0.5));
         ///timer.unpause();
@@ -1246,7 +1215,7 @@ impl_script_newtype! {
         ///# Examples
         ///```
         ///# use bevy_time::*;
-        ///let mut timer = Timer::from_seconds(1.0, false);
+        ///let mut timer = Timer::from_seconds(1.0, TimerMode::Once);
         ///assert!(!timer.paused());
         ///timer.pause();
         ///assert!(timer.paused());
@@ -1255,7 +1224,7 @@ impl_script_newtype! {
         ///```
         paused(&self:) -> Raw(bool),
 
-        ///Resets the timer. the reset doesn't affect the `paused` state of the timer.
+        ///Resets the timer. The reset doesn't affect the `paused` state of the timer.
         ///
         ///See also [`Stopwatch::reset`](Stopwatch::reset).
         ///
@@ -1263,7 +1232,7 @@ impl_script_newtype! {
         ///```
         ///# use bevy_time::*;
         ///use std::time::Duration;
-        ///let mut timer = Timer::from_seconds(1.0, false);
+        ///let mut timer = Timer::from_seconds(1.0, TimerMode::Once);
         ///timer.tick(Duration::from_secs_f32(1.5));
         ///timer.reset();
         ///assert!(!timer.finished());
@@ -1278,23 +1247,37 @@ impl_script_newtype! {
         ///```
         ///# use bevy_time::*;
         ///use std::time::Duration;
-        ///let mut timer = Timer::from_seconds(2.0, false);
+        ///let mut timer = Timer::from_seconds(2.0, TimerMode::Once);
         ///timer.tick(Duration::from_secs_f32(0.5));
         ///assert_eq!(timer.percent(), 0.25);
         ///```
         percent(&self:) -> Raw(f32),
 
-        ///Returns the percentage of the timer remaining time (goes from 0.0 to 1.0).
+        ///Returns the percentage of the timer remaining time (goes from 1.0 to 0.0).
         ///
         ///# Examples
         ///```
         ///# use bevy_time::*;
         ///use std::time::Duration;
-        ///let mut timer = Timer::from_seconds(2.0, false);
+        ///let mut timer = Timer::from_seconds(2.0, TimerMode::Once);
         ///timer.tick(Duration::from_secs_f32(0.5));
         ///assert_eq!(timer.percent_left(), 0.75);
         ///```
         percent_left(&self:) -> Raw(f32),
+
+        ///Returns the remaining time in seconds
+        ///
+        ///# Examples
+        ///```
+        ///# use bevy_time::*;
+        ///use std::cmp::Ordering;
+        ///use std::time::Duration;
+        ///let mut timer = Timer::from_seconds(2.0, TimerMode::Once);
+        ///timer.tick(Duration::from_secs_f32(0.5));
+        ///let result = timer.remaining_secs().total_cmp(&1.5);
+        ///assert_eq!(Ordering::Equal, result);
+        ///```
+        remaining_secs(&self:) -> Raw(f32),
 
         ///Returns the number of times a repeating timer
         ///finished during the last [`tick`](Timer<T>::tick) call.
@@ -1306,7 +1289,7 @@ impl_script_newtype! {
         ///```
         ///# use bevy_time::*;
         ///use std::time::Duration;
-        ///let mut timer = Timer::from_seconds(1.0, true);
+        ///let mut timer = Timer::from_seconds(1.0, TimerMode::Repeating);
         ///timer.tick(Duration::from_secs_f32(6.0));
         ///assert_eq!(timer.times_finished_this_tick(), 6);
         ///timer.tick(Duration::from_secs_f32(2.0));
@@ -1334,7 +1317,7 @@ impl_script_newtype! {
     #[languages(on_feature(lua))]
     ///Lightweight identifier of an [entity](crate::entity).
     ///
-    ///The identifier is implemented using a [generational index]: a combination of an ID and a generation.
+    ///The identifier is implemented using a [generational index]: a combination of an index and a generation.
     ///This allows fast insertion after data removal in an array while minimizing loss of spatial locality.
     ///
     ///[generational index]: https://lucassardois.medium.com/generational-indices-guide-8e3c5f7fd594
@@ -1346,19 +1329,20 @@ impl_script_newtype! {
     ///
     ///```
     ///# use bevy_ecs::prelude::*;
-    ///#
+    ///# #[derive(Component)]
+    ///# struct SomeComponent;
     ///fn setup(mut commands: Commands) {
     ///    // Calling `spawn` returns `EntityCommands`.
-    ///    let entity = commands.spawn().id();
+    ///    let entity = commands.spawn(SomeComponent).id();
     ///}
     ///
     ///fn exclusive_system(world: &mut World) {
     ///    // Calling `spawn` returns `EntityMut`.
-    ///    let entity = world.spawn().id();
+    ///    let entity = world.spawn(SomeComponent).id();
     ///}
     ///#
     ///# bevy_ecs::system::assert_is_system(setup);
-    ///# bevy_ecs::system::IntoExclusiveSystem::exclusive_system(exclusive_system);
+    ///# bevy_ecs::system::assert_is_system(exclusive_system);
     ///```
     ///
     ///It can be used to refer to a specific entity to apply [`EntityCommands`], or to call [`Query::get`] (or similar methods) to access its components.
@@ -1388,14 +1372,14 @@ impl_script_newtype! {
     Debug +
     Methods
     (
-        ///Creates a new entity reference with the specified `id` and a generation of 0.
+        ///Creates a new entity reference with the specified `index` and a generation of 0.
         ///
         ///# Note
         ///
         ///Spawning a specific `entity` value is __rarely the right choice__. Most apps should favor
         ///[`Commands::spawn`](crate::system::Commands::spawn). This method should generally
         ///only be used for sharing entities across apps, and only when they have a scheme
-        ///worked out to share an ID space (which doesn't happen by default).
+        ///worked out to share an index space (which doesn't happen by default).
         ///
         ///In general, one should not try to synchronize the ECS by attempting to ensure that
         ///`Entity` lines up between instances, but instead insert a secondary identifier as
@@ -1452,14 +1436,14 @@ impl_script_newtype! {
 
         ///Return a transiently unique identifier.
         ///
-        ///No two simultaneously-live entities share the same ID, but dead entities' IDs may collide
+        ///No two simultaneously-live entities share the same index, but dead entities' indices may collide
         ///with both live and dead entities. Useful for compactly representing entities within a
         ///specific snapshot of the world, such as when serializing.
-        id(self:) -> Raw(u32),
+        index(self:) -> Raw(u32),
 
-        ///Returns the generation of this Entity's id. The generation is incremented each time an
-        ///entity with a given id is despawned. This serves as a "count" of the number of times a
-        ///given id has been reused (id, generation) pairs uniquely identify a given Entity.
+        ///Returns the generation of this Entity's index. The generation is incremented each time an
+        ///entity with a given index is despawned. This serves as a "count" of the number of times a
+        ///given index has been reused (index, generation) pairs uniquely identify a given Entity.
         generation(self:) -> Raw(u32),
 
     )
@@ -1499,6 +1483,14 @@ impl_script_newtype! {
     ///This system runs in stage [`CoreStage::PostUpdate`](crate::CoreStage::PostUpdate). If you
     ///update the [`Transform`] of an entity in this stage or after, you will notice a 1 frame lag
     ///before the [`GlobalTransform`] is updated.
+    ///
+    ///# Examples
+    ///
+    ///- [`transform`]
+    ///- [`global_vs_local_translation`]
+    ///
+    ///[`global_vs_local_translation`]: https://github.com/bevyengine/bevy/blob/latest/examples/transforms/global_vs_local_translation.rs
+    ///[`transform`]: https://github.com/bevyengine/bevy/blob/latest/examples/transforms/transform.rs
     bevy_transform::components::Transform :
     Clone +
     Debug +
@@ -1508,10 +1500,6 @@ impl_script_newtype! {
         ///is used for z-ordering elements: higher `z`-value will be in front of lower
         ///`z`-value.
         from_xyz(Raw(f32),Raw(f32),Raw(f32)) -> self,
-
-        ///Creates a new identity [`Transform`], with no translation, rotation, and a scale of 1 on
-        ///all axes.
-        identity() -> self,
 
         ///Extracts the translation, rotation, and scale from `matrix`. It must be a 3d affine
         ///transformation matrix.
@@ -1529,9 +1517,9 @@ impl_script_newtype! {
         ///all axes.
         from_scale(Wrapped(Vec3)) -> self,
 
-        ///Updates and returns this [`Transform`] by rotating it so that its unit vector in the
-        ///local `Z` direction is toward `target` and its unit vector in the local `Y` direction
-        ///is toward `up`.
+        ///Updates and returns this [`Transform`] by rotating it so that its unit
+        ///vector in the local negative `Z` direction is toward `target` and its
+        ///unit vector in the local `Y` direction is toward `up`.
         looking_at(self:Wrapped(Vec3),Wrapped(Vec3)) -> self,
 
         ///Returns this [`Transform`] with a new translation.
@@ -1581,6 +1569,12 @@ impl_script_newtype! {
         ///Rotates this [`Transform`] by the given rotation.
         ///
         ///If this [`Transform`] has a parent, the `rotation` is relative to the rotation of the parent.
+        ///
+        ///# Examples
+        ///
+        ///- [`3d_rotation`]
+        ///
+        ///[`3d_rotation`]: https://github.com/bevyengine/bevy/blob/latest/examples/transforms/3d_rotation.rs
         rotate(&mut self:Wrapped(Quat)),
 
         ///Rotates this [`Transform`] around the given `axis` by `angle` (in radians).
@@ -1638,21 +1632,38 @@ impl_script_newtype! {
         ///resulting [`Transform`]
         mul_transform(&self:Wrapped(Transform)) -> self,
 
-        ///Returns a [`Vec3`] of this [`Transform`] applied to `value`.
-        mul_vec3(&self:Wrapped(Vec3)) -> Wrapped(Vec3),
-
-        ///Changes the `scale` of this [`Transform`], multiplying the current `scale` by
-        ///`scale_factor`.
-        apply_non_uniform_scale(&mut self:Wrapped(Vec3)),
+        ///Transforms the given `point`, applying scale, rotation and translation.
+        ///
+        ///If this [`Transform`] has a parent, this will transform a `point` that is
+        ///relative to the parent's [`Transform`] into one relative to this [`Transform`].
+        ///
+        ///If this [`Transform`] does not have a parent, this will transform a `point`
+        ///that is in global space into one relative to this [`Transform`].
+        ///
+        ///If you want to transform a `point` in global space to the local space of this [`Transform`],
+        ///consider using [`GlobalTransform::transform_point()`] instead.
+        transform_point(&self:Wrapped(Vec3)) -> Wrapped(Vec3),
 
     )
     + Fields
     (
         /// Position of the entity. In 2d, the last value of the `Vec3` is used for z-ordering.
+        ///
+        /// See the [`translations`] example for usage.
+        ///
+        /// [`translations`]: https://github.com/bevyengine/bevy/blob/latest/examples/transforms/translation.rs
         translation: Wrapped(Vec3),
         /// Rotation of the entity.
+        ///
+        /// See the [`3d_rotation`] example for usage.
+        ///
+        /// [`3d_rotation`]: https://github.com/bevyengine/bevy/blob/latest/examples/transforms/3d_rotation.rs
         rotation: Wrapped(Quat),
         /// Scale of the entity.
+        ///
+        /// See the [`scale`] example for usage.
+        ///
+        /// [`scale`]: https://github.com/bevyengine/bevy/blob/latest/examples/transforms/scale.rs
         scale: Wrapped(Vec3),
     )
     + BinOps
@@ -1689,6 +1700,12 @@ impl_script_newtype! {
     ///This system runs in stage [`CoreStage::PostUpdate`](crate::CoreStage::PostUpdate). If you
     ///update the [`Transform`] of an entity in this stage or after, you will notice a 1 frame lag
     ///before the [`GlobalTransform`] is updated.
+    ///
+    ///# Examples
+    ///
+    ///- [`global_vs_local_translation`]
+    ///
+    ///[`global_vs_local_translation`]: https://github.com/bevyengine/bevy/blob/latest/examples/transforms/global_vs_local_translation.rs
     bevy_transform::components::GlobalTransform :
     Clone +
     Debug +
@@ -1705,9 +1722,6 @@ impl_script_newtype! {
         ///The transform is expected to be non-degenerate and without shearing, or the output
         ///will be invalid.
         compute_transform(&self:) -> Wrapped(Transform),
-
-        ///Creates a new identity [`GlobalTransform`], that maps all points in space to themselves.
-        identity() -> self,
 
         ///Return the local right vector (X).
         right(&self:) -> Wrapped(Vec3),
@@ -1736,8 +1750,10 @@ impl_script_newtype! {
         ///Get an upper bound of the radius from the given `extents`.
         radius_vec3a(&self:Wrapped(Vec3A)) -> Raw(f32),
 
-        ///Returns a [`Vec3`] of this [`Transform`] applied to `value`.
-        mul_vec3(&self:Wrapped(Vec3)) -> Wrapped(Vec3),
+        ///Transforms the given `point`, applying shear, scale, rotation and translation.
+        ///
+        ///This moves `point` into the local space of this [`GlobalTransform`].
+        transform_point(&self:Wrapped(Vec3)) -> Wrapped(Vec3),
 
         ///Multiplies `self` with `transform` component by component, returning the
         ///resulting [`GlobalTransform`]
@@ -1814,6 +1830,9 @@ impl_script_newtype! {
     ///approximation for light sources VERY far away, like the sun or
     ///the moon.
     ///
+    ///The light shines along the forward direction of the entity's transform. With a default transform
+    ///this would be along the negative-Z axis.
+    ///
     ///Valid values for `illuminance` are:
     ///
     ///| Illuminance (lux) | Surfaces illuminated by                        |
@@ -1834,6 +1853,43 @@ impl_script_newtype! {
     ///| 32,000–100,000    | Direct sunlight                                |
     ///
     ///Source: [Wikipedia](https://en.wikipedia.org/wiki/Lux)
+    ///
+    ///## Shadows
+    ///
+    ///To enable shadows, set the `shadows_enabled` property to `true`.
+    ///
+    ///While directional lights contribute to the illumination of meshes regardless
+    ///of their (or the meshes') positions, currently only a limited region of the scene
+    ///(the _shadow volume_) can cast and receive shadows for any given directional light.
+    ///
+    ///The shadow volume is a _rectangular cuboid_, with left/right/bottom/top/near/far
+    ///planes controllable via the `shadow_projection` field. It is affected by the
+    ///directional light entity's [`GlobalTransform`], and as such can be freely repositioned in the
+    ///scene, (or even scaled!) without affecting illumination in any other way, by simply
+    ///moving (or scaling) the entity around. The shadow volume is always oriented towards the
+    ///light entity's forward direction.
+    ///
+    ///For smaller scenes, a static directional light with a preset volume is typically
+    ///sufficient. For larger scenes with movable cameras, you might want to introduce
+    ///a system that dynamically repositions and scales the light entity (and therefore
+    ///its shadow volume) based on the scene subject's position (e.g. a player character)
+    ///and its relative distance to the camera.
+    ///
+    ///Shadows are produced via [shadow mapping](https://en.wikipedia.org/wiki/Shadow_mapping).
+    ///To control the resolution of the shadow maps, use the [`DirectionalLightShadowMap`] resource:
+    ///
+    ///```
+    ///# use bevy_app::prelude::*;
+    ///# use bevy_pbr::DirectionalLightShadowMap;
+    ///App::new()
+    ///    .insert_resource(DirectionalLightShadowMap { size: 2048 });
+    ///```
+    ///
+    ///**Note:** Very large shadow map resolutions (> 4K) can have non-negligible performance and
+    ///memory impact, and not work properly under mobile or lower-end hardware. To improve the visual
+    ///fidelity of shadow maps, it's typically advisable to first reduce the `shadow_projection`
+    ///left/right/top/bottom to a scene-appropriate size, before ramping up the shadow map
+    ///resolution.
     bevy_pbr::DirectionalLight :
     Clone +
     Debug +
@@ -1846,6 +1902,7 @@ impl_script_newtype! {
         /// Illuminance in lux
         illuminance: Raw(f32),
         shadows_enabled: Raw(bool),
+        /// A projection that controls the volume in which shadow maps are rendered
         shadow_projection: Wrapped(OrthographicProjection),
         shadow_depth_bias: Raw(f32),
         /// A bias applied along the direction of the fragment's surface normal. It is scaled to the
@@ -1864,6 +1921,7 @@ impl_script_newtype! {
 }
 impl_script_newtype! {
     #[languages(on_feature(lua))]
+    ///Controls the resolution of [`DirectionalLight`] shadow maps.
     bevy_pbr::DirectionalLightShadowMap :
     Clone +
     Debug +
@@ -1996,7 +2054,7 @@ impl_script_newtype! {
 }
 impl_script_newtype! {
     #[languages(on_feature(lua))]
-    ///Alpha mode
+    ///Sets how a material's base color alpha channel is used for transparency.
     bevy_pbr::AlphaMode :
     Clone +
     Debug +
@@ -2085,10 +2143,10 @@ impl_script_newtype! {
 }
 impl_script_newtype! {
     #[languages(on_feature(lua))]
-    ///When used as a resource, sets the color that is used to clear the screen between frames.
+    ///A [`Resource`] that stores the color that is used to clear the screen between frames.
     ///
-    ///This color appears as the "background" color for simple apps, when
-    ///there are portions of the screen with nothing rendered.
+    ///This color appears as the "background" color for simple apps,
+    ///when there are portions of the screen with nothing rendered.
     bevy_core_pipeline::clear_color::ClearColor :
     Clone +
     Debug +
@@ -2097,7 +2155,6 @@ impl_script_newtype! {
     )
     + Fields
     (
-        0: Wrapped(Color),
     )
     + BinOps
     (
@@ -2214,7 +2271,6 @@ impl_script_newtype! {
     )
     + Fields
     (
-        0: Raw(ReflectedValue),
     )
     + BinOps
     (
@@ -2276,41 +2332,11 @@ impl_script_newtype! {
         /// An optional custom size for the sprite that will be used when rendering, instead of the size
         /// of the sprite's image
         custom_size: Raw(ReflectedValue),
+        /// An optional rectangle representing the region of the sprite's image to render, instead of
+        /// rendering the full image. This is an easy one-off alternative to using a texture atlas.
+        rect: Raw(ReflectedValue),
         /// [`Anchor`] point of the sprite in the world
         anchor: Wrapped(Anchor),
-    )
-    + BinOps
-    (
-    )
-    + UnaryOps
-    (
-    )
-    lua impl
-    {
-    }
-}
-impl_script_newtype! {
-    #[languages(on_feature(lua))]
-    ///A rectangle defined by two points. There is no defined origin, so 0,0 could be anywhere
-    ///(top-left, bottom-left, etc)
-    bevy_sprite::Rect :
-    Clone +
-    Debug +
-    Methods
-    (
-        width(&self:) -> Raw(f32),
-
-        height(&self:) -> Raw(f32),
-
-        size(&self:) -> Wrapped(Vec2),
-
-    )
-    + Fields
-    (
-        /// The beginning point of the rect
-        min: Wrapped(Vec2),
-        /// The ending point of the rect
-        max: Wrapped(Vec2),
     )
     + BinOps
     (
@@ -2380,8 +2406,8 @@ impl_script_newtype! {
     Debug +
     Methods
     (
-        ///Creates a new [`Visibility`], set as visible
-        visible() -> self,
+        ///Toggle the visibility.
+        toggle(&mut self:),
 
     )
     + Fields
@@ -2446,9 +2472,6 @@ impl_script_newtype! {
     Debug +
     Methods
     (
-        ///Creates a new [`ComputedVisibility`], set as not visible
-        not_visible() -> self,
-
         ///Whether this entity is visible to something this frame. This is true if and only if [`Self::is_visible_in_hierarchy`] and [`Self::is_visible_in_view`]
         ///are true. This is the canonical method to call to determine if an entity should be drawn.
         ///This value is updated in [`CoreStage::PostUpdate`] during the [`VisibilitySystems::CheckVisibility`] system label. Reading it from the
@@ -2563,27 +2586,95 @@ impl_script_newtype! {
     Methods
     (
         ///New `Color` from sRGB colorspace.
+        ///
+        ///# Arguments
+        ///
+        ///* `r` - Red channel. [0.0, 1.0]
+        ///* `g` - Green channel. [0.0, 1.0]
+        ///* `b` - Blue channel. [0.0, 1.0]
+        ///
+        ///See also [`Color::rgba`], [`Color::rgb_u8`], [`Color::hex`].
         rgb(Raw(f32),Raw(f32),Raw(f32)) -> Wrapped(Color),
 
         ///New `Color` from sRGB colorspace.
+        ///
+        ///# Arguments
+        ///
+        ///* `r` - Red channel. [0.0, 1.0]
+        ///* `g` - Green channel. [0.0, 1.0]
+        ///* `b` - Blue channel. [0.0, 1.0]
+        ///* `a` - Alpha channel. [0.0, 1.0]
+        ///
+        ///See also [`Color::rgb`], [`Color::rgba_u8`], [`Color::hex`].
         rgba(Raw(f32),Raw(f32),Raw(f32),Raw(f32)) -> Wrapped(Color),
 
         ///New `Color` from linear RGB colorspace.
+        ///
+        ///# Arguments
+        ///
+        ///* `r` - Red channel. [0.0, 1.0]
+        ///* `g` - Green channel. [0.0, 1.0]
+        ///* `b` - Blue channel. [0.0, 1.0]
+        ///
+        ///See also [`Color::rgb`], [`Color::rgba_linear`].
         rgb_linear(Raw(f32),Raw(f32),Raw(f32)) -> Wrapped(Color),
 
         ///New `Color` from linear RGB colorspace.
+        ///
+        ///# Arguments
+        ///
+        ///* `r` - Red channel. [0.0, 1.0]
+        ///* `g` - Green channel. [0.0, 1.0]
+        ///* `b` - Blue channel. [0.0, 1.0]
+        ///* `a` - Alpha channel. [0.0, 1.0]
+        ///
+        ///See also [`Color::rgba`], [`Color::rgb_linear`].
         rgba_linear(Raw(f32),Raw(f32),Raw(f32),Raw(f32)) -> Wrapped(Color),
 
         ///New `Color` with HSL representation in sRGB colorspace.
+        ///
+        ///# Arguments
+        ///
+        ///* `hue` - Hue channel. [0.0, 360.0]
+        ///* `saturation` - Saturation channel. [0.0, 1.0]
+        ///* `lightness` - Lightness channel. [0.0, 1.0]
+        ///
+        ///See also [`Color::hsla`].
         hsl(Raw(f32),Raw(f32),Raw(f32)) -> Wrapped(Color),
 
         ///New `Color` with HSL representation in sRGB colorspace.
+        ///
+        ///# Arguments
+        ///
+        ///* `hue` - Hue channel. [0.0, 360.0]
+        ///* `saturation` - Saturation channel. [0.0, 1.0]
+        ///* `lightness` - Lightness channel. [0.0, 1.0]
+        ///* `alpha` - Alpha channel. [0.0, 1.0]
+        ///
+        ///See also [`Color::hsl`].
         hsla(Raw(f32),Raw(f32),Raw(f32),Raw(f32)) -> Wrapped(Color),
 
         ///New `Color` from sRGB colorspace.
+        ///
+        ///# Arguments
+        ///
+        ///* `r` - Red channel. [0, 255]
+        ///* `g` - Green channel. [0, 255]
+        ///* `b` - Blue channel. [0, 255]
+        ///
+        ///See also [`Color::rgb`], [`Color::rgba_u8`], [`Color::hex`].
         rgb_u8(Raw(u8),Raw(u8),Raw(u8)) -> Wrapped(Color),
 
         ///New `Color` from sRGB colorspace.
+        ///
+        ///# Arguments
+        ///
+        ///* `r` - Red channel. [0, 255]
+        ///* `g` - Green channel. [0, 255]
+        ///* `b` - Blue channel. [0, 255]
+        ///* `a` - Alpha channel. [0, 255]
+        ///
+        ///See also [`Color::rgba`], [`Color::rgb_u8`], [`Color::hex`].
         rgba_u8(Raw(u8),Raw(u8),Raw(u8),Raw(u8)) -> Wrapped(Color),
 
         ///Get red in sRGB colorspace.
@@ -2756,6 +2847,16 @@ impl_script_newtype! {
 }
 impl_script_newtype! {
     #[languages(on_feature(lua))]
+    ///The defining component for camera entities, storing information about how and what to render
+    ///through this camera.
+    ///
+    ///The [`Camera`] component is added to an entity to define the properties of the viewpoint from
+    ///which rendering occurs. It defines the position of the view to render, the projection method
+    ///to transform the 3D objects into a 2D image, as well as the render target into which that image
+    ///is produced.
+    ///
+    ///Adding a camera is typically done by adding a bundle, either the `Camera2dBundle` or the
+    ///`Camera3dBundle`.
     bevy_render::camera::Camera :
     Clone +
     Debug +
@@ -2771,13 +2872,16 @@ impl_script_newtype! {
         viewport: Raw(ReflectedValue),
         /// Cameras with a lower priority will be rendered before cameras with a higher priority.
         priority: Raw(isize),
-        /// If this is set to true, this camera will be rendered to its specified [`RenderTarget`]. If false, this
+        /// If this is set to `true`, this camera will be rendered to its specified [`RenderTarget`]. If `false`, this
         /// camera will not be rendered.
         is_active: Raw(bool),
-        /// The method used to calculate this camera's depth. This will be used for projections and visibility.
-        depth_calculation: Wrapped(DepthCalculation),
         /// The "target" that this camera will render to.
         target: Wrapped(RenderTarget),
+        /// If this is set to `true`, the camera will use an intermediate "high dynamic range" render texture.
+        /// Warning: we are still working on this feature. If MSAA is enabled, there will be artifacts in
+        /// some cases. When rendering with WebGL, this will crash if MSAA is enabled.
+        /// See <https://github.com/bevyengine/bevy/pull/3425> for details.
+        hdr: Raw(bool),
     )
     + BinOps
     (
@@ -2858,8 +2962,6 @@ impl_script_newtype! {
 
         update(&mut self:Raw(f32),Raw(f32)),
 
-        depth_calculation(&self:) -> Wrapped(DepthCalculation),
-
         far(&self:) -> Raw(f32),
 
     )
@@ -2887,8 +2989,6 @@ impl_script_newtype! {
 
         update(&mut self:Raw(f32),Raw(f32)),
 
-        depth_calculation(&self:) -> Wrapped(DepthCalculation),
-
         far(&self:) -> Raw(f32),
 
     )
@@ -2904,8 +3004,6 @@ impl_script_newtype! {
         window_origin: Wrapped(WindowOrigin),
         scaling_mode: Wrapped(ScalingMode),
         scale: Raw(f32),
-        #[rename("_depth_calculation")]
-        depth_calculation: Wrapped(DepthCalculation),
     )
     + BinOps
     (
@@ -2919,6 +3017,7 @@ impl_script_newtype! {
 }
 impl_script_newtype! {
     #[languages(on_feature(lua))]
+    ///A 3D camera projection in which distant objects appear smaller than close objects.
     bevy_render::camera::PerspectiveProjection :
     Clone +
     Debug +
@@ -2928,39 +3027,35 @@ impl_script_newtype! {
 
         update(&mut self:Raw(f32),Raw(f32)),
 
-        depth_calculation(&self:) -> Wrapped(DepthCalculation),
-
         far(&self:) -> Raw(f32),
 
     )
     + Fields
     (
+        /// The vertical field of view (FOV) in radians.
+        ///
+        /// Defaults to a value of π/4 radians or 45 degrees.
         fov: Raw(f32),
+        /// The aspect ratio (width divided by height) of the viewing frustum.
+        ///
+        /// Bevy's [`camera_system`](crate::camera::camera_system) automatically
+        /// updates this value when the aspect ratio of the associated window changes.
+        ///
+        /// Defaults to a value of `1.0`.
         aspect_ratio: Raw(f32),
+        /// The distance from the camera in world units of the viewing frustum's near plane.
+        ///
+        /// Objects closer to the camera than this value will not be visible.
+        ///
+        /// Defaults to a value of `0.1`.
         near: Raw(f32),
+        /// The distance from the camera in world units of the viewing frustum's far plane.
+        ///
+        /// Objects farther from the camera than this value will not be visible.
+        ///
+        /// Defaults to a value of `1000.0`.
         #[rename("_far")]
         far: Raw(f32),
-    )
-    + BinOps
-    (
-    )
-    + UnaryOps
-    (
-    )
-    lua impl
-    {
-    }
-}
-impl_script_newtype! {
-    #[languages(on_feature(lua))]
-    bevy_render::camera::DepthCalculation :
-    Clone +
-    Debug +
-    Methods
-    (
-    )
-    + Fields
-    (
     )
     + BinOps
     (
@@ -3113,6 +3208,9 @@ impl_script_newtype! {
         ///Computes the dot product of `self` and `rhs`.
         dot(self:self) -> Raw(f32),
 
+        ///Returns a vector where every component is the dot product of `self` and `rhs`.
+        dot_into_vec(self:self) -> self,
+
         ///Returns a vector containing the minimum values for each element of `self` and `rhs`.
         ///
         ///In other words this computes `[self.x.min(rhs.x), self.y.min(rhs.y), ..]`.
@@ -3193,6 +3291,12 @@ impl_script_newtype! {
         ///- `-1.0` if the number is negative, `-0.0` or `NEG_INFINITY`
         ///- `NAN` if the number is `NAN`
         signum(self:) -> self,
+
+        ///Returns a bitmask with the lowest 2 bits set to the sign bits from the elements of `self`.
+        ///
+        ///A negative element results in a `1` bit and a positive element in a `0` bit.  Element `x` goes
+        ///into the first lowest bit, element `y` into the second, etc.
+        is_negative_bitmask(self:) -> Raw(u32),
 
         ///Returns `true` if, and only if, all elements are finite.  If any element is either
         ///`NaN`, positive or negative infinity, this will return `false`.
@@ -3456,6 +3560,9 @@ impl_script_newtype! {
         ///Computes the dot product of `self` and `rhs`.
         dot(self:self) -> Raw(f32),
 
+        ///Returns a vector where every component is the dot product of `self` and `rhs`.
+        dot_into_vec(self:self) -> self,
+
         ///Computes the cross product of `self` and `rhs`.
         cross(self:self) -> self,
 
@@ -3539,6 +3646,12 @@ impl_script_newtype! {
         ///- `-1.0` if the number is negative, `-0.0` or `NEG_INFINITY`
         ///- `NAN` if the number is `NAN`
         signum(self:) -> self,
+
+        ///Returns a bitmask with the lowest 3 bits set to the sign bits from the elements of `self`.
+        ///
+        ///A negative element results in a `1` bit and a positive element in a `0` bit.  Element `x` goes
+        ///into the first lowest bit, element `y` into the second, etc.
+        is_negative_bitmask(self:) -> Raw(u32),
 
         ///Returns `true` if, and only if, all elements are finite.  If any element is either
         ///`NaN`, positive or negative infinity, this will return `false`.
@@ -3807,6 +3920,9 @@ impl_script_newtype! {
         ///Computes the dot product of `self` and `rhs`.
         dot(self:self) -> Raw(f32),
 
+        ///Returns a vector where every component is the dot product of `self` and `rhs`.
+        dot_into_vec(self:self) -> self,
+
         ///Computes the cross product of `self` and `rhs`.
         cross(self:self) -> self,
 
@@ -3890,6 +4006,12 @@ impl_script_newtype! {
         ///- `-1.0` if the number is negative, `-0.0` or `NEG_INFINITY`
         ///- `NAN` if the number is `NAN`
         signum(self:) -> self,
+
+        ///Returns a bitmask with the lowest 3 bits set to the sign bits from the elements of `self`.
+        ///
+        ///A negative element results in a `1` bit and a positive element in a `0` bit.  Element `x` goes
+        ///into the first lowest bit, element `y` into the second, etc.
+        is_negative_bitmask(self:) -> Raw(u32),
 
         ///Returns `true` if, and only if, all elements are finite.  If any element is either
         ///`NaN`, positive or negative infinity, this will return `false`.
@@ -4151,6 +4273,9 @@ impl_script_newtype! {
         ///Computes the dot product of `self` and `rhs`.
         dot(self:self) -> Raw(f32),
 
+        ///Returns a vector where every component is the dot product of `self` and `rhs`.
+        dot_into_vec(self:self) -> self,
+
         ///Returns a vector containing the minimum values for each element of `self` and `rhs`.
         ///
         ///In other words this computes `[self.x.min(rhs.x), self.y.min(rhs.y), ..]`.
@@ -4231,6 +4356,12 @@ impl_script_newtype! {
         ///- `-1.0` if the number is negative, `-0.0` or `NEG_INFINITY`
         ///- `NAN` if the number is `NAN`
         signum(self:) -> self,
+
+        ///Returns a bitmask with the lowest 4 bits set to the sign bits from the elements of `self`.
+        ///
+        ///A negative element results in a `1` bit and a positive element in a `0` bit.  Element `x` goes
+        ///into the first lowest bit, element `y` into the second, etc.
+        is_negative_bitmask(self:) -> Raw(u32),
 
         ///Returns `true` if, and only if, all elements are finite.  If any element is either
         ///`NaN`, positive or negative infinity, this will return `false`.
@@ -4440,7 +4571,7 @@ impl_script_newtype! {
 }
 impl_script_newtype! {
     #[languages(on_feature(lua))]
-    ///A 2-dimensional boolean vector.
+    ///A 2-dimensional `bool` vector mask.
     glam::bool::BVec2 :
     Clone +
     Debug +
@@ -4449,7 +4580,10 @@ impl_script_newtype! {
         ///Creates a new vector mask.
         new(Raw(bool),Raw(bool)) -> self,
 
-        ///Returns a bitmask with the lowest two bits set from the elements of `self`.
+        ///Creates a vector with all elements set to `v`.
+        splat(Raw(bool)) -> self,
+
+        ///Returns a bitmask with the lowest 2 bits set from the elements of `self`.
         ///
         ///A true element results in a `1` bit and a false element in a `0` bit.  Element `x` goes
         ///into the first lowest bit, element `y` into the second, etc.
@@ -4479,7 +4613,7 @@ impl_script_newtype! {
 }
 impl_script_newtype! {
     #[languages(on_feature(lua))]
-    ///A 3-dimensional boolean vector.
+    ///A 3-dimensional `bool` vector mask.
     glam::bool::BVec3 :
     Clone +
     Debug +
@@ -4488,7 +4622,10 @@ impl_script_newtype! {
         ///Creates a new vector mask.
         new(Raw(bool),Raw(bool),Raw(bool)) -> self,
 
-        ///Returns a bitmask with the lowest two bits set from the elements of `self`.
+        ///Creates a vector with all elements set to `v`.
+        splat(Raw(bool)) -> self,
+
+        ///Returns a bitmask with the lowest 3 bits set from the elements of `self`.
         ///
         ///A true element results in a `1` bit and a false element in a `0` bit.  Element `x` goes
         ///into the first lowest bit, element `y` into the second, etc.
@@ -4519,7 +4656,7 @@ impl_script_newtype! {
 }
 impl_script_newtype! {
     #[languages(on_feature(lua))]
-    ///A 4-dimensional boolean vector.
+    ///A 4-dimensional `bool` vector mask.
     glam::bool::BVec4 :
     Clone +
     Debug +
@@ -4528,7 +4665,10 @@ impl_script_newtype! {
         ///Creates a new vector mask.
         new(Raw(bool),Raw(bool),Raw(bool),Raw(bool)) -> self,
 
-        ///Returns a bitmask with the lowest two bits set from the elements of `self`.
+        ///Creates a vector with all elements set to `v`.
+        splat(Raw(bool)) -> self,
+
+        ///Returns a bitmask with the lowest 4 bits set from the elements of `self`.
         ///
         ///A true element results in a `1` bit and a false element in a `0` bit.  Element `x` goes
         ///into the first lowest bit, element `y` into the second, etc.
@@ -4572,7 +4712,10 @@ impl_script_newtype! {
         ///Creates a new vector mask.
         new(Raw(bool),Raw(bool),Raw(bool)) -> self,
 
-        ///Returns a bitmask with the lowest two bits set from the elements of `self`.
+        ///Creates a vector with all elements set to `v`.
+        splat(Raw(bool)) -> self,
+
+        ///Returns a bitmask with the lowest 3 bits set from the elements of `self`.
         ///
         ///A true element results in a `1` bit and a false element in a `0` bit.  Element `x` goes
         ///into the first lowest bit, element `y` into the second, etc.
@@ -4612,7 +4755,10 @@ impl_script_newtype! {
         ///Creates a new vector mask.
         new(Raw(bool),Raw(bool),Raw(bool),Raw(bool)) -> self,
 
-        ///Returns a bitmask with the lowest two bits set from the elements of `self`.
+        ///Creates a vector with all elements set to `v`.
+        splat(Raw(bool)) -> self,
+
+        ///Returns a bitmask with the lowest 4 bits set from the elements of `self`.
         ///
         ///A true element results in a `1` bit and a false element in a `0` bit.  Element `x` goes
         ///into the first lowest bit, element `y` into the second, etc.
@@ -4664,6 +4810,9 @@ impl_script_newtype! {
 
         ///Computes the dot product of `self` and `rhs`.
         dot(self:self) -> Raw(f64),
+
+        ///Returns a vector where every component is the dot product of `self` and `rhs`.
+        dot_into_vec(self:self) -> self,
 
         ///Returns a vector containing the minimum values for each element of `self` and `rhs`.
         ///
@@ -4745,6 +4894,12 @@ impl_script_newtype! {
         ///- `-1.0` if the number is negative, `-0.0` or `NEG_INFINITY`
         ///- `NAN` if the number is `NAN`
         signum(self:) -> self,
+
+        ///Returns a bitmask with the lowest 2 bits set to the sign bits from the elements of `self`.
+        ///
+        ///A negative element results in a `1` bit and a positive element in a `0` bit.  Element `x` goes
+        ///into the first lowest bit, element `y` into the second, etc.
+        is_negative_bitmask(self:) -> Raw(u32),
 
         ///Returns `true` if, and only if, all elements are finite.  If any element is either
         ///`NaN`, positive or negative infinity, this will return `false`.
@@ -5008,6 +5163,9 @@ impl_script_newtype! {
         ///Computes the dot product of `self` and `rhs`.
         dot(self:self) -> Raw(f64),
 
+        ///Returns a vector where every component is the dot product of `self` and `rhs`.
+        dot_into_vec(self:self) -> self,
+
         ///Computes the cross product of `self` and `rhs`.
         cross(self:self) -> self,
 
@@ -5091,6 +5249,12 @@ impl_script_newtype! {
         ///- `-1.0` if the number is negative, `-0.0` or `NEG_INFINITY`
         ///- `NAN` if the number is `NAN`
         signum(self:) -> self,
+
+        ///Returns a bitmask with the lowest 3 bits set to the sign bits from the elements of `self`.
+        ///
+        ///A negative element results in a `1` bit and a positive element in a `0` bit.  Element `x` goes
+        ///into the first lowest bit, element `y` into the second, etc.
+        is_negative_bitmask(self:) -> Raw(u32),
 
         ///Returns `true` if, and only if, all elements are finite.  If any element is either
         ///`NaN`, positive or negative infinity, this will return `false`.
@@ -5354,6 +5518,9 @@ impl_script_newtype! {
         ///Computes the dot product of `self` and `rhs`.
         dot(self:self) -> Raw(f64),
 
+        ///Returns a vector where every component is the dot product of `self` and `rhs`.
+        dot_into_vec(self:self) -> self,
+
         ///Returns a vector containing the minimum values for each element of `self` and `rhs`.
         ///
         ///In other words this computes `[self.x.min(rhs.x), self.y.min(rhs.y), ..]`.
@@ -5434,6 +5601,12 @@ impl_script_newtype! {
         ///- `-1.0` if the number is negative, `-0.0` or `NEG_INFINITY`
         ///- `NAN` if the number is `NAN`
         signum(self:) -> self,
+
+        ///Returns a bitmask with the lowest 4 bits set to the sign bits from the elements of `self`.
+        ///
+        ///A negative element results in a `1` bit and a positive element in a `0` bit.  Element `x` goes
+        ///into the first lowest bit, element `y` into the second, etc.
+        is_negative_bitmask(self:) -> Raw(u32),
 
         ///Returns `true` if, and only if, all elements are finite.  If any element is either
         ///`NaN`, positive or negative infinity, this will return `false`.
@@ -5672,6 +5845,9 @@ impl_script_newtype! {
         ///Computes the dot product of `self` and `rhs`.
         dot(self:self) -> Raw(i32),
 
+        ///Returns a vector where every component is the dot product of `self` and `rhs`.
+        dot_into_vec(self:self) -> self,
+
         ///Returns a vector containing the minimum values for each element of `self` and `rhs`.
         ///
         ///In other words this computes `[self.x.min(rhs.x), self.y.min(rhs.y), ..]`.
@@ -5752,6 +5928,12 @@ impl_script_newtype! {
         ///- `-1.0` if the number is negative, `-0.0` or `NEG_INFINITY`
         ///- `NAN` if the number is `NAN`
         signum(self:) -> self,
+
+        ///Returns a bitmask with the lowest 2 bits set to the sign bits from the elements of `self`.
+        ///
+        ///A negative element results in a `1` bit and a positive element in a `0` bit.  Element `x` goes
+        ///into the first lowest bit, element `y` into the second, etc.
+        is_negative_bitmask(self:) -> Raw(u32),
 
         ///Returns a vector that is equal to `self` rotated by 90 degrees.
         perp(self:) -> self,
@@ -5840,6 +6022,9 @@ impl_script_newtype! {
         ///Computes the dot product of `self` and `rhs`.
         dot(self:self) -> Raw(i32),
 
+        ///Returns a vector where every component is the dot product of `self` and `rhs`.
+        dot_into_vec(self:self) -> self,
+
         ///Computes the cross product of `self` and `rhs`.
         cross(self:self) -> self,
 
@@ -5924,6 +6109,12 @@ impl_script_newtype! {
         ///- `NAN` if the number is `NAN`
         signum(self:) -> self,
 
+        ///Returns a bitmask with the lowest 3 bits set to the sign bits from the elements of `self`.
+        ///
+        ///A negative element results in a `1` bit and a positive element in a `0` bit.  Element `x` goes
+        ///into the first lowest bit, element `y` into the second, etc.
+        is_negative_bitmask(self:) -> Raw(u32),
+
         ///Casts all elements of `self` to `f32`.
         as_vec3(&self:) -> Wrapped(Vec3),
 
@@ -5999,6 +6190,9 @@ impl_script_newtype! {
 
         ///Computes the dot product of `self` and `rhs`.
         dot(self:self) -> Raw(i32),
+
+        ///Returns a vector where every component is the dot product of `self` and `rhs`.
+        dot_into_vec(self:self) -> self,
 
         ///Returns a vector containing the minimum values for each element of `self` and `rhs`.
         ///
@@ -6081,6 +6275,12 @@ impl_script_newtype! {
         ///- `NAN` if the number is `NAN`
         signum(self:) -> self,
 
+        ///Returns a bitmask with the lowest 4 bits set to the sign bits from the elements of `self`.
+        ///
+        ///A negative element results in a `1` bit and a positive element in a `0` bit.  Element `x` goes
+        ///into the first lowest bit, element `y` into the second, etc.
+        is_negative_bitmask(self:) -> Raw(u32),
+
         ///Casts all elements of `self` to `f32`.
         as_vec4(&self:) -> Wrapped(Vec4),
 
@@ -6152,6 +6352,9 @@ impl_script_newtype! {
 
         ///Computes the dot product of `self` and `rhs`.
         dot(self:self) -> Raw(u32),
+
+        ///Returns a vector where every component is the dot product of `self` and `rhs`.
+        dot_into_vec(self:self) -> self,
 
         ///Returns a vector containing the minimum values for each element of `self` and `rhs`.
         ///
@@ -6297,6 +6500,9 @@ impl_script_newtype! {
 
         ///Computes the dot product of `self` and `rhs`.
         dot(self:self) -> Raw(u32),
+
+        ///Returns a vector where every component is the dot product of `self` and `rhs`.
+        dot_into_vec(self:self) -> self,
 
         ///Computes the cross product of `self` and `rhs`.
         cross(self:self) -> self,
@@ -6446,6 +6652,9 @@ impl_script_newtype! {
 
         ///Computes the dot product of `self` and `rhs`.
         dot(self:self) -> Raw(u32),
+
+        ///Returns a vector where every component is the dot product of `self` and `rhs`.
+        dot_into_vec(self:self) -> self,
 
         ///Returns a vector containing the minimum values for each element of `self` and `rhs`.
         ///
@@ -6828,6 +7037,9 @@ impl_script_newtype! {
 
         ///Creates a 2x2 matrix from a 3x3 matrix, discarding the 2nd row and column.
         from_mat3(Wrapped(Mat3)) -> self,
+
+        ///Creates a 2x2 matrix from a 3x3 matrix, discarding the 2nd row and column.
+        from_mat3a(Wrapped(Mat3A)) -> self,
 
         ///Returns the matrix column for the given `index`.
         ///
@@ -7261,6 +7473,13 @@ impl_script_newtype! {
         ///[`Self::transform_point3()`] and [`Self::transform_vector3()`].
         from_mat3(Wrapped(Mat3)) -> self,
 
+        ///Creates an affine transformation matrix from the given 3x3 linear transformation
+        ///matrix.
+        ///
+        ///The resulting matrix can be used to transform 3D points and vectors. See
+        ///[`Self::transform_point3()`] and [`Self::transform_vector3()`].
+        from_mat3a(Wrapped(Mat3A)) -> self,
+
         ///Creates an affine transformation matrix from the given 3D `translation`.
         ///
         ///The resulting matrix can be used to transform 3D points and vectors. See
@@ -7351,6 +7570,18 @@ impl_script_newtype! {
         ///
         ///Will panic if the determinant of `self` is zero when `glam_assert` is enabled.
         inverse(&self:) -> self,
+
+        ///Creates a left-handed view matrix using a camera position, an up direction, and a facing
+        ///direction.
+        ///
+        ///For a view coordinate system with `+X=right`, `+Y=up` and `+Z=forward`.
+        look_to_lh(Wrapped(Vec3),Wrapped(Vec3),Wrapped(Vec3)) -> self,
+
+        ///Creates a right-handed view matrix using a camera position, an up direction, and a facing
+        ///direction.
+        ///
+        ///For a view coordinate system with `+X=right`, `+Y=up` and `+Z=back`.
+        look_to_rh(Wrapped(Vec3),Wrapped(Vec3),Wrapped(Vec3)) -> self,
 
         ///Creates a left-handed view matrix using a camera position, an up direction, and a focal
         ///point.
@@ -8092,6 +8323,18 @@ impl_script_newtype! {
         ///Will panic if the determinant of `self` is zero when `glam_assert` is enabled.
         inverse(&self:) -> self,
 
+        ///Creates a left-handed view matrix using a camera position, an up direction, and a facing
+        ///direction.
+        ///
+        ///For a view coordinate system with `+X=right`, `+Y=up` and `+Z=forward`.
+        look_to_lh(Wrapped(DVec3),Wrapped(DVec3),Wrapped(DVec3)) -> self,
+
+        ///Creates a right-handed view matrix using a camera position, an up direction, and a facing
+        ///direction.
+        ///
+        ///For a view coordinate system with `+X=right`, `+Y=up` and `+Z=back`.
+        look_to_rh(Wrapped(DVec3),Wrapped(DVec3),Wrapped(DVec3)) -> self,
+
         ///Creates a left-handed view matrix using a camera position, an up direction, and a focal
         ///point.
         ///For a view coordinate system with `+X=right`, `+Y=up` and `+Z=forward`.
@@ -8324,6 +8567,9 @@ impl_script_newtype! {
         ///The given `Mat3` must be an affine transform,
         from_mat3(Wrapped(Mat3)) -> self,
 
+        ///The given `Mat3A` must be an affine transform,
+        from_mat3a(Wrapped(Mat3A)) -> self,
+
         ///Transforms the given 2D point, applying shear, scale, rotation and translation.
         transform_point2(&self:Wrapped(Vec2)) -> Wrapped(Vec2),
 
@@ -8366,11 +8612,7 @@ impl_script_newtype! {
     )
     + BinOps
     (
-        self Add self -> Wrapped(Affine2),
-        self Sub self -> Wrapped(Affine2),
         self Mul Wrapped(Affine2) -> Wrapped(Affine2),
-        self Mul Wrapped(Affine2) -> Wrapped(Affine2),
-        self Mul Raw(f32) -> Wrapped(Affine2),
         self Mul Wrapped(Mat3) -> Wrapped(Mat3),
         self Mul Wrapped(Mat3A) -> Wrapped(Mat3A),
     )
@@ -8444,9 +8686,20 @@ impl_script_newtype! {
         ///i.e. contain no perspective transform.
         from_mat4(Wrapped(Mat4)) -> self,
 
-        ///Creates a left-handed view transform using a camera position, an up direction, and
-        ///a focal point.
+        ///Creates a left-handed view transform using a camera position, an up direction, and a facing
+        ///direction.
         ///
+        ///For a view coordinate system with `+X=right`, `+Y=up` and `+Z=forward`.
+        look_to_lh(Wrapped(Vec3),Wrapped(Vec3),Wrapped(Vec3)) -> self,
+
+        ///Creates a right-handed view transform using a camera position, an up direction, and a facing
+        ///direction.
+        ///
+        ///For a view coordinate system with `+X=right`, `+Y=up` and `+Z=back`.
+        look_to_rh(Wrapped(Vec3),Wrapped(Vec3),Wrapped(Vec3)) -> self,
+
+        ///Creates a left-handed view transform using a camera position, an up direction, and a focal
+        ///point.
         ///For a view coordinate system with `+X=right`, `+Y=up` and `+Z=forward`.
         ///
         ///# Panics
@@ -8454,9 +8707,8 @@ impl_script_newtype! {
         ///Will panic if `up` is not normalized when `glam_assert` is enabled.
         look_at_lh(Wrapped(Vec3),Wrapped(Vec3),Wrapped(Vec3)) -> self,
 
-        ///Creates a right-handed view transform using a camera position, an up direction, and
-        ///a focal point.
-        ///
+        ///Creates a right-handed view transform using a camera position, an up direction, and a focal
+        ///point.
         ///For a view coordinate system with `+X=right`, `+Y=up` and `+Z=back`.
         ///
         ///# Panics
@@ -8515,11 +8767,7 @@ impl_script_newtype! {
     )
     + BinOps
     (
-        self Add self -> Wrapped(Affine3A),
-        self Sub self -> Wrapped(Affine3A),
         self Mul Wrapped(Affine3A) -> Wrapped(Affine3A),
-        self Mul Wrapped(Affine3A) -> Wrapped(Affine3A),
-        self Mul Raw(f32) -> Wrapped(Affine3A),
         self Mul Wrapped(Mat4) -> Wrapped(Mat4),
     )
     + UnaryOps
@@ -8618,11 +8866,7 @@ impl_script_newtype! {
     )
     + BinOps
     (
-        self Add self -> Wrapped(DAffine2),
-        self Sub self -> Wrapped(DAffine2),
         self Mul Wrapped(DAffine2) -> Wrapped(DAffine2),
-        self Mul Wrapped(DAffine2) -> Wrapped(DAffine2),
-        self Mul Raw(f64) -> Wrapped(DAffine2),
         self Mul Wrapped(DMat3) -> Wrapped(DMat3),
     )
     + UnaryOps
@@ -8695,9 +8939,20 @@ impl_script_newtype! {
         ///i.e. contain no perspective transform.
         from_mat4(Wrapped(DMat4)) -> self,
 
-        ///Creates a left-handed view transform using a camera position, an up direction, and
-        ///a focal point.
+        ///Creates a left-handed view transform using a camera position, an up direction, and a facing
+        ///direction.
         ///
+        ///For a view coordinate system with `+X=right`, `+Y=up` and `+Z=forward`.
+        look_to_lh(Wrapped(DVec3),Wrapped(DVec3),Wrapped(DVec3)) -> self,
+
+        ///Creates a right-handed view transform using a camera position, an up direction, and a facing
+        ///direction.
+        ///
+        ///For a view coordinate system with `+X=right`, `+Y=up` and `+Z=back`.
+        look_to_rh(Wrapped(DVec3),Wrapped(DVec3),Wrapped(DVec3)) -> self,
+
+        ///Creates a left-handed view transform using a camera position, an up direction, and a focal
+        ///point.
         ///For a view coordinate system with `+X=right`, `+Y=up` and `+Z=forward`.
         ///
         ///# Panics
@@ -8705,9 +8960,8 @@ impl_script_newtype! {
         ///Will panic if `up` is not normalized when `glam_assert` is enabled.
         look_at_lh(Wrapped(DVec3),Wrapped(DVec3),Wrapped(DVec3)) -> self,
 
-        ///Creates a right-handed view transform using a camera position, an up direction, and
-        ///a focal point.
-        ///
+        ///Creates a right-handed view transform using a camera position, an up direction, and a focal
+        ///point.
         ///For a view coordinate system with `+X=right`, `+Y=up` and `+Z=back`.
         ///
         ///# Panics
@@ -8757,11 +9011,7 @@ impl_script_newtype! {
     )
     + BinOps
     (
-        self Add self -> Wrapped(DAffine3),
-        self Sub self -> Wrapped(DAffine3),
         self Mul Wrapped(DAffine3) -> Wrapped(DAffine3),
-        self Mul Wrapped(DAffine3) -> Wrapped(DAffine3),
-        self Mul Raw(f64) -> Wrapped(DAffine3),
         self Mul Wrapped(DMat4) -> Wrapped(DMat4),
     )
     + UnaryOps
@@ -8833,6 +9083,9 @@ impl_script_newtype! {
 
         ///Creates a quaternion from a 3x3 rotation matrix.
         from_mat3(Wrapped(&Mat3)) -> self,
+
+        ///Creates a quaternion from a 3x3 SIMD aligned rotation matrix.
+        from_mat3a(Wrapped(&Mat3A)) -> self,
 
         ///Creates a quaternion from a 3x3 rotation matrix inside a homogeneous 4x4 matrix.
         from_mat4(Wrapped(&Mat4)) -> self,
@@ -9301,8 +9554,6 @@ impl_script_newtype! {
     ///E.g. XYZ will first apply the z-axis rotation.
     ///
     ///YXZ can be used for yaw (y-axis), pitch (x-axis), roll (z-axis).
-    ///
-    ///The two-axis rotations (e.g. ZYZ) are not fully tested and have to be treated with caution.
     glam::EulerRot :
     Clone +
     Debug +
@@ -9311,6 +9562,247 @@ impl_script_newtype! {
     )
     + Fields
     (
+    )
+    + BinOps
+    (
+    )
+    + UnaryOps
+    (
+    )
+    lua impl
+    {
+    }
+}
+impl_script_newtype! {
+    #[languages(on_feature(lua))]
+    ///A rectangle defined by two opposite corners.
+    ///
+    ///The rectangle is axis aligned, and defined by its minimum and maximum coordinates,
+    ///stored in `Rect::min` and `Rect::max`, respectively. The minimum/maximum invariant
+    ///must be upheld by the user when directly assigning the fields, otherwise some methods
+    ///produce invalid results. It is generally recommended to use one of the constructor
+    ///methods instead, which will ensure this invariant is met, unless you already have
+    ///the minimum and maximum corners.
+    bevy_math::Rect :
+    Clone +
+    Debug +
+    Methods
+    (
+        ///Create a new rectangle from two corner points.
+        ///
+        ///The two points do not need to be the minimum and/or maximum corners.
+        ///They only need to be two opposite corners.
+        ///
+        ///# Examples
+        ///
+        ///```rust
+        ///# use bevy_math::Rect;
+        ///let r = Rect::new(0., 4., 10., 6.); // w=10 h=2
+        ///let r = Rect::new(2., 3., 5., -1.); // w=3 h=4
+        ///```
+        new(Raw(f32),Raw(f32),Raw(f32),Raw(f32)) -> self,
+
+        ///Create a new rectangle from two corner points.
+        ///
+        ///The two points do not need to be the minimum and/or maximum corners.
+        ///They only need to be two opposite corners.
+        ///
+        ///# Examples
+        ///
+        ///```rust
+        ///# use bevy_math::{Rect, Vec2};
+        ///// Unit rect from [0,0] to [1,1]
+        ///let r = Rect::from_corners(Vec2::ZERO, Vec2::ONE); // w=1 h=1
+        ///// Same; the points do not need to be ordered
+        ///let r = Rect::from_corners(Vec2::ONE, Vec2::ZERO); // w=1 h=1
+        ///```
+        from_corners(Wrapped(Vec2),Wrapped(Vec2)) -> self,
+
+        ///Create a new rectangle from its center and size.
+        ///
+        ///# Panics
+        ///
+        ///This method panics if any of the components of the size is negative.
+        ///
+        ///# Examples
+        ///
+        ///```rust
+        ///# use bevy_math::{Rect, Vec2};
+        ///let r = Rect::from_center_size(Vec2::ZERO, Vec2::ONE); // w=1 h=1
+        ///assert!(r.min.abs_diff_eq(Vec2::splat(-0.5), 1e-5));
+        ///assert!(r.max.abs_diff_eq(Vec2::splat(0.5), 1e-5));
+        ///```
+        from_center_size(Wrapped(Vec2),Wrapped(Vec2)) -> self,
+
+        ///Create a new rectangle from its center and half-size.
+        ///
+        ///# Panics
+        ///
+        ///This method panics if any of the components of the half-size is negative.
+        ///
+        ///# Examples
+        ///
+        ///```rust
+        ///# use bevy_math::{Rect, Vec2};
+        ///let r = Rect::from_center_half_size(Vec2::ZERO, Vec2::ONE); // w=2 h=2
+        ///assert!(r.min.abs_diff_eq(Vec2::splat(-1.), 1e-5));
+        ///assert!(r.max.abs_diff_eq(Vec2::splat(1.), 1e-5));
+        ///```
+        from_center_half_size(Wrapped(Vec2),Wrapped(Vec2)) -> self,
+
+        ///Check if the rectangle is empty.
+        ///
+        ///# Examples
+        ///
+        ///```rust
+        ///# use bevy_math::{Rect, Vec2};
+        ///let r = Rect::from_corners(Vec2::ZERO, Vec2::new(0., 1.)); // w=0 h=1
+        ///assert!(r.is_empty());
+        ///```
+        is_empty(&self:) -> Raw(bool),
+
+        ///Rectangle width (max.x - min.x).
+        ///
+        ///# Examples
+        ///
+        ///```rust
+        ///# use bevy_math::Rect;
+        ///let r = Rect::new(0., 0., 5., 1.); // w=5 h=1
+        ///assert!((r.width() - 5.).abs() <= 1e-5);
+        ///```
+        width(&self:) -> Raw(f32),
+
+        ///Rectangle height (max.y - min.y).
+        ///
+        ///# Examples
+        ///
+        ///```rust
+        ///# use bevy_math::Rect;
+        ///let r = Rect::new(0., 0., 5., 1.); // w=5 h=1
+        ///assert!((r.height() - 1.).abs() <= 1e-5);
+        ///```
+        height(&self:) -> Raw(f32),
+
+        ///Rectangle size.
+        ///
+        ///# Examples
+        ///
+        ///```rust
+        ///# use bevy_math::{Rect, Vec2};
+        ///let r = Rect::new(0., 0., 5., 1.); // w=5 h=1
+        ///assert!(r.size().abs_diff_eq(Vec2::new(5., 1.), 1e-5));
+        ///```
+        size(&self:) -> Wrapped(Vec2),
+
+        ///Rectangle half-size.
+        ///
+        ///# Examples
+        ///
+        ///```rust
+        ///# use bevy_math::{Rect, Vec2};
+        ///let r = Rect::new(0., 0., 5., 1.); // w=5 h=1
+        ///assert!(r.half_size().abs_diff_eq(Vec2::new(2.5, 0.5), 1e-5));
+        ///```
+        half_size(&self:) -> Wrapped(Vec2),
+
+        ///The center point of the rectangle.
+        ///
+        ///# Examples
+        ///
+        ///```rust
+        ///# use bevy_math::{Rect, Vec2};
+        ///let r = Rect::new(0., 0., 5., 1.); // w=5 h=1
+        ///assert!(r.center().abs_diff_eq(Vec2::new(2.5, 0.5), 1e-5));
+        ///```
+        center(&self:) -> Wrapped(Vec2),
+
+        ///Check if a point lies within this rectangle, inclusive of its edges.
+        ///
+        ///# Examples
+        ///
+        ///```rust
+        ///# use bevy_math::Rect;
+        ///let r = Rect::new(0., 0., 5., 1.); // w=5 h=1
+        ///assert!(r.contains(r.center()));
+        ///assert!(r.contains(r.min));
+        ///assert!(r.contains(r.max));
+        ///```
+        contains(&self:Wrapped(Vec2)) -> Raw(bool),
+
+        ///Build a new rectangle formed of the union of this rectangle and another rectangle.
+        ///
+        ///The union is the smallest rectangle enclosing both rectangles.
+        ///
+        ///# Examples
+        ///
+        ///```rust
+        ///# use bevy_math::{Rect, Vec2};
+        ///let r1 = Rect::new(0., 0., 5., 1.); // w=5 h=1
+        ///let r2 = Rect::new(1., -1., 3., 3.); // w=2 h=4
+        ///let r = r1.union(r2);
+        ///assert!(r.min.abs_diff_eq(Vec2::new(0., -1.), 1e-5));
+        ///assert!(r.max.abs_diff_eq(Vec2::new(5., 3.), 1e-5));
+        ///```
+        union(&self:Wrapped(Rect)) -> Wrapped(Rect),
+
+        ///Build a new rectangle formed of the union of this rectangle and a point.
+        ///
+        ///The union is the smallest rectangle enclosing both the rectangle and the point. If the
+        ///point is already inside the rectangle, this method returns a copy of the rectangle.
+        ///
+        ///# Examples
+        ///
+        ///```rust
+        ///# use bevy_math::{Rect, Vec2};
+        ///let r = Rect::new(0., 0., 5., 1.); // w=5 h=1
+        ///let u = r.union_point(Vec2::new(3., 6.));
+        ///assert!(u.min.abs_diff_eq(Vec2::ZERO, 1e-5));
+        ///assert!(u.max.abs_diff_eq(Vec2::new(5., 6.), 1e-5));
+        ///```
+        union_point(&self:Wrapped(Vec2)) -> Wrapped(Rect),
+
+        ///Build a new rectangle formed of the intersection of this rectangle and another rectangle.
+        ///
+        ///The intersection is the largest rectangle enclosed in both rectangles. If the intersection
+        ///is empty, this method returns an empty rectangle ([`Rect::is_empty()`] returns `true`), but
+        ///the actual values of [`Rect::min`] and [`Rect::max`] are implementation-dependent.
+        ///
+        ///# Examples
+        ///
+        ///```rust
+        ///# use bevy_math::{Rect, Vec2};
+        ///let r1 = Rect::new(0., 0., 5., 1.); // w=5 h=1
+        ///let r2 = Rect::new(1., -1., 3., 3.); // w=2 h=4
+        ///let r = r1.intersect(r2);
+        ///assert!(r.min.abs_diff_eq(Vec2::new(1., 0.), 1e-5));
+        ///assert!(r.max.abs_diff_eq(Vec2::new(3., 1.), 1e-5));
+        ///```
+        intersect(&self:Wrapped(Rect)) -> Wrapped(Rect),
+
+        ///Create a new rectangle with a constant inset.
+        ///
+        ///The inset is the extra border on all sides. A positive inset produces a larger rectangle,
+        ///while a negative inset is allowed and produces a smaller rectangle. If the inset is negative
+        ///and its absolute value is larger than the rectangle half-size, the created rectangle is empty.
+        ///
+        ///# Examples
+        ///
+        ///```rust
+        ///# use bevy_math::{Rect, Vec2};
+        ///let r = Rect::new(0., 0., 5., 1.); // w=5 h=1
+        ///let r2 = r.inset(3.); // w=11 h=7
+        ///assert!(r2.min.abs_diff_eq(Vec2::splat(-3.), 1e-5));
+        ///assert!(r2.max.abs_diff_eq(Vec2::new(8., 4.), 1e-5));
+        ///```
+        inset(&self:Raw(f32)) -> Wrapped(Rect),
+
+    )
+    + Fields
+    (
+        /// The minimum corner point of the rect.
+        min: Wrapped(Vec2),
+        /// The maximum corner point of the rect.
+        max: Wrapped(Vec2),
     )
     + BinOps
     (
@@ -9338,10 +9830,6 @@ impl bevy_mod_scripting_lua::tealr::mlu::ExportInstances for BevyAPIGlobals {
             bevy_mod_scripting_lua::tealr::mlu::UserDataProxy::<LuaName>::new,
         )?;
         instances.add_instance(
-            "Children",
-            bevy_mod_scripting_lua::tealr::mlu::UserDataProxy::<LuaChildren>::new,
-        )?;
-        instances.add_instance(
             "Text",
             bevy_mod_scripting_lua::tealr::mlu::UserDataProxy::<LuaText>::new,
         )?;
@@ -9366,24 +9854,12 @@ impl bevy_mod_scripting_lua::tealr::mlu::ExportInstances for BevyAPIGlobals {
             bevy_mod_scripting_lua::tealr::mlu::UserDataProxy::<LuaTransform>::new,
         )?;
         instances.add_instance(
-            "GlobalTransform",
-            bevy_mod_scripting_lua::tealr::mlu::UserDataProxy::<LuaGlobalTransform>::new,
-        )?;
-        instances.add_instance(
             "TextureAtlasSprite",
             bevy_mod_scripting_lua::tealr::mlu::UserDataProxy::<LuaTextureAtlasSprite>::new,
         )?;
         instances.add_instance(
             "RenderLayers",
             bevy_mod_scripting_lua::tealr::mlu::UserDataProxy::<LuaRenderLayers>::new,
-        )?;
-        instances.add_instance(
-            "Visibility",
-            bevy_mod_scripting_lua::tealr::mlu::UserDataProxy::<LuaVisibility>::new,
-        )?;
-        instances.add_instance(
-            "ComputedVisibility",
-            bevy_mod_scripting_lua::tealr::mlu::UserDataProxy::<LuaComputedVisibility>::new,
         )?;
         instances.add_instance(
             "Color",
@@ -9530,6 +10006,10 @@ impl bevy_mod_scripting_lua::tealr::mlu::ExportInstances for BevyAPIGlobals {
             bevy_mod_scripting_lua::tealr::mlu::UserDataProxy::<LuaDQuat>::new,
         )?;
         instances.add_instance(
+            "Rect",
+            bevy_mod_scripting_lua::tealr::mlu::UserDataProxy::<LuaRect>::new,
+        )?;
+        instances.add_instance(
             "world",
             crate::lua::util::DummyTypeName::<crate::lua::bevy::LuaWorld>::new,
         )?;
@@ -9578,7 +10058,6 @@ impl APIProvider for LuaBevyAPIProvider {
 			.process_type::<LuaCalculatedSize>()
 			.process_type::<LuaNode>()
 			.process_type::<LuaStyle>()
-			.process_type::<LuaUiColor>()
 			.process_type::<LuaUiImage>()
 			.process_type::<LuaButton>()
 			.process_type::<LuaImageMode>()
@@ -9588,7 +10067,6 @@ impl APIProvider for LuaBevyAPIProvider {
 			.process_type::<bevy_mod_scripting_lua::tealr::mlu::UserDataProxy<LuaName>>()
 			.process_type::<LuaGltfExtras>()
 			.process_type::<LuaChildren>()
-			.process_type::<bevy_mod_scripting_lua::tealr::mlu::UserDataProxy<LuaChildren>>()
 			.process_type::<LuaParent>()
 			.process_type::<LuaText2dBounds>()
 			.process_type::<LuaText2dSize>()
@@ -9609,7 +10087,6 @@ impl APIProvider for LuaBevyAPIProvider {
 			.process_type::<LuaTransform>()
 			.process_type::<bevy_mod_scripting_lua::tealr::mlu::UserDataProxy<LuaTransform>>()
 			.process_type::<LuaGlobalTransform>()
-			.process_type::<bevy_mod_scripting_lua::tealr::mlu::UserDataProxy<LuaGlobalTransform>>()
 			.process_type::<LuaAmbientLight>()
 			.process_type::<LuaCubemapVisibleEntities>()
 			.process_type::<LuaDirectionalLight>()
@@ -9631,14 +10108,11 @@ impl APIProvider for LuaBevyAPIProvider {
 			.process_type::<LuaTextureAtlasSprite>()
 			.process_type::<bevy_mod_scripting_lua::tealr::mlu::UserDataProxy<LuaTextureAtlasSprite>>()
 			.process_type::<LuaSprite>()
-			.process_type::<LuaRect>()
 			.process_type::<LuaRenderLayers>()
 			.process_type::<bevy_mod_scripting_lua::tealr::mlu::UserDataProxy<LuaRenderLayers>>()
 			.process_type::<LuaVisibility>()
-			.process_type::<bevy_mod_scripting_lua::tealr::mlu::UserDataProxy<LuaVisibility>>()
 			.process_type::<LuaVisibleEntities>()
 			.process_type::<LuaComputedVisibility>()
-			.process_type::<bevy_mod_scripting_lua::tealr::mlu::UserDataProxy<LuaComputedVisibility>>()
 			.process_type::<LuaSkinnedMesh>()
 			.process_type::<LuaScalingMode>()
 			.process_type::<LuaWindowOrigin>()
@@ -9656,7 +10130,6 @@ impl APIProvider for LuaBevyAPIProvider {
 			.process_type::<LuaProjection>()
 			.process_type::<LuaOrthographicProjection>()
 			.process_type::<LuaPerspectiveProjection>()
-			.process_type::<LuaDepthCalculation>()
 			.process_type::<LuaCameraRenderGraph>()
 			.process_type::<bevy_mod_scripting_lua::tealr::mlu::UserDataProxy<LuaCameraRenderGraph>>()
 			.process_type::<LuaAssetPathId>()
@@ -9727,6 +10200,8 @@ impl APIProvider for LuaBevyAPIProvider {
 			.process_type::<LuaDQuat>()
 			.process_type::<bevy_mod_scripting_lua::tealr::mlu::UserDataProxy<LuaDQuat>>()
 			.process_type::<LuaEulerRot>()
+			.process_type::<LuaRect>()
+			.process_type::<bevy_mod_scripting_lua::tealr::mlu::UserDataProxy<LuaRect>>()
 			.process_type::<ReflectedValue>()
 			.process_type::<crate::lua::bevy::LuaWorld>()
 			.process_type::<bevy_mod_scripting_lua::tealr::mlu::UserDataProxy<crate::lua::bevy::LuaWorld>>()
@@ -9785,7 +10260,6 @@ impl APIProvider for LuaBevyAPIProvider {
         app.register_foreign_lua_type::<CalculatedSize>();
         app.register_foreign_lua_type::<Node>();
         app.register_foreign_lua_type::<Style>();
-        app.register_foreign_lua_type::<UiColor>();
         app.register_foreign_lua_type::<UiImage>();
         app.register_foreign_lua_type::<Button>();
         app.register_foreign_lua_type::<ImageMode>();
@@ -9828,7 +10302,6 @@ impl APIProvider for LuaBevyAPIProvider {
         app.register_foreign_lua_type::<Mesh2dHandle>();
         app.register_foreign_lua_type::<TextureAtlasSprite>();
         app.register_foreign_lua_type::<Sprite>();
-        app.register_foreign_lua_type::<Rect>();
         app.register_foreign_lua_type::<RenderLayers>();
         app.register_foreign_lua_type::<Visibility>();
         app.register_foreign_lua_type::<VisibleEntities>();
@@ -9847,7 +10320,6 @@ impl APIProvider for LuaBevyAPIProvider {
         app.register_foreign_lua_type::<Projection>();
         app.register_foreign_lua_type::<OrthographicProjection>();
         app.register_foreign_lua_type::<PerspectiveProjection>();
-        app.register_foreign_lua_type::<DepthCalculation>();
         app.register_foreign_lua_type::<CameraRenderGraph>();
         app.register_foreign_lua_type::<AssetPathId>();
         app.register_foreign_lua_type::<LabelId>();
@@ -9885,21 +10357,22 @@ impl APIProvider for LuaBevyAPIProvider {
         app.register_foreign_lua_type::<Quat>();
         app.register_foreign_lua_type::<DQuat>();
         app.register_foreign_lua_type::<EulerRot>();
+        app.register_foreign_lua_type::<Rect>();
         app.register_foreign_lua_type::<i32>();
-        app.register_foreign_lua_type::<isize>();
-        app.register_foreign_lua_type::<String>();
-        app.register_foreign_lua_type::<bool>();
         app.register_foreign_lua_type::<u8>();
-        app.register_foreign_lua_type::<i64>();
+        app.register_foreign_lua_type::<isize>();
+        app.register_foreign_lua_type::<u16>();
         app.register_foreign_lua_type::<usize>();
+        app.register_foreign_lua_type::<i64>();
+        app.register_foreign_lua_type::<i16>();
+        app.register_foreign_lua_type::<u64>();
+        app.register_foreign_lua_type::<bool>();
+        app.register_foreign_lua_type::<f32>();
+        app.register_foreign_lua_type::<u128>();
+        app.register_foreign_lua_type::<i8>();
         app.register_foreign_lua_type::<u32>();
         app.register_foreign_lua_type::<i128>();
+        app.register_foreign_lua_type::<String>();
         app.register_foreign_lua_type::<f64>();
-        app.register_foreign_lua_type::<i8>();
-        app.register_foreign_lua_type::<u128>();
-        app.register_foreign_lua_type::<u16>();
-        app.register_foreign_lua_type::<i16>();
-        app.register_foreign_lua_type::<f32>();
-        app.register_foreign_lua_type::<u64>();
     }
 }

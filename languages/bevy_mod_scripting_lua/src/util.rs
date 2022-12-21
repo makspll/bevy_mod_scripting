@@ -3,7 +3,7 @@
 ///
 /// Current configuration will provide ".tl" paths
 /// ```rust
-/// use bevy_mod_scripting::lua_path;
+/// use bevy_mod_scripting_lua::lua_path;
 /// assert_eq!("scripts/my_script.tl",lua_path!("my_script"))
 /// ```
 #[cfg(all(feature = "teal", debug_assertions))]
