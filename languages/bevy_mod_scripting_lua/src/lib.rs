@@ -174,15 +174,15 @@ impl<A: LuaArg> ScriptHost for LuaScriptHost<A> {
                 };
 
                 if let Err(error) = f.call::<_, ()>(event.args.clone()) {
-                    let error = ScriptError::RuntimeError {
-                        script: script_data.name.to_owned(),
-                        msg: error.to_string(),
-                    };
-
                     let mut world = world_ptr.write();
                     let mut state: CachedScriptState<Self> = world.remove_resource().unwrap();
 
                     let (_, mut error_wrt, _) = state.event_state.get_mut(&mut world);
+
+                    let error = ScriptError::RuntimeError {
+                        script: script_data.name.to_owned(),
+                        msg: error.to_string(),
+                    };
 
                     error!("{}", error);
                     error_wrt.send(ScriptErrorEvent { error });

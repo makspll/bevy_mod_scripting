@@ -162,15 +162,9 @@ impl TealData for LuaWorld {
         methods.document("Retrieves a resource of the given type from the world.");
         methods.document("If such a resource does not exist returns `nil`.");
         methods.add_method("get_resource", |_, world, res_type: LuaTypeRegistration| {
-            let w = world.read();
-
-            let resource_data = res_type.data::<ReflectResource>().ok_or_else(|| {
-                mlua::Error::RuntimeError(format!("Not a resource {}", res_type.short_name()))
-            })?;
-
-            Ok(resource_data.reflect(&w).map(|_res| {
-                ScriptRef::new_resource_ref(resource_data.clone(), world.as_ref().clone())
-            }))
+            world
+                .get_resource(res_type)
+                .map_err(|e| mlua::Error::RuntimeError(e.to_string()))
         });
 
         methods.document(

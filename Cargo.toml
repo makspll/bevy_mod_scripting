@@ -54,6 +54,7 @@ bevy_script_api = { path = "bevy_script_api", version = "0.1.1", optional = true
 bevy = { version = "0.9.1"}
 rand = "0.8.5"
 bevy_console = "0.5.0"
+rhai-rand = "0.1" 
 
 # bevy_asset_loader = {git = "https://github.com/NiklasEi/bevy_asset_loader", features = ["dynamic_assets"]}
 # bevy_script_api= {path="./bevy_script_api", version="0.1.1", features=["lua","rhai"]}
@@ -108,6 +109,11 @@ required-features=["lua54"]
 name = "game_of_life_lua"
 path = "examples/lua/game_of_life.rs"
 required-features=["lua54","teal","lua_script_api"]
+
+[[example]]
+name = "game_of_life_rhai"
+path = "examples/rhai/game_of_life.rs"
+required-features=["rhai","rhai_script_api"]
 
 [[example]]
 name = "event_recipients_lua"

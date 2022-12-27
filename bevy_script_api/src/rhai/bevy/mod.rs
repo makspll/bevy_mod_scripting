@@ -1,4 +1,4 @@
-use bevy::prelude::Entity;
+use bevy::prelude::{Entity, ReflectResource};
 use bevy_mod_scripting_core::{prelude::*, world::WorldPointer};
 
 use bevy_mod_scripting_rhai::{
@@ -9,7 +9,7 @@ use rhai::plugin::*;
 
 use crate::{
     common::bevy::{ScriptTypeRegistration, ScriptWorld},
-    ReflectedValue,
+    ReflectedValue, ScriptRef,
 };
 
 use super::{RegisterForeignRhaiType, ToDynamic};
@@ -70,6 +70,23 @@ impl CustomType for ScriptWorld {
                         ))
                     })?;
                     if let Some(c) = component {
+                        c.to_dynamic()
+                    } else {
+                        Ok(Default::default())
+                    }
+                },
+            )
+            .with_fn(
+                "get_resource",
+                |self_: ScriptWorld, res_type: ScriptTypeRegistration| {
+                    let resource = self_.get_resource(res_type).map_err(|err| {
+                        Box::new(EvalAltResult::ErrorRuntime(
+                            err.to_string().into(),
+                            Position::NONE,
+                        ))
+                    })?;
+
+                    if let Some(c) = resource {
                         c.to_dynamic()
                     } else {
                         Ok(Default::default())

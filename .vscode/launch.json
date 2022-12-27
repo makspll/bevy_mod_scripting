@@ -48,5 +48,27 @@
                 "CARGO_MANIFEST_DIR": "${workspaceFolder}"
             }
         },
+        {
+            "name": "Debug example 'game_of_life_rhai'",
+            "type": "lldb",
+            "request": "launch",
+            "cargo": {
+                "args": [
+                    "build",
+                    "--example=game_of_life_rhai",
+                    "--package=bevy_mod_scripting",
+                    "--features=rhai,rhai_script_api",
+                ],
+                "filter": {
+                    "name": "game_of_life_rhai",
+                    "kind": "example"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}",
+            "env": {
+                "CARGO_MANIFEST_DIR": "${workspaceFolder}"
+            }
+        }
     ]
 }

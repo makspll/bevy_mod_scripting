@@ -3,7 +3,6 @@
     "lldb.showDisassembly": "never",
     "lldb.dereferencePointers": true,
     "lldb.consoleMode": "commands",
-
     "rust-analyzer.cargo.features": [
         "lua54",
         "lua_script_api",
@@ -15,4 +14,3 @@
         "RUSTUP_TOOLCHAIN": "stable"
     }
 }
-

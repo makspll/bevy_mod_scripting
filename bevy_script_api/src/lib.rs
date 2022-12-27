@@ -26,8 +26,9 @@ pub mod prelude {
 
     #[cfg(feature = "rhai")]
     pub use crate::rhai::{
-        bevy::RhaiBevyAPIProvider, std::RhaiVec, FromRhaiProxy, ReflectRhaiProxyable,
-        RhaiProxyable, ToRhaiProxy,
+        bevy::RhaiBevyAPIProvider,
+        std::{RhaiCopy, RhaiVec},
+        FromRhaiProxy, ReflectRhaiProxyable, RhaiProxyable, ToRhaiProxy,
     };
 
     pub use crate::{common::bevy::GetWorld, impl_script_newtype, ValueIndex};

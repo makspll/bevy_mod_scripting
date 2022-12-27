@@ -178,4 +178,19 @@ impl ScriptWorld {
             ScriptRef::new_component_ref(component_data.clone(), entity, self.clone().into())
         }))
     }
+
+    pub fn get_resource(
+        &self,
+        res_type: ScriptTypeRegistration,
+    ) -> Result<Option<ScriptRef>, ScriptError> {
+        let w = self.read();
+
+        let resource_data = res_type.data::<ReflectResource>().ok_or_else(|| {
+            ScriptError::Other(format!("Not a resource {}", res_type.short_name()))
+        })?;
+
+        Ok(resource_data
+            .reflect(&w)
+            .map(|_res| ScriptRef::new_resource_ref(resource_data.clone(), self.clone().into())))
+    }
 }

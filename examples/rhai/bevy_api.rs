@@ -135,6 +135,13 @@ fn main() -> std::io::Result<()> {
                                 print(`elem: ${e}`)
                             }
 
+                            let my_component_after = world.get_component(entity,my_component_type);
+                            print("after script:");
+                            print(my_component_after.u8);
+                            print(my_component_after.bool);
+                            print(my_component_after.string);
+                            print(my_component_after.bool_option);
+
                         }
                         "#
                     .as_bytes(),
