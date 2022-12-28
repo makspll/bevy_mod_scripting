@@ -1,6 +1,4 @@
-
 use proc_macro::TokenStream;
-
 
 pub(crate) mod rhai_method;
 

@@ -1,4 +1,4 @@
-use bevy::prelude::{Entity};
+use bevy::prelude::Entity;
 use bevy_mod_scripting_core::{prelude::*, world::WorldPointer};
 
 use bevy_mod_scripting_rhai::{

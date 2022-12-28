@@ -1,10 +1,8 @@
-use bevy_mod_scripting_common::{
-    implementor::WrapperImplementor, newtype::Newtype,
-};
+use bevy_mod_scripting_common::{implementor::WrapperImplementor, newtype::Newtype};
 use implementor::LuaImplementor;
 // use impls::{impl_enum, impl_struct};
 use proc_macro::TokenStream;
-use syn::{parse_macro_input};
+use syn::parse_macro_input;
 
 pub(crate) mod derive_flags;
 pub(crate) mod implementor;

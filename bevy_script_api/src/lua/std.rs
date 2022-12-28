@@ -1,7 +1,5 @@
 use ::std::borrow::Cow;
 
-
-
 use bevy::reflect::FromReflect;
 use bevy::reflect::Reflect;
 

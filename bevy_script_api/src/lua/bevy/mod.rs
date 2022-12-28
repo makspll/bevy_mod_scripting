@@ -1,19 +1,13 @@
 use crate::common::bevy::{ScriptTypeRegistration, ScriptWorld};
 use crate::impl_tealr_type;
 
-
-
 use std::sync::Arc;
-
 
 use bevy::ecs::system::Command;
 use bevy::hierarchy::BuildWorldChildren;
 use bevy::prelude::AppTypeRegistry;
 
-use bevy::{
-    hierarchy::{DespawnRecursive},
-    prelude::{ReflectResource},
-};
+use bevy::{hierarchy::DespawnRecursive, prelude::ReflectResource};
 use bevy_mod_scripting_core::prelude::*;
 use bevy_mod_scripting_lua::tealr;
 

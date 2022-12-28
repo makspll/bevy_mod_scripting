@@ -1,8 +1,6 @@
-use bevy_mod_scripting_common::{
-    implementor::WrapperFunction,
-};
-use proc_macro2::{TokenStream};
-use quote::{ToTokens};
+use bevy_mod_scripting_common::implementor::WrapperFunction;
+use proc_macro2::TokenStream;
+use quote::ToTokens;
 use syn::{
     parse::{Parse, ParseStream},
     *,
