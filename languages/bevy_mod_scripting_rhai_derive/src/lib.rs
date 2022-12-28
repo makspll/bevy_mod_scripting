@@ -1,6 +1,6 @@
-use bevy_mod_scripting_common::{implementor::WrapperImplementor, newtype::Newtype};
+
 use proc_macro::TokenStream;
-use syn::parse_macro_input;
+
 
 pub(crate) mod rhai_method;
 

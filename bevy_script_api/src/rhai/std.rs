@@ -2,7 +2,7 @@ use std::{any::type_name, iter::Map};
 
 use bevy::reflect::{FromReflect, Reflect};
 use bevy_mod_scripting_rhai::rhai::{
-    CustomType, Dynamic, Engine, EvalAltResult, NativeCallContext, Position,
+    CustomType, Dynamic, Engine, EvalAltResult, Position,
 };
 
 use crate::{

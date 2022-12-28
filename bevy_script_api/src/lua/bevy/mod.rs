@@ -1,22 +1,18 @@
 use crate::common::bevy::{ScriptTypeRegistration, ScriptWorld};
 use crate::impl_tealr_type;
-use bevy_mod_scripting_core::world::WorldPointer;
-use std::convert::AsRef;
-use std::ops::Deref;
+
+
+
 use std::sync::Arc;
 
-use crate::script_ref::ScriptRef;
+
 use bevy::ecs::system::Command;
 use bevy::hierarchy::BuildWorldChildren;
 use bevy::prelude::AppTypeRegistry;
-use bevy::reflect::DynamicEnum;
+
 use bevy::{
-    hierarchy::{Children, DespawnChildrenRecursive, DespawnRecursive, Parent},
-    prelude::{ReflectComponent, ReflectDefault, ReflectResource},
-    reflect::{
-        DynamicArray, DynamicList, DynamicMap, DynamicStruct, DynamicTuple, DynamicTupleStruct,
-        TypeRegistration,
-    },
+    hierarchy::{DespawnRecursive},
+    prelude::{ReflectResource},
 };
 use bevy_mod_scripting_core::prelude::*;
 use bevy_mod_scripting_lua::tealr;

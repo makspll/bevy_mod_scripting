@@ -1,4 +1,4 @@
-use bevy::prelude::{Entity, ReflectResource};
+use bevy::prelude::{Entity};
 use bevy_mod_scripting_core::{prelude::*, world::WorldPointer};
 
 use bevy_mod_scripting_rhai::{
@@ -9,7 +9,7 @@ use rhai::plugin::*;
 
 use crate::{
     common::bevy::{ScriptTypeRegistration, ScriptWorld},
-    ReflectedValue, ScriptRef,
+    ReflectedValue,
 };
 
 use super::{RegisterForeignRhaiType, ToDynamic};

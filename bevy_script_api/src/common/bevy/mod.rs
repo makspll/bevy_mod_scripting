@@ -1,5 +1,4 @@
 use std::{
-    marker::PhantomData,
     ops::{Deref, DerefMut},
     sync::Arc,
 };
@@ -10,17 +9,15 @@ use bevy::{
     ecs::system::Command,
     prelude::{
         AppTypeRegistry, BuildWorldChildren, Children, DespawnChildrenRecursive, DespawnRecursive,
-        Entity, Parent, ReflectComponent, ReflectDefault, ReflectResource, World,
+        Entity, Parent, ReflectComponent, ReflectDefault, ReflectResource,
     },
     reflect::{
         DynamicArray, DynamicEnum, DynamicList, DynamicMap, DynamicStruct, DynamicTuple,
-        DynamicTupleStruct, TypeInfo, TypeRegistration, TypeRegistry,
+        DynamicTupleStruct, TypeRegistration,
     },
 };
 use bevy_mod_scripting_core::{prelude::ScriptError, world::WorldPointer};
-use parking_lot::{
-    MappedRwLockReadGuard, MappedRwLockWriteGuard, RwLock, RwLockReadGuard, RwLockWriteGuard,
-};
+
 
 /// Helper trait for retrieving a world pointer from a script context.
 pub trait GetWorld {

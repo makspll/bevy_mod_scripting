@@ -1,10 +1,10 @@
 use bevy_mod_scripting_common::{
-    derive_data::ProxyData, implementor::WrapperImplementor, newtype::Newtype,
+    implementor::WrapperImplementor, newtype::Newtype,
 };
 use implementor::LuaImplementor;
 // use impls::{impl_enum, impl_struct};
 use proc_macro::TokenStream;
-use syn::{parse_macro_input, DeriveInput};
+use syn::{parse_macro_input};
 
 pub(crate) mod derive_flags;
 pub(crate) mod implementor;

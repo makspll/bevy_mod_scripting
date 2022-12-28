@@ -1,14 +1,13 @@
-use std::marker::PhantomData;
+
 
 use indexmap::IndexSet;
-use proc_macro2::TokenStream;
+
 use syn::{
     parenthesized,
-    parse::{Parse, ParseBuffer, ParseStream},
+    parse::{Parse, ParseStream},
     punctuated::Punctuated,
     spanned::Spanned,
-    token, Attribute, Block, DeriveInput, Field, Fields, Generics, Ident, Lit, LitStr, Meta,
-    MetaList, MetaNameValue, Signature, Token,
+    token, Attribute, Block, DeriveInput, Field, Fields, Generics, Ident, Lit, LitStr, Meta, MetaNameValue, Signature, Token,
 };
 
 pub const ATTRIBUTE_NAME: &str = "scripting";

@@ -4,7 +4,7 @@ use crate::{
 };
 use bevy::prelude::*;
 use bevy_mod_scripting_core::{prelude::*, systems::*, world::WorldPointer};
-use parking_lot::RwLock;
+
 use std::fmt;
 use std::marker::PhantomData;
 use std::sync::Mutex;

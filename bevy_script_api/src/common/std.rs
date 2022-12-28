@@ -1,6 +1,6 @@
 use std::{
     marker::PhantomData,
-    ops::{Index, Range},
+    ops::{Index},
 };
 
 use bevy::reflect::FromReflect;

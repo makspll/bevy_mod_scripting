@@ -2,9 +2,9 @@ use ::std::borrow::Cow;
 
 use ::bevy::{
     prelude::{App, AppTypeRegistry},
-    reflect::{FromType, GetTypeRegistration, Reflect, TypeRegistry, TypeRegistryArc},
+    reflect::{FromType, GetTypeRegistration, Reflect},
 };
-use bevy_mod_scripting_rhai::rhai::{export_module, CustomType, Dynamic, EvalAltResult, INT};
+use bevy_mod_scripting_rhai::rhai::{CustomType, Dynamic, EvalAltResult, INT};
 
 use crate::{ReflectedValue, ScriptRef, ValueIndex};
 
