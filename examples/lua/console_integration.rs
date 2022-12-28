@@ -2,7 +2,6 @@ use bevy::{ecs::event::Events, prelude::*};
 use bevy_console::{AddConsoleCommand, ConsoleCommand, ConsolePlugin, PrintConsoleLine};
 use bevy_mod_scripting::prelude::*;
 
-
 use std::sync::Mutex;
 
 #[derive(Default)]
