@@ -14,7 +14,10 @@ macro_rules! ref_only_wrapper_methods {
         /// Creates a script reference pointing to the wrapped value.
         ///
         /// Depending on this value it may be a lua owned or reflect relative reference
-        pub fn script_ref(&self) -> $crate::script_ref::ScriptRef {
+        pub fn script_ref(
+            &self,
+            world_ptr: bevy_mod_scripting_core::world::WorldPointer,
+        ) -> $crate::script_ref::ScriptRef {
             match self {
                 Self::Owned(val, valid) => unsafe {
                     // safety:
@@ -25,6 +28,7 @@ macro_rules! ref_only_wrapper_methods {
                     $crate::script_ref::ScriptRef::new_script_ref(
                         (val.get() as *mut dyn ::bevy::reflect::Reflect).into(),
                         ::std::sync::Arc::downgrade(valid),
+                        world_ptr,
                     )
                 },
                 Self::Ref(ref_) => ref_.clone(),

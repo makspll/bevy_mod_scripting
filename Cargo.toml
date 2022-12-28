@@ -53,9 +53,9 @@ bevy_script_api = { path = "bevy_script_api", version = "0.1.1", optional = true
 [dev-dependencies]
 bevy = { version = "0.9.1"}
 rand = "0.8.5"
+bevy_console = "0.5.0"
+rhai-rand = "0.1" 
 
-
-# bevy_console = { git = "https://github.com/OnlyGraphs/bevy-console" }
 # bevy_asset_loader = {git = "https://github.com/NiklasEi/bevy_asset_loader", features = ["dynamic_assets"]}
 # bevy_script_api= {path="./bevy_script_api", version="0.1.1", features=["lua","rhai"]}
 # bevy_mod_scripting_rhai = {path="languages/bevy_mod_scripting_rhai", version="0.1.1"}
@@ -78,7 +78,7 @@ members = [
     "languages/bevy_mod_scripting_lua",
     "languages/bevy_mod_scripting_lua_derive",
     "languages/bevy_mod_scripting_rhai",
-    # "languages/rhai/derive",
+    "languages/bevy_mod_scripting_rhai_derive",
     "bevy_mod_scripting_common"
 ]
 
@@ -89,16 +89,16 @@ opt-level = 1
 opt-level = 3
 
 
-# needs bevy 0.9 support from console
-# [[example]]
-# name = "console_integration_lua"
-# path = "examples/console_integration_lua.rs"
-# required-features = ["lua54"]
+[[example]]
+name = "console_integration_lua"
+path = "examples/lua/console_integration.rs"
+required-features = ["lua54","lua_script_api"]
 
 
-# [[example]]
-# name = "console_integration_rhai"
-# path = "examples/console_integration_rhai.rs"
+[[example]]
+name = "console_integration_rhai"
+path = "examples/rhai/console_integration.rs"
+required-features = ["rhai","rhai_script_api"]
 
 [[example]]
 name = "complex_game_loop_lua"
@@ -109,6 +109,11 @@ required-features=["lua54"]
 name = "game_of_life_lua"
 path = "examples/lua/game_of_life.rs"
 required-features=["lua54","teal","lua_script_api"]
+
+[[example]]
+name = "game_of_life_rhai"
+path = "examples/rhai/game_of_life.rs"
+required-features=["rhai","rhai_script_api"]
 
 [[example]]
 name = "event_recipients_lua"
@@ -134,7 +139,8 @@ required-features=["lua54","lua_script_api"]
 [[example]]
 name = "bevy_api_rhai"
 path = "examples/rhai/bevy_api.rs"
-required-features=["rhai"]
+required-features=["rhai","rhai_script_api"]
+
 
 [[example]]
 name = "wrappers"

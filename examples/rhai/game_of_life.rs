@@ -1,5 +1,3 @@
-use std::{borrow::Cow, sync::Mutex};
-
 use bevy::{
     diagnostic::{FrameTimeDiagnosticsPlugin, LogDiagnosticsPlugin},
     prelude::*,
@@ -13,49 +11,39 @@ use bevy::{
 };
 
 use bevy_mod_scripting::prelude::*;
+use bevy_mod_scripting_rhai::rhai::packages::Package;
+use bevy_script_api::rhai::{std::RegisterVecType, RegisterForeignRhaiType};
+use rhai_rand::RandomPackage;
 
-#[derive(Debug, Default, Reflect, Component)]
-#[reflect(Component, LuaProxyable)]
+#[derive(Clone, Debug, Default, Reflect, Component)]
+#[reflect(Component)]
 pub struct LifeState {
     pub cells: Vec<u8>,
 }
-
-impl_script_newtype!(
-    #[languages(lua)]
-    LifeState : Debug
-    lua impl {
-        get "cells" => |lua,s: &LuaLifeState| {
-            Ok(LuaVec::<u8>::new_ref(s.script_ref(lua.get_world()?).index(Cow::Borrowed("cells"))))
-        };
-        set "cells" => |lua,s,o| {
-            Vec::<u8>::apply_lua(&mut s.script_ref(lua.get_world()?).index(Cow::Borrowed("cells")),lua,o)
-        };
-    }
-);
 
 #[derive(Default)]
 pub struct LifeAPI;
 
 impl APIProvider for LifeAPI {
-    type APITarget = Mutex<Lua>;
-    type ScriptContext = Mutex<Lua>;
-    type DocTarget = LuaDocFragment;
+    type APITarget = Engine;
+    type ScriptContext = RhaiContext;
+    type DocTarget = RhaiDocFragment;
 
-    fn attach_api(&mut self, _: &mut Self::APITarget) -> Result<(), ScriptError> {
-        // we don't actually provide anything global
+    fn attach_api(&mut self, api: &mut Self::APITarget) -> Result<(), ScriptError> {
+        api.register_vec_functions::<u8>();
+        let random = RandomPackage::new();
+        api.set_max_expr_depths(999, 999);
+
+        // Load the package into the `Engine`
+        random.register_into_engine(api);
         Ok(())
     }
 
-    fn get_doc_fragment(&self) -> Option<Self::DocTarget> {
-        // this will enable us type casting in teal
-        Some(LuaDocFragment::new(|tw| tw.process_type::<LuaLifeState>()))
-    }
-
     fn register_with_app(&self, app: &mut App) {
-        // this will register the `LuaProxyable` typedata since we derived it
-        // this will resolve retrievals of this component to our custom lua object
+        // this will resolve retrievals of this component to our custom rhai object
         app.register_type::<LifeState>();
         app.register_type::<Settings>();
+        app.register_foreign_rhai_type::<Vec<u8>>();
     }
 }
 
@@ -75,7 +63,7 @@ impl Default for Settings {
             border_thickness: 1,
             live_color: 255u8,
             dead_color: 0u8,
-            physical_grid_dimensions: (88, 50),
+            physical_grid_dimensions: (44, 25),
             display_grid_dimensions: (0, 0),
         }
     }
@@ -100,8 +88,7 @@ pub fn setup(
 
     image.sampler_descriptor = ImageSampler::nearest();
 
-    // in release builds we want to fetch ".lua" files over ".tl" files
-    let script_path = bevy_mod_scripting_lua::lua_path!("game_of_life");
+    let script_path = "scripts/game_of_life.rhai";
 
     commands.spawn(Camera2dBundle::default());
     commands
@@ -124,7 +111,7 @@ pub fn setup(
                     as usize
             ],
         })
-        .insert(ScriptCollection::<LuaFile> {
+        .insert(ScriptCollection::<RhaiFile> {
             scripts: vec![Script::new(
                 script_path.to_owned(),
                 asset_server.load(script_path),
@@ -186,9 +173,9 @@ pub fn update_rendered_state(
 }
 
 /// Sends events allowing scripts to drive update logic
-pub fn send_on_update(mut events: PriorityEventWriter<LuaEvent<()>>) {
+pub fn send_on_update(mut events: PriorityEventWriter<RhaiEvent<()>>) {
     events.send(
-        LuaEvent {
+        RhaiEvent {
             hook_name: "on_update".to_owned(),
             args: (),
             recipients: Recipients::All,
@@ -198,9 +185,9 @@ pub fn send_on_update(mut events: PriorityEventWriter<LuaEvent<()>>) {
 }
 
 /// Sends initialization event
-pub fn send_init(mut events: PriorityEventWriter<LuaEvent<()>>) {
+pub fn send_init(mut events: PriorityEventWriter<RhaiEvent<()>>) {
     events.send(
-        LuaEvent {
+        RhaiEvent {
             hook_name: "init".to_owned(),
             args: (),
             recipients: Recipients::All,
@@ -222,7 +209,7 @@ impl StageLabel for LifeStages {
 }
 
 /// how often to step the simulation
-const UPDATE_FREQUENCY: f64 = 1.0 / 20.0;
+const UPDATE_FREQUENCY: f64 = 1.0 / 30.0;
 
 fn main() -> std::io::Result<()> {
     let mut app = App::new();
@@ -249,14 +236,14 @@ fn main() -> std::io::Result<()> {
             LifeStages::Scripts,
             SystemStage::single_threaded(),
         )
-        .add_script_handler_stage_with_criteria::<LuaScriptHost<()>, _, _, _, 0, 1>(
+        .add_script_handler_stage_with_criteria::<RhaiScriptHost<()>, _, _, _, 0, 1>(
             LifeStages::Scripts,
             FixedTimestep::step(UPDATE_FREQUENCY),
         )
-        .add_script_host::<LuaScriptHost<()>, _>(CoreStage::PostUpdate)
-        .add_api_provider::<LuaScriptHost<()>>(Box::new(LuaBevyAPIProvider))
-        .add_api_provider::<LuaScriptHost<()>>(Box::new(LifeAPI))
-        .update_documentation::<LuaScriptHost<()>>();
+        .add_script_host::<RhaiScriptHost<()>, _>(CoreStage::PostUpdate)
+        .add_api_provider::<RhaiScriptHost<()>>(Box::new(RhaiBevyAPIProvider))
+        .add_api_provider::<RhaiScriptHost<()>>(Box::new(LifeAPI))
+        .update_documentation::<RhaiScriptHost<()>>();
 
     app.run();
 

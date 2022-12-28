@@ -162,9 +162,10 @@ pub fn script_event_handler<H: ScriptHost, const MAX: u32, const MIN: u32>(world
         .iter_prio_range(MAX, MIN)
         .collect::<Vec<H::ScriptEvent>>();
 
+    world.insert_resource(state);
+
     // should help a lot with performance on frames where no events are fired
     if events.is_empty() {
-        world.insert_resource(state);
         return;
     }
 
@@ -199,7 +200,6 @@ pub fn script_event_handler<H: ScriptHost, const MAX: u32, const MIN: u32>(world
     // by the lock in the pointer
     host.handle_events(world, &events, ctx_iter, &mut providers);
 
-    world.insert_resource(state);
     world.insert_resource(ctxts);
     world.insert_resource(host);
     world.insert_resource(providers);

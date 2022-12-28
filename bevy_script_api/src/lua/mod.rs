@@ -1,11 +1,13 @@
 use ::std::any::TypeId;
 use ::std::borrow::Cow;
 
+use crate::common::bevy::GetWorld;
 use crate::impl_tealr_type;
 use ::bevy::prelude::{App, AppTypeRegistry};
 
 use ::bevy::reflect::{FromType, GetTypeRegistration, Reflect};
 
+use bevy_mod_scripting_core::world::WorldPointer;
 use bevy_mod_scripting_lua::tealr;
 
 use tealr::mlu::mlua::MetaMethod;
@@ -130,16 +132,15 @@ impl<'lua> ToLua<'lua> for ScriptRef {
     /// - A type implementing CustomUserData is converted with its `ref_to_lua` method
     /// - Finally the method is represented as a `ReflectedValue` which exposes the Reflect interface
     fn to_lua(self, ctx: &'lua Lua) -> mlua::Result<Value<'lua>> {
-        let luaworld = ctx.globals().get::<_, LuaWorld>("world").unwrap();
-
-        let world = luaworld.read();
+        let world = self.world_ptr.clone();
+        let world = world.read();
 
         let typedata = &world.resource::<AppTypeRegistry>();
         let g = typedata.read();
 
         let type_id = self.get(|s| s.type_id())?;
         if let Some(v) = g.get_type_data::<ReflectLuaProxyable>(type_id) {
-            Ok(v.ref_to_lua(self, ctx)?)
+            v.ref_to_lua(self, ctx)
         } else {
             ReflectedValue { ref_: self }.to_lua(ctx)
         }
@@ -171,18 +172,14 @@ impl TealData for ReflectedValue {
         });
 
         methods.add_meta_method_mut(MetaMethod::Index, |_, val, field: Value| {
-            let r = val.ref_.index(field).unwrap();
+            let r = val.ref_.index(field)?;
             Ok(r)
         });
 
         methods.add_meta_method_mut(
             MetaMethod::NewIndex,
             |ctx, val, (field, new_val): (Value, Value)| {
-                val.ref_
-                    .index(field)
-                    .unwrap()
-                    .apply_lua(ctx, new_val)
-                    .unwrap();
+                val.ref_.index(field)?.apply_lua(ctx, new_val)?;
                 Ok(())
             },
         );
@@ -299,5 +296,12 @@ impl<'lua, T: Clone + UserData + Send + ValueLuaType + Reflect + 'static> FromLu
 impl<'lua, T: Clone + UserData + Send + ValueLuaType + Reflect + 'static> ToLuaProxy<'lua> for T {
     fn to_lua_proxy(self, lua: &'lua Lua) -> mlua::Result<Value<'lua>> {
         self.to_lua(lua)
+    }
+}
+
+impl GetWorld for Lua {
+    type Error = mlua::Error;
+    fn get_world(&self) -> Result<WorldPointer, Self::Error> {
+        self.globals().get::<_, LuaWorld>("world").map(Into::into)
     }
 }

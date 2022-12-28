@@ -6,7 +6,7 @@ use {
 		tealr::mlu::mlua::MetaMethod, 
 		docs::LuaDocFragment
 	},
-	crate::lua::RegisterForeignLuaType,
+	crate::{common::bevy::GetWorld, lua::{RegisterForeignLuaType}},
 };
 use std::ops::*;
 use crate::{script_ref::{ReflectedValue,ValueIndex},
@@ -659,9 +659,9 @@ type="Mat3"
 source="bevy_math"
 lua_methods=[
 """    
-	mut (MetaMethod::Index) => |_,s,idx : usize| {
+	mut (MetaMethod::Index) => |ctx,s,idx : usize| {
 		Ok(LuaVec3::new_ref(
-				s.script_ref().sub_ref(ReflectPathElem::SubReflectionIndexed{
+				s.script_ref(ctx.get_world()?).sub_ref(ReflectPathElem::SubReflectionIndexed{
 					label:"col", 
 					index: idx,
 					get: |idx,ref_| Err(ReflectionError::InsufficientProvenance{
@@ -690,9 +690,9 @@ type="Mat2"
 source="bevy_math"
 lua_methods=[
 """    
-	mut (MetaMethod::Index) => |_,s,idx : usize| {
+	mut (MetaMethod::Index) => |ctx,s,idx : usize| {
 		Ok(LuaVec2::new_ref(
-				s.script_ref().sub_ref(ReflectPathElem::SubReflectionIndexed{
+				s.script_ref(ctx.get_world()?).sub_ref(ReflectPathElem::SubReflectionIndexed{
 					label:"col", 
 					index: idx,
 					get: |idx,ref_| Err(ReflectionError::InsufficientProvenance{
@@ -722,9 +722,9 @@ type="Mat3A"
 source="bevy_math"
 lua_methods=[
 """    
-	mut (MetaMethod::Index) => |_,s,idx : usize| {
+	mut (MetaMethod::Index) => |ctx,s,idx : usize| {
 		Ok(LuaVec3A::new_ref(
-				s.script_ref().sub_ref(ReflectPathElem::SubReflectionIndexed{
+				s.script_ref(ctx.get_world()?).sub_ref(ReflectPathElem::SubReflectionIndexed{
 					label:"col", 
 					index: idx,
 					get: |idx,ref_| Err(ReflectionError::InsufficientProvenance{
@@ -753,9 +753,9 @@ type="Mat4"
 source="bevy_math"
 lua_methods=[
 """    
-	mut (MetaMethod::Index) => |_,s,idx : usize| {
+	mut (MetaMethod::Index) => |ctx,s,idx : usize| {
 		Ok(LuaVec4::new_ref(
-				s.script_ref().sub_ref(ReflectPathElem::SubReflectionIndexed{
+				s.script_ref(ctx.get_world()?).sub_ref(ReflectPathElem::SubReflectionIndexed{
 					label:"col", 
 					index: idx,
 					get: |idx,ref_| Err(ReflectionError::InsufficientProvenance{
@@ -785,9 +785,9 @@ type="DMat2"
 source="bevy_math"
 lua_methods=[
 """    
-	mut (MetaMethod::Index) => |_,s,idx : usize| {
+	mut (MetaMethod::Index) => |ctx,s,idx : usize| {
 		Ok(LuaDVec2::new_ref(
-				s.script_ref().sub_ref(ReflectPathElem::SubReflectionIndexed{
+				s.script_ref(ctx.get_world()?).sub_ref(ReflectPathElem::SubReflectionIndexed{
 					label:"col", 
 					index: idx,
 					get: |idx,ref_| Err(ReflectionError::InsufficientProvenance{
@@ -816,9 +816,9 @@ type="DMat3"
 source="bevy_math"
 lua_methods=[
 """    
-	mut (MetaMethod::Index) => |_,s,idx : usize| {
+	mut (MetaMethod::Index) => |ctx,s,idx : usize| {
 		Ok(LuaDVec3::new_ref(
-				s.script_ref().sub_ref(ReflectPathElem::SubReflectionIndexed{
+				s.script_ref(ctx.get_world()?).sub_ref(ReflectPathElem::SubReflectionIndexed{
 					label:"col", 
 					index: idx,
 					get: |idx,ref_| Err(ReflectionError::InsufficientProvenance{
@@ -847,9 +847,9 @@ type="DMat4"
 source="bevy_math"
 lua_methods=[
 """    
-	mut (MetaMethod::Index) => |_,s,idx : usize| {
+	mut (MetaMethod::Index) => |ctx,s,idx : usize| {
 		Ok(LuaDVec4::new_ref(
-				s.script_ref().sub_ref(ReflectPathElem::SubReflectionIndexed{
+				s.script_ref(ctx.get_world()?).sub_ref(ReflectPathElem::SubReflectionIndexed{
 					label:"col", 
 					index: idx,
 					get: |idx,ref_| Err(ReflectionError::InsufficientProvenance{

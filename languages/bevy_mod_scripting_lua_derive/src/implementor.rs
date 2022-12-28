@@ -122,7 +122,6 @@ impl WrapperImplementor for LuaImplementor {
                 }
             })
             .collect();
-
         let (fields, methods) = functions.partition::<Vec<_>, _>(|f| f.method_type.is_field());
 
         let methods = methods.iter().map(|f| f.to_call_expr("methods"));

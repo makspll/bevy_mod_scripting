@@ -1,14 +1,16 @@
+use parking_lot::RwLock;
+use std::fmt;
+use std::fmt::{Debug, Display};
 use std::{borrow::Cow, sync::Weak};
 
-use crate::error::ReflectionError;
 use bevy::{
     prelude::{Entity, ReflectComponent, ReflectResource},
     reflect::{Reflect, ReflectMut, ReflectRef},
 };
-use bevy_mod_scripting_core::world::WorldPointer;
-use parking_lot::RwLock;
 
-use std::fmt;
+use crate::error::ReflectionError;
+use crate::script_ref::ReflectPtr;
+use bevy_mod_scripting_core::world::WorldPointer;
 
 /// The base of a reflect path, i.e. the top-level object or source. Reflections paths are always relative to some reflect base
 #[derive(Clone)]
@@ -17,13 +19,9 @@ pub enum ReflectBase {
     Component {
         comp: ReflectComponent,
         entity: Entity,
-        world: WorldPointer,
     },
     /// A bevy resource reference
-    Resource {
-        res: ReflectResource,
-        world: WorldPointer,
-    },
+    Resource { res: ReflectResource },
 
     /// A script owned reflect type (for example a vector constructed in lua)
     /// These can be de-allocated whenever the script gc picks them up, so every script owned object
@@ -45,15 +43,11 @@ pub enum ReflectBase {
 impl fmt::Debug for ReflectBase {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
-            Self::Component { entity, world, .. } => f
-                .debug_struct("Component")
-                .field("entity", entity)
-                .field("world", world)
-                .finish(),
-            Self::ScriptOwned { .. } => write!(f, "ScriptOwned"),
-            Self::Resource { world, .. } => {
-                f.debug_struct("Resource").field("world", world).finish()
+            Self::Component { entity, .. } => {
+                f.debug_struct("Component").field("entity", entity).finish()
             }
+            Self::ScriptOwned { .. } => write!(f, "ScriptOwned"),
+            Self::Resource { .. } => f.debug_struct("Resource").finish(),
         }
     }
 }
@@ -61,16 +55,12 @@ impl fmt::Debug for ReflectBase {
 impl fmt::Display for ReflectBase {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
-            ReflectBase::Component {
-                comp: _,
-                entity,
-                world: _,
-            } => {
+            ReflectBase::Component { comp: _, entity } => {
                 f.write_str("(Component on ")?;
                 f.write_str(&entity.index().to_string())?;
                 f.write_str(")")
             }
-            ReflectBase::Resource { res: _, world: _ } => f.write_str("(Resource"),
+            ReflectBase::Resource { res: _ } => f.write_str("(Resource"),
             ReflectBase::ScriptOwned { ptr: _, valid: _ } => f.write_str("(ScriptOwned)"),
         }
     }
@@ -103,9 +93,6 @@ pub enum ReflectPathElem {
     /// Access to a TupleStruct, Tuple, List or Array element
     IndexAccess(usize), // TODO: Map access
 }
-use std::fmt::{Debug, Display};
-
-use crate::script_ref::ReflectPtr;
 
 impl Debug for ReflectPathElem {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
@@ -353,17 +340,13 @@ impl ReflectPath {
         self.len() == 0
     }
 
-    pub fn get<O, F>(&self, f: F) -> Result<O, ReflectionError>
+    pub fn get<O, F>(&self, world_ptr: WorldPointer, f: F) -> Result<O, ReflectionError>
     where
         F: FnOnce(&dyn Reflect) -> O,
     {
         match &self.base {
-            ReflectBase::Component {
-                comp,
-                entity,
-                world,
-            } => {
-                let g = world.read();
+            ReflectBase::Component { comp, entity } => {
+                let g = world_ptr.read();
 
                 let ref_ = self.walk_path(comp.reflect(&g, *entity).ok_or_else(|| {
                     ReflectionError::InvalidBaseReference {
@@ -376,8 +359,8 @@ impl ReflectPath {
                 drop(g);
                 Ok(o)
             }
-            ReflectBase::Resource { res, world } => {
-                let g = world.read();
+            ReflectBase::Resource { res } => {
+                let g = world_ptr.read();
 
                 let ref_ = self.walk_path(res.reflect(&g).ok_or_else(|| {
                     ReflectionError::InvalidBaseReference {
@@ -405,17 +388,13 @@ impl ReflectPath {
         }
     }
 
-    pub fn get_mut<O, F>(&mut self, f: F) -> Result<O, ReflectionError>
+    pub fn get_mut<O, F>(&mut self, world_ptr: WorldPointer, f: F) -> Result<O, ReflectionError>
     where
         F: FnOnce(&mut dyn Reflect) -> O,
     {
         match &self.base {
-            ReflectBase::Component {
-                comp,
-                entity,
-                world,
-            } => {
-                let mut g = world.write();
+            ReflectBase::Component { comp, entity } => {
+                let mut g = world_ptr.write();
 
                 let ref_ = self.walk_path_mut(
                     comp.reflect_mut(&mut g, *entity)
@@ -430,8 +409,8 @@ impl ReflectPath {
                 drop(g);
                 Ok(o)
             }
-            ReflectBase::Resource { res, world } => {
-                let mut g = world.write();
+            ReflectBase::Resource { res } => {
+                let mut g = world_ptr.write();
 
                 let ref_ = self.walk_path_mut(
                     res.reflect_mut(&mut g)

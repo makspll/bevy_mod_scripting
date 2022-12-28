@@ -53,12 +53,12 @@ pub(crate) fn make_fields<'a>(
         let expr_getter = f.type_.is_wrapped()
             .then(|| {
                 quote_spanned!{f.span()=>
-                    Ok(#field_type_ident::new_ref(s.script_ref().index(std::borrow::Cow::Borrowed(#rust_id_string))))
+                    Ok(#field_type_ident::new_ref(s.script_ref(world_ptr).index(std::borrow::Cow::Borrowed(#rust_id_string))))
                 }
             }).unwrap_or_else(|| {
                 if field_type_string == "ReflectedValue" {
                     return quote_spanned!{f.span()=>
-                        Ok(s.script_ref().index(std::borrow::Cow::Borrowed(#rust_id_string)))
+                        Ok(s.script_ref(world_ptr).index(std::borrow::Cow::Borrowed(#rust_id_string)))
                     }
                 }
                 quote_spanned!{f.span()=>{}
@@ -68,7 +68,8 @@ pub(crate) fn make_fields<'a>(
 
         out.push(parse_quote_spanned! {f.span()=>
             #(#docstring)*
-            get #lua_id_string => |_,s : &#newtype_name| {
+            get #lua_id_string => |ctx,s : &#newtype_name| {
+                let world_ptr = <bevy_mod_scripting_lua::tealr::mlu::mlua::Lua as bevy_script_api::common::bevy::GetWorld>::get_world(ctx)?;
                 #expr_getter
             }
         });
@@ -76,11 +77,11 @@ pub(crate) fn make_fields<'a>(
         // make the setter method
         let expr_setter = f.type_.is_wrapped()
             .then(|| {quote_spanned!{f.span()=>
-                Ok(o.apply_self_to_base(&mut s.script_ref().index(std::borrow::Cow::Borrowed(#rust_id_string)))?)
+                Ok(o.apply_self_to_base(&mut s.script_ref(world_ptr).index(std::borrow::Cow::Borrowed(#rust_id_string)))?)
             }}).unwrap_or_else(|| {
                 if field_type_string == "ReflectedValue" {
                     return quote_spanned!{f.span()=>
-                        Ok(s.script_ref().index(std::borrow::Cow::Borrowed(#rust_id_string)).apply(&o.ref_)?)
+                        Ok(s.script_ref(world_ptr).index(std::borrow::Cow::Borrowed(#rust_id_string)).apply(&o.ref_)?)
                     }
                 }
                 quote_spanned!{f.span()=>
@@ -89,7 +90,8 @@ pub(crate) fn make_fields<'a>(
             });
 
         out.push(parse_quote_spanned! {f.span()=>
-            set #lua_id_string => |_,s: &mut #newtype_name, o: #field_type_ident| {
+            set #lua_id_string => |ctx,s: &mut #newtype_name, o: #field_type_ident| {
+                let world_ptr = <bevy_mod_scripting_lua::tealr::mlu::mlua::Lua as bevy_script_api::common::bevy::GetWorld>::get_world(ctx)?;
                 #expr_setter
             }
         });

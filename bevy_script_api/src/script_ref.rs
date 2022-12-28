@@ -1,14 +1,14 @@
+use bevy::prelude::*;
+use parking_lot::RwLock;
+use std::fmt::Debug;
+use std::{borrow::Cow, sync::Weak};
+
+use bevy_mod_scripting_core::world::WorldPointer;
+
 use crate::{
     error::ReflectionError,
     sub_reflect::{ReflectBase, ReflectPath, ReflectPathElem},
 };
-
-use std::fmt::Debug;
-
-use bevy::prelude::*;
-use bevy_mod_scripting_core::world::WorldPointer;
-use parking_lot::RwLock;
-use std::{borrow::Cow, sync::Weak};
 
 pub enum ScriptRefBase {}
 
@@ -23,23 +23,26 @@ pub enum ScriptRefBase {}
 pub struct ScriptRef {
     /// The reflection path from the root
     pub(crate) path: ReflectPath,
+    pub(crate) world_ptr: WorldPointer,
 }
 
 impl ScriptRef {
     /// Safely creates a new base component reference
-    pub fn new_component_ref(comp: ReflectComponent, entity: Entity, world: WorldPointer) -> Self {
+    pub fn new_component_ref(
+        comp: ReflectComponent,
+        entity: Entity,
+        world_ptr: WorldPointer,
+    ) -> Self {
         Self {
-            path: ReflectPath::new(ReflectBase::Component {
-                comp,
-                entity,
-                world,
-            }),
+            path: ReflectPath::new(ReflectBase::Component { comp, entity }),
+            world_ptr,
         }
     }
 
-    pub fn new_resource_ref(res: ReflectResource, world: WorldPointer) -> Self {
+    pub fn new_resource_ref(res: ReflectResource, world_ptr: WorldPointer) -> Self {
         Self {
-            path: ReflectPath::new(ReflectBase::Resource { res, world }),
+            path: ReflectPath::new(ReflectBase::Resource { res }),
+            world_ptr,
         }
     }
 
@@ -48,9 +51,14 @@ impl ScriptRef {
     /// # Safety
     /// You must ensure that the following holds:
     /// - base_ptr can be dereferenced
-    pub unsafe fn new_script_ref(ptr: ReflectPtr, valid: Weak<RwLock<()>>) -> Self {
+    pub unsafe fn new_script_ref(
+        ptr: ReflectPtr,
+        valid: Weak<RwLock<()>>,
+        world_ptr: WorldPointer,
+    ) -> Self {
         Self {
             path: ReflectPath::new(ReflectBase::ScriptOwned { ptr, valid }),
+            world_ptr,
         }
     }
 
@@ -59,7 +67,10 @@ impl ScriptRef {
     pub fn sub_ref(&self, elem: ReflectPathElem) -> ScriptRef {
         let path = self.path.new_sub(elem);
 
-        Self { path }
+        Self {
+            path,
+            ..self.clone()
+        }
     }
 
     /// Retrieves the underlying `dyn Reflect` reference and applies function which can retrieve a value.
@@ -69,7 +80,7 @@ impl ScriptRef {
     where
         F: FnOnce(&dyn Reflect) -> O,
     {
-        self.path.get(f)
+        self.path.get(self.world_ptr.clone(), f)
     }
 
     pub fn get_typed<T, O, F>(&self, f: F) -> Result<O, ReflectionError>
@@ -77,7 +88,7 @@ impl ScriptRef {
         F: FnOnce(&T) -> O,
         T: Reflect,
     {
-        self.path.get(|reflect| {
+        self.path.get(self.world_ptr.clone(), |reflect| {
             (f)(reflect.downcast_ref::<T>().unwrap_or_else(|| {
                 panic!(
                     "Expected `{}` found `{}`",
@@ -96,7 +107,7 @@ impl ScriptRef {
     where
         F: FnOnce(&mut dyn Reflect) -> O,
     {
-        self.path.get_mut(f)
+        self.path.get_mut(self.world_ptr.clone(), f)
     }
 
     pub fn get_mut_typed<T, O, F>(&mut self, f: F) -> Result<O, ReflectionError>
@@ -104,8 +115,9 @@ impl ScriptRef {
         F: FnOnce(&mut T) -> O,
         T: Reflect,
     {
-        self.path
-            .get_mut(|reflect| (f)(reflect.downcast_mut().unwrap()))
+        self.path.get_mut(self.world_ptr.clone(), |reflect| {
+            (f)(reflect.downcast_mut().unwrap())
+        })
     }
 
     /// applies another [`ScriptRef`] to self by carefuly acquiring locks and cloning if necessary.
@@ -256,8 +268,8 @@ impl From<ReflectedValue> for ScriptRef {
 //     #[derive(Clone)]
 //     struct TestArg(LuaEntity);
 
-//     impl<'lua> ToLua<'lua> for TestArg {
-//         fn to_lua(self, ctx: &'lua Lua) -> Result<LuaValue<'lua>, mlua::Error> {
+// //     impl<'lua> ToLua<'lua> for TestArg {
+////          fn to_lua(self, ctx: &'lua Lua) -> Result<LuaValue<'lua>, mlua::Error> {
 //             self.0.to_lua(ctx)
 //         }
 //     }

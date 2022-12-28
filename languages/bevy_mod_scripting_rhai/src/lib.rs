@@ -78,6 +78,7 @@ impl<A: FuncArgs + Send + Clone + Sync + 'static> ScriptHost for RhaiScriptHost<
             .init_resource::<APIProviders<Self>>()
             .register_type::<ScriptCollection<Self::ScriptAsset>>()
             .register_type::<Script<Self::ScriptAsset>>()
+            .register_type::<Handle<RhaiFile>>()
             .add_system_set_to_stage(
                 stage,
                 SystemSet::new()
@@ -111,7 +112,7 @@ impl<A: FuncArgs + Send + Clone + Sync + 'static> ScriptHost for RhaiScriptHost<
 
     fn load_script(
         &mut self,
-        path: &[u8],
+        script: &[u8],
         script_data: &ScriptData,
         _: &mut APIProviders<Self>,
     ) -> Result<Self::ScriptContext, ScriptError> {
@@ -119,7 +120,7 @@ impl<A: FuncArgs + Send + Clone + Sync + 'static> ScriptHost for RhaiScriptHost<
         let mut ast = self
             .engine
             .compile(
-                std::str::from_utf8(path).map_err(|_| ScriptError::FailedToLoad {
+                std::str::from_utf8(script).map_err(|_| ScriptError::FailedToLoad {
                     script: script_data.name.to_owned(),
                 })?,
             )
@@ -167,17 +168,16 @@ impl<A: FuncArgs + Send + Clone + Sync + 'static> ScriptHost for RhaiScriptHost<
                     Ok(v) => v,
                     Err(e) => {
                         let mut world = world_ptr.write();
-
                         let mut state: CachedScriptState<Self> = world.remove_resource().unwrap();
 
                         let (_, mut error_wrt, _) = state.event_state.get_mut(&mut world);
 
-                        let err = ScriptError::RuntimeError {
+                        let error = ScriptError::RuntimeError {
                             script: fd.name.to_string(),
                             msg: e.to_string(),
                         };
-                        error!("{}", err);
-                        error_wrt.send(ScriptErrorEvent { error: err });
+                        error!("{}", error);
+                        error_wrt.send(ScriptErrorEvent { error });
 
                         world.insert_resource(state);
                     }

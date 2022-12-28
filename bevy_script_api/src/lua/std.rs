@@ -1,7 +1,5 @@
 use ::std::borrow::Cow;
 
-use ::std::marker::PhantomData;
-
 use bevy::reflect::FromReflect;
 use bevy::reflect::Reflect;
 
@@ -18,6 +16,7 @@ use tealr::TypeName;
 
 use paste::paste;
 
+use crate::common::std::ScriptVec;
 use crate::{
     error::ReflectionError,
     script_ref::{ScriptRef, ValueIndex},
@@ -156,17 +155,13 @@ impl<T: LuaProxyable + Reflect + FromReflect + for<'a> FromLuaProxy<'a> + Clone>
         } else {
             // we need to do this in two passes, first
             // ensure that the target type is the 'some' variant to allow a sub reference
-            match self_.get_mut_typed(|s: &mut Option<T>| {
-                if s.is_none() {
-                    *s = Some(T::from_lua_proxy(new_val.clone(), lua)?);
-                    Ok::<_, mlua::Error>(true)
-                } else {
-                    Ok(false)
-                }
-            })? {
-                Ok(true) => return Ok(()),
-                Ok(false) => {}
-                Err(e) => return Err(e),
+            let is_none = self_.get_typed(|s: &Option<T>| s.is_none())?;
+
+            if is_none {
+                return self_.get_mut_typed(|s: &mut Option<T>| {
+                    *s = Some(T::from_lua_proxy(new_val, lua)?);
+                    Ok::<_, mlua::Error>(())
+                })?;
             }
 
             T::apply_lua(
@@ -233,28 +228,7 @@ impl<'lua, T: for<'a> ToLuaProxy<'a>> ToLuaProxy<'lua> for Option<T> {
 
 /// A reference to a rust vec (vec reference proxy), does not need an owned variant since
 /// lua can natively represent lists of things
-pub struct LuaVec<T> {
-    ref_: ScriptRef,
-    _ph: PhantomData<T>,
-}
-
-impl<T> Clone for LuaVec<T> {
-    fn clone(&self) -> Self {
-        Self {
-            ref_: self.ref_.clone(),
-            _ph: self._ph,
-        }
-    }
-}
-
-impl<T> LuaVec<T> {
-    pub fn new_ref(ref_: ScriptRef) -> Self {
-        Self {
-            ref_,
-            _ph: PhantomData,
-        }
-    }
-}
+pub type LuaVec<T> = ScriptVec<T>;
 
 impl<
         T: TypeName
@@ -310,35 +284,28 @@ impl<
 }
 
 impl<
-        T: TypeName
-            + FromReflect
-            + LuaProxyable
-            + for<'a> FromLuaProxy<'a>
-            + for<'a> ToLuaProxy<'a>
-            + std::fmt::Debug,
+        T: TypeName + FromReflect + LuaProxyable + for<'a> FromLuaProxy<'a> + for<'a> ToLuaProxy<'a>,
     > TealData for LuaVec<T>
 {
     fn add_methods<'lua, M: TealDataMethods<'lua, Self>>(methods: &mut M) {
         methods.document_type("A reference to the Vec<T> Rust type.");
-        methods.document_type("The indexing begins at 1.");
+        methods.document_type("All indexing begins at 1.");
 
-        methods.add_meta_method(MetaMethod::ToString, |_, s, ()| {
-            s.ref_.get_typed(|s: &Vec<T>| Ok(format!("{s:?}")))?
-        });
+        methods.add_meta_method(MetaMethod::ToString, |_, s, ()| Ok(format!("{s:?}")));
 
         methods.add_meta_method(MetaMethod::Index, |_, s, index: usize| {
-            Ok(s.ref_.index(index - 1))
+            Ok(s.index(index - 1))
         });
 
         methods.add_meta_method_mut(
             MetaMethod::NewIndex,
-            |ctx, s, (index, value): (usize, Value)| s.ref_.index(index - 1).apply_lua(ctx, value),
+            |ctx, s, (index, value): (usize, Value)| s.index(index - 1).apply_lua(ctx, value),
         );
 
         methods.add_meta_method(MetaMethod::Pairs, |ctx, s, _: ()| {
-            let len = s.ref_.get_typed(|s: &Vec<T>| s.len())?;
+            let len = s.len()?;
             let mut curr_idx = 1;
-            let ref_ = s.ref_.clone();
+            let ref_: ScriptRef = s.clone().into();
             TypedFunction::from_rust_mut(
                 move |ctx, ()| {
                     let o = if curr_idx < len {
@@ -353,41 +320,29 @@ impl<
             )
         });
 
-        methods.add_meta_method(MetaMethod::Len, |_, s, ()| {
-            s.ref_.get_typed(|s: &Vec<T>| Ok(s.len()))?
-        });
+        methods.add_meta_method(MetaMethod::Len, |_, s, ()| Ok(s.len()?));
 
         methods.add_method_mut("push", |ctx, s, v: Value| {
             let new_val = T::from_lua_proxy(v, ctx)?;
-            s.ref_.get_mut_typed(|s: &mut Vec<T>| {
-                s.push(new_val);
-                Ok(())
-            })?
+            s.push(new_val)?;
+            Ok(())
         });
 
-        methods.add_method_mut("pop", |ctx, s, ()| {
-            s.ref_
-                .get_mut_typed(|s: &mut Vec<T>| s.pop().to_lua_proxy(ctx))?
-        });
+        methods.add_method_mut("pop", |ctx, s, ()| s.pop().map(|v| v.to_lua_proxy(ctx))?);
 
         methods.add_method_mut("clear", |_, s, ()| {
-            s.ref_.get_mut_typed(|s: &mut Vec<T>| {
-                s.clear();
-                Ok(())
-            })?
+            s.clear()?;
+            Ok(())
         });
 
         methods.add_method_mut("insert", |ctx, s, (idx, v): (usize, Value<'lua>)| {
-            s.ref_.get_mut_typed(|s: &mut Vec<T>| {
-                let v = T::from_lua_proxy(v, ctx)?;
-                s.insert(idx - 1, v);
-                Ok(())
-            })?
+            s.insert(idx - 1, T::from_lua_proxy(v, ctx)?)?;
+            Ok(())
         });
 
         methods.add_method_mut("remove", |ctx, s, idx: usize| {
-            s.ref_
-                .get_mut_typed(|s: &mut Vec<T>| s.remove(idx - 1).to_lua_proxy(ctx))?
+            let removed = s.remove(idx)?;
+            removed.to_lua_proxy(ctx)
         });
     }
 }
@@ -416,13 +371,13 @@ impl<
                 self_.apply(&lua_vec.ref_)?;
             }
             Value::Table(table) => {
-                let target_len = self_.get_typed(|s: &Vec<T>| s.len())?;
+                let last_target_idx = self_.get_typed(|s: &Vec<T>| s.len())? - 1;
                 // there is also another case to consider, Vec has a lua representation available as well (table)
                 // if we receive one of those, we should also apply it
                 for entry in table.clone().pairs::<usize, Value>() {
                     let (lua_idx, v) = entry?;
                     let idx = lua_idx - 1;
-                    if lua_idx > target_len {
+                    if idx > last_target_idx {
                         // here we don't need to do anything special just use LuaProxyable impl
                         T::apply_lua(&mut self_.index(idx), lua, v)?;
                     } else {
@@ -460,22 +415,18 @@ impl<
     > FromLuaProxy<'lua> for Vec<T>
 {
     fn from_lua_proxy(new_val: Value<'lua>, lua: &'lua Lua) -> mlua::Result<Self> {
-        match &new_val {
+        match new_val {
             Value::UserData(ud) => {
                 let lua_vec = ud.borrow::<LuaVec<T>>()?;
                 lua_vec.ref_.get_typed(|s: &Vec<T>| Ok(s.clone()))?
             }
             Value::Table(table) => {
-                let mut out = Vec::default();
                 // there is also another case to consider, Vec has a lua representation available as well (table)
                 // if we receive one of those, we should clone it one by one
-                for entry in table.clone().pairs::<usize, Value>() {
-                    let (_, v) = entry?;
-
-                    out.push(T::from_lua_proxy(v, lua)?);
-                }
-
-                Ok(out)
+                table
+                    .pairs::<usize, Value>()
+                    .map(|v| v.and_then(|(_, v)| T::from_lua_proxy(v, lua)))
+                    .collect::<Result<Vec<_>, _>>()
             }
             _ => {
                 return Err(mlua::Error::FromLuaConversionError {

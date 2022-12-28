@@ -55,6 +55,7 @@ generate_api:
 	--json "../target/doc/glam.json" \
 	--config "../api_gen_config.toml" ${FLAGS} \
 	> ../bevy_script_api/src/generated.rs
+	rustfmt ./bevy_script_api/src/generated.rs
 
 make_json_files:
 	rustup run nightly-2022-12-18 cargo rustdoc -p bevy_asset@0.9.1  --  -Zunstable-options --output-format json && \

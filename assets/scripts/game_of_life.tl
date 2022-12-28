@@ -1,7 +1,6 @@
 math.randomseed(os.time())
 
 global function init()
-
     local LifeState = world:get_type_by_name("LifeState")
     local life_state = world:get_component(entity,LifeState) as types.LuaLifeState
     local cells = life_state.cells as {integer}

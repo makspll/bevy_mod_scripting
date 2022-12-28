@@ -25,6 +25,9 @@ impl MyThing {
     }
 }
 
+impl MyThing {
+    pub fn hello(&self) {}
+}
 // Step 2. Script representation
 // this macro does some magic and provides you with a `LuaMyThing` (and possibly more for other enabled languages) type with which you can create:
 // - owned values of your type via ::new()
@@ -110,6 +113,7 @@ fn main() -> std::io::Result<()> {
                 "#
                     .as_bytes(),
                     "script.lua",
+                    Entity::from_raw(0),
                     world,
                     LuaEvent {
                         hook_name: "once".to_owned(),

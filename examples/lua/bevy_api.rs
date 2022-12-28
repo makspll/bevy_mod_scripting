@@ -79,7 +79,7 @@ fn main() -> std::io::Result<()> {
         .add_system(
             |world: &mut World| {
 
-                world.spawn(())
+                let entity = world.spawn(())
                     .insert(MyComponent {
                         vec2: Vec2::new(1.0, 2.0),
                         vec3: Vec3::new(1.0, 2.0, 3.0),
@@ -98,7 +98,7 @@ fn main() -> std::io::Result<()> {
                         option: None,
                         vec_of_option_bools: vec![Some(true), None, Some(false)],
                         option_vec_of_bools: Some(vec![true, true, true]),
-                    });
+                    }).id();
 
                 // run script
                 world.resource_scope(|world, mut host: Mut<LuaScriptHost<()>>| {
@@ -117,9 +117,8 @@ fn main() -> std::io::Result<()> {
                             local my_resource_type = world:get_type_by_name("MyResource")
 
                             -- then ask the world to give us a reference to `MyComponent` on the entity we just spawned
-                            -- normally we could use `entity` but we are running in a one shot environment
 
-                            local comp = world:get_component(Entity.from_raw(0), my_component_type)
+                            local comp = world:get_component(entity, my_component_type)
                             -- and our resource
 
                             local res = world:get_resource(my_resource_type)
@@ -218,6 +217,7 @@ fn main() -> std::io::Result<()> {
                         "#
                         .as_bytes(),
                         "script.lua",
+                        entity,
                         world,
                         LuaEvent {
                             hook_name: "once".to_owned(),
