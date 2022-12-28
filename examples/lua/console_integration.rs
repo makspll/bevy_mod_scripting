@@ -1,8 +1,8 @@
 use bevy::{ecs::event::Events, prelude::*};
 use bevy_console::{AddConsoleCommand, ConsoleCommand, ConsolePlugin, PrintConsoleLine};
 use bevy_mod_scripting::prelude::*;
-use bevy_mod_scripting_core::world::WorldPointer;
-use bevy_script_api::lua::bevy::LuaWorld;
+
+
 use std::sync::Mutex;
 
 #[derive(Default)]

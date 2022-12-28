@@ -97,7 +97,7 @@ pub fn run_script_cmd(
 
                     scripts.scripts.push(Script::<RhaiFile>::new(path, handle));
                 } else {
-                    log.reply_failed(format!("Something went wrong"));
+                    log.reply_failed("Something went wrong".to_string());
                 };
             }
             None => {
