@@ -131,31 +131,19 @@ impl TealData for LuaWorld {
         methods.add_method(
             "has_component",
             |_, world, (entity, comp_type): (LuaEntity, LuaTypeRegistration)| {
-                // grab this entity before acquiring a lock in case it's a reference
-                let entity = entity.inner()?;
-                let w = world.read();
-
-                let component_data = comp_type.data::<ReflectComponent>().ok_or_else(|| {
-                    mlua::Error::RuntimeError(format!("Not a component {}", comp_type.short_name()))
-                })?;
-
-                Ok(component_data.reflect(&w, entity).is_some())
+                world
+                    .has_component(entity.inner()?, comp_type)
+                    .map_err(|e| mlua::Error::RuntimeError(e.to_string()))
             },
         );
 
         methods.document("Removes the given component from the given entity, does nothing if it doesn't exist on the entity.");
-        methods.add_method(
+        methods.add_method_mut(
             "remove_component",
             |_, world, (entity, comp_type): (LuaEntity, LuaTypeRegistration)| {
-                // grab this entity before acquiring a lock in case it's a reference
-                let entity = entity.inner()?;
-                let mut w = world.write();
-
-                let component_data = comp_type.data::<ReflectComponent>().ok_or_else(|| {
-                    mlua::Error::RuntimeError(format!("Not a component {}", comp_type.short_name()))
-                })?;
-                component_data.remove(&mut w, entity);
-                Ok(())
+                world
+                    .remove_component(entity.inner()?, comp_type)
+                    .map_err(|e| mlua::Error::RuntimeError(e.to_string()))
             },
         );
 
@@ -205,13 +193,7 @@ impl TealData for LuaWorld {
 
         methods.document("Retrieves the parent entity of the given entity if it has any.");
         methods.add_method("get_parent", |_, world, parent: LuaEntity| {
-            let w = world.read();
-
-            let parent: Option<LuaEntity> = w
-                .get::<Parent>(parent.inner()?)
-                .map(|parent| LuaEntity::new(parent.get()));
-
-            Ok(parent)
+            Ok(world.get_parent(parent.inner()?).map(LuaEntity::new))
         });
 
         methods.document("Attaches children entities to the given parent entity.");
@@ -233,15 +215,10 @@ impl TealData for LuaWorld {
         );
 
         methods.document("Attaches child entity to the given parent entity.");
-        methods.add_method(
+        methods.add_method_mut(
             "push_child",
             |_, world, (parent, child): (LuaEntity, LuaEntity)| {
-                let mut w = world.write();
-                let child = child.inner()?;
-                if let Some(mut entity) = w.get_entity_mut(parent.inner()?) {
-                    entity.push_children(&[child]);
-                }
-
+                world.push_child(parent.inner()?, child.inner()?);
                 Ok(())
             },
         );
@@ -250,16 +227,12 @@ impl TealData for LuaWorld {
         methods.add_method(
             "remove_children",
             |_, world, (parent, children): (LuaEntity, Vec<LuaEntity>)| {
-                let mut w = world.write();
                 let children = children
                     .iter()
                     .map(|e| e.inner())
                     .collect::<Result<Vec<_>, _>>()?;
 
-                if let Some(mut entity) = w.get_entity_mut(parent.inner()?) {
-                    entity.remove_children(&children);
-                }
-
+                world.remove_children(parent.inner()?, &children);
                 Ok(())
             },
         );
@@ -268,12 +241,7 @@ impl TealData for LuaWorld {
         methods.add_method(
             "remove_child",
             |_, world, (parent, child): (LuaEntity, LuaEntity)| {
-                let mut w = world.write();
-                let child = child.inner()?;
-                if let Some(mut entity) = w.get_entity_mut(parent.inner()?) {
-                    entity.remove_children(&[child]);
-                }
-
+                world.remove_children(parent.inner()?, &[child.inner()?]);
                 Ok(())
             },
         );
@@ -283,16 +251,12 @@ impl TealData for LuaWorld {
         methods.add_method(
             "insert_children",
             |_, world, (parent, index, children): (LuaEntity, usize, Vec<LuaEntity>)| {
-                let mut w = world.write();
                 let children = children
                     .iter()
                     .map(|e| e.inner())
                     .collect::<Result<Vec<_>, _>>()?;
 
-                if let Some(mut entity) = w.get_entity_mut(parent.inner()?) {
-                    entity.insert_children(index, &children);
-                }
-
+                world.insert_children(parent.inner()?, index, &children);
                 Ok(())
             },
         );
@@ -301,12 +265,7 @@ impl TealData for LuaWorld {
         methods.add_method(
             "insert_child",
             |_, world, (parent, index, child): (LuaEntity, usize, LuaEntity)| {
-                let mut w = world.write();
-                let child = child.inner()?;
-                if let Some(mut entity) = w.get_entity_mut(parent.inner()?) {
-                    entity.insert_children(index, &[child]);
-                }
-
+                world.insert_children(parent.inner()?, index, &[child.inner()?]);
                 Ok(())
             },
         );
@@ -315,22 +274,14 @@ impl TealData for LuaWorld {
         methods.add_method(
             "despawn_children_recursive",
             |_, world, entity: LuaEntity| {
-                let mut w = world.write();
-                DespawnChildrenRecursive {
-                    entity: entity.inner()?,
-                }
-                .write(&mut w);
+                world.despawn_children_recursive(entity.inner()?);
                 Ok(())
             },
         );
 
         methods.document("Despawns the given entity and the entity's children recursively");
         methods.add_method("despawn_recursive", |_, world, entity: LuaEntity| {
-            let mut w = world.write();
-            DespawnRecursive {
-                entity: entity.inner()?,
-            }
-            .write(&mut w);
+            world.despawn_recursive(entity.inner()?);
             Ok(())
         });
 

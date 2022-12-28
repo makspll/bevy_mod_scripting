@@ -7,8 +7,10 @@ use std::{
 use crate::ScriptRef;
 /// Common functionality for all script hosts
 use bevy::{
+    ecs::system::Command,
     prelude::{
-        AppTypeRegistry, Children, Entity, ReflectComponent, ReflectDefault, ReflectResource, World,
+        AppTypeRegistry, BuildWorldChildren, Children, DespawnChildrenRecursive, DespawnRecursive,
+        Entity, Parent, ReflectComponent, ReflectDefault, ReflectResource, World,
     },
     reflect::{
         DynamicArray, DynamicEnum, DynamicList, DynamicMap, DynamicStruct, DynamicTuple,
@@ -113,6 +115,44 @@ impl ScriptWorld {
             .unwrap_or_default()
     }
 
+    pub fn get_parent(&self, entity: Entity) -> Option<Entity> {
+        let w = self.read();
+        w.get::<Parent>(entity).map(|parent| parent.get())
+    }
+
+    pub fn push_child(&self, parent: Entity, child: Entity) {
+        let mut w = self.write();
+        if let Some(mut entity) = w.get_entity_mut(parent) {
+            entity.push_children(&[child]);
+        }
+    }
+
+    pub fn remove_children(&self, parent: Entity, children: &[Entity]) {
+        let mut w = self.write();
+
+        if let Some(mut entity) = w.get_entity_mut(parent) {
+            entity.remove_children(children);
+        }
+    }
+
+    pub fn insert_children(&self, parent: Entity, index: usize, children: &[Entity]) {
+        let mut w = self.write();
+
+        if let Some(mut entity) = w.get_entity_mut(parent) {
+            entity.insert_children(index, children);
+        }
+    }
+
+    pub fn despawn_children_recursive(&self, entity: Entity) {
+        let mut w = self.write();
+        DespawnChildrenRecursive { entity }.write(&mut w);
+    }
+
+    pub fn despawn_recursive(&self, entity: Entity) {
+        let mut w = self.write();
+        DespawnRecursive { entity }.write(&mut w);
+    }
+
     pub fn get_type_by_name(&self, type_name: &str) -> Option<ScriptTypeRegistration> {
         let w = self.read();
 
@@ -179,6 +219,32 @@ impl ScriptWorld {
         }))
     }
 
+    pub fn has_component(
+        &self,
+        entity: Entity,
+        comp_type: ScriptTypeRegistration,
+    ) -> Result<bool, ScriptError> {
+        let w = self.read();
+        let component_data = comp_type.data::<ReflectComponent>().ok_or_else(|| {
+            ScriptError::Other(format!("Not a component {}", comp_type.short_name()))
+        })?;
+
+        Ok(component_data.reflect(&w, entity).is_some())
+    }
+
+    pub fn remove_component(
+        &mut self,
+        entity: Entity,
+        comp_type: ScriptTypeRegistration,
+    ) -> Result<(), ScriptError> {
+        let mut w = self.write();
+        let component_data = comp_type.data::<ReflectComponent>().ok_or_else(|| {
+            ScriptError::Other(format!("Not a component {}", comp_type.short_name()))
+        })?;
+        component_data.remove(&mut w, entity);
+        Ok(())
+    }
+
     pub fn get_resource(
         &self,
         res_type: ScriptTypeRegistration,
@@ -192,5 +258,24 @@ impl ScriptWorld {
         Ok(resource_data
             .reflect(&w)
             .map(|_res| ScriptRef::new_resource_ref(resource_data.clone(), self.clone().into())))
+    }
+
+    pub fn has_resource(&self, res_type: ScriptTypeRegistration) -> Result<bool, ScriptError> {
+        let w = self.read();
+
+        let resource_data = res_type.data::<ReflectResource>().ok_or_else(|| {
+            ScriptError::Other(format!("Not a resource {}", res_type.short_name()))
+        })?;
+
+        Ok(resource_data.reflect(&w).is_some())
+    }
+    pub fn remove_resource(&mut self, res_type: ScriptTypeRegistration) -> Result<(), ScriptError> {
+        let mut w = self.write();
+
+        let resource_data = res_type.data::<ReflectResource>().ok_or_else(|| {
+            ScriptError::Other(format!("Not a resource {}", res_type.short_name()))
+        })?;
+        resource_data.remove(&mut w);
+        Ok(())
     }
 }

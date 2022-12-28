@@ -3,7 +3,7 @@ use bevy_mod_scripting_core::{prelude::*, world::WorldPointer};
 
 use bevy_mod_scripting_rhai::{
     prelude::*,
-    rhai::{self, CustomType},
+    rhai::{self, CustomType, INT},
 };
 use rhai::plugin::*;
 
@@ -77,6 +77,28 @@ impl CustomType for ScriptWorld {
                 },
             )
             .with_fn(
+                "has_compoennt",
+                |self_: ScriptWorld, entity: Entity, comp_type: ScriptTypeRegistration| {
+                    self_.has_component(entity, comp_type).map_err(|e| {
+                        Box::new(EvalAltResult::ErrorRuntime(
+                            e.to_string().into(),
+                            Position::NONE,
+                        ))
+                    })
+                },
+            )
+            .with_fn(
+                "remove_component",
+                |mut self_: ScriptWorld, entity: Entity, comp_type: ScriptTypeRegistration| {
+                    self_.remove_component(entity, comp_type).map_err(|e| {
+                        Box::new(EvalAltResult::ErrorRuntime(
+                            e.to_string().into(),
+                            Position::NONE,
+                        ))
+                    })
+                },
+            )
+            .with_fn(
                 "get_resource",
                 |self_: ScriptWorld, res_type: ScriptTypeRegistration| {
                     let resource = self_.get_resource(res_type).map_err(|err| {
@@ -93,6 +115,102 @@ impl CustomType for ScriptWorld {
                     }
                 },
             )
+            .with_fn(
+                "has_resource",
+                |self_: &mut ScriptWorld, res_type: ScriptTypeRegistration| {
+                    self_.has_resource(res_type).map_err(|e| {
+                        Box::new(EvalAltResult::ErrorRuntime(
+                            e.to_string().into(),
+                            Position::NONE,
+                        ))
+                    })
+                },
+            )
+            .with_fn(
+                "remove_resource",
+                |self_: &mut ScriptWorld, res_type: ScriptTypeRegistration| {
+                    self_.remove_resource(res_type).map_err(|e| {
+                        Box::new(EvalAltResult::ErrorRuntime(
+                            e.to_string().into(),
+                            Position::NONE,
+                        ))
+                    })
+                },
+            )
+            .with_fn("get_children", |self_: &ScriptWorld, parent: Entity| {
+                self_
+                    .get_children(parent)
+                    .into_iter()
+                    .map(Dynamic::from)
+                    .collect::<Vec<Dynamic>>()
+            })
+            .with_fn("get_parent", |self_: &ScriptWorld, entity: Entity| {
+                self_.get_parent(entity)
+            })
+            .with_fn(
+                "push_child",
+                |self_: &mut ScriptWorld, parent: Entity, child: Entity| {
+                    self_.push_child(parent, child)
+                },
+            )
+            .with_fn(
+                "remove_children",
+                |self_: &mut ScriptWorld, parent: Entity, children: Vec<Dynamic>| {
+                    self_.remove_children(
+                        parent,
+                        &children
+                            .into_iter()
+                            .map(Dynamic::cast::<Entity>)
+                            .collect::<Vec<_>>(),
+                    )
+                },
+            )
+            .with_fn(
+                "remove_child",
+                |self_: &mut ScriptWorld, parent: Entity, child: Entity| {
+                    self_.remove_children(parent, &[child])
+                },
+            )
+            .with_fn(
+                "insert_children",
+                |self_: &mut ScriptWorld, parent: Entity, index: INT, children: Vec<Dynamic>| {
+                    self_.insert_children(
+                        parent,
+                        index.try_into().expect("number too large"),
+                        &children
+                            .into_iter()
+                            .map(Dynamic::cast::<Entity>)
+                            .collect::<Vec<_>>(),
+                    )
+                },
+            )
+            .with_fn(
+                "insert_child",
+                |self_: &mut ScriptWorld, parent: Entity, index: INT, child: Entity| {
+                    self_.insert_children(
+                        parent,
+                        index.try_into().expect("number too large"),
+                        &[child],
+                    )
+                },
+            )
+            .with_fn(
+                "despawn_children_recursive",
+                |self_: &mut ScriptWorld, entity: Entity| self_.despawn_children_recursive(entity),
+            )
+            .with_fn(
+                "despawn_recursive",
+                |self_: &mut ScriptWorld, entity: Entity| self_.despawn_recursive(entity),
+            )
+            .with_fn("spawn", |self_: &mut ScriptWorld| {
+                let mut w = self_.write();
+                w.spawn(()).id()
+            })
+            .with_fn("despawn", |self_: &mut ScriptWorld, entity: Entity| {
+                let mut w = self_.write();
+
+                w.despawn(entity)
+            })
             .with_fn("to_string", |self_: &mut ScriptWorld| self_.to_string())
             .with_fn("to_debug", |self_: &mut ScriptWorld| format!("{:?}", self_));
     }
