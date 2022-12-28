@@ -324,11 +324,13 @@ To see more complex applications of this library have a look at the examples:
 - [lua - complex game loop](examples/lua/complex_game_loop.rs)
 - [lua - event recipients](examples/lua/event_recipients.rs)
 - [lua - bevy API](examples/lua/bevy_api.rs)
-- [generating statically typed wrappers + ScriptRef system](examples/wrappers.rs)
+- [rhai - bevy API](examples/rhai/bevy_api.rs)
+- [generating statically typed lua wrappers + ScriptRef system](examples/wrappers.rs)
 - [lua - documentation generation + lua static typing](examples/lua/documentation_gen.rs)
-- ~~[lua - bevy console integration](examples/lua/console_integration.rs)~~ not up to date with bevy 0.9
-- ~~[rhai - bevy console integration](examples/rhai/console_integration.rs)~~ not up to date with bevy 0.9
+- [lua - bevy console integration](examples/lua/console_integration.rs)
+- [rhai - bevy console integration](examples/rhai/console_integration.rs)
 - [lua - game of life with teal](examples/lua/game_of_life.rs)
+- [rhai - game of life](examples/rhai/game_of_life.rs)
 
 Below is a video showcasing the game_of_life example:
 [![Watch the video](https://img.youtube.com/vi/Mo9gh2g3ZHw/maxresdefault.jpg)](https://www.youtube.com/watch?v=Mo9gh2g3ZHw)
