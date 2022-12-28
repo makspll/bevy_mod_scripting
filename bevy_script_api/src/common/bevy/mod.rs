@@ -18,7 +18,6 @@ use bevy::{
 };
 use bevy_mod_scripting_core::{prelude::ScriptError, world::WorldPointer};
 
-
 /// Helper trait for retrieving a world pointer from a script context.
 pub trait GetWorld {
     type Error;
@@ -95,9 +94,9 @@ impl AsRef<WorldPointer> for ScriptWorld {
     }
 }
 
-impl Into<WorldPointer> for ScriptWorld {
-    fn into(self) -> WorldPointer {
-        self.0
+impl From<ScriptWorld> for WorldPointer {
+    fn from(val: ScriptWorld) -> Self {
+        val.0
     }
 }
 
