@@ -171,7 +171,8 @@ fn main() -> std::io::Result<()> {
         .add_system(trigger_on_update_rhai)
         .add_system(forward_script_err_to_console);
 
-    // at runtime press '~' for console then type in help for command formats
+    info!("press '~' to open the console. Type in `run_script \"console_integration.rhai\"` to run example script!");
+
     app.run();
 
     Ok(())
