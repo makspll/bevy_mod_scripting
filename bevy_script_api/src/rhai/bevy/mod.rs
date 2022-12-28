@@ -1,6 +1,7 @@
 use bevy::prelude::Entity;
 use bevy_mod_scripting_core::{prelude::*, world::WorldPointer};
 
+#[allow(deprecated)]
 use bevy_mod_scripting_rhai::{
     prelude::*,
     rhai::{self, CustomType, INT},

@@ -4,6 +4,7 @@ use ::bevy::{
     prelude::{App, AppTypeRegistry},
     reflect::{FromType, GetTypeRegistration, Reflect},
 };
+#[allow(deprecated)]
 use bevy_mod_scripting_rhai::rhai::{CustomType, Dynamic, EvalAltResult, INT};
 
 use crate::{ReflectedValue, ScriptRef, ValueIndex};

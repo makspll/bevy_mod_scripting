@@ -1,6 +1,7 @@
 use std::{any::type_name, iter::Map};
 
 use bevy::reflect::{FromReflect, Reflect};
+#[allow(deprecated)]
 use bevy_mod_scripting_rhai::rhai::{CustomType, Dynamic, Engine, EvalAltResult, Position};
 
 use crate::{
