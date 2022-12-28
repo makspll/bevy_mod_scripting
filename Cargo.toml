@@ -89,16 +89,16 @@ opt-level = 1
 opt-level = 3
 
 
-# needs bevy 0.9 support from console
-# [[example]]
-# name = "console_integration_lua"
-# path = "examples/console_integration_lua.rs"
-# required-features = ["lua54"]
+[[example]]
+name = "console_integration_lua"
+path = "examples/lua/console_integration.rs"
+required-features = ["lua54","lua_script_api"]
 
 
-# [[example]]
-# name = "console_integration_rhai"
-# path = "examples/console_integration_rhai.rs"
+[[example]]
+name = "console_integration_rhai"
+path = "examples/rhai/console_integration.rs"
+required-features = ["rhai","rhai_script_api"]
 
 [[example]]
 name = "complex_game_loop_lua"

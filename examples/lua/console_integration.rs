@@ -1,22 +1,9 @@
 use bevy::{ecs::event::Events, prelude::*};
 use bevy_console::{AddConsoleCommand, ConsoleCommand, ConsolePlugin, PrintConsoleLine};
-use bevy_mod_scripting::{
-    events::PriorityEventWriter,
-    langs::mlu::{mlua, mlua::prelude::*, mlua::Value},
-    APIProvider, AddScriptApiProvider, AddScriptHost, AddScriptHostHandler, LuaDocFragment,
-    LuaEvent, LuaFile, LuaScriptHost, Recipients, Script, ScriptCollection, ScriptData,
-    ScriptError, ScriptErrorEvent, ScriptingPlugin,
-};
+use bevy_mod_scripting::prelude::*;
+use bevy_mod_scripting_core::world::WorldPointer;
+use bevy_script_api::lua::bevy::LuaWorld;
 use std::sync::Mutex;
-
-#[derive(Clone)]
-pub struct MyLuaArg;
-
-impl<'lua> ToLua<'lua> for MyLuaArg {
-    fn to_lua(self, _: &'lua Lua) -> mlua::Result<Value<'lua>> {
-        Ok(Value::Nil)
-    }
-}
 
 #[derive(Default)]
 pub struct LuaAPIProvider;
@@ -35,20 +22,24 @@ impl APIProvider for LuaAPIProvider {
 
         let ctx = ctx.lock().unwrap();
 
-        ctx.globals().set(
-            "print_to_console",
-            ctx.create_function(|ctx, msg: String| {
-                // retrieve the world pointer
-                let world_data: usize = ctx.globals().get("world").unwrap();
-                let world: &mut World = unsafe { &mut *(world_data as *mut World) };
+        ctx.globals()
+            .set(
+                "print_to_console",
+                ctx.create_function(|ctx, msg: String| {
+                    // retrieve the world pointer
+                    let world = ctx.get_world()?;
+                    let mut world = world.write();
 
-                let mut events: Mut<Events<PrintConsoleLine>> = world.get_resource_mut().unwrap();
-                events.send(PrintConsoleLine { line: msg });
+                    let mut events: Mut<Events<PrintConsoleLine>> =
+                        world.get_resource_mut().unwrap();
+                    events.send(PrintConsoleLine { line: msg });
 
-                // return something
-                Ok(())
-            })?,
-        )?;
+                    // return something
+                    Ok(())
+                })
+                .map_err(ScriptError::new_other)?,
+            )
+            .map_err(ScriptError::new_other)?;
 
         Ok(())
     }
@@ -64,10 +55,10 @@ impl APIProvider for LuaAPIProvider {
 
 /// sends updates to script host which are then handled by the scripts
 /// in the designated stage
-pub fn trigger_on_update_lua(mut w: PriorityEventWriter<LuaEvent<MyLuaArg>>) {
+pub fn trigger_on_update_lua(mut w: PriorityEventWriter<LuaEvent<()>>) {
     let event = LuaEvent {
         hook_name: "on_update".to_string(),
-        args: Vec::default(),
+        args: (),
         recipients: Recipients::All,
     };
 
@@ -80,32 +71,9 @@ pub fn forward_script_err_to_console(
 ) {
     for e in r.iter() {
         w.send(PrintConsoleLine {
-            line: format!("ERROR:{}", e.err),
+            line: format!("ERROR:{}", e.error),
         });
     }
-}
-
-fn main() -> std::io::Result<()> {
-    let mut app = App::new();
-    app.add_plugins(DefaultPlugins)
-        .add_plugin(ScriptingPlugin)
-        .add_plugin(ConsolePlugin)
-        .add_startup_system(watch_assets)
-        // register bevy_console commands
-        .add_console_command::<RunScriptCmd, _, _>(run_script_cmd)
-        .add_console_command::<DeleteScriptCmd, _, _>(delete_script_cmd)
-        // choose and register the script hosts you want to use
-        .add_script_host::<LuaScriptHost<MyLuaArg>, _>(CoreStage::PostUpdate)
-        .add_api_provider::<LuaScriptHost<MyLuaArg>>(Box::new(LuaAPIProvider))
-        .add_script_handler_stage::<LuaScriptHost<MyLuaArg>, _, 0, 0>(CoreStage::PostUpdate)
-        // add your systems
-        .add_system(trigger_on_update_lua)
-        .add_system(forward_script_err_to_console);
-
-    // at runtime press '~' for console then type in help for command formats
-    app.run();
-
-    Ok(())
 }
 
 // we use bevy-debug-console to demonstrate how this can fit in in the runtime of a game
@@ -128,30 +96,23 @@ pub fn run_script_cmd(
     mut commands: Commands,
     mut existing_scripts: Query<&mut ScriptCollection<LuaFile>>,
 ) {
-    if let Some(RunScriptCmd { path, entity }) = log.take() {
+    if let Some(Ok(RunScriptCmd { path, entity })) = log.take() {
         let handle = server.load::<LuaFile, &str>(&format!("scripts/{}", &path));
 
         match entity {
             Some(e) => {
                 if let Ok(mut scripts) = existing_scripts.get_mut(Entity::from_raw(e)) {
                     info!("Creating script: scripts/{} {:?}", &path, e);
-
-                    scripts
-                        .scripts
-                        .push(Script::<LuaFile>::new::<LuaScriptHost<MyLuaArg>>(
-                            path, handle,
-                        ));
+                    scripts.scripts.push(Script::<LuaFile>::new(path, handle));
                 } else {
-                    log.reply_failed(format!("Something went wrong"));
+                    log.reply_failed("Something went wrong".to_string());
                 };
             }
             None => {
                 info!("Creating script: scripts/{}", &path);
 
-                commands.spawn().insert(ScriptCollection::<LuaFile> {
-                    scripts: vec![Script::<LuaFile>::new::<LuaScriptHost<MyLuaArg>>(
-                        path, handle,
-                    )],
+                commands.spawn(()).insert(ScriptCollection::<LuaFile> {
+                    scripts: vec![Script::<LuaFile>::new(path, handle)],
                 });
             }
         };
@@ -160,16 +121,16 @@ pub fn run_script_cmd(
 
 /// optional, hot reloading
 fn watch_assets(server: Res<AssetServer>) {
-    server.watch_for_changes().unwrap();
+    server.asset_io().watch_for_changes().unwrap();
 }
 
 pub fn delete_script_cmd(
     mut log: ConsoleCommand<DeleteScriptCmd>,
     mut scripts: Query<(Entity, &mut ScriptCollection<LuaFile>)>,
 ) {
-    if let Some(DeleteScriptCmd { name, entity_id }) = log.take() {
+    if let Some(Ok(DeleteScriptCmd { name, entity_id })) = log.take() {
         for (e, mut s) in scripts.iter_mut() {
-            if e.id() == entity_id {
+            if e.index() == entity_id {
                 let old_len = s.scripts.len();
                 s.scripts.retain(|s| s.name() != name);
 
@@ -198,4 +159,28 @@ pub struct DeleteScriptCmd {
 
     /// the entity the script is attached to
     pub entity_id: u32,
+}
+
+fn main() -> std::io::Result<()> {
+    let mut app = App::new();
+    app.add_plugins(DefaultPlugins)
+        .add_plugin(ScriptingPlugin)
+        .add_plugin(ConsolePlugin)
+        .add_startup_system(watch_assets)
+        // register bevy_console commands
+        .add_console_command::<RunScriptCmd, _>(run_script_cmd)
+        .add_console_command::<DeleteScriptCmd, _>(delete_script_cmd)
+        // choose and register the script hosts you want to use
+        .add_script_host::<LuaScriptHost<()>, _>(CoreStage::PostUpdate)
+        .add_api_provider::<LuaScriptHost<()>>(Box::new(LuaAPIProvider))
+        .add_api_provider::<LuaScriptHost<()>>(Box::new(LuaBevyAPIProvider))
+        .add_script_handler_stage::<LuaScriptHost<()>, _, 0, 0>(CoreStage::PostUpdate)
+        // add your systems
+        .add_system(trigger_on_update_lua)
+        .add_system(forward_script_err_to_console);
+
+    info!("press '~' to open the console. Type in `run_script \"console_integration.lua\"` to run example script!");
+    app.run();
+
+    Ok(())
 }
