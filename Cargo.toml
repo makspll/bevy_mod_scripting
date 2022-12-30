@@ -56,17 +56,6 @@ rand = "0.8.5"
 bevy_console = "0.5.0"
 rhai-rand = "0.1" 
 
-# bevy_asset_loader = {git = "https://github.com/NiklasEi/bevy_asset_loader", features = ["dynamic_assets"]}
-# bevy_script_api= {path="./bevy_script_api", version="0.1.1", features=["lua","rhai"]}
-# bevy_mod_scripting_rhai = {path="languages/bevy_mod_scripting_rhai", version="0.1.1"}
-# bevy_mod_scripting_lua = {path="languages/bevy_mod_scripting_lua", version="0.1.1", features=["lua54"]}
-# bevy_mod_scripting_lua_derive = {path="languages/bevy_mod_scripting_lua_derive", version="0.1.1"}
-
-# bevy = { version = "0.9.1"}
-# serde = "1.0.137"
-# criterion = "0.3"
-
-
 [workspace]
 resolver = "2"
 members = [

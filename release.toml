@@ -1,8 +1,51 @@
 pre-release-replacements = [
-    {file="bevy_mod_scripting_derive/Cargo.toml", search="version = .*\nauthors", replace="version = \"{{version}}\"\nauthors", exactly=1},
-    {file="bevy_api_gen/Cargo.toml", search="version = .*\nauthors", replace="version = \"{{version}}\"\nauthors", exactly=1},
-    {file="bevy_event_priority/Cargo.toml", search="version = .*\nauthors", replace="version = \"{{version}}\"\nauthors", exactly=1},
-    {file="Cargo.toml", search="version = .*\nauthors", replace="version = \"{{version}}\"\nauthors", exactly=1},
-    {file="Cargo.toml", search="bevy_event_priority = .*", replace="bevy_event_priority = {path = \"bevy_event_priority\", version = \"{{version}}\"}", exactly=1},
-    {file="Cargo.toml", search="bevy_mod_scripting_derive = .*", replace="bevy_mod_scripting_derive = {path = \"bevy_mod_scripting_derive\", version = \"{{version}}\"}", exactly=1},
+    # TOP LEVEL CRATE/WORKSPACE REPLACEMENTS
+    {file="Cargo.toml", search="^version\s=\s.*$", replace="version = \"{{version}}\"", exactly=1},
+    {file="Cargo.toml", search="^(?P<h>bevy_mod_scripting_core.*)version\s=\s\".*\"(?<t>.*)$", replace="$hversion = \"{{version}}\"}$t", exactly=1},
+    {file="Cargo.toml", search="^(?P<h>bevy_mod_scripting_lua.*)version\s=\s\".*\"(?<t>.*)$", replace="$hversion = \"{{version}}\"}$t", exactly=1},
+    {file="Cargo.toml", search="^(?P<h>bevy_mod_scripting_rhai.*)version\s=\s\".*\"(?<t>.*)$", replace="$hversion = \"{{version}}\"}$t", exactly=1},
+    {file="Cargo.toml", search="^(?P<h>bevy_script_api.*)version\s=\s\".*\"(?<t>.*)$", replace="$hversion = \"{{version}}\"}$t", exactly=1},
+    
+    # BEVY_API_GEN REPLACMENENTS
+    {file="bevy_api_gen/Cargo.toml", search="^version\s=\s.*$", replace="version = \"{{version}}\"", exactly=1},
+
+    # BEVY_EVENT_PRIORITY REPLACEMENTS
+    {file="bevy_event_priority/Cargo.toml", search="^version\s=\s.*$", replace="version = \"{{version}}\"", exactly=1},
+
+    # BEVY_MOD_SCRIPTING_COMMON REPLACEMENTS
+    {file="bevy_mod_scripting_common/Cargo.toml", search="^version\s=\s.*$", replace="version = \"{{version}}\"", exactly=1},
+
+    # BEVY_MOD_SCRIPTING_CORE REPLACEMENTS
+    {file="bevy_mod_scripting_core/Cargo.toml", search="^version\s=\s.*$", replace="version = \"{{version}}\"", exactly=1},
+    {file="bevy_mod_scripting_core/Cargo.toml", search="^(?P<h>bevy_event_priority.*)version\s=\s\".*\"(?<t>.*)$", replace="$hversion = \"{{version}}\"}$t", exactly=1},
+
+    # BEVY_MOD_SCRIPTING_DERIVE REPLACEMENTS
+    {file="bevy_mod_scripting_derive/Cargo.toml", search="^version\s=\s.*$", replace="version = \"{{version}}\"", exactly=1},
+    {file="bevy_mod_scripting_derive/Cargo.toml", search="^(?P<h>bevy_mod_scripting_common.*)version\s=\s\".*\"(?<t>.*)$", replace="$hversion = \"{{version}}\"}$t", exactly=1},
+
+    # BEVY_SCRIPT_API REPLACEMENTS
+    {file="bevy_script_api/Cargo.toml", search="^version\s=\s.*$", replace="version = \"{{version}}\"", exactly=1},
+    {file="bevy_script_api/Cargo.toml", search="^(?P<h>bevy_mod_scripting_derive.*)version\s=\s\".*\"(?<t>.*)$", replace="$hversion = \"{{version}}\"}$t", exactly=1},
+    {file="bevy_script_api/Cargo.toml", search="^(?P<h>bevy_mod_scripting_core.*)version\s=\s\".*\"(?<t>.*)$", replace="$hversion = \"{{version}}\"}$t", exactly=1},
+    {file="bevy_script_api/Cargo.toml", search="^(?P<h>bevy_mod_scripting_lua.*)version\s=\s\".*\"(?<t>.*)$", replace="$hversion = \"{{version}}\"}$t", exactly=1},
+    {file="bevy_script_api/Cargo.toml", search="^(?P<h>bevy_mod_scripting_lua_derive.*)version\s=\s\".*\"(?<t>.*)$", replace="$hversion = \"{{version}}\"}$t", exactly=1},
+    {file="bevy_script_api/Cargo.toml", search="^(?P<h>bevy_mod_scripting_rhai.*)version\s=\s\".*\"(?<t>.*)$", replace="$hversion = \"{{version}}\"}$t", exactly=1},
+
+    ## LANGUAGES
+    # BEVY_MOD_SCRIPTING_LUA REPLACEMENTS
+    {file="languages/bevy_mod_scripting_lua/Cargo.toml", search="^version\s=\s.*$", replace="version = \"{{version}}\"", exactly=1},
+    {file="languages/bevy_mod_scripting_lua/Cargo.toml", search="^(?P<h>bevy_mod_scripting_core.*)version\s=\s\".*\"(?<t>.*)$", replace="$hversion = \"{{version}}\"}$t", exactly=1},
+
+    # BEVY_MOD_SCRIPTING_RHAI REPLACEMENTS
+    {file="languages/bevy_mod_scripting_rhai/Cargo.toml", search="^version\s=\s.*$", replace="version = \"{{version}}\"", exactly=1},
+    {file="languages/bevy_mod_scripting_rhai/Cargo.toml", search="^(?P<h>bevy_mod_scripting_core.*)version\s=\s\".*\"(?<t>.*)$", replace="$hversion = \"{{version}}\"}$t", exactly=1},
+
+    # BEVY_MOD_SCRIPTING_LUA_DERIVE REPLACEMENTS
+    {file="languages/bevy_mod_scripting_lua_derive/Cargo.toml", search="^version\s=\s.*$", replace="version = \"{{version}}\"", exactly=1},
+    {file="languages/bevy_mod_scripting_lua_derive/Cargo.toml", search="^(?P<h>bevy_mod_scripting_common.*)version\s=\s\".*\"(?<t>.*)$", replace="$hversion = \"{{version}}\"}$t", exactly=1},
+
+    # BEVY_MOD_SCRIPTING_RHAI_DERIVE REPLACEMENTS
+    {file="languages/bevy_mod_scripting_rhai_derive/Cargo.toml", search="^version\s=\s.*$", replace="version = \"{{version}}\"", exactly=1},
+    {file="languages/bevy_mod_scripting_rhai_derive/Cargo.toml", search="^(?P<h>bevy_mod_scripting_common.*)version\s=\s\".*\"(?<t>.*)$", replace="$hversion = \"{{version}}\"}$t", exactly=1},
+
 ]

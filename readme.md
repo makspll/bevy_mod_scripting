@@ -5,9 +5,7 @@
 # Bevy Scripting
 
 While for Bevy out of the box scripting is a non-goal, scripting support is being worked on. 
-This crate is an attempt to make scripting a possibility with the current state of Bevy.
-
-The API will likely change in the future as more scripting support is rolled out.
+This crate is an attempt to make scripting a possibility with the current state of Bevy. It is by no means optimized, perfect or even complete so far. The API will likely change a lot as Bevy grows.
 
 
 ## Why Use Scripts?
