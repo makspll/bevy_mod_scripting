@@ -47,7 +47,7 @@ To install:
 
 An example can be seen below
 
-```rust, no_run
+```rust, ignore
 
 fn main() -> std::io::Result<()> {
     let mut app = App::new();
