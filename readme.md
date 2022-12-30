@@ -47,7 +47,7 @@ To install:
 
 An example can be seen below
 
-```rust,ignore
+```rust, no_run
 
 fn main() -> std::io::Result<()> {
     let mut app = App::new();
@@ -233,7 +233,7 @@ impl APIProvider for RhaiAPI {
 
 Register the API providers like so:
 
-```rust,ignore
+```rust, ignore
     app.add_plugins(DefaultPlugins)
         .add_plugin(ScriptingPlugin)
         .add_script_host::<LuaScriptHost<MyLuaArg>, _>(CoreStage::PostUpdate)
@@ -248,7 +248,7 @@ Note that the `APIProvider` interface also contains `setup_script` and `get_doc_
 ### Documentation Generation
 Documentation features are exposed at runtime via the `update_documentation` builder trait method for `App`:
 
-```rust
+```rust, no_run
 use bevy::prelude::*;
 use bevy_mod_scripting::prelude::*;
 
