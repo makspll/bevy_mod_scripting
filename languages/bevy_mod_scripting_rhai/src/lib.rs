@@ -183,6 +183,10 @@ impl<A: FuncArgs + Send + Clone + Sync + 'static> ScriptHost for RhaiScriptHost<
                     }
                 };
             }
+
+            // executing this at the end here means we execute global statements exactly once
+            // all this method call does is set a variable on the AST to NONE so should not affect performance
+            ctx.ast.clear_statements();
         });
     }
 }
