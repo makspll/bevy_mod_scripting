@@ -10,4 +10,8 @@ impl DocFragment for RhaiDocFragment {
     fn gen_docs(self) -> Result<(), ScriptError> {
         todo!()
     }
+
+    fn name(&self) -> &'static str {
+        todo!()
+    }
 }
