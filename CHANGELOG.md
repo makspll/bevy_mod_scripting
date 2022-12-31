@@ -3,12 +3,14 @@
 ## v0.2.0
 ### Added
 - Added support for the Bevy API for Rhai
+- Foundations laid for proxy macro for Rhai
 - Added `game_of_life` and `bevy_api` examples for Rhai
+- Added more hooks for APIProviders. `entity` and `world` constants are now set by API providers and hence you must register the `BevyAPIProvider` for your scripting language to access those. This let's us accomodate people who want barebones scripting without access to Bevy, or roll their own fully fledged API's.
 ### Changed
 - Revived `console_integration` examples
 - Major changes to low level API's
 - Major import structure changes
-- Split package into smaller packages
+- Split crate into smaller crates
 - Added more control over what's pulled into the dependency tree with finely grained features
 
 ## v0.1.1
