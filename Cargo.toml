@@ -39,6 +39,7 @@ unsafe_lua_modules=["bevy_mod_scripting_lua/unsafe_lua_modules"]
 teal = ["bevy_mod_scripting_lua/teal"]
 mlua_serialize = ["bevy_mod_scripting_lua/mlua_serialize"]
 mlua_macros = ["bevy_mod_scripting_lua/mlua_macros"]
+mlua_async = ["bevy_mod_scripting_lua/mlua_async"]
 
 ## rhai
 rhai = ["bevy_mod_scripting_rhai"]

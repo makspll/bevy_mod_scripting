@@ -26,6 +26,7 @@ luajit = ["tealr/mlua_luajit"]
 luajit52 = ["tealr/mlua_luajit52"]
 mlua_serialize = ["tealr/mlua_serialize"]
 mlua_macros = ["tealr/mlua_macros"]
+mlua_async = ["tealr/mlua_async"]
 
 [lib]
 name="bevy_mod_scripting_lua"
