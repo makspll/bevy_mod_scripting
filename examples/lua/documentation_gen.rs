@@ -83,7 +83,7 @@ impl APIProvider for LuaAPIProvider {
     }
 
     fn get_doc_fragment(&self) -> Option<Self::DocTarget> {
-        Some(LuaDocFragment::new(|tw|
+        Some(LuaDocFragment::new("MyAPI", |tw|
                     // we must select items we want included in the documentation
                     tw.process_type::<APIModule>()
                     .document_global_instance::<Export>().unwrap()))

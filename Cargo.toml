@@ -12,6 +12,10 @@ categories = ["game-development"]
 readme = "readme.md"
 include= ["readme.md","/src","/examples","/assets","LICENSE"]
 
+[[bin]]
+name = "bevy_mod_scripting_doc_gen"
+path = "src/documentation/main.rs"
+
 [lib]
 name = "bevy_mod_scripting"
 path = "src/lib.rs"
@@ -46,6 +50,7 @@ rhai = ["bevy_mod_scripting_rhai"]
 rhai_script_api=["bevy_script_api/rhai"]
 
 [dependencies]
+bevy = { version = "0.9.1", default-features = false}
 bevy_mod_scripting_core = { path = "bevy_mod_scripting_core", version = "0.1.1" }
 bevy_mod_scripting_lua = { path = "languages/bevy_mod_scripting_lua", version = "0.1.1", optional = true }
 bevy_mod_scripting_rhai = { path = "languages/bevy_mod_scripting_rhai", version = "0.1.1", optional = true}

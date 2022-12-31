@@ -48,7 +48,9 @@ impl APIProvider for LifeAPI {
 
     fn get_doc_fragment(&self) -> Option<Self::DocTarget> {
         // this will enable us type casting in teal
-        Some(LuaDocFragment::new(|tw| tw.process_type::<LuaLifeState>()))
+        Some(LuaDocFragment::new("MyAPI", |tw| {
+            tw.process_type::<LuaLifeState>()
+        }))
     }
 
     fn register_with_app(&self, app: &mut App) {

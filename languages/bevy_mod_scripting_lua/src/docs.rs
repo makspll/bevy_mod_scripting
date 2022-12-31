@@ -12,25 +12,62 @@ use bevy_mod_scripting_core::prelude::*;
 
 pub type TypeWalkerBuilder = fn(TypeWalker) -> TypeWalker;
 
+static DEFAULT_DOC_CONFIG: fn(&str) -> String = |s| {
+    format!(
+        r#"
+{{
+    "doc_template": "Builtin",
+    "page_root": "",
+    "store_in": "{s}",
+    "name": "{s}",
+    "type_def_files": {{
+      "runner": "Builtin",
+      "templates": {{
+        "teal": {{
+          "extension": ".d.tl",
+          "template": "Teal"
+        }}
+      }}
+    }}
+  }}
+
+"#
+    )
+};
+
+#[cfg(feature = "teal")]
+static DEFAULT_TEAL_CONFIG: &str = r#"
+return {
+    global_env_def="types/types",
+    build_dir="build/"
+}
+"#;
+
 struct Fragment {
     builder: TypeWalkerBuilder,
 }
 
 pub struct LuaDocFragment {
+    name: &'static str,
     walker: Vec<Fragment>,
 }
 
 /// A piece of lua documentation,
 /// Each piece is combined into one large documentation page, and also a single teal declaration file if the `teal` feature is enabled
 impl LuaDocFragment {
-    pub fn new(f: TypeWalkerBuilder) -> Self {
+    pub fn new(name: &'static str, f: TypeWalkerBuilder) -> Self {
         Self {
+            name,
             walker: vec![Fragment { builder: f }],
         }
     }
 }
 
 impl DocFragment for LuaDocFragment {
+    fn name(&self) -> &'static str {
+        self.name
+    }
+
     fn merge(mut self, o: Self) -> Self {
         self.walker.extend(o.walker.into_iter());
         self
@@ -46,38 +83,46 @@ impl DocFragment for LuaDocFragment {
         fs::create_dir_all(script_doc_dir)
             .expect("Could not create `.../assets/scripts/doc` directories");
 
+        let docs_name = self.name().to_owned();
+
         // build the type walker
         let tw = self
             .walker
             .into_iter()
             .fold(TypeWalker::new(), |a, v| (v.builder)(a));
 
-        // generate temporary json file
-        let json = serde_json::to_string_pretty(&tw)
+        // generate json file
+        let mut json = serde_json::to_string_pretty(&tw)
             .map_err(|e| ScriptError::DocGenError(e.to_string()))?;
-        let temp_dir = &std::env::temp_dir().join("bevy_mod_scripting.temp.json");
 
-        let mut json_file =
-            File::create(temp_dir).map_err(|e| ScriptError::DocGenError(e.to_string()))?;
+        // temporary fix for incompatibility in json formats
+        json.remove(json.len() - 1);
+        json.push_str(",\n\"tealr_version_used\": \"0.9.0-alpha3\"\n}");
 
-        json_file
-            .write_all(json.as_bytes())
+        let json_path = script_doc_dir.join(format!("{}.json", docs_name));
+
+        File::create(json_path)
+            .and_then(|mut file| {
+                file.write_all(json.as_bytes())?;
+                file.flush()
+            })
             .map_err(|e| ScriptError::DocGenError(e.to_string()))?;
-        json_file.flush().unwrap();
 
+        // generate doc config files if they don't exist
+        if !script_doc_dir.join("tealr_doc_gen_config.json").exists() {
+            let config_path = script_doc_dir.join("tealr_doc_gen_config.json");
+            File::create(config_path)
+                .and_then(|mut file| file.write_all(DEFAULT_DOC_CONFIG(&docs_name).as_bytes()))
+                .map_err(|e| ScriptError::DocGenError(e.to_string()))?;
+        }
+
+        // generate docs
         Command::new("tealr_doc_gen")
-            .args([
-                "--json",
-                temp_dir.to_str().unwrap(),
-                "--name",
-                "LuaApi",
-                "--build_folder",
-                fs::canonicalize(script_doc_dir).unwrap().to_str().unwrap(),
-            ])
+            .current_dir(script_doc_dir)
+            .args(["run"])
             .status()
             .map_err(|e| ScriptError::DocGenError(e.to_string()))?;
 
-        fs::remove_file(temp_dir).unwrap();
         #[cfg(feature = "teal")]
         {
             // now generate teal declaration (d.tl) file
@@ -106,15 +151,7 @@ impl DocFragment for LuaDocFragment {
                 let mut tl_file = File::create(tl_config_path)
                     .map_err(|e| ScriptError::DocGenError(e.to_string()))?;
                 tl_file
-                    .write_all(
-                        r#"
-return {
-    global_env_def="types/types",
-    build_dir="build/"
-}
-"#
-                        .as_bytes(),
-                    )
+                    .write_all(DEFAULT_TEAL_CONFIG.as_bytes())
                     .map_err(|e| ScriptError::DocGenError(e.to_string()))?;
             }
         }
