@@ -1,6 +1,13 @@
 on:
   release:
     types: [published]
+  workflow_dispatch:
+    inputs:
+      manual_tag:
+        description: 'release tag'
+        required: true
+        default: 'undefined'
+        type: string
 
 name: Documentation Generation
 
@@ -34,4 +41,4 @@ jobs:
           destination-repository-name: 'bevy_mod_scripting_lua'
           user-email: makspl17@gmail.com
           target-branch: main
-          target-directory: ${{ github.event.release.tag_name }}
+          target-directory: ${{ github.event.release.tag_name || inputs.manual_tag }}
