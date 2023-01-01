@@ -22,12 +22,13 @@ jobs:
         with:
           command: run
           args: --features=lua54,lua_script_api lua
+      - run: mv assets/scripts/doc/BevyAPI /BevyAPI
       - name: Pushes to another repository
         uses: cpina/github-action-push-to-another-repository@main
         env:
           SSH_DEPLOY_KEY: ${{ secrets.LUA_DOCUMENTATION_SSH_KEY }}
         with:
-          source-directory: 'assets/scripts/doc/BevyAPI'
+          source-directory: '/BevyAPI'
           destination-github-username: 'makspll'
           destination-repository-name: 'bevy_mod_scripting_lua'
           user-email: makspl17@gmail.com
