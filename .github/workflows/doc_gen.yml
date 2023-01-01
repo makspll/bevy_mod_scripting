@@ -30,8 +30,7 @@ jobs:
         with:
           command: run
           args: --features=lua54,lua_script_api lua
-      - run: |
-        sed -i 's/\"page_root\": \"\"/\"page_root\": \"bevy_mod_scripting_lua/{{ github.event.release.tag_name || inputs.manual_tag }}/\"/g' tealr_doc_gen_config.json 
+      - run: 'sed -i "s/\"page_root\": \"\"/\"page_root\": \"bevy_mod_scripting_lua/{{ github.event.release.tag_name || inputs.manual_tag }}/\"/g" tealr_doc_gen_config.json'
       - name: Pushes to another repository
         uses: cpina/github-action-push-to-another-repository@main
         env:
