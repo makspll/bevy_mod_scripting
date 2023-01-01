@@ -7,6 +7,7 @@ name: Documentation Generation
 jobs:
   lua:
     name: Lua Documentation
+    runs-on: ubuntu-latest
     steps:
       - name: Install alsa and udev
         run: sudo apt-get update; sudo apt-get install --no-install-recommends libasound2-dev libudev-dev
