@@ -29,7 +29,7 @@ jobs:
         with:
           command: run
           args: --features=lua54,lua_script_api lua
-      - run: ls -a && ls assets -a && ls assets/scripts -a && ls assets/scripts/doc -a 
+      - run: find / -name "BevyAPI" 
       - run: mv ./assets/scripts/doc/BevyAPI /BevyAPI
       - name: Pushes to another repository
         uses: cpina/github-action-push-to-another-repository@main
