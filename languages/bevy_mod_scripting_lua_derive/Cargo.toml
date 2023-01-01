@@ -1,6 +1,6 @@
 [package]
 name = "bevy_mod_scripting_lua_derive"
-version = "0.1.1"
+version = "0.2.0"
 authors = ["Maksymilian Mozolewski <makspl17@gmail.com>"]
 edition = "2021"
 license = "MIT"
