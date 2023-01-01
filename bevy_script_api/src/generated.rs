@@ -10039,7 +10039,7 @@ impl APIProvider for LuaBevyAPIProvider {
             .map_err(|e| ScriptError::Other(e.to_string()))
     }
     fn get_doc_fragment(&self) -> Option<Self::DocTarget> {
-        Some(LuaDocFragment::new("MyAPI", |tw| {
+        Some(LuaDocFragment::new("BevyAPI", |tw| {
             tw
 			.document_global_instance::<BevyAPIGlobals>().expect("Something went wrong documenting globals")
 			.process_type::<LuaAlignContent>()

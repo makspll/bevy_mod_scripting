@@ -26,7 +26,7 @@ jobs:
         env:
           SSH_DEPLOY_KEY: ${{ secrets.LUA_DOCUMENTATION_SSH_KEY }}
         with:
-          source-directory: 'assets/scripts/doc/pages'
+          source-directory: 'assets/scripts/doc/BevyAPI'
           destination-github-username: 'makspll'
           destination-repository-name: 'bevy_mod_scripting_lua'
           user-email: makspl17@gmail.com
