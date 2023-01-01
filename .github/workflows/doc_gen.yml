@@ -1,0 +1,34 @@
+on:
+  release:
+    types: [published]
+
+name: Documentation Generation
+
+jobs:
+  lua:
+    name: Lua Documentation
+    steps:
+      - name: Install alsa and udev
+        run: sudo apt-get update; sudo apt-get install --no-install-recommends libasound2-dev libudev-dev
+      - uses: actions/checkout@v2
+      - uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: stable
+          override: true
+      - uses: Swatinem/rust-cache@v1
+      - uses: actions-rs/cargo@v1
+        with:
+          command: run
+          args: --features=lua54,lua_script_api lua
+      - name: Pushes to another repository
+        uses: cpina/github-action-push-to-another-repository@main
+        env:
+          SSH_DEPLOY_KEY: ${{ secrets.LUA_DOCUMENTATION_SSH_KEY }}
+        with:
+          source-directory: 'assets/scripts/doc/pages'
+          destination-github-username: 'makspll'
+          destination-repository-name: 'bevy_mod_scripting_lua'
+          user-email: makspl17@gmail.com
+          target-branch: main
+          target-directory: ${{ github.event.release.tag_name }}
