@@ -97,7 +97,7 @@ impl DocFragment for LuaDocFragment {
 
         // temporary fix for incompatibility in json formats
         json.remove(json.len() - 1);
-        json.push_str(",\n\"tealr_version_used\": \"0.9.0-alpha3\"\n}");
+        json.push_str(",\n\"tealr_version_used\": \"0.9.0-alpha3\",\n\"extra_page\": []\n}");
 
         let json_path = script_doc_dir.join(format!("{}.json", docs_name));
 
