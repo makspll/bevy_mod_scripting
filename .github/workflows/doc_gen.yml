@@ -24,13 +24,12 @@ jobs:
           profile: minimal
           toolchain: stable
           override: true
-      - uses: Swatinem/rust-cache@v1
-      # - uses: actions-rs/cargo@v1
-      #   with:
-      #     command: run
-      #     args: --features=lua54,lua_script_api lua
+      - uses: Swatinem/rust-cache@v2.2.0
       - run: cargo run --features=lua54,lua_script_api lua
-      - run: find / -name "BevyAPI" 
+      - run: ls
+      - run: ls assets/
+      - run: ls assets/scripts/
+      - run: ls assets/scripts/doc/
       - run: mv ./assets/scripts/doc/BevyAPI /BevyAPI
       - name: Pushes to another repository
         uses: cpina/github-action-push-to-another-repository@main
