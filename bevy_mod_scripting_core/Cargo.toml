@@ -11,18 +11,19 @@ keywords = ["bevy", "gamedev", "scripting", "lua"]
 categories = ["game-development"]
 readme = "readme.md"
 
+
+[package.metadata.release]
+pre-release-replacements = [
+    {file="Cargo.toml", search='^version\s*=\s*.*$', replace="version = \"{{version}}\"", exactly=1},
+    {file="Cargo.toml", search='^(?P<h>bevy_event_priority\s*=.*)version\s*=\s*".*"(?P<t>.*)$', replace="${h}version = \"{{version}}\"${t}", exactly=1},
+]
+
+
 [lib]
 name = "bevy_mod_scripting_core"
 path = "src/lib.rs"
 
-# [package.metadata.docs.rs]
-# features = []
-
-# [package.metadata.release]
-# enable-features=[]
-
 [features]
-
 # if enabled enables documentation updating in optimized builds
 doc_always = []
 

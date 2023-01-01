@@ -23,6 +23,15 @@ path = "src/lib.rs"
 [package.metadata."docs.rs"]
 features = ["lua","rhai","lua_script_api","rhai_script_api","teal"]
 
+[package.metadata.release]
+pre-release-replacements = [
+    {file="Cargo.toml", search='^version\s*=\s*.*$', replace="version = \"{{version}}\"", exactly=1},
+    {file="Cargo.toml", search='^(?P<h>bevy_mod_scripting_core\s*=.*)version\s*=\s*".*"(?P<t>.*)$', replace="${h}version = \"{{version}}\"${t}", exactly=1},
+    {file="Cargo.toml", search='^(?P<h>bevy_mod_scripting_lua\s*=.*)version\s*=\s*".*"(?P<t>.*)$', replace="${h}version = \"{{version}}\"${t}", exactly=1},
+    {file="Cargo.toml", search='^(?P<h>bevy_mod_scripting_rhai\s*=.*)version\s*=\s*".*"(?P<t>.*)$', replace="${h}version = \"{{version}}\"${t}", exactly=1},
+    {file="Cargo.toml", search='^(?P<h>bevy_script_api\s*=.*)version\s*=\s*".*"(?P<t>.*)$', replace="${h}version = \"{{version}}\"${t}", exactly=1},   
+]
+
 [features]
 ## core
 doc_always = ["bevy_mod_scripting_core/doc_always"]

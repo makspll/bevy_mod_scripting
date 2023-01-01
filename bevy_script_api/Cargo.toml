@@ -11,6 +11,16 @@ keywords = ["bevy", "gamedev", "scripting", "lua","rhai"]
 categories = ["game-development"]
 readme = "readme.md"
 
+[package.metadata.release]
+pre-release-replacements = [
+    {file="Cargo.toml", search='^version\s*=\s*.*$', replace="version = \"{{version}}\"", exactly=1},
+    {file="Cargo.toml", search='^(?P<h>bevy_mod_scripting_derive\s*=.*)version\s*=\s*".*"(?P<t>.*)$', replace="${h}version = \"{{version}}\"${t}", exactly=1},
+    {file="Cargo.toml", search='^(?P<h>bevy_mod_scripting_core\s*=.*)version\s*=\s*".*"(?P<t>.*)$', replace="${h}version = \"{{version}}\"${t}", exactly=1},
+    {file="Cargo.toml", search='^(?P<h>bevy_mod_scripting_lua\s*=.*)version\s*=\s*".*"(?P<t>.*)$', replace="${h}version = \"{{version}}\"${t}", exactly=1},
+    {file="Cargo.toml", search='^(?P<h>bevy_mod_scripting_lua_derive\s*=.*)version\s*=\s*".*"(?P<t>.*)$', replace="${h}version = \"{{version}}\"${t}", exactly=1},
+    {file="Cargo.toml", search='^(?P<h>bevy_mod_scripting_rhai\s*=.*)version\s*=\s*".*"(?P<t>.*)$', replace="${h}version = \"{{version}}\"${t}", exactly=1},
+]
+
 [features]
 lua = ["bevy_mod_scripting_lua","bevy_mod_scripting_lua_derive"]
 rhai = ["bevy_mod_scripting_rhai"]
