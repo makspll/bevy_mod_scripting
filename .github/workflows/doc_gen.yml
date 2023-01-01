@@ -24,12 +24,12 @@ jobs:
           profile: minimal
           toolchain: stable
           override: true
+      - run: cargo install --git https://github.com/lenscas/tealr_doc_gen --rev 91afd4a528e7f5b746ac3a6b299c422b42c05db6
       - uses: Swatinem/rust-cache@v2.2.0
-      - run: cargo run --features=lua54,lua_script_api lua
-      - run: ls
-      - run: ls assets/
-      - run: ls assets/scripts/
-      - run: ls assets/scripts/doc/
+      - uses: actions-rs/cargo@v1
+        with:
+          command: run
+          args: --features=lua54,lua_script_api lua
       - run: mv ./assets/scripts/doc/BevyAPI /BevyAPI
       - name: Pushes to another repository
         uses: cpina/github-action-push-to-another-repository@main

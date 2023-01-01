@@ -244,9 +244,7 @@ impl<T: ScriptHost> APIProviders<T> {
                 }
             }
         }
-        d.map(|d| d.gen_docs());
-
-        Ok(())
+        d.map(|d| d.gen_docs()).unwrap_or_else(|| Ok(()))
     }
 }
 
