@@ -39,7 +39,7 @@ jobs:
         env:
           SSH_DEPLOY_KEY: ${{ secrets.LUA_DOCUMENTATION_SSH_KEY }}
         with:
-          source-directory: './assets/scripts/doc/BevyAPI/${{ github.event.release.tag_name || inputs.manual_tag  }}'
+          source-directory: './assets/scripts/doc/BevyAPI/bevy_mod_scripting_lua/${{ github.event.release.tag_name || inputs.manual_tag  }}'
           destination-github-username: 'makspll'
           destination-repository-name: 'bevy_mod_scripting_lua'
           user-email: makspl17@gmail.com
@@ -51,7 +51,7 @@ jobs:
         env:
           SSH_DEPLOY_KEY: ${{ secrets.LUA_DOCUMENTATION_SSH_KEY }}
         with:
-          source-directory: './assets/scripts/doc/BevyAPI/${{ github.event.release.tag_name || inputs.manual_tag  }}'
+          source-directory: './assets/scripts/doc/BevyAPI/bevy_mod_scripting_lua/${{ github.event.release.tag_name || inputs.manual_tag  }}'
           destination-github-username: 'makspll'
           destination-repository-name: 'bevy_mod_scripting_lua'
           user-email: makspl17@gmail.com
