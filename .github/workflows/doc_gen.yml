@@ -34,7 +34,7 @@ jobs:
           command: run
           args: --features=lua54,lua_script_api lua
       - run: cat ./assets/scripts/doc/tealr_doc_gen_config.json
-      - name: Pushes to another repository
+      - name: Push to pages
         uses: cpina/github-action-push-to-another-repository@main
         env:
           SSH_DEPLOY_KEY: ${{ secrets.LUA_DOCUMENTATION_SSH_KEY }}
@@ -45,3 +45,16 @@ jobs:
           user-email: makspl17@gmail.com
           target-branch: main
           target-directory: ${{ github.event.release.tag_name || inputs.manual_tag }}
+      - name: Pushes to pages as latest
+        if: ${{ github.event.release.tag_name }} == ''
+        uses: cpina/github-action-push-to-another-repository@main
+        env:
+          SSH_DEPLOY_KEY: ${{ secrets.LUA_DOCUMENTATION_SSH_KEY }}
+        with:
+          source-directory: './assets/scripts/doc/BevyAPI/${{ github.event.release.tag_name || inputs.manual_tag  }}'
+          destination-github-username: 'makspll'
+          destination-repository-name: 'bevy_mod_scripting_lua'
+          user-email: makspl17@gmail.com
+          target-branch: main
+          target-directory: latest
+
