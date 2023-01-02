@@ -1,6 +1,6 @@
 [package]
 name = "bevy_script_api"
-version = "0.2.0"
+version = "0.2.1"
 authors = ["Maksymilian Mozolewski <makspl17@gmail.com>"]
 edition = "2021"
 license = "MIT"
@@ -27,12 +27,12 @@ rhai = ["bevy_mod_scripting_rhai"]
 
 [dependencies]
 bevy = { version = "0.9.1", default-features = false, features=["bevy_asset","bevy_gltf","bevy_animation","bevy_core_pipeline","bevy_ui","bevy_pbr","bevy_render","bevy_text","bevy_sprite","filesystem_watcher"]}
-bevy_mod_scripting_derive = { path="../bevy_mod_scripting_derive", version = "0.2.0" }
-bevy_mod_scripting_core = { path="../bevy_mod_scripting_core", version = "0.2.0" }
+bevy_mod_scripting_derive = { path="../bevy_mod_scripting_derive", version = "0.2.1" }
+bevy_mod_scripting_core = { path="../bevy_mod_scripting_core", version = "0.2.1" }
 parking_lot="0.12.1"
 paste="1.0.7"
 thiserror="1.0.32"
 # lua
-bevy_mod_scripting_lua={path="../languages/bevy_mod_scripting_lua", version = "0.2.0", optional=true}
-bevy_mod_scripting_lua_derive={path="../languages/bevy_mod_scripting_lua_derive", version = "0.2.0", optional=true}
-bevy_mod_scripting_rhai={path="../languages/bevy_mod_scripting_rhai", version = "0.2.0", optional=true}
+bevy_mod_scripting_lua={path="../languages/bevy_mod_scripting_lua", version = "0.2.1", optional=true}
+bevy_mod_scripting_lua_derive={path="../languages/bevy_mod_scripting_lua_derive", version = "0.2.1", optional=true}
+bevy_mod_scripting_rhai={path="../languages/bevy_mod_scripting_rhai", version = "0.2.1", optional=true}
