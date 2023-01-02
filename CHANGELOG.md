@@ -1,4 +1,10 @@
 # bevy_mod_scripting Changelog
+## v0.2.1
+### Added
+- Automatic documentation publishing for lua Bevy api 
+### Fixed
+- Fixed bug where errors in documenation generation didn't propagate properly
+- Fixed broken link in readme.md
 
 ## v0.2.0
 ### Added

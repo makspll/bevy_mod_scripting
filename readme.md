@@ -293,7 +293,7 @@ It is probably a wise idea to setup a separate executable whose purpose is to on
 
 Lua documentation is provided by `tealr`, a wrapper around the `mlua` lua api which decorates their standard types. On top of providing documentation generation it's also capable of generating `d.tl` files which can be used to introduce static typing to lua via the `teal` project (you do not need to use teal to generate documentation). 
 
-This can all be seen at work in the [this example](bevy_mod_scripting/examples/documentation_gen_lua.rs).
+This can all be seen at work in the [this example](bevy_mod_scripting/examples/lua/documentation_gen.rs).
 
 ##### Teal - Lua static typing
 
