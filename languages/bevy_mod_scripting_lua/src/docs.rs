@@ -92,12 +92,12 @@ impl DocFragment for LuaDocFragment {
             .fold(TypeWalker::new(), |a, v| (v.builder)(a));
 
         // generate json file
-        let mut json = serde_json::to_string_pretty(&tw)
+        let json = serde_json::to_string_pretty(&tw)
             .map_err(|e| ScriptError::DocGenError(e.to_string()))?;
 
         // temporary fix for incompatibility in json formats
-        json.remove(json.len() - 1);
-        json.push_str(",\n\"tealr_version_used\": \"0.9.0-alpha3\",\n\"extra_page\": []\n}");
+        // json.remove(json.len() - 1);
+        // json.push_str(",\n\"tealr_version_used\": \"0.9.0-alpha3\",\n\"extra_page\": []\n}");
 
         let json_path = script_doc_dir.join(format!("{}.json", docs_name));
 
@@ -125,23 +125,27 @@ impl DocFragment for LuaDocFragment {
 
         #[cfg(feature = "teal")]
         {
-            // now generate teal declaration (d.tl) file
+            // now manage the definition (d.tl) file
+            let definition_directory = script_asset_path.join("types");
+            fs::create_dir_all(&definition_directory).map_err(|e| {
+                ScriptError::DocGenError(format!(
+                    "Could not create `{}` directories: {e}",
+                    &definition_directory.display()
+                ))
+            })?;
 
-            let script_types_dir = &script_asset_path.join("types");
-            fs::create_dir_all(script_types_dir)
-                .expect("Could not create `.../assets/scripts/types` directories");
-
-            let decl_path = &script_types_dir.join("types.d.tl");
-            // generate declaration file
-            let decl_file_contents = tw.generate("types", true).unwrap();
-
-            let mut decl_file =
-                File::create(decl_path).map_err(|e| ScriptError::DocGenError(e.to_string()))?;
-
-            decl_file
-                .write_all(decl_file_contents.as_bytes())
-                .expect("Failed to write to declaration file");
-            decl_file.flush().unwrap();
+            let definition_file_path = script_doc_dir
+                .join(&docs_name)
+                .join("definitions")
+                .join(docs_name + ".d.tl");
+            let output_definition_file_path = script_asset_path.join("types").join("types.d.tl");
+            fs::copy(&definition_file_path, &output_definition_file_path).map_err(|e| {
+                ScriptError::DocGenError(format!(
+                    "Could not copy definition file from `{}` to `{}`: {e}",
+                    definition_file_path.display(),
+                    output_definition_file_path.display()
+                ))
+            })?;
 
             // finally create a tlconfig.lua file if doesn't exist
             // we do this to avoid problems with varying teal configurations

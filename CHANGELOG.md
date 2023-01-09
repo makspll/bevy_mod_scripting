@@ -1,4 +1,7 @@
 # bevy_mod_scripting Changelog
+## Unreleased 
+- Bump `tealr_doc_gen` and `tealr` versions
+
 ## v0.2.1
 ### Added
 - Automatic documentation publishing for lua Bevy api 
