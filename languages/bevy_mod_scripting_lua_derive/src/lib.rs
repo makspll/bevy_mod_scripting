@@ -27,13 +27,7 @@ pub fn impl_lua_newtype(tokens: TokenStream) -> TokenStream {
 pub fn impl_lua_proxy(input: TokenStream) -> TokenStream {
     let derive_input = parse_macro_input!(input as DeriveInput);
 
-    let meta: Result<ProxyMeta, syn::Error> = derive_input
-        .attrs
-        .iter()
-        .filter_map(|attr| attr.parse_meta().ok())
-        .find(|attr| attr.path().is_ident("proxy"))
-        .ok_or_else(|| syn::Error::new_spanned(&derive_input, "`proxy` meta missing"))
-        .and_then(|attr| (&derive_input, attr).try_into());
+    let meta: Result<ProxyMeta, syn::Error> = derive_input.try_into();
 
     Default::default()
 }
