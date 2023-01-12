@@ -1,7 +1,7 @@
 use bevy::{app::AppExit, prelude::*};
 
 use bevy_mod_scripting::{
-    api::{impl_lua_newtype, impl_script_newtype, lua::bevy::LuaWorld, ScriptRef},
+    api::{impl_lua_newtype, impl_script_newtype, lua::bevy::LuaWorld, ScriptProxy, ScriptRef},
     prelude::*,
 };
 
@@ -18,6 +18,10 @@ pub struct MyThing {
     usize: usize,
     string: String,
 }
+
+#[derive(ScriptProxy)]
+#[proxy(languages("on_feature(lua)"))]
+pub struct Lol {}
 
 impl MyThing {
     pub fn do_something_cool(&self) -> String {

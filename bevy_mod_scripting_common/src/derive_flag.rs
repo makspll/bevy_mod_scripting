@@ -75,29 +75,6 @@ pub enum DeriveFlag {
 }
 );
 
-// #[derive(PartialEq, Eq, Hash, Debug)]
-// pub(crate) struct MethodMacroInvokation {
-//     pub target: TypePath,
-//     pub arrow: Token![->],
-//     pub identifier: LuaMethodType,
-//     pub paren: Paren,
-//     pub args: Punctuated<MethodMacroArg, Token![,]>,
-// }
-
-// #[allow(clippy::mixed_read_write_in_expression)]
-// impl Parse for MethodMacroInvokation {
-//     fn parse(input: ParseStream) -> Result<Self, syn::Error> {
-//         let f;
-//         Ok(Self {
-//             target: input.parse()?,
-//             arrow: input.parse()?,
-//             identifier: input.parse()?,
-//             paren: parenthesized!(f in input),
-//             args: f.parse_terminated(MethodMacroArg::parse)?,
-//         })
-//     }
-// }
-
 #[derive(PartialEq, Eq, Hash)]
 pub struct AutoMethod {
     pub docstring: Vec<Attribute>,

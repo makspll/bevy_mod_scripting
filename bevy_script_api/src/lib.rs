@@ -35,9 +35,9 @@ pub mod prelude {
 }
 
 // re-export derive macros from other langs
-pub use bevy_mod_scripting_derive::impl_script_newtype;
+pub use bevy_mod_scripting_derive::{impl_script_newtype, ScriptProxy};
 #[cfg(feature = "lua")]
-pub use bevy_mod_scripting_lua_derive::impl_lua_newtype; //LuaProxy};
+pub use bevy_mod_scripting_lua_derive::impl_lua_newtype;
 
 pub(crate) mod generated;
 

@@ -1,8 +1,45 @@
 #![allow(dead_code, unused_variables, unused_features)]
+use bevy_mod_scripting_common::input::ProxyMeta;
 use proc_macro::TokenStream;
 
-use quote::{format_ident, quote_spanned, ToTokens};
-use syn::{parse::Parse, parse_macro_input, spanned::Spanned, Attribute};
+use quote::{format_ident, quote, quote_spanned, ToTokens};
+use syn::{parse::Parse, parse_macro_input, spanned::Spanned, Attribute, DeriveInput};
+
+#[proc_macro_derive(ScriptProxy, attributes(proxy, rhai, lua))]
+pub fn make_script_proxy(input: TokenStream) -> TokenStream {
+    let original_tokens: proc_macro2::TokenStream = input.clone().into();
+    let derive_input = parse_macro_input!(input as DeriveInput);
+
+    let attrs: Result<ProxyMeta, syn::Error> = derive_input
+        .attrs
+        .iter()
+        .filter_map(|attr| attr.parse_meta().ok())
+        .find(|attr| attr.path().is_ident("proxy"))
+        .ok_or_else(|| syn::Error::new_spanned(&derive_input, "`proxy` meta missing"))
+        .and_then(|attr| (&derive_input, attr).try_into());
+
+    match attrs {
+        Ok(attrs) => {
+            let mut tokens: Vec<TokenStream> = Default::default();
+            for lang in attrs.language_meta.languages {
+                let macro_ident = format_ident!("impl_{}_proxy", lang.name);
+                let feature_gate = lang
+                    .on_feature
+                    .map(|feature| quote!(#[cfg(feature=#feature)]))
+                    .unwrap_or_default();
+
+                tokens.push(TokenStream::from(quote::quote! {
+                    #feature_gate
+                    bevy_mod_scripting::api::#macro_ident!{
+                        #original_tokens
+                    };
+                }));
+            }
+            tokens.into_iter().collect()
+        }
+        Err(err) => err.to_compile_error().into(),
+    }
+}
 
 /// A convenience macro which derives a lotta things to make your type work in all supported/enabled scripting languages, and provide static typing where possible.
 ///
@@ -58,6 +95,10 @@ use syn::{parse::Parse, parse_macro_input, spanned::Spanned, Attribute};
 /// println!("{:?}", std::any::TypeId::Of::<LuaMyStruct>);
 /// ```
 #[proc_macro]
+#[deprecated(
+    note = "this macro will be removed in the next release, please use the new derive macros",
+    since = "0.3.0"
+)]
 pub fn impl_script_newtype(input: TokenStream) -> TokenStream {
     let invocation = parse_macro_input!(input as MacroInvocation);
     let mut output: proc_macro2::TokenStream = Default::default();

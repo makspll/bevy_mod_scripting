@@ -1,8 +1,10 @@
-use bevy_mod_scripting_common::{implementor::WrapperImplementor, newtype::Newtype};
+use bevy_mod_scripting_common::{
+    implementor::WrapperImplementor, input::ProxyMeta, newtype::Newtype,
+};
 use implementor::LuaImplementor;
 // use impls::{impl_enum, impl_struct};
 use proc_macro::TokenStream;
-use syn::parse_macro_input;
+use syn::{parse_macro_input, DeriveInput};
 
 pub(crate) mod derive_flags;
 pub(crate) mod implementor;
@@ -21,18 +23,17 @@ pub fn impl_lua_newtype(tokens: TokenStream) -> TokenStream {
         .into()
 }
 
-// #[proc_macro_derive(LuaProxy, attributes(lua, scripting))]
-// pub fn lua_derive(input: TokenStream) -> TokenStream {
-//     let input = parse_macro_input!(input as DeriveInput);
-//     let data: Result<ProxyData, _> = (&input).try_into();
+#[proc_macro]
+pub fn impl_lua_proxy(input: TokenStream) -> TokenStream {
+    let derive_input = parse_macro_input!(input as DeriveInput);
 
-//     TokenStream::from(match data {
-//         Ok(data) => match data {
-//             ProxyData::Struct(data)
-//             | ProxyData::TupleStruct(data)
-//             | ProxyData::UnitStruct(data) => impl_struct(data),
-//             ProxyData::Enum(data) => impl_enum(data),
-//         },
-//         Err(error) => error.to_compile_error(),
-//     })
-// }
+    let meta: Result<ProxyMeta, syn::Error> = derive_input
+        .attrs
+        .iter()
+        .filter_map(|attr| attr.parse_meta().ok())
+        .find(|attr| attr.path().is_ident("proxy"))
+        .ok_or_else(|| syn::Error::new_spanned(&derive_input, "`proxy` meta missing"))
+        .and_then(|attr| (&derive_input, attr).try_into());
+
+    Default::default()
+}
