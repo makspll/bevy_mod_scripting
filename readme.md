@@ -11,7 +11,7 @@ This crate is an attempt to make scripting a possibility with the current state 
 ## Why Use Scripts?
 
 - Re-load your game logic without re-compiling the entire crate
-- If your game logic is encapsulated with scripts it becomes easilly moddable
+- If your game logic is encapsulated with scripts it becomes easily moddable
 - Allows writing game logic/UI in a smaller language, making development more accessible to non-coders on your team
 
 ## Features
@@ -168,7 +168,7 @@ pub fn trigger_on_update_rhai(mut w: PriorityEventWriter<RhaiEvent<MyRhaiArgStru
 
 ### Adding scripts
 
-A script consist of:
+A script consists of:
 - an asset handle to their code file
 - a name which is usually their path relative to the assets folder
 
@@ -287,17 +287,17 @@ fn main() -> std::io::Result<()> {
 ```
 Currently we generate documentation at runtime due to the way `tealr` works but this might change in the future as ideally this would be done statically.
 
-It is probably a wise idea to setup a separate executable whose purpose is to only generate documentation, and run it every time before a release. But keeping this step in your main app will make sure your script environment is always setup correctly.
+It is probably a wise idea to set up a separate executable whose only purpose is to generate documentation, and run it every time before a release. But keeping this step in your main app will make sure your script environment is always set up correctly.
 
 #### Lua
 
-Lua documentation is provided by `tealr`, a wrapper around the `mlua` lua api which decorates their standard types. On top of providing documentation generation it's also capable of generating `d.tl` files which can be used to introduce static typing to lua via the `teal` project (you do not need to use teal to generate documentation). 
+Lua documentation is provided by `tealr`, a wrapper around the `mlua` lua API which decorates their standard types. On top of providing documentation generation, it's also capable of generating `d.tl` files which can be used to introduce static typing to lua via the `teal` project (you do not need to use teal to generate documentation). 
 
-This can all be seen at work in the [this example](bevy_mod_scripting/examples/lua/documentation_gen.rs).
+This can all be seen at work in [this example](bevy_mod_scripting/examples/lua/documentation_gen.rs).
 
 ##### Teal - Lua static typing
 
-Teal is the reccomended way of introducing lua to your bevy game. This functionality is locked behind the `teal` cargo feature however, since it's quite opinionanted when it comes to your asset structure (`script` and `scripts/build`, folders under `assets`), and also requires `lua` + `teal` + `tealr_doc_gen` (`cargo install --git https://github.com/lenscas/tealr_doc_gen --rev 91afd4a528e7f5b746ac3a6b299c422b42c05db6`) to be installed (see https://github.com/teal-language/tl and `tealr`).
+Teal is the recommended way of introducing lua to your bevy game. This functionality is locked behind the `teal` cargo feature however, since it's quite opinionanted when it comes to your asset structure (`script` and `scripts/build`, folders under `assets`), and also requires `lua` + `teal` + `tealr_doc_gen` (`cargo install --git https://github.com/lenscas/tealr_doc_gen --rev 91afd4a528e7f5b746ac3a6b299c422b42c05db6`) to be installed (see https://github.com/teal-language/tl and `tealr`).
 
 Once enabled, `.tl` files can be loaded as lua scripts in addition to `.lua` files and compiled on the fly. With full hot-reloading support. When you're ready to release your game, you just need to run `tl build` from the `assets/scripts` directory to compile your teal files. This will generate `.lua` files under `assets/scripts/build`. You can manage loading scripts using the [`bevy_mod_scripting::lua_path`] macro.
 
@@ -308,7 +308,7 @@ If `teal` is enabled and you've added the `update_documentation` step to your ap
     - any scripts with a `.tl` extension will be compiled to lua code and type checked
 On optimized release builds none of this happens (no debug_asserts).
 
-The reccomended workflow is to use vscode and the official teal extension with an additional `tlconfig.lua` file at the **root** of your workspace with the 
+The recommended workflow is to use vscode and the official teal extension with an additional `tlconfig.lua` file at the **root** of your workspace with the 
 following content:
 ```lua
 return {
@@ -320,7 +320,7 @@ return {
 
 #### Rhai
 
-Rhai currently does not have any utilities existing for generating documentation (for the rust provided API), once something comes out we'll include it.
+Rhai currently does not have any existing utilities for generating documentation (for the rust provided API), once something comes out we'll include it.
 
 ## Configuration
 
