@@ -348,7 +348,7 @@ impl ReflectPath {
             ReflectBase::Component { comp, entity } => {
                 let g = world_ptr.read();
 
-                let ref_ = self.walk_path(comp.reflect(&g, *entity).ok_or_else(|| {
+                let ref_ = self.walk_path(comp.reflect(g.entity(*entity)).ok_or_else(|| {
                     ReflectionError::InvalidBaseReference {
                         base: self.base.to_string(),
                         reason: "Given component does not exist on this entity".to_owned(),
@@ -396,8 +396,9 @@ impl ReflectPath {
             ReflectBase::Component { comp, entity } => {
                 let mut g = world_ptr.write();
 
+                let mut e = g.entity_mut(*entity);
                 let ref_ = self.walk_path_mut(
-                    comp.reflect_mut(&mut g, *entity)
+                    comp.reflect_mut(&mut e)
                         .ok_or_else(|| ReflectionError::InvalidBaseReference {
                             base: self.base.to_string(),
                             reason: "Given component does not exist on this entity".to_owned(),

@@ -36,8 +36,8 @@ fn main() -> std::io::Result<()> {
         // the script with id 0
         // or the script with id 1
         .add_system(do_update)
-        .add_script_handler_stage::<LuaScriptHost<()>, _, 0, 0>(CoreStage::PostUpdate)
-        .add_script_host::<LuaScriptHost<()>, _>(CoreStage::PostUpdate);
+        .add_script_handler_to_base_set::<LuaScriptHost<()>, _, 0, 0>(CoreSet::PostUpdate)
+        .add_script_host_to_base_set::<LuaScriptHost<()>, _>(CoreSet::PostUpdate);
     app.run();
 
     Ok(())

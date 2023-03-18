@@ -196,16 +196,9 @@ pub fn send_init(mut events: PriorityEventWriter<RhaiEvent<()>>) {
     )
 }
 
+#[derive(SystemSet)]
 pub enum LifeStages {
     Scripts,
-}
-
-impl StageLabel for LifeStages {
-    fn as_str(&self) -> &'static str {
-        match self {
-            LifeStages::Scripts => "Scripts",
-        }
-    }
 }
 
 /// how often to step the simulation
