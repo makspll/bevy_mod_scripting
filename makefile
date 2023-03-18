@@ -75,5 +75,5 @@ make_json_files:
 	rustup run nightly-2022-12-18 cargo rustdoc -p bevy_time@0.9.1 --  -Zunstable-options --output-format json && \
 	rustup run nightly-2022-12-18 cargo rustdoc -p bevy_utils@0.9.1 --  -Zunstable-options --output-format json && \
 	rustup run nightly-2022-12-18 cargo rustdoc -p bevy_reflect@0.9.1 --  -Zunstable-options --output-format json && \
-	rustup run nightly-2022-12-18 cargo rustdoc -p glam --  -Zunstable-options --output-format json && \
+	rustup run nightly-2022-12-18 cargo rustdoc -p glam@0.22.0 --  -Zunstable-options --output-format json && \
 	rustup run nightly-2022-12-18 cargo rustdoc -p bevy@0.9.1 --  -Zunstable-options --output-format json 

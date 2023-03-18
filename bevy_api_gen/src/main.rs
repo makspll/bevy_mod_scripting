@@ -274,7 +274,7 @@ pub(crate) fn generate_macros(
     // get_doc_fragment
     writer.write_no_newline("fn get_doc_fragment(&self) -> Option<Self::DocTarget>");
     writer.open_brace();
-    writer.write_no_newline("Some(\"BevyAPI\",LuaDocFragment::new(|tw|");
+    writer.write_no_newline("Some(LuaDocFragment::new(\"BevyAPI\", |tw|");
     writer.open_brace();
     writer.write_line("tw");
     writer.write_line(".document_global_instance::<BevyAPIGlobals>().expect(\"Something went wrong documenting globals\")");
