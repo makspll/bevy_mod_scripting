@@ -67,8 +67,9 @@ bevy_script_api = { path = "bevy_script_api", version = "0.2.2", optional = true
 
 [dev-dependencies]
 bevy = { version = "0.10"}
+clap = { version = "4.1", features = ["derive"]}
 rand = "0.8.5"
-bevy_console = "0.6.0"
+bevy_console = "0.7.0"
 rhai-rand = "0.1" 
 
 [workspace]
