@@ -76,7 +76,6 @@ use bevy::render::camera::Projection;
 use bevy::render::camera::RenderTarget;
 use bevy::render::camera::ScalingMode;
 use bevy::render::camera::Viewport;
-use bevy::render::camera::WindowOrigin;
 use bevy::render::color::Color;
 use bevy::render::mesh::skinning::SkinnedMesh;
 use bevy::render::primitives::Aabb;
@@ -91,20 +90,16 @@ use bevy::sprite::Anchor;
 use bevy::sprite::Mesh2dHandle;
 use bevy::sprite::Sprite;
 use bevy::sprite::TextureAtlasSprite;
-use bevy::text::HorizontalAlign;
 use bevy::text::Text;
 use bevy::text::Text2dBounds;
-use bevy::text::Text2dSize;
 use bevy::text::TextAlignment;
 use bevy::text::TextSection;
 use bevy::text::TextStyle;
-use bevy::text::VerticalAlign;
 use bevy::time::Stopwatch;
 use bevy::time::Timer;
 use bevy::transform::components::GlobalTransform;
 use bevy::transform::components::Transform;
 use bevy::ui::widget::Button;
-use bevy::ui::widget::ImageMode;
 use bevy::ui::AlignContent;
 use bevy::ui::AlignItems;
 use bevy::ui::AlignSelf;
@@ -608,28 +603,6 @@ impl_script_newtype! {
 }
 impl_script_newtype! {
     #[languages(on_feature(lua))]
-    ///Describes how to resize the Image node
-    bevy_ui::widget::ImageMode :
-    Clone +
-    Debug +
-    Methods
-    (
-    )
-    + Fields
-    (
-    )
-    + BinOps
-    (
-    )
-    + UnaryOps
-    (
-    )
-    lua impl
-    {
-    }
-}
-impl_script_newtype! {
-    #[languages(on_feature(lua))]
     ///Whether to use a Flexbox layout model.
     ///
     ///Part of the [`Style`] component.
@@ -826,65 +799,15 @@ impl_script_newtype! {
 }
 impl_script_newtype! {
     #[languages(on_feature(lua))]
-    ///The calculated size of text drawn in 2D scene.
-    bevy_text::Text2dSize :
-    Clone +
-    Debug +
-    Methods
-    (
-    )
-    + Fields
-    (
-        size: Wrapped(Vec2),
-    )
-    + BinOps
-    (
-    )
-    + UnaryOps
-    (
-    )
-    lua impl
-    {
-    }
-}
-impl_script_newtype! {
-    #[languages(on_feature(lua))]
     bevy_text::Text :
     Clone +
     Debug +
     Methods
     (
-        ///Returns this [`Text`] with a new [`TextAlignment`].
-        with_alignment(self:Wrapped(TextAlignment)) -> self,
-
     )
     + Fields
     (
         sections: Raw(ReflectedValue),
-        alignment: Wrapped(TextAlignment),
-    )
-    + BinOps
-    (
-    )
-    + UnaryOps
-    (
-    )
-    lua impl
-    {
-    }
-}
-impl_script_newtype! {
-    #[languages(on_feature(lua))]
-    bevy_text::TextAlignment :
-    Clone +
-    Debug +
-    Methods
-    (
-    )
-    + Fields
-    (
-        vertical: Wrapped(VerticalAlign),
-        horizontal: Wrapped(HorizontalAlign),
     )
     + BinOps
     (
@@ -935,51 +858,6 @@ impl_script_newtype! {
         font: Raw(ReflectedValue),
         font_size: Raw(f32),
         color: Wrapped(Color),
-    )
-    + BinOps
-    (
-    )
-    + UnaryOps
-    (
-    )
-    lua impl
-    {
-    }
-}
-impl_script_newtype! {
-    #[languages(on_feature(lua))]
-    ///Describes horizontal alignment preference for positioning & bounds.
-    bevy_text::HorizontalAlign :
-    Clone +
-    Debug +
-    Methods
-    (
-    )
-    + Fields
-    (
-    )
-    + BinOps
-    (
-    )
-    + UnaryOps
-    (
-    )
-    lua impl
-    {
-    }
-}
-impl_script_newtype! {
-    #[languages(on_feature(lua))]
-    ///Describes vertical alignment preference for positioning & bounds. Currently a placeholder
-    ///for future functionality.
-    bevy_text::VerticalAlign :
-    Clone +
-    Debug +
-    Methods
-    (
-    )
-    + Fields
-    (
     )
     + BinOps
     (
@@ -2406,16 +2284,9 @@ impl_script_newtype! {
     Debug +
     Methods
     (
-        ///Toggle the visibility.
-        toggle(&mut self:),
-
     )
     + Fields
     (
-        /// Indicates whether this entity is visible. Hidden values will propagate down the entity hierarchy.
-        /// If this entity is hidden, all of its descendants will be hidden as well. See [`Children`] and [`Parent`] for
-        /// hierarchy info.
-        is_visible: Raw(bool),
     )
     + BinOps
     (
@@ -2539,27 +2410,6 @@ impl_script_newtype! {
 impl_script_newtype! {
     #[languages(on_feature(lua))]
     bevy_render::camera::ScalingMode :
-    Clone +
-    Debug +
-    Methods
-    (
-    )
-    + Fields
-    (
-    )
-    + BinOps
-    (
-    )
-    + UnaryOps
-    (
-    )
-    lua impl
-    {
-    }
-}
-impl_script_newtype! {
-    #[languages(on_feature(lua))]
-    bevy_render::camera::WindowOrigin :
     Clone +
     Debug +
     Methods
@@ -2789,10 +2639,7 @@ impl_script_newtype! {
     Debug +
     Methods
     (
-        from_view_projection(Wrapped(&Mat4),Wrapped(&Vec3),Wrapped(&Vec3),Raw(f32)) -> self,
-
-        intersects_obb(&self:Wrapped(&Aabb),Wrapped(&Mat4),Raw(bool)) -> Raw(bool),
-
+        intersects_obb(&self:Wrapped(&Aabb),Wrapped(&Mat4),Raw(bool), Raw(bool)) -> Raw(bool),
     )
     + Fields
     (
@@ -2826,14 +2673,6 @@ impl_script_newtype! {
     )
     + Fields
     (
-        /// The number of samples to run for Multi-Sample Anti-Aliasing. Higher numbers result in
-        /// smoother edges.
-        /// Defaults to 4.
-        ///
-        /// Note that WGPU currently only supports 1 or 4 samples.
-        /// Ultimately we plan on supporting whatever is natively supported on a given device.
-        /// Check out this issue for more info: <https://github.com/gfx-rs/wgpu/issues/1832>
-        samples: Raw(u32),
     )
     + BinOps
     (
@@ -2870,8 +2709,6 @@ impl_script_newtype! {
     (
         /// If set, this camera will render to the given [`Viewport`] rectangle within the configured [`RenderTarget`].
         viewport: Raw(ReflectedValue),
-        /// Cameras with a lower priority will be rendered before cameras with a higher priority.
-        priority: Raw(isize),
         /// If this is set to `true`, this camera will be rendered to its specified [`RenderTarget`]. If `false`, this
         /// camera will not be rendered.
         is_active: Raw(bool),
@@ -2994,14 +2831,9 @@ impl_script_newtype! {
     )
     + Fields
     (
-        left: Raw(f32),
-        right: Raw(f32),
-        bottom: Raw(f32),
-        top: Raw(f32),
         near: Raw(f32),
         #[rename("_far")]
         far: Raw(f32),
-        window_origin: Wrapped(WindowOrigin),
         scaling_mode: Wrapped(ScalingMode),
         scale: Raw(f32),
     )
@@ -10060,7 +9892,6 @@ impl APIProvider for LuaBevyAPIProvider {
 			.process_type::<LuaStyle>()
 			.process_type::<LuaUiImage>()
 			.process_type::<LuaButton>()
-			.process_type::<LuaImageMode>()
 			.process_type::<LuaDisplay>()
 			.process_type::<LuaAnimationPlayer>()
 			.process_type::<LuaName>()
@@ -10069,15 +9900,11 @@ impl APIProvider for LuaBevyAPIProvider {
 			.process_type::<LuaChildren>()
 			.process_type::<LuaParent>()
 			.process_type::<LuaText2dBounds>()
-			.process_type::<LuaText2dSize>()
 			.process_type::<LuaText>()
 			.process_type::<bevy_mod_scripting_lua::tealr::mlu::UserDataProxy<LuaText>>()
-			.process_type::<LuaTextAlignment>()
 			.process_type::<LuaTextSection>()
 			.process_type::<bevy_mod_scripting_lua::tealr::mlu::UserDataProxy<LuaTextSection>>()
 			.process_type::<LuaTextStyle>()
-			.process_type::<LuaHorizontalAlign>()
-			.process_type::<LuaVerticalAlign>()
 			.process_type::<LuaStopwatch>()
 			.process_type::<bevy_mod_scripting_lua::tealr::mlu::UserDataProxy<LuaStopwatch>>()
 			.process_type::<LuaTimer>()
@@ -10115,7 +9942,6 @@ impl APIProvider for LuaBevyAPIProvider {
 			.process_type::<LuaComputedVisibility>()
 			.process_type::<LuaSkinnedMesh>()
 			.process_type::<LuaScalingMode>()
-			.process_type::<LuaWindowOrigin>()
 			.process_type::<LuaColor>()
 			.process_type::<bevy_mod_scripting_lua::tealr::mlu::UserDataProxy<LuaColor>>()
 			.process_type::<LuaAabb>()
@@ -10262,7 +10088,6 @@ impl APIProvider for LuaBevyAPIProvider {
         app.register_foreign_lua_type::<Style>();
         app.register_foreign_lua_type::<UiImage>();
         app.register_foreign_lua_type::<Button>();
-        app.register_foreign_lua_type::<ImageMode>();
         app.register_foreign_lua_type::<Display>();
         app.register_foreign_lua_type::<AnimationPlayer>();
         app.register_foreign_lua_type::<Name>();
@@ -10270,13 +10095,9 @@ impl APIProvider for LuaBevyAPIProvider {
         app.register_foreign_lua_type::<Children>();
         app.register_foreign_lua_type::<Parent>();
         app.register_foreign_lua_type::<Text2dBounds>();
-        app.register_foreign_lua_type::<Text2dSize>();
         app.register_foreign_lua_type::<Text>();
-        app.register_foreign_lua_type::<TextAlignment>();
         app.register_foreign_lua_type::<TextSection>();
         app.register_foreign_lua_type::<TextStyle>();
-        app.register_foreign_lua_type::<HorizontalAlign>();
-        app.register_foreign_lua_type::<VerticalAlign>();
         app.register_foreign_lua_type::<Stopwatch>();
         app.register_foreign_lua_type::<Timer>();
         app.register_foreign_lua_type::<Entity>();
@@ -10308,7 +10129,6 @@ impl APIProvider for LuaBevyAPIProvider {
         app.register_foreign_lua_type::<ComputedVisibility>();
         app.register_foreign_lua_type::<SkinnedMesh>();
         app.register_foreign_lua_type::<ScalingMode>();
-        app.register_foreign_lua_type::<WindowOrigin>();
         app.register_foreign_lua_type::<Color>();
         app.register_foreign_lua_type::<Aabb>();
         app.register_foreign_lua_type::<CubemapFrusta>();

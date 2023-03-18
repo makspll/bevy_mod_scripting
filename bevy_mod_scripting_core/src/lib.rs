@@ -2,9 +2,12 @@ use crate::{
     event::ScriptErrorEvent,
     hosts::{APIProvider, APIProviders, ScriptHost},
 };
-use bevy::{ecs::schedule::IntoRunCriteria, prelude::*};
+use bevy::{
+    ecs::schedule::{BaseSystemSet, FreeSystemSet},
+    prelude::*,
+};
 use event::ScriptLoaded;
-use systems::{script_event_handler, ScriptSystemLabel};
+use systems::script_event_handler;
 
 pub mod asset;
 pub mod docs;
@@ -24,6 +27,7 @@ pub mod prelude {
             APIProvider, APIProviders, Recipients, Script, ScriptCollection, ScriptContexts,
             ScriptData, ScriptHost,
         },
+        crate::systems::script_event_handler,
         crate::{
             AddScriptApiProvider, AddScriptHost, AddScriptHostHandler, GenDocumentation,
             ScriptingPlugin,
@@ -74,16 +78,37 @@ pub trait AddScriptHost {
     /// the given stage will contain systems handling script loading,re-loading, removal etc.
     /// This stage will also send events related to the script lifecycle.
     /// Any systems which need to run the same frame a script is loaded must run after this stage.
-    fn add_script_host<T: ScriptHost, S: StageLabel>(&mut self, stage: S) -> &mut Self;
+    fn add_script_host_to_set<T: ScriptHost, S: FreeSystemSet + Clone>(
+        &mut self,
+        set: S,
+    ) -> &mut Self;
+    /// registers the given script host with your app,
+    /// the given stage will contain systems handling script loading,re-loading, removal etc.
+    /// This stage will also send events related to the script lifecycle.
+    /// Any systems which need to run the same frame a script is loaded must run after this stage.
+    fn add_script_host_to_base_set<T: ScriptHost, S: BaseSystemSet + Clone>(
+        &mut self,
+        set: S,
+    ) -> &mut Self;
 }
 
 impl AddScriptHost for App {
-    fn add_script_host<T, S>(&mut self, stage: S) -> &mut Self
+    fn add_script_host_to_set<T, S>(&mut self, set: S) -> &mut Self
     where
         T: ScriptHost,
-        S: StageLabel,
+        S: FreeSystemSet + Clone,
     {
-        T::register_with_app(self, stage);
+        T::register_with_app_in_set(self, set);
+        self.init_resource::<T>();
+        self.add_event::<ScriptLoaded>();
+        self
+    }
+    fn add_script_host_to_base_set<T, S>(&mut self, set: S) -> &mut Self
+    where
+        T: ScriptHost,
+        S: BaseSystemSet + Clone,
+    {
+        T::register_with_app_in_base_set(self, set);
         self.init_resource::<T>();
         self.add_event::<ScriptLoaded>();
         self
@@ -146,58 +171,110 @@ pub trait AddScriptHostHandler {
     ///
     /// The *frequency* of running these events, is controlled by your systems, if the event is not emitted, it cannot not handled.
     /// Of course there is nothing stopping your from emitting a single event type at varying priorities.
-    fn add_script_handler_stage<T: ScriptHost, S: StageLabel, const MAX: u32, const MIN: u32>(
+    fn add_script_handler_to_set<T: ScriptHost, S: FreeSystemSet, const MAX: u32, const MIN: u32>(
         &mut self,
-        stage: S,
+        set: S,
     ) -> &mut Self;
-
-    /// Like `add_script_handler_stage` but with additional run criteria
-    fn add_script_handler_stage_with_criteria<
+    fn add_script_handler_to_base_set<
         T: ScriptHost,
-        S: StageLabel,
-        M,
-        C: IntoRunCriteria<M>,
+        S: BaseSystemSet,
         const MAX: u32,
         const MIN: u32,
     >(
         &mut self,
-        stage: S,
-        criteria: C,
+        set: S,
+    ) -> &mut Self;
+
+    /// Like `add_script_handler_stage` but with additional run criteria
+    fn add_script_handler_to_set_with_criteria<
+        T: ScriptHost,
+        S: FreeSystemSet,
+        M,
+        C: Condition<M>,
+        const MAX: u32,
+        const MIN: u32,
+    >(
+        &mut self,
+        set: S,
+        condition: C,
+    ) -> &mut Self;
+
+    /// Like `add_script_handler_stage` but with additional run criteria
+    fn add_script_handler_to_base_set_with_criteria<
+        T: ScriptHost,
+        S: BaseSystemSet,
+        M,
+        C: Condition<M>,
+        const MAX: u32,
+        const MIN: u32,
+    >(
+        &mut self,
+        set: S,
+        condition: C,
     ) -> &mut Self;
 }
 
 impl AddScriptHostHandler for App {
-    fn add_script_handler_stage<T: ScriptHost, S: StageLabel, const MAX: u32, const MIN: u32>(
-        &mut self,
-        stage: S,
-    ) -> &mut Self {
-        self.add_system_to_stage(
-            stage,
-            script_event_handler::<T, MAX, MIN>
-                .label(ScriptSystemLabel::EventHandling)
-                .at_end(),
-        );
-        self
-    }
-
-    fn add_script_handler_stage_with_criteria<
+    fn add_script_handler_to_set<
         T: ScriptHost,
-        S: StageLabel,
-        M,
-        C: IntoRunCriteria<M>,
+        S: FreeSystemSet,
         const MAX: u32,
         const MIN: u32,
     >(
         &mut self,
-        stage: S,
-        criteria: C,
+        set: S,
     ) -> &mut Self {
-        self.add_system_to_stage(
-            stage,
+        self.add_system(script_event_handler::<T, MAX, MIN>.in_set(set));
+        self
+    }
+    fn add_script_handler_to_base_set<
+        T: ScriptHost,
+        S: BaseSystemSet,
+        const MAX: u32,
+        const MIN: u32,
+    >(
+        &mut self,
+        set: S,
+    ) -> &mut Self {
+        self.add_system(script_event_handler::<T, MAX, MIN>.in_base_set(set));
+        self
+    }
+
+    fn add_script_handler_to_set_with_criteria<
+        T: ScriptHost,
+        S: FreeSystemSet,
+        M,
+        C: Condition<M>,
+        const MAX: u32,
+        const MIN: u32,
+    >(
+        &mut self,
+        set: S,
+        condition: C,
+    ) -> &mut Self {
+        self.add_system(
             script_event_handler::<T, MAX, MIN>
-                .label(ScriptSystemLabel::EventHandling)
-                .at_end()
-                .with_run_criteria(criteria),
+                .in_set(set)
+                .run_if(condition),
+        );
+        self
+    }
+    fn add_script_handler_to_base_set_with_criteria<
+        T: ScriptHost,
+        S: BaseSystemSet,
+        M,
+        C: Condition<M>,
+        const MAX: u32,
+        const MIN: u32,
+    >(
+        &mut self,
+        set: S,
+        condition: C,
+    ) -> &mut Self {
+        self.add_system(
+            script_event_handler::<T, MAX, MIN>
+                .in_base_set(set)
+                .run_if(condition),
         );
         self
     }

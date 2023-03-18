@@ -1,5 +1,4 @@
 use bevy::prelude::*;
-use bevy::time::FixedTimestep;
 use bevy_mod_scripting::prelude::*;
 use rand::prelude::SliceRandom;
 use std::sync::atomic::Ordering::Relaxed;
@@ -131,69 +130,68 @@ fn load_our_script(server: Res<AssetServer>, mut commands: Commands) {
     });
 }
 
-fn main() -> std::io::Result<()> {
-    static PRE_PHYSICS: &str = "pre_physics";
-    static PHYSICS: &str = "physics";
-    static PRE_PHYSICS_SCRIPTS: &str = "pre_physics_scripts";
-    static POST_PHYSICS_SCRIPTS: &str = "post_physics_scripts";
-    static POST_UPDATE_SCRIPTS: &str = "post_update_scripts";
+#[derive(Debug, Clone, PartialEq, Eq, Hash, SystemSet)]
+enum ComplexGameLoopSet {
+    PrePhysics,
+    Physics,
+    PrePhysicsScripts,
+    PostPhysicsScripts,
+    PostUpdateScripts,
+}
 
-    const TIMESTEP_2_PER_SECOND: f64 = 30.0 / 60.0;
+fn main() -> std::io::Result<()> {
+    const TIMESTEP_2_PER_SECOND: f32 = 30.0 / 60.0;
 
     let mut app = App::new();
 
     app.add_plugins(DefaultPlugins)
+        .insert_resource(FixedTime::new_from_secs(TIMESTEP_2_PER_SECOND))
         .add_plugin(ScriptingPlugin)
         .add_startup_system(load_our_script)
         // --- main systems stages
         // physics logic stage (twice a second)
-        .add_stage_before(CoreStage::Update, PHYSICS, SystemStage::parallel())
-        .add_system_to_stage(
-            PHYSICS,
-            do_physics.with_run_criteria(FixedTimestep::step(TIMESTEP_2_PER_SECOND)),
+        .configure_set(ComplexGameLoopSet::Physics.before(CoreSet::Update))
+        .add_system(
+            do_physics
+                .in_set(ComplexGameLoopSet::Physics)
+                .in_schedule(CoreSchedule::FixedUpdate),
         )
         // pre physics logic stage (twice a second)
-        .add_stage_before(PHYSICS, PRE_PHYSICS, SystemStage::parallel())
-        .add_system_to_stage(
-            PRE_PHYSICS,
+        .configure_set(ComplexGameLoopSet::PrePhysics.before(ComplexGameLoopSet::Physics))
+        .add_system(
             do_some_shit_before_physics
-                .with_run_criteria(FixedTimestep::step(TIMESTEP_2_PER_SECOND)),
+                .in_set(ComplexGameLoopSet::PrePhysics)
+                .in_schedule(CoreSchedule::FixedUpdate),
         )
         // main update logic stage (every frame)
         .add_system(do_update)
         // --- script handler stages
         // pre_physics,     priority: [0,10] inclusive
-        .add_stage_after(
-            PRE_PHYSICS,
-            PRE_PHYSICS_SCRIPTS,
-            SystemStage::single_threaded(),
-        )
-        .add_script_handler_stage_with_criteria::<LuaScriptHost<mlua::Variadic<MyLuaArg>>, _, _, _, 0, 10>(
-            PRE_PHYSICS_SCRIPTS,
-            FixedTimestep::step(TIMESTEP_2_PER_SECOND),
+        .configure_set(ComplexGameLoopSet::PrePhysicsScripts.after(ComplexGameLoopSet::PrePhysics))
+        .add_system(
+            script_event_handler::<LuaScriptHost<mlua::Variadic<MyLuaArg>>, 0, 10>
+                .in_set(ComplexGameLoopSet::PrePhysicsScripts)
+                .in_schedule(CoreSchedule::FixedUpdate),
         )
         // post_physics,    priority: [11,20] inclusive
         // since the previous system will consume all events in the [0,10] range
-        .add_stage_after(
-            PHYSICS,
-            POST_PHYSICS_SCRIPTS,
-            SystemStage::single_threaded(),
-        )
-        .add_script_handler_stage_with_criteria::<LuaScriptHost<mlua::Variadic<MyLuaArg>>, _, _, _, 11, 20>(
-            POST_PHYSICS_SCRIPTS,
-            FixedTimestep::step(TIMESTEP_2_PER_SECOND),
+        .configure_set(ComplexGameLoopSet::PostPhysicsScripts.after(ComplexGameLoopSet::Physics))
+        .add_system(
+            script_event_handler::<LuaScriptHost<mlua::Variadic<MyLuaArg>>, 11, 20>
+                .in_set(ComplexGameLoopSet::PostPhysicsScripts)
+                .in_schedule(CoreSchedule::FixedUpdate),
         )
         // post_update,     priority: [21,30] inclusive
         // note we do not use the CoreStage version since our scripts might want
         // to modify transforms etc which some core systems synchronise in here
-        .add_stage_after(
-            CoreStage::Update,
-            POST_UPDATE_SCRIPTS,
-            SystemStage::single_threaded(),
+        .configure_set(ComplexGameLoopSet::PostUpdateScripts.in_base_set(CoreSet::PostUpdate))
+        .add_script_handler_to_set::<LuaScriptHost<mlua::Variadic<MyLuaArg>>, _, 21, 30>(
+            ComplexGameLoopSet::PostUpdateScripts,
         )
-        .add_script_handler_stage::<LuaScriptHost<mlua::Variadic<MyLuaArg>>, _, 21, 30>(POST_UPDATE_SCRIPTS)
         // this stage handles addition and removal of script contexts, we can safely use `CoreStage::PostUpdate`
-        .add_script_host::<LuaScriptHost<mlua::Variadic<MyLuaArg>>, _>(CoreStage::PostUpdate)
+        .add_script_host_to_base_set::<LuaScriptHost<mlua::Variadic<MyLuaArg>>, _>(
+            CoreSet::PostUpdate,
+        )
         .add_api_provider::<LuaScriptHost<mlua::Variadic<MyLuaArg>>>(Box::new(LuaAPIProvider));
     // We have 3 core systems
 

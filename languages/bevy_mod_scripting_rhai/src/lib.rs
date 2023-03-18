@@ -69,7 +69,7 @@ impl<A: FuncArgs + Send + Clone + Sync + 'static> ScriptHost for RhaiScriptHost<
     type APITarget = Engine;
     type DocTarget = RhaiDocFragment;
 
-    fn register_with_app(app: &mut bevy::prelude::App, stage: impl bevy::prelude::StageLabel) {
+    fn register_with_app(app: &mut bevy::prelude::App, set: impl bevy::prelude::SystemSet) {
         app.add_priority_event::<Self::ScriptEvent>()
             .add_asset::<RhaiFile>()
             .init_asset_loader::<RhaiLoader>()
