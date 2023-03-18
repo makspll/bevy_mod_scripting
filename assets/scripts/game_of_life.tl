@@ -2,7 +2,7 @@ math.randomseed(os.time())
 
 global function init()
     local LifeState = world:get_type_by_name("LifeState")
-    local life_state = world:get_component(entity,LifeState) as types.LuaLifeState
+    local life_state = world:get_component(entity,LifeState) as BevyAPI.LuaLifeState
     local cells = life_state.cells as {integer}
 
     -- set some cells alive
@@ -16,7 +16,7 @@ global function on_update()
     local LifeState = world:get_type_by_name("LifeState")
     local Settings = world:get_type_by_name("Settings")
 
-    local life_state = world:get_component(entity,LifeState) as types.LuaLifeState
+    local life_state = world:get_component(entity,LifeState) as BevyAPI.LuaLifeState
     local cells = life_state.cells as {integer}
 
     -- note that here we do not make use of LuaProxyable and just go off pure reflection
