@@ -73,8 +73,8 @@ fn main() -> std::io::Result<()> {
         .register_foreign_lua_type::<Option<Vec<bool>>>()
         .init_resource::<MyResource>()
         // this stage handles addition and removal of script contexts, we can safely use `CoreStage::PostUpdate`
-        .add_script_host::<LuaScriptHost<()>, _>(CoreStage::PostUpdate)
-        .add_script_handler_stage::<LuaScriptHost<()>,_,0,0>(CoreStage::PostUpdate)
+        .add_script_host_to_base_set::<LuaScriptHost<()>, _>(CoreSet::PostUpdate)
+        .add_script_handler_to_base_set::<LuaScriptHost<()>,_,0,0>(CoreSet::PostUpdate)
         .add_api_provider::<LuaScriptHost<()>>(Box::new(LuaBevyAPIProvider))
         .add_system(
             |world: &mut World| {
