@@ -165,9 +165,7 @@ fn main() -> std::io::Result<()> {
         )
         // main update logic system set (every frame)
         .add_system(do_update)
-
         // --- script handler system sets
-
         // pre_physics,     priority: [0,10] inclusive
         .configure_set(ComplexGameLoopSet::PrePhysicsScripts.after(ComplexGameLoopSet::PrePhysics))
         .add_system(
