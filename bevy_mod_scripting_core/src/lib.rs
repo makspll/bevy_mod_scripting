@@ -2,9 +2,12 @@ use crate::{
     event::ScriptErrorEvent,
     hosts::{APIProvider, APIProviders, ScriptHost},
 };
-use bevy::{ecs::schedule::IntoRunCriteria, prelude::*};
+use bevy::{
+    ecs::schedule::{BaseSystemSet, FreeSystemSet},
+    prelude::*,
+};
 use event::ScriptLoaded;
-use systems::{script_event_handler, ScriptSystemLabel};
+use systems::script_event_handler;
 
 pub mod asset;
 pub mod docs;
@@ -24,6 +27,7 @@ pub mod prelude {
             APIProvider, APIProviders, Recipients, Script, ScriptCollection, ScriptContexts,
             ScriptData, ScriptHost,
         },
+        crate::systems::script_event_handler,
         crate::{
             AddScriptApiProvider, AddScriptHost, AddScriptHostHandler, GenDocumentation,
             ScriptingPlugin,
@@ -71,19 +75,41 @@ impl GenDocumentation for App {
 /// Trait for app builder notation
 pub trait AddScriptHost {
     /// registers the given script host with your app,
-    /// the given stage will contain systems handling script loading,re-loading, removal etc.
-    /// This stage will also send events related to the script lifecycle.
-    /// Any systems which need to run the same frame a script is loaded must run after this stage.
-    fn add_script_host<T: ScriptHost, S: StageLabel>(&mut self, stage: S) -> &mut Self;
+    /// the given system set will contain systems handling script loading, re-loading, removal etc.
+    /// This system set will also send events related to the script lifecycle.
+    /// Any systems which need to run the same frame a script is loaded must run after this set.
+    fn add_script_host_to_set<T: ScriptHost, S: FreeSystemSet + Clone>(
+        &mut self,
+        set: S,
+    ) -> &mut Self;
+
+    /// registers the given script host with your app,
+    /// the given base set will contain systems handling script loading, re-loading, removal etc.
+    /// This set will also send events related to the script lifecycle.
+    /// Any systems which need to run the same frame a script is loaded must run after this set.
+    fn add_script_host_to_base_set<T: ScriptHost, S: BaseSystemSet + Clone>(
+        &mut self,
+        set: S,
+    ) -> &mut Self;
 }
 
 impl AddScriptHost for App {
-    fn add_script_host<T, S>(&mut self, stage: S) -> &mut Self
+    fn add_script_host_to_set<T, S>(&mut self, set: S) -> &mut Self
     where
         T: ScriptHost,
-        S: StageLabel,
+        S: FreeSystemSet + Clone,
     {
-        T::register_with_app(self, stage);
+        T::register_with_app_in_set(self, set);
+        self.init_resource::<T>();
+        self.add_event::<ScriptLoaded>();
+        self
+    }
+    fn add_script_host_to_base_set<T, S>(&mut self, set: S) -> &mut Self
+    where
+        T: ScriptHost,
+        S: BaseSystemSet + Clone,
+    {
+        T::register_with_app_in_base_set(self, set);
         self.init_resource::<T>();
         self.add_event::<ScriptLoaded>();
         self
@@ -124,14 +150,20 @@ impl AddScriptApiProvider for App {
 
 pub trait AddScriptHostHandler {
     /// Enables this script host to handle events with priorities in the range [0,min_prio] (inclusive),
-    /// during the runtime of the given stage.
+    /// during from within the given set.
     ///
-    /// Think of handler stages as a way to run certain types of events at various points in your engine.
+    /// Note: this is identical to adding the script_event_handler system manually, so if you require setting schedules etc, you should use that directly.
+    /// ```rust,ignore
+    /// self.add_system(
+    ///     script_event_handler::<T, MAX, MIN>.in_set(set).in_schedule(MySchedule::SomeSchedule)
+    /// );
+    /// ```
+    /// Think of handler system sets as a way to run certain types of events at specific points in your engine.
     /// A good example of this is Unity [game loop's](https://docs.unity3d.com/Manual/ExecutionOrder.html) `onUpdate` and `onFixedUpdate`.
     /// FixedUpdate runs *before* any physics while Update runs after physics and input events.
     ///
-    /// A similar setup can be achieved by using a separate stage before and after your physics,
-    /// then assigning event priorities such that your events are forced to run at a particular stage, for example:
+    /// A similar setup can be achieved by using a separate system set before and after your physics,
+    /// then assigning event priorities such that your events are forced to run at a particular system set, for example:
     ///
     /// PrePhysics: min_prio = 1
     /// PostPhysics: min_prio = 4
@@ -144,61 +176,46 @@ pub trait AddScriptHostHandler {
     /// | 3        | PostPhysics | OnMouse      |
     /// | 4        | PostPhysics | Update       |
     ///
-    /// The *frequency* of running these events, is controlled by your systems, if the event is not emitted, it cannot not handled.
+    /// The *frequency* of running these events, is controlled by your systems, if the event is not emitted, it cannot be handled.
     /// Of course there is nothing stopping your from emitting a single event type at varying priorities.
-    fn add_script_handler_stage<T: ScriptHost, S: StageLabel, const MAX: u32, const MIN: u32>(
+    fn add_script_handler_to_set<T: ScriptHost, S: FreeSystemSet, const MAX: u32, const MIN: u32>(
         &mut self,
-        stage: S,
+        set: S,
     ) -> &mut Self;
-
-    /// Like `add_script_handler_stage` but with additional run criteria
-    fn add_script_handler_stage_with_criteria<
+    fn add_script_handler_to_base_set<
         T: ScriptHost,
-        S: StageLabel,
-        M,
-        C: IntoRunCriteria<M>,
+        S: BaseSystemSet,
         const MAX: u32,
         const MIN: u32,
     >(
         &mut self,
-        stage: S,
-        criteria: C,
+        set: S,
     ) -> &mut Self;
 }
 
 impl AddScriptHostHandler for App {
-    fn add_script_handler_stage<T: ScriptHost, S: StageLabel, const MAX: u32, const MIN: u32>(
-        &mut self,
-        stage: S,
-    ) -> &mut Self {
-        self.add_system_to_stage(
-            stage,
-            script_event_handler::<T, MAX, MIN>
-                .label(ScriptSystemLabel::EventHandling)
-                .at_end(),
-        );
-        self
-    }
-
-    fn add_script_handler_stage_with_criteria<
+    fn add_script_handler_to_set<
         T: ScriptHost,
-        S: StageLabel,
-        M,
-        C: IntoRunCriteria<M>,
+        S: FreeSystemSet,
         const MAX: u32,
         const MIN: u32,
     >(
         &mut self,
-        stage: S,
-        criteria: C,
+        set: S,
     ) -> &mut Self {
-        self.add_system_to_stage(
-            stage,
-            script_event_handler::<T, MAX, MIN>
-                .label(ScriptSystemLabel::EventHandling)
-                .at_end()
-                .with_run_criteria(criteria),
-        );
+        self.add_system(script_event_handler::<T, MAX, MIN>.in_set(set));
+        self
+    }
+    fn add_script_handler_to_base_set<
+        T: ScriptHost,
+        S: BaseSystemSet,
+        const MAX: u32,
+        const MIN: u32,
+    >(
+        &mut self,
+        set: S,
+    ) -> &mut Self {
+        self.add_system(script_event_handler::<T, MAX, MIN>.in_base_set(set));
         self
     }
 }

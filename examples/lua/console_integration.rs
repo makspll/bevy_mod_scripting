@@ -1,6 +1,7 @@
 use bevy::{ecs::event::Events, prelude::*};
 use bevy_console::{AddConsoleCommand, ConsoleCommand, ConsolePlugin, PrintConsoleLine};
 use bevy_mod_scripting::prelude::*;
+use clap::Parser;
 
 use std::sync::Mutex;
 
@@ -31,7 +32,7 @@ impl APIProvider for LuaAPIProvider {
 
                     let mut events: Mut<Events<PrintConsoleLine>> =
                         world.get_resource_mut().unwrap();
-                    events.send(PrintConsoleLine { line: msg });
+                    events.send(PrintConsoleLine { line: msg.into() });
 
                     // return something
                     Ok(())
@@ -53,7 +54,7 @@ impl APIProvider for LuaAPIProvider {
 }
 
 /// sends updates to script host which are then handled by the scripts
-/// in the designated stage
+/// in their designated system sets
 pub fn trigger_on_update_lua(mut w: PriorityEventWriter<LuaEvent<()>>) {
     let event = LuaEvent {
         hook_name: "on_update".to_string(),
@@ -70,7 +71,7 @@ pub fn forward_script_err_to_console(
 ) {
     for e in r.iter() {
         w.send(PrintConsoleLine {
-            line: format!("ERROR:{}", e.error),
+            line: format!("ERROR:{}", e.error).into(),
         });
     }
 }
@@ -78,8 +79,8 @@ pub fn forward_script_err_to_console(
 // we use bevy-debug-console to demonstrate how this can fit in in the runtime of a game
 // note that using just the entity id instead of the full Entity has issues,
 // but since we aren't despawning/spawning entities this works in our case
-#[derive(ConsoleCommand)]
-#[console_command(name = "run_script")]
+#[derive(Parser, ConsoleCommand)]
+#[command(name = "run_script")]
 ///Runs a Lua script from the `assets/scripts` directory
 pub struct RunScriptCmd {
     /// the relative path to the script, e.g.: `/hello.lua` for a script located in `assets/scripts/hello.lua`
@@ -149,8 +150,8 @@ pub fn delete_script_cmd(
     }
 }
 
-#[derive(ConsoleCommand)]
-#[console_command(name = "delete_script")]
+#[derive(Parser, ConsoleCommand)]
+#[command(name = "delete_script")]
 ///Runs a Lua script from the `assets/scripts` directory
 pub struct DeleteScriptCmd {
     /// the name of the script
@@ -170,10 +171,10 @@ fn main() -> std::io::Result<()> {
         .add_console_command::<RunScriptCmd, _>(run_script_cmd)
         .add_console_command::<DeleteScriptCmd, _>(delete_script_cmd)
         // choose and register the script hosts you want to use
-        .add_script_host::<LuaScriptHost<()>, _>(CoreStage::PostUpdate)
+        .add_script_host_to_base_set::<LuaScriptHost<()>, _>(CoreSet::PostUpdate)
         .add_api_provider::<LuaScriptHost<()>>(Box::new(LuaAPIProvider))
         .add_api_provider::<LuaScriptHost<()>>(Box::new(LuaBevyAPIProvider))
-        .add_script_handler_stage::<LuaScriptHost<()>, _, 0, 0>(CoreStage::PostUpdate)
+        .add_script_handler_to_base_set::<LuaScriptHost<()>, _, 0, 0>(CoreSet::PostUpdate)
         // add your systems
         .add_system(trigger_on_update_lua)
         .add_system(forward_script_err_to_console);

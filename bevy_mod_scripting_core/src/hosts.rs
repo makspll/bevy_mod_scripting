@@ -1,5 +1,10 @@
 //! All script host related stuff
-use bevy::{asset::Asset, prelude::*, reflect::FromReflect};
+use bevy::{
+    asset::Asset,
+    ecs::schedule::{BaseSystemSet, FreeSystemSet},
+    prelude::*,
+    reflect::FromReflect,
+};
 use std::{
     collections::HashMap,
     iter::once,
@@ -124,10 +129,15 @@ pub trait ScriptHost: Send + Sync + 'static + Default + Resource {
         Ok(())
     }
 
-    /// Registers the script host with the given app, and attaches handlers to deal with spawning/removing scripts at the given stage.
+    /// Registers the script host with the given app, and attaches handlers to deal with spawning/removing scripts in the given System Set.
     ///
-    /// Ideally place after any game logic which can spawn/remove/modify scripts to avoid frame lag. (typically `CoreStage::Post_Update`)
-    fn register_with_app(app: &mut App, stage: impl StageLabel);
+    /// Ideally place after any game logic which can spawn/remove/modify scripts to avoid frame lag. (typically `CoreSet::Post_Update`)
+    fn register_with_app_in_set(app: &mut App, set: impl FreeSystemSet);
+
+    /// Registers the script host with the given app, and attaches handlers to deal with spawning/removing scripts in the given Base System Set.
+    ///
+    /// Ideally place after any game logic which can spawn/remove/modify scripts to avoid frame lag. (typically `CoreSet::Post_Update`)
+    fn register_with_app_in_base_set(app: &mut App, set: impl BaseSystemSet);
 }
 
 /// Implementors can modify a script context in order to enable

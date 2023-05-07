@@ -1,12 +1,6 @@
 use std::collections::HashSet;
 
-use bevy::{
-    ecs::system::SystemState,
-    prelude::{
-        debug, AssetEvent, Assets, ChangeTrackers, Changed, Entity, EventReader, EventWriter,
-        FromWorld, Query, RemovedComponents, Res, ResMut, Resource, SystemLabel, World,
-    },
-};
+use bevy::{ecs::system::SystemState, prelude::*};
 use bevy_event_priority::PriorityEventReader;
 
 use crate::{
@@ -16,8 +10,8 @@ use crate::{
 };
 
 /// Labels for scripting related systems
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, SystemLabel)]
-pub enum ScriptSystemLabel {
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, SystemSet)]
+pub enum ScriptSystemSet {
     /// event handling systems are always marked with this label
     EventHandling,
 }
@@ -30,7 +24,7 @@ pub fn script_add_synchronizer<H: ScriptHost + 'static>(
         (
             Entity,
             &ScriptCollection<H::ScriptAsset>,
-            ChangeTrackers<ScriptCollection<H::ScriptAsset>>,
+            Ref<ScriptCollection<H::ScriptAsset>>,
         ),
         Changed<ScriptCollection<H::ScriptAsset>>,
     >,
@@ -98,7 +92,7 @@ pub fn script_add_synchronizer<H: ScriptHost + 'static>(
 
 /// Handles the removal of script components and their contexts
 pub fn script_remove_synchronizer<H: ScriptHost>(
-    query: RemovedComponents<ScriptCollection<H::ScriptAsset>>,
+    mut query: RemovedComponents<ScriptCollection<H::ScriptAsset>>,
     mut contexts: ResMut<ScriptContexts<H::ScriptContext>>,
 ) {
     query.iter().for_each(|v| {
@@ -210,7 +204,7 @@ pub fn script_event_handler<H: ScriptHost, const MAX: u32, const MIN: u32>(world
 pub struct CachedScriptState<H: ScriptHost> {
     pub event_state: SystemState<(
         PriorityEventReader<'static, 'static, H::ScriptEvent>,
-        EventWriter<'static, 'static, ScriptErrorEvent>,
+        EventWriter<'static, ScriptErrorEvent>,
         EventReader<'static, 'static, ScriptLoaded>,
     )>,
 }
