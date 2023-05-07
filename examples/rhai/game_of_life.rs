@@ -200,12 +200,13 @@ pub enum LifeSystemSets {
 }
 
 /// how often to step the simulation
-const UPDATE_FREQUENCY: f64 = 1.0 / 30.0;
+const UPDATE_FREQUENCY: f32 = 1.0 / 30.0;
 
 fn main() -> std::io::Result<()> {
     let mut app = App::new();
 
     app.add_plugins(DefaultPlugins)
+        .insert_resource(FixedTime::new_from_secs(UPDATE_FREQUENCY))
         .add_plugin(LogDiagnosticsPlugin::default())
         .add_plugin(FrameTimeDiagnosticsPlugin::default())
         .add_plugin(ScriptingPlugin)
