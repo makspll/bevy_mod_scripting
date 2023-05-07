@@ -81,7 +81,7 @@ impl<A: LuaArg> ScriptHost for LuaScriptHost<A> {
     type ScriptAsset = LuaFile;
     type DocTarget = LuaDocFragment;
 
-    fn register_with_app_in_set(app: &mut App, set: impl FreeSystemSet + Clone) {
+    fn register_with_app_in_set(app: &mut App, set: impl FreeSystemSet) {
         app.add_priority_event::<Self::ScriptEvent>()
             .add_asset::<LuaFile>()
             .init_asset_loader::<LuaLoader>()
@@ -91,22 +91,18 @@ impl<A: LuaArg> ScriptHost for LuaScriptHost<A> {
             .register_type::<ScriptCollection<Self::ScriptAsset>>()
             .register_type::<Script<Self::ScriptAsset>>()
             .register_type::<Handle<LuaFile>>()
-            // handle script insertions removal first
-            // then update their contexts later on script asset changes
-            .add_system(
-                script_add_synchronizer::<Self>
-                    .before(script_remove_synchronizer::<Self>)
-                    .in_set(set.clone()),
-            )
-            .add_system(
-                script_remove_synchronizer::<Self>
-                    .before(script_hot_reload_handler::<Self>)
-                    .in_set(set.clone()),
-            )
-            .add_system(script_hot_reload_handler::<Self>.in_set(set));
+            .add_systems(
+                (
+                    script_add_synchronizer::<Self>,
+                    script_remove_synchronizer::<Self>,
+                    script_hot_reload_handler::<Self>,
+                )
+                    .chain()
+                    .in_set(set),
+            );
     }
 
-    fn register_with_app_in_base_set(app: &mut App, set: impl BaseSystemSet + Clone) {
+    fn register_with_app_in_base_set(app: &mut App, set: impl BaseSystemSet) {
         app.add_priority_event::<Self::ScriptEvent>()
             .add_asset::<LuaFile>()
             .init_asset_loader::<LuaLoader>()
@@ -118,17 +114,15 @@ impl<A: LuaArg> ScriptHost for LuaScriptHost<A> {
             .register_type::<Handle<LuaFile>>()
             // handle script insertions removal first
             // then update their contexts later on script asset changes
-            .add_system(
-                script_add_synchronizer::<Self>
-                    .before(script_remove_synchronizer::<Self>)
-                    .in_base_set(set.clone()),
-            )
-            .add_system(
-                script_remove_synchronizer::<Self>
-                    .before(script_hot_reload_handler::<Self>)
-                    .in_base_set(set.clone()),
-            )
-            .add_system(script_hot_reload_handler::<Self>.in_base_set(set));
+            .add_systems(
+                (
+                    script_add_synchronizer::<Self>,
+                    script_remove_synchronizer::<Self>,
+                    script_hot_reload_handler::<Self>,
+                )
+                    .chain()
+                    .in_base_set(set),
+            );
     }
 
     fn load_script(

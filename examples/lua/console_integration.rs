@@ -54,7 +54,7 @@ impl APIProvider for LuaAPIProvider {
 }
 
 /// sends updates to script host which are then handled by the scripts
-/// in the designated stage
+/// in their designated system sets
 pub fn trigger_on_update_lua(mut w: PriorityEventWriter<LuaEvent<()>>) {
     let event = LuaEvent {
         hook_name: "on_update".to_string(),

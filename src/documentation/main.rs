@@ -16,7 +16,7 @@ fn main() {
     match lang.as_str() {
         "lua" => {
             #[cfg(all(feature = "lua", feature = "lua_script_api"))]
-            app.add_script_host::<LuaScriptHost<()>, _>(CoreStage::PostUpdate)
+            app.add_script_host_to_base_set::<LuaScriptHost<()>, _>(CoreSet::PostUpdate)
                 .add_api_provider::<LuaScriptHost<()>>(Box::new(LuaBevyAPIProvider))
                 .update_documentation::<LuaScriptHost<()>>();
 

@@ -82,7 +82,7 @@ fn do_some_shit_before_physics(mut w: PriorityEventWriter<LuaEvent<mlua::Variadi
     info!("PrePhysics, firing:");
 
     for _ in 0..5 {
-        // fire random event, for any of the stages
+        // fire random event, for any of the system sets
         fire_random_event(&mut w, &ALL_EVENTS);
     }
 }
@@ -91,7 +91,7 @@ fn do_physics(mut w: PriorityEventWriter<LuaEvent<mlua::Variadic<MyLuaArg>>>) {
     info!("Physics, firing:");
 
     for _ in 0..5 {
-        // fire random event, for any stages,
+        // fire random event, for any of the system sets
         fire_random_event(&mut w, &ALL_EVENTS);
     }
 }
@@ -99,7 +99,7 @@ fn do_physics(mut w: PriorityEventWriter<LuaEvent<mlua::Variadic<MyLuaArg>>>) {
 fn do_update(mut w: PriorityEventWriter<LuaEvent<mlua::Variadic<MyLuaArg>>>) {
     info!("Update, firing:");
 
-    // fire random event, for any stages
+    // fire random event, for any of the system sets
     fire_random_event(&mut w, &ALL_EVENTS);
 }
 
@@ -148,24 +148,26 @@ fn main() -> std::io::Result<()> {
         .insert_resource(FixedTime::new_from_secs(TIMESTEP_2_PER_SECOND))
         .add_plugin(ScriptingPlugin)
         .add_startup_system(load_our_script)
-        // --- main systems stages
-        // physics logic stage (twice a second)
+        // --- main systems sets
+        // physics logic system set (twice a second)
         .configure_set(ComplexGameLoopSet::Physics.before(CoreSet::Update))
         .add_system(
             do_physics
                 .in_set(ComplexGameLoopSet::Physics)
                 .in_schedule(CoreSchedule::FixedUpdate),
         )
-        // pre physics logic stage (twice a second)
+        // pre physics logic system set (twice a second)
         .configure_set(ComplexGameLoopSet::PrePhysics.before(ComplexGameLoopSet::Physics))
         .add_system(
             do_some_shit_before_physics
                 .in_set(ComplexGameLoopSet::PrePhysics)
                 .in_schedule(CoreSchedule::FixedUpdate),
         )
-        // main update logic stage (every frame)
+        // main update logic system set (every frame)
         .add_system(do_update)
-        // --- script handler stages
+
+        // --- script handler system sets
+
         // pre_physics,     priority: [0,10] inclusive
         .configure_set(ComplexGameLoopSet::PrePhysicsScripts.after(ComplexGameLoopSet::PrePhysics))
         .add_system(
@@ -182,13 +184,13 @@ fn main() -> std::io::Result<()> {
                 .in_schedule(CoreSchedule::FixedUpdate),
         )
         // post_update,     priority: [21,30] inclusive
-        // note we do not use the CoreStage version since our scripts might want
+        // note we do not use the CoreSet version since our scripts might want
         // to modify transforms etc which some core systems synchronise in here
         .configure_set(ComplexGameLoopSet::PostUpdateScripts.in_base_set(CoreSet::PostUpdate))
         .add_script_handler_to_set::<LuaScriptHost<mlua::Variadic<MyLuaArg>>, _, 21, 30>(
             ComplexGameLoopSet::PostUpdateScripts,
         )
-        // this stage handles addition and removal of script contexts, we can safely use `CoreStage::PostUpdate`
+        // this system set handles addition and removal of script contexts, we can safely use `CoreSet::PostUpdate`
         .add_script_host_to_base_set::<LuaScriptHost<mlua::Variadic<MyLuaArg>>, _>(
             CoreSet::PostUpdate,
         )

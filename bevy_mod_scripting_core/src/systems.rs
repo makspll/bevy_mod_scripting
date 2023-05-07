@@ -1,12 +1,6 @@
 use std::collections::HashSet;
 
-use bevy::{
-    ecs::system::SystemState,
-    prelude::{
-        debug, AssetEvent, Assets, ChangeTrackers, Changed, Entity, EventReader, EventWriter,
-        FromWorld, Query, RemovedComponents, Res, ResMut, Resource, SystemSet, World,
-    },
-};
+use bevy::{ecs::system::SystemState, prelude::*};
 use bevy_event_priority::PriorityEventReader;
 
 use crate::{
@@ -30,7 +24,7 @@ pub fn script_add_synchronizer<H: ScriptHost + 'static>(
         (
             Entity,
             &ScriptCollection<H::ScriptAsset>,
-            ChangeTrackers<ScriptCollection<H::ScriptAsset>>,
+            Ref<ScriptCollection<H::ScriptAsset>>,
         ),
         Changed<ScriptCollection<H::ScriptAsset>>,
     >,

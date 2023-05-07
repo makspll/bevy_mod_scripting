@@ -94,7 +94,7 @@ fn do_update(mut w: PriorityEventWriter<LuaEvent<MyLuaArg>>) {
         ),
     ];
 
-    // fire random event, for any stages
+    // fire random event, for any of the system sets
     fire_random_event(&mut w, &all_events);
 }
 

@@ -21,7 +21,7 @@ This crate is an attempt to make scripting a possibility with the current state 
 - Rhai integration
 - Customisable script API's
 - Event based hooks (i.e. on_update)
-- Flexible event scheduling (i.e. allow handling events at different stages rather than a single stage based on the event)
+- Flexible event scheduling (i.e. allow handling events at handling stages based on the event)
 - Multiple scripts per entity
 - Multiple instances of the same script on one entity
 - Extensive callback argument type support
@@ -55,8 +55,8 @@ To install:
   - The crate is still in development so I recommended pinning to a git commit
 - Add ScriptingPlugin to your app
 - Add the ScriptHosts you plan on using (`add_script_host`)
-  - Make sure to attach it to a stage running AFTER any systems which may generate modify/create/remove script components
-- Add script handler stages to capture events in the priority range you're expecting (`add_script_handler_stage`)
+  - Make sure to attach it to a system set running AFTER any systems which may generate modify/create/remove script components
+- Add script handlers to capture events in the priority range you're expecting (`add_script_handler_to_set`,`add_script_handler_to_base_set`)
 - Add systems which generate ScriptEvents corresponding to your script host
 - Add systems which add ScriptCollection components to your entities and fill them with scripts
 
@@ -69,15 +69,15 @@ fn main() -> std::io::Result<()> {
         app.add_plugin(ScriptingPlugin)
         .add_plugins(DefaultPlugins)
         // pick and register only the hosts you want to use
-        // use any stage AFTER any systems which add/remove/modify script components
+        // use any system set AFTER any systems which add/remove/modify script components
         // in order for your script updates to propagate in a single frame
         .add_script_host_to_base_set::<RhaiScriptHost<MyRhaiArgStruct>,_>(CoreSet::PostUpdate)
         .add_script_host_to_base_set::<LuaScriptHost<MyLuaArgStruct>,_>(CoreSet::PostUpdate)
 
-        // the handlers should be placed after any stages which produce script events
-        // PostUpdate is okay only if your API doesn't require the core Bevy systems' commands
+        // the handlers should be ran after any systems which produce script events.
+        // The PostUpdate set is okay only if your API doesn't require the core Bevy systems' commands
         // to run beforehand.
-        // Note, this setup assumes a single script handler stage with all events having identical
+        // Note, this setup assumes a single script handler system set with all events having identical
         // priority of zero (see examples for more complex scenarios)
         .add_script_handler_to_base_set::<LuaScriptHost<MyLuaArg>, _, 0, 0>(
             CoreSet::PostUpdate,

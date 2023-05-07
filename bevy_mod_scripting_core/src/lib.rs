@@ -75,17 +75,18 @@ impl GenDocumentation for App {
 /// Trait for app builder notation
 pub trait AddScriptHost {
     /// registers the given script host with your app,
-    /// the given stage will contain systems handling script loading,re-loading, removal etc.
-    /// This stage will also send events related to the script lifecycle.
-    /// Any systems which need to run the same frame a script is loaded must run after this stage.
+    /// the given system set will contain systems handling script loading, re-loading, removal etc.
+    /// This system set will also send events related to the script lifecycle.
+    /// Any systems which need to run the same frame a script is loaded must run after this set.
     fn add_script_host_to_set<T: ScriptHost, S: FreeSystemSet + Clone>(
         &mut self,
         set: S,
     ) -> &mut Self;
+
     /// registers the given script host with your app,
-    /// the given stage will contain systems handling script loading,re-loading, removal etc.
-    /// This stage will also send events related to the script lifecycle.
-    /// Any systems which need to run the same frame a script is loaded must run after this stage.
+    /// the given base set will contain systems handling script loading, re-loading, removal etc.
+    /// This set will also send events related to the script lifecycle.
+    /// Any systems which need to run the same frame a script is loaded must run after this set.
     fn add_script_host_to_base_set<T: ScriptHost, S: BaseSystemSet + Clone>(
         &mut self,
         set: S,
@@ -149,14 +150,20 @@ impl AddScriptApiProvider for App {
 
 pub trait AddScriptHostHandler {
     /// Enables this script host to handle events with priorities in the range [0,min_prio] (inclusive),
-    /// during the runtime of the given stage.
+    /// during from within the given set.
     ///
-    /// Think of handler stages as a way to run certain types of events at various points in your engine.
+    /// Note: this is identical to adding the script_event_handler system manually, so if you require setting schedules etc, you should use that directly.
+    /// ```rust,ignore
+    /// self.add_system(
+    ///     script_event_handler::<T, MAX, MIN>.in_set(set).in_schedule(MySchedule::SomeSchedule)
+    /// );
+    /// ```
+    /// Think of handler system sets as a way to run certain types of events at specific points in your engine.
     /// A good example of this is Unity [game loop's](https://docs.unity3d.com/Manual/ExecutionOrder.html) `onUpdate` and `onFixedUpdate`.
     /// FixedUpdate runs *before* any physics while Update runs after physics and input events.
     ///
-    /// A similar setup can be achieved by using a separate stage before and after your physics,
-    /// then assigning event priorities such that your events are forced to run at a particular stage, for example:
+    /// A similar setup can be achieved by using a separate system set before and after your physics,
+    /// then assigning event priorities such that your events are forced to run at a particular system set, for example:
     ///
     /// PrePhysics: min_prio = 1
     /// PostPhysics: min_prio = 4
@@ -169,7 +176,7 @@ pub trait AddScriptHostHandler {
     /// | 3        | PostPhysics | OnMouse      |
     /// | 4        | PostPhysics | Update       |
     ///
-    /// The *frequency* of running these events, is controlled by your systems, if the event is not emitted, it cannot not handled.
+    /// The *frequency* of running these events, is controlled by your systems, if the event is not emitted, it cannot be handled.
     /// Of course there is nothing stopping your from emitting a single event type at varying priorities.
     fn add_script_handler_to_set<T: ScriptHost, S: FreeSystemSet, const MAX: u32, const MIN: u32>(
         &mut self,
@@ -183,34 +190,6 @@ pub trait AddScriptHostHandler {
     >(
         &mut self,
         set: S,
-    ) -> &mut Self;
-
-    /// Like `add_script_handler_stage` but with additional run criteria
-    fn add_script_handler_to_set_with_criteria<
-        T: ScriptHost,
-        S: FreeSystemSet,
-        M,
-        C: Condition<M>,
-        const MAX: u32,
-        const MIN: u32,
-    >(
-        &mut self,
-        set: S,
-        condition: C,
-    ) -> &mut Self;
-
-    /// Like `add_script_handler_stage` but with additional run criteria
-    fn add_script_handler_to_base_set_with_criteria<
-        T: ScriptHost,
-        S: BaseSystemSet,
-        M,
-        C: Condition<M>,
-        const MAX: u32,
-        const MIN: u32,
-    >(
-        &mut self,
-        set: S,
-        condition: C,
     ) -> &mut Self;
 }
 
@@ -237,45 +216,6 @@ impl AddScriptHostHandler for App {
         set: S,
     ) -> &mut Self {
         self.add_system(script_event_handler::<T, MAX, MIN>.in_base_set(set));
-        self
-    }
-
-    fn add_script_handler_to_set_with_criteria<
-        T: ScriptHost,
-        S: FreeSystemSet,
-        M,
-        C: Condition<M>,
-        const MAX: u32,
-        const MIN: u32,
-    >(
-        &mut self,
-        set: S,
-        condition: C,
-    ) -> &mut Self {
-        self.add_system(
-            script_event_handler::<T, MAX, MIN>
-                .in_set(set)
-                .run_if(condition),
-        );
-        self
-    }
-    fn add_script_handler_to_base_set_with_criteria<
-        T: ScriptHost,
-        S: BaseSystemSet,
-        M,
-        C: Condition<M>,
-        const MAX: u32,
-        const MIN: u32,
-    >(
-        &mut self,
-        set: S,
-        condition: C,
-    ) -> &mut Self {
-        self.add_system(
-            script_event_handler::<T, MAX, MIN>
-                .in_base_set(set)
-                .run_if(condition),
-        );
         self
     }
 }

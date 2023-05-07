@@ -210,7 +210,7 @@ pub fn send_init(mut events: PriorityEventWriter<LuaEvent<()>>) {
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash, SystemSet)]
-pub enum LifeStages {
+pub enum LifeSystemSets {
     Scripts,
 }
 
@@ -243,13 +243,13 @@ fn main() -> std::io::Result<()> {
                 .in_schedule(CoreSchedule::FixedUpdate),
         )
         .configure_set(
-            LifeStages::Scripts
+            LifeSystemSets::Scripts
                 .after(CoreSet::UpdateFlush)
                 .before(CoreSet::PostUpdate),
         )
         .add_system(
             script_event_handler::<LuaScriptHost<()>, 0, 1>
-                .in_set(LifeStages::Scripts)
+                .in_set(LifeSystemSets::Scripts)
                 .in_schedule(CoreSchedule::FixedUpdate),
         )
         .add_script_host_to_base_set::<LuaScriptHost<()>, _>(CoreSet::PostUpdate)
