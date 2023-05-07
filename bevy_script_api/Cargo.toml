@@ -26,7 +26,7 @@ lua = ["bevy_mod_scripting_lua","bevy_mod_scripting_lua_derive"]
 rhai = ["bevy_mod_scripting_rhai"]
 
 [dependencies]
-bevy = { version = "0.10", default-features = false, features=["bevy_asset","bevy_gltf","bevy_animation","bevy_core_pipeline","bevy_ui","bevy_pbr","bevy_render","bevy_text","bevy_sprite","filesystem_watcher"]}
+bevy = { version = "0.10.1", default-features = false, features=["bevy_asset","bevy_gltf","bevy_animation","bevy_core_pipeline","bevy_ui","bevy_pbr","bevy_render","bevy_text","bevy_sprite","filesystem_watcher"]}
 bevy_mod_scripting_derive = { path="../bevy_mod_scripting_derive", version = "0.2.2" }
 bevy_mod_scripting_core = { path="../bevy_mod_scripting_core", version = "0.2.2" }
 parking_lot="0.12.1"
