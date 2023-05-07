@@ -2,7 +2,10 @@ use crate::{
     assets::{RhaiFile, RhaiLoader},
     docs::RhaiDocFragment,
 };
-use bevy::prelude::*;
+use bevy::{
+    ecs::schedule::{BaseSystemSet, FreeSystemSet},
+    prelude::*,
+};
 use bevy_mod_scripting_core::{prelude::*, systems::*, world::WorldPointer};
 use rhai::*;
 use std::marker::PhantomData;
@@ -69,7 +72,7 @@ impl<A: FuncArgs + Send + Clone + Sync + 'static> ScriptHost for RhaiScriptHost<
     type APITarget = Engine;
     type DocTarget = RhaiDocFragment;
 
-    fn register_with_app(app: &mut bevy::prelude::App, set: impl bevy::prelude::SystemSet) {
+    fn register_with_app_in_set(app: &mut bevy::prelude::App, set: impl FreeSystemSet) {
         app.add_priority_event::<Self::ScriptEvent>()
             .add_asset::<RhaiFile>()
             .init_asset_loader::<RhaiLoader>()
@@ -79,17 +82,43 @@ impl<A: FuncArgs + Send + Clone + Sync + 'static> ScriptHost for RhaiScriptHost<
             .register_type::<ScriptCollection<Self::ScriptAsset>>()
             .register_type::<Script<Self::ScriptAsset>>()
             .register_type::<Handle<RhaiFile>>()
-            .add_system_set_to_stage(
-                stage,
-                SystemSet::new()
-                    .with_system(
-                        script_add_synchronizer::<Self>.before(script_remove_synchronizer::<Self>),
-                    )
-                    .with_system(
-                        script_remove_synchronizer::<Self>
-                            .before(script_hot_reload_handler::<Self>),
-                    )
-                    .with_system(script_hot_reload_handler::<Self>),
+            .add_systems(
+                (
+                    script_add_synchronizer::<Self>,
+                    script_remove_synchronizer::<Self>,
+                    script_hot_reload_handler::<Self>,
+                )
+                    .chain()
+                    .in_set(set),
+            )
+            // setup engine
+            .add_startup_system(
+                |mut providers: ResMut<APIProviders<Self>>, mut host: ResMut<Self>| {
+                    providers
+                        .attach_all(&mut host.engine)
+                        .expect("Error in adding api's for rhai");
+                },
+            );
+    }
+
+    fn register_with_app_in_base_set(app: &mut bevy::prelude::App, set: impl BaseSystemSet) {
+        app.add_priority_event::<Self::ScriptEvent>()
+            .add_asset::<RhaiFile>()
+            .init_asset_loader::<RhaiLoader>()
+            .init_resource::<CachedScriptState<Self>>()
+            .init_resource::<ScriptContexts<Self::ScriptContext>>()
+            .init_resource::<APIProviders<Self>>()
+            .register_type::<ScriptCollection<Self::ScriptAsset>>()
+            .register_type::<Script<Self::ScriptAsset>>()
+            .register_type::<Handle<RhaiFile>>()
+            .add_systems(
+                (
+                    script_add_synchronizer::<Self>,
+                    script_remove_synchronizer::<Self>,
+                    script_hot_reload_handler::<Self>,
+                )
+                    .chain()
+                    .in_base_set(set),
             )
             // setup engine
             .add_startup_system(
