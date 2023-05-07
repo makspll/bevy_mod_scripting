@@ -1,7 +1,7 @@
 use std::collections::HashSet;
 
 use clap::Parser;
-use indexmap::IndexMap;
+use indexmap::{IndexMap, IndexSet};
 use rustdoc_types::{Crate, Item, ItemEnum, Visibility};
 use serde::Deserialize;
 
@@ -36,7 +36,7 @@ pub struct Config {
 
     /// Describes the set of non generic things which are representible
     /// as simple lua types and don't need UserData proxies
-    pub primitives: HashSet<String>,
+    pub primitives: IndexSet<String>,
 
     pub manual_lua_types: Vec<ManualLuaType>,
 }
