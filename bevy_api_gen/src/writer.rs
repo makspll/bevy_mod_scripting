@@ -45,9 +45,7 @@ impl PrettyWriter {
 
     /// Writes indentation and prefix without a newline
     fn write_indented_prefix(&mut self) {
-        (0..self.state.indentation_level)
-            .into_iter()
-            .for_each(|_| self.output.push('\t'));
+        (0..self.state.indentation_level).for_each(|_| self.output.push('\t'));
 
         if let Some(prefix) = &self.state.prefix {
             self.output.push_str(prefix);

@@ -4,9 +4,9 @@ use syn::{parse_quote_spanned, spanned::Spanned};
 
 use crate::lua_method::LuaMethod;
 
-pub(crate) fn make_fields<'a>(
+pub(crate) fn make_fields(
     flag: &DeriveFlag,
-    new_type: &'a Newtype,
+    new_type: &Newtype,
     out: &mut Vec<LuaMethod>,
 ) -> Result<(), syn::Error> {
     let newtype_name = &new_type.args.wrapper_type;

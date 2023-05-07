@@ -34,7 +34,7 @@ macro_rules! impl_proxyable_by_copy(
         paste! {
             $(
                 impl $crate::lua::LuaProxyable for $num_ty {
-                    fn ref_to_lua< 'lua>(self_: $crate::script_ref::ScriptRef,lua: & 'lua tealr::mlu::mlua::Lua) -> tealr::mlu::mlua::Result<tealr::mlu::mlua::Value< 'lua> >  {
+                    fn ref_to_lua(self_: $crate::script_ref::ScriptRef,lua: & tealr::mlu::mlua::Lua) -> tealr::mlu::mlua::Result<tealr::mlu::mlua::Value< '_> >  {
                         self_.get_typed(|self_ : &Self| self_.to_lua(lua))?
                     }
 

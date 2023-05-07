@@ -4,9 +4,9 @@ use syn::{parse_quote, parse_quote_spanned, spanned::Spanned};
 
 use crate::lua_method::LuaMethod;
 
-pub(crate) fn make_unary_ops<'a>(
+pub(crate) fn make_unary_ops(
     flag: &DeriveFlag,
-    new_type: &'a Newtype,
+    new_type: &Newtype,
     out: &mut Vec<LuaMethod>,
 ) -> Result<(), syn::Error> {
     let newtype = &new_type.args.wrapper_type;
