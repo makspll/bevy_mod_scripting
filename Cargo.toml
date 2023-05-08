@@ -21,7 +21,7 @@ name = "bevy_mod_scripting"
 path = "src/lib.rs"
 
 [package.metadata."docs.rs"]
-features = ["lua","rhai","lua_script_api","rhai_script_api","teal"]
+features = ["lua","lua54","rhai","lua_script_api","rhai_script_api","teal"]
 
 [package.metadata.release]
 pre-release-replacements = [
