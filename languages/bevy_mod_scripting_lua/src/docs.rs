@@ -6,7 +6,7 @@ use std::{
 };
 
 use bevy::asset::FileAssetIo;
-use tealr::TypeWalker;
+use tealr::{TypeGenerator, TypeWalker};
 
 use bevy_mod_scripting_core::prelude::*;
 
@@ -86,10 +86,17 @@ impl DocFragment for LuaDocFragment {
         let docs_name = self.name().to_owned();
 
         // build the type walker
-        let tw = self
+        let mut tw = self
             .walker
             .into_iter()
             .fold(TypeWalker::new(), |a, v| (v.builder)(a));
+
+        // fixes bug in tealr which causes syntax errors in teal due to duplicate fields (from having both getters and setters)
+        tw.given_types.iter_mut().for_each(|tg| {
+            if let TypeGenerator::Record(rg) = tg {
+                rg.fields.dedup_by(|a, b| a.name == b.name);
+            }
+        });
 
         // generate json file
         let json = serde_json::to_string_pretty(&tw)
