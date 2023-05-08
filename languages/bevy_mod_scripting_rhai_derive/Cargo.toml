@@ -1,6 +1,6 @@
 [package]
 name = "bevy_mod_scripting_rhai_derive"
-version = "0.2.2"
+version = "0.3.0"
 authors = ["Maksymilian Mozolewski <makspl17@gmail.com>"]
 edition = "2021"
 license = "MIT"
@@ -23,7 +23,7 @@ path="src/lib.rs"
 proc-macro=true
 
 [dependencies]
-bevy_mod_scripting_common = {path = "../../bevy_mod_scripting_common", version = "0.2.2" }
+bevy_mod_scripting_common = {path = "../../bevy_mod_scripting_common", version = "0.3.0" }
 paste = "1.0.7"
 syn = {version="1.0.57",features=["full","fold","extra-traits"]}
 quote = "1.0.8"

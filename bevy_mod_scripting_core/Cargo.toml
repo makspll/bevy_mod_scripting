@@ -1,6 +1,6 @@
 [package]
 name = "bevy_mod_scripting_core"
-version = "0.2.2"
+version = "0.3.0"
 authors = ["Maksymilian Mozolewski <makspl17@gmail.com>"]
 edition = "2021"
 license = "MIT"
@@ -30,7 +30,7 @@ doc_always = []
 
 [dependencies]
 bevy = { version = "0.10.1", default-features = false, features=["bevy_asset","bevy_gltf","bevy_animation","bevy_core_pipeline","bevy_ui","bevy_pbr","bevy_render","bevy_text","bevy_sprite","filesystem_watcher"]}
-bevy_event_priority = {path = "../bevy_event_priority", version = "0.2.2" }
+bevy_event_priority = {path = "../bevy_event_priority", version = "0.3.0" }
 thiserror = "1.0.31"
 paste = "1.0.7"
 parking_lot = "0.12.1"
