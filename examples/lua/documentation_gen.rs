@@ -98,7 +98,7 @@ fn main() -> std::io::Result<()> {
     app.add_plugins(DefaultPlugins)
         .add_plugin(ScriptingPlugin)
         // add the providers and script host
-        .add_script_host::<LuaScriptHost<MyLuaArg>, _>(CoreStage::PostUpdate)
+        .add_script_host_to_base_set::<LuaScriptHost<MyLuaArg>, _>(CoreSet::PostUpdate)
         .add_api_provider::<LuaScriptHost<MyLuaArg>>(Box::new(LuaAPIProvider))
         .add_api_provider::<LuaScriptHost<MyLuaArg>>(Box::new(LuaBevyAPIProvider))
         // this needs to be placed after any `add_api_provider` and `add_script_host` calls
@@ -107,7 +107,7 @@ fn main() -> std::io::Result<()> {
         // declaration files, use the teal vscode extension to explore the type hints!
         // Note: This is a noop in optimized builds unless the `doc_always` feature is enabled!
         .update_documentation::<LuaScriptHost<MyLuaArg>>()
-        .add_script_handler_stage::<LuaScriptHost<MyLuaArg>, _, 0, 0>(CoreStage::PostUpdate);
+        .add_script_handler_to_base_set::<LuaScriptHost<MyLuaArg>, _, 0, 0>(CoreSet::PostUpdate);
 
     // app.run(); no need, documentation gets generated before the app even starts
 

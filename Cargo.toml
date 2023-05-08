@@ -1,6 +1,6 @@
 [package]
 name = "bevy_mod_scripting"
-version = "0.2.1"
+version = "0.3.0"
 authors = ["Maksymilian Mozolewski <makspl17@gmail.com>"]
 edition = "2021"
 license = "MIT"
@@ -21,7 +21,7 @@ name = "bevy_mod_scripting"
 path = "src/lib.rs"
 
 [package.metadata."docs.rs"]
-features = ["lua","rhai","lua_script_api","rhai_script_api","teal"]
+features = ["lua","lua54","rhai","lua_script_api","rhai_script_api","teal"]
 
 [package.metadata.release]
 pre-release-replacements = [
@@ -59,16 +59,17 @@ rhai = ["bevy_mod_scripting_rhai"]
 rhai_script_api=["bevy_script_api/rhai"]
 
 [dependencies]
-bevy = { version = "0.9.1", default-features = false}
-bevy_mod_scripting_core = { path = "bevy_mod_scripting_core", version = "0.2.1" }
-bevy_mod_scripting_lua = { path = "languages/bevy_mod_scripting_lua", version = "0.2.1", optional = true }
-bevy_mod_scripting_rhai = { path = "languages/bevy_mod_scripting_rhai", version = "0.2.1", optional = true}
-bevy_script_api = { path = "bevy_script_api", version = "0.2.1", optional = true }
+bevy = { version = "0.10.1", default-features = false}
+bevy_mod_scripting_core = { path = "bevy_mod_scripting_core", version = "0.3.0" }
+bevy_mod_scripting_lua = { path = "languages/bevy_mod_scripting_lua", version = "0.3.0", optional = true }
+bevy_mod_scripting_rhai = { path = "languages/bevy_mod_scripting_rhai", version = "0.3.0", optional = true}
+bevy_script_api = { path = "bevy_script_api", version = "0.3.0", optional = true }
 
 [dev-dependencies]
-bevy = { version = "0.9.1"}
+bevy = { version = "0.10.1"}
+clap = { version = "4.1", features = ["derive"]}
 rand = "0.8.5"
-bevy_console = "0.5.0"
+bevy_console = "0.7.0"
 rhai-rand = "0.1" 
 
 [workspace]

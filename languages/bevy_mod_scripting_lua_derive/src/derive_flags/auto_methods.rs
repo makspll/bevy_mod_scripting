@@ -9,7 +9,7 @@ use syn::{parse_quote_spanned, punctuated::Punctuated, spanned::Spanned, LitInt,
 
 use crate::lua_method::LuaMethod;
 
-pub(crate) fn make_methods<'a>(flag: &DeriveFlag, new_type: &'a Newtype, out: &mut Vec<LuaMethod>) {
+pub(crate) fn make_methods(flag: &DeriveFlag, new_type: &Newtype, out: &mut Vec<LuaMethod>) {
     let wrapped_type = &new_type.args.base_type_ident;
 
     let methods = match flag {

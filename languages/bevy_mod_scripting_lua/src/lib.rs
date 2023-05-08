@@ -2,7 +2,10 @@ use crate::{
     assets::{LuaFile, LuaLoader},
     docs::LuaDocFragment,
 };
-use bevy::prelude::*;
+use bevy::{
+    ecs::schedule::{BaseSystemSet, FreeSystemSet},
+    prelude::*,
+};
 use bevy_mod_scripting_core::{prelude::*, systems::*, world::WorldPointer};
 
 use std::fmt;
@@ -78,7 +81,7 @@ impl<A: LuaArg> ScriptHost for LuaScriptHost<A> {
     type ScriptAsset = LuaFile;
     type DocTarget = LuaDocFragment;
 
-    fn register_with_app(app: &mut App, stage: impl StageLabel) {
+    fn register_with_app_in_set(app: &mut App, set: impl FreeSystemSet) {
         app.add_priority_event::<Self::ScriptEvent>()
             .add_asset::<LuaFile>()
             .init_asset_loader::<LuaLoader>()
@@ -88,19 +91,37 @@ impl<A: LuaArg> ScriptHost for LuaScriptHost<A> {
             .register_type::<ScriptCollection<Self::ScriptAsset>>()
             .register_type::<Script<Self::ScriptAsset>>()
             .register_type::<Handle<LuaFile>>()
-            .add_system_set_to_stage(
-                stage,
-                SystemSet::new()
-                    // handle script insertions removal first
-                    // then update their contexts later on script asset changes
-                    .with_system(
-                        script_add_synchronizer::<Self>.before(script_remove_synchronizer::<Self>),
-                    )
-                    .with_system(
-                        script_remove_synchronizer::<Self>
-                            .before(script_hot_reload_handler::<Self>),
-                    )
-                    .with_system(script_hot_reload_handler::<Self>),
+            .add_systems(
+                (
+                    script_add_synchronizer::<Self>,
+                    script_remove_synchronizer::<Self>,
+                    script_hot_reload_handler::<Self>,
+                )
+                    .chain()
+                    .in_set(set),
+            );
+    }
+
+    fn register_with_app_in_base_set(app: &mut App, set: impl BaseSystemSet) {
+        app.add_priority_event::<Self::ScriptEvent>()
+            .add_asset::<LuaFile>()
+            .init_asset_loader::<LuaLoader>()
+            .init_resource::<CachedScriptState<Self>>()
+            .init_resource::<ScriptContexts<Self::ScriptContext>>()
+            .init_resource::<APIProviders<Self>>()
+            .register_type::<ScriptCollection<Self::ScriptAsset>>()
+            .register_type::<Script<Self::ScriptAsset>>()
+            .register_type::<Handle<LuaFile>>()
+            // handle script insertions removal first
+            // then update their contexts later on script asset changes
+            .add_systems(
+                (
+                    script_add_synchronizer::<Self>,
+                    script_remove_synchronizer::<Self>,
+                    script_hot_reload_handler::<Self>,
+                )
+                    .chain()
+                    .in_base_set(set),
             );
     }
 

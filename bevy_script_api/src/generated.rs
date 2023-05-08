@@ -76,7 +76,6 @@ use bevy::render::camera::Projection;
 use bevy::render::camera::RenderTarget;
 use bevy::render::camera::ScalingMode;
 use bevy::render::camera::Viewport;
-use bevy::render::camera::WindowOrigin;
 use bevy::render::color::Color;
 use bevy::render::mesh::skinning::SkinnedMesh;
 use bevy::render::primitives::Aabb;
@@ -91,20 +90,16 @@ use bevy::sprite::Anchor;
 use bevy::sprite::Mesh2dHandle;
 use bevy::sprite::Sprite;
 use bevy::sprite::TextureAtlasSprite;
-use bevy::text::HorizontalAlign;
 use bevy::text::Text;
 use bevy::text::Text2dBounds;
-use bevy::text::Text2dSize;
 use bevy::text::TextAlignment;
 use bevy::text::TextSection;
 use bevy::text::TextStyle;
-use bevy::text::VerticalAlign;
 use bevy::time::Stopwatch;
 use bevy::time::Timer;
 use bevy::transform::components::GlobalTransform;
 use bevy::transform::components::Transform;
 use bevy::ui::widget::Button;
-use bevy::ui::widget::ImageMode;
 use bevy::ui::AlignContent;
 use bevy::ui::AlignItems;
 use bevy::ui::AlignSelf;
@@ -181,7 +176,8 @@ impl_script_newtype! {
 }
 impl_script_newtype! {
     #[languages(on_feature(lua))]
-    ///Works like [`AlignItems`] but applies only to a single item
+    ///How this item is aligned according to the cross axis.
+    ///Overrides [`AlignItems`].
     bevy_ui::AlignSelf :
     Clone +
     Debug +
@@ -451,8 +447,10 @@ impl_script_newtype! {
     )
     + Fields
     (
-        /// The size of the node
-        size: Raw(ReflectedValue),
+        /// The size of the node in logical pixels
+        size: Wrapped(Vec2),
+        /// Whether to attempt to preserve the aspect ratio when determining the layout for this item
+        preserve_aspect_ratio: Raw(bool),
     )
     + BinOps
     (
@@ -472,7 +470,7 @@ impl_script_newtype! {
     Debug +
     Methods
     (
-        ///The calculated node size as width and height in pixels
+        ///The calculated node size as width and height in logical pixels
         ///automatically calculated by [`super::flex::flex_node_system`]
         size(&self:) -> Wrapped(Vec2),
 
@@ -495,9 +493,6 @@ impl_script_newtype! {
     ///Describes the style of a UI node
     ///
     ///It uses the [Flexbox](https://cssreference.io/flexbox/) system.
-    ///
-    ///**Note:** Bevy's UI is upside down compared to how Flexbox normally works, to stay consistent with engine paradigms about layouting from
-    ///the upper left corner of the display
     bevy_ui::Style :
     Clone +
     Debug +
@@ -520,7 +515,8 @@ impl_script_newtype! {
         flex_wrap: Wrapped(FlexWrap),
         /// How items are aligned according to the cross axis
         align_items: Wrapped(AlignItems),
-        /// Like align_items but for only this item
+        /// How this item is aligned according to the cross axis.
+        /// Overrides [`AlignItems`].
         align_self: Wrapped(AlignSelf),
         /// How to align each line, only applies if flex_wrap is set to
         /// [`FlexWrap::Wrap`] and there are multiple lines of items
@@ -529,28 +525,83 @@ impl_script_newtype! {
         justify_content: Wrapped(JustifyContent),
         /// The position of the node as described by its Rect
         position: Raw(ReflectedValue),
-        /// The margin of the node
+        /// The amount of space around a node outside its border.
+        ///
+        /// If a percentage value is used, the percentage is calculated based on the width of the parent node.
+        ///
+        /// # Example
+        /// ```
+        /// # use bevy_ui::{Style, UiRect, Val};
+        /// let style = Style {
+        ///     margin: UiRect {
+        ///         left: Val::Percent(10.),
+        ///         right: Val::Percent(10.),
+        ///         top: Val::Percent(15.),
+        ///         bottom: Val::Percent(15.)
+        ///     },
+        ///     ..Default::default()
+        /// };
+        /// ```
+        /// A node with this style and a parent with dimensions of 100px by 300px, will have calculated margins of 10px on both left and right edges, and 15px on both top and bottom egdes.
         margin: Raw(ReflectedValue),
-        /// The padding of the node
+        /// The amount of space between the edges of a node and its contents.
+        ///
+        /// If a percentage value is used, the percentage is calculated based on the width of the parent node.
+        ///
+        /// # Example
+        /// ```
+        /// # use bevy_ui::{Style, UiRect, Val};
+        /// let style = Style {
+        ///     padding: UiRect {
+        ///         left: Val::Percent(1.),
+        ///         right: Val::Percent(2.),
+        ///         top: Val::Percent(3.),
+        ///         bottom: Val::Percent(4.)
+        ///     },
+        ///     ..Default::default()
+        /// };
+        /// ```
+        /// A node with this style and a parent with dimensions of 300px by 100px, will have calculated padding of 3px on the left, 6px on the right, 9px on the top and 12px on the bottom.
         padding: Raw(ReflectedValue),
-        /// The border of the node
+        /// The amount of space between the margins of a node and its padding.
+        ///
+        /// If a percentage value is used, the percentage is calculated based on the width of the parent node.
+        ///
+        /// The size of the node will be expanded if there are constraints that prevent the layout algorithm from placing the border within the existing node boundary.
+        ///
+        /// Rendering for borders is not yet implemented.
         border: Raw(ReflectedValue),
         /// Defines how much a flexbox item should grow if there's space available
         flex_grow: Raw(f32),
         /// How to shrink if there's not enough space available
         flex_shrink: Raw(f32),
-        /// The initial size of the item
+        /// The initial length of the main axis, before other properties are applied.
+        ///
+        /// If both are set, `flex_basis` overrides `size` on the main axis but it obeys the bounds defined by `min_size` and `max_size`.
         flex_basis: Wrapped(Val),
-        /// The size of the flexbox
+        /// The ideal size of the flexbox
+        ///
+        /// `size.width` is used when it is within the bounds defined by `min_size.width` and `max_size.width`.
+        /// `size.height` is used when it is within the bounds defined by `min_size.height` and `max_size.height`.
         size: Raw(ReflectedValue),
         /// The minimum size of the flexbox
+        ///
+        /// `min_size.width` is used if it is greater than either `size.width` or `max_size.width`, or both.
+        /// `min_size.height` is used if it is greater than either `size.height` or `max_size.height`, or both.
         min_size: Raw(ReflectedValue),
         /// The maximum size of the flexbox
+        ///
+        /// `max_size.width` is used if it is within the bounds defined by `min_size.width` and `size.width`.
+        /// `max_size.height` is used if it is within the bounds defined by `min_size.height` and `size.height.
         max_size: Raw(ReflectedValue),
         /// The aspect ratio of the flexbox
         aspect_ratio: Raw(ReflectedValue),
         /// How to handle overflow
         overflow: Wrapped(Overflow),
+        /// The size of the gutters between the rows and columns of the flexbox layout
+        ///
+        /// Values of `Size::UNDEFINED` and `Size::AUTO` are treated as zero.
+        gap: Raw(ReflectedValue),
     )
     + BinOps
     (
@@ -573,6 +624,12 @@ impl_script_newtype! {
     )
     + Fields
     (
+        /// Handle to the texture
+        texture: Raw(ReflectedValue),
+        /// Whether the image should be flipped along its x-axis
+        flip_x: Raw(bool),
+        /// Whether the image should be flipped along its y-axis
+        flip_y: Raw(bool),
     )
     + BinOps
     (
@@ -588,28 +645,6 @@ impl_script_newtype! {
     #[languages(on_feature(lua))]
     ///Marker struct for buttons
     bevy_ui::widget::Button :
-    Clone +
-    Debug +
-    Methods
-    (
-    )
-    + Fields
-    (
-    )
-    + BinOps
-    (
-    )
-    + UnaryOps
-    (
-    )
-    lua impl
-    {
-    }
-}
-impl_script_newtype! {
-    #[languages(on_feature(lua))]
-    ///Describes how to resize the Image node
-    bevy_ui::widget::ImageMode :
     Clone +
     Debug +
     Methods
@@ -689,7 +724,8 @@ impl_script_newtype! {
 }
 impl_script_newtype! {
     #[languages(on_feature(lua))]
-    ///Component used to identify an entity. Stores a hash for faster comparisons
+    ///Component used to identify an entity. Stores a hash for faster comparisons.
+    ///
     ///The hash is eagerly re-computed upon each update to the name.
     ///
     ///[`Name`] should not be treated as a globally unique identifier for entities,
@@ -826,29 +862,6 @@ impl_script_newtype! {
 }
 impl_script_newtype! {
     #[languages(on_feature(lua))]
-    ///The calculated size of text drawn in 2D scene.
-    bevy_text::Text2dSize :
-    Clone +
-    Debug +
-    Methods
-    (
-    )
-    + Fields
-    (
-        size: Wrapped(Vec2),
-    )
-    + BinOps
-    (
-    )
-    + UnaryOps
-    (
-    )
-    lua impl
-    {
-    }
-}
-impl_script_newtype! {
-    #[languages(on_feature(lua))]
     bevy_text::Text :
     Clone +
     Debug +
@@ -861,7 +874,11 @@ impl_script_newtype! {
     + Fields
     (
         sections: Raw(ReflectedValue),
+        /// The text's internal alignment.
+        /// Should not affect its position within a container.
         alignment: Wrapped(TextAlignment),
+        /// How the text should linebreak when running out of the bounds determined by max_size
+        linebreak_behaviour: Raw(ReflectedValue),
     )
     + BinOps
     (
@@ -875,6 +892,7 @@ impl_script_newtype! {
 }
 impl_script_newtype! {
     #[languages(on_feature(lua))]
+    ///Describes horizontal alignment preference for positioning & bounds.
     bevy_text::TextAlignment :
     Clone +
     Debug +
@@ -883,8 +901,6 @@ impl_script_newtype! {
     )
     + Fields
     (
-        vertical: Wrapped(VerticalAlign),
-        horizontal: Wrapped(HorizontalAlign),
     )
     + BinOps
     (
@@ -935,51 +951,6 @@ impl_script_newtype! {
         font: Raw(ReflectedValue),
         font_size: Raw(f32),
         color: Wrapped(Color),
-    )
-    + BinOps
-    (
-    )
-    + UnaryOps
-    (
-    )
-    lua impl
-    {
-    }
-}
-impl_script_newtype! {
-    #[languages(on_feature(lua))]
-    ///Describes horizontal alignment preference for positioning & bounds.
-    bevy_text::HorizontalAlign :
-    Clone +
-    Debug +
-    Methods
-    (
-    )
-    + Fields
-    (
-    )
-    + BinOps
-    (
-    )
-    + UnaryOps
-    (
-    )
-    lua impl
-    {
-    }
-}
-impl_script_newtype! {
-    #[languages(on_feature(lua))]
-    ///Describes vertical alignment preference for positioning & bounds. Currently a placeholder
-    ///for future functionality.
-    bevy_text::VerticalAlign :
-    Clone +
-    Debug +
-    Methods
-    (
-    )
-    + Fields
-    (
     )
     + BinOps
     (
@@ -1102,7 +1073,7 @@ impl_script_newtype! {
         ///```
         paused(&self:) -> Raw(bool),
 
-        ///Resets the stopwatch. The reset doesn’t affect the paused state of the stopwatch.
+        ///Resets the stopwatch. The reset doesn't affect the paused state of the stopwatch.
         ///
         ///# Examples
         ///```
@@ -1320,6 +1291,9 @@ impl_script_newtype! {
     ///The identifier is implemented using a [generational index]: a combination of an index and a generation.
     ///This allows fast insertion after data removal in an array while minimizing loss of spatial locality.
     ///
+    ///These identifiers are only valid on the [`World`] it's sourced from. Attempting to use an `Entity` to
+    ///fetch entity components or metadata from a different world will either fail or return unexpected results.
+    ///
     ///[generational index]: https://lucassardois.medium.com/generational-indices-guide-8e3c5f7fd594
     ///
     ///# Usage
@@ -1367,12 +1341,13 @@ impl_script_newtype! {
     ///[`EntityMut::id`]: crate::world::EntityMut::id
     ///[`EntityCommands`]: crate::system::EntityCommands
     ///[`Query::get`]: crate::system::Query::get
+    ///[`World`]: crate::world::World
     bevy_ecs::entity::Entity :
     Clone +
     Debug +
     Methods
     (
-        ///Creates a new entity reference with the specified `index` and a generation of 0.
+        ///Creates a new entity ID with the specified `index` and a generation of 0.
         ///
         ///# Note
         ///
@@ -1384,41 +1359,6 @@ impl_script_newtype! {
         ///In general, one should not try to synchronize the ECS by attempting to ensure that
         ///`Entity` lines up between instances, but instead insert a secondary identifier as
         ///a component.
-        ///
-        ///There are still some use cases where it might be appropriate to use this function
-        ///externally.
-        ///
-        ///## Examples
-        ///
-        ///Initializing a collection (e.g. `array` or `Vec`) with a known size:
-        ///
-        ///```no_run
-        ///# use bevy_ecs::prelude::*;
-        ///// Create a new array of size 10 and initialize it with (invalid) entities.
-        ///let mut entities: [Entity; 10] = [Entity::from_raw(0); 10];
-        ///
-        ///// ... replace the entities with valid ones.
-        ///```
-        ///
-        ///Deriving `Reflect` for a component that has an `Entity` field:
-        ///
-        ///```no_run
-        ///# use bevy_ecs::{prelude::*, component::*};
-        ///# use bevy_reflect::Reflect;
-        ///#[derive(Reflect, Component)]
-        ///#[reflect(Component)]
-        ///pub struct MyStruct {
-        ///    pub entity: Entity,
-        ///}
-        ///
-        ///impl FromWorld for MyStruct {
-        ///    fn from_world(_world: &mut World) -> Self {
-        ///        Self {
-        ///            entity: Entity::from_raw(u32::MAX),
-        ///        }
-        ///    }
-        ///}
-        ///```
         from_raw(Raw(u32)) -> Wrapped(Entity),
 
         ///Convert to a form convenient for passing outside of rust.
@@ -1477,11 +1417,11 @@ impl_script_newtype! {
     ///
     ///[`GlobalTransform`] is the position of an entity relative to the reference frame.
     ///
-    ///[`GlobalTransform`] is updated from [`Transform`] in the system
-    ///[`transform_propagate_system`](crate::transform_propagate_system).
+    ///[`GlobalTransform`] is updated from [`Transform`] by systems in the system set
+    ///[`TransformPropagate`](crate::TransformSystem::TransformPropagate).
     ///
-    ///This system runs in stage [`CoreStage::PostUpdate`](crate::CoreStage::PostUpdate). If you
-    ///update the [`Transform`] of an entity in this stage or after, you will notice a 1 frame lag
+    ///This system runs during [`CoreSet::PostUpdate`](crate::CoreSet::PostUpdate). If you
+    ///update the [`Transform`] of an entity during this set or after, you will notice a 1 frame lag
     ///before the [`GlobalTransform`] is updated.
     ///
     ///# Examples
@@ -1491,6 +1431,7 @@ impl_script_newtype! {
     ///
     ///[`global_vs_local_translation`]: https://github.com/bevyengine/bevy/blob/latest/examples/transforms/global_vs_local_translation.rs
     ///[`transform`]: https://github.com/bevyengine/bevy/blob/latest/examples/transforms/transform.rs
+    ///[`Transform`]: super::Transform
     bevy_transform::components::Transform :
     Clone +
     Debug +
@@ -1517,10 +1458,13 @@ impl_script_newtype! {
         ///all axes.
         from_scale(Wrapped(Vec3)) -> self,
 
-        ///Updates and returns this [`Transform`] by rotating it so that its unit
-        ///vector in the local negative `Z` direction is toward `target` and its
-        ///unit vector in the local `Y` direction is toward `up`.
+        ///Returns this [`Transform`] with a new rotation so that [`Transform::forward`]
+        ///points towards the `target` position and [`Transform::up`] points towards `up`.
         looking_at(self:Wrapped(Vec3),Wrapped(Vec3)) -> self,
+
+        ///Returns this [`Transform`] with a new rotation so that [`Transform::forward`]
+        ///points in the given `direction` and [`Transform::up`] points towards `up`.
+        looking_to(self:Wrapped(Vec3),Wrapped(Vec3)) -> self,
 
         ///Returns this [`Transform`] with a new translation.
         with_translation(self:Wrapped(Vec3)) -> self,
@@ -1624,9 +1568,13 @@ impl_script_newtype! {
         ///If this [`Transform`] has a parent, the `point` is relative to the [`Transform`] of the parent.
         rotate_around(&mut self:Wrapped(Vec3),Wrapped(Quat)),
 
-        ///Rotates this [`Transform`] so that its local negative `Z` direction is toward
-        ///`target` and its local `Y` direction is toward `up`.
+        ///Rotates this [`Transform`] so that [`Transform::forward`] points towards the `target` position,
+        ///and [`Transform::up`] points towards `up`.
         look_at(&mut self:Wrapped(Vec3),Wrapped(Vec3)),
+
+        ///Rotates this [`Transform`] so that [`Transform::forward`] points in the given `direction`
+        ///and [`Transform::up`] points towards `up`.
+        look_to(&mut self:Wrapped(Vec3),Wrapped(Vec3)),
 
         ///Multiplies `self` with `transform` component by component, returning the
         ///resulting [`Transform`]
@@ -1683,6 +1631,8 @@ impl_script_newtype! {
     ///Describe the position of an entity relative to the reference frame.
     ///
     ///* To place or move an entity, you should set its [`Transform`].
+    ///* [`GlobalTransform`] is fully managed by bevy, you cannot mutate it, use
+    ///  [`Transform`] instead.
     ///* To get the global transform of an entity, you should get its [`GlobalTransform`].
     ///* For transform hierarchies to work correctly, you must have both a [`Transform`] and a [`GlobalTransform`].
     ///  * You may use the [`TransformBundle`](crate::TransformBundle) to guarantee this.
@@ -1694,18 +1644,18 @@ impl_script_newtype! {
     ///
     ///[`GlobalTransform`] is the position of an entity relative to the reference frame.
     ///
-    ///[`GlobalTransform`] is updated from [`Transform`] in the system
-    ///[`transform_propagate_system`](crate::transform_propagate_system).
+    ///[`GlobalTransform`] is updated from [`Transform`] by systems in the system set
+    ///[`TransformPropagate`](crate::TransformSystem::TransformPropagate).
     ///
-    ///This system runs in stage [`CoreStage::PostUpdate`](crate::CoreStage::PostUpdate). If you
+    ///This system runs during [`CoreSet::PostUpdate`](crate::CoreSet::PostUpdate). If you
     ///update the [`Transform`] of an entity in this stage or after, you will notice a 1 frame lag
     ///before the [`GlobalTransform`] is updated.
     ///
     ///# Examples
     ///
-    ///- [`global_vs_local_translation`]
+    ///- [`transform`]
     ///
-    ///[`global_vs_local_translation`]: https://github.com/bevyengine/bevy/blob/latest/examples/transforms/global_vs_local_translation.rs
+    ///[`transform`]: https://github.com/bevyengine/bevy/blob/latest/examples/transforms/transform.rs
     bevy_transform::components::GlobalTransform :
     Clone +
     Debug +
@@ -1722,6 +1672,41 @@ impl_script_newtype! {
         ///The transform is expected to be non-degenerate and without shearing, or the output
         ///will be invalid.
         compute_transform(&self:) -> Wrapped(Transform),
+
+        ///Returns the [`Transform`] `self` would have if it was a child of an entity
+        ///with the `parent` [`GlobalTransform`].
+        ///
+        ///This is useful if you want to "reparent" an `Entity`. Say you have an entity
+        ///`e1` that you want to turn into a child of `e2`, but you want `e1` to keep the
+        ///same global transform, even after re-parenting. You would use:
+        ///
+        ///```rust
+        ///# use bevy_transform::prelude::{GlobalTransform, Transform};
+        ///# use bevy_ecs::prelude::{Entity, Query, Component, Commands};
+        ///# use bevy_hierarchy::{prelude::Parent, BuildChildren};
+        ///#[derive(Component)]
+        ///struct ToReparent {
+        ///    new_parent: Entity,
+        ///}
+        ///fn reparent_system(
+        ///    mut commands: Commands,
+        ///    mut targets: Query<(&mut Transform, Entity, &GlobalTransform, &ToReparent)>,
+        ///    transforms: Query<&GlobalTransform>,
+        ///) {
+        ///    for (mut transform, entity, initial, to_reparent) in targets.iter_mut() {
+        ///        if let Ok(parent_transform) = transforms.get(to_reparent.new_parent) {
+        ///            *transform = initial.reparented_to(parent_transform);
+        ///            commands.entity(entity)
+        ///                .remove::<ToReparent>()
+        ///                .set_parent(to_reparent.new_parent);
+        ///        }
+        ///    }
+        ///}
+        ///```
+        ///
+        ///The transform is expected to be non-degenerate and without shearing, or the output
+        ///will be invalid.
+        reparented_to(&self:Wrapped(&GlobalTransform)) -> Wrapped(Transform),
 
         ///Return the local right vector (X).
         right(&self:) -> Wrapped(Vec3),
@@ -1858,24 +1843,11 @@ impl_script_newtype! {
     ///
     ///To enable shadows, set the `shadows_enabled` property to `true`.
     ///
-    ///While directional lights contribute to the illumination of meshes regardless
-    ///of their (or the meshes') positions, currently only a limited region of the scene
-    ///(the _shadow volume_) can cast and receive shadows for any given directional light.
+    ///Shadows are produced via [cascaded shadow maps](https://developer.download.nvidia.com/SDK/10.5/opengl/src/cascaded_shadow_maps/doc/cascaded_shadow_maps.pdf).
     ///
-    ///The shadow volume is a _rectangular cuboid_, with left/right/bottom/top/near/far
-    ///planes controllable via the `shadow_projection` field. It is affected by the
-    ///directional light entity's [`GlobalTransform`], and as such can be freely repositioned in the
-    ///scene, (or even scaled!) without affecting illumination in any other way, by simply
-    ///moving (or scaling) the entity around. The shadow volume is always oriented towards the
-    ///light entity's forward direction.
+    ///To modify the cascade set up, such as the number of cascades or the maximum shadow distance,
+    ///change the [`CascadeShadowConfig`] component of the [`crate::bundle::DirectionalLightBundle`].
     ///
-    ///For smaller scenes, a static directional light with a preset volume is typically
-    ///sufficient. For larger scenes with movable cameras, you might want to introduce
-    ///a system that dynamically repositions and scales the light entity (and therefore
-    ///its shadow volume) based on the scene subject's position (e.g. a player character)
-    ///and its relative distance to the camera.
-    ///
-    ///Shadows are produced via [shadow mapping](https://en.wikipedia.org/wiki/Shadow_mapping).
     ///To control the resolution of the shadow maps, use the [`DirectionalLightShadowMap`] resource:
     ///
     ///```
@@ -1884,12 +1856,6 @@ impl_script_newtype! {
     ///App::new()
     ///    .insert_resource(DirectionalLightShadowMap { size: 2048 });
     ///```
-    ///
-    ///**Note:** Very large shadow map resolutions (> 4K) can have non-negligible performance and
-    ///memory impact, and not work properly under mobile or lower-end hardware. To improve the visual
-    ///fidelity of shadow maps, it's typically advisable to first reduce the `shadow_projection`
-    ///left/right/top/bottom to a scene-appropriate size, before ramping up the shadow map
-    ///resolution.
     bevy_pbr::DirectionalLight :
     Clone +
     Debug +
@@ -1902,8 +1868,6 @@ impl_script_newtype! {
         /// Illuminance in lux
         illuminance: Raw(f32),
         shadows_enabled: Raw(bool),
-        /// A projection that controls the volume in which shadow maps are rendered
-        shadow_projection: Wrapped(OrthographicProjection),
         shadow_depth_bias: Raw(f32),
         /// A bias applied along the direction of the fragment's surface normal. It is scaled to the
         /// shadow map's texel size so that it is automatically adjusted to the orthographic projection.
@@ -2289,18 +2253,25 @@ impl_script_newtype! {
     Debug +
     Methods
     (
+        ///Create a new [`TextureAtlasSprite`] with a sprite index,
+        ///it should be valid in the corresponding [`TextureAtlas`]
         new(Raw(usize)) -> Wrapped(TextureAtlasSprite),
 
     )
     + Fields
     (
+        /// The tint color used to draw the sprite, defaulting to [`Color::WHITE`]
         color: Wrapped(Color),
+        /// Texture index in [`TextureAtlas`]
         index: Raw(usize),
+        /// Whether to flip the sprite in the X axis
         flip_x: Raw(bool),
+        /// Whether to flip the sprite in the Y axis
         flip_y: Raw(bool),
         /// An optional custom size for the sprite that will be used when rendering, instead of the size
         /// of the sprite's image in the atlas
         custom_size: Raw(ReflectedValue),
+        /// [`Anchor`] point of the sprite in the world
         anchor: Wrapped(Anchor),
     )
     + BinOps
@@ -2399,23 +2370,20 @@ impl_script_newtype! {
 impl_script_newtype! {
     #[languages(on_feature(lua))]
     ///User indication of whether an entity is visible. Propagates down the entity hierarchy.
-    ///If an entity is hidden in this way,  all [`Children`] (and all of their children and so on) will also be hidden.
-    ///This is done by setting the values of their [`ComputedVisibility`] component.
+    ///
+    ///If an entity is hidden in this way, all [`Children`] (and all of their children and so on) who
+    ///are set to `Inherited` will also be hidden.
+    ///
+    ///This is done by the `visibility_propagate_system` which uses the entity hierarchy and
+    ///`Visibility` to set the values of each entity's [`ComputedVisibility`] component.
     bevy_render::view::visibility::Visibility :
     Clone +
     Debug +
     Methods
     (
-        ///Toggle the visibility.
-        toggle(&mut self:),
-
     )
     + Fields
     (
-        /// Indicates whether this entity is visible. Hidden values will propagate down the entity hierarchy.
-        /// If this entity is hidden, all of its descendants will be hidden as well. See [`Children`] and [`Parent`] for
-        /// hierarchy info.
-        is_visible: Raw(bool),
     )
     + BinOps
     (
@@ -2474,22 +2442,21 @@ impl_script_newtype! {
     (
         ///Whether this entity is visible to something this frame. This is true if and only if [`Self::is_visible_in_hierarchy`] and [`Self::is_visible_in_view`]
         ///are true. This is the canonical method to call to determine if an entity should be drawn.
-        ///This value is updated in [`CoreStage::PostUpdate`] during the [`VisibilitySystems::CheckVisibility`] system label. Reading it from the
-        ///[`CoreStage::Update`] stage will yield the value from the previous frame.
+        ///This value is updated in [`CoreSet::PostUpdate`] by the [`VisibilitySystems::CheckVisibility`] system set.
+        ///Reading it during [`CoreSet::Update`] will yield the value from the previous frame.
         is_visible(&self:) -> Raw(bool),
 
         ///Whether this entity is visible in the entity hierarchy, which is determined by the [`Visibility`] component.
         ///This takes into account "visibility inheritance". If any of this entity's ancestors (see [`Parent`]) are hidden, this entity
-        ///will be hidden as well. This value is updated in the [`CoreStage::PostUpdate`] stage in the
-        ///[`VisibilitySystems::VisibilityPropagate`] system label.
+        ///will be hidden as well. This value is updated in the [`VisibilitySystems::VisibilityPropagate`], which lives under the [`CoreSet::PostUpdate`] set.
         is_visible_in_hierarchy(&self:) -> Raw(bool),
 
         ///Whether this entity is visible in _any_ view (Cameras, Lights, etc). Each entity type (and view type) should choose how to set this
         ///value. For cameras and drawn entities, this will take into account [`RenderLayers`].
         ///
-        ///This value is reset to `false` every frame in [`VisibilitySystems::VisibilityPropagate`] during [`CoreStage::PostUpdate`].
-        ///Each entity type then chooses how to set this field in the [`CoreStage::PostUpdate`] stage in the
-        ///[`VisibilitySystems::CheckVisibility`] system label. Meshes might use frustum culling to decide if they are visible in a view.
+        ///This value is reset to `false` every frame in [`VisibilitySystems::VisibilityPropagate`] during [`CoreSet::PostUpdate`].
+        ///Each entity type then chooses how to set this field in the [`VisibilitySystems::CheckVisibility`] system set, under [`CoreSet::PostUpdate`].
+        ///Meshes might use frustum culling to decide if they are visible in a view.
         ///Other entities might just set this to `true` every frame.
         is_visible_in_view(&self:) -> Raw(bool),
 
@@ -2539,27 +2506,6 @@ impl_script_newtype! {
 impl_script_newtype! {
     #[languages(on_feature(lua))]
     bevy_render::camera::ScalingMode :
-    Clone +
-    Debug +
-    Methods
-    (
-    )
-    + Fields
-    (
-    )
-    + BinOps
-    (
-    )
-    + UnaryOps
-    (
-    )
-    lua impl
-    {
-    }
-}
-impl_script_newtype! {
-    #[languages(on_feature(lua))]
-    bevy_render::camera::WindowOrigin :
     Clone +
     Debug +
     Methods
@@ -2686,8 +2632,20 @@ impl_script_newtype! {
         ///Get blue in sRGB colorspace.
         b(&self:) -> Raw(f32),
 
+        ///Returns this color with red set to a new value in sRGB colorspace.
+        with_r(self:Raw(f32)) -> self,
+
+        ///Returns this color with green set to a new value in sRGB colorspace.
+        with_g(self:Raw(f32)) -> self,
+
+        ///Returns this color with blue set to a new value in sRGB colorspace.
+        with_b(self:Raw(f32)) -> self,
+
         ///Get alpha.
         a(&self:) -> Raw(f32),
+
+        ///Returns this color with a new alpha value.
+        with_a(self:Raw(f32)) -> self,
 
         ///Converts a `Color` to variant `Color::Rgba`
         as_rgba(Wrapped(&Color):) -> Wrapped(Color),
@@ -2697,6 +2655,9 @@ impl_script_newtype! {
 
         ///Converts a `Color` to variant `Color::Hsla`
         as_hsla(Wrapped(&Color):) -> Wrapped(Color),
+
+        ///Converts a `Color` to variant `Color::Lcha`
+        as_lcha(Wrapped(&Color):) -> Wrapped(Color),
 
         ///Converts `Color` to a `u32` from sRGB colorspace.
         ///
@@ -2731,7 +2692,7 @@ impl_script_newtype! {
 }
 impl_script_newtype! {
     #[languages(on_feature(lua))]
-    ///An Axis-Aligned Bounding Box
+    ///An axis-aligned bounding box.
     bevy_render::primitives::Aabb :
     Clone +
     Debug +
@@ -2789,9 +2750,14 @@ impl_script_newtype! {
     Debug +
     Methods
     (
-        from_view_projection(Wrapped(&Mat4),Wrapped(&Vec3),Wrapped(&Vec3),Raw(f32)) -> self,
+        ///Returns a frustum derived from `view_projection`.
+        from_view_projection(Wrapped(&Mat4)) -> self,
 
-        intersects_obb(&self:Wrapped(&Aabb),Wrapped(&Mat4),Raw(bool)) -> Raw(bool),
+        ///Returns a frustum derived from `view_projection`, but with a custom
+        ///far plane.
+        from_view_projection_custom_far(Wrapped(&Mat4),Wrapped(&Vec3),Wrapped(&Vec3),Raw(f32)) -> self,
+
+        intersects_obb(&self:Wrapped(&Aabb),Wrapped(&Mat4),Raw(bool),Raw(bool)) -> Raw(bool),
 
     )
     + Fields
@@ -2811,29 +2777,29 @@ impl_script_newtype! {
     #[languages(on_feature(lua))]
     ///Configuration resource for [Multi-Sample Anti-Aliasing](https://en.wikipedia.org/wiki/Multisample_anti-aliasing).
     ///
+    ///The number of samples to run for Multi-Sample Anti-Aliasing. Higher numbers result in
+    ///smoother edges.
+    ///Defaults to 4 samples.
+    ///
+    ///Note that web currently only supports 1 or 4 samples.
+    ///
     ///# Example
     ///```
     ///# use bevy_app::prelude::App;
     ///# use bevy_render::prelude::Msaa;
     ///App::new()
-    ///    .insert_resource(Msaa { samples: 4 })
+    ///    .insert_resource(Msaa::default())
     ///    .run();
     ///```
     bevy_render::view::Msaa :
     Clone +
     Methods
     (
+        samples(&self:) -> Raw(u32),
+
     )
     + Fields
     (
-        /// The number of samples to run for Multi-Sample Anti-Aliasing. Higher numbers result in
-        /// smoother edges.
-        /// Defaults to 4.
-        ///
-        /// Note that WGPU currently only supports 1 or 4 samples.
-        /// Ultimately we plan on supporting whatever is natively supported on a given device.
-        /// Check out this issue for more info: <https://github.com/gfx-rs/wgpu/issues/1832>
-        samples: Raw(u32),
     )
     + BinOps
     (
@@ -2870,8 +2836,8 @@ impl_script_newtype! {
     (
         /// If set, this camera will render to the given [`Viewport`] rectangle within the configured [`RenderTarget`].
         viewport: Raw(ReflectedValue),
-        /// Cameras with a lower priority will be rendered before cameras with a higher priority.
-        priority: Raw(isize),
+        /// Cameras with a higher order are rendered later, and thus on top of lower order cameras.
+        order: Raw(isize),
         /// If this is set to `true`, this camera will be rendered to its specified [`RenderTarget`]. If `false`, this
         /// camera will not be rendered.
         is_active: Raw(bool),
@@ -2882,6 +2848,11 @@ impl_script_newtype! {
         /// some cases. When rendering with WebGL, this will crash if MSAA is enabled.
         /// See <https://github.com/bevyengine/bevy/pull/3425> for details.
         hdr: Raw(bool),
+        /// If this is enabled, a previous camera exists that shares this camera's render target, and this camera has MSAA enabled, then the previous camera's
+        /// outputs will be written to the intermediate multi-sampled render target textures for this camera. This enables cameras with MSAA enabled to
+        /// "write their results on top" of previous camera results, and include them as a part of their render results. This is enabled by default to ensure
+        /// cameras with MSAA enabled layer their results in the same way as cameras without MSAA enabled by default.
+        msaa_writeback: Raw(bool),
     )
     + BinOps
     (
@@ -2980,6 +2951,14 @@ impl_script_newtype! {
 }
 impl_script_newtype! {
     #[languages(on_feature(lua))]
+    ///Project a 3D space onto a 2D surface using parallel lines, i.e., unlike [`PerspectiveProjection`],
+    ///the size of objects remains the same regardless of their distance to the camera.
+    ///
+    ///The volume contained in the projection is called the *view frustum*. Since the viewport is rectangular
+    ///and projection lines are parallel, the view frustum takes the shape of a cuboid.
+    ///
+    ///Note that the scale of the projection and the apparent size of objects are inversely proportional.
+    ///As the size of the projection increases, the size of objects decreases.
     bevy_render::camera::OrthographicProjection :
     Clone +
     Debug +
@@ -2994,16 +2973,50 @@ impl_script_newtype! {
     )
     + Fields
     (
-        left: Raw(f32),
-        right: Raw(f32),
-        bottom: Raw(f32),
-        top: Raw(f32),
+        /// The distance of the near clipping plane in world units.
+        ///
+        /// Objects closer than this will not be rendered.
+        ///
+        /// Defaults to `0.0`
         near: Raw(f32),
+        /// The distance of the far clipping plane in world units.
+        ///
+        /// Objects further than this will not be rendered.
+        ///
+        /// Defaults to `1000.0`
         #[rename("_far")]
         far: Raw(f32),
-        window_origin: Wrapped(WindowOrigin),
+        /// Specifies the origin of the viewport as a normalized position from 0 to 1, where (0, 0) is the bottom left
+        /// and (1, 1) is the top right. This determines where the camera's position sits inside the viewport.
+        ///
+        /// When the projection scales due to viewport resizing, the position of the camera, and thereby `viewport_origin`,
+        /// remains at the same relative point.
+        ///
+        /// Consequently, this is pivot point when scaling. With a bottom left pivot, the projection will expand
+        /// upwards and to the right. With a top right pivot, the projection will expand downwards and to the left.
+        /// Values in between will caused the projection to scale proportionally on each axis.
+        ///
+        /// Defaults to `(0.5, 0.5)`, which makes scaling affect opposite sides equally, keeping the center
+        /// point of the viewport centered.
+        viewport_origin: Wrapped(Vec2),
+        /// How the projection will scale when the viewport is resized.
+        ///
+        /// Defaults to `ScalingMode::WindowScale(1.0)`
         scaling_mode: Wrapped(ScalingMode),
+        /// Scales the projection in world units.
+        ///
+        /// As scale increases, the apparent size of objects decreases, and vice versa.
+        ///
+        /// Defaults to `1.0`
         scale: Raw(f32),
+        /// The area that the projection covers relative to `viewport_origin`.
+        ///
+        /// Bevy's [`camera_system`](crate::camera::camera_system) automatically
+        /// updates this value when the viewport is resized depending on `OrthographicProjection`'s other fields.
+        /// In this case, `area` should not be manually modified.
+        ///
+        /// It may be necessary to set this manually for shadow projections and such.
+        area: Wrapped(Rect),
     )
     + BinOps
     (
@@ -3291,6 +3304,9 @@ impl_script_newtype! {
         ///- `-1.0` if the number is negative, `-0.0` or `NEG_INFINITY`
         ///- `NAN` if the number is `NAN`
         signum(self:) -> self,
+
+        ///Returns a vector with signs of `rhs` and the magnitudes of `self`.
+        copysign(self:self) -> self,
 
         ///Returns a bitmask with the lowest 2 bits set to the sign bits from the elements of `self`.
         ///
@@ -3646,6 +3662,9 @@ impl_script_newtype! {
         ///- `-1.0` if the number is negative, `-0.0` or `NEG_INFINITY`
         ///- `NAN` if the number is `NAN`
         signum(self:) -> self,
+
+        ///Returns a vector with signs of `rhs` and the magnitudes of `self`.
+        copysign(self:self) -> self,
 
         ///Returns a bitmask with the lowest 3 bits set to the sign bits from the elements of `self`.
         ///
@@ -4007,6 +4026,9 @@ impl_script_newtype! {
         ///- `NAN` if the number is `NAN`
         signum(self:) -> self,
 
+        ///Returns a vector with signs of `rhs` and the magnitudes of `self`.
+        copysign(self:self) -> self,
+
         ///Returns a bitmask with the lowest 3 bits set to the sign bits from the elements of `self`.
         ///
         ///A negative element results in a `1` bit and a positive element in a `0` bit.  Element `x` goes
@@ -4356,6 +4378,9 @@ impl_script_newtype! {
         ///- `-1.0` if the number is negative, `-0.0` or `NEG_INFINITY`
         ///- `NAN` if the number is `NAN`
         signum(self:) -> self,
+
+        ///Returns a vector with signs of `rhs` and the magnitudes of `self`.
+        copysign(self:self) -> self,
 
         ///Returns a bitmask with the lowest 4 bits set to the sign bits from the elements of `self`.
         ///
@@ -4895,6 +4920,9 @@ impl_script_newtype! {
         ///- `NAN` if the number is `NAN`
         signum(self:) -> self,
 
+        ///Returns a vector with signs of `rhs` and the magnitudes of `self`.
+        copysign(self:self) -> self,
+
         ///Returns a bitmask with the lowest 2 bits set to the sign bits from the elements of `self`.
         ///
         ///A negative element results in a `1` bit and a positive element in a `0` bit.  Element `x` goes
@@ -5250,6 +5278,9 @@ impl_script_newtype! {
         ///- `NAN` if the number is `NAN`
         signum(self:) -> self,
 
+        ///Returns a vector with signs of `rhs` and the magnitudes of `self`.
+        copysign(self:self) -> self,
+
         ///Returns a bitmask with the lowest 3 bits set to the sign bits from the elements of `self`.
         ///
         ///A negative element results in a `1` bit and a positive element in a `0` bit.  Element `x` goes
@@ -5602,6 +5633,9 @@ impl_script_newtype! {
         ///- `NAN` if the number is `NAN`
         signum(self:) -> self,
 
+        ///Returns a vector with signs of `rhs` and the magnitudes of `self`.
+        copysign(self:self) -> self,
+
         ///Returns a bitmask with the lowest 4 bits set to the sign bits from the elements of `self`.
         ///
         ///A negative element results in a `1` bit and a positive element in a `0` bit.  Element `x` goes
@@ -5924,10 +5958,13 @@ impl_script_newtype! {
 
         ///Returns a vector with elements representing the sign of `self`.
         ///
-        ///- `1.0` if the number is positive, `+0.0` or `INFINITY`
-        ///- `-1.0` if the number is negative, `-0.0` or `NEG_INFINITY`
-        ///- `NAN` if the number is `NAN`
+        /// - `0` if the number is zero
+        /// - `1` if the number is positive
+        /// - `-1` if the number is negative
         signum(self:) -> self,
+
+        ///Returns a vector with signs of `rhs` and the magnitudes of `self`.
+        copysign(self:self) -> self,
 
         ///Returns a bitmask with the lowest 2 bits set to the sign bits from the elements of `self`.
         ///
@@ -6104,10 +6141,13 @@ impl_script_newtype! {
 
         ///Returns a vector with elements representing the sign of `self`.
         ///
-        ///- `1.0` if the number is positive, `+0.0` or `INFINITY`
-        ///- `-1.0` if the number is negative, `-0.0` or `NEG_INFINITY`
-        ///- `NAN` if the number is `NAN`
+        /// - `0` if the number is zero
+        /// - `1` if the number is positive
+        /// - `-1` if the number is negative
         signum(self:) -> self,
+
+        ///Returns a vector with signs of `rhs` and the magnitudes of `self`.
+        copysign(self:self) -> self,
 
         ///Returns a bitmask with the lowest 3 bits set to the sign bits from the elements of `self`.
         ///
@@ -6270,10 +6310,13 @@ impl_script_newtype! {
 
         ///Returns a vector with elements representing the sign of `self`.
         ///
-        ///- `1.0` if the number is positive, `+0.0` or `INFINITY`
-        ///- `-1.0` if the number is negative, `-0.0` or `NEG_INFINITY`
-        ///- `NAN` if the number is `NAN`
+        /// - `0` if the number is zero
+        /// - `1` if the number is positive
+        /// - `-1` if the number is negative
         signum(self:) -> self,
+
+        ///Returns a vector with signs of `rhs` and the magnitudes of `self`.
+        copysign(self:self) -> self,
 
         ///Returns a bitmask with the lowest 4 bits set to the sign bits from the elements of `self`.
         ///
@@ -9826,6 +9869,10 @@ impl bevy_mod_scripting_lua::tealr::mlu::ExportInstances for BevyAPIGlobals {
         instances: &mut T,
     ) -> bevy_mod_scripting_lua::tealr::mlu::mlua::Result<()> {
         instances.add_instance(
+            "UiImage",
+            bevy_mod_scripting_lua::tealr::mlu::UserDataProxy::<LuaUiImage>::new,
+        )?;
+        instances.add_instance(
             "Name",
             bevy_mod_scripting_lua::tealr::mlu::UserDataProxy::<LuaName>::new,
         )?;
@@ -10059,8 +10106,8 @@ impl APIProvider for LuaBevyAPIProvider {
 			.process_type::<LuaNode>()
 			.process_type::<LuaStyle>()
 			.process_type::<LuaUiImage>()
+			.process_type::<bevy_mod_scripting_lua::tealr::mlu::UserDataProxy<LuaUiImage>>()
 			.process_type::<LuaButton>()
-			.process_type::<LuaImageMode>()
 			.process_type::<LuaDisplay>()
 			.process_type::<LuaAnimationPlayer>()
 			.process_type::<LuaName>()
@@ -10069,15 +10116,12 @@ impl APIProvider for LuaBevyAPIProvider {
 			.process_type::<LuaChildren>()
 			.process_type::<LuaParent>()
 			.process_type::<LuaText2dBounds>()
-			.process_type::<LuaText2dSize>()
 			.process_type::<LuaText>()
 			.process_type::<bevy_mod_scripting_lua::tealr::mlu::UserDataProxy<LuaText>>()
 			.process_type::<LuaTextAlignment>()
 			.process_type::<LuaTextSection>()
 			.process_type::<bevy_mod_scripting_lua::tealr::mlu::UserDataProxy<LuaTextSection>>()
 			.process_type::<LuaTextStyle>()
-			.process_type::<LuaHorizontalAlign>()
-			.process_type::<LuaVerticalAlign>()
 			.process_type::<LuaStopwatch>()
 			.process_type::<bevy_mod_scripting_lua::tealr::mlu::UserDataProxy<LuaStopwatch>>()
 			.process_type::<LuaTimer>()
@@ -10115,7 +10159,6 @@ impl APIProvider for LuaBevyAPIProvider {
 			.process_type::<LuaComputedVisibility>()
 			.process_type::<LuaSkinnedMesh>()
 			.process_type::<LuaScalingMode>()
-			.process_type::<LuaWindowOrigin>()
 			.process_type::<LuaColor>()
 			.process_type::<bevy_mod_scripting_lua::tealr::mlu::UserDataProxy<LuaColor>>()
 			.process_type::<LuaAabb>()
@@ -10262,7 +10305,6 @@ impl APIProvider for LuaBevyAPIProvider {
         app.register_foreign_lua_type::<Style>();
         app.register_foreign_lua_type::<UiImage>();
         app.register_foreign_lua_type::<Button>();
-        app.register_foreign_lua_type::<ImageMode>();
         app.register_foreign_lua_type::<Display>();
         app.register_foreign_lua_type::<AnimationPlayer>();
         app.register_foreign_lua_type::<Name>();
@@ -10270,13 +10312,10 @@ impl APIProvider for LuaBevyAPIProvider {
         app.register_foreign_lua_type::<Children>();
         app.register_foreign_lua_type::<Parent>();
         app.register_foreign_lua_type::<Text2dBounds>();
-        app.register_foreign_lua_type::<Text2dSize>();
         app.register_foreign_lua_type::<Text>();
         app.register_foreign_lua_type::<TextAlignment>();
         app.register_foreign_lua_type::<TextSection>();
         app.register_foreign_lua_type::<TextStyle>();
-        app.register_foreign_lua_type::<HorizontalAlign>();
-        app.register_foreign_lua_type::<VerticalAlign>();
         app.register_foreign_lua_type::<Stopwatch>();
         app.register_foreign_lua_type::<Timer>();
         app.register_foreign_lua_type::<Entity>();
@@ -10308,7 +10347,6 @@ impl APIProvider for LuaBevyAPIProvider {
         app.register_foreign_lua_type::<ComputedVisibility>();
         app.register_foreign_lua_type::<SkinnedMesh>();
         app.register_foreign_lua_type::<ScalingMode>();
-        app.register_foreign_lua_type::<WindowOrigin>();
         app.register_foreign_lua_type::<Color>();
         app.register_foreign_lua_type::<Aabb>();
         app.register_foreign_lua_type::<CubemapFrusta>();
@@ -10358,21 +10396,21 @@ impl APIProvider for LuaBevyAPIProvider {
         app.register_foreign_lua_type::<DQuat>();
         app.register_foreign_lua_type::<EulerRot>();
         app.register_foreign_lua_type::<Rect>();
-        app.register_foreign_lua_type::<u64>();
+        app.register_foreign_lua_type::<usize>();
+        app.register_foreign_lua_type::<isize>();
+        app.register_foreign_lua_type::<f32>();
         app.register_foreign_lua_type::<f64>();
-        app.register_foreign_lua_type::<i32>();
+        app.register_foreign_lua_type::<u128>();
+        app.register_foreign_lua_type::<u64>();
         app.register_foreign_lua_type::<u32>();
         app.register_foreign_lua_type::<u16>();
-        app.register_foreign_lua_type::<String>();
-        app.register_foreign_lua_type::<f32>();
-        app.register_foreign_lua_type::<bool>();
-        app.register_foreign_lua_type::<i16>();
-        app.register_foreign_lua_type::<isize>();
-        app.register_foreign_lua_type::<u128>();
         app.register_foreign_lua_type::<u8>();
-        app.register_foreign_lua_type::<i64>();
-        app.register_foreign_lua_type::<usize>();
         app.register_foreign_lua_type::<i128>();
+        app.register_foreign_lua_type::<i64>();
+        app.register_foreign_lua_type::<i32>();
+        app.register_foreign_lua_type::<i16>();
         app.register_foreign_lua_type::<i8>();
+        app.register_foreign_lua_type::<String>();
+        app.register_foreign_lua_type::<bool>();
     }
 }

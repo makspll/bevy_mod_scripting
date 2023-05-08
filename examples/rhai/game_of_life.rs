@@ -6,8 +6,7 @@ use bevy::{
         render_resource::{Extent3d, TextureDimension, TextureFormat},
         texture::ImageSampler,
     },
-    time::FixedTimestep,
-    window::WindowResized,
+    window::{PrimaryWindow, WindowResized},
 };
 
 use bevy_mod_scripting::prelude::*;
@@ -123,15 +122,14 @@ pub fn sync_window_size(
     mut resize_event: EventReader<WindowResized>,
     mut settings: ResMut<Settings>,
     mut query: Query<&mut Sprite, With<LifeState>>,
-    windows: Res<Windows>,
+    primary_windows: Query<(&Window, With<PrimaryWindow>)>,
 ) {
-    if resize_event
+    if let Some(e) = resize_event
         .iter()
-        .filter(|w| w.id.is_primary())
+        .filter(|e| primary_windows.get(e.window).is_ok())
         .last()
-        .is_some()
     {
-        let primary_window = windows.get_primary().unwrap();
+        let (primary_window, _) = primary_windows.get(e.window).unwrap();
         settings.display_grid_dimensions = (
             primary_window.physical_width(),
             primary_window.physical_height(),
@@ -196,51 +194,45 @@ pub fn send_init(mut events: PriorityEventWriter<RhaiEvent<()>>) {
     )
 }
 
-pub enum LifeStages {
+#[derive(Debug, Clone, PartialEq, Eq, Hash, SystemSet)]
+pub enum LifeSystemSets {
     Scripts,
 }
 
-impl StageLabel for LifeStages {
-    fn as_str(&self) -> &'static str {
-        match self {
-            LifeStages::Scripts => "Scripts",
-        }
-    }
-}
-
 /// how often to step the simulation
-const UPDATE_FREQUENCY: f64 = 1.0 / 30.0;
+const UPDATE_FREQUENCY: f32 = 1.0 / 30.0;
 
 fn main() -> std::io::Result<()> {
     let mut app = App::new();
 
     app.add_plugins(DefaultPlugins)
+        .insert_resource(FixedTime::new_from_secs(UPDATE_FREQUENCY))
         .add_plugin(LogDiagnosticsPlugin::default())
         .add_plugin(FrameTimeDiagnosticsPlugin::default())
         .add_plugin(ScriptingPlugin)
         .init_resource::<Settings>()
         .add_startup_system(setup)
         .add_startup_system(send_init)
-        .add_system(sync_window_size.before(update_rendered_state))
         .add_startup_system(|asset_server: ResMut<AssetServer>| {
             asset_server.asset_io().watch_for_changes().unwrap()
         })
-        .add_system_set(
-            SystemSet::new()
-                .with_run_criteria(FixedTimestep::step(UPDATE_FREQUENCY))
-                .with_system(update_rendered_state)
-                .with_system(send_on_update),
+        .add_system(sync_window_size)
+        .add_systems(
+            (update_rendered_state, send_on_update)
+                .chain()
+                .in_schedule(CoreSchedule::FixedUpdate),
         )
-        .add_stage_after(
-            CoreStage::Update,
-            LifeStages::Scripts,
-            SystemStage::single_threaded(),
+        .configure_set(
+            LifeSystemSets::Scripts
+                .after(CoreSet::UpdateFlush)
+                .before(CoreSet::PostUpdate),
         )
-        .add_script_handler_stage_with_criteria::<RhaiScriptHost<()>, _, _, _, 0, 1>(
-            LifeStages::Scripts,
-            FixedTimestep::step(UPDATE_FREQUENCY),
+        .add_system(
+            script_event_handler::<RhaiScriptHost<()>, 0, 1>
+                .in_set(LifeSystemSets::Scripts)
+                .in_schedule(CoreSchedule::FixedUpdate),
         )
-        .add_script_host::<RhaiScriptHost<()>, _>(CoreStage::PostUpdate)
+        .add_script_host_to_base_set::<RhaiScriptHost<()>, _>(CoreSet::PostUpdate)
         .add_api_provider::<RhaiScriptHost<()>>(Box::new(RhaiBevyAPIProvider))
         .add_api_provider::<RhaiScriptHost<()>>(Box::new(LifeAPI))
         .update_documentation::<RhaiScriptHost<()>>();

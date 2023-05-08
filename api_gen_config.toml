@@ -166,10 +166,6 @@ type="Button"
 source="bevy_ui"
 
 [[types]]
-type="ImageMode"
-source="bevy_ui"
-
-[[types]]
 type="Display"
 source="bevy_ui"
 
@@ -212,10 +208,6 @@ type="Text2dBounds"
 source="bevy_text"
 
 [[types]]
-type="Text2dSize"
-source="bevy_text"
-
-[[types]]
 type="Text"
 source="bevy_text"
 
@@ -230,16 +222,6 @@ source="bevy_text"
 [[types]]
 type="TextStyle"
 source="bevy_text"
-
-[[types]]
-type="HorizontalAlign"
-source="bevy_text"
-
-[[types]]
-type="VerticalAlign"
-source="bevy_text"
-
-
 
 ## BEVY_TIME
 
@@ -421,10 +403,6 @@ source="bevy_render"
 
 [[types]]
 type="ScalingMode"
-source="bevy_render"
-
-[[types]]
-type="WindowOrigin"
 source="bevy_render"
 
 [[types]]

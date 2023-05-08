@@ -66,8 +66,8 @@ fn main() -> std::io::Result<()> {
         .register_foreign_rhai_type::<Option<Vec<bool>>>()
         // note the implementation for Option is there, but we must register `LuaProxyable` for it
         .init_resource::<MyResource>()
-        // this stage handles addition and removal of script contexts, we can safely use `CoreStage::PostUpdate`
-        .add_script_host::<RhaiScriptHost<()>, _>(CoreStage::PostUpdate)
+        // this system set handles addition and removal of script contexts, we can safely use `CoreSet::PostUpdate`
+        .add_script_host_to_base_set::<RhaiScriptHost<()>, _>(CoreSet::PostUpdate)
         .add_api_provider::<RhaiScriptHost<()>>(Box::new(RhaiBevyAPIProvider))
         .add_api_provider::<RhaiScriptHost<()>>(Box::new(MyAPIProvider))
         .add_system(|world: &mut World| {
@@ -122,9 +122,13 @@ fn main() -> std::io::Result<()> {
                             my_component.bool_option = true;
                             print(my_component.bool_option);
                             
+                            print("----");
+
                             for e in my_component.vec_of_option_bools {
                                 print(`elem: ${e}`)
                             }
+                            
+                            print("----");
 
                             my_component.vec_of_option_bools = [true,false,true];
                             my_component.vec_of_option_bools[0] = false;

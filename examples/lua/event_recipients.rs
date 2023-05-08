@@ -94,7 +94,7 @@ fn do_update(mut w: PriorityEventWriter<LuaEvent<MyLuaArg>>) {
         ),
     ];
 
-    // fire random event, for any stages
+    // fire random event, for any of the system sets
     fire_random_event(&mut w, &all_events);
 }
 
@@ -107,7 +107,6 @@ fn load_our_scripts(server: Res<AssetServer>, mut commands: Commands) {
     let path = "scripts/event_recipients.lua";
     let handle = server.load::<LuaFile, &str>(path);
     let scripts = (0..2)
-        .into_iter()
         .map(|_| Script::<LuaFile>::new(path.to_string(), handle.clone()))
         .collect();
 
@@ -126,8 +125,8 @@ fn main() -> std::io::Result<()> {
         // the script with id 0
         // or the script with id 1
         .add_system(do_update)
-        .add_script_handler_stage::<LuaScriptHost<MyLuaArg>, _, 0, 0>(CoreStage::PostUpdate)
-        .add_script_host::<LuaScriptHost<MyLuaArg>, _>(CoreStage::PostUpdate)
+        .add_script_handler_to_base_set::<LuaScriptHost<MyLuaArg>, _, 0, 0>(CoreSet::PostUpdate)
+        .add_script_host_to_base_set::<LuaScriptHost<MyLuaArg>, _>(CoreSet::PostUpdate)
         .add_api_provider::<LuaScriptHost<MyLuaArg>>(Box::new(LuaAPIProvider));
     app.run();
 
