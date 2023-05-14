@@ -5,7 +5,7 @@ use proc_macro::TokenStream;
 use quote::{format_ident, quote, quote_spanned, ToTokens};
 use syn::{parse::Parse, parse_macro_input, spanned::Spanned, Attribute, DeriveInput};
 
-#[proc_macro_derive(ScriptProxy, attributes(proxy, rhai, lua))]
+#[proc_macro_derive(ScriptProxy, attributes(functions, proxy, rhai, lua))]
 pub fn make_script_proxy(input: TokenStream) -> TokenStream {
     let original_tokens: proc_macro2::TokenStream = input.clone().into();
     let derive_input = parse_macro_input!(input as DeriveInput);

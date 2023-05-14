@@ -1,11 +1,17 @@
+use std::collections::VecDeque;
+
 use indexmap::{IndexMap, IndexSet};
-use proc_macro2::Ident;
+use proc_macro2::{Ident, Span};
+use quote::TokenStreamExt;
 use syn::{
-    parse::{Nothing, Parse},
+    bracketed, parenthesized,
+    parse::{Nothing, Parse, ParseBuffer},
     punctuated::Punctuated,
     spanned::Spanned,
-    DataStruct, DeriveInput, Fields, TraitItemMethod,
+    Attribute, DataStruct, DeriveInput, Fields, TraitItemMethod,
 };
+
+use crate::utils::attribute_to_string_lit;
 
 /// Convenience structure for holding data relevant to proxy generation
 pub struct DeriveMeta {}
@@ -73,7 +79,7 @@ impl TryFrom<syn::NestedMeta> for DeriveFlag {
 /// Container for proxy flags
 #[derive(Debug, Default)]
 pub struct ProxyFlags {
-    pub derive_flags: IndexSet<DeriveFlag>,
+    pub flags: IndexSet<DeriveFlag>,
 }
 
 impl TryFrom<syn::MetaList> for ProxyFlags {
@@ -94,7 +100,9 @@ impl TryFrom<syn::MetaList> for ProxyFlags {
                 derive_flags.insert(flag);
             }
         }
-        Ok(Self { derive_flags })
+        Ok(Self {
+            flags: derive_flags,
+        })
     }
 }
 
@@ -115,11 +123,22 @@ pub enum ProxyData {
 /// Attributes relating to the proxy as a whole
 #[derive(Debug)]
 pub struct ProxyMeta {
+    /// the identifier of the proxied type
+    pub proxied_name: Ident,
+    /// the identifier for the proxy type
     pub proxy_name: Ident,
+    /// language derivation settings
     pub language_meta: LanguageMeta,
+    /// additional flags for the proxy
     pub proxy_flags: ProxyFlags,
+    /// functions to be proxied
     pub functions: IndexMap<Ident, TraitItemMethod>,
+    /// the inner type data
     pub data: ProxyData,
+    /// the derive input span
+    pub span: Span,
+    /// docstrings
+    pub docstrings: Vec<proc_macro2::TokenStream>,
 }
 
 impl TryFrom<DeriveInput> for ProxyMeta {
@@ -127,6 +146,17 @@ impl TryFrom<DeriveInput> for ProxyMeta {
 
     fn try_from(derive_input: DeriveInput) -> Result<Self, Self::Error> {
         let mut proxy_name = derive_input.ident.clone();
+        let span = derive_input.span();
+
+        // helper for collecting errors which are not fatal to the logic flow
+        // simplifies logical flow
+        let mut accumulated_errors = VecDeque::<Self::Error>::default();
+
+        let docstrings = derive_input
+            .attrs
+            .iter()
+            .map(attribute_to_string_lit)
+            .collect();
 
         let proxy_meta = derive_input
             .attrs
@@ -140,12 +170,21 @@ impl TryFrom<DeriveInput> for ProxyMeta {
             .into_iter()
             .find(|attr| attr.path.is_ident("functions"))
             .map_or(Ok(IndexMap::default()), |attr| {
-                syn::parse::<ZeroOrManyTerminated<TraitItemMethod, Nothing>>(attr.tokens.into())
+                attr.parse_args::<ZeroOrManyTerminated<TraitItemMethod, Nothing>>()
                     .map(|fns| {
+                        let mut fn_map = IndexMap::default();
                         fns.0
                             .into_iter()
                             .map(|_fn| (_fn.sig.ident.clone(), _fn))
-                            .collect::<IndexMap<_, _>>()
+                            .for_each(|(name, body)| {
+                                if let Some(old_val) = fn_map.insert(name, body) {
+                                    accumulated_errors.push_back(syn::Error::new_spanned(
+                                        old_val.sig.ident, // old == new ident
+                                        "duplicate Lua proxy function, re-name this function",
+                                    ))
+                                }
+                            });
+                        fn_map
                     })
             })?;
 
@@ -192,12 +231,21 @@ impl TryFrom<DeriveInput> for ProxyMeta {
             syn::Data::Union(_) => todo!(),
         };
 
+        let proxied_name = derive_input.ident;
+
+        if let Some(first_err) = accumulated_errors.pop_front() {
+            return Err(first_err);
+        }
+
         Ok(ProxyMeta {
+            proxied_name,
             proxy_name,
             proxy_flags,
             language_meta,
             functions,
             data,
+            span,
+            docstrings,
         })
     }
 }

@@ -19,8 +19,21 @@ pub struct MyThing {
     string: String,
 }
 
-#[derive(ScriptProxy)]
+#[derive(ScriptProxy, Reflect)]
 #[proxy(languages("on_feature(lua)"))]
+#[functions[
+
+    // #[lua(MutatingMetaMethod)]
+    // fn basd(mut self) {
+            
+    // }
+
+    // #[lua(MetaMethod)]
+    // fn asd(self);
+
+    #[lua(Method)]
+    fn basda(self);
+]]
 pub struct Lol {}
 
 impl MyThing {
