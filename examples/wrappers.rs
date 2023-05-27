@@ -22,15 +22,32 @@ pub struct MyThing {
 #[derive(ScriptProxy, Reflect)]
 #[proxy(languages("on_feature(lua)"))]
 #[functions[
+    #[lua(Function)]
+    fn fn_over_string_returning_string(a : String) -> String;
 
+    #[lua(Function)]
+    fn fn_over_string(a : String);
 
-    #[lua(Function,output(proxy))]
-    fn basda(#[proxy] abc : Lol) -> Lol;
+    #[lua(Method,output(proxy))]
+    fn fn_over_self_ref(&self) -> Lol;
+
+    #[lua(MutatingMethod,output(proxy))]
+    fn fn_over_self_ref_mut(&mut self) -> Lol;
 ]]
 pub struct Lol {}
 
 impl Lol {
-    pub fn basda(str: String) -> Self {
+    pub fn fn_over_string(_: String) {}
+
+    pub fn fn_over_string_returning_string(str_: String) -> String {
+        str_
+    }
+
+    pub fn fn_over_self_ref(&self) -> Self {
+        Self {}
+    }
+
+    pub fn fn_over_self_ref_mut(&mut self) -> Self {
         Self {}
     }
 }
