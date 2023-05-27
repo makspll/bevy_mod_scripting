@@ -80,10 +80,11 @@ impl FunctionArgMeta {
                 let passed_proxy_name = proxy_attr
                     .map(|attr| attr.parse_meta().unwrap_or_else(|err| abort!(attr, err)))
                     .map(|meta| match meta {
-                        Meta::Path(_) => generate_automatic_proxy_name(proxy_name),
+                        Meta::Path(_) => proxy_name.clone(),
                         Meta::List(MetaList{ nested, .. }) => {
                             if let Some(NestedMeta::Lit(Lit::Str(proxy_name))) = nested.first() {
-                                return format_ident!("{}", proxy_name.token().to_string())
+                                let string = proxy_name.token().to_string();
+                                return format_ident!("{}", string[1..string.len()-1])
                             }
                             abort!(nested, "Expected single item attribute list containing proxy name as in: `proxy(\"proxy_name\")`");
                         },
@@ -248,8 +249,8 @@ impl FunctionMeta<'_> {
                 let name = &fn_arg.arg_name;
                 let type_path = &fn_arg.arg_type;
                 (
-                    quote_spanned!(fn_arg.span=>#name ),
-                    quote_spanned!(fn_arg.span=>#_mut #type_path),
+                    quote_spanned!(fn_arg.span=>#_mut #name ),
+                    quote_spanned!(fn_arg.span=>#type_path),
                 )
             })
             .unzip::<_, _, Vec<proc_macro2::TokenStream>, Vec<proc_macro2::TokenStream>>();
@@ -258,6 +259,7 @@ impl FunctionMeta<'_> {
     }
 
     fn generate_mlua_body(&self, proxied_name: &Ident) -> proc_macro2::TokenStream {
+
         if let Some(body) = &self.body.default {
             return body.to_token_stream();
         }
@@ -486,7 +488,8 @@ pub fn impl_lua_proxy(input: TokenStream) -> TokenStream {
                 #body
             }
         };
-        panic!("{}", closure);
+
+        // panic!("{}", closure);
 
         let tealr_function = format_ident!("{}", fn_meta.fn_type.get_tealr_function());
         let signature = fn_meta

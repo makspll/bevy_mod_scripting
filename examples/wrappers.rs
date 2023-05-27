@@ -25,12 +25,14 @@ pub struct MyThing {
 
 
     #[lua(Function,output(proxy))]
-    fn basda(abc : String) -> Lol;
+    fn basda(#[proxy] abc : Lol) -> Lol;
 ]]
 pub struct Lol {}
 
 impl Lol {
-    pub fn basda(str: String) -> Self {}
+    pub fn basda(str: String) -> Self {
+        Self {}
+    }
 }
 
 impl MyThing {
