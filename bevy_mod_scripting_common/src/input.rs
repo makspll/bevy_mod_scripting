@@ -156,6 +156,7 @@ impl TryFrom<DeriveInput> for ProxyMeta {
             .attrs
             .iter()
             .map(attribute_to_string_lit)
+            .filter(|s| !s.is_empty())
             .collect();
 
         let proxy_meta = derive_input

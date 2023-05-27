@@ -23,18 +23,15 @@ pub struct MyThing {
 #[proxy(languages("on_feature(lua)"))]
 #[functions[
 
-    // #[lua(MutatingMetaMethod)]
-    // fn basd(mut self) {
-            
-    // }
 
-    // #[lua(MetaMethod)]
-    // fn asd(self);
-
-    #[lua(Method)]
-    fn basda(self);
+    #[lua(Function,output(proxy))]
+    fn basda(abc : String) -> Lol;
 ]]
 pub struct Lol {}
+
+impl Lol {
+    pub fn basda(str: String) -> Self {}
+}
 
 impl MyThing {
     pub fn do_something_cool(&self) -> String {

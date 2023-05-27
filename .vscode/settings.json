@@ -12,5 +12,10 @@
     ],
     "rust-analyzer.server.extraEnv": {
         "RUSTUP_TOOLCHAIN": "stable"
-    }
+    },
+    "[rust]": {
+        "editor.formatOnSave": true,
+        "editor.formatOnSaveMode": "file",
+        "editor.defaultFormatter": "rust-lang.rust-analyzer"
+    },
 }

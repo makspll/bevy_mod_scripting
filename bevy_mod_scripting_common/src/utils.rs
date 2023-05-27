@@ -97,17 +97,31 @@ macro_rules! impl_parse_enum {
 }
 
 pub(crate) use impl_parse_enum;
-use proc_macro2::TokenStream;
+use proc_macro2::{Ident, TokenStream};
 use quote::ToTokens;
 use syn::{
     parse::{Parse, ParseStream},
-    Attribute, Type,
+    Attribute, Path, PathArguments, PathSegment, Type, TypePath,
 };
 
 pub fn attribute_to_string_lit(attrs: &Attribute) -> TokenStream {
     attrs.tokens.clone().into_iter().skip(1).collect()
 }
 
+pub fn ident_to_type_path(ident: Ident) -> TypePath {
+    TypePath {
+        qself: None,
+        path: Path {
+            leading_colon: None,
+            segments: [PathSegment {
+                ident,
+                arguments: PathArguments::None,
+            }]
+            .into_iter()
+            .collect(),
+        },
+    }
+}
 /// Converts the given ToTokens into token stream, stringifies it and removes whitespace
 pub fn stringify_token_group<T: ToTokens>(t: &T) -> String {
     let mut k = t.into_token_stream().to_string();
