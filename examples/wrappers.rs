@@ -24,7 +24,7 @@ pub struct MyThing {
 #[functions[
 
     #[lua(Function)]
-    fn fn_over_string_returning_string(a : String) -> String;
+    fn fn_over_string_returning_string(a : String);
 
     #[lua(Function)]
     fn fn_over_string(a : String);

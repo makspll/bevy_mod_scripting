@@ -292,6 +292,10 @@ impl FunctionMeta<'_> {
 
     fn generate_mlua_body(&self, proxied_name: &Ident) -> proc_macro2::TokenStream {
 
+        // override this span, as otherwise spans propagate weird
+        let mut proxied_name = proxied_name.clone();
+        proxied_name.set_span(self.body.sig.ident.span());
+
         if let Some(body) = &self.body.default {
             return body.to_token_stream();
         }
@@ -302,11 +306,11 @@ impl FunctionMeta<'_> {
 
             // if a parameter is to be passed by value we use inner (which requires Clone to be supported)
             if arg.is_a_lua_proxy && !arg.is_ref  {
-                quote!(#name.inner()?)
+                quote_spanned!(name.span()=> #name.inner()?)
             } else {
                 // otherwise we depend on a later step to `turn` #name into an identifier for a reference within 
                 // the context of a closure
-                quote!(#name)
+                name.to_token_stream()
             }
         });
 
@@ -316,11 +320,11 @@ impl FunctionMeta<'_> {
             // this removes the first argument taken to be the receiver from the iterator
             let first_arg = unpacked_parameters.next().unwrap_or_else(|| abort!(self.name,"Proxied functions of the type: {} expect a receiver argument (i.e. self)", self.fn_type.as_str()));
 
-            quote! {
+            quote_spanned! {self.body.span()=>
                 #first_arg.#proxied_function_name(#(#unpacked_parameters),*)
             }
         } else {
-            quote! {
+            quote_spanned! {self.body.span()=>
                 #proxied_name::#proxied_function_name(#(#unpacked_parameters),*)
             }
         };
@@ -347,7 +351,6 @@ impl FunctionMeta<'_> {
                 Ok(__output)
             }
         };
-        // panic!("{}", constructor_wrapped_full_call);
         
         // for every argument which is a reference, we need a separate sort of call,
         // we cannot use `v.inner()` since this operates over values, we must use `val_mut` or `val` to get a reference to the wrapped
