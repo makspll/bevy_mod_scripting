@@ -302,11 +302,11 @@ impl FunctionMeta<'_> {
 
             // if a parameter is to be passed by value we use inner (which requires Clone to be supported)
             if arg.is_a_lua_proxy && !arg.is_ref  {
-                quote_spanned!(name.span()=>#name.inner()?)
+                quote!(#name.inner()?)
             } else {
                 // otherwise we depend on a later step to `turn` #name into an identifier for a reference within 
                 // the context of a closure
-                quote_spanned!(name.span()=>#name)
+                quote!(#name)
             }
         });
 
@@ -316,11 +316,11 @@ impl FunctionMeta<'_> {
             // this removes the first argument taken to be the receiver from the iterator
             let first_arg = unpacked_parameters.next().unwrap_or_else(|| abort!(self.name,"Proxied functions of the type: {} expect a receiver argument (i.e. self)", self.fn_type.as_str()));
 
-            quote_spanned! {self.body.span()=>
+            quote! {
                 #first_arg.#proxied_function_name(#(#unpacked_parameters),*)
             }
         } else {
-            quote_spanned! {self.body.span()=>
+            quote! {
                 #proxied_name::#proxied_function_name(#(#unpacked_parameters),*)
             }
         };
@@ -363,7 +363,7 @@ impl FunctionMeta<'_> {
 
                     let arg_name = &arg_meta.arg_name;
 
-                    quote_spanned!{arg_meta.span=>{
+                    quote_spanned!{self.body.span()=>{
                         #arg_name.#method_call(|#arg_name| {#acc})?
                     }}
                 } else {
@@ -372,6 +372,7 @@ impl FunctionMeta<'_> {
             });
         
         reference_unpacked_constructor_wrapped_full_call
+
     }
 
     
@@ -388,7 +389,7 @@ impl FunctionMeta<'_> {
                             self.fn_type.as_str()
                         )
                     );
-                }
+                };
             } else {
                 emit_error!(
                     definition,
@@ -541,7 +542,7 @@ pub fn impl_lua_proxy(input: TokenStream) -> TokenStream {
     let type_level_document_calls = meta
         .docstrings
         .iter()
-        .map(|tkns| quote_spanned!(tkns.span()=>methods.document_type(#tkns);));
+        .map(|tkns| quote_spanned!(meta.span=>methods.document_type(#tkns);));
 
     // generate both tealr documentation and instantiations of functions
     let methods = meta.functions.iter().map(|(name, body)| {
@@ -550,7 +551,7 @@ pub fn impl_lua_proxy(input: TokenStream) -> TokenStream {
             .iter()
             .map(attribute_to_string_lit)
             .filter(|s| !s.is_empty())
-            .map(|tkns| quote_spanned!(tkns.span()=>methods.document_type(#tkns);));
+            .map(|tkns| quote_spanned!(body.span()=>methods.document_type(#tkns);));
 
 
         let fn_meta = FunctionMeta::new(&proxy_name, name, body);

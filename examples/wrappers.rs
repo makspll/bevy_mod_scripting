@@ -22,6 +22,7 @@ pub struct MyThing {
 #[derive(ScriptProxy, Reflect)]
 #[proxy(languages("on_feature(lua)"))]
 #[functions[
+
     #[lua(Function)]
     fn fn_over_string_returning_string(a : String) -> String;
 
