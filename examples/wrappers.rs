@@ -20,11 +20,14 @@ pub struct MyThing {
 }
 
 #[derive(ScriptProxy, Reflect)]
-#[proxy(languages("on_feature(lua)"))]
+#[proxy(languages("on_feature(lua)"), derive(Clone))]
 #[functions[
 
+    #[lua(Method,output(proxy))]
+    fn fn_over_self_and_another(self, #[proxy] another: &Self) -> Self;
+
     #[lua(Function)]
-    fn fn_over_string_returning_string(a : String);
+    fn fn_over_string_returning_string(a : String) -> String;
 
     #[lua(Function)]
     fn fn_over_string(a : String);
@@ -35,9 +38,14 @@ pub struct MyThing {
     #[lua(MutatingMethod,output(proxy))]
     fn fn_over_self_ref_mut(&mut self) -> Lol;
 ]]
+#[derive(Clone)]
 pub struct Lol {}
 
 impl Lol {
+    pub fn fn_over_self_and_another(self, another: &Self) -> Self {
+        Self {}
+    }
+
     pub fn fn_over_string(_: String) {}
 
     pub fn fn_over_string_returning_string(str_: String) -> String {

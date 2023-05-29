@@ -1,6 +1,8 @@
+use std::borrow::Cow;
+
 use bevy_mod_scripting_common::{
     implementor::WrapperImplementor,
-    input::{DeriveFlag, ProxyMeta, ProxyFlags},
+    input::{DeriveFlag, ProxyMeta, ProxyFlags, ProxyTypeNameMeta},
     newtype::Newtype,
     utils::{attribute_to_string_lit, ident_to_type_path},
 };
@@ -34,6 +36,7 @@ pub fn impl_lua_newtype(tokens: TokenStream) -> TokenStream {
 }
 
 const SELF_ALIAS: &str = "_self";
+const PROXY_PREFIX: &str = "Lua";
 
 #[derive(Debug)]
 struct FunctionArgMeta {
@@ -51,7 +54,7 @@ struct FunctionArgMeta {
 impl FunctionArgMeta {
     /// Creates a new meta structure corresponding to the given function argument.
     /// Resolves receivers with the given proxy name.
-    fn new_from_fn_arg(proxy_name: &Ident, fn_arg: &FnArg) -> Self {
+    fn new_from_fn_arg(proxy_type_name_meta: &ProxyTypeNameMeta, fn_arg: &FnArg) -> Self {
         let is_a_lua_proxy;
         let arg_type;
         let arg_name;
@@ -63,7 +66,7 @@ impl FunctionArgMeta {
             FnArg::Receiver(receiver) => {
                 is_receiver = true;
                 is_a_lua_proxy = true;
-                arg_type = parse_quote!(#proxy_name);
+                arg_type = Type::Path(TypePath{ qself: None, path: proxy_type_name_meta.get_proxy_type_identifier().clone().into()});
 
                 if let Some(_mut) = receiver.mutability {
                     mutable = Some(_mut)
@@ -87,7 +90,9 @@ impl FunctionArgMeta {
                 let passed_proxy_name = proxy_attr
                     .map(|attr| attr.parse_meta().unwrap_or_else(|err| abort!(attr, err)))
                     .map(|meta| match meta {
-                        Meta::Path(_) => proxy_name.clone(),
+                        Meta::Path(_) => {
+                            ProxyTypeNameMeta::proxy_type_to_ident(PROXY_PREFIX,ty,proxy_type_name_meta.get_proxied_type_identifier()).unwrap_or_else(|(span,err)| abort!(span,err))
+                        },
                         Meta::List(MetaList{ nested, .. }) => {
                             if let Some(NestedMeta::Lit(Lit::Str(proxy_name))) = nested.first() {
                                 let string = proxy_name.token().to_string();
@@ -138,11 +143,12 @@ impl FunctionArgMeta {
 
     /// Similar to [`Self::new_from_fn_arg`] but without an option of getting a receiver argument type
     fn new_from_type(
-        proxy_name: &Ident,
+        proxy_type_name_meta: &ProxyTypeNameMeta,
         arg_name: Ident,
         arg_type: &Type,
         attrs: Vec<Attribute>,
     ) -> Self {
+
         let ty = Box::new(arg_type.clone());
         let pat_ty = PatType {
             attrs,
@@ -157,10 +163,19 @@ impl FunctionArgMeta {
             ty,
         };
 
-        Self::new_from_fn_arg(proxy_name, &FnArg::Typed(pat_ty))
+
+        Self::new_from_fn_arg(proxy_type_name_meta, &FnArg::Typed(pat_ty))
+    }
+
+    pub fn get_type_stripped_from_outer_references(&self) -> &Type {
+        match &self.arg_type {
+            Type::Reference(r) => &r.elem,
+            _ => &self.arg_type,
+        }
     }
 }
 
+#[derive(Debug)]
 struct FunctionMeta<'a> {
     name: &'a Ident,
     body: &'a TraitItemMethod,
@@ -172,7 +187,7 @@ struct FunctionMeta<'a> {
 impl FunctionMeta<'_> {
 
     fn new<'a>(
-        proxy_name: &'a Ident,
+        proxy_type_name_meta: &ProxyTypeNameMeta,
         name: &'a Ident,
         body: &'a TraitItemMethod,
     ) -> FunctionMeta<'a> {
@@ -218,7 +233,6 @@ impl FunctionMeta<'_> {
                             FunctionType::iterator()
                             .map(FunctionType::as_ident_str).collect::<Vec<_>>().join(","));
                     });
-
                 let fn_meta = FunctionMeta {
                     name,
                     body,
@@ -227,12 +241,12 @@ impl FunctionMeta<'_> {
                         .sig
                         .inputs
                         .iter()
-                        .map(|arg| FunctionArgMeta::new_from_fn_arg(proxy_name, arg))
+                        .map(|arg| FunctionArgMeta::new_from_fn_arg(proxy_type_name_meta, arg))
                         .collect(),
                     output_meta: match &body.sig.output {
                         syn::ReturnType::Default => None,
                         syn::ReturnType::Type(_, t) => Some(FunctionArgMeta::new_from_type(
-                            proxy_name,
+                            proxy_type_name_meta,
                             format_ident!("out"),
                             t,
                             output_attrs,
@@ -279,7 +293,15 @@ impl FunctionMeta<'_> {
             .map(|fn_arg| {
                 let _mut = &fn_arg.mutable;
                 let name = &fn_arg.arg_name;
-                let type_path = &fn_arg.arg_type;
+
+                // strip outer refs if the type is a proxy, we cannot have any references in type position
+                // we can still have reference semantics since we have a proxy object which we pass by value
+                let type_path = if fn_arg.is_a_lua_proxy {
+                    fn_arg.get_type_stripped_from_outer_references()
+                } else {
+                    &fn_arg.arg_type
+                };
+
                 (
                     quote_spanned!(fn_arg.span=>#_mut #name ),
                     quote_spanned!(fn_arg.span=>#type_path),
@@ -332,10 +354,9 @@ impl FunctionMeta<'_> {
         // if the output is also a proxied type, we need to wrap the result in a proxy
         let constructor_wrapped_full_call= match &self.output_meta {
             Some(output_meta) if output_meta.is_a_lua_proxy => {
-                let proxied_name = &output_meta.arg_type;
                 let proxy_type = &output_meta.arg_type;
                 quote_spanned! {self.body.span()=>
-                    let __output : #proxy_type = #proxied_name::new(#proxied_method_call);
+                    let __output : #proxy_type = #proxy_type::new(#proxied_method_call);
                     Ok(__output)
                 }
             }
@@ -406,7 +427,7 @@ impl FunctionMeta<'_> {
     }
 }
 
-#[derive(PartialEq, Eq, Clone, Copy)]
+#[derive(PartialEq, Eq, Clone, Copy, Debug)]
 enum FunctionType {
     Function,
     MetaFunction,
@@ -506,11 +527,12 @@ pub fn impl_lua_proxy(input: TokenStream) -> TokenStream {
         Err(err) => return err.to_compile_error().into(),
     };
 
-    let proxy_name = if meta.proxy_name == meta.proxied_name {
-        generate_automatic_proxy_name(&meta.proxy_name)
-    } else {
-        meta.proxy_name
-    };
+    let proxy_type_name_meta = ProxyTypeNameMeta::new(
+        Type::Path(TypePath{ qself: None, path: meta.proxy_name.into() }),
+        PROXY_PREFIX
+    );
+
+    let proxy_identifier = proxy_type_name_meta.get_proxy_type_identifier();
 
     let proxied_name = meta.proxied_name;
     let is_clonable = meta.proxy_flags.flags.contains(&DeriveFlag::Clone);
@@ -520,17 +542,17 @@ pub fn impl_lua_proxy(input: TokenStream) -> TokenStream {
 
     if is_clonable {
         definition = quote_spanned! {meta.span=>
-            bevy_script_api::make_script_wrapper!(#proxied_name as #proxy_name with Clone);
+            bevy_script_api::make_script_wrapper!(#proxied_name as #proxy_identifier with Clone);
         };
     } else {
         definition = quote_spanned! {meta.span=>
-            bevy_script_api::make_script_wrapper!(#proxied_name as #proxy_name);
+            bevy_script_api::make_script_wrapper!(#proxied_name as #proxy_identifier);
         }
     }
 
     if meta.proxy_flags.flags.contains(&DeriveFlag::Debug) {
         definition.extend(quote_spanned!{meta.span=>
-            impl std::fmt::Debug for #proxy_name {
+            impl std::fmt::Debug for #proxy_identifier {
                 fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> Result<(), std::fmt::Error> {
                     self.val(|s| s.fmt(f)).unwrap_or_else(|_| f.write_str("Error while retrieving reference in `std::fmt::Debug`."))}    
             }
@@ -538,7 +560,7 @@ pub fn impl_lua_proxy(input: TokenStream) -> TokenStream {
     }
 
     let tealr_type_implementations = quote_spanned! {meta.span=>
-        bevy_script_api::impl_tealr_type!(#proxy_name);
+        bevy_script_api::impl_tealr_type!(#proxy_identifier);
     };
 
     // generate type level tealr documentation calls
@@ -557,16 +579,14 @@ pub fn impl_lua_proxy(input: TokenStream) -> TokenStream {
             .map(|tkns| quote_spanned!(body.span()=>methods.document_type(#tkns);));
 
 
-        let fn_meta = FunctionMeta::new(&proxy_name, name, body);
+        let fn_meta = FunctionMeta::new(&proxy_type_name_meta, name, body);
         let args = fn_meta.generate_mlua_args();
         let body = fn_meta.generate_mlua_body(&proxied_name);
-
         let closure = quote_spanned! {body.span()=>
             |#args| {
                 #body
             }
         };
-
 
         let tealr_function = format_ident!("{}", fn_meta.fn_type.get_tealr_function());
         let signature = fn_meta
@@ -593,7 +613,7 @@ pub fn impl_lua_proxy(input: TokenStream) -> TokenStream {
         #[allow(unused_parens,unused_braces)]
         #[allow(clippy::all)]
 
-        impl #tealr::mlu::TealData for #proxy_name {
+        impl #tealr::mlu::TealData for #proxy_identifier {
             fn add_methods<'lua, T: #tealr::mlu::TealDataMethods<'lua, Self>>(methods: &mut T) {
                 #(#type_level_document_calls)*
                 #(#methods)*
@@ -608,6 +628,4 @@ pub fn impl_lua_proxy(input: TokenStream) -> TokenStream {
     .into()
 }
 
-fn generate_automatic_proxy_name(proxied_name: &Ident) -> Ident {
-    format_ident!("Lua{}", proxied_name)
-}
+

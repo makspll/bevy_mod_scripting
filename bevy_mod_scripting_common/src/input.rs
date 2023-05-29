@@ -2,13 +2,13 @@ use std::collections::VecDeque;
 
 use indexmap::{IndexMap, IndexSet};
 use proc_macro2::{Ident, Span};
-use quote::TokenStreamExt;
+use quote::{format_ident, ToTokens, TokenStreamExt};
 use syn::{
     bracketed, parenthesized,
     parse::{Nothing, Parse, ParseBuffer},
     punctuated::Punctuated,
     spanned::Spanned,
-    Attribute, DataStruct, DeriveInput, Fields, TraitItemMethod,
+    Attribute, DataStruct, DeriveInput, Fields, Meta, NestedMeta, TraitItemMethod, Type,
 };
 
 use crate::utils::attribute_to_string_lit;
@@ -72,7 +72,15 @@ impl TryFrom<syn::NestedMeta> for DeriveFlag {
     type Error = syn::Error;
 
     fn try_from(value: syn::NestedMeta) -> Result<Self, Self::Error> {
-        todo!()
+        match value {
+            NestedMeta::Meta(Meta::Path(p)) if p.is_ident("Clone") => Ok(Self::Clone),
+            NestedMeta::Meta(Meta::Path(p)) if p.is_ident("Debug") => Ok(Self::Debug),
+            NestedMeta::Meta(Meta::Path(p)) if p.is_ident("Display") => Ok(Self::Display),
+            _ => Err(syn::Error::new_spanned(
+                value,
+                "Expected one of `Debug`, `Display`, `Clone`",
+            )),
+        }
     }
 }
 
@@ -118,6 +126,79 @@ impl<T: Parse, S: Parse> Parse for ZeroOrManyTerminated<T, S> {
 #[derive(Debug)]
 pub enum ProxyData {
     Struct { fields: Fields },
+}
+
+pub struct ProxyTypeNameMeta {
+    proxied_type: Type,
+    proxied_type_ident: Ident,
+    proxy_type_ident: Ident,
+}
+
+impl ProxyTypeNameMeta {
+    pub fn new(proxied_type: Type, proxy_prefix: &'static str) -> Self {
+        let proxied_type_ident = match &proxied_type {
+            Type::Path(p) if p.path.get_ident().is_some() => p.path.get_ident().unwrap().clone(),
+            _ => panic!(
+                "Expected identifier for proxied type, instead got: {}",
+                proxied_type.to_token_stream()
+            ),
+        };
+
+        Self {
+            proxy_type_ident: Self::proxy_type_to_ident(
+                proxy_prefix,
+                &proxied_type,
+                &proxied_type_ident,
+            )
+            .unwrap(),
+            proxied_type_ident,
+            proxied_type,
+        }
+    }
+
+    pub fn get_proxied_type_identifier(&self) -> &Ident {
+        &self.proxied_type_ident
+    }
+
+    pub fn get_proxy_type_identifier(&self) -> &Ident {
+        &self.proxy_type_ident
+    }
+
+    pub fn get_proxied_type(&self) -> &Type {
+        &self.proxied_type
+    }
+
+    /// Converts a type representing a proxy (simple type with possible outer reference) without generics
+    /// into the identifier representing the type. in addition, replaces Self and self occurences with the given ident
+    /// uses `generate_automatic_proxy_name` in the case that the identifier is anything but `self` or `Self`.
+    ///
+    /// For example, `MyType` will be translated to `LuaMyType` if given the "Lua" prefix
+    /// `Self` will be translated to the proxied_type_identifier with the given prefix
+    /// etc.
+    pub fn proxy_type_to_ident(
+        proxy_prefix: &'static str,
+        proxy_type: &Type,
+        proxied_type_identifier: &Ident,
+    ) -> Result<Ident, (Span, String)> {
+        match proxy_type {
+            Type::Path(p) if p.path.is_ident("self") || p.path.is_ident("Self") => Ok(
+                format_ident!("{}{}", proxy_prefix, proxied_type_identifier.clone()),
+            ),
+            Type::Path(p) if p.path.get_ident().is_some() => Ok(format_ident!(
+                "{}{}",
+                proxy_prefix,
+                p.path.get_ident().unwrap()
+            )),
+            Type::Reference(tr) => {
+                Self::proxy_type_to_ident(proxy_prefix, &tr.elem, proxied_type_identifier)
+            }
+            _ => Err((
+                proxy_type.span(),
+                "Expected simple type with one identifier and possible reference for proxy type"
+                    .to_string(),
+            )),
+        }
+    }
 }
 
 /// Attributes relating to the proxy as a whole
@@ -190,33 +271,38 @@ impl TryFrom<DeriveInput> for ProxyMeta {
             })?;
 
         let mut language_meta = Default::default();
-        let proxy_flags = Default::default();
+        let mut proxy_flags: ProxyFlags = Default::default();
 
         if let syn::Meta::List(list) = proxy_meta {
             for attr in list.nested.into_iter() {
-                if let syn::NestedMeta::Meta(syn::Meta::NameValue(pair)) = attr {
-                    let ident = pair.path.get_ident().ok_or_else(|| {
-                        syn::Error::new_spanned(&pair, "Keys must be identifiers")
-                    })?;
+                match attr {
+                    NestedMeta::Meta(Meta::NameValue(pair)) => {
+                        let ident = pair.path.get_ident().ok_or_else(|| {
+                            syn::Error::new_spanned(&pair, "Keys must be identifiers")
+                        })?;
 
-                    match (ident.to_string().as_str(), pair.lit) {
-                        ("name", syn::Lit::Str(_str)) => {
-                            proxy_name = Ident::new(&_str.value(), _str.span())
+                        match (ident.to_string().as_str(), pair.lit) {
+                            ("name", syn::Lit::Str(_str)) => {
+                                proxy_name = Ident::new(&_str.value(), _str.span())
+                            }
+                            _ => {
+                                return Err(syn::Error::new_spanned(ident, "Unrecognized argument"))
+                            }
                         }
-                        _ => return Err(syn::Error::new_spanned(ident, "Unrecognized argument")),
                     }
-                } else if let syn::NestedMeta::Meta(syn::Meta::List(list)) = attr {
-                    let ident = list
-                        .path
-                        .get_ident()
-                        .ok_or_else(|| syn::Error::new_spanned(&list, "Expected identifier"))?;
+                    NestedMeta::Meta(Meta::List(list)) => {
+                        let ident = list
+                            .path
+                            .get_ident()
+                            .ok_or_else(|| syn::Error::new_spanned(&list, "Expected identifier"))?;
 
-                    match ident.to_string().as_str() {
-                        "languages" => language_meta = list.try_into()?,
-                        _ => return Err(syn::Error::new_spanned(list, "")),
+                        match ident.to_string().as_str() {
+                            "languages" => language_meta = list.try_into()?,
+                            "derive" => proxy_flags = list.try_into()?,
+                            _ => return Err(syn::Error::new_spanned(list, "")),
+                        }
                     }
-                } else {
-                    return Err(syn::Error::new_spanned(attr, "Expected key value pair"));
+                    _ => return Err(syn::Error::new_spanned(attr, "Expected key value pair")),
                 }
             }
         } else {
