@@ -318,10 +318,6 @@ impl FunctionMeta<'_> {
         let mut proxied_name = proxied_name.clone();
         proxied_name.set_span(self.body.sig.ident.span());
 
-        if let Some(body) = &self.body.default {
-            return body.to_token_stream();
-        }
-
         // unpack all parameters which need to be unpacked via `.inner` calls, turn the rest into
         let mut unpacked_parameters = self.arg_meta.iter().map(|arg| {
             let name = &arg.arg_name;
@@ -338,19 +334,38 @@ impl FunctionMeta<'_> {
 
         let proxied_function_name = self.name;
 
-        let proxied_method_call = if self.fn_type.expects_receiver() {
-            // this removes the first argument taken to be the receiver from the iterator
-            let first_arg = unpacked_parameters.next().unwrap_or_else(|| abort!(self.name,"Proxied functions of the type: {} expect a receiver argument (i.e. self)", self.fn_type.as_str()));
+        let proxied_method_call = 
+        match (self.fn_type.expects_receiver(),&self.body.default){
+            (_, Some(body)) => {
+                let param_names = self.arg_meta.iter().map(|arg| &arg.arg_name);
+                let stmts = body.stmts.iter();
+                
+                quote_spanned!{body.span()=>
+                    {
+                        #(let #param_names = #unpacked_parameters;)*
+                        (||{
+                            #(#stmts)*
+                        })()
+                    }
+                }            
+            },
+            (true, None) => {
+                // this removes the first argument taken to be the receiver from the iterator for the next step
+                let first_arg = unpacked_parameters.next().unwrap_or_else(|| abort!(self.name,"Proxied functions of the type: {} expect a receiver argument (i.e. self)", self.fn_type.as_str()));
 
-            quote_spanned! {self.body.span()=>
-                #first_arg.#proxied_function_name(#(#unpacked_parameters),*)
-            }
-        } else {
-            quote_spanned! {self.body.span()=>
-                #proxied_name::#proxied_function_name(#(#unpacked_parameters),*)
-            }
+                // since we removed the receiver we can pass the rest of the parameters here;
+                quote_spanned! {self.body.span()=>
+                    #first_arg.#proxied_function_name(#(#unpacked_parameters),*)
+                }
+            },
+            (false, None) => {
+                quote_spanned! {self.body.span()=>
+                    #proxied_name::#proxied_function_name(#(#unpacked_parameters),*)
+                }
+            },
         };
 
+        
         // if the output is also a proxied type, we need to wrap the result in a proxy
         let constructor_wrapped_full_call= match &self.output_meta {
             Some(output_meta) if output_meta.is_a_lua_proxy => {
@@ -394,7 +409,6 @@ impl FunctionMeta<'_> {
                     acc
                 }
             });
-        
         reference_unpacked_constructor_wrapped_full_call
 
     }

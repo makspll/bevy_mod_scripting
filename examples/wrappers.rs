@@ -23,6 +23,11 @@ pub struct MyThing {
 #[proxy(languages("on_feature(lua)"), derive(Clone))]
 #[functions[
 
+    #[lua(Method, output(proxy))]
+    fn custom_body(self, string: String) -> Self {
+        Lol{}
+    }
+
     #[lua(Method,output(proxy))]
     fn fn_over_self_and_another(self, #[proxy] another: &Self) -> Self;
 
