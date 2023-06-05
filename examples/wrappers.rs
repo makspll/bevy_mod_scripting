@@ -24,11 +24,14 @@ pub struct MyThing {
 #[functions[
 
     #[lua(Method, output(proxy))]
-    fn custom_body(self, string: String) -> Self {
-        Lol{}
+    fn custom_body(self) -> Self {
+        let a = self.some_string;
+        Lol{
+            some_string: a
+        }
     }
 
-    #[lua(Method,output(proxy))]
+    #[lua(Method, output(proxy))]
     fn fn_over_self_and_another(self, #[proxy] another: &Self) -> Self;
 
     #[lua(Function)]
@@ -44,11 +47,15 @@ pub struct MyThing {
     fn fn_over_self_ref_mut(&mut self) -> Lol;
 ]]
 #[derive(Clone)]
-pub struct Lol {}
+pub struct Lol {
+    some_string: String,
+}
 
 impl Lol {
     pub fn fn_over_self_and_another(self, another: &Self) -> Self {
-        Self {}
+        Self {
+            some_string: "lol".to_owned(),
+        }
     }
 
     pub fn fn_over_string(_: String) {}
@@ -58,11 +65,15 @@ impl Lol {
     }
 
     pub fn fn_over_self_ref(&self) -> Self {
-        Self {}
+        Self {
+            some_string: "lol".to_owned(),
+        }
     }
 
     pub fn fn_over_self_ref_mut(&mut self) -> Self {
-        Self {}
+        Self {
+            some_string: "lol".to_owned(),
+        }
     }
 }
 

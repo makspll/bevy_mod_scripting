@@ -2,13 +2,13 @@ use std::collections::VecDeque;
 
 use indexmap::{IndexMap, IndexSet};
 use proc_macro2::{Ident, Span};
-use quote::{format_ident, ToTokens, TokenStreamExt};
+use quote::{format_ident, ToTokens};
 use syn::{
-    bracketed, parenthesized,
-    parse::{Nothing, Parse, ParseBuffer},
+    parse::{Nothing, Parse},
     punctuated::Punctuated,
     spanned::Spanned,
-    Attribute, DataStruct, DeriveInput, Fields, Meta, NestedMeta, TraitItemMethod, Type,
+    visit_mut::VisitMut,
+    DataStruct, DeriveInput, Fields, Meta, NestedMeta, TraitItemMethod, Type,
 };
 
 use crate::utils::attribute_to_string_lit;
@@ -334,5 +334,20 @@ impl TryFrom<DeriveInput> for ProxyMeta {
             span,
             docstrings,
         })
+    }
+}
+
+/// Replaces every occurence of an identifier with
+/// the given string while preserving the original span
+pub struct IdentifierRenamingVisitor<'a> {
+    pub target: &'a str,
+    pub replacement: &'a str,
+}
+
+impl VisitMut for IdentifierRenamingVisitor<'_> {
+    fn visit_ident_mut(&mut self, i: &mut Ident) {
+        if *i == self.target {
+            *i = Ident::new(self.replacement, i.span());
+        }
     }
 }

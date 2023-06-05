@@ -1,8 +1,6 @@
-use std::borrow::Cow;
-
 use bevy_mod_scripting_common::{
     implementor::WrapperImplementor,
-    input::{DeriveFlag, ProxyMeta, ProxyFlags, ProxyTypeNameMeta},
+    input::{DeriveFlag, ProxyMeta, ProxyTypeNameMeta, IdentifierRenamingVisitor},
     newtype::Newtype,
     utils::{attribute_to_string_lit, ident_to_type_path},
 };
@@ -15,8 +13,7 @@ use quote::{format_ident, quote, quote_spanned, ToTokens};
 use syn::{
     parse_macro_input, parse_quote, punctuated::Punctuated, spanned::Spanned, token::Mut,
     Attribute, DeriveInput, Error, FnArg, Lit, Meta, MetaList, NestedMeta, Pat, PatType, Path,
-    PathArguments, PathSegment, TraitItemMethod, Type, TypePath, PatIdent,
-};
+    PathArguments, PathSegment, TraitItemMethod, Type, TypePath, PatIdent, visit_mut::VisitMut};
 
 pub(crate) mod derive_flags;
 pub(crate) mod implementor;
@@ -338,8 +335,15 @@ impl FunctionMeta<'_> {
         match (self.fn_type.expects_receiver(),&self.body.default){
             (_, Some(body)) => {
                 let param_names = self.arg_meta.iter().map(|arg| &arg.arg_name);
-                let stmts = body.stmts.iter();
                 
+                let stmts = body.stmts.iter().cloned().map(|mut s| {
+                    IdentifierRenamingVisitor{
+                        target: "self",
+                        replacement: SELF_ALIAS,
+                    }.visit_stmt_mut(&mut s);
+                    s
+                });
+
                 quote_spanned!{body.span()=>
                     {
                         #(let #param_names = #unpacked_parameters;)*
