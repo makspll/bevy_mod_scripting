@@ -24,6 +24,15 @@ pub struct MyThing {
 #[functions[
 
     #[lua(Method, output(proxy))]
+    fn fn_returning_option(self) -> Option::<Self> {
+        let a = self.some_string;
+        Some(Lol{
+            some_string: a
+        })
+    }
+
+
+    #[lua(Method, output(proxy))]
     fn custom_body(self) -> Self {
         let a = self.some_string;
         Lol{
@@ -52,6 +61,10 @@ pub struct Lol {
 }
 
 impl Lol {
+    pub fn fn_returning_option(self) -> Option<Self> {
+        Some(self)
+    }
+
     pub fn fn_over_self_and_another(self, another: &Self) -> Self {
         Self {
             some_string: "lol".to_owned(),
