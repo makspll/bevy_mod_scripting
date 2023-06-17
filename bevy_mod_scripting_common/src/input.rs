@@ -1,4 +1,4 @@
-use std::collections::VecDeque;
+use std::collections::{HashMap, VecDeque};
 
 use indexmap::{IndexMap, IndexSet};
 use proc_macro2::{Ident, Span};
@@ -8,9 +8,9 @@ use syn::{
     parse_quote,
     punctuated::Punctuated,
     spanned::Spanned,
-    token::{And, Colon2, Gt, Lt, Mut},
+    token::{And, Colon2, Comma, Gt, Lt, Mut},
     visit_mut::VisitMut,
-    AngleBracketedGenericArguments, DataStruct, DeriveInput, Fields, GenericArgument, Meta,
+    AngleBracketedGenericArguments, DataStruct, DeriveInput, Error, Fields, GenericArgument, Meta,
     NestedMeta, PatType, Path, PathArguments, PathSegment, Receiver, Token, TraitItemMethod, Type,
     TypePath, TypeReference, TypeTuple,
 };
@@ -143,6 +143,17 @@ pub struct UnitPath {
     pub inner: Box<SimpleType>,
 }
 
+/// For types of the form `Result<L, R>` i.e. an outer identifier with two nested types inside angle brackets.
+#[derive(Debug, Clone)]
+pub struct DuoPath {
+    pub ident: Ident,
+    pub colon2_token: Option<Colon2>,
+    pub lt_token: Lt,
+    pub gt_token: Gt,
+    pub left: Box<SimpleType>,
+    pub right: Box<SimpleType>,
+}
+
 /// Represents a type prefixed with an outer reference, e.g. `&T` or `&mut T`
 #[derive(Debug, Clone)]
 pub struct Reference {
@@ -171,6 +182,9 @@ pub enum SimpleType {
     Unit,
     /// A type of the form `Option<T>`
     UnitPath(UnitPath),
+    /// A type of the form `Result<T, E>` a list containing two elements is referred to as a
+    DuoPath(DuoPath),
+
     /// A type with an outer reference, e.g. `&T` or `&mut T`
     Reference(Reference),
     /// A type which doubles as a proxy type, e.g. `T` in `Option<T>`
@@ -186,7 +200,8 @@ impl SimpleType {
         proxy_prefix: &'static str,
         arg: &syn::FnArg,
         proxied_type_identifier: &Ident,
-    ) -> Result<SimpleType, (Span, String)> {
+        proxied_to_proxy_ident_map: &HashMap<Ident, Option<Ident>>,
+    ) -> Result<SimpleType, Error> {
         match arg {
             syn::FnArg::Receiver(Receiver {
                 reference,
@@ -199,6 +214,7 @@ impl SimpleType {
                         proxy_prefix,
                         &Type::Path(ident_to_type_path(proxied_type_identifier.clone())),
                         proxied_type_identifier,
+                        proxied_to_proxy_ident_map,
                     )?);
                     Ok(Self::Reference(Reference {
                         and_token: *and,
@@ -210,11 +226,15 @@ impl SimpleType {
                     proxy_prefix,
                     &Type::Path(ident_to_type_path(proxied_type_identifier.clone())),
                     proxied_type_identifier,
+                    proxied_to_proxy_ident_map,
                 ),
             },
-            syn::FnArg::Typed(PatType { ty, .. }) => {
-                Self::new_from_contextual_type(proxy_prefix, ty.as_ref(), proxied_type_identifier)
-            }
+            syn::FnArg::Typed(PatType { ty, .. }) => Self::new_from_contextual_type(
+                proxy_prefix,
+                ty.as_ref(),
+                proxied_type_identifier,
+                proxied_to_proxy_ident_map,
+            ),
         }
     }
 
@@ -223,8 +243,9 @@ impl SimpleType {
     pub fn new_from_fully_specified_type(
         proxy_prefix: &'static str,
         proxied_type: &Type,
-    ) -> Result<SimpleType, (Span, String)> {
-        Self::new_from_type(proxy_prefix, proxied_type, None)
+        proxied_to_proxy_ident_map: &HashMap<Ident, Option<Ident>>,
+    ) -> Result<SimpleType, Error> {
+        Self::new_from_type(proxy_prefix, proxied_type, None, proxied_to_proxy_ident_map)
     }
 
     /// Constructs a new SimpleProxyType from a `syn::Type`, contextual receivers such as `Self` and `self` will be replaced
@@ -233,39 +254,66 @@ impl SimpleType {
         proxy_prefix: &'static str,
         proxied_type: &Type,
         proxied_type_identifier: &Ident,
-    ) -> Result<SimpleType, (Span, String)> {
-        Self::new_from_type(proxy_prefix, proxied_type, Some(proxied_type_identifier))
+        proxied_to_proxy_ident_map: &HashMap<Ident, Option<Ident>>,
+    ) -> Result<SimpleType, Error> {
+        Self::new_from_type(
+            proxy_prefix,
+            proxied_type,
+            Some(proxied_type_identifier),
+            proxied_to_proxy_ident_map,
+        )
+    }
+
+    /// Builds a SimpleType::ProxyType or SimpleType::Type depending on the passed data,
+    /// - if the proxied type identifier has a Some value in the proxied_to_proxy_ident_map map then the proxy_ident will be set to the value in the map,
+    /// - if it has a None value it will be set to the proxied type identifier prefixed with the proxy_prefix,
+    /// - If it's not in the map it's built as a SimpleType::Type
+    fn new_proxied_type_or_type(
+        proxy_prefix: &'static str,
+        proxied_ident: &Ident,
+        proxied_to_proxy_ident_map: &HashMap<Ident, Option<Ident>>,
+    ) -> SimpleType {
+        if let Some((original_ident, replacement_ident)) =
+            proxied_to_proxy_ident_map.get_key_value(proxied_ident)
+        {
+            let proxy_ident = replacement_ident
+                .as_ref()
+                .unwrap_or(&format_ident!("{proxy_prefix}{original_ident}"))
+                .clone();
+
+            SimpleType::ProxyType(ProxyType {
+                proxied_ident: original_ident.clone(),
+                proxy_ident,
+            })
+        } else {
+            Self::Type(syn::Type::Path(ident_to_type_path(proxied_ident.clone())))
+        }
     }
 
     /// Constructs a new SimpleProxyType from a `syn::Type`, if `proxied_type_identifier` is given then contextual
     /// receivers such as `Self` and `self` will be replaced with the given identifier prefixed with the proxy_prefix, otherwise an error will be returned.
+    /// types with base identifiers not in the proxied_to_proxy_ident_map list are treated as non-proxy types and will be wrapped in a SimpleProxyType::Type
     fn new_from_type(
         proxy_prefix: &'static str,
         proxied_type: &Type,
         proxied_type_identifier: Option<&Ident>,
-    ) -> Result<SimpleType, (Span, String)> {
+        proxied_to_proxy_ident_map: &HashMap<Ident, Option<Ident>>,
+    ) -> Result<SimpleType, Error> {
         match proxied_type {
             Type::Path(p) if p.path.is_ident("self") || p.path.is_ident("Self") => {
-                let proxied_ident = proxied_type_identifier.ok_or_else(|| {
-                    (
-                        proxied_type.span(),
+                let proxied_ident: &Ident = proxied_type_identifier.ok_or_else(|| {
+                    Error::new_spanned(
+                        proxied_type,
                         "Did not expect contextual receiver in constructing simple proxy type"
                             .to_owned(),
                     )
                 })?;
-
-                Ok(SimpleType::ProxyType(ProxyType {
-                    proxied_ident: proxied_ident.clone(),
-                    proxy_ident: format_ident!("{}{}", proxy_prefix, proxied_ident),
-                }))
+                Ok(Self::new_proxied_type_or_type(proxy_prefix, proxied_ident, proxied_to_proxy_ident_map))
             }
             Type::Path(p) if !p.path.segments.is_empty() => {
                 let last_segment = p.path.segments.last().unwrap();
                 if last_segment.arguments.is_empty() {
-                    return Ok(SimpleType::ProxyType(ProxyType {
-                        proxied_ident: last_segment.ident.clone(),
-                        proxy_ident: format_ident!("{}{}", proxy_prefix, last_segment.ident),
-                    }));
+                    return Ok(Self::new_proxied_type_or_type(proxy_prefix,&last_segment.ident, proxied_to_proxy_ident_map));
                 } else if let PathArguments::AngleBracketed(args) = &last_segment.arguments {
                     if args.args.len() == 1 {
                         if let GenericArgument::Type(arg_type) = args.args.first().unwrap() {
@@ -273,6 +321,7 @@ impl SimpleType {
                                 proxy_prefix,
                                 arg_type,
                                 proxied_type_identifier,
+                                proxied_to_proxy_ident_map
                             )?);
                             return Ok(SimpleType::UnitPath(UnitPath {
                                 ident: last_segment.ident.clone(),
@@ -282,9 +331,35 @@ impl SimpleType {
                                 inner,
                             }));
                         }
+                    } else if args.args.len() == 2 {
+                        let mut args_iter = args.args.iter();
+                        if let (GenericArgument::Type(left), GenericArgument::Type(right)) =
+                            (args_iter.next().unwrap(), args_iter.next().unwrap())
+                        {
+                            let left = Box::new(Self::new_from_type(
+                                proxy_prefix,
+                                left,
+                                proxied_type_identifier,
+                                proxied_to_proxy_ident_map
+                            )?);
+                            let right = Box::new(Self::new_from_type(
+                                proxy_prefix,
+                                right,
+                                proxied_type_identifier,
+                                proxied_to_proxy_ident_map
+                            )?);
+                            return Ok(SimpleType::DuoPath(DuoPath {
+                                ident: last_segment.ident.clone(),
+                                colon2_token: args.colon2_token,
+                                lt_token: args.lt_token,
+                                gt_token: args.gt_token,
+                                left,
+                                right,
+                            }));
+                        }
                     }
                 }
-                Err((proxied_type.span(), "Unsupported type".to_owned()))
+                Err(Error::new_spanned(proxied_type, "Unsupported type".to_owned()))
             }
             Type::Reference(tr) => Ok(SimpleType::Reference(Reference {
                 and_token: tr.and_token,
@@ -293,13 +368,15 @@ impl SimpleType {
                     proxy_prefix,
                     &tr.elem,
                     proxied_type_identifier,
+                    proxied_to_proxy_ident_map
                 )?),
             })),
+            Type::Infer(_) => Ok(SimpleType::Type(proxied_type.clone())),
             Type::Tuple(TypeTuple { elems , ..}) if elems.is_empty() => {
                 Ok(SimpleType::Unit)
             },
-            _ => Err((
-                proxied_type.span(),
+            _ => Err(Error::new_spanned(
+                proxied_type,
                 format!("Expected simple type with one identifier and possible reference for proxy type, got {}", proxied_type.to_token_stream()),
             )),
         }
@@ -313,102 +390,126 @@ impl SimpleType {
     pub fn has_outer_mut_ref(&self) -> bool {
         matches!(self, SimpleType::Reference (Reference{ mutability, .. }) if mutability.is_some())
     }
-
-    /// Strips outer references and returns the type if any are present
-    pub fn construct_proxy_type_without_outer_ref(&self) -> Type {
-        match self {
-            SimpleType::Reference(Reference { inner, .. }) => inner.construct_proxy_type(),
-            other => other.construct_proxy_type(),
-        }
-    }
-
-    /// Constructs a syn::Type from this SimpleProxyType, representing the proxied type
-    pub fn construct_proxied_type(&self) -> Type {
-        self.construct_type_with_proxy_conversion(|proxied_ident, _| {
-            Type::Path(ident_to_type_path(proxied_ident.clone()))
-        })
-    }
-
-    /// Constructs a syn::Type from this SimpleProxyType, representing the proxy type
-    pub fn construct_proxy_type(&self) -> Type {
-        self.construct_type_with_proxy_conversion(|_, proxy_ident| {
-            Type::Path(ident_to_type_path(proxy_ident.clone()))
-        })
-    }
-
-    /// A helper function for constructing a syn::Type from this SimpleProxyType, using the given function to convert
-    /// the proxied type identifier and proxy type identifier into a syn::Type
-    fn construct_type_with_proxy_conversion<F: Fn(&Ident, &Ident) -> Type>(
-        &self,
-        proxy_conversion: F,
-    ) -> Type {
-        match self {
-            SimpleType::UnitPath(UnitPath {
-                ident,
-                colon2_token,
-                lt_token,
-                gt_token,
-                inner,
-            }) => Type::Path(TypePath {
-                qself: None,
-                path: PathSegment {
-                    ident: ident.clone(),
-                    arguments: PathArguments::AngleBracketed(AngleBracketedGenericArguments {
-                        colon2_token: *colon2_token,
-                        lt_token: *lt_token,
-                        args: Punctuated::from_iter(
-                            [GenericArgument::Type(
-                                inner.construct_type_with_proxy_conversion(proxy_conversion),
-                            )]
-                            .into_iter(),
-                        ),
-                        gt_token: *gt_token,
-                    }),
-                }
-                .into(),
-            }),
-            SimpleType::Reference(Reference {
-                and_token,
-                mutability,
-                inner,
-            }) => Type::Reference(TypeReference {
-                and_token: *and_token,
-                lifetime: None,
-                mutability: *mutability,
-                elem: Box::new(inner.construct_type_with_proxy_conversion(proxy_conversion)),
-            }),
-            SimpleType::Unit => Type::Tuple(TypeTuple {
-                paren_token: Default::default(),
-                elems: Default::default(),
-            }),
-            SimpleType::Type(_) => todo!(),
-            SimpleType::ProxyType(ProxyType {
-                proxied_ident,
-                proxy_ident,
-            }) => proxy_conversion(proxied_ident, proxy_ident),
-        }
-    }
 }
 
 pub trait VisitSimpleType<T> {
-    fn visit_simple_type(&self, simple_type: &SimpleType) -> T {
+    fn visit_simple_type(&mut self, simple_type: &SimpleType) -> T {
         match simple_type {
             SimpleType::Unit => self.visit_unit(),
             SimpleType::UnitPath(unit_path) => self.visit_unit_path(unit_path),
+            SimpleType::DuoPath(duo_path) => self.visit_duo_path(duo_path),
             SimpleType::Reference(reference) => self.visit_reference(reference),
             SimpleType::ProxyType(proxy_type) => self.visit_proxy_type(proxy_type),
             SimpleType::Type(_type) => self.visit_type(_type),
         }
     }
-    fn visit_unit_path(&self, unit_path: &UnitPath) -> T {
+    fn visit_unit_path(&mut self, unit_path: &UnitPath) -> T {
         self.visit_simple_type(&unit_path.inner)
     }
-    fn visit_reference(&self, reference: &Reference) -> T {
+
+    fn visit_duo_path(&mut self, duo_path: &DuoPath) -> T {
+        self.visit_simple_type(&duo_path.left);
+        self.visit_simple_type(&duo_path.right)
+    }
+
+    fn visit_reference(&mut self, reference: &Reference) -> T {
         self.visit_simple_type(&reference.inner)
     }
-    fn visit_unit(&self) -> T;
-    fn visit_proxy_type(&self, proxy_type: &ProxyType) -> T;
-    fn visit_type(&self, _type: &Type) -> T;
+    fn visit_unit(&mut self) -> T;
+    fn visit_proxy_type(&mut self, proxy_type: &ProxyType) -> T;
+    fn visit_type(&mut self, _type: &Type) -> T;
+}
+
+pub struct TypeConstructorVisitor {
+    /// if true then leaf proxies will be converted to their proxy type, otherwise they will be converted to their proxied type
+    pub generate_proxy_type: bool,
+    pub strip_outer_ref: bool,
+}
+
+impl TypeConstructorVisitor {
+    pub fn new(generate_proxy_type: bool, strip_outer_ref: bool) -> Self {
+        Self {
+            generate_proxy_type,
+            strip_outer_ref,
+        }
+    }
+}
+
+impl VisitSimpleType<Type> for TypeConstructorVisitor {
+    fn visit_unit(&mut self) -> Type {
+        Type::Tuple(TypeTuple {
+            paren_token: Default::default(),
+            elems: Default::default(),
+        })
+    }
+
+    fn visit_unit_path(&mut self, unit_path: &UnitPath) -> Type {
+        Type::Path(TypePath {
+            qself: None,
+            path: PathSegment {
+                ident: unit_path.ident.clone(),
+                arguments: PathArguments::AngleBracketed(AngleBracketedGenericArguments {
+                    colon2_token: unit_path.colon2_token,
+                    lt_token: unit_path.lt_token,
+                    args: Punctuated::from_iter(
+                        [GenericArgument::Type(
+                            self.visit_simple_type(&unit_path.inner),
+                        )]
+                        .into_iter(),
+                    ),
+                    gt_token: unit_path.gt_token,
+                }),
+            }
+            .into(),
+        })
+    }
+
+    fn visit_duo_path(&mut self, duo_path: &DuoPath) -> Type {
+        let left = self.visit_simple_type(&duo_path.left);
+        let right = self.visit_simple_type(&duo_path.right);
+
+        Type::Path(TypePath {
+            qself: None,
+            path: PathSegment {
+                ident: duo_path.ident.clone(),
+                arguments: PathArguments::AngleBracketed(AngleBracketedGenericArguments {
+                    colon2_token: duo_path.colon2_token,
+                    lt_token: duo_path.lt_token,
+                    args: Punctuated::from_iter(
+                        [GenericArgument::Type(left), GenericArgument::Type(right)].into_iter(),
+                    ),
+                    gt_token: duo_path.gt_token,
+                }),
+            }
+            .into(),
+        })
+    }
+
+    fn visit_proxy_type(&mut self, proxy_type: &ProxyType) -> Type {
+        if self.generate_proxy_type {
+            Type::Path(ident_to_type_path(proxy_type.proxy_ident.clone()))
+        } else {
+            Type::Path(ident_to_type_path(proxy_type.proxied_ident.clone()))
+        }
+    }
+
+    fn visit_type(&mut self, _type: &Type) -> Type {
+        _type.clone()
+    }
+
+    fn visit_reference(&mut self, reference: &Reference) -> Type {
+        if self.strip_outer_ref {
+            self.visit_simple_type(&reference.inner)
+        } else {
+            self.strip_outer_ref = false;
+            Type::Reference(TypeReference {
+                and_token: reference.and_token,
+                lifetime: None,
+                mutability: reference.mutability,
+                elem: Box::new(self.visit_simple_type(&reference.inner)),
+            })
+        }
+    }
 }
 
 /// Attributes relating to the proxy as a whole

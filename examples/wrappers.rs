@@ -1,9 +1,22 @@
 use bevy::{app::AppExit, prelude::*};
-
 use bevy_mod_scripting::{
     api::{impl_lua_newtype, impl_script_newtype, lua::bevy::LuaWorld, ScriptProxy, ScriptRef},
     prelude::*,
 };
+
+use mlua::Error as LuaError;
+use std::error::Error;
+use std::fmt::Display;
+#[derive(Debug)]
+pub struct MyError;
+
+impl Display for MyError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        todo!()
+    }
+}
+
+impl Error for MyError {}
 
 // Step 1. Rust representation
 // construct all our types and functionality
@@ -24,11 +37,21 @@ pub struct MyThing {
 #[functions[
 
     #[lua(Method, output(proxy))]
+    fn fn_returning_result(self) -> Result::<Self, MyError> {
+        // let a = self.some_string;
+        // Ok(Lol{
+        //     some_string: a
+        // })
+        Err(MyError)
+    }
+
+    #[lua(Method, output(proxy))]
     fn fn_returning_option(self) -> Option::<Self> {
         let a = self.some_string;
         Some(Lol{
             some_string: a
         })
+        // None
     }
 
 
@@ -61,6 +84,10 @@ pub struct Lol {
 }
 
 impl Lol {
+    pub fn fn_returning_result(self) -> Result<Self, String> {
+        Ok(self)
+    }
+
     pub fn fn_returning_option(self) -> Option<Self> {
         Some(self)
     }

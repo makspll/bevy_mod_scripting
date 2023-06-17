@@ -1,8 +1,8 @@
-use std::borrow::Cow;
+use std::{borrow::Cow, iter, collections::HashMap};
 
 use bevy_mod_scripting_common::{
     implementor::WrapperImplementor,
-    input::{DeriveFlag, ProxyMeta, IdentifierRenamingVisitor, SimpleType, UnitPath, ProxyType, VisitSimpleType},
+    input::{DeriveFlag, ProxyMeta, IdentifierRenamingVisitor, SimpleType, UnitPath, ProxyType, VisitSimpleType, DuoPath, TypeConstructorVisitor},
     newtype::Newtype,
     utils::{attribute_to_string_lit, ident_to_type_path},
 };
@@ -10,12 +10,12 @@ use implementor::LuaImplementor;
 // use impls::{impl_enum, impl_struct};
 use proc_macro::TokenStream;
 use proc_macro2::{Ident, Span};
-use proc_macro_error::{abort, emit_error, proc_macro_error};
+use proc_macro_error::{abort, emit_error, proc_macro_error, ResultExt};
 use quote::{format_ident, quote, quote_spanned, ToTokens};
 use syn::{
     parse_macro_input, parse_quote, punctuated::Punctuated, spanned::Spanned, token::{Mut, Paren},
     Attribute, DeriveInput, Error, FnArg, Lit, Meta, MetaList, NestedMeta, Pat, PatType, Path,
-    PathArguments, PathSegment, TraitItemMethod, Type, TypePath, PatIdent, visit_mut::VisitMut, TypeTuple, ReturnType};
+    PathArguments, PathSegment, TraitItemMethod, Type, TypePath, PatIdent, visit_mut::VisitMut, TypeTuple, ReturnType, MetaNameValue};
 
 pub(crate) mod derive_flags;
 pub(crate) mod implementor;
@@ -63,14 +63,19 @@ struct FunctionArgMeta {
 impl FunctionArgMeta {
     /// Creates a new meta structure corresponding to the given function argument.
     /// Resolves receivers with the given proxy name.
-    fn new_from_fn_arg(simple_type: &SimpleType, fn_arg: &FnArg) -> Self {
+    fn new_from_fn_arg(proxied_type_identifier: &Ident,fn_arg: &FnArg) -> Self {
         let arg_name;
         let mutable;
         let variant_data;
-
+        // the proxied type is always proxied with the `Lua` prefix
+        let mut proxy_ident_map = HashMap::from_iter(
+            [(proxied_type_identifier.clone(),None)].into_iter()
+        );
         match fn_arg {
             FnArg::Receiver(receiver) => {
-                variant_data = ArgVariant::Proxy { proxy_type: simple_type.clone() };
+
+                let simple_type = SimpleType::new_from_fn_arg(PROXY_PREFIX, fn_arg, proxied_type_identifier, &proxy_ident_map).unwrap_or_abort();
+                variant_data = ArgVariant::Proxy { proxy_type: simple_type };
 
                 if let Some(_mut) = receiver.mutability {
                     mutable = Some(_mut)
@@ -91,7 +96,22 @@ impl FunctionArgMeta {
                     .map(|attr| attr.parse_meta().unwrap_or_else(|err| abort!(attr, err)))
                     .map(|meta| match meta {
                         // #[proxy] 
-                        Meta::Path(_) => simple_type.clone(),
+                        Meta::Path(_) => SimpleType::new_from_contextual_type(PROXY_PREFIX, ty, proxied_type_identifier, &proxy_ident_map).unwrap_or_abort(),
+                        // #[proxy(TypeName1=ProxyType1, TypeName2=ProxyType2, ..)]  
+                        Meta::List(MetaList { nested, .. }) => {
+                            // collect all the types passed in the meta as identifiers
+                            let idents = nested.iter().map(|nested_meta| {
+                                match nested_meta {
+                                    NestedMeta::Meta(Meta::Path(path)) => 
+                                        (path.get_ident().unwrap_or_else(|| abort!(path,"Expected identifier")).clone(),None),
+                                    NestedMeta::Meta(Meta::NameValue(MetaNameValue{path, lit: Lit::Str(lit_str), ..})) => 
+                                        (path.get_ident().unwrap_or_else(|| abort!(path,"Expected identifier")).clone(), Some(lit_str.parse().unwrap_or_abort())),
+                                    _ => abort!(nested_meta.span(), "Expected proxy identifier mapping as in: `proxy(TypeName=ProxyType)` or `proxy(TypeName)` for `LuaTypeName`"),
+                                }
+                            }).collect::<Vec<(Ident,Option<Ident>)>>();
+                            proxy_ident_map.extend(idents);
+                            SimpleType::new_from_contextual_type(PROXY_PREFIX, ty, proxied_type_identifier, &proxy_ident_map).unwrap_or_abort()
+                        },
                         other => abort!(other.span(), "Expected single item attribute list containing proxy name as in: `proxy(\"proxy_name\")`")
                     });
 
@@ -121,7 +141,7 @@ impl FunctionArgMeta {
 
     /// Similar to [`Self::new_from_fn_arg`] but without an option of getting a receiver argument type
     fn new_from_type(
-        simple_type: &SimpleType,
+        proxied_type_identifier: &Ident,
         arg_name: Ident,
         arg_type: &Type,
         attrs: Vec<Attribute>,
@@ -141,7 +161,7 @@ impl FunctionArgMeta {
         };
 
 
-        Self::new_from_fn_arg(simple_type, &FnArg::Typed(pat_ty))
+        Self::new_from_fn_arg(proxied_type_identifier, &FnArg::Typed(pat_ty))
     }
 
     /// Unpacks non-reference proxy parameters (using the `inner` method) yielding expressions which correspond to the proxied type with conversion errors being
@@ -235,11 +255,10 @@ impl FunctionMeta<'_> {
                         .sig
                         .inputs
                         .iter()
-                        .map(|arg| (SimpleType::new_from_fn_arg(PROXY_PREFIX, arg, &proxied_type_identifier).unwrap_or_else(|(s,e)| abort!(s,e)), arg))
-                        .map(|(simple_type,arg)| FunctionArgMeta::new_from_fn_arg(&simple_type, arg))
+                        .map(|arg| FunctionArgMeta::new_from_fn_arg(&proxied_type_identifier, arg))
                         .collect(),
                     output_meta: FunctionArgMeta::new_from_type(
-                            &SimpleType::new_from_contextual_type(PROXY_PREFIX, &output_type, &proxied_type_identifier).unwrap_or_else(|(s,e)| abort!(s,e)),
+                            &proxied_type_identifier,
                             format_ident!("{OUT_ALIAS}"),
                             &output_type,
                             output_attrs,
@@ -277,7 +296,7 @@ impl FunctionMeta<'_> {
                 let _mut = &meta.mutable;
                 let self_name = &meta.arg_name;
                 let self_type = match &meta.variant_data {
-                    ArgVariant::Proxy { proxy_type } => proxy_type.construct_proxy_type_without_outer_ref(),
+                    ArgVariant::Proxy { proxy_type } => LuaTypeConstructorVisitor::new(true,true).visit_simple_type(proxy_type),
                     ArgVariant::NonProxy { arg_type } => abort!(arg_type, "Function expects a receiver type as first argument which needs to be a proxy type") ,
                 };
 
@@ -293,7 +312,7 @@ impl FunctionMeta<'_> {
                 // strip outer refs if the type is a proxy, we cannot have any references in type position
                 // we can still have reference semantics since we have a proxy object, however we still pass it by value
                 let type_path = match &fn_arg.variant_data {
-                    ArgVariant::Proxy { proxy_type } => proxy_type.construct_proxy_type_without_outer_ref(),
+                    ArgVariant::Proxy { proxy_type } => LuaTypeConstructorVisitor::new(true,true).visit_simple_type(proxy_type),
                     ArgVariant::NonProxy { arg_type } => arg_type.clone()
                 };
 
@@ -313,17 +332,24 @@ impl FunctionMeta<'_> {
         let mut proxied_name = proxied_name.clone();
         proxied_name.set_span(self.body.sig.ident.span());
 
-        // unpack all parameters which need to be unpacked via `.inner` calls, we deal with reference proxies later 
-        let mut unpacked_parameters = self.arg_meta
-            .iter()
-            .map(FunctionArgMeta::unpack_parameter);
-
         let function_name = self.name;
+
+        // unpack all parameters which need to be unpacked via `.inner` calls, we deal with reference proxies later 
+        let unpacked_parameters = self.arg_meta
+            .iter()
+            .map(FunctionArgMeta::unpack_parameter)
+            .collect::<Vec<_>>();
+
+        let param_names = self.arg_meta.iter()
+            .map(|arg| &arg.arg_name).collect::<Vec<_>>();
+
+        let unpacked_parameter_declarations = quote_spanned!{self.body.span()=>
+            #(let #param_names = #unpacked_parameters;)*
+        };
 
         let proxied_method_call = 
         match (self.fn_type.expects_receiver(),&self.body.default){
             (_, Some(body)) => {
-                let param_names = self.arg_meta.iter().map(|arg| &arg.arg_name);
                 
                 let stmts = body.stmts.iter().cloned().map(|mut s| {
                     IdentifierRenamingVisitor{
@@ -334,26 +360,23 @@ impl FunctionMeta<'_> {
                 });
 
                 quote_spanned!{body.span()=>
-                    {
-                        #(let #param_names = #unpacked_parameters;)*
-                        (||{
-                            #(#stmts)*
-                        })()
-                    }
+                    (||{
+                        #(#stmts)*
+                    })()
                 }            
             },
             (true, None) => {
                 // this removes the first argument taken to be the receiver from the iterator for the next step
-                let first_arg = unpacked_parameters.next().unwrap_or_else(|| abort!(self.name,"Proxied functions of the type: {} expect a receiver argument (i.e. self)", self.fn_type.as_str()));
+                let (first_arg, other_args) = param_names.split_first().unwrap_or_else(|| abort!(self.name,"Proxied functions of the type: {} expect a receiver argument (i.e. self)", self.fn_type.as_str()));
 
                 // since we removed the receiver we can pass the rest of the parameters here;
                 quote_spanned! {self.body.span()=>
-                    #first_arg.#function_name(#(#unpacked_parameters),*)
+                    #first_arg.#function_name(#(#other_args),*)
                 }
             },
             (false, None) => {
                 quote_spanned! {self.body.span()=>
-                    #proxied_name::#function_name(#(#unpacked_parameters),*)
+                    #proxied_name::#function_name(#(#param_names),*)
                 }
             },
         };
@@ -367,14 +390,19 @@ impl FunctionMeta<'_> {
                 let constructor_wrapped_expression = ProxyMapVisitor{ arg_name: out_ident.clone(), span: self.body.span() }.visit_simple_type(proxy_type);
 
                 // the type before we wrap it in a proxy
-                let proxied_output_type = proxy_type.construct_proxied_type();
+                let proxied_output_type = LuaTypeConstructorVisitor::new(false,false).visit_simple_type(proxy_type);
                 // the type after we wrap it in a proxy
-                let output_type = proxy_type.construct_proxy_type();
+                let output_type = LuaTypeConstructorVisitor::new(true,false).visit_simple_type(proxy_type);
                 
+                // determine if we need to wrap the output in an Ok() statement
+                let last_statement = match proxy_type {
+                    SimpleType::DuoPath(DuoPath{ ident , ..}) if *ident == "Result" => quote_spanned! {self.body.span()=>__output},
+                    _ => quote_spanned! {self.body.span()=>Ok(__output)}
+                };
                 quote_spanned! {self.body.span()=>
                     let #out_ident : #proxied_output_type = #proxied_method_call;
                     let __output : #output_type = #constructor_wrapped_expression;
-                    Ok(__output)
+                    #last_statement
                 }
             }
             ArgVariant::NonProxy{ arg_type } => {
@@ -410,7 +438,11 @@ impl FunctionMeta<'_> {
                     acc
                 }
             });
-        reference_unpacked_constructor_wrapped_full_call
+
+        quote!(   
+            #unpacked_parameter_declarations
+            #reference_unpacked_constructor_wrapped_full_call
+        )
 
     }
 
@@ -600,7 +632,7 @@ pub fn impl_lua_proxy(input: TokenStream) -> TokenStream {
 
         let fn_meta = FunctionMeta::new(proxied_name.clone(), name, body);
         let args = fn_meta.generate_mlua_args();
-        let body = fn_meta.generate_mlua_body(&proxied_name);
+        let body: proc_macro2::TokenStream = fn_meta.generate_mlua_body(&proxied_name);
         let closure = quote_spanned! {body.span()=>
             |#args| {
                 #body
@@ -622,7 +654,7 @@ pub fn impl_lua_proxy(input: TokenStream) -> TokenStream {
 
     let tealr = quote!(bevy_mod_scripting_lua::tealr);
 
-    quote_spanned! {meta.span=>
+    let a = quote_spanned! {meta.span=>
 
         #definition
 
@@ -644,33 +676,63 @@ pub fn impl_lua_proxy(input: TokenStream) -> TokenStream {
         }
 
     }
-    .into()
+    .into();
+    // panic!("{}", a);
+    a
 }
 
 
+/// Wrapper around the `TypeConstructorVisitor` which generates a syn::Type from a `SimpleType`.
+/// This is used to handle special cases such as when encountering an outer `Result<T,E>` where E needs to specifically be converted to an `mlua::Error` on the proxy side
+struct LuaTypeConstructorVisitor {
+    pub general_visitor: TypeConstructorVisitor,
+}
 
-/// `maps` a simple type recursively, expanding the type into a series of map calls where the leaf types are operating over
-/// unwrapped proxy types (the inner types)
-fn map_simple_type<A,B>(proxy_type : &SimpleType, 
-        input_arg_ident: Cow<Ident>, 
-        proxy_type_expansion: A,
-        type_expansion: B) -> proc_macro2::TokenStream 
-where
-    A : Fn(&Ident, &Ident) -> proc_macro2::TokenStream,
-    B : Fn(&Type) -> proc_macro2::TokenStream
-    {
-    match proxy_type {
-        SimpleType::Unit => todo!("Unit type not supported"),
-        SimpleType::UnitPath (UnitPath{ ident,inner, .. }) => {
-            let inner = map_simple_type(inner.as_ref(), input_arg_ident.clone(), proxy_type_expansion, type_expansion);
-            quote_spanned!(ident.span()=>
-                #input_arg_ident.map(|#input_arg_ident| {#inner})
-            )
-        },
-        SimpleType::Reference { .. } => todo!(),
-        SimpleType::ProxyType(ProxyType{ proxied_ident, proxy_ident }) => proxy_type_expansion(proxied_ident, proxy_ident),
-        SimpleType::Type(t) => type_expansion(t),
+impl LuaTypeConstructorVisitor {
+    pub fn new(generate_proxy_type: bool, strip_outer_ref: bool) -> Self {
+        Self {
+            general_visitor: TypeConstructorVisitor::new(generate_proxy_type,strip_outer_ref),
+        }
     }
+}
+
+impl VisitSimpleType<Type> for LuaTypeConstructorVisitor {
+    fn visit_unit(&mut self) -> Type {
+        self.general_visitor.visit_unit()
+    }
+
+    fn visit_proxy_type(&mut self, proxy_type: &ProxyType) -> Type {
+        self.general_visitor.visit_proxy_type(proxy_type)
+    }
+
+    fn visit_type(&mut self, _type: &Type) -> Type {
+        self.general_visitor.visit_type(_type)
+    }
+
+    fn visit_unit_path(&mut self, unit_path: &UnitPath) -> Type {
+        self.general_visitor.visit_unit_path(unit_path)
+    }
+
+    fn visit_duo_path(&mut self, duo_path: &DuoPath) -> Type {
+        // this will only trigger for top level types, the deeper nesting is handled by the general visitor
+        // outer Result<T,E> needs to be converted to Result<T,mlua::Error> when converting to a proxy_type
+
+        if duo_path.ident == "Result" && self.general_visitor.generate_proxy_type {
+            let ident = &duo_path.ident;
+            let lt_token = duo_path.lt_token;
+            let gt_token = duo_path.gt_token;
+            let left = self.visit_simple_type(&duo_path.left);
+            parse_quote!(#ident #lt_token #left, mlua::Error #gt_token)
+        } else {
+            self.general_visitor.visit_duo_path(duo_path)
+        }
+    }
+
+    fn visit_reference(&mut self, reference: &bevy_mod_scripting_common::input::Reference) -> Type {
+        self.general_visitor.visit_reference(reference)
+    }
+
+    
 }
 
 /// `maps` a simple type recursively, expanding the type into a series of map/iter/etc calls where the leaf types are operating over
@@ -684,29 +746,56 @@ struct ProxyMapVisitor {
 }
 
 impl VisitSimpleType<proc_macro2::TokenStream> for ProxyMapVisitor {
-    fn visit_unit_path(&self, unit_path: &UnitPath) -> proc_macro2::TokenStream {
-        let inner = self.visit_simple_type(&unit_path.inner);
-        let arg_name = &self.arg_name;
-        quote_spanned!(self.span=>
-            #arg_name.map(|#arg_name| {#inner})
-        )
+    
+
+    fn visit_unit_path(&mut self, unit_path: &UnitPath) -> proc_macro2::TokenStream {
+        let path_string: String = unit_path.ident.to_string();
+
+        match path_string.as_str() {
+            "Option" => {
+                let inner = self.visit_simple_type(&unit_path.inner);
+                let arg_name = &self.arg_name;
+                quote_spanned!(self.span=>
+                    #arg_name.map(|#arg_name| #inner)
+                )
+            }
+            _ => abort!(unit_path.ident, "Unsupported type") 
+        }
     }
 
-    fn visit_unit(&self) -> proc_macro2::TokenStream {
+    fn visit_duo_path(&mut self, duo_path: &DuoPath) -> proc_macro2::TokenStream {
+
+        let path_string: String = duo_path.ident.to_string();
+        match path_string.as_str() {
+            "Result" => {
+                let left = self.visit_simple_type(&duo_path.left);
+                let right = self.visit_simple_type(&duo_path.right);
+                let arg_name = &self.arg_name;
+                quote_spanned!(self.span=>
+                    #arg_name.map(|#arg_name| #left).map_err(|#arg_name| mlua::Error::external(#right))
+                )
+            }
+            _ => abort!(duo_path.ident, "Unsupported type") 
+        }
+        
+    }
+
+    fn visit_unit(&mut self) -> proc_macro2::TokenStream {
         quote_spanned!(self.span=>
             ()
         )
     }
 
-    fn visit_proxy_type(&self, proxy_type: &ProxyType) -> proc_macro2::TokenStream {
+    fn visit_proxy_type(&mut self, proxy_type: &ProxyType) -> proc_macro2::TokenStream {
         let proxy_ident = &proxy_type.proxy_ident;
-        let arg_name = &self.arg_name;
+        let arg_name = & self.arg_name;
         quote_spanned!{self.span=>
             #proxy_ident::new(#arg_name)
         }
     }
 
-    fn visit_type(&self, _type: &Type) -> proc_macro2::TokenStream {
-        _type.to_token_stream()
+    fn visit_type(&mut self, _type: &Type) -> proc_macro2::TokenStream {
+        self.arg_name.to_token_stream()
     }
+
 }
