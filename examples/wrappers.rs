@@ -35,9 +35,17 @@ pub struct MyThing {
 #[derive(ScriptProxy, Reflect)]
 #[proxy(languages("on_feature(lua)"), derive(Clone))]
 #[functions[
+    
+    #[lua(Method, output(proxy))]
+    fn fn_returning_vec_of_self(self) -> Vec<Self> {
+        vec![_self]
+    }
+    
+    #[lua(Method, output(proxy))]
+    fn fn_returning_vec(self) -> Vec<usize>;
 
     #[lua(Method, output(proxy))]
-    fn fn_returning_result(self) -> Result::<Self, MyError> {
+    fn fn_returning_result(self) -> Result::<usize, MyError> {
         // let a = self.some_string;
         // Ok(Lol{
         //     some_string: a
@@ -49,7 +57,8 @@ pub struct MyThing {
     fn fn_returning_option(self) -> Option::<Self> {
         let a = self.some_string;
         Some(Lol{
-            some_string: a
+            some_string: a,
+            me_vec: Default::default(),
         })
         // None
     }
@@ -59,7 +68,8 @@ pub struct MyThing {
     fn custom_body(self) -> Self {
         let a = self.some_string;
         Lol{
-            some_string: a
+            some_string: a,
+            me_vec: Default::default(),
         }
     }
 
@@ -81,9 +91,14 @@ pub struct MyThing {
 #[derive(Clone)]
 pub struct Lol {
     some_string: String,
+    me_vec: Vec<usize>,
 }
 
 impl Lol {
+    pub fn fn_returning_vec(&self) -> Vec<usize> {
+        self.me_vec.clone()
+    }
+
     pub fn fn_returning_result(self) -> Result<Self, String> {
         Ok(self)
     }
@@ -95,6 +110,7 @@ impl Lol {
     pub fn fn_over_self_and_another(self, another: &Self) -> Self {
         Self {
             some_string: "lol".to_owned(),
+            me_vec: Default::default(),
         }
     }
 
@@ -107,12 +123,14 @@ impl Lol {
     pub fn fn_over_self_ref(&self) -> Self {
         Self {
             some_string: "lol".to_owned(),
+            me_vec: Default::default(),
         }
     }
 
     pub fn fn_over_self_ref_mut(&mut self) -> Self {
         Self {
             some_string: "lol".to_owned(),
+            me_vec: Default::default(),
         }
     }
 }

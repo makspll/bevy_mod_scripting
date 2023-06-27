@@ -1,18 +1,21 @@
-use std::collections::{HashMap, VecDeque};
+use std::{
+    collections::{HashMap, VecDeque},
+    str::FromStr,
+};
 
 use indexmap::{IndexMap, IndexSet};
 use proc_macro2::{Ident, Span};
 use quote::{format_ident, ToTokens};
+use strum::{Display, EnumString};
 use syn::{
     parse::{Nothing, Parse},
-    parse_quote,
     punctuated::Punctuated,
     spanned::Spanned,
-    token::{And, Colon2, Comma, Gt, Lt, Mut},
+    token::{And, Colon2, Gt, Lt, Mut},
     visit_mut::VisitMut,
     AngleBracketedGenericArguments, DataStruct, DeriveInput, Error, Fields, GenericArgument, Meta,
-    NestedMeta, PatType, Path, PathArguments, PathSegment, Receiver, Token, TraitItemMethod, Type,
-    TypePath, TypeReference, TypeTuple,
+    NestedMeta, PatType, PathArguments, PathSegment, Receiver, TraitItemMethod, Type, TypePath,
+    TypeReference, TypeTuple,
 };
 
 use crate::utils::{attribute_to_string_lit, ident_to_type_path};
@@ -126,6 +129,24 @@ impl<T: Parse, S: Parse> Parse for ZeroOrManyTerminated<T, S> {
     }
 }
 
+/// Enumeration of commonly encountered Rust standard library type identifiers which can be effectively proxied in Lua,
+/// These types are `container` types, which wrap other types rather than standalone and literal types.
+#[derive(EnumString, Debug, Clone, Copy, Display, PartialEq, Eq)]
+pub enum StdTypeIdent {
+    Option,
+    Result,
+    Vec,
+    Box,
+    Rc,
+    Arc,
+    Cow,
+    Cell,
+    RefCell,
+    Mutex,
+    RwLock,
+    Pin,
+}
+
 /// Detailed information about the proxy, here we can access fields/variants etc.
 #[derive(Debug)]
 pub enum ProxyData {
@@ -136,6 +157,7 @@ pub enum ProxyData {
 /// This type helps us destructure these patterns and unwrap/wrap proxies fully without dealing with the complicated full syn::Type enum
 #[derive(Debug, Clone)]
 pub struct UnitPath {
+    pub std_type_ident: Option<StdTypeIdent>,
     pub ident: Ident,
     pub colon2_token: Option<Colon2>,
     pub lt_token: Lt,
@@ -146,6 +168,7 @@ pub struct UnitPath {
 /// For types of the form `Result<L, R>` i.e. an outer identifier with two nested types inside angle brackets.
 #[derive(Debug, Clone)]
 pub struct DuoPath {
+    pub std_type_ident: Option<StdTypeIdent>,
     pub ident: Ident,
     pub colon2_token: Option<Colon2>,
     pub lt_token: Lt,
@@ -324,6 +347,7 @@ impl SimpleType {
                                 proxied_to_proxy_ident_map
                             )?);
                             return Ok(SimpleType::UnitPath(UnitPath {
+                                std_type_ident: StdTypeIdent::from_str(&last_segment.ident.to_string()).ok(),
                                 ident: last_segment.ident.clone(),
                                 colon2_token: args.colon2_token,
                                 lt_token: args.lt_token,
@@ -349,6 +373,7 @@ impl SimpleType {
                                 proxied_to_proxy_ident_map
                             )?);
                             return Ok(SimpleType::DuoPath(DuoPath {
+                                std_type_ident: StdTypeIdent::from_str(&last_segment.ident.to_string()).ok(),
                                 ident: last_segment.ident.clone(),
                                 colon2_token: args.colon2_token,
                                 lt_token: args.lt_token,
@@ -390,34 +415,60 @@ impl SimpleType {
     pub fn has_outer_mut_ref(&self) -> bool {
         matches!(self, SimpleType::Reference (Reference{ mutability, .. }) if mutability.is_some())
     }
-}
 
-pub trait VisitSimpleType<T> {
-    fn visit_simple_type(&mut self, simple_type: &SimpleType) -> T {
-        match simple_type {
-            SimpleType::Unit => self.visit_unit(),
-            SimpleType::UnitPath(unit_path) => self.visit_unit_path(unit_path),
-            SimpleType::DuoPath(duo_path) => self.visit_duo_path(duo_path),
-            SimpleType::Reference(reference) => self.visit_reference(reference),
-            SimpleType::ProxyType(proxy_type) => self.visit_proxy_type(proxy_type),
-            SimpleType::Type(_type) => self.visit_type(_type),
+    /// Returns true if the type has an inner reference, (e.g. `Type<&T>`)
+    pub fn has_ref(&self) -> bool {
+        match self {
+            SimpleType::Unit => false,
+            SimpleType::UnitPath(UnitPath { inner, .. }) => inner.has_ref(),
+            SimpleType::DuoPath(DuoPath { left, right, .. }) => left.has_ref() || right.has_ref(),
+            SimpleType::Reference(_) => true,
+            SimpleType::ProxyType(ProxyType { .. }) => false,
+            SimpleType::Type(_) => false,
         }
     }
-    fn visit_unit_path(&mut self, unit_path: &UnitPath) -> T {
-        self.visit_simple_type(&unit_path.inner)
+}
+
+pub trait VisitSimpleType<T>
+where
+    T: std::fmt::Debug,
+{
+    fn visit(&mut self, simple_type: &SimpleType) -> T {
+        self.visit_simple_type(simple_type, false)
     }
 
-    fn visit_duo_path(&mut self, duo_path: &DuoPath) -> T {
-        self.visit_simple_type(&duo_path.left);
-        self.visit_simple_type(&duo_path.right)
+    fn visit_simple_type(&mut self, simple_type: &SimpleType, is_child_of_reference: bool) -> T {
+        let a = match simple_type {
+            SimpleType::Unit => self.visit_unit(is_child_of_reference),
+            SimpleType::UnitPath(unit_path) => {
+                self.visit_unit_path(unit_path, is_child_of_reference)
+            }
+            SimpleType::DuoPath(duo_path) => self.visit_duo_path(duo_path, is_child_of_reference),
+            SimpleType::Reference(reference) => {
+                self.visit_reference(reference, is_child_of_reference)
+            }
+            SimpleType::ProxyType(proxy_type) => {
+                self.visit_proxy_type(proxy_type, is_child_of_reference)
+            }
+            SimpleType::Type(_type) => self.visit_type(_type, is_child_of_reference),
+        };
+        a
+    }
+    fn visit_unit_path(&mut self, unit_path: &UnitPath, _is_child_of_reference: bool) -> T {
+        self.visit_simple_type(&unit_path.inner, false)
     }
 
-    fn visit_reference(&mut self, reference: &Reference) -> T {
-        self.visit_simple_type(&reference.inner)
+    fn visit_duo_path(&mut self, duo_path: &DuoPath, _is_child_of_reference: bool) -> T {
+        self.visit_simple_type(&duo_path.left, false);
+        self.visit_simple_type(&duo_path.right, false)
     }
-    fn visit_unit(&mut self) -> T;
-    fn visit_proxy_type(&mut self, proxy_type: &ProxyType) -> T;
-    fn visit_type(&mut self, _type: &Type) -> T;
+
+    fn visit_reference(&mut self, reference: &Reference, _is_child_of_reference: bool) -> T {
+        self.visit_simple_type(&reference.inner, true)
+    }
+    fn visit_unit(&mut self, is_child_of_reference: bool) -> T;
+    fn visit_proxy_type(&mut self, proxy_type: &ProxyType, is_child_of_reference: bool) -> T;
+    fn visit_type(&mut self, _type: &Type, is_child_of_reference: bool) -> T;
 }
 
 pub struct TypeConstructorVisitor {
@@ -436,14 +487,14 @@ impl TypeConstructorVisitor {
 }
 
 impl VisitSimpleType<Type> for TypeConstructorVisitor {
-    fn visit_unit(&mut self) -> Type {
+    fn visit_unit(&mut self, _: bool) -> Type {
         Type::Tuple(TypeTuple {
             paren_token: Default::default(),
             elems: Default::default(),
         })
     }
 
-    fn visit_unit_path(&mut self, unit_path: &UnitPath) -> Type {
+    fn visit_unit_path(&mut self, unit_path: &UnitPath, _: bool) -> Type {
         Type::Path(TypePath {
             qself: None,
             path: PathSegment {
@@ -453,7 +504,7 @@ impl VisitSimpleType<Type> for TypeConstructorVisitor {
                     lt_token: unit_path.lt_token,
                     args: Punctuated::from_iter(
                         [GenericArgument::Type(
-                            self.visit_simple_type(&unit_path.inner),
+                            self.visit_simple_type(&unit_path.inner, false),
                         )]
                         .into_iter(),
                     ),
@@ -464,9 +515,9 @@ impl VisitSimpleType<Type> for TypeConstructorVisitor {
         })
     }
 
-    fn visit_duo_path(&mut self, duo_path: &DuoPath) -> Type {
-        let left = self.visit_simple_type(&duo_path.left);
-        let right = self.visit_simple_type(&duo_path.right);
+    fn visit_duo_path(&mut self, duo_path: &DuoPath, _: bool) -> Type {
+        let left = self.visit_simple_type(&duo_path.left, false);
+        let right = self.visit_simple_type(&duo_path.right, false);
 
         Type::Path(TypePath {
             qself: None,
@@ -485,7 +536,7 @@ impl VisitSimpleType<Type> for TypeConstructorVisitor {
         })
     }
 
-    fn visit_proxy_type(&mut self, proxy_type: &ProxyType) -> Type {
+    fn visit_proxy_type(&mut self, proxy_type: &ProxyType, _: bool) -> Type {
         if self.generate_proxy_type {
             Type::Path(ident_to_type_path(proxy_type.proxy_ident.clone()))
         } else {
@@ -493,20 +544,20 @@ impl VisitSimpleType<Type> for TypeConstructorVisitor {
         }
     }
 
-    fn visit_type(&mut self, _type: &Type) -> Type {
+    fn visit_type(&mut self, _type: &Type, _: bool) -> Type {
         _type.clone()
     }
 
-    fn visit_reference(&mut self, reference: &Reference) -> Type {
+    fn visit_reference(&mut self, reference: &Reference, _: bool) -> Type {
         if self.strip_outer_ref {
-            self.visit_simple_type(&reference.inner)
+            self.visit_simple_type(&reference.inner, false)
         } else {
             self.strip_outer_ref = false;
             Type::Reference(TypeReference {
                 and_token: reference.and_token,
                 lifetime: None,
                 mutability: reference.mutability,
-                elem: Box::new(self.visit_simple_type(&reference.inner)),
+                elem: Box::new(self.visit_simple_type(&reference.inner, true)),
             })
         }
     }
@@ -660,5 +711,68 @@ impl VisitMut for IdentifierRenamingVisitor<'_> {
         if *i == self.target {
             *i = Ident::new(self.replacement, i.span());
         }
+    }
+}
+
+#[cfg(test)]
+mod test {
+    use super::VisitSimpleType;
+
+    struct TestVisitor;
+    impl VisitSimpleType<bool> for TestVisitor {
+        fn visit_unit(&mut self, is_child_of_reference: bool) -> bool {
+            is_child_of_reference
+        }
+        fn visit_proxy_type(&mut self, _: &super::ProxyType, is_child_of_reference: bool) -> bool {
+            is_child_of_reference
+        }
+        fn visit_type(&mut self, _: &syn::Type, is_child_of_reference: bool) -> bool {
+            is_child_of_reference
+        }
+    }
+
+    #[test]
+    pub fn test_child_of_reference() {
+        let mut visitor = TestVisitor;
+        assert!(!visitor.visit(&super::SimpleType::Unit));
+        assert!(
+            !visitor.visit(&super::SimpleType::ProxyType(super::ProxyType {
+                proxied_ident: syn::Ident::new("T", proc_macro2::Span::call_site()),
+                proxy_ident: syn::Ident::new("LuaT", proc_macro2::Span::call_site()),
+            }))
+        );
+        assert!(
+            !visitor.visit(&super::SimpleType::Type(syn::Type::Path(syn::TypePath {
+                qself: None,
+                path: syn::Path::from(syn::Ident::new("T", proc_macro2::Span::call_site())),
+            })))
+        );
+        assert!(
+            visitor.visit(&super::SimpleType::Reference(super::Reference {
+                and_token: syn::Token![&](proc_macro2::Span::call_site()),
+                mutability: None,
+                inner: Box::new(super::SimpleType::Unit),
+            }))
+        );
+        assert!(
+            visitor.visit(&super::SimpleType::Reference(super::Reference {
+                and_token: syn::Token![&](proc_macro2::Span::call_site()),
+                mutability: None,
+                inner: Box::new(super::SimpleType::ProxyType(super::ProxyType {
+                    proxied_ident: syn::Ident::new("T", proc_macro2::Span::call_site()),
+                    proxy_ident: syn::Ident::new("LuaT", proc_macro2::Span::call_site()),
+                })),
+            }))
+        );
+        assert!(
+            visitor.visit(&super::SimpleType::Reference(super::Reference {
+                and_token: syn::Token![&](proc_macro2::Span::call_site()),
+                mutability: None,
+                inner: Box::new(super::SimpleType::Type(syn::Type::Path(syn::TypePath {
+                    qself: None,
+                    path: syn::Path::from(syn::Ident::new("T", proc_macro2::Span::call_site())),
+                }))),
+            }))
+        );
     }
 }

@@ -18,4 +18,7 @@
         "editor.formatOnSaveMode": "file",
         "editor.defaultFormatter": "rust-lang.rust-analyzer"
     },
+    "editor.codeActionsOnSave": {
+        "source.organizeImports": true
+    },
 }

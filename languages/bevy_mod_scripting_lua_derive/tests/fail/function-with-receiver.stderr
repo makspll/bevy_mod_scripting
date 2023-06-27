@@ -1,0 +1,11 @@
+error: Lua proxy functions of type: Function, do not expect a receiver argument
+ --> tests/fail/function-with-receiver.rs:8:33
+  |
+8 |     fn fn_returning_some_string(self) {
+  |                                 ^^^^
+
+error: Lua proxy functions of type: Function, do not expect a receiver argument
+  --> tests/fail/function-with-receiver.rs:13:27
+   |
+13 |     fn fn_returning_proxy(&self) {
+   |                           ^^^^^
