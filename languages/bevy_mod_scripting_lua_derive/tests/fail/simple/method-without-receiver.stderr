@@ -1,11 +1,11 @@
 error: Lua proxy functions of type: Method, require `self` argument
- --> tests/fail/method-without-receiver.rs:8:25
+ --> tests/fail/simple/method-without-receiver.rs:8:25
   |
 8 |     fn fn_taking_nothing() {
   |                         ^^
 
 error: Lua proxy functions of type: Method, require `self` argument
-  --> tests/fail/method-without-receiver.rs:13:23
+  --> tests/fail/simple/method-without-receiver.rs:13:23
    |
 13 |     fn fn_taking_usize(arg: usize) {
    |                       ^^^^^^^^^^^^

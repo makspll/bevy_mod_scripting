@@ -1,5 +1,5 @@
 error: Invalid Function Type, expected one of: Function, MetaFunction, Method, MetaMethod, MutableFunction, MutableMetaFunction, MutatingMethod, MutatingMetaMethod
- --> tests/fail/invalid-function-type.rs:7:11
+ --> tests/fail/simple/invalid-function-type.rs:7:11
   |
 7 |     #[lua(AMASJDIASDKAW)]
   |           ^^^^^^^^^^^^^

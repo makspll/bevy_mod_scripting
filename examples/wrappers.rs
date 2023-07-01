@@ -36,6 +36,21 @@ pub struct MyThing {
 #[proxy(languages("on_feature(lua)"), derive(Clone))]
 #[functions[
     
+
+    #[lua(Function)]
+    fn fn_taking_option(#[proxy] some_str: Option<Self>)  {
+
+    }
+    
+    #[lua(Function)]
+    fn fn_taking_vec(#[proxy] some_str: Vec<Self>)  {
+    }
+
+    #[lua(Method, output(proxy))]
+    fn fn_returning_vec_of_self_(self, #[proxy] other: &Self) -> Vec<Self> {
+        vec![other.clone()]
+    }
+
     #[lua(Method, output(proxy))]
     fn fn_returning_vec_of_self(self) -> Vec<Self> {
         vec![_self]

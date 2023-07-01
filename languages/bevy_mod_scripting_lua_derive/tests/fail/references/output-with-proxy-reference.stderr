@@ -1,0 +1,5 @@
+error: Lua proxy functions do not support non 'static types as return values yet
+ --> tests/fail/references/output-with-proxy-reference.rs:8:59
+  |
+8 |     fn fn_returning_some_string(#[proxy] ref_: &Self ) -> &Self {
+  |                                                           ^

@@ -1,0 +1,23 @@
+error[E0277]: the trait bound `&str: LuaUserData` is not satisfied
+ --> tests/fail/references/non-proxy-reference.rs:7:5
+  |
+7 |     #[lua(Function)]
+  |     ^ the trait `LuaUserData` is not implemented for `&str`
+  |
+  = help: the following other types implement trait `LuaUserData`:
+            Arc<std::sync::Mutex<T>>
+            Arc<std::sync::RwLock<T>>
+            LuaAabb
+            LuaAlignContent
+            LuaAlignItems
+            LuaAlignSelf
+            LuaAlphaMode
+            LuaAmbientLight
+          and $N others
+  = note: required for `&str` to implement `FromLua<'_>`
+  = note: required for `&str` to implement `FromLuaMulti<'lua>`
+note: required by a bound in `bevy_mod_scripting_lua::tealr::mlu::TealDataMethods::add_function`
+ --> $CARGO/tealr-0.9.0-alpha4/src/mlu/teal_data_methods.rs
+  |
+  |         A: FromLuaMulti<'lua> + TealMultiValue,
+  |            ^^^^^^^^^^^^^^^^^^ required by this bound in `TealDataMethods::add_function`

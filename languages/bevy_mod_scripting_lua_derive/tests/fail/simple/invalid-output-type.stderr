@@ -1,5 +1,5 @@
 error[E0308]: mismatched types
- --> tests/fail/invalid-output-type.rs:8:8
+ --> tests/fail/simple/invalid-output-type.rs:8:8
   |
 8 |     fn my_fn() -> usize;
   |        ^^^^^^^    ----- expected due to this

@@ -427,6 +427,20 @@ impl SimpleType {
             SimpleType::Type(_) => false,
         }
     }
+
+    /// Returns true if the type has an inner proxy type
+    pub fn contains_proxy_type(&self) -> bool {
+        match self {
+            SimpleType::Unit => false,
+            SimpleType::UnitPath(UnitPath { inner, .. }) => inner.contains_proxy_type(),
+            SimpleType::DuoPath(DuoPath { left, right, .. }) => {
+                left.contains_proxy_type() || right.contains_proxy_type()
+            }
+            SimpleType::Reference(Reference { inner, .. }) => inner.contains_proxy_type(),
+            SimpleType::ProxyType(_) => true,
+            SimpleType::Type(_) => false,
+        }
+    }
 }
 
 pub trait VisitSimpleType<T>
@@ -438,7 +452,7 @@ where
     }
 
     fn visit_simple_type(&mut self, simple_type: &SimpleType, is_child_of_reference: bool) -> T {
-        let a = match simple_type {
+        match simple_type {
             SimpleType::Unit => self.visit_unit(is_child_of_reference),
             SimpleType::UnitPath(unit_path) => {
                 self.visit_unit_path(unit_path, is_child_of_reference)
@@ -451,8 +465,7 @@ where
                 self.visit_proxy_type(proxy_type, is_child_of_reference)
             }
             SimpleType::Type(_type) => self.visit_type(_type, is_child_of_reference),
-        };
-        a
+        }
     }
     fn visit_unit_path(&mut self, unit_path: &UnitPath, _is_child_of_reference: bool) -> T {
         self.visit_simple_type(&unit_path.inner, false)
