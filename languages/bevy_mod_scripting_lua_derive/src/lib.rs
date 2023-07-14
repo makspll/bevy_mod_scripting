@@ -702,7 +702,6 @@ pub fn impl_lua_proxy(input: TokenStream) -> TokenStream {
         #[automatically_derived]
         #[allow(unused_parens,unused_braces,unused_mut)]
         #[allow(clippy::all)]
-
         impl #tealr::mlu::TealData for #proxy_type {
             fn add_methods<'lua, T: #tealr::mlu::TealDataMethods<'lua, Self>>(methods: &mut T) {
                 #(#type_level_document_calls)*
@@ -711,6 +710,33 @@ pub fn impl_lua_proxy(input: TokenStream) -> TokenStream {
 
             fn add_fields<'lua, T: #tealr::mlu::TealDataFields<'lua, Self>>(fields: &mut T) {
 
+            }
+        }
+
+        #[allow(clippy::all)]
+        impl bevy_script_api::lua::LuaProxyable for #proxied_name {
+            fn ref_to_lua<'lua>(self_ : bevy_script_api::script_ref::ScriptRef, lua: &'lua #tealr::mlu::mlua::Lua) -> #tealr::mlu::mlua::Result<#tealr::mlu::mlua::Value<'lua>> {
+                <#proxy_type as #tealr::mlu::mlua::ToLua>::to_lua(#proxy_type::new_ref(self_),lua)
+            }
+
+            fn apply_lua<'lua>(self_ : &mut bevy_script_api::script_ref::ScriptRef, lua: &'lua #tealr::mlu::mlua::Lua, new_val: #tealr::mlu::mlua::Value<'lua>) -> #tealr::mlu::mlua::Result<()> {
+                if let #tealr::mlu::mlua::Value::UserData(v) = new_val {
+                    let other = v.borrow::<#proxy_type>()?;
+                    let other = &other;
+
+                    other.apply_self_to_base(self_)?;
+                    Ok(())
+                } else {
+                    Err(#tealr::mlu::mlua::Error::RuntimeError(
+                        "Error in assigning to custom user data".to_owned(),
+                    ))
+                }
+            }
+        }
+
+        impl bevy_script_api::lua::ToLuaProxy<'_> for #proxied_name {
+            fn to_lua_proxy<'lua>(self, lua: &'lua #tealr::mlu::mlua::Lua) -> #tealr::mlu::mlua::Result<#tealr::mlu::mlua::Value<'lua>>{
+                <#proxy_type as #tealr::mlu::mlua::ToLua>::to_lua(#proxy_type::new(self),lua)
             }
         }
 
