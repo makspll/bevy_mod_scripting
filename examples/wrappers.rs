@@ -79,8 +79,11 @@ fn main() -> std::io::Result<()> {
                         print("The string value is:", resource:get_my_string())
                         
                         resource:set_my_string(nil)
-                        print("The string value after calling method is:", resource:get_my_string())
+                        print("The string value after calling method with nil is:", resource:get_my_string())
+                        
                         resource:set_my_string("I was changed by the script")
+                        print("The string value after calling method with string is:", resource:get_my_string())
+
                     end
                 "#
                     .as_bytes(),
