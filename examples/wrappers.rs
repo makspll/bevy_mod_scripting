@@ -25,6 +25,10 @@ impl Error for MyError {}
     #[lua(MutatingMethod)]
     fn set_my_string(&mut self, another_string: Option<String>);
 
+    #[lua(Method)]
+    fn get_my_string(&self) -> String;
+
+
     #[lua(MetaMethod)]
     fn ToString(&self) -> String {
         format!("{:#?}", _self)
@@ -42,6 +46,10 @@ impl MyProxiedStruct {
         } else {
             self.my_string = "".to_owned();
         }
+    }
+
+    fn get_my_string(&self) -> String {
+        self.my_string.clone()
     }
 }
 
@@ -68,11 +76,10 @@ fn main() -> std::io::Result<()> {
                         local resource = world:get_resource(type)
 
                         print("The initial value is:", resource)
-                        print("The string value is:", resource.my_string)
+                        print("The string value is:", resource:get_my_string())
                         
                         resource:set_my_string(nil)
-                        print("The string value after calling method is:", resource.my_string)
-
+                        print("The string value after calling method is:", resource:get_my_string())
                         resource:set_my_string("I was changed by the script")
                     end
                 "#
