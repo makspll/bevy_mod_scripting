@@ -40,7 +40,7 @@ name="bevy_mod_scripting_lua"
 path="src/lib.rs"
 
 [dependencies]
-bevy= { version = "0.10.1", default-features = false}
+bevy= { version = "0.11", default-features = false}
 bevy_mod_scripting_core = {path="../../bevy_mod_scripting_core", version = "0.3.0" }
 tealr = { version = "=0.9.0-alpha4", features=["mlua_vendored","mlua_send"]}
 parking_lot = "0.12.1"

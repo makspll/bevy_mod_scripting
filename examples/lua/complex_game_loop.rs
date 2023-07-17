@@ -1,3 +1,4 @@
+use bevy::ecs::schedule::ScheduleLabel;
 use bevy::prelude::*;
 use bevy_mod_scripting::prelude::*;
 use rand::prelude::SliceRandom;
@@ -139,6 +140,8 @@ enum ComplexGameLoopSet {
     PostUpdateScripts,
 }
 
+struct PrePhysics {}
+
 fn main() -> std::io::Result<()> {
     const TIMESTEP_2_PER_SECOND: f32 = 30.0 / 60.0;
 
@@ -151,24 +154,26 @@ fn main() -> std::io::Result<()> {
         // --- main systems sets
         // physics logic system set (twice a second)
         .configure_set(ComplexGameLoopSet::Physics.before(CoreSet::Update))
-        .add_system(
-            do_physics
-                .in_set(ComplexGameLoopSet::Physics)
-                .in_schedule(CoreSchedule::FixedUpdate),
+        .add_systems(
+            CoreSchedule::FixedUpdate,
+            do_physics.in_set(ComplexGameLoopSet::Physics),
         )
         // pre physics logic system set (twice a second)
-        .configure_set(ComplexGameLoopSet::PrePhysics.before(ComplexGameLoopSet::Physics))
-        .add_system(
-            do_some_shit_before_physics
-                .in_set(ComplexGameLoopSet::PrePhysics)
-                .in_schedule(CoreSchedule::FixedUpdate),
+        .configure_set(
+            CoreSchedule::FixedUpdate,
+            ComplexGameLoopSet::PrePhysics.before(ComplexGameLoopSet::Physics),
         )
+        .add_systems(ComplexGameLoopSet::PrePhysics, do_some_shit_before_physics)
         // main update logic system set (every frame)
         .add_system(do_update)
         // --- script handler system sets
         // pre_physics,     priority: [0,10] inclusive
-        .configure_set(ComplexGameLoopSet::PrePhysicsScripts.after(ComplexGameLoopSet::PrePhysics))
-        .add_system(
+        .configure_set(
+            ComplexGameLoopSet::PrePhysicsScripts,
+            ComplexGameLoopSet::PrePhysicsScripts.after(ComplexGameLoopSet::PrePhysics),
+        )
+        .add_systems(
+            ,
             script_event_handler::<LuaScriptHost<mlua::Variadic<MyLuaArg>>, 0, 10>
                 .in_set(ComplexGameLoopSet::PrePhysicsScripts)
                 .in_schedule(CoreSchedule::FixedUpdate),

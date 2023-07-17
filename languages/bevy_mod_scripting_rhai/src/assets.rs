@@ -1,12 +1,12 @@
 use bevy::{
     asset::Error,
     asset::{AssetLoader, LoadedAsset},
-    reflect::TypeUuid,
+    reflect::{TypePath, TypeUuid},
 };
 use bevy_mod_scripting_core::prelude::*;
 use std::sync::Arc;
 
-#[derive(Debug, TypeUuid)]
+#[derive(Debug, TypeUuid, TypePath)]
 #[uuid = "e4f7d00d-5acd-45fb-a29c-5a44c5447f5c"]
 /// A rhai code file in bytes
 pub struct RhaiFile {

@@ -2,10 +2,7 @@ use crate::{
     event::ScriptErrorEvent,
     hosts::{APIProvider, APIProviders, ScriptHost},
 };
-use bevy::{
-    ecs::schedule::{BaseSystemSet, FreeSystemSet},
-    prelude::*,
-};
+use bevy::{ecs::schedule::ScheduleLabel, prelude::*};
 use event::ScriptLoaded;
 use systems::script_event_handler;
 
@@ -78,38 +75,23 @@ pub trait AddScriptHost {
     /// the given system set will contain systems handling script loading, re-loading, removal etc.
     /// This system set will also send events related to the script lifecycle.
     /// Any systems which need to run the same frame a script is loaded must run after this set.
-    fn add_script_host_to_set<T: ScriptHost, S: FreeSystemSet + Clone>(
+    fn add_script_host_to_set<T: ScriptHost>(
         &mut self,
-        set: S,
-    ) -> &mut Self;
-
-    /// registers the given script host with your app,
-    /// the given base set will contain systems handling script loading, re-loading, removal etc.
-    /// This set will also send events related to the script lifecycle.
-    /// Any systems which need to run the same frame a script is loaded must run after this set.
-    fn add_script_host_to_base_set<T: ScriptHost, S: BaseSystemSet + Clone>(
-        &mut self,
-        set: S,
+        schedule: impl ScheduleLabel,
+        set: impl SystemSet,
     ) -> &mut Self;
 }
 
 impl AddScriptHost for App {
-    fn add_script_host_to_set<T, S>(&mut self, set: S) -> &mut Self
+    fn add_script_host_to_set<T>(
+        &mut self,
+        schedule: impl ScheduleLabel,
+        set: impl SystemSet,
+    ) -> &mut Self
     where
         T: ScriptHost,
-        S: FreeSystemSet + Clone,
     {
-        T::register_with_app_in_set(self, set);
-        self.init_resource::<T>();
-        self.add_event::<ScriptLoaded>();
-        self
-    }
-    fn add_script_host_to_base_set<T, S>(&mut self, set: S) -> &mut Self
-    where
-        T: ScriptHost,
-        S: BaseSystemSet + Clone,
-    {
-        T::register_with_app_in_base_set(self, set);
+        T::register_with_app_in_set(self, schedule, set);
         self.init_resource::<T>();
         self.add_event::<ScriptLoaded>();
         self
@@ -178,44 +160,20 @@ pub trait AddScriptHostHandler {
     ///
     /// The *frequency* of running these events, is controlled by your systems, if the event is not emitted, it cannot be handled.
     /// Of course there is nothing stopping your from emitting a single event type at varying priorities.
-    fn add_script_handler_to_set<T: ScriptHost, S: FreeSystemSet, const MAX: u32, const MIN: u32>(
+    fn add_script_handler_to_set<T: ScriptHost, const MAX: u32, const MIN: u32>(
         &mut self,
-        set: S,
-    ) -> &mut Self;
-    fn add_script_handler_to_base_set<
-        T: ScriptHost,
-        S: BaseSystemSet,
-        const MAX: u32,
-        const MIN: u32,
-    >(
-        &mut self,
-        set: S,
+        schedule: impl ScheduleLabel,
+        set: impl SystemSet,
     ) -> &mut Self;
 }
 
 impl AddScriptHostHandler for App {
-    fn add_script_handler_to_set<
-        T: ScriptHost,
-        S: FreeSystemSet,
-        const MAX: u32,
-        const MIN: u32,
-    >(
+    fn add_script_handler_to_set<T: ScriptHost, const MAX: u32, const MIN: u32>(
         &mut self,
-        set: S,
+        schedule: impl ScheduleLabel,
+        set: impl SystemSet,
     ) -> &mut Self {
-        self.add_system(script_event_handler::<T, MAX, MIN>.in_set(set));
-        self
-    }
-    fn add_script_handler_to_base_set<
-        T: ScriptHost,
-        S: BaseSystemSet,
-        const MAX: u32,
-        const MIN: u32,
-    >(
-        &mut self,
-        set: S,
-    ) -> &mut Self {
-        self.add_system(script_event_handler::<T, MAX, MIN>.in_base_set(set));
+        self.add_systems(schedule, script_event_handler::<T, MAX, MIN>.in_set(set));
         self
     }
 }
