@@ -146,10 +146,6 @@ type="CalculatedClip"
 source="bevy_ui"
 
 [[types]]
-type="CalculatedSize"
-source="bevy_ui"
-
-[[types]]
 type="Node"
 source="bevy_ui"
 

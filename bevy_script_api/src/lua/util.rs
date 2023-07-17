@@ -136,12 +136,18 @@ macro_rules! impl_tealr_generic{
 
         }
 
-        impl ::bevy::reflect::Reflect for $name {
-            fn type_name(&self) -> &str {
-                panic!("This should never be called, I am a dummy implementation");
+        impl ::bevy::reflect::TypePath for $name {
+            fn short_type_path() -> &'static str{
+                panic!("This should never be called, I am a dummy implementation")
             }
 
-            fn get_type_info(&self) -> &'static bevy::reflect::TypeInfo {
+            fn type_path() -> &'static str{
+                panic!("This should never be called, I am a dummy implementation")
+            }
+        }
+
+        impl ::bevy::reflect::Reflect for $name {
+            fn type_name(&self) -> &str {
                 panic!("This should never be called, I am a dummy implementation");
             }
 
@@ -192,10 +198,14 @@ macro_rules! impl_tealr_generic{
             fn reflect_owned(self: Box<Self>) -> ::bevy::reflect::ReflectOwned {
                 panic!("This should never be called, I am a dummy implementation");
             }
+
+            fn get_represented_type_info(&self) -> std::option::Option<&'static bevy::reflect::TypeInfo> {
+                panic!("This should never be called, I am a dummy implementation");
+            }
         }
 
         impl ::bevy::reflect::FromReflect for $name {
-            fn from_reflect(_: &dyn ::bevy::reflect::Reflect) -> Option<Self> {
+            fn from_reflect(_: &(dyn bevy::prelude::Reflect + 'static)) -> std::option::Option<Self> {
                 panic!("This should never be called, I am a dummy implementation");
             }
         }

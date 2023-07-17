@@ -136,8 +136,9 @@ pub trait AddScriptHostHandler {
     ///
     /// Note: this is identical to adding the script_event_handler system manually, so if you require setting schedules etc, you should use that directly.
     /// ```rust,ignore
-    /// self.add_system(
-    ///     script_event_handler::<T, MAX, MIN>.in_set(set).in_schedule(MySchedule::SomeSchedule)
+    /// self.add_systems(
+    ///     MySchedule,
+    ///     script_event_handler::<T, MAX, MIN>.in_set(set)
     /// );
     /// ```
     /// Think of handler system sets as a way to run certain types of events at specific points in your engine.

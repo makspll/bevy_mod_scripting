@@ -1,4 +1,5 @@
 use bevy::{
+    asset::ChangeWatcher,
     diagnostic::{FrameTimeDiagnosticsPlugin, LogDiagnosticsPlugin},
     prelude::*,
     reflect::Reflect,
@@ -194,11 +195,6 @@ pub fn send_init(mut events: PriorityEventWriter<RhaiEvent<()>>) {
     )
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, Hash, SystemSet)]
-pub enum LifeSystemSets {
-    Scripts,
-}
-
 /// how often to step the simulation
 const UPDATE_FREQUENCY: f32 = 1.0 / 30.0;
 
@@ -214,23 +210,16 @@ fn main() -> std::io::Result<()> {
         .add_startup_system(setup)
         .add_startup_system(send_init)
         .add_startup_system(|asset_server: ResMut<AssetServer>| {
-            asset_server.asset_io().watch_for_changes().unwrap()
+            asset_server
+                .asset_io()
+                .watch_for_changes(ChangeWatcher::with_delay(0.1))
+                .unwrap()
         })
-        .add_system(sync_window_size)
+        .add_systems(Update, sync_window_size)
+        .add_systems(FixedUpdate, (update_rendered_state, send_on_update).chain())
         .add_systems(
-            (update_rendered_state, send_on_update)
-                .chain()
-                .in_schedule(CoreSchedule::FixedUpdate),
-        )
-        .configure_set(
-            LifeSystemSets::Scripts
-                .after(CoreSet::UpdateFlush)
-                .before(CoreSet::PostUpdate),
-        )
-        .add_system(
-            script_event_handler::<RhaiScriptHost<()>, 0, 1>
-                .in_set(LifeSystemSets::Scripts)
-                .in_schedule(CoreSchedule::FixedUpdate),
+            FixedUpdate,
+            script_event_handler::<RhaiScriptHost<()>, 0, 1>,
         )
         .add_script_host_to_base_set::<RhaiScriptHost<()>, _>(CoreSet::PostUpdate)
         .add_api_provider::<RhaiScriptHost<()>>(Box::new(RhaiBevyAPIProvider))

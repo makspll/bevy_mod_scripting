@@ -5,7 +5,7 @@ use std::sync::Arc;
 
 use bevy::ecs::system::Command;
 use bevy::hierarchy::BuildWorldChildren;
-use bevy::prelude::AppTypeRegistry;
+use bevy::prelude::{AppTypeRegistry, World};
 
 use bevy::{hierarchy::DespawnRecursive, prelude::ReflectResource};
 use bevy_mod_scripting_core::prelude::*;
@@ -272,16 +272,6 @@ impl TealData for LuaWorld {
         methods.document("Despawns the given entity and the entity's children recursively");
         methods.add_method("despawn_recursive", |_, world, entity: LuaEntity| {
             world.despawn_recursive(entity.inner()?);
-            Ok(())
-        });
-
-        methods.document("Despawns the given entity and the entity's children recursively");
-        methods.add_method("insert_children", |_, world, entity: LuaEntity| {
-            let mut w = world.write();
-            DespawnRecursive {
-                entity: entity.inner()?,
-            }
-            .write(&mut w);
             Ok(())
         });
 

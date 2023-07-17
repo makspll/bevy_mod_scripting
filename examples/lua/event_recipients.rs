@@ -124,7 +124,7 @@ fn main() -> std::io::Result<()> {
         // randomly fire events for either all scripts,
         // the script with id 0
         // or the script with id 1
-        .add_system(do_update)
+        .add_systems(Update, do_update)
         .add_script_handler_to_base_set::<LuaScriptHost<MyLuaArg>, _, 0, 0>(CoreSet::PostUpdate)
         .add_script_host_to_base_set::<LuaScriptHost<MyLuaArg>, _>(CoreSet::PostUpdate)
         .add_api_provider::<LuaScriptHost<MyLuaArg>>(Box::new(LuaAPIProvider));

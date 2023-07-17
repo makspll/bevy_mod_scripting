@@ -79,15 +79,6 @@ fn fire_random_event(
     w.send(event, prio);
 }
 
-fn do_some_shit_before_physics(mut w: PriorityEventWriter<LuaEvent<mlua::Variadic<MyLuaArg>>>) {
-    info!("PrePhysics, firing:");
-
-    for _ in 0..5 {
-        // fire random event, for any of the system sets
-        fire_random_event(&mut w, &ALL_EVENTS);
-    }
-}
-
 fn do_physics(mut w: PriorityEventWriter<LuaEvent<mlua::Variadic<MyLuaArg>>>) {
     info!("Physics, firing:");
 
@@ -107,20 +98,10 @@ fn do_update(mut w: PriorityEventWriter<LuaEvent<mlua::Variadic<MyLuaArg>>>) {
 #[derive(Clone, Copy)]
 pub struct ScriptEventData(&'static str, u32);
 
-static ON_PRE_PHYSICS_ONE: ScriptEventData = ScriptEventData("on_pre_physics_one", 0);
-static ON_PRE_PHYSICS_TWO: ScriptEventData = ScriptEventData("on_pre_physics_two", 1);
-static ON_POST_PHYSICS_ONE: ScriptEventData = ScriptEventData("on_post_physics_one", 11);
-static ON_POST_PHYSICS_TWO: ScriptEventData = ScriptEventData("on_post_physics_two", 12);
-static ON_POST_UPDATE_ONE: ScriptEventData = ScriptEventData("on_post_update_one", 21);
-static ON_POST_UPDATE_TWO: ScriptEventData = ScriptEventData("on_post_update_two", 22);
-static ALL_EVENTS: [ScriptEventData; 6] = [
-    ON_PRE_PHYSICS_ONE,
-    ON_PRE_PHYSICS_TWO,
-    ON_POST_PHYSICS_ONE,
-    ON_POST_PHYSICS_TWO,
-    ON_POST_UPDATE_ONE,
-    ON_POST_UPDATE_TWO,
-];
+static ON_PRE_PHYSICS: ScriptEventData = ScriptEventData("on_pre_physics", 0);
+static ON_POST_PHYSICS: ScriptEventData = ScriptEventData("on_post_physics", 11);
+static ON_POST_UPDATE: ScriptEventData = ScriptEventData("on_post_update", 21);
+static ALL_EVENTS: [ScriptEventData; 3] = [ON_PRE_PHYSICS, ON_POST_PHYSICS, ON_POST_UPDATE];
 
 fn load_our_script(server: Res<AssetServer>, mut commands: Commands) {
     let path = "scripts/complex_game_loop.lua";
@@ -131,7 +112,7 @@ fn load_our_script(server: Res<AssetServer>, mut commands: Commands) {
     });
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, Hash, SystemSet)]
+#[derive(ScheduleLabel, Debug, Clone, PartialEq, Eq, Hash, SystemSet)]
 enum ComplexGameLoopSet {
     PrePhysics,
     Physics,
@@ -140,8 +121,6 @@ enum ComplexGameLoopSet {
     PostUpdateScripts,
 }
 
-struct PrePhysics {}
-
 fn main() -> std::io::Result<()> {
     const TIMESTEP_2_PER_SECOND: f32 = 30.0 / 60.0;
 
@@ -149,58 +128,51 @@ fn main() -> std::io::Result<()> {
 
     app.add_plugins(DefaultPlugins)
         .insert_resource(FixedTime::new_from_secs(TIMESTEP_2_PER_SECOND))
-        .add_plugin(ScriptingPlugin)
-        .add_startup_system(load_our_script)
+        .add_plugins(ScriptingPlugin)
+        .add_systems(Startup, load_our_script)
         // --- main systems sets
-        // physics logic system set (twice a second)
-        .configure_set(ComplexGameLoopSet::Physics.before(CoreSet::Update))
-        .add_systems(
-            CoreSchedule::FixedUpdate,
-            do_physics.in_set(ComplexGameLoopSet::Physics),
-        )
         // pre physics logic system set (twice a second)
         .configure_set(
-            CoreSchedule::FixedUpdate,
+            FixedUpdate,
             ComplexGameLoopSet::PrePhysics.before(ComplexGameLoopSet::Physics),
         )
-        .add_systems(ComplexGameLoopSet::PrePhysics, do_some_shit_before_physics)
+        // physics logic system set (twice a second)
+        .add_systems(FixedUpdate, do_physics.in_set(ComplexGameLoopSet::Physics))
         // main update logic system set (every frame)
-        .add_system(do_update)
+        .add_systems(Update, do_update)
         // --- script handler system sets
         // pre_physics,     priority: [0,10] inclusive
         .configure_set(
-            ComplexGameLoopSet::PrePhysicsScripts,
+            FixedUpdate,
             ComplexGameLoopSet::PrePhysicsScripts.after(ComplexGameLoopSet::PrePhysics),
         )
-        .add_systems(
-            ,
-            script_event_handler::<LuaScriptHost<mlua::Variadic<MyLuaArg>>, 0, 10>
-                .in_set(ComplexGameLoopSet::PrePhysicsScripts)
-                .in_schedule(CoreSchedule::FixedUpdate),
+        .add_script_handler_to_set::<LuaScriptHost<mlua::Variadic<MyLuaArg>>, 0, 10>(
+            FixedUpdate,
+            ComplexGameLoopSet::PrePhysicsScripts,
         )
         // post_physics,    priority: [11,20] inclusive
         // since the previous system will consume all events in the [0,10] range
-        .configure_set(ComplexGameLoopSet::PostPhysicsScripts.after(ComplexGameLoopSet::Physics))
-        .add_system(
-            script_event_handler::<LuaScriptHost<mlua::Variadic<MyLuaArg>>, 11, 20>
-                .in_set(ComplexGameLoopSet::PostPhysicsScripts)
-                .in_schedule(CoreSchedule::FixedUpdate),
+        .configure_set(
+            FixedUpdate,
+            ComplexGameLoopSet::PostPhysicsScripts.after(ComplexGameLoopSet::Physics),
+        )
+        .add_script_handler_to_set::<LuaScriptHost<mlua::Variadic<MyLuaArg>>, 11, 20>(
+            FixedUpdate,
+            ComplexGameLoopSet::PostPhysicsScripts,
         )
         // post_update,     priority: [21,30] inclusive
-        // note we do not use the CoreSet version since our scripts might want
-        // to modify transforms etc which some core systems synchronise in here
-        .configure_set(ComplexGameLoopSet::PostUpdateScripts.in_base_set(CoreSet::PostUpdate))
-        .add_script_handler_to_set::<LuaScriptHost<mlua::Variadic<MyLuaArg>>, _, 21, 30>(
+        .add_script_handler_to_set::<LuaScriptHost<mlua::Variadic<MyLuaArg>>, 21, 30>(
+            PostUpdate,
             ComplexGameLoopSet::PostUpdateScripts,
         )
         // this system set handles addition and removal of script contexts, we can safely use `CoreSet::PostUpdate`
-        .add_script_host_to_base_set::<LuaScriptHost<mlua::Variadic<MyLuaArg>>, _>(
-            CoreSet::PostUpdate,
+        .add_script_host_to_set::<LuaScriptHost<mlua::Variadic<MyLuaArg>>>(
+            PostUpdate,
+            ComplexGameLoopSet::PostUpdateScripts,
         )
         .add_api_provider::<LuaScriptHost<mlua::Variadic<MyLuaArg>>>(Box::new(LuaAPIProvider));
-    // We have 3 core systems
+    // We have 2 core systems
 
-    // PrePhysics (twice per second), fires 5 random events
     // Physics (twice per second),    fires 5 random events
     // Update (every frame),          fires 1 random event
 

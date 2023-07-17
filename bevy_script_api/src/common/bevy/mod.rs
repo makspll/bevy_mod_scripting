@@ -8,8 +8,9 @@ use crate::ScriptRef;
 use bevy::{
     ecs::system::Command,
     prelude::{
-        AppTypeRegistry, BuildWorldChildren, Children, DespawnChildrenRecursive, DespawnRecursive,
-        Entity, Parent, ReflectComponent, ReflectDefault, ReflectResource,
+        despawn_with_children_recursive, AppTypeRegistry, BuildWorldChildren, Children,
+        DespawnChildrenRecursive, DespawnRecursive, Entity, Parent, ReflectComponent,
+        ReflectDefault, ReflectResource,
     },
     reflect::{
         DynamicArray, DynamicEnum, DynamicList, DynamicMap, DynamicStruct, DynamicTuple,
@@ -141,12 +142,12 @@ impl ScriptWorld {
 
     pub fn despawn_children_recursive(&self, entity: Entity) {
         let mut w = self.write();
-        DespawnChildrenRecursive { entity }.write(&mut w);
+        DespawnChildrenRecursive { entity }.apply(&mut w);
     }
 
     pub fn despawn_recursive(&self, entity: Entity) {
         let mut w = self.write();
-        DespawnRecursive { entity }.write(&mut w);
+        DespawnRecursive { entity }.apply(&mut w);
     }
 
     pub fn get_type_by_name(&self, type_name: &str) -> Option<ScriptTypeRegistration> {
@@ -183,8 +184,7 @@ impl ScriptWorld {
             bevy::reflect::TypeInfo::List(_) => component_data.insert(&mut w.entity_mut(entity), &DynamicList::default()),
             bevy::reflect::TypeInfo::Array(_) => component_data.insert(&mut w.entity_mut(entity), &DynamicArray::new(Box::new([]))),
             bevy::reflect::TypeInfo::Map(_) => component_data.insert(&mut w.entity_mut(entity), &DynamicMap::default()),
-            bevy::reflect::TypeInfo::Value(_) |
-            bevy::reflect::TypeInfo::Dynamic(_) => component_data.insert(&mut w.entity_mut(entity),
+            bevy::reflect::TypeInfo::Value(_) => component_data.insert(&mut w.entity_mut(entity),
                 comp_type.data::<ReflectDefault>().ok_or_else(||
                     ScriptError::Other(format!("Component {} is a value or dynamic type with no `ReflectDefault` type_data, cannot instantiate sensible value",comp_type.short_name())))?
                     .default()

@@ -76,7 +76,7 @@ fn main() -> std::io::Result<()> {
         .add_script_host_to_base_set::<LuaScriptHost<()>, _>(CoreSet::PostUpdate)
         .add_script_handler_to_base_set::<LuaScriptHost<()>,_,0,0>(CoreSet::PostUpdate)
         .add_api_provider::<LuaScriptHost<()>>(Box::new(LuaBevyAPIProvider))
-        .add_system(
+        .add_systems(Update,
             |world: &mut World| {
 
                 let entity = world.spawn(())

@@ -1,4 +1,4 @@
-use bevy::{ecs::event::Events, prelude::*};
+use bevy::{asset::ChangeWatcher, ecs::event::Events, prelude::*};
 use bevy_console::{AddConsoleCommand, ConsoleCommand, ConsolePlugin, PrintConsoleLine};
 use bevy_mod_scripting::prelude::*;
 use clap::Parser;
@@ -121,7 +121,10 @@ pub fn run_script_cmd(
 
 /// optional, hot reloading
 fn watch_assets(server: Res<AssetServer>) {
-    server.asset_io().watch_for_changes().unwrap();
+    server
+        .asset_io()
+        .watch_for_changes(ChangeWatcher::with_delay(0.1))
+        .unwrap();
 }
 
 pub fn delete_script_cmd(
@@ -176,8 +179,8 @@ fn main() -> std::io::Result<()> {
         .add_api_provider::<LuaScriptHost<()>>(Box::new(LuaBevyAPIProvider))
         .add_script_handler_to_base_set::<LuaScriptHost<()>, _, 0, 0>(CoreSet::PostUpdate)
         // add your systems
-        .add_system(trigger_on_update_lua)
-        .add_system(forward_script_err_to_console);
+        .add_systems(Update, trigger_on_update_lua)
+        .add_systems(Update, forward_script_err_to_console);
 
     info!("press '~' to open the console. Type in `run_script \"console_integration.lua\"` to run example script!");
     app.run();

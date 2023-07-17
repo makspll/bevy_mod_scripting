@@ -88,7 +88,7 @@ fn main() -> std::io::Result<()> {
         .add_script_host_to_base_set::<LuaScriptHost<LuaMyThing>, _>(CoreSet::PostUpdate)
         .register_type::<MyThing>()
         .init_resource::<MyThing>()
-        .add_system(|world: &mut World| {
+        .add_systems(Update, |world: &mut World| {
             world.insert_resource(MyThing {
                 usize: 420,
                 string: "I live in the bevy world, you can't touch me!".to_owned(),

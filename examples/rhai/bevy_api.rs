@@ -70,7 +70,7 @@ fn main() -> std::io::Result<()> {
         .add_script_host_to_base_set::<RhaiScriptHost<()>, _>(CoreSet::PostUpdate)
         .add_api_provider::<RhaiScriptHost<()>>(Box::new(RhaiBevyAPIProvider))
         .add_api_provider::<RhaiScriptHost<()>>(Box::new(MyAPIProvider))
-        .add_system(|world: &mut World| {
+        .add_systems(Update, |world: &mut World| {
             let entity = world
                 .spawn(())
                 .insert(MyComponent {

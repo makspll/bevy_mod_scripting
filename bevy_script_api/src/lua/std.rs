@@ -3,6 +3,7 @@ use ::std::borrow::Cow;
 use bevy::reflect::FromReflect;
 use bevy::reflect::Reflect;
 
+use bevy::reflect::TypePath;
 use bevy_mod_scripting_lua::tealr;
 
 use tealr::mlu::mlua::MetaMethod;
@@ -96,8 +97,8 @@ impl<'lua> ToLuaProxy<'lua> for String {
     }
 }
 
-impl<T: LuaProxyable + Reflect + FromReflect + for<'a> FromLuaProxy<'a> + Clone> LuaProxyable
-    for Option<T>
+impl<T: LuaProxyable + Reflect + FromReflect + TypePath + for<'a> FromLuaProxy<'a> + Clone>
+    LuaProxyable for Option<T>
 {
     fn ref_to_lua(self_: ScriptRef, lua: &Lua) -> mlua::Result<Value> {
         self_.get_typed(|s: &Option<T>| match s {
@@ -233,6 +234,7 @@ pub type LuaVec<T> = ScriptVec<T>;
 impl<
         T: TypeName
             + FromReflect
+            + TypePath
             + LuaProxyable
             + for<'a> FromLuaProxy<'a>
             + for<'a> ToLuaProxy<'a>
@@ -268,6 +270,7 @@ impl<T: TypeName> TypeName for LuaVec<T> {
 impl<
         T: TypeName
             + FromReflect
+            + TypePath
             + LuaProxyable
             + for<'a> FromLuaProxy<'a>
             + for<'a> ToLuaProxy<'a>
@@ -284,7 +287,12 @@ impl<
 }
 
 impl<
-        T: TypeName + FromReflect + LuaProxyable + for<'a> FromLuaProxy<'a> + for<'a> ToLuaProxy<'a>,
+        T: TypeName
+            + FromReflect
+            + TypePath
+            + LuaProxyable
+            + for<'a> FromLuaProxy<'a>
+            + for<'a> ToLuaProxy<'a>,
     > TealData for LuaVec<T>
 {
     fn add_methods<'lua, M: TealDataMethods<'lua, Self>>(methods: &mut M) {
@@ -350,6 +358,7 @@ impl<
 impl<
         T: TypeName
             + FromReflect
+            + TypePath
             + LuaProxyable
             + for<'a> FromLuaProxy<'a>
             + for<'a> ToLuaProxy<'a>
@@ -410,6 +419,7 @@ impl<
             + for<'a> ToLuaProxy<'a>
             + Clone
             + FromReflect
+            + TypePath
             + LuaProxyable
             + std::fmt::Debug,
     > FromLuaProxy<'lua> for Vec<T>
