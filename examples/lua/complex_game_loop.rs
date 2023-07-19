@@ -1,3 +1,4 @@
+use bevy::core::FrameCount;
 use bevy::ecs::schedule::ScheduleLabel;
 use bevy::prelude::*;
 use bevy_mod_scripting::prelude::*;
@@ -95,6 +96,10 @@ fn do_update(mut w: PriorityEventWriter<LuaEvent<mlua::Variadic<MyLuaArg>>>) {
     fire_random_event(&mut w, &ALL_EVENTS);
 }
 
+fn print_frame_count(frame: Res<FrameCount>) {
+    info!("================ Frame no {} End ================", frame.0);
+}
+
 #[derive(Clone, Copy)]
 pub struct ScriptEventData(&'static str, u32);
 
@@ -119,6 +124,7 @@ enum ComplexGameLoopSet {
     PrePhysicsScripts,
     PostPhysicsScripts,
     PostUpdateScripts,
+    EndFrame,
 }
 
 fn main() -> std::io::Result<()> {
@@ -140,6 +146,10 @@ fn main() -> std::io::Result<()> {
         .add_systems(FixedUpdate, do_physics.in_set(ComplexGameLoopSet::Physics))
         // main update logic system set (every frame)
         .add_systems(Update, do_update)
+        .add_systems(
+            PostUpdate,
+            print_frame_count.in_set(ComplexGameLoopSet::EndFrame),
+        )
         // --- script handler system sets
         // pre_physics,     priority: [0,10] inclusive
         .configure_set(
@@ -161,6 +171,10 @@ fn main() -> std::io::Result<()> {
             ComplexGameLoopSet::PostPhysicsScripts,
         )
         // post_update,     priority: [21,30] inclusive
+        .configure_set(
+            PostUpdate,
+            ComplexGameLoopSet::EndFrame.after(ComplexGameLoopSet::PostUpdateScripts),
+        )
         .add_script_handler_to_set::<LuaScriptHost<mlua::Variadic<MyLuaArg>>, 21, 30>(
             PostUpdate,
             ComplexGameLoopSet::PostUpdateScripts,

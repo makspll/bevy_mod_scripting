@@ -1,31 +1,17 @@
 
 
-function on_pre_physics_one(id) 
-    print("on_pre_physics_one, Handling:")
+function on_pre_physics(id) 
+    print("on_pre_physics, Handling:")
     print(string.format("\t-> id: %d",id))
 end
 
-function on_pre_physics_two(id)
-    print("on_pre_physics_two, Handling:")
-    print(string.format("\t-> id: %d",id))
-end
-
-function on_post_physics_one(id)
-    print("on_post_physics_one, Handling:")
+function on_post_physics(id)
+    print("on_post_physics, Handling:")
     print(string.format("\t-> id: %d",id))
 end 
 
-function on_post_physics_two(id)
-    print("on_post_physics_two, Handling:")
-    print(string.format("\t-> id: %d",id))
-end 
 
-function on_post_update_one(id)
-    print("on_post_update_one, Handling:")
-    print(string.format("\t-> id: %d",id))
-end
-
-function on_post_update_two(id)
-    print("on_post_update_two, Handling:")
+function on_post_update(id)
+    print("on_post_update, Handling:")
     print(string.format("\t-> id: %d",id))
 end

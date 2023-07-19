@@ -159,7 +159,6 @@ impl<A: LuaArg> ScriptHost for LuaScriptHost<A> {
             // guarantees when it comes to other scripts callbacks,
             // at least for now.
             let globals = ctx.globals();
-
             for event in events {
                 // check if this script should handle this event
                 if !event.recipients().is_recipient(&script_data) {
