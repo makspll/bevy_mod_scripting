@@ -1,5 +1,5 @@
 //! All script host related stuff
-use bevy::{asset::Asset, ecs::schedule::ScheduleLabel, prelude::*, reflect::FromReflect};
+use bevy::{asset::Asset, ecs::schedule::ScheduleLabel, prelude::*};
 use std::{
     collections::HashMap,
     iter::once,
@@ -127,6 +127,14 @@ pub trait ScriptHost: Send + Sync + 'static + Default + Resource {
     /// Registers the script host with the given app, and attaches handlers to deal with spawning/removing scripts in the given System Set.
     ///
     /// Ideally place after any game logic which can spawn/remove/modify scripts to avoid frame lag. (typically `PostUpdate`)
+    fn register_with_app(app: &mut App, schedule: impl ScheduleLabel) {
+        #[derive(SystemSet, Hash, Debug, Eq, PartialEq, Clone, Copy)]
+        struct DummySet;
+
+        Self::register_with_app_in_set(app, schedule, DummySet);
+    }
+
+    /// Similar to `register_with_app` but allows you to specify a system set to add the handler to.
     fn register_with_app_in_set(app: &mut App, schedule: impl ScheduleLabel, set: impl SystemSet);
 }
 

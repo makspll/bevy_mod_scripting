@@ -74,7 +74,11 @@ pub trait AddScriptHost {
     /// registers the given script host with your app,
     /// the given system set will contain systems handling script loading, re-loading, removal etc.
     /// This system set will also send events related to the script lifecycle.
-    /// Any systems which need to run the same frame a script is loaded must run after this set.
+    ///
+    /// Note: any systems which need to run the same frame a script is loaded must run after this set.
+    fn add_script_host<T: ScriptHost>(&mut self, schedule: impl ScheduleLabel) -> &mut Self;
+
+    /// Similar to `add_script_host` but allows you to specify a system set to add the script host to.
     fn add_script_host_to_set<T: ScriptHost>(
         &mut self,
         schedule: impl ScheduleLabel,
@@ -92,6 +96,16 @@ impl AddScriptHost for App {
         T: ScriptHost,
     {
         T::register_with_app_in_set(self, schedule, set);
+        self.init_resource::<T>();
+        self.add_event::<ScriptLoaded>();
+        self
+    }
+
+    fn add_script_host<T>(&mut self, schedule: impl ScheduleLabel) -> &mut Self
+    where
+        T: ScriptHost,
+    {
+        T::register_with_app(self, schedule);
         self.init_resource::<T>();
         self.add_event::<ScriptLoaded>();
         self
@@ -134,33 +148,42 @@ pub trait AddScriptHostHandler {
     /// Enables this script host to handle events with priorities in the range [0,min_prio] (inclusive),
     /// during from within the given set.
     ///
-    /// Note: this is identical to adding the script_event_handler system manually, so if you require setting schedules etc, you should use that directly.
+    /// Note: this is identical to adding the script_event_handler system manually, so if you require more complex setup, you can use the following:
     /// ```rust,ignore
     /// self.add_systems(
     ///     MySchedule,
-    ///     script_event_handler::<T, MAX, MIN>.in_set(set)
+    ///     script_event_handler::<T, MAX, MIN>
     /// );
     /// ```
-    /// Think of handler system sets as a way to run certain types of events at specific points in your engine.
+    ///
+    /// Think of event handler systems as event sinks, which collect and "unpack" the instructions in each event every frame.
+    /// Because events are also prioritised, you can enforce a particular order of execution for your events (within each frame)
+    /// regardless of where they were fired from.
+    ///
     /// A good example of this is Unity [game loop's](https://docs.unity3d.com/Manual/ExecutionOrder.html) `onUpdate` and `onFixedUpdate`.
     /// FixedUpdate runs *before* any physics while Update runs after physics and input events.
     ///
-    /// A similar setup can be achieved by using a separate system set before and after your physics,
-    /// then assigning event priorities such that your events are forced to run at a particular system set, for example:
+    /// In this crate you can achieve this by using a separate system set before and after your physics,
+    /// then assigning event priorities such that your events are forced to run at the points you want them to, for example:
     ///
-    /// PrePhysics: min_prio = 1
-    /// PostPhysics: min_prio = 4
+    /// PrePhysics priority range [0,1]
+    /// PostPhysics priority range [2,4]
     ///
-    /// | Priority | Handler     | Event        |
-    /// | -------- | ----------- | ------------ |
-    /// | 0        | PrePhysics  | Start        |
-    /// | 1        | PrePhysics  | FixedUpdate  |
-    /// | 2        | PostPhysics | OnCollision  |
-    /// | 3        | PostPhysics | OnMouse      |
-    /// | 4        | PostPhysics | Update       |
+    /// | Priority | Handler     | Event         |
+    /// | -------- | ----------- | ------------  |
+    /// | 0        | PrePhysics  | Start       0 |
+    /// | 1        | PrePhysics  | FixedUpdate 1 |
+    /// | 2        | PostPhysics | OnCollision 2 |
+    /// | 3        | PostPhysics | OnMouse     3 |
+    /// | 4        | PostPhysics | Update      4 |
     ///
-    /// The *frequency* of running these events, is controlled by your systems, if the event is not emitted, it cannot be handled.
-    /// Of course there is nothing stopping your from emitting a single event type at varying priorities.
+    /// Note: in this example, if your FixedUpdate event is fired *after* the handler system set has run, it will be discarded (since other handlers discard events of higher priority).
+    fn add_script_handler<T: ScriptHost, const MAX: u32, const MIN: u32>(
+        &mut self,
+        schedule: impl ScheduleLabel,
+    ) -> &mut Self;
+
+    /// The same as `add_script_handler` but allows you to specify a system set to add the handler to.
     fn add_script_handler_to_set<T: ScriptHost, const MAX: u32, const MIN: u32>(
         &mut self,
         schedule: impl ScheduleLabel,
@@ -175,6 +198,14 @@ impl AddScriptHostHandler for App {
         set: impl SystemSet,
     ) -> &mut Self {
         self.add_systems(schedule, script_event_handler::<T, MAX, MIN>.in_set(set));
+        self
+    }
+
+    fn add_script_handler<T: ScriptHost, const MAX: u32, const MIN: u32>(
+        &mut self,
+        schedule: impl ScheduleLabel,
+    ) -> &mut Self {
+        self.add_systems(schedule, script_event_handler::<T, MAX, MIN>);
         self
     }
 }
