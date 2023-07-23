@@ -222,7 +222,7 @@ fn main() -> std::io::Result<()> {
     }))
     .insert_resource(FixedTime::new_from_secs(UPDATE_FREQUENCY))
     .add_plugins(LogDiagnosticsPlugin::default())
-    .add_plugins(FrameTimeDiagnosticsPlugin::default())
+    .add_plugins(FrameTimeDiagnosticsPlugin)
     .add_plugins(ScriptingPlugin)
     .init_resource::<Settings>()
     .add_systems(Startup, setup)

@@ -4,17 +4,13 @@ use bevy::{asset::ChangeWatcher, prelude::*};
 use bevy_mod_scripting::prelude::*;
 
 /// fire on_update
-fn do_update(mut w: PriorityEventWriter<LuaEvent<()>>, time: Res<Time>) {
+fn do_update(mut w: PriorityEventWriter<LuaEvent<()>>) {
     let event = LuaEvent {
         hook_name: "on_update".to_owned(),
         args: (),
         recipients: Recipients::All,
     };
-    info!(
-        "\t - event: {}, time: {:?}",
-        event.hook_name,
-        (time.startup() + time.elapsed())
-    );
+
     w.send(event, 0);
 }
 
