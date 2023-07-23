@@ -116,8 +116,9 @@ impl<A: LuaArg> ScriptHost for LuaScriptHost<A> {
         lua.load(script)
             .set_name(script_data.name)
             .and_then(|c| c.exec())
-            .map_err(|_e| ScriptError::FailedToLoad {
+            .map_err(|e| ScriptError::FailedToLoad {
                 script: script_data.name.to_owned(),
+                msg: e.to_string(),
             })?;
 
         let mut lua = Mutex::new(lua);

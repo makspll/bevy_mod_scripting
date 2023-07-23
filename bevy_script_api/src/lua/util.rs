@@ -1,7 +1,60 @@
-use bevy_mod_scripting_lua::tealr;
-use std::marker::PhantomData;
+use bevy_mod_scripting_lua::{
+    prelude::{FromLua, Lua, LuaError, LuaValue, ToLua},
+    tealr,
+};
+use std::{
+    marker::PhantomData,
+    ops::{Deref, DerefMut},
+};
 
 use tealr::TypeName;
+
+/// Newtype abstraction of usize to represent a lua integer indexing things.
+/// Lua is 1 based, host is 0 based, and this type performs this conversion automatically via ToLua and FromLua traits.
+#[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
+pub struct LuaIndex(usize);
+
+impl TypeName for LuaIndex {
+    fn get_type_parts() -> std::borrow::Cow<'static, [tealr::NamePart]> {
+        usize::get_type_parts()
+    }
+}
+
+impl Deref for LuaIndex {
+    type Target = usize;
+
+    fn deref(&self) -> &Self::Target {
+        &self.0
+    }
+}
+
+impl DerefMut for LuaIndex {
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        &mut self.0
+    }
+}
+
+impl ToLua<'_> for LuaIndex {
+    fn to_lua(self, lua: &Lua) -> Result<LuaValue, LuaError> {
+        to_lua_idx(self.0).to_lua(lua)
+    }
+}
+
+impl FromLua<'_> for LuaIndex {
+    fn from_lua(value: LuaValue, lua: &Lua) -> Result<LuaIndex, LuaError> {
+        Ok(LuaIndex(to_host_idx(usize::from_lua(value, lua)?)))
+    }
+}
+
+/// Converts lua index to host index (Lua is 1 based, host is 0 based)
+pub fn to_host_idx(lua_idx: usize) -> usize {
+    lua_idx - 1
+}
+
+/// Converts host index to lua index (Lua is 1 based, host is 0 based)
+pub fn to_lua_idx(host_idx: usize) -> usize {
+    host_idx + 1
+}
 
 /// forwards the TypeName implementation of T, useful for internal 'fake' global instances
 pub struct DummyTypeName<T> {

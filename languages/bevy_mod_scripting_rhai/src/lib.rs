@@ -122,8 +122,9 @@ impl<A: FuncArgs + Send + Clone + Sync + 'static> ScriptHost for RhaiScriptHost<
         let mut ast = self
             .engine
             .compile(
-                std::str::from_utf8(script).map_err(|_| ScriptError::FailedToLoad {
+                std::str::from_utf8(script).map_err(|e| ScriptError::FailedToLoad {
                     script: script_data.name.to_owned(),
+                    msg: e.to_string(),
                 })?,
             )
             .map_err(|e| ScriptError::SyntaxError {

@@ -123,7 +123,10 @@ use std::ops::*;
 use std::sync::Mutex;
 #[cfg(feature = "lua")]
 use {
-    crate::{common::bevy::GetWorld, lua::RegisterForeignLuaType},
+    crate::{
+        common::bevy::GetWorld,
+        lua::{util::LuaIndex, RegisterForeignLuaType},
+    },
     bevy_mod_scripting_lua::{docs::LuaDocFragment, tealr::mlu::mlua::MetaMethod},
     bevy_mod_scripting_lua_derive::impl_lua_newtype,
 };
@@ -3759,8 +3762,8 @@ impl_script_newtype! {
     )
     lua impl
     {
-        (MetaMethod::Index) => |_,s,idx: usize| {Ok(s.inner()?[idx])};
-        mut (MetaMethod::NewIndex) => |_,s,(idx,val): (usize,f32)| {s.val_mut(|s| Ok(s[idx] = val))?};
+        (MetaMethod::Index) => |_,s,idx: LuaIndex| {Ok(s.inner()?[*idx])};
+        mut (MetaMethod::NewIndex) => |_,s,(idx,val): (LuaIndex,f32)| {s.val_mut(|s| Ok(s[*idx] = val))?};
     }
 }
 impl_script_newtype! {
@@ -4122,8 +4125,8 @@ impl_script_newtype! {
     )
     lua impl
     {
-        (MetaMethod::Index) => |_,s,idx: usize| {Ok(s.inner()?[idx])};
-        mut (MetaMethod::NewIndex) => |_,s,(idx,val): (usize,f32)| {s.val_mut(|s| Ok(s[idx] = val))?};
+        (MetaMethod::Index) => |_,s,idx: LuaIndex| {Ok(s.inner()?[*idx])};
+        mut (MetaMethod::NewIndex) => |_,s,(idx,val): (LuaIndex,f32)| {s.val_mut(|s| Ok(s[*idx] = val))?};
     }
 }
 impl_script_newtype! {
@@ -4490,8 +4493,8 @@ impl_script_newtype! {
     )
     lua impl
     {
-        (MetaMethod::Index) => |_,s,idx: usize| {Ok(s.inner()?[idx])};
-        mut (MetaMethod::NewIndex) => |_,s,(idx,val): (usize,f32)| {s.val_mut(|s| Ok(s[idx] = val))?};
+        (MetaMethod::Index) => |_,s,idx: LuaIndex| {Ok(s.inner()?[*idx])};
+        mut (MetaMethod::NewIndex) => |_,s,(idx,val): (LuaIndex,f32)| {s.val_mut(|s| Ok(s[*idx] = val))?};
     }
 }
 impl_script_newtype! {
@@ -4828,8 +4831,8 @@ impl_script_newtype! {
     )
     lua impl
     {
-        (MetaMethod::Index) => |_,s,idx: usize| {Ok(s.inner()?[idx])};
-        mut (MetaMethod::NewIndex) => |_,s,(idx,val): (usize,f32)| {s.val_mut(|s| Ok(s[idx] = val))?};
+        (MetaMethod::Index) => |_,s,idx: LuaIndex| {Ok(s.inner()?[*idx])};
+        mut (MetaMethod::NewIndex) => |_,s,(idx,val): (LuaIndex,f32)| {s.val_mut(|s| Ok(s[*idx] = val))?};
     }
 }
 impl_script_newtype! {
@@ -5446,8 +5449,8 @@ impl_script_newtype! {
     )
     lua impl
     {
-        (MetaMethod::Index) => |_,s,idx: usize| {Ok(s.inner()?[idx])};
-        mut (MetaMethod::NewIndex) => |_,s,(idx,val): (usize,f64)| {s.val_mut(|s| Ok(s[idx] = val))?};
+        (MetaMethod::Index) => |_,s,idx: LuaIndex| {Ok(s.inner()?[*idx])};
+        mut (MetaMethod::NewIndex) => |_,s,(idx,val): (LuaIndex,f64)| {s.val_mut(|s| Ok(s[*idx] = val))?};
     }
 }
 impl_script_newtype! {
@@ -5812,8 +5815,8 @@ impl_script_newtype! {
     )
     lua impl
     {
-        (MetaMethod::Index) => |_,s,idx: usize| {Ok(s.inner()?[idx])};
-        mut (MetaMethod::NewIndex) => |_,s,(idx,val): (usize,f64)| {s.val_mut(|s| Ok(s[idx] = val))?};
+        (MetaMethod::Index) => |_,s,idx: LuaIndex| {Ok(s.inner()?[*idx])};
+        mut (MetaMethod::NewIndex) => |_,s,(idx,val): (LuaIndex,f64)| {s.val_mut(|s| Ok(s[*idx] = val))?};
     }
 }
 impl_script_newtype! {
@@ -6148,8 +6151,8 @@ impl_script_newtype! {
     )
     lua impl
     {
-        (MetaMethod::Index) => |_,s,idx: usize| {Ok(s.inner()?[idx])};
-        mut (MetaMethod::NewIndex) => |_,s,(idx,val): (usize,f64)| {s.val_mut(|s| Ok(s[idx] = val))?};
+        (MetaMethod::Index) => |_,s,idx: LuaIndex| {Ok(s.inner()?[*idx])};
+        mut (MetaMethod::NewIndex) => |_,s,(idx,val): (LuaIndex,f64)| {s.val_mut(|s| Ok(s[*idx] = val))?};
     }
 }
 impl_script_newtype! {
@@ -6326,8 +6329,8 @@ impl_script_newtype! {
     )
     lua impl
     {
-        (MetaMethod::Index) => |_,s,idx: usize| {Ok(s.inner()?[idx])};
-        mut (MetaMethod::NewIndex) => |_,s,(idx,val): (usize,i32)| {s.val_mut(|s| Ok(s[idx] = val))?};
+        (MetaMethod::Index) => |_,s,idx: LuaIndex| {Ok(s.inner()?[*idx])};
+        mut (MetaMethod::NewIndex) => |_,s,(idx,val): (LuaIndex,i32)| {s.val_mut(|s| Ok(s[*idx] = val))?};
     }
 }
 impl_script_newtype! {
@@ -6504,8 +6507,8 @@ impl_script_newtype! {
     )
     lua impl
     {
-        (MetaMethod::Index) => |_,s,idx: usize| {Ok(s.inner()?[idx])};
-        mut (MetaMethod::NewIndex) => |_,s,(idx,val): (usize,i32)| {s.val_mut(|s| Ok(s[idx] = val))?};
+        (MetaMethod::Index) => |_,s,idx: LuaIndex| {Ok(s.inner()?[*idx])};
+        mut (MetaMethod::NewIndex) => |_,s,(idx,val): (LuaIndex,i32)| {s.val_mut(|s| Ok(s[*idx] = val))?};
     }
 }
 impl_script_newtype! {
@@ -6674,8 +6677,8 @@ impl_script_newtype! {
     )
     lua impl
     {
-        (MetaMethod::Index) => |_,s,idx: usize| {Ok(s.inner()?[idx])};
-        mut (MetaMethod::NewIndex) => |_,s,(idx,val): (usize,i32)| {s.val_mut(|s| Ok(s[idx] = val))?};
+        (MetaMethod::Index) => |_,s,idx: LuaIndex| {Ok(s.inner()?[*idx])};
+        mut (MetaMethod::NewIndex) => |_,s,(idx,val): (LuaIndex,i32)| {s.val_mut(|s| Ok(s[*idx] = val))?};
     }
 }
 impl_script_newtype! {
@@ -6820,8 +6823,8 @@ impl_script_newtype! {
     )
     lua impl
     {
-        (MetaMethod::Index) => |_,s,idx: usize| {Ok(s.inner()?[idx])};
-        mut (MetaMethod::NewIndex) => |_,s,(idx,val): (usize,u32)| {s.val_mut(|s| Ok(s[idx] = val))?};
+        (MetaMethod::Index) => |_,s,idx: LuaIndex| {Ok(s.inner()?[*idx])};
+        mut (MetaMethod::NewIndex) => |_,s,(idx,val): (LuaIndex,u32)| {s.val_mut(|s| Ok(s[*idx] = val))?};
     }
 }
 impl_script_newtype! {
@@ -6978,8 +6981,8 @@ impl_script_newtype! {
     )
     lua impl
     {
-        (MetaMethod::Index) => |_,s,idx: usize| {Ok(s.inner()?[idx])};
-        mut (MetaMethod::NewIndex) => |_,s,(idx,val): (usize,u32)| {s.val_mut(|s| Ok(s[idx] = val))?};
+        (MetaMethod::Index) => |_,s,idx: LuaIndex| {Ok(s.inner()?[*idx])};
+        mut (MetaMethod::NewIndex) => |_,s,(idx,val): (LuaIndex,u32)| {s.val_mut(|s| Ok(s[*idx] = val))?};
     }
 }
 impl_script_newtype! {
@@ -7128,8 +7131,8 @@ impl_script_newtype! {
     )
     lua impl
     {
-        (MetaMethod::Index) => |_,s,idx: usize| {Ok(s.inner()?[idx])};
-        mut (MetaMethod::NewIndex) => |_,s,(idx,val): (usize,u32)| {s.val_mut(|s| Ok(s[idx] = val))?};
+        (MetaMethod::Index) => |_,s,idx: LuaIndex| {Ok(s.inner()?[*idx])};
+        mut (MetaMethod::NewIndex) => |_,s,(idx,val): (LuaIndex,u32)| {s.val_mut(|s| Ok(s[*idx] = val))?};
     }
 }
 impl_script_newtype! {
@@ -7350,11 +7353,11 @@ impl_script_newtype! {
     lua impl
     {
 
-    mut (MetaMethod::Index) => |ctx,s,idx : usize| {
+    mut (MetaMethod::Index) => |ctx,s,idx : LuaIndex| {
         Ok(LuaVec3::new_ref(
                 s.script_ref(ctx.get_world()?).sub_ref(ReflectPathElem::SubReflectionIndexed{
                     label:"col",
-                    index: idx,
+                    index: *idx,
                     get: |idx,ref_| Err(ReflectionError::InsufficientProvenance{
                         path: "".to_owned(),
                         msg: "Cannot get column of matrix with immutable reference".to_owned()
@@ -7490,11 +7493,11 @@ impl_script_newtype! {
     lua impl
     {
 
-    mut (MetaMethod::Index) => |ctx,s,idx : usize| {
+    mut (MetaMethod::Index) => |ctx,s,idx : LuaIndex| {
         Ok(LuaVec2::new_ref(
                 s.script_ref(ctx.get_world()?).sub_ref(ReflectPathElem::SubReflectionIndexed{
                     label:"col",
-                    index: idx,
+                    index: *idx,
                     get: |idx,ref_| Err(ReflectionError::InsufficientProvenance{
                         path: "".to_owned(),
                         msg: "Cannot get column of matrix with immutable reference".to_owned()
@@ -7733,11 +7736,11 @@ impl_script_newtype! {
     lua impl
     {
 
-    mut (MetaMethod::Index) => |ctx,s,idx : usize| {
+    mut (MetaMethod::Index) => |ctx,s,idx : LuaIndex| {
         Ok(LuaVec3A::new_ref(
                 s.script_ref(ctx.get_world()?).sub_ref(ReflectPathElem::SubReflectionIndexed{
                     label:"col",
-                    index: idx,
+                    index: *idx,
                     get: |idx,ref_| Err(ReflectionError::InsufficientProvenance{
                         path: "".to_owned(),
                         msg: "Cannot get column of matrix with immutable reference".to_owned()
@@ -8118,11 +8121,11 @@ impl_script_newtype! {
     lua impl
     {
 
-    mut (MetaMethod::Index) => |ctx,s,idx : usize| {
+    mut (MetaMethod::Index) => |ctx,s,idx : LuaIndex| {
         Ok(LuaVec4::new_ref(
                 s.script_ref(ctx.get_world()?).sub_ref(ReflectPathElem::SubReflectionIndexed{
                     label:"col",
-                    index: idx,
+                    index: *idx,
                     get: |idx,ref_| Err(ReflectionError::InsufficientProvenance{
                         path: "".to_owned(),
                         msg: "Cannot get column of matrix with immutable reference".to_owned()
@@ -8253,11 +8256,11 @@ impl_script_newtype! {
     lua impl
     {
 
-    mut (MetaMethod::Index) => |ctx,s,idx : usize| {
+    mut (MetaMethod::Index) => |ctx,s,idx : LuaIndex| {
         Ok(LuaDVec2::new_ref(
                 s.script_ref(ctx.get_world()?).sub_ref(ReflectPathElem::SubReflectionIndexed{
                     label:"col",
-                    index: idx,
+                    index: *idx,
                     get: |idx,ref_| Err(ReflectionError::InsufficientProvenance{
                         path: "".to_owned(),
                         msg: "Cannot get column of matrix with immutable reference".to_owned()
@@ -8492,11 +8495,11 @@ impl_script_newtype! {
     lua impl
     {
 
-    mut (MetaMethod::Index) => |ctx,s,idx : usize| {
+    mut (MetaMethod::Index) => |ctx,s,idx : LuaIndex| {
         Ok(LuaDVec3::new_ref(
                 s.script_ref(ctx.get_world()?).sub_ref(ReflectPathElem::SubReflectionIndexed{
                     label:"col",
-                    index: idx,
+                    index: *idx,
                     get: |idx,ref_| Err(ReflectionError::InsufficientProvenance{
                         path: "".to_owned(),
                         msg: "Cannot get column of matrix with immutable reference".to_owned()
@@ -8860,11 +8863,11 @@ impl_script_newtype! {
     lua impl
     {
 
-    mut (MetaMethod::Index) => |ctx,s,idx : usize| {
+    mut (MetaMethod::Index) => |ctx,s,idx : LuaIndex| {
         Ok(LuaDVec4::new_ref(
                 s.script_ref(ctx.get_world()?).sub_ref(ReflectPathElem::SubReflectionIndexed{
                     label:"col",
-                    index: idx,
+                    index: *idx,
                     get: |idx,ref_| Err(ReflectionError::InsufficientProvenance{
                         path: "".to_owned(),
                         msg: "Cannot get column of matrix with immutable reference".to_owned()

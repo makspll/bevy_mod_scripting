@@ -6,8 +6,8 @@ fn main() {
     let args: Vec<String> = env::args().collect();
     let mut app = App::new();
     app.add_plugins(MinimalPlugins)
-        .add_plugin(ScriptingPlugin)
-        .add_plugin(AssetPlugin::default());
+        .add_plugins(ScriptingPlugin)
+        .add_plugins(AssetPlugin::default());
 
     static INVALID_ARGUMENT_WARNING: &str = "Expected one of: 'lua','rhai' as arguments";
 
@@ -16,7 +16,7 @@ fn main() {
     match lang.as_str() {
         "lua" => {
             #[cfg(all(feature = "lua", feature = "lua_script_api"))]
-            app.add_script_host_to_base_set::<LuaScriptHost<()>, _>(CoreSet::PostUpdate)
+            app.add_script_host::<LuaScriptHost<()>>(PostUpdate)
                 .add_api_provider::<LuaScriptHost<()>>(Box::new(LuaBevyAPIProvider))
                 .update_documentation::<LuaScriptHost<()>>();
 

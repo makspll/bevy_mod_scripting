@@ -18,6 +18,8 @@ use tealr::mlu::{
 
 pub use crate::generated::*;
 
+use super::util::LuaIndex;
+
 pub type LuaTypeRegistration = ScriptTypeRegistration;
 impl_tealr_type!(LuaTypeRegistration);
 
@@ -240,13 +242,13 @@ impl TealData for LuaWorld {
             .document("Inserts children entities to the given parent entity at the given index.");
         methods.add_method(
             "insert_children",
-            |_, world, (parent, index, children): (LuaEntity, usize, Vec<LuaEntity>)| {
+            |_, world, (parent, index, children): (LuaEntity, LuaIndex, Vec<LuaEntity>)| {
                 let children = children
                     .iter()
                     .map(|e| e.inner())
                     .collect::<Result<Vec<_>, _>>()?;
 
-                world.insert_children(parent.inner()?, index, &children);
+                world.insert_children(parent.inner()?, *index, &children);
                 Ok(())
             },
         );
@@ -254,8 +256,8 @@ impl TealData for LuaWorld {
         methods.document("Inserts child entity to the given parent entity at the given index.");
         methods.add_method(
             "insert_child",
-            |_, world, (parent, index, child): (LuaEntity, usize, LuaEntity)| {
-                world.insert_children(parent.inner()?, index, &[child.inner()?]);
+            |_, world, (parent, index, child): (LuaEntity, LuaIndex, LuaEntity)| {
+                world.insert_children(parent.inner()?, *index, &[child.inner()?]);
                 Ok(())
             },
         );

@@ -109,7 +109,6 @@ fn main() -> std::io::Result<()> {
         .insert_resource(FixedTime::new_from_secs(TIMESTEP_2_PER_SECOND))
         .add_plugins(ScriptingPlugin)
         .add_systems(Startup, load_our_script)
-        .configure_set(FixedUpdate, ComplexGameLoopSet::Physics.after(ComplexGameLoopSet::))
         .configure_set(
             FixedUpdate,
             ComplexGameLoopSet::PrePhysicsScripts.before(ComplexGameLoopSet::Physics),
