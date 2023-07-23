@@ -84,8 +84,8 @@ fn main() -> std::io::Result<()> {
     let mut app = App::new();
 
     app.add_plugins(DefaultPlugins)
-        .add_plugin(ScriptingPlugin)
-        .add_script_host_to_base_set::<LuaScriptHost<LuaMyThing>, _>(CoreSet::PostUpdate)
+        .add_plugins(ScriptingPlugin)
+        .add_script_host::<LuaScriptHost<LuaMyThing>>(PostUpdate)
         .register_type::<MyThing>()
         .init_resource::<MyThing>()
         .add_systems(Update, |world: &mut World| {
