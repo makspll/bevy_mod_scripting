@@ -58,7 +58,7 @@ fn main() -> std::io::Result<()> {
     let mut app = App::new();
 
     app.add_plugins(DefaultPlugins)
-        .add_plugin(ScriptingPlugin)
+        .add_plugins(ScriptingPlugin)
         .register_type::<MyComponent>()
         .register_type::<MyResource>()
         .register_foreign_rhai_type::<Option<bool>>()
@@ -67,7 +67,7 @@ fn main() -> std::io::Result<()> {
         // note the implementation for Option is there, but we must register `LuaProxyable` for it
         .init_resource::<MyResource>()
         // this system set handles addition and removal of script contexts, we can safely use `CoreSet::PostUpdate`
-        .add_script_host_to_base_set::<RhaiScriptHost<()>, _>(CoreSet::PostUpdate)
+        .add_script_host::<RhaiScriptHost<()>>(PostUpdate)
         .add_api_provider::<RhaiScriptHost<()>>(Box::new(RhaiBevyAPIProvider))
         .add_api_provider::<RhaiScriptHost<()>>(Box::new(MyAPIProvider))
         .add_systems(Update, |world: &mut World| {
