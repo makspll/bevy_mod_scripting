@@ -301,7 +301,9 @@ impl<
         methods.document_type("A reference to the Vec<T> Rust type.");
         methods.document_type("All indexing begins at 1.");
 
-        methods.add_meta_method(MetaMethod::ToString, |_, s, ()| Ok(format!("{s:?}")));
+        methods.add_meta_method(MetaMethod::ToString, |_, s, ()| {
+            Ok(s.ref_.get(|s| format!("{:?}", s))?)
+        });
 
         methods.add_meta_method(MetaMethod::Index, |_, s, index: LuaIndex| {
             Ok(s.index(*index))

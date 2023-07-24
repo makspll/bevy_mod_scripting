@@ -181,7 +181,13 @@ impl CustomType for ReflectedValue {
                 obj.ref_.index(index)?.apply_rhai(value)
             })
             .with_fn("to_debug", |self_: &mut ReflectedValue| {
-                format!("{self_:?}")
+                format!("{:?}", self_)
+            })
+            .with_fn("to_string", |self_: &mut ReflectedValue| {
+                self_
+                    .ref_
+                    .get(|s| format!("{:?}", &s))
+                    .map_err::<Box<EvalAltResult>, _>(|e| e.into())
             });
     }
 }

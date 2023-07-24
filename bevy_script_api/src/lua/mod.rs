@@ -169,7 +169,7 @@ impl TealData for ReflectedValue {
         methods.document_type("If you know the reflected value converts to a LuaType (via LuaProxyable), use the `as` operator to convert to said type.");
 
         methods.add_meta_method(MetaMethod::ToString, |_, val, ()| {
-            val.ref_.get(|s| Ok(format!("{:#?}", &s)))?
+            val.ref_.get(|s| Ok(format!("{:?}", &s)))?
         });
 
         methods.add_meta_method_mut(MetaMethod::Index, |_, val, field: Value| {
