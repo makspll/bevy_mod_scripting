@@ -1,10 +1,10 @@
 use bevy::app::AppExit;
-use bevy::math::DQuat;
+
 use bevy::prelude::*;
 use bevy_mod_scripting::prelude::*;
-use bevy_mod_scripting_lua::tealr::mlu::mlua::UserData;
+
 use bevy_script_api::lua::{
-    bevy::LuaBevyAPIProvider, ReflectLuaProxyable, RegisterForeignLuaType, ValueLuaType,
+    bevy::LuaBevyAPIProvider, RegisterForeignLuaType,
 };
 
 #[derive(Component, Default, Reflect)]

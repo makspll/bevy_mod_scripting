@@ -1,7 +1,7 @@
 use bevy::{app::AppExit, prelude::*};
 
 use bevy_mod_scripting::{
-    api::{impl_lua_newtype, impl_script_newtype, lua::bevy::LuaWorld, ScriptRef},
+    api::{impl_lua_newtype, impl_script_newtype},
     prelude::*,
 };
 
