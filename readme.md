@@ -1,5 +1,5 @@
 <p align="center">
-    <img src="./logo_bevy_scripting.svg" width="250">
+    <img src="./logo_bevy_scripting.svg" width="250" onerror="this.onerror=null; this.src='https://raw.githubusercontent.com/makspll/bevy_mod_scripting/main/logo_bevy_scripting.svg'">
 </p>
 
 # Bevy Scripting
