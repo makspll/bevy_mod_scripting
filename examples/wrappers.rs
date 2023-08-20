@@ -33,7 +33,7 @@ impl MyThing {
 // Script references can also be made to subfields (even non reflectable ones) of types via sub reflection
 //
 // Note: this step is not fully necessary, if your value is reflectable, you'll be able to reach it via
-// The bevy API, however doing this means your type will have  provide static typing for your scripts in languages which support it,
+// The bevy API, however doing this means your type will have `pass-by-reference` semantics and if the language supports it, static typing.
 // To see what else this macro can do see `src/api/generated.rs`
 impl_script_newtype!(
     #[languages(lua)]
