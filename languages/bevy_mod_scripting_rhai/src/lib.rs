@@ -94,7 +94,8 @@ impl<A: FuncArgs + Send + Clone + Sync + 'static> ScriptHost for RhaiScriptHost<
                     .in_set(set),
             )
             // setup engine
-            .add_startup_system(
+            .add_systems(
+                Startup,
                 |mut providers: ResMut<APIProviders<Self>>, mut host: ResMut<Self>| {
                     providers
                         .attach_all(&mut host.engine)

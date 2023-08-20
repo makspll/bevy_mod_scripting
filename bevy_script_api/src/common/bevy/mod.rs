@@ -8,7 +8,7 @@ use crate::ScriptRef;
 use bevy::{
     ecs::system::Command,
     prelude::{
-        despawn_with_children_recursive, AppTypeRegistry, BuildWorldChildren, Children,
+        AppTypeRegistry, BuildWorldChildren, Children,
         DespawnChildrenRecursive, DespawnRecursive, Entity, Parent, ReflectComponent,
         ReflectDefault, ReflectResource,
     },

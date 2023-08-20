@@ -3,11 +3,11 @@ use crate::impl_tealr_type;
 
 use std::sync::Arc;
 
-use bevy::ecs::system::Command;
-use bevy::hierarchy::BuildWorldChildren;
-use bevy::prelude::{AppTypeRegistry, World};
 
-use bevy::{hierarchy::DespawnRecursive, prelude::ReflectResource};
+use bevy::hierarchy::BuildWorldChildren;
+use bevy::prelude::{AppTypeRegistry};
+
+use bevy::{prelude::ReflectResource};
 use bevy_mod_scripting_core::prelude::*;
 use bevy_mod_scripting_lua::tealr;
 
