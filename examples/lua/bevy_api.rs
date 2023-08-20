@@ -3,9 +3,7 @@ use bevy::app::AppExit;
 use bevy::prelude::*;
 use bevy_mod_scripting::prelude::*;
 
-use bevy_script_api::lua::{
-    bevy::LuaBevyAPIProvider, RegisterForeignLuaType,
-};
+use bevy_script_api::lua::{bevy::LuaBevyAPIProvider, RegisterForeignLuaType};
 
 #[derive(Component, Default, Reflect)]
 #[reflect(Component)]

@@ -8,9 +8,8 @@ use crate::ScriptRef;
 use bevy::{
     ecs::system::Command,
     prelude::{
-        AppTypeRegistry, BuildWorldChildren, Children,
-        DespawnChildrenRecursive, DespawnRecursive, Entity, Parent, ReflectComponent,
-        ReflectDefault, ReflectResource,
+        AppTypeRegistry, BuildWorldChildren, Children, DespawnChildrenRecursive, DespawnRecursive,
+        Entity, Parent, ReflectComponent, ReflectDefault, ReflectResource,
     },
     reflect::{
         DynamicArray, DynamicEnum, DynamicList, DynamicMap, DynamicStruct, DynamicTuple,
