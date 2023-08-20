@@ -13,7 +13,7 @@ use bevy_mod_scripting::{
 // Even though we are implementing Clone we are still able to reference the original data in script thanks to the script wrapper we are about to implement
 // Debug is nice to have, we can forward that implementation to Lua's ToString via our macro
 #[derive(Resource, Reflect, Default, Clone, Debug)]
-#[reflect(Resource)]
+#[reflect(Resource, LuaProxyable)]
 pub struct MyThing {
     usize: usize,
     string: String,
@@ -25,9 +25,6 @@ impl MyThing {
     }
 }
 
-impl MyThing {
-    pub fn hello(&self) {}
-}
 // Step 2. Script representation
 // this macro does some magic and provides you with a `LuaMyThing` (and possibly more for other enabled languages) type with which you can create:
 // - owned values of your type via ::new()
@@ -36,7 +33,7 @@ impl MyThing {
 // Script references can also be made to subfields (even non reflectable ones) of types via sub reflection
 //
 // Note: this step is not fully necessary, if your value is reflectable, you'll be able to reach it via
-// The bevy API, however doing this means your provide static typing for your scripts in languages which support it,
+// The bevy API, however doing this means your type will have  provide static typing for your scripts in languages which support it,
 // To see what else this macro can do see `src/api/generated.rs`
 impl_script_newtype!(
     #[languages(lua)]
@@ -62,19 +59,8 @@ impl_script_newtype!(
         // below is a custom lua function
         // the fn here means this is a function and not a method (no self argument)
         // normally you'd make these available globally via mlua::create_proxy, but I digress.
-        fn "make_ref_to_my_resource" => |ctx,()| {
-            let globals = ctx.globals();
-            let lua_world : LuaWorld = globals.get("world")?;
-            let mut world = lua_world.write();
-
-            let reflect_resource_data = world.resource_scope(|world, type_registry: Mut<AppTypeRegistry>| {
-                let type_registry = type_registry.read();
-                let data = type_registry.get_type_data::<ReflectResource>(std::any::TypeId::of::<MyThing>()).expect("Type not registered properly");
-                data.clone()
-            });
-
-            // this is absolutely safe!
-            Ok(LuaMyThing::new_ref(ScriptRef::new_resource_ref(reflect_resource_data, lua_world.as_ref().clone())))
+        fn "my_raw_function" => |ctx,()| {
+            Ok("Hello from my_raw_function!".to_owned())
         };
     }
 
@@ -85,9 +71,10 @@ fn main() -> std::io::Result<()> {
 
     app.add_plugins(DefaultPlugins)
         .add_plugins(ScriptingPlugin)
-        .add_script_host::<LuaScriptHost<LuaMyThing>>(PostUpdate)
         .register_type::<MyThing>()
         .init_resource::<MyThing>()
+        .add_script_host::<LuaScriptHost<LuaMyThing>>(PostUpdate)
+        .add_api_provider::<LuaScriptHost<LuaMyThing>>(Box::new(LuaBevyAPIProvider))
         .add_systems(Update, |world: &mut World| {
             world.insert_resource(MyThing {
                 usize: 420,
@@ -98,17 +85,22 @@ fn main() -> std::io::Result<()> {
             world.resource_scope(|world, mut host: Mut<LuaScriptHost<LuaMyThing>>| {
                 host.run_one_shot(
                     r#"
-                    function once(my_thing)
-                        local my_thing2 = my_thing.make_ref_to_my_resource()
-                        print(my_thing2)
-                        print(my_thing2.usize)
-                        print(my_thing2.string)
-                        print(my_thing2:do_something_cool())
+                    function once(new_my_thing)
+                        local my_thing_type = world:get_type_by_name("MyThing");
+                        print(my_thing_type)
+                        local my_thing = world:get_resource(my_thing_type);
 
-                        my_thing2.usize = my_thing.usize
-                        my_thing2.string = my_thing.string
+                        print("my_thing: ", my_thing)
+                        print("my_thing.usize: ", my_thing.usize)
+                        print("my_thing.string: ", my_thing.string)
+                        print("my_thing:do_something_cool(): ", my_thing:do_something_cool())
+                        print("my_thing.my_raw_function(): ", my_thing.my_raw_function())
+                        print("changing my thing through the world reference")
 
-                        print(my_thing2:do_something_cool())
+                        my_thing.usize = new_my_thing.usize
+                        my_thing.string = new_my_thing.string
+
+                        print("my_thing.do_something_cool(): ", my_thing:do_something_cool())
                     end
                 "#
                     .as_bytes(),
