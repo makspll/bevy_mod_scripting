@@ -169,6 +169,11 @@ impl ScriptWorld {
     ) -> Result<ScriptRef, ScriptError> {
         let mut w = self.write();
 
+        let _ = match w.get_entity(entity) {
+            Some(_)=> Ok(()),
+            _ => Err(ScriptError::Other(format!("Entity is not valid {:#?}", entity)))
+        }?;
+
         let component_data = comp_type.data::<ReflectComponent>().ok_or_else(|| {
             ScriptError::Other(format!("Not a component {}", comp_type.short_name()))
         })?;
