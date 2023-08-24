@@ -54,9 +54,9 @@ To install:
 - Add this crate to your Cargo.toml file dependencies
   - The crate is still in development so I recommended pinning to a git commit
 - Add ScriptingPlugin to your app
-- Add the ScriptHosts you plan on using (`add_script_host`)
+- Add the ScriptHosts you plan on using (`add_script_host`, `add_script_host_to_set`)
   - Make sure to attach it to a system set running AFTER any systems which may generate modify/create/remove script components
-- Add script handlers to capture events in the priority range you're expecting (`add_script_handler_to_set`,`add_script_handler_to_base_set`)
+- Add script handlers to capture events in the priority range you're expecting (`add_script_handler_to_set`,`add_script_handler`)
 - Add systems which generate ScriptEvents corresponding to your script host
 - Add systems which add ScriptCollection components to your entities and fill them with scripts
 
@@ -71,18 +71,18 @@ fn main() -> std::io::Result<()> {
         // pick and register only the hosts you want to use
         // use any system set AFTER any systems which add/remove/modify script components
         // in order for your script updates to propagate in a single frame
-        .add_script_host_to_base_set::<RhaiScriptHost<MyRhaiArgStruct>,_>(CoreSet::PostUpdate)
-        .add_script_host_to_base_set::<LuaScriptHost<MyLuaArgStruct>,_>(CoreSet::PostUpdate)
+        .add_script_host::<RhaiScriptHost<MyRhaiArgStruct>>(PostUpdate)
+        .add_script_host::<LuaScriptHost<MyLuaArgStruct>>(PostUpdate)
 
         // the handlers should be ran after any systems which produce script events.
         // The PostUpdate set is okay only if your API doesn't require the core Bevy systems' commands
         // to run beforehand.
         // Note, this setup assumes a single script handler system set with all events having identical
         // priority of zero (see examples for more complex scenarios)
-        .add_script_handler_to_base_set::<LuaScriptHost<MyLuaArg>, _, 0, 0>(
+        .add_script_handler::<LuaScriptHost<MyLuaArg>, 0, 0>(
             CoreSet::PostUpdate,
         )
-        .add_script_handler_to_base_set::<RhaiScriptHost<RhaiEventArgs>, _, 0, 0>(
+        .add_script_handler::<RhaiScriptHost<RhaiEventArgs>, 0, 0>(
             CoreSet::PostUpdate,
         )
 
@@ -252,8 +252,8 @@ Register the API providers like so:
 ```rust, ignore
     app.add_plugins(DefaultPlugins)
         .add_plugin(ScriptingPlugin)
-        .add_script_host_to_base_set::<LuaScriptHost<MyLuaArg>, _>(CoreSet::PostUpdate)
-        .add_script_host_to_base_set::<RhaiScriptHost<MyRhaiArg>, _>(CoreSet::PostUpdate)
+        .add_script_host::<LuaScriptHost<MyLuaArg>>(PostUpdate)
+        .add_script_host::<RhaiScriptHost<MyRhaiArg>>(PostUpdate)
         .add_api_provider::<LuaScriptHost<MyLuaArg>>(Box::new(LuaAPIProvider))
         .add_api_provider::<LuaScriptHost<MyRhaiArg>>(Box::new(RhaiAPIProvider))
         //...
@@ -275,14 +275,12 @@ fn main() -> std::io::Result<()> {
 
     app.add_plugins(DefaultPlugins)
         .add_plugin(ScriptingPlugin)
-        .add_script_host_to_base_set::<LuaScriptHost<()>, _>(CoreSet::PostUpdate)
+        .add_script_host::<LuaScriptHost<()>>(PostUpdate)
         // Note: This is a noop in optimized builds unless the `doc_always` feature is enabled!
         // this will pickup any API providers added *BEFOREHAND* like this one
         // .add_api_provider::<LuaScriptHost<()>>(Box::new(LuaAPIProvider))
         .update_documentation::<LuaScriptHost<()>>()
-        .add_script_handler_to_base_set::<LuaScriptHost<()>, _, 0, 0>(
-            CoreSet::PostUpdate,
-        );
+        .add_script_handler::<LuaScriptHost<()>, 0, 0>(PostUpdate);
 
     Ok(())
 }

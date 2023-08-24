@@ -104,7 +104,6 @@ use bevy::ui::AlignContent;
 use bevy::ui::AlignItems;
 use bevy::ui::AlignSelf;
 use bevy::ui::CalculatedClip;
-use bevy::ui::CalculatedSize;
 use bevy::ui::Direction;
 use bevy::ui::Display;
 use bevy::ui::FlexDirection;
@@ -124,7 +123,10 @@ use std::ops::*;
 use std::sync::Mutex;
 #[cfg(feature = "lua")]
 use {
-    crate::{common::bevy::GetWorld, lua::RegisterForeignLuaType},
+    crate::{
+        common::bevy::GetWorld,
+        lua::{util::LuaIndex, RegisterForeignLuaType},
+    },
     bevy_mod_scripting_lua::{docs::LuaDocFragment, tealr::mlu::mlua::MetaMethod},
     bevy_mod_scripting_lua_derive::impl_lua_newtype,
 };
@@ -352,9 +354,28 @@ impl_script_newtype! {
     Debug +
     Methods
     (
+        ///Show overflowing items on both axes
+        visible() -> self,
+
+        ///Clip overflowing items on both axes
+        clip() -> self,
+
+        ///Clip overflowing items on the x axis
+        clip_x() -> self,
+
+        ///Clip overflowing items on the y axis
+        clip_y() -> self,
+
+        ///Overflow is visible on both axes
+        is_visible(&self:) -> Raw(bool),
+
     )
     + Fields
     (
+        /// Whether to show or clip overflowing items on the x axis
+        x: Raw(ReflectedValue),
+        /// Whether to show or clip overflowing items on the y axis
+        y: Raw(ReflectedValue),
     )
     + BinOps
     (
@@ -390,7 +411,10 @@ impl_script_newtype! {
 }
 impl_script_newtype! {
     #[languages(on_feature(lua))]
-    ///An enum that describes possible types of value in flexbox layout options
+    ///Represents the possible value types for layout properties.
+    ///
+    ///This enum allows specifying values for various [`Style`] properties in different units,
+    ///such as logical pixels, percentages, or automatically determined values.
     bevy_ui::Val :
     Clone +
     Debug +
@@ -438,32 +462,6 @@ impl_script_newtype! {
 }
 impl_script_newtype! {
     #[languages(on_feature(lua))]
-    ///The calculated size of the node
-    bevy_ui::CalculatedSize :
-    Clone +
-    Debug +
-    Methods
-    (
-    )
-    + Fields
-    (
-        /// The size of the node in logical pixels
-        size: Wrapped(Vec2),
-        /// Whether to attempt to preserve the aspect ratio when determining the layout for this item
-        preserve_aspect_ratio: Raw(bool),
-    )
-    + BinOps
-    (
-    )
-    + UnaryOps
-    (
-    )
-    lua impl
-    {
-    }
-}
-impl_script_newtype! {
-    #[languages(on_feature(lua))]
     ///Describes the size of a UI node
     bevy_ui::Node :
     Clone +
@@ -471,8 +469,17 @@ impl_script_newtype! {
     Methods
     (
         ///The calculated node size as width and height in logical pixels
-        ///automatically calculated by [`super::flex::flex_node_system`]
+        ///automatically calculated by [`super::layout::ui_layout_system`]
         size(&self:) -> Wrapped(Vec2),
+
+        ///Returns the size of the node in physical pixels based on the given scale factor and `UiScale`.
+        physical_size(&self:Raw(f64),Raw(f64)) -> Wrapped(Vec2),
+
+        ///Returns the logical pixel coordinates of the UI node, based on its [`GlobalTransform`].
+        logical_rect(&self:Wrapped(&GlobalTransform)) -> Wrapped(Rect),
+
+        ///Returns the physical pixel coordinates of the UI node, based on its [`GlobalTransform`] and the scale factor.
+        physical_rect(&self:Wrapped(&GlobalTransform),Raw(f64),Raw(f64)) -> Wrapped(Rect),
 
     )
     + Fields
@@ -490,9 +497,22 @@ impl_script_newtype! {
 }
 impl_script_newtype! {
     #[languages(on_feature(lua))]
-    ///Describes the style of a UI node
+    ///Describes the style of a UI container node
     ///
-    ///It uses the [Flexbox](https://cssreference.io/flexbox/) system.
+    ///Node's can be laid out using either Flexbox or CSS Grid Layout.<br />
+    ///See below for general learning resources and for documentation on the individual style properties.
+    ///
+    ///### Flexbox
+    ///
+    ///- [MDN: Basic Concepts of Grid Layout](https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_Grid_Layout/Basic_Concepts_of_Grid_Layout)
+    ///- [A Complete Guide To Flexbox](https://css-tricks.com/snippets/css/a-guide-to-flexbox/) by CSS Tricks. This is detailed guide with illustrations and comphrehensive written explanation of the different Flexbox properties and how they work.
+    ///- [Flexbox Froggy](https://flexboxfroggy.com/). An interactive tutorial/game that teaches the essential parts of Flebox in a fun engaging way.
+    ///
+    ///### CSS Grid
+    ///
+    ///- [MDN: Basic Concepts of Flexbox](https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_Flexible_Box_Layout/Basic_Concepts_of_Flexbox)
+    ///- [A Complete Guide To CSS Grid](https://css-tricks.com/snippets/css/complete-guide-grid/) by CSS Tricks. This is detailed guide with illustrations and comphrehensive written explanation of the different CSS Grid properties and how they work.
+    ///- [CSS Grid Garden](https://cssgridgarden.com/). An interactive tutorial/game that teaches the essential parts of CSS Grid in a fun engaging way.
     bevy_ui::Style :
     Clone +
     Debug +
@@ -501,30 +521,130 @@ impl_script_newtype! {
     )
     + Fields
     (
-        /// Whether to arrange this node and its children with flexbox layout
+        /// Which layout algorithm to use when laying out this node's contents:
+        ///   - [`Display::Flex`]: Use the Flexbox layout algorithm
+        ///   - [`Display::Grid`]: Use the CSS Grid layout algorithm
+        ///   - [`Display::None`]: Hide this node and perform layout as if it does not exist.
         ///
-        /// If this is set to [`Display::None`], this node will be collapsed.
+        /// <https://developer.mozilla.org/en-US/docs/Web/CSS/display>
         display: Wrapped(Display),
-        /// Whether to arrange this node relative to other nodes, or positioned absolutely
+        /// Whether a node should be laid out in-flow with, or independently of it's siblings:
+        ///  - [`PositionType::Relative`]: Layout this node in-flow with other nodes using the usual (flexbox/grid) layout algorithm.
+        ///  - [`PositionType::Absolute`]: Layout this node on top and independently of other nodes.
+        ///
+        /// <https://developer.mozilla.org/en-US/docs/Web/CSS/position>
         position_type: Wrapped(PositionType),
-        /// Which direction the content of this node should go
+        /// Whether overflowing content should be displayed or clipped.
+        ///
+        /// <https://developer.mozilla.org/en-US/docs/Web/CSS/overflow>
+        overflow: Wrapped(Overflow),
+        /// Defines the text direction. For example English is written LTR (left-to-right) while Arabic is written RTL (right-to-left).
+        ///
+        /// Note: the corresponding CSS property also affects box layout order, but this isn't yet implemented in bevy.
+        /// <https://developer.mozilla.org/en-US/docs/Web/CSS/direction>
         direction: Wrapped(Direction),
-        /// Whether to use column or row layout
-        flex_direction: Wrapped(FlexDirection),
-        /// How to wrap nodes
-        flex_wrap: Wrapped(FlexWrap),
-        /// How items are aligned according to the cross axis
+        /// The horizontal position of the left edge of the node.
+        ///  - For relatively positioned nodes, this is relative to the node's position as computed during regular layout.
+        ///  - For absolutely positioned nodes, this is relative to the *parent* node's bounding box.
+        ///
+        /// <https://developer.mozilla.org/en-US/docs/Web/CSS/left>
+        left: Wrapped(Val),
+        /// The horizontal position of the right edge of the node.
+        ///  - For relatively positioned nodes, this is relative to the node's position as computed during regular layout.
+        ///  - For absolutely positioned nodes, this is relative to the *parent* node's bounding box.
+        ///
+        /// <https://developer.mozilla.org/en-US/docs/Web/CSS/right>
+        right: Wrapped(Val),
+        /// The vertical position of the top edge of the node.
+        ///  - For relatively positioned nodes, this is relative to the node's position as computed during regular layout.
+        ///  - For absolutely positioned nodes, this is relative to the *parent* node's bounding box.
+        ///
+        /// <https://developer.mozilla.org/en-US/docs/Web/CSS/top>
+        top: Wrapped(Val),
+        /// The vertical position of the bottom edge of the node.
+        ///  - For relatively positioned nodes, this is relative to the node's position as computed during regular layout.
+        ///  - For absolutely positioned nodes, this is relative to the *parent* node's bounding box.
+        ///
+        /// <https://developer.mozilla.org/en-US/docs/Web/CSS/bottom>
+        bottom: Wrapped(Val),
+        /// The ideal width of the node. `width` is used when it is within the bounds defined by `min_width` and `max_width`.
+        ///
+        /// <https://developer.mozilla.org/en-US/docs/Web/CSS/width>
+        width: Wrapped(Val),
+        /// The ideal height of the node. `height` is used when it is within the bounds defined by `min_height` and `max_height`.
+        ///
+        /// <https://developer.mozilla.org/en-US/docs/Web/CSS/height>
+        height: Wrapped(Val),
+        /// The minimum width of the node. `min_width` is used if it is greater than either `width` and/or `max_width`.
+        ///
+        /// <https://developer.mozilla.org/en-US/docs/Web/CSS/min-width>
+        min_width: Wrapped(Val),
+        /// The minimum height of the node. `min_height` is used if it is greater than either `height` and/or `max_height`.
+        ///
+        /// <https://developer.mozilla.org/en-US/docs/Web/CSS/min-height>
+        min_height: Wrapped(Val),
+        /// The maximum width of the node. `max_width` is used if it is within the bounds defined by `min_width` and `width`.
+        ///
+        /// <https://developer.mozilla.org/en-US/docs/Web/CSS/max-width>
+        max_width: Wrapped(Val),
+        /// The maximum height of the node. `max_height` is used if it is within the bounds defined by `min_height` and `height`.
+        ///
+        /// <https://developer.mozilla.org/en-US/docs/Web/CSS/max-height>
+        max_height: Wrapped(Val),
+        /// The aspect ratio of the node (defined as `width / height`)
+        ///
+        /// <https://developer.mozilla.org/en-US/docs/Web/CSS/aspect-ratio>
+        aspect_ratio: Raw(ReflectedValue),
+        /// For Flexbox containers:
+        ///   - Sets default cross-axis alignment of the child items.
+        /// For CSS Grid containers:
+        ///   - Controls block (vertical) axis alignment of children of this grid container within their grid areas
+        ///
+        /// This value is overriden [`JustifySelf`] on the child node is set.
+        ///
+        /// <https://developer.mozilla.org/en-US/docs/Web/CSS/align-items>
         align_items: Wrapped(AlignItems),
-        /// How this item is aligned according to the cross axis.
-        /// Overrides [`AlignItems`].
+        /// For Flexbox containers:
+        ///   - This property has no effect. See `justify_content` for main-axis alignment of flex items.
+        /// For CSS Grid containers:
+        ///   - Sets default inline (horizontal) axis alignment of child items within their grid areas
+        ///
+        /// This value is overriden [`JustifySelf`] on the child node is set.
+        ///
+        /// <https://developer.mozilla.org/en-US/docs/Web/CSS/justify-items>
+        justify_items: Raw(ReflectedValue),
+        /// For Flexbox items:
+        ///   - Controls cross-axis alignment of the item.
+        /// For CSS Grid items:
+        ///   - Controls block (vertical) axis alignment of a grid item within it's grid area
+        ///
+        /// If set to `Auto`, alignment is inherited from the value of [`AlignItems`] set on the parent node.
+        ///
+        /// <https://developer.mozilla.org/en-US/docs/Web/CSS/align-self>
         align_self: Wrapped(AlignSelf),
-        /// How to align each line, only applies if flex_wrap is set to
-        /// [`FlexWrap::Wrap`] and there are multiple lines of items
+        /// For Flexbox items:
+        ///   - This property has no effect. See `justify_content` for main-axis alignment of flex items.
+        /// For CSS Grid items:
+        ///   - Controls inline (horizontal) axis alignment of a grid item within it's grid area.
+        ///
+        /// If set to `Auto`, alignment is inherited from the value of [`JustifyItems`] set on the parent node.
+        ///
+        /// <https://developer.mozilla.org/en-US/docs/Web/CSS/justify-items>
+        justify_self: Raw(ReflectedValue),
+        /// For Flexbox containers:
+        ///   - Controls alignment of lines if flex_wrap is set to [`FlexWrap::Wrap`] and there are multiple lines of items
+        /// For CSS Grid container:
+        ///   - Controls alignment of grid rows
+        ///
+        /// <https://developer.mozilla.org/en-US/docs/Web/CSS/align-content>
         align_content: Wrapped(AlignContent),
-        /// How items align according to the main axis
+        /// For Flexbox containers:
+        ///   - Controls alignment of items in the main axis
+        /// For CSS Grid containers:
+        ///   - Controls alignment of grid columns
+        ///
+        /// <https://developer.mozilla.org/en-US/docs/Web/CSS/justify-content>
         justify_content: Wrapped(JustifyContent),
-        /// The position of the node as described by its Rect
-        position: Raw(ReflectedValue),
         /// The amount of space around a node outside its border.
         ///
         /// If a percentage value is used, the percentage is calculated based on the width of the parent node.
@@ -542,7 +662,9 @@ impl_script_newtype! {
         ///     ..Default::default()
         /// };
         /// ```
-        /// A node with this style and a parent with dimensions of 100px by 300px, will have calculated margins of 10px on both left and right edges, and 15px on both top and bottom egdes.
+        /// A node with this style and a parent with dimensions of 100px by 300px, will have calculated margins of 10px on both left and right edges, and 15px on both top and bottom edges.
+        ///
+        /// <https://developer.mozilla.org/en-US/docs/Web/CSS/margin>
         margin: Raw(ReflectedValue),
         /// The amount of space between the edges of a node and its contents.
         ///
@@ -562,6 +684,8 @@ impl_script_newtype! {
         /// };
         /// ```
         /// A node with this style and a parent with dimensions of 300px by 100px, will have calculated padding of 3px on the left, 6px on the right, 9px on the top and 12px on the bottom.
+        ///
+        /// <https://developer.mozilla.org/en-US/docs/Web/CSS/padding>
         padding: Raw(ReflectedValue),
         /// The amount of space between the margins of a node and its padding.
         ///
@@ -570,38 +694,76 @@ impl_script_newtype! {
         /// The size of the node will be expanded if there are constraints that prevent the layout algorithm from placing the border within the existing node boundary.
         ///
         /// Rendering for borders is not yet implemented.
+        ///
+        /// <https://developer.mozilla.org/en-US/docs/Web/CSS/border-width>
         border: Raw(ReflectedValue),
-        /// Defines how much a flexbox item should grow if there's space available
+        /// Whether a Flexbox container should be a row or a column. This property has no effect of Grid nodes.
+        ///
+        /// <https://developer.mozilla.org/en-US/docs/Web/CSS/flex-direction>
+        flex_direction: Wrapped(FlexDirection),
+        /// Whether a Flexbox container should wrap it's contents onto multiple line wrap if they overflow. This property has no effect of Grid nodes.
+        ///
+        /// <https://developer.mozilla.org/en-US/docs/Web/CSS/flex-wrap>
+        flex_wrap: Wrapped(FlexWrap),
+        /// Defines how much a flexbox item should grow if there's space available. Defaults to 0 (don't grow at all).
+        ///
+        /// <https://developer.mozilla.org/en-US/docs/Web/CSS/flex-grow>
         flex_grow: Raw(f32),
-        /// How to shrink if there's not enough space available
+        /// Defines how much a flexbox item should shrink if there's not enough space available. Defaults to 1.
+        ///
+        /// <https://developer.mozilla.org/en-US/docs/Web/CSS/flex-shrink>
         flex_shrink: Raw(f32),
-        /// The initial length of the main axis, before other properties are applied.
+        /// The initial length of a flexbox in the main axis, before flex growing/shrinking properties are applied.
         ///
-        /// If both are set, `flex_basis` overrides `size` on the main axis but it obeys the bounds defined by `min_size` and `max_size`.
+        /// `flex_basis` overrides `size` on the main axis if both are set,  but it obeys the bounds defined by `min_size` and `max_size`.
+        ///
+        /// <https://developer.mozilla.org/en-US/docs/Web/CSS/flex-basis>
         flex_basis: Wrapped(Val),
-        /// The ideal size of the flexbox
+        /// The size of the gutters between items in a vertical flexbox layout or between rows in a grid layout
         ///
-        /// `size.width` is used when it is within the bounds defined by `min_size.width` and `max_size.width`.
-        /// `size.height` is used when it is within the bounds defined by `min_size.height` and `max_size.height`.
-        size: Raw(ReflectedValue),
-        /// The minimum size of the flexbox
+        /// Note: Values of `Val::Auto` are not valid and are treated as zero.
         ///
-        /// `min_size.width` is used if it is greater than either `size.width` or `max_size.width`, or both.
-        /// `min_size.height` is used if it is greater than either `size.height` or `max_size.height`, or both.
-        min_size: Raw(ReflectedValue),
-        /// The maximum size of the flexbox
+        /// <https://developer.mozilla.org/en-US/docs/Web/CSS/row-gap>
+        row_gap: Wrapped(Val),
+        /// The size of the gutters between items in a horizontal flexbox layout or between column in a grid layout
         ///
-        /// `max_size.width` is used if it is within the bounds defined by `min_size.width` and `size.width`.
-        /// `max_size.height` is used if it is within the bounds defined by `min_size.height` and `size.height.
-        max_size: Raw(ReflectedValue),
-        /// The aspect ratio of the flexbox
-        aspect_ratio: Raw(ReflectedValue),
-        /// How to handle overflow
-        overflow: Wrapped(Overflow),
-        /// The size of the gutters between the rows and columns of the flexbox layout
+        /// Note: Values of `Val::Auto` are not valid and are treated as zero.
         ///
-        /// Values of `Size::UNDEFINED` and `Size::AUTO` are treated as zero.
-        gap: Raw(ReflectedValue),
+        /// <https://developer.mozilla.org/en-US/docs/Web/CSS/column-gap>
+        column_gap: Wrapped(Val),
+        /// Controls whether automatically placed grid items are placed row-wise or column-wise. And whether the sparse or dense packing algorithm is used.
+        /// Only affect Grid layouts
+        ///
+        /// <https://developer.mozilla.org/en-US/docs/Web/CSS/grid-auto-flow>
+        grid_auto_flow: Raw(ReflectedValue),
+        /// Defines the number of rows a grid has and the sizes of those rows. If grid items are given explicit placements then more rows may
+        /// be implicitly generated by items that are placed out of bounds. The sizes of those rows are controlled by `grid_auto_rows` property.
+        ///
+        /// <https://developer.mozilla.org/en-US/docs/Web/CSS/grid-template-rows>
+        grid_template_rows: Raw(ReflectedValue),
+        /// Defines the number of columns a grid has and the sizes of those columns. If grid items are given explicit placements then more columns may
+        /// be implicitly generated by items that are placed out of bounds. The sizes of those columns are controlled by `grid_auto_columns` property.
+        ///
+        /// <https://developer.mozilla.org/en-US/docs/Web/CSS/grid-template-columns>
+        grid_template_columns: Raw(ReflectedValue),
+        /// Defines the size of implicitly created rows. Rows are created implicitly when grid items are given explicit placements that are out of bounds
+        /// of the rows explicitly created using `grid_template_rows`.
+        ///
+        /// <https://developer.mozilla.org/en-US/docs/Web/CSS/grid-auto-rows>
+        grid_auto_rows: Raw(ReflectedValue),
+        /// Defines the size of implicitly created columns. Columns are created implicitly when grid items are given explicit placements that are out of bounds
+        /// of the columns explicitly created using `grid_template_columms`.
+        ///
+        /// <https://developer.mozilla.org/en-US/docs/Web/CSS/grid-template-columns>
+        grid_auto_columns: Raw(ReflectedValue),
+        /// The row in which a grid item starts and how many rows it spans.
+        ///
+        /// <https://developer.mozilla.org/en-US/docs/Web/CSS/grid-row>
+        grid_row: Raw(ReflectedValue),
+        /// The column in which a grid item starts and how many columns it spans.
+        ///
+        /// <https://developer.mozilla.org/en-US/docs/Web/CSS/grid-column>
+        grid_column: Raw(ReflectedValue),
     )
     + BinOps
     (
@@ -621,6 +783,12 @@ impl_script_newtype! {
     Debug +
     Methods
     (
+        ///flip the image along its x-axis
+        with_flip_x(self:) -> self,
+
+        ///flip the image along its y-axis
+        with_flip_y(self:) -> self,
+
     )
     + Fields
     (
@@ -835,7 +1003,7 @@ impl_script_newtype! {
     #[languages(on_feature(lua))]
     ///The maximum width and height of text. The text will wrap according to the specified size.
     ///Characters out of the bounds after wrapping will be truncated. Text is aligned according to the
-    ///specified `TextAlignment`.
+    ///specified [`TextAlignment`](crate::text::TextAlignment).
     ///
     ///Note: only characters that are completely out of the bounds will be truncated, so this is not a
     ///reliable limit if it is necessary to contain the text strictly in the bounds. Currently this
@@ -870,6 +1038,10 @@ impl_script_newtype! {
         ///Returns this [`Text`] with a new [`TextAlignment`].
         with_alignment(self:Wrapped(TextAlignment)) -> self,
 
+        ///Returns this [`Text`] with soft wrapping disabled.
+        ///Hard wrapping, where text contains an explicit linebreak such as the escape sequence `\n`, will still occur.
+        with_no_wrap(self:) -> self,
+
     )
     + Fields
     (
@@ -878,7 +1050,7 @@ impl_script_newtype! {
         /// Should not affect its position within a container.
         alignment: Wrapped(TextAlignment),
         /// How the text should linebreak when running out of the bounds determined by max_size
-        linebreak_behaviour: Raw(ReflectedValue),
+        linebreak_behavior: Raw(ReflectedValue),
     )
     + BinOps
     (
@@ -1420,7 +1592,7 @@ impl_script_newtype! {
     ///[`GlobalTransform`] is updated from [`Transform`] by systems in the system set
     ///[`TransformPropagate`](crate::TransformSystem::TransformPropagate).
     ///
-    ///This system runs during [`CoreSet::PostUpdate`](crate::CoreSet::PostUpdate). If you
+    ///This system runs during [`PostUpdate`](bevy_app::PostUpdate). If you
     ///update the [`Transform`] of an entity during this set or after, you will notice a 1 frame lag
     ///before the [`GlobalTransform`] is updated.
     ///
@@ -1460,10 +1632,20 @@ impl_script_newtype! {
 
         ///Returns this [`Transform`] with a new rotation so that [`Transform::forward`]
         ///points towards the `target` position and [`Transform::up`] points towards `up`.
+        ///
+        ///In some cases it's not possible to construct a rotation. Another axis will be picked in those cases:
+        ///* if `target` is the same as the transform translation, `Vec3::Z` is used instead
+        ///* if `up` is zero, `Vec3::Y` is used instead
+        ///* if the resulting forward direction is parallel with `up`, an orthogonal vector is used as the "right" direction
         looking_at(self:Wrapped(Vec3),Wrapped(Vec3)) -> self,
 
         ///Returns this [`Transform`] with a new rotation so that [`Transform::forward`]
         ///points in the given `direction` and [`Transform::up`] points towards `up`.
+        ///
+        ///In some cases it's not possible to construct a rotation. Another axis will be picked in those cases:
+        ///* if `direction` is zero, `Vec3::Z` is used instead
+        ///* if `up` is zero, `Vec3::Y` is used instead
+        ///* if `direction` is parallel with `up`, an orthogonal vector is used as the "right" direction
         looking_to(self:Wrapped(Vec3),Wrapped(Vec3)) -> self,
 
         ///Returns this [`Transform`] with a new translation.
@@ -1570,10 +1752,20 @@ impl_script_newtype! {
 
         ///Rotates this [`Transform`] so that [`Transform::forward`] points towards the `target` position,
         ///and [`Transform::up`] points towards `up`.
+        ///
+        ///In some cases it's not possible to construct a rotation. Another axis will be picked in those cases:
+        ///* if `target` is the same as the transtorm translation, `Vec3::Z` is used instead
+        ///* if `up` is zero, `Vec3::Y` is used instead
+        ///* if the resulting forward direction is parallel with `up`, an orthogonal vector is used as the "right" direction
         look_at(&mut self:Wrapped(Vec3),Wrapped(Vec3)),
 
         ///Rotates this [`Transform`] so that [`Transform::forward`] points in the given `direction`
         ///and [`Transform::up`] points towards `up`.
+        ///
+        ///In some cases it's not possible to construct a rotation. Another axis will be picked in those cases:
+        ///* if `direction` is zero, `Vec3::NEG_Z` is used instead
+        ///* if `up` is zero, `Vec3::Y` is used instead
+        ///* if `direction` is parallel with `up`, an orthogonal vector is used as the "right" direction
         look_to(&mut self:Wrapped(Vec3),Wrapped(Vec3)),
 
         ///Multiplies `self` with `transform` component by component, returning the
@@ -1647,8 +1839,8 @@ impl_script_newtype! {
     ///[`GlobalTransform`] is updated from [`Transform`] by systems in the system set
     ///[`TransformPropagate`](crate::TransformSystem::TransformPropagate).
     ///
-    ///This system runs during [`CoreSet::PostUpdate`](crate::CoreSet::PostUpdate). If you
-    ///update the [`Transform`] of an entity in this stage or after, you will notice a 1 frame lag
+    ///This system runs during [`PostUpdate`](bevy_app::PostUpdate). If you
+    ///update the [`Transform`] of an entity in this schedule or after, you will notice a 1 frame lag
     ///before the [`GlobalTransform`] is updated.
     ///
     ///# Examples
@@ -1676,9 +1868,9 @@ impl_script_newtype! {
         ///Returns the [`Transform`] `self` would have if it was a child of an entity
         ///with the `parent` [`GlobalTransform`].
         ///
-        ///This is useful if you want to "reparent" an `Entity`. Say you have an entity
-        ///`e1` that you want to turn into a child of `e2`, but you want `e1` to keep the
-        ///same global transform, even after re-parenting. You would use:
+        ///This is useful if you want to "reparent" an [`Entity`](bevy_ecs::entity::Entity).
+        ///Say you have an entity `e1` that you want to turn into a child of `e2`,
+        ///but you want `e1` to keep the same global transform, even after re-parenting. You would use:
         ///
         ///```rust
         ///# use bevy_transform::prelude::{GlobalTransform, Transform};
@@ -1750,8 +1942,8 @@ impl_script_newtype! {
     )
     + BinOps
     (
-        self Mul Wrapped(GlobalTransform) -> Wrapped(GlobalTransform),
         self Mul Wrapped(Transform) -> Wrapped(GlobalTransform),
+        self Mul Wrapped(GlobalTransform) -> Wrapped(GlobalTransform),
         self Mul Wrapped(Vec3) -> Wrapped(Vec3),
     )
     + UnaryOps
@@ -2186,6 +2378,8 @@ impl_script_newtype! {
         clear_color: Wrapped(ClearColorConfig),
         /// The depth clear operation to perform for the main 3d pass.
         depth_load_op: Wrapped(Camera3dDepthLoadOp),
+        /// The texture usages for the depth texture created for the main 3d pass.
+        depth_texture_usages: Raw(ReflectedValue),
     )
     + BinOps
     (
@@ -2372,7 +2566,7 @@ impl_script_newtype! {
     ///User indication of whether an entity is visible. Propagates down the entity hierarchy.
     ///
     ///If an entity is hidden in this way, all [`Children`] (and all of their children and so on) who
-    ///are set to `Inherited` will also be hidden.
+    ///are set to [`Inherited`](Self::Inherited) will also be hidden.
     ///
     ///This is done by the `visibility_propagate_system` which uses the entity hierarchy and
     ///`Visibility` to set the values of each entity's [`ComputedVisibility`] component.
@@ -2442,20 +2636,20 @@ impl_script_newtype! {
     (
         ///Whether this entity is visible to something this frame. This is true if and only if [`Self::is_visible_in_hierarchy`] and [`Self::is_visible_in_view`]
         ///are true. This is the canonical method to call to determine if an entity should be drawn.
-        ///This value is updated in [`CoreSet::PostUpdate`] by the [`VisibilitySystems::CheckVisibility`] system set.
-        ///Reading it during [`CoreSet::Update`] will yield the value from the previous frame.
+        ///This value is updated in [`PostUpdate`] by the [`VisibilitySystems::CheckVisibility`] system set.
+        ///Reading it during [`Update`](bevy_app::Update) will yield the value from the previous frame.
         is_visible(&self:) -> Raw(bool),
 
         ///Whether this entity is visible in the entity hierarchy, which is determined by the [`Visibility`] component.
         ///This takes into account "visibility inheritance". If any of this entity's ancestors (see [`Parent`]) are hidden, this entity
-        ///will be hidden as well. This value is updated in the [`VisibilitySystems::VisibilityPropagate`], which lives under the [`CoreSet::PostUpdate`] set.
+        ///will be hidden as well. This value is updated in the [`VisibilitySystems::VisibilityPropagate`], which lives in the [`PostUpdate`] schedule.
         is_visible_in_hierarchy(&self:) -> Raw(bool),
 
         ///Whether this entity is visible in _any_ view (Cameras, Lights, etc). Each entity type (and view type) should choose how to set this
         ///value. For cameras and drawn entities, this will take into account [`RenderLayers`].
         ///
-        ///This value is reset to `false` every frame in [`VisibilitySystems::VisibilityPropagate`] during [`CoreSet::PostUpdate`].
-        ///Each entity type then chooses how to set this field in the [`VisibilitySystems::CheckVisibility`] system set, under [`CoreSet::PostUpdate`].
+        ///This value is reset to `false` every frame in [`VisibilitySystems::VisibilityPropagate`] during [`PostUpdate`].
+        ///Each entity type then chooses how to set this field in the [`VisibilitySystems::CheckVisibility`] system set, in [`PostUpdate`].
         ///Meshes might use frustum culling to decide if they are visible in a view.
         ///Other entities might just set this to `true` every frame.
         is_visible_in_view(&self:) -> Raw(bool),
@@ -2600,6 +2794,29 @@ impl_script_newtype! {
         ///See also [`Color::hsl`].
         hsla(Raw(f32),Raw(f32),Raw(f32),Raw(f32)) -> Wrapped(Color),
 
+        ///New `Color` with LCH representation in sRGB colorspace.
+        ///
+        ///# Arguments
+        ///
+        ///* `lightness` - Lightness channel. [0.0, 1.5]
+        ///* `chroma` - Chroma channel. [0.0, 1.5]
+        ///* `hue` - Hue channel. [0.0, 360.0]
+        ///
+        ///See also [`Color::lcha`].
+        lch(Raw(f32),Raw(f32),Raw(f32)) -> Wrapped(Color),
+
+        ///New `Color` with LCH representation in sRGB colorspace.
+        ///
+        ///# Arguments
+        ///
+        ///* `lightness` - Lightness channel. [0.0, 1.5]
+        ///* `chroma` - Chroma channel. [0.0, 1.5]
+        ///* `hue` - Hue channel. [0.0, 360.0]
+        ///* `alpha` - Alpha channel. [0.0, 1.0]
+        ///
+        ///See also [`Color::lch`].
+        lcha(Raw(f32),Raw(f32),Raw(f32),Raw(f32)) -> Wrapped(Color),
+
         ///New `Color` from sRGB colorspace.
         ///
         ///# Arguments
@@ -2677,11 +2894,11 @@ impl_script_newtype! {
     )
     + BinOps
     (
-        self Add Wrapped(Color) -> Wrapped(Color),
         self Add Wrapped(Vec4) -> Wrapped(Color),
+        self Add Wrapped(Color) -> Wrapped(Color),
+        self Mul Wrapped(Vec3) -> Wrapped(Color),
         self Mul Raw(f32) -> Wrapped(Color),
         self Mul Wrapped(Vec4) -> Wrapped(Color),
-        self Mul Wrapped(Vec3) -> Wrapped(Color),
     )
     + UnaryOps
     (
@@ -2742,9 +2959,9 @@ impl_script_newtype! {
 }
 impl_script_newtype! {
     #[languages(on_feature(lua))]
-    ///A frustum defined by the 6 containing planes
-    ///Planes are ordered left, right, top, bottom, near, far
-    ///Normals point into the contained volume
+    ///A frustum made up of the 6 defining half spaces.
+    ///Half spaces are ordered left, right, top, bottom, near, far.
+    ///The normal vectors of the half spaces point towards the interior of the frustum.
     bevy_render::primitives::Frustum :
     Clone +
     Debug +
@@ -2753,10 +2970,11 @@ impl_script_newtype! {
         ///Returns a frustum derived from `view_projection`.
         from_view_projection(Wrapped(&Mat4)) -> self,
 
-        ///Returns a frustum derived from `view_projection`, but with a custom
-        ///far plane.
+        ///Returns a frustum derived from `view_projection`,
+        ///but with a custom far plane.
         from_view_projection_custom_far(Wrapped(&Mat4),Wrapped(&Vec3),Wrapped(&Vec3),Raw(f32)) -> self,
 
+        ///Checks if an Oriented Bounding Box (obb) intersects the frustum.
         intersects_obb(&self:Wrapped(&Aabb),Wrapped(&Mat4),Raw(bool),Raw(bool)) -> Raw(bool),
 
     )
@@ -2793,6 +3011,7 @@ impl_script_newtype! {
     ///```
     bevy_render::view::Msaa :
     Clone +
+    Debug +
     Methods
     (
         samples(&self:) -> Raw(u32),
@@ -2813,8 +3032,8 @@ impl_script_newtype! {
 }
 impl_script_newtype! {
     #[languages(on_feature(lua))]
-    ///The defining component for camera entities, storing information about how and what to render
-    ///through this camera.
+    ///The defining [`Component`] for camera entities,
+    ///storing information about how and what to render through this camera.
     ///
     ///The [`Camera`] component is added to an entity to define the properties of the viewpoint from
     ///which rendering occurs. It defines the position of the view to render, the projection method
@@ -2844,9 +3063,7 @@ impl_script_newtype! {
         /// The "target" that this camera will render to.
         target: Wrapped(RenderTarget),
         /// If this is set to `true`, the camera will use an intermediate "high dynamic range" render texture.
-        /// Warning: we are still working on this feature. If MSAA is enabled, there will be artifacts in
-        /// some cases. When rendering with WebGL, this will crash if MSAA is enabled.
-        /// See <https://github.com/bevyengine/bevy/pull/3425> for details.
+        /// This allows rendering with a wider range of lighting values.
         hdr: Raw(bool),
         /// If this is enabled, a previous camera exists that shares this camera's render target, and this camera has MSAA enabled, then the previous camera's
         /// outputs will be written to the intermediate multi-sampled render target textures for this camera. This enables cameras with MSAA enabled to
@@ -3349,7 +3566,7 @@ impl_script_newtype! {
         ///
         ///For valid results, `self` must _not_ be of length zero, nor very close to zero.
         ///
-        ///See also [`Self::try_normalize`] and [`Self::normalize_or_zero`].
+        ///See also [`Self::try_normalize()`] and [`Self::normalize_or_zero()`].
         ///
         ///Panics
         ///
@@ -3361,7 +3578,7 @@ impl_script_newtype! {
         ///In particular, if the input is zero (or very close to zero), or non-finite,
         ///the result of this operation will be zero.
         ///
-        ///See also [`Self::try_normalize`].
+        ///See also [`Self::try_normalize()`].
         normalize_or_zero(self:) -> self,
 
         ///Returns whether `self` is length `1.0` or not.
@@ -3423,6 +3640,10 @@ impl_script_newtype! {
         ///each element of `self`.
         ceil(self:) -> self,
 
+        ///Returns a vector containing the integer part each element of `self`. This means numbers are
+        ///always truncated towards zero.
+        trunc(self:) -> self,
+
         ///Returns a vector containing the fractional part of the vector, e.g. `self -
         ///self.floor()`.
         ///
@@ -3480,13 +3701,14 @@ impl_script_newtype! {
         mul_add(self:self,self) -> self,
 
         ///Creates a 2D vector containing `[angle.cos(), angle.sin()]`. This can be used in
-        ///conjunction with the `rotate` method, e.g. `Vec2::from_angle(PI).rotate(Vec2::Y)` will
-        ///create the vector [-1, 0] and rotate `Vec2::Y` around it returning `-Vec2::Y`.
+        ///conjunction with the [`rotate()`][Self::rotate()] method, e.g.
+        ///`Vec2::from_angle(PI).rotate(Vec2::Y)` will create the vector `[-1, 0]`
+        ///and rotate [`Vec2::Y`] around it returning `-Vec2::Y`.
         from_angle(Raw(f32)) -> self,
 
-        ///Returns the angle (in radians) between `self` and `rhs`.
+        ///Returns the angle (in radians) between `self` and `rhs` in the range `[-π, +π]`.
         ///
-        ///The input vectors do not need to be unit length however they must be non-zero.
+        ///The inputs do not need to be unit vectors however they must be non-zero.
         angle_between(self:self) -> Raw(f32),
 
         ///Returns a vector that is equal to `self` rotated by 90 degrees.
@@ -3518,18 +3740,18 @@ impl_script_newtype! {
     )
     + BinOps
     (
-        self Add self -> Wrapped(Vec2),
         self Add Raw(f32) -> Wrapped(Vec2),
         self Add Wrapped(Vec2) -> Wrapped(Vec2),
-        self Sub self -> Wrapped(Vec2),
-        self Sub Raw(f32) -> Wrapped(Vec2),
+        self Add self -> Wrapped(Vec2),
         self Sub Wrapped(Vec2) -> Wrapped(Vec2),
-        self Div self -> Wrapped(Vec2),
-        self Div Raw(f32) -> Wrapped(Vec2),
+        self Sub Raw(f32) -> Wrapped(Vec2),
+        self Sub self -> Wrapped(Vec2),
         self Div Wrapped(Vec2) -> Wrapped(Vec2),
-        self Mul self -> Wrapped(Vec2),
+        self Div Raw(f32) -> Wrapped(Vec2),
+        self Div self -> Wrapped(Vec2),
         self Mul Raw(f32) -> Wrapped(Vec2),
         self Mul Wrapped(Vec2) -> Wrapped(Vec2),
+        self Mul self -> Wrapped(Vec2),
         self Rem self -> Wrapped(Vec2),
         self Rem Raw(f32) -> Wrapped(Vec2),
         self Rem Wrapped(Vec2) -> Wrapped(Vec2),
@@ -3540,8 +3762,8 @@ impl_script_newtype! {
     )
     lua impl
     {
-        (MetaMethod::Index) => |_,s,idx: usize| {Ok(s.inner()?[idx])};
-        mut (MetaMethod::NewIndex) => |_,s,(idx,val): (usize,f32)| {s.val_mut(|s| Ok(s[idx] = val))?};
+        (MetaMethod::Index) => |_,s,idx: LuaIndex| {Ok(s.inner()?[*idx])};
+        mut (MetaMethod::NewIndex) => |_,s,(idx,val): (LuaIndex,f32)| {s.val_mut(|s| Ok(s[*idx] = val))?};
     }
 }
 impl_script_newtype! {
@@ -3570,7 +3792,7 @@ impl_script_newtype! {
 
         ///Creates a 2D vector from the `x` and `y` elements of `self`, discarding `z`.
         ///
-        ///Truncation may also be performed by using `self.xy()` or `Vec2::from()`.
+        ///Truncation may also be performed by using [`self.xy()`][crate::swizzles::Vec3Swizzles::xy()].
         truncate(self:) -> Wrapped(Vec2),
 
         ///Computes the dot product of `self` and `rhs`.
@@ -3707,7 +3929,7 @@ impl_script_newtype! {
         ///
         ///For valid results, `self` must _not_ be of length zero, nor very close to zero.
         ///
-        ///See also [`Self::try_normalize`] and [`Self::normalize_or_zero`].
+        ///See also [`Self::try_normalize()`] and [`Self::normalize_or_zero()`].
         ///
         ///Panics
         ///
@@ -3719,7 +3941,7 @@ impl_script_newtype! {
         ///In particular, if the input is zero (or very close to zero), or non-finite,
         ///the result of this operation will be zero.
         ///
-        ///See also [`Self::try_normalize`].
+        ///See also [`Self::try_normalize()`].
         normalize_or_zero(self:) -> self,
 
         ///Returns whether `self` is length `1.0` or not.
@@ -3781,6 +4003,10 @@ impl_script_newtype! {
         ///each element of `self`.
         ceil(self:) -> self,
 
+        ///Returns a vector containing the integer part each element of `self`. This means numbers are
+        ///always truncated towards zero.
+        trunc(self:) -> self,
+
         ///Returns a vector containing the fractional part of the vector, e.g. `self -
         ///self.floor()`.
         ///
@@ -3839,19 +4065,20 @@ impl_script_newtype! {
 
         ///Returns the angle (in radians) between two vectors.
         ///
-        ///The input vectors do not need to be unit length however they must be non-zero.
+        ///The inputs do not need to be unit vectors however they must be non-zero.
         angle_between(self:self) -> Raw(f32),
 
         ///Returns some vector that is orthogonal to the given one.
         ///
         ///The input vector must be finite and non-zero.
         ///
-        ///The output vector is not necessarily unit-length.
-        ///For that use [`Self::any_orthonormal_vector`] instead.
+        ///The output vector is not necessarily unit length. For that use
+        ///[`Self::any_orthonormal_vector()`] instead.
         any_orthogonal_vector(&self:) -> self,
 
-        ///Returns any unit-length vector that is orthogonal to the given one.
-        ///The input vector must be finite and non-zero.
+        ///Returns any unit vector that is orthogonal to the given one.
+        ///
+        ///The input vector must be unit length.
         ///
         ///# Panics
         ///
@@ -3877,20 +4104,20 @@ impl_script_newtype! {
     + BinOps
     (
         self Add self -> Wrapped(Vec3),
-        self Add Raw(f32) -> Wrapped(Vec3),
         self Add Wrapped(Vec3) -> Wrapped(Vec3),
-        self Sub self -> Wrapped(Vec3),
+        self Add Raw(f32) -> Wrapped(Vec3),
         self Sub Raw(f32) -> Wrapped(Vec3),
+        self Sub self -> Wrapped(Vec3),
         self Sub Wrapped(Vec3) -> Wrapped(Vec3),
-        self Div self -> Wrapped(Vec3),
-        self Div Raw(f32) -> Wrapped(Vec3),
         self Div Wrapped(Vec3) -> Wrapped(Vec3),
+        self Div Raw(f32) -> Wrapped(Vec3),
+        self Div self -> Wrapped(Vec3),
         self Mul self -> Wrapped(Vec3),
-        self Mul Raw(f32) -> Wrapped(Vec3),
         self Mul Wrapped(Vec3) -> Wrapped(Vec3),
+        self Mul Raw(f32) -> Wrapped(Vec3),
         self Rem self -> Wrapped(Vec3),
-        self Rem Raw(f32) -> Wrapped(Vec3),
         self Rem Wrapped(Vec3) -> Wrapped(Vec3),
+        self Rem Raw(f32) -> Wrapped(Vec3),
     )
     + UnaryOps
     (
@@ -3898,18 +4125,21 @@ impl_script_newtype! {
     )
     lua impl
     {
-        (MetaMethod::Index) => |_,s,idx: usize| {Ok(s.inner()?[idx])};
-        mut (MetaMethod::NewIndex) => |_,s,(idx,val): (usize,f32)| {s.val_mut(|s| Ok(s[idx] = val))?};
+        (MetaMethod::Index) => |_,s,idx: LuaIndex| {Ok(s.inner()?[*idx])};
+        mut (MetaMethod::NewIndex) => |_,s,(idx,val): (LuaIndex,f32)| {s.val_mut(|s| Ok(s[*idx] = val))?};
     }
 }
 impl_script_newtype! {
     #[languages(on_feature(lua))]
-    ///A 3-dimensional vector with SIMD support.
+    ///A 3-dimensional vector.
     ///
-    ///This type is 16 byte aligned. A SIMD vector type is used for storage on supported platforms for
-    ///better performance than the `Vec3` type.
+    ///SIMD vector types are used for storage on supported platforms for better
+    ///performance than the [`Vec3`] type.
     ///
-    ///It is possible to convert between `Vec3` and `Vec3A` types using `From` trait implementations.
+    ///It is possible to convert between [`Vec3`] and [`Vec3A`] types using [`From`]
+    ///or [`Into`] trait implementations.
+    ///
+    ///This type is 16 byte aligned.
     glam::f32::Vec3A :
     Clone +
     Debug +
@@ -3933,7 +4163,7 @@ impl_script_newtype! {
 
         ///Creates a 2D vector from the `x` and `y` elements of `self`, discarding `z`.
         ///
-        ///Truncation may also be performed by using `self.xy()` or `Vec2::from()`.
+        ///Truncation may also be performed by using [`self.xy()`][crate::swizzles::Vec3Swizzles::xy()].
         truncate(self:) -> Wrapped(Vec2),
 
         ///Computes the dot product of `self` and `rhs`.
@@ -4070,7 +4300,7 @@ impl_script_newtype! {
         ///
         ///For valid results, `self` must _not_ be of length zero, nor very close to zero.
         ///
-        ///See also [`Self::try_normalize`] and [`Self::normalize_or_zero`].
+        ///See also [`Self::try_normalize()`] and [`Self::normalize_or_zero()`].
         ///
         ///Panics
         ///
@@ -4082,7 +4312,7 @@ impl_script_newtype! {
         ///In particular, if the input is zero (or very close to zero), or non-finite,
         ///the result of this operation will be zero.
         ///
-        ///See also [`Self::try_normalize`].
+        ///See also [`Self::try_normalize()`].
         normalize_or_zero(self:) -> self,
 
         ///Returns whether `self` is length `1.0` or not.
@@ -4144,6 +4374,10 @@ impl_script_newtype! {
         ///each element of `self`.
         ceil(self:) -> self,
 
+        ///Returns a vector containing the integer part each element of `self`. This means numbers are
+        ///always truncated towards zero.
+        trunc(self:) -> self,
+
         ///Returns a vector containing the fractional part of the vector, e.g. `self -
         ///self.floor()`.
         ///
@@ -4202,19 +4436,20 @@ impl_script_newtype! {
 
         ///Returns the angle (in radians) between two vectors.
         ///
-        ///The input vectors do not need to be unit length however they must be non-zero.
+        ///The inputs do not need to be unit vectors however they must be non-zero.
         angle_between(self:self) -> Raw(f32),
 
         ///Returns some vector that is orthogonal to the given one.
         ///
         ///The input vector must be finite and non-zero.
         ///
-        ///The output vector is not necessarily unit-length.
-        ///For that use [`Self::any_orthonormal_vector`] instead.
+        ///The output vector is not necessarily unit length. For that use
+        ///[`Self::any_orthonormal_vector()`] instead.
         any_orthogonal_vector(&self:) -> self,
 
-        ///Returns any unit-length vector that is orthogonal to the given one.
-        ///The input vector must be finite and non-zero.
+        ///Returns any unit vector that is orthogonal to the given one.
+        ///
+        ///The input vector must be unit length.
         ///
         ///# Panics
         ///
@@ -4236,21 +4471,21 @@ impl_script_newtype! {
     )
     + BinOps
     (
-        self Add self -> Wrapped(Vec3A),
-        self Add Raw(f32) -> Wrapped(Vec3A),
         self Add Wrapped(Vec3A) -> Wrapped(Vec3A),
+        self Add Raw(f32) -> Wrapped(Vec3A),
+        self Add self -> Wrapped(Vec3A),
+        self Sub Wrapped(Vec3A) -> Wrapped(Vec3A),
         self Sub self -> Wrapped(Vec3A),
         self Sub Raw(f32) -> Wrapped(Vec3A),
-        self Sub Wrapped(Vec3A) -> Wrapped(Vec3A),
-        self Div self -> Wrapped(Vec3A),
         self Div Raw(f32) -> Wrapped(Vec3A),
+        self Div self -> Wrapped(Vec3A),
         self Div Wrapped(Vec3A) -> Wrapped(Vec3A),
         self Mul self -> Wrapped(Vec3A),
-        self Mul Raw(f32) -> Wrapped(Vec3A),
         self Mul Wrapped(Vec3A) -> Wrapped(Vec3A),
-        self Rem self -> Wrapped(Vec3A),
-        self Rem Raw(f32) -> Wrapped(Vec3A),
+        self Mul Raw(f32) -> Wrapped(Vec3A),
         self Rem Wrapped(Vec3A) -> Wrapped(Vec3A),
+        self Rem Raw(f32) -> Wrapped(Vec3A),
+        self Rem self -> Wrapped(Vec3A),
     )
     + UnaryOps
     (
@@ -4258,15 +4493,17 @@ impl_script_newtype! {
     )
     lua impl
     {
-        (MetaMethod::Index) => |_,s,idx: usize| {Ok(s.inner()?[idx])};
-        mut (MetaMethod::NewIndex) => |_,s,(idx,val): (usize,f32)| {s.val_mut(|s| Ok(s[idx] = val))?};
+        (MetaMethod::Index) => |_,s,idx: LuaIndex| {Ok(s.inner()?[*idx])};
+        mut (MetaMethod::NewIndex) => |_,s,(idx,val): (LuaIndex,f32)| {s.val_mut(|s| Ok(s[*idx] = val))?};
     }
 }
 impl_script_newtype! {
     #[languages(on_feature(lua))]
-    ///A 4-dimensional vector with SIMD support.
+    ///A 4-dimensional vector.
     ///
-    ///This type uses 16 byte aligned SIMD vector type for storage.
+    ///SIMD vector types are used for storage on supported platforms.
+    ///
+    ///This type is 16 byte aligned.
     glam::f32::Vec4 :
     Clone +
     Debug +
@@ -4287,9 +4524,9 @@ impl_script_newtype! {
 
         ///Creates a 2D vector from the `x`, `y` and `z` elements of `self`, discarding `w`.
         ///
-        ///Truncation to `Vec3` may also be performed by using `self.xyz()` or `Vec3::from()`.
+        ///Truncation to [`Vec3`] may also be performed by using [`self.xyz()`][crate::swizzles::Vec4Swizzles::xyz()].
         ///
-        ///To truncate to `Vec3A` use `Vec3A::from()`.
+        ///To truncate to [`Vec3A`] use [`Vec3A::from()`].
         truncate(self:) -> Wrapped(Vec3),
 
         ///Computes the dot product of `self` and `rhs`.
@@ -4423,7 +4660,7 @@ impl_script_newtype! {
         ///
         ///For valid results, `self` must _not_ be of length zero, nor very close to zero.
         ///
-        ///See also [`Self::try_normalize`] and [`Self::normalize_or_zero`].
+        ///See also [`Self::try_normalize()`] and [`Self::normalize_or_zero()`].
         ///
         ///Panics
         ///
@@ -4435,7 +4672,7 @@ impl_script_newtype! {
         ///In particular, if the input is zero (or very close to zero), or non-finite,
         ///the result of this operation will be zero.
         ///
-        ///See also [`Self::try_normalize`].
+        ///See also [`Self::try_normalize()`].
         normalize_or_zero(self:) -> self,
 
         ///Returns whether `self` is length `1.0` or not.
@@ -4496,6 +4733,10 @@ impl_script_newtype! {
         ///Returns a vector containing the smallest integer greater than or equal to a number for
         ///each element of `self`.
         ceil(self:) -> self,
+
+        ///Returns a vector containing the integer part each element of `self`. This means numbers are
+        ///always truncated towards zero.
+        trunc(self:) -> self,
 
         ///Returns a vector containing the fractional part of the vector, e.g. `self -
         ///self.floor()`.
@@ -4568,21 +4809,21 @@ impl_script_newtype! {
     )
     + BinOps
     (
-        self Add self -> Wrapped(Vec4),
         self Add Raw(f32) -> Wrapped(Vec4),
         self Add Wrapped(Vec4) -> Wrapped(Vec4),
-        self Sub self -> Wrapped(Vec4),
+        self Add self -> Wrapped(Vec4),
         self Sub Raw(f32) -> Wrapped(Vec4),
+        self Sub self -> Wrapped(Vec4),
         self Sub Wrapped(Vec4) -> Wrapped(Vec4),
-        self Div self -> Wrapped(Vec4),
         self Div Raw(f32) -> Wrapped(Vec4),
+        self Div self -> Wrapped(Vec4),
         self Div Wrapped(Vec4) -> Wrapped(Vec4),
-        self Mul self -> Wrapped(Vec4),
         self Mul Raw(f32) -> Wrapped(Vec4),
+        self Mul self -> Wrapped(Vec4),
         self Mul Wrapped(Vec4) -> Wrapped(Vec4),
         self Rem self -> Wrapped(Vec4),
-        self Rem Raw(f32) -> Wrapped(Vec4),
         self Rem Wrapped(Vec4) -> Wrapped(Vec4),
+        self Rem Raw(f32) -> Wrapped(Vec4),
     )
     + UnaryOps
     (
@@ -4590,8 +4831,8 @@ impl_script_newtype! {
     )
     lua impl
     {
-        (MetaMethod::Index) => |_,s,idx: usize| {Ok(s.inner()?[idx])};
-        mut (MetaMethod::NewIndex) => |_,s,(idx,val): (usize,f32)| {s.val_mut(|s| Ok(s[idx] = val))?};
+        (MetaMethod::Index) => |_,s,idx: LuaIndex| {Ok(s.inner()?[*idx])};
+        mut (MetaMethod::NewIndex) => |_,s,(idx,val): (LuaIndex,f32)| {s.val_mut(|s| Ok(s[*idx] = val))?};
     }
 }
 impl_script_newtype! {
@@ -4619,6 +4860,16 @@ impl_script_newtype! {
 
         ///Returns true if all the elements are true, false otherwise.
         all(self:) -> Raw(bool),
+
+        ///Tests the value at `index`.
+        ///
+        ///Panics if `index` is greater than 1.
+        test(&self:Raw(usize)) -> Raw(bool),
+
+        ///Sets the element at `index`.
+        ///
+        ///Panics if `index` is greater than 1.
+        set(&mut self:Raw(usize),Raw(bool)),
 
     )
     + Fields
@@ -4661,6 +4912,16 @@ impl_script_newtype! {
 
         ///Returns true if all the elements are true, false otherwise.
         all(self:) -> Raw(bool),
+
+        ///Tests the value at `index`.
+        ///
+        ///Panics if `index` is greater than 2.
+        test(&self:Raw(usize)) -> Raw(bool),
+
+        ///Sets the element at `index`.
+        ///
+        ///Panics if `index` is greater than 2.
+        set(&mut self:Raw(usize),Raw(bool)),
 
     )
     + Fields
@@ -4705,6 +4966,16 @@ impl_script_newtype! {
         ///Returns true if all the elements are true, false otherwise.
         all(self:) -> Raw(bool),
 
+        ///Tests the value at `index`.
+        ///
+        ///Panics if `index` is greater than 3.
+        test(&self:Raw(usize)) -> Raw(bool),
+
+        ///Sets the element at `index`.
+        ///
+        ///Panics if `index` is greater than 3.
+        set(&mut self:Raw(usize),Raw(bool)),
+
     )
     + Fields
     (
@@ -4727,8 +4998,7 @@ impl_script_newtype! {
     #[languages(on_feature(lua))]
     ///A 3-dimensional SIMD vector mask.
     ///
-    ///This type is 16 byte aligned and is backed by a SIMD vector. If SIMD is not available
-    ///`BVec3A` will be a type alias for `BVec3`.
+    ///This type is 16 byte aligned.
     glam::bool::BVec3A :
     Clone +
     Debug +
@@ -4752,6 +5022,16 @@ impl_script_newtype! {
         ///Returns true if all the elements are true, false otherwise.
         all(self:) -> Raw(bool),
 
+        ///Tests the value at `index`.
+        ///
+        ///Panics if `index` is greater than 2.
+        test(&self:Raw(usize)) -> Raw(bool),
+
+        ///Sets the element at `index`.
+        ///
+        ///Panics if `index` is greater than 2.
+        set(&mut self:Raw(usize),Raw(bool)),
+
     )
     + Fields
     (
@@ -4770,8 +5050,7 @@ impl_script_newtype! {
     #[languages(on_feature(lua))]
     ///A 4-dimensional SIMD vector mask.
     ///
-    ///This type is 16 byte aligned and is backed by a SIMD vector. If SIMD is not available
-    ///`BVec4A` will be a type alias for `BVec4`.
+    ///This type is 16 byte aligned.
     glam::bool::BVec4A :
     Clone +
     Debug +
@@ -4794,6 +5073,16 @@ impl_script_newtype! {
 
         ///Returns true if all the elements are true, false otherwise.
         all(self:) -> Raw(bool),
+
+        ///Tests the value at `index`.
+        ///
+        ///Panics if `index` is greater than 3.
+        test(&self:Raw(usize)) -> Raw(bool),
+
+        ///Sets the element at `index`.
+        ///
+        ///Panics if `index` is greater than 3.
+        set(&mut self:Raw(usize),Raw(bool)),
 
     )
     + Fields
@@ -4964,7 +5253,7 @@ impl_script_newtype! {
         ///
         ///For valid results, `self` must _not_ be of length zero, nor very close to zero.
         ///
-        ///See also [`Self::try_normalize`] and [`Self::normalize_or_zero`].
+        ///See also [`Self::try_normalize()`] and [`Self::normalize_or_zero()`].
         ///
         ///Panics
         ///
@@ -4976,7 +5265,7 @@ impl_script_newtype! {
         ///In particular, if the input is zero (or very close to zero), or non-finite,
         ///the result of this operation will be zero.
         ///
-        ///See also [`Self::try_normalize`].
+        ///See also [`Self::try_normalize()`].
         normalize_or_zero(self:) -> self,
 
         ///Returns whether `self` is length `1.0` or not.
@@ -5038,6 +5327,10 @@ impl_script_newtype! {
         ///each element of `self`.
         ceil(self:) -> self,
 
+        ///Returns a vector containing the integer part each element of `self`. This means numbers are
+        ///always truncated towards zero.
+        trunc(self:) -> self,
+
         ///Returns a vector containing the fractional part of the vector, e.g. `self -
         ///self.floor()`.
         ///
@@ -5095,13 +5388,14 @@ impl_script_newtype! {
         mul_add(self:self,self) -> self,
 
         ///Creates a 2D vector containing `[angle.cos(), angle.sin()]`. This can be used in
-        ///conjunction with the `rotate` method, e.g. `Vec2::from_angle(PI).rotate(Vec2::Y)` will
-        ///create the vector [-1, 0] and rotate `Vec2::Y` around it returning `-Vec2::Y`.
+        ///conjunction with the [`rotate()`][Self::rotate()] method, e.g.
+        ///`DVec2::from_angle(PI).rotate(DVec2::Y)` will create the vector `[-1, 0]`
+        ///and rotate [`DVec2::Y`] around it returning `-DVec2::Y`.
         from_angle(Raw(f64)) -> self,
 
-        ///Returns the angle (in radians) between `self` and `rhs`.
+        ///Returns the angle (in radians) between `self` and `rhs` in the range `[-π, +π]`.
         ///
-        ///The input vectors do not need to be unit length however they must be non-zero.
+        ///The inputs do not need to be unit vectors however they must be non-zero.
         angle_between(self:self) -> Raw(f64),
 
         ///Returns a vector that is equal to `self` rotated by 90 degrees.
@@ -5136,15 +5430,15 @@ impl_script_newtype! {
         self Add self -> Wrapped(DVec2),
         self Add Raw(f64) -> Wrapped(DVec2),
         self Add Wrapped(DVec2) -> Wrapped(DVec2),
-        self Sub self -> Wrapped(DVec2),
         self Sub Raw(f64) -> Wrapped(DVec2),
         self Sub Wrapped(DVec2) -> Wrapped(DVec2),
+        self Sub self -> Wrapped(DVec2),
         self Div self -> Wrapped(DVec2),
-        self Div Raw(f64) -> Wrapped(DVec2),
         self Div Wrapped(DVec2) -> Wrapped(DVec2),
+        self Div Raw(f64) -> Wrapped(DVec2),
+        self Mul Wrapped(DVec2) -> Wrapped(DVec2),
         self Mul self -> Wrapped(DVec2),
         self Mul Raw(f64) -> Wrapped(DVec2),
-        self Mul Wrapped(DVec2) -> Wrapped(DVec2),
         self Rem self -> Wrapped(DVec2),
         self Rem Raw(f64) -> Wrapped(DVec2),
         self Rem Wrapped(DVec2) -> Wrapped(DVec2),
@@ -5155,8 +5449,8 @@ impl_script_newtype! {
     )
     lua impl
     {
-        (MetaMethod::Index) => |_,s,idx: usize| {Ok(s.inner()?[idx])};
-        mut (MetaMethod::NewIndex) => |_,s,(idx,val): (usize,f64)| {s.val_mut(|s| Ok(s[idx] = val))?};
+        (MetaMethod::Index) => |_,s,idx: LuaIndex| {Ok(s.inner()?[*idx])};
+        mut (MetaMethod::NewIndex) => |_,s,(idx,val): (LuaIndex,f64)| {s.val_mut(|s| Ok(s[*idx] = val))?};
     }
 }
 impl_script_newtype! {
@@ -5185,7 +5479,7 @@ impl_script_newtype! {
 
         ///Creates a 2D vector from the `x` and `y` elements of `self`, discarding `z`.
         ///
-        ///Truncation may also be performed by using `self.xy()` or `DVec2::from()`.
+        ///Truncation may also be performed by using [`self.xy()`][crate::swizzles::Vec3Swizzles::xy()].
         truncate(self:) -> Wrapped(DVec2),
 
         ///Computes the dot product of `self` and `rhs`.
@@ -5322,7 +5616,7 @@ impl_script_newtype! {
         ///
         ///For valid results, `self` must _not_ be of length zero, nor very close to zero.
         ///
-        ///See also [`Self::try_normalize`] and [`Self::normalize_or_zero`].
+        ///See also [`Self::try_normalize()`] and [`Self::normalize_or_zero()`].
         ///
         ///Panics
         ///
@@ -5334,7 +5628,7 @@ impl_script_newtype! {
         ///In particular, if the input is zero (or very close to zero), or non-finite,
         ///the result of this operation will be zero.
         ///
-        ///See also [`Self::try_normalize`].
+        ///See also [`Self::try_normalize()`].
         normalize_or_zero(self:) -> self,
 
         ///Returns whether `self` is length `1.0` or not.
@@ -5396,6 +5690,10 @@ impl_script_newtype! {
         ///each element of `self`.
         ceil(self:) -> self,
 
+        ///Returns a vector containing the integer part each element of `self`. This means numbers are
+        ///always truncated towards zero.
+        trunc(self:) -> self,
+
         ///Returns a vector containing the fractional part of the vector, e.g. `self -
         ///self.floor()`.
         ///
@@ -5454,19 +5752,20 @@ impl_script_newtype! {
 
         ///Returns the angle (in radians) between two vectors.
         ///
-        ///The input vectors do not need to be unit length however they must be non-zero.
+        ///The inputs do not need to be unit vectors however they must be non-zero.
         angle_between(self:self) -> Raw(f64),
 
         ///Returns some vector that is orthogonal to the given one.
         ///
         ///The input vector must be finite and non-zero.
         ///
-        ///The output vector is not necessarily unit-length.
-        ///For that use [`Self::any_orthonormal_vector`] instead.
+        ///The output vector is not necessarily unit length. For that use
+        ///[`Self::any_orthonormal_vector()`] instead.
         any_orthogonal_vector(&self:) -> self,
 
-        ///Returns any unit-length vector that is orthogonal to the given one.
-        ///The input vector must be finite and non-zero.
+        ///Returns any unit vector that is orthogonal to the given one.
+        ///
+        ///The input vector must be unit length.
         ///
         ///# Panics
         ///
@@ -5494,20 +5793,20 @@ impl_script_newtype! {
     )
     + BinOps
     (
-        self Add self -> Wrapped(DVec3),
         self Add Raw(f64) -> Wrapped(DVec3),
         self Add Wrapped(DVec3) -> Wrapped(DVec3),
+        self Add self -> Wrapped(DVec3),
+        self Sub Wrapped(DVec3) -> Wrapped(DVec3),
         self Sub self -> Wrapped(DVec3),
         self Sub Raw(f64) -> Wrapped(DVec3),
-        self Sub Wrapped(DVec3) -> Wrapped(DVec3),
-        self Div self -> Wrapped(DVec3),
         self Div Raw(f64) -> Wrapped(DVec3),
         self Div Wrapped(DVec3) -> Wrapped(DVec3),
-        self Mul self -> Wrapped(DVec3),
+        self Div self -> Wrapped(DVec3),
         self Mul Raw(f64) -> Wrapped(DVec3),
+        self Mul self -> Wrapped(DVec3),
         self Mul Wrapped(DVec3) -> Wrapped(DVec3),
-        self Rem self -> Wrapped(DVec3),
         self Rem Raw(f64) -> Wrapped(DVec3),
+        self Rem self -> Wrapped(DVec3),
         self Rem Wrapped(DVec3) -> Wrapped(DVec3),
     )
     + UnaryOps
@@ -5516,8 +5815,8 @@ impl_script_newtype! {
     )
     lua impl
     {
-        (MetaMethod::Index) => |_,s,idx: usize| {Ok(s.inner()?[idx])};
-        mut (MetaMethod::NewIndex) => |_,s,(idx,val): (usize,f64)| {s.val_mut(|s| Ok(s[idx] = val))?};
+        (MetaMethod::Index) => |_,s,idx: LuaIndex| {Ok(s.inner()?[*idx])};
+        mut (MetaMethod::NewIndex) => |_,s,(idx,val): (LuaIndex,f64)| {s.val_mut(|s| Ok(s[*idx] = val))?};
     }
 }
 impl_script_newtype! {
@@ -5543,7 +5842,7 @@ impl_script_newtype! {
 
         ///Creates a 2D vector from the `x`, `y` and `z` elements of `self`, discarding `w`.
         ///
-        ///Truncation to `DVec3` may also be performed by using `self.xyz()` or `DVec3::from()`.
+        ///Truncation to [`DVec3`] may also be performed by using [`self.xyz()`][crate::swizzles::Vec4Swizzles::xyz()].
         truncate(self:) -> Wrapped(DVec3),
 
         ///Computes the dot product of `self` and `rhs`.
@@ -5677,7 +5976,7 @@ impl_script_newtype! {
         ///
         ///For valid results, `self` must _not_ be of length zero, nor very close to zero.
         ///
-        ///See also [`Self::try_normalize`] and [`Self::normalize_or_zero`].
+        ///See also [`Self::try_normalize()`] and [`Self::normalize_or_zero()`].
         ///
         ///Panics
         ///
@@ -5689,7 +5988,7 @@ impl_script_newtype! {
         ///In particular, if the input is zero (or very close to zero), or non-finite,
         ///the result of this operation will be zero.
         ///
-        ///See also [`Self::try_normalize`].
+        ///See also [`Self::try_normalize()`].
         normalize_or_zero(self:) -> self,
 
         ///Returns whether `self` is length `1.0` or not.
@@ -5750,6 +6049,10 @@ impl_script_newtype! {
         ///Returns a vector containing the smallest integer greater than or equal to a number for
         ///each element of `self`.
         ceil(self:) -> self,
+
+        ///Returns a vector containing the integer part each element of `self`. This means numbers are
+        ///always truncated towards zero.
+        trunc(self:) -> self,
 
         ///Returns a vector containing the fractional part of the vector, e.g. `self -
         ///self.floor()`.
@@ -5826,20 +6129,20 @@ impl_script_newtype! {
     )
     + BinOps
     (
-        self Add self -> Wrapped(DVec4),
         self Add Raw(f64) -> Wrapped(DVec4),
+        self Add self -> Wrapped(DVec4),
         self Add Wrapped(DVec4) -> Wrapped(DVec4),
-        self Sub self -> Wrapped(DVec4),
         self Sub Raw(f64) -> Wrapped(DVec4),
         self Sub Wrapped(DVec4) -> Wrapped(DVec4),
+        self Sub self -> Wrapped(DVec4),
+        self Div Wrapped(DVec4) -> Wrapped(DVec4),
         self Div self -> Wrapped(DVec4),
         self Div Raw(f64) -> Wrapped(DVec4),
-        self Div Wrapped(DVec4) -> Wrapped(DVec4),
-        self Mul self -> Wrapped(DVec4),
-        self Mul Raw(f64) -> Wrapped(DVec4),
         self Mul Wrapped(DVec4) -> Wrapped(DVec4),
-        self Rem self -> Wrapped(DVec4),
+        self Mul Raw(f64) -> Wrapped(DVec4),
+        self Mul self -> Wrapped(DVec4),
         self Rem Raw(f64) -> Wrapped(DVec4),
+        self Rem self -> Wrapped(DVec4),
         self Rem Wrapped(DVec4) -> Wrapped(DVec4),
     )
     + UnaryOps
@@ -5848,8 +6151,8 @@ impl_script_newtype! {
     )
     lua impl
     {
-        (MetaMethod::Index) => |_,s,idx: usize| {Ok(s.inner()?[idx])};
-        mut (MetaMethod::NewIndex) => |_,s,(idx,val): (usize,f64)| {s.val_mut(|s| Ok(s[idx] = val))?};
+        (MetaMethod::Index) => |_,s,idx: LuaIndex| {Ok(s.inner()?[*idx])};
+        mut (MetaMethod::NewIndex) => |_,s,(idx,val): (LuaIndex,f64)| {s.val_mut(|s| Ok(s[*idx] = val))?};
     }
 }
 impl_script_newtype! {
@@ -5963,14 +6266,17 @@ impl_script_newtype! {
         /// - `-1` if the number is negative
         signum(self:) -> self,
 
-        ///Returns a vector with signs of `rhs` and the magnitudes of `self`.
-        copysign(self:self) -> self,
-
         ///Returns a bitmask with the lowest 2 bits set to the sign bits from the elements of `self`.
         ///
         ///A negative element results in a `1` bit and a positive element in a `0` bit.  Element `x` goes
         ///into the first lowest bit, element `y` into the second, etc.
         is_negative_bitmask(self:) -> Raw(u32),
+
+        ///Computes the squared length of `self`.
+        length_squared(self:) -> Raw(i32),
+
+        ///Compute the squared euclidean distance between two points in space.
+        distance_squared(self:self) -> Raw(i32),
 
         ///Returns a vector that is equal to `self` rotated by 90 degrees.
         perp(self:) -> self,
@@ -6002,17 +6308,17 @@ impl_script_newtype! {
     + BinOps
     (
         self Add self -> Wrapped(IVec2),
-        self Add Raw(i32) -> Wrapped(IVec2),
         self Add Wrapped(IVec2) -> Wrapped(IVec2),
-        self Sub self -> Wrapped(IVec2),
-        self Sub Raw(i32) -> Wrapped(IVec2),
+        self Add Raw(i32) -> Wrapped(IVec2),
         self Sub Wrapped(IVec2) -> Wrapped(IVec2),
-        self Div self -> Wrapped(IVec2),
+        self Sub Raw(i32) -> Wrapped(IVec2),
+        self Sub self -> Wrapped(IVec2),
         self Div Raw(i32) -> Wrapped(IVec2),
         self Div Wrapped(IVec2) -> Wrapped(IVec2),
+        self Div self -> Wrapped(IVec2),
         self Mul self -> Wrapped(IVec2),
-        self Mul Raw(i32) -> Wrapped(IVec2),
         self Mul Wrapped(IVec2) -> Wrapped(IVec2),
+        self Mul Raw(i32) -> Wrapped(IVec2),
         self Rem self -> Wrapped(IVec2),
         self Rem Raw(i32) -> Wrapped(IVec2),
         self Rem Wrapped(IVec2) -> Wrapped(IVec2),
@@ -6023,8 +6329,8 @@ impl_script_newtype! {
     )
     lua impl
     {
-        (MetaMethod::Index) => |_,s,idx: usize| {Ok(s.inner()?[idx])};
-        mut (MetaMethod::NewIndex) => |_,s,(idx,val): (usize,i32)| {s.val_mut(|s| Ok(s[idx] = val))?};
+        (MetaMethod::Index) => |_,s,idx: LuaIndex| {Ok(s.inner()?[*idx])};
+        mut (MetaMethod::NewIndex) => |_,s,(idx,val): (LuaIndex,i32)| {s.val_mut(|s| Ok(s[*idx] = val))?};
     }
 }
 impl_script_newtype! {
@@ -6053,7 +6359,7 @@ impl_script_newtype! {
 
         ///Creates a 2D vector from the `x` and `y` elements of `self`, discarding `z`.
         ///
-        ///Truncation may also be performed by using `self.xy()` or `IVec2::from()`.
+        ///Truncation may also be performed by using [`self.xy()`][crate::swizzles::Vec3Swizzles::xy()].
         truncate(self:) -> Wrapped(IVec2),
 
         ///Computes the dot product of `self` and `rhs`.
@@ -6146,14 +6452,17 @@ impl_script_newtype! {
         /// - `-1` if the number is negative
         signum(self:) -> self,
 
-        ///Returns a vector with signs of `rhs` and the magnitudes of `self`.
-        copysign(self:self) -> self,
-
         ///Returns a bitmask with the lowest 3 bits set to the sign bits from the elements of `self`.
         ///
         ///A negative element results in a `1` bit and a positive element in a `0` bit.  Element `x` goes
         ///into the first lowest bit, element `y` into the second, etc.
         is_negative_bitmask(self:) -> Raw(u32),
+
+        ///Computes the squared length of `self`.
+        length_squared(self:) -> Raw(i32),
+
+        ///Compute the squared euclidean distance between two points in space.
+        distance_squared(self:self) -> Raw(i32),
 
         ///Casts all elements of `self` to `f32`.
         as_vec3(&self:) -> Wrapped(Vec3),
@@ -6176,21 +6485,21 @@ impl_script_newtype! {
     )
     + BinOps
     (
-        self Add self -> Wrapped(IVec3),
         self Add Raw(i32) -> Wrapped(IVec3),
         self Add Wrapped(IVec3) -> Wrapped(IVec3),
-        self Sub self -> Wrapped(IVec3),
+        self Add self -> Wrapped(IVec3),
         self Sub Raw(i32) -> Wrapped(IVec3),
+        self Sub self -> Wrapped(IVec3),
         self Sub Wrapped(IVec3) -> Wrapped(IVec3),
-        self Div self -> Wrapped(IVec3),
         self Div Raw(i32) -> Wrapped(IVec3),
+        self Div self -> Wrapped(IVec3),
         self Div Wrapped(IVec3) -> Wrapped(IVec3),
+        self Mul Wrapped(IVec3) -> Wrapped(IVec3),
         self Mul self -> Wrapped(IVec3),
         self Mul Raw(i32) -> Wrapped(IVec3),
-        self Mul Wrapped(IVec3) -> Wrapped(IVec3),
-        self Rem self -> Wrapped(IVec3),
         self Rem Raw(i32) -> Wrapped(IVec3),
         self Rem Wrapped(IVec3) -> Wrapped(IVec3),
+        self Rem self -> Wrapped(IVec3),
     )
     + UnaryOps
     (
@@ -6198,8 +6507,8 @@ impl_script_newtype! {
     )
     lua impl
     {
-        (MetaMethod::Index) => |_,s,idx: usize| {Ok(s.inner()?[idx])};
-        mut (MetaMethod::NewIndex) => |_,s,(idx,val): (usize,i32)| {s.val_mut(|s| Ok(s[idx] = val))?};
+        (MetaMethod::Index) => |_,s,idx: LuaIndex| {Ok(s.inner()?[*idx])};
+        mut (MetaMethod::NewIndex) => |_,s,(idx,val): (LuaIndex,i32)| {s.val_mut(|s| Ok(s[*idx] = val))?};
     }
 }
 impl_script_newtype! {
@@ -6225,7 +6534,7 @@ impl_script_newtype! {
 
         ///Creates a 2D vector from the `x`, `y` and `z` elements of `self`, discarding `w`.
         ///
-        ///Truncation to `IVec3` may also be performed by using `self.xyz()` or `IVec3::from()`.
+        ///Truncation to [`IVec3`] may also be performed by using [`self.xyz()`][crate::swizzles::Vec4Swizzles::xyz()].
         truncate(self:) -> Wrapped(IVec3),
 
         ///Computes the dot product of `self` and `rhs`.
@@ -6315,14 +6624,17 @@ impl_script_newtype! {
         /// - `-1` if the number is negative
         signum(self:) -> self,
 
-        ///Returns a vector with signs of `rhs` and the magnitudes of `self`.
-        copysign(self:self) -> self,
-
         ///Returns a bitmask with the lowest 4 bits set to the sign bits from the elements of `self`.
         ///
         ///A negative element results in a `1` bit and a positive element in a `0` bit.  Element `x` goes
         ///into the first lowest bit, element `y` into the second, etc.
         is_negative_bitmask(self:) -> Raw(u32),
+
+        ///Computes the squared length of `self`.
+        length_squared(self:) -> Raw(i32),
+
+        ///Compute the squared euclidean distance between two points in space.
+        distance_squared(self:self) -> Raw(i32),
 
         ///Casts all elements of `self` to `f32`.
         as_vec4(&self:) -> Wrapped(Vec4),
@@ -6343,21 +6655,21 @@ impl_script_newtype! {
     )
     + BinOps
     (
+        self Add Wrapped(IVec4) -> Wrapped(IVec4),
         self Add self -> Wrapped(IVec4),
         self Add Raw(i32) -> Wrapped(IVec4),
-        self Add Wrapped(IVec4) -> Wrapped(IVec4),
         self Sub self -> Wrapped(IVec4),
-        self Sub Raw(i32) -> Wrapped(IVec4),
         self Sub Wrapped(IVec4) -> Wrapped(IVec4),
+        self Sub Raw(i32) -> Wrapped(IVec4),
         self Div self -> Wrapped(IVec4),
-        self Div Raw(i32) -> Wrapped(IVec4),
         self Div Wrapped(IVec4) -> Wrapped(IVec4),
+        self Div Raw(i32) -> Wrapped(IVec4),
         self Mul self -> Wrapped(IVec4),
-        self Mul Raw(i32) -> Wrapped(IVec4),
         self Mul Wrapped(IVec4) -> Wrapped(IVec4),
-        self Rem self -> Wrapped(IVec4),
+        self Mul Raw(i32) -> Wrapped(IVec4),
         self Rem Raw(i32) -> Wrapped(IVec4),
         self Rem Wrapped(IVec4) -> Wrapped(IVec4),
+        self Rem self -> Wrapped(IVec4),
     )
     + UnaryOps
     (
@@ -6365,8 +6677,8 @@ impl_script_newtype! {
     )
     lua impl
     {
-        (MetaMethod::Index) => |_,s,idx: usize| {Ok(s.inner()?[idx])};
-        mut (MetaMethod::NewIndex) => |_,s,(idx,val): (usize,i32)| {s.val_mut(|s| Ok(s[idx] = val))?};
+        (MetaMethod::Index) => |_,s,idx: LuaIndex| {Ok(s.inner()?[*idx])};
+        mut (MetaMethod::NewIndex) => |_,s,(idx,val): (LuaIndex,i32)| {s.val_mut(|s| Ok(s[*idx] = val))?};
     }
 }
 impl_script_newtype! {
@@ -6470,6 +6782,9 @@ impl_script_newtype! {
         ///elements.
         cmplt(self:self) -> Wrapped(BVec2),
 
+        ///Computes the squared length of `self`.
+        length_squared(self:) -> Raw(u32),
+
         ///Casts all elements of `self` to `f32`.
         as_vec2(&self:) -> Wrapped(Vec2),
 
@@ -6487,18 +6802,18 @@ impl_script_newtype! {
     )
     + BinOps
     (
-        self Add self -> Wrapped(UVec2),
         self Add Raw(u32) -> Wrapped(UVec2),
         self Add Wrapped(UVec2) -> Wrapped(UVec2),
+        self Add self -> Wrapped(UVec2),
         self Sub self -> Wrapped(UVec2),
-        self Sub Raw(u32) -> Wrapped(UVec2),
         self Sub Wrapped(UVec2) -> Wrapped(UVec2),
+        self Sub Raw(u32) -> Wrapped(UVec2),
         self Div self -> Wrapped(UVec2),
         self Div Raw(u32) -> Wrapped(UVec2),
         self Div Wrapped(UVec2) -> Wrapped(UVec2),
-        self Mul self -> Wrapped(UVec2),
-        self Mul Raw(u32) -> Wrapped(UVec2),
         self Mul Wrapped(UVec2) -> Wrapped(UVec2),
+        self Mul Raw(u32) -> Wrapped(UVec2),
+        self Mul self -> Wrapped(UVec2),
         self Rem self -> Wrapped(UVec2),
         self Rem Raw(u32) -> Wrapped(UVec2),
         self Rem Wrapped(UVec2) -> Wrapped(UVec2),
@@ -6508,8 +6823,8 @@ impl_script_newtype! {
     )
     lua impl
     {
-        (MetaMethod::Index) => |_,s,idx: usize| {Ok(s.inner()?[idx])};
-        mut (MetaMethod::NewIndex) => |_,s,(idx,val): (usize,u32)| {s.val_mut(|s| Ok(s[idx] = val))?};
+        (MetaMethod::Index) => |_,s,idx: LuaIndex| {Ok(s.inner()?[*idx])};
+        mut (MetaMethod::NewIndex) => |_,s,(idx,val): (LuaIndex,u32)| {s.val_mut(|s| Ok(s[*idx] = val))?};
     }
 }
 impl_script_newtype! {
@@ -6538,7 +6853,7 @@ impl_script_newtype! {
 
         ///Creates a 2D vector from the `x` and `y` elements of `self`, discarding `z`.
         ///
-        ///Truncation may also be performed by using `self.xy()` or `UVec2::from()`.
+        ///Truncation may also be performed by using [`self.xy()`][crate::swizzles::Vec3Swizzles::xy()].
         truncate(self:) -> Wrapped(UVec2),
 
         ///Computes the dot product of `self` and `rhs`.
@@ -6621,6 +6936,9 @@ impl_script_newtype! {
         ///elements.
         cmplt(self:self) -> Wrapped(BVec3),
 
+        ///Computes the squared length of `self`.
+        length_squared(self:) -> Raw(u32),
+
         ///Casts all elements of `self` to `f32`.
         as_vec3(&self:) -> Wrapped(Vec3),
 
@@ -6642,20 +6960,20 @@ impl_script_newtype! {
     )
     + BinOps
     (
-        self Add self -> Wrapped(UVec3),
-        self Add Raw(u32) -> Wrapped(UVec3),
         self Add Wrapped(UVec3) -> Wrapped(UVec3),
-        self Sub self -> Wrapped(UVec3),
-        self Sub Raw(u32) -> Wrapped(UVec3),
+        self Add Raw(u32) -> Wrapped(UVec3),
+        self Add self -> Wrapped(UVec3),
         self Sub Wrapped(UVec3) -> Wrapped(UVec3),
+        self Sub Raw(u32) -> Wrapped(UVec3),
+        self Sub self -> Wrapped(UVec3),
         self Div self -> Wrapped(UVec3),
         self Div Raw(u32) -> Wrapped(UVec3),
         self Div Wrapped(UVec3) -> Wrapped(UVec3),
-        self Mul self -> Wrapped(UVec3),
-        self Mul Raw(u32) -> Wrapped(UVec3),
         self Mul Wrapped(UVec3) -> Wrapped(UVec3),
-        self Rem self -> Wrapped(UVec3),
+        self Mul Raw(u32) -> Wrapped(UVec3),
+        self Mul self -> Wrapped(UVec3),
         self Rem Raw(u32) -> Wrapped(UVec3),
+        self Rem self -> Wrapped(UVec3),
         self Rem Wrapped(UVec3) -> Wrapped(UVec3),
     )
     + UnaryOps
@@ -6663,8 +6981,8 @@ impl_script_newtype! {
     )
     lua impl
     {
-        (MetaMethod::Index) => |_,s,idx: usize| {Ok(s.inner()?[idx])};
-        mut (MetaMethod::NewIndex) => |_,s,(idx,val): (usize,u32)| {s.val_mut(|s| Ok(s[idx] = val))?};
+        (MetaMethod::Index) => |_,s,idx: LuaIndex| {Ok(s.inner()?[*idx])};
+        mut (MetaMethod::NewIndex) => |_,s,(idx,val): (LuaIndex,u32)| {s.val_mut(|s| Ok(s[*idx] = val))?};
     }
 }
 impl_script_newtype! {
@@ -6690,7 +7008,7 @@ impl_script_newtype! {
 
         ///Creates a 2D vector from the `x`, `y` and `z` elements of `self`, discarding `w`.
         ///
-        ///Truncation to `UVec3` may also be performed by using `self.xyz()` or `UVec3::from()`.
+        ///Truncation to [`UVec3`] may also be performed by using [`self.xyz()`][crate::swizzles::Vec4Swizzles::xyz()].
         truncate(self:) -> Wrapped(UVec3),
 
         ///Computes the dot product of `self` and `rhs`.
@@ -6770,6 +7088,9 @@ impl_script_newtype! {
         ///elements.
         cmplt(self:self) -> Wrapped(BVec4),
 
+        ///Computes the squared length of `self`.
+        length_squared(self:) -> Raw(u32),
+
         ///Casts all elements of `self` to `f32`.
         as_vec4(&self:) -> Wrapped(Vec4),
 
@@ -6790,17 +7111,17 @@ impl_script_newtype! {
     + BinOps
     (
         self Add self -> Wrapped(UVec4),
-        self Add Raw(u32) -> Wrapped(UVec4),
         self Add Wrapped(UVec4) -> Wrapped(UVec4),
+        self Add Raw(u32) -> Wrapped(UVec4),
         self Sub self -> Wrapped(UVec4),
-        self Sub Raw(u32) -> Wrapped(UVec4),
         self Sub Wrapped(UVec4) -> Wrapped(UVec4),
+        self Sub Raw(u32) -> Wrapped(UVec4),
         self Div self -> Wrapped(UVec4),
         self Div Raw(u32) -> Wrapped(UVec4),
         self Div Wrapped(UVec4) -> Wrapped(UVec4),
+        self Mul Wrapped(UVec4) -> Wrapped(UVec4),
         self Mul self -> Wrapped(UVec4),
         self Mul Raw(u32) -> Wrapped(UVec4),
-        self Mul Wrapped(UVec4) -> Wrapped(UVec4),
         self Rem self -> Wrapped(UVec4),
         self Rem Raw(u32) -> Wrapped(UVec4),
         self Rem Wrapped(UVec4) -> Wrapped(UVec4),
@@ -6810,8 +7131,8 @@ impl_script_newtype! {
     )
     lua impl
     {
-        (MetaMethod::Index) => |_,s,idx: usize| {Ok(s.inner()?[idx])};
-        mut (MetaMethod::NewIndex) => |_,s,(idx,val): (usize,u32)| {s.val_mut(|s| Ok(s[idx] = val))?};
+        (MetaMethod::Index) => |_,s,idx: LuaIndex| {Ok(s.inner()?[*idx])};
+        mut (MetaMethod::NewIndex) => |_,s,(idx,val): (LuaIndex,u32)| {s.val_mut(|s| Ok(s[*idx] = val))?};
     }
 }
 impl_script_newtype! {
@@ -6845,7 +7166,7 @@ impl_script_newtype! {
     Debug +
     Methods
     (
-        ///Creates a 3x3 matrix from two column vectors.
+        ///Creates a 3x3 matrix from three column vectors.
         from_cols(Wrapped(Vec3),Wrapped(Vec3),Wrapped(Vec3)) -> self,
 
         ///Creates a 3x3 matrix with its diagonal set to `diagonal` and all other entries set to 0.
@@ -6979,7 +7300,7 @@ impl_script_newtype! {
         ///Transforms a 3D vector.
         mul_vec3(&self:Wrapped(Vec3)) -> Wrapped(Vec3),
 
-        ///Transforms a `Vec3A`.
+        ///Transforms a [`Vec3A`].
         mul_vec3a(&self:Wrapped(Vec3A)) -> Wrapped(Vec3A),
 
         ///Multiplies two 3x3 matrices.
@@ -7018,11 +7339,11 @@ impl_script_newtype! {
     (
         self Add self -> Wrapped(Mat3),
         self Sub self -> Wrapped(Mat3),
+        self Mul Wrapped(Mat3) -> Wrapped(Mat3),
         self Mul Wrapped(Affine2) -> Wrapped(Mat3),
+        self Mul Raw(f32) -> Wrapped(Mat3),
         self Mul self -> Wrapped(Mat3),
         self Mul Wrapped(Vec3) -> Wrapped(Vec3),
-        self Mul Wrapped(Mat3) -> Wrapped(Mat3),
-        self Mul Raw(f32) -> Wrapped(Mat3),
         self Mul Wrapped(Vec3A) -> Wrapped(Vec3A),
     )
     + UnaryOps
@@ -7032,11 +7353,11 @@ impl_script_newtype! {
     lua impl
     {
 
-    mut (MetaMethod::Index) => |ctx,s,idx : usize| {
+    mut (MetaMethod::Index) => |ctx,s,idx : LuaIndex| {
         Ok(LuaVec3::new_ref(
                 s.script_ref(ctx.get_world()?).sub_ref(ReflectPathElem::SubReflectionIndexed{
                     label:"col",
-                    index: idx,
+                    index: *idx,
                     get: |idx,ref_| Err(ReflectionError::InsufficientProvenance{
                         path: "".to_owned(),
                         msg: "Cannot get column of matrix with immutable reference".to_owned()
@@ -7060,6 +7381,10 @@ impl_script_newtype! {
 impl_script_newtype! {
     #[languages(on_feature(lua))]
     ///A 2x2 column major matrix.
+    ///
+    ///SIMD vector types are used for storage on supported platforms.
+    ///
+    ///This type is 16 byte aligned.
     glam::f32::Mat2 :
     Clone +
     Debug +
@@ -7156,10 +7481,10 @@ impl_script_newtype! {
     (
         self Add self -> Wrapped(Mat2),
         self Sub self -> Wrapped(Mat2),
-        self Mul self -> Wrapped(Mat2),
         self Mul Wrapped(Vec2) -> Wrapped(Vec2),
         self Mul Wrapped(Mat2) -> Wrapped(Mat2),
         self Mul Raw(f32) -> Wrapped(Mat2),
+        self Mul self -> Wrapped(Mat2),
     )
     + UnaryOps
     (
@@ -7168,11 +7493,11 @@ impl_script_newtype! {
     lua impl
     {
 
-    mut (MetaMethod::Index) => |ctx,s,idx : usize| {
+    mut (MetaMethod::Index) => |ctx,s,idx : LuaIndex| {
         Ok(LuaVec2::new_ref(
                 s.script_ref(ctx.get_world()?).sub_ref(ReflectPathElem::SubReflectionIndexed{
                     label:"col",
-                    index: idx,
+                    index: *idx,
                     get: |idx,ref_| Err(ReflectionError::InsufficientProvenance{
                         path: "".to_owned(),
                         msg: "Cannot get column of matrix with immutable reference".to_owned()
@@ -7224,7 +7549,7 @@ impl_script_newtype! {
     Debug +
     Methods
     (
-        ///Creates a 3x3 matrix from two column vectors.
+        ///Creates a 3x3 matrix from three column vectors.
         from_cols(Wrapped(Vec3A),Wrapped(Vec3A),Wrapped(Vec3A)) -> self,
 
         ///Creates a 3x3 matrix with its diagonal set to `diagonal` and all other entries set to 0.
@@ -7358,7 +7683,7 @@ impl_script_newtype! {
         ///Transforms a 3D vector.
         mul_vec3(&self:Wrapped(Vec3)) -> Wrapped(Vec3),
 
-        ///Transforms a `Vec3A`.
+        ///Transforms a [`Vec3A`].
         mul_vec3a(&self:Wrapped(Vec3A)) -> Wrapped(Vec3A),
 
         ///Multiplies two 3x3 matrices.
@@ -7397,12 +7722,12 @@ impl_script_newtype! {
     (
         self Add self -> Wrapped(Mat3A),
         self Sub self -> Wrapped(Mat3A),
+        self Mul Wrapped(Mat3A) -> Wrapped(Mat3A),
         self Mul Wrapped(Affine2) -> Wrapped(Mat3A),
+        self Mul Wrapped(Vec3) -> Wrapped(Vec3),
+        self Mul Raw(f32) -> Wrapped(Mat3A),
         self Mul self -> Wrapped(Mat3A),
         self Mul Wrapped(Vec3A) -> Wrapped(Vec3A),
-        self Mul Wrapped(Mat3A) -> Wrapped(Mat3A),
-        self Mul Raw(f32) -> Wrapped(Mat3A),
-        self Mul Wrapped(Vec3) -> Wrapped(Vec3),
     )
     + UnaryOps
     (
@@ -7411,11 +7736,11 @@ impl_script_newtype! {
     lua impl
     {
 
-    mut (MetaMethod::Index) => |ctx,s,idx : usize| {
+    mut (MetaMethod::Index) => |ctx,s,idx : LuaIndex| {
         Ok(LuaVec3A::new_ref(
                 s.script_ref(ctx.get_world()?).sub_ref(ReflectPathElem::SubReflectionIndexed{
                     label:"col",
-                    index: idx,
+                    index: *idx,
                     get: |idx,ref_| Err(ReflectionError::InsufficientProvenance{
                         path: "".to_owned(),
                         msg: "Cannot get column of matrix with immutable reference".to_owned()
@@ -7449,7 +7774,7 @@ impl_script_newtype! {
     ///using methods such as [`Self::from_translation()`], [`Self::from_quat()`],
     ///[`Self::from_scale()`] and [`Self::from_scale_rotation_translation()`].
     ///
-    ///Othographic projections can be created using the methods [`Self::orthographic_lh()`] for
+    ///Orthographic projections can be created using the methods [`Self::orthographic_lh()`] for
     ///left-handed coordinate systems and [`Self::orthographic_rh()`] for right-handed
     ///systems. The resulting matrix is also an affine transformation.
     ///
@@ -7472,7 +7797,7 @@ impl_script_newtype! {
     Debug +
     Methods
     (
-        ///Creates a 4x4 matrix from two column vectors.
+        ///Creates a 4x4 matrix from four column vectors.
         from_cols(Wrapped(Vec4),Wrapped(Vec4),Wrapped(Vec4),Wrapped(Vec4)) -> self,
 
         ///Creates a 4x4 matrix with its diagonal set to `diagonal` and all other entries set to 0.
@@ -7733,14 +8058,14 @@ impl_script_newtype! {
         ///Will panic if the 3rd row of `self` is not `(0, 0, 0, 1)` when `glam_assert` is enabled.
         transform_vector3(&self:Wrapped(Vec3)) -> Wrapped(Vec3),
 
-        ///Transforms the given `Vec3A` as 3D point.
+        ///Transforms the given [`Vec3A`] as 3D point.
         ///
-        ///This is the equivalent of multiplying the `Vec3A` as a 4D vector where `w` is `1.0`.
+        ///This is the equivalent of multiplying the [`Vec3A`] as a 4D vector where `w` is `1.0`.
         transform_point3a(&self:Wrapped(Vec3A)) -> Wrapped(Vec3A),
 
-        ///Transforms the give `Vec3A` as 3D vector.
+        ///Transforms the give [`Vec3A`] as 3D vector.
         ///
-        ///This is the equivalent of multiplying the `Vec3A` as a 4D vector where `w` is `0.0`.
+        ///This is the equivalent of multiplying the [`Vec3A`] as a 4D vector where `w` is `0.0`.
         transform_vector3a(&self:Wrapped(Vec3A)) -> Wrapped(Vec3A),
 
         ///Transforms a 4D vector.
@@ -7783,11 +8108,11 @@ impl_script_newtype! {
     (
         self Add self -> Wrapped(Mat4),
         self Sub self -> Wrapped(Mat4),
-        self Mul Wrapped(Affine3A) -> Wrapped(Mat4),
         self Mul self -> Wrapped(Mat4),
-        self Mul Wrapped(Vec4) -> Wrapped(Vec4),
-        self Mul Wrapped(Mat4) -> Wrapped(Mat4),
         self Mul Raw(f32) -> Wrapped(Mat4),
+        self Mul Wrapped(Mat4) -> Wrapped(Mat4),
+        self Mul Wrapped(Affine3A) -> Wrapped(Mat4),
+        self Mul Wrapped(Vec4) -> Wrapped(Vec4),
     )
     + UnaryOps
     (
@@ -7796,11 +8121,11 @@ impl_script_newtype! {
     lua impl
     {
 
-    mut (MetaMethod::Index) => |ctx,s,idx : usize| {
+    mut (MetaMethod::Index) => |ctx,s,idx : LuaIndex| {
         Ok(LuaVec4::new_ref(
                 s.script_ref(ctx.get_world()?).sub_ref(ReflectPathElem::SubReflectionIndexed{
                     label:"col",
-                    index: idx,
+                    index: *idx,
                     get: |idx,ref_| Err(ReflectionError::InsufficientProvenance{
                         path: "".to_owned(),
                         msg: "Cannot get column of matrix with immutable reference".to_owned()
@@ -7919,10 +8244,10 @@ impl_script_newtype! {
     (
         self Add self -> Wrapped(DMat2),
         self Sub self -> Wrapped(DMat2),
-        self Mul self -> Wrapped(DMat2),
-        self Mul Wrapped(DVec2) -> Wrapped(DVec2),
-        self Mul Wrapped(DMat2) -> Wrapped(DMat2),
         self Mul Raw(f64) -> Wrapped(DMat2),
+        self Mul Wrapped(DVec2) -> Wrapped(DVec2),
+        self Mul self -> Wrapped(DMat2),
+        self Mul Wrapped(DMat2) -> Wrapped(DMat2),
     )
     + UnaryOps
     (
@@ -7931,11 +8256,11 @@ impl_script_newtype! {
     lua impl
     {
 
-    mut (MetaMethod::Index) => |ctx,s,idx : usize| {
+    mut (MetaMethod::Index) => |ctx,s,idx : LuaIndex| {
         Ok(LuaDVec2::new_ref(
                 s.script_ref(ctx.get_world()?).sub_ref(ReflectPathElem::SubReflectionIndexed{
                     label:"col",
-                    index: idx,
+                    index: *idx,
                     get: |idx,ref_| Err(ReflectionError::InsufficientProvenance{
                         path: "".to_owned(),
                         msg: "Cannot get column of matrix with immutable reference".to_owned()
@@ -7987,7 +8312,7 @@ impl_script_newtype! {
     Debug +
     Methods
     (
-        ///Creates a 3x3 matrix from two column vectors.
+        ///Creates a 3x3 matrix from three column vectors.
         from_cols(Wrapped(DVec3),Wrapped(DVec3),Wrapped(DVec3)) -> self,
 
         ///Creates a 3x3 matrix with its diagonal set to `diagonal` and all other entries set to 0.
@@ -8157,11 +8482,11 @@ impl_script_newtype! {
     (
         self Add self -> Wrapped(DMat3),
         self Sub self -> Wrapped(DMat3),
-        self Mul Wrapped(DAffine2) -> Wrapped(DMat3),
         self Mul self -> Wrapped(DMat3),
         self Mul Wrapped(DVec3) -> Wrapped(DVec3),
         self Mul Wrapped(DMat3) -> Wrapped(DMat3),
         self Mul Raw(f64) -> Wrapped(DMat3),
+        self Mul Wrapped(DAffine2) -> Wrapped(DMat3),
     )
     + UnaryOps
     (
@@ -8170,11 +8495,11 @@ impl_script_newtype! {
     lua impl
     {
 
-    mut (MetaMethod::Index) => |ctx,s,idx : usize| {
+    mut (MetaMethod::Index) => |ctx,s,idx : LuaIndex| {
         Ok(LuaDVec3::new_ref(
                 s.script_ref(ctx.get_world()?).sub_ref(ReflectPathElem::SubReflectionIndexed{
                     label:"col",
-                    index: idx,
+                    index: *idx,
                     get: |idx,ref_| Err(ReflectionError::InsufficientProvenance{
                         path: "".to_owned(),
                         msg: "Cannot get column of matrix with immutable reference".to_owned()
@@ -8208,7 +8533,7 @@ impl_script_newtype! {
     ///using methods such as [`Self::from_translation()`], [`Self::from_quat()`],
     ///[`Self::from_scale()`] and [`Self::from_scale_rotation_translation()`].
     ///
-    ///Othographic projections can be created using the methods [`Self::orthographic_lh()`] for
+    ///Orthographic projections can be created using the methods [`Self::orthographic_lh()`] for
     ///left-handed coordinate systems and [`Self::orthographic_rh()`] for right-handed
     ///systems. The resulting matrix is also an affine transformation.
     ///
@@ -8231,7 +8556,7 @@ impl_script_newtype! {
     Debug +
     Methods
     (
-        ///Creates a 4x4 matrix from two column vectors.
+        ///Creates a 4x4 matrix from four column vectors.
         from_cols(Wrapped(DVec4),Wrapped(DVec4),Wrapped(DVec4),Wrapped(DVec4)) -> self,
 
         ///Creates a 4x4 matrix with its diagonal set to `diagonal` and all other entries set to 0.
@@ -8526,10 +8851,10 @@ impl_script_newtype! {
         self Add self -> Wrapped(DMat4),
         self Sub self -> Wrapped(DMat4),
         self Mul Wrapped(DAffine3) -> Wrapped(DMat4),
-        self Mul self -> Wrapped(DMat4),
-        self Mul Wrapped(DVec4) -> Wrapped(DVec4),
-        self Mul Wrapped(DMat4) -> Wrapped(DMat4),
         self Mul Raw(f64) -> Wrapped(DMat4),
+        self Mul self -> Wrapped(DMat4),
+        self Mul Wrapped(DMat4) -> Wrapped(DMat4),
+        self Mul Wrapped(DVec4) -> Wrapped(DVec4),
     )
     + UnaryOps
     (
@@ -8538,11 +8863,11 @@ impl_script_newtype! {
     lua impl
     {
 
-    mut (MetaMethod::Index) => |ctx,s,idx : usize| {
+    mut (MetaMethod::Index) => |ctx,s,idx : LuaIndex| {
         Ok(LuaDVec4::new_ref(
                 s.script_ref(ctx.get_world()?).sub_ref(ReflectPathElem::SubReflectionIndexed{
                     label:"col",
-                    index: idx,
+                    index: *idx,
                     get: |idx,ref_| Err(ReflectionError::InsufficientProvenance{
                         path: "".to_owned(),
                         msg: "Cannot get column of matrix with immutable reference".to_owned()
@@ -8610,7 +8935,7 @@ impl_script_newtype! {
         ///The given `Mat3` must be an affine transform,
         from_mat3(Wrapped(Mat3)) -> self,
 
-        ///The given `Mat3A` must be an affine transform,
+        ///The given [`Mat3A`] must be an affine transform,
         from_mat3a(Wrapped(Mat3A)) -> self,
 
         ///Transforms the given 2D point, applying shear, scale, rotation and translation.
@@ -8619,7 +8944,7 @@ impl_script_newtype! {
         ///Transforms the given 2D vector, applying shear, scale and rotation (but NOT
         ///translation).
         ///
-        ///To also apply translation, use [`Self::transform_point2`] instead.
+        ///To also apply translation, use [`Self::transform_point2()`] instead.
         transform_vector2(&self:Wrapped(Vec2)) -> Wrapped(Vec2),
 
         ///Returns `true` if, and only if, all elements are finite.
@@ -8655,9 +8980,9 @@ impl_script_newtype! {
     )
     + BinOps
     (
-        self Mul Wrapped(Affine2) -> Wrapped(Affine2),
-        self Mul Wrapped(Mat3) -> Wrapped(Mat3),
         self Mul Wrapped(Mat3A) -> Wrapped(Mat3A),
+        self Mul Wrapped(Mat3) -> Wrapped(Mat3),
+        self Mul Wrapped(Affine2) -> Wrapped(Affine2),
     )
     + UnaryOps
     (
@@ -8669,6 +8994,8 @@ impl_script_newtype! {
 impl_script_newtype! {
     #[languages(on_feature(lua))]
     ///A 3D affine transform, which can represent translation, rotation, scaling and shear.
+    ///
+    ///This type is 16 byte aligned.
     glam::f32::Affine3A :
     Clone +
     Debug +
@@ -8765,16 +9092,16 @@ impl_script_newtype! {
         ///Transforms the given 3D vector, applying shear, scale and rotation (but NOT
         ///translation).
         ///
-        ///To also apply translation, use [`Self::transform_point3`] instead.
+        ///To also apply translation, use [`Self::transform_point3()`] instead.
         transform_vector3(&self:Wrapped(Vec3)) -> Wrapped(Vec3),
 
-        ///Transforms the given `Vec3A`, applying shear, scale, rotation and translation.
+        ///Transforms the given [`Vec3A`], applying shear, scale, rotation and translation.
         transform_point3a(&self:Wrapped(Vec3A)) -> Wrapped(Vec3A),
 
-        ///Transforms the given `Vec3A`, applying shear, scale and rotation (but NOT
+        ///Transforms the given [`Vec3A`], applying shear, scale and rotation (but NOT
         ///translation).
         ///
-        ///To also apply translation, use [`Self::transform_point3a`] instead.
+        ///To also apply translation, use [`Self::transform_point3a()`] instead.
         transform_vector3a(&self:Wrapped(Vec3A)) -> Wrapped(Vec3A),
 
         ///Returns `true` if, and only if, all elements are finite.
@@ -8810,8 +9137,8 @@ impl_script_newtype! {
     )
     + BinOps
     (
-        self Mul Wrapped(Affine3A) -> Wrapped(Affine3A),
         self Mul Wrapped(Mat4) -> Wrapped(Mat4),
+        self Mul Wrapped(Affine3A) -> Wrapped(Affine3A),
     )
     + UnaryOps
     (
@@ -8873,7 +9200,7 @@ impl_script_newtype! {
         ///Transforms the given 2D vector, applying shear, scale and rotation (but NOT
         ///translation).
         ///
-        ///To also apply translation, use [`Self::transform_point2`] instead.
+        ///To also apply translation, use [`Self::transform_point2()`] instead.
         transform_vector2(&self:Wrapped(DVec2)) -> Wrapped(DVec2),
 
         ///Returns `true` if, and only if, all elements are finite.
@@ -8909,8 +9236,8 @@ impl_script_newtype! {
     )
     + BinOps
     (
-        self Mul Wrapped(DAffine2) -> Wrapped(DAffine2),
         self Mul Wrapped(DMat3) -> Wrapped(DMat3),
+        self Mul Wrapped(DAffine2) -> Wrapped(DAffine2),
     )
     + UnaryOps
     (
@@ -9018,7 +9345,7 @@ impl_script_newtype! {
         ///Transforms the given 3D vector, applying shear, scale and rotation (but NOT
         ///translation).
         ///
-        ///To also apply translation, use [`Self::transform_point3`] instead.
+        ///To also apply translation, use [`Self::transform_point3()`] instead.
         transform_vector3(&self:Wrapped(DVec3)) -> Wrapped(DVec3),
 
         ///Returns `true` if, and only if, all elements are finite.
@@ -9054,8 +9381,8 @@ impl_script_newtype! {
     )
     + BinOps
     (
-        self Mul Wrapped(DAffine3) -> Wrapped(DAffine3),
         self Mul Wrapped(DMat4) -> Wrapped(DMat4),
+        self Mul Wrapped(DAffine3) -> Wrapped(DAffine3),
     )
     + UnaryOps
     (
@@ -9071,6 +9398,8 @@ impl_script_newtype! {
     ///This quaternion is intended to be of unit length but may denormalize due to
     ///floating point "error creep" which can occur when successive quaternion
     ///operations are applied.
+    ///
+    ///SIMD vector types are used for storage on supported platforms.
     ///
     ///This type is 16 byte aligned.
     glam::f32::Quat :
@@ -9100,7 +9429,8 @@ impl_script_newtype! {
         from_vec4(Wrapped(Vec4)) -> self,
 
         ///Create a quaternion for a normalized rotation `axis` and `angle` (in radians).
-        ///The axis must be normalized (unit-length).
+        ///
+        ///The axis must be a unit vector.
         ///
         ///# Panics
         ///
@@ -9136,7 +9466,7 @@ impl_script_newtype! {
         ///Gets the minimal rotation for transforming `from` to `to`.  The rotation is in the
         ///plane spanned by the two vectors.  Will rotate at most 180 degrees.
         ///
-        ///The input vectors must be normalized (unit-length).
+        ///The inputs must be unit vectors.
         ///
         ///`from_rotation_arc(from, to) * from ≈ to`.
         ///
@@ -9154,7 +9484,7 @@ impl_script_newtype! {
         ///The rotation is in the plane spanned by the two vectors.  Will rotate at most 90
         ///degrees.
         ///
-        ///The input vectors must be normalized (unit-length).
+        ///The inputs must be unit vectors.
         ///
         ///`to.dot(from_rotation_arc_colinear(from, to) * from).abs() ≈ 1`.
         ///
@@ -9166,7 +9496,7 @@ impl_script_newtype! {
         ///Gets the minimal rotation for transforming `from` to `to`.  The resulting rotation is
         ///around the z axis. Will rotate at most 180 degrees.
         ///
-        ///The input vectors must be normalized (unit-length).
+        ///The inputs must be unit vectors.
         ///
         ///`from_rotation_arc_2d(from, to) * from ≈ to`.
         ///
@@ -9316,9 +9646,9 @@ impl_script_newtype! {
         self Add self -> Wrapped(Quat),
         self Sub self -> Wrapped(Quat),
         self Div Raw(f32) -> Wrapped(Quat),
-        self Mul Raw(f32) -> Wrapped(Quat),
-        self Mul self -> Wrapped(Quat),
         self Mul Wrapped(Vec3) -> Wrapped(Vec3),
+        self Mul self -> Wrapped(Quat),
+        self Mul Raw(f32) -> Wrapped(Quat),
         self Mul Wrapped(Vec3A) -> Wrapped(Vec3A),
     )
     + UnaryOps
@@ -9363,7 +9693,8 @@ impl_script_newtype! {
         from_vec4(Wrapped(DVec4)) -> self,
 
         ///Create a quaternion for a normalized rotation `axis` and `angle` (in radians).
-        ///The axis must be normalized (unit-length).
+        ///
+        ///The axis must be a unit vector.
         ///
         ///# Panics
         ///
@@ -9396,7 +9727,7 @@ impl_script_newtype! {
         ///Gets the minimal rotation for transforming `from` to `to`.  The rotation is in the
         ///plane spanned by the two vectors.  Will rotate at most 180 degrees.
         ///
-        ///The input vectors must be normalized (unit-length).
+        ///The inputs must be unit vectors.
         ///
         ///`from_rotation_arc(from, to) * from ≈ to`.
         ///
@@ -9414,7 +9745,7 @@ impl_script_newtype! {
         ///The rotation is in the plane spanned by the two vectors.  Will rotate at most 90
         ///degrees.
         ///
-        ///The input vectors must be normalized (unit-length).
+        ///The inputs must be unit vectors.
         ///
         ///`to.dot(from_rotation_arc_colinear(from, to) * from).abs() ≈ 1`.
         ///
@@ -9426,7 +9757,7 @@ impl_script_newtype! {
         ///Gets the minimal rotation for transforming `from` to `to`.  The resulting rotation is
         ///around the z axis. Will rotate at most 180 degrees.
         ///
-        ///The input vectors must be normalized (unit-length).
+        ///The inputs must be unit vectors.
         ///
         ///`from_rotation_arc_2d(from, to) * from ≈ to`.
         ///
@@ -9786,7 +10117,7 @@ impl_script_newtype! {
         ///assert!(r.min.abs_diff_eq(Vec2::new(0., -1.), 1e-5));
         ///assert!(r.max.abs_diff_eq(Vec2::new(5., 3.), 1e-5));
         ///```
-        union(&self:Wrapped(Rect)) -> Wrapped(Rect),
+        union(&self:self) -> self,
 
         ///Build a new rectangle formed of the union of this rectangle and a point.
         ///
@@ -9802,7 +10133,7 @@ impl_script_newtype! {
         ///assert!(u.min.abs_diff_eq(Vec2::ZERO, 1e-5));
         ///assert!(u.max.abs_diff_eq(Vec2::new(5., 6.), 1e-5));
         ///```
-        union_point(&self:Wrapped(Vec2)) -> Wrapped(Rect),
+        union_point(&self:Wrapped(Vec2)) -> self,
 
         ///Build a new rectangle formed of the intersection of this rectangle and another rectangle.
         ///
@@ -9820,7 +10151,7 @@ impl_script_newtype! {
         ///assert!(r.min.abs_diff_eq(Vec2::new(1., 0.), 1e-5));
         ///assert!(r.max.abs_diff_eq(Vec2::new(3., 1.), 1e-5));
         ///```
-        intersect(&self:Wrapped(Rect)) -> Wrapped(Rect),
+        intersect(&self:self) -> self,
 
         ///Create a new rectangle with a constant inset.
         ///
@@ -9836,8 +10167,13 @@ impl_script_newtype! {
         ///let r2 = r.inset(3.); // w=11 h=7
         ///assert!(r2.min.abs_diff_eq(Vec2::splat(-3.), 1e-5));
         ///assert!(r2.max.abs_diff_eq(Vec2::new(8., 4.), 1e-5));
+        ///
+        ///let r = Rect::new(0., -1., 6., 7.); // w=6 h=8
+        ///let r2 = r.inset(-2.); // w=11 h=7
+        ///assert!(r2.min.abs_diff_eq(Vec2::new(2., 1.), 1e-5));
+        ///assert!(r2.max.abs_diff_eq(Vec2::new(4., 5.), 1e-5));
         ///```
-        inset(&self:Raw(f32)) -> Wrapped(Rect),
+        inset(&self:Raw(f32)) -> self,
 
     )
     + Fields
@@ -9868,6 +10204,10 @@ impl bevy_mod_scripting_lua::tealr::mlu::ExportInstances for BevyAPIGlobals {
         self,
         instances: &mut T,
     ) -> bevy_mod_scripting_lua::tealr::mlu::mlua::Result<()> {
+        instances.add_instance(
+            "Overflow",
+            bevy_mod_scripting_lua::tealr::mlu::UserDataProxy::<LuaOverflow>::new,
+        )?;
         instances.add_instance(
             "UiImage",
             bevy_mod_scripting_lua::tealr::mlu::UserDataProxy::<LuaUiImage>::new,
@@ -10099,10 +10439,10 @@ impl APIProvider for LuaBevyAPIProvider {
 			.process_type::<LuaInteraction>()
 			.process_type::<LuaJustifyContent>()
 			.process_type::<LuaOverflow>()
+			.process_type::<bevy_mod_scripting_lua::tealr::mlu::UserDataProxy<LuaOverflow>>()
 			.process_type::<LuaPositionType>()
 			.process_type::<LuaVal>()
 			.process_type::<LuaCalculatedClip>()
-			.process_type::<LuaCalculatedSize>()
 			.process_type::<LuaNode>()
 			.process_type::<LuaStyle>()
 			.process_type::<LuaUiImage>()
@@ -10300,7 +10640,6 @@ impl APIProvider for LuaBevyAPIProvider {
         app.register_foreign_lua_type::<PositionType>();
         app.register_foreign_lua_type::<Val>();
         app.register_foreign_lua_type::<CalculatedClip>();
-        app.register_foreign_lua_type::<CalculatedSize>();
         app.register_foreign_lua_type::<Node>();
         app.register_foreign_lua_type::<Style>();
         app.register_foreign_lua_type::<UiImage>();

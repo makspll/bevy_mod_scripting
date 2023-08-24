@@ -1,36 +1,19 @@
 use bevy::app::AppExit;
-use bevy::math::DQuat;
+
 use bevy::prelude::*;
 use bevy_mod_scripting::{api::rhai::bevy::RhaiBevyAPIProvider, prelude::*};
 use bevy_mod_scripting_rhai::rhai::Engine;
 use bevy_script_api::rhai::{std::RegisterVecType, RegisterForeignRhaiType};
 
-/// Let's define a resource, we want it to be "assignable" via lua so we derive `ReflectLuaProxyable`
-/// This allows us to reach this value when it's a field under any other Reflectable type
-
-#[derive(Resource, Default, Clone, Reflect)]
-#[reflect(Resource)]
-pub struct MyResource {
-    pub thing: f64,
-}
-
 #[derive(Component, Default, Reflect)]
 #[reflect(Component)]
 pub struct MyComponent {
-    dquat: DQuat,
     quat: Quat,
     vec2: Vec2,
-    vec3: Vec3,
-    uvec2: UVec2,
     usize: usize,
     f32: f32,
     mat3: Mat3,
-    vec4: Vec4,
-    bool: bool,
-    string: String,
-    u8: u8,
-    bool_option: Option<bool>,
-    option: Option<Vec3>,
+    option_vec3: Option<Vec3>,
     vec_of_option_bools: Vec<Option<bool>>,
     option_vec_of_bools: Option<Vec<bool>>,
 }
@@ -58,27 +41,22 @@ fn main() -> std::io::Result<()> {
     let mut app = App::new();
 
     app.add_plugins(DefaultPlugins)
-        .add_plugin(ScriptingPlugin)
+        .add_plugins(ScriptingPlugin)
         .register_type::<MyComponent>()
-        .register_type::<MyResource>()
         .register_foreign_rhai_type::<Option<bool>>()
         .register_foreign_rhai_type::<Vec<Option<bool>>>()
         .register_foreign_rhai_type::<Option<Vec<bool>>>()
         // note the implementation for Option is there, but we must register `LuaProxyable` for it
-        .init_resource::<MyResource>()
         // this system set handles addition and removal of script contexts, we can safely use `CoreSet::PostUpdate`
-        .add_script_host_to_base_set::<RhaiScriptHost<()>, _>(CoreSet::PostUpdate)
+        .add_script_host::<RhaiScriptHost<()>>(PostUpdate)
         .add_api_provider::<RhaiScriptHost<()>>(Box::new(RhaiBevyAPIProvider))
         .add_api_provider::<RhaiScriptHost<()>>(Box::new(MyAPIProvider))
-        .add_system(|world: &mut World| {
+        .add_systems(Update, |world: &mut World| {
             let entity = world
                 .spawn(())
                 .insert(MyComponent {
-                    vec2: Vec2::new(1.0, 2.0),
-                    vec3: Vec3::new(1.0, 2.0, 3.0),
-                    vec4: Vec4::new(1.0, 2.0, 3.0, 4.0),
-                    uvec2: UVec2::new(1, 2),
                     usize: 5,
+                    vec2: Vec2::new(1.0, 2.0),
                     f32: 6.7,
                     mat3: Mat3::from_cols(
                         Vec3::new(1.0, 2.0, 3.0),
@@ -86,12 +64,7 @@ fn main() -> std::io::Result<()> {
                         Vec3::new(7.0, 8.0, 9.0),
                     ),
                     quat: Quat::from_xyzw(1.0, 2.0, 3.0, 4.0),
-                    dquat: DQuat::from_xyzw(1.0, 2.0, 3.0, 4.0),
-                    bool: true,
-                    string: "hello".to_owned(),
-                    u8: 240,
-                    bool_option: Some(true),
-                    option: None,
+                    option_vec3: Some(Vec3::new(1.0, 2.0, 3.0)),
                     vec_of_option_bools: vec![Some(true), None, Some(false)],
                     option_vec_of_bools: Some(vec![true, true, true]),
                 })
@@ -103,53 +76,90 @@ fn main() -> std::io::Result<()> {
                     r#"
                         fn once() {
                             print(world);
-                            print(world.get_children(entity));
+                            debug(world.get_children(entity));
 
+                            // we first retrieve ID's for our component and resource by their short name (long name/full path also work)
                             let my_component_type = world.get_type_by_name("MyComponent");
-                            let my_component = world.get_component(entity,my_component_type);
 
-                            debug(my_component_type);
-                            debug(my_component);
-                            print(my_component.u8);
-                            my_component.u8 = 255; 
-                            my_component.bool = false;
-                            my_component.string = "bye";
-                            my_component.bool_option = ();
-                            print(my_component.u8);
-                            print(my_component.bool);
-                            print(my_component.string);
-                            print(my_component.bool_option);
-                            my_component.bool_option = true;
-                            print(my_component.bool_option);
+                            // then ask the world to give us a reference to `MyComponent` on the entity we just spawned
+                            // resources work the same way, but we use `get_resource` instead of `get_component`
+                            // the comp object is resolved to a `bevy_script_api::script_ref::ReflectValue`.
+                            // we can use a custom proxy instead (by implementing RhaiProxyable), but this is the simplest way to get started.
+                            let comp = world.get_component(entity,my_component_type);
+
+                            print("Before script: " + comp);
+
+                            print("=============");
+
+                            comp.usize = 2;
+                            print("comp.usize: after assigning to 2: " + comp.usize);
+
+                            // not supported yet (no Bevy proxies yet)
+                            // print("comp.option_vec3 before: " + comp.option_vec3);
+                            // comp.option_vec3 = Vec3::new(2,1,3);
+                            // print("comp.option_vec3 after: " + comp.option_vec3);
                             
-                            print("----");
+                            // print("comp.option_vec3[0] before: " + comp.option_vec3[0]);
+                            // comp.option_vec3[1] = 5;
+                            // print("comp.option_vec3[0] after: " + comp.option_vec3[0]);
 
-                            for e in my_component.vec_of_option_bools {
-                                print(`elem: ${e}`)
+                            print("=============");
+
+                            print("comp.vec_of_option_bools before: " + comp.vec_of_option_bools);
+                            comp.vec_of_option_bools = [true,false,true];
+                            print("comp.vec_of_option_bools after: " + comp.vec_of_option_bools);
+
+                            print("comp.vec_of_option_bools[0] before: " + comp.vec_of_option_bools[0]);
+                            comp.vec_of_option_bools[0] = false;
+                            print("comp.vec_of_option_bools[0] after: " + comp.vec_of_option_bools[0]);
+
+                            print("comp.vec_of_option_bools before insert: " + comp.vec_of_option_bools);
+                            comp.vec_of_option_bools.insert(1,());
+                            print("comp.vec_of_option_bools after insert: " + comp.vec_of_option_bools);
+
+                            print("comp.vec_of_option_bools before push: " + comp.vec_of_option_bools);
+                            comp.vec_of_option_bools.push(false);
+                            print("comp.vec_of_option_bools after push: " + comp.vec_of_option_bools);
+
+                            print("comp.vec_of_option_bools len after push: " + comp.vec_of_option_bools.len());
+
+                            print("comp.vec_of_option_bools before pop: " + comp.vec_of_option_bools);
+                            print(comp.vec_of_option_bools.pop());
+                            print("comp.vec_of_option_bools after pop: " + comp.vec_of_option_bools);
+
+                            print("the elements inside comp.vec_of_option_bools: ");
+                            for e in comp.vec_of_option_bools {
+                                print(`elem: ${e}`);
                             }
+
+                            comp.vec_of_option_bools.clear();
+                            print("comp.vec_of_option_bools after clear: " + comp.vec_of_option_bools);
+                            print("comp.vec_of_option_bools len after clear: " + comp.vec_of_option_bools.len());
+
+                            print("=============");
+
+                            print("comp.option_vec_of_bools before: " + comp.option_vec_of_bools);
+                            print(comp.option_vec_of_bools.pop());
+                            print("comp.option_vec_of_bools after pop: " + comp.option_vec_of_bools);
                             
-                            print("----");
+                            print("comp.option_vec_of_bools len after pop: " + comp.option_vec_of_bools.len());
 
-                            my_component.vec_of_option_bools = [true,false,true];
-                            my_component.vec_of_option_bools[0] = false;
-                            my_component.vec_of_option_bools.insert(1,());
-                            my_component.vec_of_option_bools.push(false);
-
-                            for e in my_component.vec_of_option_bools {
-                                print(`elem: ${e}`)
+                            print("the elements inside comp.option_vec_of_bools: ");
+                            for e in comp.option_vec_of_bools {
+                                print(`elem: ${e}`);
                             }
 
-                            let my_component_after = world.get_component(entity,my_component_type);
+                            print("=============");
+
+
+                            let comp_after = world.get_component(entity, my_component_type);
                             print("after script:");
-                            print(my_component_after.u8);
-                            print(my_component_after.bool);
-                            print(my_component_after.string);
-                            print(my_component_after.bool_option);
+                            print(comp_after);
 
                         }
                         "#
                     .as_bytes(),
-                    "script.lua",
+                    "script.rhai",
                     entity,
                     world,
                     RhaiEvent {

@@ -1,12 +1,12 @@
 use bevy::{
     asset::{AssetLoader, Error, LoadedAsset},
-    reflect::TypeUuid,
+    reflect::{TypePath, TypeUuid},
 };
 use bevy_mod_scripting_core::asset::CodeAsset;
 
 use std::sync::Arc;
 
-#[derive(Debug, TypeUuid)]
+#[derive(Debug, TypeUuid, TypePath)]
 #[uuid = "39cadc56-aa9c-4543-8640-a018b74b5052"]
 /// A lua code file in bytes
 pub struct LuaFile {

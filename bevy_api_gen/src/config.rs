@@ -1,5 +1,3 @@
-use std::collections::HashSet;
-
 use clap::Parser;
 use indexmap::{IndexMap, IndexSet};
 use rustdoc_types::{Crate, Item, ItemEnum, Visibility};

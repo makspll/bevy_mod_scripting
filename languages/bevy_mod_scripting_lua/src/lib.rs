@@ -2,10 +2,7 @@ use crate::{
     assets::{LuaFile, LuaLoader},
     docs::LuaDocFragment,
 };
-use bevy::{
-    ecs::schedule::{BaseSystemSet, FreeSystemSet},
-    prelude::*,
-};
+use bevy::{ecs::schedule::ScheduleLabel, prelude::*};
 use bevy_mod_scripting_core::{prelude::*, systems::*, world::WorldPointer};
 
 use std::fmt;
@@ -36,7 +33,7 @@ pub trait LuaArg: for<'lua> ToLuaMulti<'lua> + Clone + Sync + Send + 'static {}
 
 impl<T: for<'lua> ToLuaMulti<'lua> + Clone + Sync + Send + 'static> LuaArg for T {}
 
-#[derive(Clone)]
+#[derive(Clone, Event)]
 /// A Lua Hook. The result of creating this event will be
 /// a call to the lua script with the hook_name and the given arguments
 pub struct LuaEvent<A: LuaArg> {
@@ -81,28 +78,7 @@ impl<A: LuaArg> ScriptHost for LuaScriptHost<A> {
     type ScriptAsset = LuaFile;
     type DocTarget = LuaDocFragment;
 
-    fn register_with_app_in_set(app: &mut App, set: impl FreeSystemSet) {
-        app.add_priority_event::<Self::ScriptEvent>()
-            .add_asset::<LuaFile>()
-            .init_asset_loader::<LuaLoader>()
-            .init_resource::<CachedScriptState<Self>>()
-            .init_resource::<ScriptContexts<Self::ScriptContext>>()
-            .init_resource::<APIProviders<Self>>()
-            .register_type::<ScriptCollection<Self::ScriptAsset>>()
-            .register_type::<Script<Self::ScriptAsset>>()
-            .register_type::<Handle<LuaFile>>()
-            .add_systems(
-                (
-                    script_add_synchronizer::<Self>,
-                    script_remove_synchronizer::<Self>,
-                    script_hot_reload_handler::<Self>,
-                )
-                    .chain()
-                    .in_set(set),
-            );
-    }
-
-    fn register_with_app_in_base_set(app: &mut App, set: impl BaseSystemSet) {
+    fn register_with_app_in_set(app: &mut App, schedule: impl ScheduleLabel, set: impl SystemSet) {
         app.add_priority_event::<Self::ScriptEvent>()
             .add_asset::<LuaFile>()
             .init_asset_loader::<LuaLoader>()
@@ -115,13 +91,14 @@ impl<A: LuaArg> ScriptHost for LuaScriptHost<A> {
             // handle script insertions removal first
             // then update their contexts later on script asset changes
             .add_systems(
+                schedule,
                 (
                     script_add_synchronizer::<Self>,
                     script_remove_synchronizer::<Self>,
                     script_hot_reload_handler::<Self>,
                 )
                     .chain()
-                    .in_base_set(set),
+                    .in_set(set),
             );
     }
 
@@ -139,8 +116,9 @@ impl<A: LuaArg> ScriptHost for LuaScriptHost<A> {
         lua.load(script)
             .set_name(script_data.name)
             .and_then(|c| c.exec())
-            .map_err(|_e| ScriptError::FailedToLoad {
+            .map_err(|e| ScriptError::FailedToLoad {
                 script: script_data.name.to_owned(),
+                msg: e.to_string(),
             })?;
 
         let mut lua = Mutex::new(lua);
@@ -182,7 +160,6 @@ impl<A: LuaArg> ScriptHost for LuaScriptHost<A> {
             // guarantees when it comes to other scripts callbacks,
             // at least for now.
             let globals = ctx.globals();
-
             for event in events {
                 // check if this script should handle this event
                 if !event.recipients().is_recipient(&script_data) {

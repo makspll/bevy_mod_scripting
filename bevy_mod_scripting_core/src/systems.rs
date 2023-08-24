@@ -146,7 +146,6 @@ pub fn script_hot_reload_handler<H: ScriptHost>(
 /// Lets the script host handle all script events
 pub fn script_event_handler<H: ScriptHost, const MAX: u32, const MIN: u32>(world: &mut World) {
     // we need to collect the events to drop the borrow of the world
-
     let mut state: CachedScriptState<H> = world.remove_resource().unwrap();
 
     let events = state

@@ -1,6 +1,6 @@
 use std::marker::PhantomData;
 
-use bevy::reflect::FromReflect;
+use bevy::reflect::{FromReflect, TypePath};
 
 use crate::{error::ReflectionError, ScriptRef, ValueIndex};
 
@@ -26,7 +26,7 @@ impl<T> std::fmt::Debug for ScriptVec<T> {
     }
 }
 
-impl<T: std::fmt::Display + FromReflect> std::fmt::Display for ScriptVec<T> {
+impl<T: std::fmt::Display + FromReflect + TypePath> std::fmt::Display for ScriptVec<T> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         let str = self
             .ref_
@@ -39,7 +39,7 @@ impl<T: std::fmt::Display + FromReflect> std::fmt::Display for ScriptVec<T> {
     }
 }
 
-impl<T: FromReflect> ScriptVec<T> {
+impl<T: FromReflect + TypePath> ScriptVec<T> {
     pub fn new_ref(ref_: ScriptRef) -> Self {
         Self {
             ref_,
@@ -116,7 +116,7 @@ impl<T: FromReflect> Iterator for ScriptVecIterator<T> {
     }
 }
 
-impl<T: FromReflect> IntoIterator for ScriptVec<T> {
+impl<T: FromReflect + TypePath> IntoIterator for ScriptVec<T> {
     type Item = ScriptRef;
 
     type IntoIter = ScriptVecIterator<T>;

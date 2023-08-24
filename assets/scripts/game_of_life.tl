@@ -30,15 +30,15 @@ global function on_update()
         prev_state[k] = (not(v == 0)) and 1 or 0
     end
 
-    for i=1,(dimensions[0] * dimensions[1]) do 
-        local north = prev_state[i - dimensions[0]] or 1
-        local south = prev_state[i + dimensions[0]] or 1 
+    for i=1,(dimensions[1] * dimensions[2]) do 
+        local north = prev_state[i - dimensions[1]] or 1
+        local south = prev_state[i + dimensions[1]] or 1 
         local east = prev_state[i + 1] or 1 
         local west = prev_state[i - 1] or 1
-        local northeast = prev_state[i - dimensions[0] + 1] or 1
-        local southeast = prev_state[i + dimensions[0] + 1] or 1
-        local northwest = prev_state[i - dimensions[0] - 1] or 1
-        local southwest = prev_state[i + dimensions[0] - 1] or 1
+        local northeast = prev_state[i - dimensions[1] + 1] or 1
+        local southeast = prev_state[i + dimensions[1] + 1] or 1
+        local northwest = prev_state[i - dimensions[1] - 1] or 1
+        local southwest = prev_state[i + dimensions[1] - 1] or 1
 
         local neighbours = north + south + east + west 
             + northeast + southeast + northwest + southwest
