@@ -3,6 +3,7 @@ use ::std::borrow::Cow;
 use bevy::reflect::FromReflect;
 use bevy::reflect::Reflect;
 
+use bevy::reflect::TypePath;
 use bevy_mod_scripting_lua::tealr;
 
 use tealr::mlu::mlua::MetaMethod;
@@ -23,6 +24,8 @@ use crate::{
     sub_reflect::ReflectPathElem,
 };
 
+use super::util::to_lua_idx;
+use super::util::LuaIndex;
 use super::ApplyLua;
 use super::FromLuaProxy;
 use super::LuaProxyable;
@@ -96,8 +99,8 @@ impl<'lua> ToLuaProxy<'lua> for String {
     }
 }
 
-impl<T: LuaProxyable + Reflect + FromReflect + for<'a> FromLuaProxy<'a> + Clone> LuaProxyable
-    for Option<T>
+impl<T: LuaProxyable + Reflect + FromReflect + TypePath + for<'a> FromLuaProxy<'a> + Clone>
+    LuaProxyable for Option<T>
 {
     fn ref_to_lua(self_: ScriptRef, lua: &Lua) -> mlua::Result<Value> {
         self_.get_typed(|s: &Option<T>| match s {
@@ -233,6 +236,7 @@ pub type LuaVec<T> = ScriptVec<T>;
 impl<
         T: TypeName
             + FromReflect
+            + TypePath
             + LuaProxyable
             + for<'a> FromLuaProxy<'a>
             + for<'a> ToLuaProxy<'a>
@@ -268,6 +272,7 @@ impl<T: TypeName> TypeName for LuaVec<T> {
 impl<
         T: TypeName
             + FromReflect
+            + TypePath
             + LuaProxyable
             + for<'a> FromLuaProxy<'a>
             + for<'a> ToLuaProxy<'a>
@@ -284,32 +289,42 @@ impl<
 }
 
 impl<
-        T: TypeName + FromReflect + LuaProxyable + for<'a> FromLuaProxy<'a> + for<'a> ToLuaProxy<'a>,
+        T: TypeName
+            + FromReflect
+            + TypePath
+            + LuaProxyable
+            + for<'a> FromLuaProxy<'a>
+            + for<'a> ToLuaProxy<'a>,
     > TealData for LuaVec<T>
 {
     fn add_methods<'lua, M: TealDataMethods<'lua, Self>>(methods: &mut M) {
         methods.document_type("A reference to the Vec<T> Rust type.");
         methods.document_type("All indexing begins at 1.");
 
-        methods.add_meta_method(MetaMethod::ToString, |_, s, ()| Ok(format!("{s:?}")));
+        methods.add_meta_method(MetaMethod::ToString, |_, s, ()| {
+            Ok(s.ref_.get(|s| format!("{:?}", s))?)
+        });
 
-        methods.add_meta_method(MetaMethod::Index, |_, s, index: usize| {
-            Ok(s.index(index - 1))
+        methods.add_meta_method(MetaMethod::Index, |_, s, index: LuaIndex| {
+            Ok(s.index(*index))
         });
 
         methods.add_meta_method_mut(
             MetaMethod::NewIndex,
-            |ctx, s, (index, value): (usize, Value)| s.index(index - 1).apply_lua(ctx, value),
+            |ctx, s, (index, value): (LuaIndex, Value)| s.index(*index).apply_lua(ctx, value),
         );
 
         methods.add_meta_method(MetaMethod::Pairs, |ctx, s, _: ()| {
             let len = s.len()?;
-            let mut curr_idx = 1;
+            let mut curr_idx = 0;
             let ref_: ScriptRef = s.clone().into();
             TypedFunction::from_rust_mut(
                 move |ctx, ()| {
                     let o = if curr_idx < len {
-                        (curr_idx.to_lua(ctx)?, ref_.index(curr_idx).to_lua(ctx)?)
+                        (
+                            to_lua_idx(curr_idx).to_lua(ctx)?,
+                            ref_.index(curr_idx).to_lua(ctx)?,
+                        )
                     } else {
                         (Value::Nil, Value::Nil)
                     };
@@ -321,6 +336,17 @@ impl<
         });
 
         methods.add_meta_method(MetaMethod::Len, |_, s, ()| Ok(s.len()?));
+
+        methods.add_method("to_table", |ctx, s, ()| {
+            let table = ctx.create_table()?;
+            let len = s.len()?;
+
+            for i in 0..len {
+                table.raw_set(to_lua_idx(i), s.index(i).to_lua(ctx)?)?;
+            }
+
+            Ok(table)
+        });
 
         methods.add_method_mut("push", |ctx, s, v: Value| {
             let new_val = T::from_lua_proxy(v, ctx)?;
@@ -335,13 +361,13 @@ impl<
             Ok(())
         });
 
-        methods.add_method_mut("insert", |ctx, s, (idx, v): (usize, Value<'lua>)| {
-            s.insert(idx - 1, T::from_lua_proxy(v, ctx)?)?;
+        methods.add_method_mut("insert", |ctx, s, (idx, v): (LuaIndex, Value<'lua>)| {
+            s.insert(*idx, T::from_lua_proxy(v, ctx)?)?;
             Ok(())
         });
 
-        methods.add_method_mut("remove", |ctx, s, idx: usize| {
-            let removed = s.remove(idx)?;
+        methods.add_method_mut("remove", |ctx, s, idx: LuaIndex| {
+            let removed = s.remove(*idx)?;
             removed.to_lua_proxy(ctx)
         });
     }
@@ -350,6 +376,7 @@ impl<
 impl<
         T: TypeName
             + FromReflect
+            + TypePath
             + LuaProxyable
             + for<'a> FromLuaProxy<'a>
             + for<'a> ToLuaProxy<'a>
@@ -410,6 +437,7 @@ impl<
             + for<'a> ToLuaProxy<'a>
             + Clone
             + FromReflect
+            + TypePath
             + LuaProxyable
             + std::fmt::Debug,
     > FromLuaProxy<'lua> for Vec<T>

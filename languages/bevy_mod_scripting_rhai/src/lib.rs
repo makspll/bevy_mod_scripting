@@ -2,10 +2,7 @@ use crate::{
     assets::{RhaiFile, RhaiLoader},
     docs::RhaiDocFragment,
 };
-use bevy::{
-    ecs::schedule::{BaseSystemSet, FreeSystemSet},
-    prelude::*,
-};
+use bevy::{ecs::schedule::ScheduleLabel, prelude::*};
 use bevy_mod_scripting_core::{prelude::*, systems::*, world::WorldPointer};
 use rhai::*;
 use std::marker::PhantomData;
@@ -50,7 +47,7 @@ pub struct RhaiContext {
     pub scope: Scope<'static>,
 }
 
-#[derive(Clone)]
+#[derive(Clone, Event)]
 /// A Rhai Hook. The result of creating this event will be
 /// a call to the lua script with the hook_name and the given arguments
 pub struct RhaiEvent<A: FuncArgs + Clone + 'static> {
@@ -72,7 +69,11 @@ impl<A: FuncArgs + Send + Clone + Sync + 'static> ScriptHost for RhaiScriptHost<
     type APITarget = Engine;
     type DocTarget = RhaiDocFragment;
 
-    fn register_with_app_in_set(app: &mut bevy::prelude::App, set: impl FreeSystemSet) {
+    fn register_with_app_in_set(
+        app: &mut bevy::prelude::App,
+        schedule: impl ScheduleLabel,
+        set: impl SystemSet,
+    ) {
         app.add_priority_event::<Self::ScriptEvent>()
             .add_asset::<RhaiFile>()
             .init_asset_loader::<RhaiLoader>()
@@ -83,6 +84,7 @@ impl<A: FuncArgs + Send + Clone + Sync + 'static> ScriptHost for RhaiScriptHost<
             .register_type::<Script<Self::ScriptAsset>>()
             .register_type::<Handle<RhaiFile>>()
             .add_systems(
+                schedule,
                 (
                     script_add_synchronizer::<Self>,
                     script_remove_synchronizer::<Self>,
@@ -92,36 +94,8 @@ impl<A: FuncArgs + Send + Clone + Sync + 'static> ScriptHost for RhaiScriptHost<
                     .in_set(set),
             )
             // setup engine
-            .add_startup_system(
-                |mut providers: ResMut<APIProviders<Self>>, mut host: ResMut<Self>| {
-                    providers
-                        .attach_all(&mut host.engine)
-                        .expect("Error in adding api's for rhai");
-                },
-            );
-    }
-
-    fn register_with_app_in_base_set(app: &mut bevy::prelude::App, set: impl BaseSystemSet) {
-        app.add_priority_event::<Self::ScriptEvent>()
-            .add_asset::<RhaiFile>()
-            .init_asset_loader::<RhaiLoader>()
-            .init_resource::<CachedScriptState<Self>>()
-            .init_resource::<ScriptContexts<Self::ScriptContext>>()
-            .init_resource::<APIProviders<Self>>()
-            .register_type::<ScriptCollection<Self::ScriptAsset>>()
-            .register_type::<Script<Self::ScriptAsset>>()
-            .register_type::<Handle<RhaiFile>>()
             .add_systems(
-                (
-                    script_add_synchronizer::<Self>,
-                    script_remove_synchronizer::<Self>,
-                    script_hot_reload_handler::<Self>,
-                )
-                    .chain()
-                    .in_base_set(set),
-            )
-            // setup engine
-            .add_startup_system(
+                Startup,
                 |mut providers: ResMut<APIProviders<Self>>, mut host: ResMut<Self>| {
                     providers
                         .attach_all(&mut host.engine)
@@ -149,8 +123,9 @@ impl<A: FuncArgs + Send + Clone + Sync + 'static> ScriptHost for RhaiScriptHost<
         let mut ast = self
             .engine
             .compile(
-                std::str::from_utf8(script).map_err(|_| ScriptError::FailedToLoad {
+                std::str::from_utf8(script).map_err(|e| ScriptError::FailedToLoad {
                     script: script_data.name.to_owned(),
+                    msg: e.to_string(),
                 })?,
             )
             .map_err(|e| ScriptError::SyntaxError {

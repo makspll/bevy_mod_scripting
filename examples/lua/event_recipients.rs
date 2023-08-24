@@ -1,8 +1,10 @@
+use bevy::asset::ChangeWatcher;
 use bevy::prelude::*;
 use bevy_mod_scripting::prelude::*;
 use rand::prelude::SliceRandom;
 use std::sync::atomic::Ordering::Relaxed;
 use std::sync::{atomic::AtomicU32, Mutex};
+use std::time::Duration;
 
 #[derive(Clone)]
 pub struct MyLuaArg(usize);
@@ -118,16 +120,19 @@ fn load_our_scripts(server: Res<AssetServer>, mut commands: Commands) {
 fn main() -> std::io::Result<()> {
     let mut app = App::new();
 
-    app.add_plugins(DefaultPlugins)
-        .add_plugin(ScriptingPlugin)
-        .add_startup_system(load_our_scripts)
-        // randomly fire events for either all scripts,
-        // the script with id 0
-        // or the script with id 1
-        .add_system(do_update)
-        .add_script_handler_to_base_set::<LuaScriptHost<MyLuaArg>, _, 0, 0>(CoreSet::PostUpdate)
-        .add_script_host_to_base_set::<LuaScriptHost<MyLuaArg>, _>(CoreSet::PostUpdate)
-        .add_api_provider::<LuaScriptHost<MyLuaArg>>(Box::new(LuaAPIProvider));
+    app.add_plugins(DefaultPlugins.set(AssetPlugin {
+        watch_for_changes: ChangeWatcher::with_delay(Duration::from_secs(0)),
+        ..Default::default()
+    }))
+    .add_plugins(ScriptingPlugin)
+    .add_systems(Startup, load_our_scripts)
+    // randomly fire events for either all scripts,
+    // the script with id 0
+    // or the script with id 1
+    .add_systems(Update, do_update)
+    .add_script_handler::<LuaScriptHost<MyLuaArg>, 0, 0>(PostUpdate)
+    .add_script_host::<LuaScriptHost<MyLuaArg>>(PostUpdate)
+    .add_api_provider::<LuaScriptHost<MyLuaArg>>(Box::new(LuaAPIProvider));
     app.run();
 
     Ok(())

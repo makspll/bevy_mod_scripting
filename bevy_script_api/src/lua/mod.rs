@@ -20,6 +20,7 @@ use tealr::TypeName;
 use crate::script_ref::{ReflectedValue, ScriptRef, ValueIndex};
 
 use self::bevy::LuaWorld;
+use self::util::to_host_idx;
 
 pub mod bevy;
 pub mod std;
@@ -65,7 +66,7 @@ impl ValueIndex<Value<'_>> for ScriptRef {
 
     fn index(&self, index: Value<'_>) -> Self::Output {
         match index {
-            Value::Integer(idx) => Ok(self.index(idx as usize)),
+            Value::Integer(idx) => Ok(self.index(to_host_idx(idx as usize))),
             Value::String(field) => {
                 let str_ = field.to_str()?.to_string();
                 // TODO: hopefully possible to use a &'_ str here
@@ -168,7 +169,7 @@ impl TealData for ReflectedValue {
         methods.document_type("If you know the reflected value converts to a LuaType (via LuaProxyable), use the `as` operator to convert to said type.");
 
         methods.add_meta_method(MetaMethod::ToString, |_, val, ()| {
-            val.ref_.get(|s| Ok(format!("{:#?}", &s)))?
+            val.ref_.get(|s| Ok(format!("{:?}", &s)))?
         });
 
         methods.add_meta_method_mut(MetaMethod::Index, |_, val, field: Value| {

@@ -1,11 +1,11 @@
-use bevy::prelude::*;
+use bevy::{asset::ChangeWatcher, prelude::*};
 
 use bevy_mod_scripting::{
     api::{impl_tealr_type, lua::bevy::LuaBevyAPIProvider},
     prelude::*,
 };
 
-use std::sync::Mutex;
+use std::{sync::Mutex, time::Duration};
 
 #[derive(Clone)]
 pub struct MyLuaArg;
@@ -95,19 +95,22 @@ impl APIProvider for LuaAPIProvider {
 fn main() -> std::io::Result<()> {
     let mut app = App::new();
 
-    app.add_plugins(DefaultPlugins)
-        .add_plugin(ScriptingPlugin)
-        // add the providers and script host
-        .add_script_host_to_base_set::<LuaScriptHost<MyLuaArg>, _>(CoreSet::PostUpdate)
-        .add_api_provider::<LuaScriptHost<MyLuaArg>>(Box::new(LuaAPIProvider))
-        .add_api_provider::<LuaScriptHost<MyLuaArg>>(Box::new(LuaBevyAPIProvider))
-        // this needs to be placed after any `add_api_provider` and `add_script_host` calls
-        // it will generate `doc` and `types` folders under `assets/scripts` containing the documentation and teal declaration files
-        // respectively. See example asset folder to see how they look like. The `teal_file.tl` script in example assets shows the usage of one of those
-        // declaration files, use the teal vscode extension to explore the type hints!
-        // Note: This is a noop in optimized builds unless the `doc_always` feature is enabled!
-        .update_documentation::<LuaScriptHost<MyLuaArg>>()
-        .add_script_handler_to_base_set::<LuaScriptHost<MyLuaArg>, _, 0, 0>(CoreSet::PostUpdate);
+    app.add_plugins(DefaultPlugins.set(AssetPlugin {
+        watch_for_changes: ChangeWatcher::with_delay(Duration::from_secs(0)),
+        ..Default::default()
+    }))
+    .add_plugins(ScriptingPlugin)
+    // add the providers and script host
+    .add_script_host::<LuaScriptHost<MyLuaArg>>(PostUpdate)
+    .add_api_provider::<LuaScriptHost<MyLuaArg>>(Box::new(LuaAPIProvider))
+    .add_api_provider::<LuaScriptHost<MyLuaArg>>(Box::new(LuaBevyAPIProvider))
+    // this needs to be placed after any `add_api_provider` and `add_script_host` calls
+    // it will generate `doc` and `types` folders under `assets/scripts` containing the documentation and teal declaration files
+    // respectively. See example asset folder to see how they look like. The `teal_file.tl` script in example assets shows the usage of one of those
+    // declaration files, use the teal vscode extension to explore the type hints!
+    // Note: This is a noop in optimized builds unless the `doc_always` feature is enabled!
+    .update_documentation::<LuaScriptHost<MyLuaArg>>()
+    .add_script_handler::<LuaScriptHost<MyLuaArg>, 0, 0>(PostUpdate);
 
     // app.run(); no need, documentation gets generated before the app even starts
 

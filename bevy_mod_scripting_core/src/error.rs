@@ -4,8 +4,8 @@ use thiserror::Error;
 pub enum ScriptError {
     #[error("Runtime error in script `{script}` {msg}")]
     RuntimeError { script: String, msg: String },
-    #[error("Failed to load script asset for `{script}`")]
-    FailedToLoad { script: String },
+    #[error("Failed to load script asset for `{script}` {msg}")]
+    FailedToLoad { script: String, msg: String },
     #[error("Syntax error for script `{script}` {msg}")]
     SyntaxError { script: String, msg: String },
     #[error("Callback method `{callback}` invalid for script `{script}` {msg}")]

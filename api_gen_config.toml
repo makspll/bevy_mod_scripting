@@ -6,12 +6,12 @@ use {
 		tealr::mlu::mlua::MetaMethod, 
 		docs::LuaDocFragment
 	},
-	crate::{common::bevy::GetWorld, lua::{RegisterForeignLuaType}},
+	crate::{common::bevy::GetWorld, lua::{RegisterForeignLuaType, util::LuaIndex}},
 };
 use std::ops::*;
 use crate::{script_ref::{ReflectedValue,ValueIndex},
 	sub_reflect::ReflectPathElem,
-	error::ReflectionError
+	error::ReflectionError,
 };
 use std::sync::Mutex;
 use bevy_mod_scripting_core::prelude::*;
@@ -143,10 +143,6 @@ source="bevy_ui"
 
 [[types]]
 type="CalculatedClip"
-source="bevy_ui"
-
-[[types]]
-type="CalculatedSize"
 source="bevy_ui"
 
 [[types]]
@@ -493,8 +489,8 @@ source="bevy_asset"
 type="Vec2"
 source="bevy_math"
 lua_methods=[
-    "(MetaMethod::Index) => |_,s,idx: usize| {Ok(s.inner()?[idx])}",
-    "mut (MetaMethod::NewIndex) => |_,s,(idx,val): (usize,f32)| {s.val_mut(|s| Ok(s[idx] = val))?}"
+    "(MetaMethod::Index) => |_,s,idx: LuaIndex| {Ok(s.inner()?[*idx])}",
+    "mut (MetaMethod::NewIndex) => |_,s,(idx,val): (LuaIndex,f32)| {s.val_mut(|s| Ok(s[*idx] = val))?}"
 ]
 import_path="glam::f32::Vec2"
 
@@ -502,8 +498,8 @@ import_path="glam::f32::Vec2"
 type="Vec3"
 source="bevy_math"
 lua_methods=[
-    "(MetaMethod::Index) => |_,s,idx: usize| {Ok(s.inner()?[idx])}",
-    "mut (MetaMethod::NewIndex) => |_,s,(idx,val): (usize,f32)| {s.val_mut(|s| Ok(s[idx] = val))?}"
+    "(MetaMethod::Index) => |_,s,idx: LuaIndex| {Ok(s.inner()?[*idx])}",
+    "mut (MetaMethod::NewIndex) => |_,s,(idx,val): (LuaIndex,f32)| {s.val_mut(|s| Ok(s[*idx] = val))?}"
 ]
 import_path="glam::f32::Vec3"
 
@@ -511,8 +507,8 @@ import_path="glam::f32::Vec3"
 type="Vec3A"
 source="bevy_math"
 lua_methods=[
-    "(MetaMethod::Index) => |_,s,idx: usize| {Ok(s.inner()?[idx])}",
-    "mut (MetaMethod::NewIndex) => |_,s,(idx,val): (usize,f32)| {s.val_mut(|s| Ok(s[idx] = val))?}"
+    "(MetaMethod::Index) => |_,s,idx: LuaIndex| {Ok(s.inner()?[*idx])}",
+    "mut (MetaMethod::NewIndex) => |_,s,(idx,val): (LuaIndex,f32)| {s.val_mut(|s| Ok(s[*idx] = val))?}"
 ]
 import_path="glam::f32::Vec3A"
 
@@ -521,8 +517,8 @@ import_path="glam::f32::Vec3A"
 type="Vec4"
 source="bevy_math"
 lua_methods=[
-    "(MetaMethod::Index) => |_,s,idx: usize| {Ok(s.inner()?[idx])}",
-    "mut (MetaMethod::NewIndex) => |_,s,(idx,val): (usize,f32)| {s.val_mut(|s| Ok(s[idx] = val))?}"
+    "(MetaMethod::Index) => |_,s,idx: LuaIndex| {Ok(s.inner()?[*idx])}",
+    "mut (MetaMethod::NewIndex) => |_,s,(idx,val): (LuaIndex,f32)| {s.val_mut(|s| Ok(s[*idx] = val))?}"
 ]
 import_path="glam::f32::Vec4"
 
@@ -555,8 +551,8 @@ import_path="glam::bool::BVec4A"
 type="DVec2"
 source="bevy_math"
 lua_methods=[
-    "(MetaMethod::Index) => |_,s,idx: usize| {Ok(s.inner()?[idx])}",
-    "mut (MetaMethod::NewIndex) => |_,s,(idx,val): (usize,f64)| {s.val_mut(|s| Ok(s[idx] = val))?}"
+    "(MetaMethod::Index) => |_,s,idx: LuaIndex| {Ok(s.inner()?[*idx])}",
+    "mut (MetaMethod::NewIndex) => |_,s,(idx,val): (LuaIndex,f64)| {s.val_mut(|s| Ok(s[*idx] = val))?}"
 ]
 import_path="glam::f64::DVec2"
 
@@ -564,8 +560,8 @@ import_path="glam::f64::DVec2"
 type="DVec3"
 source="bevy_math"
 lua_methods=[
-    "(MetaMethod::Index) => |_,s,idx: usize| {Ok(s.inner()?[idx])}",
-    "mut (MetaMethod::NewIndex) => |_,s,(idx,val): (usize,f64)| {s.val_mut(|s| Ok(s[idx] = val))?}"
+    "(MetaMethod::Index) => |_,s,idx: LuaIndex| {Ok(s.inner()?[*idx])}",
+    "mut (MetaMethod::NewIndex) => |_,s,(idx,val): (LuaIndex,f64)| {s.val_mut(|s| Ok(s[*idx] = val))?}"
 ]
 import_path="glam::f64::DVec3"
 
@@ -573,8 +569,8 @@ import_path="glam::f64::DVec3"
 type="DVec4"
 source="bevy_math"
 lua_methods=[
-    "(MetaMethod::Index) => |_,s,idx: usize| {Ok(s.inner()?[idx])}",
-    "mut (MetaMethod::NewIndex) => |_,s,(idx,val): (usize,f64)| {s.val_mut(|s| Ok(s[idx] = val))?}"
+    "(MetaMethod::Index) => |_,s,idx: LuaIndex| {Ok(s.inner()?[*idx])}",
+    "mut (MetaMethod::NewIndex) => |_,s,(idx,val): (LuaIndex,f64)| {s.val_mut(|s| Ok(s[*idx] = val))?}"
 ]
 import_path="glam::f64::DVec4"
 
@@ -582,8 +578,8 @@ import_path="glam::f64::DVec4"
 type="IVec2"
 source="bevy_math"
 lua_methods=[
-    "(MetaMethod::Index) => |_,s,idx: usize| {Ok(s.inner()?[idx])}",
-    "mut (MetaMethod::NewIndex) => |_,s,(idx,val): (usize,i32)| {s.val_mut(|s| Ok(s[idx] = val))?}"
+    "(MetaMethod::Index) => |_,s,idx: LuaIndex| {Ok(s.inner()?[*idx])}",
+    "mut (MetaMethod::NewIndex) => |_,s,(idx,val): (LuaIndex,i32)| {s.val_mut(|s| Ok(s[*idx] = val))?}"
 ]
 import_path="glam::i32::IVec2"
 
@@ -591,8 +587,8 @@ import_path="glam::i32::IVec2"
 type="IVec3"
 source="bevy_math"
 lua_methods=[
-    "(MetaMethod::Index) => |_,s,idx: usize| {Ok(s.inner()?[idx])}",
-    "mut (MetaMethod::NewIndex) => |_,s,(idx,val): (usize,i32)| {s.val_mut(|s| Ok(s[idx] = val))?}"
+    "(MetaMethod::Index) => |_,s,idx: LuaIndex| {Ok(s.inner()?[*idx])}",
+    "mut (MetaMethod::NewIndex) => |_,s,(idx,val): (LuaIndex,i32)| {s.val_mut(|s| Ok(s[*idx] = val))?}"
 ]
 import_path="glam::i32::IVec3"
 
@@ -600,8 +596,8 @@ import_path="glam::i32::IVec3"
 type="IVec4"
 source="bevy_math"
 lua_methods=[
-    "(MetaMethod::Index) => |_,s,idx: usize| {Ok(s.inner()?[idx])}",
-    "mut (MetaMethod::NewIndex) => |_,s,(idx,val): (usize,i32)| {s.val_mut(|s| Ok(s[idx] = val))?}"
+    "(MetaMethod::Index) => |_,s,idx: LuaIndex| {Ok(s.inner()?[*idx])}",
+    "mut (MetaMethod::NewIndex) => |_,s,(idx,val): (LuaIndex,i32)| {s.val_mut(|s| Ok(s[*idx] = val))?}"
 ]
 import_path="glam::i32::IVec4"
 
@@ -609,8 +605,8 @@ import_path="glam::i32::IVec4"
 type="UVec2"
 source="bevy_math"
 lua_methods=[
-    "(MetaMethod::Index) => |_,s,idx: usize| {Ok(s.inner()?[idx])}",
-    "mut (MetaMethod::NewIndex) => |_,s,(idx,val): (usize,u32)| {s.val_mut(|s| Ok(s[idx] = val))?}"
+    "(MetaMethod::Index) => |_,s,idx: LuaIndex| {Ok(s.inner()?[*idx])}",
+    "mut (MetaMethod::NewIndex) => |_,s,(idx,val): (LuaIndex,u32)| {s.val_mut(|s| Ok(s[*idx] = val))?}"
 ]
 import_path="glam::u32::UVec2"
 
@@ -618,8 +614,8 @@ import_path="glam::u32::UVec2"
 type="UVec3"
 source="bevy_math"
 lua_methods=[
-    "(MetaMethod::Index) => |_,s,idx: usize| {Ok(s.inner()?[idx])}",
-    "mut (MetaMethod::NewIndex) => |_,s,(idx,val): (usize,u32)| {s.val_mut(|s| Ok(s[idx] = val))?}"
+    "(MetaMethod::Index) => |_,s,idx: LuaIndex| {Ok(s.inner()?[*idx])}",
+    "mut (MetaMethod::NewIndex) => |_,s,(idx,val): (LuaIndex,u32)| {s.val_mut(|s| Ok(s[*idx] = val))?}"
 ]
 import_path="glam::u32::UVec3"
 
@@ -627,8 +623,8 @@ import_path="glam::u32::UVec3"
 type="UVec4"
 source="bevy_math"
 lua_methods=[
-    "(MetaMethod::Index) => |_,s,idx: usize| {Ok(s.inner()?[idx])}",
-    "mut (MetaMethod::NewIndex) => |_,s,(idx,val): (usize,u32)| {s.val_mut(|s| Ok(s[idx] = val))?}"
+    "(MetaMethod::Index) => |_,s,idx: LuaIndex| {Ok(s.inner()?[*idx])}",
+    "mut (MetaMethod::NewIndex) => |_,s,(idx,val): (LuaIndex,u32)| {s.val_mut(|s| Ok(s[*idx] = val))?}"
 ]
 import_path="glam::u32::UVec4"
 
@@ -637,11 +633,11 @@ type="Mat3"
 source="bevy_math"
 lua_methods=[
 """    
-	mut (MetaMethod::Index) => |ctx,s,idx : usize| {
+	mut (MetaMethod::Index) => |ctx,s,idx : LuaIndex| {
 		Ok(LuaVec3::new_ref(
 				s.script_ref(ctx.get_world()?).sub_ref(ReflectPathElem::SubReflectionIndexed{
 					label:"col", 
-					index: idx,
+					index: *idx,
 					get: |idx,ref_| Err(ReflectionError::InsufficientProvenance{
 						path: "".to_owned(), 
 						msg: "Cannot get column of matrix with immutable reference".to_owned()
@@ -668,11 +664,11 @@ type="Mat2"
 source="bevy_math"
 lua_methods=[
 """    
-	mut (MetaMethod::Index) => |ctx,s,idx : usize| {
+	mut (MetaMethod::Index) => |ctx,s,idx : LuaIndex| {
 		Ok(LuaVec2::new_ref(
 				s.script_ref(ctx.get_world()?).sub_ref(ReflectPathElem::SubReflectionIndexed{
 					label:"col", 
-					index: idx,
+					index: *idx,
 					get: |idx,ref_| Err(ReflectionError::InsufficientProvenance{
 						path: "".to_owned(), 
 						msg: "Cannot get column of matrix with immutable reference".to_owned()
@@ -700,11 +696,11 @@ type="Mat3A"
 source="bevy_math"
 lua_methods=[
 """    
-	mut (MetaMethod::Index) => |ctx,s,idx : usize| {
+	mut (MetaMethod::Index) => |ctx,s,idx : LuaIndex| {
 		Ok(LuaVec3A::new_ref(
 				s.script_ref(ctx.get_world()?).sub_ref(ReflectPathElem::SubReflectionIndexed{
 					label:"col", 
-					index: idx,
+					index: *idx,
 					get: |idx,ref_| Err(ReflectionError::InsufficientProvenance{
 						path: "".to_owned(), 
 						msg: "Cannot get column of matrix with immutable reference".to_owned()
@@ -731,11 +727,11 @@ type="Mat4"
 source="bevy_math"
 lua_methods=[
 """    
-	mut (MetaMethod::Index) => |ctx,s,idx : usize| {
+	mut (MetaMethod::Index) => |ctx,s,idx : LuaIndex| {
 		Ok(LuaVec4::new_ref(
 				s.script_ref(ctx.get_world()?).sub_ref(ReflectPathElem::SubReflectionIndexed{
 					label:"col", 
-					index: idx,
+					index: *idx,
 					get: |idx,ref_| Err(ReflectionError::InsufficientProvenance{
 						path: "".to_owned(), 
 						msg: "Cannot get column of matrix with immutable reference".to_owned()
@@ -763,11 +759,11 @@ type="DMat2"
 source="bevy_math"
 lua_methods=[
 """    
-	mut (MetaMethod::Index) => |ctx,s,idx : usize| {
+	mut (MetaMethod::Index) => |ctx,s,idx : LuaIndex| {
 		Ok(LuaDVec2::new_ref(
 				s.script_ref(ctx.get_world()?).sub_ref(ReflectPathElem::SubReflectionIndexed{
 					label:"col", 
-					index: idx,
+					index: *idx,
 					get: |idx,ref_| Err(ReflectionError::InsufficientProvenance{
 						path: "".to_owned(), 
 						msg: "Cannot get column of matrix with immutable reference".to_owned()
@@ -794,11 +790,11 @@ type="DMat3"
 source="bevy_math"
 lua_methods=[
 """    
-	mut (MetaMethod::Index) => |ctx,s,idx : usize| {
+	mut (MetaMethod::Index) => |ctx,s,idx : LuaIndex| {
 		Ok(LuaDVec3::new_ref(
 				s.script_ref(ctx.get_world()?).sub_ref(ReflectPathElem::SubReflectionIndexed{
 					label:"col", 
-					index: idx,
+					index: *idx,
 					get: |idx,ref_| Err(ReflectionError::InsufficientProvenance{
 						path: "".to_owned(), 
 						msg: "Cannot get column of matrix with immutable reference".to_owned()
@@ -825,11 +821,11 @@ type="DMat4"
 source="bevy_math"
 lua_methods=[
 """    
-	mut (MetaMethod::Index) => |ctx,s,idx : usize| {
+	mut (MetaMethod::Index) => |ctx,s,idx : LuaIndex| {
 		Ok(LuaDVec4::new_ref(
 				s.script_ref(ctx.get_world()?).sub_ref(ReflectPathElem::SubReflectionIndexed{
 					label:"col", 
-					index: idx,
+					index: *idx,
 					get: |idx,ref_| Err(ReflectionError::InsufficientProvenance{
 						path: "".to_owned(), 
 						msg: "Cannot get column of matrix with immutable reference".to_owned()

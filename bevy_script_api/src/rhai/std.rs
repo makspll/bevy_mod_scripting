@@ -1,6 +1,10 @@
-use std::{any::type_name, iter::Map};
+use std::{
+    any::type_name,
+    fmt::{Debug, Display},
+    iter::Map,
+};
 
-use bevy::reflect::{FromReflect, Reflect};
+use bevy::reflect::{FromReflect, Reflect, TypePath};
 #[allow(deprecated)]
 use bevy_mod_scripting_rhai::rhai::{CustomType, Dynamic, Engine, EvalAltResult, Position};
 
@@ -109,7 +113,9 @@ impl_rhai_proxy!(f64 as FLOAT);
 impl_rhai_proxy!(bool as bool);
 impl_rhai_proxy!(String as Into);
 
-impl<T: RhaiProxyable + Reflect + FromReflect + Clone + FromRhaiProxy> RhaiProxyable for Option<T> {
+impl<T: RhaiProxyable + Reflect + FromReflect + TypePath + Clone + FromRhaiProxy> RhaiProxyable
+    for Option<T>
+{
     fn ref_to_rhai(self_: crate::ScriptRef) -> Result<Dynamic, Box<EvalAltResult>> {
         self_.get_typed(|s: &Option<T>| match s {
             Some(_) => T::ref_to_rhai(self_.sub_ref(ReflectPathElem::SubReflection {
@@ -234,14 +240,27 @@ impl<T: ToRhaiProxy> ToRhaiProxy for Option<T> {
 }
 
 /// Composite trait composing the various traits required for a type `T` to be used as part of a RhaiVec<T>
-pub trait RhaiVecElem: FromReflect + RhaiProxyable + FromRhaiProxy + Clone {}
-impl<T: FromReflect + RhaiProxyable + FromRhaiProxy + Clone> RhaiVecElem for T {}
+pub trait RhaiVecElem: FromReflect + TypePath + RhaiProxyable + FromRhaiProxy + Clone {}
+impl<T: FromReflect + TypePath + RhaiProxyable + FromRhaiProxy + Clone> RhaiVecElem for T {}
 
 /// A ScriptVec wrapper which implements a custom iterator ontop of ScriptVec's
 pub struct RhaiVec<T: RhaiVecElem>(pub ScriptVec<T>);
+
 impl<T: RhaiVecElem> Clone for RhaiVec<T> {
     fn clone(&self) -> Self {
         Self(self.0.clone())
+    }
+}
+
+impl<T: RhaiVecElem> Debug for RhaiVec<T> {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{:?}", self.0)
+    }
+}
+
+impl<T: Display + RhaiVecElem> Display for RhaiVec<T> {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", self.0)
     }
 }
 
@@ -351,6 +370,12 @@ impl<T: RhaiVecElem> CustomType for RhaiVec<T> {
     fn build(mut builder: bevy_mod_scripting_rhai::rhai::TypeBuilder<Self>) {
         builder
             .with_name(type_name::<Vec<T>>())
+            .with_fn("to_debug", |vec: &mut RhaiVec<T>| format!("{:?}", vec))
+            .with_fn("to_string", |vec: &mut RhaiVec<T>| {
+                vec.ref_
+                    .get(|s| format!("{:?}", &s))
+                    .map_err::<Box<EvalAltResult>, _>(|e| e.into())
+            })
             .with_result_fn("is_empty", |vec: &mut RhaiVec<T>| {
                 vec.is_empty().map_err(Into::into)
             })

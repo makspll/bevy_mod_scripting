@@ -1,10 +1,5 @@
 //! All script host related stuff
-use bevy::{
-    asset::Asset,
-    ecs::schedule::{BaseSystemSet, FreeSystemSet},
-    prelude::*,
-    reflect::FromReflect,
-};
+use bevy::{asset::Asset, ecs::schedule::ScheduleLabel, prelude::*};
 use std::{
     collections::HashMap,
     iter::once,
@@ -131,13 +126,16 @@ pub trait ScriptHost: Send + Sync + 'static + Default + Resource {
 
     /// Registers the script host with the given app, and attaches handlers to deal with spawning/removing scripts in the given System Set.
     ///
-    /// Ideally place after any game logic which can spawn/remove/modify scripts to avoid frame lag. (typically `CoreSet::Post_Update`)
-    fn register_with_app_in_set(app: &mut App, set: impl FreeSystemSet);
+    /// Ideally place after any game logic which can spawn/remove/modify scripts to avoid frame lag. (typically `PostUpdate`)
+    fn register_with_app(app: &mut App, schedule: impl ScheduleLabel) {
+        #[derive(SystemSet, Hash, Debug, Eq, PartialEq, Clone, Copy)]
+        struct DummySet;
 
-    /// Registers the script host with the given app, and attaches handlers to deal with spawning/removing scripts in the given Base System Set.
-    ///
-    /// Ideally place after any game logic which can spawn/remove/modify scripts to avoid frame lag. (typically `CoreSet::Post_Update`)
-    fn register_with_app_in_base_set(app: &mut App, set: impl BaseSystemSet);
+        Self::register_with_app_in_set(app, schedule, DummySet);
+    }
+
+    /// Similar to `register_with_app` but allows you to specify a system set to add the handler to.
+    fn register_with_app_in_set(app: &mut App, schedule: impl ScheduleLabel, set: impl SystemSet);
 }
 
 /// Implementors can modify a script context in order to enable
@@ -307,7 +305,7 @@ impl<C> ScriptContexts<C> {
 
 /// A struct defining an instance of a script asset.
 /// Multiple instances of the same script can exist on the same entity
-#[derive(Debug, Reflect, FromReflect)]
+#[derive(Debug, Reflect)]
 pub struct Script<T: Asset> {
     /// a strong handle to the script asset
     handle: Handle<T>,
@@ -428,7 +426,7 @@ impl<T: Asset> Script<T> {
     }
 }
 
-#[derive(Component, Debug, FromReflect, Reflect)]
+#[derive(Component, Debug, Reflect)]
 #[reflect(Component, Default)]
 /// The component storing many scripts.
 /// Scripts receive information about the entity they are attached to
