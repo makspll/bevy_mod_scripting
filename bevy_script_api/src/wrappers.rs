@@ -4,9 +4,6 @@ use bevy::reflect::Reflect;
 pub trait ScriptValue: Reflect + Clone {}
 impl<T: Reflect + Clone> ScriptValue for T {}
 
-/// Script representable type with pass-by-reference semantics
-pub trait ScriptReference: Reflect {}
-impl<T: Reflect> ScriptReference for T {}
 
 #[macro_export]
 macro_rules! ref_only_wrapper_methods {

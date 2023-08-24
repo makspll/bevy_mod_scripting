@@ -18,7 +18,7 @@ impl Display for MyError {
 
 impl Error for MyError {}
 
-#[derive(ScriptProxy, Reflect, Resource, Default, Debug)]
+#[derive(ScriptProxy, Reflect, Resource, Default, Debug, Clone)]
 #[reflect(Resource, LuaProxyable)]
 #[proxy(languages("on_feature(lua)"), derive(Clone))]
 #[functions[
@@ -34,7 +34,6 @@ impl Error for MyError {}
         format!("{:#?}", _self)
     }
 ]]
-#[derive(Clone)]
 pub struct MyProxiedStruct {
     my_string: String,
 }

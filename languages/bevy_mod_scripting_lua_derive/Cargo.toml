@@ -13,33 +13,37 @@ readme = "readme.md"
 
 [package.metadata.release]
 pre-release-replacements = [
-    {file="Cargo.toml", search='^version\s*=\s*.*$', replace="version = \"{{version}}\"", exactly=1},
-    {file="Cargo.toml", search='^(?P<h>bevy_mod_scripting_common\s*=.*)version\s*=\s*".*"(?P<t>.*)$', replace="${h}version = \"{{version}}\"${t}", exactly=1},
+    { file = "Cargo.toml", search = '^version\s*=\s*.*$', replace = "version = \"{{version}}\"", exactly = 1 },
+    { file = "Cargo.toml", search = '^(?P<h>bevy_mod_scripting_common\s*=.*)version\s*=\s*".*"(?P<t>.*)$', replace = "${h}version = \"{{version}}\"${t}", exactly = 1 },
 ]
 
 [lib]
-name="bevy_mod_scripting_lua_derive"
-path="src/lib.rs"
-proc-macro=true
+name = "bevy_mod_scripting_lua_derive"
+path = "src/lib.rs"
+proc-macro = true
 
 [dependencies]
-bevy_mod_scripting_common = {path = "../../bevy_mod_scripting_common", version = "0.3.0" }
+bevy_mod_scripting_common = { path = "../../bevy_mod_scripting_common", version = "0.3.0" }
 paste = "1.0.7"
-syn = {version="1.0.57",features=["full","fold","extra-traits"]}
+syn = { version = "1.0.57", features = ["full", "fold", "extra-traits"] }
 quote = "1.0.8"
 proc-macro2 = "1.0"
 convert_case = "0.5.0"
 rustdoc-types = "0.11.0"
 serde = { version = "1.0", features = ["derive"] }
 serde_derive = "1.0.137"
-indexmap = {version= "1.9.1", features= ["serde"]}
+indexmap = { version = "1.9.1", features = ["serde"] }
 proc-macro-error = "1"
 strum = { version = "0.24.1", features = ["derive"] }
 
 [dev-dependencies]
 trybuild = "1.0"
-bevy = { version = "0.10.1", default-features = false}
-bevy_mod_scripting = { path = "../../../bevy_mod_scripting", version = "0.3.0", features=["lua", "lua_script_api", "lua54"] }
+bevy = { version = "0.11", default-features = false }
+bevy_mod_scripting = { path = "../../../bevy_mod_scripting", version = "0.3.0", features = [
+    "lua",
+    "lua_script_api",
+    "lua54",
+] }
 bevy_script_api = { path = "../../bevy_script_api", version = "0.3.0" }
 bevy_mod_scripting_lua = { path = "../bevy_mod_scripting_lua", version = "0.3.0" }
 bevy_mod_scripting_core = { path = "../../bevy_mod_scripting_core", version = "0.3.0" }
