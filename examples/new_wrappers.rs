@@ -57,12 +57,12 @@ fn main() -> std::io::Result<()> {
     let mut app = App::new();
 
     app.add_plugins(DefaultPlugins)
-        .add_plugin(ScriptingPlugin)
-        .add_script_host_to_base_set::<LuaScriptHost<()>, _>(CoreSet::PostUpdate)
+        .add_plugins(ScriptingPlugin)
+        .add_script_host::<LuaScriptHost<()>>(PostUpdate)
         .register_type::<MyProxiedStruct>()
         .init_resource::<MyProxiedStruct>()
         .add_api_provider::<LuaScriptHost<()>>(Box::new(LuaBevyAPIProvider))
-        .add_system(|world: &mut World| {
+        .add_systems(Startup, |world: &mut World| {
             world.insert_resource(MyProxiedStruct {
                 my_string: "I was retrieved from the world".to_owned(),
             });
