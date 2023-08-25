@@ -700,7 +700,7 @@ pub fn impl_lua_proxy(input: TokenStream) -> TokenStream {
         #tealr_type_implementations
 
         #[automatically_derived]
-        #[allow(unused_parens,unused_braces,unused_mut)]
+        #[allow(unused_parens, unused_braces, unused_mut, unused_variables)]
         #[allow(clippy::all)]
         impl #tealr::mlu::TealData for #proxy_type {
             fn add_methods<'lua, T: #tealr::mlu::TealDataMethods<'lua, Self>>(methods: &mut T) {
@@ -713,7 +713,7 @@ pub fn impl_lua_proxy(input: TokenStream) -> TokenStream {
             }
         }
 
-        #[allow(clippy::all)]
+        #[allow(clippy::all, unused_variables)]
         impl bevy_script_api::lua::LuaProxyable for #proxied_name {
             fn ref_to_lua<'lua>(self_ : bevy_script_api::script_ref::ScriptRef, lua: &'lua #tealr::mlu::mlua::Lua) -> #tealr::mlu::mlua::Result<#tealr::mlu::mlua::Value<'lua>> {
                 <#proxy_type as #tealr::mlu::mlua::ToLua>::to_lua(#proxy_type::new_ref(self_),lua)
@@ -734,6 +734,7 @@ pub fn impl_lua_proxy(input: TokenStream) -> TokenStream {
             }
         }
 
+        #[allow(clippy::all, unused_variables)]
         impl bevy_script_api::lua::ToLuaProxy<'_> for #proxied_name {
             fn to_lua_proxy<'lua>(self, lua: &'lua #tealr::mlu::mlua::Lua) -> #tealr::mlu::mlua::Result<#tealr::mlu::mlua::Value<'lua>>{
                 <#proxy_type as #tealr::mlu::mlua::ToLua>::to_lua(#proxy_type::new(self),lua)
