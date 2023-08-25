@@ -1,17 +1,13 @@
 use bevy::{app::AppExit, prelude::*};
-use bevy_mod_scripting::{
-    api::{impl_lua_newtype, impl_script_newtype, lua::bevy::LuaWorld, ScriptProxy, ScriptRef},
-    prelude::*,
-};
+use bevy_mod_scripting::{api::ScriptProxy, prelude::*};
 
-use mlua::Error as LuaError;
 use std::error::Error;
 use std::fmt::Display;
 #[derive(Debug)]
 pub struct MyError;
 
 impl Display for MyError {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+    fn fmt(&self, _: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         todo!()
     }
 }

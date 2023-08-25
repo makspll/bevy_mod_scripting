@@ -1,3 +1,5 @@
+#![allow(deprecated)]
+
 use bevy::{app::AppExit, prelude::*};
 
 use bevy_mod_scripting::{

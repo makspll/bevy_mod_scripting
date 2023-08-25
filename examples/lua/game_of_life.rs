@@ -1,3 +1,4 @@
+#![allow(deprecated)]
 use std::{borrow::Cow, sync::Mutex, time::Duration};
 
 use bevy::{
