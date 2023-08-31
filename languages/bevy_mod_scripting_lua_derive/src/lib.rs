@@ -12,7 +12,7 @@ use proc_macro2::*;
 use proc_macro_error::*;
 use quote::*;
 use strum::*;
-use syn::{*, spanned::*, token::{Mut, Paren}, punctuated::Punctuated, visit_mut::VisitMut};
+use syn::{*, spanned::*, token::{Mut, Paren, Bracket}, punctuated::Punctuated, visit_mut::VisitMut};
 use visitor::{LuaSimpleTypeArgumentUnwrapper, LuaTypeConstructorVisitor};
 
 use crate::visitor::LuaSimpleTypeWrapper;
@@ -39,6 +39,35 @@ const SELF_ALIAS: &str = "_self";
 const PROXIED_OUT_ALIAS: &str = "__proxied_out";
 const PROXY_OUT_ALIAS: &str = "__proxy_out";
 const PROXY_PREFIX: &str = "Lua";
+const VALID_META_METHODS : [&str; 27] = [
+    "Add",
+    "Sub",
+    "Mul",
+    "Div",
+    "Mod",
+    "Pow",
+    "Unm",
+    "IDiv",
+    "BAnd",
+    "BOr",
+    "BXor",
+    "BNot",
+    "Shl",
+    "Shr",
+    "Concat",
+    "Len",
+    "Eq",
+    "Lt",
+    "Le",
+    "Index",
+    "NewIndex",
+    "Call",
+    "ToString",
+    "Pairs",
+    "IPairs",
+    "Iter",
+    "Close",
+];
 
 #[derive(Debug)]
 struct FunctionArgMeta {
@@ -250,7 +279,6 @@ impl FunctionMeta<'_> {
                             &output_type,
                             output_attrs,
                         )
-                    ,
                 };
 
                 // validate the function against it's meta
@@ -288,8 +316,9 @@ impl FunctionMeta<'_> {
                 self_arg = Some(quote_spanned!(meta.span=> , #self_name : & #_mut #self_type));
             }
         }
-
-        let (args, arg_types) = args
+        
+        if self.fn_type.expects_arguments_other_than_self() {
+            let (args, arg_types) = args
             .map(|fn_arg| {
                 let _mut = &fn_arg.mutable;
                 let name = &fn_arg.arg_name;
@@ -303,7 +332,11 @@ impl FunctionMeta<'_> {
             })
             .unzip::<_, _, Vec<proc_macro2::TokenStream>, Vec<proc_macro2::TokenStream>>();
 
-        quote_spanned!(self.body.sig.inputs.span()=>_ #self_arg , (#(#args),*) : (#(#arg_types),*))
+            quote_spanned!(self.body.sig.inputs.span()=>_ #self_arg , (#(#args),*) : (#(#arg_types),*))
+        } else {
+            quote_spanned!(self.body.sig.inputs.span()=>_ #self_arg)
+        }
+
     }
 
     /// Takes all the argument identifiers passed into the function, generates assignments which shadow the original
@@ -418,8 +451,6 @@ impl FunctionMeta<'_> {
     }
 
     fn generate_mlua_body(&self, proxied_name: &Ident) -> proc_macro2::TokenStream {
-        
-
         let unpacked_parameter_declarations = self.generate_mlua_body_unwrapped_parameter_assignments();
 
         let proxied_output_ident = format_ident!("{PROXIED_OUT_ALIAS}", span=self.output_meta.span);
@@ -431,7 +462,7 @@ impl FunctionMeta<'_> {
         // determine if we need to wrap the output in an Ok() statement
         let last_stm = match &self.output_meta.arg_type {
             SimpleType::DuoPath(DuoPath{ ident , ..}) if *ident == "Result" => quote_spanned! {self.body.span()=>#proxy_output_ident},
-            _ => quote_spanned! {self.body.span()=>Ok(#proxy_output_ident)}
+            _ => quote_spanned! {self.body.span()=>Ok(#proxy_output_ident)},
         };
 
         let conversion_body_stms = quote!(
@@ -465,12 +496,10 @@ impl FunctionMeta<'_> {
                 }
         );
 
-
         quote!(   
             #unpacked_parameter_declarations
             #conversion_body_surrounded_with_dereferening_stms
         )
-
     }
 
     
@@ -528,6 +557,8 @@ enum FunctionType {
     MutableMetaFunction,
     MutatingMethod,
     MutatingMetaMethod,
+    FieldGetterMethod,
+    FieldSetterMethod,
 }
 
 impl FunctionType {
@@ -536,10 +567,22 @@ impl FunctionType {
             || self == FunctionType::MetaMethod
             || self == FunctionType::MutatingMethod
             || self == FunctionType::MutatingMetaMethod
+            || self == FunctionType::FieldGetterMethod
+            || self == FunctionType::FieldSetterMethod
     }
 
     fn expects_mutable_receiver(self) -> bool {
-        self == FunctionType::MutatingMethod || self == FunctionType::MutatingMetaMethod
+        self == FunctionType::MutatingMethod 
+            || self == FunctionType::FieldSetterMethod
+    }
+
+    fn is_field(self) -> bool {
+        self == FunctionType::FieldGetterMethod ||
+            self == FunctionType::FieldSetterMethod
+    }
+
+    fn expects_arguments_other_than_self(self) -> bool {
+        self != FunctionType::FieldGetterMethod 
     }
 
     fn get_tealr_function(self) -> &'static str {
@@ -552,6 +595,8 @@ impl FunctionType {
             FunctionType::MutableMetaFunction => "add_meta_function_mut",
             FunctionType::MutatingMethod => "add_method_mut",
             FunctionType::MutatingMetaMethod => "add_meta_method_mut",
+            FunctionType::FieldGetterMethod => "add_field_method_get",
+            FunctionType::FieldSetterMethod => "add_field_method_set",
         }
     }
 
@@ -621,8 +666,81 @@ pub fn impl_lua_proxy(input: TokenStream) -> TokenStream {
         .map(|tkns| quote_spanned!(meta.span=>methods.document_type(#tkns);));
     let tealr = quote!(bevy_mod_scripting_lua::tealr);
 
-    // generate both tealr documentation and instantiations of functions
-    let methods = meta.functions.iter().map(|(name, body)| {
+    let field_methods : Vec<(Ident, TraitItemMethod)> = match meta.data {
+        ProxyData::Struct { fields } => {
+            let field_processor = |idx: usize, field: &Field, is_setter: bool| {          
+                let field_name = field.ident.clone().unwrap_or_else(|| format_ident!("{}", idx));
+                let field_type = &field.ty;
+                let docs = field.attrs.iter()
+                    .filter(|attr| attr.path.is_ident("doc"))
+                    .collect::<Vec<_>>();
+
+                let mut lua_attr = field.attrs.iter()
+                    .find(|attr| attr.path.is_ident("proxy"))
+                    .map(|attr| attr.parse_meta().unwrap_or_abort())
+                    .and_then(|meta| match meta {   
+                        Meta::List(MetaList { nested, .. }) => nested.iter().find_map(|attr| match attr {
+                                NestedMeta::Meta(l@Meta::List(MetaList { nested , .. })) 
+                                    if l.path().is_ident("lua") => Some(nested.clone()),
+                                _ => None
+                            } ),
+                        _ => None
+                    })
+                    .unwrap_or_else(Punctuated::<NestedMeta,Token![,]>::new);
+
+
+                if is_setter {
+                    lua_attr.extend::<Punctuated<NestedMeta, Token![,]>>(parse_quote!(lua(FieldSetterMethod)));
+                } else {
+                    lua_attr.extend::<Punctuated<NestedMeta, Token![,]>>(parse_quote!(lua(FieldGetterMethod)));
+                }
+
+
+                let lua_attr = Attribute {
+                    pound_token: Token![#](fields.span()), 
+                    style: AttrStyle::Outer, 
+                    bracket_token: Bracket::default(), 
+                    path: Path{ leading_colon: None, segments: Default::default() }, 
+                    tokens: lua_attr.to_token_stream() 
+                };
+    
+                let trait_item_method : TraitItemMethod = if is_setter {
+                    parse_quote!{
+                        #lua_attr
+                        #(#docs)*
+                        fn #field_name (&mut self, other: #field_type) {
+                            self.#field_name;
+                            ()
+                        }
+                    }
+                } else {
+                    parse_quote!{
+                        #lua_attr
+                        #(#docs)*
+                        fn #field_name (&self) -> #field_type {
+                            self.#field_name
+                        }
+                    }
+                };
+
+                (field_name, trait_item_method)
+            };
+
+            let mut out = fields.iter().enumerate().map(|(idx,field)| 
+                field_processor(idx,field,false)).collect::<Vec<_>>();
+            
+            out.extend(fields.iter().enumerate().map(|(idx,field)| 
+                field_processor(idx,field,true)).collect::<Vec<_>>());
+            out
+        },
+    };
+
+
+    // generate both tealr documentation and instantiations of functions and field getters/setters
+    let (fields, methods) = meta.functions.iter()
+        // treat field getters and setters as normal methods for the time being, separate later
+        .chain(field_methods.iter().map(|(a,b)| (a,b)))
+        .map(|(name, body)| {
         let method_documentation_calls = body
             .attrs
             .iter()
@@ -646,38 +764,9 @@ pub fn impl_lua_proxy(input: TokenStream) -> TokenStream {
             .is_meta()
             .then(|| {
                 let name = fn_meta.name;
-                let valid_meta_methods : HashSet<&'static str> = HashSet::from_iter([
-                    "Add",
-                    "Sub",
-                    "Mul",
-                    "Div",
-                    "Mod",
-                    "Pow",
-                    "Unm",
-                    "IDiv",
-                    "BAnd",
-                    "BOr",
-                    "BXor",
-                    "BNot",
-                    "Shl",
-                    "Shr",
-                    "Concat",
-                    "Len",
-                    "Eq",
-                    "Lt",
-                    "Le",
-                    "Index",
-                    "NewIndex",
-                    "Call",
-                    "ToString",
-                    "Pairs",
-                    "IPairs",
-                    "Iter",
-                    "Close",
-                ].into_iter());
 
                 // check is valid meta method if not use custom name
-                if valid_meta_methods.contains(name.to_string().as_str()) {
+                if VALID_META_METHODS.contains(&name.to_string().as_str()) {
                     quote!(#tealr::mlu::mlua::MetaMethod::#name)
                 } else {
                     let std_string = name.to_string();
@@ -686,14 +775,23 @@ pub fn impl_lua_proxy(input: TokenStream) -> TokenStream {
             })
             .unwrap_or_else(|| fn_meta.name.to_string().to_token_stream());
 
-        quote_spanned! {body.span()=>
-            #(#method_documentation_calls)*
-            methods.#tealr_function(#signature, #closure);
-        }
-    });
+        let container_ident = if fn_meta.fn_type.is_field() {
+            format_ident!("fields", span=body.span())
+        } else {
+            format_ident!("methods", span=body.span())
+        };
 
+        (fn_meta.fn_type.is_field(), 
+            quote_spanned! {body.span()=>
+                #(#method_documentation_calls)*
+                #container_ident.#tealr_function(#signature, #closure);
+            }
+        )
+    }).partition::<Vec<(bool, proc_macro2::TokenStream)>,_>(|(is_field,_)| *is_field);
 
-    quote_spanned! {meta.span=>
+    let fields = fields.iter().map(|(_, b)| b);
+    let methods = methods.iter().map(|(_, b)| b);
+    let a = quote_spanned! {meta.span=>
 
         #definition
 
@@ -709,7 +807,7 @@ pub fn impl_lua_proxy(input: TokenStream) -> TokenStream {
             }
 
             fn add_fields<'lua, T: #tealr::mlu::TealDataFields<'lua, Self>>(fields: &mut T) {
-
+                #(#fields)*
             }
         }
 
@@ -742,5 +840,7 @@ pub fn impl_lua_proxy(input: TokenStream) -> TokenStream {
         }
 
     }
-    .into()
+    .into();
+    // panic!("{}", a);
+    a
 }

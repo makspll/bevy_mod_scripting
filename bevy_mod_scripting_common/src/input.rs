@@ -611,6 +611,7 @@ impl TryFrom<DeriveInput> for ProxyMeta {
         let docstrings = derive_input
             .attrs
             .iter()
+            .filter(|attr| attr.path.is_ident("doc"))
             .map(attribute_to_string_lit)
             .filter(|s| !s.is_empty())
             .collect();
