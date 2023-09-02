@@ -19,7 +19,8 @@ impl WorldPointer {
     /// Creates a new world pointer.
     /// # Safety
     /// satisfies world constancy, since it's impossible to change the underlying pointer
-    /// However you must ensure that the world does not go out of scope while this pointer is live    
+    /// However you must ensure that the world does not go out of scope while this pointer is live   
+    #[allow(clippy::arc_with_non_send_sync)]
     pub unsafe fn new(world: &mut World) -> Self {
         WorldPointer(Arc::new(RwLock::new(world)))
     }
