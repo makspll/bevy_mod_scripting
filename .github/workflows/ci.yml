@@ -68,7 +68,7 @@ jobs:
       - uses: actions-rs/cargo@v1
         with:
           command: clippy
-          args: --features={{ matrix.lua_feature }},rhai,teal,lua_script_api,rhai_script_api -- -D warnings 
+          args: --features=${{ matrix.lua_feature }},rhai,teal,lua_script_api,rhai_script_api -- -D warnings 
   tests:
     name: Tests
     runs-on: ubuntu-latest
