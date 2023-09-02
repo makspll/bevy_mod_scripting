@@ -69,7 +69,7 @@ impl DocFragment for LuaDocFragment {
     }
 
     fn merge(mut self, o: Self) -> Self {
-        self.walker.extend(o.walker.into_iter());
+        self.walker.extend(o.walker);
         self
     }
 
