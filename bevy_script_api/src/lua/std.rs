@@ -314,27 +314,31 @@ impl<
             |ctx, s, (index, value): (LuaIndex, Value)| s.index(*index).apply_lua(ctx, value),
         );
 
-        methods.add_meta_method(MetaMethod::Pairs, |ctx, s, _: ()| {
-            let len = s.len()?;
-            let mut curr_idx = 0;
-            let ref_: ScriptRef = s.clone().into();
-            TypedFunction::from_rust_mut(
-                move |ctx, ()| {
-                    let o = if curr_idx < len {
-                        (
-                            to_lua_idx(curr_idx).to_lua(ctx)?,
-                            ref_.index(curr_idx).to_lua(ctx)?,
-                        )
-                    } else {
-                        (Value::Nil, Value::Nil)
-                    };
-                    curr_idx += 1;
-                    Ok(o)
+        bevy_mod_scripting_lua::__cfg_feature_any_lua52_lua53_lua54_luajit52!(
+            methods.add_meta_method(
+                MetaMethod::Pairs,
+                |ctx, s, _: ()| {
+                    let len = s.len()?;
+                    let mut curr_idx = 0;
+                    let ref_: ScriptRef = s.clone().into();
+                    TypedFunction::from_rust_mut(
+                        move |ctx, ()| {
+                            let o = if curr_idx < len {
+                                (
+                                    to_lua_idx(curr_idx).to_lua(ctx)?,
+                                    ref_.index(curr_idx).to_lua(ctx)?,
+                                )
+                            } else {
+                                (Value::Nil, Value::Nil)
+                            };
+                            curr_idx += 1;
+                            Ok(o)
+                        },
+                        ctx,
+                    )
                 },
-                ctx,
-            )
-        });
-
+            );
+        );
         methods.add_meta_method(MetaMethod::Len, |_, s, ()| Ok(s.len()?));
 
         methods.add_method("to_table", |ctx, s, ()| {
