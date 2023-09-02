@@ -14,6 +14,12 @@ jobs:
     strategy:
       matrix:
        os: [windows-latest, ubuntu-latest, macOS-latest]
+       lua_feature: [lua51,lua52,lua53,lua54,luajit,luajit52]
+       exclude: 
+        - os: windows-latest
+          lua_feature: ['lua51',lua52,lua53,lua54,luajit,luajit52]
+        - os: macOS-latest
+          lua_feature: ['lua51',lua52,lua53,lua54,luajit,luajit52]
     steps:
       - name: Install alsa and udev
         run: sudo apt-get update; sudo apt-get install --no-install-recommends libasound2-dev libudev-dev
@@ -52,9 +58,6 @@ jobs:
   clippy:
     name: Clippy
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        lua_feature: [lua51,lua52,lua53,lua54,luajit,luajit52]
     steps:
       - name: Install alsa and udev
         run: sudo apt-get update; sudo apt-get install --no-install-recommends libasound2-dev libudev-dev
@@ -68,7 +71,7 @@ jobs:
       - uses: actions-rs/cargo@v1
         with:
           command: clippy
-          args: --features=${{ matrix.lua_feature }},rhai,teal,lua_script_api,rhai_script_api -- -D warnings 
+          args: --features=lua54,rhai,teal,lua_script_api,rhai_script_api -- -D warnings 
   tests:
     name: Tests
     runs-on: ubuntu-latest
