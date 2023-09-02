@@ -134,6 +134,6 @@ macro_rules! __cfg_feature_any_lua52_lua53_lua54_luajit52 {
 )))]
 #[doc(hidden)]
 #[macro_export]
-macro_rules! __cfg_feature_not_any_lua52_lua53_lua54_luajit52 {
+macro_rules! __cfg_feature_any_lua52_lua53_lua54_luajit52 {
     ( $( $tok:tt )* ) => {};
 }
