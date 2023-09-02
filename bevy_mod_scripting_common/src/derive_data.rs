@@ -238,7 +238,7 @@ impl ProxyFlags {
     }
 
     pub fn merge(&mut self, o: Self) {
-        self.flags.extend(o.flags.into_iter())
+        self.flags.extend(o.flags)
     }
 }
 
