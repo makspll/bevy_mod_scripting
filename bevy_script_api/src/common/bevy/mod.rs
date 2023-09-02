@@ -208,11 +208,14 @@ impl ScriptWorld {
     ) -> Result<Option<ScriptRef>, ScriptError> {
         let w = self.read();
 
+        let entity_ref = w.get_entity(entity).ok_or_else(|| {
+            ScriptError::Other(format!("Entity is not valid {:#?}", entity))})?;
+
         let component_data = comp_type.data::<ReflectComponent>().ok_or_else(|| {
             ScriptError::Other(format!("Not a component {}", comp_type.short_name()))
         })?;
 
-        Ok(component_data.reflect(w.entity(entity)).map(|_component| {
+        Ok(component_data.reflect(entity_ref).map(|_component| {
             ScriptRef::new_component_ref(component_data.clone(), entity, self.clone().into())
         }))
     }
@@ -227,7 +230,10 @@ impl ScriptWorld {
             ScriptError::Other(format!("Not a component {}", comp_type.short_name()))
         })?;
 
-        Ok(component_data.reflect(w.entity(entity)).is_some())
+        let entity_ref = w.get_entity(entity).ok_or_else(|| {
+            ScriptError::Other(format!("Entity is not valid {:#?}", entity))})?;
+
+        Ok(component_data.reflect(entity_ref).is_some())
     }
 
     pub fn remove_component(
@@ -236,10 +242,14 @@ impl ScriptWorld {
         comp_type: ScriptTypeRegistration,
     ) -> Result<(), ScriptError> {
         let mut w = self.write();
+
+        let mut entity_ref = w.get_entity_mut(entity).ok_or_else(|| {
+            ScriptError::Other(format!("Entity is not valid {:#?}", entity))})?;
+
         let component_data = comp_type.data::<ReflectComponent>().ok_or_else(|| {
             ScriptError::Other(format!("Not a component {}", comp_type.short_name()))
         })?;
-        component_data.remove(&mut w.entity_mut(entity));
+        component_data.remove(&mut entity_ref);
         Ok(())
     }
 
