@@ -348,12 +348,12 @@ impl ReflectPath {
             ReflectBase::Component { comp, entity } => {
                 let g = world_ptr.read();
 
-                let entity_ref = g.get_entity(*entity).ok_or_else(|| {
-                    ReflectionError::InvalidBaseReference {
-                        base: self.base.to_string(),
-                        reason: "This entity does not exist".to_owned(),
-                    }})?;
-
+                let entity_ref =
+                    g.get_entity(*entity)
+                        .ok_or_else(|| ReflectionError::InvalidBaseReference {
+                            base: self.base.to_string(),
+                            reason: "This entity does not exist".to_owned(),
+                        })?;
 
                 let ref_ = self.walk_path(comp.reflect(entity_ref).ok_or_else(|| {
                     ReflectionError::InvalidBaseReference {

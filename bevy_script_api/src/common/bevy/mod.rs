@@ -169,8 +169,9 @@ impl ScriptWorld {
     ) -> Result<ScriptRef, ScriptError> {
         let mut w = self.write();
 
-        let mut entity_ref = w.get_entity_mut(entity).ok_or_else(|| {
-            ScriptError::Other(format!("Entity is not valid {:#?}", entity))})?;
+        let mut entity_ref = w
+            .get_entity_mut(entity)
+            .ok_or_else(|| ScriptError::Other(format!("Entity is not valid {:#?}", entity)))?;
 
         let component_data = comp_type.data::<ReflectComponent>().ok_or_else(|| {
             ScriptError::Other(format!("Not a component {}", comp_type.short_name()))
@@ -208,8 +209,9 @@ impl ScriptWorld {
     ) -> Result<Option<ScriptRef>, ScriptError> {
         let w = self.read();
 
-        let entity_ref = w.get_entity(entity).ok_or_else(|| {
-            ScriptError::Other(format!("Entity is not valid {:#?}", entity))})?;
+        let entity_ref = w
+            .get_entity(entity)
+            .ok_or_else(|| ScriptError::Other(format!("Entity is not valid {:#?}", entity)))?;
 
         let component_data = comp_type.data::<ReflectComponent>().ok_or_else(|| {
             ScriptError::Other(format!("Not a component {}", comp_type.short_name()))
@@ -230,8 +232,9 @@ impl ScriptWorld {
             ScriptError::Other(format!("Not a component {}", comp_type.short_name()))
         })?;
 
-        let entity_ref = w.get_entity(entity).ok_or_else(|| {
-            ScriptError::Other(format!("Entity is not valid {:#?}", entity))})?;
+        let entity_ref = w
+            .get_entity(entity)
+            .ok_or_else(|| ScriptError::Other(format!("Entity is not valid {:#?}", entity)))?;
 
         Ok(component_data.reflect(entity_ref).is_some())
     }
@@ -243,8 +246,9 @@ impl ScriptWorld {
     ) -> Result<(), ScriptError> {
         let mut w = self.write();
 
-        let mut entity_ref = w.get_entity_mut(entity).ok_or_else(|| {
-            ScriptError::Other(format!("Entity is not valid {:#?}", entity))})?;
+        let mut entity_ref = w
+            .get_entity_mut(entity)
+            .ok_or_else(|| ScriptError::Other(format!("Entity is not valid {:#?}", entity)))?;
 
         let component_data = comp_type.data::<ReflectComponent>().ok_or_else(|| {
             ScriptError::Other(format!("Not a component {}", comp_type.short_name()))
