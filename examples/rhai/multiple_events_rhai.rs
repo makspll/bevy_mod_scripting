@@ -17,7 +17,7 @@ fn main() {
         .add_systems(Update, (call_init, call_update))
         .add_script_host::<RhaiScriptHost<ScriptArgs>>(PostUpdate)
         .add_api_provider::<RhaiScriptHost<ScriptArgs>>(Box::new(RhaiBevyAPIProvider))
-        .add_script_handler::<RhaiScriptHost<ScriptArgs>, 0, 10>(PostUpdate)
+        .add_script_handler::<RhaiScriptHost<ScriptArgs>, 0, 1>(PostUpdate)
         .run();
 }
 
@@ -99,7 +99,7 @@ fn call_update(
                 },
                 recipients: Recipients::Entity(entity),
             },
-            10,
+            1,
         );
     });
 }
