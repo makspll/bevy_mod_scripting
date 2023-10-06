@@ -149,8 +149,8 @@ impl<A: FuncArgs + Send + Clone + Sync + 'static> ScriptHost for RhaiScriptHost<
         providers: &mut APIProviders<Self>,
     ) {
         // safety:
-            // - we have &mut World access
-            // - we do not use world_ptr after we use the original reference again anywhere in this function   
+        // - we have &mut World access
+        // - we do not use world_ptr after we use the original reference again anywhere in this function
         let world_ptr = unsafe { WorldPointer::new(world) };
 
         ctxs.for_each(|(fd, ctx)| {
@@ -161,6 +161,7 @@ impl<A: FuncArgs + Send + Clone + Sync + 'static> ScriptHost for RhaiScriptHost<
             for event in events.iter() {
                 // check if this script should handle this event
                 if !event.recipients().is_recipient(&fd) {
+                    println!("Skipping script, event amount: {}", events.len());
                     return;
                 };
 
