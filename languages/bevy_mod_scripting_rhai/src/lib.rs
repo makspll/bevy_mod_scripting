@@ -161,7 +161,6 @@ impl<A: FuncArgs + Send + Clone + Sync + 'static> ScriptHost for RhaiScriptHost<
             for event in events.iter() {
                 // check if this script should handle this event
                 if !event.recipients().is_recipient(&fd) {
-                    println!("Skipping script, event amount: {}", events.len());
                     return;
                 };
 
