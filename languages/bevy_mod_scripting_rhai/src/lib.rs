@@ -175,14 +175,19 @@ impl<A: FuncArgs + Send + Clone + Sync + 'static> ScriptHost for RhaiScriptHost<
                         let mut world = world_ptr.write();
                         let mut state: CachedScriptState<Self> = world.remove_resource().unwrap();
 
-                        let (_, mut error_wrt, _) = state.event_state.get_mut(&mut world);
+                        match *e {
+                            EvalAltResult::ErrorFunctionNotFound(..) => {}
+                            _ => {
+                                let (_, mut error_wrt, _) = state.event_state.get_mut(&mut world);
 
-                        let error = ScriptError::RuntimeError {
-                            script: fd.name.to_string(),
-                            msg: e.to_string(),
-                        };
-                        error!("{}", error);
-                        error_wrt.send(ScriptErrorEvent { error });
+                                let error = ScriptError::RuntimeError {
+                                    script: fd.name.to_string(),
+                                    msg: e.to_string(),
+                                };
+                                error!("{}", error);
+                                error_wrt.send(ScriptErrorEvent { error });
+                            }
+                        }
 
                         world.insert_resource(state);
                     }
