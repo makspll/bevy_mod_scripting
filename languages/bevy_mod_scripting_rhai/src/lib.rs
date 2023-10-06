@@ -148,11 +148,12 @@ impl<A: FuncArgs + Send + Clone + Sync + 'static> ScriptHost for RhaiScriptHost<
         ctxs: impl Iterator<Item = (ScriptData<'a>, &'a mut Self::ScriptContext)>,
         providers: &mut APIProviders<Self>,
     ) {
-        ctxs.for_each(|(fd, ctx)| {
-            // safety:
+        // safety:
             // - we have &mut World access
-            // - we do not use world_ptr after we use the original reference again anywhere in this function
-            let world_ptr = unsafe { WorldPointer::new(world) };
+            // - we do not use world_ptr after we use the original reference again anywhere in this function   
+        let world_ptr = unsafe { WorldPointer::new(world) };
+
+        ctxs.for_each(|(fd, ctx)| {
             providers
                 .setup_runtime_all(world_ptr.clone(), &fd, ctx)
                 .expect("Failed to setup script runtime");
