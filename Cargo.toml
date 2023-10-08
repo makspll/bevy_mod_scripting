@@ -10,7 +10,7 @@ homepage = "https://github.com/makspll/bevy_mod_scripting"
 keywords = ["bevy", "gamedev", "scripting", "lua"]
 categories = ["game-development"]
 readme = "readme.md"
-include= ["readme.md","/src","/examples","/assets","LICENSE"]
+include = ["readme.md", "/src", "/examples", "/assets", "LICENSE"]
 
 [[bin]]
 name = "bevy_mod_scripting_doc_gen"
@@ -21,15 +21,15 @@ name = "bevy_mod_scripting"
 path = "src/lib.rs"
 
 [package.metadata."docs.rs"]
-features = ["lua","lua54","rhai","lua_script_api","rhai_script_api","teal"]
+features = ["lua", "lua54", "rhai", "lua_script_api", "rhai_script_api", "teal"]
 
 [package.metadata.release]
 pre-release-replacements = [
-    {file="Cargo.toml", search='^version\s*=\s*.*$', replace="version = \"{{version}}\"", exactly=1},
-    {file="Cargo.toml", search='^(?P<h>bevy_mod_scripting_core\s*=.*)version\s*=\s*".*"(?P<t>.*)$', replace="${h}version = \"{{version}}\"${t}", exactly=1},
-    {file="Cargo.toml", search='^(?P<h>bevy_mod_scripting_lua\s*=.*)version\s*=\s*".*"(?P<t>.*)$', replace="${h}version = \"{{version}}\"${t}", exactly=1},
-    {file="Cargo.toml", search='^(?P<h>bevy_mod_scripting_rhai\s*=.*)version\s*=\s*".*"(?P<t>.*)$', replace="${h}version = \"{{version}}\"${t}", exactly=1},
-    {file="Cargo.toml", search='^(?P<h>bevy_script_api\s*=.*)version\s*=\s*".*"(?P<t>.*)$', replace="${h}version = \"{{version}}\"${t}", exactly=1},   
+    { file = "Cargo.toml", search = '^version\s*=\s*.*$', replace = "version = \"{{version}}\"", exactly = 1 },
+    { file = "Cargo.toml", search = '^(?P<h>bevy_mod_scripting_core\s*=.*)version\s*=\s*".*"(?P<t>.*)$', replace = "${h}version = \"{{version}}\"${t}", exactly = 1 },
+    { file = "Cargo.toml", search = '^(?P<h>bevy_mod_scripting_lua\s*=.*)version\s*=\s*".*"(?P<t>.*)$', replace = "${h}version = \"{{version}}\"${t}", exactly = 1 },
+    { file = "Cargo.toml", search = '^(?P<h>bevy_mod_scripting_rhai\s*=.*)version\s*=\s*".*"(?P<t>.*)$', replace = "${h}version = \"{{version}}\"${t}", exactly = 1 },
+    { file = "Cargo.toml", search = '^(?P<h>bevy_script_api\s*=.*)version\s*=\s*".*"(?P<t>.*)$', replace = "${h}version = \"{{version}}\"${t}", exactly = 1 },
 ]
 
 [features]
@@ -47,8 +47,8 @@ luajit = ["bevy_mod_scripting_lua/luajit", "lua"]
 luajit52 = ["bevy_mod_scripting_lua/luajit52", "lua"]
 
 # optional
-lua_script_api=["bevy_script_api/lua"]
-unsafe_lua_modules=["bevy_mod_scripting_lua/unsafe_lua_modules"]
+lua_script_api = ["bevy_script_api/lua"]
+unsafe_lua_modules = ["bevy_mod_scripting_lua/unsafe_lua_modules"]
 teal = ["bevy_mod_scripting_lua/teal"]
 mlua_serialize = ["bevy_mod_scripting_lua/mlua_serialize"]
 mlua_macros = ["bevy_mod_scripting_lua/mlua_macros"]
@@ -56,21 +56,21 @@ mlua_async = ["bevy_mod_scripting_lua/mlua_async"]
 
 ## rhai
 rhai = ["bevy_mod_scripting_rhai"]
-rhai_script_api=["bevy_script_api/rhai"]
+rhai_script_api = ["bevy_script_api/rhai"]
 
 [dependencies]
-bevy = { version = "0.11", default-features = false}
+bevy = { version = "0.11", default-features = false }
 bevy_mod_scripting_core = { path = "bevy_mod_scripting_core", version = "0.3.0" }
 bevy_mod_scripting_lua = { path = "languages/bevy_mod_scripting_lua", version = "0.3.0", optional = true }
-bevy_mod_scripting_rhai = { path = "languages/bevy_mod_scripting_rhai", version = "0.3.0", optional = true}
+bevy_mod_scripting_rhai = { path = "languages/bevy_mod_scripting_rhai", version = "0.3.0", optional = true }
 bevy_script_api = { path = "bevy_script_api", version = "0.3.0", optional = true }
 
 [dev-dependencies]
-bevy = { version = "0.11"}
-clap = { version = "4.1", features = ["derive"]}
+bevy = { version = "0.11" }
+clap = { version = "4.1", features = ["derive"] }
 rand = "0.8.5"
 bevy_console = "0.8.0"
-rhai-rand = "0.1" 
+rhai-rand = "0.1"
 
 [workspace]
 resolver = "2"
@@ -84,7 +84,7 @@ members = [
     "languages/bevy_mod_scripting_lua_derive",
     "languages/bevy_mod_scripting_rhai",
     "languages/bevy_mod_scripting_rhai_derive",
-    "bevy_mod_scripting_common"
+    "bevy_mod_scripting_common",
 ]
 
 [profile.dev]
@@ -97,60 +97,60 @@ opt-level = 3
 [[example]]
 name = "console_integration_lua"
 path = "examples/lua/console_integration.rs"
-required-features = ["lua54","lua_script_api"]
-
+required-features = ["lua54", "lua_script_api"]
 
 [[example]]
 name = "console_integration_rhai"
 path = "examples/rhai/console_integration.rs"
-required-features = ["rhai","rhai_script_api"]
+required-features = ["rhai", "rhai_script_api"]
 
 [[example]]
 name = "complex_game_loop_lua"
 path = "examples/lua/complex_game_loop.rs"
-required-features=["lua54"]
+required-features = ["lua54"]
 
 [[example]]
 name = "game_of_life_lua"
 path = "examples/lua/game_of_life.rs"
-required-features=["lua54","teal","lua_script_api"]
+required-features = ["lua54", "teal", "lua_script_api"]
 
 [[example]]
 name = "game_of_life_rhai"
 path = "examples/rhai/game_of_life.rs"
-required-features=["rhai","rhai_script_api"]
+required-features = ["rhai", "rhai_script_api"]
 
 [[example]]
 name = "event_recipients_lua"
 path = "examples/lua/event_recipients.rs"
-required-features=["lua54"]
+required-features = ["lua54"]
 
 [[example]]
 name = "coroutines_lua"
 path = "examples/lua/coroutines.rs"
-required-features=["lua54"]
+required-features = ["lua54"]
 
 [[example]]
 name = "documentation_gen_lua"
 path = "examples/lua/documentation_gen.rs"
-required-features=["lua54","teal","lua_script_api"]
+required-features = ["lua54", "teal", "lua_script_api"]
 
 
 [[example]]
 name = "bevy_api_lua"
 path = "examples/lua/bevy_api.rs"
-required-features=["lua54","lua_script_api"]
+required-features = ["lua54", "lua_script_api"]
 
 [[example]]
 name = "bevy_api_rhai"
 path = "examples/rhai/bevy_api.rs"
-required-features=["rhai","rhai_script_api"]
+required-features = ["rhai", "rhai_script_api"]
 
+[[example]]
+name = "multiple_events_rhai"
+path = "examples/rhai/multiple_events_rhai.rs"
+required-features = ["rhai", "rhai_script_api"]
 
 [[example]]
 name = "wrappers"
 path = "examples/wrappers.rs"
-required-features=["lua54","lua_script_api"]
-
-
-
+required-features = ["lua54", "lua_script_api"]
