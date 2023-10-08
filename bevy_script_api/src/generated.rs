@@ -4520,7 +4520,7 @@ impl_script_newtype! {
         ///
         ///A true element in the mask uses the corresponding element from `if_true`, and false
         ///uses the element from `if_false`.
-        select(Wrapped(BVec4A),self,self) -> self,
+        select(Wrapped(BVec4),self,self) -> self,
 
         ///Creates a 2D vector from the `x`, `y` and `z` elements of `self`, discarding `w`.
         ///
@@ -4569,42 +4569,42 @@ impl_script_newtype! {
         ///
         ///In other words, this computes `[self.x == rhs.x, self.y == rhs.y, ..]` for all
         ///elements.
-        cmpeq(self:self) -> Wrapped(BVec4A),
+        cmpeq(self:self) -> Wrapped(BVec4),
 
         ///Returns a vector mask containing the result of a `!=` comparison for each element of
         ///`self` and `rhs`.
         ///
         ///In other words this computes `[self.x != rhs.x, self.y != rhs.y, ..]` for all
         ///elements.
-        cmpne(self:self) -> Wrapped(BVec4A),
+        cmpne(self:self) -> Wrapped(BVec4),
 
         ///Returns a vector mask containing the result of a `>=` comparison for each element of
         ///`self` and `rhs`.
         ///
         ///In other words this computes `[self.x >= rhs.x, self.y >= rhs.y, ..]` for all
         ///elements.
-        cmpge(self:self) -> Wrapped(BVec4A),
+        cmpge(self:self) -> Wrapped(BVec4),
 
         ///Returns a vector mask containing the result of a `>` comparison for each element of
         ///`self` and `rhs`.
         ///
         ///In other words this computes `[self.x > rhs.x, self.y > rhs.y, ..]` for all
         ///elements.
-        cmpgt(self:self) -> Wrapped(BVec4A),
+        cmpgt(self:self) -> Wrapped(BVec4),
 
         ///Returns a vector mask containing the result of a `<=` comparison for each element of
         ///`self` and `rhs`.
         ///
         ///In other words this computes `[self.x <= rhs.x, self.y <= rhs.y, ..]` for all
         ///elements.
-        cmple(self:self) -> Wrapped(BVec4A),
+        cmple(self:self) -> Wrapped(BVec4),
 
         ///Returns a vector mask containing the result of a `<` comparison for each element of
         ///`self` and `rhs`.
         ///
         ///In other words this computes `[self.x < rhs.x, self.y < rhs.y, ..]` for all
         ///elements.
-        cmplt(self:self) -> Wrapped(BVec4A),
+        cmplt(self:self) -> Wrapped(BVec4),
 
         ///Returns a vector containing the absolute value of each element of `self`.
         abs(self:) -> self,
@@ -4635,7 +4635,7 @@ impl_script_newtype! {
         ///Performs `is_nan` on each element of self, returning a vector mask of the results.
         ///
         ///In other words, this computes `[x.is_nan(), y.is_nan(), z.is_nan(), w.is_nan()]`.
-        is_nan_mask(self:) -> Wrapped(BVec4A),
+        is_nan_mask(self:) -> Wrapped(BVec4),
 
         ///Computes the length of `self`.
         length(self:) -> Raw(f32),
