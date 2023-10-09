@@ -461,7 +461,7 @@ impl<
                     .collect::<Result<Vec<_>, _>>()
             }
             _ => {
-                return Err(mlua::Error::FromLuaConversionError {
+                Err(mlua::Error::FromLuaConversionError {
                     from: new_val.type_name(),
                     to: "userdata or table",
                     message: Some("LuaVec can only be assigned with itself or a table".to_owned()),
