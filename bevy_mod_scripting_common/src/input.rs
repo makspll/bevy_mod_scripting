@@ -515,12 +515,9 @@ impl VisitSimpleType<Type> for TypeConstructorVisitor {
                 arguments: PathArguments::AngleBracketed(AngleBracketedGenericArguments {
                     colon2_token: unit_path.colon2_token,
                     lt_token: unit_path.lt_token,
-                    args: Punctuated::from_iter(
-                        [GenericArgument::Type(
-                            self.visit_simple_type(&unit_path.inner, false),
-                        )]
-                        .into_iter(),
-                    ),
+                    args: Punctuated::from_iter([GenericArgument::Type(
+                        self.visit_simple_type(&unit_path.inner, false),
+                    )]),
                     gt_token: unit_path.gt_token,
                 }),
             }
@@ -539,9 +536,10 @@ impl VisitSimpleType<Type> for TypeConstructorVisitor {
                 arguments: PathArguments::AngleBracketed(AngleBracketedGenericArguments {
                     colon2_token: duo_path.colon2_token,
                     lt_token: duo_path.lt_token,
-                    args: Punctuated::from_iter(
-                        [GenericArgument::Type(left), GenericArgument::Type(right)].into_iter(),
-                    ),
+                    args: Punctuated::from_iter([
+                        GenericArgument::Type(left),
+                        GenericArgument::Type(right),
+                    ]),
                     gt_token: duo_path.gt_token,
                 }),
             }

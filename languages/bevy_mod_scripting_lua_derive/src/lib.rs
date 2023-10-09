@@ -77,29 +77,34 @@ struct FunctionArgMeta {
     span: Span,
     /// variant specific data enumeration
     arg_type: SimpleType,
+    /// if an argument is raw, it's passed without any unwrapping to the handler function
+    /// if an argument isn't annotated with the `proxy` flag it is technically raw, but this is different for receiver and output arguments
+    is_raw: bool,
+    
 }
 
 impl FunctionArgMeta {
     /// Creates a new meta structure corresponding to the given function argument.
     /// Resolves receivers with the given proxy name.
     /// Uses given span if available, otherwise uses the span of the function argument
-    fn new_from_fn_arg(proxied_type_identifier: &Ident, fn_arg: &FnArg, span: Option<Span>) -> Self {
+    fn new_from_fn_arg(proxied_type_identifier: &Ident, fn_arg: &FnArg, span: Option<Span>, in_raw_function: bool) -> Self {
         let arg_name;
         let mutable;
         let arg_type;
         let span = span.unwrap_or(fn_arg.span());
         let proxied_type_identifier = &mut proxied_type_identifier.clone();
         proxied_type_identifier.set_span(span);
+        let is_raw = in_raw_function;
 
         // the proxied type is always proxied with the `Lua` prefix
         let mut proxy_ident_map = HashMap::from_iter(
-            [(proxied_type_identifier.clone(),None)].into_iter()
+            [(proxied_type_identifier.clone(),None)]
         );
         match fn_arg {
             FnArg::Receiver(receiver) => {
 
                 arg_type = SimpleType::new_from_fn_arg(PROXY_PREFIX, fn_arg, proxied_type_identifier, &proxy_ident_map).unwrap_or_abort();
-
+                // normally receivers are assumed to be wrapped, this let's us opt out of this behaviour
                 if let Some(_mut) = receiver.mutability {
                     mutable = Some(_mut)
                 } else {
@@ -123,12 +128,12 @@ impl FunctionArgMeta {
                         // #[proxy(TypeName1=ProxyType1, TypeName2=ProxyType2, ..)]  
                         Meta::List(MetaList { nested, .. }) => {
                             // collect all the types passed in the meta as identifiers
-                            let idents = nested.iter().map(|nested_meta| {
+                            let idents = nested.iter().filter_map(|nested_meta| {
                                 match nested_meta {
                                     NestedMeta::Meta(Meta::Path(path)) => 
-                                        (path.get_ident().unwrap_or_else(|| abort!(path,"Expected identifier")).clone(),None),
+                                        Some((path.get_ident().unwrap_or_else(|| abort!(path,"Expected identifier")).clone(),None)),
                                     NestedMeta::Meta(Meta::NameValue(MetaNameValue{path, lit: Lit::Str(lit_str), ..})) => 
-                                        (path.get_ident().unwrap_or_else(|| abort!(path,"Expected identifier")).clone(), Some(lit_str.parse().unwrap_or_abort())),
+                                        Some((path.get_ident().unwrap_or_else(|| abort!(path,"Expected identifier")).clone(), Some(lit_str.parse().unwrap_or_abort()))),
                                     _ => abort!(nested_meta.span(), "Expected proxy identifier mapping as in: `proxy(TypeName=ProxyType)` or `proxy(TypeName)` for `LuaTypeName`"),
                                 }
                             }).collect::<Vec<(Ident,Option<Ident>)>>();
@@ -157,6 +162,7 @@ impl FunctionArgMeta {
             arg_name,
             span,
             arg_type,
+            is_raw
         }
     }
 
@@ -166,6 +172,7 @@ impl FunctionArgMeta {
         arg_name: Ident,
         arg_type: &Type,
         attrs: Vec<Attribute>,
+        in_raw_function: bool,
     ) -> Self {
         let ty = Box::new(arg_type.clone());
         let pat_ty = PatType {
@@ -182,15 +189,21 @@ impl FunctionArgMeta {
         };
 
         let fn_arg = FnArg::Typed(pat_ty);
-        Self::new_from_fn_arg(proxied_type_identifier, &fn_arg, Some(arg_type.span()))
+        Self::new_from_fn_arg(proxied_type_identifier, &fn_arg, Some(arg_type.span()), in_raw_function)
     }
 
     /// Unpacks non-reference proxy parameters (using the `inner` method) yielding expressions which correspond to the proxied type with conversion errors being
     /// handled by the try `?` operator.
-    pub fn unpack_parameter(&self) -> proc_macro2::TokenStream {
+    pub fn unpack_parameter(&self) -> Option<proc_macro2::TokenStream> {
         let name = &self.arg_name;
-        // if a proxy parameter is to be passed by value we use inner (which requires Clone to be supported)
-        LuaSimpleTypeArgumentUnwrapper::new(name.clone(), name.span()).visit(&self.arg_type)
+        if self.is_raw {
+            // raw parameters DO NOT get unpacked, they get passed directly to the handling method as is
+            None
+        } else {
+            // if a proxy parameter is to be passed by value we use inner (which requires Clone to be supported)
+            Some(LuaSimpleTypeArgumentUnwrapper::new(name.clone(), name.span()).visit(&self.arg_type))
+        }
+
     }
 
 
@@ -203,6 +216,7 @@ struct FunctionMeta<'a> {
     fn_type: FunctionType,
     arg_meta: Vec<FunctionArgMeta>,
     output_meta: FunctionArgMeta,
+    is_raw: bool,
 }
 
 impl FunctionMeta<'_> {
@@ -231,27 +245,35 @@ impl FunctionMeta<'_> {
         match meta {
             Meta::List(MetaList { nested, .. }) => {
                 let mut fn_type = FunctionType::Function;
-                
+                let mut is_raw = false;
                 nested
                     .iter()
                     .for_each(|attr|{
-                        if let NestedMeta::Meta(Meta::Path(p)) = attr {
-                            let attr_str = p.get_ident().map(Ident::to_string).unwrap_or_default();
-                            if let Ok(_fn_type) = FunctionType::from_str(&attr_str) {
-                                fn_type = _fn_type;
+                        match attr {
+                            NestedMeta::Meta(Meta::Path(p)) if p.is_ident("raw") => {
+                                is_raw = true;
                                 return;
-                            } else {
-                                abort!(p, "Invalid Function Type, expected one of: {}", 
-                                    FunctionType::iter().map(|ft| ft.to_string()).collect::<Vec<_>>().join(", "))
-                            }
-                        } else if let NestedMeta::Meta(Meta::List(list)) = attr {
-                            if list.path.is_ident("output") {
-                                for attr in list.nested.iter() {
-                                    output_attrs.push(parse_quote!(#[#attr]))
+                            },
+                            NestedMeta::Meta(Meta::Path(p)) => {
+                                let attr_str = p.get_ident().map(Ident::to_string).unwrap_or_default();
+                                if let Ok(_fn_type) = FunctionType::from_str(&attr_str) {
+                                    fn_type = _fn_type;
+                                    return;
+                                } else {
+                                    abort!(p, "Invalid Function Type, expected one of: {}", 
+                                        FunctionType::iter().map(|ft| ft.to_string()).collect::<Vec<_>>().join(", "))
                                 }
-                                return;
-                            }
-                        }
+                            },
+                            NestedMeta::Meta(Meta::List(list)) => {
+                                    if list.path.is_ident("output") {
+                                        for attr in list.nested.iter() {
+                                            output_attrs.push(parse_quote!(#[#attr]))
+                                        }
+                                        return;
+                                    }
+                                },
+                            _ => return
+                        };
     
                         emit_error!(attr, "unknown or malformed lua proxy function attribute. Allowed attributes include: {}",
                             FunctionType::iter().map(|ft| ft.to_string()).collect::<Vec<_>>().join(", "));
@@ -271,14 +293,16 @@ impl FunctionMeta<'_> {
                         .sig
                         .inputs
                         .iter()
-                        .map(|arg| FunctionArgMeta::new_from_fn_arg(&proxied_type_identifier, arg, None))
+                        .map(|arg| FunctionArgMeta::new_from_fn_arg(&proxied_type_identifier, arg, None, is_raw))
                         .collect(),
                     output_meta: FunctionArgMeta::new_from_type(
                             &proxied_type_identifier,
                             format_ident!("{PROXIED_OUT_ALIAS}", span=body.sig.output.span()),
                             &output_type,
                             output_attrs,
-                        )
+                            is_raw
+                        ),
+                    is_raw
                 };
 
                 // validate the function against it's meta
@@ -316,6 +340,15 @@ impl FunctionMeta<'_> {
                 self_arg = Some(quote_spanned!(meta.span=> , #self_name : & #_mut #self_type));
             }
         }
+
+        let ctxt_arg = 
+            if self.is_raw {
+                let meta = args.next().expect_or_abort("Expected `Lua` type argument before non-receiver arguments and after the receiver if any.");
+                let name = &meta.arg_name;
+                quote_spanned!(self.name.span()=>#name : &bevy_mod_scripting_lua::tealr::mlu::mlua::Lua)
+            } else {
+                quote_spanned!(self.name.span()=>_)
+            };
         
         if self.fn_type.expects_arguments_other_than_self() {
             let (args, arg_types) = args
@@ -332,9 +365,9 @@ impl FunctionMeta<'_> {
             })
             .unzip::<_, _, Vec<proc_macro2::TokenStream>, Vec<proc_macro2::TokenStream>>();
 
-            quote_spanned!(self.body.sig.inputs.span()=>_ #self_arg , (#(#args),*) : (#(#arg_types),*))
+            quote_spanned!(self.body.sig.inputs.span()=>#ctxt_arg #self_arg , (#(#args),*) : (#(#arg_types),*))
         } else {
-            quote_spanned!(self.body.sig.inputs.span()=>_ #self_arg)
+            quote_spanned!(self.body.sig.inputs.span()=>#ctxt_arg #self_arg)
         }
 
     }
@@ -352,18 +385,13 @@ impl FunctionMeta<'_> {
     /// let other : MyType = other_ref.inner();
     /// ```
     fn generate_mlua_body_unwrapped_parameter_assignments(&self) -> proc_macro2::TokenStream {        
-        let param_names = self.arg_meta
+        self.arg_meta
             .iter()
-            .map(|arg| &arg.arg_name);
-
-        let unpacked_parameters = self.arg_meta
-            .iter()
-            .map(FunctionArgMeta::unpack_parameter)
-            .collect::<Vec<_>>();
-
-        quote_spanned!{self.body.span()=>
-            #(let mut #param_names = #unpacked_parameters;)*
-        }
+            .filter_map(|param| FunctionArgMeta::unpack_parameter(param).map(|unpacked_param| {
+                let name = &param.arg_name;
+                quote_spanned!{name.span()=>let #name = #unpacked_param;}
+            }))
+            .collect::<proc_macro2::TokenStream>()
     }
 
 
@@ -436,6 +464,12 @@ impl FunctionMeta<'_> {
     /// let __proxy_out : LuaMyType =  LuaMyType::new(__proxied_out);
     /// ```
     fn generate_mlua_body_proxy_output_stmt(&self, proxied_output_ident: &Ident, proxy_output_ident: &Ident) -> proc_macro2::TokenStream {
+        if self.output_meta.is_raw {
+            return quote_spanned! {self.body.span()=>
+                let #proxy_output_ident = #proxied_output_ident;
+            }
+        }
+        
         // generate `new` calls as required to build proxy stored in out_ident
         let constructor_wrapped_expression = 
             LuaSimpleTypeWrapper::new(proxied_output_ident.clone(), proxied_output_ident.span())
@@ -481,6 +515,10 @@ impl FunctionMeta<'_> {
                         if matches!(inner.as_ref(), SimpleType::ProxyType(_))){
                         return acc;
                     }
+                    // raw arguments are passed directly to the handler function
+                    if arg_meta.is_raw {
+                        return acc;
+                    }
 
                     let method_call = if arg_meta.arg_type.has_outer_mut_ref() {
                         format_ident!("val_mut", span=arg_meta.span)
@@ -512,6 +550,24 @@ impl FunctionMeta<'_> {
                     "Lua proxy functions do not support non 'static types as return values yet"
                 )
             )
+        }
+
+        if self.is_raw {
+            let ctxt_arg_idx = if self.fn_type.expects_receiver() {1} else {0};
+
+            let ctxt_arg = definition.sig.inputs.iter().nth(ctxt_arg_idx)
+                .ok_or_else(|| syn::Error::new_spanned(&definition.sig.inputs, 
+                        "Raw Lua proxy functions require a `&Lua` context argument following any receivers and before other arguments."))
+                .unwrap_or_abort();
+
+            let success = match ctxt_arg {
+                FnArg::Typed(PatType{ ty, .. }) => matches!(ty.as_ref(), &Type::Reference(_)),
+                _ => false
+            };
+
+            if !success {
+                emit_error!(ctxt_arg, "Raw Lua proxy functions require a `&Lua` reference after any receivers and before other arguments.")
+            }
         }
 
         if self.fn_type.expects_receiver() {
@@ -669,7 +725,7 @@ pub fn impl_lua_proxy(input: TokenStream) -> TokenStream {
     let field_methods : Vec<(Ident, TraitItemMethod)> = match meta.data {
         ProxyData::Struct { fields } => {
             let field_processor = |idx: usize, field: &Field, is_setter: bool| {          
-                let field_name = field.ident.clone().unwrap_or_else(|| format_ident!("{}", idx));
+                let field_name = field.ident.clone().unwrap_or_else(|| format_ident!("_{}", idx));
                 let field_type = &field.ty;
                 let docs = field.attrs.iter()
                     .filter(|attr| attr.path.is_ident("doc"))
@@ -694,6 +750,7 @@ pub fn impl_lua_proxy(input: TokenStream) -> TokenStream {
                 } else {
                     lua_attr.extend::<Punctuated<NestedMeta, Token![,]>>(parse_quote!(lua(FieldGetterMethod)));
                 }
+                lua_attr.extend::<Punctuated<NestedMeta, Token![,]>>(parse_quote!(raw));
 
 
                 let lua_attr = Attribute {
@@ -708,7 +765,9 @@ pub fn impl_lua_proxy(input: TokenStream) -> TokenStream {
                     parse_quote!{
                         #lua_attr
                         #(#docs)*
-                        fn #field_name (&mut self, other: #field_type) {
+                        fn #field_name (&mut self, lua: &Lua, other: #field_type) {
+                            let world_ptr = <bevy_mod_scripting_lua::tealr::mlu::mlua::Lua as bevy_script_api::common::bevy::GetWorld>::get_world(lua)?;
+
                             self.#field_name;
                             ()
                         }
@@ -717,7 +776,7 @@ pub fn impl_lua_proxy(input: TokenStream) -> TokenStream {
                     parse_quote!{
                         #lua_attr
                         #(#docs)*
-                        fn #field_name (&self) -> #field_type {
+                        fn #field_name (&self, lua: &Lua) -> #field_type {
                             self.#field_name
                         }
                     }

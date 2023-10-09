@@ -6,10 +6,9 @@ use quote::*;
 use syn::*;
 
 /// Generates an unwrapping expression which can be used to assign the unwrapped proxy to a variable.
-/// for example for the type `MyType` with `__proxied_out` identifier
-/// the argument `#[proxy] MyType` will generate the following expression:
+/// the argument `#[proxy] arg: MyType` will generate the following expression:
 /// ```rust,ignore
-/// let __proxied_out : MyType = other.inner()?;
+/// arg.inner()?;
 /// ```
 pub(crate) struct LuaSimpleTypeArgumentUnwrapper {
     arg_name: Ident,
