@@ -125,7 +125,7 @@ pub(crate) fn make_methods(flag: &DeriveFlag, new_type: &Newtype, out: &mut Vec<
         let method_identifier_string = method_identifier.to_string();
         let self_ident = m.self_.as_ref()
             .map(|_| quote_spanned!(m.span()=>#receiver_argument_identifier,))
-            .unwrap_or_else(Default::default);
+            .unwrap_or_default();
         parse_quote_spanned!{m.span()=>
             #docstrings
             #static_ #mut_ #fn_ #method_identifier_string =>|_,#self_ident (#(#parameter_identifiers),*):(#(#parameter_types),*)| #body
