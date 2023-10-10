@@ -10,19 +10,19 @@ name: Check and Lint
 jobs:
   check:
     name: Check
-    runs-on: ${{ matrix.os_and_lua.os }}
+    runs-on: ${{ matrix.run_args.os }}
     strategy:
       matrix:
-       os_and_lua: [ 
-        {os: windows-latest, lua: lua54}, 
-        {os: macOS-latest, lua: lua54},
-        {os: macos-latest-large, lua: lua54},
-        {os: ubuntu-latest, lua: lua51}, 
-        {os: ubuntu-latest, lua: lua52}, 
-        {os: ubuntu-latest, lua: lua53}, 
-        {os: ubuntu-latest, lua: lua54}, 
-        {os: ubuntu-latest, lua: luajit}, 
-        {os: ubuntu-latest, lua: luajit52}
+       run_args: [ 
+        {os: windows-latest,      lua: lua54,     cross: null}, 
+        {os: macOS-latest,        lua: lua54,     cross: null},
+        {os: ubuntu-latest,       lua: lua54,     cross: aarch64-unknown-linux-gnu},
+        {os: ubuntu-latest,       lua: lua51,     cross: null}, 
+        {os: ubuntu-latest,       lua: lua52,     cross: null}, 
+        {os: ubuntu-latest,       lua: lua53,     cross: null}, 
+        {os: ubuntu-latest,       lua: lua54,     cross: null}, 
+        {os: ubuntu-latest,       lua: luajit,    cross: null}, 
+        {os: ubuntu-latest,       lua: luajit52,  cross: null}
       ]
     steps:
       - name: Install alsa and udev
@@ -35,10 +35,19 @@ jobs:
           toolchain: stable
           override: true
       - uses: Swatinem/rust-cache@v2.2.0
-      - uses: actions-rs/cargo@v1
+      # for x86 builds
+      - if: run_args.cross == null
+        uses: actions-rs/cargo@v1
         with:
           command: check
-          args: --workspace --features=${{ matrix.os_and_lua.lua }},rhai,teal,lua_script_api,rhai_script_api
+          args: --workspace --features=${{ matrix.run_args.lua }},rhai,teal,lua_script_api,rhai_script_api
+      # for non x86 cross-compiled builds
+      - if: run_args.cross != null
+        uses: houseabsolute/actions-rust-cross@v0
+        with:
+          command: check
+          target: ${{ run_args.cross }}
+          args: --workspace --features=${{ matrix.run_args.lua }},rhai,teal,lua_script_api,rhai_script_api
 
   fmt:
     name: Rustfmt
