@@ -16,7 +16,7 @@ jobs:
        os_and_lua: [ 
         {os: windows-latest, lua: lua54}, 
         {os: macOS-latest, lua: lua54},
-        {os: macos-latest-xlarge, lua: lua54},
+        {os: macos-latest-large, lua: lua54},
         {os: ubuntu-latest, lua: lua51}, 
         {os: ubuntu-latest, lua: lua52}, 
         {os: ubuntu-latest, lua: lua53}, 
