@@ -36,13 +36,13 @@ jobs:
           override: true
       - uses: Swatinem/rust-cache@v2.2.0
       # for x86 builds
-      - if: run_args.cross == null
+      - if: matrix.run_args.cross == null
         uses: actions-rs/cargo@v1
         with:
           command: check
           args: --workspace --features=${{ matrix.run_args.lua }},rhai,teal,lua_script_api,rhai_script_api
       # for non x86 cross-compiled builds
-      - if: run_args.cross != null
+      - if: matrix.run_args.cross != null
         uses: houseabsolute/actions-rust-cross@v0
         with:
           command: check
