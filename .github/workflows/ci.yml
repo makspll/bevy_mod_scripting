@@ -46,7 +46,7 @@ jobs:
         uses: houseabsolute/actions-rust-cross@v0
         with:
           command: check
-          target: ${{ run_args.cross }}
+          target: ${{ matrix.run_args.cross }}
           args: --workspace --features=${{ matrix.run_args.lua }},rhai,teal,lua_script_api,rhai_script_api
 
   fmt:
