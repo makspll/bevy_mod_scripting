@@ -460,13 +460,11 @@ impl<
                     .map(|v| v.and_then(|(_, v)| T::from_lua_proxy(v, lua)))
                     .collect::<Result<Vec<_>, _>>()
             }
-            _ => {
-                return Err(mlua::Error::FromLuaConversionError {
-                    from: new_val.type_name(),
-                    to: "userdata or table",
-                    message: Some("LuaVec can only be assigned with itself or a table".to_owned()),
-                })
-            }
+            _ => Err(mlua::Error::FromLuaConversionError {
+                from: new_val.type_name(),
+                to: "userdata or table",
+                message: Some("LuaVec can only be assigned with itself or a table".to_owned()),
+            }),
         }
     }
 }

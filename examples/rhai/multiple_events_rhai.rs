@@ -113,13 +113,13 @@ fn call_init(
     >,
 ) {
     entity_query.for_each(|(entity, name, scripts)| {
-        if let Some(_) = scripts {
+        if scripts.is_some() {
             events.send(
                 RhaiEvent {
                     hook_name: "on_init".to_owned(),
                     args: ScriptArgs {
                         delta_time: None,
-                        entity_name: name.clone().map(|n| n.to_string()),
+                        entity_name: name.map(|n| n.to_string()),
                     },
                     recipients: Recipients::Entity(entity),
                 },
