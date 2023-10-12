@@ -108,7 +108,10 @@ fn call_update(
 fn call_init(
     mut events: PriorityEventWriter<RhaiEvent<ScriptArgs>>,
     mut loaded_scripts: EventReader<ScriptLoaded>,
-    entity_query: Query<(Entity, Option<&Name>, Option<&ScriptCollection<RhaiFile>>)>,
+    entity_query: Query<
+        (Entity, Option<&Name>, Option<&ScriptCollection<RhaiFile>>),
+        With<NewlyAddedEntityCallInit>,
+    >,
     mut commands: Commands,
 ) {
     // Call init on all entities that have a script that was just loaded, and remove the Marker component, so that Update can be called
