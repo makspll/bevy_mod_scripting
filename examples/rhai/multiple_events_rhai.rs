@@ -15,10 +15,10 @@ fn main() {
     App::new()
         .add_plugins((DefaultPlugins, ScriptingPlugin))
         .add_systems(Startup, setup_entities)
-        .add_systems(Update, (call_init, call_update))
+        .add_systems(Update, (call_init, call_update, call_test_on_all))
         .add_script_host::<RhaiScriptHost<ScriptArgs>>(PostUpdate)
         .add_api_provider::<RhaiScriptHost<ScriptArgs>>(Box::new(RhaiBevyAPIProvider))
-        .add_script_handler::<RhaiScriptHost<ScriptArgs>, 0, 1>(PostUpdate)
+        .add_script_handler::<RhaiScriptHost<ScriptArgs>, 0, 2>(PostUpdate)
         .run();
 }
 
@@ -103,6 +103,17 @@ fn call_update(
             1,
         );
     });
+}
+
+fn call_test_on_all(mut events: PriorityEventWriter<RhaiEvent<ScriptArgs>>) {
+    events.send(
+        RhaiEvent {
+            hook_name: "on_test".to_owned(),
+            args: ScriptArgs::default(),
+            recipients: Recipients::All,
+        },
+        2,
+    );
 }
 
 fn call_init(
