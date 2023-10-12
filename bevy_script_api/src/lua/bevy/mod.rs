@@ -15,7 +15,11 @@ use tealr::mlu::{
     TealData, TealDataMethods,
 };
 
-pub use crate::generated::*;
+#[cfg(not(any(target_feature = "sse2", target_feature = "simd128")))]
+pub use crate::generated_scalar::*;
+
+#[cfg(any(target_feature = "sse2", target_feature = "simd128"))]
+pub use crate::generated_simd::*;
 
 use super::util::LuaIndex;
 

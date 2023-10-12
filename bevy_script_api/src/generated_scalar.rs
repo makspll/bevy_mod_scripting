@@ -1942,8 +1942,8 @@ impl_script_newtype! {
     )
     + BinOps
     (
-        self Mul Wrapped(Transform) -> Wrapped(GlobalTransform),
         self Mul Wrapped(GlobalTransform) -> Wrapped(GlobalTransform),
+        self Mul Wrapped(Transform) -> Wrapped(GlobalTransform),
         self Mul Wrapped(Vec3) -> Wrapped(Vec3),
     )
     + UnaryOps
@@ -2894,11 +2894,11 @@ impl_script_newtype! {
     )
     + BinOps
     (
-        self Add Wrapped(Vec4) -> Wrapped(Color),
         self Add Wrapped(Color) -> Wrapped(Color),
-        self Mul Wrapped(Vec3) -> Wrapped(Color),
+        self Add Wrapped(Vec4) -> Wrapped(Color),
         self Mul Raw(f32) -> Wrapped(Color),
         self Mul Wrapped(Vec4) -> Wrapped(Color),
+        self Mul Wrapped(Vec3) -> Wrapped(Color),
     )
     + UnaryOps
     (
@@ -3740,18 +3740,18 @@ impl_script_newtype! {
     )
     + BinOps
     (
+        self Add self -> Wrapped(Vec2),
         self Add Raw(f32) -> Wrapped(Vec2),
         self Add Wrapped(Vec2) -> Wrapped(Vec2),
-        self Add self -> Wrapped(Vec2),
-        self Sub Wrapped(Vec2) -> Wrapped(Vec2),
-        self Sub Raw(f32) -> Wrapped(Vec2),
         self Sub self -> Wrapped(Vec2),
-        self Div Wrapped(Vec2) -> Wrapped(Vec2),
-        self Div Raw(f32) -> Wrapped(Vec2),
+        self Sub Raw(f32) -> Wrapped(Vec2),
+        self Sub Wrapped(Vec2) -> Wrapped(Vec2),
         self Div self -> Wrapped(Vec2),
+        self Div Raw(f32) -> Wrapped(Vec2),
+        self Div Wrapped(Vec2) -> Wrapped(Vec2),
+        self Mul self -> Wrapped(Vec2),
         self Mul Raw(f32) -> Wrapped(Vec2),
         self Mul Wrapped(Vec2) -> Wrapped(Vec2),
-        self Mul self -> Wrapped(Vec2),
         self Rem self -> Wrapped(Vec2),
         self Rem Raw(f32) -> Wrapped(Vec2),
         self Rem Wrapped(Vec2) -> Wrapped(Vec2),
@@ -4104,20 +4104,20 @@ impl_script_newtype! {
     + BinOps
     (
         self Add self -> Wrapped(Vec3),
-        self Add Wrapped(Vec3) -> Wrapped(Vec3),
         self Add Raw(f32) -> Wrapped(Vec3),
-        self Sub Raw(f32) -> Wrapped(Vec3),
+        self Add Wrapped(Vec3) -> Wrapped(Vec3),
         self Sub self -> Wrapped(Vec3),
+        self Sub Raw(f32) -> Wrapped(Vec3),
         self Sub Wrapped(Vec3) -> Wrapped(Vec3),
-        self Div Wrapped(Vec3) -> Wrapped(Vec3),
-        self Div Raw(f32) -> Wrapped(Vec3),
         self Div self -> Wrapped(Vec3),
+        self Div Raw(f32) -> Wrapped(Vec3),
+        self Div Wrapped(Vec3) -> Wrapped(Vec3),
         self Mul self -> Wrapped(Vec3),
-        self Mul Wrapped(Vec3) -> Wrapped(Vec3),
         self Mul Raw(f32) -> Wrapped(Vec3),
+        self Mul Wrapped(Vec3) -> Wrapped(Vec3),
         self Rem self -> Wrapped(Vec3),
-        self Rem Wrapped(Vec3) -> Wrapped(Vec3),
         self Rem Raw(f32) -> Wrapped(Vec3),
+        self Rem Wrapped(Vec3) -> Wrapped(Vec3),
     )
     + UnaryOps
     (
@@ -4468,24 +4468,27 @@ impl_script_newtype! {
     )
     + Fields
     (
+        x: Raw(f32),
+        y: Raw(f32),
+        z: Raw(f32),
     )
     + BinOps
     (
-        self Add Wrapped(Vec3A) -> Wrapped(Vec3A),
-        self Add Raw(f32) -> Wrapped(Vec3A),
         self Add self -> Wrapped(Vec3A),
-        self Sub Wrapped(Vec3A) -> Wrapped(Vec3A),
+        self Add Raw(f32) -> Wrapped(Vec3A),
+        self Add Wrapped(Vec3A) -> Wrapped(Vec3A),
         self Sub self -> Wrapped(Vec3A),
         self Sub Raw(f32) -> Wrapped(Vec3A),
-        self Div Raw(f32) -> Wrapped(Vec3A),
+        self Sub Wrapped(Vec3A) -> Wrapped(Vec3A),
         self Div self -> Wrapped(Vec3A),
+        self Div Raw(f32) -> Wrapped(Vec3A),
         self Div Wrapped(Vec3A) -> Wrapped(Vec3A),
         self Mul self -> Wrapped(Vec3A),
-        self Mul Wrapped(Vec3A) -> Wrapped(Vec3A),
         self Mul Raw(f32) -> Wrapped(Vec3A),
-        self Rem Wrapped(Vec3A) -> Wrapped(Vec3A),
-        self Rem Raw(f32) -> Wrapped(Vec3A),
+        self Mul Wrapped(Vec3A) -> Wrapped(Vec3A),
         self Rem self -> Wrapped(Vec3A),
+        self Rem Raw(f32) -> Wrapped(Vec3A),
+        self Rem Wrapped(Vec3A) -> Wrapped(Vec3A),
     )
     + UnaryOps
     (
@@ -4500,10 +4503,6 @@ impl_script_newtype! {
 impl_script_newtype! {
     #[languages(on_feature(lua))]
     ///A 4-dimensional vector.
-    ///
-    ///SIMD vector types are used for storage on supported platforms.
-    ///
-    ///This type is 16 byte aligned.
     glam::f32::Vec4 :
     Clone +
     Debug +
@@ -4520,7 +4519,7 @@ impl_script_newtype! {
         ///
         ///A true element in the mask uses the corresponding element from `if_true`, and false
         ///uses the element from `if_false`.
-        select(Wrapped(BVec4A),self,self) -> self,
+        select(Wrapped(BVec4),self,self) -> self,
 
         ///Creates a 2D vector from the `x`, `y` and `z` elements of `self`, discarding `w`.
         ///
@@ -4569,42 +4568,42 @@ impl_script_newtype! {
         ///
         ///In other words, this computes `[self.x == rhs.x, self.y == rhs.y, ..]` for all
         ///elements.
-        cmpeq(self:self) -> Wrapped(BVec4A),
+        cmpeq(self:self) -> Wrapped(BVec4),
 
         ///Returns a vector mask containing the result of a `!=` comparison for each element of
         ///`self` and `rhs`.
         ///
         ///In other words this computes `[self.x != rhs.x, self.y != rhs.y, ..]` for all
         ///elements.
-        cmpne(self:self) -> Wrapped(BVec4A),
+        cmpne(self:self) -> Wrapped(BVec4),
 
         ///Returns a vector mask containing the result of a `>=` comparison for each element of
         ///`self` and `rhs`.
         ///
         ///In other words this computes `[self.x >= rhs.x, self.y >= rhs.y, ..]` for all
         ///elements.
-        cmpge(self:self) -> Wrapped(BVec4A),
+        cmpge(self:self) -> Wrapped(BVec4),
 
         ///Returns a vector mask containing the result of a `>` comparison for each element of
         ///`self` and `rhs`.
         ///
         ///In other words this computes `[self.x > rhs.x, self.y > rhs.y, ..]` for all
         ///elements.
-        cmpgt(self:self) -> Wrapped(BVec4A),
+        cmpgt(self:self) -> Wrapped(BVec4),
 
         ///Returns a vector mask containing the result of a `<=` comparison for each element of
         ///`self` and `rhs`.
         ///
         ///In other words this computes `[self.x <= rhs.x, self.y <= rhs.y, ..]` for all
         ///elements.
-        cmple(self:self) -> Wrapped(BVec4A),
+        cmple(self:self) -> Wrapped(BVec4),
 
         ///Returns a vector mask containing the result of a `<` comparison for each element of
         ///`self` and `rhs`.
         ///
         ///In other words this computes `[self.x < rhs.x, self.y < rhs.y, ..]` for all
         ///elements.
-        cmplt(self:self) -> Wrapped(BVec4A),
+        cmplt(self:self) -> Wrapped(BVec4),
 
         ///Returns a vector containing the absolute value of each element of `self`.
         abs(self:) -> self,
@@ -4635,7 +4634,7 @@ impl_script_newtype! {
         ///Performs `is_nan` on each element of self, returning a vector mask of the results.
         ///
         ///In other words, this computes `[x.is_nan(), y.is_nan(), z.is_nan(), w.is_nan()]`.
-        is_nan_mask(self:) -> Wrapped(BVec4A),
+        is_nan_mask(self:) -> Wrapped(BVec4),
 
         ///Computes the length of `self`.
         length(self:) -> Raw(f32),
@@ -4806,24 +4805,28 @@ impl_script_newtype! {
     )
     + Fields
     (
+        x: Raw(f32),
+        y: Raw(f32),
+        z: Raw(f32),
+        w: Raw(f32),
     )
     + BinOps
     (
+        self Add self -> Wrapped(Vec4),
         self Add Raw(f32) -> Wrapped(Vec4),
         self Add Wrapped(Vec4) -> Wrapped(Vec4),
-        self Add self -> Wrapped(Vec4),
-        self Sub Raw(f32) -> Wrapped(Vec4),
         self Sub self -> Wrapped(Vec4),
+        self Sub Raw(f32) -> Wrapped(Vec4),
         self Sub Wrapped(Vec4) -> Wrapped(Vec4),
-        self Div Raw(f32) -> Wrapped(Vec4),
         self Div self -> Wrapped(Vec4),
+        self Div Raw(f32) -> Wrapped(Vec4),
         self Div Wrapped(Vec4) -> Wrapped(Vec4),
-        self Mul Raw(f32) -> Wrapped(Vec4),
         self Mul self -> Wrapped(Vec4),
+        self Mul Raw(f32) -> Wrapped(Vec4),
         self Mul Wrapped(Vec4) -> Wrapped(Vec4),
         self Rem self -> Wrapped(Vec4),
-        self Rem Wrapped(Vec4) -> Wrapped(Vec4),
         self Rem Raw(f32) -> Wrapped(Vec4),
+        self Rem Wrapped(Vec4) -> Wrapped(Vec4),
     )
     + UnaryOps
     (
@@ -4996,9 +4999,7 @@ impl_script_newtype! {
 }
 impl_script_newtype! {
     #[languages(on_feature(lua))]
-    ///A 3-dimensional SIMD vector mask.
-    ///
-    ///This type is 16 byte aligned.
+    ///A 3-dimensional `u32` vector mask.
     glam::bool::BVec3A :
     Clone +
     Debug +
@@ -5035,6 +5036,9 @@ impl_script_newtype! {
     )
     + Fields
     (
+        x: Raw(u32),
+        y: Raw(u32),
+        z: Raw(u32),
     )
     + BinOps
     (
@@ -5048,9 +5052,7 @@ impl_script_newtype! {
 }
 impl_script_newtype! {
     #[languages(on_feature(lua))]
-    ///A 4-dimensional SIMD vector mask.
-    ///
-    ///This type is 16 byte aligned.
+    ///A 4-dimensional `u32` vector mask.
     glam::bool::BVec4A :
     Clone +
     Debug +
@@ -5087,6 +5089,10 @@ impl_script_newtype! {
     )
     + Fields
     (
+        x: Raw(u32),
+        y: Raw(u32),
+        z: Raw(u32),
+        w: Raw(u32),
     )
     + BinOps
     (
@@ -5430,15 +5436,15 @@ impl_script_newtype! {
         self Add self -> Wrapped(DVec2),
         self Add Raw(f64) -> Wrapped(DVec2),
         self Add Wrapped(DVec2) -> Wrapped(DVec2),
+        self Sub self -> Wrapped(DVec2),
         self Sub Raw(f64) -> Wrapped(DVec2),
         self Sub Wrapped(DVec2) -> Wrapped(DVec2),
-        self Sub self -> Wrapped(DVec2),
         self Div self -> Wrapped(DVec2),
-        self Div Wrapped(DVec2) -> Wrapped(DVec2),
         self Div Raw(f64) -> Wrapped(DVec2),
-        self Mul Wrapped(DVec2) -> Wrapped(DVec2),
+        self Div Wrapped(DVec2) -> Wrapped(DVec2),
         self Mul self -> Wrapped(DVec2),
         self Mul Raw(f64) -> Wrapped(DVec2),
+        self Mul Wrapped(DVec2) -> Wrapped(DVec2),
         self Rem self -> Wrapped(DVec2),
         self Rem Raw(f64) -> Wrapped(DVec2),
         self Rem Wrapped(DVec2) -> Wrapped(DVec2),
@@ -5793,20 +5799,20 @@ impl_script_newtype! {
     )
     + BinOps
     (
+        self Add self -> Wrapped(DVec3),
         self Add Raw(f64) -> Wrapped(DVec3),
         self Add Wrapped(DVec3) -> Wrapped(DVec3),
-        self Add self -> Wrapped(DVec3),
-        self Sub Wrapped(DVec3) -> Wrapped(DVec3),
         self Sub self -> Wrapped(DVec3),
         self Sub Raw(f64) -> Wrapped(DVec3),
+        self Sub Wrapped(DVec3) -> Wrapped(DVec3),
+        self Div self -> Wrapped(DVec3),
         self Div Raw(f64) -> Wrapped(DVec3),
         self Div Wrapped(DVec3) -> Wrapped(DVec3),
-        self Div self -> Wrapped(DVec3),
-        self Mul Raw(f64) -> Wrapped(DVec3),
         self Mul self -> Wrapped(DVec3),
+        self Mul Raw(f64) -> Wrapped(DVec3),
         self Mul Wrapped(DVec3) -> Wrapped(DVec3),
-        self Rem Raw(f64) -> Wrapped(DVec3),
         self Rem self -> Wrapped(DVec3),
+        self Rem Raw(f64) -> Wrapped(DVec3),
         self Rem Wrapped(DVec3) -> Wrapped(DVec3),
     )
     + UnaryOps
@@ -6129,20 +6135,20 @@ impl_script_newtype! {
     )
     + BinOps
     (
-        self Add Raw(f64) -> Wrapped(DVec4),
         self Add self -> Wrapped(DVec4),
+        self Add Raw(f64) -> Wrapped(DVec4),
         self Add Wrapped(DVec4) -> Wrapped(DVec4),
+        self Sub self -> Wrapped(DVec4),
         self Sub Raw(f64) -> Wrapped(DVec4),
         self Sub Wrapped(DVec4) -> Wrapped(DVec4),
-        self Sub self -> Wrapped(DVec4),
-        self Div Wrapped(DVec4) -> Wrapped(DVec4),
         self Div self -> Wrapped(DVec4),
         self Div Raw(f64) -> Wrapped(DVec4),
-        self Mul Wrapped(DVec4) -> Wrapped(DVec4),
-        self Mul Raw(f64) -> Wrapped(DVec4),
+        self Div Wrapped(DVec4) -> Wrapped(DVec4),
         self Mul self -> Wrapped(DVec4),
-        self Rem Raw(f64) -> Wrapped(DVec4),
+        self Mul Raw(f64) -> Wrapped(DVec4),
+        self Mul Wrapped(DVec4) -> Wrapped(DVec4),
         self Rem self -> Wrapped(DVec4),
+        self Rem Raw(f64) -> Wrapped(DVec4),
         self Rem Wrapped(DVec4) -> Wrapped(DVec4),
     )
     + UnaryOps
@@ -6308,17 +6314,17 @@ impl_script_newtype! {
     + BinOps
     (
         self Add self -> Wrapped(IVec2),
-        self Add Wrapped(IVec2) -> Wrapped(IVec2),
         self Add Raw(i32) -> Wrapped(IVec2),
-        self Sub Wrapped(IVec2) -> Wrapped(IVec2),
-        self Sub Raw(i32) -> Wrapped(IVec2),
+        self Add Wrapped(IVec2) -> Wrapped(IVec2),
         self Sub self -> Wrapped(IVec2),
+        self Sub Raw(i32) -> Wrapped(IVec2),
+        self Sub Wrapped(IVec2) -> Wrapped(IVec2),
+        self Div self -> Wrapped(IVec2),
         self Div Raw(i32) -> Wrapped(IVec2),
         self Div Wrapped(IVec2) -> Wrapped(IVec2),
-        self Div self -> Wrapped(IVec2),
         self Mul self -> Wrapped(IVec2),
-        self Mul Wrapped(IVec2) -> Wrapped(IVec2),
         self Mul Raw(i32) -> Wrapped(IVec2),
+        self Mul Wrapped(IVec2) -> Wrapped(IVec2),
         self Rem self -> Wrapped(IVec2),
         self Rem Raw(i32) -> Wrapped(IVec2),
         self Rem Wrapped(IVec2) -> Wrapped(IVec2),
@@ -6485,21 +6491,21 @@ impl_script_newtype! {
     )
     + BinOps
     (
+        self Add self -> Wrapped(IVec3),
         self Add Raw(i32) -> Wrapped(IVec3),
         self Add Wrapped(IVec3) -> Wrapped(IVec3),
-        self Add self -> Wrapped(IVec3),
-        self Sub Raw(i32) -> Wrapped(IVec3),
         self Sub self -> Wrapped(IVec3),
+        self Sub Raw(i32) -> Wrapped(IVec3),
         self Sub Wrapped(IVec3) -> Wrapped(IVec3),
-        self Div Raw(i32) -> Wrapped(IVec3),
         self Div self -> Wrapped(IVec3),
+        self Div Raw(i32) -> Wrapped(IVec3),
         self Div Wrapped(IVec3) -> Wrapped(IVec3),
-        self Mul Wrapped(IVec3) -> Wrapped(IVec3),
         self Mul self -> Wrapped(IVec3),
         self Mul Raw(i32) -> Wrapped(IVec3),
+        self Mul Wrapped(IVec3) -> Wrapped(IVec3),
+        self Rem self -> Wrapped(IVec3),
         self Rem Raw(i32) -> Wrapped(IVec3),
         self Rem Wrapped(IVec3) -> Wrapped(IVec3),
-        self Rem self -> Wrapped(IVec3),
     )
     + UnaryOps
     (
@@ -6655,21 +6661,21 @@ impl_script_newtype! {
     )
     + BinOps
     (
-        self Add Wrapped(IVec4) -> Wrapped(IVec4),
         self Add self -> Wrapped(IVec4),
         self Add Raw(i32) -> Wrapped(IVec4),
+        self Add Wrapped(IVec4) -> Wrapped(IVec4),
         self Sub self -> Wrapped(IVec4),
-        self Sub Wrapped(IVec4) -> Wrapped(IVec4),
         self Sub Raw(i32) -> Wrapped(IVec4),
+        self Sub Wrapped(IVec4) -> Wrapped(IVec4),
         self Div self -> Wrapped(IVec4),
-        self Div Wrapped(IVec4) -> Wrapped(IVec4),
         self Div Raw(i32) -> Wrapped(IVec4),
+        self Div Wrapped(IVec4) -> Wrapped(IVec4),
         self Mul self -> Wrapped(IVec4),
-        self Mul Wrapped(IVec4) -> Wrapped(IVec4),
         self Mul Raw(i32) -> Wrapped(IVec4),
+        self Mul Wrapped(IVec4) -> Wrapped(IVec4),
+        self Rem self -> Wrapped(IVec4),
         self Rem Raw(i32) -> Wrapped(IVec4),
         self Rem Wrapped(IVec4) -> Wrapped(IVec4),
-        self Rem self -> Wrapped(IVec4),
     )
     + UnaryOps
     (
@@ -6802,18 +6808,18 @@ impl_script_newtype! {
     )
     + BinOps
     (
+        self Add self -> Wrapped(UVec2),
         self Add Raw(u32) -> Wrapped(UVec2),
         self Add Wrapped(UVec2) -> Wrapped(UVec2),
-        self Add self -> Wrapped(UVec2),
         self Sub self -> Wrapped(UVec2),
-        self Sub Wrapped(UVec2) -> Wrapped(UVec2),
         self Sub Raw(u32) -> Wrapped(UVec2),
+        self Sub Wrapped(UVec2) -> Wrapped(UVec2),
         self Div self -> Wrapped(UVec2),
         self Div Raw(u32) -> Wrapped(UVec2),
         self Div Wrapped(UVec2) -> Wrapped(UVec2),
-        self Mul Wrapped(UVec2) -> Wrapped(UVec2),
-        self Mul Raw(u32) -> Wrapped(UVec2),
         self Mul self -> Wrapped(UVec2),
+        self Mul Raw(u32) -> Wrapped(UVec2),
+        self Mul Wrapped(UVec2) -> Wrapped(UVec2),
         self Rem self -> Wrapped(UVec2),
         self Rem Raw(u32) -> Wrapped(UVec2),
         self Rem Wrapped(UVec2) -> Wrapped(UVec2),
@@ -6960,20 +6966,20 @@ impl_script_newtype! {
     )
     + BinOps
     (
-        self Add Wrapped(UVec3) -> Wrapped(UVec3),
-        self Add Raw(u32) -> Wrapped(UVec3),
         self Add self -> Wrapped(UVec3),
-        self Sub Wrapped(UVec3) -> Wrapped(UVec3),
-        self Sub Raw(u32) -> Wrapped(UVec3),
+        self Add Raw(u32) -> Wrapped(UVec3),
+        self Add Wrapped(UVec3) -> Wrapped(UVec3),
         self Sub self -> Wrapped(UVec3),
+        self Sub Raw(u32) -> Wrapped(UVec3),
+        self Sub Wrapped(UVec3) -> Wrapped(UVec3),
         self Div self -> Wrapped(UVec3),
         self Div Raw(u32) -> Wrapped(UVec3),
         self Div Wrapped(UVec3) -> Wrapped(UVec3),
-        self Mul Wrapped(UVec3) -> Wrapped(UVec3),
-        self Mul Raw(u32) -> Wrapped(UVec3),
         self Mul self -> Wrapped(UVec3),
-        self Rem Raw(u32) -> Wrapped(UVec3),
+        self Mul Raw(u32) -> Wrapped(UVec3),
+        self Mul Wrapped(UVec3) -> Wrapped(UVec3),
         self Rem self -> Wrapped(UVec3),
+        self Rem Raw(u32) -> Wrapped(UVec3),
         self Rem Wrapped(UVec3) -> Wrapped(UVec3),
     )
     + UnaryOps
@@ -7111,17 +7117,17 @@ impl_script_newtype! {
     + BinOps
     (
         self Add self -> Wrapped(UVec4),
-        self Add Wrapped(UVec4) -> Wrapped(UVec4),
         self Add Raw(u32) -> Wrapped(UVec4),
+        self Add Wrapped(UVec4) -> Wrapped(UVec4),
         self Sub self -> Wrapped(UVec4),
-        self Sub Wrapped(UVec4) -> Wrapped(UVec4),
         self Sub Raw(u32) -> Wrapped(UVec4),
+        self Sub Wrapped(UVec4) -> Wrapped(UVec4),
         self Div self -> Wrapped(UVec4),
         self Div Raw(u32) -> Wrapped(UVec4),
         self Div Wrapped(UVec4) -> Wrapped(UVec4),
-        self Mul Wrapped(UVec4) -> Wrapped(UVec4),
         self Mul self -> Wrapped(UVec4),
         self Mul Raw(u32) -> Wrapped(UVec4),
+        self Mul Wrapped(UVec4) -> Wrapped(UVec4),
         self Rem self -> Wrapped(UVec4),
         self Rem Raw(u32) -> Wrapped(UVec4),
         self Rem Wrapped(UVec4) -> Wrapped(UVec4),
@@ -7339,11 +7345,11 @@ impl_script_newtype! {
     (
         self Add self -> Wrapped(Mat3),
         self Sub self -> Wrapped(Mat3),
-        self Mul Wrapped(Mat3) -> Wrapped(Mat3),
         self Mul Wrapped(Affine2) -> Wrapped(Mat3),
-        self Mul Raw(f32) -> Wrapped(Mat3),
         self Mul self -> Wrapped(Mat3),
         self Mul Wrapped(Vec3) -> Wrapped(Vec3),
+        self Mul Wrapped(Mat3) -> Wrapped(Mat3),
+        self Mul Raw(f32) -> Wrapped(Mat3),
         self Mul Wrapped(Vec3A) -> Wrapped(Vec3A),
     )
     + UnaryOps
@@ -7381,10 +7387,6 @@ impl_script_newtype! {
 impl_script_newtype! {
     #[languages(on_feature(lua))]
     ///A 2x2 column major matrix.
-    ///
-    ///SIMD vector types are used for storage on supported platforms.
-    ///
-    ///This type is 16 byte aligned.
     glam::f32::Mat2 :
     Clone +
     Debug +
@@ -7476,15 +7478,17 @@ impl_script_newtype! {
     )
     + Fields
     (
+        x_axis: Wrapped(Vec2),
+        y_axis: Wrapped(Vec2),
     )
     + BinOps
     (
         self Add self -> Wrapped(Mat2),
         self Sub self -> Wrapped(Mat2),
+        self Mul self -> Wrapped(Mat2),
         self Mul Wrapped(Vec2) -> Wrapped(Vec2),
         self Mul Wrapped(Mat2) -> Wrapped(Mat2),
         self Mul Raw(f32) -> Wrapped(Mat2),
-        self Mul self -> Wrapped(Mat2),
     )
     + UnaryOps
     (
@@ -7722,12 +7726,12 @@ impl_script_newtype! {
     (
         self Add self -> Wrapped(Mat3A),
         self Sub self -> Wrapped(Mat3A),
-        self Mul Wrapped(Mat3A) -> Wrapped(Mat3A),
-        self Mul Wrapped(Affine2) -> Wrapped(Mat3A),
-        self Mul Wrapped(Vec3) -> Wrapped(Vec3),
-        self Mul Raw(f32) -> Wrapped(Mat3A),
         self Mul self -> Wrapped(Mat3A),
         self Mul Wrapped(Vec3A) -> Wrapped(Vec3A),
+        self Mul Wrapped(Mat3A) -> Wrapped(Mat3A),
+        self Mul Raw(f32) -> Wrapped(Mat3A),
+        self Mul Wrapped(Vec3) -> Wrapped(Vec3),
+        self Mul Wrapped(Affine2) -> Wrapped(Mat3A),
     )
     + UnaryOps
     (
@@ -8109,10 +8113,10 @@ impl_script_newtype! {
         self Add self -> Wrapped(Mat4),
         self Sub self -> Wrapped(Mat4),
         self Mul self -> Wrapped(Mat4),
-        self Mul Raw(f32) -> Wrapped(Mat4),
-        self Mul Wrapped(Mat4) -> Wrapped(Mat4),
-        self Mul Wrapped(Affine3A) -> Wrapped(Mat4),
         self Mul Wrapped(Vec4) -> Wrapped(Vec4),
+        self Mul Wrapped(Mat4) -> Wrapped(Mat4),
+        self Mul Raw(f32) -> Wrapped(Mat4),
+        self Mul Wrapped(Affine3A) -> Wrapped(Mat4),
     )
     + UnaryOps
     (
@@ -8244,10 +8248,10 @@ impl_script_newtype! {
     (
         self Add self -> Wrapped(DMat2),
         self Sub self -> Wrapped(DMat2),
-        self Mul Raw(f64) -> Wrapped(DMat2),
-        self Mul Wrapped(DVec2) -> Wrapped(DVec2),
         self Mul self -> Wrapped(DMat2),
+        self Mul Wrapped(DVec2) -> Wrapped(DVec2),
         self Mul Wrapped(DMat2) -> Wrapped(DMat2),
+        self Mul Raw(f64) -> Wrapped(DMat2),
     )
     + UnaryOps
     (
@@ -8482,11 +8486,11 @@ impl_script_newtype! {
     (
         self Add self -> Wrapped(DMat3),
         self Sub self -> Wrapped(DMat3),
+        self Mul Wrapped(DAffine2) -> Wrapped(DMat3),
         self Mul self -> Wrapped(DMat3),
         self Mul Wrapped(DVec3) -> Wrapped(DVec3),
         self Mul Wrapped(DMat3) -> Wrapped(DMat3),
         self Mul Raw(f64) -> Wrapped(DMat3),
-        self Mul Wrapped(DAffine2) -> Wrapped(DMat3),
     )
     + UnaryOps
     (
@@ -8851,10 +8855,10 @@ impl_script_newtype! {
         self Add self -> Wrapped(DMat4),
         self Sub self -> Wrapped(DMat4),
         self Mul Wrapped(DAffine3) -> Wrapped(DMat4),
-        self Mul Raw(f64) -> Wrapped(DMat4),
         self Mul self -> Wrapped(DMat4),
-        self Mul Wrapped(DMat4) -> Wrapped(DMat4),
         self Mul Wrapped(DVec4) -> Wrapped(DVec4),
+        self Mul Wrapped(DMat4) -> Wrapped(DMat4),
+        self Mul Raw(f64) -> Wrapped(DMat4),
     )
     + UnaryOps
     (
@@ -8980,9 +8984,9 @@ impl_script_newtype! {
     )
     + BinOps
     (
-        self Mul Wrapped(Mat3A) -> Wrapped(Mat3A),
-        self Mul Wrapped(Mat3) -> Wrapped(Mat3),
         self Mul Wrapped(Affine2) -> Wrapped(Affine2),
+        self Mul Wrapped(Mat3) -> Wrapped(Mat3),
+        self Mul Wrapped(Mat3A) -> Wrapped(Mat3A),
     )
     + UnaryOps
     (
@@ -9137,8 +9141,8 @@ impl_script_newtype! {
     )
     + BinOps
     (
-        self Mul Wrapped(Mat4) -> Wrapped(Mat4),
         self Mul Wrapped(Affine3A) -> Wrapped(Affine3A),
+        self Mul Wrapped(Mat4) -> Wrapped(Mat4),
     )
     + UnaryOps
     (
@@ -9236,8 +9240,8 @@ impl_script_newtype! {
     )
     + BinOps
     (
-        self Mul Wrapped(DMat3) -> Wrapped(DMat3),
         self Mul Wrapped(DAffine2) -> Wrapped(DAffine2),
+        self Mul Wrapped(DMat3) -> Wrapped(DMat3),
     )
     + UnaryOps
     (
@@ -9381,8 +9385,8 @@ impl_script_newtype! {
     )
     + BinOps
     (
-        self Mul Wrapped(DMat4) -> Wrapped(DMat4),
         self Mul Wrapped(DAffine3) -> Wrapped(DAffine3),
+        self Mul Wrapped(DMat4) -> Wrapped(DMat4),
     )
     + UnaryOps
     (
@@ -9398,10 +9402,6 @@ impl_script_newtype! {
     ///This quaternion is intended to be of unit length but may denormalize due to
     ///floating point "error creep" which can occur when successive quaternion
     ///operations are applied.
-    ///
-    ///SIMD vector types are used for storage on supported platforms.
-    ///
-    ///This type is 16 byte aligned.
     glam::f32::Quat :
     Clone +
     Debug +
@@ -9640,15 +9640,19 @@ impl_script_newtype! {
     )
     + Fields
     (
+        x: Raw(f32),
+        y: Raw(f32),
+        z: Raw(f32),
+        w: Raw(f32),
     )
     + BinOps
     (
         self Add self -> Wrapped(Quat),
         self Sub self -> Wrapped(Quat),
         self Div Raw(f32) -> Wrapped(Quat),
-        self Mul Wrapped(Vec3) -> Wrapped(Vec3),
-        self Mul self -> Wrapped(Quat),
         self Mul Raw(f32) -> Wrapped(Quat),
+        self Mul self -> Wrapped(Quat),
+        self Mul Wrapped(Vec3) -> Wrapped(Vec3),
         self Mul Wrapped(Vec3A) -> Wrapped(Vec3A),
     )
     + UnaryOps

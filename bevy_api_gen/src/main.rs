@@ -5,7 +5,7 @@ use bevy_api_gen_lib::{Args, Config, PrettyWriter, WrappedItem, WRAPPER_PREFIX};
 use clap::Parser;
 use cratepath::{get_path, path_to_import};
 use indexmap::{IndexMap, IndexSet};
-use rustdoc_types::{Crate, Impl, Item, ItemEnum};
+use rustdoc_types::{Crate, Impl, Item, ItemEnum, Path};
 use serde_json::from_reader;
 use std::{
     borrow::Cow,
@@ -89,6 +89,25 @@ pub(crate) fn generate_macros(
                         } else {
                             panic!("Expected impl items here!")
                         }
+                    });
+
+                    // sort for stability
+                    impl_items.iter_mut().for_each(|(_k, v)| {
+                        v.sort_by(|(a, c), (b, d)| {
+                            let ordering_a = a
+                                .trait_
+                                .as_ref()
+                                .map(|t| t.name.as_str())
+                                .unwrap_or_default()
+                                .cmp(
+                                    b.trait_
+                                        .as_ref()
+                                        .map(|t| t.name.as_str())
+                                        .unwrap_or_default(),
+                                );
+
+                            ordering_a.then_with(|| c.id.0.cmp(&d.id.0))
+                        });
                     });
 
                     let config = config.types.get(item.name.as_ref().unwrap()).unwrap();
@@ -343,7 +362,7 @@ pub fn main() -> Result<(), io::Error> {
         .json
         .iter()
         .map(|json| {
-            let f = File::open(json).unwrap_or_else(|_| panic!("Could not open {}", &json));
+            let f = File::open(json).unwrap_or_else(|e| panic!("Could not open `{}`. {e}", &json));
             let rdr = BufReader::new(f);
             from_reader(rdr)
         })

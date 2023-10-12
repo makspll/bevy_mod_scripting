@@ -17,13 +17,21 @@ TIME="10"
 # Have valgrind profile criterion running our benchmark for 10 seconds
 
 FLAGS=
+BEVY_VERSION=0.11.2
+GLAM_VERSION=0.24.1
+FILE_NAME=generated.rs
 
-# # valgrind outputs a callgrind.out.<pid>. We can analyze this with kcachegrind
-# kcachegrind
+
+generate_all: make_json_files make_json_files_aarch64
+	${MAKE} generate_api_aarch64 FILE_NAME=generated_scalar.rs
+	${MAKE} generate_api FILE_NAME=generated_simd.rs
+
 
 comp_benches:
 	RUSTFLAGS="-g" cargo bench --no-run 
-
+	
+# # valgrind outputs a callgrind.out.<pid>. We can analyze this with kcachegrind
+# kcachegrind
 valgrind:
 	valgrind --tool=callgrind \
 			--dump-instr=yes \
@@ -54,26 +62,74 @@ generate_api:
 	--json "../target/doc/bevy.json" \
 	--json "../target/doc/glam.json" \
 	--config "../api_gen_config.toml" ${FLAGS} \
-	> ../bevy_script_api/src/generated.rs
-	rustfmt ./bevy_script_api/src/generated.rs
+	> ../bevy_script_api/src/${FILE_NAME}
+	rustfmt ./bevy_script_api/src/${FILE_NAME}
+
+generate_api_aarch64:
+	cd bevy_api_gen && \
+	cargo run \
+	-- \
+	--json "../target/aarch64-unknown-linux-gnu/doc/bevy_asset.json" \
+	--json "../target/aarch64-unknown-linux-gnu/doc/bevy_ecs.json" \
+	--json "../target/aarch64-unknown-linux-gnu/doc/bevy_pbr.json" \
+	--json "../target/aarch64-unknown-linux-gnu/doc/bevy_render.json" \
+	--json "../target/aarch64-unknown-linux-gnu/doc/bevy_math.json" \
+	--json "../target/aarch64-unknown-linux-gnu/doc/bevy_transform.json" \
+	--json "../target/aarch64-unknown-linux-gnu/doc/bevy_sprite.json" \
+	--json "../target/aarch64-unknown-linux-gnu/doc/bevy_ui.json" \
+	--json "../target/aarch64-unknown-linux-gnu/doc/bevy_animation.json" \
+	--json "../target/aarch64-unknown-linux-gnu/doc/bevy_core.json" \
+	--json "../target/aarch64-unknown-linux-gnu/doc/bevy_core_pipeline.json" \
+	--json "../target/aarch64-unknown-linux-gnu/doc/bevy_gltf.json" \
+	--json "../target/aarch64-unknown-linux-gnu/doc/bevy_hierarchy.json" \
+	--json "../target/aarch64-unknown-linux-gnu/doc/bevy_text.json" \
+	--json "../target/aarch64-unknown-linux-gnu/doc/bevy_time.json" \
+	--json "../target/aarch64-unknown-linux-gnu/doc/bevy_utils.json" \
+	--json "../target/aarch64-unknown-linux-gnu/doc/bevy_reflect.json" \
+	--json "../target/aarch64-unknown-linux-gnu/doc/bevy.json" \
+	--json "../target/aarch64-unknown-linux-gnu/doc/glam.json" \
+	--config "../api_gen_config.toml" ${FLAGS} \
+	> ../bevy_script_api/src/${FILE_NAME}
+	rustfmt ./bevy_script_api/src/${FILE_NAME}
 
 make_json_files:
-	rustup run nightly-2023-07-16 cargo rustdoc -p bevy_asset@0.11.0  --  -Zunstable-options --output-format json && \
-	rustup run nightly-2023-07-16 cargo rustdoc -p bevy_ecs@0.11.0 --  -Zunstable-options --output-format json && \
-	rustup run nightly-2023-07-16 cargo rustdoc -p bevy_pbr@0.11.0 --  -Zunstable-options --output-format json && \
-	rustup run nightly-2023-07-16 cargo rustdoc -p bevy_render@0.11.0 --  -Zunstable-options --output-format json && \
-	rustup run nightly-2023-07-16 cargo rustdoc -p bevy_math@0.11.0 --  -Zunstable-options --output-format json && \
-	rustup run nightly-2023-07-16 cargo rustdoc -p bevy_transform@0.11.0 --  -Zunstable-options --output-format json && \
-	rustup run nightly-2023-07-16 cargo rustdoc -p bevy_sprite@0.11.0 --  -Zunstable-options --output-format json && \
-	rustup run nightly-2023-07-16 cargo rustdoc -p bevy_ui@0.11.0 --  -Zunstable-options --output-format json && \
-	rustup run nightly-2023-07-16 cargo rustdoc -p bevy_animation@0.11.0 --  -Zunstable-options --output-format json && \
-	rustup run nightly-2023-07-16 cargo rustdoc -p bevy_core@0.11.0 --  -Zunstable-options --output-format json && \
-	rustup run nightly-2023-07-16 cargo rustdoc -p bevy_core_pipeline@0.11.0 --  -Zunstable-options --output-format json && \
-	rustup run nightly-2023-07-16 cargo rustdoc -p bevy_gltf@0.11.0 --  -Zunstable-options --output-format json && \
-	rustup run nightly-2023-07-16 cargo rustdoc -p bevy_hierarchy@0.11.0 --  -Zunstable-options --output-format json && \
-	rustup run nightly-2023-07-16 cargo rustdoc -p bevy_text@0.11.0 --  -Zunstable-options --output-format json && \
-	rustup run nightly-2023-07-16 cargo rustdoc -p bevy_time@0.11.0 --  -Zunstable-options --output-format json && \
-	rustup run nightly-2023-07-16 cargo rustdoc -p bevy_utils@0.11.0 --  -Zunstable-options --output-format json && \
-	rustup run nightly-2023-07-16 cargo rustdoc -p bevy_reflect@0.11.0 --  -Zunstable-options --output-format json && \
-	rustup run nightly-2023-07-16 cargo rustdoc -p glam@0.24.1 --  -Zunstable-options --output-format json && \
-	rustup run nightly-2023-07-16 cargo rustdoc -p bevy@0.11.0 --  -Zunstable-options --output-format json 
+	cargo +nightly-2023-07-16 rustdoc -p bevy_asset@${BEVY_VERSION}  --  -Zunstable-options --output-format json && \
+	cargo +nightly-2023-07-16 rustdoc -p bevy_ecs@${BEVY_VERSION} --  -Zunstable-options --output-format json && \
+	cargo +nightly-2023-07-16 rustdoc -p bevy_pbr@${BEVY_VERSION} --  -Zunstable-options --output-format json && \
+	cargo +nightly-2023-07-16 rustdoc -p bevy_render@${BEVY_VERSION} --  -Zunstable-options --output-format json && \
+	cargo +nightly-2023-07-16 rustdoc -p bevy_math@${BEVY_VERSION} --  -Zunstable-options --output-format json && \
+	cargo +nightly-2023-07-16 rustdoc -p bevy_transform@${BEVY_VERSION} --  -Zunstable-options --output-format json && \
+	cargo +nightly-2023-07-16 rustdoc -p bevy_sprite@${BEVY_VERSION} --  -Zunstable-options --output-format json && \
+	cargo +nightly-2023-07-16 rustdoc -p bevy_ui@${BEVY_VERSION} --  -Zunstable-options --output-format json && \
+	cargo +nightly-2023-07-16 rustdoc -p bevy_animation@${BEVY_VERSION} --  -Zunstable-options --output-format json && \
+	cargo +nightly-2023-07-16 rustdoc -p bevy_core@${BEVY_VERSION} --  -Zunstable-options --output-format json && \
+	cargo +nightly-2023-07-16 rustdoc -p bevy_core_pipeline@${BEVY_VERSION} --  -Zunstable-options --output-format json && \
+	cargo +nightly-2023-07-16 rustdoc -p bevy_gltf@${BEVY_VERSION} --  -Zunstable-options --output-format json && \
+	cargo +nightly-2023-07-16 rustdoc -p bevy_hierarchy@${BEVY_VERSION} --  -Zunstable-options --output-format json && \
+	cargo +nightly-2023-07-16 rustdoc -p bevy_text@${BEVY_VERSION} --  -Zunstable-options --output-format json && \
+	cargo +nightly-2023-07-16 rustdoc -p bevy_time@${BEVY_VERSION} --  -Zunstable-options --output-format json && \
+	cargo +nightly-2023-07-16 rustdoc -p bevy_utils@${BEVY_VERSION} --  -Zunstable-options --output-format json && \
+	cargo +nightly-2023-07-16 rustdoc -p bevy_reflect@${BEVY_VERSION} --  -Zunstable-options --output-format json && \
+	cargo +nightly-2023-07-16 rustdoc -p glam@${GLAM_VERSION} --  -Zunstable-options --output-format json && \
+	cargo +nightly-2023-07-16 rustdoc -p bevy@${BEVY_VERSION} --  -Zunstable-options --output-format json 
+
+make_json_files_aarch64:
+	cargo +nightly-2023-07-16 rustdoc --target=aarch64-unknown-linux-gnu -p bevy_asset@${BEVY_VERSION}  --  -Zunstable-options --output-format json && \
+	cargo +nightly-2023-07-16 rustdoc --target=aarch64-unknown-linux-gnu -p bevy_ecs@${BEVY_VERSION} --  -Zunstable-options --output-format json && \
+	cargo +nightly-2023-07-16 rustdoc --target=aarch64-unknown-linux-gnu -p bevy_pbr@${BEVY_VERSION} --  -Zunstable-options --output-format json && \
+	cargo +nightly-2023-07-16 rustdoc --target=aarch64-unknown-linux-gnu -p bevy_render@${BEVY_VERSION} --  -Zunstable-options --output-format json && \
+	cargo +nightly-2023-07-16 rustdoc --target=aarch64-unknown-linux-gnu -p bevy_math@${BEVY_VERSION} --  -Zunstable-options --output-format json && \
+	cargo +nightly-2023-07-16 rustdoc --target=aarch64-unknown-linux-gnu -p bevy_transform@${BEVY_VERSION} --  -Zunstable-options --output-format json && \
+	cargo +nightly-2023-07-16 rustdoc --target=aarch64-unknown-linux-gnu -p bevy_sprite@${BEVY_VERSION} --  -Zunstable-options --output-format json && \
+	cargo +nightly-2023-07-16 rustdoc --target=aarch64-unknown-linux-gnu -p bevy_ui@${BEVY_VERSION} --  -Zunstable-options --output-format json && \
+	cargo +nightly-2023-07-16 rustdoc --target=aarch64-unknown-linux-gnu -p bevy_animation@${BEVY_VERSION} --  -Zunstable-options --output-format json && \
+	cargo +nightly-2023-07-16 rustdoc --target=aarch64-unknown-linux-gnu -p bevy_core@${BEVY_VERSION} --  -Zunstable-options --output-format json && \
+	cargo +nightly-2023-07-16 rustdoc --target=aarch64-unknown-linux-gnu -p bevy_core_pipeline@${BEVY_VERSION} --  -Zunstable-options --output-format json && \
+	cargo +nightly-2023-07-16 rustdoc --target=aarch64-unknown-linux-gnu -p bevy_gltf@${BEVY_VERSION} --  -Zunstable-options --output-format json && \
+	cargo +nightly-2023-07-16 rustdoc --target=aarch64-unknown-linux-gnu -p bevy_hierarchy@${BEVY_VERSION} --  -Zunstable-options --output-format json && \
+	cargo +nightly-2023-07-16 rustdoc --target=aarch64-unknown-linux-gnu -p bevy_text@${BEVY_VERSION} --  -Zunstable-options --output-format json && \
+	cargo +nightly-2023-07-16 rustdoc --target=aarch64-unknown-linux-gnu -p bevy_time@${BEVY_VERSION} --  -Zunstable-options --output-format json && \
+	cargo +nightly-2023-07-16 rustdoc --target=aarch64-unknown-linux-gnu -p bevy_utils@${BEVY_VERSION} --  -Zunstable-options --output-format json && \
+	cargo +nightly-2023-07-16 rustdoc --target=aarch64-unknown-linux-gnu -p bevy_reflect@${BEVY_VERSION} --  -Zunstable-options --output-format json && \
+	cargo +nightly-2023-07-16 rustdoc --target=aarch64-unknown-linux-gnu -p glam@${GLAM_VERSION} --  -Zunstable-options --output-format json && \
+	cargo +nightly-2023-07-16 rustdoc --target=aarch64-unknown-linux-gnu -p bevy@${BEVY_VERSION} --  -Zunstable-options --output-format json 

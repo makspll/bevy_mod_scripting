@@ -39,6 +39,10 @@ pub use bevy_mod_scripting_derive::impl_script_newtype;
 #[cfg(feature = "lua")]
 pub use bevy_mod_scripting_lua_derive::impl_lua_newtype; //LuaProxy};
 
-pub(crate) mod generated;
+#[cfg(not(any(target_feature = "sse2", target_feature = "simd128")))]
+pub(crate) mod generated_scalar;
+
+#[cfg(any(target_feature = "sse2", target_feature = "simd128"))]
+pub(crate) mod generated_simd;
 
 pub use parking_lot;
