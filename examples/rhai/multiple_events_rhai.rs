@@ -15,7 +15,7 @@ fn main() {
     App::new()
         .add_plugins((DefaultPlugins, ScriptingPlugin))
         .add_systems(Startup, setup_entities)
-        .add_systems(Update, (call_init, call_update, call_test_on_all))
+        .add_systems(Update, (call_init, call_update))
         .add_script_host::<RhaiScriptHost<ScriptArgs>>(PostUpdate)
         .add_api_provider::<RhaiScriptHost<ScriptArgs>>(Box::new(RhaiBevyAPIProvider))
         .add_script_handler::<RhaiScriptHost<ScriptArgs>, 0, 2>(PostUpdate)
@@ -140,28 +140,4 @@ fn call_init(
             }
         }
     }
-}
-
-fn call_test_on_all(
-    mut events: PriorityEventWriter<RhaiEvent<ScriptArgs>>,
-    to_update: Query<(Entity, Option<&Name>)>,
-) {
-    let mut combined_names_of_all_entities = String::new();
-    for (_, name) in &to_update {
-        if let Some(name) = name {
-            combined_names_of_all_entities.push_str(&name.to_string());
-        }
-    }
-
-    events.send(
-        RhaiEvent {
-            hook_name: "on_test".to_owned(),
-            args: ScriptArgs {
-                entity_name: Some(combined_names_of_all_entities),
-                ..Default::default()
-            },
-            recipients: Recipients::All,
-        },
-        2,
-    );
 }

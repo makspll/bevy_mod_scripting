@@ -7,7 +7,3 @@ fn on_update(name, delta) {
 
     world.despawn_recursive(entity);
 }
-
-fn on_test(names) {
-    print(`Hello World! From Test: "${names}"`);
-}
