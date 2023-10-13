@@ -105,30 +105,6 @@ fn call_update(
     });
 }
 
-fn call_test_on_all(
-    mut events: PriorityEventWriter<RhaiEvent<ScriptArgs>>,
-    to_update: Query<(Entity, Option<&Name>)>,
-) {
-    let mut combined_names_of_all_entities = String::new();
-    for (_, name) in &to_update {
-        if let Some(name) = name {
-            combined_names_of_all_entities.push_str(&name.to_string());
-        }
-    }
-
-    events.send(
-        RhaiEvent {
-            hook_name: "on_test".to_owned(),
-            args: ScriptArgs {
-                entity_name: Some(combined_names_of_all_entities),
-                ..Default::default()
-            },
-            recipients: Recipients::All,
-        },
-        2,
-    );
-}
-
 fn call_init(
     mut events: PriorityEventWriter<RhaiEvent<ScriptArgs>>,
     mut loaded_scripts: EventReader<ScriptLoaded>,
@@ -155,11 +131,37 @@ fn call_init(
                         0,
                     );
 
+                    commands.entity(entity).remove::<NewlyAddedEntityCallInit>();
                     continue 'outer;
                 }
+            } else {
+                commands.entity(entity).remove::<NewlyAddedEntityCallInit>();
+                continue 'outer;
             }
-
-            commands.entity(entity).remove::<NewlyAddedEntityCallInit>();
         }
     }
+}
+
+fn call_test_on_all(
+    mut events: PriorityEventWriter<RhaiEvent<ScriptArgs>>,
+    to_update: Query<(Entity, Option<&Name>)>,
+) {
+    let mut combined_names_of_all_entities = String::new();
+    for (_, name) in &to_update {
+        if let Some(name) = name {
+            combined_names_of_all_entities.push_str(&name.to_string());
+        }
+    }
+
+    events.send(
+        RhaiEvent {
+            hook_name: "on_test".to_owned(),
+            args: ScriptArgs {
+                entity_name: Some(combined_names_of_all_entities),
+                ..Default::default()
+            },
+            recipients: Recipients::All,
+        },
+        2,
+    );
 }
