@@ -95,11 +95,33 @@ pub fn script_remove_synchronizer<H: ScriptHost>(
     mut query: RemovedComponents<ScriptCollection<H::ScriptAsset>>,
     mut contexts: ResMut<ScriptContexts<H::ScriptContext>>,
 ) {
-    query.iter().for_each(|v| {
+    for v in query.iter() {
         // we know that this entity used to have a script component
         // ergo a script context must exist in ctxts, remove all scripts on the entity
-        contexts.remove_context(v.index());
-    })
+        println!("Removing script context for entity {:?}", v);
+        let mut script_ids = Vec::new();
+        for (script_id, (entity, ..)) in contexts.context_entities.iter() {
+            if entity.index() == v.index() {
+                script_ids.push(*script_id);
+            }
+        }
+
+        for script_id in script_ids {
+            println!("removing script id: {}", script_id);
+            contexts.remove_context(script_id);
+        }
+
+        println!("remaining contexts: {:?}", contexts.context_entities.len());
+        for (script_id, (entity, context, some_string)) in contexts.context_entities.iter() {
+            println!(
+                "script id: {}, entity: {:?}, context: {:?}, name: {:?}",
+                script_id,
+                entity,
+                context.is_some(),
+                some_string
+            );
+        }
+    }
 }
 
 /// Reloads hot-reloaded scripts, or loads missing contexts for scripts which were added but not loaded
