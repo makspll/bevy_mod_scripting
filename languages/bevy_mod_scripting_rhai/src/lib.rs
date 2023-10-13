@@ -153,10 +153,7 @@ impl<A: FuncArgs + Send + Clone + Sync + 'static> ScriptHost for RhaiScriptHost<
         // - we do not use world_ptr after we use the original reference again anywhere in this function
         let world_ptr = unsafe { WorldPointer::new(world) };
 
-        let mut ctxs_len = 0;
-
         ctxs.for_each(|(fd, ctx)| {
-            ctxs_len += 1;
             providers
                 .setup_runtime_all(world_ptr.clone(), &fd, ctx)
                 .expect("Failed to setup script runtime");
@@ -201,7 +198,5 @@ impl<A: FuncArgs + Send + Clone + Sync + 'static> ScriptHost for RhaiScriptHost<
             // all this method call does is set a variable on the AST to NONE so should not affect performance
             ctx.ast.clear_statements();
         });
-
-        println!("ctxs: {}", ctxs_len);
     }
 }
