@@ -98,13 +98,15 @@ pub fn script_remove_synchronizer<H: ScriptHost>(
     for v in query.iter() {
         // we know that this entity used to have a script component
         // ergo a script context must exist in ctxts, remove all scripts on the entity
-        let script_ids = contexts.context_entities
-                                    .iter()
-                                    .filter_map(|(script_id, (entity, ..))|  (entity == v)
-                                    .then_some(script_id))
-                                    .collect();
-        for script_id in  script_ids{
-            contexts.remove_context();
+        let script_ids = contexts
+            .context_entities
+            .iter()
+            .filter_map(|(script_id, (entity, ..))| {
+                (entity.index() == v.index()).then_some(*script_id)
+            })
+            .collect::<Vec<_>>();
+        for script_id in script_ids {
+            contexts.remove_context(script_id);
         }
     }
 }
