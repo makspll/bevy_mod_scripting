@@ -32,7 +32,7 @@ impl<A: FuncArgs + Send> Default for RhaiScriptHost<A> {
         let mut e = Engine::new();
         // prevent shadowing of `state`,`world` and `entity` in variable in scripts
         e.on_def_var(|_, info, _| {
-            Ok(info.name != "state" && info.name != "world" && info.name != "entity")
+            Ok(info.name() != "state" && info.name() != "world" && info.name() != "entity")
         });
 
         Self {

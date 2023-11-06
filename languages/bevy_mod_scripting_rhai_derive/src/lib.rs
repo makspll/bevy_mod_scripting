@@ -1,7 +1,5 @@
 use proc_macro::TokenStream;
 
-pub(crate) mod rhai_method;
-
 #[proc_macro]
 pub fn impl_lua_newtype(tokens: TokenStream) -> TokenStream {
     // let newtype = parse_macro_input!(tokens as Newtype);

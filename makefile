@@ -17,9 +17,17 @@ TIME="10"
 # Have valgrind profile criterion running our benchmark for 10 seconds
 
 FLAGS=
-
+PACKAGE=bevy_mod_scripting
+TEST_NAME=
 # # valgrind outputs a callgrind.out.<pid>. We can analyze this with kcachegrind
 # kcachegrind
+NIGHTLY_VERSION=2023-11-02
+BEVY_VERSION=0.11.2
+GLAM_VERSION=0.24.1
+build_test_in_package:
+	@cargo test --no-run --lib --workspace $(TEST_NAME)
+	@export OUTPUT=$$(find ./target/debug/deps/ -regex ".*${PACKAGE}[^.]*" -printf "%T@\t%Tc %6k KiB %p\n" | sort -n -r | awk '{print $$NF}' | head -1); \
+	mv $${OUTPUT} ./target/debug/test_binary && echo "Using: $${OUTPUT}" && ls -v ./target/debug/ | grep "test_binary"
 
 comp_benches:
 	RUSTFLAGS="-g" cargo bench --no-run 
@@ -31,9 +39,7 @@ valgrind:
 			--simulate-cache=yes \
 			${EXEC} --bench  ${T_ID} 
 generate_api:
-	cd bevy_api_gen && \
-	cargo run \
-	-- \
+	cd bevy_api_gen && cargo run --release -- \
 	--json "../target/doc/bevy_asset.json" \
 	--json "../target/doc/bevy_ecs.json" \
 	--json "../target/doc/bevy_pbr.json" \
@@ -53,27 +59,30 @@ generate_api:
 	--json "../target/doc/bevy_reflect.json" \
 	--json "../target/doc/bevy.json" \
 	--json "../target/doc/glam.json" \
+	--json "${HOME}/.rustup/toolchains/nightly-${NIGHTLY_VERSION}-x86_64-unknown-linux-gnu/share/doc/rust/json/core.json" \
+	--json "${HOME}/.rustup/toolchains/nightly-${NIGHTLY_VERSION}-x86_64-unknown-linux-gnu/share/doc/rust/json/std.json" \
 	--config "../api_gen_config.toml" ${FLAGS} \
-	> ../bevy_script_api/src/generated.rs
-	rustfmt ./bevy_script_api/src/generated.rs
+	--templates "../templates" \
+	--output ../bevy_script_api/src/generated.rs
 
 make_json_files:
-	rustup run nightly-2023-07-16 cargo rustdoc -p bevy_asset@0.11.0  --  -Zunstable-options --output-format json && \
-	rustup run nightly-2023-07-16 cargo rustdoc -p bevy_ecs@0.11.0 --  -Zunstable-options --output-format json && \
-	rustup run nightly-2023-07-16 cargo rustdoc -p bevy_pbr@0.11.0 --  -Zunstable-options --output-format json && \
-	rustup run nightly-2023-07-16 cargo rustdoc -p bevy_render@0.11.0 --  -Zunstable-options --output-format json && \
-	rustup run nightly-2023-07-16 cargo rustdoc -p bevy_math@0.11.0 --  -Zunstable-options --output-format json && \
-	rustup run nightly-2023-07-16 cargo rustdoc -p bevy_transform@0.11.0 --  -Zunstable-options --output-format json && \
-	rustup run nightly-2023-07-16 cargo rustdoc -p bevy_sprite@0.11.0 --  -Zunstable-options --output-format json && \
-	rustup run nightly-2023-07-16 cargo rustdoc -p bevy_ui@0.11.0 --  -Zunstable-options --output-format json && \
-	rustup run nightly-2023-07-16 cargo rustdoc -p bevy_animation@0.11.0 --  -Zunstable-options --output-format json && \
-	rustup run nightly-2023-07-16 cargo rustdoc -p bevy_core@0.11.0 --  -Zunstable-options --output-format json && \
-	rustup run nightly-2023-07-16 cargo rustdoc -p bevy_core_pipeline@0.11.0 --  -Zunstable-options --output-format json && \
-	rustup run nightly-2023-07-16 cargo rustdoc -p bevy_gltf@0.11.0 --  -Zunstable-options --output-format json && \
-	rustup run nightly-2023-07-16 cargo rustdoc -p bevy_hierarchy@0.11.0 --  -Zunstable-options --output-format json && \
-	rustup run nightly-2023-07-16 cargo rustdoc -p bevy_text@0.11.0 --  -Zunstable-options --output-format json && \
-	rustup run nightly-2023-07-16 cargo rustdoc -p bevy_time@0.11.0 --  -Zunstable-options --output-format json && \
-	rustup run nightly-2023-07-16 cargo rustdoc -p bevy_utils@0.11.0 --  -Zunstable-options --output-format json && \
-	rustup run nightly-2023-07-16 cargo rustdoc -p bevy_reflect@0.11.0 --  -Zunstable-options --output-format json && \
-	rustup run nightly-2023-07-16 cargo rustdoc -p glam@0.24.1 --  -Zunstable-options --output-format json && \
-	rustup run nightly-2023-07-16 cargo rustdoc -p bevy@0.11.0 --  -Zunstable-options --output-format json 
+	rustup install nightly-${NIGHTLY_VERSION}
+	rustup run nightly-${NIGHTLY_VERSION} cargo rustdoc -p bevy_asset@${BEVY_VERSION}  --  -Zunstable-options --output-format json && \
+	rustup run nightly-${NIGHTLY_VERSION} cargo rustdoc -p bevy_ecs@${BEVY_VERSION} --  -Zunstable-options --output-format json && \
+	rustup run nightly-${NIGHTLY_VERSION} cargo rustdoc -p bevy_pbr@${BEVY_VERSION} --  -Zunstable-options --output-format json && \
+	rustup run nightly-${NIGHTLY_VERSION} cargo rustdoc -p bevy_render@${BEVY_VERSION} --  -Zunstable-options --output-format json && \
+	rustup run nightly-${NIGHTLY_VERSION} cargo rustdoc -p bevy_math@${BEVY_VERSION} --  -Zunstable-options --output-format json && \
+	rustup run nightly-${NIGHTLY_VERSION} cargo rustdoc -p bevy_transform@${BEVY_VERSION} --  -Zunstable-options --output-format json && \
+	rustup run nightly-${NIGHTLY_VERSION} cargo rustdoc -p bevy_sprite@${BEVY_VERSION} --  -Zunstable-options --output-format json && \
+	rustup run nightly-${NIGHTLY_VERSION} cargo rustdoc -p bevy_ui@${BEVY_VERSION} --  -Zunstable-options --output-format json && \
+	rustup run nightly-${NIGHTLY_VERSION} cargo rustdoc -p bevy_animation@${BEVY_VERSION} --  -Zunstable-options --output-format json && \
+	rustup run nightly-${NIGHTLY_VERSION} cargo rustdoc -p bevy_core@${BEVY_VERSION} --  -Zunstable-options --output-format json && \
+	rustup run nightly-${NIGHTLY_VERSION} cargo rustdoc -p bevy_core_pipeline@${BEVY_VERSION} --  -Zunstable-options --output-format json && \
+	rustup run nightly-${NIGHTLY_VERSION} cargo rustdoc -p bevy_gltf@${BEVY_VERSION} --  -Zunstable-options --output-format json && \
+	rustup run nightly-${NIGHTLY_VERSION} cargo rustdoc -p bevy_hierarchy@${BEVY_VERSION} --  -Zunstable-options --output-format json && \
+	rustup run nightly-${NIGHTLY_VERSION} cargo rustdoc -p bevy_text@${BEVY_VERSION} --  -Zunstable-options --output-format json && \
+	rustup run nightly-${NIGHTLY_VERSION} cargo rustdoc -p bevy_time@${BEVY_VERSION} --  -Zunstable-options --output-format json && \
+	rustup run nightly-${NIGHTLY_VERSION} cargo rustdoc -p bevy_utils@${BEVY_VERSION} --  -Zunstable-options --output-format json && \
+	rustup run nightly-${NIGHTLY_VERSION} cargo rustdoc -p bevy_reflect@${BEVY_VERSION} --  -Zunstable-options --output-format json && \
+	rustup run nightly-${NIGHTLY_VERSION} cargo rustdoc -p glam@${GLAM_VERSION} --  -Zunstable-options --output-format json && \
+	rustup run nightly-${NIGHTLY_VERSION} cargo rustdoc -p bevy@${BEVY_VERSION} --  -Zunstable-options --output-format json 

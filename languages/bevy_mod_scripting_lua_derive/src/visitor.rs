@@ -1,7 +1,6 @@
 /// This module contains both `SimpleType` and `syn::Type` visitors to help us with the code generation.
 use bevy_mod_scripting_common::input::*;
 use proc_macro2::Span;
-use proc_macro_error::*;
 use quote::*;
 use syn::*;
 
@@ -21,52 +20,58 @@ impl LuaSimpleTypeArgumentUnwrapper {
     }
 }
 
-impl VisitSimpleType<proc_macro2::TokenStream> for LuaSimpleTypeArgumentUnwrapper {
-    fn visit_unit(&mut self, _: bool) -> proc_macro2::TokenStream {
-        quote_spanned!(self.span=> ())
+impl VisitSimpleType<syn::Result<proc_macro2::TokenStream>> for LuaSimpleTypeArgumentUnwrapper {
+    fn visit_unit(&mut self, _: bool) -> syn::Result<proc_macro2::TokenStream> {
+        Ok(quote_spanned!(self.span=> ()))
     }
 
     fn visit_proxy_type(
         &mut self,
         _: &ProxyType,
         is_child_of_reference: bool,
-    ) -> proc_macro2::TokenStream {
+    ) -> syn::Result<proc_macro2::TokenStream> {
         let arg_name: &Ident = &self.arg_name;
 
         if is_child_of_reference {
-            quote_spanned!(self.span=> #arg_name)
+            Ok(quote_spanned!(self.span=> #arg_name))
         } else {
-            quote_spanned!(self.span=> #arg_name.inner()?)
+            Ok(quote_spanned!(self.span=> #arg_name.inner()?))
         }
     }
 
-    fn visit_type(&mut self, _type: &Type, _: bool) -> proc_macro2::TokenStream {
+    fn visit_type(&mut self, _type: &Type, _: bool) -> syn::Result<proc_macro2::TokenStream> {
         let arg_name: &Ident = &self.arg_name;
-        quote_spanned!(self.span=> #arg_name)
+        Ok(quote_spanned!(self.span=> #arg_name))
     }
 
-    fn visit_unit_path(&mut self, unit_path: &UnitPath, _: bool) -> proc_macro2::TokenStream {
+    fn visit_unit_path(
+        &mut self,
+        unit_path: &UnitPath,
+        _: bool,
+    ) -> syn::Result<proc_macro2::TokenStream> {
         match unit_path.std_type_ident {
             Some(StdTypeIdent::Option) => {
-                let inner = self.visit_simple_type(&unit_path.inner, false);
+                let inner = self.visit_simple_type(&unit_path.inner, false)?;
                 let arg_name = &self.arg_name;
-                quote_spanned!(self.span=>
+                Ok(quote_spanned!(self.span=>
                     #arg_name.map(|#arg_name| Ok::<_,bevy_mod_scripting_lua::tealr::mlu::mlua::Error>(#inner)).transpose()?
-                )
+                ))
             }
             Some(StdTypeIdent::Vec) => {
-                let inner = self.visit_simple_type(&unit_path.inner, false);
+                let inner = self.visit_simple_type(&unit_path.inner, false)?;
                 let arg_name = &self.arg_name;
-                quote_spanned!(self.span=>
+                Ok(quote_spanned!(self.span=>
                     #arg_name.into_iter().map(|#arg_name| Ok(#inner)).collect::<Result<Vec<_>,bevy_mod_scripting_lua::tealr::mlu::mlua::Error>>()?
-                )
+                ))
             }
-            Some(unsupported_std_type) => abort!(
-                unit_path.ident,
-                "`{}` is not yet supported",
-                unsupported_std_type
-            ),
-            _ => abort!(unit_path.ident, "Unsupported type"),
+            Some(unsupported_std_type) => Err(syn::Error::new_spanned(
+                &unit_path.ident,
+                format!("`{}` is not yet supported", unsupported_std_type),
+            )),
+            _ => Err(syn::Error::new_spanned(
+                &unit_path.ident,
+                "Unsupported type",
+            )),
         }
     }
 }
@@ -87,70 +92,83 @@ impl LuaSimpleTypeWrapper {
     }
 }
 
-impl VisitSimpleType<proc_macro2::TokenStream> for LuaSimpleTypeWrapper {
-    fn visit_unit_path(&mut self, unit_path: &UnitPath, _: bool) -> proc_macro2::TokenStream {
+impl VisitSimpleType<syn::Result<proc_macro2::TokenStream>> for LuaSimpleTypeWrapper {
+    fn visit_unit_path(
+        &mut self,
+        unit_path: &UnitPath,
+        _: bool,
+    ) -> syn::Result<proc_macro2::TokenStream> {
         match unit_path.std_type_ident {
             Some(StdTypeIdent::Option) => {
-                let inner = self.visit_simple_type(&unit_path.inner, false);
+                let inner = self.visit_simple_type(&unit_path.inner, false)?;
                 let arg_name = &self.arg_name;
-                quote_spanned!(self.span=>
+                Ok(quote_spanned!(self.span=>
                     #arg_name.map(|#arg_name| #inner)
-                )
+                ))
             }
             Some(StdTypeIdent::Vec) => {
-                let inner = self.visit_simple_type(&unit_path.inner, false);
+                let inner = self.visit_simple_type(&unit_path.inner, false)?;
                 let arg_name = &self.arg_name;
 
-                quote_spanned!(self.span=>
+                Ok(quote_spanned!(self.span=>
                     #arg_name.into_iter().map(|#arg_name| #inner).collect::<Vec<_>>()
-                )
+                ))
             }
-            Some(unsupported_std_type) => abort!(
-                unit_path.ident,
-                "`{}` is not yet supported",
-                unsupported_std_type
-            ),
-            _ => abort!(unit_path.ident, "Unsupported type"),
+            Some(unsupported_std_type) => Err(syn::Error::new_spanned(
+                &unit_path.ident,
+                format!("`{}` is not yet supported", unsupported_std_type),
+            )),
+            _ => Err(syn::Error::new_spanned(
+                &unit_path.ident,
+                "Unsupported type",
+            )),
         }
     }
 
-    fn visit_duo_path(&mut self, duo_path: &DuoPath, _: bool) -> proc_macro2::TokenStream {
+    fn visit_duo_path(
+        &mut self,
+        duo_path: &DuoPath,
+        _: bool,
+    ) -> syn::Result<proc_macro2::TokenStream> {
         let tealr = quote!(bevy_mod_scripting_lua::tealr);
 
         match duo_path.std_type_ident {
             Some(StdTypeIdent::Result) => {
-                let left = self.visit_simple_type(&duo_path.left, false);
-                let right = self.visit_simple_type(&duo_path.right, false);
+                let left = self.visit_simple_type(&duo_path.left, false)?;
+                let right = self.visit_simple_type(&duo_path.right, false)?;
                 let arg_name = &self.arg_name;
-                quote_spanned!(self.span=>
+                Ok(quote_spanned!(self.span=>
                     #arg_name.map(|#arg_name| #left).map_err(|#arg_name| #tealr::mlu::mlua::Error::external(#right))
-                )
+                ))
             }
-            Some(unsupported_std_type) => abort!(
-                duo_path.ident,
-                "`{}` is not yet supported",
-                unsupported_std_type
-            ),
-            _ => abort!(duo_path.ident, "Unsupported type"),
+            Some(unsupported_std_type) => Err(syn::Error::new_spanned(
+                &duo_path.ident,
+                format!("`{}` is not yet supported", unsupported_std_type),
+            )),
+            _ => Err(syn::Error::new_spanned(&duo_path.ident, "Unsupported type")),
         }
     }
 
-    fn visit_unit(&mut self, _: bool) -> proc_macro2::TokenStream {
-        quote_spanned!(self.span=>
+    fn visit_unit(&mut self, _: bool) -> syn::Result<proc_macro2::TokenStream> {
+        Ok(quote_spanned!(self.span=>
             ()
-        )
+        ))
     }
 
-    fn visit_proxy_type(&mut self, proxy_type: &ProxyType, _: bool) -> proc_macro2::TokenStream {
+    fn visit_proxy_type(
+        &mut self,
+        proxy_type: &ProxyType,
+        _: bool,
+    ) -> syn::Result<proc_macro2::TokenStream> {
         let proxy_ident = &proxy_type.proxy_ident;
         let arg_name = &self.arg_name;
-        quote_spanned! {self.span=>
+        Ok(quote_spanned! {self.span=>
             #proxy_ident::new(#arg_name)
-        }
+        })
     }
 
-    fn visit_type(&mut self, _type: &Type, _: bool) -> proc_macro2::TokenStream {
-        self.arg_name.to_token_stream()
+    fn visit_type(&mut self, _type: &Type, _: bool) -> syn::Result<proc_macro2::TokenStream> {
+        Ok(self.arg_name.to_token_stream())
     }
 }
 
@@ -239,14 +257,16 @@ mod test {
 
         let mut visitor = LuaSimpleTypeWrapper::new(format_ident!("arg"), Span::call_site());
 
-        let output = visitor.visit(
-            &SimpleType::new_from_fully_specified_type(
-                "Lua",
-                &parse_quote!(MyType),
-                &HashMap::from_iter([(format_ident!("MyType"), None)]),
+        let output = visitor
+            .visit(
+                &SimpleType::new_from_fully_specified_type(
+                    "Lua",
+                    &parse_quote!(MyType),
+                    &HashMap::from_iter([(format_ident!("MyType"), None)]),
+                )
+                .unwrap(),
             )
-            .unwrap(),
-        );
+            .unwrap();
 
         assert_eq!(output.to_string(), expected.to_string())
     }
@@ -259,14 +279,16 @@ mod test {
 
         let mut visitor = LuaSimpleTypeWrapper::new(format_ident!("arg"), Span::call_site());
 
-        let output = visitor.visit(
-            &SimpleType::new_from_fully_specified_type(
-                "Lua",
-                &parse_quote!(MyType),
-                &HashMap::from_iter([]),
+        let output = visitor
+            .visit(
+                &SimpleType::new_from_fully_specified_type(
+                    "Lua",
+                    &parse_quote!(MyType),
+                    &HashMap::from_iter([]),
+                )
+                .unwrap(),
             )
-            .unwrap(),
-        );
+            .unwrap();
 
         assert_eq!(output.to_string(), expected.to_string())
     }
@@ -279,14 +301,16 @@ mod test {
 
         let mut visitor = LuaSimpleTypeWrapper::new(format_ident!("arg"), Span::call_site());
 
-        let output = visitor.visit(
-            &SimpleType::new_from_fully_specified_type(
-                "Lua",
-                &parse_quote!(Vec<MyType>),
-                &HashMap::from_iter([(format_ident!("MyType"), None)]),
+        let output = visitor
+            .visit(
+                &SimpleType::new_from_fully_specified_type(
+                    "Lua",
+                    &parse_quote!(Vec<MyType>),
+                    &HashMap::from_iter([(format_ident!("MyType"), None)]),
+                )
+                .unwrap(),
             )
-            .unwrap(),
-        );
+            .unwrap();
 
         assert_eq!(output.to_string(), expected.to_string())
     }
@@ -300,14 +324,16 @@ mod test {
         let mut visitor =
             LuaSimpleTypeArgumentUnwrapper::new(format_ident!("arg"), Span::call_site());
 
-        let output = visitor.visit(
-            &SimpleType::new_from_fully_specified_type(
-                "Lua",
-                &parse_quote!(MyType),
-                &HashMap::from_iter([(format_ident!("MyType"), None)]),
+        let output = visitor
+            .visit(
+                &SimpleType::new_from_fully_specified_type(
+                    "Lua",
+                    &parse_quote!(MyType),
+                    &HashMap::from_iter([(format_ident!("MyType"), None)]),
+                )
+                .unwrap(),
             )
-            .unwrap(),
-        );
+            .unwrap();
 
         assert_eq!(output.to_string(), expected.to_string())
     }
@@ -321,14 +347,16 @@ mod test {
         let mut visitor =
             LuaSimpleTypeArgumentUnwrapper::new(format_ident!("arg"), Span::call_site());
 
-        let output = visitor.visit(
-            &SimpleType::new_from_fully_specified_type(
-                "Lua",
-                &parse_quote!(MyType),
-                &HashMap::from_iter([]),
+        let output = visitor
+            .visit(
+                &SimpleType::new_from_fully_specified_type(
+                    "Lua",
+                    &parse_quote!(MyType),
+                    &HashMap::from_iter([]),
+                )
+                .unwrap(),
             )
-            .unwrap(),
-        );
+            .unwrap();
 
         assert_eq!(output.to_string(), expected.to_string())
     }
@@ -342,14 +370,16 @@ mod test {
         let mut visitor =
             LuaSimpleTypeArgumentUnwrapper::new(format_ident!("arg"), Span::call_site());
 
-        let output = visitor.visit(
-            &SimpleType::new_from_fully_specified_type(
-                "Lua",
-                &parse_quote!(Vec<MyType>),
-                &HashMap::from_iter([(format_ident!("MyType"), None)]),
+        let output = visitor
+            .visit(
+                &SimpleType::new_from_fully_specified_type(
+                    "Lua",
+                    &parse_quote!(Vec<MyType>),
+                    &HashMap::from_iter([(format_ident!("MyType"), None)]),
+                )
+                .unwrap(),
             )
-            .unwrap(),
-        );
+            .unwrap();
 
         assert_eq!(output.to_string(), expected.to_string())
     }

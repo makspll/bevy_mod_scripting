@@ -104,8 +104,12 @@ use syn::{
     Attribute, Path, PathArguments, PathSegment, Type, TypePath,
 };
 
-pub fn attribute_to_string_lit(attrs: &Attribute) -> TokenStream {
-    attrs.tokens.clone().into_iter().skip(1).collect()
+pub fn doc_attribute_to_string_lit(attrs: &Attribute) -> Option<TokenStream> {
+    attrs
+        .meta
+        .require_name_value()
+        .map(|v| v.value.to_token_stream())
+        .ok()
 }
 
 pub fn ident_to_type_path(ident: Ident) -> TypePath {

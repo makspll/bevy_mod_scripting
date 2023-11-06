@@ -1,39 +1,8 @@
 #![allow(dead_code, unused_variables, unused_features)]
-use bevy_mod_scripting_common::input::ProxyMeta;
 use proc_macro::TokenStream;
 
-use quote::{format_ident, quote, quote_spanned, ToTokens};
+use quote::{format_ident, quote_spanned, ToTokens};
 use syn::{parse::Parse, parse_macro_input, spanned::Spanned, Attribute, DeriveInput};
-
-#[proc_macro_derive(ScriptProxy, attributes(functions, proxy, rhai, lua))]
-pub fn make_script_proxy(input: TokenStream) -> TokenStream {
-    let original_tokens: proc_macro2::TokenStream = input.clone().into();
-    let derive_input = parse_macro_input!(input as DeriveInput);
-
-    let attrs: Result<ProxyMeta, syn::Error> = derive_input.try_into();
-
-    match attrs {
-        Ok(attrs) => {
-            let mut tokens: Vec<TokenStream> = Default::default();
-            for lang in attrs.language_meta.languages {
-                let macro_ident = format_ident!("impl_{}_proxy", lang.name);
-                let feature_gate = lang
-                    .on_feature
-                    .map(|feature| quote!(#[cfg(feature=#feature)]))
-                    .unwrap_or_default();
-
-                tokens.push(TokenStream::from(quote::quote! {
-                    #feature_gate
-                    bevy_mod_scripting::api::#macro_ident!{
-                        #original_tokens
-                    };
-                }));
-            }
-            tokens.into_iter().collect()
-        }
-        Err(err) => err.to_compile_error().into(),
-    }
-}
 
 /// A convenience macro which derives a lotta things to make your type work in all supported/enabled scripting languages, and provide static typing where possible.
 ///
@@ -94,72 +63,74 @@ pub fn make_script_proxy(input: TokenStream) -> TokenStream {
     since = "0.3.0"
 )]
 pub fn impl_script_newtype(input: TokenStream) -> TokenStream {
-    let invocation = parse_macro_input!(input as MacroInvocation);
-    let mut output: proc_macro2::TokenStream = Default::default();
-    // find the language implementor macro id's
-    match invocation.languages.parse_meta() {
-        Ok(syn::Meta::List(list)) => {
-            if !list.path.is_ident("languages") {
-                return syn::Error::new_spanned(list, "Expected `langauges(..)` meta list")
-                    .to_compile_error()
-                    .into();
-            }
+    // let invocation = parse_macro_input!(input as MacroInvocation);
+    // let inner = invocation.inner;
+    return input.into();
+    // let mut output: proc_macro2::TokenStream = Default::default();
+    // // find the language implementor macro id's
+    // match invocation.languages.parse_meta() {
+    //     Ok(syn::Meta::List(list)) => {
+    //         if !list.path.is_ident("languages") {
+    //             return syn::Error::new_spanned(list, "Expected `langauges(..)` meta list")
+    //                 .to_compile_error()
+    //                 .into();
+    //         }
 
-            // now create an invocation per language specified
-            for language in &list.nested {
-                let mut feature_gate = false;
-                let mut inner_language = None;
-                if let syn::NestedMeta::Meta(syn::Meta::List(sub_list)) = language {
-                    if sub_list.path.is_ident("on_feature") {
-                        if let Some(syn::NestedMeta::Meta(syn::Meta::Path(path))) =
-                            sub_list.nested.first()
-                        {
-                            if let Some(ident) = path.get_ident() {
-                                inner_language = Some(ident);
-                                feature_gate = true;
-                            }
-                        }
-                    }
-                } else if let syn::NestedMeta::Meta(syn::Meta::Path(path)) = language {
-                    if let Some(ident) = path.get_ident() {
-                        inner_language = Some(ident)
-                    }
-                }
+    //         // now create an invocation per language specified
+    //         for language in &list.nested {
+    //             let mut feature_gate = false;
+    //             let mut inner_language = None;
+    //             if let syn::NestedMeta::Meta(syn::Meta::List(sub_list)) = language {
+    //                 if sub_list.path.is_ident("on_feature") {
+    //                     if let Some(syn::NestedMeta::Meta(syn::Meta::Path(path))) =
+    //                         sub_list.nested.first()
+    //                     {
+    //                         if let Some(ident) = path.get_ident() {
+    //                             inner_language = Some(ident);
+    //                             feature_gate = true;
+    //                         }
+    //                     }
+    //                 }
+    //             } else if let syn::NestedMeta::Meta(syn::Meta::Path(path)) = language {
+    //                 if let Some(ident) = path.get_ident() {
+    //                     inner_language = Some(ident)
+    //                 }
+    //             }
 
-                let inner_language =
-                    match inner_language {
-                        Some(v) => v,
-                        None => return syn::Error::new_spanned(
-                            language,
-                            "Expected `on_feature(x)` or `x` attribute where x is a valid language",
-                        )
-                        .to_compile_error()
-                        .into(),
-                    };
+    //             let inner_language =
+    //                 match inner_language {
+    //                     Some(v) => v,
+    //                     None => return syn::Error::new_spanned(
+    //                         language,
+    //                         "Expected `on_feature(x)` or `x` attribute where x is a valid language",
+    //                     )
+    //                     .to_compile_error()
+    //                     .into(),
+    //                 };
 
-                let lang_str = inner_language.to_string();
-                let macro_ident = format_ident!("impl_{}_newtype", inner_language);
-                let inner = invocation.inner.clone();
-                let feature_gate = feature_gate.then_some(quote::quote!(#[cfg(feature=#lang_str)]));
-                output.extend(quote_spanned! {language.span()=>
-                    #feature_gate
-                    #macro_ident!{
-                        #inner
-                    }
-                });
-            }
-        }
-        _ => {
-            return syn::Error::new(
-                invocation.span(),
-                "Expected attribute of the form #[languages(..)]",
-            )
-            .to_compile_error()
-            .into()
-        }
-    };
+    //             let lang_str = inner_language.to_string();
+    //             let macro_ident = format_ident!("impl_{}_newtype", inner_language);
+    //             let inner = invocation.inner.clone();
+    //             let feature_gate = feature_gate.then_some(quote::quote!(#[cfg(feature=#lang_str)]));
+    //             output.extend(quote_spanned! {language.span()=>
+    //                 #feature_gate
+    //                 #macro_ident!{
+    //                     #inner
+    //                 }
+    //             });
+    //         }
+    //     }
+    //     _ => {
+    //         return syn::Error::new(
+    //             invocation.span(),
+    //             "Expected attribute of the form #[languages(..)]",
+    //         )
+    //         .to_compile_error()
+    //         .into()
+    //     }
+    // };
 
-    output.into()
+    // output.into()
 }
 
 pub(crate) struct MacroInvocation {

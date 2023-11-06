@@ -1,7 +1,10 @@
+use std::collections::HashSet;
+
 use clap::Parser;
 use indexmap::{IndexMap, IndexSet};
 use rustdoc_types::{Crate, Item, ItemEnum, Visibility};
 use serde::Deserialize;
+use serde_derive::Serialize;
 
 #[derive(Parser, Debug)]
 #[clap(author, version, about, long_about = None)]
@@ -14,12 +17,21 @@ pub struct Args {
     #[clap(short, long, value_parser)]
     pub config: String,
 
+    #[clap(short, long, value_parser, default_value = "templates")]
+    pub templates: String,
+
+    #[clap(short, long, value_parser, default_value = "generated.rs")]
+    pub output: String,
+
+    #[clap(short, long, value_parser, num_args(0..))]
+    pub type_allowlist: Option<Vec<String>>,
+
     /// if true the excluded methods will show up as commented out code with reasons for exclusion
     #[clap(long)]
     pub print_errors: bool,
 }
 
-#[derive(Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug)]
 pub struct Config {
     #[serde(skip_deserializing, default)]
     pub types: IndexMap<String, Newtype>,
@@ -39,7 +51,7 @@ pub struct Config {
     pub manual_lua_types: Vec<ManualLuaType>,
 }
 
-#[derive(Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug)]
 pub struct ManualLuaType {
     pub name: String,
 
@@ -60,7 +72,7 @@ pub struct ManualLuaType {
     pub use_dummy_proxy: bool,
 }
 
-#[derive(Deserialize, Debug, Hash, PartialEq, Eq)]
+#[derive(Serialize, Deserialize, Debug, Hash, PartialEq, Eq)]
 pub struct Newtype {
     #[serde(rename = "type")]
     pub type_: String,
@@ -84,13 +96,13 @@ pub struct Newtype {
     pub traits: Vec<TraitMethods>,
 }
 
-#[derive(Deserialize, Debug, PartialEq, Eq, Hash, Default)]
+#[derive(Serialize, Deserialize, Debug, PartialEq, Eq, Hash, Default)]
 pub struct TraitMethods {
     pub name: String,
     pub import_path: String,
 }
 
-#[derive(Deserialize, Debug, PartialEq, Eq, Hash)]
+#[derive(Serialize, Deserialize, Debug, PartialEq, Eq, Hash)]
 pub struct Source(pub String);
 
 impl Default for Source {

@@ -1,0 +1,11 @@
+<% include!("header.stpl"); %>
+
+<% for (_, item) in &items { %>
+<% include!("header_per_item.stpl"); %>
+<% } %>
+
+<% for (_, item) in &items { %>
+<% include!("item.stpl"); %>
+<% } %>
+
+<% include!("footer.stpl"); %>

@@ -17,11 +17,11 @@ pub use {script_ref::*, sub_reflect::*};
 pub mod prelude {
     #[cfg(feature = "lua")]
     pub use crate::{
-        impl_lua_newtype, impl_lua_proxy,
         lua::{
             bevy::LuaBevyAPIProvider, std::LuaVec, FromLuaProxy, LuaProxyable, ReflectLuaProxyable,
             ToLuaProxy,
         },
+        LuaProxy,
     };
 
     #[cfg(feature = "rhai")]
@@ -35,9 +35,9 @@ pub mod prelude {
 }
 
 // re-export derive macros from other langs
-pub use bevy_mod_scripting_derive::{impl_script_newtype, ScriptProxy};
+pub use bevy_mod_scripting_derive::impl_script_newtype;
 #[cfg(feature = "lua")]
-pub use bevy_mod_scripting_lua_derive::{impl_lua_newtype, impl_lua_proxy};
+pub use bevy_mod_scripting_lua_derive::LuaProxy;
 
 pub(crate) mod generated;
 

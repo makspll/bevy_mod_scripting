@@ -1,13 +1,15 @@
 use rustdoc_types::{GenericArg, GenericArgs, Type};
 
 /// A representation of valid argument types
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum ArgType {
     /// The primary identifier of the type
     ///
     /// Valid types right now follow the following syntax:
     /// `(&)? (mut)? ident:ident`
-    Self_,
+    Self_ {
+        in_receiver_position: bool,
+    },
     Base(String),
     Generic {
         base: Box<ArgType>,
@@ -38,7 +40,15 @@ impl fmt::Display for ArgType {
 
                 ref_.fmt(f)
             }
-            ArgType::Self_ => f.write_str("self"),
+            ArgType::Self_ {
+                in_receiver_position,
+            } => {
+                if *in_receiver_position {
+                    f.write_str("self")
+                } else {
+                    f.write_str("Self")
+                }
+            }
             ArgType::Generic { base, args } => {
                 base.fmt(f)?;
                 f.write_str("<")?;
@@ -54,18 +64,10 @@ impl fmt::Display for ArgType {
     }
 }
 
-impl TryFrom<Type> for ArgType {
+impl TryFrom<(bool, &Type)> for ArgType {
     type Error = String;
 
-    fn try_from(value: Type) -> Result<Self, Self::Error> {
-        Self::try_from(&value)
-    }
-}
-
-impl TryFrom<&Type> for ArgType {
-    type Error = String;
-
-    fn try_from(value: &Type) -> Result<Self, Self::Error> {
+    fn try_from((is_receiver, value): (bool, &Type)) -> Result<Self, Self::Error> {
         match value {
             Type::ResolvedPath(path) => {
                 let mut processed_args = Vec::default();
@@ -74,7 +76,9 @@ impl TryFrom<&Type> for ArgType {
                     if let GenericArgs::AngleBracketed { args, bindings } = a.as_ref() {
                         for generic in args {
                             match generic {
-                                GenericArg::Type(type_) => processed_args.push(type_.try_into()?),
+                                GenericArg::Type(type_) => {
+                                    processed_args.push((is_receiver, type_).try_into()?)
+                                }
                                 _ => {
                                     return Err(
                                         "Only types are allowed as generic arguments".to_owned()
@@ -89,7 +93,7 @@ impl TryFrom<&Type> for ArgType {
                         return Err("Parenthesised generics are not supported".to_owned());
                     }
                 }
-                let base = Type::Primitive(path.name.to_string()).try_into()?;
+                let base = (is_receiver, &Type::Primitive(path.name.to_string())).try_into()?;
                 if let base @ ArgType::Base(_) = base {
                     if !processed_args.is_empty() {
                         Ok(Self::Generic {
@@ -104,50 +108,56 @@ impl TryFrom<&Type> for ArgType {
                 }
             }
             Type::Primitive(name) | Type::Generic(name) => {
-                if name == "Self" {
-                    Ok(Self::Self_)
+                if name == "Self" || is_receiver {
+                    Ok(Self::Self_ {
+                        in_receiver_position: is_receiver,
+                    })
                 } else {
                     Ok(Self::Base(name.split("::").last().unwrap().to_owned()))
                 }
             }
             Type::BorrowedRef { mutable, type_, .. } => Ok(Self::Ref {
                 is_mut: *mutable,
-                ref_: Box::new(type_.as_ref().try_into()?),
+                ref_: Box::new((is_receiver, type_.as_ref()).try_into()?),
             }),
-            _ => Err("".to_owned()),
+            _ => Err("ArgType is not supported".to_owned()),
         }
     }
 }
 
 impl ArgType {
-    /// Produce an arbitrary output given the base identifier of this type or err if this is the base is a self receiver
-    pub fn map_base<F, O>(&self, f: F) -> O
+    /// Modify base and return modified self
+    pub fn map_base_mut<F>(&mut self, f: F) -> &mut Self
     where
-        F: FnOnce(Result<&String, ()>) -> O,
+        F: FnOnce(&mut String),
     {
         match self {
-            ArgType::Base(b) => f(Ok(b)),
-            ArgType::Ref { is_mut: _, ref_ } => ref_.map_base(f),
-            ArgType::Self_ => f(Err(())),
-            ArgType::Generic { base, .. } => base.map_base(f),
+            ArgType::Base(b) => f(b),
+            ArgType::Ref { is_mut: _, ref_ } => _ = ref_.map_base_mut(f),
+            ArgType::Generic { base, .. } => _ = base.map_base_mut(f),
+            _ => (),
+        };
+        self
+    }
+
+    pub fn is_receiver(&self) -> bool {
+        match self {
+            ArgType::Self_ {
+                in_receiver_position,
+            } => *in_receiver_position,
+            ArgType::Generic { base, .. } => base.is_receiver(),
+            ArgType::Ref { ref_, .. } => ref_.is_receiver(),
+            _ => false,
         }
     }
 
-    /// Produce an arbitrary output given the base identifier of this type, and optionally modify it
-    pub fn map_base_mut<F, O>(&mut self, f: F) -> O
-    where
-        F: FnOnce(Result<&mut String, ()>) -> O,
-    {
+    pub fn is_contextual(&self) -> bool {
         match self {
-            ArgType::Base(b) => f(Ok(b)),
-            ArgType::Ref { is_mut: _, ref_ } => ref_.map_base_mut(f),
-            ArgType::Self_ => f(Err(())),
-            ArgType::Generic { base, .. } => base.map_base_mut(f),
+            ArgType::Self_ { .. } => true,
+            ArgType::Generic { base, .. } => base.is_receiver(),
+            ArgType::Ref { ref_, .. } => ref_.is_receiver(),
+            _ => false,
         }
-    }
-
-    pub fn is_self(&self) -> bool {
-        self.map_base(|b| b.is_err())
     }
 
     /// Retrieves the base ident if this type is resolved otherwise returns None (i.e. in the case of a self receiver)
@@ -155,7 +165,7 @@ impl ArgType {
         match self {
             ArgType::Base(b) => Some(b),
             ArgType::Ref { is_mut: _, ref_ } => ref_.base_ident(),
-            ArgType::Self_ => None,
+            ArgType::Self_ { .. } => None,
             ArgType::Generic { base, .. } => base.base_ident(),
         }
     }
@@ -173,7 +183,7 @@ impl ArgWrapperType {
     pub fn with_config(self_type: &str, type_: &ArgType, config: &Config) -> Option<Self> {
         let base_ident = type_.base_ident().unwrap_or(self_type);
         type_
-            .is_self()
+            .is_receiver()
             .then_some(ArgWrapperType::None)
             .or_else(|| {
                 config

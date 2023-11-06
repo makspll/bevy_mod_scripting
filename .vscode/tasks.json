@@ -1,0 +1,29 @@
+{
+    "version": "2.0.0",
+    "inputs": [
+        {
+            "id": "test_name",
+            "type": "promptString",
+            "description": "Run only tests including this string in their name",
+            "default": ""
+        },
+        {
+            "id": "package",
+            "type": "promptString",
+            "description": "The crate location of this unit test",
+            "default": "bevy_mod_scripting"
+        }
+    ],
+    "tasks": [
+        {
+            "label": "Build specific package's unit tests",
+            "type": "process",
+            "command": "make",
+            "args": [
+                "build_test_in_package",
+                "PACKAGE=${input:package}",
+                "TEST_NAME=${input:test_name}"
+            ]
+        }
+    ]
+}

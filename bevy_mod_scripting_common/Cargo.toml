@@ -13,7 +13,7 @@ readme = "readme.md"
 
 [package.metadata.release]
 pre-release-replacements = [
-    {file="Cargo.toml", search='^version\s*=\s*.*$', replace="version = \"{{version}}\"", exactly=1},
+    { file = "Cargo.toml", search = '^version\s*=\s*.*$', replace = "version = \"{{version}}\"", exactly = 1 },
 ]
 
 [lib]
@@ -21,12 +21,18 @@ name = "bevy_mod_scripting_common"
 path = "src/lib.rs"
 
 [dependencies]
+darling = "0.20.3"
 paste = "1.0.7"
-syn = {version="1.0.57",features=["full","fold","extra-traits", "visit-mut"]}
+syn = { version = "2.0.38", features = [
+    "full",
+    "fold",
+    "extra-traits",
+    "visit-mut",
+] }
 quote = "1.0.8"
 proc-macro2 = "1.0"
 convert_case = "0.5.0"
 serde = { version = "1.0", features = ["derive"] }
 serde_derive = "1.0.137"
-indexmap = {version= "1.9.1", features= ["serde"]}
+indexmap = { version = "1.9.1", features = ["serde"] }
 strum = { version = "0.24.1", features = ["derive"] }

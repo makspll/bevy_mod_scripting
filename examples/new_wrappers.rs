@@ -14,7 +14,7 @@ impl Display for MyError {
 
 impl Error for MyError {}
 
-#[derive(ScriptProxy, Reflect, Resource, Default, Debug, Clone)]
+#[derive(LuaProxy, Reflect, Resource, Default, Debug, Clone)]
 #[reflect(Resource, LuaProxyable)]
 #[proxy(languages("on_feature(lua)"), derive(Clone))]
 #[functions[
@@ -24,12 +24,12 @@ impl Error for MyError {}
     // #[lua(Method)]
     // fn get_my_string(&self) -> String;
 
-    #[lua(Method,raw)]
-    fn raw_method(&self, ctx : &Lua) -> Result<String, _> {
-        let a = ctx.globals().get::<_,String>("world").unwrap();
-        let a = self.inner()?;
-        Ok("".to_owned())
-    }
+    // #[lua(Method,raw)]
+    // fn raw_method(&self, ctx : &Lua) -> Result<String, _> {
+    //     let a = ctx.globals().get::<_,String>("world").unwrap();
+    //     let a = self.inner()?;
+    //     Ok("".to_owned())
+    // }
 
 
     // #[lua(MetaMethod)]
@@ -67,7 +67,7 @@ fn main() -> std::io::Result<()> {
         .add_api_provider::<LuaScriptHost<()>>(Box::new(LuaBevyAPIProvider))
         .add_systems(Startup, |world: &mut World| {
             world.insert_resource(MyProxiedStruct {
-                // my_string: "I was retrieved from the world".to_owned(),
+                my_string: "I was retrieved from the world".to_owned(),
             });
 
             // run script

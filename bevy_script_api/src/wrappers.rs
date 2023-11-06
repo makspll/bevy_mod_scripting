@@ -4,10 +4,9 @@ use bevy::reflect::Reflect;
 pub trait ScriptValue: Reflect + Clone {}
 impl<T: Reflect + Clone> ScriptValue for T {}
 
-
 #[macro_export]
 macro_rules! ref_only_wrapper_methods {
-    ($type_:ident, $wrapper_name: ident) => {
+    ($type_:path, $wrapper_name: ident) => {
         /// Creates a script reference pointing to the wrapped value.
         ///
         /// Depending on this value it may be a lua owned or reflect relative reference
@@ -104,7 +103,7 @@ macro_rules! ref_only_wrapper_methods {
 
 #[macro_export]
 macro_rules! define_wrapper{
-    ($type_:ident, $wrapper_name:ident) => {
+    ($type_:path, $wrapper_name:ident) => {
         #[allow(clippy::large_enum_variant)]
         #[doc=concat!("A script wrapper for the type `",stringify!($type_),"`")]
         pub enum $wrapper_name{
@@ -134,7 +133,7 @@ macro_rules! define_wrapper{
 
 #[macro_export]
 macro_rules! make_script_wrapper {
-    ($type_:ident as $wrapper_name:ident with Clone) => {
+    ($type_:path as $wrapper_name:ident with Clone) => {
         $crate::define_wrapper!($type_, $wrapper_name);
         impl $wrapper_name {
             $crate::ref_only_wrapper_methods!($type_, $wrapper_name);
@@ -163,7 +162,7 @@ macro_rules! make_script_wrapper {
             }
         }
     };
-    ($type_:ident as $wrapper_name:ident) => {
+    ($type_:path as $wrapper_name:ident) => {
         $crate::define_wrapper!($type_, $wrapper_name);
         impl $wrapper_name {
             $crate::ref_only_wrapper_methods!($type_, $wrapper_name);

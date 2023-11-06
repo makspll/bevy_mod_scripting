@@ -1,6 +1,46 @@
 use rustdoc_types::{Crate, Id, ItemEnum, Visibility};
 
+pub(crate) fn crate_name(crate_: &Crate) -> String {
+    crate_
+        .index
+        .get(&crate_.root)
+        .as_ref()
+        .unwrap()
+        .name
+        .to_owned()
+        .unwrap()
+}
+
+pub(crate) fn lookup_external_item_crate_source_name(id: &Id, found_in: &Crate) -> String {
+    let crate_id = found_in
+        .paths
+        .get(id)
+        .expect("Missing link to external item")
+        .crate_id;
+    found_in
+        .external_crates
+        .get(&crate_id)
+        .unwrap()
+        .name
+        .to_owned()
+}
+
+pub(crate) fn lookup_item_crate_source<'a>(id: &'a Id, crates: &'a [Crate]) -> Option<&'a Crate> {
+    crates.iter().find(|crate_| crate_.index.contains_key(id))
+}
+
 pub(crate) fn get_path(id: &Id, source: &Crate) -> Option<Vec<Id>> {
+    log::debug!(
+        "Trying to find path for item id: `{id:?}` has index entry: `{}` has path entry: `{}`",
+        source.index.get(id).is_some(),
+        source.paths.get(id).is_some()
+    );
+    if source.index.get(id).is_none() {
+        panic!("Trying to find path for item which is external to the provided source crate, the item lives in crate: `{}` not in `{}`",            
+            source.external_crates.get(&source.paths.get(id).as_ref().unwrap().crate_id).unwrap().name,
+            crate_name(source)
+        );
+    }
     match source.paths.get(id) {
         Some(_) => return Some(vec![id.to_owned()]),
         None => {
@@ -44,13 +84,31 @@ pub(crate) fn get_path(id: &Id, source: &Crate) -> Option<Vec<Id>> {
 }
 
 pub(crate) fn path_to_import(path: Vec<Id>, source: &Crate) -> Vec<String> {
+    log::debug!(
+        "Trying to convert id path to path components: `{path:?}` with names: [{:?}] in crate: `{}`",
+        path.iter()
+            .map(|id| source
+                .index
+                .get(id)
+                .and_then(|item| item.name.as_deref())
+                .unwrap_or("None"))
+            .collect::<Vec<_>>()
+            .join(","),
+            crate_name(source)
+    );
     path.iter()
         .rev()
         .enumerate()
         .rev()
         .enumerate()
         .map(|(starti, (endi, id))| {
-            let ind = source.index.get(id).unwrap();
+            log::trace!("starti: {starti}, endi: {endi}, id: {id:?}");
+
+            let ind = source
+                .index
+                .get(id)
+                .expect("Trying to find path to item which is not in the provided source crate");
+
             if starti == 0 {
                 return source.paths.get(id).unwrap().path.clone();
             } else if endi == 0 {

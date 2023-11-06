@@ -7,13 +7,13 @@ license = "MIT"
 description = "A code generator creating macro invocations to support the changing bevy API"
 repository = "https://github.com/makspll/bevy_mod_scripting"
 homepage = "https://github.com/makspll/bevy_mod_scripting"
-keywords = ["bevy", "gamedev", "scripting", "lua","code-generation"]
+keywords = ["bevy", "gamedev", "scripting", "lua", "code-generation"]
 categories = ["game-development"]
 readme = "readme.md"
 
 [package.metadata.release]
 pre-release-replacements = [
-    {file="Cargo.toml", search='^version\s*=\s*.*$', replace="version = \"{{version}}\"", exactly=1},
+    { file = "Cargo.toml", search = '^version\s*=\s*.*$', replace = "version = \"{{version}}\"", exactly = 1 },
 ]
 
 [lib]
@@ -26,10 +26,19 @@ path = "src/main.rs"
 
 
 [dependencies]
-rustdoc-types = "0.22.0"
-clap = { version = "3.2.6", features = ["derive"] }
+
+log = "0.4.20"
+pretty_env_logger = "0.5.0"
+sailfish = "0.8.3"
+rustdoc-types = "0.23.0"
+clap = { version = "4.4.7", features = ["derive"] }
 serde_json = "1.0.81"
-toml = "0.5.9"
+toml = "0.8.6"
 serde = { version = "1.0", features = ["derive"] }
 serde_derive = "1.0.137"
-indexmap = {version= "1.9.1", features= ["serde"]}
+indexmap = { version = "2.1.0", features = ["serde"] }
+prettyplease = "0.2.15"
+syn = { version = "2", default-features = false, features = [
+    "full",
+    "parsing",
+] }

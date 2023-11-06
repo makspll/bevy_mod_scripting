@@ -1,0 +1,25 @@
+
+<% for line in &item.docstrings { %>
+///<%- line%>
+<% } %>
+#[derive(LuaProxy)]
+#[proxy(
+derive(
+    <% if item.implemented_traits.contains("Clone") { %>
+        clone,
+    <% } %>
+    <% if item.implemented_traits.contains("Debug") { %>
+        debug,
+    <% } %>
+),
+remote="<%- item.import_path
+    .replace_prefix("bevy_", "bevy::")
+    .replace_prefix("glam", "bevy::math")
+    .to_string() %>",
+functions[
+    <% for (name, function) in &item.functions { %>
+    <% include!("function.stpl"); %>
+    <% } %>
+]
+)]
+pub struct <%- item.import_path.components.last().unwrap() %>;

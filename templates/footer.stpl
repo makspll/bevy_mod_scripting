@@ -1,0 +1,74 @@
+#[cfg(feature = "lua")]
+crate::impl_tealr_generic!(pub(crate) struct T);
+#[cfg(feature = "lua")]
+#[derive(Default)]
+pub(crate) struct BevyAPIGlobals;
+#[cfg(feature = "lua")]
+impl bevy_mod_scripting_lua::tealr::mlu::ExportInstances for BevyAPIGlobals {
+    fn add_instances<'lua, T: bevy_mod_scripting_lua::tealr::mlu::InstanceCollector<'lua>>(
+        self,
+        instances: &mut T,
+    ) -> bevy_mod_scripting_lua::tealr::mlu::mlua::Result<()> {
+    
+        Ok(())
+    }
+}
+
+#[cfg(feature = "lua")]
+pub struct LuaBevyAPIProvider;
+#[cfg(feature = "lua")]
+impl APIProvider for LuaBevyAPIProvider {
+    type APITarget = Mutex<bevy_mod_scripting_lua::tealr::mlu::mlua::Lua>;
+    type ScriptContext = Mutex<bevy_mod_scripting_lua::tealr::mlu::mlua::Lua>;
+    type DocTarget = LuaDocFragment;
+    fn attach_api(&mut self, ctx: &mut Self::APITarget) -> Result<(), ScriptError> {
+        let ctx = ctx
+            .get_mut()
+            .expect("Unable to acquire lock on Lua context");
+        bevy_mod_scripting_lua::tealr::mlu::set_global_env(BevyAPIGlobals, ctx)
+            .map_err(|e| ScriptError::Other(e.to_string()))
+    }
+
+    fn get_doc_fragment(&self) -> Option<Self::DocTarget> {
+        Some(LuaDocFragment::new("BevyAPI", |tw| {
+            tw
+        }))
+    }
+
+    fn setup_script(
+        &mut self,
+        script_data: &ScriptData,
+        ctx: &mut Self::ScriptContext,
+    ) -> Result<(), ScriptError> {
+        let ctx = ctx.get_mut().expect("Could not get context");
+        let globals = ctx.globals();
+        globals
+            .set(
+                "entity",
+                crate::lua::bevy::LuaEntity::new(script_data.entity),
+            )
+            .map_err(ScriptError::new_other)?;
+        globals
+            .set::<_, crate::lua::bevy::LuaScriptData>("script", script_data.into())
+            .map_err(ScriptError::new_other)?;
+
+        Ok(())
+    }
+
+    fn setup_script_runtime(
+        &mut self,
+        world_ptr: bevy_mod_scripting_core::world::WorldPointer,
+        _script_data: &ScriptData,
+        ctx: &mut Self::ScriptContext,
+    ) -> Result<(), ScriptError> {
+        let ctx = ctx.get_mut().expect("Could not get context");
+        let globals = ctx.globals();
+        globals
+            .set("world", crate::lua::bevy::LuaWorld::new(world_ptr))
+            .map_err(ScriptError::new_other)
+    }
+
+    fn register_with_app(&self, app: &mut App) {
+    
+    }
+}

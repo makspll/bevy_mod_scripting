@@ -1,124 +1,31 @@
+use darling::{util::Flag, FromDeriveInput, FromMeta};
+use proc_macro2::Ident;
+use quote::{format_ident, ToTokens};
 use std::{
-    collections::{HashMap, VecDeque},
+    collections::HashMap,
+    ops::{Deref, DerefMut},
     str::FromStr,
 };
-
-use indexmap::{IndexMap, IndexSet};
-use proc_macro2::{Ident, Span};
-use quote::{format_ident, ToTokens};
 use strum::{Display, EnumString};
 use syn::{
-    parse::{Nothing, Parse},
+    parse::Parse,
     punctuated::Punctuated,
     spanned::Spanned,
-    token::{And, Colon2, Gt, Lt, Mut},
+    token::{And, Colon, Gt, Lt, Mut, PathSep},
     visit_mut::VisitMut,
-    AngleBracketedGenericArguments, DataStruct, DeriveInput, Error, Fields, GenericArgument, Meta,
-    NestedMeta, PatType, PathArguments, PathSegment, Receiver, TraitItemMethod, Type, TypePath,
-    TypeReference, TypeTuple,
+    AngleBracketedGenericArguments, Attribute, Error, Expr, Field, Fields, GenericArgument,
+    PatType, Path, PathArguments, PathSegment, Receiver, Token, TraitItem, TraitItemFn, Type,
+    TypePath, TypeReference, TypeTuple, Variant,
 };
 
-use crate::utils::{attribute_to_string_lit, ident_to_type_path};
-
-/// Convenience structure for holding data relevant to proxy generation
-pub struct DeriveMeta {}
-
-#[derive(Debug)]
-pub struct Language {
-    pub name: String,
-    pub on_feature: Option<String>,
-}
-
-/// Language settings for proxies
-#[derive(Default, Debug)]
-pub struct LanguageMeta {
-    pub languages: Vec<Language>,
-}
-
-impl TryFrom<syn::MetaList> for LanguageMeta {
-    type Error = syn::Error;
-
-    fn try_from(list: syn::MetaList) -> Result<Self, Self::Error> {
-        let mut languages: Vec<Language> = Default::default();
-
-        for nested_meta in list.nested.into_iter() {
-            match nested_meta {
-                syn::NestedMeta::Lit(syn::Lit::Str(_str)) => {
-                    let mut name = _str.value();
-                    let mut on_feature = None;
-                    if let Some(postfix) = name.strip_prefix("on_feature(") {
-                        if let Some(middle) = postfix.strip_suffix(')') {
-                            name = middle.to_owned();
-                            on_feature = Some(name.clone());
-                        }
-                    }
-                    languages.push(Language { name, on_feature })
-                }
-                _ => {
-                    return Err(syn::Error::new_spanned(
-                        nested_meta,
-                        "Expected language name or wrapped language name",
-                    ))
-                }
-            };
-        }
-
-        Ok(Self { languages })
-    }
-}
+use crate::utils::ident_to_type_path;
 
 /// Flags which detail required functionality or additional derivation requirements
-#[derive(Debug, Hash, PartialEq, Eq)]
-pub enum DeriveFlag {
-    Debug,
-    Display,
-    Clone,
-}
-
-impl TryFrom<syn::NestedMeta> for DeriveFlag {
-    type Error = syn::Error;
-
-    fn try_from(value: syn::NestedMeta) -> Result<Self, Self::Error> {
-        match value {
-            NestedMeta::Meta(Meta::Path(p)) if p.is_ident("Clone") => Ok(Self::Clone),
-            NestedMeta::Meta(Meta::Path(p)) if p.is_ident("Debug") => Ok(Self::Debug),
-            NestedMeta::Meta(Meta::Path(p)) if p.is_ident("Display") => Ok(Self::Display),
-            _ => Err(syn::Error::new_spanned(
-                value,
-                "Expected one of `Debug`, `Display`, `Clone`",
-            )),
-        }
-    }
-}
-
-/// Container for proxy flags
-#[derive(Debug, Default)]
+#[derive(Debug, FromMeta)]
 pub struct ProxyFlags {
-    pub flags: IndexSet<DeriveFlag>,
-}
-
-impl TryFrom<syn::MetaList> for ProxyFlags {
-    type Error = syn::Error;
-
-    fn try_from(meta_list: syn::MetaList) -> Result<Self, Self::Error> {
-        let mut derive_flags: IndexSet<DeriveFlag> = Default::default();
-
-        for nested_meta in meta_list.nested {
-            let span = nested_meta.span();
-            let flag: DeriveFlag = nested_meta.try_into()?;
-            if derive_flags.contains(&flag) {
-                return Err(syn::Error::new(
-                    span,
-                    "This flag was already defined, remove duplicate flag",
-                ));
-            } else {
-                derive_flags.insert(flag);
-            }
-        }
-        Ok(Self {
-            flags: derive_flags,
-        })
-    }
+    pub debug: Flag,
+    pub display: Flag,
+    pub clone: Flag,
 }
 
 pub(crate) struct ZeroOrManyTerminated<T: Parse, S: Parse>(Punctuated<T, S>);
@@ -159,7 +66,7 @@ pub enum ProxyData {
 pub struct UnitPath {
     pub std_type_ident: Option<StdTypeIdent>,
     pub ident: Ident,
-    pub colon2_token: Option<Colon2>,
+    pub colon2_token: Option<PathSep>,
     pub lt_token: Lt,
     pub gt_token: Gt,
     pub inner: Box<SimpleType>,
@@ -170,7 +77,7 @@ pub struct UnitPath {
 pub struct DuoPath {
     pub std_type_ident: Option<StdTypeIdent>,
     pub ident: Ident,
-    pub colon2_token: Option<Colon2>,
+    pub colon2_token: Option<PathSep>,
     pub lt_token: Lt,
     pub gt_token: Gt,
     pub left: Box<SimpleType>,
@@ -189,7 +96,7 @@ pub struct Reference {
 /// Stores both the proxied and proxy identifier i.e. `T` and `LuaT`
 #[derive(Debug, Clone)]
 pub struct ProxyType {
-    pub proxied_ident: Ident,
+    pub proxied_path: Path,
     pub proxy_ident: Ident,
 }
 
@@ -222,7 +129,7 @@ impl SimpleType {
     pub fn new_from_fn_arg(
         proxy_prefix: &'static str,
         arg: &syn::FnArg,
-        proxied_type_identifier: &Ident,
+        proxied_type_path: &Path,
         proxied_to_proxy_ident_map: &HashMap<Ident, Option<Ident>>,
     ) -> Result<SimpleType, Error> {
         match arg {
@@ -235,8 +142,11 @@ impl SimpleType {
                     let mutability = mutability.as_ref().copied();
                     let inner = Box::new(SimpleType::new_from_contextual_type(
                         proxy_prefix,
-                        &Type::Path(ident_to_type_path(proxied_type_identifier.clone())),
-                        proxied_type_identifier,
+                        &Type::Path(TypePath {
+                            qself: None,
+                            path: proxied_type_path.clone(),
+                        }),
+                        proxied_type_path,
                         proxied_to_proxy_ident_map,
                     )?);
                     Ok(Self::Reference(Reference {
@@ -247,15 +157,18 @@ impl SimpleType {
                 }
                 None => Self::new_from_contextual_type(
                     proxy_prefix,
-                    &Type::Path(ident_to_type_path(proxied_type_identifier.clone())),
-                    proxied_type_identifier,
+                    &Type::Path(TypePath {
+                        qself: None,
+                        path: proxied_type_path.clone(),
+                    }),
+                    proxied_type_path,
                     proxied_to_proxy_ident_map,
                 ),
             },
             syn::FnArg::Typed(PatType { ty, .. }) => Self::new_from_contextual_type(
                 proxy_prefix,
                 ty.as_ref(),
-                proxied_type_identifier,
+                proxied_type_path,
                 proxied_to_proxy_ident_map,
             ),
         }
@@ -268,7 +181,13 @@ impl SimpleType {
         proxied_type: &Type,
         proxied_to_proxy_ident_map: &HashMap<Ident, Option<Ident>>,
     ) -> Result<SimpleType, Error> {
-        Self::new_from_type(proxy_prefix, proxied_type, None, proxied_to_proxy_ident_map)
+        Self::new_from_type(
+            proxy_prefix,
+            proxied_type,
+            None,
+            proxied_to_proxy_ident_map,
+            false,
+        )
     }
 
     /// Constructs a new SimpleProxyType from a `syn::Type`, contextual receivers such as `Self` and `self` will be replaced
@@ -276,14 +195,32 @@ impl SimpleType {
     pub fn new_from_contextual_type(
         proxy_prefix: &'static str,
         proxied_type: &Type,
-        proxied_type_identifier: &Ident,
+        proxied_type_path: &Path,
         proxied_to_proxy_ident_map: &HashMap<Ident, Option<Ident>>,
     ) -> Result<SimpleType, Error> {
         Self::new_from_type(
             proxy_prefix,
             proxied_type,
-            Some(proxied_type_identifier),
+            Some(proxied_type_path),
             proxied_to_proxy_ident_map,
+            false,
+        )
+    }
+
+    /// Constructs a new SimpleProxyType from a `syn::Type`, contextual receivers such as `Self` and `self` will be replaced
+    /// with the given identifier prefixed with the proxy_prefix
+    /// All types will be proxied with the given proxy prefix
+    pub fn new_from_contextual_type_proxy_all(
+        proxy_prefix: &'static str,
+        proxied_type: &Type,
+        proxied_type_path: &Path,
+    ) -> Result<SimpleType, Error> {
+        Self::new_from_type(
+            proxy_prefix,
+            proxied_type,
+            Some(proxied_type_path),
+            &Default::default(),
+            true,
         )
     }
 
@@ -293,58 +230,66 @@ impl SimpleType {
     /// - If it's not in the map it's built as a SimpleType::Type
     fn new_proxied_type_or_type(
         proxy_prefix: &'static str,
-        proxied_ident: &Ident,
+        proxied_path: Path,
         proxied_to_proxy_ident_map: &HashMap<Ident, Option<Ident>>,
+        proxy_prefix_all: bool,
     ) -> SimpleType {
-        if let Some((original_ident, replacement_ident)) =
-            proxied_to_proxy_ident_map.get_key_value(proxied_ident)
-        {
+        let last_segment = &proxied_path.segments.last().unwrap().ident;
+        let replacement_ident = proxied_to_proxy_ident_map.get(last_segment);
+
+        if proxy_prefix_all || replacement_ident.is_some() {
             let proxy_ident = replacement_ident
-                .as_ref()
-                .unwrap_or(&format_ident!("{proxy_prefix}{original_ident}"))
-                .clone();
+                .cloned()
+                .flatten()
+                .unwrap_or_else(|| format_ident!("{proxy_prefix}{}", last_segment));
 
             SimpleType::ProxyType(ProxyType {
-                proxied_ident: original_ident.clone(),
+                proxied_path,
                 proxy_ident,
             })
         } else {
-            Self::Type(syn::Type::Path(ident_to_type_path(proxied_ident.clone())))
+            Self::Type(syn::Type::Path(TypePath {
+                qself: None,
+                path: proxied_path.clone(),
+            }))
         }
     }
 
     /// Constructs a new SimpleProxyType from a `syn::Type`, if `proxied_type_identifier` is given then contextual
     /// receivers such as `Self` and `self` will be replaced with the given identifier prefixed with the proxy_prefix, otherwise an error will be returned.
-    /// types with base identifiers not in the proxied_to_proxy_ident_map list are treated as non-proxy types and will be wrapped in a SimpleProxyType::Type
+    /// types with base identifiers not in the proxied_to_proxy_ident_map list are treated as non-proxy types and will be wrapped in a SimpleProxyType::Type.
+    /// If the proxy_prefix_all option is passed, the ident map will be ignored and EVERY type inside will be treated as a default proxy (prefixed with the proxy prefix as well)
     fn new_from_type(
         proxy_prefix: &'static str,
         proxied_type: &Type,
-        proxied_type_identifier: Option<&Ident>,
+        proxied_type_path: Option<&Path>,
         proxied_to_proxy_ident_map: &HashMap<Ident, Option<Ident>>,
+        proxy_prefix_all: bool,
     ) -> Result<SimpleType, Error> {
         match proxied_type {
             Type::Path(p) if p.path.is_ident("self") || p.path.is_ident("Self") => {
-                let proxied_ident: &Ident = proxied_type_identifier.ok_or_else(|| {
+                let proxied_path: &Path = proxied_type_path.ok_or_else(|| {
                     Error::new_spanned(
                         proxied_type,
                         "Did not expect contextual receiver in constructing simple proxy type"
                             .to_owned(),
                     )
                 })?;
-                Ok(Self::new_proxied_type_or_type(proxy_prefix, proxied_ident, proxied_to_proxy_ident_map))
+                Ok(Self::new_proxied_type_or_type(proxy_prefix, proxied_path.clone(), proxied_to_proxy_ident_map, proxy_prefix_all))
             }
             Type::Path(p) if !p.path.segments.is_empty() => {
                 let last_segment = p.path.segments.last().unwrap();
                 if last_segment.arguments.is_empty() {
-                    return Ok(Self::new_proxied_type_or_type(proxy_prefix,&last_segment.ident, proxied_to_proxy_ident_map));
+                    return Ok(Self::new_proxied_type_or_type(proxy_prefix, p.path.clone(), proxied_to_proxy_ident_map, proxy_prefix_all));
                 } else if let PathArguments::AngleBracketed(args) = &last_segment.arguments {
                     if args.args.len() == 1 {
                         if let GenericArgument::Type(arg_type) = args.args.first().unwrap() {
                             let inner = Box::new(Self::new_from_type(
                                 proxy_prefix,
                                 arg_type,
-                                proxied_type_identifier,
-                                proxied_to_proxy_ident_map
+                                proxied_type_path,
+                                proxied_to_proxy_ident_map,
+                                proxy_prefix_all
                             )?);
                             return Ok(SimpleType::UnitPath(UnitPath {
                                 std_type_ident: StdTypeIdent::from_str(&last_segment.ident.to_string()).ok(),
@@ -363,14 +308,16 @@ impl SimpleType {
                             let left = Box::new(Self::new_from_type(
                                 proxy_prefix,
                                 left,
-                                proxied_type_identifier,
-                                proxied_to_proxy_ident_map
+                                proxied_type_path,
+                                proxied_to_proxy_ident_map,
+                                proxy_prefix_all
                             )?);
                             let right = Box::new(Self::new_from_type(
                                 proxy_prefix,
                                 right,
-                                proxied_type_identifier,
-                                proxied_to_proxy_ident_map
+                                proxied_type_path,
+                                proxied_to_proxy_ident_map,
+                                proxy_prefix_all
                             )?);
                             return Ok(SimpleType::DuoPath(DuoPath {
                                 std_type_ident: StdTypeIdent::from_str(&last_segment.ident.to_string()).ok(),
@@ -392,8 +339,9 @@ impl SimpleType {
                 inner: Box::new(Self::new_from_type(
                     proxy_prefix,
                     &tr.elem,
-                    proxied_type_identifier,
-                    proxied_to_proxy_ident_map
+                    proxied_type_path,
+                    proxied_to_proxy_ident_map,
+                    proxy_prefix_all
                 )?),
             })),
             Type::Infer(_) => Ok(SimpleType::Type(proxied_type.clone())),
@@ -551,7 +499,10 @@ impl VisitSimpleType<Type> for TypeConstructorVisitor {
         if self.generate_proxy_type {
             Type::Path(ident_to_type_path(proxy_type.proxy_ident.clone()))
         } else {
-            Type::Path(ident_to_type_path(proxy_type.proxied_ident.clone()))
+            Type::Path(TypePath {
+                qself: None,
+                path: proxy_type.proxied_path.clone(),
+            })
         }
     }
 
@@ -574,140 +525,61 @@ impl VisitSimpleType<Type> for TypeConstructorVisitor {
     }
 }
 
-/// Attributes relating to the proxy as a whole
-#[derive(Debug)]
-pub struct ProxyMeta {
-    /// the identifier of the proxied type
-    pub proxied_name: Ident,
-    /// the identifier for the proxy type
+#[derive(FromDeriveInput)]
+#[darling(attributes(proxy), forward_attrs(allow, doc, cfg))]
+pub struct ProxyInput {
+    /// The name of the type for which we are generating a proxy
+    pub ident: syn::Ident,
+    pub attrs: Vec<Attribute>,
+
+    pub remote: Option<syn::Path>,
+    /// The name to use for the proxy type, if not provided the language derive macro
+    /// will generate one using a standard prefix.
+    #[darling(rename = "name")]
     pub proxy_name: Option<Ident>,
-    /// language derivation settings
-    pub language_meta: LanguageMeta,
-    /// additional flags for the proxy
-    pub proxy_flags: ProxyFlags,
-    /// functions to be proxied
-    pub functions: IndexMap<Ident, TraitItemMethod>,
-    /// the inner type data
-    pub data: ProxyData,
-    /// the derive input span
-    pub span: Span,
-    /// docstrings
-    pub docstrings: Vec<proc_macro2::TokenStream>,
+
+    /// The body of the type for which we are generating a proxy
+    pub data: darling::ast::Data<Variant, Field>,
+
+    /// Flags signifying which additional trait implementation should be generated on the proxy type
+    pub derive: ProxyFlags,
+
+    /// A list of multi-lang function definitions to be generated on the proxy type
+    pub functions: TraitItemFnsWrapper,
 }
 
-impl TryFrom<DeriveInput> for ProxyMeta {
-    type Error = syn::Error;
+pub struct TraitItemFnsWrapper(pub Vec<TraitItemFn>);
 
-    fn try_from(derive_input: DeriveInput) -> Result<Self, Self::Error> {
-        let mut proxy_name = None;
-        let span = derive_input.span();
+impl FromMeta for TraitItemFnsWrapper {
+    fn from_string(value: &str) -> darling::Result<Self> {
+        let token_stream: proc_macro2::TokenStream = value.parse().map_err(syn::Error::from)?;
+        let trait_items_vec = vec![syn::parse2(token_stream)?];
+        Ok(TraitItemFnsWrapper(trait_items_vec))
+    }
 
-        // helper for collecting errors which are not fatal to the logic flow
-        // simplifies logical flow
-        let mut accumulated_errors = VecDeque::<Self::Error>::default();
+    fn from_list(items: &[darling::ast::NestedMeta]) -> darling::Result<Self> {
+        Ok(TraitItemFnsWrapper(
+            items
+                .iter()
+                .map(Self::from_nested_meta)
+                .collect::<Result<Vec<_>, _>>()?
+                .into_iter()
+                .flat_map(|v| v.0.into_iter())
+                .collect::<Vec<_>>(),
+        ))
+    }
+}
 
-        let docstrings = derive_input
-            .attrs
-            .iter()
-            .filter(|attr| attr.path.is_ident("doc"))
-            .map(attribute_to_string_lit)
-            .filter(|s| !s.is_empty())
-            .collect();
+impl Deref for TraitItemFnsWrapper {
+    type Target = Vec<TraitItemFn>;
 
-        let proxy_meta = derive_input
-            .attrs
-            .iter()
-            .find(|attr| attr.path.is_ident("proxy"))
-            .ok_or_else(|| syn::Error::new_spanned(&derive_input, "`proxy` meta missing"))
-            .and_then(|attr| attr.parse_meta())?;
-
-        let functions = derive_input
-            .attrs
-            .into_iter()
-            .find(|attr| attr.path.is_ident("functions"))
-            .map_or(Ok(IndexMap::default()), |attr| {
-                attr.parse_args::<ZeroOrManyTerminated<TraitItemMethod, Nothing>>()
-                    .map(|fns| {
-                        let mut fn_map = IndexMap::default();
-                        fns.0
-                            .into_iter()
-                            .map(|_fn| (_fn.sig.ident.clone(), _fn))
-                            .for_each(|(name, body)| {
-                                if let Some(old_val) = fn_map.insert(name, body) {
-                                    accumulated_errors.push_back(syn::Error::new_spanned(
-                                        old_val.sig.ident, // old == new ident
-                                        "duplicate Lua proxy function, re-name this function",
-                                    ))
-                                }
-                            });
-                        fn_map
-                    })
-            })?;
-
-        let mut language_meta = Default::default();
-        let mut proxy_flags: ProxyFlags = Default::default();
-
-        if let syn::Meta::List(list) = proxy_meta {
-            for attr in list.nested.into_iter() {
-                match attr {
-                    NestedMeta::Meta(Meta::NameValue(pair)) => {
-                        let ident = pair.path.get_ident().ok_or_else(|| {
-                            syn::Error::new_spanned(&pair, "Keys must be identifiers")
-                        })?;
-
-                        match (ident.to_string().as_str(), pair.lit) {
-                            ("name", syn::Lit::Str(_str)) => {
-                                proxy_name = Some(Ident::new(&_str.value(), _str.span()))
-                            }
-                            _ => {
-                                return Err(syn::Error::new_spanned(ident, "Unrecognized argument"))
-                            }
-                        }
-                    }
-                    NestedMeta::Meta(Meta::List(list)) => {
-                        let ident = list
-                            .path
-                            .get_ident()
-                            .ok_or_else(|| syn::Error::new_spanned(&list, "Expected identifier"))?;
-
-                        match ident.to_string().as_str() {
-                            "languages" => language_meta = list.try_into()?,
-                            "derive" => proxy_flags = list.try_into()?,
-                            _ => return Err(syn::Error::new_spanned(list, "")),
-                        }
-                    }
-                    _ => return Err(syn::Error::new_spanned(attr, "Expected key value pair")),
-                }
-            }
-        } else {
-            return Err(syn::Error::new_spanned(
-                proxy_meta,
-                "Expected list of key value pairs",
-            ));
-        }
-
-        let data = match derive_input.data {
-            syn::Data::Struct(DataStruct { fields, .. }) => ProxyData::Struct { fields },
-            syn::Data::Enum(_) => todo!(),
-            syn::Data::Union(_) => todo!(),
-        };
-
-        let proxied_name = derive_input.ident;
-
-        if let Some(first_err) = accumulated_errors.pop_front() {
-            return Err(first_err);
-        }
-
-        Ok(ProxyMeta {
-            proxied_name,
-            proxy_name,
-            proxy_flags,
-            language_meta,
-            functions,
-            data,
-            span,
-            docstrings,
-        })
+    fn deref(&self) -> &Self::Target {
+        &self.0
+    }
+}
+impl DerefMut for TraitItemFnsWrapper {
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        &mut self.0
     }
 }
 
@@ -749,7 +621,7 @@ mod test {
         assert!(!visitor.visit(&super::SimpleType::Unit));
         assert!(
             !visitor.visit(&super::SimpleType::ProxyType(super::ProxyType {
-                proxied_ident: syn::Ident::new("T", proc_macro2::Span::call_site()),
+                proxied_path: syn::Ident::new("T", proc_macro2::Span::call_site()).into(),
                 proxy_ident: syn::Ident::new("LuaT", proc_macro2::Span::call_site()),
             }))
         );
@@ -771,7 +643,7 @@ mod test {
                 and_token: syn::Token![&](proc_macro2::Span::call_site()),
                 mutability: None,
                 inner: Box::new(super::SimpleType::ProxyType(super::ProxyType {
-                    proxied_ident: syn::Ident::new("T", proc_macro2::Span::call_site()),
+                    proxied_path: syn::Ident::new("T", proc_macro2::Span::call_site()).into(),
                     proxy_ident: syn::Ident::new("LuaT", proc_macro2::Span::call_site()),
                 })),
             }))
