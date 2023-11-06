@@ -746,34 +746,44 @@ pub fn impl_lua_proxy(input: TokenStream) -> TokenStream {
 
     let proxied_type_path : syn::Path = meta.remote.unwrap_or(meta.ident.clone().into());
     let proxy_type_ident = format_ident!("{PROXY_PREFIX}{}", &meta.ident);
+    let tealr = quote!(bevy_mod_scripting_lua::tealr);
 
-    // generate the type definition of the proxy
-    let mut definition: proc_macro2::TokenStream;
-
-    // generate main type with optional Clone extension
-    if meta.derive.clone.is_present() {
-        definition = quote_spanned! {derive_input.span()=>
-            bevy_script_api::make_script_wrapper!(#proxied_type_path as #proxy_type_ident with Clone);
-        };
-    } else {
-        definition = quote_spanned! {derive_input.span()=>
-            bevy_script_api::make_script_wrapper!(#proxied_type_path as #proxy_type_ident);
+    // optional clone extensions
+    let opt_with_clone = meta.derive.clone
+        .is_present()
+        .then_some(quote_spanned! {derive_input.span()=>with Clone})
+        .unwrap_or_default();
+    
+    let opt_from_lua_proxy = meta.derive.clone.is_present().then_some(
+        quote_spanned!{derive_input.span()=>
+            impl bevy_script_api::lua::FromLuaProxy<'_> for #proxied_type_path {
+                fn from_lua_proxy<'lua>(lua_value: #tealr::mlu::mlua::Value<'lua>, _: &'lua #tealr::mlu::mlua::Lua) -> #tealr::mlu::mlua::Result<Self> {
+                    if let #tealr::mlu::mlua::Value::UserData(ud) = lua_value{
+                        let wrapper = ud.borrow::<#proxy_type_ident>()?;
+                        Ok(std::ops::Deref::deref(&wrapper).inner()?)
+                    } else {
+                        Err(#tealr::mlu::mlua::Error::FromLuaConversionError{
+                            from: "",
+                            to: "",
+                            message: None
+                        })
+                    }
+                }
+            }
         }
-    }
+    ).unwrap_or_default();
 
     // optionally add debug implementation
-    if meta.derive.debug.is_present() {
-        definition.extend(quote_spanned!{derive_input.span()=>
+    let opt_debug_impl = meta.derive.debug.is_present().then_some(
+        quote_spanned!{derive_input.span()=>
             impl std::fmt::Debug for #proxy_type_ident {
                 fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> Result<(), std::fmt::Error> {
                     self.val(|s| s.fmt(f)).unwrap_or_else(|_| f.write_str("Error while retrieving reference in `std::fmt::Debug`."))}    
             }
-        });
-    }
+        }
+    );
 
-    let tealr_type_implementations = quote_spanned! {derive_input.span()=>
-        bevy_script_api::impl_tealr_type!(#proxy_type_ident);
-    };
+
 
     // generate type level tealr documentation calls
     let type_level_document_calls = meta
@@ -824,13 +834,16 @@ pub fn impl_lua_proxy(input: TokenStream) -> TokenStream {
     if let Err(e) = errors.finish() {
         return e.write_errors().into();
     }
-    let tealr = quote!(bevy_mod_scripting_lua::tealr);
 
     let a = quote_spanned! {derive_input.span()=>
 
-        #definition
+        bevy_script_api::make_script_wrapper!(#proxied_type_path as #proxy_type_ident #opt_with_clone);
 
-        #tealr_type_implementations
+        bevy_script_api::impl_tealr_type!(#proxy_type_ident);
+
+        #opt_debug_impl
+
+        #opt_from_lua_proxy
 
         #[automatically_derived]
         #[allow(unused_parens, unused_braces, unused_mut, unused_variables)]
