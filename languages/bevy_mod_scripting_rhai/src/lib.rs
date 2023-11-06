@@ -3,7 +3,7 @@ use crate::{
     docs::RhaiDocFragment,
 };
 use bevy::{ecs::schedule::ScheduleLabel, prelude::*};
-use bevy_mod_scripting_core::{prelude::*, systems::*, world::WorldPointer};
+use bevy_mod_scripting_core::{prelude::*, systems::*, world::WorldPointerGuard};
 use rhai::*;
 use std::marker::PhantomData;
 
@@ -150,12 +150,12 @@ impl<A: FuncArgs + Send + Clone + Sync + 'static> ScriptHost for RhaiScriptHost<
     ) {
         // safety:
         // - we have &mut World access
-        // - we do not use world_ptr after we use the original reference again anywhere in this function
-        let world_ptr = unsafe { WorldPointer::new(world) };
+        // - we do not use the original reference again anywhere in this function
+        let world = unsafe { WorldPointerGuard::new(world) };
 
         ctxs.for_each(|(fd, ctx)| {
             providers
-                .setup_runtime_all(world_ptr.clone(), &fd, ctx)
+                .setup_runtime_all(world.clone(), &fd, ctx)
                 .expect("Failed to setup script runtime");
 
             for event in events.iter() {
@@ -172,7 +172,7 @@ impl<A: FuncArgs + Send + Clone + Sync + 'static> ScriptHost for RhaiScriptHost<
                 ) {
                     Ok(v) => v,
                     Err(e) => {
-                        let mut world = world_ptr.write();
+                        let mut world = world.write();
                         let mut state: CachedScriptState<Self> = world.remove_resource().unwrap();
 
                         match *e {
