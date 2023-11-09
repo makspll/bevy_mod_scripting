@@ -363,6 +363,8 @@ impl<T: Asset> Script<T> {
 
         // retrieve owning entity
         if let Some(entity) = contexts.script_owner(script.id()) {
+            // remove old context
+            contexts.remove_context(script.id());
             // insert new re-loaded context
             Self::insert_new_script_context::<H>(
                 host,
@@ -373,10 +375,10 @@ impl<T: Asset> Script<T> {
                 contexts,
                 event_writer,
             );
+        } else {
+            // remove old context
+            contexts.remove_context(script.id());
         }
-
-        // remove old context
-        contexts.remove_context(script.id());
     }
 
     /// checks if a script has loaded, and if so loads (`ScriptHost::load_script`),
