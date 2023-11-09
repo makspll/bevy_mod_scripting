@@ -50,137 +50,177 @@ const VALID_META_METHODS : [&str; 27] = [
 ];
 
 
+/// Describes the functional signature of a function from the `functions[..]` list
+#[derive(Debug)]
+struct Signature {
+    inputs: Vec<Arg>,
+    output: Arg,
+    span: Span,
+}
+
+impl Signature {
+    fn new(proxied_type_path: Path, sig: syn::Signature, in_raw_function: bool, output_attrs: Vec<Attribute>) -> darling::Result<Self> {
+        // convert output to FnArg
+        let output_arg_name = Ident::new(PROXIED_OUT_ALIAS, sig.output.span());
+        // if no return type specified use `()`
+        let output_type = match sig.output {
+            ReturnType::Default => Type::Tuple(TypeTuple { paren_token: Default::default(), elems: Default::default() }),
+            ReturnType::Type(_, ty) => *ty,
+        };
+
+        // convert to Arg structs
+        let output = Self::convert_type(
+            output_type, 
+            &proxied_type_path, 
+            in_raw_function, 
+            output_attrs, 
+            output_arg_name, 
+            None)?;
+
+        let inputs = sig.inputs.into_iter()
+            .map(|arg| Self::convert_fn_arg(arg, &proxied_type_path, in_raw_function))
+            .collect::<darling::Result<Vec<_>>>()?;
+
+        Ok(Self {
+            inputs,
+            output,
+            span: sig.span()
+        })
+    }
+
+    /// Convert a function argument into custom Arg struct by converting the type to SimpleType and parsing attributes
+    fn convert_fn_arg(arg: FnArg, proxied_type_path: &Path, in_raw_function: bool) -> darling::Result<Arg> {
+        let mut type_map = HashMap::from_iter(
+            [(proxied_type_path.segments.last().unwrap().clone().ident,None)]
+        );
+        Ok(match  arg{
+            FnArg::Receiver(receiver) => {
+                let type_ = SimpleType::new_from_fn_arg(PROXY_PREFIX, &arg, &proxied_type_path, &type_map)?;
+                let attrs = ArgAttributes::from_attributes(&receiver.attrs)?;
+                Arg::new(attrs, Ident::new(SELF_ALIAS, receiver.span()) , receiver.mutability, type_, in_raw_function)
+            },
+            FnArg::Typed(pattern_type@PatType { attrs, pat, ty, .. }) => {
+                let (mutability, arg_name) = match *pat {
+                    Pat::Ident(PatIdent { mutability, ident, ..}) => (mutability, ident),
+                    _ => return Err(darling::Error::custom("Unsupported parameter pattern").with_span(&pattern_type)),
+                };
+
+                Self::convert_type(*ty, proxied_type_path, in_raw_function, attrs, arg_name, mutability)?
+            },
+        })
+    }
+
+    /// Convert a type corresponding to an argument into an Arg struct by converting it to a Simple type and parsing the given attributes
+    fn convert_type(ty: Type, proxied_type_path: &Path, in_raw_function: bool, attrs: Vec<Attribute>, arg_name: Ident, mutability: Option<Mut>) -> darling::Result<Arg> {
+        let mut type_map = HashMap::from_iter(
+            [(proxied_type_path.segments.last().unwrap().clone().ident,None)]
+        );
+        let is_proxy = attrs.iter().any(|a| a.path().is_ident("proxy"));
+        let attrs = ArgAttributes::from_attributes(&attrs)?;
+        let type_ = if is_proxy && attrs.map.is_empty() {
+            SimpleType::new_from_contextual_type_proxy_all(PROXY_PREFIX, &ty, &proxied_type_path)?
+        } else {
+            type_map.extend(attrs.map.into_iter().map(|(a,b)| (a,Some(b)))); 
+            SimpleType::new_from_contextual_type(PROXY_PREFIX, &ty, &proxied_type_path, &type_map)?
+        };
+
+    
+        Ok(Arg::new(attrs, arg_name, mutability, type_, in_raw_function))
+    }
+    
+}
+
 #[derive(Debug, FromAttributes)]
 #[darling(attributes(proxy))]
-struct LuaProxyArgMeta {
+struct ArgAttributes {
     #[darling(default)]
     map: HashMap<Ident, Ident>
 }
 
 
 
-
+/// Struct for holding argument/output information for functions passed via `functions[..]` meta
 #[derive(Debug)]
-struct FunctionArgMeta {
-    mutable: Option<Mut>,
+struct Arg {
+    attrs: ArgAttributes,
+    mutability: Option<Mut>,
     /// the type of the argument, only suported patterns are allowed
-    arg_name: Ident,
-    span: Span,
+    name: Ident,
     /// variant specific data enumeration
-    arg_type: SimpleType,
+    type_: SimpleType,
     /// if an argument is raw, it's passed without any unwrapping to the handler function
     /// if an argument isn't annotated with the `proxy` flag it is technically raw, but this is different for receiver and output arguments
     is_raw: bool,
-    
+    span: Span,
 }
 
-impl FunctionArgMeta {
-    /// Creates a new meta structure corresponding to the given function argument.
-    /// Resolves receivers with the given proxy name.
-    /// Uses given span if available, otherwise uses the span of the function argument
-    fn new_from_fn_arg(proxied_type_path: &Path, fn_arg: &FnArg, span: Option<Span>, in_raw_function: bool) -> darling::Result<Self> {
-        let arg_name;
-        let mutable;
-        let arg_type;
-        let span = span.unwrap_or(fn_arg.span());
-        let proxied_type_path = &mut proxied_type_path.clone();
-        proxied_type_path.segments.iter_mut().for_each(|v| v.ident.set_span(span));
-        let is_raw = in_raw_function;
+impl Arg {
 
-        // the proxied type is always proxied with the `Lua` prefix
-        let mut proxy_ident_map = HashMap::from_iter(
-            [(proxied_type_path.segments.last().unwrap().clone().ident,None)]
-        );
-        match fn_arg {
-            FnArg::Receiver(receiver) => {
-
-                arg_type = SimpleType::new_from_fn_arg(PROXY_PREFIX, fn_arg, proxied_type_path, &proxy_ident_map)?;
-                mutable = receiver.mutability;
-                arg_name = format_ident!("{}", SELF_ALIAS, span=span);
-            }
-            FnArg::Typed(PatType { attrs, pat, ty, .. }) => {
-                
-                let is_proxy = attrs.iter().any(|a| a.path().is_ident("proxy"));
-                let arg_meta = LuaProxyArgMeta::from_attributes(attrs)?;
-                mutable = parse_quote!(mut);
-                
-                if is_proxy && arg_meta.map.is_empty() {
-                    arg_type = SimpleType::new_from_contextual_type_proxy_all(PROXY_PREFIX, ty, proxied_type_path)?;
-                } else {
-                    proxy_ident_map.extend(arg_meta.map.into_iter().map(|(a,b)| (a,Some(b)))); 
-                    arg_type = SimpleType::new_from_contextual_type(PROXY_PREFIX, ty, proxied_type_path, &proxy_ident_map)?;
-                }
-
-                arg_name = match pat.as_ref() {
-                    Pat::Ident(pat_ident) => pat_ident.ident.clone(),
-                    Pat::Wild(_) => return Err(syn::Error::new_spanned(pat, "Cannot use `_` as identifier for proxy function").into()),
-                    _ => return Err(syn::Error::new_spanned(pat, "Unsupported parameter pattern").into()),
-                };
-
-            }
+    fn new(attrs: ArgAttributes, name: Ident, mutability: Option<Mut>, type_: SimpleType, is_raw: bool) -> Self{
+        Self{
+            attrs,
+            mutability,
+            name,
+            type_,
+            is_raw,
+            span: name.span()
         }
-
-        Ok(FunctionArgMeta {
-            mutable,
-            arg_name,
-            span,
-            arg_type,
-            is_raw
-        })
-    }
-
-    /// Similar to [`Self::new_from_fn_arg`] but without an option of getting a receiver argument type
-    fn new_from_type(
-        proxied_type_path: &Path,
-        arg_name: Ident,
-        arg_type: &Type,
-        attrs: Option<Meta>,
-        in_raw_function: bool,
-    ) -> darling::Result<Self> {
-        let ty = Box::new(arg_type.clone());
-        let pat_ty = PatType {
-            attrs: attrs.map(|attrs| vec![Attribute{
-                style: syn::AttrStyle::Outer, 
-                meta: attrs, 
-                pound_token: syn::token::Pound(arg_name.span()), 
-                bracket_token: syn::token::Bracket(arg_name.span())  
-            }]).unwrap_or_default(),
-            pat: Box::new(Pat::Ident(PatIdent{
-                attrs:Vec::default(), 
-                by_ref: None, 
-                mutability: None, 
-                ident: arg_name, 
-                subpat: None })
-            ),
-            colon_token: Default::default(),
-            ty,
-        };
-
-        let fn_arg = FnArg::Typed(pat_ty);
-        Self::new_from_fn_arg(proxied_type_path, &fn_arg, Some(arg_type.span()), in_raw_function)
     }
 
     /// Unpacks non-reference proxy parameters (using the `inner` method) yielding expressions which correspond to the proxied type with conversion errors being
     /// handled by the try `?` operator.
     pub fn unpack_parameter(&self) -> syn::Result<Option<proc_macro2::TokenStream>> {
-        let name = &self.arg_name;
+        let name = &self.name;
         if self.is_raw {
             // raw parameters DO NOT get unpacked, they get passed directly to the handling method as is
             Ok(None)
         } else {
             // if a proxy parameter is to be passed by value we use inner (which requires Clone to be supported)
-            Ok(Some(LuaSimpleTypeArgumentUnwrapper::new(name.clone(), name.span()).visit(&self.arg_type)?))
+            Ok(Some(LuaSimpleTypeArgumentUnwrapper::new(name.clone(), name.span()).visit(&self.type_)?))
         }
-
     }
 
+    fn arg_signature_generic(&self, expecting_receiver: bool, expecting_ctxt: bool) -> syn::Result<(proc_macro2::TokenStream, proc_macro2::TokenStream)> {
+        assert!(!(expecting_receiver && expecting_ctxt));
 
+
+        let _mut = &self.mutability;
+        let name = &self.name;
+        let type_ = LuaTypeConstructorVisitor::new(true,self.type_.contains_proxy_type()).visit(&self.type_);
+        let forced_ref = if expecting_receiver || expecting_ctxt {Some(Token![&](self.span))} else {None};
+
+        let name_part = name.to_token_stream();
+        let type_part = quote_spanned!(self.span=>
+            #forced_ref #_mut #type_);
+        Ok((name_part,type_part))
+    }
+
+    /// Generates the arg signature in an mlua `UserDataFields` or `UserDataMethods` closure for a receiver type argument.
+    /// generates using an additional outer reference.
+    pub fn arg_signature_receiver(&self) -> syn::Result<proc_macro2::TokenStream> {
+        self.arg_signature_generic(true, false).map(|(name,type_)| quote!(#name : #type_))
+    }
+
+    /// Generates the arg signature in an mlua `UserDataFields` or `UserDataMethods` closure for a Lua context type argument.
+    /// generates using an additional outer reference.
+    pub fn arg_signature_context(&self) -> syn::Result<proc_macro2::TokenStream> {
+        self.arg_signature_generic(false, true).map(|(name,type_)| quote!(#name : #type_))
+    }
+
+    /// Generates the arg signature in an mlua `UserDataFields` or `UserDataMethods` closure for a non-receiver non-context argument.
+    /// generates the type to match the argument received. 
+    /// The output is split into the name and type parts
+    pub fn arg_signature(&self) -> syn::Result<(proc_macro2::TokenStream, proc_macro2::TokenStream)>{
+        self.arg_signature_generic(false,false)
+    }
 }
 
 
+/// The attributes which can be applied to lua functions using the 
+/// `lua(..)` meta attribute
 #[derive(Debug, FromAttributes)]
 #[darling(attributes(lua))]
-struct LuaFunctionAttribute {
+struct FunctionAttributes {
     /// Marks the function to be treated as raw meaning a lot of the wrapping and unwrapping is skipped, 
     /// a 'Lua' ctxt argument is then expected
     raw: Flag,
@@ -189,6 +229,9 @@ struct LuaFunctionAttribute {
     #[darling(default, rename="kind")]
     lua_function_kind: FunctionKind,
 
+    /// Marks this to be ignored, only used for fields as functions are opt-in
+    skip: Flag,
+    
     /// Meta to pass down to the output proxy
     output: Option<Meta>,
 
@@ -201,64 +244,77 @@ struct LuaFunctionAttribute {
 }
 
 
+/// A struct corresponding to each function in the functions[...] meta list.
+/// 
 #[derive(Debug)]
-struct FunctionMeta<'a> {
-    name: &'a Ident,
-    body: &'a TraitItemFn,
-    fn_type: FunctionKind,
-    arg_meta: Vec<FunctionArgMeta>,
-    output_meta: FunctionArgMeta,
-    as_trait: Option<Path>,
-    is_raw: bool,
+struct Function {
+    name: Ident,
+    attrs: FunctionAttributes,
+    sig: Signature,
+    default: Option<Block>
 }
 
-impl FunctionMeta<'_> {
+impl Function {
 
-    fn new<'a>(
-        proxied_type_path: Path,
-        name: &'a Ident,
-        body: &'a TraitItemFn,
-    ) -> darling::Result<FunctionMeta<'a>> {
-        // interpret and validate function meta to instantiate function proxies
-
-
-        let function_meta = LuaFunctionAttribute::from_attributes(&body.attrs)?;
-        let is_raw = function_meta.raw;
-        // if no output type is specified, it's set to the unit type `()`
-        let output_type = match &body.sig.output {
-            ReturnType::Default => Type::Tuple(TypeTuple{ paren_token: Paren::default(), elems: Punctuated::default() }),
-            ReturnType::Type(_, t) => *t.to_owned(),
-        };
-
-        let mut fn_meta = FunctionMeta {
+    fn new(name: Ident, 
+        attrs: Vec<Attribute>, 
+        default: Option<Block>,
+        sig : Signature) -> darling::Result<Self> {
+        let attrs = FunctionAttributes::from_attributes(&attrs)?;
+        Ok(Self {
             name,
-            body,
-            fn_type: function_meta.lua_function_kind,
-            arg_meta: body
-                .sig
-                .inputs
-                .iter()
-                .map(|arg| FunctionArgMeta::new_from_fn_arg(&proxied_type_path, arg, None, is_raw.is_present()))
-                .collect::<darling::Result::<_>>()?,
-            output_meta: FunctionArgMeta::new_from_type(
-                    &proxied_type_path,
-                    format_ident!("{PROXIED_OUT_ALIAS}", span=body.sig.output.span()),
-                    &output_type,
-                    function_meta.output.map(|meta| {
-                            let list = meta.require_list()?.parse_args::<Meta>()?;
-                            Ok::<_,syn::Error>(list)
-                    }).transpose()?,
-                    is_raw.is_present()
-                )?,
-            is_raw: is_raw.is_present(),
-            as_trait: function_meta.as_trait
-        };
-
-        // validate the function against it's meta and correct any correctible mistakes
-        fn_meta.validate_function_definition(body)?;
-
-        Ok(fn_meta)
+            attrs,
+            sig,
+            default,
+        })
     }
+
+
+    // fn new_from<'a>(
+    //     proxied_type_path: Path,
+    //     body: &'a TraitItemFn,
+    // ) -> darling::Result<Function<'a>> {
+    //     // interpret and validate function meta to instantiate function proxies
+
+
+    //     let function_meta = FunctionAttributes::from_attributes(&body.attrs)?;
+    //     let is_raw = function_meta.raw;
+    //     // if no output type is specified, it's set to the unit type `()`
+    //     let output_type = match &body.sig.output {
+    //         ReturnType::Default => Type::Tuple(TypeTuple{ paren_token: Paren::default(), elems: Punctuated::default() }),
+    //         ReturnType::Type(_, t) => *t.to_owned(),
+    //     };
+
+    //     let mut fn_meta = Function {
+    //         name: &body.sig.ident,
+    //         body,
+    //         fn_type: function_meta.lua_function_kind,
+    //         arg_meta: body
+    //             .sig
+    //             .inputs
+    //             .iter()
+    //             .map(|arg| FunctionArgMeta::new_from_fn_arg(&proxied_type_path, arg, None, is_raw.is_present()))
+    //             .collect::<darling::Result::<_>>()?,
+    //         output_meta: FunctionArgMeta::new_from_type(
+    //                 &proxied_type_path,
+    //                 format_ident!("{PROXIED_OUT_ALIAS}", span=body.sig.output.span()),
+    //                 &output_type,
+    //                 function_meta.output.map(|meta| {
+    //                         let list = meta.require_list()?.parse_args::<Meta>()?;
+    //                         Ok::<_,syn::Error>(list)
+    //                 }).transpose()?,
+    //                 is_raw.is_present()
+    //             )?,
+    //         is_raw: is_raw.is_present(),
+    //         as_trait: function_meta.as_trait,
+    //     };
+
+    //     // validate the function against it's meta and correct any correctible mistakes
+    //     fn_meta.validate_function_definition(body)?;
+
+    //     Ok(fn_meta)
+    // }
+
 
 
     /// Converts the function's arguments into closure arguments for use in the closures given to mlua calls
@@ -272,46 +328,30 @@ impl FunctionMeta<'_> {
     /// //   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ <- these bits
     /// ```
     fn generate_mlua_args(&self) -> syn::Result<proc_macro2::TokenStream> {
-        let mut args = self.arg_meta.iter();
 
-        let mut self_arg = None;
-        if self.fn_type.expects_receiver() {
-            if let Some(meta) = args.next() {
-                let _mut = &meta.mutable;
-                let self_name = &meta.arg_name;
-                let self_type = LuaTypeConstructorVisitor::new(true,true).visit(&meta.arg_type);
+        let mut args_iter = self.sig.inputs.iter();
+        let expecting_ctxt = self.attrs.raw.is_present();
+        let expecting_receiver = self.attrs.lua_function_kind.expects_receiver();
+        let expecting_other_args = self.attrs.lua_function_kind.expects_arguments_other_than_self();
 
-                self_arg = Some(quote_spanned!(meta.span=> , #self_name : & #_mut #self_type));
-            }
-        }
+        let self_arg = expecting_ctxt.then_some(args_iter.next().map(Arg::arg_signature_receiver))
+            .flatten()
+            .transpose()?;
+        let ctxt_arg = expecting_receiver.then_some(args_iter.next().map(Arg::arg_signature_context))
+            .flatten()
+            .transpose()?;
 
-        let ctxt_arg = 
-            if self.is_raw {
-                let meta = args.next().ok_or(syn::Error::new_spanned(self.body,"Expected `Lua` type argument before non-receiver arguments and after the receiver if any."))?;
-                let name = &meta.arg_name;
-                quote_spanned!(self.name.span()=>#name : &bevy_mod_scripting_lua::tealr::mlu::mlua::Lua)
-            } else {
-                quote_spanned!(self.name.span()=>_)
-            };
-        
-        if self.fn_type.expects_arguments_other_than_self() {
-            let (args, arg_types) = args
-            .map(|fn_arg| {
-                let _mut = &fn_arg.mutable;
-                let name = &fn_arg.arg_name;
-                // strip outer refs if the type contains a proxy, we cannot have any references in type position
-                // we can still have reference semantics since we have a proxy object, however we still pass it by value
-                let type_path = LuaTypeConstructorVisitor::new(true,fn_arg.arg_type.contains_proxy_type()).visit(&fn_arg.arg_type);
-                (
-                    quote_spanned!(fn_arg.span=>#_mut #name),
-                    quote_spanned!(fn_arg.span=>#type_path),
-                )
-            })
-            .unzip::<_, _, Vec<proc_macro2::TokenStream>, Vec<proc_macro2::TokenStream>>();
-
-            Ok(quote_spanned!(self.body.sig.inputs.span()=>#ctxt_arg #self_arg , (#(#args),*) : (#(#arg_types),*)))
+        if expecting_other_args {
+            let (other_arg_names, other_arg_types) = args_iter
+                .map(Arg::arg_signature)
+                .collect::<Result<Vec<_>>>()?
+                .into_iter()
+                .unzip::<_,_,Vec<_>, Vec<_>>();
+            Ok(quote_spanned!(self.sig.span=>
+                #ctxt_arg #self_arg , (#(#other_arg_names),*) : (#(#other_arg_types),*)))
         } else {
-            Ok(quote_spanned!(self.body.sig.inputs.span()=>#ctxt_arg #self_arg))
+            Ok(quote_spanned!(self.sig.span=>
+                #ctxt_arg #self_arg))
         }
 
     }
@@ -329,15 +369,15 @@ impl FunctionMeta<'_> {
     /// let other : MyType = other_ref.inner();
     /// ```
     fn generate_mlua_body_unwrapped_parameter_assignments(&self) -> syn::Result<proc_macro2::TokenStream> {        
-        Ok(self.arg_meta
+        Ok(self.sig.inputs
             .iter()
-            .map(FunctionArgMeta::unpack_parameter)
+            .map(Arg::unpack_parameter)
             .collect::<Result<Vec<_>>>()?
             .iter()
-            .zip(self.arg_meta.iter())
-            .filter_map(|(unpacked_param, param)| 
+            .zip(self.sig.inputs.iter())
+            .filter_map(|(unpacked_param, arg)| 
                 unpacked_param.as_ref().map(|unpacked_param| {
-                    let name = &param.arg_name;
+                    let name = &arg.name;
                     quote_spanned!{name.span()=>let #name = #unpacked_param;}
                 }
             ))
@@ -641,11 +681,12 @@ fn convert_field_to_lua_accessor(idx: usize, field: &Field, is_setter: bool) -> 
     let attrs = &field.attrs;
     
     let trait_item_method : TraitItemFn = if is_setter {
+
         parse_quote!{
             #[lua(kind="FieldSetterMethod", raw)]
             #(#attrs)*
             fn #field_name (&mut self, lua: &Lua, other: #field_type) {
-                // let world_ptr = <bevy_mod_scripting_lua::tealr::mlu::mlua::Lua as bevy_script_api::common::bevy::GetWorld>::get_world(lua)?;
+                let world_ptr = <bevy_mod_scripting_lua::tealr::mlu::mlua::Lua as bevy_script_api::common::bevy::GetWorld>::get_world(lua)?;
 
                 // self.#field_name;
                 ()
@@ -679,13 +720,18 @@ fn convert_field_to_lua_accessor(idx: usize, field: &Field, is_setter: bool) -> 
 fn generate_mlua_registration_code(proxied_type_path: &Path, body: &TraitItemFn) -> darling::Result<proc_macro2::TokenStream> {
     let tealr = quote!(bevy_mod_scripting_lua::tealr);
 
-    let function_meta = LuaFunctionAttribute::from_attributes(&body.attrs)?;
+    let function_meta = FunctionAttributes::from_attributes(&body.attrs)?;
+    // if skipping return no-op
+    if function_meta.skip.is_present() {
+        return Ok(Default::default())
+    };
+
     let method_documentation_calls = function_meta.doc
         .iter()
         .map(|tkns| quote_spanned!(body.span()=>methods.document_type(#tkns);));
 
 
-    let fn_meta = FunctionMeta::new(proxied_type_path.clone(), &body.sig.ident, body)?;
+    let fn_meta = Function::new_from(proxied_type_path.clone(), &body.sig.ident, body)?;
 
     let args = fn_meta.generate_mlua_args()?;
 
@@ -745,6 +791,7 @@ pub fn impl_lua_proxy(input: TokenStream) -> TokenStream {
     }
 
     let proxied_type_path : syn::Path = meta.remote.unwrap_or(meta.ident.clone().into());
+    let proxied_type_str = proxied_type_path.segments.last().unwrap().ident.to_string();
     let proxy_type_ident = format_ident!("{PROXY_PREFIX}{}", &meta.ident);
     let tealr = quote!(bevy_mod_scripting_lua::tealr);
 
@@ -763,8 +810,8 @@ pub fn impl_lua_proxy(input: TokenStream) -> TokenStream {
                         Ok(std::ops::Deref::deref(&wrapper).inner()?)
                     } else {
                         Err(#tealr::mlu::mlua::Error::FromLuaConversionError{
-                            from: "",
-                            to: "",
+                            from: "Value",
+                            to: #proxied_type_str,
                             message: None
                         })
                     }
@@ -900,7 +947,7 @@ mod test {
     use quote::format_ident;
     use syn::{TraitItemFn, Meta};
 
-    use crate::{LuaFunctionAttribute, FunctionArgMeta, LuaProxyArgMeta};
+    use crate::{FunctionAttributes, Arg, ArgAttributes};
 
 
 
@@ -912,6 +959,6 @@ mod test {
         ";
         let trait_fn : TraitItemFn = syn::parse_str(function).unwrap();
 
-        LuaFunctionAttribute::from_attributes(&trait_fn.attrs).unwrap();
+        FunctionAttributes::from_attributes(&trait_fn.attrs).unwrap();
     }
 }
