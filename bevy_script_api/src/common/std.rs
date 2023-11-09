@@ -131,10 +131,7 @@ impl<T: FromReflect + TypePath> IntoIterator for ScriptVec<T> {
             // TODO?: end used to be an Option, and this check moved into the next method but
             // I am not sure if this will ever realistically fail, so if you do get this exception happening
             // hit me with an issue
-            end: self
-                .len()
-                .map(|v| v - 1)
-                .expect("Could not access length when creating iterator"),
+            end: self.len().map(|v| v - 1).unwrap_or(0),
             base: self,
         }
     }
