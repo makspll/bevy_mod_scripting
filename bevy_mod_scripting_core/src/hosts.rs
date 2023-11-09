@@ -366,6 +366,7 @@ impl<T: Asset> Script<T> {
 
         // retrieve owning entity
         if let Some(entity) = contexts.script_owner(script.id()) {
+            println!("Script {} has owner", script.id);
             // insert new re-loaded context
             Self::insert_new_script_context::<H>(
                 host,
@@ -376,6 +377,8 @@ impl<T: Asset> Script<T> {
                 contexts,
                 event_writer,
             );
+        } else {
+            println!("Script {} has no owner", script.id);
         }
     }
 
