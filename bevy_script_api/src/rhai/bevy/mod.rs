@@ -137,7 +137,6 @@ impl CustomType for ScriptWorld {
                 } else {
                     Dynamic::from(-1)
                 }
-                
             })
             .with_fn("get_children", |self_: ScriptWorld, parent: Entity| {
                 self_
