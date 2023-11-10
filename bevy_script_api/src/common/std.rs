@@ -134,7 +134,7 @@ impl<T: FromReflect + TypePath> IntoIterator for ScriptVec<T> {
             // if len > 0, subtract 1, otherwise set to 0
             end: self
                 .len()
-                .and_then(|len| Ok(if len > 0 { len - 1 } else { 0 }))
+                .map(|len| if len > 0 { len - 1 } else { 0 })
                 .expect("Failed to get length of ScriptVec"),
             base: self,
         }
