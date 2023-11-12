@@ -18,7 +18,7 @@ remote="<%- item.import_path
     .to_string() %>",
 functions[
     <% for (name, function) in &item.functions { %>
-    <% include!("function.stpl"); %>
+    <% include!("function.stpl"); %>,
     <% } %>
 ]
 )]

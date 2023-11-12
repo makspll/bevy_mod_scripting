@@ -418,6 +418,7 @@ struct FunctionData {
     output: Option<FunctionArg>,
     trait_path: Option<ImportPath>,
     docstrings: Vec<String>,
+    kind: String,
 }
 
 impl TryFrom<(Option<ImportPath>, Item, &Config)> for FunctionData {
@@ -474,12 +475,26 @@ impl TryFrom<(Option<ImportPath>, Item, &Config)> for FunctionData {
             .lines()
             .map(|s| s.to_owned())
             .collect();
+
+        let receiver = args
+            .first()
+            .filter(|first_arg| first_arg.type_.is_receiver());
+        let kind = receiver
+            .map(|receiver| {
+                if matches!(receiver.type_, ArgType::Ref { is_mut, .. } if is_mut) {
+                    "MutatingMethod".to_owned()
+                } else {
+                    "Method".to_owned()
+                }
+            })
+            .unwrap_or("Function".to_owned());
         Ok(Self {
             is_static,
             args,
             output,
             docstrings,
             trait_path,
+            kind,
         })
     }
 }

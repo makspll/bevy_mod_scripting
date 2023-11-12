@@ -1,30 +1,26 @@
 r#"
-    <% for line in &function.docstrings { %>
-    ///<%- line %>
-    <% } %>
-    #[lua(
-        <% if function.is_static { %>
-        kind="function",
-        <% } %>
-        <% if let Some(trait_) = &function.trait_path { %>
-            as_trait="<%- trait_
-                .replace_prefix("bevy_", "bevy::")
-                .replace_prefix("glam", "bevy::math")
-                .to_string() %>",
-        <% } %>
-        <% if function.output.as_ref().is_some_and(|output| output.is_proxied) { %>
-            output(proxy),
-        <% } %>
-    )]
-    fn <%- name %> (
-        <% for arg in &function.args { %>
-            <% if arg.type_.is_receiver() { %>
-                <%- arg.type_.to_string() %>,
-            <% } else { %>
-                <% if arg.is_proxied { %>
-                    #[proxy]
-                    <%# TODO: take this logic outside the template %>
-                    <%- arg.name %> : <%- arg.type_.clone()
+<% for line in &function.docstrings { %><%
+%>    ///<%- line %>
+<% } %><%
+%>    #[lua(kind="<%- &function.kind %>",<%
+%><% if let Some(trait_) = &function.trait_path { %><%
+    %>as_trait="<%- trait_
+        .replace_prefix("bevy_", "bevy::")
+        .replace_prefix("glam", "bevy::math")
+        .to_string() %>",<%
+%><% } %><%
+%><% if function.output.as_ref().is_some_and(|output| output.is_proxied) { %><%
+    %>output(proxy)<%
+%><% } %>)]
+    fn <%- name %> (<%
+%><% for arg in &function.args { %><%
+    %><% if arg.type_.is_receiver() { %><%
+        %><%- arg.type_.to_string() %>, <%
+    %><% } else { %><%
+        %><% if arg.is_proxied { %><%
+            %>#[proxy] <%
+        %><%# TODO: take this logic outside the template %><%
+        %><%- arg.name %> : <%- arg.type_.clone()
                         .map_base_mut(|base| *base = items
                             .get(base)
                             .unwrap()
@@ -33,26 +29,25 @@ r#"
                                 .replace_prefix("glam", "bevy::math")
                                 .to_string()
                                 )
-                            .to_string() %>,
-                <% } else { %>
-                    <%- arg.name %> : <%- arg.type_.to_string() %>,
-                <% } %>
-            <% } %>
-        <% } %>
-    ) 
-    <% if let Some(output) = &function.output { %>
-        <% if output.is_proxied { %>
-            -> <%- output.type_.clone()
-                    .map_base_mut(|base| *base = items
-                        .get(base)
-                        .unwrap()
-                        .import_path
-                            .replace_prefix("bevy_", "bevy::")
-                            .replace_prefix("glam", "bevy::math")
-                            .to_string()
-                        ).to_string() %>
-        <% } else { %>
-            -> <%- output.type_.to_string() %>
-        <% } %>
-    <% } %>;
-"#,
+                            .to_string() %>,<%
+        %><% } else { %><%
+            %><%- arg.name %> : <%- arg.type_.to_string() %>, <%
+        %><% } %><%
+    %><% } %><%
+%><% } %><%
+%>)<%
+%><% if let Some(output) = &function.output { %><%
+    %><% if output.is_proxied { %><%
+        %> -> <%- output.type_.clone()
+                        .map_base_mut(|base| *base = items
+                            .get(base)
+                            .unwrap()
+                            .import_path
+                                .replace_prefix("bevy_", "bevy::")
+                                .replace_prefix("glam", "bevy::math")
+                                .to_string()
+                            ).to_string() %><%
+    %><% } else { %><%
+        %> -> <%- output.type_.to_string() %><%
+    %><% } %><%
+%><% } %>;"#
