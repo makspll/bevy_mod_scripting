@@ -20,14 +20,12 @@ use bevy_script_api::rhai::{
 // Even though we are implementing Clone we are still able to reference the original data in script thanks to the script wrapper we are about to implement
 // Debug is nice to have, we can forward that implementation to Lua's ToString via our macro
 #[derive(Resource, Reflect, Default, Clone, Debug)]
-#[reflect(Resource, RhaiProxyable)]
+#[reflect(Resource)]
 pub struct MyThing {
     usize: usize,
     string: String,
     array: Vec<usize>,
 }
-
-impl RhaiCopy for MyThing {}
 
 impl MyThing {
     pub fn do_something_cool(&self) -> String {
