@@ -7,9 +7,7 @@ use bevy_mod_scripting_rhai::{
     docs::RhaiDocFragment, rhai::Engine, RhaiContext, RhaiEvent, RhaiScriptHost,
 };
 use bevy_script_api::rhai::{
-    bevy::RhaiBevyAPIProvider,
-    std::{RegisterVecType, RhaiCopy},
-    ReflectRhaiProxyable, RegisterForeignRhaiType,
+    bevy::RhaiBevyAPIProvider, std::RegisterVecType, RegisterForeignRhaiType,
 };
 
 // Step 1. Rust representation
@@ -25,6 +23,7 @@ pub struct MyThing {
     usize: usize,
     string: String,
     array: Vec<usize>,
+    empty_array: Vec<usize>,
 }
 
 impl MyThing {
@@ -36,6 +35,7 @@ impl MyThing {
 fn init(mut commands: Commands) {
     commands.insert_resource(MyThing {
         array: vec![1, 2, 3],
+        empty_array: vec![],
         string: "Hello World!".to_owned(),
         usize: 42,
     });
@@ -54,6 +54,16 @@ fn run_one_shot(world: &mut World) {
                         print(`MyThing.usize: ${my_thing.usize}`);
                         print(`MyThing.array: ${my_thing.array}`);
                         print(`MyThing.array[0]: ${my_thing.array[0]}`);
+                        print(`Looping through MyThing.array:`);
+                        for array_element in my_thing.array {
+                            print(`MyThing.array element: ${array_element}`);
+                        }
+                        print(`MyThing.empty_array: ${my_thing.empty_array}`);
+                        print(`Looping through MyThing.empty_array:`);
+                        for empty_array_element in my_thing.empty_array {
+                            print(`MyThing.empty_array element: ${empty_array_element}`);
+                        }
+                        print(`MyThing.empty_array[0]: ${my_thing.empty_array[0]}`);
                     }
                 "#
             .as_bytes(),
