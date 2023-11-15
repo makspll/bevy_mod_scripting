@@ -110,7 +110,7 @@ impl<T: FromReflect> Iterator for ScriptVecIterator<T> {
     type Item = ScriptRef;
 
     fn next(&mut self) -> Option<Self::Item> {
-        let nxt = (self.current < self.len).then(|| self.base.index(self.current));
+        let nxt = (self.current <= self.len).then(|| self.base.index(self.current));
         self.current += 1;
         nxt
     }
