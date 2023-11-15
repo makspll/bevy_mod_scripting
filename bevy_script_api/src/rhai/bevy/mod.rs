@@ -135,7 +135,7 @@ impl CustomType for ScriptWorld {
                 if let Some(parent) = self_.get_parent(entity) {
                     Dynamic::from(parent)
                 } else {
-                    Dynamic::from(-1)
+                    Dynamic::UNIT
                 }
             })
             .with_fn("get_children", |self_: ScriptWorld, parent: Entity| {

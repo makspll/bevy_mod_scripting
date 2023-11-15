@@ -2,7 +2,14 @@ fn on_init(name) {
     print(`Hello World! From "${name}" in Init`);
 
     let parent = world.get_parent(entity);
-    print(`Parent: ${type_of(parent)}`);
+    switch type_of(parent) {
+        "bevy_ecs::entity::Entity" => {
+            print(`Parent is an Entity`);
+        },
+        "()" => {
+            print(`Parent doesn't exist`);
+        },
+    }
 }
 
 fn on_update(name, delta) {
