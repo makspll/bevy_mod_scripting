@@ -1,6 +1,16 @@
-use bevy::{app::AppExit, prelude::*};
-use bevy_mod_scripting_core::ScriptingPlugin;
-use bevy_script_api::rhai::{ReflectRhaiProxyable, std::RhaiCopy};
+use bevy::prelude::*;
+use bevy_mod_scripting_core::{
+    hosts::{APIProvider, Recipients, ScriptHost},
+    AddScriptApiProvider, AddScriptHost, AddScriptHostHandler, ScriptingPlugin,
+};
+use bevy_mod_scripting_rhai::{
+    docs::RhaiDocFragment, rhai::Engine, RhaiContext, RhaiEvent, RhaiScriptHost,
+};
+use bevy_script_api::rhai::{
+    bevy::RhaiBevyAPIProvider,
+    std::{RegisterVecType, RhaiCopy},
+    ReflectRhaiProxyable, RegisterForeignRhaiType,
+};
 
 // Step 1. Rust representation
 // construct all our types and functionality
@@ -25,15 +35,71 @@ impl MyThing {
     }
 }
 
+fn init(mut commands: Commands) {
+    commands.insert_resource(MyThing {
+        array: vec![1, 2, 3],
+        string: "Hello World!".to_owned(),
+        usize: 42,
+    });
+}
+
+fn run_one_shot(world: &mut World) {
+    world.resource_scope(|world, mut host: Mut<RhaiScriptHost<()>>| {
+        host.run_one_shot(
+            r#"
+                    fn once() {
+                        print("hello hello");
+                    }
+                "#
+            .as_bytes(),
+            "script.rhai",
+            Entity::from_raw(0),
+            world,
+            RhaiEvent {
+                hook_name: "once".to_owned(),
+                args: (),
+                recipients: Recipients::All,
+            },
+        )
+        .expect("Something went wrong in the script!");
+    });
+}
+
 fn main() -> std::io::Result<()> {
     let mut app = App::new();
 
-    app.add_plugins(DefaultPlugins)
-        .add_plugins(ScriptingPlugin)
+    app.add_plugins((DefaultPlugins, ScriptingPlugin))
+        .add_script_host::<RhaiScriptHost<()>>(PostUpdate)
+        .add_api_provider::<RhaiScriptHost<()>>(Box::new(RhaiBevyAPIProvider))
+        .add_api_provider::<RhaiScriptHost<()>>(Box::new(WrapperApiProvider))
+        .add_script_handler::<RhaiScriptHost<()>, 0, 2>(PostUpdate)
         .register_type::<MyThing>()
-        .init_resource::<MyThing>();
+        .add_systems(Startup, init)
+        .add_systems(Update, run_one_shot.run_if(run_once()));
 
     app.run();
 
     Ok(())
+}
+
+struct WrapperApiProvider;
+
+impl APIProvider for WrapperApiProvider {
+    type APITarget = Engine;
+
+    type ScriptContext = RhaiContext;
+
+    type DocTarget = RhaiDocFragment;
+
+    fn register_with_app(&self, app: &mut App) {
+        app.register_foreign_rhai_type::<Vec<usize>>();
+    }
+
+    fn attach_api(
+        &mut self,
+        api: &mut Self::APITarget,
+    ) -> Result<(), bevy_mod_scripting_core::prelude::ScriptError> {
+        api.register_vec_functions::<usize>();
+        Ok(())
+    }
 }
