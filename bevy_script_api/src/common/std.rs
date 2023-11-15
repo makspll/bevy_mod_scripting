@@ -102,7 +102,7 @@ impl<T> From<ScriptVec<T>> for ScriptRef {
 
 pub struct ScriptVecIterator<T> {
     current: usize,
-    end: usize,
+    len: usize,
     base: ScriptVec<T>,
 }
 
@@ -110,7 +110,7 @@ impl<T: FromReflect> Iterator for ScriptVecIterator<T> {
     type Item = ScriptRef;
 
     fn next(&mut self) -> Option<Self::Item> {
-        let nxt = (self.current <= self.end).then(|| self.base.index(self.current));
+        let nxt = (self.current < self.len).then(|| self.base.index(self.current));
         self.current += 1;
         nxt
     }
@@ -132,7 +132,7 @@ impl<T: FromReflect + TypePath> IntoIterator for ScriptVec<T> {
             // I am not sure if this will ever realistically fail, so if you do get this exception happening
             // hit me with an issue
             // if len > 0, subtract 1, otherwise set to 0
-            end: self
+            len: self
                 .len()
                 .map(|len| if len > 0 { len - 1 } else { 0 })
                 .expect("Failed to get length of ScriptVec"),
