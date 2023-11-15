@@ -60,7 +60,20 @@ impl FuncArgs for ScriptArgs {
 fn setup_entities(mut commands: Commands, asset_server: Res<AssetServer>) {
     let script_path = "scripts/multiple_events_rhai.rhai";
 
-    for i in 0..10 {
+    commands.spawn_empty().with_children(|parent| {
+        parent.spawn((
+            NewlyAddedEntityCallInit,
+            Name::from("Test Entity 0"),
+            ScriptCollection::<RhaiFile> {
+                scripts: vec![Script::new(
+                    script_path.to_owned(),
+                    asset_server.load(script_path),
+                )],
+            },
+        ));
+    });
+
+    for i in 1..10 {
         let entity_name = format!("Test Entity {}", i);
         commands.spawn((
             NewlyAddedEntityCallInit,
