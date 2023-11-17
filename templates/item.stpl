@@ -22,4 +22,16 @@ functions[
     <% } %>
 ]
 )]
+
+<% if matches!(item.item_type, ItemType::Struct) { %>
+pub struct <%- item.import_path.components.last().unwrap() %> {
+    <% include!("struct_body.stpl"); %>
+}
+<% } else if matches!(item.item_type, ItemType::TupleStruct) { %>
+pub struct <%- item.import_path.components.last().unwrap() %> (
+    <% include!("struct_body.stpl"); %>
+);
+<% } else { %>
 pub struct <%- item.import_path.components.last().unwrap() %>;
+<% } %>
+

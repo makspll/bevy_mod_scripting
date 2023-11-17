@@ -2,12 +2,12 @@ r#"
 <% for line in &function.docstrings { %><%
 %>    ///<%- line %>
 <% } %><%
-%>    #[lua(kind="<%- &function.kind %>",<%
+%>    #[lua(kind="<%- &function.kind %>", <%
 %><% if let Some(trait_) = &function.trait_path { %><%
     %>as_trait="<%- trait_
         .replace_prefix("bevy_", "bevy::")
         .replace_prefix("glam", "bevy::math")
-        .to_string() %>",<%
+        .to_string() %>", <%
 %><% } %><%
 %><% if function.output.as_ref().is_some_and(|output| output.is_proxied) { %><%
     %>output(proxy)<%

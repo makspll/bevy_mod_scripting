@@ -190,6 +190,13 @@ impl SimpleType {
         )
     }
 
+    pub fn new_from_fully_specified_type_proxy_all(
+        proxy_prefix: &'static str,
+        proxied_type: &Type,
+    ) -> Result<SimpleType, Error> {
+        Self::new_from_type(proxy_prefix, proxied_type, None, &Default::default(), true)
+    }
+
     /// Constructs a new SimpleProxyType from a `syn::Type`, contextual receivers such as `Self` and `self` will be replaced
     /// with the given identifier prefixed with the proxy_prefix
     pub fn new_from_contextual_type(
