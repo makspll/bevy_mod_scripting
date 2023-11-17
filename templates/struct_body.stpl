@@ -1,6 +1,5 @@
 <% for field in &item.fields { %>
 
-    <%# #[lua(skip)] %>
     <% if field.is_proxied { %>
         #[lua(output(proxy))]
     <% } %>

@@ -593,26 +593,24 @@ impl From<(TypeMeta<'_>, &Config)> for ItemData {
                         let type_ = id
                             .as_ref()
                             .map(|id| {
-                                let meta = &meta
-                                    .source
-                                    .index
-                                    .get(id)
-                                    .ok_or::<Box<dyn Error>>(
-                                        "Expected to find field in the same crate as struct".into(),
-                                    )?
-                                    .inner;
-                                match meta {
+                                let meta = &meta.source.index.get(id).ok_or::<Box<dyn Error>>(
+                                    "Expected to find field in the same crate as struct".into(),
+                                )?;
+
+                                if meta.attrs.iter().any(|attr| attr == "#[reflect(ignore)]") {
+                                    return Err("Field ignored by reflection".into());
+                                }
+
+                                match &meta.inner {
                                     ItemEnum::StructField(field) => {
                                         Ok::<_, Box<dyn Error>>(field.clone())
                                     }
                                     _ => panic!("Expected struct field"),
                                 }
                             })
-                            .unwrap_or(Ok(Type::ResolvedPath(Path {
-                                name: "ReflectedValue".to_owned(),
-                                id: Id("ReflectedValue".to_owned()),
-                                args: None,
-                            })))?;
+                            .ok_or_else::<Box<dyn Error>, _>(|| {
+                                "Could not find StructField in the json index".into()
+                            })??;
 
                         Ok::<_, Box<dyn Error>>((idx.to_string(), type_))
                     })
@@ -641,11 +639,15 @@ impl From<(TypeMeta<'_>, &Config)> for ItemData {
                         .ok()
                 })
                 .zip(std::iter::repeat(config))
-                .map(NameType::try_from)
-                .filter_map(|result| {
-                    result
-                        .map_err(|e| log::info!("skipping field due to `{e}`"))
-                        .ok()
+                .map(|((name, type_), config)| {
+                    match NameType::try_from(((name.clone(), type_), config)) {
+                        Ok(v) => v,
+                        Err(_) => NameType {
+                            name,
+                            type_: ArgType::Base("ReflectedValue".to_owned()),
+                            is_proxied: false,
+                        },
+                    }
                 })
                 .collect::<Vec<NameType>>();
 

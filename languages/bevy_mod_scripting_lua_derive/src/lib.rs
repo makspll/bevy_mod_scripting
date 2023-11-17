@@ -457,10 +457,19 @@ impl Function {
             // getter
             SimpleType::Type(syn::Type::Path(path)) 
                 if path.path.is_ident("ReflectedValue") 
-                && self.attrs.kind.is_field_getter() => todo!(),
+                && self.attrs.kind.is_field_getter() => quote!(
+                    let #raw_output_ident = #self_name.script_ref(#world_ptr).index(std::borrow::Cow::Borrowed(#field_name_str));
+                ),
             // setter
             SimpleType::Type(syn::Type::Path(path)) 
-                if path.path.is_ident("ReflectedValue") => todo!(),
+                if path.path.is_ident("ReflectedValue") => {
+                    let first_arg_name = &self.get_other_arguments()?.next()
+                        .ok_or_else(|| syn::Error::new(self.sig.span, "Field setter requires a single argument which is missing"))?
+                        .name;
+                    quote!(
+                        let #raw_output_ident = #self_name.script_ref(#world_ptr).index(std::borrow::Cow::Borrowed(#field_name_str)).apply(&#first_arg_name.ref_)?;
+                    )
+                },
 
             // primitive use clone on the value and return it without a wrapper
             // getter
