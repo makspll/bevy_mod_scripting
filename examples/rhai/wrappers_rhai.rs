@@ -58,14 +58,12 @@ fn run_one_shot(world: &mut World) {
                         for array_element in my_thing.array {
                             print(`MyThing.array element: ${array_element}`);
                         }
+                        
                         print(`MyThing.empty_array: ${my_thing.empty_array}`);
                         print(`Looping through MyThing.empty_array:`);
-                        
-                        // this currently returns error: 
-                        // ERROR bevy_mod_scripting_rhai: Runtime error in script `script.rhai` Runtime error: Invalid reflection path: `[0]`. No such element (line 20, position 78) in call to function 'once'
-                        //for empty_array_element in my_thing.empty_array {
-                        //    print(`MyThing.empty_array element: ${empty_array_element}`);
-                        //}
+                        for empty_array_element in my_thing.empty_array {
+                            print(`MyThing.empty_array element: ${empty_array_element}`);
+                        }
 
                         // this currently returns error:
                         // ERROR bevy_mod_scripting_rhai: Runtime error in script `script.rhai` Function not found: do_something_cool (bevy_script_api::script_ref::ReflectedValue) (line 21, position 72) in call to function 'once'
