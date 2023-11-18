@@ -132,9 +132,7 @@ impl<T: FromReflect + TypePath> IntoIterator for ScriptVec<T> {
             // I am not sure if this will ever realistically fail, so if you do get this exception happening
             // hit me with an issue
             // if len > 0, subtract 1, otherwise set to 0
-            len: self
-                .len()
-                .expect("Failed to get length of ScriptVec"),
+            len: self.len().expect("Failed to get length of ScriptVec"),
             base: self,
         }
     }
