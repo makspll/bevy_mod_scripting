@@ -164,7 +164,7 @@ pub fn script_event_handler<H: ScriptHost, const MAX: u32, const MIN: u32>(world
 
     let mut ctxts: ScriptContexts<H::ScriptContext> = world.remove_resource().unwrap();
 
-    let host: H = world.remove_resource().unwrap();
+    let mut host: H = world.remove_resource().unwrap();
     let mut providers: APIProviders<H> = world.remove_resource().unwrap();
 
     // we need a resource scope to be able to simultaneously access the contexts as well

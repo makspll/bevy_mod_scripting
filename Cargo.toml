@@ -98,7 +98,6 @@ name = "console_integration_lua"
 path = "examples/lua/console_integration.rs"
 required-features = ["lua54", "lua_script_api"]
 
-
 [[example]]
 name = "console_integration_rhai"
 path = "examples/rhai/console_integration.rs"
@@ -134,7 +133,6 @@ name = "documentation_gen_lua"
 path = "examples/lua/documentation_gen.rs"
 required-features = ["lua54", "teal", "lua_script_api"]
 
-
 [[example]]
 name = "bevy_api_lua"
 path = "examples/lua/bevy_api.rs"
@@ -144,11 +142,6 @@ required-features = ["lua54", "lua_script_api"]
 name = "bevy_api_rhai"
 path = "examples/rhai/bevy_api.rs"
 required-features = ["rhai", "rhai_script_api"]
-
-[[example]]
-name = "wrappers"
-path = "examples/wrappers.rs"
-required-features = ["lua54", "lua_script_api"]
 
 [[example]]
 name = "new_wrappers"

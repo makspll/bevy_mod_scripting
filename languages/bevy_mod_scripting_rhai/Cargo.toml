@@ -22,6 +22,6 @@ name = "bevy_mod_scripting_rhai"
 path = "src/lib.rs"
 
 [dependencies]
-rhai = { version = "1.15.1", features = ["sync"] }
-bevy_mod_scripting_core = { path = "../../bevy_mod_scripting_core", version = "0.3.0" }
 bevy = { version = "0.11", default-features = false }
+rhai = { version = "1.16", features = ["sync"] }
+bevy_mod_scripting_core = { path = "../../bevy_mod_scripting_core", version = "0.3.0" }

@@ -169,6 +169,10 @@ impl ScriptWorld {
     ) -> Result<ScriptRef, ScriptError> {
         let mut w = self.write();
 
+        let mut entity_ref = w
+            .get_entity_mut(entity)
+            .ok_or_else(|| ScriptError::Other(format!("Entity is not valid {:#?}", entity)))?;
+
         let component_data = comp_type.data::<ReflectComponent>().ok_or_else(|| {
             ScriptError::Other(format!("Not a component {}", comp_type.short_name()))
         })?;
@@ -177,18 +181,18 @@ impl ScriptWorld {
         // TODO: maybe get an add_default impl added to ReflectComponent
         // this means that we don't require ReflectDefault for adding components!
         match comp_type.0.type_info(){
-            bevy::reflect::TypeInfo::Struct(_) => component_data.insert(&mut w.entity_mut(entity), &DynamicStruct::default()),
-            bevy::reflect::TypeInfo::TupleStruct(_) => component_data.insert(&mut w.entity_mut(entity), &DynamicTupleStruct::default()),
-            bevy::reflect::TypeInfo::Tuple(_) => component_data.insert(&mut w.entity_mut(entity), &DynamicTuple::default()),
-            bevy::reflect::TypeInfo::List(_) => component_data.insert(&mut w.entity_mut(entity), &DynamicList::default()),
-            bevy::reflect::TypeInfo::Array(_) => component_data.insert(&mut w.entity_mut(entity), &DynamicArray::new(Box::new([]))),
-            bevy::reflect::TypeInfo::Map(_) => component_data.insert(&mut w.entity_mut(entity), &DynamicMap::default()),
-            bevy::reflect::TypeInfo::Value(_) => component_data.insert(&mut w.entity_mut(entity),
+            bevy::reflect::TypeInfo::Struct(_) => component_data.insert(&mut entity_ref, &DynamicStruct::default()),
+            bevy::reflect::TypeInfo::TupleStruct(_) => component_data.insert(&mut entity_ref, &DynamicTupleStruct::default()),
+            bevy::reflect::TypeInfo::Tuple(_) => component_data.insert(&mut entity_ref, &DynamicTuple::default()),
+            bevy::reflect::TypeInfo::List(_) => component_data.insert(&mut entity_ref, &DynamicList::default()),
+            bevy::reflect::TypeInfo::Array(_) => component_data.insert(&mut entity_ref, &DynamicArray::new(Box::new([]))),
+            bevy::reflect::TypeInfo::Map(_) => component_data.insert(&mut entity_ref, &DynamicMap::default()),
+            bevy::reflect::TypeInfo::Value(_) => component_data.insert(&mut entity_ref,
                 comp_type.data::<ReflectDefault>().ok_or_else(||
                     ScriptError::Other(format!("Component {} is a value or dynamic type with no `ReflectDefault` type_data, cannot instantiate sensible value",comp_type.short_name())))?
                     .default()
                     .as_ref()),
-            bevy::reflect::TypeInfo::Enum(_) => component_data.insert(&mut w.entity_mut(entity), &DynamicEnum::default())
+            bevy::reflect::TypeInfo::Enum(_) => component_data.insert(&mut entity_ref, &DynamicEnum::default())
         };
 
         Ok(ScriptRef::new_component_ref(
@@ -205,11 +209,15 @@ impl ScriptWorld {
     ) -> Result<Option<ScriptRef>, ScriptError> {
         let w = self.read();
 
+        let entity_ref = w
+            .get_entity(entity)
+            .ok_or_else(|| ScriptError::Other(format!("Entity is not valid {:#?}", entity)))?;
+
         let component_data = comp_type.data::<ReflectComponent>().ok_or_else(|| {
             ScriptError::Other(format!("Not a component {}", comp_type.short_name()))
         })?;
 
-        Ok(component_data.reflect(w.entity(entity)).map(|_component| {
+        Ok(component_data.reflect(entity_ref).map(|_component| {
             ScriptRef::new_component_ref(component_data.clone(), entity, self.clone().into())
         }))
     }
@@ -224,7 +232,11 @@ impl ScriptWorld {
             ScriptError::Other(format!("Not a component {}", comp_type.short_name()))
         })?;
 
-        Ok(component_data.reflect(w.entity(entity)).is_some())
+        let entity_ref = w
+            .get_entity(entity)
+            .ok_or_else(|| ScriptError::Other(format!("Entity is not valid {:#?}", entity)))?;
+
+        Ok(component_data.reflect(entity_ref).is_some())
     }
 
     pub fn remove_component(
@@ -233,10 +245,15 @@ impl ScriptWorld {
         comp_type: ScriptTypeRegistration,
     ) -> Result<(), ScriptError> {
         let mut w = self.write();
+
+        let mut entity_ref = w
+            .get_entity_mut(entity)
+            .ok_or_else(|| ScriptError::Other(format!("Entity is not valid {:#?}", entity)))?;
+
         let component_data = comp_type.data::<ReflectComponent>().ok_or_else(|| {
             ScriptError::Other(format!("Not a component {}", comp_type.short_name()))
         })?;
-        component_data.remove(&mut w.entity_mut(entity));
+        component_data.remove(&mut entity_ref);
         Ok(())
     }
 

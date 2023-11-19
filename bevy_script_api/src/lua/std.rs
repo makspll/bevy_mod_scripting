@@ -314,27 +314,31 @@ impl<
             |ctx, s, (index, value): (LuaIndex, Value)| s.index(*index).apply_lua(ctx, value),
         );
 
-        methods.add_meta_method(MetaMethod::Pairs, |ctx, s, _: ()| {
-            let len = s.len()?;
-            let mut curr_idx = 0;
-            let ref_: ScriptRef = s.clone().into();
-            TypedFunction::from_rust_mut(
-                move |ctx, ()| {
-                    let o = if curr_idx < len {
-                        (
-                            to_lua_idx(curr_idx).to_lua(ctx)?,
-                            ref_.index(curr_idx).to_lua(ctx)?,
-                        )
-                    } else {
-                        (Value::Nil, Value::Nil)
-                    };
-                    curr_idx += 1;
-                    Ok(o)
+        bevy_mod_scripting_lua::__cfg_feature_any_lua52_lua53_lua54_luajit52!(
+            methods.add_meta_method(
+                MetaMethod::Pairs,
+                |ctx, s, _: ()| {
+                    let len = s.len()?;
+                    let mut curr_idx = 0;
+                    let ref_: ScriptRef = s.clone().into();
+                    TypedFunction::from_rust_mut(
+                        move |ctx, ()| {
+                            let o = if curr_idx < len {
+                                (
+                                    to_lua_idx(curr_idx).to_lua(ctx)?,
+                                    ref_.index(curr_idx).to_lua(ctx)?,
+                                )
+                            } else {
+                                (Value::Nil, Value::Nil)
+                            };
+                            curr_idx += 1;
+                            Ok(o)
+                        },
+                        ctx,
+                    )
                 },
-                ctx,
-            )
-        });
-
+            );
+        );
         methods.add_meta_method(MetaMethod::Len, |_, s, ()| Ok(s.len()?));
 
         methods.add_method("to_table", |ctx, s, ()| {
@@ -456,13 +460,11 @@ impl<
                     .map(|v| v.and_then(|(_, v)| T::from_lua_proxy(v, lua)))
                     .collect::<Result<Vec<_>, _>>()
             }
-            _ => {
-                return Err(mlua::Error::FromLuaConversionError {
-                    from: new_val.type_name(),
-                    to: "userdata or table",
-                    message: Some("LuaVec can only be assigned with itself or a table".to_owned()),
-                })
-            }
+            _ => Err(mlua::Error::FromLuaConversionError {
+                from: new_val.type_name(),
+                to: "userdata or table",
+                message: Some("LuaVec can only be assigned with itself or a table".to_owned()),
+            }),
         }
     }
 }

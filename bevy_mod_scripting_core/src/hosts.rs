@@ -89,7 +89,7 @@ pub trait ScriptHost: Send + Sync + 'static + Default + Resource {
     /// the main point of contact with the bevy world.
     /// Scripts are called with appropriate events in the event order
     fn handle_events<'a>(
-        &self,
+        &mut self,
         world_ptr: &mut World,
         events: &[Self::ScriptEvent],
         ctxs: impl Iterator<Item = (ScriptData<'a>, &'a mut Self::ScriptContext)>,

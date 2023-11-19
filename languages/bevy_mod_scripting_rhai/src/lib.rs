@@ -142,17 +142,18 @@ impl<A: FuncArgs + Send + Clone + Sync + 'static> ScriptHost for RhaiScriptHost<
     }
 
     fn handle_events<'a>(
-        &self,
+        &mut self,
         world: &mut World,
         events: &[Self::ScriptEvent],
         ctxs: impl Iterator<Item = (ScriptData<'a>, &'a mut Self::ScriptContext)>,
         providers: &mut APIProviders<Self>,
     ) {
+        // safety:
+        // - we have &mut World access
+        // - we do not use world_ptr after we use the original reference again anywhere in this function
+        let world_ptr = unsafe { WorldPointer::new(world) };
+
         ctxs.for_each(|(fd, ctx)| {
-            // safety:
-            // - we have &mut World access
-            // - we do not use world_ptr after we use the original reference again anywhere in this function
-            let world_ptr = unsafe { WorldPointer::new(world) };
             providers
                 .setup_runtime_all(world_ptr.clone(), &fd, ctx)
                 .expect("Failed to setup script runtime");
@@ -160,7 +161,7 @@ impl<A: FuncArgs + Send + Clone + Sync + 'static> ScriptHost for RhaiScriptHost<
             for event in events.iter() {
                 // check if this script should handle this event
                 if !event.recipients().is_recipient(&fd) {
-                    return;
+                    continue;
                 };
 
                 match self.engine.call_fn(
@@ -174,14 +175,19 @@ impl<A: FuncArgs + Send + Clone + Sync + 'static> ScriptHost for RhaiScriptHost<
                         let mut world = world_ptr.write();
                         let mut state: CachedScriptState<Self> = world.remove_resource().unwrap();
 
-                        let (_, mut error_wrt, _) = state.event_state.get_mut(&mut world);
+                        match *e {
+                            EvalAltResult::ErrorFunctionNotFound(..) => {}
+                            _ => {
+                                let (_, mut error_wrt, _) = state.event_state.get_mut(&mut world);
 
-                        let error = ScriptError::RuntimeError {
-                            script: fd.name.to_string(),
-                            msg: e.to_string(),
-                        };
-                        error!("{}", error);
-                        error_wrt.send(ScriptErrorEvent { error });
+                                let error = ScriptError::RuntimeError {
+                                    script: fd.name.to_string(),
+                                    msg: e.to_string(),
+                                };
+                                error!("{}", error);
+                                error_wrt.send(ScriptErrorEvent { error });
+                            }
+                        }
 
                         world.insert_resource(state);
                     }

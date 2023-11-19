@@ -10,10 +10,19 @@ name: Check and Lint
 jobs:
   check:
     name: Check
-    runs-on: ${{ matrix.os }}
+    runs-on: ${{ matrix.os_and_lua.os }}
     strategy:
       matrix:
-       os: [windows-latest, ubuntu-latest, macOS-latest]
+       os_and_lua: [ 
+        {os: windows-latest, lua: lua54}, 
+        {os: macOS-latest, lua: lua54},
+        {os: ubuntu-latest, lua: lua51}, 
+        {os: ubuntu-latest, lua: lua52}, 
+        {os: ubuntu-latest, lua: lua53}, 
+        {os: ubuntu-latest, lua: lua54}, 
+        {os: ubuntu-latest, lua: luajit}, 
+        {os: ubuntu-latest, lua: luajit52}
+      ]
     steps:
       - name: Install alsa and udev
         run: sudo apt-get update; sudo apt-get install --no-install-recommends libasound2-dev libudev-dev
@@ -28,7 +37,7 @@ jobs:
       - uses: actions-rs/cargo@v1
         with:
           command: check
-          args: --workspace --features=lua54,rhai,teal,lua_script_api,rhai_script_api
+          args: --workspace --features=${{ matrix.os_and_lua.lua }},rhai,teal,lua_script_api,rhai_script_api
 
   fmt:
     name: Rustfmt
