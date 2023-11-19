@@ -40,13 +40,6 @@ impl CustomType for ScriptWorld {
                     .map(Dynamic::from)
                     .unwrap_or_default()
             })
-            .with_fn("get_children", |self_: ScriptWorld, parent: Entity| {
-                self_
-                    .get_children(parent)
-                    .into_iter()
-                    .map(Dynamic::from)
-                    .collect::<Vec<_>>()
-            })
             .with_fn(
                 "add_default_component",
                 |self_: ScriptWorld, entity: Entity, type_registration: ScriptTypeRegistration| {
@@ -138,15 +131,19 @@ impl CustomType for ScriptWorld {
                     })
                 },
             )
-            .with_fn("get_children", |self_: &ScriptWorld, parent: Entity| {
+            .with_fn("get_parent", |self_: ScriptWorld, entity: Entity| {
+                if let Some(parent) = self_.get_parent(entity) {
+                    Dynamic::from(parent)
+                } else {
+                    Dynamic::UNIT
+                }
+            })
+            .with_fn("get_children", |self_: ScriptWorld, parent: Entity| {
                 self_
                     .get_children(parent)
                     .into_iter()
                     .map(Dynamic::from)
-                    .collect::<Vec<Dynamic>>()
-            })
-            .with_fn("get_parent", |self_: &ScriptWorld, entity: Entity| {
-                self_.get_parent(entity)
+                    .collect::<Vec<_>>()
             })
             .with_fn(
                 "push_child",

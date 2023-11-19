@@ -1,0 +1,4 @@
+[target.aarch64-unknown-linux-gnu]
+pre-build = [
+    "dpkg --add-architecture arm64 && apt-get -y update; apt-get -y install libasound2-dev:arm64 libudev-dev:arm64",
+]

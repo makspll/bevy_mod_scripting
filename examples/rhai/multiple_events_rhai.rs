@@ -1,5 +1,6 @@
 use bevy::{prelude::*, reflect::Reflect};
 use bevy_mod_scripting_core::{
+    event::ScriptLoaded,
     prelude::{APIProvider, PriorityEventWriter, Recipients, Script, ScriptCollection},
     AddScriptApiProvider, AddScriptHost, AddScriptHostHandler, ScriptingPlugin,
 };
@@ -17,7 +18,7 @@ fn main() {
         .add_systems(Update, (call_init, call_update))
         .add_script_host::<RhaiScriptHost<ScriptArgs>>(PostUpdate)
         .add_api_provider::<RhaiScriptHost<ScriptArgs>>(Box::new(RhaiBevyAPIProvider))
-        .add_script_handler::<RhaiScriptHost<ScriptArgs>, 0, 1>(PostUpdate)
+        .add_script_handler::<RhaiScriptHost<ScriptArgs>, 0, 2>(PostUpdate)
         .run();
 }
 
@@ -59,7 +60,20 @@ impl FuncArgs for ScriptArgs {
 fn setup_entities(mut commands: Commands, asset_server: Res<AssetServer>) {
     let script_path = "scripts/multiple_events_rhai.rhai";
 
-    for i in 0..10 {
+    commands.spawn_empty().with_children(|parent| {
+        parent.spawn((
+            NewlyAddedEntityCallInit,
+            Name::from("Test Entity 0"),
+            ScriptCollection::<RhaiFile> {
+                scripts: vec![Script::new(
+                    script_path.to_owned(),
+                    asset_server.load(script_path),
+                )],
+            },
+        ));
+    });
+
+    for i in 1..10 {
         let entity_name = format!("Test Entity {}", i);
         commands.spawn((
             NewlyAddedEntityCallInit,
@@ -106,28 +120,37 @@ fn call_update(
 
 fn call_init(
     mut events: PriorityEventWriter<RhaiEvent<ScriptArgs>>,
-    mut commands: Commands,
+    mut loaded_scripts: EventReader<ScriptLoaded>,
     entity_query: Query<
         (Entity, Option<&Name>, Option<&ScriptCollection<RhaiFile>>),
-        Added<NewlyAddedEntityCallInit>,
+        With<NewlyAddedEntityCallInit>,
     >,
+    mut commands: Commands,
 ) {
-    entity_query.for_each(|(entity, name, scripts)| {
-        if scripts.is_some() {
-            events.send(
-                RhaiEvent {
-                    hook_name: "on_init".to_owned(),
-                    args: ScriptArgs {
-                        delta_time: None,
-                        entity_name: name.map(|n| n.to_string()),
-                    },
-                    recipients: Recipients::Entity(entity),
-                },
-                0,
-            );
-            commands.entity(entity).remove::<NewlyAddedEntityCallInit>();
-        } else {
-            commands.entity(entity).remove::<NewlyAddedEntityCallInit>();
+    // Call init on all entities that have a script that was just loaded, and remove the Marker component, so that Update can be called
+    'outer: for loaded_script in loaded_scripts.iter() {
+        for (entity, name, scripts) in entity_query.iter() {
+            if let Some(scripts) = scripts {
+                if scripts.scripts.iter().any(|s| s.id() == loaded_script.sid) {
+                    events.send(
+                        RhaiEvent {
+                            hook_name: "on_init".to_owned(),
+                            args: ScriptArgs {
+                                entity_name: name.map(|n| n.to_string()),
+                                ..Default::default()
+                            },
+                            recipients: Recipients::ScriptID(loaded_script.sid),
+                        },
+                        0,
+                    );
+
+                    commands.entity(entity).remove::<NewlyAddedEntityCallInit>();
+                    continue 'outer;
+                }
+            } else {
+                commands.entity(entity).remove::<NewlyAddedEntityCallInit>();
+                continue 'outer;
+            }
         }
-    });
+    }
 }
