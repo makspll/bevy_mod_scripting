@@ -1,1 +1,2 @@
 bevy_script_api/generated.rs linguist-generated=true
+bevy_script_api/generated.rs -diff -merge
