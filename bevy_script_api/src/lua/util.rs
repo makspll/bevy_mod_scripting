@@ -132,28 +132,28 @@ macro_rules! impl_tealr_type {
 /// a fill in to allow multiple userdata types
 #[macro_export]
 macro_rules! impl_tealr_any_union {
-    ($visibility:vis $(Derives($($derives:ident), +))? enum $type_name:ident = $($sub_types:ident) | +) => {
+    ($visibility:vis $(Derives($($derives:ident), +))? enum $type_name:ident = $($sub_types_ident:ident: $sub_types_type:ty) | +) => {
         #[derive($($($derives ,)*)*)]
         #[allow(non_camel_case_types)]
         $visibility enum $type_name {
-            $($sub_types($sub_types) ,)*
+            $($sub_types_ident($sub_types_type) ,)*
         }
         impl<'lua> ::bevy_mod_scripting_lua::tealr::mlu::mlua::ToLua<'lua> for $type_name {
             fn to_lua(self, lua: &'lua ::bevy_mod_scripting_lua::tealr::mlu::mlua::Lua) -> ::std::result::Result<::bevy_mod_scripting_lua::tealr::mlu::mlua::Value<'lua>, ::bevy_mod_scripting_lua::tealr::mlu::mlua::Error> {
                 match self {
-                    $($type_name::$sub_types(x) => x.to_lua(lua),)*
+                    $($type_name::$sub_types_ident(x) => x.to_lua(lua),)*
                 }
             }
         }
         impl<'lua> ::bevy_mod_scripting_lua::tealr::mlu::mlua::FromLua<'lua> for $type_name {
             fn from_lua(value: ::bevy_mod_scripting_lua::tealr::mlu::mlua::Value<'lua>, lua: &'lua ::bevy_mod_scripting_lua::tealr::mlu::mlua::Lua) -> ::std::result::Result<Self, ::bevy_mod_scripting_lua::tealr::mlu::mlua::Error> {
-                $(match $sub_types::from_lua(value.clone(),lua) {
-                    Ok(x) => return Ok($type_name::$sub_types(x)),
+                $(match $sub_types_ident::from_lua(value.clone(),lua) {
+                    Ok(x) => return Ok($type_name::$sub_types_ident(x)),
                     Err(::bevy_mod_scripting_lua::tealr::mlu::mlua::Error::FromLuaConversionError{from:_,to:_,message:_}) => {}
                     Err(x) => return Err(x)
                 };)*
                 Err(::bevy_mod_scripting_lua::tealr::mlu::mlua::Error::FromLuaConversionError{
-                    to: stringify!( $($sub_types)|* ),
+                    to: stringify!( $($sub_types_ident)|* ),
                     from: value.type_name(),
                     message: None
                 })

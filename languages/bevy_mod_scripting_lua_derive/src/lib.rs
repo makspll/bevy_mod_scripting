@@ -1,3 +1,6 @@
+use std::collections::{HashMap, HashSet};
+
+use arg::Arg;
 use bevy_mod_scripting_common::{input::*, utils::doc_attribute_to_string_lit};
 use syn::{parse_macro_input, DeriveInput, Variant};
 use syn::{
@@ -11,6 +14,7 @@ use function::FunctionAttributes;
 use proc_macro::TokenStream;
 use proc_macro2::*;
 use quote::*;
+use vec1::{vec1, Vec1};
 pub(crate) mod arg;
 pub(crate) mod function;
 pub(crate) mod signature;
@@ -78,35 +82,49 @@ fn convert_field_to_lua_accessor(
     Ok(trait_item_method)
 }
 
-/// Given a function with correct meta and the name of the proxied type will generate mlua statement
-/// which will register the given function within an appropriate mlua container `UserDataMethods` or `UserDataFields`
-/// i.e.:
-/// ```rust,ignore
-/// /// docs
-/// fields.#tealr_function(#signature, #closure)
-/// // or
-///
-/// /// docs
-/// methods.#tealr_function(#signature, #closure)
-/// ```
-/// depending on if the function is a field accessor or a method/function
-fn generate_mlua_registration_code(
+/// Removes functions from the list and matches them up based on composite ID's into a unified struct
+fn extract_composite_functions(functions: &mut Vec<Function>) -> Vec<CompositeFunction> {
+    let indices = functions
+        .iter()
+        .enumerate()
+        .filter_map(|(idx, elem)| {
+            if elem.attrs.composite.is_some() {
+                Some(idx)
+            } else {
+                None
+            }
+        })
+        .rev() // reverse order to avoid double shifting things around
+        .collect::<Vec<_>>();
+
+    let mut composites: HashMap<String, Vec1<Function>> = HashMap::with_capacity(indices.len());
+    for i in indices {
+        let f = functions.remove(i);
+        let name = &f.attrs.composite.as_ref().unwrap();
+        if composites.contains_key(name.as_str()) {
+            composites.get_mut(name.as_str()).unwrap().push(f);
+        } else {
+            composites.entry((*name).to_owned()).or_insert(vec1![f]);
+        }
+    }
+
+    composites
+        .into_iter()
+        .map(|(id, functions)| CompositeFunction { id, functions })
+        .collect()
+}
+
+fn build_function(
     proxied_type_path: &Path,
     function_def: TraitItemFn,
-) -> darling::Result<proc_macro2::TokenStream> {
-    let tealr = quote!(bevy_mod_scripting_lua::tealr);
-
+) -> darling::Result<Option<Function>> {
     let attrs = FunctionAttributes::from_attributes(&function_def.attrs)?;
     // if skipping return no-op
     if attrs.skip.is_present() {
-        return Ok(Default::default());
+        return Ok(None);
     };
 
-    let method_documentation_calls = attrs
-        .doc
-        .iter()
-        .map(|tkns| quote_spanned!(function_def.span()=>methods.document_type(#tkns);))
-        .collect::<proc_macro2::TokenStream>();
+    let span = function_def.span();
 
     let function_name = function_def.sig.ident.clone();
     let output_attrs = attrs
@@ -129,51 +147,149 @@ fn generate_mlua_registration_code(
         attrs.raw.is_present(),
         output_attrs,
     )?;
-    let function = Function::new(
+    Function::new(
         function_name.clone(),
         attrs,
         function_def.default,
         signature,
-    )?;
+        span,
+    )
+    .map(Option::Some)
+}
 
-    let args = function.generate_mlua_args()?;
-
-    let body = function.generate_mlua_body(proxied_type_path)?;
-    let closure = quote_spanned! {body.span()=>
-        |#args| {
-            #body
-        }
-    };
-
-    let tealr_function = format_ident!(
-        "{}",
-        function.attrs.kind.get_tealr_function(),
-        span = body.span()
-    );
-    let signature = function
+/// generates either the string function name or the MetaMethod type path depending if it's a valid meta method
+fn generate_mlua_function_name(function: &Function) -> proc_macro2::TokenStream {
+    let function_name = &function.name;
+    let tealr = quote!(bevy_mod_scripting_lua::tealr);
+    function
         .attrs
         .kind
         .is_meta()
         .then(|| {
             // check is valid meta method if not use custom name
             if VALID_META_METHODS.contains(&function_name.to_string().as_str()) {
-                quote!(#tealr::mlu::mlua::MetaMethod::#function_name)
+                quote!(#tealr::mlua::MetaMethod::#function_name)
             } else {
                 let std_string = function_name.to_string();
-                quote!(#tealr::mlu::mlua::MetaMethod::Custom(#std_string.to_string()))
+                quote!(#tealr::mlua::MetaMethod::Custom(#std_string.to_string()))
             }
         })
-        .unwrap_or_else(|| function_name.to_string().to_token_stream());
+        .unwrap_or_else(|| function_name.to_string().to_token_stream())
+}
 
-    let container_ident = if function.attrs.kind.is_field() {
-        format_ident!("fields", span = body.span())
-    } else {
-        format_ident!("methods", span = body.span())
-    };
+/// Given a function with correct meta and the name of the proxied type will generate mlua statement
+/// which will register the given function within an appropriate mlua container `UserDataMethods` or `UserDataFields`
+/// i.e.:
+/// ```rust,ignore
+/// /// docs
+/// fields.#tealr_function(#signature, #closure)
+/// // or
+///
+/// /// docs
+/// methods.#tealr_function(#signature, #closure)
+/// ```
+/// depending on if the function is a field accessor or a method/function
+fn generate_mlua_registration_code(
+    container_ident: Ident,
+    proxied_type_path: &Path,
+    function: Function,
+) -> darling::Result<proc_macro2::TokenStream> {
+    let method_documentation_calls = function
+        .attrs
+        .doc
+        .iter()
+        .map(|tkns| quote_spanned!(function.span=>#container_ident.document_type(#tkns)));
 
+    let tealr_function = format_ident!(
+        "{}",
+        function.attrs.kind.get_tealr_function(),
+        span = function.span
+    );
+    let signature = generate_mlua_function_name(&function);
+
+    let args = function.generate_mlua_args()?;
+    let body = function.generate_mlua_body(proxied_type_path)?;
     Ok(quote_spanned! {body.span()=>
-        #method_documentation_calls
-        #container_ident.#tealr_function(#signature, #closure);
+        #(#method_documentation_calls);*
+        #container_ident.#tealr_function(#signature,|#args| {
+            #body
+        });
+    })
+}
+
+/// Same as generate_mlua_registration_code but for composite functions
+fn generate_mlua_registration_code_composite(
+    container_ident: Ident,
+    proxied_type_path: &Path,
+    functions: CompositeFunction,
+) -> darling::Result<proc_macro2::TokenStream> {
+    let tealr = quote!(bevy_mod_scripting_lua::tealr::mlu);
+    let mut method_documentation_calls = Vec::default();
+    let first = functions.functions.first();
+    // take the first functions for function signature from the composite
+    let tealr_function = format_ident!(
+        "{}",
+        first.attrs.kind.get_tealr_function(),
+        span = first.span
+    );
+    let signature = generate_mlua_function_name(first);
+    let (main_arg_names, main_arg_types) = first
+        .get_other_arguments()?
+        .map(|a| (a.name.clone(), quote!(#tealr::mlua::Value)))
+        .unzip::<_, _, Vec<_>, Vec<_>>();
+
+    let dispatchers =
+        functions
+            .functions
+            .iter()
+            .map(|function| {
+                // this is much easier, receivers need special treatment on mlua side
+                // function args are treated equally, we just need a union for lhs and rhs then to convert those args and
+                // pass dispatch them to the appropriate function
+                if function.attrs.kind.expects_receiver() || function.attrs.raw.is_present() {
+                    return Err(syn::Error::new(
+                        function.span,
+                        "Composite functions with receivers are not supported, use a function instead",
+                    ));
+                }
+
+                method_documentation_calls.extend(function.attrs.doc.iter().map(
+                    |tkns| quote_spanned!(function.span=>#container_ident.document_type(#tkns);),
+                ));
+
+                let (arg_names, arg_types) = function
+                    .sig
+                    .inputs
+                    .iter()
+                    .map(Arg::arg_signature)
+                    .unzip::<_, _, Vec<_>, Vec<_>>();
+                let body = function.generate_mlua_body(proxied_type_path)?;
+                Ok(quote_spanned!(function.span=>
+                    match (#(<#arg_types as #tealr::mlua::FromLua>::from_lua(#main_arg_names.clone(), ctxt)),*) {
+                        (#(Ok(#arg_names)),*) => return {
+                            #body
+                        },
+                        _ => (),
+                    };
+                ))
+            })
+            .collect::<syn::Result<Vec<_>>>()?;
+
+    // let (variant_idents, variant_types) = unique_types.iter().unzip();
+    // let composite_id = Ident::new(&functions.id, first.span);
+    Ok(quote_spanned! {first.span=>
+        // bevy_script_api::impl_tealr_any_union!(#composite_id = #(#variant_idents: #variant_types),*)
+        #(#method_documentation_calls)*
+        #container_ident.#tealr_function(#signature,|ctxt, (#(#main_arg_names),*) : (#(#main_arg_types),*)| {
+            #(#dispatchers)*
+            Err(#tealr::mlua::Error::RuntimeError(
+                format!("Function `{}` does has no overloaded version accepting argument types: `{}`",
+                    #signature,
+                    vec![#(#main_arg_names.type_name()),*].join(", ")
+                    )
+                )
+            )
+        });
     })
 }
 
@@ -185,7 +301,6 @@ pub fn impl_lua_proxy(input: TokenStream) -> TokenStream {
         Ok(v) => v,
         Err(e) => return darling::Error::write_errors(e).into(),
     };
-
     if meta.proxy_name.is_some() {
         // throw error
         return syn::Error::new(
@@ -199,7 +314,7 @@ pub fn impl_lua_proxy(input: TokenStream) -> TokenStream {
     let proxied_type_path: syn::Path = meta.remote.unwrap_or(meta.ident.clone().into());
     let proxied_type_str = proxied_type_path.segments.last().unwrap().ident.to_string();
     let proxy_type_ident = format_ident!("{PROXY_PREFIX}{}", &meta.ident);
-    let tealr = quote!(bevy_mod_scripting_lua::tealr);
+    let tealr = quote!(bevy_mod_scripting_lua::tealr::mlu);
 
     // optional clone extensions
     let opt_with_clone = meta
@@ -212,12 +327,12 @@ pub fn impl_lua_proxy(input: TokenStream) -> TokenStream {
     let opt_from_lua_proxy = meta.derive.clone.is_present().then_some(
         quote_spanned!{derive_input.span()=>
             impl bevy_script_api::lua::FromLuaProxy<'_> for #proxied_type_path {
-                fn from_lua_proxy<'lua>(lua_value: #tealr::mlu::mlua::Value<'lua>, _: &'lua #tealr::mlu::mlua::Lua) -> #tealr::mlu::mlua::Result<Self> {
-                    if let #tealr::mlu::mlua::Value::UserData(ud) = lua_value{
+                fn from_lua_proxy<'lua>(lua_value: #tealr::mlua::Value<'lua>, _: &'lua #tealr::mlua::Lua) -> #tealr::mlua::Result<Self> {
+                    if let #tealr::mlua::Value::UserData(ud) = lua_value{
                         let wrapper = ud.borrow::<#proxy_type_ident>()?;
                         Ok(std::ops::Deref::deref(&wrapper).inner()?)
                     } else {
-                        Err(#tealr::mlu::mlua::Error::FromLuaConversionError{
+                        Err(#tealr::mlua::Error::FromLuaConversionError{
                             from: "Value",
                             to: #proxied_type_str,
                             message: None
@@ -285,16 +400,68 @@ pub fn impl_lua_proxy(input: TokenStream) -> TokenStream {
     let mut errors = darling::Error::accumulator();
 
     // generate both tealr documentation and instantiations of functions and field getters/setters
-    let methods = meta
+    let mut methods = meta
         .functions
         .0
         .into_iter()
-        .map(|v| errors.handle_in(|| generate_mlua_registration_code(&proxied_type_path, v)))
+        .filter_map(|v| {
+            errors
+                .handle_in(|| build_function(&proxied_type_path, v))
+                .flatten()
+        })
         .collect::<Vec<_>>();
+
+    let composites = extract_composite_functions(&mut methods)
+        .into_iter()
+        .flat_map(|function| {
+            errors.handle_in(|| {
+                generate_mlua_registration_code_composite(
+                    format_ident!("methods", span = function.functions.first().span),
+                    &proxied_type_path,
+                    function,
+                )
+            })
+        })
+        .collect::<Vec<_>>();
+    // panic!(
+    //     "{}",
+    //     composites.into_iter().collect::<proc_macro2::TokenStream>()
+    // );
+    // for methods, allow composite functions with combined signatures and runtime dispatch based on type
 
     let fields = field_methods
         .into_iter()
-        .map(|v| errors.handle_in(|| generate_mlua_registration_code(&proxied_type_path, v)))
+        .flat_map(|v| {
+            errors
+                .handle_in(|| build_function(&proxied_type_path, v))
+                .flatten()
+        })
+        .collect::<Vec<_>>();
+
+    let methods = methods
+        .into_iter()
+        .map(|function| {
+            errors.handle_in(|| {
+                generate_mlua_registration_code(
+                    format_ident!("methods", span = function.span),
+                    &proxied_type_path,
+                    function,
+                )
+            })
+        })
+        .collect::<Vec<_>>();
+
+    let fields = fields
+        .into_iter()
+        .map(|function| {
+            errors.handle_in(|| {
+                generate_mlua_registration_code(
+                    format_ident!("fields", span = function.span),
+                    &proxied_type_path,
+                    function,
+                )
+            })
+        })
         .collect::<Vec<_>>();
 
     // stop if any errors so far
@@ -315,32 +482,33 @@ pub fn impl_lua_proxy(input: TokenStream) -> TokenStream {
         #[automatically_derived]
         #[allow(unused_parens, unused_braces, unused_mut, unused_variables)]
         #[allow(clippy::all)]
-        impl #tealr::mlu::TealData for #proxy_type_ident {
-            fn add_methods<'lua, T: #tealr::mlu::TealDataMethods<'lua, Self>>(methods: &mut T) {
+        impl #tealr::TealData for #proxy_type_ident {
+            fn add_methods<'lua, T: #tealr::TealDataMethods<'lua, Self>>(methods: &mut T) {
                 #(#type_level_document_calls)*
                 #(#methods)*
+                #(#composites)*
             }
 
-            fn add_fields<'lua, T: #tealr::mlu::TealDataFields<'lua, Self>>(fields: &mut T) {
+            fn add_fields<'lua, T: #tealr::TealDataFields<'lua, Self>>(fields: &mut T) {
                 #(#fields)*
             }
         }
 
         #[allow(clippy::all, unused_variables)]
         impl bevy_script_api::lua::LuaProxyable for #proxied_type_path {
-            fn ref_to_lua<'lua>(self_ : bevy_script_api::script_ref::ScriptRef, lua: &'lua #tealr::mlu::mlua::Lua) -> #tealr::mlu::mlua::Result<#tealr::mlu::mlua::Value<'lua>> {
-                <#proxy_type_ident as #tealr::mlu::mlua::ToLua>::to_lua(#proxy_type_ident::new_ref(self_),lua)
+            fn ref_to_lua<'lua>(self_ : bevy_script_api::script_ref::ScriptRef, lua: &'lua #tealr::mlua::Lua) -> #tealr::mlua::Result<#tealr::mlua::Value<'lua>> {
+                <#proxy_type_ident as #tealr::mlua::ToLua>::to_lua(#proxy_type_ident::new_ref(self_),lua)
             }
 
-            fn apply_lua<'lua>(self_ : &mut bevy_script_api::script_ref::ScriptRef, lua: &'lua #tealr::mlu::mlua::Lua, new_val: #tealr::mlu::mlua::Value<'lua>) -> #tealr::mlu::mlua::Result<()> {
-                if let #tealr::mlu::mlua::Value::UserData(v) = new_val {
+            fn apply_lua<'lua>(self_ : &mut bevy_script_api::script_ref::ScriptRef, lua: &'lua #tealr::mlua::Lua, new_val: #tealr::mlua::Value<'lua>) -> #tealr::mlua::Result<()> {
+                if let #tealr::mlua::Value::UserData(v) = new_val {
                     let other = v.borrow::<#proxy_type_ident>()?;
                     let other = &other;
 
                     other.apply_self_to_base(self_)?;
                     Ok(())
                 } else {
-                    Err(#tealr::mlu::mlua::Error::RuntimeError(
+                    Err(#tealr::mlua::Error::RuntimeError(
                         "Error in assigning to custom user data".to_owned(),
                     ))
                 }
@@ -349,8 +517,8 @@ pub fn impl_lua_proxy(input: TokenStream) -> TokenStream {
 
         #[allow(clippy::all, unused_variables)]
         impl bevy_script_api::lua::ToLuaProxy<'_> for #proxied_type_path {
-            fn to_lua_proxy<'lua>(self, lua: &'lua #tealr::mlu::mlua::Lua) -> #tealr::mlu::mlua::Result<#tealr::mlu::mlua::Value<'lua>>{
-                <#proxy_type_ident as #tealr::mlu::mlua::ToLua>::to_lua(#proxy_type_ident::new(self),lua)
+            fn to_lua_proxy<'lua>(self, lua: &'lua #tealr::mlua::Lua) -> #tealr::mlua::Result<#tealr::mlua::Value<'lua>>{
+                <#proxy_type_ident as #tealr::mlua::ToLua>::to_lua(#proxy_type_ident::new(self),lua)
             }
         }
 

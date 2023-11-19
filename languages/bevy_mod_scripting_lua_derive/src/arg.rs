@@ -15,7 +15,7 @@ pub struct ArgAttributes {
     pub map: HashMap<Ident, Ident>,
 }
 
-/// Struct for holding argument/output information for functions passed via `functions[..]` meta
+/// Struct for holding argument/output information in functions passed via `functions[..]` meta
 #[derive(Debug)]
 pub struct Arg {
     pub attrs: ArgAttributes,

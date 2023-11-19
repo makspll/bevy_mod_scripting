@@ -1,9 +1,10 @@
 use bevy_mod_scripting_common::input::{VisitSimpleType, SimpleType, IdentifierRenamingVisitor, DuoPath, Reference};
 use darling::{FromMeta, FromAttributes, util::Flag};
-use proc_macro2::Ident;
+use proc_macro2::{Ident, Span};
 use quote::{quote_spanned, quote, ToTokens, format_ident};
 use strum::{Display, EnumString, EnumIter};
 use syn::{Meta, Path, Block, punctuated::Punctuated, Token, LitStr, visit_mut::VisitMut, spanned::Spanned};
+use vec1::Vec1;
 
 use crate::{arg::Arg, signature::Signature, visitor::{LuaTypeConstructorVisitor, LuaSimpleTypeWrapper}, SELF_ALIAS, PROXIED_OUT_ALIAS, PROXY_OUT_ALIAS};
 
@@ -42,11 +43,7 @@ impl FunctionKind {
     pub fn is_field_getter(self) -> bool {
         self == FunctionKind::FieldGetterMethod 
     }
-
-    // fn is_field_setter(self) -> bool {
-    //     self == FunctionKind::FieldSetterMethod 
-    // }
-
+    
     /// Returns true if the mlua closure signature accepts a tuple for general 'Arguments' to the function
     /// I.e. arguments freely passed to the function by the caller. 
     pub fn expects_arguments_tuple(self) -> bool {
@@ -87,6 +84,12 @@ pub struct FunctionAttributes {
     /// a 'Lua' ctxt argument is then expected
     pub raw: Flag,
 
+    /// Marks the function as a composite with the given ID, at least one another function with the same composite
+    /// ID must exist resulting in a combined function being generated. The actual function to dispatch to will be decided based on 
+    /// the types of arguments. If the signature is invalid (i.e. doesn't allow us to dispatch) an error will be thrown
+    #[darling(default)]
+    pub composite: Option<String>,
+
     /// The kind of function to generate on the proxy
     #[darling(default)]
     pub kind: FunctionKind,
@@ -107,6 +110,15 @@ pub struct FunctionAttributes {
 }
 
 
+/// A function which combines the signatures of multiple functions, 
+/// and dispatches to the one which matches the signature if any
+/// Useful for binary operators which can accept many types on both sides
+#[derive(Debug)]
+pub struct CompositeFunction {
+    pub id: String,
+    pub functions: Vec1<Function>
+}
+
 /// A struct corresponding to each function in the functions[...] meta list.
 /// 
 #[derive(Debug)]
@@ -114,7 +126,8 @@ pub struct Function {
     pub name: Ident,
     pub attrs: FunctionAttributes,
     pub sig: Signature,
-    pub default: Option<Block>
+    pub default: Option<Block>,
+    pub span: Span,
 }
 
 impl Function {
@@ -122,12 +135,15 @@ impl Function {
     pub fn new(name: Ident, 
         attrs: FunctionAttributes, 
         default: Option<Block>,
-        sig : Signature) -> darling::Result<Self> {
+        sig : Signature,
+        span: Span
+    ) -> darling::Result<Self> {
         Ok(Self {
             name,
             attrs,
             sig,
             default,
+            span,
         })
     }
 
@@ -135,7 +151,7 @@ impl Function {
     /// Tries to retrieve the receiver argument from functions.
     /// If not expected returns None and Some otherwise.
     /// If the function is of the wrong kind or does not have the correct signature an error is thrown
-    fn self_arg(&self) -> syn::Result<Option<&Arg>> {
+    pub fn self_arg(&self) -> syn::Result<Option<&Arg>> {
         if self.attrs.kind.expects_receiver() {
             self.get_self_arg().map(Option::Some)
         } else {
@@ -144,7 +160,7 @@ impl Function {
     }
 
     /// Returns an error if self arg is not there and returns it otherwise
-    fn get_self_arg(&self) -> syn::Result<&Arg> {
+    pub fn get_self_arg(&self) -> syn::Result<&Arg> {
         self.sig.inputs
             .first()
             .ok_or_else(|| 
@@ -154,7 +170,7 @@ impl Function {
 
     /// Tries to retrieve the context argument from raw functions.
     /// If the function is not raw or doesn't have a correct signature an error is thrown
-    fn ctxt_arg(&self) -> syn::Result<Option<&Arg>> {
+    pub fn ctxt_arg(&self) -> syn::Result<Option<&Arg>> {
 
         if self.attrs.raw.is_present() {
             self.get_ctxt_arg().map(Option::Some)
@@ -164,7 +180,7 @@ impl Function {
     }
 
     /// Returns an error if no context argument is found in the correct place or returns it otherwise
-    fn get_ctxt_arg(&self) -> syn::Result<&Arg> {
+    pub fn get_ctxt_arg(&self) -> syn::Result<&Arg> {
         let ctxt_idx = if self.attrs.kind.expects_receiver() {1} else {0};
         self.sig.inputs
             .get(ctxt_idx)
@@ -175,7 +191,7 @@ impl Function {
     /// If they are expected, otherwise returns None.
     /// If arguments are expected but none are present Some(vec![]) is returned
     /// If input vec is shorter than expected, i.e. if the receiver should be there but isn't returns an Err
-    fn other_arguments(&self) -> syn::Result<Option<impl Iterator<Item=&Arg>>> {
+    pub fn other_arguments(&self) -> syn::Result<Option<impl Iterator<Item=&Arg>>> {
         if self.attrs.kind.expects_arguments_tuple() {
             self.get_other_arguments().map(Option::Some)
         } else {
@@ -183,7 +199,7 @@ impl Function {
         }
     }
 
-    fn get_other_arguments(&self) -> syn::Result<impl Iterator<Item=&Arg>> {
+    pub fn get_other_arguments(&self) -> syn::Result<impl Iterator<Item=&Arg>> {
         let other_args_idx = self.attrs.kind.expects_receiver() as usize 
         + self.attrs.raw.is_present() as usize;
 
@@ -228,6 +244,7 @@ impl Function {
             .collect::<Punctuated::<Option<proc_macro2::TokenStream>, Token![,]>>()
             .to_token_stream())
     }
+
 
     /// Takes all the argument identifiers passed into the function, generates assignments which shadow the original
     /// identifiers but modifies the parameter types if required by unpacking proxies. This is done via `.inner` calls on proxy wrappers
