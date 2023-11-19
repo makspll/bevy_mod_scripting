@@ -360,22 +360,25 @@ impl<T: Asset> Script<T> {
         event_writer: &mut EventWriter<ScriptLoaded>,
     ) {
         debug!("reloading script {}", script.id);
+
         // retrieve owning entity
-        let entity = contexts.script_owner(script.id()).unwrap();
-
-        // remove old context
-        contexts.remove_context(script.id());
-
-        // insert new re-loaded context
-        Self::insert_new_script_context::<H>(
-            host,
-            script,
-            entity,
-            script_assets,
-            providers,
-            contexts,
-            event_writer,
-        );
+        if let Some(entity) = contexts.script_owner(script.id()) {
+            // remove old context
+            contexts.remove_context(script.id());
+            // insert new re-loaded context
+            Self::insert_new_script_context::<H>(
+                host,
+                script,
+                entity,
+                script_assets,
+                providers,
+                contexts,
+                event_writer,
+            );
+        } else {
+            // remove old context
+            contexts.remove_context(script.id());
+        }
     }
 
     /// checks if a script has loaded, and if so loads (`ScriptHost::load_script`),
