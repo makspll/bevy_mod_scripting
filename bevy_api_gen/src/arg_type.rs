@@ -1,3 +1,5 @@
+use std::fmt;
+
 use rustdoc_types::{GenericArg, GenericArgs, Type};
 
 /// A representation of valid argument types
@@ -167,72 +169,6 @@ impl ArgType {
             ArgType::Ref { is_mut: _, ref_ } => ref_.base_ident(),
             ArgType::Self_ { .. } => None,
             ArgType::Generic { base, .. } => base.base_ident(),
-        }
-    }
-}
-
-#[derive(PartialEq, Eq)]
-pub enum ArgWrapperType {
-    Raw,
-    Wrapped,
-    /// in case of `self` argument
-    None,
-}
-
-impl ArgWrapperType {
-    pub fn with_config(self_type: &str, type_: &ArgType, config: &Config) -> Option<Self> {
-        let base_ident = type_.base_ident().unwrap_or(self_type);
-        type_
-            .is_receiver()
-            .then_some(ArgWrapperType::None)
-            .or_else(|| {
-                config
-                    .primitives
-                    .contains(base_ident)
-                    .then_some(ArgWrapperType::Raw)
-            })
-            .or_else(|| {
-                config
-                    .types
-                    .contains_key(base_ident)
-                    .then_some(ArgWrapperType::Wrapped)
-            })
-    }
-}
-
-impl fmt::Display for ArgWrapperType {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        match self {
-            ArgWrapperType::Raw => f.write_str("Raw"),
-            ArgWrapperType::Wrapped => f.write_str("Wrapped"),
-            ArgWrapperType::None => f.write_str("None"),
-        }
-    }
-}
-
-pub struct Arg {
-    pub type_: ArgType,
-    pub wrapper: ArgWrapperType,
-}
-
-impl Arg {
-    pub fn new(type_: ArgType, wrapper: ArgWrapperType) -> Self {
-        Self { type_, wrapper }
-    }
-}
-
-use std::fmt;
-
-use crate::Config;
-impl fmt::Display for Arg {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        let inner = self.type_.to_string();
-
-        match self.wrapper {
-            ArgWrapperType::Raw | ArgWrapperType::Wrapped => {
-                write!(f, "{}({inner})", self.wrapper)
-            }
-            ArgWrapperType::None => f.write_str(&inner),
         }
     }
 }

@@ -1,11 +1,17 @@
 use rustdoc_types::Type;
 
-pub mod arg_validator;
+pub mod arg_type;
 pub mod config;
-pub mod wrapper;
-pub mod writer;
+pub mod cratepath;
+pub mod function_data;
+pub mod item_data;
+pub mod template_data;
+pub mod type_meta;
 
-pub use {arg_validator::*, config::*, wrapper::*, writer::*};
+pub use {
+    arg_type::*, config::*, cratepath::*, function_data::*, item_data::*, template_data::*,
+    type_meta::*,
+};
 
 /// Currently only used for stringifying simple trait names
 pub fn stringify_type(type_: &Type) -> Option<String> {

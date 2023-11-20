@@ -1,6 +1,6 @@
 use rustdoc_types::{Crate, Id, ItemEnum, Visibility};
 
-pub(crate) fn crate_name(crate_: &Crate) -> String {
+pub fn crate_name(crate_: &Crate) -> String {
     crate_
         .index
         .get(&crate_.root)
@@ -11,7 +11,7 @@ pub(crate) fn crate_name(crate_: &Crate) -> String {
         .unwrap()
 }
 
-pub(crate) fn lookup_external_item_crate_source_name(id: &Id, found_in: &Crate) -> String {
+pub fn lookup_external_item_crate_source_name(id: &Id, found_in: &Crate) -> String {
     let crate_id = found_in
         .paths
         .get(id)
@@ -25,11 +25,11 @@ pub(crate) fn lookup_external_item_crate_source_name(id: &Id, found_in: &Crate) 
         .to_owned()
 }
 
-pub(crate) fn lookup_item_crate_source<'a>(id: &'a Id, crates: &'a [Crate]) -> Option<&'a Crate> {
+pub fn lookup_item_crate_source<'a>(id: &'a Id, crates: &'a [Crate]) -> Option<&'a Crate> {
     crates.iter().find(|crate_| crate_.index.contains_key(id))
 }
 
-pub(crate) fn get_path(id: &Id, source: &Crate) -> Option<Vec<Id>> {
+pub fn get_path(id: &Id, source: &Crate) -> Option<Vec<Id>> {
     log::debug!(
         "Trying to find path for item id: `{id:?}` has index entry: `{}` has path entry: `{}`",
         source.index.get(id).is_some(),
@@ -83,7 +83,7 @@ pub(crate) fn get_path(id: &Id, source: &Crate) -> Option<Vec<Id>> {
     None
 }
 
-pub(crate) fn path_to_import(path: Vec<Id>, source: &Crate) -> Vec<String> {
+pub fn path_to_import(path: Vec<Id>, source: &Crate) -> Vec<String> {
     log::debug!(
         "Trying to convert id path to path components: `{path:?}` with names: [{:?}] in crate: `{}`",
         path.iter()

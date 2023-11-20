@@ -1,5 +1,3 @@
-use std::collections::HashSet;
-
 use clap::Parser;
 use indexmap::{IndexMap, IndexSet};
 use rustdoc_types::{Crate, Item, ItemEnum, Visibility};
@@ -34,10 +32,10 @@ pub struct Args {
 #[derive(Serialize, Deserialize, Debug)]
 pub struct Config {
     #[serde(skip_deserializing, default)]
-    pub types: IndexMap<String, Newtype>,
+    pub types: IndexMap<String, NewtypeConfig>,
 
     #[serde(rename = "types")]
-    pub types_: Vec<Newtype>,
+    pub types_: Vec<NewtypeConfig>,
 
     pub imports: String,
     pub other: String,
@@ -47,59 +45,15 @@ pub struct Config {
     /// Describes the set of non generic things which are representible
     /// as simple lua types and don't need UserData proxies
     pub primitives: IndexSet<String>,
-
-    pub manual_lua_types: Vec<ManualLuaType>,
-}
-
-#[derive(Serialize, Deserialize, Debug)]
-pub struct ManualLuaType {
-    pub name: String,
-
-    /// whether or not to exclude this type from the type walker list
-    #[serde(default)]
-    pub dont_process: bool,
-
-    /// the name exposed to scripts as global
-    #[serde(default)]
-    pub proxy_name: String,
-
-    /// whether or not to include global proxy
-    #[serde(default)]
-    pub include_global_proxy: bool,
-
-    /// whether or not to use a dummy instance (DummyTypeName)
-    #[serde(default)]
-    pub use_dummy_proxy: bool,
 }
 
 #[derive(Serialize, Deserialize, Debug, Hash, PartialEq, Eq)]
-pub struct Newtype {
+pub struct NewtypeConfig {
     #[serde(rename = "type")]
     pub type_: String,
 
-    /// Override type-level docstring
-    pub doc: Option<String>,
-
     #[serde(default)]
     pub source: Source,
-
-    #[serde(default)]
-    pub lua_methods: Vec<String>,
-
-    #[serde(default)]
-    pub derive_flags: Vec<String>,
-
-    #[serde(default)]
-    pub import_path: String,
-
-    #[serde(default)]
-    pub traits: Vec<TraitMethods>,
-}
-
-#[derive(Serialize, Deserialize, Debug, PartialEq, Eq, Hash, Default)]
-pub struct TraitMethods {
-    pub name: String,
-    pub import_path: String,
 }
 
 #[derive(Serialize, Deserialize, Debug, PartialEq, Eq, Hash)]
@@ -111,7 +65,7 @@ impl Default for Source {
     }
 }
 
-impl Newtype {
+impl NewtypeConfig {
     /// Returns true if this Type:
     /// - describes the given item element
     /// - if the element is fully described in the source crate
