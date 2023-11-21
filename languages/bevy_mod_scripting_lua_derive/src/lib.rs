@@ -21,7 +21,7 @@ pub(crate) mod signature;
 pub(crate) mod visitor;
 
 const SELF_ALIAS: &str = "_self";
-const PROXIED_OUT_ALIAS: &str = "__proxied_out";
+const RAW_OUT_ALIAS: &str = "__proxied_out";
 const PROXY_OUT_ALIAS: &str = "__proxy_out";
 const PROXY_PREFIX: &str = "Lua";
 const VALID_META_METHODS: [&str; 27] = [
@@ -158,23 +158,26 @@ fn build_function(
 }
 
 /// generates either the string function name or the MetaMethod type path depending if it's a valid meta method
-fn generate_mlua_function_name(function: &Function) -> proc_macro2::TokenStream {
+fn generate_mlua_function_name(function: &Function) -> syn::Result<proc_macro2::TokenStream> {
     let function_name = &function.name;
-    let tealr = quote!(bevy_mod_scripting_lua::tealr);
-    function
-        .attrs
-        .kind
-        .is_meta()
-        .then(|| {
-            // check is valid meta method if not use custom name
-            if VALID_META_METHODS.contains(&function_name.to_string().as_str()) {
-                quote!(#tealr::mlua::MetaMethod::#function_name)
-            } else {
-                let std_string = function_name.to_string();
-                quote!(#tealr::mlua::MetaMethod::Custom(#std_string.to_string()))
-            }
-        })
-        .unwrap_or_else(|| function_name.to_string().to_token_stream())
+    let tealr = quote!(bevy_mod_scripting_lua::tealr::mlu::mlua);
+    if function.attrs.kind.is_meta() {
+        let metamethod = function.attrs.metamethod.as_ref().ok_or_else(|| {
+            syn::Error::new(
+                function.span,
+                "Missing `metamethod` lua proxy attribute, required for meta functions.",
+            )
+        })?;
+        // check is valid meta method if not use custom name
+        if VALID_META_METHODS.contains(&metamethod.to_string().as_str()) {
+            Ok(quote!(#tealr::MetaMethod::#metamethod))
+        } else {
+            let std_string = metamethod.to_string();
+            Ok(quote!(#tealr::MetaMethod::Custom(#std_string.to_string())))
+        }
+    } else {
+        Ok(function_name.to_string().to_token_stream())
+    }
 }
 
 /// Given a function with correct meta and the name of the proxied type will generate mlua statement
@@ -205,7 +208,7 @@ fn generate_mlua_registration_code(
         function.attrs.kind.get_tealr_function(),
         span = function.span
     );
-    let signature = generate_mlua_function_name(&function);
+    let signature = generate_mlua_function_name(&function)?;
 
     let args = function.generate_mlua_args()?;
     let body = function.generate_mlua_body(proxied_type_path)?;
@@ -232,7 +235,7 @@ fn generate_mlua_registration_code_composite(
         first.attrs.kind.get_tealr_function(),
         span = first.span
     );
-    let signature = generate_mlua_function_name(first);
+    let signature = generate_mlua_function_name(first)?;
     let (main_arg_names, main_arg_types) = first
         .get_other_arguments()?
         .map(|a| (a.name.clone(), quote!(#tealr::mlua::Value)))
@@ -266,8 +269,11 @@ fn generate_mlua_registration_code_composite(
                 let body = function.generate_mlua_body(proxied_type_path)?;
                 Ok(quote_spanned!(function.span=>
                     match (#(<#arg_types as #tealr::mlua::FromLua>::from_lua(#main_arg_names.clone(), ctxt)),*) {
-                        (#(Ok(#arg_names)),*) => return {
-                            #body
+                        (#(Ok(#arg_names)),*) => {
+                            let out = {
+                                #body
+                            };
+                            return out.and_then(|out| #tealr::mlua::ToLua::to_lua(out, ctxt))
                         },
                         _ => (),
                     };
@@ -277,20 +283,21 @@ fn generate_mlua_registration_code_composite(
 
     // let (variant_idents, variant_types) = unique_types.iter().unzip();
     // let composite_id = Ident::new(&functions.id, first.span);
-    Ok(quote_spanned! {first.span=>
+    let composite = quote_spanned! {first.span=>
         // bevy_script_api::impl_tealr_any_union!(#composite_id = #(#variant_idents: #variant_types),*)
         #(#method_documentation_calls)*
         #container_ident.#tealr_function(#signature,|ctxt, (#(#main_arg_names),*) : (#(#main_arg_types),*)| {
             #(#dispatchers)*
             Err(#tealr::mlua::Error::RuntimeError(
-                format!("Function `{}` does has no overloaded version accepting argument types: `{}`",
+                format!("Function `{}` has no overloaded version accepting argument types: `{}`",
                     #signature,
                     vec![#(#main_arg_names.type_name()),*].join(", ")
                     )
                 )
             )
         });
-    })
+    };
+    Ok(composite)
 }
 
 #[proc_macro_derive(LuaProxy, attributes(lua, proxy))]

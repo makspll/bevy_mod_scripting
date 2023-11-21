@@ -1,4 +1,4 @@
-use std::fmt;
+use std::{error::Error, fmt};
 
 use rustdoc_types::{GenericArg, GenericArgs, Type};
 
@@ -9,6 +9,10 @@ pub enum ArgType {
     ///
     /// Valid types right now follow the following syntax:
     /// `(&)? (mut)? ident:ident`
+    AssociatedType {
+        on: Box<ArgType>,
+        name: String,
+    },
     Self_ {
         in_receiver_position: bool,
     },
@@ -62,14 +66,18 @@ impl fmt::Display for ArgType {
                 }
                 f.write_str(">")
             }
+            ArgType::AssociatedType { on, name } => {
+                f.write_str("<")?;
+                on.fmt(f)?;
+                f.write_str("::")?;
+                f.write_str(name)
+            }
         }
     }
 }
 
-impl TryFrom<(bool, &Type)> for ArgType {
-    type Error = String;
-
-    fn try_from((is_receiver, value): (bool, &Type)) -> Result<Self, Self::Error> {
+impl ArgType {
+    pub fn try_new(is_receiver: bool, value: &Type) -> Result<Self, String> {
         match value {
             Type::ResolvedPath(path) => {
                 let mut processed_args = Vec::default();
@@ -79,7 +87,7 @@ impl TryFrom<(bool, &Type)> for ArgType {
                         for generic in args {
                             match generic {
                                 GenericArg::Type(type_) => {
-                                    processed_args.push((is_receiver, type_).try_into()?)
+                                    processed_args.push(ArgType::try_new(is_receiver, type_)?)
                                 }
                                 _ => {
                                     return Err(
@@ -95,7 +103,7 @@ impl TryFrom<(bool, &Type)> for ArgType {
                         return Err("Parenthesised generics are not supported".to_owned());
                     }
                 }
-                let base = (is_receiver, &Type::Primitive(path.name.to_string())).try_into()?;
+                let base = ArgType::try_new(is_receiver, &Type::Primitive(path.name.to_string()))?;
                 if let base @ ArgType::Base(_) = base {
                     if !processed_args.is_empty() {
                         Ok(Self::Generic {
@@ -120,9 +128,15 @@ impl TryFrom<(bool, &Type)> for ArgType {
             }
             Type::BorrowedRef { mutable, type_, .. } => Ok(Self::Ref {
                 is_mut: *mutable,
-                ref_: Box::new((is_receiver, type_.as_ref()).try_into()?),
+                ref_: Box::new(ArgType::try_new(is_receiver, type_.as_ref())?),
             }),
-            _ => Err("ArgType is not supported".to_owned()),
+            Type::QualifiedPath {
+                name, self_type, ..
+            } => Ok(Self::AssociatedType {
+                on: Box::new(ArgType::try_new(is_receiver, self_type.as_ref())?),
+                name: name.to_owned(),
+            }),
+            _ => Err(format!("ArgType is not supported: `{:?}`", value)),
         }
     }
 }
@@ -153,22 +167,64 @@ impl ArgType {
         }
     }
 
+    /// Returns true for Self/self arguments both in receiver and non receiver positions
     pub fn is_contextual(&self) -> bool {
         match self {
             ArgType::Self_ { .. } => true,
-            ArgType::Generic { base, .. } => base.is_receiver(),
-            ArgType::Ref { ref_, .. } => ref_.is_receiver(),
+            ArgType::Generic { base, .. } => base.is_contextual(),
+            ArgType::Ref { ref_, .. } => ref_.is_contextual(),
             _ => false,
         }
     }
 
-    /// Retrieves the base ident if this type is resolved otherwise returns None (i.e. in the case of a self receiver)
+    pub fn is_associated_type(&self) -> bool {
+        match self {
+            ArgType::AssociatedType { on, name } => true,
+            ArgType::Self_ {
+                in_receiver_position,
+            } => false,
+            ArgType::Base(_) => false,
+            ArgType::Generic { base, args } => base.is_associated_type(),
+            ArgType::Ref { is_mut, ref_ } => ref_.is_associated_type(),
+        }
+    }
+
+    /// Retrieves the base ident if this type is resolved otherwise returns None (i.e. in the case of a self receiver or an associated type)
     pub fn base_ident(&self) -> Option<&str> {
         match self {
             ArgType::Base(b) => Some(b),
             ArgType::Ref { is_mut: _, ref_ } => ref_.base_ident(),
             ArgType::Self_ { .. } => None,
             ArgType::Generic { base, .. } => base.base_ident(),
+            ArgType::AssociatedType { .. } => None,
+        }
+    }
+
+    pub fn has_outer_ref(&self) -> bool {
+        matches!(self, ArgType::Ref { .. })
+    }
+
+    pub fn map_associated_types<F>(self, f: &F) -> Self
+    where
+        F: Fn(Box<ArgType>, String) -> Option<Self>,
+    {
+        match self {
+            ArgType::AssociatedType { on, name } => {
+                f(on.clone(), name.clone()).unwrap_or(ArgType::AssociatedType { on, name })
+            }
+            ArgType::Self_ { .. } => self,
+            ArgType::Base(_) => self,
+            ArgType::Generic { base, args } => ArgType::Generic {
+                base: Box::new(base.map_associated_types(f)),
+                args: args
+                    .into_iter()
+                    .map(|a| a.map_associated_types(f))
+                    .collect(),
+            },
+            ArgType::Ref { ref_, is_mut } => ArgType::Ref {
+                ref_: Box::new(ref_.map_associated_types(f)),
+                is_mut,
+            },
         }
     }
 }

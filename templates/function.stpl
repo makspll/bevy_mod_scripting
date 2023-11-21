@@ -9,6 +9,9 @@ r#"
         .replace_prefix("glam", "bevy::math")
         .to_string() %>", <%
 %><% } %><%
+%><% if let Some(op) = function.operator { %><%
+%>composite="<%- op.impl_name()%>", metamethod=<%- op.function_name()%>, <%
+%><% } %><%
 %><% if function.output.as_ref().is_some_and(|output| output.is_proxied) { %><%
     %>output(proxy)<%
 %><% } %>)]

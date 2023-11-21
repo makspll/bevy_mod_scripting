@@ -17,17 +17,33 @@ remote="<%- item.import_path
     .replace_prefix("glam", "bevy::math")
     .to_string() %>",
 functions[
-    <% for (name, function) in &item.functions { %>
-    <% include!("function.stpl"); %>,
+    <% for (name, functions) in &item.functions { %>
+        <% for function in functions { %>
+            <% // filter our functions which have proxy args without Clone impls
+                let mut proxy_arg_items = function.args.iter().filter_map(|nametype| {
+                    if nametype.is_proxied {
+                        Some(nametype.type_.base_ident().map(|base| items.get(base).unwrap()).unwrap_or(item))
+                    } else {
+                        None
+                    }
+                });
+            %>
+            <%#  TODO: future versions of mlua might not require Clone on all arguments as FromLua is detached from UserData %>
+            <% if proxy_arg_items.all(|item| item.implemented_traits.contains("Clone")){ %>
+                <% include!("function.stpl"); %>,
+            <% } else { %>
+                <% log::info!("template-side skipping function : `{}` in type `{}`", name, item.import_path.to_string()); %>
+            <% } %>
+        <% } %>
     <% } %>
 ]
 )]
 
-<% if matches!(item.item_type, ItemType::Struct) { %>
+<% if matches!(item.item_type, crate::ItemType::Struct) { %>
 pub struct <%- item.import_path.components.last().unwrap() %> {
     <% include!("struct_body.stpl"); %>
 }
-<% } else if matches!(item.item_type, ItemType::TupleStruct) { %>
+<% } else if matches!(item.item_type, crate::ItemType::TupleStruct) { %>
 pub struct <%- item.import_path.components.last().unwrap() %> (
     <% include!("struct_body.stpl"); %>
 );

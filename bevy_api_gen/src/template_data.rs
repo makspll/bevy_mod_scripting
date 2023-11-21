@@ -1,10 +1,11 @@
 use std::{error::Error, fmt::Display};
 
+use clap::Arg;
 use indexmap::IndexMap;
-use rustdoc_types::Type;
+use rustdoc_types::{Crate, Item, ItemEnum, Type};
 use sailfish::TemplateOnce;
 
-use crate::{ArgType, Config, ItemData};
+use crate::{ArgType, Config, ItemData, TypeMeta};
 
 /// Struct representing an argument to a function, or a field declaration, Anything with a name and a type reall
 #[derive(Debug)]
@@ -14,11 +15,45 @@ pub struct NameType {
     pub is_proxied: bool,
 }
 
-impl TryFrom<((String, Type), &Config)> for NameType {
-    type Error = Box<dyn Error>;
-
-    fn try_from(((name, type_), config): ((String, Type), &Config)) -> Result<Self, Self::Error> {
-        let type_: ArgType = (name == "self", &type_).try_into()?;
+impl NameType {
+    pub fn try_new(
+        name: String,
+        type_: Type,
+        config: &Config,
+        assoc_types: &[&Item],
+    ) -> Result<Self, Box<dyn Error>> {
+        let mut type_: ArgType = ArgType::try_new(name == "self", &type_)?;
+        if type_.is_associated_type() {
+            log::trace!(
+                "Type `{type_:?}` contains associated type, matching up with `{assoc_types:?}`"
+            );
+            type_ = type_.map_associated_types(&|on_type, name| {
+                if on_type.is_contextual() {
+                    assoc_types
+                        .iter()
+                        .find(|assoc| {
+                            assoc
+                                .name
+                                .as_ref()
+                                .is_some_and(|assoc_name| assoc_name == &name)
+                        })
+                        .and_then(|assoc| {
+                            if let ItemEnum::AssocType { default, .. } = &assoc.inner {
+                                let a = ArgType::try_new(false, default.as_ref()?);
+                                Some(a.ok()?)
+                            } else {
+                                log::info!(
+                                    "Found matching assoc type but of wrong type {:?}",
+                                    assoc
+                                );
+                                None
+                            }
+                        })
+                } else {
+                    None
+                }
+            });
+        }
 
         let is_primitive = type_
             .base_ident()
@@ -29,11 +64,19 @@ impl TryFrom<((String, Type), &Config)> for NameType {
                 && type_
                     .base_ident()
                     .is_some_and(|ident| config.types.contains_key(ident)));
+
         if !is_primitive && !is_proxied {
             return Err(format!(
                 "Type is neither a wrapped type in the config or an allowed primitive: `{type_:?}`"
             )
             .into());
+        }
+
+        match &type_ {
+            ArgType::Ref { ref_, .. } if ref_.has_outer_ref() => {
+                return Err(format!("Type is a double reference: `{type_:?}`").into())
+            }
+            _ => (),
         }
 
         Ok(Self {

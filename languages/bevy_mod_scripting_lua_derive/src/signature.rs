@@ -10,7 +10,7 @@ use syn::{
 
 use crate::{
     arg::{Arg, ArgAttributes},
-    PROXIED_OUT_ALIAS, PROXY_PREFIX, SELF_ALIAS,
+    PROXY_PREFIX, RAW_OUT_ALIAS, SELF_ALIAS,
 };
 
 /// Describes the functional signature of a function from the `functions[..]` list
@@ -32,7 +32,7 @@ impl Signature {
         output_attrs: Vec<Attribute>,
     ) -> darling::Result<Self> {
         // convert output to FnArg
-        let output_arg_name = Ident::new(PROXIED_OUT_ALIAS, sig.output.span());
+        let output_arg_name = Ident::new(RAW_OUT_ALIAS, sig.output.span());
         let span = sig.span();
         // if no return type specified use `()`
         let output_type = match sig.output {

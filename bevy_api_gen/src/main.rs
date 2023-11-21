@@ -1,5 +1,6 @@
 use bevy_api_gen_lib::{
-    ArgType, Args, Config, NewtypeConfig, PrettyWriter, TypeMeta, WRAPPER_PREFIX,
+    get_path, path_to_import, ArgType, Args, Config, ItemData, NewtypeConfig, TemplateData,
+    TypeMeta,
 };
 
 use clap::Parser;
@@ -68,6 +69,7 @@ fn generate_macro_data<'a>(crates: &'a [Crate], config: &'a Config) -> Vec<TypeM
                     let mut self_impl: Option<&Impl> = None;
                     let mut impl_items: IndexMap<&str, Vec<(&Impl, &Item)>> = Default::default();
                     let mut implemented_traits: IndexSet<String> = Default::default();
+                    let wrapped_type = item.name.as_ref().unwrap();
 
                     let impls = match &item.inner {
                         ItemEnum::Struct(s) => &s.impls,
@@ -77,6 +79,20 @@ fn generate_macro_data<'a>(crates: &'a [Crate], config: &'a Config) -> Vec<TypeM
 
                     impls.iter().for_each(|id| {
                         if let ItemEnum::Impl(i) = &source.index.get(id).unwrap().inner {
+                            // filter out impls not for this type
+                            let for_type = ArgType::try_new(false, &i.for_).map_err(|e| {
+                                log::debug!("Ignoring impl block as could not parse type impl block is for: `{e}`")
+                            });
+                            if let Ok(for_) = &for_type {
+                                // TODO: we need a more solid light `Type` enum with proper equality and ease of use
+                                if !for_.base_ident().is_some_and(|base| base == wrapped_type){
+                                    log::debug!("Ignoring impl block as it's not for current type: for: {:?}, current_type: {wrapped_type}, block: {i:#?}", for_.base_ident());
+                                    return
+                                }
+                            } else {
+                                return
+                            }
+
                             match &i.trait_ {
                                 Some(t) => {
                                     implemented_traits.insert(t.name.to_owned());
@@ -85,7 +101,6 @@ fn generate_macro_data<'a>(crates: &'a [Crate], config: &'a Config) -> Vec<TypeM
                             }
                             i.items.iter().for_each(|id| {
                                 let it = source.index.get(id).unwrap();
-
                                 impl_items
                                     .entry(it.name.as_ref().unwrap().as_str())
                                     .or_default()
@@ -103,7 +118,6 @@ fn generate_macro_data<'a>(crates: &'a [Crate], config: &'a Config) -> Vec<TypeM
                     });
                     let path_components = path_to_import(path_components, source);
 
-                    let wrapped_type = item.name.as_ref().unwrap();
                     TypeMeta {
                         wrapped_type,
                         path_components: Cow::Owned(path_components),

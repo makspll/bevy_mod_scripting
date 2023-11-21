@@ -6,7 +6,7 @@ use strum::{Display, EnumString, EnumIter};
 use syn::{Meta, Path, Block, punctuated::Punctuated, Token, LitStr, visit_mut::VisitMut, spanned::Spanned};
 use vec1::Vec1;
 
-use crate::{arg::Arg, signature::Signature, visitor::{LuaTypeConstructorVisitor, LuaSimpleTypeWrapper}, SELF_ALIAS, PROXIED_OUT_ALIAS, PROXY_OUT_ALIAS};
+use crate::{arg::Arg, signature::Signature, visitor::{LuaTypeConstructorVisitor, LuaSimpleTypeWrapper}, SELF_ALIAS, RAW_OUT_ALIAS, PROXY_OUT_ALIAS};
 
 #[derive(Default, FromMeta, Display, EnumString, EnumIter, PartialEq, Eq, Clone, Copy, Debug)]
 #[darling(rename_all="PascalCase")]
@@ -89,6 +89,11 @@ pub struct FunctionAttributes {
     /// the types of arguments. If the signature is invalid (i.e. doesn't allow us to dispatch) an error will be thrown
     #[darling(default)]
     pub composite: Option<String>,
+
+    /// If passed provides the name of the metamethod to use for metamethod based functions
+    /// the name of the function is used to decide what rust function to call in this case
+    #[darling(default)]
+    pub metamethod: Option<Ident>,
 
     /// The kind of function to generate on the proxy
     #[darling(default)]
@@ -445,17 +450,17 @@ impl Function {
     pub fn generate_mlua_body(&self, proxied_type_path: &Path) -> syn::Result<proc_macro2::TokenStream> {
         let unpacked_parameter_declarations = self.generate_mlua_body_unwrapped_parameter_assignments()?;
 
-        let proxied_output_ident = format_ident!("{PROXIED_OUT_ALIAS}", span=self.sig.span);
+        let raw_output_ident = format_ident!("{RAW_OUT_ALIAS}", span=self.sig.span);
         let proxy_output_ident = format_ident!("{PROXY_OUT_ALIAS}", span=self.sig.span);
         
         let raw_output_stmt = if self.attrs.kind.is_field() {
-            self.generate_mlua_body_output_field(&proxied_output_ident)?
+            self.generate_mlua_body_output_field(&raw_output_ident)?
         } else {
-            self.generate_mlua_body_raw_output(&proxied_output_ident, proxied_type_path)?
+            self.generate_mlua_body_raw_output(&raw_output_ident, proxied_type_path)?
         };
 
         // for fields the output is expected to be raw anyway so this will just performa no-op
-        let proxy_output_stmt = self.generate_mlua_body_proxy_output(&proxied_output_ident, &proxy_output_ident)?;
+        let proxy_output_stmt = self.generate_mlua_body_proxy_output(&raw_output_ident, &proxy_output_ident)?;
 
         // determine if we need to wrap the output in an Ok() statement
         let last_stm = match &self.sig.output.type_ {

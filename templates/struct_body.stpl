@@ -4,7 +4,7 @@
         #[lua(output(proxy))]
     <% } %>
 
-    <% if !matches!(item.item_type, ItemType::TupleStruct) { %>
+    <% if !matches!(item.item_type, crate::ItemType::TupleStruct) { %>
     <%- field.name %> : 
     <% } %>
     <% if field.is_proxied { %>
