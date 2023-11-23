@@ -2,10 +2,7 @@ use std::error::Error;
 
 use rustdoc_types::{Crate, Item, ItemEnum};
 
-use crate::{
-    template_data::{ImportPath, NameType},
-    ArgType, Config,
-};
+use crate::{template_data::ImportPath, Config, NameType, ValidType};
 
 #[derive(Clone, Copy)]
 pub enum OperatorType {
@@ -137,7 +134,7 @@ impl FunctionData {
                 // any idx apart from 0, don't want receivers here
                 NameType::try_new("output".to_owned(), type_, config, &assoc_types).and_then(
                     |arg: NameType| {
-                        (!matches!(arg.type_, ArgType::Ref { .. }))
+                        (!matches!(arg.type_, ValidType::Ref { .. }))
                             .then_some(arg)
                             .ok_or("Reference are not supported in output position".into())
                     },
@@ -159,7 +156,7 @@ impl FunctionData {
             .map(|receiver| {
                 if let Some(op) = operator {
                     "MetaFunction".to_owned()
-                } else if matches!(receiver.type_, ArgType::Ref { is_mut, .. } if is_mut) {
+                } else if matches!(receiver.type_, ValidType::Ref { is_mut, .. } if is_mut) {
                     "MutatingMethod".to_owned()
                 } else {
                     "Method".to_owned()

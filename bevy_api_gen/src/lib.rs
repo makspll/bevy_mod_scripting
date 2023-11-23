@@ -1,16 +1,17 @@
 use rustdoc_types::Type;
 
-pub mod arg_type;
 pub mod config;
 pub mod cratepath;
 pub mod function_data;
 pub mod item_data;
+pub mod name_type;
 pub mod template_data;
 pub mod type_meta;
+pub mod valid_type;
 
 pub use {
-    arg_type::*, config::*, cratepath::*, function_data::*, item_data::*, template_data::*,
-    type_meta::*,
+    config::*, cratepath::*, function_data::*, item_data::*, name_type::*, template_data::*,
+    type_meta::*, valid_type::*,
 };
 
 /// Currently only used for stringifying simple trait names

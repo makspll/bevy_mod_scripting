@@ -1,6 +1,6 @@
 use bevy_api_gen_lib::{
-    get_path, path_to_import, ArgType, Args, Config, ItemData, NewtypeConfig, TemplateData,
-    TypeMeta,
+    get_path, path_to_import, Args, Config, ItemData, NewtypeConfig, TemplateData, TypeMeta,
+    ValidType,
 };
 
 use clap::Parser;
@@ -80,7 +80,7 @@ fn generate_macro_data<'a>(crates: &'a [Crate], config: &'a Config) -> Vec<TypeM
                     impls.iter().for_each(|id| {
                         if let ItemEnum::Impl(i) = &source.index.get(id).unwrap().inner {
                             // filter out impls not for this type
-                            let for_type = ArgType::try_new(false, &i.for_).map_err(|e| {
+                            let for_type = ValidType::try_new(false, &i.for_).map_err(|e| {
                                 log::debug!("Ignoring impl block as could not parse type impl block is for: `{e}`")
                             });
                             if let Ok(for_) = &for_type {

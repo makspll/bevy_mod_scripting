@@ -7870,7 +7870,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn xx (self, ) -> bevy::math::f32::Vec2;"#,
             
         
@@ -7880,7 +7880,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn xy (self, ) -> bevy::math::f32::Vec2;"#,
             
         
@@ -7890,7 +7890,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn xz (self, ) -> bevy::math::f32::Vec2;"#,
             
         
@@ -7900,7 +7900,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn yx (self, ) -> bevy::math::f32::Vec2;"#,
             
         
@@ -7910,7 +7910,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn yy (self, ) -> bevy::math::f32::Vec2;"#,
             
         
@@ -7920,7 +7920,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn yz (self, ) -> bevy::math::f32::Vec2;"#,
             
         
@@ -7930,7 +7930,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn zx (self, ) -> bevy::math::f32::Vec2;"#,
             
         
@@ -7940,7 +7940,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn zy (self, ) -> bevy::math::f32::Vec2;"#,
             
         
@@ -7950,7 +7950,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn zz (self, ) -> bevy::math::f32::Vec2;"#,
             
         
@@ -7960,7 +7960,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn xxx (self, ) -> bevy::math::f32::Vec3;"#,
             
         
@@ -7970,7 +7970,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn xxy (self, ) -> bevy::math::f32::Vec3;"#,
             
         
@@ -7980,7 +7980,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn xxz (self, ) -> bevy::math::f32::Vec3;"#,
             
         
@@ -7990,7 +7990,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn xyx (self, ) -> bevy::math::f32::Vec3;"#,
             
         
@@ -8000,7 +8000,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn xyy (self, ) -> bevy::math::f32::Vec3;"#,
             
         
@@ -8010,7 +8010,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn xyz (self, ) -> bevy::math::f32::Vec3;"#,
             
         
@@ -8020,7 +8020,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn xzx (self, ) -> bevy::math::f32::Vec3;"#,
             
         
@@ -8030,7 +8030,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn xzy (self, ) -> bevy::math::f32::Vec3;"#,
             
         
@@ -8040,7 +8040,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn xzz (self, ) -> bevy::math::f32::Vec3;"#,
             
         
@@ -8050,7 +8050,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn yxx (self, ) -> bevy::math::f32::Vec3;"#,
             
         
@@ -8060,7 +8060,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn yxy (self, ) -> bevy::math::f32::Vec3;"#,
             
         
@@ -8070,7 +8070,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn yxz (self, ) -> bevy::math::f32::Vec3;"#,
             
         
@@ -8080,7 +8080,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn yyx (self, ) -> bevy::math::f32::Vec3;"#,
             
         
@@ -8090,7 +8090,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn yyy (self, ) -> bevy::math::f32::Vec3;"#,
             
         
@@ -8100,7 +8100,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn yyz (self, ) -> bevy::math::f32::Vec3;"#,
             
         
@@ -8110,7 +8110,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn yzx (self, ) -> bevy::math::f32::Vec3;"#,
             
         
@@ -8120,7 +8120,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn yzy (self, ) -> bevy::math::f32::Vec3;"#,
             
         
@@ -8130,7 +8130,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn yzz (self, ) -> bevy::math::f32::Vec3;"#,
             
         
@@ -8140,7 +8140,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn zxx (self, ) -> bevy::math::f32::Vec3;"#,
             
         
@@ -8150,7 +8150,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn zxy (self, ) -> bevy::math::f32::Vec3;"#,
             
         
@@ -8160,7 +8160,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn zxz (self, ) -> bevy::math::f32::Vec3;"#,
             
         
@@ -8170,7 +8170,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn zyx (self, ) -> bevy::math::f32::Vec3;"#,
             
         
@@ -8180,7 +8180,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn zyy (self, ) -> bevy::math::f32::Vec3;"#,
             
         
@@ -8190,7 +8190,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn zyz (self, ) -> bevy::math::f32::Vec3;"#,
             
         
@@ -8200,7 +8200,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn zzx (self, ) -> bevy::math::f32::Vec3;"#,
             
         
@@ -8210,7 +8210,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn zzy (self, ) -> bevy::math::f32::Vec3;"#,
             
         
@@ -8220,7 +8220,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn zzz (self, ) -> bevy::math::f32::Vec3;"#,
             
         
@@ -8230,7 +8230,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn xxxx (self, ) -> bevy::math::f32::Vec4;"#,
             
         
@@ -8240,7 +8240,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn xxxy (self, ) -> bevy::math::f32::Vec4;"#,
             
         
@@ -8250,7 +8250,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn xxxz (self, ) -> bevy::math::f32::Vec4;"#,
             
         
@@ -8260,7 +8260,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn xxyx (self, ) -> bevy::math::f32::Vec4;"#,
             
         
@@ -8270,7 +8270,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn xxyy (self, ) -> bevy::math::f32::Vec4;"#,
             
         
@@ -8280,7 +8280,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn xxyz (self, ) -> bevy::math::f32::Vec4;"#,
             
         
@@ -8290,7 +8290,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn xxzx (self, ) -> bevy::math::f32::Vec4;"#,
             
         
@@ -8300,7 +8300,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn xxzy (self, ) -> bevy::math::f32::Vec4;"#,
             
         
@@ -8310,7 +8310,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn xxzz (self, ) -> bevy::math::f32::Vec4;"#,
             
         
@@ -8320,7 +8320,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn xyxx (self, ) -> bevy::math::f32::Vec4;"#,
             
         
@@ -8330,7 +8330,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn xyxy (self, ) -> bevy::math::f32::Vec4;"#,
             
         
@@ -8340,7 +8340,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn xyxz (self, ) -> bevy::math::f32::Vec4;"#,
             
         
@@ -8350,7 +8350,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn xyyx (self, ) -> bevy::math::f32::Vec4;"#,
             
         
@@ -8360,7 +8360,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn xyyy (self, ) -> bevy::math::f32::Vec4;"#,
             
         
@@ -8370,7 +8370,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn xyyz (self, ) -> bevy::math::f32::Vec4;"#,
             
         
@@ -8380,7 +8380,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn xyzx (self, ) -> bevy::math::f32::Vec4;"#,
             
         
@@ -8390,7 +8390,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn xyzy (self, ) -> bevy::math::f32::Vec4;"#,
             
         
@@ -8400,7 +8400,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn xyzz (self, ) -> bevy::math::f32::Vec4;"#,
             
         
@@ -8410,7 +8410,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn xzxx (self, ) -> bevy::math::f32::Vec4;"#,
             
         
@@ -8420,7 +8420,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn xzxy (self, ) -> bevy::math::f32::Vec4;"#,
             
         
@@ -8430,7 +8430,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn xzxz (self, ) -> bevy::math::f32::Vec4;"#,
             
         
@@ -8440,7 +8440,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn xzyx (self, ) -> bevy::math::f32::Vec4;"#,
             
         
@@ -8450,7 +8450,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn xzyy (self, ) -> bevy::math::f32::Vec4;"#,
             
         
@@ -8460,7 +8460,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn xzyz (self, ) -> bevy::math::f32::Vec4;"#,
             
         
@@ -8470,7 +8470,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn xzzx (self, ) -> bevy::math::f32::Vec4;"#,
             
         
@@ -8480,7 +8480,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn xzzy (self, ) -> bevy::math::f32::Vec4;"#,
             
         
@@ -8490,7 +8490,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn xzzz (self, ) -> bevy::math::f32::Vec4;"#,
             
         
@@ -8500,7 +8500,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn yxxx (self, ) -> bevy::math::f32::Vec4;"#,
             
         
@@ -8510,7 +8510,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn yxxy (self, ) -> bevy::math::f32::Vec4;"#,
             
         
@@ -8520,7 +8520,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn yxxz (self, ) -> bevy::math::f32::Vec4;"#,
             
         
@@ -8530,7 +8530,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn yxyx (self, ) -> bevy::math::f32::Vec4;"#,
             
         
@@ -8540,7 +8540,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn yxyy (self, ) -> bevy::math::f32::Vec4;"#,
             
         
@@ -8550,7 +8550,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn yxyz (self, ) -> bevy::math::f32::Vec4;"#,
             
         
@@ -8560,7 +8560,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn yxzx (self, ) -> bevy::math::f32::Vec4;"#,
             
         
@@ -8570,7 +8570,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn yxzy (self, ) -> bevy::math::f32::Vec4;"#,
             
         
@@ -8580,7 +8580,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn yxzz (self, ) -> bevy::math::f32::Vec4;"#,
             
         
@@ -8590,7 +8590,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn yyxx (self, ) -> bevy::math::f32::Vec4;"#,
             
         
@@ -8600,7 +8600,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn yyxy (self, ) -> bevy::math::f32::Vec4;"#,
             
         
@@ -8610,7 +8610,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn yyxz (self, ) -> bevy::math::f32::Vec4;"#,
             
         
@@ -8620,7 +8620,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn yyyx (self, ) -> bevy::math::f32::Vec4;"#,
             
         
@@ -8630,7 +8630,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn yyyy (self, ) -> bevy::math::f32::Vec4;"#,
             
         
@@ -8640,7 +8640,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn yyyz (self, ) -> bevy::math::f32::Vec4;"#,
             
         
@@ -8650,7 +8650,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn yyzx (self, ) -> bevy::math::f32::Vec4;"#,
             
         
@@ -8660,7 +8660,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn yyzy (self, ) -> bevy::math::f32::Vec4;"#,
             
         
@@ -8670,7 +8670,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn yyzz (self, ) -> bevy::math::f32::Vec4;"#,
             
         
@@ -8680,7 +8680,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn yzxx (self, ) -> bevy::math::f32::Vec4;"#,
             
         
@@ -8690,7 +8690,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn yzxy (self, ) -> bevy::math::f32::Vec4;"#,
             
         
@@ -8700,7 +8700,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn yzxz (self, ) -> bevy::math::f32::Vec4;"#,
             
         
@@ -8710,7 +8710,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn yzyx (self, ) -> bevy::math::f32::Vec4;"#,
             
         
@@ -8720,7 +8720,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn yzyy (self, ) -> bevy::math::f32::Vec4;"#,
             
         
@@ -8730,7 +8730,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn yzyz (self, ) -> bevy::math::f32::Vec4;"#,
             
         
@@ -8740,7 +8740,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn yzzx (self, ) -> bevy::math::f32::Vec4;"#,
             
         
@@ -8750,7 +8750,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn yzzy (self, ) -> bevy::math::f32::Vec4;"#,
             
         
@@ -8760,7 +8760,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn yzzz (self, ) -> bevy::math::f32::Vec4;"#,
             
         
@@ -8770,7 +8770,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn zxxx (self, ) -> bevy::math::f32::Vec4;"#,
             
         
@@ -8780,7 +8780,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn zxxy (self, ) -> bevy::math::f32::Vec4;"#,
             
         
@@ -8790,7 +8790,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn zxxz (self, ) -> bevy::math::f32::Vec4;"#,
             
         
@@ -8800,7 +8800,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn zxyx (self, ) -> bevy::math::f32::Vec4;"#,
             
         
@@ -8810,7 +8810,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn zxyy (self, ) -> bevy::math::f32::Vec4;"#,
             
         
@@ -8820,7 +8820,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn zxyz (self, ) -> bevy::math::f32::Vec4;"#,
             
         
@@ -8830,7 +8830,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn zxzx (self, ) -> bevy::math::f32::Vec4;"#,
             
         
@@ -8840,7 +8840,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn zxzy (self, ) -> bevy::math::f32::Vec4;"#,
             
         
@@ -8850,7 +8850,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn zxzz (self, ) -> bevy::math::f32::Vec4;"#,
             
         
@@ -8860,7 +8860,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn zyxx (self, ) -> bevy::math::f32::Vec4;"#,
             
         
@@ -8870,7 +8870,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn zyxy (self, ) -> bevy::math::f32::Vec4;"#,
             
         
@@ -8880,7 +8880,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn zyxz (self, ) -> bevy::math::f32::Vec4;"#,
             
         
@@ -8890,7 +8890,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn zyyx (self, ) -> bevy::math::f32::Vec4;"#,
             
         
@@ -8900,7 +8900,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn zyyy (self, ) -> bevy::math::f32::Vec4;"#,
             
         
@@ -8910,7 +8910,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn zyyz (self, ) -> bevy::math::f32::Vec4;"#,
             
         
@@ -8920,7 +8920,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn zyzx (self, ) -> bevy::math::f32::Vec4;"#,
             
         
@@ -8930,7 +8930,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn zyzy (self, ) -> bevy::math::f32::Vec4;"#,
             
         
@@ -8940,7 +8940,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn zyzz (self, ) -> bevy::math::f32::Vec4;"#,
             
         
@@ -8950,7 +8950,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn zzxx (self, ) -> bevy::math::f32::Vec4;"#,
             
         
@@ -8960,7 +8960,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn zzxy (self, ) -> bevy::math::f32::Vec4;"#,
             
         
@@ -8970,7 +8970,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn zzxz (self, ) -> bevy::math::f32::Vec4;"#,
             
         
@@ -8980,7 +8980,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn zzyx (self, ) -> bevy::math::f32::Vec4;"#,
             
         
@@ -8990,7 +8990,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn zzyy (self, ) -> bevy::math::f32::Vec4;"#,
             
         
@@ -9000,7 +9000,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn zzyz (self, ) -> bevy::math::f32::Vec4;"#,
             
         
@@ -9010,7 +9010,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn zzzx (self, ) -> bevy::math::f32::Vec4;"#,
             
         
@@ -9020,7 +9020,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn zzzy (self, ) -> bevy::math::f32::Vec4;"#,
             
         
@@ -9030,7 +9030,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn zzzz (self, ) -> bevy::math::f32::Vec4;"#,
             
         
@@ -9943,7 +9943,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn xx (self, ) -> bevy::math::f32::Vec2;"#,
             
         
@@ -9953,7 +9953,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn xy (self, ) -> bevy::math::f32::Vec2;"#,
             
         
@@ -9963,7 +9963,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn xz (self, ) -> bevy::math::f32::Vec2;"#,
             
         
@@ -9973,7 +9973,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn yx (self, ) -> bevy::math::f32::Vec2;"#,
             
         
@@ -9983,7 +9983,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn yy (self, ) -> bevy::math::f32::Vec2;"#,
             
         
@@ -9993,7 +9993,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn yz (self, ) -> bevy::math::f32::Vec2;"#,
             
         
@@ -10003,7 +10003,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn zx (self, ) -> bevy::math::f32::Vec2;"#,
             
         
@@ -10013,7 +10013,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn zy (self, ) -> bevy::math::f32::Vec2;"#,
             
         
@@ -10023,7 +10023,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn zz (self, ) -> bevy::math::f32::Vec2;"#,
             
         
@@ -10033,7 +10033,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn xxx (self, ) -> bevy::math::f32::Vec3A;"#,
             
         
@@ -10043,7 +10043,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn xxy (self, ) -> bevy::math::f32::Vec3A;"#,
             
         
@@ -10053,7 +10053,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn xxz (self, ) -> bevy::math::f32::Vec3A;"#,
             
         
@@ -10063,7 +10063,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn xyx (self, ) -> bevy::math::f32::Vec3A;"#,
             
         
@@ -10073,7 +10073,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn xyy (self, ) -> bevy::math::f32::Vec3A;"#,
             
         
@@ -10083,7 +10083,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn xyz (self, ) -> bevy::math::f32::Vec3A;"#,
             
         
@@ -10093,7 +10093,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn xzx (self, ) -> bevy::math::f32::Vec3A;"#,
             
         
@@ -10103,7 +10103,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn xzy (self, ) -> bevy::math::f32::Vec3A;"#,
             
         
@@ -10113,7 +10113,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn xzz (self, ) -> bevy::math::f32::Vec3A;"#,
             
         
@@ -10123,7 +10123,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn yxx (self, ) -> bevy::math::f32::Vec3A;"#,
             
         
@@ -10133,7 +10133,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn yxy (self, ) -> bevy::math::f32::Vec3A;"#,
             
         
@@ -10143,7 +10143,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn yxz (self, ) -> bevy::math::f32::Vec3A;"#,
             
         
@@ -10153,7 +10153,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn yyx (self, ) -> bevy::math::f32::Vec3A;"#,
             
         
@@ -10163,7 +10163,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn yyy (self, ) -> bevy::math::f32::Vec3A;"#,
             
         
@@ -10173,7 +10173,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn yyz (self, ) -> bevy::math::f32::Vec3A;"#,
             
         
@@ -10183,7 +10183,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn yzx (self, ) -> bevy::math::f32::Vec3A;"#,
             
         
@@ -10193,7 +10193,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn yzy (self, ) -> bevy::math::f32::Vec3A;"#,
             
         
@@ -10203,7 +10203,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn yzz (self, ) -> bevy::math::f32::Vec3A;"#,
             
         
@@ -10213,7 +10213,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn zxx (self, ) -> bevy::math::f32::Vec3A;"#,
             
         
@@ -10223,7 +10223,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn zxy (self, ) -> bevy::math::f32::Vec3A;"#,
             
         
@@ -10233,7 +10233,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn zxz (self, ) -> bevy::math::f32::Vec3A;"#,
             
         
@@ -10243,7 +10243,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn zyx (self, ) -> bevy::math::f32::Vec3A;"#,
             
         
@@ -10253,7 +10253,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn zyy (self, ) -> bevy::math::f32::Vec3A;"#,
             
         
@@ -10263,7 +10263,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn zyz (self, ) -> bevy::math::f32::Vec3A;"#,
             
         
@@ -10273,7 +10273,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn zzx (self, ) -> bevy::math::f32::Vec3A;"#,
             
         
@@ -10283,7 +10283,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn zzy (self, ) -> bevy::math::f32::Vec3A;"#,
             
         
@@ -10293,7 +10293,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn zzz (self, ) -> bevy::math::f32::Vec3A;"#,
             
         
@@ -10303,7 +10303,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn xxxx (self, ) -> bevy::math::f32::Vec4;"#,
             
         
@@ -10313,7 +10313,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn xxxy (self, ) -> bevy::math::f32::Vec4;"#,
             
         
@@ -10323,7 +10323,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn xxxz (self, ) -> bevy::math::f32::Vec4;"#,
             
         
@@ -10333,7 +10333,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn xxyx (self, ) -> bevy::math::f32::Vec4;"#,
             
         
@@ -10343,7 +10343,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn xxyy (self, ) -> bevy::math::f32::Vec4;"#,
             
         
@@ -10353,7 +10353,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn xxyz (self, ) -> bevy::math::f32::Vec4;"#,
             
         
@@ -10363,7 +10363,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn xxzx (self, ) -> bevy::math::f32::Vec4;"#,
             
         
@@ -10373,7 +10373,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn xxzy (self, ) -> bevy::math::f32::Vec4;"#,
             
         
@@ -10383,7 +10383,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn xxzz (self, ) -> bevy::math::f32::Vec4;"#,
             
         
@@ -10393,7 +10393,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn xyxx (self, ) -> bevy::math::f32::Vec4;"#,
             
         
@@ -10403,7 +10403,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn xyxy (self, ) -> bevy::math::f32::Vec4;"#,
             
         
@@ -10413,7 +10413,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn xyxz (self, ) -> bevy::math::f32::Vec4;"#,
             
         
@@ -10423,7 +10423,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn xyyx (self, ) -> bevy::math::f32::Vec4;"#,
             
         
@@ -10433,7 +10433,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn xyyy (self, ) -> bevy::math::f32::Vec4;"#,
             
         
@@ -10443,7 +10443,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn xyyz (self, ) -> bevy::math::f32::Vec4;"#,
             
         
@@ -10453,7 +10453,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn xyzx (self, ) -> bevy::math::f32::Vec4;"#,
             
         
@@ -10463,7 +10463,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn xyzy (self, ) -> bevy::math::f32::Vec4;"#,
             
         
@@ -10473,7 +10473,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn xyzz (self, ) -> bevy::math::f32::Vec4;"#,
             
         
@@ -10483,7 +10483,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn xzxx (self, ) -> bevy::math::f32::Vec4;"#,
             
         
@@ -10493,7 +10493,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn xzxy (self, ) -> bevy::math::f32::Vec4;"#,
             
         
@@ -10503,7 +10503,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn xzxz (self, ) -> bevy::math::f32::Vec4;"#,
             
         
@@ -10513,7 +10513,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn xzyx (self, ) -> bevy::math::f32::Vec4;"#,
             
         
@@ -10523,7 +10523,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn xzyy (self, ) -> bevy::math::f32::Vec4;"#,
             
         
@@ -10533,7 +10533,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn xzyz (self, ) -> bevy::math::f32::Vec4;"#,
             
         
@@ -10543,7 +10543,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn xzzx (self, ) -> bevy::math::f32::Vec4;"#,
             
         
@@ -10553,7 +10553,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn xzzy (self, ) -> bevy::math::f32::Vec4;"#,
             
         
@@ -10563,7 +10563,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn xzzz (self, ) -> bevy::math::f32::Vec4;"#,
             
         
@@ -10573,7 +10573,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn yxxx (self, ) -> bevy::math::f32::Vec4;"#,
             
         
@@ -10583,7 +10583,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn yxxy (self, ) -> bevy::math::f32::Vec4;"#,
             
         
@@ -10593,7 +10593,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn yxxz (self, ) -> bevy::math::f32::Vec4;"#,
             
         
@@ -10603,7 +10603,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn yxyx (self, ) -> bevy::math::f32::Vec4;"#,
             
         
@@ -10613,7 +10613,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn yxyy (self, ) -> bevy::math::f32::Vec4;"#,
             
         
@@ -10623,7 +10623,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn yxyz (self, ) -> bevy::math::f32::Vec4;"#,
             
         
@@ -10633,7 +10633,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn yxzx (self, ) -> bevy::math::f32::Vec4;"#,
             
         
@@ -10643,7 +10643,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn yxzy (self, ) -> bevy::math::f32::Vec4;"#,
             
         
@@ -10653,7 +10653,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn yxzz (self, ) -> bevy::math::f32::Vec4;"#,
             
         
@@ -10663,7 +10663,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn yyxx (self, ) -> bevy::math::f32::Vec4;"#,
             
         
@@ -10673,7 +10673,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn yyxy (self, ) -> bevy::math::f32::Vec4;"#,
             
         
@@ -10683,7 +10683,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn yyxz (self, ) -> bevy::math::f32::Vec4;"#,
             
         
@@ -10693,7 +10693,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn yyyx (self, ) -> bevy::math::f32::Vec4;"#,
             
         
@@ -10703,7 +10703,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn yyyy (self, ) -> bevy::math::f32::Vec4;"#,
             
         
@@ -10713,7 +10713,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn yyyz (self, ) -> bevy::math::f32::Vec4;"#,
             
         
@@ -10723,7 +10723,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn yyzx (self, ) -> bevy::math::f32::Vec4;"#,
             
         
@@ -10733,7 +10733,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn yyzy (self, ) -> bevy::math::f32::Vec4;"#,
             
         
@@ -10743,7 +10743,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn yyzz (self, ) -> bevy::math::f32::Vec4;"#,
             
         
@@ -10753,7 +10753,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn yzxx (self, ) -> bevy::math::f32::Vec4;"#,
             
         
@@ -10763,7 +10763,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn yzxy (self, ) -> bevy::math::f32::Vec4;"#,
             
         
@@ -10773,7 +10773,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn yzxz (self, ) -> bevy::math::f32::Vec4;"#,
             
         
@@ -10783,7 +10783,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn yzyx (self, ) -> bevy::math::f32::Vec4;"#,
             
         
@@ -10793,7 +10793,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn yzyy (self, ) -> bevy::math::f32::Vec4;"#,
             
         
@@ -10803,7 +10803,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn yzyz (self, ) -> bevy::math::f32::Vec4;"#,
             
         
@@ -10813,7 +10813,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn yzzx (self, ) -> bevy::math::f32::Vec4;"#,
             
         
@@ -10823,7 +10823,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn yzzy (self, ) -> bevy::math::f32::Vec4;"#,
             
         
@@ -10833,7 +10833,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn yzzz (self, ) -> bevy::math::f32::Vec4;"#,
             
         
@@ -10843,7 +10843,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn zxxx (self, ) -> bevy::math::f32::Vec4;"#,
             
         
@@ -10853,7 +10853,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn zxxy (self, ) -> bevy::math::f32::Vec4;"#,
             
         
@@ -10863,7 +10863,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn zxxz (self, ) -> bevy::math::f32::Vec4;"#,
             
         
@@ -10873,7 +10873,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn zxyx (self, ) -> bevy::math::f32::Vec4;"#,
             
         
@@ -10883,7 +10883,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn zxyy (self, ) -> bevy::math::f32::Vec4;"#,
             
         
@@ -10893,7 +10893,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn zxyz (self, ) -> bevy::math::f32::Vec4;"#,
             
         
@@ -10903,7 +10903,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn zxzx (self, ) -> bevy::math::f32::Vec4;"#,
             
         
@@ -10913,7 +10913,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn zxzy (self, ) -> bevy::math::f32::Vec4;"#,
             
         
@@ -10923,7 +10923,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn zxzz (self, ) -> bevy::math::f32::Vec4;"#,
             
         
@@ -10933,7 +10933,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn zyxx (self, ) -> bevy::math::f32::Vec4;"#,
             
         
@@ -10943,7 +10943,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn zyxy (self, ) -> bevy::math::f32::Vec4;"#,
             
         
@@ -10953,7 +10953,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn zyxz (self, ) -> bevy::math::f32::Vec4;"#,
             
         
@@ -10963,7 +10963,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn zyyx (self, ) -> bevy::math::f32::Vec4;"#,
             
         
@@ -10973,7 +10973,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn zyyy (self, ) -> bevy::math::f32::Vec4;"#,
             
         
@@ -10983,7 +10983,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn zyyz (self, ) -> bevy::math::f32::Vec4;"#,
             
         
@@ -10993,7 +10993,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn zyzx (self, ) -> bevy::math::f32::Vec4;"#,
             
         
@@ -11003,7 +11003,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn zyzy (self, ) -> bevy::math::f32::Vec4;"#,
             
         
@@ -11013,7 +11013,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn zyzz (self, ) -> bevy::math::f32::Vec4;"#,
             
         
@@ -11023,7 +11023,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn zzxx (self, ) -> bevy::math::f32::Vec4;"#,
             
         
@@ -11033,7 +11033,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn zzxy (self, ) -> bevy::math::f32::Vec4;"#,
             
         
@@ -11043,7 +11043,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn zzxz (self, ) -> bevy::math::f32::Vec4;"#,
             
         
@@ -11053,7 +11053,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn zzyx (self, ) -> bevy::math::f32::Vec4;"#,
             
         
@@ -11063,7 +11063,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn zzyy (self, ) -> bevy::math::f32::Vec4;"#,
             
         
@@ -11073,7 +11073,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn zzyz (self, ) -> bevy::math::f32::Vec4;"#,
             
         
@@ -11083,7 +11083,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn zzzx (self, ) -> bevy::math::f32::Vec4;"#,
             
         
@@ -11093,7 +11093,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn zzzy (self, ) -> bevy::math::f32::Vec4;"#,
             
         
@@ -11103,7 +11103,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn zzzz (self, ) -> bevy::math::f32::Vec4;"#,
             
         
@@ -18153,7 +18153,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn xx (self, ) -> bevy::math::f64::DVec2;"#,
             
         
@@ -18163,7 +18163,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn xy (self, ) -> bevy::math::f64::DVec2;"#,
             
         
@@ -18173,7 +18173,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn xz (self, ) -> bevy::math::f64::DVec2;"#,
             
         
@@ -18183,7 +18183,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn yx (self, ) -> bevy::math::f64::DVec2;"#,
             
         
@@ -18193,7 +18193,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn yy (self, ) -> bevy::math::f64::DVec2;"#,
             
         
@@ -18203,7 +18203,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn yz (self, ) -> bevy::math::f64::DVec2;"#,
             
         
@@ -18213,7 +18213,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn zx (self, ) -> bevy::math::f64::DVec2;"#,
             
         
@@ -18223,7 +18223,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn zy (self, ) -> bevy::math::f64::DVec2;"#,
             
         
@@ -18233,7 +18233,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn zz (self, ) -> bevy::math::f64::DVec2;"#,
             
         
@@ -18243,7 +18243,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn xxx (self, ) -> bevy::math::f64::DVec3;"#,
             
         
@@ -18253,7 +18253,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn xxy (self, ) -> bevy::math::f64::DVec3;"#,
             
         
@@ -18263,7 +18263,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn xxz (self, ) -> bevy::math::f64::DVec3;"#,
             
         
@@ -18273,7 +18273,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn xyx (self, ) -> bevy::math::f64::DVec3;"#,
             
         
@@ -18283,7 +18283,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn xyy (self, ) -> bevy::math::f64::DVec3;"#,
             
         
@@ -18293,7 +18293,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn xyz (self, ) -> bevy::math::f64::DVec3;"#,
             
         
@@ -18303,7 +18303,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn xzx (self, ) -> bevy::math::f64::DVec3;"#,
             
         
@@ -18313,7 +18313,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn xzy (self, ) -> bevy::math::f64::DVec3;"#,
             
         
@@ -18323,7 +18323,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn xzz (self, ) -> bevy::math::f64::DVec3;"#,
             
         
@@ -18333,7 +18333,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn yxx (self, ) -> bevy::math::f64::DVec3;"#,
             
         
@@ -18343,7 +18343,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn yxy (self, ) -> bevy::math::f64::DVec3;"#,
             
         
@@ -18353,7 +18353,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn yxz (self, ) -> bevy::math::f64::DVec3;"#,
             
         
@@ -18363,7 +18363,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn yyx (self, ) -> bevy::math::f64::DVec3;"#,
             
         
@@ -18373,7 +18373,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn yyy (self, ) -> bevy::math::f64::DVec3;"#,
             
         
@@ -18383,7 +18383,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn yyz (self, ) -> bevy::math::f64::DVec3;"#,
             
         
@@ -18393,7 +18393,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn yzx (self, ) -> bevy::math::f64::DVec3;"#,
             
         
@@ -18403,7 +18403,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn yzy (self, ) -> bevy::math::f64::DVec3;"#,
             
         
@@ -18413,7 +18413,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn yzz (self, ) -> bevy::math::f64::DVec3;"#,
             
         
@@ -18423,7 +18423,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn zxx (self, ) -> bevy::math::f64::DVec3;"#,
             
         
@@ -18433,7 +18433,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn zxy (self, ) -> bevy::math::f64::DVec3;"#,
             
         
@@ -18443,7 +18443,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn zxz (self, ) -> bevy::math::f64::DVec3;"#,
             
         
@@ -18453,7 +18453,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn zyx (self, ) -> bevy::math::f64::DVec3;"#,
             
         
@@ -18463,7 +18463,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn zyy (self, ) -> bevy::math::f64::DVec3;"#,
             
         
@@ -18473,7 +18473,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn zyz (self, ) -> bevy::math::f64::DVec3;"#,
             
         
@@ -18483,7 +18483,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn zzx (self, ) -> bevy::math::f64::DVec3;"#,
             
         
@@ -18493,7 +18493,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn zzy (self, ) -> bevy::math::f64::DVec3;"#,
             
         
@@ -18503,7 +18503,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn zzz (self, ) -> bevy::math::f64::DVec3;"#,
             
         
@@ -18513,7 +18513,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn xxxx (self, ) -> bevy::math::f64::DVec4;"#,
             
         
@@ -18523,7 +18523,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn xxxy (self, ) -> bevy::math::f64::DVec4;"#,
             
         
@@ -18533,7 +18533,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn xxxz (self, ) -> bevy::math::f64::DVec4;"#,
             
         
@@ -18543,7 +18543,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn xxyx (self, ) -> bevy::math::f64::DVec4;"#,
             
         
@@ -18553,7 +18553,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn xxyy (self, ) -> bevy::math::f64::DVec4;"#,
             
         
@@ -18563,7 +18563,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn xxyz (self, ) -> bevy::math::f64::DVec4;"#,
             
         
@@ -18573,7 +18573,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn xxzx (self, ) -> bevy::math::f64::DVec4;"#,
             
         
@@ -18583,7 +18583,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn xxzy (self, ) -> bevy::math::f64::DVec4;"#,
             
         
@@ -18593,7 +18593,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn xxzz (self, ) -> bevy::math::f64::DVec4;"#,
             
         
@@ -18603,7 +18603,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn xyxx (self, ) -> bevy::math::f64::DVec4;"#,
             
         
@@ -18613,7 +18613,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn xyxy (self, ) -> bevy::math::f64::DVec4;"#,
             
         
@@ -18623,7 +18623,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn xyxz (self, ) -> bevy::math::f64::DVec4;"#,
             
         
@@ -18633,7 +18633,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn xyyx (self, ) -> bevy::math::f64::DVec4;"#,
             
         
@@ -18643,7 +18643,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn xyyy (self, ) -> bevy::math::f64::DVec4;"#,
             
         
@@ -18653,7 +18653,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn xyyz (self, ) -> bevy::math::f64::DVec4;"#,
             
         
@@ -18663,7 +18663,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn xyzx (self, ) -> bevy::math::f64::DVec4;"#,
             
         
@@ -18673,7 +18673,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn xyzy (self, ) -> bevy::math::f64::DVec4;"#,
             
         
@@ -18683,7 +18683,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn xyzz (self, ) -> bevy::math::f64::DVec4;"#,
             
         
@@ -18693,7 +18693,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn xzxx (self, ) -> bevy::math::f64::DVec4;"#,
             
         
@@ -18703,7 +18703,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn xzxy (self, ) -> bevy::math::f64::DVec4;"#,
             
         
@@ -18713,7 +18713,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn xzxz (self, ) -> bevy::math::f64::DVec4;"#,
             
         
@@ -18723,7 +18723,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn xzyx (self, ) -> bevy::math::f64::DVec4;"#,
             
         
@@ -18733,7 +18733,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn xzyy (self, ) -> bevy::math::f64::DVec4;"#,
             
         
@@ -18743,7 +18743,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn xzyz (self, ) -> bevy::math::f64::DVec4;"#,
             
         
@@ -18753,7 +18753,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn xzzx (self, ) -> bevy::math::f64::DVec4;"#,
             
         
@@ -18763,7 +18763,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn xzzy (self, ) -> bevy::math::f64::DVec4;"#,
             
         
@@ -18773,7 +18773,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn xzzz (self, ) -> bevy::math::f64::DVec4;"#,
             
         
@@ -18783,7 +18783,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn yxxx (self, ) -> bevy::math::f64::DVec4;"#,
             
         
@@ -18793,7 +18793,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn yxxy (self, ) -> bevy::math::f64::DVec4;"#,
             
         
@@ -18803,7 +18803,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn yxxz (self, ) -> bevy::math::f64::DVec4;"#,
             
         
@@ -18813,7 +18813,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn yxyx (self, ) -> bevy::math::f64::DVec4;"#,
             
         
@@ -18823,7 +18823,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn yxyy (self, ) -> bevy::math::f64::DVec4;"#,
             
         
@@ -18833,7 +18833,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn yxyz (self, ) -> bevy::math::f64::DVec4;"#,
             
         
@@ -18843,7 +18843,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn yxzx (self, ) -> bevy::math::f64::DVec4;"#,
             
         
@@ -18853,7 +18853,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn yxzy (self, ) -> bevy::math::f64::DVec4;"#,
             
         
@@ -18863,7 +18863,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn yxzz (self, ) -> bevy::math::f64::DVec4;"#,
             
         
@@ -18873,7 +18873,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn yyxx (self, ) -> bevy::math::f64::DVec4;"#,
             
         
@@ -18883,7 +18883,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn yyxy (self, ) -> bevy::math::f64::DVec4;"#,
             
         
@@ -18893,7 +18893,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn yyxz (self, ) -> bevy::math::f64::DVec4;"#,
             
         
@@ -18903,7 +18903,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn yyyx (self, ) -> bevy::math::f64::DVec4;"#,
             
         
@@ -18913,7 +18913,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn yyyy (self, ) -> bevy::math::f64::DVec4;"#,
             
         
@@ -18923,7 +18923,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn yyyz (self, ) -> bevy::math::f64::DVec4;"#,
             
         
@@ -18933,7 +18933,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn yyzx (self, ) -> bevy::math::f64::DVec4;"#,
             
         
@@ -18943,7 +18943,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn yyzy (self, ) -> bevy::math::f64::DVec4;"#,
             
         
@@ -18953,7 +18953,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn yyzz (self, ) -> bevy::math::f64::DVec4;"#,
             
         
@@ -18963,7 +18963,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn yzxx (self, ) -> bevy::math::f64::DVec4;"#,
             
         
@@ -18973,7 +18973,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn yzxy (self, ) -> bevy::math::f64::DVec4;"#,
             
         
@@ -18983,7 +18983,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn yzxz (self, ) -> bevy::math::f64::DVec4;"#,
             
         
@@ -18993,7 +18993,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn yzyx (self, ) -> bevy::math::f64::DVec4;"#,
             
         
@@ -19003,7 +19003,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn yzyy (self, ) -> bevy::math::f64::DVec4;"#,
             
         
@@ -19013,7 +19013,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn yzyz (self, ) -> bevy::math::f64::DVec4;"#,
             
         
@@ -19023,7 +19023,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn yzzx (self, ) -> bevy::math::f64::DVec4;"#,
             
         
@@ -19033,7 +19033,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn yzzy (self, ) -> bevy::math::f64::DVec4;"#,
             
         
@@ -19043,7 +19043,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn yzzz (self, ) -> bevy::math::f64::DVec4;"#,
             
         
@@ -19053,7 +19053,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn zxxx (self, ) -> bevy::math::f64::DVec4;"#,
             
         
@@ -19063,7 +19063,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn zxxy (self, ) -> bevy::math::f64::DVec4;"#,
             
         
@@ -19073,7 +19073,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn zxxz (self, ) -> bevy::math::f64::DVec4;"#,
             
         
@@ -19083,7 +19083,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn zxyx (self, ) -> bevy::math::f64::DVec4;"#,
             
         
@@ -19093,7 +19093,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn zxyy (self, ) -> bevy::math::f64::DVec4;"#,
             
         
@@ -19103,7 +19103,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn zxyz (self, ) -> bevy::math::f64::DVec4;"#,
             
         
@@ -19113,7 +19113,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn zxzx (self, ) -> bevy::math::f64::DVec4;"#,
             
         
@@ -19123,7 +19123,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn zxzy (self, ) -> bevy::math::f64::DVec4;"#,
             
         
@@ -19133,7 +19133,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn zxzz (self, ) -> bevy::math::f64::DVec4;"#,
             
         
@@ -19143,7 +19143,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn zyxx (self, ) -> bevy::math::f64::DVec4;"#,
             
         
@@ -19153,7 +19153,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn zyxy (self, ) -> bevy::math::f64::DVec4;"#,
             
         
@@ -19163,7 +19163,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn zyxz (self, ) -> bevy::math::f64::DVec4;"#,
             
         
@@ -19173,7 +19173,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn zyyx (self, ) -> bevy::math::f64::DVec4;"#,
             
         
@@ -19183,7 +19183,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn zyyy (self, ) -> bevy::math::f64::DVec4;"#,
             
         
@@ -19193,7 +19193,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn zyyz (self, ) -> bevy::math::f64::DVec4;"#,
             
         
@@ -19203,7 +19203,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn zyzx (self, ) -> bevy::math::f64::DVec4;"#,
             
         
@@ -19213,7 +19213,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn zyzy (self, ) -> bevy::math::f64::DVec4;"#,
             
         
@@ -19223,7 +19223,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn zyzz (self, ) -> bevy::math::f64::DVec4;"#,
             
         
@@ -19233,7 +19233,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn zzxx (self, ) -> bevy::math::f64::DVec4;"#,
             
         
@@ -19243,7 +19243,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn zzxy (self, ) -> bevy::math::f64::DVec4;"#,
             
         
@@ -19253,7 +19253,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn zzxz (self, ) -> bevy::math::f64::DVec4;"#,
             
         
@@ -19263,7 +19263,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn zzyx (self, ) -> bevy::math::f64::DVec4;"#,
             
         
@@ -19273,7 +19273,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn zzyy (self, ) -> bevy::math::f64::DVec4;"#,
             
         
@@ -19283,7 +19283,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn zzyz (self, ) -> bevy::math::f64::DVec4;"#,
             
         
@@ -19293,7 +19293,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn zzzx (self, ) -> bevy::math::f64::DVec4;"#,
             
         
@@ -19303,7 +19303,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn zzzy (self, ) -> bevy::math::f64::DVec4;"#,
             
         
@@ -19313,7 +19313,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn zzzz (self, ) -> bevy::math::f64::DVec4;"#,
             
         
@@ -24967,7 +24967,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn xx (self, ) -> bevy::math::i32::IVec2;"#,
             
         
@@ -24977,7 +24977,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn xy (self, ) -> bevy::math::i32::IVec2;"#,
             
         
@@ -24987,7 +24987,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn xz (self, ) -> bevy::math::i32::IVec2;"#,
             
         
@@ -24997,7 +24997,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn yx (self, ) -> bevy::math::i32::IVec2;"#,
             
         
@@ -25007,7 +25007,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn yy (self, ) -> bevy::math::i32::IVec2;"#,
             
         
@@ -25017,7 +25017,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn yz (self, ) -> bevy::math::i32::IVec2;"#,
             
         
@@ -25027,7 +25027,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn zx (self, ) -> bevy::math::i32::IVec2;"#,
             
         
@@ -25037,7 +25037,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn zy (self, ) -> bevy::math::i32::IVec2;"#,
             
         
@@ -25047,7 +25047,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn zz (self, ) -> bevy::math::i32::IVec2;"#,
             
         
@@ -25057,7 +25057,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn xxx (self, ) -> bevy::math::i32::IVec3;"#,
             
         
@@ -25067,7 +25067,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn xxy (self, ) -> bevy::math::i32::IVec3;"#,
             
         
@@ -25077,7 +25077,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn xxz (self, ) -> bevy::math::i32::IVec3;"#,
             
         
@@ -25087,7 +25087,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn xyx (self, ) -> bevy::math::i32::IVec3;"#,
             
         
@@ -25097,7 +25097,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn xyy (self, ) -> bevy::math::i32::IVec3;"#,
             
         
@@ -25107,7 +25107,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn xyz (self, ) -> bevy::math::i32::IVec3;"#,
             
         
@@ -25117,7 +25117,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn xzx (self, ) -> bevy::math::i32::IVec3;"#,
             
         
@@ -25127,7 +25127,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn xzy (self, ) -> bevy::math::i32::IVec3;"#,
             
         
@@ -25137,7 +25137,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn xzz (self, ) -> bevy::math::i32::IVec3;"#,
             
         
@@ -25147,7 +25147,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn yxx (self, ) -> bevy::math::i32::IVec3;"#,
             
         
@@ -25157,7 +25157,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn yxy (self, ) -> bevy::math::i32::IVec3;"#,
             
         
@@ -25167,7 +25167,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn yxz (self, ) -> bevy::math::i32::IVec3;"#,
             
         
@@ -25177,7 +25177,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn yyx (self, ) -> bevy::math::i32::IVec3;"#,
             
         
@@ -25187,7 +25187,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn yyy (self, ) -> bevy::math::i32::IVec3;"#,
             
         
@@ -25197,7 +25197,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn yyz (self, ) -> bevy::math::i32::IVec3;"#,
             
         
@@ -25207,7 +25207,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn yzx (self, ) -> bevy::math::i32::IVec3;"#,
             
         
@@ -25217,7 +25217,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn yzy (self, ) -> bevy::math::i32::IVec3;"#,
             
         
@@ -25227,7 +25227,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn yzz (self, ) -> bevy::math::i32::IVec3;"#,
             
         
@@ -25237,7 +25237,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn zxx (self, ) -> bevy::math::i32::IVec3;"#,
             
         
@@ -25247,7 +25247,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn zxy (self, ) -> bevy::math::i32::IVec3;"#,
             
         
@@ -25257,7 +25257,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn zxz (self, ) -> bevy::math::i32::IVec3;"#,
             
         
@@ -25267,7 +25267,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn zyx (self, ) -> bevy::math::i32::IVec3;"#,
             
         
@@ -25277,7 +25277,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn zyy (self, ) -> bevy::math::i32::IVec3;"#,
             
         
@@ -25287,7 +25287,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn zyz (self, ) -> bevy::math::i32::IVec3;"#,
             
         
@@ -25297,7 +25297,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn zzx (self, ) -> bevy::math::i32::IVec3;"#,
             
         
@@ -25307,7 +25307,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn zzy (self, ) -> bevy::math::i32::IVec3;"#,
             
         
@@ -25317,7 +25317,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn zzz (self, ) -> bevy::math::i32::IVec3;"#,
             
         
@@ -25327,7 +25327,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn xxxx (self, ) -> bevy::math::i32::IVec4;"#,
             
         
@@ -25337,7 +25337,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn xxxy (self, ) -> bevy::math::i32::IVec4;"#,
             
         
@@ -25347,7 +25347,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn xxxz (self, ) -> bevy::math::i32::IVec4;"#,
             
         
@@ -25357,7 +25357,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn xxyx (self, ) -> bevy::math::i32::IVec4;"#,
             
         
@@ -25367,7 +25367,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn xxyy (self, ) -> bevy::math::i32::IVec4;"#,
             
         
@@ -25377,7 +25377,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn xxyz (self, ) -> bevy::math::i32::IVec4;"#,
             
         
@@ -25387,7 +25387,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn xxzx (self, ) -> bevy::math::i32::IVec4;"#,
             
         
@@ -25397,7 +25397,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn xxzy (self, ) -> bevy::math::i32::IVec4;"#,
             
         
@@ -25407,7 +25407,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn xxzz (self, ) -> bevy::math::i32::IVec4;"#,
             
         
@@ -25417,7 +25417,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn xyxx (self, ) -> bevy::math::i32::IVec4;"#,
             
         
@@ -25427,7 +25427,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn xyxy (self, ) -> bevy::math::i32::IVec4;"#,
             
         
@@ -25437,7 +25437,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn xyxz (self, ) -> bevy::math::i32::IVec4;"#,
             
         
@@ -25447,7 +25447,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn xyyx (self, ) -> bevy::math::i32::IVec4;"#,
             
         
@@ -25457,7 +25457,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn xyyy (self, ) -> bevy::math::i32::IVec4;"#,
             
         
@@ -25467,7 +25467,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn xyyz (self, ) -> bevy::math::i32::IVec4;"#,
             
         
@@ -25477,7 +25477,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn xyzx (self, ) -> bevy::math::i32::IVec4;"#,
             
         
@@ -25487,7 +25487,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn xyzy (self, ) -> bevy::math::i32::IVec4;"#,
             
         
@@ -25497,7 +25497,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn xyzz (self, ) -> bevy::math::i32::IVec4;"#,
             
         
@@ -25507,7 +25507,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn xzxx (self, ) -> bevy::math::i32::IVec4;"#,
             
         
@@ -25517,7 +25517,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn xzxy (self, ) -> bevy::math::i32::IVec4;"#,
             
         
@@ -25527,7 +25527,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn xzxz (self, ) -> bevy::math::i32::IVec4;"#,
             
         
@@ -25537,7 +25537,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn xzyx (self, ) -> bevy::math::i32::IVec4;"#,
             
         
@@ -25547,7 +25547,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn xzyy (self, ) -> bevy::math::i32::IVec4;"#,
             
         
@@ -25557,7 +25557,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn xzyz (self, ) -> bevy::math::i32::IVec4;"#,
             
         
@@ -25567,7 +25567,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn xzzx (self, ) -> bevy::math::i32::IVec4;"#,
             
         
@@ -25577,7 +25577,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn xzzy (self, ) -> bevy::math::i32::IVec4;"#,
             
         
@@ -25587,7 +25587,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn xzzz (self, ) -> bevy::math::i32::IVec4;"#,
             
         
@@ -25597,7 +25597,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn yxxx (self, ) -> bevy::math::i32::IVec4;"#,
             
         
@@ -25607,7 +25607,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn yxxy (self, ) -> bevy::math::i32::IVec4;"#,
             
         
@@ -25617,7 +25617,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn yxxz (self, ) -> bevy::math::i32::IVec4;"#,
             
         
@@ -25627,7 +25627,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn yxyx (self, ) -> bevy::math::i32::IVec4;"#,
             
         
@@ -25637,7 +25637,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn yxyy (self, ) -> bevy::math::i32::IVec4;"#,
             
         
@@ -25647,7 +25647,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn yxyz (self, ) -> bevy::math::i32::IVec4;"#,
             
         
@@ -25657,7 +25657,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn yxzx (self, ) -> bevy::math::i32::IVec4;"#,
             
         
@@ -25667,7 +25667,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn yxzy (self, ) -> bevy::math::i32::IVec4;"#,
             
         
@@ -25677,7 +25677,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn yxzz (self, ) -> bevy::math::i32::IVec4;"#,
             
         
@@ -25687,7 +25687,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn yyxx (self, ) -> bevy::math::i32::IVec4;"#,
             
         
@@ -25697,7 +25697,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn yyxy (self, ) -> bevy::math::i32::IVec4;"#,
             
         
@@ -25707,7 +25707,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn yyxz (self, ) -> bevy::math::i32::IVec4;"#,
             
         
@@ -25717,7 +25717,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn yyyx (self, ) -> bevy::math::i32::IVec4;"#,
             
         
@@ -25727,7 +25727,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn yyyy (self, ) -> bevy::math::i32::IVec4;"#,
             
         
@@ -25737,7 +25737,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn yyyz (self, ) -> bevy::math::i32::IVec4;"#,
             
         
@@ -25747,7 +25747,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn yyzx (self, ) -> bevy::math::i32::IVec4;"#,
             
         
@@ -25757,7 +25757,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn yyzy (self, ) -> bevy::math::i32::IVec4;"#,
             
         
@@ -25767,7 +25767,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn yyzz (self, ) -> bevy::math::i32::IVec4;"#,
             
         
@@ -25777,7 +25777,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn yzxx (self, ) -> bevy::math::i32::IVec4;"#,
             
         
@@ -25787,7 +25787,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn yzxy (self, ) -> bevy::math::i32::IVec4;"#,
             
         
@@ -25797,7 +25797,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn yzxz (self, ) -> bevy::math::i32::IVec4;"#,
             
         
@@ -25807,7 +25807,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn yzyx (self, ) -> bevy::math::i32::IVec4;"#,
             
         
@@ -25817,7 +25817,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn yzyy (self, ) -> bevy::math::i32::IVec4;"#,
             
         
@@ -25827,7 +25827,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn yzyz (self, ) -> bevy::math::i32::IVec4;"#,
             
         
@@ -25837,7 +25837,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn yzzx (self, ) -> bevy::math::i32::IVec4;"#,
             
         
@@ -25847,7 +25847,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn yzzy (self, ) -> bevy::math::i32::IVec4;"#,
             
         
@@ -25857,7 +25857,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn yzzz (self, ) -> bevy::math::i32::IVec4;"#,
             
         
@@ -25867,7 +25867,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn zxxx (self, ) -> bevy::math::i32::IVec4;"#,
             
         
@@ -25877,7 +25877,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn zxxy (self, ) -> bevy::math::i32::IVec4;"#,
             
         
@@ -25887,7 +25887,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn zxxz (self, ) -> bevy::math::i32::IVec4;"#,
             
         
@@ -25897,7 +25897,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn zxyx (self, ) -> bevy::math::i32::IVec4;"#,
             
         
@@ -25907,7 +25907,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn zxyy (self, ) -> bevy::math::i32::IVec4;"#,
             
         
@@ -25917,7 +25917,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn zxyz (self, ) -> bevy::math::i32::IVec4;"#,
             
         
@@ -25927,7 +25927,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn zxzx (self, ) -> bevy::math::i32::IVec4;"#,
             
         
@@ -25937,7 +25937,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn zxzy (self, ) -> bevy::math::i32::IVec4;"#,
             
         
@@ -25947,7 +25947,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn zxzz (self, ) -> bevy::math::i32::IVec4;"#,
             
         
@@ -25957,7 +25957,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn zyxx (self, ) -> bevy::math::i32::IVec4;"#,
             
         
@@ -25967,7 +25967,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn zyxy (self, ) -> bevy::math::i32::IVec4;"#,
             
         
@@ -25977,7 +25977,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn zyxz (self, ) -> bevy::math::i32::IVec4;"#,
             
         
@@ -25987,7 +25987,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn zyyx (self, ) -> bevy::math::i32::IVec4;"#,
             
         
@@ -25997,7 +25997,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn zyyy (self, ) -> bevy::math::i32::IVec4;"#,
             
         
@@ -26007,7 +26007,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn zyyz (self, ) -> bevy::math::i32::IVec4;"#,
             
         
@@ -26017,7 +26017,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn zyzx (self, ) -> bevy::math::i32::IVec4;"#,
             
         
@@ -26027,7 +26027,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn zyzy (self, ) -> bevy::math::i32::IVec4;"#,
             
         
@@ -26037,7 +26037,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn zyzz (self, ) -> bevy::math::i32::IVec4;"#,
             
         
@@ -26047,7 +26047,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn zzxx (self, ) -> bevy::math::i32::IVec4;"#,
             
         
@@ -26057,7 +26057,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn zzxy (self, ) -> bevy::math::i32::IVec4;"#,
             
         
@@ -26067,7 +26067,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn zzxz (self, ) -> bevy::math::i32::IVec4;"#,
             
         
@@ -26077,7 +26077,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn zzyx (self, ) -> bevy::math::i32::IVec4;"#,
             
         
@@ -26087,7 +26087,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn zzyy (self, ) -> bevy::math::i32::IVec4;"#,
             
         
@@ -26097,7 +26097,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn zzyz (self, ) -> bevy::math::i32::IVec4;"#,
             
         
@@ -26107,7 +26107,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn zzzx (self, ) -> bevy::math::i32::IVec4;"#,
             
         
@@ -26117,7 +26117,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn zzzy (self, ) -> bevy::math::i32::IVec4;"#,
             
         
@@ -26127,7 +26127,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn zzzz (self, ) -> bevy::math::i32::IVec4;"#,
             
         
@@ -31159,7 +31159,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn xx (self, ) -> bevy::math::u32::UVec2;"#,
             
         
@@ -31169,7 +31169,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn xy (self, ) -> bevy::math::u32::UVec2;"#,
             
         
@@ -31179,7 +31179,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn xz (self, ) -> bevy::math::u32::UVec2;"#,
             
         
@@ -31189,7 +31189,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn yx (self, ) -> bevy::math::u32::UVec2;"#,
             
         
@@ -31199,7 +31199,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn yy (self, ) -> bevy::math::u32::UVec2;"#,
             
         
@@ -31209,7 +31209,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn yz (self, ) -> bevy::math::u32::UVec2;"#,
             
         
@@ -31219,7 +31219,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn zx (self, ) -> bevy::math::u32::UVec2;"#,
             
         
@@ -31229,7 +31229,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn zy (self, ) -> bevy::math::u32::UVec2;"#,
             
         
@@ -31239,7 +31239,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn zz (self, ) -> bevy::math::u32::UVec2;"#,
             
         
@@ -31249,7 +31249,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn xxx (self, ) -> bevy::math::u32::UVec3;"#,
             
         
@@ -31259,7 +31259,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn xxy (self, ) -> bevy::math::u32::UVec3;"#,
             
         
@@ -31269,7 +31269,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn xxz (self, ) -> bevy::math::u32::UVec3;"#,
             
         
@@ -31279,7 +31279,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn xyx (self, ) -> bevy::math::u32::UVec3;"#,
             
         
@@ -31289,7 +31289,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn xyy (self, ) -> bevy::math::u32::UVec3;"#,
             
         
@@ -31299,7 +31299,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn xyz (self, ) -> bevy::math::u32::UVec3;"#,
             
         
@@ -31309,7 +31309,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn xzx (self, ) -> bevy::math::u32::UVec3;"#,
             
         
@@ -31319,7 +31319,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn xzy (self, ) -> bevy::math::u32::UVec3;"#,
             
         
@@ -31329,7 +31329,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn xzz (self, ) -> bevy::math::u32::UVec3;"#,
             
         
@@ -31339,7 +31339,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn yxx (self, ) -> bevy::math::u32::UVec3;"#,
             
         
@@ -31349,7 +31349,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn yxy (self, ) -> bevy::math::u32::UVec3;"#,
             
         
@@ -31359,7 +31359,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn yxz (self, ) -> bevy::math::u32::UVec3;"#,
             
         
@@ -31369,7 +31369,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn yyx (self, ) -> bevy::math::u32::UVec3;"#,
             
         
@@ -31379,7 +31379,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn yyy (self, ) -> bevy::math::u32::UVec3;"#,
             
         
@@ -31389,7 +31389,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn yyz (self, ) -> bevy::math::u32::UVec3;"#,
             
         
@@ -31399,7 +31399,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn yzx (self, ) -> bevy::math::u32::UVec3;"#,
             
         
@@ -31409,7 +31409,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn yzy (self, ) -> bevy::math::u32::UVec3;"#,
             
         
@@ -31419,7 +31419,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn yzz (self, ) -> bevy::math::u32::UVec3;"#,
             
         
@@ -31429,7 +31429,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn zxx (self, ) -> bevy::math::u32::UVec3;"#,
             
         
@@ -31439,7 +31439,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn zxy (self, ) -> bevy::math::u32::UVec3;"#,
             
         
@@ -31449,7 +31449,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn zxz (self, ) -> bevy::math::u32::UVec3;"#,
             
         
@@ -31459,7 +31459,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn zyx (self, ) -> bevy::math::u32::UVec3;"#,
             
         
@@ -31469,7 +31469,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn zyy (self, ) -> bevy::math::u32::UVec3;"#,
             
         
@@ -31479,7 +31479,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn zyz (self, ) -> bevy::math::u32::UVec3;"#,
             
         
@@ -31489,7 +31489,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn zzx (self, ) -> bevy::math::u32::UVec3;"#,
             
         
@@ -31499,7 +31499,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn zzy (self, ) -> bevy::math::u32::UVec3;"#,
             
         
@@ -31509,7 +31509,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn zzz (self, ) -> bevy::math::u32::UVec3;"#,
             
         
@@ -31519,7 +31519,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn xxxx (self, ) -> bevy::math::u32::UVec4;"#,
             
         
@@ -31529,7 +31529,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn xxxy (self, ) -> bevy::math::u32::UVec4;"#,
             
         
@@ -31539,7 +31539,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn xxxz (self, ) -> bevy::math::u32::UVec4;"#,
             
         
@@ -31549,7 +31549,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn xxyx (self, ) -> bevy::math::u32::UVec4;"#,
             
         
@@ -31559,7 +31559,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn xxyy (self, ) -> bevy::math::u32::UVec4;"#,
             
         
@@ -31569,7 +31569,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn xxyz (self, ) -> bevy::math::u32::UVec4;"#,
             
         
@@ -31579,7 +31579,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn xxzx (self, ) -> bevy::math::u32::UVec4;"#,
             
         
@@ -31589,7 +31589,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn xxzy (self, ) -> bevy::math::u32::UVec4;"#,
             
         
@@ -31599,7 +31599,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn xxzz (self, ) -> bevy::math::u32::UVec4;"#,
             
         
@@ -31609,7 +31609,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn xyxx (self, ) -> bevy::math::u32::UVec4;"#,
             
         
@@ -31619,7 +31619,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn xyxy (self, ) -> bevy::math::u32::UVec4;"#,
             
         
@@ -31629,7 +31629,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn xyxz (self, ) -> bevy::math::u32::UVec4;"#,
             
         
@@ -31639,7 +31639,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn xyyx (self, ) -> bevy::math::u32::UVec4;"#,
             
         
@@ -31649,7 +31649,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn xyyy (self, ) -> bevy::math::u32::UVec4;"#,
             
         
@@ -31659,7 +31659,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn xyyz (self, ) -> bevy::math::u32::UVec4;"#,
             
         
@@ -31669,7 +31669,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn xyzx (self, ) -> bevy::math::u32::UVec4;"#,
             
         
@@ -31679,7 +31679,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn xyzy (self, ) -> bevy::math::u32::UVec4;"#,
             
         
@@ -31689,7 +31689,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn xyzz (self, ) -> bevy::math::u32::UVec4;"#,
             
         
@@ -31699,7 +31699,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn xzxx (self, ) -> bevy::math::u32::UVec4;"#,
             
         
@@ -31709,7 +31709,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn xzxy (self, ) -> bevy::math::u32::UVec4;"#,
             
         
@@ -31719,7 +31719,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn xzxz (self, ) -> bevy::math::u32::UVec4;"#,
             
         
@@ -31729,7 +31729,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn xzyx (self, ) -> bevy::math::u32::UVec4;"#,
             
         
@@ -31739,7 +31739,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn xzyy (self, ) -> bevy::math::u32::UVec4;"#,
             
         
@@ -31749,7 +31749,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn xzyz (self, ) -> bevy::math::u32::UVec4;"#,
             
         
@@ -31759,7 +31759,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn xzzx (self, ) -> bevy::math::u32::UVec4;"#,
             
         
@@ -31769,7 +31769,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn xzzy (self, ) -> bevy::math::u32::UVec4;"#,
             
         
@@ -31779,7 +31779,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn xzzz (self, ) -> bevy::math::u32::UVec4;"#,
             
         
@@ -31789,7 +31789,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn yxxx (self, ) -> bevy::math::u32::UVec4;"#,
             
         
@@ -31799,7 +31799,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn yxxy (self, ) -> bevy::math::u32::UVec4;"#,
             
         
@@ -31809,7 +31809,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn yxxz (self, ) -> bevy::math::u32::UVec4;"#,
             
         
@@ -31819,7 +31819,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn yxyx (self, ) -> bevy::math::u32::UVec4;"#,
             
         
@@ -31829,7 +31829,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn yxyy (self, ) -> bevy::math::u32::UVec4;"#,
             
         
@@ -31839,7 +31839,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn yxyz (self, ) -> bevy::math::u32::UVec4;"#,
             
         
@@ -31849,7 +31849,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn yxzx (self, ) -> bevy::math::u32::UVec4;"#,
             
         
@@ -31859,7 +31859,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn yxzy (self, ) -> bevy::math::u32::UVec4;"#,
             
         
@@ -31869,7 +31869,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn yxzz (self, ) -> bevy::math::u32::UVec4;"#,
             
         
@@ -31879,7 +31879,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn yyxx (self, ) -> bevy::math::u32::UVec4;"#,
             
         
@@ -31889,7 +31889,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn yyxy (self, ) -> bevy::math::u32::UVec4;"#,
             
         
@@ -31899,7 +31899,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn yyxz (self, ) -> bevy::math::u32::UVec4;"#,
             
         
@@ -31909,7 +31909,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn yyyx (self, ) -> bevy::math::u32::UVec4;"#,
             
         
@@ -31919,7 +31919,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn yyyy (self, ) -> bevy::math::u32::UVec4;"#,
             
         
@@ -31929,7 +31929,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn yyyz (self, ) -> bevy::math::u32::UVec4;"#,
             
         
@@ -31939,7 +31939,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn yyzx (self, ) -> bevy::math::u32::UVec4;"#,
             
         
@@ -31949,7 +31949,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn yyzy (self, ) -> bevy::math::u32::UVec4;"#,
             
         
@@ -31959,7 +31959,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn yyzz (self, ) -> bevy::math::u32::UVec4;"#,
             
         
@@ -31969,7 +31969,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn yzxx (self, ) -> bevy::math::u32::UVec4;"#,
             
         
@@ -31979,7 +31979,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn yzxy (self, ) -> bevy::math::u32::UVec4;"#,
             
         
@@ -31989,7 +31989,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn yzxz (self, ) -> bevy::math::u32::UVec4;"#,
             
         
@@ -31999,7 +31999,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn yzyx (self, ) -> bevy::math::u32::UVec4;"#,
             
         
@@ -32009,7 +32009,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn yzyy (self, ) -> bevy::math::u32::UVec4;"#,
             
         
@@ -32019,7 +32019,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn yzyz (self, ) -> bevy::math::u32::UVec4;"#,
             
         
@@ -32029,7 +32029,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn yzzx (self, ) -> bevy::math::u32::UVec4;"#,
             
         
@@ -32039,7 +32039,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn yzzy (self, ) -> bevy::math::u32::UVec4;"#,
             
         
@@ -32049,7 +32049,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn yzzz (self, ) -> bevy::math::u32::UVec4;"#,
             
         
@@ -32059,7 +32059,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn zxxx (self, ) -> bevy::math::u32::UVec4;"#,
             
         
@@ -32069,7 +32069,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn zxxy (self, ) -> bevy::math::u32::UVec4;"#,
             
         
@@ -32079,7 +32079,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn zxxz (self, ) -> bevy::math::u32::UVec4;"#,
             
         
@@ -32089,7 +32089,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn zxyx (self, ) -> bevy::math::u32::UVec4;"#,
             
         
@@ -32099,7 +32099,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn zxyy (self, ) -> bevy::math::u32::UVec4;"#,
             
         
@@ -32109,7 +32109,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn zxyz (self, ) -> bevy::math::u32::UVec4;"#,
             
         
@@ -32119,7 +32119,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn zxzx (self, ) -> bevy::math::u32::UVec4;"#,
             
         
@@ -32129,7 +32129,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn zxzy (self, ) -> bevy::math::u32::UVec4;"#,
             
         
@@ -32139,7 +32139,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn zxzz (self, ) -> bevy::math::u32::UVec4;"#,
             
         
@@ -32149,7 +32149,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn zyxx (self, ) -> bevy::math::u32::UVec4;"#,
             
         
@@ -32159,7 +32159,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn zyxy (self, ) -> bevy::math::u32::UVec4;"#,
             
         
@@ -32169,7 +32169,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn zyxz (self, ) -> bevy::math::u32::UVec4;"#,
             
         
@@ -32179,7 +32179,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn zyyx (self, ) -> bevy::math::u32::UVec4;"#,
             
         
@@ -32189,7 +32189,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn zyyy (self, ) -> bevy::math::u32::UVec4;"#,
             
         
@@ -32199,7 +32199,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn zyyz (self, ) -> bevy::math::u32::UVec4;"#,
             
         
@@ -32209,7 +32209,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn zyzx (self, ) -> bevy::math::u32::UVec4;"#,
             
         
@@ -32219,7 +32219,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn zyzy (self, ) -> bevy::math::u32::UVec4;"#,
             
         
@@ -32229,7 +32229,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn zyzz (self, ) -> bevy::math::u32::UVec4;"#,
             
         
@@ -32239,7 +32239,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn zzxx (self, ) -> bevy::math::u32::UVec4;"#,
             
         
@@ -32249,7 +32249,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn zzxy (self, ) -> bevy::math::u32::UVec4;"#,
             
         
@@ -32259,7 +32259,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn zzxz (self, ) -> bevy::math::u32::UVec4;"#,
             
         
@@ -32269,7 +32269,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn zzyx (self, ) -> bevy::math::u32::UVec4;"#,
             
         
@@ -32279,7 +32279,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn zzyy (self, ) -> bevy::math::u32::UVec4;"#,
             
         
@@ -32289,7 +32289,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn zzyz (self, ) -> bevy::math::u32::UVec4;"#,
             
         
@@ -32299,7 +32299,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn zzzx (self, ) -> bevy::math::u32::UVec4;"#,
             
         
@@ -32309,7 +32309,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn zzzy (self, ) -> bevy::math::u32::UVec4;"#,
             
         
@@ -32319,7 +32319,7 @@ functions[
             
             
                 r#"
-    #[lua(kind="Method", as_trait="bevy::math::Vec3Swizzles", output(proxy))]
+    #[lua(kind="Method", as_trait="bevy::math::swizzles::Vec3Swizzles", output(proxy))]
     fn zzzz (self, ) -> bevy::math::u32::UVec4;"#,
             
         

@@ -4,9 +4,8 @@ use indexmap::{IndexMap, IndexSet};
 use rustdoc_types::{ItemEnum, Type};
 
 use crate::{
-    cratepath::*,
-    template_data::{ImportPath, NameType},
-    ArgType, Config, FunctionData, OperatorType, TypeMeta,
+    cratepath::*, template_data::ImportPath, Config, FunctionData, NameType, OperatorType,
+    TypeMeta, ValidType,
 };
 
 pub enum ItemType {
@@ -156,7 +155,7 @@ impl From<(TypeMeta<'_>, &Config)> for ItemData {
                         Ok(v) => v,
                         Err(_) => NameType {
                             name,
-                            type_: ArgType::Base("ReflectedValue".to_owned()),
+                            type_: ValidType::Base("ReflectedValue".to_owned()),
                             is_proxied: false,
                         },
                     }
