@@ -1,6 +1,6 @@
 use bevy_api_gen_lib::{
     get_path, path_to_import, Args, Config, ItemData, NewtypeConfig, TemplateData, TypeMeta,
-    ValidType,
+    ValidType, ImplItem,
 };
 
 use clap::Parser;
@@ -67,7 +67,7 @@ fn generate_macro_data<'a>(crates: &'a [Crate], config: &'a Config) -> Vec<TypeM
                 .map(|(id, item)| {
                     // extract all available associated constants,methods etc available to this item
                     let mut self_impl: Option<&Impl> = None;
-                    let mut impl_items: IndexMap<&str, Vec<(&Impl, &Item)>> = Default::default();
+                    let mut impl_items: IndexMap<&str, Vec<ImplItem>> = Default::default();
                     let mut implemented_traits: IndexSet<String> = Default::default();
                     let wrapped_type = item.name.as_ref().unwrap();
 
@@ -78,33 +78,47 @@ fn generate_macro_data<'a>(crates: &'a [Crate], config: &'a Config) -> Vec<TypeM
                     };
 
                     impls.iter().for_each(|id| {
-                        if let ItemEnum::Impl(i) = &source.index.get(id).unwrap().inner {
+                        if let ItemEnum::Impl(impl_) = &source.index.get(id).unwrap().inner {
+                            let mut foreign = false;
+
                             // filter out impls not for this type
-                            let for_type = ValidType::try_new(false, &i.for_).map_err(|e| {
-                                log::debug!("Ignoring impl block as could not parse type impl block is for: `{e}`")
+                            let for_type = ValidType::try_new(false, &impl_.for_).map_err(|e| {
+                                log::debug!("Ignoring impl block as could not parse type it's for: `{e}`")
                             });
                             if let Ok(for_) = &for_type {
-                                // TODO: we need a more solid light `Type` enum with proper equality and ease of use
-                                if !for_.base_ident().is_some_and(|base| base == wrapped_type){
-                                    log::debug!("Ignoring impl block as it's not for current type: for: {:?}, current_type: {wrapped_type}, block: {i:#?}", for_.base_ident());
+                                // TODO: we need a more solid light `Type` enum with proper equality, crate idea? small_syn
+                                
+
+                                foreign = for_.base_ident().is_some_and(|base| config.primitives.contains(base));
+                                // do this check since we don't want duplicate operators with mirrored lhs & rhs
+                                // on both types in the impl
+                                if !for_.base_ident().is_some_and(|base| 
+                                    base == wrapped_type 
+                                        || foreign // primitives are allowed since they don't get their own wrappers
+                                    ){
+                                    log::trace!("Ignoring impl block as it's not for the current type, or a primitive: for: {:?}, current_type: {wrapped_type}, block: {impl_:#?}", for_.base_ident());
                                     return
                                 }
                             } else {
                                 return
                             }
 
-                            match &i.trait_ {
+                            match &impl_.trait_ {
                                 Some(t) => {
                                     implemented_traits.insert(t.name.to_owned());
                                 }
-                                None => self_impl = Some(i),
+                                None => self_impl = Some(impl_),
                             }
-                            i.items.iter().for_each(|id| {
-                                let it = source.index.get(id).unwrap();
+                            impl_.items.iter().for_each(|id| {
+                                let impl_item = source.index.get(id).unwrap();
                                 impl_items
-                                    .entry(it.name.as_ref().unwrap().as_str())
+                                    .entry(impl_item.name.as_ref().unwrap().as_str())
                                     .or_default()
-                                    .push((i, it));
+                                    .push(ImplItem {
+                                        impl_,
+                                        item: impl_item,
+                                        foreign,
+                                    });
                             })
                         } else {
                             panic!("Expected impl items here!")
@@ -170,8 +184,7 @@ fn generate(crates: Vec<Crate>, config: Config, args: Args) {
                     .map(|allow_list| allow_list.contains(item.wrapped_type))
                     .unwrap_or(true)
             })
-            .zip(std::iter::repeat(&config))
-            .map(ItemData::from)
+            .map(|meta| ItemData::new(meta, &config))
             .map(|i| (i.import_path.components.last().unwrap().to_owned(), i))
             .collect(),
     };

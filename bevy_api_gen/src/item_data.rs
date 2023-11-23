@@ -4,8 +4,8 @@ use indexmap::{IndexMap, IndexSet};
 use rustdoc_types::{ItemEnum, Type};
 
 use crate::{
-    cratepath::*, template_data::ImportPath, Config, FunctionData, NameType, OperatorType,
-    TypeMeta, ValidType,
+    cratepath::*, template_data::ImportPath, Config, FunctionData, ImplItem, NameType,
+    OperatorType, TypeMeta, ValidType,
 };
 
 pub enum ItemType {
@@ -25,16 +25,21 @@ pub struct ItemData {
     pub item_type: ItemType,
 }
 
-impl From<(TypeMeta<'_>, &Config)> for ItemData {
-    fn from((meta, config): (TypeMeta<'_>, &Config)) -> Self {
+impl ItemData {
+    pub fn new(meta: TypeMeta<'_>, config: &Config) -> Self {
         let import_path: Vec<String> = meta.path_components.into();
         let import_path: ImportPath = import_path.into();
         let mut functions: IndexMap<String, Vec<FunctionData>> = Default::default();
-
         for (name, impl_items) in &meta.impl_items {
             log::debug!("Processing item: `{name}` in type: `{}`", meta.wrapped_type);
-            for (impl_, item) in impl_items {
+            for ImplItem {
+                impl_,
+                item,
+                foreign,
+            } in impl_items
+            {
                 let operator = OperatorType::from_impl_name(name);
+                let mut foreign_self = None;
                 match (|| {
                     let trait_path = impl_
                         .trait_
@@ -43,6 +48,10 @@ impl From<(TypeMeta<'_>, &Config)> for ItemData {
                             // TODO: this is probably pretty slow, pre-calculate this
                             // meta.crates.iter().find_map(|crate_|
                             if let Some(op) = operator {
+                                foreign_self =
+                                    Some(ValidType::try_new(false, &impl_.for_).map_err(|e| {
+                                        format!("Could not parse foreign self type: `{e}`")
+                                    })?);
                                 return Ok::<_, Box<dyn Error>>(op.trait_path());
                             }
 
@@ -74,6 +83,11 @@ impl From<(TypeMeta<'_>, &Config)> for ItemData {
                         config,
                         operator,
                         assoc_types,
+                        if *foreign {
+                            foreign_self.as_ref()
+                        } else {
+                            None
+                        },
                     )?;
                     Ok::<_, Box<dyn Error>>(fn_item)
                 })() {
@@ -151,7 +165,7 @@ impl From<(TypeMeta<'_>, &Config)> for ItemData {
                 })
                 .zip(std::iter::repeat(config))
                 .map(|((name, type_), config)| {
-                    match NameType::try_new(name.clone(), type_, config, Default::default()) {
+                    match NameType::try_new(name.clone(), type_, config, Default::default(), None) {
                         Ok(v) => v,
                         Err(_) => NameType {
                             name,

@@ -18,13 +18,14 @@ impl NameType {
         type_: Type,
         config: &Config,
         assoc_types: &[&Item],
+        resolve_self_with: Option<&ValidType>,
     ) -> Result<Self, Box<dyn Error>> {
         let mut type_: ValidType = ValidType::try_new(name == "self", &type_)?;
         if type_.is_associated_type() {
             log::trace!(
                 "Type `{type_:?}` contains associated type, matching up with `{assoc_types:?}`"
             );
-            type_ = type_.map_associated_types(&|on_type, name| {
+            type_.map_associated_types(&|on_type, name| {
                 if on_type.is_contextual() {
                     assoc_types
                         .iter()
@@ -32,7 +33,7 @@ impl NameType {
                             assoc
                                 .name
                                 .as_ref()
-                                .is_some_and(|assoc_name| assoc_name == &name)
+                                .is_some_and(|assoc_name| assoc_name == name)
                         })
                         .and_then(|assoc| {
                             if let ItemEnum::AssocType { default, .. } = &assoc.inner {
@@ -51,6 +52,11 @@ impl NameType {
                 }
             });
         }
+        // if we need to, resolve contextual receivers
+        resolve_self_with.map(|self_| {
+            log::trace!("Resolving receivers in type `{type_:#?}` with `{self_:?}`");
+            type_.resolve_receivers_with(self_)
+        });
 
         let is_primitive = type_
             .base_ident()

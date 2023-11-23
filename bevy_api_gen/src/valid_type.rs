@@ -205,27 +205,46 @@ impl ValidType {
         matches!(self, ValidType::Ref { .. })
     }
 
-    pub fn map_associated_types<F>(self, f: &F) -> Self
+    /// Replaces every receiver node with the given type
+    pub fn resolve_receivers_with(&mut self, other: &Self) -> &mut Self {
+        match self {
+            ValidType::Self_ { .. } => *self = other.clone(),
+            ValidType::AssociatedType { on, .. } => _ = on.resolve_receivers_with(other),
+            ValidType::Base(_) => (),
+            ValidType::Generic { base, args } => {
+                base.resolve_receivers_with(other);
+                args.iter_mut()
+                    .for_each(|a| _ = a.resolve_receivers_with(other));
+            }
+            ValidType::Ref { ref_, .. } => _ = ref_.resolve_receivers_with(other),
+        };
+        self
+    }
+
+    /// Runs a function on every node of AssociatedType in this type, if the function returns a value it is used to
+    /// replace that node
+    pub fn map_associated_types<F>(&mut self, f: &F) -> &mut Self
     where
-        F: Fn(Box<ValidType>, String) -> Option<Self>,
+        F: Fn(&Box<ValidType>, &String) -> Option<Self>,
     {
         match self {
             ValidType::AssociatedType { on, name } => {
-                f(on.clone(), name.clone()).unwrap_or(ValidType::AssociatedType { on, name })
+                if let Some(new) = f(on, name) {
+                    *self = new
+                };
             }
-            ValidType::Self_ { .. } => self,
-            ValidType::Base(_) => self,
-            ValidType::Generic { base, args } => ValidType::Generic {
-                base: Box::new(base.map_associated_types(f)),
-                args: args
-                    .into_iter()
-                    .map(|a| a.map_associated_types(f))
-                    .collect(),
-            },
-            ValidType::Ref { ref_, is_mut } => ValidType::Ref {
-                ref_: Box::new(ref_.map_associated_types(f)),
-                is_mut,
-            },
-        }
+            ValidType::Self_ { .. } => (),
+            ValidType::Base(_) => (),
+            ValidType::Generic {
+                ref mut base,
+                ref mut args,
+            } => {
+                base.map_associated_types(f);
+                args.iter_mut()
+                    .for_each(|arg| _ = arg.map_associated_types(f));
+            }
+            ValidType::Ref { ref_, .. } => _ = ref_.map_associated_types(f),
+        };
+        self
     }
 }

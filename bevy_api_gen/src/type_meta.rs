@@ -4,7 +4,7 @@ use indexmap::{IndexMap, IndexSet};
 use rustdoc_types::{Crate, Impl, Item};
 use serde_derive::Serialize;
 
-use crate::NewtypeConfig;
+use crate::{ImplItem, NewtypeConfig};
 
 /// Data describing a macro instance to be generated
 #[derive(Serialize, Debug, Clone)]
@@ -15,7 +15,7 @@ pub struct TypeMeta<'a> {
     pub config: &'a NewtypeConfig,
     pub item: &'a Item,
     /// The items coming from all trait implementations
-    pub impl_items: IndexMap<&'a str, Vec<(&'a Impl, &'a Item)>>,
+    pub impl_items: IndexMap<&'a str, Vec<ImplItem<'a>>>,
     pub implemented_traits: IndexSet<String>,
     pub self_impl: Option<&'a Impl>,
     pub crates: &'a [Crate],
