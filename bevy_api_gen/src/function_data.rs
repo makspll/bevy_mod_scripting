@@ -162,7 +162,7 @@ impl FunctionData {
             .filter(|first_arg| first_arg.type_.is_receiver());
         let kind = receiver
             .map(|receiver| {
-                if let Some(op) = operator {
+                if let Some(_) = operator {
                     "MetaFunction".to_owned()
                 } else if matches!(receiver.type_, ValidType::Ref { is_mut, .. } if is_mut) {
                     "MutatingMethod".to_owned()

@@ -1,6 +1,7 @@
 use parking_lot::RwLock;
 use std::fmt;
 use std::fmt::{Debug, Display};
+use std::ops::{Deref, DerefMut};
 use std::{borrow::Cow, sync::Weak};
 
 use bevy::{
@@ -9,12 +10,11 @@ use bevy::{
 };
 
 use crate::error::ReflectionError;
-use crate::script_ref::ReflectPtr;
 use bevy_mod_scripting_core::world::WorldPointer;
 
 /// The base of a reflect path, i.e. the top-level object or source. Reflections paths are always relative to some reflect base
 #[derive(Clone)]
-pub enum ReflectBase {
+pub(crate) enum ReflectBase {
     /// A bevy component reference
     Component {
         comp: ReflectComponent,
@@ -30,15 +30,24 @@ pub enum ReflectBase {
     /// It's extremely important that the userdata aliasing rules are upheld.
     /// this is protected in  rust -> lua accesses using the valid pointer. on the lua side,
     /// we handle references directly which are safe. If those accesses are ever mixed, one must be extremely careful!
+    /// Safety:
+    /// this is only accessible within the crate but internally, as long as the pointer points to a value whose lifetime is guarded by the
+    /// valid pointer, we are okay to dereference the pointer. Script owned values are of course owned by us so we can get (well mlua)
+    /// both a mutable and non mutable reference no problem assuming mlua does not do anything unexpected TODO: double check :) or box
     ScriptOwned {
-        ptr: ReflectPtr,
         /// We use the rwlock to validate reads and writes
         /// When a script value goes out of scope, it checks there are no strong references
         /// to this value, if there are it panicks,
-        /// so being able to acquire a read/write lock is enough to validate the reference!
-        valid: Weak<RwLock<()>>,
+        /// so being able to acquire a read/write lock is enough to validate the lifetime
+        val: Weak<RwLock<dyn Reflect>>,
     },
 }
+
+/// Safety: we can safely send this value across thread boundaries
+/// the pointer variant is always accessed with the
+unsafe impl Send for ReflectBase {}
+/// Safety: todo!()
+unsafe impl Sync for ReflectBase {}
 
 impl fmt::Debug for ReflectBase {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
@@ -55,38 +64,38 @@ impl fmt::Debug for ReflectBase {
 impl fmt::Display for ReflectBase {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
-            ReflectBase::Component { comp: _, entity } => {
+            ReflectBase::Component { entity, .. } => {
                 f.write_str("(Component on ")?;
                 f.write_str(&entity.index().to_string())?;
                 f.write_str(")")
             }
-            ReflectBase::Resource { res: _ } => f.write_str("(Resource"),
-            ReflectBase::ScriptOwned { ptr: _, valid: _ } => f.write_str("(ScriptOwned)"),
+            ReflectBase::Resource { .. } => f.write_str("(Resource)"),
+            ReflectBase::ScriptOwned { .. } => f.write_str("(ScriptOwned)"),
         }
     }
 }
 
-pub type SubReflectGet = fn(&dyn Reflect) -> Result<&dyn Reflect, ReflectionError>;
-pub type SubReflectGetMut = fn(&mut dyn Reflect) -> Result<&mut dyn Reflect, ReflectionError>;
-pub type SubReflectIndexedGet = fn(usize, &dyn Reflect) -> Result<&dyn Reflect, ReflectionError>;
-pub type SubReflectIndexedGetMut =
-    fn(usize, &mut dyn Reflect) -> Result<&mut dyn Reflect, ReflectionError>;
+pub type Get = fn(&dyn Reflect) -> Result<&dyn Reflect, ReflectionError>;
+pub type GetMut = fn(&mut dyn Reflect) -> Result<&mut dyn Reflect, ReflectionError>;
+
+pub type IndexedGet = fn(usize, &dyn Reflect) -> Result<&dyn Reflect, ReflectionError>;
+pub type IndexedGetMut = fn(usize, &mut dyn Reflect) -> Result<&mut dyn Reflect, ReflectionError>;
 
 /// Stores the path of reflection + sub reflection from a root reflect reference.
 ///
 /// Also allows accessing elements beyond reach of the normal reflect API
 #[derive(Clone)]
-pub enum ReflectPathElem {
+pub(crate) enum ReflectPathElem {
     SubReflection {
         label: &'static str,
-        get: SubReflectGet,
-        get_mut: SubReflectGetMut,
+        get: Get,
+        get_mut: GetMut,
     },
     SubReflectionIndexed {
         label: &'static str,
         index: usize,
-        get: SubReflectIndexedGet,
-        get_mut: SubReflectIndexedGetMut,
+        get: IndexedGet,
+        get_mut: IndexedGetMut,
     },
     /// Access to a struct field
     FieldAccess(Cow<'static, str>),
@@ -141,7 +150,10 @@ impl Display for ReflectPathElem {
 }
 
 impl ReflectPathElem {
-    pub fn sub_ref<'a>(&self, base: &'a dyn Reflect) -> Result<&'a dyn Reflect, ReflectionError> {
+    pub(crate) fn sub_ref<'a>(
+        &self,
+        base: &'a dyn Reflect,
+    ) -> Result<&'a dyn Reflect, ReflectionError> {
         match self {
             ReflectPathElem::SubReflection { get, .. } => get(base),
             ReflectPathElem::SubReflectionIndexed { get, index, .. } => get(*index, base),
@@ -195,7 +207,7 @@ impl ReflectPathElem {
         }
     }
 
-    pub fn sub_ref_mut<'a>(
+    pub(crate) fn sub_ref_mut<'a>(
         &self,
         base: &'a mut dyn Reflect,
     ) -> Result<&'a mut dyn Reflect, ReflectionError> {
@@ -254,7 +266,7 @@ impl ReflectPathElem {
 }
 
 #[derive(Clone, Debug)]
-pub struct ReflectPath {
+pub(crate) struct ReflectPath {
     base: ReflectBase,
     // most of these will be very short, people don't make many nested hashmaps vecs etc.
     accesses: Vec<ReflectPathElem>,
@@ -380,14 +392,14 @@ impl ReflectPath {
                 drop(g);
                 Ok(o)
             }
-            ReflectBase::ScriptOwned { ptr, valid } => {
-                let g = valid
+            ReflectBase::ScriptOwned { val } => {
+                let g = val
                     .upgrade()
                     .expect("Trying to access cached value from previous frame");
 
                 let g = g.try_read().expect("Rust safety violation: attempted to borrow value {self:?} while it was already mutably borrowed");
-
-                let ref_ = self.walk_path(unsafe { ptr.const_ref() })?;
+                // Safety: we know the pointer points to a valid value and is live, no other value has mutable access to it either
+                let ref_ = self.walk_path(&*g)?;
                 let o = f(ref_);
                 drop(g);
                 Ok(o)
@@ -433,18 +445,14 @@ impl ReflectPath {
                 drop(g);
                 Ok(o)
             }
-            ReflectBase::ScriptOwned { ptr, valid } => {
-                let g = valid
+            ReflectBase::ScriptOwned { val } => {
+                let g = val
                     .upgrade()
                     .expect("Trying to access cached value from previous frame");
 
-                let g = g.try_write().expect("Rust safety violation: attempted to borrow value {self:?} while it was already mutably borrowed");
-
-                let ref_ = self.walk_path_mut(
-                    unsafe{ptr.mut_ref()}
-                        .ok_or_else(||
-                            ReflectionError::InsufficientProvenance { path: self.to_string(), msg: "Script owned value was initialized with only an immutable reference, cannot produce mutable access".to_owned() }
-                        )?)?;
+                let mut g = g.try_write().expect("Rust safety violation: attempted to borrow value {self:?} while it was already mutably borrowed");
+                // Safety: we know the pointer points to a valid value and is live, no other value has access to it either
+                let ref_ = self.walk_path_mut(&mut *g)?;
                 let o = f(ref_);
                 drop(g);
                 Ok(o)

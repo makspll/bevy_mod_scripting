@@ -15,15 +15,14 @@ macro_rules! ref_only_wrapper_methods {
             world_ptr: bevy_mod_scripting_core::world::WorldPointer,
         ) -> $crate::script_ref::ScriptRef {
             match self {
-                Self::Owned(val, valid) => unsafe {
+                Self::Owned(val) => unsafe {
                     // safety:
                     // - valid is dropped when the value goes out of scope, so won't be dangling
                     // - using the valid lock means no incorrect aliasing may occur
                     // - the pointer points to base of the reference
                     // invariants are upheld
                     $crate::script_ref::ScriptRef::new_script_ref(
-                        (val.get() as *mut dyn ::bevy::reflect::Reflect).into(),
-                        ::std::sync::Arc::downgrade(valid),
+                        ::std::sync::Arc::downgrade(val),
                         world_ptr,
                     )
                 },
@@ -32,10 +31,7 @@ macro_rules! ref_only_wrapper_methods {
         }
 
         pub fn new(b: $type_) -> Self {
-            Self::Owned(
-                ::std::cell::UnsafeCell::new(b),
-                ::std::sync::Arc::new($crate::parking_lot::RwLock::new(())),
-            )
+            Self::Owned(::std::sync::Arc::new($crate::parking_lot::RwLock::new(b)))
         }
 
         pub fn new_ref(b: $crate::script_ref::ScriptRef) -> Self {
@@ -49,14 +45,7 @@ macro_rules! ref_only_wrapper_methods {
             F: FnOnce(&$type_) -> G,
         {
             match self {
-                Self::Owned(ref v, valid) => {
-                    // we lock here in case the accessor has a luaref holding reference to us
-                    let lock = valid.read();
-                    let o = accessor(unsafe { &*(v.get() as *const $type_) });
-                    drop(lock);
-
-                    Ok(o)
-                }
+                Self::Owned(v) => Ok(accessor(&v.read())),
                 Self::Ref(v) => v.get(|s| accessor(s.downcast_ref::<$type_>().unwrap())),
             }
         }
@@ -66,13 +55,7 @@ macro_rules! ref_only_wrapper_methods {
             F: FnOnce(&mut $type_) -> G,
         {
             match self {
-                Self::Owned(ref mut v, valid) => {
-                    let lock = valid.read();
-                    let o = accessor(v.get_mut());
-                    drop(lock);
-
-                    Ok(o)
-                }
+                Self::Owned(v) => Ok(accessor(&mut *v.write())),
                 Self::Ref(v) => v.get_mut(|s| accessor(s.downcast_mut::<$type_>().unwrap())),
             }
         }
@@ -84,10 +67,8 @@ macro_rules! ref_only_wrapper_methods {
             other: &mut $crate::script_ref::ScriptRef,
         ) -> Result<(), $crate::error::ReflectionError> {
             match self {
-                Self::Owned(v, valid) => {
-                    let lock = valid.read();
-                    other.get_mut(|other| other.apply(unsafe { &*(v.get() as *const $type_) }))?;
-                    drop(lock);
+                Self::Owned(v) => {
+                    other.get_mut(|other| other.apply(&mut *v.write()))?;
                     Ok(())
                 }
                 Self::Ref(v) => {
@@ -106,19 +87,20 @@ macro_rules! define_wrapper{
     ($type_:path, $wrapper_name:ident) => {
         #[allow(clippy::large_enum_variant)]
         #[doc=concat!("A script wrapper for the type `",stringify!($type_),"`")]
+        #[derive(Clone)]
         pub enum $wrapper_name{
-            Owned(::std::cell::UnsafeCell<$type_>, ::std::sync::Arc<$crate::parking_lot::RwLock<()>>),
+            Owned(::std::sync::Arc<$crate::parking_lot::RwLock<$type_>>),
             Ref($crate::script_ref::ScriptRef),
         }
 
         /// Safety: we make this sync via RwLock<()> assuming invariants are upheld
-        unsafe impl Sync for $wrapper_name {}
+        // unsafe impl Sync for $wrapper_name {}
 
         impl Drop for $wrapper_name {
             fn drop(&mut self) {
                 match self {
-                    Self::Owned(_, valid) => {
-                        if valid.is_locked() {
+                    Self::Owned(v) => {
+                        if v.is_locked() {
                             panic!(
                                 "Something is referencing a lua value and it's about to go out of scope!"
                             );
@@ -144,21 +126,6 @@ macro_rules! make_script_wrapper {
                 $type_: Clone,
             {
                 self.val(|s| s.clone())
-            }
-        }
-
-        impl Clone for $wrapper_name {
-            fn clone(&self) -> Self {
-                match self {
-                    Self::Owned(_, _) => Self::Owned(
-                        ::std::cell::UnsafeCell::new(
-                            self.val(|s| s.clone())
-                                .expect("Rust aliasing rules broken in cloning wrapper"),
-                        ),
-                        ::std::sync::Arc::new($crate::parking_lot::RwLock::new(())),
-                    ),
-                    Self::Ref(v) => Self::Ref(v.clone()),
-                }
             }
         }
     };

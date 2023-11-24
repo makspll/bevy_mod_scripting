@@ -47,24 +47,16 @@ impl ScriptRef {
     }
 
     /// Creates a reference to a script owned value
-    ///
-    /// # Safety
-    /// You must ensure that the following holds:
-    /// - base_ptr can be dereferenced
-    pub unsafe fn new_script_ref(
-        ptr: ReflectPtr,
-        valid: Weak<RwLock<()>>,
-        world_ptr: WorldPointer,
-    ) -> Self {
+    pub fn new_script_ref<T: Reflect>(ptr: Weak<RwLock<T>>, world_ptr: WorldPointer) -> Self {
         Self {
-            path: ReflectPath::new(ReflectBase::ScriptOwned { ptr, valid }),
+            path: ReflectPath::new(ReflectBase::ScriptOwned { val: ptr }),
             world_ptr,
         }
     }
 
     /// Creates a new script reference which points to a sub component of the original data,
     /// This also updates the pointer
-    pub fn sub_ref(&self, elem: ReflectPathElem) -> ScriptRef {
+    pub(crate) fn sub_ref(&self, elem: ReflectPathElem) -> ScriptRef {
         let path = self.path.new_sub(elem);
 
         Self {
@@ -175,71 +167,6 @@ impl ValueIndex<Cow<'static, str>> for ScriptRef {
         self.sub_ref(ReflectPathElem::FieldAccess(index))
     }
 }
-
-/// A pointer wrapper with some extra safety information about mutability.
-#[derive(Clone, Copy, Debug)]
-pub struct ReflectPtr {
-    /// the pointer to the data
-    ptr: *const dyn Reflect,
-    /// a safety bit, if false, cannot cast as mutable pointer
-    is_mut: bool,
-}
-
-impl From<*const dyn Reflect> for ReflectPtr {
-    fn from(ptr: *const dyn Reflect) -> Self {
-        Self { ptr, is_mut: false }
-    }
-}
-
-impl From<*mut dyn Reflect> for ReflectPtr {
-    fn from(ptr: *mut dyn Reflect) -> Self {
-        Self { ptr, is_mut: true }
-    }
-}
-
-impl ReflectPtr {
-    /// dereference the pointer as an immutable reference.
-    /// The caller must ensure the pointer is valid.
-    /// # Safety
-    /// pointer must point to valid non-dangling data, aliasing rules must be upheld
-    #[inline(always)]
-    pub unsafe fn const_ref<'a>(self) -> &'a dyn Reflect {
-        &*self.ptr
-    }
-
-    /// Dereference the pointer as a mutable reference,
-    ///
-    /// The caller must ensure the pointer is valid. Returns None if the underlying pointer is const
-    /// # Safety
-    /// pointer must point to valid non-dangling data, aliasing rules must be upheld
-    pub unsafe fn mut_ref<'a>(self) -> Option<&'a mut dyn Reflect> {
-        if self.is_mut {
-            Some(&mut *(self.ptr as *mut dyn Reflect))
-        } else {
-            None
-        }
-    }
-
-    /// Maps this pointer to another one with one of two funtions depending on if mutable access is available
-    /// # Safety
-    /// pointer must point to valid non-dangling data, aliasing rules must be upheld
-    pub unsafe fn map(
-        self,
-        get: fn(&dyn Reflect) -> &dyn Reflect,
-        get_mut: fn(&mut dyn Reflect) -> &mut dyn Reflect,
-    ) -> Self {
-        if self.is_mut {
-            (get_mut(self.mut_ref().unwrap()) as *const dyn Reflect).into()
-        } else {
-            (get(self.const_ref()) as *const dyn Reflect).into()
-        }
-    }
-}
-
-/// safe since Reflect values have to be Send
-unsafe impl Send for ReflectPtr {}
-/// safe since Reflect values have to be Sync
-unsafe impl Sync for ReflectPtr {}
 
 /// A value representing a type which has no special UserData implementation,
 /// It exposes the much less convenient reflect interface of the underlying type.
