@@ -30,7 +30,7 @@ impl MyThing {
 // Step 2. Script representation
 // this macro does some magic and provides you with a `LuaMyThing` (and possibly more for other enabled languages) type with which you can create:
 // - owned values of your type via ::new()
-// - references to something in the world (or script) via ::new_ref() and the ScriptRef API
+// - references to something in the world (or script) via ::new_ref() and the ReflectReference API
 //   (however this is only really accessible given the world provided to the script via the script host)
 // Script references can also be made to subfields (even non reflectable ones) of types via sub reflection
 //

@@ -21,9 +21,10 @@ PACKAGE=bevy_mod_scripting
 TEST_NAME=
 # # valgrind outputs a callgrind.out.<pid>. We can analyze this with kcachegrind
 # kcachegrind
-NIGHTLY_VERSION=2023-11-02
+NIGHTLY_VERSION=2023-11-29
 BEVY_VERSION=0.11.2
 GLAM_VERSION=0.24.1
+BEVY_PATH=./target/bevy
 build_test_in_package:
 	@cargo test --no-run --lib --workspace $(TEST_NAME)
 	@export OUTPUT=$$(find ./target/debug/deps/ -regex ".*${PACKAGE}[^.]*" -printf "%T@\t%Tc %6k KiB %p\n" | sort -n -r | awk '{print $$NF}' | head -1); \
@@ -67,22 +68,8 @@ generate_api:
 
 make_json_files:
 	rustup install nightly-${NIGHTLY_VERSION}
-	rustup run nightly-${NIGHTLY_VERSION} cargo rustdoc -p bevy_asset@${BEVY_VERSION}  --  -Zunstable-options --output-format json && \
-	rustup run nightly-${NIGHTLY_VERSION} cargo rustdoc -p bevy_ecs@${BEVY_VERSION} --  -Zunstable-options --output-format json && \
-	rustup run nightly-${NIGHTLY_VERSION} cargo rustdoc -p bevy_pbr@${BEVY_VERSION} --  -Zunstable-options --output-format json && \
-	rustup run nightly-${NIGHTLY_VERSION} cargo rustdoc -p bevy_render@${BEVY_VERSION} --  -Zunstable-options --output-format json && \
-	rustup run nightly-${NIGHTLY_VERSION} cargo rustdoc -p bevy_math@${BEVY_VERSION} --  -Zunstable-options --output-format json && \
-	rustup run nightly-${NIGHTLY_VERSION} cargo rustdoc -p bevy_transform@${BEVY_VERSION} --  -Zunstable-options --output-format json && \
-	rustup run nightly-${NIGHTLY_VERSION} cargo rustdoc -p bevy_sprite@${BEVY_VERSION} --  -Zunstable-options --output-format json && \
-	rustup run nightly-${NIGHTLY_VERSION} cargo rustdoc -p bevy_ui@${BEVY_VERSION} --  -Zunstable-options --output-format json && \
-	rustup run nightly-${NIGHTLY_VERSION} cargo rustdoc -p bevy_animation@${BEVY_VERSION} --  -Zunstable-options --output-format json && \
-	rustup run nightly-${NIGHTLY_VERSION} cargo rustdoc -p bevy_core@${BEVY_VERSION} --  -Zunstable-options --output-format json && \
-	rustup run nightly-${NIGHTLY_VERSION} cargo rustdoc -p bevy_core_pipeline@${BEVY_VERSION} --  -Zunstable-options --output-format json && \
-	rustup run nightly-${NIGHTLY_VERSION} cargo rustdoc -p bevy_gltf@${BEVY_VERSION} --  -Zunstable-options --output-format json && \
-	rustup run nightly-${NIGHTLY_VERSION} cargo rustdoc -p bevy_hierarchy@${BEVY_VERSION} --  -Zunstable-options --output-format json && \
-	rustup run nightly-${NIGHTLY_VERSION} cargo rustdoc -p bevy_text@${BEVY_VERSION} --  -Zunstable-options --output-format json && \
-	rustup run nightly-${NIGHTLY_VERSION} cargo rustdoc -p bevy_time@${BEVY_VERSION} --  -Zunstable-options --output-format json && \
-	rustup run nightly-${NIGHTLY_VERSION} cargo rustdoc -p bevy_utils@${BEVY_VERSION} --  -Zunstable-options --output-format json && \
-	rustup run nightly-${NIGHTLY_VERSION} cargo rustdoc -p bevy_reflect@${BEVY_VERSION} --  -Zunstable-options --output-format json && \
-	rustup run nightly-${NIGHTLY_VERSION} cargo rustdoc -p glam@${GLAM_VERSION} --  -Zunstable-options --output-format json && \
-	rustup run nightly-${NIGHTLY_VERSION} cargo rustdoc -p bevy@${BEVY_VERSION} --  -Zunstable-options --output-format json 
+	rustup component add rust-docs-json --toolchain nightly-${NIGHTLY_VERSION}
+	git clone https://github.com/bevyengine/bevy --branch v${BEVY_VERSION} --depth 1 ${BEVY_PATH} || true
+	cd ${BEVY_PATH} && RUSTDOCFLAGS="--document-hidden-items --document-private-items  -Zunstable-options  --output-format json" rustup run nightly-${NIGHTLY_VERSION} cargo doc --workspace --no-deps
+	mkdir -p ./target/doc/
+	cp ${BEVY_PATH}/target/doc/* ./target/doc/

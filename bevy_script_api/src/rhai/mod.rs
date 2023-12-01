@@ -7,7 +7,7 @@ use ::bevy::{
 #[allow(deprecated)]
 use bevy_mod_scripting_rhai::rhai::{CustomType, Dynamic, EvalAltResult, INT};
 
-use crate::{ReflectedValue, ScriptRef, ValueIndex};
+use crate::{ReflectReference, ReflectedValue, ValueIndex};
 
 pub mod bevy;
 pub mod std;
@@ -46,8 +46,9 @@ impl RegisterForeignRhaiType for App {
 }
 
 pub trait RhaiProxyable {
-    fn ref_to_rhai(self_: ScriptRef) -> Result<Dynamic, Box<EvalAltResult>>;
-    fn apply_rhai(self_: &mut ScriptRef, new_val: Dynamic) -> Result<(), Box<EvalAltResult>>;
+    fn ref_to_rhai(self_: ReflectReference) -> Result<Dynamic, Box<EvalAltResult>>;
+    fn apply_rhai(self_: &mut ReflectReference, new_val: Dynamic)
+        -> Result<(), Box<EvalAltResult>>;
 }
 
 pub trait FromRhaiProxy: Sized {
@@ -60,18 +61,18 @@ pub trait ToRhaiProxy {
 
 #[derive(Clone)]
 pub struct ReflectRhaiProxyable {
-    ref_to_rhai: fn(ref_: ScriptRef) -> Result<Dynamic, Box<EvalAltResult>>,
-    apply_rhai: fn(ref_: &mut ScriptRef, new_val: Dynamic) -> Result<(), Box<EvalAltResult>>,
+    ref_to_rhai: fn(ref_: ReflectReference) -> Result<Dynamic, Box<EvalAltResult>>,
+    apply_rhai: fn(ref_: &mut ReflectReference, new_val: Dynamic) -> Result<(), Box<EvalAltResult>>,
 }
 
 impl ReflectRhaiProxyable {
-    pub fn ref_to_rhai(&self, ref_: ScriptRef) -> Result<Dynamic, Box<EvalAltResult>> {
+    pub fn ref_to_rhai(&self, ref_: ReflectReference) -> Result<Dynamic, Box<EvalAltResult>> {
         (self.ref_to_rhai)(ref_)
     }
 
     pub fn apply_rhai(
         &self,
-        ref_: &mut ScriptRef,
+        ref_: &mut ReflectReference,
         new_val: Dynamic,
     ) -> Result<(), Box<EvalAltResult>> {
         (self.apply_rhai)(ref_, new_val)
@@ -97,7 +98,7 @@ impl ToDynamic for ReflectedValue {
     }
 }
 
-impl ToDynamic for ScriptRef {
+impl ToDynamic for ReflectReference {
     fn to_dynamic(self) -> Result<Dynamic, Box<EvalAltResult>> {
         // clone since it's cheap and we don't want to clone self later
         let world = self.world_ptr.clone();
@@ -120,7 +121,7 @@ pub trait ApplyRhai {
     fn apply_rhai(&mut self, value: Dynamic) -> Result<(), Box<EvalAltResult>>;
 }
 
-impl ApplyRhai for ScriptRef {
+impl ApplyRhai for ReflectReference {
     fn apply_rhai(&mut self, value: Dynamic) -> Result<(), Box<EvalAltResult>> {
         let world_ptr = self.world_ptr.clone();
 
@@ -150,7 +151,7 @@ impl ApplyRhai for ScriptRef {
     }
 }
 
-impl ValueIndex<Dynamic> for ScriptRef {
+impl ValueIndex<Dynamic> for ReflectReference {
     type Output = Result<Self, Box<EvalAltResult>>;
 
     fn index(&self, index: Dynamic) -> Self::Output {

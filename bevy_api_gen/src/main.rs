@@ -1,21 +1,21 @@
 use bevy_api_gen_lib::{
-    get_path, path_to_import, Args, Config, ItemData, NewtypeConfig, TemplateData, TypeMeta,
-    ValidType, ImplItem,
+    crate_name, cratepath, lookup_item_crate_source, print_item_variant, Args, Config,
+    CrawledImportData, ImplItem, ImportPath, ImportPathCrawler, ItemData, NewtypeConfig, Source,
+    TemplateData, TypeMeta, ValidType,
 };
 
 use clap::Parser;
 
 use indexmap::{IndexMap, IndexSet};
-use rustdoc_types::{Crate, Id, Impl, Item, ItemEnum, Path, Type};
+use rustdoc_types::{Crate, Id, Impl, ItemEnum};
 use sailfish::{runtime::Buffer, TemplateOnce};
 use serde_json::from_reader;
 use std::{
     borrow::Cow,
-    collections::HashSet,
-    error::Error,
     fmt::Display,
     fs::{read_to_string, File},
     io::{self, BufReader, Write},
+    time::Instant, error::Error,
 };
 
 pub fn main() -> Result<(), io::Error> {
@@ -32,131 +32,143 @@ pub fn main() -> Result<(), io::Error> {
         .collect::<Result<Vec<_>, _>>()?;
 
     let f = read_to_string(&args.config)?;
-    let mut config: Config =
+    let config: Config =
         toml::from_str(&f).map_err(|e| io::Error::new(io::ErrorKind::InvalidData, e))?;
-
-    config.types_.reverse();
-
-    while !config.types_.is_empty() {
-        let t = config.types_.remove(config.types_.len() - 1);
-        config.types.insert(t.type_.to_string(), t);
-    }
 
     generate(crates, config, args);
 
     Ok(())
 }
 
-fn generate_macro_data<'a>(crates: &'a [Crate], config: &'a Config) -> Vec<TypeMeta<'a>> {
-    // the items we want to generate macro instantiations for
-    let mut unmatched_types: HashSet<&String> = config.types.iter().map(|(k, _v)| k).collect();
+fn generate_macro_data<'a>(
+    crate_data: &'a CrawledImportData<'a>,
+    crates: &'a [Crate],
+    primitives: &IndexSet<String>,
+) -> Vec<TypeMeta<'a>> {
+    // now look through everything in the crates
+    let mut type_meta: Vec<_> = Default::default();
 
-    let mut type_meta: Vec<_> = crates
-        .iter()
-        .flat_map(|source| {
-            source
-                .index
-                .iter()
-                .filter(|(_id, item)| {
-                    item.name
-                        .as_ref()
-                        .and_then(|k| config.types.get(k))
-                        .map(|k| k.matches_result(item, source))
-                        .unwrap_or(false)
-                })
-                .map(|(id, item)| {
-                    // extract all available associated constants,methods etc available to this item
-                    let mut self_impl: Option<&Impl> = None;
-                    let mut impl_items: IndexMap<&str, Vec<ImplItem>> = Default::default();
-                    let mut implemented_traits: IndexSet<String> = Default::default();
-                    let wrapped_type = item.name.as_ref().unwrap();
-
-                    let impls = match &item.inner {
-                        ItemEnum::Struct(s) => &s.impls,
-                        ItemEnum::Enum(e) => &e.impls,
-                        _ => panic!("Only structs or enums are allowed!"),
-                    };
-
-                    impls.iter().for_each(|id| {
-                        if let ItemEnum::Impl(impl_) = &source.index.get(id).unwrap().inner {
-                            let mut foreign = false;
-
-                            // filter out impls not for this type
-                            let for_type = ValidType::try_new(false, &impl_.for_).map_err(|e| {
-                                log::debug!("Ignoring impl block as could not parse type it's for: `{e}`")
-                            });
-                            if let Ok(for_) = &for_type {
-                                // TODO: we need a more solid light `Type` enum with proper equality, crate idea? small_syn
-                                
-
-                                foreign = for_.base_ident().is_some_and(|base| config.primitives.contains(base));
-                                // do this check since we don't want duplicate operators with mirrored lhs & rhs
-                                // on both types in the impl
-                                if !for_.base_ident().is_some_and(|base| 
-                                    base == wrapped_type 
-                                        || foreign // primitives are allowed since they don't get their own wrappers
-                                    ){
-                                    log::trace!("Ignoring impl block as it's not for the current type, or a primitive: for: {:?}, current_type: {wrapped_type}, block: {impl_:#?}", for_.base_ident());
-                                    return
-                                }
-                            } else {
-                                return
-                            }
-
-                            match &impl_.trait_ {
-                                Some(t) => {
-                                    implemented_traits.insert(t.name.to_owned());
-                                }
-                                None => self_impl = Some(impl_),
-                            }
-                            impl_.items.iter().for_each(|id| {
-                                let impl_item = source.index.get(id).unwrap();
-                                impl_items
-                                    .entry(impl_item.name.as_ref().unwrap().as_str())
-                                    .or_default()
-                                    .push(ImplItem {
-                                        impl_,
-                                        item: impl_item,
-                                        foreign,
-                                    });
-                            })
-                        } else {
-                            panic!("Expected impl items here!")
-                        }
-                    });
-
-                    let config = config.types.get(item.name.as_ref().unwrap()).unwrap();
-
-                    let path_components = get_path(id, source).unwrap_or_else(|| {
-                        panic!("path not found for {:?} in {:?}", id, source.root)
-                    });
-                    let path_components = path_to_import(path_components, source);
-
-                    TypeMeta {
-                        wrapped_type,
-                        path_components: Cow::Owned(path_components),
-                        source,
-                        config,
-                        item,
-                        self_impl,
-                        impl_items,
-                        crates,
-                        has_global_methods: false,
-                        implemented_traits,
-                    }
-                })
+    // pre process the impls a little
+    let all_impls = crate_data
+        .get_impls()
+        .map(|(impl_crate, impl_id)| {
+            let item = impl_crate.index.get(impl_id).unwrap();
+            if let ItemEnum::Impl(impl_) = &item.inner {
+                let ty = ValidType::try_new(false, &impl_.for_).map_err(|e| format!("impl id: {impl_id:?}, crate: {impl_crate:?}, {e}"))?;
+                let trait_path = if let Some(trait_path) = impl_.trait_.as_ref() {
+                    Some(
+                        crate_data
+                            .get_public_trait_path(&(*impl_crate, trait_path.id.clone()))
+                            .ok_or_else(|| 
+                                format!("Impl id: {impl_id:?}, crate: {impl_crate:?}, No public path to trait")
+                            )?,
+                    )
+                } else {
+                    None
+                };
+                Ok::<_, Box<dyn Error>>((impl_crate, item, ty, trait_path))
+            } else {
+                unreachable!()
+            }
         })
-        .collect();
+        .filter_map(|out| match out {
+            Ok(v) => Some(v),
+            Err(e) => {
+                log::trace!("Impl is filtered out from all impls {e}");
+                None
+            }
+        })
+        .collect::<Vec<_>>();
+    // for found_in_crate in crates {
+    for (crate_, item_id) in crate_data.get_public_types() {
+        let item = crate_.index.get(item_id).unwrap();
 
-    type_meta.iter().for_each(|v| {
-        unmatched_types.remove(&v.wrapped_type);
-    });
+        // extract all available associated constants,methods etc available to this item
+        let generics = match &item.inner {
+            ItemEnum::Struct(s) => &s.generics,
+            ItemEnum::Enum(e) => &e.generics,
+            _ => panic!("paths.types contains unexpected item"),
+        };
 
-    if !unmatched_types.is_empty() {
-        panic!("Some types were not found in the given crates: {unmatched_types:#?}")
+        let mut self_impl: Option<&Impl> = None;
+        let mut impl_items: IndexMap<&str, Vec<ImplItem>> = Default::default();
+        let mut implemented_traits: IndexSet<String> = Default::default();
+        let wrapped_type = item
+            .name
+            .as_ref()
+            .unwrap_or_else(|| panic!("Expected wrapped item to have name: `{item:#?}`"));
+
+        // find all implementations on this type including from foreign crates
+        all_impls
+            .iter()
+            // TODO: we need a more solid light `Type` enum with proper equality, crate idea? small_syn
+            // or somehow resolve these types to stable cross-crate Id's
+            .filter(|(_, _, ty, _)| ty.base_ident().unwrap() == wrapped_type)
+            .for_each(|(impl_crate, item, for_ty, trait_path)| {
+                if let ItemEnum::Impl(impl_) = &item.inner {
+                    let foreign = for_ty
+                        .base_ident()
+                        .is_some_and(|base| primitives.contains(base));
+
+                    match &impl_.trait_ {
+                        Some(t) => {
+                            implemented_traits.insert(t.name.to_owned());
+                        }
+                        None => self_impl = Some(impl_),
+                    }
+
+                    impl_.items.iter().for_each(|id| {
+                        let impl_item = impl_crate.index.get(id).unwrap();
+                        impl_items
+                            .entry(impl_item.name.as_ref().unwrap().as_str())
+                            .or_default()
+                            .push(ImplItem {
+                                impl_,
+                                item: impl_item,
+                                foreign,
+                                trait_import_path: trait_path.cloned(),
+                            });
+                    })
+                } else {
+                    unreachable!()
+                }
+            });
+
+        let config = {
+            // check this type implements reflect
+            if !implemented_traits.contains("Reflect")
+                || !implemented_traits.contains("GetTypeRegistration")
+            {
+                log::debug!("Skipping type: `{wrapped_type}` as it doesn't implemnet Reflect and GetTypeRegistration");
+                continue;
+            };
+
+            NewtypeConfig {
+                type_: wrapped_type.to_owned(),
+                source: Source(crate_.crate_name().to_owned()),
+            }
+        };
+        type_meta.push(TypeMeta {
+            wrapped_type,
+            generics,
+            path_components: crate_data
+                .get_public_item_path(&(*crate_, item_id.to_owned()))
+                .expect("Item has no public path!")
+                .clone(),
+            source: crate_,
+            config: config.clone(),
+            item,
+            self_impl,
+            impl_items,
+            crates,
+            has_global_methods: false,
+            implemented_traits,
+        })
     }
-    // we want to preserve the original ordering from the config file
-    type_meta.sort_by_cached_key(|f| config.types.get_index_of(f.wrapped_type).unwrap());
+    // }
+
+    // sort to ensure stable generation each time
+    type_meta.sort_by_cached_key(|f| f.wrapped_type);
 
     type_meta
 }
@@ -170,8 +182,24 @@ fn unwrap_or_pretty_error<T, E: Display>(val: Result<T, E>) -> T {
 
 fn generate(crates: Vec<Crate>, config: Config, args: Args) {
     pretty_env_logger::init();
-    log::info!("Beginning code gen");
-    let wrapped_items = generate_macro_data(&crates, &config);
+    log::info!("Beginning code gen..");
+    // figure out the import paths for all items we might need
+    let mut path_crawler = ImportPathCrawler::new();
+    for c in &crates {
+        log::info!("Crawling crate: `{}`", crate_name(c));
+        let before = Instant::now();
+        path_crawler.crawl_crate(c);
+        log::info!("Crawling took: {}s", before.elapsed().as_secs_f32())
+    }
+    log::info!("Finalizing crawler output..");
+    let before = Instant::now();
+    let paths = path_crawler.finalize(&crates);
+    log::info!(
+        "Finalizing crawler output took: {}s",
+        before.elapsed().as_secs_f32()
+    );
+
+    let wrapped_items = generate_macro_data(&paths, &crates, &config.primitives);
 
     let mut buffer = Buffer::new();
 
@@ -184,17 +212,18 @@ fn generate(crates: Vec<Crate>, config: Config, args: Args) {
                     .map(|allow_list| allow_list.contains(item.wrapped_type))
                     .unwrap_or(true)
             })
-            .map(|meta| ItemData::new(meta, &config))
+            .filter_map(|meta| ItemData::new(meta, &config).ok())
             .map(|i| (i.import_path.components.last().unwrap().to_owned(), i))
             .collect(),
+        primitives: config.primitives,
     };
 
     unwrap_or_pretty_error(template_data.render_once_to(&mut buffer));
     let output = buffer.into_string();
-    // log::info!("Prettyfying output..");
-    // let parsed_file = unwrap_or_pretty_error(syn::parse_file(output.as_str()));
-    // let pretty_output = prettyplease::unparse(&parsed_file);
+    log::info!("Prettyfying output..");
+    let parsed_file = unwrap_or_pretty_error(syn::parse_file(output.as_str()));
+    let pretty_output = prettyplease::unparse(&parsed_file);
     let mut f = unwrap_or_pretty_error(File::create(args.output));
-    unwrap_or_pretty_error(f.write_all(output.as_bytes()));
+    unwrap_or_pretty_error(f.write_all(pretty_output.as_bytes()));
     unwrap_or_pretty_error(f.flush());
 }

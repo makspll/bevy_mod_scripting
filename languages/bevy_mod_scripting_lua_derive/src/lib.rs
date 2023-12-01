@@ -212,6 +212,7 @@ fn generate_mlua_registration_code(
 
     let args = function.generate_mlua_args()?;
     let body = function.generate_mlua_body(proxied_type_path)?;
+
     Ok(quote_spanned! {body.span()=>
         #(#method_documentation_calls);*
         #container_ident.#tealr_function(#signature,|#args| {
@@ -503,11 +504,11 @@ pub fn impl_lua_proxy(input: TokenStream) -> TokenStream {
 
         #[allow(clippy::all, unused_variables)]
         impl bevy_script_api::lua::LuaProxyable for #proxied_type_path {
-            fn ref_to_lua<'lua>(self_ : bevy_script_api::script_ref::ScriptRef, lua: &'lua #tealr::mlua::Lua) -> #tealr::mlua::Result<#tealr::mlua::Value<'lua>> {
+            fn ref_to_lua<'lua>(self_ : bevy_script_api::script_ref::ReflectReference, lua: &'lua #tealr::mlua::Lua) -> #tealr::mlua::Result<#tealr::mlua::Value<'lua>> {
                 <#proxy_type_ident as #tealr::mlua::ToLua>::to_lua(#proxy_type_ident::new_ref(self_),lua)
             }
 
-            fn apply_lua<'lua>(self_ : &mut bevy_script_api::script_ref::ScriptRef, lua: &'lua #tealr::mlua::Lua, new_val: #tealr::mlua::Value<'lua>) -> #tealr::mlua::Result<()> {
+            fn apply_lua<'lua>(self_ : &mut bevy_script_api::script_ref::ReflectReference, lua: &'lua #tealr::mlua::Lua, new_val: #tealr::mlua::Value<'lua>) -> #tealr::mlua::Result<()> {
                 if let #tealr::mlua::Value::UserData(v) = new_val {
                     let other = v.borrow::<#proxy_type_ident>()?;
                     let other = &other;

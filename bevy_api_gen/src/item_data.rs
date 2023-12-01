@@ -1,11 +1,11 @@
 use std::error::Error;
 
 use indexmap::{IndexMap, IndexSet};
-use rustdoc_types::{ItemEnum, Type};
+use rustdoc_types::{Generics, ItemEnum, Type};
 
 use crate::{
-    cratepath::*, template_data::ImportPath, Config, FunctionData, ImplItem, NameType,
-    OperatorType, TypeMeta, ValidType,
+    cratepath::ImportPath, Config, FunctionData, ImplItem, NameType, OperatorType, TypeMeta,
+    ValidType,
 };
 
 pub enum ItemType {
@@ -17,25 +17,32 @@ pub enum ItemType {
 
 pub struct ItemData {
     pub source_crate: String,
+    pub generics: Generics,
     pub import_path: ImportPath,
     pub implemented_traits: IndexSet<String>,
     pub functions: IndexMap<String, Vec<FunctionData>>,
+    pub has_globals: bool,
     pub fields: Vec<NameType>,
     pub docstrings: Vec<String>,
     pub item_type: ItemType,
 }
 
 impl ItemData {
-    pub fn new(meta: TypeMeta<'_>, config: &Config) -> Self {
-        let import_path: Vec<String> = meta.path_components.into();
-        let import_path: ImportPath = import_path.into();
+    pub fn new(meta: TypeMeta<'_>, config: &Config) -> Result<Self, Box<dyn Error>> {
+        let import_path: ImportPath = meta.path_components;
         let mut functions: IndexMap<String, Vec<FunctionData>> = Default::default();
+
+        if !meta.generics.params.is_empty() && !meta.generics.where_predicates.is_empty() {
+            return Err("Generics are not supported yet".into());
+        };
+
         for (name, impl_items) in &meta.impl_items {
             log::debug!("Processing item: `{name}` in type: `{}`", meta.wrapped_type);
             for ImplItem {
                 impl_,
                 item,
                 foreign,
+                trait_import_path,
             } in impl_items
             {
                 let operator = OperatorType::from_impl_name(name);
@@ -54,16 +61,11 @@ impl ItemData {
                                     })?);
                                 return Ok::<_, Box<dyn Error>>(op.trait_path());
                             }
-
-                            let origin_crate = lookup_item_crate_source(&trait_.id, meta.crates)
-                                .ok_or(format!(
-                                    "Could not find trait in any crates `{}` for function: `{}`",
-                                    trait_.name, name
-                                ))?;
-
-                            let path_components = get_path(&trait_.id, origin_crate).unwrap();
-                            let import_path = path_to_import(path_components, meta.source).into();
-                            Ok(import_path)
+                            log::info!("trait: {}, {:?}", trait_.name, trait_.id);
+                            Ok(trait_import_path
+                                .as_ref()
+                                .expect("Trait without import path")
+                                .clone())
                         })
                         .transpose()?;
 
@@ -179,14 +181,18 @@ impl ItemData {
             fields.extend(name_types);
         };
 
-        Self {
+        Ok(Self {
             source_crate: meta.config.source.0.to_owned(),
             import_path,
+            generics: meta.generics.clone(),
             implemented_traits: meta.implemented_traits,
-            functions,
             docstrings: vec![],
             fields,
             item_type,
-        }
+            has_globals: functions
+                .iter()
+                .any(|(_, fns)| fns.iter().any(|f| f.is_static)),
+            functions,
+        })
     }
 }

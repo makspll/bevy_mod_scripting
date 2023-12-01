@@ -9,18 +9,19 @@ use bevy::reflect::{FromReflect, Reflect, TypePath};
 use bevy_mod_scripting_rhai::rhai::{CustomType, Dynamic, Engine, EvalAltResult, Position};
 
 use crate::{
-    common::std::ScriptVec, error::ReflectionError, ReflectPathElem, ScriptRef, ValueIndex,
+    common::std::ScriptVec, error::ReflectionError, ReflectReference, ReflectionPathElement,
+    ValueIndex,
 };
 
 use super::{ApplyRhai, FromRhaiProxy, RhaiProxyable, ToDynamic, ToRhaiProxy};
 
 impl<T: Clone + RhaiCopy + Reflect> RhaiProxyable for T {
-    fn ref_to_rhai(self_: crate::ScriptRef) -> Result<Dynamic, Box<EvalAltResult>> {
+    fn ref_to_rhai(self_: crate::ReflectReference) -> Result<Dynamic, Box<EvalAltResult>> {
         self_.get_typed(|self_: &T| Ok(Dynamic::from(self_.clone())))?
     }
 
     fn apply_rhai(
-        self_: &mut crate::ScriptRef,
+        self_: &mut crate::ReflectReference,
         new_val: Dynamic,
     ) -> Result<(), Box<EvalAltResult>> {
         let other = if new_val.is::<T>() {
@@ -56,13 +57,13 @@ macro_rules! impl_rhai_proxy {
     ($type:ty, $proxy_type:ty,$self:ident: {$($proxy_expr:tt)*}, $self_to_rhai:ident : {$($proxy_expr_to_rhai:tt)*} ) => {
         impl RhaiProxyable for $type {
             fn ref_to_rhai(
-                self_: crate::ScriptRef,
+                self_: crate::ReflectReference,
             ) -> Result<Dynamic, Box<EvalAltResult>> {
                 self_.get_typed(|$self_to_rhai: &$type| Ok($($proxy_expr_to_rhai)*))?
             }
 
             fn apply_rhai(
-                self_: &mut crate::ScriptRef,
+                self_: &mut crate::ReflectReference,
                 new_val: Dynamic,
             ) -> Result<(), Box<EvalAltResult>> {
                 self_.set_val(Self::from_rhai_proxy(new_val)?)?;
@@ -116,9 +117,9 @@ impl_rhai_proxy!(String as Into);
 impl<T: RhaiProxyable + Reflect + FromReflect + TypePath + Clone + FromRhaiProxy> RhaiProxyable
     for Option<T>
 {
-    fn ref_to_rhai(self_: crate::ScriptRef) -> Result<Dynamic, Box<EvalAltResult>> {
+    fn ref_to_rhai(self_: crate::ReflectReference) -> Result<Dynamic, Box<EvalAltResult>> {
         self_.get_typed(|s: &Option<T>| match s {
-            Some(_) => T::ref_to_rhai(self_.sub_ref(ReflectPathElem::SubReflection {
+            Some(_) => T::ref_to_rhai(self_.sub_ref(ReflectionPathElement::SubReflection {
                 label: "as_ref",
                 get: |ref_| {
                     ref_.downcast_ref::<Option<T>>()
@@ -157,7 +158,7 @@ impl<T: RhaiProxyable + Reflect + FromReflect + TypePath + Clone + FromRhaiProxy
     }
 
     fn apply_rhai(
-        self_: &mut crate::ScriptRef,
+        self_: &mut crate::ReflectReference,
         new_val: Dynamic,
     ) -> Result<(), Box<EvalAltResult>> {
         if new_val.is::<()>() {
@@ -179,7 +180,7 @@ impl<T: RhaiProxyable + Reflect + FromReflect + TypePath + Clone + FromRhaiProxy
             }
 
             T::apply_rhai(
-                &mut self_.sub_ref(ReflectPathElem::SubReflection {
+                &mut self_.sub_ref(ReflectionPathElement::SubReflection {
                     label: "",
                     get: |ref_| {
                         ref_.downcast_ref::<Option<T>>()
@@ -265,7 +266,7 @@ impl<T: Display + RhaiVecElem> Display for RhaiVec<T> {
 }
 
 impl<T: RhaiVecElem> RhaiVec<T> {
-    pub fn new_ref(self_: crate::ScriptRef) -> Self {
+    pub fn new_ref(self_: crate::ReflectReference) -> Self {
         Self(ScriptVec::<T>::new_ref(self_))
     }
 }
@@ -287,7 +288,8 @@ impl<T: RhaiVecElem> std::ops::DerefMut for RhaiVec<T> {
 impl<T: RhaiVecElem> IntoIterator for RhaiVec<T> {
     type Item = Result<Dynamic, Box<EvalAltResult>>;
 
-    type IntoIter = Map<<ScriptVec<T> as IntoIterator>::IntoIter, fn(ScriptRef) -> Self::Item>;
+    type IntoIter =
+        Map<<ScriptVec<T> as IntoIterator>::IntoIter, fn(ReflectReference) -> Self::Item>;
 
     fn into_iter(self) -> Self::IntoIter {
         self.0.into_iter().map(|v| v.to_dynamic())
@@ -295,12 +297,12 @@ impl<T: RhaiVecElem> IntoIterator for RhaiVec<T> {
 }
 
 impl<T: RhaiVecElem> RhaiProxyable for Vec<T> {
-    fn ref_to_rhai(self_: crate::ScriptRef) -> Result<Dynamic, Box<EvalAltResult>> {
+    fn ref_to_rhai(self_: crate::ReflectReference) -> Result<Dynamic, Box<EvalAltResult>> {
         Ok(Dynamic::from(RhaiVec::<T>::new_ref(self_)))
     }
 
     fn apply_rhai(
-        self_: &mut crate::ScriptRef,
+        self_: &mut crate::ReflectReference,
         new_val: Dynamic,
     ) -> Result<(), Box<EvalAltResult>> {
         if new_val.is::<Vec<Dynamic>>() {

@@ -337,7 +337,7 @@ To see more complex applications of this library have a look at the examples:
 - [lua - event recipients](examples/lua/event_recipients.rs)
 - [lua - bevy API](examples/lua/bevy_api.rs)
 - [rhai - bevy API](examples/rhai/bevy_api.rs)
-- [generating statically typed lua wrappers + ScriptRef system](examples/wrappers.rs)
+- [generating statically typed lua wrappers + ReflectReference system](examples/wrappers.rs)
 - [lua - documentation generation + lua static typing](examples/lua/documentation_gen.rs)
 - [lua - bevy console integration](examples/lua/console_integration.rs)
 - [rhai - bevy console integration](examples/rhai/console_integration.rs)

@@ -34,20 +34,12 @@ pub struct Config {
     #[serde(skip_deserializing, default)]
     pub types: IndexMap<String, NewtypeConfig>,
 
-    #[serde(rename = "types")]
-    pub types_: Vec<NewtypeConfig>,
-
-    pub imports: String,
-    pub other: String,
-
-    pub lua_api_defaults: String,
-
     /// Describes the set of non generic things which are representible
     /// as simple lua types and don't need UserData proxies
     pub primitives: IndexSet<String>,
 }
 
-#[derive(Serialize, Deserialize, Debug, Hash, PartialEq, Eq)]
+#[derive(Serialize, Deserialize, Debug, Hash, PartialEq, Eq, Clone)]
 pub struct NewtypeConfig {
     #[serde(rename = "type")]
     pub type_: String,
@@ -56,7 +48,7 @@ pub struct NewtypeConfig {
     pub source: Source,
 }
 
-#[derive(Serialize, Deserialize, Debug, PartialEq, Eq, Hash)]
+#[derive(Serialize, Deserialize, Debug, PartialEq, Eq, Hash, Clone)]
 pub struct Source(pub String);
 
 impl Default for Source {

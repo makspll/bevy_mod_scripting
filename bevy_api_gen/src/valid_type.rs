@@ -90,9 +90,8 @@ impl ValidType {
                                     processed_args.push(ValidType::try_new(is_receiver, type_)?)
                                 }
                                 _ => {
-                                    return Err(
-                                        "Only types are allowed as generic arguments".to_owned()
-                                    )
+                                    return Err(format!("Non Type generic arg in type: {path:?}")
+                                        .to_owned())
                                 }
                             }
                         }

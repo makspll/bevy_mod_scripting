@@ -9,7 +9,23 @@ impl bevy_mod_scripting_lua::tealr::mlu::ExportInstances for BevyAPIGlobals {
         self,
         instances: &mut T,
     ) -> bevy_mod_scripting_lua::tealr::mlu::mlua::Result<()> {
-    
+        <% for (name, item) in &items { %>
+        <% if !item.has_globals {continue} %>
+        instances.add_instance("<%- name %>",  
+            bevy_mod_scripting_lua::tealr::mlu::UserDataProxy::<Lua<%- name %>>::new)?;
+        <% } %>
+        instances.add_instance(
+            "world",
+            crate::lua::util::DummyTypeName::<crate::lua::bevy::LuaWorld>::new,
+        )?;
+        instances.add_instance(
+            "script",
+            crate::lua::util::DummyTypeName::<crate::lua::bevy::LuaScriptData>::new,
+        )?;
+        instances.add_instance(
+            "entity",
+            crate::lua::util::DummyTypeName::<crate::lua::bevy::LuaEntity>::new,
+        )?;
         Ok(())
     }
 }
@@ -32,6 +48,20 @@ impl APIProvider for LuaBevyAPIProvider {
     fn get_doc_fragment(&self) -> Option<Self::DocTarget> {
         Some(LuaDocFragment::new("BevyAPI", |tw| {
             tw
+                .document_global_instance::<BevyAPIGlobals>().expect("Something went wrong documenting globals")
+            <% for (name,item) in &items { %>
+                .process_type::<Lua<%- name %>>()
+                <% if item.has_globals { %>
+                .process_type::<bevy_mod_scripting_lua::tealr::mlu::UserDataProxy<Lua<%- name %>>>()
+                <% } %>
+            <% } %>
+                .process_type::<ReflectedValue>()
+                .process_type::<crate::lua::bevy::LuaWorld>()
+                .process_type::<bevy_mod_scripting_lua::tealr::mlu::UserDataProxy<crate::lua::bevy::LuaWorld>>()
+                .process_type::<crate::lua::bevy::LuaScriptData>()
+                .process_type::<bevy_mod_scripting_lua::tealr::mlu::UserDataProxy<crate::lua::bevy::LuaScriptData>>()
+                .process_type::<crate::lua::bevy::LuaTypeRegistration>()
+                .process_type::<crate::lua::std::LuaVec<T>>()
         }))
     }
 
@@ -69,6 +99,16 @@ impl APIProvider for LuaBevyAPIProvider {
     }
 
     fn register_with_app(&self, app: &mut App) {
-    
+        <% for (name,item) in &items { %>
+        app.register_foreign_lua_type::<<%- item.import_path
+                .replace_prefix("bevy_", "bevy::")
+                .replace_prefix("glam", "bevy::math")
+                .to_string() 
+            %>>();
+        <% } %>
+        app.register_foreign_lua_type::<bevy::prelude::Entity>();
+        <% for primitive in primitives { %>
+        app.register_foreign_lua_type::<<%- primitive%>>();
+        <% } %>
     }
 }

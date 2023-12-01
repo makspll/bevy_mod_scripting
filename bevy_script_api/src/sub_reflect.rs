@@ -1,7 +1,6 @@
 use parking_lot::RwLock;
 use std::fmt;
 use std::fmt::{Debug, Display};
-use std::ops::{Deref, DerefMut};
 use std::{borrow::Cow, sync::Weak};
 
 use bevy::{
@@ -12,7 +11,10 @@ use bevy::{
 use crate::error::ReflectionError;
 use bevy_mod_scripting_core::world::WorldPointer;
 
-/// The base of a reflect path, i.e. the top-level object or source. Reflections paths are always relative to some reflect base
+/// The base of a reflect path, i.e. the top-level object or source.
+/// Reflections paths are always relative to some reflect base.
+///
+/// If the reflection base and reflection path are both valid we can use them to traverse reflect types
 #[derive(Clone)]
 pub(crate) enum ReflectBase {
     /// A bevy component reference
@@ -24,23 +26,7 @@ pub(crate) enum ReflectBase {
     Resource { res: ReflectResource },
 
     /// A script owned reflect type (for example a vector constructed in lua)
-    /// These can be de-allocated whenever the script gc picks them up, so every script owned object
-    /// has safety features.
-    ///
-    /// It's extremely important that the userdata aliasing rules are upheld.
-    /// this is protected in  rust -> lua accesses using the valid pointer. on the lua side,
-    /// we handle references directly which are safe. If those accesses are ever mixed, one must be extremely careful!
-    /// Safety:
-    /// this is only accessible within the crate but internally, as long as the pointer points to a value whose lifetime is guarded by the
-    /// valid pointer, we are okay to dereference the pointer. Script owned values are of course owned by us so we can get (well mlua)
-    /// both a mutable and non mutable reference no problem assuming mlua does not do anything unexpected TODO: double check :) or box
-    ScriptOwned {
-        /// We use the rwlock to validate reads and writes
-        /// When a script value goes out of scope, it checks there are no strong references
-        /// to this value, if there are it panicks,
-        /// so being able to acquire a read/write lock is enough to validate the lifetime
-        val: Weak<RwLock<dyn Reflect>>,
-    },
+    ScriptOwned { val: Weak<RwLock<dyn Reflect>> },
 }
 
 /// Safety: we can safely send this value across thread boundaries
@@ -78,24 +64,14 @@ impl fmt::Display for ReflectBase {
 pub type Get = fn(&dyn Reflect) -> Result<&dyn Reflect, ReflectionError>;
 pub type GetMut = fn(&mut dyn Reflect) -> Result<&mut dyn Reflect, ReflectionError>;
 
-pub type IndexedGet = fn(usize, &dyn Reflect) -> Result<&dyn Reflect, ReflectionError>;
-pub type IndexedGetMut = fn(usize, &mut dyn Reflect) -> Result<&mut dyn Reflect, ReflectionError>;
-
-/// Stores the path of reflection + sub reflection from a root reflect reference.
-///
-/// Also allows accessing elements beyond reach of the normal reflect API
+/// Stores a part of the path of reflection + sub reflection from a root reflect reference.
+/// Sub reflection allows us to access values unreachable by standard reflection.
 #[derive(Clone)]
-pub(crate) enum ReflectPathElem {
+pub(crate) enum ReflectionPathElement {
     SubReflection {
         label: &'static str,
         get: Get,
         get_mut: GetMut,
-    },
-    SubReflectionIndexed {
-        label: &'static str,
-        index: usize,
-        get: IndexedGet,
-        get_mut: IndexedGetMut,
     },
     /// Access to a struct field
     FieldAccess(Cow<'static, str>),
@@ -103,17 +79,12 @@ pub(crate) enum ReflectPathElem {
     IndexAccess(usize), // TODO: Map access
 }
 
-impl Debug for ReflectPathElem {
+impl Debug for ReflectionPathElement {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
             Self::SubReflection { label, .. } => f
                 .debug_struct("SubReflection")
                 .field("label", label)
-                .finish(),
-            Self::SubReflectionIndexed { label, index, .. } => f
-                .debug_struct("SubReflection")
-                .field("label", label)
-                .field("index", index)
                 .finish(),
             Self::FieldAccess(arg0) => f.debug_tuple("FieldAccess").field(arg0).finish(),
             Self::IndexAccess(arg0) => f.debug_tuple("IndexAccess").field(arg0).finish(),
@@ -121,26 +92,19 @@ impl Debug for ReflectPathElem {
     }
 }
 
-impl Display for ReflectPathElem {
+impl Display for ReflectionPathElement {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            ReflectPathElem::SubReflection { label, .. } => {
+            ReflectionPathElement::SubReflection { label, .. } => {
                 f.write_str(".")?;
                 f.write_str(label)?;
                 f.write_str("()")
             }
-            ReflectPathElem::SubReflectionIndexed { label, index, .. } => {
-                f.write_str(".")?;
-                f.write_str(label)?;
-                f.write_str("(")?;
-                f.write_str(&index.to_string())?;
-                f.write_str(")")
-            }
-            ReflectPathElem::FieldAccess(s) => {
+            ReflectionPathElement::FieldAccess(s) => {
                 f.write_str(".")?;
                 f.write_str(s)
             }
-            ReflectPathElem::IndexAccess(i) => {
+            ReflectionPathElement::IndexAccess(i) => {
                 f.write_str("[")?;
                 f.write_str(&i.to_string())?;
                 f.write_str("]")
@@ -149,15 +113,14 @@ impl Display for ReflectPathElem {
     }
 }
 
-impl ReflectPathElem {
+impl ReflectionPathElement {
     pub(crate) fn sub_ref<'a>(
         &self,
         base: &'a dyn Reflect,
     ) -> Result<&'a dyn Reflect, ReflectionError> {
         match self {
-            ReflectPathElem::SubReflection { get, .. } => get(base),
-            ReflectPathElem::SubReflectionIndexed { get, index, .. } => get(*index, base),
-            ReflectPathElem::FieldAccess(field) => match base.reflect_ref() {
+            ReflectionPathElement::SubReflection { get, .. } => get(base),
+            ReflectionPathElement::FieldAccess(field) => match base.reflect_ref() {
                 ReflectRef::Struct(s) => {
                     s.field(field)
                         .ok_or_else(|| ReflectionError::InvalidReflectionPath {
@@ -170,7 +133,7 @@ impl ReflectPathElem {
                     msg: "No such field".to_owned(),
                 }),
             },
-            ReflectPathElem::IndexAccess(index) => match base.reflect_ref() {
+            ReflectionPathElement::IndexAccess(index) => match base.reflect_ref() {
                 ReflectRef::TupleStruct(s) => {
                     s.field(*index)
                         .ok_or_else(|| ReflectionError::InvalidReflectionPath {
@@ -212,9 +175,8 @@ impl ReflectPathElem {
         base: &'a mut dyn Reflect,
     ) -> Result<&'a mut dyn Reflect, ReflectionError> {
         match self {
-            ReflectPathElem::SubReflection { get_mut, .. } => get_mut(base),
-            ReflectPathElem::SubReflectionIndexed { get_mut, index, .. } => get_mut(*index, base),
-            ReflectPathElem::FieldAccess(field) => match base.reflect_mut() {
+            ReflectionPathElement::SubReflection { get_mut, .. } => get_mut(base),
+            ReflectionPathElement::FieldAccess(field) => match base.reflect_mut() {
                 ReflectMut::Struct(s) => {
                     s.field_mut(field)
                         .ok_or_else(|| ReflectionError::InvalidReflectionPath {
@@ -227,7 +189,7 @@ impl ReflectPathElem {
                     msg: "No such field".to_owned(),
                 }),
             },
-            ReflectPathElem::IndexAccess(index) => match base.reflect_mut() {
+            ReflectionPathElement::IndexAccess(index) => match base.reflect_mut() {
                 ReflectMut::TupleStruct(s) => {
                     s.field_mut(*index)
                         .ok_or_else(|| ReflectionError::InvalidReflectionPath {
@@ -266,13 +228,13 @@ impl ReflectPathElem {
 }
 
 #[derive(Clone, Debug)]
-pub(crate) struct ReflectPath {
+pub(crate) struct ReflectionPath {
     base: ReflectBase,
     // most of these will be very short, people don't make many nested hashmaps vecs etc.
-    accesses: Vec<ReflectPathElem>,
+    accesses: Vec<ReflectionPathElement>,
 }
 
-impl Display for ReflectPath {
+impl Display for ReflectionPath {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         f.write_str(&self.base.to_string())?;
         for access in &self.accesses {
@@ -282,7 +244,7 @@ impl Display for ReflectPath {
     }
 }
 
-impl ReflectPath {
+impl ReflectionPath {
     pub fn new(base: ReflectBase) -> Self {
         Self {
             base,
@@ -293,12 +255,12 @@ impl ReflectPath {
     /// pushes another sub reflect level access to the end of this access.
     ///
     /// The most recent sub access added will be executed last.
-    pub fn push(&mut self, elem: ReflectPathElem) {
+    pub fn push(&mut self, elem: ReflectionPathElement) {
         self.accesses.push(elem);
     }
 
     /// Creates a new composite sub reflect
-    pub fn new_sub(&self, elem: ReflectPathElem) -> Self {
+    pub fn new_sub(&self, elem: ReflectionPathElement) -> Self {
         let mut accesses = self.accesses.clone();
 
         accesses.push(elem);
@@ -373,10 +335,7 @@ impl ReflectPath {
                         reason: "Given component does not exist on this entity".to_owned(),
                     }
                 })?)?;
-                // unsafe since pointer may be dangling
-                let o = f(ref_);
-                drop(g);
-                Ok(o)
+                Ok(f(ref_))
             }
             ReflectBase::Resource { res } => {
                 let g = world_ptr.read();
@@ -387,10 +346,7 @@ impl ReflectPath {
                         reason: "Given resource does not exist in this world".to_owned(),
                     }
                 })?)?;
-                // unsafe since pointer may be dangling
-                let o = f(ref_);
-                drop(g);
-                Ok(o)
+                Ok(f(ref_))
             }
             ReflectBase::ScriptOwned { val } => {
                 let g = val
@@ -398,11 +354,7 @@ impl ReflectPath {
                     .expect("Trying to access cached value from previous frame");
 
                 let g = g.try_read().expect("Rust safety violation: attempted to borrow value {self:?} while it was already mutably borrowed");
-                // Safety: we know the pointer points to a valid value and is live, no other value has mutable access to it either
-                let ref_ = self.walk_path(&*g)?;
-                let o = f(ref_);
-                drop(g);
-                Ok(o)
+                Ok(f(self.walk_path(&*g)?))
             }
         }
     }
@@ -424,10 +376,7 @@ impl ReflectPath {
                         })?
                         .into_inner(),
                 )?;
-                // unsafe since pointer may be dangling
-                let o = f(ref_);
-                drop(g);
-                Ok(o)
+                Ok(f(ref_))
             }
             ReflectBase::Resource { res } => {
                 let mut g = world_ptr.write();
@@ -440,22 +389,14 @@ impl ReflectPath {
                         })?
                         .into_inner(),
                 )?;
-                // unsafe since pointer may be dangling
-                let o = f(ref_);
-                drop(g);
-                Ok(o)
+                Ok(f(ref_))
             }
             ReflectBase::ScriptOwned { val } => {
                 let g = val
                     .upgrade()
                     .expect("Trying to access cached value from previous frame");
-
                 let mut g = g.try_write().expect("Rust safety violation: attempted to borrow value {self:?} while it was already mutably borrowed");
-                // Safety: we know the pointer points to a valid value and is live, no other value has access to it either
-                let ref_ = self.walk_path_mut(&mut *g)?;
-                let o = f(ref_);
-                drop(g);
-                Ok(o)
+                Ok(f(self.walk_path_mut(&mut *g)?))
             }
         }
     }

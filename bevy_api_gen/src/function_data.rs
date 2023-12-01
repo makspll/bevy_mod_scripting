@@ -2,7 +2,7 @@ use std::error::Error;
 
 use rustdoc_types::{Crate, Item, ItemEnum};
 
-use crate::{template_data::ImportPath, Config, NameType, ValidType};
+use crate::{Config, ImportPath, NameType, ValidType};
 
 #[derive(Clone, Copy)]
 pub enum OperatorType {
@@ -17,7 +17,7 @@ pub enum OperatorType {
 
 impl OperatorType {
     pub fn trait_path(self) -> ImportPath {
-        match self {
+        let components = match self {
             OperatorType::Add => "std::ops::Add",
             OperatorType::Sub => "std::ops::Sub",
             OperatorType::Div => "std::ops::Div",
@@ -28,8 +28,8 @@ impl OperatorType {
         }
         .split("::")
         .map(str::to_owned)
-        .collect::<Vec<_>>()
-        .into()
+        .collect::<Vec<_>>();
+        ImportPath::new_public(components)
     }
     pub fn from_impl_name(impl_name: &str) -> Option<Self> {
         match impl_name {
@@ -162,7 +162,7 @@ impl FunctionData {
             .filter(|first_arg| first_arg.type_.is_receiver());
         let kind = receiver
             .map(|receiver| {
-                if let Some(_) = operator {
+                if operator.is_some() {
                     "MetaFunction".to_owned()
                 } else if matches!(receiver.type_, ValidType::Ref { is_mut, .. } if is_mut) {
                     "MutatingMethod".to_owned()

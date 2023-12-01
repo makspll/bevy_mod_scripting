@@ -133,7 +133,6 @@ impl<A: LuaArg> ScriptHost for LuaScriptHost<A> {
         ctx: &mut Self::ScriptContext,
         providers: &mut APIProviders<Self>,
     ) -> Result<(), ScriptError> {
-        // safety: this is fine, world will only ever be accessed
         providers.setup_all(script_data, ctx)
     }
 

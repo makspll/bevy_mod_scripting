@@ -2,10 +2,10 @@ use std::marker::PhantomData;
 
 use bevy::reflect::{FromReflect, TypePath};
 
-use crate::{error::ReflectionError, ScriptRef, ValueIndex};
+use crate::{error::ReflectionError, ReflectReference, ValueIndex};
 
 pub struct ScriptVec<T> {
-    pub(crate) ref_: ScriptRef,
+    pub(crate) ref_: ReflectReference,
     _ph: PhantomData<T>,
 }
 
@@ -40,7 +40,7 @@ impl<T: std::fmt::Display + FromReflect + TypePath> std::fmt::Display for Script
 }
 
 impl<T: FromReflect + TypePath> ScriptVec<T> {
-    pub fn new_ref(ref_: ScriptRef) -> Self {
+    pub fn new_ref(ref_: ReflectReference) -> Self {
         Self {
             ref_,
             _ph: PhantomData,
@@ -87,14 +87,14 @@ impl<T: FromReflect + TypePath> ScriptVec<T> {
 }
 
 impl<T> ValueIndex<usize> for ScriptVec<T> {
-    type Output = ScriptRef;
+    type Output = ReflectReference;
 
     fn index(&self, index: usize) -> Self::Output {
         self.ref_.index(index)
     }
 }
 
-impl<T> From<ScriptVec<T>> for ScriptRef {
+impl<T> From<ScriptVec<T>> for ReflectReference {
     fn from(v: ScriptVec<T>) -> Self {
         v.ref_
     }
@@ -107,7 +107,7 @@ pub struct ScriptVecIterator<T> {
 }
 
 impl<T: FromReflect> Iterator for ScriptVecIterator<T> {
-    type Item = ScriptRef;
+    type Item = ReflectReference;
 
     fn next(&mut self) -> Option<Self::Item> {
         let nxt = (self.current < self.len).then(|| self.base.index(self.current));
@@ -117,7 +117,7 @@ impl<T: FromReflect> Iterator for ScriptVecIterator<T> {
 }
 
 impl<T: FromReflect + TypePath> IntoIterator for ScriptVec<T> {
-    type Item = ScriptRef;
+    type Item = ReflectReference;
 
     type IntoIter = ScriptVecIterator<T>;
 

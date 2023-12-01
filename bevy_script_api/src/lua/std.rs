@@ -20,8 +20,8 @@ use paste::paste;
 use crate::common::std::ScriptVec;
 use crate::{
     error::ReflectionError,
-    script_ref::{ScriptRef, ValueIndex},
-    sub_reflect::ReflectPathElem,
+    script_ref::{ReflectReference, ValueIndex},
+    sub_reflect::ReflectionPathElement,
 };
 
 use super::util::to_lua_idx;
@@ -37,11 +37,11 @@ macro_rules! impl_proxyable_by_copy(
         paste! {
             $(
                 impl $crate::lua::LuaProxyable for $num_ty {
-                    fn ref_to_lua(self_: $crate::script_ref::ScriptRef,lua: & tealr::mlu::mlua::Lua) -> tealr::mlu::mlua::Result<tealr::mlu::mlua::Value< '_> >  {
+                    fn ref_to_lua(self_: $crate::script_ref::ReflectReference,lua: & tealr::mlu::mlua::Lua) -> tealr::mlu::mlua::Result<tealr::mlu::mlua::Value< '_> >  {
                         self_.get_typed(|self_ : &Self| self_.to_lua(lua))?
                     }
 
-                    fn apply_lua< 'lua>(self_: &mut $crate::script_ref::ScriptRef,lua: & 'lua tealr::mlu::mlua::Lua,new_val:tealr::mlu::mlua::Value< 'lua>) -> tealr::mlu::mlua::Result<()>  {
+                    fn apply_lua< 'lua>(self_: &mut $crate::script_ref::ReflectReference,lua: & 'lua tealr::mlu::mlua::Lua,new_val:tealr::mlu::mlua::Value< 'lua>) -> tealr::mlu::mlua::Result<()>  {
                         self_.set_val(Self::from_lua(new_val,lua)?)?;
                         Ok(())
                     }
@@ -71,12 +71,12 @@ impl_proxyable_by_copy!(i8, i16, i32, i64, i128, isize);
 impl_proxyable_by_copy!(u8, u16, u32, u64, u128, usize);
 
 impl LuaProxyable for String {
-    fn ref_to_lua(self_: ScriptRef, lua: &Lua) -> mlua::Result<Value> {
+    fn ref_to_lua(self_: ReflectReference, lua: &Lua) -> mlua::Result<Value> {
         self_.get_typed(|self_: &String| self_.as_str().to_lua(lua))?
     }
 
     fn apply_lua<'lua>(
-        self_: &mut ScriptRef,
+        self_: &mut ReflectReference,
         lua: &'lua Lua,
         new_val: Value<'lua>,
     ) -> mlua::Result<()> {
@@ -102,10 +102,10 @@ impl<'lua> ToLuaProxy<'lua> for String {
 impl<T: LuaProxyable + Reflect + FromReflect + TypePath + for<'a> FromLuaProxy<'a> + Clone>
     LuaProxyable for Option<T>
 {
-    fn ref_to_lua(self_: ScriptRef, lua: &Lua) -> mlua::Result<Value> {
+    fn ref_to_lua(self_: ReflectReference, lua: &Lua) -> mlua::Result<Value> {
         self_.get_typed(|s: &Option<T>| match s {
             Some(_) => T::ref_to_lua(
-                self_.sub_ref(ReflectPathElem::SubReflection {
+                self_.sub_ref(ReflectionPathElement::SubReflection {
                     label: "as_ref",
                     get: |ref_| {
                         ref_.downcast_ref::<Option<T>>()
@@ -146,7 +146,7 @@ impl<T: LuaProxyable + Reflect + FromReflect + TypePath + for<'a> FromLuaProxy<'
     }
 
     fn apply_lua<'lua>(
-        self_: &mut ScriptRef,
+        self_: &mut ReflectReference,
         lua: &'lua Lua,
         new_val: Value<'lua>,
     ) -> mlua::Result<()> {
@@ -168,7 +168,7 @@ impl<T: LuaProxyable + Reflect + FromReflect + TypePath + for<'a> FromLuaProxy<'
             }
 
             T::apply_lua(
-                &mut self_.sub_ref(ReflectPathElem::SubReflection {
+                &mut self_.sub_ref(ReflectionPathElement::SubReflection {
                     label: "",
                     get: |ref_| {
                         ref_.downcast_ref::<Option<T>>()
@@ -320,7 +320,7 @@ impl<
                 |ctx, s, _: ()| {
                     let len = s.len()?;
                     let mut curr_idx = 0;
-                    let ref_: ScriptRef = s.clone().into();
+                    let ref_: ReflectReference = s.clone().into();
                     TypedFunction::from_rust_mut(
                         move |ctx, ()| {
                             let o = if curr_idx < len {
@@ -387,12 +387,12 @@ impl<
             + std::fmt::Debug,
     > LuaProxyable for Vec<T>
 {
-    fn ref_to_lua(self_: ScriptRef, lua: &Lua) -> mlua::Result<Value> {
+    fn ref_to_lua(self_: ReflectReference, lua: &Lua) -> mlua::Result<Value> {
         LuaVec::<T>::new_ref(self_).to_lua(lua)
     }
 
     fn apply_lua<'lua>(
-        self_: &mut ScriptRef,
+        self_: &mut ReflectReference,
         lua: &'lua Lua,
         new_val: Value<'lua>,
     ) -> mlua::Result<()> {

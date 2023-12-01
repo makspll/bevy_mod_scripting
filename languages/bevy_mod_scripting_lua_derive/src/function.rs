@@ -3,7 +3,7 @@ use darling::{FromMeta, FromAttributes, util::Flag};
 use proc_macro2::{Ident, Span};
 use quote::{quote_spanned, quote, ToTokens, format_ident};
 use strum::{Display, EnumString, EnumIter};
-use syn::{Meta, Path, Block, punctuated::Punctuated, Token, LitStr, visit_mut::VisitMut, spanned::Spanned};
+use syn::{Meta, Path, Block, punctuated::Punctuated, Token, LitStr, visit_mut::VisitMut, spanned::Spanned, LitInt};
 use vec1::Vec1;
 
 use crate::{arg::Arg, signature::Signature, visitor::{LuaTypeConstructorVisitor, LuaSimpleTypeWrapper}, SELF_ALIAS, RAW_OUT_ALIAS, PROXY_OUT_ALIAS};
@@ -296,7 +296,16 @@ impl Function {
                 as bevy_script_api::common::bevy::GetWorld>
                 ::get_world(#ctxt_name)?
         );
-        let field_name = &self.name;
+
+        let field_name = {
+            let str_name = self.name.to_string();
+
+            if str_name.starts_with('_') && str_name[1..].parse::<usize>().is_ok() {
+                syn::Lit::Int(LitInt::new(&str_name[1..], self.name.span())).to_token_stream()
+            } else {
+                self.name.clone().to_token_stream()
+            }
+        };
         let field_name_str =  syn::Lit::Str(LitStr::new(&self.name.to_string(), self.name.span()));
         let proxy_output_type = LuaTypeConstructorVisitor::new(true,false).visit(&field_type.type_);
 
@@ -305,7 +314,7 @@ impl Function {
             // getter
             t if t.contains_proxy_type() 
                 && self.attrs.kind.is_field_getter() => quote!(
-                    let #raw_output_ident = #proxy_output_type::new_ref(#self_name.script_ref(#world_ptr).index(std::borrow::Cow::Borrowed(#field_name_str)));
+                    let #raw_output_ident = #proxy_output_type::new_ref(bevy_script_api::script_ref::ValueIndex::index(& #self_name.reflect_ref(#world_ptr), std::borrow::Cow::Borrowed(#field_name_str)));
                 ),
             // setter
             t if t.contains_proxy_type() => {
@@ -314,16 +323,16 @@ impl Function {
                     .ok_or_else(|| syn::Error::new(self.sig.span, "Field setter requires a single argument which is missing"))?
                     .name;
                 quote!(
-                    let #raw_output_ident = #first_arg_name.apply_self_to_base(&mut #self_name.script_ref(#world_ptr).index(std::borrow::Cow::Borrowed(#field_name_str)))?;
+                    let #raw_output_ident = #first_arg_name.apply_self_to_base(&mut bevy_script_api::script_ref::ValueIndex::index(& #self_name.reflect_ref(#world_ptr), std::borrow::Cow::Borrowed(#field_name_str)))?;
                 )
             },
 
-            // plain reflection, index into the ScriptRef with the field path
+            // plain reflection, index into the ReflectReference with the field path
             // getter
             SimpleType::Type(syn::Type::Path(path)) 
                 if path.path.is_ident("ReflectedValue") 
                 && self.attrs.kind.is_field_getter() => quote!(
-                    let #raw_output_ident = #self_name.script_ref(#world_ptr).index(std::borrow::Cow::Borrowed(#field_name_str));
+                    let #raw_output_ident = bevy_script_api::script_ref::ValueIndex::index(& #self_name.reflect_ref(#world_ptr), std::borrow::Cow::Borrowed(#field_name_str));
                 ),
             // setter
             SimpleType::Type(syn::Type::Path(path)) 
@@ -332,7 +341,7 @@ impl Function {
                         .ok_or_else(|| syn::Error::new(self.sig.span, "Field setter requires a single argument which is missing"))?
                         .name;
                     quote!(
-                        let #raw_output_ident = #self_name.script_ref(#world_ptr).index(std::borrow::Cow::Borrowed(#field_name_str)).apply(&#first_arg_name.ref_)?;
+                        let #raw_output_ident =  bevy_script_api::script_ref::ValueIndex::index(& #self_name.reflect_ref(#world_ptr), std::borrow::Cow::Borrowed(#field_name_str)).apply(&#first_arg_name.ref_)?;
                     )
                 },
 

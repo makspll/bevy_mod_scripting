@@ -3,7 +3,7 @@ use std::{
     sync::Arc,
 };
 
-use crate::ScriptRef;
+use crate::ReflectReference;
 /// Common functionality for all script hosts
 use bevy::{
     ecs::system::Command,
@@ -166,7 +166,7 @@ impl ScriptWorld {
         &self,
         entity: Entity,
         comp_type: ScriptTypeRegistration,
-    ) -> Result<ScriptRef, ScriptError> {
+    ) -> Result<ReflectReference, ScriptError> {
         let mut w = self.write();
 
         let mut entity_ref = w
@@ -195,7 +195,7 @@ impl ScriptWorld {
             bevy::reflect::TypeInfo::Enum(_) => component_data.insert(&mut entity_ref, &DynamicEnum::default())
         };
 
-        Ok(ScriptRef::new_component_ref(
+        Ok(ReflectReference::new_component_ref(
             component_data.clone(),
             entity,
             self.clone().into(),
@@ -206,7 +206,7 @@ impl ScriptWorld {
         &self,
         entity: Entity,
         comp_type: ScriptTypeRegistration,
-    ) -> Result<Option<ScriptRef>, ScriptError> {
+    ) -> Result<Option<ReflectReference>, ScriptError> {
         let w = self.read();
 
         let entity_ref = w
@@ -218,7 +218,7 @@ impl ScriptWorld {
         })?;
 
         Ok(component_data.reflect(entity_ref).map(|_component| {
-            ScriptRef::new_component_ref(component_data.clone(), entity, self.clone().into())
+            ReflectReference::new_component_ref(component_data.clone(), entity, self.clone().into())
         }))
     }
 
@@ -260,16 +260,16 @@ impl ScriptWorld {
     pub fn get_resource(
         &self,
         res_type: ScriptTypeRegistration,
-    ) -> Result<Option<ScriptRef>, ScriptError> {
+    ) -> Result<Option<ReflectReference>, ScriptError> {
         let w = self.read();
 
         let resource_data = res_type.data::<ReflectResource>().ok_or_else(|| {
             ScriptError::Other(format!("Not a resource {}", res_type.short_name()))
         })?;
 
-        Ok(resource_data
-            .reflect(&w)
-            .map(|_res| ScriptRef::new_resource_ref(resource_data.clone(), self.clone().into())))
+        Ok(resource_data.reflect(&w).map(|_res| {
+            ReflectReference::new_resource_ref(resource_data.clone(), self.clone().into())
+        }))
     }
 
     pub fn has_resource(&self, res_type: ScriptTypeRegistration) -> Result<bool, ScriptError> {
