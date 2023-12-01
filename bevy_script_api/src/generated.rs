@@ -168,11 +168,7 @@ pub struct Anchor;
     fn field_len (&self, ) -> usize;"#,
     ]
 )]
-pub struct AnimationClip {
-    curves: ReflectedValue,
-    paths: ReflectedValue,
-    duration: f32,
-}
+pub struct AnimationClip {}
 #[derive(LuaProxy)]
 #[proxy(
     derive(),
@@ -182,11 +178,7 @@ pub struct AnimationClip {
     fn field_len (&self, ) -> usize;"#,
     ]
 )]
-pub struct AnimationPlayer {
-    paused: bool,
-    animation: ReflectedValue,
-    transitions: ReflectedValue,
-}
+pub struct AnimationPlayer {}
 #[derive(LuaProxy)]
 #[proxy(
     derive(clone, debug),
@@ -196,7 +188,7 @@ pub struct AnimationPlayer {
     fn assert_receiver_is_total_eq (&self, );"#,
     ]
 )]
-pub struct AssetPathId(ReflectedValue, ReflectedValue);
+pub struct AssetPathId();
 #[derive(LuaProxy)]
 #[proxy(
     derive(clone, debug),
@@ -248,7 +240,7 @@ pub struct BVec3 {
     fn default () -> Self;"#,
     ]
 )]
-pub struct BVec3A(ReflectedValue);
+pub struct BVec3A();
 #[derive(LuaProxy)]
 #[proxy(
     derive(clone, debug),
@@ -282,7 +274,7 @@ pub struct BVec4 {
     fn eq (&self, #[proxy] rhs : &Self,) -> bool;"#,
     ]
 )]
-pub struct BVec4A(ReflectedValue);
+pub struct BVec4A();
 #[derive(LuaProxy)]
 #[proxy(
     derive(clone, debug),
@@ -472,7 +464,7 @@ pub struct Camera3dDepthLoadOp;
     fn field_len (&self, ) -> usize;"#,
     ]
 )]
-pub struct Camera3dDepthTextureUsage(u32);
+pub struct Camera3dDepthTextureUsage();
 #[derive(LuaProxy)]
 #[proxy(
     derive(),
@@ -482,7 +474,7 @@ pub struct Camera3dDepthTextureUsage(u32);
     fn field_len (&self, ) -> usize;"#,
     ]
 )]
-pub struct CameraRenderGraph(ReflectedValue);
+pub struct CameraRenderGraph();
 #[derive(LuaProxy)]
 #[proxy(
     derive(clone, debug),
@@ -492,12 +484,7 @@ pub struct CameraRenderGraph(ReflectedValue);
     fn field_len (&self, ) -> usize;"#,
     ]
 )]
-pub struct Cascade {
-    view_transform: ReflectedValue,
-    projection: ReflectedValue,
-    view_projection: ReflectedValue,
-    texel_size: f32,
-}
+pub struct Cascade {}
 #[derive(LuaProxy)]
 #[proxy(
     derive(clone, debug),
@@ -524,9 +511,7 @@ pub struct CascadeShadowConfig {
     fn field_len (&self, ) -> usize;"#,
     ]
 )]
-pub struct Cascades {
-    cascades: ReflectedValue,
-}
+pub struct Cascades {}
 #[derive(LuaProxy)]
 #[proxy(
     derive(debug),
@@ -560,7 +545,7 @@ pub struct CascadesVisibleEntities {
     fn field_len (&self, ) -> usize;"#,
     ]
 )]
-pub struct Children(ReflectedValue);
+pub struct Children();
 #[derive(LuaProxy)]
 #[proxy(
     derive(clone, debug),
@@ -697,9 +682,7 @@ pub struct ColorMaterial {
     fn assert_receiver_is_total_eq (&self, );"#,
     ]
 )]
-pub struct ComputedVisibility {
-    flags: ReflectedValue,
-}
+pub struct ComputedVisibility {}
 #[derive(LuaProxy)]
 #[proxy(
     derive(debug),
@@ -712,9 +695,7 @@ pub struct ComputedVisibility {
     fn default () -> Self;"#,
     ]
 )]
-pub struct ContentSize {
-    measure_func: ReflectedValue,
-}
+pub struct ContentSize {}
 #[derive(LuaProxy)]
 #[proxy(
     derive(clone),
@@ -753,9 +734,7 @@ pub struct CubemapFrusta {
     fn field_len (&self, ) -> usize;"#,
     ]
 )]
-pub struct CubemapVisibleEntities {
-    data: ReflectedValue,
-}
+pub struct CubemapVisibleEntities {}
 #[derive(LuaProxy)]
 #[proxy(
     derive(clone, debug),
@@ -948,7 +927,7 @@ pub struct DebandDither;
     fn field_len (&self, ) -> usize;"#,
     ]
 )]
-pub struct DenoiseCAS(bool);
+pub struct DenoiseCAS();
 #[derive(LuaProxy)]
 #[proxy(
     derive(),
@@ -1015,7 +994,7 @@ pub struct DirectionalLightShadowMap {
 #[derive(LuaProxy)]
 #[proxy(
     derive(clone, debug),
-    remote = "std::path::Display",
+    remote = "bevy::ui::Display",
     functions[r#"
     #[lua(kind="Method", as_trait="bevy::reflect::Enum", )]
     fn field_len (&self, ) -> usize;"#,
@@ -1030,7 +1009,7 @@ pub struct DirectionalLightShadowMap {
     fn assert_receiver_is_total_eq (&self, );"#,
     ]
 )]
-pub struct Display {}
+pub struct Display;
 #[derive(LuaProxy)]
 #[proxy(
     derive(clone, debug),
@@ -1059,10 +1038,7 @@ pub struct Duration {}
     fn get_sparse_set_index (value : usize, ) -> Self;"#,
     ]
 )]
-pub struct Entity {
-    generation: u32,
-    index: u32,
-}
+pub struct Entity {}
 #[derive(LuaProxy)]
 #[proxy(
     derive(clone, debug),
@@ -1234,7 +1210,7 @@ pub struct Fxaa {
     fn default () -> Self;"#,
     ]
 )]
-pub struct GlobalTransform(ReflectedValue);
+pub struct GlobalTransform();
 #[derive(LuaProxy)]
 #[proxy(
     derive(clone),
@@ -1244,11 +1220,7 @@ pub struct GlobalTransform(ReflectedValue);
     fn field_len (&self, ) -> usize;"#,
     ]
 )]
-pub struct GlobalsUniform {
-    time: f32,
-    delta_time: f32,
-    frame_count: u32,
-}
+pub struct GlobalsUniform {}
 #[derive(LuaProxy)]
 #[proxy(
     derive(clone, debug),
@@ -1295,11 +1267,7 @@ pub struct GridAutoFlow;
     fn assert_receiver_is_total_eq (&self, );"#,
     ]
 )]
-pub struct GridPlacement {
-    start: ReflectedValue,
-    span: ReflectedValue,
-    end: ReflectedValue,
-}
+pub struct GridPlacement {}
 #[derive(LuaProxy)]
 #[proxy(
     derive(clone, debug),
@@ -1312,10 +1280,7 @@ pub struct GridPlacement {
     fn default () -> Self;"#,
     ]
 )]
-pub struct GridTrack {
-    min_sizing_function: ReflectedValue,
-    max_sizing_function: ReflectedValue,
-}
+pub struct GridTrack {}
 #[derive(LuaProxy)]
 #[proxy(
     derive(clone, debug),
@@ -1354,38 +1319,6 @@ pub struct GridTrackRepetition;
     ]
 )]
 pub struct HandleId;
-#[derive(LuaProxy)]
-#[proxy(
-    derive(clone, debug),
-    remote = "std::collections::HashMap",
-    functions[r#"
-    #[lua(kind="Method", as_trait="bevy::reflect::Map", )]
-    fn len (&self, ) -> usize;"#,
-    r#"
-    #[lua(kind="Method", as_trait="bevy::reflect::Map", )]
-    fn len (&self, ) -> usize;"#,
-    r#"
-    #[lua(kind="Method", as_trait="core::clone::Clone", output(proxy))]
-    fn clone (&self, ) -> Self;"#,
-    r#"
-    #[lua(kind="MutatingMethod", as_trait="core::clone::Clone", )]
-    fn clone_from (&mut self, #[proxy] other : &Self,);"#,
-    ]
-)]
-pub struct HashMap {}
-#[derive(LuaProxy)]
-#[proxy(
-    derive(clone, debug),
-    remote = "std::collections::HashSet",
-    functions[r#"
-    #[lua(kind="Method", as_trait="core::clone::Clone", output(proxy))]
-    fn clone (&self, ) -> Self;"#,
-    r#"
-    #[lua(kind="MutatingMethod", as_trait="core::clone::Clone", )]
-    fn clone_from (&mut self, #[proxy] other : &Self,);"#,
-    ]
-)]
-pub struct HashSet {}
 #[derive(LuaProxy)]
 #[proxy(
     derive(clone, debug),
@@ -1573,7 +1506,7 @@ pub struct Label;
     fn assert_receiver_is_total_eq (&self, );"#,
     ]
 )]
-pub struct LabelId(u64);
+pub struct LabelId();
 #[derive(LuaProxy)]
 #[proxy(
     derive(clone, debug),
@@ -1602,7 +1535,7 @@ pub struct ManualTextureViewHandle(u32);
     fn default () -> Self;"#,
     ]
 )]
-pub struct Mat2(ReflectedValue);
+pub struct Mat2();
 #[derive(LuaProxy)]
 #[proxy(
     derive(clone, debug),
@@ -1686,9 +1619,7 @@ pub struct Mesh2dHandle(ReflectedValue);
     fn field_len (&self, ) -> usize;"#,
     ]
 )]
-pub struct MeshMorphWeights {
-    weights: ReflectedValue,
-}
+pub struct MeshMorphWeights {}
 #[derive(LuaProxy)]
 #[proxy(derive(clone, debug), remote = "bevy::ui::MinTrackSizingFunction", functions[])]
 pub struct MinTrackSizingFunction;
@@ -1701,10 +1632,7 @@ pub struct MinTrackSizingFunction;
     fn field_len (&self, ) -> usize;"#,
     ]
 )]
-pub struct MorphWeights {
-    weights: ReflectedValue,
-    first_mesh: ReflectedValue,
-}
+pub struct MorphWeights {}
 #[derive(LuaProxy)]
 #[proxy(
     derive(),
@@ -1746,10 +1674,7 @@ pub struct Msaa;
     fn default () -> Self;"#,
     ]
 )]
-pub struct Name {
-    hash: u64,
-    name: ReflectedValue,
-}
+pub struct Name {}
 #[derive(LuaProxy)]
 #[proxy(
     derive(),
@@ -1772,9 +1697,7 @@ pub struct NoFrustumCulling;
     fn default () -> Self;"#,
     ]
 )]
-pub struct Node {
-    calculated_size: ReflectedValue,
-}
+pub struct Node {}
 #[derive(LuaProxy)]
 #[proxy(
     derive(clone, debug),
@@ -1980,28 +1903,6 @@ pub struct NotShadowReceiver;
 #[derive(LuaProxy)]
 #[proxy(
     derive(clone, debug),
-    remote = "core::option::Option",
-    functions[r#"
-    #[lua(kind="Method", as_trait="bevy::reflect::Enum", )]
-    fn field_len (&self, ) -> usize;"#,
-    r#"
-    #[lua(kind="Method", as_trait="bevy::reflect::Enum", )]
-    fn variant_index (&self, ) -> usize;"#,
-    r#"
-    #[lua(kind="Method", as_trait="core::clone::Clone", output(proxy))]
-    fn clone (&self, ) -> Self;"#,
-    r#"
-    #[lua(kind="MutatingMethod", as_trait="core::clone::Clone", )]
-    fn clone_from (&mut self, #[proxy] source : &Self,);"#,
-    r#"
-    #[lua(kind="MetaFunction", as_trait="std::cmp::PartialEq", composite="eq", metamethod=Eq, )]
-    fn eq (&self, #[proxy] other : &Self,) -> bool;"#,
-    ]
-)]
-pub struct Option;
-#[derive(LuaProxy)]
-#[proxy(
-    derive(clone, debug),
     remote = "bevy::render::camera::OrthographicProjection",
     functions[r#"
     #[lua(kind="MutatingMethod", as_trait="bevy::render::camera::CameraProjection", )]
@@ -2104,7 +2005,7 @@ pub struct ParallaxMappingMethod;
     fn field_len (&self, ) -> usize;"#,
     ]
 )]
-pub struct Parent(ReflectedValue);
+pub struct Parent();
 #[derive(LuaProxy)]
 #[proxy(derive(debug), remote = "std::path::Path", functions[])]
 pub struct Path {}
@@ -2237,54 +2138,10 @@ pub struct Projection;
     fn eq (&self, #[proxy] rhs : &Self,) -> bool;"#,
     ]
 )]
-pub struct Quat(ReflectedValue);
-#[derive(LuaProxy)]
-#[proxy(
-    derive(clone, debug),
-    remote = "core::ops::Range",
-    functions[r#"
-    #[lua(kind="Method", as_trait="core::iter::Iterator", )]
-    fn count (self, ) -> usize;"#,
-    r#"
-    #[lua(kind="Method", as_trait="core::iter::Iterator", )]
-    fn is_sorted (self, ) -> bool;"#,
-    ]
-)]
-pub struct Range {
-    start: ReflectedValue,
-    end: ReflectedValue,
-}
-#[derive(LuaProxy)]
-#[proxy(derive(clone, debug), remote = "core::ops::RangeFrom", functions[])]
-pub struct RangeFrom {
-    start: ReflectedValue,
-}
+pub struct Quat();
 #[derive(LuaProxy)]
 #[proxy(derive(clone, debug), remote = "core::ops::RangeFull", functions[])]
 pub struct RangeFull;
-#[derive(LuaProxy)]
-#[proxy(
-    derive(clone, debug),
-    remote = "core::ops::RangeInclusive",
-    functions[r#"
-    #[lua(kind="Method", as_trait="core::iter::Iterator", )]
-    fn count (self, ) -> usize;"#,
-    r#"
-    #[lua(kind="Method", as_trait="core::iter::Iterator", )]
-    fn is_sorted (self, ) -> bool;"#,
-    ]
-)]
-pub struct RangeInclusive {}
-#[derive(LuaProxy)]
-#[proxy(derive(clone, debug), remote = "core::ops::RangeTo", functions[])]
-pub struct RangeTo {
-    end: ReflectedValue,
-}
-#[derive(LuaProxy)]
-#[proxy(derive(clone, debug), remote = "core::ops::RangeToInclusive", functions[])]
-pub struct RangeToInclusive {
-    end: ReflectedValue,
-}
 #[derive(LuaProxy)]
 #[proxy(
     derive(clone, debug),
@@ -2325,7 +2182,7 @@ pub struct RelativeCursorPosition {
     fn default () -> Self;"#,
     ]
 )]
-pub struct RenderLayers(u32);
+pub struct RenderLayers();
 #[derive(LuaProxy)]
 #[proxy(
     derive(clone, debug),
@@ -2351,23 +2208,7 @@ pub struct RenderTarget;
     fn field_len (&self, ) -> usize;"#,
     ]
 )]
-pub struct RepeatedGridTrack {
-    repetition: ReflectedValue,
-    tracks: ReflectedValue,
-}
-#[derive(LuaProxy)]
-#[proxy(
-    derive(clone, debug),
-    remote = "core::result::Result",
-    functions[r#"
-    #[lua(kind="Method", as_trait="core::clone::Clone", output(proxy))]
-    fn clone (&self, ) -> Self;"#,
-    r#"
-    #[lua(kind="MutatingMethod", as_trait="core::clone::Clone", )]
-    fn clone_from (&mut self, #[proxy] source : &Self,);"#,
-    ]
-)]
-pub struct Result;
+pub struct RepeatedGridTrack {}
 #[derive(LuaProxy)]
 #[proxy(
     derive(clone, debug),
@@ -2450,7 +2291,7 @@ pub struct SkinnedMesh {
     fn assert_receiver_is_total_eq (&self, );"#,
     ]
 )]
-pub struct SourcePathId(u64);
+pub struct SourcePathId();
 #[derive(LuaProxy)]
 #[proxy(
     derive(clone, debug),
@@ -2541,10 +2382,7 @@ pub struct StandardMaterial {
     fn assert_receiver_is_total_eq (&self, );"#,
     ]
 )]
-pub struct Stopwatch {
-    elapsed: ReflectedValue,
-    paused: bool,
-}
+pub struct Stopwatch {}
 #[derive(LuaProxy)]
 #[proxy(
     derive(clone, debug),
@@ -2657,10 +2495,7 @@ pub struct TextAlignment;
     fn field_len (&self, ) -> usize;"#,
     ]
 )]
-pub struct TextFlags {
-    needs_new_measure_func: bool,
-    needs_recompute: bool,
-}
+pub struct TextFlags {}
 #[derive(LuaProxy)]
 #[proxy(
     derive(clone, debug),
@@ -2738,32 +2573,7 @@ pub struct TextureAtlasSprite {
     fn field_len (&self, ) -> usize;"#,
     ]
 )]
-pub struct Time {
-    startup: ReflectedValue,
-    first_update: ReflectedValue,
-    last_update: ReflectedValue,
-    paused: bool,
-    relative_speed: f64,
-    delta: ReflectedValue,
-    delta_seconds: f32,
-    delta_seconds_f64: f64,
-    elapsed: ReflectedValue,
-    elapsed_seconds: f32,
-    elapsed_seconds_f64: f64,
-    raw_delta: ReflectedValue,
-    raw_delta_seconds: f32,
-    raw_delta_seconds_f64: f64,
-    raw_elapsed: ReflectedValue,
-    raw_elapsed_seconds: f32,
-    raw_elapsed_seconds_f64: f64,
-    wrap_period: ReflectedValue,
-    elapsed_wrapped: ReflectedValue,
-    elapsed_seconds_wrapped: f32,
-    elapsed_seconds_wrapped_f64: f64,
-    raw_elapsed_wrapped: ReflectedValue,
-    raw_elapsed_seconds_wrapped: f32,
-    raw_elapsed_seconds_wrapped_f64: f64,
-}
+pub struct Time {}
 #[derive(LuaProxy)]
 #[proxy(
     derive(clone, debug),
@@ -2776,13 +2586,7 @@ pub struct Time {
     fn assert_receiver_is_total_eq (&self, );"#,
     ]
 )]
-pub struct Timer {
-    stopwatch: ReflectedValue,
-    duration: ReflectedValue,
-    mode: ReflectedValue,
-    finished: bool,
-    times_finished_this_tick: u32,
-}
+pub struct Timer {}
 #[derive(LuaProxy)]
 #[proxy(
     derive(clone, debug),
@@ -2930,9 +2734,7 @@ pub struct UiImage {
     fn field_len (&self, ) -> usize;"#,
     ]
 )]
-pub struct UiImageSize {
-    size: ReflectedValue,
-}
+pub struct UiImageSize {}
 #[derive(LuaProxy)]
 #[proxy(
     derive(clone, debug),
@@ -3045,7 +2847,7 @@ pub struct Vec3 {
     fn default () -> Self;"#,
     ]
 )]
-pub struct Vec3A(ReflectedValue);
+pub struct Vec3A();
 #[derive(LuaProxy)]
 #[proxy(
     derive(clone, debug),
@@ -3064,7 +2866,7 @@ pub struct Vec3A(ReflectedValue);
     fn eq (&self, #[proxy] rhs : &Self,) -> bool;"#,
     ]
 )]
-pub struct Vec4(ReflectedValue);
+pub struct Vec4();
 #[derive(LuaProxy)]
 #[proxy(
     derive(clone, debug),
@@ -3913,8 +3715,6 @@ impl APIProvider for LuaBevyAPIProvider {
                                 LuaHandleId,
                             >,
                         >()
-                        .process_type::<LuaHashMap>()
-                        .process_type::<LuaHashSet>()
                         .process_type::<LuaIVec2>()
                         .process_type::<
                             bevy_mod_scripting_lua::tealr::mlu::UserDataProxy<LuaIVec2>,
@@ -4008,7 +3808,6 @@ impl APIProvider for LuaBevyAPIProvider {
                         .process_type::<LuaNormalizedRenderTarget>()
                         .process_type::<LuaNotShadowCaster>()
                         .process_type::<LuaNotShadowReceiver>()
-                        .process_type::<LuaOption>()
                         .process_type::<LuaOrthographicProjection>()
                         .process_type::<
                             bevy_mod_scripting_lua::tealr::mlu::UserDataProxy<
@@ -4069,12 +3868,7 @@ impl APIProvider for LuaBevyAPIProvider {
                         .process_type::<
                             bevy_mod_scripting_lua::tealr::mlu::UserDataProxy<LuaQuat>,
                         >()
-                        .process_type::<LuaRange>()
-                        .process_type::<LuaRangeFrom>()
                         .process_type::<LuaRangeFull>()
-                        .process_type::<LuaRangeInclusive>()
-                        .process_type::<LuaRangeTo>()
-                        .process_type::<LuaRangeToInclusive>()
                         .process_type::<LuaRect>()
                         .process_type::<LuaRelativeCursorPosition>()
                         .process_type::<LuaRenderLayers>()
@@ -4090,7 +3884,6 @@ impl APIProvider for LuaBevyAPIProvider {
                             >,
                         >()
                         .process_type::<LuaRepeatedGridTrack>()
-                        .process_type::<LuaResult>()
                         .process_type::<LuaScalingMode>()
                         .process_type::<LuaScreenSpaceAmbientOcclusionQualityLevel>()
                         .process_type::<LuaScreenSpaceAmbientOcclusionSettings>()
@@ -4336,7 +4129,7 @@ impl APIProvider for LuaBevyAPIProvider {
         app.register_foreign_lua_type::<bevy::ui::Direction>();
         app.register_foreign_lua_type::<bevy::pbr::DirectionalLight>();
         app.register_foreign_lua_type::<bevy::pbr::DirectionalLightShadowMap>();
-        app.register_foreign_lua_type::<std::path::Display>();
+        app.register_foreign_lua_type::<bevy::ui::Display>();
         app.register_foreign_lua_type::<core::time::Duration>();
         app.register_foreign_lua_type::<bevy::ecs::entity::Entity>();
         app.register_foreign_lua_type::<bevy::animation::EntityPath>();
@@ -4357,8 +4150,6 @@ impl APIProvider for LuaBevyAPIProvider {
         app.register_foreign_lua_type::<bevy::ui::GridTrack>();
         app.register_foreign_lua_type::<bevy::ui::GridTrackRepetition>();
         app.register_foreign_lua_type::<bevy::asset::HandleId>();
-        app.register_foreign_lua_type::<std::collections::HashMap>();
-        app.register_foreign_lua_type::<std::collections::HashSet>();
         app.register_foreign_lua_type::<bevy::math::IVec2>();
         app.register_foreign_lua_type::<bevy::math::IVec3>();
         app.register_foreign_lua_type::<bevy::math::IVec4>();
@@ -4402,7 +4193,6 @@ impl APIProvider for LuaBevyAPIProvider {
         app.register_foreign_lua_type::<bevy::render::camera::NormalizedRenderTarget>();
         app.register_foreign_lua_type::<bevy::pbr::NotShadowCaster>();
         app.register_foreign_lua_type::<bevy::pbr::NotShadowReceiver>();
-        app.register_foreign_lua_type::<core::option::Option>();
         app.register_foreign_lua_type::<bevy::render::camera::OrthographicProjection>();
         app.register_foreign_lua_type::<std::ffi::OsString>();
         app.register_foreign_lua_type::<bevy::ui::Overflow>();
@@ -4417,18 +4207,12 @@ impl APIProvider for LuaBevyAPIProvider {
         app.register_foreign_lua_type::<bevy::ui::PositionType>();
         app.register_foreign_lua_type::<bevy::render::camera::Projection>();
         app.register_foreign_lua_type::<bevy::math::Quat>();
-        app.register_foreign_lua_type::<core::ops::Range>();
-        app.register_foreign_lua_type::<core::ops::RangeFrom>();
         app.register_foreign_lua_type::<core::ops::RangeFull>();
-        app.register_foreign_lua_type::<core::ops::RangeInclusive>();
-        app.register_foreign_lua_type::<core::ops::RangeTo>();
-        app.register_foreign_lua_type::<core::ops::RangeToInclusive>();
         app.register_foreign_lua_type::<bevy::math::Rect>();
         app.register_foreign_lua_type::<bevy::ui::RelativeCursorPosition>();
         app.register_foreign_lua_type::<bevy::render::view::RenderLayers>();
         app.register_foreign_lua_type::<bevy::render::camera::RenderTarget>();
         app.register_foreign_lua_type::<bevy::ui::RepeatedGridTrack>();
-        app.register_foreign_lua_type::<core::result::Result>();
         app.register_foreign_lua_type::<bevy::render::camera::ScalingMode>();
         app.register_foreign_lua_type::<bevy::pbr::ScreenSpaceAmbientOcclusionQualityLevel>();
         app.register_foreign_lua_type::<bevy::pbr::ScreenSpaceAmbientOcclusionSettings>();

@@ -1,7 +1,7 @@
 use std::error::Error;
 
 use indexmap::{IndexMap, IndexSet};
-use rustdoc_types::{Generics, ItemEnum, Type};
+use rustdoc_types::{Generics, ItemEnum, Type, Visibility};
 
 use crate::{
     cratepath::ImportPath, Config, FunctionData, ImplItem, NameType, OperatorType, TypeMeta,
@@ -32,7 +32,7 @@ impl ItemData {
         let import_path: ImportPath = meta.path_components;
         let mut functions: IndexMap<String, Vec<FunctionData>> = Default::default();
 
-        if !meta.generics.params.is_empty() && !meta.generics.where_predicates.is_empty() {
+        if !meta.generics.params.is_empty() || !meta.generics.where_predicates.is_empty() {
             return Err("Generics are not supported yet".into());
         };
 
@@ -123,7 +123,9 @@ impl ItemData {
                                 let meta = &meta.source.index.get(id).ok_or::<Box<dyn Error>>(
                                     "Expected to find field in the same crate as struct".into(),
                                 )?;
-
+                                if !matches!(meta.visibility, Visibility::Public) {
+                                    return Err("Private field".into());
+                                }
                                 if meta.attrs.iter().any(|attr| attr == "#[reflect(ignore)]") {
                                     return Err("Field ignored by reflection".into());
                                 }
@@ -148,6 +150,10 @@ impl ItemData {
                         let meta = meta.source.index.get(field).ok_or::<Box<dyn Error>>(
                             "Expected to find field in the same crate as struct".into(),
                         )?;
+                        if !matches!(meta.visibility, Visibility::Public) {
+                            return Err("Private field".into());
+                        }
+
                         let type_ = match &meta.inner {
                             ItemEnum::StructField(field) => field.clone(),
                             _ => panic!("Expected struct field"),
