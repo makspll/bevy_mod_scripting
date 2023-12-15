@@ -59,14 +59,14 @@ rhai = ["bevy_mod_scripting_rhai"]
 rhai_script_api=["bevy_script_api/rhai"]
 
 [dependencies]
-bevy = { version = "0.11", default-features = false}
+bevy = { version = "0.11.3", default-features = false}
 bevy_mod_scripting_core = { path = "bevy_mod_scripting_core", version = "0.3.0" }
 bevy_mod_scripting_lua = { path = "languages/bevy_mod_scripting_lua", version = "0.3.0", optional = true }
 bevy_mod_scripting_rhai = { path = "languages/bevy_mod_scripting_rhai", version = "0.3.0", optional = true}
 bevy_script_api = { path = "bevy_script_api", version = "0.3.0", optional = true }
 
 [dev-dependencies]
-bevy = { version = "0.11"}
+bevy = { version = "0.11.3"}
 clap = { version = "4.1", features = ["derive"]}
 rand = "0.8.5"
 bevy_console = "0.8.0"

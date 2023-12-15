@@ -132,7 +132,7 @@
 
 //         impl bevy_script_api::lua::LuaProxyable for #base_type_name {
 //             fn ref_to_lua<'lua>(self_ : bevy_script_api::script_ref::ScriptRef, lua: &'lua #tealr_root::mlu::mlua::Lua) -> #tealr_root::mlu::mlua::Result<#tealr_root::mlu::mlua::Value<'lua>> {
-//                 <#proxy_name as #tealr_root::mlu::mlua::ToLua>::to_lua(#proxy_name::new_ref(self_),lua)
+//                 <#proxy_name as #tealr_root::mlu::mlua::IntoLua>::into_lua(#proxy_name::new_ref(self_),lua)
 //             }
 
 //             fn apply_lua<'lua>(self_ : &mut bevy_script_api::script_ref::ScriptRef, lua: &'lua #tealr_root::mlu::mlua::Lua, new_val: #tealr_root::mlu::mlua::Value<'lua>) -> #tealr_root::mlu::mlua::Result<()> {
@@ -152,7 +152,7 @@
 
 //         impl bevy_script_api::lua::ToLuaProxy<'_> for #base_type_name {
 //             fn to_lua_proxy<'lua>(self, lua: &'lua #tealr_root::mlu::mlua::Lua) -> #tealr_root::mlu::mlua::Result<#tealr_root::mlu::mlua::Value<'lua>>{
-//                 <#proxy_name as #tealr_root::mlu::mlua::ToLua>::to_lua(#proxy_name::new(self),lua)
+//                 <#proxy_name as #tealr_root::mlu::mlua::IntoLua>::into_lua(#proxy_name::new(self),lua)
 //             }
 //         }
 //     };

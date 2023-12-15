@@ -9,7 +9,7 @@ use bevy_mod_scripting_lua::tealr;
 use tealr::mlu::mlua::MetaMethod;
 use tealr::mlu::TypedFunction;
 use tealr::mlu::{
-    mlua::{self, FromLua, Lua, ToLua, UserData, Value},
+    mlua::{self, FromLua, Lua, IntoLua, UserData, Value},
     TealData, TealDataMethods,
 };
 use tealr::TypeBody;
@@ -38,7 +38,7 @@ macro_rules! impl_proxyable_by_copy(
             $(
                 impl $crate::lua::LuaProxyable for $num_ty {
                     fn ref_to_lua(self_: $crate::script_ref::ScriptRef,lua: & tealr::mlu::mlua::Lua) -> tealr::mlu::mlua::Result<tealr::mlu::mlua::Value< '_> >  {
-                        self_.get_typed(|self_ : &Self| self_.to_lua(lua))?
+                        self_.get_typed(|self_ : &Self| self_.into_lua(lua))?
                     }
 
                     fn apply_lua< 'lua>(self_: &mut $crate::script_ref::ScriptRef,lua: & 'lua tealr::mlu::mlua::Lua,new_val:tealr::mlu::mlua::Value< 'lua>) -> tealr::mlu::mlua::Result<()>  {
@@ -57,7 +57,7 @@ macro_rules! impl_proxyable_by_copy(
                 impl <'lua>$crate::lua::ToLuaProxy<'lua> for $num_ty {
                     #[inline(always)]
                     fn to_lua_proxy(self, lua: &'lua Lua) -> tealr::mlu::mlua::Result<Value<'lua>> {
-                        self.to_lua(lua)
+                        self.into_lua(lua)
                     }
                 }
             )*
@@ -72,7 +72,7 @@ impl_proxyable_by_copy!(u8, u16, u32, u64, u128, usize);
 
 impl LuaProxyable for String {
     fn ref_to_lua(self_: ScriptRef, lua: &Lua) -> mlua::Result<Value> {
-        self_.get_typed(|self_: &String| self_.as_str().to_lua(lua))?
+        self_.get_typed(|self_: &String| self_.as_str().into_lua(lua))?
     }
 
     fn apply_lua<'lua>(
@@ -95,7 +95,7 @@ impl<'lua> FromLuaProxy<'lua> for String {
 
 impl<'lua> ToLuaProxy<'lua> for String {
     fn to_lua_proxy(self, lua: &'lua Lua) -> mlua::Result<Value<'lua>> {
-        self.to_lua(lua)
+        self.into_lua(lua)
     }
 }
 
@@ -325,8 +325,8 @@ impl<
                         move |ctx, ()| {
                             let o = if curr_idx < len {
                                 (
-                                    to_lua_idx(curr_idx).to_lua(ctx)?,
-                                    ref_.index(curr_idx).to_lua(ctx)?,
+                                    to_lua_idx(curr_idx).into_lua(ctx)?,
+                                    ref_.index(curr_idx).into_lua(ctx)?,
                                 )
                             } else {
                                 (Value::Nil, Value::Nil)
@@ -346,7 +346,7 @@ impl<
             let len = s.len()?;
 
             for i in 0..len {
-                table.raw_set(to_lua_idx(i), s.index(i).to_lua(ctx)?)?;
+                table.raw_set(to_lua_idx(i), s.index(i).into_lua(ctx)?)?;
             }
 
             Ok(table)
@@ -388,7 +388,7 @@ impl<
     > LuaProxyable for Vec<T>
 {
     fn ref_to_lua(self_: ScriptRef, lua: &Lua) -> mlua::Result<Value> {
-        LuaVec::<T>::new_ref(self_).to_lua(lua)
+        LuaVec::<T>::new_ref(self_).into_lua(lua)
     }
 
     fn apply_lua<'lua>(
@@ -480,6 +480,6 @@ impl<'lua, T: for<'a> ToLuaProxy<'a> + Clone + FromReflect + LuaProxyable> ToLua
             proxies.raw_set(idx, elem.to_lua_proxy(lua)?)?;
         }
 
-        proxies.to_lua(lua)
+        proxies.into_lua(lua)
     }
 }

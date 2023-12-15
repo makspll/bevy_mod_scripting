@@ -1,5 +1,5 @@
 use bevy_mod_scripting_lua::{
-    prelude::{FromLua, Lua, LuaError, LuaValue, ToLua},
+    prelude::{FromLua, Lua, LuaError, LuaValue, IntoLua},
     tealr,
 };
 use std::{
@@ -10,7 +10,7 @@ use std::{
 use tealr::TypeName;
 
 /// Newtype abstraction of usize to represent a lua integer indexing things.
-/// Lua is 1 based, host is 0 based, and this type performs this conversion automatically via ToLua and FromLua traits.
+/// Lua is 1 based, host is 0 based, and this type performs this conversion automatically via IntoLua and FromLua traits.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct LuaIndex(usize);
 
@@ -34,9 +34,9 @@ impl DerefMut for LuaIndex {
     }
 }
 
-impl ToLua<'_> for LuaIndex {
-    fn to_lua(self, lua: &Lua) -> Result<LuaValue, LuaError> {
-        to_lua_idx(self.0).to_lua(lua)
+impl IntoLua<'_> for LuaIndex {
+    fn into_lua(self, lua: &Lua) -> Result<LuaValue, LuaError> {
+        to_lua_idx(self.0).into_lua(lua)
     }
 }
 
@@ -71,8 +71,8 @@ impl<T> DummyTypeName<T> {
     }
 }
 
-impl<'lua, T> bevy_mod_scripting_lua::tealr::mlu::mlua::ToLua<'lua> for DummyTypeName<T> {
-    fn to_lua(
+impl<'lua, T> bevy_mod_scripting_lua::tealr::mlu::mlua::IntoLua<'lua> for DummyTypeName<T> {
+    fn into_lua(
         self,
         _: &'lua bevy_mod_scripting_lua::tealr::mlu::mlua::Lua,
     ) -> bevy_mod_scripting_lua::tealr::mlu::mlua::Result<
@@ -138,10 +138,10 @@ macro_rules! impl_tealr_any_union {
         $visibility enum $type_name {
             $($sub_types($sub_types) ,)*
         }
-        impl<'lua> ::bevy_mod_scripting_lua::tealr::mlu::mlua::ToLua<'lua> for $type_name {
-            fn to_lua(self, lua: &'lua ::bevy_mod_scripting_lua::tealr::mlu::mlua::Lua) -> ::std::result::Result<::bevy_mod_scripting_lua::tealr::mlu::mlua::Value<'lua>, ::bevy_mod_scripting_lua::tealr::mlu::mlua::Error> {
+        impl<'lua> ::bevy_mod_scripting_lua::tealr::mlu::mlua::IntoLua<'lua> for $type_name {
+            fn into_lua(self, lua: &'lua ::bevy_mod_scripting_lua::tealr::mlu::mlua::Lua) -> ::std::result::Result<::bevy_mod_scripting_lua::tealr::mlu::mlua::Value<'lua>, ::bevy_mod_scripting_lua::tealr::mlu::mlua::Error> {
                 match self {
-                    $($type_name::$sub_types(x) => x.to_lua(lua),)*
+                    $($type_name::$sub_types(x) => x.into_lua(lua),)*
                 }
             }
         }

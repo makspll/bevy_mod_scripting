@@ -12,7 +12,7 @@ use bevy_mod_scripting_lua::tealr;
 
 use tealr::mlu::mlua::MetaMethod;
 use tealr::mlu::{
-    mlua::{self, FromLua, Lua, ToLua, UserData, Value},
+    mlua::{self, FromLua, Lua, IntoLua, UserData, Value},
     TealData, TealDataMethods,
 };
 use tealr::TypeName;
@@ -126,13 +126,13 @@ impl ApplyLua for ScriptRef {
     }
 }
 
-impl<'lua> ToLua<'lua> for ScriptRef {
+impl<'lua> IntoLua<'lua> for ScriptRef {
     /// Converts the LuaRef to the most convenient representation
     /// checking conversions in this order:
     /// - A primitive or bevy type which has a reflect interface is converted to a custom UserData exposing its API to lua conveniently
     /// - A type implementing CustomUserData is converted with its `ref_to_lua` method
     /// - Finally the method is represented as a `ReflectedValue` which exposes the Reflect interface
-    fn to_lua(self, ctx: &'lua Lua) -> mlua::Result<Value<'lua>> {
+    fn into_lua(self, ctx: &'lua Lua) -> mlua::Result<Value<'lua>> {
         let world = self.world_ptr.clone();
         let world = world.read();
 
@@ -143,7 +143,7 @@ impl<'lua> ToLua<'lua> for ScriptRef {
         if let Some(v) = g.get_type_data::<ReflectLuaProxyable>(type_id) {
             v.ref_to_lua(self, ctx)
         } else {
-            ReflectedValue { ref_: self }.to_lua(ctx)
+            ReflectedValue { ref_: self }.into_lua(ctx)
         }
     }
 }
@@ -191,7 +191,7 @@ impl TealData for ReflectedValue {
 ///
 /// Types registered via the reflection API this way can be accessed from Lua via [`ScriptRef`] objects (via field access).
 pub trait LuaProxyable {
-    /// a version of [`mlua::ToLua::to_lua`] which does not consume the object.
+    /// a version of [`mlua::IntoLua::into_lua`] which does not consume the object.
     ///
     /// Note: The self reference is sourced from the given ScriptRef, attempting to get another mutable reference from the ScriptRef might
     /// cause a runtime error to prevent breaking of aliasing rules
@@ -209,7 +209,7 @@ pub trait LuaProxyable {
     ) -> mlua::Result<()>;
 }
 
-/// Exactly alike to [`mlua::ToLua`]
+/// Exactly alike to [`mlua::IntoLua`]
 pub trait FromLuaProxy<'lua>: Sized {
     fn from_lua_proxy(new_val: Value<'lua>, lua: &'lua Lua) -> mlua::Result<Self>;
 }
@@ -266,7 +266,7 @@ pub trait ValueLuaType {}
 
 impl<T: Clone + UserData + Send + ValueLuaType + Reflect + 'static> LuaProxyable for T {
     fn ref_to_lua(self_: ScriptRef, lua: &Lua) -> mlua::Result<Value> {
-        self_.get_typed(|s: &Self| s.clone().to_lua(lua))?
+        self_.get_typed(|s: &Self| s.clone().into_lua(lua))?
     }
 
     fn apply_lua<'lua>(
@@ -296,7 +296,7 @@ impl<'lua, T: Clone + UserData + Send + ValueLuaType + Reflect + 'static> FromLu
 
 impl<'lua, T: Clone + UserData + Send + ValueLuaType + Reflect + 'static> ToLuaProxy<'lua> for T {
     fn to_lua_proxy(self, lua: &'lua Lua) -> mlua::Result<Value<'lua>> {
-        self.to_lua(lua)
+        self.into_lua(lua)
     }
 }
 

@@ -18,7 +18,7 @@ pub enum ScriptRefBase {}
 /// Each reference holds a reflection path from the root.
 ///
 /// Automatically converts to most convenient lua representation.
-/// See [`ScriptRef::to_lua`]
+/// See [`ScriptRef::into_lua`]
 #[derive(Clone, Debug)]
 pub struct ScriptRef {
     /// The reflection path from the root
@@ -268,9 +268,9 @@ impl From<ReflectedValue> for ScriptRef {
 //     #[derive(Clone)]
 //     struct TestArg(LuaEntity);
 
-// //     impl<'lua> ToLua<'lua> for TestArg {
-////          fn to_lua(self, ctx: &'lua Lua) -> Result<LuaValue<'lua>, mlua::Error> {
-//             self.0.to_lua(ctx)
+// //     impl<'lua> IntoLua<'lua> for TestArg {
+////          fn into_lua(self, ctx: &'lua Lua) -> Result<LuaValue<'lua>, mlua::Error> {
+//             self.0.into_lua(ctx)
 //         }
 //     }
 
