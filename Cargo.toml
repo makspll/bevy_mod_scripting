@@ -20,6 +20,11 @@ path = "src/documentation/main.rs"
 name = "bevy_mod_scripting"
 path = "src/lib.rs"
 
+
+[patch.crates-io]
+#Patch required for v0.9.0-alpha4 dependancy, unless cargo can be convinced to hard-pin to it.
+tealr = {git="https://github.com/lenscas/tealr.git", rev="05c9cdbace8abb6c12fc200e03a7ffcc5afff308"}
+
 [package.metadata."docs.rs"]
 features = ["lua", "lua54", "rhai", "lua_script_api", "rhai_script_api", "teal"]
 
