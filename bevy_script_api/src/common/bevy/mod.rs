@@ -34,12 +34,12 @@ impl ScriptTypeRegistration {
 
     #[inline(always)]
     pub fn short_name(&self) -> &str {
-        self.0.type_info().type_path()
+        self.0.type_info().type_path_table().short_path()
     }
 
     #[inline(always)]
     pub fn type_name(&self) -> &'static str {
-        self.0.type_info().type_path()
+        self.0.type_info().type_path_table().path()
     }
 }
 

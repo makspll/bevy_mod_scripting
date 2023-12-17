@@ -91,7 +91,7 @@ impl TealData for LuaWorld {
 
             Ok(registry
                 .get_with_short_type_path(&type_name)
-                .or_else(|| registry.get_with_short_type_path(&type_name))
+                .or_else(|| registry.get_with_type_path(&type_name))
                 .map(|registration| LuaTypeRegistration::new(Arc::new(registration.clone()))))
         });
 
