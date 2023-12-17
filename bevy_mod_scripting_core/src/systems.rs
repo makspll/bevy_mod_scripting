@@ -9,6 +9,7 @@ use crate::{
     ScriptErrorEvent,
 };
 
+
 /// Labels for scripting related systems
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, SystemSet)]
 pub enum ScriptSystemSet {
@@ -95,20 +96,11 @@ pub fn script_remove_synchronizer<H: ScriptHost>(
     mut query: RemovedComponents<ScriptCollection<H::ScriptAsset>>,
     mut contexts: ResMut<ScriptContexts<H::ScriptContext>>,
 ) {
-    for v in query.iter() {
+    query.read().for_each(|v| {
         // we know that this entity used to have a script component
         // ergo a script context must exist in ctxts, remove all scripts on the entity
-        let script_ids = contexts
-            .context_entities
-            .iter()
-            .filter_map(|(script_id, (entity, ..))| {
-                (entity.index() == v.index()).then_some(*script_id)
-            })
-            .collect::<Vec<_>>();
-        for script_id in script_ids {
-            contexts.remove_context(script_id);
-        }
-    }
+        contexts.remove_context(v.index());
+    })
 }
 
 /// Reloads hot-reloaded scripts, or loads missing contexts for scripts which were added but not loaded
@@ -121,10 +113,10 @@ pub fn script_hot_reload_handler<H: ScriptHost>(
     mut contexts: ResMut<ScriptContexts<H::ScriptContext>>,
     mut event_writer: EventWriter<ScriptLoaded>,
 ) {
-    for e in events.iter() {
+    for e in events.read() {
         let (handle, created) = match e {
-            AssetEvent::Modified { handle } => (handle, false),
-            AssetEvent::Created { handle } => (handle, true),
+            AssetEvent::Modified { id } => (id, false),
+            AssetEvent::Added { id } => (id, true),
             _ => continue,
         };
 
@@ -137,7 +129,7 @@ pub fn script_hot_reload_handler<H: ScriptHost>(
             for script in &scripts.scripts {
                 // the script could have well loaded in the same frame that it was added
                 // in that case it will have a context attached and we do not want to reload it
-                if script.handle() == handle && !(contexts.has_context(script.id()) && created) {
+                if script.handle().id() == *handle && !(contexts.has_context(script.id()) && created) {
                     Script::<H::ScriptAsset>::reload_script::<H>(
                         &mut host,
                         script,

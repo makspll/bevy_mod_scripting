@@ -80,7 +80,7 @@ impl<A: LuaArg> ScriptHost for LuaScriptHost<A> {
 
     fn register_with_app_in_set(app: &mut App, schedule: impl ScheduleLabel, set: impl SystemSet) {
         app.add_priority_event::<Self::ScriptEvent>()
-            .add_asset::<LuaFile>()
+            .init_asset::<LuaFile>()
             .init_asset_loader::<LuaLoader>()
             .init_resource::<CachedScriptState<Self>>()
             .init_resource::<ScriptContexts<Self::ScriptContext>>()

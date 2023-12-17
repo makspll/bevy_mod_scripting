@@ -1,7 +1,6 @@
-use std::{borrow::Cow, sync::Mutex, time::Duration};
+use std::{borrow::Cow, sync::Mutex};
 
 use bevy::{
-    asset::ChangeWatcher,
     diagnostic::{FrameTimeDiagnosticsPlugin, LogDiagnosticsPlugin},
     prelude::*,
     reflect::Reflect,
@@ -100,7 +99,7 @@ pub fn setup(
         TextureFormat::R8Unorm,
     );
 
-    image.sampler_descriptor = ImageSampler::nearest();
+    image.sampler = ImageSampler::nearest();
 
     // in release builds we want to fetch ".lua" files over ".tl" files
     let script_path = bevy_mod_scripting_lua::lua_path!("game_of_life");
@@ -141,7 +140,7 @@ pub fn sync_window_size(
     primary_windows: Query<(&Window, With<PrimaryWindow>)>,
 ) {
     if let Some(e) = resize_event
-        .iter()
+        .read()
         .filter(|e| primary_windows.get(e.window).is_ok())
         .last()
     {
@@ -216,11 +215,8 @@ const UPDATE_FREQUENCY: f32 = 1.0 / 20.0;
 fn main() -> std::io::Result<()> {
     let mut app = App::new();
 
-    app.add_plugins(DefaultPlugins.set(AssetPlugin {
-        watch_for_changes: ChangeWatcher::with_delay(Duration::from_secs(0)),
-        ..Default::default()
-    }))
-    .insert_resource(FixedTime::new_from_secs(UPDATE_FREQUENCY))
+    app.add_plugins(DefaultPlugins)
+    .insert_resource(Time::<Fixed>::from_seconds(UPDATE_FREQUENCY.into()))
     .add_plugins(LogDiagnosticsPlugin::default())
     .add_plugins(FrameTimeDiagnosticsPlugin)
     .add_plugins(ScriptingPlugin)

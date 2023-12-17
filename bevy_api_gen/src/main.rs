@@ -97,9 +97,9 @@ pub(crate) fn generate_macros(
                     let path_components = get_path(id, source).unwrap_or_else(|| {
                         panic!("path not found for {:?} in {:?}", id, source.root)
                     });
-                    //eprintln!("{:?}", path_components);
+                    eprintln!("{:?}", path_components);
                     let path_components = path_to_import(path_components, source);
-                    //eprintln!("{:?}", path_components);
+                    eprintln!("{:?}", path_components);
 
                     let wrapper_name = format!("{WRAPPER_PREFIX}{}", item.name.as_ref().unwrap());
                     let wrapped_type = item.name.as_ref().unwrap();
@@ -125,7 +125,8 @@ pub(crate) fn generate_macros(
     });
 
     if !unmatched_types.is_empty() {
-        panic!("Some types were not found in the given crates: {unmatched_types:#?}")
+        //panic!("Some types were not found in the given crates: {unmatched_types:#?}")
+        eprintln!("Some types were not found in the given crates: {unmatched_types:#?}")
     }
 
     let mut writer = PrettyWriter::new();

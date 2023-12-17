@@ -5,9 +5,9 @@ use std::{
     process::Command,
 };
 
-use bevy::asset::FileAssetIo;
+//use bevy::asset::FileAssetIo;
 use tealr::{TypeGenerator, TypeWalker};
-
+use bevy::asset::io::file::FileAssetReader;
 use bevy_mod_scripting_core::prelude::*;
 
 pub type TypeWalkerBuilder = fn(TypeWalker) -> TypeWalker;
@@ -74,7 +74,7 @@ impl DocFragment for LuaDocFragment {
     }
 
     fn gen_docs(self) -> Result<(), ScriptError> {
-        let script_asset_path = &FileAssetIo::get_base_path().join("assets").join("scripts");
+        let script_asset_path = &FileAssetReader::get_base_path().join("assets").join("scripts");
 
         let script_doc_dir = &env::var("SCRIPT_DOC_DIR")
             .map(|v| v.into())

@@ -1,13 +1,13 @@
 use bevy::{
-    asset::{AssetLoader, Error, LoadedAsset},
-    reflect::{TypePath, TypeUuid},
+    asset::{AssetLoader, io::Reader, Asset},
+    reflect::{TypePath},
 };
 use bevy_mod_scripting_core::asset::CodeAsset;
 
 use std::sync::Arc;
+use anyhow::Error;
 
-#[derive(Debug, TypeUuid, TypePath)]
-#[uuid = "39cadc56-aa9c-4543-8640-a018b74b5052"]
+#[derive(Asset, TypePath, Debug)]
 /// A lua code file in bytes
 pub struct LuaFile {
     pub bytes: Arc<[u8]>,
@@ -24,20 +24,24 @@ impl CodeAsset for LuaFile {
 pub struct LuaLoader;
 
 impl AssetLoader for LuaLoader {
+    type Asset = ();
+    type Settings = ();
+    type Error = Error;
     fn load<'a>(
         &'a self,
-        bytes: &'a [u8],
+        _reader:&mut Reader, //bytes: &'a [u8],
+        _settings: &'a (),
         load_context: &'a mut bevy::asset::LoadContext,
-    ) -> bevy::asset::BoxedFuture<'a, Result<(), Error>> {
+    ) -> bevy::asset::BoxedFuture<'a, Result<Self::Asset, Self::Error>> {
         match load_context.path().extension().map(|s| s.to_str().unwrap()) {
             #[cfg(all(feature = "teal", debug_assertions))]
             Some("tl") => {
-                use bevy::asset::FileAssetIo;
+                use bevy::asset::io::file::FileAssetReader;
                 use std::fs;
                 use std::path::PathBuf;
                 use std::process::Command;
 
-                let scripts_dir = &FileAssetIo::get_base_path().join("assets").join("scripts");
+                let scripts_dir = &FileAssetReader::get_base_path().join("assets").join("scripts");
 
                 let temp_file_path = &std::env::temp_dir().join("bevy_mod_scripting.temp.lua");
 
@@ -60,7 +64,7 @@ impl AssetLoader for LuaLoader {
                         None
                     };
 
-                let full_path = &FileAssetIo::get_base_path()
+                let full_path = &FileAssetReader::get_base_path()
                     .join("assets")
                     .join(load_context.path());
 
@@ -112,18 +116,13 @@ impl AssetLoader for LuaLoader {
                     let _ = fs::copy(temp_file_path, build_dir_path.with_extension("lua"));
                 }
 
-                let lua_code =
+                let _lua_code =
                     fs::read_to_string(temp_file_path).expect("Could not find output lua file");
                 fs::remove_file(temp_file_path).unwrap();
 
-                load_context.set_default_asset(LoadedAsset::new(LuaFile {
-                    bytes: lua_code.as_bytes().into(),
-                }));
             }
             _ => {
-                load_context.set_default_asset(LoadedAsset::new(LuaFile {
-                    bytes: bytes.into(),
-                }));
+                ()
             }
         }
 

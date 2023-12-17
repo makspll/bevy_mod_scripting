@@ -7,10 +7,7 @@ use crate::{
     sub_reflect::ReflectPathElem,
 };
 use bevy::animation::AnimationPlayer;
-use bevy::asset::AssetPathId;
-use bevy::asset::HandleId;
-use bevy::asset::LabelId;
-use bevy::asset::SourcePathId;
+use bevy::asset::AssetIndex;
 use bevy::core::Name;
 use bevy::core_pipeline::clear_color::ClearColor;
 use bevy::core_pipeline::clear_color::ClearColorConfig;
@@ -81,8 +78,9 @@ use bevy::render::mesh::skinning::SkinnedMesh;
 use bevy::render::primitives::Aabb;
 use bevy::render::primitives::CubemapFrusta;
 use bevy::render::primitives::Frustum;
-use bevy::render::view::visibility::ComputedVisibility;
+use bevy::render::view::visibility::InheritedVisibility;
 use bevy::render::view::visibility::RenderLayers;
+use bevy::render::view::visibility::ViewVisibility;
 use bevy::render::view::visibility::Visibility;
 use bevy::render::view::visibility::VisibleEntities;
 use bevy::render::view::Msaa;
@@ -132,9 +130,11 @@ use {
 };
 impl_script_newtype! {
     #[languages(on_feature(lua))]
-    ///Defines how each line is aligned within the flexbox.
+    ///Used to control how items are distributed.
+    ///- For Flexbox containers, controls alignment of lines if `flex_wrap` is set to [`FlexWrap::Wrap`] and there are multiple lines of items.
+    ///- For CSS Grid containers, controls alignment of grid rows.
     ///
-    ///It only applies if [`FlexWrap::Wrap`] is present and if there are multiple lines of items.
+    ///<https://developer.mozilla.org/en-US/docs/Web/CSS/align-content>
     bevy_ui::AlignContent :
     Clone +
     Debug +
@@ -156,7 +156,11 @@ impl_script_newtype! {
 }
 impl_script_newtype! {
     #[languages(on_feature(lua))]
-    ///How items are aligned according to the cross axis
+    ///Used to control how each individual item is aligned by default within the space they're given.
+    ///- For Flexbox containers, sets default cross axis alignment of the child items.
+    ///- For CSS Grid containers, controls block (vertical) axis alignment of children of this grid container within their grid areas.
+    ///
+    ///<https://developer.mozilla.org/en-US/docs/Web/CSS/align-items>
     bevy_ui::AlignItems :
     Clone +
     Debug +
@@ -178,8 +182,11 @@ impl_script_newtype! {
 }
 impl_script_newtype! {
     #[languages(on_feature(lua))]
-    ///How this item is aligned according to the cross axis.
-    ///Overrides [`AlignItems`].
+    ///Used to control how the specified item is aligned within the space it's given.
+    ///- For Flexbox items, controls cross axis alignment of the item.
+    ///- For CSS Grid items, controls block (vertical) axis alignment of a grid item within its grid area.
+    ///
+    ///<https://developer.mozilla.org/en-US/docs/Web/CSS/align-self>
     bevy_ui::AlignSelf :
     Clone +
     Debug +
@@ -201,9 +208,9 @@ impl_script_newtype! {
 }
 impl_script_newtype! {
     #[languages(on_feature(lua))]
-    ///Defines the text direction
+    ///Defines the text direction.
     ///
-    ///For example English is written LTR (left-to-right) while Arabic is written RTL (right-to-left).
+    ///For example, English is written LTR (left-to-right) while Arabic is written RTL (right-to-left).
     bevy_ui::Direction :
     Clone +
     Debug +
@@ -297,9 +304,9 @@ impl_script_newtype! {
     ///
     ///Updated in [`ui_focus_system`].
     ///
-    ///If a UI node has both [`Interaction`] and [`ComputedVisibility`] components,
+    ///If a UI node has both [`Interaction`] and [`ViewVisibility`] components,
     ///[`Interaction`] will always be [`Interaction::None`]
-    ///when [`ComputedVisibility::is_visible()`] is false.
+    ///when [`ViewVisibility::get()`] is false.
     ///This ensures that hidden UI nodes are not interactable,
     ///and do not end up stuck in an active state if hidden at the wrong time.
     ///
@@ -326,7 +333,11 @@ impl_script_newtype! {
 }
 impl_script_newtype! {
     #[languages(on_feature(lua))]
-    ///Defines how items are aligned according to the main axis
+    ///Used to control how items are distributed.
+    ///- For Flexbox containers, controls alignment of items in the main axis.
+    ///- For CSS Grid containers, controls alignment of grid columns.
+    ///
+    ///<https://developer.mozilla.org/en-US/docs/Web/CSS/justify-content>
     bevy_ui::JustifyContent :
     Clone +
     Debug +
@@ -413,7 +424,7 @@ impl_script_newtype! {
     #[languages(on_feature(lua))]
     ///Represents the possible value types for layout properties.
     ///
-    ///This enum allows specifying values for various [`Style`] properties in different units,
+    ///This enum allows specifying values for various [`Style`](crate::Style) properties in different units,
     ///such as logical pixels, percentages, or automatically determined values.
     bevy_ui::Val :
     Clone +
@@ -431,6 +442,7 @@ impl_script_newtype! {
     )
     + UnaryOps
     (
+        Neg self -> self
     )
     lua impl
     {
@@ -468,9 +480,19 @@ impl_script_newtype! {
     Debug +
     Methods
     (
-        ///The calculated node size as width and height in logical pixels
-        ///automatically calculated by [`super::layout::ui_layout_system`]
+        ///The calculated node size as width and height in logical pixels.
+        ///
+        ///Automatically calculated by [`super::layout::ui_layout_system`].
         size(&self:) -> Wrapped(Vec2),
+
+        ///The order of the node in the UI layout.
+        ///Nodes with a higher stack index are drawn on top of and recieve interactions before nodes with lower stack indices.
+        stack_index(&self:) -> Raw(u32),
+
+        ///The calculated node size as width and height in logical pixels before rounding.
+        ///
+        ///Automatically calculated by [`super::layout::ui_layout_system`].
+        unrounded_size(&self:) -> Wrapped(Vec2),
 
         ///Returns the size of the node in physical pixels based on the given scale factor and `UiScale`.
         physical_size(&self:Raw(f64),Raw(f64)) -> Wrapped(Vec2),
@@ -480,6 +502,10 @@ impl_script_newtype! {
 
         ///Returns the physical pixel coordinates of the UI node, based on its [`GlobalTransform`] and the scale factor.
         physical_rect(&self:Wrapped(&GlobalTransform),Raw(f64),Raw(f64)) -> Wrapped(Rect),
+
+        ///Returns the thickness of the UI node's outline.
+        ///If this value is negative or `0.` then no outline will be rendered.
+        outline_width(&self:) -> Raw(f32),
 
     )
     + Fields
@@ -499,19 +525,20 @@ impl_script_newtype! {
     #[languages(on_feature(lua))]
     ///Describes the style of a UI container node
     ///
-    ///Node's can be laid out using either Flexbox or CSS Grid Layout.<br />
+    ///Nodes can be laid out using either Flexbox or CSS Grid Layout.
+    ///
     ///See below for general learning resources and for documentation on the individual style properties.
     ///
     ///### Flexbox
     ///
-    ///- [MDN: Basic Concepts of Grid Layout](https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_Grid_Layout/Basic_Concepts_of_Grid_Layout)
-    ///- [A Complete Guide To Flexbox](https://css-tricks.com/snippets/css/a-guide-to-flexbox/) by CSS Tricks. This is detailed guide with illustrations and comphrehensive written explanation of the different Flexbox properties and how they work.
-    ///- [Flexbox Froggy](https://flexboxfroggy.com/). An interactive tutorial/game that teaches the essential parts of Flebox in a fun engaging way.
+    ///- [MDN: Basic Concepts of Flexbox](https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_Flexible_Box_Layout/Basic_Concepts_of_Flexbox)
+    ///- [A Complete Guide To Flexbox](https://css-tricks.com/snippets/css/a-guide-to-flexbox/) by CSS Tricks. This is detailed guide with illustrations and comprehensive written explanation of the different Flexbox properties and how they work.
+    ///- [Flexbox Froggy](https://flexboxfroggy.com/). An interactive tutorial/game that teaches the essential parts of Flexbox in a fun engaging way.
     ///
     ///### CSS Grid
     ///
-    ///- [MDN: Basic Concepts of Flexbox](https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_Flexible_Box_Layout/Basic_Concepts_of_Flexbox)
-    ///- [A Complete Guide To CSS Grid](https://css-tricks.com/snippets/css/complete-guide-grid/) by CSS Tricks. This is detailed guide with illustrations and comphrehensive written explanation of the different CSS Grid properties and how they work.
+    ///- [MDN: Basic Concepts of Grid Layout](https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_Grid_Layout/Basic_Concepts_of_Grid_Layout)
+    ///- [A Complete Guide To CSS Grid](https://css-tricks.com/snippets/css/complete-guide-grid/) by CSS Tricks. This is detailed guide with illustrations and comprehensive written explanation of the different CSS Grid properties and how they work.
     ///- [CSS Grid Garden](https://cssgridgarden.com/). An interactive tutorial/game that teaches the essential parts of CSS Grid in a fun engaging way.
     bevy_ui::Style :
     Clone +
@@ -528,7 +555,7 @@ impl_script_newtype! {
         ///
         /// <https://developer.mozilla.org/en-US/docs/Web/CSS/display>
         display: Wrapped(Display),
-        /// Whether a node should be laid out in-flow with, or independently of it's siblings:
+        /// Whether a node should be laid out in-flow with, or independently of its siblings:
         ///  - [`PositionType::Relative`]: Layout this node in-flow with other nodes using the usual (flexbox/grid) layout algorithm.
         ///  - [`PositionType::Absolute`]: Layout this node on top and independently of other nodes.
         ///
@@ -538,9 +565,10 @@ impl_script_newtype! {
         ///
         /// <https://developer.mozilla.org/en-US/docs/Web/CSS/overflow>
         overflow: Wrapped(Overflow),
-        /// Defines the text direction. For example English is written LTR (left-to-right) while Arabic is written RTL (right-to-left).
+        /// Defines the text direction. For example, English is written LTR (left-to-right) while Arabic is written RTL (right-to-left).
         ///
-        /// Note: the corresponding CSS property also affects box layout order, but this isn't yet implemented in bevy.
+        /// Note: the corresponding CSS property also affects box layout order, but this isn't yet implemented in Bevy.
+        ///
         /// <https://developer.mozilla.org/en-US/docs/Web/CSS/direction>
         direction: Wrapped(Direction),
         /// The horizontal position of the left edge of the node.
@@ -575,11 +603,11 @@ impl_script_newtype! {
         ///
         /// <https://developer.mozilla.org/en-US/docs/Web/CSS/height>
         height: Wrapped(Val),
-        /// The minimum width of the node. `min_width` is used if it is greater than either `width` and/or `max_width`.
+        /// The minimum width of the node. `min_width` is used if it is greater than `width` and/or `max_width`.
         ///
         /// <https://developer.mozilla.org/en-US/docs/Web/CSS/min-width>
         min_width: Wrapped(Val),
-        /// The minimum height of the node. `min_height` is used if it is greater than either `height` and/or `max_height`.
+        /// The minimum height of the node. `min_height` is used if it is greater than `height` and/or `max_height`.
         ///
         /// <https://developer.mozilla.org/en-US/docs/Web/CSS/min-height>
         min_height: Wrapped(Val),
@@ -595,53 +623,47 @@ impl_script_newtype! {
         ///
         /// <https://developer.mozilla.org/en-US/docs/Web/CSS/aspect-ratio>
         aspect_ratio: Raw(ReflectedValue),
-        /// For Flexbox containers:
-        ///   - Sets default cross-axis alignment of the child items.
-        /// For CSS Grid containers:
-        ///   - Controls block (vertical) axis alignment of children of this grid container within their grid areas
+        /// Used to control how each individual item is aligned by default within the space they're given.
+        /// - For Flexbox containers, sets default cross axis alignment of the child items.
+        /// - For CSS Grid containers, controls block (vertical) axis alignment of children of this grid container within their grid areas.
         ///
-        /// This value is overriden [`JustifySelf`] on the child node is set.
+        /// This value is overridden if [`AlignSelf`] on the child node is set.
         ///
         /// <https://developer.mozilla.org/en-US/docs/Web/CSS/align-items>
         align_items: Wrapped(AlignItems),
-        /// For Flexbox containers:
-        ///   - This property has no effect. See `justify_content` for main-axis alignment of flex items.
-        /// For CSS Grid containers:
-        ///   - Sets default inline (horizontal) axis alignment of child items within their grid areas
+        /// Used to control how each individual item is aligned by default within the space they're given.
+        /// - For Flexbox containers, this property has no effect. See `justify_content` for main axis alignment of flex items.
+        /// - For CSS Grid containers, sets default inline (horizontal) axis alignment of child items within their grid areas.
         ///
-        /// This value is overriden [`JustifySelf`] on the child node is set.
+        /// This value is overridden if [`JustifySelf`] on the child node is set.
         ///
         /// <https://developer.mozilla.org/en-US/docs/Web/CSS/justify-items>
         justify_items: Raw(ReflectedValue),
-        /// For Flexbox items:
-        ///   - Controls cross-axis alignment of the item.
-        /// For CSS Grid items:
-        ///   - Controls block (vertical) axis alignment of a grid item within it's grid area
+        /// Used to control how the specified item is aligned within the space it's given.
+        /// - For Flexbox items, controls cross axis alignment of the item.
+        /// - For CSS Grid items, controls block (vertical) axis alignment of a grid item within its grid area.
         ///
         /// If set to `Auto`, alignment is inherited from the value of [`AlignItems`] set on the parent node.
         ///
         /// <https://developer.mozilla.org/en-US/docs/Web/CSS/align-self>
         align_self: Wrapped(AlignSelf),
-        /// For Flexbox items:
-        ///   - This property has no effect. See `justify_content` for main-axis alignment of flex items.
-        /// For CSS Grid items:
-        ///   - Controls inline (horizontal) axis alignment of a grid item within it's grid area.
+        /// Used to control how the specified item is aligned within the space it's given.
+        /// - For Flexbox items, this property has no effect. See `justify_content` for main axis alignment of flex items.
+        /// - For CSS Grid items, controls inline (horizontal) axis alignment of a grid item within its grid area.
         ///
         /// If set to `Auto`, alignment is inherited from the value of [`JustifyItems`] set on the parent node.
         ///
-        /// <https://developer.mozilla.org/en-US/docs/Web/CSS/justify-items>
+        /// <https://developer.mozilla.org/en-US/docs/Web/CSS/justify-self>
         justify_self: Raw(ReflectedValue),
-        /// For Flexbox containers:
-        ///   - Controls alignment of lines if flex_wrap is set to [`FlexWrap::Wrap`] and there are multiple lines of items
-        /// For CSS Grid container:
-        ///   - Controls alignment of grid rows
+        /// Used to control how items are distributed.
+        /// - For Flexbox containers, controls alignment of lines if `flex_wrap` is set to [`FlexWrap::Wrap`] and there are multiple lines of items.
+        /// - For CSS Grid containers, controls alignment of grid rows.
         ///
         /// <https://developer.mozilla.org/en-US/docs/Web/CSS/align-content>
         align_content: Wrapped(AlignContent),
-        /// For Flexbox containers:
-        ///   - Controls alignment of items in the main axis
-        /// For CSS Grid containers:
-        ///   - Controls alignment of grid columns
+        /// Used to control how items are distributed.
+        /// - For Flexbox containers, controls alignment of items in the main axis.
+        /// - For CSS Grid containers, controls alignment of grid columns.
         ///
         /// <https://developer.mozilla.org/en-US/docs/Web/CSS/justify-content>
         justify_content: Wrapped(JustifyContent),
@@ -662,7 +684,7 @@ impl_script_newtype! {
         ///     ..Default::default()
         /// };
         /// ```
-        /// A node with this style and a parent with dimensions of 100px by 300px, will have calculated margins of 10px on both left and right edges, and 15px on both top and bottom edges.
+        /// A node with this style and a parent with dimensions of 100px by 300px will have calculated margins of 10px on both left and right edges, and 15px on both top and bottom edges.
         ///
         /// <https://developer.mozilla.org/en-US/docs/Web/CSS/margin>
         margin: Raw(ReflectedValue),
@@ -683,7 +705,7 @@ impl_script_newtype! {
         ///     ..Default::default()
         /// };
         /// ```
-        /// A node with this style and a parent with dimensions of 300px by 100px, will have calculated padding of 3px on the left, 6px on the right, 9px on the top and 12px on the bottom.
+        /// A node with this style and a parent with dimensions of 300px by 100px will have calculated padding of 3px on the left, 6px on the right, 9px on the top and 12px on the bottom.
         ///
         /// <https://developer.mozilla.org/en-US/docs/Web/CSS/padding>
         padding: Raw(ReflectedValue),
@@ -693,15 +715,13 @@ impl_script_newtype! {
         ///
         /// The size of the node will be expanded if there are constraints that prevent the layout algorithm from placing the border within the existing node boundary.
         ///
-        /// Rendering for borders is not yet implemented.
-        ///
         /// <https://developer.mozilla.org/en-US/docs/Web/CSS/border-width>
         border: Raw(ReflectedValue),
-        /// Whether a Flexbox container should be a row or a column. This property has no effect of Grid nodes.
+        /// Whether a Flexbox container should be a row or a column. This property has no effect on Grid nodes.
         ///
         /// <https://developer.mozilla.org/en-US/docs/Web/CSS/flex-direction>
         flex_direction: Wrapped(FlexDirection),
-        /// Whether a Flexbox container should wrap it's contents onto multiple line wrap if they overflow. This property has no effect of Grid nodes.
+        /// Whether a Flexbox container should wrap its contents onto multiple lines if they overflow. This property has no effect on Grid nodes.
         ///
         /// <https://developer.mozilla.org/en-US/docs/Web/CSS/flex-wrap>
         flex_wrap: Wrapped(FlexWrap),
@@ -715,24 +735,24 @@ impl_script_newtype! {
         flex_shrink: Raw(f32),
         /// The initial length of a flexbox in the main axis, before flex growing/shrinking properties are applied.
         ///
-        /// `flex_basis` overrides `size` on the main axis if both are set,  but it obeys the bounds defined by `min_size` and `max_size`.
+        /// `flex_basis` overrides `size` on the main axis if both are set, but it obeys the bounds defined by `min_size` and `max_size`.
         ///
         /// <https://developer.mozilla.org/en-US/docs/Web/CSS/flex-basis>
         flex_basis: Wrapped(Val),
-        /// The size of the gutters between items in a vertical flexbox layout or between rows in a grid layout
+        /// The size of the gutters between items in a vertical flexbox layout or between rows in a grid layout.
         ///
         /// Note: Values of `Val::Auto` are not valid and are treated as zero.
         ///
         /// <https://developer.mozilla.org/en-US/docs/Web/CSS/row-gap>
         row_gap: Wrapped(Val),
-        /// The size of the gutters between items in a horizontal flexbox layout or between column in a grid layout
+        /// The size of the gutters between items in a horizontal flexbox layout or between column in a grid layout.
         ///
         /// Note: Values of `Val::Auto` are not valid and are treated as zero.
         ///
         /// <https://developer.mozilla.org/en-US/docs/Web/CSS/column-gap>
         column_gap: Wrapped(Val),
-        /// Controls whether automatically placed grid items are placed row-wise or column-wise. And whether the sparse or dense packing algorithm is used.
-        /// Only affect Grid layouts
+        /// Controls whether automatically placed grid items are placed row-wise or column-wise as well as whether the sparse or dense packing algorithm is used.
+        /// Only affects Grid layouts.
         ///
         /// <https://developer.mozilla.org/en-US/docs/Web/CSS/grid-auto-flow>
         grid_auto_flow: Raw(ReflectedValue),
@@ -752,9 +772,9 @@ impl_script_newtype! {
         /// <https://developer.mozilla.org/en-US/docs/Web/CSS/grid-auto-rows>
         grid_auto_rows: Raw(ReflectedValue),
         /// Defines the size of implicitly created columns. Columns are created implicitly when grid items are given explicit placements that are out of bounds
-        /// of the columns explicitly created using `grid_template_columms`.
+        /// of the columns explicitly created using `grid_template_columns`.
         ///
-        /// <https://developer.mozilla.org/en-US/docs/Web/CSS/grid-template-columns>
+        /// <https://developer.mozilla.org/en-US/docs/Web/CSS/grid-auto-columns>
         grid_auto_columns: Raw(ReflectedValue),
         /// The row in which a grid item starts and how many rows it spans.
         ///
@@ -783,10 +803,10 @@ impl_script_newtype! {
     Debug +
     Methods
     (
-        ///flip the image along its x-axis
+        ///Flip the image along its x-axis
         with_flip_x(self:) -> self,
 
-        ///flip the image along its y-axis
+        ///Flip the image along its y-axis
         with_flip_y(self:) -> self,
 
     )
@@ -833,7 +853,7 @@ impl_script_newtype! {
 }
 impl_script_newtype! {
     #[languages(on_feature(lua))]
-    ///Whether to use a Flexbox layout model.
+    ///Defines the layout model used by this node.
     ///
     ///Part of the [`Style`] component.
     bevy_ui::Display :
@@ -861,6 +881,15 @@ impl_script_newtype! {
     bevy_animation::AnimationPlayer :
     Methods
     (
+        ///Check if the playing animation has finished, according to the repetition behavior.
+        is_finished(&self:) -> Raw(bool),
+
+        ///Number of times the animation has completed.
+        completions(&self:) -> Raw(u32),
+
+        ///Check if the animation is playing in reverse.
+        is_playback_reversed(&self:) -> Raw(bool),
+
         ///Pause the animation
         pause(&mut self:),
 
@@ -875,6 +904,12 @@ impl_script_newtype! {
 
         ///Time elapsed playing the animation
         elapsed(&self:) -> Raw(f32),
+
+        ///Seek time inside of the animation. Always within the range [0.0, clip duration].
+        seek_time(&self:) -> Raw(f32),
+
+        ///Reset the animation to its initial state, as if no time has elapsed.
+        replay(&mut self:),
 
     )
     + Fields
@@ -920,6 +955,9 @@ impl_script_newtype! {
 }
 impl_script_newtype! {
     #[languages(on_feature(lua))]
+    ///Additional untyped data that can be present on most glTF types.
+    ///
+    ///See [the relevant glTF specification section](https://registry.khronos.org/glTF/specs/2.0/glTF-2.0.html#reference-extras).
     bevy_gltf::GltfExtras :
     Clone +
     Debug +
@@ -928,6 +966,7 @@ impl_script_newtype! {
     )
     + Fields
     (
+        /// Content of the extra data.
         value: Raw(String),
     )
     + BinOps
@@ -1016,6 +1055,7 @@ impl_script_newtype! {
     )
     + Fields
     (
+        /// The maximum width and height of text in logical pixels.
         size: Wrapped(Vec2),
     )
     + BinOps
@@ -1120,7 +1160,18 @@ impl_script_newtype! {
     )
     + Fields
     (
+        /// If this is not specified, then
+        /// * if `default_font` feature is enabled (enabled by default in `bevy` crate),
+        ///  `FiraMono-subset.ttf` compiled into the library is used.
+        /// * otherwise no text will be rendered.
         font: Raw(ReflectedValue),
+        /// The vertical height of rasterized glyphs in the font atlas in pixels.
+        ///
+        /// This is multiplied by the window scale factor and `UiScale`, but not the text entity
+        /// transform or camera projection.
+        ///
+        /// A new font atlas is generated for every combination of font handle and scaled font size
+        /// which can have a strong performance impact.
         font_size: Raw(f32),
         color: Wrapped(Color),
     )
@@ -1286,18 +1337,28 @@ impl_script_newtype! {
     Debug +
     Methods
     (
-        ///Returns `true` if the timer has reached its duration at least once.
-        ///See also [`Timer::just_finished`](Timer::just_finished).
+        ///Returns `true` if the timer has reached its duration.
+        ///
+        ///For repeating timers, this method behaves identically to [`Timer::just_finished`].
         ///
         ///# Examples
         ///```
         ///# use bevy_time::*;
         ///use std::time::Duration;
-        ///let mut timer = Timer::from_seconds(1.0, TimerMode::Once);
-        ///timer.tick(Duration::from_secs_f32(1.5));
-        ///assert!(timer.finished());
-        ///timer.tick(Duration::from_secs_f32(0.5));
-        ///assert!(timer.finished());
+        ///
+        ///let mut timer_once = Timer::from_seconds(1.0, TimerMode::Once);
+        ///timer_once.tick(Duration::from_secs_f32(1.5));
+        ///assert!(timer_once.finished());
+        ///timer_once.tick(Duration::from_secs_f32(0.5));
+        ///assert!(timer_once.finished());
+        ///
+        ///let mut timer_repeating = Timer::from_seconds(1.0, TimerMode::Repeating);
+        ///timer_repeating.tick(Duration::from_secs_f32(1.1));
+        ///assert!(timer_repeating.finished());
+        ///timer_repeating.tick(Duration::from_secs_f32(0.8));
+        ///assert!(!timer_repeating.finished());
+        ///timer_repeating.tick(Duration::from_secs_f32(0.6));
+        ///assert!(timer_repeating.finished());
         ///```
         finished(&self:) -> Raw(bool),
 
@@ -1471,7 +1532,7 @@ impl_script_newtype! {
     ///# Usage
     ///
     ///This data type is returned by iterating a `Query` that has `Entity` as part of its query fetch type parameter ([learn more]).
-    ///It can also be obtained by calling [`EntityCommands::id`] or [`EntityMut::id`].
+    ///It can also be obtained by calling [`EntityCommands::id`] or [`EntityWorldMut::id`].
     ///
     ///```
     ///# use bevy_ecs::prelude::*;
@@ -1483,7 +1544,7 @@ impl_script_newtype! {
     ///}
     ///
     ///fn exclusive_system(world: &mut World) {
-    ///    // Calling `spawn` returns `EntityMut`.
+    ///    // Calling `spawn` returns `EntityWorldMut`.
     ///    let entity = world.spawn(SomeComponent).id();
     ///}
     ///#
@@ -1510,7 +1571,7 @@ impl_script_newtype! {
     ///
     ///[learn more]: crate::system::Query#entity-id-access
     ///[`EntityCommands::id`]: crate::system::EntityCommands::id
-    ///[`EntityMut::id`]: crate::world::EntityMut::id
+    ///[`EntityWorldMut::id`]: crate::world::EntityWorldMut::id
     ///[`EntityCommands`]: crate::system::EntityCommands
     ///[`Query::get`]: crate::system::Query::get
     ///[`World`]: crate::world::World
@@ -1754,7 +1815,7 @@ impl_script_newtype! {
         ///and [`Transform::up`] points towards `up`.
         ///
         ///In some cases it's not possible to construct a rotation. Another axis will be picked in those cases:
-        ///* if `target` is the same as the transtorm translation, `Vec3::Z` is used instead
+        ///* if `target` is the same as the transform translation, `Vec3::Z` is used instead
         ///* if `up` is zero, `Vec3::Y` is used instead
         ///* if the resulting forward direction is parallel with `up`, an orthogonal vector is used as the "right" direction
         look_at(&mut self:Wrapped(Vec3),Wrapped(Vec3)),
@@ -1810,6 +1871,7 @@ impl_script_newtype! {
     (
         self Mul Wrapped(Transform) -> Wrapped(Transform),
         self Mul Wrapped(Vec3) -> Wrapped(Vec3),
+        self Mul Wrapped(GlobalTransform) -> Wrapped(GlobalTransform),
     )
     + UnaryOps
     (
@@ -1942,9 +2004,9 @@ impl_script_newtype! {
     )
     + BinOps
     (
-        self Mul Wrapped(Transform) -> Wrapped(GlobalTransform),
         self Mul Wrapped(GlobalTransform) -> Wrapped(GlobalTransform),
         self Mul Wrapped(Vec3) -> Wrapped(Vec3),
+        self Mul Wrapped(Transform) -> Wrapped(GlobalTransform),
     )
     + UnaryOps
     (
@@ -2121,6 +2183,10 @@ impl_script_newtype! {
 impl_script_newtype! {
     #[languages(on_feature(lua))]
     ///Add this component to make a [`Mesh`](bevy_render::mesh::Mesh) not receive shadows.
+    ///
+    ///**Note:** If you're using diffuse transmission, setting [`NotShadowReceiver`] will
+    ///cause both “regular” shadows as well as diffusely transmitted shadows to be disabled,
+    ///even when [`TransmittedShadowReceiver`] is being used.
     bevy_pbr::NotShadowReceiver :
     Methods
     (
@@ -2166,6 +2232,7 @@ impl_script_newtype! {
     + Fields
     (
         color: Wrapped(Color),
+        /// Luminous power in lumens
         intensity: Raw(f32),
         range: Raw(f32),
         radius: Raw(f32),
@@ -2232,7 +2299,10 @@ impl_script_newtype! {
 }
 impl_script_newtype! {
     #[languages(on_feature(lua))]
-    ///Controls whether an entity should rendered in wireframe-mode if the [`WireframePlugin`] is enabled
+    ///Enables wireframe rendering for any entity it is attached to.
+    ///It will ignore the [`WireframeConfig`] global setting.
+    ///
+    ///This requires the [`WireframePlugin`] to be enabled.
     bevy_pbr::wireframe::Wireframe :
     Clone +
     Debug +
@@ -2262,8 +2332,13 @@ impl_script_newtype! {
     )
     + Fields
     (
-        /// Whether to show wireframes for all meshes. If `false`, only meshes with a [Wireframe] component will be rendered.
+        /// Whether to show wireframes for all meshes.
+        /// Can be overridden for individual meshes by adding a [`Wireframe`] or [`NoWireframe`] component.
         global: Raw(bool),
+        /// If [`Self::global`] is set, any [`Entity`] that does not have a [`Wireframe`] component attached to it will have
+        /// wireframes using this color. Otherwise, this will be the fallback color for any entity that has a [`Wireframe`],
+        /// but no [`WireframeColor`].
+        default_color: Wrapped(Color),
     )
     + BinOps
     (
@@ -2324,6 +2399,7 @@ impl_script_newtype! {
 }
 impl_script_newtype! {
     #[languages(on_feature(lua))]
+    ///For a camera, specifies the color used to clear the viewport before rendering.
     bevy_core_pipeline::clear_color::ClearColorConfig :
     Clone +
     Debug +
@@ -2380,6 +2456,31 @@ impl_script_newtype! {
         depth_load_op: Wrapped(Camera3dDepthLoadOp),
         /// The texture usages for the depth texture created for the main 3d pass.
         depth_texture_usages: Raw(ReflectedValue),
+        /// How many individual steps should be performed in the [`Transmissive3d`](crate::core_3d::Transmissive3d) pass.
+        ///
+        /// Roughly corresponds to how many “layers of transparency” are rendered for screen space
+        /// specular transmissive objects. Each step requires making one additional
+        /// texture copy, so it's recommended to keep this number to a resonably low value. Defaults to `1`.
+        ///
+        /// ### Notes
+        ///
+        /// - No copies will be performed if there are no transmissive materials currently being rendered,
+        ///   regardless of this setting.
+        /// - Setting this to `0` disables the screen-space refraction effect entirely, and falls
+        ///   back to refracting only the environment map light's texture.
+        /// - If set to more than `0`, any opaque [`clear_color`](Camera3d::clear_color) will obscure the environment
+        ///   map light's texture, preventing it from being visible “through” transmissive materials. If you'd like
+        ///   to still have the environment map show up in your refractions, you can set the clear color's alpha to `0.0`.
+        ///   Keep in mind that depending on the platform and your window settings, this may cause the window to become
+        ///   transparent.
+        screen_space_specular_transmission_steps: Raw(usize),
+        /// The quality of the screen space specular transmission blur effect, applied to whatever's “behind” transmissive
+        /// objects when their `roughness` is greater than `0.0`.
+        ///
+        /// Higher qualities are more GPU-intensive.
+        ///
+        /// **Note:** You can get better-looking results at any quality level by enabling TAA. See: [`TemporalAntiAliasPlugin`](crate::experimental::taa::TemporalAntiAliasPlugin).
+        screen_space_specular_transmission_quality: Raw(ReflectedValue),
     )
     + BinOps
     (
@@ -2569,7 +2670,7 @@ impl_script_newtype! {
     ///are set to [`Inherited`](Self::Inherited) will also be hidden.
     ///
     ///This is done by the `visibility_propagate_system` which uses the entity hierarchy and
-    ///`Visibility` to set the values of each entity's [`ComputedVisibility`] component.
+    ///`Visibility` to set the values of each entity's [`InheritedVisibility`] component.
     bevy_render::view::visibility::Visibility :
     Clone +
     Debug +
@@ -2594,15 +2695,12 @@ impl_script_newtype! {
     ///Collection of entities visible from the current view.
     ///
     ///This component contains all entities which are visible from the currently
-    ///rendered view. The collection is updated automatically by the [`check_visibility()`]
-    ///system, and renderers can use it to optimize rendering of a particular view, to
+    ///rendered view. The collection is updated automatically by the [`VisibilitySystems::CheckVisibility`]
+    ///system set, and renderers can use it to optimize rendering of a particular view, to
     ///prevent drawing items not visible from that view.
     ///
     ///This component is intended to be attached to the same entity as the [`Camera`] and
     ///the [`Frustum`] defining the view.
-    ///
-    ///Currently this component is ignored by the sprite renderer, so sprite rendering
-    ///is not optimized per view.
     bevy_render::view::visibility::VisibleEntities :
     Clone +
     Debug +
@@ -2628,37 +2726,69 @@ impl_script_newtype! {
 }
 impl_script_newtype! {
     #[languages(on_feature(lua))]
-    ///Algorithmically-computed indication of whether an entity is visible and should be extracted for rendering
-    bevy_render::view::visibility::ComputedVisibility :
+    ///Whether or not an entity is visible in the hierarchy.
+    ///This will not be accurate until [`VisibilityPropagate`] runs in the [`PostUpdate`] schedule.
+    ///
+    ///If this is false, then [`ViewVisibility`] should also be false.
+    ///
+    ///[`VisibilityPropagate`]: VisibilitySystems::VisibilityPropagate
+    bevy_render::view::visibility::InheritedVisibility :
     Clone +
     Debug +
     Methods
     (
-        ///Whether this entity is visible to something this frame. This is true if and only if [`Self::is_visible_in_hierarchy`] and [`Self::is_visible_in_view`]
-        ///are true. This is the canonical method to call to determine if an entity should be drawn.
-        ///This value is updated in [`PostUpdate`] by the [`VisibilitySystems::CheckVisibility`] system set.
-        ///Reading it during [`Update`](bevy_app::Update) will yield the value from the previous frame.
-        is_visible(&self:) -> Raw(bool),
+        ///Returns `true` if the entity is visible in the hierarchy.
+        ///Otherwise, returns `false`.
+        get(self:) -> Raw(bool),
 
-        ///Whether this entity is visible in the entity hierarchy, which is determined by the [`Visibility`] component.
-        ///This takes into account "visibility inheritance". If any of this entity's ancestors (see [`Parent`]) are hidden, this entity
-        ///will be hidden as well. This value is updated in the [`VisibilitySystems::VisibilityPropagate`], which lives in the [`PostUpdate`] schedule.
-        is_visible_in_hierarchy(&self:) -> Raw(bool),
+    )
+    + Fields
+    (
+    )
+    + BinOps
+    (
+    )
+    + UnaryOps
+    (
+    )
+    lua impl
+    {
+    }
+}
+impl_script_newtype! {
+    #[languages(on_feature(lua))]
+    ///Algorithmically-computed indication or whether an entity is visible and should be extracted for rendering.
+    ///
+    ///Each frame, this will be reset to `false` during [`VisibilityPropagate`] systems in [`PostUpdate`].
+    ///Later in the frame, systems in [`CheckVisibility`] will mark any visible entities using [`ViewVisibility::set`].
+    ///Because of this, values of this type will be marked as changed every frame, even when they do not change.
+    ///
+    ///If you wish to add custom visibility system that sets this value, make sure you add it to the [`CheckVisibility`] set.
+    ///
+    ///[`VisibilityPropagate`]: VisibilitySystems::VisibilityPropagate
+    ///[`CheckVisibility`]: VisibilitySystems::CheckVisibility
+    bevy_render::view::visibility::ViewVisibility :
+    Clone +
+    Debug +
+    Methods
+    (
+        ///Returns `true` if the entity is visible in any view.
+        ///Otherwise, returns `false`.
+        get(self:) -> Raw(bool),
 
-        ///Whether this entity is visible in _any_ view (Cameras, Lights, etc). Each entity type (and view type) should choose how to set this
-        ///value. For cameras and drawn entities, this will take into account [`RenderLayers`].
+        ///Sets the visibility to `true`. This should not be considered reversible for a given frame,
+        ///as this component tracks whether or not the entity visible in _any_ view.
         ///
-        ///This value is reset to `false` every frame in [`VisibilitySystems::VisibilityPropagate`] during [`PostUpdate`].
-        ///Each entity type then chooses how to set this field in the [`VisibilitySystems::CheckVisibility`] system set, in [`PostUpdate`].
-        ///Meshes might use frustum culling to decide if they are visible in a view.
-        ///Other entities might just set this to `true` every frame.
-        is_visible_in_view(&self:) -> Raw(bool),
-
-        ///Sets `is_visible_in_view` to `true`. This is not reversible for a given frame, as it encodes whether or not this is visible in
-        ///_any_ view. This will be automatically reset to `false` every frame in [`VisibilitySystems::VisibilityPropagate`] and then set
-        ///to the proper value in [`VisibilitySystems::CheckVisibility`]. This should _only_ be set in systems with the [`VisibilitySystems::CheckVisibility`]
-        ///label. Don't call this unless you are defining a custom visibility system. For normal user-defined entity visibility, see [`Visibility`].
-        set_visible_in_view(&mut self:),
+        ///This will be automatically reset to `false` every frame in [`VisibilityPropagate`] and then set
+        ///to the proper value in [`CheckVisibility`].
+        ///
+        ///You should only manually set this if you are defining a custom visibility system,
+        ///in which case the system should be placed in the [`CheckVisibility`] set.
+        ///For normal user-defined entity visibility, see [`Visibility`].
+        ///
+        ///[`VisibilityPropagate`]: VisibilitySystems::VisibilityPropagate
+        ///[`CheckVisibility`]: VisibilitySystems::CheckVisibility
+        set(&mut self:),
 
     )
     + Fields
@@ -2840,29 +2970,63 @@ impl_script_newtype! {
         ///See also [`Color::rgba`], [`Color::rgb_u8`], [`Color::hex`].
         rgba_u8(Raw(u8),Raw(u8),Raw(u8),Raw(u8)) -> Wrapped(Color),
 
-        ///Get red in sRGB colorspace.
+        ///Converts a Color to variant [`Color::Rgba`] and return red in sRGB colorspace
         r(&self:) -> Raw(f32),
 
-        ///Get green in sRGB colorspace.
+        ///Converts a Color to variant [`Color::Rgba`] and return green in sRGB colorspace
         g(&self:) -> Raw(f32),
 
-        ///Get blue in sRGB colorspace.
+        ///Converts a Color to variant [`Color::Rgba`] and return blue in sRGB colorspace
         b(&self:) -> Raw(f32),
 
-        ///Returns this color with red set to a new value in sRGB colorspace.
+        ///Converts a Color to variant [`Color::Rgba`] and return this color with red set to a new value
         with_r(self:Raw(f32)) -> self,
 
-        ///Returns this color with green set to a new value in sRGB colorspace.
+        ///Converts a Color to variant [`Color::Rgba`] and return this color with green set to a new value
         with_g(self:Raw(f32)) -> self,
 
-        ///Returns this color with blue set to a new value in sRGB colorspace.
+        ///Converts a Color to variant [`Color::Rgba`] and return this color with blue set to a new value
         with_b(self:Raw(f32)) -> self,
+
+        ///Converts a Color to variant [`Color::Hsla`] and return hue
+        h(&self:) -> Raw(f32),
+
+        ///Converts a Color to variant [`Color::Hsla`] and return saturation
+        s(&self:) -> Raw(f32),
+
+        ///Converts a Color to variant [`Color::Hsla`] and return lightness
+        l(&self:) -> Raw(f32),
+
+        ///Converts a Color to variant [`Color::Hsla`] and return this color with hue set to a new value
+        with_h(self:Raw(f32)) -> self,
+
+        ///Converts a Color to variant [`Color::Hsla`] and return this color with saturation set to a new value
+        with_s(self:Raw(f32)) -> self,
+
+        ///Converts a Color to variant [`Color::Hsla`] and return this color with lightness set to a new value
+        with_l(self:Raw(f32)) -> self,
 
         ///Get alpha.
         a(&self:) -> Raw(f32),
 
         ///Returns this color with a new alpha value.
         with_a(self:Raw(f32)) -> self,
+
+        ///Determine if the color is fully transparent, i.e. if the alpha is 0.
+        ///
+        ///# Examples
+        ///
+        ///```
+        ///# use bevy_render::color::Color;
+        ///// Fully transparent colors
+        ///assert!(Color::NONE.is_fully_transparent());
+        ///assert!(Color::rgba(1.0, 0.5, 0.5, 0.0).is_fully_transparent());
+        ///
+        ///// (Partially) opaque colors
+        ///assert!(!Color::BLACK.is_fully_transparent());
+        ///assert!(!Color::rgba(1.0, 0.5, 0.5, 0.2).is_fully_transparent());
+        ///```
+        is_fully_transparent(&self:) -> Raw(bool),
 
         ///Converts a `Color` to variant `Color::Rgba`
         as_rgba(Wrapped(&Color):) -> Wrapped(Color),
@@ -2894,10 +3058,10 @@ impl_script_newtype! {
     )
     + BinOps
     (
-        self Add Wrapped(Vec4) -> Wrapped(Color),
         self Add Wrapped(Color) -> Wrapped(Color),
-        self Mul Wrapped(Vec3) -> Wrapped(Color),
+        self Add Wrapped(Vec4) -> Wrapped(Color),
         self Mul Raw(f32) -> Wrapped(Color),
+        self Mul Wrapped(Vec3) -> Wrapped(Color),
         self Mul Wrapped(Vec4) -> Wrapped(Color),
     )
     + UnaryOps
@@ -2909,13 +3073,41 @@ impl_script_newtype! {
 }
 impl_script_newtype! {
     #[languages(on_feature(lua))]
-    ///An axis-aligned bounding box.
+    ///An axis-aligned bounding box, defined by:
+    ///- a center,
+    ///- the distances from the center to each faces along the axis,
+    ///the faces are orthogonal to the axis.
+    ///
+    ///It is typically used as a component on an entity to represent the local space
+    ///occupied by this entity, with faces orthogonal to its local axis.
+    ///
+    ///This component is notably used during "frustum culling", a process to determine
+    ///if an entity should be rendered by a [`Camera`] if its bounding box intersects
+    ///with the camera's [`Frustum`].
+    ///
+    ///It will be added automatically by the systems in [`CalculateBounds`] to entities that:
+    ///- could be subject to frustum culling, for example with a [`Handle<Mesh>`]
+    ///or `Sprite` component,
+    ///- don't have the [`NoFrustumCulling`] component.
+    ///
+    ///It won't be updated automatically if the space occupied by the entity changes,
+    ///for example if the vertex positions of a [`Mesh`] inside a `Handle<Mesh>` are
+    ///updated.
+    ///
+    ///[`Camera`]: crate::camera::Camera
+    ///[`NoFrustumCulling`]: crate::view::visibility::NoFrustumCulling
+    ///[`CalculateBounds`]: crate::view::visibility::VisibilitySystems::CalculateBounds
+    ///[`Mesh`]: crate::mesh::Mesh
+    ///[`Handle<Mesh>`]: crate::mesh::Mesh
     bevy_render::primitives::Aabb :
     Clone +
     Debug +
     Methods
     (
         from_min_max(Wrapped(Vec3),Wrapped(Vec3)) -> self,
+
+        ///Calculate the relative radius of the AABB with respect to a plane
+        relative_radius(&self:Wrapped(&Vec3A),Wrapped(&Mat3A)) -> Raw(f32),
 
         min(&self:) -> Wrapped(Vec3A),
 
@@ -2959,9 +3151,31 @@ impl_script_newtype! {
 }
 impl_script_newtype! {
     #[languages(on_feature(lua))]
-    ///A frustum made up of the 6 defining half spaces.
-    ///Half spaces are ordered left, right, top, bottom, near, far.
-    ///The normal vectors of the half spaces point towards the interior of the frustum.
+    ///A region of 3D space defined by the intersection of 6 [`HalfSpace`]s.
+    ///
+    ///Frustums are typically an apex-truncated square pyramid (a pyramid without the top) or a cuboid.
+    ///
+    ///Half spaces are ordered left, right, top, bottom, near, far. The normal vectors
+    ///of the half-spaces point towards the interior of the frustum.
+    ///
+    ///A frustum component is used on an entity with a [`Camera`] component to
+    ///determine which entities will be considered for rendering by this camera.
+    ///All entities with an [`Aabb`] component that are not contained by (or crossing
+    ///the boundary of) the frustum will not be rendered, and not be used in rendering computations.
+    ///
+    ///This process is called frustum culling, and entities can opt out of it using
+    ///the [`NoFrustumCulling`] component.
+    ///
+    ///The frustum component is typically added from a bundle, either the `Camera2dBundle`
+    ///or the `Camera3dBundle`.
+    ///It is usually updated automatically by [`update_frusta`] from the
+    ///[`CameraProjection`] component and [`GlobalTransform`] of the camera entity.
+    ///
+    ///[`Camera`]: crate::camera::Camera
+    ///[`NoFrustumCulling`]: crate::view::visibility::NoFrustumCulling
+    ///[`update_frusta`]: crate::view::visibility::update_frusta
+    ///[`CameraProjection`]: crate::camera::CameraProjection
+    ///[`GlobalTransform`]: bevy_transform::components::GlobalTransform
     bevy_render::primitives::Frustum :
     Clone +
     Debug +
@@ -2975,7 +3189,7 @@ impl_script_newtype! {
         from_view_projection_custom_far(Wrapped(&Mat4),Wrapped(&Vec3),Wrapped(&Vec3),Raw(f32)) -> self,
 
         ///Checks if an Oriented Bounding Box (obb) intersects the frustum.
-        intersects_obb(&self:Wrapped(&Aabb),Wrapped(&Mat4),Raw(bool),Raw(bool)) -> Raw(bool),
+        intersects_obb(&self:Wrapped(&Aabb),Wrapped(&Affine3A),Raw(bool),Raw(bool)) -> Raw(bool),
 
     )
     + Fields
@@ -3083,7 +3297,7 @@ impl_script_newtype! {
 }
 impl_script_newtype! {
     #[languages(on_feature(lua))]
-    ///The "target" that a [`Camera`] will render to. For example, this could be a [`Window`](bevy_window::Window)
+    ///The "target" that a [`Camera`] will render to. For example, this could be a [`Window`]
     ///swapchain or an [`Image`].
     bevy_render::camera::RenderTarget :
     Clone +
@@ -3218,7 +3432,7 @@ impl_script_newtype! {
         viewport_origin: Wrapped(Vec2),
         /// How the projection will scale when the viewport is resized.
         ///
-        /// Defaults to `ScalingMode::WindowScale(1.0)`
+        /// Defaults to `ScalingMode::WindowSize(1.0)`
         scaling_mode: Wrapped(ScalingMode),
         /// Scales the projection in world units.
         ///
@@ -3319,80 +3533,9 @@ impl_script_newtype! {
 }
 impl_script_newtype! {
     #[languages(on_feature(lua))]
-    ///An unique identifier to an asset path.
-    bevy_asset::AssetPathId :
-    Clone +
-    Debug +
-    Methods
-    (
-        ///Gets the id of the source path.
-        source_path_id(&self:) -> Wrapped(SourcePathId),
-
-        ///Gets the id of the sub-asset label.
-        label_id(&self:) -> Wrapped(LabelId),
-
-    )
-    + Fields
-    (
-    )
-    + BinOps
-    (
-    )
-    + UnaryOps
-    (
-    )
-    lua impl
-    {
-    }
-}
-impl_script_newtype! {
-    #[languages(on_feature(lua))]
-    ///An unique identifier to a sub-asset label.
-    bevy_asset::LabelId :
-    Clone +
-    Debug +
-    Methods
-    (
-    )
-    + Fields
-    (
-    )
-    + BinOps
-    (
-    )
-    + UnaryOps
-    (
-    )
-    lua impl
-    {
-    }
-}
-impl_script_newtype! {
-    #[languages(on_feature(lua))]
-    ///An unique identifier to the source path of an asset.
-    bevy_asset::SourcePathId :
-    Clone +
-    Debug +
-    Methods
-    (
-    )
-    + Fields
-    (
-    )
-    + BinOps
-    (
-    )
-    + UnaryOps
-    (
-    )
-    lua impl
-    {
-    }
-}
-impl_script_newtype! {
-    #[languages(on_feature(lua))]
-    ///A unique, stable asset id.
-    bevy_asset::HandleId :
+    ///A generational runtime-only identifier for a specific [`Asset`] stored in [`Assets`]. This is optimized for efficient runtime
+    ///usage and is not suitable for identifying assets across app runs.
+    bevy_asset::AssetIndex :
     Clone +
     Debug +
     Methods
@@ -3561,6 +3704,14 @@ impl_script_newtype! {
 
         ///Compute the squared euclidean distance between two points in space.
         distance_squared(self:self) -> Raw(f32),
+
+        ///Returns the element-wise quotient of [Euclidean division] of `self` by `rhs`.
+        div_euclid(self:self) -> self,
+
+        ///Returns the element-wise remainder of [Euclidean division] of `self` by `rhs`.
+        ///
+        ///[Euclidean division]: f32::rem_euclid
+        rem_euclid(self:self) -> self,
 
         ///Returns `self` normalized to length 1.0.
         ///
@@ -3746,15 +3897,15 @@ impl_script_newtype! {
         self Sub Wrapped(Vec2) -> Wrapped(Vec2),
         self Sub Raw(f32) -> Wrapped(Vec2),
         self Sub self -> Wrapped(Vec2),
+        self Div self -> Wrapped(Vec2),
         self Div Wrapped(Vec2) -> Wrapped(Vec2),
         self Div Raw(f32) -> Wrapped(Vec2),
-        self Div self -> Wrapped(Vec2),
-        self Mul Raw(f32) -> Wrapped(Vec2),
         self Mul Wrapped(Vec2) -> Wrapped(Vec2),
+        self Mul Raw(f32) -> Wrapped(Vec2),
         self Mul self -> Wrapped(Vec2),
-        self Rem self -> Wrapped(Vec2),
-        self Rem Raw(f32) -> Wrapped(Vec2),
         self Rem Wrapped(Vec2) -> Wrapped(Vec2),
+        self Rem Raw(f32) -> Wrapped(Vec2),
+        self Rem self -> Wrapped(Vec2),
     )
     + UnaryOps
     (
@@ -3924,6 +4075,14 @@ impl_script_newtype! {
 
         ///Compute the squared euclidean distance between two points in space.
         distance_squared(self:self) -> Raw(f32),
+
+        ///Returns the element-wise quotient of [Euclidean division] of `self` by `rhs`.
+        div_euclid(self:self) -> self,
+
+        ///Returns the element-wise remainder of [Euclidean division] of `self` by `rhs`.
+        ///
+        ///[Euclidean division]: f32::rem_euclid
+        rem_euclid(self:self) -> self,
 
         ///Returns `self` normalized to length 1.0.
         ///
@@ -4103,21 +4262,21 @@ impl_script_newtype! {
     )
     + BinOps
     (
-        self Add self -> Wrapped(Vec3),
-        self Add Wrapped(Vec3) -> Wrapped(Vec3),
         self Add Raw(f32) -> Wrapped(Vec3),
+        self Add Wrapped(Vec3) -> Wrapped(Vec3),
+        self Add self -> Wrapped(Vec3),
         self Sub Raw(f32) -> Wrapped(Vec3),
-        self Sub self -> Wrapped(Vec3),
         self Sub Wrapped(Vec3) -> Wrapped(Vec3),
-        self Div Wrapped(Vec3) -> Wrapped(Vec3),
-        self Div Raw(f32) -> Wrapped(Vec3),
+        self Sub self -> Wrapped(Vec3),
         self Div self -> Wrapped(Vec3),
+        self Div Raw(f32) -> Wrapped(Vec3),
+        self Div Wrapped(Vec3) -> Wrapped(Vec3),
         self Mul self -> Wrapped(Vec3),
-        self Mul Wrapped(Vec3) -> Wrapped(Vec3),
         self Mul Raw(f32) -> Wrapped(Vec3),
+        self Mul Wrapped(Vec3) -> Wrapped(Vec3),
+        self Rem Raw(f32) -> Wrapped(Vec3),
         self Rem self -> Wrapped(Vec3),
         self Rem Wrapped(Vec3) -> Wrapped(Vec3),
-        self Rem Raw(f32) -> Wrapped(Vec3),
     )
     + UnaryOps
     (
@@ -4296,6 +4455,14 @@ impl_script_newtype! {
         ///Compute the squared euclidean distance between two points in space.
         distance_squared(self:self) -> Raw(f32),
 
+        ///Returns the element-wise quotient of [Euclidean division] of `self` by `rhs`.
+        div_euclid(self:self) -> self,
+
+        ///Returns the element-wise remainder of [Euclidean division] of `self` by `rhs`.
+        ///
+        ///[Euclidean division]: f32::rem_euclid
+        rem_euclid(self:self) -> self,
+
         ///Returns `self` normalized to length 1.0.
         ///
         ///For valid results, `self` must _not_ be of length zero, nor very close to zero.
@@ -4471,21 +4638,21 @@ impl_script_newtype! {
     )
     + BinOps
     (
-        self Add Wrapped(Vec3A) -> Wrapped(Vec3A),
-        self Add Raw(f32) -> Wrapped(Vec3A),
         self Add self -> Wrapped(Vec3A),
+        self Add Raw(f32) -> Wrapped(Vec3A),
+        self Add Wrapped(Vec3A) -> Wrapped(Vec3A),
         self Sub Wrapped(Vec3A) -> Wrapped(Vec3A),
         self Sub self -> Wrapped(Vec3A),
         self Sub Raw(f32) -> Wrapped(Vec3A),
+        self Div Wrapped(Vec3A) -> Wrapped(Vec3A),
         self Div Raw(f32) -> Wrapped(Vec3A),
         self Div self -> Wrapped(Vec3A),
-        self Div Wrapped(Vec3A) -> Wrapped(Vec3A),
         self Mul self -> Wrapped(Vec3A),
         self Mul Wrapped(Vec3A) -> Wrapped(Vec3A),
         self Mul Raw(f32) -> Wrapped(Vec3A),
-        self Rem Wrapped(Vec3A) -> Wrapped(Vec3A),
         self Rem Raw(f32) -> Wrapped(Vec3A),
         self Rem self -> Wrapped(Vec3A),
+        self Rem Wrapped(Vec3A) -> Wrapped(Vec3A),
     )
     + UnaryOps
     (
@@ -4522,7 +4689,7 @@ impl_script_newtype! {
         ///uses the element from `if_false`.
         select(Wrapped(BVec4A),self,self) -> self,
 
-        ///Creates a 2D vector from the `x`, `y` and `z` elements of `self`, discarding `w`.
+        ///Creates a 3D vector from the `x`, `y` and `z` elements of `self`, discarding `w`.
         ///
         ///Truncation to [`Vec3`] may also be performed by using [`self.xyz()`][crate::swizzles::Vec4Swizzles::xyz()].
         ///
@@ -4655,6 +4822,14 @@ impl_script_newtype! {
 
         ///Compute the squared euclidean distance between two points in space.
         distance_squared(self:self) -> Raw(f32),
+
+        ///Returns the element-wise quotient of [Euclidean division] of `self` by `rhs`.
+        div_euclid(self:self) -> self,
+
+        ///Returns the element-wise remainder of [Euclidean division] of `self` by `rhs`.
+        ///
+        ///[Euclidean division]: f32::rem_euclid
+        rem_euclid(self:self) -> self,
 
         ///Returns `self` normalized to length 1.0.
         ///
@@ -4809,21 +4984,21 @@ impl_script_newtype! {
     )
     + BinOps
     (
-        self Add Raw(f32) -> Wrapped(Vec4),
-        self Add Wrapped(Vec4) -> Wrapped(Vec4),
         self Add self -> Wrapped(Vec4),
+        self Add Wrapped(Vec4) -> Wrapped(Vec4),
+        self Add Raw(f32) -> Wrapped(Vec4),
+        self Sub Wrapped(Vec4) -> Wrapped(Vec4),
         self Sub Raw(f32) -> Wrapped(Vec4),
         self Sub self -> Wrapped(Vec4),
-        self Sub Wrapped(Vec4) -> Wrapped(Vec4),
-        self Div Raw(f32) -> Wrapped(Vec4),
         self Div self -> Wrapped(Vec4),
         self Div Wrapped(Vec4) -> Wrapped(Vec4),
-        self Mul Raw(f32) -> Wrapped(Vec4),
-        self Mul self -> Wrapped(Vec4),
+        self Div Raw(f32) -> Wrapped(Vec4),
         self Mul Wrapped(Vec4) -> Wrapped(Vec4),
+        self Mul self -> Wrapped(Vec4),
+        self Mul Raw(f32) -> Wrapped(Vec4),
+        self Rem Raw(f32) -> Wrapped(Vec4),
         self Rem self -> Wrapped(Vec4),
         self Rem Wrapped(Vec4) -> Wrapped(Vec4),
-        self Rem Raw(f32) -> Wrapped(Vec4),
     )
     + UnaryOps
     (
@@ -5249,6 +5424,14 @@ impl_script_newtype! {
         ///Compute the squared euclidean distance between two points in space.
         distance_squared(self:self) -> Raw(f64),
 
+        ///Returns the element-wise quotient of [Euclidean division] of `self` by `rhs`.
+        div_euclid(self:self) -> self,
+
+        ///Returns the element-wise remainder of [Euclidean division] of `self` by `rhs`.
+        ///
+        ///[Euclidean division]: f64::rem_euclid
+        rem_euclid(self:self) -> self,
+
         ///Returns `self` normalized to length 1.0.
         ///
         ///For valid results, `self` must _not_ be of length zero, nor very close to zero.
@@ -5427,21 +5610,21 @@ impl_script_newtype! {
     )
     + BinOps
     (
-        self Add self -> Wrapped(DVec2),
-        self Add Raw(f64) -> Wrapped(DVec2),
         self Add Wrapped(DVec2) -> Wrapped(DVec2),
+        self Add Raw(f64) -> Wrapped(DVec2),
+        self Add self -> Wrapped(DVec2),
         self Sub Raw(f64) -> Wrapped(DVec2),
-        self Sub Wrapped(DVec2) -> Wrapped(DVec2),
         self Sub self -> Wrapped(DVec2),
-        self Div self -> Wrapped(DVec2),
+        self Sub Wrapped(DVec2) -> Wrapped(DVec2),
         self Div Wrapped(DVec2) -> Wrapped(DVec2),
+        self Div self -> Wrapped(DVec2),
         self Div Raw(f64) -> Wrapped(DVec2),
         self Mul Wrapped(DVec2) -> Wrapped(DVec2),
         self Mul self -> Wrapped(DVec2),
         self Mul Raw(f64) -> Wrapped(DVec2),
+        self Rem Wrapped(DVec2) -> Wrapped(DVec2),
         self Rem self -> Wrapped(DVec2),
         self Rem Raw(f64) -> Wrapped(DVec2),
-        self Rem Wrapped(DVec2) -> Wrapped(DVec2),
     )
     + UnaryOps
     (
@@ -5611,6 +5794,14 @@ impl_script_newtype! {
 
         ///Compute the squared euclidean distance between two points in space.
         distance_squared(self:self) -> Raw(f64),
+
+        ///Returns the element-wise quotient of [Euclidean division] of `self` by `rhs`.
+        div_euclid(self:self) -> self,
+
+        ///Returns the element-wise remainder of [Euclidean division] of `self` by `rhs`.
+        ///
+        ///[Euclidean division]: f64::rem_euclid
+        rem_euclid(self:self) -> self,
 
         ///Returns `self` normalized to length 1.0.
         ///
@@ -5793,21 +5984,21 @@ impl_script_newtype! {
     )
     + BinOps
     (
-        self Add Raw(f64) -> Wrapped(DVec3),
-        self Add Wrapped(DVec3) -> Wrapped(DVec3),
         self Add self -> Wrapped(DVec3),
+        self Add Wrapped(DVec3) -> Wrapped(DVec3),
+        self Add Raw(f64) -> Wrapped(DVec3),
         self Sub Wrapped(DVec3) -> Wrapped(DVec3),
         self Sub self -> Wrapped(DVec3),
         self Sub Raw(f64) -> Wrapped(DVec3),
         self Div Raw(f64) -> Wrapped(DVec3),
-        self Div Wrapped(DVec3) -> Wrapped(DVec3),
         self Div self -> Wrapped(DVec3),
-        self Mul Raw(f64) -> Wrapped(DVec3),
+        self Div Wrapped(DVec3) -> Wrapped(DVec3),
         self Mul self -> Wrapped(DVec3),
+        self Mul Raw(f64) -> Wrapped(DVec3),
         self Mul Wrapped(DVec3) -> Wrapped(DVec3),
-        self Rem Raw(f64) -> Wrapped(DVec3),
         self Rem self -> Wrapped(DVec3),
         self Rem Wrapped(DVec3) -> Wrapped(DVec3),
+        self Rem Raw(f64) -> Wrapped(DVec3),
     )
     + UnaryOps
     (
@@ -5840,7 +6031,7 @@ impl_script_newtype! {
         ///uses the element from `if_false`.
         select(Wrapped(BVec4),self,self) -> self,
 
-        ///Creates a 2D vector from the `x`, `y` and `z` elements of `self`, discarding `w`.
+        ///Creates a 3D vector from the `x`, `y` and `z` elements of `self`, discarding `w`.
         ///
         ///Truncation to [`DVec3`] may also be performed by using [`self.xyz()`][crate::swizzles::Vec4Swizzles::xyz()].
         truncate(self:) -> Wrapped(DVec3),
@@ -5971,6 +6162,14 @@ impl_script_newtype! {
 
         ///Compute the squared euclidean distance between two points in space.
         distance_squared(self:self) -> Raw(f64),
+
+        ///Returns the element-wise quotient of [Euclidean division] of `self` by `rhs`.
+        div_euclid(self:self) -> self,
+
+        ///Returns the element-wise remainder of [Euclidean division] of `self` by `rhs`.
+        ///
+        ///[Euclidean division]: f64::rem_euclid
+        rem_euclid(self:self) -> self,
 
         ///Returns `self` normalized to length 1.0.
         ///
@@ -6129,21 +6328,21 @@ impl_script_newtype! {
     )
     + BinOps
     (
-        self Add Raw(f64) -> Wrapped(DVec4),
-        self Add self -> Wrapped(DVec4),
         self Add Wrapped(DVec4) -> Wrapped(DVec4),
-        self Sub Raw(f64) -> Wrapped(DVec4),
-        self Sub Wrapped(DVec4) -> Wrapped(DVec4),
+        self Add self -> Wrapped(DVec4),
+        self Add Raw(f64) -> Wrapped(DVec4),
         self Sub self -> Wrapped(DVec4),
-        self Div Wrapped(DVec4) -> Wrapped(DVec4),
+        self Sub Wrapped(DVec4) -> Wrapped(DVec4),
+        self Sub Raw(f64) -> Wrapped(DVec4),
         self Div self -> Wrapped(DVec4),
         self Div Raw(f64) -> Wrapped(DVec4),
+        self Div Wrapped(DVec4) -> Wrapped(DVec4),
         self Mul Wrapped(DVec4) -> Wrapped(DVec4),
-        self Mul Raw(f64) -> Wrapped(DVec4),
         self Mul self -> Wrapped(DVec4),
+        self Mul Raw(f64) -> Wrapped(DVec4),
+        self Rem Wrapped(DVec4) -> Wrapped(DVec4),
         self Rem Raw(f64) -> Wrapped(DVec4),
         self Rem self -> Wrapped(DVec4),
-        self Rem Wrapped(DVec4) -> Wrapped(DVec4),
     )
     + UnaryOps
     (
@@ -6278,6 +6477,20 @@ impl_script_newtype! {
         ///Compute the squared euclidean distance between two points in space.
         distance_squared(self:self) -> Raw(i32),
 
+        ///Returns the element-wise quotient of [Euclidean division] of `self` by `rhs`.
+        ///
+        ///# Panics
+        ///This function will panic if any `rhs` element is 0 or the division results in overflow.
+        div_euclid(self:self) -> self,
+
+        ///Returns the element-wise remainder of [Euclidean division] of `self` by `rhs`.
+        ///
+        ///# Panics
+        ///This function will panic if any `rhs` element is 0 or the division results in overflow.
+        ///
+        ///[Euclidean division]: i32::rem_euclid
+        rem_euclid(self:self) -> self,
+
         ///Returns a vector that is equal to `self` rotated by 90 degrees.
         perp(self:) -> self,
 
@@ -6299,6 +6512,46 @@ impl_script_newtype! {
         ///Casts all elements of `self` to `u32`.
         as_uvec2(&self:) -> Wrapped(UVec2),
 
+        ///Returns a vector containing the wrapping addition of `self` and `rhs`.
+        ///
+        ///In other words this computes `[self.x.wrapping_add(rhs.x), self.y.wrapping_add(rhs.y), ..]`.
+        wrapping_add(self:self) -> self,
+
+        ///Returns a vector containing the wrapping subtraction of `self` and `rhs`.
+        ///
+        ///In other words this computes `[self.x.wrapping_sub(rhs.x), self.y.wrapping_sub(rhs.y), ..]`.
+        wrapping_sub(self:self) -> self,
+
+        ///Returns a vector containing the wrapping multiplication of `self` and `rhs`.
+        ///
+        ///In other words this computes `[self.x.wrapping_mul(rhs.x), self.y.wrapping_mul(rhs.y), ..]`.
+        wrapping_mul(self:self) -> self,
+
+        ///Returns a vector containing the wrapping division of `self` and `rhs`.
+        ///
+        ///In other words this computes `[self.x.wrapping_div(rhs.x), self.y.wrapping_div(rhs.y), ..]`.
+        wrapping_div(self:self) -> self,
+
+        ///Returns a vector containing the saturating addition of `self` and `rhs`.
+        ///
+        ///In other words this computes `[self.x.saturating_add(rhs.x), self.y.saturating_add(rhs.y), ..]`.
+        saturating_add(self:self) -> self,
+
+        ///Returns a vector containing the saturating subtraction of `self` and `rhs`.
+        ///
+        ///In other words this computes `[self.x.saturating_sub(rhs.x), self.y.saturating_sub(rhs.y), ..]`.
+        saturating_sub(self:self) -> self,
+
+        ///Returns a vector containing the saturating multiplication of `self` and `rhs`.
+        ///
+        ///In other words this computes `[self.x.saturating_mul(rhs.x), self.y.saturating_mul(rhs.y), ..]`.
+        saturating_mul(self:self) -> self,
+
+        ///Returns a vector containing the saturating division of `self` and `rhs`.
+        ///
+        ///In other words this computes `[self.x.saturating_div(rhs.x), self.y.saturating_div(rhs.y), ..]`.
+        saturating_div(self:self) -> self,
+
     )
     + Fields
     (
@@ -6307,18 +6560,18 @@ impl_script_newtype! {
     )
     + BinOps
     (
-        self Add self -> Wrapped(IVec2),
         self Add Wrapped(IVec2) -> Wrapped(IVec2),
+        self Add self -> Wrapped(IVec2),
         self Add Raw(i32) -> Wrapped(IVec2),
-        self Sub Wrapped(IVec2) -> Wrapped(IVec2),
         self Sub Raw(i32) -> Wrapped(IVec2),
+        self Sub Wrapped(IVec2) -> Wrapped(IVec2),
         self Sub self -> Wrapped(IVec2),
         self Div Raw(i32) -> Wrapped(IVec2),
-        self Div Wrapped(IVec2) -> Wrapped(IVec2),
         self Div self -> Wrapped(IVec2),
-        self Mul self -> Wrapped(IVec2),
-        self Mul Wrapped(IVec2) -> Wrapped(IVec2),
+        self Div Wrapped(IVec2) -> Wrapped(IVec2),
         self Mul Raw(i32) -> Wrapped(IVec2),
+        self Mul Wrapped(IVec2) -> Wrapped(IVec2),
+        self Mul self -> Wrapped(IVec2),
         self Rem self -> Wrapped(IVec2),
         self Rem Raw(i32) -> Wrapped(IVec2),
         self Rem Wrapped(IVec2) -> Wrapped(IVec2),
@@ -6464,6 +6717,20 @@ impl_script_newtype! {
         ///Compute the squared euclidean distance between two points in space.
         distance_squared(self:self) -> Raw(i32),
 
+        ///Returns the element-wise quotient of [Euclidean division] of `self` by `rhs`.
+        ///
+        ///# Panics
+        ///This function will panic if any `rhs` element is 0 or the division results in overflow.
+        div_euclid(self:self) -> self,
+
+        ///Returns the element-wise remainder of [Euclidean division] of `self` by `rhs`.
+        ///
+        ///# Panics
+        ///This function will panic if any `rhs` element is 0 or the division results in overflow.
+        ///
+        ///[Euclidean division]: i32::rem_euclid
+        rem_euclid(self:self) -> self,
+
         ///Casts all elements of `self` to `f32`.
         as_vec3(&self:) -> Wrapped(Vec3),
 
@@ -6475,6 +6742,46 @@ impl_script_newtype! {
 
         ///Casts all elements of `self` to `u32`.
         as_uvec3(&self:) -> Wrapped(UVec3),
+
+        ///Returns a vector containing the wrapping addition of `self` and `rhs`.
+        ///
+        ///In other words this computes `[self.x.wrapping_add(rhs.x), self.y.wrapping_add(rhs.y), ..]`.
+        wrapping_add(self:self) -> self,
+
+        ///Returns a vector containing the wrapping subtraction of `self` and `rhs`.
+        ///
+        ///In other words this computes `[self.x.wrapping_sub(rhs.x), self.y.wrapping_sub(rhs.y), ..]`.
+        wrapping_sub(self:self) -> self,
+
+        ///Returns a vector containing the wrapping multiplication of `self` and `rhs`.
+        ///
+        ///In other words this computes `[self.x.wrapping_mul(rhs.x), self.y.wrapping_mul(rhs.y), ..]`.
+        wrapping_mul(self:self) -> self,
+
+        ///Returns a vector containing the wrapping division of `self` and `rhs`.
+        ///
+        ///In other words this computes `[self.x.wrapping_div(rhs.x), self.y.wrapping_div(rhs.y), ..]`.
+        wrapping_div(self:self) -> self,
+
+        ///Returns a vector containing the saturating addition of `self` and `rhs`.
+        ///
+        ///In other words this computes `[self.x.saturating_add(rhs.x), self.y.saturating_add(rhs.y), ..]`.
+        saturating_add(self:self) -> self,
+
+        ///Returns a vector containing the saturating subtraction of `self` and `rhs`.
+        ///
+        ///In other words this computes `[self.x.saturating_sub(rhs.x), self.y.saturating_sub(rhs.y), ..]`.
+        saturating_sub(self:self) -> self,
+
+        ///Returns a vector containing the saturating multiplication of `self` and `rhs`.
+        ///
+        ///In other words this computes `[self.x.saturating_mul(rhs.x), self.y.saturating_mul(rhs.y), ..]`.
+        saturating_mul(self:self) -> self,
+
+        ///Returns a vector containing the saturating division of `self` and `rhs`.
+        ///
+        ///In other words this computes `[self.x.saturating_div(rhs.x), self.y.saturating_div(rhs.y), ..]`.
+        saturating_div(self:self) -> self,
 
     )
     + Fields
@@ -6488,18 +6795,18 @@ impl_script_newtype! {
         self Add Raw(i32) -> Wrapped(IVec3),
         self Add Wrapped(IVec3) -> Wrapped(IVec3),
         self Add self -> Wrapped(IVec3),
+        self Sub Wrapped(IVec3) -> Wrapped(IVec3),
         self Sub Raw(i32) -> Wrapped(IVec3),
         self Sub self -> Wrapped(IVec3),
-        self Sub Wrapped(IVec3) -> Wrapped(IVec3),
+        self Div Wrapped(IVec3) -> Wrapped(IVec3),
         self Div Raw(i32) -> Wrapped(IVec3),
         self Div self -> Wrapped(IVec3),
-        self Div Wrapped(IVec3) -> Wrapped(IVec3),
-        self Mul Wrapped(IVec3) -> Wrapped(IVec3),
-        self Mul self -> Wrapped(IVec3),
         self Mul Raw(i32) -> Wrapped(IVec3),
+        self Mul self -> Wrapped(IVec3),
+        self Mul Wrapped(IVec3) -> Wrapped(IVec3),
         self Rem Raw(i32) -> Wrapped(IVec3),
-        self Rem Wrapped(IVec3) -> Wrapped(IVec3),
         self Rem self -> Wrapped(IVec3),
+        self Rem Wrapped(IVec3) -> Wrapped(IVec3),
     )
     + UnaryOps
     (
@@ -6532,7 +6839,7 @@ impl_script_newtype! {
         ///uses the element from `if_false`.
         select(Wrapped(BVec4),self,self) -> self,
 
-        ///Creates a 2D vector from the `x`, `y` and `z` elements of `self`, discarding `w`.
+        ///Creates a 3D vector from the `x`, `y` and `z` elements of `self`, discarding `w`.
         ///
         ///Truncation to [`IVec3`] may also be performed by using [`self.xyz()`][crate::swizzles::Vec4Swizzles::xyz()].
         truncate(self:) -> Wrapped(IVec3),
@@ -6636,6 +6943,20 @@ impl_script_newtype! {
         ///Compute the squared euclidean distance between two points in space.
         distance_squared(self:self) -> Raw(i32),
 
+        ///Returns the element-wise quotient of [Euclidean division] of `self` by `rhs`.
+        ///
+        ///# Panics
+        ///This function will panic if any `rhs` element is 0 or the division results in overflow.
+        div_euclid(self:self) -> self,
+
+        ///Returns the element-wise remainder of [Euclidean division] of `self` by `rhs`.
+        ///
+        ///# Panics
+        ///This function will panic if any `rhs` element is 0 or the division results in overflow.
+        ///
+        ///[Euclidean division]: i32::rem_euclid
+        rem_euclid(self:self) -> self,
+
         ///Casts all elements of `self` to `f32`.
         as_vec4(&self:) -> Wrapped(Vec4),
 
@@ -6644,6 +6965,46 @@ impl_script_newtype! {
 
         ///Casts all elements of `self` to `u32`.
         as_uvec4(&self:) -> Wrapped(UVec4),
+
+        ///Returns a vector containing the wrapping addition of `self` and `rhs`.
+        ///
+        ///In other words this computes `[self.x.wrapping_add(rhs.x), self.y.wrapping_add(rhs.y), ..]`.
+        wrapping_add(self:self) -> self,
+
+        ///Returns a vector containing the wrapping subtraction of `self` and `rhs`.
+        ///
+        ///In other words this computes `[self.x.wrapping_sub(rhs.x), self.y.wrapping_sub(rhs.y), ..]`.
+        wrapping_sub(self:self) -> self,
+
+        ///Returns a vector containing the wrapping multiplication of `self` and `rhs`.
+        ///
+        ///In other words this computes `[self.x.wrapping_mul(rhs.x), self.y.wrapping_mul(rhs.y), ..]`.
+        wrapping_mul(self:self) -> self,
+
+        ///Returns a vector containing the wrapping division of `self` and `rhs`.
+        ///
+        ///In other words this computes `[self.x.wrapping_div(rhs.x), self.y.wrapping_div(rhs.y), ..]`.
+        wrapping_div(self:self) -> self,
+
+        ///Returns a vector containing the saturating addition of `self` and `rhs`.
+        ///
+        ///In other words this computes `[self.x.saturating_add(rhs.x), self.y.saturating_add(rhs.y), ..]`.
+        saturating_add(self:self) -> self,
+
+        ///Returns a vector containing the saturating subtraction of `self` and `rhs`.
+        ///
+        ///In other words this computes `[self.x.saturating_sub(rhs.x), self.y.saturating_sub(rhs.y), ..]`.
+        saturating_sub(self:self) -> self,
+
+        ///Returns a vector containing the saturating multiplication of `self` and `rhs`.
+        ///
+        ///In other words this computes `[self.x.saturating_mul(rhs.x), self.y.saturating_mul(rhs.y), ..]`.
+        saturating_mul(self:self) -> self,
+
+        ///Returns a vector containing the saturating division of `self` and `rhs`.
+        ///
+        ///In other words this computes `[self.x.saturating_div(rhs.x), self.y.saturating_div(rhs.y), ..]`.
+        saturating_div(self:self) -> self,
 
     )
     + Fields
@@ -6656,20 +7017,20 @@ impl_script_newtype! {
     + BinOps
     (
         self Add Wrapped(IVec4) -> Wrapped(IVec4),
-        self Add self -> Wrapped(IVec4),
         self Add Raw(i32) -> Wrapped(IVec4),
+        self Add self -> Wrapped(IVec4),
         self Sub self -> Wrapped(IVec4),
         self Sub Wrapped(IVec4) -> Wrapped(IVec4),
         self Sub Raw(i32) -> Wrapped(IVec4),
         self Div self -> Wrapped(IVec4),
-        self Div Wrapped(IVec4) -> Wrapped(IVec4),
         self Div Raw(i32) -> Wrapped(IVec4),
-        self Mul self -> Wrapped(IVec4),
+        self Div Wrapped(IVec4) -> Wrapped(IVec4),
         self Mul Wrapped(IVec4) -> Wrapped(IVec4),
         self Mul Raw(i32) -> Wrapped(IVec4),
+        self Mul self -> Wrapped(IVec4),
         self Rem Raw(i32) -> Wrapped(IVec4),
-        self Rem Wrapped(IVec4) -> Wrapped(IVec4),
         self Rem self -> Wrapped(IVec4),
+        self Rem Wrapped(IVec4) -> Wrapped(IVec4),
     )
     + UnaryOps
     (
@@ -6794,6 +7155,46 @@ impl_script_newtype! {
         ///Casts all elements of `self` to `i32`.
         as_ivec2(&self:) -> Wrapped(IVec2),
 
+        ///Returns a vector containing the wrapping addition of `self` and `rhs`.
+        ///
+        ///In other words this computes `[self.x.wrapping_add(rhs.x), self.y.wrapping_add(rhs.y), ..]`.
+        wrapping_add(self:self) -> self,
+
+        ///Returns a vector containing the wrapping subtraction of `self` and `rhs`.
+        ///
+        ///In other words this computes `[self.x.wrapping_sub(rhs.x), self.y.wrapping_sub(rhs.y), ..]`.
+        wrapping_sub(self:self) -> self,
+
+        ///Returns a vector containing the wrapping multiplication of `self` and `rhs`.
+        ///
+        ///In other words this computes `[self.x.wrapping_mul(rhs.x), self.y.wrapping_mul(rhs.y), ..]`.
+        wrapping_mul(self:self) -> self,
+
+        ///Returns a vector containing the wrapping division of `self` and `rhs`.
+        ///
+        ///In other words this computes `[self.x.wrapping_div(rhs.x), self.y.wrapping_div(rhs.y), ..]`.
+        wrapping_div(self:self) -> self,
+
+        ///Returns a vector containing the saturating addition of `self` and `rhs`.
+        ///
+        ///In other words this computes `[self.x.saturating_add(rhs.x), self.y.saturating_add(rhs.y), ..]`.
+        saturating_add(self:self) -> self,
+
+        ///Returns a vector containing the saturating subtraction of `self` and `rhs`.
+        ///
+        ///In other words this computes `[self.x.saturating_sub(rhs.x), self.y.saturating_sub(rhs.y), ..]`.
+        saturating_sub(self:self) -> self,
+
+        ///Returns a vector containing the saturating multiplication of `self` and `rhs`.
+        ///
+        ///In other words this computes `[self.x.saturating_mul(rhs.x), self.y.saturating_mul(rhs.y), ..]`.
+        saturating_mul(self:self) -> self,
+
+        ///Returns a vector containing the saturating division of `self` and `rhs`.
+        ///
+        ///In other words this computes `[self.x.saturating_div(rhs.x), self.y.saturating_div(rhs.y), ..]`.
+        saturating_div(self:self) -> self,
+
     )
     + Fields
     (
@@ -6802,21 +7203,21 @@ impl_script_newtype! {
     )
     + BinOps
     (
-        self Add Raw(u32) -> Wrapped(UVec2),
         self Add Wrapped(UVec2) -> Wrapped(UVec2),
         self Add self -> Wrapped(UVec2),
+        self Add Raw(u32) -> Wrapped(UVec2),
         self Sub self -> Wrapped(UVec2),
         self Sub Wrapped(UVec2) -> Wrapped(UVec2),
         self Sub Raw(u32) -> Wrapped(UVec2),
         self Div self -> Wrapped(UVec2),
-        self Div Raw(u32) -> Wrapped(UVec2),
         self Div Wrapped(UVec2) -> Wrapped(UVec2),
+        self Div Raw(u32) -> Wrapped(UVec2),
         self Mul Wrapped(UVec2) -> Wrapped(UVec2),
         self Mul Raw(u32) -> Wrapped(UVec2),
         self Mul self -> Wrapped(UVec2),
+        self Rem Wrapped(UVec2) -> Wrapped(UVec2),
         self Rem self -> Wrapped(UVec2),
         self Rem Raw(u32) -> Wrapped(UVec2),
-        self Rem Wrapped(UVec2) -> Wrapped(UVec2),
     )
     + UnaryOps
     (
@@ -6951,6 +7352,46 @@ impl_script_newtype! {
         ///Casts all elements of `self` to `i32`.
         as_ivec3(&self:) -> Wrapped(IVec3),
 
+        ///Returns a vector containing the wrapping addition of `self` and `rhs`.
+        ///
+        ///In other words this computes `[self.x.wrapping_add(rhs.x), self.y.wrapping_add(rhs.y), ..]`.
+        wrapping_add(self:self) -> self,
+
+        ///Returns a vector containing the wrapping subtraction of `self` and `rhs`.
+        ///
+        ///In other words this computes `[self.x.wrapping_sub(rhs.x), self.y.wrapping_sub(rhs.y), ..]`.
+        wrapping_sub(self:self) -> self,
+
+        ///Returns a vector containing the wrapping multiplication of `self` and `rhs`.
+        ///
+        ///In other words this computes `[self.x.wrapping_mul(rhs.x), self.y.wrapping_mul(rhs.y), ..]`.
+        wrapping_mul(self:self) -> self,
+
+        ///Returns a vector containing the wrapping division of `self` and `rhs`.
+        ///
+        ///In other words this computes `[self.x.wrapping_div(rhs.x), self.y.wrapping_div(rhs.y), ..]`.
+        wrapping_div(self:self) -> self,
+
+        ///Returns a vector containing the saturating addition of `self` and `rhs`.
+        ///
+        ///In other words this computes `[self.x.saturating_add(rhs.x), self.y.saturating_add(rhs.y), ..]`.
+        saturating_add(self:self) -> self,
+
+        ///Returns a vector containing the saturating subtraction of `self` and `rhs`.
+        ///
+        ///In other words this computes `[self.x.saturating_sub(rhs.x), self.y.saturating_sub(rhs.y), ..]`.
+        saturating_sub(self:self) -> self,
+
+        ///Returns a vector containing the saturating multiplication of `self` and `rhs`.
+        ///
+        ///In other words this computes `[self.x.saturating_mul(rhs.x), self.y.saturating_mul(rhs.y), ..]`.
+        saturating_mul(self:self) -> self,
+
+        ///Returns a vector containing the saturating division of `self` and `rhs`.
+        ///
+        ///In other words this computes `[self.x.saturating_div(rhs.x), self.y.saturating_div(rhs.y), ..]`.
+        saturating_div(self:self) -> self,
+
     )
     + Fields
     (
@@ -6963,12 +7404,12 @@ impl_script_newtype! {
         self Add Wrapped(UVec3) -> Wrapped(UVec3),
         self Add Raw(u32) -> Wrapped(UVec3),
         self Add self -> Wrapped(UVec3),
-        self Sub Wrapped(UVec3) -> Wrapped(UVec3),
         self Sub Raw(u32) -> Wrapped(UVec3),
         self Sub self -> Wrapped(UVec3),
-        self Div self -> Wrapped(UVec3),
+        self Sub Wrapped(UVec3) -> Wrapped(UVec3),
         self Div Raw(u32) -> Wrapped(UVec3),
         self Div Wrapped(UVec3) -> Wrapped(UVec3),
+        self Div self -> Wrapped(UVec3),
         self Mul Wrapped(UVec3) -> Wrapped(UVec3),
         self Mul Raw(u32) -> Wrapped(UVec3),
         self Mul self -> Wrapped(UVec3),
@@ -7006,7 +7447,7 @@ impl_script_newtype! {
         ///uses the element from `if_false`.
         select(Wrapped(BVec4),self,self) -> self,
 
-        ///Creates a 2D vector from the `x`, `y` and `z` elements of `self`, discarding `w`.
+        ///Creates a 3D vector from the `x`, `y` and `z` elements of `self`, discarding `w`.
         ///
         ///Truncation to [`UVec3`] may also be performed by using [`self.xyz()`][crate::swizzles::Vec4Swizzles::xyz()].
         truncate(self:) -> Wrapped(UVec3),
@@ -7100,6 +7541,46 @@ impl_script_newtype! {
         ///Casts all elements of `self` to `i32`.
         as_ivec4(&self:) -> Wrapped(IVec4),
 
+        ///Returns a vector containing the wrapping addition of `self` and `rhs`.
+        ///
+        ///In other words this computes `[self.x.wrapping_add(rhs.x), self.y.wrapping_add(rhs.y), ..]`.
+        wrapping_add(self:self) -> self,
+
+        ///Returns a vector containing the wrapping subtraction of `self` and `rhs`.
+        ///
+        ///In other words this computes `[self.x.wrapping_sub(rhs.x), self.y.wrapping_sub(rhs.y), ..]`.
+        wrapping_sub(self:self) -> self,
+
+        ///Returns a vector containing the wrapping multiplication of `self` and `rhs`.
+        ///
+        ///In other words this computes `[self.x.wrapping_mul(rhs.x), self.y.wrapping_mul(rhs.y), ..]`.
+        wrapping_mul(self:self) -> self,
+
+        ///Returns a vector containing the wrapping division of `self` and `rhs`.
+        ///
+        ///In other words this computes `[self.x.wrapping_div(rhs.x), self.y.wrapping_div(rhs.y), ..]`.
+        wrapping_div(self:self) -> self,
+
+        ///Returns a vector containing the saturating addition of `self` and `rhs`.
+        ///
+        ///In other words this computes `[self.x.saturating_add(rhs.x), self.y.saturating_add(rhs.y), ..]`.
+        saturating_add(self:self) -> self,
+
+        ///Returns a vector containing the saturating subtraction of `self` and `rhs`.
+        ///
+        ///In other words this computes `[self.x.saturating_sub(rhs.x), self.y.saturating_sub(rhs.y), ..]`.
+        saturating_sub(self:self) -> self,
+
+        ///Returns a vector containing the saturating multiplication of `self` and `rhs`.
+        ///
+        ///In other words this computes `[self.x.saturating_mul(rhs.x), self.y.saturating_mul(rhs.y), ..]`.
+        saturating_mul(self:self) -> self,
+
+        ///Returns a vector containing the saturating division of `self` and `rhs`.
+        ///
+        ///In other words this computes `[self.x.saturating_div(rhs.x), self.y.saturating_div(rhs.y), ..]`.
+        saturating_div(self:self) -> self,
+
     )
     + Fields
     (
@@ -7110,20 +7591,20 @@ impl_script_newtype! {
     )
     + BinOps
     (
-        self Add self -> Wrapped(UVec4),
         self Add Wrapped(UVec4) -> Wrapped(UVec4),
         self Add Raw(u32) -> Wrapped(UVec4),
-        self Sub self -> Wrapped(UVec4),
+        self Add self -> Wrapped(UVec4),
         self Sub Wrapped(UVec4) -> Wrapped(UVec4),
+        self Sub self -> Wrapped(UVec4),
         self Sub Raw(u32) -> Wrapped(UVec4),
         self Div self -> Wrapped(UVec4),
-        self Div Raw(u32) -> Wrapped(UVec4),
         self Div Wrapped(UVec4) -> Wrapped(UVec4),
-        self Mul Wrapped(UVec4) -> Wrapped(UVec4),
+        self Div Raw(u32) -> Wrapped(UVec4),
         self Mul self -> Wrapped(UVec4),
         self Mul Raw(u32) -> Wrapped(UVec4),
-        self Rem self -> Wrapped(UVec4),
+        self Mul Wrapped(UVec4) -> Wrapped(UVec4),
         self Rem Raw(u32) -> Wrapped(UVec4),
+        self Rem self -> Wrapped(UVec4),
         self Rem Wrapped(UVec4) -> Wrapped(UVec4),
     )
     + UnaryOps
@@ -7339,11 +7820,11 @@ impl_script_newtype! {
     (
         self Add self -> Wrapped(Mat3),
         self Sub self -> Wrapped(Mat3),
-        self Mul Wrapped(Mat3) -> Wrapped(Mat3),
-        self Mul Wrapped(Affine2) -> Wrapped(Mat3),
-        self Mul Raw(f32) -> Wrapped(Mat3),
-        self Mul self -> Wrapped(Mat3),
         self Mul Wrapped(Vec3) -> Wrapped(Vec3),
+        self Mul Wrapped(Affine2) -> Wrapped(Mat3),
+        self Mul self -> Wrapped(Mat3),
+        self Mul Wrapped(Mat3) -> Wrapped(Mat3),
+        self Mul Raw(f32) -> Wrapped(Mat3),
         self Mul Wrapped(Vec3A) -> Wrapped(Vec3A),
     )
     + UnaryOps
@@ -7368,7 +7849,7 @@ impl_script_newtype! {
                                 .unwrap()
                                 .col_mut(idx))
                         } else {
-                            Err(ReflectionError::CannotDowncast{from: ref_.type_name().to_owned().into(), to:"Mat3".into()})
+                            Err(ReflectionError::CannotDowncast{from: ref_.get_represented_type_info().unwrap().type_path().into(), to:"Mat3".into()})
                         }
                     }
                 })
@@ -7481,9 +7962,9 @@ impl_script_newtype! {
     (
         self Add self -> Wrapped(Mat2),
         self Sub self -> Wrapped(Mat2),
-        self Mul Wrapped(Vec2) -> Wrapped(Vec2),
-        self Mul Wrapped(Mat2) -> Wrapped(Mat2),
         self Mul Raw(f32) -> Wrapped(Mat2),
+        self Mul Wrapped(Mat2) -> Wrapped(Mat2),
+        self Mul Wrapped(Vec2) -> Wrapped(Vec2),
         self Mul self -> Wrapped(Mat2),
     )
     + UnaryOps
@@ -7508,7 +7989,7 @@ impl_script_newtype! {
                                 .unwrap()
                                 .col_mut(idx))
                         } else {
-                            Err(ReflectionError::CannotDowncast{from: ref_.type_name().to_owned().into(), to:"Mat2".into()})
+                            Err(ReflectionError::CannotDowncast{from: ref_.get_represented_type_info().unwrap().type_path().into(), to:"Mat2".into()})
                         }
                     }
                 })
@@ -7722,12 +8203,12 @@ impl_script_newtype! {
     (
         self Add self -> Wrapped(Mat3A),
         self Sub self -> Wrapped(Mat3A),
-        self Mul Wrapped(Mat3A) -> Wrapped(Mat3A),
-        self Mul Wrapped(Affine2) -> Wrapped(Mat3A),
         self Mul Wrapped(Vec3) -> Wrapped(Vec3),
+        self Mul Wrapped(Affine2) -> Wrapped(Mat3A),
+        self Mul Wrapped(Vec3A) -> Wrapped(Vec3A),
         self Mul Raw(f32) -> Wrapped(Mat3A),
         self Mul self -> Wrapped(Mat3A),
-        self Mul Wrapped(Vec3A) -> Wrapped(Vec3A),
+        self Mul Wrapped(Mat3A) -> Wrapped(Mat3A),
     )
     + UnaryOps
     (
@@ -7751,7 +8232,7 @@ impl_script_newtype! {
                                 .unwrap()
                                 .col_mut(idx))
                         } else {
-                            Err(ReflectionError::CannotDowncast{from: ref_.type_name().to_owned().into(), to:"Mat3A".into()})
+                            Err(ReflectionError::CannotDowncast{from: ref_.get_represented_type_info().unwrap().type_path().into(), to:"Mat3A".into()})
                         }
                     }
                 })
@@ -8108,10 +8589,10 @@ impl_script_newtype! {
     (
         self Add self -> Wrapped(Mat4),
         self Sub self -> Wrapped(Mat4),
-        self Mul self -> Wrapped(Mat4),
+        self Mul Wrapped(Affine3A) -> Wrapped(Mat4),
         self Mul Raw(f32) -> Wrapped(Mat4),
         self Mul Wrapped(Mat4) -> Wrapped(Mat4),
-        self Mul Wrapped(Affine3A) -> Wrapped(Mat4),
+        self Mul self -> Wrapped(Mat4),
         self Mul Wrapped(Vec4) -> Wrapped(Vec4),
     )
     + UnaryOps
@@ -8136,7 +8617,7 @@ impl_script_newtype! {
                                 .unwrap()
                                 .col_mut(idx))
                         } else {
-                            Err(ReflectionError::CannotDowncast{from: ref_.type_name().to_owned().into(), to:"Mat4".into()})
+                            Err(ReflectionError::CannotDowncast{from: ref_.get_represented_type_info().unwrap().type_path().into(), to:"Mat4".into()})
                         }
                     }
                 })
@@ -8245,8 +8726,8 @@ impl_script_newtype! {
         self Add self -> Wrapped(DMat2),
         self Sub self -> Wrapped(DMat2),
         self Mul Raw(f64) -> Wrapped(DMat2),
-        self Mul Wrapped(DVec2) -> Wrapped(DVec2),
         self Mul self -> Wrapped(DMat2),
+        self Mul Wrapped(DVec2) -> Wrapped(DVec2),
         self Mul Wrapped(DMat2) -> Wrapped(DMat2),
     )
     + UnaryOps
@@ -8271,7 +8752,7 @@ impl_script_newtype! {
                                 .unwrap()
                                 .col_mut(idx))
                         } else {
-                            Err(ReflectionError::CannotDowncast{from: ref_.type_name().to_owned().into(), to:"DMat2".into()})
+                            Err(ReflectionError::CannotDowncast{from: ref_.get_represented_type_info().unwrap().type_path().into(), to:"DMat2".into()})
                         }
                     }
                 })
@@ -8482,10 +8963,10 @@ impl_script_newtype! {
     (
         self Add self -> Wrapped(DMat3),
         self Sub self -> Wrapped(DMat3),
-        self Mul self -> Wrapped(DMat3),
-        self Mul Wrapped(DVec3) -> Wrapped(DVec3),
         self Mul Wrapped(DMat3) -> Wrapped(DMat3),
         self Mul Raw(f64) -> Wrapped(DMat3),
+        self Mul Wrapped(DVec3) -> Wrapped(DVec3),
+        self Mul self -> Wrapped(DMat3),
         self Mul Wrapped(DAffine2) -> Wrapped(DMat3),
     )
     + UnaryOps
@@ -8510,7 +8991,7 @@ impl_script_newtype! {
                                 .unwrap()
                                 .col_mut(idx))
                         } else {
-                            Err(ReflectionError::CannotDowncast{from: ref_.type_name().to_owned().into(), to:"DMat3".into()})
+                            Err(ReflectionError::CannotDowncast{from: ref_.get_represented_type_info().unwrap().type_path().into(), to:"DMat3".into()})
                         }
                     }
                 })
@@ -8850,11 +9331,11 @@ impl_script_newtype! {
     (
         self Add self -> Wrapped(DMat4),
         self Sub self -> Wrapped(DMat4),
-        self Mul Wrapped(DAffine3) -> Wrapped(DMat4),
+        self Mul Wrapped(DVec4) -> Wrapped(DVec4),
         self Mul Raw(f64) -> Wrapped(DMat4),
+        self Mul Wrapped(DAffine3) -> Wrapped(DMat4),
         self Mul self -> Wrapped(DMat4),
         self Mul Wrapped(DMat4) -> Wrapped(DMat4),
-        self Mul Wrapped(DVec4) -> Wrapped(DVec4),
     )
     + UnaryOps
     (
@@ -8878,7 +9359,7 @@ impl_script_newtype! {
                                 .unwrap()
                                 .col_mut(idx))
                         } else {
-                            Err(ReflectionError::CannotDowncast{from: ref_.type_name().to_owned().into(), to:"DMat4".into()})
+                            Err(ReflectionError::CannotDowncast{from: ref_.get_represented_type_info().unwrap().type_path().into(), to:"DMat4".into()})
                         }
                     }
                 })
@@ -9236,8 +9717,8 @@ impl_script_newtype! {
     )
     + BinOps
     (
-        self Mul Wrapped(DMat3) -> Wrapped(DMat3),
         self Mul Wrapped(DAffine2) -> Wrapped(DAffine2),
+        self Mul Wrapped(DMat3) -> Wrapped(DMat3),
     )
     + UnaryOps
     (
@@ -9381,8 +9862,8 @@ impl_script_newtype! {
     )
     + BinOps
     (
-        self Mul Wrapped(DMat4) -> Wrapped(DMat4),
         self Mul Wrapped(DAffine3) -> Wrapped(DAffine3),
+        self Mul Wrapped(DMat4) -> Wrapped(DMat4),
     )
     + UnaryOps
     (
@@ -9646,10 +10127,10 @@ impl_script_newtype! {
         self Add self -> Wrapped(Quat),
         self Sub self -> Wrapped(Quat),
         self Div Raw(f32) -> Wrapped(Quat),
-        self Mul Wrapped(Vec3) -> Wrapped(Vec3),
-        self Mul self -> Wrapped(Quat),
         self Mul Raw(f32) -> Wrapped(Quat),
         self Mul Wrapped(Vec3A) -> Wrapped(Vec3A),
+        self Mul Wrapped(Vec3) -> Wrapped(Vec3),
+        self Mul self -> Wrapped(Quat),
     )
     + UnaryOps
     (
@@ -9908,8 +10389,8 @@ impl_script_newtype! {
         self Add self -> Wrapped(DQuat),
         self Sub self -> Wrapped(DQuat),
         self Div Raw(f64) -> Wrapped(DQuat),
-        self Mul Raw(f64) -> Wrapped(DQuat),
         self Mul self -> Wrapped(DQuat),
+        self Mul Raw(f64) -> Wrapped(DQuat),
         self Mul Wrapped(DVec3) -> Wrapped(DVec3),
     )
     + UnaryOps
@@ -10175,6 +10656,24 @@ impl_script_newtype! {
         ///```
         inset(&self:Raw(f32)) -> self,
 
+        ///Build a new rectangle from this one with its coordinates expressed
+        ///relative to `other` in a normalized ([0..1] x [0..1]) coordinate system.
+        ///
+        ///# Examples
+        ///
+        ///```rust
+        ///# use bevy_math::{Rect, Vec2};
+        ///let r = Rect::new(2., 3., 4., 6.);
+        ///let s = Rect::new(0., 0., 10., 10.);
+        ///let n = r.normalize(s);
+        ///
+        ///assert_eq!(n.min.x, 0.2);
+        ///assert_eq!(n.min.y, 0.3);
+        ///assert_eq!(n.max.x, 0.4);
+        ///assert_eq!(n.max.y, 0.6);
+        ///```
+        normalize(&self:self) -> self,
+
     )
     + Fields
     (
@@ -10263,10 +10762,6 @@ impl bevy_mod_scripting_lua::tealr::mlu::ExportInstances for BevyAPIGlobals {
         instances.add_instance(
             "CameraRenderGraph",
             bevy_mod_scripting_lua::tealr::mlu::UserDataProxy::<LuaCameraRenderGraph>::new,
-        )?;
-        instances.add_instance(
-            "HandleId",
-            bevy_mod_scripting_lua::tealr::mlu::UserDataProxy::<LuaHandleId>::new,
         )?;
         instances.add_instance(
             "Vec2",
@@ -10496,7 +10991,8 @@ impl APIProvider for LuaBevyAPIProvider {
 			.process_type::<bevy_mod_scripting_lua::tealr::mlu::UserDataProxy<LuaRenderLayers>>()
 			.process_type::<LuaVisibility>()
 			.process_type::<LuaVisibleEntities>()
-			.process_type::<LuaComputedVisibility>()
+			.process_type::<LuaInheritedVisibility>()
+			.process_type::<LuaViewVisibility>()
 			.process_type::<LuaSkinnedMesh>()
 			.process_type::<LuaScalingMode>()
 			.process_type::<LuaColor>()
@@ -10515,11 +11011,7 @@ impl APIProvider for LuaBevyAPIProvider {
 			.process_type::<LuaPerspectiveProjection>()
 			.process_type::<LuaCameraRenderGraph>()
 			.process_type::<bevy_mod_scripting_lua::tealr::mlu::UserDataProxy<LuaCameraRenderGraph>>()
-			.process_type::<LuaAssetPathId>()
-			.process_type::<LuaLabelId>()
-			.process_type::<LuaSourcePathId>()
-			.process_type::<LuaHandleId>()
-			.process_type::<bevy_mod_scripting_lua::tealr::mlu::UserDataProxy<LuaHandleId>>()
+			.process_type::<LuaAssetIndex>()
 			.process_type::<LuaVec2>()
 			.process_type::<bevy_mod_scripting_lua::tealr::mlu::UserDataProxy<LuaVec2>>()
 			.process_type::<LuaVec3>()
@@ -10683,7 +11175,8 @@ impl APIProvider for LuaBevyAPIProvider {
         app.register_foreign_lua_type::<RenderLayers>();
         app.register_foreign_lua_type::<Visibility>();
         app.register_foreign_lua_type::<VisibleEntities>();
-        app.register_foreign_lua_type::<ComputedVisibility>();
+        app.register_foreign_lua_type::<InheritedVisibility>();
+        app.register_foreign_lua_type::<ViewVisibility>();
         app.register_foreign_lua_type::<SkinnedMesh>();
         app.register_foreign_lua_type::<ScalingMode>();
         app.register_foreign_lua_type::<Color>();
@@ -10698,10 +11191,7 @@ impl APIProvider for LuaBevyAPIProvider {
         app.register_foreign_lua_type::<OrthographicProjection>();
         app.register_foreign_lua_type::<PerspectiveProjection>();
         app.register_foreign_lua_type::<CameraRenderGraph>();
-        app.register_foreign_lua_type::<AssetPathId>();
-        app.register_foreign_lua_type::<LabelId>();
-        app.register_foreign_lua_type::<SourcePathId>();
-        app.register_foreign_lua_type::<HandleId>();
+        app.register_foreign_lua_type::<AssetIndex>();
         app.register_foreign_lua_type::<Vec2>();
         app.register_foreign_lua_type::<Vec3>();
         app.register_foreign_lua_type::<Vec3A>();
