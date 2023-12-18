@@ -22,6 +22,6 @@
         "editor.defaultFormatter": "rust-lang.rust-analyzer"
     },
     "editor.codeActionsOnSave": {
-        "source.organizeImports": true
+        "source.organizeImports": "explicit"
     },
 }

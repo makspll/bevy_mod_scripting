@@ -2,7 +2,7 @@ use std::error::Error;
 
 use rustdoc_types::{Item, ItemEnum, Type};
 
-use crate::{Config, ValidType};
+use crate::ValidType;
 
 /// Struct representing an argument to a function, or a field declaration, Anything with a name and a type reall
 #[derive(Debug)]
@@ -16,7 +16,6 @@ impl NameType {
     pub fn try_new(
         name: String,
         type_: Type,
-        config: &Config,
         assoc_types: &[&Item],
         resolve_self_with: Option<&ValidType>,
     ) -> Result<Self, Box<dyn Error>> {

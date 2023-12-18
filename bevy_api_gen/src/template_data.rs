@@ -6,7 +6,7 @@ use rustdoc_types::{Crate, Item, ItemEnum, Type};
 use sailfish::TemplateOnce;
 use serde_derive::Serialize;
 
-use crate::{Config, ItemData, TypeMeta, ValidType};
+use crate::{ItemData, ValidType};
 
 #[derive(TemplateOnce)]
 #[template(path = "main.stpl", escape = false)]

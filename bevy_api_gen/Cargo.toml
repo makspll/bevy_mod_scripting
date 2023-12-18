@@ -38,6 +38,7 @@ serde = { version = "1.0", features = ["derive"] }
 serde_derive = "1.0.137"
 indexmap = { version = "2.1.0", features = ["serde"] }
 prettyplease = "0.2.15"
+wildmatch = "2.1.1"
 syn = { version = "2", default-features = false, features = [
     "full",
     "parsing",

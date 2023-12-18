@@ -25,6 +25,7 @@ NIGHTLY_VERSION=2023-11-29
 BEVY_VERSION=0.11.2
 GLAM_VERSION=0.24.1
 BEVY_PATH=./target/bevy
+TEALR_PATH=./target/tealr
 build_test_in_package:
 	@cargo test --no-run --lib --workspace $(TEST_NAME)
 	@export OUTPUT=$$(find ./target/debug/deps/ -regex ".*${PACKAGE}[^.]*" -printf "%T@\t%Tc %6k KiB %p\n" | sort -n -r | awk '{print $$NF}' | head -1); \
@@ -41,6 +42,12 @@ valgrind:
 			${EXEC} --bench  ${T_ID} 
 generate_api:
 	cd bevy_api_gen && cargo run --release -- \
+	--filters "bevy*","uuid*","glam*","core*","std*","alloc*" \
+	--excludes "bevy_ecs*" \
+	--json "../target/doc/uuid.json" \
+	--json "../target/doc/bevy_ptr.json" \
+	--json "../target/doc/bevy_app.json" \
+	--json "../target/doc/bevy_diagnostic.json" \
 	--json "../target/doc/bevy_asset.json" \
 	--json "../target/doc/bevy_ecs.json" \
 	--json "../target/doc/bevy_pbr.json" \
@@ -62,6 +69,7 @@ generate_api:
 	--json "../target/doc/glam.json" \
 	--json "${HOME}/.rustup/toolchains/nightly-${NIGHTLY_VERSION}-x86_64-unknown-linux-gnu/share/doc/rust/json/core.json" \
 	--json "${HOME}/.rustup/toolchains/nightly-${NIGHTLY_VERSION}-x86_64-unknown-linux-gnu/share/doc/rust/json/std.json" \
+	--json "${HOME}/.rustup/toolchains/nightly-${NIGHTLY_VERSION}-x86_64-unknown-linux-gnu/share/doc/rust/json/alloc.json" \
 	--config "../api_gen_config.toml" ${FLAGS} \
 	--templates "../templates" \
 	--output ../bevy_script_api/src/generated.rs
@@ -70,6 +78,9 @@ make_json_files:
 	rustup install nightly-${NIGHTLY_VERSION}
 	rustup component add rust-docs-json --toolchain nightly-${NIGHTLY_VERSION}
 	git clone https://github.com/bevyengine/bevy --branch v${BEVY_VERSION} --depth 1 ${BEVY_PATH} || true
-	cd ${BEVY_PATH} && RUSTDOCFLAGS="--document-hidden-items --document-private-items  -Zunstable-options  --output-format json" rustup run nightly-${NIGHTLY_VERSION} cargo doc --workspace --no-deps
+	git clone https://github.com/lenscas/tealr --branch v0.9.0-alpha4 --depth 1 ${TEALR_PATH} || true
 	mkdir -p ./target/doc/
+	cd ${BEVY_PATH} && RUSTDOCFLAGS="--document-hidden-items --document-private-items  -Zunstable-options  --output-format json" rustup run nightly-${NIGHTLY_VERSION} cargo doc --workspace
 	cp ${BEVY_PATH}/target/doc/* ./target/doc/
+	cd ${TEALR_PATH} && RUSTDOCFLAGS="--document-hidden-items --document-private-items  -Zunstable-options  --output-format json" rustup run nightly-${NIGHTLY_VERSION} cargo doc --features=mlua_vendored,mlua_lua54 --workspace
+	cp ${TEALR_PATH}/target/doc/* ./target/doc/

@@ -1,6 +1,8 @@
+use gtrie::Trie;
 use indexmap::{IndexMap, IndexSet};
 use rustdoc_types::{
-    Crate, Enum, Id, Impl, Import, Item, ItemEnum, Module, Struct, Trait, Visibility,
+    Crate, Enum, GenericArg, GenericArgs, Id, Impl, Import, Item, ItemEnum, Module, Struct, Trait,
+    Type, Visibility,
 };
 use serde_derive::Serialize;
 use std::borrow::Cow::{Borrowed, Owned};
@@ -10,6 +12,9 @@ use std::fmt::Display;
 use std::hash::Hash;
 use std::iter::{once, repeat};
 use std::{borrow::Cow, ops::Deref};
+use syn::ItemTrait;
+
+use crate::{args, UniversalType};
 
 pub fn print_item_variant(variant: &ItemEnum) -> &'static str {
     match variant {
@@ -38,10 +43,16 @@ pub fn print_item_variant(variant: &ItemEnum) -> &'static str {
     }
 }
 
-#[derive(Clone, Serialize, Debug)]
+#[derive(Clone, Serialize, Debug, Eq, PartialOrd, Ord)]
 pub struct ImportPath {
-    pub is_public: bool,
     pub components: Vec<String>,
+    pub is_public: bool,
+}
+
+impl PartialEq for ImportPath {
+    fn eq(&self, other: &Self) -> bool {
+        self.components == other.components
+    }
 }
 
 impl ImportPath {
@@ -76,7 +87,7 @@ impl ImportPath {
 
 /// An Id which uniquely identifies a crate
 #[derive(Clone, Eq, Copy)]
-pub struct CrateId<'a>(&'a Crate, &'a str);
+pub struct CrateId<'a>(pub &'a Crate, pub &'a str);
 impl<'a> CrateId<'a> {
     pub fn crate_name(self) -> &'a str {
         self.1
@@ -109,38 +120,108 @@ impl PartialEq for CrateId<'_> {
     }
 }
 
-#[derive(Debug)]
 pub struct CrawledImportData<'a> {
     /// contains import paths public + private of every item in impls and types
     /// as well as the traits implemented by impls, may contain MORE than that, but these should be ignored
     /// paths are sorted, with public and shorter paths appearing earlier
     paths: IndexMap<(CrateId<'a>, Id), Vec<ImportPath>>,
-    /// a set of all impls in the crate, possibly for external traits for which paths will be present in a crate
-    /// different from the definition crate
-    impls: IndexSet<(CrateId<'a>, Id)>,
+    /// a trie of all paths, used to resolve external paths to internal paths and match up items from different modules
+    inverse_paths: Trie<char, (CrateId<'a>, Id)>,
+    /// a set of all impls in the crate, possibly for external traits for which paths will be present,
+    /// optionally mapping to the id of the trait they implement
+    impls: IndexMap<(CrateId<'a>, Id), Option<(CrateId<'a>, Id)>>,
+    /// Mapping from definitions of traits to ALL their implementations, including in other crates
+    inverse_impls: IndexMap<(CrateId<'a>, Id), Vec<(CrateId<'a>, Id)>>,
     /// a set of all structs/enums in the crate, always in their definition crates
     types: IndexSet<(CrateId<'a>, Id)>,
-    /// A mapping from external traits in a local crate to another crate where the trait is defined
-    ext_traits: IndexMap<(CrateId<'a>, Id), (CrateId<'a>, Id)>,
+
     all_crates: Vec<CrateId<'a>>,
 }
 
-impl CrawledImportData<'_> {
-    pub fn get_types(&self) -> impl Iterator<Item = &(CrateId, Id)> {
+impl<'a> CrawledImportData<'a> {
+    /// Given path, find the item in one of the crates we crawled if it exists, and return the ID
+    pub fn get_item_by_path(&self, path: &[String]) -> Option<(CrateId<'a>, Id)> {
+        self.inverse_paths.get_value(path.join("::").chars())
+    }
+
+    /// Given the id of an item and the crate it's found, identify the definition id of that item (might be the same)
+    /// The crate id must be the one the item was found in, i.e. it must either be in the index or paths field of the crate.
+    ///
+    /// Note: for std lib, private items are not documented so this won't work for those.
+    /// If None is returned then either a crate was not crawled, you're looking in the wrong crate, or you didn't crawl the crate of definition with --document-private-items
+    pub fn find_item(&self, id: &(CrateId<'a>, Id)) -> Option<(CrateId<'a>, Id)> {
+        if id.0.index.contains_key(&id.1) {
+            Some(id.clone())
+        } else {
+            id.0.paths
+                .get(&id.1)
+                .and_then(|p| self.get_item_by_path(&p.path))
+        }
+    }
+
+    /// Returns all the types in all crates (structs, enums, type aliases etc)
+    pub fn get_types(&self) -> impl Iterator<Item = &(CrateId<'a>, Id)> {
         self.types.iter()
     }
 
-    pub fn get_public_types(&self) -> impl Iterator<Item = &(CrateId, Id)> {
+    /// Returns all the public types in all crates (structs, enums, type aliases etc)
+    pub fn get_public_types(&self) -> impl Iterator<Item = &(CrateId<'a>, Id)> {
         self.get_types()
             .filter(|id| self.get_public_item_path(id).is_some())
     }
 
-    pub fn get_impls(&self) -> impl Iterator<Item = &(CrateId, Id)> {
+    /// Returns all the traits in all crates
+    pub fn get_traits(&self) -> impl Iterator<Item = &(CrateId<'a>, Id)> {
+        self.inverse_impls.keys()
+    }
+
+    pub fn get_impls_for_trait(
+        &self,
+        trait_id: &(CrateId<'a>, Id),
+    ) -> Option<&[(CrateId<'a>, Id)]> {
+        self.inverse_impls.get(trait_id).map(|v| v.as_slice())
+    }
+
+    /// Returns all the impls in all crates, impls for traits will only appear if the traits themselves are public
+    pub fn get_public_impls(
+        &self,
+    ) -> impl Iterator<Item = (&(CrateId<'a>, Id), &Option<(CrateId<'a>, Id)>)> {
         self.impls.iter()
     }
 
+    /// Returns all the public traits in all crates
+    pub fn get_public_traits(&self) -> impl Iterator<Item = &(CrateId<'a>, Id)> {
+        self.get_traits()
+            .filter(|id| self.get_public_item_path(id).is_some())
+    }
+
+    /// searches for the given item in the given crate and returns the shortest import path (might not be public)
+    pub fn get_item_path(&self, id: &(CrateId<'a>, Id)) -> Option<&ImportPath> {
+        self.paths.get(id).and_then(|paths| paths.first())
+    }
+
+    /// searches for the given item in the given crate and returns the shortest import path which is public
+    pub fn get_public_item_path(&self, id: &(CrateId<'a>, Id)) -> Option<&ImportPath> {
+        self.get_item_path(id).filter(|p| p.is_public)
+    }
+
+    /// Searches for the given trait in the given crate, and if not found, searches the resolved external traits list from that crate.
+    ///
+    /// If the given item exists and is a trate it's returned, otherwise None
+    pub fn find_trait(&self, trait_id: &(CrateId<'a>, Id)) -> Option<(CrateId<'a>, Id)> {
+        if trait_id.0.index.contains_key(&trait_id.1) {
+            Some(trait_id.clone())
+        } else {
+            trait_id
+                .0
+                .paths
+                .get(&trait_id.1)
+                .and_then(|p| self.get_item_by_path(&p.path))
+        }
+    }
+
     /// Searches for the given trait in both the given crate and resolved external traits list and returns the shortest path found (might not be public)
-    pub fn get_trait_path<'a>(&'a self, trait_id: &(CrateId<'a>, Id)) -> Option<&ImportPath> {
+    pub fn find_trait_path(&self, trait_id: &(CrateId<'a>, Id)) -> Option<&ImportPath> {
         log::trace!(
             "Searching for trait path for trait: `{:?}` in crate: `{}`",
             &trait_id.1,
@@ -148,28 +229,19 @@ impl CrawledImportData<'_> {
         );
         let out = self.get_item_path(trait_id).or_else(|| {
             log::trace!("Trait not in the given crate, searching external traits");
-            self.ext_traits
-                .get(trait_id)
-                .and_then(|trait_def_id| self.get_item_path(trait_def_id))
+            trait_id
+                .0
+                .paths
+                .get(&trait_id.1)
+                .and_then(|p| self.get_item_by_path(&p.path))
+                .map(|i| self.get_item_path(&i).unwrap())
         });
         log::trace!("Path found?: {:?}", out);
         out
     }
 
-    pub fn get_public_trait_path<'a>(
-        &'a self,
-        trait_id: &(CrateId<'a>, Id),
-    ) -> Option<&ImportPath> {
-        self.get_trait_path(trait_id).filter(|p| p.is_public)
-    }
-
-    /// searches for the given item in the given crate and returns the shortest import path (might not be public)
-    pub fn get_item_path<'a>(&'a self, id: &(CrateId<'a>, Id)) -> Option<&ImportPath> {
-        self.paths.get(id).and_then(|paths| paths.first())
-    }
-
-    pub fn get_public_item_path<'a>(&'a self, id: &(CrateId<'a>, Id)) -> Option<&ImportPath> {
-        self.get_item_path(id).filter(|p| p.is_public)
+    pub fn find_public_trait_path(&self, trait_id: &(CrateId<'a>, Id)) -> Option<&ImportPath> {
+        self.find_trait_path(trait_id).filter(|p| p.is_public)
     }
 }
 
@@ -190,9 +262,9 @@ pub(crate) struct CrateCrawlerData {
     pub(crate) types: IndexSet<Id>,
     /// Mapping from implementations to the traits they're implementing
     pub(crate) impls_to_traits: IndexMap<Id, Id>,
-    /// Traits which were found with an external path which are being referenced
-    /// in the impls, if not matched up to items from other crates, need to be removed together with impls which reference those
-    pub(crate) external_traits: IndexMap<Id, Vec<String>>,
+    // /// Traits which were found with an external path which are being referenced
+    // /// in the impls, if not matched up to items from other crates, need to be removed together with impls which reference those
+    // pub(crate) external_traits: IndexMap<Id, Vec<String>>,
 }
 
 impl ImportPathCrawler {
@@ -235,28 +307,44 @@ impl ImportPathCrawler {
             // if we encounter longer paths, well somebody is doing something wrong but it ain't us
             paths.sort_by_key(|p| (p.components.len() * 1000) - (p.is_public as usize * 1000))
         });
-        let mut tree = gtrie::Trie::<char, &(CrateId, Id)>::new();
+        let mut inverse_paths = gtrie::Trie::<char, (CrateId, Id)>::new();
 
         paths.iter().for_each(|(id, import_paths)| {
             for p in import_paths {
                 // use full import syntax with ::'s so that My::Trait::Struct does not equal MyTrait::Struct
-                tree.insert(p.to_string().chars(), id)
+                inverse_paths.insert(p.to_string().chars(), id.clone())
             }
         });
 
         // with the tree built we can process the rest
-        let mut impls = IndexSet::default();
+        let mut impls = IndexMap::default();
         let mut types = IndexSet::default();
-        let mut ext_traits = IndexMap::default();
         crate_data_iter.clone().for_each(|(crate_id, data)| {
-            Self::finalize_impls(crate_id, data, &mut impls, &mut ext_traits, &tree);
+            Self::finalize_impls(crate_id, data, &mut impls, &inverse_paths);
             Self::finalize_types(crate_id, data, &mut types);
         });
+
+        let inverse_impls = impls
+            .iter()
+            .filter_map(|(impl_id, trait_id)| Some((trait_id.clone()?, impl_id.clone())))
+            .fold(
+                IndexMap::default(),
+                |mut inverse_impls: IndexMap<(CrateId<'_>, Id), Vec<(CrateId<'_>, Id)>>,
+                 (impl_id, trait_id)| {
+                    inverse_impls
+                        .entry(trait_id)
+                        .or_default()
+                        .push(impl_id.clone());
+                    inverse_impls
+                },
+            );
+
         CrawledImportData {
             paths,
             impls,
             types,
-            ext_traits,
+            inverse_paths,
+            inverse_impls,
             all_crates: crate_data_iter.map(|(id, _)| id).collect(),
         }
     }
@@ -290,47 +378,23 @@ impl ImportPathCrawler {
     fn finalize_impls<'a>(
         crate_id: CrateId<'a>,
         data: &CrateCrawlerData,
-        impls: &mut IndexSet<(CrateId<'a>, Id)>,
-        ext_traits: &mut IndexMap<(CrateId<'a>, Id), (CrateId<'a>, Id)>,
-        crawled_id_map: &gtrie::Trie<char, &(CrateId<'a>, Id)>,
+        impls: &mut IndexMap<(CrateId<'a>, Id), Option<(CrateId<'a>, Id)>>,
+        crawled_id_map: &gtrie::Trie<char, (CrateId<'a>, Id)>,
     ) {
-        // these paths are often private we need to find them in the crawled map and resolve to a better
-        // and most importantly public path, we generate a mapping from the local id's to globally resolved id's
-        // anything leftover must be from a crate which was NOT included in the crawl and impls using those need to be filtered out
-        for (ext_trait_internal_id, ext_import_path) in &data.external_traits {
-            if let Some(ext_trait_global_id) =
-                crawled_id_map.get_value(ext_import_path.join("::").chars())
-            {
-                ext_traits.insert(
-                    (crate_id, ext_trait_internal_id.clone()),
-                    ext_trait_global_id.clone(),
-                );
-            }
-        }
-
         let filtered_impls = data.impls.iter().filter_map(|impl_id| {
-            data.impls_to_traits
-                .get(impl_id)
-                .map(|trait_id| {
-                    (
-                        data.external_traits.contains_key(trait_id),
-                        ext_traits.contains_key(&(crate_id, data.impls_to_traits[impl_id].clone())),
-                    )
-                })
-                .and_then(|(is_external, is_resolved)| {
-                    (!is_external || is_resolved).then_some((crate_id, impl_id.clone()))
-                })
-        });
+            let trait_id = if let Some(trait_id) = data.impls_to_traits.get(impl_id) {
+                if crate_id.0.index.contains_key(trait_id) {
+                    Some((crate_id, trait_id.clone()))
+                } else {
+                    let path = crate_id.0.paths.get(trait_id).unwrap().path.join("::");
+                    Some(crawled_id_map.get_value(path.chars())?) // if it has a trait but can't find it filter it out
+                }
+            } else {
+                None
+            };
 
-        let filtered_impls = filtered_impls.inspect(|id| {
-            log::trace!(
-                "Impl `{:?}`, with trait: `{:?}`, trait has path: {} in crate: {}, trait is resolved externally: {}",
-                id.1,
-                &data.impls_to_traits[&id.1],
-                data.paths.contains_key(&data.impls_to_traits[&id.1]),
-                crate_id.crate_name(),
-                ext_traits.contains_key(&(crate_id, data.impls_to_traits[&id.1].clone())),
-            );
+            // is_external implies it's resolved externally or return None
+            Some(((crate_id, impl_id.clone()), trait_id))
         });
 
         impls.extend(filtered_impls);
@@ -475,6 +539,10 @@ impl ImportPathCrawler {
                 children = impls.to_owned();
                 register_path_for_item = true;
             }
+            ItemEnum::TypeAlias(ty) => {
+                children = vec![];
+                register_path_for_item = true;
+            }
             ItemEnum::Impl(Impl { trait_, for_, .. }) => {
                 // keep track of impls
                 if let Some(trait_) = trait_ {
@@ -485,11 +553,11 @@ impl ImportPathCrawler {
                         }
                         // if the trait is external, we won't encounter it on the normal path,
                         // we have to add the import path from here, this might add traits which are
-                        // not visible from the public API (i.e. )
-                        log::trace!("Impl is for external trait: `{:?}`, we won't find it in the index, saving import path from .paths", trait_.id);
-                        self.data[crate_name]
-                            .external_traits
-                            .insert(trait_.id.clone(), crate_.paths[&trait_.id].path.to_owned());
+                        // not visible from the public API
+                        // log::trace!("Impl is for external trait: `{:?}`, we won't find it in the index, saving import path from .paths", trait_.id);
+                        // self.data[crate_name]
+                        //     .external_traits
+                        //     .insert(trait_.id.clone(), crate_.paths[&trait_.id].path.to_owned());
                     }
 
                     // store impl to trait mapping
@@ -561,129 +629,3 @@ pub fn crate_name(crate_: &Crate) -> &str {
 pub fn lookup_item_crate_source<'a>(id: &Id, crates: &'a [Crate]) -> Option<&'a Crate> {
     crates.iter().find(|crate_| crate_.index.contains_key(id))
 }
-
-// pub fn get_path(id: &Id, source: &Crate) -> Option<Vec<Id>> {
-//     log::debug!(
-//         "Trying to find path for item id: `{id:?}` has index entry: `{}` has path entry: `{}`",
-//         source.index.get(id).is_some(),
-//         source.paths.get(id).is_some()
-//     );
-//     if source.index.get(id).is_none() {
-//         panic!("Trying to find path for item which is external to the provided source crate, the item lives in crate: `{}` not in `{}`",
-//             source.external_crates.get(&source.paths.get(id).as_ref().unwrap().crate_id).unwrap().name,
-//             crate_name(source)
-//         );
-//     }
-//     match source.paths.get(id) {
-//         Some(_) => return Some(vec![id.to_owned()]),
-//         None => {
-//             let ind = source.index.get(id)?;
-//             if let Visibility::Restricted { parent, .. } = &ind.visibility {
-//                 if let Some(p_path) = get_path(parent, source) {
-//                     return Some(p_path);
-//                 }
-//             }
-//             let parents = source.index.iter().filter(|(_, p_item)| {
-//                 // if let Some(name) = &ind.name {
-//                 //     if p_item.links.contains_key(name) {
-//                 //         log::debug!(
-//                 //             "parent via item.links in: `{:?}` named: `{:?}`",
-//                 //             p_item.id,
-//                 //             p_item.name
-//                 //         );
-
-//                 //         return true;
-//                 //     }
-//                 // }
-//                 // if let ItemEnum::Impl(p_impl) = &p_item.inner {
-//                 //     return p_impl.items.contains(id);
-//                 // }
-//                 if let ItemEnum::Import(p_import) = &p_item.inner {
-//                     if let Some(p_inner) = &p_import.id {
-//                         log::debug!(
-//                             "parent import found: `{:?}` named: `{:?}` importing: `{:?}`",
-//                             p_item.id,
-//                             p_import.source,
-//                             p_inner
-//                         );
-//                         return p_inner == id;
-//                     }
-//                     return false;
-//                 }
-//                 if let ItemEnum::Module(p_mod) = &p_item.inner {
-//                     log::debug!(
-//                         "parent module found: `{:?}` named: `{:?}` containing: `{:?}`",
-//                         p_item.id,
-//                         p_item.name,
-//                         p_mod.items
-//                     );
-//                     return p_mod.items.contains(id);
-//                 }
-//                 false
-//             });
-
-//             for (parent, _) in parents {
-//                 log::debug!("`{id:?}` searching through parent: `{parent:?}`");
-//                 let path_o = get_path(parent, source);
-//                 if let Some(mut path) = path_o {
-//                     log::debug!(
-//                         "`{id:?}` found path through parent: `{parent:?}`, path: `{path:#?}`"
-//                     );
-//                     path.push(id.to_owned());
-//                     return Some(path);
-//                 }
-//             }
-//         }
-//     };
-//     None
-// }
-
-// pub fn path_to_import(path: Vec<Id>, source: &Crate) -> Vec<String> {
-//     log::debug!(
-//         "Trying to convert id path to path components: `{path:?}` with names: [{:?}] in crate: `{}`",
-//         path.iter()
-//             .map(|id| source
-//                 .index
-//                 .get(id)
-//                 .and_then(|item| item.name.as_deref())
-//                 .unwrap_or("None"))
-//             .collect::<Vec<_>>()
-//             .join(","),
-//             crate_name(source)
-//     );
-//     path.iter()
-//         .rev()
-//         .enumerate()
-//         .rev()
-//         .enumerate()
-//         .map(|(starti, (endi, id))| {
-//             log::trace!("starti: {starti}, endi: {endi}, id: {id:?}");
-
-//             let ind = source
-//                 .index
-//                 .get(id)
-//                 .expect("Trying to find path to item which is not in the provided source crate");
-
-//             if starti == 0 {
-//                 return source.paths.get(id).unwrap().path.clone();
-//             } else if endi == 0 {
-//                 if let Some(name) = &ind.name {
-//                     return vec![name.to_owned()];
-//                 }
-//             } else if let Visibility::Restricted { parent: _, path } = &ind.visibility {
-//                 return path[2..].split("::").map(|x| x.to_string()).collect();
-//             } else if let ItemEnum::Module(module) = &ind.inner {
-//                 if !module.is_stripped {
-//                     return vec![source.index.get(id).unwrap().name.clone().unwrap()];
-//                 } else {
-//                     return vec![];
-//                 }
-//             }
-//             vec![]
-//         })
-//         .reduce(|mut x, y| {
-//             x.extend(y);
-//             x
-//         })
-//         .unwrap()
-// }

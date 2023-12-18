@@ -1,8 +1,8 @@
 use std::error::Error;
 
-use rustdoc_types::{Crate, Item, ItemEnum};
+use rustdoc_types::{Item, ItemEnum};
 
-use crate::{Config, ImportPath, NameType, ValidType};
+use crate::{ImportPath, NameType, ValidType};
 
 #[derive(Clone, Copy)]
 pub enum OperatorType {
@@ -82,7 +82,6 @@ impl FunctionData {
     pub fn try_new(
         trait_path: Option<ImportPath>,
         item: Item,
-        config: &Config,
         operator: Option<OperatorType>,
         assoc_types: Vec<&Item>,
         resolve_self_with: Option<&ValidType>,
@@ -102,9 +101,7 @@ impl FunctionData {
         let args = decl
             .inputs
             .into_iter()
-            .map(|(name, type_)| {
-                NameType::try_new(name, type_, config, &assoc_types, resolve_self_with)
-            })
+            .map(|(name, type_)| NameType::try_new(name, type_, &assoc_types, resolve_self_with))
             .collect::<Result<Vec<_>, _>>()?;
 
         let is_static = args
@@ -135,18 +132,12 @@ impl FunctionData {
         let output = output
             .map(|type_| {
                 // any idx apart from 0, don't want receivers here
-                NameType::try_new(
-                    "output".to_owned(),
-                    type_,
-                    config,
-                    &assoc_types,
-                    resolve_self_with,
-                )
-                .and_then(|arg: NameType| {
-                    (!matches!(arg.type_, ValidType::Ref { .. }))
-                        .then_some(arg)
-                        .ok_or("Reference are not supported in output position".into())
-                })
+                NameType::try_new("output".to_owned(), type_, &assoc_types, resolve_self_with)
+                    .and_then(|arg: NameType| {
+                        (!matches!(arg.type_, ValidType::Ref { .. }))
+                            .then_some(arg)
+                            .ok_or("Reference are not supported in output position".into())
+                    })
             })
             .transpose()?;
 

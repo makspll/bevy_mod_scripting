@@ -1,18 +1,29 @@
 use std::error::Error;
 
 use indexmap::{IndexMap, IndexSet};
-use rustdoc_types::{Generics, ItemEnum, Type, Visibility};
+use rustdoc_types::{Crate, Generics, Item, ItemEnum, StructKind, Type, Visibility};
 
 use crate::{
-    cratepath::ImportPath, Config, FunctionData, ImplItem, NameType, OperatorType, TypeMeta,
-    ValidType,
+    cratepath::ImportPath, CrateId, FunctionData, ImplItem, NameType, OperatorType, ValidType,
 };
 
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum ItemType {
     UnitStruct,
     TupleStruct,
     Struct,
+    Enum,
     Unsupported,
+}
+
+impl From<StructKind> for ItemType {
+    fn from(value: StructKind) -> Self {
+        match value {
+            StructKind::Unit => Self::UnitStruct,
+            StructKind::Tuple(_) => Self::TupleStruct,
+            StructKind::Plain { .. } => Self::Struct,
+        }
+    }
 }
 
 pub struct ItemData {
@@ -28,16 +39,19 @@ pub struct ItemData {
 }
 
 impl ItemData {
-    pub fn new(meta: TypeMeta<'_>, config: &Config) -> Result<Self, Box<dyn Error>> {
-        let import_path: ImportPath = meta.path_components;
+    pub fn new(
+        item: &Item,
+        item_type: ItemType,
+        import_path: ImportPath,
+        impl_items: &IndexMap<&str, Vec<ImplItem>>,
+        implemented_traits: IndexSet<String>,
+        source_crate: CrateId,
+        config: &Config,
+    ) -> Result<Self, Box<dyn Error>> {
         let mut functions: IndexMap<String, Vec<FunctionData>> = Default::default();
 
-        if !meta.generics.params.is_empty() || !meta.generics.where_predicates.is_empty() {
-            return Err("Generics are not supported yet".into());
-        };
-
-        for (name, impl_items) in &meta.impl_items {
-            log::debug!("Processing item: `{name}` in type: `{}`", meta.wrapped_type);
+        for (name, impl_items) in impl_items {
+            log::debug!("Processing item: `{name}` in type: `{}`", import_path);
             for ImplItem {
                 impl_,
                 item,
@@ -73,7 +87,7 @@ impl ItemData {
                         .items
                         .iter()
                         .filter_map(|id| {
-                            meta.source.index.get(id).and_then(|i| {
+                            source_crate.index.get(id).and_then(|i| {
                                 matches!(i.inner, ItemEnum::AssocType { .. }).then_some(i)
                             })
                         })
@@ -103,14 +117,7 @@ impl ItemData {
         }
 
         let mut fields: Vec<NameType> = Default::default();
-        let mut item_type = ItemType::Unsupported;
-        if let ItemEnum::Struct(struct_) = &meta.item.inner {
-            item_type = match struct_.kind {
-                rustdoc_types::StructKind::Unit => ItemType::UnitStruct,
-                rustdoc_types::StructKind::Tuple(_) => ItemType::TupleStruct,
-                rustdoc_types::StructKind::Plain { .. } => ItemType::Struct,
-            };
-
+        if let ItemEnum::Struct(struct_) = &item.inner {
             let field_pairs: Vec<Result<(String, Type), Box<dyn Error>>> = match &struct_.kind {
                 rustdoc_types::StructKind::Unit => Default::default(),
                 rustdoc_types::StructKind::Tuple(t) => t
@@ -120,7 +127,7 @@ impl ItemData {
                         let type_ = id
                             .as_ref()
                             .map(|id| {
-                                let meta = &meta.source.index.get(id).ok_or::<Box<dyn Error>>(
+                                let meta = source_crate.index.get(id).ok_or::<Box<dyn Error>>(
                                     "Expected to find field in the same crate as struct".into(),
                                 )?;
                                 if !matches!(meta.visibility, Visibility::Public) {
@@ -147,7 +154,7 @@ impl ItemData {
                 rustdoc_types::StructKind::Plain { fields, .. } => fields
                     .iter()
                     .map(|field| {
-                        let meta = meta.source.index.get(field).ok_or::<Box<dyn Error>>(
+                        let meta = source_crate.index.get(field).ok_or::<Box<dyn Error>>(
                             "Expected to find field in the same crate as struct".into(),
                         )?;
                         if !matches!(meta.visibility, Visibility::Public) {
@@ -188,10 +195,13 @@ impl ItemData {
         };
 
         Ok(Self {
-            source_crate: meta.config.source.0.to_owned(),
+            source_crate: source_crate.crate_name().to_owned(),
             import_path,
-            generics: meta.generics.clone(),
-            implemented_traits: meta.implemented_traits,
+            generics: Generics {
+                params: vec![],
+                where_predicates: vec![],
+            },
+            implemented_traits,
             docstrings: vec![],
             fields,
             item_type,
