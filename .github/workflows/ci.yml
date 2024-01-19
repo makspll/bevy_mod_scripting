@@ -34,7 +34,14 @@ jobs:
           profile: minimal
           toolchain: stable
           override: true
-      - uses: Swatinem/rust-cache@v2.7.0
+      - name: Configure sccache env var and set build profile to ephemeral build
+        run: | 
+            echo "RUSTC_WRAPPER=sccache" >> $GITHUB_ENV
+      echo “SCCACHE_GHA_ENABLED=true" >> $GITHUB_ENV
+            echo “RUSTFLAGS='--cfg profile=ephemeral-build'” >> $GITHUB_ENV
+
+      - name: Run sccache-cache
+        uses: mozilla-actions/sccache-action@v0.0.2
       # for x86 builds
       - if: matrix.run_args.cross == null
         uses: actions-rs/cargo@v1
@@ -62,7 +69,14 @@ jobs:
           components: rustfmt
           toolchain: stable
           override: true
-      - uses: Swatinem/rust-cache@v2.7.0
+      - name: Configure sccache env var and set build profile to ephemeral build
+        run: | 
+            echo "RUSTC_WRAPPER=sccache" >> $GITHUB_ENV
+      echo “SCCACHE_GHA_ENABLED=true" >> $GITHUB_ENV
+            echo “RUSTFLAGS='--cfg profile=ephemeral-build'” >> $GITHUB_ENV
+
+      - name: Run sccache-cache
+        uses: mozilla-actions/sccache-action@v0.0.2
       - uses: actions-rs/cargo@v1
         with:
           command: fmt
@@ -80,7 +94,14 @@ jobs:
           toolchain: stable
           components: clippy
           override: true
-      - uses: Swatinem/rust-cache@v2.7.0
+      - name: Configure sccache env var and set build profile to ephemeral build
+        run: | 
+            echo "RUSTC_WRAPPER=sccache" >> $GITHUB_ENV
+      echo “SCCACHE_GHA_ENABLED=true" >> $GITHUB_ENV
+            echo “RUSTFLAGS='--cfg profile=ephemeral-build'” >> $GITHUB_ENV
+
+      - name: Run sccache-cache
+        uses: mozilla-actions/sccache-action@v0.0.2
       - uses: actions-rs/cargo@v1
         with:
           command: clippy
@@ -108,7 +129,14 @@ jobs:
         with:
           toolchain: stable
           override: true
-      - uses: Swatinem/rust-cache@v2.7.0
+      - name: Configure sccache env var and set build profile to ephemeral build
+        run: | 
+            echo "RUSTC_WRAPPER=sccache" >> $GITHUB_ENV
+      echo “SCCACHE_GHA_ENABLED=true" >> $GITHUB_ENV
+            echo “RUSTFLAGS='--cfg profile=ephemeral-build'” >> $GITHUB_ENV
+
+      - name: Run sccache-cache
+        uses: mozilla-actions/sccache-action@v0.0.2
       - uses: actions-rs/cargo@v1
         with:
           command: test
@@ -124,7 +152,14 @@ jobs:
         with:
           toolchain: stable
           override: true
-      - uses: Swatinem/rust-cache@v2.7.0
+      - name: Configure sccache env var and set build profile to ephemeral build
+        run: | 
+            echo "RUSTC_WRAPPER=sccache" >> $GITHUB_ENV
+      echo “SCCACHE_GHA_ENABLED=true" >> $GITHUB_ENV
+            echo “RUSTFLAGS='--cfg profile=ephemeral-build'” >> $GITHUB_ENV
+
+      - name: Run sccache-cache
+        uses: mozilla-actions/sccache-action@v0.0.2
       - name: Find docs.rs features
         run: echo "DOCS_FEATURES=$(cargo metadata --no-deps | python -c "import sys,json; [print(','.join(x['metadata']['docs.rs']['features'])) for x in json.load(sys.stdin)['packages'] if x['name'] == 'bevy_mod_scripting']")" >> $GITHUB_OUTPUT
         id: features
