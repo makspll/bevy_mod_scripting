@@ -94,7 +94,7 @@ opt-level = 1
 opt-level = 3
 
 [profile.ephemeral-build]
-inherits = "release"
+inherits = "dev"
 opt-level = 2
 codegen-units = 8
 
