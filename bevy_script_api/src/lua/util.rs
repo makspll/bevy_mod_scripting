@@ -7,7 +7,7 @@ use std::{
     ops::{Deref, DerefMut},
 };
 
-use tealr::TypeName;
+
 
 /// Newtype abstraction of usize to represent a lua integer indexing things.
 /// Lua is 1 based, host is 0 based, and this type performs this conversion automatically via ToLua and FromLua traits.
