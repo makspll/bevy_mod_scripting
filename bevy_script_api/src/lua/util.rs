@@ -7,8 +7,6 @@ use std::{
     ops::{Deref, DerefMut},
 };
 
-
-
 /// Newtype abstraction of usize to represent a lua integer indexing things.
 /// Lua is 1 based, host is 0 based, and this type performs this conversion automatically via ToLua and FromLua traits.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
