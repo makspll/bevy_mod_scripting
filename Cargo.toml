@@ -159,3 +159,8 @@ required-features = ["rhai", "rhai_script_api"]
 name = "wrappers"
 path = "examples/wrappers.rs"
 required-features = ["lua54", "lua_script_api"]
+
+[[example]]
+name = "minimal_rune"
+path = "examples/rune/minimal.rs"
+required-features = ["rune"]
