@@ -164,3 +164,8 @@ required-features = ["lua54", "lua_script_api"]
 name = "minimal_rune"
 path = "examples/rune/minimal.rs"
 required-features = ["rune"]
+
+[[example]]
+name = "event_recipients_rune"
+path = "examples/rune/event_recipients.rs"
+required-features = ["rune"]
