@@ -9,6 +9,7 @@ use std::sync::Arc;
 #[uuid = "e4f7d00d-5acd-45fb-a29c-6472718771fc"]
 /// A loaded rune file in bytes.
 pub struct RuneFile {
+    /// File content in bytes.
     pub bytes: Arc<[u8]>,
 }
 
@@ -19,7 +20,7 @@ impl CodeAsset for RuneFile {
 }
 
 #[derive(Default)]
-/// Loads rune scripts.
+/// Enables loading Rune scripts from `.rune` and `.rn` files.
 pub struct RuneLoader;
 
 impl AssetLoader for RuneLoader {
@@ -38,6 +39,6 @@ impl AssetLoader for RuneLoader {
     }
 
     fn extensions(&self) -> &[&str] {
-        &["rune"]
+        &["rune", "rn"]
     }
 }

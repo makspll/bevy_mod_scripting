@@ -24,14 +24,22 @@ pub mod prelude {
     pub use rune::{self, runtime::Args, Context};
 }
 
+/// Super trait adding additional bounds to Rune's `Args` trait.
+/// It's gets automatically implemented for any type that implments `Args`,
+/// so you should never have to manually implement it.
 pub trait RuneArgs: Args + Clone + Send + Sync + 'static {}
 
 impl<T: Args + Clone + Send + Sync + 'static> RuneArgs for T {}
 
+/// A Rune script hook.
 #[derive(Debug, Clone, Event)]
 pub struct RuneEvent<A: RuneArgs> {
+    /// The name of the Rune function to call.
     pub hook_name: String,
+    /// The arguments to supply the function being invoked. If you
+    /// don't need any arguments, `()` is a good default value.
     pub args: A,
+    /// The target set of scripts that should handle this event.
     pub recipients: Recipients,
 }
 
@@ -41,6 +49,7 @@ impl<A: RuneArgs> ScriptEvent for RuneEvent<A> {
     }
 }
 
+/// Script context for a rune script.
 pub struct RuneScriptContext {
     pub unit: Arc<Unit>,
     pub runtime_context: Arc<RuntimeContext>,
@@ -49,21 +58,19 @@ pub struct RuneScriptContext {
 #[derive(Resource)]
 /// Rune script host. Enables Rune scripting.
 pub struct RuneScriptHost<A: RuneArgs> {
-    // context: Context,
     _ph: PhantomData<A>,
 }
 
 impl<A: RuneArgs> Default for RuneScriptHost<A> {
     fn default() -> Self {
         Self {
-            // context: rune_modules::default_context().expect("Error creating default context"),
             _ph: Default::default(),
         }
     }
 }
 
 impl<A: RuneArgs> RuneScriptHost<A> {
-    /// Handle errors from a Rune virtual machine.
+    /// Helper function to handle errors from a Rune virtual machine.
     ///
     #[cold]
     fn handle_rune_error(world: WorldPointer, error: VmError, script_data: &ScriptData<'_>) {
@@ -78,6 +85,7 @@ impl<A: RuneArgs> RuneScriptHost<A> {
         };
 
         error!("{}", error);
+
         error_wrt.send(ScriptErrorEvent { error });
         world.insert_resource(state);
     }
