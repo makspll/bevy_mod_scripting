@@ -1,22 +1,20 @@
 use bevy_mod_scripting_lua::{
-    prelude::{FromLua, Lua, LuaError, LuaValue, ToLua},
-    tealr,
+    prelude::{FromLua, IntoLua, Lua, LuaError, LuaValue},
+    tealr::{self, ToTypename},
 };
 use std::{
     marker::PhantomData,
     ops::{Deref, DerefMut},
 };
 
-use tealr::TypeName;
-
 /// Newtype abstraction of usize to represent a lua integer indexing things.
 /// Lua is 1 based, host is 0 based, and this type performs this conversion automatically via ToLua and FromLua traits.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct LuaIndex(usize);
 
-impl TypeName for LuaIndex {
-    fn get_type_parts() -> std::borrow::Cow<'static, [tealr::NamePart]> {
-        usize::get_type_parts()
+impl ToTypename for LuaIndex {
+    fn to_typename() -> tealr::Type {
+        <usize as ToTypename>::to_typename()
     }
 }
 
@@ -34,9 +32,9 @@ impl DerefMut for LuaIndex {
     }
 }
 
-impl ToLua<'_> for LuaIndex {
-    fn to_lua(self, lua: &Lua) -> Result<LuaValue, LuaError> {
-        to_lua_idx(self.0).to_lua(lua)
+impl IntoLua<'_> for LuaIndex {
+    fn into_lua(self, lua: &Lua) -> Result<LuaValue, LuaError> {
+        to_lua_idx(self.0).into_lua(lua)
     }
 }
 
@@ -71,8 +69,8 @@ impl<T> DummyTypeName<T> {
     }
 }
 
-impl<'lua, T> bevy_mod_scripting_lua::tealr::mlu::mlua::ToLua<'lua> for DummyTypeName<T> {
-    fn to_lua(
+impl<'lua, T> bevy_mod_scripting_lua::tealr::mlu::mlua::IntoLua<'lua> for DummyTypeName<T> {
+    fn into_lua(
         self,
         _: &'lua bevy_mod_scripting_lua::tealr::mlu::mlua::Lua,
     ) -> bevy_mod_scripting_lua::tealr::mlu::mlua::Result<
@@ -82,23 +80,45 @@ impl<'lua, T> bevy_mod_scripting_lua::tealr::mlu::mlua::ToLua<'lua> for DummyTyp
     }
 }
 
-impl<T: TypeName> bevy_mod_scripting_lua::tealr::TypeName for DummyTypeName<T> {
-    fn get_type_parts() -> std::borrow::Cow<'static, [bevy_mod_scripting_lua::tealr::NamePart]> {
-        T::get_type_parts()
+impl<T: ToTypename> ToTypename for DummyTypeName<T> {
+    fn to_typename() -> bevy_mod_scripting_lua::tealr::Type {
+        T::to_typename()
     }
+}
+
+#[macro_export]
+macro_rules! impl_from_lua_with_clone {
+    ($v:ty) => {
+        impl<'lua> bevy_mod_scripting_lua::tealr::mlu::mlua::FromLua<'lua> for $v {
+            #[inline]
+            fn from_lua(
+                value: bevy_mod_scripting_lua::tealr::mlu::mlua::Value<'lua>,
+                _: &'lua bevy_mod_scripting_lua::tealr::mlu::mlua::Lua,
+            ) -> bevy_mod_scripting_lua::tealr::mlu::mlua::Result<$v> {
+                match value {
+                    bevy_mod_scripting_lua::tealr::mlu::mlua::Value::UserData(ud) => {
+                        Ok(ud.borrow::<$v>()?.clone())
+                    }
+                    _ => Err(
+                        bevy_mod_scripting_lua::tealr::mlu::mlua::Error::FromLuaConversionError {
+                            from: value.type_name(),
+                            to: "userdata",
+                            message: None,
+                        },
+                    ),
+                }
+            }
+        }
+    };
 }
 
 /// Implements :tealr::TypeName, tealr::TypeBody and mlua::Userdata based on non-generic single token type name implementing TealData
 #[macro_export]
 macro_rules! impl_tealr_type {
     ($v:ty) => {
-        impl bevy_mod_scripting_lua::tealr::TypeName for $v {
-            fn get_type_parts() -> ::std::borrow::Cow<'static, [bevy_mod_scripting_lua::tealr::NamePart]> {
-                ::std::borrow::Cow::Borrowed(&[bevy_mod_scripting_lua::tealr::NamePart::Type(bevy_mod_scripting_lua::tealr::TealType {
-                    name: ::std::borrow::Cow::Borrowed(stringify!($v)),
-                    generics: None,
-                    type_kind: bevy_mod_scripting_lua::tealr::KindOfType::External,
-                })])
+        impl bevy_mod_scripting_lua::tealr::ToTypename for $v {
+            fn to_typename() -> bevy_mod_scripting_lua::tealr::Type {
+                bevy_mod_scripting_lua::tealr::Type::new_single(stringify!($v), bevy_mod_scripting_lua::tealr::KindOfType::External)
             }
         }
 
@@ -138,10 +158,10 @@ macro_rules! impl_tealr_any_union {
         $visibility enum $type_name {
             $($sub_types($sub_types) ,)*
         }
-        impl<'lua> ::bevy_mod_scripting_lua::tealr::mlu::mlua::ToLua<'lua> for $type_name {
-            fn to_lua(self, lua: &'lua ::bevy_mod_scripting_lua::tealr::mlu::mlua::Lua) -> ::std::result::Result<::bevy_mod_scripting_lua::tealr::mlu::mlua::Value<'lua>, ::bevy_mod_scripting_lua::tealr::mlu::mlua::Error> {
+        impl<'lua> ::bevy_mod_scripting_lua::tealr::mlu::mlua::IntoLua<'lua> for $type_name {
+            fn into_lua(self, lua: &'lua ::bevy_mod_scripting_lua::tealr::mlu::mlua::Lua) -> ::std::result::Result<::bevy_mod_scripting_lua::tealr::mlu::mlua::Value<'lua>, ::bevy_mod_scripting_lua::tealr::mlu::mlua::Error> {
                 match self {
-                    $($type_name::$sub_types(x) => x.to_lua(lua),)*
+                    $($type_name::$sub_types(x) => x.into_lua(lua),)*
                 }
             }
         }
@@ -159,17 +179,9 @@ macro_rules! impl_tealr_any_union {
                 })
             }
         }
-        impl ::bevy_mod_scripting_lua::tealr::TypeName for $type_name {
-            fn get_type_parts() -> ::std::borrow::Cow<'static,[::bevy_mod_scripting_lua::tealr::NamePart]> {
-                ::std::borrow::Cow::Borrowed(&[::bevy_mod_scripting_lua::tealr::NamePart::Type(::bevy_mod_scripting_lua::tealr::TealType {
-                    name: ::std::borrow::Cow::Borrowed("any"),
-                    generics: None,
-                    type_kind: ::bevy_mod_scripting_lua::tealr::KindOfType::Builtin,
-                })])
-            }
-
-            fn get_type_kind() -> ::bevy_mod_scripting_lua::tealr::KindOfType {
-                ::bevy_mod_scripting_lua::tealr::KindOfType::Builtin
+        impl ::bevy_mod_scripting_lua::tealr::ToTypename for $type_name {
+            fn to_typename() -> bevy_mod_scripting_lua::tealr::Type {
+                    bevy_mod_scripting_lua::tealr::Type::new_single("any", bevy_mod_scripting_lua::tealr::KindOfType::Builtin)
             }
         }
     };
@@ -264,6 +276,7 @@ macro_rules! impl_tealr_generic{
         }
 
         $crate::impl_tealr_type!($name);
+        $crate::impl_from_lua_with_clone!($name);
     }
 }
 

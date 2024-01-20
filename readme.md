@@ -295,7 +295,9 @@ It is probably a wise idea to set up a separate executable whose only purpose is
 
 Lua documentation is provided by `tealr`, a wrapper around the `mlua` lua API which decorates their standard types. On top of providing documentation generation, it's also capable of generating `d.tl` files which can be used to introduce static typing to lua via the `teal` project (you do not need to use teal to generate documentation).
 
-This can all be seen at work in [this example](bevy_mod_scripting/examples/lua/documentation_gen.rs).
+This can all be seen at work in [this example](bevy_mod_scripting/examples/lua/documentation_gen.rs). 
+
+The docs for the bevy API provided in this crate are generated automatically each release onto this repo [here](https://github.com/makspll/bevy_mod_scripting_lua) and deployed [here](https://makspll.github.io/bevy_mod_scripting_lua/v0.3.0/). You might need to set the `page_root` to the path to something like: `assets/doc/YourAPI` in the automatically generated config file over at: `assets/doc/tealr_doc_gen_config.json`
 
 ##### Teal - Lua static typing
 
