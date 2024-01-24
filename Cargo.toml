@@ -99,6 +99,11 @@ opt-level = 1
 [profile.dev.package."*"]
 opt-level = 3
 
+[profile.ephemeral-build]
+inherits = "dev"
+opt-level = 2
+codegen-units = 8
+
 
 [[example]]
 name = "console_integration_lua"

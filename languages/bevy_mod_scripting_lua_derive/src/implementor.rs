@@ -73,6 +73,7 @@ impl WrapperImplementor for LuaImplementor {
             definition = quote_spanned! {newtype.span()=>
                 #definition
                 bevy_script_api::make_script_wrapper!(#base_type as #newtype_name with Clone);
+                bevy_script_api::impl_from_lua_with_clone!(#newtype_name);
             };
         } else {
             definition = quote_spanned! {newtype.span()=>
@@ -144,7 +145,7 @@ impl WrapperImplementor for LuaImplementor {
 
             impl bevy_script_api::lua::LuaProxyable for #wrapped_type {
                 fn ref_to_lua<'lua>(self_ : bevy_script_api::script_ref::ScriptRef, lua: &'lua #tealr::mlu::mlua::Lua) -> #tealr::mlu::mlua::Result<#tealr::mlu::mlua::Value<'lua>> {
-                    <#wrapper_type as #tealr::mlu::mlua::ToLua>::to_lua(#wrapper_type::new_ref(self_),lua)
+                    <#wrapper_type as #tealr::mlu::mlua::IntoLua>::into_lua(#wrapper_type::new_ref(self_),lua)
                 }
 
                 fn apply_lua<'lua>(self_ : &mut bevy_script_api::script_ref::ScriptRef, lua: &'lua #tealr::mlu::mlua::Lua, new_val: #tealr::mlu::mlua::Value<'lua>) -> #tealr::mlu::mlua::Result<()> {
@@ -164,7 +165,7 @@ impl WrapperImplementor for LuaImplementor {
 
             impl bevy_script_api::lua::ToLuaProxy<'_> for #wrapped_type {
                 fn to_lua_proxy<'lua>(self, lua: &'lua #tealr::mlu::mlua::Lua) -> #tealr::mlu::mlua::Result<#tealr::mlu::mlua::Value<'lua>>{
-                    <#wrapper_type as #tealr::mlu::mlua::ToLua>::to_lua(#wrapper_type::new(self),lua)
+                    <#wrapper_type as #tealr::mlu::mlua::IntoLua>::into_lua(#wrapper_type::new(self),lua)
                 }
             }
         };
