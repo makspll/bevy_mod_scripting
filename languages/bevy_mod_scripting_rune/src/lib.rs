@@ -49,6 +49,18 @@ impl<A: RuneArgs> ScriptEvent for RuneEvent<A> {
     }
 }
 
+/// A cached Rune Vm used to execute units.
+struct RuneVm(Vm);
+
+impl Default for RuneVm {
+    fn default() -> Self {
+        Self(Vm::new(
+            Arc::new(RuntimeContext::default()),
+            Arc::new(Unit::default()),
+        ))
+    }
+}
+
 /// Script context for a rune script.
 pub struct RuneScriptContext {
     pub unit: Arc<Unit>,
@@ -116,6 +128,8 @@ impl<A: RuneArgs> ScriptHost for RuneScriptHost<A> {
             .register_type::<ScriptCollection<Self::ScriptAsset>>()
             .register_type::<Script<Self::ScriptAsset>>()
             .register_type::<Handle<RuneFile>>()
+            // Add a cached Vm as a non-send resource.
+            .insert_non_send_resource(RuneVm::default())
             // handle script insertions removal first
             // then update their contexts later on script asset changes
             .add_systems(
@@ -209,36 +223,49 @@ impl<A: RuneArgs> ScriptHost for RuneScriptHost<A> {
         ctxs: impl Iterator<Item = (ScriptData<'a>, &'a mut Self::ScriptContext)>,
         providers: &mut APIProviders<Self>,
     ) {
-        // Safety:
-        // - we have &mut World access
-        // - we do not use the original reference again anywhere in this function
-        let world = unsafe { WorldPointerGuard::new(world) };
+        // Grab the cached Vm.
+        let RuneVm(mut vm) = world.remove_non_send_resource::<RuneVm>().unwrap(/* invariant */);
 
-        ctxs.for_each(|(script_data, ctx)| {
-            providers
-                .setup_runtime_all(world.clone(), &script_data, ctx)
-                .expect("Could not setup script runtime");
+        {
+            // Safety:
+            // - we have &mut World access
+            // - we do not use the original reference again anywhere in this block.
+            // - the guard is dropped at the end of this block.
+            let world = unsafe { WorldPointerGuard::new(world) };
 
-            for event in events {
-                if !event.recipients().is_recipient(&script_data) {
-                    continue;
-                }
+            ctxs.for_each(|(script_data, ctx)| {
+                providers
+                    .setup_runtime_all(world.clone(), &script_data, ctx)
+                    .expect("Could not setup script runtime");
 
-                // TODO: should we store `Vm` in a script context?
-                let mut vm = Vm::new(ctx.runtime_context.clone(), ctx.unit.clone());
-
-                let mut exec = match vm.execute([event.hook_name.as_str()], event.args.clone()) {
-                    Ok(exec) => exec,
-                    Err(error) => {
-                        Self::handle_rune_error(world.clone(), error, &script_data);
+                for event in events {
+                    if !event.recipients().is_recipient(&script_data) {
                         continue;
                     }
-                };
 
-                if let VmResult::Err(error) = exec.complete() {
-                    Self::handle_rune_error(world.clone(), error, &script_data);
+                    // Swap out the old context and old unit with the new ones.
+                    *vm.context_mut() = Arc::clone(&ctx.runtime_context);
+                    *vm.unit_mut() = Arc::clone(&ctx.unit);
+
+                    let mut exec = match vm.execute([event.hook_name.as_str()], event.args.clone())
+                    {
+                        Ok(exec) => exec,
+                        Err(error) => {
+                            Self::handle_rune_error(world.clone(), error, &script_data);
+                            continue;
+                        }
+                    };
+
+                    if let VmResult::Err(error) = exec.complete() {
+                        Self::handle_rune_error(world.clone(), error, &script_data);
+                    }
                 }
-            }
-        });
+            });
+
+            // explictly release the pointer to world.
+            drop(world);
+        }
+
+        world.insert_non_send_resource(RuneVm(vm));
     }
 }
