@@ -117,11 +117,10 @@ impl<A: LuaArg> ScriptHost for LuaScriptHost<A> {
         let mut lua = Mutex::new(lua);
         providers.attach_all(&mut lua)?;
 
-        lua
-            .get_mut()
+        lua.get_mut()
             .map_err(|e| ScriptError::FailedToLoad {
                 script: script_data.name.to_owned(),
-                msg: e.to_string()
+                msg: e.to_string(),
             })?
             .load(script)
             .set_name(script_data.name)
