@@ -41,14 +41,14 @@ jobs:
         uses: actions-rs/cargo@v1
         with:
           command: check
-          args: --workspace --features=${{ matrix.run_args.lua }},rhai,teal,lua_script_api,rhai_script_api
+          args: --workspace --features=${{ matrix.run_args.lua }},rhai,teal,lua_script_api,rhai_script_api,rune
       # for non x86 cross-compiled builds
       - if: matrix.run_args.cross != null
         uses: houseabsolute/actions-rust-cross@v0
         with:
           command: check
           target: ${{ matrix.run_args.cross }}
-          args: --workspace --features=${{ matrix.run_args.lua }},rhai,teal,lua_script_api,rhai_script_api --profile=ephemeral-build
+          args: --workspace --features=${{ matrix.run_args.lua }},rhai,teal,lua_script_api,rhai_script_api,rune --profile=ephemeral-build
 
   fmt:
     name: Rustfmt
@@ -87,7 +87,7 @@ jobs:
       - uses: actions-rs/cargo@v1
         with:
           command: clippy
-          args: --features=lua54,rhai,teal,lua_script_api,rhai_script_api --profile=ephemeral-build -- -D warnings 
+          args: --features=lua54,rhai,teal,lua_script_api,rhai_script_api,rune --profile=ephemeral-build -- -D warnings 
   tests:
     name: Tests
     runs-on: ubuntu-latest
@@ -116,7 +116,7 @@ jobs:
       - uses: actions-rs/cargo@v1
         with:
           command: test
-          args: --workspace --features=lua54,rhai,teal,lua_script_api,rhai_script_api --profile=ephemeral-build
+          args: --workspace --features=lua54,rhai,teal,lua_script_api,rhai_script_api,rune --profile=ephemeral-build
   docs:
     name: Docs
     runs-on: ubuntu-latest
