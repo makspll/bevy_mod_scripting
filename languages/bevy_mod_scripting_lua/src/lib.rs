@@ -113,7 +113,16 @@ impl<A: LuaArg> ScriptHost for LuaScriptHost<A> {
         #[cfg(not(feature = "unsafe_lua_modules"))]
         let lua = Lua::new();
 
-        lua.load(script)
+        // init lua api before loading script
+        let mut lua = Mutex::new(lua);
+        providers.attach_all(&mut lua)?;
+
+        lua.get_mut()
+            .map_err(|e| ScriptError::FailedToLoad {
+                script: script_data.name.to_owned(),
+                msg: e.to_string(),
+            })?
+            .load(script)
             .set_name(script_data.name)
             .exec()
             .map_err(|e| ScriptError::FailedToLoad {
@@ -121,9 +130,6 @@ impl<A: LuaArg> ScriptHost for LuaScriptHost<A> {
                 msg: e.to_string(),
             })?;
 
-        let mut lua = Mutex::new(lua);
-
-        providers.attach_all(&mut lua)?;
         Ok(lua)
     }
 
