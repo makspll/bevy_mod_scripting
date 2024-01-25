@@ -44,6 +44,7 @@ The languages currently supported are as follows:
 |----|----|----|
 |Lua|4|Yes|
 |Rhai|2|No|
+|Rune|1|No|
 
 ## Usage
 
