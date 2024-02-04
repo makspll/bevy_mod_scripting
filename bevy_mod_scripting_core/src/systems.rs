@@ -38,8 +38,8 @@ pub fn script_add_synchronizer<H: ScriptHost + 'static>(world: &mut World) {
         let changed = state.scripts_changed_query.get(world);
         for (entity, new_scripts, tracker) in changed.iter() {
             q.push((
-                entity.clone(),
-                new_scripts.scripts.iter().cloned().collect::<Vec<_>>(),
+                entity,
+                new_scripts.scripts.to_vec(),
                 tracker.is_added(),
             ))
         }
@@ -53,7 +53,7 @@ pub fn script_add_synchronizer<H: ScriptHost + 'static>(world: &mut World) {
                 Script::<H::ScriptAsset>::insert_new_script_context::<H>(
                     world,
                     &mut host,
-                    &new_script,
+                    new_script,
                     *entity,
                     &script_assets,
                     &mut providers,
@@ -172,7 +172,7 @@ pub fn script_hot_reload_handler<H: ScriptHost>(world: &mut World) {
                     Script::<H::ScriptAsset>::reload_script::<H>(
                         world,
                         &mut host,
-                        &script,
+                        script,
                         &script_assets,
                         &mut providers,
                         &mut contexts,

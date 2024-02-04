@@ -118,7 +118,7 @@ impl<A: FuncArgs + Send + Clone + Sync + 'static> ScriptHost for RhaiScriptHost<
 
     fn load_script(
         &mut self,
-        world_pointer: WorldPointer,
+        _world_pointer: WorldPointer,
         script: &[u8],
         script_data: &ScriptData,
         _: &mut APIProviders<Self>,

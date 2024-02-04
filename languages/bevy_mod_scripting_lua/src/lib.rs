@@ -121,7 +121,7 @@ impl<A: LuaArg> ScriptHost for LuaScriptHost<A> {
         let mut lua = Mutex::new(lua);
 
         providers
-            .setup_runtime_all(world.clone(), &script_data, &mut lua)
+            .setup_runtime_all(world.clone(), script_data, &mut lua)
             .expect("Could not setup script runtime");
 
         providers.attach_all(&mut lua)?;

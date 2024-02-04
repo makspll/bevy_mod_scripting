@@ -146,7 +146,7 @@ impl<A: RuneArgs> ScriptHost for RuneScriptHost<A> {
 
     fn load_script(
         &mut self,
-        world_ptr: WorldPointer,
+        _world_ptr: WorldPointer,
         script: &[u8],
         script_data: &ScriptData,
         providers: &mut APIProviders<Self>,
