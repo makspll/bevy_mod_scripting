@@ -13,7 +13,9 @@ use tealr::mlu::mlua::{prelude::*, Function};
 pub mod assets;
 pub mod docs;
 pub mod util;
+use bevy_mod_scripting_core::world::WorldPointer;
 pub use tealr;
+
 pub mod prelude {
     pub use crate::{
         assets::{LuaFile, LuaLoader},
@@ -83,6 +85,7 @@ impl<A: LuaArg> ScriptHost for LuaScriptHost<A> {
             .add_asset::<LuaFile>()
             .init_asset_loader::<LuaLoader>()
             .init_resource::<CachedScriptState<Self>>()
+            .init_resource::<CachedScriptLoadState<Self>>()
             .init_resource::<ScriptContexts<Self::ScriptContext>>()
             .init_resource::<APIProviders<Self>>()
             .register_type::<ScriptCollection<Self::ScriptAsset>>()
@@ -104,6 +107,7 @@ impl<A: LuaArg> ScriptHost for LuaScriptHost<A> {
 
     fn load_script(
         &mut self,
+        world: WorldPointer,
         script: &[u8],
         script_data: &ScriptData,
         providers: &mut APIProviders<Self>,
@@ -115,6 +119,11 @@ impl<A: LuaArg> ScriptHost for LuaScriptHost<A> {
 
         // init lua api before loading script
         let mut lua = Mutex::new(lua);
+
+        providers
+            .setup_runtime_all(world.clone(), &script_data, &mut lua)
+            .expect("Could not setup script runtime");
+
         providers.attach_all(&mut lua)?;
 
         lua.get_mut()
