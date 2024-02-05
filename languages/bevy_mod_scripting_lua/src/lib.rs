@@ -15,6 +15,7 @@ pub mod docs;
 pub mod util;
 use bevy_mod_scripting_core::world::WorldPointer;
 pub use tealr;
+use bevy_mod_scripting_core::event::write_error_event_with_world;
 
 pub mod prelude {
     pub use crate::{
@@ -124,19 +125,27 @@ impl<A: LuaArg> ScriptHost for LuaScriptHost<A> {
             .setup_runtime_all(world.clone(), script_data, &mut lua)
             .expect("Could not setup script runtime");
 
-        providers.attach_all(&mut lua)?;
+        {
+            providers.attach_all(&mut lua)?;
+        }
 
         lua.get_mut()
-            .map_err(|e| ScriptError::FailedToLoad {
-                script: script_data.name.to_owned(),
-                msg: e.to_string(),
+            .map_err(|e| {
+                write_error_event_with_world::<Self>(world.clone(), script_data.name.to_owned(),e.to_string());
+                ScriptError::FailedToLoad {
+                    script: script_data.name.to_owned(),
+                    msg: e.to_string(),
+                }
             })?
             .load(script)
             .set_name(script_data.name)
             .exec()
-            .map_err(|e| ScriptError::FailedToLoad {
-                script: script_data.name.to_owned(),
-                msg: e.to_string(),
+            .map_err(|e| {
+                write_error_event_with_world::<Self>(world.clone(), script_data.name.to_owned(),e.to_string());
+                ScriptError::FailedToLoad {
+                    script: script_data.name.to_owned(),
+                    msg: e.to_string(),
+                }
             })?;
 
         Ok(lua)
@@ -187,19 +196,7 @@ impl<A: LuaArg> ScriptHost for LuaScriptHost<A> {
                 };
 
                 if let Err(error) = f.call::<_, ()>(event.args.clone()) {
-                    let mut world = world.write();
-                    let mut state: CachedScriptState<Self> = world.remove_resource().unwrap();
-
-                    let (_, mut error_wrt, _) = state.event_state.get_mut(&mut world);
-
-                    let error = ScriptError::RuntimeError {
-                        script: script_data.name.to_owned(),
-                        msg: error.to_string(),
-                    };
-
-                    error!("{}", error);
-                    error_wrt.send(ScriptErrorEvent { error });
-                    world.insert_resource(state);
+                    write_error_event_with_world::<Self>(world.clone(), script_data.name.to_owned(),error.to_string());
                 }
             }
         });
