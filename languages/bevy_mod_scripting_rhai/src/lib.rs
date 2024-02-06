@@ -9,7 +9,9 @@ use std::marker::PhantomData;
 
 pub mod assets;
 pub mod docs;
+use bevy_mod_scripting_core::world::WorldPointer;
 pub use rhai;
+
 pub mod prelude {
     pub use crate::{
         assets::{RhaiFile, RhaiLoader},
@@ -78,6 +80,7 @@ impl<A: FuncArgs + Send + Clone + Sync + 'static> ScriptHost for RhaiScriptHost<
             .add_asset::<RhaiFile>()
             .init_asset_loader::<RhaiLoader>()
             .init_resource::<CachedScriptState<Self>>()
+            .init_resource::<CachedScriptLoadState<Self>>()
             .init_resource::<ScriptContexts<Self::ScriptContext>>()
             .init_resource::<APIProviders<Self>>()
             .register_type::<ScriptCollection<Self::ScriptAsset>>()
@@ -115,6 +118,7 @@ impl<A: FuncArgs + Send + Clone + Sync + 'static> ScriptHost for RhaiScriptHost<
 
     fn load_script(
         &mut self,
+        _world_pointer: WorldPointer,
         script: &[u8],
         script_data: &ScriptData,
         _: &mut APIProviders<Self>,

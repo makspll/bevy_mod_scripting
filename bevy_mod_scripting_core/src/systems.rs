@@ -19,36 +19,43 @@ pub enum ScriptSystemSet {
 /// Handles creating contexts for new/modified scripts
 /// Scripts are likely not loaded instantly at this point, so most of the time
 /// this system simply inserts an empty context
-pub fn script_add_synchronizer<H: ScriptHost + 'static>(
-    query: Query<
-        (
-            Entity,
-            &ScriptCollection<H::ScriptAsset>,
-            Ref<ScriptCollection<H::ScriptAsset>>,
-        ),
-        Changed<ScriptCollection<H::ScriptAsset>>,
-    >,
-    mut host: ResMut<H>,
-    mut providers: ResMut<APIProviders<H>>,
-    script_assets: Res<Assets<H::ScriptAsset>>,
-    mut contexts: ResMut<ScriptContexts<H::ScriptContext>>,
-    mut event_writer: EventWriter<ScriptLoaded>,
-) {
+pub fn script_add_synchronizer<H: ScriptHost + 'static>(world: &mut World) {
     debug!("Handling addition/modification of scripts");
 
-    query.for_each(|(entity, new_scripts, tracker)| {
-        if tracker.is_added() {
-            new_scripts.scripts.iter().for_each(|new_script| {
+    let mut state: CachedScriptLoadState<H> = world.remove_resource().unwrap();
+
+    // Entity,
+    // &'static ScriptCollection<H::ScriptAsset>,
+    // Ref<'static, ScriptCollection<H::ScriptAsset>>,
+
+    let script_assets: Assets<H::ScriptAsset> = world.remove_resource().unwrap();
+    let mut contexts: ScriptContexts<H::ScriptContext> = world.remove_resource().unwrap();
+    let mut host: H = world.remove_resource().unwrap();
+    let mut providers: APIProviders<H> = world.remove_resource().unwrap();
+
+    let query: Vec<_> = {
+        let mut q = vec![];
+        let changed = state.scripts_changed_query.get(world);
+        for (entity, new_scripts, tracker) in changed.iter() {
+            q.push((entity, new_scripts.scripts.to_vec(), tracker.is_added()))
+        }
+        q
+    };
+    world.insert_resource(state);
+
+    for (entity, new_scripts, tracker) in query.iter() {
+        if *tracker {
+            for new_script in new_scripts {
                 Script::<H::ScriptAsset>::insert_new_script_context::<H>(
+                    world,
                     &mut host,
                     new_script,
-                    entity,
+                    *entity,
                     &script_assets,
                     &mut providers,
                     &mut contexts,
-                    &mut event_writer,
                 )
-            })
+            }
         } else {
             // changed but structure already exists in contexts
             // find out what's changed
@@ -58,14 +65,10 @@ pub fn script_add_synchronizer<H: ScriptHost + 'static>(
             let context_ids = contexts
                 .context_entities
                 .iter()
-                .filter_map(|(sid, (e, _, _))| if *e == entity { Some(sid) } else { None })
+                .filter_map(|(sid, (e, _, _))| if e == entity { Some(sid) } else { None })
                 .cloned()
                 .collect::<HashSet<u32>>();
-            let script_ids = new_scripts
-                .scripts
-                .iter()
-                .map(|s| s.id())
-                .collect::<HashSet<u32>>();
+            let script_ids = new_scripts.iter().map(|s| s.id()).collect::<HashSet<u32>>();
 
             let removed_scripts = context_ids.difference(&script_ids);
             let added_scripts = script_ids.difference(&context_ids);
@@ -75,19 +78,25 @@ pub fn script_add_synchronizer<H: ScriptHost + 'static>(
             }
 
             for a in added_scripts {
-                let script = new_scripts.scripts.iter().find(|e| &e.id() == a).unwrap();
+                let script = new_scripts.iter().find(|e| &e.id() == a).unwrap();
                 Script::<H::ScriptAsset>::insert_new_script_context::<H>(
+                    world,
                     &mut host,
                     script,
-                    entity,
+                    *entity,
                     &script_assets,
                     &mut providers,
                     &mut contexts,
-                    &mut event_writer,
                 )
             }
         }
-    })
+    }
+
+    // return ownership
+    world.insert_resource(script_assets);
+    world.insert_resource(contexts);
+    world.insert_resource(host);
+    world.insert_resource(providers);
 }
 
 /// Handles the removal of script components and their contexts
@@ -112,44 +121,66 @@ pub fn script_remove_synchronizer<H: ScriptHost>(
 }
 
 /// Reloads hot-reloaded scripts, or loads missing contexts for scripts which were added but not loaded
-pub fn script_hot_reload_handler<H: ScriptHost>(
-    mut events: EventReader<AssetEvent<H::ScriptAsset>>,
-    mut host: ResMut<H>,
-    scripts: Query<&ScriptCollection<H::ScriptAsset>>,
-    script_assets: Res<Assets<H::ScriptAsset>>,
-    mut providers: ResMut<APIProviders<H>>,
-    mut contexts: ResMut<ScriptContexts<H::ScriptContext>>,
-    mut event_writer: EventWriter<ScriptLoaded>,
-) {
-    for e in events.iter() {
-        let (handle, created) = match e {
-            AssetEvent::Modified { handle } => (handle, false),
-            AssetEvent::Created { handle } => (handle, true),
-            _ => continue,
-        };
+pub fn script_hot_reload_handler<H: ScriptHost>(world: &mut World) {
+    let mut state: CachedScriptLoadState<H> = world.remove_resource().unwrap();
 
+    let events = {
+        state
+            .event_state
+            .get_mut(world)
+            .1
+            .iter()
+            .filter_map(|e| match e {
+                AssetEvent::Modified { handle } => Some((handle.clone(), false)),
+                AssetEvent::Created { handle } => Some((handle.clone(), true)),
+                _ => None,
+            })
+            .collect::<Vec<_>>()
+    };
+    // collect all asset events up front
+    // let events = events.iter().collect::<Vec<H::ScriptAsset>>();
+    // collect all scripts from query upfront
+    let scripts = state
+        .scripts_query
+        .get(world)
+        .iter()
+        .cloned()
+        .collect::<Vec<_>>();
+
+    world.insert_resource(state);
+
+    let script_assets: Assets<H::ScriptAsset> = world.remove_resource().unwrap();
+    let mut contexts: ScriptContexts<H::ScriptContext> = world.remove_resource().unwrap();
+    let mut host: H = world.remove_resource().unwrap();
+    let mut providers: APIProviders<H> = world.remove_resource().unwrap();
+
+    for (handle, created) in events {
         // find script using this handle by handle id
         // whether this script was modified or created
         // if a script exists with this handle, we should reload it to load in a new context
         // which at this point will be either None or Some(outdated context)
         // both ways are fine
         for scripts in scripts.iter() {
-            for script in &scripts.scripts {
+            for script in scripts.scripts.iter() {
                 // the script could have well loaded in the same frame that it was added
                 // in that case it will have a context attached and we do not want to reload it
-                if script.handle() == handle && !(contexts.has_context(script.id()) && created) {
+                if script.handle() == &handle && !(contexts.has_context(script.id()) && created) {
                     Script::<H::ScriptAsset>::reload_script::<H>(
+                        world,
                         &mut host,
                         script,
                         &script_assets,
                         &mut providers,
                         &mut contexts,
-                        &mut event_writer,
                     );
                 }
             }
         }
     }
+    world.insert_resource(script_assets);
+    world.insert_resource(contexts);
+    world.insert_resource(host);
+    world.insert_resource(providers);
 }
 
 /// Lets the script host handle all script events
@@ -221,6 +252,39 @@ impl<H: ScriptHost> FromWorld for CachedScriptState<H> {
     fn from_world(world: &mut World) -> Self {
         Self {
             event_state: SystemState::new(world),
+        }
+    }
+}
+
+#[derive(Resource)]
+/// system state for exclusive systems dealing with script load events
+pub struct CachedScriptLoadState<H: ScriptHost> {
+    pub event_state: SystemState<(
+        EventWriter<'static, ScriptLoaded>,
+        EventReader<'static, 'static, AssetEvent<H::ScriptAsset>>,
+    )>,
+    pub scripts_query:
+        SystemState<Query<'static, 'static, &'static ScriptCollection<H::ScriptAsset>>>,
+    pub scripts_changed_query: SystemState<
+        Query<
+            'static,
+            'static,
+            (
+                Entity,
+                &'static ScriptCollection<H::ScriptAsset>,
+                Ref<'static, ScriptCollection<H::ScriptAsset>>,
+            ),
+            Changed<ScriptCollection<H::ScriptAsset>>,
+        >,
+    >,
+}
+
+impl<H: ScriptHost> FromWorld for crate::systems::CachedScriptLoadState<H> {
+    fn from_world(world: &mut World) -> Self {
+        Self {
+            event_state: SystemState::new(world),
+            scripts_query: SystemState::new(world),
+            scripts_changed_query: SystemState::new(world),
         }
     }
 }

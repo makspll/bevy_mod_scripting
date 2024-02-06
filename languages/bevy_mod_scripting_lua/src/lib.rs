@@ -13,7 +13,10 @@ use tealr::mlu::mlua::{prelude::*, Function};
 pub mod assets;
 pub mod docs;
 pub mod util;
+use bevy_mod_scripting_core::event::write_error_event_with_world;
+use bevy_mod_scripting_core::world::WorldPointer;
 pub use tealr;
+
 pub mod prelude {
     pub use crate::{
         assets::{LuaFile, LuaLoader},
@@ -83,6 +86,7 @@ impl<A: LuaArg> ScriptHost for LuaScriptHost<A> {
             .add_asset::<LuaFile>()
             .init_asset_loader::<LuaLoader>()
             .init_resource::<CachedScriptState<Self>>()
+            .init_resource::<CachedScriptLoadState<Self>>()
             .init_resource::<ScriptContexts<Self::ScriptContext>>()
             .init_resource::<APIProviders<Self>>()
             .register_type::<ScriptCollection<Self::ScriptAsset>>()
@@ -104,6 +108,7 @@ impl<A: LuaArg> ScriptHost for LuaScriptHost<A> {
 
     fn load_script(
         &mut self,
+        world: WorldPointer,
         script: &[u8],
         script_data: &ScriptData,
         providers: &mut APIProviders<Self>,
@@ -115,19 +120,44 @@ impl<A: LuaArg> ScriptHost for LuaScriptHost<A> {
 
         // init lua api before loading script
         let mut lua = Mutex::new(lua);
+
+        providers
+            .setup_runtime_all(world.clone(), script_data, &mut lua)
+            .expect("Could not setup script runtime");
+
         providers.attach_all(&mut lua)?;
 
+        // We do this twice to get around the issue of attach_all overriding values here for the sake of
+        // documenting, TODO: this is messy, shouldn't be a problem but it's messy
+        providers
+            .setup_runtime_all(world.clone(), script_data, &mut lua)
+            .expect("Could not setup script runtime");
+
         lua.get_mut()
-            .map_err(|e| ScriptError::FailedToLoad {
-                script: script_data.name.to_owned(),
-                msg: e.to_string(),
+            .map_err(|e| {
+                write_error_event_with_world::<Self>(
+                    world.clone(),
+                    script_data.name.to_owned(),
+                    e.to_string(),
+                );
+                ScriptError::FailedToLoad {
+                    script: script_data.name.to_owned(),
+                    msg: e.to_string(),
+                }
             })?
             .load(script)
             .set_name(script_data.name)
             .exec()
-            .map_err(|e| ScriptError::FailedToLoad {
-                script: script_data.name.to_owned(),
-                msg: e.to_string(),
+            .map_err(|e| {
+                write_error_event_with_world::<Self>(
+                    world.clone(),
+                    script_data.name.to_owned(),
+                    e.to_string(),
+                );
+                ScriptError::FailedToLoad {
+                    script: script_data.name.to_owned(),
+                    msg: e.to_string(),
+                }
             })?;
 
         Ok(lua)
@@ -178,19 +208,11 @@ impl<A: LuaArg> ScriptHost for LuaScriptHost<A> {
                 };
 
                 if let Err(error) = f.call::<_, ()>(event.args.clone()) {
-                    let mut world = world.write();
-                    let mut state: CachedScriptState<Self> = world.remove_resource().unwrap();
-
-                    let (_, mut error_wrt, _) = state.event_state.get_mut(&mut world);
-
-                    let error = ScriptError::RuntimeError {
-                        script: script_data.name.to_owned(),
-                        msg: error.to_string(),
-                    };
-
-                    error!("{}", error);
-                    error_wrt.send(ScriptErrorEvent { error });
-                    world.insert_resource(state);
+                    write_error_event_with_world::<Self>(
+                        world.clone(),
+                        script_data.name.to_owned(),
+                        error.to_string(),
+                    );
                 }
             }
         });

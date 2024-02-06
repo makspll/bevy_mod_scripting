@@ -1,11 +1,13 @@
 //! All script host related stuff
 use bevy::{asset::Asset, ecs::schedule::ScheduleLabel, prelude::*};
+use std::ops::DerefMut;
 use std::{
     collections::HashMap,
     iter::once,
     sync::atomic::{AtomicU32, Ordering},
 };
 
+use crate::world::WorldPointerGuard;
 use crate::{
     asset::CodeAsset,
     docs::DocFragment,
@@ -73,6 +75,7 @@ pub trait ScriptHost: Send + Sync + 'static + Default + Resource {
     /// to send useful errors.
     fn load_script(
         &mut self,
+        world_ptr: WorldPointer,
         script: &[u8],
         script_data: &ScriptData,
         providers: &mut APIProviders<Self>,
@@ -113,11 +116,24 @@ pub trait ScriptHost: Send + Sync + 'static + Default + Resource {
         };
 
         let mut providers: APIProviders<Self> = world.remove_resource().unwrap();
-        let mut ctx = self.load_script(script, &fd, &mut providers).unwrap();
+        // safety:
+        // - we have &mut World access
+        // - we do not use the original reference again anywhere in this function after this was created
+        let world = unsafe { WorldPointerGuard::new(world) };
+        let mut ctx = self
+            .load_script(world.clone(), script, &fd, &mut providers)
+            .unwrap();
         self.setup_script(&fd, &mut ctx, &mut providers)?;
         let events = [event; 1];
 
-        self.handle_events(world, &events, once((fd, &mut ctx)), &mut providers);
+        let mut world = world.write();
+
+        self.handle_events(
+            world.deref_mut(),
+            &events,
+            once((fd, &mut ctx)),
+            &mut providers,
+        );
 
         world.insert_resource(providers);
 
@@ -352,12 +368,12 @@ impl<T: Asset> Script<T> {
     /// reloads the script by deleting the old context and inserting a new one
     /// if the script context never existed, it will after this call.
     pub(crate) fn reload_script<H: ScriptHost>(
+        world: &mut World,
         host: &mut H,
         script: &Script<H::ScriptAsset>,
         script_assets: &Assets<H::ScriptAsset>,
         providers: &mut APIProviders<H>,
         contexts: &mut ScriptContexts<H::ScriptContext>,
-        event_writer: &mut EventWriter<ScriptLoaded>,
     ) {
         debug!("reloading script {}", script.id);
 
@@ -367,13 +383,13 @@ impl<T: Asset> Script<T> {
             contexts.remove_context(script.id());
             // insert new re-loaded context
             Self::insert_new_script_context::<H>(
+                world,
                 host,
                 script,
                 entity,
                 script_assets,
                 providers,
                 contexts,
-                event_writer,
             );
         } else {
             // remove old context
@@ -385,14 +401,19 @@ impl<T: Asset> Script<T> {
     /// sets up (`ScriptHost::setup_script`) and inserts its new context into the contexts resource
     /// otherwise inserts None. Sends ScriptLoaded event if the script was loaded
     pub(crate) fn insert_new_script_context<H: ScriptHost>(
+        world: &mut World,
         host: &mut H,
         new_script: &Script<H::ScriptAsset>,
         entity: Entity,
         script_assets: &Assets<H::ScriptAsset>,
         providers: &mut APIProviders<H>,
         contexts: &mut ScriptContexts<H::ScriptContext>,
-        event_writer: &mut EventWriter<ScriptLoaded>,
     ) {
+        // safety:
+        // - we have &mut World access
+        // - we do not use the original reference again anywhere in this function
+        let world = unsafe { WorldPointerGuard::new(world) };
+
         let fd = ScriptData {
             sid: new_script.id(),
             entity,
@@ -410,14 +431,19 @@ impl<T: Asset> Script<T> {
         };
         debug!("Inserted script {:?}", fd);
 
-        match host.load_script(script.bytes(), &fd, providers) {
+        match host.load_script(world.clone(), script.bytes(), &fd, providers) {
             Ok(mut ctx) => {
                 host.setup_script(&fd, &mut ctx, providers)
                     .expect("Failed to setup script");
                 contexts.insert_context(fd, Some(ctx));
-                event_writer.send(ScriptLoaded {
-                    sid: new_script.id(),
-                });
+                {
+                    let mut world = world.write();
+                    world.resource_scope(|_, mut event_writer: Mut<Events<ScriptLoaded>>| {
+                        event_writer.send(ScriptLoaded {
+                            sid: new_script.id(),
+                        });
+                    })
+                }
             }
             Err(e) => {
                 warn! {"Error in loading script {}:\n{}", &new_script.name,e}
@@ -425,6 +451,17 @@ impl<T: Asset> Script<T> {
                 // but contexts are left in a valid state
                 contexts.insert_context(fd, None);
             }
+        }
+    }
+}
+
+/// Allows the script handles to be cloned along with the explicit bevy asset handle clone
+impl<T: Asset> Clone for Script<T> {
+    fn clone(&self) -> Self {
+        Self {
+            handle: self.handle.clone(),
+            name: self.name.clone(),
+            id: self.id,
         }
     }
 }
@@ -437,6 +474,14 @@ impl<T: Asset> Script<T> {
 /// can be attached to the same entity
 pub struct ScriptCollection<T: Asset> {
     pub scripts: Vec<Script<T>>,
+}
+
+impl<T: Asset> Clone for ScriptCollection<T> {
+    fn clone(&self) -> Self {
+        Self {
+            scripts: self.scripts.clone(),
+        }
+    }
 }
 
 impl<T: Asset> Default for ScriptCollection<T> {
