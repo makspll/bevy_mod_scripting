@@ -125,9 +125,7 @@ impl<A: LuaArg> ScriptHost for LuaScriptHost<A> {
             .setup_runtime_all(world.clone(), script_data, &mut lua)
             .expect("Could not setup script runtime");
 
-        {
-            providers.attach_all(&mut lua)?;
-        }
+        providers.attach_all(&mut lua)?;
 
         // We do this twice to get around the issue of attach_all overriding values here for the sake of
         // documenting, TODO: this is messy, shouldn't be a problem but it's messy

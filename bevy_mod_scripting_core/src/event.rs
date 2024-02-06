@@ -1,10 +1,10 @@
 use bevy::log::error;
 use bevy::prelude::Event;
 
-use crate::{error::ScriptError, hosts::Recipients};
 use crate::hosts::ScriptHost;
 use crate::systems::CachedScriptState;
 use crate::world::WorldPointer;
+use crate::{error::ScriptError, hosts::Recipients};
 
 /// An error coming from a script
 #[derive(Debug, Event)]
@@ -25,7 +25,11 @@ pub trait ScriptEvent: Send + Sync + Clone + Event + 'static {
     fn recipients(&self) -> &Recipients;
 }
 
-pub fn write_error_event_with_world<H: ScriptHost>(world: WorldPointer, script_name: String, error_text: String) {
+pub fn write_error_event_with_world<H: ScriptHost>(
+    world: WorldPointer,
+    script_name: String,
+    error_text: String,
+) {
     let mut world = world.write();
     let mut state: CachedScriptState<H> = world.remove_resource().unwrap();
 

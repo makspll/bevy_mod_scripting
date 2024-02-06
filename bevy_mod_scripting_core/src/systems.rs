@@ -37,11 +37,7 @@ pub fn script_add_synchronizer<H: ScriptHost + 'static>(world: &mut World) {
         let mut q = vec![];
         let changed = state.scripts_changed_query.get(world);
         for (entity, new_scripts, tracker) in changed.iter() {
-            q.push((
-                entity,
-                new_scripts.scripts.to_vec(),
-                tracker.is_added(),
-            ))
+            q.push((entity, new_scripts.scripts.to_vec(), tracker.is_added()))
         }
         q
     };

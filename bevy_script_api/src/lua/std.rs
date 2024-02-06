@@ -6,7 +6,7 @@ use bevy_mod_scripting_lua::tealr;
 
 use bevy_mod_scripting_lua::tealr::ToTypename;
 use tealr::mlu::mlua::MetaMethod;
-use tealr::mlu::TypedFunction;
+
 use tealr::mlu::{
     mlua::{self, FromLua, IntoLua, Lua, UserData, Value},
     TealData, TealDataMethods,
