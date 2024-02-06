@@ -262,14 +262,6 @@ pub struct CachedScriptLoadState<H: ScriptHost> {
     pub event_state: SystemState<(
         EventWriter<'static, ScriptLoaded>,
         EventReader<'static, 'static, AssetEvent<H::ScriptAsset>>,
-        // Query<'static, 'static,
-        //     (
-        //         Entity,
-        //         &'static ScriptCollection<H::ScriptAsset>,
-        //         Ref<'static, ScriptCollection<H::ScriptAsset>>,
-        //     ),
-        //     Changed<ScriptCollection<H::ScriptAsset>>,
-        // >
     )>,
     pub scripts_query:
         SystemState<Query<'static, 'static, &'static ScriptCollection<H::ScriptAsset>>>,
