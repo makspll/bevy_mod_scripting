@@ -13,9 +13,9 @@ use tealr::mlu::mlua::{prelude::*, Function};
 pub mod assets;
 pub mod docs;
 pub mod util;
+use bevy_mod_scripting_core::event::write_error_event_with_world;
 use bevy_mod_scripting_core::world::WorldPointer;
 pub use tealr;
-use bevy_mod_scripting_core::event::write_error_event_with_world;
 
 pub mod prelude {
     pub use crate::{
@@ -129,9 +129,19 @@ impl<A: LuaArg> ScriptHost for LuaScriptHost<A> {
             providers.attach_all(&mut lua)?;
         }
 
+        // We do this twice to get around the issue of attach_all overriding values here for the sake of
+        // documenting, TODO: this is messy, shouldn't be a problem but it's messy
+        providers
+            .setup_runtime_all(world.clone(), script_data, &mut lua)
+            .expect("Could not setup script runtime");
+
         lua.get_mut()
             .map_err(|e| {
-                write_error_event_with_world::<Self>(world.clone(), script_data.name.to_owned(),e.to_string());
+                write_error_event_with_world::<Self>(
+                    world.clone(),
+                    script_data.name.to_owned(),
+                    e.to_string(),
+                );
                 ScriptError::FailedToLoad {
                     script: script_data.name.to_owned(),
                     msg: e.to_string(),
@@ -141,7 +151,11 @@ impl<A: LuaArg> ScriptHost for LuaScriptHost<A> {
             .set_name(script_data.name)
             .exec()
             .map_err(|e| {
-                write_error_event_with_world::<Self>(world.clone(), script_data.name.to_owned(),e.to_string());
+                write_error_event_with_world::<Self>(
+                    world.clone(),
+                    script_data.name.to_owned(),
+                    e.to_string(),
+                );
                 ScriptError::FailedToLoad {
                     script: script_data.name.to_owned(),
                     msg: e.to_string(),
@@ -196,7 +210,11 @@ impl<A: LuaArg> ScriptHost for LuaScriptHost<A> {
                 };
 
                 if let Err(error) = f.call::<_, ()>(event.args.clone()) {
-                    write_error_event_with_world::<Self>(world.clone(), script_data.name.to_owned(),error.to_string());
+                    write_error_event_with_world::<Self>(
+                        world.clone(),
+                        script_data.name.to_owned(),
+                        error.to_string(),
+                    );
                 }
             }
         });
