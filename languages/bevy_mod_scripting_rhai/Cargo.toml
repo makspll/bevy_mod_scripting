@@ -13,15 +13,16 @@ readme = "readme.md"
 
 [package.metadata.release]
 pre-release-replacements = [
-    {file="Cargo.toml", search='^version\s*=\s*.*$', replace="version = \"{{version}}\"", exactly=1},
-    {file="Cargo.toml", search='^(?P<h>bevy_mod_scripting_core\s*=.*)version\s*=\s*".*"(?P<t>.*)$', replace="${h}version = \"{{version}}\"${t}", exactly=1},
+    { file = "Cargo.toml", search = '^version\s*=\s*.*$', replace = "version = \"{{version}}\"", exactly = 1 },
+    { file = "Cargo.toml", search = '^(?P<h>bevy_mod_scripting_core\s*=.*)version\s*=\s*".*"(?P<t>.*)$', replace = "${h}version = \"{{version}}\"${t}", exactly = 1 },
 ]
 
 [lib]
-name="bevy_mod_scripting_rhai"
-path="src/lib.rs"
+name = "bevy_mod_scripting_rhai"
+path = "src/lib.rs"
 
 [dependencies]
-bevy= { version = "0.12", default-features = false}
+bevy = { version = "0.12", default-features = false }
 rhai = { version = "1.16", features = ["sync"] }
-bevy_mod_scripting_core = {path="../../bevy_mod_scripting_core", version = "0.4.0" }
+bevy_mod_scripting_core = { path = "../../bevy_mod_scripting_core", version = "0.4.0" }
+anyhow = "1.0.75"

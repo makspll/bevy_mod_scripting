@@ -128,7 +128,7 @@ fn call_init(
     mut commands: Commands,
 ) {
     // Call init on all entities that have a script that was just loaded, and remove the Marker component, so that Update can be called
-    'outer: for loaded_script in loaded_scripts.iter() {
+    'outer: for loaded_script in loaded_scripts.read() {
         for (entity, name, scripts) in entity_query.iter() {
             if let Some(scripts) = scripts {
                 if scripts.scripts.iter().any(|s| s.id() == loaded_script.sid) {

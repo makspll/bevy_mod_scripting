@@ -9,15 +9,15 @@ repository = "https://github.com/makspll/bevy_mod_scripting"
 homepage = "https://github.com/makspll/bevy_mod_scripting"
 keywords = ["bevy", "gamedev", "scripting", "rhai"]
 categories = ["game-development"]
-readme="readme.md"
+readme = "readme.md"
 
 [package.metadata."docs.rs"]
 features = ["lua54"]
 
 [package.metadata.release]
 pre-release-replacements = [
-    {file="Cargo.toml", search='^version\s*=\s*.*$', replace="version = \"{{version}}\"", exactly=1},
-    {file="Cargo.toml", search='^(?P<h>bevy_mod_scripting_core\s*=.*)version\s*=\s*".*"(?P<t>.*)$', replace="${h}version = \"{{version}}\"${t}", exactly=1},
+    { file = "Cargo.toml", search = '^version\s*=\s*.*$', replace = "version = \"{{version}}\"", exactly = 1 },
+    { file = "Cargo.toml", search = '^(?P<h>bevy_mod_scripting_core\s*=.*)version\s*=\s*".*"(?P<t>.*)$', replace = "${h}version = \"{{version}}\"${t}", exactly = 1 },
 ]
 enable-features = ["lua54"]
 
@@ -39,16 +39,18 @@ mlua_macros = ["tealr/mlua_macros"]
 mlua_async = ["tealr/mlua_async"]
 
 [lib]
-name="bevy_mod_scripting_lua"
-path="src/lib.rs"
+name = "bevy_mod_scripting_lua"
+path = "src/lib.rs"
 
 [dependencies]
-bevy= { version = "0.12", default-features = false}
-bevy_mod_scripting_core = {path="../../bevy_mod_scripting_core", version = "0.4.0" }
+bevy = { version = "0.12", default-features = false }
+bevy_mod_scripting_core = { path = "../../bevy_mod_scripting_core", version = "0.4.0" }
 #Git pin required for v0.9.0-alpha4 dependancy, without it 0.9.1 is pulled
-tealr = {git="https://github.com/lenscas/tealr.git", rev="05c9cdbace8abb6c12fc200e03a7ffcc5afff308", features=["mlua_vendored","mlua_send"]}
+tealr = { git = "https://github.com/lenscas/tealr.git", rev = "05c9cdbace8abb6c12fc200e03a7ffcc5afff308", features = [
+    "mlua_vendored",
+    "mlua_send",
+] }
 parking_lot = "0.12.1"
 serde_json = "1.0.81"
-serde = { version = "1", features = ["derive"] }
+# serde = { version = "1", features = ["derive"] }
 anyhow = "1.0.75"
-

@@ -142,9 +142,9 @@ impl ApplyRhai for ScriptRef {
         }
 
         Err(Box::new(EvalAltResult::ErrorRuntime(self.get(|s|
-            format!("Attempted to assign `{}` = {value:?}. Did you forget to call `app.register_foreign_lua_type::<{}>`?",
+            format!("Attempted to assign `{}` = {value:?}. Did you forget to call `app.register_foreign_rhai_type::<{}>`?",
                 self.path,
-                s.type_name()
+                s.get_represented_type_info().unwrap().type_path()
             ))?.into(),Position::NONE)
         ))
     }

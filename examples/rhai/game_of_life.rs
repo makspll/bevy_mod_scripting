@@ -1,7 +1,4 @@
-use std::time::Duration;
-
 use bevy::{
-    asset::ChangeWatcher,
     diagnostic::{FrameTimeDiagnosticsPlugin, LogDiagnosticsPlugin},
     prelude::*,
     reflect::Reflect,
@@ -88,7 +85,7 @@ pub fn setup(
         TextureFormat::R8Unorm,
     );
 
-    image.sampler_descriptor = ImageSampler::nearest();
+    image.sampler = ImageSampler::nearest();
 
     let script_path = "scripts/game_of_life.rhai";
 
@@ -128,7 +125,7 @@ pub fn sync_window_size(
     primary_windows: Query<(&Window, With<PrimaryWindow>)>,
 ) {
     if let Some(e) = resize_event
-        .iter()
+        .read()
         .filter(|e| primary_windows.get(e.window).is_ok())
         .last()
     {
@@ -198,32 +195,29 @@ pub fn send_init(mut events: PriorityEventWriter<RhaiEvent<()>>) {
 }
 
 /// how often to step the simulation
-const UPDATE_FREQUENCY: f32 = 1.0 / 30.0;
+const UPDATE_FREQUENCY: f64 = 1.0 / 30.0;
 
 fn main() -> std::io::Result<()> {
     let mut app = App::new();
 
-    app.add_plugins(DefaultPlugins.set(AssetPlugin {
-        watch_for_changes: ChangeWatcher::with_delay(Duration::from_secs(0)),
-        ..Default::default()
-    }))
-    .insert_resource(FixedTime::new_from_secs(UPDATE_FREQUENCY))
-    .add_plugins(LogDiagnosticsPlugin::default())
-    .add_plugins(FrameTimeDiagnosticsPlugin)
-    .add_plugins(ScriptingPlugin)
-    .init_resource::<Settings>()
-    .add_systems(Startup, setup)
-    .add_systems(Startup, send_init)
-    .add_systems(Update, sync_window_size)
-    .add_systems(FixedUpdate, (update_rendered_state, send_on_update).chain())
-    .add_systems(
-        FixedUpdate,
-        script_event_handler::<RhaiScriptHost<()>, 0, 1>,
-    )
-    .add_script_host::<RhaiScriptHost<()>>(PostUpdate)
-    .add_api_provider::<RhaiScriptHost<()>>(Box::new(RhaiBevyAPIProvider))
-    .add_api_provider::<RhaiScriptHost<()>>(Box::new(LifeAPI))
-    .update_documentation::<RhaiScriptHost<()>>();
+    app.add_plugins(DefaultPlugins)
+        .insert_resource(Time::<Fixed>::from_seconds(UPDATE_FREQUENCY))
+        .add_plugins(LogDiagnosticsPlugin::default())
+        .add_plugins(FrameTimeDiagnosticsPlugin)
+        .add_plugins(ScriptingPlugin)
+        .init_resource::<Settings>()
+        .add_systems(Startup, setup)
+        .add_systems(Startup, send_init)
+        .add_systems(Update, sync_window_size)
+        .add_systems(FixedUpdate, (update_rendered_state, send_on_update).chain())
+        .add_systems(
+            FixedUpdate,
+            script_event_handler::<RhaiScriptHost<()>, 0, 1>,
+        )
+        .add_script_host::<RhaiScriptHost<()>>(PostUpdate)
+        .add_api_provider::<RhaiScriptHost<()>>(Box::new(RhaiBevyAPIProvider))
+        .add_api_provider::<RhaiScriptHost<()>>(Box::new(LifeAPI))
+        .update_documentation::<RhaiScriptHost<()>>();
 
     app.run();
 

@@ -97,9 +97,7 @@ pub(crate) fn generate_macros(
                     let path_components = get_path(id, source).unwrap_or_else(|| {
                         panic!("path not found for {:?} in {:?}", id, source.root)
                     });
-                    eprintln!("{:?}", path_components);
                     let path_components = path_to_import(path_components, source);
-                    eprintln!("{:?}", path_components);
 
                     let wrapper_name = format!("{WRAPPER_PREFIX}{}", item.name.as_ref().unwrap());
                     let wrapped_type = item.name.as_ref().unwrap();
