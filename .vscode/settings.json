@@ -8,7 +8,8 @@
         "lua_script_api",
         "rhai",
         "rhai_script_api",
-        "teal"
+        "teal",
+        "rune"
     ],
     "rust-analyzer.server.extraEnv": {
         "RUSTUP_TOOLCHAIN": "stable"

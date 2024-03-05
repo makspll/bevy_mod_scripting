@@ -1,10 +1,8 @@
-use bevy::asset::ChangeWatcher;
 use bevy::prelude::*;
 use bevy_mod_scripting::prelude::*;
 use rand::prelude::SliceRandom;
 use std::sync::atomic::AtomicU32;
 use std::sync::atomic::Ordering::Relaxed;
-use std::time::Duration;
 
 #[derive(Clone)]
 pub struct MyRuneArg(usize);
@@ -96,7 +94,7 @@ fn load_scripts(server: Res<AssetServer>, mut commands: Commands) {
     // Spawn two identical scripts.
     // Their id's will be 0 and 1.
     let path = "scripts/event_recipients.rune";
-    let handle = server.load::<RuneFile, &str>(path);
+    let handle = server.load::<RuneFile>(path);
     let scripts = (0..2)
         .map(|_| Script::<RuneFile>::new(path.to_string(), handle.clone()))
         .collect();
@@ -108,10 +106,7 @@ fn load_scripts(server: Res<AssetServer>, mut commands: Commands) {
 
 fn main() {
     App::new()
-        .add_plugins(DefaultPlugins.set(AssetPlugin {
-            watch_for_changes: ChangeWatcher::with_delay(Duration::from_secs(0)),
-            ..Default::default()
-        }))
+        .add_plugins(DefaultPlugins)
         .add_plugins(ScriptingPlugin)
         .add_systems(Startup, load_scripts)
         // Randomly fire events for either all scripts, the script with an id of `0`,
