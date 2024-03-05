@@ -1,6 +1,6 @@
 [package]
 name = "bevy_mod_scripting"
-version = "0.3.0"
+version = "0.4.0"
 authors = ["Maksymilian Mozolewski <makspl17@gmail.com>"]
 edition = "2021"
 license = "MIT"
@@ -63,18 +63,19 @@ rhai_script_api = ["bevy_script_api/rhai"]
 rune = ["bevy_mod_scripting_rune"]
 
 [dependencies]
-bevy = { version = "0.11", default-features = false }
-bevy_mod_scripting_core = { path = "bevy_mod_scripting_core", version = "0.3.0" }
-bevy_mod_scripting_lua = { path = "languages/bevy_mod_scripting_lua", version = "0.3.0", optional = true }
-bevy_mod_scripting_rhai = { path = "languages/bevy_mod_scripting_rhai", version = "0.3.0", optional = true }
-bevy_mod_scripting_rune = { path = "languages/bevy_mod_scripting_rune", version = "0.3.0", optional = true }
-bevy_script_api = { path = "bevy_script_api", version = "0.3.0", optional = true }
+bevy = { version = "0.12", default-features = false }
+bevy_mod_scripting_core = { path = "bevy_mod_scripting_core", version = "0.4.0" }
+bevy_mod_scripting_lua = { path = "languages/bevy_mod_scripting_lua", version = "0.4.0", optional = true }
+bevy_mod_scripting_rhai = { path = "languages/bevy_mod_scripting_rhai", version = "0.4.0", optional = true }
+bevy_mod_scripting_rune = { path = "languages/bevy_mod_scripting_rune", version = "0.4.0", optional = true }
+bevy_script_api = { path = "bevy_script_api", version = "0.4.0", optional = true }
+
 
 [dev-dependencies]
-bevy = { version = "0.11" }
+bevy = { version = "0.12" }
 clap = { version = "4.1", features = ["derive"] }
 rand = "0.8.5"
-bevy_console = "0.8.0"
+bevy_console = "0.10.1"
 rhai-rand = "0.1"
 
 [workspace]
@@ -108,12 +109,12 @@ codegen-units = 8
 [[example]]
 name = "console_integration_lua"
 path = "examples/lua/console_integration.rs"
-required-features = ["lua54", "lua_script_api"]
+required-features = ["lua54", "lua_script_api", "bevy/file_watcher"]
 
 [[example]]
 name = "console_integration_rhai"
 path = "examples/rhai/console_integration.rs"
-required-features = ["rhai", "rhai_script_api"]
+required-features = ["rhai", "rhai_script_api", "bevy/file_watcher"]
 
 [[example]]
 name = "complex_game_loop_lua"
@@ -123,12 +124,12 @@ required-features = ["lua54"]
 [[example]]
 name = "game_of_life_lua"
 path = "examples/lua/game_of_life.rs"
-required-features = ["lua54", "teal", "lua_script_api"]
+required-features = ["lua54", "teal", "lua_script_api", "bevy/file_watcher"]
 
 [[example]]
 name = "game_of_life_rhai"
 path = "examples/rhai/game_of_life.rs"
-required-features = ["rhai", "rhai_script_api"]
+required-features = ["rhai", "rhai_script_api", "bevy/file_watcher"]
 
 [[example]]
 name = "event_recipients_lua"

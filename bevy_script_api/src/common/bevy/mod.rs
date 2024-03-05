@@ -34,26 +34,26 @@ impl ScriptTypeRegistration {
 
     #[inline(always)]
     pub fn short_name(&self) -> &str {
-        self.0.short_name()
+        self.0.type_info().type_path_table().short_path()
     }
 
     #[inline(always)]
     pub fn type_name(&self) -> &'static str {
-        self.0.type_name()
+        self.0.type_info().type_path_table().path()
     }
 }
 
 impl std::fmt::Debug for ScriptTypeRegistration {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         f.debug_tuple("ScriptTypeRegistration")
-            .field(&self.0.type_name())
+            .field(&self.0.type_info().type_path())
             .finish()
     }
 }
 
 impl std::fmt::Display for ScriptTypeRegistration {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        f.write_str(self.0.short_name())
+        f.write_str(self.0.type_info().type_path())
     }
 }
 
@@ -157,8 +157,8 @@ impl ScriptWorld {
         let registry = registry.read();
 
         registry
-            .get_with_short_name(type_name)
-            .or_else(|| registry.get_with_name(type_name))
+            .get_with_short_type_path(type_name)
+            .or_else(|| registry.get_with_type_path(type_name))
             .map(|registration| ScriptTypeRegistration::new(Arc::new(registration.clone())))
     }
 

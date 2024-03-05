@@ -58,22 +58,22 @@ generate_api:
 	rustfmt ./bevy_script_api/src/generated.rs
 
 make_json_files:
-	rustup run nightly-2023-07-16 cargo rustdoc -p bevy_asset@0.11.0  --  -Zunstable-options --output-format json && \
-	rustup run nightly-2023-07-16 cargo rustdoc -p bevy_ecs@0.11.0 --  -Zunstable-options --output-format json && \
-	rustup run nightly-2023-07-16 cargo rustdoc -p bevy_pbr@0.11.0 --  -Zunstable-options --output-format json && \
-	rustup run nightly-2023-07-16 cargo rustdoc -p bevy_render@0.11.0 --  -Zunstable-options --output-format json && \
-	rustup run nightly-2023-07-16 cargo rustdoc -p bevy_math@0.11.0 --  -Zunstable-options --output-format json && \
-	rustup run nightly-2023-07-16 cargo rustdoc -p bevy_transform@0.11.0 --  -Zunstable-options --output-format json && \
-	rustup run nightly-2023-07-16 cargo rustdoc -p bevy_sprite@0.11.0 --  -Zunstable-options --output-format json && \
-	rustup run nightly-2023-07-16 cargo rustdoc -p bevy_ui@0.11.0 --  -Zunstable-options --output-format json && \
-	rustup run nightly-2023-07-16 cargo rustdoc -p bevy_animation@0.11.0 --  -Zunstable-options --output-format json && \
-	rustup run nightly-2023-07-16 cargo rustdoc -p bevy_core@0.11.0 --  -Zunstable-options --output-format json && \
-	rustup run nightly-2023-07-16 cargo rustdoc -p bevy_core_pipeline@0.11.0 --  -Zunstable-options --output-format json && \
-	rustup run nightly-2023-07-16 cargo rustdoc -p bevy_gltf@0.11.0 --  -Zunstable-options --output-format json && \
-	rustup run nightly-2023-07-16 cargo rustdoc -p bevy_hierarchy@0.11.0 --  -Zunstable-options --output-format json && \
-	rustup run nightly-2023-07-16 cargo rustdoc -p bevy_text@0.11.0 --  -Zunstable-options --output-format json && \
-	rustup run nightly-2023-07-16 cargo rustdoc -p bevy_time@0.11.0 --  -Zunstable-options --output-format json && \
-	rustup run nightly-2023-07-16 cargo rustdoc -p bevy_utils@0.11.0 --  -Zunstable-options --output-format json && \
-	rustup run nightly-2023-07-16 cargo rustdoc -p bevy_reflect@0.11.0 --  -Zunstable-options --output-format json && \
+	rustup run nightly-2023-07-16 cargo rustdoc -p bevy_asset@0.12.1  --  -Zunstable-options --output-format json && \
+	rustup run nightly-2023-07-16 cargo rustdoc -p bevy_ecs@0.12.1 --  -Zunstable-options --output-format json && \
+	rustup run nightly-2023-07-16 cargo rustdoc -p bevy_pbr@0.12.1 --  -Zunstable-options --output-format json && \
+	rustup run nightly-2023-07-16 cargo rustdoc -p bevy_render@0.12.1 --  -Zunstable-options --output-format json && \
+	rustup run nightly-2023-07-16 cargo rustdoc -p bevy_math@0.12.1 --  -Zunstable-options --output-format json && \
+	rustup run nightly-2023-07-16 cargo rustdoc -p bevy_transform@0.12.1 --  -Zunstable-options --output-format json && \
+	rustup run nightly-2023-07-16 cargo rustdoc -p bevy_sprite@0.12.1 --  -Zunstable-options --output-format json && \
+	rustup run nightly-2023-07-16 cargo rustdoc -p bevy_ui@0.12.1 --  -Zunstable-options --output-format json && \
+	rustup run nightly-2023-07-16 cargo rustdoc -p bevy_animation@0.12.1 --  -Zunstable-options --output-format json && \
+	rustup run nightly-2023-07-16 cargo rustdoc -p bevy_core@0.12.1 --  -Zunstable-options --output-format json && \
+	rustup run nightly-2023-07-16 cargo rustdoc -p bevy_core_pipeline@0.12.1 --  -Zunstable-options --output-format json && \
+	rustup run nightly-2023-07-16 cargo rustdoc -p bevy_gltf@0.12.1 --  -Zunstable-options --output-format json && \
+	rustup run nightly-2023-07-16 cargo rustdoc -p bevy_hierarchy@0.12.1 --  -Zunstable-options --output-format json && \
+	rustup run nightly-2023-07-16 cargo rustdoc -p bevy_text@0.12.1 --  -Zunstable-options --output-format json && \
+	rustup run nightly-2023-07-16 cargo rustdoc -p bevy_time@0.12.1 --  -Zunstable-options --output-format json && \
+	rustup run nightly-2023-07-16 cargo rustdoc -p bevy_utils@0.12.1 --  -Zunstable-options --output-format json && \
+	rustup run nightly-2023-07-16 cargo rustdoc -p bevy_reflect@0.12.1 --  -Zunstable-options --output-format json && \
 	rustup run nightly-2023-07-16 cargo rustdoc -p glam@0.24.1 --  -Zunstable-options --output-format json && \
-	rustup run nightly-2023-07-16 cargo rustdoc -p bevy@0.11.0 --  -Zunstable-options --output-format json 
+	rustup run nightly-2023-07-16 cargo rustdoc -p bevy@0.12.1 --  -Zunstable-options --output-format json 

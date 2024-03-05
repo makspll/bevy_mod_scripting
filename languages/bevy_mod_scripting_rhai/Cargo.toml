@@ -1,6 +1,6 @@
 [package]
 name = "bevy_mod_scripting_rhai"
-version = "0.3.0"
+version = "0.4.0"
 authors = ["Maksymilian Mozolewski <makspl17@gmail.com>"]
 edition = "2021"
 license = "MIT"
@@ -13,15 +13,16 @@ readme = "readme.md"
 
 [package.metadata.release]
 pre-release-replacements = [
-    {file="Cargo.toml", search='^version\s*=\s*.*$', replace="version = \"{{version}}\"", exactly=1},
-    {file="Cargo.toml", search='^(?P<h>bevy_mod_scripting_core\s*=.*)version\s*=\s*".*"(?P<t>.*)$', replace="${h}version = \"{{version}}\"${t}", exactly=1},
+    { file = "Cargo.toml", search = '^version\s*=\s*.*$', replace = "version = \"{{version}}\"", exactly = 1 },
+    { file = "Cargo.toml", search = '^(?P<h>bevy_mod_scripting_core\s*=.*)version\s*=\s*".*"(?P<t>.*)$', replace = "${h}version = \"{{version}}\"${t}", exactly = 1 },
 ]
 
 [lib]
-name="bevy_mod_scripting_rhai"
-path="src/lib.rs"
+name = "bevy_mod_scripting_rhai"
+path = "src/lib.rs"
 
 [dependencies]
-bevy= { version = "0.11", default-features = false}
+bevy = { version = "0.12", default-features = false }
 rhai = { version = "1.16", features = ["sync"] }
-bevy_mod_scripting_core = {path="../../bevy_mod_scripting_core", version = "0.3.0" }
+bevy_mod_scripting_core = { path = "../../bevy_mod_scripting_core", version = "0.4.0" }
+anyhow = "1.0.75"

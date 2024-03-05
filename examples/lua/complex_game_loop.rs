@@ -79,7 +79,7 @@ fn print_frame_count(frame: Res<FrameCount>) {
 
 fn load_our_script(server: Res<AssetServer>, mut commands: Commands) {
     let path = "scripts/complex_game_loop.lua";
-    let handle = server.load::<LuaFile, &str>(path);
+    let handle = server.load::<LuaFile>(path);
 
     commands.spawn(()).insert(ScriptCollection::<LuaFile> {
         scripts: vec![Script::<LuaFile>::new(path.to_string(), handle)],
@@ -96,7 +96,7 @@ enum ComplexGameLoopSet {
 }
 
 fn main() -> std::io::Result<()> {
-    const TIMESTEP_2_PER_SECOND: f32 = 30.0 / 60.0;
+    const TIMESTEP_2_PER_SECOND: f64 = 30.0 / 60.0;
 
     let mut app = App::new();
 
@@ -106,18 +106,18 @@ fn main() -> std::io::Result<()> {
     // we run the post-update scripts after post-update
     // pretty straightforward, note we use FixedUpdate for physics, which means it runs less often than Update
     app.add_plugins(DefaultPlugins)
-        .insert_resource(FixedTime::new_from_secs(TIMESTEP_2_PER_SECOND))
+        .insert_resource(Time::<Fixed>::from_seconds(TIMESTEP_2_PER_SECOND))
         .add_plugins(ScriptingPlugin)
         .add_systems(Startup, load_our_script)
-        .configure_set(
+        .configure_sets(
             FixedUpdate,
             ComplexGameLoopSet::PrePhysicsScripts.before(ComplexGameLoopSet::Physics),
         )
-        .configure_set(
+        .configure_sets(
             FixedUpdate,
             ComplexGameLoopSet::PostPhysicsScripts.after(ComplexGameLoopSet::Physics),
         )
-        .configure_set(
+        .configure_sets(
             PostUpdate,
             ComplexGameLoopSet::EndFrame.after(ComplexGameLoopSet::PostUpdateScripts),
         );

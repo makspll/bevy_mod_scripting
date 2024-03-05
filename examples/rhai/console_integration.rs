@@ -1,6 +1,4 @@
-use std::time::Duration;
-
-use bevy::{asset::ChangeWatcher, ecs::event::Events, prelude::*};
+use bevy::{ecs::event::Events, prelude::*};
 use bevy_console::{AddConsoleCommand, ConsoleCommand, ConsolePlugin, PrintConsoleLine};
 use bevy_mod_scripting::prelude::*;
 use bevy_script_api::common::bevy::ScriptWorld;
@@ -63,7 +61,7 @@ pub fn forward_script_err_to_console(
     mut r: EventReader<ScriptErrorEvent>,
     mut w: EventWriter<PrintConsoleLine>,
 ) {
-    for e in r.iter() {
+    for e in r.read() {
         w.send(PrintConsoleLine {
             line: format!("ERROR:{}", e.error).into(),
         });
@@ -91,7 +89,7 @@ pub fn run_script_cmd(
     mut existing_scripts: Query<&mut ScriptCollection<RhaiFile>>,
 ) {
     if let Some(Ok(RunScriptCmd { path, entity })) = log.take() {
-        let handle = server.load::<RhaiFile, &str>(&format!("scripts/{}", &path));
+        let handle = server.load::<RhaiFile>(&format!("scripts/{}", &path));
 
         match entity {
             Some(e) => {
@@ -153,23 +151,20 @@ pub struct DeleteScriptCmd {
 
 fn main() -> std::io::Result<()> {
     let mut app = App::new();
-    app.add_plugins(DefaultPlugins.set(AssetPlugin {
-        watch_for_changes: ChangeWatcher::with_delay(Duration::from_secs(0)),
-        ..Default::default()
-    }))
-    .add_plugins(ScriptingPlugin)
-    .add_plugins(ConsolePlugin)
-    // register bevy_console commands
-    .add_console_command::<RunScriptCmd, _>(run_script_cmd)
-    .add_console_command::<DeleteScriptCmd, _>(delete_script_cmd)
-    // choose and register the script hosts you want to use
-    .add_script_host::<RhaiScriptHost<()>>(PostUpdate)
-    .add_api_provider::<RhaiScriptHost<()>>(Box::new(RhaiAPI))
-    .add_api_provider::<RhaiScriptHost<()>>(Box::new(RhaiBevyAPIProvider))
-    .add_script_handler::<RhaiScriptHost<()>, 0, 0>(PostUpdate)
-    // add your systems
-    .add_systems(Update, trigger_on_update_rhai)
-    .add_systems(Update, forward_script_err_to_console);
+    app.add_plugins(DefaultPlugins)
+        .add_plugins(ScriptingPlugin)
+        .add_plugins(ConsolePlugin)
+        // register bevy_console commands
+        .add_console_command::<RunScriptCmd, _>(run_script_cmd)
+        .add_console_command::<DeleteScriptCmd, _>(delete_script_cmd)
+        // choose and register the script hosts you want to use
+        .add_script_host::<RhaiScriptHost<()>>(PostUpdate)
+        .add_api_provider::<RhaiScriptHost<()>>(Box::new(RhaiAPI))
+        .add_api_provider::<RhaiScriptHost<()>>(Box::new(RhaiBevyAPIProvider))
+        .add_script_handler::<RhaiScriptHost<()>, 0, 0>(PostUpdate)
+        // add your systems
+        .add_systems(Update, trigger_on_update_rhai)
+        .add_systems(Update, forward_script_err_to_console);
 
     info!("press '~' to open the console. Type in `run_script \"console_integration.rhai\"` to run example script!");
 

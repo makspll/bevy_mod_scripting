@@ -1,9 +1,9 @@
-use bevy::{asset::ChangeWatcher, ecs::event::Events, prelude::*};
+use bevy::{ecs::event::Events, prelude::*};
 use bevy_console::{AddConsoleCommand, ConsoleCommand, ConsolePlugin, PrintConsoleLine};
 use bevy_mod_scripting::prelude::*;
 use clap::Parser;
 
-use std::{sync::Mutex, time::Duration};
+use std::sync::Mutex;
 
 #[derive(Default)]
 pub struct LuaAPIProvider;
@@ -69,7 +69,7 @@ pub fn forward_script_err_to_console(
     mut r: EventReader<ScriptErrorEvent>,
     mut w: EventWriter<PrintConsoleLine>,
 ) {
-    for e in r.iter() {
+    for e in r.read() {
         w.send(PrintConsoleLine {
             line: format!("ERROR:{}", e.error).into(),
         });
@@ -97,7 +97,7 @@ pub fn run_script_cmd(
     mut existing_scripts: Query<&mut ScriptCollection<LuaFile>>,
 ) {
     if let Some(Ok(RunScriptCmd { path, entity })) = log.take() {
-        let handle = server.load::<LuaFile, &str>(&format!("scripts/{}", &path));
+        let handle = server.load::<LuaFile>(&format!("scripts/{}", &path));
 
         match entity {
             Some(e) => {
@@ -158,23 +158,20 @@ pub struct DeleteScriptCmd {
 
 fn main() -> std::io::Result<()> {
     let mut app = App::new();
-    app.add_plugins(DefaultPlugins.set(AssetPlugin {
-        watch_for_changes: ChangeWatcher::with_delay(Duration::from_secs(0)),
-        ..Default::default()
-    }))
-    .add_plugins(ScriptingPlugin)
-    .add_plugins(ConsolePlugin)
-    // register bevy_console commands
-    .add_console_command::<RunScriptCmd, _>(run_script_cmd)
-    .add_console_command::<DeleteScriptCmd, _>(delete_script_cmd)
-    // choose and register the script hosts you want to use
-    .add_script_host::<LuaScriptHost<()>>(PostUpdate)
-    .add_api_provider::<LuaScriptHost<()>>(Box::new(LuaAPIProvider))
-    .add_api_provider::<LuaScriptHost<()>>(Box::new(LuaBevyAPIProvider))
-    .add_script_handler::<LuaScriptHost<()>, 0, 0>(PostUpdate)
-    // add your systems
-    .add_systems(Update, trigger_on_update_lua)
-    .add_systems(Update, forward_script_err_to_console);
+    app.add_plugins(DefaultPlugins)
+        .add_plugins(ScriptingPlugin)
+        .add_plugins(ConsolePlugin)
+        // register bevy_console commands
+        .add_console_command::<RunScriptCmd, _>(run_script_cmd)
+        .add_console_command::<DeleteScriptCmd, _>(delete_script_cmd)
+        // choose and register the script hosts you want to use
+        .add_script_host::<LuaScriptHost<()>>(PostUpdate)
+        .add_api_provider::<LuaScriptHost<()>>(Box::new(LuaAPIProvider))
+        .add_api_provider::<LuaScriptHost<()>>(Box::new(LuaBevyAPIProvider))
+        .add_script_handler::<LuaScriptHost<()>, 0, 0>(PostUpdate)
+        // add your systems
+        .add_systems(Update, trigger_on_update_lua)
+        .add_systems(Update, forward_script_err_to_console);
 
     info!("press '~' to open the console. Type in `run_script \"console_integration.lua\"` to run example script!");
     app.run();

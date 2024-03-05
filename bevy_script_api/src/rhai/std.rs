@@ -123,7 +123,7 @@ impl<T: RhaiProxyable + Reflect + FromReflect + TypePath + Clone + FromRhaiProxy
                 get: |ref_| {
                     ref_.downcast_ref::<Option<T>>()
                         .ok_or_else(|| ReflectionError::CannotDowncast {
-                            from: ref_.type_name().to_owned().into(),
+                            from: ref_.get_represented_type_info().unwrap().type_path().into(),
                             to: stringify!(Option<T>).into(),
                         })?
                         .as_ref()
@@ -137,7 +137,7 @@ impl<T: RhaiProxyable + Reflect + FromReflect + TypePath + Clone + FromRhaiProxy
                 get_mut: |ref_| {
                     ref_.downcast_mut::<Option<T>>()
                         // TODO: there is some weird borrow checker fuckery going on here
-                        // i tried having from: ref_.type_name().to_owned().into() instead of "Reflect"
+                        // i tried having from: ref_.get_represented_type_info().unwrap().type_path().into() instead of "Reflect"
                         // and lying this out in an if let expression, but nothing will satisfy the borrow checker here, so leaving this for now
                         .ok_or_else(|| ReflectionError::CannotDowncast {
                             from: "Reflect".into(),
@@ -184,7 +184,7 @@ impl<T: RhaiProxyable + Reflect + FromReflect + TypePath + Clone + FromRhaiProxy
                     get: |ref_| {
                         ref_.downcast_ref::<Option<T>>()
                             .ok_or_else(|| ReflectionError::CannotDowncast {
-                                from: ref_.type_name().to_owned().into(),
+                                from: ref_.get_represented_type_info().unwrap().type_path().into(),
                                 to: stringify!(Option<T>).into(),
                             })?
                             .as_ref()
@@ -208,7 +208,7 @@ impl<T: RhaiProxyable + Reflect + FromReflect + TypePath + Clone + FromRhaiProxy
                                 })
                         } else {
                             Err(ReflectionError::CannotDowncast {
-                                from: ref_.type_name().to_owned().into(),
+                                from: ref_.get_represented_type_info().unwrap().type_path().into(),
                                 to: stringify!(Option<T>).into(),
                             })
                         }

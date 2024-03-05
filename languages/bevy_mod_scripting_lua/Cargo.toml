@@ -1,6 +1,6 @@
 [package]
 name = "bevy_mod_scripting_lua"
-version = "0.3.0"
+version = "0.4.0"
 authors = ["Maksymilian Mozolewski <makspl17@gmail.com>"]
 edition = "2021"
 license = "MIT"
@@ -43,13 +43,13 @@ name = "bevy_mod_scripting_lua"
 path = "src/lib.rs"
 
 [dependencies]
-bevy = { version = "0.11", default-features = false }
-bevy_mod_scripting_core = { path = "../../bevy_mod_scripting_core", version = "0.3.0" }
+bevy = { version = "0.12", default-features = false }
+bevy_mod_scripting_core = { path = "../../bevy_mod_scripting_core", version = "0.4.0" }
 tealr = { version = "0.9", features = [
     "mlua_vendored",
     "mlua_send",
     "mlua_macros",
 ] }
-parking_lot = "0.12.1" #Git pin required for v0.9.0-alpha4 dependancy, without it 0.9.1 is pulled
+parking_lot = "0.12.1"
 serde_json = "1.0.81"
-serde = { version = "1", features = ["derive"] }
+anyhow = "1.0.75"

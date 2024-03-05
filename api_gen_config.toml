@@ -390,7 +390,11 @@ type="VisibleEntities"
 source="bevy_render"
 
 [[types]]
-type="ComputedVisibility"
+type="InheritedVisibility"
+source="bevy_render"
+
+[[types]]
+type="ViewVisibility"
 source="bevy_render"
 
 [[types]]
@@ -469,20 +473,26 @@ source="bevy_render"
 ## BEVY_ASSET
 
 [[types]]
-type="AssetPathId"
+type="AssetIndex"
 source="bevy_asset"
 
-[[types]]
-type="LabelId"
-source="bevy_asset"
+#Needs manual implementation? it's generic.
+#[[types]]
+#type="AssetId"
+#source="bevy_asset"
 
-[[types]]
-type="SourcePathId"
-source="bevy_asset"
+#Not handled by reflection
+#[[types]]
+#type="StrongHandle"
+#source="bevy_asset"
 
-[[types]]
-type="HandleId"
-source="bevy_asset"
+#[[types]]
+#type="Label"
+#source="bevy_asset"
+
+#[[types]]
+#type="Handle"
+#source="bevy_asset"
 
 ## BEVY_MATH
 [[types]]
@@ -648,7 +658,7 @@ lua_methods=[
 								.unwrap()
 								.col_mut(idx))
 						} else {
-							Err(ReflectionError::CannotDowncast{from: ref_.type_name().to_owned().into(), to:"Mat3".into()})
+							Err(ReflectionError::CannotDowncast{from: ref_.get_represented_type_info().unwrap().type_path().into(), to:"Mat3".into()})
 						}	
 					}
 				})
@@ -679,7 +689,7 @@ lua_methods=[
 								.unwrap()
 								.col_mut(idx))
 						} else {
-							Err(ReflectionError::CannotDowncast{from: ref_.type_name().to_owned().into(), to:"Mat2".into()})
+							Err(ReflectionError::CannotDowncast{from: ref_.get_represented_type_info().unwrap().type_path().into(), to:"Mat2".into()})
 						}	
 					}
 				})
@@ -711,7 +721,7 @@ lua_methods=[
 								.unwrap()
 								.col_mut(idx))
 						} else {
-							Err(ReflectionError::CannotDowncast{from: ref_.type_name().to_owned().into(), to:"Mat3A".into()})
+							Err(ReflectionError::CannotDowncast{from: ref_.get_represented_type_info().unwrap().type_path().into(), to:"Mat3A".into()})
 						}	
 					}
 				})
@@ -742,7 +752,7 @@ lua_methods=[
 								.unwrap()
 								.col_mut(idx))
 						} else {
-							Err(ReflectionError::CannotDowncast{from: ref_.type_name().to_owned().into(), to:"Mat4".into()})
+							Err(ReflectionError::CannotDowncast{from: ref_.get_represented_type_info().unwrap().type_path().into(), to:"Mat4".into()})
 						}	
 					}
 				})
@@ -774,7 +784,7 @@ lua_methods=[
 								.unwrap()
 								.col_mut(idx))
 						} else {
-							Err(ReflectionError::CannotDowncast{from: ref_.type_name().to_owned().into(), to:"DMat2".into()})
+							Err(ReflectionError::CannotDowncast{from: ref_.get_represented_type_info().unwrap().type_path().into(), to:"DMat2".into()})
 						}	
 					}
 				})
@@ -805,7 +815,7 @@ lua_methods=[
 								.unwrap()
 								.col_mut(idx))
 						} else {
-							Err(ReflectionError::CannotDowncast{from: ref_.type_name().to_owned().into(), to:"DMat3".into()})
+							Err(ReflectionError::CannotDowncast{from: ref_.get_represented_type_info().unwrap().type_path().into(), to:"DMat3".into()})
 						}	
 					}
 				})
@@ -836,7 +846,7 @@ lua_methods=[
 								.unwrap()
 								.col_mut(idx))
 						} else {
-							Err(ReflectionError::CannotDowncast{from: ref_.type_name().to_owned().into(), to:"DMat4".into()})
+							Err(ReflectionError::CannotDowncast{from: ref_.get_represented_type_info().unwrap().type_path().into(), to:"DMat4".into()})
 						}	
 					}
 				})
