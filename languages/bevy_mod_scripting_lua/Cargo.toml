@@ -15,10 +15,6 @@ readme = "readme.md"
 features = ["lua54"]
 
 [package.metadata.release]
-pre-release-replacements = [
-    { file = "Cargo.toml", search = '^version\s*=\s*.*$', replace = "version = \"{{version}}\"", exactly = 1 },
-    { file = "Cargo.toml", search = '^(?P<h>bevy_mod_scripting_core\s*=.*)version\s*=\s*".*"(?P<t>.*)$', replace = "${h}version = \"{{version}}\"${t}", exactly = 1 },
-]
 enable-features = ["lua54"]
 
 [features]

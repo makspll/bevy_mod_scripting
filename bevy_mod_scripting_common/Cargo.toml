@@ -11,21 +11,16 @@ keywords = ["bevy", "gamedev", "scripting", "lua"]
 categories = ["game-development"]
 readme = "readme.md"
 
-[package.metadata.release]
-pre-release-replacements = [
-    {file="Cargo.toml", search='^version\s*=\s*.*$', replace="version = \"{{version}}\"", exactly=1},
-]
-
 [lib]
 name = "bevy_mod_scripting_common"
 path = "src/lib.rs"
 
 [dependencies]
 paste = "1.0.7"
-syn = {version="1.0.57",features=["full","fold","extra-traits"]}
+syn = { version = "1.0.57", features = ["full", "fold", "extra-traits"] }
 quote = "1.0.8"
 proc-macro2 = "1.0"
 convert_case = "0.5.0"
 serde = { version = "1.0", features = ["derive"] }
 serde_derive = "1.0.137"
-indexmap = {version= "1.9.1", features= ["serde"]}
+indexmap = { version = "1.9.1", features = ["serde"] }
