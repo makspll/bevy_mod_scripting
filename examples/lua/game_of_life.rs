@@ -216,21 +216,21 @@ fn main() -> std::io::Result<()> {
     let mut app = App::new();
 
     app.add_plugins(DefaultPlugins)
-    .insert_resource(Time::<Fixed>::from_seconds(UPDATE_FREQUENCY.into()))
-    .add_plugins(LogDiagnosticsPlugin::default())
-    .add_plugins(FrameTimeDiagnosticsPlugin)
-    .add_plugins(ScriptingPlugin)
-    .init_resource::<Settings>()
-    .add_systems(Startup, setup)
-    .add_systems(Startup, send_init)
-    .add_systems(Update, sync_window_size)
-    .add_systems(FixedUpdate, update_rendered_state.after(sync_window_size))
-    .add_systems(FixedUpdate, send_on_update.after(update_rendered_state))
-    .add_systems(FixedUpdate, script_event_handler::<LuaScriptHost<()>, 0, 1>)
-    .add_script_host::<LuaScriptHost<()>>(PostUpdate)
-    .add_api_provider::<LuaScriptHost<()>>(Box::new(LuaBevyAPIProvider))
-    .add_api_provider::<LuaScriptHost<()>>(Box::new(LifeAPI))
-    .update_documentation::<LuaScriptHost<()>>();
+        .insert_resource(Time::<Fixed>::from_seconds(UPDATE_FREQUENCY.into()))
+        .add_plugins(LogDiagnosticsPlugin::default())
+        .add_plugins(FrameTimeDiagnosticsPlugin)
+        .add_plugins(ScriptingPlugin)
+        .init_resource::<Settings>()
+        .add_systems(Startup, setup)
+        .add_systems(Startup, send_init)
+        .add_systems(Update, sync_window_size)
+        .add_systems(FixedUpdate, update_rendered_state.after(sync_window_size))
+        .add_systems(FixedUpdate, send_on_update.after(update_rendered_state))
+        .add_systems(FixedUpdate, script_event_handler::<LuaScriptHost<()>, 0, 1>)
+        .add_script_host::<LuaScriptHost<()>>(PostUpdate)
+        .add_api_provider::<LuaScriptHost<()>>(Box::new(LuaBevyAPIProvider))
+        .add_api_provider::<LuaScriptHost<()>>(Box::new(LifeAPI))
+        .update_documentation::<LuaScriptHost<()>>();
 
     app.run();
 

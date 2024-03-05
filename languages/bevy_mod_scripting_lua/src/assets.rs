@@ -1,6 +1,6 @@
 use bevy::{
     asset::{io::Reader, Asset, AssetLoader, AsyncReadExt},
-    prelude::*,
+    log::info,
     reflect::TypePath,
     utils::BoxedFuture,
 };
