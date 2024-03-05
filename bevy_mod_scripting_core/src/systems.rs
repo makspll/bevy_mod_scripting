@@ -9,7 +9,6 @@ use crate::{
     ScriptErrorEvent,
 };
 
-
 /// Labels for scripting related systems
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, SystemSet)]
 pub enum ScriptSystemSet {
@@ -129,7 +128,9 @@ pub fn script_hot_reload_handler<H: ScriptHost>(
             for script in &scripts.scripts {
                 // the script could have well loaded in the same frame that it was added
                 // in that case it will have a context attached and we do not want to reload it
-                if script.handle().id() == *handle && !(contexts.has_context(script.id()) && created) {
+                if script.handle().id() == *handle
+                    && !(contexts.has_context(script.id()) && created)
+                {
                     Script::<H::ScriptAsset>::reload_script::<H>(
                         &mut host,
                         script,
