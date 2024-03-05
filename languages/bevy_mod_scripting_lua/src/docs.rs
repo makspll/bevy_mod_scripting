@@ -20,6 +20,7 @@ static DEFAULT_DOC_CONFIG: fn(&str) -> String = |s| {
     "page_root": "",
     "store_in": "{s}",
     "name": "{s}",
+    "is_global": true,
     "type_def_files": {{
       "runner": "Builtin",
       "templates": {{

@@ -7,9 +7,9 @@ use std::sync::{atomic::AtomicU32, Mutex};
 #[derive(Clone)]
 pub struct MyLuaArg(usize);
 
-impl<'lua> ToLua<'lua> for MyLuaArg {
-    fn to_lua(self, lua: &'lua Lua) -> mlua::Result<Value<'lua>> {
-        self.0.to_lua(lua)
+impl<'lua> IntoLua<'lua> for MyLuaArg {
+    fn into_lua(self, lua: &'lua Lua) -> mlua::Result<Value<'lua>> {
+        self.0.into_lua(lua)
     }
 }
 

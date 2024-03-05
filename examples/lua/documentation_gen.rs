@@ -10,8 +10,8 @@ use std::sync::Mutex;
 #[derive(Clone)]
 pub struct MyLuaArg;
 
-impl<'lua> ToLua<'lua> for MyLuaArg {
-    fn to_lua(self, _lua: &'lua Lua) -> mlua::Result<mlua::Value<'lua>> {
+impl<'lua> IntoLua<'lua> for MyLuaArg {
+    fn into_lua(self, _lua: &'lua Lua) -> mlua::Result<mlua::Value<'lua>> {
         Ok(Value::Nil)
     }
 }
