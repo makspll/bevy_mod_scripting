@@ -1,0 +1,27 @@
+[package]
+name = "bevy_mod_scripting_rune"
+version = "0.3.0"
+edition = "2021"
+license = "MIT"
+description = "Necessary functionality for Rune support with bevy_mod_scripting"
+repository = "https://github.com/makspll/bevy_mod_scripting"
+homepage = "https://github.com/makspll/bevy_mod_scripting"
+keywords = ["bevy", "gamedev", "scripting", "rune"]
+categories = ["game-development"]
+readme = "readme.md"
+
+[package.metadata.release]
+pre-release-replacements = [
+    { file = "Cargo.toml", search = '^version\s*=\s*.*$', replace = "version = \"{{version}}\"", exactly = 1 },
+    { file = "Cargo.toml", search = '^(?P<h>bevy_mod_scripting_core\s*=.*)version\s*=\s*".*"(?P<t>.*)$', replace = "${h}version = \"{{version}}\"${t}", exactly = 1 },
+]
+
+[lib]
+name = "bevy_mod_scripting_rune"
+path = "src/lib.rs"
+
+[dependencies]
+bevy_mod_scripting_core = { path = "../../bevy_mod_scripting_core", version = "0.3.0" }
+bevy = "0.11"
+rune = "0.13.1"
+rune-modules = "0.13.1"

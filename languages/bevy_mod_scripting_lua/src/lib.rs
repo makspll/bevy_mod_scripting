@@ -29,9 +29,9 @@ pub mod prelude {
     };
 }
 
-pub trait LuaArg: for<'lua> ToLuaMulti<'lua> + Clone + Sync + Send + 'static {}
+pub trait LuaArg: for<'lua> IntoLuaMulti<'lua> + Clone + Sync + Send + 'static {}
 
-impl<T: for<'lua> ToLuaMulti<'lua> + Clone + Sync + Send + 'static> LuaArg for T {}
+impl<T: for<'lua> IntoLuaMulti<'lua> + Clone + Sync + Send + 'static> LuaArg for T {}
 
 #[derive(Clone, Event)]
 /// A Lua Hook. The result of creating this event will be
@@ -113,17 +113,23 @@ impl<A: LuaArg> ScriptHost for LuaScriptHost<A> {
         #[cfg(not(feature = "unsafe_lua_modules"))]
         let lua = Lua::new();
 
-        lua.load(script)
+        // init lua api before loading script
+        let mut lua = Mutex::new(lua);
+        providers.attach_all(&mut lua)?;
+
+        lua.get_mut()
+            .map_err(|e| ScriptError::FailedToLoad {
+                script: script_data.name.to_owned(),
+                msg: e.to_string(),
+            })?
+            .load(script)
             .set_name(script_data.name)
-            .and_then(|c| c.exec())
+            .exec()
             .map_err(|e| ScriptError::FailedToLoad {
                 script: script_data.name.to_owned(),
                 msg: e.to_string(),
             })?;
 
-        let mut lua = Mutex::new(lua);
-
-        providers.attach_all(&mut lua)?;
         Ok(lua)
     }
 

@@ -34,20 +34,21 @@ jobs:
           profile: minimal
           toolchain: stable
           override: true
-      - uses: Swatinem/rust-cache@v2.7.0
+      - name: Rust Cache
+        uses: Swatinem/rust-cache@v2.7.3
       # for x86 builds
       - if: matrix.run_args.cross == null
         uses: actions-rs/cargo@v1
         with:
           command: check
-          args: --workspace --features=${{ matrix.run_args.lua }},rhai,teal,lua_script_api,rhai_script_api
+          args: --workspace --features=${{ matrix.run_args.lua }},rhai,teal,lua_script_api,rhai_script_api,rune
       # for non x86 cross-compiled builds
       - if: matrix.run_args.cross != null
         uses: houseabsolute/actions-rust-cross@v0
         with:
           command: check
           target: ${{ matrix.run_args.cross }}
-          args: --workspace --features=${{ matrix.run_args.lua }},rhai,teal,lua_script_api,rhai_script_api
+          args: --workspace --features=${{ matrix.run_args.lua }},rhai,teal,lua_script_api,rhai_script_api,rune --profile=ephemeral-build
 
   fmt:
     name: Rustfmt
@@ -62,7 +63,8 @@ jobs:
           components: rustfmt
           toolchain: stable
           override: true
-      - uses: Swatinem/rust-cache@v2.7.0
+      - name: Rust Cache
+        uses: Swatinem/rust-cache@v2.7.3
       - uses: actions-rs/cargo@v1
         with:
           command: fmt
@@ -80,11 +82,12 @@ jobs:
           toolchain: stable
           components: clippy
           override: true
-      - uses: Swatinem/rust-cache@v2.7.0
+      - name: Rust Cache
+        uses: Swatinem/rust-cache@v2.7.3
       - uses: actions-rs/cargo@v1
         with:
           command: clippy
-          args: --features=lua54,rhai,teal,lua_script_api,rhai_script_api -- -D warnings 
+          args: --features=lua54,rhai,teal,lua_script_api,rhai_script_api,rune --profile=ephemeral-build -- -D warnings 
   tests:
     name: Tests
     runs-on: ubuntu-latest
@@ -108,11 +111,12 @@ jobs:
         with:
           toolchain: stable
           override: true
-      - uses: Swatinem/rust-cache@v2.7.0
+      - name: Rust Cache
+        uses: Swatinem/rust-cache@v2.7.3
       - uses: actions-rs/cargo@v1
         with:
           command: test
-          args: --workspace --features=lua54,rhai,teal,lua_script_api,rhai_script_api
+          args: --workspace --features=lua54,rhai,teal,lua_script_api,rhai_script_api,rune --profile=ephemeral-build
   docs:
     name: Docs
     runs-on: ubuntu-latest
@@ -124,11 +128,12 @@ jobs:
         with:
           toolchain: stable
           override: true
-      - uses: Swatinem/rust-cache@v2.7.0
+      - name: Rust Cache
+        uses: Swatinem/rust-cache@v2.7.3
       - name: Find docs.rs features
         run: echo "DOCS_FEATURES=$(cargo metadata --no-deps | python -c "import sys,json; [print(','.join(x['metadata']['docs.rs']['features'])) for x in json.load(sys.stdin)['packages'] if x['name'] == 'bevy_mod_scripting']")" >> $GITHUB_OUTPUT
         id: features
       - uses: actions-rs/cargo@v1
         with:
           command: doc
-          args: --workspace --features=${{ steps.features.outputs.DOCS_FEATURES }}
+          args: --workspace --features=${{ steps.features.outputs.DOCS_FEATURES }} --profile=ephemeral-build

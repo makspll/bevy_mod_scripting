@@ -24,6 +24,11 @@ pub mod rhai {
     }
 }
 
+#[cfg(feature = "rune")]
+pub mod rune {
+    pub use bevy_mod_scripting_rune::*;
+}
+
 #[cfg(any(feature = "lua_script_api", feature = "rhai_script_api"))]
 pub mod api {
     pub use bevy_script_api::*;
@@ -37,6 +42,9 @@ pub mod prelude {
 
     #[cfg(feature = "rhai")]
     pub use bevy_mod_scripting_rhai::prelude::*;
+
+    #[cfg(feature = "rune")]
+    pub use bevy_mod_scripting_rune::prelude::*;
 
     #[cfg(any(feature = "lua_script_api", feature = "rhai_script_api"))]
     pub use bevy_script_api::prelude::*;
