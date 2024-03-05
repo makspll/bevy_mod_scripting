@@ -1,6 +1,5 @@
 use bevy::{
     asset::{io::Reader, Asset, AssetLoader, AsyncReadExt},
-    log::info,
     reflect::TypePath,
     utils::BoxedFuture,
 };
@@ -64,7 +63,7 @@ fn old_lua_load<'a>(
             let full_path = &FileAssetReader::get_base_path()
                 .join("assets")
                 .join(load_context.path());
-            info!(
+            bevy::log::info!(
                 "tl check {} : {}",
                 full_path.to_str().unwrap(),
                 scripts_dir.to_str().unwrap()
