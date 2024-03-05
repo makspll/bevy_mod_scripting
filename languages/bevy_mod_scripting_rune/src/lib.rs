@@ -12,12 +12,12 @@ use rune::{
     Context, Diagnostics, Source, Sources, Unit, Vm,
 };
 
-mod assests;
+mod assets;
 mod docs;
 
 pub mod prelude {
     pub use crate::{
-        assests::{RuneFile, RuneLoader},
+        assets::{RuneFile, RuneLoader},
         docs::RuneDocFragment,
         RuneArgs, RuneEvent, RuneScriptContext, RuneScriptHost,
     };
@@ -120,7 +120,7 @@ impl<A: RuneArgs> ScriptHost for RuneScriptHost<A> {
         set: impl SystemSet,
     ) {
         app.add_priority_event::<Self::ScriptEvent>()
-            .add_asset::<RuneFile>()
+            .init_asset::<RuneFile>()
             .init_asset_loader::<RuneLoader>()
             .init_resource::<CachedScriptState<Self>>()
             .init_resource::<ScriptContexts<Self::ScriptContext>>()
