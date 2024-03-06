@@ -36,7 +36,7 @@ pub fn script_add_synchronizer<H: ScriptHost + 'static>(
 ) {
     debug!("Handling addition/modification of scripts");
 
-    query.for_each(|(entity, new_scripts, tracker)| {
+    query.iter().for_each(|(entity, new_scripts, tracker)| {
         if tracker.is_added() {
             new_scripts.scripts.iter().for_each(|new_script| {
                 Script::<H::ScriptAsset>::insert_new_script_context::<H>(

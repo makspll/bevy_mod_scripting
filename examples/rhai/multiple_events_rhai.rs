@@ -103,7 +103,7 @@ fn call_update(
         ),
     >,
 ) {
-    to_update.for_each(|(entity, name)| {
+    to_update.iter().for_each(|(entity, name)| {
         events.send(
             RhaiEvent {
                 hook_name: "on_update".to_owned(),
