@@ -44,6 +44,9 @@ jobs:
           args: --workspace --features=${{ matrix.run_args.lua }},rhai,teal,lua_script_api,rhai_script_api,rune
       # for non x86 cross-compiled builds
       - if: matrix.run_args.cross != null
+        name: Clear space
+        run: sudo rm -rf /usr/share/dotnet; sudo rm -rf /opt/ghc; sudo rm -rf "/usr/local/share/boost"; sudo rm -rf "$AGENT_TOOLSDIRECTORY"
+      - if: matrix.run_args.cross != null
         uses: houseabsolute/actions-rust-cross@v0
         with:
           command: check
