@@ -1,6 +1,6 @@
 [package]
 name = "bevy_mod_scripting_rhai"
-version = "0.4.0"
+version = "0.5.0"
 authors = ["Maksymilian Mozolewski <makspl17@gmail.com>"]
 edition = "2021"
 license = "MIT"
@@ -18,5 +18,5 @@ path = "src/lib.rs"
 [dependencies]
 bevy = { version = "0.13", default-features = false }
 rhai = { version = "1.16", features = ["sync"] }
-bevy_mod_scripting_core = { path = "../../bevy_mod_scripting_core", version = "0.4.0" }
+bevy_mod_scripting_core = { path = "../../bevy_mod_scripting_core", version = "0.5.0" }
 anyhow = "1.0.75"
