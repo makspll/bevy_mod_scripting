@@ -102,6 +102,8 @@ opt-level = 3
 inherits = "dev"
 opt-level = 2
 codegen-units = 8
+incremental = false
+debug = false
 
 
 [[example]]
