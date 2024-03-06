@@ -196,7 +196,7 @@ impl ScriptWorld {
                 comp_type.data::<ReflectDefault>().ok_or_else(||
                     ScriptError::Other(format!("Component {} is a value or dynamic type with no `ReflectDefault` type_data, cannot instantiate sensible value",comp_type.short_name())))?
                     .default()
-                    .as_ref(), 
+                    .as_ref(),
                     &registry_lock),
             bevy::reflect::TypeInfo::Enum(_) => component_data.insert(&mut entity_ref, &DynamicEnum::default(), &registry_lock)
         };
