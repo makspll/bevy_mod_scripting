@@ -212,9 +212,6 @@ macro_rules! impl_tealr_generic{
         }
 
         impl ::bevy::reflect::Reflect for $name {
-            fn type_name(&self) -> &str {
-                panic!("This should never be called, I am a dummy implementation");
-            }
 
             fn into_any(self: Box<Self>) -> Box<dyn std::any::Any> {
                 panic!("This should never be called, I am a dummy implementation");

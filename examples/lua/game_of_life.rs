@@ -5,6 +5,7 @@ use bevy::{
     prelude::*,
     reflect::Reflect,
     render::{
+        render_asset::RenderAssetUsages,
         render_resource::{Extent3d, TextureDimension, TextureFormat},
         texture::ImageSampler,
     },
@@ -97,6 +98,7 @@ pub fn setup(
         TextureDimension::D2,
         &[0u8],
         TextureFormat::R8Unorm,
+        RenderAssetUsages::RENDER_WORLD | RenderAssetUsages::MAIN_WORLD,
     );
 
     image.sampler = ImageSampler::nearest();
@@ -137,14 +139,14 @@ pub fn sync_window_size(
     mut resize_event: EventReader<WindowResized>,
     mut settings: ResMut<Settings>,
     mut query: Query<&mut Sprite, With<LifeState>>,
-    primary_windows: Query<(&Window, With<PrimaryWindow>)>,
+    primary_windows: Query<&Window, With<PrimaryWindow>>,
 ) {
     if let Some(e) = resize_event
         .read()
         .filter(|e| primary_windows.get(e.window).is_ok())
         .last()
     {
-        let (primary_window, _) = primary_windows.get(e.window).unwrap();
+        let primary_window = primary_windows.get(e.window).unwrap();
         settings.display_grid_dimensions = (
             primary_window.physical_width(),
             primary_window.physical_height(),
