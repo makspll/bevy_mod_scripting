@@ -67,7 +67,7 @@ An example can be seen below
 
 fn main() -> std::io::Result<()> {
     let mut app = App::new();
-        app.add_plugin(ScriptingPlugin)
+        app.add_plugins(ScriptingPlugin)
         .add_plugins(DefaultPlugins)
         // pick and register only the hosts you want to use
         // use any system set AFTER any systems which add/remove/modify script components
@@ -191,7 +191,7 @@ pub fn load_a_script(
 ) {
     // this handle is kept by the script so it will not be unloaded
     let path = "scripts/console_integration.lua".to_string();
-    let handle = server.load::<LuaFile, &str>(&path);
+    let handle = server.load::<LuaFile>(&path);
 
 
     commands.spawn(()).insert(ScriptCollection::<LuaFile> {
@@ -252,7 +252,7 @@ Register the API providers like so:
 
 ```rust, ignore
     app.add_plugins(DefaultPlugins)
-        .add_plugin(ScriptingPlugin)
+        .add_plugins(ScriptingPlugin)
         .add_script_host::<LuaScriptHost<MyLuaArg>>(PostUpdate)
         .add_script_host::<RhaiScriptHost<MyRhaiArg>>(PostUpdate)
         .add_api_provider::<LuaScriptHost<MyLuaArg>>(Box::new(LuaAPIProvider))
@@ -275,7 +275,7 @@ fn main() -> std::io::Result<()> {
     let mut app = App::new();
 
     app.add_plugins(DefaultPlugins)
-        .add_plugin(ScriptingPlugin)
+        .add_plugins(ScriptingPlugin)
         .add_script_host::<LuaScriptHost<()>>(PostUpdate)
         // Note: This is a noop in optimized builds unless the `doc_always` feature is enabled!
         // this will pickup any API providers added *BEFOREHAND* like this one
