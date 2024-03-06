@@ -1,0 +1,16 @@
+{
+    "doc_template": "Builtin",
+    "page_root": "<page_root>",
+    "store_in": "BevyAPI",
+    "name": "BevyAPI",
+    "is_global": true,
+    "type_def_files": {
+        "runner": "Builtin",
+        "templates": {
+            "teal": {
+                "extension": ".d.tl",
+                "template": "Teal"
+            }
+        }
+    }
+}
