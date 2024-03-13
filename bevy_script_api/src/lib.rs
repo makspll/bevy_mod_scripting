@@ -22,6 +22,7 @@ pub mod prelude {
             bevy::LuaBevyAPIProvider, std::LuaVec, FromLuaProxy, LuaProxyable, ReflectLuaProxyable,
             ToLuaProxy,
         },
+        impl_rhai_newtype,
     };
 
     #[cfg(feature = "rhai")]
@@ -37,7 +38,9 @@ pub mod prelude {
 // re-export derive macros from other langs
 pub use bevy_mod_scripting_derive::impl_script_newtype;
 #[cfg(feature = "lua")]
-pub use bevy_mod_scripting_lua_derive::impl_lua_newtype; //LuaProxy};
+pub use bevy_mod_scripting_lua_derive::impl_lua_newtype;
+#[cfg(feature = "rhai")]
+pub use bevy_mod_scripting_rhai_derive::impl_rhai_derive;
 
 pub(crate) mod generated;
 
