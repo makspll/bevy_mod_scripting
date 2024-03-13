@@ -1,0 +1,12 @@
+{
+    "rust-analyzer.rustc.source": "discover",
+    "rust-analyzer.server.extraEnv": {
+        "RA_LOG": "ERROR"
+    },
+    "rust-analyzer.check.overrideCommand": [
+        "cargo",
+        "+nightly-2024-01-24",
+        "clippy",
+        "--message-format=json",
+    ]
+}
