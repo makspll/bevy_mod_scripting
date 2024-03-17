@@ -1,9 +1,10 @@
 use std::{env, io, str::FromStr};
 
-use log::LevelFilter;
+use log::{debug, LevelFilter};
 use rustc_plugin::{CrateFilter, RustcPlugin, RustcPluginArgs, Utf8Path};
+use rustc_session::config::Input;
 
-use crate::BevyAnalyzerCallbacks;
+use crate::{modifying_file_loader::ModifyingFileLoader, BevyAnalyzerCallbacks};
 
 pub struct BevyAnalyzer;
 
@@ -32,7 +33,8 @@ impl RustcPlugin for BevyAnalyzer {
         plugin_args: Self::Args,
     ) -> rustc_interface::interface::Result<()> {
         let mut callbacks = BevyAnalyzerCallbacks;
-        let compiler = rustc_driver::RunCompiler::new(&compiler_args, &mut callbacks);
+        let mut compiler = rustc_driver::RunCompiler::new(&compiler_args, &mut callbacks);
+        compiler.set_file_loader(Some(Box::new(ModifyingFileLoader)));
         compiler.run()
     }
 }

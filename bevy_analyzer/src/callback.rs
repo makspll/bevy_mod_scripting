@@ -1,12 +1,13 @@
 use log::{debug, trace};
 use rustc_errors::FatalError;
+use rustc_hir::def_id::LOCAL_CRATE;
 
-use crate::FIND_REFLECT_TYPES;
+use crate::ALL_PASSES;
 
 pub struct BevyAnalyzerCallbacks;
 
 impl rustc_driver::Callbacks for BevyAnalyzerCallbacks {
-    fn config(&mut self, _config: &mut rustc_interface::interface::Config) {}
+    fn config(&mut self, config: &mut rustc_interface::interface::Config) {}
 
     fn after_expansion<'tcx>(
         &mut self,
@@ -23,11 +24,14 @@ impl rustc_driver::Callbacks for BevyAnalyzerCallbacks {
             sess.dcx().fatal("compilation failed, aborting analysis.");
         }
         gcx.enter(|tcx| {
-            let passes = [FIND_REFLECT_TYPES];
-            let mut ctxt = crate::BevyCtxt { tcx };
+            let mut ctxt = crate::BevyCtxt::new(tcx);
             trace!("Running all passes");
-            for p in passes {
-                trace!("Running pass: {}", p.name);
+            for p in ALL_PASSES {
+                debug!(
+                    "Running pass: '{}' on crate: '{}'",
+                    p.name,
+                    tcx.crate_name(LOCAL_CRATE)
+                );
                 tcx.sess.time(p.name, || (p.cb)(&mut ctxt));
             }
         });
