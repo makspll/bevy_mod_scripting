@@ -1,12 +1,12 @@
 use std::io;
 
-use log::{debug, trace};
+use log::debug;
 use rustc_data_structures::sync::{AtomicBool, Lrc, Ordering};
 use rustc_span::source_map::{FileLoader, RealFileLoader};
 
 /// Injects extern statements into the first loaded file (crate root)
 #[derive(Default)]
-pub struct ModifyingFileLoader;
+pub(crate) struct ModifyingFileLoader;
 static LOADED: AtomicBool = AtomicBool::new(false);
 
 impl FileLoader for ModifyingFileLoader {

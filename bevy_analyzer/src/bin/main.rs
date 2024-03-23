@@ -3,13 +3,15 @@ use std::{
     env,
     fs::{create_dir_all, File},
     io::Write,
-    path::{Path, PathBuf},
+    path::Path,
     process::{Command, Stdio},
 };
 
 use bevy_analyzer::*;
-use log::{debug, trace};
-use rustc_plugin::RustcPlugin;
+use clap::Parser;
+use log::{debug, info, trace};
+use strum::VariantNames;
+use tera::Context;
 
 const BOOTSTRAP_DEPS: [&str; 2] = ["mlua", "bevy_reflect"];
 
@@ -17,6 +19,96 @@ fn main() {
     env_logger::init();
     debug!("CLI entrypoint");
     debug!("Creating bootstrapping crate");
+
+    let metadata = cargo_metadata::MetadataCommand::new()
+        .no_deps()
+        .other_options(["--all-features".to_string(), "--offline".to_string()])
+        .exec()
+        .unwrap();
+    let plugin_subdir = format!("plugin-{}", env!("RUSTC_CHANNEL"));
+    let target_dir = metadata.target_directory.join(plugin_subdir);
+    env::set_var(TARGET_DIR_ENV_NAME, target_dir);
+
+    // parse this here to early exit on wrong args
+    let args = Args::parse_from(env::args().skip(1));
+
+    if env::var("RUST_LOG").is_err() {
+        env::set_var(
+            "RUST_LOG",
+            match (args.verbose.verbose as isize) - (args.verbose.quiet as isize) {
+                0 => "info",
+                1 => "debug",
+                x if x >= 2 => "trace",
+                _ => "error",
+            },
+        );
+    }
+
+    match args.cmd {
+        bevy_analyzer::Command::Print { template } => {
+            println!(
+                "{}",
+                TEMPLATE_DIR
+                    .get_file(template.to_string())
+                    .unwrap()
+                    .contents_utf8()
+                    .unwrap()
+            );
+            return;
+        }
+        bevy_analyzer::Command::ListTemplates => {
+            for template in TemplateKind::VARIANTS {
+                println!("{}", template);
+            }
+            return;
+        }
+        bevy_analyzer::Command::Collect {
+            output,
+            templates,
+            api_name,
+        } => {
+            let tera = configure_tera("no_crate", &templates);
+            info!("Collecting from: {}", output);
+            if !output.is_dir() {
+                panic!("Output is not a directory");
+            }
+            let crates = std::fs::read_dir(&output)
+                .expect("Could not read output directory")
+                .filter_map(|d| {
+                    let entry = d.expect("Could not read entry in output directory");
+                    let path = entry.path();
+                    if path.extension().is_some_and(|ext| ext == "rs")
+                        && path.file_stem().is_some_and(|s| s != "mod")
+                    {
+                        Some(path.file_stem().unwrap().to_owned())
+                    } else {
+                        None
+                    }
+                });
+            let meta_loader = MetaLoader::new(vec![output.to_owned()]);
+            let context = Collect {
+                crates: crates
+                    .map(|c| {
+                        let name = c.to_str().unwrap().to_owned();
+                        log::info!("Collecting crate: {}", name);
+                        let meta = meta_loader
+                            .meta_for(&name)
+                            .expect("Could not find meta file for crate");
+                        Crate { name, meta }
+                    })
+                    .collect(),
+                api_name,
+            };
+            let context =
+                Context::from_serialize(context).expect("Could not create template context");
+            let file = File::create(output.join("mod.rs")).unwrap();
+            tera.render_to(&TemplateKind::SharedModule.to_string(), &context, file)
+                .expect("Failed to render mod.rs");
+            log::info!("Succesfully generated mod.rs");
+            return;
+        }
+        _ => {}
+    }
 
     let temp_dir = tempdir::TempDir::new("bevy_analyzer_bootstrap")
         .expect("Error occured when trying to acquire temp file");
@@ -98,7 +190,7 @@ fn main() {
 /// Generate bootstrapping crate files
 fn write_bootstrap_files(path: &Path) {
     // write manifest file 'Cargo.toml'
-    let manifest_content = include_bytes!("../Cargo.bootstrap.toml");
+    let manifest_content = include_bytes!("../../Cargo.bootstrap.toml");
     let manifest_path = path.join("Cargo.toml");
 
     let mut file = File::create(manifest_path)

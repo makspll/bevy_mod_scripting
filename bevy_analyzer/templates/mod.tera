@@ -1,0 +1,53 @@
+{%- for crate in crates %}
+    mod {{ crate.name }};
+{% endfor -%}
+
+
+
+pub struct {{ api_name }};
+
+impl bevy_mod_scripting::core::hosts::APIProvider for {{ api_name }} {
+        type APITarget = Mutex<bevy_mod_scripting_lua::tealr::mlu::mlua::Lua>;
+        type ScriptContext = Mutex<bevy_mod_scripting_lua::tealr::mlu::mlua::Lua>;
+        type DocTarget = LuaDocFragment;
+
+    fn attach_api(&mut self, ctx: &mut Self::APITarget) -> Result<(), ScriptError> {
+        {% for crate in crates %}
+            {% set crate_name = crate.name %}
+            {{ crate_name }}::{{ "A P I Provider" | prefix(val=crate_name) | convert_case(case="upper_camel")}}.attach_api(ctx);
+        {% endfor %}
+    }
+
+    fn get_doc_fragment(&self) -> Option<Self::DocTarget> {
+        [
+        {% for crate in crates %}
+          {% set crate_name = crate.name %}
+          {{ crate_name }}::{{ "A P I Provider" | prefix(val=crate_name) | convert_case(case="upper_camel")}}.get_doc_fragment(),  
+        {% endfor %}
+        ].iter().filter().fold(|(a,b)| a.merge(b))
+    }
+
+    fn setup_script(
+        &mut self,
+        script_data: &ScriptData,
+        ctx: &mut Self::ScriptContext,
+    ) -> Result<(), ScriptError> {
+        Ok(())
+    }
+
+    fn setup_script_runtime(
+        &mut self,
+        world_ptr: bevy_mod_scripting_core::world::WorldPointer,
+        _script_data: &ScriptData,
+        ctx: &mut Self::ScriptContext,
+    ) -> Result<(), ScriptError> {
+        Ok(())
+    }
+
+    fn register_with_app(&self, app: &mut App) {
+        {% for crate in crates %}
+            {% set crate_name = crate.name %}
+            {{ crate_name }}::{{ "A P I Provider" | prefix(val=crate_name) | convert_case(case="upper_camel")}}.register_with_app(app);
+        {% endfor %}
+    }
+}

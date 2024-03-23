@@ -1,0 +1,68 @@
+r#"
+{% for docstring in function.docstrings -%}
+///{{docstring}}
+{% endfor -%}
+
+{%- filter prettyplease(impl_context=true) -%}
+#[lua(
+
+{% if function.has_self %}
+kind="Method",
+{% else %}
+kind="Function",
+{% endif %}
+
+{%- if function.from_trait_path -%}
+as_trait="{{ function.from_trait_path }}",
+{%- endif -%}
+
+{%- if function.output.reflection_strategy == "Proxy" -%}
+output(proxy),
+{%- endif -%}
+
+{# forgive me father, this probably should be a filter #}
+{% if function.from_trait_path == "std::opsNeg" %}
+composite="{{ function.ident }}",
+metamethod="Unm",
+{% elif function.from_trait_path == "std::ops::Mul" %}
+composite="{{ function.ident }}",
+metamethod="Mul",
+{% elif function.from_trait_path == "std::ops::Add" %}
+composite="{{ function.ident }}",
+metamethod="Add",
+{% elif function.from_trait_path == "std::ops::Sub" %}
+composite="{{ function.ident }}",
+metamethod="Sub",
+{% elif function.from_trait_path == "std::ops::Div" %}
+composite="{{ function.ident }}",
+metamethod="Div",
+{% elif function.from_trait_path == "std::ops::Rem" %}
+composite="{{ function.ident }}",
+metamethod="Mod",
+{% elif function.from_trait_path == "std::cmp:Eq" %}
+composite="{{ function.ident }}",
+metamethod="Eq",
+{% elif function.from_trait_path == "std::cmp::PartialEq" %}
+composite="{{ function.ident }}",
+metamethod="Eq",
+{% endif %}
+
+)] 
+fn {{ function.ident }} (
+    {%- filter separated(delimeter=", ", split_at="---", ignore_first=true) -%}
+
+    {%- for arg in function.args -%}
+        ---
+        {%- if arg.ident and arg.reflection_strategy == "Proxy" -%}
+            #[proxy]
+        {%- endif -%}
+        {%- if arg.ident -%}
+            {{- arg.ident }} : {# -#}
+        {%- endif -%} 
+        {{- arg.ty -}}
+    {%- endfor -%}
+
+    {%- endfilter -%}
+) -> {{ function.output.ty -}};
+{%- endfilter %}
+"#

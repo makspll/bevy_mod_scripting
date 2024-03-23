@@ -1,58 +1,142 @@
+use std::collections::HashMap;
+
+use cargo_metadata::camino::Utf8PathBuf;
 use indexmap::IndexMap;
-use rustc_hir::{def_id::DefId, Variant, VariantData};
+use log::debug;
+use rustc_hir::{def_id::DefId, EnumDef, VariantData};
 use rustc_middle::ty::TyCtxt;
+use serde::Serialize;
 
-pub struct BevyCtxt<'tcx> {
-    pub tcx: TyCtxt<'tcx>,
-    pub reflect_types: Vec<DefId>,
-    /// Contains field/variant information for each reflect type
-    pub variant_data: IndexMap<DefId, FilteredVariant<'tcx>>,
-    pub cached_traits: CachedTraits,
+use crate::{MetaLoader, TemplateContext};
+
+pub(crate) struct BevyCtxt<'tcx> {
+    pub(crate) tcx: TyCtxt<'tcx>,
+    pub(crate) meta_loader: MetaLoader,
+    pub(crate) reflect_types: IndexMap<DefId, ReflectType<'tcx>>,
+    pub(crate) cached_traits: CachedTraits,
+
+    /// the template context used for generating code
+    pub(crate) template_context: Option<TemplateContext>,
 }
-
-/// A collection of common traits stored for quick access.
-#[derive(Default)]
-pub struct CachedTraits {
-    pub mlua_from_lua: Option<DefId>,
-    pub mlua_to_lua: Option<DefId>,
-    pub bevy_reflect_reflect: Option<DefId>,
-}
-
-impl CachedTraits {
-    pub fn has_all_mlua_traits(&self) -> bool {
-        self.mlua_from_lua.is_some() && self.mlua_to_lua.is_some()
-    }
-
-    pub fn has_all_bevy_traits(&self) -> bool {
-        self.bevy_reflect_reflect.is_some()
-    }
-}
-
-pub const DEF_PATHS_FROM_LUA: [&str; 2] = ["value::FromLua", "mlua::FromLua"];
-pub const DEF_PATHS_TO_LUA: [&str; 2] = ["value::ToLua", "mlua::ToLua"];
-pub const DEF_PATHS_REFLECT: [&str; 2] = ["bevy_reflect::Reflect", "reflect::Reflect"];
 
 impl<'tcx> BevyCtxt<'tcx> {
-    pub fn new(tcx: TyCtxt<'tcx>) -> Self {
+    /// Creates a new context with the provided TyCtxt and meta directories
+    pub(crate) fn new(tcx: TyCtxt<'tcx>, meta_dirs: Vec<Utf8PathBuf>) -> Self {
         Self {
             tcx,
             reflect_types: Default::default(),
-            variant_data: Default::default(),
             cached_traits: Default::default(),
+            meta_loader: MetaLoader::new(meta_dirs),
+            template_context: Default::default(),
         }
+    }
+
+    /// Clears all data structures in the context
+    pub(crate) fn clear(&mut self) {
+        debug!("Clearing all context");
+        *self = Self::new(self.tcx, self.meta_loader.meta_dirs.clone());
     }
 }
 
-pub enum FilteredVariant<'tcx> {
-    Enum(FilteredEnumData<'tcx>),
-    Struct(VariantData<'tcx>),
+#[derive(Clone, Default, Debug)]
+pub(crate) struct ReflectType<'tcx> {
+    /// Trait implementations for the reflect type (from a selection)
+    pub(crate) trait_impls: Option<Vec<DefId>>,
+    /// Information about the ADT structure, fields, and variants
+    pub(crate) variant_data: Option<ADTVariant<'tcx>>,
+    /// Functions passing criteria to be proxied
+    pub(crate) valid_functions: Option<Vec<FunctionContext>>,
+
+    /// Mapping from fields to the reflection strategy
+    field_reflection_types: IndexMap<DefId, ReflectionStrategy>,
 }
 
-pub struct FilteredEnumData<'tcx> {
-    pub variants: Vec<FilteredEnumVariant<'tcx>>,
+impl ReflectType<'_> {
+    pub(crate) fn set_field_reflection_strategies<
+        I: Iterator<Item = (DefId, ReflectionStrategy)>,
+    >(
+        &mut self,
+        field_strats: I,
+    ) {
+        self.field_reflection_types = field_strats.collect();
+    }
+
+    pub(crate) fn get_field_reflection_strat(&self, field: DefId) -> Option<&ReflectionStrategy> {
+        self.field_reflection_types.get(&field)
+    }
 }
 
-pub enum FilteredEnumVariant<'tcx> {
-    Variant(&'tcx Variant<'tcx>),
+pub(crate) const DEF_PATHS_FROM_LUA: [&str; 2] = ["value::FromLuaMulti", "mlua::FromLuaMulti"];
+pub(crate) const DEF_PATHS_TO_LUA: [&str; 2] = ["value::ToLuaMulti", "mlua::ToLuaMulti"];
+pub(crate) const DEF_PATHS_REFLECT: [&str; 2] = ["bevy_reflect::Reflect", "reflect::Reflect"];
+pub(crate) const FN_SOURCE_TRAITS: [&str; 12] = [
+    // PRINTING
+    "std::string::ToString",
+    // OWNERSHIP
+    "std::clone::Clone",
+    // OPERATORS
+    "std::ops::Neg",
+    "std::ops::Mul",
+    "std::ops::Add",
+    "std::ops::Sub",
+    "std::ops::Div",
+    "std::ops::Rem",
+    "std::cmp::Eq",
+    "std::cmp::PartialEq",
+    "std::ord::Ord", // we don't use these fully cuz of the output types not being lua primitives, but keeping it for the future
+    "std::ord::PartialOrd",
+];
+
+/// A collection of common traits stored for quick access.
+#[derive(Default)]
+pub(crate) struct CachedTraits {
+    pub(crate) mlua_from_lua_multi: Option<DefId>,
+    pub(crate) mlua_to_lua_multi: Option<DefId>,
+    pub(crate) bevy_reflect_reflect: Option<DefId>,
+    /// Traits whose methods can be included in the generated code
+    pub(crate) fn_source_traits: HashMap<String, DefId>,
+}
+
+impl CachedTraits {
+    pub(crate) fn has_all_mlua_traits(&self) -> bool {
+        self.mlua_from_lua_multi.is_some() && self.mlua_to_lua_multi.is_some()
+    }
+
+    pub(crate) fn has_all_bevy_traits(&self) -> bool {
+        self.bevy_reflect_reflect.is_some()
+    }
+
+    pub(crate) fn has_all_fn_source_traits(&self) -> bool {
+        self.fn_source_traits
+            .iter()
+            .all(|(k, _)| FN_SOURCE_TRAITS.contains(&k.as_str()))
+    }
+}
+
+#[derive(Clone, Debug)]
+pub(crate) struct FunctionContext {
+    pub(crate) def_id: DefId,
+    pub(crate) has_self: bool,
+    pub(crate) trait_did: Option<DefId>,
+    /// strategies for input and output (last element is the output)
+    pub(crate) reflection_strategies: Vec<ReflectionStrategy>,
+}
+
+#[derive(PartialEq, Eq, Clone, Copy, Serialize, Debug)]
+pub(crate) enum ReflectionStrategy {
+    /// The will have a known wrapper we can use
+    Proxy,
+    /// The type is a primitive with the right traits to be used directly in arguments and return values
+    Primitive,
+    /// Use a reflection primitive i.e. 'ReflectedValue', dynamic runtime reflection
+    Reflection,
+    /// Either ignored via 'reflect(ignore)' or not visible
     Filtered,
+}
+
+/// Variant with only ADT types
+#[derive(Clone, Debug)]
+pub(crate) enum ADTVariant<'tcx> {
+    Enum(EnumDef<'tcx>),
+    Struct(VariantData<'tcx>),
 }

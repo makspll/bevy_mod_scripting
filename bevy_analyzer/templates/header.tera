@@ -1,0 +1,14 @@
+#![allow(clippy::all, unused_imports, deprecated, dead_code)]
+// This file is generatedchange the template not this file
+extern crate self as bevy_script_api;
+
+use std::sync::Mutex;
+use bevy::prelude::App;
+use bevy_mod_scripting_core::prelude::*;
+
+#[cfg(feature = "lua")]
+use {
+    crate::{lua::RegisterForeignLuaType, ReflectedValue},
+    bevy_mod_scripting_lua::docs::LuaDocFragment,
+    bevy_mod_scripting_lua_derive::LuaProxy,
+};
