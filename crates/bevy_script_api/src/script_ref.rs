@@ -83,7 +83,7 @@ impl ReflectReference {
                 panic!(
                     "Expected `{}` found `{}`",
                     ::std::any::type_name::<T>(),
-                    reflect.type_name()
+                    reflect.get_represented_type_info().unwrap().type_path()
                 )
             }))
         })

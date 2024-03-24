@@ -480,7 +480,6 @@ pub fn impl_lua_proxy(input: TokenStream) -> TokenStream {
     quote_spanned! {derive_input.span()=>
 
         bevy_script_api::make_script_wrapper!(#proxied_type_path as #proxy_type_ident #opt_with_clone);
-
         bevy_script_api::impl_tealr_type!(#proxy_type_ident);
 
         #opt_debug_impl
