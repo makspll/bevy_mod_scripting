@@ -16,7 +16,7 @@ pub struct BevyAnalyzer;
     about,
     long_about,
     disable_help_flag = true,
-    bin_name = "cargo bevy-analyzer",
+    bin_name = "cargo bevy-api-gen",
     arg_required_else_help = true
 )]
 /// A Cargo plugin which can generate reflection powered wrappers for Bevy types,
@@ -66,7 +66,7 @@ pub struct Verbosity {
 
 pub const TARGET_DIR_ENV_NAME: &str = "PLUGIN_TARGET_DIR";
 fn compute_default_dir() -> String {
-    const DEFAULT_DIR: &str = "bevy_analyzer";
+    const DEFAULT_DIR: &str = "bevy_api_gen";
     //  this will be called a number of times, when it matters it won't default,
     // if the args are passed anywhere else this will act as dummy default
     Utf8PathBuf::from(std::env::var(TARGET_DIR_ENV_NAME).unwrap_or_default())
@@ -187,7 +187,7 @@ impl RustcPlugin for BevyAnalyzer {
     }
 
     fn driver_name(&self) -> std::borrow::Cow<'static, str> {
-        "bevy-analyzer-driver".into()
+        "bevy-api-gen-driver".into()
     }
 
     fn args(&self, target_dir: &Utf8Path) -> rustc_plugin::RustcPluginArgs<Self::Args> {

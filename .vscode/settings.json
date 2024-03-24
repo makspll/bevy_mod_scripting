@@ -3,19 +3,12 @@
     "lldb.showDisassembly": "never",
     "lldb.dereferencePointers": true,
     "lldb.consoleMode": "commands",
-    "rust-analyzer.cargo.features": [
-        "lua54",
-        "lua_script_api",
-        "rhai",
-        "rhai_script_api",
-        "teal"
-    ],
-    "rust-analyzer.server.extraEnv": {
-        "RUSTUP_TOOLCHAIN": "stable"
-    },
-    "rust-analyzer.runnables.extraEnv": {
-        "LD_LIBRARY_PATH": "${workspaceFolder}/target/debug/deps:${env:HOME}/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/lib"
-    },
+    // "rust-analyzer.server.extraEnv": {
+    //     "RUSTUP_TOOLCHAIN": "stable"
+    // },
+    // "rust-analyzer.runnables.extraEnv": {
+    //     "LD_LIBRARY_PATH": "${workspaceFolder}/target/debug/deps:${env:HOME}/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/lib"
+    // },
     "[rust]": {
         "editor.formatOnSave": true,
         "editor.formatOnSaveMode": "file",
@@ -24,4 +17,14 @@
     "editor.codeActionsOnSave": {
         "source.organizeImports": "explicit"
     },
+    "rust-analyzer.rustc.source": "discover",
+    "rust-analyzer.linkedProjects": [
+        "./crates/bevy_api_gen/Cargo.toml",
+        "Cargo.toml"
+    ],
+    "rust-analyzer.check.invocationStrategy": "per_workspace",
+    "rust-analyzer.check.invocationLocation": "workspace",
+    "rust-analyzer.check.overrideCommand": [
+        "/home/makspll/git/bevy_mod_scripting/check.sh"
+    ]
 }

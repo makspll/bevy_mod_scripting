@@ -7,7 +7,7 @@ use std::{
     process::{Command, Stdio},
 };
 
-use bevy_analyzer::*;
+use bevy_api_gen::*;
 use clap::Parser;
 use log::{debug, info, trace};
 use strum::VariantNames;
@@ -45,7 +45,7 @@ fn main() {
     }
 
     match args.cmd {
-        bevy_analyzer::Command::Print { template } => {
+        bevy_api_gen::Command::Print { template } => {
             println!(
                 "{}",
                 TEMPLATE_DIR
@@ -56,13 +56,13 @@ fn main() {
             );
             return;
         }
-        bevy_analyzer::Command::ListTemplates => {
+        bevy_api_gen::Command::ListTemplates => {
             for template in TemplateKind::VARIANTS {
                 println!("{}", template);
             }
             return;
         }
-        bevy_analyzer::Command::Collect {
+        bevy_api_gen::Command::Collect {
             output,
             templates,
             api_name,
@@ -110,7 +110,7 @@ fn main() {
         _ => {}
     }
 
-    let temp_dir = tempdir::TempDir::new("bevy_analyzer_bootstrap")
+    let temp_dir = tempdir::TempDir::new("bevy_api_gen_bootstrap")
         .expect("Error occured when trying to acquire temp file");
 
     debug!("Temporary directory: {}", &temp_dir.path().display());
@@ -177,7 +177,7 @@ fn main() {
         panic!("Could not find 'libmlua' artifact among bootstrap crate artifacts, stopping.");
     }
 
-    debug!("Running bevy_analyzer main cargo command");
+    debug!("Running bevy_api_gen main cargo command");
 
     debug!("RUSTFLAGS={}", env::var("RUSTFLAGS").unwrap_or_default());
 

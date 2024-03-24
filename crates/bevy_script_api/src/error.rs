@@ -1,5 +1,4 @@
 use std::borrow::Cow;
-
 use thiserror::Error;
 
 #[derive(Error, Debug, Clone)]

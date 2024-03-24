@@ -20,17 +20,11 @@ path = "src/documentation/main.rs"
 name = "bevy_mod_scripting"
 path = "src/lib.rs"
 
+[rust-analyzer.cargo.features]
+features = ["lua54", "lua_script_api", "rhai", "rhai_script_api", "teal"]
+
 [package.metadata."docs.rs"]
 features = ["lua", "lua54", "rhai", "lua_script_api", "rhai_script_api", "teal"]
-
-[package.metadata.release]
-pre-release-replacements = [
-    { file = "Cargo.toml", search = '^version\s*=\s*.*$', replace = "version = \"{{version}}\"", exactly = 1 },
-    { file = "Cargo.toml", search = '^(?P<h>bevy_mod_scripting_core\s*=.*)version\s*=\s*".*"(?P<t>.*)$', replace = "${h}version = \"{{version}}\"${t}", exactly = 1 },
-    { file = "Cargo.toml", search = '^(?P<h>bevy_mod_scripting_lua\s*=.*)version\s*=\s*".*"(?P<t>.*)$', replace = "${h}version = \"{{version}}\"${t}", exactly = 1 },
-    { file = "Cargo.toml", search = '^(?P<h>bevy_mod_scripting_rhai\s*=.*)version\s*=\s*".*"(?P<t>.*)$', replace = "${h}version = \"{{version}}\"${t}", exactly = 1 },
-    { file = "Cargo.toml", search = '^(?P<h>bevy_script_api\s*=.*)version\s*=\s*".*"(?P<t>.*)$', replace = "${h}version = \"{{version}}\"${t}", exactly = 1 },
-]
 
 [features]
 ## core
@@ -60,10 +54,10 @@ rhai_script_api = ["bevy_script_api/rhai"]
 
 [dependencies]
 bevy = { version = "0.11", default-features = false }
-bevy_mod_scripting_core = { path = "bevy_mod_scripting_core", version = "0.3.0" }
-bevy_mod_scripting_lua = { path = "languages/bevy_mod_scripting_lua", version = "0.3.0", optional = true }
-bevy_mod_scripting_rhai = { path = "languages/bevy_mod_scripting_rhai", version = "0.3.0", optional = true }
-bevy_script_api = { path = "bevy_script_api", version = "0.3.0", optional = true }
+bevy_mod_scripting_core = { path = "crates/bevy_mod_scripting_core", version = "0.3.0" }
+bevy_mod_scripting_lua = { path = "crates/languages/bevy_mod_scripting_lua", version = "0.3.0", optional = true }
+bevy_mod_scripting_rhai = { path = "crates/languages/bevy_mod_scripting_rhai", version = "0.3.0", optional = true }
+bevy_script_api = { path = "crates/bevy_script_api", version = "0.3.0", optional = true }
 
 [dev-dependencies]
 bevy = { version = "0.11" }
@@ -74,17 +68,17 @@ rhai-rand = "0.1"
 
 [workspace]
 resolver = "2"
+exclude = ["bevy_api_gen"]
 members = [
-    "bevy_mod_scripting_core",
-    "bevy_event_priority",
-    "bevy_mod_scripting_derive",
-    "bevy_api_gen",
-    "bevy_script_api",
-    "languages/bevy_mod_scripting_lua",
-    "languages/bevy_mod_scripting_lua_derive",
-    "languages/bevy_mod_scripting_rhai",
-    "languages/bevy_mod_scripting_rhai_derive",
-    "bevy_mod_scripting_common",
+    "crates/bevy_mod_scripting_core",
+    "crates/bevy_event_priority",
+    "crates/bevy_mod_scripting_derive",
+    "crates/bevy_script_api",
+    "crates/languages/bevy_mod_scripting_lua",
+    "crates/languages/bevy_mod_scripting_lua_derive",
+    "crates/languages/bevy_mod_scripting_rhai",
+    "crates/languages/bevy_mod_scripting_rhai_derive",
+    "crates/bevy_mod_scripting_common",
 ]
 
 [profile.dev]

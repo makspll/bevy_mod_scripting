@@ -1,19 +1,26 @@
 [package]
-name = "bevy_analyzer"
+name = "bevy_api_gen"
 version = "0.1.0"
 edition = "2021"
 
 [[bin]]
-name = "cargo-bevy-analyzer"
+name = "cargo-bevy-api-gen"
 path = "src/bin/main.rs"
 
 [[bin]]
-name = "bevy-analyzer-driver"
+name = "bevy-bevy-api-gen-driver"
 path = "src/bin/driver.rs"
 
 
+[rust-analyzer.rustc]
+source = "discover"
+
 [package.metadata.rust-analyzer]
 rustc_private = true
+
+[rust-analyzer.check]
+overrideCommand = ["cargo", "+nightly-2024-01-24", "a", "--message-format=json"]
+
 
 [dependencies]
 log = "0.4"

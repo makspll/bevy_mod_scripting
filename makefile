@@ -84,3 +84,6 @@ make_json_files:
 	cp ${BEVY_PATH}/target/doc/* ./target/doc/
 	cd ${TEALR_PATH} && RUSTDOCFLAGS="--document-hidden-items --document-private-items  -Zunstable-options  --output-format json" rustup run nightly-${NIGHTLY_VERSION} cargo doc --features=mlua_vendored,mlua_lua54 --workspace
 	cp ${TEALR_PATH}/target/doc/* ./target/doc/
+
+install_bevy_api_gen:
+	cd bevy_api_gen && cargo install --path .
