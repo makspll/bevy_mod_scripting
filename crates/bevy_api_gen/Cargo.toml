@@ -8,7 +8,7 @@ name = "cargo-bevy-api-gen"
 path = "src/bin/main.rs"
 
 [[bin]]
-name = "bevy-bevy-api-gen-driver"
+name = "bevy-api-gen-driver"
 path = "src/bin/driver.rs"
 
 

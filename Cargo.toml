@@ -20,9 +20,6 @@ path = "src/documentation/main.rs"
 name = "bevy_mod_scripting"
 path = "src/lib.rs"
 
-[rust-analyzer.cargo.features]
-features = ["lua54", "lua_script_api", "rhai", "rhai_script_api", "teal"]
-
 [package.metadata."docs.rs"]
 features = ["lua", "lua54", "rhai", "lua_script_api", "rhai_script_api", "teal"]
 

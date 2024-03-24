@@ -86,4 +86,7 @@ make_json_files:
 	cp ${TEALR_PATH}/target/doc/* ./target/doc/
 
 install_bevy_api_gen:
-	cd bevy_api_gen && cargo install --path .
+	cargo +nightly-2024-01-24 install --path ./crates/bevy_api_gen
+
+
+
