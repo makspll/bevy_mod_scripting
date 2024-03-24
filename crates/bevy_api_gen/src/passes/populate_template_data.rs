@@ -1,14 +1,11 @@
 use log::trace;
 use rustc_ast::Attribute;
-use rustc_hir::{
-    def_id::{DefId, LOCAL_CRATE},
-    FieldDef, VariantData,
-};
-use rustc_middle::ty::{ParamTy, TyKind, TypeFoldable};
+use rustc_hir::def_id::{DefId, LOCAL_CRATE};
+use rustc_middle::ty::{FieldDef, ParamTy, TyKind, TypeFoldable};
 use rustc_span::Symbol;
 
 use crate::{
-    ADTVariant, Arg, Args, BevyCtxt, Field, Function, FunctionContext, Item, Output, ReflectType,
+    Arg, Args, BevyCtxt, Field, Function, FunctionContext, Item, Output, ReflectType,
     TemplateContext, Variant,
 };
 /// Converts the BevyCtxt into simpler data that can be used in templates directly,
@@ -28,29 +25,22 @@ pub(crate) fn populate_template_data(ctxt: &mut BevyCtxt<'_>, args: &Args) -> bo
 
         let functions = process_functions(ctxt, fn_ctxts);
         let variant = ty_ctxt.variant_data.as_ref().unwrap();
-        let is_tuple_struct = matches!(
-            variant,
-            ADTVariant::Struct(VariantData::Tuple(..)) | ADTVariant::Struct(VariantData::Unit(..))
-        );
 
-        let variants = match variant {
-            ADTVariant::Enum(e) => e
-                .variants
-                .iter()
-                .map(|variant| Variant {
-                    docstrings: docstrings(
-                        ctxt.tcx.get_attrs_unchecked(variant.def_id.to_def_id()),
-                    ),
-                    name: variant.ident.to_string().into(),
-                    fields: process_fields(ctxt, variant.data.fields(), &ty_ctxt),
-                })
-                .collect(),
-            ADTVariant::Struct(s) => vec![Variant {
-                docstrings: Default::default(),
-                name: None,
-                fields: process_fields(ctxt, s.fields(), &ty_ctxt),
-            }],
-        };
+        let is_tuple_struct = variant.is_struct()
+            && variant
+                .all_fields()
+                .next()
+                .is_some_and(|f| f.name.as_str().chars().all(|c| c.is_numeric()));
+
+        let variants = variant
+            .variants()
+            .iter()
+            .map(|variant| Variant {
+                docstrings: docstrings(ctxt.tcx.get_attrs_unchecked(variant.def_id)),
+                name: variant.name.to_ident_string().into(),
+                fields: process_fields(ctxt, variant.fields.iter(), &ty_ctxt),
+            })
+            .collect::<Vec<_>>();
 
         let item = Item {
             ident: tcx.item_name(reflect_ty_did).to_ident_string(),
@@ -94,19 +84,18 @@ pub(crate) fn populate_template_data(ctxt: &mut BevyCtxt<'_>, args: &Args) -> bo
     true
 }
 
-pub(crate) fn process_fields(
+pub(crate) fn process_fields<'f, I: Iterator<Item = &'f FieldDef>>(
     ctxt: &BevyCtxt,
-    fields: &[FieldDef],
+    fields: I,
     ty_ctxt: &ReflectType,
 ) -> Vec<Field> {
     fields
-        .iter()
         .map(|field| Field {
-            docstrings: docstrings(ctxt.tcx.get_attrs_unchecked(field.def_id.to_def_id())),
-            ident: field.ident.to_string(),
-            ty: ctxt.tcx.type_of(field.def_id).skip_binder().to_string(),
+            docstrings: docstrings(ctxt.tcx.get_attrs_unchecked(field.did)),
+            ident: field.name.to_ident_string(),
+            ty: ctxt.tcx.type_of(field.did).skip_binder().to_string(),
             reflection_strategy: *ty_ctxt
-                .get_field_reflection_strat(field.def_id.to_def_id())
+                .get_field_reflection_strat(field.did)
                 .unwrap_or_else(|| panic!("{ty_ctxt:#?}")),
         })
         .collect()

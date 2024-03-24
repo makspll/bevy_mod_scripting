@@ -22,10 +22,10 @@ impl FileLoader for ModifyingFileLoader {
             );
             RealFileLoader.read_file(path).map(|mut f| {
                 if !f.contains("extern crate mlua") {
-                    f.push_str("extern crate mlua;");
+                    f.push_str("#[allow(unused_extern_crates)] extern crate mlua;");
                 }
                 if !f.contains("extern crate bevy_reflect") {
-                    f.push_str("extern crate bevy_reflect;");
+                    f.push_str("#[allow(unused_extern_crates)] extern crate bevy_reflect;");
                 }
                 f
             })

@@ -1,9 +1,9 @@
 use indexmap::IndexMap;
 use log::{info, trace};
 use rustc_ast::Attribute;
-use rustc_hir::{def_id::DefId, FieldDef};
+use rustc_hir::def_id::DefId;
 use rustc_infer::infer::TyCtxtInferExt;
-use rustc_middle::ty::{AssocKind, FnSig, ParamEnv, Ty, TyCtxt};
+use rustc_middle::ty::{AdtKind, AssocKind, FieldDef, FnSig, ParamEnv, Ty, TyCtxt};
 use rustc_span::Symbol;
 use rustc_trait_selection::infer::InferCtxtExt;
 
@@ -20,21 +20,20 @@ pub(crate) fn find_methods_and_fields(ctxt: &mut BevyCtxt<'_>, _args: &Args) -> 
     // borrow checker fucky wucky
     let reflect_types = ctxt.reflect_types.keys().cloned().collect::<Vec<_>>();
     for def_id in reflect_types {
-        let item = ctxt.tcx.hir().expect_item(def_id.expect_local());
-        let param_env = ctxt.tcx.param_env(def_id);
+        let adt_def = ctxt.tcx.adt_def(def_id);
 
-        match item.kind {
-            rustc_hir::ItemKind::Enum(variant_data, _) => {
-
-                let strats = variant_data.variants.iter().flat_map(|variant|  {
-                    if has_reflect_ignore_attr(ctxt.tcx.hir().attrs(variant.hir_id)) {
+        match adt_def.adt_kind() {
+            AdtKind::Enum => {
+                
+                let strats = adt_def.variants().iter().flat_map(|variant|  {
+                    if has_reflect_ignore_attr(ctxt.tcx.get_attrs_unchecked(variant.def_id)) {
                         // TODO: is this the right approach? do we need to still include those variants? or do we just provide dummies
                         // or can we just skip those ?
-                        info!("ignoring enum variant: {}::{} due to 'reflect(ignore)' attribute", ctxt.tcx.item_name(def_id), variant.ident);
+                        info!("ignoring enum variant: {}::{} due to 'reflect(ignore)' attribute", ctxt.tcx.item_name(def_id), variant.name);
                         todo!();
                     }
 
-                    process_fields(ctxt.tcx, &ctxt.meta_loader, &ctxt.reflect_types, &ctxt.cached_traits, variant.data.fields(), param_env)
+                    process_fields(ctxt.tcx, &ctxt.meta_loader, &ctxt.reflect_types, &ctxt.cached_traits, variant.fields.iter(), ctxt.tcx.param_env(variant.def_id))
                 }).collect::<Vec<_>>();
 
                 strats.iter().for_each(|(f_did, strat)| match strat {
@@ -44,12 +43,12 @@ pub(crate) fn find_methods_and_fields(ctxt: &mut BevyCtxt<'_>, _args: &Args) -> 
                 });
 
                 let ty_ctxt = ctxt.reflect_types.get_mut(&def_id).unwrap();
-                ty_ctxt.variant_data = Some(crate::ADTVariant::Enum(variant_data));
+                ty_ctxt.variant_data = Some(adt_def);
                 ty_ctxt.set_field_reflection_strategies(strats.into_iter());
 
             },
-            rustc_hir::ItemKind::Struct(variant_data, _) => {
-                let fields = process_fields(ctxt.tcx, &ctxt.meta_loader, &ctxt.reflect_types,&ctxt.cached_traits, variant_data.fields(), param_env);
+            AdtKind::Struct => {
+                let fields = process_fields(ctxt.tcx, &ctxt.meta_loader, &ctxt.reflect_types,&ctxt.cached_traits, adt_def.all_fields(), ctxt.tcx.param_env(def_id));
                 fields.iter().for_each(|(f_did, strat)| match strat {
                     ReflectionStrategy::Reflection => report_field_not_supported(ctxt.tcx, *f_did, def_id, None, "type is neither a proxy nor a type expressible as lua primitive"),
                     ReflectionStrategy::Filtered => report_field_not_supported(ctxt.tcx, *f_did, def_id, None, "field has a 'reflect(ignore)' attribute"),
@@ -57,7 +56,7 @@ pub(crate) fn find_methods_and_fields(ctxt: &mut BevyCtxt<'_>, _args: &Args) -> 
                 });
                 let ty_ctxt = ctxt.reflect_types.get_mut(&def_id).unwrap();
                 assert!(ty_ctxt.variant_data.is_none(), "variant data already set!");
-                ty_ctxt.variant_data = Some(crate::ADTVariant::Struct(variant_data));
+                ty_ctxt.variant_data = Some(adt_def);
                 ty_ctxt.set_field_reflection_strategies(fields.into_iter());
             },
             t => panic!("Unexpected item type, all `Reflect` implementing items should be enums or structs. : {:?}", t)
@@ -218,22 +217,21 @@ fn report_field_not_supported(
 }
 
 /// Checks each field individually and returns reflection strategies
-fn process_fields<'tcx>(
+fn process_fields<'tcx,'f, I: Iterator<Item = &'f FieldDef>>(
     tcx: TyCtxt<'tcx>,
     meta_loader: &MetaLoader,
     reflect_types: &IndexMap<DefId, ReflectType<'tcx>>,
     cached_traits: &CachedTraits,
-    fields: &[FieldDef<'tcx>],
+    fields: I,
     param_env: ParamEnv<'tcx>,
 ) -> Vec<(DefId, ReflectionStrategy)> {
     fields
-        .iter()
         .map(move |f| {
-            let field_ty = tcx.erase_regions(tcx.type_of(f.def_id).instantiate_identity());
+            let field_ty = tcx.erase_regions(tcx.type_of(f.did).instantiate_identity());
             if type_is_supported_as_proxy_arg(tcx, reflect_types, meta_loader, field_ty)
                 && type_is_supported_as_proxy_return_val(tcx, reflect_types, meta_loader, field_ty)
             {
-                (f.def_id.to_def_id(), crate::ReflectionStrategy::Proxy)
+                (f.did, crate::ReflectionStrategy::Proxy)
             } else if type_is_supported_as_non_proxy_arg(tcx, param_env, cached_traits, field_ty)
                 && type_is_supported_as_non_proxy_return_val(
                     tcx,
@@ -242,11 +240,11 @@ fn process_fields<'tcx>(
                     field_ty,
                 )
             {
-                (f.def_id.to_def_id(), crate::ReflectionStrategy::Primitive)
-            } else if !has_reflect_ignore_attr(tcx.hir().attrs(f.hir_id)) {
-                (f.def_id.to_def_id(), crate::ReflectionStrategy::Reflection)
+                (f.did, crate::ReflectionStrategy::Primitive)
+            } else if !has_reflect_ignore_attr(tcx.get_attrs_unchecked(f.did)) {
+                (f.did, crate::ReflectionStrategy::Reflection)
             } else {
-                (f.def_id.to_def_id(), crate::ReflectionStrategy::Filtered)
+                (f.did, crate::ReflectionStrategy::Filtered)
             }
         })
         .collect::<Vec<_>>()
@@ -269,7 +267,7 @@ fn type_is_supported_as_proxy_arg<'tcx>(
     meta_loader: &MetaLoader,
     ty: Ty,
 ) -> bool {
-    type_is_local_adt_and_reflectable(tcx, reflect_types, meta_loader, ty.peel_refs())
+    type_is_adt_and_reflectable(tcx, reflect_types, meta_loader, ty.peel_refs())
 }
 
 /// Returns true if this type can be used in return position by checking if it's a top level proxy arg without references
@@ -279,11 +277,11 @@ fn type_is_supported_as_proxy_return_val<'tcx>(
     meta_loader: &MetaLoader,
     ty: Ty,
 ) -> bool {
-    type_is_local_adt_and_reflectable(tcx, reflect_types, meta_loader, ty)
+    type_is_adt_and_reflectable(tcx, reflect_types, meta_loader, ty)
 }
 
-/// Check if the type is a local ADT and is reflectable (i.e. a proxy is being generated for it in SOME crate)
-fn type_is_local_adt_and_reflectable<'tcx>(
+/// Check if the type is an ADT and is reflectable (i.e. a proxy is being generated for it in SOME crate that we know about from the meta files)
+fn type_is_adt_and_reflectable<'tcx>(
     tcx: TyCtxt<'tcx>,
     reflect_types: &IndexMap<DefId, ReflectType<'tcx>>,
     meta_loader: &MetaLoader,
@@ -298,10 +296,14 @@ fn type_is_local_adt_and_reflectable<'tcx>(
         }
 
         // for other crates, reach for meta data
+        // we know a reflect impl can ONLY exist in one of two places due to orphan rules:
+        // 1) the bevy_reflect crate 
+        // 2) the crate that defines the type
+        // so search for these metas!
         let crate_name = tcx.crate_name(did.krate).to_ident_string();
-        let meta = match meta_loader.meta_for(&crate_name) {
+        let meta = match meta_loader.meta_for(&crate_name).or_else(|| meta_loader.meta_for("bevy_reflect")) {
             Some(meta) => meta,
-            None => return false, // TODO: is it possible we get false negatives here ? perhaps due to parallel compilation ?
+            None => return false, // TODO: is it possible we get false negatives here ? perhaps due to parallel compilation ? or possibly because of dependency order
         };
         meta.contains_def_path_hash(tcx.def_path_hash(did))
     })

@@ -26,5 +26,6 @@
     "rust-analyzer.check.invocationLocation": "workspace",
     "rust-analyzer.check.overrideCommand": [
         "/home/makspll/git/bevy_mod_scripting/check.sh"
-    ]
+    ],
+    "rust-analyzer.showUnlinkedFileNotification": false
 }

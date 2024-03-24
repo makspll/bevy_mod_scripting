@@ -3,8 +3,8 @@ use std::collections::HashMap;
 use cargo_metadata::camino::Utf8PathBuf;
 use indexmap::IndexMap;
 use log::debug;
-use rustc_hir::{def_id::DefId, EnumDef, VariantData};
-use rustc_middle::ty::TyCtxt;
+use rustc_hir::def_id::DefId;
+use rustc_middle::ty::{AdtDef, TyCtxt};
 use serde::Serialize;
 
 use crate::{MetaLoader, TemplateContext};
@@ -43,7 +43,7 @@ pub(crate) struct ReflectType<'tcx> {
     /// Trait implementations for the reflect type (from a selection)
     pub(crate) trait_impls: Option<Vec<DefId>>,
     /// Information about the ADT structure, fields, and variants
-    pub(crate) variant_data: Option<ADTVariant<'tcx>>,
+    pub(crate) variant_data: Option<AdtDef<'tcx>>,
     /// Functions passing criteria to be proxied
     pub(crate) valid_functions: Option<Vec<FunctionContext>>,
 
@@ -132,11 +132,4 @@ pub(crate) enum ReflectionStrategy {
     Reflection,
     /// Either ignored via 'reflect(ignore)' or not visible
     Filtered,
-}
-
-/// Variant with only ADT types
-#[derive(Clone, Debug)]
-pub(crate) enum ADTVariant<'tcx> {
-    Enum(EnumDef<'tcx>),
-    Struct(VariantData<'tcx>),
 }
