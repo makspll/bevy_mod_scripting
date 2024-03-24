@@ -1,0 +1,3 @@
+pub fn on_event() {
+    print_fancy("Hello, World!");
+}

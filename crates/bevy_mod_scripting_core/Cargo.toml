@@ -1,6 +1,6 @@
 [package]
 name = "bevy_mod_scripting_core"
-version = "0.3.0"
+version = "0.5.0"
 authors = ["Maksymilian Mozolewski <makspl17@gmail.com>"]
 edition = "2021"
 license = "MIT"
@@ -10,14 +10,6 @@ homepage = "https://github.com/makspll/bevy_mod_scripting"
 keywords = ["bevy", "gamedev", "scripting", "lua"]
 categories = ["game-development"]
 readme = "readme.md"
-
-
-[package.metadata.release]
-pre-release-replacements = [
-    {file="Cargo.toml", search='^version\s*=\s*.*$', replace="version = \"{{version}}\"", exactly=1},
-    {file="Cargo.toml", search='^(?P<h>bevy_event_priority\s*=.*)version\s*=\s*".*"(?P<t>.*)$', replace="${h}version = \"{{version}}\"${t}", exactly=1},
-]
-
 
 [lib]
 name = "bevy_mod_scripting_core"
@@ -29,10 +21,19 @@ doc_always = []
 
 
 [dependencies]
-bevy = { version = "0.11", default-features = false, features=["bevy_asset","bevy_gltf","bevy_animation","bevy_core_pipeline","bevy_ui","bevy_pbr","bevy_render","bevy_text","bevy_sprite","filesystem_watcher"]}
-bevy_event_priority = {path = "../bevy_event_priority", version = "0.3.0" }
+bevy = { version = "0.13", default-features = false, features = [
+    "bevy_asset",
+    "bevy_gltf",
+    "bevy_animation",
+    "bevy_core_pipeline",
+    "bevy_ui",
+    "bevy_pbr",
+    "bevy_render",
+    "bevy_text",
+    "bevy_sprite",
+] }
+bevy_event_priority = { path = "../bevy_event_priority", version = "0.5.0" }
 thiserror = "1.0.31"
 paste = "1.0.7"
 parking_lot = "0.12.1"
-
-
+anyhow = "1.0.75"

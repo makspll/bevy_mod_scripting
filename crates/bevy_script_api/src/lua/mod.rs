@@ -1,21 +1,20 @@
-use ::std::any::TypeId;
-use ::std::borrow::Cow;
+use std::any::TypeId;
+use std::borrow::Cow;
 
 use crate::common::bevy::GetWorld;
-use crate::impl_tealr_type;
-use ::bevy::prelude::{App, AppTypeRegistry};
+use crate::{impl_from_lua_with_clone, impl_tealr_type};
+use bevy::prelude::{App, AppTypeRegistry};
 
-use ::bevy::reflect::{FromType, GetTypeRegistration, Reflect};
+use bevy::reflect::{FromType, GetTypeRegistration, Reflect};
 
 use bevy_mod_scripting_core::world::WorldPointer;
-use bevy_mod_scripting_lua::tealr;
+use bevy_mod_scripting_lua::tealr::{self, ToTypename};
 
 use tealr::mlu::mlua::MetaMethod;
 use tealr::mlu::{
-    mlua::{self, FromLua, Lua, ToLua, UserData, Value},
+    mlua::{self, FromLua, IntoLua, Lua, UserData, Value},
     TealData, TealDataMethods,
 };
-use tealr::TypeName;
 
 use crate::script_ref::{ReflectReference, ReflectedValue, ValueIndex};
 
@@ -120,19 +119,19 @@ impl ApplyLua for ReflectReference {
         Err(mlua::Error::RuntimeError(self.get(|s|
             format!("Attempted to assign `{}` = {v:?}. Did you forget to call `app.register_foreign_lua_type::<{}>`?",
                 self.path,
-                s.type_name()
+                s.get_represented_type_info().unwrap().type_path()
             ))?)
         )
     }
 }
 
-impl<'lua> ToLua<'lua> for ReflectReference {
+impl<'lua> IntoLua<'lua> for ReflectReference {
     /// Converts the LuaRef to the most convenient representation
     /// checking conversions in this order:
     /// - A primitive or bevy type which has a reflect interface is converted to a custom UserData exposing its API to lua conveniently
     /// - A type implementing CustomUserData is converted with its `ref_to_lua` method
     /// - Finally the method is represented as a `ReflectedValue` which exposes the Reflect interface
-    fn to_lua(self, ctx: &'lua Lua) -> mlua::Result<Value<'lua>> {
+    fn into_lua(self, ctx: &'lua Lua) -> mlua::Result<Value<'lua>> {
         let world = self.world_ptr.clone();
         let world = world.read();
 
@@ -143,26 +142,19 @@ impl<'lua> ToLua<'lua> for ReflectReference {
         if let Some(v) = g.get_type_data::<ReflectLuaProxyable>(type_id) {
             v.ref_to_lua(self, ctx)
         } else {
-            ReflectedValue { ref_: self }.to_lua(ctx)
+            ReflectedValue { ref_: self }.into_lua(ctx)
         }
     }
 }
 
-impl TypeName for ReflectReference {
-    /// ReflectedValue represents the "lowest common denominator" across the possible returned types
-    /// people can always use 'as' to cast to the right type
-    /// but the static analysis will be conservative, i.e. the compiler will assume the smallest set of functionality
-    /// by default
-    fn get_type_parts() -> Cow<'static, [tealr::NamePart]> {
-        Cow::Borrowed(&[tealr::NamePart::Type(tealr::TealType {
-            name: Cow::Borrowed("ReflectedValue"),
-            generics: None,
-            type_kind: tealr::KindOfType::Builtin,
-        })])
+impl ToTypename for ReflectReference {
+    fn to_typename() -> tealr::Type {
+        tealr::Type::new_single("ReflectedValue", tealr::KindOfType::External)
     }
 }
 
 impl_tealr_type!(ReflectedValue);
+impl_from_lua_with_clone!(ReflectedValue);
 impl TealData for ReflectedValue {
     fn add_methods<'lua, T: TealDataMethods<'lua, Self>>(methods: &mut T) {
         methods.document_type("This type represents a generic reflected value.");
@@ -270,7 +262,7 @@ pub trait ValueLuaType {}
 
 impl<T: Clone + UserData + Send + ValueLuaType + Reflect + 'static> LuaProxyable for T {
     fn ref_to_lua(self_: ReflectReference, lua: &Lua) -> mlua::Result<Value> {
-        self_.get_typed(|s: &Self| s.clone().to_lua(lua))?
+        self_.get_typed(|s: &Self| s.clone().into_lua(lua))?
     }
 
     fn apply_lua<'lua>(
@@ -292,7 +284,9 @@ impl<T: Clone + UserData + Send + ValueLuaType + Reflect + 'static> LuaProxyable
     }
 }
 
-impl<'lua, T: Clone + UserData + Send + ValueLuaType + Reflect + 'static> FromLuaProxy<'lua> for T {
+impl<'lua, T: Clone + UserData + FromLua<'lua> + Send + ValueLuaType + Reflect + 'static>
+    FromLuaProxy<'lua> for T
+{
     fn from_lua_proxy(new_val: Value<'lua>, lua: &'lua Lua) -> mlua::Result<Self> {
         T::from_lua(new_val, lua)
     }
@@ -300,7 +294,7 @@ impl<'lua, T: Clone + UserData + Send + ValueLuaType + Reflect + 'static> FromLu
 
 impl<'lua, T: Clone + UserData + Send + ValueLuaType + Reflect + 'static> ToLuaProxy<'lua> for T {
     fn to_lua_proxy(self, lua: &'lua Lua) -> mlua::Result<Value<'lua>> {
-        self.to_lua(lua)
+        self.into_lua(lua)
     }
 }
 

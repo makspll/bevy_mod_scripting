@@ -1,21 +1,19 @@
 use bevy::{
-    asset::Error,
-    asset::{AssetLoader, LoadedAsset},
-    reflect::{TypePath, TypeUuid},
+    asset::{io::Reader, Asset, AssetLoader, AsyncReadExt, LoadContext},
+    reflect::TypePath,
 };
-use bevy_mod_scripting_core::prelude::*;
-use std::sync::Arc;
 
-#[derive(Debug, TypeUuid, TypePath)]
-#[uuid = "e4f7d00d-5acd-45fb-a29c-5a44c5447f5c"]
+use bevy_mod_scripting_core::prelude::*;
+
+#[derive(Asset, Debug, TypePath)]
 /// A rhai code file in bytes
 pub struct RhaiFile {
-    pub bytes: Arc<[u8]>,
+    pub bytes: Vec<u8>,
 }
 
 impl CodeAsset for RhaiFile {
     fn bytes(&self) -> &[u8] {
-        &self.bytes
+        self.bytes.as_slice()
     }
 }
 
@@ -24,15 +22,20 @@ impl CodeAsset for RhaiFile {
 pub struct RhaiLoader;
 
 impl AssetLoader for RhaiLoader {
+    type Asset = RhaiFile;
+    type Settings = ();
+    type Error = anyhow::Error;
     fn load<'a>(
         &'a self,
-        bytes: &'a [u8],
-        load_context: &'a mut bevy::asset::LoadContext,
-    ) -> bevy::asset::BoxedFuture<'a, Result<(), Error>> {
-        load_context.set_default_asset(LoadedAsset::new(RhaiFile {
-            bytes: bytes.into(),
-        }));
-        Box::pin(async move { Ok(()) })
+        reader: &'a mut Reader,
+        _: &'a Self::Settings,
+        _: &'a mut LoadContext,
+    ) -> bevy::asset::BoxedFuture<'a, Result<Self::Asset, Self::Error>> {
+        Box::pin(async move {
+            let mut bytes = Vec::new();
+            reader.read_to_end(&mut bytes).await?;
+            Ok(RhaiFile { bytes })
+        })
     }
 
     fn extensions(&self) -> &[&str] {

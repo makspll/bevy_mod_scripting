@@ -25,7 +25,7 @@ jobs:
           toolchain: stable
           override: true
       - uses: Swatinem/rust-cache@v2.2.0
-      - run: cargo install --git https://github.com/lenscas/tealr_doc_gen --rev 91afd4a528e7f5b746ac3a6b299c422b42c05db6
+      - run: cargo install --git https://github.com/lenscas/tealr_doc_gen
       - run: mkdir -p ./assets/scripts/doc/
       - run: cp tealr_doc_gen_config.json ./assets/scripts/doc/tealr_doc_gen_config.json
       - run: sed -i "s/<page_root>/bevy_mod_scripting_lua\/${{github.event.release.tag_name || inputs.manual_tag}}\//" ./assets/scripts/doc/tealr_doc_gen_config.json 

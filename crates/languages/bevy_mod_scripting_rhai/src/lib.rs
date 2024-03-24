@@ -75,7 +75,7 @@ impl<A: FuncArgs + Send + Clone + Sync + 'static> ScriptHost for RhaiScriptHost<
         set: impl SystemSet,
     ) {
         app.add_priority_event::<Self::ScriptEvent>()
-            .add_asset::<RhaiFile>()
+            .init_asset::<RhaiFile>()
             .init_asset_loader::<RhaiLoader>()
             .init_resource::<CachedScriptState<Self>>()
             .init_resource::<ScriptContexts<Self::ScriptContext>>()

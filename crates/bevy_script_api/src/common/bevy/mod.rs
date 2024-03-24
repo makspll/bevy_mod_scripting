@@ -34,26 +34,26 @@ impl ScriptTypeRegistration {
 
     #[inline(always)]
     pub fn short_name(&self) -> &str {
-        self.0.short_name()
+        self.0.type_info().type_path_table().short_path()
     }
 
     #[inline(always)]
     pub fn type_name(&self) -> &'static str {
-        self.0.type_name()
+        self.0.type_info().type_path_table().path()
     }
 }
 
 impl std::fmt::Debug for ScriptTypeRegistration {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         f.debug_tuple("ScriptTypeRegistration")
-            .field(&self.0.type_name())
+            .field(&self.0.type_info().type_path())
             .finish()
     }
 }
 
 impl std::fmt::Display for ScriptTypeRegistration {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        f.write_str(self.0.short_name())
+        f.write_str(self.0.type_info().type_path())
     }
 }
 
@@ -157,8 +157,8 @@ impl ScriptWorld {
         let registry = registry.read();
 
         registry
-            .get_with_short_name(type_name)
-            .or_else(|| registry.get_with_name(type_name))
+            .get_with_short_type_path(type_name)
+            .or_else(|| registry.get_with_type_path(type_name))
             .map(|registration| ScriptTypeRegistration::new(Arc::new(registration.clone())))
     }
 
@@ -169,6 +169,9 @@ impl ScriptWorld {
     ) -> Result<ReflectReference, ScriptError> {
         let mut w = self.write();
 
+        // Remove: AppTypeRegistry
+        let registry: AppTypeRegistry = w.remove_resource().unwrap();
+
         let mut entity_ref = w
             .get_entity_mut(entity)
             .ok_or_else(|| ScriptError::Other(format!("Entity is not valid {:#?}", entity)))?;
@@ -177,23 +180,31 @@ impl ScriptWorld {
             ScriptError::Other(format!("Not a component {}", comp_type.short_name()))
         })?;
 
+        let registry_lock = registry.read();
+
         // this is just a formality
         // TODO: maybe get an add_default impl added to ReflectComponent
         // this means that we don't require ReflectDefault for adding components!
         match comp_type.0.type_info(){
-            bevy::reflect::TypeInfo::Struct(_) => component_data.insert(&mut entity_ref, &DynamicStruct::default()),
-            bevy::reflect::TypeInfo::TupleStruct(_) => component_data.insert(&mut entity_ref, &DynamicTupleStruct::default()),
-            bevy::reflect::TypeInfo::Tuple(_) => component_data.insert(&mut entity_ref, &DynamicTuple::default()),
-            bevy::reflect::TypeInfo::List(_) => component_data.insert(&mut entity_ref, &DynamicList::default()),
-            bevy::reflect::TypeInfo::Array(_) => component_data.insert(&mut entity_ref, &DynamicArray::new(Box::new([]))),
-            bevy::reflect::TypeInfo::Map(_) => component_data.insert(&mut entity_ref, &DynamicMap::default()),
+            bevy::reflect::TypeInfo::Struct(_) => component_data.insert(&mut entity_ref, &DynamicStruct::default(), &registry_lock),
+            bevy::reflect::TypeInfo::TupleStruct(_) => component_data.insert(&mut entity_ref, &DynamicTupleStruct::default(), &registry_lock),
+            bevy::reflect::TypeInfo::Tuple(_) => component_data.insert(&mut entity_ref, &DynamicTuple::default(), &registry_lock),
+            bevy::reflect::TypeInfo::List(_) => component_data.insert(&mut entity_ref, &DynamicList::default(), &registry_lock),
+            bevy::reflect::TypeInfo::Array(_) => component_data.insert(&mut entity_ref, &DynamicArray::new(Box::new([])), &registry_lock),
+            bevy::reflect::TypeInfo::Map(_) => component_data.insert(&mut entity_ref, &DynamicMap::default(), &registry_lock),
             bevy::reflect::TypeInfo::Value(_) => component_data.insert(&mut entity_ref,
                 comp_type.data::<ReflectDefault>().ok_or_else(||
                     ScriptError::Other(format!("Component {} is a value or dynamic type with no `ReflectDefault` type_data, cannot instantiate sensible value",comp_type.short_name())))?
                     .default()
-                    .as_ref()),
-            bevy::reflect::TypeInfo::Enum(_) => component_data.insert(&mut entity_ref, &DynamicEnum::default())
+                    .as_ref(),
+                    &registry_lock),
+            bevy::reflect::TypeInfo::Enum(_) => component_data.insert(&mut entity_ref, &DynamicEnum::default(), &registry_lock)
         };
+        // if we do not drop the lock here, line below will complain registry is still borrowed at drop
+        drop(registry_lock);
+
+        // Insert: AppTypeRegistry
+        w.insert_resource(registry);
 
         Ok(ReflectReference::new_component_ref(
             component_data.clone(),

@@ -1,5 +1,5 @@
 use crate::common::bevy::{ScriptTypeRegistration, ScriptWorld};
-use crate::impl_tealr_type;
+use crate::{impl_from_lua_with_clone, impl_tealr_type};
 
 use std::sync::Arc;
 
@@ -21,6 +21,7 @@ use super::util::LuaIndex;
 
 pub type LuaTypeRegistration = ScriptTypeRegistration;
 impl_tealr_type!(LuaTypeRegistration);
+impl_from_lua_with_clone!(LuaTypeRegistration);
 
 impl TealData for LuaTypeRegistration {
     fn add_methods<'lua, T: TealDataMethods<'lua, Self>>(methods: &mut T) {
@@ -66,6 +67,7 @@ impl TealData for LuaScriptData {
 pub type LuaWorld = ScriptWorld;
 
 impl_tealr_type!(LuaWorld);
+impl_from_lua_with_clone!(LuaWorld);
 
 impl TealData for LuaWorld {
     fn add_methods<'lua, T: TealDataMethods<'lua, Self>>(methods: &mut T) {
@@ -90,8 +92,8 @@ impl TealData for LuaWorld {
             let registry = registry.read();
 
             Ok(registry
-                .get_with_short_name(&type_name)
-                .or_else(|| registry.get_with_name(&type_name))
+                .get_with_short_type_path(&type_name)
+                .or_else(|| registry.get_with_type_path(&type_name))
                 .map(|registration| LuaTypeRegistration::new(Arc::new(registration.clone()))))
         });
 

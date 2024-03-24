@@ -1,6 +1,6 @@
 [package]
 name = "bevy_mod_scripting_common"
-version = "0.3.0"
+version = "0.5.0"
 authors = ["Maksymilian Mozolewski <makspl17@gmail.com>"]
 edition = "2021"
 license = "MIT"
@@ -10,11 +10,6 @@ homepage = "https://github.com/makspll/bevy_mod_scripting"
 keywords = ["bevy", "gamedev", "scripting", "lua"]
 categories = ["game-development"]
 readme = "readme.md"
-
-[package.metadata.release]
-pre-release-replacements = [
-    { file = "Cargo.toml", search = '^version\s*=\s*.*$', replace = "version = \"{{version}}\"", exactly = 1 },
-]
 
 [lib]
 name = "bevy_mod_scripting_common"

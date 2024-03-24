@@ -127,7 +127,7 @@ fn main() -> std::io::Result<()> {
                 .expect("Could not find MyThing Resource");
             println!("After script run: {my_thing:#?}");
             // exit app
-            world.send_event(AppExit)
+            world.send_event(AppExit);
         });
 
     app.run();

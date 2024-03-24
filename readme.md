@@ -44,6 +44,7 @@ The languages currently supported are as follows:
 |----|----|----|
 |Lua|4|Yes|
 |Rhai|2|No|
+|Rune|1|No|
 
 ## Usage
 
@@ -66,7 +67,7 @@ An example can be seen below
 
 fn main() -> std::io::Result<()> {
     let mut app = App::new();
-        app.add_plugin(ScriptingPlugin)
+        app.add_plugins(ScriptingPlugin)
         .add_plugins(DefaultPlugins)
         // pick and register only the hosts you want to use
         // use any system set AFTER any systems which add/remove/modify script components
@@ -190,7 +191,7 @@ pub fn load_a_script(
 ) {
     // this handle is kept by the script so it will not be unloaded
     let path = "scripts/console_integration.lua".to_string();
-    let handle = server.load::<LuaFile, &str>(&path);
+    let handle = server.load::<LuaFile>(&path);
 
 
     commands.spawn(()).insert(ScriptCollection::<LuaFile> {
@@ -251,7 +252,7 @@ Register the API providers like so:
 
 ```rust, ignore
     app.add_plugins(DefaultPlugins)
-        .add_plugin(ScriptingPlugin)
+        .add_plugins(ScriptingPlugin)
         .add_script_host::<LuaScriptHost<MyLuaArg>>(PostUpdate)
         .add_script_host::<RhaiScriptHost<MyRhaiArg>>(PostUpdate)
         .add_api_provider::<LuaScriptHost<MyLuaArg>>(Box::new(LuaAPIProvider))
@@ -274,7 +275,7 @@ fn main() -> std::io::Result<()> {
     let mut app = App::new();
 
     app.add_plugins(DefaultPlugins)
-        .add_plugin(ScriptingPlugin)
+        .add_plugins(ScriptingPlugin)
         .add_script_host::<LuaScriptHost<()>>(PostUpdate)
         // Note: This is a noop in optimized builds unless the `doc_always` feature is enabled!
         // this will pickup any API providers added *BEFOREHAND* like this one
@@ -295,7 +296,9 @@ It is probably a wise idea to set up a separate executable whose only purpose is
 
 Lua documentation is provided by `tealr`, a wrapper around the `mlua` lua API which decorates their standard types. On top of providing documentation generation, it's also capable of generating `d.tl` files which can be used to introduce static typing to lua via the `teal` project (you do not need to use teal to generate documentation).
 
-This can all be seen at work in [this example](bevy_mod_scripting/examples/lua/documentation_gen.rs).
+This can all be seen at work in [this example](bevy_mod_scripting/examples/lua/documentation_gen.rs). 
+
+The docs for the bevy API provided in this crate are generated automatically each release onto this repo [here](https://github.com/makspll/bevy_mod_scripting_lua) and deployed [here](https://makspll.github.io/bevy_mod_scripting_lua/v0.3.0/). You might need to set the `page_root` to the path to something like: `assets/doc/YourAPI` in the automatically generated config file over at: `assets/doc/tealr_doc_gen_config.json`
 
 ##### Teal - Lua static typing
 

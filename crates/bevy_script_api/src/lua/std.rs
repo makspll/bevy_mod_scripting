@@ -1,19 +1,17 @@
-use ::std::borrow::Cow;
-
 use bevy::reflect::FromReflect;
 use bevy::reflect::Reflect;
 
 use bevy::reflect::TypePath;
 use bevy_mod_scripting_lua::tealr;
 
+use bevy_mod_scripting_lua::tealr::ToTypename;
 use tealr::mlu::mlua::MetaMethod;
 use tealr::mlu::TypedFunction;
 use tealr::mlu::{
-    mlua::{self, FromLua, Lua, ToLua, UserData, Value},
+    mlua::{self, FromLua, IntoLua, Lua, UserData, Value},
     TealData, TealDataMethods,
 };
 use tealr::TypeBody;
-use tealr::TypeName;
 
 use paste::paste;
 
@@ -38,7 +36,7 @@ macro_rules! impl_proxyable_by_copy(
             $(
                 impl $crate::lua::LuaProxyable for $num_ty {
                     fn ref_to_lua(self_: $crate::script_ref::ReflectReference,lua: & tealr::mlu::mlua::Lua) -> tealr::mlu::mlua::Result<tealr::mlu::mlua::Value< '_> >  {
-                        self_.get_typed(|self_ : &Self| self_.to_lua(lua))?
+                        self_.get_typed(|self_ : &Self| self_.into_lua(lua))?
                     }
 
                     fn apply_lua< 'lua>(self_: &mut $crate::script_ref::ReflectReference,lua: & 'lua tealr::mlu::mlua::Lua,new_val:tealr::mlu::mlua::Value< 'lua>) -> tealr::mlu::mlua::Result<()>  {
@@ -57,7 +55,7 @@ macro_rules! impl_proxyable_by_copy(
                 impl <'lua>$crate::lua::ToLuaProxy<'lua> for $num_ty {
                     #[inline(always)]
                     fn to_lua_proxy(self, lua: &'lua Lua) -> tealr::mlu::mlua::Result<Value<'lua>> {
-                        self.to_lua(lua)
+                        self.into_lua(lua)
                     }
                 }
             )*
@@ -72,7 +70,7 @@ impl_proxyable_by_copy!(u8, u16, u32, u64, u128, usize);
 
 impl LuaProxyable for String {
     fn ref_to_lua(self_: ReflectReference, lua: &Lua) -> mlua::Result<Value> {
-        self_.get_typed(|self_: &String| self_.as_str().to_lua(lua))?
+        self_.get_typed(|self_: &String| self_.as_str().into_lua(lua))?
     }
 
     fn apply_lua<'lua>(
@@ -95,7 +93,7 @@ impl<'lua> FromLuaProxy<'lua> for String {
 
 impl<'lua> ToLuaProxy<'lua> for String {
     fn to_lua_proxy(self, lua: &'lua Lua) -> mlua::Result<Value<'lua>> {
-        self.to_lua(lua)
+        self.into_lua(lua)
     }
 }
 
@@ -110,7 +108,7 @@ impl<T: LuaProxyable + Reflect + FromReflect + TypePath + for<'a> FromLuaProxy<'
                     get: |ref_| {
                         ref_.downcast_ref::<Option<T>>()
                             .ok_or_else(|| ReflectionError::CannotDowncast {
-                                from: ref_.type_name().to_owned().into(),
+                                from: ref_.get_represented_type_info().unwrap().type_path().into(),
                                 to: stringify!(Option<T>).into(),
                             })?
                             .as_ref()
@@ -124,7 +122,7 @@ impl<T: LuaProxyable + Reflect + FromReflect + TypePath + for<'a> FromLuaProxy<'
                     get_mut: |ref_| {
                         ref_.downcast_mut::<Option<T>>()
                             // TODO: there is some weird borrow checker fuckery going on here
-                            // i tried having from: ref_.type_name().to_owned().into() instead of "Reflect"
+                            // i tried having from: ref_.get_represented_type_info().unwrap().type_path().into() instead of "Reflect"
                             // and lying this out in an if let expression, but nothing will satisfy the borrow checker here, so leaving this for now
                             .ok_or_else(|| ReflectionError::CannotDowncast {
                                 from: "Reflect".into(),
@@ -173,7 +171,7 @@ impl<T: LuaProxyable + Reflect + FromReflect + TypePath + for<'a> FromLuaProxy<'
                     get: |ref_| {
                         ref_.downcast_ref::<Option<T>>()
                             .ok_or_else(|| ReflectionError::CannotDowncast {
-                                from: ref_.type_name().to_owned().into(),
+                                from: ref_.get_represented_type_info().unwrap().type_path().into(),
                                 to: stringify!(Option<T>).into(),
                             })?
                             .as_ref()
@@ -197,7 +195,7 @@ impl<T: LuaProxyable + Reflect + FromReflect + TypePath + for<'a> FromLuaProxy<'
                                 })
                         } else {
                             Err(ReflectionError::CannotDowncast {
-                                from: ref_.type_name().to_owned().into(),
+                                from: ref_.get_represented_type_info().unwrap().type_path().into(),
                                 to: stringify!(Option<T>).into(),
                             })
                         }
@@ -234,7 +232,7 @@ impl<'lua, T: for<'a> ToLuaProxy<'a>> ToLuaProxy<'lua> for Option<T> {
 pub type LuaVec<T> = ScriptVec<T>;
 
 impl<
-        T: TypeName
+        T: ToTypename
             + FromReflect
             + TypePath
             + LuaProxyable
@@ -253,24 +251,15 @@ impl<
     }
 }
 
-impl<T: TypeName> TypeName for LuaVec<T> {
-    fn get_type_parts() -> Cow<'static, [tealr::NamePart]> {
-        let mut parts = vec![
-            tealr::NamePart::Type(tealr::TealType {
-                name: Cow::Borrowed("LuaVec"),
-                type_kind: tealr::KindOfType::External,
-                generics: None,
-            }),
-            tealr::NamePart::Symbol("<".into()),
-        ];
-        parts.extend(T::get_type_parts().iter().cloned());
-        parts.push(tealr::NamePart::Symbol(">".into()));
-        parts.into()
+impl<T: ToTypename> ToTypename for LuaVec<T> {
+    /// Before tealr deprecated TypeName, this used to incorporate generics here, but right now I don't think they're supported anymore
+    fn to_typename() -> tealr::Type {
+        tealr::Type::new_single("LuaVec", tealr::KindOfType::External)
     }
 }
 
 impl<
-        T: TypeName
+        T: ToTypename
             + FromReflect
             + TypePath
             + LuaProxyable
@@ -289,7 +278,7 @@ impl<
 }
 
 impl<
-        T: TypeName
+        T: ToTypename
             + FromReflect
             + TypePath
             + LuaProxyable
@@ -325,8 +314,8 @@ impl<
                         move |ctx, ()| {
                             let o = if curr_idx < len {
                                 (
-                                    to_lua_idx(curr_idx).to_lua(ctx)?,
-                                    ref_.index(curr_idx).to_lua(ctx)?,
+                                    to_lua_idx(curr_idx).into_lua(ctx)?,
+                                    ref_.index(curr_idx).into_lua(ctx)?,
                                 )
                             } else {
                                 (Value::Nil, Value::Nil)
@@ -346,7 +335,7 @@ impl<
             let len = s.len()?;
 
             for i in 0..len {
-                table.raw_set(to_lua_idx(i), s.index(i).to_lua(ctx)?)?;
+                table.raw_set(to_lua_idx(i), s.index(i).into_lua(ctx)?)?;
             }
 
             Ok(table)
@@ -378,7 +367,7 @@ impl<
 }
 
 impl<
-        T: TypeName
+        T: ToTypename
             + FromReflect
             + TypePath
             + LuaProxyable
@@ -388,7 +377,7 @@ impl<
     > LuaProxyable for Vec<T>
 {
     fn ref_to_lua(self_: ReflectReference, lua: &Lua) -> mlua::Result<Value> {
-        LuaVec::<T>::new_ref(self_).to_lua(lua)
+        LuaVec::<T>::new_ref(self_).into_lua(lua)
     }
 
     fn apply_lua<'lua>(
@@ -436,7 +425,7 @@ impl<
 
 impl<
         'lua,
-        T: TypeName
+        T: ToTypename
             + for<'a> FromLuaProxy<'a>
             + for<'a> ToLuaProxy<'a>
             + Clone
@@ -478,6 +467,6 @@ impl<'lua, T: for<'a> ToLuaProxy<'a> + Clone + FromReflect + LuaProxyable> ToLua
             proxies.raw_set(idx, elem.to_lua_proxy(lua)?)?;
         }
 
-        proxies.to_lua(lua)
+        proxies.into_lua(lua)
     }
 }
