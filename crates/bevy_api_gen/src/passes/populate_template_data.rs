@@ -1,12 +1,14 @@
+use std::fmt::Write;
+
 use log::trace;
 use rustc_ast::Attribute;
 use rustc_hir::def_id::{DefId, LOCAL_CRATE};
-use rustc_middle::ty::{FieldDef, ParamTy, TyKind, TypeFoldable};
+use rustc_middle::ty::{FieldDef, ParamTy, Ty, TyCtxt, TyKind, TypeFoldable};
 use rustc_span::Symbol;
 
 use crate::{
-    Arg, Args, BevyCtxt, Field, Function, FunctionContext, Item, Output, ReflectType,
-    TemplateContext, Variant,
+    Arg, Args, BevyCtxt, Field, Function, FunctionContext, ImportPathFinder, Item, Output,
+    ReflectType, ReflectionStrategy, TemplateContext, Variant,
 };
 /// Converts the BevyCtxt into simpler data that can be used in templates directly,
 /// Clears the BevyCtxt by clearing data structures after it uses them.
@@ -59,9 +61,30 @@ pub(crate) fn populate_template_data(ctxt: &mut BevyCtxt<'_>, args: &Args) -> bo
     }
 
     let crate_name = tcx.crate_name(LOCAL_CRATE).to_string();
+    let dep_names = tcx
+        .crates(())
+        .iter()
+        .map(|d| tcx.crate_name(*d).to_ident_string())
+        .collect::<Vec<_>>();
+
+    let dependencies = ctxt
+        .meta_loader
+        .workspace_meta
+        .crates
+        .iter()
+        .filter(|c| {
+            dep_names.contains(c) && ctxt.meta_loader.meta_for_workspace_crate(c).will_generate
+        })
+        .cloned()
+        .collect();
+
     ctxt.clear();
 
-    ctxt.template_context = Some(TemplateContext { crate_name, items });
+    ctxt.template_context = Some(TemplateContext {
+        crate_name,
+        items,
+        dependencies,
+    });
 
     if let crate::Command::Generate {
         template_data_only, ..
@@ -90,10 +113,13 @@ pub(crate) fn process_fields<'f, I: Iterator<Item = &'f FieldDef>>(
     ty_ctxt: &ReflectType,
 ) -> Vec<Field> {
     fields
+        .filter(|field| {
+            *ty_ctxt.get_field_reflection_strat(field.did).unwrap() == ReflectionStrategy::Filtered
+        })
         .map(|field| Field {
             docstrings: docstrings(ctxt.tcx.get_attrs_unchecked(field.did)),
             ident: field.name.to_ident_string(),
-            ty: ctxt.tcx.type_of(field.did).skip_binder().to_string(),
+            ty: ty_to_string(ctxt, ctxt.tcx.type_of(field.did).skip_binder()),
             reflection_strategy: *ty_ctxt
                 .get_field_reflection_strat(field.did)
                 .unwrap_or_else(|| panic!("{ty_ctxt:#?}")),
@@ -137,10 +163,11 @@ pub(crate) fn process_functions(ctxt: &BevyCtxt, fns: &[FunctionContext]) -> Vec
                         (ident.to_string().into(), *ty)
                     };
                     // remove projections like `<Struct as Trait>::AssocType`
-                    let ty = ctxt
-                        .tcx
-                        .normalize_erasing_regions(ctxt.tcx.param_env(fn_ctxt.def_id), ty)
-                        .to_string();
+                    let ty = ty_to_string(
+                        ctxt,
+                        ctxt.tcx
+                            .normalize_erasing_regions(ctxt.tcx.param_env(fn_ctxt.def_id), ty),
+                    );
                     Arg {
                         ident,
                         ty,
@@ -149,10 +176,11 @@ pub(crate) fn process_functions(ctxt: &BevyCtxt, fns: &[FunctionContext]) -> Vec
                 })
                 .collect();
 
-            let ty = ctxt
-                .tcx
-                .normalize_erasing_regions(ctxt.tcx.param_env(fn_ctxt.def_id), fn_sig.output())
-                .to_string();
+            let ty = ty_to_string(
+                ctxt,
+                ctxt.tcx
+                    .normalize_erasing_regions(ctxt.tcx.param_env(fn_ctxt.def_id), fn_sig.output()),
+            );
 
             let output = Output {
                 ty,
@@ -173,11 +201,6 @@ pub(crate) fn process_functions(ctxt: &BevyCtxt, fns: &[FunctionContext]) -> Vec
         .collect()
 }
 
-// TODO: this is probably too simplistic, and might yield non public paths
-pub(crate) fn import_path(ctxt: &BevyCtxt, def_id: DefId) -> String {
-    ctxt.tcx.def_path_str(def_id)
-}
-
 /// extracts and normalizes docstrings in a given list of attributes
 pub(crate) fn docstrings(attrs: &[Attribute]) -> Vec<String> {
     attrs
@@ -191,4 +214,92 @@ pub(crate) fn docstrings(attrs: &[Attribute]) -> Vec<String> {
                 .collect::<Vec<_>>()
         })
         .collect()
+}
+
+// TODO: this is probably too simplistic, and might yield non public paths
+pub(crate) fn import_path(ctxt: &BevyCtxt, def_id: DefId) -> String {
+    ctxt.path_finder
+        .find_import_paths(def_id)
+        .unwrap_or_else(|| vec![ctxt.tcx.def_path_str(def_id)])
+        // .unwrap_or_else(|| {
+        //     panic!(
+        //         "Could not find import path for: {:?}, {} of kind: {:?}",
+        //         def_id,
+        //         ctxt.tcx.item_name(def_id),
+        //         ctxt.tcx.def_kind(def_id),
+        //     )
+        // })
+        .first()
+        .unwrap()
+        .to_owned()
+    // ctxt.tcx.def_path_str(def_id)
+}
+
+/// Normalizes type import paths in types before printing them
+fn ty_to_string<'tcx>(ctxt: &BevyCtxt<'tcx>, ty: Ty<'tcx>) -> String {
+    // walk through the type and replace all paths with their import paths
+    TyPrinter::new(ctxt.tcx).print(&ctxt.path_finder, ty)
+    // ty.fold_with(&mut rustc_middle::ty::fold::BottomUpFolder {
+    //     tcx: ctxt.tcx,
+    //     ty_op: |ty| {
+    //         if let Some(adt_def) = ty.ty_adt_def() {
+    //             let did = adt_def.did();
+    //             let import_path = ctxt
+    //                 .path_finder
+    //                 .find_import_paths(did)
+    //                 .map(|p| p.first().unwrap().to_owned())
+    //                 .unwrap_or_else(|| ctxt.tcx.def_path_str(did));
+    //             // TODO: instead of using hack maybe build a type walker
+    //             ctxt.tcx
+    //                 .mk_ty_from_kind(TyKind::Param(ParamTy::new(0, Symbol::intern(&import_path))))
+    //         } else {
+    //             ty
+    //         }
+    //     },
+    //     lt_op: |lt| lt,
+    //     ct_op: |ct| ct,
+    // })
+    // .to_string()
+}
+
+struct TyPrinter<'tcx> {
+    buffer: String,
+    tcx: TyCtxt<'tcx>,
+}
+
+impl<'tcx> TyPrinter<'tcx> {
+    pub fn new(tcx: TyCtxt<'tcx>) -> Self {
+        TyPrinter {
+            buffer: String::new(),
+            tcx,
+        }
+    }
+    pub fn print(mut self, path_finder: &ImportPathFinder, ty: Ty<'_>) -> String {
+        self.build_str(path_finder, ty);
+        self.buffer
+    }
+
+    fn build_str(&mut self, path_finder: &ImportPathFinder, ty: Ty<'_>) {
+        match ty.kind() {
+            TyKind::Adt(adt_def, args) => {
+                let did = adt_def.did();
+                let import_path = path_finder
+                    .find_import_paths(did)
+                    .map(|p| p.first().unwrap().to_owned())
+                    .unwrap_or_else(|| self.tcx.def_path_str(did));
+                self.buffer.push_str(&import_path);
+                if args.len() > 0 {
+                    self.buffer.push('<');
+                    for a in args.iter() {
+                        match a.as_type() {
+                            Some(ty) => self.build_str(path_finder, ty),
+                            None => _ = self.buffer.write_str(&a.to_string()),
+                        }
+                    }
+                    self.buffer.push('>');
+                }
+            }
+            _ => self.buffer.push_str(&ty.to_string()),
+        }
+    }
 }

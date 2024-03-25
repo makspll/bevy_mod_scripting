@@ -227,6 +227,11 @@ fn process_fields<'tcx,'f, I: Iterator<Item = &'f FieldDef>>(
 ) -> Vec<(DefId, ReflectionStrategy)> {
     fields
         .map(move |f| {
+
+            if !f.vis.is_public(){
+                return (f.did, crate::ReflectionStrategy::Filtered);
+            }
+
             let field_ty = tcx.erase_regions(tcx.type_of(f.did).instantiate_identity());
             if type_is_supported_as_proxy_arg(tcx, reflect_types, meta_loader, field_ty)
                 && type_is_supported_as_proxy_return_val(tcx, reflect_types, meta_loader, field_ty)
@@ -333,7 +338,7 @@ fn type_is_supported_as_non_proxy_return_val<'tcx>(
     ty: Ty<'tcx>,
 ) -> bool {
     trace!("Checkign type is supported as non proxy return val: '{ty:?}' with param_env: '{param_env:?}'");
-    impls_trait(tcx, param_env, ty, cached_traits.mlua_to_lua_multi.unwrap())
+    impls_trait(tcx, param_env, ty, cached_traits.mlua_into_lua_multi.unwrap())
 }
 
 pub(crate) fn impls_trait<'tcx>(

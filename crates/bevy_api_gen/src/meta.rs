@@ -5,12 +5,16 @@ use log::debug;
 use rustc_hir::def_id::DefPathHash;
 use serde::{Deserialize, Serialize};
 
+use crate::WorkspaceMeta;
+
 /// Similar to .rmeta files but for the code generator, each crate is analysed separately but we need to share some information
 /// between crates to be able to properly identify links between crates
 #[derive(Serialize, Deserialize, Clone)]
 pub struct Meta {
     /// The local proxies generated after analysis
     pub(crate) proxies: Vec<ProxyMeta>,
+    /// False if no files are going to be generated for this crate
+    pub(crate) will_generate: bool,
 }
 
 impl Meta {
@@ -33,22 +37,39 @@ pub(crate) struct ProxyMeta {
 /// Manages deserialisation and retrieval of meta files
 pub struct MetaLoader {
     pub(crate) meta_dirs: Vec<Utf8PathBuf>,
+    pub(crate) workspace_meta: WorkspaceMeta,
     cache: RefCell<HashMap<String, Meta>>,
 }
 
 impl MetaLoader {
-    pub fn new(meta_dirs: Vec<Utf8PathBuf>) -> Self {
+    pub fn new(meta_dirs: Vec<Utf8PathBuf>, workspace_meta: WorkspaceMeta) -> Self {
         Self {
             meta_dirs,
             cache: Default::default(),
+            workspace_meta,
         }
     }
 
     /// Retrieves the meta for the provided crate, returns 'Some(meta)' if it exists and 'None' otherwise
     pub fn meta_for(&self, crate_name: &str) -> Option<Meta> {
-        self.meta_dirs
+        let meta = self
+            .meta_dirs
             .iter()
-            .find_map(|dir| self.meta_for_in_dir(crate_name, dir))
+            .find_map(|dir| self.meta_for_in_dir(crate_name, dir));
+
+        if meta.is_none() && self.workspace_meta.crates.iter().any(|i| i == crate_name) {
+            // this is a workspace crate and we depend on it, so it's meta should be available
+            panic!("Could not find meta for workspace crate: `{}`", crate_name);
+        };
+
+        meta
+    }
+
+    /// Use if you know your crate is in the workspace
+    pub fn meta_for_workspace_crate(&self, crate_name: &str) -> Meta {
+        assert!(self.workspace_meta.crates.iter().any(|i| i == crate_name));
+        self.meta_for(crate_name)
+            .expect("Could not find meta for workspace crate")
     }
 
     fn meta_for_in_dir(&self, crate_name: &str, dir: &Utf8PathBuf) -> Option<Meta> {

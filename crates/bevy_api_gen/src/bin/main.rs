@@ -25,9 +25,22 @@ fn main() {
         .other_options(["--all-features".to_string(), "--offline".to_string()])
         .exec()
         .unwrap();
+
     let plugin_subdir = format!("plugin-{}", env!("RUSTC_CHANNEL"));
-    let target_dir = metadata.target_directory.join(plugin_subdir);
-    env::set_var(TARGET_DIR_ENV_NAME, target_dir);
+    let plugin_target_dir = metadata.target_directory.join(plugin_subdir);
+
+    // inform the deps about the workspace crates, this is going to be useful when working with meta files as we will be able to
+    // know when to panic if a crate is not found
+    // it's also useful to pass around the output directory for our Args default values to be able to compute them
+    let workspace_meta = WorkspaceMeta {
+        crates: metadata
+            .workspace_packages()
+            .iter()
+            .map(|p| p.name.to_owned())
+            .collect::<Vec<_>>(),
+        plugin_target_dir,
+    };
+    workspace_meta.set_env();
 
     // parse this here to early exit on wrong args
     let args = Args::parse_from(env::args().skip(1));
@@ -85,7 +98,7 @@ fn main() {
                         None
                     }
                 });
-            let meta_loader = MetaLoader::new(vec![output.to_owned()]);
+            let meta_loader = MetaLoader::new(vec![output.to_owned()], workspace_meta);
             let context = Collect {
                 crates: crates
                     .map(|c| {

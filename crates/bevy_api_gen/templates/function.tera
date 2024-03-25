@@ -6,44 +6,41 @@ r#"
 {%- filter prettyplease(impl_context=true) -%}
 #[lua(
 
-{% if function.has_self %}
+{%- if function.from_trait_path -%}
+    {% if function.from_trait_path is matching("std::(ops|cmp)::(Eq|Neg|Mul|Add|Sub|Div|Rem)") %}
+    {% set is_op = true %}
+    {% endif %}
+as_trait="{{ function.from_trait_path }}",
+{%- endif -%}
+
+{% if function.has_self and not is_op %}
 kind="Method",
 {% else %}
 kind="Function",
 {% endif %}
 
-{%- if function.from_trait_path -%}
-as_trait="{{ function.from_trait_path }}",
-{%- endif -%}
-
 {%- if function.output.reflection_strategy == "Proxy" -%}
 output(proxy),
 {%- endif -%}
 
-{# forgive me father, this probably should be a filter #}
-{% if function.from_trait_path == "std::opsNeg" %}
+{% if is_op %}
 composite="{{ function.ident }}",
+{% endif %}
+
+{# forgive me father, this probably should be a filter #}
+{% if function.from_trait_path == "std::ops::Neg" %}
 metamethod="Unm",
 {% elif function.from_trait_path == "std::ops::Mul" %}
-composite="{{ function.ident }}",
 metamethod="Mul",
 {% elif function.from_trait_path == "std::ops::Add" %}
-composite="{{ function.ident }}",
 metamethod="Add",
 {% elif function.from_trait_path == "std::ops::Sub" %}
-composite="{{ function.ident }}",
 metamethod="Sub",
 {% elif function.from_trait_path == "std::ops::Div" %}
-composite="{{ function.ident }}",
 metamethod="Div",
 {% elif function.from_trait_path == "std::ops::Rem" %}
-composite="{{ function.ident }}",
 metamethod="Mod",
 {% elif function.from_trait_path == "std::cmp:Eq" %}
-composite="{{ function.ident }}",
-metamethod="Eq",
-{% elif function.from_trait_path == "std::cmp::PartialEq" %}
-composite="{{ function.ident }}",
 metamethod="Eq",
 {% endif %}
 

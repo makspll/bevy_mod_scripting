@@ -2,6 +2,7 @@ use crate::{Args, BevyCtxt};
 
 mod cache_traits;
 mod codegen;
+mod crawl_paths;
 mod find_methods_and_fields;
 mod find_reflect_types;
 mod find_trait_impls;
@@ -49,12 +50,18 @@ pub(crate) const FIND_TRAIT_IMPLS: Pass = Pass {
     cb: find_trait_impls::find_trait_impls,
 };
 
-pub(crate) const ALL_PASSES: [Pass; 7] = [
+pub(crate) const CRAWL_PATHS: Pass = Pass {
+    name: "Crawl Paths",
+    cb: crawl_paths::crawl_paths,
+};
+
+pub(crate) const ALL_PASSES: [Pass; 8] = [
     CACHE_TRAITS,
     FIND_REFLECT_TYPES,
     WRITE_META, // the earlier this happens the better, as other crates will depend on our meta files but not the rest of the passes!
     FIND_TRAIT_IMPLS,
     FIND_METHODS_AND_FIELDS,
+    CRAWL_PATHS,
     POPULATE_TEMPLATE_DATA,
     CODEGEN,
 ];

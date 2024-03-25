@@ -2,7 +2,7 @@ use log::{info, trace};
 use rustc_errors::FatalError;
 use rustc_hir::def_id::LOCAL_CRATE;
 
-use crate::{Args, ALL_PASSES};
+use crate::{Args, WorkspaceMeta, ALL_PASSES};
 
 pub(crate) struct BevyAnalyzerCallbacks {
     args: Args,
@@ -46,8 +46,16 @@ impl rustc_driver::Callbacks for BevyAnalyzerCallbacks {
                 .for_each(|m| meta_dirs.push(m.to_owned()));
         };
 
+        let include_private = match &self.args.cmd {
+            crate::Command::Generate {
+                include_private, ..
+            } => *include_private,
+            _ => false,
+        };
+
         gcx.enter(|tcx| {
-            let mut ctxt = crate::BevyCtxt::new(tcx, meta_dirs);
+            let mut ctxt =
+                crate::BevyCtxt::new(tcx, meta_dirs, WorkspaceMeta::from_env(), include_private);
 
             trace!("Running all passes");
             for p in ALL_PASSES {
@@ -58,10 +66,6 @@ impl rustc_driver::Callbacks for BevyAnalyzerCallbacks {
                 );
                 let continue_ = tcx.sess.time(p.name, || (p.cb)(&mut ctxt, &self.args));
                 if !continue_ {
-                    info!(
-                        "Pass: '{}' requested compilation to stop, stopping early",
-                        p.name
-                    );
                     break;
                 }
             }

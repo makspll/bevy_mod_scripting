@@ -2,15 +2,21 @@ use crate::{configure_tera, Args, BevyCtxt, TemplateKind};
 
 use log::info;
 use rustc_hir::def_id::LOCAL_CRATE;
-use std::fs::{self, File};
+use std::{
+    fs::{self, File},
+    str::FromStr,
+};
 use tera::Context;
 
 /// generates a module with the appropriate wrappers for all the found reflection ADT's in the crate
 pub(crate) fn codegen(ctxt: &mut BevyCtxt<'_>, args: &Args) -> bool {
-    let (output, templates) = match &args.cmd {
+    let (output, templates, template_args) = match &args.cmd {
         crate::Command::Generate {
-            output, templates, ..
-        } => (output, templates),
+            output,
+            templates,
+            template_args,
+            ..
+        } => (output, templates, template_args),
         _ => return true,
     };
 
@@ -21,8 +27,13 @@ pub(crate) fn codegen(ctxt: &mut BevyCtxt<'_>, args: &Args) -> bool {
     info!("Writing code files to : {}", output);
 
     let template_data = ctxt.template_context.as_ref().unwrap();
-    let context = Context::from_serialize(template_data).unwrap();
-
+    let mut context = Context::from_serialize(template_data).unwrap();
+    if let Some(args) = template_args {
+        let json = serde_json::Value::from_str(args).unwrap();
+        let map = serde_json::Map::from_iter(vec![("args".to_owned(), json)]);
+        let additional_ctxt = Context::from_serialize(serde_json::Value::Object(map)).unwrap();
+        context.extend(additional_ctxt);
+    }
     // generate crate artifact
     let file = File::create(output.join(format!("{}.rs", template_data.crate_name))).unwrap();
 

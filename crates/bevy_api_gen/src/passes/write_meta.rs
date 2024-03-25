@@ -29,7 +29,11 @@ pub(crate) fn write_meta(ctxt: &mut BevyCtxt<'_>, args: &Args) -> bool {
             local_hash_id: def_path_hash.local_hash().as_u64(),
         });
     }
-    let meta = Meta { proxies };
+    let will_generate = !proxies.is_empty();
+    let meta = Meta {
+        proxies,
+        will_generate,
+    };
     let meta_json = serde_json::to_string(&meta).expect("Meta serialization failed");
     let crate_name = tcx.crate_name(LOCAL_CRATE);
 
@@ -39,6 +43,11 @@ pub(crate) fn write_meta(ctxt: &mut BevyCtxt<'_>, args: &Args) -> bool {
         File::create(output.join(format!(".{crate_name}")).with_extension("json")).unwrap();
 
     file.write_all(meta_json.as_bytes()).unwrap();
+
+    if !will_generate {
+        log::info!("No reflect types found in the crate, writing empty meta.");
+        return false;
+    }
 
     true
 }

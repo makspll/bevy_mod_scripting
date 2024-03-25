@@ -21,7 +21,7 @@ doc_always = []
 
 
 [dependencies]
-bevy = { version = "0.13", default-features = false, features = [
+bevy = { workspace = true, default-features = false, features = [
     "bevy_asset",
     "bevy_gltf",
     "bevy_animation",

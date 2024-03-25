@@ -13,20 +13,25 @@ extern crate rustc_session;
 extern crate rustc_span;
 extern crate rustc_trait_selection;
 
+mod args;
 mod callback;
 mod context;
+mod import_path;
 mod meta;
 mod modifying_file_loader;
 mod passes;
 mod plugin;
 mod template;
 
+// pub(crate) use args::*;
 pub(crate) use callback::*;
 pub(crate) use context::*;
+pub(crate) use import_path::*;
 pub(crate) use meta::*;
 pub(crate) use passes::*;
 pub(crate) use template::*;
 
+pub use args::{Args, Command, WorkspaceMeta};
 pub use meta::MetaLoader;
-pub use plugin::{Args, BevyAnalyzer, Command, TemplateKind, TARGET_DIR_ENV_NAME};
-pub use template::{configure_tera, Collect, Crate, TEMPLATE_DIR};
+pub use plugin::BevyAnalyzer;
+pub use template::{configure_tera, Collect, Crate, TemplateKind, TEMPLATE_DIR};

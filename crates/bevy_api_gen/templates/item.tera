@@ -2,7 +2,7 @@
 ///{{ line }}
 {% endfor %}
 
-#[derive(LuaProxy)]
+#[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
 derive(
     {%- filter separated(delimeter=",", split_at="---") -%}

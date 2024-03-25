@@ -15,8 +15,6 @@ use tealr::mlu::{
     TealData, TealDataMethods,
 };
 
-pub use crate::generated::*;
-
 use super::util::LuaIndex;
 
 pub type LuaTypeRegistration = ScriptTypeRegistration;

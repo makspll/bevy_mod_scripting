@@ -51,11 +51,6 @@ pub(crate) fn find_reflect_types(ctxt: &mut BevyCtxt<'_>, args: &Args) -> bool {
         ctxt.reflect_types.extend(reflect_adts_did);
     }
 
-    if ctxt.reflect_types.is_empty() {
-        log::info!("No reflect types found in the crate");
-        return false;
-    }
-
     ctxt.reflect_types
         .sort_by_cached_key(|did, _| did.index.as_u32() + did.krate.as_u32());
 

@@ -15,7 +15,7 @@ name = "bevy_mod_scripting_rune"
 path = "src/lib.rs"
 
 [dependencies]
-bevy_mod_scripting_core = { path = "../../bevy_mod_scripting_core", version = "0.5.0" }
+bevy_mod_scripting_core = { workspace = true }
 bevy = "0.13"
 rune = "0.13.1"
 rune-modules = "0.13.1"

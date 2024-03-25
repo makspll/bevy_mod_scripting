@@ -1,18 +1,60 @@
 use std::collections::HashMap;
 
+use clap::ValueEnum;
 use convert_case::{Case, Casing};
 use include_dir::{include_dir, Dir};
-use serde::Serialize;
-use strum::VariantNames;
+use serde::{Deserialize, Serialize};
+use strum::*;
 use tera::{Tera, Value};
 
-use crate::{Meta, ReflectionStrategy, TemplateKind};
+use crate::{Meta, ReflectionStrategy};
 
 // load the built-in templates statically
 pub static TEMPLATE_DIR: Dir = include_dir!("$CARGO_MANIFEST_DIR/templates");
 
+/// Describes the available templates and overrides
+#[derive(
+    Display,
+    EnumString,
+    VariantNames,
+    VariantArray,
+    IntoStaticStr,
+    Clone,
+    Copy,
+    Serialize,
+    Deserialize,
+)]
+pub enum TemplateKind {
+    #[strum(to_string = "mod.tera")]
+    SharedModule,
+    #[strum(to_string = "crate.tera")]
+    CrateArtifact,
+    #[strum(to_string = "field.tera")]
+    Field,
+    #[strum(to_string = "function.tera")]
+    Function,
+    #[strum(to_string = "item.tera")]
+    Item,
+    #[strum(to_string = "header.tera")]
+    Header,
+    #[strum(to_string = "footer.tera")]
+    Footer,
+}
+
+impl ValueEnum for TemplateKind {
+    fn value_variants<'a>() -> &'a [Self] {
+        <Self as VariantArray>::VARIANTS
+    }
+
+    fn to_possible_value(&self) -> Option<clap::builder::PossibleValue> {
+        let static_str: &'static str = self.into();
+        Some(clap::builder::PossibleValue::new(static_str))
+    }
+}
+
 #[derive(Serialize)]
 pub(crate) struct TemplateContext {
+    pub(crate) dependencies: Vec<String>,
     pub(crate) crate_name: String,
     pub(crate) items: Vec<Item>,
 }
@@ -96,7 +138,7 @@ pub fn configure_tera(
     let mut tera = tera::Tera::default();
     configure_tera_env(&mut tera, crate_name);
 
-    for template_filename in TemplateKind::VARIANTS {
+    for template_filename in <TemplateKind as strum::VariantNames>::VARIANTS {
         // check if this template is overwritten by the user if so don't bother loading it
         if let Some(t) = &user_templates_dir {
             let template_path = t.join(template_filename);
@@ -156,9 +198,12 @@ pub(crate) fn configure_tera_env(tera: &mut Tera, crate_name: &str) {
 
             if impl_context {
                 Ok(Value::String(
-                    out.trim_start_matches("pub trait X {")
-                        .trim_end_matches('}')
-                        .trim()
+                    out.split('{')
+                        .nth(1)
+                        .unwrap()
+                        .split('}')
+                        .next()
+                        .unwrap()
                         .to_owned(),
                 ))
             } else {

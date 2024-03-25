@@ -1,4 +1,4 @@
-use std::collections::{HashMap, HashSet};
+use std::collections::HashMap;
 
 use arg::Arg;
 use bevy_mod_scripting_common::{input::*, utils::doc_attribute_to_string_lit};
@@ -274,7 +274,7 @@ fn generate_mlua_registration_code_composite(
                             let out = {
                                 #body
                             };
-                            return out.and_then(|out| #tealr::mlua::ToLua::to_lua(out, ctxt))
+                            return out.and_then(|out| #tealr::mlua::IntoLua::into_lua(out, ctxt))
                         },
                         _ => (),
                     };
@@ -479,8 +479,8 @@ pub fn impl_lua_proxy(input: TokenStream) -> TokenStream {
 
     quote_spanned! {derive_input.span()=>
 
-        bevy_script_api::make_script_wrapper!(#proxied_type_path as #proxy_type_ident #opt_with_clone);
-        bevy_script_api::impl_tealr_type!(#proxy_type_ident);
+        make_script_wrapper!(#proxied_type_path as #proxy_type_ident #opt_with_clone);
+        impl_tealr_type!(#proxy_type_ident);
 
         #opt_debug_impl
 
@@ -504,7 +504,7 @@ pub fn impl_lua_proxy(input: TokenStream) -> TokenStream {
         #[allow(clippy::all, unused_variables)]
         impl bevy_script_api::lua::LuaProxyable for #proxied_type_path {
             fn ref_to_lua<'lua>(self_ : bevy_script_api::script_ref::ReflectReference, lua: &'lua #tealr::mlua::Lua) -> #tealr::mlua::Result<#tealr::mlua::Value<'lua>> {
-                <#proxy_type_ident as #tealr::mlua::ToLua>::to_lua(#proxy_type_ident::new_ref(self_),lua)
+                <#proxy_type_ident as #tealr::mlua::IntoLua>::into_lua(#proxy_type_ident::new_ref(self_),lua)
             }
 
             fn apply_lua<'lua>(self_ : &mut bevy_script_api::script_ref::ReflectReference, lua: &'lua #tealr::mlua::Lua, new_val: #tealr::mlua::Value<'lua>) -> #tealr::mlua::Result<()> {
@@ -523,9 +523,9 @@ pub fn impl_lua_proxy(input: TokenStream) -> TokenStream {
         }
 
         #[allow(clippy::all, unused_variables)]
-        impl bevy_script_api::lua::ToLuaProxy<'_> for #proxied_type_path {
+        impl bevy_script_api::lua::IntoLuaProxy<'_> for #proxied_type_path {
             fn to_lua_proxy<'lua>(self, lua: &'lua #tealr::mlua::Lua) -> #tealr::mlua::Result<#tealr::mlua::Value<'lua>>{
-                <#proxy_type_ident as #tealr::mlua::ToLua>::to_lua(#proxy_type_ident::new(self),lua)
+                <#proxy_type_ident as #tealr::mlua::IntoLua>::into_lua(#proxy_type_ident::new(self),lua)
             }
         }
 

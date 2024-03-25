@@ -1,11 +1,11 @@
-use std::any::TypeId;
-use std::borrow::Cow;
+use ::std::any::TypeId;
+use ::std::borrow::Cow;
 
 use crate::common::bevy::GetWorld;
 use crate::{impl_from_lua_with_clone, impl_tealr_type};
-use bevy::prelude::{App, AppTypeRegistry};
+use ::bevy::prelude::{App, AppTypeRegistry};
 
-use bevy::reflect::{FromType, GetTypeRegistration, Reflect};
+use ::bevy::reflect::{FromType, GetTypeRegistration, Reflect};
 
 use bevy_mod_scripting_core::world::WorldPointer;
 use bevy_mod_scripting_lua::tealr::{self, ToTypename};
@@ -18,7 +18,6 @@ use tealr::mlu::{
 
 use crate::script_ref::{ReflectReference, ReflectedValue, ValueIndex};
 
-use self::bevy::LuaWorld;
 use self::util::to_host_idx;
 
 pub mod bevy;
@@ -207,7 +206,7 @@ pub trait FromLuaProxy<'lua>: Sized {
 }
 
 /// Exactly alike to [`mlua::FromLua`]
-pub trait ToLuaProxy<'lua> {
+pub trait IntoLuaProxy<'lua> {
     fn to_lua_proxy(self, lua: &'lua Lua) -> mlua::Result<Value<'lua>>;
 }
 
@@ -292,7 +291,7 @@ impl<'lua, T: Clone + UserData + FromLua<'lua> + Send + ValueLuaType + Reflect +
     }
 }
 
-impl<'lua, T: Clone + UserData + Send + ValueLuaType + Reflect + 'static> ToLuaProxy<'lua> for T {
+impl<'lua, T: Clone + UserData + Send + ValueLuaType + Reflect + 'static> IntoLuaProxy<'lua> for T {
     fn to_lua_proxy(self, lua: &'lua Lua) -> mlua::Result<Value<'lua>> {
         self.into_lua(lua)
     }

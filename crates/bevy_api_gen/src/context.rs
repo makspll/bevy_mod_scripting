@@ -7,13 +7,14 @@ use rustc_hir::def_id::DefId;
 use rustc_middle::ty::{AdtDef, TyCtxt};
 use serde::Serialize;
 
-use crate::{MetaLoader, TemplateContext};
+use crate::{ImportPathFinder, MetaLoader, TemplateContext};
 
 pub(crate) struct BevyCtxt<'tcx> {
     pub(crate) tcx: TyCtxt<'tcx>,
     pub(crate) meta_loader: MetaLoader,
     pub(crate) reflect_types: IndexMap<DefId, ReflectType<'tcx>>,
     pub(crate) cached_traits: CachedTraits,
+    pub(crate) path_finder: ImportPathFinder<'tcx>,
 
     /// the template context used for generating code
     pub(crate) template_context: Option<TemplateContext>,
@@ -21,20 +22,31 @@ pub(crate) struct BevyCtxt<'tcx> {
 
 impl<'tcx> BevyCtxt<'tcx> {
     /// Creates a new context with the provided TyCtxt and meta directories
-    pub(crate) fn new(tcx: TyCtxt<'tcx>, meta_dirs: Vec<Utf8PathBuf>) -> Self {
+    pub(crate) fn new(
+        tcx: TyCtxt<'tcx>,
+        meta_dirs: Vec<Utf8PathBuf>,
+        workspace_meta: crate::WorkspaceMeta,
+        include_private_paths: bool,
+    ) -> Self {
         Self {
             tcx,
             reflect_types: Default::default(),
             cached_traits: Default::default(),
-            meta_loader: MetaLoader::new(meta_dirs),
+            meta_loader: MetaLoader::new(meta_dirs, workspace_meta),
             template_context: Default::default(),
+            path_finder: ImportPathFinder::new(tcx, include_private_paths),
         }
     }
 
     /// Clears all data structures in the context
     pub(crate) fn clear(&mut self) {
         debug!("Clearing all context");
-        *self = Self::new(self.tcx, self.meta_loader.meta_dirs.clone());
+        *self = Self::new(
+            self.tcx,
+            self.meta_loader.meta_dirs.clone(),
+            self.meta_loader.workspace_meta.clone(),
+            self.path_finder.include_private_paths,
+        );
     }
 }
 
@@ -67,7 +79,7 @@ impl ReflectType<'_> {
 }
 
 pub(crate) const DEF_PATHS_FROM_LUA: [&str; 2] = ["value::FromLuaMulti", "mlua::FromLuaMulti"];
-pub(crate) const DEF_PATHS_TO_LUA: [&str; 2] = ["value::ToLuaMulti", "mlua::ToLuaMulti"];
+pub(crate) const DEF_PATHS_INTO_LUA: [&str; 2] = ["value::IntoLuaMulti", "mlua::IntoLuaMulti"];
 pub(crate) const DEF_PATHS_REFLECT: [&str; 2] = ["bevy_reflect::Reflect", "reflect::Reflect"];
 pub(crate) const FN_SOURCE_TRAITS: [&str; 12] = [
     // PRINTING
@@ -91,7 +103,7 @@ pub(crate) const FN_SOURCE_TRAITS: [&str; 12] = [
 #[derive(Default)]
 pub(crate) struct CachedTraits {
     pub(crate) mlua_from_lua_multi: Option<DefId>,
-    pub(crate) mlua_to_lua_multi: Option<DefId>,
+    pub(crate) mlua_into_lua_multi: Option<DefId>,
     pub(crate) bevy_reflect_reflect: Option<DefId>,
     /// Traits whose methods can be included in the generated code
     pub(crate) fn_source_traits: HashMap<String, DefId>,
@@ -99,7 +111,7 @@ pub(crate) struct CachedTraits {
 
 impl CachedTraits {
     pub(crate) fn has_all_mlua_traits(&self) -> bool {
-        self.mlua_from_lua_multi.is_some() && self.mlua_to_lua_multi.is_some()
+        self.mlua_from_lua_multi.is_some() && self.mlua_into_lua_multi.is_some()
     }
 
     pub(crate) fn has_all_bevy_traits(&self) -> bool {

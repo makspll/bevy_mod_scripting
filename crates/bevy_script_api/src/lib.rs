@@ -17,10 +17,7 @@ pub use {script_ref::*, sub_reflect::*};
 pub mod prelude {
     #[cfg(feature = "lua")]
     pub use crate::{
-        lua::{
-            bevy::LuaBevyAPIProvider, std::LuaVec, FromLuaProxy, LuaProxyable, ReflectLuaProxyable,
-            ToLuaProxy,
-        },
+        lua::{std::LuaVec, FromLuaProxy, IntoLuaProxy, LuaProxyable, ReflectLuaProxyable},
         LuaProxy,
     };
 
@@ -38,7 +35,5 @@ pub mod prelude {
 pub use bevy_mod_scripting_derive::impl_script_newtype;
 #[cfg(feature = "lua")]
 pub use bevy_mod_scripting_lua_derive::LuaProxy;
-
-pub(crate) mod generated;
 
 pub use parking_lot;

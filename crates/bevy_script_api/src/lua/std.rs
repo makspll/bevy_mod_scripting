@@ -26,8 +26,8 @@ use super::util::to_lua_idx;
 use super::util::LuaIndex;
 use super::ApplyLua;
 use super::FromLuaProxy;
+use super::IntoLuaProxy;
 use super::LuaProxyable;
-use super::ToLuaProxy;
 
 /// Implements custom user data for simple copy types which implement to and from lua
 macro_rules! impl_proxyable_by_copy(
@@ -52,7 +52,7 @@ macro_rules! impl_proxyable_by_copy(
                     }
                 }
 
-                impl <'lua>$crate::lua::ToLuaProxy<'lua> for $num_ty {
+                impl <'lua>$crate::lua::IntoLuaProxy<'lua> for $num_ty {
                     #[inline(always)]
                     fn to_lua_proxy(self, lua: &'lua Lua) -> tealr::mlu::mlua::Result<Value<'lua>> {
                         self.into_lua(lua)
@@ -91,7 +91,7 @@ impl<'lua> FromLuaProxy<'lua> for String {
     }
 }
 
-impl<'lua> ToLuaProxy<'lua> for String {
+impl<'lua> IntoLuaProxy<'lua> for String {
     fn to_lua_proxy(self, lua: &'lua Lua) -> mlua::Result<Value<'lua>> {
         self.into_lua(lua)
     }
@@ -218,7 +218,7 @@ impl<'lua, T: for<'a> FromLuaProxy<'a>> FromLuaProxy<'lua> for Option<T> {
     }
 }
 
-impl<'lua, T: for<'a> ToLuaProxy<'a>> ToLuaProxy<'lua> for Option<T> {
+impl<'lua, T: for<'a> IntoLuaProxy<'a>> IntoLuaProxy<'lua> for Option<T> {
     fn to_lua_proxy(self, lua: &'lua Lua) -> mlua::Result<Value<'lua>> {
         match self {
             Some(v) => v.to_lua_proxy(lua),
@@ -237,7 +237,7 @@ impl<
             + TypePath
             + LuaProxyable
             + for<'a> FromLuaProxy<'a>
-            + for<'a> ToLuaProxy<'a>
+            + for<'a> IntoLuaProxy<'a>
             + std::fmt::Debug,
     > UserData for LuaVec<T>
 {
@@ -264,7 +264,7 @@ impl<
             + TypePath
             + LuaProxyable
             + for<'a> FromLuaProxy<'a>
-            + for<'a> ToLuaProxy<'a>
+            + for<'a> IntoLuaProxy<'a>
             + std::fmt::Debug,
     > TypeBody for LuaVec<T>
 {
@@ -283,7 +283,7 @@ impl<
             + TypePath
             + LuaProxyable
             + for<'a> FromLuaProxy<'a>
-            + for<'a> ToLuaProxy<'a>,
+            + for<'a> IntoLuaProxy<'a>,
     > TealData for LuaVec<T>
 {
     fn add_methods<'lua, M: TealDataMethods<'lua, Self>>(methods: &mut M) {
@@ -372,7 +372,7 @@ impl<
             + TypePath
             + LuaProxyable
             + for<'a> FromLuaProxy<'a>
-            + for<'a> ToLuaProxy<'a>
+            + for<'a> IntoLuaProxy<'a>
             + std::fmt::Debug,
     > LuaProxyable for Vec<T>
 {
@@ -427,7 +427,7 @@ impl<
         'lua,
         T: ToTypename
             + for<'a> FromLuaProxy<'a>
-            + for<'a> ToLuaProxy<'a>
+            + for<'a> IntoLuaProxy<'a>
             + Clone
             + FromReflect
             + TypePath
@@ -458,7 +458,7 @@ impl<
     }
 }
 
-impl<'lua, T: for<'a> ToLuaProxy<'a> + Clone + FromReflect + LuaProxyable> ToLuaProxy<'lua>
+impl<'lua, T: for<'a> IntoLuaProxy<'a> + Clone + FromReflect + LuaProxyable> IntoLuaProxy<'lua>
     for Vec<T>
 {
     fn to_lua_proxy(self, lua: &'lua Lua) -> mlua::Result<Value<'lua>> {
