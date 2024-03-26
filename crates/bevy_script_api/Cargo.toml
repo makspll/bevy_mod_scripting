@@ -27,6 +27,7 @@ bevy = { workspace = true, default-features = false, features = [
     "bevy_text",
     "bevy_sprite",
     "file_watcher",
+    "multi-threaded",
 ] }
 bevy_mod_scripting_derive = { path = "../bevy_mod_scripting_derive", version = "0.5.0" }
 bevy_mod_scripting_core = { workspace = true }

@@ -70,12 +70,12 @@ bevy_script_api = { path = "crates/bevy_script_api", version = "0.5.0", optional
 
 
 [workspace.dependencies]
-bevy = { version = "0.13", default-features = false }
+bevy = { version = "=0.13.0", default-features = false }
 bevy_mod_scripting_core = { path = "crates/bevy_mod_scripting_core", version = "0.5.0" }
 bevy_mod_scripting_common = { path = "crates/bevy_mod_scripting_common", version = "0.5.0" }
 
 [dev-dependencies]
-bevy = { version = "0.13" }
+bevy = { workspace = true, default-features = true }
 clap = { version = "4.1", features = ["derive"] }
 rand = "0.8.5"
 bevy_console = "0.11.1"
@@ -113,12 +113,22 @@ debug = false
 [[example]]
 name = "console_integration_lua"
 path = "examples/lua/console_integration.rs"
-required-features = ["lua54", "lua_script_api", "bevy/file_watcher"]
+required-features = [
+    "lua54",
+    "lua_script_api",
+    "bevy/file_watcher",
+    "bevy/multi-threaded",
+]
 
 [[example]]
 name = "console_integration_rhai"
 path = "examples/rhai/console_integration.rs"
-required-features = ["rhai", "rhai_script_api", "bevy/file_watcher"]
+required-features = [
+    "rhai",
+    "rhai_script_api",
+    "bevy/file_watcher",
+    "bevy/multi-threaded",
+]
 
 [[example]]
 name = "complex_game_loop_lua"
@@ -128,12 +138,23 @@ required-features = ["lua54"]
 [[example]]
 name = "game_of_life_lua"
 path = "examples/lua/game_of_life.rs"
-required-features = ["lua54", "teal", "lua_script_api", "bevy/file_watcher"]
+required-features = [
+    "lua54",
+    "teal",
+    "lua_script_api",
+    "bevy/file_watcher",
+    "bevy/multi-threaded",
+]
 
 [[example]]
 name = "game_of_life_rhai"
 path = "examples/rhai/game_of_life.rs"
-required-features = ["rhai", "rhai_script_api", "bevy/file_watcher"]
+required-features = [
+    "rhai",
+    "rhai_script_api",
+    "bevy/file_watcher",
+    "bevy/multi-threaded",
+]
 
 [[example]]
 name = "event_recipients_lua"

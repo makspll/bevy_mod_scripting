@@ -1,7 +1,7 @@
 use std::{cell::RefCell, collections::HashMap, fs::File, io::BufReader};
 
 use cargo_metadata::camino::Utf8PathBuf;
-use log::debug;
+use log::{debug, trace};
 use rustc_hir::def_id::DefPathHash;
 use serde::{Deserialize, Serialize};
 
@@ -75,10 +75,10 @@ impl MetaLoader {
     fn meta_for_in_dir(&self, crate_name: &str, dir: &Utf8PathBuf) -> Option<Meta> {
         let cache = self.cache.borrow();
         if cache.contains_key(crate_name) {
-            debug!("Loading meta from cache for: {}", crate_name);
+            trace!("Loading meta from cache for: {}", crate_name);
             return cache.get(crate_name).cloned();
         } else {
-            debug!("Loading meta from filesystem for: {}", crate_name);
+            trace!("Loading meta from filesystem for: {}", crate_name);
             drop(cache);
             let mut cache = self.cache.borrow_mut();
             let meta = Self::opt_load_meta(dir.join(format!(".{crate_name}.json")))?;
@@ -89,7 +89,7 @@ impl MetaLoader {
 
     fn opt_load_meta(path: Utf8PathBuf) -> Option<Meta> {
         if !path.exists() {
-            debug!("Meta not found at: {}", path);
+            trace!("Meta not found at: {}", path);
             return None;
         }
         let file = File::open(path).unwrap();
