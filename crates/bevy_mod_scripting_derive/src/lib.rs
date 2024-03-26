@@ -1,7 +1,7 @@
 #![allow(dead_code, unused_variables, unused_features)]
 use proc_macro::TokenStream;
 
-use quote::{ToTokens};
+use quote::ToTokens;
 use syn::{parse::Parse, spanned::Spanned, Attribute};
 
 /// A convenience macro which derives a lotta things to make your type work in all supported/enabled scripting languages, and provide static typing where possible.

@@ -13,9 +13,9 @@ use syn::{
     spanned::Spanned,
     token::{And, Gt, Lt, Mut, PathSep},
     visit_mut::VisitMut,
-    AngleBracketedGenericArguments, Attribute, Error, Field, Fields, GenericArgument,
-    PatType, Path, PathArguments, PathSegment, Receiver, TraitItemFn, Type,
-    TypePath, TypeReference, TypeTuple, Variant,
+    AngleBracketedGenericArguments, Attribute, Error, Field, Fields, GenericArgument, PatType,
+    Path, PathArguments, PathSegment, Receiver, TraitItemFn, Type, TypePath, TypeReference,
+    TypeTuple, Variant,
 };
 
 use crate::utils::ident_to_type_path;
