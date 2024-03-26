@@ -45,12 +45,12 @@ extern crate self as bevy_script_api;
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
 derive(clone,debug),
-remote="bevy_ui::measurement::ContentSize",
+remote="bevy::ui::measurement::ContentSize",
 functions[r#"
 /// Creates a `ContentSize` with a `Measure` that always returns given `size` argument, regardless of the UI layout's constraints.
 
     #[lua(kind = "Function", output(proxy))]
-    fn fixed_size(#[proxy] size: bevy_math::Vec2) -> bevy_ui::measurement::ContentSize;
+    fn fixed_size(#[proxy] size: bevy::math::Vec2) -> bevy::ui::measurement::ContentSize;
 
 "#]
 )]
@@ -61,9 +61,7 @@ functions[r#"
 pub struct LuaContentSize{
     
     
-        measure_func:std::option::Option<taffy::node::MeasureFunc>,
-
-
+        
     
     
 }
@@ -75,11 +73,11 @@ pub struct LuaContentSize{
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
 derive(clone,debug),
-remote="bevy_ui::widget::Button",
+remote="bevy::ui::widget::Button",
 functions[r#"
 
     #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
-    fn clone(&self) -> bevy_ui::widget::Button;
+    fn clone(&self) -> bevy::ui::widget::Button;
 
 "#]
 )]
@@ -102,18 +100,18 @@ pub struct LuaButton{
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
 derive(clone,debug),
-remote="bevy_ui::widget::UiImageSize",
+remote="bevy::ui::widget::UiImageSize",
 functions[r#"
 /// The size of the image's texture
 
     #[lua(kind = "Method", output(proxy))]
-    fn size(&self) -> bevy_math::Vec2;
+    fn size(&self) -> bevy::math::Vec2;
 
 "#,
 			r#"
 
     #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
-    fn clone(&self) -> bevy_ui::widget::UiImageSize;
+    fn clone(&self) -> bevy::ui::widget::UiImageSize;
 
 "#]
 )]
@@ -124,9 +122,7 @@ functions[r#"
 pub struct LuaUiImageSize{
     
     
-        size:bevy_math::Vec2,
-
-
+        
     
     
 }
@@ -138,11 +134,11 @@ pub struct LuaUiImageSize{
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
 derive(clone,debug),
-remote="bevy_ui::widget::Label",
+remote="bevy::ui::widget::Label",
 functions[r#"
 
     #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
-    fn clone(&self) -> bevy_ui::widget::Label;
+    fn clone(&self) -> bevy::ui::widget::Label;
 
 "#]
 )]
@@ -165,11 +161,11 @@ pub struct LuaLabel{
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
 derive(clone,debug),
-remote="bevy_ui::widget::TextFlags",
+remote="bevy::ui::widget::TextFlags",
 functions[r#"
 
     #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
-    fn clone(&self) -> bevy_ui::widget::TextFlags;
+    fn clone(&self) -> bevy::ui::widget::TextFlags;
 
 "#]
 )]
@@ -180,13 +176,9 @@ functions[r#"
 pub struct LuaTextFlags{
     
     
-        needs_new_measure_func:bool,
-
-
+        
     
-        needs_recompute:bool,
-
-
+        
     
     
 }
@@ -222,8 +214,14 @@ pub struct LuaTextFlags{
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
 derive(clone,debug),
-remote="bevy_ui::prelude::Interaction",
+remote="bevy::ui::prelude::Interaction",
 functions[r#"
+
+    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
+    fn clone(&self) -> bevy::ui::prelude::Interaction;
+
+"#,
+			r#"
 
     #[lua(as_trait = "std::cmp::PartialEq", kind = "Method")]
     fn eq(&self, #[proxy] other: &focus::Interaction) -> bool;
@@ -237,12 +235,6 @@ functions[r#"
         composite = "assert_receiver_is_total_eq",
     )]
     fn assert_receiver_is_total_eq(&self) -> ();
-
-"#,
-			r#"
-
-    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
-    fn clone(&self) -> bevy_ui::prelude::Interaction;
 
 "#]
 )]
@@ -267,7 +259,7 @@ pub struct LuaInteraction{
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
 derive(clone,debug),
-remote="bevy_ui::RelativeCursorPosition",
+remote="bevy::ui::RelativeCursorPosition",
 functions[r#"
 /// A helper function to check if the mouse is over the node
 
@@ -277,14 +269,14 @@ functions[r#"
 "#,
 			r#"
 
-    #[lua(as_trait = "std::cmp::PartialEq", kind = "Method")]
-    fn eq(&self, #[proxy] other: &focus::RelativeCursorPosition) -> bool;
+    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
+    fn clone(&self) -> bevy::ui::RelativeCursorPosition;
 
 "#,
 			r#"
 
-    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
-    fn clone(&self) -> bevy_ui::RelativeCursorPosition;
+    #[lua(as_trait = "std::cmp::PartialEq", kind = "Method")]
+    fn eq(&self, #[proxy] other: &focus::RelativeCursorPosition) -> bool;
 
 "#]
 )]
@@ -305,8 +297,14 @@ pub struct LuaRelativeCursorPosition{
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
 derive(clone,debug),
-remote="bevy_ui::FocusPolicy",
+remote="bevy::ui::FocusPolicy",
 functions[r#"
+
+    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
+    fn clone(&self) -> bevy::ui::FocusPolicy;
+
+"#,
+			r#"
 
     #[lua(as_trait = "std::cmp::PartialEq", kind = "Method")]
     fn eq(&self, #[proxy] other: &focus::FocusPolicy) -> bool;
@@ -320,12 +318,6 @@ functions[r#"
         composite = "assert_receiver_is_total_eq",
     )]
     fn assert_receiver_is_total_eq(&self) -> ();
-
-"#,
-			r#"
-
-    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
-    fn clone(&self) -> bevy_ui::FocusPolicy;
 
 "#]
 )]
@@ -348,41 +340,11 @@ pub struct LuaFocusPolicy{
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
 derive(clone,debug),
-remote="bevy_ui::prelude::Val",
+remote="bevy::ui::prelude::Val",
 functions[r#"
 
-    #[lua(
-        as_trait = "std::ops::Mul",
-        kind = "Function",
-        output(proxy),
-        composite = "mul",
-        metamethod = "Mul",
-    )]
-    fn mul(self, rhs: f32) -> bevy_ui::prelude::Val;
-
-"#,
-			r#"
-
-    #[lua(as_trait = "std::cmp::PartialEq", kind = "Method")]
-    fn eq(&self, #[proxy] other: &geometry::Val) -> bool;
-
-"#,
-			r#"
-
-    #[lua(
-        as_trait = "std::ops::Div",
-        kind = "Function",
-        output(proxy),
-        composite = "div",
-        metamethod = "Div",
-    )]
-    fn div(self, rhs: f32) -> bevy_ui::prelude::Val;
-
-"#,
-			r#"
-
     #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
-    fn clone(&self) -> bevy_ui::prelude::Val;
+    fn clone(&self) -> bevy::ui::prelude::Val;
 
 "#,
 			r#"
@@ -394,7 +356,37 @@ functions[r#"
         composite = "neg",
         metamethod = "Unm",
     )]
-    fn neg(self) -> bevy_ui::prelude::Val;
+    fn neg(self) -> bevy::ui::prelude::Val;
+
+"#,
+			r#"
+
+    #[lua(
+        as_trait = "std::ops::Div",
+        kind = "Function",
+        output(proxy),
+        composite = "div",
+        metamethod = "Div",
+    )]
+    fn div(self, rhs: f32) -> bevy::ui::prelude::Val;
+
+"#,
+			r#"
+
+    #[lua(
+        as_trait = "std::ops::Mul",
+        kind = "Function",
+        output(proxy),
+        composite = "mul",
+        metamethod = "Mul",
+    )]
+    fn mul(self, rhs: f32) -> bevy::ui::prelude::Val;
+
+"#,
+			r#"
+
+    #[lua(as_trait = "std::cmp::PartialEq", kind = "Method")]
+    fn eq(&self, #[proxy] other: &geometry::Val) -> bool;
 
 "#]
 )]
@@ -477,7 +469,7 @@ pub struct LuaVal{
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
 derive(clone,debug),
-remote="bevy_ui::prelude::UiRect",
+remote="bevy::ui::prelude::UiRect",
 functions[r#"
 /// Creates a new [`UiRect`] from the values specified.
 /// # Example
@@ -499,14 +491,14 @@ functions[r#"
     #[lua(kind = "Function", output(proxy))]
     fn new(
         #[proxy]
-        left: bevy_ui::prelude::Val,
+        left: bevy::ui::prelude::Val,
         #[proxy]
-        right: bevy_ui::prelude::Val,
+        right: bevy::ui::prelude::Val,
         #[proxy]
-        top: bevy_ui::prelude::Val,
+        top: bevy::ui::prelude::Val,
         #[proxy]
-        bottom: bevy_ui::prelude::Val,
-    ) -> bevy_ui::prelude::UiRect;
+        bottom: bevy::ui::prelude::Val,
+    ) -> bevy::ui::prelude::UiRect;
 
 "#,
 			r#"
@@ -523,7 +515,7 @@ functions[r#"
 /// ```
 
     #[lua(kind = "Function", output(proxy))]
-    fn all(#[proxy] value: bevy_ui::prelude::Val) -> bevy_ui::prelude::UiRect;
+    fn all(#[proxy] value: bevy::ui::prelude::Val) -> bevy::ui::prelude::UiRect;
 
 "#,
 			r#"
@@ -541,7 +533,7 @@ functions[r#"
 /// ```
 
     #[lua(kind = "Function", output(proxy))]
-    fn px(left: f32, right: f32, top: f32, bottom: f32) -> bevy_ui::prelude::UiRect;
+    fn px(left: f32, right: f32, top: f32, bottom: f32) -> bevy::ui::prelude::UiRect;
 
 "#,
 			r#"
@@ -559,7 +551,12 @@ functions[r#"
 /// ```
 
     #[lua(kind = "Function", output(proxy))]
-    fn percent(left: f32, right: f32, top: f32, bottom: f32) -> bevy_ui::prelude::UiRect;
+    fn percent(
+        left: f32,
+        right: f32,
+        top: f32,
+        bottom: f32,
+    ) -> bevy::ui::prelude::UiRect;
 
 "#,
 			r#"
@@ -577,7 +574,7 @@ functions[r#"
 /// ```
 
     #[lua(kind = "Function", output(proxy))]
-    fn horizontal(#[proxy] value: bevy_ui::prelude::Val) -> bevy_ui::prelude::UiRect;
+    fn horizontal(#[proxy] value: bevy::ui::prelude::Val) -> bevy::ui::prelude::UiRect;
 
 "#,
 			r#"
@@ -595,7 +592,7 @@ functions[r#"
 /// ```
 
     #[lua(kind = "Function", output(proxy))]
-    fn vertical(#[proxy] value: bevy_ui::prelude::Val) -> bevy_ui::prelude::UiRect;
+    fn vertical(#[proxy] value: bevy::ui::prelude::Val) -> bevy::ui::prelude::UiRect;
 
 "#,
 			r#"
@@ -614,10 +611,10 @@ functions[r#"
     #[lua(kind = "Function", output(proxy))]
     fn axes(
         #[proxy]
-        horizontal: bevy_ui::prelude::Val,
+        horizontal: bevy::ui::prelude::Val,
         #[proxy]
-        vertical: bevy_ui::prelude::Val,
-    ) -> bevy_ui::prelude::UiRect;
+        vertical: bevy::ui::prelude::Val,
+    ) -> bevy::ui::prelude::UiRect;
 
 "#,
 			r#"
@@ -635,7 +632,7 @@ functions[r#"
 /// ```
 
     #[lua(kind = "Function", output(proxy))]
-    fn left(#[proxy] value: bevy_ui::prelude::Val) -> bevy_ui::prelude::UiRect;
+    fn left(#[proxy] value: bevy::ui::prelude::Val) -> bevy::ui::prelude::UiRect;
 
 "#,
 			r#"
@@ -653,7 +650,7 @@ functions[r#"
 /// ```
 
     #[lua(kind = "Function", output(proxy))]
-    fn right(#[proxy] value: bevy_ui::prelude::Val) -> bevy_ui::prelude::UiRect;
+    fn right(#[proxy] value: bevy::ui::prelude::Val) -> bevy::ui::prelude::UiRect;
 
 "#,
 			r#"
@@ -671,7 +668,7 @@ functions[r#"
 /// ```
 
     #[lua(kind = "Function", output(proxy))]
-    fn top(#[proxy] value: bevy_ui::prelude::Val) -> bevy_ui::prelude::UiRect;
+    fn top(#[proxy] value: bevy::ui::prelude::Val) -> bevy::ui::prelude::UiRect;
 
 "#,
 			r#"
@@ -689,19 +686,19 @@ functions[r#"
 /// ```
 
     #[lua(kind = "Function", output(proxy))]
-    fn bottom(#[proxy] value: bevy_ui::prelude::Val) -> bevy_ui::prelude::UiRect;
+    fn bottom(#[proxy] value: bevy::ui::prelude::Val) -> bevy::ui::prelude::UiRect;
+
+"#,
+			r#"
+
+    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
+    fn clone(&self) -> bevy::ui::prelude::UiRect;
 
 "#,
 			r#"
 
     #[lua(as_trait = "std::cmp::PartialEq", kind = "Method")]
     fn eq(&self, #[proxy] other: &geometry::UiRect) -> bool;
-
-"#,
-			r#"
-
-    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
-    fn clone(&self) -> bevy_ui::prelude::UiRect;
 
 "#]
 )]
@@ -732,13 +729,13 @@ pub struct LuaUiRect{
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
 derive(clone,debug),
-remote="bevy_ui::prelude::Node",
+remote="bevy::ui::prelude::Node",
 functions[r#"
 /// The calculated node size as width and height in logical pixels.
 /// Automatically calculated by [`super::layout::ui_layout_system`].
 
     #[lua(kind = "Method", output(proxy))]
-    fn size(&self) -> bevy_math::Vec2;
+    fn size(&self) -> bevy::math::Vec2;
 
 "#,
 			r#"
@@ -754,14 +751,14 @@ functions[r#"
 /// Automatically calculated by [`super::layout::ui_layout_system`].
 
     #[lua(kind = "Method", output(proxy))]
-    fn unrounded_size(&self) -> bevy_math::Vec2;
+    fn unrounded_size(&self) -> bevy::math::Vec2;
 
 "#,
 			r#"
 /// Returns the size of the node in physical pixels based on the given scale factor and `UiScale`.
 
     #[lua(kind = "Method", output(proxy))]
-    fn physical_size(&self, scale_factor: f32, ui_scale: f32) -> bevy_math::Vec2;
+    fn physical_size(&self, scale_factor: f32, ui_scale: f32) -> bevy::math::Vec2;
 
 "#,
 			r#"
@@ -775,7 +772,7 @@ functions[r#"
 			r#"
 
     #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
-    fn clone(&self) -> bevy_ui::prelude::Node;
+    fn clone(&self) -> bevy::ui::prelude::Node;
 
 "#]
 )]
@@ -786,25 +783,15 @@ functions[r#"
 pub struct LuaNode{
     
     
-        stack_index:u32,
-
-
+        
     
-        calculated_size:bevy_math::Vec2,
-
-
+        
     
-        outline_width:f32,
-
-
+        
     
-        outline_offset:f32,
-
-
+        
     
-        unrounded_size:bevy_math::Vec2,
-
-
+        
     
     
 }
@@ -836,17 +823,17 @@ pub struct LuaNode{
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
 derive(clone,debug),
-remote="bevy_ui::prelude::Style",
+remote="bevy::ui::prelude::Style",
 functions[r#"
 
-    #[lua(as_trait = "std::cmp::PartialEq", kind = "Method")]
-    fn eq(&self, #[proxy] other: &ui_node::Style) -> bool;
+    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
+    fn clone(&self) -> bevy::ui::prelude::Style;
 
 "#,
 			r#"
 
-    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
-    fn clone(&self) -> bevy_ui::prelude::Style;
+    #[lua(as_trait = "std::cmp::PartialEq", kind = "Method")]
+    fn eq(&self, #[proxy] other: &ui_node::Style) -> bool;
 
 "#]
 )]
@@ -873,8 +860,14 @@ pub struct LuaStyle{
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
 derive(clone,debug),
-remote="bevy_ui::prelude::AlignItems",
+remote="bevy::ui::prelude::AlignItems",
 functions[r#"
+
+    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
+    fn clone(&self) -> bevy::ui::prelude::AlignItems;
+
+"#,
+			r#"
 
     #[lua(as_trait = "std::cmp::PartialEq", kind = "Method")]
     fn eq(&self, #[proxy] other: &ui_node::AlignItems) -> bool;
@@ -888,12 +881,6 @@ functions[r#"
         composite = "assert_receiver_is_total_eq",
     )]
     fn assert_receiver_is_total_eq(&self) -> ();
-
-"#,
-			r#"
-
-    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
-    fn clone(&self) -> bevy_ui::prelude::AlignItems;
 
 "#]
 )]
@@ -918,8 +905,14 @@ pub struct LuaAlignItems{
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
 derive(clone,debug),
-remote="bevy_ui::prelude::JustifyItems",
+remote="bevy::ui::prelude::JustifyItems",
 functions[r#"
+
+    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
+    fn clone(&self) -> bevy::ui::prelude::JustifyItems;
+
+"#,
+			r#"
 
     #[lua(as_trait = "std::cmp::PartialEq", kind = "Method")]
     fn eq(&self, #[proxy] other: &ui_node::JustifyItems) -> bool;
@@ -933,12 +926,6 @@ functions[r#"
         composite = "assert_receiver_is_total_eq",
     )]
     fn assert_receiver_is_total_eq(&self) -> ();
-
-"#,
-			r#"
-
-    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
-    fn clone(&self) -> bevy_ui::prelude::JustifyItems;
 
 "#]
 )]
@@ -963,8 +950,14 @@ pub struct LuaJustifyItems{
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
 derive(clone,debug),
-remote="bevy_ui::prelude::AlignSelf",
+remote="bevy::ui::prelude::AlignSelf",
 functions[r#"
+
+    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
+    fn clone(&self) -> bevy::ui::prelude::AlignSelf;
+
+"#,
+			r#"
 
     #[lua(as_trait = "std::cmp::PartialEq", kind = "Method")]
     fn eq(&self, #[proxy] other: &ui_node::AlignSelf) -> bool;
@@ -978,12 +971,6 @@ functions[r#"
         composite = "assert_receiver_is_total_eq",
     )]
     fn assert_receiver_is_total_eq(&self) -> ();
-
-"#,
-			r#"
-
-    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
-    fn clone(&self) -> bevy_ui::prelude::AlignSelf;
 
 "#]
 )]
@@ -1008,8 +995,14 @@ pub struct LuaAlignSelf{
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
 derive(clone,debug),
-remote="bevy_ui::prelude::JustifySelf",
+remote="bevy::ui::prelude::JustifySelf",
 functions[r#"
+
+    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
+    fn clone(&self) -> bevy::ui::prelude::JustifySelf;
+
+"#,
+			r#"
 
     #[lua(as_trait = "std::cmp::PartialEq", kind = "Method")]
     fn eq(&self, #[proxy] other: &ui_node::JustifySelf) -> bool;
@@ -1023,12 +1016,6 @@ functions[r#"
         composite = "assert_receiver_is_total_eq",
     )]
     fn assert_receiver_is_total_eq(&self) -> ();
-
-"#,
-			r#"
-
-    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
-    fn clone(&self) -> bevy_ui::prelude::JustifySelf;
 
 "#]
 )]
@@ -1053,8 +1040,14 @@ pub struct LuaJustifySelf{
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
 derive(clone,debug),
-remote="bevy_ui::prelude::AlignContent",
+remote="bevy::ui::prelude::AlignContent",
 functions[r#"
+
+    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
+    fn clone(&self) -> bevy::ui::prelude::AlignContent;
+
+"#,
+			r#"
 
     #[lua(as_trait = "std::cmp::PartialEq", kind = "Method")]
     fn eq(&self, #[proxy] other: &ui_node::AlignContent) -> bool;
@@ -1068,12 +1061,6 @@ functions[r#"
         composite = "assert_receiver_is_total_eq",
     )]
     fn assert_receiver_is_total_eq(&self) -> ();
-
-"#,
-			r#"
-
-    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
-    fn clone(&self) -> bevy_ui::prelude::AlignContent;
 
 "#]
 )]
@@ -1098,8 +1085,14 @@ pub struct LuaAlignContent{
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
 derive(clone,debug),
-remote="bevy_ui::prelude::JustifyContent",
+remote="bevy::ui::prelude::JustifyContent",
 functions[r#"
+
+    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
+    fn clone(&self) -> bevy::ui::prelude::JustifyContent;
+
+"#,
+			r#"
 
     #[lua(as_trait = "std::cmp::PartialEq", kind = "Method")]
     fn eq(&self, #[proxy] other: &ui_node::JustifyContent) -> bool;
@@ -1113,12 +1106,6 @@ functions[r#"
         composite = "assert_receiver_is_total_eq",
     )]
     fn assert_receiver_is_total_eq(&self) -> ();
-
-"#,
-			r#"
-
-    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
-    fn clone(&self) -> bevy_ui::prelude::JustifyContent;
 
 "#]
 )]
@@ -1139,8 +1126,14 @@ pub struct LuaJustifyContent{
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
 derive(clone,debug),
-remote="bevy_ui::prelude::Direction",
+remote="bevy::ui::prelude::Direction",
 functions[r#"
+
+    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
+    fn clone(&self) -> bevy::ui::prelude::Direction;
+
+"#,
+			r#"
 
     #[lua(as_trait = "std::cmp::PartialEq", kind = "Method")]
     fn eq(&self, #[proxy] other: &ui_node::Direction) -> bool;
@@ -1154,12 +1147,6 @@ functions[r#"
         composite = "assert_receiver_is_total_eq",
     )]
     fn assert_receiver_is_total_eq(&self) -> ();
-
-"#,
-			r#"
-
-    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
-    fn clone(&self) -> bevy_ui::prelude::Direction;
 
 "#]
 )]
@@ -1180,8 +1167,14 @@ pub struct LuaDirection{
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
 derive(clone,debug),
-remote="bevy_ui::prelude::Display",
+remote="bevy::ui::prelude::Display",
 functions[r#"
+
+    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
+    fn clone(&self) -> bevy::ui::prelude::Display;
+
+"#,
+			r#"
 
     #[lua(as_trait = "std::cmp::PartialEq", kind = "Method")]
     fn eq(&self, #[proxy] other: &ui_node::Display) -> bool;
@@ -1195,12 +1188,6 @@ functions[r#"
         composite = "assert_receiver_is_total_eq",
     )]
     fn assert_receiver_is_total_eq(&self) -> ();
-
-"#,
-			r#"
-
-    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
-    fn clone(&self) -> bevy_ui::prelude::Display;
 
 "#]
 )]
@@ -1219,8 +1206,14 @@ pub struct LuaDisplay{
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
 derive(clone,debug),
-remote="bevy_ui::prelude::FlexDirection",
+remote="bevy::ui::prelude::FlexDirection",
 functions[r#"
+
+    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
+    fn clone(&self) -> bevy::ui::prelude::FlexDirection;
+
+"#,
+			r#"
 
     #[lua(as_trait = "std::cmp::PartialEq", kind = "Method")]
     fn eq(&self, #[proxy] other: &ui_node::FlexDirection) -> bool;
@@ -1234,12 +1227,6 @@ functions[r#"
         composite = "assert_receiver_is_total_eq",
     )]
     fn assert_receiver_is_total_eq(&self) -> ();
-
-"#,
-			r#"
-
-    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
-    fn clone(&self) -> bevy_ui::prelude::FlexDirection;
 
 "#]
 )]
@@ -1258,33 +1245,33 @@ pub struct LuaFlexDirection{
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
 derive(clone,debug),
-remote="bevy_ui::prelude::Overflow",
+remote="bevy::ui::prelude::Overflow",
 functions[r#"
 /// Show overflowing items on both axes
 
     #[lua(kind = "Function", output(proxy))]
-    fn visible() -> bevy_ui::prelude::Overflow;
+    fn visible() -> bevy::ui::prelude::Overflow;
 
 "#,
 			r#"
 /// Clip overflowing items on both axes
 
     #[lua(kind = "Function", output(proxy))]
-    fn clip() -> bevy_ui::prelude::Overflow;
+    fn clip() -> bevy::ui::prelude::Overflow;
 
 "#,
 			r#"
 /// Clip overflowing items on the x axis
 
     #[lua(kind = "Function", output(proxy))]
-    fn clip_x() -> bevy_ui::prelude::Overflow;
+    fn clip_x() -> bevy::ui::prelude::Overflow;
 
 "#,
 			r#"
 /// Clip overflowing items on the y axis
 
     #[lua(kind = "Function", output(proxy))]
-    fn clip_y() -> bevy_ui::prelude::Overflow;
+    fn clip_y() -> bevy::ui::prelude::Overflow;
 
 "#,
 			r#"
@@ -1292,6 +1279,12 @@ functions[r#"
 
     #[lua(kind = "Method")]
     fn is_visible(&self) -> bool;
+
+"#,
+			r#"
+
+    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
+    fn clone(&self) -> bevy::ui::prelude::Overflow;
 
 "#,
 			r#"
@@ -1308,12 +1301,6 @@ functions[r#"
         composite = "assert_receiver_is_total_eq",
     )]
     fn assert_receiver_is_total_eq(&self) -> ();
-
-"#,
-			r#"
-
-    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
-    fn clone(&self) -> bevy_ui::prelude::Overflow;
 
 "#]
 )]
@@ -1334,12 +1321,18 @@ pub struct LuaOverflow{
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
 derive(clone,debug),
-remote="bevy_ui::prelude::OverflowAxis",
+remote="bevy::ui::prelude::OverflowAxis",
 functions[r#"
 /// Overflow is visible on this axis
 
     #[lua(kind = "Method")]
     fn is_visible(&self) -> bool;
+
+"#,
+			r#"
+
+    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
+    fn clone(&self) -> bevy::ui::prelude::OverflowAxis;
 
 "#,
 			r#"
@@ -1356,12 +1349,6 @@ functions[r#"
         composite = "assert_receiver_is_total_eq",
     )]
     fn assert_receiver_is_total_eq(&self) -> ();
-
-"#,
-			r#"
-
-    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
-    fn clone(&self) -> bevy_ui::prelude::OverflowAxis;
 
 "#]
 )]
@@ -1380,8 +1367,14 @@ pub struct LuaOverflowAxis{
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
 derive(clone,debug),
-remote="bevy_ui::prelude::PositionType",
+remote="bevy::ui::prelude::PositionType",
 functions[r#"
+
+    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
+    fn clone(&self) -> bevy::ui::prelude::PositionType;
+
+"#,
+			r#"
 
     #[lua(as_trait = "std::cmp::PartialEq", kind = "Method")]
     fn eq(&self, #[proxy] other: &ui_node::PositionType) -> bool;
@@ -1395,12 +1388,6 @@ functions[r#"
         composite = "assert_receiver_is_total_eq",
     )]
     fn assert_receiver_is_total_eq(&self) -> ();
-
-"#,
-			r#"
-
-    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
-    fn clone(&self) -> bevy_ui::prelude::PositionType;
 
 "#]
 )]
@@ -1419,8 +1406,14 @@ pub struct LuaPositionType{
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
 derive(clone,debug),
-remote="bevy_ui::prelude::FlexWrap",
+remote="bevy::ui::prelude::FlexWrap",
 functions[r#"
+
+    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
+    fn clone(&self) -> bevy::ui::prelude::FlexWrap;
+
+"#,
+			r#"
 
     #[lua(as_trait = "std::cmp::PartialEq", kind = "Method")]
     fn eq(&self, #[proxy] other: &ui_node::FlexWrap) -> bool;
@@ -1434,12 +1427,6 @@ functions[r#"
         composite = "assert_receiver_is_total_eq",
     )]
     fn assert_receiver_is_total_eq(&self) -> ();
-
-"#,
-			r#"
-
-    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
-    fn clone(&self) -> bevy_ui::prelude::FlexWrap;
 
 "#]
 )]
@@ -1466,8 +1453,14 @@ pub struct LuaFlexWrap{
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
 derive(clone,debug),
-remote="bevy_ui::prelude::GridAutoFlow",
+remote="bevy::ui::prelude::GridAutoFlow",
 functions[r#"
+
+    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
+    fn clone(&self) -> bevy::ui::prelude::GridAutoFlow;
+
+"#,
+			r#"
 
     #[lua(as_trait = "std::cmp::PartialEq", kind = "Method")]
     fn eq(&self, #[proxy] other: &ui_node::GridAutoFlow) -> bool;
@@ -1481,12 +1474,6 @@ functions[r#"
         composite = "assert_receiver_is_total_eq",
     )]
     fn assert_receiver_is_total_eq(&self) -> ();
-
-"#,
-			r#"
-
-    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
-    fn clone(&self) -> bevy_ui::prelude::GridAutoFlow;
 
 "#]
 )]
@@ -1503,17 +1490,17 @@ pub struct LuaGridAutoFlow{
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
 derive(clone,debug),
-remote="bevy_ui::prelude::MinTrackSizingFunction",
+remote="bevy::ui::prelude::MinTrackSizingFunction",
 functions[r#"
 
-    #[lua(as_trait = "std::cmp::PartialEq", kind = "Method")]
-    fn eq(&self, #[proxy] other: &ui_node::MinTrackSizingFunction) -> bool;
+    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
+    fn clone(&self) -> bevy::ui::prelude::MinTrackSizingFunction;
 
 "#,
 			r#"
 
-    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
-    fn clone(&self) -> bevy_ui::prelude::MinTrackSizingFunction;
+    #[lua(as_trait = "std::cmp::PartialEq", kind = "Method")]
+    fn eq(&self, #[proxy] other: &ui_node::MinTrackSizingFunction) -> bool;
 
 "#]
 )]
@@ -1530,17 +1517,17 @@ pub struct LuaMinTrackSizingFunction{
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
 derive(clone,debug),
-remote="bevy_ui::prelude::MaxTrackSizingFunction",
+remote="bevy::ui::prelude::MaxTrackSizingFunction",
 functions[r#"
 
-    #[lua(as_trait = "std::cmp::PartialEq", kind = "Method")]
-    fn eq(&self, #[proxy] other: &ui_node::MaxTrackSizingFunction) -> bool;
+    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
+    fn clone(&self) -> bevy::ui::prelude::MaxTrackSizingFunction;
 
 "#,
 			r#"
 
-    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
-    fn clone(&self) -> bevy_ui::prelude::MaxTrackSizingFunction;
+    #[lua(as_trait = "std::cmp::PartialEq", kind = "Method")]
+    fn eq(&self, #[proxy] other: &ui_node::MaxTrackSizingFunction) -> bool;
 
 "#]
 )]
@@ -1561,17 +1548,17 @@ pub struct LuaMaxTrackSizingFunction{
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
 derive(clone,debug),
-remote="bevy_ui::prelude::GridTrack",
+remote="bevy::ui::prelude::GridTrack",
 functions[r#"
 
-    #[lua(as_trait = "std::cmp::PartialEq", kind = "Method")]
-    fn eq(&self, #[proxy] other: &ui_node::GridTrack) -> bool;
+    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
+    fn clone(&self) -> bevy::ui::prelude::GridTrack;
 
 "#,
 			r#"
 
-    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
-    fn clone(&self) -> bevy_ui::prelude::GridTrack;
+    #[lua(as_trait = "std::cmp::PartialEq", kind = "Method")]
+    fn eq(&self, #[proxy] other: &ui_node::GridTrack) -> bool;
 
 "#]
 )]
@@ -1582,13 +1569,9 @@ functions[r#"
 pub struct LuaGridTrack{
     
     
-        min_sizing_function:bevy_ui::prelude::MinTrackSizingFunction,
-
-
+        
     
-        max_sizing_function:bevy_ui::prelude::MaxTrackSizingFunction,
-
-
+        
     
     
 }
@@ -1602,17 +1585,17 @@ pub struct LuaGridTrack{
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
 derive(clone,debug),
-remote="bevy_ui::prelude::GridTrackRepetition",
+remote="bevy::ui::prelude::GridTrackRepetition",
 functions[r#"
 
-    #[lua(as_trait = "std::cmp::PartialEq", kind = "Method")]
-    fn eq(&self, #[proxy] other: &ui_node::GridTrackRepetition) -> bool;
+    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
+    fn clone(&self) -> bevy::ui::prelude::GridTrackRepetition;
 
 "#,
 			r#"
 
-    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
-    fn clone(&self) -> bevy_ui::prelude::GridTrackRepetition;
+    #[lua(as_trait = "std::cmp::PartialEq", kind = "Method")]
+    fn eq(&self, #[proxy] other: &ui_node::GridTrackRepetition) -> bool;
 
 "#]
 )]
@@ -1649,17 +1632,17 @@ pub struct LuaGridTrackRepetition{
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
 derive(clone,debug),
-remote="bevy_ui::prelude::RepeatedGridTrack",
+remote="bevy::ui::prelude::RepeatedGridTrack",
 functions[r#"
 
-    #[lua(as_trait = "std::cmp::PartialEq", kind = "Method")]
-    fn eq(&self, #[proxy] other: &ui_node::RepeatedGridTrack) -> bool;
+    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
+    fn clone(&self) -> bevy::ui::prelude::RepeatedGridTrack;
 
 "#,
 			r#"
 
-    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
-    fn clone(&self) -> bevy_ui::prelude::RepeatedGridTrack;
+    #[lua(as_trait = "std::cmp::PartialEq", kind = "Method")]
+    fn eq(&self, #[proxy] other: &ui_node::RepeatedGridTrack) -> bool;
 
 "#]
 )]
@@ -1670,13 +1653,9 @@ functions[r#"
 pub struct LuaRepeatedGridTrack{
     
     
-        repetition:bevy_ui::prelude::GridTrackRepetition,
-
-
+        
     
-        tracks:bevy_utils::smallvec::SmallVec<[ui_node::GridTrack; 1]>,
-
-
+        
     
     
 }
@@ -1704,12 +1683,12 @@ pub struct LuaRepeatedGridTrack{
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
 derive(clone,debug),
-remote="bevy_ui::prelude::GridPlacement",
+remote="bevy::ui::prelude::GridPlacement",
 functions[r#"
 /// Place the grid item automatically (letting the `span` default to `1`).
 
     #[lua(kind = "Function", output(proxy))]
-    fn auto() -> bevy_ui::prelude::GridPlacement;
+    fn auto() -> bevy::ui::prelude::GridPlacement;
 
 "#,
 			r#"
@@ -1718,7 +1697,7 @@ functions[r#"
 /// Panics if `span` is `0`.
 
     #[lua(kind = "Function", output(proxy))]
-    fn span(span: u16) -> bevy_ui::prelude::GridPlacement;
+    fn span(span: u16) -> bevy::ui::prelude::GridPlacement;
 
 "#,
 			r#"
@@ -1727,7 +1706,7 @@ functions[r#"
 /// Panics if `start` is `0`.
 
     #[lua(kind = "Function", output(proxy))]
-    fn start(start: i16) -> bevy_ui::prelude::GridPlacement;
+    fn start(start: i16) -> bevy::ui::prelude::GridPlacement;
 
 "#,
 			r#"
@@ -1736,7 +1715,7 @@ functions[r#"
 /// Panics if `end` is `0`.
 
     #[lua(kind = "Function", output(proxy))]
-    fn end(end: i16) -> bevy_ui::prelude::GridPlacement;
+    fn end(end: i16) -> bevy::ui::prelude::GridPlacement;
 
 "#,
 			r#"
@@ -1745,7 +1724,7 @@ functions[r#"
 /// Panics if `start` or `span` is `0`.
 
     #[lua(kind = "Function", output(proxy))]
-    fn start_span(start: i16, span: u16) -> bevy_ui::prelude::GridPlacement;
+    fn start_span(start: i16, span: u16) -> bevy::ui::prelude::GridPlacement;
 
 "#,
 			r#"
@@ -1754,7 +1733,7 @@ functions[r#"
 /// Panics if `start` or `end` is `0`.
 
     #[lua(kind = "Function", output(proxy))]
-    fn start_end(start: i16, end: i16) -> bevy_ui::prelude::GridPlacement;
+    fn start_end(start: i16, end: i16) -> bevy::ui::prelude::GridPlacement;
 
 "#,
 			r#"
@@ -1763,7 +1742,7 @@ functions[r#"
 /// Panics if `end` or `span` is `0`.
 
     #[lua(kind = "Function", output(proxy))]
-    fn end_span(end: i16, span: u16) -> bevy_ui::prelude::GridPlacement;
+    fn end_span(end: i16, span: u16) -> bevy::ui::prelude::GridPlacement;
 
 "#,
 			r#"
@@ -1772,7 +1751,7 @@ functions[r#"
 /// Panics if `start` is `0`.
 
     #[lua(kind = "Method", output(proxy))]
-    fn set_start(self, start: i16) -> bevy_ui::prelude::GridPlacement;
+    fn set_start(self, start: i16) -> bevy::ui::prelude::GridPlacement;
 
 "#,
 			r#"
@@ -1781,7 +1760,7 @@ functions[r#"
 /// Panics if `end` is `0`.
 
     #[lua(kind = "Method", output(proxy))]
-    fn set_end(self, end: i16) -> bevy_ui::prelude::GridPlacement;
+    fn set_end(self, end: i16) -> bevy::ui::prelude::GridPlacement;
 
 "#,
 			r#"
@@ -1790,7 +1769,7 @@ functions[r#"
 /// Panics if `span` is `0`.
 
     #[lua(kind = "Method", output(proxy))]
-    fn set_span(self, span: u16) -> bevy_ui::prelude::GridPlacement;
+    fn set_span(self, span: u16) -> bevy::ui::prelude::GridPlacement;
 
 "#,
 			r#"
@@ -1816,6 +1795,12 @@ functions[r#"
 "#,
 			r#"
 
+    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
+    fn clone(&self) -> bevy::ui::prelude::GridPlacement;
+
+"#,
+			r#"
+
     #[lua(as_trait = "std::cmp::PartialEq", kind = "Method")]
     fn eq(&self, #[proxy] other: &ui_node::GridPlacement) -> bool;
 
@@ -1829,12 +1814,6 @@ functions[r#"
     )]
     fn assert_receiver_is_total_eq(&self) -> ();
 
-"#,
-			r#"
-
-    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
-    fn clone(&self) -> bevy_ui::prelude::GridPlacement;
-
 "#]
 )]
 
@@ -1844,17 +1823,11 @@ functions[r#"
 pub struct LuaGridPlacement{
     
     
-        start:std::option::Option<std::num::NonZeroI16>,
-
-
+        
     
-        span:std::option::Option<std::num::NonZeroU16>,
-
-
+        
     
-        end:std::option::Option<std::num::NonZeroI16>,
-
-
+        
     
     
 }
@@ -1870,11 +1843,11 @@ pub struct LuaGridPlacement{
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
 derive(clone,debug),
-remote="bevy_ui::prelude::BackgroundColor",
+remote="bevy::ui::prelude::BackgroundColor",
 functions[r#"
 
     #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
-    fn clone(&self) -> bevy_ui::prelude::BackgroundColor;
+    fn clone(&self) -> bevy::ui::prelude::BackgroundColor;
 
 "#]
 )]
@@ -1894,11 +1867,11 @@ pub struct LuaBackgroundColor(
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
 derive(clone,debug),
-remote="bevy_ui::prelude::BorderColor",
+remote="bevy::ui::prelude::BorderColor",
 functions[r#"
 
     #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
-    fn clone(&self) -> bevy_ui::prelude::BorderColor;
+    fn clone(&self) -> bevy::ui::prelude::BorderColor;
 
 "#]
 )]
@@ -2012,25 +1985,25 @@ pub struct LuaBorderColor(
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
 derive(clone,debug),
-remote="bevy_ui::prelude::Outline",
+remote="bevy::ui::prelude::Outline",
 functions[r#"
 /// Create a new outline
 
     #[lua(kind = "Function", output(proxy))]
     fn new(
         #[proxy]
-        width: bevy_ui::prelude::Val,
+        width: bevy::ui::prelude::Val,
         #[proxy]
-        offset: bevy_ui::prelude::Val,
+        offset: bevy::ui::prelude::Val,
         #[proxy]
-        color: bevy_render::color::Color,
-    ) -> bevy_ui::prelude::Outline;
+        color: bevy::render::color::Color,
+    ) -> bevy::ui::prelude::Outline;
 
 "#,
 			r#"
 
     #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
-    fn clone(&self) -> bevy_ui::prelude::Outline;
+    fn clone(&self) -> bevy::ui::prelude::Outline;
 
 "#]
 )]
@@ -2051,25 +2024,25 @@ pub struct LuaOutline{
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
 derive(clone,debug),
-remote="bevy_ui::prelude::UiImage",
+remote="bevy::ui::prelude::UiImage",
 functions[r#"
 /// Flip the image along its x-axis
 
     #[lua(kind = "Method", output(proxy))]
-    fn with_flip_x(self) -> bevy_ui::prelude::UiImage;
+    fn with_flip_x(self) -> bevy::ui::prelude::UiImage;
 
 "#,
 			r#"
 /// Flip the image along its y-axis
 
     #[lua(kind = "Method", output(proxy))]
-    fn with_flip_y(self) -> bevy_ui::prelude::UiImage;
+    fn with_flip_y(self) -> bevy::ui::prelude::UiImage;
 
 "#,
 			r#"
 
     #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
-    fn clone(&self) -> bevy_ui::prelude::UiImage;
+    fn clone(&self) -> bevy::ui::prelude::UiImage;
 
 "#]
 )]
@@ -2090,11 +2063,11 @@ pub struct LuaUiImage{
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
 derive(clone,debug),
-remote="bevy_ui::prelude::CalculatedClip",
+remote="bevy::ui::prelude::CalculatedClip",
 functions[r#"
 
     #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
-    fn clone(&self) -> bevy_ui::prelude::CalculatedClip;
+    fn clone(&self) -> bevy::ui::prelude::CalculatedClip;
 
 "#]
 )]
@@ -2133,11 +2106,11 @@ pub struct LuaCalculatedClip{
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
 derive(clone,debug),
-remote="bevy_ui::prelude::ZIndex",
+remote="bevy::ui::prelude::ZIndex",
 functions[r#"
 
     #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
-    fn clone(&self) -> bevy_ui::prelude::ZIndex;
+    fn clone(&self) -> bevy::ui::prelude::ZIndex;
 
 "#]
 )]
@@ -2166,11 +2139,17 @@ pub struct LuaZIndex{
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
 derive(clone,debug),
-remote="bevy_ui::prelude::TargetCamera",
+remote="bevy::ui::prelude::TargetCamera",
 functions[r#"
 
     #[lua(kind = "Method", output(proxy))]
-    fn entity(&self) -> bevy_ecs::entity::Entity;
+    fn entity(&self) -> bevy::ecs::entity::Entity;
+
+"#,
+			r#"
+
+    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
+    fn clone(&self) -> bevy::ui::prelude::TargetCamera;
 
 "#,
 			r#"
@@ -2187,12 +2166,6 @@ functions[r#"
         composite = "assert_receiver_is_total_eq",
     )]
     fn assert_receiver_is_total_eq(&self) -> ();
-
-"#,
-			r#"
-
-    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
-    fn clone(&self) -> bevy_ui::prelude::TargetCamera;
 
 "#]
 )]
@@ -2216,7 +2189,7 @@ pub struct LuaTargetCamera(
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
 derive(clone,debug),
-remote="bevy_ui::prelude::UiScale",
+remote="bevy::ui::prelude::UiScale",
 functions[]
 )]
 
@@ -2229,7 +2202,10 @@ pub struct LuaUiScale(
 );
 
 
-bevy_script_api::util::impl_tealr_generic!(pub(crate) struct T);
+
+
+crate::impl_tealr_generic!(pub(crate) struct T);
+
 
 #[derive(Default)]
 pub(crate) struct Globals;
@@ -2512,85 +2488,85 @@ impl bevy_mod_scripting_core::hosts::APIProvider for BevyUiAPIProvider {
 
     fn register_with_app(&self, app: &mut bevy::app::App) {
         
-        app.register_foreign_lua_type::<bevy_ui::measurement::ContentSize>();
+        app.register_foreign_lua_type::<bevy::ui::measurement::ContentSize>();
         
-        app.register_foreign_lua_type::<bevy_ui::widget::Button>();
+        app.register_foreign_lua_type::<bevy::ui::widget::Button>();
         
-        app.register_foreign_lua_type::<bevy_ui::widget::UiImageSize>();
+        app.register_foreign_lua_type::<bevy::ui::widget::UiImageSize>();
         
-        app.register_foreign_lua_type::<bevy_ui::widget::Label>();
+        app.register_foreign_lua_type::<bevy::ui::widget::Label>();
         
-        app.register_foreign_lua_type::<bevy_ui::widget::TextFlags>();
+        app.register_foreign_lua_type::<bevy::ui::widget::TextFlags>();
         
-        app.register_foreign_lua_type::<bevy_ui::prelude::Interaction>();
+        app.register_foreign_lua_type::<bevy::ui::prelude::Interaction>();
         
-        app.register_foreign_lua_type::<bevy_ui::RelativeCursorPosition>();
+        app.register_foreign_lua_type::<bevy::ui::RelativeCursorPosition>();
         
-        app.register_foreign_lua_type::<bevy_ui::FocusPolicy>();
+        app.register_foreign_lua_type::<bevy::ui::FocusPolicy>();
         
-        app.register_foreign_lua_type::<bevy_ui::prelude::Val>();
+        app.register_foreign_lua_type::<bevy::ui::prelude::Val>();
         
-        app.register_foreign_lua_type::<bevy_ui::prelude::UiRect>();
+        app.register_foreign_lua_type::<bevy::ui::prelude::UiRect>();
         
-        app.register_foreign_lua_type::<bevy_ui::prelude::Node>();
+        app.register_foreign_lua_type::<bevy::ui::prelude::Node>();
         
-        app.register_foreign_lua_type::<bevy_ui::prelude::Style>();
+        app.register_foreign_lua_type::<bevy::ui::prelude::Style>();
         
-        app.register_foreign_lua_type::<bevy_ui::prelude::AlignItems>();
+        app.register_foreign_lua_type::<bevy::ui::prelude::AlignItems>();
         
-        app.register_foreign_lua_type::<bevy_ui::prelude::JustifyItems>();
+        app.register_foreign_lua_type::<bevy::ui::prelude::JustifyItems>();
         
-        app.register_foreign_lua_type::<bevy_ui::prelude::AlignSelf>();
+        app.register_foreign_lua_type::<bevy::ui::prelude::AlignSelf>();
         
-        app.register_foreign_lua_type::<bevy_ui::prelude::JustifySelf>();
+        app.register_foreign_lua_type::<bevy::ui::prelude::JustifySelf>();
         
-        app.register_foreign_lua_type::<bevy_ui::prelude::AlignContent>();
+        app.register_foreign_lua_type::<bevy::ui::prelude::AlignContent>();
         
-        app.register_foreign_lua_type::<bevy_ui::prelude::JustifyContent>();
+        app.register_foreign_lua_type::<bevy::ui::prelude::JustifyContent>();
         
-        app.register_foreign_lua_type::<bevy_ui::prelude::Direction>();
+        app.register_foreign_lua_type::<bevy::ui::prelude::Direction>();
         
-        app.register_foreign_lua_type::<bevy_ui::prelude::Display>();
+        app.register_foreign_lua_type::<bevy::ui::prelude::Display>();
         
-        app.register_foreign_lua_type::<bevy_ui::prelude::FlexDirection>();
+        app.register_foreign_lua_type::<bevy::ui::prelude::FlexDirection>();
         
-        app.register_foreign_lua_type::<bevy_ui::prelude::Overflow>();
+        app.register_foreign_lua_type::<bevy::ui::prelude::Overflow>();
         
-        app.register_foreign_lua_type::<bevy_ui::prelude::OverflowAxis>();
+        app.register_foreign_lua_type::<bevy::ui::prelude::OverflowAxis>();
         
-        app.register_foreign_lua_type::<bevy_ui::prelude::PositionType>();
+        app.register_foreign_lua_type::<bevy::ui::prelude::PositionType>();
         
-        app.register_foreign_lua_type::<bevy_ui::prelude::FlexWrap>();
+        app.register_foreign_lua_type::<bevy::ui::prelude::FlexWrap>();
         
-        app.register_foreign_lua_type::<bevy_ui::prelude::GridAutoFlow>();
+        app.register_foreign_lua_type::<bevy::ui::prelude::GridAutoFlow>();
         
-        app.register_foreign_lua_type::<bevy_ui::prelude::MinTrackSizingFunction>();
+        app.register_foreign_lua_type::<bevy::ui::prelude::MinTrackSizingFunction>();
         
-        app.register_foreign_lua_type::<bevy_ui::prelude::MaxTrackSizingFunction>();
+        app.register_foreign_lua_type::<bevy::ui::prelude::MaxTrackSizingFunction>();
         
-        app.register_foreign_lua_type::<bevy_ui::prelude::GridTrack>();
+        app.register_foreign_lua_type::<bevy::ui::prelude::GridTrack>();
         
-        app.register_foreign_lua_type::<bevy_ui::prelude::GridTrackRepetition>();
+        app.register_foreign_lua_type::<bevy::ui::prelude::GridTrackRepetition>();
         
-        app.register_foreign_lua_type::<bevy_ui::prelude::RepeatedGridTrack>();
+        app.register_foreign_lua_type::<bevy::ui::prelude::RepeatedGridTrack>();
         
-        app.register_foreign_lua_type::<bevy_ui::prelude::GridPlacement>();
+        app.register_foreign_lua_type::<bevy::ui::prelude::GridPlacement>();
         
-        app.register_foreign_lua_type::<bevy_ui::prelude::BackgroundColor>();
+        app.register_foreign_lua_type::<bevy::ui::prelude::BackgroundColor>();
         
-        app.register_foreign_lua_type::<bevy_ui::prelude::BorderColor>();
+        app.register_foreign_lua_type::<bevy::ui::prelude::BorderColor>();
         
-        app.register_foreign_lua_type::<bevy_ui::prelude::Outline>();
+        app.register_foreign_lua_type::<bevy::ui::prelude::Outline>();
         
-        app.register_foreign_lua_type::<bevy_ui::prelude::UiImage>();
+        app.register_foreign_lua_type::<bevy::ui::prelude::UiImage>();
         
-        app.register_foreign_lua_type::<bevy_ui::prelude::CalculatedClip>();
+        app.register_foreign_lua_type::<bevy::ui::prelude::CalculatedClip>();
         
-        app.register_foreign_lua_type::<bevy_ui::prelude::ZIndex>();
+        app.register_foreign_lua_type::<bevy::ui::prelude::ZIndex>();
         
-        app.register_foreign_lua_type::<bevy_ui::prelude::TargetCamera>();
+        app.register_foreign_lua_type::<bevy::ui::prelude::TargetCamera>();
         
-        app.register_foreign_lua_type::<bevy_ui::prelude::UiScale>();
+        app.register_foreign_lua_type::<bevy::ui::prelude::UiScale>();
         
     }
 }

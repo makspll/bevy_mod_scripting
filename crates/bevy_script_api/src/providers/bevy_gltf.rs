@@ -6,6 +6,28 @@ use super::bevy_ecs::*;
 
 use super::bevy_reflect::*;
 
+use super::bevy_animation::*;
+
+use super::bevy_asset::*;
+
+use super::bevy_core::*;
+
+use super::bevy_hierarchy::*;
+
+use super::bevy_input::*;
+
+use super::bevy_window::*;
+
+use super::bevy_render::*;
+
+use super::bevy_time::*;
+
+use super::bevy_transform::*;
+
+use super::bevy_core_pipeline::*;
+
+use super::bevy_pbr::*;
+
 
 
 extern crate self as bevy_script_api;
@@ -15,44 +37,19 @@ extern crate self as bevy_script_api;
 
 
     
-/// Component used to identify an entity. Stores a hash for faster comparisons.
+/// Additional untyped data that can be present on most glTF types.
 
-/// The hash is eagerly re-computed upon each update to the name.
-
-/// [`Name`] should not be treated as a globally unique identifier for entities,
-
-/// as multiple entities can have the same name.  [`Entity`] should be
-
-/// used instead as the default unique identifier.
+/// See [the relevant glTF specification section](https://registry.khronos.org/glTF/specs/2.0/glTF-2.0.html#reference-extras).
 
 
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
 derive(clone,debug),
-remote="bevy_core::prelude::Name",
+remote="bevy::gltf::GltfExtras",
 functions[r#"
-/// Gets the name of the entity as a `&str`.
-
-    #[lua(kind = "Method")]
-    fn as_str(&self) -> &str;
-
-"#,
-			r#"
-
-    #[lua(kind = "Method")]
-    fn update_hash(&mut self) -> ();
-
-"#,
-			r#"
 
     #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
-    fn clone(&self) -> bevy_core::prelude::Name;
-
-"#,
-			r#"
-
-    #[lua(as_trait = "std::cmp::PartialEq", kind = "Method")]
-    fn eq(&self, #[proxy] other: &name::Name) -> bool;
+    fn clone(&self) -> bevy::gltf::GltfExtras;
 
 "#]
 )]
@@ -60,22 +57,17 @@ functions[r#"
 
 
 
-pub struct LuaName{
+pub struct LuaGltfExtras{
     
-    
-        hash:u64,
-
-
-    
-        name:std::borrow::Cow<'staticstr>,
-
-
     
     
 }
 
 
-bevy_script_api::util::impl_tealr_generic!(pub(crate) struct T);
+
+
+crate::impl_tealr_generic!(pub(crate) struct T);
+
 
 #[derive(Default)]
 pub(crate) struct Globals;
@@ -92,9 +84,9 @@ impl bevy_mod_scripting_lua::tealr::mlu::ExportInstances for Globals {
     }
 }
 
-pub struct BevyCoreAPIProvider;
+pub struct BevyGltfAPIProvider;
 
-impl bevy_mod_scripting_core::hosts::APIProvider for BevyCoreAPIProvider {
+impl bevy_mod_scripting_core::hosts::APIProvider for BevyGltfAPIProvider {
         type APITarget = std::sync::Mutex<bevy_mod_scripting_lua::tealr::mlu::mlua::Lua>;
         type ScriptContext = std::sync::Mutex<bevy_mod_scripting_lua::tealr::mlu::mlua::Lua>;
         type DocTarget = bevy_mod_scripting_lua::docs::LuaDocFragment;
@@ -108,11 +100,11 @@ impl bevy_mod_scripting_core::hosts::APIProvider for BevyCoreAPIProvider {
     }
 
     fn get_doc_fragment(&self) -> Option<Self::DocTarget> {
-        Some(bevy_mod_scripting_lua::docs::LuaDocFragment::new("BevyCoreAPI", |tw| {
+        Some(bevy_mod_scripting_lua::docs::LuaDocFragment::new("BevyGltfAPI", |tw| {
             tw
                 .document_global_instance::<Globals>().expect("Something went wrong documenting globals")
             
-                .process_type::<LuaName>()
+                .process_type::<LuaGltfExtras>()
                 
             
             }
@@ -138,7 +130,7 @@ impl bevy_mod_scripting_core::hosts::APIProvider for BevyCoreAPIProvider {
 
     fn register_with_app(&self, app: &mut bevy::app::App) {
         
-        app.register_foreign_lua_type::<bevy_core::prelude::Name>();
+        app.register_foreign_lua_type::<bevy::gltf::GltfExtras>();
         
     }
 }

@@ -1,8 +1,9 @@
 use log::{info, trace};
 use rustc_errors::FatalError;
 use rustc_hir::def_id::LOCAL_CRATE;
+use tera::Context;
 
-use crate::{Args, WorkspaceMeta, ALL_PASSES};
+use crate::{Args, TemplateKind, WorkspaceMeta, ALL_PASSES};
 
 pub(crate) struct BevyAnalyzerCallbacks {
     args: Args,
@@ -31,14 +32,17 @@ impl rustc_driver::Callbacks for BevyAnalyzerCallbacks {
         }
 
         let mut meta_dirs = Vec::default();
+        let mut templates_dir = None;
         // add all relevant meta dirs to the context
         if let crate::Command::Generate {
             output,
             meta,
             meta_output,
+            templates,
             ..
         } = &self.args.cmd
         {
+            templates_dir = templates.to_owned();
             meta_dirs.push(output.to_owned());
             meta.iter()
                 .flatten()
@@ -54,15 +58,28 @@ impl rustc_driver::Callbacks for BevyAnalyzerCallbacks {
         };
 
         gcx.enter(|tcx| {
-            let mut ctxt =
-                crate::BevyCtxt::new(tcx, meta_dirs, WorkspaceMeta::from_env(), include_private);
+            // tera environment for import processor
+            let tera = crate::configure_tera(tcx.crate_name(LOCAL_CRATE).as_str(), &templates_dir);
+
+            let mut ctxt = crate::BevyCtxt::new(
+                tcx,
+                meta_dirs,
+                WorkspaceMeta::from_env(),
+                include_private,
+                Some(Box::new(move |import_path| {
+                    let mut ctxt = Context::new();
+                    ctxt.insert("import", import_path);
+                    tera.render(&TemplateKind::ImportProcessor.to_string(), &ctxt)
+                        .unwrap()
+                })),
+            );
 
             trace!("Running all passes");
             for p in ALL_PASSES {
                 info!(
-                    "Running pass: '{}' on crate: '{}'",
-                    p.name,
-                    tcx.crate_name(LOCAL_CRATE)
+                    "{}, in crate: {}",
+                    p.description,
+                    tcx.crate_name(LOCAL_CRATE),
                 );
                 let continue_ = tcx.sess.time(p.name, || (p.cb)(&mut ctxt, &self.args));
                 if !continue_ {

@@ -43,14 +43,8 @@ extern crate self as bevy_script_api;
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
 derive(clone,debug),
-remote="bevy_pbr::wireframe::Wireframe",
+remote="bevy::pbr::wireframe::Wireframe",
 functions[r#"
-
-    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
-    fn clone(&self) -> bevy_pbr::wireframe::Wireframe;
-
-"#,
-			r#"
 
     #[lua(
         as_trait = "std::cmp::Eq",
@@ -58,6 +52,12 @@ functions[r#"
         composite = "assert_receiver_is_total_eq",
     )]
     fn assert_receiver_is_total_eq(&self) -> ();
+
+"#,
+			r#"
+
+    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
+    fn clone(&self) -> bevy::pbr::wireframe::Wireframe;
 
 "#,
 			r#"
@@ -90,11 +90,11 @@ pub struct LuaWireframe{
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
 derive(clone,debug),
-remote="bevy_pbr::wireframe::WireframeColor",
+remote="bevy::pbr::wireframe::WireframeColor",
 functions[r#"
 
     #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
-    fn clone(&self) -> bevy_pbr::wireframe::WireframeColor;
+    fn clone(&self) -> bevy::pbr::wireframe::WireframeColor;
 
 "#]
 )]
@@ -119,14 +119,8 @@ pub struct LuaWireframeColor{
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
 derive(clone,debug),
-remote="bevy_pbr::wireframe::NoWireframe",
+remote="bevy::pbr::wireframe::NoWireframe",
 functions[r#"
-
-    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
-    fn clone(&self) -> bevy_pbr::wireframe::NoWireframe;
-
-"#,
-			r#"
 
     #[lua(
         as_trait = "std::cmp::Eq",
@@ -134,6 +128,12 @@ functions[r#"
         composite = "assert_receiver_is_total_eq",
     )]
     fn assert_receiver_is_total_eq(&self) -> ();
+
+"#,
+			r#"
+
+    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
+    fn clone(&self) -> bevy::pbr::wireframe::NoWireframe;
 
 "#,
 			r#"
@@ -158,11 +158,11 @@ pub struct LuaNoWireframe{
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
 derive(clone,debug),
-remote="bevy_pbr::wireframe::WireframeConfig",
+remote="bevy::pbr::wireframe::WireframeConfig",
 functions[r#"
 
     #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
-    fn clone(&self) -> bevy_pbr::wireframe::WireframeConfig;
+    fn clone(&self) -> bevy::pbr::wireframe::WireframeConfig;
 
 "#]
 )]
@@ -183,11 +183,11 @@ pub struct LuaWireframeConfig{
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
 derive(clone,debug),
-remote="bevy_pbr::prelude::AlphaMode",
+remote="bevy::pbr::prelude::AlphaMode",
 functions[r#"
 
     #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
-    fn clone(&self) -> bevy_pbr::prelude::AlphaMode;
+    fn clone(&self) -> bevy::pbr::prelude::AlphaMode;
 
 "#,
 			r#"
@@ -210,11 +210,11 @@ pub struct LuaAlphaMode{
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
 derive(clone,debug),
-remote="bevy_pbr::CubemapVisibleEntities",
+remote="bevy::pbr::CubemapVisibleEntities",
 functions[r#"
 
     #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
-    fn clone(&self) -> bevy_pbr::CubemapVisibleEntities;
+    fn clone(&self) -> bevy::pbr::CubemapVisibleEntities;
 
 "#]
 )]
@@ -225,9 +225,7 @@ functions[r#"
 pub struct LuaCubemapVisibleEntities{
     
     
-        data:[bevy_render::view::VisibleEntities; 6],
-
-
+        
     
     
 }
@@ -237,11 +235,11 @@ pub struct LuaCubemapVisibleEntities{
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
 derive(clone,debug),
-remote="bevy_pbr::CascadesVisibleEntities",
+remote="bevy::pbr::CascadesVisibleEntities",
 functions[r#"
 
     #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
-    fn clone(&self) -> bevy_pbr::CascadesVisibleEntities;
+    fn clone(&self) -> bevy::pbr::CascadesVisibleEntities;
 
 "#]
 )]
@@ -332,11 +330,11 @@ pub struct LuaCascadesVisibleEntities{
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
 derive(clone,debug),
-remote="bevy_pbr::prelude::FogSettings",
+remote="bevy::pbr::prelude::FogSettings",
 functions[r#"
 
     #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
-    fn clone(&self) -> bevy_pbr::prelude::FogSettings;
+    fn clone(&self) -> bevy::pbr::prelude::FogSettings;
 
 "#]
 )]
@@ -389,13 +387,13 @@ pub struct LuaFogSettings{
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
 derive(clone,debug),
-remote="bevy_pbr::prelude::FogFalloff",
+remote="bevy::pbr::prelude::FogFalloff",
 functions[r#"
 /// Creates a [`FogFalloff::Exponential`] value from the given visibility distance in world units,
 /// using the revised Koschmieder contrast threshold, [`FogFalloff::REVISED_KOSCHMIEDER_CONTRAST_THRESHOLD`].
 
     #[lua(kind = "Function", output(proxy))]
-    fn from_visibility(visibility: f32) -> bevy_pbr::prelude::FogFalloff;
+    fn from_visibility(visibility: f32) -> bevy::pbr::prelude::FogFalloff;
 
 "#,
 			r#"
@@ -406,7 +404,7 @@ functions[r#"
     fn from_visibility_contrast(
         visibility: f32,
         contrast_threshold: f32,
-    ) -> bevy_pbr::prelude::FogFalloff;
+    ) -> bevy::pbr::prelude::FogFalloff;
 
 "#,
 			r#"
@@ -414,7 +412,7 @@ functions[r#"
 /// using the revised Koschmieder contrast threshold, [`FogFalloff::REVISED_KOSCHMIEDER_CONTRAST_THRESHOLD`].
 
     #[lua(kind = "Function", output(proxy))]
-    fn from_visibility_squared(visibility: f32) -> bevy_pbr::prelude::FogFalloff;
+    fn from_visibility_squared(visibility: f32) -> bevy::pbr::prelude::FogFalloff;
 
 "#,
 			r#"
@@ -425,7 +423,7 @@ functions[r#"
     fn from_visibility_contrast_squared(
         visibility: f32,
         contrast_threshold: f32,
-    ) -> bevy_pbr::prelude::FogFalloff;
+    ) -> bevy::pbr::prelude::FogFalloff;
 
 "#,
 			r#"
@@ -437,8 +435,8 @@ functions[r#"
     fn from_visibility_color(
         visibility: f32,
         #[proxy]
-        extinction_inscattering_color: bevy_render::color::Color,
-    ) -> bevy_pbr::prelude::FogFalloff;
+        extinction_inscattering_color: bevy::render::color::Color,
+    ) -> bevy::pbr::prelude::FogFalloff;
 
 "#,
 			r#"
@@ -454,10 +452,10 @@ functions[r#"
     fn from_visibility_colors(
         visibility: f32,
         #[proxy]
-        extinction_color: bevy_render::color::Color,
+        extinction_color: bevy::render::color::Color,
         #[proxy]
-        inscattering_color: bevy_render::color::Color,
-    ) -> bevy_pbr::prelude::FogFalloff;
+        inscattering_color: bevy::render::color::Color,
+    ) -> bevy::pbr::prelude::FogFalloff;
 
 "#,
 			r#"
@@ -469,8 +467,8 @@ functions[r#"
         visibility: f32,
         contrast_threshold: f32,
         #[proxy]
-        extinction_inscattering_color: bevy_render::color::Color,
-    ) -> bevy_pbr::prelude::FogFalloff;
+        extinction_inscattering_color: bevy::render::color::Color,
+    ) -> bevy::pbr::prelude::FogFalloff;
 
 "#,
 			r#"
@@ -486,10 +484,10 @@ functions[r#"
         visibility: f32,
         contrast_threshold: f32,
         #[proxy]
-        extinction_color: bevy_render::color::Color,
+        extinction_color: bevy::render::color::Color,
         #[proxy]
-        inscattering_color: bevy_render::color::Color,
-    ) -> bevy_pbr::prelude::FogFalloff;
+        inscattering_color: bevy::render::color::Color,
+    ) -> bevy::pbr::prelude::FogFalloff;
 
 "#,
 			r#"
@@ -520,7 +518,7 @@ functions[r#"
 			r#"
 
     #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
-    fn clone(&self) -> bevy_pbr::prelude::FogFalloff;
+    fn clone(&self) -> bevy::pbr::prelude::FogFalloff;
 
 "#]
 )]
@@ -565,11 +563,11 @@ pub struct LuaFogFalloff{
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
 derive(clone,debug),
-remote="bevy_pbr::prelude::PointLight",
+remote="bevy::pbr::prelude::PointLight",
 functions[r#"
 
     #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
-    fn clone(&self) -> bevy_pbr::prelude::PointLight;
+    fn clone(&self) -> bevy::pbr::prelude::PointLight;
 
 "#]
 )]
@@ -588,11 +586,11 @@ pub struct LuaPointLight{
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
 derive(clone,debug),
-remote="bevy_pbr::PointLightShadowMap",
+remote="bevy::pbr::PointLightShadowMap",
 functions[r#"
 
     #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
-    fn clone(&self) -> bevy_pbr::PointLightShadowMap;
+    fn clone(&self) -> bevy::pbr::PointLightShadowMap;
 
 "#]
 )]
@@ -619,11 +617,11 @@ pub struct LuaPointLightShadowMap{
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
 derive(clone,debug),
-remote="bevy_pbr::prelude::SpotLight",
+remote="bevy::pbr::prelude::SpotLight",
 functions[r#"
 
     #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
-    fn clone(&self) -> bevy_pbr::prelude::SpotLight;
+    fn clone(&self) -> bevy::pbr::prelude::SpotLight;
 
 "#]
 )]
@@ -714,11 +712,11 @@ pub struct LuaSpotLight{
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
 derive(clone,debug),
-remote="bevy_pbr::prelude::DirectionalLight",
+remote="bevy::pbr::prelude::DirectionalLight",
 functions[r#"
 
     #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
-    fn clone(&self) -> bevy_pbr::prelude::DirectionalLight;
+    fn clone(&self) -> bevy::pbr::prelude::DirectionalLight;
 
 "#]
 )]
@@ -739,11 +737,11 @@ pub struct LuaDirectionalLight{
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
 derive(clone,debug),
-remote="bevy_pbr::DirectionalLightShadowMap",
+remote="bevy::pbr::DirectionalLightShadowMap",
 functions[r#"
 
     #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
-    fn clone(&self) -> bevy_pbr::DirectionalLightShadowMap;
+    fn clone(&self) -> bevy::pbr::DirectionalLightShadowMap;
 
 "#]
 )]
@@ -786,11 +784,11 @@ pub struct LuaDirectionalLightShadowMap{
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
 derive(clone,debug),
-remote="bevy_pbr::CascadeShadowConfig",
+remote="bevy::pbr::CascadeShadowConfig",
 functions[r#"
 
     #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
-    fn clone(&self) -> bevy_pbr::CascadeShadowConfig;
+    fn clone(&self) -> bevy::pbr::CascadeShadowConfig;
 
 "#]
 )]
@@ -809,11 +807,11 @@ pub struct LuaCascadeShadowConfig{
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
 derive(clone,debug),
-remote="bevy_pbr::Cascades",
+remote="bevy::pbr::Cascades",
 functions[r#"
 
     #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
-    fn clone(&self) -> bevy_pbr::Cascades;
+    fn clone(&self) -> bevy::pbr::Cascades;
 
 "#]
 )]
@@ -824,9 +822,7 @@ functions[r#"
 pub struct LuaCascades{
     
     
-        cascades:bevy_utils::hashbrown::HashMap<bevy_ecs::entity::Entitystd::vec::Vec<bevy_pbr::Cascadestd::alloc::Global>bevy_ecs::entity::EntityHashallocator_api2::stable::alloc::global::Global>,
-
-
+        
     
     
 }
@@ -836,11 +832,11 @@ pub struct LuaCascades{
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
 derive(clone,debug),
-remote="bevy_pbr::Cascade",
+remote="bevy::pbr::Cascade",
 functions[r#"
 
     #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
-    fn clone(&self) -> bevy_pbr::Cascade;
+    fn clone(&self) -> bevy::pbr::Cascade;
 
 "#]
 )]
@@ -851,21 +847,13 @@ functions[r#"
 pub struct LuaCascade{
     
     
-        view_transform:bevy_math::Mat4,
-
-
+        
     
-        projection:bevy_math::Mat4,
-
-
+        
     
-        view_projection:bevy_math::Mat4,
-
-
+        
     
-        texel_size:f32,
-
-
+        
     
     
 }
@@ -897,11 +885,11 @@ pub struct LuaCascade{
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
 derive(clone,debug),
-remote="bevy_pbr::prelude::AmbientLight",
+remote="bevy::pbr::prelude::AmbientLight",
 functions[r#"
 
     #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
-    fn clone(&self) -> bevy_pbr::prelude::AmbientLight;
+    fn clone(&self) -> bevy::pbr::prelude::AmbientLight;
 
 "#]
 )]
@@ -922,7 +910,7 @@ pub struct LuaAmbientLight{
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
 derive(clone,debug),
-remote="bevy_pbr::NotShadowCaster",
+remote="bevy::pbr::NotShadowCaster",
 functions[]
 )]
 
@@ -948,7 +936,7 @@ pub struct LuaNotShadowCaster{
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
 derive(clone,debug),
-remote="bevy_pbr::NotShadowReceiver",
+remote="bevy::pbr::NotShadowReceiver",
 functions[]
 )]
 
@@ -976,7 +964,7 @@ pub struct LuaNotShadowReceiver{
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
 derive(clone,debug),
-remote="bevy_pbr::TransmittedShadowReceiver",
+remote="bevy::pbr::TransmittedShadowReceiver",
 functions[]
 )]
 
@@ -1004,14 +992,8 @@ pub struct LuaTransmittedShadowReceiver{
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
 derive(clone,debug),
-remote="bevy_pbr::ShadowFilteringMethod",
+remote="bevy::pbr::ShadowFilteringMethod",
 functions[r#"
-
-    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
-    fn clone(&self) -> bevy_pbr::ShadowFilteringMethod;
-
-"#,
-			r#"
 
     #[lua(
         as_trait = "std::cmp::Eq",
@@ -1019,6 +1001,12 @@ functions[r#"
         composite = "assert_receiver_is_total_eq",
     )]
     fn assert_receiver_is_total_eq(&self) -> ();
+
+"#,
+			r#"
+
+    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
+    fn clone(&self) -> bevy::pbr::ShadowFilteringMethod;
 
 "#,
 			r#"
@@ -1045,11 +1033,11 @@ pub struct LuaShadowFilteringMethod{
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
 derive(clone,debug),
-remote="bevy_pbr::ClusterFarZMode",
+remote="bevy::pbr::ClusterFarZMode",
 functions[r#"
 
     #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
-    fn clone(&self) -> bevy_pbr::ClusterFarZMode;
+    fn clone(&self) -> bevy::pbr::ClusterFarZMode;
 
 "#]
 )]
@@ -1068,11 +1056,11 @@ pub struct LuaClusterFarZMode{
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
 derive(clone,debug),
-remote="bevy_pbr::ClusterZConfig",
+remote="bevy::pbr::ClusterZConfig",
 functions[r#"
 
     #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
-    fn clone(&self) -> bevy_pbr::ClusterZConfig;
+    fn clone(&self) -> bevy::pbr::ClusterZConfig;
 
 "#]
 )]
@@ -1093,15 +1081,15 @@ pub struct LuaClusterZConfig{
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
 derive(clone,debug),
-remote="bevy_pbr::ClusterConfig",
+remote="bevy::pbr::ClusterConfig",
 functions[r#"
 
     #[lua(kind = "Method", output(proxy))]
     fn dimensions_for_screen_size(
         &self,
         #[proxy]
-        screen_size: bevy_math::UVec2,
-    ) -> bevy_math::UVec3;
+        screen_size: bevy::math::UVec2,
+    ) -> bevy::math::UVec3;
 
 "#,
 			r#"
@@ -1113,7 +1101,7 @@ functions[r#"
 			r#"
 
     #[lua(kind = "Method", output(proxy))]
-    fn far_z_mode(&self) -> bevy_pbr::ClusterFarZMode;
+    fn far_z_mode(&self) -> bevy::pbr::ClusterFarZMode;
 
 "#,
 			r#"
@@ -1125,7 +1113,7 @@ functions[r#"
 			r#"
 
     #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
-    fn clone(&self) -> bevy_pbr::ClusterConfig;
+    fn clone(&self) -> bevy::pbr::ClusterConfig;
 
 "#]
 )]
@@ -1148,11 +1136,11 @@ pub struct LuaClusterConfig{
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
 derive(clone,debug),
-remote="bevy_pbr::prelude::EnvironmentMapLight",
+remote="bevy::pbr::prelude::EnvironmentMapLight",
 functions[r#"
 
     #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
-    fn clone(&self) -> bevy_pbr::prelude::EnvironmentMapLight;
+    fn clone(&self) -> bevy::pbr::prelude::EnvironmentMapLight;
 
 "#]
 )]
@@ -1175,11 +1163,11 @@ pub struct LuaEnvironmentMapLight{
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
 derive(clone,debug),
-remote="bevy_pbr::irradiance_volume::IrradianceVolume",
+remote="bevy::pbr::irradiance_volume::IrradianceVolume",
 functions[r#"
 
     #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
-    fn clone(&self) -> bevy_pbr::irradiance_volume::IrradianceVolume;
+    fn clone(&self) -> bevy::pbr::irradiance_volume::IrradianceVolume;
 
 "#]
 )]
@@ -1266,18 +1254,18 @@ pub struct LuaIrradianceVolume{
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
 derive(clone,debug),
-remote="bevy_pbr::prelude::LightProbe",
+remote="bevy::pbr::prelude::LightProbe",
 functions[r#"
 /// Creates a new light probe component.
 
     #[lua(kind = "Function", output(proxy))]
-    fn new() -> bevy_pbr::prelude::LightProbe;
+    fn new() -> bevy::pbr::prelude::LightProbe;
 
 "#,
 			r#"
 
     #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
-    fn clone(&self) -> bevy_pbr::prelude::LightProbe;
+    fn clone(&self) -> bevy::pbr::prelude::LightProbe;
 
 "#]
 )]
@@ -1308,11 +1296,11 @@ pub struct LuaLightProbe{
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
 derive(clone,debug),
-remote="bevy_pbr::Lightmap",
+remote="bevy::pbr::Lightmap",
 functions[r#"
 
     #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
-    fn clone(&self) -> bevy_pbr::Lightmap;
+    fn clone(&self) -> bevy::pbr::Lightmap;
 
 "#]
 )]
@@ -1333,17 +1321,17 @@ pub struct LuaLightmap{
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
 derive(clone,debug),
-remote="bevy_pbr::DefaultOpaqueRendererMethod",
+remote="bevy::pbr::DefaultOpaqueRendererMethod",
 functions[r#"
 
     #[lua(kind = "Function", output(proxy))]
-    fn forward() -> bevy_pbr::DefaultOpaqueRendererMethod;
+    fn forward() -> bevy::pbr::DefaultOpaqueRendererMethod;
 
 "#,
 			r#"
 
     #[lua(kind = "Function", output(proxy))]
-    fn deferred() -> bevy_pbr::DefaultOpaqueRendererMethod;
+    fn deferred() -> bevy::pbr::DefaultOpaqueRendererMethod;
 
 "#,
 			r#"
@@ -1361,7 +1349,7 @@ functions[r#"
 			r#"
 
     #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
-    fn clone(&self) -> bevy_pbr::DefaultOpaqueRendererMethod;
+    fn clone(&self) -> bevy::pbr::DefaultOpaqueRendererMethod;
 
 "#]
 )]
@@ -1371,9 +1359,7 @@ functions[r#"
 pub struct LuaDefaultOpaqueRendererMethod(
     
     
-        bevy_pbr::OpaqueRendererMethod,
-
-
+        
     
     
 );
@@ -1413,11 +1399,11 @@ pub struct LuaDefaultOpaqueRendererMethod(
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
 derive(clone,debug),
-remote="bevy_pbr::OpaqueRendererMethod",
+remote="bevy::pbr::OpaqueRendererMethod",
 functions[r#"
 
     #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
-    fn clone(&self) -> bevy_pbr::OpaqueRendererMethod;
+    fn clone(&self) -> bevy::pbr::OpaqueRendererMethod;
 
 "#]
 )]
@@ -1450,17 +1436,11 @@ pub struct LuaOpaqueRendererMethod{
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
 derive(clone,debug),
-remote="bevy_pbr::prelude::ParallaxMappingMethod",
+remote="bevy::pbr::prelude::ParallaxMappingMethod",
 functions[r#"
 
     #[lua(kind = "Method")]
     fn max_steps(&self) -> u32;
-
-"#,
-			r#"
-
-    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
-    fn clone(&self) -> bevy_pbr::prelude::ParallaxMappingMethod;
 
 "#,
 			r#"
@@ -1471,6 +1451,12 @@ functions[r#"
         composite = "assert_receiver_is_total_eq",
     )]
     fn assert_receiver_is_total_eq(&self) -> ();
+
+"#,
+			r#"
+
+    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
+    fn clone(&self) -> bevy::pbr::prelude::ParallaxMappingMethod;
 
 "#,
 			r#"
@@ -1501,11 +1487,11 @@ pub struct LuaParallaxMappingMethod{
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
 derive(clone,debug),
-remote="bevy_pbr::prelude::StandardMaterial",
+remote="bevy::pbr::prelude::StandardMaterial",
 functions[r#"
 
     #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
-    fn clone(&self) -> bevy_pbr::prelude::StandardMaterial;
+    fn clone(&self) -> bevy::pbr::prelude::StandardMaterial;
 
 "#]
 )]
@@ -1550,14 +1536,8 @@ pub struct LuaStandardMaterial{
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
 derive(clone,debug),
-remote="bevy_pbr::ScreenSpaceAmbientOcclusionSettings",
+remote="bevy::pbr::ScreenSpaceAmbientOcclusionSettings",
 functions[r#"
-
-    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
-    fn clone(&self) -> bevy_pbr::ScreenSpaceAmbientOcclusionSettings;
-
-"#,
-			r#"
 
     #[lua(
         as_trait = "std::cmp::Eq",
@@ -1565,6 +1545,12 @@ functions[r#"
         composite = "assert_receiver_is_total_eq",
     )]
     fn assert_receiver_is_total_eq(&self) -> ();
+
+"#,
+			r#"
+
+    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
+    fn clone(&self) -> bevy::pbr::ScreenSpaceAmbientOcclusionSettings;
 
 "#,
 			r#"
@@ -1589,17 +1575,11 @@ pub struct LuaScreenSpaceAmbientOcclusionSettings{
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
 derive(clone,debug),
-remote="bevy_pbr::ScreenSpaceAmbientOcclusionQualityLevel",
+remote="bevy::pbr::ScreenSpaceAmbientOcclusionQualityLevel",
 functions[r#"
 
     #[lua(kind = "Method")]
     fn sample_counts(&self) -> (u32, u32);
-
-"#,
-			r#"
-
-    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
-    fn clone(&self) -> bevy_pbr::ScreenSpaceAmbientOcclusionQualityLevel;
 
 "#,
 			r#"
@@ -1610,6 +1590,12 @@ functions[r#"
         composite = "assert_receiver_is_total_eq",
     )]
     fn assert_receiver_is_total_eq(&self) -> ();
+
+"#,
+			r#"
+
+    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
+    fn clone(&self) -> bevy::pbr::ScreenSpaceAmbientOcclusionQualityLevel;
 
 "#,
 			r#"
@@ -1628,7 +1614,10 @@ pub struct LuaScreenSpaceAmbientOcclusionQualityLevel{
 }
 
 
-bevy_script_api::util::impl_tealr_generic!(pub(crate) struct T);
+
+
+crate::impl_tealr_generic!(pub(crate) struct T);
+
 
 #[derive(Default)]
 pub(crate) struct Globals;
@@ -1876,75 +1865,75 @@ impl bevy_mod_scripting_core::hosts::APIProvider for BevyPbrAPIProvider {
 
     fn register_with_app(&self, app: &mut bevy::app::App) {
         
-        app.register_foreign_lua_type::<bevy_pbr::wireframe::Wireframe>();
+        app.register_foreign_lua_type::<bevy::pbr::wireframe::Wireframe>();
         
-        app.register_foreign_lua_type::<bevy_pbr::wireframe::WireframeColor>();
+        app.register_foreign_lua_type::<bevy::pbr::wireframe::WireframeColor>();
         
-        app.register_foreign_lua_type::<bevy_pbr::wireframe::NoWireframe>();
+        app.register_foreign_lua_type::<bevy::pbr::wireframe::NoWireframe>();
         
-        app.register_foreign_lua_type::<bevy_pbr::wireframe::WireframeConfig>();
+        app.register_foreign_lua_type::<bevy::pbr::wireframe::WireframeConfig>();
         
-        app.register_foreign_lua_type::<bevy_pbr::prelude::AlphaMode>();
+        app.register_foreign_lua_type::<bevy::pbr::prelude::AlphaMode>();
         
-        app.register_foreign_lua_type::<bevy_pbr::CubemapVisibleEntities>();
+        app.register_foreign_lua_type::<bevy::pbr::CubemapVisibleEntities>();
         
-        app.register_foreign_lua_type::<bevy_pbr::CascadesVisibleEntities>();
+        app.register_foreign_lua_type::<bevy::pbr::CascadesVisibleEntities>();
         
-        app.register_foreign_lua_type::<bevy_pbr::prelude::FogSettings>();
+        app.register_foreign_lua_type::<bevy::pbr::prelude::FogSettings>();
         
-        app.register_foreign_lua_type::<bevy_pbr::prelude::FogFalloff>();
+        app.register_foreign_lua_type::<bevy::pbr::prelude::FogFalloff>();
         
-        app.register_foreign_lua_type::<bevy_pbr::prelude::PointLight>();
+        app.register_foreign_lua_type::<bevy::pbr::prelude::PointLight>();
         
-        app.register_foreign_lua_type::<bevy_pbr::PointLightShadowMap>();
+        app.register_foreign_lua_type::<bevy::pbr::PointLightShadowMap>();
         
-        app.register_foreign_lua_type::<bevy_pbr::prelude::SpotLight>();
+        app.register_foreign_lua_type::<bevy::pbr::prelude::SpotLight>();
         
-        app.register_foreign_lua_type::<bevy_pbr::prelude::DirectionalLight>();
+        app.register_foreign_lua_type::<bevy::pbr::prelude::DirectionalLight>();
         
-        app.register_foreign_lua_type::<bevy_pbr::DirectionalLightShadowMap>();
+        app.register_foreign_lua_type::<bevy::pbr::DirectionalLightShadowMap>();
         
-        app.register_foreign_lua_type::<bevy_pbr::CascadeShadowConfig>();
+        app.register_foreign_lua_type::<bevy::pbr::CascadeShadowConfig>();
         
-        app.register_foreign_lua_type::<bevy_pbr::Cascades>();
+        app.register_foreign_lua_type::<bevy::pbr::Cascades>();
         
-        app.register_foreign_lua_type::<bevy_pbr::Cascade>();
+        app.register_foreign_lua_type::<bevy::pbr::Cascade>();
         
-        app.register_foreign_lua_type::<bevy_pbr::prelude::AmbientLight>();
+        app.register_foreign_lua_type::<bevy::pbr::prelude::AmbientLight>();
         
-        app.register_foreign_lua_type::<bevy_pbr::NotShadowCaster>();
+        app.register_foreign_lua_type::<bevy::pbr::NotShadowCaster>();
         
-        app.register_foreign_lua_type::<bevy_pbr::NotShadowReceiver>();
+        app.register_foreign_lua_type::<bevy::pbr::NotShadowReceiver>();
         
-        app.register_foreign_lua_type::<bevy_pbr::TransmittedShadowReceiver>();
+        app.register_foreign_lua_type::<bevy::pbr::TransmittedShadowReceiver>();
         
-        app.register_foreign_lua_type::<bevy_pbr::ShadowFilteringMethod>();
+        app.register_foreign_lua_type::<bevy::pbr::ShadowFilteringMethod>();
         
-        app.register_foreign_lua_type::<bevy_pbr::ClusterFarZMode>();
+        app.register_foreign_lua_type::<bevy::pbr::ClusterFarZMode>();
         
-        app.register_foreign_lua_type::<bevy_pbr::ClusterZConfig>();
+        app.register_foreign_lua_type::<bevy::pbr::ClusterZConfig>();
         
-        app.register_foreign_lua_type::<bevy_pbr::ClusterConfig>();
+        app.register_foreign_lua_type::<bevy::pbr::ClusterConfig>();
         
-        app.register_foreign_lua_type::<bevy_pbr::prelude::EnvironmentMapLight>();
+        app.register_foreign_lua_type::<bevy::pbr::prelude::EnvironmentMapLight>();
         
-        app.register_foreign_lua_type::<bevy_pbr::irradiance_volume::IrradianceVolume>();
+        app.register_foreign_lua_type::<bevy::pbr::irradiance_volume::IrradianceVolume>();
         
-        app.register_foreign_lua_type::<bevy_pbr::prelude::LightProbe>();
+        app.register_foreign_lua_type::<bevy::pbr::prelude::LightProbe>();
         
-        app.register_foreign_lua_type::<bevy_pbr::Lightmap>();
+        app.register_foreign_lua_type::<bevy::pbr::Lightmap>();
         
-        app.register_foreign_lua_type::<bevy_pbr::DefaultOpaqueRendererMethod>();
+        app.register_foreign_lua_type::<bevy::pbr::DefaultOpaqueRendererMethod>();
         
-        app.register_foreign_lua_type::<bevy_pbr::OpaqueRendererMethod>();
+        app.register_foreign_lua_type::<bevy::pbr::OpaqueRendererMethod>();
         
-        app.register_foreign_lua_type::<bevy_pbr::prelude::ParallaxMappingMethod>();
+        app.register_foreign_lua_type::<bevy::pbr::prelude::ParallaxMappingMethod>();
         
-        app.register_foreign_lua_type::<bevy_pbr::prelude::StandardMaterial>();
+        app.register_foreign_lua_type::<bevy::pbr::prelude::StandardMaterial>();
         
-        app.register_foreign_lua_type::<bevy_pbr::ScreenSpaceAmbientOcclusionSettings>();
+        app.register_foreign_lua_type::<bevy::pbr::ScreenSpaceAmbientOcclusionSettings>();
         
-        app.register_foreign_lua_type::<bevy_pbr::ScreenSpaceAmbientOcclusionQualityLevel>();
+        app.register_foreign_lua_type::<bevy::pbr::ScreenSpaceAmbientOcclusionQualityLevel>();
         
     }
 }

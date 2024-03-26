@@ -28,7 +28,6 @@ bevy = { workspace = true, default-features = false, features = [
     "bevy_sprite",
     "file_watcher",
 ] }
-bevy_script_api_providers = { path = "../bevy_script_api_providers", version = "0.5.0" }
 bevy_mod_scripting_derive = { path = "../bevy_mod_scripting_derive", version = "0.5.0" }
 bevy_mod_scripting_core = { workspace = true }
 parking_lot = "0.12.1"

@@ -36,13 +36,12 @@ pub(crate) fn find_reflect_types(ctxt: &mut BevyCtxt<'_>, args: &Args) -> bool {
             .flat_map(|(self_ty, impl_dids)| impl_dids.iter().zip(std::iter::repeat(self_ty)))
             .filter_map(|(impl_did, self_ty)| {
                 let generics = tcx.generics_of(*impl_did);
-                (impl_did.is_local() &&
+                (impl_did.is_local() &&   
+                // only non parametrized simple types are allowed, i.e. "MyStruct" is allowed but "MyStruct<T>" isn't
                     generics.own_counts().types == 0
                         && generics.own_counts().consts == 0
                         && generics.own_counts().lifetimes == 0
-                        // only non parametrized simple types are allowed, i.e. "MyStruct" is allowed but "MyStruct<T>" isn't
-                        // we also only have details about the local crates structs so skip non local types
-                        && self_ty.def().is_some())
+                        && self_ty.def().is_some_and(|did| tcx.visibility(did).is_public()))
                 .then(|| self_ty.def().unwrap())
             })
             .inspect(|impl_| debug!("On type: {:?}", tcx.item_name(*impl_)))

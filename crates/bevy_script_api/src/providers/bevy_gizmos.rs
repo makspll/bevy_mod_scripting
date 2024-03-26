@@ -6,8 +6,6 @@ use super::bevy_ecs::*;
 
 use super::bevy_reflect::*;
 
-use super::bevy_animation::*;
-
 use super::bevy_asset::*;
 
 use super::bevy_core::*;
@@ -28,6 +26,8 @@ use super::bevy_core_pipeline::*;
 
 use super::bevy_pbr::*;
 
+use super::bevy_sprite::*;
+
 
 
 extern crate self as bevy_script_api;
@@ -37,19 +37,17 @@ extern crate self as bevy_script_api;
 
 
     
-/// Additional untyped data that can be present on most glTF types.
-
-/// See [the relevant glTF specification section](https://registry.khronos.org/glTF/specs/2.0/glTF-2.0.html#reference-extras).
+/// The [`GizmoConfigGroup`] used for debug visualizations of [`Aabb`] components on entities
 
 
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
 derive(clone,debug),
-remote="bevy_gltf::GltfExtras",
+remote="bevy::gizmos::aabb::AabbGizmoConfigGroup",
 functions[r#"
 
     #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
-    fn clone(&self) -> bevy_gltf::GltfExtras;
+    fn clone(&self) -> bevy::gizmos::aabb::AabbGizmoConfigGroup;
 
 "#]
 )]
@@ -57,14 +55,82 @@ functions[r#"
 
 
 
-pub struct LuaGltfExtras{
+pub struct LuaAabbGizmoConfigGroup{
+    
+    
+    
+}
+
+    
+/// Add this [`Component`] to an entity to draw its [`Aabb`] component.
+
+
+#[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
+#[proxy(
+derive(clone,debug),
+remote="bevy::gizmos::aabb::ShowAabbGizmo",
+functions[]
+)]
+
+
+
+
+pub struct LuaShowAabbGizmo{
+    
+    
+    
+}
+
+    
+/// The default gizmo config group.
+
+
+#[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
+#[proxy(
+derive(clone,debug),
+remote="bevy::gizmos::config::DefaultGizmoConfigGroup",
+functions[]
+)]
+
+
+
+
+pub struct LuaDefaultGizmoConfigGroup{
+    
+    
+    
+}
+
+    
+/// A struct that stores configuration for gizmos.
+
+
+#[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
+#[proxy(
+derive(clone,debug),
+remote="bevy::gizmos::config::GizmoConfig",
+functions[r#"
+
+    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
+    fn clone(&self) -> bevy::gizmos::config::GizmoConfig;
+
+"#]
+)]
+
+
+
+
+pub struct LuaGizmoConfig{
     
     
     
 }
 
 
-bevy_script_api::util::impl_tealr_generic!(pub(crate) struct T);
+
+
+crate::impl_tealr_generic!(pub(crate) struct T);
+
 
 #[derive(Default)]
 pub(crate) struct Globals;
@@ -76,14 +142,20 @@ impl bevy_mod_scripting_lua::tealr::mlu::ExportInstances for Globals {
     ) -> bevy_mod_scripting_lua::tealr::mlu::mlua::Result<()> {
          
             
+         
+            
+         
+            
+         
+            
         
         Ok(())
     }
 }
 
-pub struct BevyGltfAPIProvider;
+pub struct BevyGizmosAPIProvider;
 
-impl bevy_mod_scripting_core::hosts::APIProvider for BevyGltfAPIProvider {
+impl bevy_mod_scripting_core::hosts::APIProvider for BevyGizmosAPIProvider {
         type APITarget = std::sync::Mutex<bevy_mod_scripting_lua::tealr::mlu::mlua::Lua>;
         type ScriptContext = std::sync::Mutex<bevy_mod_scripting_lua::tealr::mlu::mlua::Lua>;
         type DocTarget = bevy_mod_scripting_lua::docs::LuaDocFragment;
@@ -97,11 +169,20 @@ impl bevy_mod_scripting_core::hosts::APIProvider for BevyGltfAPIProvider {
     }
 
     fn get_doc_fragment(&self) -> Option<Self::DocTarget> {
-        Some(bevy_mod_scripting_lua::docs::LuaDocFragment::new("BevyGltfAPI", |tw| {
+        Some(bevy_mod_scripting_lua::docs::LuaDocFragment::new("BevyGizmosAPI", |tw| {
             tw
                 .document_global_instance::<Globals>().expect("Something went wrong documenting globals")
             
-                .process_type::<LuaGltfExtras>()
+                .process_type::<LuaAabbGizmoConfigGroup>()
+                
+            
+                .process_type::<LuaShowAabbGizmo>()
+                
+            
+                .process_type::<LuaDefaultGizmoConfigGroup>()
+                
+            
+                .process_type::<LuaGizmoConfig>()
                 
             
             }
@@ -127,7 +208,13 @@ impl bevy_mod_scripting_core::hosts::APIProvider for BevyGltfAPIProvider {
 
     fn register_with_app(&self, app: &mut bevy::app::App) {
         
-        app.register_foreign_lua_type::<bevy_gltf::GltfExtras>();
+        app.register_foreign_lua_type::<bevy::gizmos::aabb::AabbGizmoConfigGroup>();
+        
+        app.register_foreign_lua_type::<bevy::gizmos::aabb::ShowAabbGizmo>();
+        
+        app.register_foreign_lua_type::<bevy::gizmos::config::DefaultGizmoConfigGroup>();
+        
+        app.register_foreign_lua_type::<bevy::gizmos::config::GizmoConfig>();
         
     }
 }

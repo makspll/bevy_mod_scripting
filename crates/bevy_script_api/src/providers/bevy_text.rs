@@ -39,11 +39,11 @@ extern crate self as bevy_script_api;
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
 derive(clone,debug),
-remote="bevy_text::GlyphAtlasInfo",
+remote="bevy::text::GlyphAtlasInfo",
 functions[r#"
 
     #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
-    fn clone(&self) -> bevy_text::GlyphAtlasInfo;
+    fn clone(&self) -> bevy::text::GlyphAtlasInfo;
 
 "#]
 )]
@@ -62,11 +62,11 @@ pub struct LuaGlyphAtlasInfo{
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
 derive(clone,debug),
-remote="bevy_text::PositionedGlyph",
+remote="bevy::text::PositionedGlyph",
 functions[r#"
 
     #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
-    fn clone(&self) -> bevy_text::PositionedGlyph;
+    fn clone(&self) -> bevy::text::PositionedGlyph;
 
 "#]
 )]
@@ -89,11 +89,11 @@ pub struct LuaPositionedGlyph{
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
 derive(clone,debug),
-remote="bevy_text::TextLayoutInfo",
+remote="bevy::text::TextLayoutInfo",
 functions[r#"
 
     #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
-    fn clone(&self) -> bevy_text::TextLayoutInfo;
+    fn clone(&self) -> bevy::text::TextLayoutInfo;
 
 "#]
 )]
@@ -112,7 +112,7 @@ pub struct LuaTextLayoutInfo{
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
 derive(clone,debug),
-remote="bevy_text::prelude::Text",
+remote="bevy::text::prelude::Text",
 functions[r#"
 /// Returns this [`Text`] with a new [`JustifyText`].
 
@@ -120,8 +120,8 @@ functions[r#"
     fn with_justify(
         self,
         #[proxy]
-        justify: bevy_text::prelude::JustifyText,
-    ) -> bevy_text::prelude::Text;
+        justify: bevy::text::prelude::JustifyText,
+    ) -> bevy::text::prelude::Text;
 
 "#,
 			r#"
@@ -129,13 +129,13 @@ functions[r#"
 /// Hard wrapping, where text contains an explicit linebreak such as the escape sequence `\n`, will still occur.
 
     #[lua(kind = "Method", output(proxy))]
-    fn with_no_wrap(self) -> bevy_text::prelude::Text;
+    fn with_no_wrap(self) -> bevy::text::prelude::Text;
 
 "#,
 			r#"
 
     #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
-    fn clone(&self) -> bevy_text::prelude::Text;
+    fn clone(&self) -> bevy::text::prelude::Text;
 
 "#]
 )]
@@ -154,21 +154,21 @@ pub struct LuaText{
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
 derive(clone,debug),
-remote="bevy_text::prelude::TextSection",
+remote="bevy::text::prelude::TextSection",
 functions[r#"
 /// Create an empty [`TextSection`] from a style. Useful when the value will be set dynamically.
 
     #[lua(kind = "Function", output(proxy))]
     fn from_style(
         #[proxy]
-        style: bevy_text::prelude::TextStyle,
-    ) -> bevy_text::prelude::TextSection;
+        style: bevy::text::prelude::TextStyle,
+    ) -> bevy::text::prelude::TextSection;
 
 "#,
 			r#"
 
     #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
-    fn clone(&self) -> bevy_text::prelude::TextSection;
+    fn clone(&self) -> bevy::text::prelude::TextSection;
 
 "#]
 )]
@@ -195,11 +195,11 @@ pub struct LuaTextSection{
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
 derive(clone,debug),
-remote="bevy_text::prelude::JustifyText",
+remote="bevy::text::prelude::JustifyText",
 functions[r#"
 
     #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
-    fn clone(&self) -> bevy_text::prelude::JustifyText;
+    fn clone(&self) -> bevy::text::prelude::JustifyText;
 
 "#,
 			r#"
@@ -232,11 +232,11 @@ pub struct LuaJustifyText{
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
 derive(clone,debug),
-remote="bevy_text::prelude::TextStyle",
+remote="bevy::text::prelude::TextStyle",
 functions[r#"
 
     #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
-    fn clone(&self) -> bevy_text::prelude::TextStyle;
+    fn clone(&self) -> bevy::text::prelude::TextStyle;
 
 "#]
 )]
@@ -257,11 +257,11 @@ pub struct LuaTextStyle{
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
 derive(clone,debug),
-remote="bevy_text::BreakLineOn",
+remote="bevy::text::BreakLineOn",
 functions[r#"
 
     #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
-    fn clone(&self) -> bevy_text::BreakLineOn;
+    fn clone(&self) -> bevy::text::BreakLineOn;
 
 "#,
 			r#"
@@ -306,11 +306,11 @@ pub struct LuaBreakLineOn{
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
 derive(clone,debug),
-remote="bevy_text::Text2dBounds",
+remote="bevy::text::Text2dBounds",
 functions[r#"
 
     #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
-    fn clone(&self) -> bevy_text::Text2dBounds;
+    fn clone(&self) -> bevy::text::Text2dBounds;
 
 "#]
 )]
@@ -325,7 +325,10 @@ pub struct LuaText2dBounds{
 }
 
 
-bevy_script_api::util::impl_tealr_generic!(pub(crate) struct T);
+
+
+crate::impl_tealr_generic!(pub(crate) struct T);
+
 
 #[derive(Default)]
 pub(crate) struct Globals;
@@ -433,23 +436,23 @@ impl bevy_mod_scripting_core::hosts::APIProvider for BevyTextAPIProvider {
 
     fn register_with_app(&self, app: &mut bevy::app::App) {
         
-        app.register_foreign_lua_type::<bevy_text::GlyphAtlasInfo>();
+        app.register_foreign_lua_type::<bevy::text::GlyphAtlasInfo>();
         
-        app.register_foreign_lua_type::<bevy_text::PositionedGlyph>();
+        app.register_foreign_lua_type::<bevy::text::PositionedGlyph>();
         
-        app.register_foreign_lua_type::<bevy_text::TextLayoutInfo>();
+        app.register_foreign_lua_type::<bevy::text::TextLayoutInfo>();
         
-        app.register_foreign_lua_type::<bevy_text::prelude::Text>();
+        app.register_foreign_lua_type::<bevy::text::prelude::Text>();
         
-        app.register_foreign_lua_type::<bevy_text::prelude::TextSection>();
+        app.register_foreign_lua_type::<bevy::text::prelude::TextSection>();
         
-        app.register_foreign_lua_type::<bevy_text::prelude::JustifyText>();
+        app.register_foreign_lua_type::<bevy::text::prelude::JustifyText>();
         
-        app.register_foreign_lua_type::<bevy_text::prelude::TextStyle>();
+        app.register_foreign_lua_type::<bevy::text::prelude::TextStyle>();
         
-        app.register_foreign_lua_type::<bevy_text::BreakLineOn>();
+        app.register_foreign_lua_type::<bevy::text::BreakLineOn>();
         
-        app.register_foreign_lua_type::<bevy_text::Text2dBounds>();
+        app.register_foreign_lua_type::<bevy::text::Text2dBounds>();
         
     }
 }

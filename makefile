@@ -28,7 +28,7 @@ CODEGEN_PATH=${PWD}/target/codegen
 BEVY_PATH=${CODEGEN_PATH}/bevy
 GLAM_PATH=${CODEGEN_PATH}/glam
 OUTPUT_PATH=${CODEGEN_PATH}/output
-GENERATED_SRC_PATH=./crates/bevy_script_api_providers/src/providers
+GENERATED_SRC_PATH=./crates/bevy_script_api/src/providers
 build_test_in_package:
 	@cargo test --no-run --lib --workspace $(TEST_NAME)
 	@export OUTPUT=$$(find ./target/debug/deps/ -regex ".*${PACKAGE}[^.]*" -printf "%T@\t%Tc %6k KiB %p\n" | sort -n -r | awk '{print $$NF}' | head -1); \
@@ -53,7 +53,7 @@ prepare_api_gen:
 	git clone https://github.com/bevyengine/bevy --branch v${BEVY_VERSION} --depth 1 ${BEVY_PATH} || true
 
 generate_bevy:
-	cd ${BEVY_PATH} && cargo +${NIGHTLY_VERSION} bevy-api-gen generate --output ${OUTPUT_PATH} -v --template-args '{"add_bevy_script_api_extern": true}'
+	cd ${BEVY_PATH} && cargo +${NIGHTLY_VERSION} bevy-api-gen generate --output ${OUTPUT_PATH} -v --template-args '{ "self_is_bevy_script_api": true}'
 
 collect_bevy:
 	cd ${BEVY_PATH} && cargo +${NIGHTLY_VERSION} bevy-api-gen collect --output ${OUTPUT_PATH} -v

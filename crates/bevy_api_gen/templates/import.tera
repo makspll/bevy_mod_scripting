@@ -1,0 +1,5 @@
+{%- if import is starting_with("bevy_") -%}
+bevy::{{- import | substring(start=5) -}}
+{%- else -%}
+{{import}}
+{%- endif -%}

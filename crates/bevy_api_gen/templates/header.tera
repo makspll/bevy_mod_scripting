@@ -5,7 +5,7 @@
 use super::{{crate}}::*;
 {% endfor %}
 
-{% if args.add_bevy_script_api_extern %}
+{% if args.self_is_bevy_script_api %}
 extern crate self as bevy_script_api;
 {% endif %}
 

@@ -41,11 +41,11 @@ extern crate self as bevy_script_api;
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
 derive(clone,debug),
-remote="bevy_render::camera::Viewport",
+remote="bevy::render::camera::Viewport",
 functions[r#"
 
     #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
-    fn clone(&self) -> bevy_render::camera::Viewport;
+    fn clone(&self) -> bevy::render::camera::Viewport;
 
 "#]
 )]
@@ -68,7 +68,7 @@ pub struct LuaViewport{
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
 derive(clone,debug),
-remote="bevy_render::camera::Exposure",
+remote="bevy::render::camera::Exposure",
 functions[r#"
 /// Converts EV100 values to exposure values.
 /// <https://google.github.io/filament/Filament.md.html#imagingpipeline/physicallybasedcamera/exposure>
@@ -80,7 +80,7 @@ functions[r#"
 			r#"
 
     #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
-    fn clone(&self) -> bevy_render::camera::Exposure;
+    fn clone(&self) -> bevy::render::camera::Exposure;
 
 "#]
 )]
@@ -115,7 +115,7 @@ pub struct LuaExposure{
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
 derive(clone,debug),
-remote="bevy_render::camera::Camera",
+remote="bevy::render::camera::Camera",
 functions[r#"
 
     #[lua(kind = "Method")]
@@ -126,13 +126,13 @@ functions[r#"
 /// The projection matrix computed using this camera's [`CameraProjection`].
 
     #[lua(kind = "Method", output(proxy))]
-    fn projection_matrix(&self) -> bevy_math::Mat4;
+    fn projection_matrix(&self) -> bevy::math::Mat4;
 
 "#,
 			r#"
 
     #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
-    fn clone(&self) -> bevy_render::camera::Camera;
+    fn clone(&self) -> bevy::render::camera::Camera;
 
 "#]
 )]
@@ -153,11 +153,11 @@ pub struct LuaCamera{
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
 derive(clone,debug),
-remote="bevy_render::camera::CameraRenderGraph",
+remote="bevy::render::camera::CameraRenderGraph",
 functions[r#"
 
     #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
-    fn clone(&self) -> bevy_render::camera::CameraRenderGraph;
+    fn clone(&self) -> bevy::render::camera::CameraRenderGraph;
 
 "#]
 )]
@@ -167,9 +167,7 @@ functions[r#"
 pub struct LuaCameraRenderGraph(
     
     
-        bevy_utils::intern::Interned<(dyn render_graph::graph::RenderSubGraph + 'static)>,
-
-
+        
     
     
 );
@@ -183,11 +181,11 @@ pub struct LuaCameraRenderGraph(
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
 derive(clone,debug),
-remote="bevy_render::camera::RenderTarget",
+remote="bevy::render::camera::RenderTarget",
 functions[r#"
 
     #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
-    fn clone(&self) -> bevy_render::camera::RenderTarget;
+    fn clone(&self) -> bevy::render::camera::RenderTarget;
 
 "#]
 )]
@@ -208,8 +206,14 @@ pub struct LuaRenderTarget{
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
 derive(clone,debug),
-remote="bevy_render::camera::NormalizedRenderTarget",
+remote="bevy::render::camera::NormalizedRenderTarget",
 functions[r#"
+
+    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
+    fn clone(&self) -> bevy::render::camera::NormalizedRenderTarget;
+
+"#,
+			r#"
 
     #[lua(
         as_trait = "std::cmp::Eq",
@@ -223,12 +227,6 @@ functions[r#"
 
     #[lua(as_trait = "std::cmp::PartialEq", kind = "Method")]
     fn eq(&self, #[proxy] other: &camera::camera::NormalizedRenderTarget) -> bool;
-
-"#,
-			r#"
-
-    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
-    fn clone(&self) -> bevy_render::camera::NormalizedRenderTarget;
 
 "#]
 )]
@@ -247,11 +245,11 @@ pub struct LuaNormalizedRenderTarget{
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
 derive(clone,debug),
-remote="bevy_render::camera::CameraMainTextureUsages",
+remote="bevy::render::camera::CameraMainTextureUsages",
 functions[r#"
 
     #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
-    fn clone(&self) -> bevy_render::camera::CameraMainTextureUsages;
+    fn clone(&self) -> bevy::render::camera::CameraMainTextureUsages;
 
 "#]
 )]
@@ -271,11 +269,11 @@ pub struct LuaCameraMainTextureUsages(
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
 derive(clone,debug),
-remote="bevy_render::camera::ClearColorConfig",
+remote="bevy::render::camera::ClearColorConfig",
 functions[r#"
 
     #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
-    fn clone(&self) -> bevy_render::camera::ClearColorConfig;
+    fn clone(&self) -> bevy::render::camera::ClearColorConfig;
 
 "#]
 )]
@@ -298,11 +296,11 @@ pub struct LuaClearColorConfig{
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
 derive(clone,debug),
-remote="bevy_render::camera::ClearColor",
+remote="bevy::render::camera::ClearColor",
 functions[r#"
 
     #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
-    fn clone(&self) -> bevy_render::camera::ClearColor;
+    fn clone(&self) -> bevy::render::camera::ClearColor;
 
 "#]
 )]
@@ -322,8 +320,14 @@ pub struct LuaClearColor(
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
 derive(clone,debug),
-remote="bevy_render::camera::ManualTextureViewHandle",
+remote="bevy::render::camera::ManualTextureViewHandle",
 functions[r#"
+
+    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
+    fn clone(&self) -> bevy::render::camera::ManualTextureViewHandle;
+
+"#,
+			r#"
 
     #[lua(
         as_trait = "std::cmp::Eq",
@@ -341,12 +345,6 @@ functions[r#"
         #[proxy]
         other: &camera::manual_texture_view::ManualTextureViewHandle,
     ) -> bool;
-
-"#,
-			r#"
-
-    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
-    fn clone(&self) -> bevy_render::camera::ManualTextureViewHandle;
 
 "#]
 )]
@@ -366,11 +364,11 @@ pub struct LuaManualTextureViewHandle(
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
 derive(clone,debug),
-remote="bevy_render::camera::Projection",
+remote="bevy::render::camera::Projection",
 functions[r#"
 
     #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
-    fn clone(&self) -> bevy_render::camera::Projection;
+    fn clone(&self) -> bevy::render::camera::Projection;
 
 "#]
 )]
@@ -389,11 +387,11 @@ pub struct LuaProjection{
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
 derive(clone,debug),
-remote="bevy_render::camera::PerspectiveProjection",
+remote="bevy::render::camera::PerspectiveProjection",
 functions[r#"
 
     #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
-    fn clone(&self) -> bevy_render::camera::PerspectiveProjection;
+    fn clone(&self) -> bevy::render::camera::PerspectiveProjection;
 
 "#]
 )]
@@ -432,8 +430,14 @@ pub struct LuaPerspectiveProjection{
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
 derive(clone,debug),
-remote="bevy_render::camera::ScalingMode",
+remote="bevy::render::camera::ScalingMode",
 functions[r#"
+
+    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
+    fn clone(&self) -> bevy::render::camera::ScalingMode;
+
+"#,
+			r#"
 /// Scale the `ScalingMode`. For example, dividing by 2 makes the viewport half as large.
 
     #[lua(
@@ -443,7 +447,7 @@ functions[r#"
         composite = "div",
         metamethod = "Div",
     )]
-    fn div(self, rhs: f32) -> bevy_render::camera::ScalingMode;
+    fn div(self, rhs: f32) -> bevy::render::camera::ScalingMode;
 
 "#,
 			r#"
@@ -456,13 +460,7 @@ functions[r#"
         composite = "mul",
         metamethod = "Mul",
     )]
-    fn mul(self, rhs: f32) -> bevy_render::camera::ScalingMode;
-
-"#,
-			r#"
-
-    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
-    fn clone(&self) -> bevy_render::camera::ScalingMode;
+    fn mul(self, rhs: f32) -> bevy::render::camera::ScalingMode;
 
 "#]
 )]
@@ -509,11 +507,11 @@ pub struct LuaScalingMode{
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
 derive(clone,debug),
-remote="bevy_render::camera::OrthographicProjection",
+remote="bevy::render::camera::OrthographicProjection",
 functions[r#"
 
     #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
-    fn clone(&self) -> bevy_render::camera::OrthographicProjection;
+    fn clone(&self) -> bevy::render::camera::OrthographicProjection;
 
 "#]
 )]
@@ -532,7 +530,7 @@ pub struct LuaOrthographicProjection{
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
 derive(clone,debug),
-remote="bevy_render::color::Color",
+remote="bevy::render::color::Color",
 functions[r#"
 /// New `Color` from sRGB colorspace.
 /// # Arguments
@@ -542,7 +540,7 @@ functions[r#"
 /// See also [`Color::rgba`], [`Color::rgb_u8`], [`Color::hex`].
 
     #[lua(kind = "Function", output(proxy))]
-    fn rgb(r: f32, g: f32, b: f32) -> bevy_render::color::Color;
+    fn rgb(r: f32, g: f32, b: f32) -> bevy::render::color::Color;
 
 "#,
 			r#"
@@ -555,7 +553,7 @@ functions[r#"
 /// See also [`Color::rgb`], [`Color::rgba_u8`], [`Color::hex`].
 
     #[lua(kind = "Function", output(proxy))]
-    fn rgba(r: f32, g: f32, b: f32, a: f32) -> bevy_render::color::Color;
+    fn rgba(r: f32, g: f32, b: f32, a: f32) -> bevy::render::color::Color;
 
 "#,
 			r#"
@@ -567,7 +565,7 @@ functions[r#"
 /// See also [`Color::rgb`], [`Color::rgba_linear`].
 
     #[lua(kind = "Function", output(proxy))]
-    fn rgb_linear(r: f32, g: f32, b: f32) -> bevy_render::color::Color;
+    fn rgb_linear(r: f32, g: f32, b: f32) -> bevy::render::color::Color;
 
 "#,
 			r#"
@@ -580,7 +578,7 @@ functions[r#"
 /// See also [`Color::rgba`], [`Color::rgb_linear`].
 
     #[lua(kind = "Function", output(proxy))]
-    fn rgba_linear(r: f32, g: f32, b: f32, a: f32) -> bevy_render::color::Color;
+    fn rgba_linear(r: f32, g: f32, b: f32, a: f32) -> bevy::render::color::Color;
 
 "#,
 			r#"
@@ -592,7 +590,7 @@ functions[r#"
 /// See also [`Color::hsla`].
 
     #[lua(kind = "Function", output(proxy))]
-    fn hsl(hue: f32, saturation: f32, lightness: f32) -> bevy_render::color::Color;
+    fn hsl(hue: f32, saturation: f32, lightness: f32) -> bevy::render::color::Color;
 
 "#,
 			r#"
@@ -610,7 +608,7 @@ functions[r#"
         saturation: f32,
         lightness: f32,
         alpha: f32,
-    ) -> bevy_render::color::Color;
+    ) -> bevy::render::color::Color;
 
 "#,
 			r#"
@@ -622,7 +620,7 @@ functions[r#"
 /// See also [`Color::lcha`].
 
     #[lua(kind = "Function", output(proxy))]
-    fn lch(lightness: f32, chroma: f32, hue: f32) -> bevy_render::color::Color;
+    fn lch(lightness: f32, chroma: f32, hue: f32) -> bevy::render::color::Color;
 
 "#,
 			r#"
@@ -640,7 +638,7 @@ functions[r#"
         chroma: f32,
         hue: f32,
         alpha: f32,
-    ) -> bevy_render::color::Color;
+    ) -> bevy::render::color::Color;
 
 "#,
 			r#"
@@ -652,7 +650,7 @@ functions[r#"
 /// See also [`Color::rgb`], [`Color::rgba_u8`], [`Color::hex`].
 
     #[lua(kind = "Function", output(proxy))]
-    fn rgb_u8(r: u8, g: u8, b: u8) -> bevy_render::color::Color;
+    fn rgb_u8(r: u8, g: u8, b: u8) -> bevy::render::color::Color;
 
 "#,
 			r#"
@@ -665,7 +663,7 @@ functions[r#"
 /// See also [`Color::rgba`], [`Color::rgb_u8`], [`Color::hex`].
 
     #[lua(kind = "Function", output(proxy))]
-    fn rgba_u8(r: u8, g: u8, b: u8, a: u8) -> bevy_render::color::Color;
+    fn rgba_u8(r: u8, g: u8, b: u8, a: u8) -> bevy::render::color::Color;
 
 "#,
 			r#"
@@ -693,21 +691,21 @@ functions[r#"
 /// Converts a Color to variant [`Color::Rgba`] and return this color with red set to a new value
 
     #[lua(kind = "Method", output(proxy))]
-    fn with_r(self, r: f32) -> bevy_render::color::Color;
+    fn with_r(self, r: f32) -> bevy::render::color::Color;
 
 "#,
 			r#"
 /// Converts a Color to variant [`Color::Rgba`] and return this color with green set to a new value
 
     #[lua(kind = "Method", output(proxy))]
-    fn with_g(self, g: f32) -> bevy_render::color::Color;
+    fn with_g(self, g: f32) -> bevy::render::color::Color;
 
 "#,
 			r#"
 /// Converts a Color to variant [`Color::Rgba`] and return this color with blue set to a new value
 
     #[lua(kind = "Method", output(proxy))]
-    fn with_b(self, b: f32) -> bevy_render::color::Color;
+    fn with_b(self, b: f32) -> bevy::render::color::Color;
 
 "#,
 			r#"
@@ -735,21 +733,21 @@ functions[r#"
 /// Converts a Color to variant [`Color::Hsla`] and return this color with hue set to a new value
 
     #[lua(kind = "Method", output(proxy))]
-    fn with_h(self, h: f32) -> bevy_render::color::Color;
+    fn with_h(self, h: f32) -> bevy::render::color::Color;
 
 "#,
 			r#"
 /// Converts a Color to variant [`Color::Hsla`] and return this color with saturation set to a new value
 
     #[lua(kind = "Method", output(proxy))]
-    fn with_s(self, s: f32) -> bevy_render::color::Color;
+    fn with_s(self, s: f32) -> bevy::render::color::Color;
 
 "#,
 			r#"
 /// Converts a Color to variant [`Color::Hsla`] and return this color with lightness set to a new value
 
     #[lua(kind = "Method", output(proxy))]
-    fn with_l(self, l: f32) -> bevy_render::color::Color;
+    fn with_l(self, l: f32) -> bevy::render::color::Color;
 
 "#,
 			r#"
@@ -763,7 +761,7 @@ functions[r#"
 /// Returns this color with a new alpha value.
 
     #[lua(kind = "Method", output(proxy))]
-    fn with_a(self, a: f32) -> bevy_render::color::Color;
+    fn with_a(self, a: f32) -> bevy::render::color::Color;
 
 "#,
 			r#"
@@ -787,28 +785,28 @@ functions[r#"
 /// Converts a `Color` to variant `Color::Rgba`
 
     #[lua(kind = "Method", output(proxy))]
-    fn as_rgba(&self) -> bevy_render::color::Color;
+    fn as_rgba(&self) -> bevy::render::color::Color;
 
 "#,
 			r#"
 /// Converts a `Color` to variant `Color::RgbaLinear`
 
     #[lua(kind = "Method", output(proxy))]
-    fn as_rgba_linear(&self) -> bevy_render::color::Color;
+    fn as_rgba_linear(&self) -> bevy::render::color::Color;
 
 "#,
 			r#"
 /// Converts a `Color` to variant `Color::Hsla`
 
     #[lua(kind = "Method", output(proxy))]
-    fn as_hsla(&self) -> bevy_render::color::Color;
+    fn as_hsla(&self) -> bevy::render::color::Color;
 
 "#,
 			r#"
 /// Converts a `Color` to variant `Color::Lcha`
 
     #[lua(kind = "Method", output(proxy))]
-    fn as_lcha(&self) -> bevy_render::color::Color;
+    fn as_lcha(&self) -> bevy::render::color::Color;
 
 "#,
 			r#"
@@ -868,56 +866,56 @@ functions[r#"
 /// Convert `Color` to RGBA and return as `Vec4`.
 
     #[lua(kind = "Method", output(proxy))]
-    fn rgba_to_vec4(&self) -> bevy_math::Vec4;
+    fn rgba_to_vec4(&self) -> bevy::math::Vec4;
 
 "#,
 			r#"
 /// Convert `Color` to RGBA and return as `Vec3`.
 
     #[lua(kind = "Method", output(proxy))]
-    fn rgb_to_vec3(&self) -> bevy_math::Vec3;
+    fn rgb_to_vec3(&self) -> bevy::math::Vec3;
 
 "#,
 			r#"
 /// Convert `Color` to linear RGBA and return as `Vec4`.
 
     #[lua(kind = "Method", output(proxy))]
-    fn rgba_linear_to_vec4(&self) -> bevy_math::Vec4;
+    fn rgba_linear_to_vec4(&self) -> bevy::math::Vec4;
 
 "#,
 			r#"
 /// Convert `Color` to linear RGBA and return as `Vec3`.
 
     #[lua(kind = "Method", output(proxy))]
-    fn rgb_linear_to_vec3(&self) -> bevy_math::Vec3;
+    fn rgb_linear_to_vec3(&self) -> bevy::math::Vec3;
 
 "#,
 			r#"
 /// Convert `Color` to HSLA and return as `Vec4`.
 
     #[lua(kind = "Method", output(proxy))]
-    fn hsla_to_vec4(&self) -> bevy_math::Vec4;
+    fn hsla_to_vec4(&self) -> bevy::math::Vec4;
 
 "#,
 			r#"
 /// Convert `Color` to HSLA and return as `Vec3`.
 
     #[lua(kind = "Method", output(proxy))]
-    fn hsl_to_vec3(&self) -> bevy_math::Vec3;
+    fn hsl_to_vec3(&self) -> bevy::math::Vec3;
 
 "#,
 			r#"
 /// Convert `Color` to LCHA and return as `Vec4`.
 
     #[lua(kind = "Method", output(proxy))]
-    fn lcha_to_vec4(&self) -> bevy_math::Vec4;
+    fn lcha_to_vec4(&self) -> bevy::math::Vec4;
 
 "#,
 			r#"
 /// Convert `Color` to LCHA and return as `Vec3`.
 
     #[lua(kind = "Method", output(proxy))]
-    fn lch_to_vec3(&self) -> bevy_math::Vec3;
+    fn lch_to_vec3(&self) -> bevy::math::Vec3;
 
 "#,
 			r#"
@@ -929,19 +927,19 @@ functions[r#"
         composite = "add",
         metamethod = "Add",
     )]
-    fn add(self, #[proxy] rhs: bevy_render::color::Color) -> bevy_render::color::Color;
+    fn add(self, #[proxy] rhs: bevy::render::color::Color) -> bevy::render::color::Color;
+
+"#,
+			r#"
+
+    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
+    fn clone(&self) -> bevy::render::color::Color;
 
 "#,
 			r#"
 
     #[lua(as_trait = "std::cmp::PartialEq", kind = "Method")]
     fn eq(&self, #[proxy] other: &color::Color) -> bool;
-
-"#,
-			r#"
-
-    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
-    fn clone(&self) -> bevy_render::color::Color;
 
 "#]
 )]
@@ -962,11 +960,11 @@ pub struct LuaColor{
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
 derive(clone,debug),
-remote="bevy_render::globals::GlobalsUniform",
+remote="bevy::render::globals::GlobalsUniform",
 functions[r#"
 
     #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
-    fn clone(&self) -> bevy_render::globals::GlobalsUniform;
+    fn clone(&self) -> bevy::render::globals::GlobalsUniform;
 
 "#]
 )]
@@ -977,17 +975,11 @@ functions[r#"
 pub struct LuaGlobalsUniform{
     
     
-        time:f32,
-
-
+        
     
-        delta_time:f32,
-
-
+        
     
-        frame_count:u32,
-
-
+        
     
     
 }
@@ -997,11 +989,11 @@ pub struct LuaGlobalsUniform{
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
 derive(clone,debug),
-remote="bevy_render::mesh::skinning::SkinnedMesh",
+remote="bevy::render::mesh::skinning::SkinnedMesh",
 functions[r#"
 
     #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
-    fn clone(&self) -> bevy_render::mesh::skinning::SkinnedMesh;
+    fn clone(&self) -> bevy::render::mesh::skinning::SkinnedMesh;
 
 "#]
 )]
@@ -1160,14 +1152,14 @@ pub struct LuaSkinnedMesh{
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
 derive(clone,debug),
-remote="bevy_render::mesh::Mesh",
+remote="bevy::render::mesh::Mesh",
 functions[r#"
 /// Sets the vertex indices of the mesh. They describe how triangles are constructed out of the
 /// vertex attributes and are therefore only useful for the [`PrimitiveTopology`] variants
 /// that use triangles.
 
     #[lua(kind = "Method")]
-    fn insert_indices(&mut self, #[proxy] indices: bevy_render::mesh::Indices) -> ();
+    fn insert_indices(&mut self, #[proxy] indices: bevy::render::mesh::Indices) -> ();
 
 "#,
 			r#"
@@ -1180,8 +1172,8 @@ functions[r#"
     fn with_inserted_indices(
         self,
         #[proxy]
-        indices: bevy_render::mesh::Indices,
-    ) -> bevy_render::mesh::Mesh;
+        indices: bevy::render::mesh::Indices,
+    ) -> bevy::render::mesh::Mesh;
 
 "#,
 			r#"
@@ -1189,7 +1181,7 @@ functions[r#"
 /// (Alternatively, you can use [`Mesh::remove_indices`] to mutate an existing mesh in-place)
 
     #[lua(kind = "Method", output(proxy))]
-    fn with_removed_indices(self) -> bevy_render::mesh::Mesh;
+    fn with_removed_indices(self) -> bevy::render::mesh::Mesh;
 
 "#,
 			r#"
@@ -1235,7 +1227,7 @@ functions[r#"
 /// (Alternatively, you can use [`Mesh::duplicate_vertices`] to mutate an existing mesh in-place)
 
     #[lua(kind = "Method", output(proxy))]
-    fn with_duplicated_vertices(self) -> bevy_render::mesh::Mesh;
+    fn with_duplicated_vertices(self) -> bevy::render::mesh::Mesh;
 
 "#,
 			r#"
@@ -1258,7 +1250,7 @@ functions[r#"
 /// Consider calling [`Mesh::with_duplicated_vertices`] or export your mesh with normal attributes.
 
     #[lua(kind = "Method", output(proxy))]
-    fn with_computed_flat_normals(self) -> bevy_render::mesh::Mesh;
+    fn with_computed_flat_normals(self) -> bevy::render::mesh::Mesh;
 
 "#,
 			r#"
@@ -1269,7 +1261,7 @@ functions[r#"
 /// For example, [`VertexAttributeValues::Float32`] is incompatible with [`VertexAttributeValues::Float32x3`].
 
     #[lua(kind = "Method")]
-    fn merge(&mut self, #[proxy] other: bevy_render::mesh::Mesh) -> ();
+    fn merge(&mut self, #[proxy] other: bevy::render::mesh::Mesh) -> ();
 
 "#,
 			r#"
@@ -1279,8 +1271,8 @@ functions[r#"
     fn transformed_by(
         self,
         #[proxy]
-        transform: bevy_transform::components::Transform,
-    ) -> bevy_render::mesh::Mesh;
+        transform: bevy::transform::components::Transform,
+    ) -> bevy::render::mesh::Mesh;
 
 "#,
 			r#"
@@ -1290,7 +1282,7 @@ functions[r#"
     fn transform_by(
         &mut self,
         #[proxy]
-        transform: bevy_transform::components::Transform,
+        transform: bevy::transform::components::Transform,
     ) -> ();
 
 "#,
@@ -1301,43 +1293,43 @@ functions[r#"
     fn translated_by(
         self,
         #[proxy]
-        translation: bevy_math::Vec3,
-    ) -> bevy_render::mesh::Mesh;
+        translation: bevy::math::Vec3,
+    ) -> bevy::render::mesh::Mesh;
 
 "#,
 			r#"
 /// Translates the vertex positions of the mesh in place by the given [`Vec3`].
 
     #[lua(kind = "Method")]
-    fn translate_by(&mut self, #[proxy] translation: bevy_math::Vec3) -> ();
+    fn translate_by(&mut self, #[proxy] translation: bevy::math::Vec3) -> ();
 
 "#,
 			r#"
 /// Rotates the vertex positions, normals, and tangents of the mesh by the given [`Quat`].
 
     #[lua(kind = "Method", output(proxy))]
-    fn rotated_by(self, #[proxy] rotation: bevy_math::Quat) -> bevy_render::mesh::Mesh;
+    fn rotated_by(self, #[proxy] rotation: bevy::math::Quat) -> bevy::render::mesh::Mesh;
 
 "#,
 			r#"
 /// Rotates the vertex positions, normals, and tangents of the mesh in place by the given [`Quat`].
 
     #[lua(kind = "Method")]
-    fn rotate_by(&mut self, #[proxy] rotation: bevy_math::Quat) -> ();
+    fn rotate_by(&mut self, #[proxy] rotation: bevy::math::Quat) -> ();
 
 "#,
 			r#"
 /// Scales the vertex positions, normals, and tangents of the mesh by the given [`Vec3`].
 
     #[lua(kind = "Method", output(proxy))]
-    fn scaled_by(self, #[proxy] scale: bevy_math::Vec3) -> bevy_render::mesh::Mesh;
+    fn scaled_by(self, #[proxy] scale: bevy::math::Vec3) -> bevy::render::mesh::Mesh;
 
 "#,
 			r#"
 /// Scales the vertex positions, normals, and tangents of the mesh in place by the given [`Vec3`].
 
     #[lua(kind = "Method")]
-    fn scale_by(&mut self, #[proxy] scale: bevy_math::Vec3) -> ();
+    fn scale_by(&mut self, #[proxy] scale: bevy::math::Vec3) -> ();
 
 "#,
 			r#"
@@ -1366,7 +1358,7 @@ functions[r#"
     fn with_morph_target_names(
         self,
         names: std::vec::Vec<std::string::Stringstd::alloc::Global>,
-    ) -> bevy_render::mesh::Mesh;
+    ) -> bevy::render::mesh::Mesh;
 
 "#,
 			r#"
@@ -1386,7 +1378,7 @@ functions[r#"
 			r#"
 
     #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
-    fn clone(&self) -> bevy_render::mesh::Mesh;
+    fn clone(&self) -> bevy::render::mesh::Mesh;
 
 "#]
 )]
@@ -1397,25 +1389,15 @@ functions[r#"
 pub struct LuaMesh{
     
     
-        primitive_topology:bevy_render::mesh::PrimitiveTopology,
-
-
+        
     
-        attributes:std::collections::BTreeMap<bevy_render::mesh::MeshVertexAttributeIdmesh::mesh::MeshAttributeDatastd::alloc::Global>,
-
-
+        
     
-        indices:std::option::Option<bevy_render::mesh::Indices>,
-
-
+        
     
-        morph_targets:std::option::Option<bevy_asset::Handle<bevy_render::texture::Image>>,
-
-
+        
     
-        morph_target_names:std::option::Option<std::vec::Vec<std::string::Stringstd::alloc::Global>>,
-
-
+        
     
     
 }
@@ -1429,7 +1411,7 @@ pub struct LuaMesh{
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
 derive(clone,debug),
-remote="bevy_render::mesh::Indices",
+remote="bevy::render::mesh::Indices",
 functions[r#"
 /// Returns the number of indices.
 
@@ -1447,7 +1429,7 @@ functions[r#"
 			r#"
 
     #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
-    fn clone(&self) -> bevy_render::mesh::Indices;
+    fn clone(&self) -> bevy::render::mesh::Indices;
 
 "#]
 )]
@@ -1484,7 +1466,7 @@ pub struct LuaIndices{
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
 derive(clone,debug),
-remote="bevy_render::mesh::morph::MorphWeights",
+remote="bevy::render::mesh::morph::MorphWeights",
 functions[r#"
 
     #[lua(kind = "Method")]
@@ -1494,7 +1476,7 @@ functions[r#"
 			r#"
 
     #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
-    fn clone(&self) -> bevy_render::mesh::morph::MorphWeights;
+    fn clone(&self) -> bevy::render::mesh::morph::MorphWeights;
 
 "#]
 )]
@@ -1505,13 +1487,9 @@ functions[r#"
 pub struct LuaMorphWeights{
     
     
-        weights:std::vec::Vec<f32std::alloc::Global>,
-
-
+        
     
-        first_mesh:std::option::Option<bevy_asset::Handle<bevy_render::mesh::Mesh>>,
-
-
+        
     
     
 }
@@ -1537,7 +1515,7 @@ pub struct LuaMorphWeights{
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
 derive(clone,debug),
-remote="bevy_render::mesh::morph::MeshMorphWeights",
+remote="bevy::render::mesh::morph::MeshMorphWeights",
 functions[r#"
 
     #[lua(kind = "Method")]
@@ -1547,7 +1525,7 @@ functions[r#"
 			r#"
 
     #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
-    fn clone(&self) -> bevy_render::mesh::morph::MeshMorphWeights;
+    fn clone(&self) -> bevy::render::mesh::morph::MeshMorphWeights;
 
 "#]
 )]
@@ -1558,9 +1536,7 @@ functions[r#"
 pub struct LuaMeshMorphWeights{
     
     
-        weights:std::vec::Vec<f32std::alloc::Global>,
-
-
+        
     
     
 }
@@ -1612,16 +1588,16 @@ pub struct LuaMeshMorphWeights{
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
 derive(clone,debug),
-remote="bevy_render::primitives::Aabb",
+remote="bevy::render::primitives::Aabb",
 functions[r#"
 
     #[lua(kind = "Function", output(proxy))]
     fn from_min_max(
         #[proxy]
-        minimum: bevy_math::Vec3,
+        minimum: bevy::math::Vec3,
         #[proxy]
-        maximum: bevy_math::Vec3,
-    ) -> bevy_render::primitives::Aabb;
+        maximum: bevy::math::Vec3,
+    ) -> bevy::render::primitives::Aabb;
 
 "#,
 			r#"
@@ -1640,25 +1616,25 @@ functions[r#"
 			r#"
 
     #[lua(kind = "Method", output(proxy))]
-    fn min(&self) -> bevy_math::Vec3A;
+    fn min(&self) -> bevy::math::Vec3A;
 
 "#,
 			r#"
 
     #[lua(kind = "Method", output(proxy))]
-    fn max(&self) -> bevy_math::Vec3A;
+    fn max(&self) -> bevy::math::Vec3A;
+
+"#,
+			r#"
+
+    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
+    fn clone(&self) -> bevy::render::primitives::Aabb;
 
 "#,
 			r#"
 
     #[lua(as_trait = "std::cmp::PartialEq", kind = "Method")]
     fn eq(&self, #[proxy] other: &primitives::Aabb) -> bool;
-
-"#,
-			r#"
-
-    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
-    fn clone(&self) -> bevy_render::primitives::Aabb;
 
 "#]
 )]
@@ -1715,7 +1691,7 @@ pub struct LuaAabb{
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
 derive(clone,debug),
-remote="bevy_render::primitives::Frustum",
+remote="bevy::render::primitives::Frustum",
 functions[r#"
 /// Returns a frustum derived from `view_projection`.
 
@@ -1723,7 +1699,7 @@ functions[r#"
     fn from_view_projection(
         #[proxy]
         view_projection: &bevy_math::Mat4,
-    ) -> bevy_render::primitives::Frustum;
+    ) -> bevy::render::primitives::Frustum;
 
 "#,
 			r#"
@@ -1739,7 +1715,7 @@ functions[r#"
         #[proxy]
         view_backward: &bevy_math::Vec3,
         far: f32,
-    ) -> bevy_render::primitives::Frustum;
+    ) -> bevy::render::primitives::Frustum;
 
 "#,
 			r#"
@@ -1750,7 +1726,7 @@ functions[r#"
     fn from_view_projection_no_far(
         #[proxy]
         view_projection: &bevy_math::Mat4,
-    ) -> bevy_render::primitives::Frustum;
+    ) -> bevy::render::primitives::Frustum;
 
 "#,
 			r#"
@@ -1771,7 +1747,7 @@ functions[r#"
 			r#"
 
     #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
-    fn clone(&self) -> bevy_render::primitives::Frustum;
+    fn clone(&self) -> bevy::render::primitives::Frustum;
 
 "#]
 )]
@@ -1790,11 +1766,11 @@ pub struct LuaFrustum{
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
 derive(clone,debug),
-remote="bevy_render::primitives::CubemapFrusta",
+remote="bevy::render::primitives::CubemapFrusta",
 functions[r#"
 
     #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
-    fn clone(&self) -> bevy_render::primitives::CubemapFrusta;
+    fn clone(&self) -> bevy::render::primitives::CubemapFrusta;
 
 "#]
 )]
@@ -1813,7 +1789,7 @@ pub struct LuaCubemapFrusta{
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
 derive(clone,debug),
-remote="bevy_render::primitives::CascadesFrusta",
+remote="bevy::render::primitives::CascadesFrusta",
 functions[]
 )]
 
@@ -1853,19 +1829,19 @@ pub struct LuaCascadesFrusta{
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
 derive(clone,debug),
-remote="bevy_render::render_asset::RenderAssetUsages",
+remote="bevy::render::render_asset::RenderAssetUsages",
 functions[r#"
 /// Get a flags value with all bits unset.
 
     #[lua(kind = "Function", output(proxy))]
-    fn empty() -> bevy_render::render_asset::RenderAssetUsages;
+    fn empty() -> bevy::render::render_asset::RenderAssetUsages;
 
 "#,
 			r#"
 /// Get a flags value with all known bits set.
 
     #[lua(kind = "Function", output(proxy))]
-    fn all() -> bevy_render::render_asset::RenderAssetUsages;
+    fn all() -> bevy::render::render_asset::RenderAssetUsages;
 
 "#,
 			r#"
@@ -1880,14 +1856,14 @@ functions[r#"
 /// Convert from a bits value, unsetting any unknown bits.
 
     #[lua(kind = "Function", output(proxy))]
-    fn from_bits_truncate(bits: u8) -> bevy_render::render_asset::RenderAssetUsages;
+    fn from_bits_truncate(bits: u8) -> bevy::render::render_asset::RenderAssetUsages;
 
 "#,
 			r#"
 /// Convert from a bits value exactly.
 
     #[lua(kind = "Function", output(proxy))]
-    fn from_bits_retain(bits: u8) -> bevy_render::render_asset::RenderAssetUsages;
+    fn from_bits_retain(bits: u8) -> bevy::render::render_asset::RenderAssetUsages;
 
 "#,
 			r#"
@@ -1911,7 +1887,7 @@ functions[r#"
     fn intersects(
         &self,
         #[proxy]
-        other: bevy_render::render_asset::RenderAssetUsages,
+        other: bevy::render::render_asset::RenderAssetUsages,
     ) -> bool;
 
 "#,
@@ -1922,7 +1898,7 @@ functions[r#"
     fn contains(
         &self,
         #[proxy]
-        other: bevy_render::render_asset::RenderAssetUsages,
+        other: bevy::render::render_asset::RenderAssetUsages,
     ) -> bool;
 
 "#,
@@ -1933,7 +1909,7 @@ functions[r#"
     fn insert(
         &mut self,
         #[proxy]
-        other: bevy_render::render_asset::RenderAssetUsages,
+        other: bevy::render::render_asset::RenderAssetUsages,
     ) -> ();
 
 "#,
@@ -1946,7 +1922,7 @@ functions[r#"
     fn remove(
         &mut self,
         #[proxy]
-        other: bevy_render::render_asset::RenderAssetUsages,
+        other: bevy::render::render_asset::RenderAssetUsages,
     ) -> ();
 
 "#,
@@ -1957,7 +1933,7 @@ functions[r#"
     fn toggle(
         &mut self,
         #[proxy]
-        other: bevy_render::render_asset::RenderAssetUsages,
+        other: bevy::render::render_asset::RenderAssetUsages,
     ) -> ();
 
 "#,
@@ -1968,7 +1944,7 @@ functions[r#"
     fn set(
         &mut self,
         #[proxy]
-        other: bevy_render::render_asset::RenderAssetUsages,
+        other: bevy::render::render_asset::RenderAssetUsages,
         value: bool,
     ) -> ();
 
@@ -1980,8 +1956,8 @@ functions[r#"
     fn intersection(
         self,
         #[proxy]
-        other: bevy_render::render_asset::RenderAssetUsages,
-    ) -> bevy_render::render_asset::RenderAssetUsages;
+        other: bevy::render::render_asset::RenderAssetUsages,
+    ) -> bevy::render::render_asset::RenderAssetUsages;
 
 "#,
 			r#"
@@ -1991,8 +1967,8 @@ functions[r#"
     fn union(
         self,
         #[proxy]
-        other: bevy_render::render_asset::RenderAssetUsages,
-    ) -> bevy_render::render_asset::RenderAssetUsages;
+        other: bevy::render::render_asset::RenderAssetUsages,
+    ) -> bevy::render::render_asset::RenderAssetUsages;
 
 "#,
 			r#"
@@ -2004,8 +1980,8 @@ functions[r#"
     fn difference(
         self,
         #[proxy]
-        other: bevy_render::render_asset::RenderAssetUsages,
-    ) -> bevy_render::render_asset::RenderAssetUsages;
+        other: bevy::render::render_asset::RenderAssetUsages,
+    ) -> bevy::render::render_asset::RenderAssetUsages;
 
 "#,
 			r#"
@@ -2015,15 +1991,31 @@ functions[r#"
     fn symmetric_difference(
         self,
         #[proxy]
-        other: bevy_render::render_asset::RenderAssetUsages,
-    ) -> bevy_render::render_asset::RenderAssetUsages;
+        other: bevy::render::render_asset::RenderAssetUsages,
+    ) -> bevy::render::render_asset::RenderAssetUsages;
 
 "#,
 			r#"
 /// The bitwise negation (`!`) of the bits in a flags value, truncating the result.
 
     #[lua(kind = "Method", output(proxy))]
-    fn complement(self) -> bevy_render::render_asset::RenderAssetUsages;
+    fn complement(self) -> bevy::render::render_asset::RenderAssetUsages;
+
+"#,
+			r#"
+
+    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
+    fn clone(&self) -> bevy::render::render_asset::RenderAssetUsages;
+
+"#,
+			r#"
+
+    #[lua(
+        as_trait = "std::cmp::Eq",
+        kind = "Function",
+        composite = "assert_receiver_is_total_eq",
+    )]
+    fn assert_receiver_is_total_eq(&self) -> ();
 
 "#,
 			r#"
@@ -2041,30 +2033,14 @@ functions[r#"
     fn sub(
         self,
         #[proxy]
-        other: bevy_render::render_asset::RenderAssetUsages,
-    ) -> bevy_render::render_asset::RenderAssetUsages;
-
-"#,
-			r#"
-
-    #[lua(
-        as_trait = "std::cmp::Eq",
-        kind = "Function",
-        composite = "assert_receiver_is_total_eq",
-    )]
-    fn assert_receiver_is_total_eq(&self) -> ();
+        other: bevy::render::render_asset::RenderAssetUsages,
+    ) -> bevy::render::render_asset::RenderAssetUsages;
 
 "#,
 			r#"
 
     #[lua(as_trait = "std::cmp::PartialEq", kind = "Method")]
     fn eq(&self, #[proxy] other: &render_asset::RenderAssetUsages) -> bool;
-
-"#,
-			r#"
-
-    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
-    fn clone(&self) -> bevy_render::render_asset::RenderAssetUsages;
 
 "#]
 )]
@@ -2074,9 +2050,7 @@ functions[r#"
 pub struct LuaRenderAssetUsages(
     
     
-        <render_asset::RenderAssetUsages as bitflags::__private::PublicFlags>::Internal,
-
-
+        
     
     
 );
@@ -2086,7 +2060,7 @@ pub struct LuaRenderAssetUsages(
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
 derive(clone,debug),
-remote="bevy_render::texture::Image",
+remote="bevy::render::texture::Image",
 functions[r#"
 /// Returns the width of a 2D image.
 
@@ -2105,14 +2079,14 @@ functions[r#"
 /// Returns the size of a 2D image as f32.
 
     #[lua(kind = "Method", output(proxy))]
-    fn size_f32(&self) -> bevy_math::Vec2;
+    fn size_f32(&self) -> bevy::math::Vec2;
 
 "#,
 			r#"
 /// Returns the size of a 2D image.
 
     #[lua(kind = "Method", output(proxy))]
-    fn size(&self) -> bevy_math::UVec2;
+    fn size(&self) -> bevy::math::UVec2;
 
 "#,
 			r#"
@@ -2137,7 +2111,7 @@ functions[r#"
 			r#"
 
     #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
-    fn clone(&self) -> bevy_render::texture::Image;
+    fn clone(&self) -> bevy::render::texture::Image;
 
 "#]
 )]
@@ -2172,26 +2146,26 @@ pub struct LuaImage{
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
 derive(clone,debug),
-remote="bevy_render::view::visibility::RenderLayers",
+remote="bevy::render::view::visibility::RenderLayers",
 functions[r#"
 /// Create a new `RenderLayers` belonging to the given layer.
 
     #[lua(kind = "Function", output(proxy))]
-    fn layer(n: u8) -> bevy_render::view::visibility::RenderLayers;
+    fn layer(n: u8) -> bevy::render::view::visibility::RenderLayers;
 
 "#,
 			r#"
 /// Create a new `RenderLayers` that belongs to all layers.
 
     #[lua(kind = "Function", output(proxy))]
-    fn all() -> bevy_render::view::visibility::RenderLayers;
+    fn all() -> bevy::render::view::visibility::RenderLayers;
 
 "#,
 			r#"
 /// Create a new `RenderLayers` that belongs to no layers.
 
     #[lua(kind = "Function", output(proxy))]
-    fn none() -> bevy_render::view::visibility::RenderLayers;
+    fn none() -> bevy::render::view::visibility::RenderLayers;
 
 "#,
 			r#"
@@ -2202,7 +2176,7 @@ functions[r#"
 /// Panics when called with a layer greater than `TOTAL_LAYERS - 1`.
 
     #[lua(kind = "Method", output(proxy))]
-    fn with(self, layer: u8) -> bevy_render::view::visibility::RenderLayers;
+    fn with(self, layer: u8) -> bevy::render::view::visibility::RenderLayers;
 
 "#,
 			r#"
@@ -2211,7 +2185,7 @@ functions[r#"
 /// Panics when called with a layer greater than `TOTAL_LAYERS - 1`.
 
     #[lua(kind = "Method", output(proxy))]
-    fn without(self, layer: u8) -> bevy_render::view::visibility::RenderLayers;
+    fn without(self, layer: u8) -> bevy::render::view::visibility::RenderLayers;
 
 "#,
 			r#"
@@ -2237,6 +2211,12 @@ functions[r#"
 "#,
 			r#"
 
+    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
+    fn clone(&self) -> bevy::render::view::visibility::RenderLayers;
+
+"#,
+			r#"
+
     #[lua(
         as_trait = "std::cmp::Eq",
         kind = "Function",
@@ -2250,12 +2230,6 @@ functions[r#"
     #[lua(as_trait = "std::cmp::PartialEq", kind = "Method")]
     fn eq(&self, #[proxy] other: &view::visibility::render_layers::RenderLayers) -> bool;
 
-"#,
-			r#"
-
-    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
-    fn clone(&self) -> bevy_render::view::visibility::RenderLayers;
-
 "#]
 )]
 
@@ -2264,9 +2238,7 @@ functions[r#"
 pub struct LuaRenderLayers(
     
     
-        u32,
-
-
+        
     
     
 );
@@ -2286,8 +2258,14 @@ pub struct LuaRenderLayers(
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
 derive(clone,debug),
-remote="bevy_render::view::visibility::Visibility",
+remote="bevy::render::view::visibility::Visibility",
 functions[r#"
+
+    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
+    fn clone(&self) -> bevy::render::view::visibility::Visibility;
+
+"#,
+			r#"
 
     #[lua(
         as_trait = "std::cmp::Eq",
@@ -2295,12 +2273,6 @@ functions[r#"
         composite = "assert_receiver_is_total_eq",
     )]
     fn assert_receiver_is_total_eq(&self) -> ();
-
-"#,
-			r#"
-
-    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
-    fn clone(&self) -> bevy_render::view::visibility::Visibility;
 
 "#]
 )]
@@ -2325,13 +2297,19 @@ pub struct LuaVisibility{
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
 derive(clone,debug),
-remote="bevy_render::view::visibility::InheritedVisibility",
+remote="bevy::render::view::visibility::InheritedVisibility",
 functions[r#"
 /// Returns `true` if the entity is visible in the hierarchy.
 /// Otherwise, returns `false`.
 
     #[lua(kind = "Method")]
     fn get(self) -> bool;
+
+"#,
+			r#"
+
+    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
+    fn clone(&self) -> bevy::render::view::visibility::InheritedVisibility;
 
 "#,
 			r#"
@@ -2349,12 +2327,6 @@ functions[r#"
     #[lua(as_trait = "std::cmp::PartialEq", kind = "Method")]
     fn eq(&self, #[proxy] other: &view::visibility::InheritedVisibility) -> bool;
 
-"#,
-			r#"
-
-    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
-    fn clone(&self) -> bevy_render::view::visibility::InheritedVisibility;
-
 "#]
 )]
 
@@ -2363,9 +2335,7 @@ functions[r#"
 pub struct LuaInheritedVisibility(
     
     
-        bool,
-
-
+        
     
     
 );
@@ -2389,7 +2359,7 @@ pub struct LuaInheritedVisibility(
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
 derive(clone,debug),
-remote="bevy_render::view::visibility::ViewVisibility",
+remote="bevy::render::view::visibility::ViewVisibility",
 functions[r#"
 /// Returns `true` if the entity is visible in any view.
 /// Otherwise, returns `false`.
@@ -2415,6 +2385,12 @@ functions[r#"
 "#,
 			r#"
 
+    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
+    fn clone(&self) -> bevy::render::view::visibility::ViewVisibility;
+
+"#,
+			r#"
+
     #[lua(
         as_trait = "std::cmp::Eq",
         kind = "Function",
@@ -2428,12 +2404,6 @@ functions[r#"
     #[lua(as_trait = "std::cmp::PartialEq", kind = "Method")]
     fn eq(&self, #[proxy] other: &view::visibility::ViewVisibility) -> bool;
 
-"#,
-			r#"
-
-    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
-    fn clone(&self) -> bevy_render::view::visibility::ViewVisibility;
-
 "#]
 )]
 
@@ -2442,9 +2412,7 @@ functions[r#"
 pub struct LuaViewVisibility(
     
     
-        bool,
-
-
+        
     
     
 );
@@ -2466,7 +2434,7 @@ pub struct LuaViewVisibility(
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
 derive(clone,debug),
-remote="bevy_render::view::visibility::NoFrustumCulling",
+remote="bevy::render::view::visibility::NoFrustumCulling",
 functions[]
 )]
 
@@ -2498,7 +2466,7 @@ pub struct LuaNoFrustumCulling{
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
 derive(clone,debug),
-remote="bevy_render::view::visibility::VisibleEntities",
+remote="bevy::render::view::visibility::VisibleEntities",
 functions[r#"
 
     #[lua(kind = "Method")]
@@ -2514,7 +2482,7 @@ functions[r#"
 			r#"
 
     #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
-    fn clone(&self) -> bevy_render::view::visibility::VisibleEntities;
+    fn clone(&self) -> bevy::render::view::visibility::VisibleEntities;
 
 "#]
 )]
@@ -2559,7 +2527,7 @@ pub struct LuaVisibleEntities{
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
 derive(clone,debug),
-remote="bevy_render::view::Msaa",
+remote="bevy::render::view::Msaa",
 functions[r#"
 
     #[lua(kind = "Method")]
@@ -2568,14 +2536,14 @@ functions[r#"
 "#,
 			r#"
 
-    #[lua(as_trait = "std::cmp::PartialEq", kind = "Method")]
-    fn eq(&self, #[proxy] other: &view::Msaa) -> bool;
+    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
+    fn clone(&self) -> bevy::render::view::Msaa;
 
 "#,
 			r#"
 
-    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
-    fn clone(&self) -> bevy_render::view::Msaa;
+    #[lua(as_trait = "std::cmp::PartialEq", kind = "Method")]
+    fn eq(&self, #[proxy] other: &view::Msaa) -> bool;
 
 "#]
 )]
@@ -2594,11 +2562,11 @@ pub struct LuaMsaa{
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
 derive(clone,debug),
-remote="bevy_render::view::ColorGrading",
+remote="bevy::render::view::ColorGrading",
 functions[r#"
 
     #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
-    fn clone(&self) -> bevy_render::view::ColorGrading;
+    fn clone(&self) -> bevy::render::view::ColorGrading;
 
 "#]
 )]
@@ -2613,7 +2581,10 @@ pub struct LuaColorGrading{
 }
 
 
-bevy_script_api::util::impl_tealr_generic!(pub(crate) struct T);
+
+
+crate::impl_tealr_generic!(pub(crate) struct T);
+
 
 #[derive(Default)]
 pub(crate) struct Globals;
@@ -2871,75 +2842,75 @@ impl bevy_mod_scripting_core::hosts::APIProvider for BevyRenderAPIProvider {
 
     fn register_with_app(&self, app: &mut bevy::app::App) {
         
-        app.register_foreign_lua_type::<bevy_render::camera::Viewport>();
+        app.register_foreign_lua_type::<bevy::render::camera::Viewport>();
         
-        app.register_foreign_lua_type::<bevy_render::camera::Exposure>();
+        app.register_foreign_lua_type::<bevy::render::camera::Exposure>();
         
-        app.register_foreign_lua_type::<bevy_render::camera::Camera>();
+        app.register_foreign_lua_type::<bevy::render::camera::Camera>();
         
-        app.register_foreign_lua_type::<bevy_render::camera::CameraRenderGraph>();
+        app.register_foreign_lua_type::<bevy::render::camera::CameraRenderGraph>();
         
-        app.register_foreign_lua_type::<bevy_render::camera::RenderTarget>();
+        app.register_foreign_lua_type::<bevy::render::camera::RenderTarget>();
         
-        app.register_foreign_lua_type::<bevy_render::camera::NormalizedRenderTarget>();
+        app.register_foreign_lua_type::<bevy::render::camera::NormalizedRenderTarget>();
         
-        app.register_foreign_lua_type::<bevy_render::camera::CameraMainTextureUsages>();
+        app.register_foreign_lua_type::<bevy::render::camera::CameraMainTextureUsages>();
         
-        app.register_foreign_lua_type::<bevy_render::camera::ClearColorConfig>();
+        app.register_foreign_lua_type::<bevy::render::camera::ClearColorConfig>();
         
-        app.register_foreign_lua_type::<bevy_render::camera::ClearColor>();
+        app.register_foreign_lua_type::<bevy::render::camera::ClearColor>();
         
-        app.register_foreign_lua_type::<bevy_render::camera::ManualTextureViewHandle>();
+        app.register_foreign_lua_type::<bevy::render::camera::ManualTextureViewHandle>();
         
-        app.register_foreign_lua_type::<bevy_render::camera::Projection>();
+        app.register_foreign_lua_type::<bevy::render::camera::Projection>();
         
-        app.register_foreign_lua_type::<bevy_render::camera::PerspectiveProjection>();
+        app.register_foreign_lua_type::<bevy::render::camera::PerspectiveProjection>();
         
-        app.register_foreign_lua_type::<bevy_render::camera::ScalingMode>();
+        app.register_foreign_lua_type::<bevy::render::camera::ScalingMode>();
         
-        app.register_foreign_lua_type::<bevy_render::camera::OrthographicProjection>();
+        app.register_foreign_lua_type::<bevy::render::camera::OrthographicProjection>();
         
-        app.register_foreign_lua_type::<bevy_render::color::Color>();
+        app.register_foreign_lua_type::<bevy::render::color::Color>();
         
-        app.register_foreign_lua_type::<bevy_render::globals::GlobalsUniform>();
+        app.register_foreign_lua_type::<bevy::render::globals::GlobalsUniform>();
         
-        app.register_foreign_lua_type::<bevy_render::mesh::skinning::SkinnedMesh>();
+        app.register_foreign_lua_type::<bevy::render::mesh::skinning::SkinnedMesh>();
         
-        app.register_foreign_lua_type::<bevy_render::mesh::Mesh>();
+        app.register_foreign_lua_type::<bevy::render::mesh::Mesh>();
         
-        app.register_foreign_lua_type::<bevy_render::mesh::Indices>();
+        app.register_foreign_lua_type::<bevy::render::mesh::Indices>();
         
-        app.register_foreign_lua_type::<bevy_render::mesh::morph::MorphWeights>();
+        app.register_foreign_lua_type::<bevy::render::mesh::morph::MorphWeights>();
         
-        app.register_foreign_lua_type::<bevy_render::mesh::morph::MeshMorphWeights>();
+        app.register_foreign_lua_type::<bevy::render::mesh::morph::MeshMorphWeights>();
         
-        app.register_foreign_lua_type::<bevy_render::primitives::Aabb>();
+        app.register_foreign_lua_type::<bevy::render::primitives::Aabb>();
         
-        app.register_foreign_lua_type::<bevy_render::primitives::Frustum>();
+        app.register_foreign_lua_type::<bevy::render::primitives::Frustum>();
         
-        app.register_foreign_lua_type::<bevy_render::primitives::CubemapFrusta>();
+        app.register_foreign_lua_type::<bevy::render::primitives::CubemapFrusta>();
         
-        app.register_foreign_lua_type::<bevy_render::primitives::CascadesFrusta>();
+        app.register_foreign_lua_type::<bevy::render::primitives::CascadesFrusta>();
         
-        app.register_foreign_lua_type::<bevy_render::render_asset::RenderAssetUsages>();
+        app.register_foreign_lua_type::<bevy::render::render_asset::RenderAssetUsages>();
         
-        app.register_foreign_lua_type::<bevy_render::texture::Image>();
+        app.register_foreign_lua_type::<bevy::render::texture::Image>();
         
-        app.register_foreign_lua_type::<bevy_render::view::visibility::RenderLayers>();
+        app.register_foreign_lua_type::<bevy::render::view::visibility::RenderLayers>();
         
-        app.register_foreign_lua_type::<bevy_render::view::visibility::Visibility>();
+        app.register_foreign_lua_type::<bevy::render::view::visibility::Visibility>();
         
-        app.register_foreign_lua_type::<bevy_render::view::visibility::InheritedVisibility>();
+        app.register_foreign_lua_type::<bevy::render::view::visibility::InheritedVisibility>();
         
-        app.register_foreign_lua_type::<bevy_render::view::visibility::ViewVisibility>();
+        app.register_foreign_lua_type::<bevy::render::view::visibility::ViewVisibility>();
         
-        app.register_foreign_lua_type::<bevy_render::view::visibility::NoFrustumCulling>();
+        app.register_foreign_lua_type::<bevy::render::view::visibility::NoFrustumCulling>();
         
-        app.register_foreign_lua_type::<bevy_render::view::visibility::VisibleEntities>();
+        app.register_foreign_lua_type::<bevy::render::view::visibility::VisibleEntities>();
         
-        app.register_foreign_lua_type::<bevy_render::view::Msaa>();
+        app.register_foreign_lua_type::<bevy::render::view::Msaa>();
         
-        app.register_foreign_lua_type::<bevy_render::view::ColorGrading>();
+        app.register_foreign_lua_type::<bevy::render::view::ColorGrading>();
         
     }
 }

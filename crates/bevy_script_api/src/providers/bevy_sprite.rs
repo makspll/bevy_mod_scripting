@@ -39,11 +39,11 @@ extern crate self as bevy_script_api;
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
 derive(clone,debug),
-remote="bevy_sprite::prelude::ColorMaterial",
+remote="bevy::sprite::prelude::ColorMaterial",
 functions[r#"
 
     #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
-    fn clone(&self) -> bevy_sprite::prelude::ColorMaterial;
+    fn clone(&self) -> bevy::sprite::prelude::ColorMaterial;
 
 "#]
 )]
@@ -66,7 +66,7 @@ pub struct LuaColorMaterial{
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
 derive(clone,debug),
-remote="bevy_sprite::Mesh2dHandle",
+remote="bevy::sprite::Mesh2dHandle",
 functions[r#"
 
     #[lua(
@@ -79,14 +79,14 @@ functions[r#"
 "#,
 			r#"
 
-    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
-    fn clone(&self) -> bevy_sprite::Mesh2dHandle;
+    #[lua(as_trait = "std::cmp::PartialEq", kind = "Method")]
+    fn eq(&self, #[proxy] other: &mesh2d::mesh::Mesh2dHandle) -> bool;
 
 "#,
 			r#"
 
-    #[lua(as_trait = "std::cmp::PartialEq", kind = "Method")]
-    fn eq(&self, #[proxy] other: &mesh2d::mesh::Mesh2dHandle) -> bool;
+    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
+    fn clone(&self) -> bevy::sprite::Mesh2dHandle;
 
 "#]
 )]
@@ -108,11 +108,11 @@ pub struct LuaMesh2dHandle(
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
 derive(clone,debug),
-remote="bevy_sprite::prelude::Sprite",
+remote="bevy::sprite::prelude::Sprite",
 functions[r#"
 
     #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
-    fn clone(&self) -> bevy_sprite::prelude::Sprite;
+    fn clone(&self) -> bevy::sprite::prelude::Sprite;
 
 "#]
 )]
@@ -133,11 +133,11 @@ pub struct LuaSprite{
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
 derive(clone,debug),
-remote="bevy_sprite::prelude::ImageScaleMode",
+remote="bevy::sprite::prelude::ImageScaleMode",
 functions[r#"
 
     #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
-    fn clone(&self) -> bevy_sprite::prelude::ImageScaleMode;
+    fn clone(&self) -> bevy::sprite::prelude::ImageScaleMode;
 
 "#]
 )]
@@ -158,23 +158,23 @@ pub struct LuaImageScaleMode{
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
 derive(clone,debug),
-remote="bevy_sprite::Anchor",
+remote="bevy::sprite::Anchor",
 functions[r#"
 
     #[lua(kind = "Method", output(proxy))]
-    fn as_vec(&self) -> bevy_math::Vec2;
-
-"#,
-			r#"
-
-    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
-    fn clone(&self) -> bevy_sprite::Anchor;
+    fn as_vec(&self) -> bevy::math::Vec2;
 
 "#,
 			r#"
 
     #[lua(as_trait = "std::cmp::PartialEq", kind = "Method")]
     fn eq(&self, #[proxy] other: &sprite::Anchor) -> bool;
+
+"#,
+			r#"
+
+    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
+    fn clone(&self) -> bevy::sprite::Anchor;
 
 "#]
 )]
@@ -205,15 +205,15 @@ pub struct LuaAnchor{
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
 derive(clone,debug),
-remote="bevy_sprite::prelude::TextureAtlasLayout",
+remote="bevy::sprite::prelude::TextureAtlasLayout",
 functions[r#"
 /// Create a new empty layout with custom `dimensions`
 
     #[lua(kind = "Function", output(proxy))]
     fn new_empty(
         #[proxy]
-        dimensions: bevy_math::Vec2,
-    ) -> bevy_sprite::prelude::TextureAtlasLayout;
+        dimensions: bevy::math::Vec2,
+    ) -> bevy::sprite::prelude::TextureAtlasLayout;
 
 "#,
 			r#"
@@ -232,7 +232,7 @@ functions[r#"
 			r#"
 
     #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
-    fn clone(&self) -> bevy_sprite::prelude::TextureAtlasLayout;
+    fn clone(&self) -> bevy::sprite::prelude::TextureAtlasLayout;
 
 "#]
 )]
@@ -243,9 +243,7 @@ functions[r#"
 pub struct LuaTextureAtlasLayout{
     
     
-        texture_handles:std::option::Option<bevy_utils::hashbrown::HashMap<bevy_asset::AssetId<bevy_render::texture::Image>usizestd::hash::BuildHasherDefault<bevy_utils::AHasher>allocator_api2::stable::alloc::global::Global>>,
-
-
+        
     
     
 }
@@ -273,11 +271,11 @@ pub struct LuaTextureAtlasLayout{
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
 derive(clone,debug),
-remote="bevy_sprite::prelude::TextureAtlas",
+remote="bevy::sprite::prelude::TextureAtlas",
 functions[r#"
 
     #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
-    fn clone(&self) -> bevy_sprite::prelude::TextureAtlas;
+    fn clone(&self) -> bevy::sprite::prelude::TextureAtlas;
 
 "#]
 )]
@@ -298,12 +296,12 @@ pub struct LuaTextureAtlas{
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
 derive(clone,debug),
-remote="bevy_sprite::prelude::BorderRect",
+remote="bevy::sprite::prelude::BorderRect",
 functions[r#"
 /// Creates a new border as a square, with identical pixel padding values on every direction
 
     #[lua(kind = "Function", output(proxy))]
-    fn square(value: f32) -> bevy_sprite::prelude::BorderRect;
+    fn square(value: f32) -> bevy::sprite::prelude::BorderRect;
 
 "#,
 			r#"
@@ -312,19 +310,19 @@ functions[r#"
 /// - `vertical` for top and bottom pixel padding
 
     #[lua(kind = "Function", output(proxy))]
-    fn rectangle(horizontal: f32, vertical: f32) -> bevy_sprite::prelude::BorderRect;
-
-"#,
-			r#"
-
-    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
-    fn clone(&self) -> bevy_sprite::prelude::BorderRect;
+    fn rectangle(horizontal: f32, vertical: f32) -> bevy::sprite::prelude::BorderRect;
 
 "#,
 			r#"
 
     #[lua(as_trait = "std::cmp::PartialEq", kind = "Method")]
     fn eq(&self, #[proxy] other: &texture_slice::border_rect::BorderRect) -> bool;
+
+"#,
+			r#"
+
+    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
+    fn clone(&self) -> bevy::sprite::prelude::BorderRect;
 
 "#]
 )]
@@ -355,11 +353,11 @@ pub struct LuaBorderRect{
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
 derive(clone,debug),
-remote="bevy_sprite::prelude::TextureSlicer",
+remote="bevy::sprite::prelude::TextureSlicer",
 functions[r#"
 
     #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
-    fn clone(&self) -> bevy_sprite::prelude::TextureSlicer;
+    fn clone(&self) -> bevy::sprite::prelude::TextureSlicer;
 
 "#]
 )]
@@ -380,11 +378,11 @@ pub struct LuaTextureSlicer{
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
 derive(clone,debug),
-remote="bevy_sprite::prelude::SliceScaleMode",
+remote="bevy::sprite::prelude::SliceScaleMode",
 functions[r#"
 
     #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
-    fn clone(&self) -> bevy_sprite::prelude::SliceScaleMode;
+    fn clone(&self) -> bevy::sprite::prelude::SliceScaleMode;
 
 "#]
 )]
@@ -397,7 +395,10 @@ pub struct LuaSliceScaleMode{
 }
 
 
-bevy_script_api::util::impl_tealr_generic!(pub(crate) struct T);
+
+
+crate::impl_tealr_generic!(pub(crate) struct T);
+
 
 #[derive(Default)]
 pub(crate) struct Globals;
@@ -515,25 +516,25 @@ impl bevy_mod_scripting_core::hosts::APIProvider for BevySpriteAPIProvider {
 
     fn register_with_app(&self, app: &mut bevy::app::App) {
         
-        app.register_foreign_lua_type::<bevy_sprite::prelude::ColorMaterial>();
+        app.register_foreign_lua_type::<bevy::sprite::prelude::ColorMaterial>();
         
-        app.register_foreign_lua_type::<bevy_sprite::Mesh2dHandle>();
+        app.register_foreign_lua_type::<bevy::sprite::Mesh2dHandle>();
         
-        app.register_foreign_lua_type::<bevy_sprite::prelude::Sprite>();
+        app.register_foreign_lua_type::<bevy::sprite::prelude::Sprite>();
         
-        app.register_foreign_lua_type::<bevy_sprite::prelude::ImageScaleMode>();
+        app.register_foreign_lua_type::<bevy::sprite::prelude::ImageScaleMode>();
         
-        app.register_foreign_lua_type::<bevy_sprite::Anchor>();
+        app.register_foreign_lua_type::<bevy::sprite::Anchor>();
         
-        app.register_foreign_lua_type::<bevy_sprite::prelude::TextureAtlasLayout>();
+        app.register_foreign_lua_type::<bevy::sprite::prelude::TextureAtlasLayout>();
         
-        app.register_foreign_lua_type::<bevy_sprite::prelude::TextureAtlas>();
+        app.register_foreign_lua_type::<bevy::sprite::prelude::TextureAtlas>();
         
-        app.register_foreign_lua_type::<bevy_sprite::prelude::BorderRect>();
+        app.register_foreign_lua_type::<bevy::sprite::prelude::BorderRect>();
         
-        app.register_foreign_lua_type::<bevy_sprite::prelude::TextureSlicer>();
+        app.register_foreign_lua_type::<bevy::sprite::prelude::TextureSlicer>();
         
-        app.register_foreign_lua_type::<bevy_sprite::prelude::SliceScaleMode>();
+        app.register_foreign_lua_type::<bevy::sprite::prelude::SliceScaleMode>();
         
     }
 }

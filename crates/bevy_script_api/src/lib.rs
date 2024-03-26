@@ -35,5 +35,6 @@ pub mod prelude {
 pub use bevy_mod_scripting_derive::impl_script_newtype;
 #[cfg(feature = "lua")]
 pub use bevy_mod_scripting_lua_derive::LuaProxy;
+pub(crate) mod providers;
 
 pub use parking_lot;

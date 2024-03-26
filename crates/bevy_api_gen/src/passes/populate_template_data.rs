@@ -3,7 +3,7 @@ use std::fmt::Write;
 use log::trace;
 use rustc_ast::Attribute;
 use rustc_hir::def_id::{DefId, LOCAL_CRATE};
-use rustc_middle::ty::{FieldDef, ParamTy, Ty, TyCtxt, TyKind, TypeFoldable};
+use rustc_middle::ty::{FieldDef, ParamTy, Ty, TyKind, TypeFoldable};
 use rustc_span::Symbol;
 
 use crate::{
@@ -220,7 +220,6 @@ pub(crate) fn docstrings(attrs: &[Attribute]) -> Vec<String> {
 pub(crate) fn import_path(ctxt: &BevyCtxt, def_id: DefId) -> String {
     ctxt.path_finder
         .find_import_paths(def_id)
-        .unwrap_or_else(|| vec![ctxt.tcx.def_path_str(def_id)])
         // .unwrap_or_else(|| {
         //     panic!(
         //         "Could not find import path for: {:?}, {} of kind: {:?}",
@@ -237,41 +236,18 @@ pub(crate) fn import_path(ctxt: &BevyCtxt, def_id: DefId) -> String {
 
 /// Normalizes type import paths in types before printing them
 fn ty_to_string<'tcx>(ctxt: &BevyCtxt<'tcx>, ty: Ty<'tcx>) -> String {
-    // walk through the type and replace all paths with their import paths
-    TyPrinter::new(ctxt.tcx).print(&ctxt.path_finder, ty)
-    // ty.fold_with(&mut rustc_middle::ty::fold::BottomUpFolder {
-    //     tcx: ctxt.tcx,
-    //     ty_op: |ty| {
-    //         if let Some(adt_def) = ty.ty_adt_def() {
-    //             let did = adt_def.did();
-    //             let import_path = ctxt
-    //                 .path_finder
-    //                 .find_import_paths(did)
-    //                 .map(|p| p.first().unwrap().to_owned())
-    //                 .unwrap_or_else(|| ctxt.tcx.def_path_str(did));
-    //             // TODO: instead of using hack maybe build a type walker
-    //             ctxt.tcx
-    //                 .mk_ty_from_kind(TyKind::Param(ParamTy::new(0, Symbol::intern(&import_path))))
-    //         } else {
-    //             ty
-    //         }
-    //     },
-    //     lt_op: |lt| lt,
-    //     ct_op: |ct| ct,
-    // })
-    // .to_string()
+    // walk through the type and replace all paths with their standardised import paths
+    TyPrinter::new().print(&ctxt.path_finder, ty)
 }
 
-struct TyPrinter<'tcx> {
+struct TyPrinter {
     buffer: String,
-    tcx: TyCtxt<'tcx>,
 }
 
-impl<'tcx> TyPrinter<'tcx> {
-    pub fn new(tcx: TyCtxt<'tcx>) -> Self {
+impl TyPrinter {
+    pub fn new() -> Self {
         TyPrinter {
             buffer: String::new(),
-            tcx,
         }
     }
     pub fn print(mut self, path_finder: &ImportPathFinder, ty: Ty<'_>) -> String {
@@ -285,8 +261,9 @@ impl<'tcx> TyPrinter<'tcx> {
                 let did = adt_def.did();
                 let import_path = path_finder
                     .find_import_paths(did)
-                    .map(|p| p.first().unwrap().to_owned())
-                    .unwrap_or_else(|| self.tcx.def_path_str(did));
+                    .first()
+                    .unwrap()
+                    .to_owned();
                 self.buffer.push_str(&import_path);
                 if args.len() > 0 {
                     self.buffer.push('<');

@@ -23,17 +23,11 @@ extern crate self as bevy_script_api;
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
 derive(clone,debug),
-remote="bevy_asset::AssetIndex",
+remote="bevy::asset::AssetIndex",
 functions[r#"
 
     #[lua(as_trait = "std::cmp::PartialEq", kind = "Method")]
     fn eq(&self, #[proxy] other: &assets::AssetIndex) -> bool;
-
-"#,
-			r#"
-
-    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
-    fn clone(&self) -> bevy_asset::AssetIndex;
 
 "#,
 			r#"
@@ -45,6 +39,12 @@ functions[r#"
     )]
     fn assert_receiver_is_total_eq(&self) -> ();
 
+"#,
+			r#"
+
+    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
+    fn clone(&self) -> bevy::asset::AssetIndex;
+
 "#]
 )]
 
@@ -54,13 +54,9 @@ functions[r#"
 pub struct LuaAssetIndex{
     
     
-        generation:u32,
-
-
+        
     
-        index:u32,
-
-
+        
     
     
 }
@@ -132,7 +128,7 @@ pub struct LuaAssetIndex{
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
 derive(clone,debug),
-remote="bevy_asset::AssetPath",
+remote="bevy::asset::AssetPath",
 functions[r#"
 /// Gets the "sub-asset label".
 
@@ -144,7 +140,7 @@ functions[r#"
 /// Gets the path to the asset in the "virtual filesystem" without a label (if a label is currently set).
 
     #[lua(kind = "Method", output(proxy))]
-    fn without_label(&self) -> bevy_asset::AssetPath<'_>;
+    fn without_label(&self) -> bevy::asset::AssetPath<'_>;
 
 "#,
 			r#"
@@ -161,7 +157,7 @@ functions[r#"
 /// [`Arc`]: std::sync::Arc
 
     #[lua(kind = "Method", output(proxy))]
-    fn into_owned(self) -> bevy_asset::AssetPath<'_>;
+    fn into_owned(self) -> bevy::asset::AssetPath<'_>;
 
 "#,
 			r#"
@@ -171,7 +167,7 @@ functions[r#"
 /// [`Arc`]: std::sync::Arc
 
     #[lua(kind = "Method", output(proxy))]
-    fn clone_owned(&self) -> bevy_asset::AssetPath<'_>;
+    fn clone_owned(&self) -> bevy::asset::AssetPath<'_>;
 
 "#,
 			r#"
@@ -190,18 +186,18 @@ functions[r#"
 "#,
 			r#"
 
-    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
-    fn clone(&self) -> bevy_asset::AssetPath<'_>;
-
-"#,
-			r#"
-
     #[lua(
         as_trait = "std::cmp::Eq",
         kind = "Function",
         composite = "assert_receiver_is_total_eq",
     )]
     fn assert_receiver_is_total_eq(&self) -> ();
+
+"#,
+			r#"
+
+    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
+    fn clone(&self) -> bevy::asset::AssetPath<'_>;
 
 "#]
 )]
@@ -212,23 +208,20 @@ functions[r#"
 pub struct LuaAssetPath{
     
     
-        source:bevy_asset::io::AssetSourceId<'a>,
-
-
+        
     
-        path:bevy_utils::CowArc<'astd::path::Path>,
-
-
+        
     
-        label:std::option::Option<bevy_utils::CowArc<'astr>>,
-
-
+        
     
     
 }
 
 
-bevy_script_api::util::impl_tealr_generic!(pub(crate) struct T);
+
+
+crate::impl_tealr_generic!(pub(crate) struct T);
+
 
 #[derive(Default)]
 pub(crate) struct Globals;
@@ -296,9 +289,9 @@ impl bevy_mod_scripting_core::hosts::APIProvider for BevyAssetAPIProvider {
 
     fn register_with_app(&self, app: &mut bevy::app::App) {
         
-        app.register_foreign_lua_type::<bevy_asset::AssetIndex>();
+        app.register_foreign_lua_type::<bevy::asset::AssetIndex>();
         
-        app.register_foreign_lua_type::<bevy_asset::AssetPath>();
+        app.register_foreign_lua_type::<bevy::asset::AssetPath>();
         
     }
 }

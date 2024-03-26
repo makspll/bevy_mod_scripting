@@ -61,11 +61,11 @@ extern crate self as bevy_script_api;
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
 derive(clone,debug),
-remote="bevy_core_pipeline::bloom::BloomSettings",
+remote="bevy::core_pipeline::bloom::BloomSettings",
 functions[r#"
 
     #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
-    fn clone(&self) -> bevy_core_pipeline::bloom::BloomSettings;
+    fn clone(&self) -> bevy::core_pipeline::bloom::BloomSettings;
 
 "#]
 )]
@@ -98,11 +98,11 @@ pub struct LuaBloomSettings{
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
 derive(clone,debug),
-remote="bevy_core_pipeline::bloom::BloomPrefilterSettings",
+remote="bevy::core_pipeline::bloom::BloomPrefilterSettings",
 functions[r#"
 
     #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
-    fn clone(&self) -> bevy_core_pipeline::bloom::BloomPrefilterSettings;
+    fn clone(&self) -> bevy::core_pipeline::bloom::BloomPrefilterSettings;
 
 "#]
 )]
@@ -121,8 +121,20 @@ pub struct LuaBloomPrefilterSettings{
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
 derive(clone,debug),
-remote="bevy_core_pipeline::bloom::BloomCompositeMode",
+remote="bevy::core_pipeline::bloom::BloomCompositeMode",
 functions[r#"
+
+    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
+    fn clone(&self) -> bevy::core_pipeline::bloom::BloomCompositeMode;
+
+"#,
+			r#"
+
+    #[lua(as_trait = "std::cmp::PartialEq", kind = "Method")]
+    fn eq(&self, #[proxy] other: &bloom::settings::BloomCompositeMode) -> bool;
+
+"#,
+			r#"
 
     #[lua(
         as_trait = "std::cmp::Eq",
@@ -130,18 +142,6 @@ functions[r#"
         composite = "assert_receiver_is_total_eq",
     )]
     fn assert_receiver_is_total_eq(&self) -> ();
-
-"#,
-			r#"
-
-    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
-    fn clone(&self) -> bevy_core_pipeline::bloom::BloomCompositeMode;
-
-"#,
-			r#"
-
-    #[lua(as_trait = "std::cmp::PartialEq", kind = "Method")]
-    fn eq(&self, #[proxy] other: &bloom::settings::BloomCompositeMode) -> bool;
 
 "#]
 )]
@@ -172,13 +172,13 @@ pub struct LuaBloomCompositeMode{
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
 derive(clone,debug),
-remote="bevy_core_pipeline::contrast_adaptive_sharpening::ContrastAdaptiveSharpeningSettings",
+remote="bevy::core_pipeline::contrast_adaptive_sharpening::ContrastAdaptiveSharpeningSettings",
 functions[r#"
 
     #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
     fn clone(
         &self,
-    ) -> bevy_core_pipeline::contrast_adaptive_sharpening::ContrastAdaptiveSharpeningSettings;
+    ) -> bevy::core_pipeline::contrast_adaptive_sharpening::ContrastAdaptiveSharpeningSettings;
 
 "#]
 )]
@@ -197,11 +197,11 @@ pub struct LuaContrastAdaptiveSharpeningSettings{
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
 derive(clone,debug),
-remote="bevy_core_pipeline::contrast_adaptive_sharpening::DenoiseCAS",
+remote="bevy::core_pipeline::contrast_adaptive_sharpening::DenoiseCAS",
 functions[r#"
 
     #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
-    fn clone(&self) -> bevy_core_pipeline::contrast_adaptive_sharpening::DenoiseCAS;
+    fn clone(&self) -> bevy::core_pipeline::contrast_adaptive_sharpening::DenoiseCAS;
 
 "#]
 )]
@@ -211,9 +211,7 @@ functions[r#"
 pub struct LuaDenoiseCAS(
     
     
-        bool,
-
-
+        
     
     
 );
@@ -223,11 +221,11 @@ pub struct LuaDenoiseCAS(
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
 derive(clone,debug),
-remote="bevy_core_pipeline::core_2d::Camera2d",
+remote="bevy::core_pipeline::core_2d::Camera2d",
 functions[r#"
 
     #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
-    fn clone(&self) -> bevy_core_pipeline::core_2d::Camera2d;
+    fn clone(&self) -> bevy::core_pipeline::core_2d::Camera2d;
 
 "#]
 )]
@@ -248,11 +246,11 @@ pub struct LuaCamera2d{
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
 derive(clone,debug),
-remote="bevy_core_pipeline::core_3d::Camera3d",
+remote="bevy::core_pipeline::core_3d::Camera3d",
 functions[r#"
 
     #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
-    fn clone(&self) -> bevy_core_pipeline::core_3d::Camera3d;
+    fn clone(&self) -> bevy::core_pipeline::core_3d::Camera3d;
 
 "#]
 )]
@@ -271,11 +269,11 @@ pub struct LuaCamera3d{
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
 derive(clone,debug),
-remote="bevy_core_pipeline::core_3d::Camera3dDepthTextureUsage",
+remote="bevy::core_pipeline::core_3d::Camera3dDepthTextureUsage",
 functions[r#"
 
     #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
-    fn clone(&self) -> bevy_core_pipeline::core_3d::Camera3dDepthTextureUsage;
+    fn clone(&self) -> bevy::core_pipeline::core_3d::Camera3dDepthTextureUsage;
 
 "#]
 )]
@@ -285,9 +283,7 @@ functions[r#"
 pub struct LuaCamera3dDepthTextureUsage(
     
     
-        u32,
-
-
+        
     
     
 );
@@ -299,11 +295,11 @@ pub struct LuaCamera3dDepthTextureUsage(
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
 derive(clone,debug),
-remote="bevy_core_pipeline::core_3d::Camera3dDepthLoadOp",
+remote="bevy::core_pipeline::core_3d::Camera3dDepthLoadOp",
 functions[r#"
 
     #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
-    fn clone(&self) -> bevy_core_pipeline::core_3d::Camera3dDepthLoadOp;
+    fn clone(&self) -> bevy::core_pipeline::core_3d::Camera3dDepthLoadOp;
 
 "#]
 )]
@@ -328,11 +324,11 @@ pub struct LuaCamera3dDepthLoadOp{
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
 derive(clone,debug),
-remote="bevy_core_pipeline::core_3d::ScreenSpaceTransmissionQuality",
+remote="bevy::core_pipeline::core_3d::ScreenSpaceTransmissionQuality",
 functions[r#"
 
     #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
-    fn clone(&self) -> bevy_core_pipeline::core_3d::ScreenSpaceTransmissionQuality;
+    fn clone(&self) -> bevy::core_pipeline::core_3d::ScreenSpaceTransmissionQuality;
 
 "#,
 			r#"
@@ -359,11 +355,23 @@ pub struct LuaScreenSpaceTransmissionQuality{
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
 derive(clone,debug),
-remote="bevy_core_pipeline::fxaa::Sensitivity",
+remote="bevy::core_pipeline::fxaa::Sensitivity",
 functions[r#"
 
     #[lua(kind = "Method")]
     fn get_str(&self) -> &str;
+
+"#,
+			r#"
+
+    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
+    fn clone(&self) -> bevy::core_pipeline::fxaa::Sensitivity;
+
+"#,
+			r#"
+
+    #[lua(as_trait = "std::cmp::PartialEq", kind = "Method")]
+    fn eq(&self, #[proxy] other: &fxaa::Sensitivity) -> bool;
 
 "#,
 			r#"
@@ -374,18 +382,6 @@ functions[r#"
         composite = "assert_receiver_is_total_eq",
     )]
     fn assert_receiver_is_total_eq(&self) -> ();
-
-"#,
-			r#"
-
-    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
-    fn clone(&self) -> bevy_core_pipeline::fxaa::Sensitivity;
-
-"#,
-			r#"
-
-    #[lua(as_trait = "std::cmp::PartialEq", kind = "Method")]
-    fn eq(&self, #[proxy] other: &fxaa::Sensitivity) -> bool;
 
 "#]
 )]
@@ -402,11 +398,11 @@ pub struct LuaSensitivity{
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
 derive(clone,debug),
-remote="bevy_core_pipeline::fxaa::Fxaa",
+remote="bevy::core_pipeline::fxaa::Fxaa",
 functions[r#"
 
     #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
-    fn clone(&self) -> bevy_core_pipeline::fxaa::Fxaa;
+    fn clone(&self) -> bevy::core_pipeline::fxaa::Fxaa;
 
 "#]
 )]
@@ -427,7 +423,7 @@ pub struct LuaFxaa{
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
 derive(clone,debug),
-remote="bevy_core_pipeline::prepass::DepthPrepass",
+remote="bevy::core_pipeline::prepass::DepthPrepass",
 functions[]
 )]
 
@@ -449,7 +445,7 @@ pub struct LuaDepthPrepass{
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
 derive(clone,debug),
-remote="bevy_core_pipeline::prepass::NormalPrepass",
+remote="bevy::core_pipeline::prepass::NormalPrepass",
 functions[]
 )]
 
@@ -469,7 +465,7 @@ pub struct LuaNormalPrepass{
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
 derive(clone,debug),
-remote="bevy_core_pipeline::prepass::MotionVectorPrepass",
+remote="bevy::core_pipeline::prepass::MotionVectorPrepass",
 functions[]
 )]
 
@@ -491,7 +487,7 @@ pub struct LuaMotionVectorPrepass{
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
 derive(clone,debug),
-remote="bevy_core_pipeline::prepass::DeferredPrepass",
+remote="bevy::core_pipeline::prepass::DeferredPrepass",
 functions[]
 )]
 
@@ -567,11 +563,11 @@ pub struct LuaDeferredPrepass{
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
 derive(clone,debug),
-remote="bevy_core_pipeline::experimental::taa::TemporalAntiAliasSettings",
+remote="bevy::core_pipeline::experimental::taa::TemporalAntiAliasSettings",
 functions[r#"
 
     #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
-    fn clone(&self) -> bevy_core_pipeline::experimental::taa::TemporalAntiAliasSettings;
+    fn clone(&self) -> bevy::core_pipeline::experimental::taa::TemporalAntiAliasSettings;
 
 "#]
 )]
@@ -592,11 +588,23 @@ pub struct LuaTemporalAntiAliasSettings{
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
 derive(clone,debug),
-remote="bevy_core_pipeline::tonemapping::Tonemapping",
+remote="bevy::core_pipeline::tonemapping::Tonemapping",
 functions[r#"
 
     #[lua(kind = "Method")]
     fn is_enabled(&self) -> bool;
+
+"#,
+			r#"
+
+    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
+    fn clone(&self) -> bevy::core_pipeline::tonemapping::Tonemapping;
+
+"#,
+			r#"
+
+    #[lua(as_trait = "std::cmp::PartialEq", kind = "Method")]
+    fn eq(&self, #[proxy] other: &tonemapping::Tonemapping) -> bool;
 
 "#,
 			r#"
@@ -607,18 +615,6 @@ functions[r#"
         composite = "assert_receiver_is_total_eq",
     )]
     fn assert_receiver_is_total_eq(&self) -> ();
-
-"#,
-			r#"
-
-    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
-    fn clone(&self) -> bevy_core_pipeline::tonemapping::Tonemapping;
-
-"#,
-			r#"
-
-    #[lua(as_trait = "std::cmp::PartialEq", kind = "Method")]
-    fn eq(&self, #[proxy] other: &tonemapping::Tonemapping) -> bool;
 
 "#]
 )]
@@ -637,8 +633,20 @@ pub struct LuaTonemapping{
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
 derive(clone,debug),
-remote="bevy_core_pipeline::tonemapping::DebandDither",
+remote="bevy::core_pipeline::tonemapping::DebandDither",
 functions[r#"
+
+    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
+    fn clone(&self) -> bevy::core_pipeline::tonemapping::DebandDither;
+
+"#,
+			r#"
+
+    #[lua(as_trait = "std::cmp::PartialEq", kind = "Method")]
+    fn eq(&self, #[proxy] other: &tonemapping::DebandDither) -> bool;
+
+"#,
+			r#"
 
     #[lua(
         as_trait = "std::cmp::Eq",
@@ -646,18 +654,6 @@ functions[r#"
         composite = "assert_receiver_is_total_eq",
     )]
     fn assert_receiver_is_total_eq(&self) -> ();
-
-"#,
-			r#"
-
-    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
-    fn clone(&self) -> bevy_core_pipeline::tonemapping::DebandDither;
-
-"#,
-			r#"
-
-    #[lua(as_trait = "std::cmp::PartialEq", kind = "Method")]
-    fn eq(&self, #[proxy] other: &tonemapping::DebandDither) -> bool;
 
 "#]
 )]
@@ -670,7 +666,10 @@ pub struct LuaDebandDither{
 }
 
 
-bevy_script_api::util::impl_tealr_generic!(pub(crate) struct T);
+
+
+crate::impl_tealr_generic!(pub(crate) struct T);
+
 
 #[derive(Default)]
 pub(crate) struct Globals;
@@ -823,43 +822,43 @@ impl bevy_mod_scripting_core::hosts::APIProvider for BevyCorePipelineAPIProvider
 
     fn register_with_app(&self, app: &mut bevy::app::App) {
         
-        app.register_foreign_lua_type::<bevy_core_pipeline::bloom::BloomSettings>();
+        app.register_foreign_lua_type::<bevy::core_pipeline::bloom::BloomSettings>();
         
-        app.register_foreign_lua_type::<bevy_core_pipeline::bloom::BloomPrefilterSettings>();
+        app.register_foreign_lua_type::<bevy::core_pipeline::bloom::BloomPrefilterSettings>();
         
-        app.register_foreign_lua_type::<bevy_core_pipeline::bloom::BloomCompositeMode>();
+        app.register_foreign_lua_type::<bevy::core_pipeline::bloom::BloomCompositeMode>();
         
-        app.register_foreign_lua_type::<bevy_core_pipeline::contrast_adaptive_sharpening::ContrastAdaptiveSharpeningSettings>();
+        app.register_foreign_lua_type::<bevy::core_pipeline::contrast_adaptive_sharpening::ContrastAdaptiveSharpeningSettings>();
         
-        app.register_foreign_lua_type::<bevy_core_pipeline::contrast_adaptive_sharpening::DenoiseCAS>();
+        app.register_foreign_lua_type::<bevy::core_pipeline::contrast_adaptive_sharpening::DenoiseCAS>();
         
-        app.register_foreign_lua_type::<bevy_core_pipeline::core_2d::Camera2d>();
+        app.register_foreign_lua_type::<bevy::core_pipeline::core_2d::Camera2d>();
         
-        app.register_foreign_lua_type::<bevy_core_pipeline::core_3d::Camera3d>();
+        app.register_foreign_lua_type::<bevy::core_pipeline::core_3d::Camera3d>();
         
-        app.register_foreign_lua_type::<bevy_core_pipeline::core_3d::Camera3dDepthTextureUsage>();
+        app.register_foreign_lua_type::<bevy::core_pipeline::core_3d::Camera3dDepthTextureUsage>();
         
-        app.register_foreign_lua_type::<bevy_core_pipeline::core_3d::Camera3dDepthLoadOp>();
+        app.register_foreign_lua_type::<bevy::core_pipeline::core_3d::Camera3dDepthLoadOp>();
         
-        app.register_foreign_lua_type::<bevy_core_pipeline::core_3d::ScreenSpaceTransmissionQuality>();
+        app.register_foreign_lua_type::<bevy::core_pipeline::core_3d::ScreenSpaceTransmissionQuality>();
         
-        app.register_foreign_lua_type::<bevy_core_pipeline::fxaa::Sensitivity>();
+        app.register_foreign_lua_type::<bevy::core_pipeline::fxaa::Sensitivity>();
         
-        app.register_foreign_lua_type::<bevy_core_pipeline::fxaa::Fxaa>();
+        app.register_foreign_lua_type::<bevy::core_pipeline::fxaa::Fxaa>();
         
-        app.register_foreign_lua_type::<bevy_core_pipeline::prepass::DepthPrepass>();
+        app.register_foreign_lua_type::<bevy::core_pipeline::prepass::DepthPrepass>();
         
-        app.register_foreign_lua_type::<bevy_core_pipeline::prepass::NormalPrepass>();
+        app.register_foreign_lua_type::<bevy::core_pipeline::prepass::NormalPrepass>();
         
-        app.register_foreign_lua_type::<bevy_core_pipeline::prepass::MotionVectorPrepass>();
+        app.register_foreign_lua_type::<bevy::core_pipeline::prepass::MotionVectorPrepass>();
         
-        app.register_foreign_lua_type::<bevy_core_pipeline::prepass::DeferredPrepass>();
+        app.register_foreign_lua_type::<bevy::core_pipeline::prepass::DeferredPrepass>();
         
-        app.register_foreign_lua_type::<bevy_core_pipeline::experimental::taa::TemporalAntiAliasSettings>();
+        app.register_foreign_lua_type::<bevy::core_pipeline::experimental::taa::TemporalAntiAliasSettings>();
         
-        app.register_foreign_lua_type::<bevy_core_pipeline::tonemapping::Tonemapping>();
+        app.register_foreign_lua_type::<bevy::core_pipeline::tonemapping::Tonemapping>();
         
-        app.register_foreign_lua_type::<bevy_core_pipeline::tonemapping::DebandDither>();
+        app.register_foreign_lua_type::<bevy::core_pipeline::tonemapping::DebandDither>();
         
     }
 }

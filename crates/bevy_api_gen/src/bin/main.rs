@@ -49,10 +49,10 @@ fn main() {
         env::set_var(
             "RUST_LOG",
             match (args.verbose.verbose as isize) - (args.verbose.quiet as isize) {
-                0 => "info",
-                1 => "debug",
-                x if x >= 2 => "trace",
-                _ => "error",
+                0 => "bevy_api_gen=info",
+                1 => "bevy_api_gen=debug",
+                x if x >= 2 => "bevy_api_gen=trace",
+                _ => "bevy_api_gen=error",
             },
         );
     }

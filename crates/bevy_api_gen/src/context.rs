@@ -27,6 +27,7 @@ impl<'tcx> BevyCtxt<'tcx> {
         meta_dirs: Vec<Utf8PathBuf>,
         workspace_meta: crate::WorkspaceMeta,
         include_private_paths: bool,
+        import_path_processor: Option<Box<dyn Fn(&str) -> String>>,
     ) -> Self {
         Self {
             tcx,
@@ -34,18 +35,20 @@ impl<'tcx> BevyCtxt<'tcx> {
             cached_traits: Default::default(),
             meta_loader: MetaLoader::new(meta_dirs, workspace_meta),
             template_context: Default::default(),
-            path_finder: ImportPathFinder::new(tcx, include_private_paths),
+            path_finder: ImportPathFinder::new(tcx, include_private_paths, import_path_processor),
         }
     }
 
     /// Clears all data structures in the context
+    /// the context unusable
     pub(crate) fn clear(&mut self) {
         debug!("Clearing all context");
         *self = Self::new(
             self.tcx,
-            self.meta_loader.meta_dirs.clone(),
-            self.meta_loader.workspace_meta.clone(),
-            self.path_finder.include_private_paths,
+            Default::default(),
+            Default::default(),
+            Default::default(),
+            Default::default(),
         );
     }
 }

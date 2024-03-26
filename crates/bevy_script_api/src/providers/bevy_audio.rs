@@ -29,12 +29,12 @@ extern crate self as bevy_script_api;
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
 derive(clone,debug),
-remote="bevy_audio::Volume",
+remote="bevy::audio::Volume",
 functions[r#"
 /// Create a new volume level.
 
     #[lua(kind = "Function", output(proxy))]
-    fn new(volume: f32) -> bevy_audio::Volume;
+    fn new(volume: f32) -> bevy::audio::Volume;
 
 "#,
 			r#"
@@ -47,7 +47,7 @@ functions[r#"
 			r#"
 
     #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
-    fn clone(&self) -> bevy_audio::Volume;
+    fn clone(&self) -> bevy::audio::Volume;
 
 "#]
 )]
@@ -57,9 +57,7 @@ functions[r#"
 pub struct LuaVolume(
     
     
-        f32,
-
-
+        
     
     
 );
@@ -71,11 +69,11 @@ pub struct LuaVolume(
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
 derive(clone,debug),
-remote="bevy_audio::PlaybackMode",
+remote="bevy::audio::PlaybackMode",
 functions[r#"
 
     #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
-    fn clone(&self) -> bevy_audio::PlaybackMode;
+    fn clone(&self) -> bevy::audio::PlaybackMode;
 
 "#]
 )]
@@ -100,12 +98,12 @@ pub struct LuaPlaybackMode{
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
 derive(clone,debug),
-remote="bevy_audio::prelude::PlaybackSettings",
+remote="bevy::audio::prelude::PlaybackSettings",
 functions[r#"
 /// Helper to start in a paused state.
 
     #[lua(kind = "Method", output(proxy))]
-    fn paused(self) -> bevy_audio::prelude::PlaybackSettings;
+    fn paused(self) -> bevy::audio::prelude::PlaybackSettings;
 
 "#,
 			r#"
@@ -115,22 +113,22 @@ functions[r#"
     fn with_volume(
         self,
         #[proxy]
-        volume: bevy_audio::Volume,
-    ) -> bevy_audio::prelude::PlaybackSettings;
+        volume: bevy::audio::Volume,
+    ) -> bevy::audio::prelude::PlaybackSettings;
 
 "#,
 			r#"
 /// Helper to set the speed from start of playback.
 
     #[lua(kind = "Method", output(proxy))]
-    fn with_speed(self, speed: f32) -> bevy_audio::prelude::PlaybackSettings;
+    fn with_speed(self, speed: f32) -> bevy::audio::prelude::PlaybackSettings;
 
 "#,
 			r#"
 /// Helper to enable or disable spatial audio.
 
     #[lua(kind = "Method", output(proxy))]
-    fn with_spatial(self, spatial: bool) -> bevy_audio::prelude::PlaybackSettings;
+    fn with_spatial(self, spatial: bool) -> bevy::audio::prelude::PlaybackSettings;
 
 "#,
 			r#"
@@ -140,14 +138,14 @@ functions[r#"
     fn with_spatial_scale(
         self,
         #[proxy]
-        spatial_scale: bevy_audio::SpatialScale,
-    ) -> bevy_audio::prelude::PlaybackSettings;
+        spatial_scale: bevy::audio::SpatialScale,
+    ) -> bevy::audio::prelude::PlaybackSettings;
 
 "#,
 			r#"
 
     #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
-    fn clone(&self) -> bevy_audio::prelude::PlaybackSettings;
+    fn clone(&self) -> bevy::audio::prelude::PlaybackSettings;
 
 "#]
 )]
@@ -172,20 +170,20 @@ pub struct LuaPlaybackSettings{
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
 derive(clone,debug),
-remote="bevy_audio::prelude::SpatialListener",
+remote="bevy::audio::prelude::SpatialListener",
 functions[r#"
 /// Creates a new `SpatialListener` component.
 /// `gap` is the distance between the left and right "ears" of the listener. Ears are
 /// positioned on the x axis.
 
     #[lua(kind = "Function", output(proxy))]
-    fn new(gap: f32) -> bevy_audio::prelude::SpatialListener;
+    fn new(gap: f32) -> bevy::audio::prelude::SpatialListener;
 
 "#,
 			r#"
 
     #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
-    fn clone(&self) -> bevy_audio::prelude::SpatialListener;
+    fn clone(&self) -> bevy::audio::prelude::SpatialListener;
 
 "#]
 )]
@@ -208,18 +206,18 @@ pub struct LuaSpatialListener{
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
 derive(clone,debug),
-remote="bevy_audio::prelude::GlobalVolume",
+remote="bevy::audio::prelude::GlobalVolume",
 functions[r#"
 /// Create a new [`GlobalVolume`] with the given volume.
 
     #[lua(kind = "Function", output(proxy))]
-    fn new(volume: f32) -> bevy_audio::prelude::GlobalVolume;
+    fn new(volume: f32) -> bevy::audio::prelude::GlobalVolume;
 
 "#,
 			r#"
 
     #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
-    fn clone(&self) -> bevy_audio::prelude::GlobalVolume;
+    fn clone(&self) -> bevy::audio::prelude::GlobalVolume;
 
 "#]
 )]
@@ -244,12 +242,12 @@ pub struct LuaGlobalVolume{
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
 derive(clone,debug),
-remote="bevy_audio::SpatialScale",
+remote="bevy::audio::SpatialScale",
 functions[r#"
 /// Create a new `SpatialScale` with the same value for all 3 dimensions.
 
     #[lua(kind = "Function", output(proxy))]
-    fn new(scale: f32) -> bevy_audio::SpatialScale;
+    fn new(scale: f32) -> bevy::audio::SpatialScale;
 
 "#,
 			r#"
@@ -257,13 +255,13 @@ functions[r#"
 /// for `z`.
 
     #[lua(kind = "Function", output(proxy))]
-    fn new_2d(scale: f32) -> bevy_audio::SpatialScale;
+    fn new_2d(scale: f32) -> bevy::audio::SpatialScale;
 
 "#,
 			r#"
 
     #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
-    fn clone(&self) -> bevy_audio::SpatialScale;
+    fn clone(&self) -> bevy::audio::SpatialScale;
 
 "#]
 )]
@@ -289,11 +287,11 @@ pub struct LuaSpatialScale(
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
 derive(clone,debug),
-remote="bevy_audio::DefaultSpatialScale",
+remote="bevy::audio::DefaultSpatialScale",
 functions[r#"
 
     #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
-    fn clone(&self) -> bevy_audio::DefaultSpatialScale;
+    fn clone(&self) -> bevy::audio::DefaultSpatialScale;
 
 "#]
 )]
@@ -307,7 +305,10 @@ pub struct LuaDefaultSpatialScale(
 );
 
 
-bevy_script_api::util::impl_tealr_generic!(pub(crate) struct T);
+
+
+crate::impl_tealr_generic!(pub(crate) struct T);
+
 
 #[derive(Default)]
 pub(crate) struct Globals;
@@ -420,19 +421,19 @@ impl bevy_mod_scripting_core::hosts::APIProvider for BevyAudioAPIProvider {
 
     fn register_with_app(&self, app: &mut bevy::app::App) {
         
-        app.register_foreign_lua_type::<bevy_audio::Volume>();
+        app.register_foreign_lua_type::<bevy::audio::Volume>();
         
-        app.register_foreign_lua_type::<bevy_audio::PlaybackMode>();
+        app.register_foreign_lua_type::<bevy::audio::PlaybackMode>();
         
-        app.register_foreign_lua_type::<bevy_audio::prelude::PlaybackSettings>();
+        app.register_foreign_lua_type::<bevy::audio::prelude::PlaybackSettings>();
         
-        app.register_foreign_lua_type::<bevy_audio::prelude::SpatialListener>();
+        app.register_foreign_lua_type::<bevy::audio::prelude::SpatialListener>();
         
-        app.register_foreign_lua_type::<bevy_audio::prelude::GlobalVolume>();
+        app.register_foreign_lua_type::<bevy::audio::prelude::GlobalVolume>();
         
-        app.register_foreign_lua_type::<bevy_audio::SpatialScale>();
+        app.register_foreign_lua_type::<bevy::audio::SpatialScale>();
         
-        app.register_foreign_lua_type::<bevy_audio::DefaultSpatialScale>();
+        app.register_foreign_lua_type::<bevy::audio::DefaultSpatialScale>();
         
     }
 }

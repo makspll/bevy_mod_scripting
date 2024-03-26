@@ -39,6 +39,8 @@ pub enum TemplateKind {
     Header,
     #[strum(to_string = "footer.tera")]
     Footer,
+    #[strum(to_string = "import.tera")]
+    ImportProcessor,
 }
 
 impl ValueEnum for TemplateKind {
@@ -252,6 +254,17 @@ pub(crate) fn configure_tera_env(tera: &mut Tera, crate_name: &str) {
         let str = expect_str(val)?;
         let prefix = expect_str(expect_arg(args, "val")?)?;
         Ok(Value::String(format!("{prefix}{str}")))
+    });
+
+    tera.register_filter("substring", |val: &Value, args: &HashMap<String, Value>| {
+        let str = expect_str(val)?;
+        let start = expect_arg(args, "start")?.as_u64().unwrap() as usize;
+        let end = args.get("end").map(|v| v.as_u64().unwrap() as usize);
+        Ok(Value::String(if let Some(end) = end {
+            str[start..end].to_owned()
+        } else {
+            str[start..].to_owned()
+        }))
     });
 
     tera.register_filter("prefix_lua", |val: &Value, _: &HashMap<String, Value>| {

@@ -1,6 +1,6 @@
 use std::io;
 
-use log::debug;
+use log::trace;
 use rustc_data_structures::sync::{AtomicBool, Lrc, Ordering};
 use rustc_span::source_map::{FileLoader, RealFileLoader};
 
@@ -16,7 +16,7 @@ impl FileLoader for ModifyingFileLoader {
 
     fn read_file(&self, path: &std::path::Path) -> std::io::Result<String> {
         if !LOADED.fetch_or(true, Ordering::SeqCst) {
-            debug!(
+            trace!(
                 "Injecting in-memory extern statements into: {}",
                 path.to_str().unwrap()
             );

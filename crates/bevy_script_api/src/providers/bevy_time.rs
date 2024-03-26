@@ -119,11 +119,11 @@ extern crate self as bevy_script_api;
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
 derive(clone,debug),
-remote="bevy_time::prelude::Fixed",
+remote="bevy::time::prelude::Fixed",
 functions[r#"
 
     #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
-    fn clone(&self) -> bevy_time::prelude::Fixed;
+    fn clone(&self) -> bevy::time::prelude::Fixed;
 
 "#]
 )]
@@ -134,13 +134,9 @@ functions[r#"
 pub struct LuaFixed{
     
     
-        timestep:bevy_utils::Duration,
-
-
+        
     
-        overstep:bevy_utils::Duration,
-
-
+        
     
     
 }
@@ -190,11 +186,11 @@ pub struct LuaFixed{
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
 derive(clone,debug),
-remote="bevy_time::prelude::Real",
+remote="bevy::time::prelude::Real",
 functions[r#"
 
     #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
-    fn clone(&self) -> bevy_time::prelude::Real;
+    fn clone(&self) -> bevy::time::prelude::Real;
 
 "#]
 )]
@@ -205,17 +201,11 @@ functions[r#"
 pub struct LuaReal{
     
     
-        startup:bevy_utils::Instant,
-
-
+        
     
-        first_update:std::option::Option<bevy_utils::Instant>,
-
-
+        
     
-        last_update:std::option::Option<bevy_utils::Instant>,
-
-
+        
     
     
 }
@@ -257,7 +247,7 @@ pub struct LuaReal{
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
 derive(clone,debug),
-remote="bevy_time::Stopwatch",
+remote="bevy::time::Stopwatch",
 functions[r#"
 /// Create a new unpaused `Stopwatch` with no elapsed time.
 /// # Examples
@@ -269,7 +259,7 @@ functions[r#"
 /// ```
 
     #[lua(kind = "Function", output(proxy))]
-    fn new() -> bevy_time::Stopwatch;
+    fn new() -> bevy::time::Stopwatch;
 
 "#,
 			r#"
@@ -288,7 +278,7 @@ functions[r#"
 /// [`elapsed_secs_f64`](Stopwatch::elapsed_secs_f64) - if an `f64` is desirable instead.
 
     #[lua(kind = "Method", output(proxy))]
-    fn elapsed(&self) -> bevy_utils::Duration;
+    fn elapsed(&self) -> bevy::utils::Duration;
 
 "#,
 			r#"
@@ -333,7 +323,7 @@ functions[r#"
 /// ```
 
     #[lua(kind = "Method")]
-    fn set_elapsed(&mut self, #[proxy] time: bevy_utils::Duration) -> ();
+    fn set_elapsed(&mut self, #[proxy] time: bevy::utils::Duration) -> ();
 
 "#,
 			r#"
@@ -408,12 +398,6 @@ functions[r#"
 "#,
 			r#"
 
-    #[lua(as_trait = "std::cmp::PartialEq", kind = "Method")]
-    fn eq(&self, #[proxy] other: &stopwatch::Stopwatch) -> bool;
-
-"#,
-			r#"
-
     #[lua(
         as_trait = "std::cmp::Eq",
         kind = "Function",
@@ -424,8 +408,14 @@ functions[r#"
 "#,
 			r#"
 
+    #[lua(as_trait = "std::cmp::PartialEq", kind = "Method")]
+    fn eq(&self, #[proxy] other: &stopwatch::Stopwatch) -> bool;
+
+"#,
+			r#"
+
     #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
-    fn clone(&self) -> bevy_time::Stopwatch;
+    fn clone(&self) -> bevy::time::Stopwatch;
 
 "#]
 )]
@@ -436,13 +426,9 @@ functions[r#"
 pub struct LuaStopwatch{
     
     
-        elapsed:bevy_utils::Duration,
-
-
+        
     
-        paused:bool,
-
-
+        
     
     
 }
@@ -462,7 +448,7 @@ pub struct LuaStopwatch{
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
 derive(clone,debug),
-remote="bevy_time::prelude::Timer",
+remote="bevy::time::prelude::Timer",
 functions[r#"
 /// Creates a new timer with a given duration.
 /// See also [`Timer::from_seconds`](Timer::from_seconds).
@@ -470,10 +456,10 @@ functions[r#"
     #[lua(kind = "Function", output(proxy))]
     fn new(
         #[proxy]
-        duration: bevy_utils::Duration,
+        duration: bevy::utils::Duration,
         #[proxy]
-        mode: bevy_time::prelude::TimerMode,
-    ) -> bevy_time::prelude::Timer;
+        mode: bevy::time::prelude::TimerMode,
+    ) -> bevy::time::prelude::Timer;
 
 "#,
 			r#"
@@ -488,8 +474,8 @@ functions[r#"
     fn from_seconds(
         duration: f32,
         #[proxy]
-        mode: bevy_time::prelude::TimerMode,
-    ) -> bevy_time::prelude::Timer;
+        mode: bevy::time::prelude::TimerMode,
+    ) -> bevy::time::prelude::Timer;
 
 "#,
 			r#"
@@ -548,7 +534,7 @@ functions[r#"
 /// ```
 
     #[lua(kind = "Method", output(proxy))]
-    fn elapsed(&self) -> bevy_utils::Duration;
+    fn elapsed(&self) -> bevy::utils::Duration;
 
 "#,
 			r#"
@@ -574,7 +560,7 @@ functions[r#"
 /// ```
 
     #[lua(kind = "Method")]
-    fn set_elapsed(&mut self, #[proxy] time: bevy_utils::Duration) -> ();
+    fn set_elapsed(&mut self, #[proxy] time: bevy::utils::Duration) -> ();
 
 "#,
 			r#"
@@ -588,7 +574,7 @@ functions[r#"
 /// ```
 
     #[lua(kind = "Method", output(proxy))]
-    fn duration(&self) -> bevy_utils::Duration;
+    fn duration(&self) -> bevy::utils::Duration;
 
 "#,
 			r#"
@@ -603,7 +589,7 @@ functions[r#"
 /// ```
 
     #[lua(kind = "Method")]
-    fn set_duration(&mut self, #[proxy] duration: bevy_utils::Duration) -> ();
+    fn set_duration(&mut self, #[proxy] duration: bevy::utils::Duration) -> ();
 
 "#,
 			r#"
@@ -616,7 +602,7 @@ functions[r#"
 /// ```
 
     #[lua(kind = "Method", output(proxy))]
-    fn mode(&self) -> bevy_time::prelude::TimerMode;
+    fn mode(&self) -> bevy::time::prelude::TimerMode;
 
 "#,
 			r#"
@@ -630,7 +616,7 @@ functions[r#"
 /// ```
 
     #[lua(kind = "Method")]
-    fn set_mode(&mut self, #[proxy] mode: bevy_time::prelude::TimerMode) -> ();
+    fn set_mode(&mut self, #[proxy] mode: bevy::time::prelude::TimerMode) -> ();
 
 "#,
 			r#"
@@ -765,7 +751,7 @@ functions[r#"
 /// ```
 
     #[lua(kind = "Method", output(proxy))]
-    fn remaining(&self) -> bevy_utils::Duration;
+    fn remaining(&self) -> bevy::utils::Duration;
 
 "#,
 			r#"
@@ -792,12 +778,6 @@ functions[r#"
 "#,
 			r#"
 
-    #[lua(as_trait = "std::cmp::PartialEq", kind = "Method")]
-    fn eq(&self, #[proxy] other: &timer::Timer) -> bool;
-
-"#,
-			r#"
-
     #[lua(
         as_trait = "std::cmp::Eq",
         kind = "Function",
@@ -808,8 +788,14 @@ functions[r#"
 "#,
 			r#"
 
+    #[lua(as_trait = "std::cmp::PartialEq", kind = "Method")]
+    fn eq(&self, #[proxy] other: &timer::Timer) -> bool;
+
+"#,
+			r#"
+
     #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
-    fn clone(&self) -> bevy_time::prelude::Timer;
+    fn clone(&self) -> bevy::time::prelude::Timer;
 
 "#]
 )]
@@ -820,25 +806,15 @@ functions[r#"
 pub struct LuaTimer{
     
     
-        stopwatch:bevy_time::Stopwatch,
-
-
+        
     
-        duration:bevy_utils::Duration,
-
-
+        
     
-        mode:bevy_time::prelude::TimerMode,
-
-
+        
     
-        finished:bool,
-
-
+        
     
-        times_finished_this_tick:u32,
-
-
+        
     
     
 }
@@ -850,14 +826,8 @@ pub struct LuaTimer{
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
 derive(clone,debug),
-remote="bevy_time::prelude::TimerMode",
+remote="bevy::time::prelude::TimerMode",
 functions[r#"
-
-    #[lua(as_trait = "std::cmp::PartialEq", kind = "Method")]
-    fn eq(&self, #[proxy] other: &timer::TimerMode) -> bool;
-
-"#,
-			r#"
 
     #[lua(
         as_trait = "std::cmp::Eq",
@@ -869,8 +839,14 @@ functions[r#"
 "#,
 			r#"
 
+    #[lua(as_trait = "std::cmp::PartialEq", kind = "Method")]
+    fn eq(&self, #[proxy] other: &timer::TimerMode) -> bool;
+
+"#,
+			r#"
+
     #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
-    fn clone(&self) -> bevy_time::prelude::TimerMode;
+    fn clone(&self) -> bevy::time::prelude::TimerMode;
 
 "#]
 )]
@@ -997,11 +973,11 @@ pub struct LuaTimerMode{
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
 derive(clone,debug),
-remote="bevy_time::prelude::Virtual",
+remote="bevy::time::prelude::Virtual",
 functions[r#"
 
     #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
-    fn clone(&self) -> bevy_time::prelude::Virtual;
+    fn clone(&self) -> bevy::time::prelude::Virtual;
 
 "#]
 )]
@@ -1012,27 +988,22 @@ functions[r#"
 pub struct LuaVirtual{
     
     
-        max_delta:bevy_utils::Duration,
-
-
+        
     
-        paused:bool,
-
-
+        
     
-        relative_speed:f64,
-
-
+        
     
-        effective_speed:f64,
-
-
+        
     
     
 }
 
 
-bevy_script_api::util::impl_tealr_generic!(pub(crate) struct T);
+
+
+crate::impl_tealr_generic!(pub(crate) struct T);
+
 
 #[derive(Default)]
 pub(crate) struct Globals;
@@ -1130,17 +1101,17 @@ impl bevy_mod_scripting_core::hosts::APIProvider for BevyTimeAPIProvider {
 
     fn register_with_app(&self, app: &mut bevy::app::App) {
         
-        app.register_foreign_lua_type::<bevy_time::prelude::Fixed>();
+        app.register_foreign_lua_type::<bevy::time::prelude::Fixed>();
         
-        app.register_foreign_lua_type::<bevy_time::prelude::Real>();
+        app.register_foreign_lua_type::<bevy::time::prelude::Real>();
         
-        app.register_foreign_lua_type::<bevy_time::Stopwatch>();
+        app.register_foreign_lua_type::<bevy::time::Stopwatch>();
         
-        app.register_foreign_lua_type::<bevy_time::prelude::Timer>();
+        app.register_foreign_lua_type::<bevy::time::prelude::Timer>();
         
-        app.register_foreign_lua_type::<bevy_time::prelude::TimerMode>();
+        app.register_foreign_lua_type::<bevy::time::prelude::TimerMode>();
         
-        app.register_foreign_lua_type::<bevy_time::prelude::Virtual>();
+        app.register_foreign_lua_type::<bevy::time::prelude::Virtual>();
         
     }
 }

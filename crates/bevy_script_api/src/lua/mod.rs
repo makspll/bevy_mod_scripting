@@ -18,6 +18,7 @@ use tealr::mlu::{
 
 use crate::script_ref::{ReflectReference, ReflectedValue, ValueIndex};
 
+use self::bevy::LuaWorld;
 use self::util::to_host_idx;
 
 pub mod bevy;

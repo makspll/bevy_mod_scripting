@@ -87,7 +87,6 @@ members = [
     "crates/bevy_event_priority",
     "crates/bevy_mod_scripting_derive",
     "crates/bevy_script_api",
-    "crates/bevy_script_api_providers",
     "crates/languages/bevy_mod_scripting_lua",
     "crates/languages/bevy_mod_scripting_lua_derive",
     "crates/languages/bevy_mod_scripting_rhai",

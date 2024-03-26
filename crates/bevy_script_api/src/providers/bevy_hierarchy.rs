@@ -41,7 +41,7 @@ extern crate self as bevy_script_api;
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
 derive(clone,debug),
-remote="bevy_hierarchy::prelude::Children",
+remote="bevy::hierarchy::prelude::Children",
 functions[r#"
 /// Swaps the child at `a_index` with the child at `b_index`.
 
@@ -56,9 +56,7 @@ functions[r#"
 pub struct LuaChildren(
     
     
-        bevy_utils::smallvec::SmallVec<[bevy_ecs::entity::Entity; 8]>,
-
-
+        
     
     
 );
@@ -88,12 +86,12 @@ pub struct LuaChildren(
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
 derive(clone,debug),
-remote="bevy_hierarchy::prelude::Parent",
+remote="bevy::hierarchy::prelude::Parent",
 functions[r#"
 /// Gets the [`Entity`] ID of the parent.
 
     #[lua(kind = "Method", output(proxy))]
-    fn get(&self) -> bevy_ecs::entity::Entity;
+    fn get(&self) -> bevy::ecs::entity::Entity;
 
 "#,
 			r#"
@@ -119,15 +117,16 @@ functions[r#"
 pub struct LuaParent(
     
     
-        bevy_ecs::entity::Entity,
-
-
+        
     
     
 );
 
 
-bevy_script_api::util::impl_tealr_generic!(pub(crate) struct T);
+
+
+crate::impl_tealr_generic!(pub(crate) struct T);
+
 
 #[derive(Default)]
 pub(crate) struct Globals;
@@ -195,9 +194,9 @@ impl bevy_mod_scripting_core::hosts::APIProvider for BevyHierarchyAPIProvider {
 
     fn register_with_app(&self, app: &mut bevy::app::App) {
         
-        app.register_foreign_lua_type::<bevy_hierarchy::prelude::Children>();
+        app.register_foreign_lua_type::<bevy::hierarchy::prelude::Children>();
         
-        app.register_foreign_lua_type::<bevy_hierarchy::prelude::Parent>();
+        app.register_foreign_lua_type::<bevy::hierarchy::prelude::Parent>();
         
     }
 }

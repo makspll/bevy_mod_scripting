@@ -1,4 +1,5 @@
 use crate::common::bevy::{ScriptTypeRegistration, ScriptWorld};
+use crate::providers::bevy_ecs::LuaEntity;
 use crate::{impl_from_lua_with_clone, impl_tealr_type};
 
 use std::sync::Arc;

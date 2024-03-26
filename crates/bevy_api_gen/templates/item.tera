@@ -37,7 +37,9 @@ functions[
 pub struct {{ item.ident | prefix_lua -}} {{ open_item }}
     {% if not item.is_enum %}
     {% for field in item.variants[0].fields %}
+        {% if field.reflection_strategy != "Filtered" %}
         {% include "field.tera" %}
+        {% endif %}
     {% endfor %}
     {% endif %}
 {{ close_item -}}

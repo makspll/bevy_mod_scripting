@@ -30,15 +30,21 @@ pub(crate) struct ImportPathFinder<'tcx> {
     tcx: TyCtxt<'tcx>,
     pub(crate) cache: IndexMap<DefId, Vec<Vec<ImportPathElement>>>,
     pub(crate) include_private_paths: bool,
+    pub(crate) import_path_processor: Option<Box<dyn Fn(&str) -> String>>,
 }
 
 impl<'tcx> ImportPathFinder<'tcx> {
     /// Creates a new ImportPathFinder with the provided TyCtxt
-    pub(crate) fn new(tcx: TyCtxt<'tcx>, include_private_paths: bool) -> Self {
+    pub(crate) fn new(
+        tcx: TyCtxt<'tcx>,
+        include_private_paths: bool,
+        import_path_processor: Option<Box<dyn Fn(&str) -> String>>,
+    ) -> Self {
         Self {
             tcx,
             cache: Default::default(),
             include_private_paths,
+            import_path_processor,
         }
     }
 
@@ -84,8 +90,10 @@ impl<'tcx> ImportPathFinder<'tcx> {
                 DefKind::Mod => self.crawl_module(did, new_frontier),
                 DefKind::Struct | DefKind::Union | DefKind::Enum | DefKind::Trait => {
                     // save the rename and the def id
+
                     let mut new_frontier = new_frontier.clone();
                     new_frontier.push(ImportPathElement::Rename(did, rename));
+
                     trace!("saving import path for {:?}: {:?}", did, new_frontier);
                     self.cache.entry(did).or_default().push(new_frontier);
                 }
@@ -94,21 +102,38 @@ impl<'tcx> ImportPathFinder<'tcx> {
         }
     }
 
-    pub(crate) fn find_import_paths(&self, def_id: DefId) -> Option<Vec<String>> {
-        self.cache.get(&def_id).map(|v| {
-            v.iter()
-                .map(|elems| self.import_path_to_def_string(elems))
-                .collect()
-        })
+    pub(crate) fn find_import_paths(&self, def_id: DefId) -> Vec<String> {
+        self.cache
+            .get(&def_id)
+            .map(|v| {
+                v.iter()
+                    .map(|elems| self.import_path_to_def_string(elems))
+                    .collect()
+            })
+            .unwrap_or_else(|| {
+                let path = self.tcx.def_path_str(def_id);
+                if let Some(p) = &self.import_path_processor {
+                    vec![(p)(&path)]
+                } else {
+                    vec![path]
+                }
+            })
     }
 
     pub(crate) fn import_path_to_def_string(&self, path: &[ImportPathElement]) -> String {
-        path.iter()
+        let out = path
+            .iter()
             .map(|elem| match elem {
                 ImportPathElement::Rename(_, name) => name.to_owned(),
                 ImportPathElement::Item(did) => self.tcx.item_name(*did).to_ident_string(),
             })
             .collect::<Vec<_>>()
-            .join("::")
+            .join("::");
+
+        if let Some(processor) = &self.import_path_processor {
+            (processor)(&out)
+        } else {
+            out
+        }
     }
 }
