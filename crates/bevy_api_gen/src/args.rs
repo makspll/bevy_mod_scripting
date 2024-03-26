@@ -31,6 +31,29 @@ pub struct Args {
 
     #[command(flatten)]
     pub verbose: Verbosity,
+
+    /// Features to enable when running cargo, requires workspace_root to be provided to work properly
+    #[arg(
+        global = true,
+        short,
+        long,
+        default_value = "",
+        use_value_delimiter = true,
+        value_delimiter = ','
+    )]
+    pub features: Vec<String>,
+
+    /// Disable default features when running cargo, requires workspace_root to be provided to work properly
+    #[arg(global = true, long, default_value = "false")]
+    pub no_default_features: bool,
+
+    /// If provided will use the workspace root to calculate effective dependencies and only generate code for currently active features
+    #[arg(global = true, long, default_value = "bevy")]
+    pub workspace_root: Option<String>,
+
+    /// additional template context in the form of json, provided to the templates under an 'args' key
+    #[arg(global = true, long)]
+    pub template_args: Option<String>,
 }
 
 #[derive(clap::Args, Debug, Clone, Default, Serialize, Deserialize)]
@@ -54,6 +77,26 @@ pub struct Verbosity {
         conflicts_with = "verbose",
     )]
     pub quiet: u8,
+}
+
+impl Verbosity {
+    pub fn get_log_level(&self) -> log::Level {
+        match (self.verbose as isize) - (self.quiet as isize) {
+            0 => log::Level::Info,
+            1 => log::Level::Debug,
+            x if x >= 2 => log::Level::Trace,
+            _ => log::Level::Trace,
+        }
+    }
+
+    pub fn get_rustlog_value(&self) -> &str {
+        match (self.verbose as isize) - (self.quiet as isize) {
+            0 => "info",
+            1 => "debug",
+            x if x >= 2 => "trace",
+            _ => "error",
+        }
+    }
 }
 
 #[derive(Subcommand, Deserialize, Serialize, strum::EnumIs)]
@@ -106,10 +149,6 @@ pub enum Command {
         /// The data returned is the same as the one provided to the templates.
         #[arg(long, action)]
         template_data_only: bool,
-
-        /// additional template context in the form of json, provided to the templates under an 'args' key
-        #[arg(long)]
-        template_args: Option<String>,
     },
     // /// Final step, once you generate all the crate files you would like to have in your module, you can run this command to
     // /// generate a `mod.rs` file using the `collect.rs` template, which will be provided with all the generated filenames and can 'collect' all the items as it wishes
@@ -136,13 +175,25 @@ pub(crate) fn compute_default_dir() -> String {
 /// Utility for storing and retrieving workspace meta information in env vars
 #[derive(Default, Clone)]
 pub struct WorkspaceMeta {
+    /// the crates in the workspace
     pub crates: Vec<String>,
     pub plugin_target_dir: Utf8PathBuf,
+    pub include_crates: Option<Vec<String>>,
 }
 
 impl WorkspaceMeta {
     const CRATES_ENV_NAME: &'static str = "WORKSPACE_CRATES_META";
     const PLUGIN_DIR_NAME: &'static str = "WORKSPACE_PLUGIN_DIR_META";
+    const INCLUDE_CRATES_ENV_NAME: &'static str = "WORKSPACE_OPT_INCLUDE_CRATES_META";
+
+    /// Returns true if the given crate is in the workspace and if the plugin will run on it
+    pub fn is_workspace_and_included_crate(&self, crate_name: &str) -> bool {
+        self.include_crates
+            .as_ref()
+            .map(|include_crates| include_crates.contains(&crate_name.to_owned()))
+            .unwrap_or(true)
+            && self.crates.contains(&crate_name.to_owned())
+    }
 
     /// Will populate the meta from the environment variables, if empty will use defaults
     pub fn from_env() -> Self {
@@ -155,10 +206,17 @@ impl WorkspaceMeta {
             plugin_target_dir: std::env::var(Self::PLUGIN_DIR_NAME)
                 .unwrap_or_default()
                 .into(),
+            include_crates: std::env::var(Self::INCLUDE_CRATES_ENV_NAME)
+                .ok()
+                .map(|s| s.split(',').map(|s| s.to_owned()).collect()),
         }
     }
 
     pub fn set_env(&self) {
         std::env::set_var(Self::CRATES_ENV_NAME, self.crates.join(","));
+        std::env::set_var(Self::PLUGIN_DIR_NAME, &self.plugin_target_dir);
+        if let Some(include_crates) = &self.include_crates {
+            std::env::set_var(Self::INCLUDE_CRATES_ENV_NAME, include_crates.join(","));
+        }
     }
 }

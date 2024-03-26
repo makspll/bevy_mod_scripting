@@ -4,8 +4,14 @@
     pub(crate) mod {{ crate.name }};
 {% endfor -%}
 
+{% if args.self_is_bevy_script_api %}
+extern crate self as bevy_script_api;
+use crate::lua::RegisterForeignLuaType;
+{% else %}
+use bevy_script_api::lua::RegisterForeignLuaType;
+{% endif %}
 
-
+use bevy_mod_scripting_core::docs::DocFragment;
 
 
 pub struct {{ api_name }};
@@ -32,7 +38,10 @@ impl bevy_mod_scripting_core::hosts::APIProvider for {{ api_name }} {
         ]
         .into_iter()
         .filter_map(|a: Option<_>| a)
-        .fold(None, |(a, b)| a.merge(b))    
+        .fold(None, |a, b| match a {
+            Some(a) => Some(a.merge(b)),
+            None => Some(b),
+        })    
     }
 
     fn setup_script(

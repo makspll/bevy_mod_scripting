@@ -7,14 +7,14 @@ r#"
 #[lua(
 
 {%- if function.from_trait_path -%}
-    {% if function.from_trait_path is matching("std::(ops|cmp)::(Eq|Neg|Mul|Add|Sub|Div|Rem)") %}
+    {% if function.from_trait_path is matching("std::(ops|cmp)::(PartialEq|Neg|Mul|Add|Sub|Div|Rem)") %}
     {% set is_op = true %}
     {% endif %}
 as_trait="{{ function.from_trait_path }}",
 {%- endif -%}
 
 {% if function.has_self and not is_op %}
-kind="Method",
+kind="{% if function.args.0.ty is starting_with("&mut") %}Mutating{% endif %}Method",
 {% else %}
 kind="Function",
 {% endif %}
@@ -40,7 +40,7 @@ metamethod="Sub",
 metamethod="Div",
 {% elif function.from_trait_path == "std::ops::Rem" %}
 metamethod="Mod",
-{% elif function.from_trait_path == "std::cmp:Eq" %}
+{% elif function.from_trait_path == "std::cmp:PartialEq" %}
 metamethod="Eq",
 {% endif %}
 

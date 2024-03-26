@@ -38,10 +38,11 @@ pub(crate) fn find_reflect_types(ctxt: &mut BevyCtxt<'_>, args: &Args) -> bool {
                 let generics = tcx.generics_of(*impl_did);
                 (impl_did.is_local() &&   
                 // only non parametrized simple types are allowed, i.e. "MyStruct" is allowed but "MyStruct<T>" isn't
-                    generics.own_counts().types == 0
-                        && generics.own_counts().consts == 0
-                        && generics.own_counts().lifetimes == 0
-                        && self_ty.def().is_some_and(|did| tcx.visibility(did).is_public()))
+                    generics.count() == 0 &&
+                    self_ty.def().is_some_and(|did| {
+                            let adt_generics = tcx.generics_of(did);
+                            tcx.visibility(did).is_public() && adt_generics.count() == 0
+                        }))
                 .then(|| self_ty.def().unwrap())
             })
             .inspect(|impl_| debug!("On type: {:?}", tcx.item_name(*impl_)))

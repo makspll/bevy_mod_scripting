@@ -17,6 +17,9 @@ pub(crate) fn populate_template_data(ctxt: &mut BevyCtxt<'_>, args: &Args) -> bo
 
     let mut items: Vec<_> = Vec::with_capacity(ctxt.reflect_types.len());
 
+    let clone_diagnostic = tcx.get_diagnostic_item(Symbol::intern("Clone")).unwrap();
+    let debug_diagnostic = tcx.get_diagnostic_item(Symbol::intern("Debug")).unwrap();
+
     for (reflect_ty_did, ty_ctxt) in ctxt.reflect_types.drain(..).collect::<Vec<_>>().into_iter() {
         let fn_ctxts = ty_ctxt
             .valid_functions
@@ -43,7 +46,7 @@ pub(crate) fn populate_template_data(ctxt: &mut BevyCtxt<'_>, args: &Args) -> bo
                 fields: process_fields(ctxt, variant.fields.iter(), &ty_ctxt),
             })
             .collect::<Vec<_>>();
-
+        let trait_impls = ty_ctxt.trait_impls.as_ref().unwrap();
         let item = Item {
             ident: tcx.item_name(reflect_ty_did).to_ident_string(),
             import_path: import_path(ctxt, reflect_ty_did),
@@ -53,8 +56,8 @@ pub(crate) fn populate_template_data(ctxt: &mut BevyCtxt<'_>, args: &Args) -> bo
             variants,
             is_tuple_struct,
             docstrings: docstrings(tcx.get_attrs_unchecked(reflect_ty_did)),
-            impls_clone: true,
-            impls_debug: true,
+            impls_clone: trait_impls.contains_key(&clone_diagnostic),
+            impls_debug: trait_impls.contains_key(&debug_diagnostic),
         };
 
         items.push(item);
@@ -73,7 +76,12 @@ pub(crate) fn populate_template_data(ctxt: &mut BevyCtxt<'_>, args: &Args) -> bo
         .crates
         .iter()
         .filter(|c| {
-            dep_names.contains(c) && ctxt.meta_loader.meta_for_workspace_crate(c).will_generate
+            dep_names.contains(c)
+                && ctxt
+                    .meta_loader
+                    .meta_for(c)
+                    .unwrap_or_else(|| panic!("Expected meta for dependency: {c}"))
+                    .will_generate
         })
         .cloned()
         .collect();

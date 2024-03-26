@@ -1,7 +1,14 @@
-use std::{cell::RefCell, collections::HashMap, fs::File, io::BufReader};
+use std::{
+    cell::RefCell,
+    collections::HashMap,
+    fs::File,
+    io::{BufReader, BufWriter, Write},
+    thread::sleep,
+    time::Duration,
+};
 
 use cargo_metadata::camino::Utf8PathBuf;
-use log::{debug, trace};
+use log::trace;
 use rustc_hir::def_id::DefPathHash;
 use serde::{Deserialize, Serialize};
 
@@ -42,6 +49,7 @@ pub struct MetaLoader {
 }
 
 impl MetaLoader {
+    /// First meta dir is used as output
     pub fn new(meta_dirs: Vec<Utf8PathBuf>, workspace_meta: WorkspaceMeta) -> Self {
         Self {
             meta_dirs,
@@ -52,24 +60,36 @@ impl MetaLoader {
 
     /// Retrieves the meta for the provided crate, returns 'Some(meta)' if it exists and 'None' otherwise
     pub fn meta_for(&self, crate_name: &str) -> Option<Meta> {
+        self.meta_for_retry(crate_name, 3)
+    }
+
+    pub fn meta_for_retry(&self, crate_name: &str, try_attempts: usize) -> Option<Meta> {
         let meta = self
             .meta_dirs
             .iter()
             .find_map(|dir| self.meta_for_in_dir(crate_name, dir));
 
-        if meta.is_none() && self.workspace_meta.crates.iter().any(|i| i == crate_name) {
-            // this is a workspace crate and we depend on it, so it's meta should be available
-            panic!("Could not find meta for workspace crate: `{}`", crate_name);
+        if meta.is_none()
+            && self
+                .workspace_meta
+                .is_workspace_and_included_crate(crate_name)
+        {
+            if try_attempts == 0 {
+                return None;
+            };
+
+            let mut retries = 0;
+            while retries < try_attempts {
+                sleep(Duration::from_secs(2u64.pow(retries as u32)));
+                if let Some(out) = self.meta_for_retry(crate_name, 0) {
+                    return Some(out);
+                };
+                retries += 1;
+            }
+            panic!("Could not find meta for workspace crate: {}", crate_name);
         };
 
         meta
-    }
-
-    /// Use if you know your crate is in the workspace
-    pub fn meta_for_workspace_crate(&self, crate_name: &str) -> Meta {
-        assert!(self.workspace_meta.crates.iter().any(|i| i == crate_name));
-        self.meta_for(crate_name)
-            .expect("Could not find meta for workspace crate")
     }
 
     fn meta_for_in_dir(&self, crate_name: &str, dir: &Utf8PathBuf) -> Option<Meta> {
@@ -81,7 +101,8 @@ impl MetaLoader {
             trace!("Loading meta from filesystem for: {}", crate_name);
             drop(cache);
             let mut cache = self.cache.borrow_mut();
-            let meta = Self::opt_load_meta(dir.join(format!(".{crate_name}.json")))?;
+            let meta =
+                Self::opt_load_meta(dir.join(Self::crate_name_to_meta_filename(crate_name)))?;
             cache.insert(crate_name.to_owned(), meta.clone());
             Some(meta)
         }
@@ -96,5 +117,24 @@ impl MetaLoader {
         let reader = BufReader::new(file);
 
         serde_json::from_reader(reader).unwrap()
+    }
+
+    pub fn write_meta(&self, crate_name: &str, meta: &Meta) {
+        let path = self
+            .meta_dirs
+            .first()
+            .expect("No meta directory provided for output")
+            .join(Self::crate_name_to_meta_filename(crate_name));
+
+        std::fs::create_dir_all(path.parent().unwrap()).unwrap();
+
+        let file = File::create(&path).unwrap();
+        let mut writer = BufWriter::new(file);
+        serde_json::to_writer(&mut writer, meta).unwrap();
+        writer.flush().expect("Could not flush data to meta file");
+    }
+
+    fn crate_name_to_meta_filename(crate_name: &str) -> String {
+        format!("{}.json", crate_name)
     }
 }

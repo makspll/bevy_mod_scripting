@@ -29,6 +29,8 @@ BEVY_PATH=${CODEGEN_PATH}/bevy
 GLAM_PATH=${CODEGEN_PATH}/glam
 OUTPUT_PATH=${CODEGEN_PATH}/output
 GENERATED_SRC_PATH=./crates/bevy_script_api/src/providers
+GEN_BEVY_FEATURES=bevy_asset,bevy_gltf,bevy_animation,bevy_core_pipeline,bevy_ui,bevy_pbr,bevy_render,bevy_text,bevy_sprite,file_watcher,multi-threaded
+
 build_test_in_package:
 	@cargo test --no-run --lib --workspace $(TEST_NAME)
 	@export OUTPUT=$$(find ./target/debug/deps/ -regex ".*${PACKAGE}[^.]*" -printf "%T@\t%Tc %6k KiB %p\n" | sort -n -r | awk '{print $$NF}' | head -1); \
@@ -51,15 +53,22 @@ install_bevy_api_gen:
 prepare_api_gen:
 	mkdir ${CODEGEN_PATH} || true
 	git clone https://github.com/bevyengine/bevy --branch v${BEVY_VERSION} --depth 1 ${BEVY_PATH} || true
+	rm -rf ${OUTPUT_PATH}/* 
+	cd ${BEVY_PATH} && git fetch --tags && git checkout v${BEVY_VERSION}
 
 generate_bevy:
-	cd ${BEVY_PATH} && cargo +${NIGHTLY_VERSION} bevy-api-gen generate --output ${OUTPUT_PATH} -v --template-args '{ "self_is_bevy_script_api": true}'
+	cd ${BEVY_PATH} && cargo +${NIGHTLY_VERSION} bevy-api-gen generate --output ${OUTPUT_PATH} -v --template-args '{ "self_is_bevy_script_api": true}' --features ${GEN_BEVY_FEATURES} --no-default-features
 
 collect_bevy:
-	cd ${BEVY_PATH} && cargo +${NIGHTLY_VERSION} bevy-api-gen collect --output ${OUTPUT_PATH} -v
+	cd ${BEVY_PATH} && cargo +${NIGHTLY_VERSION} bevy-api-gen collect --output ${OUTPUT_PATH} -v --template-args '{ "self_is_bevy_script_api": true}'
+
+deletion_confirmation:
+	@echo -n "This action will delete ALL files in directories: '${GENERATED_SRC_PATH}' amd ${OUTPUT_PATH} (y/N) "
+	@read ans && [ $${ans:-N} = y ]
 
 install_generated_files:
 	mkdir ${GENERATED_SRC_PATH} || true
+	rm -rf ${GENERATED_SRC_PATH}/* || true
 	find ${OUTPUT_PATH} -name "*.rs" -exec cp {} ${GENERATED_SRC_PATH} \;
 
-generate: install_bevy_api_gen prepare_api_gen generate_bevy collect_bevy install_generated_files
+generate: deletion_confirmation install_bevy_api_gen prepare_api_gen generate_bevy collect_bevy install_generated_files

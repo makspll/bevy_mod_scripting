@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+use std::{collections::HashMap, str::FromStr};
 
 use clap::ValueEnum;
 use convert_case::{Case, Casing};
@@ -311,6 +311,16 @@ pub(crate) fn configure_tera_env(tera: &mut Tera, crate_name: &str) {
             Ok(Value::String(str.to_case(case_from_str(case)?)))
         },
     )
+}
+
+pub fn extend_context_with_args(template_args: Option<&str>, context: &mut tera::Context) {
+    if let Some(args) = template_args.as_ref() {
+        let json = serde_json::Value::from_str(args).unwrap();
+        let map = serde_json::Map::from_iter(vec![("args".to_owned(), json)]);
+        let additional_ctxt =
+            tera::Context::from_serialize(serde_json::Value::Object(map)).unwrap();
+        context.extend(additional_ctxt);
+    }
 }
 
 fn expect_str(value: &Value) -> tera::Result<&str> {

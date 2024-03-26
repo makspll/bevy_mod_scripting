@@ -16,6 +16,7 @@ extern crate rustc_trait_selection;
 mod args;
 mod callback;
 mod context;
+mod feature_graph;
 mod import_path;
 mod meta;
 mod modifying_file_loader;
@@ -32,6 +33,9 @@ pub(crate) use passes::*;
 pub(crate) use template::*;
 
 pub use args::{Args, Command, WorkspaceMeta};
+pub use feature_graph::*;
 pub use meta::MetaLoader;
 pub use plugin::BevyAnalyzer;
-pub use template::{configure_tera, Collect, Crate, TemplateKind, TEMPLATE_DIR};
+pub use template::{
+    configure_tera, extend_context_with_args, Collect, Crate, TemplateKind, TEMPLATE_DIR,
+};

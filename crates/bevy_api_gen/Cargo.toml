@@ -40,6 +40,7 @@ prettyplease = "0.2"
 convert_case = "0.6"
 syn = { version = "2", features = ["parsing"], no-default-features = true }
 clap-verbosity-flag = "2.2"
+itertools = "0.12"
 
 [build-dependencies]
 toml = "0.8"

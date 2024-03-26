@@ -1,9 +1,9 @@
 use indexmap::IndexMap;
 use log::{info, trace};
 use rustc_ast::Attribute;
-use rustc_hir::def_id::DefId;
+use rustc_hir::def_id::{DefId, LOCAL_CRATE};
 use rustc_infer::infer::TyCtxtInferExt;
-use rustc_middle::ty::{AdtKind, AssocKind, FieldDef, FnSig, ParamEnv, Ty, TyCtxt};
+use rustc_middle::ty::{AdtKind, AssocKind, FieldDef, FnSig, ParamEnv, Ty, TyCtxt, TyKind};
 use rustc_span::Symbol;
 use rustc_trait_selection::infer::InferCtxtExt;
 
@@ -64,10 +64,12 @@ pub(crate) fn find_methods_and_fields(ctxt: &mut BevyCtxt<'_>, _args: &Args) -> 
 
         // borrow checker fucky wucky pt2
         let trait_impls_for_ty = {
-            let ty_ctxt = ctxt.reflect_types.get_mut(&def_id).unwrap();
+            let ty_ctxt = ctxt.reflect_types.get(&def_id).unwrap();
             ty_ctxt.trait_impls.as_ref()
                 .expect("A type was not processed correctly in a previous pass, missing trait impl info")
-                .clone()
+                .values()
+                .cloned()
+                .collect::<Vec<_>>()
         };
 
         // should we not find functions set default value for future passes
@@ -95,10 +97,12 @@ pub(crate) fn find_methods_and_fields(ctxt: &mut BevyCtxt<'_>, _args: &Args) -> 
                         return None;
                     }
 
+
                     let trait_did = ctxt
                         .tcx
                         .impl_trait_ref(*impl_did)
                         .map(|tr| tr.skip_binder().def_id);
+
                     let fn_name = assoc_item.name.to_ident_string();
                     let has_self = assoc_item.fn_has_self_parameter;
                     let fn_did = assoc_item.def_id;
@@ -112,6 +116,12 @@ pub(crate) fn find_methods_and_fields(ctxt: &mut BevyCtxt<'_>, _args: &Args) -> 
                         param_env,
                         ctxt.tcx.fn_sig(fn_did).instantiate_identity(),
                     );
+
+                    if trait_did.is_none() && !ctxt.tcx.visibility(fn_did).is_public() {
+                        log::info!("Skipping non-public function: `{}` on type: `{}`", fn_name, ctxt.tcx.item_name(def_id));
+                        return None 
+                    }
+
                     let arg_names = ctxt.tcx.fn_arg_names(fn_did);
 
                     let mut reflection_strategies = Vec::with_capacity(sig.inputs().len());
@@ -306,7 +316,15 @@ fn type_is_adt_and_reflectable<'tcx>(
         // 2) the crate that defines the type
         // so search for these metas!
         let crate_name = tcx.crate_name(did.krate).to_ident_string();
-        let meta = match meta_loader.meta_for(&crate_name).or_else(|| meta_loader.meta_for("bevy_reflect")) {
+
+        let meta_sources = if tcx.crate_name(LOCAL_CRATE).as_str() == "bevy_reflect" {
+            // otherwise meta loader might expect the meta to exist
+            vec![crate_name]
+        } else {
+            vec![crate_name, "bevy_reflect".to_string()]
+        };
+
+        let meta = match meta_sources.iter().find_map(|s| meta_loader.meta_for(s)){
             Some(meta) => meta,
             None => return false, // TODO: is it possible we get false negatives here ? perhaps due to parallel compilation ? or possibly because of dependency order
         };
@@ -338,6 +356,12 @@ fn type_is_supported_as_non_proxy_return_val<'tcx>(
     ty: Ty<'tcx>,
 ) -> bool {
     trace!("Checkign type is supported as non proxy return val: '{ty:?}' with param_env: '{param_env:?}'");
+    if let TyKind::Ref(region, _, _) = ty.kind() {
+        if !region.get_name().is_some_and(|rn| rn.as_str() == "'static") {
+            return false;
+        } 
+    }
+
     impls_trait(tcx, param_env, ty, cached_traits.mlua_into_lua_multi.unwrap())
 }
 

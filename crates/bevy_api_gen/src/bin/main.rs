@@ -2,7 +2,7 @@ use std::{
     collections::HashMap,
     env,
     fs::{create_dir_all, File},
-    io::{Read, Write},
+    io::Write,
     path::Path,
     process::{Command, Stdio},
 };
@@ -17,15 +17,37 @@ use tera::Context;
 const BOOTSTRAP_DEPS: [&str; 2] = ["mlua", "bevy_reflect"];
 
 fn main() {
+    // parse this here to early exit on wrong args
+    let args = Args::parse_from(env::args().skip(1));
+
+    if env::var("RUST_LOG").is_err() {
+        env::set_var("RUST_LOG", args.verbose.get_rustlog_value());
+    }
     env_logger::init();
-    debug!("CLI entrypoint");
-    debug!("Creating bootstrapping crate");
 
     let metadata = cargo_metadata::MetadataCommand::new()
         .no_deps()
         .other_options(["--all-features".to_string(), "--offline".to_string()])
         .exec()
         .unwrap();
+    let crates = metadata
+        .workspace_packages()
+        .iter()
+        .map(|p| p.name.to_owned())
+        .collect::<Vec<_>>();
+    let include_crates = match (&args.workspace_root, args.cmd.is_generate()) {
+        (Some(root), true) => {
+            let feature_graph = FeatureGraph::from_metadata(&metadata, root);
+            let dependencies = feature_graph
+                .dependencies_for_features(args.features.as_ref(), !args.no_default_features)
+                .into_iter()
+                .map(|s| s.to_owned())
+                .collect::<Vec<String>>();
+
+            Some(dependencies)
+        }
+        _ => None,
+    };
 
     let plugin_subdir = format!("plugin-{}", env!("RUSTC_CHANNEL"));
     let plugin_target_dir = metadata.target_directory.join(plugin_subdir);
@@ -34,29 +56,11 @@ fn main() {
     // know when to panic if a crate is not found
     // it's also useful to pass around the output directory for our Args default values to be able to compute them
     let workspace_meta = WorkspaceMeta {
-        crates: metadata
-            .workspace_packages()
-            .iter()
-            .map(|p| p.name.to_owned())
-            .collect::<Vec<_>>(),
+        crates,
         plugin_target_dir: plugin_target_dir.clone(),
+        include_crates,
     };
     workspace_meta.set_env();
-
-    // parse this here to early exit on wrong args
-    let args = Args::parse_from(env::args().skip(1));
-
-    if env::var("RUST_LOG").is_err() {
-        env::set_var(
-            "RUST_LOG",
-            match (args.verbose.verbose as isize) - (args.verbose.quiet as isize) {
-                0 => "bevy_api_gen=info",
-                1 => "bevy_api_gen=debug",
-                x if x >= 2 => "bevy_api_gen=trace",
-                _ => "bevy_api_gen=error",
-            },
-        );
-    }
 
     match args.cmd {
         bevy_api_gen::Command::Print { template } => {
@@ -113,11 +117,15 @@ fn main() {
                     .collect(),
                 api_name,
             };
-            let context =
+            let mut context =
                 Context::from_serialize(context).expect("Could not create template context");
-            let file = File::create(output.join("mod.rs")).unwrap();
-            tera.render_to(&TemplateKind::SharedModule.to_string(), &context, file)
+
+            extend_context_with_args(args.template_args.as_deref(), &mut context);
+
+            let mut file = File::create(output.join("mod.rs")).unwrap();
+            tera.render_to(&TemplateKind::SharedModule.to_string(), &context, &mut file)
                 .expect("Failed to render mod.rs");
+            file.flush().unwrap();
             log::info!("Succesfully generated mod.rs");
             return;
         }
@@ -131,18 +139,7 @@ fn main() {
 
     write_bootstrap_files(temp_dir.path());
 
-    debug!("Building bootstrapping crate");
-
-    let mut cmd = Command::new("cargo")
-        .current_dir(&temp_dir)
-        .stdout(Stdio::piped())
-        .args(["build", "--message-format=json"])
-        .spawn()
-        .unwrap();
-
-    let reader = std::io::BufReader::new(cmd.stdout.take().unwrap());
-
-    let bootstrap_rlibs = build_bootstrap(reader, cmd, &plugin_target_dir.join("bootstrap"));
+    let bootstrap_rlibs = build_bootstrap(temp_dir.path(), &plugin_target_dir.join("bootstrap"));
 
     if bootstrap_rlibs.len() == BOOTSTRAP_DEPS.len() {
         let extern_args = bootstrap_rlibs
@@ -178,10 +175,11 @@ fn main() {
 /// Build bootstrap files if they don't exist
 /// use cached ones otherwise
 fn build_bootstrap(
-    reader: std::io::BufReader<std::process::ChildStdout>,
-    mut cmd: std::process::Child,
+    temp_dir: &Path,
     cache_dir: &Utf8Path,
 ) -> HashMap<String, cargo_metadata::camino::Utf8PathBuf> {
+    debug!("Building bootstrapping crate");
+
     // first check cache
     if cache_dir.exists() {
         let mut bootstrap_rlibs = HashMap::with_capacity(BOOTSTRAP_DEPS.len());
@@ -192,6 +190,16 @@ fn build_bootstrap(
         }
         return bootstrap_rlibs;
     }
+
+    // run build command
+    let mut cmd = Command::new("cargo")
+        .current_dir(temp_dir)
+        .stdout(Stdio::piped())
+        .args(["build", "--message-format=json"])
+        .spawn()
+        .unwrap();
+
+    let reader = std::io::BufReader::new(cmd.stdout.take().unwrap());
 
     std::fs::create_dir_all(cache_dir).unwrap();
 

@@ -18,6 +18,7 @@ pub mod prelude {
     #[cfg(feature = "lua")]
     pub use crate::{
         lua::{std::LuaVec, FromLuaProxy, IntoLuaProxy, LuaProxyable, ReflectLuaProxyable},
+        providers::BevyAPIProvider,
         LuaProxy,
     };
 

@@ -2,7 +2,8 @@ use log::trace;
 use rustc_hir::def_id::LOCAL_CRATE;
 
 use crate::{
-    Args, BevyCtxt, DEF_PATHS_FROM_LUA, DEF_PATHS_INTO_LUA, DEF_PATHS_REFLECT, FN_SOURCE_TRAITS,
+    Args, BevyCtxt, DEF_PATHS_FROM_LUA, DEF_PATHS_GET_TYPE_REGISTRATION, DEF_PATHS_INTO_LUA,
+    DEF_PATHS_REFLECT, FN_SOURCE_TRAITS,
 };
 
 /// Finds and caches relevant traits, if they cannot be found throws an ICE
@@ -21,6 +22,14 @@ pub(crate) fn cache_traits(ctxt: &mut BevyCtxt<'_>, _args: &Args) -> bool {
         } else if DEF_PATHS_REFLECT.contains(&def_path_str.as_str()) {
             trace!("found Reflect trait def id: {trait_did:?}");
             ctxt.cached_traits.bevy_reflect_reflect = Some(trait_did);
+        } else if DEF_PATHS_GET_TYPE_REGISTRATION.contains(&def_path_str.as_str()) {
+            trace!("found GetTypeRegistration trait def id: {trait_did:?}");
+            ctxt.cached_traits.bevy_reflect_get_type_registration = Some(trait_did);
+        } else if FN_SOURCE_TRAITS.contains(&def_path_str.as_str()) {
+            trace!("found misc trait def id: {trait_did:?}");
+            ctxt.cached_traits
+                .fn_source_traits
+                .insert(def_path_str.to_string(), trait_did);
         } else if FN_SOURCE_TRAITS.contains(&def_path_str.as_str()) {
             trace!("found misc trait def id: {trait_did:?}");
             ctxt.cached_traits

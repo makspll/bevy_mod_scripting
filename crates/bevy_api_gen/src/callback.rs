@@ -43,10 +43,12 @@ impl rustc_driver::Callbacks for BevyAnalyzerCallbacks {
         } = &self.args.cmd
         {
             templates_dir = templates.to_owned();
+            if let Some(meta_output) = meta_output {
+                meta_dirs.push(meta_output.to_owned())
+            };
             meta_dirs.push(output.to_owned());
             meta.iter()
                 .flatten()
-                .chain(meta_output.iter())
                 .for_each(|m| meta_dirs.push(m.to_owned()));
         };
 
@@ -63,7 +65,7 @@ impl rustc_driver::Callbacks for BevyAnalyzerCallbacks {
 
             let mut ctxt = crate::BevyCtxt::new(
                 tcx,
-                meta_dirs,
+                &meta_dirs,
                 WorkspaceMeta::from_env(),
                 include_private,
                 Some(Box::new(move |import_path| {

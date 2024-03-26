@@ -24,7 +24,7 @@ impl<'tcx> BevyCtxt<'tcx> {
     /// Creates a new context with the provided TyCtxt and meta directories
     pub(crate) fn new(
         tcx: TyCtxt<'tcx>,
-        meta_dirs: Vec<Utf8PathBuf>,
+        meta_dirs: &[Utf8PathBuf],
         workspace_meta: crate::WorkspaceMeta,
         include_private_paths: bool,
         import_path_processor: Option<Box<dyn Fn(&str) -> String>>,
@@ -33,7 +33,7 @@ impl<'tcx> BevyCtxt<'tcx> {
             tcx,
             reflect_types: Default::default(),
             cached_traits: Default::default(),
-            meta_loader: MetaLoader::new(meta_dirs, workspace_meta),
+            meta_loader: MetaLoader::new(meta_dirs.to_vec(), workspace_meta),
             template_context: Default::default(),
             path_finder: ImportPathFinder::new(tcx, include_private_paths, import_path_processor),
         }
@@ -55,8 +55,8 @@ impl<'tcx> BevyCtxt<'tcx> {
 
 #[derive(Clone, Default, Debug)]
 pub(crate) struct ReflectType<'tcx> {
-    /// Trait implementations for the reflect type (from a selection)
-    pub(crate) trait_impls: Option<Vec<DefId>>,
+    /// Map from traits to their implementations for the reflect type (from a selection)
+    pub(crate) trait_impls: Option<HashMap<DefId, DefId>>,
     /// Information about the ADT structure, fields, and variants
     pub(crate) variant_data: Option<AdtDef<'tcx>>,
     /// Functions passing criteria to be proxied
@@ -84,8 +84,16 @@ impl ReflectType<'_> {
 pub(crate) const DEF_PATHS_FROM_LUA: [&str; 2] = ["value::FromLuaMulti", "mlua::FromLuaMulti"];
 pub(crate) const DEF_PATHS_INTO_LUA: [&str; 2] = ["value::IntoLuaMulti", "mlua::IntoLuaMulti"];
 pub(crate) const DEF_PATHS_REFLECT: [&str; 2] = ["bevy_reflect::Reflect", "reflect::Reflect"];
-pub(crate) const FN_SOURCE_TRAITS: [&str; 12] = [
+pub(crate) const DEF_PATHS_GET_TYPE_REGISTRATION: [&str; 2] = [
+    "bevy_reflect::GetTypeRegistration",
+    "reflect::GetTypeRegistration",
+];
+
+/// A collection of traits which we search for in the codebase, some of these are necessary to figure out if a type
+/// is Clone or Debug for the purposes of the macro code generation
+pub(crate) const FN_SOURCE_TRAITS: [&str; 13] = [
     // PRINTING
+    "std::fmt::Debug",
     "std::string::ToString",
     // OWNERSHIP
     "std::clone::Clone",
@@ -108,6 +116,7 @@ pub(crate) struct CachedTraits {
     pub(crate) mlua_from_lua_multi: Option<DefId>,
     pub(crate) mlua_into_lua_multi: Option<DefId>,
     pub(crate) bevy_reflect_reflect: Option<DefId>,
+    pub(crate) bevy_reflect_get_type_registration: Option<DefId>,
     /// Traits whose methods can be included in the generated code
     pub(crate) fn_source_traits: HashMap<String, DefId>,
 }
@@ -118,7 +127,7 @@ impl CachedTraits {
     }
 
     pub(crate) fn has_all_bevy_traits(&self) -> bool {
-        self.bevy_reflect_reflect.is_some()
+        self.bevy_reflect_reflect.is_some() && self.bevy_reflect_get_type_registration.is_some()
     }
 
     pub(crate) fn has_all_fn_source_traits(&self) -> bool {

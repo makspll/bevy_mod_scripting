@@ -67,8 +67,8 @@ pub(crate) const CRAWL_PATHS: Pass = Pass {
 pub(crate) const ALL_PASSES: [Pass; 8] = [
     CACHE_TRAITS,
     FIND_REFLECT_TYPES,
+    FIND_TRAIT_IMPLS, // we have to do this before meta as we still filter some things here
     WRITE_META, // the earlier this happens the better, as other crates will depend on our meta files but not the rest of the passes!
-    FIND_TRAIT_IMPLS,
     FIND_METHODS_AND_FIELDS,
     CRAWL_PATHS,
     POPULATE_TEMPLATE_DATA,
