@@ -398,6 +398,12 @@ functions[r#"
 "#,
 			r#"
 
+    #[lua(as_trait = "std::cmp::PartialEq", kind = "Method")]
+    fn eq(&self, #[proxy] other: &stopwatch::Stopwatch) -> bool;
+
+"#,
+			r#"
+
     #[lua(
         as_trait = "std::cmp::Eq",
         kind = "Function",
@@ -410,12 +416,6 @@ functions[r#"
 
     #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
     fn clone(&self) -> bevy::time::Stopwatch;
-
-"#,
-			r#"
-
-    #[lua(as_trait = "std::cmp::PartialEq", kind = "Method")]
-    fn eq(&self, #[proxy] other: &stopwatch::Stopwatch) -> bool;
 
 "#]
 )]
@@ -778,6 +778,12 @@ functions[r#"
 "#,
 			r#"
 
+    #[lua(as_trait = "std::cmp::PartialEq", kind = "Method")]
+    fn eq(&self, #[proxy] other: &timer::Timer) -> bool;
+
+"#,
+			r#"
+
     #[lua(
         as_trait = "std::cmp::Eq",
         kind = "Function",
@@ -790,12 +796,6 @@ functions[r#"
 
     #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
     fn clone(&self) -> bevy::time::prelude::Timer;
-
-"#,
-			r#"
-
-    #[lua(as_trait = "std::cmp::PartialEq", kind = "Method")]
-    fn eq(&self, #[proxy] other: &timer::Timer) -> bool;
 
 "#]
 )]
@@ -829,6 +829,12 @@ derive(clone,debug),
 remote="bevy::time::prelude::TimerMode",
 functions[r#"
 
+    #[lua(as_trait = "std::cmp::PartialEq", kind = "Method")]
+    fn eq(&self, #[proxy] other: &timer::TimerMode) -> bool;
+
+"#,
+			r#"
+
     #[lua(
         as_trait = "std::cmp::Eq",
         kind = "Function",
@@ -841,12 +847,6 @@ functions[r#"
 
     #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
     fn clone(&self) -> bevy::time::prelude::TimerMode;
-
-"#,
-			r#"
-
-    #[lua(as_trait = "std::cmp::PartialEq", kind = "Method")]
-    fn eq(&self, #[proxy] other: &timer::TimerMode) -> bool;
 
 "#]
 )]

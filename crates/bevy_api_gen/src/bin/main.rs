@@ -2,12 +2,13 @@ use std::{
     collections::HashMap,
     env,
     fs::{create_dir_all, File},
-    io::Write,
+    io::{Read, Write},
     path::Path,
     process::{Command, Stdio},
 };
 
 use bevy_api_gen::*;
+use cargo_metadata::camino::Utf8Path;
 use clap::Parser;
 use log::{debug, info, trace};
 use strum::VariantNames;
@@ -38,7 +39,7 @@ fn main() {
             .iter()
             .map(|p| p.name.to_owned())
             .collect::<Vec<_>>(),
-        plugin_target_dir,
+        plugin_target_dir: plugin_target_dir.clone(),
     };
     workspace_meta.set_env();
 
@@ -141,33 +142,7 @@ fn main() {
 
     let reader = std::io::BufReader::new(cmd.stdout.take().unwrap());
 
-    let mut bootstrap_rlibs = HashMap::with_capacity(BOOTSTRAP_DEPS.len());
-    for msg in cargo_metadata::Message::parse_stream(reader) {
-        if let cargo_metadata::Message::CompilerArtifact(artifact) = msg.unwrap() {
-            trace!(
-                "produced artifacts for: {}, at: {:?}",
-                artifact.package_id,
-                artifact.filenames
-            );
-
-            for artifact in artifact.filenames.into_iter() {
-                let file_name = artifact.file_name().unwrap_or_default();
-                let lib_name = file_name.split('-').next().unwrap().strip_prefix("lib");
-
-                if let Some(lib_name) = lib_name {
-                    if BOOTSTRAP_DEPS.contains(&lib_name)
-                        && artifact.extension().is_some_and(|ext| ext == "rlib")
-                    {
-                        bootstrap_rlibs.insert(lib_name.to_owned(), artifact);
-                    }
-                }
-            }
-        }
-    }
-
-    if !cmd.wait().unwrap().success() {
-        panic!("Building bootstrap crate returned a failure status code");
-    };
+    let bootstrap_rlibs = build_bootstrap(reader, cmd, &plugin_target_dir.join("bootstrap"));
 
     if bootstrap_rlibs.len() == BOOTSTRAP_DEPS.len() {
         let extern_args = bootstrap_rlibs
@@ -198,6 +173,77 @@ fn main() {
 
     // just making sure the temp dir lives until everything is done
     drop(temp_dir);
+}
+
+/// Build bootstrap files if they don't exist
+/// use cached ones otherwise
+fn build_bootstrap(
+    reader: std::io::BufReader<std::process::ChildStdout>,
+    mut cmd: std::process::Child,
+    cache_dir: &Utf8Path,
+) -> HashMap<String, cargo_metadata::camino::Utf8PathBuf> {
+    // first check cache
+    if cache_dir.exists() {
+        let mut bootstrap_rlibs = HashMap::with_capacity(BOOTSTRAP_DEPS.len());
+        for entry in std::fs::read_dir(cache_dir).unwrap() {
+            let entry = entry.unwrap();
+            let artifact = entry.path();
+            process_artifact(artifact.try_into().unwrap(), &mut bootstrap_rlibs);
+        }
+        return bootstrap_rlibs;
+    }
+
+    std::fs::create_dir_all(cache_dir).unwrap();
+
+    let mut bootstrap_rlibs = HashMap::with_capacity(BOOTSTRAP_DEPS.len());
+    for msg in cargo_metadata::Message::parse_stream(reader) {
+        if let cargo_metadata::Message::CompilerArtifact(artifact) = msg.unwrap() {
+            trace!(
+                "produced artifacts for: {}, at: {:?}",
+                artifact.package_id,
+                artifact.filenames
+            );
+
+            for artifact in artifact.filenames.into_iter() {
+                process_artifact(artifact, &mut bootstrap_rlibs);
+            }
+        }
+    }
+
+    // cache bootstrap artifacts
+    if let Some(artifact) = bootstrap_rlibs.values().next() {
+        let deps_dir = artifact.parent().unwrap();
+
+        for dir in std::fs::read_dir(deps_dir).unwrap() {
+            let dir = dir.unwrap();
+            let path = dir.path();
+
+            let dest = cache_dir.join(path.file_name().unwrap().to_str().unwrap());
+            std::fs::copy(path, dest).unwrap();
+        }
+    }
+
+    if !cmd.wait().unwrap().success() {
+        panic!("Building bootstrap crate returned a failure status code");
+    };
+    bootstrap_rlibs
+}
+
+/// Process artifact and add it to the bootstrap rlibs if it's is for a bootstrap dependency and an rlib
+fn process_artifact(
+    artifact: cargo_metadata::camino::Utf8PathBuf,
+    bootstrap_rlibs: &mut HashMap<String, cargo_metadata::camino::Utf8PathBuf>,
+) {
+    let file_name = artifact.file_name().unwrap_or_default();
+    let lib_name = file_name.split('-').next().unwrap().strip_prefix("lib");
+
+    if let Some(lib_name) = lib_name {
+        if BOOTSTRAP_DEPS.contains(&lib_name)
+            && artifact.extension().is_some_and(|ext| ext == "rlib")
+        {
+            bootstrap_rlibs.insert(lib_name.to_owned(), artifact);
+        }
+    }
 }
 
 /// Generate bootstrapping crate files

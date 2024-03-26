@@ -124,12 +124,8 @@ derive(clone,debug),
 remote="bevy::core_pipeline::bloom::BloomCompositeMode",
 functions[r#"
 
-    #[lua(
-        as_trait = "std::cmp::Eq",
-        kind = "Function",
-        composite = "assert_receiver_is_total_eq",
-    )]
-    fn assert_receiver_is_total_eq(&self) -> ();
+    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
+    fn clone(&self) -> bevy::core_pipeline::bloom::BloomCompositeMode;
 
 "#,
 			r#"
@@ -140,8 +136,12 @@ functions[r#"
 "#,
 			r#"
 
-    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
-    fn clone(&self) -> bevy::core_pipeline::bloom::BloomCompositeMode;
+    #[lua(
+        as_trait = "std::cmp::Eq",
+        kind = "Function",
+        composite = "assert_receiver_is_total_eq",
+    )]
+    fn assert_receiver_is_total_eq(&self) -> ();
 
 "#]
 )]
@@ -327,18 +327,18 @@ derive(clone,debug),
 remote="bevy::core_pipeline::core_3d::ScreenSpaceTransmissionQuality",
 functions[r#"
 
+    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
+    fn clone(&self) -> bevy::core_pipeline::core_3d::ScreenSpaceTransmissionQuality;
+
+"#,
+			r#"
+
     #[lua(as_trait = "std::cmp::PartialEq", kind = "Method")]
     fn eq(
         &self,
         #[proxy]
         other: &core_3d::camera_3d::ScreenSpaceTransmissionQuality,
     ) -> bool;
-
-"#,
-			r#"
-
-    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
-    fn clone(&self) -> bevy::core_pipeline::core_3d::ScreenSpaceTransmissionQuality;
 
 "#]
 )]
@@ -364,12 +364,8 @@ functions[r#"
 "#,
 			r#"
 
-    #[lua(
-        as_trait = "std::cmp::Eq",
-        kind = "Function",
-        composite = "assert_receiver_is_total_eq",
-    )]
-    fn assert_receiver_is_total_eq(&self) -> ();
+    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
+    fn clone(&self) -> bevy::core_pipeline::fxaa::Sensitivity;
 
 "#,
 			r#"
@@ -380,8 +376,12 @@ functions[r#"
 "#,
 			r#"
 
-    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
-    fn clone(&self) -> bevy::core_pipeline::fxaa::Sensitivity;
+    #[lua(
+        as_trait = "std::cmp::Eq",
+        kind = "Function",
+        composite = "assert_receiver_is_total_eq",
+    )]
+    fn assert_receiver_is_total_eq(&self) -> ();
 
 "#]
 )]
@@ -597,12 +597,8 @@ functions[r#"
 "#,
 			r#"
 
-    #[lua(
-        as_trait = "std::cmp::Eq",
-        kind = "Function",
-        composite = "assert_receiver_is_total_eq",
-    )]
-    fn assert_receiver_is_total_eq(&self) -> ();
+    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
+    fn clone(&self) -> bevy::core_pipeline::tonemapping::Tonemapping;
 
 "#,
 			r#"
@@ -613,8 +609,12 @@ functions[r#"
 "#,
 			r#"
 
-    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
-    fn clone(&self) -> bevy::core_pipeline::tonemapping::Tonemapping;
+    #[lua(
+        as_trait = "std::cmp::Eq",
+        kind = "Function",
+        composite = "assert_receiver_is_total_eq",
+    )]
+    fn assert_receiver_is_total_eq(&self) -> ();
 
 "#]
 )]
@@ -636,12 +636,8 @@ derive(clone,debug),
 remote="bevy::core_pipeline::tonemapping::DebandDither",
 functions[r#"
 
-    #[lua(
-        as_trait = "std::cmp::Eq",
-        kind = "Function",
-        composite = "assert_receiver_is_total_eq",
-    )]
-    fn assert_receiver_is_total_eq(&self) -> ();
+    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
+    fn clone(&self) -> bevy::core_pipeline::tonemapping::DebandDither;
 
 "#,
 			r#"
@@ -652,8 +648,12 @@ functions[r#"
 "#,
 			r#"
 
-    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
-    fn clone(&self) -> bevy::core_pipeline::tonemapping::DebandDither;
+    #[lua(
+        as_trait = "std::cmp::Eq",
+        kind = "Function",
+        composite = "assert_receiver_is_total_eq",
+    )]
+    fn assert_receiver_is_total_eq(&self) -> ();
 
 "#]
 )]

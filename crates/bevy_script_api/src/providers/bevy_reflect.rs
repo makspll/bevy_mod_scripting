@@ -2869,16 +2869,6 @@ functions[r#"
 			r#"
 
     #[lua(
-        as_trait = "bevy::reflect::erased_serde::__private::serde::__private::ToString",
-        kind = "Method",
-        output(proxy),
-    )]
-    fn to_string(&self) -> std::string::String;
-
-"#,
-			r#"
-
-    #[lua(
         as_trait = "std::cmp::Eq",
         kind = "Function",
         composite = "assert_receiver_is_total_eq",
@@ -2903,6 +2893,16 @@ functions[r#"
         kind = "Method",
     )]
     fn clone_from(&mut self, #[proxy] source: &std::string::String) -> ();
+
+"#,
+			r#"
+
+    #[lua(
+        as_trait = "bevy::reflect::erased_serde::__private::serde::__private::ToString",
+        kind = "Method",
+        output(proxy),
+    )]
+    fn to_string(&self) -> std::string::String;
 
 "#]
 )]
@@ -3175,12 +3175,6 @@ functions[r#"
 
 "#,
 			r#"
-
-    #[lua(as_trait = "std::cmp::PartialEq", kind = "Method")]
-    fn eq(&self, #[proxy] other: &bevy_utils::Instant) -> bool;
-
-"#,
-			r#"
 /// # Panics
 /// This function may panic if the resulting point in time cannot be represented by the
 /// underlying data structure. See [`Instant::checked_add`] for a version without panic.
@@ -3193,6 +3187,12 @@ functions[r#"
         metamethod = "Add",
     )]
     fn add(self, #[proxy] other: bevy::utils::Duration) -> bevy::utils::Instant;
+
+"#,
+			r#"
+
+    #[lua(as_trait = "std::cmp::PartialEq", kind = "Method")]
+    fn eq(&self, #[proxy] other: &bevy_utils::Instant) -> bool;
 
 "#,
 			r#"
@@ -4758,6 +4758,18 @@ functions[r#"
 "#,
 			r#"
 
+    #[lua(
+        as_trait = "std::ops::Add",
+        kind = "Function",
+        output(proxy),
+        composite = "add",
+        metamethod = "Add",
+    )]
+    fn add(self, #[proxy] rhs: bevy::math::Mat3) -> bevy::math::Mat3;
+
+"#,
+			r#"
+
     #[lua(as_trait = "std::cmp::PartialEq", kind = "Method")]
     fn eq(&self, #[proxy] rhs: &glam::Mat3) -> bool;
 
@@ -4772,18 +4784,6 @@ functions[r#"
         metamethod = "Unm",
     )]
     fn neg(self) -> bevy::math::Mat3;
-
-"#,
-			r#"
-
-    #[lua(
-        as_trait = "std::ops::Add",
-        kind = "Function",
-        output(proxy),
-        composite = "add",
-        metamethod = "Add",
-    )]
-    fn add(self, #[proxy] rhs: bevy::math::Mat3) -> bevy::math::Mat3;
 
 "#,
 			r#"
@@ -6245,6 +6245,18 @@ functions[r#"
 "#,
 			r#"
 
+    #[lua(
+        as_trait = "std::ops::Add",
+        kind = "Function",
+        output(proxy),
+        composite = "add",
+        metamethod = "Add",
+    )]
+    fn add(self, #[proxy] rhs: bevy::math::Mat2) -> bevy::math::Mat2;
+
+"#,
+			r#"
+
     #[lua(as_trait = "std::cmp::PartialEq", kind = "Method")]
     fn eq(&self, #[proxy] rhs: &glam::Mat2) -> bool;
 
@@ -6259,18 +6271,6 @@ functions[r#"
         metamethod = "Unm",
     )]
     fn neg(self) -> bevy::math::Mat2;
-
-"#,
-			r#"
-
-    #[lua(
-        as_trait = "std::ops::Add",
-        kind = "Function",
-        output(proxy),
-        composite = "add",
-        metamethod = "Add",
-    )]
-    fn add(self, #[proxy] rhs: bevy::math::Mat2) -> bevy::math::Mat2;
 
 "#,
 			r#"
@@ -6662,6 +6662,18 @@ functions[r#"
 "#,
 			r#"
 
+    #[lua(
+        as_trait = "std::ops::Add",
+        kind = "Function",
+        output(proxy),
+        composite = "add",
+        metamethod = "Add",
+    )]
+    fn add(self, #[proxy] rhs: bevy::math::Mat3A) -> bevy::math::Mat3A;
+
+"#,
+			r#"
+
     #[lua(as_trait = "std::cmp::PartialEq", kind = "Method")]
     fn eq(&self, #[proxy] rhs: &glam::Mat3A) -> bool;
 
@@ -6676,18 +6688,6 @@ functions[r#"
         metamethod = "Unm",
     )]
     fn neg(self) -> bevy::math::Mat3A;
-
-"#,
-			r#"
-
-    #[lua(
-        as_trait = "std::ops::Add",
-        kind = "Function",
-        output(proxy),
-        composite = "add",
-        metamethod = "Add",
-    )]
-    fn add(self, #[proxy] rhs: bevy::math::Mat3A) -> bevy::math::Mat3A;
 
 "#,
 			r#"
@@ -7353,6 +7353,18 @@ functions[r#"
 "#,
 			r#"
 
+    #[lua(
+        as_trait = "std::ops::Add",
+        kind = "Function",
+        output(proxy),
+        composite = "add",
+        metamethod = "Add",
+    )]
+    fn add(self, #[proxy] rhs: bevy::math::Mat4) -> bevy::math::Mat4;
+
+"#,
+			r#"
+
     #[lua(as_trait = "std::cmp::PartialEq", kind = "Method")]
     fn eq(&self, #[proxy] rhs: &glam::Mat4) -> bool;
 
@@ -7367,18 +7379,6 @@ functions[r#"
         metamethod = "Unm",
     )]
     fn neg(self) -> bevy::math::Mat4;
-
-"#,
-			r#"
-
-    #[lua(
-        as_trait = "std::ops::Add",
-        kind = "Function",
-        output(proxy),
-        composite = "add",
-        metamethod = "Add",
-    )]
-    fn add(self, #[proxy] rhs: bevy::math::Mat4) -> bevy::math::Mat4;
 
 "#,
 			r#"
@@ -7823,21 +7823,17 @@ functions[r#"
 
 "#,
 			r#"
-
-    #[lua(as_trait = "std::cmp::PartialEq", kind = "Method")]
-    fn eq(&self, #[proxy] rhs: &glam::Quat) -> bool;
-
-"#,
-			r#"
+/// Divides a quaternion by a scalar value.
+/// The quotient is not guaranteed to be normalized.
 
     #[lua(
-        as_trait = "std::ops::Neg",
+        as_trait = "std::ops::Div",
         kind = "Function",
         output(proxy),
-        composite = "neg",
-        metamethod = "Unm",
+        composite = "div",
+        metamethod = "Div",
     )]
-    fn neg(self) -> bevy::math::Quat;
+    fn div(self, rhs: f32) -> bevy::math::Quat;
 
 "#,
 			r#"
@@ -7858,26 +7854,30 @@ functions[r#"
 "#,
 			r#"
 
+    #[lua(as_trait = "std::cmp::PartialEq", kind = "Method")]
+    fn eq(&self, #[proxy] rhs: &glam::Quat) -> bool;
+
+"#,
+			r#"
+
+    #[lua(
+        as_trait = "std::ops::Neg",
+        kind = "Function",
+        output(proxy),
+        composite = "neg",
+        metamethod = "Unm",
+    )]
+    fn neg(self) -> bevy::math::Quat;
+
+"#,
+			r#"
+
     #[lua(
         as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone",
         kind = "Method",
         output(proxy),
     )]
     fn clone(&self) -> bevy::math::Quat;
-
-"#,
-			r#"
-/// Divides a quaternion by a scalar value.
-/// The quotient is not guaranteed to be normalized.
-
-    #[lua(
-        as_trait = "std::ops::Div",
-        kind = "Function",
-        output(proxy),
-        composite = "div",
-        metamethod = "Div",
-    )]
-    fn div(self, rhs: f32) -> bevy::math::Quat;
 
 "#]
 )]
@@ -9799,6 +9799,18 @@ functions[r#"
 "#,
 			r#"
 
+    #[lua(
+        as_trait = "std::ops::Add",
+        kind = "Function",
+        output(proxy),
+        composite = "add",
+        metamethod = "Add",
+    )]
+    fn add(self, #[proxy] rhs: bevy::math::DMat2) -> bevy::math::DMat2;
+
+"#,
+			r#"
+
     #[lua(as_trait = "std::cmp::PartialEq", kind = "Method")]
     fn eq(&self, #[proxy] rhs: &glam::DMat2) -> bool;
 
@@ -9813,18 +9825,6 @@ functions[r#"
         metamethod = "Unm",
     )]
     fn neg(self) -> bevy::math::DMat2;
-
-"#,
-			r#"
-
-    #[lua(
-        as_trait = "std::ops::Add",
-        kind = "Function",
-        output(proxy),
-        composite = "add",
-        metamethod = "Add",
-    )]
-    fn add(self, #[proxy] rhs: bevy::math::DMat2) -> bevy::math::DMat2;
 
 "#,
 			r#"
@@ -10212,6 +10212,18 @@ functions[r#"
 "#,
 			r#"
 
+    #[lua(
+        as_trait = "std::ops::Add",
+        kind = "Function",
+        output(proxy),
+        composite = "add",
+        metamethod = "Add",
+    )]
+    fn add(self, #[proxy] rhs: bevy::math::DMat3) -> bevy::math::DMat3;
+
+"#,
+			r#"
+
     #[lua(as_trait = "std::cmp::PartialEq", kind = "Method")]
     fn eq(&self, #[proxy] rhs: &glam::DMat3) -> bool;
 
@@ -10226,18 +10238,6 @@ functions[r#"
         metamethod = "Unm",
     )]
     fn neg(self) -> bevy::math::DMat3;
-
-"#,
-			r#"
-
-    #[lua(
-        as_trait = "std::ops::Add",
-        kind = "Function",
-        output(proxy),
-        composite = "add",
-        metamethod = "Add",
-    )]
-    fn add(self, #[proxy] rhs: bevy::math::DMat3) -> bevy::math::DMat3;
 
 "#,
 			r#"
@@ -10881,6 +10881,18 @@ functions[r#"
 "#,
 			r#"
 
+    #[lua(
+        as_trait = "std::ops::Add",
+        kind = "Function",
+        output(proxy),
+        composite = "add",
+        metamethod = "Add",
+    )]
+    fn add(self, #[proxy] rhs: bevy::math::DMat4) -> bevy::math::DMat4;
+
+"#,
+			r#"
+
     #[lua(as_trait = "std::cmp::PartialEq", kind = "Method")]
     fn eq(&self, #[proxy] rhs: &glam::DMat4) -> bool;
 
@@ -10895,18 +10907,6 @@ functions[r#"
         metamethod = "Unm",
     )]
     fn neg(self) -> bevy::math::DMat4;
-
-"#,
-			r#"
-
-    #[lua(
-        as_trait = "std::ops::Add",
-        kind = "Function",
-        output(proxy),
-        composite = "add",
-        metamethod = "Add",
-    )]
-    fn add(self, #[proxy] rhs: bevy::math::DMat4) -> bevy::math::DMat4;
 
 "#,
 			r#"
@@ -11337,21 +11337,17 @@ functions[r#"
 
 "#,
 			r#"
-
-    #[lua(as_trait = "std::cmp::PartialEq", kind = "Method")]
-    fn eq(&self, #[proxy] rhs: &glam::DQuat) -> bool;
-
-"#,
-			r#"
+/// Divides a quaternion by a scalar value.
+/// The quotient is not guaranteed to be normalized.
 
     #[lua(
-        as_trait = "std::ops::Neg",
+        as_trait = "std::ops::Div",
         kind = "Function",
         output(proxy),
-        composite = "neg",
-        metamethod = "Unm",
+        composite = "div",
+        metamethod = "Div",
     )]
-    fn neg(self) -> bevy::math::DQuat;
+    fn div(self, rhs: f64) -> bevy::math::DQuat;
 
 "#,
 			r#"
@@ -11372,26 +11368,30 @@ functions[r#"
 "#,
 			r#"
 
+    #[lua(as_trait = "std::cmp::PartialEq", kind = "Method")]
+    fn eq(&self, #[proxy] rhs: &glam::DQuat) -> bool;
+
+"#,
+			r#"
+
+    #[lua(
+        as_trait = "std::ops::Neg",
+        kind = "Function",
+        output(proxy),
+        composite = "neg",
+        metamethod = "Unm",
+    )]
+    fn neg(self) -> bevy::math::DQuat;
+
+"#,
+			r#"
+
     #[lua(
         as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone",
         kind = "Method",
         output(proxy),
     )]
     fn clone(&self) -> bevy::math::DQuat;
-
-"#,
-			r#"
-/// Divides a quaternion by a scalar value.
-/// The quotient is not guaranteed to be normalized.
-
-    #[lua(
-        as_trait = "std::ops::Div",
-        kind = "Function",
-        output(proxy),
-        composite = "div",
-        metamethod = "Div",
-    )]
-    fn div(self, rhs: f64) -> bevy::math::DQuat;
 
 "#]
 )]
@@ -22649,6 +22649,18 @@ functions[r#"
 			r#"
 
     #[lua(
+        as_trait = "std::ops::Mul",
+        kind = "Function",
+        output(proxy),
+        composite = "mul",
+        metamethod = "Mul",
+    )]
+    fn mul(self, rhs: u32) -> bevy::utils::Duration;
+
+"#,
+			r#"
+
+    #[lua(
         as_trait = "std::ops::Sub",
         kind = "Function",
         output(proxy),
@@ -22661,17 +22673,23 @@ functions[r#"
 			r#"
 
     #[lua(
+        as_trait = "std::ops::Div",
+        kind = "Function",
+        output(proxy),
+        composite = "div",
+        metamethod = "Div",
+    )]
+    fn div(self, rhs: u32) -> bevy::utils::Duration;
+
+"#,
+			r#"
+
+    #[lua(
         as_trait = "std::cmp::Eq",
         kind = "Function",
         composite = "assert_receiver_is_total_eq",
     )]
     fn assert_receiver_is_total_eq(&self) -> ();
-
-"#,
-			r#"
-
-    #[lua(as_trait = "std::cmp::PartialEq", kind = "Method")]
-    fn eq(&self, #[proxy] other: &bevy_utils::Duration) -> bool;
 
 "#,
 			r#"
@@ -22688,14 +22706,8 @@ functions[r#"
 "#,
 			r#"
 
-    #[lua(
-        as_trait = "std::ops::Mul",
-        kind = "Function",
-        output(proxy),
-        composite = "mul",
-        metamethod = "Mul",
-    )]
-    fn mul(self, rhs: u32) -> bevy::utils::Duration;
+    #[lua(as_trait = "std::cmp::PartialEq", kind = "Method")]
+    fn eq(&self, #[proxy] other: &bevy_utils::Duration) -> bool;
 
 "#,
 			r#"
@@ -22706,18 +22718,6 @@ functions[r#"
         output(proxy),
     )]
     fn clone(&self) -> bevy::utils::Duration;
-
-"#,
-			r#"
-
-    #[lua(
-        as_trait = "std::ops::Div",
-        kind = "Function",
-        output(proxy),
-        composite = "div",
-        metamethod = "Div",
-    )]
-    fn div(self, rhs: u32) -> bevy::utils::Duration;
 
 "#]
 )]

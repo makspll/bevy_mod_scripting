@@ -198,12 +198,8 @@ derive(clone,debug),
 remote="bevy::text::prelude::JustifyText",
 functions[r#"
 
-    #[lua(
-        as_trait = "std::cmp::Eq",
-        kind = "Function",
-        composite = "assert_receiver_is_total_eq",
-    )]
-    fn assert_receiver_is_total_eq(&self) -> ();
+    #[lua(as_trait = "std::cmp::PartialEq", kind = "Method")]
+    fn eq(&self, #[proxy] other: &text::JustifyText) -> bool;
 
 "#,
 			r#"
@@ -214,8 +210,12 @@ functions[r#"
 "#,
 			r#"
 
-    #[lua(as_trait = "std::cmp::PartialEq", kind = "Method")]
-    fn eq(&self, #[proxy] other: &text::JustifyText) -> bool;
+    #[lua(
+        as_trait = "std::cmp::Eq",
+        kind = "Function",
+        composite = "assert_receiver_is_total_eq",
+    )]
+    fn assert_receiver_is_total_eq(&self) -> ();
 
 "#]
 )]
@@ -260,12 +260,8 @@ derive(clone,debug),
 remote="bevy::text::BreakLineOn",
 functions[r#"
 
-    #[lua(
-        as_trait = "std::cmp::Eq",
-        kind = "Function",
-        composite = "assert_receiver_is_total_eq",
-    )]
-    fn assert_receiver_is_total_eq(&self) -> ();
+    #[lua(as_trait = "std::cmp::PartialEq", kind = "Method")]
+    fn eq(&self, #[proxy] other: &text::BreakLineOn) -> bool;
 
 "#,
 			r#"
@@ -276,8 +272,12 @@ functions[r#"
 "#,
 			r#"
 
-    #[lua(as_trait = "std::cmp::PartialEq", kind = "Method")]
-    fn eq(&self, #[proxy] other: &text::BreakLineOn) -> bool;
+    #[lua(
+        as_trait = "std::cmp::Eq",
+        kind = "Function",
+        composite = "assert_receiver_is_total_eq",
+    )]
+    fn assert_receiver_is_total_eq(&self) -> ();
 
 "#]
 )]

@@ -69,8 +69,12 @@ derive(clone,debug),
 remote="bevy::sprite::Mesh2dHandle",
 functions[r#"
 
-    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
-    fn clone(&self) -> bevy::sprite::Mesh2dHandle;
+    #[lua(
+        as_trait = "std::cmp::Eq",
+        kind = "Function",
+        composite = "assert_receiver_is_total_eq",
+    )]
+    fn assert_receiver_is_total_eq(&self) -> ();
 
 "#,
 			r#"
@@ -81,12 +85,8 @@ functions[r#"
 "#,
 			r#"
 
-    #[lua(
-        as_trait = "std::cmp::Eq",
-        kind = "Function",
-        composite = "assert_receiver_is_total_eq",
-    )]
-    fn assert_receiver_is_total_eq(&self) -> ();
+    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
+    fn clone(&self) -> bevy::sprite::Mesh2dHandle;
 
 "#]
 )]
@@ -167,14 +167,14 @@ functions[r#"
 "#,
 			r#"
 
-    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
-    fn clone(&self) -> bevy::sprite::Anchor;
+    #[lua(as_trait = "std::cmp::PartialEq", kind = "Method")]
+    fn eq(&self, #[proxy] other: &sprite::Anchor) -> bool;
 
 "#,
 			r#"
 
-    #[lua(as_trait = "std::cmp::PartialEq", kind = "Method")]
-    fn eq(&self, #[proxy] other: &sprite::Anchor) -> bool;
+    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
+    fn clone(&self) -> bevy::sprite::Anchor;
 
 "#]
 )]
@@ -315,14 +315,14 @@ functions[r#"
 "#,
 			r#"
 
-    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
-    fn clone(&self) -> bevy::sprite::prelude::BorderRect;
+    #[lua(as_trait = "std::cmp::PartialEq", kind = "Method")]
+    fn eq(&self, #[proxy] other: &texture_slice::border_rect::BorderRect) -> bool;
 
 "#,
 			r#"
 
-    #[lua(as_trait = "std::cmp::PartialEq", kind = "Method")]
-    fn eq(&self, #[proxy] other: &texture_slice::border_rect::BorderRect) -> bool;
+    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
+    fn clone(&self) -> bevy::sprite::prelude::BorderRect;
 
 "#]
 )]

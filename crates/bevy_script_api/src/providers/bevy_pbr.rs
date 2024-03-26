@@ -46,6 +46,16 @@ derive(clone,debug),
 remote="bevy::pbr::wireframe::Wireframe",
 functions[r#"
 
+    #[lua(
+        as_trait = "std::cmp::Eq",
+        kind = "Function",
+        composite = "assert_receiver_is_total_eq",
+    )]
+    fn assert_receiver_is_total_eq(&self) -> ();
+
+"#,
+			r#"
+
     #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
     fn clone(&self) -> bevy::pbr::wireframe::Wireframe;
 
@@ -54,16 +64,6 @@ functions[r#"
 
     #[lua(as_trait = "std::cmp::PartialEq", kind = "Method")]
     fn eq(&self, #[proxy] other: &wireframe::Wireframe) -> bool;
-
-"#,
-			r#"
-
-    #[lua(
-        as_trait = "std::cmp::Eq",
-        kind = "Function",
-        composite = "assert_receiver_is_total_eq",
-    )]
-    fn assert_receiver_is_total_eq(&self) -> ();
 
 "#]
 )]
@@ -122,6 +122,16 @@ derive(clone,debug),
 remote="bevy::pbr::wireframe::NoWireframe",
 functions[r#"
 
+    #[lua(
+        as_trait = "std::cmp::Eq",
+        kind = "Function",
+        composite = "assert_receiver_is_total_eq",
+    )]
+    fn assert_receiver_is_total_eq(&self) -> ();
+
+"#,
+			r#"
+
     #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
     fn clone(&self) -> bevy::pbr::wireframe::NoWireframe;
 
@@ -130,16 +140,6 @@ functions[r#"
 
     #[lua(as_trait = "std::cmp::PartialEq", kind = "Method")]
     fn eq(&self, #[proxy] other: &wireframe::NoWireframe) -> bool;
-
-"#,
-			r#"
-
-    #[lua(
-        as_trait = "std::cmp::Eq",
-        kind = "Function",
-        composite = "assert_receiver_is_total_eq",
-    )]
-    fn assert_receiver_is_total_eq(&self) -> ();
 
 "#]
 )]
@@ -995,6 +995,16 @@ derive(clone,debug),
 remote="bevy::pbr::ShadowFilteringMethod",
 functions[r#"
 
+    #[lua(
+        as_trait = "std::cmp::Eq",
+        kind = "Function",
+        composite = "assert_receiver_is_total_eq",
+    )]
+    fn assert_receiver_is_total_eq(&self) -> ();
+
+"#,
+			r#"
+
     #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
     fn clone(&self) -> bevy::pbr::ShadowFilteringMethod;
 
@@ -1003,16 +1013,6 @@ functions[r#"
 
     #[lua(as_trait = "std::cmp::PartialEq", kind = "Method")]
     fn eq(&self, #[proxy] other: &light::ShadowFilteringMethod) -> bool;
-
-"#,
-			r#"
-
-    #[lua(
-        as_trait = "std::cmp::Eq",
-        kind = "Function",
-        composite = "assert_receiver_is_total_eq",
-    )]
-    fn assert_receiver_is_total_eq(&self) -> ();
 
 "#]
 )]
@@ -1445,6 +1445,16 @@ functions[r#"
 "#,
 			r#"
 
+    #[lua(
+        as_trait = "std::cmp::Eq",
+        kind = "Function",
+        composite = "assert_receiver_is_total_eq",
+    )]
+    fn assert_receiver_is_total_eq(&self) -> ();
+
+"#,
+			r#"
+
     #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
     fn clone(&self) -> bevy::pbr::prelude::ParallaxMappingMethod;
 
@@ -1453,16 +1463,6 @@ functions[r#"
 
     #[lua(as_trait = "std::cmp::PartialEq", kind = "Method")]
     fn eq(&self, #[proxy] other: &parallax::ParallaxMappingMethod) -> bool;
-
-"#,
-			r#"
-
-    #[lua(
-        as_trait = "std::cmp::Eq",
-        kind = "Function",
-        composite = "assert_receiver_is_total_eq",
-    )]
-    fn assert_receiver_is_total_eq(&self) -> ();
 
 "#]
 )]
@@ -1539,6 +1539,16 @@ derive(clone,debug),
 remote="bevy::pbr::ScreenSpaceAmbientOcclusionSettings",
 functions[r#"
 
+    #[lua(
+        as_trait = "std::cmp::Eq",
+        kind = "Function",
+        composite = "assert_receiver_is_total_eq",
+    )]
+    fn assert_receiver_is_total_eq(&self) -> ();
+
+"#,
+			r#"
+
     #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
     fn clone(&self) -> bevy::pbr::ScreenSpaceAmbientOcclusionSettings;
 
@@ -1547,16 +1557,6 @@ functions[r#"
 
     #[lua(as_trait = "std::cmp::PartialEq", kind = "Method")]
     fn eq(&self, #[proxy] other: &ssao::ScreenSpaceAmbientOcclusionSettings) -> bool;
-
-"#,
-			r#"
-
-    #[lua(
-        as_trait = "std::cmp::Eq",
-        kind = "Function",
-        composite = "assert_receiver_is_total_eq",
-    )]
-    fn assert_receiver_is_total_eq(&self) -> ();
 
 "#]
 )]
@@ -1584,6 +1584,16 @@ functions[r#"
 "#,
 			r#"
 
+    #[lua(
+        as_trait = "std::cmp::Eq",
+        kind = "Function",
+        composite = "assert_receiver_is_total_eq",
+    )]
+    fn assert_receiver_is_total_eq(&self) -> ();
+
+"#,
+			r#"
+
     #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
     fn clone(&self) -> bevy::pbr::ScreenSpaceAmbientOcclusionQualityLevel;
 
@@ -1592,16 +1602,6 @@ functions[r#"
 
     #[lua(as_trait = "std::cmp::PartialEq", kind = "Method")]
     fn eq(&self, #[proxy] other: &ssao::ScreenSpaceAmbientOcclusionQualityLevel) -> bool;
-
-"#,
-			r#"
-
-    #[lua(
-        as_trait = "std::cmp::Eq",
-        kind = "Function",
-        composite = "assert_receiver_is_total_eq",
-    )]
-    fn assert_receiver_is_total_eq(&self) -> ();
 
 "#]
 )]

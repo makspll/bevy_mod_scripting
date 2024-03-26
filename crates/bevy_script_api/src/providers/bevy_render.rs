@@ -209,6 +209,16 @@ derive(clone,debug),
 remote="bevy::render::camera::NormalizedRenderTarget",
 functions[r#"
 
+    #[lua(
+        as_trait = "std::cmp::Eq",
+        kind = "Function",
+        composite = "assert_receiver_is_total_eq",
+    )]
+    fn assert_receiver_is_total_eq(&self) -> ();
+
+"#,
+			r#"
+
     #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
     fn clone(&self) -> bevy::render::camera::NormalizedRenderTarget;
 
@@ -217,16 +227,6 @@ functions[r#"
 
     #[lua(as_trait = "std::cmp::PartialEq", kind = "Method")]
     fn eq(&self, #[proxy] other: &camera::camera::NormalizedRenderTarget) -> bool;
-
-"#,
-			r#"
-
-    #[lua(
-        as_trait = "std::cmp::Eq",
-        kind = "Function",
-        composite = "assert_receiver_is_total_eq",
-    )]
-    fn assert_receiver_is_total_eq(&self) -> ();
 
 "#]
 )]
@@ -323,6 +323,16 @@ derive(clone,debug),
 remote="bevy::render::camera::ManualTextureViewHandle",
 functions[r#"
 
+    #[lua(
+        as_trait = "std::cmp::Eq",
+        kind = "Function",
+        composite = "assert_receiver_is_total_eq",
+    )]
+    fn assert_receiver_is_total_eq(&self) -> ();
+
+"#,
+			r#"
+
     #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
     fn clone(&self) -> bevy::render::camera::ManualTextureViewHandle;
 
@@ -335,16 +345,6 @@ functions[r#"
         #[proxy]
         other: &camera::manual_texture_view::ManualTextureViewHandle,
     ) -> bool;
-
-"#,
-			r#"
-
-    #[lua(
-        as_trait = "std::cmp::Eq",
-        kind = "Function",
-        composite = "assert_receiver_is_total_eq",
-    )]
-    fn assert_receiver_is_total_eq(&self) -> ();
 
 "#]
 )]
@@ -432,9 +432,16 @@ pub struct LuaPerspectiveProjection{
 derive(clone,debug),
 remote="bevy::render::camera::ScalingMode",
 functions[r#"
+/// Scale the `ScalingMode`. For example, multiplying by 2 makes the viewport twice as large.
 
-    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
-    fn clone(&self) -> bevy::render::camera::ScalingMode;
+    #[lua(
+        as_trait = "std::ops::Mul",
+        kind = "Function",
+        output(proxy),
+        composite = "mul",
+        metamethod = "Mul",
+    )]
+    fn mul(self, rhs: f32) -> bevy::render::camera::ScalingMode;
 
 "#,
 			r#"
@@ -451,16 +458,9 @@ functions[r#"
 
 "#,
 			r#"
-/// Scale the `ScalingMode`. For example, multiplying by 2 makes the viewport twice as large.
 
-    #[lua(
-        as_trait = "std::ops::Mul",
-        kind = "Function",
-        output(proxy),
-        composite = "mul",
-        metamethod = "Mul",
-    )]
-    fn mul(self, rhs: f32) -> bevy::render::camera::ScalingMode;
+    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
+    fn clone(&self) -> bevy::render::camera::ScalingMode;
 
 "#]
 )]
@@ -920,12 +920,6 @@ functions[r#"
 "#,
 			r#"
 
-    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
-    fn clone(&self) -> bevy::render::color::Color;
-
-"#,
-			r#"
-
     #[lua(
         as_trait = "std::ops::Add",
         kind = "Function",
@@ -934,6 +928,12 @@ functions[r#"
         metamethod = "Add",
     )]
     fn add(self, #[proxy] rhs: bevy::render::color::Color) -> bevy::render::color::Color;
+
+"#,
+			r#"
+
+    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
+    fn clone(&self) -> bevy::render::color::Color;
 
 "#,
 			r#"
@@ -2003,12 +2003,6 @@ functions[r#"
 
 "#,
 			r#"
-
-    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
-    fn clone(&self) -> bevy::render::render_asset::RenderAssetUsages;
-
-"#,
-			r#"
 /// The intersection of a source flags value with the complement of a target flags value (`&!`).
 /// This method is not equivalent to `self & !other` when `other` has unknown bits set.
 /// `difference` won't truncate `other`, but the `!` operator will.
@@ -2029,18 +2023,24 @@ functions[r#"
 "#,
 			r#"
 
-    #[lua(as_trait = "std::cmp::PartialEq", kind = "Method")]
-    fn eq(&self, #[proxy] other: &render_asset::RenderAssetUsages) -> bool;
-
-"#,
-			r#"
-
     #[lua(
         as_trait = "std::cmp::Eq",
         kind = "Function",
         composite = "assert_receiver_is_total_eq",
     )]
     fn assert_receiver_is_total_eq(&self) -> ();
+
+"#,
+			r#"
+
+    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
+    fn clone(&self) -> bevy::render::render_asset::RenderAssetUsages;
+
+"#,
+			r#"
+
+    #[lua(as_trait = "std::cmp::PartialEq", kind = "Method")]
+    fn eq(&self, #[proxy] other: &render_asset::RenderAssetUsages) -> bool;
 
 "#]
 )]
@@ -2211,6 +2211,16 @@ functions[r#"
 "#,
 			r#"
 
+    #[lua(
+        as_trait = "std::cmp::Eq",
+        kind = "Function",
+        composite = "assert_receiver_is_total_eq",
+    )]
+    fn assert_receiver_is_total_eq(&self) -> ();
+
+"#,
+			r#"
+
     #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
     fn clone(&self) -> bevy::render::view::visibility::RenderLayers;
 
@@ -2219,16 +2229,6 @@ functions[r#"
 
     #[lua(as_trait = "std::cmp::PartialEq", kind = "Method")]
     fn eq(&self, #[proxy] other: &view::visibility::render_layers::RenderLayers) -> bool;
-
-"#,
-			r#"
-
-    #[lua(
-        as_trait = "std::cmp::Eq",
-        kind = "Function",
-        composite = "assert_receiver_is_total_eq",
-    )]
-    fn assert_receiver_is_total_eq(&self) -> ();
 
 "#]
 )]
@@ -2261,18 +2261,18 @@ derive(clone,debug),
 remote="bevy::render::view::visibility::Visibility",
 functions[r#"
 
-    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
-    fn clone(&self) -> bevy::render::view::visibility::Visibility;
-
-"#,
-			r#"
-
     #[lua(
         as_trait = "std::cmp::Eq",
         kind = "Function",
         composite = "assert_receiver_is_total_eq",
     )]
     fn assert_receiver_is_total_eq(&self) -> ();
+
+"#,
+			r#"
+
+    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
+    fn clone(&self) -> bevy::render::view::visibility::Visibility;
 
 "#]
 )]
@@ -2308,6 +2308,16 @@ functions[r#"
 "#,
 			r#"
 
+    #[lua(
+        as_trait = "std::cmp::Eq",
+        kind = "Function",
+        composite = "assert_receiver_is_total_eq",
+    )]
+    fn assert_receiver_is_total_eq(&self) -> ();
+
+"#,
+			r#"
+
     #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
     fn clone(&self) -> bevy::render::view::visibility::InheritedVisibility;
 
@@ -2316,16 +2326,6 @@ functions[r#"
 
     #[lua(as_trait = "std::cmp::PartialEq", kind = "Method")]
     fn eq(&self, #[proxy] other: &view::visibility::InheritedVisibility) -> bool;
-
-"#,
-			r#"
-
-    #[lua(
-        as_trait = "std::cmp::Eq",
-        kind = "Function",
-        composite = "assert_receiver_is_total_eq",
-    )]
-    fn assert_receiver_is_total_eq(&self) -> ();
 
 "#]
 )]
@@ -2385,6 +2385,16 @@ functions[r#"
 "#,
 			r#"
 
+    #[lua(
+        as_trait = "std::cmp::Eq",
+        kind = "Function",
+        composite = "assert_receiver_is_total_eq",
+    )]
+    fn assert_receiver_is_total_eq(&self) -> ();
+
+"#,
+			r#"
+
     #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
     fn clone(&self) -> bevy::render::view::visibility::ViewVisibility;
 
@@ -2393,16 +2403,6 @@ functions[r#"
 
     #[lua(as_trait = "std::cmp::PartialEq", kind = "Method")]
     fn eq(&self, #[proxy] other: &view::visibility::ViewVisibility) -> bool;
-
-"#,
-			r#"
-
-    #[lua(
-        as_trait = "std::cmp::Eq",
-        kind = "Function",
-        composite = "assert_receiver_is_total_eq",
-    )]
-    fn assert_receiver_is_total_eq(&self) -> ();
 
 "#]
 )]

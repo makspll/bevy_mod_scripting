@@ -22,7 +22,7 @@ TEST_NAME=
 # # valgrind outputs a callgrind.out.<pid>. We can analyze this with kcachegrind
 # kcachegrind
 NIGHTLY_VERSION=nightly-2024-01-24
-BEVY_VERSION=0.13.0
+BEVY_VERSION=0.13.1
 GLAM_VERSION=0.25.0
 CODEGEN_PATH=${PWD}/target/codegen
 BEVY_PATH=${CODEGEN_PATH}/bevy
