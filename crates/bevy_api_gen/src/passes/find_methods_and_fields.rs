@@ -212,6 +212,7 @@ fn report_field_not_supported(
     variant_did: Option<DefId>,
     reason: &'static str,
 ) {
+
     let normalised_ty = tcx.normalize_erasing_regions(
         tcx.param_env(type_did),
         tcx.type_of(f_did).instantiate_identity(),
@@ -282,6 +283,7 @@ fn type_is_supported_as_proxy_arg<'tcx>(
     meta_loader: &MetaLoader,
     ty: Ty,
 ) -> bool {
+    log::trace!("Checking type is supported as proxy arg: '{}'", ty);
     type_is_adt_and_reflectable(tcx, reflect_types, meta_loader, ty.peel_refs())
 }
 
@@ -292,6 +294,7 @@ fn type_is_supported_as_proxy_return_val<'tcx>(
     meta_loader: &MetaLoader,
     ty: Ty,
 ) -> bool {
+    log::trace!("Checking type is supported as proxy return val: '{}'", ty);
     type_is_adt_and_reflectable(tcx, reflect_types, meta_loader, ty)
 }
 
@@ -305,9 +308,9 @@ fn type_is_adt_and_reflectable<'tcx>(
     ty.ty_adt_def().is_some_and(|adt_def| {
         let did = adt_def.did();
 
-        if did.is_local() {
+        if reflect_types.contains_key(&did) {
             // local types are easy to check
-            return reflect_types.contains_key(&did);
+            return true;
         }
 
         // for other crates, reach for meta data
@@ -328,7 +331,11 @@ fn type_is_adt_and_reflectable<'tcx>(
             Some(meta) => meta,
             None => return false, // TODO: is it possible we get false negatives here ? perhaps due to parallel compilation ? or possibly because of dependency order
         };
-        meta.contains_def_path_hash(tcx.def_path_hash(did))
+
+        let contains_hash = meta.contains_def_path_hash(tcx.def_path_hash(did));
+        log::trace!("Meta for type: `{}`, contained in meta `{}`", tcx.item_name(did), contains_hash);
+        contains_hash
+        
     })
 }
 

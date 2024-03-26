@@ -56,8 +56,11 @@ prepare_api_gen:
 	rm -rf ${OUTPUT_PATH}/* 
 	cd ${BEVY_PATH} && git fetch --tags && git checkout v${BEVY_VERSION}
 
+clean_bevy:
+	cd ${BEVY_PATH} && cargo clean
+
 generate_bevy:
-	cd ${BEVY_PATH} && cargo +${NIGHTLY_VERSION} bevy-api-gen generate --output ${OUTPUT_PATH} -v --template-args '{ "self_is_bevy_script_api": true}' --features ${GEN_BEVY_FEATURES} --no-default-features
+	cd ${BEVY_PATH} && cargo +${NIGHTLY_VERSION} bevy-api-gen generate --output ${OUTPUT_PATH} -vv --template-args '{ "self_is_bevy_script_api": true}' --features ${GEN_BEVY_FEATURES} --no-default-features
 
 collect_bevy:
 	cd ${BEVY_PATH} && cargo +${NIGHTLY_VERSION} bevy-api-gen collect --output ${OUTPUT_PATH} -v --template-args '{ "self_is_bevy_script_api": true}'
@@ -71,4 +74,4 @@ install_generated_files:
 	rm -rf ${GENERATED_SRC_PATH}/* || true
 	find ${OUTPUT_PATH} -name "*.rs" -exec cp {} ${GENERATED_SRC_PATH} \;
 
-generate: deletion_confirmation install_bevy_api_gen prepare_api_gen generate_bevy collect_bevy install_generated_files
+generate: deletion_confirmation install_bevy_api_gen prepare_api_gen clean_bevy generate_bevy collect_bevy install_generated_files

@@ -58,7 +58,7 @@ impl RustcPlugin for BevyAnalyzer {
 
     fn modify_cargo(&self, cmd: &mut std::process::Command, args: &Self::Args) {
         *cmd = copy_command_without_args(cmd, &["-q", "-v", "--all", "--workspace"]);
-
+        cmd.args(["--color", "always"]);
         if !args.features.is_empty() {
             cmd.args(["--features", &args.features.join(",")]);
         }
@@ -68,7 +68,7 @@ impl RustcPlugin for BevyAnalyzer {
         }
 
         // make cargo chatty as well
-        if args.verbose.get_log_level() >= log::Level::Trace {
+        if args.verbose.get_log_level_int() >= 3 {
             cmd.arg("-v");
         } else {
             cmd.arg("-q");

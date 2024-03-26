@@ -73,14 +73,14 @@ functions[r#"
 "#,
 			r#"
 
-    #[lua(as_trait = "std::cmp::Eq", kind = "Method")]
-    fn assert_receiver_is_total_eq(&self) -> ();
+    #[lua(as_trait = "std::cmp::PartialEq", kind = "Function", composite = "eq")]
+    fn eq(&self, #[proxy] other: &component::ComponentId) -> bool;
 
 "#,
 			r#"
 
-    #[lua(as_trait = "std::cmp::PartialEq", kind = "Function", composite = "eq")]
-    fn eq(&self, #[proxy] other: &component::ComponentId) -> bool;
+    #[lua(as_trait = "std::cmp::Eq", kind = "Method")]
+    fn assert_receiver_is_total_eq(&self) -> ();
 
 "#,
 			r#"
@@ -442,14 +442,14 @@ functions[r#"
 "#,
 			r#"
 
-    #[lua(as_trait = "std::cmp::PartialEq", kind = "Function", composite = "eq")]
-    fn eq(&self, #[proxy] other: &entity::Entity) -> bool;
+    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
+    fn clone(&self) -> bevy::ecs::entity::Entity;
 
 "#,
 			r#"
 
-    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
-    fn clone(&self) -> bevy::ecs::entity::Entity;
+    #[lua(as_trait = "std::cmp::PartialEq", kind = "Function", composite = "eq")]
+    fn eq(&self, #[proxy] other: &entity::Entity) -> bool;
 
 "#]
 )]

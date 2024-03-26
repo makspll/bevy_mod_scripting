@@ -80,17 +80,20 @@ pub struct Verbosity {
 }
 
 impl Verbosity {
+    pub fn get_log_level_int(&self) -> i8 {
+        (self.verbose as i8) - (self.quiet as i8)
+    }
     pub fn get_log_level(&self) -> log::Level {
-        match (self.verbose as isize) - (self.quiet as isize) {
+        match self.get_log_level_int() {
             0 => log::Level::Info,
             1 => log::Level::Debug,
             x if x >= 2 => log::Level::Trace,
-            _ => log::Level::Trace,
+            _ => log::Level::Error,
         }
     }
 
     pub fn get_rustlog_value(&self) -> &str {
-        match (self.verbose as isize) - (self.quiet as isize) {
+        match self.get_log_level_int() {
             0 => "info",
             1 => "debug",
             x if x >= 2 => "trace",

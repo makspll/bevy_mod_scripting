@@ -48,14 +48,14 @@ functions[r#"
 "#,
 			r#"
 
-    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
-    fn clone(&self) -> bevy::input::gamepad::Gamepad;
+    #[lua(as_trait = "std::cmp::PartialEq", kind = "Function", composite = "eq")]
+    fn eq(&self, #[proxy] other: &gamepad::Gamepad) -> bool;
 
 "#,
 			r#"
 
-    #[lua(as_trait = "std::cmp::PartialEq", kind = "Function", composite = "eq")]
-    fn eq(&self, #[proxy] other: &gamepad::Gamepad) -> bool;
+    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
+    fn clone(&self) -> bevy::input::gamepad::Gamepad;
 
 "#,
 			r#"
@@ -91,14 +91,14 @@ functions[r#"
 "#,
 			r#"
 
-    #[lua(as_trait = "std::cmp::PartialEq", kind = "Function", composite = "eq")]
-    fn eq(&self, #[proxy] other: &gamepad::GamepadInfo) -> bool;
+    #[lua(as_trait = "std::cmp::Eq", kind = "Method")]
+    fn assert_receiver_is_total_eq(&self) -> ();
 
 "#,
 			r#"
 
-    #[lua(as_trait = "std::cmp::Eq", kind = "Method")]
-    fn assert_receiver_is_total_eq(&self) -> ();
+    #[lua(as_trait = "std::cmp::PartialEq", kind = "Function", composite = "eq")]
+    fn eq(&self, #[proxy] other: &gamepad::GamepadInfo) -> bool;
 
 "#]
 )]
@@ -198,14 +198,14 @@ functions[r#"
 "#,
 			r#"
 
-    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
-    fn clone(&self) -> bevy::input::gamepad::GamepadButton;
+    #[lua(as_trait = "std::cmp::Eq", kind = "Method")]
+    fn assert_receiver_is_total_eq(&self) -> ();
 
 "#,
 			r#"
 
-    #[lua(as_trait = "std::cmp::Eq", kind = "Method")]
-    fn assert_receiver_is_total_eq(&self) -> ();
+    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
+    fn clone(&self) -> bevy::input::gamepad::GamepadButton;
 
 "#,
 			r#"
@@ -235,14 +235,14 @@ derive(clone,debug,),
 remote="bevy::input::gamepad::GamepadButtonInput",
 functions[r#"
 
-    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
-    fn clone(&self) -> bevy::input::gamepad::GamepadButtonInput;
+    #[lua(as_trait = "std::cmp::Eq", kind = "Method")]
+    fn assert_receiver_is_total_eq(&self) -> ();
 
 "#,
 			r#"
 
-    #[lua(as_trait = "std::cmp::Eq", kind = "Method")]
-    fn assert_receiver_is_total_eq(&self) -> ();
+    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
+    fn clone(&self) -> bevy::input::gamepad::GamepadButtonInput;
 
 "#,
 			r#"
@@ -280,14 +280,14 @@ derive(clone,debug,),
 remote="bevy::input::gamepad::GamepadAxisType",
 functions[r#"
 
-    #[lua(as_trait = "std::cmp::Eq", kind = "Method")]
-    fn assert_receiver_is_total_eq(&self) -> ();
+    #[lua(as_trait = "std::cmp::PartialEq", kind = "Function", composite = "eq")]
+    fn eq(&self, #[proxy] other: &gamepad::GamepadAxisType) -> bool;
 
 "#,
 			r#"
 
-    #[lua(as_trait = "std::cmp::PartialEq", kind = "Function", composite = "eq")]
-    fn eq(&self, #[proxy] other: &gamepad::GamepadAxisType) -> bool;
+    #[lua(as_trait = "std::cmp::Eq", kind = "Method")]
+    fn assert_receiver_is_total_eq(&self) -> ();
 
 "#,
 			r#"
@@ -346,12 +346,6 @@ functions[r#"
 "#,
 			r#"
 
-    #[lua(as_trait = "std::cmp::Eq", kind = "Method")]
-    fn assert_receiver_is_total_eq(&self) -> ();
-
-"#,
-			r#"
-
     #[lua(as_trait = "std::cmp::PartialEq", kind = "Function", composite = "eq")]
     fn eq(&self, #[proxy] other: &gamepad::GamepadAxis) -> bool;
 
@@ -360,6 +354,12 @@ functions[r#"
 
     #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
     fn clone(&self) -> bevy::input::gamepad::GamepadAxis;
+
+"#,
+			r#"
+
+    #[lua(as_trait = "std::cmp::Eq", kind = "Method")]
+    fn assert_receiver_is_total_eq(&self) -> ();
 
 "#]
 )]
@@ -624,14 +624,14 @@ functions[r#"
 "#,
 			r#"
 
-    #[lua(as_trait = "std::cmp::PartialEq", kind = "Function", composite = "eq")]
-    fn eq(&self, #[proxy] other: &gamepad::AxisSettings) -> bool;
+    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
+    fn clone(&self) -> bevy::input::gamepad::AxisSettings;
 
 "#,
 			r#"
 
-    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
-    fn clone(&self) -> bevy::input::gamepad::AxisSettings;
+    #[lua(as_trait = "std::cmp::PartialEq", kind = "Function", composite = "eq")]
+    fn eq(&self, #[proxy] other: &gamepad::AxisSettings) -> bool;
 
 "#]
 )]
@@ -721,14 +721,14 @@ derive(clone,debug,),
 remote="bevy::input::gamepad::GamepadConnection",
 functions[r#"
 
-    #[lua(as_trait = "std::cmp::PartialEq", kind = "Function", composite = "eq")]
-    fn eq(&self, #[proxy] other: &gamepad::GamepadConnection) -> bool;
+    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
+    fn clone(&self) -> bevy::input::gamepad::GamepadConnection;
 
 "#,
 			r#"
 
-    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
-    fn clone(&self) -> bevy::input::gamepad::GamepadConnection;
+    #[lua(as_trait = "std::cmp::PartialEq", kind = "Function", composite = "eq")]
+    fn eq(&self, #[proxy] other: &gamepad::GamepadConnection) -> bool;
 
 "#]
 )]
@@ -778,14 +778,14 @@ functions[r#"
 "#,
 			r#"
 
-    #[lua(as_trait = "std::cmp::PartialEq", kind = "Function", composite = "eq")]
-    fn eq(&self, #[proxy] other: &gamepad::GamepadConnectionEvent) -> bool;
+    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
+    fn clone(&self) -> bevy::input::gamepad::GamepadConnectionEvent;
 
 "#,
 			r#"
 
-    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
-    fn clone(&self) -> bevy::input::gamepad::GamepadConnectionEvent;
+    #[lua(as_trait = "std::cmp::PartialEq", kind = "Function", composite = "eq")]
+    fn eq(&self, #[proxy] other: &gamepad::GamepadConnectionEvent) -> bool;
 
 "#]
 )]
@@ -952,14 +952,14 @@ functions[r#"
 "#,
 			r#"
 
-    #[lua(as_trait = "std::cmp::PartialEq", kind = "Function", composite = "eq")]
-    fn eq(&self, #[proxy] other: &keyboard::KeyboardInput) -> bool;
+    #[lua(as_trait = "std::cmp::Eq", kind = "Method")]
+    fn assert_receiver_is_total_eq(&self) -> ();
 
 "#,
 			r#"
 
-    #[lua(as_trait = "std::cmp::Eq", kind = "Method")]
-    fn assert_receiver_is_total_eq(&self) -> ();
+    #[lua(as_trait = "std::cmp::PartialEq", kind = "Function", composite = "eq")]
+    fn eq(&self, #[proxy] other: &keyboard::KeyboardInput) -> bool;
 
 "#]
 )]
@@ -997,8 +997,8 @@ derive(clone,debug,),
 remote="bevy::input::keyboard::NativeKeyCode",
 functions[r#"
 
-    #[lua(as_trait = "std::cmp::Eq", kind = "Method")]
-    fn assert_receiver_is_total_eq(&self) -> ();
+    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
+    fn clone(&self) -> bevy::input::keyboard::NativeKeyCode;
 
 "#,
 			r#"
@@ -1009,8 +1009,8 @@ functions[r#"
 "#,
 			r#"
 
-    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
-    fn clone(&self) -> bevy::input::keyboard::NativeKeyCode;
+    #[lua(as_trait = "std::cmp::Eq", kind = "Method")]
+    fn assert_receiver_is_total_eq(&self) -> ();
 
 "#]
 )]
@@ -1060,14 +1060,14 @@ functions[r#"
 "#,
 			r#"
 
-    #[lua(as_trait = "std::cmp::PartialEq", kind = "Function", composite = "eq")]
-    fn eq(&self, #[proxy] other: &keyboard::KeyCode) -> bool;
+    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
+    fn clone(&self) -> bevy::input::keyboard::KeyCode;
 
 "#,
 			r#"
 
-    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
-    fn clone(&self) -> bevy::input::keyboard::KeyCode;
+    #[lua(as_trait = "std::cmp::PartialEq", kind = "Function", composite = "eq")]
+    fn eq(&self, #[proxy] other: &keyboard::KeyCode) -> bool;
 
 "#]
 )]
@@ -1103,8 +1103,8 @@ derive(clone,debug,),
 remote="bevy::input::keyboard::NativeKey",
 functions[r#"
 
-    #[lua(as_trait = "std::cmp::PartialEq", kind = "Function", composite = "eq")]
-    fn eq(&self, #[proxy] other: &keyboard::NativeKey) -> bool;
+    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
+    fn clone(&self) -> bevy::input::keyboard::NativeKey;
 
 "#,
 			r#"
@@ -1115,8 +1115,8 @@ functions[r#"
 "#,
 			r#"
 
-    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
-    fn clone(&self) -> bevy::input::keyboard::NativeKey;
+    #[lua(as_trait = "std::cmp::PartialEq", kind = "Function", composite = "eq")]
+    fn eq(&self, #[proxy] other: &keyboard::NativeKey) -> bool;
 
 "#]
 )]
@@ -1185,12 +1185,6 @@ derive(clone,debug,),
 remote="bevy::input::mouse::MouseButtonInput",
 functions[r#"
 
-    #[lua(as_trait = "std::cmp::PartialEq", kind = "Function", composite = "eq")]
-    fn eq(&self, #[proxy] other: &mouse::MouseButtonInput) -> bool;
-
-"#,
-			r#"
-
     #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
     fn clone(&self) -> bevy::input::mouse::MouseButtonInput;
 
@@ -1199,6 +1193,12 @@ functions[r#"
 
     #[lua(as_trait = "std::cmp::Eq", kind = "Method")]
     fn assert_receiver_is_total_eq(&self) -> ();
+
+"#,
+			r#"
+
+    #[lua(as_trait = "std::cmp::PartialEq", kind = "Function", composite = "eq")]
+    fn eq(&self, #[proxy] other: &mouse::MouseButtonInput) -> bool;
 
 "#]
 )]
@@ -1232,6 +1232,12 @@ derive(clone,debug,),
 remote="bevy::input::mouse::MouseButton",
 functions[r#"
 
+    #[lua(as_trait = "std::cmp::PartialEq", kind = "Function", composite = "eq")]
+    fn eq(&self, #[proxy] other: &mouse::MouseButton) -> bool;
+
+"#,
+			r#"
+
     #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
     fn clone(&self) -> bevy::input::mouse::MouseButton;
 
@@ -1240,12 +1246,6 @@ functions[r#"
 
     #[lua(as_trait = "std::cmp::Eq", kind = "Method")]
     fn assert_receiver_is_total_eq(&self) -> ();
-
-"#,
-			r#"
-
-    #[lua(as_trait = "std::cmp::PartialEq", kind = "Function", composite = "eq")]
-    fn eq(&self, #[proxy] other: &mouse::MouseButton) -> bool;
 
 "#]
 )]
@@ -1314,12 +1314,6 @@ derive(clone,debug,),
 remote="bevy::input::mouse::MouseScrollUnit",
 functions[r#"
 
-    #[lua(as_trait = "std::cmp::PartialEq", kind = "Function", composite = "eq")]
-    fn eq(&self, #[proxy] other: &mouse::MouseScrollUnit) -> bool;
-
-"#,
-			r#"
-
     #[lua(as_trait = "std::cmp::Eq", kind = "Method")]
     fn assert_receiver_is_total_eq(&self) -> ();
 
@@ -1328,6 +1322,12 @@ functions[r#"
 
     #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
     fn clone(&self) -> bevy::input::mouse::MouseScrollUnit;
+
+"#,
+			r#"
+
+    #[lua(as_trait = "std::cmp::PartialEq", kind = "Function", composite = "eq")]
+    fn eq(&self, #[proxy] other: &mouse::MouseScrollUnit) -> bool;
 
 "#]
 )]
@@ -1412,14 +1412,14 @@ derive(clone,debug,),
 remote="bevy::input::touch::TouchInput",
 functions[r#"
 
-    #[lua(as_trait = "std::cmp::PartialEq", kind = "Function", composite = "eq")]
-    fn eq(&self, #[proxy] other: &touch::TouchInput) -> bool;
+    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
+    fn clone(&self) -> bevy::input::touch::TouchInput;
 
 "#,
 			r#"
 
-    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
-    fn clone(&self) -> bevy::input::touch::TouchInput;
+    #[lua(as_trait = "std::cmp::PartialEq", kind = "Function", composite = "eq")]
+    fn eq(&self, #[proxy] other: &touch::TouchInput) -> bool;
 
 "#]
 )]
@@ -1488,14 +1488,14 @@ functions[r#"
 "#,
 			r#"
 
-    #[lua(as_trait = "std::cmp::PartialEq", kind = "Function", composite = "eq")]
-    fn eq(&self, #[proxy] other: &touch::TouchPhase) -> bool;
+    #[lua(as_trait = "std::cmp::Eq", kind = "Method")]
+    fn assert_receiver_is_total_eq(&self) -> ();
 
 "#,
 			r#"
 
-    #[lua(as_trait = "std::cmp::Eq", kind = "Method")]
-    fn assert_receiver_is_total_eq(&self) -> ();
+    #[lua(as_trait = "std::cmp::PartialEq", kind = "Function", composite = "eq")]
+    fn eq(&self, #[proxy] other: &touch::TouchPhase) -> bool;
 
 "#]
 )]
@@ -1525,14 +1525,14 @@ derive(clone,debug,),
 remote="bevy::input::touchpad::TouchpadMagnify",
 functions[r#"
 
-    #[lua(as_trait = "std::cmp::PartialEq", kind = "Function", composite = "eq")]
-    fn eq(&self, #[proxy] other: &touchpad::TouchpadMagnify) -> bool;
+    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
+    fn clone(&self) -> bevy::input::touchpad::TouchpadMagnify;
 
 "#,
 			r#"
 
-    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
-    fn clone(&self) -> bevy::input::touchpad::TouchpadMagnify;
+    #[lua(as_trait = "std::cmp::PartialEq", kind = "Function", composite = "eq")]
+    fn eq(&self, #[proxy] other: &touchpad::TouchpadMagnify) -> bool;
 
 "#]
 )]
@@ -1563,14 +1563,14 @@ derive(clone,debug,),
 remote="bevy::input::touchpad::TouchpadRotate",
 functions[r#"
 
-    #[lua(as_trait = "std::cmp::PartialEq", kind = "Function", composite = "eq")]
-    fn eq(&self, #[proxy] other: &touchpad::TouchpadRotate) -> bool;
+    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
+    fn clone(&self) -> bevy::input::touchpad::TouchpadRotate;
 
 "#,
 			r#"
 
-    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
-    fn clone(&self) -> bevy::input::touchpad::TouchpadRotate;
+    #[lua(as_trait = "std::cmp::PartialEq", kind = "Function", composite = "eq")]
+    fn eq(&self, #[proxy] other: &touchpad::TouchpadRotate) -> bool;
 
 "#]
 )]
@@ -1600,14 +1600,14 @@ functions[r#"
 "#,
 			r#"
 
-    #[lua(as_trait = "std::cmp::Eq", kind = "Method")]
-    fn assert_receiver_is_total_eq(&self) -> ();
+    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
+    fn clone(&self) -> bevy::input::ButtonState;
 
 "#,
 			r#"
 
-    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
-    fn clone(&self) -> bevy::input::ButtonState;
+    #[lua(as_trait = "std::cmp::Eq", kind = "Method")]
+    fn assert_receiver_is_total_eq(&self) -> ();
 
 "#,
 			r#"

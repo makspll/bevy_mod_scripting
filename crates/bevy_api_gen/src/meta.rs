@@ -63,29 +63,24 @@ impl MetaLoader {
         self.meta_for_retry(crate_name, 3)
     }
 
-    pub fn meta_for_retry(&self, crate_name: &str, try_attempts: usize) -> Option<Meta> {
+    fn meta_for_retry(&self, crate_name: &str, _try_attempts: usize) -> Option<Meta> {
         let meta = self
             .meta_dirs
             .iter()
             .find_map(|dir| self.meta_for_in_dir(crate_name, dir));
 
-        if meta.is_none()
-            && self
-                .workspace_meta
-                .is_workspace_and_included_crate(crate_name)
-        {
-            if try_attempts == 0 {
-                return None;
-            };
+        let needs_meta = self
+            .workspace_meta
+            .is_workspace_and_included_crate(crate_name);
 
-            let mut retries = 0;
-            while retries < try_attempts {
-                sleep(Duration::from_secs(2u64.pow(retries as u32)));
-                if let Some(out) = self.meta_for_retry(crate_name, 0) {
-                    return Some(out);
-                };
-                retries += 1;
-            }
+        if meta.is_none() {
+            log::trace!(
+                "Could not find meta for crate: `{}`, is_workspace_and_included: '{}'",
+                crate_name,
+                needs_meta
+            )
+        }
+        if meta.is_none() && needs_meta {
             panic!("Could not find meta for workspace crate: {}", crate_name);
         };
 

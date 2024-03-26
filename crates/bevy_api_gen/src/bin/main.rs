@@ -206,12 +206,6 @@ fn build_bootstrap(
     let mut bootstrap_rlibs = HashMap::with_capacity(BOOTSTRAP_DEPS.len());
     for msg in cargo_metadata::Message::parse_stream(reader) {
         if let cargo_metadata::Message::CompilerArtifact(artifact) = msg.unwrap() {
-            trace!(
-                "produced artifacts for: {}, at: {:?}",
-                artifact.package_id,
-                artifact.filenames
-            );
-
             for artifact in artifact.filenames.into_iter() {
                 process_artifact(artifact, &mut bootstrap_rlibs);
             }

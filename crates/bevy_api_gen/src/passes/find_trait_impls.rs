@@ -13,14 +13,22 @@ pub(crate) fn find_trait_impls(ctxt: &mut BevyCtxt<'_>, _args: &Args) -> bool {
 
     // first filter out those without GetTypeRegistration traits
     ctxt.reflect_types.retain(|reflect_ty_did, _| {
-        type_impl_of_trait(
+        let retaining = type_impl_of_trait(
             tcx,
             ctxt.cached_traits
                 .bevy_reflect_get_type_registration
                 .unwrap(),
             reflect_ty_did,
         )
-        .is_some()
+        .is_some();
+
+        if !retaining {
+            trace!(
+                "Type: `{:?}` does not implement GetTypeRegistration, removing from reflect types",
+                tcx.def_path_str(*reflect_ty_did)
+            );
+        }
+        retaining
     });
 
     for (reflect_ty_did, type_ctxt) in ctxt.reflect_types.iter_mut() {
