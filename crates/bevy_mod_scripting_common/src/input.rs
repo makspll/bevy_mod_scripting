@@ -11,10 +11,10 @@ use syn::{
     parse::Parse,
     punctuated::Punctuated,
     spanned::Spanned,
-    token::{And, Colon, Gt, Lt, Mut, PathSep},
+    token::{And, Gt, Lt, Mut, PathSep},
     visit_mut::VisitMut,
-    AngleBracketedGenericArguments, Attribute, Error, Expr, Field, Fields, GenericArgument,
-    PatType, Path, PathArguments, PathSegment, Receiver, Token, TraitItem, TraitItemFn, Type,
+    AngleBracketedGenericArguments, Attribute, Error, Field, Fields, GenericArgument,
+    PatType, Path, PathArguments, PathSegment, Receiver, TraitItemFn, Type,
     TypePath, TypeReference, TypeTuple, Variant,
 };
 

@@ -1,8 +1,8 @@
 #![allow(dead_code, unused_variables, unused_features)]
 use proc_macro::TokenStream;
 
-use quote::{format_ident, quote_spanned, ToTokens};
-use syn::{parse::Parse, parse_macro_input, spanned::Spanned, Attribute, DeriveInput};
+use quote::{ToTokens};
+use syn::{parse::Parse, spanned::Spanned, Attribute};
 
 /// A convenience macro which derives a lotta things to make your type work in all supported/enabled scripting languages, and provide static typing where possible.
 ///
@@ -65,7 +65,7 @@ use syn::{parse::Parse, parse_macro_input, spanned::Spanned, Attribute, DeriveIn
 pub fn impl_script_newtype(input: TokenStream) -> TokenStream {
     // let invocation = parse_macro_input!(input as MacroInvocation);
     // let inner = invocation.inner;
-    return input.into();
+    input
     // let mut output: proc_macro2::TokenStream = Default::default();
     // // find the language implementor macro id's
     // match invocation.languages.parse_meta() {

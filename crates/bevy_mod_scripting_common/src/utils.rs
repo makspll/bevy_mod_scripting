@@ -96,7 +96,7 @@ macro_rules! impl_parse_enum {
     };
 }
 
-pub(crate) use impl_parse_enum;
+
 use proc_macro2::{Ident, TokenStream};
 use quote::ToTokens;
 use syn::{
