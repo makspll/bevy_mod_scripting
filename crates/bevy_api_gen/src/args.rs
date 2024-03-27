@@ -102,6 +102,19 @@ impl Verbosity {
     }
 }
 
+fn default_ignored_types() -> String {
+    [
+        "bevy_reflect::DynamicArray",
+        "bevy_reflect::DynamicList",
+        "bevy_reflect::DynamicMap",
+        "bevy_reflect::DynamicStruct",
+        "bevy_reflect::DynamicTuple",
+        "bevy_reflect::DynamicTupleStruct",
+        "bevy_reflect::DynamicEnum",
+    ]
+    .join(",")
+}
+
 #[derive(Subcommand, Deserialize, Serialize, strum::EnumIs)]
 pub enum Command {
     /// Prints built-in templates to stdout
@@ -152,6 +165,14 @@ pub enum Command {
         /// The data returned is the same as the one provided to the templates.
         #[arg(long, action)]
         template_data_only: bool,
+
+        #[arg(
+            long,
+            default_value = default_ignored_types(),
+            use_value_delimiter = true,
+            value_delimiter = ','
+        )]
+        ignored_types: Vec<String>,
     },
     // /// Final step, once you generate all the crate files you would like to have in your module, you can run this command to
     // /// generate a `mod.rs` file using the `collect.rs` template, which will be provided with all the generated filenames and can 'collect' all the items as it wishes

@@ -1,4 +1,4 @@
-use log::debug;
+use log::{debug, info};
 use rustc_hir::def_id::LOCAL_CRATE;
 
 use crate::{Args, BevyCtxt, ReflectType, DEF_PATHS_REFLECT};
@@ -6,6 +6,10 @@ use crate::{Args, BevyCtxt, ReflectType, DEF_PATHS_REFLECT};
 /// Finds all reflect types which we can wrap in the crate as well as sorts the final list.
 pub(crate) fn find_reflect_types(ctxt: &mut BevyCtxt<'_>, args: &Args) -> bool {
     let tcx = &ctxt.tcx;
+    let ignored_types = match &args.cmd {
+        crate::Command::Generate {  ignored_types, .. } => ignored_types,
+        _ => return true,
+    };
 
     for trait_did in tcx.all_local_trait_impls(()).keys() {
         // we want to find the canonical `Reflect` trait's implemenations across crates, so let's check all impls and choose those
@@ -40,6 +44,10 @@ pub(crate) fn find_reflect_types(ctxt: &mut BevyCtxt<'_>, args: &Args) -> bool {
                 // only non parametrized simple types are allowed, i.e. "MyStruct" is allowed but "MyStruct<T>" isn't
                     generics.count() == 0 &&
                     self_ty.def().is_some_and(|did| {
+                            if ignored_types.contains(&format!("{}::{}",ctxt.tcx.crate_name(LOCAL_CRATE),ctxt.tcx.item_name(did))) {
+                                info!("Ignoring type: {:?}", tcx.def_path_str(did));
+                                return false;
+                            };
                             let adt_generics = tcx.generics_of(did);
                             tcx.visibility(did).is_public() && adt_generics.count() == 0
                         }))

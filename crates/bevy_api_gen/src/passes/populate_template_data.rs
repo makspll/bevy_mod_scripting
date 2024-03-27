@@ -195,7 +195,10 @@ pub(crate) fn process_functions(ctxt: &BevyCtxt, fns: &[FunctionContext]) -> Vec
                 reflection_strategy: *fn_ctxt.reflection_strategies.last().unwrap(),
             };
 
+            let is_unsafe = fn_ctxt.is_unsafe;
+
             Function {
+                is_unsafe,
                 ident: ctxt.tcx.item_name(fn_ctxt.def_id).to_ident_string(),
                 args,
                 output,
@@ -275,10 +278,13 @@ impl TyPrinter {
                 self.buffer.push_str(&import_path);
                 if args.len() > 0 {
                     self.buffer.push('<');
-                    for a in args.iter() {
+                    for (idx, a) in args.iter().enumerate() {
                         match a.as_type() {
                             Some(ty) => self.build_str(path_finder, ty),
                             None => _ = self.buffer.write_str(&a.to_string()),
+                        }
+                        if idx != args.len() - 1 {
+                            self.buffer.push_str(", ");
                         }
                     }
                     self.buffer.push('>');

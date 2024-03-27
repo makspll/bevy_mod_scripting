@@ -3,8 +3,6 @@ use std::{
     collections::HashMap,
     fs::File,
     io::{BufReader, BufWriter, Write},
-    thread::sleep,
-    time::Duration,
 };
 
 use cargo_metadata::camino::Utf8PathBuf;

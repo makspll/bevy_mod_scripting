@@ -138,6 +138,7 @@ pub struct Function {
     pub sig: Signature,
     pub default: Option<Block>,
     pub span: Span,
+    pub is_unsafe: bool,
 }
 
 impl Function {
@@ -147,6 +148,7 @@ impl Function {
         default: Option<Block>,
         sig: Signature,
         span: Span,
+        is_unsafe: bool,
     ) -> darling::Result<Self> {
         Ok(Self {
             name,
@@ -154,6 +156,7 @@ impl Function {
             sig,
             default,
             span,
+            is_unsafe,
         })
     }
 
@@ -580,10 +583,19 @@ impl Function {
                         #arg_name.#method_call(|#arg_name| {#acc})?
                     }}
                 });
-
-        Ok(quote!(
+        let out = quote!(
             #unpacked_parameter_declarations
             #conversion_body_surrounded_with_dereferening_stms
-        ))
+        );
+
+        if self.is_unsafe {
+            Ok(quote_spanned! {self.sig.span=>
+                unsafe {
+                    #out
+                }
+            })
+        } else {
+            Ok(out)
+        }
     }
 }

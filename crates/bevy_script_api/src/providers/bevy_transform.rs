@@ -78,6 +78,47 @@ functions[r#"
 
 "#,
 			r#"
+
+    #[lua(kind = "Function", output(proxy))]
+    fn from_translation(
+        #[proxy]
+        translation: bevy::math::Vec3,
+    ) -> bevy::transform::components::GlobalTransform;
+
+"#,
+			r#"
+
+    #[lua(kind = "Function", output(proxy))]
+    fn from_rotation(
+        #[proxy]
+        rotation: bevy::math::Quat,
+    ) -> bevy::transform::components::GlobalTransform;
+
+"#,
+			r#"
+
+    #[lua(kind = "Function", output(proxy))]
+    fn from_scale(
+        #[proxy]
+        scale: bevy::math::Vec3,
+    ) -> bevy::transform::components::GlobalTransform;
+
+"#,
+			r#"
+/// Returns the 3d affine transformation matrix as a [`Mat4`].
+
+    #[lua(kind = "Method", output(proxy))]
+    fn compute_matrix(&self) -> bevy::math::Mat4;
+
+"#,
+			r#"
+/// Returns the 3d affine transformation matrix as an [`Affine3A`].
+
+    #[lua(kind = "Method", output(proxy))]
+    fn affine(&self) -> bevy::math::Affine3A;
+
+"#,
+			r#"
 /// Returns the transformation as a [`Transform`].
 /// The transform is expected to be non-degenerate and without shearing, or the output
 /// will be invalid.
@@ -124,6 +165,77 @@ functions[r#"
         #[proxy]
         parent: &components::global_transform::GlobalTransform,
     ) -> bevy::transform::components::Transform;
+
+"#,
+			r#"
+///Return the local right vector (X).
+
+    #[lua(kind = "Method", output(proxy))]
+    fn right(&self) -> bevy::math::Vec3;
+
+"#,
+			r#"
+///Return the local left vector (-X).
+
+    #[lua(kind = "Method", output(proxy))]
+    fn left(&self) -> bevy::math::Vec3;
+
+"#,
+			r#"
+///Return the local up vector (Y).
+
+    #[lua(kind = "Method", output(proxy))]
+    fn up(&self) -> bevy::math::Vec3;
+
+"#,
+			r#"
+///Return the local down vector (-Y).
+
+    #[lua(kind = "Method", output(proxy))]
+    fn down(&self) -> bevy::math::Vec3;
+
+"#,
+			r#"
+///Return the local back vector (Z).
+
+    #[lua(kind = "Method", output(proxy))]
+    fn back(&self) -> bevy::math::Vec3;
+
+"#,
+			r#"
+///Return the local forward vector (-Z).
+
+    #[lua(kind = "Method", output(proxy))]
+    fn forward(&self) -> bevy::math::Vec3;
+
+"#,
+			r#"
+/// Get the translation as a [`Vec3`].
+
+    #[lua(kind = "Method", output(proxy))]
+    fn translation(&self) -> bevy::math::Vec3;
+
+"#,
+			r#"
+/// Get the translation as a [`Vec3A`].
+
+    #[lua(kind = "Method", output(proxy))]
+    fn translation_vec3a(&self) -> bevy::math::Vec3A;
+
+"#,
+			r#"
+/// Get an upper bound of the radius from the given `extents`.
+
+    #[lua(kind = "Method")]
+    fn radius_vec3a(&self, #[proxy] extents: bevy::math::Vec3A) -> f32;
+
+"#,
+			r#"
+/// Transforms the given `point`, applying shear, scale, rotation and translation.
+/// This moves `point` into the local space of this [`GlobalTransform`].
+
+    #[lua(kind = "Method", output(proxy))]
+    fn transform_point(&self, #[proxy] point: bevy::math::Vec3) -> bevy::math::Vec3;
 
 "#,
 			r#"
@@ -218,6 +330,154 @@ functions[r#"
 
 "#,
 			r#"
+/// Extracts the translation, rotation, and scale from `matrix`. It must be a 3d affine
+/// transformation matrix.
+
+    #[lua(kind = "Function", output(proxy))]
+    fn from_matrix(
+        #[proxy]
+        matrix: bevy::math::Mat4,
+    ) -> bevy::transform::components::Transform;
+
+"#,
+			r#"
+/// Creates a new [`Transform`], with `translation`. Rotation will be 0 and scale 1 on
+/// all axes.
+
+    #[lua(kind = "Function", output(proxy))]
+    fn from_translation(
+        #[proxy]
+        translation: bevy::math::Vec3,
+    ) -> bevy::transform::components::Transform;
+
+"#,
+			r#"
+/// Creates a new [`Transform`], with `rotation`. Translation will be 0 and scale 1 on
+/// all axes.
+
+    #[lua(kind = "Function", output(proxy))]
+    fn from_rotation(
+        #[proxy]
+        rotation: bevy::math::Quat,
+    ) -> bevy::transform::components::Transform;
+
+"#,
+			r#"
+/// Creates a new [`Transform`], with `scale`. Translation will be 0 and rotation 0 on
+/// all axes.
+
+    #[lua(kind = "Function", output(proxy))]
+    fn from_scale(
+        #[proxy]
+        scale: bevy::math::Vec3,
+    ) -> bevy::transform::components::Transform;
+
+"#,
+			r#"
+/// Returns this [`Transform`] with a new rotation so that [`Transform::forward`]
+/// points towards the `target` position and [`Transform::up`] points towards `up`.
+/// In some cases it's not possible to construct a rotation. Another axis will be picked in those cases:
+/// * if `target` is the same as the transform translation, `Vec3::Z` is used instead
+/// * if `up` is zero, `Vec3::Y` is used instead
+/// * if the resulting forward direction is parallel with `up`, an orthogonal vector is used as the "right" direction
+
+    #[lua(kind = "Method", output(proxy))]
+    fn looking_at(
+        self,
+        #[proxy]
+        target: bevy::math::Vec3,
+        #[proxy]
+        up: bevy::math::Vec3,
+    ) -> bevy::transform::components::Transform;
+
+"#,
+			r#"
+/// Returns this [`Transform`] with a new rotation so that [`Transform::forward`]
+/// points in the given `direction` and [`Transform::up`] points towards `up`.
+/// In some cases it's not possible to construct a rotation. Another axis will be picked in those cases:
+/// * if `direction` is zero, `Vec3::Z` is used instead
+/// * if `up` is zero, `Vec3::Y` is used instead
+/// * if `direction` is parallel with `up`, an orthogonal vector is used as the "right" direction
+
+    #[lua(kind = "Method", output(proxy))]
+    fn looking_to(
+        self,
+        #[proxy]
+        direction: bevy::math::Vec3,
+        #[proxy]
+        up: bevy::math::Vec3,
+    ) -> bevy::transform::components::Transform;
+
+"#,
+			r#"
+/// Returns this [`Transform`] with a new translation.
+
+    #[lua(kind = "Method", output(proxy))]
+    fn with_translation(
+        self,
+        #[proxy]
+        translation: bevy::math::Vec3,
+    ) -> bevy::transform::components::Transform;
+
+"#,
+			r#"
+/// Returns this [`Transform`] with a new rotation.
+
+    #[lua(kind = "Method", output(proxy))]
+    fn with_rotation(
+        self,
+        #[proxy]
+        rotation: bevy::math::Quat,
+    ) -> bevy::transform::components::Transform;
+
+"#,
+			r#"
+/// Returns this [`Transform`] with a new scale.
+
+    #[lua(kind = "Method", output(proxy))]
+    fn with_scale(
+        self,
+        #[proxy]
+        scale: bevy::math::Vec3,
+    ) -> bevy::transform::components::Transform;
+
+"#,
+			r#"
+/// Returns the 3d affine transformation matrix from this transforms translation,
+/// rotation, and scale.
+
+    #[lua(kind = "Method", output(proxy))]
+    fn compute_matrix(&self) -> bevy::math::Mat4;
+
+"#,
+			r#"
+/// Returns the 3d affine transformation matrix from this transforms translation,
+/// rotation, and scale.
+
+    #[lua(kind = "Method", output(proxy))]
+    fn compute_affine(&self) -> bevy::math::Affine3A;
+
+"#,
+			r#"
+/// Rotates this [`Transform`] by the given rotation.
+/// If this [`Transform`] has a parent, the `rotation` is relative to the rotation of the parent.
+/// # Examples
+/// - [`3d_rotation`]
+/// [`3d_rotation`]: https://github.com/bevyengine/bevy/blob/latest/examples/transforms/3d_rotation.rs
+
+    #[lua(kind = "MutatingMethod")]
+    fn rotate(&mut self, #[proxy] rotation: bevy::math::Quat) -> ();
+
+"#,
+			r#"
+/// Rotates this [`Transform`] around the given `axis` by `angle` (in radians).
+/// If this [`Transform`] has a parent, the `axis` is relative to the rotation of the parent.
+
+    #[lua(kind = "MutatingMethod")]
+    fn rotate_axis(&mut self, #[proxy] axis: bevy::math::Vec3, angle: f32) -> ();
+
+"#,
+			r#"
 /// Rotates this [`Transform`] around the `X` axis by `angle` (in radians).
 /// If this [`Transform`] has a parent, the axis is relative to the rotation of the parent.
 
@@ -242,6 +502,21 @@ functions[r#"
 
 "#,
 			r#"
+/// Rotates this [`Transform`] by the given `rotation`.
+/// The `rotation` is relative to this [`Transform`]'s current rotation.
+
+    #[lua(kind = "MutatingMethod")]
+    fn rotate_local(&mut self, #[proxy] rotation: bevy::math::Quat) -> ();
+
+"#,
+			r#"
+/// Rotates this [`Transform`] around its local `axis` by `angle` (in radians).
+
+    #[lua(kind = "MutatingMethod")]
+    fn rotate_local_axis(&mut self, #[proxy] axis: bevy::math::Vec3, angle: f32) -> ();
+
+"#,
+			r#"
 /// Rotates this [`Transform`] around its local `X` axis by `angle` (in radians).
 
     #[lua(kind = "MutatingMethod")]
@@ -263,6 +538,70 @@ functions[r#"
 
 "#,
 			r#"
+/// Translates this [`Transform`] around a `point` in space.
+/// If this [`Transform`] has a parent, the `point` is relative to the [`Transform`] of the parent.
+
+    #[lua(kind = "MutatingMethod")]
+    fn translate_around(
+        &mut self,
+        #[proxy]
+        point: bevy::math::Vec3,
+        #[proxy]
+        rotation: bevy::math::Quat,
+    ) -> ();
+
+"#,
+			r#"
+/// Rotates this [`Transform`] around a `point` in space.
+/// If this [`Transform`] has a parent, the `point` is relative to the [`Transform`] of the parent.
+
+    #[lua(kind = "MutatingMethod")]
+    fn rotate_around(
+        &mut self,
+        #[proxy]
+        point: bevy::math::Vec3,
+        #[proxy]
+        rotation: bevy::math::Quat,
+    ) -> ();
+
+"#,
+			r#"
+/// Rotates this [`Transform`] so that [`Transform::forward`] points towards the `target` position,
+/// and [`Transform::up`] points towards `up`.
+/// In some cases it's not possible to construct a rotation. Another axis will be picked in those cases:
+/// * if `target` is the same as the transform translation, `Vec3::Z` is used instead
+/// * if `up` is zero, `Vec3::Y` is used instead
+/// * if the resulting forward direction is parallel with `up`, an orthogonal vector is used as the "right" direction
+
+    #[lua(kind = "MutatingMethod")]
+    fn look_at(
+        &mut self,
+        #[proxy]
+        target: bevy::math::Vec3,
+        #[proxy]
+        up: bevy::math::Vec3,
+    ) -> ();
+
+"#,
+			r#"
+/// Rotates this [`Transform`] so that [`Transform::forward`] points in the given `direction`
+/// and [`Transform::up`] points towards `up`.
+/// In some cases it's not possible to construct a rotation. Another axis will be picked in those cases:
+/// * if `direction` is zero, `Vec3::NEG_Z` is used instead
+/// * if `up` is zero, `Vec3::Y` is used instead
+/// * if `direction` is parallel with `up`, an orthogonal vector is used as the "right" direction
+
+    #[lua(kind = "MutatingMethod")]
+    fn look_to(
+        &mut self,
+        #[proxy]
+        direction: bevy::math::Vec3,
+        #[proxy]
+        up: bevy::math::Vec3,
+    ) -> ();
+
+"#,
+			r#"
 /// Multiplies `self` with `transform` component by component, returning the
 /// resulting [`Transform`]
 
@@ -272,6 +611,19 @@ functions[r#"
         #[proxy]
         transform: bevy::transform::components::Transform,
     ) -> bevy::transform::components::Transform;
+
+"#,
+			r#"
+/// Transforms the given `point`, applying scale, rotation and translation.
+/// If this [`Transform`] has a parent, this will transform a `point` that is
+/// relative to the parent's [`Transform`] into one relative to this [`Transform`].
+/// If this [`Transform`] does not have a parent, this will transform a `point`
+/// that is in global space into one relative to this [`Transform`].
+/// If you want to transform a `point` in global space to the local space of this [`Transform`],
+/// consider using [`GlobalTransform::transform_point()`] instead.
+
+    #[lua(kind = "Method", output(proxy))]
+    fn transform_point(&self, #[proxy] point: bevy::math::Vec3) -> bevy::math::Vec3;
 
 "#,
 			r#"

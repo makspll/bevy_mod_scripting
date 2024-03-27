@@ -1,7 +1,7 @@
 use indexmap::IndexMap;
 use log::{info, trace};
 use rustc_ast::Attribute;
-use rustc_hir::def_id::{DefId, LOCAL_CRATE};
+use rustc_hir::{def_id::{DefId, LOCAL_CRATE}, Unsafety};
 use rustc_infer::infer::TyCtxtInferExt;
 use rustc_middle::ty::{AdtKind, AssocKind, FieldDef, FnSig, ParamEnv, Ty, TyCtxt, TyKind};
 use rustc_span::Symbol;
@@ -116,6 +116,7 @@ pub(crate) fn find_methods_and_fields(ctxt: &mut BevyCtxt<'_>, _args: &Args) -> 
                         param_env,
                         ctxt.tcx.fn_sig(fn_did).instantiate_identity(),
                     );
+                    let is_unsafe = sig.unsafety == Unsafety::Unsafe;
 
                     if trait_did.is_none() && !ctxt.tcx.visibility(fn_did).is_public() {
                         log::info!("Skipping non-public function: `{}` on type: `{}`", fn_name, ctxt.tcx.item_name(def_id));
@@ -126,20 +127,20 @@ pub(crate) fn find_methods_and_fields(ctxt: &mut BevyCtxt<'_>, _args: &Args) -> 
 
                     let mut reflection_strategies = Vec::with_capacity(sig.inputs().len());
                     for (idx, arg_ty) in sig.inputs().iter().enumerate() {
-                        if type_is_supported_as_proxy_arg(
-                            ctxt.tcx,
-                            &ctxt.reflect_types,
-                            &ctxt.meta_loader,
-                            *arg_ty,
-                        ) {
-                            reflection_strategies.push(ReflectionStrategy::Proxy);
-                        } else if type_is_supported_as_non_proxy_arg(
+                        if type_is_supported_as_non_proxy_arg(
                             ctxt.tcx,
                             param_env,
                             &ctxt.cached_traits,
                             *arg_ty,
                         ) {
                             reflection_strategies.push(ReflectionStrategy::Primitive);
+                        } else if type_is_supported_as_proxy_arg(
+                            ctxt.tcx,
+                            &ctxt.reflect_types,
+                            &ctxt.meta_loader,
+                            *arg_ty,
+                        ) {
+                            reflection_strategies.push(ReflectionStrategy::Proxy);
                         } else {
                             report_fn_arg_not_supported(
                                 ctxt.tcx,
@@ -152,20 +153,20 @@ pub(crate) fn find_methods_and_fields(ctxt: &mut BevyCtxt<'_>, _args: &Args) -> 
                         }
                     }
 
-                    if type_is_supported_as_proxy_return_val(
-                        ctxt.tcx,
-                        &ctxt.reflect_types,
-                        &ctxt.meta_loader,
-                        sig.output(),
-                    ) {
-                        reflection_strategies.push(ReflectionStrategy::Proxy);
-                    } else if type_is_supported_as_non_proxy_return_val(
+                    if type_is_supported_as_non_proxy_return_val(
                         ctxt.tcx,
                         param_env,
                         &ctxt.cached_traits,
                         sig.output(),
                     ) {
                         reflection_strategies.push(ReflectionStrategy::Primitive);
+                    } else if type_is_supported_as_proxy_return_val(
+                        ctxt.tcx,
+                        &ctxt.reflect_types,
+                        &ctxt.meta_loader,
+                        sig.output(),
+                    ) {
+                        reflection_strategies.push(ReflectionStrategy::Proxy);
                     } else {
                         report_fn_arg_not_supported(
                             ctxt.tcx,
@@ -178,6 +179,7 @@ pub(crate) fn find_methods_and_fields(ctxt: &mut BevyCtxt<'_>, _args: &Args) -> 
                     }
 
                     Some(FunctionContext {
+                        is_unsafe,
                         def_id: fn_did,
                         has_self,
                         trait_did,
@@ -244,11 +246,7 @@ fn process_fields<'tcx,'f, I: Iterator<Item = &'f FieldDef>>(
             }
 
             let field_ty = tcx.erase_regions(tcx.type_of(f.did).instantiate_identity());
-            if type_is_supported_as_proxy_arg(tcx, reflect_types, meta_loader, field_ty)
-                && type_is_supported_as_proxy_return_val(tcx, reflect_types, meta_loader, field_ty)
-            {
-                (f.did, crate::ReflectionStrategy::Proxy)
-            } else if type_is_supported_as_non_proxy_arg(tcx, param_env, cached_traits, field_ty)
+            if type_is_supported_as_non_proxy_arg(tcx, param_env, cached_traits, field_ty)
                 && type_is_supported_as_non_proxy_return_val(
                     tcx,
                     param_env,
@@ -257,7 +255,11 @@ fn process_fields<'tcx,'f, I: Iterator<Item = &'f FieldDef>>(
                 )
             {
                 (f.did, crate::ReflectionStrategy::Primitive)
-            } else if !has_reflect_ignore_attr(tcx.get_attrs_unchecked(f.did)) {
+            } else if type_is_supported_as_proxy_arg(tcx, reflect_types, meta_loader, field_ty)
+                && type_is_supported_as_proxy_return_val(tcx, reflect_types, meta_loader, field_ty)
+            {
+                (f.did, crate::ReflectionStrategy::Proxy)
+            }  else if !has_reflect_ignore_attr(tcx.get_attrs_unchecked(f.did)) {
                 (f.did, crate::ReflectionStrategy::Reflection)
             } else {
                 (f.did, crate::ReflectionStrategy::Filtered)

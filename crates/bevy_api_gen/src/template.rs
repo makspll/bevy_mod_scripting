@@ -94,6 +94,7 @@ pub(crate) struct Field {
 
 #[derive(Serialize)]
 pub(crate) struct Function {
+    pub(crate) is_unsafe: bool,
     pub(crate) ident: String,
     pub(crate) has_self: bool,
     pub(crate) args: Vec<Arg>,

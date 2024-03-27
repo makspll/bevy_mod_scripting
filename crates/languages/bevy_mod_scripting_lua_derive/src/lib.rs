@@ -141,6 +141,9 @@ fn build_function(
         })
         .transpose()?
         .unwrap_or_default();
+
+    let is_unsafe = function_def.sig.unsafety.is_some();
+
     let signature = Signature::new(
         proxied_type_path.clone(),
         function_def.sig,
@@ -153,6 +156,7 @@ fn build_function(
         function_def.default,
         signature,
         span,
+        is_unsafe,
     )
     .map(Option::Some)
 }

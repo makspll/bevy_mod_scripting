@@ -282,12 +282,22 @@ impl SimpleType {
                             .to_owned(),
                     )
                 })?;
-                Ok(Self::new_proxied_type_or_type(proxy_prefix, proxied_path.clone(), proxied_to_proxy_ident_map, proxy_prefix_all))
+                Ok(Self::new_proxied_type_or_type(
+                    proxy_prefix,
+                    proxied_path.clone(),
+                    proxied_to_proxy_ident_map,
+                    proxy_prefix_all,
+                ))
             }
             Type::Path(p) if !p.path.segments.is_empty() => {
                 let last_segment = p.path.segments.last().unwrap();
                 if last_segment.arguments.is_empty() {
-                    return Ok(Self::new_proxied_type_or_type(proxy_prefix, p.path.clone(), proxied_to_proxy_ident_map, proxy_prefix_all));
+                    return Ok(Self::new_proxied_type_or_type(
+                        proxy_prefix,
+                        p.path.clone(),
+                        proxied_to_proxy_ident_map,
+                        proxy_prefix_all,
+                    ));
                 } else if let PathArguments::AngleBracketed(args) = &last_segment.arguments {
                     if args.args.len() == 1 {
                         if let GenericArgument::Type(arg_type) = args.args.first().unwrap() {
@@ -296,10 +306,13 @@ impl SimpleType {
                                 arg_type,
                                 proxied_type_path,
                                 proxied_to_proxy_ident_map,
-                                proxy_prefix_all
+                                proxy_prefix_all,
                             )?);
                             return Ok(SimpleType::UnitPath(UnitPath {
-                                std_type_ident: StdTypeIdent::from_str(&last_segment.ident.to_string()).ok(),
+                                std_type_ident: StdTypeIdent::from_str(
+                                    &last_segment.ident.to_string(),
+                                )
+                                .ok(),
                                 ident: last_segment.ident.clone(),
                                 colon2_token: args.colon2_token,
                                 lt_token: args.lt_token,
@@ -317,17 +330,20 @@ impl SimpleType {
                                 left,
                                 proxied_type_path,
                                 proxied_to_proxy_ident_map,
-                                proxy_prefix_all
+                                proxy_prefix_all,
                             )?);
                             let right = Box::new(Self::new_from_type(
                                 proxy_prefix,
                                 right,
                                 proxied_type_path,
                                 proxied_to_proxy_ident_map,
-                                proxy_prefix_all
+                                proxy_prefix_all,
                             )?);
                             return Ok(SimpleType::DuoPath(DuoPath {
-                                std_type_ident: StdTypeIdent::from_str(&last_segment.ident.to_string()).ok(),
+                                std_type_ident: StdTypeIdent::from_str(
+                                    &last_segment.ident.to_string(),
+                                )
+                                .ok(),
                                 ident: last_segment.ident.clone(),
                                 colon2_token: args.colon2_token,
                                 lt_token: args.lt_token,
@@ -338,7 +354,10 @@ impl SimpleType {
                         }
                     }
                 }
-                Err(Error::new_spanned(proxied_type, "Unsupported type".to_owned()))
+                Err(Error::new_spanned(
+                    proxied_type,
+                    "Unsupported type".to_owned(),
+                ))
             }
             Type::Reference(tr) => Ok(SimpleType::Reference(Reference {
                 and_token: tr.and_token,
@@ -348,17 +367,12 @@ impl SimpleType {
                     &tr.elem,
                     proxied_type_path,
                     proxied_to_proxy_ident_map,
-                    proxy_prefix_all
+                    proxy_prefix_all,
                 )?),
             })),
             Type::Infer(_) => Ok(SimpleType::Type(proxied_type.clone())),
-            Type::Tuple(TypeTuple { elems , ..}) if elems.is_empty() => {
-                Ok(SimpleType::Unit)
-            },
-            _ => Err(Error::new_spanned(
-                proxied_type,
-                format!("Expected simple type with one identifier and possible reference for proxy type, got {}", proxied_type.to_token_stream()),
-            )),
+            Type::Tuple(TypeTuple { elems, .. }) if elems.is_empty() => Ok(SimpleType::Unit),
+            t => Ok(SimpleType::Type(t.clone())),
         }
     }
 

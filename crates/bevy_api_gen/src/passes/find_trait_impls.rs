@@ -11,16 +11,33 @@ use crate::{Args, BevyCtxt};
 pub(crate) fn find_trait_impls(ctxt: &mut BevyCtxt<'_>, _args: &Args) -> bool {
     let tcx = &ctxt.tcx;
 
-    // first filter out those without GetTypeRegistration traits
     ctxt.reflect_types.retain(|reflect_ty_did, _| {
+        // first filter out those without GetTypeRegistration traits
+        // TODO: this is working partially,
+        // some types even though they clearly implement GetTypeRegistration are not being picked up
+        // the impl is just straight up missing
+        // let retaining = type_impl_of_trait(
+        //     tcx,
+        //     ctxt.cached_traits
+        //         .bevy_reflect_get_type_registration
+        //         .unwrap(),
+        //     reflect_ty_did,
+        // )
+        // .is_some();
+
+        // filter out types which have impls both ways
         let retaining = type_impl_of_trait(
             tcx,
-            ctxt.cached_traits
-                .bevy_reflect_get_type_registration
-                .unwrap(),
+            ctxt.cached_traits.mlua_from_lua_multi.unwrap(),
             reflect_ty_did,
         )
-        .is_some();
+        .is_none()
+            || type_impl_of_trait(
+                tcx,
+                ctxt.cached_traits.mlua_into_lua_multi.unwrap(),
+                reflect_ty_did,
+            )
+            .is_none();
 
         if !retaining {
             trace!(
@@ -52,6 +69,11 @@ fn type_impl_of_trait(
     trait_did: DefId,
     reflect_ty_did: &rustc_hir::def_id::DefId,
 ) -> Option<DefId> {
+    log::trace!(
+        "Finding impl for trait: {:?} on type: {:?}",
+        tcx.def_path_str(trait_did),
+        tcx.def_path_str(*reflect_ty_did)
+    );
     let mut out = None;
     tcx.for_each_relevant_impl(
         trait_did,

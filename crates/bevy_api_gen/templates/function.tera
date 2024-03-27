@@ -45,7 +45,7 @@ metamethod="Eq",
 {% endif %}
 
 )] 
-fn {{ function.ident }} (
+{% if function.is_unsafe %}unsafe {% endif -%}fn {{ function.ident }} (
     {%- filter separated(delimeter=", ", split_at="---", ignore_first=true) -%}
 
     {%- for arg in function.args -%}
