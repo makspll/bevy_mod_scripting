@@ -41,7 +41,7 @@ pub(crate) fn find_trait_impls(ctxt: &mut BevyCtxt<'_>, _args: &Args) -> bool {
 
         if !retaining {
             trace!(
-                "Type: `{:?}` does not implement GetTypeRegistration, removing from reflect types",
+                "Type: `{:?}` implements both from and into lua, removing from reflect types",
                 tcx.def_path_str(*reflect_ty_did)
             );
         }
