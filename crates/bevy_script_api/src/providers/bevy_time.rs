@@ -269,6 +269,25 @@ functions[r#"
 "#,
 			r#"
 /// Returns the elapsed time since the last [`reset`](Stopwatch::reset)
+/// of the stopwatch.
+/// # Examples
+/// ```
+/// # use bevy_time::*;
+/// use std::time::Duration;
+/// let mut stopwatch = Stopwatch::new();
+/// stopwatch.tick(Duration::from_secs(1));
+/// assert_eq!(stopwatch.elapsed(), Duration::from_secs(1));
+/// ```
+/// # See Also
+/// [`elapsed_secs`](Stopwatch::elapsed_secs) - if an `f32` value is desirable instead.
+/// [`elapsed_secs_f64`](Stopwatch::elapsed_secs_f64) - if an `f64` is desirable instead.
+
+    #[lua(kind = "Method", output(proxy))]
+    fn elapsed(&self) -> bevy::utils::Duration;
+
+"#,
+			r#"
+/// Returns the elapsed time since the last [`reset`](Stopwatch::reset)
 /// of the stopwatch, in seconds.
 /// # Examples
 /// ```
@@ -295,6 +314,21 @@ functions[r#"
 
     #[lua(kind = "Method")]
     fn elapsed_secs_f64(&self) -> f64;
+
+"#,
+			r#"
+/// Sets the elapsed time of the stopwatch.
+/// # Examples
+/// ```
+/// # use bevy_time::*;
+/// use std::time::Duration;
+/// let mut stopwatch = Stopwatch::new();
+/// stopwatch.set_elapsed(Duration::from_secs_f32(1.0));
+/// assert_eq!(stopwatch.elapsed_secs(), 1.0);
+/// ```
+
+    #[lua(kind = "MutatingMethod")]
+    fn set_elapsed(&mut self, #[proxy] time: bevy::utils::Duration) -> ();
 
 "#,
 			r#"
@@ -369,6 +403,12 @@ functions[r#"
 "#,
 			r#"
 
+    #[lua(as_trait = "std::cmp::PartialEq", kind = "Function", composite = "eq")]
+    fn eq(&self, #[proxy] other: &stopwatch::Stopwatch) -> bool;
+
+"#,
+			r#"
+
     #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
     fn clone(&self) -> bevy::time::Stopwatch;
 
@@ -377,12 +417,6 @@ functions[r#"
 
     #[lua(as_trait = "std::cmp::Eq", kind = "Method")]
     fn assert_receiver_is_total_eq(&self) -> ();
-
-"#,
-			r#"
-
-    #[lua(as_trait = "std::cmp::PartialEq", kind = "Function", composite = "eq")]
-    fn eq(&self, #[proxy] other: &stopwatch::Stopwatch) -> bool;
 
 "#]
 )]
@@ -416,7 +450,19 @@ pub struct Stopwatch{
 #[proxy(
 derive(clone,debug,),
 remote="bevy::time::prelude::Timer",
-functions[
+functions[r#"
+/// Creates a new timer with a given duration.
+/// See also [`Timer::from_seconds`](Timer::from_seconds).
+
+    #[lua(kind = "Function", output(proxy))]
+    fn new(
+        #[proxy]
+        duration: bevy::utils::Duration,
+        #[proxy]
+        mode: bevy::time::prelude::TimerMode,
+    ) -> bevy::time::prelude::Timer;
+
+"#,
 			r#"
 /// Creates a new timer with a given duration in seconds.
 /// # Example
@@ -476,11 +522,75 @@ functions[
 
 "#,
 			r#"
+/// Returns the time elapsed on the timer. Guaranteed to be between 0.0 and `duration`.
+/// Will only equal `duration` when the timer is finished and non repeating.
+/// See also [`Stopwatch::elapsed`](Stopwatch::elapsed).
+/// # Examples
+/// ```
+/// # use bevy_time::*;
+/// use std::time::Duration;
+/// let mut timer = Timer::from_seconds(1.0, TimerMode::Once);
+/// timer.tick(Duration::from_secs_f32(0.5));
+/// assert_eq!(timer.elapsed(), Duration::from_secs_f32(0.5));
+/// ```
+
+    #[lua(kind = "Method", output(proxy))]
+    fn elapsed(&self) -> bevy::utils::Duration;
+
+"#,
+			r#"
 /// Returns the time elapsed on the timer as an `f32`.
 /// See also [`Timer::elapsed`](Timer::elapsed).
 
     #[lua(kind = "Method")]
     fn elapsed_secs(&self) -> f32;
+
+"#,
+			r#"
+/// Sets the elapsed time of the timer without any other considerations.
+/// See also [`Stopwatch::set`](Stopwatch::set).
+/// #
+/// ```
+/// # use bevy_time::*;
+/// use std::time::Duration;
+/// let mut timer = Timer::from_seconds(1.0, TimerMode::Once);
+/// timer.set_elapsed(Duration::from_secs(2));
+/// assert_eq!(timer.elapsed(), Duration::from_secs(2));
+/// // the timer is not finished even if the elapsed time is greater than the duration.
+/// assert!(!timer.finished());
+/// ```
+
+    #[lua(kind = "MutatingMethod")]
+    fn set_elapsed(&mut self, #[proxy] time: bevy::utils::Duration) -> ();
+
+"#,
+			r#"
+/// Returns the duration of the timer.
+/// # Examples
+/// ```
+/// # use bevy_time::*;
+/// use std::time::Duration;
+/// let timer = Timer::new(Duration::from_secs(1), TimerMode::Once);
+/// assert_eq!(timer.duration(), Duration::from_secs(1));
+/// ```
+
+    #[lua(kind = "Method", output(proxy))]
+    fn duration(&self) -> bevy::utils::Duration;
+
+"#,
+			r#"
+/// Sets the duration of the timer.
+/// # Examples
+/// ```
+/// # use bevy_time::*;
+/// use std::time::Duration;
+/// let mut timer = Timer::from_seconds(1.5, TimerMode::Once);
+/// timer.set_duration(Duration::from_secs(1));
+/// assert_eq!(timer.duration(), Duration::from_secs(1));
+/// ```
+
+    #[lua(kind = "MutatingMethod")]
+    fn set_duration(&mut self, #[proxy] duration: bevy::utils::Duration) -> ();
 
 "#,
 			r#"
@@ -631,6 +741,21 @@ functions[
 
 "#,
 			r#"
+/// Returns the remaining time using Duration
+/// # Examples
+/// ```
+/// # use bevy_time::*;
+/// use std::time::Duration;
+/// let mut timer = Timer::from_seconds(2.0, TimerMode::Once);
+/// timer.tick(Duration::from_secs_f32(0.5));
+/// assert_eq!(timer.remaining(), Duration::from_secs_f32(1.5));
+/// ```
+
+    #[lua(kind = "Method", output(proxy))]
+    fn remaining(&self) -> bevy::utils::Duration;
+
+"#,
+			r#"
 /// Returns the number of times a repeating timer
 /// finished during the last [`tick`](Timer<T>::tick) call.
 /// For non repeating-timers, this method will only ever
@@ -654,6 +779,12 @@ functions[
 "#,
 			r#"
 
+    #[lua(as_trait = "std::cmp::Eq", kind = "Method")]
+    fn assert_receiver_is_total_eq(&self) -> ();
+
+"#,
+			r#"
+
     #[lua(as_trait = "std::cmp::PartialEq", kind = "Function", composite = "eq")]
     fn eq(&self, #[proxy] other: &timer::Timer) -> bool;
 
@@ -662,12 +793,6 @@ functions[
 
     #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
     fn clone(&self) -> bevy::time::prelude::Timer;
-
-"#,
-			r#"
-
-    #[lua(as_trait = "std::cmp::Eq", kind = "Method")]
-    fn assert_receiver_is_total_eq(&self) -> ();
 
 "#]
 )]
@@ -701,8 +826,8 @@ derive(clone,debug,),
 remote="bevy::time::prelude::TimerMode",
 functions[r#"
 
-    #[lua(as_trait = "std::cmp::Eq", kind = "Method")]
-    fn assert_receiver_is_total_eq(&self) -> ();
+    #[lua(as_trait = "std::cmp::PartialEq", kind = "Function", composite = "eq")]
+    fn eq(&self, #[proxy] other: &timer::TimerMode) -> bool;
 
 "#,
 			r#"
@@ -713,8 +838,8 @@ functions[r#"
 "#,
 			r#"
 
-    #[lua(as_trait = "std::cmp::PartialEq", kind = "Function", composite = "eq")]
-    fn eq(&self, #[proxy] other: &timer::TimerMode) -> bool;
+    #[lua(as_trait = "std::cmp::Eq", kind = "Method")]
+    fn assert_receiver_is_total_eq(&self) -> ();
 
 "#]
 )]

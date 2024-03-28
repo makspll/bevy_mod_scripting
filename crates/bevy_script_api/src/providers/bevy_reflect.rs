@@ -600,6 +600,12 @@ functions[r#"
 "#,
 			r#"
 
+    #[lua(as_trait = "std::cmp::Eq", kind = "Method")]
+    fn assert_receiver_is_total_eq(&self) -> ();
+
+"#,
+			r#"
+
     #[lua(
         as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone",
         kind = "Method",
@@ -612,12 +618,6 @@ functions[r#"
 
     #[lua(as_trait = "std::cmp::PartialEq", kind = "Function", composite = "eq")]
     fn eq(&self, #[proxy] other: &bevy_utils::Uuid) -> bool;
-
-"#,
-			r#"
-
-    #[lua(as_trait = "std::cmp::Eq", kind = "Method")]
-    fn assert_receiver_is_total_eq(&self) -> ();
 
 "#]
 )]
@@ -654,12 +654,6 @@ functions[r#"
 "#,
 			r#"
 
-    #[lua(as_trait = "std::cmp::PartialEq", kind = "Function", composite = "eq")]
-    fn eq(&self, #[proxy] other: &bevy_math::primitives::Direction2d) -> bool;
-
-"#,
-			r#"
-
     #[lua(
         as_trait = "std::ops::Neg",
         kind = "Function",
@@ -668,6 +662,12 @@ functions[r#"
         metamethod = "Unm",
     )]
     fn neg(self) -> bevy::math::primitives::Direction2d;
+
+"#,
+			r#"
+
+    #[lua(as_trait = "std::cmp::PartialEq", kind = "Function", composite = "eq")]
+    fn eq(&self, #[proxy] other: &bevy_math::primitives::Direction2d) -> bool;
 
 "#,
 			r#"
@@ -739,18 +739,18 @@ functions[r#"
 "#,
 			r#"
 
-    #[lua(as_trait = "std::cmp::PartialEq", kind = "Function", composite = "eq")]
-    fn eq(&self, #[proxy] other: &bevy_math::primitives::Circle) -> bool;
-
-"#,
-			r#"
-
     #[lua(
         as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone",
         kind = "Method",
         output(proxy),
     )]
     fn clone(&self) -> bevy::math::primitives::Circle;
+
+"#,
+			r#"
+
+    #[lua(as_trait = "std::cmp::PartialEq", kind = "Function", composite = "eq")]
+    fn eq(&self, #[proxy] other: &bevy_math::primitives::Circle) -> bool;
 
 "#]
 )]
@@ -811,18 +811,18 @@ functions[r#"
 "#,
 			r#"
 
-    #[lua(as_trait = "std::cmp::PartialEq", kind = "Function", composite = "eq")]
-    fn eq(&self, #[proxy] other: &bevy_math::primitives::Ellipse) -> bool;
-
-"#,
-			r#"
-
     #[lua(
         as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone",
         kind = "Method",
         output(proxy),
     )]
     fn clone(&self) -> bevy::math::primitives::Ellipse;
+
+"#,
+			r#"
+
+    #[lua(as_trait = "std::cmp::PartialEq", kind = "Function", composite = "eq")]
+    fn eq(&self, #[proxy] other: &bevy_math::primitives::Ellipse) -> bool;
 
 "#]
 )]
@@ -894,18 +894,18 @@ derive(clone,debug,),
 remote="bevy::math::primitives::Line2d",
 functions[r#"
 
-    #[lua(as_trait = "std::cmp::PartialEq", kind = "Function", composite = "eq")]
-    fn eq(&self, #[proxy] other: &bevy_math::primitives::Line2d) -> bool;
-
-"#,
-			r#"
-
     #[lua(
         as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone",
         kind = "Method",
         output(proxy),
     )]
     fn clone(&self) -> bevy::math::primitives::Line2d;
+
+"#,
+			r#"
+
+    #[lua(as_trait = "std::cmp::PartialEq", kind = "Function", composite = "eq")]
+    fn eq(&self, #[proxy] other: &bevy_math::primitives::Line2d) -> bool;
 
 "#]
 )]
@@ -954,18 +954,18 @@ functions[r#"
 "#,
 			r#"
 
-    #[lua(as_trait = "std::cmp::PartialEq", kind = "Function", composite = "eq")]
-    fn eq(&self, #[proxy] other: &bevy_math::primitives::Segment2d) -> bool;
-
-"#,
-			r#"
-
     #[lua(
         as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone",
         kind = "Method",
         output(proxy),
     )]
     fn clone(&self) -> bevy::math::primitives::Segment2d;
+
+"#,
+			r#"
+
+    #[lua(as_trait = "std::cmp::PartialEq", kind = "Function", composite = "eq")]
+    fn eq(&self, #[proxy] other: &bevy_math::primitives::Segment2d) -> bool;
 
 "#]
 )]
@@ -1025,18 +1025,18 @@ functions[r#"
 "#,
 			r#"
 
-    #[lua(as_trait = "std::cmp::PartialEq", kind = "Function", composite = "eq")]
-    fn eq(&self, #[proxy] other: &bevy_math::primitives::Triangle2d) -> bool;
-
-"#,
-			r#"
-
     #[lua(
         as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone",
         kind = "Method",
         output(proxy),
     )]
     fn clone(&self) -> bevy::math::primitives::Triangle2d;
+
+"#,
+			r#"
+
+    #[lua(as_trait = "std::cmp::PartialEq", kind = "Function", composite = "eq")]
+    fn eq(&self, #[proxy] other: &bevy_math::primitives::Triangle2d) -> bool;
 
 "#]
 )]
@@ -1116,18 +1116,18 @@ functions[r#"
 "#,
 			r#"
 
-    #[lua(as_trait = "std::cmp::PartialEq", kind = "Function", composite = "eq")]
-    fn eq(&self, #[proxy] other: &bevy_math::primitives::Rectangle) -> bool;
-
-"#,
-			r#"
-
     #[lua(
         as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone",
         kind = "Method",
         output(proxy),
     )]
     fn clone(&self) -> bevy::math::primitives::Rectangle;
+
+"#,
+			r#"
+
+    #[lua(as_trait = "std::cmp::PartialEq", kind = "Function", composite = "eq")]
+    fn eq(&self, #[proxy] other: &bevy_math::primitives::Rectangle) -> bool;
 
 "#]
 )]
@@ -1334,18 +1334,6 @@ functions[r#"
 			r#"
 
     #[lua(
-        as_trait = "std::ops::Neg",
-        kind = "Function",
-        output(proxy),
-        composite = "neg",
-        metamethod = "Unm",
-    )]
-    fn neg(self) -> bevy::math::primitives::Direction3d;
-
-"#,
-			r#"
-
-    #[lua(
         as_trait = "std::ops::Mul",
         kind = "Function",
         output(proxy),
@@ -1363,6 +1351,18 @@ functions[r#"
         output(proxy),
     )]
     fn clone(&self) -> bevy::math::primitives::Direction3d;
+
+"#,
+			r#"
+
+    #[lua(
+        as_trait = "std::ops::Neg",
+        kind = "Function",
+        output(proxy),
+        composite = "neg",
+        metamethod = "Unm",
+    )]
+    fn neg(self) -> bevy::math::primitives::Direction3d;
 
 "#]
 )]
@@ -1573,6 +1573,67 @@ functions[r#"
 
     #[lua(kind = "Function", output(proxy))]
     fn new() -> std::ffi::OsString;
+
+"#,
+			r#"
+/// Converts bytes to an `OsString` without checking that the bytes contains
+/// valid [`OsStr`]-encoded data.
+/// The byte encoding is an unspecified, platform-specific, self-synchronizing superset of UTF-8.
+/// By being a self-synchronizing superset of UTF-8, this encoding is also a superset of 7-bit
+/// ASCII.
+/// See the [module's toplevel documentation about conversions][conversions] for safe,
+/// cross-platform [conversions] from/to native representations.
+/// # Safety
+/// As the encoding is unspecified, callers must pass in bytes that originated as a mixture of
+/// validated UTF-8 and bytes from [`OsStr::as_encoded_bytes`] from within the same rust version
+/// built for the same target platform.  For example, reconstructing an `OsString` from bytes sent
+/// over the network or stored in a file will likely violate these safety rules.
+/// Due to the encoding being self-synchronizing, the bytes from [`OsStr::as_encoded_bytes`] can be
+/// split either immediately before or immediately after any valid non-empty UTF-8 substring.
+/// # Example
+/// ```
+/// use std::ffi::OsStr;
+/// let os_str = OsStr::new("Mary had a little lamb");
+/// let bytes = os_str.as_encoded_bytes();
+/// let words = bytes.split(|b| *b == b' ');
+/// let words: Vec<&OsStr> = words.map(|word| {
+///     // SAFETY:
+///     // - Each `word` only contains content that originated from `OsStr::as_encoded_bytes`
+///     // - Only split with ASCII whitespace which is a non-empty UTF-8 substring
+///     unsafe { OsStr::from_encoded_bytes_unchecked(word) }
+/// }).collect();
+/// ```
+/// [conversions]: super#conversions
+
+    #[lua(kind = "Function", output(proxy))]
+    unsafe fn from_encoded_bytes_unchecked(
+        bytes: bevy::reflect::erased_serde::__private::serde::__private::Vec<
+            u8,
+            std::alloc::Global,
+        >,
+    ) -> std::ffi::OsString;
+
+"#,
+			r#"
+/// Converts the `OsString` into a byte slice.  To convert the byte slice back into an
+/// `OsString`, use the [`OsStr::from_encoded_bytes_unchecked`] function.
+/// The byte encoding is an unspecified, platform-specific, self-synchronizing superset of UTF-8.
+/// By being a self-synchronizing superset of UTF-8, this encoding is also a superset of 7-bit
+/// ASCII.
+/// Note: As the encoding is unspecified, any sub-slice of bytes that is not valid UTF-8 should
+/// be treated as opaque and only comparable within the same rust version built for the same
+/// target platform.  For example, sending the bytes over the network or storing it in a file
+/// will likely result in incompatible data.  See [`OsString`] for more encoding details
+/// and [`std::ffi`] for platform-specific, specified conversions.
+/// [`std::ffi`]: crate::ffi
+
+    #[lua(kind = "Method")]
+    fn into_encoded_bytes(
+        self,
+    ) -> bevy::reflect::erased_serde::__private::serde::__private::Vec<
+        u8,
+        std::alloc::Global,
+    >;
 
 "#,
 			r#"
@@ -1853,18 +1914,18 @@ functions[r#"
 "#,
 			r#"
 
+    #[lua(as_trait = "std::cmp::PartialEq", kind = "Function", composite = "eq")]
+    fn eq(&self, #[proxy] other: &bevy_math::primitives::Segment3d) -> bool;
+
+"#,
+			r#"
+
     #[lua(
         as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone",
         kind = "Method",
         output(proxy),
     )]
     fn clone(&self) -> bevy::math::primitives::Segment3d;
-
-"#,
-			r#"
-
-    #[lua(as_trait = "std::cmp::PartialEq", kind = "Function", composite = "eq")]
-    fn eq(&self, #[proxy] other: &bevy_math::primitives::Segment3d) -> bool;
 
 "#]
 )]
@@ -1948,18 +2009,18 @@ functions[r#"
 "#,
 			r#"
 
-    #[lua(as_trait = "std::cmp::PartialEq", kind = "Function", composite = "eq")]
-    fn eq(&self, #[proxy] other: &bevy_math::primitives::Cuboid) -> bool;
-
-"#,
-			r#"
-
     #[lua(
         as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone",
         kind = "Method",
         output(proxy),
     )]
     fn clone(&self) -> bevy::math::primitives::Cuboid;
+
+"#,
+			r#"
+
+    #[lua(as_trait = "std::cmp::PartialEq", kind = "Function", composite = "eq")]
+    fn eq(&self, #[proxy] other: &bevy_math::primitives::Cuboid) -> bool;
 
 "#]
 )]
@@ -2026,18 +2087,18 @@ functions[r#"
 "#,
 			r#"
 
-    #[lua(as_trait = "std::cmp::PartialEq", kind = "Function", composite = "eq")]
-    fn eq(&self, #[proxy] other: &bevy_math::primitives::Cylinder) -> bool;
-
-"#,
-			r#"
-
     #[lua(
         as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone",
         kind = "Method",
         output(proxy),
     )]
     fn clone(&self) -> bevy::math::primitives::Cylinder;
+
+"#,
+			r#"
+
+    #[lua(as_trait = "std::cmp::PartialEq", kind = "Function", composite = "eq")]
+    fn eq(&self, #[proxy] other: &bevy_math::primitives::Cylinder) -> bool;
 
 "#]
 )]
@@ -2092,18 +2153,18 @@ functions[r#"
 "#,
 			r#"
 
-    #[lua(as_trait = "std::cmp::PartialEq", kind = "Function", composite = "eq")]
-    fn eq(&self, #[proxy] other: &bevy_math::primitives::Capsule3d) -> bool;
-
-"#,
-			r#"
-
     #[lua(
         as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone",
         kind = "Method",
         output(proxy),
     )]
     fn clone(&self) -> bevy::math::primitives::Capsule3d;
+
+"#,
+			r#"
+
+    #[lua(as_trait = "std::cmp::PartialEq", kind = "Function", composite = "eq")]
+    fn eq(&self, #[proxy] other: &bevy_math::primitives::Capsule3d) -> bool;
 
 "#]
 )]
@@ -2210,18 +2271,18 @@ derive(clone,debug,),
 remote="bevy::math::primitives::ConicalFrustum",
 functions[r#"
 
+    #[lua(as_trait = "std::cmp::PartialEq", kind = "Function", composite = "eq")]
+    fn eq(&self, #[proxy] other: &bevy_math::primitives::ConicalFrustum) -> bool;
+
+"#,
+			r#"
+
     #[lua(
         as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone",
         kind = "Method",
         output(proxy),
     )]
     fn clone(&self) -> bevy::math::primitives::ConicalFrustum;
-
-"#,
-			r#"
-
-    #[lua(as_trait = "std::cmp::PartialEq", kind = "Function", composite = "eq")]
-    fn eq(&self, #[proxy] other: &bevy_math::primitives::ConicalFrustum) -> bool;
 
 "#]
 )]
@@ -2602,18 +2663,18 @@ functions[r#"
 "#,
 			r#"
 
-    #[lua(as_trait = "std::cmp::Eq", kind = "Method")]
-    fn assert_receiver_is_total_eq(&self) -> ();
-
-"#,
-			r#"
-
     #[lua(
         as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone",
         kind = "Method",
         output(proxy),
     )]
     fn clone(&self) -> bevy::math::IRect;
+
+"#,
+			r#"
+
+    #[lua(as_trait = "std::cmp::Eq", kind = "Method")]
+    fn assert_receiver_is_total_eq(&self) -> ();
 
 "#,
 			r#"
@@ -3249,18 +3310,18 @@ functions[r#"
 "#,
 			r#"
 
+    #[lua(as_trait = "std::cmp::PartialEq", kind = "Function", composite = "eq")]
+    fn eq(&self, #[proxy] other: &bevy_math::URect) -> bool;
+
+"#,
+			r#"
+
     #[lua(
         as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone",
         kind = "Method",
         output(proxy),
     )]
     fn clone(&self) -> bevy::math::URect;
-
-"#,
-			r#"
-
-    #[lua(as_trait = "std::cmp::PartialEq", kind = "Function", composite = "eq")]
-    fn eq(&self, #[proxy] other: &bevy_math::URect) -> bool;
 
 "#,
 			r#"
@@ -3669,6 +3730,76 @@ functions[r#"
 
 "#,
 			r#"
+/// Returns the amount of time elapsed from another instant to this one,
+/// or zero duration if that instant is later than this one.
+/// # Panics
+/// Previous rust versions panicked when `earlier` was later than `self`. Currently this
+/// method saturates. Future versions may reintroduce the panic in some circumstances.
+/// See [Monotonicity].
+/// [Monotonicity]: Instant#monotonicity
+/// # Examples
+/// ```no_run
+/// use std::time::{Duration, Instant};
+/// use std::thread::sleep;
+/// let now = Instant::now();
+/// sleep(Duration::new(1, 0));
+/// let new_now = Instant::now();
+/// println!("{:?}", new_now.duration_since(now));
+/// println!("{:?}", now.duration_since(new_now)); // 0ns
+/// ```
+
+    #[lua(kind = "Method", output(proxy))]
+    fn duration_since(
+        &self,
+        #[proxy]
+        earlier: bevy::utils::Instant,
+    ) -> bevy::utils::Duration;
+
+"#,
+			r#"
+/// Returns the amount of time elapsed from another instant to this one,
+/// or zero duration if that instant is later than this one.
+/// # Examples
+/// ```no_run
+/// use std::time::{Duration, Instant};
+/// use std::thread::sleep;
+/// let now = Instant::now();
+/// sleep(Duration::new(1, 0));
+/// let new_now = Instant::now();
+/// println!("{:?}", new_now.saturating_duration_since(now));
+/// println!("{:?}", now.saturating_duration_since(new_now)); // 0ns
+/// ```
+
+    #[lua(kind = "Method", output(proxy))]
+    fn saturating_duration_since(
+        &self,
+        #[proxy]
+        earlier: bevy::utils::Instant,
+    ) -> bevy::utils::Duration;
+
+"#,
+			r#"
+/// Returns the amount of time elapsed since this instant.
+/// # Panics
+/// Previous rust versions panicked when the current time was earlier than self. Currently this
+/// method returns a Duration of zero in that case. Future versions may reintroduce the panic.
+/// See [Monotonicity].
+/// [Monotonicity]: Instant#monotonicity
+/// # Examples
+/// ```no_run
+/// use std::thread::sleep;
+/// use std::time::{Duration, Instant};
+/// let instant = Instant::now();
+/// let three_secs = Duration::from_secs(3);
+/// sleep(three_secs);
+/// assert!(instant.elapsed() >= three_secs);
+/// ```
+
+    #[lua(kind = "Method", output(proxy))]
+    fn elapsed(&self) -> bevy::utils::Duration;
+
+"#,
+			r#"
 
     #[lua(
         as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone",
@@ -3679,15 +3810,30 @@ functions[r#"
 
 "#,
 			r#"
+/// # Panics
+/// This function may panic if the resulting point in time cannot be represented by the
+/// underlying data structure. See [`Instant::checked_add`] for a version without panic.
 
-    #[lua(as_trait = "std::cmp::Eq", kind = "Method")]
-    fn assert_receiver_is_total_eq(&self) -> ();
+    #[lua(
+        as_trait = "std::ops::Add",
+        kind = "Function",
+        output(proxy),
+        composite = "add",
+        metamethod = "Add",
+    )]
+    fn add(self, #[proxy] other: bevy::utils::Duration) -> bevy::utils::Instant;
 
 "#,
 			r#"
 
     #[lua(as_trait = "std::cmp::PartialEq", kind = "Function", composite = "eq")]
     fn eq(&self, #[proxy] other: &bevy_utils::Instant) -> bool;
+
+"#,
+			r#"
+
+    #[lua(as_trait = "std::cmp::Eq", kind = "Method")]
+    fn assert_receiver_is_total_eq(&self) -> ();
 
 "#]
 )]
@@ -3718,18 +3864,18 @@ derive(clone,debug,),
 remote="bevy::math::EulerRot",
 functions[r#"
 
-    #[lua(as_trait = "std::cmp::PartialEq", kind = "Function", composite = "eq")]
-    fn eq(&self, #[proxy] other: &glam::EulerRot) -> bool;
-
-"#,
-			r#"
-
     #[lua(
         as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone",
         kind = "Method",
         output(proxy),
     )]
     fn clone(&self) -> bevy::math::EulerRot;
+
+"#,
+			r#"
+
+    #[lua(as_trait = "std::cmp::PartialEq", kind = "Function", composite = "eq")]
+    fn eq(&self, #[proxy] other: &glam::EulerRot) -> bool;
 
 "#,
 			r#"
@@ -3904,6 +4050,12 @@ functions[r#"
 "#,
 			r#"
 
+    #[lua(as_trait = "std::cmp::Eq", kind = "Method")]
+    fn assert_receiver_is_total_eq(&self) -> ();
+
+"#,
+			r#"
+
     #[lua(as_trait = "std::cmp::PartialEq", kind = "Function", composite = "eq")]
     fn eq(&self, #[proxy] other: &glam::BVec3) -> bool;
 
@@ -3916,12 +4068,6 @@ functions[r#"
         output(proxy),
     )]
     fn clone(&self) -> bevy::math::BVec3;
-
-"#,
-			r#"
-
-    #[lua(as_trait = "std::cmp::Eq", kind = "Method")]
-    fn assert_receiver_is_total_eq(&self) -> ();
 
 "#]
 )]
@@ -3998,16 +4144,6 @@ functions[r#"
 "#,
 			r#"
 
-    #[lua(
-        as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone",
-        kind = "Method",
-        output(proxy),
-    )]
-    fn clone(&self) -> bevy::math::BVec4;
-
-"#,
-			r#"
-
     #[lua(as_trait = "std::cmp::PartialEq", kind = "Function", composite = "eq")]
     fn eq(&self, #[proxy] other: &glam::BVec4) -> bool;
 
@@ -4016,6 +4152,16 @@ functions[r#"
 
     #[lua(as_trait = "std::cmp::Eq", kind = "Method")]
     fn assert_receiver_is_total_eq(&self) -> ();
+
+"#,
+			r#"
+
+    #[lua(
+        as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone",
+        kind = "Method",
+        output(proxy),
+    )]
+    fn clone(&self) -> bevy::math::BVec4;
 
 "#]
 )]
@@ -4094,18 +4240,18 @@ functions[r#"
 "#,
 			r#"
 
+    #[lua(as_trait = "std::cmp::PartialEq", kind = "Function", composite = "eq")]
+    fn eq(&self, #[proxy] rhs: &glam::BVec3A) -> bool;
+
+"#,
+			r#"
+
     #[lua(
         as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone",
         kind = "Method",
         output(proxy),
     )]
     fn clone(&self) -> bevy::math::BVec3A;
-
-"#,
-			r#"
-
-    #[lua(as_trait = "std::cmp::PartialEq", kind = "Function", composite = "eq")]
-    fn eq(&self, #[proxy] rhs: &glam::BVec3A) -> bool;
 
 "#]
 )]
@@ -4185,18 +4331,18 @@ functions[r#"
 "#,
 			r#"
 
-    #[lua(as_trait = "std::cmp::PartialEq", kind = "Function", composite = "eq")]
-    fn eq(&self, #[proxy] rhs: &glam::BVec4A) -> bool;
-
-"#,
-			r#"
-
     #[lua(
         as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone",
         kind = "Method",
         output(proxy),
     )]
     fn clone(&self) -> bevy::math::BVec4A;
+
+"#,
+			r#"
+
+    #[lua(as_trait = "std::cmp::PartialEq", kind = "Function", composite = "eq")]
+    fn eq(&self, #[proxy] rhs: &glam::BVec4A) -> bool;
 
 "#]
 )]
@@ -4391,18 +4537,18 @@ functions[r#"
 "#,
 			r#"
 
+    #[lua(as_trait = "std::cmp::PartialEq", kind = "Function", composite = "eq")]
+    fn eq(&self, #[proxy] rhs: &glam::Affine2) -> bool;
+
+"#,
+			r#"
+
     #[lua(
         as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone",
         kind = "Method",
         output(proxy),
     )]
     fn clone(&self) -> bevy::math::Affine2;
-
-"#,
-			r#"
-
-    #[lua(as_trait = "std::cmp::PartialEq", kind = "Function", composite = "eq")]
-    fn eq(&self, #[proxy] rhs: &glam::Affine2) -> bool;
 
 "#]
 )]
@@ -4715,18 +4861,18 @@ functions[r#"
 "#,
 			r#"
 
-    #[lua(as_trait = "std::cmp::PartialEq", kind = "Function", composite = "eq")]
-    fn eq(&self, #[proxy] rhs: &glam::Affine3A) -> bool;
-
-"#,
-			r#"
-
     #[lua(
         as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone",
         kind = "Method",
         output(proxy),
     )]
     fn clone(&self) -> bevy::math::Affine3A;
+
+"#,
+			r#"
+
+    #[lua(as_trait = "std::cmp::PartialEq", kind = "Function", composite = "eq")]
+    fn eq(&self, #[proxy] rhs: &glam::Affine3A) -> bool;
 
 "#]
 )]
@@ -5080,6 +5226,18 @@ functions[r#"
 			r#"
 
     #[lua(
+        as_trait = "std::ops::Neg",
+        kind = "Function",
+        output(proxy),
+        composite = "neg",
+        metamethod = "Unm",
+    )]
+    fn neg(self) -> bevy::math::Mat3;
+
+"#,
+			r#"
+
+    #[lua(
         as_trait = "std::ops::Sub",
         kind = "Function",
         output(proxy),
@@ -5101,6 +5259,12 @@ functions[r#"
 "#,
 			r#"
 
+    #[lua(as_trait = "std::cmp::PartialEq", kind = "Function", composite = "eq")]
+    fn eq(&self, #[proxy] rhs: &glam::Mat3) -> bool;
+
+"#,
+			r#"
+
     #[lua(
         as_trait = "std::ops::Add",
         kind = "Function",
@@ -5109,24 +5273,6 @@ functions[r#"
         metamethod = "Add",
     )]
     fn add(self, #[proxy] rhs: bevy::math::Mat3) -> bevy::math::Mat3;
-
-"#,
-			r#"
-
-    #[lua(
-        as_trait = "std::ops::Neg",
-        kind = "Function",
-        output(proxy),
-        composite = "neg",
-        metamethod = "Unm",
-    )]
-    fn neg(self) -> bevy::math::Mat3;
-
-"#,
-			r#"
-
-    #[lua(as_trait = "std::cmp::PartialEq", kind = "Function", composite = "eq")]
-    fn eq(&self, #[proxy] rhs: &glam::Mat3) -> bool;
 
 "#]
 )]
@@ -5717,12 +5863,6 @@ functions[r#"
 "#,
 			r#"
 
-    #[lua(as_trait = "std::cmp::PartialEq", kind = "Function", composite = "eq")]
-    fn eq(&self, #[proxy] other: &glam::Vec2) -> bool;
-
-"#,
-			r#"
-
     #[lua(
         as_trait = "std::ops::Neg",
         kind = "Function",
@@ -5741,6 +5881,12 @@ functions[r#"
         output(proxy),
     )]
     fn clone(&self) -> bevy::math::Vec2;
+
+"#,
+			r#"
+
+    #[lua(as_trait = "std::cmp::PartialEq", kind = "Function", composite = "eq")]
+    fn eq(&self, #[proxy] other: &glam::Vec2) -> bool;
 
 "#]
 )]
@@ -6324,12 +6470,6 @@ functions[r#"
 "#,
 			r#"
 
-    #[lua(as_trait = "std::cmp::PartialEq", kind = "Function", composite = "eq")]
-    fn eq(&self, #[proxy] other: &glam::Vec3) -> bool;
-
-"#,
-			r#"
-
     #[lua(
         as_trait = "std::ops::Neg",
         kind = "Function",
@@ -6338,6 +6478,12 @@ functions[r#"
         metamethod = "Unm",
     )]
     fn neg(self) -> bevy::math::Vec3;
+
+"#,
+			r#"
+
+    #[lua(as_trait = "std::cmp::PartialEq", kind = "Function", composite = "eq")]
+    fn eq(&self, #[proxy] other: &glam::Vec3) -> bool;
 
 "#,
 			r#"
@@ -6565,6 +6711,18 @@ functions[r#"
 			r#"
 
     #[lua(
+        as_trait = "std::ops::Neg",
+        kind = "Function",
+        output(proxy),
+        composite = "neg",
+        metamethod = "Unm",
+    )]
+    fn neg(self) -> bevy::math::Mat2;
+
+"#,
+			r#"
+
+    #[lua(
         as_trait = "std::ops::Sub",
         kind = "Function",
         output(proxy),
@@ -6584,18 +6742,6 @@ functions[r#"
         metamethod = "Add",
     )]
     fn add(self, #[proxy] rhs: bevy::math::Mat2) -> bevy::math::Mat2;
-
-"#,
-			r#"
-
-    #[lua(
-        as_trait = "std::ops::Neg",
-        kind = "Function",
-        output(proxy),
-        composite = "neg",
-        metamethod = "Unm",
-    )]
-    fn neg(self) -> bevy::math::Mat2;
 
 "#,
 			r#"
@@ -6968,18 +7114,6 @@ functions[r#"
 			r#"
 
     #[lua(
-        as_trait = "std::ops::Add",
-        kind = "Function",
-        output(proxy),
-        composite = "add",
-        metamethod = "Add",
-    )]
-    fn add(self, #[proxy] rhs: bevy::math::Mat3A) -> bevy::math::Mat3A;
-
-"#,
-			r#"
-
-    #[lua(
         as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone",
         kind = "Method",
         output(proxy),
@@ -7003,6 +7137,18 @@ functions[r#"
 
     #[lua(as_trait = "std::cmp::PartialEq", kind = "Function", composite = "eq")]
     fn eq(&self, #[proxy] rhs: &glam::Mat3A) -> bool;
+
+"#,
+			r#"
+
+    #[lua(
+        as_trait = "std::ops::Add",
+        kind = "Function",
+        output(proxy),
+        composite = "add",
+        metamethod = "Add",
+    )]
+    fn add(self, #[proxy] rhs: bevy::math::Mat3A) -> bevy::math::Mat3A;
 
 "#]
 )]
@@ -7624,17 +7770,13 @@ functions[r#"
 			r#"
 
     #[lua(
-        as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone",
-        kind = "Method",
+        as_trait = "std::ops::Neg",
+        kind = "Function",
         output(proxy),
+        composite = "neg",
+        metamethod = "Unm",
     )]
-    fn clone(&self) -> bevy::math::Mat4;
-
-"#,
-			r#"
-
-    #[lua(as_trait = "std::cmp::PartialEq", kind = "Function", composite = "eq")]
-    fn eq(&self, #[proxy] rhs: &glam::Mat4) -> bool;
+    fn neg(self) -> bevy::math::Mat4;
 
 "#,
 			r#"
@@ -7647,6 +7789,12 @@ functions[r#"
         metamethod = "Sub",
     )]
     fn sub(self, #[proxy] rhs: bevy::math::Mat4) -> bevy::math::Mat4;
+
+"#,
+			r#"
+
+    #[lua(as_trait = "std::cmp::PartialEq", kind = "Function", composite = "eq")]
+    fn eq(&self, #[proxy] rhs: &glam::Mat4) -> bool;
 
 "#,
 			r#"
@@ -7664,13 +7812,11 @@ functions[r#"
 			r#"
 
     #[lua(
-        as_trait = "std::ops::Neg",
-        kind = "Function",
+        as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone",
+        kind = "Method",
         output(proxy),
-        composite = "neg",
-        metamethod = "Unm",
     )]
-    fn neg(self) -> bevy::math::Mat4;
+    fn clone(&self) -> bevy::math::Mat4;
 
 "#]
 )]
@@ -8079,6 +8225,12 @@ functions[r#"
 "#,
 			r#"
 
+    #[lua(as_trait = "std::cmp::PartialEq", kind = "Function", composite = "eq")]
+    fn eq(&self, #[proxy] rhs: &glam::Quat) -> bool;
+
+"#,
+			r#"
+
     #[lua(
         as_trait = "std::ops::Neg",
         kind = "Function",
@@ -8087,20 +8239,6 @@ functions[r#"
         metamethod = "Unm",
     )]
     fn neg(self) -> bevy::math::Quat;
-
-"#,
-			r#"
-/// Divides a quaternion by a scalar value.
-/// The quotient is not guaranteed to be normalized.
-
-    #[lua(
-        as_trait = "std::ops::Div",
-        kind = "Function",
-        output(proxy),
-        composite = "div",
-        metamethod = "Div",
-    )]
-    fn div(self, rhs: f32) -> bevy::math::Quat;
 
 "#,
 			r#"
@@ -8120,19 +8258,17 @@ functions[r#"
 
 "#,
 			r#"
-
-    #[lua(as_trait = "std::cmp::PartialEq", kind = "Function", composite = "eq")]
-    fn eq(&self, #[proxy] rhs: &glam::Quat) -> bool;
-
-"#,
-			r#"
+/// Divides a quaternion by a scalar value.
+/// The quotient is not guaranteed to be normalized.
 
     #[lua(
-        as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone",
-        kind = "Method",
+        as_trait = "std::ops::Div",
+        kind = "Function",
         output(proxy),
+        composite = "div",
+        metamethod = "Div",
     )]
-    fn clone(&self) -> bevy::math::Quat;
+    fn div(self, rhs: f32) -> bevy::math::Quat;
 
 "#,
 			r#"
@@ -8147,6 +8283,16 @@ functions[r#"
         metamethod = "Sub",
     )]
     fn sub(self, #[proxy] rhs: bevy::math::Quat) -> bevy::math::Quat;
+
+"#,
+			r#"
+
+    #[lua(
+        as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone",
+        kind = "Method",
+        output(proxy),
+    )]
+    fn clone(&self) -> bevy::math::Quat;
 
 "#]
 )]
@@ -8749,14 +8895,8 @@ functions[r#"
 "#,
 			r#"
 
-    #[lua(
-        as_trait = "std::ops::Neg",
-        kind = "Function",
-        output(proxy),
-        composite = "neg",
-        metamethod = "Unm",
-    )]
-    fn neg(self) -> bevy::math::Vec3A;
+    #[lua(as_trait = "std::cmp::PartialEq", kind = "Function", composite = "eq")]
+    fn eq(&self, #[proxy] rhs: &glam::Vec3A) -> bool;
 
 "#,
 			r#"
@@ -8771,8 +8911,14 @@ functions[r#"
 "#,
 			r#"
 
-    #[lua(as_trait = "std::cmp::PartialEq", kind = "Function", composite = "eq")]
-    fn eq(&self, #[proxy] rhs: &glam::Vec3A) -> bool;
+    #[lua(
+        as_trait = "std::ops::Neg",
+        kind = "Function",
+        output(proxy),
+        composite = "neg",
+        metamethod = "Unm",
+    )]
+    fn neg(self) -> bevy::math::Vec3A;
 
 "#]
 )]
@@ -9327,6 +9473,16 @@ functions[r#"
 			r#"
 
     #[lua(
+        as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone",
+        kind = "Method",
+        output(proxy),
+    )]
+    fn clone(&self) -> bevy::math::Vec4;
+
+"#,
+			r#"
+
+    #[lua(
         as_trait = "std::ops::Neg",
         kind = "Function",
         output(proxy),
@@ -9334,16 +9490,6 @@ functions[r#"
         metamethod = "Unm",
     )]
     fn neg(self) -> bevy::math::Vec4;
-
-"#,
-			r#"
-
-    #[lua(
-        as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone",
-        kind = "Method",
-        output(proxy),
-    )]
-    fn clone(&self) -> bevy::math::Vec4;
 
 "#]
 )]
@@ -10057,18 +10203,6 @@ functions[r#"
 			r#"
 
     #[lua(
-        as_trait = "std::ops::Neg",
-        kind = "Function",
-        output(proxy),
-        composite = "neg",
-        metamethod = "Unm",
-    )]
-    fn neg(self) -> bevy::math::DMat2;
-
-"#,
-			r#"
-
-    #[lua(
         as_trait = "std::ops::Sub",
         kind = "Function",
         output(proxy),
@@ -10081,17 +10215,29 @@ functions[r#"
 			r#"
 
     #[lua(
-        as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone",
-        kind = "Method",
+        as_trait = "std::ops::Neg",
+        kind = "Function",
         output(proxy),
+        composite = "neg",
+        metamethod = "Unm",
     )]
-    fn clone(&self) -> bevy::math::DMat2;
+    fn neg(self) -> bevy::math::DMat2;
 
 "#,
 			r#"
 
     #[lua(as_trait = "std::cmp::PartialEq", kind = "Function", composite = "eq")]
     fn eq(&self, #[proxy] rhs: &glam::DMat2) -> bool;
+
+"#,
+			r#"
+
+    #[lua(
+        as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone",
+        kind = "Method",
+        output(proxy),
+    )]
+    fn clone(&self) -> bevy::math::DMat2;
 
 "#]
 )]
@@ -10442,29 +10588,17 @@ functions[r#"
 			r#"
 
     #[lua(
-        as_trait = "std::ops::Neg",
-        kind = "Function",
+        as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone",
+        kind = "Method",
         output(proxy),
-        composite = "neg",
-        metamethod = "Unm",
     )]
-    fn neg(self) -> bevy::math::DMat3;
+    fn clone(&self) -> bevy::math::DMat3;
 
 "#,
 			r#"
 
     #[lua(as_trait = "std::cmp::PartialEq", kind = "Function", composite = "eq")]
     fn eq(&self, #[proxy] rhs: &glam::DMat3) -> bool;
-
-"#,
-			r#"
-
-    #[lua(
-        as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone",
-        kind = "Method",
-        output(proxy),
-    )]
-    fn clone(&self) -> bevy::math::DMat3;
 
 "#,
 			r#"
@@ -10477,6 +10611,18 @@ functions[r#"
         metamethod = "Sub",
     )]
     fn sub(self, #[proxy] rhs: bevy::math::DMat3) -> bevy::math::DMat3;
+
+"#,
+			r#"
+
+    #[lua(
+        as_trait = "std::ops::Neg",
+        kind = "Function",
+        output(proxy),
+        composite = "neg",
+        metamethod = "Unm",
+    )]
+    fn neg(self) -> bevy::math::DMat3;
 
 "#,
 			r#"
@@ -11094,16 +11240,6 @@ functions[r#"
 			r#"
 
     #[lua(
-        as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone",
-        kind = "Method",
-        output(proxy),
-    )]
-    fn clone(&self) -> bevy::math::DMat4;
-
-"#,
-			r#"
-
-    #[lua(
         as_trait = "std::ops::Sub",
         kind = "Function",
         output(proxy),
@@ -11123,6 +11259,16 @@ functions[r#"
         metamethod = "Add",
     )]
     fn add(self, #[proxy] rhs: bevy::math::DMat4) -> bevy::math::DMat4;
+
+"#,
+			r#"
+
+    #[lua(
+        as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone",
+        kind = "Method",
+        output(proxy),
+    )]
+    fn clone(&self) -> bevy::math::DMat4;
 
 "#,
 			r#"
@@ -11528,6 +11674,20 @@ functions[r#"
 
 "#,
 			r#"
+/// Subtracts the `rhs` quaternion from `self`.
+/// The difference is not guaranteed to be normalized.
+
+    #[lua(
+        as_trait = "std::ops::Sub",
+        kind = "Function",
+        output(proxy),
+        composite = "sub",
+        metamethod = "Sub",
+    )]
+    fn sub(self, #[proxy] rhs: bevy::math::DQuat) -> bevy::math::DQuat;
+
+"#,
+			r#"
 
     #[lua(
         as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone",
@@ -11539,8 +11699,14 @@ functions[r#"
 "#,
 			r#"
 
-    #[lua(as_trait = "std::cmp::PartialEq", kind = "Function", composite = "eq")]
-    fn eq(&self, #[proxy] rhs: &glam::DQuat) -> bool;
+    #[lua(
+        as_trait = "std::ops::Neg",
+        kind = "Function",
+        output(proxy),
+        composite = "neg",
+        metamethod = "Unm",
+    )]
+    fn neg(self) -> bevy::math::DQuat;
 
 "#,
 			r#"
@@ -11560,20 +11726,6 @@ functions[r#"
 
 "#,
 			r#"
-/// Subtracts the `rhs` quaternion from `self`.
-/// The difference is not guaranteed to be normalized.
-
-    #[lua(
-        as_trait = "std::ops::Sub",
-        kind = "Function",
-        output(proxy),
-        composite = "sub",
-        metamethod = "Sub",
-    )]
-    fn sub(self, #[proxy] rhs: bevy::math::DQuat) -> bevy::math::DQuat;
-
-"#,
-			r#"
 /// Divides a quaternion by a scalar value.
 /// The quotient is not guaranteed to be normalized.
 
@@ -11589,14 +11741,8 @@ functions[r#"
 "#,
 			r#"
 
-    #[lua(
-        as_trait = "std::ops::Neg",
-        kind = "Function",
-        output(proxy),
-        composite = "neg",
-        metamethod = "Unm",
-    )]
-    fn neg(self) -> bevy::math::DQuat;
+    #[lua(as_trait = "std::cmp::PartialEq", kind = "Function", composite = "eq")]
+    fn eq(&self, #[proxy] rhs: &glam::DQuat) -> bool;
 
 "#]
 )]
@@ -12205,12 +12351,6 @@ functions[r#"
 "#,
 			r#"
 
-    #[lua(as_trait = "std::cmp::PartialEq", kind = "Function", composite = "eq")]
-    fn eq(&self, #[proxy] other: &glam::DVec2) -> bool;
-
-"#,
-			r#"
-
     #[lua(
         as_trait = "std::ops::Neg",
         kind = "Function",
@@ -12219,6 +12359,12 @@ functions[r#"
         metamethod = "Unm",
     )]
     fn neg(self) -> bevy::math::DVec2;
+
+"#,
+			r#"
+
+    #[lua(as_trait = "std::cmp::PartialEq", kind = "Function", composite = "eq")]
+    fn eq(&self, #[proxy] other: &glam::DVec2) -> bool;
 
 "#]
 )]
@@ -12824,16 +12970,6 @@ functions[r#"
 			r#"
 
     #[lua(
-        as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone",
-        kind = "Method",
-        output(proxy),
-    )]
-    fn clone(&self) -> bevy::math::DVec3;
-
-"#,
-			r#"
-
-    #[lua(
         as_trait = "std::ops::Neg",
         kind = "Function",
         output(proxy),
@@ -12841,6 +12977,16 @@ functions[r#"
         metamethod = "Unm",
     )]
     fn neg(self) -> bevy::math::DVec3;
+
+"#,
+			r#"
+
+    #[lua(
+        as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone",
+        kind = "Method",
+        output(proxy),
+    )]
+    fn clone(&self) -> bevy::math::DVec3;
 
 "#]
 )]
@@ -13390,18 +13536,18 @@ functions[r#"
 "#,
 			r#"
 
-    #[lua(as_trait = "std::cmp::PartialEq", kind = "Function", composite = "eq")]
-    fn eq(&self, #[proxy] other: &glam::DVec4) -> bool;
-
-"#,
-			r#"
-
     #[lua(
         as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone",
         kind = "Method",
         output(proxy),
     )]
     fn clone(&self) -> bevy::math::DVec4;
+
+"#,
+			r#"
+
+    #[lua(as_trait = "std::cmp::PartialEq", kind = "Function", composite = "eq")]
+    fn eq(&self, #[proxy] other: &glam::DVec4) -> bool;
 
 "#,
 			r#"
@@ -13793,12 +13939,6 @@ functions[r#"
 "#,
 			r#"
 
-    #[lua(as_trait = "std::cmp::PartialEq", kind = "Function", composite = "eq")]
-    fn eq(&self, #[proxy] other: &glam::IVec2) -> bool;
-
-"#,
-			r#"
-
     #[lua(
         as_trait = "std::ops::Neg",
         kind = "Function",
@@ -13807,6 +13947,12 @@ functions[r#"
         metamethod = "Unm",
     )]
     fn neg(self) -> bevy::math::IVec2;
+
+"#,
+			r#"
+
+    #[lua(as_trait = "std::cmp::PartialEq", kind = "Function", composite = "eq")]
+    fn eq(&self, #[proxy] other: &glam::IVec2) -> bool;
 
 "#,
 			r#"
@@ -14200,22 +14346,6 @@ functions[r#"
 "#,
 			r#"
 
-    #[lua(as_trait = "std::cmp::Eq", kind = "Method")]
-    fn assert_receiver_is_total_eq(&self) -> ();
-
-"#,
-			r#"
-
-    #[lua(
-        as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone",
-        kind = "Method",
-        output(proxy),
-    )]
-    fn clone(&self) -> bevy::math::IVec3;
-
-"#,
-			r#"
-
     #[lua(as_trait = "std::cmp::PartialEq", kind = "Function", composite = "eq")]
     fn eq(&self, #[proxy] other: &glam::IVec3) -> bool;
 
@@ -14230,6 +14360,22 @@ functions[r#"
         metamethod = "Unm",
     )]
     fn neg(self) -> bevy::math::IVec3;
+
+"#,
+			r#"
+
+    #[lua(as_trait = "std::cmp::Eq", kind = "Method")]
+    fn assert_receiver_is_total_eq(&self) -> ();
+
+"#,
+			r#"
+
+    #[lua(
+        as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone",
+        kind = "Method",
+        output(proxy),
+    )]
+    fn clone(&self) -> bevy::math::IVec3;
 
 "#]
 )]
@@ -14586,6 +14732,12 @@ functions[r#"
 "#,
 			r#"
 
+    #[lua(as_trait = "std::cmp::PartialEq", kind = "Function", composite = "eq")]
+    fn eq(&self, #[proxy] other: &glam::IVec4) -> bool;
+
+"#,
+			r#"
+
     #[lua(as_trait = "std::cmp::Eq", kind = "Method")]
     fn assert_receiver_is_total_eq(&self) -> ();
 
@@ -14598,12 +14750,6 @@ functions[r#"
         output(proxy),
     )]
     fn clone(&self) -> bevy::math::IVec4;
-
-"#,
-			r#"
-
-    #[lua(as_trait = "std::cmp::PartialEq", kind = "Function", composite = "eq")]
-    fn eq(&self, #[proxy] other: &glam::IVec4) -> bool;
 
 "#,
 			r#"
@@ -15268,18 +15414,18 @@ functions[r#"
 "#,
 			r#"
 
+    #[lua(as_trait = "std::cmp::Eq", kind = "Method")]
+    fn assert_receiver_is_total_eq(&self) -> ();
+
+"#,
+			r#"
+
     #[lua(
         as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone",
         kind = "Method",
         output(proxy),
     )]
     fn clone(&self) -> bevy::math::UVec3;
-
-"#,
-			r#"
-
-    #[lua(as_trait = "std::cmp::Eq", kind = "Method")]
-    fn assert_receiver_is_total_eq(&self) -> ();
 
 "#]
 )]
@@ -15584,6 +15730,16 @@ functions[r#"
 "#,
 			r#"
 
+    #[lua(
+        as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone",
+        kind = "Method",
+        output(proxy),
+    )]
+    fn clone(&self) -> bevy::math::UVec4;
+
+"#,
+			r#"
+
     #[lua(as_trait = "std::cmp::Eq", kind = "Method")]
     fn assert_receiver_is_total_eq(&self) -> ();
 
@@ -15592,16 +15748,6 @@ functions[r#"
 
     #[lua(as_trait = "std::cmp::PartialEq", kind = "Function", composite = "eq")]
     fn eq(&self, #[proxy] other: &glam::UVec4) -> bool;
-
-"#,
-			r#"
-
-    #[lua(
-        as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone",
-        kind = "Method",
-        output(proxy),
-    )]
-    fn clone(&self) -> bevy::math::UVec4;
 
 "#]
 )]
@@ -15988,18 +16134,6 @@ functions[r#"
 			r#"
 
     #[lua(
-        as_trait = "std::ops::Neg",
-        kind = "Function",
-        output(proxy),
-        composite = "neg",
-        metamethod = "Unm",
-    )]
-    fn neg(self) -> bevy::math::I64Vec2;
-
-"#,
-			r#"
-
-    #[lua(
         as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone",
         kind = "Method",
         output(proxy),
@@ -16011,6 +16145,18 @@ functions[r#"
 
     #[lua(as_trait = "std::cmp::PartialEq", kind = "Function", composite = "eq")]
     fn eq(&self, #[proxy] other: &glam::I64Vec2) -> bool;
+
+"#,
+			r#"
+
+    #[lua(
+        as_trait = "std::ops::Neg",
+        kind = "Function",
+        output(proxy),
+        composite = "neg",
+        metamethod = "Unm",
+    )]
+    fn neg(self) -> bevy::math::I64Vec2;
 
 "#]
 )]
@@ -16388,18 +16534,18 @@ functions[r#"
 "#,
 			r#"
 
-    #[lua(as_trait = "std::cmp::PartialEq", kind = "Function", composite = "eq")]
-    fn eq(&self, #[proxy] other: &glam::I64Vec3) -> bool;
-
-"#,
-			r#"
-
     #[lua(
         as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone",
         kind = "Method",
         output(proxy),
     )]
     fn clone(&self) -> bevy::math::I64Vec3;
+
+"#,
+			r#"
+
+    #[lua(as_trait = "std::cmp::PartialEq", kind = "Function", composite = "eq")]
+    fn eq(&self, #[proxy] other: &glam::I64Vec3) -> bool;
 
 "#,
 			r#"
@@ -16774,14 +16920,24 @@ functions[r#"
 "#,
 			r#"
 
-    #[lua(as_trait = "std::cmp::Eq", kind = "Method")]
-    fn assert_receiver_is_total_eq(&self) -> ();
+    #[lua(as_trait = "std::cmp::PartialEq", kind = "Function", composite = "eq")]
+    fn eq(&self, #[proxy] other: &glam::I64Vec4) -> bool;
 
 "#,
 			r#"
 
-    #[lua(as_trait = "std::cmp::PartialEq", kind = "Function", composite = "eq")]
-    fn eq(&self, #[proxy] other: &glam::I64Vec4) -> bool;
+    #[lua(
+        as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone",
+        kind = "Method",
+        output(proxy),
+    )]
+    fn clone(&self) -> bevy::math::I64Vec4;
+
+"#,
+			r#"
+
+    #[lua(as_trait = "std::cmp::Eq", kind = "Method")]
+    fn assert_receiver_is_total_eq(&self) -> ();
 
 "#,
 			r#"
@@ -16794,16 +16950,6 @@ functions[r#"
         metamethod = "Unm",
     )]
     fn neg(self) -> bevy::math::I64Vec4;
-
-"#,
-			r#"
-
-    #[lua(
-        as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone",
-        kind = "Method",
-        output(proxy),
-    )]
-    fn clone(&self) -> bevy::math::I64Vec4;
 
 "#]
 )]
@@ -17107,6 +17253,16 @@ functions[r#"
 "#,
 			r#"
 
+    #[lua(
+        as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone",
+        kind = "Method",
+        output(proxy),
+    )]
+    fn clone(&self) -> bevy::math::U64Vec2;
+
+"#,
+			r#"
+
     #[lua(as_trait = "std::cmp::PartialEq", kind = "Function", composite = "eq")]
     fn eq(&self, #[proxy] other: &glam::U64Vec2) -> bool;
 
@@ -17115,16 +17271,6 @@ functions[r#"
 
     #[lua(as_trait = "std::cmp::Eq", kind = "Method")]
     fn assert_receiver_is_total_eq(&self) -> ();
-
-"#,
-			r#"
-
-    #[lua(
-        as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone",
-        kind = "Method",
-        output(proxy),
-    )]
-    fn clone(&self) -> bevy::math::U64Vec2;
 
 "#]
 )]
@@ -17450,18 +17596,18 @@ functions[r#"
 "#,
 			r#"
 
-    #[lua(as_trait = "std::cmp::Eq", kind = "Method")]
-    fn assert_receiver_is_total_eq(&self) -> ();
-
-"#,
-			r#"
-
     #[lua(
         as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone",
         kind = "Method",
         output(proxy),
     )]
     fn clone(&self) -> bevy::math::U64Vec3;
+
+"#,
+			r#"
+
+    #[lua(as_trait = "std::cmp::Eq", kind = "Method")]
+    fn assert_receiver_is_total_eq(&self) -> ();
 
 "#,
 			r#"
@@ -17782,8 +17928,253 @@ functions[r#"
 "#,
 			r#"
 
+    #[lua(as_trait = "std::cmp::Eq", kind = "Method")]
+    fn assert_receiver_is_total_eq(&self) -> ();
+
+"#,
+			r#"
+
     #[lua(as_trait = "std::cmp::PartialEq", kind = "Function", composite = "eq")]
     fn eq(&self, #[proxy] other: &glam::U64Vec4) -> bool;
+
+"#]
+)]
+
+
+
+
+pub struct U64Vec4{
+    
+    
+    
+}
+
+    
+/// An integer that is known not to equal zero.
+
+/// This enables some memory layout optimization.
+
+///For example, `Option<NonZeroU8>` is the same size as `u8`:
+
+/// ```rust
+
+/// use std::mem::size_of;
+
+///assert_eq!(size_of::<Option<core::num::NonZeroU8>>(), size_of::<u8>());
+
+/// ```
+
+/// # Layout
+
+///`NonZeroU8` is guaranteed to have the same layout and bit validity as `u8`
+
+/// with the exception that `0` is not a valid instance.
+
+///`Option<NonZeroU8>` is guaranteed to be compatible with `u8`,
+
+/// including in FFI.
+
+/// Thanks to the [null pointer optimization],
+
+///`NonZeroU8` and `Option<NonZeroU8>`
+
+/// are guaranteed to have the same size and alignment:
+
+/// ```
+
+/// # use std::mem::{size_of, align_of};
+
+///use std::num::NonZeroU8;
+
+///assert_eq!(size_of::<NonZeroU8>(), size_of::<Option<NonZeroU8>>());
+
+///assert_eq!(align_of::<NonZeroU8>(), align_of::<Option<NonZeroU8>>());
+
+/// ```
+
+/// [null pointer optimization]: crate::option#representation
+
+
+#[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
+#[proxy(
+derive(clone,debug,),
+remote="std::num::NonZeroU8",
+functions[r#"
+/// Creates a non-zero without checking whether the value is non-zero.
+/// This results in undefined behaviour if the value is zero.
+/// # Safety
+/// The value must not be zero.
+
+    #[lua(kind = "Function", output(proxy))]
+    unsafe fn new_unchecked(n: u8) -> std::num::NonZeroU8;
+
+"#,
+			r#"
+/// Returns the value as a primitive type.
+
+    #[lua(kind = "Method")]
+    fn get(self) -> u8;
+
+"#,
+			r#"
+/// Returns the number of leading zeros in the binary representation of `self`.
+/// On many architectures, this function can perform better than `leading_zeros()` on the underlying integer type, as special handling of zero can be avoided.
+/// # Examples
+/// Basic usage:
+/// ```
+///let n = std::num::NonZeroU8::new(u8::MAX).unwrap();
+/// assert_eq!(n.leading_zeros(), 0);
+/// ```
+
+    #[lua(kind = "Method")]
+    fn leading_zeros(self) -> u32;
+
+"#,
+			r#"
+/// Returns the number of trailing zeros in the binary representation
+/// of `self`.
+/// On many architectures, this function can perform better than `trailing_zeros()` on the underlying integer type, as special handling of zero can be avoided.
+/// # Examples
+/// Basic usage:
+/// ```
+///let n = std::num::NonZeroU8::new(0b0101000).unwrap();
+/// assert_eq!(n.trailing_zeros(), 3);
+/// ```
+
+    #[lua(kind = "Method")]
+    fn trailing_zeros(self) -> u32;
+
+"#,
+			r#"
+/// Adds an unsigned integer to a non-zero value.
+///Return [`NonZeroU8::MAX`] on overflow.
+/// # Examples
+/// ```
+///# use std::num::NonZeroU8;
+/// # fn main() { test().unwrap(); }
+/// # fn test() -> Option<()> {
+///let one = NonZeroU8::new(1)?;
+///let two = NonZeroU8::new(2)?;
+///let max = NonZeroU8::new(u8::MAX)?;
+/// assert_eq!(two, one.saturating_add(1));
+/// assert_eq!(max, max.saturating_add(1));
+/// # Some(())
+/// # }
+/// ```
+
+    #[lua(kind = "Method", output(proxy))]
+    fn saturating_add(self, other: u8) -> std::num::NonZeroU8;
+
+"#,
+			r#"
+/// Returns the base 2 logarithm of the number, rounded down.
+/// This is the same operation as
+///[`u8::ilog2`],
+/// except that it has no failure cases to worry about
+/// since this value can never be zero.
+/// # Examples
+/// ```
+///# use std::num::NonZeroU8;
+///assert_eq!(NonZeroU8::new(7).unwrap().ilog2(), 2);
+///assert_eq!(NonZeroU8::new(8).unwrap().ilog2(), 3);
+///assert_eq!(NonZeroU8::new(9).unwrap().ilog2(), 3);
+/// ```
+
+    #[lua(kind = "Method")]
+    fn ilog2(self) -> u32;
+
+"#,
+			r#"
+/// Returns the base 10 logarithm of the number, rounded down.
+/// This is the same operation as
+///[`u8::ilog10`],
+/// except that it has no failure cases to worry about
+/// since this value can never be zero.
+/// # Examples
+/// ```
+///# use std::num::NonZeroU8;
+///assert_eq!(NonZeroU8::new(99).unwrap().ilog10(), 1);
+///assert_eq!(NonZeroU8::new(100).unwrap().ilog10(), 2);
+///assert_eq!(NonZeroU8::new(101).unwrap().ilog10(), 2);
+/// ```
+
+    #[lua(kind = "Method")]
+    fn ilog10(self) -> u32;
+
+"#,
+			r#"
+/// Returns `true` if and only if `self == (1 << k)` for some `k`.
+/// On many architectures, this function can perform better than `is_power_of_two()`
+/// on the underlying integer type, as special handling of zero can be avoided.
+/// # Examples
+/// Basic usage:
+/// ```
+///let eight = std::num::NonZeroU8::new(8).unwrap();
+/// assert!(eight.is_power_of_two());
+///let ten = std::num::NonZeroU8::new(10).unwrap();
+/// assert!(!ten.is_power_of_two());
+/// ```
+
+    #[lua(kind = "Method")]
+    fn is_power_of_two(self) -> bool;
+
+"#,
+			r#"
+/// Multiplies two non-zero integers together.
+///Return [`NonZeroU8::MAX`] on overflow.
+/// # Examples
+/// ```
+///# use std::num::NonZeroU8;
+/// # fn main() { test().unwrap(); }
+/// # fn test() -> Option<()> {
+///let two = NonZeroU8::new(2)?;
+///let four = NonZeroU8::new(4)?;
+///let max = NonZeroU8::new(u8::MAX)?;
+/// assert_eq!(four, two.saturating_mul(two));
+/// assert_eq!(max, four.saturating_mul(max));
+/// # Some(())
+/// # }
+/// ```
+
+    #[lua(kind = "Method", output(proxy))]
+    fn saturating_mul(self, #[proxy] other: std::num::NonZeroU8) -> std::num::NonZeroU8;
+
+"#,
+			r#"
+/// Raise non-zero value to an integer power.
+///Return [`NonZeroU8::MAX`] on overflow.
+/// # Examples
+/// ```
+///# use std::num::NonZeroU8;
+/// # fn main() { test().unwrap(); }
+/// # fn test() -> Option<()> {
+///let three = NonZeroU8::new(3)?;
+///let twenty_seven = NonZeroU8::new(27)?;
+///let max = NonZeroU8::new(u8::MAX)?;
+/// assert_eq!(twenty_seven, three.saturating_pow(3));
+/// assert_eq!(max, max.saturating_pow(3));
+/// # Some(())
+/// # }
+/// ```
+
+    #[lua(kind = "Method", output(proxy))]
+    fn saturating_pow(self, other: u32) -> std::num::NonZeroU8;
+
+"#,
+			r#"
+
+    #[lua(
+        as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone",
+        kind = "Method",
+        output(proxy),
+    )]
+    fn clone(&self) -> std::num::NonZeroU8;
+
+"#,
+			r#"
+
+    #[lua(as_trait = "std::cmp::PartialEq", kind = "Function", composite = "eq")]
+    fn eq(&self, #[proxy] other: &std::num::NonZeroU8) -> bool;
 
 "#,
 			r#"
@@ -17796,9 +18187,4130 @@ functions[r#"
 
 
 
-
-pub struct U64Vec4{
+pub struct NonZeroU8(
     
+    
+        
+    
+    
+);
+
+    
+/// An integer that is known not to equal zero.
+
+/// This enables some memory layout optimization.
+
+///For example, `Option<NonZeroU16>` is the same size as `u16`:
+
+/// ```rust
+
+/// use std::mem::size_of;
+
+///assert_eq!(size_of::<Option<core::num::NonZeroU16>>(), size_of::<u16>());
+
+/// ```
+
+/// # Layout
+
+///`NonZeroU16` is guaranteed to have the same layout and bit validity as `u16`
+
+/// with the exception that `0` is not a valid instance.
+
+///`Option<NonZeroU16>` is guaranteed to be compatible with `u16`,
+
+/// including in FFI.
+
+/// Thanks to the [null pointer optimization],
+
+///`NonZeroU16` and `Option<NonZeroU16>`
+
+/// are guaranteed to have the same size and alignment:
+
+/// ```
+
+/// # use std::mem::{size_of, align_of};
+
+///use std::num::NonZeroU16;
+
+///assert_eq!(size_of::<NonZeroU16>(), size_of::<Option<NonZeroU16>>());
+
+///assert_eq!(align_of::<NonZeroU16>(), align_of::<Option<NonZeroU16>>());
+
+/// ```
+
+/// [null pointer optimization]: crate::option#representation
+
+
+#[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
+#[proxy(
+derive(clone,debug,),
+remote="std::num::NonZeroU16",
+functions[r#"
+/// Creates a non-zero without checking whether the value is non-zero.
+/// This results in undefined behaviour if the value is zero.
+/// # Safety
+/// The value must not be zero.
+
+    #[lua(kind = "Function", output(proxy))]
+    unsafe fn new_unchecked(n: u16) -> std::num::NonZeroU16;
+
+"#,
+			r#"
+/// Returns the value as a primitive type.
+
+    #[lua(kind = "Method")]
+    fn get(self) -> u16;
+
+"#,
+			r#"
+/// Returns the number of leading zeros in the binary representation of `self`.
+/// On many architectures, this function can perform better than `leading_zeros()` on the underlying integer type, as special handling of zero can be avoided.
+/// # Examples
+/// Basic usage:
+/// ```
+///let n = std::num::NonZeroU16::new(u16::MAX).unwrap();
+/// assert_eq!(n.leading_zeros(), 0);
+/// ```
+
+    #[lua(kind = "Method")]
+    fn leading_zeros(self) -> u32;
+
+"#,
+			r#"
+/// Returns the number of trailing zeros in the binary representation
+/// of `self`.
+/// On many architectures, this function can perform better than `trailing_zeros()` on the underlying integer type, as special handling of zero can be avoided.
+/// # Examples
+/// Basic usage:
+/// ```
+///let n = std::num::NonZeroU16::new(0b0101000).unwrap();
+/// assert_eq!(n.trailing_zeros(), 3);
+/// ```
+
+    #[lua(kind = "Method")]
+    fn trailing_zeros(self) -> u32;
+
+"#,
+			r#"
+/// Adds an unsigned integer to a non-zero value.
+///Return [`NonZeroU16::MAX`] on overflow.
+/// # Examples
+/// ```
+///# use std::num::NonZeroU16;
+/// # fn main() { test().unwrap(); }
+/// # fn test() -> Option<()> {
+///let one = NonZeroU16::new(1)?;
+///let two = NonZeroU16::new(2)?;
+///let max = NonZeroU16::new(u16::MAX)?;
+/// assert_eq!(two, one.saturating_add(1));
+/// assert_eq!(max, max.saturating_add(1));
+/// # Some(())
+/// # }
+/// ```
+
+    #[lua(kind = "Method", output(proxy))]
+    fn saturating_add(self, other: u16) -> std::num::NonZeroU16;
+
+"#,
+			r#"
+/// Returns the base 2 logarithm of the number, rounded down.
+/// This is the same operation as
+///[`u16::ilog2`],
+/// except that it has no failure cases to worry about
+/// since this value can never be zero.
+/// # Examples
+/// ```
+///# use std::num::NonZeroU16;
+///assert_eq!(NonZeroU16::new(7).unwrap().ilog2(), 2);
+///assert_eq!(NonZeroU16::new(8).unwrap().ilog2(), 3);
+///assert_eq!(NonZeroU16::new(9).unwrap().ilog2(), 3);
+/// ```
+
+    #[lua(kind = "Method")]
+    fn ilog2(self) -> u32;
+
+"#,
+			r#"
+/// Returns the base 10 logarithm of the number, rounded down.
+/// This is the same operation as
+///[`u16::ilog10`],
+/// except that it has no failure cases to worry about
+/// since this value can never be zero.
+/// # Examples
+/// ```
+///# use std::num::NonZeroU16;
+///assert_eq!(NonZeroU16::new(99).unwrap().ilog10(), 1);
+///assert_eq!(NonZeroU16::new(100).unwrap().ilog10(), 2);
+///assert_eq!(NonZeroU16::new(101).unwrap().ilog10(), 2);
+/// ```
+
+    #[lua(kind = "Method")]
+    fn ilog10(self) -> u32;
+
+"#,
+			r#"
+/// Returns `true` if and only if `self == (1 << k)` for some `k`.
+/// On many architectures, this function can perform better than `is_power_of_two()`
+/// on the underlying integer type, as special handling of zero can be avoided.
+/// # Examples
+/// Basic usage:
+/// ```
+///let eight = std::num::NonZeroU16::new(8).unwrap();
+/// assert!(eight.is_power_of_two());
+///let ten = std::num::NonZeroU16::new(10).unwrap();
+/// assert!(!ten.is_power_of_two());
+/// ```
+
+    #[lua(kind = "Method")]
+    fn is_power_of_two(self) -> bool;
+
+"#,
+			r#"
+/// Multiplies two non-zero integers together.
+///Return [`NonZeroU16::MAX`] on overflow.
+/// # Examples
+/// ```
+///# use std::num::NonZeroU16;
+/// # fn main() { test().unwrap(); }
+/// # fn test() -> Option<()> {
+///let two = NonZeroU16::new(2)?;
+///let four = NonZeroU16::new(4)?;
+///let max = NonZeroU16::new(u16::MAX)?;
+/// assert_eq!(four, two.saturating_mul(two));
+/// assert_eq!(max, four.saturating_mul(max));
+/// # Some(())
+/// # }
+/// ```
+
+    #[lua(kind = "Method", output(proxy))]
+    fn saturating_mul(
+        self,
+        #[proxy]
+        other: std::num::NonZeroU16,
+    ) -> std::num::NonZeroU16;
+
+"#,
+			r#"
+/// Raise non-zero value to an integer power.
+///Return [`NonZeroU16::MAX`] on overflow.
+/// # Examples
+/// ```
+///# use std::num::NonZeroU16;
+/// # fn main() { test().unwrap(); }
+/// # fn test() -> Option<()> {
+///let three = NonZeroU16::new(3)?;
+///let twenty_seven = NonZeroU16::new(27)?;
+///let max = NonZeroU16::new(u16::MAX)?;
+/// assert_eq!(twenty_seven, three.saturating_pow(3));
+/// assert_eq!(max, max.saturating_pow(3));
+/// # Some(())
+/// # }
+/// ```
+
+    #[lua(kind = "Method", output(proxy))]
+    fn saturating_pow(self, other: u32) -> std::num::NonZeroU16;
+
+"#,
+			r#"
+
+    #[lua(as_trait = "std::cmp::Eq", kind = "Method")]
+    fn assert_receiver_is_total_eq(&self) -> ();
+
+"#,
+			r#"
+
+    #[lua(
+        as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone",
+        kind = "Method",
+        output(proxy),
+    )]
+    fn clone(&self) -> std::num::NonZeroU16;
+
+"#,
+			r#"
+
+    #[lua(as_trait = "std::cmp::PartialEq", kind = "Function", composite = "eq")]
+    fn eq(&self, #[proxy] other: &std::num::NonZeroU16) -> bool;
+
+"#]
+)]
+
+
+
+pub struct NonZeroU16(
+    
+    
+        
+    
+    
+);
+
+    
+/// An integer that is known not to equal zero.
+
+/// This enables some memory layout optimization.
+
+///For example, `Option<NonZeroU32>` is the same size as `u32`:
+
+/// ```rust
+
+/// use std::mem::size_of;
+
+///assert_eq!(size_of::<Option<core::num::NonZeroU32>>(), size_of::<u32>());
+
+/// ```
+
+/// # Layout
+
+///`NonZeroU32` is guaranteed to have the same layout and bit validity as `u32`
+
+/// with the exception that `0` is not a valid instance.
+
+///`Option<NonZeroU32>` is guaranteed to be compatible with `u32`,
+
+/// including in FFI.
+
+/// Thanks to the [null pointer optimization],
+
+///`NonZeroU32` and `Option<NonZeroU32>`
+
+/// are guaranteed to have the same size and alignment:
+
+/// ```
+
+/// # use std::mem::{size_of, align_of};
+
+///use std::num::NonZeroU32;
+
+///assert_eq!(size_of::<NonZeroU32>(), size_of::<Option<NonZeroU32>>());
+
+///assert_eq!(align_of::<NonZeroU32>(), align_of::<Option<NonZeroU32>>());
+
+/// ```
+
+/// [null pointer optimization]: crate::option#representation
+
+
+#[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
+#[proxy(
+derive(clone,debug,),
+remote="std::num::NonZeroU32",
+functions[r#"
+/// Creates a non-zero without checking whether the value is non-zero.
+/// This results in undefined behaviour if the value is zero.
+/// # Safety
+/// The value must not be zero.
+
+    #[lua(kind = "Function", output(proxy))]
+    unsafe fn new_unchecked(n: u32) -> std::num::NonZeroU32;
+
+"#,
+			r#"
+/// Returns the value as a primitive type.
+
+    #[lua(kind = "Method")]
+    fn get(self) -> u32;
+
+"#,
+			r#"
+/// Returns the number of leading zeros in the binary representation of `self`.
+/// On many architectures, this function can perform better than `leading_zeros()` on the underlying integer type, as special handling of zero can be avoided.
+/// # Examples
+/// Basic usage:
+/// ```
+///let n = std::num::NonZeroU32::new(u32::MAX).unwrap();
+/// assert_eq!(n.leading_zeros(), 0);
+/// ```
+
+    #[lua(kind = "Method")]
+    fn leading_zeros(self) -> u32;
+
+"#,
+			r#"
+/// Returns the number of trailing zeros in the binary representation
+/// of `self`.
+/// On many architectures, this function can perform better than `trailing_zeros()` on the underlying integer type, as special handling of zero can be avoided.
+/// # Examples
+/// Basic usage:
+/// ```
+///let n = std::num::NonZeroU32::new(0b0101000).unwrap();
+/// assert_eq!(n.trailing_zeros(), 3);
+/// ```
+
+    #[lua(kind = "Method")]
+    fn trailing_zeros(self) -> u32;
+
+"#,
+			r#"
+/// Adds an unsigned integer to a non-zero value.
+///Return [`NonZeroU32::MAX`] on overflow.
+/// # Examples
+/// ```
+///# use std::num::NonZeroU32;
+/// # fn main() { test().unwrap(); }
+/// # fn test() -> Option<()> {
+///let one = NonZeroU32::new(1)?;
+///let two = NonZeroU32::new(2)?;
+///let max = NonZeroU32::new(u32::MAX)?;
+/// assert_eq!(two, one.saturating_add(1));
+/// assert_eq!(max, max.saturating_add(1));
+/// # Some(())
+/// # }
+/// ```
+
+    #[lua(kind = "Method", output(proxy))]
+    fn saturating_add(self, other: u32) -> std::num::NonZeroU32;
+
+"#,
+			r#"
+/// Returns the base 2 logarithm of the number, rounded down.
+/// This is the same operation as
+///[`u32::ilog2`],
+/// except that it has no failure cases to worry about
+/// since this value can never be zero.
+/// # Examples
+/// ```
+///# use std::num::NonZeroU32;
+///assert_eq!(NonZeroU32::new(7).unwrap().ilog2(), 2);
+///assert_eq!(NonZeroU32::new(8).unwrap().ilog2(), 3);
+///assert_eq!(NonZeroU32::new(9).unwrap().ilog2(), 3);
+/// ```
+
+    #[lua(kind = "Method")]
+    fn ilog2(self) -> u32;
+
+"#,
+			r#"
+/// Returns the base 10 logarithm of the number, rounded down.
+/// This is the same operation as
+///[`u32::ilog10`],
+/// except that it has no failure cases to worry about
+/// since this value can never be zero.
+/// # Examples
+/// ```
+///# use std::num::NonZeroU32;
+///assert_eq!(NonZeroU32::new(99).unwrap().ilog10(), 1);
+///assert_eq!(NonZeroU32::new(100).unwrap().ilog10(), 2);
+///assert_eq!(NonZeroU32::new(101).unwrap().ilog10(), 2);
+/// ```
+
+    #[lua(kind = "Method")]
+    fn ilog10(self) -> u32;
+
+"#,
+			r#"
+/// Returns `true` if and only if `self == (1 << k)` for some `k`.
+/// On many architectures, this function can perform better than `is_power_of_two()`
+/// on the underlying integer type, as special handling of zero can be avoided.
+/// # Examples
+/// Basic usage:
+/// ```
+///let eight = std::num::NonZeroU32::new(8).unwrap();
+/// assert!(eight.is_power_of_two());
+///let ten = std::num::NonZeroU32::new(10).unwrap();
+/// assert!(!ten.is_power_of_two());
+/// ```
+
+    #[lua(kind = "Method")]
+    fn is_power_of_two(self) -> bool;
+
+"#,
+			r#"
+/// Multiplies two non-zero integers together.
+///Return [`NonZeroU32::MAX`] on overflow.
+/// # Examples
+/// ```
+///# use std::num::NonZeroU32;
+/// # fn main() { test().unwrap(); }
+/// # fn test() -> Option<()> {
+///let two = NonZeroU32::new(2)?;
+///let four = NonZeroU32::new(4)?;
+///let max = NonZeroU32::new(u32::MAX)?;
+/// assert_eq!(four, two.saturating_mul(two));
+/// assert_eq!(max, four.saturating_mul(max));
+/// # Some(())
+/// # }
+/// ```
+
+    #[lua(kind = "Method", output(proxy))]
+    fn saturating_mul(
+        self,
+        #[proxy]
+        other: std::num::NonZeroU32,
+    ) -> std::num::NonZeroU32;
+
+"#,
+			r#"
+/// Raise non-zero value to an integer power.
+///Return [`NonZeroU32::MAX`] on overflow.
+/// # Examples
+/// ```
+///# use std::num::NonZeroU32;
+/// # fn main() { test().unwrap(); }
+/// # fn test() -> Option<()> {
+///let three = NonZeroU32::new(3)?;
+///let twenty_seven = NonZeroU32::new(27)?;
+///let max = NonZeroU32::new(u32::MAX)?;
+/// assert_eq!(twenty_seven, three.saturating_pow(3));
+/// assert_eq!(max, max.saturating_pow(3));
+/// # Some(())
+/// # }
+/// ```
+
+    #[lua(kind = "Method", output(proxy))]
+    fn saturating_pow(self, other: u32) -> std::num::NonZeroU32;
+
+"#,
+			r#"
+
+    #[lua(as_trait = "std::cmp::Eq", kind = "Method")]
+    fn assert_receiver_is_total_eq(&self) -> ();
+
+"#,
+			r#"
+
+    #[lua(as_trait = "std::cmp::PartialEq", kind = "Function", composite = "eq")]
+    fn eq(&self, #[proxy] other: &std::num::NonZeroU32) -> bool;
+
+"#,
+			r#"
+
+    #[lua(
+        as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone",
+        kind = "Method",
+        output(proxy),
+    )]
+    fn clone(&self) -> std::num::NonZeroU32;
+
+"#]
+)]
+
+
+
+pub struct NonZeroU32(
+    
+    
+        
+    
+    
+);
+
+    
+/// An integer that is known not to equal zero.
+
+/// This enables some memory layout optimization.
+
+///For example, `Option<NonZeroU64>` is the same size as `u64`:
+
+/// ```rust
+
+/// use std::mem::size_of;
+
+///assert_eq!(size_of::<Option<core::num::NonZeroU64>>(), size_of::<u64>());
+
+/// ```
+
+/// # Layout
+
+///`NonZeroU64` is guaranteed to have the same layout and bit validity as `u64`
+
+/// with the exception that `0` is not a valid instance.
+
+///`Option<NonZeroU64>` is guaranteed to be compatible with `u64`,
+
+/// including in FFI.
+
+/// Thanks to the [null pointer optimization],
+
+///`NonZeroU64` and `Option<NonZeroU64>`
+
+/// are guaranteed to have the same size and alignment:
+
+/// ```
+
+/// # use std::mem::{size_of, align_of};
+
+///use std::num::NonZeroU64;
+
+///assert_eq!(size_of::<NonZeroU64>(), size_of::<Option<NonZeroU64>>());
+
+///assert_eq!(align_of::<NonZeroU64>(), align_of::<Option<NonZeroU64>>());
+
+/// ```
+
+/// [null pointer optimization]: crate::option#representation
+
+
+#[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
+#[proxy(
+derive(clone,debug,),
+remote="std::num::NonZeroU64",
+functions[r#"
+/// Creates a non-zero without checking whether the value is non-zero.
+/// This results in undefined behaviour if the value is zero.
+/// # Safety
+/// The value must not be zero.
+
+    #[lua(kind = "Function", output(proxy))]
+    unsafe fn new_unchecked(n: u64) -> std::num::NonZeroU64;
+
+"#,
+			r#"
+/// Returns the value as a primitive type.
+
+    #[lua(kind = "Method")]
+    fn get(self) -> u64;
+
+"#,
+			r#"
+/// Returns the number of leading zeros in the binary representation of `self`.
+/// On many architectures, this function can perform better than `leading_zeros()` on the underlying integer type, as special handling of zero can be avoided.
+/// # Examples
+/// Basic usage:
+/// ```
+///let n = std::num::NonZeroU64::new(u64::MAX).unwrap();
+/// assert_eq!(n.leading_zeros(), 0);
+/// ```
+
+    #[lua(kind = "Method")]
+    fn leading_zeros(self) -> u32;
+
+"#,
+			r#"
+/// Returns the number of trailing zeros in the binary representation
+/// of `self`.
+/// On many architectures, this function can perform better than `trailing_zeros()` on the underlying integer type, as special handling of zero can be avoided.
+/// # Examples
+/// Basic usage:
+/// ```
+///let n = std::num::NonZeroU64::new(0b0101000).unwrap();
+/// assert_eq!(n.trailing_zeros(), 3);
+/// ```
+
+    #[lua(kind = "Method")]
+    fn trailing_zeros(self) -> u32;
+
+"#,
+			r#"
+/// Adds an unsigned integer to a non-zero value.
+///Return [`NonZeroU64::MAX`] on overflow.
+/// # Examples
+/// ```
+///# use std::num::NonZeroU64;
+/// # fn main() { test().unwrap(); }
+/// # fn test() -> Option<()> {
+///let one = NonZeroU64::new(1)?;
+///let two = NonZeroU64::new(2)?;
+///let max = NonZeroU64::new(u64::MAX)?;
+/// assert_eq!(two, one.saturating_add(1));
+/// assert_eq!(max, max.saturating_add(1));
+/// # Some(())
+/// # }
+/// ```
+
+    #[lua(kind = "Method", output(proxy))]
+    fn saturating_add(self, other: u64) -> std::num::NonZeroU64;
+
+"#,
+			r#"
+/// Returns the base 2 logarithm of the number, rounded down.
+/// This is the same operation as
+///[`u64::ilog2`],
+/// except that it has no failure cases to worry about
+/// since this value can never be zero.
+/// # Examples
+/// ```
+///# use std::num::NonZeroU64;
+///assert_eq!(NonZeroU64::new(7).unwrap().ilog2(), 2);
+///assert_eq!(NonZeroU64::new(8).unwrap().ilog2(), 3);
+///assert_eq!(NonZeroU64::new(9).unwrap().ilog2(), 3);
+/// ```
+
+    #[lua(kind = "Method")]
+    fn ilog2(self) -> u32;
+
+"#,
+			r#"
+/// Returns the base 10 logarithm of the number, rounded down.
+/// This is the same operation as
+///[`u64::ilog10`],
+/// except that it has no failure cases to worry about
+/// since this value can never be zero.
+/// # Examples
+/// ```
+///# use std::num::NonZeroU64;
+///assert_eq!(NonZeroU64::new(99).unwrap().ilog10(), 1);
+///assert_eq!(NonZeroU64::new(100).unwrap().ilog10(), 2);
+///assert_eq!(NonZeroU64::new(101).unwrap().ilog10(), 2);
+/// ```
+
+    #[lua(kind = "Method")]
+    fn ilog10(self) -> u32;
+
+"#,
+			r#"
+/// Returns `true` if and only if `self == (1 << k)` for some `k`.
+/// On many architectures, this function can perform better than `is_power_of_two()`
+/// on the underlying integer type, as special handling of zero can be avoided.
+/// # Examples
+/// Basic usage:
+/// ```
+///let eight = std::num::NonZeroU64::new(8).unwrap();
+/// assert!(eight.is_power_of_two());
+///let ten = std::num::NonZeroU64::new(10).unwrap();
+/// assert!(!ten.is_power_of_two());
+/// ```
+
+    #[lua(kind = "Method")]
+    fn is_power_of_two(self) -> bool;
+
+"#,
+			r#"
+/// Multiplies two non-zero integers together.
+///Return [`NonZeroU64::MAX`] on overflow.
+/// # Examples
+/// ```
+///# use std::num::NonZeroU64;
+/// # fn main() { test().unwrap(); }
+/// # fn test() -> Option<()> {
+///let two = NonZeroU64::new(2)?;
+///let four = NonZeroU64::new(4)?;
+///let max = NonZeroU64::new(u64::MAX)?;
+/// assert_eq!(four, two.saturating_mul(two));
+/// assert_eq!(max, four.saturating_mul(max));
+/// # Some(())
+/// # }
+/// ```
+
+    #[lua(kind = "Method", output(proxy))]
+    fn saturating_mul(
+        self,
+        #[proxy]
+        other: std::num::NonZeroU64,
+    ) -> std::num::NonZeroU64;
+
+"#,
+			r#"
+/// Raise non-zero value to an integer power.
+///Return [`NonZeroU64::MAX`] on overflow.
+/// # Examples
+/// ```
+///# use std::num::NonZeroU64;
+/// # fn main() { test().unwrap(); }
+/// # fn test() -> Option<()> {
+///let three = NonZeroU64::new(3)?;
+///let twenty_seven = NonZeroU64::new(27)?;
+///let max = NonZeroU64::new(u64::MAX)?;
+/// assert_eq!(twenty_seven, three.saturating_pow(3));
+/// assert_eq!(max, max.saturating_pow(3));
+/// # Some(())
+/// # }
+/// ```
+
+    #[lua(kind = "Method", output(proxy))]
+    fn saturating_pow(self, other: u32) -> std::num::NonZeroU64;
+
+"#,
+			r#"
+
+    #[lua(as_trait = "std::cmp::Eq", kind = "Method")]
+    fn assert_receiver_is_total_eq(&self) -> ();
+
+"#,
+			r#"
+
+    #[lua(
+        as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone",
+        kind = "Method",
+        output(proxy),
+    )]
+    fn clone(&self) -> std::num::NonZeroU64;
+
+"#,
+			r#"
+
+    #[lua(as_trait = "std::cmp::PartialEq", kind = "Function", composite = "eq")]
+    fn eq(&self, #[proxy] other: &std::num::NonZeroU64) -> bool;
+
+"#]
+)]
+
+
+
+pub struct NonZeroU64(
+    
+    
+        
+    
+    
+);
+
+    
+/// An integer that is known not to equal zero.
+
+/// This enables some memory layout optimization.
+
+///For example, `Option<NonZeroU128>` is the same size as `u128`:
+
+/// ```rust
+
+/// use std::mem::size_of;
+
+///assert_eq!(size_of::<Option<core::num::NonZeroU128>>(), size_of::<u128>());
+
+/// ```
+
+/// # Layout
+
+///`NonZeroU128` is guaranteed to have the same layout and bit validity as `u128`
+
+/// with the exception that `0` is not a valid instance.
+
+///`Option<NonZeroU128>` is guaranteed to be compatible with `u128`,
+
+/// including in FFI.
+
+/// Thanks to the [null pointer optimization],
+
+///`NonZeroU128` and `Option<NonZeroU128>`
+
+/// are guaranteed to have the same size and alignment:
+
+/// ```
+
+/// # use std::mem::{size_of, align_of};
+
+///use std::num::NonZeroU128;
+
+///assert_eq!(size_of::<NonZeroU128>(), size_of::<Option<NonZeroU128>>());
+
+///assert_eq!(align_of::<NonZeroU128>(), align_of::<Option<NonZeroU128>>());
+
+/// ```
+
+/// [null pointer optimization]: crate::option#representation
+
+
+#[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
+#[proxy(
+derive(clone,debug,),
+remote="std::num::NonZeroU128",
+functions[r#"
+/// Creates a non-zero without checking whether the value is non-zero.
+/// This results in undefined behaviour if the value is zero.
+/// # Safety
+/// The value must not be zero.
+
+    #[lua(kind = "Function", output(proxy))]
+    unsafe fn new_unchecked(n: u128) -> std::num::NonZeroU128;
+
+"#,
+			r#"
+/// Returns the value as a primitive type.
+
+    #[lua(kind = "Method")]
+    fn get(self) -> u128;
+
+"#,
+			r#"
+/// Returns the number of leading zeros in the binary representation of `self`.
+/// On many architectures, this function can perform better than `leading_zeros()` on the underlying integer type, as special handling of zero can be avoided.
+/// # Examples
+/// Basic usage:
+/// ```
+///let n = std::num::NonZeroU128::new(u128::MAX).unwrap();
+/// assert_eq!(n.leading_zeros(), 0);
+/// ```
+
+    #[lua(kind = "Method")]
+    fn leading_zeros(self) -> u32;
+
+"#,
+			r#"
+/// Returns the number of trailing zeros in the binary representation
+/// of `self`.
+/// On many architectures, this function can perform better than `trailing_zeros()` on the underlying integer type, as special handling of zero can be avoided.
+/// # Examples
+/// Basic usage:
+/// ```
+///let n = std::num::NonZeroU128::new(0b0101000).unwrap();
+/// assert_eq!(n.trailing_zeros(), 3);
+/// ```
+
+    #[lua(kind = "Method")]
+    fn trailing_zeros(self) -> u32;
+
+"#,
+			r#"
+/// Adds an unsigned integer to a non-zero value.
+///Return [`NonZeroU128::MAX`] on overflow.
+/// # Examples
+/// ```
+///# use std::num::NonZeroU128;
+/// # fn main() { test().unwrap(); }
+/// # fn test() -> Option<()> {
+///let one = NonZeroU128::new(1)?;
+///let two = NonZeroU128::new(2)?;
+///let max = NonZeroU128::new(u128::MAX)?;
+/// assert_eq!(two, one.saturating_add(1));
+/// assert_eq!(max, max.saturating_add(1));
+/// # Some(())
+/// # }
+/// ```
+
+    #[lua(kind = "Method", output(proxy))]
+    fn saturating_add(self, other: u128) -> std::num::NonZeroU128;
+
+"#,
+			r#"
+/// Returns the base 2 logarithm of the number, rounded down.
+/// This is the same operation as
+///[`u128::ilog2`],
+/// except that it has no failure cases to worry about
+/// since this value can never be zero.
+/// # Examples
+/// ```
+///# use std::num::NonZeroU128;
+///assert_eq!(NonZeroU128::new(7).unwrap().ilog2(), 2);
+///assert_eq!(NonZeroU128::new(8).unwrap().ilog2(), 3);
+///assert_eq!(NonZeroU128::new(9).unwrap().ilog2(), 3);
+/// ```
+
+    #[lua(kind = "Method")]
+    fn ilog2(self) -> u32;
+
+"#,
+			r#"
+/// Returns the base 10 logarithm of the number, rounded down.
+/// This is the same operation as
+///[`u128::ilog10`],
+/// except that it has no failure cases to worry about
+/// since this value can never be zero.
+/// # Examples
+/// ```
+///# use std::num::NonZeroU128;
+///assert_eq!(NonZeroU128::new(99).unwrap().ilog10(), 1);
+///assert_eq!(NonZeroU128::new(100).unwrap().ilog10(), 2);
+///assert_eq!(NonZeroU128::new(101).unwrap().ilog10(), 2);
+/// ```
+
+    #[lua(kind = "Method")]
+    fn ilog10(self) -> u32;
+
+"#,
+			r#"
+/// Returns `true` if and only if `self == (1 << k)` for some `k`.
+/// On many architectures, this function can perform better than `is_power_of_two()`
+/// on the underlying integer type, as special handling of zero can be avoided.
+/// # Examples
+/// Basic usage:
+/// ```
+///let eight = std::num::NonZeroU128::new(8).unwrap();
+/// assert!(eight.is_power_of_two());
+///let ten = std::num::NonZeroU128::new(10).unwrap();
+/// assert!(!ten.is_power_of_two());
+/// ```
+
+    #[lua(kind = "Method")]
+    fn is_power_of_two(self) -> bool;
+
+"#,
+			r#"
+/// Multiplies two non-zero integers together.
+///Return [`NonZeroU128::MAX`] on overflow.
+/// # Examples
+/// ```
+///# use std::num::NonZeroU128;
+/// # fn main() { test().unwrap(); }
+/// # fn test() -> Option<()> {
+///let two = NonZeroU128::new(2)?;
+///let four = NonZeroU128::new(4)?;
+///let max = NonZeroU128::new(u128::MAX)?;
+/// assert_eq!(four, two.saturating_mul(two));
+/// assert_eq!(max, four.saturating_mul(max));
+/// # Some(())
+/// # }
+/// ```
+
+    #[lua(kind = "Method", output(proxy))]
+    fn saturating_mul(
+        self,
+        #[proxy]
+        other: std::num::NonZeroU128,
+    ) -> std::num::NonZeroU128;
+
+"#,
+			r#"
+/// Raise non-zero value to an integer power.
+///Return [`NonZeroU128::MAX`] on overflow.
+/// # Examples
+/// ```
+///# use std::num::NonZeroU128;
+/// # fn main() { test().unwrap(); }
+/// # fn test() -> Option<()> {
+///let three = NonZeroU128::new(3)?;
+///let twenty_seven = NonZeroU128::new(27)?;
+///let max = NonZeroU128::new(u128::MAX)?;
+/// assert_eq!(twenty_seven, three.saturating_pow(3));
+/// assert_eq!(max, max.saturating_pow(3));
+/// # Some(())
+/// # }
+/// ```
+
+    #[lua(kind = "Method", output(proxy))]
+    fn saturating_pow(self, other: u32) -> std::num::NonZeroU128;
+
+"#,
+			r#"
+
+    #[lua(
+        as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone",
+        kind = "Method",
+        output(proxy),
+    )]
+    fn clone(&self) -> std::num::NonZeroU128;
+
+"#,
+			r#"
+
+    #[lua(as_trait = "std::cmp::Eq", kind = "Method")]
+    fn assert_receiver_is_total_eq(&self) -> ();
+
+"#,
+			r#"
+
+    #[lua(as_trait = "std::cmp::PartialEq", kind = "Function", composite = "eq")]
+    fn eq(&self, #[proxy] other: &std::num::NonZeroU128) -> bool;
+
+"#]
+)]
+
+
+
+pub struct NonZeroU128(
+    
+    
+        
+    
+    
+);
+
+    
+/// An integer that is known not to equal zero.
+
+/// This enables some memory layout optimization.
+
+///For example, `Option<NonZeroUsize>` is the same size as `usize`:
+
+/// ```rust
+
+/// use std::mem::size_of;
+
+///assert_eq!(size_of::<Option<core::num::NonZeroUsize>>(), size_of::<usize>());
+
+/// ```
+
+/// # Layout
+
+///`NonZeroUsize` is guaranteed to have the same layout and bit validity as `usize`
+
+/// with the exception that `0` is not a valid instance.
+
+///`Option<NonZeroUsize>` is guaranteed to be compatible with `usize`,
+
+/// including in FFI.
+
+/// Thanks to the [null pointer optimization],
+
+///`NonZeroUsize` and `Option<NonZeroUsize>`
+
+/// are guaranteed to have the same size and alignment:
+
+/// ```
+
+/// # use std::mem::{size_of, align_of};
+
+///use std::num::NonZeroUsize;
+
+///assert_eq!(size_of::<NonZeroUsize>(), size_of::<Option<NonZeroUsize>>());
+
+///assert_eq!(align_of::<NonZeroUsize>(), align_of::<Option<NonZeroUsize>>());
+
+/// ```
+
+/// [null pointer optimization]: crate::option#representation
+
+
+#[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
+#[proxy(
+derive(clone,debug,),
+remote="std::num::NonZeroUsize",
+functions[r#"
+/// Creates a non-zero without checking whether the value is non-zero.
+/// This results in undefined behaviour if the value is zero.
+/// # Safety
+/// The value must not be zero.
+
+    #[lua(kind = "Function", output(proxy))]
+    unsafe fn new_unchecked(n: usize) -> std::num::NonZeroUsize;
+
+"#,
+			r#"
+/// Returns the value as a primitive type.
+
+    #[lua(kind = "Method")]
+    fn get(self) -> usize;
+
+"#,
+			r#"
+/// Returns the number of leading zeros in the binary representation of `self`.
+/// On many architectures, this function can perform better than `leading_zeros()` on the underlying integer type, as special handling of zero can be avoided.
+/// # Examples
+/// Basic usage:
+/// ```
+///let n = std::num::NonZeroUsize::new(usize::MAX).unwrap();
+/// assert_eq!(n.leading_zeros(), 0);
+/// ```
+
+    #[lua(kind = "Method")]
+    fn leading_zeros(self) -> u32;
+
+"#,
+			r#"
+/// Returns the number of trailing zeros in the binary representation
+/// of `self`.
+/// On many architectures, this function can perform better than `trailing_zeros()` on the underlying integer type, as special handling of zero can be avoided.
+/// # Examples
+/// Basic usage:
+/// ```
+///let n = std::num::NonZeroUsize::new(0b0101000).unwrap();
+/// assert_eq!(n.trailing_zeros(), 3);
+/// ```
+
+    #[lua(kind = "Method")]
+    fn trailing_zeros(self) -> u32;
+
+"#,
+			r#"
+/// Adds an unsigned integer to a non-zero value.
+///Return [`NonZeroUsize::MAX`] on overflow.
+/// # Examples
+/// ```
+///# use std::num::NonZeroUsize;
+/// # fn main() { test().unwrap(); }
+/// # fn test() -> Option<()> {
+///let one = NonZeroUsize::new(1)?;
+///let two = NonZeroUsize::new(2)?;
+///let max = NonZeroUsize::new(usize::MAX)?;
+/// assert_eq!(two, one.saturating_add(1));
+/// assert_eq!(max, max.saturating_add(1));
+/// # Some(())
+/// # }
+/// ```
+
+    #[lua(kind = "Method", output(proxy))]
+    fn saturating_add(self, other: usize) -> std::num::NonZeroUsize;
+
+"#,
+			r#"
+/// Returns the base 2 logarithm of the number, rounded down.
+/// This is the same operation as
+///[`usize::ilog2`],
+/// except that it has no failure cases to worry about
+/// since this value can never be zero.
+/// # Examples
+/// ```
+///# use std::num::NonZeroUsize;
+///assert_eq!(NonZeroUsize::new(7).unwrap().ilog2(), 2);
+///assert_eq!(NonZeroUsize::new(8).unwrap().ilog2(), 3);
+///assert_eq!(NonZeroUsize::new(9).unwrap().ilog2(), 3);
+/// ```
+
+    #[lua(kind = "Method")]
+    fn ilog2(self) -> u32;
+
+"#,
+			r#"
+/// Returns the base 10 logarithm of the number, rounded down.
+/// This is the same operation as
+///[`usize::ilog10`],
+/// except that it has no failure cases to worry about
+/// since this value can never be zero.
+/// # Examples
+/// ```
+///# use std::num::NonZeroUsize;
+///assert_eq!(NonZeroUsize::new(99).unwrap().ilog10(), 1);
+///assert_eq!(NonZeroUsize::new(100).unwrap().ilog10(), 2);
+///assert_eq!(NonZeroUsize::new(101).unwrap().ilog10(), 2);
+/// ```
+
+    #[lua(kind = "Method")]
+    fn ilog10(self) -> u32;
+
+"#,
+			r#"
+/// Returns `true` if and only if `self == (1 << k)` for some `k`.
+/// On many architectures, this function can perform better than `is_power_of_two()`
+/// on the underlying integer type, as special handling of zero can be avoided.
+/// # Examples
+/// Basic usage:
+/// ```
+///let eight = std::num::NonZeroUsize::new(8).unwrap();
+/// assert!(eight.is_power_of_two());
+///let ten = std::num::NonZeroUsize::new(10).unwrap();
+/// assert!(!ten.is_power_of_two());
+/// ```
+
+    #[lua(kind = "Method")]
+    fn is_power_of_two(self) -> bool;
+
+"#,
+			r#"
+/// Multiplies two non-zero integers together.
+///Return [`NonZeroUsize::MAX`] on overflow.
+/// # Examples
+/// ```
+///# use std::num::NonZeroUsize;
+/// # fn main() { test().unwrap(); }
+/// # fn test() -> Option<()> {
+///let two = NonZeroUsize::new(2)?;
+///let four = NonZeroUsize::new(4)?;
+///let max = NonZeroUsize::new(usize::MAX)?;
+/// assert_eq!(four, two.saturating_mul(two));
+/// assert_eq!(max, four.saturating_mul(max));
+/// # Some(())
+/// # }
+/// ```
+
+    #[lua(kind = "Method", output(proxy))]
+    fn saturating_mul(
+        self,
+        #[proxy]
+        other: std::num::NonZeroUsize,
+    ) -> std::num::NonZeroUsize;
+
+"#,
+			r#"
+/// Raise non-zero value to an integer power.
+///Return [`NonZeroUsize::MAX`] on overflow.
+/// # Examples
+/// ```
+///# use std::num::NonZeroUsize;
+/// # fn main() { test().unwrap(); }
+/// # fn test() -> Option<()> {
+///let three = NonZeroUsize::new(3)?;
+///let twenty_seven = NonZeroUsize::new(27)?;
+///let max = NonZeroUsize::new(usize::MAX)?;
+/// assert_eq!(twenty_seven, three.saturating_pow(3));
+/// assert_eq!(max, max.saturating_pow(3));
+/// # Some(())
+/// # }
+/// ```
+
+    #[lua(kind = "Method", output(proxy))]
+    fn saturating_pow(self, other: u32) -> std::num::NonZeroUsize;
+
+"#,
+			r#"
+
+    #[lua(
+        as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone",
+        kind = "Method",
+        output(proxy),
+    )]
+    fn clone(&self) -> std::num::NonZeroUsize;
+
+"#,
+			r#"
+
+    #[lua(as_trait = "std::cmp::PartialEq", kind = "Function", composite = "eq")]
+    fn eq(&self, #[proxy] other: &std::num::NonZeroUsize) -> bool;
+
+"#,
+			r#"
+
+    #[lua(as_trait = "std::cmp::Eq", kind = "Method")]
+    fn assert_receiver_is_total_eq(&self) -> ();
+
+"#]
+)]
+
+
+
+pub struct NonZeroUsize(
+    
+    
+        
+    
+    
+);
+
+    
+/// An integer that is known not to equal zero.
+
+/// This enables some memory layout optimization.
+
+///For example, `Option<NonZeroI8>` is the same size as `i8`:
+
+/// ```rust
+
+/// use std::mem::size_of;
+
+///assert_eq!(size_of::<Option<core::num::NonZeroI8>>(), size_of::<i8>());
+
+/// ```
+
+/// # Layout
+
+///`NonZeroI8` is guaranteed to have the same layout and bit validity as `i8`
+
+/// with the exception that `0` is not a valid instance.
+
+///`Option<NonZeroI8>` is guaranteed to be compatible with `i8`,
+
+/// including in FFI.
+
+/// Thanks to the [null pointer optimization],
+
+///`NonZeroI8` and `Option<NonZeroI8>`
+
+/// are guaranteed to have the same size and alignment:
+
+/// ```
+
+/// # use std::mem::{size_of, align_of};
+
+///use std::num::NonZeroI8;
+
+///assert_eq!(size_of::<NonZeroI8>(), size_of::<Option<NonZeroI8>>());
+
+///assert_eq!(align_of::<NonZeroI8>(), align_of::<Option<NonZeroI8>>());
+
+/// ```
+
+/// [null pointer optimization]: crate::option#representation
+
+
+#[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
+#[proxy(
+derive(clone,debug,),
+remote="std::num::NonZeroI8",
+functions[r#"
+/// Creates a non-zero without checking whether the value is non-zero.
+/// This results in undefined behaviour if the value is zero.
+/// # Safety
+/// The value must not be zero.
+
+    #[lua(kind = "Function", output(proxy))]
+    unsafe fn new_unchecked(n: i8) -> std::num::NonZeroI8;
+
+"#,
+			r#"
+/// Returns the value as a primitive type.
+
+    #[lua(kind = "Method")]
+    fn get(self) -> i8;
+
+"#,
+			r#"
+/// Returns the number of leading zeros in the binary representation of `self`.
+/// On many architectures, this function can perform better than `leading_zeros()` on the underlying integer type, as special handling of zero can be avoided.
+/// # Examples
+/// Basic usage:
+/// ```
+///let n = std::num::NonZeroI8::new(-1i8).unwrap();
+/// assert_eq!(n.leading_zeros(), 0);
+/// ```
+
+    #[lua(kind = "Method")]
+    fn leading_zeros(self) -> u32;
+
+"#,
+			r#"
+/// Returns the number of trailing zeros in the binary representation
+/// of `self`.
+/// On many architectures, this function can perform better than `trailing_zeros()` on the underlying integer type, as special handling of zero can be avoided.
+/// # Examples
+/// Basic usage:
+/// ```
+///let n = std::num::NonZeroI8::new(0b0101000).unwrap();
+/// assert_eq!(n.trailing_zeros(), 3);
+/// ```
+
+    #[lua(kind = "Method")]
+    fn trailing_zeros(self) -> u32;
+
+"#,
+			r#"
+/// Computes the absolute value of self.
+///See [`i8::abs`]
+/// for documentation on overflow behaviour.
+/// # Example
+/// ```
+///# use std::num::NonZeroI8;
+/// # fn main() { test().unwrap(); }
+/// # fn test() -> Option<()> {
+///let pos = NonZeroI8::new(1)?;
+///let neg = NonZeroI8::new(-1)?;
+/// assert_eq!(pos, pos.abs());
+/// assert_eq!(pos, neg.abs());
+/// # Some(())
+/// # }
+/// ```
+
+    #[lua(kind = "Method", output(proxy))]
+    fn abs(self) -> std::num::NonZeroI8;
+
+"#,
+			r#"
+/// Saturating absolute value, see
+///[`i8::saturating_abs`].
+/// # Example
+/// ```
+///# use std::num::NonZeroI8;
+/// # fn main() { test().unwrap(); }
+/// # fn test() -> Option<()> {
+///let pos = NonZeroI8::new(1)?;
+///let neg = NonZeroI8::new(-1)?;
+///let min = NonZeroI8::new(i8::MIN)?;
+///let min_plus = NonZeroI8::new(i8::MIN + 1)?;
+///let max = NonZeroI8::new(i8::MAX)?;
+/// assert_eq!(pos, pos.saturating_abs());
+/// assert_eq!(pos, neg.saturating_abs());
+/// assert_eq!(max, min.saturating_abs());
+/// assert_eq!(max, min_plus.saturating_abs());
+/// # Some(())
+/// # }
+/// ```
+
+    #[lua(kind = "Method", output(proxy))]
+    fn saturating_abs(self) -> std::num::NonZeroI8;
+
+"#,
+			r#"
+/// Wrapping absolute value, see
+///[`i8::wrapping_abs`].
+/// # Example
+/// ```
+///# use std::num::NonZeroI8;
+/// # fn main() { test().unwrap(); }
+/// # fn test() -> Option<()> {
+///let pos = NonZeroI8::new(1)?;
+///let neg = NonZeroI8::new(-1)?;
+///let min = NonZeroI8::new(i8::MIN)?;
+///# let max = NonZeroI8::new(i8::MAX)?;
+/// assert_eq!(pos, pos.wrapping_abs());
+/// assert_eq!(pos, neg.wrapping_abs());
+/// assert_eq!(min, min.wrapping_abs());
+/// assert_eq!(max, (-max).wrapping_abs());
+/// # Some(())
+/// # }
+/// ```
+
+    #[lua(kind = "Method", output(proxy))]
+    fn wrapping_abs(self) -> std::num::NonZeroI8;
+
+"#,
+			r#"
+/// Computes the absolute value of self
+/// without any wrapping or panicking.
+/// # Example
+/// ```
+///# use std::num::NonZeroI8;
+///# use std::num::NonZeroU8;
+/// # fn main() { test().unwrap(); }
+/// # fn test() -> Option<()> {
+///let u_pos = NonZeroU8::new(1)?;
+///let i_pos = NonZeroI8::new(1)?;
+///let i_neg = NonZeroI8::new(-1)?;
+///let i_min = NonZeroI8::new(i8::MIN)?;
+///let u_max = NonZeroU8::new(u8::MAX / 2 + 1)?;
+/// assert_eq!(u_pos, i_pos.unsigned_abs());
+/// assert_eq!(u_pos, i_neg.unsigned_abs());
+/// assert_eq!(u_max, i_min.unsigned_abs());
+/// # Some(())
+/// # }
+/// ```
+
+    #[lua(kind = "Method", output(proxy))]
+    fn unsigned_abs(self) -> std::num::NonZeroU8;
+
+"#,
+			r#"
+/// Returns `true` if `self` is positive and `false` if the
+/// number is negative.
+/// # Example
+/// ```
+///# use std::num::NonZeroI8;
+/// # fn main() { test().unwrap(); }
+/// # fn test() -> Option<()> {
+///let pos_five = NonZeroI8::new(5)?;
+///let neg_five = NonZeroI8::new(-5)?;
+/// assert!(pos_five.is_positive());
+/// assert!(!neg_five.is_positive());
+/// # Some(())
+/// # }
+/// ```
+
+    #[lua(kind = "Method")]
+    fn is_positive(self) -> bool;
+
+"#,
+			r#"
+/// Returns `true` if `self` is negative and `false` if the
+/// number is positive.
+/// # Example
+/// ```
+///# use std::num::NonZeroI8;
+/// # fn main() { test().unwrap(); }
+/// # fn test() -> Option<()> {
+///let pos_five = NonZeroI8::new(5)?;
+///let neg_five = NonZeroI8::new(-5)?;
+/// assert!(neg_five.is_negative());
+/// assert!(!pos_five.is_negative());
+/// # Some(())
+/// # }
+/// ```
+
+    #[lua(kind = "Method")]
+    fn is_negative(self) -> bool;
+
+"#,
+			r#"
+/// Saturating negation. Computes `-self`,
+///returning [`NonZeroI8::MAX`]
+///if `self == NonZeroI8::MIN`
+/// instead of overflowing.
+/// # Example
+/// ```
+///# use std::num::NonZeroI8;
+/// # fn main() { test().unwrap(); }
+/// # fn test() -> Option<()> {
+///let pos_five = NonZeroI8::new(5)?;
+///let neg_five = NonZeroI8::new(-5)?;
+///let min = NonZeroI8::new(i8::MIN)?;
+///let min_plus_one = NonZeroI8::new(i8::MIN + 1)?;
+///let max = NonZeroI8::new(i8::MAX)?;
+/// assert_eq!(pos_five.saturating_neg(), neg_five);
+/// assert_eq!(min.saturating_neg(), max);
+/// assert_eq!(max.saturating_neg(), min_plus_one);
+/// # Some(())
+/// # }
+/// ```
+
+    #[lua(kind = "Method", output(proxy))]
+    fn saturating_neg(self) -> std::num::NonZeroI8;
+
+"#,
+			r#"
+/// Wrapping (modular) negation. Computes `-self`, wrapping around at the boundary
+/// of the type.
+///See [`i8::wrapping_neg`]
+/// for documentation on overflow behaviour.
+/// # Example
+/// ```
+///# use std::num::NonZeroI8;
+/// # fn main() { test().unwrap(); }
+/// # fn test() -> Option<()> {
+///let pos_five = NonZeroI8::new(5)?;
+///let neg_five = NonZeroI8::new(-5)?;
+///let min = NonZeroI8::new(i8::MIN)?;
+/// assert_eq!(pos_five.wrapping_neg(), neg_five);
+/// assert_eq!(min.wrapping_neg(), min);
+/// # Some(())
+/// # }
+/// ```
+
+    #[lua(kind = "Method", output(proxy))]
+    fn wrapping_neg(self) -> std::num::NonZeroI8;
+
+"#,
+			r#"
+/// Multiplies two non-zero integers together.
+///Return [`NonZeroI8::MAX`] on overflow.
+/// # Examples
+/// ```
+///# use std::num::NonZeroI8;
+/// # fn main() { test().unwrap(); }
+/// # fn test() -> Option<()> {
+///let two = NonZeroI8::new(2)?;
+///let four = NonZeroI8::new(4)?;
+///let max = NonZeroI8::new(i8::MAX)?;
+/// assert_eq!(four, two.saturating_mul(two));
+/// assert_eq!(max, four.saturating_mul(max));
+/// # Some(())
+/// # }
+/// ```
+
+    #[lua(kind = "Method", output(proxy))]
+    fn saturating_mul(self, #[proxy] other: std::num::NonZeroI8) -> std::num::NonZeroI8;
+
+"#,
+			r#"
+/// Raise non-zero value to an integer power.
+///Return [`NonZeroI8::MIN`] or [`NonZeroI8::MAX`] on overflow.
+/// # Examples
+/// ```
+///# use std::num::NonZeroI8;
+/// # fn main() { test().unwrap(); }
+/// # fn test() -> Option<()> {
+///let three = NonZeroI8::new(3)?;
+///let twenty_seven = NonZeroI8::new(27)?;
+///let max = NonZeroI8::new(i8::MAX)?;
+/// assert_eq!(twenty_seven, three.saturating_pow(3));
+/// assert_eq!(max, max.saturating_pow(3));
+/// # Some(())
+/// # }
+/// ```
+
+    #[lua(kind = "Method", output(proxy))]
+    fn saturating_pow(self, other: u32) -> std::num::NonZeroI8;
+
+"#,
+			r#"
+
+    #[lua(
+        as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone",
+        kind = "Method",
+        output(proxy),
+    )]
+    fn clone(&self) -> std::num::NonZeroI8;
+
+"#,
+			r#"
+
+    #[lua(as_trait = "std::cmp::PartialEq", kind = "Function", composite = "eq")]
+    fn eq(&self, #[proxy] other: &std::num::NonZeroI8) -> bool;
+
+"#,
+			r#"
+
+    #[lua(as_trait = "std::cmp::Eq", kind = "Method")]
+    fn assert_receiver_is_total_eq(&self) -> ();
+
+"#,
+			r#"
+
+    #[lua(
+        as_trait = "std::ops::Neg",
+        kind = "Function",
+        output(proxy),
+        composite = "neg",
+        metamethod = "Unm",
+    )]
+    fn neg(self) -> std::num::NonZeroI8;
+
+"#]
+)]
+
+
+
+pub struct NonZeroI8(
+    
+    
+        
+    
+    
+);
+
+    
+/// An integer that is known not to equal zero.
+
+/// This enables some memory layout optimization.
+
+///For example, `Option<NonZeroI16>` is the same size as `i16`:
+
+/// ```rust
+
+/// use std::mem::size_of;
+
+///assert_eq!(size_of::<Option<core::num::NonZeroI16>>(), size_of::<i16>());
+
+/// ```
+
+/// # Layout
+
+///`NonZeroI16` is guaranteed to have the same layout and bit validity as `i16`
+
+/// with the exception that `0` is not a valid instance.
+
+///`Option<NonZeroI16>` is guaranteed to be compatible with `i16`,
+
+/// including in FFI.
+
+/// Thanks to the [null pointer optimization],
+
+///`NonZeroI16` and `Option<NonZeroI16>`
+
+/// are guaranteed to have the same size and alignment:
+
+/// ```
+
+/// # use std::mem::{size_of, align_of};
+
+///use std::num::NonZeroI16;
+
+///assert_eq!(size_of::<NonZeroI16>(), size_of::<Option<NonZeroI16>>());
+
+///assert_eq!(align_of::<NonZeroI16>(), align_of::<Option<NonZeroI16>>());
+
+/// ```
+
+/// [null pointer optimization]: crate::option#representation
+
+
+#[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
+#[proxy(
+derive(clone,debug,),
+remote="std::num::NonZeroI16",
+functions[r#"
+/// Creates a non-zero without checking whether the value is non-zero.
+/// This results in undefined behaviour if the value is zero.
+/// # Safety
+/// The value must not be zero.
+
+    #[lua(kind = "Function", output(proxy))]
+    unsafe fn new_unchecked(n: i16) -> std::num::NonZeroI16;
+
+"#,
+			r#"
+/// Returns the value as a primitive type.
+
+    #[lua(kind = "Method")]
+    fn get(self) -> i16;
+
+"#,
+			r#"
+/// Returns the number of leading zeros in the binary representation of `self`.
+/// On many architectures, this function can perform better than `leading_zeros()` on the underlying integer type, as special handling of zero can be avoided.
+/// # Examples
+/// Basic usage:
+/// ```
+///let n = std::num::NonZeroI16::new(-1i16).unwrap();
+/// assert_eq!(n.leading_zeros(), 0);
+/// ```
+
+    #[lua(kind = "Method")]
+    fn leading_zeros(self) -> u32;
+
+"#,
+			r#"
+/// Returns the number of trailing zeros in the binary representation
+/// of `self`.
+/// On many architectures, this function can perform better than `trailing_zeros()` on the underlying integer type, as special handling of zero can be avoided.
+/// # Examples
+/// Basic usage:
+/// ```
+///let n = std::num::NonZeroI16::new(0b0101000).unwrap();
+/// assert_eq!(n.trailing_zeros(), 3);
+/// ```
+
+    #[lua(kind = "Method")]
+    fn trailing_zeros(self) -> u32;
+
+"#,
+			r#"
+/// Computes the absolute value of self.
+///See [`i16::abs`]
+/// for documentation on overflow behaviour.
+/// # Example
+/// ```
+///# use std::num::NonZeroI16;
+/// # fn main() { test().unwrap(); }
+/// # fn test() -> Option<()> {
+///let pos = NonZeroI16::new(1)?;
+///let neg = NonZeroI16::new(-1)?;
+/// assert_eq!(pos, pos.abs());
+/// assert_eq!(pos, neg.abs());
+/// # Some(())
+/// # }
+/// ```
+
+    #[lua(kind = "Method", output(proxy))]
+    fn abs(self) -> std::num::NonZeroI16;
+
+"#,
+			r#"
+/// Saturating absolute value, see
+///[`i16::saturating_abs`].
+/// # Example
+/// ```
+///# use std::num::NonZeroI16;
+/// # fn main() { test().unwrap(); }
+/// # fn test() -> Option<()> {
+///let pos = NonZeroI16::new(1)?;
+///let neg = NonZeroI16::new(-1)?;
+///let min = NonZeroI16::new(i16::MIN)?;
+///let min_plus = NonZeroI16::new(i16::MIN + 1)?;
+///let max = NonZeroI16::new(i16::MAX)?;
+/// assert_eq!(pos, pos.saturating_abs());
+/// assert_eq!(pos, neg.saturating_abs());
+/// assert_eq!(max, min.saturating_abs());
+/// assert_eq!(max, min_plus.saturating_abs());
+/// # Some(())
+/// # }
+/// ```
+
+    #[lua(kind = "Method", output(proxy))]
+    fn saturating_abs(self) -> std::num::NonZeroI16;
+
+"#,
+			r#"
+/// Wrapping absolute value, see
+///[`i16::wrapping_abs`].
+/// # Example
+/// ```
+///# use std::num::NonZeroI16;
+/// # fn main() { test().unwrap(); }
+/// # fn test() -> Option<()> {
+///let pos = NonZeroI16::new(1)?;
+///let neg = NonZeroI16::new(-1)?;
+///let min = NonZeroI16::new(i16::MIN)?;
+///# let max = NonZeroI16::new(i16::MAX)?;
+/// assert_eq!(pos, pos.wrapping_abs());
+/// assert_eq!(pos, neg.wrapping_abs());
+/// assert_eq!(min, min.wrapping_abs());
+/// assert_eq!(max, (-max).wrapping_abs());
+/// # Some(())
+/// # }
+/// ```
+
+    #[lua(kind = "Method", output(proxy))]
+    fn wrapping_abs(self) -> std::num::NonZeroI16;
+
+"#,
+			r#"
+/// Computes the absolute value of self
+/// without any wrapping or panicking.
+/// # Example
+/// ```
+///# use std::num::NonZeroI16;
+///# use std::num::NonZeroU16;
+/// # fn main() { test().unwrap(); }
+/// # fn test() -> Option<()> {
+///let u_pos = NonZeroU16::new(1)?;
+///let i_pos = NonZeroI16::new(1)?;
+///let i_neg = NonZeroI16::new(-1)?;
+///let i_min = NonZeroI16::new(i16::MIN)?;
+///let u_max = NonZeroU16::new(u16::MAX / 2 + 1)?;
+/// assert_eq!(u_pos, i_pos.unsigned_abs());
+/// assert_eq!(u_pos, i_neg.unsigned_abs());
+/// assert_eq!(u_max, i_min.unsigned_abs());
+/// # Some(())
+/// # }
+/// ```
+
+    #[lua(kind = "Method", output(proxy))]
+    fn unsigned_abs(self) -> std::num::NonZeroU16;
+
+"#,
+			r#"
+/// Returns `true` if `self` is positive and `false` if the
+/// number is negative.
+/// # Example
+/// ```
+///# use std::num::NonZeroI16;
+/// # fn main() { test().unwrap(); }
+/// # fn test() -> Option<()> {
+///let pos_five = NonZeroI16::new(5)?;
+///let neg_five = NonZeroI16::new(-5)?;
+/// assert!(pos_five.is_positive());
+/// assert!(!neg_five.is_positive());
+/// # Some(())
+/// # }
+/// ```
+
+    #[lua(kind = "Method")]
+    fn is_positive(self) -> bool;
+
+"#,
+			r#"
+/// Returns `true` if `self` is negative and `false` if the
+/// number is positive.
+/// # Example
+/// ```
+///# use std::num::NonZeroI16;
+/// # fn main() { test().unwrap(); }
+/// # fn test() -> Option<()> {
+///let pos_five = NonZeroI16::new(5)?;
+///let neg_five = NonZeroI16::new(-5)?;
+/// assert!(neg_five.is_negative());
+/// assert!(!pos_five.is_negative());
+/// # Some(())
+/// # }
+/// ```
+
+    #[lua(kind = "Method")]
+    fn is_negative(self) -> bool;
+
+"#,
+			r#"
+/// Saturating negation. Computes `-self`,
+///returning [`NonZeroI16::MAX`]
+///if `self == NonZeroI16::MIN`
+/// instead of overflowing.
+/// # Example
+/// ```
+///# use std::num::NonZeroI16;
+/// # fn main() { test().unwrap(); }
+/// # fn test() -> Option<()> {
+///let pos_five = NonZeroI16::new(5)?;
+///let neg_five = NonZeroI16::new(-5)?;
+///let min = NonZeroI16::new(i16::MIN)?;
+///let min_plus_one = NonZeroI16::new(i16::MIN + 1)?;
+///let max = NonZeroI16::new(i16::MAX)?;
+/// assert_eq!(pos_five.saturating_neg(), neg_five);
+/// assert_eq!(min.saturating_neg(), max);
+/// assert_eq!(max.saturating_neg(), min_plus_one);
+/// # Some(())
+/// # }
+/// ```
+
+    #[lua(kind = "Method", output(proxy))]
+    fn saturating_neg(self) -> std::num::NonZeroI16;
+
+"#,
+			r#"
+/// Wrapping (modular) negation. Computes `-self`, wrapping around at the boundary
+/// of the type.
+///See [`i16::wrapping_neg`]
+/// for documentation on overflow behaviour.
+/// # Example
+/// ```
+///# use std::num::NonZeroI16;
+/// # fn main() { test().unwrap(); }
+/// # fn test() -> Option<()> {
+///let pos_five = NonZeroI16::new(5)?;
+///let neg_five = NonZeroI16::new(-5)?;
+///let min = NonZeroI16::new(i16::MIN)?;
+/// assert_eq!(pos_five.wrapping_neg(), neg_five);
+/// assert_eq!(min.wrapping_neg(), min);
+/// # Some(())
+/// # }
+/// ```
+
+    #[lua(kind = "Method", output(proxy))]
+    fn wrapping_neg(self) -> std::num::NonZeroI16;
+
+"#,
+			r#"
+/// Multiplies two non-zero integers together.
+///Return [`NonZeroI16::MAX`] on overflow.
+/// # Examples
+/// ```
+///# use std::num::NonZeroI16;
+/// # fn main() { test().unwrap(); }
+/// # fn test() -> Option<()> {
+///let two = NonZeroI16::new(2)?;
+///let four = NonZeroI16::new(4)?;
+///let max = NonZeroI16::new(i16::MAX)?;
+/// assert_eq!(four, two.saturating_mul(two));
+/// assert_eq!(max, four.saturating_mul(max));
+/// # Some(())
+/// # }
+/// ```
+
+    #[lua(kind = "Method", output(proxy))]
+    fn saturating_mul(
+        self,
+        #[proxy]
+        other: std::num::NonZeroI16,
+    ) -> std::num::NonZeroI16;
+
+"#,
+			r#"
+/// Raise non-zero value to an integer power.
+///Return [`NonZeroI16::MIN`] or [`NonZeroI16::MAX`] on overflow.
+/// # Examples
+/// ```
+///# use std::num::NonZeroI16;
+/// # fn main() { test().unwrap(); }
+/// # fn test() -> Option<()> {
+///let three = NonZeroI16::new(3)?;
+///let twenty_seven = NonZeroI16::new(27)?;
+///let max = NonZeroI16::new(i16::MAX)?;
+/// assert_eq!(twenty_seven, three.saturating_pow(3));
+/// assert_eq!(max, max.saturating_pow(3));
+/// # Some(())
+/// # }
+/// ```
+
+    #[lua(kind = "Method", output(proxy))]
+    fn saturating_pow(self, other: u32) -> std::num::NonZeroI16;
+
+"#,
+			r#"
+
+    #[lua(as_trait = "std::cmp::PartialEq", kind = "Function", composite = "eq")]
+    fn eq(&self, #[proxy] other: &std::num::NonZeroI16) -> bool;
+
+"#,
+			r#"
+
+    #[lua(
+        as_trait = "std::ops::Neg",
+        kind = "Function",
+        output(proxy),
+        composite = "neg",
+        metamethod = "Unm",
+    )]
+    fn neg(self) -> std::num::NonZeroI16;
+
+"#,
+			r#"
+
+    #[lua(as_trait = "std::cmp::Eq", kind = "Method")]
+    fn assert_receiver_is_total_eq(&self) -> ();
+
+"#,
+			r#"
+
+    #[lua(
+        as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone",
+        kind = "Method",
+        output(proxy),
+    )]
+    fn clone(&self) -> std::num::NonZeroI16;
+
+"#]
+)]
+
+
+
+pub struct NonZeroI16(
+    
+    
+        
+    
+    
+);
+
+    
+/// An integer that is known not to equal zero.
+
+/// This enables some memory layout optimization.
+
+///For example, `Option<NonZeroI32>` is the same size as `i32`:
+
+/// ```rust
+
+/// use std::mem::size_of;
+
+///assert_eq!(size_of::<Option<core::num::NonZeroI32>>(), size_of::<i32>());
+
+/// ```
+
+/// # Layout
+
+///`NonZeroI32` is guaranteed to have the same layout and bit validity as `i32`
+
+/// with the exception that `0` is not a valid instance.
+
+///`Option<NonZeroI32>` is guaranteed to be compatible with `i32`,
+
+/// including in FFI.
+
+/// Thanks to the [null pointer optimization],
+
+///`NonZeroI32` and `Option<NonZeroI32>`
+
+/// are guaranteed to have the same size and alignment:
+
+/// ```
+
+/// # use std::mem::{size_of, align_of};
+
+///use std::num::NonZeroI32;
+
+///assert_eq!(size_of::<NonZeroI32>(), size_of::<Option<NonZeroI32>>());
+
+///assert_eq!(align_of::<NonZeroI32>(), align_of::<Option<NonZeroI32>>());
+
+/// ```
+
+/// [null pointer optimization]: crate::option#representation
+
+
+#[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
+#[proxy(
+derive(clone,debug,),
+remote="std::num::NonZeroI32",
+functions[r#"
+/// Creates a non-zero without checking whether the value is non-zero.
+/// This results in undefined behaviour if the value is zero.
+/// # Safety
+/// The value must not be zero.
+
+    #[lua(kind = "Function", output(proxy))]
+    unsafe fn new_unchecked(n: i32) -> std::num::NonZeroI32;
+
+"#,
+			r#"
+/// Returns the value as a primitive type.
+
+    #[lua(kind = "Method")]
+    fn get(self) -> i32;
+
+"#,
+			r#"
+/// Returns the number of leading zeros in the binary representation of `self`.
+/// On many architectures, this function can perform better than `leading_zeros()` on the underlying integer type, as special handling of zero can be avoided.
+/// # Examples
+/// Basic usage:
+/// ```
+///let n = std::num::NonZeroI32::new(-1i32).unwrap();
+/// assert_eq!(n.leading_zeros(), 0);
+/// ```
+
+    #[lua(kind = "Method")]
+    fn leading_zeros(self) -> u32;
+
+"#,
+			r#"
+/// Returns the number of trailing zeros in the binary representation
+/// of `self`.
+/// On many architectures, this function can perform better than `trailing_zeros()` on the underlying integer type, as special handling of zero can be avoided.
+/// # Examples
+/// Basic usage:
+/// ```
+///let n = std::num::NonZeroI32::new(0b0101000).unwrap();
+/// assert_eq!(n.trailing_zeros(), 3);
+/// ```
+
+    #[lua(kind = "Method")]
+    fn trailing_zeros(self) -> u32;
+
+"#,
+			r#"
+/// Computes the absolute value of self.
+///See [`i32::abs`]
+/// for documentation on overflow behaviour.
+/// # Example
+/// ```
+///# use std::num::NonZeroI32;
+/// # fn main() { test().unwrap(); }
+/// # fn test() -> Option<()> {
+///let pos = NonZeroI32::new(1)?;
+///let neg = NonZeroI32::new(-1)?;
+/// assert_eq!(pos, pos.abs());
+/// assert_eq!(pos, neg.abs());
+/// # Some(())
+/// # }
+/// ```
+
+    #[lua(kind = "Method", output(proxy))]
+    fn abs(self) -> std::num::NonZeroI32;
+
+"#,
+			r#"
+/// Saturating absolute value, see
+///[`i32::saturating_abs`].
+/// # Example
+/// ```
+///# use std::num::NonZeroI32;
+/// # fn main() { test().unwrap(); }
+/// # fn test() -> Option<()> {
+///let pos = NonZeroI32::new(1)?;
+///let neg = NonZeroI32::new(-1)?;
+///let min = NonZeroI32::new(i32::MIN)?;
+///let min_plus = NonZeroI32::new(i32::MIN + 1)?;
+///let max = NonZeroI32::new(i32::MAX)?;
+/// assert_eq!(pos, pos.saturating_abs());
+/// assert_eq!(pos, neg.saturating_abs());
+/// assert_eq!(max, min.saturating_abs());
+/// assert_eq!(max, min_plus.saturating_abs());
+/// # Some(())
+/// # }
+/// ```
+
+    #[lua(kind = "Method", output(proxy))]
+    fn saturating_abs(self) -> std::num::NonZeroI32;
+
+"#,
+			r#"
+/// Wrapping absolute value, see
+///[`i32::wrapping_abs`].
+/// # Example
+/// ```
+///# use std::num::NonZeroI32;
+/// # fn main() { test().unwrap(); }
+/// # fn test() -> Option<()> {
+///let pos = NonZeroI32::new(1)?;
+///let neg = NonZeroI32::new(-1)?;
+///let min = NonZeroI32::new(i32::MIN)?;
+///# let max = NonZeroI32::new(i32::MAX)?;
+/// assert_eq!(pos, pos.wrapping_abs());
+/// assert_eq!(pos, neg.wrapping_abs());
+/// assert_eq!(min, min.wrapping_abs());
+/// assert_eq!(max, (-max).wrapping_abs());
+/// # Some(())
+/// # }
+/// ```
+
+    #[lua(kind = "Method", output(proxy))]
+    fn wrapping_abs(self) -> std::num::NonZeroI32;
+
+"#,
+			r#"
+/// Computes the absolute value of self
+/// without any wrapping or panicking.
+/// # Example
+/// ```
+///# use std::num::NonZeroI32;
+///# use std::num::NonZeroU32;
+/// # fn main() { test().unwrap(); }
+/// # fn test() -> Option<()> {
+///let u_pos = NonZeroU32::new(1)?;
+///let i_pos = NonZeroI32::new(1)?;
+///let i_neg = NonZeroI32::new(-1)?;
+///let i_min = NonZeroI32::new(i32::MIN)?;
+///let u_max = NonZeroU32::new(u32::MAX / 2 + 1)?;
+/// assert_eq!(u_pos, i_pos.unsigned_abs());
+/// assert_eq!(u_pos, i_neg.unsigned_abs());
+/// assert_eq!(u_max, i_min.unsigned_abs());
+/// # Some(())
+/// # }
+/// ```
+
+    #[lua(kind = "Method", output(proxy))]
+    fn unsigned_abs(self) -> std::num::NonZeroU32;
+
+"#,
+			r#"
+/// Returns `true` if `self` is positive and `false` if the
+/// number is negative.
+/// # Example
+/// ```
+///# use std::num::NonZeroI32;
+/// # fn main() { test().unwrap(); }
+/// # fn test() -> Option<()> {
+///let pos_five = NonZeroI32::new(5)?;
+///let neg_five = NonZeroI32::new(-5)?;
+/// assert!(pos_five.is_positive());
+/// assert!(!neg_five.is_positive());
+/// # Some(())
+/// # }
+/// ```
+
+    #[lua(kind = "Method")]
+    fn is_positive(self) -> bool;
+
+"#,
+			r#"
+/// Returns `true` if `self` is negative and `false` if the
+/// number is positive.
+/// # Example
+/// ```
+///# use std::num::NonZeroI32;
+/// # fn main() { test().unwrap(); }
+/// # fn test() -> Option<()> {
+///let pos_five = NonZeroI32::new(5)?;
+///let neg_five = NonZeroI32::new(-5)?;
+/// assert!(neg_five.is_negative());
+/// assert!(!pos_five.is_negative());
+/// # Some(())
+/// # }
+/// ```
+
+    #[lua(kind = "Method")]
+    fn is_negative(self) -> bool;
+
+"#,
+			r#"
+/// Saturating negation. Computes `-self`,
+///returning [`NonZeroI32::MAX`]
+///if `self == NonZeroI32::MIN`
+/// instead of overflowing.
+/// # Example
+/// ```
+///# use std::num::NonZeroI32;
+/// # fn main() { test().unwrap(); }
+/// # fn test() -> Option<()> {
+///let pos_five = NonZeroI32::new(5)?;
+///let neg_five = NonZeroI32::new(-5)?;
+///let min = NonZeroI32::new(i32::MIN)?;
+///let min_plus_one = NonZeroI32::new(i32::MIN + 1)?;
+///let max = NonZeroI32::new(i32::MAX)?;
+/// assert_eq!(pos_five.saturating_neg(), neg_five);
+/// assert_eq!(min.saturating_neg(), max);
+/// assert_eq!(max.saturating_neg(), min_plus_one);
+/// # Some(())
+/// # }
+/// ```
+
+    #[lua(kind = "Method", output(proxy))]
+    fn saturating_neg(self) -> std::num::NonZeroI32;
+
+"#,
+			r#"
+/// Wrapping (modular) negation. Computes `-self`, wrapping around at the boundary
+/// of the type.
+///See [`i32::wrapping_neg`]
+/// for documentation on overflow behaviour.
+/// # Example
+/// ```
+///# use std::num::NonZeroI32;
+/// # fn main() { test().unwrap(); }
+/// # fn test() -> Option<()> {
+///let pos_five = NonZeroI32::new(5)?;
+///let neg_five = NonZeroI32::new(-5)?;
+///let min = NonZeroI32::new(i32::MIN)?;
+/// assert_eq!(pos_five.wrapping_neg(), neg_five);
+/// assert_eq!(min.wrapping_neg(), min);
+/// # Some(())
+/// # }
+/// ```
+
+    #[lua(kind = "Method", output(proxy))]
+    fn wrapping_neg(self) -> std::num::NonZeroI32;
+
+"#,
+			r#"
+/// Multiplies two non-zero integers together.
+///Return [`NonZeroI32::MAX`] on overflow.
+/// # Examples
+/// ```
+///# use std::num::NonZeroI32;
+/// # fn main() { test().unwrap(); }
+/// # fn test() -> Option<()> {
+///let two = NonZeroI32::new(2)?;
+///let four = NonZeroI32::new(4)?;
+///let max = NonZeroI32::new(i32::MAX)?;
+/// assert_eq!(four, two.saturating_mul(two));
+/// assert_eq!(max, four.saturating_mul(max));
+/// # Some(())
+/// # }
+/// ```
+
+    #[lua(kind = "Method", output(proxy))]
+    fn saturating_mul(
+        self,
+        #[proxy]
+        other: std::num::NonZeroI32,
+    ) -> std::num::NonZeroI32;
+
+"#,
+			r#"
+/// Raise non-zero value to an integer power.
+///Return [`NonZeroI32::MIN`] or [`NonZeroI32::MAX`] on overflow.
+/// # Examples
+/// ```
+///# use std::num::NonZeroI32;
+/// # fn main() { test().unwrap(); }
+/// # fn test() -> Option<()> {
+///let three = NonZeroI32::new(3)?;
+///let twenty_seven = NonZeroI32::new(27)?;
+///let max = NonZeroI32::new(i32::MAX)?;
+/// assert_eq!(twenty_seven, three.saturating_pow(3));
+/// assert_eq!(max, max.saturating_pow(3));
+/// # Some(())
+/// # }
+/// ```
+
+    #[lua(kind = "Method", output(proxy))]
+    fn saturating_pow(self, other: u32) -> std::num::NonZeroI32;
+
+"#,
+			r#"
+
+    #[lua(
+        as_trait = "std::ops::Neg",
+        kind = "Function",
+        output(proxy),
+        composite = "neg",
+        metamethod = "Unm",
+    )]
+    fn neg(self) -> std::num::NonZeroI32;
+
+"#,
+			r#"
+
+    #[lua(as_trait = "std::cmp::PartialEq", kind = "Function", composite = "eq")]
+    fn eq(&self, #[proxy] other: &std::num::NonZeroI32) -> bool;
+
+"#,
+			r#"
+
+    #[lua(
+        as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone",
+        kind = "Method",
+        output(proxy),
+    )]
+    fn clone(&self) -> std::num::NonZeroI32;
+
+"#,
+			r#"
+
+    #[lua(as_trait = "std::cmp::Eq", kind = "Method")]
+    fn assert_receiver_is_total_eq(&self) -> ();
+
+"#]
+)]
+
+
+
+pub struct NonZeroI32(
+    
+    
+        
+    
+    
+);
+
+    
+/// An integer that is known not to equal zero.
+
+/// This enables some memory layout optimization.
+
+///For example, `Option<NonZeroI64>` is the same size as `i64`:
+
+/// ```rust
+
+/// use std::mem::size_of;
+
+///assert_eq!(size_of::<Option<core::num::NonZeroI64>>(), size_of::<i64>());
+
+/// ```
+
+/// # Layout
+
+///`NonZeroI64` is guaranteed to have the same layout and bit validity as `i64`
+
+/// with the exception that `0` is not a valid instance.
+
+///`Option<NonZeroI64>` is guaranteed to be compatible with `i64`,
+
+/// including in FFI.
+
+/// Thanks to the [null pointer optimization],
+
+///`NonZeroI64` and `Option<NonZeroI64>`
+
+/// are guaranteed to have the same size and alignment:
+
+/// ```
+
+/// # use std::mem::{size_of, align_of};
+
+///use std::num::NonZeroI64;
+
+///assert_eq!(size_of::<NonZeroI64>(), size_of::<Option<NonZeroI64>>());
+
+///assert_eq!(align_of::<NonZeroI64>(), align_of::<Option<NonZeroI64>>());
+
+/// ```
+
+/// [null pointer optimization]: crate::option#representation
+
+
+#[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
+#[proxy(
+derive(clone,debug,),
+remote="std::num::NonZeroI64",
+functions[r#"
+/// Creates a non-zero without checking whether the value is non-zero.
+/// This results in undefined behaviour if the value is zero.
+/// # Safety
+/// The value must not be zero.
+
+    #[lua(kind = "Function", output(proxy))]
+    unsafe fn new_unchecked(n: i64) -> std::num::NonZeroI64;
+
+"#,
+			r#"
+/// Returns the value as a primitive type.
+
+    #[lua(kind = "Method")]
+    fn get(self) -> i64;
+
+"#,
+			r#"
+/// Returns the number of leading zeros in the binary representation of `self`.
+/// On many architectures, this function can perform better than `leading_zeros()` on the underlying integer type, as special handling of zero can be avoided.
+/// # Examples
+/// Basic usage:
+/// ```
+///let n = std::num::NonZeroI64::new(-1i64).unwrap();
+/// assert_eq!(n.leading_zeros(), 0);
+/// ```
+
+    #[lua(kind = "Method")]
+    fn leading_zeros(self) -> u32;
+
+"#,
+			r#"
+/// Returns the number of trailing zeros in the binary representation
+/// of `self`.
+/// On many architectures, this function can perform better than `trailing_zeros()` on the underlying integer type, as special handling of zero can be avoided.
+/// # Examples
+/// Basic usage:
+/// ```
+///let n = std::num::NonZeroI64::new(0b0101000).unwrap();
+/// assert_eq!(n.trailing_zeros(), 3);
+/// ```
+
+    #[lua(kind = "Method")]
+    fn trailing_zeros(self) -> u32;
+
+"#,
+			r#"
+/// Computes the absolute value of self.
+///See [`i64::abs`]
+/// for documentation on overflow behaviour.
+/// # Example
+/// ```
+///# use std::num::NonZeroI64;
+/// # fn main() { test().unwrap(); }
+/// # fn test() -> Option<()> {
+///let pos = NonZeroI64::new(1)?;
+///let neg = NonZeroI64::new(-1)?;
+/// assert_eq!(pos, pos.abs());
+/// assert_eq!(pos, neg.abs());
+/// # Some(())
+/// # }
+/// ```
+
+    #[lua(kind = "Method", output(proxy))]
+    fn abs(self) -> std::num::NonZeroI64;
+
+"#,
+			r#"
+/// Saturating absolute value, see
+///[`i64::saturating_abs`].
+/// # Example
+/// ```
+///# use std::num::NonZeroI64;
+/// # fn main() { test().unwrap(); }
+/// # fn test() -> Option<()> {
+///let pos = NonZeroI64::new(1)?;
+///let neg = NonZeroI64::new(-1)?;
+///let min = NonZeroI64::new(i64::MIN)?;
+///let min_plus = NonZeroI64::new(i64::MIN + 1)?;
+///let max = NonZeroI64::new(i64::MAX)?;
+/// assert_eq!(pos, pos.saturating_abs());
+/// assert_eq!(pos, neg.saturating_abs());
+/// assert_eq!(max, min.saturating_abs());
+/// assert_eq!(max, min_plus.saturating_abs());
+/// # Some(())
+/// # }
+/// ```
+
+    #[lua(kind = "Method", output(proxy))]
+    fn saturating_abs(self) -> std::num::NonZeroI64;
+
+"#,
+			r#"
+/// Wrapping absolute value, see
+///[`i64::wrapping_abs`].
+/// # Example
+/// ```
+///# use std::num::NonZeroI64;
+/// # fn main() { test().unwrap(); }
+/// # fn test() -> Option<()> {
+///let pos = NonZeroI64::new(1)?;
+///let neg = NonZeroI64::new(-1)?;
+///let min = NonZeroI64::new(i64::MIN)?;
+///# let max = NonZeroI64::new(i64::MAX)?;
+/// assert_eq!(pos, pos.wrapping_abs());
+/// assert_eq!(pos, neg.wrapping_abs());
+/// assert_eq!(min, min.wrapping_abs());
+/// assert_eq!(max, (-max).wrapping_abs());
+/// # Some(())
+/// # }
+/// ```
+
+    #[lua(kind = "Method", output(proxy))]
+    fn wrapping_abs(self) -> std::num::NonZeroI64;
+
+"#,
+			r#"
+/// Computes the absolute value of self
+/// without any wrapping or panicking.
+/// # Example
+/// ```
+///# use std::num::NonZeroI64;
+///# use std::num::NonZeroU64;
+/// # fn main() { test().unwrap(); }
+/// # fn test() -> Option<()> {
+///let u_pos = NonZeroU64::new(1)?;
+///let i_pos = NonZeroI64::new(1)?;
+///let i_neg = NonZeroI64::new(-1)?;
+///let i_min = NonZeroI64::new(i64::MIN)?;
+///let u_max = NonZeroU64::new(u64::MAX / 2 + 1)?;
+/// assert_eq!(u_pos, i_pos.unsigned_abs());
+/// assert_eq!(u_pos, i_neg.unsigned_abs());
+/// assert_eq!(u_max, i_min.unsigned_abs());
+/// # Some(())
+/// # }
+/// ```
+
+    #[lua(kind = "Method", output(proxy))]
+    fn unsigned_abs(self) -> std::num::NonZeroU64;
+
+"#,
+			r#"
+/// Returns `true` if `self` is positive and `false` if the
+/// number is negative.
+/// # Example
+/// ```
+///# use std::num::NonZeroI64;
+/// # fn main() { test().unwrap(); }
+/// # fn test() -> Option<()> {
+///let pos_five = NonZeroI64::new(5)?;
+///let neg_five = NonZeroI64::new(-5)?;
+/// assert!(pos_five.is_positive());
+/// assert!(!neg_five.is_positive());
+/// # Some(())
+/// # }
+/// ```
+
+    #[lua(kind = "Method")]
+    fn is_positive(self) -> bool;
+
+"#,
+			r#"
+/// Returns `true` if `self` is negative and `false` if the
+/// number is positive.
+/// # Example
+/// ```
+///# use std::num::NonZeroI64;
+/// # fn main() { test().unwrap(); }
+/// # fn test() -> Option<()> {
+///let pos_five = NonZeroI64::new(5)?;
+///let neg_five = NonZeroI64::new(-5)?;
+/// assert!(neg_five.is_negative());
+/// assert!(!pos_five.is_negative());
+/// # Some(())
+/// # }
+/// ```
+
+    #[lua(kind = "Method")]
+    fn is_negative(self) -> bool;
+
+"#,
+			r#"
+/// Saturating negation. Computes `-self`,
+///returning [`NonZeroI64::MAX`]
+///if `self == NonZeroI64::MIN`
+/// instead of overflowing.
+/// # Example
+/// ```
+///# use std::num::NonZeroI64;
+/// # fn main() { test().unwrap(); }
+/// # fn test() -> Option<()> {
+///let pos_five = NonZeroI64::new(5)?;
+///let neg_five = NonZeroI64::new(-5)?;
+///let min = NonZeroI64::new(i64::MIN)?;
+///let min_plus_one = NonZeroI64::new(i64::MIN + 1)?;
+///let max = NonZeroI64::new(i64::MAX)?;
+/// assert_eq!(pos_five.saturating_neg(), neg_five);
+/// assert_eq!(min.saturating_neg(), max);
+/// assert_eq!(max.saturating_neg(), min_plus_one);
+/// # Some(())
+/// # }
+/// ```
+
+    #[lua(kind = "Method", output(proxy))]
+    fn saturating_neg(self) -> std::num::NonZeroI64;
+
+"#,
+			r#"
+/// Wrapping (modular) negation. Computes `-self`, wrapping around at the boundary
+/// of the type.
+///See [`i64::wrapping_neg`]
+/// for documentation on overflow behaviour.
+/// # Example
+/// ```
+///# use std::num::NonZeroI64;
+/// # fn main() { test().unwrap(); }
+/// # fn test() -> Option<()> {
+///let pos_five = NonZeroI64::new(5)?;
+///let neg_five = NonZeroI64::new(-5)?;
+///let min = NonZeroI64::new(i64::MIN)?;
+/// assert_eq!(pos_five.wrapping_neg(), neg_five);
+/// assert_eq!(min.wrapping_neg(), min);
+/// # Some(())
+/// # }
+/// ```
+
+    #[lua(kind = "Method", output(proxy))]
+    fn wrapping_neg(self) -> std::num::NonZeroI64;
+
+"#,
+			r#"
+/// Multiplies two non-zero integers together.
+///Return [`NonZeroI64::MAX`] on overflow.
+/// # Examples
+/// ```
+///# use std::num::NonZeroI64;
+/// # fn main() { test().unwrap(); }
+/// # fn test() -> Option<()> {
+///let two = NonZeroI64::new(2)?;
+///let four = NonZeroI64::new(4)?;
+///let max = NonZeroI64::new(i64::MAX)?;
+/// assert_eq!(four, two.saturating_mul(two));
+/// assert_eq!(max, four.saturating_mul(max));
+/// # Some(())
+/// # }
+/// ```
+
+    #[lua(kind = "Method", output(proxy))]
+    fn saturating_mul(
+        self,
+        #[proxy]
+        other: std::num::NonZeroI64,
+    ) -> std::num::NonZeroI64;
+
+"#,
+			r#"
+/// Raise non-zero value to an integer power.
+///Return [`NonZeroI64::MIN`] or [`NonZeroI64::MAX`] on overflow.
+/// # Examples
+/// ```
+///# use std::num::NonZeroI64;
+/// # fn main() { test().unwrap(); }
+/// # fn test() -> Option<()> {
+///let three = NonZeroI64::new(3)?;
+///let twenty_seven = NonZeroI64::new(27)?;
+///let max = NonZeroI64::new(i64::MAX)?;
+/// assert_eq!(twenty_seven, three.saturating_pow(3));
+/// assert_eq!(max, max.saturating_pow(3));
+/// # Some(())
+/// # }
+/// ```
+
+    #[lua(kind = "Method", output(proxy))]
+    fn saturating_pow(self, other: u32) -> std::num::NonZeroI64;
+
+"#,
+			r#"
+
+    #[lua(
+        as_trait = "std::ops::Neg",
+        kind = "Function",
+        output(proxy),
+        composite = "neg",
+        metamethod = "Unm",
+    )]
+    fn neg(self) -> std::num::NonZeroI64;
+
+"#,
+			r#"
+
+    #[lua(
+        as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone",
+        kind = "Method",
+        output(proxy),
+    )]
+    fn clone(&self) -> std::num::NonZeroI64;
+
+"#,
+			r#"
+
+    #[lua(as_trait = "std::cmp::PartialEq", kind = "Function", composite = "eq")]
+    fn eq(&self, #[proxy] other: &std::num::NonZeroI64) -> bool;
+
+"#,
+			r#"
+
+    #[lua(as_trait = "std::cmp::Eq", kind = "Method")]
+    fn assert_receiver_is_total_eq(&self) -> ();
+
+"#]
+)]
+
+
+
+pub struct NonZeroI64(
+    
+    
+        
+    
+    
+);
+
+    
+/// An integer that is known not to equal zero.
+
+/// This enables some memory layout optimization.
+
+///For example, `Option<NonZeroI128>` is the same size as `i128`:
+
+/// ```rust
+
+/// use std::mem::size_of;
+
+///assert_eq!(size_of::<Option<core::num::NonZeroI128>>(), size_of::<i128>());
+
+/// ```
+
+/// # Layout
+
+///`NonZeroI128` is guaranteed to have the same layout and bit validity as `i128`
+
+/// with the exception that `0` is not a valid instance.
+
+///`Option<NonZeroI128>` is guaranteed to be compatible with `i128`,
+
+/// including in FFI.
+
+/// Thanks to the [null pointer optimization],
+
+///`NonZeroI128` and `Option<NonZeroI128>`
+
+/// are guaranteed to have the same size and alignment:
+
+/// ```
+
+/// # use std::mem::{size_of, align_of};
+
+///use std::num::NonZeroI128;
+
+///assert_eq!(size_of::<NonZeroI128>(), size_of::<Option<NonZeroI128>>());
+
+///assert_eq!(align_of::<NonZeroI128>(), align_of::<Option<NonZeroI128>>());
+
+/// ```
+
+/// [null pointer optimization]: crate::option#representation
+
+
+#[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
+#[proxy(
+derive(clone,debug,),
+remote="std::num::NonZeroI128",
+functions[r#"
+/// Creates a non-zero without checking whether the value is non-zero.
+/// This results in undefined behaviour if the value is zero.
+/// # Safety
+/// The value must not be zero.
+
+    #[lua(kind = "Function", output(proxy))]
+    unsafe fn new_unchecked(n: i128) -> std::num::NonZeroI128;
+
+"#,
+			r#"
+/// Returns the value as a primitive type.
+
+    #[lua(kind = "Method")]
+    fn get(self) -> i128;
+
+"#,
+			r#"
+/// Returns the number of leading zeros in the binary representation of `self`.
+/// On many architectures, this function can perform better than `leading_zeros()` on the underlying integer type, as special handling of zero can be avoided.
+/// # Examples
+/// Basic usage:
+/// ```
+///let n = std::num::NonZeroI128::new(-1i128).unwrap();
+/// assert_eq!(n.leading_zeros(), 0);
+/// ```
+
+    #[lua(kind = "Method")]
+    fn leading_zeros(self) -> u32;
+
+"#,
+			r#"
+/// Returns the number of trailing zeros in the binary representation
+/// of `self`.
+/// On many architectures, this function can perform better than `trailing_zeros()` on the underlying integer type, as special handling of zero can be avoided.
+/// # Examples
+/// Basic usage:
+/// ```
+///let n = std::num::NonZeroI128::new(0b0101000).unwrap();
+/// assert_eq!(n.trailing_zeros(), 3);
+/// ```
+
+    #[lua(kind = "Method")]
+    fn trailing_zeros(self) -> u32;
+
+"#,
+			r#"
+/// Computes the absolute value of self.
+///See [`i128::abs`]
+/// for documentation on overflow behaviour.
+/// # Example
+/// ```
+///# use std::num::NonZeroI128;
+/// # fn main() { test().unwrap(); }
+/// # fn test() -> Option<()> {
+///let pos = NonZeroI128::new(1)?;
+///let neg = NonZeroI128::new(-1)?;
+/// assert_eq!(pos, pos.abs());
+/// assert_eq!(pos, neg.abs());
+/// # Some(())
+/// # }
+/// ```
+
+    #[lua(kind = "Method", output(proxy))]
+    fn abs(self) -> std::num::NonZeroI128;
+
+"#,
+			r#"
+/// Saturating absolute value, see
+///[`i128::saturating_abs`].
+/// # Example
+/// ```
+///# use std::num::NonZeroI128;
+/// # fn main() { test().unwrap(); }
+/// # fn test() -> Option<()> {
+///let pos = NonZeroI128::new(1)?;
+///let neg = NonZeroI128::new(-1)?;
+///let min = NonZeroI128::new(i128::MIN)?;
+///let min_plus = NonZeroI128::new(i128::MIN + 1)?;
+///let max = NonZeroI128::new(i128::MAX)?;
+/// assert_eq!(pos, pos.saturating_abs());
+/// assert_eq!(pos, neg.saturating_abs());
+/// assert_eq!(max, min.saturating_abs());
+/// assert_eq!(max, min_plus.saturating_abs());
+/// # Some(())
+/// # }
+/// ```
+
+    #[lua(kind = "Method", output(proxy))]
+    fn saturating_abs(self) -> std::num::NonZeroI128;
+
+"#,
+			r#"
+/// Wrapping absolute value, see
+///[`i128::wrapping_abs`].
+/// # Example
+/// ```
+///# use std::num::NonZeroI128;
+/// # fn main() { test().unwrap(); }
+/// # fn test() -> Option<()> {
+///let pos = NonZeroI128::new(1)?;
+///let neg = NonZeroI128::new(-1)?;
+///let min = NonZeroI128::new(i128::MIN)?;
+///# let max = NonZeroI128::new(i128::MAX)?;
+/// assert_eq!(pos, pos.wrapping_abs());
+/// assert_eq!(pos, neg.wrapping_abs());
+/// assert_eq!(min, min.wrapping_abs());
+/// assert_eq!(max, (-max).wrapping_abs());
+/// # Some(())
+/// # }
+/// ```
+
+    #[lua(kind = "Method", output(proxy))]
+    fn wrapping_abs(self) -> std::num::NonZeroI128;
+
+"#,
+			r#"
+/// Computes the absolute value of self
+/// without any wrapping or panicking.
+/// # Example
+/// ```
+///# use std::num::NonZeroI128;
+///# use std::num::NonZeroU128;
+/// # fn main() { test().unwrap(); }
+/// # fn test() -> Option<()> {
+///let u_pos = NonZeroU128::new(1)?;
+///let i_pos = NonZeroI128::new(1)?;
+///let i_neg = NonZeroI128::new(-1)?;
+///let i_min = NonZeroI128::new(i128::MIN)?;
+///let u_max = NonZeroU128::new(u128::MAX / 2 + 1)?;
+/// assert_eq!(u_pos, i_pos.unsigned_abs());
+/// assert_eq!(u_pos, i_neg.unsigned_abs());
+/// assert_eq!(u_max, i_min.unsigned_abs());
+/// # Some(())
+/// # }
+/// ```
+
+    #[lua(kind = "Method", output(proxy))]
+    fn unsigned_abs(self) -> std::num::NonZeroU128;
+
+"#,
+			r#"
+/// Returns `true` if `self` is positive and `false` if the
+/// number is negative.
+/// # Example
+/// ```
+///# use std::num::NonZeroI128;
+/// # fn main() { test().unwrap(); }
+/// # fn test() -> Option<()> {
+///let pos_five = NonZeroI128::new(5)?;
+///let neg_five = NonZeroI128::new(-5)?;
+/// assert!(pos_five.is_positive());
+/// assert!(!neg_five.is_positive());
+/// # Some(())
+/// # }
+/// ```
+
+    #[lua(kind = "Method")]
+    fn is_positive(self) -> bool;
+
+"#,
+			r#"
+/// Returns `true` if `self` is negative and `false` if the
+/// number is positive.
+/// # Example
+/// ```
+///# use std::num::NonZeroI128;
+/// # fn main() { test().unwrap(); }
+/// # fn test() -> Option<()> {
+///let pos_five = NonZeroI128::new(5)?;
+///let neg_five = NonZeroI128::new(-5)?;
+/// assert!(neg_five.is_negative());
+/// assert!(!pos_five.is_negative());
+/// # Some(())
+/// # }
+/// ```
+
+    #[lua(kind = "Method")]
+    fn is_negative(self) -> bool;
+
+"#,
+			r#"
+/// Saturating negation. Computes `-self`,
+///returning [`NonZeroI128::MAX`]
+///if `self == NonZeroI128::MIN`
+/// instead of overflowing.
+/// # Example
+/// ```
+///# use std::num::NonZeroI128;
+/// # fn main() { test().unwrap(); }
+/// # fn test() -> Option<()> {
+///let pos_five = NonZeroI128::new(5)?;
+///let neg_five = NonZeroI128::new(-5)?;
+///let min = NonZeroI128::new(i128::MIN)?;
+///let min_plus_one = NonZeroI128::new(i128::MIN + 1)?;
+///let max = NonZeroI128::new(i128::MAX)?;
+/// assert_eq!(pos_five.saturating_neg(), neg_five);
+/// assert_eq!(min.saturating_neg(), max);
+/// assert_eq!(max.saturating_neg(), min_plus_one);
+/// # Some(())
+/// # }
+/// ```
+
+    #[lua(kind = "Method", output(proxy))]
+    fn saturating_neg(self) -> std::num::NonZeroI128;
+
+"#,
+			r#"
+/// Wrapping (modular) negation. Computes `-self`, wrapping around at the boundary
+/// of the type.
+///See [`i128::wrapping_neg`]
+/// for documentation on overflow behaviour.
+/// # Example
+/// ```
+///# use std::num::NonZeroI128;
+/// # fn main() { test().unwrap(); }
+/// # fn test() -> Option<()> {
+///let pos_five = NonZeroI128::new(5)?;
+///let neg_five = NonZeroI128::new(-5)?;
+///let min = NonZeroI128::new(i128::MIN)?;
+/// assert_eq!(pos_five.wrapping_neg(), neg_five);
+/// assert_eq!(min.wrapping_neg(), min);
+/// # Some(())
+/// # }
+/// ```
+
+    #[lua(kind = "Method", output(proxy))]
+    fn wrapping_neg(self) -> std::num::NonZeroI128;
+
+"#,
+			r#"
+/// Multiplies two non-zero integers together.
+///Return [`NonZeroI128::MAX`] on overflow.
+/// # Examples
+/// ```
+///# use std::num::NonZeroI128;
+/// # fn main() { test().unwrap(); }
+/// # fn test() -> Option<()> {
+///let two = NonZeroI128::new(2)?;
+///let four = NonZeroI128::new(4)?;
+///let max = NonZeroI128::new(i128::MAX)?;
+/// assert_eq!(four, two.saturating_mul(two));
+/// assert_eq!(max, four.saturating_mul(max));
+/// # Some(())
+/// # }
+/// ```
+
+    #[lua(kind = "Method", output(proxy))]
+    fn saturating_mul(
+        self,
+        #[proxy]
+        other: std::num::NonZeroI128,
+    ) -> std::num::NonZeroI128;
+
+"#,
+			r#"
+/// Raise non-zero value to an integer power.
+///Return [`NonZeroI128::MIN`] or [`NonZeroI128::MAX`] on overflow.
+/// # Examples
+/// ```
+///# use std::num::NonZeroI128;
+/// # fn main() { test().unwrap(); }
+/// # fn test() -> Option<()> {
+///let three = NonZeroI128::new(3)?;
+///let twenty_seven = NonZeroI128::new(27)?;
+///let max = NonZeroI128::new(i128::MAX)?;
+/// assert_eq!(twenty_seven, three.saturating_pow(3));
+/// assert_eq!(max, max.saturating_pow(3));
+/// # Some(())
+/// # }
+/// ```
+
+    #[lua(kind = "Method", output(proxy))]
+    fn saturating_pow(self, other: u32) -> std::num::NonZeroI128;
+
+"#,
+			r#"
+
+    #[lua(as_trait = "std::cmp::PartialEq", kind = "Function", composite = "eq")]
+    fn eq(&self, #[proxy] other: &std::num::NonZeroI128) -> bool;
+
+"#,
+			r#"
+
+    #[lua(
+        as_trait = "std::ops::Neg",
+        kind = "Function",
+        output(proxy),
+        composite = "neg",
+        metamethod = "Unm",
+    )]
+    fn neg(self) -> std::num::NonZeroI128;
+
+"#,
+			r#"
+
+    #[lua(as_trait = "std::cmp::Eq", kind = "Method")]
+    fn assert_receiver_is_total_eq(&self) -> ();
+
+"#,
+			r#"
+
+    #[lua(
+        as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone",
+        kind = "Method",
+        output(proxy),
+    )]
+    fn clone(&self) -> std::num::NonZeroI128;
+
+"#]
+)]
+
+
+
+pub struct NonZeroI128(
+    
+    
+        
+    
+    
+);
+
+    
+/// An integer that is known not to equal zero.
+
+/// This enables some memory layout optimization.
+
+///For example, `Option<NonZeroIsize>` is the same size as `isize`:
+
+/// ```rust
+
+/// use std::mem::size_of;
+
+///assert_eq!(size_of::<Option<core::num::NonZeroIsize>>(), size_of::<isize>());
+
+/// ```
+
+/// # Layout
+
+///`NonZeroIsize` is guaranteed to have the same layout and bit validity as `isize`
+
+/// with the exception that `0` is not a valid instance.
+
+///`Option<NonZeroIsize>` is guaranteed to be compatible with `isize`,
+
+/// including in FFI.
+
+/// Thanks to the [null pointer optimization],
+
+///`NonZeroIsize` and `Option<NonZeroIsize>`
+
+/// are guaranteed to have the same size and alignment:
+
+/// ```
+
+/// # use std::mem::{size_of, align_of};
+
+///use std::num::NonZeroIsize;
+
+///assert_eq!(size_of::<NonZeroIsize>(), size_of::<Option<NonZeroIsize>>());
+
+///assert_eq!(align_of::<NonZeroIsize>(), align_of::<Option<NonZeroIsize>>());
+
+/// ```
+
+/// [null pointer optimization]: crate::option#representation
+
+
+#[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
+#[proxy(
+derive(clone,debug,),
+remote="std::num::NonZeroIsize",
+functions[r#"
+/// Creates a non-zero without checking whether the value is non-zero.
+/// This results in undefined behaviour if the value is zero.
+/// # Safety
+/// The value must not be zero.
+
+    #[lua(kind = "Function", output(proxy))]
+    unsafe fn new_unchecked(n: isize) -> std::num::NonZeroIsize;
+
+"#,
+			r#"
+/// Returns the value as a primitive type.
+
+    #[lua(kind = "Method")]
+    fn get(self) -> isize;
+
+"#,
+			r#"
+/// Returns the number of leading zeros in the binary representation of `self`.
+/// On many architectures, this function can perform better than `leading_zeros()` on the underlying integer type, as special handling of zero can be avoided.
+/// # Examples
+/// Basic usage:
+/// ```
+///let n = std::num::NonZeroIsize::new(-1isize).unwrap();
+/// assert_eq!(n.leading_zeros(), 0);
+/// ```
+
+    #[lua(kind = "Method")]
+    fn leading_zeros(self) -> u32;
+
+"#,
+			r#"
+/// Returns the number of trailing zeros in the binary representation
+/// of `self`.
+/// On many architectures, this function can perform better than `trailing_zeros()` on the underlying integer type, as special handling of zero can be avoided.
+/// # Examples
+/// Basic usage:
+/// ```
+///let n = std::num::NonZeroIsize::new(0b0101000).unwrap();
+/// assert_eq!(n.trailing_zeros(), 3);
+/// ```
+
+    #[lua(kind = "Method")]
+    fn trailing_zeros(self) -> u32;
+
+"#,
+			r#"
+/// Computes the absolute value of self.
+///See [`isize::abs`]
+/// for documentation on overflow behaviour.
+/// # Example
+/// ```
+///# use std::num::NonZeroIsize;
+/// # fn main() { test().unwrap(); }
+/// # fn test() -> Option<()> {
+///let pos = NonZeroIsize::new(1)?;
+///let neg = NonZeroIsize::new(-1)?;
+/// assert_eq!(pos, pos.abs());
+/// assert_eq!(pos, neg.abs());
+/// # Some(())
+/// # }
+/// ```
+
+    #[lua(kind = "Method", output(proxy))]
+    fn abs(self) -> std::num::NonZeroIsize;
+
+"#,
+			r#"
+/// Saturating absolute value, see
+///[`isize::saturating_abs`].
+/// # Example
+/// ```
+///# use std::num::NonZeroIsize;
+/// # fn main() { test().unwrap(); }
+/// # fn test() -> Option<()> {
+///let pos = NonZeroIsize::new(1)?;
+///let neg = NonZeroIsize::new(-1)?;
+///let min = NonZeroIsize::new(isize::MIN)?;
+///let min_plus = NonZeroIsize::new(isize::MIN + 1)?;
+///let max = NonZeroIsize::new(isize::MAX)?;
+/// assert_eq!(pos, pos.saturating_abs());
+/// assert_eq!(pos, neg.saturating_abs());
+/// assert_eq!(max, min.saturating_abs());
+/// assert_eq!(max, min_plus.saturating_abs());
+/// # Some(())
+/// # }
+/// ```
+
+    #[lua(kind = "Method", output(proxy))]
+    fn saturating_abs(self) -> std::num::NonZeroIsize;
+
+"#,
+			r#"
+/// Wrapping absolute value, see
+///[`isize::wrapping_abs`].
+/// # Example
+/// ```
+///# use std::num::NonZeroIsize;
+/// # fn main() { test().unwrap(); }
+/// # fn test() -> Option<()> {
+///let pos = NonZeroIsize::new(1)?;
+///let neg = NonZeroIsize::new(-1)?;
+///let min = NonZeroIsize::new(isize::MIN)?;
+///# let max = NonZeroIsize::new(isize::MAX)?;
+/// assert_eq!(pos, pos.wrapping_abs());
+/// assert_eq!(pos, neg.wrapping_abs());
+/// assert_eq!(min, min.wrapping_abs());
+/// assert_eq!(max, (-max).wrapping_abs());
+/// # Some(())
+/// # }
+/// ```
+
+    #[lua(kind = "Method", output(proxy))]
+    fn wrapping_abs(self) -> std::num::NonZeroIsize;
+
+"#,
+			r#"
+/// Computes the absolute value of self
+/// without any wrapping or panicking.
+/// # Example
+/// ```
+///# use std::num::NonZeroIsize;
+///# use std::num::NonZeroUsize;
+/// # fn main() { test().unwrap(); }
+/// # fn test() -> Option<()> {
+///let u_pos = NonZeroUsize::new(1)?;
+///let i_pos = NonZeroIsize::new(1)?;
+///let i_neg = NonZeroIsize::new(-1)?;
+///let i_min = NonZeroIsize::new(isize::MIN)?;
+///let u_max = NonZeroUsize::new(usize::MAX / 2 + 1)?;
+/// assert_eq!(u_pos, i_pos.unsigned_abs());
+/// assert_eq!(u_pos, i_neg.unsigned_abs());
+/// assert_eq!(u_max, i_min.unsigned_abs());
+/// # Some(())
+/// # }
+/// ```
+
+    #[lua(kind = "Method", output(proxy))]
+    fn unsigned_abs(self) -> std::num::NonZeroUsize;
+
+"#,
+			r#"
+/// Returns `true` if `self` is positive and `false` if the
+/// number is negative.
+/// # Example
+/// ```
+///# use std::num::NonZeroIsize;
+/// # fn main() { test().unwrap(); }
+/// # fn test() -> Option<()> {
+///let pos_five = NonZeroIsize::new(5)?;
+///let neg_five = NonZeroIsize::new(-5)?;
+/// assert!(pos_five.is_positive());
+/// assert!(!neg_five.is_positive());
+/// # Some(())
+/// # }
+/// ```
+
+    #[lua(kind = "Method")]
+    fn is_positive(self) -> bool;
+
+"#,
+			r#"
+/// Returns `true` if `self` is negative and `false` if the
+/// number is positive.
+/// # Example
+/// ```
+///# use std::num::NonZeroIsize;
+/// # fn main() { test().unwrap(); }
+/// # fn test() -> Option<()> {
+///let pos_five = NonZeroIsize::new(5)?;
+///let neg_five = NonZeroIsize::new(-5)?;
+/// assert!(neg_five.is_negative());
+/// assert!(!pos_five.is_negative());
+/// # Some(())
+/// # }
+/// ```
+
+    #[lua(kind = "Method")]
+    fn is_negative(self) -> bool;
+
+"#,
+			r#"
+/// Saturating negation. Computes `-self`,
+///returning [`NonZeroIsize::MAX`]
+///if `self == NonZeroIsize::MIN`
+/// instead of overflowing.
+/// # Example
+/// ```
+///# use std::num::NonZeroIsize;
+/// # fn main() { test().unwrap(); }
+/// # fn test() -> Option<()> {
+///let pos_five = NonZeroIsize::new(5)?;
+///let neg_five = NonZeroIsize::new(-5)?;
+///let min = NonZeroIsize::new(isize::MIN)?;
+///let min_plus_one = NonZeroIsize::new(isize::MIN + 1)?;
+///let max = NonZeroIsize::new(isize::MAX)?;
+/// assert_eq!(pos_five.saturating_neg(), neg_five);
+/// assert_eq!(min.saturating_neg(), max);
+/// assert_eq!(max.saturating_neg(), min_plus_one);
+/// # Some(())
+/// # }
+/// ```
+
+    #[lua(kind = "Method", output(proxy))]
+    fn saturating_neg(self) -> std::num::NonZeroIsize;
+
+"#,
+			r#"
+/// Wrapping (modular) negation. Computes `-self`, wrapping around at the boundary
+/// of the type.
+///See [`isize::wrapping_neg`]
+/// for documentation on overflow behaviour.
+/// # Example
+/// ```
+///# use std::num::NonZeroIsize;
+/// # fn main() { test().unwrap(); }
+/// # fn test() -> Option<()> {
+///let pos_five = NonZeroIsize::new(5)?;
+///let neg_five = NonZeroIsize::new(-5)?;
+///let min = NonZeroIsize::new(isize::MIN)?;
+/// assert_eq!(pos_five.wrapping_neg(), neg_five);
+/// assert_eq!(min.wrapping_neg(), min);
+/// # Some(())
+/// # }
+/// ```
+
+    #[lua(kind = "Method", output(proxy))]
+    fn wrapping_neg(self) -> std::num::NonZeroIsize;
+
+"#,
+			r#"
+/// Multiplies two non-zero integers together.
+///Return [`NonZeroIsize::MAX`] on overflow.
+/// # Examples
+/// ```
+///# use std::num::NonZeroIsize;
+/// # fn main() { test().unwrap(); }
+/// # fn test() -> Option<()> {
+///let two = NonZeroIsize::new(2)?;
+///let four = NonZeroIsize::new(4)?;
+///let max = NonZeroIsize::new(isize::MAX)?;
+/// assert_eq!(four, two.saturating_mul(two));
+/// assert_eq!(max, four.saturating_mul(max));
+/// # Some(())
+/// # }
+/// ```
+
+    #[lua(kind = "Method", output(proxy))]
+    fn saturating_mul(
+        self,
+        #[proxy]
+        other: std::num::NonZeroIsize,
+    ) -> std::num::NonZeroIsize;
+
+"#,
+			r#"
+/// Raise non-zero value to an integer power.
+///Return [`NonZeroIsize::MIN`] or [`NonZeroIsize::MAX`] on overflow.
+/// # Examples
+/// ```
+///# use std::num::NonZeroIsize;
+/// # fn main() { test().unwrap(); }
+/// # fn test() -> Option<()> {
+///let three = NonZeroIsize::new(3)?;
+///let twenty_seven = NonZeroIsize::new(27)?;
+///let max = NonZeroIsize::new(isize::MAX)?;
+/// assert_eq!(twenty_seven, three.saturating_pow(3));
+/// assert_eq!(max, max.saturating_pow(3));
+/// # Some(())
+/// # }
+/// ```
+
+    #[lua(kind = "Method", output(proxy))]
+    fn saturating_pow(self, other: u32) -> std::num::NonZeroIsize;
+
+"#,
+			r#"
+
+    #[lua(
+        as_trait = "std::ops::Neg",
+        kind = "Function",
+        output(proxy),
+        composite = "neg",
+        metamethod = "Unm",
+    )]
+    fn neg(self) -> std::num::NonZeroIsize;
+
+"#,
+			r#"
+
+    #[lua(as_trait = "std::cmp::Eq", kind = "Method")]
+    fn assert_receiver_is_total_eq(&self) -> ();
+
+"#,
+			r#"
+
+    #[lua(
+        as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone",
+        kind = "Method",
+        output(proxy),
+    )]
+    fn clone(&self) -> std::num::NonZeroIsize;
+
+"#,
+			r#"
+
+    #[lua(as_trait = "std::cmp::PartialEq", kind = "Function", composite = "eq")]
+    fn eq(&self, #[proxy] other: &std::num::NonZeroIsize) -> bool;
+
+"#]
+)]
+
+
+
+pub struct NonZeroIsize(
+    
+    
+        
+    
+    
+);
+
+    
+/// An unbounded range (`..`).
+
+/// `RangeFull` is primarily used as a [slicing index], its shorthand is `..`.
+
+/// It cannot serve as an [`Iterator`] because it doesn't have a starting point.
+
+/// # Examples
+
+/// The `..` syntax is a `RangeFull`:
+
+/// ```
+
+/// assert_eq!(.., std::ops::RangeFull);
+
+/// ```
+
+/// It does not have an [`IntoIterator`] implementation, so you can't use it in
+
+/// a `for` loop directly. This won't compile:
+
+/// ```compile_fail,E0277
+
+/// for i in .. {
+
+///     // ...
+
+/// }
+
+/// ```
+
+/// Used as a [slicing index], `RangeFull` produces the full array as a slice.
+
+/// ```
+
+/// let arr = [0, 1, 2, 3, 4];
+
+/// assert_eq!(arr[ ..  ], [0, 1, 2, 3, 4]); // This is the `RangeFull`
+
+/// assert_eq!(arr[ .. 3], [0, 1, 2      ]);
+
+/// assert_eq!(arr[ ..=3], [0, 1, 2, 3   ]);
+
+/// assert_eq!(arr[1..  ], [   1, 2, 3, 4]);
+
+/// assert_eq!(arr[1.. 3], [   1, 2      ]);
+
+/// assert_eq!(arr[1..=3], [   1, 2, 3   ]);
+
+/// ```
+
+/// [slicing index]: crate::slice::SliceIndex
+
+
+#[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
+#[proxy(
+derive(clone,debug,),
+remote="std::ops::RangeFull",
+functions[r#"
+
+    #[lua(as_trait = "std::cmp::Eq", kind = "Method")]
+    fn assert_receiver_is_total_eq(&self) -> ();
+
+"#,
+			r#"
+
+    #[lua(as_trait = "std::cmp::PartialEq", kind = "Function", composite = "eq")]
+    fn eq(&self, #[proxy] other: &std::ops::RangeFull) -> bool;
+
+"#,
+			r#"
+
+    #[lua(
+        as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone",
+        kind = "Method",
+        output(proxy),
+    )]
+    fn clone(&self) -> std::ops::RangeFull;
+
+"#]
+)]
+
+
+
+
+pub struct RangeFull{
+    
+    
+    
+}
+
+    
+/// A `Duration` type to represent a span of time, typically used for system
+
+/// timeouts.
+
+/// Each `Duration` is composed of a whole number of seconds and a fractional part
+
+/// represented in nanoseconds. If the underlying system does not support
+
+/// nanosecond-level precision, APIs binding a system timeout will typically round up
+
+/// the number of nanoseconds.
+
+/// [`Duration`]s implement many common traits, including [`Add`], [`Sub`], and other
+
+/// [`ops`] traits. It implements [`Default`] by returning a zero-length `Duration`.
+
+/// [`ops`]: crate::ops
+
+/// # Examples
+
+/// ```
+
+/// use std::time::Duration;
+
+/// let five_seconds = Duration::new(5, 0);
+
+/// let five_seconds_and_five_nanos = five_seconds + Duration::new(0, 5);
+
+/// assert_eq!(five_seconds_and_five_nanos.as_secs(), 5);
+
+/// assert_eq!(five_seconds_and_five_nanos.subsec_nanos(), 5);
+
+/// let ten_millis = Duration::from_millis(10);
+
+/// ```
+
+/// # Formatting `Duration` values
+
+/// `Duration` intentionally does not have a `Display` impl, as there are a
+
+/// variety of ways to format spans of time for human readability. `Duration`
+
+/// provides a `Debug` impl that shows the full precision of the value.
+
+/// The `Debug` output uses the non-ASCII "µs" suffix for microseconds. If your
+
+/// program output may appear in contexts that cannot rely on full Unicode
+
+/// compatibility, you may wish to format `Duration` objects yourself or use a
+
+/// crate to do so.
+
+
+#[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
+#[proxy(
+derive(clone,debug,),
+remote="bevy::utils::Duration",
+functions[r#"
+/// Creates a new `Duration` from the specified number of whole seconds and
+/// additional nanoseconds.
+/// If the number of nanoseconds is greater than 1 billion (the number of
+/// nanoseconds in a second), then it will carry over into the seconds provided.
+/// # Panics
+/// This constructor will panic if the carry from the nanoseconds overflows
+/// the seconds counter.
+/// # Examples
+/// ```
+/// use std::time::Duration;
+/// let five_seconds = Duration::new(5, 0);
+/// ```
+
+    #[lua(kind = "Function", output(proxy))]
+    fn new(secs: u64, nanos: u32) -> bevy::utils::Duration;
+
+"#,
+			r#"
+/// Creates a new `Duration` from the specified number of whole seconds.
+/// # Examples
+/// ```
+/// use std::time::Duration;
+/// let duration = Duration::from_secs(5);
+/// assert_eq!(5, duration.as_secs());
+/// assert_eq!(0, duration.subsec_nanos());
+/// ```
+
+    #[lua(kind = "Function", output(proxy))]
+    fn from_secs(secs: u64) -> bevy::utils::Duration;
+
+"#,
+			r#"
+/// Creates a new `Duration` from the specified number of milliseconds.
+/// # Examples
+/// ```
+/// use std::time::Duration;
+/// let duration = Duration::from_millis(2569);
+/// assert_eq!(2, duration.as_secs());
+/// assert_eq!(569_000_000, duration.subsec_nanos());
+/// ```
+
+    #[lua(kind = "Function", output(proxy))]
+    fn from_millis(millis: u64) -> bevy::utils::Duration;
+
+"#,
+			r#"
+/// Creates a new `Duration` from the specified number of microseconds.
+/// # Examples
+/// ```
+/// use std::time::Duration;
+/// let duration = Duration::from_micros(1_000_002);
+/// assert_eq!(1, duration.as_secs());
+/// assert_eq!(2000, duration.subsec_nanos());
+/// ```
+
+    #[lua(kind = "Function", output(proxy))]
+    fn from_micros(micros: u64) -> bevy::utils::Duration;
+
+"#,
+			r#"
+/// Creates a new `Duration` from the specified number of nanoseconds.
+/// # Examples
+/// ```
+/// use std::time::Duration;
+/// let duration = Duration::from_nanos(1_000_000_123);
+/// assert_eq!(1, duration.as_secs());
+/// assert_eq!(123, duration.subsec_nanos());
+/// ```
+
+    #[lua(kind = "Function", output(proxy))]
+    fn from_nanos(nanos: u64) -> bevy::utils::Duration;
+
+"#,
+			r#"
+/// Returns true if this `Duration` spans no time.
+/// # Examples
+/// ```
+/// use std::time::Duration;
+/// assert!(Duration::ZERO.is_zero());
+/// assert!(Duration::new(0, 0).is_zero());
+/// assert!(Duration::from_nanos(0).is_zero());
+/// assert!(Duration::from_secs(0).is_zero());
+/// assert!(!Duration::new(1, 1).is_zero());
+/// assert!(!Duration::from_nanos(1).is_zero());
+/// assert!(!Duration::from_secs(1).is_zero());
+/// ```
+
+    #[lua(kind = "Method")]
+    fn is_zero(&self) -> bool;
+
+"#,
+			r#"
+/// Returns the number of _whole_ seconds contained by this `Duration`.
+/// The returned value does not include the fractional (nanosecond) part of the
+/// duration, which can be obtained using [`subsec_nanos`].
+/// # Examples
+/// ```
+/// use std::time::Duration;
+/// let duration = Duration::new(5, 730023852);
+/// assert_eq!(duration.as_secs(), 5);
+/// ```
+/// To determine the total number of seconds represented by the `Duration`
+/// including the fractional part, use [`as_secs_f64`] or [`as_secs_f32`]
+/// [`as_secs_f64`]: Duration::as_secs_f64
+/// [`as_secs_f32`]: Duration::as_secs_f32
+/// [`subsec_nanos`]: Duration::subsec_nanos
+
+    #[lua(kind = "Method")]
+    fn as_secs(&self) -> u64;
+
+"#,
+			r#"
+/// Returns the fractional part of this `Duration`, in whole milliseconds.
+/// This method does **not** return the length of the duration when
+/// represented by milliseconds. The returned number always represents a
+/// fractional portion of a second (i.e., it is less than one thousand).
+/// # Examples
+/// ```
+/// use std::time::Duration;
+/// let duration = Duration::from_millis(5432);
+/// assert_eq!(duration.as_secs(), 5);
+/// assert_eq!(duration.subsec_millis(), 432);
+/// ```
+
+    #[lua(kind = "Method")]
+    fn subsec_millis(&self) -> u32;
+
+"#,
+			r#"
+/// Returns the fractional part of this `Duration`, in whole microseconds.
+/// This method does **not** return the length of the duration when
+/// represented by microseconds. The returned number always represents a
+/// fractional portion of a second (i.e., it is less than one million).
+/// # Examples
+/// ```
+/// use std::time::Duration;
+/// let duration = Duration::from_micros(1_234_567);
+/// assert_eq!(duration.as_secs(), 1);
+/// assert_eq!(duration.subsec_micros(), 234_567);
+/// ```
+
+    #[lua(kind = "Method")]
+    fn subsec_micros(&self) -> u32;
+
+"#,
+			r#"
+/// Returns the fractional part of this `Duration`, in nanoseconds.
+/// This method does **not** return the length of the duration when
+/// represented by nanoseconds. The returned number always represents a
+/// fractional portion of a second (i.e., it is less than one billion).
+/// # Examples
+/// ```
+/// use std::time::Duration;
+/// let duration = Duration::from_millis(5010);
+/// assert_eq!(duration.as_secs(), 5);
+/// assert_eq!(duration.subsec_nanos(), 10_000_000);
+/// ```
+
+    #[lua(kind = "Method")]
+    fn subsec_nanos(&self) -> u32;
+
+"#,
+			r#"
+/// Returns the total number of whole milliseconds contained by this `Duration`.
+/// # Examples
+/// ```
+/// use std::time::Duration;
+/// let duration = Duration::new(5, 730023852);
+/// assert_eq!(duration.as_millis(), 5730);
+/// ```
+
+    #[lua(kind = "Method")]
+    fn as_millis(&self) -> u128;
+
+"#,
+			r#"
+/// Returns the total number of whole microseconds contained by this `Duration`.
+/// # Examples
+/// ```
+/// use std::time::Duration;
+/// let duration = Duration::new(5, 730023852);
+/// assert_eq!(duration.as_micros(), 5730023);
+/// ```
+
+    #[lua(kind = "Method")]
+    fn as_micros(&self) -> u128;
+
+"#,
+			r#"
+/// Returns the total number of nanoseconds contained by this `Duration`.
+/// # Examples
+/// ```
+/// use std::time::Duration;
+/// let duration = Duration::new(5, 730023852);
+/// assert_eq!(duration.as_nanos(), 5730023852);
+/// ```
+
+    #[lua(kind = "Method")]
+    fn as_nanos(&self) -> u128;
+
+"#,
+			r#"
+/// Saturating `Duration` addition. Computes `self + other`, returning [`Duration::MAX`]
+/// if overflow occurred.
+/// # Examples
+/// ```
+/// #![feature(duration_constants)]
+/// use std::time::Duration;
+/// assert_eq!(Duration::new(0, 0).saturating_add(Duration::new(0, 1)), Duration::new(0, 1));
+/// assert_eq!(Duration::new(1, 0).saturating_add(Duration::new(u64::MAX, 0)), Duration::MAX);
+/// ```
+
+    #[lua(kind = "Method", output(proxy))]
+    fn saturating_add(
+        self,
+        #[proxy]
+        rhs: bevy::utils::Duration,
+    ) -> bevy::utils::Duration;
+
+"#,
+			r#"
+/// Saturating `Duration` subtraction. Computes `self - other`, returning [`Duration::ZERO`]
+/// if the result would be negative or if overflow occurred.
+/// # Examples
+/// ```
+/// use std::time::Duration;
+/// assert_eq!(Duration::new(0, 1).saturating_sub(Duration::new(0, 0)), Duration::new(0, 1));
+/// assert_eq!(Duration::new(0, 0).saturating_sub(Duration::new(0, 1)), Duration::ZERO);
+/// ```
+
+    #[lua(kind = "Method", output(proxy))]
+    fn saturating_sub(
+        self,
+        #[proxy]
+        rhs: bevy::utils::Duration,
+    ) -> bevy::utils::Duration;
+
+"#,
+			r#"
+/// Saturating `Duration` multiplication. Computes `self * other`, returning
+/// [`Duration::MAX`] if overflow occurred.
+/// # Examples
+/// ```
+/// #![feature(duration_constants)]
+/// use std::time::Duration;
+/// assert_eq!(Duration::new(0, 500_000_001).saturating_mul(2), Duration::new(1, 2));
+/// assert_eq!(Duration::new(u64::MAX - 1, 0).saturating_mul(2), Duration::MAX);
+/// ```
+
+    #[lua(kind = "Method", output(proxy))]
+    fn saturating_mul(self, rhs: u32) -> bevy::utils::Duration;
+
+"#,
+			r#"
+/// Returns the number of seconds contained by this `Duration` as `f64`.
+/// The returned value does include the fractional (nanosecond) part of the duration.
+/// # Examples
+/// ```
+/// use std::time::Duration;
+/// let dur = Duration::new(2, 700_000_000);
+/// assert_eq!(dur.as_secs_f64(), 2.7);
+/// ```
+
+    #[lua(kind = "Method")]
+    fn as_secs_f64(&self) -> f64;
+
+"#,
+			r#"
+/// Returns the number of seconds contained by this `Duration` as `f32`.
+/// The returned value does include the fractional (nanosecond) part of the duration.
+/// # Examples
+/// ```
+/// use std::time::Duration;
+/// let dur = Duration::new(2, 700_000_000);
+/// assert_eq!(dur.as_secs_f32(), 2.7);
+/// ```
+
+    #[lua(kind = "Method")]
+    fn as_secs_f32(&self) -> f32;
+
+"#,
+			r#"
+/// Creates a new `Duration` from the specified number of seconds represented
+/// as `f64`.
+/// # Panics
+/// This constructor will panic if `secs` is negative, overflows `Duration` or not finite.
+/// # Examples
+/// ```
+/// use std::time::Duration;
+/// let res = Duration::from_secs_f64(0.0);
+/// assert_eq!(res, Duration::new(0, 0));
+/// let res = Duration::from_secs_f64(1e-20);
+/// assert_eq!(res, Duration::new(0, 0));
+/// let res = Duration::from_secs_f64(4.2e-7);
+/// assert_eq!(res, Duration::new(0, 420));
+/// let res = Duration::from_secs_f64(2.7);
+/// assert_eq!(res, Duration::new(2, 700_000_000));
+/// let res = Duration::from_secs_f64(3e10);
+/// assert_eq!(res, Duration::new(30_000_000_000, 0));
+/// // subnormal float
+/// let res = Duration::from_secs_f64(f64::from_bits(1));
+/// assert_eq!(res, Duration::new(0, 0));
+/// // conversion uses rounding
+/// let res = Duration::from_secs_f64(0.999e-9);
+/// assert_eq!(res, Duration::new(0, 1));
+/// ```
+
+    #[lua(kind = "Function", output(proxy))]
+    fn from_secs_f64(secs: f64) -> bevy::utils::Duration;
+
+"#,
+			r#"
+/// Creates a new `Duration` from the specified number of seconds represented
+/// as `f32`.
+/// # Panics
+/// This constructor will panic if `secs` is negative, overflows `Duration` or not finite.
+/// # Examples
+/// ```
+/// use std::time::Duration;
+/// let res = Duration::from_secs_f32(0.0);
+/// assert_eq!(res, Duration::new(0, 0));
+/// let res = Duration::from_secs_f32(1e-20);
+/// assert_eq!(res, Duration::new(0, 0));
+/// let res = Duration::from_secs_f32(4.2e-7);
+/// assert_eq!(res, Duration::new(0, 420));
+/// let res = Duration::from_secs_f32(2.7);
+/// assert_eq!(res, Duration::new(2, 700_000_048));
+/// let res = Duration::from_secs_f32(3e10);
+/// assert_eq!(res, Duration::new(30_000_001_024, 0));
+/// // subnormal float
+/// let res = Duration::from_secs_f32(f32::from_bits(1));
+/// assert_eq!(res, Duration::new(0, 0));
+/// // conversion uses rounding
+/// let res = Duration::from_secs_f32(0.999e-9);
+/// assert_eq!(res, Duration::new(0, 1));
+/// ```
+
+    #[lua(kind = "Function", output(proxy))]
+    fn from_secs_f32(secs: f32) -> bevy::utils::Duration;
+
+"#,
+			r#"
+/// Multiplies `Duration` by `f64`.
+/// # Panics
+/// This method will panic if result is negative, overflows `Duration` or not finite.
+/// # Examples
+/// ```
+/// use std::time::Duration;
+/// let dur = Duration::new(2, 700_000_000);
+/// assert_eq!(dur.mul_f64(3.14), Duration::new(8, 478_000_000));
+/// assert_eq!(dur.mul_f64(3.14e5), Duration::new(847_800, 0));
+/// ```
+
+    #[lua(kind = "Method", output(proxy))]
+    fn mul_f64(self, rhs: f64) -> bevy::utils::Duration;
+
+"#,
+			r#"
+/// Multiplies `Duration` by `f32`.
+/// # Panics
+/// This method will panic if result is negative, overflows `Duration` or not finite.
+/// # Examples
+/// ```
+/// use std::time::Duration;
+/// let dur = Duration::new(2, 700_000_000);
+/// assert_eq!(dur.mul_f32(3.14), Duration::new(8, 478_000_641));
+/// assert_eq!(dur.mul_f32(3.14e5), Duration::new(847800, 0));
+/// ```
+
+    #[lua(kind = "Method", output(proxy))]
+    fn mul_f32(self, rhs: f32) -> bevy::utils::Duration;
+
+"#,
+			r#"
+/// Divide `Duration` by `f64`.
+/// # Panics
+/// This method will panic if result is negative, overflows `Duration` or not finite.
+/// # Examples
+/// ```
+/// use std::time::Duration;
+/// let dur = Duration::new(2, 700_000_000);
+/// assert_eq!(dur.div_f64(3.14), Duration::new(0, 859_872_611));
+/// assert_eq!(dur.div_f64(3.14e5), Duration::new(0, 8_599));
+/// ```
+
+    #[lua(kind = "Method", output(proxy))]
+    fn div_f64(self, rhs: f64) -> bevy::utils::Duration;
+
+"#,
+			r#"
+/// Divide `Duration` by `f32`.
+/// # Panics
+/// This method will panic if result is negative, overflows `Duration` or not finite.
+/// # Examples
+/// ```
+/// use std::time::Duration;
+/// let dur = Duration::new(2, 700_000_000);
+/// // note that due to rounding errors result is slightly
+/// // different from 0.859_872_611
+/// assert_eq!(dur.div_f32(3.14), Duration::new(0, 859_872_580));
+/// assert_eq!(dur.div_f32(3.14e5), Duration::new(0, 8_599));
+/// ```
+
+    #[lua(kind = "Method", output(proxy))]
+    fn div_f32(self, rhs: f32) -> bevy::utils::Duration;
+
+"#,
+			r#"
+
+    #[lua(as_trait = "std::cmp::Eq", kind = "Method")]
+    fn assert_receiver_is_total_eq(&self) -> ();
+
+"#,
+			r#"
+
+    #[lua(
+        as_trait = "std::ops::Add",
+        kind = "Function",
+        output(proxy),
+        composite = "add",
+        metamethod = "Add",
+    )]
+    fn add(self, #[proxy] rhs: bevy::utils::Duration) -> bevy::utils::Duration;
+
+"#,
+			r#"
+
+    #[lua(as_trait = "std::cmp::PartialEq", kind = "Function", composite = "eq")]
+    fn eq(&self, #[proxy] other: &bevy_utils::Duration) -> bool;
+
+"#,
+			r#"
+
+    #[lua(
+        as_trait = "std::ops::Div",
+        kind = "Function",
+        output(proxy),
+        composite = "div",
+        metamethod = "Div",
+    )]
+    fn div(self, rhs: u32) -> bevy::utils::Duration;
+
+"#,
+			r#"
+
+    #[lua(
+        as_trait = "std::ops::Mul",
+        kind = "Function",
+        output(proxy),
+        composite = "mul",
+        metamethod = "Mul",
+    )]
+    fn mul(self, rhs: u32) -> bevy::utils::Duration;
+
+"#,
+			r#"
+
+    #[lua(
+        as_trait = "std::ops::Sub",
+        kind = "Function",
+        output(proxy),
+        composite = "sub",
+        metamethod = "Sub",
+    )]
+    fn sub(self, #[proxy] rhs: bevy::utils::Duration) -> bevy::utils::Duration;
+
+"#,
+			r#"
+
+    #[lua(
+        as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone",
+        kind = "Method",
+        output(proxy),
+    )]
+    fn clone(&self) -> bevy::utils::Duration;
+
+"#]
+)]
+
+
+
+
+pub struct Duration{
+    
+    
+        
+    
+        
     
     
 }
@@ -18134,7 +22646,72 @@ impl bevy_mod_scripting_lua::tealr::mlu::ExportInstances for Globals {
                 instances.add_instance("LuaU64Vec4", 
                                 bevy_mod_scripting_lua::tealr::mlu::UserDataProxy::<LuaU64Vec4>::new)?;
             
-
+         
+            
+                instances.add_instance("LuaNonZeroU8", 
+                                bevy_mod_scripting_lua::tealr::mlu::UserDataProxy::<LuaNonZeroU8>::new)?;
+            
+         
+            
+                instances.add_instance("LuaNonZeroU16", 
+                                bevy_mod_scripting_lua::tealr::mlu::UserDataProxy::<LuaNonZeroU16>::new)?;
+            
+         
+            
+                instances.add_instance("LuaNonZeroU32", 
+                                bevy_mod_scripting_lua::tealr::mlu::UserDataProxy::<LuaNonZeroU32>::new)?;
+            
+         
+            
+                instances.add_instance("LuaNonZeroU64", 
+                                bevy_mod_scripting_lua::tealr::mlu::UserDataProxy::<LuaNonZeroU64>::new)?;
+            
+         
+            
+                instances.add_instance("LuaNonZeroU128", 
+                                bevy_mod_scripting_lua::tealr::mlu::UserDataProxy::<LuaNonZeroU128>::new)?;
+            
+         
+            
+                instances.add_instance("LuaNonZeroUsize", 
+                                bevy_mod_scripting_lua::tealr::mlu::UserDataProxy::<LuaNonZeroUsize>::new)?;
+            
+         
+            
+                instances.add_instance("LuaNonZeroI8", 
+                                bevy_mod_scripting_lua::tealr::mlu::UserDataProxy::<LuaNonZeroI8>::new)?;
+            
+         
+            
+                instances.add_instance("LuaNonZeroI16", 
+                                bevy_mod_scripting_lua::tealr::mlu::UserDataProxy::<LuaNonZeroI16>::new)?;
+            
+         
+            
+                instances.add_instance("LuaNonZeroI32", 
+                                bevy_mod_scripting_lua::tealr::mlu::UserDataProxy::<LuaNonZeroI32>::new)?;
+            
+         
+            
+                instances.add_instance("LuaNonZeroI64", 
+                                bevy_mod_scripting_lua::tealr::mlu::UserDataProxy::<LuaNonZeroI64>::new)?;
+            
+         
+            
+                instances.add_instance("LuaNonZeroI128", 
+                                bevy_mod_scripting_lua::tealr::mlu::UserDataProxy::<LuaNonZeroI128>::new)?;
+            
+         
+            
+                instances.add_instance("LuaNonZeroIsize", 
+                                bevy_mod_scripting_lua::tealr::mlu::UserDataProxy::<LuaNonZeroIsize>::new)?;
+            
+         
+            
+         
+            
+                instances.add_instance("LuaDuration", 
+                                bevy_mod_scripting_lua::tealr::mlu::UserDataProxy::<LuaDuration>::new)?;
             
         
         Ok(())
@@ -18483,7 +23060,73 @@ impl bevy_mod_scripting_core::hosts::APIProvider for BevyReflectAPIProvider {
                 
                 .process_type::<bevy_mod_scripting_lua::tealr::mlu::UserDataProxy<LuaU64Vec4>>()
                 
-
+            
+                .process_type::<LuaNonZeroU8>()
+                
+                .process_type::<bevy_mod_scripting_lua::tealr::mlu::UserDataProxy<LuaNonZeroU8>>()
+                
+            
+                .process_type::<LuaNonZeroU16>()
+                
+                .process_type::<bevy_mod_scripting_lua::tealr::mlu::UserDataProxy<LuaNonZeroU16>>()
+                
+            
+                .process_type::<LuaNonZeroU32>()
+                
+                .process_type::<bevy_mod_scripting_lua::tealr::mlu::UserDataProxy<LuaNonZeroU32>>()
+                
+            
+                .process_type::<LuaNonZeroU64>()
+                
+                .process_type::<bevy_mod_scripting_lua::tealr::mlu::UserDataProxy<LuaNonZeroU64>>()
+                
+            
+                .process_type::<LuaNonZeroU128>()
+                
+                .process_type::<bevy_mod_scripting_lua::tealr::mlu::UserDataProxy<LuaNonZeroU128>>()
+                
+            
+                .process_type::<LuaNonZeroUsize>()
+                
+                .process_type::<bevy_mod_scripting_lua::tealr::mlu::UserDataProxy<LuaNonZeroUsize>>()
+                
+            
+                .process_type::<LuaNonZeroI8>()
+                
+                .process_type::<bevy_mod_scripting_lua::tealr::mlu::UserDataProxy<LuaNonZeroI8>>()
+                
+            
+                .process_type::<LuaNonZeroI16>()
+                
+                .process_type::<bevy_mod_scripting_lua::tealr::mlu::UserDataProxy<LuaNonZeroI16>>()
+                
+            
+                .process_type::<LuaNonZeroI32>()
+                
+                .process_type::<bevy_mod_scripting_lua::tealr::mlu::UserDataProxy<LuaNonZeroI32>>()
+                
+            
+                .process_type::<LuaNonZeroI64>()
+                
+                .process_type::<bevy_mod_scripting_lua::tealr::mlu::UserDataProxy<LuaNonZeroI64>>()
+                
+            
+                .process_type::<LuaNonZeroI128>()
+                
+                .process_type::<bevy_mod_scripting_lua::tealr::mlu::UserDataProxy<LuaNonZeroI128>>()
+                
+            
+                .process_type::<LuaNonZeroIsize>()
+                
+                .process_type::<bevy_mod_scripting_lua::tealr::mlu::UserDataProxy<LuaNonZeroIsize>>()
+                
+            
+                .process_type::<LuaRangeFull>()
+                
+            
+                .process_type::<LuaDuration>()
+                
+                .process_type::<bevy_mod_scripting_lua::tealr::mlu::UserDataProxy<LuaDuration>>()
                 
             
             }
@@ -18643,7 +23286,33 @@ impl bevy_mod_scripting_core::hosts::APIProvider for BevyReflectAPIProvider {
         
         app.register_foreign_lua_type::<bevy::math::U64Vec4>();
         
-
+        app.register_foreign_lua_type::<std::num::NonZeroU8>();
+        
+        app.register_foreign_lua_type::<std::num::NonZeroU16>();
+        
+        app.register_foreign_lua_type::<std::num::NonZeroU32>();
+        
+        app.register_foreign_lua_type::<std::num::NonZeroU64>();
+        
+        app.register_foreign_lua_type::<std::num::NonZeroU128>();
+        
+        app.register_foreign_lua_type::<std::num::NonZeroUsize>();
+        
+        app.register_foreign_lua_type::<std::num::NonZeroI8>();
+        
+        app.register_foreign_lua_type::<std::num::NonZeroI16>();
+        
+        app.register_foreign_lua_type::<std::num::NonZeroI32>();
+        
+        app.register_foreign_lua_type::<std::num::NonZeroI64>();
+        
+        app.register_foreign_lua_type::<std::num::NonZeroI128>();
+        
+        app.register_foreign_lua_type::<std::num::NonZeroIsize>();
+        
+        app.register_foreign_lua_type::<std::ops::RangeFull>();
+        
+        app.register_foreign_lua_type::<bevy::utils::Duration>();
         
     }
 }

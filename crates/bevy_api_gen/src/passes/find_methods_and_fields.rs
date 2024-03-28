@@ -116,6 +116,16 @@ pub(crate) fn find_methods_and_fields(ctxt: &mut BevyCtxt<'_>, _args: &Args) -> 
                         param_env,
                         ctxt.tcx.fn_sig(fn_did).instantiate_identity(),
                     );
+
+                    if let Some(unstability) =  ctxt.tcx.lookup_stability(fn_did) {
+                        if unstability.is_unstable() {
+                            log::debug!("Skipping unstable function: `{}` on type: `{}` feature: {:?}", ctxt.tcx.item_name(fn_did), ctxt.tcx.item_name(def_id), unstability.feature.as_str());
+                            return None;
+                        } else {
+                            log::debug!("Allowing possibly unstable function: `{}` on type: `{}`, stability: {:?}", ctxt.tcx.item_name(fn_did), ctxt.tcx.item_name(def_id), unstability)
+                        }
+                    };
+
                     let is_unsafe = sig.unsafety == Unsafety::Unsafe;
 
                     if trait_did.is_none() && !ctxt.tcx.visibility(fn_did).is_public() {
