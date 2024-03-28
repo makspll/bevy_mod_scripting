@@ -600,8 +600,8 @@ functions[r#"
 "#,
 			r#"
 
-    #[lua(as_trait = "std::cmp::Eq", kind = "Method")]
-    fn assert_receiver_is_total_eq(&self) -> ();
+    #[lua(as_trait = "std::cmp::PartialEq", kind = "Function", composite = "eq")]
+    fn eq(&self, #[proxy] other: &bevy_utils::Uuid) -> bool;
 
 "#,
 			r#"
@@ -616,8 +616,8 @@ functions[r#"
 "#,
 			r#"
 
-    #[lua(as_trait = "std::cmp::PartialEq", kind = "Function", composite = "eq")]
-    fn eq(&self, #[proxy] other: &bevy_utils::Uuid) -> bool;
+    #[lua(as_trait = "std::cmp::Eq", kind = "Method")]
+    fn assert_receiver_is_total_eq(&self) -> ();
 
 "#]
 )]
@@ -739,18 +739,18 @@ functions[r#"
 "#,
 			r#"
 
+    #[lua(as_trait = "std::cmp::PartialEq", kind = "Function", composite = "eq")]
+    fn eq(&self, #[proxy] other: &bevy_math::primitives::Circle) -> bool;
+
+"#,
+			r#"
+
     #[lua(
         as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone",
         kind = "Method",
         output(proxy),
     )]
     fn clone(&self) -> bevy::math::primitives::Circle;
-
-"#,
-			r#"
-
-    #[lua(as_trait = "std::cmp::PartialEq", kind = "Function", composite = "eq")]
-    fn eq(&self, #[proxy] other: &bevy_math::primitives::Circle) -> bool;
 
 "#]
 )]
@@ -811,18 +811,18 @@ functions[r#"
 "#,
 			r#"
 
+    #[lua(as_trait = "std::cmp::PartialEq", kind = "Function", composite = "eq")]
+    fn eq(&self, #[proxy] other: &bevy_math::primitives::Ellipse) -> bool;
+
+"#,
+			r#"
+
     #[lua(
         as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone",
         kind = "Method",
         output(proxy),
     )]
     fn clone(&self) -> bevy::math::primitives::Ellipse;
-
-"#,
-			r#"
-
-    #[lua(as_trait = "std::cmp::PartialEq", kind = "Function", composite = "eq")]
-    fn eq(&self, #[proxy] other: &bevy_math::primitives::Ellipse) -> bool;
 
 "#]
 )]
@@ -857,18 +857,18 @@ functions[r#"
 "#,
 			r#"
 
-    #[lua(as_trait = "std::cmp::PartialEq", kind = "Function", composite = "eq")]
-    fn eq(&self, #[proxy] other: &bevy_math::primitives::Plane2d) -> bool;
-
-"#,
-			r#"
-
     #[lua(
         as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone",
         kind = "Method",
         output(proxy),
     )]
     fn clone(&self) -> bevy::math::primitives::Plane2d;
+
+"#,
+			r#"
+
+    #[lua(as_trait = "std::cmp::PartialEq", kind = "Function", composite = "eq")]
+    fn eq(&self, #[proxy] other: &bevy_math::primitives::Plane2d) -> bool;
 
 "#]
 )]
@@ -894,18 +894,18 @@ derive(clone,debug,),
 remote="bevy::math::primitives::Line2d",
 functions[r#"
 
+    #[lua(as_trait = "std::cmp::PartialEq", kind = "Function", composite = "eq")]
+    fn eq(&self, #[proxy] other: &bevy_math::primitives::Line2d) -> bool;
+
+"#,
+			r#"
+
     #[lua(
         as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone",
         kind = "Method",
         output(proxy),
     )]
     fn clone(&self) -> bevy::math::primitives::Line2d;
-
-"#,
-			r#"
-
-    #[lua(as_trait = "std::cmp::PartialEq", kind = "Function", composite = "eq")]
-    fn eq(&self, #[proxy] other: &bevy_math::primitives::Line2d) -> bool;
 
 "#]
 )]
@@ -1116,18 +1116,18 @@ functions[r#"
 "#,
 			r#"
 
+    #[lua(as_trait = "std::cmp::PartialEq", kind = "Function", composite = "eq")]
+    fn eq(&self, #[proxy] other: &bevy_math::primitives::Rectangle) -> bool;
+
+"#,
+			r#"
+
     #[lua(
         as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone",
         kind = "Method",
         output(proxy),
     )]
     fn clone(&self) -> bevy::math::primitives::Rectangle;
-
-"#,
-			r#"
-
-    #[lua(as_trait = "std::cmp::PartialEq", kind = "Function", composite = "eq")]
-    fn eq(&self, #[proxy] other: &bevy_math::primitives::Rectangle) -> bool;
 
 "#]
 )]
@@ -1236,18 +1236,18 @@ functions[r#"
 "#,
 			r#"
 
-    #[lua(as_trait = "std::cmp::PartialEq", kind = "Function", composite = "eq")]
-    fn eq(&self, #[proxy] other: &bevy_math::primitives::RegularPolygon) -> bool;
-
-"#,
-			r#"
-
     #[lua(
         as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone",
         kind = "Method",
         output(proxy),
     )]
     fn clone(&self) -> bevy::math::primitives::RegularPolygon;
+
+"#,
+			r#"
+
+    #[lua(as_trait = "std::cmp::PartialEq", kind = "Function", composite = "eq")]
+    fn eq(&self, #[proxy] other: &bevy_math::primitives::RegularPolygon) -> bool;
 
 "#]
 )]
@@ -1327,8 +1327,24 @@ functions[r#"
 "#,
 			r#"
 
-    #[lua(as_trait = "std::cmp::PartialEq", kind = "Function", composite = "eq")]
-    fn eq(&self, #[proxy] other: &bevy_math::primitives::Direction3d) -> bool;
+    #[lua(
+        as_trait = "std::ops::Neg",
+        kind = "Function",
+        output(proxy),
+        composite = "neg",
+        metamethod = "Unm",
+    )]
+    fn neg(self) -> bevy::math::primitives::Direction3d;
+
+"#,
+			r#"
+
+    #[lua(
+        as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone",
+        kind = "Method",
+        output(proxy),
+    )]
+    fn clone(&self) -> bevy::math::primitives::Direction3d;
 
 "#,
 			r#"
@@ -1345,24 +1361,8 @@ functions[r#"
 "#,
 			r#"
 
-    #[lua(
-        as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone",
-        kind = "Method",
-        output(proxy),
-    )]
-    fn clone(&self) -> bevy::math::primitives::Direction3d;
-
-"#,
-			r#"
-
-    #[lua(
-        as_trait = "std::ops::Neg",
-        kind = "Function",
-        output(proxy),
-        composite = "neg",
-        metamethod = "Unm",
-    )]
-    fn neg(self) -> bevy::math::primitives::Direction3d;
+    #[lua(as_trait = "std::cmp::PartialEq", kind = "Function", composite = "eq")]
+    fn eq(&self, #[proxy] other: &bevy_math::primitives::Direction3d) -> bool;
 
 "#]
 )]
@@ -1450,353 +1450,6 @@ pub struct Sphere{
 }
 
     
-/// A type that can represent owned, mutable platform-native strings, but is
-
-/// cheaply inter-convertible with Rust strings.
-
-/// The need for this type arises from the fact that:
-
-/// * On Unix systems, strings are often arbitrary sequences of non-zero
-
-///   bytes, in many cases interpreted as UTF-8.
-
-/// * On Windows, strings are often arbitrary sequences of non-zero 16-bit
-
-///   values, interpreted as UTF-16 when it is valid to do so.
-
-/// * In Rust, strings are always valid UTF-8, which may contain zeros.
-
-/// `OsString` and [`OsStr`] bridge this gap by simultaneously representing Rust
-
-/// and platform-native string values, and in particular allowing a Rust string
-
-/// to be converted into an "OS" string with no cost if possible. A consequence
-
-/// of this is that `OsString` instances are *not* `NUL` terminated; in order
-
-/// to pass to e.g., Unix system call, you should create a [`CStr`].
-
-/// `OsString` is to <code>&[OsStr]</code> as [`String`] is to <code>&[str]</code>: the former
-
-/// in each pair are owned strings; the latter are borrowed
-
-/// references.
-
-/// Note, `OsString` and [`OsStr`] internally do not necessarily hold strings in
-
-/// the form native to the platform; While on Unix, strings are stored as a
-
-/// sequence of 8-bit values, on Windows, where strings are 16-bit value based
-
-/// as just discussed, strings are also actually stored as a sequence of 8-bit
-
-/// values, encoded in a less-strict variant of UTF-8. This is useful to
-
-/// understand when handling capacity and length values.
-
-/// # Capacity of `OsString`
-
-/// Capacity uses units of UTF-8 bytes for OS strings which were created from valid unicode, and
-
-/// uses units of bytes in an unspecified encoding for other contents. On a given target, all
-
-/// `OsString` and `OsStr` values use the same units for capacity, so the following will work:
-
-/// ```
-
-/// use std::ffi::{OsStr, OsString};
-
-/// fn concat_os_strings(a: &OsStr, b: &OsStr) -> OsString {
-
-///     let mut ret = OsString::with_capacity(a.len() + b.len()); // This will allocate
-
-///     ret.push(a); // This will not allocate further
-
-///     ret.push(b); // This will not allocate further
-
-///     ret
-
-/// }
-
-/// ```
-
-/// # Creating an `OsString`
-
-/// **From a Rust string**: `OsString` implements
-
-/// <code>[From]<[String]></code>, so you can use <code>my_string.[into]\()</code> to
-
-/// create an `OsString` from a normal Rust string.
-
-/// **From slices:** Just like you can start with an empty Rust
-
-/// [`String`] and then [`String::push_str`] some <code>&[str]</code>
-
-/// sub-string slices into it, you can create an empty `OsString` with
-
-/// the [`OsString::new`] method and then push string slices into it with the
-
-/// [`OsString::push`] method.
-
-/// # Extracting a borrowed reference to the whole OS string
-
-/// You can use the [`OsString::as_os_str`] method to get an <code>&[OsStr]</code> from
-
-/// an `OsString`; this is effectively a borrowed reference to the
-
-/// whole string.
-
-/// # Conversions
-
-/// See the [module's toplevel documentation about conversions][conversions] for a discussion on
-
-/// the traits which `OsString` implements for [conversions] from/to native representations.
-
-/// [`CStr`]: crate::ffi::CStr
-
-/// [conversions]: super#conversions
-
-/// [into]: Into::into
-
-
-#[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
-#[proxy(
-derive(clone,debug,),
-remote="std::ffi::OsString",
-functions[r#"
-/// Constructs a new empty `OsString`.
-/// # Examples
-/// ```
-/// use std::ffi::OsString;
-/// let os_string = OsString::new();
-/// ```
-
-    #[lua(kind = "Function", output(proxy))]
-    fn new() -> std::ffi::OsString;
-
-"#,
-			r#"
-/// Converts bytes to an `OsString` without checking that the bytes contains
-/// valid [`OsStr`]-encoded data.
-/// The byte encoding is an unspecified, platform-specific, self-synchronizing superset of UTF-8.
-/// By being a self-synchronizing superset of UTF-8, this encoding is also a superset of 7-bit
-/// ASCII.
-/// See the [module's toplevel documentation about conversions][conversions] for safe,
-/// cross-platform [conversions] from/to native representations.
-/// # Safety
-/// As the encoding is unspecified, callers must pass in bytes that originated as a mixture of
-/// validated UTF-8 and bytes from [`OsStr::as_encoded_bytes`] from within the same rust version
-/// built for the same target platform.  For example, reconstructing an `OsString` from bytes sent
-/// over the network or stored in a file will likely violate these safety rules.
-/// Due to the encoding being self-synchronizing, the bytes from [`OsStr::as_encoded_bytes`] can be
-/// split either immediately before or immediately after any valid non-empty UTF-8 substring.
-/// # Example
-/// ```
-/// use std::ffi::OsStr;
-/// let os_str = OsStr::new("Mary had a little lamb");
-/// let bytes = os_str.as_encoded_bytes();
-/// let words = bytes.split(|b| *b == b' ');
-/// let words: Vec<&OsStr> = words.map(|word| {
-///     // SAFETY:
-///     // - Each `word` only contains content that originated from `OsStr::as_encoded_bytes`
-///     // - Only split with ASCII whitespace which is a non-empty UTF-8 substring
-///     unsafe { OsStr::from_encoded_bytes_unchecked(word) }
-/// }).collect();
-/// ```
-/// [conversions]: super#conversions
-
-    #[lua(kind = "Function", output(proxy))]
-    unsafe fn from_encoded_bytes_unchecked(
-        bytes: bevy::reflect::erased_serde::__private::serde::__private::Vec<
-            u8,
-            std::alloc::Global,
-        >,
-    ) -> std::ffi::OsString;
-
-"#,
-			r#"
-/// Converts the `OsString` into a byte slice.  To convert the byte slice back into an
-/// `OsString`, use the [`OsStr::from_encoded_bytes_unchecked`] function.
-/// The byte encoding is an unspecified, platform-specific, self-synchronizing superset of UTF-8.
-/// By being a self-synchronizing superset of UTF-8, this encoding is also a superset of 7-bit
-/// ASCII.
-/// Note: As the encoding is unspecified, any sub-slice of bytes that is not valid UTF-8 should
-/// be treated as opaque and only comparable within the same rust version built for the same
-/// target platform.  For example, sending the bytes over the network or storing it in a file
-/// will likely result in incompatible data.  See [`OsString`] for more encoding details
-/// and [`std::ffi`] for platform-specific, specified conversions.
-/// [`std::ffi`]: crate::ffi
-
-    #[lua(kind = "Method")]
-    fn into_encoded_bytes(
-        self,
-    ) -> bevy::reflect::erased_serde::__private::serde::__private::Vec<
-        u8,
-        std::alloc::Global,
-    >;
-
-"#,
-			r#"
-/// Creates a new `OsString` with at least the given capacity.
-/// The string will be able to hold at least `capacity` length units of other
-/// OS strings without reallocating. This method is allowed to allocate for
-/// more units than `capacity`. If `capacity` is 0, the string will not
-/// allocate.
-/// See the main `OsString` documentation information about encoding and capacity units.
-/// # Examples
-/// ```
-/// use std::ffi::OsString;
-/// let mut os_string = OsString::with_capacity(10);
-/// let capacity = os_string.capacity();
-/// // This push is done without reallocating
-/// os_string.push("foo");
-/// assert_eq!(capacity, os_string.capacity());
-/// ```
-
-    #[lua(kind = "Function", output(proxy))]
-    fn with_capacity(capacity: usize) -> std::ffi::OsString;
-
-"#,
-			r#"
-/// Truncates the `OsString` to zero length.
-/// # Examples
-/// ```
-/// use std::ffi::OsString;
-/// let mut os_string = OsString::from("foo");
-/// assert_eq!(&os_string, "foo");
-/// os_string.clear();
-/// assert_eq!(&os_string, "");
-/// ```
-
-    #[lua(kind = "MutatingMethod")]
-    fn clear(&mut self) -> ();
-
-"#,
-			r#"
-/// Returns the capacity this `OsString` can hold without reallocating.
-/// See the main `OsString` documentation information about encoding and capacity units.
-/// # Examples
-/// ```
-/// use std::ffi::OsString;
-/// let os_string = OsString::with_capacity(10);
-/// assert!(os_string.capacity() >= 10);
-/// ```
-
-    #[lua(kind = "Method")]
-    fn capacity(&self) -> usize;
-
-"#,
-			r#"
-/// Reserves capacity for at least `additional` more capacity to be inserted
-/// in the given `OsString`. Does nothing if the capacity is
-/// already sufficient.
-/// The collection may reserve more space to speculatively avoid frequent reallocations.
-/// See the main `OsString` documentation information about encoding and capacity units.
-/// # Examples
-/// ```
-/// use std::ffi::OsString;
-/// let mut s = OsString::new();
-/// s.reserve(10);
-/// assert!(s.capacity() >= 10);
-/// ```
-
-    #[lua(kind = "MutatingMethod")]
-    fn reserve(&mut self, additional: usize) -> ();
-
-"#,
-			r#"
-/// Reserves the minimum capacity for at least `additional` more capacity to
-/// be inserted in the given `OsString`. Does nothing if the capacity is
-/// already sufficient.
-/// Note that the allocator may give the collection more space than it
-/// requests. Therefore, capacity can not be relied upon to be precisely
-/// minimal. Prefer [`reserve`] if future insertions are expected.
-/// [`reserve`]: OsString::reserve
-/// See the main `OsString` documentation information about encoding and capacity units.
-/// # Examples
-/// ```
-/// use std::ffi::OsString;
-/// let mut s = OsString::new();
-/// s.reserve_exact(10);
-/// assert!(s.capacity() >= 10);
-/// ```
-
-    #[lua(kind = "MutatingMethod")]
-    fn reserve_exact(&mut self, additional: usize) -> ();
-
-"#,
-			r#"
-/// Shrinks the capacity of the `OsString` to match its length.
-/// See the main `OsString` documentation information about encoding and capacity units.
-/// # Examples
-/// ```
-/// use std::ffi::OsString;
-/// let mut s = OsString::from("foo");
-/// s.reserve(100);
-/// assert!(s.capacity() >= 100);
-/// s.shrink_to_fit();
-/// assert_eq!(3, s.capacity());
-/// ```
-
-    #[lua(kind = "MutatingMethod")]
-    fn shrink_to_fit(&mut self) -> ();
-
-"#,
-			r#"
-/// Shrinks the capacity of the `OsString` with a lower bound.
-/// The capacity will remain at least as large as both the length
-/// and the supplied value.
-/// If the current capacity is less than the lower limit, this is a no-op.
-/// See the main `OsString` documentation information about encoding and capacity units.
-/// # Examples
-/// ```
-/// use std::ffi::OsString;
-/// let mut s = OsString::from("foo");
-/// s.reserve(100);
-/// assert!(s.capacity() >= 100);
-/// s.shrink_to(10);
-/// assert!(s.capacity() >= 10);
-/// s.shrink_to(0);
-/// assert!(s.capacity() >= 3);
-/// ```
-
-    #[lua(kind = "MutatingMethod")]
-    fn shrink_to(&mut self, min_capacity: usize) -> ();
-
-"#,
-			r#"
-
-    #[lua(
-        as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone",
-        kind = "Method",
-        output(proxy),
-    )]
-    fn clone(&self) -> std::ffi::OsString;
-
-"#,
-			r#"
-
-    #[lua(
-        as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone",
-        kind = "MutatingMethod",
-    )]
-    fn clone_from(&mut self, #[proxy] source: &std::ffi::OsString) -> ();
-
-"#]
-)]
-
-
-
-
-pub struct OsString{
-    
-    
-        
-    
-    
-}
-
-    
 /// An unbounded plane in 3D space. It forms a separating surface through the origin,
 
 /// stretching infinitely far
@@ -1817,18 +1470,18 @@ functions[r#"
 "#,
 			r#"
 
-    #[lua(as_trait = "std::cmp::PartialEq", kind = "Function", composite = "eq")]
-    fn eq(&self, #[proxy] other: &bevy_math::primitives::Plane3d) -> bool;
-
-"#,
-			r#"
-
     #[lua(
         as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone",
         kind = "Method",
         output(proxy),
     )]
     fn clone(&self) -> bevy::math::primitives::Plane3d;
+
+"#,
+			r#"
+
+    #[lua(as_trait = "std::cmp::PartialEq", kind = "Function", composite = "eq")]
+    fn eq(&self, #[proxy] other: &bevy_math::primitives::Plane3d) -> bool;
 
 "#]
 )]
@@ -1854,18 +1507,18 @@ derive(clone,debug,),
 remote="bevy::math::primitives::Line3d",
 functions[r#"
 
+    #[lua(as_trait = "std::cmp::PartialEq", kind = "Function", composite = "eq")]
+    fn eq(&self, #[proxy] other: &bevy_math::primitives::Line3d) -> bool;
+
+"#,
+			r#"
+
     #[lua(
         as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone",
         kind = "Method",
         output(proxy),
     )]
     fn clone(&self) -> bevy::math::primitives::Line3d;
-
-"#,
-			r#"
-
-    #[lua(as_trait = "std::cmp::PartialEq", kind = "Function", composite = "eq")]
-    fn eq(&self, #[proxy] other: &bevy_math::primitives::Line3d) -> bool;
 
 "#]
 )]
@@ -2009,18 +1662,18 @@ functions[r#"
 "#,
 			r#"
 
+    #[lua(as_trait = "std::cmp::PartialEq", kind = "Function", composite = "eq")]
+    fn eq(&self, #[proxy] other: &bevy_math::primitives::Cuboid) -> bool;
+
+"#,
+			r#"
+
     #[lua(
         as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone",
         kind = "Method",
         output(proxy),
     )]
     fn clone(&self) -> bevy::math::primitives::Cuboid;
-
-"#,
-			r#"
-
-    #[lua(as_trait = "std::cmp::PartialEq", kind = "Function", composite = "eq")]
-    fn eq(&self, #[proxy] other: &bevy_math::primitives::Cuboid) -> bool;
 
 "#]
 )]
@@ -2153,18 +1806,18 @@ functions[r#"
 "#,
 			r#"
 
+    #[lua(as_trait = "std::cmp::PartialEq", kind = "Function", composite = "eq")]
+    fn eq(&self, #[proxy] other: &bevy_math::primitives::Capsule3d) -> bool;
+
+"#,
+			r#"
+
     #[lua(
         as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone",
         kind = "Method",
         output(proxy),
     )]
     fn clone(&self) -> bevy::math::primitives::Capsule3d;
-
-"#,
-			r#"
-
-    #[lua(as_trait = "std::cmp::PartialEq", kind = "Function", composite = "eq")]
-    fn eq(&self, #[proxy] other: &bevy_math::primitives::Capsule3d) -> bool;
 
 "#]
 )]
@@ -3310,8 +2963,8 @@ functions[r#"
 "#,
 			r#"
 
-    #[lua(as_trait = "std::cmp::PartialEq", kind = "Function", composite = "eq")]
-    fn eq(&self, #[proxy] other: &bevy_math::URect) -> bool;
+    #[lua(as_trait = "std::cmp::Eq", kind = "Method")]
+    fn assert_receiver_is_total_eq(&self) -> ();
 
 "#,
 			r#"
@@ -3326,8 +2979,8 @@ functions[r#"
 "#,
 			r#"
 
-    #[lua(as_trait = "std::cmp::Eq", kind = "Method")]
-    fn assert_receiver_is_total_eq(&self) -> ();
+    #[lua(as_trait = "std::cmp::PartialEq", kind = "Function", composite = "eq")]
+    fn eq(&self, #[proxy] other: &bevy_math::URect) -> bool;
 
 "#]
 )]
@@ -3458,19 +3111,6 @@ functions[r#"
 
     #[lua(kind = "MutatingMethod")]
     fn pop(&mut self) -> bool;
-
-"#,
-			r#"
-/// Consumes the `PathBuf`, yielding its internal [`OsString`] storage.
-/// # Examples
-/// ```
-/// use std::path::PathBuf;
-/// let p = PathBuf::from("/the/head");
-/// let os_str = p.into_os_string();
-/// ```
-
-    #[lua(kind = "Method", output(proxy))]
-    fn into_os_string(self) -> std::ffi::OsString;
 
 "#,
 			r#"
@@ -3801,12 +3441,14 @@ functions[r#"
 "#,
 			r#"
 
-    #[lua(
-        as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone",
-        kind = "Method",
-        output(proxy),
-    )]
-    fn clone(&self) -> bevy::utils::Instant;
+    #[lua(as_trait = "std::cmp::Eq", kind = "Method")]
+    fn assert_receiver_is_total_eq(&self) -> ();
+
+"#,
+			r#"
+
+    #[lua(as_trait = "std::cmp::PartialEq", kind = "Function", composite = "eq")]
+    fn eq(&self, #[proxy] other: &bevy_utils::Instant) -> bool;
 
 "#,
 			r#"
@@ -3826,14 +3468,12 @@ functions[r#"
 "#,
 			r#"
 
-    #[lua(as_trait = "std::cmp::PartialEq", kind = "Function", composite = "eq")]
-    fn eq(&self, #[proxy] other: &bevy_utils::Instant) -> bool;
-
-"#,
-			r#"
-
-    #[lua(as_trait = "std::cmp::Eq", kind = "Method")]
-    fn assert_receiver_is_total_eq(&self) -> ();
+    #[lua(
+        as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone",
+        kind = "Method",
+        output(proxy),
+    )]
+    fn clone(&self) -> bevy::utils::Instant;
 
 "#]
 )]
@@ -3864,6 +3504,12 @@ derive(clone,debug,),
 remote="bevy::math::EulerRot",
 functions[r#"
 
+    #[lua(as_trait = "std::cmp::Eq", kind = "Method")]
+    fn assert_receiver_is_total_eq(&self) -> ();
+
+"#,
+			r#"
+
     #[lua(
         as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone",
         kind = "Method",
@@ -3876,12 +3522,6 @@ functions[r#"
 
     #[lua(as_trait = "std::cmp::PartialEq", kind = "Function", composite = "eq")]
     fn eq(&self, #[proxy] other: &glam::EulerRot) -> bool;
-
-"#,
-			r#"
-
-    #[lua(as_trait = "std::cmp::Eq", kind = "Method")]
-    fn assert_receiver_is_total_eq(&self) -> ();
 
 "#]
 )]
@@ -3962,18 +3602,18 @@ functions[r#"
 "#,
 			r#"
 
+    #[lua(as_trait = "std::cmp::Eq", kind = "Method")]
+    fn assert_receiver_is_total_eq(&self) -> ();
+
+"#,
+			r#"
+
     #[lua(
         as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone",
         kind = "Method",
         output(proxy),
     )]
     fn clone(&self) -> bevy::math::BVec2;
-
-"#,
-			r#"
-
-    #[lua(as_trait = "std::cmp::Eq", kind = "Method")]
-    fn assert_receiver_is_total_eq(&self) -> ();
 
 "#]
 )]
@@ -4050,12 +3690,6 @@ functions[r#"
 "#,
 			r#"
 
-    #[lua(as_trait = "std::cmp::Eq", kind = "Method")]
-    fn assert_receiver_is_total_eq(&self) -> ();
-
-"#,
-			r#"
-
     #[lua(as_trait = "std::cmp::PartialEq", kind = "Function", composite = "eq")]
     fn eq(&self, #[proxy] other: &glam::BVec3) -> bool;
 
@@ -4068,6 +3702,12 @@ functions[r#"
         output(proxy),
     )]
     fn clone(&self) -> bevy::math::BVec3;
+
+"#,
+			r#"
+
+    #[lua(as_trait = "std::cmp::Eq", kind = "Method")]
+    fn assert_receiver_is_total_eq(&self) -> ();
 
 "#]
 )]
@@ -4144,14 +3784,14 @@ functions[r#"
 "#,
 			r#"
 
-    #[lua(as_trait = "std::cmp::PartialEq", kind = "Function", composite = "eq")]
-    fn eq(&self, #[proxy] other: &glam::BVec4) -> bool;
+    #[lua(as_trait = "std::cmp::Eq", kind = "Method")]
+    fn assert_receiver_is_total_eq(&self) -> ();
 
 "#,
 			r#"
 
-    #[lua(as_trait = "std::cmp::Eq", kind = "Method")]
-    fn assert_receiver_is_total_eq(&self) -> ();
+    #[lua(as_trait = "std::cmp::PartialEq", kind = "Function", composite = "eq")]
+    fn eq(&self, #[proxy] other: &glam::BVec4) -> bool;
 
 "#,
 			r#"
@@ -4331,18 +3971,18 @@ functions[r#"
 "#,
 			r#"
 
+    #[lua(as_trait = "std::cmp::PartialEq", kind = "Function", composite = "eq")]
+    fn eq(&self, #[proxy] rhs: &glam::BVec4A) -> bool;
+
+"#,
+			r#"
+
     #[lua(
         as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone",
         kind = "Method",
         output(proxy),
     )]
     fn clone(&self) -> bevy::math::BVec4A;
-
-"#,
-			r#"
-
-    #[lua(as_trait = "std::cmp::PartialEq", kind = "Function", composite = "eq")]
-    fn eq(&self, #[proxy] rhs: &glam::BVec4A) -> bool;
 
 "#]
 )]
@@ -4861,18 +4501,18 @@ functions[r#"
 "#,
 			r#"
 
+    #[lua(as_trait = "std::cmp::PartialEq", kind = "Function", composite = "eq")]
+    fn eq(&self, #[proxy] rhs: &glam::Affine3A) -> bool;
+
+"#,
+			r#"
+
     #[lua(
         as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone",
         kind = "Method",
         output(proxy),
     )]
     fn clone(&self) -> bevy::math::Affine3A;
-
-"#,
-			r#"
-
-    #[lua(as_trait = "std::cmp::PartialEq", kind = "Function", composite = "eq")]
-    fn eq(&self, #[proxy] rhs: &glam::Affine3A) -> bool;
 
 "#]
 )]
@@ -5226,6 +4866,18 @@ functions[r#"
 			r#"
 
     #[lua(
+        as_trait = "std::ops::Sub",
+        kind = "Function",
+        output(proxy),
+        composite = "sub",
+        metamethod = "Sub",
+    )]
+    fn sub(self, #[proxy] rhs: bevy::math::Mat3) -> bevy::math::Mat3;
+
+"#,
+			r#"
+
+    #[lua(
         as_trait = "std::ops::Neg",
         kind = "Function",
         output(proxy),
@@ -5238,13 +4890,13 @@ functions[r#"
 			r#"
 
     #[lua(
-        as_trait = "std::ops::Sub",
+        as_trait = "std::ops::Add",
         kind = "Function",
         output(proxy),
-        composite = "sub",
-        metamethod = "Sub",
+        composite = "add",
+        metamethod = "Add",
     )]
-    fn sub(self, #[proxy] rhs: bevy::math::Mat3) -> bevy::math::Mat3;
+    fn add(self, #[proxy] rhs: bevy::math::Mat3) -> bevy::math::Mat3;
 
 "#,
 			r#"
@@ -5261,18 +4913,6 @@ functions[r#"
 
     #[lua(as_trait = "std::cmp::PartialEq", kind = "Function", composite = "eq")]
     fn eq(&self, #[proxy] rhs: &glam::Mat3) -> bool;
-
-"#,
-			r#"
-
-    #[lua(
-        as_trait = "std::ops::Add",
-        kind = "Function",
-        output(proxy),
-        composite = "add",
-        metamethod = "Add",
-    )]
-    fn add(self, #[proxy] rhs: bevy::math::Mat3) -> bevy::math::Mat3;
 
 "#]
 )]
@@ -5863,6 +5503,12 @@ functions[r#"
 "#,
 			r#"
 
+    #[lua(as_trait = "std::cmp::PartialEq", kind = "Function", composite = "eq")]
+    fn eq(&self, #[proxy] other: &glam::Vec2) -> bool;
+
+"#,
+			r#"
+
     #[lua(
         as_trait = "std::ops::Neg",
         kind = "Function",
@@ -5881,12 +5527,6 @@ functions[r#"
         output(proxy),
     )]
     fn clone(&self) -> bevy::math::Vec2;
-
-"#,
-			r#"
-
-    #[lua(as_trait = "std::cmp::PartialEq", kind = "Function", composite = "eq")]
-    fn eq(&self, #[proxy] other: &glam::Vec2) -> bool;
 
 "#]
 )]
@@ -6471,13 +6111,11 @@ functions[r#"
 			r#"
 
     #[lua(
-        as_trait = "std::ops::Neg",
-        kind = "Function",
+        as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone",
+        kind = "Method",
         output(proxy),
-        composite = "neg",
-        metamethod = "Unm",
     )]
-    fn neg(self) -> bevy::math::Vec3;
+    fn clone(&self) -> bevy::math::Vec3;
 
 "#,
 			r#"
@@ -6489,11 +6127,13 @@ functions[r#"
 			r#"
 
     #[lua(
-        as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone",
-        kind = "Method",
+        as_trait = "std::ops::Neg",
+        kind = "Function",
         output(proxy),
+        composite = "neg",
+        metamethod = "Unm",
     )]
-    fn clone(&self) -> bevy::math::Vec3;
+    fn neg(self) -> bevy::math::Vec3;
 
 "#]
 )]
@@ -6711,6 +6351,24 @@ functions[r#"
 			r#"
 
     #[lua(
+        as_trait = "std::ops::Sub",
+        kind = "Function",
+        output(proxy),
+        composite = "sub",
+        metamethod = "Sub",
+    )]
+    fn sub(self, #[proxy] rhs: bevy::math::Mat2) -> bevy::math::Mat2;
+
+"#,
+			r#"
+
+    #[lua(as_trait = "std::cmp::PartialEq", kind = "Function", composite = "eq")]
+    fn eq(&self, #[proxy] rhs: &glam::Mat2) -> bool;
+
+"#,
+			r#"
+
+    #[lua(
         as_trait = "std::ops::Neg",
         kind = "Function",
         output(proxy),
@@ -6723,18 +6381,6 @@ functions[r#"
 			r#"
 
     #[lua(
-        as_trait = "std::ops::Sub",
-        kind = "Function",
-        output(proxy),
-        composite = "sub",
-        metamethod = "Sub",
-    )]
-    fn sub(self, #[proxy] rhs: bevy::math::Mat2) -> bevy::math::Mat2;
-
-"#,
-			r#"
-
-    #[lua(
         as_trait = "std::ops::Add",
         kind = "Function",
         output(proxy),
@@ -6742,12 +6388,6 @@ functions[r#"
         metamethod = "Add",
     )]
     fn add(self, #[proxy] rhs: bevy::math::Mat2) -> bevy::math::Mat2;
-
-"#,
-			r#"
-
-    #[lua(as_trait = "std::cmp::PartialEq", kind = "Function", composite = "eq")]
-    fn eq(&self, #[proxy] rhs: &glam::Mat2) -> bool;
 
 "#]
 )]
@@ -7101,24 +6741,8 @@ functions[r#"
 "#,
 			r#"
 
-    #[lua(
-        as_trait = "std::ops::Sub",
-        kind = "Function",
-        output(proxy),
-        composite = "sub",
-        metamethod = "Sub",
-    )]
-    fn sub(self, #[proxy] rhs: bevy::math::Mat3A) -> bevy::math::Mat3A;
-
-"#,
-			r#"
-
-    #[lua(
-        as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone",
-        kind = "Method",
-        output(proxy),
-    )]
-    fn clone(&self) -> bevy::math::Mat3A;
+    #[lua(as_trait = "std::cmp::PartialEq", kind = "Function", composite = "eq")]
+    fn eq(&self, #[proxy] rhs: &glam::Mat3A) -> bool;
 
 "#,
 			r#"
@@ -7135,8 +6759,12 @@ functions[r#"
 "#,
 			r#"
 
-    #[lua(as_trait = "std::cmp::PartialEq", kind = "Function", composite = "eq")]
-    fn eq(&self, #[proxy] rhs: &glam::Mat3A) -> bool;
+    #[lua(
+        as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone",
+        kind = "Method",
+        output(proxy),
+    )]
+    fn clone(&self) -> bevy::math::Mat3A;
 
 "#,
 			r#"
@@ -7149,6 +6777,18 @@ functions[r#"
         metamethod = "Add",
     )]
     fn add(self, #[proxy] rhs: bevy::math::Mat3A) -> bevy::math::Mat3A;
+
+"#,
+			r#"
+
+    #[lua(
+        as_trait = "std::ops::Sub",
+        kind = "Function",
+        output(proxy),
+        composite = "sub",
+        metamethod = "Sub",
+    )]
+    fn sub(self, #[proxy] rhs: bevy::math::Mat3A) -> bevy::math::Mat3A;
 
 "#]
 )]
@@ -7770,13 +7410,13 @@ functions[r#"
 			r#"
 
     #[lua(
-        as_trait = "std::ops::Neg",
+        as_trait = "std::ops::Add",
         kind = "Function",
         output(proxy),
-        composite = "neg",
-        metamethod = "Unm",
+        composite = "add",
+        metamethod = "Add",
     )]
-    fn neg(self) -> bevy::math::Mat4;
+    fn add(self, #[proxy] rhs: bevy::math::Mat4) -> bevy::math::Mat4;
 
 "#,
 			r#"
@@ -7793,6 +7433,16 @@ functions[r#"
 "#,
 			r#"
 
+    #[lua(
+        as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone",
+        kind = "Method",
+        output(proxy),
+    )]
+    fn clone(&self) -> bevy::math::Mat4;
+
+"#,
+			r#"
+
     #[lua(as_trait = "std::cmp::PartialEq", kind = "Function", composite = "eq")]
     fn eq(&self, #[proxy] rhs: &glam::Mat4) -> bool;
 
@@ -7800,23 +7450,13 @@ functions[r#"
 			r#"
 
     #[lua(
-        as_trait = "std::ops::Add",
+        as_trait = "std::ops::Neg",
         kind = "Function",
         output(proxy),
-        composite = "add",
-        metamethod = "Add",
+        composite = "neg",
+        metamethod = "Unm",
     )]
-    fn add(self, #[proxy] rhs: bevy::math::Mat4) -> bevy::math::Mat4;
-
-"#,
-			r#"
-
-    #[lua(
-        as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone",
-        kind = "Method",
-        output(proxy),
-    )]
-    fn clone(&self) -> bevy::math::Mat4;
+    fn neg(self) -> bevy::math::Mat4;
 
 "#]
 )]
@@ -8224,6 +7864,34 @@ functions[r#"
 
 "#,
 			r#"
+/// Divides a quaternion by a scalar value.
+/// The quotient is not guaranteed to be normalized.
+
+    #[lua(
+        as_trait = "std::ops::Div",
+        kind = "Function",
+        output(proxy),
+        composite = "div",
+        metamethod = "Div",
+    )]
+    fn div(self, rhs: f32) -> bevy::math::Quat;
+
+"#,
+			r#"
+/// Subtracts the `rhs` quaternion from `self`.
+/// The difference is not guaranteed to be normalized.
+
+    #[lua(
+        as_trait = "std::ops::Sub",
+        kind = "Function",
+        output(proxy),
+        composite = "sub",
+        metamethod = "Sub",
+    )]
+    fn sub(self, #[proxy] rhs: bevy::math::Quat) -> bevy::math::Quat;
+
+"#,
+			r#"
 
     #[lua(as_trait = "std::cmp::PartialEq", kind = "Function", composite = "eq")]
     fn eq(&self, #[proxy] rhs: &glam::Quat) -> bool;
@@ -8255,34 +7923,6 @@ functions[r#"
         metamethod = "Add",
     )]
     fn add(self, #[proxy] rhs: bevy::math::Quat) -> bevy::math::Quat;
-
-"#,
-			r#"
-/// Divides a quaternion by a scalar value.
-/// The quotient is not guaranteed to be normalized.
-
-    #[lua(
-        as_trait = "std::ops::Div",
-        kind = "Function",
-        output(proxy),
-        composite = "div",
-        metamethod = "Div",
-    )]
-    fn div(self, rhs: f32) -> bevy::math::Quat;
-
-"#,
-			r#"
-/// Subtracts the `rhs` quaternion from `self`.
-/// The difference is not guaranteed to be normalized.
-
-    #[lua(
-        as_trait = "std::ops::Sub",
-        kind = "Function",
-        output(proxy),
-        composite = "sub",
-        metamethod = "Sub",
-    )]
-    fn sub(self, #[proxy] rhs: bevy::math::Quat) -> bevy::math::Quat;
 
 "#,
 			r#"
@@ -8895,6 +8535,18 @@ functions[r#"
 "#,
 			r#"
 
+    #[lua(
+        as_trait = "std::ops::Neg",
+        kind = "Function",
+        output(proxy),
+        composite = "neg",
+        metamethod = "Unm",
+    )]
+    fn neg(self) -> bevy::math::Vec3A;
+
+"#,
+			r#"
+
     #[lua(as_trait = "std::cmp::PartialEq", kind = "Function", composite = "eq")]
     fn eq(&self, #[proxy] rhs: &glam::Vec3A) -> bool;
 
@@ -8907,18 +8559,6 @@ functions[r#"
         output(proxy),
     )]
     fn clone(&self) -> bevy::math::Vec3A;
-
-"#,
-			r#"
-
-    #[lua(
-        as_trait = "std::ops::Neg",
-        kind = "Function",
-        output(proxy),
-        composite = "neg",
-        metamethod = "Unm",
-    )]
-    fn neg(self) -> bevy::math::Vec3A;
 
 "#]
 )]
@@ -9466,18 +9106,18 @@ functions[r#"
 "#,
 			r#"
 
-    #[lua(as_trait = "std::cmp::PartialEq", kind = "Function", composite = "eq")]
-    fn eq(&self, #[proxy] rhs: &glam::Vec4) -> bool;
-
-"#,
-			r#"
-
     #[lua(
         as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone",
         kind = "Method",
         output(proxy),
     )]
     fn clone(&self) -> bevy::math::Vec4;
+
+"#,
+			r#"
+
+    #[lua(as_trait = "std::cmp::PartialEq", kind = "Function", composite = "eq")]
+    fn eq(&self, #[proxy] rhs: &glam::Vec4) -> bool;
 
 "#,
 			r#"
@@ -10191,13 +9831,23 @@ functions[r#"
 			r#"
 
     #[lua(
-        as_trait = "std::ops::Add",
+        as_trait = "std::ops::Neg",
         kind = "Function",
         output(proxy),
-        composite = "add",
-        metamethod = "Add",
+        composite = "neg",
+        metamethod = "Unm",
     )]
-    fn add(self, #[proxy] rhs: bevy::math::DMat2) -> bevy::math::DMat2;
+    fn neg(self) -> bevy::math::DMat2;
+
+"#,
+			r#"
+
+    #[lua(
+        as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone",
+        kind = "Method",
+        output(proxy),
+    )]
+    fn clone(&self) -> bevy::math::DMat2;
 
 "#,
 			r#"
@@ -10215,29 +9865,19 @@ functions[r#"
 			r#"
 
     #[lua(
-        as_trait = "std::ops::Neg",
+        as_trait = "std::ops::Add",
         kind = "Function",
         output(proxy),
-        composite = "neg",
-        metamethod = "Unm",
+        composite = "add",
+        metamethod = "Add",
     )]
-    fn neg(self) -> bevy::math::DMat2;
+    fn add(self, #[proxy] rhs: bevy::math::DMat2) -> bevy::math::DMat2;
 
 "#,
 			r#"
 
     #[lua(as_trait = "std::cmp::PartialEq", kind = "Function", composite = "eq")]
     fn eq(&self, #[proxy] rhs: &glam::DMat2) -> bool;
-
-"#,
-			r#"
-
-    #[lua(
-        as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone",
-        kind = "Method",
-        output(proxy),
-    )]
-    fn clone(&self) -> bevy::math::DMat2;
 
 "#]
 )]
@@ -10588,34 +10228,6 @@ functions[r#"
 			r#"
 
     #[lua(
-        as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone",
-        kind = "Method",
-        output(proxy),
-    )]
-    fn clone(&self) -> bevy::math::DMat3;
-
-"#,
-			r#"
-
-    #[lua(as_trait = "std::cmp::PartialEq", kind = "Function", composite = "eq")]
-    fn eq(&self, #[proxy] rhs: &glam::DMat3) -> bool;
-
-"#,
-			r#"
-
-    #[lua(
-        as_trait = "std::ops::Sub",
-        kind = "Function",
-        output(proxy),
-        composite = "sub",
-        metamethod = "Sub",
-    )]
-    fn sub(self, #[proxy] rhs: bevy::math::DMat3) -> bevy::math::DMat3;
-
-"#,
-			r#"
-
-    #[lua(
         as_trait = "std::ops::Neg",
         kind = "Function",
         output(proxy),
@@ -10635,6 +10247,34 @@ functions[r#"
         metamethod = "Add",
     )]
     fn add(self, #[proxy] rhs: bevy::math::DMat3) -> bevy::math::DMat3;
+
+"#,
+			r#"
+
+    #[lua(
+        as_trait = "std::ops::Sub",
+        kind = "Function",
+        output(proxy),
+        composite = "sub",
+        metamethod = "Sub",
+    )]
+    fn sub(self, #[proxy] rhs: bevy::math::DMat3) -> bevy::math::DMat3;
+
+"#,
+			r#"
+
+    #[lua(
+        as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone",
+        kind = "Method",
+        output(proxy),
+    )]
+    fn clone(&self) -> bevy::math::DMat3;
+
+"#,
+			r#"
+
+    #[lua(as_trait = "std::cmp::PartialEq", kind = "Function", composite = "eq")]
+    fn eq(&self, #[proxy] rhs: &glam::DMat3) -> bool;
 
 "#]
 )]
@@ -11233,8 +10873,14 @@ functions[r#"
 "#,
 			r#"
 
-    #[lua(as_trait = "std::cmp::PartialEq", kind = "Function", composite = "eq")]
-    fn eq(&self, #[proxy] rhs: &glam::DMat4) -> bool;
+    #[lua(
+        as_trait = "std::ops::Add",
+        kind = "Function",
+        output(proxy),
+        composite = "add",
+        metamethod = "Add",
+    )]
+    fn add(self, #[proxy] rhs: bevy::math::DMat4) -> bevy::math::DMat4;
 
 "#,
 			r#"
@@ -11251,24 +10897,8 @@ functions[r#"
 "#,
 			r#"
 
-    #[lua(
-        as_trait = "std::ops::Add",
-        kind = "Function",
-        output(proxy),
-        composite = "add",
-        metamethod = "Add",
-    )]
-    fn add(self, #[proxy] rhs: bevy::math::DMat4) -> bevy::math::DMat4;
-
-"#,
-			r#"
-
-    #[lua(
-        as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone",
-        kind = "Method",
-        output(proxy),
-    )]
-    fn clone(&self) -> bevy::math::DMat4;
+    #[lua(as_trait = "std::cmp::PartialEq", kind = "Function", composite = "eq")]
+    fn eq(&self, #[proxy] rhs: &glam::DMat4) -> bool;
 
 "#,
 			r#"
@@ -11281,6 +10911,16 @@ functions[r#"
         metamethod = "Unm",
     )]
     fn neg(self) -> bevy::math::DMat4;
+
+"#,
+			r#"
+
+    #[lua(
+        as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone",
+        kind = "Method",
+        output(proxy),
+    )]
+    fn clone(&self) -> bevy::math::DMat4;
 
 "#]
 )]
@@ -11674,27 +11314,9 @@ functions[r#"
 
 "#,
 			r#"
-/// Subtracts the `rhs` quaternion from `self`.
-/// The difference is not guaranteed to be normalized.
 
-    #[lua(
-        as_trait = "std::ops::Sub",
-        kind = "Function",
-        output(proxy),
-        composite = "sub",
-        metamethod = "Sub",
-    )]
-    fn sub(self, #[proxy] rhs: bevy::math::DQuat) -> bevy::math::DQuat;
-
-"#,
-			r#"
-
-    #[lua(
-        as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone",
-        kind = "Method",
-        output(proxy),
-    )]
-    fn clone(&self) -> bevy::math::DQuat;
+    #[lua(as_trait = "std::cmp::PartialEq", kind = "Function", composite = "eq")]
+    fn eq(&self, #[proxy] rhs: &glam::DQuat) -> bool;
 
 "#,
 			r#"
@@ -11726,6 +11348,16 @@ functions[r#"
 
 "#,
 			r#"
+
+    #[lua(
+        as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone",
+        kind = "Method",
+        output(proxy),
+    )]
+    fn clone(&self) -> bevy::math::DQuat;
+
+"#,
+			r#"
 /// Divides a quaternion by a scalar value.
 /// The quotient is not guaranteed to be normalized.
 
@@ -11740,9 +11372,17 @@ functions[r#"
 
 "#,
 			r#"
+/// Subtracts the `rhs` quaternion from `self`.
+/// The difference is not guaranteed to be normalized.
 
-    #[lua(as_trait = "std::cmp::PartialEq", kind = "Function", composite = "eq")]
-    fn eq(&self, #[proxy] rhs: &glam::DQuat) -> bool;
+    #[lua(
+        as_trait = "std::ops::Sub",
+        kind = "Function",
+        output(proxy),
+        composite = "sub",
+        metamethod = "Sub",
+    )]
+    fn sub(self, #[proxy] rhs: bevy::math::DQuat) -> bevy::math::DQuat;
 
 "#]
 )]
@@ -12342,16 +11982,6 @@ functions[r#"
 			r#"
 
     #[lua(
-        as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone",
-        kind = "Method",
-        output(proxy),
-    )]
-    fn clone(&self) -> bevy::math::DVec2;
-
-"#,
-			r#"
-
-    #[lua(
         as_trait = "std::ops::Neg",
         kind = "Function",
         output(proxy),
@@ -12365,6 +11995,16 @@ functions[r#"
 
     #[lua(as_trait = "std::cmp::PartialEq", kind = "Function", composite = "eq")]
     fn eq(&self, #[proxy] other: &glam::DVec2) -> bool;
+
+"#,
+			r#"
+
+    #[lua(
+        as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone",
+        kind = "Method",
+        output(proxy),
+    )]
+    fn clone(&self) -> bevy::math::DVec2;
 
 "#]
 )]
@@ -12963,12 +12603,6 @@ functions[r#"
 "#,
 			r#"
 
-    #[lua(as_trait = "std::cmp::PartialEq", kind = "Function", composite = "eq")]
-    fn eq(&self, #[proxy] other: &glam::DVec3) -> bool;
-
-"#,
-			r#"
-
     #[lua(
         as_trait = "std::ops::Neg",
         kind = "Function",
@@ -12987,6 +12621,12 @@ functions[r#"
         output(proxy),
     )]
     fn clone(&self) -> bevy::math::DVec3;
+
+"#,
+			r#"
+
+    #[lua(as_trait = "std::cmp::PartialEq", kind = "Function", composite = "eq")]
+    fn eq(&self, #[proxy] other: &glam::DVec3) -> bool;
 
 "#]
 )]
@@ -13537,11 +13177,13 @@ functions[r#"
 			r#"
 
     #[lua(
-        as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone",
-        kind = "Method",
+        as_trait = "std::ops::Neg",
+        kind = "Function",
         output(proxy),
+        composite = "neg",
+        metamethod = "Unm",
     )]
-    fn clone(&self) -> bevy::math::DVec4;
+    fn neg(self) -> bevy::math::DVec4;
 
 "#,
 			r#"
@@ -13553,13 +13195,11 @@ functions[r#"
 			r#"
 
     #[lua(
-        as_trait = "std::ops::Neg",
-        kind = "Function",
+        as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone",
+        kind = "Method",
         output(proxy),
-        composite = "neg",
-        metamethod = "Unm",
     )]
-    fn neg(self) -> bevy::math::DVec4;
+    fn clone(&self) -> bevy::math::DVec4;
 
 "#]
 )]
@@ -13939,18 +13579,6 @@ functions[r#"
 "#,
 			r#"
 
-    #[lua(
-        as_trait = "std::ops::Neg",
-        kind = "Function",
-        output(proxy),
-        composite = "neg",
-        metamethod = "Unm",
-    )]
-    fn neg(self) -> bevy::math::IVec2;
-
-"#,
-			r#"
-
     #[lua(as_trait = "std::cmp::PartialEq", kind = "Function", composite = "eq")]
     fn eq(&self, #[proxy] other: &glam::IVec2) -> bool;
 
@@ -13959,6 +13587,18 @@ functions[r#"
 
     #[lua(as_trait = "std::cmp::Eq", kind = "Method")]
     fn assert_receiver_is_total_eq(&self) -> ();
+
+"#,
+			r#"
+
+    #[lua(
+        as_trait = "std::ops::Neg",
+        kind = "Function",
+        output(proxy),
+        composite = "neg",
+        metamethod = "Unm",
+    )]
+    fn neg(self) -> bevy::math::IVec2;
 
 "#,
 			r#"
@@ -14346,12 +13986,6 @@ functions[r#"
 "#,
 			r#"
 
-    #[lua(as_trait = "std::cmp::PartialEq", kind = "Function", composite = "eq")]
-    fn eq(&self, #[proxy] other: &glam::IVec3) -> bool;
-
-"#,
-			r#"
-
     #[lua(
         as_trait = "std::ops::Neg",
         kind = "Function",
@@ -14364,8 +13998,8 @@ functions[r#"
 "#,
 			r#"
 
-    #[lua(as_trait = "std::cmp::Eq", kind = "Method")]
-    fn assert_receiver_is_total_eq(&self) -> ();
+    #[lua(as_trait = "std::cmp::PartialEq", kind = "Function", composite = "eq")]
+    fn eq(&self, #[proxy] other: &glam::IVec3) -> bool;
 
 "#,
 			r#"
@@ -14376,6 +14010,12 @@ functions[r#"
         output(proxy),
     )]
     fn clone(&self) -> bevy::math::IVec3;
+
+"#,
+			r#"
+
+    #[lua(as_trait = "std::cmp::Eq", kind = "Method")]
+    fn assert_receiver_is_total_eq(&self) -> ();
 
 "#]
 )]
@@ -14732,12 +14372,6 @@ functions[r#"
 "#,
 			r#"
 
-    #[lua(as_trait = "std::cmp::PartialEq", kind = "Function", composite = "eq")]
-    fn eq(&self, #[proxy] other: &glam::IVec4) -> bool;
-
-"#,
-			r#"
-
     #[lua(as_trait = "std::cmp::Eq", kind = "Method")]
     fn assert_receiver_is_total_eq(&self) -> ();
 
@@ -14762,6 +14396,12 @@ functions[r#"
         metamethod = "Unm",
     )]
     fn neg(self) -> bevy::math::IVec4;
+
+"#,
+			r#"
+
+    #[lua(as_trait = "std::cmp::PartialEq", kind = "Function", composite = "eq")]
+    fn eq(&self, #[proxy] other: &glam::IVec4) -> bool;
 
 "#]
 )]
@@ -15065,6 +14705,12 @@ functions[r#"
 "#,
 			r#"
 
+    #[lua(as_trait = "std::cmp::Eq", kind = "Method")]
+    fn assert_receiver_is_total_eq(&self) -> ();
+
+"#,
+			r#"
+
     #[lua(as_trait = "std::cmp::PartialEq", kind = "Function", composite = "eq")]
     fn eq(&self, #[proxy] other: &glam::UVec2) -> bool;
 
@@ -15077,12 +14723,6 @@ functions[r#"
         output(proxy),
     )]
     fn clone(&self) -> bevy::math::UVec2;
-
-"#,
-			r#"
-
-    #[lua(as_trait = "std::cmp::Eq", kind = "Method")]
-    fn assert_receiver_is_total_eq(&self) -> ();
 
 "#]
 )]
@@ -15408,8 +15048,12 @@ functions[r#"
 "#,
 			r#"
 
-    #[lua(as_trait = "std::cmp::PartialEq", kind = "Function", composite = "eq")]
-    fn eq(&self, #[proxy] other: &glam::UVec3) -> bool;
+    #[lua(
+        as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone",
+        kind = "Method",
+        output(proxy),
+    )]
+    fn clone(&self) -> bevy::math::UVec3;
 
 "#,
 			r#"
@@ -15420,12 +15064,8 @@ functions[r#"
 "#,
 			r#"
 
-    #[lua(
-        as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone",
-        kind = "Method",
-        output(proxy),
-    )]
-    fn clone(&self) -> bevy::math::UVec3;
+    #[lua(as_trait = "std::cmp::PartialEq", kind = "Function", composite = "eq")]
+    fn eq(&self, #[proxy] other: &glam::UVec3) -> bool;
 
 "#]
 )]
@@ -15730,12 +15370,8 @@ functions[r#"
 "#,
 			r#"
 
-    #[lua(
-        as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone",
-        kind = "Method",
-        output(proxy),
-    )]
-    fn clone(&self) -> bevy::math::UVec4;
+    #[lua(as_trait = "std::cmp::PartialEq", kind = "Function", composite = "eq")]
+    fn eq(&self, #[proxy] other: &glam::UVec4) -> bool;
 
 "#,
 			r#"
@@ -15746,8 +15382,12 @@ functions[r#"
 "#,
 			r#"
 
-    #[lua(as_trait = "std::cmp::PartialEq", kind = "Function", composite = "eq")]
-    fn eq(&self, #[proxy] other: &glam::UVec4) -> bool;
+    #[lua(
+        as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone",
+        kind = "Method",
+        output(proxy),
+    )]
+    fn clone(&self) -> bevy::math::UVec4;
 
 "#]
 )]
@@ -16127,6 +15767,24 @@ functions[r#"
 "#,
 			r#"
 
+    #[lua(
+        as_trait = "std::ops::Neg",
+        kind = "Function",
+        output(proxy),
+        composite = "neg",
+        metamethod = "Unm",
+    )]
+    fn neg(self) -> bevy::math::I64Vec2;
+
+"#,
+			r#"
+
+    #[lua(as_trait = "std::cmp::PartialEq", kind = "Function", composite = "eq")]
+    fn eq(&self, #[proxy] other: &glam::I64Vec2) -> bool;
+
+"#,
+			r#"
+
     #[lua(as_trait = "std::cmp::Eq", kind = "Method")]
     fn assert_receiver_is_total_eq(&self) -> ();
 
@@ -16139,24 +15797,6 @@ functions[r#"
         output(proxy),
     )]
     fn clone(&self) -> bevy::math::I64Vec2;
-
-"#,
-			r#"
-
-    #[lua(as_trait = "std::cmp::PartialEq", kind = "Function", composite = "eq")]
-    fn eq(&self, #[proxy] other: &glam::I64Vec2) -> bool;
-
-"#,
-			r#"
-
-    #[lua(
-        as_trait = "std::ops::Neg",
-        kind = "Function",
-        output(proxy),
-        composite = "neg",
-        metamethod = "Unm",
-    )]
-    fn neg(self) -> bevy::math::I64Vec2;
 
 "#]
 )]
@@ -16534,18 +16174,14 @@ functions[r#"
 "#,
 			r#"
 
-    #[lua(
-        as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone",
-        kind = "Method",
-        output(proxy),
-    )]
-    fn clone(&self) -> bevy::math::I64Vec3;
+    #[lua(as_trait = "std::cmp::PartialEq", kind = "Function", composite = "eq")]
+    fn eq(&self, #[proxy] other: &glam::I64Vec3) -> bool;
 
 "#,
 			r#"
 
-    #[lua(as_trait = "std::cmp::PartialEq", kind = "Function", composite = "eq")]
-    fn eq(&self, #[proxy] other: &glam::I64Vec3) -> bool;
+    #[lua(as_trait = "std::cmp::Eq", kind = "Method")]
+    fn assert_receiver_is_total_eq(&self) -> ();
 
 "#,
 			r#"
@@ -16562,8 +16198,12 @@ functions[r#"
 "#,
 			r#"
 
-    #[lua(as_trait = "std::cmp::Eq", kind = "Method")]
-    fn assert_receiver_is_total_eq(&self) -> ();
+    #[lua(
+        as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone",
+        kind = "Method",
+        output(proxy),
+    )]
+    fn clone(&self) -> bevy::math::I64Vec3;
 
 "#]
 )]
@@ -16920,24 +16560,12 @@ functions[r#"
 "#,
 			r#"
 
-    #[lua(as_trait = "std::cmp::PartialEq", kind = "Function", composite = "eq")]
-    fn eq(&self, #[proxy] other: &glam::I64Vec4) -> bool;
-
-"#,
-			r#"
-
     #[lua(
         as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone",
         kind = "Method",
         output(proxy),
     )]
     fn clone(&self) -> bevy::math::I64Vec4;
-
-"#,
-			r#"
-
-    #[lua(as_trait = "std::cmp::Eq", kind = "Method")]
-    fn assert_receiver_is_total_eq(&self) -> ();
 
 "#,
 			r#"
@@ -16950,6 +16578,18 @@ functions[r#"
         metamethod = "Unm",
     )]
     fn neg(self) -> bevy::math::I64Vec4;
+
+"#,
+			r#"
+
+    #[lua(as_trait = "std::cmp::PartialEq", kind = "Function", composite = "eq")]
+    fn eq(&self, #[proxy] other: &glam::I64Vec4) -> bool;
+
+"#,
+			r#"
+
+    #[lua(as_trait = "std::cmp::Eq", kind = "Method")]
+    fn assert_receiver_is_total_eq(&self) -> ();
 
 "#]
 )]
@@ -17253,6 +16893,12 @@ functions[r#"
 "#,
 			r#"
 
+    #[lua(as_trait = "std::cmp::Eq", kind = "Method")]
+    fn assert_receiver_is_total_eq(&self) -> ();
+
+"#,
+			r#"
+
     #[lua(
         as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone",
         kind = "Method",
@@ -17265,12 +16911,6 @@ functions[r#"
 
     #[lua(as_trait = "std::cmp::PartialEq", kind = "Function", composite = "eq")]
     fn eq(&self, #[proxy] other: &glam::U64Vec2) -> bool;
-
-"#,
-			r#"
-
-    #[lua(as_trait = "std::cmp::Eq", kind = "Method")]
-    fn assert_receiver_is_total_eq(&self) -> ();
 
 "#]
 )]
@@ -17606,14 +17246,14 @@ functions[r#"
 "#,
 			r#"
 
-    #[lua(as_trait = "std::cmp::Eq", kind = "Method")]
-    fn assert_receiver_is_total_eq(&self) -> ();
+    #[lua(as_trait = "std::cmp::PartialEq", kind = "Function", composite = "eq")]
+    fn eq(&self, #[proxy] other: &glam::U64Vec3) -> bool;
 
 "#,
 			r#"
 
-    #[lua(as_trait = "std::cmp::PartialEq", kind = "Function", composite = "eq")]
-    fn eq(&self, #[proxy] other: &glam::U64Vec3) -> bool;
+    #[lua(as_trait = "std::cmp::Eq", kind = "Method")]
+    fn assert_receiver_is_total_eq(&self) -> ();
 
 "#]
 )]
@@ -17918,6 +17558,12 @@ functions[r#"
 "#,
 			r#"
 
+    #[lua(as_trait = "std::cmp::PartialEq", kind = "Function", composite = "eq")]
+    fn eq(&self, #[proxy] other: &glam::U64Vec4) -> bool;
+
+"#,
+			r#"
+
     #[lua(
         as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone",
         kind = "Method",
@@ -17930,12 +17576,6 @@ functions[r#"
 
     #[lua(as_trait = "std::cmp::Eq", kind = "Method")]
     fn assert_receiver_is_total_eq(&self) -> ();
-
-"#,
-			r#"
-
-    #[lua(as_trait = "std::cmp::PartialEq", kind = "Function", composite = "eq")]
-    fn eq(&self, #[proxy] other: &glam::U64Vec4) -> bool;
 
 "#]
 )]
@@ -18163,12 +17803,8 @@ functions[r#"
 "#,
 			r#"
 
-    #[lua(
-        as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone",
-        kind = "Method",
-        output(proxy),
-    )]
-    fn clone(&self) -> std::num::NonZeroU8;
+    #[lua(as_trait = "std::cmp::Eq", kind = "Method")]
+    fn assert_receiver_is_total_eq(&self) -> ();
 
 "#,
 			r#"
@@ -18179,8 +17815,12 @@ functions[r#"
 "#,
 			r#"
 
-    #[lua(as_trait = "std::cmp::Eq", kind = "Method")]
-    fn assert_receiver_is_total_eq(&self) -> ();
+    #[lua(
+        as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone",
+        kind = "Method",
+        output(proxy),
+    )]
+    fn clone(&self) -> std::num::NonZeroU8;
 
 "#]
 )]
@@ -18413,8 +18053,8 @@ functions[r#"
 "#,
 			r#"
 
-    #[lua(as_trait = "std::cmp::Eq", kind = "Method")]
-    fn assert_receiver_is_total_eq(&self) -> ();
+    #[lua(as_trait = "std::cmp::PartialEq", kind = "Function", composite = "eq")]
+    fn eq(&self, #[proxy] other: &std::num::NonZeroU16) -> bool;
 
 "#,
 			r#"
@@ -18429,8 +18069,8 @@ functions[r#"
 "#,
 			r#"
 
-    #[lua(as_trait = "std::cmp::PartialEq", kind = "Function", composite = "eq")]
-    fn eq(&self, #[proxy] other: &std::num::NonZeroU16) -> bool;
+    #[lua(as_trait = "std::cmp::Eq", kind = "Method")]
+    fn assert_receiver_is_total_eq(&self) -> ();
 
 "#]
 )]
@@ -18669,18 +18309,18 @@ functions[r#"
 "#,
 			r#"
 
-    #[lua(as_trait = "std::cmp::PartialEq", kind = "Function", composite = "eq")]
-    fn eq(&self, #[proxy] other: &std::num::NonZeroU32) -> bool;
-
-"#,
-			r#"
-
     #[lua(
         as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone",
         kind = "Method",
         output(proxy),
     )]
     fn clone(&self) -> std::num::NonZeroU32;
+
+"#,
+			r#"
+
+    #[lua(as_trait = "std::cmp::PartialEq", kind = "Function", composite = "eq")]
+    fn eq(&self, #[proxy] other: &std::num::NonZeroU32) -> bool;
 
 "#]
 )]
@@ -19163,12 +18803,8 @@ functions[r#"
 "#,
 			r#"
 
-    #[lua(
-        as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone",
-        kind = "Method",
-        output(proxy),
-    )]
-    fn clone(&self) -> std::num::NonZeroU128;
+    #[lua(as_trait = "std::cmp::PartialEq", kind = "Function", composite = "eq")]
+    fn eq(&self, #[proxy] other: &std::num::NonZeroU128) -> bool;
 
 "#,
 			r#"
@@ -19179,8 +18815,12 @@ functions[r#"
 "#,
 			r#"
 
-    #[lua(as_trait = "std::cmp::PartialEq", kind = "Function", composite = "eq")]
-    fn eq(&self, #[proxy] other: &std::num::NonZeroU128) -> bool;
+    #[lua(
+        as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone",
+        kind = "Method",
+        output(proxy),
+    )]
+    fn clone(&self) -> std::num::NonZeroU128;
 
 "#]
 )]
@@ -19413,6 +19053,12 @@ functions[r#"
 "#,
 			r#"
 
+    #[lua(as_trait = "std::cmp::Eq", kind = "Method")]
+    fn assert_receiver_is_total_eq(&self) -> ();
+
+"#,
+			r#"
+
     #[lua(
         as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone",
         kind = "Method",
@@ -19425,12 +19071,6 @@ functions[r#"
 
     #[lua(as_trait = "std::cmp::PartialEq", kind = "Function", composite = "eq")]
     fn eq(&self, #[proxy] other: &std::num::NonZeroUsize) -> bool;
-
-"#,
-			r#"
-
-    #[lua(as_trait = "std::cmp::Eq", kind = "Method")]
-    fn assert_receiver_is_total_eq(&self) -> ();
 
 "#]
 )]
@@ -19769,16 +19409,6 @@ functions[r#"
 "#,
 			r#"
 
-    #[lua(
-        as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone",
-        kind = "Method",
-        output(proxy),
-    )]
-    fn clone(&self) -> std::num::NonZeroI8;
-
-"#,
-			r#"
-
     #[lua(as_trait = "std::cmp::PartialEq", kind = "Function", composite = "eq")]
     fn eq(&self, #[proxy] other: &std::num::NonZeroI8) -> bool;
 
@@ -19799,6 +19429,16 @@ functions[r#"
         metamethod = "Unm",
     )]
     fn neg(self) -> std::num::NonZeroI8;
+
+"#,
+			r#"
+
+    #[lua(
+        as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone",
+        kind = "Method",
+        output(proxy),
+    )]
+    fn clone(&self) -> std::num::NonZeroI8;
 
 "#]
 )]
@@ -20141,8 +19781,24 @@ functions[r#"
 "#,
 			r#"
 
+    #[lua(as_trait = "std::cmp::Eq", kind = "Method")]
+    fn assert_receiver_is_total_eq(&self) -> ();
+
+"#,
+			r#"
+
     #[lua(as_trait = "std::cmp::PartialEq", kind = "Function", composite = "eq")]
     fn eq(&self, #[proxy] other: &std::num::NonZeroI16) -> bool;
+
+"#,
+			r#"
+
+    #[lua(
+        as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone",
+        kind = "Method",
+        output(proxy),
+    )]
+    fn clone(&self) -> std::num::NonZeroI16;
 
 "#,
 			r#"
@@ -20155,22 +19811,6 @@ functions[r#"
         metamethod = "Unm",
     )]
     fn neg(self) -> std::num::NonZeroI16;
-
-"#,
-			r#"
-
-    #[lua(as_trait = "std::cmp::Eq", kind = "Method")]
-    fn assert_receiver_is_total_eq(&self) -> ();
-
-"#,
-			r#"
-
-    #[lua(
-        as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone",
-        kind = "Method",
-        output(proxy),
-    )]
-    fn clone(&self) -> std::num::NonZeroI16;
 
 "#]
 )]
@@ -20525,8 +20165,8 @@ functions[r#"
 "#,
 			r#"
 
-    #[lua(as_trait = "std::cmp::PartialEq", kind = "Function", composite = "eq")]
-    fn eq(&self, #[proxy] other: &std::num::NonZeroI32) -> bool;
+    #[lua(as_trait = "std::cmp::Eq", kind = "Method")]
+    fn assert_receiver_is_total_eq(&self) -> ();
 
 "#,
 			r#"
@@ -20541,8 +20181,8 @@ functions[r#"
 "#,
 			r#"
 
-    #[lua(as_trait = "std::cmp::Eq", kind = "Method")]
-    fn assert_receiver_is_total_eq(&self) -> ();
+    #[lua(as_trait = "std::cmp::PartialEq", kind = "Function", composite = "eq")]
+    fn eq(&self, #[proxy] other: &std::num::NonZeroI32) -> bool;
 
 "#]
 )]
@@ -20885,14 +20525,8 @@ functions[r#"
 "#,
 			r#"
 
-    #[lua(
-        as_trait = "std::ops::Neg",
-        kind = "Function",
-        output(proxy),
-        composite = "neg",
-        metamethod = "Unm",
-    )]
-    fn neg(self) -> std::num::NonZeroI64;
+    #[lua(as_trait = "std::cmp::Eq", kind = "Method")]
+    fn assert_receiver_is_total_eq(&self) -> ();
 
 "#,
 			r#"
@@ -20907,14 +20541,20 @@ functions[r#"
 "#,
 			r#"
 
-    #[lua(as_trait = "std::cmp::PartialEq", kind = "Function", composite = "eq")]
-    fn eq(&self, #[proxy] other: &std::num::NonZeroI64) -> bool;
+    #[lua(
+        as_trait = "std::ops::Neg",
+        kind = "Function",
+        output(proxy),
+        composite = "neg",
+        metamethod = "Unm",
+    )]
+    fn neg(self) -> std::num::NonZeroI64;
 
 "#,
 			r#"
 
-    #[lua(as_trait = "std::cmp::Eq", kind = "Method")]
-    fn assert_receiver_is_total_eq(&self) -> ();
+    #[lua(as_trait = "std::cmp::PartialEq", kind = "Function", composite = "eq")]
+    fn eq(&self, #[proxy] other: &std::num::NonZeroI64) -> bool;
 
 "#]
 )]
@@ -21257,8 +20897,12 @@ functions[r#"
 "#,
 			r#"
 
-    #[lua(as_trait = "std::cmp::PartialEq", kind = "Function", composite = "eq")]
-    fn eq(&self, #[proxy] other: &std::num::NonZeroI128) -> bool;
+    #[lua(
+        as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone",
+        kind = "Method",
+        output(proxy),
+    )]
+    fn clone(&self) -> std::num::NonZeroI128;
 
 "#,
 			r#"
@@ -21275,18 +20919,14 @@ functions[r#"
 "#,
 			r#"
 
-    #[lua(as_trait = "std::cmp::Eq", kind = "Method")]
-    fn assert_receiver_is_total_eq(&self) -> ();
+    #[lua(as_trait = "std::cmp::PartialEq", kind = "Function", composite = "eq")]
+    fn eq(&self, #[proxy] other: &std::num::NonZeroI128) -> bool;
 
 "#,
 			r#"
 
-    #[lua(
-        as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone",
-        kind = "Method",
-        output(proxy),
-    )]
-    fn clone(&self) -> std::num::NonZeroI128;
+    #[lua(as_trait = "std::cmp::Eq", kind = "Method")]
+    fn assert_receiver_is_total_eq(&self) -> ();
 
 "#]
 )]
@@ -21629,6 +21269,12 @@ functions[r#"
 "#,
 			r#"
 
+    #[lua(as_trait = "std::cmp::PartialEq", kind = "Function", composite = "eq")]
+    fn eq(&self, #[proxy] other: &std::num::NonZeroIsize) -> bool;
+
+"#,
+			r#"
+
     #[lua(
         as_trait = "std::ops::Neg",
         kind = "Function",
@@ -21653,12 +21299,6 @@ functions[r#"
         output(proxy),
     )]
     fn clone(&self) -> std::num::NonZeroIsize;
-
-"#,
-			r#"
-
-    #[lua(as_trait = "std::cmp::PartialEq", kind = "Function", composite = "eq")]
-    fn eq(&self, #[proxy] other: &std::num::NonZeroIsize) -> bool;
 
 "#]
 )]
@@ -21733,14 +21373,14 @@ derive(clone,debug,),
 remote="std::ops::RangeFull",
 functions[r#"
 
-    #[lua(as_trait = "std::cmp::Eq", kind = "Method")]
-    fn assert_receiver_is_total_eq(&self) -> ();
+    #[lua(as_trait = "std::cmp::PartialEq", kind = "Function", composite = "eq")]
+    fn eq(&self, #[proxy] other: &std::ops::RangeFull) -> bool;
 
 "#,
 			r#"
 
-    #[lua(as_trait = "std::cmp::PartialEq", kind = "Function", composite = "eq")]
-    fn eq(&self, #[proxy] other: &std::ops::RangeFull) -> bool;
+    #[lua(as_trait = "std::cmp::Eq", kind = "Method")]
+    fn assert_receiver_is_total_eq(&self) -> ();
 
 "#,
 			r#"
@@ -22232,8 +21872,32 @@ functions[r#"
 "#,
 			r#"
 
+    #[lua(
+        as_trait = "std::ops::Sub",
+        kind = "Function",
+        output(proxy),
+        composite = "sub",
+        metamethod = "Sub",
+    )]
+    fn sub(self, #[proxy] rhs: bevy::utils::Duration) -> bevy::utils::Duration;
+
+"#,
+			r#"
+
     #[lua(as_trait = "std::cmp::Eq", kind = "Method")]
     fn assert_receiver_is_total_eq(&self) -> ();
+
+"#,
+			r#"
+
+    #[lua(
+        as_trait = "std::ops::Div",
+        kind = "Function",
+        output(proxy),
+        composite = "div",
+        metamethod = "Div",
+    )]
+    fn div(self, rhs: u32) -> bevy::utils::Duration;
 
 "#,
 			r#"
@@ -22257,13 +21921,11 @@ functions[r#"
 			r#"
 
     #[lua(
-        as_trait = "std::ops::Div",
-        kind = "Function",
+        as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone",
+        kind = "Method",
         output(proxy),
-        composite = "div",
-        metamethod = "Div",
     )]
-    fn div(self, rhs: u32) -> bevy::utils::Duration;
+    fn clone(&self) -> bevy::utils::Duration;
 
 "#,
 			r#"
@@ -22276,28 +21938,6 @@ functions[r#"
         metamethod = "Mul",
     )]
     fn mul(self, rhs: u32) -> bevy::utils::Duration;
-
-"#,
-			r#"
-
-    #[lua(
-        as_trait = "std::ops::Sub",
-        kind = "Function",
-        output(proxy),
-        composite = "sub",
-        metamethod = "Sub",
-    )]
-    fn sub(self, #[proxy] rhs: bevy::utils::Duration) -> bevy::utils::Duration;
-
-"#,
-			r#"
-
-    #[lua(
-        as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone",
-        kind = "Method",
-        output(proxy),
-    )]
-    fn clone(&self) -> bevy::utils::Duration;
 
 "#]
 )]
@@ -22392,11 +22032,6 @@ impl bevy_mod_scripting_lua::tealr::mlu::ExportInstances for Globals {
             
                 instances.add_instance("LuaSphere", 
                                 bevy_mod_scripting_lua::tealr::mlu::UserDataProxy::<LuaSphere>::new)?;
-            
-         
-            
-                instances.add_instance("LuaOsString", 
-                                bevy_mod_scripting_lua::tealr::mlu::UserDataProxy::<LuaOsString>::new)?;
             
          
             
@@ -22804,11 +22439,6 @@ impl bevy_mod_scripting_core::hosts::APIProvider for BevyReflectAPIProvider {
                 .process_type::<bevy_mod_scripting_lua::tealr::mlu::UserDataProxy<LuaSphere>>()
                 
             
-                .process_type::<LuaOsString>()
-                
-                .process_type::<bevy_mod_scripting_lua::tealr::mlu::UserDataProxy<LuaOsString>>()
-                
-            
                 .process_type::<LuaPlane3d>()
                 
                 .process_type::<bevy_mod_scripting_lua::tealr::mlu::UserDataProxy<LuaPlane3d>>()
@@ -23179,8 +22809,6 @@ impl bevy_mod_scripting_core::hosts::APIProvider for BevyReflectAPIProvider {
         app.register_foreign_lua_type::<bevy::math::primitives::Direction3d>();
         
         app.register_foreign_lua_type::<bevy::math::primitives::Sphere>();
-        
-        app.register_foreign_lua_type::<std::ffi::OsString>();
         
         app.register_foreign_lua_type::<bevy::math::primitives::Plane3d>();
         
