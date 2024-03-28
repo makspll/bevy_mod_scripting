@@ -1,0 +1,11 @@
+# Cargo.toml file used for bootstrapping of mlua and other dependencies which need to be included in every crate for analysis
+[package]
+name = "bevy_analyzer_deps_bootstrap"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+mlua = { version = "0.9.2", features = ["lua54", "vendored", "send", "macros"] }
+bevy_reflect = { version = "0.13.1", features = ["bevy", "bevy_math"] }
+
+[workspace]

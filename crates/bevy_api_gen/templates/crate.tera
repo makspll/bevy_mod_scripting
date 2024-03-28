@@ -1,0 +1,7 @@
+{% include "header.tera" %}
+
+{% for item in items %}
+    {% include "item.tera" %}
+{% endfor %}
+
+{% include "footer.tera" %}

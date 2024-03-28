@@ -1,0 +1,9 @@
+{%- if field.reflection_strategy == "Proxy" -%}
+        #[lua(output(proxy))]
+{%- endif -%}
+
+{%- if not item.is_tuple_struct -%}
+{{- field.ident -}} :
+{%- endif -%}
+{{- field.ty -}} ,
+

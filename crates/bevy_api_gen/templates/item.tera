@@ -1,0 +1,42 @@
+{% for line in item.docstrings %}
+///{{ line }}
+{% endfor %}
+
+#[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
+#[proxy(
+derive(
+    {%- if item.impls_clone -%}
+        clone,
+    {%- endif -%}
+    {%- if item.impls_debug -%}
+        debug,
+    {%- endif -%}
+),
+remote="{{ item.import_path }}",
+functions[
+    {%- filter separated(delimeter=",\n\t\t\t", split_at="---", ignore_first=true) -%}
+    {%- for function in item.functions -%}
+        ---
+        {%- include "function.tera" -%}
+    {%- endfor -%}
+    {%- endfilter -%}
+]
+)]
+
+{%- if item.is_tuple_struct -%}
+{% set open_item = "(" %}
+{% set close_item = ");" %}
+{% else %}
+{% set open_item = "{" %}
+{% set close_item = "}" %}
+{% endif %}
+
+pub struct {{ item.ident -}} {{ open_item }}
+    {% if not item.is_enum %}
+    {% for field in item.variants[0].fields %}
+        {% if field.reflection_strategy != "Filtered" %}
+        {% include "field.tera" %}
+        {% endif %}
+    {% endfor %}
+    {% endif %}
+{{ close_item -}}
