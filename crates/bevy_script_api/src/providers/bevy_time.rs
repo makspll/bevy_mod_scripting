@@ -403,14 +403,14 @@ functions[r#"
 "#,
 			r#"
 
-    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
-    fn clone(&self) -> bevy::time::Stopwatch;
+    #[lua(as_trait = "std::cmp::PartialEq", kind = "Function", composite = "eq")]
+    fn eq(&self, #[proxy] other: &stopwatch::Stopwatch) -> bool;
 
 "#,
 			r#"
 
-    #[lua(as_trait = "std::cmp::PartialEq", kind = "Function", composite = "eq")]
-    fn eq(&self, #[proxy] other: &stopwatch::Stopwatch) -> bool;
+    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
+    fn clone(&self) -> bevy::time::Stopwatch;
 
 "#,
 			r#"
@@ -779,14 +779,14 @@ functions[r#"
 "#,
 			r#"
 
-    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
-    fn clone(&self) -> bevy::time::prelude::Timer;
+    #[lua(as_trait = "std::cmp::PartialEq", kind = "Function", composite = "eq")]
+    fn eq(&self, #[proxy] other: &timer::Timer) -> bool;
 
 "#,
 			r#"
 
-    #[lua(as_trait = "std::cmp::PartialEq", kind = "Function", composite = "eq")]
-    fn eq(&self, #[proxy] other: &timer::Timer) -> bool;
+    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
+    fn clone(&self) -> bevy::time::prelude::Timer;
 
 "#,
 			r#"
@@ -826,14 +826,14 @@ derive(clone,debug,),
 remote="bevy::time::prelude::TimerMode",
 functions[r#"
 
-    #[lua(as_trait = "std::cmp::Eq", kind = "Method")]
-    fn assert_receiver_is_total_eq(&self) -> ();
+    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
+    fn clone(&self) -> bevy::time::prelude::TimerMode;
 
 "#,
 			r#"
 
-    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
-    fn clone(&self) -> bevy::time::prelude::TimerMode;
+    #[lua(as_trait = "std::cmp::Eq", kind = "Method")]
+    fn assert_receiver_is_total_eq(&self) -> ();
 
 "#,
 			r#"
@@ -993,11 +993,6 @@ pub struct Virtual{
 }
 
 
-
-
-crate::impl_tealr_generic!(pub(crate) struct T);
-
-
 #[derive(Default)]
 pub(crate) struct Globals;
 
@@ -1012,12 +1007,12 @@ impl bevy_mod_scripting_lua::tealr::mlu::ExportInstances for Globals {
             
          
             
-                instances.add_instance("LuaStopwatch", 
+                instances.add_instance("Stopwatch", 
                                 bevy_mod_scripting_lua::tealr::mlu::UserDataProxy::<LuaStopwatch>::new)?;
             
          
             
-                instances.add_instance("LuaTimer", 
+                instances.add_instance("Timer", 
                                 bevy_mod_scripting_lua::tealr::mlu::UserDataProxy::<LuaTimer>::new)?;
             
          

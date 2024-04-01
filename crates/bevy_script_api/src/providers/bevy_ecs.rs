@@ -73,12 +73,6 @@ functions[r#"
 "#,
 			r#"
 
-    #[lua(as_trait = "std::cmp::Eq", kind = "Method")]
-    fn assert_receiver_is_total_eq(&self) -> ();
-
-"#,
-			r#"
-
     #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
     fn clone(&self) -> bevy::ecs::component::ComponentId;
 
@@ -87,6 +81,12 @@ functions[r#"
 
     #[lua(as_trait = "std::cmp::PartialEq", kind = "Function", composite = "eq")]
     fn eq(&self, #[proxy] other: &component::ComponentId) -> bool;
+
+"#,
+			r#"
+
+    #[lua(as_trait = "std::cmp::Eq", kind = "Method")]
+    fn assert_receiver_is_total_eq(&self) -> ();
 
 "#]
 )]
@@ -148,8 +148,8 @@ functions[r#"
 "#,
 			r#"
 
-    #[lua(as_trait = "std::cmp::Eq", kind = "Method")]
-    fn assert_receiver_is_total_eq(&self) -> ();
+    #[lua(as_trait = "std::cmp::PartialEq", kind = "Function", composite = "eq")]
+    fn eq(&self, #[proxy] other: &component::Tick) -> bool;
 
 "#,
 			r#"
@@ -160,8 +160,8 @@ functions[r#"
 "#,
 			r#"
 
-    #[lua(as_trait = "std::cmp::PartialEq", kind = "Function", composite = "eq")]
-    fn eq(&self, #[proxy] other: &component::Tick) -> bool;
+    #[lua(as_trait = "std::cmp::Eq", kind = "Method")]
+    fn assert_receiver_is_total_eq(&self) -> ();
 
 "#]
 )]
@@ -442,14 +442,14 @@ functions[r#"
 "#,
 			r#"
 
-    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
-    fn clone(&self) -> bevy::ecs::entity::Entity;
+    #[lua(as_trait = "std::cmp::PartialEq", kind = "Function", composite = "eq")]
+    fn eq(&self, #[proxy] other: &entity::Entity) -> bool;
 
 "#,
 			r#"
 
-    #[lua(as_trait = "std::cmp::PartialEq", kind = "Function", composite = "eq")]
-    fn eq(&self, #[proxy] other: &entity::Entity) -> bool;
+    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
+    fn clone(&self) -> bevy::ecs::entity::Entity;
 
 "#]
 )]
@@ -468,11 +468,6 @@ pub struct Entity{
 }
 
 
-
-
-crate::impl_tealr_generic!(pub(crate) struct T);
-
-
 #[derive(Default)]
 pub(crate) struct Globals;
 
@@ -483,12 +478,12 @@ impl bevy_mod_scripting_lua::tealr::mlu::ExportInstances for Globals {
     ) -> bevy_mod_scripting_lua::tealr::mlu::mlua::Result<()> {
          
             
-                instances.add_instance("LuaComponentId", 
+                instances.add_instance("ComponentId", 
                                 bevy_mod_scripting_lua::tealr::mlu::UserDataProxy::<LuaComponentId>::new)?;
             
          
             
-                instances.add_instance("LuaTick", 
+                instances.add_instance("Tick", 
                                 bevy_mod_scripting_lua::tealr::mlu::UserDataProxy::<LuaTick>::new)?;
             
          
@@ -497,7 +492,7 @@ impl bevy_mod_scripting_lua::tealr::mlu::ExportInstances for Globals {
             
          
             
-                instances.add_instance("LuaEntity", 
+                instances.add_instance("Entity", 
                                 bevy_mod_scripting_lua::tealr::mlu::UserDataProxy::<LuaEntity>::new)?;
             
         

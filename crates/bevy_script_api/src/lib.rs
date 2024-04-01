@@ -8,6 +8,7 @@ pub mod rhai;
 
 pub mod common;
 
+pub(crate) mod core_providers;
 pub mod script_ref;
 pub mod sub_reflect;
 pub mod wrappers;
@@ -17,6 +18,7 @@ pub use {script_ref::*, sub_reflect::*};
 pub mod prelude {
     #[cfg(feature = "lua")]
     pub use crate::{
+        core_providers::CoreBevyAPIProvider,
         lua::{std::LuaVec, FromLuaProxy, IntoLuaProxy, LuaProxyable, ReflectLuaProxyable},
         providers::BevyAPIProvider,
         LuaProxy,

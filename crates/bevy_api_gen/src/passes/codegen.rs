@@ -45,6 +45,10 @@ pub(crate) fn codegen(ctxt: &mut BevyCtxt<'_>, args: &Args) -> bool {
 mod tests {
     use std::collections::HashSet;
 
+    use strum::VariantNames;
+
+    use crate::TEMPLATE_DIR;
+
     use super::*;
 
     #[test]

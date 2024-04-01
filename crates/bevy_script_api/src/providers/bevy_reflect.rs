@@ -600,12 +600,6 @@ functions[r#"
 "#,
 			r#"
 
-    #[lua(as_trait = "std::cmp::PartialEq", kind = "Function", composite = "eq")]
-    fn eq(&self, #[proxy] other: &bevy_utils::Uuid) -> bool;
-
-"#,
-			r#"
-
     #[lua(
         as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone",
         kind = "Method",
@@ -618,6 +612,12 @@ functions[r#"
 
     #[lua(as_trait = "std::cmp::Eq", kind = "Method")]
     fn assert_receiver_is_total_eq(&self) -> ();
+
+"#,
+			r#"
+
+    #[lua(as_trait = "std::cmp::PartialEq", kind = "Function", composite = "eq")]
+    fn eq(&self, #[proxy] other: &bevy_utils::Uuid) -> bool;
 
 "#]
 )]
@@ -654,6 +654,12 @@ functions[r#"
 "#,
 			r#"
 
+    #[lua(as_trait = "std::cmp::PartialEq", kind = "Function", composite = "eq")]
+    fn eq(&self, #[proxy] other: &bevy_math::primitives::Direction2d) -> bool;
+
+"#,
+			r#"
+
     #[lua(
         as_trait = "std::ops::Neg",
         kind = "Function",
@@ -662,12 +668,6 @@ functions[r#"
         metamethod = "Unm",
     )]
     fn neg(self) -> bevy::math::primitives::Direction2d;
-
-"#,
-			r#"
-
-    #[lua(as_trait = "std::cmp::PartialEq", kind = "Function", composite = "eq")]
-    fn eq(&self, #[proxy] other: &bevy_math::primitives::Direction2d) -> bool;
 
 "#,
 			r#"
@@ -811,18 +811,18 @@ functions[r#"
 "#,
 			r#"
 
-    #[lua(as_trait = "std::cmp::PartialEq", kind = "Function", composite = "eq")]
-    fn eq(&self, #[proxy] other: &bevy_math::primitives::Ellipse) -> bool;
-
-"#,
-			r#"
-
     #[lua(
         as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone",
         kind = "Method",
         output(proxy),
     )]
     fn clone(&self) -> bevy::math::primitives::Ellipse;
+
+"#,
+			r#"
+
+    #[lua(as_trait = "std::cmp::PartialEq", kind = "Function", composite = "eq")]
+    fn eq(&self, #[proxy] other: &bevy_math::primitives::Ellipse) -> bool;
 
 "#]
 )]
@@ -857,18 +857,18 @@ functions[r#"
 "#,
 			r#"
 
+    #[lua(as_trait = "std::cmp::PartialEq", kind = "Function", composite = "eq")]
+    fn eq(&self, #[proxy] other: &bevy_math::primitives::Plane2d) -> bool;
+
+"#,
+			r#"
+
     #[lua(
         as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone",
         kind = "Method",
         output(proxy),
     )]
     fn clone(&self) -> bevy::math::primitives::Plane2d;
-
-"#,
-			r#"
-
-    #[lua(as_trait = "std::cmp::PartialEq", kind = "Function", composite = "eq")]
-    fn eq(&self, #[proxy] other: &bevy_math::primitives::Plane2d) -> bool;
 
 "#]
 )]
@@ -894,18 +894,18 @@ derive(clone,debug,),
 remote="bevy::math::primitives::Line2d",
 functions[r#"
 
-    #[lua(as_trait = "std::cmp::PartialEq", kind = "Function", composite = "eq")]
-    fn eq(&self, #[proxy] other: &bevy_math::primitives::Line2d) -> bool;
-
-"#,
-			r#"
-
     #[lua(
         as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone",
         kind = "Method",
         output(proxy),
     )]
     fn clone(&self) -> bevy::math::primitives::Line2d;
+
+"#,
+			r#"
+
+    #[lua(as_trait = "std::cmp::PartialEq", kind = "Function", composite = "eq")]
+    fn eq(&self, #[proxy] other: &bevy_math::primitives::Line2d) -> bool;
 
 "#]
 )]
@@ -954,18 +954,18 @@ functions[r#"
 "#,
 			r#"
 
+    #[lua(as_trait = "std::cmp::PartialEq", kind = "Function", composite = "eq")]
+    fn eq(&self, #[proxy] other: &bevy_math::primitives::Segment2d) -> bool;
+
+"#,
+			r#"
+
     #[lua(
         as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone",
         kind = "Method",
         output(proxy),
     )]
     fn clone(&self) -> bevy::math::primitives::Segment2d;
-
-"#,
-			r#"
-
-    #[lua(as_trait = "std::cmp::PartialEq", kind = "Function", composite = "eq")]
-    fn eq(&self, #[proxy] other: &bevy_math::primitives::Segment2d) -> bool;
 
 "#]
 )]
@@ -1025,18 +1025,18 @@ functions[r#"
 "#,
 			r#"
 
+    #[lua(as_trait = "std::cmp::PartialEq", kind = "Function", composite = "eq")]
+    fn eq(&self, #[proxy] other: &bevy_math::primitives::Triangle2d) -> bool;
+
+"#,
+			r#"
+
     #[lua(
         as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone",
         kind = "Method",
         output(proxy),
     )]
     fn clone(&self) -> bevy::math::primitives::Triangle2d;
-
-"#,
-			r#"
-
-    #[lua(as_trait = "std::cmp::PartialEq", kind = "Function", composite = "eq")]
-    fn eq(&self, #[proxy] other: &bevy_math::primitives::Triangle2d) -> bool;
 
 "#]
 )]
@@ -1236,18 +1236,18 @@ functions[r#"
 "#,
 			r#"
 
+    #[lua(as_trait = "std::cmp::PartialEq", kind = "Function", composite = "eq")]
+    fn eq(&self, #[proxy] other: &bevy_math::primitives::RegularPolygon) -> bool;
+
+"#,
+			r#"
+
     #[lua(
         as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone",
         kind = "Method",
         output(proxy),
     )]
     fn clone(&self) -> bevy::math::primitives::RegularPolygon;
-
-"#,
-			r#"
-
-    #[lua(as_trait = "std::cmp::PartialEq", kind = "Function", composite = "eq")]
-    fn eq(&self, #[proxy] other: &bevy_math::primitives::RegularPolygon) -> bool;
 
 "#]
 )]
@@ -1280,18 +1280,18 @@ functions[r#"
 "#,
 			r#"
 
-    #[lua(as_trait = "std::cmp::PartialEq", kind = "Function", composite = "eq")]
-    fn eq(&self, #[proxy] other: &bevy_math::primitives::Capsule2d) -> bool;
-
-"#,
-			r#"
-
     #[lua(
         as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone",
         kind = "Method",
         output(proxy),
     )]
     fn clone(&self) -> bevy::math::primitives::Capsule2d;
+
+"#,
+			r#"
+
+    #[lua(as_trait = "std::cmp::PartialEq", kind = "Function", composite = "eq")]
+    fn eq(&self, #[proxy] other: &bevy_math::primitives::Capsule2d) -> bool;
 
 "#]
 )]
@@ -1328,23 +1328,17 @@ functions[r#"
 			r#"
 
     #[lua(
-        as_trait = "std::ops::Neg",
-        kind = "Function",
-        output(proxy),
-        composite = "neg",
-        metamethod = "Unm",
-    )]
-    fn neg(self) -> bevy::math::primitives::Direction3d;
-
-"#,
-			r#"
-
-    #[lua(
         as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone",
         kind = "Method",
         output(proxy),
     )]
     fn clone(&self) -> bevy::math::primitives::Direction3d;
+
+"#,
+			r#"
+
+    #[lua(as_trait = "std::cmp::PartialEq", kind = "Function", composite = "eq")]
+    fn eq(&self, #[proxy] other: &bevy_math::primitives::Direction3d) -> bool;
 
 "#,
 			r#"
@@ -1361,8 +1355,14 @@ functions[r#"
 "#,
 			r#"
 
-    #[lua(as_trait = "std::cmp::PartialEq", kind = "Function", composite = "eq")]
-    fn eq(&self, #[proxy] other: &bevy_math::primitives::Direction3d) -> bool;
+    #[lua(
+        as_trait = "std::ops::Neg",
+        kind = "Function",
+        output(proxy),
+        composite = "neg",
+        metamethod = "Unm",
+    )]
+    fn neg(self) -> bevy::math::primitives::Direction3d;
 
 "#]
 )]
@@ -1507,18 +1507,18 @@ derive(clone,debug,),
 remote="bevy::math::primitives::Line3d",
 functions[r#"
 
-    #[lua(as_trait = "std::cmp::PartialEq", kind = "Function", composite = "eq")]
-    fn eq(&self, #[proxy] other: &bevy_math::primitives::Line3d) -> bool;
-
-"#,
-			r#"
-
     #[lua(
         as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone",
         kind = "Method",
         output(proxy),
     )]
     fn clone(&self) -> bevy::math::primitives::Line3d;
+
+"#,
+			r#"
+
+    #[lua(as_trait = "std::cmp::PartialEq", kind = "Function", composite = "eq")]
+    fn eq(&self, #[proxy] other: &bevy_math::primitives::Line3d) -> bool;
 
 "#]
 )]
@@ -1662,18 +1662,18 @@ functions[r#"
 "#,
 			r#"
 
-    #[lua(as_trait = "std::cmp::PartialEq", kind = "Function", composite = "eq")]
-    fn eq(&self, #[proxy] other: &bevy_math::primitives::Cuboid) -> bool;
-
-"#,
-			r#"
-
     #[lua(
         as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone",
         kind = "Method",
         output(proxy),
     )]
     fn clone(&self) -> bevy::math::primitives::Cuboid;
+
+"#,
+			r#"
+
+    #[lua(as_trait = "std::cmp::PartialEq", kind = "Function", composite = "eq")]
+    fn eq(&self, #[proxy] other: &bevy_math::primitives::Cuboid) -> bool;
 
 "#]
 )]
@@ -2316,18 +2316,18 @@ functions[r#"
 "#,
 			r#"
 
+    #[lua(as_trait = "std::cmp::Eq", kind = "Method")]
+    fn assert_receiver_is_total_eq(&self) -> ();
+
+"#,
+			r#"
+
     #[lua(
         as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone",
         kind = "Method",
         output(proxy),
     )]
     fn clone(&self) -> bevy::math::IRect;
-
-"#,
-			r#"
-
-    #[lua(as_trait = "std::cmp::Eq", kind = "Method")]
-    fn assert_receiver_is_total_eq(&self) -> ();
 
 "#,
 			r#"
@@ -2649,18 +2649,18 @@ functions[r#"
 "#,
 			r#"
 
+    #[lua(as_trait = "std::cmp::PartialEq", kind = "Function", composite = "eq")]
+    fn eq(&self, #[proxy] other: &bevy_math::Rect) -> bool;
+
+"#,
+			r#"
+
     #[lua(
         as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone",
         kind = "Method",
         output(proxy),
     )]
     fn clone(&self) -> bevy::math::Rect;
-
-"#,
-			r#"
-
-    #[lua(as_trait = "std::cmp::PartialEq", kind = "Function", composite = "eq")]
-    fn eq(&self, #[proxy] other: &bevy_math::Rect) -> bool;
 
 "#]
 )]
@@ -2963,6 +2963,12 @@ functions[r#"
 "#,
 			r#"
 
+    #[lua(as_trait = "std::cmp::PartialEq", kind = "Function", composite = "eq")]
+    fn eq(&self, #[proxy] other: &bevy_math::URect) -> bool;
+
+"#,
+			r#"
+
     #[lua(as_trait = "std::cmp::Eq", kind = "Method")]
     fn assert_receiver_is_total_eq(&self) -> ();
 
@@ -2975,12 +2981,6 @@ functions[r#"
         output(proxy),
     )]
     fn clone(&self) -> bevy::math::URect;
-
-"#,
-			r#"
-
-    #[lua(as_trait = "std::cmp::PartialEq", kind = "Function", composite = "eq")]
-    fn eq(&self, #[proxy] other: &bevy_math::URect) -> bool;
 
 "#]
 )]
@@ -3441,14 +3441,12 @@ functions[r#"
 "#,
 			r#"
 
-    #[lua(as_trait = "std::cmp::Eq", kind = "Method")]
-    fn assert_receiver_is_total_eq(&self) -> ();
-
-"#,
-			r#"
-
-    #[lua(as_trait = "std::cmp::PartialEq", kind = "Function", composite = "eq")]
-    fn eq(&self, #[proxy] other: &bevy_utils::Instant) -> bool;
+    #[lua(
+        as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone",
+        kind = "Method",
+        output(proxy),
+    )]
+    fn clone(&self) -> bevy::utils::Instant;
 
 "#,
 			r#"
@@ -3468,12 +3466,14 @@ functions[r#"
 "#,
 			r#"
 
-    #[lua(
-        as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone",
-        kind = "Method",
-        output(proxy),
-    )]
-    fn clone(&self) -> bevy::utils::Instant;
+    #[lua(as_trait = "std::cmp::Eq", kind = "Method")]
+    fn assert_receiver_is_total_eq(&self) -> ();
+
+"#,
+			r#"
+
+    #[lua(as_trait = "std::cmp::PartialEq", kind = "Function", composite = "eq")]
+    fn eq(&self, #[proxy] other: &bevy_utils::Instant) -> bool;
 
 "#]
 )]
@@ -3510,18 +3510,18 @@ functions[r#"
 "#,
 			r#"
 
+    #[lua(as_trait = "std::cmp::PartialEq", kind = "Function", composite = "eq")]
+    fn eq(&self, #[proxy] other: &glam::EulerRot) -> bool;
+
+"#,
+			r#"
+
     #[lua(
         as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone",
         kind = "Method",
         output(proxy),
     )]
     fn clone(&self) -> bevy::math::EulerRot;
-
-"#,
-			r#"
-
-    #[lua(as_trait = "std::cmp::PartialEq", kind = "Function", composite = "eq")]
-    fn eq(&self, #[proxy] other: &glam::EulerRot) -> bool;
 
 "#]
 )]
@@ -3602,18 +3602,18 @@ functions[r#"
 "#,
 			r#"
 
-    #[lua(as_trait = "std::cmp::Eq", kind = "Method")]
-    fn assert_receiver_is_total_eq(&self) -> ();
-
-"#,
-			r#"
-
     #[lua(
         as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone",
         kind = "Method",
         output(proxy),
     )]
     fn clone(&self) -> bevy::math::BVec2;
+
+"#,
+			r#"
+
+    #[lua(as_trait = "std::cmp::Eq", kind = "Method")]
+    fn assert_receiver_is_total_eq(&self) -> ();
 
 "#]
 )]
@@ -3690,8 +3690,8 @@ functions[r#"
 "#,
 			r#"
 
-    #[lua(as_trait = "std::cmp::PartialEq", kind = "Function", composite = "eq")]
-    fn eq(&self, #[proxy] other: &glam::BVec3) -> bool;
+    #[lua(as_trait = "std::cmp::Eq", kind = "Method")]
+    fn assert_receiver_is_total_eq(&self) -> ();
 
 "#,
 			r#"
@@ -3706,8 +3706,8 @@ functions[r#"
 "#,
 			r#"
 
-    #[lua(as_trait = "std::cmp::Eq", kind = "Method")]
-    fn assert_receiver_is_total_eq(&self) -> ();
+    #[lua(as_trait = "std::cmp::PartialEq", kind = "Function", composite = "eq")]
+    fn eq(&self, #[proxy] other: &glam::BVec3) -> bool;
 
 "#]
 )]
@@ -3784,14 +3784,14 @@ functions[r#"
 "#,
 			r#"
 
-    #[lua(as_trait = "std::cmp::Eq", kind = "Method")]
-    fn assert_receiver_is_total_eq(&self) -> ();
+    #[lua(as_trait = "std::cmp::PartialEq", kind = "Function", composite = "eq")]
+    fn eq(&self, #[proxy] other: &glam::BVec4) -> bool;
 
 "#,
 			r#"
 
-    #[lua(as_trait = "std::cmp::PartialEq", kind = "Function", composite = "eq")]
-    fn eq(&self, #[proxy] other: &glam::BVec4) -> bool;
+    #[lua(as_trait = "std::cmp::Eq", kind = "Method")]
+    fn assert_receiver_is_total_eq(&self) -> ();
 
 "#,
 			r#"
@@ -3880,18 +3880,18 @@ functions[r#"
 "#,
 			r#"
 
-    #[lua(as_trait = "std::cmp::PartialEq", kind = "Function", composite = "eq")]
-    fn eq(&self, #[proxy] rhs: &glam::BVec3A) -> bool;
-
-"#,
-			r#"
-
     #[lua(
         as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone",
         kind = "Method",
         output(proxy),
     )]
     fn clone(&self) -> bevy::math::BVec3A;
+
+"#,
+			r#"
+
+    #[lua(as_trait = "std::cmp::PartialEq", kind = "Function", composite = "eq")]
+    fn eq(&self, #[proxy] rhs: &glam::BVec3A) -> bool;
 
 "#]
 )]
@@ -3971,18 +3971,18 @@ functions[r#"
 "#,
 			r#"
 
-    #[lua(as_trait = "std::cmp::PartialEq", kind = "Function", composite = "eq")]
-    fn eq(&self, #[proxy] rhs: &glam::BVec4A) -> bool;
-
-"#,
-			r#"
-
     #[lua(
         as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone",
         kind = "Method",
         output(proxy),
     )]
     fn clone(&self) -> bevy::math::BVec4A;
+
+"#,
+			r#"
+
+    #[lua(as_trait = "std::cmp::PartialEq", kind = "Function", composite = "eq")]
+    fn eq(&self, #[proxy] rhs: &glam::BVec4A) -> bool;
 
 "#]
 )]
@@ -4177,18 +4177,18 @@ functions[r#"
 "#,
 			r#"
 
-    #[lua(as_trait = "std::cmp::PartialEq", kind = "Function", composite = "eq")]
-    fn eq(&self, #[proxy] rhs: &glam::Affine2) -> bool;
-
-"#,
-			r#"
-
     #[lua(
         as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone",
         kind = "Method",
         output(proxy),
     )]
     fn clone(&self) -> bevy::math::Affine2;
+
+"#,
+			r#"
+
+    #[lua(as_trait = "std::cmp::PartialEq", kind = "Function", composite = "eq")]
+    fn eq(&self, #[proxy] rhs: &glam::Affine2) -> bool;
 
 "#]
 )]
@@ -4866,18 +4866,6 @@ functions[r#"
 			r#"
 
     #[lua(
-        as_trait = "std::ops::Sub",
-        kind = "Function",
-        output(proxy),
-        composite = "sub",
-        metamethod = "Sub",
-    )]
-    fn sub(self, #[proxy] rhs: bevy::math::Mat3) -> bevy::math::Mat3;
-
-"#,
-			r#"
-
-    #[lua(
         as_trait = "std::ops::Neg",
         kind = "Function",
         output(proxy),
@@ -4902,17 +4890,29 @@ functions[r#"
 			r#"
 
     #[lua(
-        as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone",
-        kind = "Method",
+        as_trait = "std::ops::Sub",
+        kind = "Function",
         output(proxy),
+        composite = "sub",
+        metamethod = "Sub",
     )]
-    fn clone(&self) -> bevy::math::Mat3;
+    fn sub(self, #[proxy] rhs: bevy::math::Mat3) -> bevy::math::Mat3;
 
 "#,
 			r#"
 
     #[lua(as_trait = "std::cmp::PartialEq", kind = "Function", composite = "eq")]
     fn eq(&self, #[proxy] rhs: &glam::Mat3) -> bool;
+
+"#,
+			r#"
+
+    #[lua(
+        as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone",
+        kind = "Method",
+        output(proxy),
+    )]
+    fn clone(&self) -> bevy::math::Mat3;
 
 "#]
 )]
@@ -5503,6 +5503,16 @@ functions[r#"
 "#,
 			r#"
 
+    #[lua(
+        as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone",
+        kind = "Method",
+        output(proxy),
+    )]
+    fn clone(&self) -> bevy::math::Vec2;
+
+"#,
+			r#"
+
     #[lua(as_trait = "std::cmp::PartialEq", kind = "Function", composite = "eq")]
     fn eq(&self, #[proxy] other: &glam::Vec2) -> bool;
 
@@ -5520,14 +5530,10 @@ functions[r#"
 
 "#,
 			r#"
-
-    #[lua(
-        as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone",
-        kind = "Method",
-        output(proxy),
-    )]
-    fn clone(&self) -> bevy::math::Vec2;
-
+#[lua(kind="Method", raw , metamethod="Index")]
+fn index(&self, lua: &Lua, idx: crate::lua::util::LuaIndex) -> Result<f32,_> {
+    Ok(self.inner()?[*idx])
+}
 "#]
 )]
 
@@ -6110,16 +6116,6 @@ functions[r#"
 "#,
 			r#"
 
-    #[lua(
-        as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone",
-        kind = "Method",
-        output(proxy),
-    )]
-    fn clone(&self) -> bevy::math::Vec3;
-
-"#,
-			r#"
-
     #[lua(as_trait = "std::cmp::PartialEq", kind = "Function", composite = "eq")]
     fn eq(&self, #[proxy] other: &glam::Vec3) -> bool;
 
@@ -6135,6 +6131,22 @@ functions[r#"
     )]
     fn neg(self) -> bevy::math::Vec3;
 
+"#,
+			r#"
+
+    #[lua(
+        as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone",
+        kind = "Method",
+        output(proxy),
+    )]
+    fn clone(&self) -> bevy::math::Vec3;
+
+"#,
+			r#"
+#[lua(kind="Method", raw , metamethod="Index")]
+fn index(&self, lua: &Lua, idx: crate::lua::util::LuaIndex) -> Result<f32,_> {
+    Ok(self.inner()?[*idx])
+}
 "#]
 )]
 
@@ -6340,30 +6352,18 @@ functions[r#"
 "#,
 			r#"
 
+    #[lua(as_trait = "std::cmp::PartialEq", kind = "Function", composite = "eq")]
+    fn eq(&self, #[proxy] rhs: &glam::Mat2) -> bool;
+
+"#,
+			r#"
+
     #[lua(
         as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone",
         kind = "Method",
         output(proxy),
     )]
     fn clone(&self) -> bevy::math::Mat2;
-
-"#,
-			r#"
-
-    #[lua(
-        as_trait = "std::ops::Sub",
-        kind = "Function",
-        output(proxy),
-        composite = "sub",
-        metamethod = "Sub",
-    )]
-    fn sub(self, #[proxy] rhs: bevy::math::Mat2) -> bevy::math::Mat2;
-
-"#,
-			r#"
-
-    #[lua(as_trait = "std::cmp::PartialEq", kind = "Function", composite = "eq")]
-    fn eq(&self, #[proxy] rhs: &glam::Mat2) -> bool;
 
 "#,
 			r#"
@@ -6388,6 +6388,18 @@ functions[r#"
         metamethod = "Add",
     )]
     fn add(self, #[proxy] rhs: bevy::math::Mat2) -> bevy::math::Mat2;
+
+"#,
+			r#"
+
+    #[lua(
+        as_trait = "std::ops::Sub",
+        kind = "Function",
+        output(proxy),
+        composite = "sub",
+        metamethod = "Sub",
+    )]
+    fn sub(self, #[proxy] rhs: bevy::math::Mat2) -> bevy::math::Mat2;
 
 "#]
 )]
@@ -6741,8 +6753,12 @@ functions[r#"
 "#,
 			r#"
 
-    #[lua(as_trait = "std::cmp::PartialEq", kind = "Function", composite = "eq")]
-    fn eq(&self, #[proxy] rhs: &glam::Mat3A) -> bool;
+    #[lua(
+        as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone",
+        kind = "Method",
+        output(proxy),
+    )]
+    fn clone(&self) -> bevy::math::Mat3A;
 
 "#,
 			r#"
@@ -6760,11 +6776,13 @@ functions[r#"
 			r#"
 
     #[lua(
-        as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone",
-        kind = "Method",
+        as_trait = "std::ops::Sub",
+        kind = "Function",
         output(proxy),
+        composite = "sub",
+        metamethod = "Sub",
     )]
-    fn clone(&self) -> bevy::math::Mat3A;
+    fn sub(self, #[proxy] rhs: bevy::math::Mat3A) -> bevy::math::Mat3A;
 
 "#,
 			r#"
@@ -6781,14 +6799,8 @@ functions[r#"
 "#,
 			r#"
 
-    #[lua(
-        as_trait = "std::ops::Sub",
-        kind = "Function",
-        output(proxy),
-        composite = "sub",
-        metamethod = "Sub",
-    )]
-    fn sub(self, #[proxy] rhs: bevy::math::Mat3A) -> bevy::math::Mat3A;
+    #[lua(as_trait = "std::cmp::PartialEq", kind = "Function", composite = "eq")]
+    fn eq(&self, #[proxy] rhs: &glam::Mat3A) -> bool;
 
 "#]
 )]
@@ -7410,18 +7422,6 @@ functions[r#"
 			r#"
 
     #[lua(
-        as_trait = "std::ops::Add",
-        kind = "Function",
-        output(proxy),
-        composite = "add",
-        metamethod = "Add",
-    )]
-    fn add(self, #[proxy] rhs: bevy::math::Mat4) -> bevy::math::Mat4;
-
-"#,
-			r#"
-
-    #[lua(
         as_trait = "std::ops::Sub",
         kind = "Function",
         output(proxy),
@@ -7445,6 +7445,18 @@ functions[r#"
 
     #[lua(as_trait = "std::cmp::PartialEq", kind = "Function", composite = "eq")]
     fn eq(&self, #[proxy] rhs: &glam::Mat4) -> bool;
+
+"#,
+			r#"
+
+    #[lua(
+        as_trait = "std::ops::Add",
+        kind = "Function",
+        output(proxy),
+        composite = "add",
+        metamethod = "Add",
+    )]
+    fn add(self, #[proxy] rhs: bevy::math::Mat4) -> bevy::math::Mat4;
 
 "#,
 			r#"
@@ -7864,40 +7876,6 @@ functions[r#"
 
 "#,
 			r#"
-/// Divides a quaternion by a scalar value.
-/// The quotient is not guaranteed to be normalized.
-
-    #[lua(
-        as_trait = "std::ops::Div",
-        kind = "Function",
-        output(proxy),
-        composite = "div",
-        metamethod = "Div",
-    )]
-    fn div(self, rhs: f32) -> bevy::math::Quat;
-
-"#,
-			r#"
-/// Subtracts the `rhs` quaternion from `self`.
-/// The difference is not guaranteed to be normalized.
-
-    #[lua(
-        as_trait = "std::ops::Sub",
-        kind = "Function",
-        output(proxy),
-        composite = "sub",
-        metamethod = "Sub",
-    )]
-    fn sub(self, #[proxy] rhs: bevy::math::Quat) -> bevy::math::Quat;
-
-"#,
-			r#"
-
-    #[lua(as_trait = "std::cmp::PartialEq", kind = "Function", composite = "eq")]
-    fn eq(&self, #[proxy] rhs: &glam::Quat) -> bool;
-
-"#,
-			r#"
 
     #[lua(
         as_trait = "std::ops::Neg",
@@ -7923,6 +7901,40 @@ functions[r#"
         metamethod = "Add",
     )]
     fn add(self, #[proxy] rhs: bevy::math::Quat) -> bevy::math::Quat;
+
+"#,
+			r#"
+/// Divides a quaternion by a scalar value.
+/// The quotient is not guaranteed to be normalized.
+
+    #[lua(
+        as_trait = "std::ops::Div",
+        kind = "Function",
+        output(proxy),
+        composite = "div",
+        metamethod = "Div",
+    )]
+    fn div(self, rhs: f32) -> bevy::math::Quat;
+
+"#,
+			r#"
+
+    #[lua(as_trait = "std::cmp::PartialEq", kind = "Function", composite = "eq")]
+    fn eq(&self, #[proxy] rhs: &glam::Quat) -> bool;
+
+"#,
+			r#"
+/// Subtracts the `rhs` quaternion from `self`.
+/// The difference is not guaranteed to be normalized.
+
+    #[lua(
+        as_trait = "std::ops::Sub",
+        kind = "Function",
+        output(proxy),
+        composite = "sub",
+        metamethod = "Sub",
+    )]
+    fn sub(self, #[proxy] rhs: bevy::math::Quat) -> bevy::math::Quat;
 
 "#,
 			r#"
@@ -8560,6 +8572,12 @@ functions[r#"
     )]
     fn clone(&self) -> bevy::math::Vec3A;
 
+"#,
+			r#"
+#[lua(kind="Method", raw , metamethod="Index")]
+fn index(&self, lua: &Lua, idx: crate::lua::util::LuaIndex) -> Result<f32,_> {
+    Ok(self.inner()?[*idx])
+}
 "#]
 )]
 
@@ -9116,12 +9134,6 @@ functions[r#"
 "#,
 			r#"
 
-    #[lua(as_trait = "std::cmp::PartialEq", kind = "Function", composite = "eq")]
-    fn eq(&self, #[proxy] rhs: &glam::Vec4) -> bool;
-
-"#,
-			r#"
-
     #[lua(
         as_trait = "std::ops::Neg",
         kind = "Function",
@@ -9131,6 +9143,18 @@ functions[r#"
     )]
     fn neg(self) -> bevy::math::Vec4;
 
+"#,
+			r#"
+
+    #[lua(as_trait = "std::cmp::PartialEq", kind = "Function", composite = "eq")]
+    fn eq(&self, #[proxy] rhs: &glam::Vec4) -> bool;
+
+"#,
+			r#"
+#[lua(kind="Method", raw , metamethod="Index")]
+fn index(&self, lua: &Lua, idx: crate::lua::util::LuaIndex) -> Result<f32,_> {
+    Ok(self.inner()?[*idx])
+}
 "#]
 )]
 
@@ -9623,18 +9647,18 @@ functions[r#"
 "#,
 			r#"
 
-    #[lua(as_trait = "std::cmp::PartialEq", kind = "Function", composite = "eq")]
-    fn eq(&self, #[proxy] rhs: &glam::DAffine3) -> bool;
-
-"#,
-			r#"
-
     #[lua(
         as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone",
         kind = "Method",
         output(proxy),
     )]
     fn clone(&self) -> bevy::math::DAffine3;
+
+"#,
+			r#"
+
+    #[lua(as_trait = "std::cmp::PartialEq", kind = "Function", composite = "eq")]
+    fn eq(&self, #[proxy] rhs: &glam::DAffine3) -> bool;
 
 "#]
 )]
@@ -9830,6 +9854,12 @@ functions[r#"
 "#,
 			r#"
 
+    #[lua(as_trait = "std::cmp::PartialEq", kind = "Function", composite = "eq")]
+    fn eq(&self, #[proxy] rhs: &glam::DMat2) -> bool;
+
+"#,
+			r#"
+
     #[lua(
         as_trait = "std::ops::Neg",
         kind = "Function",
@@ -9843,11 +9873,13 @@ functions[r#"
 			r#"
 
     #[lua(
-        as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone",
-        kind = "Method",
+        as_trait = "std::ops::Add",
+        kind = "Function",
         output(proxy),
+        composite = "add",
+        metamethod = "Add",
     )]
-    fn clone(&self) -> bevy::math::DMat2;
+    fn add(self, #[proxy] rhs: bevy::math::DMat2) -> bevy::math::DMat2;
 
 "#,
 			r#"
@@ -9865,19 +9897,11 @@ functions[r#"
 			r#"
 
     #[lua(
-        as_trait = "std::ops::Add",
-        kind = "Function",
+        as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone",
+        kind = "Method",
         output(proxy),
-        composite = "add",
-        metamethod = "Add",
     )]
-    fn add(self, #[proxy] rhs: bevy::math::DMat2) -> bevy::math::DMat2;
-
-"#,
-			r#"
-
-    #[lua(as_trait = "std::cmp::PartialEq", kind = "Function", composite = "eq")]
-    fn eq(&self, #[proxy] rhs: &glam::DMat2) -> bool;
+    fn clone(&self) -> bevy::math::DMat2;
 
 "#]
 )]
@@ -10228,13 +10252,11 @@ functions[r#"
 			r#"
 
     #[lua(
-        as_trait = "std::ops::Neg",
-        kind = "Function",
+        as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone",
+        kind = "Method",
         output(proxy),
-        composite = "neg",
-        metamethod = "Unm",
     )]
-    fn neg(self) -> bevy::math::DMat3;
+    fn clone(&self) -> bevy::math::DMat3;
 
 "#,
 			r#"
@@ -10251,6 +10273,24 @@ functions[r#"
 "#,
 			r#"
 
+    #[lua(as_trait = "std::cmp::PartialEq", kind = "Function", composite = "eq")]
+    fn eq(&self, #[proxy] rhs: &glam::DMat3) -> bool;
+
+"#,
+			r#"
+
+    #[lua(
+        as_trait = "std::ops::Neg",
+        kind = "Function",
+        output(proxy),
+        composite = "neg",
+        metamethod = "Unm",
+    )]
+    fn neg(self) -> bevy::math::DMat3;
+
+"#,
+			r#"
+
     #[lua(
         as_trait = "std::ops::Sub",
         kind = "Function",
@@ -10259,22 +10299,6 @@ functions[r#"
         metamethod = "Sub",
     )]
     fn sub(self, #[proxy] rhs: bevy::math::DMat3) -> bevy::math::DMat3;
-
-"#,
-			r#"
-
-    #[lua(
-        as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone",
-        kind = "Method",
-        output(proxy),
-    )]
-    fn clone(&self) -> bevy::math::DMat3;
-
-"#,
-			r#"
-
-    #[lua(as_trait = "std::cmp::PartialEq", kind = "Function", composite = "eq")]
-    fn eq(&self, #[proxy] rhs: &glam::DMat3) -> bool;
 
 "#]
 )]
@@ -10886,13 +10910,13 @@ functions[r#"
 			r#"
 
     #[lua(
-        as_trait = "std::ops::Sub",
+        as_trait = "std::ops::Neg",
         kind = "Function",
         output(proxy),
-        composite = "sub",
-        metamethod = "Sub",
+        composite = "neg",
+        metamethod = "Unm",
     )]
-    fn sub(self, #[proxy] rhs: bevy::math::DMat4) -> bevy::math::DMat4;
+    fn neg(self) -> bevy::math::DMat4;
 
 "#,
 			r#"
@@ -10904,13 +10928,13 @@ functions[r#"
 			r#"
 
     #[lua(
-        as_trait = "std::ops::Neg",
+        as_trait = "std::ops::Sub",
         kind = "Function",
         output(proxy),
-        composite = "neg",
-        metamethod = "Unm",
+        composite = "sub",
+        metamethod = "Sub",
     )]
-    fn neg(self) -> bevy::math::DMat4;
+    fn sub(self, #[proxy] rhs: bevy::math::DMat4) -> bevy::math::DMat4;
 
 "#,
 			r#"
@@ -11314,24 +11338,6 @@ functions[r#"
 
 "#,
 			r#"
-
-    #[lua(as_trait = "std::cmp::PartialEq", kind = "Function", composite = "eq")]
-    fn eq(&self, #[proxy] rhs: &glam::DQuat) -> bool;
-
-"#,
-			r#"
-
-    #[lua(
-        as_trait = "std::ops::Neg",
-        kind = "Function",
-        output(proxy),
-        composite = "neg",
-        metamethod = "Unm",
-    )]
-    fn neg(self) -> bevy::math::DQuat;
-
-"#,
-			r#"
 /// Adds two quaternions.
 /// The sum is not guaranteed to be normalized.
 /// Note that addition is not the same as combining the rotations represented by the
@@ -11345,16 +11351,6 @@ functions[r#"
         metamethod = "Add",
     )]
     fn add(self, #[proxy] rhs: bevy::math::DQuat) -> bevy::math::DQuat;
-
-"#,
-			r#"
-
-    #[lua(
-        as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone",
-        kind = "Method",
-        output(proxy),
-    )]
-    fn clone(&self) -> bevy::math::DQuat;
 
 "#,
 			r#"
@@ -11383,6 +11379,34 @@ functions[r#"
         metamethod = "Sub",
     )]
     fn sub(self, #[proxy] rhs: bevy::math::DQuat) -> bevy::math::DQuat;
+
+"#,
+			r#"
+
+    #[lua(
+        as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone",
+        kind = "Method",
+        output(proxy),
+    )]
+    fn clone(&self) -> bevy::math::DQuat;
+
+"#,
+			r#"
+
+    #[lua(as_trait = "std::cmp::PartialEq", kind = "Function", composite = "eq")]
+    fn eq(&self, #[proxy] rhs: &glam::DQuat) -> bool;
+
+"#,
+			r#"
+
+    #[lua(
+        as_trait = "std::ops::Neg",
+        kind = "Function",
+        output(proxy),
+        composite = "neg",
+        metamethod = "Unm",
+    )]
+    fn neg(self) -> bevy::math::DQuat;
 
 "#]
 )]
@@ -11982,13 +12006,11 @@ functions[r#"
 			r#"
 
     #[lua(
-        as_trait = "std::ops::Neg",
-        kind = "Function",
+        as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone",
+        kind = "Method",
         output(proxy),
-        composite = "neg",
-        metamethod = "Unm",
     )]
-    fn neg(self) -> bevy::math::DVec2;
+    fn clone(&self) -> bevy::math::DVec2;
 
 "#,
 			r#"
@@ -12000,12 +12022,20 @@ functions[r#"
 			r#"
 
     #[lua(
-        as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone",
-        kind = "Method",
+        as_trait = "std::ops::Neg",
+        kind = "Function",
         output(proxy),
+        composite = "neg",
+        metamethod = "Unm",
     )]
-    fn clone(&self) -> bevy::math::DVec2;
+    fn neg(self) -> bevy::math::DVec2;
 
+"#,
+			r#"
+#[lua(kind="Method", raw , metamethod="Index")]
+fn index(&self, lua: &Lua, idx: crate::lua::util::LuaIndex) -> Result<f64,_> {
+    Ok(self.inner()?[*idx])
+}
 "#]
 )]
 
@@ -12603,6 +12633,12 @@ functions[r#"
 "#,
 			r#"
 
+    #[lua(as_trait = "std::cmp::PartialEq", kind = "Function", composite = "eq")]
+    fn eq(&self, #[proxy] other: &glam::DVec3) -> bool;
+
+"#,
+			r#"
+
     #[lua(
         as_trait = "std::ops::Neg",
         kind = "Function",
@@ -12624,10 +12660,10 @@ functions[r#"
 
 "#,
 			r#"
-
-    #[lua(as_trait = "std::cmp::PartialEq", kind = "Function", composite = "eq")]
-    fn eq(&self, #[proxy] other: &glam::DVec3) -> bool;
-
+#[lua(kind="Method", raw , metamethod="Index")]
+fn index(&self, lua: &Lua, idx: crate::lua::util::LuaIndex) -> Result<f64,_> {
+    Ok(self.inner()?[*idx])
+}
 "#]
 )]
 
@@ -13176,18 +13212,6 @@ functions[r#"
 "#,
 			r#"
 
-    #[lua(
-        as_trait = "std::ops::Neg",
-        kind = "Function",
-        output(proxy),
-        composite = "neg",
-        metamethod = "Unm",
-    )]
-    fn neg(self) -> bevy::math::DVec4;
-
-"#,
-			r#"
-
     #[lua(as_trait = "std::cmp::PartialEq", kind = "Function", composite = "eq")]
     fn eq(&self, #[proxy] other: &glam::DVec4) -> bool;
 
@@ -13201,6 +13225,24 @@ functions[r#"
     )]
     fn clone(&self) -> bevy::math::DVec4;
 
+"#,
+			r#"
+
+    #[lua(
+        as_trait = "std::ops::Neg",
+        kind = "Function",
+        output(proxy),
+        composite = "neg",
+        metamethod = "Unm",
+    )]
+    fn neg(self) -> bevy::math::DVec4;
+
+"#,
+			r#"
+#[lua(kind="Method", raw , metamethod="Index")]
+fn index(&self, lua: &Lua, idx: crate::lua::util::LuaIndex) -> Result<f64,_> {
+    Ok(self.inner()?[*idx])
+}
 "#]
 )]
 
@@ -13585,12 +13627,6 @@ functions[r#"
 "#,
 			r#"
 
-    #[lua(as_trait = "std::cmp::Eq", kind = "Method")]
-    fn assert_receiver_is_total_eq(&self) -> ();
-
-"#,
-			r#"
-
     #[lua(
         as_trait = "std::ops::Neg",
         kind = "Function",
@@ -13610,6 +13646,18 @@ functions[r#"
     )]
     fn clone(&self) -> bevy::math::IVec2;
 
+"#,
+			r#"
+
+    #[lua(as_trait = "std::cmp::Eq", kind = "Method")]
+    fn assert_receiver_is_total_eq(&self) -> ();
+
+"#,
+			r#"
+#[lua(kind="Method", raw , metamethod="Index")]
+fn index(&self, lua: &Lua, idx: crate::lua::util::LuaIndex) -> Result<i32,_> {
+    Ok(self.inner()?[*idx])
+}
 "#]
 )]
 
@@ -13987,13 +14035,11 @@ functions[r#"
 			r#"
 
     #[lua(
-        as_trait = "std::ops::Neg",
-        kind = "Function",
+        as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone",
+        kind = "Method",
         output(proxy),
-        composite = "neg",
-        metamethod = "Unm",
     )]
-    fn neg(self) -> bevy::math::IVec3;
+    fn clone(&self) -> bevy::math::IVec3;
 
 "#,
 			r#"
@@ -14004,19 +14050,27 @@ functions[r#"
 "#,
 			r#"
 
-    #[lua(
-        as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone",
-        kind = "Method",
-        output(proxy),
-    )]
-    fn clone(&self) -> bevy::math::IVec3;
+    #[lua(as_trait = "std::cmp::Eq", kind = "Method")]
+    fn assert_receiver_is_total_eq(&self) -> ();
 
 "#,
 			r#"
 
-    #[lua(as_trait = "std::cmp::Eq", kind = "Method")]
-    fn assert_receiver_is_total_eq(&self) -> ();
+    #[lua(
+        as_trait = "std::ops::Neg",
+        kind = "Function",
+        output(proxy),
+        composite = "neg",
+        metamethod = "Unm",
+    )]
+    fn neg(self) -> bevy::math::IVec3;
 
+"#,
+			r#"
+#[lua(kind="Method", raw , metamethod="Index")]
+fn index(&self, lua: &Lua, idx: crate::lua::util::LuaIndex) -> Result<i32,_> {
+    Ok(self.inner()?[*idx])
+}
 "#]
 )]
 
@@ -14372,18 +14426,14 @@ functions[r#"
 "#,
 			r#"
 
-    #[lua(as_trait = "std::cmp::Eq", kind = "Method")]
-    fn assert_receiver_is_total_eq(&self) -> ();
+    #[lua(as_trait = "std::cmp::PartialEq", kind = "Function", composite = "eq")]
+    fn eq(&self, #[proxy] other: &glam::IVec4) -> bool;
 
 "#,
 			r#"
 
-    #[lua(
-        as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone",
-        kind = "Method",
-        output(proxy),
-    )]
-    fn clone(&self) -> bevy::math::IVec4;
+    #[lua(as_trait = "std::cmp::Eq", kind = "Method")]
+    fn assert_receiver_is_total_eq(&self) -> ();
 
 "#,
 			r#"
@@ -14400,9 +14450,19 @@ functions[r#"
 "#,
 			r#"
 
-    #[lua(as_trait = "std::cmp::PartialEq", kind = "Function", composite = "eq")]
-    fn eq(&self, #[proxy] other: &glam::IVec4) -> bool;
+    #[lua(
+        as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone",
+        kind = "Method",
+        output(proxy),
+    )]
+    fn clone(&self) -> bevy::math::IVec4;
 
+"#,
+			r#"
+#[lua(kind="Method", raw , metamethod="Index")]
+fn index(&self, lua: &Lua, idx: crate::lua::util::LuaIndex) -> Result<i32,_> {
+    Ok(self.inner()?[*idx])
+}
 "#]
 )]
 
@@ -14705,6 +14765,16 @@ functions[r#"
 "#,
 			r#"
 
+    #[lua(
+        as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone",
+        kind = "Method",
+        output(proxy),
+    )]
+    fn clone(&self) -> bevy::math::UVec2;
+
+"#,
+			r#"
+
     #[lua(as_trait = "std::cmp::Eq", kind = "Method")]
     fn assert_receiver_is_total_eq(&self) -> ();
 
@@ -14716,14 +14786,10 @@ functions[r#"
 
 "#,
 			r#"
-
-    #[lua(
-        as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone",
-        kind = "Method",
-        output(proxy),
-    )]
-    fn clone(&self) -> bevy::math::UVec2;
-
+#[lua(kind="Method", raw , metamethod="Index")]
+fn index(&self, lua: &Lua, idx: crate::lua::util::LuaIndex) -> Result<u32,_> {
+    Ok(self.inner()?[*idx])
+}
 "#]
 )]
 
@@ -15067,6 +15133,12 @@ functions[r#"
     #[lua(as_trait = "std::cmp::PartialEq", kind = "Function", composite = "eq")]
     fn eq(&self, #[proxy] other: &glam::UVec3) -> bool;
 
+"#,
+			r#"
+#[lua(kind="Method", raw , metamethod="Index")]
+fn index(&self, lua: &Lua, idx: crate::lua::util::LuaIndex) -> Result<u32,_> {
+    Ok(self.inner()?[*idx])
+}
 "#]
 )]
 
@@ -15370,8 +15442,12 @@ functions[r#"
 "#,
 			r#"
 
-    #[lua(as_trait = "std::cmp::PartialEq", kind = "Function", composite = "eq")]
-    fn eq(&self, #[proxy] other: &glam::UVec4) -> bool;
+    #[lua(
+        as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone",
+        kind = "Method",
+        output(proxy),
+    )]
+    fn clone(&self) -> bevy::math::UVec4;
 
 "#,
 			r#"
@@ -15382,13 +15458,15 @@ functions[r#"
 "#,
 			r#"
 
-    #[lua(
-        as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone",
-        kind = "Method",
-        output(proxy),
-    )]
-    fn clone(&self) -> bevy::math::UVec4;
+    #[lua(as_trait = "std::cmp::PartialEq", kind = "Function", composite = "eq")]
+    fn eq(&self, #[proxy] other: &glam::UVec4) -> bool;
 
+"#,
+			r#"
+#[lua(kind="Method", raw , metamethod="Index")]
+fn index(&self, lua: &Lua, idx: crate::lua::util::LuaIndex) -> Result<u32,_> {
+    Ok(self.inner()?[*idx])
+}
 "#]
 )]
 
@@ -15767,14 +15845,8 @@ functions[r#"
 "#,
 			r#"
 
-    #[lua(
-        as_trait = "std::ops::Neg",
-        kind = "Function",
-        output(proxy),
-        composite = "neg",
-        metamethod = "Unm",
-    )]
-    fn neg(self) -> bevy::math::I64Vec2;
+    #[lua(as_trait = "std::cmp::Eq", kind = "Method")]
+    fn assert_receiver_is_total_eq(&self) -> ();
 
 "#,
 			r#"
@@ -15785,18 +15857,24 @@ functions[r#"
 "#,
 			r#"
 
-    #[lua(as_trait = "std::cmp::Eq", kind = "Method")]
-    fn assert_receiver_is_total_eq(&self) -> ();
-
-"#,
-			r#"
-
     #[lua(
         as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone",
         kind = "Method",
         output(proxy),
     )]
     fn clone(&self) -> bevy::math::I64Vec2;
+
+"#,
+			r#"
+
+    #[lua(
+        as_trait = "std::ops::Neg",
+        kind = "Function",
+        output(proxy),
+        composite = "neg",
+        metamethod = "Unm",
+    )]
+    fn neg(self) -> bevy::math::I64Vec2;
 
 "#]
 )]
@@ -16180,6 +16258,16 @@ functions[r#"
 "#,
 			r#"
 
+    #[lua(
+        as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone",
+        kind = "Method",
+        output(proxy),
+    )]
+    fn clone(&self) -> bevy::math::I64Vec3;
+
+"#,
+			r#"
+
     #[lua(as_trait = "std::cmp::Eq", kind = "Method")]
     fn assert_receiver_is_total_eq(&self) -> ();
 
@@ -16194,16 +16282,6 @@ functions[r#"
         metamethod = "Unm",
     )]
     fn neg(self) -> bevy::math::I64Vec3;
-
-"#,
-			r#"
-
-    #[lua(
-        as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone",
-        kind = "Method",
-        output(proxy),
-    )]
-    fn clone(&self) -> bevy::math::I64Vec3;
 
 "#]
 )]
@@ -16570,14 +16648,8 @@ functions[r#"
 "#,
 			r#"
 
-    #[lua(
-        as_trait = "std::ops::Neg",
-        kind = "Function",
-        output(proxy),
-        composite = "neg",
-        metamethod = "Unm",
-    )]
-    fn neg(self) -> bevy::math::I64Vec4;
+    #[lua(as_trait = "std::cmp::Eq", kind = "Method")]
+    fn assert_receiver_is_total_eq(&self) -> ();
 
 "#,
 			r#"
@@ -16588,8 +16660,14 @@ functions[r#"
 "#,
 			r#"
 
-    #[lua(as_trait = "std::cmp::Eq", kind = "Method")]
-    fn assert_receiver_is_total_eq(&self) -> ();
+    #[lua(
+        as_trait = "std::ops::Neg",
+        kind = "Function",
+        output(proxy),
+        composite = "neg",
+        metamethod = "Unm",
+    )]
+    fn neg(self) -> bevy::math::I64Vec4;
 
 "#]
 )]
@@ -17236,12 +17314,8 @@ functions[r#"
 "#,
 			r#"
 
-    #[lua(
-        as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone",
-        kind = "Method",
-        output(proxy),
-    )]
-    fn clone(&self) -> bevy::math::U64Vec3;
+    #[lua(as_trait = "std::cmp::Eq", kind = "Method")]
+    fn assert_receiver_is_total_eq(&self) -> ();
 
 "#,
 			r#"
@@ -17252,8 +17326,12 @@ functions[r#"
 "#,
 			r#"
 
-    #[lua(as_trait = "std::cmp::Eq", kind = "Method")]
-    fn assert_receiver_is_total_eq(&self) -> ();
+    #[lua(
+        as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone",
+        kind = "Method",
+        output(proxy),
+    )]
+    fn clone(&self) -> bevy::math::U64Vec3;
 
 "#]
 )]
@@ -17558,6 +17636,12 @@ functions[r#"
 "#,
 			r#"
 
+    #[lua(as_trait = "std::cmp::Eq", kind = "Method")]
+    fn assert_receiver_is_total_eq(&self) -> ();
+
+"#,
+			r#"
+
     #[lua(as_trait = "std::cmp::PartialEq", kind = "Function", composite = "eq")]
     fn eq(&self, #[proxy] other: &glam::U64Vec4) -> bool;
 
@@ -17570,12 +17654,6 @@ functions[r#"
         output(proxy),
     )]
     fn clone(&self) -> bevy::math::U64Vec4;
-
-"#,
-			r#"
-
-    #[lua(as_trait = "std::cmp::Eq", kind = "Method")]
-    fn assert_receiver_is_total_eq(&self) -> ();
 
 "#]
 )]
@@ -17809,18 +17887,18 @@ functions[r#"
 "#,
 			r#"
 
-    #[lua(as_trait = "std::cmp::PartialEq", kind = "Function", composite = "eq")]
-    fn eq(&self, #[proxy] other: &std::num::NonZeroU8) -> bool;
-
-"#,
-			r#"
-
     #[lua(
         as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone",
         kind = "Method",
         output(proxy),
     )]
     fn clone(&self) -> std::num::NonZeroU8;
+
+"#,
+			r#"
+
+    #[lua(as_trait = "std::cmp::PartialEq", kind = "Function", composite = "eq")]
+    fn eq(&self, #[proxy] other: &std::num::NonZeroU8) -> bool;
 
 "#]
 )]
@@ -18053,12 +18131,6 @@ functions[r#"
 "#,
 			r#"
 
-    #[lua(as_trait = "std::cmp::PartialEq", kind = "Function", composite = "eq")]
-    fn eq(&self, #[proxy] other: &std::num::NonZeroU16) -> bool;
-
-"#,
-			r#"
-
     #[lua(
         as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone",
         kind = "Method",
@@ -18071,6 +18143,12 @@ functions[r#"
 
     #[lua(as_trait = "std::cmp::Eq", kind = "Method")]
     fn assert_receiver_is_total_eq(&self) -> ();
+
+"#,
+			r#"
+
+    #[lua(as_trait = "std::cmp::PartialEq", kind = "Function", composite = "eq")]
+    fn eq(&self, #[proxy] other: &std::num::NonZeroU16) -> bool;
 
 "#]
 )]
@@ -18303,18 +18381,18 @@ functions[r#"
 "#,
 			r#"
 
-    #[lua(as_trait = "std::cmp::Eq", kind = "Method")]
-    fn assert_receiver_is_total_eq(&self) -> ();
-
-"#,
-			r#"
-
     #[lua(
         as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone",
         kind = "Method",
         output(proxy),
     )]
     fn clone(&self) -> std::num::NonZeroU32;
+
+"#,
+			r#"
+
+    #[lua(as_trait = "std::cmp::Eq", kind = "Method")]
+    fn assert_receiver_is_total_eq(&self) -> ();
 
 "#,
 			r#"
@@ -18553,6 +18631,12 @@ functions[r#"
 "#,
 			r#"
 
+    #[lua(as_trait = "std::cmp::PartialEq", kind = "Function", composite = "eq")]
+    fn eq(&self, #[proxy] other: &std::num::NonZeroU64) -> bool;
+
+"#,
+			r#"
+
     #[lua(as_trait = "std::cmp::Eq", kind = "Method")]
     fn assert_receiver_is_total_eq(&self) -> ();
 
@@ -18565,12 +18649,6 @@ functions[r#"
         output(proxy),
     )]
     fn clone(&self) -> std::num::NonZeroU64;
-
-"#,
-			r#"
-
-    #[lua(as_trait = "std::cmp::PartialEq", kind = "Function", composite = "eq")]
-    fn eq(&self, #[proxy] other: &std::num::NonZeroU64) -> bool;
 
 "#]
 )]
@@ -18809,18 +18887,18 @@ functions[r#"
 "#,
 			r#"
 
-    #[lua(as_trait = "std::cmp::Eq", kind = "Method")]
-    fn assert_receiver_is_total_eq(&self) -> ();
-
-"#,
-			r#"
-
     #[lua(
         as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone",
         kind = "Method",
         output(proxy),
     )]
     fn clone(&self) -> std::num::NonZeroU128;
+
+"#,
+			r#"
+
+    #[lua(as_trait = "std::cmp::Eq", kind = "Method")]
+    fn assert_receiver_is_total_eq(&self) -> ();
 
 "#]
 )]
@@ -19053,8 +19131,8 @@ functions[r#"
 "#,
 			r#"
 
-    #[lua(as_trait = "std::cmp::Eq", kind = "Method")]
-    fn assert_receiver_is_total_eq(&self) -> ();
+    #[lua(as_trait = "std::cmp::PartialEq", kind = "Function", composite = "eq")]
+    fn eq(&self, #[proxy] other: &std::num::NonZeroUsize) -> bool;
 
 "#,
 			r#"
@@ -19069,8 +19147,8 @@ functions[r#"
 "#,
 			r#"
 
-    #[lua(as_trait = "std::cmp::PartialEq", kind = "Function", composite = "eq")]
-    fn eq(&self, #[proxy] other: &std::num::NonZeroUsize) -> bool;
+    #[lua(as_trait = "std::cmp::Eq", kind = "Method")]
+    fn assert_receiver_is_total_eq(&self) -> ();
 
 "#]
 )]
@@ -19409,12 +19487,6 @@ functions[r#"
 "#,
 			r#"
 
-    #[lua(as_trait = "std::cmp::PartialEq", kind = "Function", composite = "eq")]
-    fn eq(&self, #[proxy] other: &std::num::NonZeroI8) -> bool;
-
-"#,
-			r#"
-
     #[lua(as_trait = "std::cmp::Eq", kind = "Method")]
     fn assert_receiver_is_total_eq(&self) -> ();
 
@@ -19429,6 +19501,12 @@ functions[r#"
         metamethod = "Unm",
     )]
     fn neg(self) -> std::num::NonZeroI8;
+
+"#,
+			r#"
+
+    #[lua(as_trait = "std::cmp::PartialEq", kind = "Function", composite = "eq")]
+    fn eq(&self, #[proxy] other: &std::num::NonZeroI8) -> bool;
 
 "#,
 			r#"
@@ -19781,18 +19859,6 @@ functions[r#"
 "#,
 			r#"
 
-    #[lua(as_trait = "std::cmp::Eq", kind = "Method")]
-    fn assert_receiver_is_total_eq(&self) -> ();
-
-"#,
-			r#"
-
-    #[lua(as_trait = "std::cmp::PartialEq", kind = "Function", composite = "eq")]
-    fn eq(&self, #[proxy] other: &std::num::NonZeroI16) -> bool;
-
-"#,
-			r#"
-
     #[lua(
         as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone",
         kind = "Method",
@@ -19811,6 +19877,18 @@ functions[r#"
         metamethod = "Unm",
     )]
     fn neg(self) -> std::num::NonZeroI16;
+
+"#,
+			r#"
+
+    #[lua(as_trait = "std::cmp::Eq", kind = "Method")]
+    fn assert_receiver_is_total_eq(&self) -> ();
+
+"#,
+			r#"
+
+    #[lua(as_trait = "std::cmp::PartialEq", kind = "Function", composite = "eq")]
+    fn eq(&self, #[proxy] other: &std::num::NonZeroI16) -> bool;
 
 "#]
 )]
@@ -20165,18 +20243,18 @@ functions[r#"
 "#,
 			r#"
 
-    #[lua(as_trait = "std::cmp::Eq", kind = "Method")]
-    fn assert_receiver_is_total_eq(&self) -> ();
-
-"#,
-			r#"
-
     #[lua(
         as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone",
         kind = "Method",
         output(proxy),
     )]
     fn clone(&self) -> std::num::NonZeroI32;
+
+"#,
+			r#"
+
+    #[lua(as_trait = "std::cmp::Eq", kind = "Method")]
+    fn assert_receiver_is_total_eq(&self) -> ();
 
 "#,
 			r#"
@@ -20525,12 +20603,6 @@ functions[r#"
 "#,
 			r#"
 
-    #[lua(as_trait = "std::cmp::Eq", kind = "Method")]
-    fn assert_receiver_is_total_eq(&self) -> ();
-
-"#,
-			r#"
-
     #[lua(
         as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone",
         kind = "Method",
@@ -20549,6 +20621,12 @@ functions[r#"
         metamethod = "Unm",
     )]
     fn neg(self) -> std::num::NonZeroI64;
+
+"#,
+			r#"
+
+    #[lua(as_trait = "std::cmp::Eq", kind = "Method")]
+    fn assert_receiver_is_total_eq(&self) -> ();
 
 "#,
 			r#"
@@ -20897,12 +20975,14 @@ functions[r#"
 "#,
 			r#"
 
-    #[lua(
-        as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone",
-        kind = "Method",
-        output(proxy),
-    )]
-    fn clone(&self) -> std::num::NonZeroI128;
+    #[lua(as_trait = "std::cmp::Eq", kind = "Method")]
+    fn assert_receiver_is_total_eq(&self) -> ();
+
+"#,
+			r#"
+
+    #[lua(as_trait = "std::cmp::PartialEq", kind = "Function", composite = "eq")]
+    fn eq(&self, #[proxy] other: &std::num::NonZeroI128) -> bool;
 
 "#,
 			r#"
@@ -20919,14 +20999,12 @@ functions[r#"
 "#,
 			r#"
 
-    #[lua(as_trait = "std::cmp::PartialEq", kind = "Function", composite = "eq")]
-    fn eq(&self, #[proxy] other: &std::num::NonZeroI128) -> bool;
-
-"#,
-			r#"
-
-    #[lua(as_trait = "std::cmp::Eq", kind = "Method")]
-    fn assert_receiver_is_total_eq(&self) -> ();
+    #[lua(
+        as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone",
+        kind = "Method",
+        output(proxy),
+    )]
+    fn clone(&self) -> std::num::NonZeroI128;
 
 "#]
 )]
@@ -21269,12 +21347,6 @@ functions[r#"
 "#,
 			r#"
 
-    #[lua(as_trait = "std::cmp::PartialEq", kind = "Function", composite = "eq")]
-    fn eq(&self, #[proxy] other: &std::num::NonZeroIsize) -> bool;
-
-"#,
-			r#"
-
     #[lua(
         as_trait = "std::ops::Neg",
         kind = "Function",
@@ -21287,18 +21359,24 @@ functions[r#"
 "#,
 			r#"
 
-    #[lua(as_trait = "std::cmp::Eq", kind = "Method")]
-    fn assert_receiver_is_total_eq(&self) -> ();
-
-"#,
-			r#"
-
     #[lua(
         as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone",
         kind = "Method",
         output(proxy),
     )]
     fn clone(&self) -> std::num::NonZeroIsize;
+
+"#,
+			r#"
+
+    #[lua(as_trait = "std::cmp::PartialEq", kind = "Function", composite = "eq")]
+    fn eq(&self, #[proxy] other: &std::num::NonZeroIsize) -> bool;
+
+"#,
+			r#"
+
+    #[lua(as_trait = "std::cmp::Eq", kind = "Method")]
+    fn assert_receiver_is_total_eq(&self) -> ();
 
 "#]
 )]
@@ -21379,18 +21457,18 @@ functions[r#"
 "#,
 			r#"
 
-    #[lua(as_trait = "std::cmp::Eq", kind = "Method")]
-    fn assert_receiver_is_total_eq(&self) -> ();
-
-"#,
-			r#"
-
     #[lua(
         as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone",
         kind = "Method",
         output(proxy),
     )]
     fn clone(&self) -> std::ops::RangeFull;
+
+"#,
+			r#"
+
+    #[lua(as_trait = "std::cmp::Eq", kind = "Method")]
+    fn assert_receiver_is_total_eq(&self) -> ();
 
 "#]
 )]
@@ -21884,6 +21962,28 @@ functions[r#"
 "#,
 			r#"
 
+    #[lua(
+        as_trait = "std::ops::Mul",
+        kind = "Function",
+        output(proxy),
+        composite = "mul",
+        metamethod = "Mul",
+    )]
+    fn mul(self, rhs: u32) -> bevy::utils::Duration;
+
+"#,
+			r#"
+
+    #[lua(
+        as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone",
+        kind = "Method",
+        output(proxy),
+    )]
+    fn clone(&self) -> bevy::utils::Duration;
+
+"#,
+			r#"
+
     #[lua(as_trait = "std::cmp::Eq", kind = "Method")]
     fn assert_receiver_is_total_eq(&self) -> ();
 
@@ -21902,6 +22002,12 @@ functions[r#"
 "#,
 			r#"
 
+    #[lua(as_trait = "std::cmp::PartialEq", kind = "Function", composite = "eq")]
+    fn eq(&self, #[proxy] other: &bevy_utils::Duration) -> bool;
+
+"#,
+			r#"
+
     #[lua(
         as_trait = "std::ops::Add",
         kind = "Function",
@@ -21910,34 +22016,6 @@ functions[r#"
         metamethod = "Add",
     )]
     fn add(self, #[proxy] rhs: bevy::utils::Duration) -> bevy::utils::Duration;
-
-"#,
-			r#"
-
-    #[lua(as_trait = "std::cmp::PartialEq", kind = "Function", composite = "eq")]
-    fn eq(&self, #[proxy] other: &bevy_utils::Duration) -> bool;
-
-"#,
-			r#"
-
-    #[lua(
-        as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone",
-        kind = "Method",
-        output(proxy),
-    )]
-    fn clone(&self) -> bevy::utils::Duration;
-
-"#,
-			r#"
-
-    #[lua(
-        as_trait = "std::ops::Mul",
-        kind = "Function",
-        output(proxy),
-        composite = "mul",
-        metamethod = "Mul",
-    )]
-    fn mul(self, rhs: u32) -> bevy::utils::Duration;
 
 "#]
 )]
@@ -21956,11 +22034,6 @@ pub struct Duration{
 }
 
 
-
-
-crate::impl_tealr_generic!(pub(crate) struct T);
-
-
 #[derive(Default)]
 pub(crate) struct Globals;
 
@@ -21973,91 +22046,91 @@ impl bevy_mod_scripting_lua::tealr::mlu::ExportInstances for Globals {
             
          
             
-                instances.add_instance("LuaUuid", 
+                instances.add_instance("Uuid", 
                                 bevy_mod_scripting_lua::tealr::mlu::UserDataProxy::<LuaUuid>::new)?;
             
          
             
-                instances.add_instance("LuaDirection2d", 
+                instances.add_instance("Direction2d", 
                                 bevy_mod_scripting_lua::tealr::mlu::UserDataProxy::<LuaDirection2d>::new)?;
             
          
             
-                instances.add_instance("LuaCircle", 
+                instances.add_instance("Circle", 
                                 bevy_mod_scripting_lua::tealr::mlu::UserDataProxy::<LuaCircle>::new)?;
             
          
             
-                instances.add_instance("LuaEllipse", 
+                instances.add_instance("Ellipse", 
                                 bevy_mod_scripting_lua::tealr::mlu::UserDataProxy::<LuaEllipse>::new)?;
             
          
             
-                instances.add_instance("LuaPlane2d", 
+                instances.add_instance("Plane2d", 
                                 bevy_mod_scripting_lua::tealr::mlu::UserDataProxy::<LuaPlane2d>::new)?;
             
          
             
          
             
-                instances.add_instance("LuaSegment2d", 
+                instances.add_instance("Segment2d", 
                                 bevy_mod_scripting_lua::tealr::mlu::UserDataProxy::<LuaSegment2d>::new)?;
             
          
             
-                instances.add_instance("LuaTriangle2d", 
+                instances.add_instance("Triangle2d", 
                                 bevy_mod_scripting_lua::tealr::mlu::UserDataProxy::<LuaTriangle2d>::new)?;
             
          
             
-                instances.add_instance("LuaRectangle", 
+                instances.add_instance("Rectangle", 
                                 bevy_mod_scripting_lua::tealr::mlu::UserDataProxy::<LuaRectangle>::new)?;
             
          
             
-                instances.add_instance("LuaRegularPolygon", 
+                instances.add_instance("RegularPolygon", 
                                 bevy_mod_scripting_lua::tealr::mlu::UserDataProxy::<LuaRegularPolygon>::new)?;
             
          
             
-                instances.add_instance("LuaCapsule2d", 
+                instances.add_instance("Capsule2d", 
                                 bevy_mod_scripting_lua::tealr::mlu::UserDataProxy::<LuaCapsule2d>::new)?;
             
          
             
-                instances.add_instance("LuaDirection3d", 
+                instances.add_instance("Direction3d", 
                                 bevy_mod_scripting_lua::tealr::mlu::UserDataProxy::<LuaDirection3d>::new)?;
             
          
             
-                instances.add_instance("LuaSphere", 
+                instances.add_instance("Sphere", 
                                 bevy_mod_scripting_lua::tealr::mlu::UserDataProxy::<LuaSphere>::new)?;
             
          
             
-                instances.add_instance("LuaPlane3d", 
+                instances.add_instance("Plane3d", 
                                 bevy_mod_scripting_lua::tealr::mlu::UserDataProxy::<LuaPlane3d>::new)?;
             
          
             
          
             
-                instances.add_instance("LuaSegment3d", 
+                instances.add_instance("Segment3d", 
                                 bevy_mod_scripting_lua::tealr::mlu::UserDataProxy::<LuaSegment3d>::new)?;
             
          
             
-                instances.add_instance("LuaCuboid", 
+                instances.add_instance("Cuboid", 
                                 bevy_mod_scripting_lua::tealr::mlu::UserDataProxy::<LuaCuboid>::new)?;
             
          
             
-                instances.add_instance("LuaCylinder", 
+                instances.add_instance("Cylinder", 
                                 bevy_mod_scripting_lua::tealr::mlu::UserDataProxy::<LuaCylinder>::new)?;
             
          
             
-                instances.add_instance("LuaCapsule3d", 
+                instances.add_instance("Capsule3d", 
                                 bevy_mod_scripting_lua::tealr::mlu::UserDataProxy::<LuaCapsule3d>::new)?;
             
          
@@ -22066,286 +22139,286 @@ impl bevy_mod_scripting_lua::tealr::mlu::ExportInstances for Globals {
             
          
             
-                instances.add_instance("LuaTorus", 
+                instances.add_instance("Torus", 
                                 bevy_mod_scripting_lua::tealr::mlu::UserDataProxy::<LuaTorus>::new)?;
             
          
             
-                instances.add_instance("LuaIRect", 
+                instances.add_instance("IRect", 
                                 bevy_mod_scripting_lua::tealr::mlu::UserDataProxy::<LuaIRect>::new)?;
             
          
             
-                instances.add_instance("LuaRect", 
+                instances.add_instance("Rect", 
                                 bevy_mod_scripting_lua::tealr::mlu::UserDataProxy::<LuaRect>::new)?;
             
          
             
-                instances.add_instance("LuaURect", 
+                instances.add_instance("URect", 
                                 bevy_mod_scripting_lua::tealr::mlu::UserDataProxy::<LuaURect>::new)?;
             
          
             
-                instances.add_instance("LuaPathBuf", 
+                instances.add_instance("PathBuf", 
                                 bevy_mod_scripting_lua::tealr::mlu::UserDataProxy::<LuaPathBuf>::new)?;
             
          
             
-                instances.add_instance("LuaInstant", 
+                instances.add_instance("Instant", 
                                 bevy_mod_scripting_lua::tealr::mlu::UserDataProxy::<LuaInstant>::new)?;
             
          
             
          
             
-                instances.add_instance("LuaBVec2", 
+                instances.add_instance("BVec2", 
                                 bevy_mod_scripting_lua::tealr::mlu::UserDataProxy::<LuaBVec2>::new)?;
             
          
             
-                instances.add_instance("LuaBVec3", 
+                instances.add_instance("BVec3", 
                                 bevy_mod_scripting_lua::tealr::mlu::UserDataProxy::<LuaBVec3>::new)?;
             
          
             
-                instances.add_instance("LuaBVec4", 
+                instances.add_instance("BVec4", 
                                 bevy_mod_scripting_lua::tealr::mlu::UserDataProxy::<LuaBVec4>::new)?;
             
          
             
-                instances.add_instance("LuaBVec3A", 
+                instances.add_instance("BVec3A", 
                                 bevy_mod_scripting_lua::tealr::mlu::UserDataProxy::<LuaBVec3A>::new)?;
             
          
             
-                instances.add_instance("LuaBVec4A", 
+                instances.add_instance("BVec4A", 
                                 bevy_mod_scripting_lua::tealr::mlu::UserDataProxy::<LuaBVec4A>::new)?;
             
          
             
-                instances.add_instance("LuaAffine2", 
+                instances.add_instance("Affine2", 
                                 bevy_mod_scripting_lua::tealr::mlu::UserDataProxy::<LuaAffine2>::new)?;
             
          
             
-                instances.add_instance("LuaAffine3A", 
+                instances.add_instance("Affine3A", 
                                 bevy_mod_scripting_lua::tealr::mlu::UserDataProxy::<LuaAffine3A>::new)?;
             
          
             
-                instances.add_instance("LuaMat3", 
+                instances.add_instance("Mat3", 
                                 bevy_mod_scripting_lua::tealr::mlu::UserDataProxy::<LuaMat3>::new)?;
             
          
             
-                instances.add_instance("LuaVec2", 
+                instances.add_instance("Vec2", 
                                 bevy_mod_scripting_lua::tealr::mlu::UserDataProxy::<LuaVec2>::new)?;
             
          
             
-                instances.add_instance("LuaVec3", 
+                instances.add_instance("Vec3", 
                                 bevy_mod_scripting_lua::tealr::mlu::UserDataProxy::<LuaVec3>::new)?;
             
          
             
-                instances.add_instance("LuaMat2", 
+                instances.add_instance("Mat2", 
                                 bevy_mod_scripting_lua::tealr::mlu::UserDataProxy::<LuaMat2>::new)?;
             
          
             
-                instances.add_instance("LuaMat3A", 
+                instances.add_instance("Mat3A", 
                                 bevy_mod_scripting_lua::tealr::mlu::UserDataProxy::<LuaMat3A>::new)?;
             
          
             
-                instances.add_instance("LuaMat4", 
+                instances.add_instance("Mat4", 
                                 bevy_mod_scripting_lua::tealr::mlu::UserDataProxy::<LuaMat4>::new)?;
             
          
             
-                instances.add_instance("LuaQuat", 
+                instances.add_instance("Quat", 
                                 bevy_mod_scripting_lua::tealr::mlu::UserDataProxy::<LuaQuat>::new)?;
             
          
             
-                instances.add_instance("LuaVec3A", 
+                instances.add_instance("Vec3A", 
                                 bevy_mod_scripting_lua::tealr::mlu::UserDataProxy::<LuaVec3A>::new)?;
             
          
             
-                instances.add_instance("LuaVec4", 
+                instances.add_instance("Vec4", 
                                 bevy_mod_scripting_lua::tealr::mlu::UserDataProxy::<LuaVec4>::new)?;
             
          
             
-                instances.add_instance("LuaDAffine2", 
+                instances.add_instance("DAffine2", 
                                 bevy_mod_scripting_lua::tealr::mlu::UserDataProxy::<LuaDAffine2>::new)?;
             
          
             
-                instances.add_instance("LuaDAffine3", 
+                instances.add_instance("DAffine3", 
                                 bevy_mod_scripting_lua::tealr::mlu::UserDataProxy::<LuaDAffine3>::new)?;
             
          
             
-                instances.add_instance("LuaDMat2", 
+                instances.add_instance("DMat2", 
                                 bevy_mod_scripting_lua::tealr::mlu::UserDataProxy::<LuaDMat2>::new)?;
             
          
             
-                instances.add_instance("LuaDMat3", 
+                instances.add_instance("DMat3", 
                                 bevy_mod_scripting_lua::tealr::mlu::UserDataProxy::<LuaDMat3>::new)?;
             
          
             
-                instances.add_instance("LuaDMat4", 
+                instances.add_instance("DMat4", 
                                 bevy_mod_scripting_lua::tealr::mlu::UserDataProxy::<LuaDMat4>::new)?;
             
          
             
-                instances.add_instance("LuaDQuat", 
+                instances.add_instance("DQuat", 
                                 bevy_mod_scripting_lua::tealr::mlu::UserDataProxy::<LuaDQuat>::new)?;
             
          
             
-                instances.add_instance("LuaDVec2", 
+                instances.add_instance("DVec2", 
                                 bevy_mod_scripting_lua::tealr::mlu::UserDataProxy::<LuaDVec2>::new)?;
             
          
             
-                instances.add_instance("LuaDVec3", 
+                instances.add_instance("DVec3", 
                                 bevy_mod_scripting_lua::tealr::mlu::UserDataProxy::<LuaDVec3>::new)?;
             
          
             
-                instances.add_instance("LuaDVec4", 
+                instances.add_instance("DVec4", 
                                 bevy_mod_scripting_lua::tealr::mlu::UserDataProxy::<LuaDVec4>::new)?;
             
          
             
-                instances.add_instance("LuaIVec2", 
+                instances.add_instance("IVec2", 
                                 bevy_mod_scripting_lua::tealr::mlu::UserDataProxy::<LuaIVec2>::new)?;
             
          
             
-                instances.add_instance("LuaIVec3", 
+                instances.add_instance("IVec3", 
                                 bevy_mod_scripting_lua::tealr::mlu::UserDataProxy::<LuaIVec3>::new)?;
             
          
             
-                instances.add_instance("LuaIVec4", 
+                instances.add_instance("IVec4", 
                                 bevy_mod_scripting_lua::tealr::mlu::UserDataProxy::<LuaIVec4>::new)?;
             
          
             
-                instances.add_instance("LuaUVec2", 
+                instances.add_instance("UVec2", 
                                 bevy_mod_scripting_lua::tealr::mlu::UserDataProxy::<LuaUVec2>::new)?;
             
          
             
-                instances.add_instance("LuaUVec3", 
+                instances.add_instance("UVec3", 
                                 bevy_mod_scripting_lua::tealr::mlu::UserDataProxy::<LuaUVec3>::new)?;
             
          
             
-                instances.add_instance("LuaUVec4", 
+                instances.add_instance("UVec4", 
                                 bevy_mod_scripting_lua::tealr::mlu::UserDataProxy::<LuaUVec4>::new)?;
             
          
             
-                instances.add_instance("LuaI64Vec2", 
+                instances.add_instance("I64Vec2", 
                                 bevy_mod_scripting_lua::tealr::mlu::UserDataProxy::<LuaI64Vec2>::new)?;
             
          
             
-                instances.add_instance("LuaI64Vec3", 
+                instances.add_instance("I64Vec3", 
                                 bevy_mod_scripting_lua::tealr::mlu::UserDataProxy::<LuaI64Vec3>::new)?;
             
          
             
-                instances.add_instance("LuaI64Vec4", 
+                instances.add_instance("I64Vec4", 
                                 bevy_mod_scripting_lua::tealr::mlu::UserDataProxy::<LuaI64Vec4>::new)?;
             
          
             
-                instances.add_instance("LuaU64Vec2", 
+                instances.add_instance("U64Vec2", 
                                 bevy_mod_scripting_lua::tealr::mlu::UserDataProxy::<LuaU64Vec2>::new)?;
             
          
             
-                instances.add_instance("LuaU64Vec3", 
+                instances.add_instance("U64Vec3", 
                                 bevy_mod_scripting_lua::tealr::mlu::UserDataProxy::<LuaU64Vec3>::new)?;
             
          
             
-                instances.add_instance("LuaU64Vec4", 
+                instances.add_instance("U64Vec4", 
                                 bevy_mod_scripting_lua::tealr::mlu::UserDataProxy::<LuaU64Vec4>::new)?;
             
          
             
-                instances.add_instance("LuaNonZeroU8", 
+                instances.add_instance("NonZeroU8", 
                                 bevy_mod_scripting_lua::tealr::mlu::UserDataProxy::<LuaNonZeroU8>::new)?;
             
          
             
-                instances.add_instance("LuaNonZeroU16", 
+                instances.add_instance("NonZeroU16", 
                                 bevy_mod_scripting_lua::tealr::mlu::UserDataProxy::<LuaNonZeroU16>::new)?;
             
          
             
-                instances.add_instance("LuaNonZeroU32", 
+                instances.add_instance("NonZeroU32", 
                                 bevy_mod_scripting_lua::tealr::mlu::UserDataProxy::<LuaNonZeroU32>::new)?;
             
          
             
-                instances.add_instance("LuaNonZeroU64", 
+                instances.add_instance("NonZeroU64", 
                                 bevy_mod_scripting_lua::tealr::mlu::UserDataProxy::<LuaNonZeroU64>::new)?;
             
          
             
-                instances.add_instance("LuaNonZeroU128", 
+                instances.add_instance("NonZeroU128", 
                                 bevy_mod_scripting_lua::tealr::mlu::UserDataProxy::<LuaNonZeroU128>::new)?;
             
          
             
-                instances.add_instance("LuaNonZeroUsize", 
+                instances.add_instance("NonZeroUsize", 
                                 bevy_mod_scripting_lua::tealr::mlu::UserDataProxy::<LuaNonZeroUsize>::new)?;
             
          
             
-                instances.add_instance("LuaNonZeroI8", 
+                instances.add_instance("NonZeroI8", 
                                 bevy_mod_scripting_lua::tealr::mlu::UserDataProxy::<LuaNonZeroI8>::new)?;
             
          
             
-                instances.add_instance("LuaNonZeroI16", 
+                instances.add_instance("NonZeroI16", 
                                 bevy_mod_scripting_lua::tealr::mlu::UserDataProxy::<LuaNonZeroI16>::new)?;
             
          
             
-                instances.add_instance("LuaNonZeroI32", 
+                instances.add_instance("NonZeroI32", 
                                 bevy_mod_scripting_lua::tealr::mlu::UserDataProxy::<LuaNonZeroI32>::new)?;
             
          
             
-                instances.add_instance("LuaNonZeroI64", 
+                instances.add_instance("NonZeroI64", 
                                 bevy_mod_scripting_lua::tealr::mlu::UserDataProxy::<LuaNonZeroI64>::new)?;
             
          
             
-                instances.add_instance("LuaNonZeroI128", 
+                instances.add_instance("NonZeroI128", 
                                 bevy_mod_scripting_lua::tealr::mlu::UserDataProxy::<LuaNonZeroI128>::new)?;
             
          
             
-                instances.add_instance("LuaNonZeroIsize", 
+                instances.add_instance("NonZeroIsize", 
                                 bevy_mod_scripting_lua::tealr::mlu::UserDataProxy::<LuaNonZeroIsize>::new)?;
             
          
             
          
             
-                instances.add_instance("LuaDuration", 
+                instances.add_instance("Duration", 
                                 bevy_mod_scripting_lua::tealr::mlu::UserDataProxy::<LuaDuration>::new)?;
             
         

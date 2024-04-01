@@ -3,7 +3,7 @@ use bevy::app::AppExit;
 use bevy::prelude::*;
 use bevy_mod_scripting::prelude::*;
 
-use bevy_script_api::lua::{bevy::LuaBevyAPIProvider, RegisterForeignLuaType};
+use bevy_script_api::{lua::RegisterForeignLuaType, prelude::*};
 
 #[derive(Component, Default, Reflect)]
 #[reflect(Component)]
@@ -30,7 +30,8 @@ fn main() -> std::io::Result<()> {
         .register_foreign_lua_type::<Option<bool>>()
         .register_foreign_lua_type::<Option<Vec<bool>>>()
         .add_script_host::<LuaScriptHost<()>>(PostUpdate)
-        .add_api_provider::<LuaScriptHost<()>>(Box::new(LuaBevyAPIProvider))
+        .add_api_provider::<LuaScriptHost<()>>(Box::new(BevyAPIProvider))
+        .add_api_provider::<LuaScriptHost<()>>(Box::new(CoreBevyAPIProvider))
         .add_systems(Startup,
             |world: &mut World| {
 

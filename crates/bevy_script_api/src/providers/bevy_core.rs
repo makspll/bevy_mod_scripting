@@ -63,11 +63,6 @@ pub struct Name{
 }
 
 
-
-
-crate::impl_tealr_generic!(pub(crate) struct T);
-
-
 #[derive(Default)]
 pub(crate) struct Globals;
 

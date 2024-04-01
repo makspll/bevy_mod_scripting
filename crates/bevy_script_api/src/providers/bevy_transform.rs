@@ -252,14 +252,14 @@ functions[r#"
 "#,
 			r#"
 
-    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
-    fn clone(&self) -> bevy::transform::components::GlobalTransform;
+    #[lua(as_trait = "std::cmp::PartialEq", kind = "Function", composite = "eq")]
+    fn eq(&self, #[proxy] other: &components::global_transform::GlobalTransform) -> bool;
 
 "#,
 			r#"
 
-    #[lua(as_trait = "std::cmp::PartialEq", kind = "Function", composite = "eq")]
-    fn eq(&self, #[proxy] other: &components::global_transform::GlobalTransform) -> bool;
+    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
+    fn clone(&self) -> bevy::transform::components::GlobalTransform;
 
 "#]
 )]
@@ -637,14 +637,14 @@ functions[r#"
 "#,
 			r#"
 
-    #[lua(as_trait = "std::cmp::PartialEq", kind = "Function", composite = "eq")]
-    fn eq(&self, #[proxy] other: &components::transform::Transform) -> bool;
+    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
+    fn clone(&self) -> bevy::transform::components::Transform;
 
 "#,
 			r#"
 
-    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
-    fn clone(&self) -> bevy::transform::components::Transform;
+    #[lua(as_trait = "std::cmp::PartialEq", kind = "Function", composite = "eq")]
+    fn eq(&self, #[proxy] other: &components::transform::Transform) -> bool;
 
 "#]
 )]
@@ -659,11 +659,6 @@ pub struct Transform{
 }
 
 
-
-
-crate::impl_tealr_generic!(pub(crate) struct T);
-
-
 #[derive(Default)]
 pub(crate) struct Globals;
 
@@ -674,12 +669,12 @@ impl bevy_mod_scripting_lua::tealr::mlu::ExportInstances for Globals {
     ) -> bevy_mod_scripting_lua::tealr::mlu::mlua::Result<()> {
          
             
-                instances.add_instance("LuaGlobalTransform", 
+                instances.add_instance("GlobalTransform", 
                                 bevy_mod_scripting_lua::tealr::mlu::UserDataProxy::<LuaGlobalTransform>::new)?;
             
          
             
-                instances.add_instance("LuaTransform", 
+                instances.add_instance("Transform", 
                                 bevy_mod_scripting_lua::tealr::mlu::UserDataProxy::<LuaTransform>::new)?;
             
         
