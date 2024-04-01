@@ -90,7 +90,12 @@ fn main() -> std::io::Result<()> {
                             -- all of these implementations can be overridden via the bevy TypeRegistry
                             comp.usize = 2
                             print("comp.usize after assigning to 2: ", comp.usize)
-                            
+
+                            -- vec's and matrices have custom __index and __newindex overrides
+                            print("comp.vec2 before: ", comp.vec2)
+                            comp.vec2[1] = 69
+                            print("comp.vec2 after: ", comp.vec2)
+
                             -- Option's get converted to nil or the value inside
                             print("comp.option_vec3 before: ", comp.option_vec3)
                             comp.option_vec3 = Vec3.new(2,1,3)

@@ -81,13 +81,18 @@ pub(crate) fn find_methods_and_fields(ctxt: &mut BevyCtxt<'_>, _args: &Args) -> 
         ty_ctxt.valid_functions = Some(Vec::default());
 
         // filter the list of all methods and select candidates applicable to proxy generation
-        for impl_did in ctxt
+        let mut all_impls = ctxt
             .tcx
             .inherent_impls(def_id)
             .unwrap()
             .iter()
             .chain(trait_impls_for_ty.iter())
-        {
+            .collect::<Vec<_>>();
+
+        // sort them to avoid unnecessary diffs, we can use hashes here as they are forever stable (touch wood)
+        all_impls.sort_by_cached_key(|a| ctxt.tcx.def_path_hash(**a));
+
+        for impl_did in all_impls {
             let functions = ctxt
                 .tcx
                 .associated_items(impl_did)

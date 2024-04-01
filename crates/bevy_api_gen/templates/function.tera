@@ -15,6 +15,8 @@ as_trait="{{ function.from_trait_path }}",
 
 {% if function.has_self and not is_op %}
 kind="{% if function.args.0.ty is starting_with("&mut") %}Mutating{% endif %}Method",
+{% elif is_op %}
+kind="MetaFunction",
 {% else %}
 kind="Function",
 {% endif %}
@@ -27,7 +29,6 @@ output(proxy),
 composite="{{ function.ident }}",
 {% endif %}
 
-{# forgive me father, this probably should be a filter #}
 {% if function.from_trait_path == "std::ops::Neg" %}
 metamethod="Unm",
 {% elif function.from_trait_path == "std::ops::Mul" %}
@@ -40,7 +41,7 @@ metamethod="Sub",
 metamethod="Div",
 {% elif function.from_trait_path == "std::ops::Rem" %}
 metamethod="Mod",
-{% elif function.from_trait_path == "std::cmp:PartialEq" %}
+{% elif function.from_trait_path == "std::cmp::PartialEq" %}
 metamethod="Eq",
 {% endif %}
 

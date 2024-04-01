@@ -21,10 +21,7 @@ functions[
         {%- include "function.tera" -%}
     {%- endfor -%}
     {% if item.import_path is matching("bevy::math::[^B]?Vec.?") %}
-        ---
-        r#"
-        {%- set vec_type = item.import_path | split(pat="::") | last -%}
-
+    {%- set vec_type = item.import_path | split(pat="::") | last -%}
         {%- if vec_type is starting_with("V") -%} 
             {%- set num_type = "f32" -%}
         {%- elif vec_type is starting_with("U16") -%}
@@ -42,7 +39,14 @@ functions[
         {%- elif vec_type is starting_with("I64") -%}
             {%- set num_type = "i64" -%}
         {%- endif -%} 
+        
+        ---
+        r#"
         {{- macros::vector_index(num_type=num_type) -}}
+        "#
+        ---
+        r#"
+        {{- macros::vector_newindex(num_type=num_type) -}}
         "#
     {% endif %}
     {%- endfilter -%}

@@ -60,7 +60,7 @@ pub(crate) fn find_reflect_types(ctxt: &mut BevyCtxt<'_>, args: &Args) -> bool {
     }
 
     ctxt.reflect_types
-        .sort_by_cached_key(|did, _| did.index.as_u32() + did.krate.as_u32());
+        .sort_by_cached_key(|did, _| tcx.item_name(*did));
 
     if args.cmd.is_list_types() {
         for did in ctxt.reflect_types.keys() {

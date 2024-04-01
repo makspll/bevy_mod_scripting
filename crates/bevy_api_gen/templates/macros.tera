@@ -1,13 +1,13 @@
 {% macro vector_index(num_type) %}
-#[lua(kind="Method", raw , metamethod="Index")]
+#[lua(kind="MetaMethod", raw , metamethod="Index")]
 fn index(&self, lua: &Lua, idx: crate::lua::util::LuaIndex) -> Result<{{ num_type }},_> {
     Ok(self.inner()?[*idx])
 }
 {% endmacro vector_index %}
 
 {% macro vector_newindex(num_type) %}
-#[lua(kind="MutatingMethod", raw , metamethod="NewIndex")]
-fn index(&mut self, lua: &Lua, (idx, val): (crate::lua::util::LuaIndex,{{ num_type }})) -> Result<{{ num_type }},_> {
+#[lua(kind="MutatingMetaMethod", raw , metamethod="NewIndex")]
+fn index(&mut self, lua: &Lua, idx: crate::lua::util::LuaIndex, val: {{ num_type }}) -> Result<(),_> {
     self.val_mut(|s| Ok(s[*idx] = val))?
 }
 {% endmacro vector_newindex %}
