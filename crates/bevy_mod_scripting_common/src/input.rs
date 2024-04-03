@@ -1,6 +1,6 @@
 use darling::{util::Flag, FromDeriveInput, FromMeta};
 use proc_macro2::Ident;
-use quote::{format_ident, ToTokens};
+use quote::format_ident;
 use std::{
     collections::HashMap,
     ops::{Deref, DerefMut},

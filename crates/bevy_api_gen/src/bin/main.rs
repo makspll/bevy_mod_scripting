@@ -10,7 +10,7 @@ use std::{
 use bevy_api_gen::*;
 use cargo_metadata::camino::Utf8Path;
 use clap::Parser;
-use log::{debug, info, trace};
+use log::{debug, info};
 use strum::VariantNames;
 use tera::Context;
 

@@ -3,15 +3,12 @@ use std::collections::HashMap;
 use log::trace;
 use rustc_hir::def_id::DefId;
 use rustc_infer::{
-    infer::{BoundRegionConversionTime, DefineOpaqueTypes, InferCtxt, TyCtxtInferExt},
-    traits::{Obligation, ObligationCause, PolyTraitObligation},
+    infer::{InferCtxt, TyCtxtInferExt},
+    traits::{Obligation, ObligationCause},
 };
-use rustc_middle::ty::{Binder, ClauseKind, ImplPolarity, PolyTraitPredicate, TraitPredicate, Ty};
+use rustc_middle::ty::Ty;
 use rustc_span::DUMMY_SP;
-use rustc_trait_selection::{
-    infer::InferCtxtExt,
-    traits::{elaborate, ObligationCtxt},
-};
+use rustc_trait_selection::traits::ObligationCtxt;
 
 use crate::{Args, BevyCtxt};
 

@@ -1,4 +1,4 @@
-#![allow(clippy::all, unused_imports, deprecated, dead_code)]
+#![allow(clippy::all, unused_imports, deprecated, dead_code, unused_variables)]
 #![cfg_attr(rustfmt, rustfmt_skip)]
 use super::bevy_ecs::*;
 use super::bevy_reflect::*;
@@ -46,7 +46,7 @@ impl bevy_mod_scripting_lua::tealr::mlu::ExportInstances for Globals {
     fn add_instances<
         'lua,
         T: bevy_mod_scripting_lua::tealr::mlu::InstanceCollector<'lua>,
-    >(self, instances: &mut T) -> bevy_mod_scripting_lua::tealr::mlu::mlua::Result<()> {
+    >(self, _instances: &mut T) -> bevy_mod_scripting_lua::tealr::mlu::mlua::Result<()> {
         Ok(())
     }
 }
