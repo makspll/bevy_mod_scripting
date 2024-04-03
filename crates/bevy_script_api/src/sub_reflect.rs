@@ -253,13 +253,6 @@ impl ReflectionPath {
         }
     }
 
-    /// pushes another sub reflect level access to the end of this access.
-    ///
-    /// The most recent sub access added will be executed last.
-    pub fn push(&mut self, elem: ReflectionPathElement) {
-        self.accesses.push(elem);
-    }
-
     /// Creates a new composite sub reflect
     pub fn new_sub(&self, elem: ReflectionPathElement) -> Self {
         let mut accesses = self.accesses.clone();
@@ -305,14 +298,6 @@ impl ReflectionPath {
         } else {
             Ok(ref_)
         }
-    }
-
-    pub fn len(&self) -> u8 {
-        self.accesses.len() as u8
-    }
-
-    pub fn is_empty(&self) -> bool {
-        self.len() == 0
     }
 
     pub fn get<O, F>(&self, world_ptr: WorldPointer, f: F) -> Result<O, ReflectionError>
