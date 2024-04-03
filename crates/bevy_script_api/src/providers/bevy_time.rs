@@ -216,230 +216,6 @@ pub struct Real{
 }
 
     
-/// A Stopwatch is a struct that track elapsed time when started.
-
-/// # Examples
-
-/// ```
-
-/// # use bevy_time::*;
-
-/// use std::time::Duration;
-
-/// let mut stopwatch = Stopwatch::new();
-
-/// assert_eq!(stopwatch.elapsed_secs(), 0.0);
-
-/// stopwatch.tick(Duration::from_secs_f32(1.0)); // tick one second
-
-/// assert_eq!(stopwatch.elapsed_secs(), 1.0);
-
-/// stopwatch.pause();
-
-/// stopwatch.tick(Duration::from_secs_f32(1.0)); // paused stopwatches don't tick
-
-/// assert_eq!(stopwatch.elapsed_secs(), 1.0);
-
-/// stopwatch.reset(); // reset the stopwatch
-
-/// assert!(stopwatch.paused());
-
-/// assert_eq!(stopwatch.elapsed_secs(), 0.0);
-
-/// ```
-
-
-#[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
-#[proxy(
-derive(clone,debug,),
-remote="bevy::time::Stopwatch",
-functions[r#"
-/// Create a new unpaused `Stopwatch` with no elapsed time.
-/// # Examples
-/// ```
-/// # use bevy_time::*;
-/// let stopwatch = Stopwatch::new();
-/// assert_eq!(stopwatch.elapsed_secs(), 0.0);
-/// assert_eq!(stopwatch.paused(), false);
-/// ```
-
-    #[lua(kind = "Function", output(proxy))]
-    fn new() -> bevy::time::Stopwatch;
-
-"#,
-			r#"
-/// Returns the elapsed time since the last [`reset`](Stopwatch::reset)
-/// of the stopwatch.
-/// # Examples
-/// ```
-/// # use bevy_time::*;
-/// use std::time::Duration;
-/// let mut stopwatch = Stopwatch::new();
-/// stopwatch.tick(Duration::from_secs(1));
-/// assert_eq!(stopwatch.elapsed(), Duration::from_secs(1));
-/// ```
-/// # See Also
-/// [`elapsed_secs`](Stopwatch::elapsed_secs) - if an `f32` value is desirable instead.
-/// [`elapsed_secs_f64`](Stopwatch::elapsed_secs_f64) - if an `f64` is desirable instead.
-
-    #[lua(kind = "Method", output(proxy))]
-    fn elapsed(&self) -> bevy::utils::Duration;
-
-"#,
-			r#"
-/// Returns the elapsed time since the last [`reset`](Stopwatch::reset)
-/// of the stopwatch, in seconds.
-/// # Examples
-/// ```
-/// # use bevy_time::*;
-/// use std::time::Duration;
-/// let mut stopwatch = Stopwatch::new();
-/// stopwatch.tick(Duration::from_secs(1));
-/// assert_eq!(stopwatch.elapsed_secs(), 1.0);
-/// ```
-/// # See Also
-/// [`elapsed`](Stopwatch::elapsed) - if a `Duration` is desirable instead.
-/// [`elapsed_secs_f64`](Stopwatch::elapsed_secs_f64) - if an `f64` is desirable instead.
-
-    #[lua(kind = "Method")]
-    fn elapsed_secs(&self) -> f32;
-
-"#,
-			r#"
-/// Returns the elapsed time since the last [`reset`](Stopwatch::reset)
-/// of the stopwatch, in seconds, as f64.
-/// # See Also
-/// [`elapsed`](Stopwatch::elapsed) - if a `Duration` is desirable instead.
-/// [`elapsed_secs`](Stopwatch::elapsed_secs) - if an `f32` is desirable instead.
-
-    #[lua(kind = "Method")]
-    fn elapsed_secs_f64(&self) -> f64;
-
-"#,
-			r#"
-/// Sets the elapsed time of the stopwatch.
-/// # Examples
-/// ```
-/// # use bevy_time::*;
-/// use std::time::Duration;
-/// let mut stopwatch = Stopwatch::new();
-/// stopwatch.set_elapsed(Duration::from_secs_f32(1.0));
-/// assert_eq!(stopwatch.elapsed_secs(), 1.0);
-/// ```
-
-    #[lua(kind = "MutatingMethod")]
-    fn set_elapsed(&mut self, #[proxy] time: bevy::utils::Duration) -> ();
-
-"#,
-			r#"
-/// Pauses the stopwatch. Any call to [`tick`](Stopwatch::tick) while
-/// paused will not have any effect on the elapsed time.
-/// # Examples
-/// ```
-/// # use bevy_time::*;
-/// use std::time::Duration;
-/// let mut stopwatch = Stopwatch::new();
-/// stopwatch.pause();
-/// stopwatch.tick(Duration::from_secs_f32(1.5));
-/// assert!(stopwatch.paused());
-/// assert_eq!(stopwatch.elapsed_secs(), 0.0);
-/// ```
-
-    #[lua(kind = "MutatingMethod")]
-    fn pause(&mut self) -> ();
-
-"#,
-			r#"
-/// Unpauses the stopwatch. Resume the effect of ticking on elapsed time.
-/// # Examples
-/// ```
-/// # use bevy_time::*;
-/// use std::time::Duration;
-/// let mut stopwatch = Stopwatch::new();
-/// stopwatch.pause();
-/// stopwatch.tick(Duration::from_secs_f32(1.0));
-/// stopwatch.unpause();
-/// stopwatch.tick(Duration::from_secs_f32(1.0));
-/// assert!(!stopwatch.paused());
-/// assert_eq!(stopwatch.elapsed_secs(), 1.0);
-/// ```
-
-    #[lua(kind = "MutatingMethod")]
-    fn unpause(&mut self) -> ();
-
-"#,
-			r#"
-/// Returns `true` if the stopwatch is paused.
-/// # Examples
-/// ```
-/// # use bevy_time::*;
-/// let mut stopwatch = Stopwatch::new();
-/// assert!(!stopwatch.paused());
-/// stopwatch.pause();
-/// assert!(stopwatch.paused());
-/// stopwatch.unpause();
-/// assert!(!stopwatch.paused());
-/// ```
-
-    #[lua(kind = "Method")]
-    fn paused(&self) -> bool;
-
-"#,
-			r#"
-/// Resets the stopwatch. The reset doesn't affect the paused state of the stopwatch.
-/// # Examples
-/// ```
-/// # use bevy_time::*;
-/// use std::time::Duration;
-/// let mut stopwatch = Stopwatch::new();
-/// stopwatch.tick(Duration::from_secs_f32(1.5));
-/// stopwatch.reset();
-/// assert_eq!(stopwatch.elapsed_secs(), 0.0);
-/// ```
-
-    #[lua(kind = "MutatingMethod")]
-    fn reset(&mut self) -> ();
-
-"#,
-			r#"
-
-    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
-    fn clone(&self) -> bevy::time::Stopwatch;
-
-"#,
-			r#"
-
-    #[lua(as_trait = "std::cmp::Eq", kind = "Method")]
-    fn assert_receiver_is_total_eq(&self) -> ();
-
-"#,
-			r#"
-
-    #[lua(
-        as_trait = "std::cmp::PartialEq",
-        kind = "MetaFunction",
-        composite = "eq",
-        metamethod = "Eq",
-    )]
-    fn eq(&self, #[proxy] other: &stopwatch::Stopwatch) -> bool;
-
-"#]
-)]
-
-
-
-
-pub struct Stopwatch{
-    
-    
-        
-    
-        
-    
-    
-}
-
-    
 /// Tracks elapsed time. Enters the finished state once `duration` is reached.
 
 /// Non repeating timers will stop tracking and stay in the finished state until reset.
@@ -456,6 +232,23 @@ pub struct Stopwatch{
 derive(clone,debug,),
 remote="bevy::time::prelude::Timer",
 functions[r#"
+
+    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
+    fn clone(&self) -> bevy::time::prelude::Timer;
+
+"#,
+			r#"
+
+    #[lua(
+        as_trait = "std::cmp::PartialEq",
+        kind = "MetaFunction",
+        composite = "eq",
+        metamethod = "Eq",
+    )]
+    fn eq(&self, #[proxy] other: &timer::Timer) -> bool;
+
+"#,
+			r#"
 /// Creates a new timer with a given duration.
 /// See also [`Timer::from_seconds`](Timer::from_seconds).
 
@@ -784,23 +577,6 @@ functions[r#"
 "#,
 			r#"
 
-    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
-    fn clone(&self) -> bevy::time::prelude::Timer;
-
-"#,
-			r#"
-
-    #[lua(
-        as_trait = "std::cmp::PartialEq",
-        kind = "MetaFunction",
-        composite = "eq",
-        metamethod = "Eq",
-    )]
-    fn eq(&self, #[proxy] other: &timer::Timer) -> bool;
-
-"#,
-			r#"
-
     #[lua(as_trait = "std::cmp::Eq", kind = "Method")]
     fn assert_receiver_is_total_eq(&self) -> ();
 
@@ -836,8 +612,13 @@ derive(clone,debug,),
 remote="bevy::time::prelude::TimerMode",
 functions[r#"
 
-    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
-    fn clone(&self) -> bevy::time::prelude::TimerMode;
+    #[lua(
+        as_trait = "std::cmp::PartialEq",
+        kind = "MetaFunction",
+        composite = "eq",
+        metamethod = "Eq",
+    )]
+    fn eq(&self, #[proxy] other: &timer::TimerMode) -> bool;
 
 "#,
 			r#"
@@ -848,13 +629,8 @@ functions[r#"
 "#,
 			r#"
 
-    #[lua(
-        as_trait = "std::cmp::PartialEq",
-        kind = "MetaFunction",
-        composite = "eq",
-        metamethod = "Eq",
-    )]
-    fn eq(&self, #[proxy] other: &timer::TimerMode) -> bool;
+    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
+    fn clone(&self) -> bevy::time::prelude::TimerMode;
 
 "#]
 )]
@@ -1007,6 +783,230 @@ pub struct Virtual{
     
 }
 
+    
+/// A Stopwatch is a struct that track elapsed time when started.
+
+/// # Examples
+
+/// ```
+
+/// # use bevy_time::*;
+
+/// use std::time::Duration;
+
+/// let mut stopwatch = Stopwatch::new();
+
+/// assert_eq!(stopwatch.elapsed_secs(), 0.0);
+
+/// stopwatch.tick(Duration::from_secs_f32(1.0)); // tick one second
+
+/// assert_eq!(stopwatch.elapsed_secs(), 1.0);
+
+/// stopwatch.pause();
+
+/// stopwatch.tick(Duration::from_secs_f32(1.0)); // paused stopwatches don't tick
+
+/// assert_eq!(stopwatch.elapsed_secs(), 1.0);
+
+/// stopwatch.reset(); // reset the stopwatch
+
+/// assert!(stopwatch.paused());
+
+/// assert_eq!(stopwatch.elapsed_secs(), 0.0);
+
+/// ```
+
+
+#[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
+#[proxy(
+derive(clone,debug,),
+remote="bevy::time::Stopwatch",
+functions[r#"
+
+    #[lua(as_trait = "std::cmp::Eq", kind = "Method")]
+    fn assert_receiver_is_total_eq(&self) -> ();
+
+"#,
+			r#"
+/// Create a new unpaused `Stopwatch` with no elapsed time.
+/// # Examples
+/// ```
+/// # use bevy_time::*;
+/// let stopwatch = Stopwatch::new();
+/// assert_eq!(stopwatch.elapsed_secs(), 0.0);
+/// assert_eq!(stopwatch.paused(), false);
+/// ```
+
+    #[lua(kind = "Function", output(proxy))]
+    fn new() -> bevy::time::Stopwatch;
+
+"#,
+			r#"
+/// Returns the elapsed time since the last [`reset`](Stopwatch::reset)
+/// of the stopwatch.
+/// # Examples
+/// ```
+/// # use bevy_time::*;
+/// use std::time::Duration;
+/// let mut stopwatch = Stopwatch::new();
+/// stopwatch.tick(Duration::from_secs(1));
+/// assert_eq!(stopwatch.elapsed(), Duration::from_secs(1));
+/// ```
+/// # See Also
+/// [`elapsed_secs`](Stopwatch::elapsed_secs) - if an `f32` value is desirable instead.
+/// [`elapsed_secs_f64`](Stopwatch::elapsed_secs_f64) - if an `f64` is desirable instead.
+
+    #[lua(kind = "Method", output(proxy))]
+    fn elapsed(&self) -> bevy::utils::Duration;
+
+"#,
+			r#"
+/// Returns the elapsed time since the last [`reset`](Stopwatch::reset)
+/// of the stopwatch, in seconds.
+/// # Examples
+/// ```
+/// # use bevy_time::*;
+/// use std::time::Duration;
+/// let mut stopwatch = Stopwatch::new();
+/// stopwatch.tick(Duration::from_secs(1));
+/// assert_eq!(stopwatch.elapsed_secs(), 1.0);
+/// ```
+/// # See Also
+/// [`elapsed`](Stopwatch::elapsed) - if a `Duration` is desirable instead.
+/// [`elapsed_secs_f64`](Stopwatch::elapsed_secs_f64) - if an `f64` is desirable instead.
+
+    #[lua(kind = "Method")]
+    fn elapsed_secs(&self) -> f32;
+
+"#,
+			r#"
+/// Returns the elapsed time since the last [`reset`](Stopwatch::reset)
+/// of the stopwatch, in seconds, as f64.
+/// # See Also
+/// [`elapsed`](Stopwatch::elapsed) - if a `Duration` is desirable instead.
+/// [`elapsed_secs`](Stopwatch::elapsed_secs) - if an `f32` is desirable instead.
+
+    #[lua(kind = "Method")]
+    fn elapsed_secs_f64(&self) -> f64;
+
+"#,
+			r#"
+/// Sets the elapsed time of the stopwatch.
+/// # Examples
+/// ```
+/// # use bevy_time::*;
+/// use std::time::Duration;
+/// let mut stopwatch = Stopwatch::new();
+/// stopwatch.set_elapsed(Duration::from_secs_f32(1.0));
+/// assert_eq!(stopwatch.elapsed_secs(), 1.0);
+/// ```
+
+    #[lua(kind = "MutatingMethod")]
+    fn set_elapsed(&mut self, #[proxy] time: bevy::utils::Duration) -> ();
+
+"#,
+			r#"
+/// Pauses the stopwatch. Any call to [`tick`](Stopwatch::tick) while
+/// paused will not have any effect on the elapsed time.
+/// # Examples
+/// ```
+/// # use bevy_time::*;
+/// use std::time::Duration;
+/// let mut stopwatch = Stopwatch::new();
+/// stopwatch.pause();
+/// stopwatch.tick(Duration::from_secs_f32(1.5));
+/// assert!(stopwatch.paused());
+/// assert_eq!(stopwatch.elapsed_secs(), 0.0);
+/// ```
+
+    #[lua(kind = "MutatingMethod")]
+    fn pause(&mut self) -> ();
+
+"#,
+			r#"
+/// Unpauses the stopwatch. Resume the effect of ticking on elapsed time.
+/// # Examples
+/// ```
+/// # use bevy_time::*;
+/// use std::time::Duration;
+/// let mut stopwatch = Stopwatch::new();
+/// stopwatch.pause();
+/// stopwatch.tick(Duration::from_secs_f32(1.0));
+/// stopwatch.unpause();
+/// stopwatch.tick(Duration::from_secs_f32(1.0));
+/// assert!(!stopwatch.paused());
+/// assert_eq!(stopwatch.elapsed_secs(), 1.0);
+/// ```
+
+    #[lua(kind = "MutatingMethod")]
+    fn unpause(&mut self) -> ();
+
+"#,
+			r#"
+/// Returns `true` if the stopwatch is paused.
+/// # Examples
+/// ```
+/// # use bevy_time::*;
+/// let mut stopwatch = Stopwatch::new();
+/// assert!(!stopwatch.paused());
+/// stopwatch.pause();
+/// assert!(stopwatch.paused());
+/// stopwatch.unpause();
+/// assert!(!stopwatch.paused());
+/// ```
+
+    #[lua(kind = "Method")]
+    fn paused(&self) -> bool;
+
+"#,
+			r#"
+/// Resets the stopwatch. The reset doesn't affect the paused state of the stopwatch.
+/// # Examples
+/// ```
+/// # use bevy_time::*;
+/// use std::time::Duration;
+/// let mut stopwatch = Stopwatch::new();
+/// stopwatch.tick(Duration::from_secs_f32(1.5));
+/// stopwatch.reset();
+/// assert_eq!(stopwatch.elapsed_secs(), 0.0);
+/// ```
+
+    #[lua(kind = "MutatingMethod")]
+    fn reset(&mut self) -> ();
+
+"#,
+			r#"
+
+    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
+    fn clone(&self) -> bevy::time::Stopwatch;
+
+"#,
+			r#"
+
+    #[lua(
+        as_trait = "std::cmp::PartialEq",
+        kind = "MetaFunction",
+        composite = "eq",
+        metamethod = "Eq",
+    )]
+    fn eq(&self, #[proxy] other: &stopwatch::Stopwatch) -> bool;
+
+"#]
+)]
+
+
+
+
+pub struct Stopwatch{
+    
+    
+        
+    
+        
+    
+    
+}
+
 
 #[derive(Default)]
 pub(crate) struct Globals;
@@ -1022,17 +1022,17 @@ impl bevy_mod_scripting_lua::tealr::mlu::ExportInstances for Globals {
             
          
             
-                instances.add_instance("Stopwatch", 
-                                bevy_mod_scripting_lua::tealr::mlu::UserDataProxy::<LuaStopwatch>::new)?;
-            
-         
-            
                 instances.add_instance("Timer", 
                                 bevy_mod_scripting_lua::tealr::mlu::UserDataProxy::<LuaTimer>::new)?;
             
          
             
          
+            
+         
+            
+                instances.add_instance("Stopwatch", 
+                                bevy_mod_scripting_lua::tealr::mlu::UserDataProxy::<LuaStopwatch>::new)?;
             
         
         Ok(())
@@ -1065,11 +1065,6 @@ impl bevy_mod_scripting_core::hosts::APIProvider for BevyTimeAPIProvider {
                 .process_type::<LuaReal>()
                 
             
-                .process_type::<LuaStopwatch>()
-                
-                .process_type::<bevy_mod_scripting_lua::tealr::mlu::UserDataProxy<LuaStopwatch>>()
-                
-            
                 .process_type::<LuaTimer>()
                 
                 .process_type::<bevy_mod_scripting_lua::tealr::mlu::UserDataProxy<LuaTimer>>()
@@ -1079,6 +1074,11 @@ impl bevy_mod_scripting_core::hosts::APIProvider for BevyTimeAPIProvider {
                 
             
                 .process_type::<LuaVirtual>()
+                
+            
+                .process_type::<LuaStopwatch>()
+                
+                .process_type::<bevy_mod_scripting_lua::tealr::mlu::UserDataProxy<LuaStopwatch>>()
                 
             
             }
@@ -1108,13 +1108,13 @@ impl bevy_mod_scripting_core::hosts::APIProvider for BevyTimeAPIProvider {
         
         app.register_foreign_lua_type::<bevy::time::prelude::Real>();
         
-        app.register_foreign_lua_type::<bevy::time::Stopwatch>();
-        
         app.register_foreign_lua_type::<bevy::time::prelude::Timer>();
         
         app.register_foreign_lua_type::<bevy::time::prelude::TimerMode>();
         
         app.register_foreign_lua_type::<bevy::time::prelude::Virtual>();
+        
+        app.register_foreign_lua_type::<bevy::time::Stopwatch>();
         
     }
 }

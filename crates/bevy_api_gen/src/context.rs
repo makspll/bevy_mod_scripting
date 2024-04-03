@@ -56,7 +56,7 @@ impl<'tcx> BevyCtxt<'tcx> {
 #[derive(Clone, Default, Debug)]
 pub(crate) struct ReflectType<'tcx> {
     /// Map from traits to their implementations for the reflect type (from a selection)
-    pub(crate) trait_impls: Option<HashMap<DefId, DefId>>,
+    pub(crate) trait_impls: Option<HashMap<DefId, Vec<DefId>>>,
     /// Information about the ADT structure, fields, and variants
     pub(crate) variant_data: Option<AdtDef<'tcx>>,
     /// Functions passing criteria to be proxied
@@ -91,7 +91,7 @@ pub(crate) const DEF_PATHS_GET_TYPE_REGISTRATION: [&str; 2] = [
 
 /// A collection of traits which we search for in the codebase, some of these are necessary to figure out if a type
 /// is Clone or Debug for the purposes of the macro code generation
-pub(crate) const FN_SOURCE_TRAITS: [&str; 13] = [
+pub(crate) const STD_SOURCE_TRAITS: [&str; 13] = [
     // PRINTING
     "std::fmt::Debug",
     "std::string::ToString",
@@ -106,8 +106,8 @@ pub(crate) const FN_SOURCE_TRAITS: [&str; 13] = [
     "std::ops::Rem",
     "std::cmp::Eq",
     "std::cmp::PartialEq",
-    "std::ord::Ord", // we don't use these fully cuz of the output types not being lua primitives, but keeping it for the future
-    "std::ord::PartialOrd",
+    "std::cmp::Ord", // we don't use these fully cuz of the output types not being lua primitives, but keeping it for the future
+    "std::cmp::PartialOrd",
 ];
 
 /// A collection of common traits stored for quick access.
@@ -118,7 +118,7 @@ pub(crate) struct CachedTraits {
     pub(crate) bevy_reflect_reflect: Option<DefId>,
     pub(crate) bevy_reflect_get_type_registration: Option<DefId>,
     /// Traits whose methods can be included in the generated code
-    pub(crate) fn_source_traits: HashMap<String, DefId>,
+    pub(crate) std_source_traits: HashMap<String, DefId>,
 }
 
 impl CachedTraits {
@@ -130,10 +130,18 @@ impl CachedTraits {
         self.bevy_reflect_reflect.is_some() && self.bevy_reflect_get_type_registration.is_some()
     }
 
-    pub(crate) fn has_all_fn_source_traits(&self) -> bool {
-        self.fn_source_traits
+    pub(crate) fn has_all_std_source_traits(&self) -> bool {
+        STD_SOURCE_TRAITS
             .iter()
-            .all(|(k, _)| FN_SOURCE_TRAITS.contains(&k.as_str()))
+            .all(|t| self.std_source_traits.contains_key(*t))
+    }
+
+    pub(crate) fn missing_std_source_traits(&self) -> Vec<String> {
+        STD_SOURCE_TRAITS
+            .iter()
+            .filter(|t| !self.std_source_traits.contains_key(**t))
+            .map(|s| (*s).to_owned())
+            .collect()
     }
 }
 
