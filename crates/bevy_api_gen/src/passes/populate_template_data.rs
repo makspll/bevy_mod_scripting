@@ -121,9 +121,6 @@ pub(crate) fn process_fields<'f, I: Iterator<Item = &'f FieldDef>>(
     ty_ctxt: &ReflectType,
 ) -> Vec<Field> {
     fields
-        .filter(|field| {
-            *ty_ctxt.get_field_reflection_strat(field.did).unwrap() == ReflectionStrategy::Filtered
-        })
         .map(|field| Field {
             docstrings: docstrings(ctxt.tcx.get_attrs_unchecked(field.did)),
             ident: field.name.to_ident_string(),

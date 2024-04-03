@@ -9,8 +9,6 @@ use super::{{crate}}::*;
 
 {% if args.self_is_bevy_script_api %}
 extern crate self as bevy_script_api;
-use crate::lua::RegisterForeignLuaType;
-{% else %}
-use bevy_script_api::lua::RegisterForeignLuaType;
 {% endif %}
 
+use bevy_script_api::{lua::RegisterForeignLuaType, ReflectedValue};

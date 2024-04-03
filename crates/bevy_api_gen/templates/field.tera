@@ -1,9 +1,15 @@
 {%- if field.reflection_strategy == "Proxy" -%}
         #[lua(output(proxy))]
+{%- elif field.reflection_strategy == "Filtered" -%}
+        #[lua(skip)]
 {%- endif -%}
 
 {%- if not item.is_tuple_struct -%}
 {{- field.ident -}} :
 {%- endif -%}
-{{- field.ty -}} ,
+{% if field.reflection_strategy != "Reflection" -%}
+{{- field.ty -}}
+{%- else -%}
+ReflectedValue
+{%- endif -%} ,
 

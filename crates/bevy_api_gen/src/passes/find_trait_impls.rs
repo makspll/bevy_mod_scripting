@@ -130,9 +130,7 @@ fn type_impl_of_trait(
     out
 }
 
-/// this is the same logic as in rustc_trait_selection::...::recompute_applicable_impls, i.e. we need to go through all
-/// impls that may match and perform full on matching on them
-/// If this goes out of date with rustc, we can just copy the function here
+/// this is similar logic to rustc_trait_selection::...::recompute_applicable_impls,
 fn impl_matches<'tcx>(
     infcx: &InferCtxt<'tcx>,
     ty: Ty<'tcx>,
@@ -151,7 +149,10 @@ fn impl_matches<'tcx>(
             .instantiate(tcx, impl_args);
         let impl_trait_ref = ocx.normalize(&ObligationCause::dummy(), param_env, impl_trait_ref);
         let impl_trait_ref_ty = impl_trait_ref.self_ty();
-        if let Err(_) = ocx.eq(&ObligationCause::dummy(), param_env, impl_trait_ref_ty, ty) {
+        if ocx
+            .eq(&ObligationCause::dummy(), param_env, impl_trait_ref_ty, ty)
+            .is_err()
+        {
             return false;
         }
 

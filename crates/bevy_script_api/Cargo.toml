@@ -39,3 +39,4 @@ bevy_mod_scripting_lua = { path = "../languages/bevy_mod_scripting_lua", version
 bevy_mod_scripting_lua_derive = { path = "../languages/bevy_mod_scripting_lua_derive", version = "0.5.0", optional = true }
 bevy_mod_scripting_rhai = { path = "../languages/bevy_mod_scripting_rhai", version = "0.5.0", optional = true }
 smol_str = "0.2"
+allocator-api2 = "0.2"

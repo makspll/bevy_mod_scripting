@@ -1,3 +1,4 @@
+{%- filter prettyplease -%}
 {% include "header.tera" %}
 
 {% for item in items %}
@@ -5,3 +6,4 @@
 {% endfor %}
 
 {% include "footer.tera" %}
+{%- endfilter -%}
