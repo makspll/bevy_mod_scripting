@@ -8,7 +8,6 @@
 extern crate self as bevy_script_api;
 {% endif %}
 
-use bevy_script_api::lua::RegisterForeignLuaType;
 use bevy_mod_scripting_core::docs::DocFragment;
 
 
