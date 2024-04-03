@@ -48,6 +48,10 @@ functions[
         r#"
         {{- macros::vector_newindex(num_type=num_type) -}}
         "#
+    {% elif item.import_path is matching("bevy::math::[^B]?Mat.?") %}
+        {%- set mat_type = item.import_path | split(pat="::") | last -%}
+        {%- set col_type = mat_type | replace(from="Mat", to="Vec")-%}
+        {{- macros::matrix_index(col_type=,mat_type=mat_type)-}}
     {% endif %}
     {%- endfilter -%}
 ]

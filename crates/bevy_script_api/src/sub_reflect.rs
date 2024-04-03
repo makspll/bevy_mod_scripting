@@ -1,6 +1,7 @@
 use parking_lot::RwLock;
 use std::fmt;
 use std::fmt::{Debug, Display};
+use std::sync::Arc;
 use std::{borrow::Cow, sync::Weak};
 
 use bevy::{
@@ -61,17 +62,17 @@ impl fmt::Display for ReflectBase {
     }
 }
 
-pub type Get = fn(&dyn Reflect) -> Result<&dyn Reflect, ReflectionError>;
-pub type GetMut = fn(&mut dyn Reflect) -> Result<&mut dyn Reflect, ReflectionError>;
+pub type Get = dyn Fn(&dyn Reflect) -> Result<&dyn Reflect, ReflectionError>;
+pub type GetMut = dyn Fn(&mut dyn Reflect) -> Result<&mut dyn Reflect, ReflectionError>;
 
 /// Stores a part of the path of reflection + sub reflection from a root reflect reference.
 /// Sub reflection allows us to access values unreachable by standard reflection.
 #[derive(Clone)]
-pub(crate) enum ReflectionPathElement {
+pub enum ReflectionPathElement {
     SubReflection {
         label: &'static str,
-        get: Get,
-        get_mut: GetMut,
+        get: Arc<Get>,
+        get_mut: Arc<GetMut>,
     },
     /// Access to a struct field
     FieldAccess(Cow<'static, str>),

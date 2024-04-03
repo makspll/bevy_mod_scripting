@@ -24,6 +24,12 @@ pub struct ReflectReference {
     pub(crate) world_ptr: WorldPointer,
 }
 
+/// Safety: copying just copies the path of reflection, any closures inside, and the world pointer.
+/// that itself is safe to copy.
+unsafe impl Send for ReflectReference {}
+/// Safety: all accesses to value are protected by locking the world pointer.
+unsafe impl Sync for ReflectReference {}
+
 impl ReflectReference {
     /// Safely creates a new base component reference
     pub fn new_component_ref(

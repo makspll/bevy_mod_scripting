@@ -109,7 +109,7 @@ fn type_impl_of_trait(
 
             let ty = tcx.type_of(reflect_ty_did).instantiate_identity();
             let infcx = tcx.infer_ctxt().build();
-            let result = impl_matches(&infcx, ty, trait_did, impl_did);
+            let result = impl_matches(&infcx, ty, impl_did);
             log::trace!("Result: {:#?}", result);
             if result {
                 trace!(
@@ -131,12 +131,8 @@ fn type_impl_of_trait(
 }
 
 /// this is similar logic to rustc_trait_selection::...::recompute_applicable_impls,
-fn impl_matches<'tcx>(
-    infcx: &InferCtxt<'tcx>,
-    ty: Ty<'tcx>,
-    trait_def_id: DefId,
-    impl_def_id: DefId,
-) -> bool {
+/// Asserts that the given impl (which MUST be a trait did)
+fn impl_matches<'tcx>(infcx: &InferCtxt<'tcx>, ty: Ty<'tcx>, impl_def_id: DefId) -> bool {
     let tcx = infcx.tcx;
 
     let impl_may_apply = |impl_def_id| {
@@ -145,7 +141,7 @@ fn impl_matches<'tcx>(
         let impl_args = infcx.fresh_args_for_item(DUMMY_SP, impl_def_id);
         let impl_trait_ref = tcx
             .impl_trait_ref(impl_def_id)
-            .unwrap()
+            .expect("Expected defid to be an impl for a trait")
             .instantiate(tcx, impl_args);
         let impl_trait_ref = ocx.normalize(&ObligationCause::dummy(), param_env, impl_trait_ref);
         let impl_trait_ref_ty = impl_trait_ref.self_ty();

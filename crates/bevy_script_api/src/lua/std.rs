@@ -1,3 +1,5 @@
+use std::sync::Arc;
+
 use bevy::reflect::FromReflect;
 use bevy::reflect::Reflect;
 
@@ -105,7 +107,7 @@ impl<T: LuaProxyable + Reflect + FromReflect + TypePath + for<'a> FromLuaProxy<'
             Some(_) => T::ref_to_lua(
                 self_.sub_ref(ReflectionPathElement::SubReflection {
                     label: "as_ref",
-                    get: |ref_| {
+                    get: Arc::new(|ref_| {
                         ref_.downcast_ref::<Option<T>>()
                             .ok_or_else(|| ReflectionError::CannotDowncast {
                                 from: ref_.get_represented_type_info().unwrap().type_path().into(),
@@ -118,8 +120,8 @@ impl<T: LuaProxyable + Reflect + FromReflect + TypePath + for<'a> FromLuaProxy<'
                                     "Stale reference to Option. Cannot sub reflect.".to_owned(),
                                 )
                             })
-                    },
-                    get_mut: |ref_| {
+                    }),
+                    get_mut: Arc::new(|ref_| {
                         ref_.downcast_mut::<Option<T>>()
                             // TODO: there is some weird borrow checker fuckery going on here
                             // i tried having from: ref_.get_represented_type_info().unwrap().type_path().into() instead of "Reflect"
@@ -135,7 +137,7 @@ impl<T: LuaProxyable + Reflect + FromReflect + TypePath + for<'a> FromLuaProxy<'
                                     "Stale reference to Option. Cannot sub reflect.".to_owned(),
                                 )
                             })
-                    },
+                    }),
                 }),
                 lua,
             ),
@@ -168,7 +170,7 @@ impl<T: LuaProxyable + Reflect + FromReflect + TypePath + for<'a> FromLuaProxy<'
             T::apply_lua(
                 &mut self_.sub_ref(ReflectionPathElement::SubReflection {
                     label: "",
-                    get: |ref_| {
+                    get: Arc::new(|ref_| {
                         ref_.downcast_ref::<Option<T>>()
                             .ok_or_else(|| ReflectionError::CannotDowncast {
                                 from: ref_.get_represented_type_info().unwrap().type_path().into(),
@@ -181,8 +183,8 @@ impl<T: LuaProxyable + Reflect + FromReflect + TypePath + for<'a> FromLuaProxy<'
                                     "Stale reference to Option. Cannot sub reflect.".to_owned(),
                                 )
                             })
-                    },
-                    get_mut: |ref_| {
+                    }),
+                    get_mut: Arc::new(|ref_| {
                         if ref_.is::<Option<T>>() {
                             ref_.downcast_mut::<Option<T>>()
                                 .unwrap()
@@ -199,7 +201,7 @@ impl<T: LuaProxyable + Reflect + FromReflect + TypePath + for<'a> FromLuaProxy<'
                                 to: stringify!(Option<T>).into(),
                             })
                         }
-                    },
+                    }),
                 }),
                 lua,
                 new_val,

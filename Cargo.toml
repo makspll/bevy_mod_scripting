@@ -98,9 +98,11 @@ resolver = "2"
 exclude = ["bevy_api_gen"]
 
 [profile.dev]
+debug = 1
 opt-level = 1
 
 [profile.dev.package."*"]
+debug = 0
 opt-level = 3
 
 [profile.ephemeral-build]
