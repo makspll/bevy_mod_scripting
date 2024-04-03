@@ -1,4 +1,5 @@
 #![allow(clippy::all, unused_imports, deprecated, dead_code)]
+#![cfg_attr(rustfmt, rustfmt_skip)]
 use super::bevy_ecs::*;
 use super::bevy_reflect::*;
 use super::bevy_core::*;
