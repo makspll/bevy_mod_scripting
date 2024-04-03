@@ -76,6 +76,7 @@ pub(crate) struct Item {
     pub(crate) is_tuple_struct: bool,
     pub(crate) impls_clone: bool,
     pub(crate) impls_debug: bool,
+    pub(crate) impls_display: bool,
 }
 
 /// One of enum variants or a struct

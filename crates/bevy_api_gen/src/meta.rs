@@ -12,6 +12,10 @@ use serde::{Deserialize, Serialize};
 
 use crate::WorkspaceMeta;
 
+/// The version of the meta file format, we can use this to show errors if incompatibile formats are used
+/// or to convert older formats to newer ones automatically
+pub(crate) const META_VERSION: &str = "1";
+
 /// Similar to .rmeta files but for the code generator, each crate is analysed separately but we need to share some information
 /// between crates to be able to properly identify links between crates
 #[derive(Serialize, Deserialize, Clone)]
@@ -20,6 +24,7 @@ pub struct Meta {
     pub(crate) proxies: Vec<ProxyMeta>,
     /// False if no files are going to be generated for this crate
     pub(crate) will_generate: bool,
+    pub(crate) meta_version: String,
 }
 
 impl Meta {

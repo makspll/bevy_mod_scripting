@@ -4,7 +4,9 @@ use super::bevy_reflect::*;
 use super::bevy_core::*;
 use super::bevy_hierarchy::*;
 extern crate self as bevy_script_api;
-use bevy_script_api::{lua::RegisterForeignLuaType, ReflectedValue};
+use bevy_script_api::{
+    lua::RegisterForeignLuaType, ReflectedValue, common::bevy::GetWorld,
+};
 /// Describe the position of an entity relative to the reference frame.
 /// * To place or move an entity, you should set its [`Transform`].
 /// * [`GlobalTransform`] is fully managed by bevy, you cannot mutate it, use
@@ -26,7 +28,7 @@ use bevy_script_api::{lua::RegisterForeignLuaType, ReflectedValue};
 /// [`transform`]: https://github.com/bevyengine/bevy/blob/latest/examples/transforms/transform.rs
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
-    derive(clone, debug),
+    derive(clone),
     remote = "bevy::transform::components::GlobalTransform",
     functions[r#"
 
@@ -267,6 +269,12 @@ use bevy_script_api::{lua::RegisterForeignLuaType, ReflectedValue};
         transform: bevy::transform::components::Transform,
     ) -> bevy::transform::components::GlobalTransform;
 
+"#,
+    r#"
+#[lua(kind="MetaMethod", metamethod="ToString")]
+fn index(&self) -> String {
+    format!("{:?}", _self)
+}
 "#]
 )]
 pub struct GlobalTransform();
@@ -292,7 +300,7 @@ pub struct GlobalTransform();
 /// [`transform`]: https://github.com/bevyengine/bevy/blob/latest/examples/transforms/transform.rs
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
-    derive(clone, debug),
+    derive(clone),
     remote = "bevy::transform::components::Transform",
     functions[r#"
 
@@ -669,6 +677,12 @@ pub struct GlobalTransform();
     )]
     fn mul(self, #[proxy] value: bevy::math::Vec3) -> bevy::math::Vec3;
 
+"#,
+    r#"
+#[lua(kind="MetaMethod", metamethod="ToString")]
+fn index(&self) -> String {
+    format!("{:?}", _self)
+}
 "#]
 )]
 pub struct Transform {

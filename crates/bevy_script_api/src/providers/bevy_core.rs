@@ -2,7 +2,9 @@
 use super::bevy_ecs::*;
 use super::bevy_reflect::*;
 extern crate self as bevy_script_api;
-use bevy_script_api::{lua::RegisterForeignLuaType, ReflectedValue};
+use bevy_script_api::{
+    lua::RegisterForeignLuaType, ReflectedValue, common::bevy::GetWorld,
+};
 /// Component used to identify an entity. Stores a hash for faster comparisons.
 /// The hash is eagerly re-computed upon each update to the name.
 /// [`Name`] should not be treated as a globally unique identifier for entities,
@@ -10,7 +12,7 @@ use bevy_script_api::{lua::RegisterForeignLuaType, ReflectedValue};
 /// used instead as the default unique identifier.
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
-    derive(clone, debug),
+    derive(clone),
     remote = "bevy::core::prelude::Name",
     functions[r#"
 
@@ -28,6 +30,12 @@ use bevy_script_api::{lua::RegisterForeignLuaType, ReflectedValue};
     )]
     fn eq(&self, #[proxy] other: &name::Name) -> bool;
 
+"#,
+    r#"
+#[lua(kind="MetaMethod", metamethod="ToString")]
+fn index(&self) -> String {
+    format!("{}", _self)
+}
 "#]
 )]
 pub struct Name {}

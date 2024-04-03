@@ -23,8 +23,6 @@ use crate::utils::ident_to_type_path;
 /// Flags which detail required functionality or additional derivation requirements
 #[derive(Debug, FromMeta)]
 pub struct ProxyFlags {
-    pub debug: Flag,
-    pub display: Flag,
     pub clone: Flag,
 }
 

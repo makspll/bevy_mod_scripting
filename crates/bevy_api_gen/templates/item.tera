@@ -9,9 +9,6 @@ derive(
     {%- if item.impls_clone -%}
         clone,
     {%- endif -%}
-    {%- if item.impls_debug -%}
-        debug,
-    {%- endif -%}
 ),
 remote="{{ item.import_path }}",
 functions[
@@ -20,7 +17,18 @@ functions[
         ---
         {%- include "function.tera" -%}
     {%- endfor -%}
-    {% if item.import_path is matching("bevy::math::[^B]?Vec.?") %}
+    {%- if item.impls_display -%}
+        ---
+        r#"
+        {{- macros::display_as_to_string() -}}
+        "#
+    {%- elif item.impls_debug -%}
+        ---
+        r#"
+        {{- macros::debug_as_to_string() -}}
+        "#
+    {%- endif -%}
+    {%- if item.import_path is matching("bevy::math::[^B]?Vec.?") -%}
     {%- set vec_type = item.import_path | split(pat="::") | last -%}
         {%- if vec_type is starting_with("V") -%} 
             {%- set num_type = "f32" -%}
@@ -49,9 +57,12 @@ functions[
         {{- macros::vector_newindex(num_type=num_type) -}}
         "#
     {% elif item.import_path is matching("bevy::math::[^B]?Mat.?") %}
+        ---
+        r#"
         {%- set mat_type = item.import_path | split(pat="::") | last -%}
         {%- set col_type = mat_type | replace(from="Mat", to="Vec")-%}
-        {{- macros::matrix_index(col_type=,mat_type=mat_type)-}}
+        {{- macros::matrix_index(col_type=col_type,mat_type=mat_type)-}}
+        "#
     {% endif %}
     {%- endfilter -%}
 ]

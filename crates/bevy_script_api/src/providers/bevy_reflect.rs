@@ -29,7 +29,7 @@ use bevy_script_api::{common::bevy::GetWorld, lua::RegisterForeignLuaType, Refle
 /// crate to do so.
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
-    derive(clone, debug),
+    derive(clone),
     remote = "bevy::utils::Duration",
     functions[r#"
 
@@ -513,6 +513,12 @@ use bevy_script_api::{common::bevy::GetWorld, lua::RegisterForeignLuaType, Refle
     #[lua(kind = "Method", output(proxy))]
     fn div_f32(self, rhs: f32) -> bevy::utils::Duration;
 
+"#,
+    r#"
+#[lua(kind="MetaMethod", metamethod="ToString")]
+fn index(&self) -> String {
+    format!("{:?}", _self)
+}
 "#]
 )]
 pub struct Duration {}
@@ -597,7 +603,7 @@ pub struct Duration {}
 /// [`checked_duration_since`]: Instant::checked_duration_since
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
-    derive(clone, debug),
+    derive(clone),
     remote = "bevy::utils::Instant",
     functions[r#"
 /// # Panics
@@ -753,6 +759,12 @@ pub struct Duration {}
     )]
     fn sub(self, #[proxy] other: bevy::utils::Instant) -> bevy::utils::Duration;
 
+"#,
+    r#"
+#[lua(kind="MetaMethod", metamethod="ToString")]
+fn index(&self) -> String {
+    format!("{:?}", _self)
+}
 "#]
 )]
 pub struct Instant();
@@ -780,7 +792,7 @@ pub struct Instant();
 /// [null pointer optimization]: crate::option#representation
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
-    derive(clone, debug),
+    derive(clone),
     remote = "std::num::NonZeroI128",
     functions[r#"
 
@@ -1096,6 +1108,12 @@ pub struct Instant();
     #[lua(as_trait = "std::cmp::Eq", kind = "Method")]
     fn assert_receiver_is_total_eq(&self) -> ();
 
+"#,
+    r#"
+#[lua(kind="MetaMethod", metamethod="ToString")]
+fn index(&self) -> String {
+    format!("{}", _self)
+}
 "#]
 )]
 pub struct NonZeroI128();
@@ -1123,7 +1141,7 @@ pub struct NonZeroI128();
 /// [null pointer optimization]: crate::option#representation
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
-    derive(clone, debug),
+    derive(clone),
     remote = "std::num::NonZeroI16",
     functions[r#"
 
@@ -1439,6 +1457,12 @@ pub struct NonZeroI128();
     )]
     fn neg(self) -> std::num::NonZeroI16;
 
+"#,
+    r#"
+#[lua(kind="MetaMethod", metamethod="ToString")]
+fn index(&self) -> String {
+    format!("{}", _self)
+}
 "#]
 )]
 pub struct NonZeroI16();
@@ -1466,7 +1490,7 @@ pub struct NonZeroI16();
 /// [null pointer optimization]: crate::option#representation
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
-    derive(clone, debug),
+    derive(clone),
     remote = "std::num::NonZeroI32",
     functions[r#"
 
@@ -1782,6 +1806,12 @@ pub struct NonZeroI16();
     #[lua(as_trait = "std::cmp::Eq", kind = "Method")]
     fn assert_receiver_is_total_eq(&self) -> ();
 
+"#,
+    r#"
+#[lua(kind="MetaMethod", metamethod="ToString")]
+fn index(&self) -> String {
+    format!("{}", _self)
+}
 "#]
 )]
 pub struct NonZeroI32();
@@ -1809,7 +1839,7 @@ pub struct NonZeroI32();
 /// [null pointer optimization]: crate::option#representation
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
-    derive(clone, debug),
+    derive(clone),
     remote = "std::num::NonZeroI64",
     functions[r#"
 /// Creates a non-zero without checking whether the value is non-zero.
@@ -2125,6 +2155,12 @@ pub struct NonZeroI32();
     #[lua(as_trait = "std::cmp::Eq", kind = "Method")]
     fn assert_receiver_is_total_eq(&self) -> ();
 
+"#,
+    r#"
+#[lua(kind="MetaMethod", metamethod="ToString")]
+fn index(&self) -> String {
+    format!("{}", _self)
+}
 "#]
 )]
 pub struct NonZeroI64();
@@ -2152,7 +2188,7 @@ pub struct NonZeroI64();
 /// [null pointer optimization]: crate::option#representation
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
-    derive(clone, debug),
+    derive(clone),
     remote = "std::num::NonZeroI8",
     functions[r#"
 
@@ -2464,6 +2500,12 @@ pub struct NonZeroI64();
     #[lua(kind = "Method", output(proxy))]
     fn saturating_pow(self, other: u32) -> std::num::NonZeroI8;
 
+"#,
+    r#"
+#[lua(kind="MetaMethod", metamethod="ToString")]
+fn index(&self) -> String {
+    format!("{}", _self)
+}
 "#]
 )]
 pub struct NonZeroI8();
@@ -2491,7 +2533,7 @@ pub struct NonZeroI8();
 /// [null pointer optimization]: crate::option#representation
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
-    derive(clone, debug),
+    derive(clone),
     remote = "std::num::NonZeroU128",
     functions[r#"
 
@@ -2685,6 +2727,12 @@ pub struct NonZeroI8();
     #[lua(kind = "Method", output(proxy))]
     fn saturating_pow(self, other: u32) -> std::num::NonZeroU128;
 
+"#,
+    r#"
+#[lua(kind="MetaMethod", metamethod="ToString")]
+fn index(&self) -> String {
+    format!("{}", _self)
+}
 "#]
 )]
 pub struct NonZeroU128();
@@ -2712,7 +2760,7 @@ pub struct NonZeroU128();
 /// [null pointer optimization]: crate::option#representation
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
-    derive(clone, debug),
+    derive(clone),
     remote = "std::num::NonZeroU16",
     functions[r#"
 /// Creates a non-zero without checking whether the value is non-zero.
@@ -2906,6 +2954,12 @@ pub struct NonZeroU128();
     )]
     fn clone(&self) -> std::num::NonZeroU16;
 
+"#,
+    r#"
+#[lua(kind="MetaMethod", metamethod="ToString")]
+fn index(&self) -> String {
+    format!("{}", _self)
+}
 "#]
 )]
 pub struct NonZeroU16();
@@ -2933,7 +2987,7 @@ pub struct NonZeroU16();
 /// [null pointer optimization]: crate::option#representation
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
-    derive(clone, debug),
+    derive(clone),
     remote = "std::num::NonZeroU32",
     functions[r#"
 
@@ -3127,6 +3181,12 @@ pub struct NonZeroU16();
     )]
     fn clone(&self) -> std::num::NonZeroU32;
 
+"#,
+    r#"
+#[lua(kind="MetaMethod", metamethod="ToString")]
+fn index(&self) -> String {
+    format!("{}", _self)
+}
 "#]
 )]
 pub struct NonZeroU32();
@@ -3154,7 +3214,7 @@ pub struct NonZeroU32();
 /// [null pointer optimization]: crate::option#representation
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
-    derive(clone, debug),
+    derive(clone),
     remote = "std::num::NonZeroU64",
     functions[r#"
 
@@ -3348,6 +3408,12 @@ pub struct NonZeroU32();
     #[lua(as_trait = "std::cmp::Eq", kind = "Method")]
     fn assert_receiver_is_total_eq(&self) -> ();
 
+"#,
+    r#"
+#[lua(kind="MetaMethod", metamethod="ToString")]
+fn index(&self) -> String {
+    format!("{}", _self)
+}
 "#]
 )]
 pub struct NonZeroU64();
@@ -3375,7 +3441,7 @@ pub struct NonZeroU64();
 /// [null pointer optimization]: crate::option#representation
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
-    derive(clone, debug),
+    derive(clone),
     remote = "std::num::NonZeroU8",
     functions[r#"
 
@@ -3565,6 +3631,12 @@ pub struct NonZeroU64();
     )]
     fn eq(&self, #[proxy] other: &std::num::NonZeroU8) -> bool;
 
+"#,
+    r#"
+#[lua(kind="MetaMethod", metamethod="ToString")]
+fn index(&self) -> String {
+    format!("{}", _self)
+}
 "#]
 )]
 pub struct NonZeroU8();
@@ -3592,7 +3664,7 @@ pub struct NonZeroU8();
 /// [null pointer optimization]: crate::option#representation
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
-    derive(clone, debug),
+    derive(clone),
     remote = "std::num::NonZeroUsize",
     functions[r#"
 
@@ -3786,6 +3858,12 @@ pub struct NonZeroU8();
     )]
     fn clone(&self) -> std::num::NonZeroUsize;
 
+"#,
+    r#"
+#[lua(kind="MetaMethod", metamethod="ToString")]
+fn index(&self) -> String {
+    format!("{}", _self)
+}
 "#]
 )]
 pub struct NonZeroUsize();
@@ -3823,7 +3901,7 @@ pub struct NonZeroUsize();
 /// Which method works best depends on what kind of situation you're in.
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
-    derive(clone, debug),
+    derive(clone),
     remote = "std::path::PathBuf",
     functions[r#"
 
@@ -3951,6 +4029,12 @@ pub struct NonZeroUsize();
     #[lua(kind = "MutatingMethod")]
     fn shrink_to(&mut self, min_capacity: usize) -> ();
 
+"#,
+    r#"
+#[lua(kind="MetaMethod", metamethod="ToString")]
+fn index(&self) -> String {
+    format!("{:?}", _self)
+}
 "#]
 )]
 pub struct PathBuf {}
@@ -3982,7 +4066,7 @@ pub struct PathBuf {}
 /// [slicing index]: crate::slice::SliceIndex
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
-    derive(clone, debug),
+    derive(clone),
     remote = "std::ops::RangeFull",
     functions[r#"
 
@@ -4010,6 +4094,12 @@ pub struct PathBuf {}
     #[lua(as_trait = "std::cmp::Eq", kind = "Method")]
     fn assert_receiver_is_total_eq(&self) -> ();
 
+"#,
+    r#"
+#[lua(kind="MetaMethod", metamethod="ToString")]
+fn index(&self) -> String {
+    format!("{:?}", _self)
+}
 "#]
 )]
 pub struct RangeFull {}
@@ -4021,7 +4111,7 @@ pub struct RangeFull {}
 /// This type is 16 byte aligned.
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
-    derive(clone, debug),
+    derive(clone),
     remote = "bevy::math::Quat",
     functions[r#"
 
@@ -4550,13 +4640,19 @@ pub struct RangeFull {}
         direction: bevy::math::primitives::Direction3d,
     ) -> bevy::math::primitives::Direction3d;
 
+"#,
+    r#"
+#[lua(kind="MetaMethod", metamethod="ToString")]
+fn index(&self) -> String {
+    format!("{}", _self)
+}
 "#]
 )]
 pub struct Quat();
 /// A 3-dimensional vector.
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
-    derive(clone, debug),
+    derive(clone),
     remote = "bevy::math::Vec3",
     functions[r#"
 
@@ -5272,13 +5368,19 @@ pub struct Quat();
 
 "#,
     r#"
+#[lua(kind="MetaMethod", metamethod="ToString")]
+fn index(&self) -> String {
+    format!("{}", _self)
+}
+"#,
+    r#"
 #[lua(kind="MetaMethod", raw , metamethod="Index")]
 fn index(&self, lua: &Lua, idx: crate::lua::util::LuaIndex) -> Result<f32,_> {
     Ok(self.inner()?[*idx])
 }
 "#,
     r#"
-#[lua(kind="MutatingMetaMethod", raw , metamethod="NewIndex")]
+#[lua(kind="MutatingMetaMethod", raw, metamethod="NewIndex")]
 fn index(&mut self, lua: &Lua, idx: crate::lua::util::LuaIndex, val: f32) -> Result<(),_> {
     self.val_mut(|s| Ok(s[*idx] = val))?
 }
@@ -5292,7 +5394,7 @@ pub struct Vec3 {
 /// A 2-dimensional vector.
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
-    derive(clone, debug),
+    derive(clone),
     remote = "bevy::math::IVec2",
     functions[r#"
 
@@ -5810,13 +5912,19 @@ pub struct Vec3 {
 
 "#,
     r#"
+#[lua(kind="MetaMethod", metamethod="ToString")]
+fn index(&self) -> String {
+    format!("{}", _self)
+}
+"#,
+    r#"
 #[lua(kind="MetaMethod", raw , metamethod="Index")]
 fn index(&self, lua: &Lua, idx: crate::lua::util::LuaIndex) -> Result<i32,_> {
     Ok(self.inner()?[*idx])
 }
 "#,
     r#"
-#[lua(kind="MutatingMetaMethod", raw , metamethod="NewIndex")]
+#[lua(kind="MutatingMetaMethod", raw, metamethod="NewIndex")]
 fn index(&mut self, lua: &Lua, idx: crate::lua::util::LuaIndex, val: i32) -> Result<(),_> {
     self.val_mut(|s| Ok(s[*idx] = val))?
 }
@@ -5829,7 +5937,7 @@ pub struct IVec2 {
 /// A 3-dimensional vector.
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
-    derive(clone, debug),
+    derive(clone),
     remote = "bevy::math::IVec3",
     functions[r#"
 
@@ -6345,13 +6453,19 @@ pub struct IVec2 {
 
 "#,
     r#"
+#[lua(kind="MetaMethod", metamethod="ToString")]
+fn index(&self) -> String {
+    format!("{}", _self)
+}
+"#,
+    r#"
 #[lua(kind="MetaMethod", raw , metamethod="Index")]
 fn index(&self, lua: &Lua, idx: crate::lua::util::LuaIndex) -> Result<i32,_> {
     Ok(self.inner()?[*idx])
 }
 "#,
     r#"
-#[lua(kind="MutatingMetaMethod", raw , metamethod="NewIndex")]
+#[lua(kind="MutatingMetaMethod", raw, metamethod="NewIndex")]
 fn index(&mut self, lua: &Lua, idx: crate::lua::util::LuaIndex, val: i32) -> Result<(),_> {
     self.val_mut(|s| Ok(s[*idx] = val))?
 }
@@ -6365,7 +6479,7 @@ pub struct IVec3 {
 /// A 4-dimensional vector.
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
-    derive(clone, debug),
+    derive(clone),
     remote = "bevy::math::IVec4",
     functions[r#"
 
@@ -6860,13 +6974,19 @@ pub struct IVec3 {
 
 "#,
     r#"
+#[lua(kind="MetaMethod", metamethod="ToString")]
+fn index(&self) -> String {
+    format!("{}", _self)
+}
+"#,
+    r#"
 #[lua(kind="MetaMethod", raw , metamethod="Index")]
 fn index(&self, lua: &Lua, idx: crate::lua::util::LuaIndex) -> Result<i32,_> {
     Ok(self.inner()?[*idx])
 }
 "#,
     r#"
-#[lua(kind="MutatingMetaMethod", raw , metamethod="NewIndex")]
+#[lua(kind="MutatingMetaMethod", raw, metamethod="NewIndex")]
 fn index(&mut self, lua: &Lua, idx: crate::lua::util::LuaIndex, val: i32) -> Result<(),_> {
     self.val_mut(|s| Ok(s[*idx] = val))?
 }
@@ -6881,7 +7001,7 @@ pub struct IVec4 {
 /// A 2-dimensional vector.
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
-    derive(clone, debug),
+    derive(clone),
     remote = "bevy::math::I64Vec2",
     functions[r#"
 
@@ -7397,6 +7517,12 @@ pub struct IVec4 {
     #[lua(kind = "Method", output(proxy))]
     fn saturating_div(self, #[proxy] rhs: bevy::math::I64Vec2) -> bevy::math::I64Vec2;
 
+"#,
+    r#"
+#[lua(kind="MetaMethod", metamethod="ToString")]
+fn index(&self) -> String {
+    format!("{}", _self)
+}
 "#]
 )]
 pub struct I64Vec2 {
@@ -7406,7 +7532,7 @@ pub struct I64Vec2 {
 /// A 3-dimensional vector.
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
-    derive(clone, debug),
+    derive(clone),
     remote = "bevy::math::I64Vec3",
     functions[r#"
 
@@ -7920,6 +8046,12 @@ pub struct I64Vec2 {
     )]
     fn sub(self, rhs: i64) -> bevy::math::I64Vec3;
 
+"#,
+    r#"
+#[lua(kind="MetaMethod", metamethod="ToString")]
+fn index(&self) -> String {
+    format!("{}", _self)
+}
 "#]
 )]
 pub struct I64Vec3 {
@@ -7930,7 +8062,7 @@ pub struct I64Vec3 {
 /// A 4-dimensional vector.
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
-    derive(clone, debug),
+    derive(clone),
     remote = "bevy::math::I64Vec4",
     functions[r#"
 
@@ -8423,6 +8555,12 @@ pub struct I64Vec3 {
     #[lua(kind = "Method", output(proxy))]
     fn saturating_div(self, #[proxy] rhs: bevy::math::I64Vec4) -> bevy::math::I64Vec4;
 
+"#,
+    r#"
+#[lua(kind="MetaMethod", metamethod="ToString")]
+fn index(&self) -> String {
+    format!("{}", _self)
+}
 "#]
 )]
 pub struct I64Vec4 {
@@ -8434,7 +8572,7 @@ pub struct I64Vec4 {
 /// A 2-dimensional vector.
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
-    derive(clone, debug),
+    derive(clone),
     remote = "bevy::math::UVec2",
     functions[r#"
 
@@ -8864,13 +9002,19 @@ pub struct I64Vec4 {
 
 "#,
     r#"
+#[lua(kind="MetaMethod", metamethod="ToString")]
+fn index(&self) -> String {
+    format!("{}", _self)
+}
+"#,
+    r#"
 #[lua(kind="MetaMethod", raw , metamethod="Index")]
 fn index(&self, lua: &Lua, idx: crate::lua::util::LuaIndex) -> Result<u32,_> {
     Ok(self.inner()?[*idx])
 }
 "#,
     r#"
-#[lua(kind="MutatingMetaMethod", raw , metamethod="NewIndex")]
+#[lua(kind="MutatingMetaMethod", raw, metamethod="NewIndex")]
 fn index(&mut self, lua: &Lua, idx: crate::lua::util::LuaIndex, val: u32) -> Result<(),_> {
     self.val_mut(|s| Ok(s[*idx] = val))?
 }
@@ -8883,7 +9027,7 @@ pub struct UVec2 {
 /// A 3-dimensional vector.
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
-    derive(clone, debug),
+    derive(clone),
     remote = "bevy::math::UVec3",
     functions[r#"
 
@@ -9335,13 +9479,19 @@ pub struct UVec2 {
 
 "#,
     r#"
+#[lua(kind="MetaMethod", metamethod="ToString")]
+fn index(&self) -> String {
+    format!("{}", _self)
+}
+"#,
+    r#"
 #[lua(kind="MetaMethod", raw , metamethod="Index")]
 fn index(&self, lua: &Lua, idx: crate::lua::util::LuaIndex) -> Result<u32,_> {
     Ok(self.inner()?[*idx])
 }
 "#,
     r#"
-#[lua(kind="MutatingMetaMethod", raw , metamethod="NewIndex")]
+#[lua(kind="MutatingMetaMethod", raw, metamethod="NewIndex")]
 fn index(&mut self, lua: &Lua, idx: crate::lua::util::LuaIndex, val: u32) -> Result<(),_> {
     self.val_mut(|s| Ok(s[*idx] = val))?
 }
@@ -9355,7 +9505,7 @@ pub struct UVec3 {
 /// A 4-dimensional vector.
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
-    derive(clone, debug),
+    derive(clone),
     remote = "bevy::math::UVec4",
     functions[r#"
 
@@ -9786,13 +9936,19 @@ pub struct UVec3 {
 
 "#,
     r#"
+#[lua(kind="MetaMethod", metamethod="ToString")]
+fn index(&self) -> String {
+    format!("{}", _self)
+}
+"#,
+    r#"
 #[lua(kind="MetaMethod", raw , metamethod="Index")]
 fn index(&self, lua: &Lua, idx: crate::lua::util::LuaIndex) -> Result<u32,_> {
     Ok(self.inner()?[*idx])
 }
 "#,
     r#"
-#[lua(kind="MutatingMetaMethod", raw , metamethod="NewIndex")]
+#[lua(kind="MutatingMetaMethod", raw, metamethod="NewIndex")]
 fn index(&mut self, lua: &Lua, idx: crate::lua::util::LuaIndex, val: u32) -> Result<(),_> {
     self.val_mut(|s| Ok(s[*idx] = val))?
 }
@@ -9807,7 +9963,7 @@ pub struct UVec4 {
 /// A 2-dimensional vector.
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
-    derive(clone, debug),
+    derive(clone),
     remote = "bevy::math::U64Vec2",
     functions[r#"
 
@@ -10235,6 +10391,12 @@ pub struct UVec4 {
     #[lua(kind = "Method", output(proxy))]
     fn saturating_div(self, #[proxy] rhs: bevy::math::U64Vec2) -> bevy::math::U64Vec2;
 
+"#,
+    r#"
+#[lua(kind="MetaMethod", metamethod="ToString")]
+fn index(&self) -> String {
+    format!("{}", _self)
+}
 "#]
 )]
 pub struct U64Vec2 {
@@ -10244,7 +10406,7 @@ pub struct U64Vec2 {
 /// A 3-dimensional vector.
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
-    derive(clone, debug),
+    derive(clone),
     remote = "bevy::math::U64Vec3",
     functions[r#"
 
@@ -10694,6 +10856,12 @@ pub struct U64Vec2 {
     )]
     fn rem(self, rhs: u64) -> bevy::math::U64Vec3;
 
+"#,
+    r#"
+#[lua(kind="MetaMethod", metamethod="ToString")]
+fn index(&self) -> String {
+    format!("{}", _self)
+}
 "#]
 )]
 pub struct U64Vec3 {
@@ -10704,7 +10872,7 @@ pub struct U64Vec3 {
 /// A 4-dimensional vector.
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
-    derive(clone, debug),
+    derive(clone),
     remote = "bevy::math::U64Vec4",
     functions[r#"
 
@@ -11133,6 +11301,12 @@ pub struct U64Vec3 {
     )]
     fn sub(self, #[proxy] rhs: bevy::math::U64Vec4) -> bevy::math::U64Vec4;
 
+"#,
+    r#"
+#[lua(kind="MetaMethod", metamethod="ToString")]
+fn index(&self) -> String {
+    format!("{}", _self)
+}
 "#]
 )]
 pub struct U64Vec4 {
@@ -11144,7 +11318,7 @@ pub struct U64Vec4 {
 /// A 2-dimensional vector.
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
-    derive(clone, debug),
+    derive(clone),
     remote = "bevy::math::Vec2",
     functions[r#"
 
@@ -11867,13 +12041,19 @@ pub struct U64Vec4 {
 
 "#,
     r#"
+#[lua(kind="MetaMethod", metamethod="ToString")]
+fn index(&self) -> String {
+    format!("{}", _self)
+}
+"#,
+    r#"
 #[lua(kind="MetaMethod", raw , metamethod="Index")]
 fn index(&self, lua: &Lua, idx: crate::lua::util::LuaIndex) -> Result<f32,_> {
     Ok(self.inner()?[*idx])
 }
 "#,
     r#"
-#[lua(kind="MutatingMetaMethod", raw , metamethod="NewIndex")]
+#[lua(kind="MutatingMetaMethod", raw, metamethod="NewIndex")]
 fn index(&mut self, lua: &Lua, idx: crate::lua::util::LuaIndex, val: f32) -> Result<(),_> {
     self.val_mut(|s| Ok(s[*idx] = val))?
 }
@@ -11891,7 +12071,7 @@ pub struct Vec2 {
 /// This type is 16 byte aligned.
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
-    derive(clone, debug),
+    derive(clone),
     remote = "bevy::math::Vec3A",
     functions[r#"
 
@@ -12615,13 +12795,19 @@ pub struct Vec2 {
 
 "#,
     r#"
+#[lua(kind="MetaMethod", metamethod="ToString")]
+fn index(&self) -> String {
+    format!("{}", _self)
+}
+"#,
+    r#"
 #[lua(kind="MetaMethod", raw , metamethod="Index")]
 fn index(&self, lua: &Lua, idx: crate::lua::util::LuaIndex) -> Result<f32,_> {
     Ok(self.inner()?[*idx])
 }
 "#,
     r#"
-#[lua(kind="MutatingMetaMethod", raw , metamethod="NewIndex")]
+#[lua(kind="MutatingMetaMethod", raw, metamethod="NewIndex")]
 fn index(&mut self, lua: &Lua, idx: crate::lua::util::LuaIndex, val: f32) -> Result<(),_> {
     self.val_mut(|s| Ok(s[*idx] = val))?
 }
@@ -12633,7 +12819,7 @@ pub struct Vec3A();
 /// This type is 16 byte aligned.
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
-    derive(clone, debug),
+    derive(clone),
     remote = "bevy::math::Vec4",
     functions[r#"
 
@@ -13308,13 +13494,19 @@ pub struct Vec3A();
 
 "#,
     r#"
+#[lua(kind="MetaMethod", metamethod="ToString")]
+fn index(&self) -> String {
+    format!("{}", _self)
+}
+"#,
+    r#"
 #[lua(kind="MetaMethod", raw , metamethod="Index")]
 fn index(&self, lua: &Lua, idx: crate::lua::util::LuaIndex) -> Result<f32,_> {
     Ok(self.inner()?[*idx])
 }
 "#,
     r#"
-#[lua(kind="MutatingMetaMethod", raw , metamethod="NewIndex")]
+#[lua(kind="MutatingMetaMethod", raw, metamethod="NewIndex")]
 fn index(&mut self, lua: &Lua, idx: crate::lua::util::LuaIndex, val: f32) -> Result<(),_> {
     self.val_mut(|s| Ok(s[*idx] = val))?
 }
@@ -13324,7 +13516,7 @@ pub struct Vec4();
 /// A 2-dimensional `bool` vector mask.
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
-    derive(clone, debug),
+    derive(clone),
     remote = "bevy::math::BVec2",
     functions[r#"
 
@@ -13405,6 +13597,12 @@ pub struct Vec4();
     )]
     fn clone(&self) -> bevy::math::BVec2;
 
+"#,
+    r#"
+#[lua(kind="MetaMethod", metamethod="ToString")]
+fn index(&self) -> String {
+    format!("{}", _self)
+}
 "#]
 )]
 pub struct BVec2 {
@@ -13414,7 +13612,7 @@ pub struct BVec2 {
 /// A 3-dimensional `bool` vector mask.
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
-    derive(clone, debug),
+    derive(clone),
     remote = "bevy::math::BVec3",
     functions[r#"
 
@@ -13495,6 +13693,12 @@ pub struct BVec2 {
     )]
     fn clone(&self) -> bevy::math::BVec3;
 
+"#,
+    r#"
+#[lua(kind="MetaMethod", metamethod="ToString")]
+fn index(&self) -> String {
+    format!("{}", _self)
+}
 "#]
 )]
 pub struct BVec3 {
@@ -13505,7 +13709,7 @@ pub struct BVec3 {
 /// A 4-dimensional `bool` vector mask.
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
-    derive(clone, debug),
+    derive(clone),
     remote = "bevy::math::BVec4",
     functions[r#"
 
@@ -13586,6 +13790,12 @@ pub struct BVec3 {
     )]
     fn eq(&self, #[proxy] other: &glam::BVec4) -> bool;
 
+"#,
+    r#"
+#[lua(kind="MetaMethod", metamethod="ToString")]
+fn index(&self) -> String {
+    format!("{}", _self)
+}
 "#]
 )]
 pub struct BVec4 {
@@ -13597,7 +13807,7 @@ pub struct BVec4 {
 /// A 2-dimensional vector.
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
-    derive(clone, debug),
+    derive(clone),
     remote = "bevy::math::DVec2",
     functions[r#"
 
@@ -14328,13 +14538,19 @@ pub struct BVec4 {
 
 "#,
     r#"
+#[lua(kind="MetaMethod", metamethod="ToString")]
+fn index(&self) -> String {
+    format!("{}", _self)
+}
+"#,
+    r#"
 #[lua(kind="MetaMethod", raw , metamethod="Index")]
 fn index(&self, lua: &Lua, idx: crate::lua::util::LuaIndex) -> Result<f64,_> {
     Ok(self.inner()?[*idx])
 }
 "#,
     r#"
-#[lua(kind="MutatingMetaMethod", raw , metamethod="NewIndex")]
+#[lua(kind="MutatingMetaMethod", raw, metamethod="NewIndex")]
 fn index(&mut self, lua: &Lua, idx: crate::lua::util::LuaIndex, val: f64) -> Result<(),_> {
     self.val_mut(|s| Ok(s[*idx] = val))?
 }
@@ -14347,7 +14563,7 @@ pub struct DVec2 {
 /// A 3-dimensional vector.
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
-    derive(clone, debug),
+    derive(clone),
     remote = "bevy::math::DVec3",
     functions[r#"
 
@@ -15078,13 +15294,19 @@ pub struct DVec2 {
 
 "#,
     r#"
+#[lua(kind="MetaMethod", metamethod="ToString")]
+fn index(&self) -> String {
+    format!("{}", _self)
+}
+"#,
+    r#"
 #[lua(kind="MetaMethod", raw , metamethod="Index")]
 fn index(&self, lua: &Lua, idx: crate::lua::util::LuaIndex) -> Result<f64,_> {
     Ok(self.inner()?[*idx])
 }
 "#,
     r#"
-#[lua(kind="MutatingMetaMethod", raw , metamethod="NewIndex")]
+#[lua(kind="MutatingMetaMethod", raw, metamethod="NewIndex")]
 fn index(&mut self, lua: &Lua, idx: crate::lua::util::LuaIndex, val: f64) -> Result<(),_> {
     self.val_mut(|s| Ok(s[*idx] = val))?
 }
@@ -15098,7 +15320,7 @@ pub struct DVec3 {
 /// A 4-dimensional vector.
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
-    derive(clone, debug),
+    derive(clone),
     remote = "bevy::math::DVec4",
     functions[r#"
 
@@ -15780,13 +16002,19 @@ pub struct DVec3 {
 
 "#,
     r#"
+#[lua(kind="MetaMethod", metamethod="ToString")]
+fn index(&self) -> String {
+    format!("{}", _self)
+}
+"#,
+    r#"
 #[lua(kind="MetaMethod", raw , metamethod="Index")]
 fn index(&self, lua: &Lua, idx: crate::lua::util::LuaIndex) -> Result<f64,_> {
     Ok(self.inner()?[*idx])
 }
 "#,
     r#"
-#[lua(kind="MutatingMetaMethod", raw , metamethod="NewIndex")]
+#[lua(kind="MutatingMetaMethod", raw, metamethod="NewIndex")]
 fn index(&mut self, lua: &Lua, idx: crate::lua::util::LuaIndex, val: f64) -> Result<(),_> {
     self.val_mut(|s| Ok(s[*idx] = val))?
 }
@@ -15803,7 +16031,7 @@ pub struct DVec4 {
 /// This type is 16 byte aligned.
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
-    derive(clone, debug),
+    derive(clone),
     remote = "bevy::math::Mat2",
     functions[r#"
 
@@ -16076,6 +16304,36 @@ pub struct DVec4 {
     )]
     fn clone(&self) -> bevy::math::Mat2;
 
+"#,
+    r#"
+#[lua(kind="MetaMethod", metamethod="ToString")]
+fn index(&self) -> String {
+    format!("{}", _self)
+}
+"#,
+    r#"
+#[lua(kind = "MetaMethod", raw, metamethod="Index")]
+fn index(&self, ctx : &Lua, idx: crate::lua::util::LuaIndex) -> Result<LuaVec2,_> {
+    Ok(LuaVec2::new_ref(
+            self.reflect_ref(ctx.get_world()?).sub_ref(bevy_script_api::ReflectionPathElement::SubReflection{
+                label:"col", 
+                get: std::sync::Arc::new(|ref_| Err(bevy_script_api::error::ReflectionError::InsufficientProvenance{
+                    path: "".to_owned(), 
+                    msg: "Cannot get column of matrix with immutable reference".to_owned()
+                })),
+                get_mut: std::sync::Arc::new(move |ref_| {
+                    if ref_.is::<bevy::math::Mat2>(){
+                        Ok(ref_.downcast_mut::<bevy::math::Mat2>()
+                            .unwrap()
+                            .col_mut(*idx))
+                    } else {
+                        Err(bevy_script_api::error::ReflectionError::CannotDowncast{from: ref_.get_represented_type_info().unwrap().type_path().into(), to:"Mat3".into()})
+                    }	
+                })
+            })
+        )
+    )
+}
 "#]
 )]
 pub struct Mat2();
@@ -16100,7 +16358,7 @@ pub struct Mat2();
 /// transform.
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
-    derive(clone, debug),
+    derive(clone),
     remote = "bevy::math::Mat3",
     functions[r#"
 
@@ -16510,31 +16768,37 @@ pub struct Mat2();
 
     #[lua(kind = "Method", output(proxy))]
     fn as_dmat3(&self) -> bevy::math::DMat3;
-    "#
-    ,
-r#"
-    #[lua(kind = "MetaMethod",  raw, metamethod="Index")]
-	fn index(&self,ctx : &Lua, idx: crate::lua::util::LuaIndex) -> Result<LuaVec3,_> {
-		Ok(LuaVec3::new_ref(
-				self.reflect_ref(ctx.get_world()?).sub_ref(bevy_script_api::ReflectionPathElement::SubReflection{
-					label:"col", 
-					get: std::sync::Arc::new(|ref_| Err(bevy_script_api::error::ReflectionError::InsufficientProvenance{
-						path: "".to_owned(), 
-						msg: "Cannot get column of matrix with immutable reference".to_owned()
-					})),
-					get_mut: std::sync::Arc::new(move |ref_| {
-						if ref_.is::<bevy::math::Mat3>(){
-							Ok(ref_.downcast_mut::<bevy::math::Mat3>()
-								.unwrap()
-								.col_mut(*idx))
-						} else {
-							Err(bevy_script_api::error::ReflectionError::CannotDowncast{from: ref_.get_represented_type_info().unwrap().type_path().into(), to:"Mat3".into()})
-						}	
-					})
-				})
-			)
-		)
-	}
+
+"#,
+    r#"
+#[lua(kind="MetaMethod", metamethod="ToString")]
+fn index(&self) -> String {
+    format!("{}", _self)
+}
+"#,
+    r#"
+#[lua(kind = "MetaMethod", raw, metamethod="Index")]
+fn index(&self, ctx : &Lua, idx: crate::lua::util::LuaIndex) -> Result<LuaVec3,_> {
+    Ok(LuaVec3::new_ref(
+            self.reflect_ref(ctx.get_world()?).sub_ref(bevy_script_api::ReflectionPathElement::SubReflection{
+                label:"col", 
+                get: std::sync::Arc::new(|ref_| Err(bevy_script_api::error::ReflectionError::InsufficientProvenance{
+                    path: "".to_owned(), 
+                    msg: "Cannot get column of matrix with immutable reference".to_owned()
+                })),
+                get_mut: std::sync::Arc::new(move |ref_| {
+                    if ref_.is::<bevy::math::Mat3>(){
+                        Ok(ref_.downcast_mut::<bevy::math::Mat3>()
+                            .unwrap()
+                            .col_mut(*idx))
+                    } else {
+                        Err(bevy_script_api::error::ReflectionError::CannotDowncast{from: ref_.get_represented_type_info().unwrap().type_path().into(), to:"Mat3".into()})
+                    }	
+                })
+            })
+        )
+    )
+}
 "#]
 )]
 pub struct Mat3 {
@@ -16566,7 +16830,7 @@ pub struct Mat3 {
 /// transform.
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
-    derive(clone, debug),
+    derive(clone),
     remote = "bevy::math::Mat3A",
     functions[r#"
 /// Creates a 3x3 matrix from three column vectors.
@@ -16977,6 +17241,36 @@ pub struct Mat3 {
     )]
     fn mul(self, #[proxy] rhs: bevy::math::Affine2) -> bevy::math::Mat3A;
 
+"#,
+    r#"
+#[lua(kind="MetaMethod", metamethod="ToString")]
+fn index(&self) -> String {
+    format!("{}", _self)
+}
+"#,
+    r#"
+#[lua(kind = "MetaMethod", raw, metamethod="Index")]
+fn index(&self, ctx : &Lua, idx: crate::lua::util::LuaIndex) -> Result<LuaVec3A,_> {
+    Ok(LuaVec3A::new_ref(
+            self.reflect_ref(ctx.get_world()?).sub_ref(bevy_script_api::ReflectionPathElement::SubReflection{
+                label:"col", 
+                get: std::sync::Arc::new(|ref_| Err(bevy_script_api::error::ReflectionError::InsufficientProvenance{
+                    path: "".to_owned(), 
+                    msg: "Cannot get column of matrix with immutable reference".to_owned()
+                })),
+                get_mut: std::sync::Arc::new(move |ref_| {
+                    if ref_.is::<bevy::math::Mat3A>(){
+                        Ok(ref_.downcast_mut::<bevy::math::Mat3A>()
+                            .unwrap()
+                            .col_mut(*idx))
+                    } else {
+                        Err(bevy_script_api::error::ReflectionError::CannotDowncast{from: ref_.get_represented_type_info().unwrap().type_path().into(), to:"Mat3".into()})
+                    }	
+                })
+            })
+        )
+    )
+}
 "#]
 )]
 pub struct Mat3A {
@@ -17012,7 +17306,7 @@ pub struct Mat3A {
 /// perspective correction using the [`Self::project_point3()`] convenience method.
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
-    derive(clone, debug),
+    derive(clone),
     remote = "bevy::math::Mat4",
     functions[r#"
 
@@ -17671,6 +17965,36 @@ pub struct Mat3A {
     )]
     fn mul(self, #[proxy] rhs: bevy::math::Affine3A) -> bevy::math::Mat4;
 
+"#,
+    r#"
+#[lua(kind="MetaMethod", metamethod="ToString")]
+fn index(&self) -> String {
+    format!("{}", _self)
+}
+"#,
+    r#"
+#[lua(kind = "MetaMethod", raw, metamethod="Index")]
+fn index(&self, ctx : &Lua, idx: crate::lua::util::LuaIndex) -> Result<LuaVec4,_> {
+    Ok(LuaVec4::new_ref(
+            self.reflect_ref(ctx.get_world()?).sub_ref(bevy_script_api::ReflectionPathElement::SubReflection{
+                label:"col", 
+                get: std::sync::Arc::new(|ref_| Err(bevy_script_api::error::ReflectionError::InsufficientProvenance{
+                    path: "".to_owned(), 
+                    msg: "Cannot get column of matrix with immutable reference".to_owned()
+                })),
+                get_mut: std::sync::Arc::new(move |ref_| {
+                    if ref_.is::<bevy::math::Mat4>(){
+                        Ok(ref_.downcast_mut::<bevy::math::Mat4>()
+                            .unwrap()
+                            .col_mut(*idx))
+                    } else {
+                        Err(bevy_script_api::error::ReflectionError::CannotDowncast{from: ref_.get_represented_type_info().unwrap().type_path().into(), to:"Mat3".into()})
+                    }	
+                })
+            })
+        )
+    )
+}
 "#]
 )]
 pub struct Mat4 {
@@ -17686,7 +18010,7 @@ pub struct Mat4 {
 /// A 2x2 column major matrix.
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
-    derive(clone, debug),
+    derive(clone),
     remote = "bevy::math::DMat2",
     functions[r#"
 
@@ -17952,6 +18276,36 @@ pub struct Mat4 {
     )]
     fn mul(self, rhs: f64) -> bevy::math::DMat2;
 
+"#,
+    r#"
+#[lua(kind="MetaMethod", metamethod="ToString")]
+fn index(&self) -> String {
+    format!("{}", _self)
+}
+"#,
+    r#"
+#[lua(kind = "MetaMethod", raw, metamethod="Index")]
+fn index(&self, ctx : &Lua, idx: crate::lua::util::LuaIndex) -> Result<LuaDVec2,_> {
+    Ok(LuaDVec2::new_ref(
+            self.reflect_ref(ctx.get_world()?).sub_ref(bevy_script_api::ReflectionPathElement::SubReflection{
+                label:"col", 
+                get: std::sync::Arc::new(|ref_| Err(bevy_script_api::error::ReflectionError::InsufficientProvenance{
+                    path: "".to_owned(), 
+                    msg: "Cannot get column of matrix with immutable reference".to_owned()
+                })),
+                get_mut: std::sync::Arc::new(move |ref_| {
+                    if ref_.is::<bevy::math::DMat2>(){
+                        Ok(ref_.downcast_mut::<bevy::math::DMat2>()
+                            .unwrap()
+                            .col_mut(*idx))
+                    } else {
+                        Err(bevy_script_api::error::ReflectionError::CannotDowncast{from: ref_.get_represented_type_info().unwrap().type_path().into(), to:"Mat3".into()})
+                    }	
+                })
+            })
+        )
+    )
+}
 "#]
 )]
 pub struct DMat2 {
@@ -17981,7 +18335,7 @@ pub struct DMat2 {
 /// transform.
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
-    derive(clone, debug),
+    derive(clone),
     remote = "bevy::math::DMat3",
     functions[r#"
 /// Creates a 3x3 matrix from three column vectors.
@@ -18377,6 +18731,36 @@ pub struct DMat2 {
     )]
     fn eq(&self, #[proxy] rhs: &glam::DMat3) -> bool;
 
+"#,
+    r#"
+#[lua(kind="MetaMethod", metamethod="ToString")]
+fn index(&self) -> String {
+    format!("{}", _self)
+}
+"#,
+    r#"
+#[lua(kind = "MetaMethod", raw, metamethod="Index")]
+fn index(&self, ctx : &Lua, idx: crate::lua::util::LuaIndex) -> Result<LuaDVec3,_> {
+    Ok(LuaDVec3::new_ref(
+            self.reflect_ref(ctx.get_world()?).sub_ref(bevy_script_api::ReflectionPathElement::SubReflection{
+                label:"col", 
+                get: std::sync::Arc::new(|ref_| Err(bevy_script_api::error::ReflectionError::InsufficientProvenance{
+                    path: "".to_owned(), 
+                    msg: "Cannot get column of matrix with immutable reference".to_owned()
+                })),
+                get_mut: std::sync::Arc::new(move |ref_| {
+                    if ref_.is::<bevy::math::DMat3>(){
+                        Ok(ref_.downcast_mut::<bevy::math::DMat3>()
+                            .unwrap()
+                            .col_mut(*idx))
+                    } else {
+                        Err(bevy_script_api::error::ReflectionError::CannotDowncast{from: ref_.get_represented_type_info().unwrap().type_path().into(), to:"Mat3".into()})
+                    }	
+                })
+            })
+        )
+    )
+}
 "#]
 )]
 pub struct DMat3 {
@@ -18412,7 +18796,7 @@ pub struct DMat3 {
 /// perspective correction using the [`Self::project_point3()`] convenience method.
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
-    derive(clone, debug),
+    derive(clone),
     remote = "bevy::math::DMat4",
     functions[r#"
 
@@ -19049,6 +19433,36 @@ pub struct DMat3 {
     )]
     fn neg(self) -> bevy::math::DMat4;
 
+"#,
+    r#"
+#[lua(kind="MetaMethod", metamethod="ToString")]
+fn index(&self) -> String {
+    format!("{}", _self)
+}
+"#,
+    r#"
+#[lua(kind = "MetaMethod", raw, metamethod="Index")]
+fn index(&self, ctx : &Lua, idx: crate::lua::util::LuaIndex) -> Result<LuaDVec4,_> {
+    Ok(LuaDVec4::new_ref(
+            self.reflect_ref(ctx.get_world()?).sub_ref(bevy_script_api::ReflectionPathElement::SubReflection{
+                label:"col", 
+                get: std::sync::Arc::new(|ref_| Err(bevy_script_api::error::ReflectionError::InsufficientProvenance{
+                    path: "".to_owned(), 
+                    msg: "Cannot get column of matrix with immutable reference".to_owned()
+                })),
+                get_mut: std::sync::Arc::new(move |ref_| {
+                    if ref_.is::<bevy::math::DMat4>(){
+                        Ok(ref_.downcast_mut::<bevy::math::DMat4>()
+                            .unwrap()
+                            .col_mut(*idx))
+                    } else {
+                        Err(bevy_script_api::error::ReflectionError::CannotDowncast{from: ref_.get_represented_type_info().unwrap().type_path().into(), to:"Mat3".into()})
+                    }	
+                })
+            })
+        )
+    )
+}
 "#]
 )]
 pub struct DMat4 {
@@ -19064,7 +19478,7 @@ pub struct DMat4 {
 /// A 2D affine transform, which can represent translation, rotation, scaling and shear.
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
-    derive(clone, debug),
+    derive(clone),
     remote = "bevy::math::Affine2",
     functions[r#"
 
@@ -19292,6 +19706,12 @@ pub struct DMat4 {
     #[lua(kind = "Method", output(proxy))]
     fn inverse(&self) -> bevy::math::Affine2;
 
+"#,
+    r#"
+#[lua(kind="MetaMethod", metamethod="ToString")]
+fn index(&self) -> String {
+    format!("{}", _self)
+}
 "#]
 )]
 pub struct Affine2 {
@@ -19304,7 +19724,7 @@ pub struct Affine2 {
 /// This type is 16 byte aligned.
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
-    derive(clone, debug),
+    derive(clone),
     remote = "bevy::math::Affine3A",
     functions[r#"
 /// Creates an affine transform from three column vectors.
@@ -19637,6 +20057,12 @@ pub struct Affine2 {
     )]
     fn mul(self, #[proxy] rhs: bevy::math::Mat4) -> bevy::math::Mat4;
 
+"#,
+    r#"
+#[lua(kind="MetaMethod", metamethod="ToString")]
+fn index(&self) -> String {
+    format!("{}", _self)
+}
 "#]
 )]
 pub struct Affine3A {
@@ -19648,7 +20074,7 @@ pub struct Affine3A {
 /// A 2D affine transform, which can represent translation, rotation, scaling and shear.
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
-    derive(clone, debug),
+    derive(clone),
     remote = "bevy::math::DAffine2",
     functions[r#"
 /// Creates an affine transform from three column vectors.
@@ -19857,6 +20283,12 @@ pub struct Affine3A {
     )]
     fn eq(&self, #[proxy] rhs: &glam::DAffine2) -> bool;
 
+"#,
+    r#"
+#[lua(kind="MetaMethod", metamethod="ToString")]
+fn index(&self) -> String {
+    format!("{}", _self)
+}
 "#]
 )]
 pub struct DAffine2 {
@@ -19868,7 +20300,7 @@ pub struct DAffine2 {
 /// A 3D affine transform, which can represent translation, rotation, scaling and shear.
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
-    derive(clone, debug),
+    derive(clone),
     remote = "bevy::math::DAffine3",
     functions[r#"
 
@@ -20185,6 +20617,12 @@ pub struct DAffine2 {
     )]
     fn clone(&self) -> bevy::math::DAffine3;
 
+"#,
+    r#"
+#[lua(kind="MetaMethod", metamethod="ToString")]
+fn index(&self) -> String {
+    format!("{}", _self)
+}
 "#]
 )]
 pub struct DAffine3 {
@@ -20199,7 +20637,7 @@ pub struct DAffine3 {
 /// operations are applied.
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
-    derive(clone, debug),
+    derive(clone),
     remote = "bevy::math::DQuat",
     functions[r#"
 /// Creates a new rotation quaternion.
@@ -20689,6 +21127,12 @@ pub struct DAffine3 {
     )]
     fn mul(self, #[proxy] rhs: bevy::math::DQuat) -> bevy::math::DQuat;
 
+"#,
+    r#"
+#[lua(kind="MetaMethod", metamethod="ToString")]
+fn index(&self) -> String {
+    format!("{}", _self)
+}
 "#]
 )]
 pub struct DQuat {
@@ -20703,7 +21147,7 @@ pub struct DQuat {
 /// YXZ can be used for yaw (y-axis), pitch (x-axis), roll (z-axis).
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
-    derive(clone, debug),
+    derive(clone),
     remote = "bevy::math::EulerRot",
     functions[r#"
 
@@ -20731,6 +21175,12 @@ pub struct DQuat {
     )]
     fn eq(&self, #[proxy] other: &glam::EulerRot) -> bool;
 
+"#,
+    r#"
+#[lua(kind="MetaMethod", metamethod="ToString")]
+fn index(&self) -> String {
+    format!("{:?}", _self)
+}
 "#]
 )]
 pub struct EulerRot {}
@@ -20738,7 +21188,7 @@ pub struct EulerRot {}
 /// This type is 16 byte aligned.
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
-    derive(clone, debug),
+    derive(clone),
     remote = "bevy::math::BVec3A",
     functions[r#"
 
@@ -20813,6 +21263,12 @@ pub struct EulerRot {}
     )]
     fn clone(&self) -> bevy::math::BVec3A;
 
+"#,
+    r#"
+#[lua(kind="MetaMethod", metamethod="ToString")]
+fn index(&self) -> String {
+    format!("{}", _self)
+}
 "#]
 )]
 pub struct BVec3A();
@@ -20820,7 +21276,7 @@ pub struct BVec3A();
 /// This type is 16 byte aligned.
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
-    derive(clone, debug),
+    derive(clone),
     remote = "bevy::math::BVec4A",
     functions[r#"
 
@@ -20895,13 +21351,19 @@ pub struct BVec3A();
     #[lua(kind = "MutatingMethod")]
     fn set(&mut self, index: usize, value: bool) -> ();
 
+"#,
+    r#"
+#[lua(kind="MetaMethod", metamethod="ToString")]
+fn index(&self) -> String {
+    format!("{}", _self)
+}
 "#]
 )]
 pub struct BVec4A();
 /// A normalized vector pointing in a direction in 2D space
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
-    derive(clone, debug),
+    derive(clone),
     remote = "bevy::math::primitives::Direction2d",
     functions[r#"
 /// Create a [`Direction2d`] from a [`Vec2`] that is already normalized.
@@ -20947,13 +21409,19 @@ pub struct BVec4A();
     )]
     fn eq(&self, #[proxy] other: &bevy_math::primitives::Direction2d) -> bool;
 
+"#,
+    r#"
+#[lua(kind="MetaMethod", metamethod="ToString")]
+fn index(&self) -> String {
+    format!("{:?}", _self)
+}
 "#]
 )]
 pub struct Direction2d();
 /// A circle primitive
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
-    derive(clone, debug),
+    derive(clone),
     remote = "bevy::math::primitives::Circle",
     functions[r#"
 
@@ -21012,6 +21480,12 @@ pub struct Direction2d();
     #[lua(kind = "Method", output(proxy))]
     fn closest_point(&self, #[proxy] point: bevy::math::Vec2) -> bevy::math::Vec2;
 
+"#,
+    r#"
+#[lua(kind="MetaMethod", metamethod="ToString")]
+fn index(&self) -> String {
+    format!("{:?}", _self)
+}
 "#]
 )]
 pub struct Circle {
@@ -21020,7 +21494,7 @@ pub struct Circle {
 /// An ellipse primitive
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
-    derive(clone, debug),
+    derive(clone),
     remote = "bevy::math::primitives::Ellipse",
     functions[r#"
 
@@ -21079,6 +21553,12 @@ pub struct Circle {
     #[lua(kind = "Method")]
     fn area(&self) -> f32;
 
+"#,
+    r#"
+#[lua(kind="MetaMethod", metamethod="ToString")]
+fn index(&self) -> String {
+    format!("{:?}", _self)
+}
 "#]
 )]
 pub struct Ellipse {
@@ -21089,7 +21569,7 @@ pub struct Ellipse {
 /// stretching infinitely far
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
-    derive(clone, debug),
+    derive(clone),
     remote = "bevy::math::primitives::Plane2d",
     functions[r#"
 
@@ -21120,6 +21600,12 @@ pub struct Ellipse {
     )]
     fn eq(&self, #[proxy] other: &bevy_math::primitives::Plane2d) -> bool;
 
+"#,
+    r#"
+#[lua(kind="MetaMethod", metamethod="ToString")]
+fn index(&self) -> String {
+    format!("{:?}", _self)
+}
 "#]
 )]
 pub struct Plane2d {
@@ -21130,7 +21616,7 @@ pub struct Plane2d {
 /// For a finite line: [`Segment2d`]
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
-    derive(clone, debug),
+    derive(clone),
     remote = "bevy::math::primitives::Line2d",
     functions[r#"
 
@@ -21152,6 +21638,12 @@ pub struct Plane2d {
     )]
     fn clone(&self) -> bevy::math::primitives::Line2d;
 
+"#,
+    r#"
+#[lua(kind="MetaMethod", metamethod="ToString")]
+fn index(&self) -> String {
+    format!("{:?}", _self)
+}
 "#]
 )]
 pub struct Line2d {
@@ -21161,7 +21653,7 @@ pub struct Line2d {
 /// A segment of a line along a direction in 2D space.
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
-    derive(clone, debug),
+    derive(clone),
     remote = "bevy::math::primitives::Segment2d",
     functions[r#"
 
@@ -21208,6 +21700,12 @@ pub struct Line2d {
     )]
     fn clone(&self) -> bevy::math::primitives::Segment2d;
 
+"#,
+    r#"
+#[lua(kind="MetaMethod", metamethod="ToString")]
+fn index(&self) -> String {
+    format!("{:?}", _self)
+}
 "#]
 )]
 pub struct Segment2d {
@@ -21218,7 +21716,7 @@ pub struct Segment2d {
 /// A triangle in 2D space
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
-    derive(clone, debug),
+    derive(clone),
     remote = "bevy::math::primitives::Triangle2d",
     functions[r#"
 
@@ -21276,6 +21774,12 @@ pub struct Segment2d {
     )]
     fn clone(&self) -> bevy::math::primitives::Triangle2d;
 
+"#,
+    r#"
+#[lua(kind="MetaMethod", metamethod="ToString")]
+fn index(&self) -> String {
+    format!("{:?}", _self)
+}
 "#]
 )]
 pub struct Triangle2d {
@@ -21284,7 +21788,7 @@ pub struct Triangle2d {
 /// A rectangle primitive
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
-    derive(clone, debug),
+    derive(clone),
     remote = "bevy::math::primitives::Rectangle",
     functions[r#"
 /// Create a new `Rectangle` from a full width and height
@@ -21362,6 +21866,12 @@ pub struct Triangle2d {
     )]
     fn eq(&self, #[proxy] other: &bevy_math::primitives::Rectangle) -> bool;
 
+"#,
+    r#"
+#[lua(kind="MetaMethod", metamethod="ToString")]
+fn index(&self) -> String {
+    format!("{:?}", _self)
+}
 "#]
 )]
 pub struct Rectangle {
@@ -21371,7 +21881,7 @@ pub struct Rectangle {
 /// A polygon where all vertices lie on a circle, equally far apart.
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
-    derive(clone, debug),
+    derive(clone),
     remote = "bevy::math::primitives::RegularPolygon",
     functions[r#"
 
@@ -21478,6 +21988,12 @@ pub struct Rectangle {
     )]
     fn eq(&self, #[proxy] other: &bevy_math::primitives::RegularPolygon) -> bool;
 
+"#,
+    r#"
+#[lua(kind="MetaMethod", metamethod="ToString")]
+fn index(&self) -> String {
+    format!("{:?}", _self)
+}
 "#]
 )]
 pub struct RegularPolygon {
@@ -21489,7 +22005,7 @@ pub struct RegularPolygon {
 /// A two-dimensional capsule is defined as a neighborhood of points at a distance (radius) from a line
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
-    derive(clone, debug),
+    derive(clone),
     remote = "bevy::math::primitives::Capsule2d",
     functions[r#"
 
@@ -21518,6 +22034,12 @@ pub struct RegularPolygon {
     )]
     fn clone(&self) -> bevy::math::primitives::Capsule2d;
 
+"#,
+    r#"
+#[lua(kind="MetaMethod", metamethod="ToString")]
+fn index(&self) -> String {
+    format!("{:?}", _self)
+}
 "#]
 )]
 pub struct Capsule2d {
@@ -21527,7 +22049,7 @@ pub struct Capsule2d {
 /// A normalized vector pointing in a direction in 3D space
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
-    derive(clone, debug),
+    derive(clone),
     remote = "bevy::math::primitives::Direction3d",
     functions[r#"
 
@@ -21585,13 +22107,19 @@ pub struct Capsule2d {
         value: bevy::math::Vec3,
     ) -> bevy::math::primitives::Direction3d;
 
+"#,
+    r#"
+#[lua(kind="MetaMethod", metamethod="ToString")]
+fn index(&self) -> String {
+    format!("{:?}", _self)
+}
 "#]
 )]
 pub struct Direction3d();
 /// A sphere primitive
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
-    derive(clone, debug),
+    derive(clone),
     remote = "bevy::math::primitives::Sphere",
     functions[r#"
 
@@ -21650,6 +22178,12 @@ pub struct Direction3d();
     #[lua(kind = "Method", output(proxy))]
     fn closest_point(&self, #[proxy] point: bevy::math::Vec3) -> bevy::math::Vec3;
 
+"#,
+    r#"
+#[lua(kind="MetaMethod", metamethod="ToString")]
+fn index(&self) -> String {
+    format!("{:?}", _self)
+}
 "#]
 )]
 pub struct Sphere {
@@ -21659,7 +22193,7 @@ pub struct Sphere {
 /// stretching infinitely far
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
-    derive(clone, debug),
+    derive(clone),
     remote = "bevy::math::primitives::Plane3d",
     functions[r#"
 
@@ -21690,6 +22224,12 @@ pub struct Sphere {
     #[lua(kind = "Function", output(proxy))]
     fn new(#[proxy] normal: bevy::math::Vec3) -> bevy::math::primitives::Plane3d;
 
+"#,
+    r#"
+#[lua(kind="MetaMethod", metamethod="ToString")]
+fn index(&self) -> String {
+    format!("{:?}", _self)
+}
 "#]
 )]
 pub struct Plane3d {
@@ -21700,7 +22240,7 @@ pub struct Plane3d {
 /// For a finite line: [`Segment3d`]
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
-    derive(clone, debug),
+    derive(clone),
     remote = "bevy::math::primitives::Line3d",
     functions[r#"
 
@@ -21722,6 +22262,12 @@ pub struct Plane3d {
     )]
     fn eq(&self, #[proxy] other: &bevy_math::primitives::Line3d) -> bool;
 
+"#,
+    r#"
+#[lua(kind="MetaMethod", metamethod="ToString")]
+fn index(&self) -> String {
+    format!("{:?}", _self)
+}
 "#]
 )]
 pub struct Line3d {
@@ -21731,7 +22277,7 @@ pub struct Line3d {
 /// A segment of a line along a direction in 3D space.
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
-    derive(clone, debug),
+    derive(clone),
     remote = "bevy::math::primitives::Segment3d",
     functions[r#"
 
@@ -21778,6 +22324,12 @@ pub struct Line3d {
     #[lua(kind = "Method", output(proxy))]
     fn point2(&self) -> bevy::math::Vec3;
 
+"#,
+    r#"
+#[lua(kind="MetaMethod", metamethod="ToString")]
+fn index(&self) -> String {
+    format!("{:?}", _self)
+}
 "#]
 )]
 pub struct Segment3d {
@@ -21788,7 +22340,7 @@ pub struct Segment3d {
 /// A cuboid primitive, more commonly known as a box.
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
-    derive(clone, debug),
+    derive(clone),
     remote = "bevy::math::primitives::Cuboid",
     functions[r#"
 
@@ -21870,6 +22422,12 @@ pub struct Segment3d {
     )]
     fn eq(&self, #[proxy] other: &bevy_math::primitives::Cuboid) -> bool;
 
+"#,
+    r#"
+#[lua(kind="MetaMethod", metamethod="ToString")]
+fn index(&self) -> String {
+    format!("{:?}", _self)
+}
 "#]
 )]
 pub struct Cuboid {
@@ -21879,7 +22437,7 @@ pub struct Cuboid {
 /// A cylinder primitive
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
-    derive(clone, debug),
+    derive(clone),
     remote = "bevy::math::primitives::Cylinder",
     functions[r#"
 
@@ -21944,6 +22502,12 @@ pub struct Cuboid {
     )]
     fn eq(&self, #[proxy] other: &bevy_math::primitives::Cylinder) -> bool;
 
+"#,
+    r#"
+#[lua(kind="MetaMethod", metamethod="ToString")]
+fn index(&self) -> String {
+    format!("{:?}", _self)
+}
 "#]
 )]
 pub struct Cylinder {
@@ -21954,7 +22518,7 @@ pub struct Cylinder {
 /// A three-dimensional capsule is defined as a surface at a distance (radius) from a line
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
-    derive(clone, debug),
+    derive(clone),
     remote = "bevy::math::primitives::Capsule3d",
     functions[r#"
 
@@ -22005,6 +22569,12 @@ pub struct Cylinder {
     #[lua(kind = "Method")]
     fn volume(&self) -> f32;
 
+"#,
+    r#"
+#[lua(kind="MetaMethod", metamethod="ToString")]
+fn index(&self) -> String {
+    format!("{:?}", _self)
+}
 "#]
 )]
 pub struct Capsule3d {
@@ -22014,7 +22584,7 @@ pub struct Capsule3d {
 /// A cone primitive.
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
-    derive(clone, debug),
+    derive(clone),
     remote = "bevy::math::primitives::Cone",
     functions[r#"
 
@@ -22080,6 +22650,12 @@ pub struct Capsule3d {
     )]
     fn clone(&self) -> bevy::math::primitives::Cone;
 
+"#,
+    r#"
+#[lua(kind="MetaMethod", metamethod="ToString")]
+fn index(&self) -> String {
+    format!("{:?}", _self)
+}
 "#]
 )]
 pub struct Cone {
@@ -22091,7 +22667,7 @@ pub struct Cone {
 /// by slicing off a section of a cone.
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
-    derive(clone, debug),
+    derive(clone),
     remote = "bevy::math::primitives::ConicalFrustum",
     functions[r#"
 
@@ -22113,6 +22689,12 @@ pub struct Cone {
     )]
     fn clone(&self) -> bevy::math::primitives::ConicalFrustum;
 
+"#,
+    r#"
+#[lua(kind="MetaMethod", metamethod="ToString")]
+fn index(&self) -> String {
+    format!("{:?}", _self)
+}
 "#]
 )]
 pub struct ConicalFrustum {
@@ -22123,7 +22705,7 @@ pub struct ConicalFrustum {
 /// A torus primitive, often representing a ring or donut shape
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
-    derive(clone, debug),
+    derive(clone),
     remote = "bevy::math::primitives::Torus",
     functions[r#"
 
@@ -22188,6 +22770,12 @@ pub struct ConicalFrustum {
     )]
     fn clone(&self) -> bevy::math::primitives::Torus;
 
+"#,
+    r#"
+#[lua(kind="MetaMethod", metamethod="ToString")]
+fn index(&self) -> String {
+    format!("{:?}", _self)
+}
 "#]
 )]
 pub struct Torus {
@@ -22203,7 +22791,7 @@ pub struct Torus {
 /// the minimum and maximum corners.
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
-    derive(clone, debug),
+    derive(clone),
     remote = "bevy::math::IRect",
     functions[r#"
 
@@ -22498,6 +23086,12 @@ pub struct Torus {
     #[lua(as_trait = "std::cmp::Eq", kind = "Method")]
     fn assert_receiver_is_total_eq(&self) -> ();
 
+"#,
+    r#"
+#[lua(kind="MetaMethod", metamethod="ToString")]
+fn index(&self) -> String {
+    format!("{:?}", _self)
+}
 "#]
 )]
 pub struct IRect {
@@ -22515,7 +23109,7 @@ pub struct IRect {
 /// the minimum and maximum corners.
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
-    derive(clone, debug),
+    derive(clone),
     remote = "bevy::math::Rect",
     functions[r#"
 /// Create a new rectangle from two corner points.
@@ -22817,6 +23411,12 @@ pub struct IRect {
     )]
     fn eq(&self, #[proxy] other: &bevy_math::Rect) -> bool;
 
+"#,
+    r#"
+#[lua(kind="MetaMethod", metamethod="ToString")]
+fn index(&self) -> String {
+    format!("{:?}", _self)
+}
 "#]
 )]
 pub struct Rect {
@@ -22834,7 +23434,7 @@ pub struct Rect {
 /// the minimum and maximum corners.
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
-    derive(clone, debug),
+    derive(clone),
     remote = "bevy::math::URect",
     functions[r#"
 
@@ -23129,6 +23729,12 @@ pub struct Rect {
     )]
     fn clone(&self) -> bevy::math::URect;
 
+"#,
+    r#"
+#[lua(kind="MetaMethod", metamethod="ToString")]
+fn index(&self) -> String {
+    format!("{:?}", _self)
+}
 "#]
 )]
 pub struct URect {
@@ -23154,7 +23760,7 @@ pub struct URect {
 /// `WS`: A string of 32 newlines followed by 128 spaces.
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
-    derive(clone, debug),
+    derive(clone),
     remote = "smol_str::SmolStr",
     functions[r#"
 
@@ -23200,6 +23806,12 @@ pub struct URect {
     )]
     fn clone(&self) -> smol_str::SmolStr;
 
+"#,
+    r#"
+#[lua(kind="MetaMethod", metamethod="ToString")]
+fn index(&self) -> String {
+    format!("{}", _self)
+}
 "#]
 )]
 pub struct SmolStr();
@@ -23227,7 +23839,7 @@ pub struct SmolStr();
 /// [null pointer optimization]: crate::option#representation
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
-    derive(clone, debug),
+    derive(clone),
     remote = "std::num::NonZeroIsize",
     functions[r#"
 
@@ -23543,6 +24155,12 @@ pub struct SmolStr();
     )]
     fn neg(self) -> std::num::NonZeroIsize;
 
+"#,
+    r#"
+#[lua(kind="MetaMethod", metamethod="ToString")]
+fn index(&self) -> String {
+    format!("{}", _self)
+}
 "#]
 )]
 pub struct NonZeroIsize();
@@ -23620,7 +24238,7 @@ pub struct NonZeroIsize();
 /// The `Uuid` type is always guaranteed to be have the same ABI as [`Bytes`].
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
-    derive(clone, debug),
+    derive(clone),
     remote = "bevy::utils::Uuid",
     functions[r#"
 /// Returns the version number of the UUID.
@@ -24001,6 +24619,12 @@ pub struct NonZeroIsize();
     )]
     fn eq(&self, #[proxy] other: &bevy_utils::Uuid) -> bool;
 
+"#,
+    r#"
+#[lua(kind="MetaMethod", metamethod="ToString")]
+fn index(&self) -> String {
+    format!("{}", _self)
+}
 "#]
 )]
 pub struct Uuid();

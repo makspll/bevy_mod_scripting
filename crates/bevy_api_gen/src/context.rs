@@ -89,11 +89,12 @@ pub(crate) const DEF_PATHS_GET_TYPE_REGISTRATION: [&str; 2] = [
     "reflect::GetTypeRegistration",
 ];
 
-/// A collection of traits which we search for in the codebase, some of these are necessary to figure out if a type
-/// is Clone or Debug for the purposes of the macro code generation
-pub(crate) const STD_SOURCE_TRAITS: [&str; 13] = [
+/// A collection of traits which we search for in the codebase, some are included purely for the methods they provide,
+/// others are later used for quick lookup of the type "does this type implement Display" etc.
+pub(crate) const STD_SOURCE_TRAITS: [&str; 14] = [
     // PRINTING
     "std::fmt::Debug",
+    "std::fmt::Display",
     "std::string::ToString",
     // OWNERSHIP
     "std::clone::Clone",
@@ -117,7 +118,8 @@ pub(crate) struct CachedTraits {
     pub(crate) mlua_into_lua_multi: Option<DefId>,
     pub(crate) bevy_reflect_reflect: Option<DefId>,
     pub(crate) bevy_reflect_get_type_registration: Option<DefId>,
-    /// Traits whose methods can be included in the generated code
+    /// Map from def_path_str to DefId of common std traits we work with
+    /// these are the only trait impls from which we generate methods
     pub(crate) std_source_traits: HashMap<String, DefId>,
 }
 

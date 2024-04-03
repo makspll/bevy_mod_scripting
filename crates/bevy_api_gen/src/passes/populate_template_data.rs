@@ -8,7 +8,7 @@ use rustc_span::Symbol;
 
 use crate::{
     Arg, Args, BevyCtxt, Field, Function, FunctionContext, ImportPathFinder, Item, Output,
-    ReflectType, ReflectionStrategy, TemplateContext, Variant,
+    ReflectType, TemplateContext, Variant,
 };
 /// Converts the BevyCtxt into simpler data that can be used in templates directly,
 /// Clears the BevyCtxt by clearing data structures after it uses them.
@@ -19,6 +19,7 @@ pub(crate) fn populate_template_data(ctxt: &mut BevyCtxt<'_>, args: &Args) -> bo
 
     let clone_diagnostic = tcx.get_diagnostic_item(Symbol::intern("Clone")).unwrap();
     let debug_diagnostic = tcx.get_diagnostic_item(Symbol::intern("Debug")).unwrap();
+    let display_diagnostic = tcx.get_diagnostic_item(Symbol::intern("Display")).unwrap();
 
     for (reflect_ty_did, ty_ctxt) in ctxt.reflect_types.drain(..).collect::<Vec<_>>().into_iter() {
         let fn_ctxts = ty_ctxt
@@ -58,6 +59,7 @@ pub(crate) fn populate_template_data(ctxt: &mut BevyCtxt<'_>, args: &Args) -> bo
             docstrings: docstrings(tcx.get_attrs_unchecked(reflect_ty_did)),
             impls_clone: trait_impls.contains_key(&clone_diagnostic),
             impls_debug: trait_impls.contains_key(&debug_diagnostic),
+            impls_display: trait_impls.contains_key(&display_diagnostic),
         };
 
         items.push(item);
@@ -228,18 +230,9 @@ pub(crate) fn docstrings(attrs: &[Attribute]) -> Vec<String> {
 pub(crate) fn import_path(ctxt: &BevyCtxt, def_id: DefId) -> String {
     ctxt.path_finder
         .find_import_paths(def_id)
-        // .unwrap_or_else(|| {
-        //     panic!(
-        //         "Could not find import path for: {:?}, {} of kind: {:?}",
-        //         def_id,
-        //         ctxt.tcx.item_name(def_id),
-        //         ctxt.tcx.def_kind(def_id),
-        //     )
-        // })
         .first()
         .unwrap()
         .to_owned()
-    // ctxt.tcx.def_path_str(def_id)
 }
 
 /// Normalizes type import paths in types before printing them

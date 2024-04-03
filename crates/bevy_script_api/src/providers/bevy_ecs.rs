@@ -1,7 +1,9 @@
 #![allow(clippy::all, unused_imports, deprecated, dead_code)]
 use super::bevy_reflect::*;
 extern crate self as bevy_script_api;
-use bevy_script_api::{lua::RegisterForeignLuaType, ReflectedValue};
+use bevy_script_api::{
+    lua::RegisterForeignLuaType, ReflectedValue, common::bevy::GetWorld,
+};
 /// Lightweight identifier of an [entity](crate::entity).
 /// The identifier is implemented using a [generational index]: a combination of an index and a generation.
 /// This allows fast insertion after data removal in an array while minimizing loss of spatial locality.
@@ -50,7 +52,7 @@ use bevy_script_api::{lua::RegisterForeignLuaType, ReflectedValue};
 /// [`World`]: crate::world::World
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
-    derive(clone, debug),
+    derive(clone),
     remote = "bevy::ecs::entity::Entity",
     functions[r#"
 /// Creates a new entity ID with the specified `index` and a generation of 1.
@@ -122,6 +124,12 @@ use bevy_script_api::{lua::RegisterForeignLuaType, ReflectedValue};
     #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
     fn clone(&self) -> bevy::ecs::entity::Entity;
 
+"#,
+    r#"
+#[lua(kind="MetaMethod", metamethod="ToString")]
+fn index(&self) -> String {
+    format!("{:?}", _self)
+}
 "#]
 )]
 pub struct Entity {}
@@ -144,7 +152,7 @@ pub struct Entity {}
 /// to the `ComponentId` for a [`Resource`] is available via [`Components::resource_id()`].
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
-    derive(clone, debug),
+    derive(clone),
     remote = "bevy::ecs::component::ComponentId",
     functions[r#"
 
@@ -184,6 +192,12 @@ pub struct Entity {}
     )]
     fn eq(&self, #[proxy] other: &component::ComponentId) -> bool;
 
+"#,
+    r#"
+#[lua(kind="MetaMethod", metamethod="ToString")]
+fn index(&self) -> String {
+    format!("{:?}", _self)
+}
 "#]
 )]
 pub struct ComponentId();
@@ -191,7 +205,7 @@ pub struct ComponentId();
 /// This is used to power change detection.
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
-    derive(clone, debug),
+    derive(clone),
     remote = "bevy::ecs::component::Tick",
     functions[r#"
 
@@ -250,13 +264,19 @@ pub struct ComponentId();
     #[lua(as_trait = "std::cmp::Eq", kind = "Method")]
     fn assert_receiver_is_total_eq(&self) -> ();
 
+"#,
+    r#"
+#[lua(kind="MetaMethod", metamethod="ToString")]
+fn index(&self) -> String {
+    format!("{:?}", _self)
+}
 "#]
 )]
 pub struct Tick {}
 /// Records when a component or resource was added and when it was last mutably dereferenced (or added).
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
-    derive(clone, debug),
+    derive(clone),
     remote = "bevy::ecs::component::ComponentTicks",
     functions[r#"
 /// Returns `true` if the component or resource was added after the system last ran.
@@ -320,6 +340,12 @@ pub struct Tick {}
     #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
     fn clone(&self) -> bevy::ecs::component::ComponentTicks;
 
+"#,
+    r#"
+#[lua(kind="MetaMethod", metamethod="ToString")]
+fn index(&self) -> String {
+    format!("{:?}", _self)
+}
 "#]
 )]
 pub struct ComponentTicks {}

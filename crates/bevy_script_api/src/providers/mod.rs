@@ -8,7 +8,6 @@ pub(crate) mod bevy_hierarchy;
 pub(crate) mod bevy_window;
 pub(crate) mod bevy_reflect;
 extern crate self as bevy_script_api;
-use bevy_script_api::lua::RegisterForeignLuaType;
 use bevy_mod_scripting_core::docs::DocFragment;
 pub struct BevyAPIProvider;
 impl bevy_mod_scripting_core::hosts::APIProvider for BevyAPIProvider {

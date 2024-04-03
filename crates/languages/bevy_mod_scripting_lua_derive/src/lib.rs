@@ -355,16 +355,6 @@ pub fn impl_lua_proxy(input: TokenStream) -> TokenStream {
         }
     ).unwrap_or_default();
 
-    // optionally add debug implementation
-    let opt_debug_impl = meta.derive.debug.is_present().then_some(
-        quote_spanned!{derive_input.span()=>
-            impl std::fmt::Debug for #proxy_type_ident {
-                fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> Result<(), std::fmt::Error> {
-                    self.val(|s| s.fmt(f)).unwrap_or_else(|_| f.write_str("Error while retrieving reference in `std::fmt::Debug`."))}    
-            }
-        }
-    );
-
     // generate type level tealr documentation calls
     let type_level_document_calls = meta
         .attrs
@@ -483,8 +473,6 @@ pub fn impl_lua_proxy(input: TokenStream) -> TokenStream {
         bevy_script_api::make_script_wrapper!(#proxied_type_path as #proxy_type_ident #opt_with_clone);
         bevy_script_api::impl_from_lua_with_clone!(#proxy_type_ident);
         bevy_script_api::impl_tealr_type!(#proxy_type_ident);
-
-        #opt_debug_impl
 
         #opt_from_lua_proxy
 

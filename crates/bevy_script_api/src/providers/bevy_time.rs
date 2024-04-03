@@ -2,7 +2,9 @@
 use super::bevy_ecs::*;
 use super::bevy_reflect::*;
 extern crate self as bevy_script_api;
-use bevy_script_api::{lua::RegisterForeignLuaType, ReflectedValue};
+use bevy_script_api::{
+    lua::RegisterForeignLuaType, ReflectedValue, common::bevy::GetWorld,
+};
 /// The fixed timestep game clock following virtual time.
 /// A specialization of the [`Time`] structure. **For method documentation, see
 /// [`Time<Fixed>#impl-Time<Fixed>`].**
@@ -55,13 +57,19 @@ use bevy_script_api::{lua::RegisterForeignLuaType, ReflectedValue};
 /// processed according to the new [`timestep()`](Time::timestep) value.
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
-    derive(clone, debug),
+    derive(clone),
     remote = "bevy::time::prelude::Fixed",
     functions[r#"
 
     #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
     fn clone(&self) -> bevy::time::prelude::Fixed;
 
+"#,
+    r#"
+#[lua(kind="MetaMethod", metamethod="ToString")]
+fn index(&self) -> String {
+    format!("{:?}", _self)
+}
 "#]
 )]
 pub struct Fixed {}
@@ -87,13 +95,19 @@ pub struct Fixed {}
 /// [`last_update()`](Time::last_update) are recorded and accessible.
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
-    derive(clone, debug),
+    derive(clone),
     remote = "bevy::time::prelude::Real",
     functions[r#"
 
     #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
     fn clone(&self) -> bevy::time::prelude::Real;
 
+"#,
+    r#"
+#[lua(kind="MetaMethod", metamethod="ToString")]
+fn index(&self) -> String {
+    format!("{:?}", _self)
+}
 "#]
 )]
 pub struct Real {}
@@ -104,7 +118,7 @@ pub struct Real {}
 /// Paused timers will not have elapsed time increased.
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
-    derive(clone, debug),
+    derive(clone),
     remote = "bevy::time::prelude::Timer",
     functions[r#"
 
@@ -455,13 +469,19 @@ pub struct Real {}
     #[lua(as_trait = "std::cmp::Eq", kind = "Method")]
     fn assert_receiver_is_total_eq(&self) -> ();
 
+"#,
+    r#"
+#[lua(kind="MetaMethod", metamethod="ToString")]
+fn index(&self) -> String {
+    format!("{:?}", _self)
+}
 "#]
 )]
 pub struct Timer {}
 /// Specifies [`Timer`] behavior.
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
-    derive(clone, debug),
+    derive(clone),
     remote = "bevy::time::prelude::TimerMode",
     functions[r#"
 
@@ -485,6 +505,12 @@ pub struct Timer {}
     #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
     fn clone(&self) -> bevy::time::prelude::TimerMode;
 
+"#,
+    r#"
+#[lua(kind="MetaMethod", metamethod="ToString")]
+fn index(&self) -> String {
+    format!("{:?}", _self)
+}
 "#]
 )]
 pub struct TimerMode {}
@@ -545,13 +571,19 @@ pub struct TimerMode {}
 /// falling behind real time.
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
-    derive(clone, debug),
+    derive(clone),
     remote = "bevy::time::prelude::Virtual",
     functions[r#"
 
     #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
     fn clone(&self) -> bevy::time::prelude::Virtual;
 
+"#,
+    r#"
+#[lua(kind="MetaMethod", metamethod="ToString")]
+fn index(&self) -> String {
+    format!("{:?}", _self)
+}
 "#]
 )]
 pub struct Virtual {}
@@ -573,7 +605,7 @@ pub struct Virtual {}
 /// ```
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
-    derive(clone, debug),
+    derive(clone),
     remote = "bevy::time::Stopwatch",
     functions[r#"
 
@@ -745,6 +777,12 @@ pub struct Virtual {}
     )]
     fn eq(&self, #[proxy] other: &stopwatch::Stopwatch) -> bool;
 
+"#,
+    r#"
+#[lua(kind="MetaMethod", metamethod="ToString")]
+fn index(&self) -> String {
+    format!("{:?}", _self)
+}
 "#]
 )]
 pub struct Stopwatch {}

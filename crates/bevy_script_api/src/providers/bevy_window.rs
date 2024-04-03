@@ -3,11 +3,13 @@ use super::bevy_ecs::*;
 use super::bevy_reflect::*;
 use super::bevy_input::*;
 extern crate self as bevy_script_api;
-use bevy_script_api::{lua::RegisterForeignLuaType, ReflectedValue};
+use bevy_script_api::{
+    lua::RegisterForeignLuaType, ReflectedValue, common::bevy::GetWorld,
+};
 /// An event that is sent whenever the user's cursor enters a window.
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
-    derive(clone, debug),
+    derive(clone),
     remote = "bevy::window::prelude::CursorEntered",
     functions[r#"
 
@@ -31,6 +33,12 @@ use bevy_script_api::{lua::RegisterForeignLuaType, ReflectedValue};
     #[lua(as_trait = "std::cmp::Eq", kind = "Method")]
     fn assert_receiver_is_total_eq(&self) -> ();
 
+"#,
+    r#"
+#[lua(kind="MetaMethod", metamethod="ToString")]
+fn index(&self) -> String {
+    format!("{:?}", _self)
+}
 "#]
 )]
 pub struct CursorEntered {
@@ -45,7 +53,7 @@ pub struct CursorEntered {
 /// [`window_settings`]: https://github.com/bevyengine/bevy/blob/latest/examples/window/window_settings.rs
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
-    derive(clone, debug),
+    derive(clone),
     remote = "bevy::window::prelude::CursorIcon",
     functions[r#"
 
@@ -69,13 +77,19 @@ pub struct CursorEntered {
     )]
     fn eq(&self, #[proxy] other: &cursor::CursorIcon) -> bool;
 
+"#,
+    r#"
+#[lua(kind="MetaMethod", metamethod="ToString")]
+fn index(&self) -> String {
+    format!("{:?}", _self)
+}
 "#]
 )]
 pub struct CursorIcon {}
 /// An event that is sent whenever the user's cursor leaves a window.
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
-    derive(clone, debug),
+    derive(clone),
     remote = "bevy::window::prelude::CursorLeft",
     functions[r#"
 
@@ -99,6 +113,12 @@ pub struct CursorIcon {}
     )]
     fn eq(&self, #[proxy] other: &event::CursorLeft) -> bool;
 
+"#,
+    r#"
+#[lua(kind="MetaMethod", metamethod="ToString")]
+fn index(&self) -> String {
+    format!("{:?}", _self)
+}
 "#]
 )]
 pub struct CursorLeft {
@@ -115,7 +135,7 @@ pub struct CursorLeft {
 /// [`MouseMotion`]: bevy_input::mouse::MouseMotion
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
-    derive(clone, debug),
+    derive(clone),
     remote = "bevy::window::prelude::CursorMoved",
     functions[r#"
 
@@ -133,6 +153,12 @@ pub struct CursorLeft {
     )]
     fn eq(&self, #[proxy] other: &event::CursorMoved) -> bool;
 
+"#,
+    r#"
+#[lua(kind="MetaMethod", metamethod="ToString")]
+fn index(&self) -> String {
+    format!("{:?}", _self)
+}
 "#]
 )]
 pub struct CursorMoved {
@@ -145,7 +171,7 @@ pub struct CursorMoved {
 /// Events related to files being dragged and dropped on a window.
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
-    derive(clone, debug),
+    derive(clone),
     remote = "bevy::window::prelude::FileDragAndDrop",
     functions[r#"
 
@@ -169,6 +195,12 @@ pub struct CursorMoved {
     #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
     fn clone(&self) -> bevy::window::prelude::FileDragAndDrop;
 
+"#,
+    r#"
+#[lua(kind="MetaMethod", metamethod="ToString")]
+fn index(&self) -> String {
+    format!("{:?}", _self)
+}
 "#]
 )]
 pub struct FileDragAndDrop {}
@@ -177,7 +209,7 @@ pub struct FileDragAndDrop {}
 /// It is only sent if IME was enabled on the window with [`Window::ime_enabled`](crate::window::Window::ime_enabled).
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
-    derive(clone, debug),
+    derive(clone),
     remote = "bevy::window::prelude::Ime",
     functions[r#"
 
@@ -201,6 +233,12 @@ pub struct FileDragAndDrop {}
     )]
     fn eq(&self, #[proxy] other: &event::Ime) -> bool;
 
+"#,
+    r#"
+#[lua(kind="MetaMethod", metamethod="ToString")]
+fn index(&self) -> String {
+    format!("{:?}", _self)
+}
 "#]
 )]
 pub struct Ime {}
@@ -208,7 +246,7 @@ pub struct Ime {}
 /// Used when centering a [`Window`] on a monitor.
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
-    derive(clone, debug),
+    derive(clone),
     remote = "bevy::window::prelude::MonitorSelection",
     functions[r#"
 
@@ -232,13 +270,19 @@ pub struct Ime {}
     #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
     fn clone(&self) -> bevy::window::prelude::MonitorSelection;
 
+"#,
+    r#"
+#[lua(kind="MetaMethod", metamethod="ToString")]
+fn index(&self) -> String {
+    format!("{:?}", _self)
+}
 "#]
 )]
 pub struct MonitorSelection {}
 /// An event that is sent whenever a window receives a character from the OS or underlying system.
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
-    derive(clone, debug),
+    derive(clone),
     remote = "bevy::window::prelude::ReceivedCharacter",
     functions[r#"
 
@@ -262,6 +306,12 @@ pub struct MonitorSelection {}
     #[lua(as_trait = "std::cmp::Eq", kind = "Method")]
     fn assert_receiver_is_total_eq(&self) -> ();
 
+"#,
+    r#"
+#[lua(kind="MetaMethod", metamethod="ToString")]
+fn index(&self) -> String {
+    format!("{:?}", _self)
+}
 "#]
 )]
 pub struct ReceivedCharacter {
@@ -296,7 +346,7 @@ pub struct ReceivedCharacter {
 /// ```
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
-    derive(clone, debug),
+    derive(clone),
     remote = "bevy::window::prelude::Window",
     functions[r#"
 /// Setting to true will attempt to maximize the window.
@@ -359,6 +409,12 @@ pub struct ReceivedCharacter {
     #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
     fn clone(&self) -> bevy::window::prelude::Window;
 
+"#,
+    r#"
+#[lua(kind="MetaMethod", metamethod="ToString")]
+fn index(&self) -> String {
+    format!("{:?}", _self)
+}
 "#]
 )]
 pub struct Window {
@@ -399,7 +455,7 @@ pub struct Window {
 /// An event that is sent when a window is repositioned in physical pixels.
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
-    derive(clone, debug),
+    derive(clone),
     remote = "bevy::window::prelude::WindowMoved",
     functions[r#"
 
@@ -423,6 +479,12 @@ pub struct Window {
     )]
     fn eq(&self, #[proxy] other: &event::WindowMoved) -> bool;
 
+"#,
+    r#"
+#[lua(kind="MetaMethod", metamethod="ToString")]
+fn index(&self) -> String {
+    format!("{:?}", _self)
+}
 "#]
 )]
 pub struct WindowMoved {
@@ -434,7 +496,7 @@ pub struct WindowMoved {
 /// Defines where a [`Window`] should be placed on the screen.
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
-    derive(clone, debug),
+    derive(clone),
     remote = "bevy::window::prelude::WindowPosition",
     functions[r#"
 
@@ -480,6 +542,12 @@ pub struct WindowMoved {
         monitor: bevy::window::prelude::MonitorSelection,
     ) -> ();
 
+"#,
+    r#"
+#[lua(kind="MetaMethod", metamethod="ToString")]
+fn index(&self) -> String {
+    format!("{:?}", _self)
+}
 "#]
 )]
 pub struct WindowPosition {}
@@ -491,7 +559,7 @@ pub struct WindowPosition {}
 /// required to disable maximizing is not yet exposed by winit.
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
-    derive(clone, debug),
+    derive(clone),
     remote = "bevy::window::prelude::WindowResizeConstraints",
     functions[r#"
 /// Checks if the constraints are valid.
@@ -517,6 +585,12 @@ pub struct WindowPosition {}
     )]
     fn eq(&self, #[proxy] other: &window::WindowResizeConstraints) -> bool;
 
+"#,
+    r#"
+#[lua(kind="MetaMethod", metamethod="ToString")]
+fn index(&self) -> String {
+    format!("{:?}", _self)
+}
 "#]
 )]
 pub struct WindowResizeConstraints {
@@ -528,7 +602,7 @@ pub struct WindowResizeConstraints {
 /// A window event that is sent whenever a window's logical size has changed.
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
-    derive(clone, debug),
+    derive(clone),
     remote = "bevy::window::WindowResized",
     functions[r#"
 
@@ -546,6 +620,12 @@ pub struct WindowResizeConstraints {
     #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
     fn clone(&self) -> bevy::window::WindowResized;
 
+"#,
+    r#"
+#[lua(kind="MetaMethod", metamethod="ToString")]
+fn index(&self) -> String {
+    format!("{:?}", _self)
+}
 "#]
 )]
 pub struct WindowResized {
@@ -558,7 +638,7 @@ pub struct WindowResized {
 /// To create a new window, spawn an entity with a [`crate::Window`] on it.
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
-    derive(clone, debug),
+    derive(clone),
     remote = "bevy::window::WindowCreated",
     functions[r#"
 
@@ -582,6 +662,12 @@ pub struct WindowResized {
     )]
     fn eq(&self, #[proxy] other: &event::WindowCreated) -> bool;
 
+"#,
+    r#"
+#[lua(kind="MetaMethod", metamethod="ToString")]
+fn index(&self) -> String {
+    format!("{:?}", _self)
+}
 "#]
 )]
 pub struct WindowCreated {
@@ -592,7 +678,7 @@ pub struct WindowCreated {
 /// the window entity loses its [`Window`](crate::window::Window) component or is despawned.
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
-    derive(clone, debug),
+    derive(clone),
     remote = "bevy::window::WindowClosed",
     functions[r#"
 
@@ -616,6 +702,12 @@ pub struct WindowCreated {
     #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
     fn clone(&self) -> bevy::window::WindowClosed;
 
+"#,
+    r#"
+#[lua(kind="MetaMethod", metamethod="ToString")]
+fn index(&self) -> String {
+    format!("{:?}", _self)
+}
 "#]
 )]
 pub struct WindowClosed {
@@ -632,7 +724,7 @@ pub struct WindowClosed {
 /// [`Window`]: crate::Window
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
-    derive(clone, debug),
+    derive(clone),
     remote = "bevy::window::WindowCloseRequested",
     functions[r#"
 
@@ -656,6 +748,12 @@ pub struct WindowClosed {
     )]
     fn eq(&self, #[proxy] other: &event::WindowCloseRequested) -> bool;
 
+"#,
+    r#"
+#[lua(kind="MetaMethod", metamethod="ToString")]
+fn index(&self) -> String {
+    format!("{:?}", _self)
+}
 "#]
 )]
 pub struct WindowCloseRequested {
@@ -667,7 +765,7 @@ pub struct WindowCloseRequested {
 /// persist state before the application terminates.
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
-    derive(clone, debug),
+    derive(clone),
     remote = "bevy::window::WindowDestroyed",
     functions[r#"
 
@@ -691,6 +789,12 @@ pub struct WindowCloseRequested {
     )]
     fn eq(&self, #[proxy] other: &event::WindowDestroyed) -> bool;
 
+"#,
+    r#"
+#[lua(kind="MetaMethod", metamethod="ToString")]
+fn index(&self) -> String {
+    format!("{:?}", _self)
+}
 "#]
 )]
 pub struct WindowDestroyed {
@@ -701,7 +805,7 @@ pub struct WindowDestroyed {
 /// even if their control flow is set to `Wait` and there have been no window events.
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
-    derive(clone, debug),
+    derive(clone),
     remote = "bevy::window::RequestRedraw",
     functions[r#"
 
@@ -725,13 +829,19 @@ pub struct WindowDestroyed {
     #[lua(as_trait = "std::cmp::Eq", kind = "Method")]
     fn assert_receiver_is_total_eq(&self) -> ();
 
+"#,
+    r#"
+#[lua(kind="MetaMethod", metamethod="ToString")]
+fn index(&self) -> String {
+    format!("{:?}", _self)
+}
 "#]
 )]
 pub struct RequestRedraw {}
 /// An event that indicates a window has received or lost focus.
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
-    derive(clone, debug),
+    derive(clone),
     remote = "bevy::window::WindowFocused",
     functions[r#"
 
@@ -755,6 +865,12 @@ pub struct RequestRedraw {}
     )]
     fn eq(&self, #[proxy] other: &event::WindowFocused) -> bool;
 
+"#,
+    r#"
+#[lua(kind="MetaMethod", metamethod="ToString")]
+fn index(&self) -> String {
+    format!("{:?}", _self)
+}
 "#]
 )]
 pub struct WindowFocused {
@@ -770,7 +886,7 @@ pub struct WindowFocused {
 /// [`WindowEvent::Occluded`]: https://docs.rs/winit/latest/winit/event/enum.WindowEvent.html#variant.Occluded
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
-    derive(clone, debug),
+    derive(clone),
     remote = "bevy::window::WindowOccluded",
     functions[r#"
 
@@ -794,6 +910,12 @@ pub struct WindowFocused {
     )]
     fn eq(&self, #[proxy] other: &event::WindowOccluded) -> bool;
 
+"#,
+    r#"
+#[lua(kind="MetaMethod", metamethod="ToString")]
+fn index(&self) -> String {
+    format!("{:?}", _self)
+}
 "#]
 )]
 pub struct WindowOccluded {
@@ -804,7 +926,7 @@ pub struct WindowOccluded {
 /// An event that indicates a window's scale factor has changed.
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
-    derive(clone, debug),
+    derive(clone),
     remote = "bevy::window::WindowScaleFactorChanged",
     functions[r#"
 
@@ -822,6 +944,12 @@ pub struct WindowOccluded {
     )]
     fn eq(&self, #[proxy] other: &event::WindowScaleFactorChanged) -> bool;
 
+"#,
+    r#"
+#[lua(kind="MetaMethod", metamethod="ToString")]
+fn index(&self) -> String {
+    format!("{:?}", _self)
+}
 "#]
 )]
 pub struct WindowScaleFactorChanged {
@@ -832,7 +960,7 @@ pub struct WindowScaleFactorChanged {
 /// An event that indicates a window's OS-reported scale factor has changed.
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
-    derive(clone, debug),
+    derive(clone),
     remote = "bevy::window::WindowBackendScaleFactorChanged",
     functions[r#"
 
@@ -850,6 +978,12 @@ pub struct WindowScaleFactorChanged {
     #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
     fn clone(&self) -> bevy::window::WindowBackendScaleFactorChanged;
 
+"#,
+    r#"
+#[lua(kind="MetaMethod", metamethod="ToString")]
+fn index(&self) -> String {
+    format!("{:?}", _self)
+}
 "#]
 )]
 pub struct WindowBackendScaleFactorChanged {
@@ -862,7 +996,7 @@ pub struct WindowBackendScaleFactorChanged {
 /// i.e. It is only sent when [`Window::window_theme`](crate::window::Window::window_theme) is `None` and the system theme changes.
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
-    derive(clone, debug),
+    derive(clone),
     remote = "bevy::window::WindowThemeChanged",
     functions[r#"
 
@@ -886,6 +1020,12 @@ pub struct WindowBackendScaleFactorChanged {
     #[lua(as_trait = "std::cmp::Eq", kind = "Method")]
     fn assert_receiver_is_total_eq(&self) -> ();
 
+"#,
+    r#"
+#[lua(kind="MetaMethod", metamethod="ToString")]
+fn index(&self) -> String {
+    format!("{:?}", _self)
+}
 "#]
 )]
 pub struct WindowThemeChanged {
@@ -897,7 +1037,7 @@ pub struct WindowThemeChanged {
 /// Application lifetime events
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
-    derive(clone, debug),
+    derive(clone),
     remote = "bevy::window::ApplicationLifetime",
     functions[r#"
 
@@ -921,6 +1061,12 @@ pub struct WindowThemeChanged {
     )]
     fn eq(&self, #[proxy] other: &event::ApplicationLifetime) -> bool;
 
+"#,
+    r#"
+#[lua(kind="MetaMethod", metamethod="ToString")]
+fn index(&self) -> String {
+    format!("{:?}", _self)
+}
 "#]
 )]
 pub struct ApplicationLifetime {}
@@ -931,7 +1077,7 @@ pub struct ApplicationLifetime {}
 /// is `Some`.
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
-    derive(clone, debug),
+    derive(clone),
     remote = "bevy::window::PrimaryWindow",
     functions[r#"
 
@@ -955,19 +1101,31 @@ pub struct ApplicationLifetime {}
     )]
     fn eq(&self, #[proxy] other: &window::PrimaryWindow) -> bool;
 
+"#,
+    r#"
+#[lua(kind="MetaMethod", metamethod="ToString")]
+fn index(&self) -> String {
+    format!("{:?}", _self)
+}
 "#]
 )]
 pub struct PrimaryWindow {}
 /// Cursor data for a [`Window`].
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
-    derive(clone, debug),
+    derive(clone),
     remote = "bevy::window::Cursor",
     functions[r#"
 
     #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
     fn clone(&self) -> bevy::window::Cursor;
 
+"#,
+    r#"
+#[lua(kind="MetaMethod", metamethod="ToString")]
+fn index(&self) -> String {
+    format!("{:?}", _self)
+}
 "#]
 )]
 pub struct Cursor {
@@ -986,7 +1144,7 @@ pub struct Cursor {
 /// Since `Windows` and `macOS` have different [`CursorGrabMode`] support, we first try to set the grab mode that was asked for. If it doesn't work then use the alternate grab mode.
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
-    derive(clone, debug),
+    derive(clone),
     remote = "bevy::window::CursorGrabMode",
     functions[r#"
 
@@ -1010,13 +1168,19 @@ pub struct Cursor {
     #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
     fn clone(&self) -> bevy::window::CursorGrabMode;
 
+"#,
+    r#"
+#[lua(kind="MetaMethod", metamethod="ToString")]
+fn index(&self) -> String {
+    format!("{:?}", _self)
+}
 "#]
 )]
 pub struct CursorGrabMode {}
 /// Specifies how the alpha channel of the textures should be handled during compositing, for a [`Window`].
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
-    derive(clone, debug),
+    derive(clone),
     remote = "bevy::window::CompositeAlphaMode",
     functions[r#"
 
@@ -1040,6 +1204,12 @@ pub struct CursorGrabMode {}
     #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
     fn clone(&self) -> bevy::window::CompositeAlphaMode;
 
+"#,
+    r#"
+#[lua(kind="MetaMethod", metamethod="ToString")]
+fn index(&self) -> String {
+    format!("{:?}", _self)
+}
 "#]
 )]
 pub struct CompositeAlphaMode {}
@@ -1080,7 +1250,7 @@ pub struct CompositeAlphaMode {}
 /// the limits of the screen will not get back that previous requested size.
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
-    derive(clone, debug),
+    derive(clone),
     remote = "bevy::window::WindowResolution",
     functions[r#"
 
@@ -1202,13 +1372,19 @@ pub struct CompositeAlphaMode {}
     #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
     fn clone(&self) -> bevy::window::WindowResolution;
 
+"#,
+    r#"
+#[lua(kind="MetaMethod", metamethod="ToString")]
+fn index(&self) -> String {
+    format!("{:?}", _self)
+}
 "#]
 )]
 pub struct WindowResolution {}
 /// Defines the way a [`Window`] is displayed.
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
-    derive(clone, debug),
+    derive(clone),
     remote = "bevy::window::WindowMode",
     functions[r#"
 
@@ -1232,6 +1408,12 @@ pub struct WindowResolution {}
     #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
     fn clone(&self) -> bevy::window::WindowMode;
 
+"#,
+    r#"
+#[lua(kind="MetaMethod", metamethod="ToString")]
+fn index(&self) -> String {
+    format!("{:?}", _self)
+}
 "#]
 )]
 pub struct WindowMode {}
@@ -1243,7 +1425,7 @@ pub struct WindowMode {}
 /// - **iOS / Android / Web / Wayland:** Unsupported.
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
-    derive(clone, debug),
+    derive(clone),
     remote = "bevy::window::WindowLevel",
     functions[r#"
 
@@ -1267,6 +1449,12 @@ pub struct WindowMode {}
     )]
     fn eq(&self, #[proxy] other: &window::WindowLevel) -> bool;
 
+"#,
+    r#"
+#[lua(kind="MetaMethod", metamethod="ToString")]
+fn index(&self) -> String {
+    format!("{:?}", _self)
+}
 "#]
 )]
 pub struct WindowLevel {}
@@ -1287,7 +1475,7 @@ pub struct WindowLevel {}
 /// [`AutoNoVsync`]: PresentMode::AutoNoVsync
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
-    derive(clone, debug),
+    derive(clone),
     remote = "bevy::window::PresentMode",
     functions[r#"
 
@@ -1311,13 +1499,19 @@ pub struct WindowLevel {}
     #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
     fn clone(&self) -> bevy::window::PresentMode;
 
+"#,
+    r#"
+#[lua(kind="MetaMethod", metamethod="ToString")]
+fn index(&self) -> String {
+    format!("{:?}", _self)
+}
 "#]
 )]
 pub struct PresentMode {}
 /// Stores internal [`Window`] state that isn't directly accessible.
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
-    derive(clone, debug),
+    derive(clone),
     remote = "bevy::window::InternalWindowState",
     functions[r#"
 
@@ -1349,13 +1543,19 @@ pub struct PresentMode {}
     #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
     fn clone(&self) -> bevy::window::InternalWindowState;
 
+"#,
+    r#"
+#[lua(kind="MetaMethod", metamethod="ToString")]
+fn index(&self) -> String {
+    format!("{:?}", _self)
+}
 "#]
 )]
 pub struct InternalWindowState {}
 /// The [`Window`] theme variant to use.
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
-    derive(clone, debug),
+    derive(clone),
     remote = "bevy::window::WindowTheme",
     functions[r#"
 
@@ -1379,6 +1579,12 @@ pub struct InternalWindowState {}
     #[lua(as_trait = "std::cmp::Eq", kind = "Method")]
     fn assert_receiver_is_total_eq(&self) -> ();
 
+"#,
+    r#"
+#[lua(kind="MetaMethod", metamethod="ToString")]
+fn index(&self) -> String {
+    format!("{:?}", _self)
+}
 "#]
 )]
 pub struct WindowTheme {}
@@ -1388,7 +1594,7 @@ pub struct WindowTheme {}
 /// On some **`Linux`** environments these values have no effect.
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
-    derive(clone, debug),
+    derive(clone),
     remote = "bevy::window::EnabledButtons",
     functions[r#"
 
@@ -1406,6 +1612,12 @@ pub struct WindowTheme {}
     #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
     fn clone(&self) -> bevy::window::EnabledButtons;
 
+"#,
+    r#"
+#[lua(kind="MetaMethod", metamethod="ToString")]
+fn index(&self) -> String {
+    format!("{:?}", _self)
+}
 "#]
 )]
 pub struct EnabledButtons {
@@ -1417,13 +1629,19 @@ pub struct EnabledButtons {
 /// a more vague defaulting choice.
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
-    derive(clone, debug),
+    derive(clone),
     remote = "bevy::window::WindowRef",
     functions[r#"
 
     #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
     fn clone(&self) -> bevy::window::WindowRef;
 
+"#,
+    r#"
+#[lua(kind="MetaMethod", metamethod="ToString")]
+fn index(&self) -> String {
+    format!("{:?}", _self)
+}
 "#]
 )]
 pub struct WindowRef {}
@@ -1431,7 +1649,7 @@ pub struct WindowRef {}
 /// For most purposes you probably want to use the unnormalized version [`WindowRef`].
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
-    derive(clone, debug),
+    derive(clone),
     remote = "bevy::window::NormalizedWindowRef",
     functions[r#"
 
@@ -1462,6 +1680,12 @@ pub struct WindowRef {}
     #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
     fn clone(&self) -> bevy::window::NormalizedWindowRef;
 
+"#,
+    r#"
+#[lua(kind="MetaMethod", metamethod="ToString")]
+fn index(&self) -> String {
+    format!("{:?}", _self)
+}
 "#]
 )]
 pub struct NormalizedWindowRef();

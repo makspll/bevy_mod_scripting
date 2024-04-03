@@ -3,7 +3,9 @@ use super::bevy_ecs::*;
 use super::bevy_reflect::*;
 use super::bevy_core::*;
 extern crate self as bevy_script_api;
-use bevy_script_api::{lua::RegisterForeignLuaType, ReflectedValue};
+use bevy_script_api::{
+    lua::RegisterForeignLuaType, ReflectedValue, common::bevy::GetWorld,
+};
 /// Contains references to the child entities of this entity.
 /// Each child must contain a [`Parent`] component that points back to this entity.
 /// This component rarely needs to be created manually,
@@ -16,7 +18,7 @@ use bevy_script_api::{lua::RegisterForeignLuaType, ReflectedValue};
 /// [`BuildChildren::with_children`]: crate::child_builder::BuildChildren::with_children
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
-    derive(debug),
+    derive(),
     remote = "bevy::hierarchy::prelude::Children",
     functions[r#"
 /// Swaps the child at `a_index` with the child at `b_index`.
@@ -24,6 +26,12 @@ use bevy_script_api::{lua::RegisterForeignLuaType, ReflectedValue};
     #[lua(kind = "MutatingMethod")]
     fn swap(&mut self, a_index: usize, b_index: usize) -> ();
 
+"#,
+    r#"
+#[lua(kind="MetaMethod", metamethod="ToString")]
+fn index(&self) -> String {
+    format!("{:?}", _self)
+}
 "#]
 )]
 pub struct Children();
@@ -39,7 +47,7 @@ pub struct Children();
 /// [`BuildChildren::with_children`]: crate::child_builder::BuildChildren::with_children
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
-    derive(debug),
+    derive(),
     remote = "bevy::hierarchy::prelude::Parent",
     functions[r#"
 
@@ -64,6 +72,12 @@ pub struct Children();
     #[lua(kind = "Method", output(proxy))]
     fn get(&self) -> bevy::ecs::entity::Entity;
 
+"#,
+    r#"
+#[lua(kind="MetaMethod", metamethod="ToString")]
+fn index(&self) -> String {
+    format!("{:?}", _self)
+}
 "#]
 )]
 pub struct Parent();
