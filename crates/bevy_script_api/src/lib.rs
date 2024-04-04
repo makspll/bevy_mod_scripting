@@ -31,13 +31,15 @@ pub mod prelude {
         FromRhaiProxy, ReflectRhaiProxyable, RhaiProxyable, ToRhaiProxy,
     };
 
-    pub use crate::{common::bevy::GetWorld, impl_script_newtype, ValueIndex};
+    pub use crate::{common::bevy::GetWorld, ValueIndex};
 }
 
-// re-export derive macros from other langs
-pub use bevy_mod_scripting_derive::impl_script_newtype;
 #[cfg(feature = "lua")]
 pub use bevy_mod_scripting_lua_derive::LuaProxy;
+
+// for now providers do not support any other lang so just remove this whole module if they are not needed
+#[cfg(feature = "lua")]
+#[cfg(not(doctest))]
 pub(crate) mod providers;
 
 pub use parking_lot;
