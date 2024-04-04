@@ -2,6 +2,11 @@
 name = "bevy_api_gen"
 version = "0.5.0"
 edition = "2021"
+description = "Code generator tool for bevy"
+license = "MIT OR Apache-2.0"
+repository = "https://github.com/makspll/bevy_mod_scripting"
+readme = "readme.md"
+include = ["readme.md", "/src", "/templates"]
 
 [[bin]]
 name = "cargo-bevy-api-gen"

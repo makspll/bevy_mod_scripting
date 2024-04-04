@@ -2,7 +2,7 @@
 name = "bevy_mod_scripting_rune"
 version = "0.6.0"
 edition = "2021"
-license = "MIT"
+license = "MIT OR Apache-2.0"
 description = "Necessary functionality for Rune support with bevy_mod_scripting"
 repository = "https://github.com/makspll/bevy_mod_scripting"
 homepage = "https://github.com/makspll/bevy_mod_scripting"
