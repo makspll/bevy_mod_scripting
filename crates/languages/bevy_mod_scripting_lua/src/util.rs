@@ -1,7 +1,7 @@
 /// generates path to the given script depending on build configuration.
 /// (optimized builds don't have the teal compiler available)
 ///
-/// Current configuration will provide ".tl" paths
+/// Current configuration will provide "scripts/*.tl" paths
 /// ```rust
 /// use bevy_mod_scripting_lua::lua_path;
 /// assert_eq!("scripts/my_script.tl",lua_path!("my_script"))
@@ -17,16 +17,32 @@ macro_rules! lua_path {
 /// generates path to the given script depending on build configuration.
 /// (optimized builds don't have the teal compiler available)
 ///
-/// Current configuration will provide ".lua" paths
+/// Current configuration will provide "scripts/build/*.lua" paths
 /// ```rust
 /// use bevy_mod_scripting::lua_path;
 /// assert_eq!("scripts/build/my_script.lua",lua_path!("my_script"))
 /// ```
-#[cfg(all(feature = "teal", not(debug_assertions)))]
+#[cfg(all(not(debug_assertions), feature = "teal"))]
 #[macro_export]
 macro_rules! lua_path {
     ($v:literal) => {
         concat!("scripts/build/", $v, ".lua")
+    };
+}
+
+/// generates path to the given script depending on build configuration.
+/// (optimized builds don't have the teal compiler available)
+///
+/// Current configuration will provide "/scripts/*.lua" paths
+/// ```rust
+/// use bevy_mod_scripting::lua_path;
+/// assert_eq!("scripts/build/my_script.lua",lua_path!("my_script"))
+/// ```
+#[cfg(not(feature = "teal"))]
+#[macro_export]
+macro_rules! lua_path {
+    ($v:literal) => {
+        concat!("scripts/", $v, ".lua")
     };
 }
 

@@ -142,7 +142,6 @@ name = "game_of_life_lua"
 path = "examples/lua/game_of_life.rs"
 required-features = [
     "lua54",
-    "teal",
     "lua_script_api",
     "bevy/file_watcher",
     "bevy/multi-threaded",
@@ -184,8 +183,8 @@ path = "examples/rhai/bevy_api.rs"
 required-features = ["rhai", "rhai_script_api"]
 
 [[example]]
-name = "new_wrappers"
-path = "examples/new_wrappers.rs"
+name = "wrappers"
+path = "examples/wrappers.rs"
 required-features = ["lua54", "lua_script_api"]
 
 [[example]]

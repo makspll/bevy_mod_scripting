@@ -1,9 +1,9 @@
 math.randomseed(os.time())
 
-global function init()
+function init()
     local LifeState = world:get_type_by_name("LifeState")
-    local life_state = world:get_component(entity,LifeState) as BevyAPI.LuaLifeState
-    local cells = life_state.cells as {integer}
+    local life_state = world:get_component(entity,LifeState)
+    local cells = life_state.cells
 
     -- set some cells alive
     for _=1,10000 do 
@@ -12,21 +12,22 @@ global function init()
     end
 end
 
-global function on_update()
+function on_update()
     local LifeState = world:get_type_by_name("LifeState")
     local Settings = world:get_type_by_name("Settings")
 
-    local life_state = world:get_component(entity,LifeState) as BevyAPI.LuaLifeState
-    local cells = life_state.cells as {integer}
+    local life_state = world:get_component(entity,LifeState)
+    -- note currently this is a copy of the cells, as of now the macro does not automatically support Vec<T> proxies by reference
+    local cells = life_state.cells
 
     -- note that here we do not make use of LuaProxyable and just go off pure reflection
-    local settings = world:get_resource(Settings) as {string:any}
-    local dimensions = settings.physical_grid_dimensions as {integer}
+    local settings = world:get_resource(Settings)
+    local dimensions = settings.physical_grid_dimensions
 
     
     -- primitives are passed by value to lua, keep a hold of old state but turn 255's into 1's
     local prev_state = {}
-    for k,v in pairs(life_state.cells as {integer:integer}) do 
+    for k,v in pairs(cells) do 
         prev_state[k] = (not(v == 0)) and 1 or 0
     end
 
@@ -52,5 +53,6 @@ global function on_update()
         end
     end
 
-
+    -- propagate the updates
+    life_state.cells = cells
 end

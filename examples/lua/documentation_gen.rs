@@ -64,7 +64,7 @@ impl APIProvider for LuaAPIProvider {
     type DocTarget = LuaDocFragment;
     type ScriptContext = Mutex<Lua>;
 
-    fn attach_api(&mut self, ctx: &mut Self::APITarget) -> Result<(), ScriptError> {
+    fn attach_api(&mut self, _ctx: &mut Self::APITarget) -> Result<(), ScriptError> {
         Ok(())
     }
 

@@ -21,7 +21,7 @@ use syn::{
 use crate::utils::ident_to_type_path;
 
 /// Flags which detail required functionality or additional derivation requirements
-#[derive(Debug, FromMeta)]
+#[derive(Debug, FromMeta, Default)]
 pub struct ProxyFlags {
     pub clone: Flag,
 }
@@ -561,12 +561,15 @@ pub struct ProxyInput {
     pub data: darling::ast::Data<Variant, Field>,
 
     /// Flags signifying which additional trait implementation should be generated on the proxy type
+    #[darling(default)]
     pub derive: ProxyFlags,
 
     /// A list of multi-lang function definitions to be generated on the proxy type
+    #[darling(default)]
     pub functions: TraitItemFnsWrapper,
 }
 
+#[derive(Default)]
 pub struct TraitItemFnsWrapper(pub Vec<TraitItemFn>);
 
 impl FromMeta for TraitItemFnsWrapper {
