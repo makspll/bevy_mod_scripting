@@ -1,9 +1,6 @@
 use bevy::prelude::*;
 
-use bevy_mod_scripting::{
-    api::{impl_tealr_type, lua::bevy::LuaBevyAPIProvider},
-    prelude::*,
-};
+use bevy_mod_scripting::{api::impl_tealr_type, prelude::*};
 
 use std::sync::Mutex;
 
@@ -62,23 +59,12 @@ impl tealr::mlu::ExportInstances for Export {
 #[derive(Default)]
 pub struct LuaAPIProvider;
 
-/// the custom Lua api, world is provided via a global pointer,
-/// and callbacks are defined only once at script creation
 impl APIProvider for LuaAPIProvider {
     type APITarget = Mutex<Lua>;
     type DocTarget = LuaDocFragment;
     type ScriptContext = Mutex<Lua>;
 
     fn attach_api(&mut self, ctx: &mut Self::APITarget) -> Result<(), ScriptError> {
-        // callbacks can receive any `ToLuaMulti` arguments, here '()' and
-        // return any `FromLuaMulti` arguments, here a `usize`
-        // check the Rlua documentation for more details
-
-        let ctx = ctx.get_mut().unwrap();
-
-        // equivalent to ctx.globals().set() but for multiple items
-        tealr::mlu::set_global_env(Export, ctx).map_err(ScriptError::new_other)?;
-
         Ok(())
     }
 
@@ -100,7 +86,8 @@ fn main() -> std::io::Result<()> {
         // add the providers and script host
         .add_script_host::<LuaScriptHost<MyLuaArg>>(PostUpdate)
         .add_api_provider::<LuaScriptHost<MyLuaArg>>(Box::new(LuaAPIProvider))
-        .add_api_provider::<LuaScriptHost<MyLuaArg>>(Box::new(LuaBevyAPIProvider))
+        .add_api_provider::<LuaScriptHost<MyLuaArg>>(Box::new(CoreBevyAPIProvider))
+        .add_api_provider::<LuaScriptHost<MyLuaArg>>(Box::new(BevyAPIProvider))
         // this needs to be placed after any `add_api_provider` and `add_script_host` calls
         // it will generate `doc` and `types` folders under `assets/scripts` containing the documentation and teal declaration files
         // respectively. See example asset folder to see how they look like. The `teal_file.tl` script in example assets shows the usage of one of those
@@ -108,8 +95,5 @@ fn main() -> std::io::Result<()> {
         // Note: This is a noop in optimized builds unless the `doc_always` feature is enabled!
         .update_documentation::<LuaScriptHost<MyLuaArg>>()
         .add_script_handler::<LuaScriptHost<MyLuaArg>, 0, 0>(PostUpdate);
-
-    // app.run(); no need, documentation gets generated before the app even starts
-
     Ok(())
 }
