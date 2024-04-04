@@ -1,14 +1,14 @@
 use bevy::prelude::*;
 use bevy_mod_scripting::api::*;
 #[derive(LuaProxy, Reflect, Clone)]
-#[proxy(functions = [
+#[proxy(functions[
     r#"
-    #[lua(kind="MutableMethod")]
+    #[lua(kind="MutatingMethod")]
     fn fn_returning_some_string(&mut self) -> String;
     "#,
 
     r#"
-    #[lua(kind="MutableMethod", output(proxy))]
+    #[lua(kind="MutatingMethod", output(proxy))]
     fn fn_returning_proxy(&mut self) -> Self;
     "#,
 ])]

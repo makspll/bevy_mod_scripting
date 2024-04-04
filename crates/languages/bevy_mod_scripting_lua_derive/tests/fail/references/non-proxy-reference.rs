@@ -2,10 +2,10 @@ use bevy::prelude::*;
 use bevy_mod_scripting::api::*;
 
 #[derive(LuaProxy, Reflect, Clone)]
-#[proxy(functions = [
+#[proxy(functions[
     r#"
     #[lua(kind="Function")]
-    fn fn_returning_some_string(some_str: &str) -> String
+    fn fn_returning_some_string(some_str: &str) -> String;
     "#,
 ])]
 pub struct MyStruct {

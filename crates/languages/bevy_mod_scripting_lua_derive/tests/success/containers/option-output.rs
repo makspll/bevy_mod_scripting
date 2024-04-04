@@ -18,14 +18,14 @@ use bevy_mod_scripting::api::*;
     "#,
 
     r#"
-    #[lua(kind="Function", output(proxy="proxy"))]
+    #[lua(kind="Function", output(proxy))]
     fn fn_returning_some_proxy() -> Option<Self> {
         Some(MyStruct)
     }
     "#,
 
     r#"
-    #[lua(kind="Function", output(proxy="proxy"))]
+    #[lua(kind="Function", output(proxy))]
     fn fn_returning_none_proxy() -> Option<Self> {
         None
     }

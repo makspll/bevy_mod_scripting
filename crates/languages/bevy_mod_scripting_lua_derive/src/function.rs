@@ -258,7 +258,7 @@ impl Function {
                 args.map(Arg::arg_signature).unzip::<_, _, Vec<_>, Vec<_>>();
 
             quote_spanned!(self.sig.span=>
-                (#(#other_arg_names),*) : (#(#other_arg_types),*)
+                (#(mut #other_arg_names),*) : (#(#other_arg_types),*)
             )
         });
 
@@ -295,7 +295,7 @@ impl Function {
             .filter_map(|(unpacked_param, arg)| {
                 unpacked_param.as_ref().map(|unpacked_param| {
                     let name = &arg.name;
-                    quote_spanned! {name.span()=>let #name = #unpacked_param;}
+                    quote_spanned! {name.span()=>let mut #name = #unpacked_param;}
                 })
             })
             .collect::<proc_macro2::TokenStream>())
@@ -580,7 +580,7 @@ impl Function {
                     let arg_name = &arg_meta.name;
 
                     quote_spanned! {self.sig.span=>{
-                        #arg_name.#method_call(|#arg_name| {#acc})?
+                        #arg_name.#method_call(|mut #arg_name| {#acc})?
                     }}
                 });
         let out = quote!(

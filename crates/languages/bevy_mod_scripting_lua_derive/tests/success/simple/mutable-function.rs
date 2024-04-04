@@ -2,18 +2,18 @@ use bevy::prelude::*;
 use bevy_mod_scripting::api::*;
 
 #[derive(LuaProxy, Reflect, Clone)]
-#[proxy(functions = [
+#[proxy(functions[
     r#"
-    #[lua(kind="MutableFunction")]
-    fn fn_returning_some_string(&mut self) -> String {
-        self.some_string.clone()
+    #[lua(kind="Function")]
+    fn fn_returning_some_string(#[proxy]arg: &mut MyStruct) -> String {
+        arg.some_string.clone()
     }
     "#,
 
     r#"
-    #[lua(kind="MutableFunction", output(proxy))]
-    fn fn_returning_proxy(&mut self) -> Self {
-        self.clone()
+    #[lua(kind="Function", output(proxy))]
+    fn fn_returning_proxy(#[proxy]arg: &mut MyStruct) -> Self {
+        arg.clone()
     }
     "#,
 ])]

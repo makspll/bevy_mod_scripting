@@ -1,10 +1,10 @@
 use bevy::prelude::*;
 use bevy_mod_scripting::api::*;
 
-#[derive(LuaProxy, Reflect)]
-#[proxy(functions = [
+#[derive(LuaProxy, Reflect, Clone)]
+#[proxy(functions[
     r#"
-    #[lua(kind="MetaFunction")]
+    #[lua(kind="MetaFunction", metamethod="ToString")]
     fn ToString(#[proxy] my_struct:  &Self) -> String {
         my_struct.some_string.clone()
     }

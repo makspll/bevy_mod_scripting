@@ -2,7 +2,7 @@ use bevy::prelude::*;
 use bevy_mod_scripting::api::*;
 
 #[derive(LuaProxy, Reflect, Clone)]
-#[proxy(functions = [
+#[proxy(functions[
     r#"
     #[lua(kind="MetaMethod", metamethod="ToString")]
     fn ToString(&self) -> String {
@@ -14,13 +14,6 @@ use bevy_mod_scripting::api::*;
     #[lua(kind="MetaMethod", metamethod="Index", output(proxy))]
     fn Index(&self, _idx: usize) -> Self {
         self.clone()
-    }
-    "#,
-
-    r#"
-    #[lua(kind="MetaMethod", metamethod="Custom", output(proxy))]
-    fn Custom(&self)  {
-        
     }
     "#,
 ])]

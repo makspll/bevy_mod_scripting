@@ -1,5 +1,0 @@
-error: Did not expect contextual receiver in constructing simple proxy type
- --> tests/fail/simple/missing-proxy-output-attr.rs:8:32
-  |
-8 |     fn fn_returning_proxy() -> Self {
-  |                                ^^^^

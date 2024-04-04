@@ -1,8 +1,8 @@
 use bevy::prelude::*;
 use bevy_mod_scripting::api::*;
 
-#[derive(LuaProxy, Reflect)]
-#[proxy(functions = [
+#[derive(LuaProxy, Reflect, Clone)]
+#[proxy(functions[
     r#"
     #[lua(kind="MetaMethod", metamethod="ToString")]
     fn ToString(&self) -> String {

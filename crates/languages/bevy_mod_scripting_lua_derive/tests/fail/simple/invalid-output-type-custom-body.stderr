@@ -1,5 +1,10 @@
-error: Did not expect contextual receiver in constructing simple proxy type
- --> tests/fail/simple/invalid-output-type-custom-body.rs:8:32
-  |
-8 |     fn fn_returning_proxy() -> Self {
-  |                                ^^^^
+error[E0308]: mismatched types
+  --> tests/fail/simple/invalid-output-type-custom-body.rs:4:10
+   |
+4  | #[derive(LuaProxy, Reflect, Clone)]
+   |          ^^^^^^^^ expected `MyStruct`, found integer
+...
+13 | pub struct MyStruct;
+   |            -------- expected due to this
+   |
+   = note: this error originates in the derive macro `LuaProxy` (in Nightly builds, run with -Z macro-backtrace for more info)

@@ -2,9 +2,9 @@ use bevy::prelude::*;
 use bevy_mod_scripting::api::*;
 
 #[derive(LuaProxy, Reflect, Clone)]
-#[proxy(functions = [
+#[proxy(functions[
     r#"
-    #[lua(kind="MutableMetaMethod", metamethod="ToString")]
+    #[lua(kind="MutatingMetaMethod", metamethod="ToString")]
     fn ToString(&mut self) -> String {
         self.some_string = "lol".to_string();
         self.some_string.clone()
@@ -12,7 +12,7 @@ use bevy_mod_scripting::api::*;
     "#,
 
     r#"
-    #[lua(kind="MutableMetaMethod", metamethod="Index", output(proxy))]
+    #[lua(kind="MutatingMetaMethod", metamethod="Index", output(proxy))]
     fn Index(&mut self, _i: usize) -> Self {
         self.clone()
     }

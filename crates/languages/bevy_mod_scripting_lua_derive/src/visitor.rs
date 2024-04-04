@@ -103,7 +103,7 @@ impl VisitSimpleType<syn::Result<proc_macro2::TokenStream>> for LuaSimpleTypeWra
                 let inner = self.visit_simple_type(&unit_path.inner, false)?;
                 let arg_name = &self.arg_name;
                 Ok(quote_spanned!(self.span=>
-                    #arg_name.map(|#arg_name| #inner)
+                    #arg_name.map(|mut #arg_name| #inner)
                 ))
             }
             Some(StdTypeIdent::Vec) => {
@@ -111,7 +111,7 @@ impl VisitSimpleType<syn::Result<proc_macro2::TokenStream>> for LuaSimpleTypeWra
                 let arg_name = &self.arg_name;
 
                 Ok(quote_spanned!(self.span=>
-                    #arg_name.into_iter().map(|#arg_name| #inner).collect::<Vec<_>>()
+                    #arg_name.into_iter().map(|mut #arg_name| #inner).collect::<Vec<_>>()
                 ))
             }
             Some(unsupported_std_type) => Err(syn::Error::new_spanned(
@@ -138,7 +138,7 @@ impl VisitSimpleType<syn::Result<proc_macro2::TokenStream>> for LuaSimpleTypeWra
                 let right = self.visit_simple_type(&duo_path.right, false)?;
                 let arg_name = &self.arg_name;
                 Ok(quote_spanned!(self.span=>
-                    #arg_name.map(|#arg_name| #left).map_err(|#arg_name| #tealr::mlu::mlua::Error::external(#right))
+                    #arg_name.map(|mut #arg_name| #left).map_err(|#arg_name| #tealr::mlu::mlua::Error::external(#right))
                 ))
             }
             Some(unsupported_std_type) => Err(syn::Error::new_spanned(
@@ -296,7 +296,7 @@ mod test {
     #[test]
     pub fn test_lua_argument_wrapper_vec() {
         let expected = quote_spanned!(Span::call_site()=>
-            arg.into_iter().map(|arg| LuaMyType::new(arg)).collect::<Vec<_>>()
+            arg.into_iter().map(|mut arg| LuaMyType::new(arg)).collect::<Vec<_>>()
         );
 
         let mut visitor = LuaSimpleTypeWrapper::new(format_ident!("arg"), Span::call_site());

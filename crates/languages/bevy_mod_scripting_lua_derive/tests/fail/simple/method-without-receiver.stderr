@@ -1,11 +1,7 @@
-error: Lua proxy functions of type: Method, require `self` argument
- --> tests/fail/simple/method-without-receiver.rs:8:25
+error: Expected receiver as first argument in the signature
+ --> tests/fail/simple/method-without-receiver.rs:4:10
   |
-8 |     fn fn_taking_nothing() {
-  |                         ^^
-
-error: Lua proxy functions of type: Method, require `self` argument
-  --> tests/fail/simple/method-without-receiver.rs:13:23
-   |
-13 |     fn fn_taking_usize(arg: usize) {
-   |                       ^^^^^^^^^^^^
+4 | #[derive(LuaProxy, Reflect, Clone)]
+  |          ^^^^^^^^
+  |
+  = note: this error originates in the derive macro `LuaProxy` (in Nightly builds, run with -Z macro-backtrace for more info)

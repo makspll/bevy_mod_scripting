@@ -2,7 +2,7 @@ use bevy::prelude::*;
 use bevy_mod_scripting::api::*;
 
 #[derive(LuaProxy, Reflect, Clone)]
-#[proxy(functions = [
+#[proxy(functions[
     r#"
     #[lua(kind="Function")]
     fn fn_returning_string_vec() -> Vec<String> {

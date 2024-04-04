@@ -1,8 +1,8 @@
 use bevy::prelude::*;
 use bevy_mod_scripting::api::*;
 
-#[derive(LuaProxy, Reflect)]
-#[proxy(functions = [
+#[derive(LuaProxy, Reflect, Clone)]
+#[proxy(derive(clone), functions[
     r#"
     #[lua(kind="Function")]
     fn fn_returning_string_vec(_vec: Vec<String>) {
