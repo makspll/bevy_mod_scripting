@@ -15,18 +15,15 @@ This crate is an attempt to make scripting a possibility with the current state 
 
 ## Features
 
-- Script host interface
 - Hot re-loading scripts (on script asset changes, scripts using those assets are re-started)
-- Mlua integration
-- Rhai integration
-- Customisable script API's
+- Lua, Teal, Rhai and Rune integrations
+- Automatically generated Bevy bindings for Lua
+- CLI rustc extensions for generating your own Lua bindings
 - Event based hooks (i.e. on_update)
 - Flexible event scheduling (i.e. allow handling events at handling stages based on the event)
 - Multiple scripts per entity
 - Multiple instances of the same script on one entity
 - Extensive callback argument type support
-- General Bevy API.
-- Lua implementation of Bevy API (and support for more langauges incoming)
 - Utilities for generating script native documentation
 - Loading external lua libraries via `require` (enabled with `unsafe_lua_modules` cargo feature due to potential unsafety)
 
@@ -101,19 +98,11 @@ fn main() -> std::io::Result<()> {
 
 ### Firing Script Callbacks
 
-Scripts are triggered by firing `ScriptEvents`. This crate uses custom priority event writers and readers, so events are sent along with a priority. Together with your event pipeline this priority affects when your events are handled. A priority of 0 is the highest.
+Scripts are activated by dispatching `ScriptEvents`. This crate employs custom priority event writers and readers, which means events are transmitted with an associated priority. This priority, in conjunction with your event pipeline, influences the sequence in which your events are processed. A priority of 0 is considered the highest.
 
-You can use this to create game loops akin to Unity's or other game engine's.
+This mechanism can be utilized to construct game loops similar to those found in Unity or other game engines.
 
-There are no guarantees that force the script callbacks to be executed fully for all scripts, i.e. before processing the next callback event, so this order guarantee only holds on a per script basis.
-
-Examples of systems which generate callbacks can be seen below:
-
-#### Mlua
-
-Use valid lua function names for hook names and any number of arguments which are to be passed on to the function.
-
-Any types implementing the `mlua::ToLua` trait can be used.
+An example event dispatching system can be seen below:
 
 ```rust
 use bevy::prelude::*;
@@ -133,49 +122,14 @@ pub fn trigger_on_update_lua(mut w: PriorityEventWriter<LuaEvent<()>>) {
 }
 ```
 
-#### Rhai
-
-Rhai supports any rust types implementing FuncArgs as function arguments.
-
-```rust
-use bevy::prelude::*;
-use bevy_mod_scripting::prelude::*;
-
-#[cfg(feature = "rhai")]
-#[derive(Clone)]
-pub struct MyRhaiArgStruct {
-    // ...
-}
-
-#[cfg(feature = "rhai")]
-impl FuncArgs for MyRhaiArgStruct {
-    fn parse<ARGS: Extend<rhai::Dynamic>>(self, _args: &mut ARGS) {
-        // ...
-    }
-}
-
-// event callback generator for rhai
-// rhai event arguments can be any rust type implementing FuncArgs
-#[cfg(feature = "rhai")]
-pub fn trigger_on_update_rhai(mut w: PriorityEventWriter<RhaiEvent<MyRhaiArgStruct>>) {
-    let event = RhaiEvent {
-        hook_name: "on_update".to_string(),
-        args: MyRhaiArgStruct {},
-        recipients: Recipients::All
-    };
-
-    w.send(event,0);
-}
-```
-
 ### Adding scripts
 
-A script consists of:
+A script is composed of:
 
-- an asset handle to their code file
-- a name which is usually their path relative to the assets folder
+- A reference to its code file, represented as an asset handle
+- A name, typically the path relative to the assets folder
 
-Scripts are attached to entities in the form of `bevy_mod_scripting::ScriptCollection` components as seen below:
+Scripts are associated with entities through `bevy_mod_scripting::ScriptCollection` components, as illustrated below:
 
 ```rust
 use std::sync::Mutex;
@@ -204,7 +158,7 @@ pub fn load_a_script(
 
 ### Defining an API
 
-To expose an API to your scripts, implement the APIProvider trait. To register this API with your script host use the `add_api_provider` of `App`. APIProviders are a little bit like plugins, since they can also have access to the bevy App via one of the methods provided, and
+To make an API accessible to your scripts, you need to implement the `APIProvider` trait. This can be registered with your script host using the `add_api_provider` method of `App`. `APIProviders` function similarly to plugins:
 
 ```rust
 use ::std::sync::Mutex;
@@ -214,8 +168,6 @@ use bevy_mod_scripting::prelude::*;
 #[derive(Default)]
 pub struct LuaAPI;
 
-/// the custom Lua api, world is provided via a global pointer,
-/// and callbacks are defined only once at script creation
 #[cfg(feature = "lua")]
 impl APIProvider for LuaAPI {
     type APITarget = Mutex<Lua>;
@@ -223,44 +175,22 @@ impl APIProvider for LuaAPI {
     type ScriptContext = Mutex<Lua>;
 
     fn attach_api(&mut self, ctx: &mut Self::APITarget) -> Result<(),ScriptError> {
-        // generate API here
-        // world is provided via ctx see examples
-        // ...
+        // ... access the lua context here when the script loads
         Ok(())
     }
 }
-
-#[cfg(feature = "rhai")]
-#[derive(Default)]
-pub struct RhaiAPI {}
-
-#[cfg(feature = "rhai")]
-impl APIProvider for RhaiAPI {
-    type APITarget = Engine;
-    type DocTarget = RhaiDocFragment;
-    type ScriptContext = RhaiContext;
-
-    fn attach_api(&mut self, ctx: &mut Self::APITarget) -> Result<(),ScriptError> {
-        // ...
-        Ok(())
-    }
-}
-
 ```
 
-Register the API providers like so:
+Register your API providers like so:
 
 ```rust, ignore
     app.add_plugins(DefaultPlugins)
         .add_plugins(ScriptingPlugin)
         .add_script_host::<LuaScriptHost<MyLuaArg>>(PostUpdate)
-        .add_script_host::<RhaiScriptHost<MyRhaiArg>>(PostUpdate)
         .add_api_provider::<LuaScriptHost<MyLuaArg>>(Box::new(LuaAPIProvider))
-        .add_api_provider::<LuaScriptHost<MyRhaiArg>>(Box::new(RhaiAPIProvider))
         //...
 ```
-
-Note that the `APIProvider` interface also contains `setup_script` and `get_doc_fragment` methods which are by default no-ops. These can be used to provide documentation (see examples) and guaranteed one-time-per-script setup (such as lua package path setup).
+The `APIProvider` interface also includes `setup_script` and `get_doc_fragment` methods. By default, these methods do not perform any operation. However, they can be utilized for specific purposes. For instance, `get_doc_fragment` can be used to generate documentation (refer to examples), and `setup_script` can ensure a one-time setup per script, like setting up a Lua package path.
 
 ### Documentation Generation
 
@@ -287,18 +217,13 @@ fn main() -> std::io::Result<()> {
 }
 
 ```
-
-Currently we generate documentation at runtime due to the way `tealr` works but this might change in the future as ideally this would be done statically.
-
-It is probably a wise idea to set up a separate executable whose only purpose is to generate documentation, and run it every time before a release. But keeping this step in your main app will make sure your script environment is always set up correctly.
-
 #### Lua
 
-Lua documentation is provided by `tealr`, a wrapper around the `mlua` lua API which decorates their standard types. On top of providing documentation generation, it's also capable of generating `d.tl` files which can be used to introduce static typing to lua via the `teal` project (you do not need to use teal to generate documentation).
+`tealr`, a wrapper around the `mlua` crate, provides mechanisms for Lua documentation generation. It can generate `d.tl` files for static typing in Lua via the `teal` project, but using `teal` isn't necessary for documentation generation. 
 
-This can all be seen at work in [this example](bevy_mod_scripting/examples/lua/documentation_gen.rs). 
+See [this example](bevy_mod_scripting/examples/lua/documentation_gen.rs) for a demonstration. 
 
-The docs for the bevy API provided in this crate are generated automatically each release onto this repo [here](https://github.com/makspll/bevy_mod_scripting_lua) and deployed [here](https://makspll.github.io/bevy_mod_scripting_lua/v0.3.0/). You might need to set the `page_root` to the path to something like: `assets/doc/YourAPI` in the automatically generated config file over at: `assets/doc/tealr_doc_gen_config.json`
+The Bevy API documentation for this crate is auto-generated with each release and can be found [here](https://github.com/makspll/bevy_mod_scripting_lua) and [here](https://makspll.github.io/bevy_mod_scripting_lua/v0.3.0/). You may need to adjust the `page_root` in the auto-generated `assets/doc/tealr_doc_gen_config.json` file to a path like `assets/doc/YourAPI`.
 
 ##### Teal - Lua static typing
 
@@ -320,17 +245,9 @@ return {
 }
 ```
 
-#### Rhai
-
-Rhai currently does not have any existing utilities for generating documentation (for the rust provided API), once something comes out we'll include it.
-
 ## Configuration
 
 - `SCRIPT_DOC_DIR` - documentation is generated in `assets/scripts/docs` or to the path in this ENV variable if it's set.
-
-## Scenes
-
-The `Script` components will persist a scene load, but their script contexts won't, after a scene load you must manually reload the scripts using `Script::reload_script`
 
 ## Examples
 
