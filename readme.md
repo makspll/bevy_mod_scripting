@@ -38,7 +38,7 @@ Support for languages is expressed in three levels:
 The languages currently supported are as follows:
 |Language| Support Level | Documentation Generation |
 |----|----|----|
-|Lua|4|Yes|
+|Lua|4|[Yes](https://makspll.github.io/bevy_mod_scripting_lua/latest/)|
 |Rhai|2|No|
 |Rune|1|No|
 
