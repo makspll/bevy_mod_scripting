@@ -8,13 +8,6 @@ extern crate self as bevy_script_api;
 use bevy_script_api::{
     lua::RegisterForeignLuaType, ReflectedValue, common::bevy::GetWorld,
 };
-/// A gamepad with an associated `ID`.
-/// ## Usage
-/// The primary way to access the individual connected gamepads is done through the [`Gamepads`]
-/// `bevy` resource. It is also used inside of [`GamepadConnectionEvent`]s to correspond a gamepad
-/// with a connection event.
-/// ## Note
-/// The `ID` of a gamepad is fixed until the gamepad disconnects or the app is restarted.
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
     derive(clone),
@@ -59,12 +52,6 @@ fn index(&self) -> String {
 pub struct Gamepad {
     id: usize,
 }
-/// An axis of a [`Gamepad`].
-/// ## Usage
-/// It is used as the generic `T` value of an [`Axis`] to create `bevy` resources. These
-/// resources store the data of the axes of a gamepad and can be accessed inside of a system.
-/// ## Updating
-/// The gamepad axes resources are updated inside of the [`gamepad_axis_event_system`].
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
     derive(clone),
@@ -126,11 +113,6 @@ pub struct GamepadAxis {
     #[lua(output(proxy))]
     axis_type: bevy::input::gamepad::GamepadAxisType,
 }
-/// A type of a [`GamepadAxis`].
-/// ## Usage
-/// This is used to determine which axis has changed its value when receiving a
-/// [`GamepadAxisChangedEvent`]. It is also used in the [`GamepadAxis`]
-/// which in turn is used to create the [`Axis<GamepadAxis>`] `bevy` resource.
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
     derive(clone),
@@ -166,12 +148,6 @@ fn index(&self) -> String {
 "#]
 )]
 pub struct GamepadAxisType {}
-/// A button of a [`Gamepad`].
-/// ## Usage
-/// It is used as the generic `T` value of an [`ButtonInput`] and [`Axis`] to create `bevy` resources. These
-/// resources store the data of the buttons of a gamepad and can be accessed inside of a system.
-/// ## Updating
-/// The gamepad button resources are updated inside of the [`gamepad_button_event_system`].
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
     derive(clone),
@@ -233,12 +209,6 @@ pub struct GamepadButton {
     #[lua(output(proxy))]
     button_type: bevy::input::gamepad::GamepadButtonType,
 }
-/// A type of a [`GamepadButton`].
-/// ## Usage
-/// This is used to determine which button has changed its value when receiving a
-/// [`GamepadButtonChangedEvent`]. It is also used in the [`GamepadButton`]
-/// which in turn is used to create the [`ButtonInput<GamepadButton>`] or
-/// [`Axis<GamepadButton>`] `bevy` resources.
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
     derive(clone),
@@ -274,18 +244,6 @@ fn index(&self) -> String {
 "#]
 )]
 pub struct GamepadButtonType {}
-/// The key code of a [`KeyboardInput`].
-/// ## Usage
-/// It is used as the generic `T` value of an [`ButtonInput`] to create a `Res<Input<KeyCode>>`.
-/// Code representing the location of a physical key
-/// This mostly conforms to the UI Events Specification's [`KeyboardEvent.code`] with a few
-/// exceptions:
-/// - The keys that the specification calls `MetaLeft` and `MetaRight` are named `SuperLeft` and
-///   `SuperRight` here.
-/// - The key that the specification calls "Super" is reported as `Unidentified` here.
-/// [`KeyboardEvent.code`]: https://w3c.github.io/uievents-code/#code-value-tables
-/// ## Updating
-/// The resource is updated inside of the [`keyboard_input_system`].
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
     derive(clone),
@@ -321,12 +279,6 @@ fn index(&self) -> String {
 "#]
 )]
 pub struct KeyCode {}
-/// A button on a mouse device.
-/// ## Usage
-/// It is used as the generic `T` value of an [`ButtonInput`] to create a `bevy`
-/// resource.
-/// ## Updating
-/// The resource is updated inside of the [`mouse_button_input_system`].
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
     derive(clone),
@@ -362,22 +314,6 @@ fn index(&self) -> String {
 "#]
 )]
 pub struct MouseButton {}
-/// A touch input event.
-/// ## Logic
-/// Every time the user touches the screen, a new [`TouchPhase::Started`] event with an unique
-/// identifier for the finger is generated. When the finger is lifted, the [`TouchPhase::Ended`]
-/// event is generated with the same finger id.
-/// After a [`TouchPhase::Started`] event has been emitted, there may be zero or more [`TouchPhase::Moved`]
-/// events when the finger is moved or the touch pressure changes.
-/// The finger id may be reused by the system after an [`TouchPhase::Ended`] event. The user
-/// should assume that a new [`TouchPhase::Started`] event received with the same id has nothing
-/// to do with the old finger and is a new finger.
-/// A [`TouchPhase::Canceled`] event is emitted when the system has canceled tracking this
-/// touch, such as when the window loses focus, or on iOS if the user moves the
-/// device against their face.
-/// ## Note
-/// This event is the translated version of the `WindowEvent::Touch` from the `winit` crate.
-/// It is available to the end user and can be used for game logic.
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
     derive(clone),
@@ -416,9 +352,6 @@ pub struct TouchInput {
     force: ReflectedValue,
     id: u64,
 }
-/// The logical key code of a [`KeyboardInput`].
-/// ## Technical
-/// Its values map 1 to 1 to winit's Key.
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
     derive(clone),
@@ -454,12 +387,6 @@ fn index(&self) -> String {
 "#]
 )]
 pub struct Key {}
-/// A keyboard input event.
-/// This event is the translated version of the `WindowEvent::KeyboardInput` from the `winit` crate.
-/// It is available to the end user and can be used for game logic.
-/// ## Usage
-/// The event is consumed inside of the [`keyboard_input_system`]
-/// to update the [`Input<KeyCode>`](ButtonInput<KeyCode>) resource.
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
     derive(clone),
@@ -504,14 +431,6 @@ pub struct KeyboardInput {
     #[lua(output(proxy))]
     window: bevy::ecs::entity::Entity,
 }
-/// Contains the platform-native logical key identifier, known as keysym.
-/// Exactly what that means differs from platform to platform, but the values are to some degree
-/// tied to the currently active keyboard layout. The same key on the same keyboard may also report
-/// different values on different platforms, which is one of the reasons this is a per-platform
-/// enum.
-/// This enum is primarily used to store raw keysym when Winit doesn't map a given native logical
-/// key identifier to a meaningful [`Key`] variant. This lets you use [`Key`], and let the user
-/// define keybinds which work in the presence of identifiers we haven't mapped for you yet.
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
     derive(clone),
@@ -547,14 +466,6 @@ fn index(&self) -> String {
 "#]
 )]
 pub struct NativeKey {}
-/// Contains the platform-native physical key identifier
-/// The exact values vary from platform to platform (which is part of why this is a per-platform
-/// enum), but the values are primarily tied to the key's physical location on the keyboard.
-/// This enum is primarily used to store raw keycodes when Winit doesn't map a given native
-/// physical key identifier to a meaningful [`KeyCode`] variant. In the presence of identifiers we
-/// haven't mapped for you yet, this lets you use use [`KeyCode`] to:
-/// - Correctly match key press and release events.
-/// - On non-web platforms, support assigning keybinds to virtually any key through a UI.
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
     derive(clone),
@@ -590,11 +501,6 @@ fn index(&self) -> String {
 "#]
 )]
 pub struct NativeKeyCode {}
-/// A mouse button input event.
-/// This event is the translated version of the `WindowEvent::MouseInput` from the `winit` crate.
-/// ## Usage
-/// The event is read inside of the [`mouse_button_input_system`]
-/// to update the [`Input<MouseButton>`](ButtonInput<MouseButton>) resource.
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
     derive(clone),
@@ -637,12 +543,6 @@ pub struct MouseButtonInput {
     #[lua(output(proxy))]
     window: bevy::ecs::entity::Entity,
 }
-/// An event reporting the change in physical position of a pointing device.
-/// This represents raw, unfiltered physical motion.
-/// It is the translated version of [`DeviceEvent::MouseMotion`] from the `winit` crate.
-/// All pointing devices connected to a single machine at the same time can emit the event independently.
-/// However, the event data does not make it possible to distinguish which device it is referring to.
-/// [`DeviceEvent::MouseMotion`]: https://docs.rs/winit/latest/winit/event/enum.DeviceEvent.html#variant.MouseMotion
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
     derive(clone),
@@ -675,10 +575,6 @@ pub struct MouseMotion {
     #[lua(output(proxy))]
     delta: bevy::math::Vec2,
 }
-/// The scroll unit.
-/// Describes how a value of a [`MouseWheel`] event has to be interpreted.
-/// The value of the event can either be interpreted as the amount of lines or the amount of pixels
-/// to scroll.
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
     derive(clone),
@@ -714,8 +610,6 @@ fn index(&self) -> String {
 "#]
 )]
 pub struct MouseScrollUnit {}
-/// A mouse wheel event.
-/// This event is the translated version of the `WindowEvent::MouseWheel` from the `winit` crate.
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
     derive(clone),
@@ -752,7 +646,6 @@ pub struct MouseWheel {
     #[lua(output(proxy))]
     window: bevy::ecs::entity::Entity,
 }
-/// A force description of a [`Touch`] input.
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
     derive(clone),
@@ -782,12 +675,6 @@ fn index(&self) -> String {
 "#]
 )]
 pub struct ForceTouch {}
-/// A phase of a [`TouchInput`].
-/// ## Usage
-/// It is used to describe the phase of the touch input that is currently active.
-/// This includes a phase that indicates that a touch input has started or ended,
-/// or that a finger has moved. There is also a canceled phase that indicates that
-/// the system canceled the tracking of the finger.
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
     derive(clone),
@@ -823,11 +710,6 @@ fn index(&self) -> String {
 "#]
 )]
 pub struct TouchPhase {}
-/// Touchpad magnification event with two-finger pinch gesture.
-/// Positive delta values indicate magnification (zooming in) and
-/// negative delta values indicate shrinking (zooming out).
-/// ## Platform-specific
-/// - Only available on **`macOS`**.
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
     derive(clone),
@@ -857,11 +739,6 @@ fn index(&self) -> String {
 "#]
 )]
 pub struct TouchpadMagnify(f32);
-/// Touchpad rotation event with two-finger rotation gesture.
-/// Positive delta values indicate rotation counterclockwise and
-/// negative delta values indicate rotation clockwise.
-/// ## Platform-specific
-/// - Only available on **`macOS`**.
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
     derive(clone),
@@ -891,15 +768,6 @@ fn index(&self) -> String {
 "#]
 )]
 pub struct TouchpadRotate(f32);
-/// Settings for a [`GamepadAxis`].
-/// It is used inside of the [`GamepadSettings`] to define the sensitivity range and
-/// threshold for an axis.
-/// Values that are higher than `livezone_upperbound` will be rounded up to 1.0.
-/// Values that are lower than `livezone_lowerbound` will be rounded down to -1.0.
-/// Values that are in-between `deadzone_lowerbound` and `deadzone_upperbound` will be rounded
-/// to 0.0.
-/// Otherwise, values will not be rounded.
-/// The valid range is `[-1.0, 1.0]`.
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
     derive(clone),
@@ -1033,16 +901,6 @@ fn index(&self) -> String {
 "#]
 )]
 pub struct AxisSettings {}
-/// Settings for a [`GamepadButton`].
-/// It is used inside of the [`GamepadSettings`] to define the sensitivity range and
-/// threshold for a button axis.
-/// ## Logic
-/// - Values that are higher than or equal to `high` will be rounded to 1.0.
-/// - Values that are lower than or equal to `low` will be rounded to 0.0.
-/// - Otherwise, values will not be rounded.
-/// The valid range is from 0.0 to 1.0, inclusive.
-/// ## Updating
-/// The current value of a button is received through the [`GamepadButtonChangedEvent`].
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
     derive(clone),
@@ -1078,11 +936,6 @@ pub struct ButtonAxisSettings {
     low: f32,
     threshold: f32,
 }
-/// Manages settings for gamepad buttons.
-/// It is used inside of [`GamepadSettings`] to define the threshold for a gamepad button
-/// to be considered pressed or released. A button is considered pressed if the `press_threshold`
-/// value is surpassed and released if the `release_threshold` value is undercut.
-/// Allowed values: `0.0 <= ``release_threshold`` <= ``press_threshold`` <= 1.0`
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
     derive(clone),
@@ -1149,8 +1002,6 @@ fn index(&self) -> String {
 "#]
 )]
 pub struct ButtonSettings {}
-/// Gamepad event for when the "value" on the axis changes
-/// by an amount larger than the threshold defined in [`GamepadSettings`].
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
     derive(clone),
@@ -1199,8 +1050,6 @@ pub struct GamepadAxisChangedEvent {
     axis_type: bevy::input::gamepad::GamepadAxisType,
     value: f32,
 }
-/// Gamepad event for when the "value" (amount of pressure) on the button
-/// changes by an amount larger than the threshold defined in [`GamepadSettings`].
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
     derive(clone),
@@ -1249,7 +1098,6 @@ pub struct GamepadButtonChangedEvent {
     button_type: bevy::input::gamepad::GamepadButtonType,
     value: f32,
 }
-/// A gamepad button input event.
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
     derive(clone),
@@ -1290,7 +1138,6 @@ pub struct GamepadButtonInput {
     #[lua(output(proxy))]
     state: bevy::input::ButtonState,
 }
-/// The connection status of a gamepad.
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
     derive(clone),
@@ -1320,8 +1167,6 @@ fn index(&self) -> String {
 "#]
 )]
 pub struct GamepadConnection {}
-/// A Gamepad connection event. Created when a connection to a gamepad
-/// is established and when a gamepad is disconnected.
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
     derive(clone),
@@ -1382,10 +1227,6 @@ pub struct GamepadConnectionEvent {
     #[lua(output(proxy))]
     connection: bevy::input::gamepad::GamepadConnection,
 }
-/// A gamepad event.
-/// This event type is used over the [`GamepadConnectionEvent`],
-/// [`GamepadButtonChangedEvent`] and [`GamepadAxisChangedEvent`] when
-/// the in-frame relative ordering of events is important.
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
     derive(clone),
@@ -1415,15 +1256,6 @@ fn index(&self) -> String {
 "#]
 )]
 pub struct GamepadEvent {}
-/// Settings for all [`Gamepad`]s.
-/// ## Usage
-/// It is used to create a `bevy` resource that stores the settings of every [`GamepadButton`] and
-/// [`GamepadAxis`]. If no user defined [`ButtonSettings`], [`AxisSettings`], or [`ButtonAxisSettings`]
-/// are defined, the default settings of each are used as a fallback accordingly.
-/// ## Note
-/// The [`GamepadSettings`] are used inside of `bevy_gilrs` to determine when raw gamepad events from `gilrs`,
-/// should register as a [`GamepadEvent`]. Events that don't meet the change thresholds defined in [`GamepadSettings`]
-/// will not register. To modify these settings, mutate the corresponding resource.
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
     derive(),
@@ -1446,7 +1278,6 @@ pub struct GamepadSettings {
     axis_settings: ReflectedValue,
     button_axis_settings: ReflectedValue,
 }
-/// The current "press" state of an element
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
     derive(clone),
@@ -1489,7 +1320,6 @@ fn index(&self) -> String {
 "#]
 )]
 pub struct ButtonState {}
-/// Metadata associated with a [`Gamepad`].
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
     derive(clone),

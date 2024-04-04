@@ -10,25 +10,6 @@ extern crate self as bevy_script_api;
 use bevy_script_api::{
     lua::RegisterForeignLuaType, ReflectedValue, common::bevy::GetWorld,
 };
-/// Describe the position of an entity relative to the reference frame.
-/// * To place or move an entity, you should set its [`Transform`].
-/// * [`GlobalTransform`] is fully managed by bevy, you cannot mutate it, use
-///   [`Transform`] instead.
-/// * To get the global transform of an entity, you should get its [`GlobalTransform`].
-/// * For transform hierarchies to work correctly, you must have both a [`Transform`] and a [`GlobalTransform`].
-///   * You may use the [`TransformBundle`](crate::TransformBundle) to guarantee this.
-/// ## [`Transform`] and [`GlobalTransform`]
-/// [`Transform`] is the position of an entity relative to its parent position, or the reference
-/// frame if it doesn't have a [`Parent`](bevy_hierarchy::Parent).
-/// [`GlobalTransform`] is the position of an entity relative to the reference frame.
-/// [`GlobalTransform`] is updated from [`Transform`] by systems in the system set
-/// [`TransformPropagate`](crate::TransformSystem::TransformPropagate).
-/// This system runs during [`PostUpdate`](bevy_app::PostUpdate). If you
-/// update the [`Transform`] of an entity in this schedule or after, you will notice a 1 frame lag
-/// before the [`GlobalTransform`] is updated.
-/// # Examples
-/// - [`transform`]
-/// [`transform`]: https://github.com/bevyengine/bevy/blob/latest/examples/transforms/transform.rs
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
     derive(clone),
@@ -281,26 +262,6 @@ fn index(&self) -> String {
 "#]
 )]
 pub struct GlobalTransform();
-/// Describe the position of an entity. If the entity has a parent, the position is relative
-/// to its parent position.
-/// * To place or move an entity, you should set its [`Transform`].
-/// * To get the global transform of an entity, you should get its [`GlobalTransform`].
-/// * To be displayed, an entity must have both a [`Transform`] and a [`GlobalTransform`].
-///   * You may use the [`TransformBundle`](crate::TransformBundle) to guarantee this.
-/// ## [`Transform`] and [`GlobalTransform`]
-/// [`Transform`] is the position of an entity relative to its parent position, or the reference
-/// frame if it doesn't have a [`Parent`](bevy_hierarchy::Parent).
-/// [`GlobalTransform`] is the position of an entity relative to the reference frame.
-/// [`GlobalTransform`] is updated from [`Transform`] by systems in the system set
-/// [`TransformPropagate`](crate::TransformSystem::TransformPropagate).
-/// This system runs during [`PostUpdate`](bevy_app::PostUpdate). If you
-/// update the [`Transform`] of an entity during this set or after, you will notice a 1 frame lag
-/// before the [`GlobalTransform`] is updated.
-/// # Examples
-/// - [`transform`]
-/// - [`global_vs_local_translation`]
-/// [`global_vs_local_translation`]: https://github.com/bevyengine/bevy/blob/latest/examples/transforms/global_vs_local_translation.rs
-/// [`transform`]: https://github.com/bevyengine/bevy/blob/latest/examples/transforms/transform.rs
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
     derive(clone),

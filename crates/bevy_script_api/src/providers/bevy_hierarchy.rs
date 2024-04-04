@@ -9,16 +9,6 @@ extern crate self as bevy_script_api;
 use bevy_script_api::{
     lua::RegisterForeignLuaType, ReflectedValue, common::bevy::GetWorld,
 };
-/// Contains references to the child entities of this entity.
-/// Each child must contain a [`Parent`] component that points back to this entity.
-/// This component rarely needs to be created manually,
-/// consider using higher level utilities like [`BuildChildren::with_children`]
-/// which are safer and easier to use.
-/// See [`HierarchyQueryExt`] for hierarchy related methods on [`Query`].
-/// [`HierarchyQueryExt`]: crate::query_extension::HierarchyQueryExt
-/// [`Query`]: bevy_ecs::system::Query
-/// [`Parent`]: crate::components::parent::Parent
-/// [`BuildChildren::with_children`]: crate::child_builder::BuildChildren::with_children
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
     derive(),
@@ -38,16 +28,6 @@ fn index(&self) -> String {
 "#]
 )]
 pub struct Children();
-/// Holds a reference to the parent entity of this entity.
-/// This component should only be present on entities that actually have a parent entity.
-/// Parent entity must have this entity stored in its [`Children`] component.
-/// It is hard to set up parent/child relationships manually,
-/// consider using higher level utilities like [`BuildChildren::with_children`].
-/// See [`HierarchyQueryExt`] for hierarchy related methods on [`Query`].
-/// [`HierarchyQueryExt`]: crate::query_extension::HierarchyQueryExt
-/// [`Query`]: bevy_ecs::system::Query
-/// [`Children`]: super::children::Children
-/// [`BuildChildren::with_children`]: crate::child_builder::BuildChildren::with_children
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
     derive(),

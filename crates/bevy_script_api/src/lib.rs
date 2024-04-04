@@ -39,7 +39,6 @@ pub use bevy_mod_scripting_lua_derive::LuaProxy;
 
 // for now providers do not support any other lang so just remove this whole module if they are not needed
 #[cfg(feature = "lua")]
-#[cfg(not(doctest))]
 pub(crate) mod providers;
 
 pub use parking_lot;

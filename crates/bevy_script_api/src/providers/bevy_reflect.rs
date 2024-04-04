@@ -6,32 +6,6 @@ extern crate self as bevy_script_api;
 use bevy_script_api::{
     lua::RegisterForeignLuaType, ReflectedValue, common::bevy::GetWorld,
 };
-/// A `Duration` type to represent a span of time, typically used for system
-/// timeouts.
-/// Each `Duration` is composed of a whole number of seconds and a fractional part
-/// represented in nanoseconds. If the underlying system does not support
-/// nanosecond-level precision, APIs binding a system timeout will typically round up
-/// the number of nanoseconds.
-/// [`Duration`]s implement many common traits, including [`Add`], [`Sub`], and other
-/// [`ops`] traits. It implements [`Default`] by returning a zero-length `Duration`.
-/// [`ops`]: crate::ops
-/// # Examples
-/// ```
-/// use std::time::Duration;
-/// let five_seconds = Duration::new(5, 0);
-/// let five_seconds_and_five_nanos = five_seconds + Duration::new(0, 5);
-/// assert_eq!(five_seconds_and_five_nanos.as_secs(), 5);
-/// assert_eq!(five_seconds_and_five_nanos.subsec_nanos(), 5);
-/// let ten_millis = Duration::from_millis(10);
-/// ```
-/// # Formatting `Duration` values
-/// `Duration` intentionally does not have a `Display` impl, as there are a
-/// variety of ways to format spans of time for human readability. `Duration`
-/// provides a `Debug` impl that shows the full precision of the value.
-/// The `Debug` output uses the non-ASCII "µs" suffix for microseconds. If your
-/// program output may appear in contexts that cannot rely on full Unicode
-/// compatibility, you may wish to format `Duration` objects yourself or use a
-/// crate to do so.
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
     derive(clone),
@@ -527,85 +501,6 @@ fn index(&self) -> String {
 "#]
 )]
 pub struct Duration {}
-/// A measurement of a monotonically nondecreasing clock.
-/// Opaque and useful only with [`Duration`].
-/// Instants are always guaranteed, barring [platform bugs], to be no less than any previously
-/// measured instant when created, and are often useful for tasks such as measuring
-/// benchmarks or timing how long an operation takes.
-/// Note, however, that instants are **not** guaranteed to be **steady**. In other
-/// words, each tick of the underlying clock might not be the same length (e.g.
-/// some seconds may be longer than others). An instant may jump forwards or
-/// experience time dilation (slow down or speed up), but it will never go
-/// backwards.
-/// As part of this non-guarantee it is also not specified whether system suspends count as
-/// elapsed time or not. The behavior varies across platforms and rust versions.
-/// Instants are opaque types that can only be compared to one another. There is
-/// no method to get "the number of seconds" from an instant. Instead, it only
-/// allows measuring the duration between two instants (or comparing two
-/// instants).
-/// The size of an `Instant` struct may vary depending on the target operating
-/// system.
-/// Example:
-/// ```no_run
-/// use std::time::{Duration, Instant};
-/// use std::thread::sleep;
-/// fn main() {
-///    let now = Instant::now();
-///    // we sleep for 2 seconds
-///    sleep(Duration::new(2, 0));
-///    // it prints '2'
-///    println!("{}", now.elapsed().as_secs());
-/// }
-/// ```
-/// [platform bugs]: Instant#monotonicity
-/// # OS-specific behaviors
-/// An `Instant` is a wrapper around system-specific types and it may behave
-/// differently depending on the underlying operating system. For example,
-/// the following snippet is fine on Linux but panics on macOS:
-/// ```no_run
-/// use std::time::{Instant, Duration};
-/// let now = Instant::now();
-/// let max_seconds = u64::MAX / 1_000_000_000;
-/// let duration = Duration::new(max_seconds, 0);
-/// println!("{:?}", now + duration);
-/// ```
-/// # Underlying System calls
-/// The following system calls are [currently] being used by `now()` to find out
-/// the current time:
-/// |  Platform |               System call                                            |
-/// |-----------|----------------------------------------------------------------------|
-/// | SGX       | [`insecure_time` usercall]. More information on [timekeeping in SGX] |
-/// | UNIX      | [clock_gettime (Monotonic Clock)]                                    |
-/// | Darwin    | [clock_gettime (Monotonic Clock)]                                    |
-/// | VXWorks   | [clock_gettime (Monotonic Clock)]                                    |
-/// | SOLID     | `get_tim`                                                            |
-/// | WASI      | [__wasi_clock_time_get (Monotonic Clock)]                            |
-/// | Windows   | [QueryPerformanceCounter]                                            |
-/// [currently]: crate::io#platform-specific-behavior
-/// [QueryPerformanceCounter]: https://docs.microsoft.com/en-us/windows/win32/api/profileapi/nf-profileapi-queryperformancecounter
-/// [`insecure_time` usercall]: https://edp.fortanix.com/docs/api/fortanix_sgx_abi/struct.Usercalls.html#method.insecure_time
-/// [timekeeping in SGX]: https://edp.fortanix.com/docs/concepts/rust-std/#codestdtimecode
-/// [__wasi_clock_time_get (Monotonic Clock)]: https://github.com/WebAssembly/WASI/blob/main/legacy/preview1/docs.md#clock_time_get
-/// [clock_gettime (Monotonic Clock)]: https://linux.die.net/man/3/clock_gettime
-/// **Disclaimer:** These system calls might change over time.
-/// > Note: mathematical operations like [`add`] may panic if the underlying
-/// > structure cannot represent the new point in time.
-/// [`add`]: Instant::add
-/// ## Monotonicity
-/// On all platforms `Instant` will try to use an OS API that guarantees monotonic behavior
-/// if available, which is the case for all [tier 1] platforms.
-/// In practice such guarantees are – under rare circumstances – broken by hardware, virtualization
-/// or operating system bugs. To work around these bugs and platforms not offering monotonic clocks
-/// [`duration_since`], [`elapsed`] and [`sub`] saturate to zero. In older Rust versions this
-/// lead to a panic instead. [`checked_duration_since`] can be used to detect and handle situations
-/// where monotonicity is violated, or `Instant`s are subtracted in the wrong order.
-/// This workaround obscures programming errors where earlier and later instants are accidentally
-/// swapped. For this reason future rust versions may reintroduce panics.
-/// [tier 1]: https://doc.rust-lang.org/rustc/platform-support.html
-/// [`duration_since`]: Instant::duration_since
-/// [`elapsed`]: Instant::elapsed
-/// [`sub`]: Instant::sub
-/// [`checked_duration_since`]: Instant::checked_duration_since
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
     derive(clone),
@@ -773,28 +668,6 @@ fn index(&self) -> String {
 "#]
 )]
 pub struct Instant();
-/// An integer that is known not to equal zero.
-/// This enables some memory layout optimization.
-///For example, `Option<NonZeroI128>` is the same size as `i128`:
-/// ```rust
-/// use std::mem::size_of;
-///assert_eq!(size_of::<Option<core::num::NonZeroI128>>(), size_of::<i128>());
-/// ```
-/// # Layout
-///`NonZeroI128` is guaranteed to have the same layout and bit validity as `i128`
-/// with the exception that `0` is not a valid instance.
-///`Option<NonZeroI128>` is guaranteed to be compatible with `i128`,
-/// including in FFI.
-/// Thanks to the [null pointer optimization],
-///`NonZeroI128` and `Option<NonZeroI128>`
-/// are guaranteed to have the same size and alignment:
-/// ```
-/// # use std::mem::{size_of, align_of};
-///use std::num::NonZeroI128;
-///assert_eq!(size_of::<NonZeroI128>(), size_of::<Option<NonZeroI128>>());
-///assert_eq!(align_of::<NonZeroI128>(), align_of::<Option<NonZeroI128>>());
-/// ```
-/// [null pointer optimization]: crate::option#representation
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
     derive(clone),
@@ -1122,28 +995,6 @@ fn index(&self) -> String {
 "#]
 )]
 pub struct NonZeroI128();
-/// An integer that is known not to equal zero.
-/// This enables some memory layout optimization.
-///For example, `Option<NonZeroI16>` is the same size as `i16`:
-/// ```rust
-/// use std::mem::size_of;
-///assert_eq!(size_of::<Option<core::num::NonZeroI16>>(), size_of::<i16>());
-/// ```
-/// # Layout
-///`NonZeroI16` is guaranteed to have the same layout and bit validity as `i16`
-/// with the exception that `0` is not a valid instance.
-///`Option<NonZeroI16>` is guaranteed to be compatible with `i16`,
-/// including in FFI.
-/// Thanks to the [null pointer optimization],
-///`NonZeroI16` and `Option<NonZeroI16>`
-/// are guaranteed to have the same size and alignment:
-/// ```
-/// # use std::mem::{size_of, align_of};
-///use std::num::NonZeroI16;
-///assert_eq!(size_of::<NonZeroI16>(), size_of::<Option<NonZeroI16>>());
-///assert_eq!(align_of::<NonZeroI16>(), align_of::<Option<NonZeroI16>>());
-/// ```
-/// [null pointer optimization]: crate::option#representation
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
     derive(clone),
@@ -1471,28 +1322,6 @@ fn index(&self) -> String {
 "#]
 )]
 pub struct NonZeroI16();
-/// An integer that is known not to equal zero.
-/// This enables some memory layout optimization.
-///For example, `Option<NonZeroI32>` is the same size as `i32`:
-/// ```rust
-/// use std::mem::size_of;
-///assert_eq!(size_of::<Option<core::num::NonZeroI32>>(), size_of::<i32>());
-/// ```
-/// # Layout
-///`NonZeroI32` is guaranteed to have the same layout and bit validity as `i32`
-/// with the exception that `0` is not a valid instance.
-///`Option<NonZeroI32>` is guaranteed to be compatible with `i32`,
-/// including in FFI.
-/// Thanks to the [null pointer optimization],
-///`NonZeroI32` and `Option<NonZeroI32>`
-/// are guaranteed to have the same size and alignment:
-/// ```
-/// # use std::mem::{size_of, align_of};
-///use std::num::NonZeroI32;
-///assert_eq!(size_of::<NonZeroI32>(), size_of::<Option<NonZeroI32>>());
-///assert_eq!(align_of::<NonZeroI32>(), align_of::<Option<NonZeroI32>>());
-/// ```
-/// [null pointer optimization]: crate::option#representation
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
     derive(clone),
@@ -1820,28 +1649,6 @@ fn index(&self) -> String {
 "#]
 )]
 pub struct NonZeroI32();
-/// An integer that is known not to equal zero.
-/// This enables some memory layout optimization.
-///For example, `Option<NonZeroI64>` is the same size as `i64`:
-/// ```rust
-/// use std::mem::size_of;
-///assert_eq!(size_of::<Option<core::num::NonZeroI64>>(), size_of::<i64>());
-/// ```
-/// # Layout
-///`NonZeroI64` is guaranteed to have the same layout and bit validity as `i64`
-/// with the exception that `0` is not a valid instance.
-///`Option<NonZeroI64>` is guaranteed to be compatible with `i64`,
-/// including in FFI.
-/// Thanks to the [null pointer optimization],
-///`NonZeroI64` and `Option<NonZeroI64>`
-/// are guaranteed to have the same size and alignment:
-/// ```
-/// # use std::mem::{size_of, align_of};
-///use std::num::NonZeroI64;
-///assert_eq!(size_of::<NonZeroI64>(), size_of::<Option<NonZeroI64>>());
-///assert_eq!(align_of::<NonZeroI64>(), align_of::<Option<NonZeroI64>>());
-/// ```
-/// [null pointer optimization]: crate::option#representation
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
     derive(clone),
@@ -2169,28 +1976,6 @@ fn index(&self) -> String {
 "#]
 )]
 pub struct NonZeroI64();
-/// An integer that is known not to equal zero.
-/// This enables some memory layout optimization.
-///For example, `Option<NonZeroI8>` is the same size as `i8`:
-/// ```rust
-/// use std::mem::size_of;
-///assert_eq!(size_of::<Option<core::num::NonZeroI8>>(), size_of::<i8>());
-/// ```
-/// # Layout
-///`NonZeroI8` is guaranteed to have the same layout and bit validity as `i8`
-/// with the exception that `0` is not a valid instance.
-///`Option<NonZeroI8>` is guaranteed to be compatible with `i8`,
-/// including in FFI.
-/// Thanks to the [null pointer optimization],
-///`NonZeroI8` and `Option<NonZeroI8>`
-/// are guaranteed to have the same size and alignment:
-/// ```
-/// # use std::mem::{size_of, align_of};
-///use std::num::NonZeroI8;
-///assert_eq!(size_of::<NonZeroI8>(), size_of::<Option<NonZeroI8>>());
-///assert_eq!(align_of::<NonZeroI8>(), align_of::<Option<NonZeroI8>>());
-/// ```
-/// [null pointer optimization]: crate::option#representation
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
     derive(clone),
@@ -2514,28 +2299,6 @@ fn index(&self) -> String {
 "#]
 )]
 pub struct NonZeroI8();
-/// An integer that is known not to equal zero.
-/// This enables some memory layout optimization.
-///For example, `Option<NonZeroU128>` is the same size as `u128`:
-/// ```rust
-/// use std::mem::size_of;
-///assert_eq!(size_of::<Option<core::num::NonZeroU128>>(), size_of::<u128>());
-/// ```
-/// # Layout
-///`NonZeroU128` is guaranteed to have the same layout and bit validity as `u128`
-/// with the exception that `0` is not a valid instance.
-///`Option<NonZeroU128>` is guaranteed to be compatible with `u128`,
-/// including in FFI.
-/// Thanks to the [null pointer optimization],
-///`NonZeroU128` and `Option<NonZeroU128>`
-/// are guaranteed to have the same size and alignment:
-/// ```
-/// # use std::mem::{size_of, align_of};
-///use std::num::NonZeroU128;
-///assert_eq!(size_of::<NonZeroU128>(), size_of::<Option<NonZeroU128>>());
-///assert_eq!(align_of::<NonZeroU128>(), align_of::<Option<NonZeroU128>>());
-/// ```
-/// [null pointer optimization]: crate::option#representation
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
     derive(clone),
@@ -2741,28 +2504,6 @@ fn index(&self) -> String {
 "#]
 )]
 pub struct NonZeroU128();
-/// An integer that is known not to equal zero.
-/// This enables some memory layout optimization.
-///For example, `Option<NonZeroU16>` is the same size as `u16`:
-/// ```rust
-/// use std::mem::size_of;
-///assert_eq!(size_of::<Option<core::num::NonZeroU16>>(), size_of::<u16>());
-/// ```
-/// # Layout
-///`NonZeroU16` is guaranteed to have the same layout and bit validity as `u16`
-/// with the exception that `0` is not a valid instance.
-///`Option<NonZeroU16>` is guaranteed to be compatible with `u16`,
-/// including in FFI.
-/// Thanks to the [null pointer optimization],
-///`NonZeroU16` and `Option<NonZeroU16>`
-/// are guaranteed to have the same size and alignment:
-/// ```
-/// # use std::mem::{size_of, align_of};
-///use std::num::NonZeroU16;
-///assert_eq!(size_of::<NonZeroU16>(), size_of::<Option<NonZeroU16>>());
-///assert_eq!(align_of::<NonZeroU16>(), align_of::<Option<NonZeroU16>>());
-/// ```
-/// [null pointer optimization]: crate::option#representation
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
     derive(clone),
@@ -2968,28 +2709,6 @@ fn index(&self) -> String {
 "#]
 )]
 pub struct NonZeroU16();
-/// An integer that is known not to equal zero.
-/// This enables some memory layout optimization.
-///For example, `Option<NonZeroU32>` is the same size as `u32`:
-/// ```rust
-/// use std::mem::size_of;
-///assert_eq!(size_of::<Option<core::num::NonZeroU32>>(), size_of::<u32>());
-/// ```
-/// # Layout
-///`NonZeroU32` is guaranteed to have the same layout and bit validity as `u32`
-/// with the exception that `0` is not a valid instance.
-///`Option<NonZeroU32>` is guaranteed to be compatible with `u32`,
-/// including in FFI.
-/// Thanks to the [null pointer optimization],
-///`NonZeroU32` and `Option<NonZeroU32>`
-/// are guaranteed to have the same size and alignment:
-/// ```
-/// # use std::mem::{size_of, align_of};
-///use std::num::NonZeroU32;
-///assert_eq!(size_of::<NonZeroU32>(), size_of::<Option<NonZeroU32>>());
-///assert_eq!(align_of::<NonZeroU32>(), align_of::<Option<NonZeroU32>>());
-/// ```
-/// [null pointer optimization]: crate::option#representation
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
     derive(clone),
@@ -3195,28 +2914,6 @@ fn index(&self) -> String {
 "#]
 )]
 pub struct NonZeroU32();
-/// An integer that is known not to equal zero.
-/// This enables some memory layout optimization.
-///For example, `Option<NonZeroU64>` is the same size as `u64`:
-/// ```rust
-/// use std::mem::size_of;
-///assert_eq!(size_of::<Option<core::num::NonZeroU64>>(), size_of::<u64>());
-/// ```
-/// # Layout
-///`NonZeroU64` is guaranteed to have the same layout and bit validity as `u64`
-/// with the exception that `0` is not a valid instance.
-///`Option<NonZeroU64>` is guaranteed to be compatible with `u64`,
-/// including in FFI.
-/// Thanks to the [null pointer optimization],
-///`NonZeroU64` and `Option<NonZeroU64>`
-/// are guaranteed to have the same size and alignment:
-/// ```
-/// # use std::mem::{size_of, align_of};
-///use std::num::NonZeroU64;
-///assert_eq!(size_of::<NonZeroU64>(), size_of::<Option<NonZeroU64>>());
-///assert_eq!(align_of::<NonZeroU64>(), align_of::<Option<NonZeroU64>>());
-/// ```
-/// [null pointer optimization]: crate::option#representation
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
     derive(clone),
@@ -3422,28 +3119,6 @@ fn index(&self) -> String {
 "#]
 )]
 pub struct NonZeroU64();
-/// An integer that is known not to equal zero.
-/// This enables some memory layout optimization.
-///For example, `Option<NonZeroU8>` is the same size as `u8`:
-/// ```rust
-/// use std::mem::size_of;
-///assert_eq!(size_of::<Option<core::num::NonZeroU8>>(), size_of::<u8>());
-/// ```
-/// # Layout
-///`NonZeroU8` is guaranteed to have the same layout and bit validity as `u8`
-/// with the exception that `0` is not a valid instance.
-///`Option<NonZeroU8>` is guaranteed to be compatible with `u8`,
-/// including in FFI.
-/// Thanks to the [null pointer optimization],
-///`NonZeroU8` and `Option<NonZeroU8>`
-/// are guaranteed to have the same size and alignment:
-/// ```
-/// # use std::mem::{size_of, align_of};
-///use std::num::NonZeroU8;
-///assert_eq!(size_of::<NonZeroU8>(), size_of::<Option<NonZeroU8>>());
-///assert_eq!(align_of::<NonZeroU8>(), align_of::<Option<NonZeroU8>>());
-/// ```
-/// [null pointer optimization]: crate::option#representation
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
     derive(clone),
@@ -3645,28 +3320,6 @@ fn index(&self) -> String {
 "#]
 )]
 pub struct NonZeroU8();
-/// An integer that is known not to equal zero.
-/// This enables some memory layout optimization.
-///For example, `Option<NonZeroUsize>` is the same size as `usize`:
-/// ```rust
-/// use std::mem::size_of;
-///assert_eq!(size_of::<Option<core::num::NonZeroUsize>>(), size_of::<usize>());
-/// ```
-/// # Layout
-///`NonZeroUsize` is guaranteed to have the same layout and bit validity as `usize`
-/// with the exception that `0` is not a valid instance.
-///`Option<NonZeroUsize>` is guaranteed to be compatible with `usize`,
-/// including in FFI.
-/// Thanks to the [null pointer optimization],
-///`NonZeroUsize` and `Option<NonZeroUsize>`
-/// are guaranteed to have the same size and alignment:
-/// ```
-/// # use std::mem::{size_of, align_of};
-///use std::num::NonZeroUsize;
-///assert_eq!(size_of::<NonZeroUsize>(), size_of::<Option<NonZeroUsize>>());
-///assert_eq!(align_of::<NonZeroUsize>(), align_of::<Option<NonZeroUsize>>());
-/// ```
-/// [null pointer optimization]: crate::option#representation
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
     derive(clone),
@@ -3872,38 +3525,6 @@ fn index(&self) -> String {
 "#]
 )]
 pub struct NonZeroUsize();
-/// An owned, mutable path (akin to [`String`]).
-/// This type provides methods like [`push`] and [`set_extension`] that mutate
-/// the path in place. It also implements [`Deref`] to [`Path`], meaning that
-/// all methods on [`Path`] slices are available on `PathBuf` values as well.
-/// [`push`]: PathBuf::push
-/// [`set_extension`]: PathBuf::set_extension
-/// More details about the overall approach can be found in
-/// the [module documentation](self).
-/// # Examples
-/// You can use [`push`] to build up a `PathBuf` from
-/// components:
-/// ```
-/// use std::path::PathBuf;
-/// let mut path = PathBuf::new();
-/// path.push(r"C:\");
-/// path.push("windows");
-/// path.push("system32");
-/// path.set_extension("dll");
-/// ```
-/// However, [`push`] is best used for dynamic situations. This is a better way
-/// to do this when you know all of the components ahead of time:
-/// ```
-/// use std::path::PathBuf;
-/// let path: PathBuf = [r"C:\", "windows", "system32.dll"].iter().collect();
-/// ```
-/// We can still do better than this! Since these are all strings, we can use
-/// `From::from`:
-/// ```
-/// use std::path::PathBuf;
-/// let path = PathBuf::from(r"C:\windows\system32.dll");
-/// ```
-/// Which method works best depends on what kind of situation you're in.
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
     derive(clone),
@@ -4043,32 +3664,6 @@ fn index(&self) -> String {
 "#]
 )]
 pub struct PathBuf {}
-/// An unbounded range (`..`).
-/// `RangeFull` is primarily used as a [slicing index], its shorthand is `..`.
-/// It cannot serve as an [`Iterator`] because it doesn't have a starting point.
-/// # Examples
-/// The `..` syntax is a `RangeFull`:
-/// ```
-/// assert_eq!(.., std::ops::RangeFull);
-/// ```
-/// It does not have an [`IntoIterator`] implementation, so you can't use it in
-/// a `for` loop directly. This won't compile:
-/// ```compile_fail,E0277
-/// for i in .. {
-///     // ...
-/// }
-/// ```
-/// Used as a [slicing index], `RangeFull` produces the full array as a slice.
-/// ```
-/// let arr = [0, 1, 2, 3, 4];
-/// assert_eq!(arr[ ..  ], [0, 1, 2, 3, 4]); // This is the `RangeFull`
-/// assert_eq!(arr[ .. 3], [0, 1, 2      ]);
-/// assert_eq!(arr[ ..=3], [0, 1, 2, 3   ]);
-/// assert_eq!(arr[1..  ], [   1, 2, 3, 4]);
-/// assert_eq!(arr[1.. 3], [   1, 2      ]);
-/// assert_eq!(arr[1..=3], [   1, 2, 3   ]);
-/// ```
-/// [slicing index]: crate::slice::SliceIndex
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
     derive(clone),
@@ -4108,12 +3703,6 @@ fn index(&self) -> String {
 "#]
 )]
 pub struct RangeFull {}
-/// A quaternion representing an orientation.
-/// This quaternion is intended to be of unit length but may denormalize due to
-/// floating point "error creep" which can occur when successive quaternion
-/// operations are applied.
-/// SIMD vector types are used for storage on supported platforms.
-/// This type is 16 byte aligned.
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
     derive(clone),
@@ -4654,7 +4243,6 @@ fn index(&self) -> String {
 "#]
 )]
 pub struct Quat();
-/// A 3-dimensional vector.
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
     derive(clone),
@@ -5396,7 +4984,6 @@ pub struct Vec3 {
     y: f32,
     z: f32,
 }
-/// A 2-dimensional vector.
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
     derive(clone),
@@ -5939,7 +5526,6 @@ pub struct IVec2 {
     x: i32,
     y: i32,
 }
-/// A 3-dimensional vector.
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
     derive(clone),
@@ -6481,7 +6067,6 @@ pub struct IVec3 {
     y: i32,
     z: i32,
 }
-/// A 4-dimensional vector.
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
     derive(clone),
@@ -7003,7 +6588,6 @@ pub struct IVec4 {
     z: i32,
     w: i32,
 }
-/// A 2-dimensional vector.
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
     derive(clone),
@@ -7534,7 +7118,6 @@ pub struct I64Vec2 {
     x: i64,
     y: i64,
 }
-/// A 3-dimensional vector.
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
     derive(clone),
@@ -8064,7 +7647,6 @@ pub struct I64Vec3 {
     y: i64,
     z: i64,
 }
-/// A 4-dimensional vector.
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
     derive(clone),
@@ -8574,7 +8156,6 @@ pub struct I64Vec4 {
     z: i64,
     w: i64,
 }
-/// A 2-dimensional vector.
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
     derive(clone),
@@ -9029,7 +8610,6 @@ pub struct UVec2 {
     x: u32,
     y: u32,
 }
-/// A 3-dimensional vector.
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
     derive(clone),
@@ -9507,7 +9087,6 @@ pub struct UVec3 {
     y: u32,
     z: u32,
 }
-/// A 4-dimensional vector.
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
     derive(clone),
@@ -9965,7 +9544,6 @@ pub struct UVec4 {
     z: u32,
     w: u32,
 }
-/// A 2-dimensional vector.
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
     derive(clone),
@@ -10408,7 +9986,6 @@ pub struct U64Vec2 {
     x: u64,
     y: u64,
 }
-/// A 3-dimensional vector.
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
     derive(clone),
@@ -10874,7 +10451,6 @@ pub struct U64Vec3 {
     y: u64,
     z: u64,
 }
-/// A 4-dimensional vector.
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
     derive(clone),
@@ -11320,7 +10896,6 @@ pub struct U64Vec4 {
     z: u64,
     w: u64,
 }
-/// A 2-dimensional vector.
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
     derive(clone),
@@ -12068,12 +11643,6 @@ pub struct Vec2 {
     x: f32,
     y: f32,
 }
-/// A 3-dimensional vector.
-/// SIMD vector types are used for storage on supported platforms for better
-/// performance than the [`Vec3`] type.
-/// It is possible to convert between [`Vec3`] and [`Vec3A`] types using [`From`]
-/// or [`Into`] trait implementations.
-/// This type is 16 byte aligned.
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
     derive(clone),
@@ -12819,9 +12388,6 @@ fn index(&mut self, lua: &Lua, idx: crate::lua::util::LuaIndex, val: f32) -> Res
 "#]
 )]
 pub struct Vec3A();
-/// A 4-dimensional vector.
-/// SIMD vector types are used for storage on supported platforms.
-/// This type is 16 byte aligned.
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
     derive(clone),
@@ -13518,7 +13084,6 @@ fn index(&mut self, lua: &Lua, idx: crate::lua::util::LuaIndex, val: f32) -> Res
 "#]
 )]
 pub struct Vec4();
-/// A 2-dimensional `bool` vector mask.
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
     derive(clone),
@@ -13614,7 +13179,6 @@ pub struct BVec2 {
     x: bool,
     y: bool,
 }
-/// A 3-dimensional `bool` vector mask.
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
     derive(clone),
@@ -13711,7 +13275,6 @@ pub struct BVec3 {
     y: bool,
     z: bool,
 }
-/// A 4-dimensional `bool` vector mask.
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
     derive(clone),
@@ -13809,7 +13372,6 @@ pub struct BVec4 {
     z: bool,
     w: bool,
 }
-/// A 2-dimensional vector.
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
     derive(clone),
@@ -14565,7 +14127,6 @@ pub struct DVec2 {
     x: f64,
     y: f64,
 }
-/// A 3-dimensional vector.
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
     derive(clone),
@@ -15322,7 +14883,6 @@ pub struct DVec3 {
     y: f64,
     z: f64,
 }
-/// A 4-dimensional vector.
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
     derive(clone),
@@ -16031,9 +15591,6 @@ pub struct DVec4 {
     z: f64,
     w: f64,
 }
-/// A 2x2 column major matrix.
-/// SIMD vector types are used for storage on supported platforms.
-/// This type is 16 byte aligned.
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
     derive(clone),
@@ -16342,25 +15899,6 @@ fn index(&self, ctx : &Lua, idx: crate::lua::util::LuaIndex) -> Result<LuaVec2,_
 "#]
 )]
 pub struct Mat2();
-/// A 3x3 column major matrix.
-/// This 3x3 matrix type features convenience methods for creating and using linear and
-/// affine transformations. If you are primarily dealing with 2D affine transformations the
-/// [`Affine2`](crate::Affine2) type is much faster and more space efficient than
-/// using a 3x3 matrix.
-/// Linear transformations including 3D rotation and scale can be created using methods
-/// such as [`Self::from_diagonal()`], [`Self::from_quat()`], [`Self::from_axis_angle()`],
-/// [`Self::from_rotation_x()`], [`Self::from_rotation_y()`], or
-/// [`Self::from_rotation_z()`].
-/// The resulting matrices can be use to transform 3D vectors using regular vector
-/// multiplication.
-/// Affine transformations including 2D translation, rotation and scale can be created
-/// using methods such as [`Self::from_translation()`], [`Self::from_angle()`],
-/// [`Self::from_scale()`] and [`Self::from_scale_angle_translation()`].
-/// The [`Self::transform_point2()`] and [`Self::transform_vector2()`] convenience methods
-/// are provided for performing affine transforms on 2D vectors and points. These multiply
-/// 2D inputs as 3D vectors with an implicit `z` value of `1` for points and `0` for
-/// vectors respectively. These methods assume that `Self` contains a valid affine
-/// transform.
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
     derive(clone),
@@ -16814,25 +16352,6 @@ pub struct Mat3 {
     #[lua(output(proxy))]
     z_axis: bevy::math::Vec3,
 }
-/// A 3x3 column major matrix.
-/// This 3x3 matrix type features convenience methods for creating and using linear and
-/// affine transformations. If you are primarily dealing with 2D affine transformations the
-/// [`Affine2`](crate::Affine2) type is much faster and more space efficient than
-/// using a 3x3 matrix.
-/// Linear transformations including 3D rotation and scale can be created using methods
-/// such as [`Self::from_diagonal()`], [`Self::from_quat()`], [`Self::from_axis_angle()`],
-/// [`Self::from_rotation_x()`], [`Self::from_rotation_y()`], or
-/// [`Self::from_rotation_z()`].
-/// The resulting matrices can be use to transform 3D vectors using regular vector
-/// multiplication.
-/// Affine transformations including 2D translation, rotation and scale can be created
-/// using methods such as [`Self::from_translation()`], [`Self::from_angle()`],
-/// [`Self::from_scale()`] and [`Self::from_scale_angle_translation()`].
-/// The [`Self::transform_point2()`] and [`Self::transform_vector2()`] convenience methods
-/// are provided for performing affine transforms on 2D vectors and points. These multiply
-/// 2D inputs as 3D vectors with an implicit `z` value of `1` for points and `0` for
-/// vectors respectively. These methods assume that `Self` contains a valid affine
-/// transform.
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
     derive(clone),
@@ -17286,29 +16805,6 @@ pub struct Mat3A {
     #[lua(output(proxy))]
     z_axis: bevy::math::Vec3A,
 }
-/// A 4x4 column major matrix.
-/// This 4x4 matrix type features convenience methods for creating and using affine transforms and
-/// perspective projections. If you are primarily dealing with 3D affine transformations
-/// considering using [`Affine3A`](crate::Affine3A) which is faster than a 4x4 matrix
-/// for some affine operations.
-/// Affine transformations including 3D translation, rotation and scale can be created
-/// using methods such as [`Self::from_translation()`], [`Self::from_quat()`],
-/// [`Self::from_scale()`] and [`Self::from_scale_rotation_translation()`].
-/// Orthographic projections can be created using the methods [`Self::orthographic_lh()`] for
-/// left-handed coordinate systems and [`Self::orthographic_rh()`] for right-handed
-/// systems. The resulting matrix is also an affine transformation.
-/// The [`Self::transform_point3()`] and [`Self::transform_vector3()`] convenience methods
-/// are provided for performing affine transformations on 3D vectors and points. These
-/// multiply 3D inputs as 4D vectors with an implicit `w` value of `1` for points and `0`
-/// for vectors respectively. These methods assume that `Self` contains a valid affine
-/// transform.
-/// Perspective projections can be created using methods such as
-/// [`Self::perspective_lh()`], [`Self::perspective_infinite_lh()`] and
-/// [`Self::perspective_infinite_reverse_lh()`] for left-handed co-ordinate systems and
-/// [`Self::perspective_rh()`], [`Self::perspective_infinite_rh()`] and
-/// [`Self::perspective_infinite_reverse_rh()`] for right-handed co-ordinate systems.
-/// The resulting perspective project can be use to transform 3D vectors as points with
-/// perspective correction using the [`Self::project_point3()`] convenience method.
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
     derive(clone),
@@ -18012,7 +17508,6 @@ pub struct Mat4 {
     #[lua(output(proxy))]
     w_axis: bevy::math::Vec4,
 }
-/// A 2x2 column major matrix.
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
     derive(clone),
@@ -18319,25 +17814,6 @@ pub struct DMat2 {
     #[lua(output(proxy))]
     y_axis: bevy::math::DVec2,
 }
-/// A 3x3 column major matrix.
-/// This 3x3 matrix type features convenience methods for creating and using linear and
-/// affine transformations. If you are primarily dealing with 2D affine transformations the
-/// [`DAffine2`](crate::DAffine2) type is much faster and more space efficient than
-/// using a 3x3 matrix.
-/// Linear transformations including 3D rotation and scale can be created using methods
-/// such as [`Self::from_diagonal()`], [`Self::from_quat()`], [`Self::from_axis_angle()`],
-/// [`Self::from_rotation_x()`], [`Self::from_rotation_y()`], or
-/// [`Self::from_rotation_z()`].
-/// The resulting matrices can be use to transform 3D vectors using regular vector
-/// multiplication.
-/// Affine transformations including 2D translation, rotation and scale can be created
-/// using methods such as [`Self::from_translation()`], [`Self::from_angle()`],
-/// [`Self::from_scale()`] and [`Self::from_scale_angle_translation()`].
-/// The [`Self::transform_point2()`] and [`Self::transform_vector2()`] convenience methods
-/// are provided for performing affine transforms on 2D vectors and points. These multiply
-/// 2D inputs as 3D vectors with an implicit `z` value of `1` for points and `0` for
-/// vectors respectively. These methods assume that `Self` contains a valid affine
-/// transform.
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
     derive(clone),
@@ -18776,29 +18252,6 @@ pub struct DMat3 {
     #[lua(output(proxy))]
     z_axis: bevy::math::DVec3,
 }
-/// A 4x4 column major matrix.
-/// This 4x4 matrix type features convenience methods for creating and using affine transforms and
-/// perspective projections. If you are primarily dealing with 3D affine transformations
-/// considering using [`DAffine3`](crate::DAffine3) which is faster than a 4x4 matrix
-/// for some affine operations.
-/// Affine transformations including 3D translation, rotation and scale can be created
-/// using methods such as [`Self::from_translation()`], [`Self::from_quat()`],
-/// [`Self::from_scale()`] and [`Self::from_scale_rotation_translation()`].
-/// Orthographic projections can be created using the methods [`Self::orthographic_lh()`] for
-/// left-handed coordinate systems and [`Self::orthographic_rh()`] for right-handed
-/// systems. The resulting matrix is also an affine transformation.
-/// The [`Self::transform_point3()`] and [`Self::transform_vector3()`] convenience methods
-/// are provided for performing affine transformations on 3D vectors and points. These
-/// multiply 3D inputs as 4D vectors with an implicit `w` value of `1` for points and `0`
-/// for vectors respectively. These methods assume that `Self` contains a valid affine
-/// transform.
-/// Perspective projections can be created using methods such as
-/// [`Self::perspective_lh()`], [`Self::perspective_infinite_lh()`] and
-/// [`Self::perspective_infinite_reverse_lh()`] for left-handed co-ordinate systems and
-/// [`Self::perspective_rh()`], [`Self::perspective_infinite_rh()`] and
-/// [`Self::perspective_infinite_reverse_rh()`] for right-handed co-ordinate systems.
-/// The resulting perspective project can be use to transform 3D vectors as points with
-/// perspective correction using the [`Self::project_point3()`] convenience method.
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
     derive(clone),
@@ -19480,7 +18933,6 @@ pub struct DMat4 {
     #[lua(output(proxy))]
     w_axis: bevy::math::DVec4,
 }
-/// A 2D affine transform, which can represent translation, rotation, scaling and shear.
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
     derive(clone),
@@ -19725,8 +19177,6 @@ pub struct Affine2 {
     #[lua(output(proxy))]
     translation: bevy::math::Vec2,
 }
-/// A 3D affine transform, which can represent translation, rotation, scaling and shear.
-/// This type is 16 byte aligned.
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
     derive(clone),
@@ -20076,7 +19526,6 @@ pub struct Affine3A {
     #[lua(output(proxy))]
     translation: bevy::math::Vec3A,
 }
-/// A 2D affine transform, which can represent translation, rotation, scaling and shear.
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
     derive(clone),
@@ -20302,7 +19751,6 @@ pub struct DAffine2 {
     #[lua(output(proxy))]
     translation: bevy::math::DVec2,
 }
-/// A 3D affine transform, which can represent translation, rotation, scaling and shear.
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
     derive(clone),
@@ -20636,10 +20084,6 @@ pub struct DAffine3 {
     #[lua(output(proxy))]
     translation: bevy::math::DVec3,
 }
-/// A quaternion representing an orientation.
-/// This quaternion is intended to be of unit length but may denormalize due to
-/// floating point "error creep" which can occur when successive quaternion
-/// operations are applied.
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
     derive(clone),
@@ -21146,10 +20590,6 @@ pub struct DQuat {
     z: f64,
     w: f64,
 }
-/// Euler rotation sequences.
-/// The angles are applied starting from the right.
-/// E.g. XYZ will first apply the z-axis rotation.
-/// YXZ can be used for yaw (y-axis), pitch (x-axis), roll (z-axis).
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
     derive(clone),
@@ -21189,8 +20629,6 @@ fn index(&self) -> String {
 "#]
 )]
 pub struct EulerRot {}
-/// A 3-dimensional SIMD vector mask.
-/// This type is 16 byte aligned.
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
     derive(clone),
@@ -21277,8 +20715,6 @@ fn index(&self) -> String {
 "#]
 )]
 pub struct BVec3A();
-/// A 4-dimensional SIMD vector mask.
-/// This type is 16 byte aligned.
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
     derive(clone),
@@ -21365,7 +20801,6 @@ fn index(&self) -> String {
 "#]
 )]
 pub struct BVec4A();
-/// A normalized vector pointing in a direction in 2D space
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
     derive(clone),
@@ -21423,7 +20858,6 @@ fn index(&self) -> String {
 "#]
 )]
 pub struct Direction2d();
-/// A circle primitive
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
     derive(clone),
@@ -21496,7 +20930,6 @@ fn index(&self) -> String {
 pub struct Circle {
     radius: f32,
 }
-/// An ellipse primitive
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
     derive(clone),
@@ -21570,8 +21003,6 @@ pub struct Ellipse {
     #[lua(output(proxy))]
     half_size: bevy::math::Vec2,
 }
-/// An unbounded plane in 2D space. It forms a separating surface through the origin,
-/// stretching infinitely far
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
     derive(clone),
@@ -21617,8 +21048,6 @@ pub struct Plane2d {
     #[lua(output(proxy))]
     normal: bevy::math::primitives::Direction2d,
 }
-/// An infinite line along a direction in 2D space.
-/// For a finite line: [`Segment2d`]
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
     derive(clone),
@@ -21655,7 +21084,6 @@ pub struct Line2d {
     #[lua(output(proxy))]
     direction: bevy::math::primitives::Direction2d,
 }
-/// A segment of a line along a direction in 2D space.
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
     derive(clone),
@@ -21718,7 +21146,6 @@ pub struct Segment2d {
     direction: bevy::math::primitives::Direction2d,
     half_length: f32,
 }
-/// A triangle in 2D space
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
     derive(clone),
@@ -21790,7 +21217,6 @@ fn index(&self) -> String {
 pub struct Triangle2d {
     vertices: ReflectedValue,
 }
-/// A rectangle primitive
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
     derive(clone),
@@ -21883,7 +21309,6 @@ pub struct Rectangle {
     #[lua(output(proxy))]
     half_size: bevy::math::Vec2,
 }
-/// A polygon where all vertices lie on a circle, equally far apart.
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
     derive(clone),
@@ -22006,8 +21431,6 @@ pub struct RegularPolygon {
     circumcircle: bevy::math::primitives::Circle,
     sides: usize,
 }
-/// A 2D capsule primitive, also known as a stadium or pill shape.
-/// A two-dimensional capsule is defined as a neighborhood of points at a distance (radius) from a line
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
     derive(clone),
@@ -22051,7 +21474,6 @@ pub struct Capsule2d {
     radius: f32,
     half_length: f32,
 }
-/// A normalized vector pointing in a direction in 3D space
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
     derive(clone),
@@ -22121,7 +21543,6 @@ fn index(&self) -> String {
 "#]
 )]
 pub struct Direction3d();
-/// A sphere primitive
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
     derive(clone),
@@ -22194,8 +21615,6 @@ fn index(&self) -> String {
 pub struct Sphere {
     radius: f32,
 }
-/// An unbounded plane in 3D space. It forms a separating surface through the origin,
-/// stretching infinitely far
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
     derive(clone),
@@ -22241,8 +21660,6 @@ pub struct Plane3d {
     #[lua(output(proxy))]
     normal: bevy::math::primitives::Direction3d,
 }
-/// An infinite line along a direction in 3D space.
-/// For a finite line: [`Segment3d`]
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
     derive(clone),
@@ -22279,7 +21696,6 @@ pub struct Line3d {
     #[lua(output(proxy))]
     direction: bevy::math::primitives::Direction3d,
 }
-/// A segment of a line along a direction in 3D space.
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
     derive(clone),
@@ -22342,7 +21758,6 @@ pub struct Segment3d {
     direction: bevy::math::primitives::Direction3d,
     half_length: f32,
 }
-/// A cuboid primitive, more commonly known as a box.
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
     derive(clone),
@@ -22439,7 +21854,6 @@ pub struct Cuboid {
     #[lua(output(proxy))]
     half_size: bevy::math::Vec3,
 }
-/// A cylinder primitive
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
     derive(clone),
@@ -22519,8 +21933,6 @@ pub struct Cylinder {
     radius: f32,
     half_height: f32,
 }
-/// A 3D capsule primitive.
-/// A three-dimensional capsule is defined as a surface at a distance (radius) from a line
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
     derive(clone),
@@ -22586,7 +21998,6 @@ pub struct Capsule3d {
     radius: f32,
     half_length: f32,
 }
-/// A cone primitive.
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
     derive(clone),
@@ -22667,9 +22078,6 @@ pub struct Cone {
     radius: f32,
     height: f32,
 }
-/// A conical frustum primitive.
-/// A conical frustum can be created
-/// by slicing off a section of a cone.
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
     derive(clone),
@@ -22707,7 +22115,6 @@ pub struct ConicalFrustum {
     radius_bottom: f32,
     height: f32,
 }
-/// A torus primitive, often representing a ring or donut shape
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
     derive(clone),
@@ -22787,13 +22194,6 @@ pub struct Torus {
     minor_radius: f32,
     major_radius: f32,
 }
-/// A rectangle defined by two opposite corners.
-/// The rectangle is axis aligned, and defined by its minimum and maximum coordinates,
-/// stored in `IRect::min` and `IRect::max`, respectively. The minimum/maximum invariant
-/// must be upheld by the user when directly assigning the fields, otherwise some methods
-/// produce invalid results. It is generally recommended to use one of the constructor
-/// methods instead, which will ensure this invariant is met, unless you already have
-/// the minimum and maximum corners.
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
     derive(clone),
@@ -23105,13 +22505,6 @@ pub struct IRect {
     #[lua(output(proxy))]
     max: bevy::math::IVec2,
 }
-/// A rectangle defined by two opposite corners.
-/// The rectangle is axis aligned, and defined by its minimum and maximum coordinates,
-/// stored in `Rect::min` and `Rect::max`, respectively. The minimum/maximum invariant
-/// must be upheld by the user when directly assigning the fields, otherwise some methods
-/// produce invalid results. It is generally recommended to use one of the constructor
-/// methods instead, which will ensure this invariant is met, unless you already have
-/// the minimum and maximum corners.
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
     derive(clone),
@@ -23430,13 +22823,6 @@ pub struct Rect {
     #[lua(output(proxy))]
     max: bevy::math::Vec2,
 }
-/// A rectangle defined by two opposite corners.
-/// The rectangle is axis aligned, and defined by its minimum and maximum coordinates,
-/// stored in `URect::min` and `URect::max`, respectively. The minimum/maximum invariant
-/// must be upheld by the user when directly assigning the fields, otherwise some methods
-/// produce invalid results. It is generally recommended to use one of the constructor
-/// methods instead, which will ensure this invariant is met, unless you already have
-/// the minimum and maximum corners.
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
     derive(clone),
@@ -23748,21 +23134,6 @@ pub struct URect {
     #[lua(output(proxy))]
     max: bevy::math::UVec2,
 }
-/// A `SmolStr` is a string type that has the following properties:
-/// * `size_of::<SmolStr>() == 24` (therefor `== size_of::<String>()` on 64 bit platforms)
-/// * `Clone` is `O(1)`
-/// * Strings are stack-allocated if they are:
-///     * Up to 23 bytes long
-///     * Longer than 23 bytes, but substrings of `WS` (see below). Such strings consist
-///     solely of consecutive newlines, followed by consecutive spaces
-/// * If a string does not satisfy the aforementioned conditions, it is heap-allocated
-/// * Additionally, a `SmolStr` can be explicitely created from a `&'static str` without allocation
-/// Unlike `String`, however, `SmolStr` is immutable. The primary use case for
-/// `SmolStr` is a good enough default storage for tokens of typical programming
-/// languages. Strings consisting of a series of newlines, followed by a series of
-/// whitespace are a typical pattern in computer programs because of indentation.
-/// Note that a specialized interner might be a better solution for some use cases.
-/// `WS`: A string of 32 newlines followed by 128 spaces.
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
     derive(clone),
@@ -23820,28 +23191,6 @@ fn index(&self) -> String {
 "#]
 )]
 pub struct SmolStr();
-/// An integer that is known not to equal zero.
-/// This enables some memory layout optimization.
-///For example, `Option<NonZeroIsize>` is the same size as `isize`:
-/// ```rust
-/// use std::mem::size_of;
-///assert_eq!(size_of::<Option<core::num::NonZeroIsize>>(), size_of::<isize>());
-/// ```
-/// # Layout
-///`NonZeroIsize` is guaranteed to have the same layout and bit validity as `isize`
-/// with the exception that `0` is not a valid instance.
-///`Option<NonZeroIsize>` is guaranteed to be compatible with `isize`,
-/// including in FFI.
-/// Thanks to the [null pointer optimization],
-///`NonZeroIsize` and `Option<NonZeroIsize>`
-/// are guaranteed to have the same size and alignment:
-/// ```
-/// # use std::mem::{size_of, align_of};
-///use std::num::NonZeroIsize;
-///assert_eq!(size_of::<NonZeroIsize>(), size_of::<Option<NonZeroIsize>>());
-///assert_eq!(align_of::<NonZeroIsize>(), align_of::<Option<NonZeroIsize>>());
-/// ```
-/// [null pointer optimization]: crate::option#representation
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
     derive(clone),
@@ -24169,78 +23518,6 @@ fn index(&self) -> String {
 "#]
 )]
 pub struct NonZeroIsize();
-/// A Universally Unique Identifier (UUID).
-/// # Examples
-/// Parse a UUID given in the simple format and print it as a urn:
-/// ```
-/// # use uuid::Uuid;
-/// # fn main() -> Result<(), uuid::Error> {
-/// let my_uuid = Uuid::parse_str("a1a2a3a4b1b2c1c2d1d2d3d4d5d6d7d8")?;
-/// println!("{}", my_uuid.urn());
-/// # Ok(())
-/// # }
-/// ```
-/// Create a new random (V4) UUID and print it out in hexadecimal form:
-/// ```
-/// // Note that this requires the `v4` feature enabled in the uuid crate.
-/// # use uuid::Uuid;
-/// # fn main() {
-/// # #[cfg(feature = "v4")] {
-/// let my_uuid = Uuid::new_v4();
-/// println!("{}", my_uuid);
-/// # }
-/// # }
-/// ```
-/// # Formatting
-/// A UUID can be formatted in one of a few ways:
-/// * [`simple`](#method.simple): `a1a2a3a4b1b2c1c2d1d2d3d4d5d6d7d8`.
-/// * [`hyphenated`](#method.hyphenated):
-///   `a1a2a3a4-b1b2-c1c2-d1d2-d3d4d5d6d7d8`.
-/// * [`urn`](#method.urn): `urn:uuid:A1A2A3A4-B1B2-C1C2-D1D2-D3D4D5D6D7D8`.
-/// * [`braced`](#method.braced): `{a1a2a3a4-b1b2-c1c2-d1d2-d3d4d5d6d7d8}`.
-/// The default representation when formatting a UUID with `Display` is
-/// hyphenated:
-/// ```
-/// # use uuid::Uuid;
-/// # fn main() -> Result<(), uuid::Error> {
-/// let my_uuid = Uuid::parse_str("a1a2a3a4b1b2c1c2d1d2d3d4d5d6d7d8")?;
-/// assert_eq!(
-///     "a1a2a3a4-b1b2-c1c2-d1d2-d3d4d5d6d7d8",
-///     my_uuid.to_string(),
-/// );
-/// # Ok(())
-/// # }
-/// ```
-/// Other formats can be specified using adapter methods on the UUID:
-/// ```
-/// # use uuid::Uuid;
-/// # fn main() -> Result<(), uuid::Error> {
-/// let my_uuid = Uuid::parse_str("a1a2a3a4b1b2c1c2d1d2d3d4d5d6d7d8")?;
-/// assert_eq!(
-///     "urn:uuid:a1a2a3a4-b1b2-c1c2-d1d2-d3d4d5d6d7d8",
-///     my_uuid.urn().to_string(),
-/// );
-/// # Ok(())
-/// # }
-/// ```
-/// # Endianness
-/// The specification for UUIDs encodes the integer fields that make up the
-/// value in big-endian order. This crate assumes integer inputs are already in
-/// the correct order by default, regardless of the endianness of the
-/// environment. Most methods that accept integers have a `_le` variant (such as
-/// `from_fields_le`) that assumes any integer values will need to have their
-/// bytes flipped, regardless of the endianness of the environment.
-/// Most users won't need to worry about endianness unless they need to operate
-/// on individual fields (such as when converting between Microsoft GUIDs). The
-/// important things to remember are:
-/// - The endianness is in terms of the fields of the UUID, not the environment.
-/// - The endianness is assumed to be big-endian when there's no `_le` suffix
-///   somewhere.
-/// - Byte-flipping in `_le` methods applies to each integer.
-/// - Endianness roundtrips, so if you create a UUID with `from_fields_le`
-///   you'll get the same values back out with `to_fields_le`.
-/// # ABI
-/// The `Uuid` type is always guaranteed to be have the same ABI as [`Bytes`].
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
     derive(clone),

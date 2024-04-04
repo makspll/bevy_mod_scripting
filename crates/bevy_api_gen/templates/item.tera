@@ -1,6 +1,6 @@
 {% import "macros.tera" as macros -%}
 {% for line in item.docstrings %}
-///{{ line }}
+{# for now #}
 {% endfor %}
 
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
