@@ -16,7 +16,7 @@ jobs:
        run_args: [ 
         {os: windows-latest,      lua: lua54,     cross: null}, 
         {os: macOS-latest,        lua: lua54,     cross: null},
-        {os: ubuntu-latest,       lua: lua54,     cross: aarch64-unknown-linux-gnu},
+        # {os: ubuntu-latest,       lua: lua54,     cross: aarch64-unknown-linux-gnu}, see https://github.com/houseabsolute/actions-rust-cross/issues/15
         {os: ubuntu-latest,       lua: lua51,     cross: null}, 
         {os: ubuntu-latest,       lua: lua52,     cross: null}, 
         {os: ubuntu-latest,       lua: lua53,     cross: null}, 

@@ -4,22 +4,21 @@
 
 # Bevy Scripting
 
-While for Bevy out of the box scripting is a non-goal, scripting support is being worked on.
-This crate is an attempt to make scripting a possibility with the current state of Bevy. It is by no means optimized, perfect or even complete so far. The API will likely change a lot as Bevy grows.
+Although Bevy doesn't directly support scripting, efforts are underway to incorporate it. This crate represents an initial attempt to enable scripting within Bevy's existing framework. It's important to note that this is a work in progress and not yet optimized or complete. As Bevy evolves, significant changes to this API are anticipated.
 
 ## Why Use Scripts?
 
-- Re-load your game logic without re-compiling the entire crate
-- If your game logic is encapsulated with scripts it becomes easily moddable
-- Allows writing game logic/UI in a smaller language, making development more accessible to non-coders on your team
+- Refresh your game mechanics without the need for full crate recompilation
+- Encapsulating game logic in scripts paves way for modders to create custom content easilly
+- Scripting game logic/UI in a simpler language broadens development accessibility to non-programmers on your team
 
 ## Features
 
-- Hot re-loading scripts (on script asset changes, scripts using those assets are re-started)
+- Hot re-loading scripts
 - Lua, Teal, Rhai and Rune integrations
 - Automatically generated Bevy bindings for Lua
 - CLI rustc extensions for generating your own Lua bindings
-- Event based hooks (i.e. on_update)
+- Event based hooks (i.e. `on_update`)
 - Flexible event scheduling (i.e. allow handling events at handling stages based on the event)
 - Multiple scripts per entity
 - Multiple instances of the same script on one entity
