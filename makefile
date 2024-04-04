@@ -17,9 +17,24 @@ TIME="10"
 # Have valgrind profile criterion running our benchmark for 10 seconds
 
 FLAGS=
-
+PACKAGE=bevy_mod_scripting
+TEST_NAME=
 # # valgrind outputs a callgrind.out.<pid>. We can analyze this with kcachegrind
 # kcachegrind
+NIGHTLY_VERSION=nightly-2024-01-24
+BEVY_VERSION=0.13.1
+GLAM_VERSION=0.25.0
+CODEGEN_PATH=${PWD}/target/codegen
+BEVY_PATH=${CODEGEN_PATH}/bevy
+GLAM_PATH=${CODEGEN_PATH}/glam
+OUTPUT_PATH=${CODEGEN_PATH}/output
+GENERATED_SRC_PATH=./crates/bevy_script_api/src/providers
+GEN_BEVY_FEATURES=bevy_asset,bevy_gltf,bevy_animation,bevy_core_pipeline,bevy_ui,bevy_pbr,bevy_render,bevy_text,bevy_sprite,file_watcher,multi-threaded
+
+build_test_in_package:
+	@cargo test --no-run --lib --workspace $(TEST_NAME)
+	@export OUTPUT=$$(find ./target/debug/deps/ -regex ".*${PACKAGE}[^.]*" -printf "%T@\t%Tc %6k KiB %p\n" | sort -n -r | awk '{print $$NF}' | head -1); \
+	mv $${OUTPUT} ./target/debug/test_binary && echo "Using: $${OUTPUT}" && ls -v ./target/debug/ | grep "test_binary"
 
 comp_benches:
 	RUSTFLAGS="-g" cargo bench --no-run 
@@ -30,50 +45,33 @@ valgrind:
 			--collect-jumps=yes \
 			--simulate-cache=yes \
 			${EXEC} --bench  ${T_ID} 
-generate_api:
-	cd bevy_api_gen && \
-	cargo run \
-	-- \
-	--json "../target/doc/bevy_asset.json" \
-	--json "../target/doc/bevy_ecs.json" \
-	--json "../target/doc/bevy_pbr.json" \
-	--json "../target/doc/bevy_render.json" \
-	--json "../target/doc/bevy_math.json" \
-	--json "../target/doc/bevy_transform.json" \
-	--json "../target/doc/bevy_sprite.json" \
-	--json "../target/doc/bevy_ui.json" \
-	--json "../target/doc/bevy_animation.json" \
-	--json "../target/doc/bevy_core.json" \
-	--json "../target/doc/bevy_core_pipeline.json" \
-	--json "../target/doc/bevy_gltf.json" \
-	--json "../target/doc/bevy_hierarchy.json" \
-	--json "../target/doc/bevy_text.json" \
-	--json "../target/doc/bevy_time.json" \
-	--json "../target/doc/bevy_utils.json" \
-	--json "../target/doc/bevy_reflect.json" \
-	--json "../target/doc/bevy.json" \
-	--json "../target/doc/glam.json" \
-	--config "../api_gen_config.toml" ${FLAGS} \
-	> ../bevy_script_api/src/generated.rs
-	rustfmt ./bevy_script_api/src/generated.rs
 
-make_json_files:
-	rustup run nightly-2024-03-06 cargo rustdoc -p bevy_asset@0.13.0  --  -Zunstable-options --output-format json && \
-	rustup run nightly-2024-03-06 cargo rustdoc -p bevy_ecs@0.13.0 --  -Zunstable-options --output-format json && \
-	rustup run nightly-2024-03-06 cargo rustdoc -p bevy_pbr@0.13.0 --  -Zunstable-options --output-format json && \
-	rustup run nightly-2024-03-06 cargo rustdoc -p bevy_render@0.13.0 --  -Zunstable-options --output-format json && \
-	rustup run nightly-2024-03-06 cargo rustdoc -p bevy_math@0.13.0 --  -Zunstable-options --output-format json && \
-	rustup run nightly-2024-03-06 cargo rustdoc -p bevy_transform@0.13.0 --  -Zunstable-options --output-format json && \
-	rustup run nightly-2024-03-06 cargo rustdoc -p bevy_sprite@0.13.0 --  -Zunstable-options --output-format json && \
-	rustup run nightly-2024-03-06 cargo rustdoc -p bevy_ui@0.13.0 --  -Zunstable-options --output-format json && \
-	rustup run nightly-2024-03-06 cargo rustdoc -p bevy_animation@0.13.0 --  -Zunstable-options --output-format json && \
-	rustup run nightly-2024-03-06 cargo rustdoc -p bevy_core@0.13.0 --  -Zunstable-options --output-format json && \
-	rustup run nightly-2024-03-06 cargo rustdoc -p bevy_core_pipeline@0.13.0 --  -Zunstable-options --output-format json && \
-	rustup run nightly-2024-03-06 cargo rustdoc -p bevy_gltf@0.13.0 --  -Zunstable-options --output-format json && \
-	rustup run nightly-2024-03-06 cargo rustdoc -p bevy_hierarchy@0.13.0 --  -Zunstable-options --output-format json && \
-	rustup run nightly-2024-03-06 cargo rustdoc -p bevy_text@0.13.0 --  -Zunstable-options --output-format json && \
-	rustup run nightly-2024-03-06 cargo rustdoc -p bevy_time@0.13.0 --  -Zunstable-options --output-format json && \
-	rustup run nightly-2024-03-06 cargo rustdoc -p bevy_utils@0.13.0 --  -Zunstable-options --output-format json && \
-	rustup run nightly-2024-03-06 cargo rustdoc -p bevy_reflect@0.13.0 --  -Zunstable-options --output-format json && \
-	rustup run nightly-2024-03-06 cargo rustdoc -p glam@0.25.0 --  -Zunstable-options --output-format json && \
-	rustup run nightly-2024-03-06 cargo rustdoc -p bevy@0.13.0 --  -Zunstable-options --output-format json 
+install_bevy_api_gen:
+	rustup install ${NIGHTLY_VERSION}
+	cargo +${NIGHTLY_VERSION} install --path ./crates/bevy_api_gen
+
+prepare_api_gen:
+	mkdir ${CODEGEN_PATH} || true
+	git clone https://github.com/bevyengine/bevy --branch v${BEVY_VERSION} --depth 1 ${BEVY_PATH} || true
+	rm -rf ${OUTPUT_PATH}/* 
+	cd ${BEVY_PATH} && git fetch --tags && git checkout v${BEVY_VERSION}
+
+clean_bevy:
+	cd ${BEVY_PATH} && cargo clean
+
+generate_bevy:
+	cd ${BEVY_PATH} && cargo +${NIGHTLY_VERSION} bevy-api-gen generate --output ${OUTPUT_PATH} --template-args '{ "self_is_bevy_script_api": true}' --features ${GEN_BEVY_FEATURES}
+
+collect_bevy:
+	cd ${BEVY_PATH} && cargo +${NIGHTLY_VERSION} bevy-api-gen collect --output ${OUTPUT_PATH} --template-args '{ "self_is_bevy_script_api": true}'
+
+deletion_confirmation:
+	@echo -n "This action will delete ALL files in directories: '${GENERATED_SRC_PATH}' amd ${OUTPUT_PATH} (y/N) "
+	@read ans && [ $${ans:-N} = y ]
+
+install_generated_files:
+	mkdir ${GENERATED_SRC_PATH} || true
+	rm -rf ${GENERATED_SRC_PATH}/* || true
+	find ${OUTPUT_PATH} -name "*.rs" -exec cp {} ${GENERATED_SRC_PATH} \;
+
+generate: deletion_confirmation install_bevy_api_gen prepare_api_gen clean_bevy generate_bevy collect_bevy install_generated_files

@@ -1,0 +1,52 @@
+{% macro vector_index(num_type) %}
+#[lua(kind="MetaMethod", raw , metamethod="Index")]
+fn index(&self, lua: &Lua, idx: crate::lua::util::LuaIndex) -> Result<{{ num_type }},_> {
+    Ok(self.inner()?[*idx])
+}
+{% endmacro vector_index %}
+
+{% macro vector_newindex(num_type) %}
+#[lua(kind="MutatingMetaMethod", raw, metamethod="NewIndex")]
+fn index(&mut self, lua: &Lua, idx: crate::lua::util::LuaIndex, val: {{ num_type }}) -> Result<(),_> {
+    self.val_mut(|s| Ok(s[*idx] = val))?
+}
+{% endmacro vector_newindex %}
+
+{% macro matrix_index(col_type, mat_type) %}
+#[lua(kind = "MetaMethod", raw, metamethod="Index")]
+fn index(&self, ctx : &Lua, idx: crate::lua::util::LuaIndex) -> Result<{{ col_type | prefix_lua }},_> {
+    Ok({{ col_type | prefix_lua }}::new_ref(
+            self.reflect_ref(ctx.get_world()?).sub_ref(bevy_script_api::ReflectionPathElement::SubReflection{
+                label:"col", 
+                get: std::sync::Arc::new(|ref_| Err(bevy_script_api::error::ReflectionError::InsufficientProvenance{
+                    path: "".to_owned(), 
+                    msg: "Cannot get column of matrix with immutable reference".to_owned()
+                })),
+                get_mut: std::sync::Arc::new(move |ref_| {
+                    if ref_.is::<bevy::math::{{ mat_type }}>(){
+                        Ok(ref_.downcast_mut::<bevy::math::{{ mat_type }}>()
+                            .unwrap()
+                            .col_mut(*idx))
+                    } else {
+                        Err(bevy_script_api::error::ReflectionError::CannotDowncast{from: ref_.get_represented_type_info().unwrap().type_path().into(), to:"Mat3".into()})
+                    }	
+                })
+            })
+        )
+    )
+}
+{% endmacro matrix_index %}
+
+{% macro debug_as_to_string() %}
+#[lua(kind="MetaMethod", metamethod="ToString")]
+fn index(&self) -> String {
+    format!("{:?}", _self)
+}
+{% endmacro debug_as_to_string %}
+
+{% macro display_as_to_string() %}
+#[lua(kind="MetaMethod", metamethod="ToString")]
+fn index(&self) -> String {
+    format!("{}", _self)
+}
+{% endmacro debug_as_to_string %}

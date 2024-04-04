@@ -167,7 +167,7 @@ fn main() -> std::io::Result<()> {
         // choose and register the script hosts you want to use
         .add_script_host::<LuaScriptHost<()>>(PostUpdate)
         .add_api_provider::<LuaScriptHost<()>>(Box::new(LuaAPIProvider))
-        .add_api_provider::<LuaScriptHost<()>>(Box::new(LuaBevyAPIProvider))
+        .add_api_provider::<LuaScriptHost<()>>(Box::new(LuaCoreBevyAPIProvider))
         .add_script_handler::<LuaScriptHost<()>, 0, 0>(PostUpdate)
         // add your systems
         .add_systems(Update, trigger_on_update_lua)

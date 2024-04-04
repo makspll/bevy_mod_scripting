@@ -1,0 +1,87 @@
+{% import "macros.tera" as macros -%}
+{% for line in item.docstrings %}
+{# for now #}
+{% endfor %}
+
+#[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
+#[proxy(
+derive(
+    {%- if item.impls_clone -%}
+        clone,
+    {%- endif -%}
+),
+remote="{{ item.import_path }}",
+functions[
+    {%- filter separated(delimeter=",\n\t\t\t", split_at="---", ignore_first=true) -%}
+    {%- for function in item.functions -%}
+        ---
+        {%- include "function.tera" -%}
+    {%- endfor -%}
+    {%- if item.impls_display -%}
+        ---
+        r#"
+        {{- macros::display_as_to_string() -}}
+        "#
+    {%- elif item.impls_debug -%}
+        ---
+        r#"
+        {{- macros::debug_as_to_string() -}}
+        "#
+    {%- endif -%}
+    {%- if item.import_path is matching("bevy::math::[^B]?Vec.?") -%}
+    {%- set vec_type = item.import_path | split(pat="::") | last -%}
+        {%- if vec_type is starting_with("V") -%} 
+            {%- set num_type = "f32" -%}
+        {%- elif vec_type is starting_with("U16") -%}
+            {%- set num_type = "u64" -%}
+        {%- elif vec_type is starting_with("UV") -%}
+            {%- set num_type = "u32" -%}
+        {%- elif vec_type is starting_with("U16") -%}
+            {%- set num_type = "u16" -%}
+        {%- elif vec_type is starting_with("DV") -%}
+            {%- set num_type = "f64" -%}
+        {%- elif vec_type is starting_with("IV") -%}
+            {%- set num_type = "i32" -%}
+        {%- elif vec_type is starting_with("I16") -%}
+            {%- set num_type = "i16" -%}
+        {%- elif vec_type is starting_with("I64") -%}
+            {%- set num_type = "i64" -%}
+        {%- endif -%} 
+        
+        ---
+        r#"
+        {{- macros::vector_index(num_type=num_type) -}}
+        "#
+        ---
+        r#"
+        {{- macros::vector_newindex(num_type=num_type) -}}
+        "#
+    {% elif item.import_path is matching("bevy::math::[^B]?Mat.?") %}
+        ---
+        r#"
+        {%- set mat_type = item.import_path | split(pat="::") | last -%}
+        {%- set col_type = mat_type | replace(from="Mat", to="Vec")-%}
+        {{- macros::matrix_index(col_type=col_type,mat_type=mat_type)-}}
+        "#
+    {% endif %}
+    {%- endfilter -%}
+]
+)]
+
+{%- if item.is_tuple_struct -%}
+{% set open_item = "(" %}
+{% set close_item = ");" %}
+{% else %}
+{% set open_item = "{" %}
+{% set close_item = "}" %}
+{% endif %}
+
+pub struct {{ item.ident -}} {{ open_item }}
+    {% if not item.is_enum %}
+    {% for field in item.variants[0].fields %}
+        {% if field.reflection_strategy != "Filtered" %}
+        {% include "field.tera" %}
+        {% endif %}
+    {% endfor %}
+    {% endif %}
+{{ close_item -}}

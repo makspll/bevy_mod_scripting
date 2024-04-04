@@ -1,0 +1,66 @@
+r#"
+{% for docstring in function.docstrings -%}
+///{{docstring}}
+{% endfor -%}
+
+{%- filter prettyplease(impl_context=true) -%}
+#[lua(
+
+{%- if function.from_trait_path -%}
+    {% if function.from_trait_path is matching("std::(ops|cmp)::(PartialEq|Neg|Mul|Add|Sub|Div|Rem)") %}
+    {% set is_op = true %}
+    {% endif %}
+as_trait="{{ function.from_trait_path }}",
+{%- endif -%}
+
+{% if function.has_self and not is_op %}
+kind="{% if function.args.0.ty is starting_with("&mut") %}Mutating{% endif %}Method",
+{% elif is_op %}
+kind="MetaFunction",
+{% else %}
+kind="Function",
+{% endif %}
+
+{%- if function.output.reflection_strategy == "Proxy" -%}
+output(proxy),
+{%- endif -%}
+
+{% if is_op %}
+composite="{{ function.ident }}",
+{% endif %}
+
+{% if function.from_trait_path == "std::ops::Neg" %}
+metamethod="Unm",
+{% elif function.from_trait_path == "std::ops::Mul" %}
+metamethod="Mul",
+{% elif function.from_trait_path == "std::ops::Add" %}
+metamethod="Add",
+{% elif function.from_trait_path == "std::ops::Sub" %}
+metamethod="Sub",
+{% elif function.from_trait_path == "std::ops::Div" %}
+metamethod="Div",
+{% elif function.from_trait_path == "std::ops::Rem" %}
+metamethod="Mod",
+{% elif function.from_trait_path == "std::cmp::PartialEq" %}
+metamethod="Eq",
+{% endif %}
+
+)] 
+{% if function.is_unsafe %}unsafe {% endif -%}fn {{ function.ident }} (
+    {%- filter separated(delimeter=", ", split_at="---", ignore_first=true) -%}
+
+    {%- for arg in function.args -%}
+        ---
+        {%- if arg.ident and arg.reflection_strategy == "Proxy" -%}
+            #[proxy]
+        {%- endif -%}
+        {%- if arg.ident -%}
+            {{- arg.ident }} : {# -#}
+        {%- endif -%} 
+        {{- arg.ty -}}
+    {%- endfor -%}
+
+    {%- endfilter -%}
+) -> {{ function.output.ty -}};
+{%- endfilter %}
+"#

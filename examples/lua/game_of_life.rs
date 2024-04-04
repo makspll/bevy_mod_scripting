@@ -1,4 +1,5 @@
-use std::{borrow::Cow, sync::Mutex};
+#![allow(deprecated)]
+use std::sync::Mutex;
 
 use bevy::{
     diagnostic::{FrameTimeDiagnosticsPlugin, LogDiagnosticsPlugin},
@@ -14,24 +15,11 @@ use bevy::{
 
 use bevy_mod_scripting::prelude::*;
 
-#[derive(Debug, Default, Reflect, Component)]
+#[derive(Debug, Default, Clone, Reflect, Component, LuaProxy)]
 #[reflect(Component, LuaProxyable)]
 pub struct LifeState {
     pub cells: Vec<u8>,
 }
-
-impl_script_newtype!(
-    #[languages(lua)]
-    LifeState : Debug
-    lua impl {
-        get "cells" => |lua,s: &LuaLifeState| {
-            Ok(LuaVec::<u8>::new_ref(s.script_ref(lua.get_world()?).index(Cow::Borrowed("cells"))))
-        };
-        set "cells" => |lua,s,o| {
-            Vec::<u8>::apply_lua(&mut s.script_ref(lua.get_world()?).index(Cow::Borrowed("cells")),lua,o)
-        };
-    }
-);
 
 #[derive(Default)]
 pub struct LifeAPI;
@@ -44,13 +32,6 @@ impl APIProvider for LifeAPI {
     fn attach_api(&mut self, _: &mut Self::APITarget) -> Result<(), ScriptError> {
         // we don't actually provide anything global
         Ok(())
-    }
-
-    fn get_doc_fragment(&self) -> Option<Self::DocTarget> {
-        // this will enable us type casting in teal
-        Some(LuaDocFragment::new("MyAPI", |tw| {
-            tw.process_type::<LuaLifeState>()
-        }))
     }
 
     fn register_with_app(&self, app: &mut App) {
@@ -103,7 +84,6 @@ pub fn setup(
 
     image.sampler = ImageSampler::nearest();
 
-    // in release builds we want to fetch ".lua" files over ".tl" files
     let script_path = bevy_mod_scripting_lua::lua_path!("game_of_life");
 
     commands.spawn(Camera2dBundle::default());
@@ -211,8 +191,7 @@ pub fn send_init(mut events: PriorityEventWriter<LuaEvent<()>>) {
     )
 }
 
-/// how often to step the simulation
-const UPDATE_FREQUENCY: f32 = 1.0 / 20.0;
+const UPDATE_FREQUENCY: f32 = 1.0 / 60.0;
 
 fn main() -> std::io::Result<()> {
     let mut app = App::new();
@@ -230,9 +209,8 @@ fn main() -> std::io::Result<()> {
         .add_systems(FixedUpdate, send_on_update.after(update_rendered_state))
         .add_systems(FixedUpdate, script_event_handler::<LuaScriptHost<()>, 0, 1>)
         .add_script_host::<LuaScriptHost<()>>(PostUpdate)
-        .add_api_provider::<LuaScriptHost<()>>(Box::new(LuaBevyAPIProvider))
-        .add_api_provider::<LuaScriptHost<()>>(Box::new(LifeAPI))
-        .update_documentation::<LuaScriptHost<()>>();
+        .add_api_provider::<LuaScriptHost<()>>(Box::new(LuaCoreBevyAPIProvider))
+        .add_api_provider::<LuaScriptHost<()>>(Box::new(LifeAPI));
 
     app.run();
 

@@ -1,0 +1,33 @@
+[package]
+name = "bevy_mod_scripting_common"
+version = "0.5.0"
+authors = ["Maksymilian Mozolewski <makspl17@gmail.com>"]
+edition = "2021"
+license = "MIT"
+description = "Traits and syn structures for language implementors"
+repository = "https://github.com/makspll/bevy_mod_scripting"
+homepage = "https://github.com/makspll/bevy_mod_scripting"
+keywords = ["bevy", "gamedev", "scripting", "lua"]
+categories = ["game-development"]
+readme = "readme.md"
+
+[lib]
+name = "bevy_mod_scripting_common"
+path = "src/lib.rs"
+
+[dependencies]
+darling = "0.20.3"
+paste = "1.0.7"
+syn = { version = "2.0.38", features = [
+    "full",
+    "fold",
+    "extra-traits",
+    "visit-mut",
+] }
+quote = "1.0.8"
+proc-macro2 = "1.0"
+convert_case = "0.5.0"
+serde = { version = "1.0", features = ["derive"] }
+serde_derive = "1.0.137"
+indexmap = { version = "1.9.1", features = ["serde"] }
+strum = { version = "0.24.1", features = ["derive"] }

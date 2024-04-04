@@ -3,15 +3,21 @@
     "lldb.showDisassembly": "never",
     "lldb.dereferencePointers": true,
     "lldb.consoleMode": "commands",
-    "rust-analyzer.cargo.features": [
-        "lua54",
-        "lua_script_api",
-        "rhai",
-        "rhai_script_api",
-        "teal",
-        "rune"
+    "[rust]": {
+        "editor.formatOnSave": true,
+        "editor.formatOnSaveMode": "file",
+        "editor.defaultFormatter": "rust-lang.rust-analyzer"
+    },
+    "rust-analyzer.rustc.source": "discover",
+    "rust-analyzer.linkedProjects": [
+        "./crates/bevy_api_gen/Cargo.toml",
+        "Cargo.toml",
     ],
-    "rust-analyzer.server.extraEnv": {
-        "RUSTUP_TOOLCHAIN": "stable"
-    }
+    "rust-analyzer.check.invocationStrategy": "per_workspace",
+    "rust-analyzer.check.invocationLocation": "workspace",
+    "rust-analyzer.check.overrideCommand": [
+        "/home/makspll/git/bevy_mod_scripting/check.sh"
+    ],
+    "rust-analyzer.showUnlinkedFileNotification": false,
+    // "rust-analyzer.semanticHighlighting.operator.enable": false
 }

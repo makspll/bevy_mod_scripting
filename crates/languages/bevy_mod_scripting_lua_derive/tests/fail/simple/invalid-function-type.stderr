@@ -1,0 +1,7 @@
+error: Unknown literal value `AMASJDIASDKAW`
+ --> tests/fail/simple/invalid-function-type.rs:4:10
+  |
+4 | #[derive(LuaProxy, Reflect, Clone)]
+  |          ^^^^^^^^
+  |
+  = note: this error originates in the derive macro `LuaProxy` (in Nightly builds, run with -Z macro-backtrace for more info)
