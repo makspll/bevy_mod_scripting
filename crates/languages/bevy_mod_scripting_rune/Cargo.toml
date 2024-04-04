@@ -1,6 +1,6 @@
 [package]
 name = "bevy_mod_scripting_rune"
-version = "0.5.0"
+version = "0.6.0"
 edition = "2021"
 license = "MIT"
 description = "Necessary functionality for Rune support with bevy_mod_scripting"

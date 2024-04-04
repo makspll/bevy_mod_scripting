@@ -1,6 +1,6 @@
 [package]
 name = "bevy_event_priority"
-version = "0.5.0"
+version = "0.6.0"
 authors = ["Maksymilian Mozolewski <makspl17@gmail.com>"]
 edition = "2021"
 license = "MIT"
