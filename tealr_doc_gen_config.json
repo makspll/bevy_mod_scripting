@@ -1,8 +1,8 @@
 {
     "doc_template": "Builtin",
     "page_root": "<page_root>",
-    "store_in": "BevyAPI",
-    "name": "BevyAPI",
+    "store_in": "CoreBevyAPI",
+    "name": "CoreBevyAPI",
     "is_global": true,
     "type_def_files": {
         "runner": "Builtin",
