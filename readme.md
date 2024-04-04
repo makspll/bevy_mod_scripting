@@ -6,6 +6,8 @@
 
 Although Bevy doesn't directly support scripting, efforts are underway to incorporate it. This crate represents an initial attempt to enable scripting within Bevy's existing framework. It's important to note that this is a work in progress and not yet optimized or complete. As Bevy evolves, significant changes to this API are anticipated.
 
+For a detailed look at how this crate works see [architecture.md](architecture.md)
+
 ## Why Use Scripts?
 
 - Refresh your game mechanics without the need for full crate recompilation
