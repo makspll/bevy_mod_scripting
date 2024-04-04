@@ -4,7 +4,7 @@ use bevy_mod_scripting::prelude::*;
 #[derive(LuaProxy, Reflect, Resource, Default, Debug, Clone)]
 #[reflect(Resource, LuaProxyable)]
 #[proxy(
-    derive(clone), 
+    derive(clone),
     functions[
         r#"
         #[lua(kind="MutatingMethod")]
@@ -39,7 +39,6 @@ pub struct MyProxiedStruct {
 }
 
 impl MyProxiedStruct {
-
     fn set_with_another(&mut self, another: MyProxiedStruct) {
         self.my_string = another.my_string;
     }
