@@ -1,14 +1,13 @@
 use bevy::prelude::*;
 use bevy_mod_scripting::api::*;
 
-#[derive(ScriptProxy, Reflect)]
-#[proxy(languages("lua"), derive(Clone))]
-#[functions[
-    #[lua(Function)]
-    fn fn_returning_some_string(#[proxy] other: &Self) -> String;
-
-]]
-#[derive(Clone)]
+#[derive(LuaProxy, Reflect)]
+#[proxy(functions = [
+    r#"
+    #[lua(kind="Function")]
+    fn fn_returning_some_string(#[proxy] other: &Self) -> String
+    "#,
+])]
 pub struct MyStruct {
     some_string: String,
     me_vec: Vec<usize>,

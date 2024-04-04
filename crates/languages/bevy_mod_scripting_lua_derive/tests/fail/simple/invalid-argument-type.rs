@@ -1,13 +1,13 @@
 use bevy::prelude::*;
 use bevy_mod_scripting::api::*;
 
-#[derive(ScriptProxy, Reflect)]
-#[proxy(languages("lua"), derive(Clone))]
-#[functions[
-    #[lua(Method)]
-    fn my_fn(&self, arg: String);
-]]
-#[derive(Clone)]
+#[derive(LuaProxy, Reflect, Clone)]
+#[proxy(functions = [
+    r#"
+    #[lua(kind="Method")]
+    fn my_fn(&self, arg: String)
+    "#,
+])]
 pub struct MyStruct;
 
 impl MyStruct {

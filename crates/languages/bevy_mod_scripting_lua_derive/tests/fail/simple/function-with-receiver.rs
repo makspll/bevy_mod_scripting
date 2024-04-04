@@ -1,20 +1,21 @@
 use bevy::prelude::*;
 use bevy_mod_scripting::api::*;
-
-#[derive(ScriptProxy, Reflect)]
-#[proxy(languages("lua"), derive(Clone))]
-#[functions[
-    #[lua(Function)]
+#[derive(LuaProxy, Reflect, Clone)]
+#[proxy(functions = [
+    r#"
+    #[lua(kind="Function")]
     fn fn_returning_some_string(self) {
 
     }
+    "#,
 
-    #[lua(Function)]
+    r#"
+    #[lua(kind="Function")]
     fn fn_returning_proxy(&self) {
         
     }
-]]
-#[derive(Clone)]
+    "#,
+])]
 pub struct MyStruct;
 
 pub fn main() {}

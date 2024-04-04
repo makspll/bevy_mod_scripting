@@ -1,16 +1,17 @@
 use bevy::prelude::*;
 use bevy_mod_scripting::api::*;
-
-#[derive(ScriptProxy, Reflect)]
-#[proxy(languages("lua"), derive(Clone))]
-#[functions[
-    #[lua(MutatingMethod)]
+#[derive(LuaProxy, Reflect, Clone)]
+#[proxy(functions = [
+    r#"
+    #[lua(kind="MutableMethod")]
     fn fn_returning_some_string(&mut self) -> String;
+    "#,
 
-    #[lua(MutatingMethod, output(proxy))]
+    r#"
+    #[lua(kind="MutableMethod", output(proxy))]
     fn fn_returning_proxy(&mut self) -> Self;
-]]
-#[derive(Clone)]
+    "#,
+])]
 pub struct MyStruct {
     some_string: String,
     me_vec: Vec<usize>,

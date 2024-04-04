@@ -1,20 +1,22 @@
 use bevy::prelude::*;
 use bevy_mod_scripting::api::*;
 
-#[derive(ScriptProxy, Reflect)]
-#[proxy(languages("lua"), derive(Clone))]
-#[functions[
-    #[lua(MetaMethod)]
+#[derive(LuaProxy, Reflect)]
+#[proxy(functions = [
+    r#"
+    #[lua(kind="MetaMethod", metamethod="ToString")]
     fn ToString(&self) -> String {
         self.some_string.clone()
     }
+    "#,
 
-    #[lua(MetaMethod, output(proxy))]
+    r#"
+    #[lua(kind="MetaMethod", metamethod="Index", output(proxy))]
     fn Index(&self, _idx: usize) -> Self {
         self.clone()
     }
-]]
-#[derive(Clone)]
+    "#,
+])]
 pub struct MyStruct {
     some_string: String,
     me_vec: Vec<usize>,

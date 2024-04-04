@@ -1,24 +1,25 @@
 use bevy::prelude::*;
 use bevy_mod_scripting::api::*;
 
-#[derive(ScriptProxy, Reflect)]
-#[proxy(languages("lua"), derive(Clone))]
-#[functions[
-    #[lua(MutatingMetaMethod)]
+#[derive(LuaProxy, Reflect, Clone)]
+#[proxy(functions = [
+    r#"
+    #[lua(kind="MutableMetaMethod", metamethod="ToString")]
     fn ToString(&mut self) -> String {
         self.some_string = "lol".to_string();
         self.some_string.clone()
     }
+    "#,
 
-    #[lua(MutatingMetaMethod, output(proxy))]
+    r#"
+    #[lua(kind="MutableMetaMethod", metamethod="Index", output(proxy))]
     fn Index(&mut self, _idx: usize) -> Self {
         self.clone()
     }
-]]
-#[derive(Clone)]
+    "#,
+])]
 pub struct MyStruct {
     some_string: String,
     me_vec: Vec<usize>,
 }
-
 pub fn main() {}

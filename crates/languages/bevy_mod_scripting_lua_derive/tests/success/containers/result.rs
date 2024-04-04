@@ -15,30 +15,36 @@ impl Display for MyError {
     }
 }
 
-#[derive(ScriptProxy, Reflect, Clone)]
-#[proxy(languages("lua"), derive(Clone))]
-#[functions[
-    #[lua(Function)]
+#[derive(LuaProxy, Reflect, Clone)]
+#[proxy(functions = [
+    r#"
+    #[lua(kind="Function")]
     fn fn_returning_usize_result() -> Result<usize, MyError> {
         Ok(2)
     }
+    "#,
 
-    #[lua(Function)]
+    r#"
+    #[lua(kind="Function")]
     fn fn_returning_usize_result_err() -> Result<usize, MyError> {
         Err(MyError)
     }
+    "#,
 
-
-    #[lua(Function, output(proxy))]
+    r#"
+    #[lua(kind="Function", output(proxy))]
     fn fn_returning_ok_proxy() -> Result<Self, MyError> {
         Ok(MyStruct)
     }
+    "#,
 
-    #[lua(Function, output(proxy))]
+    r#"
+    #[lua(kind="Function", output(proxy))]
     fn fn_returning_err_proxy() -> Result<Self, MyError> {
         Err(MyError)
     }
-]]
+    "#,
+])]
 pub struct MyStruct;
 
 pub fn main() {}
