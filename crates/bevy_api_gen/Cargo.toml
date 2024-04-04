@@ -6,7 +6,13 @@ description = "Code generator tool for bevy"
 license = "MIT OR Apache-2.0"
 repository = "https://github.com/makspll/bevy_mod_scripting"
 readme = "readme.md"
-include = ["readme.md", "/src", "/templates"]
+include = [
+    "readme.md",
+    "/src",
+    "/templates",
+    "Cargo.bootstrap.toml",
+    "build.rs",
+]
 
 [[bin]]
 name = "cargo-bevy-api-gen"
