@@ -12,7 +12,7 @@ use bevy_mod_scripting::prelude::*;
         "#,
         r#"
         #[lua(kind="MutatingMethod")]
-        fn set_with_another(&mut self, #[proxy] another: &Self);
+        fn set_with_another(&mut self, #[proxy] another: Self);
         "#,
         r#"
         #[lua(kind="Method")]
@@ -40,8 +40,8 @@ pub struct MyProxiedStruct {
 
 impl MyProxiedStruct {
 
-    fn set_with_another(&mut self, another: &MyProxiedStruct) {
-        self.my_string = another.my_string.clone();
+    fn set_with_another(&mut self, another: MyProxiedStruct) {
+        self.my_string = another.my_string;
     }
 
     fn set_my_string(&mut self, another_string: Option<String>) {
@@ -53,8 +53,7 @@ impl MyProxiedStruct {
     }
 
     fn get_my_string(&self) -> String {
-        // self.my_string.clone()
-        "".to_owned()
+        self.my_string.clone()
     }
 }
 
@@ -84,10 +83,13 @@ fn main() -> std::io::Result<()> {
                         print("The string value is:", resource:get_my_string())
                         
                         resource:set_my_string(nil)
-                        print("The string value after calling method with nil is:", resource:get_my_string())
+                        print("The string value after calling 'set_my_string(nil)' is:", resource:get_my_string())
                         
                         resource:set_my_string("I was changed by the script")
-                        print("The string value after calling method with string is:", resource:get_my_string())
+                        print("The string value after calling 'set_my_string(\"I was changed by the script\")' is:", resource:get_my_string())
+
+                        resource:set_with_another(resource)
+                        print("The string value after calling  'set_with_another(resource)' is:", resource:get_my_string())
 
                     end
                 "#
