@@ -188,7 +188,7 @@ Register your API providers like so:
     app.add_plugins(DefaultPlugins)
         .add_plugins(ScriptingPlugin)
         .add_script_host::<LuaScriptHost<MyLuaArg>>(PostUpdate)
-        .add_api_provider::<LuaScriptHost<MyLuaArg>>(Box::new(LuaAPIProvider))
+        .add_api_provider::<LuaScriptHost<MyLuaArg>>(Box::new(LuaAPI))
         //...
 ```
 The `APIProvider` interface also includes `setup_script` and `get_doc_fragment` methods. By default, these methods do not perform any operation. However, they can be utilized for specific purposes. For instance, `get_doc_fragment` can be used to generate documentation (refer to examples), and `setup_script` can ensure a one-time setup per script, like setting up a Lua package path.
@@ -210,7 +210,8 @@ fn main() -> std::io::Result<()> {
         .add_script_host::<LuaScriptHost<()>>(PostUpdate)
         // Note: This is a noop in optimized builds unless the `doc_always` feature is enabled!
         // this will pickup any API providers added *BEFOREHAND* like this one
-        // .add_api_provider::<LuaScriptHost<()>>(Box::new(LuaAPIProvider))
+        .add_api_provider::<LuaScriptHost<()>>(Box::new(LuaBevyAPIProvider))
+        .add_api_provider::<LuaScriptHost<()>>(Box::new(LuaCoreBevyAPIProvider))
         .update_documentation::<LuaScriptHost<()>>()
         .add_script_handler::<LuaScriptHost<()>, 0, 0>(PostUpdate);
 

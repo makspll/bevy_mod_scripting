@@ -209,7 +209,7 @@ fn main() -> std::io::Result<()> {
         .add_systems(FixedUpdate, send_on_update.after(update_rendered_state))
         .add_systems(FixedUpdate, script_event_handler::<LuaScriptHost<()>, 0, 1>)
         .add_script_host::<LuaScriptHost<()>>(PostUpdate)
-        .add_api_provider::<LuaScriptHost<()>>(Box::new(CoreBevyAPIProvider))
+        .add_api_provider::<LuaScriptHost<()>>(Box::new(LuaCoreBevyAPIProvider))
         .add_api_provider::<LuaScriptHost<()>>(Box::new(LifeAPI));
 
     app.run();

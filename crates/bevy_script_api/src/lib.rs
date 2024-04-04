@@ -23,9 +23,9 @@ pub use {script_ref::*, sub_reflect::*};
 pub mod prelude {
     #[cfg(feature = "lua")]
     pub use crate::{
-        core_providers::CoreBevyAPIProvider,
+        core_providers::LuaCoreBevyAPIProvider,
         lua::{std::LuaVec, FromLuaProxy, IntoLuaProxy, LuaProxyable, ReflectLuaProxyable},
-        providers::BevyAPIProvider,
+        providers::LuaBevyAPIProvider,
         LuaProxy,
     };
 

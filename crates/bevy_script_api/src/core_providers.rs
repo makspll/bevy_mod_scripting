@@ -1,6 +1,6 @@
 use crate::lua::RegisterForeignLuaType;
 
-pub struct CoreBevyAPIProvider;
+pub struct LuaCoreBevyAPIProvider;
 
 #[derive(Default)]
 pub(crate) struct CoreBevyGlobals;
@@ -28,7 +28,7 @@ impl bevy_mod_scripting_lua::tealr::mlu::ExportInstances for CoreBevyGlobals {
     }
 }
 
-impl bevy_mod_scripting_core::hosts::APIProvider for CoreBevyAPIProvider {
+impl bevy_mod_scripting_core::hosts::APIProvider for LuaCoreBevyAPIProvider {
     type APITarget = std::sync::Mutex<bevy_mod_scripting_lua::tealr::mlu::mlua::Lua>;
     type ScriptContext = std::sync::Mutex<bevy_mod_scripting_lua::tealr::mlu::mlua::Lua>;
     type DocTarget = bevy_mod_scripting_lua::docs::LuaDocFragment;

@@ -12,8 +12,8 @@ pub(crate) mod bevy_window;
 pub(crate) mod bevy_reflect;
 extern crate self as bevy_script_api;
 use bevy_mod_scripting_core::docs::DocFragment;
-pub struct BevyAPIProvider;
-impl bevy_mod_scripting_core::hosts::APIProvider for BevyAPIProvider {
+pub struct LuaBevyAPIProvider;
+impl bevy_mod_scripting_core::hosts::APIProvider for LuaBevyAPIProvider {
     type APITarget = std::sync::Mutex<bevy_mod_scripting_lua::tealr::mlu::mlua::Lua>;
     type ScriptContext = std::sync::Mutex<bevy_mod_scripting_lua::tealr::mlu::mlua::Lua>;
     type DocTarget = bevy_mod_scripting_lua::docs::LuaDocFragment;

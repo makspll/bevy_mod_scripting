@@ -64,7 +64,7 @@ fn main() -> std::io::Result<()> {
         .add_script_host::<LuaScriptHost<()>>(PostUpdate)
         .register_type::<MyProxiedStruct>()
         .init_resource::<MyProxiedStruct>()
-        .add_api_provider::<LuaScriptHost<()>>(Box::new(CoreBevyAPIProvider))
+        .add_api_provider::<LuaScriptHost<()>>(Box::new(LuaCoreBevyAPIProvider))
         .add_systems(Startup, |world: &mut World| {
             world.insert_resource(MyProxiedStruct {
                 my_string: "I was retrieved from the world".to_owned(),

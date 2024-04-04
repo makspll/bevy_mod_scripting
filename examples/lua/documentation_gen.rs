@@ -86,8 +86,8 @@ fn main() -> std::io::Result<()> {
         // add the providers and script host
         .add_script_host::<LuaScriptHost<MyLuaArg>>(PostUpdate)
         .add_api_provider::<LuaScriptHost<MyLuaArg>>(Box::new(LuaAPIProvider))
-        .add_api_provider::<LuaScriptHost<MyLuaArg>>(Box::new(CoreBevyAPIProvider))
-        .add_api_provider::<LuaScriptHost<MyLuaArg>>(Box::new(BevyAPIProvider))
+        .add_api_provider::<LuaScriptHost<MyLuaArg>>(Box::new(LuaCoreBevyAPIProvider))
+        .add_api_provider::<LuaScriptHost<MyLuaArg>>(Box::new(LuaBevyAPIProvider))
         // this needs to be placed after any `add_api_provider` and `add_script_host` calls
         // it will generate `doc` and `types` folders under `assets/scripts` containing the documentation and teal declaration files
         // respectively. See example asset folder to see how they look like. The `teal_file.tl` script in example assets shows the usage of one of those
