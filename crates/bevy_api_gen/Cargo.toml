@@ -12,6 +12,7 @@ include = [
     "/templates",
     "Cargo.bootstrap.toml",
     "build.rs",
+    "rust-toolchain.toml",
 ]
 
 [[bin]]
