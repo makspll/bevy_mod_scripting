@@ -17,6 +17,7 @@ fn main() {
         "lua" => {
             #[cfg(all(feature = "lua", feature = "lua_script_api"))]
             app.add_script_host::<LuaScriptHost<()>>(PostUpdate)
+                .add_api_provider::<LuaScriptHost<()>>(Box::new(CoreBevyAPIProvider))
                 .add_api_provider::<LuaScriptHost<()>>(Box::new(BevyAPIProvider))
                 .update_documentation::<LuaScriptHost<()>>();
 

@@ -33,7 +33,7 @@ For a detailed look at how this crate works see [architecture.md](architecture.m
 Support for languages is expressed in three levels:
 
 1. `ScriptHost` implementation, scripts can be loaded, scheduled and run in this language with support for custom `APIProvider`
-2. A `<language>BevyAPIProvider` is implemented which enables access to `entity`,`world` etc and provides support for at least basic operations such as `get_component`, `add_component`, `spawn` etc
+2. A Bevy API Providedr is implemented which enables access to `entity`,`world` etc and provides support for at least basic operations such as `get_component`, `add_component`, `spawn` etc
 3. Macros for generating proxy wrapper structures exist and can be used for custom types with the ability to add script-side functionality
 4. Macros instantiations are automatically generated for native Bevy structures
 
