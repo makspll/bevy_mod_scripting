@@ -8,7 +8,6 @@ use std::{
 };
 use strum::{Display, EnumString};
 use syn::{
-    parse::Parse,
     punctuated::Punctuated,
     spanned::Spanned,
     token::{And, Gt, Lt, Mut, PathSep},
@@ -24,14 +23,6 @@ use crate::utils::ident_to_type_path;
 #[derive(Debug, FromMeta, Default)]
 pub struct ProxyFlags {
     pub clone: Flag,
-}
-
-pub(crate) struct ZeroOrManyTerminated<T: Parse, S: Parse>(Punctuated<T, S>);
-
-impl<T: Parse, S: Parse> Parse for ZeroOrManyTerminated<T, S> {
-    fn parse(input: syn::parse::ParseStream) -> syn::Result<Self> {
-        Ok(Self(Punctuated::<T, S>::parse_terminated(input)?))
-    }
 }
 
 /// Enumeration of commonly encountered Rust standard library type identifiers which can be effectively proxied in Lua,
