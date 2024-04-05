@@ -1,7 +1,10 @@
 use indexmap::IndexMap;
 use log::{info, trace};
 use rustc_ast::Attribute;
-use rustc_hir::{def_id::{DefId, LOCAL_CRATE}, Unsafety};
+use rustc_hir::{
+    def_id::{DefId, LOCAL_CRATE},
+    Unsafety,
+};
 use rustc_infer::infer::TyCtxtInferExt;
 use rustc_middle::ty::{AdtKind, AssocKind, FieldDef, FnSig, ParamEnv, Ty, TyCtxt, TyKind};
 use rustc_span::Symbol;
@@ -24,7 +27,6 @@ pub(crate) fn find_methods_and_fields(ctxt: &mut BevyCtxt<'_>, _args: &Args) -> 
 
         match adt_def.adt_kind() {
             AdtKind::Enum => {
-                
                 let strats = adt_def.variants().iter().flat_map(|variant|  {
                     if has_reflect_ignore_attr(ctxt.tcx.get_attrs_unchecked(variant.def_id)) {
                         // TODO: is this the right approach? do we need to still include those variants? or do we just provide dummies
@@ -102,7 +104,6 @@ pub(crate) fn find_methods_and_fields(ctxt: &mut BevyCtxt<'_>, _args: &Args) -> 
                         return None;
                     }
 
-
                     let trait_did = ctxt
                         .tcx
                         .impl_trait_ref(*impl_did)
@@ -122,9 +123,14 @@ pub(crate) fn find_methods_and_fields(ctxt: &mut BevyCtxt<'_>, _args: &Args) -> 
                         ctxt.tcx.fn_sig(fn_did).instantiate_identity(),
                     );
 
-                    if let Some(unstability) =  ctxt.tcx.lookup_stability(fn_did) {
+                    if let Some(unstability) = ctxt.tcx.lookup_stability(fn_did) {
                         if unstability.is_unstable() {
-                            log::debug!("Skipping unstable function: `{}` on type: `{}` feature: {:?}", ctxt.tcx.item_name(fn_did), ctxt.tcx.item_name(def_id), unstability.feature.as_str());
+                            log::debug!(
+                                "Skipping unstable function: `{}` on type: `{}` feature: {:?}",
+                                ctxt.tcx.item_name(fn_did),
+                                ctxt.tcx.item_name(def_id),
+                                unstability.feature.as_str()
+                            );
                             return None;
                         }
                     };
@@ -132,8 +138,12 @@ pub(crate) fn find_methods_and_fields(ctxt: &mut BevyCtxt<'_>, _args: &Args) -> 
                     let is_unsafe = sig.unsafety == Unsafety::Unsafe;
 
                     if trait_did.is_none() && !ctxt.tcx.visibility(fn_did).is_public() {
-                        log::info!("Skipping non-public function: `{}` on type: `{}`", fn_name, ctxt.tcx.item_name(def_id));
-                        return None 
+                        log::info!(
+                            "Skipping non-public function: `{}` on type: `{}`",
+                            fn_name,
+                            ctxt.tcx.item_name(def_id)
+                        );
+                        return None;
                     }
 
                     let arg_names = ctxt.tcx.fn_arg_names(fn_did);
@@ -227,7 +237,6 @@ fn report_field_not_supported(
     variant_did: Option<DefId>,
     reason: &'static str,
 ) {
-
     let normalised_ty = tcx.normalize_erasing_regions(
         tcx.param_env(type_did),
         tcx.type_of(f_did).instantiate_identity(),
@@ -243,7 +252,7 @@ fn report_field_not_supported(
 }
 
 /// Checks each field individually and returns reflection strategies
-fn process_fields<'tcx,'f, I: Iterator<Item = &'f FieldDef>>(
+fn process_fields<'tcx, 'f, I: Iterator<Item = &'f FieldDef>>(
     tcx: TyCtxt<'tcx>,
     meta_loader: &MetaLoader,
     reflect_types: &IndexMap<DefId, ReflectType<'tcx>>,
@@ -253,8 +262,7 @@ fn process_fields<'tcx,'f, I: Iterator<Item = &'f FieldDef>>(
 ) -> Vec<(DefId, ReflectionStrategy)> {
     fields
         .map(move |f| {
-
-            if !f.vis.is_public(){
+            if !f.vis.is_public() {
                 return (f.did, crate::ReflectionStrategy::Filtered);
             }
 
@@ -272,7 +280,7 @@ fn process_fields<'tcx,'f, I: Iterator<Item = &'f FieldDef>>(
                 && type_is_supported_as_proxy_return_val(tcx, reflect_types, meta_loader, field_ty)
             {
                 (f.did, crate::ReflectionStrategy::Proxy)
-            }  else if !has_reflect_ignore_attr(tcx.get_attrs_unchecked(f.did)) {
+            } else if !has_reflect_ignore_attr(tcx.get_attrs_unchecked(f.did)) {
                 (f.did, crate::ReflectionStrategy::Reflection)
             } else {
                 (f.did, crate::ReflectionStrategy::Filtered)
@@ -330,7 +338,7 @@ fn type_is_adt_and_reflectable<'tcx>(
 
         // for other crates, reach for meta data
         // we know a reflect impl can ONLY exist in one of two places due to orphan rules:
-        // 1) the bevy_reflect crate 
+        // 1) the bevy_reflect crate
         // 2) the crate that defines the type
         // so search for these metas!
         let crate_name = tcx.crate_name(did.krate).to_ident_string();
@@ -342,15 +350,18 @@ fn type_is_adt_and_reflectable<'tcx>(
             vec![crate_name, "bevy_reflect".to_string()]
         };
 
-        let meta = match meta_sources.iter().find_map(|s| meta_loader.meta_for(s)){
+        let meta = match meta_sources.iter().find_map(|s| meta_loader.meta_for(s)) {
             Some(meta) => meta,
             None => return false, // TODO: is it possible we get false negatives here ? perhaps due to parallel compilation ? or possibly because of dependency order
         };
 
         let contains_hash = meta.contains_def_path_hash(tcx.def_path_hash(did));
-        log::trace!("Meta for type: `{}`, contained in meta `{}`", tcx.item_name(did), contains_hash);
+        log::trace!(
+            "Meta for type: `{}`, contained in meta `{}`",
+            tcx.item_name(did),
+            contains_hash
+        );
         contains_hash
-        
     })
 }
 
@@ -381,10 +392,15 @@ fn type_is_supported_as_non_proxy_return_val<'tcx>(
     if let TyKind::Ref(region, _, _) = ty.kind() {
         if !region.get_name().is_some_and(|rn| rn.as_str() == "'static") {
             return false;
-        } 
+        }
     }
 
-    impls_trait(tcx, param_env, ty, cached_traits.mlua_into_lua_multi.unwrap())
+    impls_trait(
+        tcx,
+        param_env,
+        ty,
+        cached_traits.mlua_into_lua_multi.unwrap(),
+    )
 }
 
 pub(crate) fn impls_trait<'tcx>(
