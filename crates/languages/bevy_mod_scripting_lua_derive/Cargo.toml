@@ -40,7 +40,7 @@ vec1 = "1.10.1"
 [dev-dependencies]
 trybuild = "1.0"
 bevy = { workspace = true, default-features = false }
-bevy_mod_scripting = { path = "../../../../bevy_mod_scripting", features = [
+bevy_mod_scripting = { path = "../../../.", features = [
     "lua",
     "lua_script_api",
     "lua54",

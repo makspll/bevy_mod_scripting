@@ -14,15 +14,15 @@ jobs:
     strategy:
       matrix:
        run_args: [ 
-        {os: windows-latest,      lua: lua54,     cross: null}, 
-        {os: macOS-latest,        lua: lua54,     cross: null},
-        # {os: ubuntu-latest,       lua: lua54,     cross: aarch64-unknown-linux-gnu}, see https://github.com/houseabsolute/actions-rust-cross/issues/15
-        {os: ubuntu-latest,       lua: lua51,     cross: null}, 
-        {os: ubuntu-latest,       lua: lua52,     cross: null}, 
-        {os: ubuntu-latest,       lua: lua53,     cross: null}, 
-        {os: ubuntu-latest,       lua: lua54,     cross: null}, 
-        {os: ubuntu-latest,       lua: luajit,    cross: null}, 
-        {os: ubuntu-latest,       lua: luajit52,  cross: null}
+        {os: windows-latest,      lua: lua54,     cross: x86_64-pc-windows-msvc}, 
+        {os: macOS-latest,        lua: lua54,     cross: x86_64-apple-darwin},
+        {os: ubuntu-latest,       lua: lua54,     cross: aarch64-unknown-linux-gnu},
+        {os: ubuntu-latest,       lua: lua51,     cross: x86_64-unknown-linux-gnu}, 
+        {os: ubuntu-latest,       lua: lua52,     cross: x86_64-unknown-linux-gnu}, 
+        {os: ubuntu-latest,       lua: lua53,     cross: x86_64-unknown-linux-gnu}, 
+        {os: ubuntu-latest,       lua: lua54,     cross: x86_64-unknown-linux-gnu}, 
+        {os: ubuntu-latest,       lua: luajit,    cross: x86_64-unknown-linux-gnu}, 
+        {os: ubuntu-latest,       lua: luajit52,  cross: x86_64-unknown-linux-gnu}
       ]
     steps:
       - name: Install alsa and udev
@@ -36,18 +36,9 @@ jobs:
           override: true
       - name: Rust Cache
         uses: Swatinem/rust-cache@v2.7.3
-      # for x86 builds
-      - if: matrix.run_args.cross == null
-        uses: actions-rs/cargo@v1
-        with:
-          command: check
-          args: --workspace --features=${{ matrix.run_args.lua }},rhai,teal,lua_script_api,rhai_script_api,rune
-      # for non x86 cross-compiled builds
-      - if: matrix.run_args.cross != null
-        name: Clear space
+      - name: Clear space
         run: sudo rm -rf /usr/share/dotnet; sudo rm -rf /opt/ghc; sudo rm -rf "/usr/local/share/boost"; sudo rm -rf "$AGENT_TOOLSDIRECTORY"
-      - if: matrix.run_args.cross != null
-        uses: houseabsolute/actions-rust-cross@v0
+      - uses: houseabsolute/actions-rust-cross@v0
         with:
           command: check
           target: ${{ matrix.run_args.cross }}
