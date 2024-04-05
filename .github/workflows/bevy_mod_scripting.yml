@@ -1,11 +1,17 @@
 on:
   pull_request:
+    paths-ignore:
+    - 'crates/bevy_api_gen/**'
+    - 'crates/macro_tests/**'
   push:
     branches:
       - main
+    paths-ignore:
+      - 'crates/bevy_api_gen/**'
+      - 'crates/macro_tests/**'
 
 
-name: Check and Lint
+name: Check and Lint - bevy_mod_scripting
 
 jobs:
   check:
@@ -14,20 +20,20 @@ jobs:
     strategy:
       matrix:
        run_args: [ 
-        {os: windows-latest,      lua: lua54,     cross: null}, 
-        {os: macOS-latest,        lua: lua54,     cross: null},
-        # {os: ubuntu-latest,       lua: lua54,     cross: aarch64-unknown-linux-gnu}, see https://github.com/houseabsolute/actions-rust-cross/issues/15
-        {os: ubuntu-latest,       lua: lua51,     cross: null}, 
-        {os: ubuntu-latest,       lua: lua52,     cross: null}, 
-        {os: ubuntu-latest,       lua: lua53,     cross: null}, 
-        {os: ubuntu-latest,       lua: lua54,     cross: null}, 
-        {os: ubuntu-latest,       lua: luajit,    cross: null}, 
-        {os: ubuntu-latest,       lua: luajit52,  cross: null}
+        {os: windows-latest,      lua: lua54,     cross: x86_64-pc-windows-msvc}, 
+        {os: macOS-latest,        lua: lua54,     cross: x86_64-apple-darwin},
+        {os: ubuntu-latest,       lua: lua54,     cross: aarch64-unknown-linux-gnu},
+        {os: ubuntu-latest,       lua: lua51,     cross: x86_64-unknown-linux-gnu}, 
+        {os: ubuntu-latest,       lua: lua52,     cross: x86_64-unknown-linux-gnu}, 
+        {os: ubuntu-latest,       lua: lua53,     cross: x86_64-unknown-linux-gnu}, 
+        {os: ubuntu-latest,       lua: lua54,     cross: x86_64-unknown-linux-gnu}, 
+        {os: ubuntu-latest,       lua: luajit,    cross: x86_64-unknown-linux-gnu}, 
+        {os: ubuntu-latest,       lua: luajit52,  cross: x86_64-unknown-linux-gnu}
       ]
     steps:
-      - name: Install alsa and udev
+      - if: runner.os == 'linux'
+        name: Install alsa and udev
         run: sudo apt-get update; sudo apt-get install --no-install-recommends libasound2-dev libudev-dev
-        if: runner.os == 'linux'
       - uses: actions/checkout@v2
       - uses: actions-rs/toolchain@v1
         with:
@@ -36,18 +42,10 @@ jobs:
           override: true
       - name: Rust Cache
         uses: Swatinem/rust-cache@v2.7.3
-      # for x86 builds
-      - if: matrix.run_args.cross == null
-        uses: actions-rs/cargo@v1
-        with:
-          command: check
-          args: --workspace --features=${{ matrix.run_args.lua }},rhai,teal,lua_script_api,rhai_script_api,rune
-      # for non x86 cross-compiled builds
-      - if: matrix.run_args.cross != null
+      - if: runner.os != 'windows'
         name: Clear space
-        run: sudo rm -rf /usr/share/dotnet; sudo rm -rf /opt/ghc; sudo rm -rf "/usr/local/share/boost"; sudo rm -rf "$AGENT_TOOLSDIRECTORY"
-      - if: matrix.run_args.cross != null
-        uses: houseabsolute/actions-rust-cross@v0
+        run: rm -rf /usr/share/dotnet; rm -rf /opt/ghc; rm -rf "/usr/local/share/boost"; rm -rf "$AGENT_TOOLSDIRECTORY"
+      - uses: houseabsolute/actions-rust-cross@v0
         with:
           command: check
           target: ${{ matrix.run_args.cross }}
@@ -101,7 +99,6 @@ jobs:
         uses: actions/checkout@v3
       - name: Install alsa and udev
         run: sudo apt-get update; sudo apt-get install --no-install-recommends libasound2-dev libudev-dev
-      - uses: actions/checkout@v2
       - uses: actions-rs/toolchain@v1
         with:
           toolchain: stable

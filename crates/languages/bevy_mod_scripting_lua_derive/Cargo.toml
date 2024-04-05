@@ -36,15 +36,3 @@ serde_derive = "1.0.137"
 indexmap = { version = "1.9.1", features = ["serde"] }
 strum = { version = "0.24.1", features = ["derive"] }
 vec1 = "1.10.1"
-
-[dev-dependencies]
-trybuild = "1.0"
-bevy = { workspace = true, default-features = false }
-bevy_mod_scripting = { path = "../../../../bevy_mod_scripting", features = [
-    "lua",
-    "lua_script_api",
-    "lua54",
-] }
-bevy_script_api = { path = "../../bevy_script_api" }
-bevy_mod_scripting_lua = { path = "../bevy_mod_scripting_lua" }
-bevy_mod_scripting_core = { workspace = true }

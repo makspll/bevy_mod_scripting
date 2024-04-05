@@ -23,6 +23,12 @@ path = "src/bin/main.rs"
 name = "bevy-api-gen-driver"
 path = "src/bin/driver.rs"
 
+[profile.ephemeral-build]
+inherits = "dev"
+opt-level = 2
+codegen-units = 8
+incremental = false
+debug = false
 
 [rust-analyzer.rustc]
 source = "discover"

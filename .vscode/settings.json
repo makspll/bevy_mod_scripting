@@ -11,6 +11,7 @@
     "rust-analyzer.rustc.source": "discover",
     "rust-analyzer.linkedProjects": [
         "./crates/bevy_api_gen/Cargo.toml",
+        // "./crates/macro_tests/Cargo.toml",
         "Cargo.toml",
     ],
     "rust-analyzer.check.invocationStrategy": "per_workspace",

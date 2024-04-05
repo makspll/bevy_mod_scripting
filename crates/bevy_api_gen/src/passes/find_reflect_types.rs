@@ -7,7 +7,7 @@ use crate::{Args, BevyCtxt, ReflectType, DEF_PATHS_REFLECT};
 pub(crate) fn find_reflect_types(ctxt: &mut BevyCtxt<'_>, args: &Args) -> bool {
     let tcx = &ctxt.tcx;
     let ignored_types = match &args.cmd {
-        crate::Command::Generate {  ignored_types, .. } => ignored_types,
+        crate::Command::Generate { ignored_types, .. } => ignored_types,
         _ => return true,
     };
 
@@ -40,7 +40,7 @@ pub(crate) fn find_reflect_types(ctxt: &mut BevyCtxt<'_>, args: &Args) -> bool {
             .flat_map(|(self_ty, impl_dids)| impl_dids.iter().zip(std::iter::repeat(self_ty)))
             .filter_map(|(impl_did, self_ty)| {
                 let generics = tcx.generics_of(*impl_did);
-                (impl_did.is_local() &&   
+                (impl_did.is_local() &&
                 // only non parametrized simple types are allowed, i.e. "MyStruct" is allowed but "MyStruct<T>" isn't
                     generics.count() == 0 &&
                     self_ty.def().is_some_and(|did| {
