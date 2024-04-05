@@ -19,13 +19,6 @@ jobs:
       - name: Clear space
         run: sudo rm -rf /usr/share/dotnet; sudo rm -rf /opt/ghc; sudo rm -rf "/usr/local/share/boost"; sudo rm -rf "$AGENT_TOOLSDIRECTORY"
       - uses: actions/checkout@v3
-        with:
-          sparse-checkout: 'crates/macro_tests'
-          sparse-checkout-cone-mode: false
-      - name: Move macro_tests to root
-        run: |
-          mv crates/macro_tests/* .
-          rm -rf crates
       - name: Install alsa and udev
         run: sudo apt-get update; sudo apt-get install --no-install-recommends libasound2-dev libudev-dev
       - uses: actions-rs/toolchain@v1
@@ -34,7 +27,7 @@ jobs:
           override: true
       - name: Rust Cache
         uses: Swatinem/rust-cache@v2.7.3
-      - uses: actions-rs/cargo@v1
+      - uses: actions-rs/toolchain@v1
         with:
-          command: test
-          args: --profile=ephemeral-build
+          toolchain: stable
+      - run: cd crates/macro_tests && cargo test --profile=ephemereal-build
