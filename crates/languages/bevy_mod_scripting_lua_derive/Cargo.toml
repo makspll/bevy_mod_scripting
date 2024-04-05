@@ -43,7 +43,6 @@ bevy = { workspace = true, default-features = false }
 bevy_mod_scripting = { path = "../../../.", features = [
     "lua",
     "lua_script_api",
-    "lua54",
 ] }
 bevy_script_api = { path = "../../bevy_script_api" }
 bevy_mod_scripting_lua = { path = "../bevy_mod_scripting_lua" }
