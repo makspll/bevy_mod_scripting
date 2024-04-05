@@ -8,15 +8,20 @@ on:
 
 
 name: Check and Lint - bevy_api_gen
-defaults:
-  run:
-    working-directory: /crates/bevy_api_gen
+
 jobs:
   check:
     name: Check
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
+        with:
+          sparse-checkout: 'crates/bevy_api_gen'
+          sparse-checkout-cone-mode: false
+      - name: Move bevy_api_gen to root
+        run: |
+          mv crates/bevy_api_gen/* .
+          rm -rf crates
       - uses: actions-rs/toolchain@v1
         with:
           profile: minimal
@@ -35,7 +40,14 @@ jobs:
     name: Rustfmt
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
+        with:
+          sparse-checkout: 'crates/bevy_api_gen'
+          sparse-checkout-cone-mode: false
+      - name: Move bevy_api_gen to root
+        run: |
+          mv crates/bevy_api_gen/* .
+          rm -rf crates
       - uses: actions-rs/toolchain@v1
         with:
           profile: minimal
@@ -53,7 +65,14 @@ jobs:
     name: Clippy
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
+        with:
+          sparse-checkout: 'crates/bevy_api_gen'
+          sparse-checkout-cone-mode: false
+      - name: Move bevy_api_gen to root
+        run: |
+          mv crates/bevy_api_gen/* .
+          rm -rf crates
       - uses: actions-rs/toolchain@v1
         with:
           toolchain: stable
@@ -69,9 +88,14 @@ jobs:
     name: Tests
     runs-on: ubuntu-latest
     steps:
-      - name: Clear space
-        run: sudo rm -rf /usr/share/dotnet; sudo rm -rf /opt/ghc; sudo rm -rf "/usr/local/share/boost"; sudo rm -rf "$AGENT_TOOLSDIRECTORY"
       - uses: actions/checkout@v3
+        with:
+          sparse-checkout: 'crates/bevy_api_gen'
+          sparse-checkout-cone-mode: false
+      - name: Move bevy_api_gen to root
+        run: |
+          mv crates/bevy_api_gen/* .
+          rm -rf crates
       - uses: actions-rs/toolchain@v1
         with:
           toolchain: stable
@@ -86,18 +110,23 @@ jobs:
     name: Docs
     runs-on: ubuntu-latest
     steps:
-      - name: Install alsa and udev
-        run: sudo apt-get update; sudo apt-get install --no-install-recommends libasound2-dev libudev-dev
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
+        with:
+          sparse-checkout: 'crates/bevy_api_gen'
+          sparse-checkout-cone-mode: false
+      - name: Move bevy_api_gen to root
+        run: |
+          mv crates/bevy_api_gen/* .
+          rm -rf crates
       - uses: actions-rs/toolchain@v1
         with:
           toolchain: stable
           override: true
       - name: Rust Cache
         uses: Swatinem/rust-cache@v2.7.3
-      - name: Find docs.rs features
-        run: echo "DOCS_FEATURES=$(cargo metadata --no-deps | python -c "import sys,json; [print(','.join(x['metadata']['docs.rs']['features'])) for x in json.load(sys.stdin)['packages'] if x['name'] == 'bevy_mod_scripting']")" >> $GITHUB_OUTPUT
-        id: features
+      # - name: Find docs.rs features
+      #   run: echo "DOCS_FEATURES=$(cargo metadata --no-deps | python -c "import sys,json; [print(','.join(x['metadata']['docs.rs']['features'])) for x in json.load(sys.stdin)['packages'] if x['name'] == 'bevy_mod_scripting']")" >> $GITHUB_OUTPUT
+      #   id: features
       - uses: actions-rs/cargo@v1
         with:
           command: doc
