@@ -94,7 +94,7 @@ members = [
     "crates/bevy_mod_scripting_common",
 ]
 resolver = "2"
-exclude = ["bevy_api_gen"]
+exclude = ["crates/bevy_api_gen", "crates/macro_tests"]
 
 [profile.dev]
 debug = 1

@@ -3,31 +3,17 @@ on:
   push:
     branches:
       - main
+    paths: 
+      - "crates/bevy_api_gen/**"
 
 
-name: Check and Lint
+name: Check and Lint - bevy_api_gen
 
 jobs:
   check:
     name: Check
-    runs-on: ${{ matrix.run_args.os }}
-    strategy:
-      matrix:
-       run_args: [ 
-        {os: windows-latest,      lua: lua54,     cross: x86_64-pc-windows-msvc}, 
-        {os: macOS-latest,        lua: lua54,     cross: x86_64-apple-darwin},
-        {os: ubuntu-latest,       lua: lua54,     cross: aarch64-unknown-linux-gnu},
-        {os: ubuntu-latest,       lua: lua51,     cross: x86_64-unknown-linux-gnu}, 
-        {os: ubuntu-latest,       lua: lua52,     cross: x86_64-unknown-linux-gnu}, 
-        {os: ubuntu-latest,       lua: lua53,     cross: x86_64-unknown-linux-gnu}, 
-        {os: ubuntu-latest,       lua: lua54,     cross: x86_64-unknown-linux-gnu}, 
-        {os: ubuntu-latest,       lua: luajit,    cross: x86_64-unknown-linux-gnu}, 
-        {os: ubuntu-latest,       lua: luajit52,  cross: x86_64-unknown-linux-gnu}
-      ]
+    runs-on: ubuntu-latest
     steps:
-      - if: runner.os == 'linux'
-        name: Install alsa and udev
-        run: sudo apt-get update; sudo apt-get install --no-install-recommends libasound2-dev libudev-dev
       - uses: actions/checkout@v2
       - uses: actions-rs/toolchain@v1
         with:
@@ -36,21 +22,17 @@ jobs:
           override: true
       - name: Rust Cache
         uses: Swatinem/rust-cache@v2.7.3
-      - if: runner.os != 'windows'
-        name: Clear space
+      - name: Clear space
         run: rm -rf /usr/share/dotnet; rm -rf /opt/ghc; rm -rf "/usr/local/share/boost"; rm -rf "$AGENT_TOOLSDIRECTORY"
-      - uses: houseabsolute/actions-rust-cross@v0
+      - uses: actions-rs/cargo@v1
         with:
           command: check
-          target: ${{ matrix.run_args.cross }}
-          args: --workspace --features=${{ matrix.run_args.lua }},rhai,teal,lua_script_api,rhai_script_api,rune --profile=ephemeral-build
+          args: --profile=ephemeral-build
 
   fmt:
     name: Rustfmt
     runs-on: ubuntu-latest
     steps:
-      - name: Install alsa and udev
-        run: sudo apt-get update; sudo apt-get install --no-install-recommends libasound2-dev libudev-dev
       - uses: actions/checkout@v2
       - uses: actions-rs/toolchain@v1
         with:
@@ -69,8 +51,6 @@ jobs:
     name: Clippy
     runs-on: ubuntu-latest
     steps:
-      - name: Install alsa and udev
-        run: sudo apt-get update; sudo apt-get install --no-install-recommends libasound2-dev libudev-dev
       - uses: actions/checkout@v2
       - uses: actions-rs/toolchain@v1
         with:
@@ -82,18 +62,14 @@ jobs:
       - uses: actions-rs/cargo@v1
         with:
           command: clippy
-          args: --features=lua54,rhai,teal,lua_script_api,rhai_script_api,rune --profile=ephemeral-build -- -D warnings 
+          args: --profile=ephemeral-build -- -D warnings 
   tests:
     name: Tests
     runs-on: ubuntu-latest
     steps:
       - name: Clear space
         run: sudo rm -rf /usr/share/dotnet; sudo rm -rf /opt/ghc; sudo rm -rf "/usr/local/share/boost"; sudo rm -rf "$AGENT_TOOLSDIRECTORY"
-      - name: Checkout
-        uses: actions/checkout@v3
-      - name: Install alsa and udev
-        run: sudo apt-get update; sudo apt-get install --no-install-recommends libasound2-dev libudev-dev
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - uses: actions-rs/toolchain@v1
         with:
           toolchain: stable
@@ -103,7 +79,7 @@ jobs:
       - uses: actions-rs/cargo@v1
         with:
           command: test
-          args: --workspace --features=lua54,rhai,teal,lua_script_api,rhai_script_api,rune --profile=ephemeral-build
+          args: --profile=ephemeral-build
   docs:
     name: Docs
     runs-on: ubuntu-latest
@@ -123,4 +99,4 @@ jobs:
       - uses: actions-rs/cargo@v1
         with:
           command: doc
-          args: --workspace --features=${{ steps.features.outputs.DOCS_FEATURES }} --profile=ephemeral-build
+          args: --profile=ephemeral-build
