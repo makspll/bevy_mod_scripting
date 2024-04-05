@@ -1,5 +1,7 @@
 on:
   pull_request:
+    paths: 
+    - "crates/bevy_api_gen/**"
   push:
     branches:
       - main
@@ -11,7 +13,7 @@ name: Check and Lint - bevy_api_gen
 
 jobs:
   check:
-    name: Check
+    name: Check - bevy_api_gen
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
@@ -37,7 +39,7 @@ jobs:
           args: --profile=ephemeral-build
 
   fmt:
-    name: Rustfmt
+    name: Rustfmt - bevy_api_gen
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
@@ -62,7 +64,7 @@ jobs:
           args: --all -- --check
 
   clippy:
-    name: Clippy
+    name: Clippy - bevy_api_gen
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
@@ -85,7 +87,7 @@ jobs:
           command: clippy
           args: --profile=ephemeral-build -- -D warnings 
   tests:
-    name: Tests
+    name: Tests - bevy_api_gen
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
@@ -107,7 +109,7 @@ jobs:
           command: test
           args: --profile=ephemeral-build
   docs:
-    name: Docs
+    name: Docs - bevy_api_gen
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
