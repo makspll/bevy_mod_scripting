@@ -8,14 +8,13 @@ on:
 
 
 name: Check and Lint - bevy_api_gen
-
+defaults:
+  run:
+    working-directory: dart_project
 jobs:
   check:
     name: Check
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: ./crates/bevy_api_gen
     steps:
       - uses: actions/checkout@v2
       - uses: actions-rs/toolchain@v1
