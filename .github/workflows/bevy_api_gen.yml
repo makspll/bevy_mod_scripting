@@ -10,7 +10,7 @@ on:
 name: Check and Lint - bevy_api_gen
 defaults:
   run:
-    working-directory: dart_project
+    working-directory: /crates/bevy_api_gen
 jobs:
   check:
     name: Check
