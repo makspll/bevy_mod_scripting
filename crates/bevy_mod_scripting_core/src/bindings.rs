@@ -6,14 +6,18 @@
 // we need traits which let us go from &dyn Reflect to a wrapper type
 
 use std::{
-    any::{Any, TypeId},
+    any::TypeId,
     sync::{Arc, Mutex},
 };
 
 use bevy::{
-    ecs::{component::ComponentId, entity::Entity, world::World},
+    ecs::{
+        change_detection::MutUntyped, entity::Entity, world::unsafe_world_cell::UnsafeWorldCell,
+    },
     ptr::Ptr,
-    reflect::{ParsedPath, Reflect, ReflectFromPtr, ReflectPath, ReflectPathError, TypeRegistry},
+    reflect::{
+        ParsedPath, Reflect, ReflectFromPtr, ReflectPath, ReflectPathError, TypeInfo, TypeRegistry,
+    },
 };
 
 use crate::error::ReflectionError;
@@ -25,41 +29,54 @@ pub enum Wrapper {
 }
 
 /// An accessor to a `dyn Reflect` struct, stores a base ID of the type and a reflection path
+/// safe to build but to reflect on the value inside you need to ensure aliasing rules are upheld
+#[derive(Debug)]
 pub struct ReflectReference {
-    base: ReflectId,
+    pub base: ReflectBase,
     // TODO: experiment with Fixed capacity vec, boxed array etc, compromise between heap allocation and runtime cost
     // needs benchmarks first though
     /// The path from the top level type to the actual value we want to access
-    reflect_path: Vec<ReflectionPathElem<'static>>,
+    pub reflect_path: Vec<ReflectionPathElem>,
 }
 
 impl ReflectReference {
-    /// Retrieves the underlying `dyn Reflect` object given a world
-    /// - If the reference is to a component and the entity no longer exists, returns `None`
-    /// - If the resource or component ID's are invalid will panic
-    /// - In the future if the underlying reference is NOT to a Component or Resource ReflectId this will return None, i.e. for Bundles
-    pub fn reflect<'w>(
+    /// Retrieves a reference to the underlying `dyn Reflect` type valid for the 'w lifetime of the world cell
+    /// # Safety
+    /// - The caller must ensure the cell has permission to access the underlying value
+    /// - The caller must ensure no aliasing mut references to the same value exist at all at the same time
+    /// - This includes the AppTypeRegistry resource if it is being borrowed from the world!
+    pub unsafe fn reflect<'w>(
         &self,
-        world: &'w World,
+        world: UnsafeWorldCell<'w>,
         type_registry: &TypeRegistry,
     ) -> Result<&'w dyn Reflect, ReflectionError> {
-        let type_id = self.base.type_id(world);
-
         // all Reflect types should have this derived
         let from_ptr_data: &ReflectFromPtr = type_registry
-            .get_type_data(type_id)
+            .get_type_data(self.base.type_id)
             .expect("FromPtr is not registered for this type, cannot retrieve reflect reference");
 
-        let ptr = self.base.get_ptr(world)?;
+        let ptr = self
+            .base
+            .base_id
+            .get_ptr(self.base.type_id, world)
+            .ok_or_else(|| ReflectionError::InvalidBaseReference {
+                base: self.base.display_with_type_name(type_registry),
+                reason: "Base reference is invalid, is the component/resource initialized? does the entity exist?".to_string(),
+            })?;
 
-        // Safety: we use the same type_id to both
+        // (Ptr) Safety: we use the same type_id to both
         // 1) retrieve the ptr
         // 2) retrieve the ReflectFromPtr type data
-        // so the as_reflect implementation should match and this is sound
-        debug_assert_eq!(from_ptr_data.type_id(), type_id, "Invariant violated");
+        // (UnsafeWorldCell) Safety:
+        // we already have access to &world so no &mut world exists
+        debug_assert_eq!(
+            from_ptr_data.type_id(),
+            self.base.type_id,
+            "Invariant violated"
+        );
         let mut base = unsafe { from_ptr_data.as_reflect(ptr) };
 
-        for elem in self.reflect_path.iter().skip(1) {
+        for elem in self.reflect_path.iter() {
             base = elem
                 .reflect_element(base)
                 .map_err(|e| ReflectionError::Other(e.to_string()))?;
@@ -68,30 +85,46 @@ impl ReflectReference {
         Ok(base)
     }
 
-    pub fn reflect_mut<'w>(
+    /// Retrieves mutable reference to the underlying `dyn Reflect` type valid for the 'w lifetime of the world cell
+    /// # Safety
+    /// - The caller must ensure the cell has permission to access the underlying value
+    /// - The caller must ensure no aliasing mut references to the same value exist at all at the same time
+    /// - This includes the AppTypeRegistry resource if it is being borrowed from the world!
+    pub unsafe fn reflect_mut<'w>(
         &self,
-        world: &'w mut World,
+        world: UnsafeWorldCell<'w>,
         type_registry: &TypeRegistry,
     ) -> Result<&'w mut dyn Reflect, ReflectionError> {
-        let type_id = self.base.type_id(world);
-
         // all Reflect types should have this derived
         let from_ptr_data: &ReflectFromPtr = type_registry
-            .get_type_data(type_id)
+            .get_type_data(self.base.type_id)
             .expect("FromPtr is not registered for this type, cannot retrieve reflect reference");
 
-        let ptr = self.base.get_ptr(world)?;
+        let ptr = self
+         .base
+         .base_id
+         .get_ptr_mut(self.base.type_id, world)
+         .ok_or_else(|| ReflectionError::InvalidBaseReference {
+             base: self.base.display_with_type_name(type_registry),
+             reason: "Base reference is invalid, is the component/resource initialized? does the entity exist?".to_string(),
+         })?
+            .into_inner();
 
-        // Safety: we use the same type_id to both
+        // (Ptr) Safety: we use the same type_id to both
         // 1) retrieve the ptr
         // 2) retrieve the ReflectFromPtr type data
-        // so the as_reflect implementation should match and this is sound
-        debug_assert_eq!(from_ptr_data.type_id(), type_id, "Invariant violated");
+        // (UnsafeWorldCell) Safety:
+        // we already have access to &world so no &mut world exists
+        debug_assert_eq!(
+            from_ptr_data.type_id(),
+            self.base.type_id,
+            "Invariant violated"
+        );
         let mut base = unsafe { from_ptr_data.as_reflect_mut(ptr) };
 
-        for elem in self.reflect_path.iter().skip(1) {
+        for elem in self.reflect_path.iter() {
             base = elem
-                .reflect_mut(base)
+                .reflect_element_mut(base)
                 .map_err(|e| ReflectionError::Other(e.to_string()))?;
         }
 
@@ -100,43 +133,78 @@ impl ReflectReference {
 }
 
 #[derive(Clone, Copy, Debug)]
+pub struct ReflectBase {
+    type_id: TypeId,
+    base_id: ReflectId,
+}
+
+impl ReflectBase {
+    pub fn type_name(&self, type_registry: &TypeRegistry) -> &'static str {
+        type_registry
+            .get_type_info(self.type_id)
+            .map(TypeInfo::type_path)
+            .unwrap_or("<Unregistered TypeId>")
+    }
+
+    pub fn display_with_type_name(&self, type_registry: &TypeRegistry) -> String {
+        format!(
+            "ReflectBase({}, {:?})",
+            self.type_name(type_registry),
+            self.base_id
+        )
+    }
+}
+
+#[derive(Clone, Copy, Debug)]
 pub enum ReflectId {
-    Component(ComponentId, Entity),
-    Resource(ComponentId),
+    Component(Entity),
+    Resource,
     // Bundle(BundleId),
 }
 
 impl ReflectId {
-    pub fn type_id(self, world: &World) -> TypeId {
+    /// Retrieves the pointer to the underlying `dyn Reflect` object valid for the 'w lifteime of the world cell
+    ///
+    /// # Safety
+    /// - The caller must ensure the cell has permission to access the underlying value
+    /// - The caller must ensure no aliasing mutable references to the same value exist at the same time
+    pub unsafe fn get_ptr(self, type_id: TypeId, world: UnsafeWorldCell<'_>) -> Option<Ptr<'_>> {
         match self {
-            ReflectId::Component(id, _) | ReflectId::Resource(id) => world
-                .components()
-                .get_info(id)
-                .expect("Invalid component id")
-                .type_id()
-                .expect("Expected rust type"),
+            ReflectId::Component(entity) => {
+                let component_id = world.components().get_id(type_id)?;
+                // Safety: the caller ensures invariants hold
+                world.get_entity(entity)?.get_by_id(component_id)
+            }
+            ReflectId::Resource => {
+                let component_id = world.components().get_resource_id(type_id)?;
+
+                // Safety: the caller ensures invariants hold
+                world.get_resource_by_id(component_id)
+            }
         }
     }
 
-    pub fn get_ptr(self, world: &World) -> Result<Ptr, ReflectionError> {
+    /// Retrieves the pointer to the underlying `dyn Reflect` object valid for the 'w lifteime of the world cell
+    ///
+    /// # Safety
+    /// - The caller must ensure the cell has permission to access the underlying value
+    /// - The caller must ensure no aliasing references to the same value exist at all at the same time
+    pub unsafe fn get_ptr_mut(
+        self,
+        type_id: TypeId,
+        world: UnsafeWorldCell<'_>,
+    ) -> Option<MutUntyped<'_>> {
         match self {
-            ReflectId::Component(id, entity) => {
-                world
-                    .get_by_id(entity, id)
-                    .ok_or_else(|| ReflectionError::InvalidBaseReference {
-                        base: format!("{:?}", self),
-                        reason: "Entity no longer exists, or componentId is no longer valid"
-                            .to_string(),
-                    })
+            ReflectId::Component(entity) => {
+                let component_id = world.components().get_id(type_id)?;
+                // Safety: the caller ensures invariants hold
+                world.get_entity(entity)?.get_mut_by_id(component_id)
             }
-            ReflectId::Resource(id) => {
-                world
-                    .get_resource_by_id(id)
-                    .ok_or_else(|| ReflectionError::InvalidBaseReference {
-                        base: format!("{:?}", self),
-                        reason: "Resource no longer exists, or componentId is no longer valid"
-                            .to_string(),
-                    })
+            ReflectId::Resource => {
+                let component_id = world.components().get_id(type_id)?;
+
+                // Safety: the caller ensures invariants hold
+                world.get_resource_mut_by_id(component_id)
             }
         }
     }
@@ -144,14 +212,14 @@ impl ReflectId {
 
 /// An element in the reflection path, the base reference included
 #[derive(Clone)]
-pub enum ReflectionPathElem<'a> {
+pub enum ReflectionPathElem {
     /// A standard reflection path, i.e. `.field_name[vec_index]`, pre-parsed since we construct once potentially use many times
     Reflection(ParsedPath),
     /// a deferred reflection
-    DeferredReflection(DeferredReflection<'a>),
+    DeferredReflection(DeferredReflection),
 }
 
-impl std::fmt::Debug for ReflectionPathElem<'_> {
+impl std::fmt::Debug for ReflectionPathElem {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
             Self::Reflection(arg0) => f.debug_tuple("Reflection").field(arg0).finish(),
@@ -160,18 +228,21 @@ impl std::fmt::Debug for ReflectionPathElem<'_> {
     }
 }
 
-impl<'a> ReflectPath<'a> for ReflectionPathElem<'a> {
-    fn reflect_element(self, root: &dyn Reflect) -> Result<&dyn Reflect, ReflectPathError<'a>> {
+impl<'a> ReflectPath<'a> for &'a ReflectionPathElem {
+    fn reflect_element<'r>(
+        self,
+        root: &'r dyn Reflect,
+    ) -> Result<&'r dyn Reflect, ReflectPathError<'a>> {
         match self {
             ReflectionPathElem::Reflection(path) => path.reflect_element(root),
             ReflectionPathElem::DeferredReflection(f) => (f.get)(root),
         }
     }
 
-    fn reflect_element_mut(
+    fn reflect_element_mut<'r>(
         self,
-        root: &mut dyn Reflect,
-    ) -> Result<&mut dyn Reflect, ReflectPathError<'a>> {
+        root: &'r mut dyn Reflect,
+    ) -> Result<&'r mut dyn Reflect, ReflectPathError<'a>> {
         match self {
             ReflectionPathElem::Reflection(path) => path.reflect_element_mut(root),
             ReflectionPathElem::DeferredReflection(defref) => (defref.get_mut)(root),
@@ -181,16 +252,23 @@ impl<'a> ReflectPath<'a> for ReflectionPathElem<'a> {
 
 /// A ReflectPath which can perform arbitrary operations on the root object to produce a sub-reference
 #[derive(Clone)]
-pub struct DeferredReflection<'a> {
-    get: Arc<dyn Fn(&dyn Reflect) -> Result<&dyn Reflect, ReflectPathError<'a>> + Send + Sync>,
+pub struct DeferredReflection {
+    get: Arc<dyn Fn(&dyn Reflect) -> Result<&dyn Reflect, ReflectPathError<'static>> + Send + Sync>,
     get_mut: Arc<
-        dyn Fn(&mut dyn Reflect) -> Result<&mut dyn Reflect, ReflectPathError<'a>> + Send + Sync,
+        dyn Fn(&mut dyn Reflect) -> Result<&mut dyn Reflect, ReflectPathError<'static>>
+            + Send
+            + Sync,
     >,
 }
 
 #[cfg(test)]
 mod test {
-    use bevy::ecs::{component::Component, system::Resource};
+    use std::sync::RwLock;
+
+    use bevy::{
+        ecs::{component::Component, reflect::AppTypeRegistry, system::Resource, world::World},
+        reflect::TypeRegistryArc,
+    };
 
     use super::*;
 
@@ -204,14 +282,27 @@ mod test {
         bytes: Vec<u8>,
     }
 
-    #[test]
-    fn test_reflect_reference() {
+    fn setup_world() -> (World, Arc<RwLock<TypeRegistry>>) {
         let mut world = World::default();
-        let component_id = world.init_component::<TestComponent>();
-        let resource_id = world.init_resource::<TestResource>();
+        world.init_component::<TestComponent>();
+        world.init_resource::<TestResource>();
 
-        let type_registry = TypeRegistry::new();
+        let mut type_registry = TypeRegistry::new();
+        type_registry.register::<TestComponent>();
+        type_registry.register::<TestResource>();
 
+        let type_registry = Arc::new(RwLock::new(type_registry));
+
+        world.insert_resource(AppTypeRegistry(TypeRegistryArc {
+            internal: type_registry.clone(),
+        }));
+
+        (world, type_registry)
+    }
+
+    #[test]
+    fn test_parsed_path() {
+        let (mut world, type_registry) = setup_world();
         let entity = world
             .spawn(TestComponent {
                 strings: vec![String::from("hello")],
@@ -221,33 +312,103 @@ mod test {
         world.insert_resource(TestResource { bytes: vec![42] });
 
         let component_reflect_ref = ReflectReference {
-            base: ReflectId::Component(component_id, entity),
+            base: ReflectBase {
+                base_id: ReflectId::Component(entity),
+                type_id: TypeId::of::<TestComponent>(),
+            },
             reflect_path: vec![ReflectionPathElem::Reflection(
                 ParsedPath::parse_static(".strings[0]").unwrap(),
             )],
         };
 
-        assert_eq!(
-            component_reflect_ref
-                .reflect(&world, &type_registry)
-                .unwrap()
-                .downcast_ref(),
-            Some(&String::from("hello"))
-        );
+        let type_registry = &type_registry.read().unwrap();
+        // Safety:
+        // - we have unique access to world, and nothing else is accessing it
+        // - we are not accessing type registry via the cell
+        unsafe {
+            assert_eq!(
+                component_reflect_ref
+                    .reflect(world.as_unsafe_world_cell_readonly(), type_registry)
+                    .unwrap()
+                    .downcast_ref::<String>(),
+                Some(&String::from("hello"))
+            );
+        }
 
         let resource_reflect_ref = ReflectReference {
-            base: ReflectId::Resource(resource_id),
+            base: ReflectBase {
+                base_id: ReflectId::Resource,
+                type_id: TypeId::of::<TestResource>(),
+            },
             reflect_path: vec![ReflectionPathElem::Reflection(
                 ParsedPath::parse_static(".bytes[0]").unwrap(),
             )],
         };
 
-        assert_eq!(
-            resource_reflect_ref
-                .reflect(&world, &type_registry)
+        // Safety:
+        // - we have unique access to world, and nothing else is accessing it
+        // - we are not accessing type registry via the cell
+        unsafe {
+            assert_eq!(
+                resource_reflect_ref
+                    .reflect(world.as_unsafe_world_cell(), type_registry)
+                    .unwrap()
+                    .downcast_ref(),
+                Some(&42u8)
+            );
+        }
+    }
+
+    #[test]
+    fn test_parsed_and_deferred_path() {
+        let (mut world, type_registry) = setup_world();
+        let entity = world
+            .spawn(TestComponent {
+                strings: vec![String::from("hello")],
+            })
+            .id();
+
+        world.insert_resource(TestResource { bytes: vec![42] });
+
+        let component_reflect_ref = ReflectReference {
+            base: ReflectBase {
+                base_id: ReflectId::Component(entity),
+                type_id: TypeId::of::<TestComponent>(),
+            },
+            reflect_path: vec![
+                ReflectionPathElem::Reflection(ParsedPath::parse_static(".strings").unwrap()),
+                ReflectionPathElem::DeferredReflection(DeferredReflection {
+                    get: Arc::new(|root| {
+                        let strings = root.downcast_ref::<Vec<String>>().unwrap();
+                        Ok(strings.first().unwrap())
+                    }),
+                    get_mut: Arc::new(|root| {
+                        let strings = root.downcast_mut::<Vec<String>>().unwrap();
+                        Ok(strings.first_mut().unwrap())
+                    }),
+                }),
+            ],
+        };
+
+        let type_registry = &type_registry.read().unwrap();
+        // Safety:
+        // - we have unique access to world, and nothing else is accessing it
+        // - we are not accessing type registry via the cell
+        // - we drop the mutable access before the immutable access
+        unsafe {
+            *component_reflect_ref
+                .reflect_mut(world.as_unsafe_world_cell(), type_registry)
                 .unwrap()
-                .downcast_ref(),
-            Some(&42)
-        );
+                .downcast_mut::<String>()
+                .unwrap() = String::from("world");
+
+            assert_eq!(
+                component_reflect_ref
+                    .reflect(world.as_unsafe_world_cell_readonly(), type_registry)
+                    .unwrap()
+                    .downcast_ref::<String>(),
+                Some(&String::from("world"))
+            );
+        }
     }
 }
