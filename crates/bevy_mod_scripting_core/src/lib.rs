@@ -7,6 +7,7 @@ use event::ScriptLoaded;
 use systems::script_event_handler;
 
 pub mod asset;
+pub mod bindings;
 pub mod docs;
 pub mod error;
 pub mod event;

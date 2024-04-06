@@ -1,5 +1,5 @@
 //! All script host related stuff
-use bevy::{asset::Asset, ecs::schedule::ScheduleLabel, prelude::*};
+use bevy::{ecs::schedule::ScheduleLabel, prelude::*};
 use std::{
     collections::HashMap,
     iter::once,
