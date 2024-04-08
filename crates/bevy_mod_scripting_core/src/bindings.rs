@@ -4,18 +4,16 @@
 //! reflection gives us access to `dyn Reflect` objects via their type name,
 //! Scripting languages only really support `Clone` objects so if we want to support references,
 //! we need wrapper types which have owned and ref variants.
-//! we need traits which let us go from &dyn Reflect to a wrapper type.
-
 use parking_lot::RwLock;
 use std::{any::TypeId, cell::RefCell, collections::HashMap, marker::PhantomData, sync::Arc};
 
 use bevy::{
     ecs::{
         change_detection::MutUntyped,
-        component::ComponentId,
+        component::{Component, ComponentId},
         entity::Entity,
         system::Resource,
-        world::{unsafe_world_cell::UnsafeWorldCell, World},
+        world::{unsafe_world_cell::UnsafeWorldCell, Mut, World},
     },
     ptr::Ptr,
     reflect::{
@@ -23,37 +21,7 @@ use bevy::{
     },
 };
 
-use crate::error::ReflectionError;
-
-pub type AllocationId = usize;
-
-/// Allocator used to allocate and deallocate `dyn Reflect` values
-/// Used to be able to ensure lifetime of the values we are accessing as well as optimize allocations
-#[derive(Resource, Default)]
-pub struct ScriptAllocator {
-    // TODO: experiment with object pools, sparse set etc.
-    pub allocations: HashMap<AllocationId, Arc<dyn Reflect>>,
-}
-
-impl ScriptAllocator {
-    /// Allocates a new [`Reflect`] value and returns an [`AllocationId`] which can be used to access it later
-    pub fn allocate(&mut self, value: Arc<dyn Reflect>) -> AllocationId {
-        let id = self.allocations.len();
-        self.allocations.insert(id, value);
-        id
-    }
-
-    /// Deallocates the [`Reflect`] value with the given [`AllocationId`]
-    pub fn deallocate(&mut self, id: AllocationId) {
-        self.allocations.remove(&id);
-    }
-
-    /// Runs a garbage collection pass on the allocations, removing any allocations which have no more strong references
-    /// Needs to be run periodically to prevent memory leaks
-    pub fn clean_garbage_allocations(&mut self) {
-        self.allocations.retain(|_, v| Arc::strong_count(v) > 1);
-    }
-}
+use crate::{allocator::AllocationId, error::ReflectionError};
 
 /// A wrapper for a `dyn Reflect` struct, can either be owned or a reference
 pub enum Wrapper {
@@ -142,6 +110,136 @@ impl<'w> WorldAccessGuard<'w> {
         };
         self.get_access(access_id)
     }
+
+    pub fn get_component<T: Component>(
+        &self,
+        access: &WorldAccess,
+        entity: Entity,
+    ) -> Result<Option<&T>, ReflectionError> {
+        let component_id = match self.cell.components().component_id::<T>() {
+            Some(id) => id,
+            None => return Ok(None),
+        };
+
+        if access.0
+            == (ReflectAccessId {
+                kind: ReflectAccessKind::ComponentOrResource,
+                id: component_id.index(),
+            })
+        {
+            // Safety: we have the correct access id
+            return unsafe { Ok(self.cell.get_entity(entity).and_then(|e| e.get::<T>())) };
+        } else {
+            Err(ReflectionError::InsufficientAccess {
+                base: format!("Component<{}>", std::any::type_name::<T>()),
+                reason: format!(
+                    "Invalid access, instead got permission to read: {}",
+                    self.cell
+                        .components()
+                        .get_info(ComponentId::new(access.0.id))
+                        .map(|info| info.name())
+                        .unwrap_or("<Unknown Component>")
+                ),
+            })
+        }
+    }
+
+    pub fn get_component_mut<T: Component>(
+        &self,
+        access: &mut WorldAccess,
+        entity: Entity,
+    ) -> Result<Option<Mut<T>>, ReflectionError> {
+        let component_id = match self.cell.components().component_id::<T>() {
+            Some(id) => id,
+            None => return Ok(None),
+        };
+
+        if access.0
+            == (ReflectAccessId {
+                kind: ReflectAccessKind::ComponentOrResource,
+                id: component_id.index(),
+            })
+        {
+            // Safety: we have the correct access id
+            return unsafe { Ok(self.cell.get_entity(entity).and_then(|e| e.get_mut::<T>())) };
+        } else {
+            Err(ReflectionError::InsufficientAccess {
+                base: format!("Component<{}>", std::any::type_name::<T>()),
+                reason: format!(
+                    "Invalid access, instead got permission to read: {}",
+                    self.cell
+                        .components()
+                        .get_info(ComponentId::new(access.0.id))
+                        .map(|info| info.name())
+                        .unwrap_or("<Unknown Component>")
+                ),
+            })
+        }
+    }
+
+    pub fn get_resource<T: Resource>(
+        &self,
+        access: &WorldAccess,
+    ) -> Result<Option<&T>, ReflectionError> {
+        let resource_id = match self.cell.components().resource_id::<T>() {
+            Some(id) => id,
+            None => return Ok(None),
+        };
+
+        if access.0
+            == (ReflectAccessId {
+                kind: ReflectAccessKind::ComponentOrResource,
+                id: resource_id.index(),
+            })
+        {
+            // Safety: we have the correct access id
+            return unsafe { Ok(self.cell.get_resource::<T>()) };
+        } else {
+            Err(ReflectionError::InsufficientAccess {
+                base: format!("Resource<{}>", std::any::type_name::<T>()),
+                reason: format!(
+                    "Invalid access, instead got permission to read: {}",
+                    self.cell
+                        .components()
+                        .get_info(ComponentId::new(access.0.id))
+                        .map(|info| info.name())
+                        .unwrap_or("<Unknown Component>")
+                ),
+            })
+        }
+    }
+
+    pub fn get_resource_mut<T: Resource>(
+        &self,
+        access: &mut WorldAccess,
+    ) -> Result<Option<Mut<T>>, ReflectionError> {
+        let resource_id = match self.cell.components().resource_id::<T>() {
+            Some(id) => id,
+            None => return Ok(None),
+        };
+
+        if access.0
+            == (ReflectAccessId {
+                kind: ReflectAccessKind::ComponentOrResource,
+                id: resource_id.index(),
+            })
+        {
+            // Safety: we have the correct access id
+            return unsafe { Ok(self.cell.get_resource_mut::<T>()) };
+        } else {
+            Err(ReflectionError::InsufficientAccess {
+                base: format!("Resource<{}>", std::any::type_name::<T>()),
+                reason: format!(
+                    "Invalid access, instead got permission to read: {}",
+                    self.cell
+                        .components()
+                        .get_info(ComponentId::new(access.0.id))
+                        .map(|info| info.name())
+                        .unwrap_or("<Unknown Component>")
+                ),
+            })
+        }
+    }
 }
 
 /// Having this is permission to access the contained [`ReflectAccessId`], there is no way to access anything safely through a [`WorldAccessGuard`]
@@ -201,6 +299,8 @@ impl ReflectReference {
 
     /// Retrieves a reference to the underlying `dyn Reflect` type valid for the 'w lifetime of the world cell.
     /// If the underlying componentId is not the same as the one we have access to, an error is returned.
+    ///
+    /// If we are accessing a component or resource, it's marked as changed
     pub fn reflect_mut<'w>(
         &'w self,
         world: UnsafeWorldCell<'w>,
@@ -469,15 +569,17 @@ pub struct DeferredReflection {
 #[cfg(test)]
 mod test {
 
-    use super::*;
-    use bevy::ecs::{component::Component, world::World};
+    use crate::allocator::ReflectAllocator;
 
-    #[derive(Component, Reflect)]
+    use super::*;
+    use bevy::ecs::{component::Component, system::Resource, world::World};
+
+    #[derive(Component, Reflect, PartialEq, Eq, Debug)]
     struct TestComponent {
         strings: Vec<String>,
     }
 
-    #[derive(Resource, Reflect, Default)]
+    #[derive(Resource, Reflect, Default, PartialEq, Eq, Debug)]
     struct TestResource {
         bytes: Vec<u8>,
     }
@@ -495,66 +597,7 @@ mod test {
     }
 
     #[test]
-    fn test_parsed_path() {
-        let (mut world, type_registry, component_id, resource_id) = setup_world();
-        let entity = world
-            .spawn(TestComponent {
-                strings: vec![String::from("hello")],
-            })
-            .id();
-
-        world.insert_resource(TestResource { bytes: vec![42] });
-        let world = WorldAccessGuard::new(&mut world);
-
-        let component_reflect_ref = ReflectReference {
-            base: ReflectBaseType {
-                base_id: ReflectBase::Component(entity, component_id),
-                type_id: TypeId::of::<TestComponent>(),
-            },
-            reflect_path: vec![ReflectionPathElem::Reflection(
-                ParsedPath::parse_static(".strings[0]").unwrap(),
-            )],
-        };
-
-        let component_access = world.get_component_access(component_id);
-        assert_eq!(
-            component_reflect_ref
-                .reflect(
-                    world.as_unsafe_world_cell_readonly(),
-                    &component_access.read(),
-                    &type_registry,
-                )
-                .unwrap()
-                .downcast_ref::<String>(),
-            Some(&String::from("hello"))
-        );
-
-        let resource_reflect_ref = ReflectReference {
-            base: ReflectBaseType {
-                base_id: ReflectBase::Resource(resource_id),
-                type_id: TypeId::of::<TestResource>(),
-            },
-            reflect_path: vec![ReflectionPathElem::Reflection(
-                ParsedPath::parse_static(".bytes[0]").unwrap(),
-            )],
-        };
-
-        let resource_access = world.get_component_access(resource_id);
-        assert_eq!(
-            resource_reflect_ref
-                .reflect(
-                    world.as_unsafe_world_cell(),
-                    &resource_access.read(),
-                    &type_registry,
-                )
-                .unwrap()
-                .downcast_ref(),
-            Some(&42u8)
-        );
-    }
-
-    #[test]
-    fn test_parsed_and_deferred_path() {
+    fn test_component_access() {
         let (mut world, type_registry, component_id, _) = setup_world();
         let entity = world
             .spawn(TestComponent {
@@ -562,7 +605,6 @@ mod test {
             })
             .id();
 
-        world.insert_resource(TestResource { bytes: vec![42] });
         let world = WorldAccessGuard::new(&mut world);
 
         let component_reflect_ref = ReflectReference {
@@ -586,6 +628,7 @@ mod test {
         };
 
         let component_access = world.get_component_access(component_id);
+
         *component_reflect_ref
             .reflect_mut(
                 world.as_unsafe_world_cell(),
@@ -594,18 +637,104 @@ mod test {
             )
             .unwrap()
             .downcast_mut::<String>()
-            .unwrap() = String::from("world");
+            .unwrap() = "world".to_owned();
+
+        assert_eq!(
+            world
+                .get_component::<TestComponent>(&component_access.read(), entity)
+                .unwrap()
+                .unwrap(),
+            &TestComponent {
+                strings: vec![String::from("world")]
+            }
+        );
+
+        *world
+            .get_component_mut::<TestComponent>(&mut component_access.write(), entity)
+            .unwrap()
+            .unwrap()
+            .as_mut() = TestComponent {
+            strings: vec![String::from("typed_world")],
+        };
 
         assert_eq!(
             component_reflect_ref
                 .reflect(
-                    world.as_unsafe_world_cell_readonly(),
+                    world.as_unsafe_world_cell(),
                     &component_access.read(),
-                    &type_registry,
+                    &type_registry
                 )
                 .unwrap()
-                .downcast_ref::<String>(),
-            Some(&String::from("world"))
+                .downcast_ref::<String>()
+                .unwrap(),
+            &"typed_world".to_owned()
+        );
+    }
+
+    #[test]
+    fn test_resource_access() {
+        let (mut world, type_registry, _, resource_id) = setup_world();
+
+        world.insert_resource(TestResource { bytes: vec![42u8] });
+        let world = WorldAccessGuard::new(&mut world);
+
+        let resource_reflect_ref = ReflectReference {
+            base: ReflectBaseType {
+                base_id: ReflectBase::Resource(resource_id),
+                type_id: TypeId::of::<TestResource>(),
+            },
+            reflect_path: vec![
+                ReflectionPathElem::Reflection(ParsedPath::parse_static(".bytes").unwrap()),
+                ReflectionPathElem::DeferredReflection(DeferredReflection {
+                    get: Arc::new(|root| {
+                        let strings = root.downcast_ref::<Vec<u8>>().unwrap();
+                        Ok(strings.first().unwrap())
+                    }),
+                    get_mut: Arc::new(|root| {
+                        let strings = root.downcast_mut::<Vec<u8>>().unwrap();
+                        Ok(strings.first_mut().unwrap())
+                    }),
+                }),
+            ],
+        };
+
+        let resource_access = world.get_resource_access(resource_id);
+
+        *resource_reflect_ref
+            .reflect_mut(
+                world.as_unsafe_world_cell(),
+                &mut resource_access.write(),
+                &type_registry,
+            )
+            .unwrap()
+            .downcast_mut::<u8>()
+            .unwrap() = 42u8;
+
+        assert_eq!(
+            world
+                .get_resource::<TestResource>(&resource_access.read())
+                .unwrap()
+                .unwrap(),
+            &TestResource { bytes: vec![42u8] }
+        );
+
+        *world
+            .get_resource_mut::<TestResource>(&mut resource_access.write())
+            .unwrap()
+            .unwrap()
+            .as_mut() = TestResource { bytes: vec![69u8] };
+
+        assert_eq!(
+            resource_reflect_ref
+                .reflect(
+                    world.as_unsafe_world_cell(),
+                    &resource_access.read(),
+                    &type_registry
+                )
+                .unwrap()
+                .downcast_ref::<u8>()
+                .unwrap(),
+            &69u8
         );
     }
 
@@ -614,7 +743,7 @@ mod test {
         let (mut world, type_registry, _, _) = setup_world();
 
         let world = WorldAccessGuard::new(&mut world);
-        let mut script_allocator = ScriptAllocator::default();
+        let mut script_allocator = ReflectAllocator::default();
         let allocation_id = script_allocator.allocate(Arc::new("hello".to_string()));
 
         let owned_reflect_ref = ReflectReference {
