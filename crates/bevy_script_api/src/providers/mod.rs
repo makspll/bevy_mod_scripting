@@ -59,14 +59,6 @@ impl bevy_mod_scripting_core::hosts::APIProvider for LuaBevyAPIProvider {
     ) -> Result<(), bevy_mod_scripting_core::error::ScriptError> {
         Ok(())
     }
-    fn setup_script_runtime(
-        &mut self,
-        world_ptr: bevy_mod_scripting_core::world::WorldPointer,
-        _script_data: &bevy_mod_scripting_core::hosts::ScriptData,
-        ctx: &mut Self::ScriptContext,
-    ) -> Result<(), bevy_mod_scripting_core::error::ScriptError> {
-        Ok(())
-    }
     fn register_with_app(&self, app: &mut bevy::app::App) {
         bevy_ecs::BevyEcsAPIProvider.register_with_app(app);
         bevy_transform::BevyTransformAPIProvider.register_with_app(app);

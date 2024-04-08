@@ -15,6 +15,12 @@ use bevy_script_api::{
     remote = "bevy::window::prelude::CursorEntered",
     functions[r#"
 
+    #[lua(as_trait = "std::cmp::Eq", kind = "Method")]
+    fn assert_receiver_is_total_eq(&self) -> ();
+
+"#,
+    r#"
+
     #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
     fn clone(&self) -> bevy::window::prelude::CursorEntered;
 
@@ -28,12 +34,6 @@ use bevy_script_api::{
         metamethod = "Eq",
     )]
     fn eq(&self, #[proxy] other: &event::CursorEntered) -> bool;
-
-"#,
-    r#"
-
-    #[lua(as_trait = "std::cmp::Eq", kind = "Method")]
-    fn assert_receiver_is_total_eq(&self) -> ();
 
 "#,
     r#"
@@ -88,14 +88,14 @@ pub struct CursorIcon {}
     remote = "bevy::window::prelude::CursorLeft",
     functions[r#"
 
-    #[lua(as_trait = "std::cmp::Eq", kind = "Method")]
-    fn assert_receiver_is_total_eq(&self) -> ();
+    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
+    fn clone(&self) -> bevy::window::prelude::CursorLeft;
 
 "#,
     r#"
 
-    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
-    fn clone(&self) -> bevy::window::prelude::CursorLeft;
+    #[lua(as_trait = "std::cmp::Eq", kind = "Method")]
+    fn assert_receiver_is_total_eq(&self) -> ();
 
 "#,
     r#"
@@ -161,6 +161,12 @@ pub struct CursorMoved {
     remote = "bevy::window::prelude::FileDragAndDrop",
     functions[r#"
 
+    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
+    fn clone(&self) -> bevy::window::prelude::FileDragAndDrop;
+
+"#,
+    r#"
+
     #[lua(
         as_trait = "std::cmp::PartialEq",
         kind = "MetaFunction",
@@ -177,12 +183,6 @@ pub struct CursorMoved {
 
 "#,
     r#"
-
-    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
-    fn clone(&self) -> bevy::window::prelude::FileDragAndDrop;
-
-"#,
-    r#"
 #[lua(kind="MetaMethod", metamethod="ToString")]
 fn index(&self) -> String {
     format!("{:?}", _self)
@@ -195,12 +195,6 @@ pub struct FileDragAndDrop {}
     derive(clone),
     remote = "bevy::window::prelude::Ime",
     functions[r#"
-
-    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
-    fn clone(&self) -> bevy::window::prelude::Ime;
-
-"#,
-    r#"
 
     #[lua(as_trait = "std::cmp::Eq", kind = "Method")]
     fn assert_receiver_is_total_eq(&self) -> ();
@@ -218,6 +212,12 @@ pub struct FileDragAndDrop {}
 
 "#,
     r#"
+
+    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
+    fn clone(&self) -> bevy::window::prelude::Ime;
+
+"#,
+    r#"
 #[lua(kind="MetaMethod", metamethod="ToString")]
 fn index(&self) -> String {
     format!("{:?}", _self)
@@ -231,8 +231,8 @@ pub struct Ime {}
     remote = "bevy::window::prelude::MonitorSelection",
     functions[r#"
 
-    #[lua(as_trait = "std::cmp::Eq", kind = "Method")]
-    fn assert_receiver_is_total_eq(&self) -> ();
+    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
+    fn clone(&self) -> bevy::window::prelude::MonitorSelection;
 
 "#,
     r#"
@@ -248,8 +248,8 @@ pub struct Ime {}
 "#,
     r#"
 
-    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
-    fn clone(&self) -> bevy::window::prelude::MonitorSelection;
+    #[lua(as_trait = "std::cmp::Eq", kind = "Method")]
+    fn assert_receiver_is_total_eq(&self) -> ();
 
 "#,
     r#"
@@ -272,6 +272,12 @@ pub struct MonitorSelection {}
 "#,
     r#"
 
+    #[lua(as_trait = "std::cmp::Eq", kind = "Method")]
+    fn assert_receiver_is_total_eq(&self) -> ();
+
+"#,
+    r#"
+
     #[lua(
         as_trait = "std::cmp::PartialEq",
         kind = "MetaFunction",
@@ -279,12 +285,6 @@ pub struct MonitorSelection {}
         metamethod = "Eq",
     )]
     fn eq(&self, #[proxy] other: &event::ReceivedCharacter) -> bool;
-
-"#,
-    r#"
-
-    #[lua(as_trait = "std::cmp::Eq", kind = "Method")]
-    fn assert_receiver_is_total_eq(&self) -> ();
 
 "#,
     r#"
@@ -305,6 +305,12 @@ pub struct ReceivedCharacter {
     derive(clone),
     remote = "bevy::window::prelude::Window",
     functions[r#"
+
+    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
+    fn clone(&self) -> bevy::window::prelude::Window;
+
+"#,
+    r#"
 /// Setting to true will attempt to maximize the window.
 /// Setting to false will attempt to un-maximize the window.
 
@@ -361,12 +367,6 @@ pub struct ReceivedCharacter {
 
 "#,
     r#"
-
-    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
-    fn clone(&self) -> bevy::window::prelude::Window;
-
-"#,
-    r#"
 #[lua(kind="MetaMethod", metamethod="ToString")]
 fn index(&self) -> String {
     format!("{:?}", _self)
@@ -414,8 +414,13 @@ pub struct Window {
     remote = "bevy::window::prelude::WindowMoved",
     functions[r#"
 
-    #[lua(as_trait = "std::cmp::Eq", kind = "Method")]
-    fn assert_receiver_is_total_eq(&self) -> ();
+    #[lua(
+        as_trait = "std::cmp::PartialEq",
+        kind = "MetaFunction",
+        composite = "eq",
+        metamethod = "Eq",
+    )]
+    fn eq(&self, #[proxy] other: &event::WindowMoved) -> bool;
 
 "#,
     r#"
@@ -426,13 +431,8 @@ pub struct Window {
 "#,
     r#"
 
-    #[lua(
-        as_trait = "std::cmp::PartialEq",
-        kind = "MetaFunction",
-        composite = "eq",
-        metamethod = "Eq",
-    )]
-    fn eq(&self, #[proxy] other: &event::WindowMoved) -> bool;
+    #[lua(as_trait = "std::cmp::Eq", kind = "Method")]
+    fn assert_receiver_is_total_eq(&self) -> ();
 
 "#,
     r#"
@@ -453,23 +453,6 @@ pub struct WindowMoved {
     derive(clone),
     remote = "bevy::window::prelude::WindowPosition",
     functions[r#"
-
-    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
-    fn clone(&self) -> bevy::window::prelude::WindowPosition;
-
-"#,
-    r#"
-
-    #[lua(
-        as_trait = "std::cmp::PartialEq",
-        kind = "MetaFunction",
-        composite = "eq",
-        metamethod = "Eq",
-    )]
-    fn eq(&self, #[proxy] other: &window::WindowPosition) -> bool;
-
-"#,
-    r#"
 /// Creates a new [`WindowPosition`] at a position.
 
     #[lua(kind = "Function", output(proxy))]
@@ -498,6 +481,23 @@ pub struct WindowMoved {
 
 "#,
     r#"
+
+    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
+    fn clone(&self) -> bevy::window::prelude::WindowPosition;
+
+"#,
+    r#"
+
+    #[lua(
+        as_trait = "std::cmp::PartialEq",
+        kind = "MetaFunction",
+        composite = "eq",
+        metamethod = "Eq",
+    )]
+    fn eq(&self, #[proxy] other: &window::WindowPosition) -> bool;
+
+"#,
+    r#"
 #[lua(kind="MetaMethod", metamethod="ToString")]
 fn index(&self) -> String {
     format!("{:?}", _self)
@@ -510,11 +510,14 @@ pub struct WindowPosition {}
     derive(clone),
     remote = "bevy::window::prelude::WindowResizeConstraints",
     functions[r#"
-/// Checks if the constraints are valid.
-/// Will output warnings if it isn't.
 
-    #[lua(kind = "Method", output(proxy))]
-    fn check_constraints(&self) -> bevy::window::prelude::WindowResizeConstraints;
+    #[lua(
+        as_trait = "std::cmp::PartialEq",
+        kind = "MetaFunction",
+        composite = "eq",
+        metamethod = "Eq",
+    )]
+    fn eq(&self, #[proxy] other: &window::WindowResizeConstraints) -> bool;
 
 "#,
     r#"
@@ -524,14 +527,11 @@ pub struct WindowPosition {}
 
 "#,
     r#"
+/// Checks if the constraints are valid.
+/// Will output warnings if it isn't.
 
-    #[lua(
-        as_trait = "std::cmp::PartialEq",
-        kind = "MetaFunction",
-        composite = "eq",
-        metamethod = "Eq",
-    )]
-    fn eq(&self, #[proxy] other: &window::WindowResizeConstraints) -> bool;
+    #[lua(kind = "Method", output(proxy))]
+    fn check_constraints(&self) -> bevy::window::prelude::WindowResizeConstraints;
 
 "#,
     r#"
@@ -553,6 +553,12 @@ pub struct WindowResizeConstraints {
     remote = "bevy::window::WindowResized",
     functions[r#"
 
+    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
+    fn clone(&self) -> bevy::window::WindowResized;
+
+"#,
+    r#"
+
     #[lua(
         as_trait = "std::cmp::PartialEq",
         kind = "MetaFunction",
@@ -560,12 +566,6 @@ pub struct WindowResizeConstraints {
         metamethod = "Eq",
     )]
     fn eq(&self, #[proxy] other: &event::WindowResized) -> bool;
-
-"#,
-    r#"
-
-    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
-    fn clone(&self) -> bevy::window::WindowResized;
 
 "#,
     r#"
@@ -593,12 +593,6 @@ pub struct WindowResized {
 "#,
     r#"
 
-    #[lua(as_trait = "std::cmp::Eq", kind = "Method")]
-    fn assert_receiver_is_total_eq(&self) -> ();
-
-"#,
-    r#"
-
     #[lua(
         as_trait = "std::cmp::PartialEq",
         kind = "MetaFunction",
@@ -606,6 +600,12 @@ pub struct WindowResized {
         metamethod = "Eq",
     )]
     fn eq(&self, #[proxy] other: &event::WindowCreated) -> bool;
+
+"#,
+    r#"
+
+    #[lua(as_trait = "std::cmp::Eq", kind = "Method")]
+    fn assert_receiver_is_total_eq(&self) -> ();
 
 "#,
     r#"
@@ -625,13 +625,8 @@ pub struct WindowCreated {
     remote = "bevy::window::WindowClosed",
     functions[r#"
 
-    #[lua(
-        as_trait = "std::cmp::PartialEq",
-        kind = "MetaFunction",
-        composite = "eq",
-        metamethod = "Eq",
-    )]
-    fn eq(&self, #[proxy] other: &event::WindowClosed) -> bool;
+    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
+    fn clone(&self) -> bevy::window::WindowClosed;
 
 "#,
     r#"
@@ -642,8 +637,13 @@ pub struct WindowCreated {
 "#,
     r#"
 
-    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
-    fn clone(&self) -> bevy::window::WindowClosed;
+    #[lua(
+        as_trait = "std::cmp::PartialEq",
+        kind = "MetaFunction",
+        composite = "eq",
+        metamethod = "Eq",
+    )]
+    fn eq(&self, #[proxy] other: &event::WindowClosed) -> bool;
 
 "#,
     r#"
@@ -663,6 +663,17 @@ pub struct WindowClosed {
     remote = "bevy::window::WindowCloseRequested",
     functions[r#"
 
+    #[lua(
+        as_trait = "std::cmp::PartialEq",
+        kind = "MetaFunction",
+        composite = "eq",
+        metamethod = "Eq",
+    )]
+    fn eq(&self, #[proxy] other: &event::WindowCloseRequested) -> bool;
+
+"#,
+    r#"
+
     #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
     fn clone(&self) -> bevy::window::WindowCloseRequested;
 
@@ -671,17 +682,6 @@ pub struct WindowClosed {
 
     #[lua(as_trait = "std::cmp::Eq", kind = "Method")]
     fn assert_receiver_is_total_eq(&self) -> ();
-
-"#,
-    r#"
-
-    #[lua(
-        as_trait = "std::cmp::PartialEq",
-        kind = "MetaFunction",
-        composite = "eq",
-        metamethod = "Eq",
-    )]
-    fn eq(&self, #[proxy] other: &event::WindowCloseRequested) -> bool;
 
 "#,
     r#"
@@ -701,14 +701,14 @@ pub struct WindowCloseRequested {
     remote = "bevy::window::WindowDestroyed",
     functions[r#"
 
-    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
-    fn clone(&self) -> bevy::window::WindowDestroyed;
+    #[lua(as_trait = "std::cmp::Eq", kind = "Method")]
+    fn assert_receiver_is_total_eq(&self) -> ();
 
 "#,
     r#"
 
-    #[lua(as_trait = "std::cmp::Eq", kind = "Method")]
-    fn assert_receiver_is_total_eq(&self) -> ();
+    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
+    fn clone(&self) -> bevy::window::WindowDestroyed;
 
 "#,
     r#"
@@ -739,17 +739,6 @@ pub struct WindowDestroyed {
     remote = "bevy::window::RequestRedraw",
     functions[r#"
 
-    #[lua(
-        as_trait = "std::cmp::PartialEq",
-        kind = "MetaFunction",
-        composite = "eq",
-        metamethod = "Eq",
-    )]
-    fn eq(&self, #[proxy] other: &event::RequestRedraw) -> bool;
-
-"#,
-    r#"
-
     #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
     fn clone(&self) -> bevy::window::RequestRedraw;
 
@@ -758,6 +747,17 @@ pub struct WindowDestroyed {
 
     #[lua(as_trait = "std::cmp::Eq", kind = "Method")]
     fn assert_receiver_is_total_eq(&self) -> ();
+
+"#,
+    r#"
+
+    #[lua(
+        as_trait = "std::cmp::PartialEq",
+        kind = "MetaFunction",
+        composite = "eq",
+        metamethod = "Eq",
+    )]
+    fn eq(&self, #[proxy] other: &event::RequestRedraw) -> bool;
 
 "#,
     r#"
@@ -774,14 +774,14 @@ pub struct RequestRedraw {}
     remote = "bevy::window::WindowFocused",
     functions[r#"
 
-    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
-    fn clone(&self) -> bevy::window::WindowFocused;
+    #[lua(as_trait = "std::cmp::Eq", kind = "Method")]
+    fn assert_receiver_is_total_eq(&self) -> ();
 
 "#,
     r#"
 
-    #[lua(as_trait = "std::cmp::Eq", kind = "Method")]
-    fn assert_receiver_is_total_eq(&self) -> ();
+    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
+    fn clone(&self) -> bevy::window::WindowFocused;
 
 "#,
     r#"
@@ -852,12 +852,6 @@ pub struct WindowOccluded {
     remote = "bevy::window::WindowScaleFactorChanged",
     functions[r#"
 
-    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
-    fn clone(&self) -> bevy::window::WindowScaleFactorChanged;
-
-"#,
-    r#"
-
     #[lua(
         as_trait = "std::cmp::PartialEq",
         kind = "MetaFunction",
@@ -865,6 +859,12 @@ pub struct WindowOccluded {
         metamethod = "Eq",
     )]
     fn eq(&self, #[proxy] other: &event::WindowScaleFactorChanged) -> bool;
+
+"#,
+    r#"
+
+    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
+    fn clone(&self) -> bevy::window::WindowScaleFactorChanged;
 
 "#,
     r#"
@@ -885,6 +885,12 @@ pub struct WindowScaleFactorChanged {
     remote = "bevy::window::WindowBackendScaleFactorChanged",
     functions[r#"
 
+    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
+    fn clone(&self) -> bevy::window::WindowBackendScaleFactorChanged;
+
+"#,
+    r#"
+
     #[lua(
         as_trait = "std::cmp::PartialEq",
         kind = "MetaFunction",
@@ -892,12 +898,6 @@ pub struct WindowScaleFactorChanged {
         metamethod = "Eq",
     )]
     fn eq(&self, #[proxy] other: &event::WindowBackendScaleFactorChanged) -> bool;
-
-"#,
-    r#"
-
-    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
-    fn clone(&self) -> bevy::window::WindowBackendScaleFactorChanged;
 
 "#,
     r#"
@@ -918,6 +918,12 @@ pub struct WindowBackendScaleFactorChanged {
     remote = "bevy::window::WindowThemeChanged",
     functions[r#"
 
+    #[lua(as_trait = "std::cmp::Eq", kind = "Method")]
+    fn assert_receiver_is_total_eq(&self) -> ();
+
+"#,
+    r#"
+
     #[lua(
         as_trait = "std::cmp::PartialEq",
         kind = "MetaFunction",
@@ -931,12 +937,6 @@ pub struct WindowBackendScaleFactorChanged {
 
     #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
     fn clone(&self) -> bevy::window::WindowThemeChanged;
-
-"#,
-    r#"
-
-    #[lua(as_trait = "std::cmp::Eq", kind = "Method")]
-    fn assert_receiver_is_total_eq(&self) -> ();
 
 "#,
     r#"
@@ -958,6 +958,17 @@ pub struct WindowThemeChanged {
     remote = "bevy::window::ApplicationLifetime",
     functions[r#"
 
+    #[lua(
+        as_trait = "std::cmp::PartialEq",
+        kind = "MetaFunction",
+        composite = "eq",
+        metamethod = "Eq",
+    )]
+    fn eq(&self, #[proxy] other: &event::ApplicationLifetime) -> bool;
+
+"#,
+    r#"
+
     #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
     fn clone(&self) -> bevy::window::ApplicationLifetime;
 
@@ -966,17 +977,6 @@ pub struct WindowThemeChanged {
 
     #[lua(as_trait = "std::cmp::Eq", kind = "Method")]
     fn assert_receiver_is_total_eq(&self) -> ();
-
-"#,
-    r#"
-
-    #[lua(
-        as_trait = "std::cmp::PartialEq",
-        kind = "MetaFunction",
-        composite = "eq",
-        metamethod = "Eq",
-    )]
-    fn eq(&self, #[proxy] other: &event::ApplicationLifetime) -> bool;
 
 "#,
     r#"
@@ -993,12 +993,6 @@ pub struct ApplicationLifetime {}
     remote = "bevy::window::PrimaryWindow",
     functions[r#"
 
-    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
-    fn clone(&self) -> bevy::window::PrimaryWindow;
-
-"#,
-    r#"
-
     #[lua(as_trait = "std::cmp::Eq", kind = "Method")]
     fn assert_receiver_is_total_eq(&self) -> ();
 
@@ -1012,6 +1006,12 @@ pub struct ApplicationLifetime {}
         metamethod = "Eq",
     )]
     fn eq(&self, #[proxy] other: &window::PrimaryWindow) -> bool;
+
+"#,
+    r#"
+
+    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
+    fn clone(&self) -> bevy::window::PrimaryWindow;
 
 "#,
     r#"
@@ -1053,6 +1053,12 @@ pub struct Cursor {
     remote = "bevy::window::CursorGrabMode",
     functions[r#"
 
+    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
+    fn clone(&self) -> bevy::window::CursorGrabMode;
+
+"#,
+    r#"
+
     #[lua(
         as_trait = "std::cmp::PartialEq",
         kind = "MetaFunction",
@@ -1069,12 +1075,6 @@ pub struct Cursor {
 
 "#,
     r#"
-
-    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
-    fn clone(&self) -> bevy::window::CursorGrabMode;
-
-"#,
-    r#"
 #[lua(kind="MetaMethod", metamethod="ToString")]
 fn index(&self) -> String {
     format!("{:?}", _self)
@@ -1088,8 +1088,8 @@ pub struct CursorGrabMode {}
     remote = "bevy::window::CompositeAlphaMode",
     functions[r#"
 
-    #[lua(as_trait = "std::cmp::Eq", kind = "Method")]
-    fn assert_receiver_is_total_eq(&self) -> ();
+    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
+    fn clone(&self) -> bevy::window::CompositeAlphaMode;
 
 "#,
     r#"
@@ -1105,8 +1105,8 @@ pub struct CursorGrabMode {}
 "#,
     r#"
 
-    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
-    fn clone(&self) -> bevy::window::CompositeAlphaMode;
+    #[lua(as_trait = "std::cmp::Eq", kind = "Method")]
+    fn assert_receiver_is_total_eq(&self) -> ();
 
 "#,
     r#"
@@ -1122,6 +1122,12 @@ pub struct CompositeAlphaMode {}
     derive(clone),
     remote = "bevy::window::WindowResolution",
     functions[r#"
+
+    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
+    fn clone(&self) -> bevy::window::WindowResolution;
+
+"#,
+    r#"
 
     #[lua(
         as_trait = "std::cmp::PartialEq",
@@ -1237,12 +1243,6 @@ pub struct CompositeAlphaMode {}
 
 "#,
     r#"
-
-    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
-    fn clone(&self) -> bevy::window::WindowResolution;
-
-"#,
-    r#"
 #[lua(kind="MetaMethod", metamethod="ToString")]
 fn index(&self) -> String {
     format!("{:?}", _self)
@@ -1256,13 +1256,8 @@ pub struct WindowResolution {}
     remote = "bevy::window::WindowMode",
     functions[r#"
 
-    #[lua(
-        as_trait = "std::cmp::PartialEq",
-        kind = "MetaFunction",
-        composite = "eq",
-        metamethod = "Eq",
-    )]
-    fn eq(&self, #[proxy] other: &window::WindowMode) -> bool;
+    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
+    fn clone(&self) -> bevy::window::WindowMode;
 
 "#,
     r#"
@@ -1273,8 +1268,13 @@ pub struct WindowResolution {}
 "#,
     r#"
 
-    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
-    fn clone(&self) -> bevy::window::WindowMode;
+    #[lua(
+        as_trait = "std::cmp::PartialEq",
+        kind = "MetaFunction",
+        composite = "eq",
+        metamethod = "Eq",
+    )]
+    fn eq(&self, #[proxy] other: &window::WindowMode) -> bool;
 
 "#,
     r#"
@@ -1291,14 +1291,14 @@ pub struct WindowMode {}
     remote = "bevy::window::WindowLevel",
     functions[r#"
 
-    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
-    fn clone(&self) -> bevy::window::WindowLevel;
+    #[lua(as_trait = "std::cmp::Eq", kind = "Method")]
+    fn assert_receiver_is_total_eq(&self) -> ();
 
 "#,
     r#"
 
-    #[lua(as_trait = "std::cmp::Eq", kind = "Method")]
-    fn assert_receiver_is_total_eq(&self) -> ();
+    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
+    fn clone(&self) -> bevy::window::WindowLevel;
 
 "#,
     r#"
@@ -1337,14 +1337,14 @@ pub struct WindowLevel {}
 "#,
     r#"
 
-    #[lua(as_trait = "std::cmp::Eq", kind = "Method")]
-    fn assert_receiver_is_total_eq(&self) -> ();
+    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
+    fn clone(&self) -> bevy::window::PresentMode;
 
 "#,
     r#"
 
-    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
-    fn clone(&self) -> bevy::window::PresentMode;
+    #[lua(as_trait = "std::cmp::Eq", kind = "Method")]
+    fn assert_receiver_is_total_eq(&self) -> ();
 
 "#,
     r#"
@@ -1371,6 +1371,12 @@ pub struct PresentMode {}
 
 "#,
     r#"
+
+    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
+    fn clone(&self) -> bevy::window::InternalWindowState;
+
+"#,
+    r#"
 /// Consumes the current maximize request, if it exists. This should only be called by window backends.
 
     #[lua(kind = "MutatingMethod")]
@@ -1382,12 +1388,6 @@ pub struct PresentMode {}
 
     #[lua(kind = "MutatingMethod")]
     fn take_minimize_request(&mut self) -> std::option::Option<bool>;
-
-"#,
-    r#"
-
-    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
-    fn clone(&self) -> bevy::window::InternalWindowState;
 
 "#,
     r#"
@@ -1404,8 +1404,8 @@ pub struct InternalWindowState {}
     remote = "bevy::window::WindowTheme",
     functions[r#"
 
-    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
-    fn clone(&self) -> bevy::window::WindowTheme;
+    #[lua(as_trait = "std::cmp::Eq", kind = "Method")]
+    fn assert_receiver_is_total_eq(&self) -> ();
 
 "#,
     r#"
@@ -1421,8 +1421,8 @@ pub struct InternalWindowState {}
 "#,
     r#"
 
-    #[lua(as_trait = "std::cmp::Eq", kind = "Method")]
-    fn assert_receiver_is_total_eq(&self) -> ();
+    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
+    fn clone(&self) -> bevy::window::WindowTheme;
 
 "#,
     r#"
@@ -1495,13 +1495,6 @@ pub struct WindowRef {}
 
 "#,
     r#"
-/// Fetch the entity of this window reference
-
-    #[lua(kind = "Method", output(proxy))]
-    fn entity(&self) -> bevy::ecs::entity::Entity;
-
-"#,
-    r#"
 
     #[lua(
         as_trait = "std::cmp::PartialEq",
@@ -1510,6 +1503,13 @@ pub struct WindowRef {}
         metamethod = "Eq",
     )]
     fn eq(&self, #[proxy] other: &window::NormalizedWindowRef) -> bool;
+
+"#,
+    r#"
+/// Fetch the entity of this window reference
+
+    #[lua(kind = "Method", output(proxy))]
+    fn entity(&self) -> bevy::ecs::entity::Entity;
 
 "#,
     r#"
@@ -1626,14 +1626,6 @@ impl bevy_mod_scripting_core::hosts::APIProvider for BevyWindowAPIProvider {
     fn setup_script(
         &mut self,
         script_data: &bevy_mod_scripting_core::hosts::ScriptData,
-        ctx: &mut Self::ScriptContext,
-    ) -> Result<(), bevy_mod_scripting_core::error::ScriptError> {
-        Ok(())
-    }
-    fn setup_script_runtime(
-        &mut self,
-        world_ptr: bevy_mod_scripting_core::world::WorldPointer,
-        _script_data: &bevy_mod_scripting_core::hosts::ScriptData,
         ctx: &mut Self::ScriptContext,
     ) -> Result<(), bevy_mod_scripting_core::error::ScriptError> {
         Ok(())

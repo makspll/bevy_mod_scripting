@@ -45,6 +45,7 @@ pub struct ReflectAccessId {
 }
 
 /// Provides safe access to the world via [`WorldAccess`] permissions, which enforce aliasing rules at runtime in multi-thread environments
+#[derive(Clone)]
 pub struct WorldAccessGuard<'w> {
     cell: UnsafeWorldCell<'w>,
     // TODO: lotta indirection here, can we make this better?

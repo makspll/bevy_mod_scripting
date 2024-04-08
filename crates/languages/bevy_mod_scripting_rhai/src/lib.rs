@@ -3,7 +3,7 @@ use crate::{
     docs::RhaiDocFragment,
 };
 use bevy::{ecs::schedule::ScheduleLabel, prelude::*};
-use bevy_mod_scripting_core::{prelude::*, systems::*, world::WorldPointerGuard};
+use bevy_mod_scripting_core::{prelude::*, systems::*};
 use rhai::*;
 use std::marker::PhantomData;
 
@@ -146,18 +146,9 @@ impl<A: FuncArgs + Send + Clone + Sync + 'static> ScriptHost for RhaiScriptHost<
         world: &mut World,
         events: &[Self::ScriptEvent],
         ctxs: impl Iterator<Item = (ScriptData<'a>, &'a mut Self::ScriptContext)>,
-        providers: &mut APIProviders<Self>,
+        _providers: &mut APIProviders<Self>,
     ) {
-        // safety:
-        // - we have &mut World access
-        // - we do not use the original reference again anywhere in this function
-        let world = unsafe { WorldPointerGuard::new(world) };
-
         ctxs.for_each(|(fd, ctx)| {
-            providers
-                .setup_runtime_all(world.clone(), &fd, ctx)
-                .expect("Failed to setup script runtime");
-
             for event in events.iter() {
                 // check if this script should handle this event
                 if !event.recipients().is_recipient(&fd) {
@@ -172,13 +163,12 @@ impl<A: FuncArgs + Send + Clone + Sync + 'static> ScriptHost for RhaiScriptHost<
                 ) {
                     Ok(v) => v,
                     Err(e) => {
-                        let mut world = world.write();
                         let mut state: CachedScriptState<Self> = world.remove_resource().unwrap();
 
                         match *e {
                             EvalAltResult::ErrorFunctionNotFound(..) => {}
                             _ => {
-                                let (_, mut error_wrt, _) = state.event_state.get_mut(&mut world);
+                                let (_, mut error_wrt, _) = state.event_state.get_mut(world);
 
                                 let error = ScriptError::RuntimeError {
                                     script: fd.name.to_string(),

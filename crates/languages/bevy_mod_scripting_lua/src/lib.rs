@@ -3,7 +3,7 @@ use crate::{
     docs::LuaDocFragment,
 };
 use bevy::{ecs::schedule::ScheduleLabel, prelude::*};
-use bevy_mod_scripting_core::{prelude::*, systems::*, world::WorldPointerGuard};
+use bevy_mod_scripting_core::{prelude::*, systems::*};
 
 use std::sync::Mutex;
 use std::{fmt, marker::PhantomData};
@@ -148,18 +148,9 @@ impl<A: LuaArg> ScriptHost for LuaScriptHost<A> {
         world: &mut World,
         events: &[Self::ScriptEvent],
         ctxs: impl Iterator<Item = (ScriptData<'a>, &'a mut Self::ScriptContext)>,
-        providers: &mut APIProviders<Self>,
+        _providers: &mut APIProviders<Self>,
     ) {
-        // safety:
-        // - we have &mut World access
-        // - we do not use the original reference again anywhere in this function
-        let world = unsafe { WorldPointerGuard::new(world) };
-
         ctxs.for_each(|(script_data, ctx)| {
-            providers
-                .setup_runtime_all(world.clone(), &script_data, ctx)
-                .expect("Could not setup script runtime");
-
             let ctx = ctx.get_mut().expect("Poison error in context");
 
             // event order is preserved, but scripts can't rely on any temporal
@@ -178,10 +169,9 @@ impl<A: LuaArg> ScriptHost for LuaScriptHost<A> {
                 };
 
                 if let Err(error) = f.call::<_, ()>(event.args.clone()) {
-                    let mut world = world.write();
                     let mut state: CachedScriptState<Self> = world.remove_resource().unwrap();
 
-                    let (_, mut error_wrt, _) = state.event_state.get_mut(&mut world);
+                    let (_, mut error_wrt, _) = state.event_state.get_mut(world);
 
                     let error = ScriptError::RuntimeError {
                         script: script_data.name.to_owned(),

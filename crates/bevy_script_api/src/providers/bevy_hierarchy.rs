@@ -33,6 +33,13 @@ pub struct Children();
     derive(),
     remote = "bevy::hierarchy::prelude::Parent",
     functions[r#"
+/// Gets the [`Entity`] ID of the parent.
+
+    #[lua(kind = "Method", output(proxy))]
+    fn get(&self) -> bevy::ecs::entity::Entity;
+
+"#,
+    r#"
 
     #[lua(
         as_trait = "std::cmp::PartialEq",
@@ -47,13 +54,6 @@ pub struct Children();
 
     #[lua(as_trait = "std::cmp::Eq", kind = "Method")]
     fn assert_receiver_is_total_eq(&self) -> ();
-
-"#,
-    r#"
-/// Gets the [`Entity`] ID of the parent.
-
-    #[lua(kind = "Method", output(proxy))]
-    fn get(&self) -> bevy::ecs::entity::Entity;
 
 "#,
     r#"
@@ -105,14 +105,6 @@ impl bevy_mod_scripting_core::hosts::APIProvider for BevyHierarchyAPIProvider {
     fn setup_script(
         &mut self,
         script_data: &bevy_mod_scripting_core::hosts::ScriptData,
-        ctx: &mut Self::ScriptContext,
-    ) -> Result<(), bevy_mod_scripting_core::error::ScriptError> {
-        Ok(())
-    }
-    fn setup_script_runtime(
-        &mut self,
-        world_ptr: bevy_mod_scripting_core::world::WorldPointer,
-        _script_data: &bevy_mod_scripting_core::hosts::ScriptData,
         ctx: &mut Self::ScriptContext,
     ) -> Result<(), bevy_mod_scripting_core::error::ScriptError> {
         Ok(())

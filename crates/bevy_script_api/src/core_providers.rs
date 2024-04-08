@@ -80,19 +80,6 @@ impl bevy_mod_scripting_core::hosts::APIProvider for LuaCoreBevyAPIProvider {
         Ok(())
     }
 
-    fn setup_script_runtime(
-        &mut self,
-        world_ptr: bevy_mod_scripting_core::world::WorldPointer,
-        _script_data: &bevy_mod_scripting_core::hosts::ScriptData,
-        ctx: &mut Self::ScriptContext,
-    ) -> Result<(), bevy_mod_scripting_core::error::ScriptError> {
-        let ctx = ctx.get_mut().expect("Could not get context");
-        let globals = ctx.globals();
-        globals
-            .set("world", crate::lua::bevy::LuaWorld::new(world_ptr))
-            .map_err(bevy_mod_scripting_core::error::ScriptError::new_other)
-    }
-
     fn register_with_app(&self, app: &mut bevy::app::App) {
         app.register_foreign_lua_type::<usize>();
         app.register_foreign_lua_type::<isize>();

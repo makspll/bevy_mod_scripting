@@ -12,6 +12,23 @@ use bevy_script_api::{
     derive(clone),
     remote = "bevy::ecs::entity::Entity",
     functions[r#"
+
+    #[lua(
+        as_trait = "std::cmp::PartialEq",
+        kind = "MetaFunction",
+        composite = "eq",
+        metamethod = "Eq",
+    )]
+    fn eq(&self, #[proxy] other: &entity::Entity) -> bool;
+
+"#,
+    r#"
+
+    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
+    fn clone(&self) -> bevy::ecs::entity::Entity;
+
+"#,
+    r#"
 /// Creates a new entity ID with the specified `index` and a generation of 1.
 /// # Note
 /// Spawning a specific `entity` value is __rarely the right choice__. Most apps should favor
@@ -66,23 +83,6 @@ use bevy_script_api::{
 
 "#,
     r#"
-
-    #[lua(
-        as_trait = "std::cmp::PartialEq",
-        kind = "MetaFunction",
-        composite = "eq",
-        metamethod = "Eq",
-    )]
-    fn eq(&self, #[proxy] other: &entity::Entity) -> bool;
-
-"#,
-    r#"
-
-    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
-    fn clone(&self) -> bevy::ecs::entity::Entity;
-
-"#,
-    r#"
 #[lua(kind="MetaMethod", metamethod="ToString")]
 fn index(&self) -> String {
     format!("{:?}", _self)
@@ -95,12 +95,6 @@ pub struct Entity {}
     derive(clone),
     remote = "bevy::ecs::component::ComponentId",
     functions[r#"
-
-    #[lua(as_trait = "std::cmp::Eq", kind = "Method")]
-    fn assert_receiver_is_total_eq(&self) -> ();
-
-"#,
-    r#"
 /// Creates a new [`ComponentId`].
 /// The `index` is a unique value associated with each type of component in a given world.
 /// Usually, this value is taken from a counter incremented for each type of component registered with the world.
@@ -118,8 +112,8 @@ pub struct Entity {}
 "#,
     r#"
 
-    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
-    fn clone(&self) -> bevy::ecs::component::ComponentId;
+    #[lua(as_trait = "std::cmp::Eq", kind = "Method")]
+    fn assert_receiver_is_total_eq(&self) -> ();
 
 "#,
     r#"
@@ -131,6 +125,12 @@ pub struct Entity {}
         metamethod = "Eq",
     )]
     fn eq(&self, #[proxy] other: &component::ComponentId) -> bool;
+
+"#,
+    r#"
+
+    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
+    fn clone(&self) -> bevy::ecs::component::ComponentId;
 
 "#,
     r#"
@@ -147,13 +147,14 @@ pub struct ComponentId();
     remote = "bevy::ecs::component::Tick",
     functions[r#"
 
-    #[lua(
-        as_trait = "std::cmp::PartialEq",
-        kind = "MetaFunction",
-        composite = "eq",
-        metamethod = "Eq",
-    )]
-    fn eq(&self, #[proxy] other: &component::Tick) -> bool;
+    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
+    fn clone(&self) -> bevy::ecs::component::Tick;
+
+"#,
+    r#"
+
+    #[lua(as_trait = "std::cmp::Eq", kind = "Method")]
+    fn assert_receiver_is_total_eq(&self) -> ();
 
 "#,
     r#"
@@ -193,14 +194,13 @@ pub struct ComponentId();
 "#,
     r#"
 
-    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
-    fn clone(&self) -> bevy::ecs::component::Tick;
-
-"#,
-    r#"
-
-    #[lua(as_trait = "std::cmp::Eq", kind = "Method")]
-    fn assert_receiver_is_total_eq(&self) -> ();
+    #[lua(
+        as_trait = "std::cmp::PartialEq",
+        kind = "MetaFunction",
+        composite = "eq",
+        metamethod = "Eq",
+    )]
+    fn eq(&self, #[proxy] other: &component::Tick) -> bool;
 
 "#,
     r#"
@@ -216,6 +216,12 @@ pub struct Tick {}
     derive(clone),
     remote = "bevy::ecs::component::ComponentTicks",
     functions[r#"
+
+    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
+    fn clone(&self) -> bevy::ecs::component::ComponentTicks;
+
+"#,
+    r#"
 /// Returns `true` if the component or resource was added after the system last ran.
 
     #[lua(kind = "Method")]
@@ -270,12 +276,6 @@ pub struct Tick {}
 
     #[lua(kind = "MutatingMethod")]
     fn set_changed(&mut self, #[proxy] change_tick: bevy::ecs::component::Tick) -> ();
-
-"#,
-    r#"
-
-    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
-    fn clone(&self) -> bevy::ecs::component::ComponentTicks;
 
 "#,
     r#"
@@ -368,14 +368,6 @@ impl bevy_mod_scripting_core::hosts::APIProvider for BevyEcsAPIProvider {
     fn setup_script(
         &mut self,
         script_data: &bevy_mod_scripting_core::hosts::ScriptData,
-        ctx: &mut Self::ScriptContext,
-    ) -> Result<(), bevy_mod_scripting_core::error::ScriptError> {
-        Ok(())
-    }
-    fn setup_script_runtime(
-        &mut self,
-        world_ptr: bevy_mod_scripting_core::world::WorldPointer,
-        _script_data: &bevy_mod_scripting_core::hosts::ScriptData,
         ctx: &mut Self::ScriptContext,
     ) -> Result<(), bevy_mod_scripting_core::error::ScriptError> {
         Ok(())

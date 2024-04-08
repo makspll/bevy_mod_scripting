@@ -11,7 +11,6 @@ use crate::{
     docs::DocFragment,
     error::ScriptError,
     event::{ScriptEvent, ScriptLoaded},
-    world::WorldPointer,
 };
 
 /// Describes the target set of scripts this event should
@@ -138,6 +137,43 @@ pub trait ScriptHost: Send + Sync + 'static + Default + Resource {
     fn register_with_app_in_set(app: &mut App, schedule: impl ScheduleLabel, set: impl SystemSet);
 }
 
+/// Implementors can override the way that each callback is handled, this can be used to provide temporary values such as the word handle.
+/// There can only be one [`RuntimeProvider`] per script host, so be careful about what your APIProviders expect!
+pub trait RuntimeProvider: 'static {
+    /// The type of script context the APIProvider works with, must be the same as the ScriptContext of the target ScriptHost.
+    type ScriptContext: Send + Sync + 'static;
+
+    /// the type of script engine/context the API is attached to, this must be the same as the APITarget of the ScriptHost meant to receive it.
+    type APITarget: Send + Sync + 'static;
+
+    /// The type of event being handled by the runtime
+    type Event: Send + Sync + 'static;
+
+    fn handle_event(
+        &mut self,
+        ctx: &mut Self::ScriptContext,
+        script_data: &ScriptData,
+        event: &Self::Event,
+    ) -> Result<(), ScriptError>;
+
+    /// Provides the runtime if it's different from the context
+    fn get_mut(&mut self) -> Option<&mut Self::APITarget> {
+        None
+    }
+}
+
+/// The resource containing a runtime provider for a particular set of type parameters
+#[derive(Resource)]
+pub struct RuntimeProviderContainer<H: ScriptHost> {
+    pub provider: Box<
+        dyn RuntimeProvider<
+            Event = H::ScriptEvent,
+            ScriptContext = H::ScriptContext,
+            APITarget = H::APITarget,
+        >,
+    >,
+}
+
 /// Implementors can modify a script context in order to enable
 /// API access. ScriptHosts call `attach_api` when creating scripts
 pub trait APIProvider: 'static + Send + Sync {
@@ -153,16 +189,6 @@ pub trait APIProvider: 'static + Send + Sync {
     /// or on a per-engine basis. Rhai for example allows you to decouple the State of each script from the
     /// engine. For one-time setup use `Self::setup_script`
     fn attach_api(&mut self, api: &mut Self::APITarget) -> Result<(), ScriptError>;
-
-    /// Hook executed every time a script is about to handle events, most notably used to "refresh" world pointers
-    fn setup_script_runtime(
-        &mut self,
-        _world_ptr: WorldPointer,
-        _script_data: &ScriptData,
-        _ctx: &mut Self::ScriptContext,
-    ) -> Result<(), ScriptError> {
-        Ok(())
-    }
 
     /// Setup meant to be executed once for every single script. Use this if you need to consistently setup scripts.
     /// For API's use `Self::attach_api` instead.
@@ -211,19 +237,6 @@ impl<T: ScriptHost> APIProviders<T> {
     pub fn attach_all(&mut self, ctx: &mut T::APITarget) -> Result<(), ScriptError> {
         for p in self.providers.iter_mut() {
             p.attach_api(ctx)?;
-        }
-
-        Ok(())
-    }
-
-    pub fn setup_runtime_all(
-        &mut self,
-        world_ptr: WorldPointer,
-        script_data: &ScriptData,
-        ctx: &mut T::ScriptContext,
-    ) -> Result<(), ScriptError> {
-        for p in self.providers.iter_mut() {
-            p.setup_script_runtime(world_ptr.clone(), script_data, ctx)?;
         }
 
         Ok(())
