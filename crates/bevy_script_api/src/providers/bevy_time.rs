@@ -25,7 +25,7 @@ fn index(&self) -> String {
 }
 "#]
 )]
-pub struct Fixed {}
+struct Fixed {}
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
     derive(clone),
@@ -43,18 +43,12 @@ fn index(&self) -> String {
 }
 "#]
 )]
-pub struct Real {}
+struct Real {}
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
     derive(clone),
     remote = "bevy::time::prelude::Timer",
     functions[r#"
-
-    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
-    fn clone(&self) -> bevy::time::prelude::Timer;
-
-"#,
-    r#"
 
     #[lua(
         as_trait = "std::cmp::PartialEq",
@@ -394,6 +388,12 @@ pub struct Real {}
 "#,
     r#"
 
+    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
+    fn clone(&self) -> bevy::time::prelude::Timer;
+
+"#,
+    r#"
+
     #[lua(as_trait = "std::cmp::Eq", kind = "Method")]
     fn assert_receiver_is_total_eq(&self) -> ();
 
@@ -405,12 +405,18 @@ fn index(&self) -> String {
 }
 "#]
 )]
-pub struct Timer {}
+struct Timer {}
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
     derive(clone),
     remote = "bevy::time::prelude::TimerMode",
     functions[r#"
+
+    #[lua(as_trait = "std::cmp::Eq", kind = "Method")]
+    fn assert_receiver_is_total_eq(&self) -> ();
+
+"#,
+    r#"
 
     #[lua(
         as_trait = "std::cmp::PartialEq",
@@ -419,12 +425,6 @@ pub struct Timer {}
         metamethod = "Eq",
     )]
     fn eq(&self, #[proxy] other: &timer::TimerMode) -> bool;
-
-"#,
-    r#"
-
-    #[lua(as_trait = "std::cmp::Eq", kind = "Method")]
-    fn assert_receiver_is_total_eq(&self) -> ();
 
 "#,
     r#"
@@ -440,7 +440,7 @@ fn index(&self) -> String {
 }
 "#]
 )]
-pub struct TimerMode {}
+struct TimerMode {}
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
     derive(clone),
@@ -458,15 +458,15 @@ fn index(&self) -> String {
 }
 "#]
 )]
-pub struct Virtual {}
+struct Virtual {}
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
     derive(clone),
     remote = "bevy::time::Stopwatch",
     functions[r#"
 
-    #[lua(as_trait = "std::cmp::Eq", kind = "Method")]
-    fn assert_receiver_is_total_eq(&self) -> ();
+    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
+    fn clone(&self) -> bevy::time::Stopwatch;
 
 "#,
     r#"
@@ -619,12 +619,6 @@ pub struct Virtual {}
 "#,
     r#"
 
-    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
-    fn clone(&self) -> bevy::time::Stopwatch;
-
-"#,
-    r#"
-
     #[lua(
         as_trait = "std::cmp::PartialEq",
         kind = "MetaFunction",
@@ -635,13 +629,19 @@ pub struct Virtual {}
 
 "#,
     r#"
+
+    #[lua(as_trait = "std::cmp::Eq", kind = "Method")]
+    fn assert_receiver_is_total_eq(&self) -> ();
+
+"#,
+    r#"
 #[lua(kind="MetaMethod", metamethod="ToString")]
 fn index(&self) -> String {
     format!("{:?}", _self)
 }
 "#]
 )]
-pub struct Stopwatch {}
+struct Stopwatch {}
 #[derive(Default)]
 pub(crate) struct Globals;
 impl bevy_mod_scripting_lua::tealr::mlu::ExportInstances for Globals {

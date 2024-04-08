@@ -500,7 +500,7 @@ fn index(&self) -> String {
 }
 "#]
 )]
-pub struct Duration {}
+struct Duration {}
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
     derive(clone),
@@ -667,7 +667,7 @@ fn index(&self) -> String {
 }
 "#]
 )]
-pub struct Instant();
+struct Instant();
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
     derive(clone),
@@ -994,7 +994,7 @@ fn index(&self) -> String {
 }
 "#]
 )]
-pub struct NonZeroI128();
+struct NonZeroI128();
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
     derive(clone),
@@ -1321,7 +1321,7 @@ fn index(&self) -> String {
 }
 "#]
 )]
-pub struct NonZeroI16();
+struct NonZeroI16();
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
     derive(clone),
@@ -1648,7 +1648,7 @@ fn index(&self) -> String {
 }
 "#]
 )]
-pub struct NonZeroI32();
+struct NonZeroI32();
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
     derive(clone),
@@ -1975,7 +1975,7 @@ fn index(&self) -> String {
 }
 "#]
 )]
-pub struct NonZeroI64();
+struct NonZeroI64();
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
     derive(clone),
@@ -2298,7 +2298,7 @@ fn index(&self) -> String {
 }
 "#]
 )]
-pub struct NonZeroI8();
+struct NonZeroI8();
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
     derive(clone),
@@ -2503,7 +2503,7 @@ fn index(&self) -> String {
 }
 "#]
 )]
-pub struct NonZeroU128();
+struct NonZeroU128();
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
     derive(clone),
@@ -2708,7 +2708,7 @@ fn index(&self) -> String {
 }
 "#]
 )]
-pub struct NonZeroU16();
+struct NonZeroU16();
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
     derive(clone),
@@ -2913,7 +2913,7 @@ fn index(&self) -> String {
 }
 "#]
 )]
-pub struct NonZeroU32();
+struct NonZeroU32();
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
     derive(clone),
@@ -3118,7 +3118,7 @@ fn index(&self) -> String {
 }
 "#]
 )]
-pub struct NonZeroU64();
+struct NonZeroU64();
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
     derive(clone),
@@ -3319,7 +3319,7 @@ fn index(&self) -> String {
 }
 "#]
 )]
-pub struct NonZeroU8();
+struct NonZeroU8();
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
     derive(clone),
@@ -3524,7 +3524,7 @@ fn index(&self) -> String {
 }
 "#]
 )]
-pub struct NonZeroUsize();
+struct NonZeroUsize();
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
     derive(clone),
@@ -3663,7 +3663,7 @@ fn index(&self) -> String {
 }
 "#]
 )]
-pub struct PathBuf {}
+struct PathBuf {}
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
     derive(clone),
@@ -3702,7 +3702,7 @@ fn index(&self) -> String {
 }
 "#]
 )]
-pub struct RangeFull {}
+struct RangeFull {}
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
     derive(clone),
@@ -3710,12 +3710,11 @@ pub struct RangeFull {}
     functions[r#"
 
     #[lua(
-        as_trait = "std::cmp::PartialEq",
-        kind = "MetaFunction",
-        composite = "eq",
-        metamethod = "Eq",
+        as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone",
+        kind = "Method",
+        output(proxy),
     )]
-    fn eq(&self, #[proxy] rhs: &glam::Quat) -> bool;
+    fn clone(&self) -> bevy::math::Quat;
 
 "#,
     r#"
@@ -3730,105 +3729,6 @@ pub struct RangeFull {}
         metamethod = "Sub",
     )]
     fn sub(self, #[proxy] rhs: bevy::math::Quat) -> bevy::math::Quat;
-
-"#,
-    r#"
-/// Divides a quaternion by a scalar value.
-/// The quotient is not guaranteed to be normalized.
-
-    #[lua(
-        as_trait = "std::ops::Div",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "div",
-        metamethod = "Div",
-    )]
-    fn div(self, rhs: f32) -> bevy::math::Quat;
-
-"#,
-    r#"
-
-    #[lua(
-        as_trait = "std::ops::Mul",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "mul",
-        metamethod = "Mul",
-    )]
-    fn mul(self, #[proxy] rhs: bevy::math::Vec3A) -> bevy::math::Vec3A;
-
-"#,
-    r#"
-/// Multiplies two quaternions. If they each represent a rotation, the result will
-/// represent the combined rotation.
-/// Note that due to floating point rounding the result may not be perfectly
-/// normalized.
-/// # Panics
-/// Will panic if `self` or `rhs` are not normalized when `glam_assert` is enabled.
-
-    #[lua(
-        as_trait = "std::ops::Mul",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "mul",
-        metamethod = "Mul",
-    )]
-    fn mul(self, #[proxy] rhs: bevy::math::Quat) -> bevy::math::Quat;
-
-"#,
-    r#"
-/// Adds two quaternions.
-/// The sum is not guaranteed to be normalized.
-/// Note that addition is not the same as combining the rotations represented by the
-/// two quaternions! That corresponds to multiplication.
-
-    #[lua(
-        as_trait = "std::ops::Add",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "add",
-        metamethod = "Add",
-    )]
-    fn add(self, #[proxy] rhs: bevy::math::Quat) -> bevy::math::Quat;
-
-"#,
-    r#"
-/// Multiplies a quaternion by a scalar value.
-/// The product is not guaranteed to be normalized.
-
-    #[lua(
-        as_trait = "std::ops::Mul",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "mul",
-        metamethod = "Mul",
-    )]
-    fn mul(self, rhs: f32) -> bevy::math::Quat;
-
-"#,
-    r#"
-
-    #[lua(
-        as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone",
-        kind = "Method",
-        output(proxy),
-    )]
-    fn clone(&self) -> bevy::math::Quat;
-
-"#,
-    r#"
-/// Multiplies a quaternion and a 3D vector, returning the rotated vector.
-/// # Panics
-/// Will panic if `self` is not normalized when `glam_assert` is enabled.
-
-    #[lua(
-        as_trait = "std::ops::Mul",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "mul",
-        metamethod = "Mul",
-    )]
-    fn mul(self, #[proxy] rhs: bevy::math::Vec3) -> bevy::math::Vec3;
 
 "#,
     r#"
@@ -4207,6 +4107,36 @@ pub struct RangeFull {}
 
 "#,
     r#"
+/// Adds two quaternions.
+/// The sum is not guaranteed to be normalized.
+/// Note that addition is not the same as combining the rotations represented by the
+/// two quaternions! That corresponds to multiplication.
+
+    #[lua(
+        as_trait = "std::ops::Add",
+        kind = "MetaFunction",
+        output(proxy),
+        composite = "add",
+        metamethod = "Add",
+    )]
+    fn add(self, #[proxy] rhs: bevy::math::Quat) -> bevy::math::Quat;
+
+"#,
+    r#"
+/// Multiplies a quaternion by a scalar value.
+/// The product is not guaranteed to be normalized.
+
+    #[lua(
+        as_trait = "std::ops::Mul",
+        kind = "MetaFunction",
+        output(proxy),
+        composite = "mul",
+        metamethod = "Mul",
+    )]
+    fn mul(self, rhs: f32) -> bevy::math::Quat;
+
+"#,
+    r#"
 
     #[lua(
         as_trait = "std::ops::Neg",
@@ -4216,6 +4146,76 @@ pub struct RangeFull {}
         metamethod = "Unm",
     )]
     fn neg(self) -> bevy::math::Quat;
+
+"#,
+    r#"
+/// Divides a quaternion by a scalar value.
+/// The quotient is not guaranteed to be normalized.
+
+    #[lua(
+        as_trait = "std::ops::Div",
+        kind = "MetaFunction",
+        output(proxy),
+        composite = "div",
+        metamethod = "Div",
+    )]
+    fn div(self, rhs: f32) -> bevy::math::Quat;
+
+"#,
+    r#"
+
+    #[lua(
+        as_trait = "std::ops::Mul",
+        kind = "MetaFunction",
+        output(proxy),
+        composite = "mul",
+        metamethod = "Mul",
+    )]
+    fn mul(self, #[proxy] rhs: bevy::math::Vec3A) -> bevy::math::Vec3A;
+
+"#,
+    r#"
+/// Multiplies a quaternion and a 3D vector, returning the rotated vector.
+/// # Panics
+/// Will panic if `self` is not normalized when `glam_assert` is enabled.
+
+    #[lua(
+        as_trait = "std::ops::Mul",
+        kind = "MetaFunction",
+        output(proxy),
+        composite = "mul",
+        metamethod = "Mul",
+    )]
+    fn mul(self, #[proxy] rhs: bevy::math::Vec3) -> bevy::math::Vec3;
+
+"#,
+    r#"
+
+    #[lua(
+        as_trait = "std::cmp::PartialEq",
+        kind = "MetaFunction",
+        composite = "eq",
+        metamethod = "Eq",
+    )]
+    fn eq(&self, #[proxy] rhs: &glam::Quat) -> bool;
+
+"#,
+    r#"
+/// Multiplies two quaternions. If they each represent a rotation, the result will
+/// represent the combined rotation.
+/// Note that due to floating point rounding the result may not be perfectly
+/// normalized.
+/// # Panics
+/// Will panic if `self` or `rhs` are not normalized when `glam_assert` is enabled.
+
+    #[lua(
+        as_trait = "std::ops::Mul",
+        kind = "MetaFunction",
+        output(proxy),
+        composite = "mul",
+        metamethod = "Mul",
+    )]
+    fn mul(self, #[proxy] rhs: bevy::math::Quat) -> bevy::math::Quat;
 
 "#,
     r#"
@@ -4242,81 +4242,12 @@ fn index(&self) -> String {
 }
 "#]
 )]
-pub struct Quat();
+struct Quat();
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
     derive(clone),
     remote = "bevy::math::Vec3",
     functions[r#"
-
-    #[lua(
-        as_trait = "std::ops::Div",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "div",
-        metamethod = "Div",
-    )]
-    fn div(self, #[proxy] rhs: bevy::math::Vec3) -> bevy::math::Vec3;
-
-"#,
-    r#"
-
-    #[lua(
-        as_trait = "std::ops::Mul",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "mul",
-        metamethod = "Mul",
-    )]
-    fn mul(self, rhs: f32) -> bevy::math::Vec3;
-
-"#,
-    r#"
-
-    #[lua(
-        as_trait = "std::ops::Add",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "add",
-        metamethod = "Add",
-    )]
-    fn add(self, #[proxy] rhs: bevy::math::Vec3) -> bevy::math::Vec3;
-
-"#,
-    r#"
-
-    #[lua(
-        as_trait = "std::cmp::PartialEq",
-        kind = "MetaFunction",
-        composite = "eq",
-        metamethod = "Eq",
-    )]
-    fn eq(&self, #[proxy] other: &glam::Vec3) -> bool;
-
-"#,
-    r#"
-
-    #[lua(
-        as_trait = "std::ops::Sub",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "sub",
-        metamethod = "Sub",
-    )]
-    fn sub(self, rhs: f32) -> bevy::math::Vec3;
-
-"#,
-    r#"
-
-    #[lua(
-        as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone",
-        kind = "Method",
-        output(proxy),
-    )]
-    fn clone(&self) -> bevy::math::Vec3;
-
-"#,
-    r#"
 
     #[lua(
         as_trait = "std::ops::Add",
@@ -4326,66 +4257,6 @@ pub struct Quat();
         metamethod = "Add",
     )]
     fn add(self, rhs: f32) -> bevy::math::Vec3;
-
-"#,
-    r#"
-
-    #[lua(
-        as_trait = "std::ops::Neg",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "neg",
-        metamethod = "Unm",
-    )]
-    fn neg(self) -> bevy::math::Vec3;
-
-"#,
-    r#"
-
-    #[lua(
-        as_trait = "std::ops::Mul",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "mul",
-        metamethod = "Mul",
-    )]
-    fn mul(self, #[proxy] rhs: bevy::math::Vec3) -> bevy::math::Vec3;
-
-"#,
-    r#"
-
-    #[lua(
-        as_trait = "std::ops::Rem",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "rem",
-        metamethod = "Mod",
-    )]
-    fn rem(self, #[proxy] rhs: bevy::math::Vec3) -> bevy::math::Vec3;
-
-"#,
-    r#"
-
-    #[lua(
-        as_trait = "std::ops::Sub",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "sub",
-        metamethod = "Sub",
-    )]
-    fn sub(self, #[proxy] rhs: bevy::math::Vec3) -> bevy::math::Vec3;
-
-"#,
-    r#"
-
-    #[lua(
-        as_trait = "std::ops::Rem",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "rem",
-        metamethod = "Mod",
-    )]
-    fn rem(self, rhs: f32) -> bevy::math::Vec3;
 
 "#,
     r#"
@@ -4951,6 +4822,28 @@ pub struct Quat();
     r#"
 
     #[lua(
+        as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone",
+        kind = "Method",
+        output(proxy),
+    )]
+    fn clone(&self) -> bevy::math::Vec3;
+
+"#,
+    r#"
+
+    #[lua(
+        as_trait = "std::ops::Mul",
+        kind = "MetaFunction",
+        output(proxy),
+        composite = "mul",
+        metamethod = "Mul",
+    )]
+    fn mul(self, rhs: f32) -> bevy::math::Vec3;
+
+"#,
+    r#"
+
+    #[lua(
         as_trait = "std::ops::Div",
         kind = "MetaFunction",
         output(proxy),
@@ -4958,6 +4851,113 @@ pub struct Quat();
         metamethod = "Div",
     )]
     fn div(self, rhs: f32) -> bevy::math::Vec3;
+
+"#,
+    r#"
+
+    #[lua(
+        as_trait = "std::ops::Add",
+        kind = "MetaFunction",
+        output(proxy),
+        composite = "add",
+        metamethod = "Add",
+    )]
+    fn add(self, #[proxy] rhs: bevy::math::Vec3) -> bevy::math::Vec3;
+
+"#,
+    r#"
+
+    #[lua(
+        as_trait = "std::ops::Sub",
+        kind = "MetaFunction",
+        output(proxy),
+        composite = "sub",
+        metamethod = "Sub",
+    )]
+    fn sub(self, rhs: f32) -> bevy::math::Vec3;
+
+"#,
+    r#"
+
+    #[lua(
+        as_trait = "std::ops::Rem",
+        kind = "MetaFunction",
+        output(proxy),
+        composite = "rem",
+        metamethod = "Mod",
+    )]
+    fn rem(self, rhs: f32) -> bevy::math::Vec3;
+
+"#,
+    r#"
+
+    #[lua(
+        as_trait = "std::ops::Rem",
+        kind = "MetaFunction",
+        output(proxy),
+        composite = "rem",
+        metamethod = "Mod",
+    )]
+    fn rem(self, #[proxy] rhs: bevy::math::Vec3) -> bevy::math::Vec3;
+
+"#,
+    r#"
+
+    #[lua(
+        as_trait = "std::ops::Mul",
+        kind = "MetaFunction",
+        output(proxy),
+        composite = "mul",
+        metamethod = "Mul",
+    )]
+    fn mul(self, #[proxy] rhs: bevy::math::Vec3) -> bevy::math::Vec3;
+
+"#,
+    r#"
+
+    #[lua(
+        as_trait = "std::ops::Neg",
+        kind = "MetaFunction",
+        output(proxy),
+        composite = "neg",
+        metamethod = "Unm",
+    )]
+    fn neg(self) -> bevy::math::Vec3;
+
+"#,
+    r#"
+
+    #[lua(
+        as_trait = "std::ops::Sub",
+        kind = "MetaFunction",
+        output(proxy),
+        composite = "sub",
+        metamethod = "Sub",
+    )]
+    fn sub(self, #[proxy] rhs: bevy::math::Vec3) -> bevy::math::Vec3;
+
+"#,
+    r#"
+
+    #[lua(
+        as_trait = "std::ops::Div",
+        kind = "MetaFunction",
+        output(proxy),
+        composite = "div",
+        metamethod = "Div",
+    )]
+    fn div(self, #[proxy] rhs: bevy::math::Vec3) -> bevy::math::Vec3;
+
+"#,
+    r#"
+
+    #[lua(
+        as_trait = "std::cmp::PartialEq",
+        kind = "MetaFunction",
+        composite = "eq",
+        metamethod = "Eq",
+    )]
+    fn eq(&self, #[proxy] other: &glam::Vec3) -> bool;
 
 "#,
     r#"
@@ -4979,7 +4979,7 @@ fn index(&mut self, lua: &Lua, idx: crate::lua::util::LuaIndex, val: f32) -> Res
 }
 "#]
 )]
-pub struct Vec3 {
+struct Vec3 {
     x: f32,
     y: f32,
     z: f32,
@@ -5001,14 +5001,8 @@ pub struct Vec3 {
 "#,
     r#"
 
-    #[lua(
-        as_trait = "std::ops::Sub",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "sub",
-        metamethod = "Sub",
-    )]
-    fn sub(self, #[proxy] rhs: bevy::math::IVec2) -> bevy::math::IVec2;
+    #[lua(as_trait = "std::cmp::Eq", kind = "Method")]
+    fn assert_receiver_is_total_eq(&self) -> ();
 
 "#,
     r#"
@@ -5026,25 +5020,13 @@ pub struct Vec3 {
     r#"
 
     #[lua(
-        as_trait = "std::ops::Rem",
+        as_trait = "std::ops::Div",
         kind = "MetaFunction",
         output(proxy),
-        composite = "rem",
-        metamethod = "Mod",
+        composite = "div",
+        metamethod = "Div",
     )]
-    fn rem(self, #[proxy] rhs: bevy::math::IVec2) -> bevy::math::IVec2;
-
-"#,
-    r#"
-
-    #[lua(
-        as_trait = "std::ops::Neg",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "neg",
-        metamethod = "Unm",
-    )]
-    fn neg(self) -> bevy::math::IVec2;
+    fn div(self, #[proxy] rhs: bevy::math::IVec2) -> bevy::math::IVec2;
 
 "#,
     r#"
@@ -5062,11 +5044,83 @@ pub struct Vec3 {
     r#"
 
     #[lua(
+        as_trait = "std::ops::Rem",
+        kind = "MetaFunction",
+        output(proxy),
+        composite = "rem",
+        metamethod = "Mod",
+    )]
+    fn rem(self, #[proxy] rhs: bevy::math::IVec2) -> bevy::math::IVec2;
+
+"#,
+    r#"
+
+    #[lua(
+        as_trait = "std::ops::Rem",
+        kind = "MetaFunction",
+        output(proxy),
+        composite = "rem",
+        metamethod = "Mod",
+    )]
+    fn rem(self, rhs: i32) -> bevy::math::IVec2;
+
+"#,
+    r#"
+
+    #[lua(
+        as_trait = "std::ops::Add",
+        kind = "MetaFunction",
+        output(proxy),
+        composite = "add",
+        metamethod = "Add",
+    )]
+    fn add(self, rhs: i32) -> bevy::math::IVec2;
+
+"#,
+    r#"
+
+    #[lua(
+        as_trait = "std::ops::Sub",
+        kind = "MetaFunction",
+        output(proxy),
+        composite = "sub",
+        metamethod = "Sub",
+    )]
+    fn sub(self, #[proxy] rhs: bevy::math::IVec2) -> bevy::math::IVec2;
+
+"#,
+    r#"
+
+    #[lua(
         as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone",
         kind = "Method",
         output(proxy),
     )]
     fn clone(&self) -> bevy::math::IVec2;
+
+"#,
+    r#"
+
+    #[lua(
+        as_trait = "std::ops::Div",
+        kind = "MetaFunction",
+        output(proxy),
+        composite = "div",
+        metamethod = "Div",
+    )]
+    fn div(self, rhs: i32) -> bevy::math::IVec2;
+
+"#,
+    r#"
+
+    #[lua(
+        as_trait = "std::ops::Neg",
+        kind = "MetaFunction",
+        output(proxy),
+        composite = "neg",
+        metamethod = "Unm",
+    )]
+    fn neg(self) -> bevy::math::IVec2;
 
 "#,
     r#"
@@ -5428,18 +5482,6 @@ pub struct Vec3 {
     r#"
 
     #[lua(
-        as_trait = "std::ops::Mul",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "mul",
-        metamethod = "Mul",
-    )]
-    fn mul(self, rhs: i32) -> bevy::math::IVec2;
-
-"#,
-    r#"
-
-    #[lua(
         as_trait = "std::ops::Add",
         kind = "MetaFunction",
         output(proxy),
@@ -5451,56 +5493,14 @@ pub struct Vec3 {
 "#,
     r#"
 
-    #[lua(as_trait = "std::cmp::Eq", kind = "Method")]
-    fn assert_receiver_is_total_eq(&self) -> ();
-
-"#,
-    r#"
-
     #[lua(
-        as_trait = "std::ops::Rem",
+        as_trait = "std::ops::Mul",
         kind = "MetaFunction",
         output(proxy),
-        composite = "rem",
-        metamethod = "Mod",
+        composite = "mul",
+        metamethod = "Mul",
     )]
-    fn rem(self, rhs: i32) -> bevy::math::IVec2;
-
-"#,
-    r#"
-
-    #[lua(
-        as_trait = "std::ops::Add",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "add",
-        metamethod = "Add",
-    )]
-    fn add(self, rhs: i32) -> bevy::math::IVec2;
-
-"#,
-    r#"
-
-    #[lua(
-        as_trait = "std::ops::Div",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "div",
-        metamethod = "Div",
-    )]
-    fn div(self, rhs: i32) -> bevy::math::IVec2;
-
-"#,
-    r#"
-
-    #[lua(
-        as_trait = "std::ops::Div",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "div",
-        metamethod = "Div",
-    )]
-    fn div(self, #[proxy] rhs: bevy::math::IVec2) -> bevy::math::IVec2;
+    fn mul(self, rhs: i32) -> bevy::math::IVec2;
 
 "#,
     r#"
@@ -5522,7 +5522,7 @@ fn index(&mut self, lua: &Lua, idx: crate::lua::util::LuaIndex, val: i32) -> Res
 }
 "#]
 )]
-pub struct IVec2 {
+struct IVec2 {
     x: i32,
     y: i32,
 }
@@ -5532,46 +5532,6 @@ pub struct IVec2 {
     remote = "bevy::math::IVec3",
     functions[r#"
 
-    #[lua(as_trait = "std::cmp::Eq", kind = "Method")]
-    fn assert_receiver_is_total_eq(&self) -> ();
-
-"#,
-    r#"
-
-    #[lua(
-        as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone",
-        kind = "Method",
-        output(proxy),
-    )]
-    fn clone(&self) -> bevy::math::IVec3;
-
-"#,
-    r#"
-
-    #[lua(
-        as_trait = "std::ops::Add",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "add",
-        metamethod = "Add",
-    )]
-    fn add(self, rhs: i32) -> bevy::math::IVec3;
-
-"#,
-    r#"
-
-    #[lua(
-        as_trait = "std::ops::Sub",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "sub",
-        metamethod = "Sub",
-    )]
-    fn sub(self, #[proxy] rhs: bevy::math::IVec3) -> bevy::math::IVec3;
-
-"#,
-    r#"
-
     #[lua(
         as_trait = "std::ops::Div",
         kind = "MetaFunction",
@@ -5580,77 +5540,6 @@ pub struct IVec2 {
         metamethod = "Div",
     )]
     fn div(self, #[proxy] rhs: bevy::math::IVec3) -> bevy::math::IVec3;
-
-"#,
-    r#"
-
-    #[lua(
-        as_trait = "std::ops::Add",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "add",
-        metamethod = "Add",
-    )]
-    fn add(self, #[proxy] rhs: bevy::math::IVec3) -> bevy::math::IVec3;
-
-"#,
-    r#"
-
-    #[lua(
-        as_trait = "std::ops::Mul",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "mul",
-        metamethod = "Mul",
-    )]
-    fn mul(self, #[proxy] rhs: bevy::math::IVec3) -> bevy::math::IVec3;
-
-"#,
-    r#"
-
-    #[lua(
-        as_trait = "std::ops::Div",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "div",
-        metamethod = "Div",
-    )]
-    fn div(self, rhs: i32) -> bevy::math::IVec3;
-
-"#,
-    r#"
-
-    #[lua(
-        as_trait = "std::cmp::PartialEq",
-        kind = "MetaFunction",
-        composite = "eq",
-        metamethod = "Eq",
-    )]
-    fn eq(&self, #[proxy] other: &glam::IVec3) -> bool;
-
-"#,
-    r#"
-
-    #[lua(
-        as_trait = "std::ops::Rem",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "rem",
-        metamethod = "Mod",
-    )]
-    fn rem(self, rhs: i32) -> bevy::math::IVec3;
-
-"#,
-    r#"
-
-    #[lua(
-        as_trait = "std::ops::Sub",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "sub",
-        metamethod = "Sub",
-    )]
-    fn sub(self, rhs: i32) -> bevy::math::IVec3;
 
 "#,
     r#"
@@ -6010,6 +5899,105 @@ pub struct IVec2 {
     r#"
 
     #[lua(
+        as_trait = "std::ops::Add",
+        kind = "MetaFunction",
+        output(proxy),
+        composite = "add",
+        metamethod = "Add",
+    )]
+    fn add(self, #[proxy] rhs: bevy::math::IVec3) -> bevy::math::IVec3;
+
+"#,
+    r#"
+
+    #[lua(
+        as_trait = "std::ops::Sub",
+        kind = "MetaFunction",
+        output(proxy),
+        composite = "sub",
+        metamethod = "Sub",
+    )]
+    fn sub(self, rhs: i32) -> bevy::math::IVec3;
+
+"#,
+    r#"
+
+    #[lua(
+        as_trait = "std::ops::Add",
+        kind = "MetaFunction",
+        output(proxy),
+        composite = "add",
+        metamethod = "Add",
+    )]
+    fn add(self, rhs: i32) -> bevy::math::IVec3;
+
+"#,
+    r#"
+
+    #[lua(
+        as_trait = "std::ops::Div",
+        kind = "MetaFunction",
+        output(proxy),
+        composite = "div",
+        metamethod = "Div",
+    )]
+    fn div(self, rhs: i32) -> bevy::math::IVec3;
+
+"#,
+    r#"
+
+    #[lua(
+        as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone",
+        kind = "Method",
+        output(proxy),
+    )]
+    fn clone(&self) -> bevy::math::IVec3;
+
+"#,
+    r#"
+
+    #[lua(
+        as_trait = "std::cmp::PartialEq",
+        kind = "MetaFunction",
+        composite = "eq",
+        metamethod = "Eq",
+    )]
+    fn eq(&self, #[proxy] other: &glam::IVec3) -> bool;
+
+"#,
+    r#"
+
+    #[lua(as_trait = "std::cmp::Eq", kind = "Method")]
+    fn assert_receiver_is_total_eq(&self) -> ();
+
+"#,
+    r#"
+
+    #[lua(
+        as_trait = "std::ops::Mul",
+        kind = "MetaFunction",
+        output(proxy),
+        composite = "mul",
+        metamethod = "Mul",
+    )]
+    fn mul(self, #[proxy] rhs: bevy::math::IVec3) -> bevy::math::IVec3;
+
+"#,
+    r#"
+
+    #[lua(
+        as_trait = "std::ops::Rem",
+        kind = "MetaFunction",
+        output(proxy),
+        composite = "rem",
+        metamethod = "Mod",
+    )]
+    fn rem(self, rhs: i32) -> bevy::math::IVec3;
+
+"#,
+    r#"
+
+    #[lua(
         as_trait = "std::ops::Mul",
         kind = "MetaFunction",
         output(proxy),
@@ -6044,6 +6032,18 @@ pub struct IVec2 {
 
 "#,
     r#"
+
+    #[lua(
+        as_trait = "std::ops::Sub",
+        kind = "MetaFunction",
+        output(proxy),
+        composite = "sub",
+        metamethod = "Sub",
+    )]
+    fn sub(self, #[proxy] rhs: bevy::math::IVec3) -> bevy::math::IVec3;
+
+"#,
+    r#"
 #[lua(kind="MetaMethod", metamethod="ToString")]
 fn index(&self) -> String {
     format!("{}", _self)
@@ -6062,7 +6062,7 @@ fn index(&mut self, lua: &Lua, idx: crate::lua::util::LuaIndex, val: i32) -> Res
 }
 "#]
 )]
-pub struct IVec3 {
+struct IVec3 {
     x: i32,
     y: i32,
     z: i32,
@@ -6074,6 +6074,40 @@ pub struct IVec3 {
     functions[r#"
 
     #[lua(
+        as_trait = "std::ops::Rem",
+        kind = "MetaFunction",
+        output(proxy),
+        composite = "rem",
+        metamethod = "Mod",
+    )]
+    fn rem(self, #[proxy] rhs: bevy::math::IVec4) -> bevy::math::IVec4;
+
+"#,
+    r#"
+
+    #[lua(
+        as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone",
+        kind = "Method",
+        output(proxy),
+    )]
+    fn clone(&self) -> bevy::math::IVec4;
+
+"#,
+    r#"
+
+    #[lua(
+        as_trait = "std::ops::Sub",
+        kind = "MetaFunction",
+        output(proxy),
+        composite = "sub",
+        metamethod = "Sub",
+    )]
+    fn sub(self, rhs: i32) -> bevy::math::IVec4;
+
+"#,
+    r#"
+
+    #[lua(
         as_trait = "std::ops::Mul",
         kind = "MetaFunction",
         output(proxy),
@@ -6081,6 +6115,53 @@ pub struct IVec3 {
         metamethod = "Mul",
     )]
     fn mul(self, #[proxy] rhs: bevy::math::IVec4) -> bevy::math::IVec4;
+
+"#,
+    r#"
+
+    #[lua(
+        as_trait = "std::cmp::PartialEq",
+        kind = "MetaFunction",
+        composite = "eq",
+        metamethod = "Eq",
+    )]
+    fn eq(&self, #[proxy] other: &glam::IVec4) -> bool;
+
+"#,
+    r#"
+
+    #[lua(
+        as_trait = "std::ops::Div",
+        kind = "MetaFunction",
+        output(proxy),
+        composite = "div",
+        metamethod = "Div",
+    )]
+    fn div(self, #[proxy] rhs: bevy::math::IVec4) -> bevy::math::IVec4;
+
+"#,
+    r#"
+
+    #[lua(
+        as_trait = "std::ops::Add",
+        kind = "MetaFunction",
+        output(proxy),
+        composite = "add",
+        metamethod = "Add",
+    )]
+    fn add(self, rhs: i32) -> bevy::math::IVec4;
+
+"#,
+    r#"
+
+    #[lua(
+        as_trait = "std::ops::Rem",
+        kind = "MetaFunction",
+        output(proxy),
+        composite = "rem",
+        metamethod = "Mod",
+    )]
+    fn rem(self, rhs: i32) -> bevy::math::IVec4;
 
 "#,
     r#"
@@ -6418,102 +6499,8 @@ pub struct IVec3 {
 "#,
     r#"
 
-    #[lua(
-        as_trait = "std::ops::Add",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "add",
-        metamethod = "Add",
-    )]
-    fn add(self, rhs: i32) -> bevy::math::IVec4;
-
-"#,
-    r#"
-
-    #[lua(
-        as_trait = "std::ops::Rem",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "rem",
-        metamethod = "Mod",
-    )]
-    fn rem(self, rhs: i32) -> bevy::math::IVec4;
-
-"#,
-    r#"
-
     #[lua(as_trait = "std::cmp::Eq", kind = "Method")]
     fn assert_receiver_is_total_eq(&self) -> ();
-
-"#,
-    r#"
-
-    #[lua(
-        as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone",
-        kind = "Method",
-        output(proxy),
-    )]
-    fn clone(&self) -> bevy::math::IVec4;
-
-"#,
-    r#"
-
-    #[lua(
-        as_trait = "std::ops::Div",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "div",
-        metamethod = "Div",
-    )]
-    fn div(self, #[proxy] rhs: bevy::math::IVec4) -> bevy::math::IVec4;
-
-"#,
-    r#"
-
-    #[lua(
-        as_trait = "std::ops::Sub",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "sub",
-        metamethod = "Sub",
-    )]
-    fn sub(self, rhs: i32) -> bevy::math::IVec4;
-
-"#,
-    r#"
-
-    #[lua(
-        as_trait = "std::ops::Add",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "add",
-        metamethod = "Add",
-    )]
-    fn add(self, #[proxy] rhs: bevy::math::IVec4) -> bevy::math::IVec4;
-
-"#,
-    r#"
-
-    #[lua(
-        as_trait = "std::ops::Sub",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "sub",
-        metamethod = "Sub",
-    )]
-    fn sub(self, #[proxy] rhs: bevy::math::IVec4) -> bevy::math::IVec4;
-
-"#,
-    r#"
-
-    #[lua(
-        as_trait = "std::ops::Mul",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "mul",
-        metamethod = "Mul",
-    )]
-    fn mul(self, rhs: i32) -> bevy::math::IVec4;
 
 "#,
     r#"
@@ -6531,6 +6518,30 @@ pub struct IVec3 {
     r#"
 
     #[lua(
+        as_trait = "std::ops::Sub",
+        kind = "MetaFunction",
+        output(proxy),
+        composite = "sub",
+        metamethod = "Sub",
+    )]
+    fn sub(self, #[proxy] rhs: bevy::math::IVec4) -> bevy::math::IVec4;
+
+"#,
+    r#"
+
+    #[lua(
+        as_trait = "std::ops::Add",
+        kind = "MetaFunction",
+        output(proxy),
+        composite = "add",
+        metamethod = "Add",
+    )]
+    fn add(self, #[proxy] rhs: bevy::math::IVec4) -> bevy::math::IVec4;
+
+"#,
+    r#"
+
+    #[lua(
         as_trait = "std::ops::Neg",
         kind = "MetaFunction",
         output(proxy),
@@ -6543,24 +6554,13 @@ pub struct IVec3 {
     r#"
 
     #[lua(
-        as_trait = "std::cmp::PartialEq",
-        kind = "MetaFunction",
-        composite = "eq",
-        metamethod = "Eq",
-    )]
-    fn eq(&self, #[proxy] other: &glam::IVec4) -> bool;
-
-"#,
-    r#"
-
-    #[lua(
-        as_trait = "std::ops::Rem",
+        as_trait = "std::ops::Mul",
         kind = "MetaFunction",
         output(proxy),
-        composite = "rem",
-        metamethod = "Mod",
+        composite = "mul",
+        metamethod = "Mul",
     )]
-    fn rem(self, #[proxy] rhs: bevy::math::IVec4) -> bevy::math::IVec4;
+    fn mul(self, rhs: i32) -> bevy::math::IVec4;
 
 "#,
     r#"
@@ -6582,7 +6582,7 @@ fn index(&mut self, lua: &Lua, idx: crate::lua::util::LuaIndex, val: i32) -> Res
 }
 "#]
 )]
-pub struct IVec4 {
+struct IVec4 {
     x: i32,
     y: i32,
     z: i32,
@@ -6595,95 +6595,6 @@ pub struct IVec4 {
     functions[r#"
 
     #[lua(
-        as_trait = "std::ops::Mul",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "mul",
-        metamethod = "Mul",
-    )]
-    fn mul(self, rhs: i64) -> bevy::math::I64Vec2;
-
-"#,
-    r#"
-
-    #[lua(
-        as_trait = "std::cmp::PartialEq",
-        kind = "MetaFunction",
-        composite = "eq",
-        metamethod = "Eq",
-    )]
-    fn eq(&self, #[proxy] other: &glam::I64Vec2) -> bool;
-
-"#,
-    r#"
-
-    #[lua(as_trait = "std::cmp::Eq", kind = "Method")]
-    fn assert_receiver_is_total_eq(&self) -> ();
-
-"#,
-    r#"
-
-    #[lua(
-        as_trait = "std::ops::Neg",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "neg",
-        metamethod = "Unm",
-    )]
-    fn neg(self) -> bevy::math::I64Vec2;
-
-"#,
-    r#"
-
-    #[lua(
-        as_trait = "std::ops::Sub",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "sub",
-        metamethod = "Sub",
-    )]
-    fn sub(self, #[proxy] rhs: bevy::math::I64Vec2) -> bevy::math::I64Vec2;
-
-"#,
-    r#"
-
-    #[lua(
-        as_trait = "std::ops::Add",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "add",
-        metamethod = "Add",
-    )]
-    fn add(self, #[proxy] rhs: bevy::math::I64Vec2) -> bevy::math::I64Vec2;
-
-"#,
-    r#"
-
-    #[lua(
-        as_trait = "std::ops::Add",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "add",
-        metamethod = "Add",
-    )]
-    fn add(self, rhs: i64) -> bevy::math::I64Vec2;
-
-"#,
-    r#"
-
-    #[lua(
-        as_trait = "std::ops::Rem",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "rem",
-        metamethod = "Mod",
-    )]
-    fn rem(self, #[proxy] rhs: bevy::math::I64Vec2) -> bevy::math::I64Vec2;
-
-"#,
-    r#"
-
-    #[lua(
         as_trait = "std::ops::Div",
         kind = "MetaFunction",
         output(proxy),
@@ -6691,28 +6602,6 @@ pub struct IVec4 {
         metamethod = "Div",
     )]
     fn div(self, #[proxy] rhs: bevy::math::I64Vec2) -> bevy::math::I64Vec2;
-
-"#,
-    r#"
-
-    #[lua(
-        as_trait = "std::ops::Mul",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "mul",
-        metamethod = "Mul",
-    )]
-    fn mul(self, #[proxy] rhs: bevy::math::I64Vec2) -> bevy::math::I64Vec2;
-
-"#,
-    r#"
-
-    #[lua(
-        as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone",
-        kind = "Method",
-        output(proxy),
-    )]
-    fn clone(&self) -> bevy::math::I64Vec2;
 
 "#,
     r#"
@@ -6730,13 +6619,13 @@ pub struct IVec4 {
     r#"
 
     #[lua(
-        as_trait = "std::ops::Div",
+        as_trait = "std::ops::Rem",
         kind = "MetaFunction",
         output(proxy),
-        composite = "div",
-        metamethod = "Div",
+        composite = "rem",
+        metamethod = "Mod",
     )]
-    fn div(self, rhs: i64) -> bevy::math::I64Vec2;
+    fn rem(self, #[proxy] rhs: bevy::math::I64Vec2) -> bevy::math::I64Vec2;
 
 "#,
     r#"
@@ -6749,6 +6638,54 @@ pub struct IVec4 {
         metamethod = "Mod",
     )]
     fn rem(self, rhs: i64) -> bevy::math::I64Vec2;
+
+"#,
+    r#"
+
+    #[lua(
+        as_trait = "std::ops::Div",
+        kind = "MetaFunction",
+        output(proxy),
+        composite = "div",
+        metamethod = "Div",
+    )]
+    fn div(self, rhs: i64) -> bevy::math::I64Vec2;
+
+"#,
+    r#"
+
+    #[lua(
+        as_trait = "std::ops::Sub",
+        kind = "MetaFunction",
+        output(proxy),
+        composite = "sub",
+        metamethod = "Sub",
+    )]
+    fn sub(self, #[proxy] rhs: bevy::math::I64Vec2) -> bevy::math::I64Vec2;
+
+"#,
+    r#"
+
+    #[lua(
+        as_trait = "std::ops::Neg",
+        kind = "MetaFunction",
+        output(proxy),
+        composite = "neg",
+        metamethod = "Unm",
+    )]
+    fn neg(self) -> bevy::math::I64Vec2;
+
+"#,
+    r#"
+
+    #[lua(
+        as_trait = "std::ops::Add",
+        kind = "MetaFunction",
+        output(proxy),
+        composite = "add",
+        metamethod = "Add",
+    )]
+    fn add(self, rhs: i64) -> bevy::math::I64Vec2;
 
 "#,
     r#"
@@ -7108,13 +7045,76 @@ pub struct IVec4 {
 
 "#,
     r#"
+
+    #[lua(
+        as_trait = "std::cmp::PartialEq",
+        kind = "MetaFunction",
+        composite = "eq",
+        metamethod = "Eq",
+    )]
+    fn eq(&self, #[proxy] other: &glam::I64Vec2) -> bool;
+
+"#,
+    r#"
+
+    #[lua(
+        as_trait = "std::ops::Mul",
+        kind = "MetaFunction",
+        output(proxy),
+        composite = "mul",
+        metamethod = "Mul",
+    )]
+    fn mul(self, #[proxy] rhs: bevy::math::I64Vec2) -> bevy::math::I64Vec2;
+
+"#,
+    r#"
+
+    #[lua(
+        as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone",
+        kind = "Method",
+        output(proxy),
+    )]
+    fn clone(&self) -> bevy::math::I64Vec2;
+
+"#,
+    r#"
+
+    #[lua(
+        as_trait = "std::ops::Add",
+        kind = "MetaFunction",
+        output(proxy),
+        composite = "add",
+        metamethod = "Add",
+    )]
+    fn add(self, #[proxy] rhs: bevy::math::I64Vec2) -> bevy::math::I64Vec2;
+
+"#,
+    r#"
+
+    #[lua(
+        as_trait = "std::ops::Mul",
+        kind = "MetaFunction",
+        output(proxy),
+        composite = "mul",
+        metamethod = "Mul",
+    )]
+    fn mul(self, rhs: i64) -> bevy::math::I64Vec2;
+
+"#,
+    r#"
+
+    #[lua(as_trait = "std::cmp::Eq", kind = "Method")]
+    fn assert_receiver_is_total_eq(&self) -> ();
+
+"#,
+    r#"
 #[lua(kind="MetaMethod", metamethod="ToString")]
 fn index(&self) -> String {
     format!("{}", _self)
 }
 "#]
 )]
-pub struct I64Vec2 {
+struct I64Vec2 {
     x: i64,
     y: i64,
 }
@@ -7123,6 +7123,30 @@ pub struct I64Vec2 {
     derive(clone),
     remote = "bevy::math::I64Vec3",
     functions[r#"
+
+    #[lua(
+        as_trait = "std::ops::Sub",
+        kind = "MetaFunction",
+        output(proxy),
+        composite = "sub",
+        metamethod = "Sub",
+    )]
+    fn sub(self, rhs: i64) -> bevy::math::I64Vec3;
+
+"#,
+    r#"
+
+    #[lua(
+        as_trait = "std::ops::Mul",
+        kind = "MetaFunction",
+        output(proxy),
+        composite = "mul",
+        metamethod = "Mul",
+    )]
+    fn mul(self, #[proxy] rhs: bevy::math::I64Vec3) -> bevy::math::I64Vec3;
+
+"#,
+    r#"
 
     #[lua(
         as_trait = "std::ops::Div",
@@ -7137,13 +7161,83 @@ pub struct I64Vec2 {
     r#"
 
     #[lua(
-        as_trait = "std::ops::Div",
+        as_trait = "std::ops::Add",
         kind = "MetaFunction",
         output(proxy),
-        composite = "div",
-        metamethod = "Div",
+        composite = "add",
+        metamethod = "Add",
     )]
-    fn div(self, rhs: i64) -> bevy::math::I64Vec3;
+    fn add(self, #[proxy] rhs: bevy::math::I64Vec3) -> bevy::math::I64Vec3;
+
+"#,
+    r#"
+
+    #[lua(
+        as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone",
+        kind = "Method",
+        output(proxy),
+    )]
+    fn clone(&self) -> bevy::math::I64Vec3;
+
+"#,
+    r#"
+
+    #[lua(
+        as_trait = "std::ops::Rem",
+        kind = "MetaFunction",
+        output(proxy),
+        composite = "rem",
+        metamethod = "Mod",
+    )]
+    fn rem(self, rhs: i64) -> bevy::math::I64Vec3;
+
+"#,
+    r#"
+
+    #[lua(
+        as_trait = "std::ops::Rem",
+        kind = "MetaFunction",
+        output(proxy),
+        composite = "rem",
+        metamethod = "Mod",
+    )]
+    fn rem(self, #[proxy] rhs: bevy::math::I64Vec3) -> bevy::math::I64Vec3;
+
+"#,
+    r#"
+
+    #[lua(
+        as_trait = "std::ops::Mul",
+        kind = "MetaFunction",
+        output(proxy),
+        composite = "mul",
+        metamethod = "Mul",
+    )]
+    fn mul(self, rhs: i64) -> bevy::math::I64Vec3;
+
+"#,
+    r#"
+
+    #[lua(
+        as_trait = "std::ops::Neg",
+        kind = "MetaFunction",
+        output(proxy),
+        composite = "neg",
+        metamethod = "Unm",
+    )]
+    fn neg(self) -> bevy::math::I64Vec3;
+
+"#,
+    r#"
+
+    #[lua(
+        as_trait = "std::ops::Add",
+        kind = "MetaFunction",
+        output(proxy),
+        composite = "add",
+        metamethod = "Add",
+    )]
+    fn add(self, rhs: i64) -> bevy::math::I64Vec3;
 
 "#,
     r#"
@@ -7503,64 +7597,13 @@ pub struct I64Vec2 {
     r#"
 
     #[lua(
-        as_trait = "std::ops::Rem",
+        as_trait = "std::ops::Div",
         kind = "MetaFunction",
         output(proxy),
-        composite = "rem",
-        metamethod = "Mod",
+        composite = "div",
+        metamethod = "Div",
     )]
-    fn rem(self, rhs: i64) -> bevy::math::I64Vec3;
-
-"#,
-    r#"
-
-    #[lua(as_trait = "std::cmp::Eq", kind = "Method")]
-    fn assert_receiver_is_total_eq(&self) -> ();
-
-"#,
-    r#"
-
-    #[lua(
-        as_trait = "std::cmp::PartialEq",
-        kind = "MetaFunction",
-        composite = "eq",
-        metamethod = "Eq",
-    )]
-    fn eq(&self, #[proxy] other: &glam::I64Vec3) -> bool;
-
-"#,
-    r#"
-
-    #[lua(
-        as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone",
-        kind = "Method",
-        output(proxy),
-    )]
-    fn clone(&self) -> bevy::math::I64Vec3;
-
-"#,
-    r#"
-
-    #[lua(
-        as_trait = "std::ops::Add",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "add",
-        metamethod = "Add",
-    )]
-    fn add(self, #[proxy] rhs: bevy::math::I64Vec3) -> bevy::math::I64Vec3;
-
-"#,
-    r#"
-
-    #[lua(
-        as_trait = "std::ops::Add",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "add",
-        metamethod = "Add",
-    )]
-    fn add(self, rhs: i64) -> bevy::math::I64Vec3;
+    fn div(self, rhs: i64) -> bevy::math::I64Vec3;
 
 "#,
     r#"
@@ -7578,61 +7621,18 @@ pub struct I64Vec2 {
     r#"
 
     #[lua(
-        as_trait = "std::ops::Neg",
+        as_trait = "std::cmp::PartialEq",
         kind = "MetaFunction",
-        output(proxy),
-        composite = "neg",
-        metamethod = "Unm",
+        composite = "eq",
+        metamethod = "Eq",
     )]
-    fn neg(self) -> bevy::math::I64Vec3;
+    fn eq(&self, #[proxy] other: &glam::I64Vec3) -> bool;
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "std::ops::Mul",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "mul",
-        metamethod = "Mul",
-    )]
-    fn mul(self, rhs: i64) -> bevy::math::I64Vec3;
-
-"#,
-    r#"
-
-    #[lua(
-        as_trait = "std::ops::Rem",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "rem",
-        metamethod = "Mod",
-    )]
-    fn rem(self, #[proxy] rhs: bevy::math::I64Vec3) -> bevy::math::I64Vec3;
-
-"#,
-    r#"
-
-    #[lua(
-        as_trait = "std::ops::Mul",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "mul",
-        metamethod = "Mul",
-    )]
-    fn mul(self, #[proxy] rhs: bevy::math::I64Vec3) -> bevy::math::I64Vec3;
-
-"#,
-    r#"
-
-    #[lua(
-        as_trait = "std::ops::Sub",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "sub",
-        metamethod = "Sub",
-    )]
-    fn sub(self, rhs: i64) -> bevy::math::I64Vec3;
+    #[lua(as_trait = "std::cmp::Eq", kind = "Method")]
+    fn assert_receiver_is_total_eq(&self) -> ();
 
 "#,
     r#"
@@ -7642,7 +7642,7 @@ fn index(&self) -> String {
 }
 "#]
 )]
-pub struct I64Vec3 {
+struct I64Vec3 {
     x: i64,
     y: i64,
     z: i64,
@@ -7661,105 +7661,6 @@ pub struct I64Vec3 {
         metamethod = "Sub",
     )]
     fn sub(self, rhs: i64) -> bevy::math::I64Vec4;
-
-"#,
-    r#"
-
-    #[lua(as_trait = "std::cmp::Eq", kind = "Method")]
-    fn assert_receiver_is_total_eq(&self) -> ();
-
-"#,
-    r#"
-
-    #[lua(
-        as_trait = "std::ops::Div",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "div",
-        metamethod = "Div",
-    )]
-    fn div(self, rhs: i64) -> bevy::math::I64Vec4;
-
-"#,
-    r#"
-
-    #[lua(
-        as_trait = "std::ops::Add",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "add",
-        metamethod = "Add",
-    )]
-    fn add(self, rhs: i64) -> bevy::math::I64Vec4;
-
-"#,
-    r#"
-
-    #[lua(
-        as_trait = "std::ops::Sub",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "sub",
-        metamethod = "Sub",
-    )]
-    fn sub(self, #[proxy] rhs: bevy::math::I64Vec4) -> bevy::math::I64Vec4;
-
-"#,
-    r#"
-
-    #[lua(
-        as_trait = "std::cmp::PartialEq",
-        kind = "MetaFunction",
-        composite = "eq",
-        metamethod = "Eq",
-    )]
-    fn eq(&self, #[proxy] other: &glam::I64Vec4) -> bool;
-
-"#,
-    r#"
-
-    #[lua(
-        as_trait = "std::ops::Div",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "div",
-        metamethod = "Div",
-    )]
-    fn div(self, #[proxy] rhs: bevy::math::I64Vec4) -> bevy::math::I64Vec4;
-
-"#,
-    r#"
-
-    #[lua(
-        as_trait = "std::ops::Rem",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "rem",
-        metamethod = "Mod",
-    )]
-    fn rem(self, #[proxy] rhs: bevy::math::I64Vec4) -> bevy::math::I64Vec4;
-
-"#,
-    r#"
-
-    #[lua(
-        as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone",
-        kind = "Method",
-        output(proxy),
-    )]
-    fn clone(&self) -> bevy::math::I64Vec4;
-
-"#,
-    r#"
-
-    #[lua(
-        as_trait = "std::ops::Rem",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "rem",
-        metamethod = "Mod",
-    )]
-    fn rem(self, rhs: i64) -> bevy::math::I64Vec4;
 
 "#,
     r#"
@@ -7789,13 +7690,94 @@ pub struct I64Vec3 {
     r#"
 
     #[lua(
-        as_trait = "std::ops::Neg",
+        as_trait = "std::ops::Sub",
         kind = "MetaFunction",
         output(proxy),
-        composite = "neg",
-        metamethod = "Unm",
+        composite = "sub",
+        metamethod = "Sub",
     )]
-    fn neg(self) -> bevy::math::I64Vec4;
+    fn sub(self, #[proxy] rhs: bevy::math::I64Vec4) -> bevy::math::I64Vec4;
+
+"#,
+    r#"
+
+    #[lua(
+        as_trait = "std::ops::Div",
+        kind = "MetaFunction",
+        output(proxy),
+        composite = "div",
+        metamethod = "Div",
+    )]
+    fn div(self, #[proxy] rhs: bevy::math::I64Vec4) -> bevy::math::I64Vec4;
+
+"#,
+    r#"
+
+    #[lua(
+        as_trait = "std::cmp::PartialEq",
+        kind = "MetaFunction",
+        composite = "eq",
+        metamethod = "Eq",
+    )]
+    fn eq(&self, #[proxy] other: &glam::I64Vec4) -> bool;
+
+"#,
+    r#"
+
+    #[lua(
+        as_trait = "std::ops::Rem",
+        kind = "MetaFunction",
+        output(proxy),
+        composite = "rem",
+        metamethod = "Mod",
+    )]
+    fn rem(self, rhs: i64) -> bevy::math::I64Vec4;
+
+"#,
+    r#"
+
+    #[lua(
+        as_trait = "std::ops::Div",
+        kind = "MetaFunction",
+        output(proxy),
+        composite = "div",
+        metamethod = "Div",
+    )]
+    fn div(self, rhs: i64) -> bevy::math::I64Vec4;
+
+"#,
+    r#"
+
+    #[lua(
+        as_trait = "std::ops::Rem",
+        kind = "MetaFunction",
+        output(proxy),
+        composite = "rem",
+        metamethod = "Mod",
+    )]
+    fn rem(self, #[proxy] rhs: bevy::math::I64Vec4) -> bevy::math::I64Vec4;
+
+"#,
+    r#"
+
+    #[lua(
+        as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone",
+        kind = "Method",
+        output(proxy),
+    )]
+    fn clone(&self) -> bevy::math::I64Vec4;
+
+"#,
+    r#"
+
+    #[lua(
+        as_trait = "std::ops::Add",
+        kind = "MetaFunction",
+        output(proxy),
+        composite = "add",
+        metamethod = "Add",
+    )]
+    fn add(self, rhs: i64) -> bevy::math::I64Vec4;
 
 "#,
     r#"
@@ -7808,6 +7790,18 @@ pub struct I64Vec3 {
         metamethod = "Mul",
     )]
     fn mul(self, #[proxy] rhs: bevy::math::I64Vec4) -> bevy::math::I64Vec4;
+
+"#,
+    r#"
+
+    #[lua(
+        as_trait = "std::ops::Neg",
+        kind = "MetaFunction",
+        output(proxy),
+        composite = "neg",
+        metamethod = "Unm",
+    )]
+    fn neg(self) -> bevy::math::I64Vec4;
 
 "#,
     r#"
@@ -8144,13 +8138,19 @@ pub struct I64Vec3 {
 
 "#,
     r#"
+
+    #[lua(as_trait = "std::cmp::Eq", kind = "Method")]
+    fn assert_receiver_is_total_eq(&self) -> ();
+
+"#,
+    r#"
 #[lua(kind="MetaMethod", metamethod="ToString")]
 fn index(&self) -> String {
     format!("{}", _self)
 }
 "#]
 )]
-pub struct I64Vec4 {
+struct I64Vec4 {
     x: i64,
     y: i64,
     z: i64,
@@ -8161,83 +8161,6 @@ pub struct I64Vec4 {
     derive(clone),
     remote = "bevy::math::UVec2",
     functions[r#"
-
-    #[lua(
-        as_trait = "std::ops::Add",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "add",
-        metamethod = "Add",
-    )]
-    fn add(self, #[proxy] rhs: bevy::math::UVec2) -> bevy::math::UVec2;
-
-"#,
-    r#"
-
-    #[lua(
-        as_trait = "std::ops::Div",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "div",
-        metamethod = "Div",
-    )]
-    fn div(self, rhs: u32) -> bevy::math::UVec2;
-
-"#,
-    r#"
-
-    #[lua(
-        as_trait = "std::ops::Mul",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "mul",
-        metamethod = "Mul",
-    )]
-    fn mul(self, #[proxy] rhs: bevy::math::UVec2) -> bevy::math::UVec2;
-
-"#,
-    r#"
-
-    #[lua(as_trait = "std::cmp::Eq", kind = "Method")]
-    fn assert_receiver_is_total_eq(&self) -> ();
-
-"#,
-    r#"
-
-    #[lua(
-        as_trait = "std::ops::Rem",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "rem",
-        metamethod = "Mod",
-    )]
-    fn rem(self, #[proxy] rhs: bevy::math::UVec2) -> bevy::math::UVec2;
-
-"#,
-    r#"
-
-    #[lua(
-        as_trait = "std::ops::Mul",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "mul",
-        metamethod = "Mul",
-    )]
-    fn mul(self, rhs: u32) -> bevy::math::UVec2;
-
-"#,
-    r#"
-
-    #[lua(
-        as_trait = "std::cmp::PartialEq",
-        kind = "MetaFunction",
-        composite = "eq",
-        metamethod = "Eq",
-    )]
-    fn eq(&self, #[proxy] other: &glam::UVec2) -> bool;
-
-"#,
-    r#"
 
     #[lua(
         as_trait = "std::ops::Sub",
@@ -8532,13 +8455,13 @@ pub struct I64Vec4 {
     r#"
 
     #[lua(
-        as_trait = "std::ops::Add",
+        as_trait = "std::ops::Sub",
         kind = "MetaFunction",
         output(proxy),
-        composite = "add",
-        metamethod = "Add",
+        composite = "sub",
+        metamethod = "Sub",
     )]
-    fn add(self, rhs: u32) -> bevy::math::UVec2;
+    fn sub(self, rhs: u32) -> bevy::math::UVec2;
 
 "#,
     r#"
@@ -8556,6 +8479,59 @@ pub struct I64Vec4 {
     r#"
 
     #[lua(
+        as_trait = "std::ops::Add",
+        kind = "MetaFunction",
+        output(proxy),
+        composite = "add",
+        metamethod = "Add",
+    )]
+    fn add(self, rhs: u32) -> bevy::math::UVec2;
+
+"#,
+    r#"
+
+    #[lua(as_trait = "std::cmp::Eq", kind = "Method")]
+    fn assert_receiver_is_total_eq(&self) -> ();
+
+"#,
+    r#"
+
+    #[lua(
+        as_trait = "std::ops::Rem",
+        kind = "MetaFunction",
+        output(proxy),
+        composite = "rem",
+        metamethod = "Mod",
+    )]
+    fn rem(self, #[proxy] rhs: bevy::math::UVec2) -> bevy::math::UVec2;
+
+"#,
+    r#"
+
+    #[lua(
+        as_trait = "std::cmp::PartialEq",
+        kind = "MetaFunction",
+        composite = "eq",
+        metamethod = "Eq",
+    )]
+    fn eq(&self, #[proxy] other: &glam::UVec2) -> bool;
+
+"#,
+    r#"
+
+    #[lua(
+        as_trait = "std::ops::Add",
+        kind = "MetaFunction",
+        output(proxy),
+        composite = "add",
+        metamethod = "Add",
+    )]
+    fn add(self, #[proxy] rhs: bevy::math::UVec2) -> bevy::math::UVec2;
+
+"#,
+    r#"
+
+    #[lua(
         as_trait = "std::ops::Div",
         kind = "MetaFunction",
         output(proxy),
@@ -8568,23 +8544,47 @@ pub struct I64Vec4 {
     r#"
 
     #[lua(
-        as_trait = "std::ops::Sub",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "sub",
-        metamethod = "Sub",
-    )]
-    fn sub(self, rhs: u32) -> bevy::math::UVec2;
-
-"#,
-    r#"
-
-    #[lua(
         as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone",
         kind = "Method",
         output(proxy),
     )]
     fn clone(&self) -> bevy::math::UVec2;
+
+"#,
+    r#"
+
+    #[lua(
+        as_trait = "std::ops::Mul",
+        kind = "MetaFunction",
+        output(proxy),
+        composite = "mul",
+        metamethod = "Mul",
+    )]
+    fn mul(self, rhs: u32) -> bevy::math::UVec2;
+
+"#,
+    r#"
+
+    #[lua(
+        as_trait = "std::ops::Mul",
+        kind = "MetaFunction",
+        output(proxy),
+        composite = "mul",
+        metamethod = "Mul",
+    )]
+    fn mul(self, #[proxy] rhs: bevy::math::UVec2) -> bevy::math::UVec2;
+
+"#,
+    r#"
+
+    #[lua(
+        as_trait = "std::ops::Div",
+        kind = "MetaFunction",
+        output(proxy),
+        composite = "div",
+        metamethod = "Div",
+    )]
+    fn div(self, rhs: u32) -> bevy::math::UVec2;
 
 "#,
     r#"
@@ -8606,7 +8606,7 @@ fn index(&mut self, lua: &Lua, idx: crate::lua::util::LuaIndex, val: u32) -> Res
 }
 "#]
 )]
-pub struct UVec2 {
+struct UVec2 {
     x: u32,
     y: u32,
 }
@@ -8617,66 +8617,13 @@ pub struct UVec2 {
     functions[r#"
 
     #[lua(
-        as_trait = "std::ops::Sub",
+        as_trait = "std::ops::Add",
         kind = "MetaFunction",
         output(proxy),
-        composite = "sub",
-        metamethod = "Sub",
+        composite = "add",
+        metamethod = "Add",
     )]
-    fn sub(self, rhs: u32) -> bevy::math::UVec3;
-
-"#,
-    r#"
-
-    #[lua(
-        as_trait = "std::cmp::PartialEq",
-        kind = "MetaFunction",
-        composite = "eq",
-        metamethod = "Eq",
-    )]
-    fn eq(&self, #[proxy] other: &glam::UVec3) -> bool;
-
-"#,
-    r#"
-
-    #[lua(
-        as_trait = "std::ops::Rem",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "rem",
-        metamethod = "Mod",
-    )]
-    fn rem(self, #[proxy] rhs: bevy::math::UVec3) -> bevy::math::UVec3;
-
-"#,
-    r#"
-
-    #[lua(as_trait = "std::cmp::Eq", kind = "Method")]
-    fn assert_receiver_is_total_eq(&self) -> ();
-
-"#,
-    r#"
-
-    #[lua(
-        as_trait = "std::ops::Mul",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "mul",
-        metamethod = "Mul",
-    )]
-    fn mul(self, rhs: u32) -> bevy::math::UVec3;
-
-"#,
-    r#"
-
-    #[lua(
-        as_trait = "std::ops::Sub",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "sub",
-        metamethod = "Sub",
-    )]
-    fn sub(self, #[proxy] rhs: bevy::math::UVec3) -> bevy::math::UVec3;
+    fn add(self, #[proxy] rhs: bevy::math::UVec3) -> bevy::math::UVec3;
 
 "#,
     r#"
@@ -8984,13 +8931,24 @@ pub struct UVec2 {
     r#"
 
     #[lua(
-        as_trait = "std::ops::Add",
+        as_trait = "std::ops::Rem",
         kind = "MetaFunction",
         output(proxy),
-        composite = "add",
-        metamethod = "Add",
+        composite = "rem",
+        metamethod = "Mod",
     )]
-    fn add(self, #[proxy] rhs: bevy::math::UVec3) -> bevy::math::UVec3;
+    fn rem(self, rhs: u32) -> bevy::math::UVec3;
+
+"#,
+    r#"
+
+    #[lua(
+        as_trait = "std::cmp::PartialEq",
+        kind = "MetaFunction",
+        composite = "eq",
+        metamethod = "Eq",
+    )]
+    fn eq(&self, #[proxy] other: &glam::UVec3) -> bool;
 
 "#,
     r#"
@@ -9002,17 +8960,25 @@ pub struct UVec2 {
         composite = "mul",
         metamethod = "Mul",
     )]
-    fn mul(self, #[proxy] rhs: bevy::math::UVec3) -> bevy::math::UVec3;
+    fn mul(self, rhs: u32) -> bevy::math::UVec3;
+
+"#,
+    r#"
+
+    #[lua(as_trait = "std::cmp::Eq", kind = "Method")]
+    fn assert_receiver_is_total_eq(&self) -> ();
 
 "#,
     r#"
 
     #[lua(
-        as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone",
-        kind = "Method",
+        as_trait = "std::ops::Sub",
+        kind = "MetaFunction",
         output(proxy),
+        composite = "sub",
+        metamethod = "Sub",
     )]
-    fn clone(&self) -> bevy::math::UVec3;
+    fn sub(self, #[proxy] rhs: bevy::math::UVec3) -> bevy::math::UVec3;
 
 "#,
     r#"
@@ -9025,6 +8991,18 @@ pub struct UVec2 {
         metamethod = "Add",
     )]
     fn add(self, rhs: u32) -> bevy::math::UVec3;
+
+"#,
+    r#"
+
+    #[lua(
+        as_trait = "std::ops::Mul",
+        kind = "MetaFunction",
+        output(proxy),
+        composite = "mul",
+        metamethod = "Mul",
+    )]
+    fn mul(self, #[proxy] rhs: bevy::math::UVec3) -> bevy::math::UVec3;
 
 "#,
     r#"
@@ -9060,7 +9038,29 @@ pub struct UVec2 {
         composite = "rem",
         metamethod = "Mod",
     )]
-    fn rem(self, rhs: u32) -> bevy::math::UVec3;
+    fn rem(self, #[proxy] rhs: bevy::math::UVec3) -> bevy::math::UVec3;
+
+"#,
+    r#"
+
+    #[lua(
+        as_trait = "std::ops::Sub",
+        kind = "MetaFunction",
+        output(proxy),
+        composite = "sub",
+        metamethod = "Sub",
+    )]
+    fn sub(self, rhs: u32) -> bevy::math::UVec3;
+
+"#,
+    r#"
+
+    #[lua(
+        as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone",
+        kind = "Method",
+        output(proxy),
+    )]
+    fn clone(&self) -> bevy::math::UVec3;
 
 "#,
     r#"
@@ -9082,7 +9082,7 @@ fn index(&mut self, lua: &Lua, idx: crate::lua::util::LuaIndex, val: u32) -> Res
 }
 "#]
 )]
-pub struct UVec3 {
+struct UVec3 {
     x: u32,
     y: u32,
     z: u32,
@@ -9094,30 +9094,6 @@ pub struct UVec3 {
     functions[r#"
 
     #[lua(
-        as_trait = "std::ops::Rem",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "rem",
-        metamethod = "Mod",
-    )]
-    fn rem(self, #[proxy] rhs: bevy::math::UVec4) -> bevy::math::UVec4;
-
-"#,
-    r#"
-
-    #[lua(
-        as_trait = "std::ops::Rem",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "rem",
-        metamethod = "Mod",
-    )]
-    fn rem(self, rhs: u32) -> bevy::math::UVec4;
-
-"#,
-    r#"
-
-    #[lua(
         as_trait = "std::ops::Div",
         kind = "MetaFunction",
         output(proxy),
@@ -9125,30 +9101,6 @@ pub struct UVec3 {
         metamethod = "Div",
     )]
     fn div(self, rhs: u32) -> bevy::math::UVec4;
-
-"#,
-    r#"
-
-    #[lua(
-        as_trait = "std::ops::Sub",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "sub",
-        metamethod = "Sub",
-    )]
-    fn sub(self, rhs: u32) -> bevy::math::UVec4;
-
-"#,
-    r#"
-
-    #[lua(
-        as_trait = "std::ops::Div",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "div",
-        metamethod = "Div",
-    )]
-    fn div(self, #[proxy] rhs: bevy::math::UVec4) -> bevy::math::UVec4;
 
 "#,
     r#"
@@ -9435,41 +9387,12 @@ pub struct UVec3 {
     r#"
 
     #[lua(
-        as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone",
-        kind = "Method",
-        output(proxy),
-    )]
-    fn clone(&self) -> bevy::math::UVec4;
-
-"#,
-    r#"
-
-    #[lua(as_trait = "std::cmp::Eq", kind = "Method")]
-    fn assert_receiver_is_total_eq(&self) -> ();
-
-"#,
-    r#"
-
-    #[lua(
-        as_trait = "std::ops::Add",
+        as_trait = "std::cmp::PartialEq",
         kind = "MetaFunction",
-        output(proxy),
-        composite = "add",
-        metamethod = "Add",
+        composite = "eq",
+        metamethod = "Eq",
     )]
-    fn add(self, #[proxy] rhs: bevy::math::UVec4) -> bevy::math::UVec4;
-
-"#,
-    r#"
-
-    #[lua(
-        as_trait = "std::ops::Sub",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "sub",
-        metamethod = "Sub",
-    )]
-    fn sub(self, #[proxy] rhs: bevy::math::UVec4) -> bevy::math::UVec4;
+    fn eq(&self, #[proxy] other: &glam::UVec4) -> bool;
 
 "#,
     r#"
@@ -9487,6 +9410,18 @@ pub struct UVec3 {
     r#"
 
     #[lua(
+        as_trait = "std::ops::Add",
+        kind = "MetaFunction",
+        output(proxy),
+        composite = "add",
+        metamethod = "Add",
+    )]
+    fn add(self, #[proxy] rhs: bevy::math::UVec4) -> bevy::math::UVec4;
+
+"#,
+    r#"
+
+    #[lua(
         as_trait = "std::ops::Mul",
         kind = "MetaFunction",
         output(proxy),
@@ -9494,6 +9429,70 @@ pub struct UVec3 {
         metamethod = "Mul",
     )]
     fn mul(self, #[proxy] rhs: bevy::math::UVec4) -> bevy::math::UVec4;
+
+"#,
+    r#"
+
+    #[lua(
+        as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone",
+        kind = "Method",
+        output(proxy),
+    )]
+    fn clone(&self) -> bevy::math::UVec4;
+
+"#,
+    r#"
+
+    #[lua(
+        as_trait = "std::ops::Div",
+        kind = "MetaFunction",
+        output(proxy),
+        composite = "div",
+        metamethod = "Div",
+    )]
+    fn div(self, #[proxy] rhs: bevy::math::UVec4) -> bevy::math::UVec4;
+
+"#,
+    r#"
+
+    #[lua(
+        as_trait = "std::ops::Sub",
+        kind = "MetaFunction",
+        output(proxy),
+        composite = "sub",
+        metamethod = "Sub",
+    )]
+    fn sub(self, #[proxy] rhs: bevy::math::UVec4) -> bevy::math::UVec4;
+
+"#,
+    r#"
+
+    #[lua(
+        as_trait = "std::ops::Sub",
+        kind = "MetaFunction",
+        output(proxy),
+        composite = "sub",
+        metamethod = "Sub",
+    )]
+    fn sub(self, rhs: u32) -> bevy::math::UVec4;
+
+"#,
+    r#"
+
+    #[lua(
+        as_trait = "std::ops::Rem",
+        kind = "MetaFunction",
+        output(proxy),
+        composite = "rem",
+        metamethod = "Mod",
+    )]
+    fn rem(self, #[proxy] rhs: bevy::math::UVec4) -> bevy::math::UVec4;
+
+"#,
+    r#"
+
+    #[lua(as_trait = "std::cmp::Eq", kind = "Method")]
+    fn assert_receiver_is_total_eq(&self) -> ();
 
 "#,
     r#"
@@ -9511,12 +9510,13 @@ pub struct UVec3 {
     r#"
 
     #[lua(
-        as_trait = "std::cmp::PartialEq",
+        as_trait = "std::ops::Rem",
         kind = "MetaFunction",
-        composite = "eq",
-        metamethod = "Eq",
+        output(proxy),
+        composite = "rem",
+        metamethod = "Mod",
     )]
-    fn eq(&self, #[proxy] other: &glam::UVec4) -> bool;
+    fn rem(self, rhs: u32) -> bevy::math::UVec4;
 
 "#,
     r#"
@@ -9538,7 +9538,7 @@ fn index(&mut self, lua: &Lua, idx: crate::lua::util::LuaIndex, val: u32) -> Res
 }
 "#]
 )]
-pub struct UVec4 {
+struct UVec4 {
     x: u32,
     y: u32,
     z: u32,
@@ -9551,13 +9551,13 @@ pub struct UVec4 {
     functions[r#"
 
     #[lua(
-        as_trait = "std::ops::Sub",
+        as_trait = "std::ops::Div",
         kind = "MetaFunction",
         output(proxy),
-        composite = "sub",
-        metamethod = "Sub",
+        composite = "div",
+        metamethod = "Div",
     )]
-    fn sub(self, #[proxy] rhs: bevy::math::U64Vec2) -> bevy::math::U64Vec2;
+    fn div(self, rhs: u64) -> bevy::math::U64Vec2;
 
 "#,
     r#"
@@ -9575,18 +9575,6 @@ pub struct UVec4 {
     r#"
 
     #[lua(
-        as_trait = "std::ops::Rem",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "rem",
-        metamethod = "Mod",
-    )]
-    fn rem(self, rhs: u64) -> bevy::math::U64Vec2;
-
-"#,
-    r#"
-
-    #[lua(
         as_trait = "std::ops::Mul",
         kind = "MetaFunction",
         output(proxy),
@@ -9594,42 +9582,6 @@ pub struct UVec4 {
         metamethod = "Mul",
     )]
     fn mul(self, rhs: u64) -> bevy::math::U64Vec2;
-
-"#,
-    r#"
-
-    #[lua(
-        as_trait = "std::ops::Add",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "add",
-        metamethod = "Add",
-    )]
-    fn add(self, rhs: u64) -> bevy::math::U64Vec2;
-
-"#,
-    r#"
-
-    #[lua(
-        as_trait = "std::ops::Mul",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "mul",
-        metamethod = "Mul",
-    )]
-    fn mul(self, #[proxy] rhs: bevy::math::U64Vec2) -> bevy::math::U64Vec2;
-
-"#,
-    r#"
-
-    #[lua(
-        as_trait = "std::ops::Div",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "div",
-        metamethod = "Div",
-    )]
-    fn div(self, rhs: u64) -> bevy::math::U64Vec2;
 
 "#,
     r#"
@@ -9659,12 +9611,13 @@ pub struct UVec4 {
     r#"
 
     #[lua(
-        as_trait = "std::cmp::PartialEq",
+        as_trait = "std::ops::Rem",
         kind = "MetaFunction",
-        composite = "eq",
-        metamethod = "Eq",
+        output(proxy),
+        composite = "rem",
+        metamethod = "Mod",
     )]
-    fn eq(&self, #[proxy] other: &glam::U64Vec2) -> bool;
+    fn rem(self, rhs: u64) -> bevy::math::U64Vec2;
 
 "#,
     r#"
@@ -9679,8 +9632,13 @@ pub struct UVec4 {
 "#,
     r#"
 
-    #[lua(as_trait = "std::cmp::Eq", kind = "Method")]
-    fn assert_receiver_is_total_eq(&self) -> ();
+    #[lua(
+        as_trait = "std::cmp::PartialEq",
+        kind = "MetaFunction",
+        composite = "eq",
+        metamethod = "Eq",
+    )]
+    fn eq(&self, #[proxy] other: &glam::U64Vec2) -> bool;
 
 "#,
     r#"
@@ -9693,6 +9651,48 @@ pub struct UVec4 {
         metamethod = "Sub",
     )]
     fn sub(self, rhs: u64) -> bevy::math::U64Vec2;
+
+"#,
+    r#"
+
+    #[lua(
+        as_trait = "std::ops::Mul",
+        kind = "MetaFunction",
+        output(proxy),
+        composite = "mul",
+        metamethod = "Mul",
+    )]
+    fn mul(self, #[proxy] rhs: bevy::math::U64Vec2) -> bevy::math::U64Vec2;
+
+"#,
+    r#"
+
+    #[lua(
+        as_trait = "std::ops::Sub",
+        kind = "MetaFunction",
+        output(proxy),
+        composite = "sub",
+        metamethod = "Sub",
+    )]
+    fn sub(self, #[proxy] rhs: bevy::math::U64Vec2) -> bevy::math::U64Vec2;
+
+"#,
+    r#"
+
+    #[lua(as_trait = "std::cmp::Eq", kind = "Method")]
+    fn assert_receiver_is_total_eq(&self) -> ();
+
+"#,
+    r#"
+
+    #[lua(
+        as_trait = "std::ops::Add",
+        kind = "MetaFunction",
+        output(proxy),
+        composite = "add",
+        metamethod = "Add",
+    )]
+    fn add(self, rhs: u64) -> bevy::math::U64Vec2;
 
 "#,
     r#"
@@ -9982,7 +9982,7 @@ fn index(&self) -> String {
 }
 "#]
 )]
-pub struct U64Vec2 {
+struct U64Vec2 {
     x: u64,
     y: u64,
 }
@@ -9991,59 +9991,6 @@ pub struct U64Vec2 {
     derive(clone),
     remote = "bevy::math::U64Vec3",
     functions[r#"
-
-    #[lua(
-        as_trait = "std::ops::Sub",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "sub",
-        metamethod = "Sub",
-    )]
-    fn sub(self, #[proxy] rhs: bevy::math::U64Vec3) -> bevy::math::U64Vec3;
-
-"#,
-    r#"
-
-    #[lua(as_trait = "std::cmp::Eq", kind = "Method")]
-    fn assert_receiver_is_total_eq(&self) -> ();
-
-"#,
-    r#"
-
-    #[lua(
-        as_trait = "std::ops::Mul",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "mul",
-        metamethod = "Mul",
-    )]
-    fn mul(self, rhs: u64) -> bevy::math::U64Vec3;
-
-"#,
-    r#"
-
-    #[lua(
-        as_trait = "std::ops::Div",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "div",
-        metamethod = "Div",
-    )]
-    fn div(self, #[proxy] rhs: bevy::math::U64Vec3) -> bevy::math::U64Vec3;
-
-"#,
-    r#"
-
-    #[lua(
-        as_trait = "std::cmp::PartialEq",
-        kind = "MetaFunction",
-        composite = "eq",
-        metamethod = "Eq",
-    )]
-    fn eq(&self, #[proxy] other: &glam::U64Vec3) -> bool;
-
-"#,
-    r#"
 /// Creates a new vector.
 
     #[lua(kind = "Function", output(proxy))]
@@ -10348,28 +10295,6 @@ pub struct U64Vec2 {
     r#"
 
     #[lua(
-        as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone",
-        kind = "Method",
-        output(proxy),
-    )]
-    fn clone(&self) -> bevy::math::U64Vec3;
-
-"#,
-    r#"
-
-    #[lua(
-        as_trait = "std::ops::Div",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "div",
-        metamethod = "Div",
-    )]
-    fn div(self, rhs: u64) -> bevy::math::U64Vec3;
-
-"#,
-    r#"
-
-    #[lua(
         as_trait = "std::ops::Add",
         kind = "MetaFunction",
         output(proxy),
@@ -10377,18 +10302,6 @@ pub struct U64Vec2 {
         metamethod = "Add",
     )]
     fn add(self, #[proxy] rhs: bevy::math::U64Vec3) -> bevy::math::U64Vec3;
-
-"#,
-    r#"
-
-    #[lua(
-        as_trait = "std::ops::Add",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "add",
-        metamethod = "Add",
-    )]
-    fn add(self, rhs: u64) -> bevy::math::U64Vec3;
 
 "#,
     r#"
@@ -10406,6 +10319,18 @@ pub struct U64Vec2 {
     r#"
 
     #[lua(
+        as_trait = "std::ops::Div",
+        kind = "MetaFunction",
+        output(proxy),
+        composite = "div",
+        metamethod = "Div",
+    )]
+    fn div(self, #[proxy] rhs: bevy::math::U64Vec3) -> bevy::math::U64Vec3;
+
+"#,
+    r#"
+
+    #[lua(
         as_trait = "std::ops::Rem",
         kind = "MetaFunction",
         output(proxy),
@@ -10413,6 +10338,18 @@ pub struct U64Vec2 {
         metamethod = "Mod",
     )]
     fn rem(self, #[proxy] rhs: bevy::math::U64Vec3) -> bevy::math::U64Vec3;
+
+"#,
+    r#"
+
+    #[lua(
+        as_trait = "std::ops::Rem",
+        kind = "MetaFunction",
+        output(proxy),
+        composite = "rem",
+        metamethod = "Mod",
+    )]
+    fn rem(self, rhs: u64) -> bevy::math::U64Vec3;
 
 "#,
     r#"
@@ -10430,13 +10367,76 @@ pub struct U64Vec2 {
     r#"
 
     #[lua(
-        as_trait = "std::ops::Rem",
+        as_trait = "std::ops::Mul",
         kind = "MetaFunction",
         output(proxy),
-        composite = "rem",
-        metamethod = "Mod",
+        composite = "mul",
+        metamethod = "Mul",
     )]
-    fn rem(self, rhs: u64) -> bevy::math::U64Vec3;
+    fn mul(self, rhs: u64) -> bevy::math::U64Vec3;
+
+"#,
+    r#"
+
+    #[lua(
+        as_trait = "std::ops::Add",
+        kind = "MetaFunction",
+        output(proxy),
+        composite = "add",
+        metamethod = "Add",
+    )]
+    fn add(self, rhs: u64) -> bevy::math::U64Vec3;
+
+"#,
+    r#"
+
+    #[lua(as_trait = "std::cmp::Eq", kind = "Method")]
+    fn assert_receiver_is_total_eq(&self) -> ();
+
+"#,
+    r#"
+
+    #[lua(
+        as_trait = "std::ops::Div",
+        kind = "MetaFunction",
+        output(proxy),
+        composite = "div",
+        metamethod = "Div",
+    )]
+    fn div(self, rhs: u64) -> bevy::math::U64Vec3;
+
+"#,
+    r#"
+
+    #[lua(
+        as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone",
+        kind = "Method",
+        output(proxy),
+    )]
+    fn clone(&self) -> bevy::math::U64Vec3;
+
+"#,
+    r#"
+
+    #[lua(
+        as_trait = "std::cmp::PartialEq",
+        kind = "MetaFunction",
+        composite = "eq",
+        metamethod = "Eq",
+    )]
+    fn eq(&self, #[proxy] other: &glam::U64Vec3) -> bool;
+
+"#,
+    r#"
+
+    #[lua(
+        as_trait = "std::ops::Sub",
+        kind = "MetaFunction",
+        output(proxy),
+        composite = "sub",
+        metamethod = "Sub",
+    )]
+    fn sub(self, #[proxy] rhs: bevy::math::U64Vec3) -> bevy::math::U64Vec3;
 
 "#,
     r#"
@@ -10446,7 +10446,7 @@ fn index(&self) -> String {
 }
 "#]
 )]
-pub struct U64Vec3 {
+struct U64Vec3 {
     x: u64,
     y: u64,
     z: u64,
@@ -10458,13 +10458,83 @@ pub struct U64Vec3 {
     functions[r#"
 
     #[lua(
+        as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone",
+        kind = "Method",
+        output(proxy),
+    )]
+    fn clone(&self) -> bevy::math::U64Vec4;
+
+"#,
+    r#"
+
+    #[lua(
+        as_trait = "std::ops::Mul",
+        kind = "MetaFunction",
+        output(proxy),
+        composite = "mul",
+        metamethod = "Mul",
+    )]
+    fn mul(self, #[proxy] rhs: bevy::math::U64Vec4) -> bevy::math::U64Vec4;
+
+"#,
+    r#"
+
+    #[lua(
         as_trait = "std::ops::Div",
         kind = "MetaFunction",
         output(proxy),
         composite = "div",
         metamethod = "Div",
     )]
-    fn div(self, #[proxy] rhs: bevy::math::U64Vec4) -> bevy::math::U64Vec4;
+    fn div(self, rhs: u64) -> bevy::math::U64Vec4;
+
+"#,
+    r#"
+
+    #[lua(
+        as_trait = "std::ops::Sub",
+        kind = "MetaFunction",
+        output(proxy),
+        composite = "sub",
+        metamethod = "Sub",
+    )]
+    fn sub(self, rhs: u64) -> bevy::math::U64Vec4;
+
+"#,
+    r#"
+
+    #[lua(
+        as_trait = "std::ops::Mul",
+        kind = "MetaFunction",
+        output(proxy),
+        composite = "mul",
+        metamethod = "Mul",
+    )]
+    fn mul(self, rhs: u64) -> bevy::math::U64Vec4;
+
+"#,
+    r#"
+
+    #[lua(
+        as_trait = "std::ops::Rem",
+        kind = "MetaFunction",
+        output(proxy),
+        composite = "rem",
+        metamethod = "Mod",
+    )]
+    fn rem(self, rhs: u64) -> bevy::math::U64Vec4;
+
+"#,
+    r#"
+
+    #[lua(
+        as_trait = "std::ops::Sub",
+        kind = "MetaFunction",
+        output(proxy),
+        composite = "sub",
+        metamethod = "Sub",
+    )]
+    fn sub(self, #[proxy] rhs: bevy::math::U64Vec4) -> bevy::math::U64Vec4;
 
 "#,
     r#"
@@ -10481,20 +10551,14 @@ pub struct U64Vec3 {
 "#,
     r#"
 
-    #[lua(as_trait = "std::cmp::Eq", kind = "Method")]
-    fn assert_receiver_is_total_eq(&self) -> ();
-
-"#,
-    r#"
-
     #[lua(
-        as_trait = "std::ops::Rem",
+        as_trait = "std::ops::Add",
         kind = "MetaFunction",
         output(proxy),
-        composite = "rem",
-        metamethod = "Mod",
+        composite = "add",
+        metamethod = "Add",
     )]
-    fn rem(self, rhs: u64) -> bevy::math::U64Vec4;
+    fn add(self, #[proxy] rhs: bevy::math::U64Vec4) -> bevy::math::U64Vec4;
 
 "#,
     r#"
@@ -10780,6 +10844,12 @@ pub struct U64Vec3 {
 "#,
     r#"
 
+    #[lua(as_trait = "std::cmp::Eq", kind = "Method")]
+    fn assert_receiver_is_total_eq(&self) -> ();
+
+"#,
+    r#"
+
     #[lua(
         as_trait = "std::cmp::PartialEq",
         kind = "MetaFunction",
@@ -10792,25 +10862,13 @@ pub struct U64Vec3 {
     r#"
 
     #[lua(
-        as_trait = "std::ops::Mul",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "mul",
-        metamethod = "Mul",
-    )]
-    fn mul(self, rhs: u64) -> bevy::math::U64Vec4;
-
-"#,
-    r#"
-
-    #[lua(
         as_trait = "std::ops::Div",
         kind = "MetaFunction",
         output(proxy),
         composite = "div",
         metamethod = "Div",
     )]
-    fn div(self, rhs: u64) -> bevy::math::U64Vec4;
+    fn div(self, #[proxy] rhs: bevy::math::U64Vec4) -> bevy::math::U64Vec4;
 
 "#,
     r#"
@@ -10826,71 +10884,13 @@ pub struct U64Vec3 {
 
 "#,
     r#"
-
-    #[lua(
-        as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone",
-        kind = "Method",
-        output(proxy),
-    )]
-    fn clone(&self) -> bevy::math::U64Vec4;
-
-"#,
-    r#"
-
-    #[lua(
-        as_trait = "std::ops::Mul",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "mul",
-        metamethod = "Mul",
-    )]
-    fn mul(self, #[proxy] rhs: bevy::math::U64Vec4) -> bevy::math::U64Vec4;
-
-"#,
-    r#"
-
-    #[lua(
-        as_trait = "std::ops::Add",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "add",
-        metamethod = "Add",
-    )]
-    fn add(self, #[proxy] rhs: bevy::math::U64Vec4) -> bevy::math::U64Vec4;
-
-"#,
-    r#"
-
-    #[lua(
-        as_trait = "std::ops::Sub",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "sub",
-        metamethod = "Sub",
-    )]
-    fn sub(self, rhs: u64) -> bevy::math::U64Vec4;
-
-"#,
-    r#"
-
-    #[lua(
-        as_trait = "std::ops::Sub",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "sub",
-        metamethod = "Sub",
-    )]
-    fn sub(self, #[proxy] rhs: bevy::math::U64Vec4) -> bevy::math::U64Vec4;
-
-"#,
-    r#"
 #[lua(kind="MetaMethod", metamethod="ToString")]
 fn index(&self) -> String {
     format!("{}", _self)
 }
 "#]
 )]
-pub struct U64Vec4 {
+struct U64Vec4 {
     x: u64,
     y: u64,
     z: u64,
@@ -10903,95 +10903,12 @@ pub struct U64Vec4 {
     functions[r#"
 
     #[lua(
-        as_trait = "std::ops::Div",
+        as_trait = "std::cmp::PartialEq",
         kind = "MetaFunction",
-        output(proxy),
-        composite = "div",
-        metamethod = "Div",
+        composite = "eq",
+        metamethod = "Eq",
     )]
-    fn div(self, #[proxy] rhs: bevy::math::Vec2) -> bevy::math::Vec2;
-
-"#,
-    r#"
-
-    #[lua(
-        as_trait = "std::ops::Sub",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "sub",
-        metamethod = "Sub",
-    )]
-    fn sub(self, rhs: f32) -> bevy::math::Vec2;
-
-"#,
-    r#"
-
-    #[lua(
-        as_trait = "std::ops::Mul",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "mul",
-        metamethod = "Mul",
-    )]
-    fn mul(self, rhs: f32) -> bevy::math::Vec2;
-
-"#,
-    r#"
-
-    #[lua(
-        as_trait = "std::ops::Neg",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "neg",
-        metamethod = "Unm",
-    )]
-    fn neg(self) -> bevy::math::Vec2;
-
-"#,
-    r#"
-
-    #[lua(
-        as_trait = "std::ops::Rem",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "rem",
-        metamethod = "Mod",
-    )]
-    fn rem(self, rhs: f32) -> bevy::math::Vec2;
-
-"#,
-    r#"
-
-    #[lua(
-        as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone",
-        kind = "Method",
-        output(proxy),
-    )]
-    fn clone(&self) -> bevy::math::Vec2;
-
-"#,
-    r#"
-
-    #[lua(
-        as_trait = "std::ops::Sub",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "sub",
-        metamethod = "Sub",
-    )]
-    fn sub(self, #[proxy] rhs: bevy::math::Vec2) -> bevy::math::Vec2;
-
-"#,
-    r#"
-
-    #[lua(
-        as_trait = "std::ops::Rem",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "rem",
-        metamethod = "Mod",
-    )]
-    fn rem(self, #[proxy] rhs: bevy::math::Vec2) -> bevy::math::Vec2;
+    fn eq(&self, #[proxy] other: &glam::Vec2) -> bool;
 
 "#,
     r#"
@@ -11016,6 +10933,124 @@ pub struct U64Vec4 {
         metamethod = "Add",
     )]
     fn add(self, rhs: f32) -> bevy::math::Vec2;
+
+"#,
+    r#"
+
+    #[lua(
+        as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone",
+        kind = "Method",
+        output(proxy),
+    )]
+    fn clone(&self) -> bevy::math::Vec2;
+
+"#,
+    r#"
+
+    #[lua(
+        as_trait = "std::ops::Rem",
+        kind = "MetaFunction",
+        output(proxy),
+        composite = "rem",
+        metamethod = "Mod",
+    )]
+    fn rem(self, #[proxy] rhs: bevy::math::Vec2) -> bevy::math::Vec2;
+
+"#,
+    r#"
+
+    #[lua(
+        as_trait = "std::ops::Sub",
+        kind = "MetaFunction",
+        output(proxy),
+        composite = "sub",
+        metamethod = "Sub",
+    )]
+    fn sub(self, rhs: f32) -> bevy::math::Vec2;
+
+"#,
+    r#"
+
+    #[lua(
+        as_trait = "std::ops::Add",
+        kind = "MetaFunction",
+        output(proxy),
+        composite = "add",
+        metamethod = "Add",
+    )]
+    fn add(self, #[proxy] rhs: bevy::math::Vec2) -> bevy::math::Vec2;
+
+"#,
+    r#"
+
+    #[lua(
+        as_trait = "std::ops::Div",
+        kind = "MetaFunction",
+        output(proxy),
+        composite = "div",
+        metamethod = "Div",
+    )]
+    fn div(self, #[proxy] rhs: bevy::math::Vec2) -> bevy::math::Vec2;
+
+"#,
+    r#"
+
+    #[lua(
+        as_trait = "std::ops::Mul",
+        kind = "MetaFunction",
+        output(proxy),
+        composite = "mul",
+        metamethod = "Mul",
+    )]
+    fn mul(self, rhs: f32) -> bevy::math::Vec2;
+
+"#,
+    r#"
+
+    #[lua(
+        as_trait = "std::ops::Div",
+        kind = "MetaFunction",
+        output(proxy),
+        composite = "div",
+        metamethod = "Div",
+    )]
+    fn div(self, rhs: f32) -> bevy::math::Vec2;
+
+"#,
+    r#"
+
+    #[lua(
+        as_trait = "std::ops::Sub",
+        kind = "MetaFunction",
+        output(proxy),
+        composite = "sub",
+        metamethod = "Sub",
+    )]
+    fn sub(self, #[proxy] rhs: bevy::math::Vec2) -> bevy::math::Vec2;
+
+"#,
+    r#"
+
+    #[lua(
+        as_trait = "std::ops::Neg",
+        kind = "MetaFunction",
+        output(proxy),
+        composite = "neg",
+        metamethod = "Unm",
+    )]
+    fn neg(self) -> bevy::math::Vec2;
+
+"#,
+    r#"
+
+    #[lua(
+        as_trait = "std::ops::Rem",
+        kind = "MetaFunction",
+        output(proxy),
+        composite = "rem",
+        metamethod = "Mod",
+    )]
+    fn rem(self, rhs: f32) -> bevy::math::Vec2;
 
 "#,
     r#"
@@ -11586,41 +11621,6 @@ pub struct U64Vec4 {
 
 "#,
     r#"
-
-    #[lua(
-        as_trait = "std::ops::Add",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "add",
-        metamethod = "Add",
-    )]
-    fn add(self, #[proxy] rhs: bevy::math::Vec2) -> bevy::math::Vec2;
-
-"#,
-    r#"
-
-    #[lua(
-        as_trait = "std::ops::Div",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "div",
-        metamethod = "Div",
-    )]
-    fn div(self, rhs: f32) -> bevy::math::Vec2;
-
-"#,
-    r#"
-
-    #[lua(
-        as_trait = "std::cmp::PartialEq",
-        kind = "MetaFunction",
-        composite = "eq",
-        metamethod = "Eq",
-    )]
-    fn eq(&self, #[proxy] other: &glam::Vec2) -> bool;
-
-"#,
-    r#"
 #[lua(kind="MetaMethod", metamethod="ToString")]
 fn index(&self) -> String {
     format!("{}", _self)
@@ -11639,7 +11639,7 @@ fn index(&mut self, lua: &Lua, idx: crate::lua::util::LuaIndex, val: f32) -> Res
 }
 "#]
 )]
-pub struct Vec2 {
+struct Vec2 {
     x: f32,
     y: f32,
 }
@@ -11648,42 +11648,6 @@ pub struct Vec2 {
     derive(clone),
     remote = "bevy::math::Vec3A",
     functions[r#"
-
-    #[lua(
-        as_trait = "std::ops::Div",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "div",
-        metamethod = "Div",
-    )]
-    fn div(self, #[proxy] rhs: bevy::math::Vec3A) -> bevy::math::Vec3A;
-
-"#,
-    r#"
-
-    #[lua(
-        as_trait = "std::ops::Mul",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "mul",
-        metamethod = "Mul",
-    )]
-    fn mul(self, #[proxy] rhs: bevy::math::Vec3A) -> bevy::math::Vec3A;
-
-"#,
-    r#"
-
-    #[lua(
-        as_trait = "std::ops::Sub",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "sub",
-        metamethod = "Sub",
-    )]
-    fn sub(self, #[proxy] rhs: bevy::math::Vec3A) -> bevy::math::Vec3A;
-
-"#,
-    r#"
 
     #[lua(
         as_trait = "std::ops::Add",
@@ -11698,36 +11662,13 @@ pub struct Vec2 {
     r#"
 
     #[lua(
-        as_trait = "std::ops::Sub",
+        as_trait = "std::ops::Mul",
         kind = "MetaFunction",
         output(proxy),
-        composite = "sub",
-        metamethod = "Sub",
+        composite = "mul",
+        metamethod = "Mul",
     )]
-    fn sub(self, rhs: f32) -> bevy::math::Vec3A;
-
-"#,
-    r#"
-
-    #[lua(
-        as_trait = "std::cmp::PartialEq",
-        kind = "MetaFunction",
-        composite = "eq",
-        metamethod = "Eq",
-    )]
-    fn eq(&self, #[proxy] rhs: &glam::Vec3A) -> bool;
-
-"#,
-    r#"
-
-    #[lua(
-        as_trait = "std::ops::Rem",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "rem",
-        metamethod = "Mod",
-    )]
-    fn rem(self, rhs: f32) -> bevy::math::Vec3A;
+    fn mul(self, rhs: f32) -> bevy::math::Vec3A;
 
 "#,
     r#"
@@ -12301,47 +12242,13 @@ pub struct Vec2 {
     r#"
 
     #[lua(
-        as_trait = "std::ops::Add",
+        as_trait = "std::ops::Div",
         kind = "MetaFunction",
         output(proxy),
-        composite = "add",
-        metamethod = "Add",
+        composite = "div",
+        metamethod = "Div",
     )]
-    fn add(self, rhs: f32) -> bevy::math::Vec3A;
-
-"#,
-    r#"
-
-    #[lua(
-        as_trait = "std::ops::Mul",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "mul",
-        metamethod = "Mul",
-    )]
-    fn mul(self, rhs: f32) -> bevy::math::Vec3A;
-
-"#,
-    r#"
-
-    #[lua(
-        as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone",
-        kind = "Method",
-        output(proxy),
-    )]
-    fn clone(&self) -> bevy::math::Vec3A;
-
-"#,
-    r#"
-
-    #[lua(
-        as_trait = "std::ops::Neg",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "neg",
-        metamethod = "Unm",
-    )]
-    fn neg(self) -> bevy::math::Vec3A;
+    fn div(self, #[proxy] rhs: bevy::math::Vec3A) -> bevy::math::Vec3A;
 
 "#,
     r#"
@@ -12359,6 +12266,39 @@ pub struct Vec2 {
     r#"
 
     #[lua(
+        as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone",
+        kind = "Method",
+        output(proxy),
+    )]
+    fn clone(&self) -> bevy::math::Vec3A;
+
+"#,
+    r#"
+
+    #[lua(
+        as_trait = "std::cmp::PartialEq",
+        kind = "MetaFunction",
+        composite = "eq",
+        metamethod = "Eq",
+    )]
+    fn eq(&self, #[proxy] rhs: &glam::Vec3A) -> bool;
+
+"#,
+    r#"
+
+    #[lua(
+        as_trait = "std::ops::Sub",
+        kind = "MetaFunction",
+        output(proxy),
+        composite = "sub",
+        metamethod = "Sub",
+    )]
+    fn sub(self, #[proxy] rhs: bevy::math::Vec3A) -> bevy::math::Vec3A;
+
+"#,
+    r#"
+
+    #[lua(
         as_trait = "std::ops::Rem",
         kind = "MetaFunction",
         output(proxy),
@@ -12366,6 +12306,66 @@ pub struct Vec2 {
         metamethod = "Mod",
     )]
     fn rem(self, #[proxy] rhs: bevy::math::Vec3A) -> bevy::math::Vec3A;
+
+"#,
+    r#"
+
+    #[lua(
+        as_trait = "std::ops::Rem",
+        kind = "MetaFunction",
+        output(proxy),
+        composite = "rem",
+        metamethod = "Mod",
+    )]
+    fn rem(self, rhs: f32) -> bevy::math::Vec3A;
+
+"#,
+    r#"
+
+    #[lua(
+        as_trait = "std::ops::Add",
+        kind = "MetaFunction",
+        output(proxy),
+        composite = "add",
+        metamethod = "Add",
+    )]
+    fn add(self, rhs: f32) -> bevy::math::Vec3A;
+
+"#,
+    r#"
+
+    #[lua(
+        as_trait = "std::ops::Sub",
+        kind = "MetaFunction",
+        output(proxy),
+        composite = "sub",
+        metamethod = "Sub",
+    )]
+    fn sub(self, rhs: f32) -> bevy::math::Vec3A;
+
+"#,
+    r#"
+
+    #[lua(
+        as_trait = "std::ops::Mul",
+        kind = "MetaFunction",
+        output(proxy),
+        composite = "mul",
+        metamethod = "Mul",
+    )]
+    fn mul(self, #[proxy] rhs: bevy::math::Vec3A) -> bevy::math::Vec3A;
+
+"#,
+    r#"
+
+    #[lua(
+        as_trait = "std::ops::Neg",
+        kind = "MetaFunction",
+        output(proxy),
+        composite = "neg",
+        metamethod = "Unm",
+    )]
+    fn neg(self) -> bevy::math::Vec3A;
 
 "#,
     r#"
@@ -12387,7 +12387,7 @@ fn index(&mut self, lua: &Lua, idx: crate::lua::util::LuaIndex, val: f32) -> Res
 }
 "#]
 )]
-pub struct Vec3A();
+struct Vec3A();
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
     derive(clone),
@@ -12395,13 +12395,22 @@ pub struct Vec3A();
     functions[r#"
 
     #[lua(
-        as_trait = "std::ops::Div",
+        as_trait = "std::cmp::PartialEq",
         kind = "MetaFunction",
-        output(proxy),
-        composite = "div",
-        metamethod = "Div",
+        composite = "eq",
+        metamethod = "Eq",
     )]
-    fn div(self, #[proxy] rhs: bevy::math::Vec4) -> bevy::math::Vec4;
+    fn eq(&self, #[proxy] rhs: &glam::Vec4) -> bool;
+
+"#,
+    r#"
+
+    #[lua(
+        as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone",
+        kind = "Method",
+        output(proxy),
+    )]
+    fn clone(&self) -> bevy::math::Vec4;
 
 "#,
     r#"
@@ -12419,70 +12428,13 @@ pub struct Vec3A();
     r#"
 
     #[lua(
-        as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone",
-        kind = "Method",
-        output(proxy),
-    )]
-    fn clone(&self) -> bevy::math::Vec4;
-
-"#,
-    r#"
-
-    #[lua(
-        as_trait = "std::cmp::PartialEq",
-        kind = "MetaFunction",
-        composite = "eq",
-        metamethod = "Eq",
-    )]
-    fn eq(&self, #[proxy] rhs: &glam::Vec4) -> bool;
-
-"#,
-    r#"
-
-    #[lua(
         as_trait = "std::ops::Mul",
         kind = "MetaFunction",
         output(proxy),
         composite = "mul",
         metamethod = "Mul",
     )]
-    fn mul(self, #[proxy] rhs: bevy::math::Vec4) -> bevy::math::Vec4;
-
-"#,
-    r#"
-
-    #[lua(
-        as_trait = "std::ops::Add",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "add",
-        metamethod = "Add",
-    )]
-    fn add(self, rhs: f32) -> bevy::math::Vec4;
-
-"#,
-    r#"
-
-    #[lua(
-        as_trait = "std::ops::Sub",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "sub",
-        metamethod = "Sub",
-    )]
-    fn sub(self, #[proxy] rhs: bevy::math::Vec4) -> bevy::math::Vec4;
-
-"#,
-    r#"
-
-    #[lua(
-        as_trait = "std::ops::Div",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "div",
-        metamethod = "Div",
-    )]
-    fn div(self, rhs: f32) -> bevy::math::Vec4;
+    fn mul(self, rhs: f32) -> bevy::math::Vec4;
 
 "#,
     r#"
@@ -12495,42 +12447,6 @@ pub struct Vec3A();
         metamethod = "Unm",
     )]
     fn neg(self) -> bevy::math::Vec4;
-
-"#,
-    r#"
-
-    #[lua(
-        as_trait = "std::ops::Rem",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "rem",
-        metamethod = "Mod",
-    )]
-    fn rem(self, rhs: f32) -> bevy::math::Vec4;
-
-"#,
-    r#"
-
-    #[lua(
-        as_trait = "std::ops::Sub",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "sub",
-        metamethod = "Sub",
-    )]
-    fn sub(self, rhs: f32) -> bevy::math::Vec4;
-
-"#,
-    r#"
-
-    #[lua(
-        as_trait = "std::ops::Rem",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "rem",
-        metamethod = "Mod",
-    )]
-    fn rem(self, #[proxy] rhs: bevy::math::Vec4) -> bevy::math::Vec4;
 
 "#,
     r#"
@@ -13055,13 +12971,97 @@ pub struct Vec3A();
     r#"
 
     #[lua(
+        as_trait = "std::ops::Div",
+        kind = "MetaFunction",
+        output(proxy),
+        composite = "div",
+        metamethod = "Div",
+    )]
+    fn div(self, #[proxy] rhs: bevy::math::Vec4) -> bevy::math::Vec4;
+
+"#,
+    r#"
+
+    #[lua(
+        as_trait = "std::ops::Rem",
+        kind = "MetaFunction",
+        output(proxy),
+        composite = "rem",
+        metamethod = "Mod",
+    )]
+    fn rem(self, rhs: f32) -> bevy::math::Vec4;
+
+"#,
+    r#"
+
+    #[lua(
+        as_trait = "std::ops::Div",
+        kind = "MetaFunction",
+        output(proxy),
+        composite = "div",
+        metamethod = "Div",
+    )]
+    fn div(self, rhs: f32) -> bevy::math::Vec4;
+
+"#,
+    r#"
+
+    #[lua(
+        as_trait = "std::ops::Add",
+        kind = "MetaFunction",
+        output(proxy),
+        composite = "add",
+        metamethod = "Add",
+    )]
+    fn add(self, rhs: f32) -> bevy::math::Vec4;
+
+"#,
+    r#"
+
+    #[lua(
+        as_trait = "std::ops::Rem",
+        kind = "MetaFunction",
+        output(proxy),
+        composite = "rem",
+        metamethod = "Mod",
+    )]
+    fn rem(self, #[proxy] rhs: bevy::math::Vec4) -> bevy::math::Vec4;
+
+"#,
+    r#"
+
+    #[lua(
         as_trait = "std::ops::Mul",
         kind = "MetaFunction",
         output(proxy),
         composite = "mul",
         metamethod = "Mul",
     )]
-    fn mul(self, rhs: f32) -> bevy::math::Vec4;
+    fn mul(self, #[proxy] rhs: bevy::math::Vec4) -> bevy::math::Vec4;
+
+"#,
+    r#"
+
+    #[lua(
+        as_trait = "std::ops::Sub",
+        kind = "MetaFunction",
+        output(proxy),
+        composite = "sub",
+        metamethod = "Sub",
+    )]
+    fn sub(self, rhs: f32) -> bevy::math::Vec4;
+
+"#,
+    r#"
+
+    #[lua(
+        as_trait = "std::ops::Sub",
+        kind = "MetaFunction",
+        output(proxy),
+        composite = "sub",
+        metamethod = "Sub",
+    )]
+    fn sub(self, #[proxy] rhs: bevy::math::Vec4) -> bevy::math::Vec4;
 
 "#,
     r#"
@@ -13083,15 +13083,20 @@ fn index(&mut self, lua: &Lua, idx: crate::lua::util::LuaIndex, val: f32) -> Res
 }
 "#]
 )]
-pub struct Vec4();
+struct Vec4();
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
     derive(clone),
     remote = "bevy::math::BVec2",
     functions[r#"
 
-    #[lua(as_trait = "std::cmp::Eq", kind = "Method")]
-    fn assert_receiver_is_total_eq(&self) -> ();
+    #[lua(
+        as_trait = "std::cmp::PartialEq",
+        kind = "MetaFunction",
+        composite = "eq",
+        metamethod = "Eq",
+    )]
+    fn eq(&self, #[proxy] other: &glam::BVec2) -> bool;
 
 "#,
     r#"
@@ -13149,13 +13154,8 @@ pub struct Vec4();
 "#,
     r#"
 
-    #[lua(
-        as_trait = "std::cmp::PartialEq",
-        kind = "MetaFunction",
-        composite = "eq",
-        metamethod = "Eq",
-    )]
-    fn eq(&self, #[proxy] other: &glam::BVec2) -> bool;
+    #[lua(as_trait = "std::cmp::Eq", kind = "Method")]
+    fn assert_receiver_is_total_eq(&self) -> ();
 
 "#,
     r#"
@@ -13175,7 +13175,7 @@ fn index(&self) -> String {
 }
 "#]
 )]
-pub struct BVec2 {
+struct BVec2 {
     x: bool,
     y: bool,
 }
@@ -13192,6 +13192,22 @@ pub struct BVec2 {
         metamethod = "Eq",
     )]
     fn eq(&self, #[proxy] other: &glam::BVec3) -> bool;
+
+"#,
+    r#"
+
+    #[lua(
+        as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone",
+        kind = "Method",
+        output(proxy),
+    )]
+    fn clone(&self) -> bevy::math::BVec3;
+
+"#,
+    r#"
+
+    #[lua(as_trait = "std::cmp::Eq", kind = "Method")]
+    fn assert_receiver_is_total_eq(&self) -> ();
 
 "#,
     r#"
@@ -13248,29 +13264,13 @@ pub struct BVec2 {
 
 "#,
     r#"
-
-    #[lua(as_trait = "std::cmp::Eq", kind = "Method")]
-    fn assert_receiver_is_total_eq(&self) -> ();
-
-"#,
-    r#"
-
-    #[lua(
-        as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone",
-        kind = "Method",
-        output(proxy),
-    )]
-    fn clone(&self) -> bevy::math::BVec3;
-
-"#,
-    r#"
 #[lua(kind="MetaMethod", metamethod="ToString")]
 fn index(&self) -> String {
     format!("{}", _self)
 }
 "#]
 )]
-pub struct BVec3 {
+struct BVec3 {
     x: bool,
     y: bool,
     z: bool,
@@ -13280,16 +13280,6 @@ pub struct BVec3 {
     derive(clone),
     remote = "bevy::math::BVec4",
     functions[r#"
-
-    #[lua(
-        as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone",
-        kind = "Method",
-        output(proxy),
-    )]
-    fn clone(&self) -> bevy::math::BVec4;
-
-"#,
-    r#"
 /// Creates a new vector mask.
 
     #[lua(kind = "Function", output(proxy))]
@@ -13344,12 +13334,6 @@ pub struct BVec3 {
 "#,
     r#"
 
-    #[lua(as_trait = "std::cmp::Eq", kind = "Method")]
-    fn assert_receiver_is_total_eq(&self) -> ();
-
-"#,
-    r#"
-
     #[lua(
         as_trait = "std::cmp::PartialEq",
         kind = "MetaFunction",
@@ -13360,13 +13344,29 @@ pub struct BVec3 {
 
 "#,
     r#"
+
+    #[lua(
+        as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone",
+        kind = "Method",
+        output(proxy),
+    )]
+    fn clone(&self) -> bevy::math::BVec4;
+
+"#,
+    r#"
+
+    #[lua(as_trait = "std::cmp::Eq", kind = "Method")]
+    fn assert_receiver_is_total_eq(&self) -> ();
+
+"#,
+    r#"
 #[lua(kind="MetaMethod", metamethod="ToString")]
 fn index(&self) -> String {
     format!("{}", _self)
 }
 "#]
 )]
-pub struct BVec4 {
+struct BVec4 {
     x: bool,
     y: bool,
     z: bool,
@@ -13377,6 +13377,42 @@ pub struct BVec4 {
     derive(clone),
     remote = "bevy::math::DVec2",
     functions[r#"
+
+    #[lua(
+        as_trait = "std::ops::Div",
+        kind = "MetaFunction",
+        output(proxy),
+        composite = "div",
+        metamethod = "Div",
+    )]
+    fn div(self, rhs: f64) -> bevy::math::DVec2;
+
+"#,
+    r#"
+
+    #[lua(
+        as_trait = "std::ops::Mul",
+        kind = "MetaFunction",
+        output(proxy),
+        composite = "mul",
+        metamethod = "Mul",
+    )]
+    fn mul(self, #[proxy] rhs: bevy::math::DVec2) -> bevy::math::DVec2;
+
+"#,
+    r#"
+
+    #[lua(
+        as_trait = "std::ops::Rem",
+        kind = "MetaFunction",
+        output(proxy),
+        composite = "rem",
+        metamethod = "Mod",
+    )]
+    fn rem(self, #[proxy] rhs: bevy::math::DVec2) -> bevy::math::DVec2;
+
+"#,
+    r#"
 
     #[lua(
         as_trait = "std::cmp::PartialEq",
@@ -13390,13 +13426,13 @@ pub struct BVec4 {
     r#"
 
     #[lua(
-        as_trait = "std::ops::Add",
+        as_trait = "std::ops::Rem",
         kind = "MetaFunction",
         output(proxy),
-        composite = "add",
-        metamethod = "Add",
+        composite = "rem",
+        metamethod = "Mod",
     )]
-    fn add(self, rhs: f64) -> bevy::math::DVec2;
+    fn rem(self, rhs: f64) -> bevy::math::DVec2;
 
 "#,
     r#"
@@ -13989,13 +14025,59 @@ pub struct BVec4 {
     r#"
 
     #[lua(
-        as_trait = "std::ops::Rem",
+        as_trait = "std::ops::Neg",
         kind = "MetaFunction",
         output(proxy),
-        composite = "rem",
-        metamethod = "Mod",
+        composite = "neg",
+        metamethod = "Unm",
     )]
-    fn rem(self, rhs: f64) -> bevy::math::DVec2;
+    fn neg(self) -> bevy::math::DVec2;
+
+"#,
+    r#"
+
+    #[lua(
+        as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone",
+        kind = "Method",
+        output(proxy),
+    )]
+    fn clone(&self) -> bevy::math::DVec2;
+
+"#,
+    r#"
+
+    #[lua(
+        as_trait = "std::ops::Sub",
+        kind = "MetaFunction",
+        output(proxy),
+        composite = "sub",
+        metamethod = "Sub",
+    )]
+    fn sub(self, rhs: f64) -> bevy::math::DVec2;
+
+"#,
+    r#"
+
+    #[lua(
+        as_trait = "std::ops::Add",
+        kind = "MetaFunction",
+        output(proxy),
+        composite = "add",
+        metamethod = "Add",
+    )]
+    fn add(self, #[proxy] rhs: bevy::math::DVec2) -> bevy::math::DVec2;
+
+"#,
+    r#"
+
+    #[lua(
+        as_trait = "std::ops::Add",
+        kind = "MetaFunction",
+        output(proxy),
+        composite = "add",
+        metamethod = "Add",
+    )]
+    fn add(self, rhs: f64) -> bevy::math::DVec2;
 
 "#,
     r#"
@@ -14019,89 +14101,7 @@ pub struct BVec4 {
         composite = "div",
         metamethod = "Div",
     )]
-    fn div(self, rhs: f64) -> bevy::math::DVec2;
-
-"#,
-    r#"
-
-    #[lua(
-        as_trait = "std::ops::Div",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "div",
-        metamethod = "Div",
-    )]
     fn div(self, #[proxy] rhs: bevy::math::DVec2) -> bevy::math::DVec2;
-
-"#,
-    r#"
-
-    #[lua(
-        as_trait = "std::ops::Add",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "add",
-        metamethod = "Add",
-    )]
-    fn add(self, #[proxy] rhs: bevy::math::DVec2) -> bevy::math::DVec2;
-
-"#,
-    r#"
-
-    #[lua(
-        as_trait = "std::ops::Sub",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "sub",
-        metamethod = "Sub",
-    )]
-    fn sub(self, rhs: f64) -> bevy::math::DVec2;
-
-"#,
-    r#"
-
-    #[lua(
-        as_trait = "std::ops::Neg",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "neg",
-        metamethod = "Unm",
-    )]
-    fn neg(self) -> bevy::math::DVec2;
-
-"#,
-    r#"
-
-    #[lua(
-        as_trait = "std::ops::Mul",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "mul",
-        metamethod = "Mul",
-    )]
-    fn mul(self, #[proxy] rhs: bevy::math::DVec2) -> bevy::math::DVec2;
-
-"#,
-    r#"
-
-    #[lua(
-        as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone",
-        kind = "Method",
-        output(proxy),
-    )]
-    fn clone(&self) -> bevy::math::DVec2;
-
-"#,
-    r#"
-
-    #[lua(
-        as_trait = "std::ops::Rem",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "rem",
-        metamethod = "Mod",
-    )]
-    fn rem(self, #[proxy] rhs: bevy::math::DVec2) -> bevy::math::DVec2;
 
 "#,
     r#"
@@ -14123,7 +14123,7 @@ fn index(&mut self, lua: &Lua, idx: crate::lua::util::LuaIndex, val: f64) -> Res
 }
 "#]
 )]
-pub struct DVec2 {
+struct DVec2 {
     x: f64,
     y: f64,
 }
@@ -14134,6 +14134,77 @@ pub struct DVec2 {
     functions[r#"
 
     #[lua(
+        as_trait = "std::ops::Rem",
+        kind = "MetaFunction",
+        output(proxy),
+        composite = "rem",
+        metamethod = "Mod",
+    )]
+    fn rem(self, #[proxy] rhs: bevy::math::DVec3) -> bevy::math::DVec3;
+
+"#,
+    r#"
+
+    #[lua(
+        as_trait = "std::ops::Div",
+        kind = "MetaFunction",
+        output(proxy),
+        composite = "div",
+        metamethod = "Div",
+    )]
+    fn div(self, rhs: f64) -> bevy::math::DVec3;
+
+"#,
+    r#"
+
+    #[lua(
+        as_trait = "std::ops::Add",
+        kind = "MetaFunction",
+        output(proxy),
+        composite = "add",
+        metamethod = "Add",
+    )]
+    fn add(self, #[proxy] rhs: bevy::math::DVec3) -> bevy::math::DVec3;
+
+"#,
+    r#"
+
+    #[lua(
+        as_trait = "std::cmp::PartialEq",
+        kind = "MetaFunction",
+        composite = "eq",
+        metamethod = "Eq",
+    )]
+    fn eq(&self, #[proxy] other: &glam::DVec3) -> bool;
+
+"#,
+    r#"
+
+    #[lua(
+        as_trait = "std::ops::Mul",
+        kind = "MetaFunction",
+        output(proxy),
+        composite = "mul",
+        metamethod = "Mul",
+    )]
+    fn mul(self, rhs: f64) -> bevy::math::DVec3;
+
+"#,
+    r#"
+
+    #[lua(
+        as_trait = "std::ops::Add",
+        kind = "MetaFunction",
+        output(proxy),
+        composite = "add",
+        metamethod = "Add",
+    )]
+    fn add(self, rhs: f64) -> bevy::math::DVec3;
+
+"#,
+    r#"
+
+    #[lua(
         as_trait = "std::ops::Sub",
         kind = "MetaFunction",
         output(proxy),
@@ -14141,6 +14212,52 @@ pub struct DVec2 {
         metamethod = "Sub",
     )]
     fn sub(self, #[proxy] rhs: bevy::math::DVec3) -> bevy::math::DVec3;
+
+"#,
+    r#"
+
+    #[lua(
+        as_trait = "std::ops::Sub",
+        kind = "MetaFunction",
+        output(proxy),
+        composite = "sub",
+        metamethod = "Sub",
+    )]
+    fn sub(self, rhs: f64) -> bevy::math::DVec3;
+
+"#,
+    r#"
+
+    #[lua(
+        as_trait = "std::ops::Rem",
+        kind = "MetaFunction",
+        output(proxy),
+        composite = "rem",
+        metamethod = "Mod",
+    )]
+    fn rem(self, rhs: f64) -> bevy::math::DVec3;
+
+"#,
+    r#"
+
+    #[lua(
+        as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone",
+        kind = "Method",
+        output(proxy),
+    )]
+    fn clone(&self) -> bevy::math::DVec3;
+
+"#,
+    r#"
+
+    #[lua(
+        as_trait = "std::ops::Neg",
+        kind = "MetaFunction",
+        output(proxy),
+        composite = "neg",
+        metamethod = "Unm",
+    )]
+    fn neg(self) -> bevy::math::DVec3;
 
 "#,
     r#"
@@ -14721,123 +14838,6 @@ pub struct DVec2 {
     r#"
 
     #[lua(
-        as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone",
-        kind = "Method",
-        output(proxy),
-    )]
-    fn clone(&self) -> bevy::math::DVec3;
-
-"#,
-    r#"
-
-    #[lua(
-        as_trait = "std::ops::Div",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "div",
-        metamethod = "Div",
-    )]
-    fn div(self, #[proxy] rhs: bevy::math::DVec3) -> bevy::math::DVec3;
-
-"#,
-    r#"
-
-    #[lua(
-        as_trait = "std::ops::Neg",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "neg",
-        metamethod = "Unm",
-    )]
-    fn neg(self) -> bevy::math::DVec3;
-
-"#,
-    r#"
-
-    #[lua(
-        as_trait = "std::cmp::PartialEq",
-        kind = "MetaFunction",
-        composite = "eq",
-        metamethod = "Eq",
-    )]
-    fn eq(&self, #[proxy] other: &glam::DVec3) -> bool;
-
-"#,
-    r#"
-
-    #[lua(
-        as_trait = "std::ops::Mul",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "mul",
-        metamethod = "Mul",
-    )]
-    fn mul(self, rhs: f64) -> bevy::math::DVec3;
-
-"#,
-    r#"
-
-    #[lua(
-        as_trait = "std::ops::Div",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "div",
-        metamethod = "Div",
-    )]
-    fn div(self, rhs: f64) -> bevy::math::DVec3;
-
-"#,
-    r#"
-
-    #[lua(
-        as_trait = "std::ops::Rem",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "rem",
-        metamethod = "Mod",
-    )]
-    fn rem(self, rhs: f64) -> bevy::math::DVec3;
-
-"#,
-    r#"
-
-    #[lua(
-        as_trait = "std::ops::Add",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "add",
-        metamethod = "Add",
-    )]
-    fn add(self, rhs: f64) -> bevy::math::DVec3;
-
-"#,
-    r#"
-
-    #[lua(
-        as_trait = "std::ops::Sub",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "sub",
-        metamethod = "Sub",
-    )]
-    fn sub(self, rhs: f64) -> bevy::math::DVec3;
-
-"#,
-    r#"
-
-    #[lua(
-        as_trait = "std::ops::Rem",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "rem",
-        metamethod = "Mod",
-    )]
-    fn rem(self, #[proxy] rhs: bevy::math::DVec3) -> bevy::math::DVec3;
-
-"#,
-    r#"
-
-    #[lua(
         as_trait = "std::ops::Mul",
         kind = "MetaFunction",
         output(proxy),
@@ -14850,13 +14850,13 @@ pub struct DVec2 {
     r#"
 
     #[lua(
-        as_trait = "std::ops::Add",
+        as_trait = "std::ops::Div",
         kind = "MetaFunction",
         output(proxy),
-        composite = "add",
-        metamethod = "Add",
+        composite = "div",
+        metamethod = "Div",
     )]
-    fn add(self, #[proxy] rhs: bevy::math::DVec3) -> bevy::math::DVec3;
+    fn div(self, #[proxy] rhs: bevy::math::DVec3) -> bevy::math::DVec3;
 
 "#,
     r#"
@@ -14878,7 +14878,7 @@ fn index(&mut self, lua: &Lua, idx: crate::lua::util::LuaIndex, val: f64) -> Res
 }
 "#]
 )]
-pub struct DVec3 {
+struct DVec3 {
     x: f64,
     y: f64,
     z: f64,
@@ -14890,37 +14890,23 @@ pub struct DVec3 {
     functions[r#"
 
     #[lua(
-        as_trait = "std::ops::Add",
+        as_trait = "std::ops::Mul",
         kind = "MetaFunction",
         output(proxy),
-        composite = "add",
-        metamethod = "Add",
+        composite = "mul",
+        metamethod = "Mul",
     )]
-    fn add(self, rhs: f64) -> bevy::math::DVec4;
+    fn mul(self, #[proxy] rhs: bevy::math::DVec4) -> bevy::math::DVec4;
 
 "#,
     r#"
 
     #[lua(
-        as_trait = "std::ops::Div",
-        kind = "MetaFunction",
+        as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone",
+        kind = "Method",
         output(proxy),
-        composite = "div",
-        metamethod = "Div",
     )]
-    fn div(self, #[proxy] rhs: bevy::math::DVec4) -> bevy::math::DVec4;
-
-"#,
-    r#"
-
-    #[lua(
-        as_trait = "std::ops::Div",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "div",
-        metamethod = "Div",
-    )]
-    fn div(self, rhs: f64) -> bevy::math::DVec4;
+    fn clone(&self) -> bevy::math::DVec4;
 
 "#,
     r#"
@@ -14932,42 +14918,19 @@ pub struct DVec3 {
         composite = "rem",
         metamethod = "Mod",
     )]
-    fn rem(self, rhs: f64) -> bevy::math::DVec4;
+    fn rem(self, #[proxy] rhs: bevy::math::DVec4) -> bevy::math::DVec4;
 
 "#,
     r#"
 
     #[lua(
-        as_trait = "std::ops::Sub",
+        as_trait = "std::ops::Add",
         kind = "MetaFunction",
         output(proxy),
-        composite = "sub",
-        metamethod = "Sub",
+        composite = "add",
+        metamethod = "Add",
     )]
-    fn sub(self, rhs: f64) -> bevy::math::DVec4;
-
-"#,
-    r#"
-
-    #[lua(
-        as_trait = "std::cmp::PartialEq",
-        kind = "MetaFunction",
-        composite = "eq",
-        metamethod = "Eq",
-    )]
-    fn eq(&self, #[proxy] other: &glam::DVec4) -> bool;
-
-"#,
-    r#"
-
-    #[lua(
-        as_trait = "std::ops::Sub",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "sub",
-        metamethod = "Sub",
-    )]
-    fn sub(self, #[proxy] rhs: bevy::math::DVec4) -> bevy::math::DVec4;
+    fn add(self, #[proxy] rhs: bevy::math::DVec4) -> bevy::math::DVec4;
 
 "#,
     r#"
@@ -15511,6 +15474,66 @@ pub struct DVec3 {
     r#"
 
     #[lua(
+        as_trait = "std::ops::Rem",
+        kind = "MetaFunction",
+        output(proxy),
+        composite = "rem",
+        metamethod = "Mod",
+    )]
+    fn rem(self, rhs: f64) -> bevy::math::DVec4;
+
+"#,
+    r#"
+
+    #[lua(
+        as_trait = "std::ops::Div",
+        kind = "MetaFunction",
+        output(proxy),
+        composite = "div",
+        metamethod = "Div",
+    )]
+    fn div(self, #[proxy] rhs: bevy::math::DVec4) -> bevy::math::DVec4;
+
+"#,
+    r#"
+
+    #[lua(
+        as_trait = "std::ops::Sub",
+        kind = "MetaFunction",
+        output(proxy),
+        composite = "sub",
+        metamethod = "Sub",
+    )]
+    fn sub(self, #[proxy] rhs: bevy::math::DVec4) -> bevy::math::DVec4;
+
+"#,
+    r#"
+
+    #[lua(
+        as_trait = "std::ops::Div",
+        kind = "MetaFunction",
+        output(proxy),
+        composite = "div",
+        metamethod = "Div",
+    )]
+    fn div(self, rhs: f64) -> bevy::math::DVec4;
+
+"#,
+    r#"
+
+    #[lua(
+        as_trait = "std::ops::Sub",
+        kind = "MetaFunction",
+        output(proxy),
+        composite = "sub",
+        metamethod = "Sub",
+    )]
+    fn sub(self, rhs: f64) -> bevy::math::DVec4;
+
+"#,
+    r#"
+
+    #[lua(
         as_trait = "std::ops::Mul",
         kind = "MetaFunction",
         output(proxy),
@@ -15523,47 +15546,24 @@ pub struct DVec3 {
     r#"
 
     #[lua(
+        as_trait = "std::cmp::PartialEq",
+        kind = "MetaFunction",
+        composite = "eq",
+        metamethod = "Eq",
+    )]
+    fn eq(&self, #[proxy] other: &glam::DVec4) -> bool;
+
+"#,
+    r#"
+
+    #[lua(
         as_trait = "std::ops::Add",
         kind = "MetaFunction",
         output(proxy),
         composite = "add",
         metamethod = "Add",
     )]
-    fn add(self, #[proxy] rhs: bevy::math::DVec4) -> bevy::math::DVec4;
-
-"#,
-    r#"
-
-    #[lua(
-        as_trait = "std::ops::Rem",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "rem",
-        metamethod = "Mod",
-    )]
-    fn rem(self, #[proxy] rhs: bevy::math::DVec4) -> bevy::math::DVec4;
-
-"#,
-    r#"
-
-    #[lua(
-        as_trait = "std::ops::Mul",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "mul",
-        metamethod = "Mul",
-    )]
-    fn mul(self, #[proxy] rhs: bevy::math::DVec4) -> bevy::math::DVec4;
-
-"#,
-    r#"
-
-    #[lua(
-        as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone",
-        kind = "Method",
-        output(proxy),
-    )]
-    fn clone(&self) -> bevy::math::DVec4;
+    fn add(self, rhs: f64) -> bevy::math::DVec4;
 
 "#,
     r#"
@@ -15585,7 +15585,7 @@ fn index(&mut self, lua: &Lua, idx: crate::lua::util::LuaIndex, val: f64) -> Res
 }
 "#]
 )]
-pub struct DVec4 {
+struct DVec4 {
     x: f64,
     y: f64,
     z: f64,
@@ -15596,30 +15596,6 @@ pub struct DVec4 {
     derive(clone),
     remote = "bevy::math::Mat2",
     functions[r#"
-
-    #[lua(
-        as_trait = "std::ops::Neg",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "neg",
-        metamethod = "Unm",
-    )]
-    fn neg(self) -> bevy::math::Mat2;
-
-"#,
-    r#"
-
-    #[lua(
-        as_trait = "std::ops::Add",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "add",
-        metamethod = "Add",
-    )]
-    fn add(self, #[proxy] rhs: bevy::math::Mat2) -> bevy::math::Mat2;
-
-"#,
-    r#"
 /// Creates a 2x2 matrix from two column vectors.
 
     #[lua(kind = "Function", output(proxy))]
@@ -15801,13 +15777,23 @@ pub struct DVec4 {
     r#"
 
     #[lua(
-        as_trait = "std::ops::Sub",
+        as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone",
+        kind = "Method",
+        output(proxy),
+    )]
+    fn clone(&self) -> bevy::math::Mat2;
+
+"#,
+    r#"
+
+    #[lua(
+        as_trait = "std::ops::Neg",
         kind = "MetaFunction",
         output(proxy),
-        composite = "sub",
-        metamethod = "Sub",
+        composite = "neg",
+        metamethod = "Unm",
     )]
-    fn sub(self, #[proxy] rhs: bevy::math::Mat2) -> bevy::math::Mat2;
+    fn neg(self) -> bevy::math::Mat2;
 
 "#,
     r#"
@@ -15849,6 +15835,18 @@ pub struct DVec4 {
     r#"
 
     #[lua(
+        as_trait = "std::ops::Sub",
+        kind = "MetaFunction",
+        output(proxy),
+        composite = "sub",
+        metamethod = "Sub",
+    )]
+    fn sub(self, #[proxy] rhs: bevy::math::Mat2) -> bevy::math::Mat2;
+
+"#,
+    r#"
+
+    #[lua(
         as_trait = "std::cmp::PartialEq",
         kind = "MetaFunction",
         composite = "eq",
@@ -15860,11 +15858,13 @@ pub struct DVec4 {
     r#"
 
     #[lua(
-        as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone",
-        kind = "Method",
+        as_trait = "std::ops::Add",
+        kind = "MetaFunction",
         output(proxy),
+        composite = "add",
+        metamethod = "Add",
     )]
-    fn clone(&self) -> bevy::math::Mat2;
+    fn add(self, #[proxy] rhs: bevy::math::Mat2) -> bevy::math::Mat2;
 
 "#,
     r#"
@@ -15898,12 +15898,36 @@ fn index(&self, ctx : &Lua, idx: crate::lua::util::LuaIndex) -> Result<LuaVec2,_
 }
 "#]
 )]
-pub struct Mat2();
+struct Mat2();
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
     derive(clone),
     remote = "bevy::math::Mat3",
     functions[r#"
+
+    #[lua(
+        as_trait = "std::ops::Neg",
+        kind = "MetaFunction",
+        output(proxy),
+        composite = "neg",
+        metamethod = "Unm",
+    )]
+    fn neg(self) -> bevy::math::Mat3;
+
+"#,
+    r#"
+
+    #[lua(
+        as_trait = "std::ops::Sub",
+        kind = "MetaFunction",
+        output(proxy),
+        composite = "sub",
+        metamethod = "Sub",
+    )]
+    fn sub(self, #[proxy] rhs: bevy::math::Mat3) -> bevy::math::Mat3;
+
+"#,
+    r#"
 
     #[lua(
         as_trait = "std::ops::Mul",
@@ -15912,28 +15936,7 @@ pub struct Mat2();
         composite = "mul",
         metamethod = "Mul",
     )]
-    fn mul(self, #[proxy] rhs: bevy::math::Vec3A) -> bevy::math::Vec3A;
-
-"#,
-    r#"
-
-    #[lua(
-        as_trait = "std::cmp::PartialEq",
-        kind = "MetaFunction",
-        composite = "eq",
-        metamethod = "Eq",
-    )]
-    fn eq(&self, #[proxy] rhs: &glam::Mat3) -> bool;
-
-"#,
-    r#"
-
-    #[lua(
-        as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone",
-        kind = "Method",
-        output(proxy),
-    )]
-    fn clone(&self) -> bevy::math::Mat3;
+    fn mul(self, #[proxy] rhs: bevy::math::Vec3) -> bevy::math::Vec3;
 
 "#,
     r#"
@@ -15957,7 +15960,18 @@ pub struct Mat2();
         composite = "mul",
         metamethod = "Mul",
     )]
-    fn mul(self, #[proxy] rhs: bevy::math::Vec3) -> bevy::math::Vec3;
+    fn mul(self, rhs: f32) -> bevy::math::Mat3;
+
+"#,
+    r#"
+
+    #[lua(
+        as_trait = "std::cmp::PartialEq",
+        kind = "MetaFunction",
+        composite = "eq",
+        metamethod = "Eq",
+    )]
+    fn eq(&self, #[proxy] rhs: &glam::Mat3) -> bool;
 
 "#,
     r#"
@@ -15975,6 +15989,16 @@ pub struct Mat2();
     r#"
 
     #[lua(
+        as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone",
+        kind = "Method",
+        output(proxy),
+    )]
+    fn clone(&self) -> bevy::math::Mat3;
+
+"#,
+    r#"
+
+    #[lua(
         as_trait = "std::ops::Mul",
         kind = "MetaFunction",
         output(proxy),
@@ -15982,42 +16006,6 @@ pub struct Mat2();
         metamethod = "Mul",
     )]
     fn mul(self, #[proxy] rhs: bevy::math::Mat3) -> bevy::math::Mat3;
-
-"#,
-    r#"
-
-    #[lua(
-        as_trait = "std::ops::Mul",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "mul",
-        metamethod = "Mul",
-    )]
-    fn mul(self, rhs: f32) -> bevy::math::Mat3;
-
-"#,
-    r#"
-
-    #[lua(
-        as_trait = "std::ops::Sub",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "sub",
-        metamethod = "Sub",
-    )]
-    fn sub(self, #[proxy] rhs: bevy::math::Mat3) -> bevy::math::Mat3;
-
-"#,
-    r#"
-
-    #[lua(
-        as_trait = "std::ops::Neg",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "neg",
-        metamethod = "Unm",
-    )]
-    fn neg(self) -> bevy::math::Mat3;
 
 "#,
     r#"
@@ -16314,6 +16302,18 @@ pub struct Mat2();
 
 "#,
     r#"
+
+    #[lua(
+        as_trait = "std::ops::Mul",
+        kind = "MetaFunction",
+        output(proxy),
+        composite = "mul",
+        metamethod = "Mul",
+    )]
+    fn mul(self, #[proxy] rhs: bevy::math::Vec3A) -> bevy::math::Vec3A;
+
+"#,
+    r#"
 #[lua(kind="MetaMethod", metamethod="ToString")]
 fn index(&self) -> String {
     format!("{}", _self)
@@ -16344,7 +16344,7 @@ fn index(&self, ctx : &Lua, idx: crate::lua::util::LuaIndex) -> Result<LuaVec3,_
 }
 "#]
 )]
-pub struct Mat3 {
+struct Mat3 {
     #[lua(output(proxy))]
     x_axis: bevy::math::Vec3,
     #[lua(output(proxy))]
@@ -16652,65 +16652,6 @@ pub struct Mat3 {
     r#"
 
     #[lua(
-        as_trait = "std::ops::Mul",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "mul",
-        metamethod = "Mul",
-    )]
-    fn mul(self, rhs: f32) -> bevy::math::Mat3A;
-
-"#,
-    r#"
-
-    #[lua(
-        as_trait = "std::cmp::PartialEq",
-        kind = "MetaFunction",
-        composite = "eq",
-        metamethod = "Eq",
-    )]
-    fn eq(&self, #[proxy] rhs: &glam::Mat3A) -> bool;
-
-"#,
-    r#"
-
-    #[lua(
-        as_trait = "std::ops::Mul",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "mul",
-        metamethod = "Mul",
-    )]
-    fn mul(self, #[proxy] rhs: bevy::math::Vec3A) -> bevy::math::Vec3A;
-
-"#,
-    r#"
-
-    #[lua(
-        as_trait = "std::ops::Sub",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "sub",
-        metamethod = "Sub",
-    )]
-    fn sub(self, #[proxy] rhs: bevy::math::Mat3A) -> bevy::math::Mat3A;
-
-"#,
-    r#"
-
-    #[lua(
-        as_trait = "std::ops::Add",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "add",
-        metamethod = "Add",
-    )]
-    fn add(self, #[proxy] rhs: bevy::math::Mat3A) -> bevy::math::Mat3A;
-
-"#,
-    r#"
-
-    #[lua(
         as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone",
         kind = "Method",
         output(proxy),
@@ -16728,18 +16669,6 @@ pub struct Mat3 {
         metamethod = "Mul",
     )]
     fn mul(self, #[proxy] rhs: bevy::math::Vec3) -> bevy::math::Vec3;
-
-"#,
-    r#"
-
-    #[lua(
-        as_trait = "std::ops::Neg",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "neg",
-        metamethod = "Unm",
-    )]
-    fn neg(self) -> bevy::math::Mat3A;
 
 "#,
     r#"
@@ -16764,6 +16693,77 @@ pub struct Mat3 {
         metamethod = "Mul",
     )]
     fn mul(self, #[proxy] rhs: bevy::math::Affine2) -> bevy::math::Mat3A;
+
+"#,
+    r#"
+
+    #[lua(
+        as_trait = "std::ops::Mul",
+        kind = "MetaFunction",
+        output(proxy),
+        composite = "mul",
+        metamethod = "Mul",
+    )]
+    fn mul(self, #[proxy] rhs: bevy::math::Vec3A) -> bevy::math::Vec3A;
+
+"#,
+    r#"
+
+    #[lua(
+        as_trait = "std::ops::Add",
+        kind = "MetaFunction",
+        output(proxy),
+        composite = "add",
+        metamethod = "Add",
+    )]
+    fn add(self, #[proxy] rhs: bevy::math::Mat3A) -> bevy::math::Mat3A;
+
+"#,
+    r#"
+
+    #[lua(
+        as_trait = "std::ops::Mul",
+        kind = "MetaFunction",
+        output(proxy),
+        composite = "mul",
+        metamethod = "Mul",
+    )]
+    fn mul(self, rhs: f32) -> bevy::math::Mat3A;
+
+"#,
+    r#"
+
+    #[lua(
+        as_trait = "std::ops::Neg",
+        kind = "MetaFunction",
+        output(proxy),
+        composite = "neg",
+        metamethod = "Unm",
+    )]
+    fn neg(self) -> bevy::math::Mat3A;
+
+"#,
+    r#"
+
+    #[lua(
+        as_trait = "std::ops::Sub",
+        kind = "MetaFunction",
+        output(proxy),
+        composite = "sub",
+        metamethod = "Sub",
+    )]
+    fn sub(self, #[proxy] rhs: bevy::math::Mat3A) -> bevy::math::Mat3A;
+
+"#,
+    r#"
+
+    #[lua(
+        as_trait = "std::cmp::PartialEq",
+        kind = "MetaFunction",
+        composite = "eq",
+        metamethod = "Eq",
+    )]
+    fn eq(&self, #[proxy] rhs: &glam::Mat3A) -> bool;
 
 "#,
     r#"
@@ -16797,7 +16797,7 @@ fn index(&self, ctx : &Lua, idx: crate::lua::util::LuaIndex) -> Result<LuaVec3A,
 }
 "#]
 )]
-pub struct Mat3A {
+struct Mat3A {
     #[lua(output(proxy))]
     x_axis: bevy::math::Vec3A,
     #[lua(output(proxy))]
@@ -16812,64 +16812,6 @@ pub struct Mat3A {
     functions[r#"
 
     #[lua(
-        as_trait = "std::ops::Add",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "add",
-        metamethod = "Add",
-    )]
-    fn add(self, #[proxy] rhs: bevy::math::Mat4) -> bevy::math::Mat4;
-
-"#,
-    r#"
-
-    #[lua(
-        as_trait = "std::ops::Mul",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "mul",
-        metamethod = "Mul",
-    )]
-    fn mul(self, rhs: f32) -> bevy::math::Mat4;
-
-"#,
-    r#"
-
-    #[lua(
-        as_trait = "std::ops::Neg",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "neg",
-        metamethod = "Unm",
-    )]
-    fn neg(self) -> bevy::math::Mat4;
-
-"#,
-    r#"
-
-    #[lua(
-        as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone",
-        kind = "Method",
-        output(proxy),
-    )]
-    fn clone(&self) -> bevy::math::Mat4;
-
-"#,
-    r#"
-
-    #[lua(
-        as_trait = "std::ops::Sub",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "sub",
-        metamethod = "Sub",
-    )]
-    fn sub(self, #[proxy] rhs: bevy::math::Mat4) -> bevy::math::Mat4;
-
-"#,
-    r#"
-
-    #[lua(
         as_trait = "std::ops::Mul",
         kind = "MetaFunction",
         output(proxy),
@@ -16877,29 +16819,6 @@ pub struct Mat3A {
         metamethod = "Mul",
     )]
     fn mul(self, #[proxy] rhs: bevy::math::Vec4) -> bevy::math::Vec4;
-
-"#,
-    r#"
-
-    #[lua(
-        as_trait = "std::cmp::PartialEq",
-        kind = "MetaFunction",
-        composite = "eq",
-        metamethod = "Eq",
-    )]
-    fn eq(&self, #[proxy] rhs: &glam::Mat4) -> bool;
-
-"#,
-    r#"
-
-    #[lua(
-        as_trait = "std::ops::Mul",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "mul",
-        metamethod = "Mul",
-    )]
-    fn mul(self, #[proxy] rhs: bevy::math::Mat4) -> bevy::math::Mat4;
 
 "#,
     r#"
@@ -17458,6 +17377,65 @@ pub struct Mat3A {
     r#"
 
     #[lua(
+        as_trait = "std::ops::Add",
+        kind = "MetaFunction",
+        output(proxy),
+        composite = "add",
+        metamethod = "Add",
+    )]
+    fn add(self, #[proxy] rhs: bevy::math::Mat4) -> bevy::math::Mat4;
+
+"#,
+    r#"
+
+    #[lua(
+        as_trait = "std::ops::Sub",
+        kind = "MetaFunction",
+        output(proxy),
+        composite = "sub",
+        metamethod = "Sub",
+    )]
+    fn sub(self, #[proxy] rhs: bevy::math::Mat4) -> bevy::math::Mat4;
+
+"#,
+    r#"
+
+    #[lua(
+        as_trait = "std::cmp::PartialEq",
+        kind = "MetaFunction",
+        composite = "eq",
+        metamethod = "Eq",
+    )]
+    fn eq(&self, #[proxy] rhs: &glam::Mat4) -> bool;
+
+"#,
+    r#"
+
+    #[lua(
+        as_trait = "std::ops::Mul",
+        kind = "MetaFunction",
+        output(proxy),
+        composite = "mul",
+        metamethod = "Mul",
+    )]
+    fn mul(self, rhs: f32) -> bevy::math::Mat4;
+
+"#,
+    r#"
+
+    #[lua(
+        as_trait = "std::ops::Mul",
+        kind = "MetaFunction",
+        output(proxy),
+        composite = "mul",
+        metamethod = "Mul",
+    )]
+    fn mul(self, #[proxy] rhs: bevy::math::Mat4) -> bevy::math::Mat4;
+
+"#,
+    r#"
+
+    #[lua(
         as_trait = "std::ops::Mul",
         kind = "MetaFunction",
         output(proxy),
@@ -17465,6 +17443,28 @@ pub struct Mat3A {
         metamethod = "Mul",
     )]
     fn mul(self, #[proxy] rhs: bevy::math::Affine3A) -> bevy::math::Mat4;
+
+"#,
+    r#"
+
+    #[lua(
+        as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone",
+        kind = "Method",
+        output(proxy),
+    )]
+    fn clone(&self) -> bevy::math::Mat4;
+
+"#,
+    r#"
+
+    #[lua(
+        as_trait = "std::ops::Neg",
+        kind = "MetaFunction",
+        output(proxy),
+        composite = "neg",
+        metamethod = "Unm",
+    )]
+    fn neg(self) -> bevy::math::Mat4;
 
 "#,
     r#"
@@ -17498,7 +17498,7 @@ fn index(&self, ctx : &Lua, idx: crate::lua::util::LuaIndex) -> Result<LuaVec4,_
 }
 "#]
 )]
-pub struct Mat4 {
+struct Mat4 {
     #[lua(output(proxy))]
     x_axis: bevy::math::Vec4,
     #[lua(output(proxy))]
@@ -17513,40 +17513,6 @@ pub struct Mat4 {
     derive(clone),
     remote = "bevy::math::DMat2",
     functions[r#"
-
-    #[lua(
-        as_trait = "std::ops::Sub",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "sub",
-        metamethod = "Sub",
-    )]
-    fn sub(self, #[proxy] rhs: bevy::math::DMat2) -> bevy::math::DMat2;
-
-"#,
-    r#"
-
-    #[lua(
-        as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone",
-        kind = "Method",
-        output(proxy),
-    )]
-    fn clone(&self) -> bevy::math::DMat2;
-
-"#,
-    r#"
-
-    #[lua(
-        as_trait = "std::ops::Neg",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "neg",
-        metamethod = "Unm",
-    )]
-    fn neg(self) -> bevy::math::DMat2;
-
-"#,
-    r#"
 /// Creates a 2x2 matrix from two column vectors.
 
     #[lua(kind = "Function", output(proxy))]
@@ -17745,13 +17711,11 @@ pub struct Mat4 {
     r#"
 
     #[lua(
-        as_trait = "std::ops::Add",
-        kind = "MetaFunction",
+        as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone",
+        kind = "Method",
         output(proxy),
-        composite = "add",
-        metamethod = "Add",
     )]
-    fn add(self, #[proxy] rhs: bevy::math::DMat2) -> bevy::math::DMat2;
+    fn clone(&self) -> bevy::math::DMat2;
 
 "#,
     r#"
@@ -17768,6 +17732,30 @@ pub struct Mat4 {
     r#"
 
     #[lua(
+        as_trait = "std::ops::Add",
+        kind = "MetaFunction",
+        output(proxy),
+        composite = "add",
+        metamethod = "Add",
+    )]
+    fn add(self, #[proxy] rhs: bevy::math::DMat2) -> bevy::math::DMat2;
+
+"#,
+    r#"
+
+    #[lua(
+        as_trait = "std::ops::Neg",
+        kind = "MetaFunction",
+        output(proxy),
+        composite = "neg",
+        metamethod = "Unm",
+    )]
+    fn neg(self) -> bevy::math::DMat2;
+
+"#,
+    r#"
+
+    #[lua(
         as_trait = "std::ops::Mul",
         kind = "MetaFunction",
         output(proxy),
@@ -17775,6 +17763,18 @@ pub struct Mat4 {
         metamethod = "Mul",
     )]
     fn mul(self, rhs: f64) -> bevy::math::DMat2;
+
+"#,
+    r#"
+
+    #[lua(
+        as_trait = "std::ops::Sub",
+        kind = "MetaFunction",
+        output(proxy),
+        composite = "sub",
+        metamethod = "Sub",
+    )]
+    fn sub(self, #[proxy] rhs: bevy::math::DMat2) -> bevy::math::DMat2;
 
 "#,
     r#"
@@ -17808,7 +17808,7 @@ fn index(&self, ctx : &Lua, idx: crate::lua::util::LuaIndex) -> Result<LuaDVec2,
 }
 "#]
 )]
-pub struct DMat2 {
+struct DMat2 {
     #[lua(output(proxy))]
     x_axis: bevy::math::DVec2,
     #[lua(output(proxy))]
@@ -17819,6 +17819,75 @@ pub struct DMat2 {
     derive(clone),
     remote = "bevy::math::DMat3",
     functions[r#"
+
+    #[lua(
+        as_trait = "std::ops::Neg",
+        kind = "MetaFunction",
+        output(proxy),
+        composite = "neg",
+        metamethod = "Unm",
+    )]
+    fn neg(self) -> bevy::math::DMat3;
+
+"#,
+    r#"
+
+    #[lua(
+        as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone",
+        kind = "Method",
+        output(proxy),
+    )]
+    fn clone(&self) -> bevy::math::DMat3;
+
+"#,
+    r#"
+
+    #[lua(
+        as_trait = "std::ops::Mul",
+        kind = "MetaFunction",
+        output(proxy),
+        composite = "mul",
+        metamethod = "Mul",
+    )]
+    fn mul(self, rhs: f64) -> bevy::math::DMat3;
+
+"#,
+    r#"
+
+    #[lua(
+        as_trait = "std::ops::Add",
+        kind = "MetaFunction",
+        output(proxy),
+        composite = "add",
+        metamethod = "Add",
+    )]
+    fn add(self, #[proxy] rhs: bevy::math::DMat3) -> bevy::math::DMat3;
+
+"#,
+    r#"
+
+    #[lua(
+        as_trait = "std::ops::Mul",
+        kind = "MetaFunction",
+        output(proxy),
+        composite = "mul",
+        metamethod = "Mul",
+    )]
+    fn mul(self, #[proxy] rhs: bevy::math::DVec3) -> bevy::math::DVec3;
+
+"#,
+    r#"
+
+    #[lua(
+        as_trait = "std::cmp::PartialEq",
+        kind = "MetaFunction",
+        composite = "eq",
+        metamethod = "Eq",
+    )]
+    fn eq(&self, #[proxy] rhs: &glam::DMat3) -> bool;
+
+"#,
+    r#"
 /// Creates a 3x3 matrix from three column vectors.
 
     #[lua(kind = "Function", output(proxy))]
@@ -18111,64 +18180,6 @@ pub struct DMat2 {
     r#"
 
     #[lua(
-        as_trait = "std::ops::Neg",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "neg",
-        metamethod = "Unm",
-    )]
-    fn neg(self) -> bevy::math::DMat3;
-
-"#,
-    r#"
-
-    #[lua(
-        as_trait = "std::ops::Mul",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "mul",
-        metamethod = "Mul",
-    )]
-    fn mul(self, rhs: f64) -> bevy::math::DMat3;
-
-"#,
-    r#"
-
-    #[lua(
-        as_trait = "std::ops::Add",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "add",
-        metamethod = "Add",
-    )]
-    fn add(self, #[proxy] rhs: bevy::math::DMat3) -> bevy::math::DMat3;
-
-"#,
-    r#"
-
-    #[lua(
-        as_trait = "std::ops::Mul",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "mul",
-        metamethod = "Mul",
-    )]
-    fn mul(self, #[proxy] rhs: bevy::math::DVec3) -> bevy::math::DVec3;
-
-"#,
-    r#"
-
-    #[lua(
-        as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone",
-        kind = "Method",
-        output(proxy),
-    )]
-    fn clone(&self) -> bevy::math::DMat3;
-
-"#,
-    r#"
-
-    #[lua(
         as_trait = "std::ops::Sub",
         kind = "MetaFunction",
         output(proxy),
@@ -18203,17 +18214,6 @@ pub struct DMat2 {
 
 "#,
     r#"
-
-    #[lua(
-        as_trait = "std::cmp::PartialEq",
-        kind = "MetaFunction",
-        composite = "eq",
-        metamethod = "Eq",
-    )]
-    fn eq(&self, #[proxy] rhs: &glam::DMat3) -> bool;
-
-"#,
-    r#"
 #[lua(kind="MetaMethod", metamethod="ToString")]
 fn index(&self) -> String {
     format!("{}", _self)
@@ -18244,7 +18244,7 @@ fn index(&self, ctx : &Lua, idx: crate::lua::util::LuaIndex) -> Result<LuaDVec3,
 }
 "#]
 )]
-pub struct DMat3 {
+struct DMat3 {
     #[lua(output(proxy))]
     x_axis: bevy::math::DVec3,
     #[lua(output(proxy))]
@@ -18271,48 +18271,12 @@ pub struct DMat3 {
     r#"
 
     #[lua(
-        as_trait = "std::ops::Mul",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "mul",
-        metamethod = "Mul",
-    )]
-    fn mul(self, #[proxy] rhs: bevy::math::DAffine3) -> bevy::math::DMat4;
-
-"#,
-    r#"
-
-    #[lua(
-        as_trait = "std::ops::Add",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "add",
-        metamethod = "Add",
-    )]
-    fn add(self, #[proxy] rhs: bevy::math::DMat4) -> bevy::math::DMat4;
-
-"#,
-    r#"
-
-    #[lua(
         as_trait = "std::cmp::PartialEq",
         kind = "MetaFunction",
         composite = "eq",
         metamethod = "Eq",
     )]
     fn eq(&self, #[proxy] rhs: &glam::DMat4) -> bool;
-
-"#,
-    r#"
-
-    #[lua(
-        as_trait = "std::ops::Sub",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "sub",
-        metamethod = "Sub",
-    )]
-    fn sub(self, #[proxy] rhs: bevy::math::DMat4) -> bevy::math::DMat4;
 
 "#,
     r#"
@@ -18337,6 +18301,40 @@ pub struct DMat3 {
         metamethod = "Mul",
     )]
     fn mul(self, #[proxy] rhs: bevy::math::DMat4) -> bevy::math::DMat4;
+
+"#,
+    r#"
+
+    #[lua(
+        as_trait = "std::ops::Neg",
+        kind = "MetaFunction",
+        output(proxy),
+        composite = "neg",
+        metamethod = "Unm",
+    )]
+    fn neg(self) -> bevy::math::DMat4;
+
+"#,
+    r#"
+
+    #[lua(
+        as_trait = "std::ops::Add",
+        kind = "MetaFunction",
+        output(proxy),
+        composite = "add",
+        metamethod = "Add",
+    )]
+    fn add(self, #[proxy] rhs: bevy::math::DMat4) -> bevy::math::DMat4;
+
+"#,
+    r#"
+
+    #[lua(
+        as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone",
+        kind = "Method",
+        output(proxy),
+    )]
+    fn clone(&self) -> bevy::math::DMat4;
 
 "#,
     r#"
@@ -18873,23 +18871,25 @@ pub struct DMat3 {
     r#"
 
     #[lua(
-        as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone",
-        kind = "Method",
+        as_trait = "std::ops::Mul",
+        kind = "MetaFunction",
         output(proxy),
+        composite = "mul",
+        metamethod = "Mul",
     )]
-    fn clone(&self) -> bevy::math::DMat4;
+    fn mul(self, #[proxy] rhs: bevy::math::DAffine3) -> bevy::math::DMat4;
 
 "#,
     r#"
 
     #[lua(
-        as_trait = "std::ops::Neg",
+        as_trait = "std::ops::Sub",
         kind = "MetaFunction",
         output(proxy),
-        composite = "neg",
-        metamethod = "Unm",
+        composite = "sub",
+        metamethod = "Sub",
     )]
-    fn neg(self) -> bevy::math::DMat4;
+    fn sub(self, #[proxy] rhs: bevy::math::DMat4) -> bevy::math::DMat4;
 
 "#,
     r#"
@@ -18923,7 +18923,7 @@ fn index(&self, ctx : &Lua, idx: crate::lua::util::LuaIndex) -> Result<LuaDVec4,
 }
 "#]
 )]
-pub struct DMat4 {
+struct DMat4 {
     #[lua(output(proxy))]
     x_axis: bevy::math::DVec4,
     #[lua(output(proxy))]
@@ -18938,63 +18938,6 @@ pub struct DMat4 {
     derive(clone),
     remote = "bevy::math::Affine2",
     functions[r#"
-
-    #[lua(
-        as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone",
-        kind = "Method",
-        output(proxy),
-    )]
-    fn clone(&self) -> bevy::math::Affine2;
-
-"#,
-    r#"
-
-    #[lua(
-        as_trait = "std::ops::Mul",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "mul",
-        metamethod = "Mul",
-    )]
-    fn mul(self, #[proxy] rhs: bevy::math::Mat3A) -> bevy::math::Mat3A;
-
-"#,
-    r#"
-
-    #[lua(
-        as_trait = "std::ops::Mul",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "mul",
-        metamethod = "Mul",
-    )]
-    fn mul(self, #[proxy] rhs: bevy::math::Mat3) -> bevy::math::Mat3;
-
-"#,
-    r#"
-
-    #[lua(
-        as_trait = "std::cmp::PartialEq",
-        kind = "MetaFunction",
-        composite = "eq",
-        metamethod = "Eq",
-    )]
-    fn eq(&self, #[proxy] rhs: &glam::Affine2) -> bool;
-
-"#,
-    r#"
-
-    #[lua(
-        as_trait = "std::ops::Mul",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "mul",
-        metamethod = "Mul",
-    )]
-    fn mul(self, #[proxy] rhs: bevy::math::Affine2) -> bevy::math::Affine2;
-
-"#,
-    r#"
 /// Creates an affine transform from three column vectors.
 
     #[lua(kind = "Function", output(proxy))]
@@ -19165,13 +19108,70 @@ pub struct DMat4 {
 
 "#,
     r#"
+
+    #[lua(
+        as_trait = "std::ops::Mul",
+        kind = "MetaFunction",
+        output(proxy),
+        composite = "mul",
+        metamethod = "Mul",
+    )]
+    fn mul(self, #[proxy] rhs: bevy::math::Affine2) -> bevy::math::Affine2;
+
+"#,
+    r#"
+
+    #[lua(
+        as_trait = "std::ops::Mul",
+        kind = "MetaFunction",
+        output(proxy),
+        composite = "mul",
+        metamethod = "Mul",
+    )]
+    fn mul(self, #[proxy] rhs: bevy::math::Mat3) -> bevy::math::Mat3;
+
+"#,
+    r#"
+
+    #[lua(
+        as_trait = "std::cmp::PartialEq",
+        kind = "MetaFunction",
+        composite = "eq",
+        metamethod = "Eq",
+    )]
+    fn eq(&self, #[proxy] rhs: &glam::Affine2) -> bool;
+
+"#,
+    r#"
+
+    #[lua(
+        as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone",
+        kind = "Method",
+        output(proxy),
+    )]
+    fn clone(&self) -> bevy::math::Affine2;
+
+"#,
+    r#"
+
+    #[lua(
+        as_trait = "std::ops::Mul",
+        kind = "MetaFunction",
+        output(proxy),
+        composite = "mul",
+        metamethod = "Mul",
+    )]
+    fn mul(self, #[proxy] rhs: bevy::math::Mat3A) -> bevy::math::Mat3A;
+
+"#,
+    r#"
 #[lua(kind="MetaMethod", metamethod="ToString")]
 fn index(&self) -> String {
     format!("{}", _self)
 }
 "#]
 )]
-pub struct Affine2 {
+struct Affine2 {
     #[lua(output(proxy))]
     matrix2: bevy::math::Mat2,
     #[lua(output(proxy))]
@@ -19471,22 +19471,13 @@ pub struct Affine2 {
     r#"
 
     #[lua(
-        as_trait = "std::cmp::PartialEq",
+        as_trait = "std::ops::Mul",
         kind = "MetaFunction",
-        composite = "eq",
-        metamethod = "Eq",
-    )]
-    fn eq(&self, #[proxy] rhs: &glam::Affine3A) -> bool;
-
-"#,
-    r#"
-
-    #[lua(
-        as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone",
-        kind = "Method",
         output(proxy),
+        composite = "mul",
+        metamethod = "Mul",
     )]
-    fn clone(&self) -> bevy::math::Affine3A;
+    fn mul(self, #[proxy] rhs: bevy::math::Mat4) -> bevy::math::Mat4;
 
 "#,
     r#"
@@ -19504,13 +19495,22 @@ pub struct Affine2 {
     r#"
 
     #[lua(
-        as_trait = "std::ops::Mul",
-        kind = "MetaFunction",
+        as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone",
+        kind = "Method",
         output(proxy),
-        composite = "mul",
-        metamethod = "Mul",
     )]
-    fn mul(self, #[proxy] rhs: bevy::math::Mat4) -> bevy::math::Mat4;
+    fn clone(&self) -> bevy::math::Affine3A;
+
+"#,
+    r#"
+
+    #[lua(
+        as_trait = "std::cmp::PartialEq",
+        kind = "MetaFunction",
+        composite = "eq",
+        metamethod = "Eq",
+    )]
+    fn eq(&self, #[proxy] rhs: &glam::Affine3A) -> bool;
 
 "#,
     r#"
@@ -19520,7 +19520,7 @@ fn index(&self) -> String {
 }
 "#]
 )]
-pub struct Affine3A {
+struct Affine3A {
     #[lua(output(proxy))]
     matrix3: bevy::math::Mat3A,
     #[lua(output(proxy))]
@@ -19531,6 +19531,51 @@ pub struct Affine3A {
     derive(clone),
     remote = "bevy::math::DAffine2",
     functions[r#"
+
+    #[lua(
+        as_trait = "std::ops::Mul",
+        kind = "MetaFunction",
+        output(proxy),
+        composite = "mul",
+        metamethod = "Mul",
+    )]
+    fn mul(self, #[proxy] rhs: bevy::math::DAffine2) -> bevy::math::DAffine2;
+
+"#,
+    r#"
+
+    #[lua(
+        as_trait = "std::ops::Mul",
+        kind = "MetaFunction",
+        output(proxy),
+        composite = "mul",
+        metamethod = "Mul",
+    )]
+    fn mul(self, #[proxy] rhs: bevy::math::DMat3) -> bevy::math::DMat3;
+
+"#,
+    r#"
+
+    #[lua(
+        as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone",
+        kind = "Method",
+        output(proxy),
+    )]
+    fn clone(&self) -> bevy::math::DAffine2;
+
+"#,
+    r#"
+
+    #[lua(
+        as_trait = "std::cmp::PartialEq",
+        kind = "MetaFunction",
+        composite = "eq",
+        metamethod = "Eq",
+    )]
+    fn eq(&self, #[proxy] rhs: &glam::DAffine2) -> bool;
+
+"#,
+    r#"
 /// Creates an affine transform from three column vectors.
 
     #[lua(kind = "Function", output(proxy))]
@@ -19694,58 +19739,13 @@ pub struct Affine3A {
 
 "#,
     r#"
-
-    #[lua(
-        as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone",
-        kind = "Method",
-        output(proxy),
-    )]
-    fn clone(&self) -> bevy::math::DAffine2;
-
-"#,
-    r#"
-
-    #[lua(
-        as_trait = "std::ops::Mul",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "mul",
-        metamethod = "Mul",
-    )]
-    fn mul(self, #[proxy] rhs: bevy::math::DAffine2) -> bevy::math::DAffine2;
-
-"#,
-    r#"
-
-    #[lua(
-        as_trait = "std::ops::Mul",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "mul",
-        metamethod = "Mul",
-    )]
-    fn mul(self, #[proxy] rhs: bevy::math::DMat3) -> bevy::math::DMat3;
-
-"#,
-    r#"
-
-    #[lua(
-        as_trait = "std::cmp::PartialEq",
-        kind = "MetaFunction",
-        composite = "eq",
-        metamethod = "Eq",
-    )]
-    fn eq(&self, #[proxy] rhs: &glam::DAffine2) -> bool;
-
-"#,
-    r#"
 #[lua(kind="MetaMethod", metamethod="ToString")]
 fn index(&self) -> String {
     format!("{}", _self)
 }
 "#]
 )]
-pub struct DAffine2 {
+struct DAffine2 {
     #[lua(output(proxy))]
     matrix2: bevy::math::DMat2,
     #[lua(output(proxy))]
@@ -19765,6 +19765,27 @@ pub struct DAffine2 {
         metamethod = "Mul",
     )]
     fn mul(self, #[proxy] rhs: bevy::math::DMat4) -> bevy::math::DMat4;
+
+"#,
+    r#"
+
+    #[lua(
+        as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone",
+        kind = "Method",
+        output(proxy),
+    )]
+    fn clone(&self) -> bevy::math::DAffine3;
+
+"#,
+    r#"
+
+    #[lua(
+        as_trait = "std::cmp::PartialEq",
+        kind = "MetaFunction",
+        composite = "eq",
+        metamethod = "Eq",
+    )]
+    fn eq(&self, #[proxy] rhs: &glam::DAffine3) -> bool;
 
 "#,
     r#"
@@ -20051,34 +20072,13 @@ pub struct DAffine2 {
 
 "#,
     r#"
-
-    #[lua(
-        as_trait = "std::cmp::PartialEq",
-        kind = "MetaFunction",
-        composite = "eq",
-        metamethod = "Eq",
-    )]
-    fn eq(&self, #[proxy] rhs: &glam::DAffine3) -> bool;
-
-"#,
-    r#"
-
-    #[lua(
-        as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone",
-        kind = "Method",
-        output(proxy),
-    )]
-    fn clone(&self) -> bevy::math::DAffine3;
-
-"#,
-    r#"
 #[lua(kind="MetaMethod", metamethod="ToString")]
 fn index(&self) -> String {
     format!("{}", _self)
 }
 "#]
 )]
-pub struct DAffine3 {
+struct DAffine3 {
     #[lua(output(proxy))]
     matrix3: bevy::math::DMat3,
     #[lua(output(proxy))]
@@ -20089,6 +20089,130 @@ pub struct DAffine3 {
     derive(clone),
     remote = "bevy::math::DQuat",
     functions[r#"
+
+    #[lua(
+        as_trait = "std::cmp::PartialEq",
+        kind = "MetaFunction",
+        composite = "eq",
+        metamethod = "Eq",
+    )]
+    fn eq(&self, #[proxy] rhs: &glam::DQuat) -> bool;
+
+"#,
+    r#"
+/// Divides a quaternion by a scalar value.
+/// The quotient is not guaranteed to be normalized.
+
+    #[lua(
+        as_trait = "std::ops::Div",
+        kind = "MetaFunction",
+        output(proxy),
+        composite = "div",
+        metamethod = "Div",
+    )]
+    fn div(self, rhs: f64) -> bevy::math::DQuat;
+
+"#,
+    r#"
+/// Subtracts the `rhs` quaternion from `self`.
+/// The difference is not guaranteed to be normalized.
+
+    #[lua(
+        as_trait = "std::ops::Sub",
+        kind = "MetaFunction",
+        output(proxy),
+        composite = "sub",
+        metamethod = "Sub",
+    )]
+    fn sub(self, #[proxy] rhs: bevy::math::DQuat) -> bevy::math::DQuat;
+
+"#,
+    r#"
+/// Adds two quaternions.
+/// The sum is not guaranteed to be normalized.
+/// Note that addition is not the same as combining the rotations represented by the
+/// two quaternions! That corresponds to multiplication.
+
+    #[lua(
+        as_trait = "std::ops::Add",
+        kind = "MetaFunction",
+        output(proxy),
+        composite = "add",
+        metamethod = "Add",
+    )]
+    fn add(self, #[proxy] rhs: bevy::math::DQuat) -> bevy::math::DQuat;
+
+"#,
+    r#"
+/// Multiplies a quaternion and a 3D vector, returning the rotated vector.
+/// # Panics
+/// Will panic if `self` is not normalized when `glam_assert` is enabled.
+
+    #[lua(
+        as_trait = "std::ops::Mul",
+        kind = "MetaFunction",
+        output(proxy),
+        composite = "mul",
+        metamethod = "Mul",
+    )]
+    fn mul(self, #[proxy] rhs: bevy::math::DVec3) -> bevy::math::DVec3;
+
+"#,
+    r#"
+/// Multiplies two quaternions. If they each represent a rotation, the result will
+/// represent the combined rotation.
+/// Note that due to floating point rounding the result may not be perfectly
+/// normalized.
+/// # Panics
+/// Will panic if `self` or `rhs` are not normalized when `glam_assert` is enabled.
+
+    #[lua(
+        as_trait = "std::ops::Mul",
+        kind = "MetaFunction",
+        output(proxy),
+        composite = "mul",
+        metamethod = "Mul",
+    )]
+    fn mul(self, #[proxy] rhs: bevy::math::DQuat) -> bevy::math::DQuat;
+
+"#,
+    r#"
+/// Multiplies a quaternion by a scalar value.
+/// The product is not guaranteed to be normalized.
+
+    #[lua(
+        as_trait = "std::ops::Mul",
+        kind = "MetaFunction",
+        output(proxy),
+        composite = "mul",
+        metamethod = "Mul",
+    )]
+    fn mul(self, rhs: f64) -> bevy::math::DQuat;
+
+"#,
+    r#"
+
+    #[lua(
+        as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone",
+        kind = "Method",
+        output(proxy),
+    )]
+    fn clone(&self) -> bevy::math::DQuat;
+
+"#,
+    r#"
+
+    #[lua(
+        as_trait = "std::ops::Neg",
+        kind = "MetaFunction",
+        output(proxy),
+        composite = "neg",
+        metamethod = "Unm",
+    )]
+    fn neg(self) -> bevy::math::DQuat;
+
+"#,
+    r#"
 /// Creates a new rotation quaternion.
 /// This should generally not be called manually unless you know what you are doing.
 /// Use one of the other constructors instead such as `identity` or `from_axis_angle`.
@@ -20454,137 +20578,13 @@ pub struct DAffine3 {
 
 "#,
     r#"
-/// Divides a quaternion by a scalar value.
-/// The quotient is not guaranteed to be normalized.
-
-    #[lua(
-        as_trait = "std::ops::Div",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "div",
-        metamethod = "Div",
-    )]
-    fn div(self, rhs: f64) -> bevy::math::DQuat;
-
-"#,
-    r#"
-
-    #[lua(
-        as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone",
-        kind = "Method",
-        output(proxy),
-    )]
-    fn clone(&self) -> bevy::math::DQuat;
-
-"#,
-    r#"
-
-    #[lua(
-        as_trait = "std::cmp::PartialEq",
-        kind = "MetaFunction",
-        composite = "eq",
-        metamethod = "Eq",
-    )]
-    fn eq(&self, #[proxy] rhs: &glam::DQuat) -> bool;
-
-"#,
-    r#"
-/// Adds two quaternions.
-/// The sum is not guaranteed to be normalized.
-/// Note that addition is not the same as combining the rotations represented by the
-/// two quaternions! That corresponds to multiplication.
-
-    #[lua(
-        as_trait = "std::ops::Add",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "add",
-        metamethod = "Add",
-    )]
-    fn add(self, #[proxy] rhs: bevy::math::DQuat) -> bevy::math::DQuat;
-
-"#,
-    r#"
-
-    #[lua(
-        as_trait = "std::ops::Neg",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "neg",
-        metamethod = "Unm",
-    )]
-    fn neg(self) -> bevy::math::DQuat;
-
-"#,
-    r#"
-/// Multiplies a quaternion by a scalar value.
-/// The product is not guaranteed to be normalized.
-
-    #[lua(
-        as_trait = "std::ops::Mul",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "mul",
-        metamethod = "Mul",
-    )]
-    fn mul(self, rhs: f64) -> bevy::math::DQuat;
-
-"#,
-    r#"
-/// Subtracts the `rhs` quaternion from `self`.
-/// The difference is not guaranteed to be normalized.
-
-    #[lua(
-        as_trait = "std::ops::Sub",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "sub",
-        metamethod = "Sub",
-    )]
-    fn sub(self, #[proxy] rhs: bevy::math::DQuat) -> bevy::math::DQuat;
-
-"#,
-    r#"
-/// Multiplies a quaternion and a 3D vector, returning the rotated vector.
-/// # Panics
-/// Will panic if `self` is not normalized when `glam_assert` is enabled.
-
-    #[lua(
-        as_trait = "std::ops::Mul",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "mul",
-        metamethod = "Mul",
-    )]
-    fn mul(self, #[proxy] rhs: bevy::math::DVec3) -> bevy::math::DVec3;
-
-"#,
-    r#"
-/// Multiplies two quaternions. If they each represent a rotation, the result will
-/// represent the combined rotation.
-/// Note that due to floating point rounding the result may not be perfectly
-/// normalized.
-/// # Panics
-/// Will panic if `self` or `rhs` are not normalized when `glam_assert` is enabled.
-
-    #[lua(
-        as_trait = "std::ops::Mul",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "mul",
-        metamethod = "Mul",
-    )]
-    fn mul(self, #[proxy] rhs: bevy::math::DQuat) -> bevy::math::DQuat;
-
-"#,
-    r#"
 #[lua(kind="MetaMethod", metamethod="ToString")]
 fn index(&self) -> String {
     format!("{}", _self)
 }
 "#]
 )]
-pub struct DQuat {
+struct DQuat {
     x: f64,
     y: f64,
     z: f64,
@@ -20595,6 +20595,17 @@ pub struct DQuat {
     derive(clone),
     remote = "bevy::math::EulerRot",
     functions[r#"
+
+    #[lua(
+        as_trait = "std::cmp::PartialEq",
+        kind = "MetaFunction",
+        composite = "eq",
+        metamethod = "Eq",
+    )]
+    fn eq(&self, #[proxy] other: &glam::EulerRot) -> bool;
+
+"#,
+    r#"
 
     #[lua(as_trait = "std::cmp::Eq", kind = "Method")]
     fn assert_receiver_is_total_eq(&self) -> ();
@@ -20611,40 +20622,18 @@ pub struct DQuat {
 
 "#,
     r#"
-
-    #[lua(
-        as_trait = "std::cmp::PartialEq",
-        kind = "MetaFunction",
-        composite = "eq",
-        metamethod = "Eq",
-    )]
-    fn eq(&self, #[proxy] other: &glam::EulerRot) -> bool;
-
-"#,
-    r#"
 #[lua(kind="MetaMethod", metamethod="ToString")]
 fn index(&self) -> String {
     format!("{:?}", _self)
 }
 "#]
 )]
-pub struct EulerRot {}
+struct EulerRot {}
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
     derive(clone),
     remote = "bevy::math::BVec3A",
     functions[r#"
-
-    #[lua(
-        as_trait = "std::cmp::PartialEq",
-        kind = "MetaFunction",
-        composite = "eq",
-        metamethod = "Eq",
-    )]
-    fn eq(&self, #[proxy] rhs: &glam::BVec3A) -> bool;
-
-"#,
-    r#"
 /// Creates a new vector mask.
 
     #[lua(kind = "Function", output(proxy))]
@@ -20708,28 +20697,29 @@ pub struct EulerRot {}
 
 "#,
     r#"
+
+    #[lua(
+        as_trait = "std::cmp::PartialEq",
+        kind = "MetaFunction",
+        composite = "eq",
+        metamethod = "Eq",
+    )]
+    fn eq(&self, #[proxy] rhs: &glam::BVec3A) -> bool;
+
+"#,
+    r#"
 #[lua(kind="MetaMethod", metamethod="ToString")]
 fn index(&self) -> String {
     format!("{}", _self)
 }
 "#]
 )]
-pub struct BVec3A();
+struct BVec3A();
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
     derive(clone),
     remote = "bevy::math::BVec4A",
     functions[r#"
-
-    #[lua(
-        as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone",
-        kind = "Method",
-        output(proxy),
-    )]
-    fn clone(&self) -> bevy::math::BVec4A;
-
-"#,
-    r#"
 
     #[lua(
         as_trait = "std::cmp::PartialEq",
@@ -20794,27 +20784,36 @@ pub struct BVec3A();
 
 "#,
     r#"
+
+    #[lua(
+        as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone",
+        kind = "Method",
+        output(proxy),
+    )]
+    fn clone(&self) -> bevy::math::BVec4A;
+
+"#,
+    r#"
 #[lua(kind="MetaMethod", metamethod="ToString")]
 fn index(&self) -> String {
     format!("{}", _self)
 }
 "#]
 )]
-pub struct BVec4A();
+struct BVec4A();
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
     derive(clone),
     remote = "bevy::math::primitives::Direction2d",
     functions[r#"
-/// Create a [`Direction2d`] from a [`Vec2`] that is already normalized.
-/// # Warning
-/// `value` must be normalized, i.e it's length must be `1.0`.
 
-    #[lua(kind = "Function", output(proxy))]
-    fn new_unchecked(
-        #[proxy]
-        value: bevy::math::Vec2,
-    ) -> bevy::math::primitives::Direction2d;
+    #[lua(
+        as_trait = "std::cmp::PartialEq",
+        kind = "MetaFunction",
+        composite = "eq",
+        metamethod = "Eq",
+    )]
+    fn eq(&self, #[proxy] other: &bevy_math::primitives::Direction2d) -> bool;
 
 "#,
     r#"
@@ -20840,14 +20839,15 @@ pub struct BVec4A();
 
 "#,
     r#"
+/// Create a [`Direction2d`] from a [`Vec2`] that is already normalized.
+/// # Warning
+/// `value` must be normalized, i.e it's length must be `1.0`.
 
-    #[lua(
-        as_trait = "std::cmp::PartialEq",
-        kind = "MetaFunction",
-        composite = "eq",
-        metamethod = "Eq",
-    )]
-    fn eq(&self, #[proxy] other: &bevy_math::primitives::Direction2d) -> bool;
+    #[lua(kind = "Function", output(proxy))]
+    fn new_unchecked(
+        #[proxy]
+        value: bevy::math::Vec2,
+    ) -> bevy::math::primitives::Direction2d;
 
 "#,
     r#"
@@ -20857,22 +20857,12 @@ fn index(&self) -> String {
 }
 "#]
 )]
-pub struct Direction2d();
+struct Direction2d();
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
     derive(clone),
     remote = "bevy::math::primitives::Circle",
     functions[r#"
-
-    #[lua(
-        as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone",
-        kind = "Method",
-        output(proxy),
-    )]
-    fn clone(&self) -> bevy::math::primitives::Circle;
-
-"#,
-    r#"
 
     #[lua(
         as_trait = "std::cmp::PartialEq",
@@ -20881,6 +20871,16 @@ pub struct Direction2d();
         metamethod = "Eq",
     )]
     fn eq(&self, #[proxy] other: &bevy_math::primitives::Circle) -> bool;
+
+"#,
+    r#"
+
+    #[lua(
+        as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone",
+        kind = "Method",
+        output(proxy),
+    )]
+    fn clone(&self) -> bevy::math::primitives::Circle;
 
 "#,
     r#"
@@ -20927,7 +20927,7 @@ fn index(&self) -> String {
 }
 "#]
 )]
-pub struct Circle {
+struct Circle {
     radius: f32,
 }
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
@@ -20935,27 +20935,6 @@ pub struct Circle {
     derive(clone),
     remote = "bevy::math::primitives::Ellipse",
     functions[r#"
-
-    #[lua(
-        as_trait = "std::cmp::PartialEq",
-        kind = "MetaFunction",
-        composite = "eq",
-        metamethod = "Eq",
-    )]
-    fn eq(&self, #[proxy] other: &bevy_math::primitives::Ellipse) -> bool;
-
-"#,
-    r#"
-
-    #[lua(
-        as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone",
-        kind = "Method",
-        output(proxy),
-    )]
-    fn clone(&self) -> bevy::math::primitives::Ellipse;
-
-"#,
-    r#"
 /// Create a new `Ellipse` from half of its width and height.
 /// This corresponds to the two perpendicular radii defining the ellipse.
 
@@ -20993,13 +20972,34 @@ pub struct Circle {
 
 "#,
     r#"
+
+    #[lua(
+        as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone",
+        kind = "Method",
+        output(proxy),
+    )]
+    fn clone(&self) -> bevy::math::primitives::Ellipse;
+
+"#,
+    r#"
+
+    #[lua(
+        as_trait = "std::cmp::PartialEq",
+        kind = "MetaFunction",
+        composite = "eq",
+        metamethod = "Eq",
+    )]
+    fn eq(&self, #[proxy] other: &bevy_math::primitives::Ellipse) -> bool;
+
+"#,
+    r#"
 #[lua(kind="MetaMethod", metamethod="ToString")]
 fn index(&self) -> String {
     format!("{:?}", _self)
 }
 "#]
 )]
-pub struct Ellipse {
+struct Ellipse {
     #[lua(output(proxy))]
     half_size: bevy::math::Vec2,
 }
@@ -21018,15 +21018,6 @@ pub struct Ellipse {
 
 "#,
     r#"
-/// Create a new `Plane2d` from a normal
-/// # Panics
-/// Panics if the given `normal` is zero (or very close to zero), or non-finite.
-
-    #[lua(kind = "Function", output(proxy))]
-    fn new(#[proxy] normal: bevy::math::Vec2) -> bevy::math::primitives::Plane2d;
-
-"#,
-    r#"
 
     #[lua(
         as_trait = "std::cmp::PartialEq",
@@ -21038,13 +21029,22 @@ pub struct Ellipse {
 
 "#,
     r#"
+/// Create a new `Plane2d` from a normal
+/// # Panics
+/// Panics if the given `normal` is zero (or very close to zero), or non-finite.
+
+    #[lua(kind = "Function", output(proxy))]
+    fn new(#[proxy] normal: bevy::math::Vec2) -> bevy::math::primitives::Plane2d;
+
+"#,
+    r#"
 #[lua(kind="MetaMethod", metamethod="ToString")]
 fn index(&self) -> String {
     format!("{:?}", _self)
 }
 "#]
 )]
-pub struct Plane2d {
+struct Plane2d {
     #[lua(output(proxy))]
     normal: bevy::math::primitives::Direction2d,
 }
@@ -21053,6 +21053,16 @@ pub struct Plane2d {
     derive(clone),
     remote = "bevy::math::primitives::Line2d",
     functions[r#"
+
+    #[lua(
+        as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone",
+        kind = "Method",
+        output(proxy),
+    )]
+    fn clone(&self) -> bevy::math::primitives::Line2d;
+
+"#,
+    r#"
 
     #[lua(
         as_trait = "std::cmp::PartialEq",
@@ -21064,23 +21074,13 @@ pub struct Plane2d {
 
 "#,
     r#"
-
-    #[lua(
-        as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone",
-        kind = "Method",
-        output(proxy),
-    )]
-    fn clone(&self) -> bevy::math::primitives::Line2d;
-
-"#,
-    r#"
 #[lua(kind="MetaMethod", metamethod="ToString")]
 fn index(&self) -> String {
     format!("{:?}", _self)
 }
 "#]
 )]
-pub struct Line2d {
+struct Line2d {
     #[lua(output(proxy))]
     direction: bevy::math::primitives::Direction2d,
 }
@@ -21097,6 +21097,16 @@ pub struct Line2d {
         metamethod = "Eq",
     )]
     fn eq(&self, #[proxy] other: &bevy_math::primitives::Segment2d) -> bool;
+
+"#,
+    r#"
+
+    #[lua(
+        as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone",
+        kind = "Method",
+        output(proxy),
+    )]
+    fn clone(&self) -> bevy::math::primitives::Segment2d;
 
 "#,
     r#"
@@ -21125,23 +21135,13 @@ pub struct Line2d {
 
 "#,
     r#"
-
-    #[lua(
-        as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone",
-        kind = "Method",
-        output(proxy),
-    )]
-    fn clone(&self) -> bevy::math::primitives::Segment2d;
-
-"#,
-    r#"
 #[lua(kind="MetaMethod", metamethod="ToString")]
 fn index(&self) -> String {
     format!("{:?}", _self)
 }
 "#]
 )]
-pub struct Segment2d {
+struct Segment2d {
     #[lua(output(proxy))]
     direction: bevy::math::primitives::Direction2d,
     half_length: f32,
@@ -21153,12 +21153,11 @@ pub struct Segment2d {
     functions[r#"
 
     #[lua(
-        as_trait = "std::cmp::PartialEq",
-        kind = "MetaFunction",
-        composite = "eq",
-        metamethod = "Eq",
+        as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone",
+        kind = "Method",
+        output(proxy),
     )]
-    fn eq(&self, #[proxy] other: &bevy_math::primitives::Triangle2d) -> bool;
+    fn clone(&self) -> bevy::math::primitives::Triangle2d;
 
 "#,
     r#"
@@ -21200,11 +21199,12 @@ pub struct Segment2d {
     r#"
 
     #[lua(
-        as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone",
-        kind = "Method",
-        output(proxy),
+        as_trait = "std::cmp::PartialEq",
+        kind = "MetaFunction",
+        composite = "eq",
+        metamethod = "Eq",
     )]
-    fn clone(&self) -> bevy::math::primitives::Triangle2d;
+    fn eq(&self, #[proxy] other: &bevy_math::primitives::Triangle2d) -> bool;
 
 "#,
     r#"
@@ -21214,7 +21214,7 @@ fn index(&self) -> String {
 }
 "#]
 )]
-pub struct Triangle2d {
+struct Triangle2d {
     vertices: ReflectedValue,
 }
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
@@ -21222,6 +21222,16 @@ pub struct Triangle2d {
     derive(clone),
     remote = "bevy::math::primitives::Rectangle",
     functions[r#"
+
+    #[lua(
+        as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone",
+        kind = "Method",
+        output(proxy),
+    )]
+    fn clone(&self) -> bevy::math::primitives::Rectangle;
+
+"#,
+    r#"
 /// Create a new `Rectangle` from a full width and height
 
     #[lua(kind = "Function", output(proxy))]
@@ -21280,16 +21290,6 @@ pub struct Triangle2d {
     r#"
 
     #[lua(
-        as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone",
-        kind = "Method",
-        output(proxy),
-    )]
-    fn clone(&self) -> bevy::math::primitives::Rectangle;
-
-"#,
-    r#"
-
-    #[lua(
         as_trait = "std::cmp::PartialEq",
         kind = "MetaFunction",
         composite = "eq",
@@ -21305,7 +21305,7 @@ fn index(&self) -> String {
 }
 "#]
 )]
-pub struct Rectangle {
+struct Rectangle {
     #[lua(output(proxy))]
     half_size: bevy::math::Vec2,
 }
@@ -21426,7 +21426,7 @@ fn index(&self) -> String {
 }
 "#]
 )]
-pub struct RegularPolygon {
+struct RegularPolygon {
     #[lua(output(proxy))]
     circumcircle: bevy::math::primitives::Circle,
     sides: usize,
@@ -21436,6 +21436,13 @@ pub struct RegularPolygon {
     derive(clone),
     remote = "bevy::math::primitives::Capsule2d",
     functions[r#"
+/// Create a new `Capsule2d` from a radius and length
+
+    #[lua(kind = "Function", output(proxy))]
+    fn new(radius: f32, length: f32) -> bevy::math::primitives::Capsule2d;
+
+"#,
+    r#"
 
     #[lua(
         as_trait = "std::cmp::PartialEq",
@@ -21444,13 +21451,6 @@ pub struct RegularPolygon {
         metamethod = "Eq",
     )]
     fn eq(&self, #[proxy] other: &bevy_math::primitives::Capsule2d) -> bool;
-
-"#,
-    r#"
-/// Create a new `Capsule2d` from a radius and length
-
-    #[lua(kind = "Function", output(proxy))]
-    fn new(radius: f32, length: f32) -> bevy::math::primitives::Capsule2d;
 
 "#,
     r#"
@@ -21470,7 +21470,7 @@ fn index(&self) -> String {
 }
 "#]
 )]
-pub struct Capsule2d {
+struct Capsule2d {
     radius: f32,
     half_length: f32,
 }
@@ -21481,13 +21481,13 @@ pub struct Capsule2d {
     functions[r#"
 
     #[lua(
-        as_trait = "std::ops::Mul",
+        as_trait = "std::ops::Neg",
         kind = "MetaFunction",
         output(proxy),
-        composite = "mul",
-        metamethod = "Mul",
+        composite = "neg",
+        metamethod = "Unm",
     )]
-    fn mul(self, rhs: f32) -> bevy::math::Vec3;
+    fn neg(self) -> bevy::math::primitives::Direction3d;
 
 "#,
     r#"
@@ -21512,18 +21512,6 @@ pub struct Capsule2d {
 
 "#,
     r#"
-
-    #[lua(
-        as_trait = "std::ops::Neg",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "neg",
-        metamethod = "Unm",
-    )]
-    fn neg(self) -> bevy::math::primitives::Direction3d;
-
-"#,
-    r#"
 /// Create a [`Direction3d`] from a [`Vec3`] that is already normalized.
 /// # Warning
 /// `value` must be normalized, i.e it's length must be `1.0`.
@@ -21536,13 +21524,25 @@ pub struct Capsule2d {
 
 "#,
     r#"
+
+    #[lua(
+        as_trait = "std::ops::Mul",
+        kind = "MetaFunction",
+        output(proxy),
+        composite = "mul",
+        metamethod = "Mul",
+    )]
+    fn mul(self, rhs: f32) -> bevy::math::Vec3;
+
+"#,
+    r#"
 #[lua(kind="MetaMethod", metamethod="ToString")]
 fn index(&self) -> String {
     format!("{:?}", _self)
 }
 "#]
 )]
-pub struct Direction3d();
+struct Direction3d();
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
     derive(clone),
@@ -21555,17 +21555,6 @@ pub struct Direction3d();
         output(proxy),
     )]
     fn clone(&self) -> bevy::math::primitives::Sphere;
-
-"#,
-    r#"
-
-    #[lua(
-        as_trait = "std::cmp::PartialEq",
-        kind = "MetaFunction",
-        composite = "eq",
-        metamethod = "Eq",
-    )]
-    fn eq(&self, #[proxy] other: &bevy_math::primitives::Sphere) -> bool;
 
 "#,
     r#"
@@ -21606,13 +21595,24 @@ pub struct Direction3d();
 
 "#,
     r#"
+
+    #[lua(
+        as_trait = "std::cmp::PartialEq",
+        kind = "MetaFunction",
+        composite = "eq",
+        metamethod = "Eq",
+    )]
+    fn eq(&self, #[proxy] other: &bevy_math::primitives::Sphere) -> bool;
+
+"#,
+    r#"
 #[lua(kind="MetaMethod", metamethod="ToString")]
 fn index(&self) -> String {
     format!("{:?}", _self)
 }
 "#]
 )]
-pub struct Sphere {
+struct Sphere {
     radius: f32,
 }
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
@@ -21620,6 +21620,15 @@ pub struct Sphere {
     derive(clone),
     remote = "bevy::math::primitives::Plane3d",
     functions[r#"
+/// Create a new `Plane3d` from a normal
+/// # Panics
+/// Panics if the given `normal` is zero (or very close to zero), or non-finite.
+
+    #[lua(kind = "Function", output(proxy))]
+    fn new(#[proxy] normal: bevy::math::Vec3) -> bevy::math::primitives::Plane3d;
+
+"#,
+    r#"
 
     #[lua(
         as_trait = "std::cmp::PartialEq",
@@ -21641,22 +21650,13 @@ pub struct Sphere {
 
 "#,
     r#"
-/// Create a new `Plane3d` from a normal
-/// # Panics
-/// Panics if the given `normal` is zero (or very close to zero), or non-finite.
-
-    #[lua(kind = "Function", output(proxy))]
-    fn new(#[proxy] normal: bevy::math::Vec3) -> bevy::math::primitives::Plane3d;
-
-"#,
-    r#"
 #[lua(kind="MetaMethod", metamethod="ToString")]
 fn index(&self) -> String {
     format!("{:?}", _self)
 }
 "#]
 )]
-pub struct Plane3d {
+struct Plane3d {
     #[lua(output(proxy))]
     normal: bevy::math::primitives::Direction3d,
 }
@@ -21692,7 +21692,7 @@ fn index(&self) -> String {
 }
 "#]
 )]
-pub struct Line3d {
+struct Line3d {
     #[lua(output(proxy))]
     direction: bevy::math::primitives::Direction3d,
 }
@@ -21701,17 +21701,6 @@ pub struct Line3d {
     derive(clone),
     remote = "bevy::math::primitives::Segment3d",
     functions[r#"
-
-    #[lua(
-        as_trait = "std::cmp::PartialEq",
-        kind = "MetaFunction",
-        composite = "eq",
-        metamethod = "Eq",
-    )]
-    fn eq(&self, #[proxy] other: &bevy_math::primitives::Segment3d) -> bool;
-
-"#,
-    r#"
 
     #[lua(
         as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone",
@@ -21747,13 +21736,24 @@ pub struct Line3d {
 
 "#,
     r#"
+
+    #[lua(
+        as_trait = "std::cmp::PartialEq",
+        kind = "MetaFunction",
+        composite = "eq",
+        metamethod = "Eq",
+    )]
+    fn eq(&self, #[proxy] other: &bevy_math::primitives::Segment3d) -> bool;
+
+"#,
+    r#"
 #[lua(kind="MetaMethod", metamethod="ToString")]
 fn index(&self) -> String {
     format!("{:?}", _self)
 }
 "#]
 )]
-pub struct Segment3d {
+struct Segment3d {
     #[lua(output(proxy))]
     direction: bevy::math::primitives::Direction3d,
     half_length: f32,
@@ -21765,11 +21765,12 @@ pub struct Segment3d {
     functions[r#"
 
     #[lua(
-        as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone",
-        kind = "Method",
-        output(proxy),
+        as_trait = "std::cmp::PartialEq",
+        kind = "MetaFunction",
+        composite = "eq",
+        metamethod = "Eq",
     )]
-    fn clone(&self) -> bevy::math::primitives::Cuboid;
+    fn eq(&self, #[proxy] other: &bevy_math::primitives::Cuboid) -> bool;
 
 "#,
     r#"
@@ -21835,12 +21836,11 @@ pub struct Segment3d {
     r#"
 
     #[lua(
-        as_trait = "std::cmp::PartialEq",
-        kind = "MetaFunction",
-        composite = "eq",
-        metamethod = "Eq",
+        as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone",
+        kind = "Method",
+        output(proxy),
     )]
-    fn eq(&self, #[proxy] other: &bevy_math::primitives::Cuboid) -> bool;
+    fn clone(&self) -> bevy::math::primitives::Cuboid;
 
 "#,
     r#"
@@ -21850,7 +21850,7 @@ fn index(&self) -> String {
 }
 "#]
 )]
-pub struct Cuboid {
+struct Cuboid {
     #[lua(output(proxy))]
     half_size: bevy::math::Vec3,
 }
@@ -21866,6 +21866,17 @@ pub struct Cuboid {
         output(proxy),
     )]
     fn clone(&self) -> bevy::math::primitives::Cylinder;
+
+"#,
+    r#"
+
+    #[lua(
+        as_trait = "std::cmp::PartialEq",
+        kind = "MetaFunction",
+        composite = "eq",
+        metamethod = "Eq",
+    )]
+    fn eq(&self, #[proxy] other: &bevy_math::primitives::Cylinder) -> bool;
 
 "#,
     r#"
@@ -21912,24 +21923,13 @@ pub struct Cuboid {
 
 "#,
     r#"
-
-    #[lua(
-        as_trait = "std::cmp::PartialEq",
-        kind = "MetaFunction",
-        composite = "eq",
-        metamethod = "Eq",
-    )]
-    fn eq(&self, #[proxy] other: &bevy_math::primitives::Cylinder) -> bool;
-
-"#,
-    r#"
 #[lua(kind="MetaMethod", metamethod="ToString")]
 fn index(&self) -> String {
     format!("{:?}", _self)
 }
 "#]
 )]
-pub struct Cylinder {
+struct Cylinder {
     radius: f32,
     half_height: f32,
 }
@@ -21940,22 +21940,22 @@ pub struct Cylinder {
     functions[r#"
 
     #[lua(
-        as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone",
-        kind = "Method",
-        output(proxy),
-    )]
-    fn clone(&self) -> bevy::math::primitives::Capsule3d;
-
-"#,
-    r#"
-
-    #[lua(
         as_trait = "std::cmp::PartialEq",
         kind = "MetaFunction",
         composite = "eq",
         metamethod = "Eq",
     )]
     fn eq(&self, #[proxy] other: &bevy_math::primitives::Capsule3d) -> bool;
+
+"#,
+    r#"
+
+    #[lua(
+        as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone",
+        kind = "Method",
+        output(proxy),
+    )]
+    fn clone(&self) -> bevy::math::primitives::Capsule3d;
 
 "#,
     r#"
@@ -21994,7 +21994,7 @@ fn index(&self) -> String {
 }
 "#]
 )]
-pub struct Capsule3d {
+struct Capsule3d {
     radius: f32,
     half_length: f32,
 }
@@ -22074,7 +22074,7 @@ fn index(&self) -> String {
 }
 "#]
 )]
-pub struct Cone {
+struct Cone {
     radius: f32,
     height: f32,
 }
@@ -22083,6 +22083,16 @@ pub struct Cone {
     derive(clone),
     remote = "bevy::math::primitives::ConicalFrustum",
     functions[r#"
+
+    #[lua(
+        as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone",
+        kind = "Method",
+        output(proxy),
+    )]
+    fn clone(&self) -> bevy::math::primitives::ConicalFrustum;
+
+"#,
+    r#"
 
     #[lua(
         as_trait = "std::cmp::PartialEq",
@@ -22094,23 +22104,13 @@ pub struct Cone {
 
 "#,
     r#"
-
-    #[lua(
-        as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone",
-        kind = "Method",
-        output(proxy),
-    )]
-    fn clone(&self) -> bevy::math::primitives::ConicalFrustum;
-
-"#,
-    r#"
 #[lua(kind="MetaMethod", metamethod="ToString")]
 fn index(&self) -> String {
     format!("{:?}", _self)
 }
 "#]
 )]
-pub struct ConicalFrustum {
+struct ConicalFrustum {
     radius_top: f32,
     radius_bottom: f32,
     height: f32,
@@ -22120,17 +22120,6 @@ pub struct ConicalFrustum {
     derive(clone),
     remote = "bevy::math::primitives::Torus",
     functions[r#"
-
-    #[lua(
-        as_trait = "std::cmp::PartialEq",
-        kind = "MetaFunction",
-        composite = "eq",
-        metamethod = "Eq",
-    )]
-    fn eq(&self, #[proxy] other: &bevy_math::primitives::Torus) -> bool;
-
-"#,
-    r#"
 /// Create a new `Torus` from an inner and outer radius.
 /// The inner radius is the radius of the hole, and the outer radius
 /// is the radius of the entire object
@@ -22184,13 +22173,24 @@ pub struct ConicalFrustum {
 
 "#,
     r#"
+
+    #[lua(
+        as_trait = "std::cmp::PartialEq",
+        kind = "MetaFunction",
+        composite = "eq",
+        metamethod = "Eq",
+    )]
+    fn eq(&self, #[proxy] other: &bevy_math::primitives::Torus) -> bool;
+
+"#,
+    r#"
 #[lua(kind="MetaMethod", metamethod="ToString")]
 fn index(&self) -> String {
     format!("{:?}", _self)
 }
 "#]
 )]
-pub struct Torus {
+struct Torus {
     minor_radius: f32,
     major_radius: f32,
 }
@@ -22200,23 +22200,18 @@ pub struct Torus {
     remote = "bevy::math::IRect",
     functions[r#"
 
+    #[lua(as_trait = "std::cmp::Eq", kind = "Method")]
+    fn assert_receiver_is_total_eq(&self) -> ();
+
+"#,
+    r#"
+
     #[lua(
         as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone",
         kind = "Method",
         output(proxy),
     )]
     fn clone(&self) -> bevy::math::IRect;
-
-"#,
-    r#"
-
-    #[lua(
-        as_trait = "std::cmp::PartialEq",
-        kind = "MetaFunction",
-        composite = "eq",
-        metamethod = "Eq",
-    )]
-    fn eq(&self, #[proxy] other: &bevy_math::IRect) -> bool;
 
 "#,
     r#"
@@ -22488,8 +22483,13 @@ pub struct Torus {
 "#,
     r#"
 
-    #[lua(as_trait = "std::cmp::Eq", kind = "Method")]
-    fn assert_receiver_is_total_eq(&self) -> ();
+    #[lua(
+        as_trait = "std::cmp::PartialEq",
+        kind = "MetaFunction",
+        composite = "eq",
+        metamethod = "Eq",
+    )]
+    fn eq(&self, #[proxy] other: &bevy_math::IRect) -> bool;
 
 "#,
     r#"
@@ -22499,7 +22499,7 @@ fn index(&self) -> String {
 }
 "#]
 )]
-pub struct IRect {
+struct IRect {
     #[lua(output(proxy))]
     min: bevy::math::IVec2,
     #[lua(output(proxy))]
@@ -22792,16 +22792,6 @@ pub struct IRect {
     r#"
 
     #[lua(
-        as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone",
-        kind = "Method",
-        output(proxy),
-    )]
-    fn clone(&self) -> bevy::math::Rect;
-
-"#,
-    r#"
-
-    #[lua(
         as_trait = "std::cmp::PartialEq",
         kind = "MetaFunction",
         composite = "eq",
@@ -22811,13 +22801,23 @@ pub struct IRect {
 
 "#,
     r#"
+
+    #[lua(
+        as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone",
+        kind = "Method",
+        output(proxy),
+    )]
+    fn clone(&self) -> bevy::math::Rect;
+
+"#,
+    r#"
 #[lua(kind="MetaMethod", metamethod="ToString")]
 fn index(&self) -> String {
     format!("{:?}", _self)
 }
 "#]
 )]
-pub struct Rect {
+struct Rect {
     #[lua(output(proxy))]
     min: bevy::math::Vec2,
     #[lua(output(proxy))]
@@ -22829,19 +22829,12 @@ pub struct Rect {
     remote = "bevy::math::URect",
     functions[r#"
 
-    #[lua(as_trait = "std::cmp::Eq", kind = "Method")]
-    fn assert_receiver_is_total_eq(&self) -> ();
-
-"#,
-    r#"
-
     #[lua(
-        as_trait = "std::cmp::PartialEq",
-        kind = "MetaFunction",
-        composite = "eq",
-        metamethod = "Eq",
+        as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone",
+        kind = "Method",
+        output(proxy),
     )]
-    fn eq(&self, #[proxy] other: &bevy_math::URect) -> bool;
+    fn clone(&self) -> bevy::math::URect;
 
 "#,
     r#"
@@ -23114,11 +23107,18 @@ pub struct Rect {
     r#"
 
     #[lua(
-        as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone",
-        kind = "Method",
-        output(proxy),
+        as_trait = "std::cmp::PartialEq",
+        kind = "MetaFunction",
+        composite = "eq",
+        metamethod = "Eq",
     )]
-    fn clone(&self) -> bevy::math::URect;
+    fn eq(&self, #[proxy] other: &bevy_math::URect) -> bool;
+
+"#,
+    r#"
+
+    #[lua(as_trait = "std::cmp::Eq", kind = "Method")]
+    fn assert_receiver_is_total_eq(&self) -> ();
 
 "#,
     r#"
@@ -23128,7 +23128,7 @@ fn index(&self) -> String {
 }
 "#]
 )]
-pub struct URect {
+struct URect {
     #[lua(output(proxy))]
     min: bevy::math::UVec2,
     #[lua(output(proxy))]
@@ -23190,7 +23190,7 @@ fn index(&self) -> String {
 }
 "#]
 )]
-pub struct SmolStr();
+struct SmolStr();
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
     derive(clone),
@@ -23517,12 +23517,28 @@ fn index(&self) -> String {
 }
 "#]
 )]
-pub struct NonZeroIsize();
+struct NonZeroIsize();
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
     derive(clone),
     remote = "bevy::utils::Uuid",
     functions[r#"
+
+    #[lua(as_trait = "std::cmp::Eq", kind = "Method")]
+    fn assert_receiver_is_total_eq(&self) -> ();
+
+"#,
+    r#"
+
+    #[lua(
+        as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone",
+        kind = "Method",
+        output(proxy),
+    )]
+    fn clone(&self) -> bevy::utils::Uuid;
+
+"#,
+    r#"
 /// Returns the version number of the UUID.
 /// This represents the algorithm used to generate the value.
 /// This method is the future-proof alternative to [`Uuid::get_version`].
@@ -23850,22 +23866,6 @@ pub struct NonZeroIsize();
 
 "#,
     r#"
-
-    #[lua(
-        as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone",
-        kind = "Method",
-        output(proxy),
-    )]
-    fn clone(&self) -> bevy::utils::Uuid;
-
-"#,
-    r#"
-
-    #[lua(as_trait = "std::cmp::Eq", kind = "Method")]
-    fn assert_receiver_is_total_eq(&self) -> ();
-
-"#,
-    r#"
 /// Creates a random UUID.
 /// This uses the [`getrandom`] crate to utilise the operating system's RNG
 /// as the source of random numbers. If you'd like to use a custom
@@ -23909,7 +23909,7 @@ fn index(&self) -> String {
 }
 "#]
 )]
-pub struct Uuid();
+struct Uuid();
 #[derive(Default)]
 pub(crate) struct Globals;
 impl bevy_mod_scripting_lua::tealr::mlu::ExportInstances for Globals {

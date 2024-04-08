@@ -36,7 +36,7 @@ fn index(&self) -> String {
 }
 "#]
 )]
-pub struct Name {}
+struct Name {}
 #[derive(Default)]
 pub(crate) struct Globals;
 impl bevy_mod_scripting_lua::tealr::mlu::ExportInstances for Globals {

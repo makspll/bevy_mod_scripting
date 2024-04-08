@@ -76,7 +76,7 @@ functions[
 {% set close_item = "}" %}
 {% endif %}
 
-pub struct {{ item.ident -}} {{ open_item }}
+struct {{ item.ident -}} {{ open_item }}
     {% if not item.is_enum %}
     {% for field in item.variants[0].fields %}
         {% if field.reflection_strategy != "Filtered" %}
