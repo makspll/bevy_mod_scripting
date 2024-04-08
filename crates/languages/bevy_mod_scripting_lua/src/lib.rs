@@ -5,15 +5,16 @@ use crate::{
 use bevy::{ecs::schedule::ScheduleLabel, prelude::*};
 use bevy_mod_scripting_core::{prelude::*, systems::*, world::WorldPointerGuard};
 
-use std::fmt;
-use std::marker::PhantomData;
 use std::sync::Mutex;
+use std::{fmt, marker::PhantomData};
 use tealr::mlu::mlua::{prelude::*, Function};
 
 pub mod assets;
+pub mod bindings;
 pub mod docs;
 pub mod util;
 pub use tealr;
+
 pub mod prelude {
     pub use crate::{
         assets::{LuaFile, LuaLoader},

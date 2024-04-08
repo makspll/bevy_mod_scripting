@@ -1,5 +1,3 @@
-use std::borrow::Cow;
-
 use thiserror::Error;
 
 #[derive(Error, Debug, Clone)]
@@ -35,15 +33,13 @@ impl ScriptError {
 pub enum ReflectionError {
     #[error("Base reference `{base}` is invalid. {reason}")]
     InvalidBaseReference { base: String, reason: String },
+    #[error("Cannot safely access `{base}`. {reason}")]
+    InsufficientAccess { base: String, reason: String },
     #[error("Insuficient provenance error while accessing `{path}`. {msg}")]
     InsufficientProvenance { path: String, msg: String },
     #[error("Invalid reflection path: `{path}`. {msg}")]
     InvalidReflectionPath { path: String, msg: String },
-    #[error("Cannot downcast from `{from}` to `{to}`")]
-    CannotDowncast {
-        from: Cow<'static, str>,
-        to: Cow<'static, str>,
-    },
+
     #[error("{0}")]
     Other(String),
 }

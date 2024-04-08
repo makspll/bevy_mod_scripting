@@ -3,6 +3,7 @@ use crate::{
     hosts::{APIProvider, APIProviders, ScriptHost},
 };
 use bevy::{ecs::schedule::ScheduleLabel, prelude::*};
+use bindings::ScriptAllocator;
 use event::ScriptLoaded;
 use systems::script_event_handler;
 
@@ -44,7 +45,8 @@ pub struct ScriptingPlugin;
 
 impl Plugin for ScriptingPlugin {
     fn build(&self, app: &mut bevy::prelude::App) {
-        app.add_event::<ScriptErrorEvent>();
+        app.add_event::<ScriptErrorEvent>()
+            .init_resource::<ScriptAllocator>();
     }
 }
 
