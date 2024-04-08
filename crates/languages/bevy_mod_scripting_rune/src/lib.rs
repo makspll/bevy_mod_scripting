@@ -4,7 +4,6 @@ use bevy::prelude::*;
 use bevy_mod_scripting_core::{
     prelude::*,
     systems::{self, CachedScriptState},
-    world::{WorldPointer, WorldPointerGuard},
 };
 use prelude::{RuneDocFragment, RuneFile, RuneLoader};
 use rune::{
@@ -85,11 +84,10 @@ impl<A: RuneArgs> RuneScriptHost<A> {
     /// Helper function to handle errors from a Rune virtual machine.
     ///
     #[cold]
-    fn handle_rune_error(world: WorldPointer, error: VmError, script_data: &ScriptData<'_>) {
-        let mut world = world.write();
+    fn handle_rune_error(world: &mut World, error: VmError, script_data: &ScriptData<'_>) {
         let mut state: CachedScriptState<Self> = world.remove_resource().unwrap();
 
-        let (_, mut error_wrt, _) = state.event_state.get_mut(&mut world);
+        let (_, mut error_wrt, _) = state.event_state.get_mut(world);
 
         let error = ScriptError::RuntimeError {
             script: script_data.name.to_owned(),
@@ -221,23 +219,13 @@ impl<A: RuneArgs> ScriptHost for RuneScriptHost<A> {
         world: &mut World,
         events: &[Self::ScriptEvent],
         ctxs: impl Iterator<Item = (ScriptData<'a>, &'a mut Self::ScriptContext)>,
-        providers: &mut APIProviders<Self>,
+        _providers: &mut APIProviders<Self>,
     ) {
         // Grab the cached Vm.
         let RuneVm(mut vm) = world.remove_non_send_resource::<RuneVm>().unwrap(/* invariant */);
 
         {
-            // Safety:
-            // - we have &mut World access
-            // - we do not use the original reference again anywhere in this block.
-            // - the guard is dropped at the end of this block.
-            let world = unsafe { WorldPointerGuard::new(world) };
-
             ctxs.for_each(|(script_data, ctx)| {
-                providers
-                    .setup_runtime_all(world.clone(), &script_data, ctx)
-                    .expect("Could not setup script runtime");
-
                 for event in events {
                     if !event.recipients().is_recipient(&script_data) {
                         continue;
@@ -251,19 +239,16 @@ impl<A: RuneArgs> ScriptHost for RuneScriptHost<A> {
                     {
                         Ok(exec) => exec,
                         Err(error) => {
-                            Self::handle_rune_error(world.clone(), error, &script_data);
+                            Self::handle_rune_error(world, error, &script_data);
                             continue;
                         }
                     };
 
                     if let VmResult::Err(error) = exec.complete() {
-                        Self::handle_rune_error(world.clone(), error, &script_data);
+                        Self::handle_rune_error(world, error, &script_data);
                     }
                 }
             });
-
-            // explictly release the pointer to world.
-            drop(world);
         }
 
         world.insert_non_send_resource(RuneVm(vm));

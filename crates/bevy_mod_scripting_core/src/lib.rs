@@ -2,17 +2,21 @@ use crate::{
     event::ScriptErrorEvent,
     hosts::{APIProvider, APIProviders, ScriptHost},
 };
+use allocator::ReflectAllocator;
 use bevy::{ecs::schedule::ScheduleLabel, prelude::*};
 use event::ScriptLoaded;
-use systems::script_event_handler;
+use systems::{garbage_collector, script_event_handler};
 
+pub mod allocator;
 pub mod asset;
+pub mod bindings;
 pub mod docs;
 pub mod error;
 pub mod event;
 pub mod hosts;
 pub mod systems;
 pub mod world;
+
 pub mod prelude {
     // general
     pub use {
@@ -43,7 +47,9 @@ pub struct ScriptingPlugin;
 
 impl Plugin for ScriptingPlugin {
     fn build(&self, app: &mut bevy::prelude::App) {
-        app.add_event::<ScriptErrorEvent>();
+        app.add_event::<ScriptErrorEvent>()
+            .init_resource::<ReflectAllocator>()
+            .add_systems(PostUpdate, garbage_collector);
     }
 }
 

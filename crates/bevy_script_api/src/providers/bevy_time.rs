@@ -50,12 +50,6 @@ pub struct Real {}
     remote = "bevy::time::prelude::Timer",
     functions[r#"
 
-    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
-    fn clone(&self) -> bevy::time::prelude::Timer;
-
-"#,
-    r#"
-
     #[lua(
         as_trait = "std::cmp::PartialEq",
         kind = "MetaFunction",
@@ -394,6 +388,12 @@ pub struct Real {}
 "#,
     r#"
 
+    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
+    fn clone(&self) -> bevy::time::prelude::Timer;
+
+"#,
+    r#"
+
     #[lua(as_trait = "std::cmp::Eq", kind = "Method")]
     fn assert_receiver_is_total_eq(&self) -> ();
 
@@ -412,6 +412,12 @@ pub struct Timer {}
     remote = "bevy::time::prelude::TimerMode",
     functions[r#"
 
+    #[lua(as_trait = "std::cmp::Eq", kind = "Method")]
+    fn assert_receiver_is_total_eq(&self) -> ();
+
+"#,
+    r#"
+
     #[lua(
         as_trait = "std::cmp::PartialEq",
         kind = "MetaFunction",
@@ -419,12 +425,6 @@ pub struct Timer {}
         metamethod = "Eq",
     )]
     fn eq(&self, #[proxy] other: &timer::TimerMode) -> bool;
-
-"#,
-    r#"
-
-    #[lua(as_trait = "std::cmp::Eq", kind = "Method")]
-    fn assert_receiver_is_total_eq(&self) -> ();
 
 "#,
     r#"
@@ -465,8 +465,8 @@ pub struct Virtual {}
     remote = "bevy::time::Stopwatch",
     functions[r#"
 
-    #[lua(as_trait = "std::cmp::Eq", kind = "Method")]
-    fn assert_receiver_is_total_eq(&self) -> ();
+    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
+    fn clone(&self) -> bevy::time::Stopwatch;
 
 "#,
     r#"
@@ -619,12 +619,6 @@ pub struct Virtual {}
 "#,
     r#"
 
-    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
-    fn clone(&self) -> bevy::time::Stopwatch;
-
-"#,
-    r#"
-
     #[lua(
         as_trait = "std::cmp::PartialEq",
         kind = "MetaFunction",
@@ -632,6 +626,12 @@ pub struct Virtual {}
         metamethod = "Eq",
     )]
     fn eq(&self, #[proxy] other: &stopwatch::Stopwatch) -> bool;
+
+"#,
+    r#"
+
+    #[lua(as_trait = "std::cmp::Eq", kind = "Method")]
+    fn assert_receiver_is_total_eq(&self) -> ();
 
 "#,
     r#"
@@ -705,14 +705,6 @@ impl bevy_mod_scripting_core::hosts::APIProvider for BevyTimeAPIProvider {
     fn setup_script(
         &mut self,
         script_data: &bevy_mod_scripting_core::hosts::ScriptData,
-        ctx: &mut Self::ScriptContext,
-    ) -> Result<(), bevy_mod_scripting_core::error::ScriptError> {
-        Ok(())
-    }
-    fn setup_script_runtime(
-        &mut self,
-        world_ptr: bevy_mod_scripting_core::world::WorldPointer,
-        _script_data: &bevy_mod_scripting_core::hosts::ScriptData,
         ctx: &mut Self::ScriptContext,
     ) -> Result<(), bevy_mod_scripting_core::error::ScriptError> {
         Ok(())

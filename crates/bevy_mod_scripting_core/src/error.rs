@@ -28,3 +28,18 @@ impl ScriptError {
         Self::Other(other.to_string())
     }
 }
+
+#[derive(Error, Debug, Clone)]
+pub enum ReflectionError {
+    #[error("Base reference `{base}` is invalid. {reason}")]
+    InvalidBaseReference { base: String, reason: String },
+    #[error("Cannot safely access `{base}`. {reason}")]
+    InsufficientAccess { base: String, reason: String },
+    #[error("Insuficient provenance error while accessing `{path}`. {msg}")]
+    InsufficientProvenance { path: String, msg: String },
+    #[error("Invalid reflection path: `{path}`. {msg}")]
+    InvalidReflectionPath { path: String, msg: String },
+
+    #[error("{0}")]
+    Other(String),
+}

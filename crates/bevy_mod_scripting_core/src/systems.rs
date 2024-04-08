@@ -4,16 +4,15 @@ use bevy::{ecs::system::SystemState, prelude::*};
 use bevy_event_priority::PriorityEventReader;
 
 use crate::{
+    allocator::ReflectAllocator,
     event::ScriptLoaded,
     prelude::{APIProviders, Script, ScriptCollection, ScriptContexts, ScriptData, ScriptHost},
     ScriptErrorEvent,
 };
 
-/// Labels for scripting related systems
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, SystemSet)]
-pub enum ScriptSystemSet {
-    /// event handling systems are always marked with this label
-    EventHandling,
+/// Cleans up dangling script allocations
+pub fn garbage_collector(mut allocator: ResMut<ReflectAllocator>) {
+    allocator.clean_garbage_allocations()
 }
 
 /// Handles creating contexts for new/modified scripts

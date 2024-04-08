@@ -1,5 +1,5 @@
 use bevy::prelude::Entity;
-use bevy_mod_scripting_core::{prelude::*, world::WorldPointer};
+use bevy_mod_scripting_core::prelude::*;
 
 #[allow(deprecated)]
 use bevy_mod_scripting_rhai::{
@@ -225,16 +225,6 @@ impl APIProvider for RhaiBevyAPIProvider {
         engine.build_type::<ReflectedValue>();
         engine.build_type::<ScriptTypeRegistration>();
         engine.build_type::<ScriptWorld>();
-        Ok(())
-    }
-
-    fn setup_script_runtime(
-        &mut self,
-        world_ptr: WorldPointer,
-        _script_data: &ScriptData,
-        ctx: &mut Self::ScriptContext,
-    ) -> Result<(), ScriptError> {
-        ctx.scope.set_value("world", ScriptWorld::new(world_ptr));
         Ok(())
     }
 
