@@ -27,12 +27,19 @@ fn index(&self) -> String {
 }
 "#]
 )]
-pub struct Children();
+struct Children();
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
     derive(),
     remote = "bevy::hierarchy::prelude::Parent",
     functions[r#"
+/// Gets the [`Entity`] ID of the parent.
+
+    #[lua(kind = "Method", output(proxy))]
+    fn get(&self) -> bevy::ecs::entity::Entity;
+
+"#,
+    r#"
 
     #[lua(
         as_trait = "std::cmp::PartialEq",
@@ -50,20 +57,13 @@ pub struct Children();
 
 "#,
     r#"
-/// Gets the [`Entity`] ID of the parent.
-
-    #[lua(kind = "Method", output(proxy))]
-    fn get(&self) -> bevy::ecs::entity::Entity;
-
-"#,
-    r#"
 #[lua(kind="MetaMethod", metamethod="ToString")]
 fn index(&self) -> String {
     format!("{:?}", _self)
 }
 "#]
 )]
-pub struct Parent();
+struct Parent();
 #[derive(Default)]
 pub(crate) struct Globals;
 impl bevy_mod_scripting_lua::tealr::mlu::ExportInstances for Globals {

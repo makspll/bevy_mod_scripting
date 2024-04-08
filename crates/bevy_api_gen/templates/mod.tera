@@ -4,7 +4,7 @@
 #![cfg_attr(rustfmt, rustfmt_skip)]
 {% filter prettyplease %}
 {%- for crate in crates %}
-    pub(crate) mod {{ crate.name }};
+    pub mod {{ crate.name }};
 {% endfor -%}
 
 {% if args.self_is_bevy_script_api %}

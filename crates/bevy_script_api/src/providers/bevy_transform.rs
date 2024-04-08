@@ -26,39 +26,6 @@ use bevy_script_api::{
     fn mul(
         self,
         #[proxy]
-        global_transform: bevy::transform::components::GlobalTransform,
-    ) -> bevy::transform::components::GlobalTransform;
-
-"#,
-    r#"
-
-    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
-    fn clone(&self) -> bevy::transform::components::GlobalTransform;
-
-"#,
-    r#"
-
-    #[lua(
-        as_trait = "std::cmp::PartialEq",
-        kind = "MetaFunction",
-        composite = "eq",
-        metamethod = "Eq",
-    )]
-    fn eq(&self, #[proxy] other: &components::global_transform::GlobalTransform) -> bool;
-
-"#,
-    r#"
-
-    #[lua(
-        as_trait = "std::ops::Mul",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "mul",
-        metamethod = "Mul",
-    )]
-    fn mul(
-        self,
-        #[proxy]
         transform: bevy::transform::components::Transform,
     ) -> bevy::transform::components::GlobalTransform;
 
@@ -73,6 +40,17 @@ use bevy_script_api::{
         metamethod = "Mul",
     )]
     fn mul(self, #[proxy] value: bevy::math::Vec3) -> bevy::math::Vec3;
+
+"#,
+    r#"
+
+    #[lua(
+        as_trait = "std::cmp::PartialEq",
+        kind = "MetaFunction",
+        composite = "eq",
+        metamethod = "Eq",
+    )]
+    fn eq(&self, #[proxy] other: &components::global_transform::GlobalTransform) -> bool;
 
 "#,
     r#"
@@ -255,48 +233,9 @@ use bevy_script_api::{
 
 "#,
     r#"
-#[lua(kind="MetaMethod", metamethod="ToString")]
-fn index(&self) -> String {
-    format!("{:?}", _self)
-}
-"#]
-)]
-pub struct GlobalTransform();
-#[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
-#[proxy(
-    derive(clone),
-    remote = "bevy::transform::components::Transform",
-    functions[r#"
 
     #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
-    fn clone(&self) -> bevy::transform::components::Transform;
-
-"#,
-    r#"
-
-    #[lua(
-        as_trait = "std::ops::Mul",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "mul",
-        metamethod = "Mul",
-    )]
-    fn mul(
-        self,
-        #[proxy]
-        transform: bevy::transform::components::Transform,
-    ) -> bevy::transform::components::Transform;
-
-"#,
-    r#"
-
-    #[lua(
-        as_trait = "std::cmp::PartialEq",
-        kind = "MetaFunction",
-        composite = "eq",
-        metamethod = "Eq",
-    )]
-    fn eq(&self, #[proxy] other: &components::transform::Transform) -> bool;
+    fn clone(&self) -> bevy::transform::components::GlobalTransform;
 
 "#,
     r#"
@@ -313,6 +252,29 @@ pub struct GlobalTransform();
         #[proxy]
         global_transform: bevy::transform::components::GlobalTransform,
     ) -> bevy::transform::components::GlobalTransform;
+
+"#,
+    r#"
+#[lua(kind="MetaMethod", metamethod="ToString")]
+fn index(&self) -> String {
+    format!("{:?}", _self)
+}
+"#]
+)]
+struct GlobalTransform();
+#[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
+#[proxy(
+    derive(clone),
+    remote = "bevy::transform::components::Transform",
+    functions[r#"
+
+    #[lua(
+        as_trait = "std::cmp::PartialEq",
+        kind = "MetaFunction",
+        composite = "eq",
+        metamethod = "Eq",
+    )]
+    fn eq(&self, #[proxy] other: &components::transform::Transform) -> bool;
 
 "#,
     r#"
@@ -639,7 +601,45 @@ pub struct GlobalTransform();
         composite = "mul",
         metamethod = "Mul",
     )]
+    fn mul(
+        self,
+        #[proxy]
+        transform: bevy::transform::components::Transform,
+    ) -> bevy::transform::components::Transform;
+
+"#,
+    r#"
+
+    #[lua(
+        as_trait = "std::ops::Mul",
+        kind = "MetaFunction",
+        output(proxy),
+        composite = "mul",
+        metamethod = "Mul",
+    )]
+    fn mul(
+        self,
+        #[proxy]
+        global_transform: bevy::transform::components::GlobalTransform,
+    ) -> bevy::transform::components::GlobalTransform;
+
+"#,
+    r#"
+
+    #[lua(
+        as_trait = "std::ops::Mul",
+        kind = "MetaFunction",
+        output(proxy),
+        composite = "mul",
+        metamethod = "Mul",
+    )]
     fn mul(self, #[proxy] value: bevy::math::Vec3) -> bevy::math::Vec3;
+
+"#,
+    r#"
+
+    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
+    fn clone(&self) -> bevy::transform::components::Transform;
 
 "#,
     r#"
@@ -649,7 +649,7 @@ fn index(&self) -> String {
 }
 "#]
 )]
-pub struct Transform {
+struct Transform {
     #[lua(output(proxy))]
     translation: bevy::math::Vec3,
     #[lua(output(proxy))]
