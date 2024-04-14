@@ -4,8 +4,14 @@
 //! reflection gives us access to `dyn Reflect` objects via their type name,
 //! Scripting languages only really support `Clone` objects so if we want to support references,
 //! we need wrapper types which have owned and ref variants.
-use parking_lot::RwLock;
-use std::{any::TypeId, cell::RefCell, collections::HashMap, marker::PhantomData, sync::Arc};
+use lockable::LockableHashMap;
+
+use std::{
+    any::TypeId,
+    marker::PhantomData,
+    sync::{Arc, Weak},
+    time::Duration,
+};
 
 use bevy::{
     ecs::{
@@ -21,35 +27,91 @@ use bevy::{
     },
 };
 
-use crate::{allocator::AllocationId, error::ReflectionError};
-
-/// A wrapper for a `dyn Reflect` struct, can either be owned or a reference
-pub enum Wrapper {
-    Owned(Arc<dyn Reflect>, AllocationId),
-    Ref(ReflectReference),
-}
+use crate::{allocator::ReflectAllocationId, error::ReflectionError, prelude::ReflectAllocator};
 
 /// Describes kinds of base value we are accessing via reflection
-#[derive(PartialEq, Eq, Copy, Clone)]
+#[derive(PartialEq, Eq, Copy, Clone, Hash, Debug)]
 pub enum ReflectAccessKind {
     ComponentOrResource,
-    Owned,
+    Allocation,
 }
 
 /// Describes the id pointing to the base value we are accessing via reflection, for components and resources this is the ComponentId
 /// for script owned values this is an allocationId, this is used to ensure we have permission to access the value.
-#[derive(PartialEq, Eq, Copy, Clone)]
+#[derive(PartialEq, Eq, Copy, Clone, Hash, Debug)]
 pub struct ReflectAccessId {
     kind: ReflectAccessKind,
     id: usize,
 }
 
+impl ReflectAccessId {
+    pub fn new_component_or_resource_id(id: ComponentId) -> Self {
+        Self {
+            kind: ReflectAccessKind::ComponentOrResource,
+            id: id.index(),
+        }
+    }
+
+    pub fn new_owned_id(id: ReflectAllocationId) -> Self {
+        Self {
+            kind: ReflectAccessKind::Allocation,
+            id: id.id(),
+        }
+    }
+}
+/// While [`WorldAccessGuard`] prevents aliasing at runtime and also makes sure world exists as long as the guard itself,
+/// borrows sadly do not persist the script-host boundary :(. That is to be expected, but instead we can make an abstraction which removes the lifetime parameter, making the outer type 'static,
+/// while making sure the lifetime is still satisfied!
+#[derive(Clone)]
+pub struct WorldCallbackAccess(Weak<WorldAccessGuard<'static>>);
+
+impl WorldCallbackAccess {
+    /// Wraps a callback which requires access to the world in a 'static way via [`WorldCallbackAccess`].
+    pub fn with_callback_access<T>(
+        world: &mut World,
+        callback: impl FnOnce(&WorldCallbackAccess) -> T,
+    ) -> T {
+        // - the world cannot be dropped before the world drops since we have mutable reference to it in this entire function
+        // - nothing can alias inappropriately WorldAccessGuard since it's only instance is behind the raw Arc
+        let world_guard = Arc::new(WorldAccessGuard::new(world));
+        let world_guard = unsafe { WorldCallbackAccess::new(Arc::downgrade(&world_guard)) };
+
+        callback(&world_guard)
+    }
+
+    /// Creates a new [`WorldCallbackAccess`] with an erased lifetime.
+    ///
+    /// # Safety
+    /// - The caller must ensure the [`WorldAccessGuard`] must not outlive the 'w lifetime
+    /// - In practice this means that between the moment the original Arc is dropped, the lifetime 'w must be valid
+    /// - I.e. you *must* drop the original [`Arc<WorldAccessGuard>`] before the original 'w scope ends
+    pub unsafe fn new<'w>(world: Weak<WorldAccessGuard<'w>>) -> Self {
+        // Safety: the caller ensures `WorldAccessGuard` does not outlive the original lifetime 'w
+
+        let world = unsafe {
+            std::mem::transmute::<Weak<WorldAccessGuard<'w>>, Weak<WorldAccessGuard<'static>>>(
+                world,
+            )
+        };
+
+        Self(world)
+    }
+
+    /// Attempts to read the world access guard, if it still exists
+    pub fn read(&self) -> Option<Arc<WorldAccessGuard<'static>>> {
+        self.0.upgrade()
+    }
+}
+
+/// Unit of world access
+pub type WorldAccessUnit<'w> = WorldAccessWrite<'w>;
+
 /// Provides safe access to the world via [`WorldAccess`] permissions, which enforce aliasing rules at runtime in multi-thread environments
 #[derive(Clone)]
 pub struct WorldAccessGuard<'w> {
     cell: UnsafeWorldCell<'w>,
-    // TODO: lotta indirection here, can we make this better?
-    accesses: RefCell<HashMap<usize, Arc<RwLock<WorldAccess<'w>>>>>,
+    // TODO: this is fairly hefty, explore other ways to hand out locks on WorldAccess
+    accesses: Arc<LockableHashMap<ReflectAccessId, Option<WorldAccessUnit<'w>>>>,
 }
 
 impl<'w> WorldAccessGuard<'w> {
@@ -73,24 +135,76 @@ impl<'w> WorldAccessGuard<'w> {
         self.cell
     }
 
-    fn make_access_if_not_exists(&self, id: ReflectAccessId) {
-        self.accesses
-            .borrow_mut()
-            .entry(id.id)
-            .or_insert_with(|| Arc::new(RwLock::new(WorldAccess(id, PhantomData))));
+    /// Tries to get access to the given reflect access id, if it's already returns `None`. If you want to wait for access, use [`WorldAccessGuard::get_access_timeout`] instead.
+    /// Remember to release this access once done with [`WorldAccessGuard::release_access`] or nobody else will be able to access this id!.
+    ///
+    /// Although forgetting to release access is safe, it's frankly quite rude and can lead to deadlocks.
+    pub fn get_access(&self, raid: ReflectAccessId) -> Option<WorldAccessUnit<'w>> {
+        let mut guard = self
+            .accesses
+            .blocking_lock(raid, lockable::SyncLimit::no_limit())
+            .unwrap();
+        let guard = guard.value_or_insert_with(|| {
+            Some(WorldAccessWrite {
+                raid,
+                _ph: PhantomData,
+            })
+        });
+
+        if guard.is_some() {
+            guard.take()
+        } else {
+            // somebody has access to this already, we cannot access at the moment
+            None
+        }
     }
 
-    pub fn get_access(&self, raid: ReflectAccessId) -> Arc<RwLock<WorldAccess<'w>>> {
-        self.make_access_if_not_exists(raid);
-        let locks = self.accesses.borrow();
-        let val = locks.get(&raid.id).expect("access not present");
-        val.clone()
+    /// Blocking version of [`WorldAccessGuard::get_access`], waits for access to the given reflect access id. Will busy wait at the given intervals, untill the timeout is reached.
+    ///
+    /// # Panic
+    /// Will panic once access was not available after the timeout was reached
+    pub fn get_access_timeout(
+        &self,
+        raid: ReflectAccessId,
+        timeout: Duration,
+        interval: Duration,
+    ) -> WorldAccessUnit<'w> {
+        let mut access = self.get_access(raid);
+        let start = std::time::Instant::now();
+
+        while access.is_none() {
+            std::thread::sleep(interval);
+            access = self.get_access(raid);
+            if start.elapsed() > timeout {
+                panic!("Timeout reached while waiting for access to {:?}", raid);
+            }
+        }
+        access.unwrap()
+    }
+
+    /// Releases access to the given reflect access id
+    pub fn release_access(&self, access: WorldAccessUnit<'w>) {
+        let mut guard = self
+            .accesses
+            .blocking_lock(access.raid, lockable::SyncLimit::no_limit())
+            .unwrap();
+
+        let guard = guard
+            .value_mut()
+            .expect("Invariant violated, access should exist");
+
+        // should not be possible, we are the only ones who can instantiate WorldAccessUnit
+        debug_assert!(
+            guard.is_none(),
+            "Invariant violated, an access has been released by someone else already who shouldn't have been able to do so"
+        );
+        *guard = Some(access);
     }
 
     /// Get access to the given component_id, this is the only way to access a component/resource safely (in the context of the world access guard)
     /// since you can only access this component_id through a RwLock, there is no way to break aliasing rules.
     /// Additionally the 'w lifetime prevents you from storing this access outside the lifetime of the underlying cell
-    pub fn get_component_access(&self, cid: ComponentId) -> Arc<RwLock<WorldAccess<'w>>> {
+    pub fn get_component_access(&self, cid: ComponentId) -> Option<WorldAccessUnit<'w>> {
         let access_id = ReflectAccessId {
             kind: ReflectAccessKind::ComponentOrResource,
             id: cid.index(),
@@ -101,21 +215,23 @@ impl<'w> WorldAccessGuard<'w> {
     /// Get access to the given component_id, this is the only way to access a component/resource safely (in the context of the world access guard)
     /// since you can only access this component_id through a RwLock, there is no way to break aliasing rules.
     /// Additionally the 'w lifetime prevents you from storing this access outside the lifetime of the underlying cell
-    pub fn get_resource_access(&self, cid: ComponentId) -> Arc<RwLock<WorldAccess<'w>>> {
+    pub fn get_resource_access(&self, cid: ComponentId) -> Option<WorldAccessUnit<'w>> {
         self.get_component_access(cid)
     }
 
-    pub fn get_owned_access(&self, id: AllocationId) -> Arc<RwLock<WorldAccess<'w>>> {
+    /// Get access to the given allocation_id, this is the only way to access a script owned value safely (in the context of the world access guard)
+    pub fn get_allocation_access(&self, id: ReflectAllocationId) -> Option<WorldAccessUnit<'w>> {
         let access_id = ReflectAccessId {
-            kind: ReflectAccessKind::Owned,
-            id,
+            kind: ReflectAccessKind::Allocation,
+            id: id.id(),
         };
         self.get_access(access_id)
     }
 
+    /// Get access to the given component, this is the only way to access a component/resource safely (in the context of the world access guard)
     pub fn get_component<T: Component>(
         &self,
-        access: &WorldAccess,
+        access: &WorldAccessWrite,
         entity: Entity,
     ) -> Result<Option<&T>, ReflectionError> {
         let component_id = match self.cell.components().component_id::<T>() {
@@ -123,12 +239,10 @@ impl<'w> WorldAccessGuard<'w> {
             None => return Ok(None),
         };
 
-        if access.0
-            == (ReflectAccessId {
-                kind: ReflectAccessKind::ComponentOrResource,
-                id: component_id.index(),
-            })
-        {
+        if access.can_read(ReflectAccessId {
+            kind: ReflectAccessKind::ComponentOrResource,
+            id: component_id.index(),
+        }) {
             // Safety: we have the correct access id
             return unsafe { Ok(self.cell.get_entity(entity).and_then(|e| e.get::<T>())) };
         } else {
@@ -138,7 +252,7 @@ impl<'w> WorldAccessGuard<'w> {
                     "Invalid access, instead got permission to read: {}",
                     self.cell
                         .components()
-                        .get_info(ComponentId::new(access.0.id))
+                        .get_info(ComponentId::new(access.raid.id))
                         .map(|info| info.name())
                         .unwrap_or("<Unknown Component>")
                 ),
@@ -146,9 +260,10 @@ impl<'w> WorldAccessGuard<'w> {
         }
     }
 
+    /// Get access to the given component, this is the only way to access a component/resource safely (in the context of the world access guard)
     pub fn get_component_mut<T: Component>(
         &self,
-        access: &mut WorldAccess,
+        access: &mut WorldAccessWrite,
         entity: Entity,
     ) -> Result<Option<Mut<T>>, ReflectionError> {
         let component_id = match self.cell.components().component_id::<T>() {
@@ -156,12 +271,10 @@ impl<'w> WorldAccessGuard<'w> {
             None => return Ok(None),
         };
 
-        if access.0
-            == (ReflectAccessId {
-                kind: ReflectAccessKind::ComponentOrResource,
-                id: component_id.index(),
-            })
-        {
+        if access.can_write(ReflectAccessId {
+            kind: ReflectAccessKind::ComponentOrResource,
+            id: component_id.index(),
+        }) {
             // Safety: we have the correct access id
             return unsafe { Ok(self.cell.get_entity(entity).and_then(|e| e.get_mut::<T>())) };
         } else {
@@ -171,7 +284,7 @@ impl<'w> WorldAccessGuard<'w> {
                     "Invalid access, instead got permission to read: {}",
                     self.cell
                         .components()
-                        .get_info(ComponentId::new(access.0.id))
+                        .get_info(ComponentId::new(access.raid.id))
                         .map(|info| info.name())
                         .unwrap_or("<Unknown Component>")
                 ),
@@ -179,21 +292,20 @@ impl<'w> WorldAccessGuard<'w> {
         }
     }
 
+    /// Get access to the given resource
     pub fn get_resource<T: Resource>(
         &self,
-        access: &WorldAccess,
+        access: &WorldAccessWrite,
     ) -> Result<Option<&T>, ReflectionError> {
         let resource_id = match self.cell.components().resource_id::<T>() {
             Some(id) => id,
             None => return Ok(None),
         };
 
-        if access.0
-            == (ReflectAccessId {
-                kind: ReflectAccessKind::ComponentOrResource,
-                id: resource_id.index(),
-            })
-        {
+        if access.can_read(ReflectAccessId {
+            kind: ReflectAccessKind::ComponentOrResource,
+            id: resource_id.index(),
+        }) {
             // Safety: we have the correct access id
             return unsafe { Ok(self.cell.get_resource::<T>()) };
         } else {
@@ -203,7 +315,7 @@ impl<'w> WorldAccessGuard<'w> {
                     "Invalid access, instead got permission to read: {}",
                     self.cell
                         .components()
-                        .get_info(ComponentId::new(access.0.id))
+                        .get_info(ComponentId::new(access.raid.id))
                         .map(|info| info.name())
                         .unwrap_or("<Unknown Component>")
                 ),
@@ -211,21 +323,20 @@ impl<'w> WorldAccessGuard<'w> {
         }
     }
 
+    /// Get access to the given resource, this is the only way to access a component/resource safely (in the context of the world access guard)
     pub fn get_resource_mut<T: Resource>(
         &self,
-        access: &mut WorldAccess,
+        access: &mut WorldAccessWrite,
     ) -> Result<Option<Mut<T>>, ReflectionError> {
         let resource_id = match self.cell.components().resource_id::<T>() {
             Some(id) => id,
             None => return Ok(None),
         };
 
-        if access.0
-            == (ReflectAccessId {
-                kind: ReflectAccessKind::ComponentOrResource,
-                id: resource_id.index(),
-            })
-        {
+        if access.can_write(ReflectAccessId {
+            kind: ReflectAccessKind::ComponentOrResource,
+            id: resource_id.index(),
+        }) {
             // Safety: we have the correct access id
             return unsafe { Ok(self.cell.get_resource_mut::<T>()) };
         } else {
@@ -235,7 +346,7 @@ impl<'w> WorldAccessGuard<'w> {
                     "Invalid access, instead got permission to read: {}",
                     self.cell
                         .components()
-                        .get_info(ComponentId::new(access.0.id))
+                        .get_info(ComponentId::new(access.raid.id))
                         .map(|info| info.name())
                         .unwrap_or("<Unknown Component>")
                 ),
@@ -250,13 +361,28 @@ impl<'w> WorldAccessGuard<'w> {
 /// If you do own a [`WorldAccess`] for some [`ReflectAccessId`], you can read and write to it safely.
 /// If you only have an immutable borrow of [`WorldAccess`] you can only read it safely.
 /// If you have a mutable borrow of [`WorldAccess`] you can read and write to it safely.
-pub struct WorldAccess<'a>(pub ReflectAccessId, PhantomData<&'a usize>);
+#[derive(Debug)]
+pub struct WorldAccessWrite<'a> {
+    pub raid: ReflectAccessId,
+    pub(self) _ph: PhantomData<&'a usize>,
+}
+
+impl<'w> WorldAccessWrite<'w> {
+    pub fn can_read(&self, raid: ReflectAccessId) -> bool {
+        self.raid == raid
+    }
+
+    #[inline]
+    pub fn can_write(&self, raid: ReflectAccessId) -> bool {
+        self.can_read(raid)
+    }
+}
 
 // pub struct
 
 /// An accessor to a `dyn Reflect` struct, stores a base ID of the type and a reflection path
 /// safe to build but to reflect on the value inside you need to ensure aliasing rules are upheld
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct ReflectReference {
     pub base: ReflectBaseType,
     // TODO: experiment with Fixed capacity vec, boxed array etc, compromise between heap allocation and runtime cost
@@ -269,67 +395,96 @@ pub struct ReflectReference {
 struct UnregisteredType;
 
 impl ReflectReference {
+    /// Returns `Ok(())` if the given access is sufficient to read the value or an appropriate error otherwise
+    pub fn expect_read_access<'w>(
+        &self,
+        access: &WorldAccessWrite<'w>,
+        type_registry: &TypeRegistry,
+        world: UnsafeWorldCell<'w>,
+    ) -> Result<(), ReflectionError> {
+        if !access.can_read(self.base.base_id.get_reflect_access_id()) {
+            Err(ReflectionError::InsufficientAccess {
+                base: self.base.display_with_type_name(type_registry),
+                reason: format!(
+                    "Invalid access, instead got permission to read: {}",
+                    ReflectBaseType {
+                        type_id: world
+                            .components()
+                            .get_info(ComponentId::new(access.raid.id))
+                            .and_then(|c| c.type_id())
+                            .unwrap_or(TypeId::of::<UnregisteredType>()),
+                        base_id: self.base.base_id.clone()
+                    }
+                    .display_with_type_name(type_registry),
+                )
+                .to_owned(),
+            })
+        } else {
+            Ok(())
+        }
+    }
+
+    /// Returns `Ok(())` if the given access is sufficient to write to the value or an appropriate error otherwise
+    /// Note that this is not sufficient for write access, you also need to ensure the [`WorldAccessWrite`] won't be used to access the same value mutably elsewhere,
+    /// if you have a `&mut WorldAccessWrite` you can guarantee this statically. This function just checks that the access itself is for the right base with write access
+    pub fn expect_write_access<'w>(
+        &self,
+        access: &WorldAccessWrite<'w>,
+        type_registry: &TypeRegistry,
+        world: UnsafeWorldCell<'w>,
+    ) -> Result<(), ReflectionError> {
+        if !access.can_read(self.base.base_id.get_reflect_access_id()) {
+            Err(ReflectionError::InsufficientAccess {
+                base: self.base.display_with_type_name(type_registry),
+                reason: format!(
+                    "Invalid access, instead got permission to write to: {}",
+                    ReflectBaseType {
+                        type_id: world
+                            .components()
+                            .get_info(ComponentId::new(access.raid.id))
+                            .and_then(|c| c.type_id())
+                            .unwrap_or(TypeId::of::<UnregisteredType>()),
+                        base_id: self.base.base_id.clone()
+                    }
+                    .display_with_type_name(type_registry),
+                )
+                .to_owned(),
+            })
+        } else {
+            Ok(())
+        }
+    }
+
     /// Retrieves a reference to the underlying `dyn Reflect` type valid for the 'w lifetime of the world cell.
     /// If the underlying componentId is not the same as the one we have access to, an error is returned.
-    pub fn reflect<'w>(
-        &'w self,
+    pub fn reflect<'w, 'c>(
+        &self,
         world: UnsafeWorldCell<'w>,
-        access: &WorldAccess<'w>,
+        access: &'c WorldAccessWrite<'w>,
         type_registry: &TypeRegistry,
-    ) -> Result<&'w dyn Reflect, ReflectionError> {
-        if access.0 == self.base.base_id.get_reflect_access_id() {
-            // Safety: since we have read access to the underlying componentId we can safely access the component
-            return unsafe { self.reflect_unsafe(world, type_registry) };
-        }
-        Err(ReflectionError::InsufficientAccess {
-            base: self.base.display_with_type_name(type_registry),
-            reason: format!(
-                "Invalid access, instead got permission to read: {}",
-                ReflectBaseType {
-                    type_id: world
-                        .components()
-                        .get_info(ComponentId::new(access.0.id))
-                        .and_then(|c| c.type_id())
-                        .unwrap_or(TypeId::of::<UnregisteredType>()),
-                    base_id: self.base.base_id.clone()
-                }
-                .display_with_type_name(type_registry),
-            )
-            .to_owned(),
-        })
+        allocator: Option<&'c ReflectAllocator>,
+    ) -> Result<&'c dyn Reflect, ReflectionError> {
+        self.expect_read_access(access, type_registry, world)?;
+        // Safety: since we have read access to the underlying componentId we can safely access the component
+        // and we can return a reference tied to its lifetime, which will prevent invalid aliasing
+        return unsafe { self.reflect_unsafe(world, type_registry, allocator) };
     }
 
     /// Retrieves a reference to the underlying `dyn Reflect` type valid for the 'w lifetime of the world cell.
     /// If the underlying componentId is not the same as the one we have access to, an error is returned.
     ///
     /// If we are accessing a component or resource, it's marked as changed
-    pub fn reflect_mut<'w>(
-        &'w self,
+    pub fn reflect_mut<'w, 'c>(
+        &self,
         world: UnsafeWorldCell<'w>,
-        access: &mut WorldAccess<'w>,
+        access: &'c mut WorldAccessWrite<'w>,
         type_registry: &TypeRegistry,
-    ) -> Result<&'w mut dyn Reflect, ReflectionError> {
-        if access.0 == self.base.base_id.get_reflect_access_id() {
-            // Safety: since we have write access to the underlying reflect access id we can safely access the component
-            return unsafe { self.reflect_mut_unsafe(world, type_registry) };
-        }
-
-        Err(ReflectionError::InsufficientAccess {
-            base: self.base.display_with_type_name(type_registry),
-            reason: format!(
-                "Invalid access, instead got permission to mutate: {}",
-                ReflectBaseType {
-                    type_id: world
-                        .components()
-                        .get_info(ComponentId::new(access.0.id))
-                        .and_then(|c| c.type_id())
-                        .unwrap_or(TypeId::of::<UnregisteredType>()),
-                    base_id: self.base.base_id.clone()
-                }
-                .display_with_type_name(type_registry),
-            )
-            .to_owned(),
-        })
+        allocator: Option<&'c ReflectAllocator>,
+    ) -> Result<&'c mut dyn Reflect, ReflectionError> {
+        self.expect_write_access(access, type_registry, world)?;
+        // Safety: since we have write access to the underlying reflect access id we can safely access the component
+        // and we can return a reference tied to its lifetime, which will prevent invalid aliasing
+        return unsafe { self.reflect_mut_unsafe(world, type_registry, allocator) };
     }
 
     /// Retrieves a reference to the underlying `dyn Reflect` type valid for the 'w lifetime of the world cell
@@ -337,13 +492,25 @@ impl ReflectReference {
     /// - The caller must ensure the cell has permission to access the underlying value
     /// - The caller must ensure no aliasing mut references to the same value exist at all at the same time
     pub unsafe fn reflect_unsafe<'w>(
-        &'w self,
+        &self,
         world: UnsafeWorldCell<'w>,
         type_registry: &TypeRegistry,
+        allocator: Option<&'w ReflectAllocator>,
     ) -> Result<&'w dyn Reflect, ReflectionError> {
-        if let ReflectBase::Owned(weak, _) = &self.base.base_id {
-            // safety:
-            return Ok(weak.as_ref());
+        if let ReflectBase::Owned(id) = &self.base.base_id {
+            let allocator = allocator.ok_or_else(|| ReflectionError::AllocationError {
+                id: *id,
+                reason: "Allocator missing".to_owned(),
+            })?;
+            let arc = allocator
+                .get(*id)
+                .ok_or_else(|| ReflectionError::AllocationError {
+                    id: *id,
+                    reason: "Allocation was deallocated before it was accessed".to_owned(),
+                })?;
+
+            // safety: caller promises it's fine :)
+            return Ok(unsafe { &*arc.get_ptr() });
         };
         // all Reflect types should have this derived
         let from_ptr_data: &ReflectFromPtr = type_registry
@@ -384,15 +551,26 @@ impl ReflectReference {
     /// Retrieves mutable reference to the underlying `dyn Reflect` type valid for the 'w lifetime of the world cell
     /// # Safety
     /// - The caller must ensure the cell has permission to access the underlying value
-    /// - The caller must ensure no aliasing mut references to the same value exist at all at the same time
+    /// - The caller must ensure no other references to the same value exist at all at the same time (even if you have the correct access)
     pub unsafe fn reflect_mut_unsafe<'w>(
-        &'w self,
+        &self,
         world: UnsafeWorldCell<'w>,
         type_registry: &TypeRegistry,
+        allocator: Option<&'w ReflectAllocator>,
     ) -> Result<&'w mut dyn Reflect, ReflectionError> {
-        if let ReflectBase::Owned(weak, _) = &self.base.base_id {
+        if let ReflectBase::Owned(id) = &self.base.base_id {
+            let allocator = allocator.ok_or_else(|| ReflectionError::AllocationError {
+                id: *id,
+                reason: "Allocator missing".to_owned(),
+            })?;
+            let arc = allocator
+                .get_mut(*id)
+                .ok_or_else(|| ReflectionError::AllocationError {
+                    id: *id,
+                    reason: "Allocation was deallocated before it was accessed".to_owned(),
+                })?;
             // Safety: caller promises this is fine :)
-            return Ok(unsafe { &mut *(Arc::as_ptr(weak) as *mut _) });
+            return Ok(unsafe { &mut *arc.get_ptr() });
         };
 
         // all Reflect types should have this derived
@@ -435,8 +613,8 @@ impl ReflectReference {
 
 #[derive(Clone, Debug)]
 pub struct ReflectBaseType {
-    type_id: TypeId,
-    base_id: ReflectBase,
+    pub type_id: TypeId,
+    pub base_id: ReflectBase,
 }
 
 impl ReflectBaseType {
@@ -461,7 +639,7 @@ impl ReflectBaseType {
 pub enum ReflectBase {
     Component(Entity, ComponentId),
     Resource(ComponentId),
-    Owned(Arc<dyn Reflect>, AllocationId),
+    Owned(ReflectAllocationId),
 }
 
 impl ReflectBase {
@@ -509,9 +687,9 @@ impl ReflectBase {
                 kind: ReflectAccessKind::ComponentOrResource,
                 id: cid.index(),
             },
-            ReflectBase::Owned(_, id) => ReflectAccessId {
-                kind: ReflectAccessKind::Owned,
-                id: *id,
+            ReflectBase::Owned(id) => ReflectAccessId {
+                kind: ReflectAccessKind::Allocation,
+                id: id.id(),
             },
         }
     }
@@ -571,7 +749,9 @@ pub struct DeferredReflection {
 #[cfg(test)]
 mod test {
 
-    use crate::allocator::ReflectAllocator;
+    use std::cell::UnsafeCell;
+
+    use crate::allocator::{ReflectAllocation, ReflectAllocator};
 
     use super::*;
     use bevy::ecs::{component::Component, system::Resource, world::World};
@@ -597,6 +777,47 @@ mod test {
 
         (world, type_registry, component_id, resource_id)
     }
+
+    // #[test]
+    // fn doesnt_compile() {
+    //     let (mut world, type_registry, c_id, _) = setup_world();
+
+    //     let world = WorldAccessGuard::new(&mut world);
+
+    //     let reflect_ref = ReflectReference {
+    //         base: ReflectBaseType {
+    //             base_id: ReflectBase::Component(Entity::from_raw(0), c_id),
+    //             type_id: TypeId::of::<TestComponent>(),
+    //         },
+    //         reflect_path: vec![],
+    //     };
+
+    //     let mut access = WorldAccess {
+    //         raid: ReflectAccessId {
+    //             kind: ReflectAccessKind::ComponentOrResource,
+    //             id: c_id.index(),
+    //         },
+    //         write: true,
+    //         _ph: PhantomData,
+    //     };
+
+    //     let read = reflect_ref
+    //         .reflect(world.as_unsafe_world_cell(), &access, None, &type_registry)
+    //         .unwrap();
+
+    //     // This shouldn't compile! borrow checker should prevent this
+    //     let read_mut = reflect_ref
+    //         .reflect_mut(
+    //             world.as_unsafe_world_cell(),
+    //             &mut access,
+    //             None,
+    //             &type_registry,
+    //         )
+    //         .unwrap();
+
+    //     drop(read);
+    //     drop(read_mut);
+    // }
 
     #[test]
     fn test_component_access() {
@@ -629,13 +850,13 @@ mod test {
             ],
         };
 
-        let component_access = world.get_component_access(component_id);
-
+        let mut component_access = world.get_component_access(component_id).unwrap();
         *component_reflect_ref
             .reflect_mut(
                 world.as_unsafe_world_cell(),
-                &mut component_access.write(),
+                &mut component_access,
                 &type_registry,
+                None,
             )
             .unwrap()
             .downcast_mut::<String>()
@@ -643,7 +864,7 @@ mod test {
 
         assert_eq!(
             world
-                .get_component::<TestComponent>(&component_access.read(), entity)
+                .get_component::<TestComponent>(&component_access, entity)
                 .unwrap()
                 .unwrap(),
             &TestComponent {
@@ -652,7 +873,7 @@ mod test {
         );
 
         *world
-            .get_component_mut::<TestComponent>(&mut component_access.write(), entity)
+            .get_component_mut::<TestComponent>(&mut component_access, entity)
             .unwrap()
             .unwrap()
             .as_mut() = TestComponent {
@@ -663,13 +884,21 @@ mod test {
             component_reflect_ref
                 .reflect(
                     world.as_unsafe_world_cell(),
-                    &component_access.read(),
-                    &type_registry
+                    &component_access,
+                    &type_registry,
+                    None,
                 )
                 .unwrap()
                 .downcast_ref::<String>()
                 .unwrap(),
             &"typed_world".to_owned()
+        );
+
+        world.release_access(component_access);
+
+        assert!(
+            world.get_component_access(component_id).is_some(),
+            "access was not release correctly"
         );
     }
 
@@ -700,13 +929,14 @@ mod test {
             ],
         };
 
-        let resource_access = world.get_resource_access(resource_id);
+        let mut resource_access = world.get_resource_access(resource_id).unwrap();
 
         *resource_reflect_ref
             .reflect_mut(
                 world.as_unsafe_world_cell(),
-                &mut resource_access.write(),
+                &mut resource_access,
                 &type_registry,
+                None,
             )
             .unwrap()
             .downcast_mut::<u8>()
@@ -714,14 +944,14 @@ mod test {
 
         assert_eq!(
             world
-                .get_resource::<TestResource>(&resource_access.read())
+                .get_resource::<TestResource>(&resource_access)
                 .unwrap()
                 .unwrap(),
             &TestResource { bytes: vec![42u8] }
         );
 
         *world
-            .get_resource_mut::<TestResource>(&mut resource_access.write())
+            .get_resource_mut::<TestResource>(&mut resource_access)
             .unwrap()
             .unwrap()
             .as_mut() = TestResource { bytes: vec![69u8] };
@@ -730,13 +960,20 @@ mod test {
             resource_reflect_ref
                 .reflect(
                     world.as_unsafe_world_cell(),
-                    &resource_access.read(),
-                    &type_registry
+                    &resource_access,
+                    &type_registry,
+                    None,
                 )
                 .unwrap()
                 .downcast_ref::<u8>()
                 .unwrap(),
             &69u8
+        );
+
+        world.release_access(resource_access);
+        assert!(
+            world.get_resource_access(resource_id).is_some(),
+            "access was not release correctly"
         );
     }
 
@@ -746,56 +983,72 @@ mod test {
 
         let world = WorldAccessGuard::new(&mut world);
         let mut script_allocator = ReflectAllocator::default();
-        let allocation_id = script_allocator.allocate(Arc::new("hello".to_string()));
+        let allocation_id = script_allocator.allocate(ReflectAllocation::new(Arc::new(
+            UnsafeCell::new("hello".to_string()),
+        )));
 
         let owned_reflect_ref = ReflectReference {
             base: ReflectBaseType {
-                base_id: ReflectBase::Owned(
-                    script_allocator
-                        .allocations
-                        .get(&allocation_id)
-                        .unwrap()
-                        .clone(),
-                    allocation_id,
-                ),
+                base_id: ReflectBase::Owned(allocation_id),
                 type_id: TypeId::of::<String>(),
             },
             reflect_path: vec![],
         };
 
-        let owned_access = world.get_owned_access(allocation_id);
+        let allocation_access = world.get_allocation_access(allocation_id).unwrap();
 
         assert_eq!(
             owned_reflect_ref
                 .reflect(
                     world.as_unsafe_world_cell_readonly(),
-                    &owned_access.read(),
+                    &allocation_access,
                     &type_registry,
+                    Some(&script_allocator),
                 )
                 .unwrap()
                 .downcast_ref::<String>(),
             Some(&String::from("hello"))
         );
 
-        let onwed_access_read = owned_access.read();
         assert!(
-            world.get_owned_access(allocation_id).try_write().is_none(),
-            "Mutable borrow allowed while immutable borrow exists"
+            world.get_allocation_access(allocation_id).is_none(),
+            "Multiple accesses to same base ID exist, safety violation"
         );
-        drop(onwed_access_read)
+
+        world.release_access(allocation_access);
+        assert!(
+            world.get_allocation_access(allocation_id).is_some(),
+            "access was not release correctly"
+        );
     }
 
     #[test]
+    #[allow(clippy::drop_non_drop)]
     fn test_invalid_runtime_access() {
         let mut world = World::new();
         let world = WorldAccessGuard::new(&mut world);
         let access = world.get_component_access(ComponentId::new(0));
-        let access2 = world.get_component_access(ComponentId::new(0));
-        let access = access.read();
         assert!(
-            access2.try_write().is_none(),
-            "Immutable and Mutable borrow allowed at the same time"
+            world.get_component_access(ComponentId::new(0)).is_none(),
+            "access was allowed to alias"
         );
         drop(access);
+    }
+
+    #[test]
+    #[should_panic]
+    fn test_double_release_panics() {
+        let mut world = World::new();
+        let world = WorldAccessGuard::new(&mut world);
+        let access = world.get_component_access(ComponentId::new(0)).unwrap();
+        world.release_access(access);
+        // This won't be possible in client code
+        world.release_access(WorldAccessWrite {
+            raid: ReflectAccessId {
+                kind: ReflectAccessKind::ComponentOrResource,
+                id: 0,
+            },
+            _ph: PhantomData,
+        });
     }
 }

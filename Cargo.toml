@@ -46,7 +46,7 @@ luajit = ["bevy_mod_scripting_lua/luajit", "lua"]
 luajit52 = ["bevy_mod_scripting_lua/luajit52", "lua"]
 
 # optional
-lua_script_api = ["bevy_script_api/lua"]
+# lua_script_api = ["bevy_script_api/lua"]
 unsafe_lua_modules = ["bevy_mod_scripting_lua/unsafe_lua_modules"]
 teal = ["bevy_mod_scripting_lua/teal"]
 mlua_serialize = ["bevy_mod_scripting_lua/mlua_serialize"]
@@ -55,7 +55,7 @@ mlua_async = ["bevy_mod_scripting_lua/mlua_async"]
 
 ## rhai
 rhai = ["bevy_mod_scripting_rhai"]
-rhai_script_api = ["bevy_script_api/rhai"]
+# rhai_script_api = ["bevy_script_api/rhai"]
 
 ## rune
 rune = ["bevy_mod_scripting_rune"]
@@ -66,7 +66,7 @@ bevy_mod_scripting_core = { workspace = true }
 bevy_mod_scripting_lua = { path = "crates/languages/bevy_mod_scripting_lua", version = "0.6.0", optional = true }
 bevy_mod_scripting_rhai = { path = "crates/languages/bevy_mod_scripting_rhai", version = "0.6.0", optional = true }
 bevy_mod_scripting_rune = { path = "crates/languages/bevy_mod_scripting_rune", version = "0.6.0", optional = true }
-bevy_script_api = { path = "crates/bevy_script_api", version = "0.6.0", optional = true }
+# bevy_script_api = { path = "crates/bevy_script_api", version = "0.6.0", optional = true }
 
 
 [workspace.dependencies]
@@ -84,8 +84,7 @@ rhai-rand = "0.1"
 [workspace]
 members = [
     "crates/bevy_mod_scripting_core",
-    "crates/bevy_event_priority",
-    "crates/bevy_script_api",
+    # "crates/bevy_script_api",
     "crates/languages/bevy_mod_scripting_lua",
     "crates/languages/bevy_mod_scripting_lua_derive",
     "crates/languages/bevy_mod_scripting_rhai",

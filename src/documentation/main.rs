@@ -6,7 +6,7 @@ fn main() {
     let args: Vec<String> = env::args().collect();
     let mut app = App::new();
     app.add_plugins(MinimalPlugins)
-        .add_plugins(ScriptingPlugin)
+        // .add_plugins(ScriptingPlugin)
         .add_plugins(AssetPlugin::default());
 
     static INVALID_ARGUMENT_WARNING: &str = "Expected one of: 'lua','rhai' as arguments";

@@ -188,7 +188,12 @@ pub enum Command {
 
         /// The name of the API, this will be passed to the `collect.rs` template, which by default will be used as the APIProvider name and the
         /// title of the documentation.
-        #[arg(short, long, value_name = "NAME", default_value = "LuaBevyAPIProvider")]
+        #[arg(
+            short,
+            long,
+            value_name = "NAME",
+            default_value = "LuaBevyScriptingPlugin"
+        )]
         api_name: String,
     },
 }
