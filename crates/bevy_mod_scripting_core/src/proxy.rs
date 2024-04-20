@@ -1,6 +1,9 @@
 //! Set of traits used to define how types are turned into and from proxies in Lua.
 //! Proxies can either be logical "copies" or owned "direct representations" of the instance, or references to one via the [`bevy_mod_scripting_core::bindings::ReflectReference`] construct.
-use std::num::{NonZeroU128, NonZeroU16, NonZeroU32, NonZeroU64, NonZeroU8, NonZeroUsize};
+use std::{
+    marker::PhantomData,
+    num::{NonZeroU128, NonZeroU16, NonZeroU32, NonZeroU64, NonZeroU8, NonZeroUsize},
+};
 
 use bevy::{
     reflect::{FromReflect, Reflect, TypeRegistry},
@@ -12,20 +15,18 @@ use crate::{
     prelude::{ReflectAllocator, ReflectionError},
 };
 
-pub trait Proxied: Sized {
-    type Proxy: Clone
-        + AsRef<ReflectReference>
-        + Into<ReflectReference>
-        + From<ReflectReference>
-        + std::fmt::Debug;
+/// Inverse to [`Unproxy`], packages up a type into a proxy type.
+pub trait Proxy {
+    type Input;
+
+    fn proxy(input: Self::Input) -> Self;
 }
 
-pub struct Proxy<T: Proxied>(pub T::Proxy);
-
-pub struct RefProxy<T: Proxied>(pub T::Proxy);
-
-pub struct RefMutProxy<T: Proxied>(pub T::Proxy);
-
+/// A mechanism for converting proxy types into their represented types.
+/// Note this can be implemented by 'meta-proxy' types which themselves aren't proxies, but wrap other proxies and provide a specific unproxying mechanism.
+/// `RefProxy` and `RefMutProxy` are such 'meta-proxy' types.
+///
+/// the [`Unproxy::Output`] type parameter is the type that this `proxy` will be converted to after unwrapping.
 pub trait Unproxy<'w, 'c> {
     type Output: 'c;
 
@@ -41,21 +42,102 @@ pub trait Unproxy<'w, 'c> {
         0
     }
 
+    /// Unproxies a proxy type into the represented type without world access
+    /// This will fail on proxies which require world access to unproxy (for example those whose proxies are glorified [`ReflectReference`]'s )
+    fn unproxy(&'c mut self) -> Result<Self::Output, ReflectionError> {
+        Err(ReflectionError::InsufficientAccess {
+            base: std::any::type_name::<Self::Output>().to_owned(),
+            reason: "Attempted to unproxy a type that requires world access without providing it"
+                .to_owned(),
+        })
+    }
+
+    /// Unproxies a proxy type into the represented type with world access
     /// # Safety
-    /// - The caller must not use the accesses in the accesses list after the unproxy call to create a mutable reference, as this call might borrow mutably from the same access
-    unsafe fn unproxy(
+    /// - The caller must not use the accesses in the accesses list after the unproxy call at all, as implementors assume they have unique access to the accesses.
+    unsafe fn unproxy_with_world(
         &'c mut self,
-        guard: &WorldAccessGuard<'w>,
-        accesses: &'c [WorldAccessUnit<'w>],
-        type_registry: &TypeRegistry,
-        allocator: &'c ReflectAllocator,
-    ) -> Result<Self::Output, ReflectionError>;
+        _guard: &WorldAccessGuard<'w>,
+        _accesses: &'c [WorldAccessUnit<'w>],
+        _type_registry: &TypeRegistry,
+        _allocator: &'c ReflectAllocator,
+    ) -> Result<Self::Output, ReflectionError> {
+        self.unproxy()
+    }
 }
 
-impl<'w, 'c, T: Proxied + FromReflect> Unproxy<'w, 'c> for Proxy<T> {
+/// A wrapper type which when unproxied will return a `T` value.
+/// Requires the type to be constructible from a reference to the proxy type.
+#[derive(Debug, PartialEq, Eq)]
+pub struct ValProxy<T, P>(pub P, PhantomData<T>);
+
+impl<T, P> ValProxy<T, P> {
+    pub fn new(v: P) -> Self {
+        Self(v, PhantomData)
+    }
+}
+
+/// A wrapper type which when unproxied will return a `T` value.
+/// Assumes that the proxy type contains a [`ReflectReference`] via [`AsRef<ReflectReference>`]
+#[derive(PartialEq, Eq, Debug)]
+pub struct ReflectValProxy<T, P>(pub P, PhantomData<T>);
+
+impl<T, P> ReflectValProxy<T, P> {
+    pub fn new(v: P) -> Self {
+        Self(v, PhantomData)
+    }
+}
+
+/// A proxy type which when unproxied will return a reference to a `T` value.
+/// Assumes that the proxy type contains a [`ReflectReference`] via [`AsRef<ReflectReference>`]
+pub struct ReflectRefProxy<T, P>(pub P, PhantomData<T>);
+
+impl<T, P> ReflectRefProxy<T, P> {
+    pub fn new(v: P) -> Self {
+        Self(v, PhantomData)
+    }
+}
+
+/// A proxy type which when unproxied will return a mutable reference to a `T` value.
+/// Assumes that the proxy type contains a [`ReflectReference`] via [`AsRef<ReflectReference>`]
+pub struct ReflectRefMutProxy<T, P>(pub P, PhantomData<T>);
+
+impl<T, P> ReflectRefMutProxy<T, P> {
+    pub fn new(v: P) -> Self {
+        Self(v, PhantomData)
+    }
+}
+
+impl<'w, 'c, T: 'c, P: 'c> Unproxy<'w, 'c> for ValProxy<T, P>
+where
+    T: From<&'c P>,
+{
     type Output = T;
 
-    unsafe fn unproxy(
+    fn unproxy(&'c mut self) -> Result<Self::Output, ReflectionError> {
+        Ok(T::from(&self.0))
+    }
+}
+
+impl<T, P> Proxy for ValProxy<T, P>
+where
+    T: Into<P>,
+{
+    type Input = T;
+
+    fn proxy(input: Self::Input) -> Self {
+        ValProxy::new(input.into())
+    }
+}
+
+impl<'w, 'c, T, P> Unproxy<'w, 'c> for ReflectValProxy<T, P>
+where
+    P: AsRef<ReflectReference>,
+    T: FromReflect,
+{
+    type Output = T;
+
+    unsafe fn unproxy_with_world(
         &'c mut self,
         guard: &WorldAccessGuard<'w>,
         _accesses: &'c [WorldAccessUnit<'w>],
@@ -86,7 +168,11 @@ impl<'w, 'c, T: Proxied + FromReflect> Unproxy<'w, 'c> for Proxy<T> {
     }
 }
 
-impl<'w, 'c, T: Proxied + Reflect + 'w> Unproxy<'w, 'c> for RefProxy<T> {
+impl<'w, 'c, T, P> Unproxy<'w, 'c> for ReflectRefProxy<T, P>
+where
+    P: AsRef<ReflectReference>,
+    T: Reflect,
+{
     type Output = &'c T;
 
     fn collect_accesses(
@@ -106,7 +192,7 @@ impl<'w, 'c, T: Proxied + Reflect + 'w> Unproxy<'w, 'c> for RefProxy<T> {
         Ok(())
     }
 
-    unsafe fn unproxy(
+    unsafe fn unproxy_with_world(
         &'c mut self,
         guard: &WorldAccessGuard<'w>,
         accesses: &'c [WorldAccessUnit<'w>],
@@ -141,7 +227,11 @@ impl<'w, 'c, T: Proxied + Reflect + 'w> Unproxy<'w, 'c> for RefProxy<T> {
     }
 }
 
-impl<'w, 'c, T: Proxied + Reflect + 'w> Unproxy<'w, 'c> for RefMutProxy<T> {
+impl<'w, 'c, T, P> Unproxy<'w, 'c> for ReflectRefMutProxy<T, P>
+where
+    P: AsRef<ReflectReference>,
+    T: Reflect,
+{
     type Output = &'c mut T;
 
     fn collect_accesses(
@@ -161,7 +251,7 @@ impl<'w, 'c, T: Proxied + Reflect + 'w> Unproxy<'w, 'c> for RefMutProxy<T> {
         Ok(())
     }
 
-    unsafe fn unproxy(
+    unsafe fn unproxy_with_world(
         &'c mut self,
         guard: &WorldAccessGuard<'w>,
         accesses: &'c [WorldAccessUnit<'w>],
@@ -221,7 +311,16 @@ impl<'w, 'c, T: Unproxy<'w, 'c>> Unproxy<'w, 'c> for Vec<T> {
         self.iter().map(|item| item.accesses_len()).sum()
     }
 
-    unsafe fn unproxy(
+    fn unproxy(&'c mut self) -> Result<Self::Output, ReflectionError> {
+        let mut out = Vec::with_capacity(self.len());
+        for item in self {
+            let unproxied = item.unproxy()?;
+            out.push(unproxied);
+        }
+        Ok(out)
+    }
+
+    unsafe fn unproxy_with_world(
         &'c mut self,
         guard: &WorldAccessGuard<'w>,
         accesses: &'c [WorldAccessUnit<'w>],
@@ -232,7 +331,7 @@ impl<'w, 'c, T: Unproxy<'w, 'c>> Unproxy<'w, 'c> for Vec<T> {
         let mut offset = 0;
         for item in self {
             let width = item.accesses_len();
-            let unproxied = item.unproxy(
+            let unproxied = item.unproxy_with_world(
                 guard,
                 &accesses[offset..offset + width],
                 type_registry,
@@ -245,51 +344,103 @@ impl<'w, 'c, T: Unproxy<'w, 'c>> Unproxy<'w, 'c> for Vec<T> {
     }
 }
 
-impl<'w, 'c, T: Unproxy<'w, 'c> + 'c> Unproxy<'w, 'c> for &T
-where
-    T::Output: Copy,
-{
+impl<T: Proxy> Proxy for Vec<T> {
+    type Input = Vec<T::Input>;
+
+    fn proxy(input: Self::Input) -> Self {
+        input.into_iter().map(T::proxy).collect()
+    }
+}
+
+impl<'w, 'c, T: Unproxy<'w, 'c> + 'c> Unproxy<'w, 'c> for &T {
     type Output = &'c T;
 
-    unsafe fn unproxy(
-        &'c mut self,
-        _guard: &WorldAccessGuard<'w>,
-        _accesses: &'c [WorldAccessUnit<'w>],
-        _type_registry: &TypeRegistry,
-        _allocator: &'c ReflectAllocator,
-    ) -> Result<Self::Output, ReflectionError> {
+    fn unproxy(&'c mut self) -> Result<Self::Output, ReflectionError> {
         Ok(self)
     }
 }
 
-impl<'w, 'c, T: Unproxy<'w, 'c> + 'c> Unproxy<'w, 'c> for &mut T
-where
-    T::Output: Copy,
-{
-    type Output = &'c mut T;
+impl<'a, T: Proxy> Proxy for &'a T {
+    type Input = &'a T;
 
-    unsafe fn unproxy(
-        &'c mut self,
-        _guard: &WorldAccessGuard<'w>,
-        _accesses: &'c [WorldAccessUnit<'w>],
-        _type_registry: &TypeRegistry,
-        _allocator: &'c ReflectAllocator,
-    ) -> Result<Self::Output, ReflectionError> {
-        Ok(*self)
+    fn proxy(input: Self::Input) -> Self {
+        input
     }
 }
 
-macro_rules! impl_by_move {
+impl<'w, 'c, T: Unproxy<'w, 'c> + 'c> Unproxy<'w, 'c> for &mut T {
+    type Output = &'c mut T;
+
+    fn unproxy(&'c mut self) -> Result<Self::Output, ReflectionError> {
+        Ok(self)
+    }
+}
+
+impl<'a, T: Proxy> Proxy for &'a mut T {
+    type Input = &'a mut T;
+
+    fn proxy(input: Self::Input) -> Self {
+        input
+    }
+}
+
+impl<'w, 'c, T: Unproxy<'w, 'c> + 'c> Unproxy<'w, 'c> for Option<T> {
+    type Output = Option<T::Output>;
+
+    fn unproxy(&'c mut self) -> Result<Self::Output, ReflectionError> {
+        if let Some(s) = self {
+            let inner = s.unproxy()?;
+            Ok(Some(inner))
+        } else {
+            Ok(None)
+        }
+    }
+
+    unsafe fn unproxy_with_world(
+        &'c mut self,
+        guard: &WorldAccessGuard<'w>,
+        accesses: &'c [WorldAccessUnit<'w>],
+        type_registry: &TypeRegistry,
+        allocator: &'c ReflectAllocator,
+    ) -> Result<Self::Output, ReflectionError> {
+        if let Some(s) = self {
+            let inner = s.unproxy_with_world(guard, accesses, type_registry, allocator)?;
+            Ok(Some(inner))
+        } else {
+            Ok(None)
+        }
+    }
+
+    fn collect_accesses(
+        &self,
+        guard: &WorldAccessGuard<'w>,
+        accesses: &mut SmallVec<[WorldAccessWrite<'w>; 1]>,
+    ) -> Result<(), ReflectionError> {
+        self.as_ref()
+            .map(|s| s.collect_accesses(guard, accesses))
+            .unwrap_or_else(|| Ok(()))
+    }
+
+    fn accesses_len(&self) -> usize {
+        self.as_ref().map_or(0, |s| s.accesses_len())
+    }
+}
+
+impl<T: Proxy> Proxy for Option<T> {
+    type Input = Option<T::Input>;
+
+    fn proxy(input: Self::Input) -> Self {
+        input.map(T::proxy)
+    }
+}
+
+macro_rules! impl_unproxy_by_move {
     ($($ty:ty),*) => {
         $(impl<'w, 'c> Unproxy<'w, 'c> for $ty {
             type Output = $ty;
 
-            unsafe fn unproxy(
-                &'c mut self,
-                _guard: &WorldAccessGuard<'w>,
-                _accesses: &'c [WorldAccessUnit<'w>],
-                _type_registry: &TypeRegistry,
-                _allocator: &'c ReflectAllocator,
+            fn unproxy(
+                &'c mut self
             ) -> Result<Self::Output, ReflectionError> {
                 Ok(*self)
             }
@@ -297,8 +448,36 @@ macro_rules! impl_by_move {
     };
 }
 
-impl_by_move!(usize, u8, u16, u32, u64, u128, isize, i8, i16, i32, i64, i128, f32, f64, bool);
-impl_by_move!(
+macro_rules! impl_proxy_by_move {
+    ($($ty:ident),*) => {
+        $(
+            impl Proxy for $ty {
+                type Input = Self;
+
+                fn proxy(input: Self::Input) -> Self {
+                    input
+                }
+            }
+        )*
+    }
+}
+
+impl_proxy_by_move!(
+    usize,
+    u8,
+    u16,
+    u32,
+    u64,
+    u128,
+    isize,
+    i8,
+    i16,
+    i32,
+    i64,
+    i128,
+    f32,
+    f64,
+    bool,
     NonZeroUsize,
     NonZeroU8,
     NonZeroU16,
@@ -307,62 +486,97 @@ impl_by_move!(
     NonZeroU128
 );
 
-macro_rules! impl_by_clone {
+impl_unproxy_by_move!(
+    usize,
+    u8,
+    u16,
+    u32,
+    u64,
+    u128,
+    isize,
+    i8,
+    i16,
+    i32,
+    i64,
+    i128,
+    f32,
+    f64,
+    bool,
+    NonZeroUsize,
+    NonZeroU8,
+    NonZeroU16,
+    NonZeroU32,
+    NonZeroU64,
+    NonZeroU128
+);
+
+macro_rules! impl_unproxy_by_clone {
     ($($ty:ty),*) => {
         $(impl<'w, 'c> Unproxy<'w, 'c> for $ty {
             type Output = $ty;
 
-            unsafe fn unproxy(
-                &'c mut self,
-                _guard: &WorldAccessGuard<'w>,
-                _accesses: &'c [WorldAccessUnit<'w>],
-                _type_registry: &TypeRegistry,
-                _allocator: &'c ReflectAllocator,
-            ) -> Result<Self::Output, ReflectionError> {
+            fn unproxy(&'c mut self) -> Result<Self::Output, ReflectionError> {
                 Ok(self.clone())
             }
         })*
     };
 }
 
-impl_by_clone!(String);
+impl_unproxy_by_clone!(String);
+impl_proxy_by_move!(String);
 
-macro_rules! impl_tuple_unproxy {
+macro_rules! impl_tuple_unproxy_proxy {
     ($(($ty:ident, $idx:tt)),*) => {
+        impl <$($ty : Proxy,)*> Proxy for ($($ty,)*)
+        {
+            type Input = ($($ty::Input,)*);
+
+            #[allow(clippy::unused_unit)]
+            fn proxy(_input: Self::Input) -> Self {
+                ($($ty::proxy(_input.$idx),)*)
+            }
+        }
+
         impl<'w, 'c, $($ty: Unproxy<'w, 'c>),*> Unproxy<'w, 'c> for ($($ty,)*) {
             type Output = ($($ty::Output,)*);
 
             fn collect_accesses(
                 &self,
-                guard: &WorldAccessGuard<'w>,
-                accesses: &mut SmallVec<[WorldAccessWrite<'w>; 1]>,
+                _guard: &WorldAccessGuard<'w>,
+                _accesses: &mut SmallVec<[WorldAccessWrite<'w>; 1]>,
             ) -> Result<(), ReflectionError> {
-                $(self.$idx.collect_accesses(guard, accesses)?;)*
+                $(self.$idx.collect_accesses(_guard, _accesses)?;)*
                 Ok(())
             }
 
             fn accesses_len(&self) -> usize {
-                let mut len = 0;
-                $(len += self.$idx.accesses_len();)*
-                len
+                let mut _len = 0;
+                $(_len += self.$idx.accesses_len();)*
+                _len
+            }
+
+            fn unproxy(&'c mut self) -> Result<Self::Output, ReflectionError> {
+                Ok(($(
+                    self.$idx.unproxy()?
+                ,)*))
             }
 
             #[allow(unused_assignments)]
-            unsafe fn unproxy(
+            unsafe fn unproxy_with_world(
                 &'c mut self,
-                guard: &WorldAccessGuard<'w>,
-                accesses: &'c [WorldAccessUnit<'w>],
-                type_registry: &TypeRegistry,
-                allocator: &'c ReflectAllocator,
+                _guard: &WorldAccessGuard<'w>,
+                _accesses: &'c [WorldAccessUnit<'w>],
+                _type_registry: &TypeRegistry,
+                _allocator: &'c ReflectAllocator,
             ) -> Result<Self::Output, ReflectionError> {
-                let mut offset = 0;
+                let mut _offset = 0;
 
                 Ok(($(
                     {
                         let width = self.$idx.accesses_len();
-                        let elem = self.$idx.unproxy(guard, &accesses[offset..offset+width], type_registry, allocator)?;
+                        let elem = self.$idx.unproxy_with_world(_guard, &_accesses[_offset.._offset+width], _type_registry, _allocator)?;
 
-                        offset += width;
+                        _offset += width;
                         elem
                     }
                 ,)*))
@@ -372,40 +586,41 @@ macro_rules! impl_tuple_unproxy {
     };
 }
 
+impl_tuple_unproxy_proxy!();
 #[rustfmt::skip]
-impl_tuple_unproxy!((A, 0));
+impl_tuple_unproxy_proxy!((A, 0));
 #[rustfmt::skip]
-impl_tuple_unproxy!((A, 0), (B, 1));
+impl_tuple_unproxy_proxy!((A, 0), (B, 1));
 #[rustfmt::skip]
-impl_tuple_unproxy!((A, 0), (B, 1), (C, 2));
+impl_tuple_unproxy_proxy!((A, 0), (B, 1), (C, 2));
 #[rustfmt::skip]
-impl_tuple_unproxy!((A, 0), (B, 1), (C, 2), (D, 3));
+impl_tuple_unproxy_proxy!((A, 0), (B, 1), (C, 2), (D, 3));
 #[rustfmt::skip]
-impl_tuple_unproxy!((A, 0), (B, 1), (C, 2), (D, 3), (E, 4));
+impl_tuple_unproxy_proxy!((A, 0), (B, 1), (C, 2), (D, 3), (E, 4));
 #[rustfmt::skip]
-impl_tuple_unproxy!((A, 0), (B, 1), (C, 2), (D, 3), (E, 4), (F, 5));
+impl_tuple_unproxy_proxy!((A, 0), (B, 1), (C, 2), (D, 3), (E, 4), (F, 5));
 #[rustfmt::skip]
-impl_tuple_unproxy!((A, 0), (B, 1), (C, 2), (D, 3), (E, 4), (F, 5), (G, 6));
+impl_tuple_unproxy_proxy!((A, 0), (B, 1), (C, 2), (D, 3), (E, 4), (F, 5), (G, 6));
 #[rustfmt::skip]
-impl_tuple_unproxy!((A, 0), (B, 1), (C, 2), (D, 3), (E, 4), (F, 5), (G, 6), (H, 7));
+impl_tuple_unproxy_proxy!((A, 0), (B, 1), (C, 2), (D, 3), (E, 4), (F, 5), (G, 6), (H, 7));
 #[rustfmt::skip]
-impl_tuple_unproxy!((A, 0), (B, 1), (C, 2), (D, 3), (E, 4), (F, 5), (G, 6), (H, 7), (I, 8));
+impl_tuple_unproxy_proxy!((A, 0), (B, 1), (C, 2), (D, 3), (E, 4), (F, 5), (G, 6), (H, 7), (I, 8));
 #[rustfmt::skip]
-impl_tuple_unproxy!((A, 0), (B, 1), (C, 2), (D, 3), (E, 4), (F, 5), (G, 6), (H, 7), (I, 8), (J, 9));
+impl_tuple_unproxy_proxy!((A, 0), (B, 1), (C, 2), (D, 3), (E, 4), (F, 5), (G, 6), (H, 7), (I, 8), (J, 9));
 #[rustfmt::skip]
-impl_tuple_unproxy!((A, 0), (B, 1), (C, 2), (D, 3), (E, 4), (F, 5), (G, 6), (H, 7), (I, 8), (J, 9), (K, 10));
+impl_tuple_unproxy_proxy!((A, 0), (B, 1), (C, 2), (D, 3), (E, 4), (F, 5), (G, 6), (H, 7), (I, 8), (J, 9), (K, 10));
 #[rustfmt::skip]
-impl_tuple_unproxy!((A, 0), (B, 1), (C, 2), (D, 3), (E, 4), (F, 5), (G, 6), (H, 7), (I, 8), (J, 9), (K, 10), (L, 11));
+impl_tuple_unproxy_proxy!((A, 0), (B, 1), (C, 2), (D, 3), (E, 4), (F, 5), (G, 6), (H, 7), (I, 8), (J, 9), (K, 10), (L, 11));
 #[rustfmt::skip]
-impl_tuple_unproxy!((A, 0), (B, 1), (C, 2), (D, 3), (E, 4), (F, 5), (G, 6), (H, 7), (I, 8), (J, 9), (K, 10), (L, 11), (M, 12));
+impl_tuple_unproxy_proxy!((A, 0), (B, 1), (C, 2), (D, 3), (E, 4), (F, 5), (G, 6), (H, 7), (I, 8), (J, 9), (K, 10), (L, 11), (M, 12));
 #[rustfmt::skip]
-impl_tuple_unproxy!((A, 0), (B, 1), (C, 2), (D, 3), (E, 4), (F, 5), (G, 6), (H, 7), (I, 8), (J, 9), (K, 10), (L, 11), (M, 12), (N, 13));
+impl_tuple_unproxy_proxy!((A, 0), (B, 1), (C, 2), (D, 3), (E, 4), (F, 5), (G, 6), (H, 7), (I, 8), (J, 9), (K, 10), (L, 11), (M, 12), (N, 13));
 #[rustfmt::skip]
-impl_tuple_unproxy!((A, 0), (B, 1), (C, 2), (D, 3), (E, 4), (F, 5), (G, 6), (H, 7), (I, 8), (J, 9), (K, 10), (L, 11), (M, 12), (N, 13), (O, 14));
+impl_tuple_unproxy_proxy!((A, 0), (B, 1), (C, 2), (D, 3), (E, 4), (F, 5), (G, 6), (H, 7), (I, 8), (J, 9), (K, 10), (L, 11), (M, 12), (N, 13), (O, 14));
 #[rustfmt::skip]
-impl_tuple_unproxy!((A, 0), (B, 1), (C, 2), (D, 3), (E, 4), (F, 5), (G, 6), (H, 7), (I, 8), (J, 9), (K, 10), (L, 11), (M, 12), (N, 13), (O, 14), (P, 15));
+impl_tuple_unproxy_proxy!((A, 0), (B, 1), (C, 2), (D, 3), (E, 4), (F, 5), (G, 6), (H, 7), (I, 8), (J, 9), (K, 10), (L, 11), (M, 12), (N, 13), (O, 14), (P, 15));
 #[rustfmt::skip]
-impl_tuple_unproxy!((A, 0), (B, 1), (C, 2), (D, 3), (E, 4), (F, 5), (G, 6), (H, 7), (I, 8), (J, 9), (K, 10), (L, 11), (M, 12), (N, 13), (O, 14), (P, 15), (Q, 16));
+impl_tuple_unproxy_proxy!((A, 0), (B, 1), (C, 2), (D, 3), (E, 4), (F, 5), (G, 6), (H, 7), (I, 8), (J, 9), (K, 10), (L, 11), (M, 12), (N, 13), (O, 14), (P, 15), (Q, 16));
 
 #[cfg(test)]
 mod test {
@@ -420,21 +635,26 @@ mod test {
 
     use super::*;
 
-    #[derive(Reflect, Component)]
+    #[derive(Reflect, Component, PartialEq, Eq, Debug, Clone)]
     struct Test(pub &'static str);
 
-    impl Proxied for Test {
-        type Proxy = TestProxy;
-    }
+    #[derive(Debug, Clone, PartialEq, Eq)]
+    struct ValTestProxy(Test);
 
-    #[derive(Debug, Clone)]
-    struct TestProxy(ReflectReference);
-
-    impl From<TestProxy> for ReflectReference {
-        fn from(value: TestProxy) -> Self {
-            value.0
+    impl From<Test> for ValTestProxy {
+        fn from(value: Test) -> Self {
+            Self(value)
         }
     }
+
+    impl<'a> From<&'a ValTestProxy> for Test {
+        fn from(value: &'a ValTestProxy) -> Self {
+            value.0.clone()
+        }
+    }
+
+    #[derive(Debug, Clone, PartialEq, Eq)]
+    struct TestProxy(ReflectReference);
 
     impl From<ReflectReference> for TestProxy {
         fn from(value: ReflectReference) -> Self {
@@ -448,14 +668,81 @@ mod test {
         }
     }
 
+    macro_rules! assert_proxy_invertible {
+        ($original:expr, $($proxy_ty:tt)*) => {
+            let mut world = World::new();
+            let mut accesses = SmallVec::new();
+            let world = WorldAccessGuard::new(&mut world);
+            let type_registry = TypeRegistry::default();
+            let allocator = ReflectAllocator::default();
+
+            let mut proxy = $($proxy_ty)*::proxy($original);
+            proxy.collect_accesses(&world, &mut accesses).unwrap();
+
+            let unproxied = unsafe {
+                proxy
+                    .unproxy_with_world(&world, &mut accesses, &type_registry, &allocator)
+                    .unwrap()
+            };
+            assert_eq!(
+                unproxied, $original,
+                "Proxy and unproxy does not yield original type, expected {:?}, got {:?}",
+                $original, unproxied
+            );
+
+            let unproxied_without_world = proxy.unproxy().unwrap();
+            assert_eq!(
+                unproxied_without_world, $original,
+                "Proxy and unproxy does not yield original type, expected {:?}, got {:?}",
+                $original, unproxied_without_world
+            );
+        };
+    }
+
     #[test]
-    pub fn test_proxy() {
+    pub fn test_non_reflect_val_proxy() {
+        assert_proxy_invertible!(Test("test"), ValProxy::<Test, ValTestProxy>);
+    }
+
+    #[test]
+    pub fn test_complex_types_proxy_is_inverse_of_unproxy() {
+        assert_proxy_invertible!(Vec::<usize>::default(), Vec::<usize>);
+        assert_proxy_invertible!(Some(Test("test")), Option::<ValProxy::<Test, ValTestProxy>>);
+        assert_proxy_invertible!(None::<Test>, Option::<ValProxy::<Test, ValTestProxy>>);
+        assert_proxy_invertible!(
+            Some(Some(Test("test"))),
+            Option::<Option<ValProxy::<Test, ValTestProxy>>>
+        );
+        assert_proxy_invertible!(
+            vec![Some(Test("test")), None, Some(Test("test"))],
+            Vec::<Option<ValProxy::<Test, ValTestProxy>>>
+        );
+        assert_proxy_invertible!(vec![&1, &2, &3], Vec::<&usize>);
+        assert_proxy_invertible!(vec![&(1, 2)], Vec::<&(usize, usize)>);
+        assert_proxy_invertible!(vec![vec![1, 2], vec![1, 2, 3]], Vec::<Vec<usize>>);
+        assert_proxy_invertible!(
+            vec![vec![(1, 2), (3, 4)], vec![(1, 2), (3, 4)]],
+            Vec::<Vec<(usize, usize)>>
+        );
+        assert_proxy_invertible!(Some(1), Option::<usize>);
+        assert_proxy_invertible!(Some(Some(1)), Option::<Option<usize>>);
+        assert_proxy_invertible!(None::<usize>, Option::<usize>);
+        assert_proxy_invertible!(None::<Option<usize>>, Option::<Option<usize>>);
+        assert_proxy_invertible!(vec![Some(1), None, Some(2)], Vec::<Option<usize>>);
+        assert_proxy_invertible!(
+            vec![Some(vec![1, 2, 3]), None, Some(vec![1, 4])],
+            Vec::<Option<Vec<usize>>>
+        );
+    }
+
+    #[test]
+    pub fn test_val_proxy() {
         let mut allocator = ReflectAllocator::default();
         let alloc_id = allocator.allocate(ReflectAllocation::new(Arc::new(UnsafeCell::new(Test(
             "test",
         )))));
 
-        let mut proxy = Proxy::<Test>(TestProxy(ReflectReference {
+        let mut proxy = ReflectValProxy::<Test, TestProxy>::new(TestProxy(ReflectReference {
             base: ReflectBaseType {
                 type_id: std::any::TypeId::of::<Test>(),
                 base_id: ReflectBase::Owned(alloc_id),
@@ -470,7 +757,7 @@ mod test {
         proxy.collect_accesses(&world, &mut accesses).unwrap();
         let unproxied = unsafe {
             proxy
-                .unproxy(&world, &accesses, &type_registry, &allocator)
+                .unproxy_with_world(&world, &accesses, &type_registry, &allocator)
                 .unwrap()
         };
         assert_eq!(unproxied.0, "test");
@@ -483,7 +770,7 @@ mod test {
             "test",
         )))));
 
-        let mut proxy = RefProxy::<Test>(TestProxy(ReflectReference {
+        let mut proxy = ReflectRefProxy::<Test, TestProxy>::new(TestProxy(ReflectReference {
             base: ReflectBaseType {
                 type_id: std::any::TypeId::of::<Test>(),
                 base_id: ReflectBase::Owned(alloc_id),
@@ -498,7 +785,7 @@ mod test {
         proxy.collect_accesses(&world, &mut accesses).unwrap();
         let unproxied = unsafe {
             proxy
-                .unproxy(&world, &accesses, &type_registry, &allocator)
+                .unproxy_with_world(&world, &accesses, &type_registry, &allocator)
                 .unwrap()
         };
         assert_eq!(unproxied.0, "test");
@@ -511,7 +798,7 @@ mod test {
             "test",
         )))));
 
-        let mut proxy = RefMutProxy::<Test>(TestProxy(ReflectReference {
+        let mut proxy = ReflectRefMutProxy::<Test, TestProxy>::new(TestProxy(ReflectReference {
             base: ReflectBaseType {
                 type_id: std::any::TypeId::of::<Test>(),
                 base_id: ReflectBase::Owned(alloc_id),
@@ -526,7 +813,7 @@ mod test {
         proxy.collect_accesses(&world, &mut accesses).unwrap();
         let unproxied = unsafe {
             proxy
-                .unproxy(&world, &accesses, &type_registry, &allocator)
+                .unproxy_with_world(&world, &accesses, &type_registry, &allocator)
                 .unwrap()
         };
         assert_eq!(unproxied.0, "test");
@@ -539,13 +826,15 @@ mod test {
             "test",
         )))));
 
-        let mut proxy = vec![RefMutProxy::<Test>(TestProxy(ReflectReference {
-            base: ReflectBaseType {
-                type_id: std::any::TypeId::of::<Test>(),
-                base_id: ReflectBase::Owned(alloc_id),
+        let mut proxy = vec![Some(ReflectRefMutProxy::<Test, TestProxy>::new(TestProxy(
+            ReflectReference {
+                base: ReflectBaseType {
+                    type_id: std::any::TypeId::of::<Test>(),
+                    base_id: ReflectBase::Owned(alloc_id),
+                },
+                reflect_path: vec![],
             },
-            reflect_path: vec![],
-        }))];
+        )))];
         let mut world = World::new();
         let mut accesses = SmallVec::new();
         let world = WorldAccessGuard::new(&mut world);
@@ -554,48 +843,10 @@ mod test {
         proxy.collect_accesses(&world, &mut accesses).unwrap();
         let unproxied = unsafe {
             proxy
-                .unproxy(&world, &accesses, &type_registry, &allocator)
+                .unproxy_with_world(&world, &accesses, &type_registry, &allocator)
                 .unwrap()
         };
-        assert_eq!(unproxied[0].0, "test");
-    }
-
-    #[test]
-    pub fn test_vec_usize_ref() {
-        let allocator = ReflectAllocator::default();
-
-        let mut proxy = vec![&1];
-        let mut world = World::new();
-        let mut accesses = SmallVec::new();
-        let world = WorldAccessGuard::new(&mut world);
-        let type_registry = TypeRegistry::default();
-
-        proxy.collect_accesses(&world, &mut accesses).unwrap();
-        let unproxied = unsafe {
-            proxy
-                .unproxy(&world, &accesses, &type_registry, &allocator)
-                .unwrap()
-        };
-        assert_eq!(unproxied[0], &42);
-    }
-
-    #[test]
-    pub fn test_tuple_refs() {
-        let allocator = ReflectAllocator::default();
-
-        let mut proxy = (vec![&1], vec![&2, &4], vec![&3]);
-        let mut world = World::new();
-        let mut accesses = SmallVec::new();
-        let world = WorldAccessGuard::new(&mut world);
-        let type_registry = TypeRegistry::default();
-
-        proxy.collect_accesses(&world, &mut accesses).unwrap();
-        let unproxied = unsafe {
-            proxy
-                .unproxy(&world, &accesses, &type_registry, &allocator)
-                .unwrap()
-        };
-        assert_eq!(unproxied, (vec![&1], vec![&2, &4], vec![&3]));
+        assert_eq!(unproxied[0].as_ref().unwrap().0, "test");
     }
 
     #[test]
@@ -616,8 +867,8 @@ mod test {
 
         // mutable access to the same allocation
         let proxy = vec![
-            RefMutProxy::<Test>(TestProxy(reflect_ref.clone())),
-            RefMutProxy::<Test>(TestProxy(reflect_ref)),
+            ReflectRefMutProxy::<Test, TestProxy>::new(TestProxy(reflect_ref.clone())),
+            ReflectRefMutProxy::<Test, TestProxy>::new(TestProxy(reflect_ref)),
         ];
 
         let mut world = World::new();

@@ -8,6 +8,7 @@ use lockable::LockableHashMap;
 
 use std::{
     any::TypeId,
+    fmt::Debug,
     marker::PhantomData,
     sync::{Arc, Weak},
     time::Duration,
@@ -44,6 +45,15 @@ pub struct ReflectAccessId {
     id: usize,
 }
 
+impl From<ComponentId> for ReflectAccessId {
+    fn from(value: ComponentId) -> Self {
+        Self {
+            kind: ReflectAccessKind::ComponentOrResource,
+            id: value.index(),
+        }
+    }
+}
+
 impl ReflectAccessId {
     pub fn new_component_or_resource_id(id: ComponentId) -> Self {
         Self {
@@ -59,7 +69,7 @@ impl ReflectAccessId {
         }
     }
 }
-/// While [`WorldAccessGuard`] prevents aliasing at runtime and also makes sure world exists as long as the guard itself,
+/// While [`WorldAccessGuard`] prevents aliasing at runtime and also makes sure world exists at least as long as the guard itself,
 /// borrows sadly do not persist the script-host boundary :(. That is to be expected, but instead we can make an abstraction which removes the lifetime parameter, making the outer type 'static,
 /// while making sure the lifetime is still satisfied!
 #[derive(Clone)]
@@ -382,7 +392,7 @@ impl<'w> WorldAccessWrite<'w> {
 
 /// An accessor to a `dyn Reflect` struct, stores a base ID of the type and a reflection path
 /// safe to build but to reflect on the value inside you need to ensure aliasing rules are upheld
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct ReflectReference {
     pub base: ReflectBaseType,
     // TODO: experiment with Fixed capacity vec, boxed array etc, compromise between heap allocation and runtime cost
@@ -611,7 +621,7 @@ impl ReflectReference {
     }
 }
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, PartialEq, Eq)]
 pub struct ReflectBaseType {
     pub type_id: TypeId,
     pub base_id: ReflectBase,
@@ -635,7 +645,7 @@ impl ReflectBaseType {
 }
 
 /// The Id of the kind of reflection base being pointed to
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, PartialEq, Eq)]
 pub enum ReflectBase {
     Component(Entity, ComponentId),
     Resource(ComponentId),
@@ -696,21 +706,12 @@ impl ReflectBase {
 }
 
 /// An element in the reflection path, the base reference included
-#[derive(Clone)]
+#[derive(Clone, PartialEq, Eq, Debug)]
 pub enum ReflectionPathElem {
     /// A standard reflection path, i.e. `.field_name[vec_index]`, pre-parsed since we construct once potentially use many times
     Reflection(ParsedPath),
     /// a deferred reflection
     DeferredReflection(DeferredReflection),
-}
-
-impl std::fmt::Debug for ReflectionPathElem {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        match self {
-            Self::Reflection(arg0) => f.debug_tuple("Reflection").field(arg0).finish(),
-            Self::DeferredReflection(_) => f.write_str("DeferredReflection"),
-        }
-    }
 }
 
 impl<'a> ReflectPath<'a> for &'a ReflectionPathElem {
@@ -745,6 +746,20 @@ pub struct DeferredReflection {
             + Sync,
     >,
 }
+
+impl Debug for DeferredReflection {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.write_str("DeferredReflection")
+    }
+}
+
+impl PartialEq for DeferredReflection {
+    fn eq(&self, other: &Self) -> bool {
+        Arc::ptr_eq(&self.get, &other.get) && Arc::ptr_eq(&self.get_mut, &other.get_mut)
+    }
+}
+
+impl Eq for DeferredReflection {}
 
 #[cfg(test)]
 mod test {
