@@ -5,79 +5,74 @@
 use super::bevy_ecs::*;
 use super::bevy_reflect::*;
 use super::bevy_core::*;
-extern crate self as bevy_script_api;
-use bevy_script_api::{
-    lua::RegisterForeignLuaType, ReflectedValue, common::bevy::GetWorld,
-};
 use bevy_mod_scripting_core::{AddContextInitializer, StoreDocumentation};
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
     remote = "bevy::hierarchy::prelude::Children",
+    bms_core_path = "bevy_mod_scripting_core",
+    bms_lua_path = "crate",
     functions[r#"
 /// Swaps the child at `a_index` with the child at `b_index`.
 
-    #[lua(kind = "MutatingMethod")]
+    #[lua()]
     fn swap(&mut self, a_index: usize, b_index: usize) -> ();
 
 "#,
     r#"
-#[lua(kind="MetaMethod", metamethod="ToString")]
+#[lua(metamethod="ToString")]
 fn index(&self) -> String {
     format!("{:?}", _self)
 }
 "#]
 )]
-pub struct Children();
+pub struct LuaChildren();
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
     remote = "bevy::hierarchy::prelude::Parent",
+    bms_core_path = "bevy_mod_scripting_core",
+    bms_lua_path = "crate",
     functions[r#"
 
-    #[lua(
-        as_trait = "std::cmp::PartialEq",
-        kind = "MetaFunction",
-        composite = "eq",
-        metamethod = "Eq",
-    )]
+    #[lua(as_trait = "std::cmp::PartialEq", composite = "eq")]
     fn eq(&self, #[proxy] other: &components::parent::Parent) -> bool;
 
 "#,
     r#"
 /// Gets the [`Entity`] ID of the parent.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn get(&self) -> bevy::ecs::entity::Entity;
 
 "#,
     r#"
 
-    #[lua(as_trait = "std::cmp::Eq", kind = "Method")]
+    #[lua(as_trait = "std::cmp::Eq")]
     fn assert_receiver_is_total_eq(&self) -> ();
 
 "#,
     r#"
-#[lua(kind="MetaMethod", metamethod="ToString")]
+#[lua(metamethod="ToString")]
 fn index(&self) -> String {
     format!("{:?}", _self)
 }
 "#]
 )]
-pub struct Parent();
+pub struct LuaParent();
 #[derive(Default)]
 pub(crate) struct Globals;
-impl bevy_mod_scripting_lua::tealr::mlu::ExportInstances for Globals {
-    fn add_instances<
-        'lua,
-        T: bevy_mod_scripting_lua::tealr::mlu::InstanceCollector<'lua>,
-    >(self, instances: &mut T) -> bevy_mod_scripting_lua::tealr::mlu::mlua::Result<()> {
+impl crate::tealr::mlu::ExportInstances for Globals {
+    fn add_instances<'lua, T: crate::tealr::mlu::InstanceCollector<'lua>>(
+        self,
+        instances: &mut T,
+    ) -> crate::tealr::mlu::mlua::Result<()> {
         Ok(())
     }
 }
 fn bevy_hierarchy_context_initializer(
     _: &bevy_mod_scripting_core::script::ScriptId,
-    ctx: &mut bevy_mod_scripting_lua::prelude::Lua,
+    ctx: &mut crate::prelude::Lua,
 ) -> Result<(), bevy_mod_scripting_core::error::ScriptError> {
-    bevy_mod_scripting_lua::tealr::mlu::set_global_env(Globals, ctx)?;
+    crate::tealr::mlu::set_global_env(Globals, ctx)?;
     Ok(())
 }
 pub struct BevyHierarchyScriptingPlugin;
@@ -87,7 +82,7 @@ impl bevy::app::Plugin for BevyHierarchyScriptingPlugin {
         app.register_foreign_lua_type::<bevy::hierarchy::prelude::Parent>();
         app.add_context_initializer::<()>(bevy_hierarchy_context_initializer);
         app.add_documentation_fragment(
-            bevy_mod_scripting_lua::docs::LuaDocumentationFragment::new(
+            crate::docs::LuaDocumentationFragment::new(
                 "BevyHierarchyAPI",
                 |tw| {
                     tw.document_global_instance::<Globals>()

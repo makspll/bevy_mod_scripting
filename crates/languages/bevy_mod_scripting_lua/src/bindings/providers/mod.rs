@@ -10,7 +10,6 @@ pub(crate) mod bevy_time;
 pub(crate) mod bevy_hierarchy;
 pub(crate) mod bevy_window;
 pub(crate) mod bevy_reflect;
-extern crate self as bevy_script_api;
 pub struct LuaBevyScriptingPlugin;
 impl bevy::app::Plugin for LuaBevyScriptingPlugin {
     fn build(&self, app: &mut bevy::prelude::App) {

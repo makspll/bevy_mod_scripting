@@ -2,86 +2,51 @@
 #![allow(clippy::all)]
 #![allow(unused, deprecated, dead_code)]
 #![cfg_attr(rustfmt, rustfmt_skip)]
-extern crate self as bevy_script_api;
-use bevy_script_api::{
-    lua::RegisterForeignLuaType, ReflectedValue, common::bevy::GetWorld,
-};
 use bevy_mod_scripting_core::{AddContextInitializer, StoreDocumentation};
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
     remote = "bevy::utils::Duration",
+    bms_core_path = "bevy_mod_scripting_core",
+    bms_lua_path = "crate",
     functions[r#"
 
-    #[lua(
-        as_trait = "std::ops::Add",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "add",
-        metamethod = "Add",
-    )]
+    #[lua(as_trait = "std::ops::Add", composite = "add")]
     fn add(self, #[proxy] rhs: bevy::utils::Duration) -> bevy::utils::Duration;
 
 "#,
     r#"
 
-    #[lua(as_trait = "std::cmp::Eq", kind = "Method")]
+    #[lua(as_trait = "std::cmp::Eq")]
     fn assert_receiver_is_total_eq(&self) -> ();
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "std::ops::Mul",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "mul",
-        metamethod = "Mul",
-    )]
+    #[lua(as_trait = "std::ops::Mul", composite = "mul")]
     fn mul(self, rhs: u32) -> bevy::utils::Duration;
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "std::ops::Div",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "div",
-        metamethod = "Div",
-    )]
+    #[lua(as_trait = "std::ops::Div", composite = "div")]
     fn div(self, rhs: u32) -> bevy::utils::Duration;
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "std::ops::Sub",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "sub",
-        metamethod = "Sub",
-    )]
+    #[lua(as_trait = "std::ops::Sub", composite = "sub")]
     fn sub(self, #[proxy] rhs: bevy::utils::Duration) -> bevy::utils::Duration;
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "std::cmp::PartialEq",
-        kind = "MetaFunction",
-        composite = "eq",
-        metamethod = "Eq",
-    )]
+    #[lua(as_trait = "std::cmp::PartialEq", composite = "eq")]
     fn eq(&self, #[proxy] other: &bevy_utils::Duration) -> bool;
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone",
-        kind = "Method",
-        output(proxy),
-    )]
+    #[lua(as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone")]
     fn clone(&self) -> bevy::utils::Duration;
 
 "#,
@@ -99,7 +64,7 @@ use bevy_mod_scripting_core::{AddContextInitializer, StoreDocumentation};
 /// let five_seconds = Duration::new(5, 0);
 /// ```
 
-    #[lua(kind = "Function", output(proxy))]
+    #[lua()]
     fn new(secs: u64, nanos: u32) -> bevy::utils::Duration;
 
 "#,
@@ -113,7 +78,7 @@ use bevy_mod_scripting_core::{AddContextInitializer, StoreDocumentation};
 /// assert_eq!(0, duration.subsec_nanos());
 /// ```
 
-    #[lua(kind = "Function", output(proxy))]
+    #[lua()]
     fn from_secs(secs: u64) -> bevy::utils::Duration;
 
 "#,
@@ -127,7 +92,7 @@ use bevy_mod_scripting_core::{AddContextInitializer, StoreDocumentation};
 /// assert_eq!(569_000_000, duration.subsec_nanos());
 /// ```
 
-    #[lua(kind = "Function", output(proxy))]
+    #[lua()]
     fn from_millis(millis: u64) -> bevy::utils::Duration;
 
 "#,
@@ -141,7 +106,7 @@ use bevy_mod_scripting_core::{AddContextInitializer, StoreDocumentation};
 /// assert_eq!(2000, duration.subsec_nanos());
 /// ```
 
-    #[lua(kind = "Function", output(proxy))]
+    #[lua()]
     fn from_micros(micros: u64) -> bevy::utils::Duration;
 
 "#,
@@ -155,7 +120,7 @@ use bevy_mod_scripting_core::{AddContextInitializer, StoreDocumentation};
 /// assert_eq!(123, duration.subsec_nanos());
 /// ```
 
-    #[lua(kind = "Function", output(proxy))]
+    #[lua()]
     fn from_nanos(nanos: u64) -> bevy::utils::Duration;
 
 "#,
@@ -173,7 +138,7 @@ use bevy_mod_scripting_core::{AddContextInitializer, StoreDocumentation};
 /// assert!(!Duration::from_secs(1).is_zero());
 /// ```
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn is_zero(&self) -> bool;
 
 "#,
@@ -193,7 +158,7 @@ use bevy_mod_scripting_core::{AddContextInitializer, StoreDocumentation};
 /// [`as_secs_f32`]: Duration::as_secs_f32
 /// [`subsec_nanos`]: Duration::subsec_nanos
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn as_secs(&self) -> u64;
 
 "#,
@@ -210,7 +175,7 @@ use bevy_mod_scripting_core::{AddContextInitializer, StoreDocumentation};
 /// assert_eq!(duration.subsec_millis(), 432);
 /// ```
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn subsec_millis(&self) -> u32;
 
 "#,
@@ -227,7 +192,7 @@ use bevy_mod_scripting_core::{AddContextInitializer, StoreDocumentation};
 /// assert_eq!(duration.subsec_micros(), 234_567);
 /// ```
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn subsec_micros(&self) -> u32;
 
 "#,
@@ -244,7 +209,7 @@ use bevy_mod_scripting_core::{AddContextInitializer, StoreDocumentation};
 /// assert_eq!(duration.subsec_nanos(), 10_000_000);
 /// ```
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn subsec_nanos(&self) -> u32;
 
 "#,
@@ -257,7 +222,7 @@ use bevy_mod_scripting_core::{AddContextInitializer, StoreDocumentation};
 /// assert_eq!(duration.as_millis(), 5730);
 /// ```
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn as_millis(&self) -> u128;
 
 "#,
@@ -270,7 +235,7 @@ use bevy_mod_scripting_core::{AddContextInitializer, StoreDocumentation};
 /// assert_eq!(duration.as_micros(), 5730023);
 /// ```
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn as_micros(&self) -> u128;
 
 "#,
@@ -283,7 +248,7 @@ use bevy_mod_scripting_core::{AddContextInitializer, StoreDocumentation};
 /// assert_eq!(duration.as_nanos(), 5730023852);
 /// ```
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn as_nanos(&self) -> u128;
 
 "#,
@@ -298,7 +263,7 @@ use bevy_mod_scripting_core::{AddContextInitializer, StoreDocumentation};
 /// assert_eq!(Duration::new(1, 0).saturating_add(Duration::new(u64::MAX, 0)), Duration::MAX);
 /// ```
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn saturating_add(
         self,
         #[proxy]
@@ -316,7 +281,7 @@ use bevy_mod_scripting_core::{AddContextInitializer, StoreDocumentation};
 /// assert_eq!(Duration::new(0, 0).saturating_sub(Duration::new(0, 1)), Duration::ZERO);
 /// ```
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn saturating_sub(
         self,
         #[proxy]
@@ -335,7 +300,7 @@ use bevy_mod_scripting_core::{AddContextInitializer, StoreDocumentation};
 /// assert_eq!(Duration::new(u64::MAX - 1, 0).saturating_mul(2), Duration::MAX);
 /// ```
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn saturating_mul(self, rhs: u32) -> bevy::utils::Duration;
 
 "#,
@@ -349,7 +314,7 @@ use bevy_mod_scripting_core::{AddContextInitializer, StoreDocumentation};
 /// assert_eq!(dur.as_secs_f64(), 2.7);
 /// ```
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn as_secs_f64(&self) -> f64;
 
 "#,
@@ -363,7 +328,7 @@ use bevy_mod_scripting_core::{AddContextInitializer, StoreDocumentation};
 /// assert_eq!(dur.as_secs_f32(), 2.7);
 /// ```
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn as_secs_f32(&self) -> f32;
 
 "#,
@@ -393,7 +358,7 @@ use bevy_mod_scripting_core::{AddContextInitializer, StoreDocumentation};
 /// assert_eq!(res, Duration::new(0, 1));
 /// ```
 
-    #[lua(kind = "Function", output(proxy))]
+    #[lua()]
     fn from_secs_f64(secs: f64) -> bevy::utils::Duration;
 
 "#,
@@ -423,7 +388,7 @@ use bevy_mod_scripting_core::{AddContextInitializer, StoreDocumentation};
 /// assert_eq!(res, Duration::new(0, 1));
 /// ```
 
-    #[lua(kind = "Function", output(proxy))]
+    #[lua()]
     fn from_secs_f32(secs: f32) -> bevy::utils::Duration;
 
 "#,
@@ -439,7 +404,7 @@ use bevy_mod_scripting_core::{AddContextInitializer, StoreDocumentation};
 /// assert_eq!(dur.mul_f64(3.14e5), Duration::new(847_800, 0));
 /// ```
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn mul_f64(self, rhs: f64) -> bevy::utils::Duration;
 
 "#,
@@ -455,7 +420,7 @@ use bevy_mod_scripting_core::{AddContextInitializer, StoreDocumentation};
 /// assert_eq!(dur.mul_f32(3.14e5), Duration::new(847800, 0));
 /// ```
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn mul_f32(self, rhs: f32) -> bevy::utils::Duration;
 
 "#,
@@ -471,7 +436,7 @@ use bevy_mod_scripting_core::{AddContextInitializer, StoreDocumentation};
 /// assert_eq!(dur.div_f64(3.14e5), Duration::new(0, 8_599));
 /// ```
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn div_f64(self, rhs: f64) -> bevy::utils::Duration;
 
 "#,
@@ -489,72 +454,53 @@ use bevy_mod_scripting_core::{AddContextInitializer, StoreDocumentation};
 /// assert_eq!(dur.div_f32(3.14e5), Duration::new(0, 8_599));
 /// ```
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn div_f32(self, rhs: f32) -> bevy::utils::Duration;
 
 "#,
     r#"
-#[lua(kind="MetaMethod", metamethod="ToString")]
+#[lua(metamethod="ToString")]
 fn index(&self) -> String {
     format!("{:?}", _self)
 }
 "#]
 )]
-pub struct Duration {}
+pub struct LuaDuration {}
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
     remote = "bevy::utils::Instant",
+    bms_core_path = "bevy_mod_scripting_core",
+    bms_lua_path = "crate",
     functions[r#"
 /// # Panics
 /// This function may panic if the resulting point in time cannot be represented by the
 /// underlying data structure. See [`Instant::checked_add`] for a version without panic.
 
-    #[lua(
-        as_trait = "std::ops::Add",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "add",
-        metamethod = "Add",
-    )]
+    #[lua(as_trait = "std::ops::Add", composite = "add")]
     fn add(self, #[proxy] other: bevy::utils::Duration) -> bevy::utils::Instant;
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "std::cmp::PartialEq",
-        kind = "MetaFunction",
-        composite = "eq",
-        metamethod = "Eq",
-    )]
+    #[lua(as_trait = "std::cmp::PartialEq", composite = "eq")]
     fn eq(&self, #[proxy] other: &bevy_utils::Instant) -> bool;
 
 "#,
     r#"
 
-    #[lua(as_trait = "std::cmp::Eq", kind = "Method")]
+    #[lua(as_trait = "std::cmp::Eq")]
     fn assert_receiver_is_total_eq(&self) -> ();
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "std::ops::Sub",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "sub",
-        metamethod = "Sub",
-    )]
+    #[lua(as_trait = "std::ops::Sub", composite = "sub")]
     fn sub(self, #[proxy] other: bevy::utils::Duration) -> bevy::utils::Instant;
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone",
-        kind = "Method",
-        output(proxy),
-    )]
+    #[lua(as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone")]
     fn clone(&self) -> bevy::utils::Instant;
 
 "#,
@@ -566,7 +512,7 @@ pub struct Duration {}
 /// let now = Instant::now();
 /// ```
 
-    #[lua(kind = "Function", output(proxy))]
+    #[lua()]
     fn now() -> bevy::utils::Instant;
 
 "#,
@@ -589,7 +535,7 @@ pub struct Duration {}
 /// println!("{:?}", now.duration_since(new_now)); // 0ns
 /// ```
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn duration_since(
         &self,
         #[proxy]
@@ -611,7 +557,7 @@ pub struct Duration {}
 /// println!("{:?}", now.saturating_duration_since(new_now)); // 0ns
 /// ```
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn saturating_duration_since(
         &self,
         #[proxy]
@@ -636,7 +582,7 @@ pub struct Duration {}
 /// assert!(instant.elapsed() >= three_secs);
 /// ```
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn elapsed(&self) -> bevy::utils::Duration;
 
 "#,
@@ -649,34 +595,26 @@ pub struct Duration {}
 /// See [Monotonicity].
 /// [Monotonicity]: Instant#monotonicity
 
-    #[lua(
-        as_trait = "std::ops::Sub",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "sub",
-        metamethod = "Sub",
-    )]
+    #[lua(as_trait = "std::ops::Sub", composite = "sub")]
     fn sub(self, #[proxy] other: bevy::utils::Instant) -> bevy::utils::Duration;
 
 "#,
     r#"
-#[lua(kind="MetaMethod", metamethod="ToString")]
+#[lua(metamethod="ToString")]
 fn index(&self) -> String {
     format!("{:?}", _self)
 }
 "#]
 )]
-pub struct Instant();
+pub struct LuaInstant();
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
     remote = "std::num::NonZeroI128",
+    bms_core_path = "bevy_mod_scripting_core",
+    bms_lua_path = "crate",
     functions[r#"
 
-    #[lua(
-        as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone",
-        kind = "Method",
-        output(proxy),
-    )]
+    #[lua(as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone")]
     fn clone(&self) -> std::num::NonZeroI128;
 
 "#,
@@ -686,14 +624,14 @@ pub struct Instant();
 /// # Safety
 /// The value must not be zero.
 
-    #[lua(kind = "Function", output(proxy))]
+    #[lua()]
     unsafe fn new_unchecked(n: i128) -> std::num::NonZeroI128;
 
 "#,
     r#"
 /// Returns the value as a primitive type.
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn get(self) -> i128;
 
 "#,
@@ -707,7 +645,7 @@ pub struct Instant();
 /// assert_eq!(n.leading_zeros(), 0);
 /// ```
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn leading_zeros(self) -> u32;
 
 "#,
@@ -722,7 +660,7 @@ pub struct Instant();
 /// assert_eq!(n.trailing_zeros(), 3);
 /// ```
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn trailing_zeros(self) -> u32;
 
 "#,
@@ -743,7 +681,7 @@ pub struct Instant();
 /// # }
 /// ```
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn abs(self) -> std::num::NonZeroI128;
 
 "#,
@@ -768,7 +706,7 @@ pub struct Instant();
 /// # }
 /// ```
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn saturating_abs(self) -> std::num::NonZeroI128;
 
 "#,
@@ -792,7 +730,7 @@ pub struct Instant();
 /// # }
 /// ```
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn wrapping_abs(self) -> std::num::NonZeroI128;
 
 "#,
@@ -817,7 +755,7 @@ pub struct Instant();
 /// # }
 /// ```
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn unsigned_abs(self) -> std::num::NonZeroU128;
 
 "#,
@@ -837,7 +775,7 @@ pub struct Instant();
 /// # }
 /// ```
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn is_positive(self) -> bool;
 
 "#,
@@ -857,7 +795,7 @@ pub struct Instant();
 /// # }
 /// ```
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn is_negative(self) -> bool;
 
 "#,
@@ -883,7 +821,7 @@ pub struct Instant();
 /// # }
 /// ```
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn saturating_neg(self) -> std::num::NonZeroI128;
 
 "#,
@@ -906,7 +844,7 @@ pub struct Instant();
 /// # }
 /// ```
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn wrapping_neg(self) -> std::num::NonZeroI128;
 
 "#,
@@ -927,7 +865,7 @@ pub struct Instant();
 /// # }
 /// ```
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn saturating_mul(
         self,
         #[proxy]
@@ -952,74 +890,56 @@ pub struct Instant();
 /// # }
 /// ```
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn saturating_pow(self, other: u32) -> std::num::NonZeroI128;
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "std::cmp::PartialEq",
-        kind = "MetaFunction",
-        composite = "eq",
-        metamethod = "Eq",
-    )]
+    #[lua(as_trait = "std::cmp::PartialEq", composite = "eq")]
     fn eq(&self, #[proxy] other: &std::num::NonZeroI128) -> bool;
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "std::ops::Neg",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "neg",
-        metamethod = "Unm",
-    )]
+    #[lua(as_trait = "std::ops::Neg", composite = "neg")]
     fn neg(self) -> std::num::NonZeroI128;
 
 "#,
     r#"
 
-    #[lua(as_trait = "std::cmp::Eq", kind = "Method")]
+    #[lua(as_trait = "std::cmp::Eq")]
     fn assert_receiver_is_total_eq(&self) -> ();
 
 "#,
     r#"
-#[lua(kind="MetaMethod", metamethod="ToString")]
+#[lua(metamethod="ToString")]
 fn index(&self) -> String {
     format!("{}", _self)
 }
 "#]
 )]
-pub struct NonZeroI128();
+pub struct LuaNonZeroI128();
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
     remote = "std::num::NonZeroI16",
+    bms_core_path = "bevy_mod_scripting_core",
+    bms_lua_path = "crate",
     functions[r#"
 
-    #[lua(
-        as_trait = "std::cmp::PartialEq",
-        kind = "MetaFunction",
-        composite = "eq",
-        metamethod = "Eq",
-    )]
+    #[lua(as_trait = "std::cmp::PartialEq", composite = "eq")]
     fn eq(&self, #[proxy] other: &std::num::NonZeroI16) -> bool;
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone",
-        kind = "Method",
-        output(proxy),
-    )]
+    #[lua(as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone")]
     fn clone(&self) -> std::num::NonZeroI16;
 
 "#,
     r#"
 
-    #[lua(as_trait = "std::cmp::Eq", kind = "Method")]
+    #[lua(as_trait = "std::cmp::Eq")]
     fn assert_receiver_is_total_eq(&self) -> ();
 
 "#,
@@ -1029,14 +949,14 @@ pub struct NonZeroI128();
 /// # Safety
 /// The value must not be zero.
 
-    #[lua(kind = "Function", output(proxy))]
+    #[lua()]
     unsafe fn new_unchecked(n: i16) -> std::num::NonZeroI16;
 
 "#,
     r#"
 /// Returns the value as a primitive type.
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn get(self) -> i16;
 
 "#,
@@ -1050,7 +970,7 @@ pub struct NonZeroI128();
 /// assert_eq!(n.leading_zeros(), 0);
 /// ```
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn leading_zeros(self) -> u32;
 
 "#,
@@ -1065,7 +985,7 @@ pub struct NonZeroI128();
 /// assert_eq!(n.trailing_zeros(), 3);
 /// ```
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn trailing_zeros(self) -> u32;
 
 "#,
@@ -1086,7 +1006,7 @@ pub struct NonZeroI128();
 /// # }
 /// ```
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn abs(self) -> std::num::NonZeroI16;
 
 "#,
@@ -1111,7 +1031,7 @@ pub struct NonZeroI128();
 /// # }
 /// ```
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn saturating_abs(self) -> std::num::NonZeroI16;
 
 "#,
@@ -1135,7 +1055,7 @@ pub struct NonZeroI128();
 /// # }
 /// ```
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn wrapping_abs(self) -> std::num::NonZeroI16;
 
 "#,
@@ -1160,7 +1080,7 @@ pub struct NonZeroI128();
 /// # }
 /// ```
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn unsigned_abs(self) -> std::num::NonZeroU16;
 
 "#,
@@ -1180,7 +1100,7 @@ pub struct NonZeroI128();
 /// # }
 /// ```
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn is_positive(self) -> bool;
 
 "#,
@@ -1200,7 +1120,7 @@ pub struct NonZeroI128();
 /// # }
 /// ```
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn is_negative(self) -> bool;
 
 "#,
@@ -1226,7 +1146,7 @@ pub struct NonZeroI128();
 /// # }
 /// ```
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn saturating_neg(self) -> std::num::NonZeroI16;
 
 "#,
@@ -1249,7 +1169,7 @@ pub struct NonZeroI128();
 /// # }
 /// ```
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn wrapping_neg(self) -> std::num::NonZeroI16;
 
 "#,
@@ -1270,7 +1190,7 @@ pub struct NonZeroI128();
 /// # }
 /// ```
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn saturating_mul(
         self,
         #[proxy]
@@ -1295,42 +1215,32 @@ pub struct NonZeroI128();
 /// # }
 /// ```
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn saturating_pow(self, other: u32) -> std::num::NonZeroI16;
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "std::ops::Neg",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "neg",
-        metamethod = "Unm",
-    )]
+    #[lua(as_trait = "std::ops::Neg", composite = "neg")]
     fn neg(self) -> std::num::NonZeroI16;
 
 "#,
     r#"
-#[lua(kind="MetaMethod", metamethod="ToString")]
+#[lua(metamethod="ToString")]
 fn index(&self) -> String {
     format!("{}", _self)
 }
 "#]
 )]
-pub struct NonZeroI16();
+pub struct LuaNonZeroI16();
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
     remote = "std::num::NonZeroI32",
+    bms_core_path = "bevy_mod_scripting_core",
+    bms_lua_path = "crate",
     functions[r#"
 
-    #[lua(
-        as_trait = "std::ops::Neg",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "neg",
-        metamethod = "Unm",
-    )]
+    #[lua(as_trait = "std::ops::Neg", composite = "neg")]
     fn neg(self) -> std::num::NonZeroI32;
 
 "#,
@@ -1340,14 +1250,14 @@ pub struct NonZeroI16();
 /// # Safety
 /// The value must not be zero.
 
-    #[lua(kind = "Function", output(proxy))]
+    #[lua()]
     unsafe fn new_unchecked(n: i32) -> std::num::NonZeroI32;
 
 "#,
     r#"
 /// Returns the value as a primitive type.
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn get(self) -> i32;
 
 "#,
@@ -1361,7 +1271,7 @@ pub struct NonZeroI16();
 /// assert_eq!(n.leading_zeros(), 0);
 /// ```
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn leading_zeros(self) -> u32;
 
 "#,
@@ -1376,7 +1286,7 @@ pub struct NonZeroI16();
 /// assert_eq!(n.trailing_zeros(), 3);
 /// ```
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn trailing_zeros(self) -> u32;
 
 "#,
@@ -1397,7 +1307,7 @@ pub struct NonZeroI16();
 /// # }
 /// ```
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn abs(self) -> std::num::NonZeroI32;
 
 "#,
@@ -1422,7 +1332,7 @@ pub struct NonZeroI16();
 /// # }
 /// ```
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn saturating_abs(self) -> std::num::NonZeroI32;
 
 "#,
@@ -1446,7 +1356,7 @@ pub struct NonZeroI16();
 /// # }
 /// ```
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn wrapping_abs(self) -> std::num::NonZeroI32;
 
 "#,
@@ -1471,7 +1381,7 @@ pub struct NonZeroI16();
 /// # }
 /// ```
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn unsigned_abs(self) -> std::num::NonZeroU32;
 
 "#,
@@ -1491,7 +1401,7 @@ pub struct NonZeroI16();
 /// # }
 /// ```
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn is_positive(self) -> bool;
 
 "#,
@@ -1511,7 +1421,7 @@ pub struct NonZeroI16();
 /// # }
 /// ```
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn is_negative(self) -> bool;
 
 "#,
@@ -1537,7 +1447,7 @@ pub struct NonZeroI16();
 /// # }
 /// ```
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn saturating_neg(self) -> std::num::NonZeroI32;
 
 "#,
@@ -1560,7 +1470,7 @@ pub struct NonZeroI16();
 /// # }
 /// ```
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn wrapping_neg(self) -> std::num::NonZeroI32;
 
 "#,
@@ -1581,7 +1491,7 @@ pub struct NonZeroI16();
 /// # }
 /// ```
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn saturating_mul(
         self,
         #[proxy]
@@ -1606,62 +1516,55 @@ pub struct NonZeroI16();
 /// # }
 /// ```
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn saturating_pow(self, other: u32) -> std::num::NonZeroI32;
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone",
-        kind = "Method",
-        output(proxy),
-    )]
+    #[lua(as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone")]
     fn clone(&self) -> std::num::NonZeroI32;
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "std::cmp::PartialEq",
-        kind = "MetaFunction",
-        composite = "eq",
-        metamethod = "Eq",
-    )]
+    #[lua(as_trait = "std::cmp::PartialEq", composite = "eq")]
     fn eq(&self, #[proxy] other: &std::num::NonZeroI32) -> bool;
 
 "#,
     r#"
 
-    #[lua(as_trait = "std::cmp::Eq", kind = "Method")]
+    #[lua(as_trait = "std::cmp::Eq")]
     fn assert_receiver_is_total_eq(&self) -> ();
 
 "#,
     r#"
-#[lua(kind="MetaMethod", metamethod="ToString")]
+#[lua(metamethod="ToString")]
 fn index(&self) -> String {
     format!("{}", _self)
 }
 "#]
 )]
-pub struct NonZeroI32();
+pub struct LuaNonZeroI32();
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
     remote = "std::num::NonZeroI64",
+    bms_core_path = "bevy_mod_scripting_core",
+    bms_lua_path = "crate",
     functions[r#"
 /// Creates a non-zero without checking whether the value is non-zero.
 /// This results in undefined behaviour if the value is zero.
 /// # Safety
 /// The value must not be zero.
 
-    #[lua(kind = "Function", output(proxy))]
+    #[lua()]
     unsafe fn new_unchecked(n: i64) -> std::num::NonZeroI64;
 
 "#,
     r#"
 /// Returns the value as a primitive type.
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn get(self) -> i64;
 
 "#,
@@ -1675,7 +1578,7 @@ pub struct NonZeroI32();
 /// assert_eq!(n.leading_zeros(), 0);
 /// ```
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn leading_zeros(self) -> u32;
 
 "#,
@@ -1690,7 +1593,7 @@ pub struct NonZeroI32();
 /// assert_eq!(n.trailing_zeros(), 3);
 /// ```
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn trailing_zeros(self) -> u32;
 
 "#,
@@ -1711,7 +1614,7 @@ pub struct NonZeroI32();
 /// # }
 /// ```
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn abs(self) -> std::num::NonZeroI64;
 
 "#,
@@ -1736,7 +1639,7 @@ pub struct NonZeroI32();
 /// # }
 /// ```
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn saturating_abs(self) -> std::num::NonZeroI64;
 
 "#,
@@ -1760,7 +1663,7 @@ pub struct NonZeroI32();
 /// # }
 /// ```
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn wrapping_abs(self) -> std::num::NonZeroI64;
 
 "#,
@@ -1785,7 +1688,7 @@ pub struct NonZeroI32();
 /// # }
 /// ```
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn unsigned_abs(self) -> std::num::NonZeroU64;
 
 "#,
@@ -1805,7 +1708,7 @@ pub struct NonZeroI32();
 /// # }
 /// ```
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn is_positive(self) -> bool;
 
 "#,
@@ -1825,7 +1728,7 @@ pub struct NonZeroI32();
 /// # }
 /// ```
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn is_negative(self) -> bool;
 
 "#,
@@ -1851,7 +1754,7 @@ pub struct NonZeroI32();
 /// # }
 /// ```
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn saturating_neg(self) -> std::num::NonZeroI64;
 
 "#,
@@ -1874,7 +1777,7 @@ pub struct NonZeroI32();
 /// # }
 /// ```
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn wrapping_neg(self) -> std::num::NonZeroI64;
 
 "#,
@@ -1895,7 +1798,7 @@ pub struct NonZeroI32();
 /// # }
 /// ```
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn saturating_mul(
         self,
         #[proxy]
@@ -1920,96 +1823,68 @@ pub struct NonZeroI32();
 /// # }
 /// ```
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn saturating_pow(self, other: u32) -> std::num::NonZeroI64;
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "std::ops::Neg",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "neg",
-        metamethod = "Unm",
-    )]
+    #[lua(as_trait = "std::ops::Neg", composite = "neg")]
     fn neg(self) -> std::num::NonZeroI64;
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "std::cmp::PartialEq",
-        kind = "MetaFunction",
-        composite = "eq",
-        metamethod = "Eq",
-    )]
+    #[lua(as_trait = "std::cmp::PartialEq", composite = "eq")]
     fn eq(&self, #[proxy] other: &std::num::NonZeroI64) -> bool;
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone",
-        kind = "Method",
-        output(proxy),
-    )]
+    #[lua(as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone")]
     fn clone(&self) -> std::num::NonZeroI64;
 
 "#,
     r#"
 
-    #[lua(as_trait = "std::cmp::Eq", kind = "Method")]
+    #[lua(as_trait = "std::cmp::Eq")]
     fn assert_receiver_is_total_eq(&self) -> ();
 
 "#,
     r#"
-#[lua(kind="MetaMethod", metamethod="ToString")]
+#[lua(metamethod="ToString")]
 fn index(&self) -> String {
     format!("{}", _self)
 }
 "#]
 )]
-pub struct NonZeroI64();
+pub struct LuaNonZeroI64();
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
     remote = "std::num::NonZeroI8",
+    bms_core_path = "bevy_mod_scripting_core",
+    bms_lua_path = "crate",
     functions[r#"
 
-    #[lua(as_trait = "std::cmp::Eq", kind = "Method")]
+    #[lua(as_trait = "std::cmp::Eq")]
     fn assert_receiver_is_total_eq(&self) -> ();
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "std::ops::Neg",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "neg",
-        metamethod = "Unm",
-    )]
+    #[lua(as_trait = "std::ops::Neg", composite = "neg")]
     fn neg(self) -> std::num::NonZeroI8;
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "std::cmp::PartialEq",
-        kind = "MetaFunction",
-        composite = "eq",
-        metamethod = "Eq",
-    )]
+    #[lua(as_trait = "std::cmp::PartialEq", composite = "eq")]
     fn eq(&self, #[proxy] other: &std::num::NonZeroI8) -> bool;
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone",
-        kind = "Method",
-        output(proxy),
-    )]
+    #[lua(as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone")]
     fn clone(&self) -> std::num::NonZeroI8;
 
 "#,
@@ -2019,14 +1894,14 @@ pub struct NonZeroI64();
 /// # Safety
 /// The value must not be zero.
 
-    #[lua(kind = "Function", output(proxy))]
+    #[lua()]
     unsafe fn new_unchecked(n: i8) -> std::num::NonZeroI8;
 
 "#,
     r#"
 /// Returns the value as a primitive type.
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn get(self) -> i8;
 
 "#,
@@ -2040,7 +1915,7 @@ pub struct NonZeroI64();
 /// assert_eq!(n.leading_zeros(), 0);
 /// ```
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn leading_zeros(self) -> u32;
 
 "#,
@@ -2055,7 +1930,7 @@ pub struct NonZeroI64();
 /// assert_eq!(n.trailing_zeros(), 3);
 /// ```
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn trailing_zeros(self) -> u32;
 
 "#,
@@ -2076,7 +1951,7 @@ pub struct NonZeroI64();
 /// # }
 /// ```
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn abs(self) -> std::num::NonZeroI8;
 
 "#,
@@ -2101,7 +1976,7 @@ pub struct NonZeroI64();
 /// # }
 /// ```
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn saturating_abs(self) -> std::num::NonZeroI8;
 
 "#,
@@ -2125,7 +2000,7 @@ pub struct NonZeroI64();
 /// # }
 /// ```
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn wrapping_abs(self) -> std::num::NonZeroI8;
 
 "#,
@@ -2150,7 +2025,7 @@ pub struct NonZeroI64();
 /// # }
 /// ```
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn unsigned_abs(self) -> std::num::NonZeroU8;
 
 "#,
@@ -2170,7 +2045,7 @@ pub struct NonZeroI64();
 /// # }
 /// ```
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn is_positive(self) -> bool;
 
 "#,
@@ -2190,7 +2065,7 @@ pub struct NonZeroI64();
 /// # }
 /// ```
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn is_negative(self) -> bool;
 
 "#,
@@ -2216,7 +2091,7 @@ pub struct NonZeroI64();
 /// # }
 /// ```
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn saturating_neg(self) -> std::num::NonZeroI8;
 
 "#,
@@ -2239,7 +2114,7 @@ pub struct NonZeroI64();
 /// # }
 /// ```
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn wrapping_neg(self) -> std::num::NonZeroI8;
 
 "#,
@@ -2260,7 +2135,7 @@ pub struct NonZeroI64();
 /// # }
 /// ```
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn saturating_mul(self, #[proxy] other: std::num::NonZeroI8) -> std::num::NonZeroI8;
 
 "#,
@@ -2281,45 +2156,38 @@ pub struct NonZeroI64();
 /// # }
 /// ```
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn saturating_pow(self, other: u32) -> std::num::NonZeroI8;
 
 "#,
     r#"
-#[lua(kind="MetaMethod", metamethod="ToString")]
+#[lua(metamethod="ToString")]
 fn index(&self) -> String {
     format!("{}", _self)
 }
 "#]
 )]
-pub struct NonZeroI8();
+pub struct LuaNonZeroI8();
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
     remote = "std::num::NonZeroU128",
+    bms_core_path = "bevy_mod_scripting_core",
+    bms_lua_path = "crate",
     functions[r#"
 
-    #[lua(
-        as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone",
-        kind = "Method",
-        output(proxy),
-    )]
+    #[lua(as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone")]
     fn clone(&self) -> std::num::NonZeroU128;
 
 "#,
     r#"
 
-    #[lua(as_trait = "std::cmp::Eq", kind = "Method")]
+    #[lua(as_trait = "std::cmp::Eq")]
     fn assert_receiver_is_total_eq(&self) -> ();
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "std::cmp::PartialEq",
-        kind = "MetaFunction",
-        composite = "eq",
-        metamethod = "Eq",
-    )]
+    #[lua(as_trait = "std::cmp::PartialEq", composite = "eq")]
     fn eq(&self, #[proxy] other: &std::num::NonZeroU128) -> bool;
 
 "#,
@@ -2329,14 +2197,14 @@ pub struct NonZeroI8();
 /// # Safety
 /// The value must not be zero.
 
-    #[lua(kind = "Function", output(proxy))]
+    #[lua()]
     unsafe fn new_unchecked(n: u128) -> std::num::NonZeroU128;
 
 "#,
     r#"
 /// Returns the value as a primitive type.
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn get(self) -> u128;
 
 "#,
@@ -2350,7 +2218,7 @@ pub struct NonZeroI8();
 /// assert_eq!(n.leading_zeros(), 0);
 /// ```
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn leading_zeros(self) -> u32;
 
 "#,
@@ -2365,7 +2233,7 @@ pub struct NonZeroI8();
 /// assert_eq!(n.trailing_zeros(), 3);
 /// ```
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn trailing_zeros(self) -> u32;
 
 "#,
@@ -2386,7 +2254,7 @@ pub struct NonZeroI8();
 /// # }
 /// ```
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn saturating_add(self, other: u128) -> std::num::NonZeroU128;
 
 "#,
@@ -2404,7 +2272,7 @@ pub struct NonZeroI8();
 ///assert_eq!(NonZeroU128::new(9).unwrap().ilog2(), 3);
 /// ```
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn ilog2(self) -> u32;
 
 "#,
@@ -2422,7 +2290,7 @@ pub struct NonZeroI8();
 ///assert_eq!(NonZeroU128::new(101).unwrap().ilog10(), 2);
 /// ```
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn ilog10(self) -> u32;
 
 "#,
@@ -2439,7 +2307,7 @@ pub struct NonZeroI8();
 /// assert!(!ten.is_power_of_two());
 /// ```
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn is_power_of_two(self) -> bool;
 
 "#,
@@ -2460,7 +2328,7 @@ pub struct NonZeroI8();
 /// # }
 /// ```
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn saturating_mul(
         self,
         #[proxy]
@@ -2485,35 +2353,37 @@ pub struct NonZeroI8();
 /// # }
 /// ```
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn saturating_pow(self, other: u32) -> std::num::NonZeroU128;
 
 "#,
     r#"
-#[lua(kind="MetaMethod", metamethod="ToString")]
+#[lua(metamethod="ToString")]
 fn index(&self) -> String {
     format!("{}", _self)
 }
 "#]
 )]
-pub struct NonZeroU128();
+pub struct LuaNonZeroU128();
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
     remote = "std::num::NonZeroU16",
+    bms_core_path = "bevy_mod_scripting_core",
+    bms_lua_path = "crate",
     functions[r#"
 /// Creates a non-zero without checking whether the value is non-zero.
 /// This results in undefined behaviour if the value is zero.
 /// # Safety
 /// The value must not be zero.
 
-    #[lua(kind = "Function", output(proxy))]
+    #[lua()]
     unsafe fn new_unchecked(n: u16) -> std::num::NonZeroU16;
 
 "#,
     r#"
 /// Returns the value as a primitive type.
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn get(self) -> u16;
 
 "#,
@@ -2527,7 +2397,7 @@ pub struct NonZeroU128();
 /// assert_eq!(n.leading_zeros(), 0);
 /// ```
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn leading_zeros(self) -> u32;
 
 "#,
@@ -2542,7 +2412,7 @@ pub struct NonZeroU128();
 /// assert_eq!(n.trailing_zeros(), 3);
 /// ```
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn trailing_zeros(self) -> u32;
 
 "#,
@@ -2563,7 +2433,7 @@ pub struct NonZeroU128();
 /// # }
 /// ```
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn saturating_add(self, other: u16) -> std::num::NonZeroU16;
 
 "#,
@@ -2581,7 +2451,7 @@ pub struct NonZeroU128();
 ///assert_eq!(NonZeroU16::new(9).unwrap().ilog2(), 3);
 /// ```
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn ilog2(self) -> u32;
 
 "#,
@@ -2599,7 +2469,7 @@ pub struct NonZeroU128();
 ///assert_eq!(NonZeroU16::new(101).unwrap().ilog10(), 2);
 /// ```
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn ilog10(self) -> u32;
 
 "#,
@@ -2616,7 +2486,7 @@ pub struct NonZeroU128();
 /// assert!(!ten.is_power_of_two());
 /// ```
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn is_power_of_two(self) -> bool;
 
 "#,
@@ -2637,7 +2507,7 @@ pub struct NonZeroU128();
 /// # }
 /// ```
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn saturating_mul(
         self,
         #[proxy]
@@ -2662,62 +2532,50 @@ pub struct NonZeroU128();
 /// # }
 /// ```
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn saturating_pow(self, other: u32) -> std::num::NonZeroU16;
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "std::cmp::PartialEq",
-        kind = "MetaFunction",
-        composite = "eq",
-        metamethod = "Eq",
-    )]
+    #[lua(as_trait = "std::cmp::PartialEq", composite = "eq")]
     fn eq(&self, #[proxy] other: &std::num::NonZeroU16) -> bool;
 
 "#,
     r#"
 
-    #[lua(as_trait = "std::cmp::Eq", kind = "Method")]
+    #[lua(as_trait = "std::cmp::Eq")]
     fn assert_receiver_is_total_eq(&self) -> ();
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone",
-        kind = "Method",
-        output(proxy),
-    )]
+    #[lua(as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone")]
     fn clone(&self) -> std::num::NonZeroU16;
 
 "#,
     r#"
-#[lua(kind="MetaMethod", metamethod="ToString")]
+#[lua(metamethod="ToString")]
 fn index(&self) -> String {
     format!("{}", _self)
 }
 "#]
 )]
-pub struct NonZeroU16();
+pub struct LuaNonZeroU16();
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
     remote = "std::num::NonZeroU32",
+    bms_core_path = "bevy_mod_scripting_core",
+    bms_lua_path = "crate",
     functions[r#"
 
-    #[lua(
-        as_trait = "std::cmp::PartialEq",
-        kind = "MetaFunction",
-        composite = "eq",
-        metamethod = "Eq",
-    )]
+    #[lua(as_trait = "std::cmp::PartialEq", composite = "eq")]
     fn eq(&self, #[proxy] other: &std::num::NonZeroU32) -> bool;
 
 "#,
     r#"
 
-    #[lua(as_trait = "std::cmp::Eq", kind = "Method")]
+    #[lua(as_trait = "std::cmp::Eq")]
     fn assert_receiver_is_total_eq(&self) -> ();
 
 "#,
@@ -2727,14 +2585,14 @@ pub struct NonZeroU16();
 /// # Safety
 /// The value must not be zero.
 
-    #[lua(kind = "Function", output(proxy))]
+    #[lua()]
     unsafe fn new_unchecked(n: u32) -> std::num::NonZeroU32;
 
 "#,
     r#"
 /// Returns the value as a primitive type.
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn get(self) -> u32;
 
 "#,
@@ -2748,7 +2606,7 @@ pub struct NonZeroU16();
 /// assert_eq!(n.leading_zeros(), 0);
 /// ```
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn leading_zeros(self) -> u32;
 
 "#,
@@ -2763,7 +2621,7 @@ pub struct NonZeroU16();
 /// assert_eq!(n.trailing_zeros(), 3);
 /// ```
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn trailing_zeros(self) -> u32;
 
 "#,
@@ -2784,7 +2642,7 @@ pub struct NonZeroU16();
 /// # }
 /// ```
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn saturating_add(self, other: u32) -> std::num::NonZeroU32;
 
 "#,
@@ -2802,7 +2660,7 @@ pub struct NonZeroU16();
 ///assert_eq!(NonZeroU32::new(9).unwrap().ilog2(), 3);
 /// ```
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn ilog2(self) -> u32;
 
 "#,
@@ -2820,7 +2678,7 @@ pub struct NonZeroU16();
 ///assert_eq!(NonZeroU32::new(101).unwrap().ilog10(), 2);
 /// ```
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn ilog10(self) -> u32;
 
 "#,
@@ -2837,7 +2695,7 @@ pub struct NonZeroU16();
 /// assert!(!ten.is_power_of_two());
 /// ```
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn is_power_of_two(self) -> bool;
 
 "#,
@@ -2858,7 +2716,7 @@ pub struct NonZeroU16();
 /// # }
 /// ```
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn saturating_mul(
         self,
         #[proxy]
@@ -2883,39 +2741,32 @@ pub struct NonZeroU16();
 /// # }
 /// ```
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn saturating_pow(self, other: u32) -> std::num::NonZeroU32;
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone",
-        kind = "Method",
-        output(proxy),
-    )]
+    #[lua(as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone")]
     fn clone(&self) -> std::num::NonZeroU32;
 
 "#,
     r#"
-#[lua(kind="MetaMethod", metamethod="ToString")]
+#[lua(metamethod="ToString")]
 fn index(&self) -> String {
     format!("{}", _self)
 }
 "#]
 )]
-pub struct NonZeroU32();
+pub struct LuaNonZeroU32();
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
     remote = "std::num::NonZeroU64",
+    bms_core_path = "bevy_mod_scripting_core",
+    bms_lua_path = "crate",
     functions[r#"
 
-    #[lua(
-        as_trait = "std::cmp::PartialEq",
-        kind = "MetaFunction",
-        composite = "eq",
-        metamethod = "Eq",
-    )]
+    #[lua(as_trait = "std::cmp::PartialEq", composite = "eq")]
     fn eq(&self, #[proxy] other: &std::num::NonZeroU64) -> bool;
 
 "#,
@@ -2925,14 +2776,14 @@ pub struct NonZeroU32();
 /// # Safety
 /// The value must not be zero.
 
-    #[lua(kind = "Function", output(proxy))]
+    #[lua()]
     unsafe fn new_unchecked(n: u64) -> std::num::NonZeroU64;
 
 "#,
     r#"
 /// Returns the value as a primitive type.
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn get(self) -> u64;
 
 "#,
@@ -2946,7 +2797,7 @@ pub struct NonZeroU32();
 /// assert_eq!(n.leading_zeros(), 0);
 /// ```
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn leading_zeros(self) -> u32;
 
 "#,
@@ -2961,7 +2812,7 @@ pub struct NonZeroU32();
 /// assert_eq!(n.trailing_zeros(), 3);
 /// ```
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn trailing_zeros(self) -> u32;
 
 "#,
@@ -2982,7 +2833,7 @@ pub struct NonZeroU32();
 /// # }
 /// ```
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn saturating_add(self, other: u64) -> std::num::NonZeroU64;
 
 "#,
@@ -3000,7 +2851,7 @@ pub struct NonZeroU32();
 ///assert_eq!(NonZeroU64::new(9).unwrap().ilog2(), 3);
 /// ```
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn ilog2(self) -> u32;
 
 "#,
@@ -3018,7 +2869,7 @@ pub struct NonZeroU32();
 ///assert_eq!(NonZeroU64::new(101).unwrap().ilog10(), 2);
 /// ```
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn ilog10(self) -> u32;
 
 "#,
@@ -3035,7 +2886,7 @@ pub struct NonZeroU32();
 /// assert!(!ten.is_power_of_two());
 /// ```
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn is_power_of_two(self) -> bool;
 
 "#,
@@ -3056,7 +2907,7 @@ pub struct NonZeroU32();
 /// # }
 /// ```
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn saturating_mul(
         self,
         #[proxy]
@@ -3081,50 +2932,44 @@ pub struct NonZeroU32();
 /// # }
 /// ```
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn saturating_pow(self, other: u32) -> std::num::NonZeroU64;
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone",
-        kind = "Method",
-        output(proxy),
-    )]
+    #[lua(as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone")]
     fn clone(&self) -> std::num::NonZeroU64;
 
 "#,
     r#"
 
-    #[lua(as_trait = "std::cmp::Eq", kind = "Method")]
+    #[lua(as_trait = "std::cmp::Eq")]
     fn assert_receiver_is_total_eq(&self) -> ();
 
 "#,
     r#"
-#[lua(kind="MetaMethod", metamethod="ToString")]
+#[lua(metamethod="ToString")]
 fn index(&self) -> String {
     format!("{}", _self)
 }
 "#]
 )]
-pub struct NonZeroU64();
+pub struct LuaNonZeroU64();
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
     remote = "std::num::NonZeroU8",
+    bms_core_path = "bevy_mod_scripting_core",
+    bms_lua_path = "crate",
     functions[r#"
 
-    #[lua(as_trait = "std::cmp::Eq", kind = "Method")]
+    #[lua(as_trait = "std::cmp::Eq")]
     fn assert_receiver_is_total_eq(&self) -> ();
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone",
-        kind = "Method",
-        output(proxy),
-    )]
+    #[lua(as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone")]
     fn clone(&self) -> std::num::NonZeroU8;
 
 "#,
@@ -3134,14 +2979,14 @@ pub struct NonZeroU64();
 /// # Safety
 /// The value must not be zero.
 
-    #[lua(kind = "Function", output(proxy))]
+    #[lua()]
     unsafe fn new_unchecked(n: u8) -> std::num::NonZeroU8;
 
 "#,
     r#"
 /// Returns the value as a primitive type.
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn get(self) -> u8;
 
 "#,
@@ -3155,7 +3000,7 @@ pub struct NonZeroU64();
 /// assert_eq!(n.leading_zeros(), 0);
 /// ```
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn leading_zeros(self) -> u32;
 
 "#,
@@ -3170,7 +3015,7 @@ pub struct NonZeroU64();
 /// assert_eq!(n.trailing_zeros(), 3);
 /// ```
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn trailing_zeros(self) -> u32;
 
 "#,
@@ -3191,7 +3036,7 @@ pub struct NonZeroU64();
 /// # }
 /// ```
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn saturating_add(self, other: u8) -> std::num::NonZeroU8;
 
 "#,
@@ -3209,7 +3054,7 @@ pub struct NonZeroU64();
 ///assert_eq!(NonZeroU8::new(9).unwrap().ilog2(), 3);
 /// ```
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn ilog2(self) -> u32;
 
 "#,
@@ -3227,7 +3072,7 @@ pub struct NonZeroU64();
 ///assert_eq!(NonZeroU8::new(101).unwrap().ilog10(), 2);
 /// ```
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn ilog10(self) -> u32;
 
 "#,
@@ -3244,7 +3089,7 @@ pub struct NonZeroU64();
 /// assert!(!ten.is_power_of_two());
 /// ```
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn is_power_of_two(self) -> bool;
 
 "#,
@@ -3265,7 +3110,7 @@ pub struct NonZeroU64();
 /// # }
 /// ```
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn saturating_mul(self, #[proxy] other: std::num::NonZeroU8) -> std::num::NonZeroU8;
 
 "#,
@@ -3286,35 +3131,32 @@ pub struct NonZeroU64();
 /// # }
 /// ```
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn saturating_pow(self, other: u32) -> std::num::NonZeroU8;
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "std::cmp::PartialEq",
-        kind = "MetaFunction",
-        composite = "eq",
-        metamethod = "Eq",
-    )]
+    #[lua(as_trait = "std::cmp::PartialEq", composite = "eq")]
     fn eq(&self, #[proxy] other: &std::num::NonZeroU8) -> bool;
 
 "#,
     r#"
-#[lua(kind="MetaMethod", metamethod="ToString")]
+#[lua(metamethod="ToString")]
 fn index(&self) -> String {
     format!("{}", _self)
 }
 "#]
 )]
-pub struct NonZeroU8();
+pub struct LuaNonZeroU8();
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
     remote = "std::num::NonZeroUsize",
+    bms_core_path = "bevy_mod_scripting_core",
+    bms_lua_path = "crate",
     functions[r#"
 
-    #[lua(as_trait = "std::cmp::Eq", kind = "Method")]
+    #[lua(as_trait = "std::cmp::Eq")]
     fn assert_receiver_is_total_eq(&self) -> ();
 
 "#,
@@ -3324,14 +3166,14 @@ pub struct NonZeroU8();
 /// # Safety
 /// The value must not be zero.
 
-    #[lua(kind = "Function", output(proxy))]
+    #[lua()]
     unsafe fn new_unchecked(n: usize) -> std::num::NonZeroUsize;
 
 "#,
     r#"
 /// Returns the value as a primitive type.
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn get(self) -> usize;
 
 "#,
@@ -3345,7 +3187,7 @@ pub struct NonZeroU8();
 /// assert_eq!(n.leading_zeros(), 0);
 /// ```
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn leading_zeros(self) -> u32;
 
 "#,
@@ -3360,7 +3202,7 @@ pub struct NonZeroU8();
 /// assert_eq!(n.trailing_zeros(), 3);
 /// ```
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn trailing_zeros(self) -> u32;
 
 "#,
@@ -3381,7 +3223,7 @@ pub struct NonZeroU8();
 /// # }
 /// ```
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn saturating_add(self, other: usize) -> std::num::NonZeroUsize;
 
 "#,
@@ -3399,7 +3241,7 @@ pub struct NonZeroU8();
 ///assert_eq!(NonZeroUsize::new(9).unwrap().ilog2(), 3);
 /// ```
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn ilog2(self) -> u32;
 
 "#,
@@ -3417,7 +3259,7 @@ pub struct NonZeroU8();
 ///assert_eq!(NonZeroUsize::new(101).unwrap().ilog10(), 2);
 /// ```
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn ilog10(self) -> u32;
 
 "#,
@@ -3434,7 +3276,7 @@ pub struct NonZeroU8();
 /// assert!(!ten.is_power_of_two());
 /// ```
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn is_power_of_two(self) -> bool;
 
 "#,
@@ -3455,7 +3297,7 @@ pub struct NonZeroU8();
 /// # }
 /// ```
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn saturating_mul(
         self,
         #[proxy]
@@ -3480,69 +3322,50 @@ pub struct NonZeroU8();
 /// # }
 /// ```
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn saturating_pow(self, other: u32) -> std::num::NonZeroUsize;
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "std::cmp::PartialEq",
-        kind = "MetaFunction",
-        composite = "eq",
-        metamethod = "Eq",
-    )]
+    #[lua(as_trait = "std::cmp::PartialEq", composite = "eq")]
     fn eq(&self, #[proxy] other: &std::num::NonZeroUsize) -> bool;
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone",
-        kind = "Method",
-        output(proxy),
-    )]
+    #[lua(as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone")]
     fn clone(&self) -> std::num::NonZeroUsize;
 
 "#,
     r#"
-#[lua(kind="MetaMethod", metamethod="ToString")]
+#[lua(metamethod="ToString")]
 fn index(&self) -> String {
     format!("{}", _self)
 }
 "#]
 )]
-pub struct NonZeroUsize();
+pub struct LuaNonZeroUsize();
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
     remote = "std::path::PathBuf",
+    bms_core_path = "bevy_mod_scripting_core",
+    bms_lua_path = "crate",
     functions[r#"
 
-    #[lua(
-        as_trait = "std::cmp::PartialEq",
-        kind = "MetaFunction",
-        composite = "eq",
-        metamethod = "Eq",
-    )]
+    #[lua(as_trait = "std::cmp::PartialEq", composite = "eq")]
     fn eq(&self, #[proxy] other: &std::path::PathBuf) -> bool;
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone",
-        kind = "Method",
-        output(proxy),
-    )]
+    #[lua(as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone")]
     fn clone(&self) -> std::path::PathBuf;
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone",
-        kind = "MutatingMethod",
-    )]
+    #[lua(as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone")]
     fn clone_from(&mut self, #[proxy] source: &std::path::PathBuf) -> ();
 
 "#,
@@ -3554,7 +3377,7 @@ pub struct NonZeroUsize();
 /// let path = PathBuf::new();
 /// ```
 
-    #[lua(kind = "Function", output(proxy))]
+    #[lua()]
     fn new() -> std::path::PathBuf;
 
 "#,
@@ -3572,7 +3395,7 @@ pub struct NonZeroUsize();
 /// ```
 /// [`with_capacity`]: OsString::with_capacity
 
-    #[lua(kind = "Function", output(proxy))]
+    #[lua()]
     fn with_capacity(capacity: usize) -> std::path::PathBuf;
 
 "#,
@@ -3591,7 +3414,7 @@ pub struct NonZeroUsize();
 /// assert_eq!(Path::new("/"), p);
 /// ```
 
-    #[lua(kind = "MutatingMethod")]
+    #[lua()]
     fn pop(&mut self) -> bool;
 
 "#,
@@ -3599,7 +3422,7 @@ pub struct NonZeroUsize();
 /// Invokes [`capacity`] on the underlying instance of [`OsString`].
 /// [`capacity`]: OsString::capacity
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn capacity(&self) -> usize;
 
 "#,
@@ -3607,7 +3430,7 @@ pub struct NonZeroUsize();
 /// Invokes [`clear`] on the underlying instance of [`OsString`].
 /// [`clear`]: OsString::clear
 
-    #[lua(kind = "MutatingMethod")]
+    #[lua()]
     fn clear(&mut self) -> ();
 
 "#,
@@ -3615,7 +3438,7 @@ pub struct NonZeroUsize();
 /// Invokes [`reserve`] on the underlying instance of [`OsString`].
 /// [`reserve`]: OsString::reserve
 
-    #[lua(kind = "MutatingMethod")]
+    #[lua()]
     fn reserve(&mut self, additional: usize) -> ();
 
 "#,
@@ -3623,7 +3446,7 @@ pub struct NonZeroUsize();
 /// Invokes [`reserve_exact`] on the underlying instance of [`OsString`].
 /// [`reserve_exact`]: OsString::reserve_exact
 
-    #[lua(kind = "MutatingMethod")]
+    #[lua()]
     fn reserve_exact(&mut self, additional: usize) -> ();
 
 "#,
@@ -3631,7 +3454,7 @@ pub struct NonZeroUsize();
 /// Invokes [`shrink_to_fit`] on the underlying instance of [`OsString`].
 /// [`shrink_to_fit`]: OsString::shrink_to_fit
 
-    #[lua(kind = "MutatingMethod")]
+    #[lua()]
     fn shrink_to_fit(&mut self) -> ();
 
 "#,
@@ -3639,69 +3462,58 @@ pub struct NonZeroUsize();
 /// Invokes [`shrink_to`] on the underlying instance of [`OsString`].
 /// [`shrink_to`]: OsString::shrink_to
 
-    #[lua(kind = "MutatingMethod")]
+    #[lua()]
     fn shrink_to(&mut self, min_capacity: usize) -> ();
 
 "#,
     r#"
-#[lua(kind="MetaMethod", metamethod="ToString")]
+#[lua(metamethod="ToString")]
 fn index(&self) -> String {
     format!("{:?}", _self)
 }
 "#]
 )]
-pub struct PathBuf {}
+pub struct LuaPathBuf {}
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
     remote = "std::ops::RangeFull",
+    bms_core_path = "bevy_mod_scripting_core",
+    bms_lua_path = "crate",
     functions[r#"
 
-    #[lua(
-        as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone",
-        kind = "Method",
-        output(proxy),
-    )]
+    #[lua(as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone")]
     fn clone(&self) -> std::ops::RangeFull;
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "std::cmp::PartialEq",
-        kind = "MetaFunction",
-        composite = "eq",
-        metamethod = "Eq",
-    )]
+    #[lua(as_trait = "std::cmp::PartialEq", composite = "eq")]
     fn eq(&self, #[proxy] other: &std::ops::RangeFull) -> bool;
 
 "#,
     r#"
 
-    #[lua(as_trait = "std::cmp::Eq", kind = "Method")]
+    #[lua(as_trait = "std::cmp::Eq")]
     fn assert_receiver_is_total_eq(&self) -> ();
 
 "#,
     r#"
-#[lua(kind="MetaMethod", metamethod="ToString")]
+#[lua(metamethod="ToString")]
 fn index(&self) -> String {
     format!("{:?}", _self)
 }
 "#]
 )]
-pub struct RangeFull {}
+pub struct LuaRangeFull {}
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
     remote = "bevy::math::Quat",
+    bms_core_path = "bevy_mod_scripting_core",
+    bms_lua_path = "crate",
     functions[r#"
 /// Rotates the [`Direction3d`] using a [`Quat`].
 
-    #[lua(
-        as_trait = "std::ops::Mul",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "mul",
-        metamethod = "Mul",
-    )]
+    #[lua(as_trait = "std::ops::Mul", composite = "mul")]
     fn mul(
         self,
         #[proxy]
@@ -3711,13 +3523,7 @@ pub struct RangeFull {}
 "#,
     r#"
 
-    #[lua(
-        as_trait = "std::ops::Mul",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "mul",
-        metamethod = "Mul",
-    )]
+    #[lua(as_trait = "std::ops::Mul", composite = "mul")]
     fn mul(self, #[proxy] rhs: bevy::math::Vec3A) -> bevy::math::Vec3A;
 
 "#,
@@ -3726,13 +3532,7 @@ pub struct RangeFull {}
 /// # Panics
 /// Will panic if `self` is not normalized when `glam_assert` is enabled.
 
-    #[lua(
-        as_trait = "std::ops::Mul",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "mul",
-        metamethod = "Mul",
-    )]
+    #[lua(as_trait = "std::ops::Mul", composite = "mul")]
     fn mul(self, #[proxy] rhs: bevy::math::Vec3) -> bevy::math::Vec3;
 
 "#,
@@ -3744,23 +3544,13 @@ pub struct RangeFull {}
 /// # Panics
 /// Will panic if `self` or `rhs` are not normalized when `glam_assert` is enabled.
 
-    #[lua(
-        as_trait = "std::ops::Mul",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "mul",
-        metamethod = "Mul",
-    )]
+    #[lua(as_trait = "std::ops::Mul", composite = "mul")]
     fn mul(self, #[proxy] rhs: bevy::math::Quat) -> bevy::math::Quat;
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone",
-        kind = "Method",
-        output(proxy),
-    )]
+    #[lua(as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone")]
     fn clone(&self) -> bevy::math::Quat;
 
 "#,
@@ -3770,13 +3560,7 @@ pub struct RangeFull {}
 /// Note that addition is not the same as combining the rotations represented by the
 /// two quaternions! That corresponds to multiplication.
 
-    #[lua(
-        as_trait = "std::ops::Add",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "add",
-        metamethod = "Add",
-    )]
+    #[lua(as_trait = "std::ops::Add", composite = "add")]
     fn add(self, #[proxy] rhs: bevy::math::Quat) -> bevy::math::Quat;
 
 "#,
@@ -3784,24 +3568,13 @@ pub struct RangeFull {}
 /// Subtracts the `rhs` quaternion from `self`.
 /// The difference is not guaranteed to be normalized.
 
-    #[lua(
-        as_trait = "std::ops::Sub",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "sub",
-        metamethod = "Sub",
-    )]
+    #[lua(as_trait = "std::ops::Sub", composite = "sub")]
     fn sub(self, #[proxy] rhs: bevy::math::Quat) -> bevy::math::Quat;
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "std::cmp::PartialEq",
-        kind = "MetaFunction",
-        composite = "eq",
-        metamethod = "Eq",
-    )]
+    #[lua(as_trait = "std::cmp::PartialEq", composite = "eq")]
     fn eq(&self, #[proxy] rhs: &glam::Quat) -> bool;
 
 "#,
@@ -3809,13 +3582,7 @@ pub struct RangeFull {}
 /// Divides a quaternion by a scalar value.
 /// The quotient is not guaranteed to be normalized.
 
-    #[lua(
-        as_trait = "std::ops::Div",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "div",
-        metamethod = "Div",
-    )]
+    #[lua(as_trait = "std::ops::Div", composite = "div")]
     fn div(self, rhs: f32) -> bevy::math::Quat;
 
 "#,
@@ -3828,7 +3595,7 @@ pub struct RangeFull {}
 /// This function does not check if the input is normalized, it is up to the user to
 /// provide normalized input or to normalized the resulting quaternion.
 
-    #[lua(kind = "Function", output(proxy))]
+    #[lua()]
     fn from_xyzw(x: f32, y: f32, z: f32, w: f32) -> bevy::math::Quat;
 
 "#,
@@ -3838,7 +3605,7 @@ pub struct RangeFull {}
 /// This function does not check if the input is normalized, it is up to the user to
 /// provide normalized input or to normalized the resulting quaternion.
 
-    #[lua(kind = "Function", output(proxy))]
+    #[lua()]
     fn from_array(a: [f32; 4]) -> bevy::math::Quat;
 
 "#,
@@ -3848,7 +3615,7 @@ pub struct RangeFull {}
 /// This function does not check if the input is normalized, it is up to the user to
 /// provide normalized input or to normalized the resulting quaternion.
 
-    #[lua(kind = "Function", output(proxy))]
+    #[lua()]
     fn from_vec4(#[proxy] v: bevy::math::Vec4) -> bevy::math::Quat;
 
 "#,
@@ -3858,7 +3625,7 @@ pub struct RangeFull {}
 /// # Panics
 /// Will panic if `axis` is not normalized when `glam_assert` is enabled.
 
-    #[lua(kind = "Function", output(proxy))]
+    #[lua()]
     fn from_axis_angle(#[proxy] axis: bevy::math::Vec3, angle: f32) -> bevy::math::Quat;
 
 "#,
@@ -3866,35 +3633,35 @@ pub struct RangeFull {}
 /// Create a quaternion that rotates `v.length()` radians around `v.normalize()`.
 /// `from_scaled_axis(Vec3::ZERO)` results in the identity quaternion.
 
-    #[lua(kind = "Function", output(proxy))]
+    #[lua()]
     fn from_scaled_axis(#[proxy] v: bevy::math::Vec3) -> bevy::math::Quat;
 
 "#,
     r#"
 /// Creates a quaternion from the `angle` (in radians) around the x axis.
 
-    #[lua(kind = "Function", output(proxy))]
+    #[lua()]
     fn from_rotation_x(angle: f32) -> bevy::math::Quat;
 
 "#,
     r#"
 /// Creates a quaternion from the `angle` (in radians) around the y axis.
 
-    #[lua(kind = "Function", output(proxy))]
+    #[lua()]
     fn from_rotation_y(angle: f32) -> bevy::math::Quat;
 
 "#,
     r#"
 /// Creates a quaternion from the `angle` (in radians) around the z axis.
 
-    #[lua(kind = "Function", output(proxy))]
+    #[lua()]
     fn from_rotation_z(angle: f32) -> bevy::math::Quat;
 
 "#,
     r#"
 /// Creates a quaternion from the given Euler rotation sequence and the angles (in radians).
 
-    #[lua(kind = "Function", output(proxy))]
+    #[lua()]
     fn from_euler(
         #[proxy]
         euler: bevy::math::EulerRot,
@@ -3907,21 +3674,21 @@ pub struct RangeFull {}
     r#"
 /// Creates a quaternion from a 3x3 rotation matrix.
 
-    #[lua(kind = "Function", output(proxy))]
+    #[lua()]
     fn from_mat3(#[proxy] mat: &glam::Mat3) -> bevy::math::Quat;
 
 "#,
     r#"
 /// Creates a quaternion from a 3x3 SIMD aligned rotation matrix.
 
-    #[lua(kind = "Function", output(proxy))]
+    #[lua()]
     fn from_mat3a(#[proxy] mat: &glam::Mat3A) -> bevy::math::Quat;
 
 "#,
     r#"
 /// Creates a quaternion from a 3x3 rotation matrix inside a homogeneous 4x4 matrix.
 
-    #[lua(kind = "Function", output(proxy))]
+    #[lua()]
     fn from_mat4(#[proxy] mat: &glam::Mat4) -> bevy::math::Quat;
 
 "#,
@@ -3935,7 +3702,7 @@ pub struct RangeFull {}
 /// # Panics
 /// Will panic if `from` or `to` are not normalized when `glam_assert` is enabled.
 
-    #[lua(kind = "Function", output(proxy))]
+    #[lua()]
     fn from_rotation_arc(
         #[proxy]
         from: bevy::math::Vec3,
@@ -3954,7 +3721,7 @@ pub struct RangeFull {}
 /// # Panics
 /// Will panic if `from` or `to` are not normalized when `glam_assert` is enabled.
 
-    #[lua(kind = "Function", output(proxy))]
+    #[lua()]
     fn from_rotation_arc_colinear(
         #[proxy]
         from: bevy::math::Vec3,
@@ -3973,7 +3740,7 @@ pub struct RangeFull {}
 /// # Panics
 /// Will panic if `from` or `to` are not normalized when `glam_assert` is enabled.
 
-    #[lua(kind = "Function", output(proxy))]
+    #[lua()]
     fn from_rotation_arc_2d(
         #[proxy]
         from: bevy::math::Vec2,
@@ -3985,28 +3752,28 @@ pub struct RangeFull {}
     r#"
 /// Returns the rotation axis scaled by the rotation in radians.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn to_scaled_axis(self) -> bevy::math::Vec3;
 
 "#,
     r#"
 /// Returns the rotation angles for the given euler rotation sequence.
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn to_euler(self, #[proxy] euler: bevy::math::EulerRot) -> (f32, f32, f32);
 
 "#,
     r#"
 /// `[x, y, z, w]`
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn to_array(&self) -> [f32; 4];
 
 "#,
     r#"
 /// Returns the vector part of the quaternion.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn xyz(self) -> bevy::math::Vec3;
 
 "#,
@@ -4014,7 +3781,7 @@ pub struct RangeFull {}
 /// Returns the quaternion conjugate of `self`. For a unit quaternion the
 /// conjugate is also the inverse.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn conjugate(self) -> bevy::math::Quat;
 
 "#,
@@ -4026,7 +3793,7 @@ pub struct RangeFull {}
 /// # Panics
 /// Will panic if `self` is not normalized when `glam_assert` is enabled.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn inverse(self) -> bevy::math::Quat;
 
 "#,
@@ -4034,14 +3801,14 @@ pub struct RangeFull {}
 /// Computes the dot product of `self` and `rhs`. The dot product is
 /// equal to the cosine of the angle between two quaternion rotations.
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn dot(self, #[proxy] rhs: bevy::math::Quat) -> f32;
 
 "#,
     r#"
 /// Computes the length of `self`.
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn length(self) -> f32;
 
 "#,
@@ -4050,7 +3817,7 @@ pub struct RangeFull {}
 /// This is generally faster than `length()` as it avoids a square
 /// root operation.
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn length_squared(self) -> f32;
 
 "#,
@@ -4058,7 +3825,7 @@ pub struct RangeFull {}
 /// Computes `1.0 / length()`.
 /// For valid results, `self` must _not_ be of length zero.
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn length_recip(self) -> f32;
 
 "#,
@@ -4068,7 +3835,7 @@ pub struct RangeFull {}
 /// Panics
 /// Will panic if `self` is zero length when `glam_assert` is enabled.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn normalize(self) -> bevy::math::Quat;
 
 "#,
@@ -4076,13 +3843,13 @@ pub struct RangeFull {}
 /// Returns `true` if, and only if, all elements are finite.
 /// If any element is either `NaN`, positive or negative infinity, this will return `false`.
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn is_finite(self) -> bool;
 
 "#,
     r#"
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn is_nan(self) -> bool;
 
 "#,
@@ -4090,13 +3857,13 @@ pub struct RangeFull {}
 /// Returns whether `self` of length `1.0` or not.
 /// Uses a precision threshold of `1e-6`.
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn is_normalized(self) -> bool;
 
 "#,
     r#"
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn is_near_identity(self) -> bool;
 
 "#,
@@ -4107,7 +3874,7 @@ pub struct RangeFull {}
 /// # Panics
 /// Will panic if `self` or `rhs` are not normalized when `glam_assert` is enabled.
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn angle_between(self, #[proxy] rhs: bevy::math::Quat) -> f32;
 
 "#,
@@ -4120,7 +3887,7 @@ pub struct RangeFull {}
 /// For more see
 /// [comparing floating point numbers](https://randomascii.wordpress.com/2012/02/25/comparing-floating-point-numbers-2012-edition/).
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn abs_diff_eq(self, #[proxy] rhs: bevy::math::Quat, max_abs_diff: f32) -> bool;
 
 "#,
@@ -4132,7 +3899,7 @@ pub struct RangeFull {}
 /// # Panics
 /// Will panic if `self` or `end` are not normalized when `glam_assert` is enabled.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn lerp(self, #[proxy] end: bevy::math::Quat, s: f32) -> bevy::math::Quat;
 
 "#,
@@ -4144,7 +3911,7 @@ pub struct RangeFull {}
 /// # Panics
 /// Will panic if `self` or `end` are not normalized when `glam_assert` is enabled.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn slerp(self, #[proxy] end: bevy::math::Quat, s: f32) -> bevy::math::Quat;
 
 "#,
@@ -4153,7 +3920,7 @@ pub struct RangeFull {}
 /// # Panics
 /// Will panic if `self` is not normalized when `glam_assert` is enabled.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn mul_vec3(self, #[proxy] rhs: bevy::math::Vec3) -> bevy::math::Vec3;
 
 "#,
@@ -4164,33 +3931,33 @@ pub struct RangeFull {}
 /// # Panics
 /// Will panic if `self` or `rhs` are not normalized when `glam_assert` is enabled.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn mul_quat(self, #[proxy] rhs: bevy::math::Quat) -> bevy::math::Quat;
 
 "#,
     r#"
 /// Creates a quaternion from a 3x3 rotation matrix inside a 3D affine transform.
 
-    #[lua(kind = "Function", output(proxy))]
+    #[lua()]
     fn from_affine3(#[proxy] a: &glam::Affine3A) -> bevy::math::Quat;
 
 "#,
     r#"
 /// Multiplies a quaternion and a 3D vector, returning the rotated vector.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn mul_vec3a(self, #[proxy] rhs: bevy::math::Vec3A) -> bevy::math::Vec3A;
 
 "#,
     r#"
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn as_dquat(self) -> bevy::math::DQuat;
 
 "#,
     r#"
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn as_f64(self) -> bevy::math::DQuat;
 
 "#,
@@ -4198,156 +3965,94 @@ pub struct RangeFull {}
 /// Multiplies a quaternion by a scalar value.
 /// The product is not guaranteed to be normalized.
 
-    #[lua(
-        as_trait = "std::ops::Mul",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "mul",
-        metamethod = "Mul",
-    )]
+    #[lua(as_trait = "std::ops::Mul", composite = "mul")]
     fn mul(self, rhs: f32) -> bevy::math::Quat;
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "std::ops::Neg",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "neg",
-        metamethod = "Unm",
-    )]
+    #[lua(as_trait = "std::ops::Neg", composite = "neg")]
     fn neg(self) -> bevy::math::Quat;
 
 "#,
     r#"
-#[lua(kind="MetaMethod", metamethod="ToString")]
+#[lua(metamethod="ToString")]
 fn index(&self) -> String {
     format!("{}", _self)
 }
 "#]
 )]
-pub struct Quat();
+pub struct LuaQuat();
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
     remote = "bevy::math::Vec3",
+    bms_core_path = "bevy_mod_scripting_core",
+    bms_lua_path = "crate",
     functions[r#"
 
-    #[lua(
-        as_trait = "std::ops::Add",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "add",
-        metamethod = "Add",
-    )]
+    #[lua(as_trait = "std::ops::Add", composite = "add")]
     fn add(self, #[proxy] rhs: bevy::math::Vec3) -> bevy::math::Vec3;
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "std::ops::Neg",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "neg",
-        metamethod = "Unm",
-    )]
+    #[lua(as_trait = "std::ops::Neg", composite = "neg")]
     fn neg(self) -> bevy::math::Vec3;
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "std::ops::Sub",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "sub",
-        metamethod = "Sub",
-    )]
+    #[lua(as_trait = "std::ops::Sub", composite = "sub")]
     fn sub(self, #[proxy] rhs: bevy::math::Vec3) -> bevy::math::Vec3;
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "std::ops::Mul",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "mul",
-        metamethod = "Mul",
-    )]
+    #[lua(as_trait = "std::ops::Mul", composite = "mul")]
     fn mul(self, rhs: f32) -> bevy::math::Vec3;
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "std::ops::Div",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "div",
-        metamethod = "Div",
-    )]
+    #[lua(as_trait = "std::ops::Div", composite = "div")]
     fn div(self, #[proxy] rhs: bevy::math::Vec3) -> bevy::math::Vec3;
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "std::ops::Mul",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "mul",
-        metamethod = "Mul",
-    )]
+    #[lua(as_trait = "std::ops::Mul", composite = "mul")]
     fn mul(self, #[proxy] rhs: bevy::math::Vec3) -> bevy::math::Vec3;
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "std::ops::Rem",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "rem",
-        metamethod = "Mod",
-    )]
+    #[lua(as_trait = "std::ops::Rem", composite = "rem")]
     fn rem(self, rhs: f32) -> bevy::math::Vec3;
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "std::ops::Add",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "add",
-        metamethod = "Add",
-    )]
+    #[lua(as_trait = "std::ops::Add", composite = "add")]
     fn add(self, rhs: f32) -> bevy::math::Vec3;
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone",
-        kind = "Method",
-        output(proxy),
-    )]
+    #[lua(as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone")]
     fn clone(&self) -> bevy::math::Vec3;
 
 "#,
     r#"
 /// Creates a new vector.
 
-    #[lua(kind = "Function", output(proxy))]
+    #[lua()]
     fn new(x: f32, y: f32, z: f32) -> bevy::math::Vec3;
 
 "#,
     r#"
 /// Creates a vector with all elements set to `v`.
 
-    #[lua(kind = "Function", output(proxy))]
+    #[lua()]
     fn splat(v: f32) -> bevy::math::Vec3;
 
 "#,
@@ -4357,7 +4062,7 @@ pub struct Quat();
 /// A true element in the mask uses the corresponding element from `if_true`, and false
 /// uses the element from `if_false`.
 
-    #[lua(kind = "Function", output(proxy))]
+    #[lua()]
     fn select(
         #[proxy]
         mask: bevy::math::BVec3,
@@ -4371,21 +4076,21 @@ pub struct Quat();
     r#"
 /// Creates a new vector from an array.
 
-    #[lua(kind = "Function", output(proxy))]
+    #[lua()]
     fn from_array(a: [f32; 3]) -> bevy::math::Vec3;
 
 "#,
     r#"
 /// `[x, y, z]`
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn to_array(&self) -> [f32; 3];
 
 "#,
     r#"
 /// Creates a 4D vector from `self` and the given `w` value.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn extend(self, w: f32) -> bevy::math::Vec4;
 
 "#,
@@ -4393,28 +4098,28 @@ pub struct Quat();
 /// Creates a 2D vector from the `x` and `y` elements of `self`, discarding `z`.
 /// Truncation may also be performed by using [`self.xy()`][crate::swizzles::Vec3Swizzles::xy()].
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn truncate(self) -> bevy::math::Vec2;
 
 "#,
     r#"
 /// Computes the dot product of `self` and `rhs`.
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn dot(self, #[proxy] rhs: bevy::math::Vec3) -> f32;
 
 "#,
     r#"
 /// Returns a vector where every component is the dot product of `self` and `rhs`.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn dot_into_vec(self, #[proxy] rhs: bevy::math::Vec3) -> bevy::math::Vec3;
 
 "#,
     r#"
 /// Computes the cross product of `self` and `rhs`.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn cross(self, #[proxy] rhs: bevy::math::Vec3) -> bevy::math::Vec3;
 
 "#,
@@ -4422,7 +4127,7 @@ pub struct Quat();
 /// Returns a vector containing the minimum values for each element of `self` and `rhs`.
 /// In other words this computes `[self.x.min(rhs.x), self.y.min(rhs.y), ..]`.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn min(self, #[proxy] rhs: bevy::math::Vec3) -> bevy::math::Vec3;
 
 "#,
@@ -4430,7 +4135,7 @@ pub struct Quat();
 /// Returns a vector containing the maximum values for each element of `self` and `rhs`.
 /// In other words this computes `[self.x.max(rhs.x), self.y.max(rhs.y), ..]`.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn max(self, #[proxy] rhs: bevy::math::Vec3) -> bevy::math::Vec3;
 
 "#,
@@ -4440,7 +4145,7 @@ pub struct Quat();
 /// # Panics
 /// Will panic if `min` is greater than `max` when `glam_assert` is enabled.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn clamp(
         self,
         #[proxy]
@@ -4454,7 +4159,7 @@ pub struct Quat();
 /// Returns the horizontal minimum of `self`.
 /// In other words this computes `min(x, y, ..)`.
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn min_element(self) -> f32;
 
 "#,
@@ -4462,7 +4167,7 @@ pub struct Quat();
 /// Returns the horizontal maximum of `self`.
 /// In other words this computes `max(x, y, ..)`.
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn max_element(self) -> f32;
 
 "#,
@@ -4472,7 +4177,7 @@ pub struct Quat();
 /// In other words, this computes `[self.x == rhs.x, self.y == rhs.y, ..]` for all
 /// elements.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn cmpeq(self, #[proxy] rhs: bevy::math::Vec3) -> bevy::math::BVec3;
 
 "#,
@@ -4482,7 +4187,7 @@ pub struct Quat();
 /// In other words this computes `[self.x != rhs.x, self.y != rhs.y, ..]` for all
 /// elements.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn cmpne(self, #[proxy] rhs: bevy::math::Vec3) -> bevy::math::BVec3;
 
 "#,
@@ -4492,7 +4197,7 @@ pub struct Quat();
 /// In other words this computes `[self.x >= rhs.x, self.y >= rhs.y, ..]` for all
 /// elements.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn cmpge(self, #[proxy] rhs: bevy::math::Vec3) -> bevy::math::BVec3;
 
 "#,
@@ -4502,7 +4207,7 @@ pub struct Quat();
 /// In other words this computes `[self.x > rhs.x, self.y > rhs.y, ..]` for all
 /// elements.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn cmpgt(self, #[proxy] rhs: bevy::math::Vec3) -> bevy::math::BVec3;
 
 "#,
@@ -4512,7 +4217,7 @@ pub struct Quat();
 /// In other words this computes `[self.x <= rhs.x, self.y <= rhs.y, ..]` for all
 /// elements.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn cmple(self, #[proxy] rhs: bevy::math::Vec3) -> bevy::math::BVec3;
 
 "#,
@@ -4522,14 +4227,14 @@ pub struct Quat();
 /// In other words this computes `[self.x < rhs.x, self.y < rhs.y, ..]` for all
 /// elements.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn cmplt(self, #[proxy] rhs: bevy::math::Vec3) -> bevy::math::BVec3;
 
 "#,
     r#"
 /// Returns a vector containing the absolute value of each element of `self`.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn abs(self) -> bevy::math::Vec3;
 
 "#,
@@ -4539,14 +4244,14 @@ pub struct Quat();
 /// - `-1.0` if the number is negative, `-0.0` or `NEG_INFINITY`
 /// - `NAN` if the number is `NAN`
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn signum(self) -> bevy::math::Vec3;
 
 "#,
     r#"
 /// Returns a vector with signs of `rhs` and the magnitudes of `self`.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn copysign(self, #[proxy] rhs: bevy::math::Vec3) -> bevy::math::Vec3;
 
 "#,
@@ -4555,7 +4260,7 @@ pub struct Quat();
 /// A negative element results in a `1` bit and a positive element in a `0` bit.  Element `x` goes
 /// into the first lowest bit, element `y` into the second, etc.
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn is_negative_bitmask(self) -> u32;
 
 "#,
@@ -4563,14 +4268,14 @@ pub struct Quat();
 /// Returns `true` if, and only if, all elements are finite.  If any element is either
 /// `NaN`, positive or negative infinity, this will return `false`.
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn is_finite(self) -> bool;
 
 "#,
     r#"
 /// Returns `true` if any elements are `NaN`.
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn is_nan(self) -> bool;
 
 "#,
@@ -4578,14 +4283,14 @@ pub struct Quat();
 /// Performs `is_nan` on each element of self, returning a vector mask of the results.
 /// In other words, this computes `[x.is_nan(), y.is_nan(), z.is_nan(), w.is_nan()]`.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn is_nan_mask(self) -> bevy::math::BVec3;
 
 "#,
     r#"
 /// Computes the length of `self`.
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn length(self) -> f32;
 
 "#,
@@ -4593,7 +4298,7 @@ pub struct Quat();
 /// Computes the squared length of `self`.
 /// This is faster than `length()` as it avoids a square root operation.
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn length_squared(self) -> f32;
 
 "#,
@@ -4601,28 +4306,28 @@ pub struct Quat();
 /// Computes `1.0 / length()`.
 /// For valid results, `self` must _not_ be of length zero.
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn length_recip(self) -> f32;
 
 "#,
     r#"
 /// Computes the Euclidean distance between two points in space.
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn distance(self, #[proxy] rhs: bevy::math::Vec3) -> f32;
 
 "#,
     r#"
 /// Compute the squared euclidean distance between two points in space.
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn distance_squared(self, #[proxy] rhs: bevy::math::Vec3) -> f32;
 
 "#,
     r#"
 /// Returns the element-wise quotient of [Euclidean division] of `self` by `rhs`.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn div_euclid(self, #[proxy] rhs: bevy::math::Vec3) -> bevy::math::Vec3;
 
 "#,
@@ -4630,7 +4335,7 @@ pub struct Quat();
 /// Returns the element-wise remainder of [Euclidean division] of `self` by `rhs`.
 /// [Euclidean division]: f32::rem_euclid
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn rem_euclid(self, #[proxy] rhs: bevy::math::Vec3) -> bevy::math::Vec3;
 
 "#,
@@ -4641,7 +4346,7 @@ pub struct Quat();
 /// Panics
 /// Will panic if `self` is zero length when `glam_assert` is enabled.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn normalize(self) -> bevy::math::Vec3;
 
 "#,
@@ -4651,7 +4356,7 @@ pub struct Quat();
 /// the result of this operation will be zero.
 /// See also [`Self::try_normalize()`].
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn normalize_or_zero(self) -> bevy::math::Vec3;
 
 "#,
@@ -4659,7 +4364,7 @@ pub struct Quat();
 /// Returns whether `self` is length `1.0` or not.
 /// Uses a precision threshold of `1e-6`.
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn is_normalized(self) -> bool;
 
 "#,
@@ -4669,7 +4374,7 @@ pub struct Quat();
 /// # Panics
 /// Will panic if `rhs` is zero length when `glam_assert` is enabled.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn project_onto(self, #[proxy] rhs: bevy::math::Vec3) -> bevy::math::Vec3;
 
 "#,
@@ -4681,7 +4386,7 @@ pub struct Quat();
 /// # Panics
 /// Will panic if `rhs` has a length of zero when `glam_assert` is enabled.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn reject_from(self, #[proxy] rhs: bevy::math::Vec3) -> bevy::math::Vec3;
 
 "#,
@@ -4691,7 +4396,7 @@ pub struct Quat();
 /// # Panics
 /// Will panic if `rhs` is not normalized when `glam_assert` is enabled.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn project_onto_normalized(self, #[proxy] rhs: bevy::math::Vec3) -> bevy::math::Vec3;
 
 "#,
@@ -4703,7 +4408,7 @@ pub struct Quat();
 /// # Panics
 /// Will panic if `rhs` is not normalized when `glam_assert` is enabled.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn reject_from_normalized(self, #[proxy] rhs: bevy::math::Vec3) -> bevy::math::Vec3;
 
 "#,
@@ -4711,7 +4416,7 @@ pub struct Quat();
 /// Returns a vector containing the nearest integer to a number for each element of `self`.
 /// Round half-way cases away from 0.0.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn round(self) -> bevy::math::Vec3;
 
 "#,
@@ -4719,7 +4424,7 @@ pub struct Quat();
 /// Returns a vector containing the largest integer less than or equal to a number for each
 /// element of `self`.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn floor(self) -> bevy::math::Vec3;
 
 "#,
@@ -4727,7 +4432,7 @@ pub struct Quat();
 /// Returns a vector containing the smallest integer greater than or equal to a number for
 /// each element of `self`.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn ceil(self) -> bevy::math::Vec3;
 
 "#,
@@ -4735,7 +4440,7 @@ pub struct Quat();
 /// Returns a vector containing the integer part each element of `self`. This means numbers are
 /// always truncated towards zero.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn trunc(self) -> bevy::math::Vec3;
 
 "#,
@@ -4744,7 +4449,7 @@ pub struct Quat();
 /// self.floor()`.
 /// Note that this is fast but not precise for large numbers.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn fract(self) -> bevy::math::Vec3;
 
 "#,
@@ -4752,21 +4457,21 @@ pub struct Quat();
 /// Returns a vector containing `e^self` (the exponential function) for each element of
 /// `self`.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn exp(self) -> bevy::math::Vec3;
 
 "#,
     r#"
 /// Returns a vector containing each element of `self` raised to the power of `n`.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn powf(self, n: f32) -> bevy::math::Vec3;
 
 "#,
     r#"
 /// Returns a vector containing the reciprocal `1.0/n` of each element of `self`.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn recip(self) -> bevy::math::Vec3;
 
 "#,
@@ -4776,7 +4481,7 @@ pub struct Quat();
 /// will be equal to `rhs`. When `s` is outside of range `[0, 1]`, the result is linearly
 /// extrapolated.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn lerp(self, #[proxy] rhs: bevy::math::Vec3, s: f32) -> bevy::math::Vec3;
 
 "#,
@@ -4789,7 +4494,7 @@ pub struct Quat();
 /// For more see
 /// [comparing floating point numbers](https://randomascii.wordpress.com/2012/02/25/comparing-floating-point-numbers-2012-edition/).
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn abs_diff_eq(self, #[proxy] rhs: bevy::math::Vec3, max_abs_diff: f32) -> bool;
 
 "#,
@@ -4798,21 +4503,21 @@ pub struct Quat();
 /// # Panics
 /// Will panic if `min` is greater than `max` when `glam_assert` is enabled.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn clamp_length(self, min: f32, max: f32) -> bevy::math::Vec3;
 
 "#,
     r#"
 /// Returns a vector with a length no more than `max`
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn clamp_length_max(self, max: f32) -> bevy::math::Vec3;
 
 "#,
     r#"
 /// Returns a vector with a length no less than `min`
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn clamp_length_min(self, min: f32) -> bevy::math::Vec3;
 
 "#,
@@ -4824,7 +4529,7 @@ pub struct Quat();
 /// and will be heavily dependant on designing algorithms with specific target hardware in
 /// mind.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn mul_add(
         self,
         #[proxy]
@@ -4838,7 +4543,7 @@ pub struct Quat();
 /// Returns the angle (in radians) between two vectors.
 /// The inputs do not need to be unit vectors however they must be non-zero.
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn angle_between(self, #[proxy] rhs: bevy::math::Vec3) -> f32;
 
 "#,
@@ -4848,7 +4553,7 @@ pub struct Quat();
 /// The output vector is not necessarily unit length. For that use
 /// [`Self::any_orthonormal_vector()`] instead.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn any_orthogonal_vector(&self) -> bevy::math::Vec3;
 
 "#,
@@ -4858,112 +4563,89 @@ pub struct Quat();
 /// # Panics
 /// Will panic if `self` is not normalized when `glam_assert` is enabled.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn any_orthonormal_vector(&self) -> bevy::math::Vec3;
 
 "#,
     r#"
 /// Casts all elements of `self` to `f64`.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn as_dvec3(&self) -> bevy::math::DVec3;
 
 "#,
     r#"
 /// Casts all elements of `self` to `i32`.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn as_ivec3(&self) -> bevy::math::IVec3;
 
 "#,
     r#"
 /// Casts all elements of `self` to `u32`.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn as_uvec3(&self) -> bevy::math::UVec3;
 
 "#,
     r#"
 /// Casts all elements of `self` to `i64`.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn as_i64vec3(&self) -> bevy::math::I64Vec3;
 
 "#,
     r#"
 /// Casts all elements of `self` to `u64`.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn as_u64vec3(&self) -> bevy::math::U64Vec3;
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "std::ops::Div",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "div",
-        metamethod = "Div",
-    )]
+    #[lua(as_trait = "std::ops::Div", composite = "div")]
     fn div(self, rhs: f32) -> bevy::math::Vec3;
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "std::ops::Rem",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "rem",
-        metamethod = "Mod",
-    )]
+    #[lua(as_trait = "std::ops::Rem", composite = "rem")]
     fn rem(self, #[proxy] rhs: bevy::math::Vec3) -> bevy::math::Vec3;
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "std::ops::Sub",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "sub",
-        metamethod = "Sub",
-    )]
+    #[lua(as_trait = "std::ops::Sub", composite = "sub")]
     fn sub(self, rhs: f32) -> bevy::math::Vec3;
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "std::cmp::PartialEq",
-        kind = "MetaFunction",
-        composite = "eq",
-        metamethod = "Eq",
-    )]
+    #[lua(as_trait = "std::cmp::PartialEq", composite = "eq")]
     fn eq(&self, #[proxy] other: &glam::Vec3) -> bool;
 
 "#,
     r#"
-#[lua(kind="MetaMethod", metamethod="ToString")]
+#[lua(metamethod="ToString")]
 fn index(&self) -> String {
     format!("{}", _self)
 }
 "#,
     r#"
-#[lua(kind="MetaMethod", raw , metamethod="Index")]
+#[lua(raw , metamethod="Index")]
 fn index(&self, lua: &Lua, idx: crate::lua::util::LuaIndex) -> Result<f32,_> {
-    Ok(self.inner()?[*idx])
+    Ok(_self.inner()?[*idx])
 }
 "#,
     r#"
-#[lua(kind="MutatingMetaMethod", raw, metamethod="NewIndex")]
+#[lua(raw, metamethod="NewIndex")]
 fn index(&mut self, lua: &Lua, idx: crate::lua::util::LuaIndex, val: f32) -> Result<(),_> {
-    self.val_mut(|s| Ok(s[*idx] = val))?
+    _self.val_mut(|s| Ok(s[*idx] = val))?
 }
 "#]
 )]
-pub struct Vec3 {
+pub struct LuaVec3 {
     x: f32,
     y: f32,
     z: f32,
@@ -4971,152 +4653,91 @@ pub struct Vec3 {
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
     remote = "bevy::math::IVec2",
+    bms_core_path = "bevy_mod_scripting_core",
+    bms_lua_path = "crate",
     functions[r#"
 
-    #[lua(
-        as_trait = "std::ops::Add",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "add",
-        metamethod = "Add",
-    )]
+    #[lua(as_trait = "std::ops::Add", composite = "add")]
     fn add(self, rhs: i32) -> bevy::math::IVec2;
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "std::ops::Sub",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "sub",
-        metamethod = "Sub",
-    )]
+    #[lua(as_trait = "std::ops::Sub", composite = "sub")]
     fn sub(self, #[proxy] rhs: bevy::math::IVec2) -> bevy::math::IVec2;
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "std::ops::Rem",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "rem",
-        metamethod = "Mod",
-    )]
+    #[lua(as_trait = "std::ops::Rem", composite = "rem")]
     fn rem(self, #[proxy] rhs: bevy::math::IVec2) -> bevy::math::IVec2;
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "std::ops::Add",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "add",
-        metamethod = "Add",
-    )]
+    #[lua(as_trait = "std::ops::Add", composite = "add")]
     fn add(self, #[proxy] rhs: bevy::math::IVec2) -> bevy::math::IVec2;
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "std::ops::Mul",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "mul",
-        metamethod = "Mul",
-    )]
+    #[lua(as_trait = "std::ops::Mul", composite = "mul")]
     fn mul(self, rhs: i32) -> bevy::math::IVec2;
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "std::cmp::PartialEq",
-        kind = "MetaFunction",
-        composite = "eq",
-        metamethod = "Eq",
-    )]
+    #[lua(as_trait = "std::cmp::PartialEq", composite = "eq")]
     fn eq(&self, #[proxy] other: &glam::IVec2) -> bool;
 
 "#,
     r#"
 
-    #[lua(as_trait = "std::cmp::Eq", kind = "Method")]
+    #[lua(as_trait = "std::cmp::Eq")]
     fn assert_receiver_is_total_eq(&self) -> ();
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "std::ops::Sub",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "sub",
-        metamethod = "Sub",
-    )]
+    #[lua(as_trait = "std::ops::Sub", composite = "sub")]
     fn sub(self, rhs: i32) -> bevy::math::IVec2;
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone",
-        kind = "Method",
-        output(proxy),
-    )]
+    #[lua(as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone")]
     fn clone(&self) -> bevy::math::IVec2;
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "std::ops::Rem",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "rem",
-        metamethod = "Mod",
-    )]
+    #[lua(as_trait = "std::ops::Rem", composite = "rem")]
     fn rem(self, rhs: i32) -> bevy::math::IVec2;
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "std::ops::Mul",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "mul",
-        metamethod = "Mul",
-    )]
+    #[lua(as_trait = "std::ops::Mul", composite = "mul")]
     fn mul(self, #[proxy] rhs: bevy::math::IVec2) -> bevy::math::IVec2;
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "std::ops::Div",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "div",
-        metamethod = "Div",
-    )]
+    #[lua(as_trait = "std::ops::Div", composite = "div")]
     fn div(self, #[proxy] rhs: bevy::math::IVec2) -> bevy::math::IVec2;
 
 "#,
     r#"
 /// Creates a new vector.
 
-    #[lua(kind = "Function", output(proxy))]
+    #[lua()]
     fn new(x: i32, y: i32) -> bevy::math::IVec2;
 
 "#,
     r#"
 /// Creates a vector with all elements set to `v`.
 
-    #[lua(kind = "Function", output(proxy))]
+    #[lua()]
     fn splat(v: i32) -> bevy::math::IVec2;
 
 "#,
@@ -5126,7 +4747,7 @@ pub struct Vec3 {
 /// A true element in the mask uses the corresponding element from `if_true`, and false
 /// uses the element from `if_false`.
 
-    #[lua(kind = "Function", output(proxy))]
+    #[lua()]
     fn select(
         #[proxy]
         mask: bevy::math::BVec2,
@@ -5140,35 +4761,35 @@ pub struct Vec3 {
     r#"
 /// Creates a new vector from an array.
 
-    #[lua(kind = "Function", output(proxy))]
+    #[lua()]
     fn from_array(a: [i32; 2]) -> bevy::math::IVec2;
 
 "#,
     r#"
 /// `[x, y]`
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn to_array(&self) -> [i32; 2];
 
 "#,
     r#"
 /// Creates a 3D vector from `self` and the given `z` value.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn extend(self, z: i32) -> bevy::math::IVec3;
 
 "#,
     r#"
 /// Computes the dot product of `self` and `rhs`.
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn dot(self, #[proxy] rhs: bevy::math::IVec2) -> i32;
 
 "#,
     r#"
 /// Returns a vector where every component is the dot product of `self` and `rhs`.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn dot_into_vec(self, #[proxy] rhs: bevy::math::IVec2) -> bevy::math::IVec2;
 
 "#,
@@ -5176,7 +4797,7 @@ pub struct Vec3 {
 /// Returns a vector containing the minimum values for each element of `self` and `rhs`.
 /// In other words this computes `[self.x.min(rhs.x), self.y.min(rhs.y), ..]`.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn min(self, #[proxy] rhs: bevy::math::IVec2) -> bevy::math::IVec2;
 
 "#,
@@ -5184,7 +4805,7 @@ pub struct Vec3 {
 /// Returns a vector containing the maximum values for each element of `self` and `rhs`.
 /// In other words this computes `[self.x.max(rhs.x), self.y.max(rhs.y), ..]`.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn max(self, #[proxy] rhs: bevy::math::IVec2) -> bevy::math::IVec2;
 
 "#,
@@ -5194,7 +4815,7 @@ pub struct Vec3 {
 /// # Panics
 /// Will panic if `min` is greater than `max` when `glam_assert` is enabled.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn clamp(
         self,
         #[proxy]
@@ -5208,7 +4829,7 @@ pub struct Vec3 {
 /// Returns the horizontal minimum of `self`.
 /// In other words this computes `min(x, y, ..)`.
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn min_element(self) -> i32;
 
 "#,
@@ -5216,7 +4837,7 @@ pub struct Vec3 {
 /// Returns the horizontal maximum of `self`.
 /// In other words this computes `max(x, y, ..)`.
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn max_element(self) -> i32;
 
 "#,
@@ -5226,7 +4847,7 @@ pub struct Vec3 {
 /// In other words, this computes `[self.x == rhs.x, self.y == rhs.y, ..]` for all
 /// elements.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn cmpeq(self, #[proxy] rhs: bevy::math::IVec2) -> bevy::math::BVec2;
 
 "#,
@@ -5236,7 +4857,7 @@ pub struct Vec3 {
 /// In other words this computes `[self.x != rhs.x, self.y != rhs.y, ..]` for all
 /// elements.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn cmpne(self, #[proxy] rhs: bevy::math::IVec2) -> bevy::math::BVec2;
 
 "#,
@@ -5246,7 +4867,7 @@ pub struct Vec3 {
 /// In other words this computes `[self.x >= rhs.x, self.y >= rhs.y, ..]` for all
 /// elements.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn cmpge(self, #[proxy] rhs: bevy::math::IVec2) -> bevy::math::BVec2;
 
 "#,
@@ -5256,7 +4877,7 @@ pub struct Vec3 {
 /// In other words this computes `[self.x > rhs.x, self.y > rhs.y, ..]` for all
 /// elements.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn cmpgt(self, #[proxy] rhs: bevy::math::IVec2) -> bevy::math::BVec2;
 
 "#,
@@ -5266,7 +4887,7 @@ pub struct Vec3 {
 /// In other words this computes `[self.x <= rhs.x, self.y <= rhs.y, ..]` for all
 /// elements.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn cmple(self, #[proxy] rhs: bevy::math::IVec2) -> bevy::math::BVec2;
 
 "#,
@@ -5276,14 +4897,14 @@ pub struct Vec3 {
 /// In other words this computes `[self.x < rhs.x, self.y < rhs.y, ..]` for all
 /// elements.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn cmplt(self, #[proxy] rhs: bevy::math::IVec2) -> bevy::math::BVec2;
 
 "#,
     r#"
 /// Returns a vector containing the absolute value of each element of `self`.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn abs(self) -> bevy::math::IVec2;
 
 "#,
@@ -5293,7 +4914,7 @@ pub struct Vec3 {
 ///  - `1` if the number is positive
 ///  - `-1` if the number is negative
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn signum(self) -> bevy::math::IVec2;
 
 "#,
@@ -5302,21 +4923,21 @@ pub struct Vec3 {
 /// A negative element results in a `1` bit and a positive element in a `0` bit.  Element `x` goes
 /// into the first lowest bit, element `y` into the second, etc.
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn is_negative_bitmask(self) -> u32;
 
 "#,
     r#"
 /// Computes the squared length of `self`.
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn length_squared(self) -> i32;
 
 "#,
     r#"
 /// Compute the squared euclidean distance between two points in space.
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn distance_squared(self, #[proxy] rhs: bevy::math::IVec2) -> i32;
 
 "#,
@@ -5325,7 +4946,7 @@ pub struct Vec3 {
 /// # Panics
 /// This function will panic if any `rhs` element is 0 or the division results in overflow.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn div_euclid(self, #[proxy] rhs: bevy::math::IVec2) -> bevy::math::IVec2;
 
 "#,
@@ -5335,14 +4956,14 @@ pub struct Vec3 {
 /// This function will panic if any `rhs` element is 0 or the division results in overflow.
 /// [Euclidean division]: i32::rem_euclid
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn rem_euclid(self, #[proxy] rhs: bevy::math::IVec2) -> bevy::math::IVec2;
 
 "#,
     r#"
 /// Returns a vector that is equal to `self` rotated by 90 degrees.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn perp(self) -> bevy::math::IVec2;
 
 "#,
@@ -5350,7 +4971,7 @@ pub struct Vec3 {
 /// The perpendicular dot product of `self` and `rhs`.
 /// Also known as the wedge product, 2D cross product, and determinant.
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn perp_dot(self, #[proxy] rhs: bevy::math::IVec2) -> i32;
 
 "#,
@@ -5359,42 +4980,42 @@ pub struct Vec3 {
 /// then this just rotation. This is what you usually want. Otherwise,
 /// it will be like a rotation with a multiplication by `self`'s length.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn rotate(self, #[proxy] rhs: bevy::math::IVec2) -> bevy::math::IVec2;
 
 "#,
     r#"
 /// Casts all elements of `self` to `f32`.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn as_vec2(&self) -> bevy::math::Vec2;
 
 "#,
     r#"
 /// Casts all elements of `self` to `f64`.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn as_dvec2(&self) -> bevy::math::DVec2;
 
 "#,
     r#"
 /// Casts all elements of `self` to `u32`.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn as_uvec2(&self) -> bevy::math::UVec2;
 
 "#,
     r#"
 /// Casts all elements of `self` to `i64`.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn as_i64vec2(&self) -> bevy::math::I64Vec2;
 
 "#,
     r#"
 /// Casts all elements of `self` to `u64`.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn as_u64vec2(&self) -> bevy::math::U64Vec2;
 
 "#,
@@ -5402,7 +5023,7 @@ pub struct Vec3 {
 /// Returns a vector containing the wrapping addition of `self` and `rhs`.
 /// In other words this computes `[self.x.wrapping_add(rhs.x), self.y.wrapping_add(rhs.y), ..]`.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn wrapping_add(self, #[proxy] rhs: bevy::math::IVec2) -> bevy::math::IVec2;
 
 "#,
@@ -5410,7 +5031,7 @@ pub struct Vec3 {
 /// Returns a vector containing the wrapping subtraction of `self` and `rhs`.
 /// In other words this computes `[self.x.wrapping_sub(rhs.x), self.y.wrapping_sub(rhs.y), ..]`.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn wrapping_sub(self, #[proxy] rhs: bevy::math::IVec2) -> bevy::math::IVec2;
 
 "#,
@@ -5418,7 +5039,7 @@ pub struct Vec3 {
 /// Returns a vector containing the wrapping multiplication of `self` and `rhs`.
 /// In other words this computes `[self.x.wrapping_mul(rhs.x), self.y.wrapping_mul(rhs.y), ..]`.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn wrapping_mul(self, #[proxy] rhs: bevy::math::IVec2) -> bevy::math::IVec2;
 
 "#,
@@ -5426,7 +5047,7 @@ pub struct Vec3 {
 /// Returns a vector containing the wrapping division of `self` and `rhs`.
 /// In other words this computes `[self.x.wrapping_div(rhs.x), self.y.wrapping_div(rhs.y), ..]`.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn wrapping_div(self, #[proxy] rhs: bevy::math::IVec2) -> bevy::math::IVec2;
 
 "#,
@@ -5434,7 +5055,7 @@ pub struct Vec3 {
 /// Returns a vector containing the saturating addition of `self` and `rhs`.
 /// In other words this computes `[self.x.saturating_add(rhs.x), self.y.saturating_add(rhs.y), ..]`.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn saturating_add(self, #[proxy] rhs: bevy::math::IVec2) -> bevy::math::IVec2;
 
 "#,
@@ -5442,7 +5063,7 @@ pub struct Vec3 {
 /// Returns a vector containing the saturating subtraction of `self` and `rhs`.
 /// In other words this computes `[self.x.saturating_sub(rhs.x), self.y.saturating_sub(rhs.y), ..]`.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn saturating_sub(self, #[proxy] rhs: bevy::math::IVec2) -> bevy::math::IVec2;
 
 "#,
@@ -5450,7 +5071,7 @@ pub struct Vec3 {
 /// Returns a vector containing the saturating multiplication of `self` and `rhs`.
 /// In other words this computes `[self.x.saturating_mul(rhs.x), self.y.saturating_mul(rhs.y), ..]`.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn saturating_mul(self, #[proxy] rhs: bevy::math::IVec2) -> bevy::math::IVec2;
 
 "#,
@@ -5458,107 +5079,79 @@ pub struct Vec3 {
 /// Returns a vector containing the saturating division of `self` and `rhs`.
 /// In other words this computes `[self.x.saturating_div(rhs.x), self.y.saturating_div(rhs.y), ..]`.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn saturating_div(self, #[proxy] rhs: bevy::math::IVec2) -> bevy::math::IVec2;
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "std::ops::Div",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "div",
-        metamethod = "Div",
-    )]
+    #[lua(as_trait = "std::ops::Div", composite = "div")]
     fn div(self, rhs: i32) -> bevy::math::IVec2;
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "std::ops::Neg",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "neg",
-        metamethod = "Unm",
-    )]
+    #[lua(as_trait = "std::ops::Neg", composite = "neg")]
     fn neg(self) -> bevy::math::IVec2;
 
 "#,
     r#"
-#[lua(kind="MetaMethod", metamethod="ToString")]
+#[lua(metamethod="ToString")]
 fn index(&self) -> String {
     format!("{}", _self)
 }
 "#,
     r#"
-#[lua(kind="MetaMethod", raw , metamethod="Index")]
+#[lua(raw , metamethod="Index")]
 fn index(&self, lua: &Lua, idx: crate::lua::util::LuaIndex) -> Result<i32,_> {
-    Ok(self.inner()?[*idx])
+    Ok(_self.inner()?[*idx])
 }
 "#,
     r#"
-#[lua(kind="MutatingMetaMethod", raw, metamethod="NewIndex")]
+#[lua(raw, metamethod="NewIndex")]
 fn index(&mut self, lua: &Lua, idx: crate::lua::util::LuaIndex, val: i32) -> Result<(),_> {
-    self.val_mut(|s| Ok(s[*idx] = val))?
+    _self.val_mut(|s| Ok(s[*idx] = val))?
 }
 "#]
 )]
-pub struct IVec2 {
+pub struct LuaIVec2 {
     x: i32,
     y: i32,
 }
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
     remote = "bevy::math::IVec3",
+    bms_core_path = "bevy_mod_scripting_core",
+    bms_lua_path = "crate",
     functions[r#"
 
-    #[lua(
-        as_trait = "std::ops::Sub",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "sub",
-        metamethod = "Sub",
-    )]
+    #[lua(as_trait = "std::ops::Sub", composite = "sub")]
     fn sub(self, #[proxy] rhs: bevy::math::IVec3) -> bevy::math::IVec3;
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "std::ops::Rem",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "rem",
-        metamethod = "Mod",
-    )]
+    #[lua(as_trait = "std::ops::Rem", composite = "rem")]
     fn rem(self, #[proxy] rhs: bevy::math::IVec3) -> bevy::math::IVec3;
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "std::ops::Sub",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "sub",
-        metamethod = "Sub",
-    )]
+    #[lua(as_trait = "std::ops::Sub", composite = "sub")]
     fn sub(self, rhs: i32) -> bevy::math::IVec3;
 
 "#,
     r#"
 /// Creates a new vector.
 
-    #[lua(kind = "Function", output(proxy))]
+    #[lua()]
     fn new(x: i32, y: i32, z: i32) -> bevy::math::IVec3;
 
 "#,
     r#"
 /// Creates a vector with all elements set to `v`.
 
-    #[lua(kind = "Function", output(proxy))]
+    #[lua()]
     fn splat(v: i32) -> bevy::math::IVec3;
 
 "#,
@@ -5568,7 +5161,7 @@ pub struct IVec2 {
 /// A true element in the mask uses the corresponding element from `if_true`, and false
 /// uses the element from `if_false`.
 
-    #[lua(kind = "Function", output(proxy))]
+    #[lua()]
     fn select(
         #[proxy]
         mask: bevy::math::BVec3,
@@ -5582,21 +5175,21 @@ pub struct IVec2 {
     r#"
 /// Creates a new vector from an array.
 
-    #[lua(kind = "Function", output(proxy))]
+    #[lua()]
     fn from_array(a: [i32; 3]) -> bevy::math::IVec3;
 
 "#,
     r#"
 /// `[x, y, z]`
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn to_array(&self) -> [i32; 3];
 
 "#,
     r#"
 /// Creates a 4D vector from `self` and the given `w` value.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn extend(self, w: i32) -> bevy::math::IVec4;
 
 "#,
@@ -5604,28 +5197,28 @@ pub struct IVec2 {
 /// Creates a 2D vector from the `x` and `y` elements of `self`, discarding `z`.
 /// Truncation may also be performed by using [`self.xy()`][crate::swizzles::Vec3Swizzles::xy()].
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn truncate(self) -> bevy::math::IVec2;
 
 "#,
     r#"
 /// Computes the dot product of `self` and `rhs`.
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn dot(self, #[proxy] rhs: bevy::math::IVec3) -> i32;
 
 "#,
     r#"
 /// Returns a vector where every component is the dot product of `self` and `rhs`.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn dot_into_vec(self, #[proxy] rhs: bevy::math::IVec3) -> bevy::math::IVec3;
 
 "#,
     r#"
 /// Computes the cross product of `self` and `rhs`.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn cross(self, #[proxy] rhs: bevy::math::IVec3) -> bevy::math::IVec3;
 
 "#,
@@ -5633,7 +5226,7 @@ pub struct IVec2 {
 /// Returns a vector containing the minimum values for each element of `self` and `rhs`.
 /// In other words this computes `[self.x.min(rhs.x), self.y.min(rhs.y), ..]`.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn min(self, #[proxy] rhs: bevy::math::IVec3) -> bevy::math::IVec3;
 
 "#,
@@ -5641,7 +5234,7 @@ pub struct IVec2 {
 /// Returns a vector containing the maximum values for each element of `self` and `rhs`.
 /// In other words this computes `[self.x.max(rhs.x), self.y.max(rhs.y), ..]`.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn max(self, #[proxy] rhs: bevy::math::IVec3) -> bevy::math::IVec3;
 
 "#,
@@ -5651,7 +5244,7 @@ pub struct IVec2 {
 /// # Panics
 /// Will panic if `min` is greater than `max` when `glam_assert` is enabled.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn clamp(
         self,
         #[proxy]
@@ -5665,7 +5258,7 @@ pub struct IVec2 {
 /// Returns the horizontal minimum of `self`.
 /// In other words this computes `min(x, y, ..)`.
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn min_element(self) -> i32;
 
 "#,
@@ -5673,7 +5266,7 @@ pub struct IVec2 {
 /// Returns the horizontal maximum of `self`.
 /// In other words this computes `max(x, y, ..)`.
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn max_element(self) -> i32;
 
 "#,
@@ -5683,7 +5276,7 @@ pub struct IVec2 {
 /// In other words, this computes `[self.x == rhs.x, self.y == rhs.y, ..]` for all
 /// elements.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn cmpeq(self, #[proxy] rhs: bevy::math::IVec3) -> bevy::math::BVec3;
 
 "#,
@@ -5693,7 +5286,7 @@ pub struct IVec2 {
 /// In other words this computes `[self.x != rhs.x, self.y != rhs.y, ..]` for all
 /// elements.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn cmpne(self, #[proxy] rhs: bevy::math::IVec3) -> bevy::math::BVec3;
 
 "#,
@@ -5703,7 +5296,7 @@ pub struct IVec2 {
 /// In other words this computes `[self.x >= rhs.x, self.y >= rhs.y, ..]` for all
 /// elements.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn cmpge(self, #[proxy] rhs: bevy::math::IVec3) -> bevy::math::BVec3;
 
 "#,
@@ -5713,7 +5306,7 @@ pub struct IVec2 {
 /// In other words this computes `[self.x > rhs.x, self.y > rhs.y, ..]` for all
 /// elements.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn cmpgt(self, #[proxy] rhs: bevy::math::IVec3) -> bevy::math::BVec3;
 
 "#,
@@ -5723,7 +5316,7 @@ pub struct IVec2 {
 /// In other words this computes `[self.x <= rhs.x, self.y <= rhs.y, ..]` for all
 /// elements.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn cmple(self, #[proxy] rhs: bevy::math::IVec3) -> bevy::math::BVec3;
 
 "#,
@@ -5733,14 +5326,14 @@ pub struct IVec2 {
 /// In other words this computes `[self.x < rhs.x, self.y < rhs.y, ..]` for all
 /// elements.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn cmplt(self, #[proxy] rhs: bevy::math::IVec3) -> bevy::math::BVec3;
 
 "#,
     r#"
 /// Returns a vector containing the absolute value of each element of `self`.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn abs(self) -> bevy::math::IVec3;
 
 "#,
@@ -5750,7 +5343,7 @@ pub struct IVec2 {
 ///  - `1` if the number is positive
 ///  - `-1` if the number is negative
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn signum(self) -> bevy::math::IVec3;
 
 "#,
@@ -5759,21 +5352,21 @@ pub struct IVec2 {
 /// A negative element results in a `1` bit and a positive element in a `0` bit.  Element `x` goes
 /// into the first lowest bit, element `y` into the second, etc.
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn is_negative_bitmask(self) -> u32;
 
 "#,
     r#"
 /// Computes the squared length of `self`.
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn length_squared(self) -> i32;
 
 "#,
     r#"
 /// Compute the squared euclidean distance between two points in space.
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn distance_squared(self, #[proxy] rhs: bevy::math::IVec3) -> i32;
 
 "#,
@@ -5782,7 +5375,7 @@ pub struct IVec2 {
 /// # Panics
 /// This function will panic if any `rhs` element is 0 or the division results in overflow.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn div_euclid(self, #[proxy] rhs: bevy::math::IVec3) -> bevy::math::IVec3;
 
 "#,
@@ -5792,49 +5385,49 @@ pub struct IVec2 {
 /// This function will panic if any `rhs` element is 0 or the division results in overflow.
 /// [Euclidean division]: i32::rem_euclid
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn rem_euclid(self, #[proxy] rhs: bevy::math::IVec3) -> bevy::math::IVec3;
 
 "#,
     r#"
 /// Casts all elements of `self` to `f32`.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn as_vec3(&self) -> bevy::math::Vec3;
 
 "#,
     r#"
 /// Casts all elements of `self` to `f32`.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn as_vec3a(&self) -> bevy::math::Vec3A;
 
 "#,
     r#"
 /// Casts all elements of `self` to `f64`.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn as_dvec3(&self) -> bevy::math::DVec3;
 
 "#,
     r#"
 /// Casts all elements of `self` to `u32`.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn as_uvec3(&self) -> bevy::math::UVec3;
 
 "#,
     r#"
 /// Casts all elements of `self` to `i64`.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn as_i64vec3(&self) -> bevy::math::I64Vec3;
 
 "#,
     r#"
 /// Casts all elements of `self` to `u64`.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn as_u64vec3(&self) -> bevy::math::U64Vec3;
 
 "#,
@@ -5842,7 +5435,7 @@ pub struct IVec2 {
 /// Returns a vector containing the wrapping addition of `self` and `rhs`.
 /// In other words this computes `[self.x.wrapping_add(rhs.x), self.y.wrapping_add(rhs.y), ..]`.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn wrapping_add(self, #[proxy] rhs: bevy::math::IVec3) -> bevy::math::IVec3;
 
 "#,
@@ -5850,7 +5443,7 @@ pub struct IVec2 {
 /// Returns a vector containing the wrapping subtraction of `self` and `rhs`.
 /// In other words this computes `[self.x.wrapping_sub(rhs.x), self.y.wrapping_sub(rhs.y), ..]`.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn wrapping_sub(self, #[proxy] rhs: bevy::math::IVec3) -> bevy::math::IVec3;
 
 "#,
@@ -5858,7 +5451,7 @@ pub struct IVec2 {
 /// Returns a vector containing the wrapping multiplication of `self` and `rhs`.
 /// In other words this computes `[self.x.wrapping_mul(rhs.x), self.y.wrapping_mul(rhs.y), ..]`.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn wrapping_mul(self, #[proxy] rhs: bevy::math::IVec3) -> bevy::math::IVec3;
 
 "#,
@@ -5866,7 +5459,7 @@ pub struct IVec2 {
 /// Returns a vector containing the wrapping division of `self` and `rhs`.
 /// In other words this computes `[self.x.wrapping_div(rhs.x), self.y.wrapping_div(rhs.y), ..]`.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn wrapping_div(self, #[proxy] rhs: bevy::math::IVec3) -> bevy::math::IVec3;
 
 "#,
@@ -5874,7 +5467,7 @@ pub struct IVec2 {
 /// Returns a vector containing the saturating addition of `self` and `rhs`.
 /// In other words this computes `[self.x.saturating_add(rhs.x), self.y.saturating_add(rhs.y), ..]`.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn saturating_add(self, #[proxy] rhs: bevy::math::IVec3) -> bevy::math::IVec3;
 
 "#,
@@ -5882,7 +5475,7 @@ pub struct IVec2 {
 /// Returns a vector containing the saturating subtraction of `self` and `rhs`.
 /// In other words this computes `[self.x.saturating_sub(rhs.x), self.y.saturating_sub(rhs.y), ..]`.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn saturating_sub(self, #[proxy] rhs: bevy::math::IVec3) -> bevy::math::IVec3;
 
 "#,
@@ -5890,7 +5483,7 @@ pub struct IVec2 {
 /// Returns a vector containing the saturating multiplication of `self` and `rhs`.
 /// In other words this computes `[self.x.saturating_mul(rhs.x), self.y.saturating_mul(rhs.y), ..]`.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn saturating_mul(self, #[proxy] rhs: bevy::math::IVec3) -> bevy::math::IVec3;
 
 "#,
@@ -5898,153 +5491,96 @@ pub struct IVec2 {
 /// Returns a vector containing the saturating division of `self` and `rhs`.
 /// In other words this computes `[self.x.saturating_div(rhs.x), self.y.saturating_div(rhs.y), ..]`.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn saturating_div(self, #[proxy] rhs: bevy::math::IVec3) -> bevy::math::IVec3;
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "std::ops::Div",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "div",
-        metamethod = "Div",
-    )]
+    #[lua(as_trait = "std::ops::Div", composite = "div")]
     fn div(self, #[proxy] rhs: bevy::math::IVec3) -> bevy::math::IVec3;
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "std::ops::Mul",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "mul",
-        metamethod = "Mul",
-    )]
+    #[lua(as_trait = "std::ops::Mul", composite = "mul")]
     fn mul(self, #[proxy] rhs: bevy::math::IVec3) -> bevy::math::IVec3;
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "std::ops::Neg",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "neg",
-        metamethod = "Unm",
-    )]
+    #[lua(as_trait = "std::ops::Neg", composite = "neg")]
     fn neg(self) -> bevy::math::IVec3;
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone",
-        kind = "Method",
-        output(proxy),
-    )]
+    #[lua(as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone")]
     fn clone(&self) -> bevy::math::IVec3;
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "std::ops::Add",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "add",
-        metamethod = "Add",
-    )]
+    #[lua(as_trait = "std::ops::Add", composite = "add")]
     fn add(self, #[proxy] rhs: bevy::math::IVec3) -> bevy::math::IVec3;
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "std::ops::Rem",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "rem",
-        metamethod = "Mod",
-    )]
+    #[lua(as_trait = "std::ops::Rem", composite = "rem")]
     fn rem(self, rhs: i32) -> bevy::math::IVec3;
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "std::ops::Add",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "add",
-        metamethod = "Add",
-    )]
+    #[lua(as_trait = "std::ops::Add", composite = "add")]
     fn add(self, rhs: i32) -> bevy::math::IVec3;
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "std::ops::Div",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "div",
-        metamethod = "Div",
-    )]
+    #[lua(as_trait = "std::ops::Div", composite = "div")]
     fn div(self, rhs: i32) -> bevy::math::IVec3;
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "std::ops::Mul",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "mul",
-        metamethod = "Mul",
-    )]
+    #[lua(as_trait = "std::ops::Mul", composite = "mul")]
     fn mul(self, rhs: i32) -> bevy::math::IVec3;
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "std::cmp::PartialEq",
-        kind = "MetaFunction",
-        composite = "eq",
-        metamethod = "Eq",
-    )]
+    #[lua(as_trait = "std::cmp::PartialEq", composite = "eq")]
     fn eq(&self, #[proxy] other: &glam::IVec3) -> bool;
 
 "#,
     r#"
 
-    #[lua(as_trait = "std::cmp::Eq", kind = "Method")]
+    #[lua(as_trait = "std::cmp::Eq")]
     fn assert_receiver_is_total_eq(&self) -> ();
 
 "#,
     r#"
-#[lua(kind="MetaMethod", metamethod="ToString")]
+#[lua(metamethod="ToString")]
 fn index(&self) -> String {
     format!("{}", _self)
 }
 "#,
     r#"
-#[lua(kind="MetaMethod", raw , metamethod="Index")]
+#[lua(raw , metamethod="Index")]
 fn index(&self, lua: &Lua, idx: crate::lua::util::LuaIndex) -> Result<i32,_> {
-    Ok(self.inner()?[*idx])
+    Ok(_self.inner()?[*idx])
 }
 "#,
     r#"
-#[lua(kind="MutatingMetaMethod", raw, metamethod="NewIndex")]
+#[lua(raw, metamethod="NewIndex")]
 fn index(&mut self, lua: &Lua, idx: crate::lua::util::LuaIndex, val: i32) -> Result<(),_> {
-    self.val_mut(|s| Ok(s[*idx] = val))?
+    _self.val_mut(|s| Ok(s[*idx] = val))?
 }
 "#]
 )]
-pub struct IVec3 {
+pub struct LuaIVec3 {
     x: i32,
     y: i32,
     z: i32,
@@ -6052,57 +5588,43 @@ pub struct IVec3 {
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
     remote = "bevy::math::IVec4",
+    bms_core_path = "bevy_mod_scripting_core",
+    bms_lua_path = "crate",
     functions[r#"
 
-    #[lua(
-        as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone",
-        kind = "Method",
-        output(proxy),
-    )]
+    #[lua(as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone")]
     fn clone(&self) -> bevy::math::IVec4;
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "std::ops::Rem",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "rem",
-        metamethod = "Mod",
-    )]
+    #[lua(as_trait = "std::ops::Rem", composite = "rem")]
     fn rem(self, rhs: i32) -> bevy::math::IVec4;
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "std::ops::Rem",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "rem",
-        metamethod = "Mod",
-    )]
+    #[lua(as_trait = "std::ops::Rem", composite = "rem")]
     fn rem(self, #[proxy] rhs: bevy::math::IVec4) -> bevy::math::IVec4;
 
 "#,
     r#"
 
-    #[lua(as_trait = "std::cmp::Eq", kind = "Method")]
+    #[lua(as_trait = "std::cmp::Eq")]
     fn assert_receiver_is_total_eq(&self) -> ();
 
 "#,
     r#"
 /// Creates a new vector.
 
-    #[lua(kind = "Function", output(proxy))]
+    #[lua()]
     fn new(x: i32, y: i32, z: i32, w: i32) -> bevy::math::IVec4;
 
 "#,
     r#"
 /// Creates a vector with all elements set to `v`.
 
-    #[lua(kind = "Function", output(proxy))]
+    #[lua()]
     fn splat(v: i32) -> bevy::math::IVec4;
 
 "#,
@@ -6112,7 +5634,7 @@ pub struct IVec3 {
 /// A true element in the mask uses the corresponding element from `if_true`, and false
 /// uses the element from `if_false`.
 
-    #[lua(kind = "Function", output(proxy))]
+    #[lua()]
     fn select(
         #[proxy]
         mask: bevy::math::BVec4,
@@ -6126,14 +5648,14 @@ pub struct IVec3 {
     r#"
 /// Creates a new vector from an array.
 
-    #[lua(kind = "Function", output(proxy))]
+    #[lua()]
     fn from_array(a: [i32; 4]) -> bevy::math::IVec4;
 
 "#,
     r#"
 /// `[x, y, z, w]`
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn to_array(&self) -> [i32; 4];
 
 "#,
@@ -6141,21 +5663,21 @@ pub struct IVec3 {
 /// Creates a 3D vector from the `x`, `y` and `z` elements of `self`, discarding `w`.
 /// Truncation to [`IVec3`] may also be performed by using [`self.xyz()`][crate::swizzles::Vec4Swizzles::xyz()].
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn truncate(self) -> bevy::math::IVec3;
 
 "#,
     r#"
 /// Computes the dot product of `self` and `rhs`.
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn dot(self, #[proxy] rhs: bevy::math::IVec4) -> i32;
 
 "#,
     r#"
 /// Returns a vector where every component is the dot product of `self` and `rhs`.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn dot_into_vec(self, #[proxy] rhs: bevy::math::IVec4) -> bevy::math::IVec4;
 
 "#,
@@ -6163,7 +5685,7 @@ pub struct IVec3 {
 /// Returns a vector containing the minimum values for each element of `self` and `rhs`.
 /// In other words this computes `[self.x.min(rhs.x), self.y.min(rhs.y), ..]`.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn min(self, #[proxy] rhs: bevy::math::IVec4) -> bevy::math::IVec4;
 
 "#,
@@ -6171,7 +5693,7 @@ pub struct IVec3 {
 /// Returns a vector containing the maximum values for each element of `self` and `rhs`.
 /// In other words this computes `[self.x.max(rhs.x), self.y.max(rhs.y), ..]`.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn max(self, #[proxy] rhs: bevy::math::IVec4) -> bevy::math::IVec4;
 
 "#,
@@ -6181,7 +5703,7 @@ pub struct IVec3 {
 /// # Panics
 /// Will panic if `min` is greater than `max` when `glam_assert` is enabled.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn clamp(
         self,
         #[proxy]
@@ -6195,7 +5717,7 @@ pub struct IVec3 {
 /// Returns the horizontal minimum of `self`.
 /// In other words this computes `min(x, y, ..)`.
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn min_element(self) -> i32;
 
 "#,
@@ -6203,7 +5725,7 @@ pub struct IVec3 {
 /// Returns the horizontal maximum of `self`.
 /// In other words this computes `max(x, y, ..)`.
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn max_element(self) -> i32;
 
 "#,
@@ -6213,7 +5735,7 @@ pub struct IVec3 {
 /// In other words, this computes `[self.x == rhs.x, self.y == rhs.y, ..]` for all
 /// elements.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn cmpeq(self, #[proxy] rhs: bevy::math::IVec4) -> bevy::math::BVec4;
 
 "#,
@@ -6223,7 +5745,7 @@ pub struct IVec3 {
 /// In other words this computes `[self.x != rhs.x, self.y != rhs.y, ..]` for all
 /// elements.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn cmpne(self, #[proxy] rhs: bevy::math::IVec4) -> bevy::math::BVec4;
 
 "#,
@@ -6233,7 +5755,7 @@ pub struct IVec3 {
 /// In other words this computes `[self.x >= rhs.x, self.y >= rhs.y, ..]` for all
 /// elements.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn cmpge(self, #[proxy] rhs: bevy::math::IVec4) -> bevy::math::BVec4;
 
 "#,
@@ -6243,7 +5765,7 @@ pub struct IVec3 {
 /// In other words this computes `[self.x > rhs.x, self.y > rhs.y, ..]` for all
 /// elements.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn cmpgt(self, #[proxy] rhs: bevy::math::IVec4) -> bevy::math::BVec4;
 
 "#,
@@ -6253,7 +5775,7 @@ pub struct IVec3 {
 /// In other words this computes `[self.x <= rhs.x, self.y <= rhs.y, ..]` for all
 /// elements.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn cmple(self, #[proxy] rhs: bevy::math::IVec4) -> bevy::math::BVec4;
 
 "#,
@@ -6263,14 +5785,14 @@ pub struct IVec3 {
 /// In other words this computes `[self.x < rhs.x, self.y < rhs.y, ..]` for all
 /// elements.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn cmplt(self, #[proxy] rhs: bevy::math::IVec4) -> bevy::math::BVec4;
 
 "#,
     r#"
 /// Returns a vector containing the absolute value of each element of `self`.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn abs(self) -> bevy::math::IVec4;
 
 "#,
@@ -6280,7 +5802,7 @@ pub struct IVec3 {
 ///  - `1` if the number is positive
 ///  - `-1` if the number is negative
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn signum(self) -> bevy::math::IVec4;
 
 "#,
@@ -6289,21 +5811,21 @@ pub struct IVec3 {
 /// A negative element results in a `1` bit and a positive element in a `0` bit.  Element `x` goes
 /// into the first lowest bit, element `y` into the second, etc.
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn is_negative_bitmask(self) -> u32;
 
 "#,
     r#"
 /// Computes the squared length of `self`.
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn length_squared(self) -> i32;
 
 "#,
     r#"
 /// Compute the squared euclidean distance between two points in space.
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn distance_squared(self, #[proxy] rhs: bevy::math::IVec4) -> i32;
 
 "#,
@@ -6312,7 +5834,7 @@ pub struct IVec3 {
 /// # Panics
 /// This function will panic if any `rhs` element is 0 or the division results in overflow.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn div_euclid(self, #[proxy] rhs: bevy::math::IVec4) -> bevy::math::IVec4;
 
 "#,
@@ -6322,42 +5844,42 @@ pub struct IVec3 {
 /// This function will panic if any `rhs` element is 0 or the division results in overflow.
 /// [Euclidean division]: i32::rem_euclid
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn rem_euclid(self, #[proxy] rhs: bevy::math::IVec4) -> bevy::math::IVec4;
 
 "#,
     r#"
 /// Casts all elements of `self` to `f32`.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn as_vec4(&self) -> bevy::math::Vec4;
 
 "#,
     r#"
 /// Casts all elements of `self` to `f64`.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn as_dvec4(&self) -> bevy::math::DVec4;
 
 "#,
     r#"
 /// Casts all elements of `self` to `u32`.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn as_uvec4(&self) -> bevy::math::UVec4;
 
 "#,
     r#"
 /// Casts all elements of `self` to `i64`.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn as_i64vec4(&self) -> bevy::math::I64Vec4;
 
 "#,
     r#"
 /// Casts all elements of `self` to `u64`.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn as_u64vec4(&self) -> bevy::math::U64Vec4;
 
 "#,
@@ -6365,7 +5887,7 @@ pub struct IVec3 {
 /// Returns a vector containing the wrapping addition of `self` and `rhs`.
 /// In other words this computes `[self.x.wrapping_add(rhs.x), self.y.wrapping_add(rhs.y), ..]`.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn wrapping_add(self, #[proxy] rhs: bevy::math::IVec4) -> bevy::math::IVec4;
 
 "#,
@@ -6373,7 +5895,7 @@ pub struct IVec3 {
 /// Returns a vector containing the wrapping subtraction of `self` and `rhs`.
 /// In other words this computes `[self.x.wrapping_sub(rhs.x), self.y.wrapping_sub(rhs.y), ..]`.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn wrapping_sub(self, #[proxy] rhs: bevy::math::IVec4) -> bevy::math::IVec4;
 
 "#,
@@ -6381,7 +5903,7 @@ pub struct IVec3 {
 /// Returns a vector containing the wrapping multiplication of `self` and `rhs`.
 /// In other words this computes `[self.x.wrapping_mul(rhs.x), self.y.wrapping_mul(rhs.y), ..]`.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn wrapping_mul(self, #[proxy] rhs: bevy::math::IVec4) -> bevy::math::IVec4;
 
 "#,
@@ -6389,7 +5911,7 @@ pub struct IVec3 {
 /// Returns a vector containing the wrapping division of `self` and `rhs`.
 /// In other words this computes `[self.x.wrapping_div(rhs.x), self.y.wrapping_div(rhs.y), ..]`.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn wrapping_div(self, #[proxy] rhs: bevy::math::IVec4) -> bevy::math::IVec4;
 
 "#,
@@ -6397,7 +5919,7 @@ pub struct IVec3 {
 /// Returns a vector containing the saturating addition of `self` and `rhs`.
 /// In other words this computes `[self.x.saturating_add(rhs.x), self.y.saturating_add(rhs.y), ..]`.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn saturating_add(self, #[proxy] rhs: bevy::math::IVec4) -> bevy::math::IVec4;
 
 "#,
@@ -6405,7 +5927,7 @@ pub struct IVec3 {
 /// Returns a vector containing the saturating subtraction of `self` and `rhs`.
 /// In other words this computes `[self.x.saturating_sub(rhs.x), self.y.saturating_sub(rhs.y), ..]`.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn saturating_sub(self, #[proxy] rhs: bevy::math::IVec4) -> bevy::math::IVec4;
 
 "#,
@@ -6413,7 +5935,7 @@ pub struct IVec3 {
 /// Returns a vector containing the saturating multiplication of `self` and `rhs`.
 /// In other words this computes `[self.x.saturating_mul(rhs.x), self.y.saturating_mul(rhs.y), ..]`.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn saturating_mul(self, #[proxy] rhs: bevy::math::IVec4) -> bevy::math::IVec4;
 
 "#,
@@ -6421,149 +5943,90 @@ pub struct IVec3 {
 /// Returns a vector containing the saturating division of `self` and `rhs`.
 /// In other words this computes `[self.x.saturating_div(rhs.x), self.y.saturating_div(rhs.y), ..]`.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn saturating_div(self, #[proxy] rhs: bevy::math::IVec4) -> bevy::math::IVec4;
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "std::ops::Mul",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "mul",
-        metamethod = "Mul",
-    )]
+    #[lua(as_trait = "std::ops::Mul", composite = "mul")]
     fn mul(self, #[proxy] rhs: bevy::math::IVec4) -> bevy::math::IVec4;
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "std::ops::Div",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "div",
-        metamethod = "Div",
-    )]
+    #[lua(as_trait = "std::ops::Div", composite = "div")]
     fn div(self, #[proxy] rhs: bevy::math::IVec4) -> bevy::math::IVec4;
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "std::cmp::PartialEq",
-        kind = "MetaFunction",
-        composite = "eq",
-        metamethod = "Eq",
-    )]
+    #[lua(as_trait = "std::cmp::PartialEq", composite = "eq")]
     fn eq(&self, #[proxy] other: &glam::IVec4) -> bool;
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "std::ops::Div",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "div",
-        metamethod = "Div",
-    )]
+    #[lua(as_trait = "std::ops::Div", composite = "div")]
     fn div(self, rhs: i32) -> bevy::math::IVec4;
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "std::ops::Mul",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "mul",
-        metamethod = "Mul",
-    )]
+    #[lua(as_trait = "std::ops::Mul", composite = "mul")]
     fn mul(self, rhs: i32) -> bevy::math::IVec4;
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "std::ops::Add",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "add",
-        metamethod = "Add",
-    )]
+    #[lua(as_trait = "std::ops::Add", composite = "add")]
     fn add(self, #[proxy] rhs: bevy::math::IVec4) -> bevy::math::IVec4;
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "std::ops::Sub",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "sub",
-        metamethod = "Sub",
-    )]
+    #[lua(as_trait = "std::ops::Sub", composite = "sub")]
     fn sub(self, #[proxy] rhs: bevy::math::IVec4) -> bevy::math::IVec4;
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "std::ops::Add",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "add",
-        metamethod = "Add",
-    )]
+    #[lua(as_trait = "std::ops::Add", composite = "add")]
     fn add(self, rhs: i32) -> bevy::math::IVec4;
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "std::ops::Neg",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "neg",
-        metamethod = "Unm",
-    )]
+    #[lua(as_trait = "std::ops::Neg", composite = "neg")]
     fn neg(self) -> bevy::math::IVec4;
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "std::ops::Sub",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "sub",
-        metamethod = "Sub",
-    )]
+    #[lua(as_trait = "std::ops::Sub", composite = "sub")]
     fn sub(self, rhs: i32) -> bevy::math::IVec4;
 
 "#,
     r#"
-#[lua(kind="MetaMethod", metamethod="ToString")]
+#[lua(metamethod="ToString")]
 fn index(&self) -> String {
     format!("{}", _self)
 }
 "#,
     r#"
-#[lua(kind="MetaMethod", raw , metamethod="Index")]
+#[lua(raw , metamethod="Index")]
 fn index(&self, lua: &Lua, idx: crate::lua::util::LuaIndex) -> Result<i32,_> {
-    Ok(self.inner()?[*idx])
+    Ok(_self.inner()?[*idx])
 }
 "#,
     r#"
-#[lua(kind="MutatingMetaMethod", raw, metamethod="NewIndex")]
+#[lua(raw, metamethod="NewIndex")]
 fn index(&mut self, lua: &Lua, idx: crate::lua::util::LuaIndex, val: i32) -> Result<(),_> {
-    self.val_mut(|s| Ok(s[*idx] = val))?
+    _self.val_mut(|s| Ok(s[*idx] = val))?
 }
 "#]
 )]
-pub struct IVec4 {
+pub struct LuaIVec4 {
     x: i32,
     y: i32,
     z: i32,
@@ -6572,176 +6035,103 @@ pub struct IVec4 {
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
     remote = "bevy::math::I64Vec2",
+    bms_core_path = "bevy_mod_scripting_core",
+    bms_lua_path = "crate",
     functions[r#"
 
-    #[lua(
-        as_trait = "std::ops::Mul",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "mul",
-        metamethod = "Mul",
-    )]
+    #[lua(as_trait = "std::ops::Mul", composite = "mul")]
     fn mul(self, #[proxy] rhs: bevy::math::I64Vec2) -> bevy::math::I64Vec2;
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "std::ops::Mul",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "mul",
-        metamethod = "Mul",
-    )]
+    #[lua(as_trait = "std::ops::Mul", composite = "mul")]
     fn mul(self, rhs: i64) -> bevy::math::I64Vec2;
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "std::ops::Rem",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "rem",
-        metamethod = "Mod",
-    )]
+    #[lua(as_trait = "std::ops::Rem", composite = "rem")]
     fn rem(self, #[proxy] rhs: bevy::math::I64Vec2) -> bevy::math::I64Vec2;
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "std::ops::Neg",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "neg",
-        metamethod = "Unm",
-    )]
+    #[lua(as_trait = "std::ops::Neg", composite = "neg")]
     fn neg(self) -> bevy::math::I64Vec2;
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "std::ops::Div",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "div",
-        metamethod = "Div",
-    )]
+    #[lua(as_trait = "std::ops::Div", composite = "div")]
     fn div(self, #[proxy] rhs: bevy::math::I64Vec2) -> bevy::math::I64Vec2;
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "std::ops::Add",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "add",
-        metamethod = "Add",
-    )]
+    #[lua(as_trait = "std::ops::Add", composite = "add")]
     fn add(self, rhs: i64) -> bevy::math::I64Vec2;
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "std::ops::Rem",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "rem",
-        metamethod = "Mod",
-    )]
+    #[lua(as_trait = "std::ops::Rem", composite = "rem")]
     fn rem(self, rhs: i64) -> bevy::math::I64Vec2;
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "std::ops::Sub",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "sub",
-        metamethod = "Sub",
-    )]
+    #[lua(as_trait = "std::ops::Sub", composite = "sub")]
     fn sub(self, rhs: i64) -> bevy::math::I64Vec2;
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "std::cmp::PartialEq",
-        kind = "MetaFunction",
-        composite = "eq",
-        metamethod = "Eq",
-    )]
+    #[lua(as_trait = "std::cmp::PartialEq", composite = "eq")]
     fn eq(&self, #[proxy] other: &glam::I64Vec2) -> bool;
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "std::ops::Add",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "add",
-        metamethod = "Add",
-    )]
+    #[lua(as_trait = "std::ops::Add", composite = "add")]
     fn add(self, #[proxy] rhs: bevy::math::I64Vec2) -> bevy::math::I64Vec2;
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "std::ops::Div",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "div",
-        metamethod = "Div",
-    )]
+    #[lua(as_trait = "std::ops::Div", composite = "div")]
     fn div(self, rhs: i64) -> bevy::math::I64Vec2;
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "std::ops::Sub",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "sub",
-        metamethod = "Sub",
-    )]
+    #[lua(as_trait = "std::ops::Sub", composite = "sub")]
     fn sub(self, #[proxy] rhs: bevy::math::I64Vec2) -> bevy::math::I64Vec2;
 
 "#,
     r#"
 
-    #[lua(as_trait = "std::cmp::Eq", kind = "Method")]
+    #[lua(as_trait = "std::cmp::Eq")]
     fn assert_receiver_is_total_eq(&self) -> ();
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone",
-        kind = "Method",
-        output(proxy),
-    )]
+    #[lua(as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone")]
     fn clone(&self) -> bevy::math::I64Vec2;
 
 "#,
     r#"
 /// Creates a new vector.
 
-    #[lua(kind = "Function", output(proxy))]
+    #[lua()]
     fn new(x: i64, y: i64) -> bevy::math::I64Vec2;
 
 "#,
     r#"
 /// Creates a vector with all elements set to `v`.
 
-    #[lua(kind = "Function", output(proxy))]
+    #[lua()]
     fn splat(v: i64) -> bevy::math::I64Vec2;
 
 "#,
@@ -6751,7 +6141,7 @@ pub struct IVec4 {
 /// A true element in the mask uses the corresponding element from `if_true`, and false
 /// uses the element from `if_false`.
 
-    #[lua(kind = "Function", output(proxy))]
+    #[lua()]
     fn select(
         #[proxy]
         mask: bevy::math::BVec2,
@@ -6765,35 +6155,35 @@ pub struct IVec4 {
     r#"
 /// Creates a new vector from an array.
 
-    #[lua(kind = "Function", output(proxy))]
+    #[lua()]
     fn from_array(a: [i64; 2]) -> bevy::math::I64Vec2;
 
 "#,
     r#"
 /// `[x, y]`
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn to_array(&self) -> [i64; 2];
 
 "#,
     r#"
 /// Creates a 3D vector from `self` and the given `z` value.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn extend(self, z: i64) -> bevy::math::I64Vec3;
 
 "#,
     r#"
 /// Computes the dot product of `self` and `rhs`.
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn dot(self, #[proxy] rhs: bevy::math::I64Vec2) -> i64;
 
 "#,
     r#"
 /// Returns a vector where every component is the dot product of `self` and `rhs`.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn dot_into_vec(self, #[proxy] rhs: bevy::math::I64Vec2) -> bevy::math::I64Vec2;
 
 "#,
@@ -6801,7 +6191,7 @@ pub struct IVec4 {
 /// Returns a vector containing the minimum values for each element of `self` and `rhs`.
 /// In other words this computes `[self.x.min(rhs.x), self.y.min(rhs.y), ..]`.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn min(self, #[proxy] rhs: bevy::math::I64Vec2) -> bevy::math::I64Vec2;
 
 "#,
@@ -6809,7 +6199,7 @@ pub struct IVec4 {
 /// Returns a vector containing the maximum values for each element of `self` and `rhs`.
 /// In other words this computes `[self.x.max(rhs.x), self.y.max(rhs.y), ..]`.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn max(self, #[proxy] rhs: bevy::math::I64Vec2) -> bevy::math::I64Vec2;
 
 "#,
@@ -6819,7 +6209,7 @@ pub struct IVec4 {
 /// # Panics
 /// Will panic if `min` is greater than `max` when `glam_assert` is enabled.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn clamp(
         self,
         #[proxy]
@@ -6833,7 +6223,7 @@ pub struct IVec4 {
 /// Returns the horizontal minimum of `self`.
 /// In other words this computes `min(x, y, ..)`.
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn min_element(self) -> i64;
 
 "#,
@@ -6841,7 +6231,7 @@ pub struct IVec4 {
 /// Returns the horizontal maximum of `self`.
 /// In other words this computes `max(x, y, ..)`.
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn max_element(self) -> i64;
 
 "#,
@@ -6851,7 +6241,7 @@ pub struct IVec4 {
 /// In other words, this computes `[self.x == rhs.x, self.y == rhs.y, ..]` for all
 /// elements.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn cmpeq(self, #[proxy] rhs: bevy::math::I64Vec2) -> bevy::math::BVec2;
 
 "#,
@@ -6861,7 +6251,7 @@ pub struct IVec4 {
 /// In other words this computes `[self.x != rhs.x, self.y != rhs.y, ..]` for all
 /// elements.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn cmpne(self, #[proxy] rhs: bevy::math::I64Vec2) -> bevy::math::BVec2;
 
 "#,
@@ -6871,7 +6261,7 @@ pub struct IVec4 {
 /// In other words this computes `[self.x >= rhs.x, self.y >= rhs.y, ..]` for all
 /// elements.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn cmpge(self, #[proxy] rhs: bevy::math::I64Vec2) -> bevy::math::BVec2;
 
 "#,
@@ -6881,7 +6271,7 @@ pub struct IVec4 {
 /// In other words this computes `[self.x > rhs.x, self.y > rhs.y, ..]` for all
 /// elements.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn cmpgt(self, #[proxy] rhs: bevy::math::I64Vec2) -> bevy::math::BVec2;
 
 "#,
@@ -6891,7 +6281,7 @@ pub struct IVec4 {
 /// In other words this computes `[self.x <= rhs.x, self.y <= rhs.y, ..]` for all
 /// elements.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn cmple(self, #[proxy] rhs: bevy::math::I64Vec2) -> bevy::math::BVec2;
 
 "#,
@@ -6901,14 +6291,14 @@ pub struct IVec4 {
 /// In other words this computes `[self.x < rhs.x, self.y < rhs.y, ..]` for all
 /// elements.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn cmplt(self, #[proxy] rhs: bevy::math::I64Vec2) -> bevy::math::BVec2;
 
 "#,
     r#"
 /// Returns a vector containing the absolute value of each element of `self`.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn abs(self) -> bevy::math::I64Vec2;
 
 "#,
@@ -6918,7 +6308,7 @@ pub struct IVec4 {
 ///  - `1` if the number is positive
 ///  - `-1` if the number is negative
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn signum(self) -> bevy::math::I64Vec2;
 
 "#,
@@ -6927,21 +6317,21 @@ pub struct IVec4 {
 /// A negative element results in a `1` bit and a positive element in a `0` bit.  Element `x` goes
 /// into the first lowest bit, element `y` into the second, etc.
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn is_negative_bitmask(self) -> u32;
 
 "#,
     r#"
 /// Computes the squared length of `self`.
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn length_squared(self) -> i64;
 
 "#,
     r#"
 /// Compute the squared euclidean distance between two points in space.
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn distance_squared(self, #[proxy] rhs: bevy::math::I64Vec2) -> i64;
 
 "#,
@@ -6950,7 +6340,7 @@ pub struct IVec4 {
 /// # Panics
 /// This function will panic if any `rhs` element is 0 or the division results in overflow.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn div_euclid(self, #[proxy] rhs: bevy::math::I64Vec2) -> bevy::math::I64Vec2;
 
 "#,
@@ -6960,14 +6350,14 @@ pub struct IVec4 {
 /// This function will panic if any `rhs` element is 0 or the division results in overflow.
 /// [Euclidean division]: i64::rem_euclid
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn rem_euclid(self, #[proxy] rhs: bevy::math::I64Vec2) -> bevy::math::I64Vec2;
 
 "#,
     r#"
 /// Returns a vector that is equal to `self` rotated by 90 degrees.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn perp(self) -> bevy::math::I64Vec2;
 
 "#,
@@ -6975,7 +6365,7 @@ pub struct IVec4 {
 /// The perpendicular dot product of `self` and `rhs`.
 /// Also known as the wedge product, 2D cross product, and determinant.
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn perp_dot(self, #[proxy] rhs: bevy::math::I64Vec2) -> i64;
 
 "#,
@@ -6984,42 +6374,42 @@ pub struct IVec4 {
 /// then this just rotation. This is what you usually want. Otherwise,
 /// it will be like a rotation with a multiplication by `self`'s length.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn rotate(self, #[proxy] rhs: bevy::math::I64Vec2) -> bevy::math::I64Vec2;
 
 "#,
     r#"
 /// Casts all elements of `self` to `f32`.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn as_vec2(&self) -> bevy::math::Vec2;
 
 "#,
     r#"
 /// Casts all elements of `self` to `f64`.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn as_dvec2(&self) -> bevy::math::DVec2;
 
 "#,
     r#"
 /// Casts all elements of `self` to `i32`.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn as_ivec2(&self) -> bevy::math::IVec2;
 
 "#,
     r#"
 /// Casts all elements of `self` to `u32`.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn as_uvec2(&self) -> bevy::math::UVec2;
 
 "#,
     r#"
 /// Casts all elements of `self` to `u64`.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn as_u64vec2(&self) -> bevy::math::U64Vec2;
 
 "#,
@@ -7027,7 +6417,7 @@ pub struct IVec4 {
 /// Returns a vector containing the wrapping addition of `self` and `rhs`.
 /// In other words this computes `[self.x.wrapping_add(rhs.x), self.y.wrapping_add(rhs.y), ..]`.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn wrapping_add(self, #[proxy] rhs: bevy::math::I64Vec2) -> bevy::math::I64Vec2;
 
 "#,
@@ -7035,7 +6425,7 @@ pub struct IVec4 {
 /// Returns a vector containing the wrapping subtraction of `self` and `rhs`.
 /// In other words this computes `[self.x.wrapping_sub(rhs.x), self.y.wrapping_sub(rhs.y), ..]`.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn wrapping_sub(self, #[proxy] rhs: bevy::math::I64Vec2) -> bevy::math::I64Vec2;
 
 "#,
@@ -7043,7 +6433,7 @@ pub struct IVec4 {
 /// Returns a vector containing the wrapping multiplication of `self` and `rhs`.
 /// In other words this computes `[self.x.wrapping_mul(rhs.x), self.y.wrapping_mul(rhs.y), ..]`.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn wrapping_mul(self, #[proxy] rhs: bevy::math::I64Vec2) -> bevy::math::I64Vec2;
 
 "#,
@@ -7051,7 +6441,7 @@ pub struct IVec4 {
 /// Returns a vector containing the wrapping division of `self` and `rhs`.
 /// In other words this computes `[self.x.wrapping_div(rhs.x), self.y.wrapping_div(rhs.y), ..]`.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn wrapping_div(self, #[proxy] rhs: bevy::math::I64Vec2) -> bevy::math::I64Vec2;
 
 "#,
@@ -7059,7 +6449,7 @@ pub struct IVec4 {
 /// Returns a vector containing the saturating addition of `self` and `rhs`.
 /// In other words this computes `[self.x.saturating_add(rhs.x), self.y.saturating_add(rhs.y), ..]`.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn saturating_add(self, #[proxy] rhs: bevy::math::I64Vec2) -> bevy::math::I64Vec2;
 
 "#,
@@ -7067,7 +6457,7 @@ pub struct IVec4 {
 /// Returns a vector containing the saturating subtraction of `self` and `rhs`.
 /// In other words this computes `[self.x.saturating_sub(rhs.x), self.y.saturating_sub(rhs.y), ..]`.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn saturating_sub(self, #[proxy] rhs: bevy::math::I64Vec2) -> bevy::math::I64Vec2;
 
 "#,
@@ -7075,7 +6465,7 @@ pub struct IVec4 {
 /// Returns a vector containing the saturating multiplication of `self` and `rhs`.
 /// In other words this computes `[self.x.saturating_mul(rhs.x), self.y.saturating_mul(rhs.y), ..]`.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn saturating_mul(self, #[proxy] rhs: bevy::math::I64Vec2) -> bevy::math::I64Vec2;
 
 "#,
@@ -7083,77 +6473,61 @@ pub struct IVec4 {
 /// Returns a vector containing the saturating division of `self` and `rhs`.
 /// In other words this computes `[self.x.saturating_div(rhs.x), self.y.saturating_div(rhs.y), ..]`.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn saturating_div(self, #[proxy] rhs: bevy::math::I64Vec2) -> bevy::math::I64Vec2;
 
 "#,
     r#"
-#[lua(kind="MetaMethod", metamethod="ToString")]
+#[lua(metamethod="ToString")]
 fn index(&self) -> String {
     format!("{}", _self)
 }
 "#]
 )]
-pub struct I64Vec2 {
+pub struct LuaI64Vec2 {
     x: i64,
     y: i64,
 }
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
     remote = "bevy::math::I64Vec3",
+    bms_core_path = "bevy_mod_scripting_core",
+    bms_lua_path = "crate",
     functions[r#"
 
-    #[lua(
-        as_trait = "std::ops::Sub",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "sub",
-        metamethod = "Sub",
-    )]
+    #[lua(as_trait = "std::ops::Sub", composite = "sub")]
     fn sub(self, rhs: i64) -> bevy::math::I64Vec3;
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "std::ops::Sub",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "sub",
-        metamethod = "Sub",
-    )]
+    #[lua(as_trait = "std::ops::Sub", composite = "sub")]
     fn sub(self, #[proxy] rhs: bevy::math::I64Vec3) -> bevy::math::I64Vec3;
 
 "#,
     r#"
 
-    #[lua(as_trait = "std::cmp::Eq", kind = "Method")]
+    #[lua(as_trait = "std::cmp::Eq")]
     fn assert_receiver_is_total_eq(&self) -> ();
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "std::ops::Add",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "add",
-        metamethod = "Add",
-    )]
+    #[lua(as_trait = "std::ops::Add", composite = "add")]
     fn add(self, rhs: i64) -> bevy::math::I64Vec3;
 
 "#,
     r#"
 /// Creates a new vector.
 
-    #[lua(kind = "Function", output(proxy))]
+    #[lua()]
     fn new(x: i64, y: i64, z: i64) -> bevy::math::I64Vec3;
 
 "#,
     r#"
 /// Creates a vector with all elements set to `v`.
 
-    #[lua(kind = "Function", output(proxy))]
+    #[lua()]
     fn splat(v: i64) -> bevy::math::I64Vec3;
 
 "#,
@@ -7163,7 +6537,7 @@ pub struct I64Vec2 {
 /// A true element in the mask uses the corresponding element from `if_true`, and false
 /// uses the element from `if_false`.
 
-    #[lua(kind = "Function", output(proxy))]
+    #[lua()]
     fn select(
         #[proxy]
         mask: bevy::math::BVec3,
@@ -7177,21 +6551,21 @@ pub struct I64Vec2 {
     r#"
 /// Creates a new vector from an array.
 
-    #[lua(kind = "Function", output(proxy))]
+    #[lua()]
     fn from_array(a: [i64; 3]) -> bevy::math::I64Vec3;
 
 "#,
     r#"
 /// `[x, y, z]`
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn to_array(&self) -> [i64; 3];
 
 "#,
     r#"
 /// Creates a 4D vector from `self` and the given `w` value.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn extend(self, w: i64) -> bevy::math::I64Vec4;
 
 "#,
@@ -7199,28 +6573,28 @@ pub struct I64Vec2 {
 /// Creates a 2D vector from the `x` and `y` elements of `self`, discarding `z`.
 /// Truncation may also be performed by using [`self.xy()`][crate::swizzles::Vec3Swizzles::xy()].
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn truncate(self) -> bevy::math::I64Vec2;
 
 "#,
     r#"
 /// Computes the dot product of `self` and `rhs`.
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn dot(self, #[proxy] rhs: bevy::math::I64Vec3) -> i64;
 
 "#,
     r#"
 /// Returns a vector where every component is the dot product of `self` and `rhs`.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn dot_into_vec(self, #[proxy] rhs: bevy::math::I64Vec3) -> bevy::math::I64Vec3;
 
 "#,
     r#"
 /// Computes the cross product of `self` and `rhs`.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn cross(self, #[proxy] rhs: bevy::math::I64Vec3) -> bevy::math::I64Vec3;
 
 "#,
@@ -7228,7 +6602,7 @@ pub struct I64Vec2 {
 /// Returns a vector containing the minimum values for each element of `self` and `rhs`.
 /// In other words this computes `[self.x.min(rhs.x), self.y.min(rhs.y), ..]`.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn min(self, #[proxy] rhs: bevy::math::I64Vec3) -> bevy::math::I64Vec3;
 
 "#,
@@ -7236,7 +6610,7 @@ pub struct I64Vec2 {
 /// Returns a vector containing the maximum values for each element of `self` and `rhs`.
 /// In other words this computes `[self.x.max(rhs.x), self.y.max(rhs.y), ..]`.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn max(self, #[proxy] rhs: bevy::math::I64Vec3) -> bevy::math::I64Vec3;
 
 "#,
@@ -7246,7 +6620,7 @@ pub struct I64Vec2 {
 /// # Panics
 /// Will panic if `min` is greater than `max` when `glam_assert` is enabled.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn clamp(
         self,
         #[proxy]
@@ -7260,7 +6634,7 @@ pub struct I64Vec2 {
 /// Returns the horizontal minimum of `self`.
 /// In other words this computes `min(x, y, ..)`.
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn min_element(self) -> i64;
 
 "#,
@@ -7268,7 +6642,7 @@ pub struct I64Vec2 {
 /// Returns the horizontal maximum of `self`.
 /// In other words this computes `max(x, y, ..)`.
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn max_element(self) -> i64;
 
 "#,
@@ -7278,7 +6652,7 @@ pub struct I64Vec2 {
 /// In other words, this computes `[self.x == rhs.x, self.y == rhs.y, ..]` for all
 /// elements.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn cmpeq(self, #[proxy] rhs: bevy::math::I64Vec3) -> bevy::math::BVec3;
 
 "#,
@@ -7288,7 +6662,7 @@ pub struct I64Vec2 {
 /// In other words this computes `[self.x != rhs.x, self.y != rhs.y, ..]` for all
 /// elements.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn cmpne(self, #[proxy] rhs: bevy::math::I64Vec3) -> bevy::math::BVec3;
 
 "#,
@@ -7298,7 +6672,7 @@ pub struct I64Vec2 {
 /// In other words this computes `[self.x >= rhs.x, self.y >= rhs.y, ..]` for all
 /// elements.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn cmpge(self, #[proxy] rhs: bevy::math::I64Vec3) -> bevy::math::BVec3;
 
 "#,
@@ -7308,7 +6682,7 @@ pub struct I64Vec2 {
 /// In other words this computes `[self.x > rhs.x, self.y > rhs.y, ..]` for all
 /// elements.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn cmpgt(self, #[proxy] rhs: bevy::math::I64Vec3) -> bevy::math::BVec3;
 
 "#,
@@ -7318,7 +6692,7 @@ pub struct I64Vec2 {
 /// In other words this computes `[self.x <= rhs.x, self.y <= rhs.y, ..]` for all
 /// elements.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn cmple(self, #[proxy] rhs: bevy::math::I64Vec3) -> bevy::math::BVec3;
 
 "#,
@@ -7328,14 +6702,14 @@ pub struct I64Vec2 {
 /// In other words this computes `[self.x < rhs.x, self.y < rhs.y, ..]` for all
 /// elements.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn cmplt(self, #[proxy] rhs: bevy::math::I64Vec3) -> bevy::math::BVec3;
 
 "#,
     r#"
 /// Returns a vector containing the absolute value of each element of `self`.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn abs(self) -> bevy::math::I64Vec3;
 
 "#,
@@ -7345,7 +6719,7 @@ pub struct I64Vec2 {
 ///  - `1` if the number is positive
 ///  - `-1` if the number is negative
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn signum(self) -> bevy::math::I64Vec3;
 
 "#,
@@ -7354,21 +6728,21 @@ pub struct I64Vec2 {
 /// A negative element results in a `1` bit and a positive element in a `0` bit.  Element `x` goes
 /// into the first lowest bit, element `y` into the second, etc.
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn is_negative_bitmask(self) -> u32;
 
 "#,
     r#"
 /// Computes the squared length of `self`.
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn length_squared(self) -> i64;
 
 "#,
     r#"
 /// Compute the squared euclidean distance between two points in space.
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn distance_squared(self, #[proxy] rhs: bevy::math::I64Vec3) -> i64;
 
 "#,
@@ -7377,7 +6751,7 @@ pub struct I64Vec2 {
 /// # Panics
 /// This function will panic if any `rhs` element is 0 or the division results in overflow.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn div_euclid(self, #[proxy] rhs: bevy::math::I64Vec3) -> bevy::math::I64Vec3;
 
 "#,
@@ -7387,49 +6761,49 @@ pub struct I64Vec2 {
 /// This function will panic if any `rhs` element is 0 or the division results in overflow.
 /// [Euclidean division]: i64::rem_euclid
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn rem_euclid(self, #[proxy] rhs: bevy::math::I64Vec3) -> bevy::math::I64Vec3;
 
 "#,
     r#"
 /// Casts all elements of `self` to `f32`.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn as_vec3(&self) -> bevy::math::Vec3;
 
 "#,
     r#"
 /// Casts all elements of `self` to `f32`.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn as_vec3a(&self) -> bevy::math::Vec3A;
 
 "#,
     r#"
 /// Casts all elements of `self` to `f64`.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn as_dvec3(&self) -> bevy::math::DVec3;
 
 "#,
     r#"
 /// Casts all elements of `self` to `i32`.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn as_ivec3(&self) -> bevy::math::IVec3;
 
 "#,
     r#"
 /// Casts all elements of `self` to `u32`.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn as_uvec3(&self) -> bevy::math::UVec3;
 
 "#,
     r#"
 /// Casts all elements of `self` to `u64`.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn as_u64vec3(&self) -> bevy::math::U64Vec3;
 
 "#,
@@ -7437,7 +6811,7 @@ pub struct I64Vec2 {
 /// Returns a vector containing the wrapping addition of `self` and `rhs`.
 /// In other words this computes `[self.x.wrapping_add(rhs.x), self.y.wrapping_add(rhs.y), ..]`.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn wrapping_add(self, #[proxy] rhs: bevy::math::I64Vec3) -> bevy::math::I64Vec3;
 
 "#,
@@ -7445,7 +6819,7 @@ pub struct I64Vec2 {
 /// Returns a vector containing the wrapping subtraction of `self` and `rhs`.
 /// In other words this computes `[self.x.wrapping_sub(rhs.x), self.y.wrapping_sub(rhs.y), ..]`.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn wrapping_sub(self, #[proxy] rhs: bevy::math::I64Vec3) -> bevy::math::I64Vec3;
 
 "#,
@@ -7453,7 +6827,7 @@ pub struct I64Vec2 {
 /// Returns a vector containing the wrapping multiplication of `self` and `rhs`.
 /// In other words this computes `[self.x.wrapping_mul(rhs.x), self.y.wrapping_mul(rhs.y), ..]`.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn wrapping_mul(self, #[proxy] rhs: bevy::math::I64Vec3) -> bevy::math::I64Vec3;
 
 "#,
@@ -7461,7 +6835,7 @@ pub struct I64Vec2 {
 /// Returns a vector containing the wrapping division of `self` and `rhs`.
 /// In other words this computes `[self.x.wrapping_div(rhs.x), self.y.wrapping_div(rhs.y), ..]`.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn wrapping_div(self, #[proxy] rhs: bevy::math::I64Vec3) -> bevy::math::I64Vec3;
 
 "#,
@@ -7469,7 +6843,7 @@ pub struct I64Vec2 {
 /// Returns a vector containing the saturating addition of `self` and `rhs`.
 /// In other words this computes `[self.x.saturating_add(rhs.x), self.y.saturating_add(rhs.y), ..]`.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn saturating_add(self, #[proxy] rhs: bevy::math::I64Vec3) -> bevy::math::I64Vec3;
 
 "#,
@@ -7477,7 +6851,7 @@ pub struct I64Vec2 {
 /// Returns a vector containing the saturating subtraction of `self` and `rhs`.
 /// In other words this computes `[self.x.saturating_sub(rhs.x), self.y.saturating_sub(rhs.y), ..]`.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn saturating_sub(self, #[proxy] rhs: bevy::math::I64Vec3) -> bevy::math::I64Vec3;
 
 "#,
@@ -7485,7 +6859,7 @@ pub struct I64Vec2 {
 /// Returns a vector containing the saturating multiplication of `self` and `rhs`.
 /// In other words this computes `[self.x.saturating_mul(rhs.x), self.y.saturating_mul(rhs.y), ..]`.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn saturating_mul(self, #[proxy] rhs: bevy::math::I64Vec3) -> bevy::math::I64Vec3;
 
 "#,
@@ -7493,135 +6867,78 @@ pub struct I64Vec2 {
 /// Returns a vector containing the saturating division of `self` and `rhs`.
 /// In other words this computes `[self.x.saturating_div(rhs.x), self.y.saturating_div(rhs.y), ..]`.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn saturating_div(self, #[proxy] rhs: bevy::math::I64Vec3) -> bevy::math::I64Vec3;
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "std::ops::Rem",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "rem",
-        metamethod = "Mod",
-    )]
+    #[lua(as_trait = "std::ops::Rem", composite = "rem")]
     fn rem(self, rhs: i64) -> bevy::math::I64Vec3;
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "std::ops::Add",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "add",
-        metamethod = "Add",
-    )]
+    #[lua(as_trait = "std::ops::Add", composite = "add")]
     fn add(self, #[proxy] rhs: bevy::math::I64Vec3) -> bevy::math::I64Vec3;
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "std::ops::Rem",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "rem",
-        metamethod = "Mod",
-    )]
+    #[lua(as_trait = "std::ops::Rem", composite = "rem")]
     fn rem(self, #[proxy] rhs: bevy::math::I64Vec3) -> bevy::math::I64Vec3;
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "std::ops::Div",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "div",
-        metamethod = "Div",
-    )]
+    #[lua(as_trait = "std::ops::Div", composite = "div")]
     fn div(self, rhs: i64) -> bevy::math::I64Vec3;
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "std::ops::Mul",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "mul",
-        metamethod = "Mul",
-    )]
+    #[lua(as_trait = "std::ops::Mul", composite = "mul")]
     fn mul(self, #[proxy] rhs: bevy::math::I64Vec3) -> bevy::math::I64Vec3;
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone",
-        kind = "Method",
-        output(proxy),
-    )]
+    #[lua(as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone")]
     fn clone(&self) -> bevy::math::I64Vec3;
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "std::cmp::PartialEq",
-        kind = "MetaFunction",
-        composite = "eq",
-        metamethod = "Eq",
-    )]
+    #[lua(as_trait = "std::cmp::PartialEq", composite = "eq")]
     fn eq(&self, #[proxy] other: &glam::I64Vec3) -> bool;
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "std::ops::Neg",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "neg",
-        metamethod = "Unm",
-    )]
+    #[lua(as_trait = "std::ops::Neg", composite = "neg")]
     fn neg(self) -> bevy::math::I64Vec3;
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "std::ops::Mul",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "mul",
-        metamethod = "Mul",
-    )]
+    #[lua(as_trait = "std::ops::Mul", composite = "mul")]
     fn mul(self, rhs: i64) -> bevy::math::I64Vec3;
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "std::ops::Div",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "div",
-        metamethod = "Div",
-    )]
+    #[lua(as_trait = "std::ops::Div", composite = "div")]
     fn div(self, #[proxy] rhs: bevy::math::I64Vec3) -> bevy::math::I64Vec3;
 
 "#,
     r#"
-#[lua(kind="MetaMethod", metamethod="ToString")]
+#[lua(metamethod="ToString")]
 fn index(&self) -> String {
     format!("{}", _self)
 }
 "#]
 )]
-pub struct I64Vec3 {
+pub struct LuaI64Vec3 {
     x: i64,
     y: i64,
     z: i64,
@@ -7629,59 +6946,43 @@ pub struct I64Vec3 {
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
     remote = "bevy::math::I64Vec4",
+    bms_core_path = "bevy_mod_scripting_core",
+    bms_lua_path = "crate",
     functions[r#"
 
-    #[lua(as_trait = "std::cmp::Eq", kind = "Method")]
+    #[lua(as_trait = "std::cmp::Eq")]
     fn assert_receiver_is_total_eq(&self) -> ();
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "std::ops::Add",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "add",
-        metamethod = "Add",
-    )]
+    #[lua(as_trait = "std::ops::Add", composite = "add")]
     fn add(self, #[proxy] rhs: bevy::math::I64Vec4) -> bevy::math::I64Vec4;
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "std::ops::Mul",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "mul",
-        metamethod = "Mul",
-    )]
+    #[lua(as_trait = "std::ops::Mul", composite = "mul")]
     fn mul(self, #[proxy] rhs: bevy::math::I64Vec4) -> bevy::math::I64Vec4;
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "std::ops::Rem",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "rem",
-        metamethod = "Mod",
-    )]
+    #[lua(as_trait = "std::ops::Rem", composite = "rem")]
     fn rem(self, rhs: i64) -> bevy::math::I64Vec4;
 
 "#,
     r#"
 /// Creates a new vector.
 
-    #[lua(kind = "Function", output(proxy))]
+    #[lua()]
     fn new(x: i64, y: i64, z: i64, w: i64) -> bevy::math::I64Vec4;
 
 "#,
     r#"
 /// Creates a vector with all elements set to `v`.
 
-    #[lua(kind = "Function", output(proxy))]
+    #[lua()]
     fn splat(v: i64) -> bevy::math::I64Vec4;
 
 "#,
@@ -7691,7 +6992,7 @@ pub struct I64Vec3 {
 /// A true element in the mask uses the corresponding element from `if_true`, and false
 /// uses the element from `if_false`.
 
-    #[lua(kind = "Function", output(proxy))]
+    #[lua()]
     fn select(
         #[proxy]
         mask: bevy::math::BVec4,
@@ -7705,14 +7006,14 @@ pub struct I64Vec3 {
     r#"
 /// Creates a new vector from an array.
 
-    #[lua(kind = "Function", output(proxy))]
+    #[lua()]
     fn from_array(a: [i64; 4]) -> bevy::math::I64Vec4;
 
 "#,
     r#"
 /// `[x, y, z, w]`
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn to_array(&self) -> [i64; 4];
 
 "#,
@@ -7720,21 +7021,21 @@ pub struct I64Vec3 {
 /// Creates a 3D vector from the `x`, `y` and `z` elements of `self`, discarding `w`.
 /// Truncation to [`I64Vec3`] may also be performed by using [`self.xyz()`][crate::swizzles::Vec4Swizzles::xyz()].
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn truncate(self) -> bevy::math::I64Vec3;
 
 "#,
     r#"
 /// Computes the dot product of `self` and `rhs`.
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn dot(self, #[proxy] rhs: bevy::math::I64Vec4) -> i64;
 
 "#,
     r#"
 /// Returns a vector where every component is the dot product of `self` and `rhs`.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn dot_into_vec(self, #[proxy] rhs: bevy::math::I64Vec4) -> bevy::math::I64Vec4;
 
 "#,
@@ -7742,7 +7043,7 @@ pub struct I64Vec3 {
 /// Returns a vector containing the minimum values for each element of `self` and `rhs`.
 /// In other words this computes `[self.x.min(rhs.x), self.y.min(rhs.y), ..]`.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn min(self, #[proxy] rhs: bevy::math::I64Vec4) -> bevy::math::I64Vec4;
 
 "#,
@@ -7750,7 +7051,7 @@ pub struct I64Vec3 {
 /// Returns a vector containing the maximum values for each element of `self` and `rhs`.
 /// In other words this computes `[self.x.max(rhs.x), self.y.max(rhs.y), ..]`.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn max(self, #[proxy] rhs: bevy::math::I64Vec4) -> bevy::math::I64Vec4;
 
 "#,
@@ -7760,7 +7061,7 @@ pub struct I64Vec3 {
 /// # Panics
 /// Will panic if `min` is greater than `max` when `glam_assert` is enabled.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn clamp(
         self,
         #[proxy]
@@ -7774,7 +7075,7 @@ pub struct I64Vec3 {
 /// Returns the horizontal minimum of `self`.
 /// In other words this computes `min(x, y, ..)`.
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn min_element(self) -> i64;
 
 "#,
@@ -7782,7 +7083,7 @@ pub struct I64Vec3 {
 /// Returns the horizontal maximum of `self`.
 /// In other words this computes `max(x, y, ..)`.
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn max_element(self) -> i64;
 
 "#,
@@ -7792,7 +7093,7 @@ pub struct I64Vec3 {
 /// In other words, this computes `[self.x == rhs.x, self.y == rhs.y, ..]` for all
 /// elements.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn cmpeq(self, #[proxy] rhs: bevy::math::I64Vec4) -> bevy::math::BVec4;
 
 "#,
@@ -7802,7 +7103,7 @@ pub struct I64Vec3 {
 /// In other words this computes `[self.x != rhs.x, self.y != rhs.y, ..]` for all
 /// elements.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn cmpne(self, #[proxy] rhs: bevy::math::I64Vec4) -> bevy::math::BVec4;
 
 "#,
@@ -7812,7 +7113,7 @@ pub struct I64Vec3 {
 /// In other words this computes `[self.x >= rhs.x, self.y >= rhs.y, ..]` for all
 /// elements.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn cmpge(self, #[proxy] rhs: bevy::math::I64Vec4) -> bevy::math::BVec4;
 
 "#,
@@ -7822,7 +7123,7 @@ pub struct I64Vec3 {
 /// In other words this computes `[self.x > rhs.x, self.y > rhs.y, ..]` for all
 /// elements.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn cmpgt(self, #[proxy] rhs: bevy::math::I64Vec4) -> bevy::math::BVec4;
 
 "#,
@@ -7832,7 +7133,7 @@ pub struct I64Vec3 {
 /// In other words this computes `[self.x <= rhs.x, self.y <= rhs.y, ..]` for all
 /// elements.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn cmple(self, #[proxy] rhs: bevy::math::I64Vec4) -> bevy::math::BVec4;
 
 "#,
@@ -7842,14 +7143,14 @@ pub struct I64Vec3 {
 /// In other words this computes `[self.x < rhs.x, self.y < rhs.y, ..]` for all
 /// elements.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn cmplt(self, #[proxy] rhs: bevy::math::I64Vec4) -> bevy::math::BVec4;
 
 "#,
     r#"
 /// Returns a vector containing the absolute value of each element of `self`.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn abs(self) -> bevy::math::I64Vec4;
 
 "#,
@@ -7859,7 +7160,7 @@ pub struct I64Vec3 {
 ///  - `1` if the number is positive
 ///  - `-1` if the number is negative
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn signum(self) -> bevy::math::I64Vec4;
 
 "#,
@@ -7868,21 +7169,21 @@ pub struct I64Vec3 {
 /// A negative element results in a `1` bit and a positive element in a `0` bit.  Element `x` goes
 /// into the first lowest bit, element `y` into the second, etc.
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn is_negative_bitmask(self) -> u32;
 
 "#,
     r#"
 /// Computes the squared length of `self`.
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn length_squared(self) -> i64;
 
 "#,
     r#"
 /// Compute the squared euclidean distance between two points in space.
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn distance_squared(self, #[proxy] rhs: bevy::math::I64Vec4) -> i64;
 
 "#,
@@ -7891,7 +7192,7 @@ pub struct I64Vec3 {
 /// # Panics
 /// This function will panic if any `rhs` element is 0 or the division results in overflow.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn div_euclid(self, #[proxy] rhs: bevy::math::I64Vec4) -> bevy::math::I64Vec4;
 
 "#,
@@ -7901,42 +7202,42 @@ pub struct I64Vec3 {
 /// This function will panic if any `rhs` element is 0 or the division results in overflow.
 /// [Euclidean division]: i64::rem_euclid
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn rem_euclid(self, #[proxy] rhs: bevy::math::I64Vec4) -> bevy::math::I64Vec4;
 
 "#,
     r#"
 /// Casts all elements of `self` to `f32`.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn as_vec4(&self) -> bevy::math::Vec4;
 
 "#,
     r#"
 /// Casts all elements of `self` to `f64`.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn as_dvec4(&self) -> bevy::math::DVec4;
 
 "#,
     r#"
 /// Casts all elements of `self` to `i32`.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn as_ivec4(&self) -> bevy::math::IVec4;
 
 "#,
     r#"
 /// Casts all elements of `self` to `u32`.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn as_uvec4(&self) -> bevy::math::UVec4;
 
 "#,
     r#"
 /// Casts all elements of `self` to `u64`.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn as_u64vec4(&self) -> bevy::math::U64Vec4;
 
 "#,
@@ -7944,7 +7245,7 @@ pub struct I64Vec3 {
 /// Returns a vector containing the wrapping addition of `self` and `rhs`.
 /// In other words this computes `[self.x.wrapping_add(rhs.x), self.y.wrapping_add(rhs.y), ..]`.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn wrapping_add(self, #[proxy] rhs: bevy::math::I64Vec4) -> bevy::math::I64Vec4;
 
 "#,
@@ -7952,7 +7253,7 @@ pub struct I64Vec3 {
 /// Returns a vector containing the wrapping subtraction of `self` and `rhs`.
 /// In other words this computes `[self.x.wrapping_sub(rhs.x), self.y.wrapping_sub(rhs.y), ..]`.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn wrapping_sub(self, #[proxy] rhs: bevy::math::I64Vec4) -> bevy::math::I64Vec4;
 
 "#,
@@ -7960,7 +7261,7 @@ pub struct I64Vec3 {
 /// Returns a vector containing the wrapping multiplication of `self` and `rhs`.
 /// In other words this computes `[self.x.wrapping_mul(rhs.x), self.y.wrapping_mul(rhs.y), ..]`.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn wrapping_mul(self, #[proxy] rhs: bevy::math::I64Vec4) -> bevy::math::I64Vec4;
 
 "#,
@@ -7968,7 +7269,7 @@ pub struct I64Vec3 {
 /// Returns a vector containing the wrapping division of `self` and `rhs`.
 /// In other words this computes `[self.x.wrapping_div(rhs.x), self.y.wrapping_div(rhs.y), ..]`.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn wrapping_div(self, #[proxy] rhs: bevy::math::I64Vec4) -> bevy::math::I64Vec4;
 
 "#,
@@ -7976,7 +7277,7 @@ pub struct I64Vec3 {
 /// Returns a vector containing the saturating addition of `self` and `rhs`.
 /// In other words this computes `[self.x.saturating_add(rhs.x), self.y.saturating_add(rhs.y), ..]`.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn saturating_add(self, #[proxy] rhs: bevy::math::I64Vec4) -> bevy::math::I64Vec4;
 
 "#,
@@ -7984,7 +7285,7 @@ pub struct I64Vec3 {
 /// Returns a vector containing the saturating subtraction of `self` and `rhs`.
 /// In other words this computes `[self.x.saturating_sub(rhs.x), self.y.saturating_sub(rhs.y), ..]`.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn saturating_sub(self, #[proxy] rhs: bevy::math::I64Vec4) -> bevy::math::I64Vec4;
 
 "#,
@@ -7992,7 +7293,7 @@ pub struct I64Vec3 {
 /// Returns a vector containing the saturating multiplication of `self` and `rhs`.
 /// In other words this computes `[self.x.saturating_mul(rhs.x), self.y.saturating_mul(rhs.y), ..]`.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn saturating_mul(self, #[proxy] rhs: bevy::math::I64Vec4) -> bevy::math::I64Vec4;
 
 "#,
@@ -8000,135 +7301,78 @@ pub struct I64Vec3 {
 /// Returns a vector containing the saturating division of `self` and `rhs`.
 /// In other words this computes `[self.x.saturating_div(rhs.x), self.y.saturating_div(rhs.y), ..]`.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn saturating_div(self, #[proxy] rhs: bevy::math::I64Vec4) -> bevy::math::I64Vec4;
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "std::ops::Mul",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "mul",
-        metamethod = "Mul",
-    )]
+    #[lua(as_trait = "std::ops::Mul", composite = "mul")]
     fn mul(self, rhs: i64) -> bevy::math::I64Vec4;
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "std::ops::Sub",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "sub",
-        metamethod = "Sub",
-    )]
+    #[lua(as_trait = "std::ops::Sub", composite = "sub")]
     fn sub(self, #[proxy] rhs: bevy::math::I64Vec4) -> bevy::math::I64Vec4;
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone",
-        kind = "Method",
-        output(proxy),
-    )]
+    #[lua(as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone")]
     fn clone(&self) -> bevy::math::I64Vec4;
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "std::ops::Div",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "div",
-        metamethod = "Div",
-    )]
+    #[lua(as_trait = "std::ops::Div", composite = "div")]
     fn div(self, #[proxy] rhs: bevy::math::I64Vec4) -> bevy::math::I64Vec4;
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "std::cmp::PartialEq",
-        kind = "MetaFunction",
-        composite = "eq",
-        metamethod = "Eq",
-    )]
+    #[lua(as_trait = "std::cmp::PartialEq", composite = "eq")]
     fn eq(&self, #[proxy] other: &glam::I64Vec4) -> bool;
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "std::ops::Neg",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "neg",
-        metamethod = "Unm",
-    )]
+    #[lua(as_trait = "std::ops::Neg", composite = "neg")]
     fn neg(self) -> bevy::math::I64Vec4;
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "std::ops::Div",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "div",
-        metamethod = "Div",
-    )]
+    #[lua(as_trait = "std::ops::Div", composite = "div")]
     fn div(self, rhs: i64) -> bevy::math::I64Vec4;
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "std::ops::Add",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "add",
-        metamethod = "Add",
-    )]
+    #[lua(as_trait = "std::ops::Add", composite = "add")]
     fn add(self, rhs: i64) -> bevy::math::I64Vec4;
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "std::ops::Sub",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "sub",
-        metamethod = "Sub",
-    )]
+    #[lua(as_trait = "std::ops::Sub", composite = "sub")]
     fn sub(self, rhs: i64) -> bevy::math::I64Vec4;
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "std::ops::Rem",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "rem",
-        metamethod = "Mod",
-    )]
+    #[lua(as_trait = "std::ops::Rem", composite = "rem")]
     fn rem(self, #[proxy] rhs: bevy::math::I64Vec4) -> bevy::math::I64Vec4;
 
 "#,
     r#"
-#[lua(kind="MetaMethod", metamethod="ToString")]
+#[lua(metamethod="ToString")]
 fn index(&self) -> String {
     format!("{}", _self)
 }
 "#]
 )]
-pub struct I64Vec4 {
+pub struct LuaI64Vec4 {
     x: i64,
     y: i64,
     z: i64,
@@ -8137,164 +7381,97 @@ pub struct I64Vec4 {
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
     remote = "bevy::math::UVec2",
+    bms_core_path = "bevy_mod_scripting_core",
+    bms_lua_path = "crate",
     functions[r#"
 
-    #[lua(
-        as_trait = "std::ops::Rem",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "rem",
-        metamethod = "Mod",
-    )]
+    #[lua(as_trait = "std::ops::Rem", composite = "rem")]
     fn rem(self, #[proxy] rhs: bevy::math::UVec2) -> bevy::math::UVec2;
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "std::ops::Rem",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "rem",
-        metamethod = "Mod",
-    )]
+    #[lua(as_trait = "std::ops::Rem", composite = "rem")]
     fn rem(self, rhs: u32) -> bevy::math::UVec2;
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "std::ops::Sub",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "sub",
-        metamethod = "Sub",
-    )]
+    #[lua(as_trait = "std::ops::Sub", composite = "sub")]
     fn sub(self, rhs: u32) -> bevy::math::UVec2;
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "std::cmp::PartialEq",
-        kind = "MetaFunction",
-        composite = "eq",
-        metamethod = "Eq",
-    )]
+    #[lua(as_trait = "std::cmp::PartialEq", composite = "eq")]
     fn eq(&self, #[proxy] other: &glam::UVec2) -> bool;
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone",
-        kind = "Method",
-        output(proxy),
-    )]
+    #[lua(as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone")]
     fn clone(&self) -> bevy::math::UVec2;
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "std::ops::Div",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "div",
-        metamethod = "Div",
-    )]
+    #[lua(as_trait = "std::ops::Div", composite = "div")]
     fn div(self, rhs: u32) -> bevy::math::UVec2;
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "std::ops::Add",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "add",
-        metamethod = "Add",
-    )]
+    #[lua(as_trait = "std::ops::Add", composite = "add")]
     fn add(self, rhs: u32) -> bevy::math::UVec2;
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "std::ops::Mul",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "mul",
-        metamethod = "Mul",
-    )]
+    #[lua(as_trait = "std::ops::Mul", composite = "mul")]
     fn mul(self, #[proxy] rhs: bevy::math::UVec2) -> bevy::math::UVec2;
 
 "#,
     r#"
 
-    #[lua(as_trait = "std::cmp::Eq", kind = "Method")]
+    #[lua(as_trait = "std::cmp::Eq")]
     fn assert_receiver_is_total_eq(&self) -> ();
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "std::ops::Sub",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "sub",
-        metamethod = "Sub",
-    )]
+    #[lua(as_trait = "std::ops::Sub", composite = "sub")]
     fn sub(self, #[proxy] rhs: bevy::math::UVec2) -> bevy::math::UVec2;
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "std::ops::Add",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "add",
-        metamethod = "Add",
-    )]
+    #[lua(as_trait = "std::ops::Add", composite = "add")]
     fn add(self, #[proxy] rhs: bevy::math::UVec2) -> bevy::math::UVec2;
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "std::ops::Div",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "div",
-        metamethod = "Div",
-    )]
+    #[lua(as_trait = "std::ops::Div", composite = "div")]
     fn div(self, #[proxy] rhs: bevy::math::UVec2) -> bevy::math::UVec2;
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "std::ops::Mul",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "mul",
-        metamethod = "Mul",
-    )]
+    #[lua(as_trait = "std::ops::Mul", composite = "mul")]
     fn mul(self, rhs: u32) -> bevy::math::UVec2;
 
 "#,
     r#"
 /// Creates a new vector.
 
-    #[lua(kind = "Function", output(proxy))]
+    #[lua()]
     fn new(x: u32, y: u32) -> bevy::math::UVec2;
 
 "#,
     r#"
 /// Creates a vector with all elements set to `v`.
 
-    #[lua(kind = "Function", output(proxy))]
+    #[lua()]
     fn splat(v: u32) -> bevy::math::UVec2;
 
 "#,
@@ -8304,7 +7481,7 @@ pub struct I64Vec4 {
 /// A true element in the mask uses the corresponding element from `if_true`, and false
 /// uses the element from `if_false`.
 
-    #[lua(kind = "Function", output(proxy))]
+    #[lua()]
     fn select(
         #[proxy]
         mask: bevy::math::BVec2,
@@ -8318,35 +7495,35 @@ pub struct I64Vec4 {
     r#"
 /// Creates a new vector from an array.
 
-    #[lua(kind = "Function", output(proxy))]
+    #[lua()]
     fn from_array(a: [u32; 2]) -> bevy::math::UVec2;
 
 "#,
     r#"
 /// `[x, y]`
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn to_array(&self) -> [u32; 2];
 
 "#,
     r#"
 /// Creates a 3D vector from `self` and the given `z` value.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn extend(self, z: u32) -> bevy::math::UVec3;
 
 "#,
     r#"
 /// Computes the dot product of `self` and `rhs`.
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn dot(self, #[proxy] rhs: bevy::math::UVec2) -> u32;
 
 "#,
     r#"
 /// Returns a vector where every component is the dot product of `self` and `rhs`.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn dot_into_vec(self, #[proxy] rhs: bevy::math::UVec2) -> bevy::math::UVec2;
 
 "#,
@@ -8354,7 +7531,7 @@ pub struct I64Vec4 {
 /// Returns a vector containing the minimum values for each element of `self` and `rhs`.
 /// In other words this computes `[self.x.min(rhs.x), self.y.min(rhs.y), ..]`.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn min(self, #[proxy] rhs: bevy::math::UVec2) -> bevy::math::UVec2;
 
 "#,
@@ -8362,7 +7539,7 @@ pub struct I64Vec4 {
 /// Returns a vector containing the maximum values for each element of `self` and `rhs`.
 /// In other words this computes `[self.x.max(rhs.x), self.y.max(rhs.y), ..]`.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn max(self, #[proxy] rhs: bevy::math::UVec2) -> bevy::math::UVec2;
 
 "#,
@@ -8372,7 +7549,7 @@ pub struct I64Vec4 {
 /// # Panics
 /// Will panic if `min` is greater than `max` when `glam_assert` is enabled.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn clamp(
         self,
         #[proxy]
@@ -8386,7 +7563,7 @@ pub struct I64Vec4 {
 /// Returns the horizontal minimum of `self`.
 /// In other words this computes `min(x, y, ..)`.
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn min_element(self) -> u32;
 
 "#,
@@ -8394,7 +7571,7 @@ pub struct I64Vec4 {
 /// Returns the horizontal maximum of `self`.
 /// In other words this computes `max(x, y, ..)`.
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn max_element(self) -> u32;
 
 "#,
@@ -8404,7 +7581,7 @@ pub struct I64Vec4 {
 /// In other words, this computes `[self.x == rhs.x, self.y == rhs.y, ..]` for all
 /// elements.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn cmpeq(self, #[proxy] rhs: bevy::math::UVec2) -> bevy::math::BVec2;
 
 "#,
@@ -8414,7 +7591,7 @@ pub struct I64Vec4 {
 /// In other words this computes `[self.x != rhs.x, self.y != rhs.y, ..]` for all
 /// elements.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn cmpne(self, #[proxy] rhs: bevy::math::UVec2) -> bevy::math::BVec2;
 
 "#,
@@ -8424,7 +7601,7 @@ pub struct I64Vec4 {
 /// In other words this computes `[self.x >= rhs.x, self.y >= rhs.y, ..]` for all
 /// elements.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn cmpge(self, #[proxy] rhs: bevy::math::UVec2) -> bevy::math::BVec2;
 
 "#,
@@ -8434,7 +7611,7 @@ pub struct I64Vec4 {
 /// In other words this computes `[self.x > rhs.x, self.y > rhs.y, ..]` for all
 /// elements.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn cmpgt(self, #[proxy] rhs: bevy::math::UVec2) -> bevy::math::BVec2;
 
 "#,
@@ -8444,7 +7621,7 @@ pub struct I64Vec4 {
 /// In other words this computes `[self.x <= rhs.x, self.y <= rhs.y, ..]` for all
 /// elements.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn cmple(self, #[proxy] rhs: bevy::math::UVec2) -> bevy::math::BVec2;
 
 "#,
@@ -8454,49 +7631,49 @@ pub struct I64Vec4 {
 /// In other words this computes `[self.x < rhs.x, self.y < rhs.y, ..]` for all
 /// elements.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn cmplt(self, #[proxy] rhs: bevy::math::UVec2) -> bevy::math::BVec2;
 
 "#,
     r#"
 /// Computes the squared length of `self`.
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn length_squared(self) -> u32;
 
 "#,
     r#"
 /// Casts all elements of `self` to `f32`.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn as_vec2(&self) -> bevy::math::Vec2;
 
 "#,
     r#"
 /// Casts all elements of `self` to `f64`.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn as_dvec2(&self) -> bevy::math::DVec2;
 
 "#,
     r#"
 /// Casts all elements of `self` to `i32`.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn as_ivec2(&self) -> bevy::math::IVec2;
 
 "#,
     r#"
 /// Casts all elements of `self` to `i64`.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn as_i64vec2(&self) -> bevy::math::I64Vec2;
 
 "#,
     r#"
 /// Casts all elements of `self` to `u64`.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn as_u64vec2(&self) -> bevy::math::U64Vec2;
 
 "#,
@@ -8504,7 +7681,7 @@ pub struct I64Vec4 {
 /// Returns a vector containing the wrapping addition of `self` and `rhs`.
 /// In other words this computes `[self.x.wrapping_add(rhs.x), self.y.wrapping_add(rhs.y), ..]`.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn wrapping_add(self, #[proxy] rhs: bevy::math::UVec2) -> bevy::math::UVec2;
 
 "#,
@@ -8512,7 +7689,7 @@ pub struct I64Vec4 {
 /// Returns a vector containing the wrapping subtraction of `self` and `rhs`.
 /// In other words this computes `[self.x.wrapping_sub(rhs.x), self.y.wrapping_sub(rhs.y), ..]`.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn wrapping_sub(self, #[proxy] rhs: bevy::math::UVec2) -> bevy::math::UVec2;
 
 "#,
@@ -8520,7 +7697,7 @@ pub struct I64Vec4 {
 /// Returns a vector containing the wrapping multiplication of `self` and `rhs`.
 /// In other words this computes `[self.x.wrapping_mul(rhs.x), self.y.wrapping_mul(rhs.y), ..]`.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn wrapping_mul(self, #[proxy] rhs: bevy::math::UVec2) -> bevy::math::UVec2;
 
 "#,
@@ -8528,7 +7705,7 @@ pub struct I64Vec4 {
 /// Returns a vector containing the wrapping division of `self` and `rhs`.
 /// In other words this computes `[self.x.wrapping_div(rhs.x), self.y.wrapping_div(rhs.y), ..]`.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn wrapping_div(self, #[proxy] rhs: bevy::math::UVec2) -> bevy::math::UVec2;
 
 "#,
@@ -8536,7 +7713,7 @@ pub struct I64Vec4 {
 /// Returns a vector containing the saturating addition of `self` and `rhs`.
 /// In other words this computes `[self.x.saturating_add(rhs.x), self.y.saturating_add(rhs.y), ..]`.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn saturating_add(self, #[proxy] rhs: bevy::math::UVec2) -> bevy::math::UVec2;
 
 "#,
@@ -8544,7 +7721,7 @@ pub struct I64Vec4 {
 /// Returns a vector containing the saturating subtraction of `self` and `rhs`.
 /// In other words this computes `[self.x.saturating_sub(rhs.x), self.y.saturating_sub(rhs.y), ..]`.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn saturating_sub(self, #[proxy] rhs: bevy::math::UVec2) -> bevy::math::UVec2;
 
 "#,
@@ -8552,7 +7729,7 @@ pub struct I64Vec4 {
 /// Returns a vector containing the saturating multiplication of `self` and `rhs`.
 /// In other words this computes `[self.x.saturating_mul(rhs.x), self.y.saturating_mul(rhs.y), ..]`.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn saturating_mul(self, #[proxy] rhs: bevy::math::UVec2) -> bevy::math::UVec2;
 
 "#,
@@ -8560,119 +7737,85 @@ pub struct I64Vec4 {
 /// Returns a vector containing the saturating division of `self` and `rhs`.
 /// In other words this computes `[self.x.saturating_div(rhs.x), self.y.saturating_div(rhs.y), ..]`.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn saturating_div(self, #[proxy] rhs: bevy::math::UVec2) -> bevy::math::UVec2;
 
 "#,
     r#"
-#[lua(kind="MetaMethod", metamethod="ToString")]
+#[lua(metamethod="ToString")]
 fn index(&self) -> String {
     format!("{}", _self)
 }
 "#,
     r#"
-#[lua(kind="MetaMethod", raw , metamethod="Index")]
+#[lua(raw , metamethod="Index")]
 fn index(&self, lua: &Lua, idx: crate::lua::util::LuaIndex) -> Result<u32,_> {
-    Ok(self.inner()?[*idx])
+    Ok(_self.inner()?[*idx])
 }
 "#,
     r#"
-#[lua(kind="MutatingMetaMethod", raw, metamethod="NewIndex")]
+#[lua(raw, metamethod="NewIndex")]
 fn index(&mut self, lua: &Lua, idx: crate::lua::util::LuaIndex, val: u32) -> Result<(),_> {
-    self.val_mut(|s| Ok(s[*idx] = val))?
+    _self.val_mut(|s| Ok(s[*idx] = val))?
 }
 "#]
 )]
-pub struct UVec2 {
+pub struct LuaUVec2 {
     x: u32,
     y: u32,
 }
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
     remote = "bevy::math::UVec3",
+    bms_core_path = "bevy_mod_scripting_core",
+    bms_lua_path = "crate",
     functions[r#"
 
-    #[lua(
-        as_trait = "std::ops::Mul",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "mul",
-        metamethod = "Mul",
-    )]
+    #[lua(as_trait = "std::ops::Mul", composite = "mul")]
     fn mul(self, rhs: u32) -> bevy::math::UVec3;
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "std::ops::Mul",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "mul",
-        metamethod = "Mul",
-    )]
+    #[lua(as_trait = "std::ops::Mul", composite = "mul")]
     fn mul(self, #[proxy] rhs: bevy::math::UVec3) -> bevy::math::UVec3;
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "std::ops::Rem",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "rem",
-        metamethod = "Mod",
-    )]
+    #[lua(as_trait = "std::ops::Rem", composite = "rem")]
     fn rem(self, #[proxy] rhs: bevy::math::UVec3) -> bevy::math::UVec3;
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "std::ops::Rem",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "rem",
-        metamethod = "Mod",
-    )]
+    #[lua(as_trait = "std::ops::Rem", composite = "rem")]
     fn rem(self, rhs: u32) -> bevy::math::UVec3;
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "std::ops::Div",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "div",
-        metamethod = "Div",
-    )]
+    #[lua(as_trait = "std::ops::Div", composite = "div")]
     fn div(self, rhs: u32) -> bevy::math::UVec3;
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "std::ops::Sub",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "sub",
-        metamethod = "Sub",
-    )]
+    #[lua(as_trait = "std::ops::Sub", composite = "sub")]
     fn sub(self, #[proxy] rhs: bevy::math::UVec3) -> bevy::math::UVec3;
 
 "#,
     r#"
 /// Creates a new vector.
 
-    #[lua(kind = "Function", output(proxy))]
+    #[lua()]
     fn new(x: u32, y: u32, z: u32) -> bevy::math::UVec3;
 
 "#,
     r#"
 /// Creates a vector with all elements set to `v`.
 
-    #[lua(kind = "Function", output(proxy))]
+    #[lua()]
     fn splat(v: u32) -> bevy::math::UVec3;
 
 "#,
@@ -8682,7 +7825,7 @@ pub struct UVec2 {
 /// A true element in the mask uses the corresponding element from `if_true`, and false
 /// uses the element from `if_false`.
 
-    #[lua(kind = "Function", output(proxy))]
+    #[lua()]
     fn select(
         #[proxy]
         mask: bevy::math::BVec3,
@@ -8696,21 +7839,21 @@ pub struct UVec2 {
     r#"
 /// Creates a new vector from an array.
 
-    #[lua(kind = "Function", output(proxy))]
+    #[lua()]
     fn from_array(a: [u32; 3]) -> bevy::math::UVec3;
 
 "#,
     r#"
 /// `[x, y, z]`
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn to_array(&self) -> [u32; 3];
 
 "#,
     r#"
 /// Creates a 4D vector from `self` and the given `w` value.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn extend(self, w: u32) -> bevy::math::UVec4;
 
 "#,
@@ -8718,28 +7861,28 @@ pub struct UVec2 {
 /// Creates a 2D vector from the `x` and `y` elements of `self`, discarding `z`.
 /// Truncation may also be performed by using [`self.xy()`][crate::swizzles::Vec3Swizzles::xy()].
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn truncate(self) -> bevy::math::UVec2;
 
 "#,
     r#"
 /// Computes the dot product of `self` and `rhs`.
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn dot(self, #[proxy] rhs: bevy::math::UVec3) -> u32;
 
 "#,
     r#"
 /// Returns a vector where every component is the dot product of `self` and `rhs`.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn dot_into_vec(self, #[proxy] rhs: bevy::math::UVec3) -> bevy::math::UVec3;
 
 "#,
     r#"
 /// Computes the cross product of `self` and `rhs`.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn cross(self, #[proxy] rhs: bevy::math::UVec3) -> bevy::math::UVec3;
 
 "#,
@@ -8747,7 +7890,7 @@ pub struct UVec2 {
 /// Returns a vector containing the minimum values for each element of `self` and `rhs`.
 /// In other words this computes `[self.x.min(rhs.x), self.y.min(rhs.y), ..]`.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn min(self, #[proxy] rhs: bevy::math::UVec3) -> bevy::math::UVec3;
 
 "#,
@@ -8755,7 +7898,7 @@ pub struct UVec2 {
 /// Returns a vector containing the maximum values for each element of `self` and `rhs`.
 /// In other words this computes `[self.x.max(rhs.x), self.y.max(rhs.y), ..]`.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn max(self, #[proxy] rhs: bevy::math::UVec3) -> bevy::math::UVec3;
 
 "#,
@@ -8765,7 +7908,7 @@ pub struct UVec2 {
 /// # Panics
 /// Will panic if `min` is greater than `max` when `glam_assert` is enabled.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn clamp(
         self,
         #[proxy]
@@ -8779,7 +7922,7 @@ pub struct UVec2 {
 /// Returns the horizontal minimum of `self`.
 /// In other words this computes `min(x, y, ..)`.
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn min_element(self) -> u32;
 
 "#,
@@ -8787,7 +7930,7 @@ pub struct UVec2 {
 /// Returns the horizontal maximum of `self`.
 /// In other words this computes `max(x, y, ..)`.
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn max_element(self) -> u32;
 
 "#,
@@ -8797,7 +7940,7 @@ pub struct UVec2 {
 /// In other words, this computes `[self.x == rhs.x, self.y == rhs.y, ..]` for all
 /// elements.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn cmpeq(self, #[proxy] rhs: bevy::math::UVec3) -> bevy::math::BVec3;
 
 "#,
@@ -8807,7 +7950,7 @@ pub struct UVec2 {
 /// In other words this computes `[self.x != rhs.x, self.y != rhs.y, ..]` for all
 /// elements.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn cmpne(self, #[proxy] rhs: bevy::math::UVec3) -> bevy::math::BVec3;
 
 "#,
@@ -8817,7 +7960,7 @@ pub struct UVec2 {
 /// In other words this computes `[self.x >= rhs.x, self.y >= rhs.y, ..]` for all
 /// elements.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn cmpge(self, #[proxy] rhs: bevy::math::UVec3) -> bevy::math::BVec3;
 
 "#,
@@ -8827,7 +7970,7 @@ pub struct UVec2 {
 /// In other words this computes `[self.x > rhs.x, self.y > rhs.y, ..]` for all
 /// elements.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn cmpgt(self, #[proxy] rhs: bevy::math::UVec3) -> bevy::math::BVec3;
 
 "#,
@@ -8837,7 +7980,7 @@ pub struct UVec2 {
 /// In other words this computes `[self.x <= rhs.x, self.y <= rhs.y, ..]` for all
 /// elements.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn cmple(self, #[proxy] rhs: bevy::math::UVec3) -> bevy::math::BVec3;
 
 "#,
@@ -8847,56 +7990,56 @@ pub struct UVec2 {
 /// In other words this computes `[self.x < rhs.x, self.y < rhs.y, ..]` for all
 /// elements.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn cmplt(self, #[proxy] rhs: bevy::math::UVec3) -> bevy::math::BVec3;
 
 "#,
     r#"
 /// Computes the squared length of `self`.
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn length_squared(self) -> u32;
 
 "#,
     r#"
 /// Casts all elements of `self` to `f32`.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn as_vec3(&self) -> bevy::math::Vec3;
 
 "#,
     r#"
 /// Casts all elements of `self` to `f32`.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn as_vec3a(&self) -> bevy::math::Vec3A;
 
 "#,
     r#"
 /// Casts all elements of `self` to `f64`.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn as_dvec3(&self) -> bevy::math::DVec3;
 
 "#,
     r#"
 /// Casts all elements of `self` to `i32`.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn as_ivec3(&self) -> bevy::math::IVec3;
 
 "#,
     r#"
 /// Casts all elements of `self` to `i64`.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn as_i64vec3(&self) -> bevy::math::I64Vec3;
 
 "#,
     r#"
 /// Casts all elements of `self` to `u64`.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn as_u64vec3(&self) -> bevy::math::U64Vec3;
 
 "#,
@@ -8904,7 +8047,7 @@ pub struct UVec2 {
 /// Returns a vector containing the wrapping addition of `self` and `rhs`.
 /// In other words this computes `[self.x.wrapping_add(rhs.x), self.y.wrapping_add(rhs.y), ..]`.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn wrapping_add(self, #[proxy] rhs: bevy::math::UVec3) -> bevy::math::UVec3;
 
 "#,
@@ -8912,7 +8055,7 @@ pub struct UVec2 {
 /// Returns a vector containing the wrapping subtraction of `self` and `rhs`.
 /// In other words this computes `[self.x.wrapping_sub(rhs.x), self.y.wrapping_sub(rhs.y), ..]`.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn wrapping_sub(self, #[proxy] rhs: bevy::math::UVec3) -> bevy::math::UVec3;
 
 "#,
@@ -8920,7 +8063,7 @@ pub struct UVec2 {
 /// Returns a vector containing the wrapping multiplication of `self` and `rhs`.
 /// In other words this computes `[self.x.wrapping_mul(rhs.x), self.y.wrapping_mul(rhs.y), ..]`.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn wrapping_mul(self, #[proxy] rhs: bevy::math::UVec3) -> bevy::math::UVec3;
 
 "#,
@@ -8928,7 +8071,7 @@ pub struct UVec2 {
 /// Returns a vector containing the wrapping division of `self` and `rhs`.
 /// In other words this computes `[self.x.wrapping_div(rhs.x), self.y.wrapping_div(rhs.y), ..]`.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn wrapping_div(self, #[proxy] rhs: bevy::math::UVec3) -> bevy::math::UVec3;
 
 "#,
@@ -8936,7 +8079,7 @@ pub struct UVec2 {
 /// Returns a vector containing the saturating addition of `self` and `rhs`.
 /// In other words this computes `[self.x.saturating_add(rhs.x), self.y.saturating_add(rhs.y), ..]`.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn saturating_add(self, #[proxy] rhs: bevy::math::UVec3) -> bevy::math::UVec3;
 
 "#,
@@ -8944,7 +8087,7 @@ pub struct UVec2 {
 /// Returns a vector containing the saturating subtraction of `self` and `rhs`.
 /// In other words this computes `[self.x.saturating_sub(rhs.x), self.y.saturating_sub(rhs.y), ..]`.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn saturating_sub(self, #[proxy] rhs: bevy::math::UVec3) -> bevy::math::UVec3;
 
 "#,
@@ -8952,7 +8095,7 @@ pub struct UVec2 {
 /// Returns a vector containing the saturating multiplication of `self` and `rhs`.
 /// In other words this computes `[self.x.saturating_mul(rhs.x), self.y.saturating_mul(rhs.y), ..]`.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn saturating_mul(self, #[proxy] rhs: bevy::math::UVec3) -> bevy::math::UVec3;
 
 "#,
@@ -8960,105 +8103,72 @@ pub struct UVec2 {
 /// Returns a vector containing the saturating division of `self` and `rhs`.
 /// In other words this computes `[self.x.saturating_div(rhs.x), self.y.saturating_div(rhs.y), ..]`.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn saturating_div(self, #[proxy] rhs: bevy::math::UVec3) -> bevy::math::UVec3;
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "std::cmp::PartialEq",
-        kind = "MetaFunction",
-        composite = "eq",
-        metamethod = "Eq",
-    )]
+    #[lua(as_trait = "std::cmp::PartialEq", composite = "eq")]
     fn eq(&self, #[proxy] other: &glam::UVec3) -> bool;
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "std::ops::Add",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "add",
-        metamethod = "Add",
-    )]
+    #[lua(as_trait = "std::ops::Add", composite = "add")]
     fn add(self, rhs: u32) -> bevy::math::UVec3;
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "std::ops::Div",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "div",
-        metamethod = "Div",
-    )]
+    #[lua(as_trait = "std::ops::Div", composite = "div")]
     fn div(self, #[proxy] rhs: bevy::math::UVec3) -> bevy::math::UVec3;
 
 "#,
     r#"
 
-    #[lua(as_trait = "std::cmp::Eq", kind = "Method")]
+    #[lua(as_trait = "std::cmp::Eq")]
     fn assert_receiver_is_total_eq(&self) -> ();
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone",
-        kind = "Method",
-        output(proxy),
-    )]
+    #[lua(as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone")]
     fn clone(&self) -> bevy::math::UVec3;
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "std::ops::Add",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "add",
-        metamethod = "Add",
-    )]
+    #[lua(as_trait = "std::ops::Add", composite = "add")]
     fn add(self, #[proxy] rhs: bevy::math::UVec3) -> bevy::math::UVec3;
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "std::ops::Sub",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "sub",
-        metamethod = "Sub",
-    )]
+    #[lua(as_trait = "std::ops::Sub", composite = "sub")]
     fn sub(self, rhs: u32) -> bevy::math::UVec3;
 
 "#,
     r#"
-#[lua(kind="MetaMethod", metamethod="ToString")]
+#[lua(metamethod="ToString")]
 fn index(&self) -> String {
     format!("{}", _self)
 }
 "#,
     r#"
-#[lua(kind="MetaMethod", raw , metamethod="Index")]
+#[lua(raw , metamethod="Index")]
 fn index(&self, lua: &Lua, idx: crate::lua::util::LuaIndex) -> Result<u32,_> {
-    Ok(self.inner()?[*idx])
+    Ok(_self.inner()?[*idx])
 }
 "#,
     r#"
-#[lua(kind="MutatingMetaMethod", raw, metamethod="NewIndex")]
+#[lua(raw, metamethod="NewIndex")]
 fn index(&mut self, lua: &Lua, idx: crate::lua::util::LuaIndex, val: u32) -> Result<(),_> {
-    self.val_mut(|s| Ok(s[*idx] = val))?
+    _self.val_mut(|s| Ok(s[*idx] = val))?
 }
 "#]
 )]
-pub struct UVec3 {
+pub struct LuaUVec3 {
     x: u32,
     y: u32,
     z: u32,
@@ -9066,95 +8176,61 @@ pub struct UVec3 {
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
     remote = "bevy::math::UVec4",
+    bms_core_path = "bevy_mod_scripting_core",
+    bms_lua_path = "crate",
     functions[r#"
 
-    #[lua(
-        as_trait = "std::ops::Add",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "add",
-        metamethod = "Add",
-    )]
+    #[lua(as_trait = "std::ops::Add", composite = "add")]
     fn add(self, #[proxy] rhs: bevy::math::UVec4) -> bevy::math::UVec4;
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "std::ops::Div",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "div",
-        metamethod = "Div",
-    )]
+    #[lua(as_trait = "std::ops::Div", composite = "div")]
     fn div(self, #[proxy] rhs: bevy::math::UVec4) -> bevy::math::UVec4;
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "std::ops::Div",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "div",
-        metamethod = "Div",
-    )]
+    #[lua(as_trait = "std::ops::Div", composite = "div")]
     fn div(self, rhs: u32) -> bevy::math::UVec4;
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "std::ops::Add",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "add",
-        metamethod = "Add",
-    )]
+    #[lua(as_trait = "std::ops::Add", composite = "add")]
     fn add(self, rhs: u32) -> bevy::math::UVec4;
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "std::ops::Rem",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "rem",
-        metamethod = "Mod",
-    )]
+    #[lua(as_trait = "std::ops::Rem", composite = "rem")]
     fn rem(self, #[proxy] rhs: bevy::math::UVec4) -> bevy::math::UVec4;
 
 "#,
     r#"
 
-    #[lua(as_trait = "std::cmp::Eq", kind = "Method")]
+    #[lua(as_trait = "std::cmp::Eq")]
     fn assert_receiver_is_total_eq(&self) -> ();
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "std::ops::Rem",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "rem",
-        metamethod = "Mod",
-    )]
+    #[lua(as_trait = "std::ops::Rem", composite = "rem")]
     fn rem(self, rhs: u32) -> bevy::math::UVec4;
 
 "#,
     r#"
 /// Creates a new vector.
 
-    #[lua(kind = "Function", output(proxy))]
+    #[lua()]
     fn new(x: u32, y: u32, z: u32, w: u32) -> bevy::math::UVec4;
 
 "#,
     r#"
 /// Creates a vector with all elements set to `v`.
 
-    #[lua(kind = "Function", output(proxy))]
+    #[lua()]
     fn splat(v: u32) -> bevy::math::UVec4;
 
 "#,
@@ -9164,7 +8240,7 @@ pub struct UVec3 {
 /// A true element in the mask uses the corresponding element from `if_true`, and false
 /// uses the element from `if_false`.
 
-    #[lua(kind = "Function", output(proxy))]
+    #[lua()]
     fn select(
         #[proxy]
         mask: bevy::math::BVec4,
@@ -9178,14 +8254,14 @@ pub struct UVec3 {
     r#"
 /// Creates a new vector from an array.
 
-    #[lua(kind = "Function", output(proxy))]
+    #[lua()]
     fn from_array(a: [u32; 4]) -> bevy::math::UVec4;
 
 "#,
     r#"
 /// `[x, y, z, w]`
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn to_array(&self) -> [u32; 4];
 
 "#,
@@ -9193,21 +8269,21 @@ pub struct UVec3 {
 /// Creates a 3D vector from the `x`, `y` and `z` elements of `self`, discarding `w`.
 /// Truncation to [`UVec3`] may also be performed by using [`self.xyz()`][crate::swizzles::Vec4Swizzles::xyz()].
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn truncate(self) -> bevy::math::UVec3;
 
 "#,
     r#"
 /// Computes the dot product of `self` and `rhs`.
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn dot(self, #[proxy] rhs: bevy::math::UVec4) -> u32;
 
 "#,
     r#"
 /// Returns a vector where every component is the dot product of `self` and `rhs`.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn dot_into_vec(self, #[proxy] rhs: bevy::math::UVec4) -> bevy::math::UVec4;
 
 "#,
@@ -9215,7 +8291,7 @@ pub struct UVec3 {
 /// Returns a vector containing the minimum values for each element of `self` and `rhs`.
 /// In other words this computes `[self.x.min(rhs.x), self.y.min(rhs.y), ..]`.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn min(self, #[proxy] rhs: bevy::math::UVec4) -> bevy::math::UVec4;
 
 "#,
@@ -9223,7 +8299,7 @@ pub struct UVec3 {
 /// Returns a vector containing the maximum values for each element of `self` and `rhs`.
 /// In other words this computes `[self.x.max(rhs.x), self.y.max(rhs.y), ..]`.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn max(self, #[proxy] rhs: bevy::math::UVec4) -> bevy::math::UVec4;
 
 "#,
@@ -9233,7 +8309,7 @@ pub struct UVec3 {
 /// # Panics
 /// Will panic if `min` is greater than `max` when `glam_assert` is enabled.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn clamp(
         self,
         #[proxy]
@@ -9247,7 +8323,7 @@ pub struct UVec3 {
 /// Returns the horizontal minimum of `self`.
 /// In other words this computes `min(x, y, ..)`.
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn min_element(self) -> u32;
 
 "#,
@@ -9255,7 +8331,7 @@ pub struct UVec3 {
 /// Returns the horizontal maximum of `self`.
 /// In other words this computes `max(x, y, ..)`.
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn max_element(self) -> u32;
 
 "#,
@@ -9265,7 +8341,7 @@ pub struct UVec3 {
 /// In other words, this computes `[self.x == rhs.x, self.y == rhs.y, ..]` for all
 /// elements.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn cmpeq(self, #[proxy] rhs: bevy::math::UVec4) -> bevy::math::BVec4;
 
 "#,
@@ -9275,7 +8351,7 @@ pub struct UVec3 {
 /// In other words this computes `[self.x != rhs.x, self.y != rhs.y, ..]` for all
 /// elements.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn cmpne(self, #[proxy] rhs: bevy::math::UVec4) -> bevy::math::BVec4;
 
 "#,
@@ -9285,7 +8361,7 @@ pub struct UVec3 {
 /// In other words this computes `[self.x >= rhs.x, self.y >= rhs.y, ..]` for all
 /// elements.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn cmpge(self, #[proxy] rhs: bevy::math::UVec4) -> bevy::math::BVec4;
 
 "#,
@@ -9295,7 +8371,7 @@ pub struct UVec3 {
 /// In other words this computes `[self.x > rhs.x, self.y > rhs.y, ..]` for all
 /// elements.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn cmpgt(self, #[proxy] rhs: bevy::math::UVec4) -> bevy::math::BVec4;
 
 "#,
@@ -9305,7 +8381,7 @@ pub struct UVec3 {
 /// In other words this computes `[self.x <= rhs.x, self.y <= rhs.y, ..]` for all
 /// elements.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn cmple(self, #[proxy] rhs: bevy::math::UVec4) -> bevy::math::BVec4;
 
 "#,
@@ -9315,49 +8391,49 @@ pub struct UVec3 {
 /// In other words this computes `[self.x < rhs.x, self.y < rhs.y, ..]` for all
 /// elements.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn cmplt(self, #[proxy] rhs: bevy::math::UVec4) -> bevy::math::BVec4;
 
 "#,
     r#"
 /// Computes the squared length of `self`.
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn length_squared(self) -> u32;
 
 "#,
     r#"
 /// Casts all elements of `self` to `f32`.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn as_vec4(&self) -> bevy::math::Vec4;
 
 "#,
     r#"
 /// Casts all elements of `self` to `f64`.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn as_dvec4(&self) -> bevy::math::DVec4;
 
 "#,
     r#"
 /// Casts all elements of `self` to `i32`.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn as_ivec4(&self) -> bevy::math::IVec4;
 
 "#,
     r#"
 /// Casts all elements of `self` to `i64`.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn as_i64vec4(&self) -> bevy::math::I64Vec4;
 
 "#,
     r#"
 /// Casts all elements of `self` to `u64`.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn as_u64vec4(&self) -> bevy::math::U64Vec4;
 
 "#,
@@ -9365,7 +8441,7 @@ pub struct UVec3 {
 /// Returns a vector containing the wrapping addition of `self` and `rhs`.
 /// In other words this computes `[self.x.wrapping_add(rhs.x), self.y.wrapping_add(rhs.y), ..]`.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn wrapping_add(self, #[proxy] rhs: bevy::math::UVec4) -> bevy::math::UVec4;
 
 "#,
@@ -9373,7 +8449,7 @@ pub struct UVec3 {
 /// Returns a vector containing the wrapping subtraction of `self` and `rhs`.
 /// In other words this computes `[self.x.wrapping_sub(rhs.x), self.y.wrapping_sub(rhs.y), ..]`.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn wrapping_sub(self, #[proxy] rhs: bevy::math::UVec4) -> bevy::math::UVec4;
 
 "#,
@@ -9381,7 +8457,7 @@ pub struct UVec3 {
 /// Returns a vector containing the wrapping multiplication of `self` and `rhs`.
 /// In other words this computes `[self.x.wrapping_mul(rhs.x), self.y.wrapping_mul(rhs.y), ..]`.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn wrapping_mul(self, #[proxy] rhs: bevy::math::UVec4) -> bevy::math::UVec4;
 
 "#,
@@ -9389,7 +8465,7 @@ pub struct UVec3 {
 /// Returns a vector containing the wrapping division of `self` and `rhs`.
 /// In other words this computes `[self.x.wrapping_div(rhs.x), self.y.wrapping_div(rhs.y), ..]`.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn wrapping_div(self, #[proxy] rhs: bevy::math::UVec4) -> bevy::math::UVec4;
 
 "#,
@@ -9397,7 +8473,7 @@ pub struct UVec3 {
 /// Returns a vector containing the saturating addition of `self` and `rhs`.
 /// In other words this computes `[self.x.saturating_add(rhs.x), self.y.saturating_add(rhs.y), ..]`.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn saturating_add(self, #[proxy] rhs: bevy::math::UVec4) -> bevy::math::UVec4;
 
 "#,
@@ -9405,7 +8481,7 @@ pub struct UVec3 {
 /// Returns a vector containing the saturating subtraction of `self` and `rhs`.
 /// In other words this computes `[self.x.saturating_sub(rhs.x), self.y.saturating_sub(rhs.y), ..]`.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn saturating_sub(self, #[proxy] rhs: bevy::math::UVec4) -> bevy::math::UVec4;
 
 "#,
@@ -9413,7 +8489,7 @@ pub struct UVec3 {
 /// Returns a vector containing the saturating multiplication of `self` and `rhs`.
 /// In other words this computes `[self.x.saturating_mul(rhs.x), self.y.saturating_mul(rhs.y), ..]`.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn saturating_mul(self, #[proxy] rhs: bevy::math::UVec4) -> bevy::math::UVec4;
 
 "#,
@@ -9421,99 +8497,66 @@ pub struct UVec3 {
 /// Returns a vector containing the saturating division of `self` and `rhs`.
 /// In other words this computes `[self.x.saturating_div(rhs.x), self.y.saturating_div(rhs.y), ..]`.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn saturating_div(self, #[proxy] rhs: bevy::math::UVec4) -> bevy::math::UVec4;
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "std::cmp::PartialEq",
-        kind = "MetaFunction",
-        composite = "eq",
-        metamethod = "Eq",
-    )]
+    #[lua(as_trait = "std::cmp::PartialEq", composite = "eq")]
     fn eq(&self, #[proxy] other: &glam::UVec4) -> bool;
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "std::ops::Sub",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "sub",
-        metamethod = "Sub",
-    )]
+    #[lua(as_trait = "std::ops::Sub", composite = "sub")]
     fn sub(self, rhs: u32) -> bevy::math::UVec4;
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "std::ops::Sub",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "sub",
-        metamethod = "Sub",
-    )]
+    #[lua(as_trait = "std::ops::Sub", composite = "sub")]
     fn sub(self, #[proxy] rhs: bevy::math::UVec4) -> bevy::math::UVec4;
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone",
-        kind = "Method",
-        output(proxy),
-    )]
+    #[lua(as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone")]
     fn clone(&self) -> bevy::math::UVec4;
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "std::ops::Mul",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "mul",
-        metamethod = "Mul",
-    )]
+    #[lua(as_trait = "std::ops::Mul", composite = "mul")]
     fn mul(self, rhs: u32) -> bevy::math::UVec4;
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "std::ops::Mul",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "mul",
-        metamethod = "Mul",
-    )]
+    #[lua(as_trait = "std::ops::Mul", composite = "mul")]
     fn mul(self, #[proxy] rhs: bevy::math::UVec4) -> bevy::math::UVec4;
 
 "#,
     r#"
-#[lua(kind="MetaMethod", metamethod="ToString")]
+#[lua(metamethod="ToString")]
 fn index(&self) -> String {
     format!("{}", _self)
 }
 "#,
     r#"
-#[lua(kind="MetaMethod", raw , metamethod="Index")]
+#[lua(raw , metamethod="Index")]
 fn index(&self, lua: &Lua, idx: crate::lua::util::LuaIndex) -> Result<u32,_> {
-    Ok(self.inner()?[*idx])
+    Ok(_self.inner()?[*idx])
 }
 "#,
     r#"
-#[lua(kind="MutatingMetaMethod", raw, metamethod="NewIndex")]
+#[lua(raw, metamethod="NewIndex")]
 fn index(&mut self, lua: &Lua, idx: crate::lua::util::LuaIndex, val: u32) -> Result<(),_> {
-    self.val_mut(|s| Ok(s[*idx] = val))?
+    _self.val_mut(|s| Ok(s[*idx] = val))?
 }
 "#]
 )]
-pub struct UVec4 {
+pub struct LuaUVec4 {
     x: u32,
     y: u32,
     z: u32,
@@ -9522,29 +8565,25 @@ pub struct UVec4 {
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
     remote = "bevy::math::U64Vec2",
+    bms_core_path = "bevy_mod_scripting_core",
+    bms_lua_path = "crate",
     functions[r#"
 
-    #[lua(
-        as_trait = "std::ops::Mul",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "mul",
-        metamethod = "Mul",
-    )]
+    #[lua(as_trait = "std::ops::Mul", composite = "mul")]
     fn mul(self, rhs: u64) -> bevy::math::U64Vec2;
 
 "#,
     r#"
 /// Creates a new vector.
 
-    #[lua(kind = "Function", output(proxy))]
+    #[lua()]
     fn new(x: u64, y: u64) -> bevy::math::U64Vec2;
 
 "#,
     r#"
 /// Creates a vector with all elements set to `v`.
 
-    #[lua(kind = "Function", output(proxy))]
+    #[lua()]
     fn splat(v: u64) -> bevy::math::U64Vec2;
 
 "#,
@@ -9554,7 +8593,7 @@ pub struct UVec4 {
 /// A true element in the mask uses the corresponding element from `if_true`, and false
 /// uses the element from `if_false`.
 
-    #[lua(kind = "Function", output(proxy))]
+    #[lua()]
     fn select(
         #[proxy]
         mask: bevy::math::BVec2,
@@ -9568,35 +8607,35 @@ pub struct UVec4 {
     r#"
 /// Creates a new vector from an array.
 
-    #[lua(kind = "Function", output(proxy))]
+    #[lua()]
     fn from_array(a: [u64; 2]) -> bevy::math::U64Vec2;
 
 "#,
     r#"
 /// `[x, y]`
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn to_array(&self) -> [u64; 2];
 
 "#,
     r#"
 /// Creates a 3D vector from `self` and the given `z` value.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn extend(self, z: u64) -> bevy::math::U64Vec3;
 
 "#,
     r#"
 /// Computes the dot product of `self` and `rhs`.
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn dot(self, #[proxy] rhs: bevy::math::U64Vec2) -> u64;
 
 "#,
     r#"
 /// Returns a vector where every component is the dot product of `self` and `rhs`.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn dot_into_vec(self, #[proxy] rhs: bevy::math::U64Vec2) -> bevy::math::U64Vec2;
 
 "#,
@@ -9604,7 +8643,7 @@ pub struct UVec4 {
 /// Returns a vector containing the minimum values for each element of `self` and `rhs`.
 /// In other words this computes `[self.x.min(rhs.x), self.y.min(rhs.y), ..]`.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn min(self, #[proxy] rhs: bevy::math::U64Vec2) -> bevy::math::U64Vec2;
 
 "#,
@@ -9612,7 +8651,7 @@ pub struct UVec4 {
 /// Returns a vector containing the maximum values for each element of `self` and `rhs`.
 /// In other words this computes `[self.x.max(rhs.x), self.y.max(rhs.y), ..]`.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn max(self, #[proxy] rhs: bevy::math::U64Vec2) -> bevy::math::U64Vec2;
 
 "#,
@@ -9622,7 +8661,7 @@ pub struct UVec4 {
 /// # Panics
 /// Will panic if `min` is greater than `max` when `glam_assert` is enabled.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn clamp(
         self,
         #[proxy]
@@ -9636,7 +8675,7 @@ pub struct UVec4 {
 /// Returns the horizontal minimum of `self`.
 /// In other words this computes `min(x, y, ..)`.
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn min_element(self) -> u64;
 
 "#,
@@ -9644,7 +8683,7 @@ pub struct UVec4 {
 /// Returns the horizontal maximum of `self`.
 /// In other words this computes `max(x, y, ..)`.
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn max_element(self) -> u64;
 
 "#,
@@ -9654,7 +8693,7 @@ pub struct UVec4 {
 /// In other words, this computes `[self.x == rhs.x, self.y == rhs.y, ..]` for all
 /// elements.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn cmpeq(self, #[proxy] rhs: bevy::math::U64Vec2) -> bevy::math::BVec2;
 
 "#,
@@ -9664,7 +8703,7 @@ pub struct UVec4 {
 /// In other words this computes `[self.x != rhs.x, self.y != rhs.y, ..]` for all
 /// elements.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn cmpne(self, #[proxy] rhs: bevy::math::U64Vec2) -> bevy::math::BVec2;
 
 "#,
@@ -9674,7 +8713,7 @@ pub struct UVec4 {
 /// In other words this computes `[self.x >= rhs.x, self.y >= rhs.y, ..]` for all
 /// elements.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn cmpge(self, #[proxy] rhs: bevy::math::U64Vec2) -> bevy::math::BVec2;
 
 "#,
@@ -9684,7 +8723,7 @@ pub struct UVec4 {
 /// In other words this computes `[self.x > rhs.x, self.y > rhs.y, ..]` for all
 /// elements.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn cmpgt(self, #[proxy] rhs: bevy::math::U64Vec2) -> bevy::math::BVec2;
 
 "#,
@@ -9694,7 +8733,7 @@ pub struct UVec4 {
 /// In other words this computes `[self.x <= rhs.x, self.y <= rhs.y, ..]` for all
 /// elements.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn cmple(self, #[proxy] rhs: bevy::math::U64Vec2) -> bevy::math::BVec2;
 
 "#,
@@ -9704,49 +8743,49 @@ pub struct UVec4 {
 /// In other words this computes `[self.x < rhs.x, self.y < rhs.y, ..]` for all
 /// elements.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn cmplt(self, #[proxy] rhs: bevy::math::U64Vec2) -> bevy::math::BVec2;
 
 "#,
     r#"
 /// Computes the squared length of `self`.
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn length_squared(self) -> u64;
 
 "#,
     r#"
 /// Casts all elements of `self` to `f32`.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn as_vec2(&self) -> bevy::math::Vec2;
 
 "#,
     r#"
 /// Casts all elements of `self` to `f64`.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn as_dvec2(&self) -> bevy::math::DVec2;
 
 "#,
     r#"
 /// Casts all elements of `self` to `i32`.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn as_ivec2(&self) -> bevy::math::IVec2;
 
 "#,
     r#"
 /// Casts all elements of `self` to `u32`.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn as_uvec2(&self) -> bevy::math::UVec2;
 
 "#,
     r#"
 /// Casts all elements of `self` to `i64`.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn as_i64vec2(&self) -> bevy::math::I64Vec2;
 
 "#,
@@ -9754,7 +8793,7 @@ pub struct UVec4 {
 /// Returns a vector containing the wrapping addition of `self` and `rhs`.
 /// In other words this computes `[self.x.wrapping_add(rhs.x), self.y.wrapping_add(rhs.y), ..]`.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn wrapping_add(self, #[proxy] rhs: bevy::math::U64Vec2) -> bevy::math::U64Vec2;
 
 "#,
@@ -9762,7 +8801,7 @@ pub struct UVec4 {
 /// Returns a vector containing the wrapping subtraction of `self` and `rhs`.
 /// In other words this computes `[self.x.wrapping_sub(rhs.x), self.y.wrapping_sub(rhs.y), ..]`.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn wrapping_sub(self, #[proxy] rhs: bevy::math::U64Vec2) -> bevy::math::U64Vec2;
 
 "#,
@@ -9770,7 +8809,7 @@ pub struct UVec4 {
 /// Returns a vector containing the wrapping multiplication of `self` and `rhs`.
 /// In other words this computes `[self.x.wrapping_mul(rhs.x), self.y.wrapping_mul(rhs.y), ..]`.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn wrapping_mul(self, #[proxy] rhs: bevy::math::U64Vec2) -> bevy::math::U64Vec2;
 
 "#,
@@ -9778,7 +8817,7 @@ pub struct UVec4 {
 /// Returns a vector containing the wrapping division of `self` and `rhs`.
 /// In other words this computes `[self.x.wrapping_div(rhs.x), self.y.wrapping_div(rhs.y), ..]`.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn wrapping_div(self, #[proxy] rhs: bevy::math::U64Vec2) -> bevy::math::U64Vec2;
 
 "#,
@@ -9786,7 +8825,7 @@ pub struct UVec4 {
 /// Returns a vector containing the saturating addition of `self` and `rhs`.
 /// In other words this computes `[self.x.saturating_add(rhs.x), self.y.saturating_add(rhs.y), ..]`.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn saturating_add(self, #[proxy] rhs: bevy::math::U64Vec2) -> bevy::math::U64Vec2;
 
 "#,
@@ -9794,7 +8833,7 @@ pub struct UVec4 {
 /// Returns a vector containing the saturating subtraction of `self` and `rhs`.
 /// In other words this computes `[self.x.saturating_sub(rhs.x), self.y.saturating_sub(rhs.y), ..]`.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn saturating_sub(self, #[proxy] rhs: bevy::math::U64Vec2) -> bevy::math::U64Vec2;
 
 "#,
@@ -9802,7 +8841,7 @@ pub struct UVec4 {
 /// Returns a vector containing the saturating multiplication of `self` and `rhs`.
 /// In other words this computes `[self.x.saturating_mul(rhs.x), self.y.saturating_mul(rhs.y), ..]`.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn saturating_mul(self, #[proxy] rhs: bevy::math::U64Vec2) -> bevy::math::U64Vec2;
 
 "#,
@@ -9810,182 +8849,115 @@ pub struct UVec4 {
 /// Returns a vector containing the saturating division of `self` and `rhs`.
 /// In other words this computes `[self.x.saturating_div(rhs.x), self.y.saturating_div(rhs.y), ..]`.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn saturating_div(self, #[proxy] rhs: bevy::math::U64Vec2) -> bevy::math::U64Vec2;
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "std::ops::Mul",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "mul",
-        metamethod = "Mul",
-    )]
+    #[lua(as_trait = "std::ops::Mul", composite = "mul")]
     fn mul(self, #[proxy] rhs: bevy::math::U64Vec2) -> bevy::math::U64Vec2;
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "std::ops::Add",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "add",
-        metamethod = "Add",
-    )]
+    #[lua(as_trait = "std::ops::Add", composite = "add")]
     fn add(self, rhs: u64) -> bevy::math::U64Vec2;
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "std::ops::Rem",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "rem",
-        metamethod = "Mod",
-    )]
+    #[lua(as_trait = "std::ops::Rem", composite = "rem")]
     fn rem(self, rhs: u64) -> bevy::math::U64Vec2;
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "std::ops::Rem",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "rem",
-        metamethod = "Mod",
-    )]
+    #[lua(as_trait = "std::ops::Rem", composite = "rem")]
     fn rem(self, #[proxy] rhs: bevy::math::U64Vec2) -> bevy::math::U64Vec2;
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone",
-        kind = "Method",
-        output(proxy),
-    )]
+    #[lua(as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone")]
     fn clone(&self) -> bevy::math::U64Vec2;
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "std::ops::Sub",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "sub",
-        metamethod = "Sub",
-    )]
+    #[lua(as_trait = "std::ops::Sub", composite = "sub")]
     fn sub(self, #[proxy] rhs: bevy::math::U64Vec2) -> bevy::math::U64Vec2;
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "std::ops::Add",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "add",
-        metamethod = "Add",
-    )]
+    #[lua(as_trait = "std::ops::Add", composite = "add")]
     fn add(self, #[proxy] rhs: bevy::math::U64Vec2) -> bevy::math::U64Vec2;
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "std::cmp::PartialEq",
-        kind = "MetaFunction",
-        composite = "eq",
-        metamethod = "Eq",
-    )]
+    #[lua(as_trait = "std::cmp::PartialEq", composite = "eq")]
     fn eq(&self, #[proxy] other: &glam::U64Vec2) -> bool;
 
 "#,
     r#"
 
-    #[lua(as_trait = "std::cmp::Eq", kind = "Method")]
+    #[lua(as_trait = "std::cmp::Eq")]
     fn assert_receiver_is_total_eq(&self) -> ();
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "std::ops::Sub",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "sub",
-        metamethod = "Sub",
-    )]
+    #[lua(as_trait = "std::ops::Sub", composite = "sub")]
     fn sub(self, rhs: u64) -> bevy::math::U64Vec2;
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "std::ops::Div",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "div",
-        metamethod = "Div",
-    )]
+    #[lua(as_trait = "std::ops::Div", composite = "div")]
     fn div(self, #[proxy] rhs: bevy::math::U64Vec2) -> bevy::math::U64Vec2;
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "std::ops::Div",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "div",
-        metamethod = "Div",
-    )]
+    #[lua(as_trait = "std::ops::Div", composite = "div")]
     fn div(self, rhs: u64) -> bevy::math::U64Vec2;
 
 "#,
     r#"
-#[lua(kind="MetaMethod", metamethod="ToString")]
+#[lua(metamethod="ToString")]
 fn index(&self) -> String {
     format!("{}", _self)
 }
 "#]
 )]
-pub struct U64Vec2 {
+pub struct LuaU64Vec2 {
     x: u64,
     y: u64,
 }
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
     remote = "bevy::math::U64Vec3",
+    bms_core_path = "bevy_mod_scripting_core",
+    bms_lua_path = "crate",
     functions[r#"
 
-    #[lua(
-        as_trait = "std::ops::Sub",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "sub",
-        metamethod = "Sub",
-    )]
+    #[lua(as_trait = "std::ops::Sub", composite = "sub")]
     fn sub(self, rhs: u64) -> bevy::math::U64Vec3;
 
 "#,
     r#"
 /// Creates a new vector.
 
-    #[lua(kind = "Function", output(proxy))]
+    #[lua()]
     fn new(x: u64, y: u64, z: u64) -> bevy::math::U64Vec3;
 
 "#,
     r#"
 /// Creates a vector with all elements set to `v`.
 
-    #[lua(kind = "Function", output(proxy))]
+    #[lua()]
     fn splat(v: u64) -> bevy::math::U64Vec3;
 
 "#,
@@ -9995,7 +8967,7 @@ pub struct U64Vec2 {
 /// A true element in the mask uses the corresponding element from `if_true`, and false
 /// uses the element from `if_false`.
 
-    #[lua(kind = "Function", output(proxy))]
+    #[lua()]
     fn select(
         #[proxy]
         mask: bevy::math::BVec3,
@@ -10009,21 +8981,21 @@ pub struct U64Vec2 {
     r#"
 /// Creates a new vector from an array.
 
-    #[lua(kind = "Function", output(proxy))]
+    #[lua()]
     fn from_array(a: [u64; 3]) -> bevy::math::U64Vec3;
 
 "#,
     r#"
 /// `[x, y, z]`
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn to_array(&self) -> [u64; 3];
 
 "#,
     r#"
 /// Creates a 4D vector from `self` and the given `w` value.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn extend(self, w: u64) -> bevy::math::U64Vec4;
 
 "#,
@@ -10031,28 +9003,28 @@ pub struct U64Vec2 {
 /// Creates a 2D vector from the `x` and `y` elements of `self`, discarding `z`.
 /// Truncation may also be performed by using [`self.xy()`][crate::swizzles::Vec3Swizzles::xy()].
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn truncate(self) -> bevy::math::U64Vec2;
 
 "#,
     r#"
 /// Computes the dot product of `self` and `rhs`.
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn dot(self, #[proxy] rhs: bevy::math::U64Vec3) -> u64;
 
 "#,
     r#"
 /// Returns a vector where every component is the dot product of `self` and `rhs`.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn dot_into_vec(self, #[proxy] rhs: bevy::math::U64Vec3) -> bevy::math::U64Vec3;
 
 "#,
     r#"
 /// Computes the cross product of `self` and `rhs`.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn cross(self, #[proxy] rhs: bevy::math::U64Vec3) -> bevy::math::U64Vec3;
 
 "#,
@@ -10060,7 +9032,7 @@ pub struct U64Vec2 {
 /// Returns a vector containing the minimum values for each element of `self` and `rhs`.
 /// In other words this computes `[self.x.min(rhs.x), self.y.min(rhs.y), ..]`.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn min(self, #[proxy] rhs: bevy::math::U64Vec3) -> bevy::math::U64Vec3;
 
 "#,
@@ -10068,7 +9040,7 @@ pub struct U64Vec2 {
 /// Returns a vector containing the maximum values for each element of `self` and `rhs`.
 /// In other words this computes `[self.x.max(rhs.x), self.y.max(rhs.y), ..]`.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn max(self, #[proxy] rhs: bevy::math::U64Vec3) -> bevy::math::U64Vec3;
 
 "#,
@@ -10078,7 +9050,7 @@ pub struct U64Vec2 {
 /// # Panics
 /// Will panic if `min` is greater than `max` when `glam_assert` is enabled.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn clamp(
         self,
         #[proxy]
@@ -10092,7 +9064,7 @@ pub struct U64Vec2 {
 /// Returns the horizontal minimum of `self`.
 /// In other words this computes `min(x, y, ..)`.
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn min_element(self) -> u64;
 
 "#,
@@ -10100,7 +9072,7 @@ pub struct U64Vec2 {
 /// Returns the horizontal maximum of `self`.
 /// In other words this computes `max(x, y, ..)`.
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn max_element(self) -> u64;
 
 "#,
@@ -10110,7 +9082,7 @@ pub struct U64Vec2 {
 /// In other words, this computes `[self.x == rhs.x, self.y == rhs.y, ..]` for all
 /// elements.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn cmpeq(self, #[proxy] rhs: bevy::math::U64Vec3) -> bevy::math::BVec3;
 
 "#,
@@ -10120,7 +9092,7 @@ pub struct U64Vec2 {
 /// In other words this computes `[self.x != rhs.x, self.y != rhs.y, ..]` for all
 /// elements.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn cmpne(self, #[proxy] rhs: bevy::math::U64Vec3) -> bevy::math::BVec3;
 
 "#,
@@ -10130,7 +9102,7 @@ pub struct U64Vec2 {
 /// In other words this computes `[self.x >= rhs.x, self.y >= rhs.y, ..]` for all
 /// elements.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn cmpge(self, #[proxy] rhs: bevy::math::U64Vec3) -> bevy::math::BVec3;
 
 "#,
@@ -10140,7 +9112,7 @@ pub struct U64Vec2 {
 /// In other words this computes `[self.x > rhs.x, self.y > rhs.y, ..]` for all
 /// elements.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn cmpgt(self, #[proxy] rhs: bevy::math::U64Vec3) -> bevy::math::BVec3;
 
 "#,
@@ -10150,7 +9122,7 @@ pub struct U64Vec2 {
 /// In other words this computes `[self.x <= rhs.x, self.y <= rhs.y, ..]` for all
 /// elements.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn cmple(self, #[proxy] rhs: bevy::math::U64Vec3) -> bevy::math::BVec3;
 
 "#,
@@ -10160,56 +9132,56 @@ pub struct U64Vec2 {
 /// In other words this computes `[self.x < rhs.x, self.y < rhs.y, ..]` for all
 /// elements.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn cmplt(self, #[proxy] rhs: bevy::math::U64Vec3) -> bevy::math::BVec3;
 
 "#,
     r#"
 /// Computes the squared length of `self`.
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn length_squared(self) -> u64;
 
 "#,
     r#"
 /// Casts all elements of `self` to `f32`.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn as_vec3(&self) -> bevy::math::Vec3;
 
 "#,
     r#"
 /// Casts all elements of `self` to `f32`.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn as_vec3a(&self) -> bevy::math::Vec3A;
 
 "#,
     r#"
 /// Casts all elements of `self` to `f64`.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn as_dvec3(&self) -> bevy::math::DVec3;
 
 "#,
     r#"
 /// Casts all elements of `self` to `i32`.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn as_ivec3(&self) -> bevy::math::IVec3;
 
 "#,
     r#"
 /// Casts all elements of `self` to `u32`.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn as_uvec3(&self) -> bevy::math::UVec3;
 
 "#,
     r#"
 /// Casts all elements of `self` to `i64`.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn as_i64vec3(&self) -> bevy::math::I64Vec3;
 
 "#,
@@ -10217,7 +9189,7 @@ pub struct U64Vec2 {
 /// Returns a vector containing the wrapping addition of `self` and `rhs`.
 /// In other words this computes `[self.x.wrapping_add(rhs.x), self.y.wrapping_add(rhs.y), ..]`.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn wrapping_add(self, #[proxy] rhs: bevy::math::U64Vec3) -> bevy::math::U64Vec3;
 
 "#,
@@ -10225,7 +9197,7 @@ pub struct U64Vec2 {
 /// Returns a vector containing the wrapping subtraction of `self` and `rhs`.
 /// In other words this computes `[self.x.wrapping_sub(rhs.x), self.y.wrapping_sub(rhs.y), ..]`.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn wrapping_sub(self, #[proxy] rhs: bevy::math::U64Vec3) -> bevy::math::U64Vec3;
 
 "#,
@@ -10233,7 +9205,7 @@ pub struct U64Vec2 {
 /// Returns a vector containing the wrapping multiplication of `self` and `rhs`.
 /// In other words this computes `[self.x.wrapping_mul(rhs.x), self.y.wrapping_mul(rhs.y), ..]`.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn wrapping_mul(self, #[proxy] rhs: bevy::math::U64Vec3) -> bevy::math::U64Vec3;
 
 "#,
@@ -10241,7 +9213,7 @@ pub struct U64Vec2 {
 /// Returns a vector containing the wrapping division of `self` and `rhs`.
 /// In other words this computes `[self.x.wrapping_div(rhs.x), self.y.wrapping_div(rhs.y), ..]`.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn wrapping_div(self, #[proxy] rhs: bevy::math::U64Vec3) -> bevy::math::U64Vec3;
 
 "#,
@@ -10249,7 +9221,7 @@ pub struct U64Vec2 {
 /// Returns a vector containing the saturating addition of `self` and `rhs`.
 /// In other words this computes `[self.x.saturating_add(rhs.x), self.y.saturating_add(rhs.y), ..]`.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn saturating_add(self, #[proxy] rhs: bevy::math::U64Vec3) -> bevy::math::U64Vec3;
 
 "#,
@@ -10257,7 +9229,7 @@ pub struct U64Vec2 {
 /// Returns a vector containing the saturating subtraction of `self` and `rhs`.
 /// In other words this computes `[self.x.saturating_sub(rhs.x), self.y.saturating_sub(rhs.y), ..]`.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn saturating_sub(self, #[proxy] rhs: bevy::math::U64Vec3) -> bevy::math::U64Vec3;
 
 "#,
@@ -10265,7 +9237,7 @@ pub struct U64Vec2 {
 /// Returns a vector containing the saturating multiplication of `self` and `rhs`.
 /// In other words this computes `[self.x.saturating_mul(rhs.x), self.y.saturating_mul(rhs.y), ..]`.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn saturating_mul(self, #[proxy] rhs: bevy::math::U64Vec3) -> bevy::math::U64Vec3;
 
 "#,
@@ -10273,153 +9245,90 @@ pub struct U64Vec2 {
 /// Returns a vector containing the saturating division of `self` and `rhs`.
 /// In other words this computes `[self.x.saturating_div(rhs.x), self.y.saturating_div(rhs.y), ..]`.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn saturating_div(self, #[proxy] rhs: bevy::math::U64Vec3) -> bevy::math::U64Vec3;
 
 "#,
     r#"
 
-    #[lua(as_trait = "std::cmp::Eq", kind = "Method")]
+    #[lua(as_trait = "std::cmp::Eq")]
     fn assert_receiver_is_total_eq(&self) -> ();
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "std::ops::Rem",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "rem",
-        metamethod = "Mod",
-    )]
+    #[lua(as_trait = "std::ops::Rem", composite = "rem")]
     fn rem(self, #[proxy] rhs: bevy::math::U64Vec3) -> bevy::math::U64Vec3;
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "std::ops::Mul",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "mul",
-        metamethod = "Mul",
-    )]
+    #[lua(as_trait = "std::ops::Mul", composite = "mul")]
     fn mul(self, rhs: u64) -> bevy::math::U64Vec3;
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "std::ops::Add",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "add",
-        metamethod = "Add",
-    )]
+    #[lua(as_trait = "std::ops::Add", composite = "add")]
     fn add(self, #[proxy] rhs: bevy::math::U64Vec3) -> bevy::math::U64Vec3;
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone",
-        kind = "Method",
-        output(proxy),
-    )]
+    #[lua(as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone")]
     fn clone(&self) -> bevy::math::U64Vec3;
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "std::ops::Mul",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "mul",
-        metamethod = "Mul",
-    )]
+    #[lua(as_trait = "std::ops::Mul", composite = "mul")]
     fn mul(self, #[proxy] rhs: bevy::math::U64Vec3) -> bevy::math::U64Vec3;
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "std::ops::Div",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "div",
-        metamethod = "Div",
-    )]
+    #[lua(as_trait = "std::ops::Div", composite = "div")]
     fn div(self, #[proxy] rhs: bevy::math::U64Vec3) -> bevy::math::U64Vec3;
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "std::ops::Rem",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "rem",
-        metamethod = "Mod",
-    )]
+    #[lua(as_trait = "std::ops::Rem", composite = "rem")]
     fn rem(self, rhs: u64) -> bevy::math::U64Vec3;
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "std::ops::Div",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "div",
-        metamethod = "Div",
-    )]
+    #[lua(as_trait = "std::ops::Div", composite = "div")]
     fn div(self, rhs: u64) -> bevy::math::U64Vec3;
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "std::cmp::PartialEq",
-        kind = "MetaFunction",
-        composite = "eq",
-        metamethod = "Eq",
-    )]
+    #[lua(as_trait = "std::cmp::PartialEq", composite = "eq")]
     fn eq(&self, #[proxy] other: &glam::U64Vec3) -> bool;
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "std::ops::Add",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "add",
-        metamethod = "Add",
-    )]
+    #[lua(as_trait = "std::ops::Add", composite = "add")]
     fn add(self, rhs: u64) -> bevy::math::U64Vec3;
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "std::ops::Sub",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "sub",
-        metamethod = "Sub",
-    )]
+    #[lua(as_trait = "std::ops::Sub", composite = "sub")]
     fn sub(self, #[proxy] rhs: bevy::math::U64Vec3) -> bevy::math::U64Vec3;
 
 "#,
     r#"
-#[lua(kind="MetaMethod", metamethod="ToString")]
+#[lua(metamethod="ToString")]
 fn index(&self) -> String {
     format!("{}", _self)
 }
 "#]
 )]
-pub struct U64Vec3 {
+pub struct LuaU64Vec3 {
     x: u64,
     y: u64,
     z: u64,
@@ -10427,17 +9336,19 @@ pub struct U64Vec3 {
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
     remote = "bevy::math::U64Vec4",
+    bms_core_path = "bevy_mod_scripting_core",
+    bms_lua_path = "crate",
     functions[r#"
 /// Creates a new vector.
 
-    #[lua(kind = "Function", output(proxy))]
+    #[lua()]
     fn new(x: u64, y: u64, z: u64, w: u64) -> bevy::math::U64Vec4;
 
 "#,
     r#"
 /// Creates a vector with all elements set to `v`.
 
-    #[lua(kind = "Function", output(proxy))]
+    #[lua()]
     fn splat(v: u64) -> bevy::math::U64Vec4;
 
 "#,
@@ -10447,7 +9358,7 @@ pub struct U64Vec3 {
 /// A true element in the mask uses the corresponding element from `if_true`, and false
 /// uses the element from `if_false`.
 
-    #[lua(kind = "Function", output(proxy))]
+    #[lua()]
     fn select(
         #[proxy]
         mask: bevy::math::BVec4,
@@ -10461,14 +9372,14 @@ pub struct U64Vec3 {
     r#"
 /// Creates a new vector from an array.
 
-    #[lua(kind = "Function", output(proxy))]
+    #[lua()]
     fn from_array(a: [u64; 4]) -> bevy::math::U64Vec4;
 
 "#,
     r#"
 /// `[x, y, z, w]`
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn to_array(&self) -> [u64; 4];
 
 "#,
@@ -10476,21 +9387,21 @@ pub struct U64Vec3 {
 /// Creates a 3D vector from the `x`, `y` and `z` elements of `self`, discarding `w`.
 /// Truncation to [`U64Vec3`] may also be performed by using [`self.xyz()`][crate::swizzles::Vec4Swizzles::xyz()].
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn truncate(self) -> bevy::math::U64Vec3;
 
 "#,
     r#"
 /// Computes the dot product of `self` and `rhs`.
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn dot(self, #[proxy] rhs: bevy::math::U64Vec4) -> u64;
 
 "#,
     r#"
 /// Returns a vector where every component is the dot product of `self` and `rhs`.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn dot_into_vec(self, #[proxy] rhs: bevy::math::U64Vec4) -> bevy::math::U64Vec4;
 
 "#,
@@ -10498,7 +9409,7 @@ pub struct U64Vec3 {
 /// Returns a vector containing the minimum values for each element of `self` and `rhs`.
 /// In other words this computes `[self.x.min(rhs.x), self.y.min(rhs.y), ..]`.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn min(self, #[proxy] rhs: bevy::math::U64Vec4) -> bevy::math::U64Vec4;
 
 "#,
@@ -10506,7 +9417,7 @@ pub struct U64Vec3 {
 /// Returns a vector containing the maximum values for each element of `self` and `rhs`.
 /// In other words this computes `[self.x.max(rhs.x), self.y.max(rhs.y), ..]`.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn max(self, #[proxy] rhs: bevy::math::U64Vec4) -> bevy::math::U64Vec4;
 
 "#,
@@ -10516,7 +9427,7 @@ pub struct U64Vec3 {
 /// # Panics
 /// Will panic if `min` is greater than `max` when `glam_assert` is enabled.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn clamp(
         self,
         #[proxy]
@@ -10530,7 +9441,7 @@ pub struct U64Vec3 {
 /// Returns the horizontal minimum of `self`.
 /// In other words this computes `min(x, y, ..)`.
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn min_element(self) -> u64;
 
 "#,
@@ -10538,7 +9449,7 @@ pub struct U64Vec3 {
 /// Returns the horizontal maximum of `self`.
 /// In other words this computes `max(x, y, ..)`.
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn max_element(self) -> u64;
 
 "#,
@@ -10548,7 +9459,7 @@ pub struct U64Vec3 {
 /// In other words, this computes `[self.x == rhs.x, self.y == rhs.y, ..]` for all
 /// elements.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn cmpeq(self, #[proxy] rhs: bevy::math::U64Vec4) -> bevy::math::BVec4;
 
 "#,
@@ -10558,7 +9469,7 @@ pub struct U64Vec3 {
 /// In other words this computes `[self.x != rhs.x, self.y != rhs.y, ..]` for all
 /// elements.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn cmpne(self, #[proxy] rhs: bevy::math::U64Vec4) -> bevy::math::BVec4;
 
 "#,
@@ -10568,7 +9479,7 @@ pub struct U64Vec3 {
 /// In other words this computes `[self.x >= rhs.x, self.y >= rhs.y, ..]` for all
 /// elements.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn cmpge(self, #[proxy] rhs: bevy::math::U64Vec4) -> bevy::math::BVec4;
 
 "#,
@@ -10578,7 +9489,7 @@ pub struct U64Vec3 {
 /// In other words this computes `[self.x > rhs.x, self.y > rhs.y, ..]` for all
 /// elements.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn cmpgt(self, #[proxy] rhs: bevy::math::U64Vec4) -> bevy::math::BVec4;
 
 "#,
@@ -10588,7 +9499,7 @@ pub struct U64Vec3 {
 /// In other words this computes `[self.x <= rhs.x, self.y <= rhs.y, ..]` for all
 /// elements.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn cmple(self, #[proxy] rhs: bevy::math::U64Vec4) -> bevy::math::BVec4;
 
 "#,
@@ -10598,49 +9509,49 @@ pub struct U64Vec3 {
 /// In other words this computes `[self.x < rhs.x, self.y < rhs.y, ..]` for all
 /// elements.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn cmplt(self, #[proxy] rhs: bevy::math::U64Vec4) -> bevy::math::BVec4;
 
 "#,
     r#"
 /// Computes the squared length of `self`.
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn length_squared(self) -> u64;
 
 "#,
     r#"
 /// Casts all elements of `self` to `f32`.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn as_vec4(&self) -> bevy::math::Vec4;
 
 "#,
     r#"
 /// Casts all elements of `self` to `f64`.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn as_dvec4(&self) -> bevy::math::DVec4;
 
 "#,
     r#"
 /// Casts all elements of `self` to `i32`.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn as_ivec4(&self) -> bevy::math::IVec4;
 
 "#,
     r#"
 /// Casts all elements of `self` to `u32`.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn as_uvec4(&self) -> bevy::math::UVec4;
 
 "#,
     r#"
 /// Casts all elements of `self` to `i64`.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn as_i64vec4(&self) -> bevy::math::I64Vec4;
 
 "#,
@@ -10648,7 +9559,7 @@ pub struct U64Vec3 {
 /// Returns a vector containing the wrapping addition of `self` and `rhs`.
 /// In other words this computes `[self.x.wrapping_add(rhs.x), self.y.wrapping_add(rhs.y), ..]`.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn wrapping_add(self, #[proxy] rhs: bevy::math::U64Vec4) -> bevy::math::U64Vec4;
 
 "#,
@@ -10656,7 +9567,7 @@ pub struct U64Vec3 {
 /// Returns a vector containing the wrapping subtraction of `self` and `rhs`.
 /// In other words this computes `[self.x.wrapping_sub(rhs.x), self.y.wrapping_sub(rhs.y), ..]`.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn wrapping_sub(self, #[proxy] rhs: bevy::math::U64Vec4) -> bevy::math::U64Vec4;
 
 "#,
@@ -10664,7 +9575,7 @@ pub struct U64Vec3 {
 /// Returns a vector containing the wrapping multiplication of `self` and `rhs`.
 /// In other words this computes `[self.x.wrapping_mul(rhs.x), self.y.wrapping_mul(rhs.y), ..]`.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn wrapping_mul(self, #[proxy] rhs: bevy::math::U64Vec4) -> bevy::math::U64Vec4;
 
 "#,
@@ -10672,7 +9583,7 @@ pub struct U64Vec3 {
 /// Returns a vector containing the wrapping division of `self` and `rhs`.
 /// In other words this computes `[self.x.wrapping_div(rhs.x), self.y.wrapping_div(rhs.y), ..]`.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn wrapping_div(self, #[proxy] rhs: bevy::math::U64Vec4) -> bevy::math::U64Vec4;
 
 "#,
@@ -10680,7 +9591,7 @@ pub struct U64Vec3 {
 /// Returns a vector containing the saturating addition of `self` and `rhs`.
 /// In other words this computes `[self.x.saturating_add(rhs.x), self.y.saturating_add(rhs.y), ..]`.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn saturating_add(self, #[proxy] rhs: bevy::math::U64Vec4) -> bevy::math::U64Vec4;
 
 "#,
@@ -10688,7 +9599,7 @@ pub struct U64Vec3 {
 /// Returns a vector containing the saturating subtraction of `self` and `rhs`.
 /// In other words this computes `[self.x.saturating_sub(rhs.x), self.y.saturating_sub(rhs.y), ..]`.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn saturating_sub(self, #[proxy] rhs: bevy::math::U64Vec4) -> bevy::math::U64Vec4;
 
 "#,
@@ -10696,7 +9607,7 @@ pub struct U64Vec3 {
 /// Returns a vector containing the saturating multiplication of `self` and `rhs`.
 /// In other words this computes `[self.x.saturating_mul(rhs.x), self.y.saturating_mul(rhs.y), ..]`.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn saturating_mul(self, #[proxy] rhs: bevy::math::U64Vec4) -> bevy::math::U64Vec4;
 
 "#,
@@ -10704,165 +9615,96 @@ pub struct U64Vec3 {
 /// Returns a vector containing the saturating division of `self` and `rhs`.
 /// In other words this computes `[self.x.saturating_div(rhs.x), self.y.saturating_div(rhs.y), ..]`.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn saturating_div(self, #[proxy] rhs: bevy::math::U64Vec4) -> bevy::math::U64Vec4;
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "std::ops::Sub",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "sub",
-        metamethod = "Sub",
-    )]
+    #[lua(as_trait = "std::ops::Sub", composite = "sub")]
     fn sub(self, rhs: u64) -> bevy::math::U64Vec4;
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "std::ops::Mul",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "mul",
-        metamethod = "Mul",
-    )]
+    #[lua(as_trait = "std::ops::Mul", composite = "mul")]
     fn mul(self, #[proxy] rhs: bevy::math::U64Vec4) -> bevy::math::U64Vec4;
 
 "#,
     r#"
 
-    #[lua(as_trait = "std::cmp::Eq", kind = "Method")]
+    #[lua(as_trait = "std::cmp::Eq")]
     fn assert_receiver_is_total_eq(&self) -> ();
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "std::ops::Div",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "div",
-        metamethod = "Div",
-    )]
+    #[lua(as_trait = "std::ops::Div", composite = "div")]
     fn div(self, rhs: u64) -> bevy::math::U64Vec4;
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "std::ops::Sub",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "sub",
-        metamethod = "Sub",
-    )]
+    #[lua(as_trait = "std::ops::Sub", composite = "sub")]
     fn sub(self, #[proxy] rhs: bevy::math::U64Vec4) -> bevy::math::U64Vec4;
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "std::ops::Add",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "add",
-        metamethod = "Add",
-    )]
+    #[lua(as_trait = "std::ops::Add", composite = "add")]
     fn add(self, #[proxy] rhs: bevy::math::U64Vec4) -> bevy::math::U64Vec4;
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "std::ops::Div",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "div",
-        metamethod = "Div",
-    )]
+    #[lua(as_trait = "std::ops::Div", composite = "div")]
     fn div(self, #[proxy] rhs: bevy::math::U64Vec4) -> bevy::math::U64Vec4;
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "std::ops::Mul",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "mul",
-        metamethod = "Mul",
-    )]
+    #[lua(as_trait = "std::ops::Mul", composite = "mul")]
     fn mul(self, rhs: u64) -> bevy::math::U64Vec4;
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "std::ops::Rem",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "rem",
-        metamethod = "Mod",
-    )]
+    #[lua(as_trait = "std::ops::Rem", composite = "rem")]
     fn rem(self, #[proxy] rhs: bevy::math::U64Vec4) -> bevy::math::U64Vec4;
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "std::ops::Add",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "add",
-        metamethod = "Add",
-    )]
+    #[lua(as_trait = "std::ops::Add", composite = "add")]
     fn add(self, rhs: u64) -> bevy::math::U64Vec4;
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "std::cmp::PartialEq",
-        kind = "MetaFunction",
-        composite = "eq",
-        metamethod = "Eq",
-    )]
+    #[lua(as_trait = "std::cmp::PartialEq", composite = "eq")]
     fn eq(&self, #[proxy] other: &glam::U64Vec4) -> bool;
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "std::ops::Rem",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "rem",
-        metamethod = "Mod",
-    )]
+    #[lua(as_trait = "std::ops::Rem", composite = "rem")]
     fn rem(self, rhs: u64) -> bevy::math::U64Vec4;
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone",
-        kind = "Method",
-        output(proxy),
-    )]
+    #[lua(as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone")]
     fn clone(&self) -> bevy::math::U64Vec4;
 
 "#,
     r#"
-#[lua(kind="MetaMethod", metamethod="ToString")]
+#[lua(metamethod="ToString")]
 fn index(&self) -> String {
     format!("{}", _self)
 }
 "#]
 )]
-pub struct U64Vec4 {
+pub struct LuaU64Vec4 {
     x: u64,
     y: u64,
     z: u64,
@@ -10871,148 +9713,85 @@ pub struct U64Vec4 {
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
     remote = "bevy::math::Vec2",
+    bms_core_path = "bevy_mod_scripting_core",
+    bms_lua_path = "crate",
     functions[r#"
 
-    #[lua(
-        as_trait = "std::ops::Mul",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "mul",
-        metamethod = "Mul",
-    )]
+    #[lua(as_trait = "std::ops::Mul", composite = "mul")]
     fn mul(self, #[proxy] rhs: bevy::math::Vec2) -> bevy::math::Vec2;
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "std::ops::Rem",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "rem",
-        metamethod = "Mod",
-    )]
+    #[lua(as_trait = "std::ops::Rem", composite = "rem")]
     fn rem(self, #[proxy] rhs: bevy::math::Vec2) -> bevy::math::Vec2;
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "std::ops::Sub",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "sub",
-        metamethod = "Sub",
-    )]
+    #[lua(as_trait = "std::ops::Sub", composite = "sub")]
     fn sub(self, rhs: f32) -> bevy::math::Vec2;
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "std::ops::Rem",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "rem",
-        metamethod = "Mod",
-    )]
+    #[lua(as_trait = "std::ops::Rem", composite = "rem")]
     fn rem(self, rhs: f32) -> bevy::math::Vec2;
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "std::ops::Sub",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "sub",
-        metamethod = "Sub",
-    )]
+    #[lua(as_trait = "std::ops::Sub", composite = "sub")]
     fn sub(self, #[proxy] rhs: bevy::math::Vec2) -> bevy::math::Vec2;
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "std::ops::Div",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "div",
-        metamethod = "Div",
-    )]
+    #[lua(as_trait = "std::ops::Div", composite = "div")]
     fn div(self, rhs: f32) -> bevy::math::Vec2;
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "std::ops::Neg",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "neg",
-        metamethod = "Unm",
-    )]
+    #[lua(as_trait = "std::ops::Neg", composite = "neg")]
     fn neg(self) -> bevy::math::Vec2;
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "std::cmp::PartialEq",
-        kind = "MetaFunction",
-        composite = "eq",
-        metamethod = "Eq",
-    )]
+    #[lua(as_trait = "std::cmp::PartialEq", composite = "eq")]
     fn eq(&self, #[proxy] other: &glam::Vec2) -> bool;
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "std::ops::Add",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "add",
-        metamethod = "Add",
-    )]
+    #[lua(as_trait = "std::ops::Add", composite = "add")]
     fn add(self, #[proxy] rhs: bevy::math::Vec2) -> bevy::math::Vec2;
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "std::ops::Div",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "div",
-        metamethod = "Div",
-    )]
+    #[lua(as_trait = "std::ops::Div", composite = "div")]
     fn div(self, #[proxy] rhs: bevy::math::Vec2) -> bevy::math::Vec2;
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "std::ops::Mul",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "mul",
-        metamethod = "Mul",
-    )]
+    #[lua(as_trait = "std::ops::Mul", composite = "mul")]
     fn mul(self, rhs: f32) -> bevy::math::Vec2;
 
 "#,
     r#"
 /// Creates a new vector.
 
-    #[lua(kind = "Function", output(proxy))]
+    #[lua()]
     fn new(x: f32, y: f32) -> bevy::math::Vec2;
 
 "#,
     r#"
 /// Creates a vector with all elements set to `v`.
 
-    #[lua(kind = "Function", output(proxy))]
+    #[lua()]
     fn splat(v: f32) -> bevy::math::Vec2;
 
 "#,
@@ -11022,7 +9801,7 @@ pub struct U64Vec4 {
 /// A true element in the mask uses the corresponding element from `if_true`, and false
 /// uses the element from `if_false`.
 
-    #[lua(kind = "Function", output(proxy))]
+    #[lua()]
     fn select(
         #[proxy]
         mask: bevy::math::BVec2,
@@ -11036,35 +9815,35 @@ pub struct U64Vec4 {
     r#"
 /// Creates a new vector from an array.
 
-    #[lua(kind = "Function", output(proxy))]
+    #[lua()]
     fn from_array(a: [f32; 2]) -> bevy::math::Vec2;
 
 "#,
     r#"
 /// `[x, y]`
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn to_array(&self) -> [f32; 2];
 
 "#,
     r#"
 /// Creates a 3D vector from `self` and the given `z` value.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn extend(self, z: f32) -> bevy::math::Vec3;
 
 "#,
     r#"
 /// Computes the dot product of `self` and `rhs`.
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn dot(self, #[proxy] rhs: bevy::math::Vec2) -> f32;
 
 "#,
     r#"
 /// Returns a vector where every component is the dot product of `self` and `rhs`.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn dot_into_vec(self, #[proxy] rhs: bevy::math::Vec2) -> bevy::math::Vec2;
 
 "#,
@@ -11072,7 +9851,7 @@ pub struct U64Vec4 {
 /// Returns a vector containing the minimum values for each element of `self` and `rhs`.
 /// In other words this computes `[self.x.min(rhs.x), self.y.min(rhs.y), ..]`.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn min(self, #[proxy] rhs: bevy::math::Vec2) -> bevy::math::Vec2;
 
 "#,
@@ -11080,7 +9859,7 @@ pub struct U64Vec4 {
 /// Returns a vector containing the maximum values for each element of `self` and `rhs`.
 /// In other words this computes `[self.x.max(rhs.x), self.y.max(rhs.y), ..]`.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn max(self, #[proxy] rhs: bevy::math::Vec2) -> bevy::math::Vec2;
 
 "#,
@@ -11090,7 +9869,7 @@ pub struct U64Vec4 {
 /// # Panics
 /// Will panic if `min` is greater than `max` when `glam_assert` is enabled.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn clamp(
         self,
         #[proxy]
@@ -11104,7 +9883,7 @@ pub struct U64Vec4 {
 /// Returns the horizontal minimum of `self`.
 /// In other words this computes `min(x, y, ..)`.
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn min_element(self) -> f32;
 
 "#,
@@ -11112,7 +9891,7 @@ pub struct U64Vec4 {
 /// Returns the horizontal maximum of `self`.
 /// In other words this computes `max(x, y, ..)`.
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn max_element(self) -> f32;
 
 "#,
@@ -11122,7 +9901,7 @@ pub struct U64Vec4 {
 /// In other words, this computes `[self.x == rhs.x, self.y == rhs.y, ..]` for all
 /// elements.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn cmpeq(self, #[proxy] rhs: bevy::math::Vec2) -> bevy::math::BVec2;
 
 "#,
@@ -11132,7 +9911,7 @@ pub struct U64Vec4 {
 /// In other words this computes `[self.x != rhs.x, self.y != rhs.y, ..]` for all
 /// elements.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn cmpne(self, #[proxy] rhs: bevy::math::Vec2) -> bevy::math::BVec2;
 
 "#,
@@ -11142,7 +9921,7 @@ pub struct U64Vec4 {
 /// In other words this computes `[self.x >= rhs.x, self.y >= rhs.y, ..]` for all
 /// elements.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn cmpge(self, #[proxy] rhs: bevy::math::Vec2) -> bevy::math::BVec2;
 
 "#,
@@ -11152,7 +9931,7 @@ pub struct U64Vec4 {
 /// In other words this computes `[self.x > rhs.x, self.y > rhs.y, ..]` for all
 /// elements.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn cmpgt(self, #[proxy] rhs: bevy::math::Vec2) -> bevy::math::BVec2;
 
 "#,
@@ -11162,7 +9941,7 @@ pub struct U64Vec4 {
 /// In other words this computes `[self.x <= rhs.x, self.y <= rhs.y, ..]` for all
 /// elements.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn cmple(self, #[proxy] rhs: bevy::math::Vec2) -> bevy::math::BVec2;
 
 "#,
@@ -11172,14 +9951,14 @@ pub struct U64Vec4 {
 /// In other words this computes `[self.x < rhs.x, self.y < rhs.y, ..]` for all
 /// elements.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn cmplt(self, #[proxy] rhs: bevy::math::Vec2) -> bevy::math::BVec2;
 
 "#,
     r#"
 /// Returns a vector containing the absolute value of each element of `self`.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn abs(self) -> bevy::math::Vec2;
 
 "#,
@@ -11189,14 +9968,14 @@ pub struct U64Vec4 {
 /// - `-1.0` if the number is negative, `-0.0` or `NEG_INFINITY`
 /// - `NAN` if the number is `NAN`
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn signum(self) -> bevy::math::Vec2;
 
 "#,
     r#"
 /// Returns a vector with signs of `rhs` and the magnitudes of `self`.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn copysign(self, #[proxy] rhs: bevy::math::Vec2) -> bevy::math::Vec2;
 
 "#,
@@ -11205,7 +9984,7 @@ pub struct U64Vec4 {
 /// A negative element results in a `1` bit and a positive element in a `0` bit.  Element `x` goes
 /// into the first lowest bit, element `y` into the second, etc.
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn is_negative_bitmask(self) -> u32;
 
 "#,
@@ -11213,14 +9992,14 @@ pub struct U64Vec4 {
 /// Returns `true` if, and only if, all elements are finite.  If any element is either
 /// `NaN`, positive or negative infinity, this will return `false`.
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn is_finite(self) -> bool;
 
 "#,
     r#"
 /// Returns `true` if any elements are `NaN`.
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn is_nan(self) -> bool;
 
 "#,
@@ -11228,14 +10007,14 @@ pub struct U64Vec4 {
 /// Performs `is_nan` on each element of self, returning a vector mask of the results.
 /// In other words, this computes `[x.is_nan(), y.is_nan(), z.is_nan(), w.is_nan()]`.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn is_nan_mask(self) -> bevy::math::BVec2;
 
 "#,
     r#"
 /// Computes the length of `self`.
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn length(self) -> f32;
 
 "#,
@@ -11243,7 +10022,7 @@ pub struct U64Vec4 {
 /// Computes the squared length of `self`.
 /// This is faster than `length()` as it avoids a square root operation.
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn length_squared(self) -> f32;
 
 "#,
@@ -11251,28 +10030,28 @@ pub struct U64Vec4 {
 /// Computes `1.0 / length()`.
 /// For valid results, `self` must _not_ be of length zero.
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn length_recip(self) -> f32;
 
 "#,
     r#"
 /// Computes the Euclidean distance between two points in space.
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn distance(self, #[proxy] rhs: bevy::math::Vec2) -> f32;
 
 "#,
     r#"
 /// Compute the squared euclidean distance between two points in space.
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn distance_squared(self, #[proxy] rhs: bevy::math::Vec2) -> f32;
 
 "#,
     r#"
 /// Returns the element-wise quotient of [Euclidean division] of `self` by `rhs`.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn div_euclid(self, #[proxy] rhs: bevy::math::Vec2) -> bevy::math::Vec2;
 
 "#,
@@ -11280,7 +10059,7 @@ pub struct U64Vec4 {
 /// Returns the element-wise remainder of [Euclidean division] of `self` by `rhs`.
 /// [Euclidean division]: f32::rem_euclid
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn rem_euclid(self, #[proxy] rhs: bevy::math::Vec2) -> bevy::math::Vec2;
 
 "#,
@@ -11291,7 +10070,7 @@ pub struct U64Vec4 {
 /// Panics
 /// Will panic if `self` is zero length when `glam_assert` is enabled.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn normalize(self) -> bevy::math::Vec2;
 
 "#,
@@ -11301,7 +10080,7 @@ pub struct U64Vec4 {
 /// the result of this operation will be zero.
 /// See also [`Self::try_normalize()`].
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn normalize_or_zero(self) -> bevy::math::Vec2;
 
 "#,
@@ -11309,7 +10088,7 @@ pub struct U64Vec4 {
 /// Returns whether `self` is length `1.0` or not.
 /// Uses a precision threshold of `1e-6`.
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn is_normalized(self) -> bool;
 
 "#,
@@ -11319,7 +10098,7 @@ pub struct U64Vec4 {
 /// # Panics
 /// Will panic if `rhs` is zero length when `glam_assert` is enabled.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn project_onto(self, #[proxy] rhs: bevy::math::Vec2) -> bevy::math::Vec2;
 
 "#,
@@ -11331,7 +10110,7 @@ pub struct U64Vec4 {
 /// # Panics
 /// Will panic if `rhs` has a length of zero when `glam_assert` is enabled.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn reject_from(self, #[proxy] rhs: bevy::math::Vec2) -> bevy::math::Vec2;
 
 "#,
@@ -11341,7 +10120,7 @@ pub struct U64Vec4 {
 /// # Panics
 /// Will panic if `rhs` is not normalized when `glam_assert` is enabled.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn project_onto_normalized(self, #[proxy] rhs: bevy::math::Vec2) -> bevy::math::Vec2;
 
 "#,
@@ -11353,7 +10132,7 @@ pub struct U64Vec4 {
 /// # Panics
 /// Will panic if `rhs` is not normalized when `glam_assert` is enabled.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn reject_from_normalized(self, #[proxy] rhs: bevy::math::Vec2) -> bevy::math::Vec2;
 
 "#,
@@ -11361,7 +10140,7 @@ pub struct U64Vec4 {
 /// Returns a vector containing the nearest integer to a number for each element of `self`.
 /// Round half-way cases away from 0.0.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn round(self) -> bevy::math::Vec2;
 
 "#,
@@ -11369,7 +10148,7 @@ pub struct U64Vec4 {
 /// Returns a vector containing the largest integer less than or equal to a number for each
 /// element of `self`.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn floor(self) -> bevy::math::Vec2;
 
 "#,
@@ -11377,7 +10156,7 @@ pub struct U64Vec4 {
 /// Returns a vector containing the smallest integer greater than or equal to a number for
 /// each element of `self`.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn ceil(self) -> bevy::math::Vec2;
 
 "#,
@@ -11385,7 +10164,7 @@ pub struct U64Vec4 {
 /// Returns a vector containing the integer part each element of `self`. This means numbers are
 /// always truncated towards zero.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn trunc(self) -> bevy::math::Vec2;
 
 "#,
@@ -11394,7 +10173,7 @@ pub struct U64Vec4 {
 /// self.floor()`.
 /// Note that this is fast but not precise for large numbers.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn fract(self) -> bevy::math::Vec2;
 
 "#,
@@ -11402,21 +10181,21 @@ pub struct U64Vec4 {
 /// Returns a vector containing `e^self` (the exponential function) for each element of
 /// `self`.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn exp(self) -> bevy::math::Vec2;
 
 "#,
     r#"
 /// Returns a vector containing each element of `self` raised to the power of `n`.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn powf(self, n: f32) -> bevy::math::Vec2;
 
 "#,
     r#"
 /// Returns a vector containing the reciprocal `1.0/n` of each element of `self`.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn recip(self) -> bevy::math::Vec2;
 
 "#,
@@ -11426,7 +10205,7 @@ pub struct U64Vec4 {
 /// will be equal to `rhs`. When `s` is outside of range `[0, 1]`, the result is linearly
 /// extrapolated.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn lerp(self, #[proxy] rhs: bevy::math::Vec2, s: f32) -> bevy::math::Vec2;
 
 "#,
@@ -11439,7 +10218,7 @@ pub struct U64Vec4 {
 /// For more see
 /// [comparing floating point numbers](https://randomascii.wordpress.com/2012/02/25/comparing-floating-point-numbers-2012-edition/).
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn abs_diff_eq(self, #[proxy] rhs: bevy::math::Vec2, max_abs_diff: f32) -> bool;
 
 "#,
@@ -11448,21 +10227,21 @@ pub struct U64Vec4 {
 /// # Panics
 /// Will panic if `min` is greater than `max` when `glam_assert` is enabled.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn clamp_length(self, min: f32, max: f32) -> bevy::math::Vec2;
 
 "#,
     r#"
 /// Returns a vector with a length no more than `max`
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn clamp_length_max(self, max: f32) -> bevy::math::Vec2;
 
 "#,
     r#"
 /// Returns a vector with a length no less than `min`
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn clamp_length_min(self, min: f32) -> bevy::math::Vec2;
 
 "#,
@@ -11474,7 +10253,7 @@ pub struct U64Vec4 {
 /// and will be heavily dependant on designing algorithms with specific target hardware in
 /// mind.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn mul_add(
         self,
         #[proxy]
@@ -11490,7 +10269,7 @@ pub struct U64Vec4 {
 /// `Vec2::from_angle(PI).rotate(Vec2::Y)` will create the vector `[-1, 0]`
 /// and rotate [`Vec2::Y`] around it returning `-Vec2::Y`.
 
-    #[lua(kind = "Function", output(proxy))]
+    #[lua()]
     fn from_angle(angle: f32) -> bevy::math::Vec2;
 
 "#,
@@ -11498,7 +10277,7 @@ pub struct U64Vec4 {
 /// Returns the angle (in radians) of this vector in the range `[-π, +π]`.
 /// The input does not need to be a unit vector however it must be non-zero.
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn to_angle(self) -> f32;
 
 "#,
@@ -11506,14 +10285,14 @@ pub struct U64Vec4 {
 /// Returns the angle (in radians) between `self` and `rhs` in the range `[-π, +π]`.
 /// The inputs do not need to be unit vectors however they must be non-zero.
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn angle_between(self, #[proxy] rhs: bevy::math::Vec2) -> f32;
 
 "#,
     r#"
 /// Returns a vector that is equal to `self` rotated by 90 degrees.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn perp(self) -> bevy::math::Vec2;
 
 "#,
@@ -11521,7 +10300,7 @@ pub struct U64Vec4 {
 /// The perpendicular dot product of `self` and `rhs`.
 /// Also known as the wedge product, 2D cross product, and determinant.
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn perp_dot(self, #[proxy] rhs: bevy::math::Vec2) -> f32;
 
 "#,
@@ -11530,151 +10309,120 @@ pub struct U64Vec4 {
 /// then this just rotation. This is what you usually want. Otherwise,
 /// it will be like a rotation with a multiplication by `self`'s length.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn rotate(self, #[proxy] rhs: bevy::math::Vec2) -> bevy::math::Vec2;
 
 "#,
     r#"
 /// Casts all elements of `self` to `f64`.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn as_dvec2(&self) -> bevy::math::DVec2;
 
 "#,
     r#"
 /// Casts all elements of `self` to `i32`.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn as_ivec2(&self) -> bevy::math::IVec2;
 
 "#,
     r#"
 /// Casts all elements of `self` to `u32`.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn as_uvec2(&self) -> bevy::math::UVec2;
 
 "#,
     r#"
 /// Casts all elements of `self` to `i64`.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn as_i64vec2(&self) -> bevy::math::I64Vec2;
 
 "#,
     r#"
 /// Casts all elements of `self` to `u64`.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn as_u64vec2(&self) -> bevy::math::U64Vec2;
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "std::ops::Add",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "add",
-        metamethod = "Add",
-    )]
+    #[lua(as_trait = "std::ops::Add", composite = "add")]
     fn add(self, rhs: f32) -> bevy::math::Vec2;
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone",
-        kind = "Method",
-        output(proxy),
-    )]
+    #[lua(as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone")]
     fn clone(&self) -> bevy::math::Vec2;
 
 "#,
     r#"
-#[lua(kind="MetaMethod", metamethod="ToString")]
+#[lua(metamethod="ToString")]
 fn index(&self) -> String {
     format!("{}", _self)
 }
 "#,
     r#"
-#[lua(kind="MetaMethod", raw , metamethod="Index")]
+#[lua(raw , metamethod="Index")]
 fn index(&self, lua: &Lua, idx: crate::lua::util::LuaIndex) -> Result<f32,_> {
-    Ok(self.inner()?[*idx])
+    Ok(_self.inner()?[*idx])
 }
 "#,
     r#"
-#[lua(kind="MutatingMetaMethod", raw, metamethod="NewIndex")]
+#[lua(raw, metamethod="NewIndex")]
 fn index(&mut self, lua: &Lua, idx: crate::lua::util::LuaIndex, val: f32) -> Result<(),_> {
-    self.val_mut(|s| Ok(s[*idx] = val))?
+    _self.val_mut(|s| Ok(s[*idx] = val))?
 }
 "#]
 )]
-pub struct Vec2 {
+pub struct LuaVec2 {
     x: f32,
     y: f32,
 }
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
     remote = "bevy::math::Vec3A",
+    bms_core_path = "bevy_mod_scripting_core",
+    bms_lua_path = "crate",
     functions[r#"
 
-    #[lua(
-        as_trait = "std::ops::Sub",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "sub",
-        metamethod = "Sub",
-    )]
+    #[lua(as_trait = "std::ops::Sub", composite = "sub")]
     fn sub(self, rhs: f32) -> bevy::math::Vec3A;
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "std::ops::Sub",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "sub",
-        metamethod = "Sub",
-    )]
+    #[lua(as_trait = "std::ops::Sub", composite = "sub")]
     fn sub(self, #[proxy] rhs: bevy::math::Vec3A) -> bevy::math::Vec3A;
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "std::cmp::PartialEq",
-        kind = "MetaFunction",
-        composite = "eq",
-        metamethod = "Eq",
-    )]
+    #[lua(as_trait = "std::cmp::PartialEq", composite = "eq")]
     fn eq(&self, #[proxy] rhs: &glam::Vec3A) -> bool;
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "std::ops::Rem",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "rem",
-        metamethod = "Mod",
-    )]
+    #[lua(as_trait = "std::ops::Rem", composite = "rem")]
     fn rem(self, rhs: f32) -> bevy::math::Vec3A;
 
 "#,
     r#"
 /// Creates a new vector.
 
-    #[lua(kind = "Function", output(proxy))]
+    #[lua()]
     fn new(x: f32, y: f32, z: f32) -> bevy::math::Vec3A;
 
 "#,
     r#"
 /// Creates a vector with all elements set to `v`.
 
-    #[lua(kind = "Function", output(proxy))]
+    #[lua()]
     fn splat(v: f32) -> bevy::math::Vec3A;
 
 "#,
@@ -11684,7 +10432,7 @@ pub struct Vec2 {
 /// A true element in the mask uses the corresponding element from `if_true`, and false
 /// uses the element from `if_false`.
 
-    #[lua(kind = "Function", output(proxy))]
+    #[lua()]
     fn select(
         #[proxy]
         mask: bevy::math::BVec3A,
@@ -11698,21 +10446,21 @@ pub struct Vec2 {
     r#"
 /// Creates a new vector from an array.
 
-    #[lua(kind = "Function", output(proxy))]
+    #[lua()]
     fn from_array(a: [f32; 3]) -> bevy::math::Vec3A;
 
 "#,
     r#"
 /// `[x, y, z]`
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn to_array(&self) -> [f32; 3];
 
 "#,
     r#"
 /// Creates a 4D vector from `self` and the given `w` value.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn extend(self, w: f32) -> bevy::math::Vec4;
 
 "#,
@@ -11720,28 +10468,28 @@ pub struct Vec2 {
 /// Creates a 2D vector from the `x` and `y` elements of `self`, discarding `z`.
 /// Truncation may also be performed by using [`self.xy()`][crate::swizzles::Vec3Swizzles::xy()].
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn truncate(self) -> bevy::math::Vec2;
 
 "#,
     r#"
 /// Computes the dot product of `self` and `rhs`.
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn dot(self, #[proxy] rhs: bevy::math::Vec3A) -> f32;
 
 "#,
     r#"
 /// Returns a vector where every component is the dot product of `self` and `rhs`.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn dot_into_vec(self, #[proxy] rhs: bevy::math::Vec3A) -> bevy::math::Vec3A;
 
 "#,
     r#"
 /// Computes the cross product of `self` and `rhs`.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn cross(self, #[proxy] rhs: bevy::math::Vec3A) -> bevy::math::Vec3A;
 
 "#,
@@ -11749,7 +10497,7 @@ pub struct Vec2 {
 /// Returns a vector containing the minimum values for each element of `self` and `rhs`.
 /// In other words this computes `[self.x.min(rhs.x), self.y.min(rhs.y), ..]`.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn min(self, #[proxy] rhs: bevy::math::Vec3A) -> bevy::math::Vec3A;
 
 "#,
@@ -11757,7 +10505,7 @@ pub struct Vec2 {
 /// Returns a vector containing the maximum values for each element of `self` and `rhs`.
 /// In other words this computes `[self.x.max(rhs.x), self.y.max(rhs.y), ..]`.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn max(self, #[proxy] rhs: bevy::math::Vec3A) -> bevy::math::Vec3A;
 
 "#,
@@ -11767,7 +10515,7 @@ pub struct Vec2 {
 /// # Panics
 /// Will panic if `min` is greater than `max` when `glam_assert` is enabled.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn clamp(
         self,
         #[proxy]
@@ -11781,7 +10529,7 @@ pub struct Vec2 {
 /// Returns the horizontal minimum of `self`.
 /// In other words this computes `min(x, y, ..)`.
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn min_element(self) -> f32;
 
 "#,
@@ -11789,7 +10537,7 @@ pub struct Vec2 {
 /// Returns the horizontal maximum of `self`.
 /// In other words this computes `max(x, y, ..)`.
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn max_element(self) -> f32;
 
 "#,
@@ -11799,7 +10547,7 @@ pub struct Vec2 {
 /// In other words, this computes `[self.x == rhs.x, self.y == rhs.y, ..]` for all
 /// elements.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn cmpeq(self, #[proxy] rhs: bevy::math::Vec3A) -> bevy::math::BVec3A;
 
 "#,
@@ -11809,7 +10557,7 @@ pub struct Vec2 {
 /// In other words this computes `[self.x != rhs.x, self.y != rhs.y, ..]` for all
 /// elements.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn cmpne(self, #[proxy] rhs: bevy::math::Vec3A) -> bevy::math::BVec3A;
 
 "#,
@@ -11819,7 +10567,7 @@ pub struct Vec2 {
 /// In other words this computes `[self.x >= rhs.x, self.y >= rhs.y, ..]` for all
 /// elements.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn cmpge(self, #[proxy] rhs: bevy::math::Vec3A) -> bevy::math::BVec3A;
 
 "#,
@@ -11829,7 +10577,7 @@ pub struct Vec2 {
 /// In other words this computes `[self.x > rhs.x, self.y > rhs.y, ..]` for all
 /// elements.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn cmpgt(self, #[proxy] rhs: bevy::math::Vec3A) -> bevy::math::BVec3A;
 
 "#,
@@ -11839,7 +10587,7 @@ pub struct Vec2 {
 /// In other words this computes `[self.x <= rhs.x, self.y <= rhs.y, ..]` for all
 /// elements.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn cmple(self, #[proxy] rhs: bevy::math::Vec3A) -> bevy::math::BVec3A;
 
 "#,
@@ -11849,14 +10597,14 @@ pub struct Vec2 {
 /// In other words this computes `[self.x < rhs.x, self.y < rhs.y, ..]` for all
 /// elements.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn cmplt(self, #[proxy] rhs: bevy::math::Vec3A) -> bevy::math::BVec3A;
 
 "#,
     r#"
 /// Returns a vector containing the absolute value of each element of `self`.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn abs(self) -> bevy::math::Vec3A;
 
 "#,
@@ -11866,14 +10614,14 @@ pub struct Vec2 {
 /// - `-1.0` if the number is negative, `-0.0` or `NEG_INFINITY`
 /// - `NAN` if the number is `NAN`
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn signum(self) -> bevy::math::Vec3A;
 
 "#,
     r#"
 /// Returns a vector with signs of `rhs` and the magnitudes of `self`.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn copysign(self, #[proxy] rhs: bevy::math::Vec3A) -> bevy::math::Vec3A;
 
 "#,
@@ -11882,7 +10630,7 @@ pub struct Vec2 {
 /// A negative element results in a `1` bit and a positive element in a `0` bit.  Element `x` goes
 /// into the first lowest bit, element `y` into the second, etc.
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn is_negative_bitmask(self) -> u32;
 
 "#,
@@ -11890,14 +10638,14 @@ pub struct Vec2 {
 /// Returns `true` if, and only if, all elements are finite.  If any element is either
 /// `NaN`, positive or negative infinity, this will return `false`.
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn is_finite(self) -> bool;
 
 "#,
     r#"
 /// Returns `true` if any elements are `NaN`.
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn is_nan(self) -> bool;
 
 "#,
@@ -11905,14 +10653,14 @@ pub struct Vec2 {
 /// Performs `is_nan` on each element of self, returning a vector mask of the results.
 /// In other words, this computes `[x.is_nan(), y.is_nan(), z.is_nan(), w.is_nan()]`.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn is_nan_mask(self) -> bevy::math::BVec3A;
 
 "#,
     r#"
 /// Computes the length of `self`.
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn length(self) -> f32;
 
 "#,
@@ -11920,7 +10668,7 @@ pub struct Vec2 {
 /// Computes the squared length of `self`.
 /// This is faster than `length()` as it avoids a square root operation.
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn length_squared(self) -> f32;
 
 "#,
@@ -11928,28 +10676,28 @@ pub struct Vec2 {
 /// Computes `1.0 / length()`.
 /// For valid results, `self` must _not_ be of length zero.
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn length_recip(self) -> f32;
 
 "#,
     r#"
 /// Computes the Euclidean distance between two points in space.
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn distance(self, #[proxy] rhs: bevy::math::Vec3A) -> f32;
 
 "#,
     r#"
 /// Compute the squared euclidean distance between two points in space.
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn distance_squared(self, #[proxy] rhs: bevy::math::Vec3A) -> f32;
 
 "#,
     r#"
 /// Returns the element-wise quotient of [Euclidean division] of `self` by `rhs`.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn div_euclid(self, #[proxy] rhs: bevy::math::Vec3A) -> bevy::math::Vec3A;
 
 "#,
@@ -11957,7 +10705,7 @@ pub struct Vec2 {
 /// Returns the element-wise remainder of [Euclidean division] of `self` by `rhs`.
 /// [Euclidean division]: f32::rem_euclid
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn rem_euclid(self, #[proxy] rhs: bevy::math::Vec3A) -> bevy::math::Vec3A;
 
 "#,
@@ -11968,7 +10716,7 @@ pub struct Vec2 {
 /// Panics
 /// Will panic if `self` is zero length when `glam_assert` is enabled.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn normalize(self) -> bevy::math::Vec3A;
 
 "#,
@@ -11978,7 +10726,7 @@ pub struct Vec2 {
 /// the result of this operation will be zero.
 /// See also [`Self::try_normalize()`].
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn normalize_or_zero(self) -> bevy::math::Vec3A;
 
 "#,
@@ -11986,7 +10734,7 @@ pub struct Vec2 {
 /// Returns whether `self` is length `1.0` or not.
 /// Uses a precision threshold of `1e-6`.
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn is_normalized(self) -> bool;
 
 "#,
@@ -11996,7 +10744,7 @@ pub struct Vec2 {
 /// # Panics
 /// Will panic if `rhs` is zero length when `glam_assert` is enabled.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn project_onto(self, #[proxy] rhs: bevy::math::Vec3A) -> bevy::math::Vec3A;
 
 "#,
@@ -12008,7 +10756,7 @@ pub struct Vec2 {
 /// # Panics
 /// Will panic if `rhs` has a length of zero when `glam_assert` is enabled.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn reject_from(self, #[proxy] rhs: bevy::math::Vec3A) -> bevy::math::Vec3A;
 
 "#,
@@ -12018,7 +10766,7 @@ pub struct Vec2 {
 /// # Panics
 /// Will panic if `rhs` is not normalized when `glam_assert` is enabled.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn project_onto_normalized(
         self,
         #[proxy]
@@ -12034,7 +10782,7 @@ pub struct Vec2 {
 /// # Panics
 /// Will panic if `rhs` is not normalized when `glam_assert` is enabled.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn reject_from_normalized(
         self,
         #[proxy]
@@ -12046,7 +10794,7 @@ pub struct Vec2 {
 /// Returns a vector containing the nearest integer to a number for each element of `self`.
 /// Round half-way cases away from 0.0.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn round(self) -> bevy::math::Vec3A;
 
 "#,
@@ -12054,7 +10802,7 @@ pub struct Vec2 {
 /// Returns a vector containing the largest integer less than or equal to a number for each
 /// element of `self`.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn floor(self) -> bevy::math::Vec3A;
 
 "#,
@@ -12062,7 +10810,7 @@ pub struct Vec2 {
 /// Returns a vector containing the smallest integer greater than or equal to a number for
 /// each element of `self`.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn ceil(self) -> bevy::math::Vec3A;
 
 "#,
@@ -12070,7 +10818,7 @@ pub struct Vec2 {
 /// Returns a vector containing the integer part each element of `self`. This means numbers are
 /// always truncated towards zero.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn trunc(self) -> bevy::math::Vec3A;
 
 "#,
@@ -12079,7 +10827,7 @@ pub struct Vec2 {
 /// self.floor()`.
 /// Note that this is fast but not precise for large numbers.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn fract(self) -> bevy::math::Vec3A;
 
 "#,
@@ -12087,21 +10835,21 @@ pub struct Vec2 {
 /// Returns a vector containing `e^self` (the exponential function) for each element of
 /// `self`.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn exp(self) -> bevy::math::Vec3A;
 
 "#,
     r#"
 /// Returns a vector containing each element of `self` raised to the power of `n`.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn powf(self, n: f32) -> bevy::math::Vec3A;
 
 "#,
     r#"
 /// Returns a vector containing the reciprocal `1.0/n` of each element of `self`.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn recip(self) -> bevy::math::Vec3A;
 
 "#,
@@ -12111,7 +10859,7 @@ pub struct Vec2 {
 /// will be equal to `rhs`. When `s` is outside of range `[0, 1]`, the result is linearly
 /// extrapolated.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn lerp(self, #[proxy] rhs: bevy::math::Vec3A, s: f32) -> bevy::math::Vec3A;
 
 "#,
@@ -12124,7 +10872,7 @@ pub struct Vec2 {
 /// For more see
 /// [comparing floating point numbers](https://randomascii.wordpress.com/2012/02/25/comparing-floating-point-numbers-2012-edition/).
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn abs_diff_eq(self, #[proxy] rhs: bevy::math::Vec3A, max_abs_diff: f32) -> bool;
 
 "#,
@@ -12133,21 +10881,21 @@ pub struct Vec2 {
 /// # Panics
 /// Will panic if `min` is greater than `max` when `glam_assert` is enabled.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn clamp_length(self, min: f32, max: f32) -> bevy::math::Vec3A;
 
 "#,
     r#"
 /// Returns a vector with a length no more than `max`
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn clamp_length_max(self, max: f32) -> bevy::math::Vec3A;
 
 "#,
     r#"
 /// Returns a vector with a length no less than `min`
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn clamp_length_min(self, min: f32) -> bevy::math::Vec3A;
 
 "#,
@@ -12159,7 +10907,7 @@ pub struct Vec2 {
 /// and will be heavily dependant on designing algorithms with specific target hardware in
 /// mind.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn mul_add(
         self,
         #[proxy]
@@ -12173,7 +10921,7 @@ pub struct Vec2 {
 /// Returns the angle (in radians) between two vectors.
 /// The inputs do not need to be unit vectors however they must be non-zero.
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn angle_between(self, #[proxy] rhs: bevy::math::Vec3A) -> f32;
 
 "#,
@@ -12183,7 +10931,7 @@ pub struct Vec2 {
 /// The output vector is not necessarily unit length. For that use
 /// [`Self::any_orthonormal_vector()`] instead.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn any_orthogonal_vector(&self) -> bevy::math::Vec3A;
 
 "#,
@@ -12193,230 +10941,159 @@ pub struct Vec2 {
 /// # Panics
 /// Will panic if `self` is not normalized when `glam_assert` is enabled.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn any_orthonormal_vector(&self) -> bevy::math::Vec3A;
 
 "#,
     r#"
 /// Casts all elements of `self` to `f64`.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn as_dvec3(&self) -> bevy::math::DVec3;
 
 "#,
     r#"
 /// Casts all elements of `self` to `i32`.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn as_ivec3(&self) -> bevy::math::IVec3;
 
 "#,
     r#"
 /// Casts all elements of `self` to `u32`.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn as_uvec3(&self) -> bevy::math::UVec3;
 
 "#,
     r#"
 /// Casts all elements of `self` to `i64`.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn as_i64vec3(&self) -> bevy::math::I64Vec3;
 
 "#,
     r#"
 /// Casts all elements of `self` to `u64`.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn as_u64vec3(&self) -> bevy::math::U64Vec3;
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "std::ops::Div",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "div",
-        metamethod = "Div",
-    )]
+    #[lua(as_trait = "std::ops::Div", composite = "div")]
     fn div(self, rhs: f32) -> bevy::math::Vec3A;
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "std::ops::Add",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "add",
-        metamethod = "Add",
-    )]
+    #[lua(as_trait = "std::ops::Add", composite = "add")]
     fn add(self, rhs: f32) -> bevy::math::Vec3A;
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "std::ops::Mul",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "mul",
-        metamethod = "Mul",
-    )]
+    #[lua(as_trait = "std::ops::Mul", composite = "mul")]
     fn mul(self, rhs: f32) -> bevy::math::Vec3A;
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "std::ops::Mul",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "mul",
-        metamethod = "Mul",
-    )]
+    #[lua(as_trait = "std::ops::Mul", composite = "mul")]
     fn mul(self, #[proxy] rhs: bevy::math::Vec3A) -> bevy::math::Vec3A;
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone",
-        kind = "Method",
-        output(proxy),
-    )]
+    #[lua(as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone")]
     fn clone(&self) -> bevy::math::Vec3A;
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "std::ops::Div",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "div",
-        metamethod = "Div",
-    )]
+    #[lua(as_trait = "std::ops::Div", composite = "div")]
     fn div(self, #[proxy] rhs: bevy::math::Vec3A) -> bevy::math::Vec3A;
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "std::ops::Neg",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "neg",
-        metamethod = "Unm",
-    )]
+    #[lua(as_trait = "std::ops::Neg", composite = "neg")]
     fn neg(self) -> bevy::math::Vec3A;
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "std::ops::Rem",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "rem",
-        metamethod = "Mod",
-    )]
+    #[lua(as_trait = "std::ops::Rem", composite = "rem")]
     fn rem(self, #[proxy] rhs: bevy::math::Vec3A) -> bevy::math::Vec3A;
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "std::ops::Add",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "add",
-        metamethod = "Add",
-    )]
+    #[lua(as_trait = "std::ops::Add", composite = "add")]
     fn add(self, #[proxy] rhs: bevy::math::Vec3A) -> bevy::math::Vec3A;
 
 "#,
     r#"
-#[lua(kind="MetaMethod", metamethod="ToString")]
+#[lua(metamethod="ToString")]
 fn index(&self) -> String {
     format!("{}", _self)
 }
 "#,
     r#"
-#[lua(kind="MetaMethod", raw , metamethod="Index")]
+#[lua(raw , metamethod="Index")]
 fn index(&self, lua: &Lua, idx: crate::lua::util::LuaIndex) -> Result<f32,_> {
-    Ok(self.inner()?[*idx])
+    Ok(_self.inner()?[*idx])
 }
 "#,
     r#"
-#[lua(kind="MutatingMetaMethod", raw, metamethod="NewIndex")]
+#[lua(raw, metamethod="NewIndex")]
 fn index(&mut self, lua: &Lua, idx: crate::lua::util::LuaIndex, val: f32) -> Result<(),_> {
-    self.val_mut(|s| Ok(s[*idx] = val))?
+    _self.val_mut(|s| Ok(s[*idx] = val))?
 }
 "#]
 )]
-pub struct Vec3A();
+pub struct LuaVec3A();
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
     remote = "bevy::math::Vec4",
+    bms_core_path = "bevy_mod_scripting_core",
+    bms_lua_path = "crate",
     functions[r#"
 
-    #[lua(
-        as_trait = "std::ops::Sub",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "sub",
-        metamethod = "Sub",
-    )]
+    #[lua(as_trait = "std::ops::Sub", composite = "sub")]
     fn sub(self, #[proxy] rhs: bevy::math::Vec4) -> bevy::math::Vec4;
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "std::ops::Rem",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "rem",
-        metamethod = "Mod",
-    )]
+    #[lua(as_trait = "std::ops::Rem", composite = "rem")]
     fn rem(self, #[proxy] rhs: bevy::math::Vec4) -> bevy::math::Vec4;
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "std::cmp::PartialEq",
-        kind = "MetaFunction",
-        composite = "eq",
-        metamethod = "Eq",
-    )]
+    #[lua(as_trait = "std::cmp::PartialEq", composite = "eq")]
     fn eq(&self, #[proxy] rhs: &glam::Vec4) -> bool;
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone",
-        kind = "Method",
-        output(proxy),
-    )]
+    #[lua(as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone")]
     fn clone(&self) -> bevy::math::Vec4;
 
 "#,
     r#"
 /// Creates a new vector.
 
-    #[lua(kind = "Function", output(proxy))]
+    #[lua()]
     fn new(x: f32, y: f32, z: f32, w: f32) -> bevy::math::Vec4;
 
 "#,
     r#"
 /// Creates a vector with all elements set to `v`.
 
-    #[lua(kind = "Function", output(proxy))]
+    #[lua()]
     fn splat(v: f32) -> bevy::math::Vec4;
 
 "#,
@@ -12426,7 +11103,7 @@ pub struct Vec3A();
 /// A true element in the mask uses the corresponding element from `if_true`, and false
 /// uses the element from `if_false`.
 
-    #[lua(kind = "Function", output(proxy))]
+    #[lua()]
     fn select(
         #[proxy]
         mask: bevy::math::BVec4A,
@@ -12440,14 +11117,14 @@ pub struct Vec3A();
     r#"
 /// Creates a new vector from an array.
 
-    #[lua(kind = "Function", output(proxy))]
+    #[lua()]
     fn from_array(a: [f32; 4]) -> bevy::math::Vec4;
 
 "#,
     r#"
 /// `[x, y, z, w]`
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn to_array(&self) -> [f32; 4];
 
 "#,
@@ -12456,21 +11133,21 @@ pub struct Vec3A();
 /// Truncation to [`Vec3`] may also be performed by using [`self.xyz()`][crate::swizzles::Vec4Swizzles::xyz()].
 /// To truncate to [`Vec3A`] use [`Vec3A::from()`].
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn truncate(self) -> bevy::math::Vec3;
 
 "#,
     r#"
 /// Computes the dot product of `self` and `rhs`.
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn dot(self, #[proxy] rhs: bevy::math::Vec4) -> f32;
 
 "#,
     r#"
 /// Returns a vector where every component is the dot product of `self` and `rhs`.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn dot_into_vec(self, #[proxy] rhs: bevy::math::Vec4) -> bevy::math::Vec4;
 
 "#,
@@ -12478,7 +11155,7 @@ pub struct Vec3A();
 /// Returns a vector containing the minimum values for each element of `self` and `rhs`.
 /// In other words this computes `[self.x.min(rhs.x), self.y.min(rhs.y), ..]`.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn min(self, #[proxy] rhs: bevy::math::Vec4) -> bevy::math::Vec4;
 
 "#,
@@ -12486,7 +11163,7 @@ pub struct Vec3A();
 /// Returns a vector containing the maximum values for each element of `self` and `rhs`.
 /// In other words this computes `[self.x.max(rhs.x), self.y.max(rhs.y), ..]`.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn max(self, #[proxy] rhs: bevy::math::Vec4) -> bevy::math::Vec4;
 
 "#,
@@ -12496,7 +11173,7 @@ pub struct Vec3A();
 /// # Panics
 /// Will panic if `min` is greater than `max` when `glam_assert` is enabled.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn clamp(
         self,
         #[proxy]
@@ -12510,7 +11187,7 @@ pub struct Vec3A();
 /// Returns the horizontal minimum of `self`.
 /// In other words this computes `min(x, y, ..)`.
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn min_element(self) -> f32;
 
 "#,
@@ -12518,7 +11195,7 @@ pub struct Vec3A();
 /// Returns the horizontal maximum of `self`.
 /// In other words this computes `max(x, y, ..)`.
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn max_element(self) -> f32;
 
 "#,
@@ -12528,7 +11205,7 @@ pub struct Vec3A();
 /// In other words, this computes `[self.x == rhs.x, self.y == rhs.y, ..]` for all
 /// elements.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn cmpeq(self, #[proxy] rhs: bevy::math::Vec4) -> bevy::math::BVec4A;
 
 "#,
@@ -12538,7 +11215,7 @@ pub struct Vec3A();
 /// In other words this computes `[self.x != rhs.x, self.y != rhs.y, ..]` for all
 /// elements.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn cmpne(self, #[proxy] rhs: bevy::math::Vec4) -> bevy::math::BVec4A;
 
 "#,
@@ -12548,7 +11225,7 @@ pub struct Vec3A();
 /// In other words this computes `[self.x >= rhs.x, self.y >= rhs.y, ..]` for all
 /// elements.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn cmpge(self, #[proxy] rhs: bevy::math::Vec4) -> bevy::math::BVec4A;
 
 "#,
@@ -12558,7 +11235,7 @@ pub struct Vec3A();
 /// In other words this computes `[self.x > rhs.x, self.y > rhs.y, ..]` for all
 /// elements.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn cmpgt(self, #[proxy] rhs: bevy::math::Vec4) -> bevy::math::BVec4A;
 
 "#,
@@ -12568,7 +11245,7 @@ pub struct Vec3A();
 /// In other words this computes `[self.x <= rhs.x, self.y <= rhs.y, ..]` for all
 /// elements.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn cmple(self, #[proxy] rhs: bevy::math::Vec4) -> bevy::math::BVec4A;
 
 "#,
@@ -12578,14 +11255,14 @@ pub struct Vec3A();
 /// In other words this computes `[self.x < rhs.x, self.y < rhs.y, ..]` for all
 /// elements.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn cmplt(self, #[proxy] rhs: bevy::math::Vec4) -> bevy::math::BVec4A;
 
 "#,
     r#"
 /// Returns a vector containing the absolute value of each element of `self`.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn abs(self) -> bevy::math::Vec4;
 
 "#,
@@ -12595,14 +11272,14 @@ pub struct Vec3A();
 /// - `-1.0` if the number is negative, `-0.0` or `NEG_INFINITY`
 /// - `NAN` if the number is `NAN`
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn signum(self) -> bevy::math::Vec4;
 
 "#,
     r#"
 /// Returns a vector with signs of `rhs` and the magnitudes of `self`.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn copysign(self, #[proxy] rhs: bevy::math::Vec4) -> bevy::math::Vec4;
 
 "#,
@@ -12611,7 +11288,7 @@ pub struct Vec3A();
 /// A negative element results in a `1` bit and a positive element in a `0` bit.  Element `x` goes
 /// into the first lowest bit, element `y` into the second, etc.
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn is_negative_bitmask(self) -> u32;
 
 "#,
@@ -12619,14 +11296,14 @@ pub struct Vec3A();
 /// Returns `true` if, and only if, all elements are finite.  If any element is either
 /// `NaN`, positive or negative infinity, this will return `false`.
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn is_finite(self) -> bool;
 
 "#,
     r#"
 /// Returns `true` if any elements are `NaN`.
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn is_nan(self) -> bool;
 
 "#,
@@ -12634,14 +11311,14 @@ pub struct Vec3A();
 /// Performs `is_nan` on each element of self, returning a vector mask of the results.
 /// In other words, this computes `[x.is_nan(), y.is_nan(), z.is_nan(), w.is_nan()]`.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn is_nan_mask(self) -> bevy::math::BVec4A;
 
 "#,
     r#"
 /// Computes the length of `self`.
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn length(self) -> f32;
 
 "#,
@@ -12649,7 +11326,7 @@ pub struct Vec3A();
 /// Computes the squared length of `self`.
 /// This is faster than `length()` as it avoids a square root operation.
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn length_squared(self) -> f32;
 
 "#,
@@ -12657,28 +11334,28 @@ pub struct Vec3A();
 /// Computes `1.0 / length()`.
 /// For valid results, `self` must _not_ be of length zero.
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn length_recip(self) -> f32;
 
 "#,
     r#"
 /// Computes the Euclidean distance between two points in space.
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn distance(self, #[proxy] rhs: bevy::math::Vec4) -> f32;
 
 "#,
     r#"
 /// Compute the squared euclidean distance between two points in space.
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn distance_squared(self, #[proxy] rhs: bevy::math::Vec4) -> f32;
 
 "#,
     r#"
 /// Returns the element-wise quotient of [Euclidean division] of `self` by `rhs`.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn div_euclid(self, #[proxy] rhs: bevy::math::Vec4) -> bevy::math::Vec4;
 
 "#,
@@ -12686,7 +11363,7 @@ pub struct Vec3A();
 /// Returns the element-wise remainder of [Euclidean division] of `self` by `rhs`.
 /// [Euclidean division]: f32::rem_euclid
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn rem_euclid(self, #[proxy] rhs: bevy::math::Vec4) -> bevy::math::Vec4;
 
 "#,
@@ -12697,7 +11374,7 @@ pub struct Vec3A();
 /// Panics
 /// Will panic if `self` is zero length when `glam_assert` is enabled.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn normalize(self) -> bevy::math::Vec4;
 
 "#,
@@ -12707,7 +11384,7 @@ pub struct Vec3A();
 /// the result of this operation will be zero.
 /// See also [`Self::try_normalize()`].
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn normalize_or_zero(self) -> bevy::math::Vec4;
 
 "#,
@@ -12715,7 +11392,7 @@ pub struct Vec3A();
 /// Returns whether `self` is length `1.0` or not.
 /// Uses a precision threshold of `1e-6`.
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn is_normalized(self) -> bool;
 
 "#,
@@ -12725,7 +11402,7 @@ pub struct Vec3A();
 /// # Panics
 /// Will panic if `rhs` is zero length when `glam_assert` is enabled.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn project_onto(self, #[proxy] rhs: bevy::math::Vec4) -> bevy::math::Vec4;
 
 "#,
@@ -12737,7 +11414,7 @@ pub struct Vec3A();
 /// # Panics
 /// Will panic if `rhs` has a length of zero when `glam_assert` is enabled.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn reject_from(self, #[proxy] rhs: bevy::math::Vec4) -> bevy::math::Vec4;
 
 "#,
@@ -12747,7 +11424,7 @@ pub struct Vec3A();
 /// # Panics
 /// Will panic if `rhs` is not normalized when `glam_assert` is enabled.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn project_onto_normalized(self, #[proxy] rhs: bevy::math::Vec4) -> bevy::math::Vec4;
 
 "#,
@@ -12759,7 +11436,7 @@ pub struct Vec3A();
 /// # Panics
 /// Will panic if `rhs` is not normalized when `glam_assert` is enabled.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn reject_from_normalized(self, #[proxy] rhs: bevy::math::Vec4) -> bevy::math::Vec4;
 
 "#,
@@ -12767,7 +11444,7 @@ pub struct Vec3A();
 /// Returns a vector containing the nearest integer to a number for each element of `self`.
 /// Round half-way cases away from 0.0.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn round(self) -> bevy::math::Vec4;
 
 "#,
@@ -12775,7 +11452,7 @@ pub struct Vec3A();
 /// Returns a vector containing the largest integer less than or equal to a number for each
 /// element of `self`.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn floor(self) -> bevy::math::Vec4;
 
 "#,
@@ -12783,7 +11460,7 @@ pub struct Vec3A();
 /// Returns a vector containing the smallest integer greater than or equal to a number for
 /// each element of `self`.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn ceil(self) -> bevy::math::Vec4;
 
 "#,
@@ -12791,7 +11468,7 @@ pub struct Vec3A();
 /// Returns a vector containing the integer part each element of `self`. This means numbers are
 /// always truncated towards zero.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn trunc(self) -> bevy::math::Vec4;
 
 "#,
@@ -12800,7 +11477,7 @@ pub struct Vec3A();
 /// self.floor()`.
 /// Note that this is fast but not precise for large numbers.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn fract(self) -> bevy::math::Vec4;
 
 "#,
@@ -12808,21 +11485,21 @@ pub struct Vec3A();
 /// Returns a vector containing `e^self` (the exponential function) for each element of
 /// `self`.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn exp(self) -> bevy::math::Vec4;
 
 "#,
     r#"
 /// Returns a vector containing each element of `self` raised to the power of `n`.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn powf(self, n: f32) -> bevy::math::Vec4;
 
 "#,
     r#"
 /// Returns a vector containing the reciprocal `1.0/n` of each element of `self`.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn recip(self) -> bevy::math::Vec4;
 
 "#,
@@ -12832,7 +11509,7 @@ pub struct Vec3A();
 /// will be equal to `rhs`. When `s` is outside of range `[0, 1]`, the result is linearly
 /// extrapolated.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn lerp(self, #[proxy] rhs: bevy::math::Vec4, s: f32) -> bevy::math::Vec4;
 
 "#,
@@ -12845,7 +11522,7 @@ pub struct Vec3A();
 /// For more see
 /// [comparing floating point numbers](https://randomascii.wordpress.com/2012/02/25/comparing-floating-point-numbers-2012-edition/).
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn abs_diff_eq(self, #[proxy] rhs: bevy::math::Vec4, max_abs_diff: f32) -> bool;
 
 "#,
@@ -12854,21 +11531,21 @@ pub struct Vec3A();
 /// # Panics
 /// Will panic if `min` is greater than `max` when `glam_assert` is enabled.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn clamp_length(self, min: f32, max: f32) -> bevy::math::Vec4;
 
 "#,
     r#"
 /// Returns a vector with a length no more than `max`
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn clamp_length_max(self, max: f32) -> bevy::math::Vec4;
 
 "#,
     r#"
 /// Returns a vector with a length no less than `min`
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn clamp_length_min(self, min: f32) -> bevy::math::Vec4;
 
 "#,
@@ -12880,7 +11557,7 @@ pub struct Vec3A();
 /// and will be heavily dependant on designing algorithms with specific target hardware in
 /// mind.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn mul_add(
         self,
         #[proxy]
@@ -12893,190 +11570,134 @@ pub struct Vec3A();
     r#"
 /// Casts all elements of `self` to `f64`.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn as_dvec4(&self) -> bevy::math::DVec4;
 
 "#,
     r#"
 /// Casts all elements of `self` to `i32`.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn as_ivec4(&self) -> bevy::math::IVec4;
 
 "#,
     r#"
 /// Casts all elements of `self` to `u32`.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn as_uvec4(&self) -> bevy::math::UVec4;
 
 "#,
     r#"
 /// Casts all elements of `self` to `i64`.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn as_i64vec4(&self) -> bevy::math::I64Vec4;
 
 "#,
     r#"
 /// Casts all elements of `self` to `u64`.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn as_u64vec4(&self) -> bevy::math::U64Vec4;
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "std::ops::Rem",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "rem",
-        metamethod = "Mod",
-    )]
+    #[lua(as_trait = "std::ops::Rem", composite = "rem")]
     fn rem(self, rhs: f32) -> bevy::math::Vec4;
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "std::ops::Mul",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "mul",
-        metamethod = "Mul",
-    )]
+    #[lua(as_trait = "std::ops::Mul", composite = "mul")]
     fn mul(self, rhs: f32) -> bevy::math::Vec4;
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "std::ops::Add",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "add",
-        metamethod = "Add",
-    )]
+    #[lua(as_trait = "std::ops::Add", composite = "add")]
     fn add(self, rhs: f32) -> bevy::math::Vec4;
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "std::ops::Sub",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "sub",
-        metamethod = "Sub",
-    )]
+    #[lua(as_trait = "std::ops::Sub", composite = "sub")]
     fn sub(self, rhs: f32) -> bevy::math::Vec4;
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "std::ops::Add",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "add",
-        metamethod = "Add",
-    )]
+    #[lua(as_trait = "std::ops::Add", composite = "add")]
     fn add(self, #[proxy] rhs: bevy::math::Vec4) -> bevy::math::Vec4;
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "std::ops::Mul",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "mul",
-        metamethod = "Mul",
-    )]
+    #[lua(as_trait = "std::ops::Mul", composite = "mul")]
     fn mul(self, #[proxy] rhs: bevy::math::Vec4) -> bevy::math::Vec4;
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "std::ops::Div",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "div",
-        metamethod = "Div",
-    )]
+    #[lua(as_trait = "std::ops::Div", composite = "div")]
     fn div(self, #[proxy] rhs: bevy::math::Vec4) -> bevy::math::Vec4;
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "std::ops::Neg",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "neg",
-        metamethod = "Unm",
-    )]
+    #[lua(as_trait = "std::ops::Neg", composite = "neg")]
     fn neg(self) -> bevy::math::Vec4;
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "std::ops::Div",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "div",
-        metamethod = "Div",
-    )]
+    #[lua(as_trait = "std::ops::Div", composite = "div")]
     fn div(self, rhs: f32) -> bevy::math::Vec4;
 
 "#,
     r#"
-#[lua(kind="MetaMethod", metamethod="ToString")]
+#[lua(metamethod="ToString")]
 fn index(&self) -> String {
     format!("{}", _self)
 }
 "#,
     r#"
-#[lua(kind="MetaMethod", raw , metamethod="Index")]
+#[lua(raw , metamethod="Index")]
 fn index(&self, lua: &Lua, idx: crate::lua::util::LuaIndex) -> Result<f32,_> {
-    Ok(self.inner()?[*idx])
+    Ok(_self.inner()?[*idx])
 }
 "#,
     r#"
-#[lua(kind="MutatingMetaMethod", raw, metamethod="NewIndex")]
+#[lua(raw, metamethod="NewIndex")]
 fn index(&mut self, lua: &Lua, idx: crate::lua::util::LuaIndex, val: f32) -> Result<(),_> {
-    self.val_mut(|s| Ok(s[*idx] = val))?
+    _self.val_mut(|s| Ok(s[*idx] = val))?
 }
 "#]
 )]
-pub struct Vec4();
+pub struct LuaVec4();
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
     remote = "bevy::math::BVec2",
+    bms_core_path = "bevy_mod_scripting_core",
+    bms_lua_path = "crate",
     functions[r#"
 
-    #[lua(
-        as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone",
-        kind = "Method",
-        output(proxy),
-    )]
+    #[lua(as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone")]
     fn clone(&self) -> bevy::math::BVec2;
 
 "#,
     r#"
 /// Creates a new vector mask.
 
-    #[lua(kind = "Function", output(proxy))]
+    #[lua()]
     fn new(x: bool, y: bool) -> bevy::math::BVec2;
 
 "#,
     r#"
 /// Creates a vector with all elements set to `v`.
 
-    #[lua(kind = "Function", output(proxy))]
+    #[lua()]
     fn splat(v: bool) -> bevy::math::BVec2;
 
 "#,
@@ -13085,21 +11706,21 @@ pub struct Vec4();
 /// A true element results in a `1` bit and a false element in a `0` bit.  Element `x` goes
 /// into the first lowest bit, element `y` into the second, etc.
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn bitmask(self) -> u32;
 
 "#,
     r#"
 /// Returns true if any of the elements are true, false otherwise.
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn any(self) -> bool;
 
 "#,
     r#"
 /// Returns true if all the elements are true, false otherwise.
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn all(self) -> bool;
 
 "#,
@@ -13107,7 +11728,7 @@ pub struct Vec4();
 /// Tests the value at `index`.
 /// Panics if `index` is greater than 1.
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn test(&self, index: usize) -> bool;
 
 "#,
@@ -13115,58 +11736,55 @@ pub struct Vec4();
 /// Sets the element at `index`.
 /// Panics if `index` is greater than 1.
 
-    #[lua(kind = "MutatingMethod")]
+    #[lua()]
     fn set(&mut self, index: usize, value: bool) -> ();
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "std::cmp::PartialEq",
-        kind = "MetaFunction",
-        composite = "eq",
-        metamethod = "Eq",
-    )]
+    #[lua(as_trait = "std::cmp::PartialEq", composite = "eq")]
     fn eq(&self, #[proxy] other: &glam::BVec2) -> bool;
 
 "#,
     r#"
 
-    #[lua(as_trait = "std::cmp::Eq", kind = "Method")]
+    #[lua(as_trait = "std::cmp::Eq")]
     fn assert_receiver_is_total_eq(&self) -> ();
 
 "#,
     r#"
-#[lua(kind="MetaMethod", metamethod="ToString")]
+#[lua(metamethod="ToString")]
 fn index(&self) -> String {
     format!("{}", _self)
 }
 "#]
 )]
-pub struct BVec2 {
+pub struct LuaBVec2 {
     x: bool,
     y: bool,
 }
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
     remote = "bevy::math::BVec3",
+    bms_core_path = "bevy_mod_scripting_core",
+    bms_lua_path = "crate",
     functions[r#"
 
-    #[lua(as_trait = "std::cmp::Eq", kind = "Method")]
+    #[lua(as_trait = "std::cmp::Eq")]
     fn assert_receiver_is_total_eq(&self) -> ();
 
 "#,
     r#"
 /// Creates a new vector mask.
 
-    #[lua(kind = "Function", output(proxy))]
+    #[lua()]
     fn new(x: bool, y: bool, z: bool) -> bevy::math::BVec3;
 
 "#,
     r#"
 /// Creates a vector with all elements set to `v`.
 
-    #[lua(kind = "Function", output(proxy))]
+    #[lua()]
     fn splat(v: bool) -> bevy::math::BVec3;
 
 "#,
@@ -13175,21 +11793,21 @@ pub struct BVec2 {
 /// A true element results in a `1` bit and a false element in a `0` bit.  Element `x` goes
 /// into the first lowest bit, element `y` into the second, etc.
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn bitmask(self) -> u32;
 
 "#,
     r#"
 /// Returns true if any of the elements are true, false otherwise.
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn any(self) -> bool;
 
 "#,
     r#"
 /// Returns true if all the elements are true, false otherwise.
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn all(self) -> bool;
 
 "#,
@@ -13197,7 +11815,7 @@ pub struct BVec2 {
 /// Tests the value at `index`.
 /// Panics if `index` is greater than 2.
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn test(&self, index: usize) -> bool;
 
 "#,
@@ -13205,39 +11823,30 @@ pub struct BVec2 {
 /// Sets the element at `index`.
 /// Panics if `index` is greater than 2.
 
-    #[lua(kind = "MutatingMethod")]
+    #[lua()]
     fn set(&mut self, index: usize, value: bool) -> ();
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "std::cmp::PartialEq",
-        kind = "MetaFunction",
-        composite = "eq",
-        metamethod = "Eq",
-    )]
+    #[lua(as_trait = "std::cmp::PartialEq", composite = "eq")]
     fn eq(&self, #[proxy] other: &glam::BVec3) -> bool;
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone",
-        kind = "Method",
-        output(proxy),
-    )]
+    #[lua(as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone")]
     fn clone(&self) -> bevy::math::BVec3;
 
 "#,
     r#"
-#[lua(kind="MetaMethod", metamethod="ToString")]
+#[lua(metamethod="ToString")]
 fn index(&self) -> String {
     format!("{}", _self)
 }
 "#]
 )]
-pub struct BVec3 {
+pub struct LuaBVec3 {
     x: bool,
     y: bool,
     z: bool,
@@ -13245,44 +11854,37 @@ pub struct BVec3 {
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
     remote = "bevy::math::BVec4",
+    bms_core_path = "bevy_mod_scripting_core",
+    bms_lua_path = "crate",
     functions[r#"
 
-    #[lua(
-        as_trait = "std::cmp::PartialEq",
-        kind = "MetaFunction",
-        composite = "eq",
-        metamethod = "Eq",
-    )]
+    #[lua(as_trait = "std::cmp::PartialEq", composite = "eq")]
     fn eq(&self, #[proxy] other: &glam::BVec4) -> bool;
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone",
-        kind = "Method",
-        output(proxy),
-    )]
+    #[lua(as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone")]
     fn clone(&self) -> bevy::math::BVec4;
 
 "#,
     r#"
 
-    #[lua(as_trait = "std::cmp::Eq", kind = "Method")]
+    #[lua(as_trait = "std::cmp::Eq")]
     fn assert_receiver_is_total_eq(&self) -> ();
 
 "#,
     r#"
 /// Creates a new vector mask.
 
-    #[lua(kind = "Function", output(proxy))]
+    #[lua()]
     fn new(x: bool, y: bool, z: bool, w: bool) -> bevy::math::BVec4;
 
 "#,
     r#"
 /// Creates a vector with all elements set to `v`.
 
-    #[lua(kind = "Function", output(proxy))]
+    #[lua()]
     fn splat(v: bool) -> bevy::math::BVec4;
 
 "#,
@@ -13291,21 +11893,21 @@ pub struct BVec3 {
 /// A true element results in a `1` bit and a false element in a `0` bit.  Element `x` goes
 /// into the first lowest bit, element `y` into the second, etc.
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn bitmask(self) -> u32;
 
 "#,
     r#"
 /// Returns true if any of the elements are true, false otherwise.
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn any(self) -> bool;
 
 "#,
     r#"
 /// Returns true if all the elements are true, false otherwise.
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn all(self) -> bool;
 
 "#,
@@ -13313,7 +11915,7 @@ pub struct BVec3 {
 /// Tests the value at `index`.
 /// Panics if `index` is greater than 3.
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn test(&self, index: usize) -> bool;
 
 "#,
@@ -13321,18 +11923,18 @@ pub struct BVec3 {
 /// Sets the element at `index`.
 /// Panics if `index` is greater than 3.
 
-    #[lua(kind = "MutatingMethod")]
+    #[lua()]
     fn set(&mut self, index: usize, value: bool) -> ();
 
 "#,
     r#"
-#[lua(kind="MetaMethod", metamethod="ToString")]
+#[lua(metamethod="ToString")]
 fn index(&self) -> String {
     format!("{}", _self)
 }
 "#]
 )]
-pub struct BVec4 {
+pub struct LuaBVec4 {
     x: bool,
     y: bool,
     z: bool,
@@ -13341,137 +11943,79 @@ pub struct BVec4 {
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
     remote = "bevy::math::DVec2",
+    bms_core_path = "bevy_mod_scripting_core",
+    bms_lua_path = "crate",
     functions[r#"
 
-    #[lua(
-        as_trait = "std::ops::Add",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "add",
-        metamethod = "Add",
-    )]
+    #[lua(as_trait = "std::ops::Add", composite = "add")]
     fn add(self, #[proxy] rhs: bevy::math::DVec2) -> bevy::math::DVec2;
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "std::ops::Mul",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "mul",
-        metamethod = "Mul",
-    )]
+    #[lua(as_trait = "std::ops::Mul", composite = "mul")]
     fn mul(self, #[proxy] rhs: bevy::math::DVec2) -> bevy::math::DVec2;
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "std::ops::Rem",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "rem",
-        metamethod = "Mod",
-    )]
+    #[lua(as_trait = "std::ops::Rem", composite = "rem")]
     fn rem(self, #[proxy] rhs: bevy::math::DVec2) -> bevy::math::DVec2;
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "std::ops::Div",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "div",
-        metamethod = "Div",
-    )]
+    #[lua(as_trait = "std::ops::Div", composite = "div")]
     fn div(self, #[proxy] rhs: bevy::math::DVec2) -> bevy::math::DVec2;
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "std::ops::Add",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "add",
-        metamethod = "Add",
-    )]
+    #[lua(as_trait = "std::ops::Add", composite = "add")]
     fn add(self, rhs: f64) -> bevy::math::DVec2;
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "std::ops::Div",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "div",
-        metamethod = "Div",
-    )]
+    #[lua(as_trait = "std::ops::Div", composite = "div")]
     fn div(self, rhs: f64) -> bevy::math::DVec2;
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "std::ops::Rem",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "rem",
-        metamethod = "Mod",
-    )]
+    #[lua(as_trait = "std::ops::Rem", composite = "rem")]
     fn rem(self, rhs: f64) -> bevy::math::DVec2;
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "std::ops::Neg",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "neg",
-        metamethod = "Unm",
-    )]
+    #[lua(as_trait = "std::ops::Neg", composite = "neg")]
     fn neg(self) -> bevy::math::DVec2;
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "std::ops::Sub",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "sub",
-        metamethod = "Sub",
-    )]
+    #[lua(as_trait = "std::ops::Sub", composite = "sub")]
     fn sub(self, #[proxy] rhs: bevy::math::DVec2) -> bevy::math::DVec2;
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "std::ops::Sub",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "sub",
-        metamethod = "Sub",
-    )]
+    #[lua(as_trait = "std::ops::Sub", composite = "sub")]
     fn sub(self, rhs: f64) -> bevy::math::DVec2;
 
 "#,
     r#"
 /// Creates a new vector.
 
-    #[lua(kind = "Function", output(proxy))]
+    #[lua()]
     fn new(x: f64, y: f64) -> bevy::math::DVec2;
 
 "#,
     r#"
 /// Creates a vector with all elements set to `v`.
 
-    #[lua(kind = "Function", output(proxy))]
+    #[lua()]
     fn splat(v: f64) -> bevy::math::DVec2;
 
 "#,
@@ -13481,7 +12025,7 @@ pub struct BVec4 {
 /// A true element in the mask uses the corresponding element from `if_true`, and false
 /// uses the element from `if_false`.
 
-    #[lua(kind = "Function", output(proxy))]
+    #[lua()]
     fn select(
         #[proxy]
         mask: bevy::math::BVec2,
@@ -13495,35 +12039,35 @@ pub struct BVec4 {
     r#"
 /// Creates a new vector from an array.
 
-    #[lua(kind = "Function", output(proxy))]
+    #[lua()]
     fn from_array(a: [f64; 2]) -> bevy::math::DVec2;
 
 "#,
     r#"
 /// `[x, y]`
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn to_array(&self) -> [f64; 2];
 
 "#,
     r#"
 /// Creates a 3D vector from `self` and the given `z` value.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn extend(self, z: f64) -> bevy::math::DVec3;
 
 "#,
     r#"
 /// Computes the dot product of `self` and `rhs`.
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn dot(self, #[proxy] rhs: bevy::math::DVec2) -> f64;
 
 "#,
     r#"
 /// Returns a vector where every component is the dot product of `self` and `rhs`.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn dot_into_vec(self, #[proxy] rhs: bevy::math::DVec2) -> bevy::math::DVec2;
 
 "#,
@@ -13531,7 +12075,7 @@ pub struct BVec4 {
 /// Returns a vector containing the minimum values for each element of `self` and `rhs`.
 /// In other words this computes `[self.x.min(rhs.x), self.y.min(rhs.y), ..]`.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn min(self, #[proxy] rhs: bevy::math::DVec2) -> bevy::math::DVec2;
 
 "#,
@@ -13539,7 +12083,7 @@ pub struct BVec4 {
 /// Returns a vector containing the maximum values for each element of `self` and `rhs`.
 /// In other words this computes `[self.x.max(rhs.x), self.y.max(rhs.y), ..]`.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn max(self, #[proxy] rhs: bevy::math::DVec2) -> bevy::math::DVec2;
 
 "#,
@@ -13549,7 +12093,7 @@ pub struct BVec4 {
 /// # Panics
 /// Will panic if `min` is greater than `max` when `glam_assert` is enabled.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn clamp(
         self,
         #[proxy]
@@ -13563,7 +12107,7 @@ pub struct BVec4 {
 /// Returns the horizontal minimum of `self`.
 /// In other words this computes `min(x, y, ..)`.
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn min_element(self) -> f64;
 
 "#,
@@ -13571,7 +12115,7 @@ pub struct BVec4 {
 /// Returns the horizontal maximum of `self`.
 /// In other words this computes `max(x, y, ..)`.
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn max_element(self) -> f64;
 
 "#,
@@ -13581,7 +12125,7 @@ pub struct BVec4 {
 /// In other words, this computes `[self.x == rhs.x, self.y == rhs.y, ..]` for all
 /// elements.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn cmpeq(self, #[proxy] rhs: bevy::math::DVec2) -> bevy::math::BVec2;
 
 "#,
@@ -13591,7 +12135,7 @@ pub struct BVec4 {
 /// In other words this computes `[self.x != rhs.x, self.y != rhs.y, ..]` for all
 /// elements.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn cmpne(self, #[proxy] rhs: bevy::math::DVec2) -> bevy::math::BVec2;
 
 "#,
@@ -13601,7 +12145,7 @@ pub struct BVec4 {
 /// In other words this computes `[self.x >= rhs.x, self.y >= rhs.y, ..]` for all
 /// elements.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn cmpge(self, #[proxy] rhs: bevy::math::DVec2) -> bevy::math::BVec2;
 
 "#,
@@ -13611,7 +12155,7 @@ pub struct BVec4 {
 /// In other words this computes `[self.x > rhs.x, self.y > rhs.y, ..]` for all
 /// elements.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn cmpgt(self, #[proxy] rhs: bevy::math::DVec2) -> bevy::math::BVec2;
 
 "#,
@@ -13621,7 +12165,7 @@ pub struct BVec4 {
 /// In other words this computes `[self.x <= rhs.x, self.y <= rhs.y, ..]` for all
 /// elements.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn cmple(self, #[proxy] rhs: bevy::math::DVec2) -> bevy::math::BVec2;
 
 "#,
@@ -13631,14 +12175,14 @@ pub struct BVec4 {
 /// In other words this computes `[self.x < rhs.x, self.y < rhs.y, ..]` for all
 /// elements.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn cmplt(self, #[proxy] rhs: bevy::math::DVec2) -> bevy::math::BVec2;
 
 "#,
     r#"
 /// Returns a vector containing the absolute value of each element of `self`.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn abs(self) -> bevy::math::DVec2;
 
 "#,
@@ -13648,14 +12192,14 @@ pub struct BVec4 {
 /// - `-1.0` if the number is negative, `-0.0` or `NEG_INFINITY`
 /// - `NAN` if the number is `NAN`
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn signum(self) -> bevy::math::DVec2;
 
 "#,
     r#"
 /// Returns a vector with signs of `rhs` and the magnitudes of `self`.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn copysign(self, #[proxy] rhs: bevy::math::DVec2) -> bevy::math::DVec2;
 
 "#,
@@ -13664,7 +12208,7 @@ pub struct BVec4 {
 /// A negative element results in a `1` bit and a positive element in a `0` bit.  Element `x` goes
 /// into the first lowest bit, element `y` into the second, etc.
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn is_negative_bitmask(self) -> u32;
 
 "#,
@@ -13672,14 +12216,14 @@ pub struct BVec4 {
 /// Returns `true` if, and only if, all elements are finite.  If any element is either
 /// `NaN`, positive or negative infinity, this will return `false`.
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn is_finite(self) -> bool;
 
 "#,
     r#"
 /// Returns `true` if any elements are `NaN`.
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn is_nan(self) -> bool;
 
 "#,
@@ -13687,14 +12231,14 @@ pub struct BVec4 {
 /// Performs `is_nan` on each element of self, returning a vector mask of the results.
 /// In other words, this computes `[x.is_nan(), y.is_nan(), z.is_nan(), w.is_nan()]`.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn is_nan_mask(self) -> bevy::math::BVec2;
 
 "#,
     r#"
 /// Computes the length of `self`.
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn length(self) -> f64;
 
 "#,
@@ -13702,7 +12246,7 @@ pub struct BVec4 {
 /// Computes the squared length of `self`.
 /// This is faster than `length()` as it avoids a square root operation.
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn length_squared(self) -> f64;
 
 "#,
@@ -13710,28 +12254,28 @@ pub struct BVec4 {
 /// Computes `1.0 / length()`.
 /// For valid results, `self` must _not_ be of length zero.
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn length_recip(self) -> f64;
 
 "#,
     r#"
 /// Computes the Euclidean distance between two points in space.
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn distance(self, #[proxy] rhs: bevy::math::DVec2) -> f64;
 
 "#,
     r#"
 /// Compute the squared euclidean distance between two points in space.
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn distance_squared(self, #[proxy] rhs: bevy::math::DVec2) -> f64;
 
 "#,
     r#"
 /// Returns the element-wise quotient of [Euclidean division] of `self` by `rhs`.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn div_euclid(self, #[proxy] rhs: bevy::math::DVec2) -> bevy::math::DVec2;
 
 "#,
@@ -13739,7 +12283,7 @@ pub struct BVec4 {
 /// Returns the element-wise remainder of [Euclidean division] of `self` by `rhs`.
 /// [Euclidean division]: f64::rem_euclid
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn rem_euclid(self, #[proxy] rhs: bevy::math::DVec2) -> bevy::math::DVec2;
 
 "#,
@@ -13750,7 +12294,7 @@ pub struct BVec4 {
 /// Panics
 /// Will panic if `self` is zero length when `glam_assert` is enabled.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn normalize(self) -> bevy::math::DVec2;
 
 "#,
@@ -13760,7 +12304,7 @@ pub struct BVec4 {
 /// the result of this operation will be zero.
 /// See also [`Self::try_normalize()`].
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn normalize_or_zero(self) -> bevy::math::DVec2;
 
 "#,
@@ -13768,7 +12312,7 @@ pub struct BVec4 {
 /// Returns whether `self` is length `1.0` or not.
 /// Uses a precision threshold of `1e-6`.
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn is_normalized(self) -> bool;
 
 "#,
@@ -13778,7 +12322,7 @@ pub struct BVec4 {
 /// # Panics
 /// Will panic if `rhs` is zero length when `glam_assert` is enabled.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn project_onto(self, #[proxy] rhs: bevy::math::DVec2) -> bevy::math::DVec2;
 
 "#,
@@ -13790,7 +12334,7 @@ pub struct BVec4 {
 /// # Panics
 /// Will panic if `rhs` has a length of zero when `glam_assert` is enabled.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn reject_from(self, #[proxy] rhs: bevy::math::DVec2) -> bevy::math::DVec2;
 
 "#,
@@ -13800,7 +12344,7 @@ pub struct BVec4 {
 /// # Panics
 /// Will panic if `rhs` is not normalized when `glam_assert` is enabled.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn project_onto_normalized(
         self,
         #[proxy]
@@ -13816,7 +12360,7 @@ pub struct BVec4 {
 /// # Panics
 /// Will panic if `rhs` is not normalized when `glam_assert` is enabled.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn reject_from_normalized(
         self,
         #[proxy]
@@ -13828,7 +12372,7 @@ pub struct BVec4 {
 /// Returns a vector containing the nearest integer to a number for each element of `self`.
 /// Round half-way cases away from 0.0.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn round(self) -> bevy::math::DVec2;
 
 "#,
@@ -13836,7 +12380,7 @@ pub struct BVec4 {
 /// Returns a vector containing the largest integer less than or equal to a number for each
 /// element of `self`.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn floor(self) -> bevy::math::DVec2;
 
 "#,
@@ -13844,7 +12388,7 @@ pub struct BVec4 {
 /// Returns a vector containing the smallest integer greater than or equal to a number for
 /// each element of `self`.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn ceil(self) -> bevy::math::DVec2;
 
 "#,
@@ -13852,7 +12396,7 @@ pub struct BVec4 {
 /// Returns a vector containing the integer part each element of `self`. This means numbers are
 /// always truncated towards zero.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn trunc(self) -> bevy::math::DVec2;
 
 "#,
@@ -13861,7 +12405,7 @@ pub struct BVec4 {
 /// self.floor()`.
 /// Note that this is fast but not precise for large numbers.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn fract(self) -> bevy::math::DVec2;
 
 "#,
@@ -13869,21 +12413,21 @@ pub struct BVec4 {
 /// Returns a vector containing `e^self` (the exponential function) for each element of
 /// `self`.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn exp(self) -> bevy::math::DVec2;
 
 "#,
     r#"
 /// Returns a vector containing each element of `self` raised to the power of `n`.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn powf(self, n: f64) -> bevy::math::DVec2;
 
 "#,
     r#"
 /// Returns a vector containing the reciprocal `1.0/n` of each element of `self`.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn recip(self) -> bevy::math::DVec2;
 
 "#,
@@ -13893,7 +12437,7 @@ pub struct BVec4 {
 /// will be equal to `rhs`. When `s` is outside of range `[0, 1]`, the result is linearly
 /// extrapolated.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn lerp(self, #[proxy] rhs: bevy::math::DVec2, s: f64) -> bevy::math::DVec2;
 
 "#,
@@ -13906,7 +12450,7 @@ pub struct BVec4 {
 /// For more see
 /// [comparing floating point numbers](https://randomascii.wordpress.com/2012/02/25/comparing-floating-point-numbers-2012-edition/).
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn abs_diff_eq(self, #[proxy] rhs: bevy::math::DVec2, max_abs_diff: f64) -> bool;
 
 "#,
@@ -13915,21 +12459,21 @@ pub struct BVec4 {
 /// # Panics
 /// Will panic if `min` is greater than `max` when `glam_assert` is enabled.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn clamp_length(self, min: f64, max: f64) -> bevy::math::DVec2;
 
 "#,
     r#"
 /// Returns a vector with a length no more than `max`
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn clamp_length_max(self, max: f64) -> bevy::math::DVec2;
 
 "#,
     r#"
 /// Returns a vector with a length no less than `min`
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn clamp_length_min(self, min: f64) -> bevy::math::DVec2;
 
 "#,
@@ -13941,7 +12485,7 @@ pub struct BVec4 {
 /// and will be heavily dependant on designing algorithms with specific target hardware in
 /// mind.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn mul_add(
         self,
         #[proxy]
@@ -13957,7 +12501,7 @@ pub struct BVec4 {
 /// `DVec2::from_angle(PI).rotate(DVec2::Y)` will create the vector `[-1, 0]`
 /// and rotate [`DVec2::Y`] around it returning `-DVec2::Y`.
 
-    #[lua(kind = "Function", output(proxy))]
+    #[lua()]
     fn from_angle(angle: f64) -> bevy::math::DVec2;
 
 "#,
@@ -13965,7 +12509,7 @@ pub struct BVec4 {
 /// Returns the angle (in radians) of this vector in the range `[-π, +π]`.
 /// The input does not need to be a unit vector however it must be non-zero.
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn to_angle(self) -> f64;
 
 "#,
@@ -13973,14 +12517,14 @@ pub struct BVec4 {
 /// Returns the angle (in radians) between `self` and `rhs` in the range `[-π, +π]`.
 /// The inputs do not need to be unit vectors however they must be non-zero.
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn angle_between(self, #[proxy] rhs: bevy::math::DVec2) -> f64;
 
 "#,
     r#"
 /// Returns a vector that is equal to `self` rotated by 90 degrees.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn perp(self) -> bevy::math::DVec2;
 
 "#,
@@ -13988,7 +12532,7 @@ pub struct BVec4 {
 /// The perpendicular dot product of `self` and `rhs`.
 /// Also known as the wedge product, 2D cross product, and determinant.
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn perp_dot(self, #[proxy] rhs: bevy::math::DVec2) -> f64;
 
 "#,
@@ -13997,127 +12541,108 @@ pub struct BVec4 {
 /// then this just rotation. This is what you usually want. Otherwise,
 /// it will be like a rotation with a multiplication by `self`'s length.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn rotate(self, #[proxy] rhs: bevy::math::DVec2) -> bevy::math::DVec2;
 
 "#,
     r#"
 /// Casts all elements of `self` to `f32`.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn as_vec2(&self) -> bevy::math::Vec2;
 
 "#,
     r#"
 /// Casts all elements of `self` to `i32`.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn as_ivec2(&self) -> bevy::math::IVec2;
 
 "#,
     r#"
 /// Casts all elements of `self` to `u32`.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn as_uvec2(&self) -> bevy::math::UVec2;
 
 "#,
     r#"
 /// Casts all elements of `self` to `i64`.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn as_i64vec2(&self) -> bevy::math::I64Vec2;
 
 "#,
     r#"
 /// Casts all elements of `self` to `u64`.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn as_u64vec2(&self) -> bevy::math::U64Vec2;
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "std::ops::Mul",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "mul",
-        metamethod = "Mul",
-    )]
+    #[lua(as_trait = "std::ops::Mul", composite = "mul")]
     fn mul(self, rhs: f64) -> bevy::math::DVec2;
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "std::cmp::PartialEq",
-        kind = "MetaFunction",
-        composite = "eq",
-        metamethod = "Eq",
-    )]
+    #[lua(as_trait = "std::cmp::PartialEq", composite = "eq")]
     fn eq(&self, #[proxy] other: &glam::DVec2) -> bool;
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone",
-        kind = "Method",
-        output(proxy),
-    )]
+    #[lua(as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone")]
     fn clone(&self) -> bevy::math::DVec2;
 
 "#,
     r#"
-#[lua(kind="MetaMethod", metamethod="ToString")]
+#[lua(metamethod="ToString")]
 fn index(&self) -> String {
     format!("{}", _self)
 }
 "#,
     r#"
-#[lua(kind="MetaMethod", raw , metamethod="Index")]
+#[lua(raw , metamethod="Index")]
 fn index(&self, lua: &Lua, idx: crate::lua::util::LuaIndex) -> Result<f64,_> {
-    Ok(self.inner()?[*idx])
+    Ok(_self.inner()?[*idx])
 }
 "#,
     r#"
-#[lua(kind="MutatingMetaMethod", raw, metamethod="NewIndex")]
+#[lua(raw, metamethod="NewIndex")]
 fn index(&mut self, lua: &Lua, idx: crate::lua::util::LuaIndex, val: f64) -> Result<(),_> {
-    self.val_mut(|s| Ok(s[*idx] = val))?
+    _self.val_mut(|s| Ok(s[*idx] = val))?
 }
 "#]
 )]
-pub struct DVec2 {
+pub struct LuaDVec2 {
     x: f64,
     y: f64,
 }
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
     remote = "bevy::math::DVec3",
+    bms_core_path = "bevy_mod_scripting_core",
+    bms_lua_path = "crate",
     functions[r#"
 
-    #[lua(
-        as_trait = "std::ops::Neg",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "neg",
-        metamethod = "Unm",
-    )]
+    #[lua(as_trait = "std::ops::Neg", composite = "neg")]
     fn neg(self) -> bevy::math::DVec3;
 
 "#,
     r#"
 /// Creates a new vector.
 
-    #[lua(kind = "Function", output(proxy))]
+    #[lua()]
     fn new(x: f64, y: f64, z: f64) -> bevy::math::DVec3;
 
 "#,
     r#"
 /// Creates a vector with all elements set to `v`.
 
-    #[lua(kind = "Function", output(proxy))]
+    #[lua()]
     fn splat(v: f64) -> bevy::math::DVec3;
 
 "#,
@@ -14127,7 +12652,7 @@ pub struct DVec2 {
 /// A true element in the mask uses the corresponding element from `if_true`, and false
 /// uses the element from `if_false`.
 
-    #[lua(kind = "Function", output(proxy))]
+    #[lua()]
     fn select(
         #[proxy]
         mask: bevy::math::BVec3,
@@ -14141,21 +12666,21 @@ pub struct DVec2 {
     r#"
 /// Creates a new vector from an array.
 
-    #[lua(kind = "Function", output(proxy))]
+    #[lua()]
     fn from_array(a: [f64; 3]) -> bevy::math::DVec3;
 
 "#,
     r#"
 /// `[x, y, z]`
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn to_array(&self) -> [f64; 3];
 
 "#,
     r#"
 /// Creates a 4D vector from `self` and the given `w` value.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn extend(self, w: f64) -> bevy::math::DVec4;
 
 "#,
@@ -14163,28 +12688,28 @@ pub struct DVec2 {
 /// Creates a 2D vector from the `x` and `y` elements of `self`, discarding `z`.
 /// Truncation may also be performed by using [`self.xy()`][crate::swizzles::Vec3Swizzles::xy()].
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn truncate(self) -> bevy::math::DVec2;
 
 "#,
     r#"
 /// Computes the dot product of `self` and `rhs`.
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn dot(self, #[proxy] rhs: bevy::math::DVec3) -> f64;
 
 "#,
     r#"
 /// Returns a vector where every component is the dot product of `self` and `rhs`.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn dot_into_vec(self, #[proxy] rhs: bevy::math::DVec3) -> bevy::math::DVec3;
 
 "#,
     r#"
 /// Computes the cross product of `self` and `rhs`.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn cross(self, #[proxy] rhs: bevy::math::DVec3) -> bevy::math::DVec3;
 
 "#,
@@ -14192,7 +12717,7 @@ pub struct DVec2 {
 /// Returns a vector containing the minimum values for each element of `self` and `rhs`.
 /// In other words this computes `[self.x.min(rhs.x), self.y.min(rhs.y), ..]`.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn min(self, #[proxy] rhs: bevy::math::DVec3) -> bevy::math::DVec3;
 
 "#,
@@ -14200,7 +12725,7 @@ pub struct DVec2 {
 /// Returns a vector containing the maximum values for each element of `self` and `rhs`.
 /// In other words this computes `[self.x.max(rhs.x), self.y.max(rhs.y), ..]`.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn max(self, #[proxy] rhs: bevy::math::DVec3) -> bevy::math::DVec3;
 
 "#,
@@ -14210,7 +12735,7 @@ pub struct DVec2 {
 /// # Panics
 /// Will panic if `min` is greater than `max` when `glam_assert` is enabled.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn clamp(
         self,
         #[proxy]
@@ -14224,7 +12749,7 @@ pub struct DVec2 {
 /// Returns the horizontal minimum of `self`.
 /// In other words this computes `min(x, y, ..)`.
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn min_element(self) -> f64;
 
 "#,
@@ -14232,7 +12757,7 @@ pub struct DVec2 {
 /// Returns the horizontal maximum of `self`.
 /// In other words this computes `max(x, y, ..)`.
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn max_element(self) -> f64;
 
 "#,
@@ -14242,7 +12767,7 @@ pub struct DVec2 {
 /// In other words, this computes `[self.x == rhs.x, self.y == rhs.y, ..]` for all
 /// elements.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn cmpeq(self, #[proxy] rhs: bevy::math::DVec3) -> bevy::math::BVec3;
 
 "#,
@@ -14252,7 +12777,7 @@ pub struct DVec2 {
 /// In other words this computes `[self.x != rhs.x, self.y != rhs.y, ..]` for all
 /// elements.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn cmpne(self, #[proxy] rhs: bevy::math::DVec3) -> bevy::math::BVec3;
 
 "#,
@@ -14262,7 +12787,7 @@ pub struct DVec2 {
 /// In other words this computes `[self.x >= rhs.x, self.y >= rhs.y, ..]` for all
 /// elements.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn cmpge(self, #[proxy] rhs: bevy::math::DVec3) -> bevy::math::BVec3;
 
 "#,
@@ -14272,7 +12797,7 @@ pub struct DVec2 {
 /// In other words this computes `[self.x > rhs.x, self.y > rhs.y, ..]` for all
 /// elements.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn cmpgt(self, #[proxy] rhs: bevy::math::DVec3) -> bevy::math::BVec3;
 
 "#,
@@ -14282,7 +12807,7 @@ pub struct DVec2 {
 /// In other words this computes `[self.x <= rhs.x, self.y <= rhs.y, ..]` for all
 /// elements.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn cmple(self, #[proxy] rhs: bevy::math::DVec3) -> bevy::math::BVec3;
 
 "#,
@@ -14292,14 +12817,14 @@ pub struct DVec2 {
 /// In other words this computes `[self.x < rhs.x, self.y < rhs.y, ..]` for all
 /// elements.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn cmplt(self, #[proxy] rhs: bevy::math::DVec3) -> bevy::math::BVec3;
 
 "#,
     r#"
 /// Returns a vector containing the absolute value of each element of `self`.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn abs(self) -> bevy::math::DVec3;
 
 "#,
@@ -14309,14 +12834,14 @@ pub struct DVec2 {
 /// - `-1.0` if the number is negative, `-0.0` or `NEG_INFINITY`
 /// - `NAN` if the number is `NAN`
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn signum(self) -> bevy::math::DVec3;
 
 "#,
     r#"
 /// Returns a vector with signs of `rhs` and the magnitudes of `self`.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn copysign(self, #[proxy] rhs: bevy::math::DVec3) -> bevy::math::DVec3;
 
 "#,
@@ -14325,7 +12850,7 @@ pub struct DVec2 {
 /// A negative element results in a `1` bit and a positive element in a `0` bit.  Element `x` goes
 /// into the first lowest bit, element `y` into the second, etc.
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn is_negative_bitmask(self) -> u32;
 
 "#,
@@ -14333,14 +12858,14 @@ pub struct DVec2 {
 /// Returns `true` if, and only if, all elements are finite.  If any element is either
 /// `NaN`, positive or negative infinity, this will return `false`.
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn is_finite(self) -> bool;
 
 "#,
     r#"
 /// Returns `true` if any elements are `NaN`.
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn is_nan(self) -> bool;
 
 "#,
@@ -14348,14 +12873,14 @@ pub struct DVec2 {
 /// Performs `is_nan` on each element of self, returning a vector mask of the results.
 /// In other words, this computes `[x.is_nan(), y.is_nan(), z.is_nan(), w.is_nan()]`.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn is_nan_mask(self) -> bevy::math::BVec3;
 
 "#,
     r#"
 /// Computes the length of `self`.
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn length(self) -> f64;
 
 "#,
@@ -14363,7 +12888,7 @@ pub struct DVec2 {
 /// Computes the squared length of `self`.
 /// This is faster than `length()` as it avoids a square root operation.
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn length_squared(self) -> f64;
 
 "#,
@@ -14371,28 +12896,28 @@ pub struct DVec2 {
 /// Computes `1.0 / length()`.
 /// For valid results, `self` must _not_ be of length zero.
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn length_recip(self) -> f64;
 
 "#,
     r#"
 /// Computes the Euclidean distance between two points in space.
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn distance(self, #[proxy] rhs: bevy::math::DVec3) -> f64;
 
 "#,
     r#"
 /// Compute the squared euclidean distance between two points in space.
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn distance_squared(self, #[proxy] rhs: bevy::math::DVec3) -> f64;
 
 "#,
     r#"
 /// Returns the element-wise quotient of [Euclidean division] of `self` by `rhs`.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn div_euclid(self, #[proxy] rhs: bevy::math::DVec3) -> bevy::math::DVec3;
 
 "#,
@@ -14400,7 +12925,7 @@ pub struct DVec2 {
 /// Returns the element-wise remainder of [Euclidean division] of `self` by `rhs`.
 /// [Euclidean division]: f64::rem_euclid
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn rem_euclid(self, #[proxy] rhs: bevy::math::DVec3) -> bevy::math::DVec3;
 
 "#,
@@ -14411,7 +12936,7 @@ pub struct DVec2 {
 /// Panics
 /// Will panic if `self` is zero length when `glam_assert` is enabled.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn normalize(self) -> bevy::math::DVec3;
 
 "#,
@@ -14421,7 +12946,7 @@ pub struct DVec2 {
 /// the result of this operation will be zero.
 /// See also [`Self::try_normalize()`].
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn normalize_or_zero(self) -> bevy::math::DVec3;
 
 "#,
@@ -14429,7 +12954,7 @@ pub struct DVec2 {
 /// Returns whether `self` is length `1.0` or not.
 /// Uses a precision threshold of `1e-6`.
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn is_normalized(self) -> bool;
 
 "#,
@@ -14439,7 +12964,7 @@ pub struct DVec2 {
 /// # Panics
 /// Will panic if `rhs` is zero length when `glam_assert` is enabled.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn project_onto(self, #[proxy] rhs: bevy::math::DVec3) -> bevy::math::DVec3;
 
 "#,
@@ -14451,7 +12976,7 @@ pub struct DVec2 {
 /// # Panics
 /// Will panic if `rhs` has a length of zero when `glam_assert` is enabled.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn reject_from(self, #[proxy] rhs: bevy::math::DVec3) -> bevy::math::DVec3;
 
 "#,
@@ -14461,7 +12986,7 @@ pub struct DVec2 {
 /// # Panics
 /// Will panic if `rhs` is not normalized when `glam_assert` is enabled.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn project_onto_normalized(
         self,
         #[proxy]
@@ -14477,7 +13002,7 @@ pub struct DVec2 {
 /// # Panics
 /// Will panic if `rhs` is not normalized when `glam_assert` is enabled.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn reject_from_normalized(
         self,
         #[proxy]
@@ -14489,7 +13014,7 @@ pub struct DVec2 {
 /// Returns a vector containing the nearest integer to a number for each element of `self`.
 /// Round half-way cases away from 0.0.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn round(self) -> bevy::math::DVec3;
 
 "#,
@@ -14497,7 +13022,7 @@ pub struct DVec2 {
 /// Returns a vector containing the largest integer less than or equal to a number for each
 /// element of `self`.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn floor(self) -> bevy::math::DVec3;
 
 "#,
@@ -14505,7 +13030,7 @@ pub struct DVec2 {
 /// Returns a vector containing the smallest integer greater than or equal to a number for
 /// each element of `self`.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn ceil(self) -> bevy::math::DVec3;
 
 "#,
@@ -14513,7 +13038,7 @@ pub struct DVec2 {
 /// Returns a vector containing the integer part each element of `self`. This means numbers are
 /// always truncated towards zero.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn trunc(self) -> bevy::math::DVec3;
 
 "#,
@@ -14522,7 +13047,7 @@ pub struct DVec2 {
 /// self.floor()`.
 /// Note that this is fast but not precise for large numbers.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn fract(self) -> bevy::math::DVec3;
 
 "#,
@@ -14530,21 +13055,21 @@ pub struct DVec2 {
 /// Returns a vector containing `e^self` (the exponential function) for each element of
 /// `self`.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn exp(self) -> bevy::math::DVec3;
 
 "#,
     r#"
 /// Returns a vector containing each element of `self` raised to the power of `n`.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn powf(self, n: f64) -> bevy::math::DVec3;
 
 "#,
     r#"
 /// Returns a vector containing the reciprocal `1.0/n` of each element of `self`.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn recip(self) -> bevy::math::DVec3;
 
 "#,
@@ -14554,7 +13079,7 @@ pub struct DVec2 {
 /// will be equal to `rhs`. When `s` is outside of range `[0, 1]`, the result is linearly
 /// extrapolated.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn lerp(self, #[proxy] rhs: bevy::math::DVec3, s: f64) -> bevy::math::DVec3;
 
 "#,
@@ -14567,7 +13092,7 @@ pub struct DVec2 {
 /// For more see
 /// [comparing floating point numbers](https://randomascii.wordpress.com/2012/02/25/comparing-floating-point-numbers-2012-edition/).
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn abs_diff_eq(self, #[proxy] rhs: bevy::math::DVec3, max_abs_diff: f64) -> bool;
 
 "#,
@@ -14576,21 +13101,21 @@ pub struct DVec2 {
 /// # Panics
 /// Will panic if `min` is greater than `max` when `glam_assert` is enabled.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn clamp_length(self, min: f64, max: f64) -> bevy::math::DVec3;
 
 "#,
     r#"
 /// Returns a vector with a length no more than `max`
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn clamp_length_max(self, max: f64) -> bevy::math::DVec3;
 
 "#,
     r#"
 /// Returns a vector with a length no less than `min`
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn clamp_length_min(self, min: f64) -> bevy::math::DVec3;
 
 "#,
@@ -14602,7 +13127,7 @@ pub struct DVec2 {
 /// and will be heavily dependant on designing algorithms with specific target hardware in
 /// mind.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn mul_add(
         self,
         #[proxy]
@@ -14616,7 +13141,7 @@ pub struct DVec2 {
 /// Returns the angle (in radians) between two vectors.
 /// The inputs do not need to be unit vectors however they must be non-zero.
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn angle_between(self, #[proxy] rhs: bevy::math::DVec3) -> f64;
 
 "#,
@@ -14626,7 +13151,7 @@ pub struct DVec2 {
 /// The output vector is not necessarily unit length. For that use
 /// [`Self::any_orthonormal_vector()`] instead.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn any_orthogonal_vector(&self) -> bevy::math::DVec3;
 
 "#,
@@ -14636,213 +13161,144 @@ pub struct DVec2 {
 /// # Panics
 /// Will panic if `self` is not normalized when `glam_assert` is enabled.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn any_orthonormal_vector(&self) -> bevy::math::DVec3;
 
 "#,
     r#"
 /// Casts all elements of `self` to `f32`.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn as_vec3(&self) -> bevy::math::Vec3;
 
 "#,
     r#"
 /// Casts all elements of `self` to `f32`.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn as_vec3a(&self) -> bevy::math::Vec3A;
 
 "#,
     r#"
 /// Casts all elements of `self` to `i32`.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn as_ivec3(&self) -> bevy::math::IVec3;
 
 "#,
     r#"
 /// Casts all elements of `self` to `u32`.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn as_uvec3(&self) -> bevy::math::UVec3;
 
 "#,
     r#"
 /// Casts all elements of `self` to `i64`.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn as_i64vec3(&self) -> bevy::math::I64Vec3;
 
 "#,
     r#"
 /// Casts all elements of `self` to `u64`.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn as_u64vec3(&self) -> bevy::math::U64Vec3;
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "std::cmp::PartialEq",
-        kind = "MetaFunction",
-        composite = "eq",
-        metamethod = "Eq",
-    )]
+    #[lua(as_trait = "std::cmp::PartialEq", composite = "eq")]
     fn eq(&self, #[proxy] other: &glam::DVec3) -> bool;
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "std::ops::Mul",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "mul",
-        metamethod = "Mul",
-    )]
+    #[lua(as_trait = "std::ops::Mul", composite = "mul")]
     fn mul(self, rhs: f64) -> bevy::math::DVec3;
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "std::ops::Sub",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "sub",
-        metamethod = "Sub",
-    )]
+    #[lua(as_trait = "std::ops::Sub", composite = "sub")]
     fn sub(self, rhs: f64) -> bevy::math::DVec3;
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "std::ops::Div",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "div",
-        metamethod = "Div",
-    )]
+    #[lua(as_trait = "std::ops::Div", composite = "div")]
     fn div(self, rhs: f64) -> bevy::math::DVec3;
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "std::ops::Add",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "add",
-        metamethod = "Add",
-    )]
+    #[lua(as_trait = "std::ops::Add", composite = "add")]
     fn add(self, rhs: f64) -> bevy::math::DVec3;
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "std::ops::Mul",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "mul",
-        metamethod = "Mul",
-    )]
+    #[lua(as_trait = "std::ops::Mul", composite = "mul")]
     fn mul(self, #[proxy] rhs: bevy::math::DVec3) -> bevy::math::DVec3;
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "std::ops::Add",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "add",
-        metamethod = "Add",
-    )]
+    #[lua(as_trait = "std::ops::Add", composite = "add")]
     fn add(self, #[proxy] rhs: bevy::math::DVec3) -> bevy::math::DVec3;
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "std::ops::Sub",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "sub",
-        metamethod = "Sub",
-    )]
+    #[lua(as_trait = "std::ops::Sub", composite = "sub")]
     fn sub(self, #[proxy] rhs: bevy::math::DVec3) -> bevy::math::DVec3;
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone",
-        kind = "Method",
-        output(proxy),
-    )]
+    #[lua(as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone")]
     fn clone(&self) -> bevy::math::DVec3;
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "std::ops::Div",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "div",
-        metamethod = "Div",
-    )]
+    #[lua(as_trait = "std::ops::Div", composite = "div")]
     fn div(self, #[proxy] rhs: bevy::math::DVec3) -> bevy::math::DVec3;
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "std::ops::Rem",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "rem",
-        metamethod = "Mod",
-    )]
+    #[lua(as_trait = "std::ops::Rem", composite = "rem")]
     fn rem(self, rhs: f64) -> bevy::math::DVec3;
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "std::ops::Rem",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "rem",
-        metamethod = "Mod",
-    )]
+    #[lua(as_trait = "std::ops::Rem", composite = "rem")]
     fn rem(self, #[proxy] rhs: bevy::math::DVec3) -> bevy::math::DVec3;
 
 "#,
     r#"
-#[lua(kind="MetaMethod", metamethod="ToString")]
+#[lua(metamethod="ToString")]
 fn index(&self) -> String {
     format!("{}", _self)
 }
 "#,
     r#"
-#[lua(kind="MetaMethod", raw , metamethod="Index")]
+#[lua(raw , metamethod="Index")]
 fn index(&self, lua: &Lua, idx: crate::lua::util::LuaIndex) -> Result<f64,_> {
-    Ok(self.inner()?[*idx])
+    Ok(_self.inner()?[*idx])
 }
 "#,
     r#"
-#[lua(kind="MutatingMetaMethod", raw, metamethod="NewIndex")]
+#[lua(raw, metamethod="NewIndex")]
 fn index(&mut self, lua: &Lua, idx: crate::lua::util::LuaIndex, val: f64) -> Result<(),_> {
-    self.val_mut(|s| Ok(s[*idx] = val))?
+    _self.val_mut(|s| Ok(s[*idx] = val))?
 }
 "#]
 )]
-pub struct DVec3 {
+pub struct LuaDVec3 {
     x: f64,
     y: f64,
     z: f64,
@@ -14850,146 +13306,85 @@ pub struct DVec3 {
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
     remote = "bevy::math::DVec4",
+    bms_core_path = "bevy_mod_scripting_core",
+    bms_lua_path = "crate",
     functions[r#"
 
-    #[lua(
-        as_trait = "std::ops::Add",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "add",
-        metamethod = "Add",
-    )]
+    #[lua(as_trait = "std::ops::Add", composite = "add")]
     fn add(self, rhs: f64) -> bevy::math::DVec4;
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "std::ops::Rem",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "rem",
-        metamethod = "Mod",
-    )]
+    #[lua(as_trait = "std::ops::Rem", composite = "rem")]
     fn rem(self, rhs: f64) -> bevy::math::DVec4;
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "std::ops::Mul",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "mul",
-        metamethod = "Mul",
-    )]
+    #[lua(as_trait = "std::ops::Mul", composite = "mul")]
     fn mul(self, rhs: f64) -> bevy::math::DVec4;
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "std::ops::Sub",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "sub",
-        metamethod = "Sub",
-    )]
+    #[lua(as_trait = "std::ops::Sub", composite = "sub")]
     fn sub(self, rhs: f64) -> bevy::math::DVec4;
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "std::cmp::PartialEq",
-        kind = "MetaFunction",
-        composite = "eq",
-        metamethod = "Eq",
-    )]
+    #[lua(as_trait = "std::cmp::PartialEq", composite = "eq")]
     fn eq(&self, #[proxy] other: &glam::DVec4) -> bool;
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "std::ops::Sub",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "sub",
-        metamethod = "Sub",
-    )]
+    #[lua(as_trait = "std::ops::Sub", composite = "sub")]
     fn sub(self, #[proxy] rhs: bevy::math::DVec4) -> bevy::math::DVec4;
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone",
-        kind = "Method",
-        output(proxy),
-    )]
+    #[lua(as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone")]
     fn clone(&self) -> bevy::math::DVec4;
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "std::ops::Rem",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "rem",
-        metamethod = "Mod",
-    )]
+    #[lua(as_trait = "std::ops::Rem", composite = "rem")]
     fn rem(self, #[proxy] rhs: bevy::math::DVec4) -> bevy::math::DVec4;
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "std::ops::Div",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "div",
-        metamethod = "Div",
-    )]
+    #[lua(as_trait = "std::ops::Div", composite = "div")]
     fn div(self, #[proxy] rhs: bevy::math::DVec4) -> bevy::math::DVec4;
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "std::ops::Add",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "add",
-        metamethod = "Add",
-    )]
+    #[lua(as_trait = "std::ops::Add", composite = "add")]
     fn add(self, #[proxy] rhs: bevy::math::DVec4) -> bevy::math::DVec4;
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "std::ops::Neg",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "neg",
-        metamethod = "Unm",
-    )]
+    #[lua(as_trait = "std::ops::Neg", composite = "neg")]
     fn neg(self) -> bevy::math::DVec4;
 
 "#,
     r#"
 /// Creates a new vector.
 
-    #[lua(kind = "Function", output(proxy))]
+    #[lua()]
     fn new(x: f64, y: f64, z: f64, w: f64) -> bevy::math::DVec4;
 
 "#,
     r#"
 /// Creates a vector with all elements set to `v`.
 
-    #[lua(kind = "Function", output(proxy))]
+    #[lua()]
     fn splat(v: f64) -> bevy::math::DVec4;
 
 "#,
@@ -14999,7 +13394,7 @@ pub struct DVec3 {
 /// A true element in the mask uses the corresponding element from `if_true`, and false
 /// uses the element from `if_false`.
 
-    #[lua(kind = "Function", output(proxy))]
+    #[lua()]
     fn select(
         #[proxy]
         mask: bevy::math::BVec4,
@@ -15013,14 +13408,14 @@ pub struct DVec3 {
     r#"
 /// Creates a new vector from an array.
 
-    #[lua(kind = "Function", output(proxy))]
+    #[lua()]
     fn from_array(a: [f64; 4]) -> bevy::math::DVec4;
 
 "#,
     r#"
 /// `[x, y, z, w]`
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn to_array(&self) -> [f64; 4];
 
 "#,
@@ -15028,21 +13423,21 @@ pub struct DVec3 {
 /// Creates a 3D vector from the `x`, `y` and `z` elements of `self`, discarding `w`.
 /// Truncation to [`DVec3`] may also be performed by using [`self.xyz()`][crate::swizzles::Vec4Swizzles::xyz()].
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn truncate(self) -> bevy::math::DVec3;
 
 "#,
     r#"
 /// Computes the dot product of `self` and `rhs`.
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn dot(self, #[proxy] rhs: bevy::math::DVec4) -> f64;
 
 "#,
     r#"
 /// Returns a vector where every component is the dot product of `self` and `rhs`.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn dot_into_vec(self, #[proxy] rhs: bevy::math::DVec4) -> bevy::math::DVec4;
 
 "#,
@@ -15050,7 +13445,7 @@ pub struct DVec3 {
 /// Returns a vector containing the minimum values for each element of `self` and `rhs`.
 /// In other words this computes `[self.x.min(rhs.x), self.y.min(rhs.y), ..]`.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn min(self, #[proxy] rhs: bevy::math::DVec4) -> bevy::math::DVec4;
 
 "#,
@@ -15058,7 +13453,7 @@ pub struct DVec3 {
 /// Returns a vector containing the maximum values for each element of `self` and `rhs`.
 /// In other words this computes `[self.x.max(rhs.x), self.y.max(rhs.y), ..]`.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn max(self, #[proxy] rhs: bevy::math::DVec4) -> bevy::math::DVec4;
 
 "#,
@@ -15068,7 +13463,7 @@ pub struct DVec3 {
 /// # Panics
 /// Will panic if `min` is greater than `max` when `glam_assert` is enabled.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn clamp(
         self,
         #[proxy]
@@ -15082,7 +13477,7 @@ pub struct DVec3 {
 /// Returns the horizontal minimum of `self`.
 /// In other words this computes `min(x, y, ..)`.
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn min_element(self) -> f64;
 
 "#,
@@ -15090,7 +13485,7 @@ pub struct DVec3 {
 /// Returns the horizontal maximum of `self`.
 /// In other words this computes `max(x, y, ..)`.
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn max_element(self) -> f64;
 
 "#,
@@ -15100,7 +13495,7 @@ pub struct DVec3 {
 /// In other words, this computes `[self.x == rhs.x, self.y == rhs.y, ..]` for all
 /// elements.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn cmpeq(self, #[proxy] rhs: bevy::math::DVec4) -> bevy::math::BVec4;
 
 "#,
@@ -15110,7 +13505,7 @@ pub struct DVec3 {
 /// In other words this computes `[self.x != rhs.x, self.y != rhs.y, ..]` for all
 /// elements.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn cmpne(self, #[proxy] rhs: bevy::math::DVec4) -> bevy::math::BVec4;
 
 "#,
@@ -15120,7 +13515,7 @@ pub struct DVec3 {
 /// In other words this computes `[self.x >= rhs.x, self.y >= rhs.y, ..]` for all
 /// elements.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn cmpge(self, #[proxy] rhs: bevy::math::DVec4) -> bevy::math::BVec4;
 
 "#,
@@ -15130,7 +13525,7 @@ pub struct DVec3 {
 /// In other words this computes `[self.x > rhs.x, self.y > rhs.y, ..]` for all
 /// elements.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn cmpgt(self, #[proxy] rhs: bevy::math::DVec4) -> bevy::math::BVec4;
 
 "#,
@@ -15140,7 +13535,7 @@ pub struct DVec3 {
 /// In other words this computes `[self.x <= rhs.x, self.y <= rhs.y, ..]` for all
 /// elements.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn cmple(self, #[proxy] rhs: bevy::math::DVec4) -> bevy::math::BVec4;
 
 "#,
@@ -15150,14 +13545,14 @@ pub struct DVec3 {
 /// In other words this computes `[self.x < rhs.x, self.y < rhs.y, ..]` for all
 /// elements.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn cmplt(self, #[proxy] rhs: bevy::math::DVec4) -> bevy::math::BVec4;
 
 "#,
     r#"
 /// Returns a vector containing the absolute value of each element of `self`.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn abs(self) -> bevy::math::DVec4;
 
 "#,
@@ -15167,14 +13562,14 @@ pub struct DVec3 {
 /// - `-1.0` if the number is negative, `-0.0` or `NEG_INFINITY`
 /// - `NAN` if the number is `NAN`
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn signum(self) -> bevy::math::DVec4;
 
 "#,
     r#"
 /// Returns a vector with signs of `rhs` and the magnitudes of `self`.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn copysign(self, #[proxy] rhs: bevy::math::DVec4) -> bevy::math::DVec4;
 
 "#,
@@ -15183,7 +13578,7 @@ pub struct DVec3 {
 /// A negative element results in a `1` bit and a positive element in a `0` bit.  Element `x` goes
 /// into the first lowest bit, element `y` into the second, etc.
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn is_negative_bitmask(self) -> u32;
 
 "#,
@@ -15191,14 +13586,14 @@ pub struct DVec3 {
 /// Returns `true` if, and only if, all elements are finite.  If any element is either
 /// `NaN`, positive or negative infinity, this will return `false`.
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn is_finite(self) -> bool;
 
 "#,
     r#"
 /// Returns `true` if any elements are `NaN`.
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn is_nan(self) -> bool;
 
 "#,
@@ -15206,14 +13601,14 @@ pub struct DVec3 {
 /// Performs `is_nan` on each element of self, returning a vector mask of the results.
 /// In other words, this computes `[x.is_nan(), y.is_nan(), z.is_nan(), w.is_nan()]`.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn is_nan_mask(self) -> bevy::math::BVec4;
 
 "#,
     r#"
 /// Computes the length of `self`.
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn length(self) -> f64;
 
 "#,
@@ -15221,7 +13616,7 @@ pub struct DVec3 {
 /// Computes the squared length of `self`.
 /// This is faster than `length()` as it avoids a square root operation.
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn length_squared(self) -> f64;
 
 "#,
@@ -15229,28 +13624,28 @@ pub struct DVec3 {
 /// Computes `1.0 / length()`.
 /// For valid results, `self` must _not_ be of length zero.
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn length_recip(self) -> f64;
 
 "#,
     r#"
 /// Computes the Euclidean distance between two points in space.
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn distance(self, #[proxy] rhs: bevy::math::DVec4) -> f64;
 
 "#,
     r#"
 /// Compute the squared euclidean distance between two points in space.
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn distance_squared(self, #[proxy] rhs: bevy::math::DVec4) -> f64;
 
 "#,
     r#"
 /// Returns the element-wise quotient of [Euclidean division] of `self` by `rhs`.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn div_euclid(self, #[proxy] rhs: bevy::math::DVec4) -> bevy::math::DVec4;
 
 "#,
@@ -15258,7 +13653,7 @@ pub struct DVec3 {
 /// Returns the element-wise remainder of [Euclidean division] of `self` by `rhs`.
 /// [Euclidean division]: f64::rem_euclid
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn rem_euclid(self, #[proxy] rhs: bevy::math::DVec4) -> bevy::math::DVec4;
 
 "#,
@@ -15269,7 +13664,7 @@ pub struct DVec3 {
 /// Panics
 /// Will panic if `self` is zero length when `glam_assert` is enabled.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn normalize(self) -> bevy::math::DVec4;
 
 "#,
@@ -15279,7 +13674,7 @@ pub struct DVec3 {
 /// the result of this operation will be zero.
 /// See also [`Self::try_normalize()`].
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn normalize_or_zero(self) -> bevy::math::DVec4;
 
 "#,
@@ -15287,7 +13682,7 @@ pub struct DVec3 {
 /// Returns whether `self` is length `1.0` or not.
 /// Uses a precision threshold of `1e-6`.
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn is_normalized(self) -> bool;
 
 "#,
@@ -15297,7 +13692,7 @@ pub struct DVec3 {
 /// # Panics
 /// Will panic if `rhs` is zero length when `glam_assert` is enabled.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn project_onto(self, #[proxy] rhs: bevy::math::DVec4) -> bevy::math::DVec4;
 
 "#,
@@ -15309,7 +13704,7 @@ pub struct DVec3 {
 /// # Panics
 /// Will panic if `rhs` has a length of zero when `glam_assert` is enabled.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn reject_from(self, #[proxy] rhs: bevy::math::DVec4) -> bevy::math::DVec4;
 
 "#,
@@ -15319,7 +13714,7 @@ pub struct DVec3 {
 /// # Panics
 /// Will panic if `rhs` is not normalized when `glam_assert` is enabled.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn project_onto_normalized(
         self,
         #[proxy]
@@ -15335,7 +13730,7 @@ pub struct DVec3 {
 /// # Panics
 /// Will panic if `rhs` is not normalized when `glam_assert` is enabled.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn reject_from_normalized(
         self,
         #[proxy]
@@ -15347,7 +13742,7 @@ pub struct DVec3 {
 /// Returns a vector containing the nearest integer to a number for each element of `self`.
 /// Round half-way cases away from 0.0.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn round(self) -> bevy::math::DVec4;
 
 "#,
@@ -15355,7 +13750,7 @@ pub struct DVec3 {
 /// Returns a vector containing the largest integer less than or equal to a number for each
 /// element of `self`.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn floor(self) -> bevy::math::DVec4;
 
 "#,
@@ -15363,7 +13758,7 @@ pub struct DVec3 {
 /// Returns a vector containing the smallest integer greater than or equal to a number for
 /// each element of `self`.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn ceil(self) -> bevy::math::DVec4;
 
 "#,
@@ -15371,7 +13766,7 @@ pub struct DVec3 {
 /// Returns a vector containing the integer part each element of `self`. This means numbers are
 /// always truncated towards zero.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn trunc(self) -> bevy::math::DVec4;
 
 "#,
@@ -15380,7 +13775,7 @@ pub struct DVec3 {
 /// self.floor()`.
 /// Note that this is fast but not precise for large numbers.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn fract(self) -> bevy::math::DVec4;
 
 "#,
@@ -15388,21 +13783,21 @@ pub struct DVec3 {
 /// Returns a vector containing `e^self` (the exponential function) for each element of
 /// `self`.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn exp(self) -> bevy::math::DVec4;
 
 "#,
     r#"
 /// Returns a vector containing each element of `self` raised to the power of `n`.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn powf(self, n: f64) -> bevy::math::DVec4;
 
 "#,
     r#"
 /// Returns a vector containing the reciprocal `1.0/n` of each element of `self`.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn recip(self) -> bevy::math::DVec4;
 
 "#,
@@ -15412,7 +13807,7 @@ pub struct DVec3 {
 /// will be equal to `rhs`. When `s` is outside of range `[0, 1]`, the result is linearly
 /// extrapolated.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn lerp(self, #[proxy] rhs: bevy::math::DVec4, s: f64) -> bevy::math::DVec4;
 
 "#,
@@ -15425,7 +13820,7 @@ pub struct DVec3 {
 /// For more see
 /// [comparing floating point numbers](https://randomascii.wordpress.com/2012/02/25/comparing-floating-point-numbers-2012-edition/).
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn abs_diff_eq(self, #[proxy] rhs: bevy::math::DVec4, max_abs_diff: f64) -> bool;
 
 "#,
@@ -15434,21 +13829,21 @@ pub struct DVec3 {
 /// # Panics
 /// Will panic if `min` is greater than `max` when `glam_assert` is enabled.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn clamp_length(self, min: f64, max: f64) -> bevy::math::DVec4;
 
 "#,
     r#"
 /// Returns a vector with a length no more than `max`
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn clamp_length_max(self, max: f64) -> bevy::math::DVec4;
 
 "#,
     r#"
 /// Returns a vector with a length no less than `min`
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn clamp_length_min(self, min: f64) -> bevy::math::DVec4;
 
 "#,
@@ -15460,7 +13855,7 @@ pub struct DVec3 {
 /// and will be heavily dependant on designing algorithms with specific target hardware in
 /// mind.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn mul_add(
         self,
         #[proxy]
@@ -15473,82 +13868,70 @@ pub struct DVec3 {
     r#"
 /// Casts all elements of `self` to `f32`.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn as_vec4(&self) -> bevy::math::Vec4;
 
 "#,
     r#"
 /// Casts all elements of `self` to `i32`.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn as_ivec4(&self) -> bevy::math::IVec4;
 
 "#,
     r#"
 /// Casts all elements of `self` to `u32`.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn as_uvec4(&self) -> bevy::math::UVec4;
 
 "#,
     r#"
 /// Casts all elements of `self` to `i64`.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn as_i64vec4(&self) -> bevy::math::I64Vec4;
 
 "#,
     r#"
 /// Casts all elements of `self` to `u64`.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn as_u64vec4(&self) -> bevy::math::U64Vec4;
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "std::ops::Mul",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "mul",
-        metamethod = "Mul",
-    )]
+    #[lua(as_trait = "std::ops::Mul", composite = "mul")]
     fn mul(self, #[proxy] rhs: bevy::math::DVec4) -> bevy::math::DVec4;
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "std::ops::Div",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "div",
-        metamethod = "Div",
-    )]
+    #[lua(as_trait = "std::ops::Div", composite = "div")]
     fn div(self, rhs: f64) -> bevy::math::DVec4;
 
 "#,
     r#"
-#[lua(kind="MetaMethod", metamethod="ToString")]
+#[lua(metamethod="ToString")]
 fn index(&self) -> String {
     format!("{}", _self)
 }
 "#,
     r#"
-#[lua(kind="MetaMethod", raw , metamethod="Index")]
+#[lua(raw , metamethod="Index")]
 fn index(&self, lua: &Lua, idx: crate::lua::util::LuaIndex) -> Result<f64,_> {
-    Ok(self.inner()?[*idx])
+    Ok(_self.inner()?[*idx])
 }
 "#,
     r#"
-#[lua(kind="MutatingMetaMethod", raw, metamethod="NewIndex")]
+#[lua(raw, metamethod="NewIndex")]
 fn index(&mut self, lua: &Lua, idx: crate::lua::util::LuaIndex, val: f64) -> Result<(),_> {
-    self.val_mut(|s| Ok(s[*idx] = val))?
+    _self.val_mut(|s| Ok(s[*idx] = val))?
 }
 "#]
 )]
-pub struct DVec4 {
+pub struct LuaDVec4 {
     x: f64,
     y: f64,
     z: f64,
@@ -15557,34 +13940,24 @@ pub struct DVec4 {
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
     remote = "bevy::math::Mat2",
+    bms_core_path = "bevy_mod_scripting_core",
+    bms_lua_path = "crate",
     functions[r#"
 
-    #[lua(
-        as_trait = "std::ops::Mul",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "mul",
-        metamethod = "Mul",
-    )]
+    #[lua(as_trait = "std::ops::Mul", composite = "mul")]
     fn mul(self, #[proxy] rhs: bevy::math::Mat2) -> bevy::math::Mat2;
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "std::ops::Sub",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "sub",
-        metamethod = "Sub",
-    )]
+    #[lua(as_trait = "std::ops::Sub", composite = "sub")]
     fn sub(self, #[proxy] rhs: bevy::math::Mat2) -> bevy::math::Mat2;
 
 "#,
     r#"
 /// Creates a 2x2 matrix from two column vectors.
 
-    #[lua(kind = "Function", output(proxy))]
+    #[lua()]
     fn from_cols(
         #[proxy]
         x_axis: bevy::math::Vec2,
@@ -15597,7 +13970,7 @@ pub struct DVec4 {
 /// Creates a `[f32; 4]` array storing data in column major order.
 /// If you require data in row major order `transpose` the matrix first.
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn to_cols_array(&self) -> [f32; 4];
 
 "#,
@@ -15605,14 +13978,14 @@ pub struct DVec4 {
 /// Creates a `[[f32; 2]; 2]` 2D array storing data in column major order.
 /// If you require data in row major order `transpose` the matrix first.
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn to_cols_array_2d(&self) -> [[f32; 2]; 2];
 
 "#,
     r#"
 /// Creates a 2x2 matrix with its diagonal set to `diagonal` and all other entries set to 0.
 
-    #[lua(kind = "Function", output(proxy))]
+    #[lua()]
     fn from_diagonal(#[proxy] diagonal: bevy::math::Vec2) -> bevy::math::Mat2;
 
 "#,
@@ -15620,7 +13993,7 @@ pub struct DVec4 {
 /// Creates a 2x2 matrix containing the combining non-uniform `scale` and rotation of
 /// `angle` (in radians).
 
-    #[lua(kind = "Function", output(proxy))]
+    #[lua()]
     fn from_scale_angle(
         #[proxy]
         scale: bevy::math::Vec2,
@@ -15631,21 +14004,21 @@ pub struct DVec4 {
     r#"
 /// Creates a 2x2 matrix containing a rotation of `angle` (in radians).
 
-    #[lua(kind = "Function", output(proxy))]
+    #[lua()]
     fn from_angle(angle: f32) -> bevy::math::Mat2;
 
 "#,
     r#"
 /// Creates a 2x2 matrix from a 3x3 matrix, discarding the 2nd row and column.
 
-    #[lua(kind = "Function", output(proxy))]
+    #[lua()]
     fn from_mat3(#[proxy] m: bevy::math::Mat3) -> bevy::math::Mat2;
 
 "#,
     r#"
 /// Creates a 2x2 matrix from a 3x3 matrix, discarding the 2nd row and column.
 
-    #[lua(kind = "Function", output(proxy))]
+    #[lua()]
     fn from_mat3a(#[proxy] m: bevy::math::Mat3A) -> bevy::math::Mat2;
 
 "#,
@@ -15654,7 +14027,7 @@ pub struct DVec4 {
 /// # Panics
 /// Panics if `index` is greater than 1.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn col(&self, index: usize) -> bevy::math::Vec2;
 
 "#,
@@ -15663,7 +14036,7 @@ pub struct DVec4 {
 /// # Panics
 /// Panics if `index` is greater than 1.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn row(&self, index: usize) -> bevy::math::Vec2;
 
 "#,
@@ -15671,28 +14044,28 @@ pub struct DVec4 {
 /// Returns `true` if, and only if, all elements are finite.
 /// If any element is either `NaN`, positive or negative infinity, this will return `false`.
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn is_finite(&self) -> bool;
 
 "#,
     r#"
 /// Returns `true` if any elements are `NaN`.
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn is_nan(&self) -> bool;
 
 "#,
     r#"
 /// Returns the transpose of `self`.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn transpose(&self) -> bevy::math::Mat2;
 
 "#,
     r#"
 /// Returns the determinant of `self`.
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn determinant(&self) -> f32;
 
 "#,
@@ -15702,42 +14075,42 @@ pub struct DVec4 {
 /// # Panics
 /// Will panic if the determinant of `self` is zero when `glam_assert` is enabled.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn inverse(&self) -> bevy::math::Mat2;
 
 "#,
     r#"
 /// Transforms a 2D vector.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn mul_vec2(&self, #[proxy] rhs: bevy::math::Vec2) -> bevy::math::Vec2;
 
 "#,
     r#"
 /// Multiplies two 2x2 matrices.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn mul_mat2(&self, #[proxy] rhs: &glam::Mat2) -> bevy::math::Mat2;
 
 "#,
     r#"
 /// Adds two 2x2 matrices.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn add_mat2(&self, #[proxy] rhs: &glam::Mat2) -> bevy::math::Mat2;
 
 "#,
     r#"
 /// Subtracts two 2x2 matrices.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn sub_mat2(&self, #[proxy] rhs: &glam::Mat2) -> bevy::math::Mat2;
 
 "#,
     r#"
 /// Multiplies a 2x2 matrix by a scalar.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn mul_scalar(&self, rhs: f32) -> bevy::math::Mat2;
 
 "#,
@@ -15750,96 +14123,63 @@ pub struct DVec4 {
 /// For more see
 /// [comparing floating point numbers](https://randomascii.wordpress.com/2012/02/25/comparing-floating-point-numbers-2012-edition/).
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn abs_diff_eq(&self, #[proxy] rhs: bevy::math::Mat2, max_abs_diff: f32) -> bool;
 
 "#,
     r#"
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn as_dmat2(&self) -> bevy::math::DMat2;
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone",
-        kind = "Method",
-        output(proxy),
-    )]
+    #[lua(as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone")]
     fn clone(&self) -> bevy::math::Mat2;
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "std::ops::Add",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "add",
-        metamethod = "Add",
-    )]
+    #[lua(as_trait = "std::ops::Add", composite = "add")]
     fn add(self, #[proxy] rhs: bevy::math::Mat2) -> bevy::math::Mat2;
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "std::ops::Mul",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "mul",
-        metamethod = "Mul",
-    )]
+    #[lua(as_trait = "std::ops::Mul", composite = "mul")]
     fn mul(self, #[proxy] rhs: bevy::math::Vec2) -> bevy::math::Vec2;
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "std::ops::Neg",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "neg",
-        metamethod = "Unm",
-    )]
+    #[lua(as_trait = "std::ops::Neg", composite = "neg")]
     fn neg(self) -> bevy::math::Mat2;
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "std::ops::Mul",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "mul",
-        metamethod = "Mul",
-    )]
+    #[lua(as_trait = "std::ops::Mul", composite = "mul")]
     fn mul(self, rhs: f32) -> bevy::math::Mat2;
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "std::cmp::PartialEq",
-        kind = "MetaFunction",
-        composite = "eq",
-        metamethod = "Eq",
-    )]
+    #[lua(as_trait = "std::cmp::PartialEq", composite = "eq")]
     fn eq(&self, #[proxy] rhs: &glam::Mat2) -> bool;
 
 "#,
     r#"
-#[lua(kind="MetaMethod", metamethod="ToString")]
+#[lua(metamethod="ToString")]
 fn index(&self) -> String {
     format!("{}", _self)
 }
 "#,
     r#"
-#[lua(kind = "MetaMethod", raw, metamethod="Index")]
+#[lua(raw, metamethod="Index")]
 fn index(&self, ctx : &Lua, idx: crate::lua::util::LuaIndex) -> Result<LuaVec2,_> {
     Ok(LuaVec2::new_ref(
-            self.reflect_ref(ctx.get_world()?).sub_ref(bevy_script_api::ReflectionPathElement::SubReflection{
+            _self.reflect_ref(ctx.get_world()?).sub_ref(bevy_script_api::ReflectionPathElement::SubReflection{
                 label:"col", 
                 get: std::sync::Arc::new(|ref_| Err(bevy_script_api::error::ReflectionError::InsufficientProvenance{
                     path: "".to_owned(), 
@@ -15860,96 +14200,58 @@ fn index(&self, ctx : &Lua, idx: crate::lua::util::LuaIndex) -> Result<LuaVec2,_
 }
 "#]
 )]
-pub struct Mat2();
+pub struct LuaMat2();
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
     remote = "bevy::math::Mat3",
+    bms_core_path = "bevy_mod_scripting_core",
+    bms_lua_path = "crate",
     functions[r#"
 
-    #[lua(
-        as_trait = "std::ops::Neg",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "neg",
-        metamethod = "Unm",
-    )]
+    #[lua(as_trait = "std::ops::Neg", composite = "neg")]
     fn neg(self) -> bevy::math::Mat3;
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "std::ops::Mul",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "mul",
-        metamethod = "Mul",
-    )]
+    #[lua(as_trait = "std::ops::Mul", composite = "mul")]
     fn mul(self, #[proxy] rhs: bevy::math::Vec3) -> bevy::math::Vec3;
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "std::ops::Mul",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "mul",
-        metamethod = "Mul",
-    )]
+    #[lua(as_trait = "std::ops::Mul", composite = "mul")]
     fn mul(self, #[proxy] rhs: bevy::math::Mat3) -> bevy::math::Mat3;
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone",
-        kind = "Method",
-        output(proxy),
-    )]
+    #[lua(as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone")]
     fn clone(&self) -> bevy::math::Mat3;
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "std::ops::Mul",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "mul",
-        metamethod = "Mul",
-    )]
+    #[lua(as_trait = "std::ops::Mul", composite = "mul")]
     fn mul(self, rhs: f32) -> bevy::math::Mat3;
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "std::ops::Add",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "add",
-        metamethod = "Add",
-    )]
+    #[lua(as_trait = "std::ops::Add", composite = "add")]
     fn add(self, #[proxy] rhs: bevy::math::Mat3) -> bevy::math::Mat3;
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "std::ops::Mul",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "mul",
-        metamethod = "Mul",
-    )]
+    #[lua(as_trait = "std::ops::Mul", composite = "mul")]
     fn mul(self, #[proxy] rhs: bevy::math::Affine2) -> bevy::math::Mat3;
 
 "#,
     r#"
 /// Creates a 3x3 matrix from three column vectors.
 
-    #[lua(kind = "Function", output(proxy))]
+    #[lua()]
     fn from_cols(
         #[proxy]
         x_axis: bevy::math::Vec3,
@@ -15964,7 +14266,7 @@ pub struct Mat2();
 /// Creates a `[f32; 9]` array storing data in column major order.
 /// If you require data in row major order `transpose` the matrix first.
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn to_cols_array(&self) -> [f32; 9];
 
 "#,
@@ -15972,21 +14274,21 @@ pub struct Mat2();
 /// Creates a `[[f32; 3]; 3]` 3D array storing data in column major order.
 /// If you require data in row major order `transpose` the matrix first.
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn to_cols_array_2d(&self) -> [[f32; 3]; 3];
 
 "#,
     r#"
 /// Creates a 3x3 matrix with its diagonal set to `diagonal` and all other entries set to 0.
 
-    #[lua(kind = "Function", output(proxy))]
+    #[lua()]
     fn from_diagonal(#[proxy] diagonal: bevy::math::Vec3) -> bevy::math::Mat3;
 
 "#,
     r#"
 /// Creates a 3x3 matrix from a 4x4 matrix, discarding the 4th row and column.
 
-    #[lua(kind = "Function", output(proxy))]
+    #[lua()]
     fn from_mat4(#[proxy] m: bevy::math::Mat4) -> bevy::math::Mat3;
 
 "#,
@@ -15995,7 +14297,7 @@ pub struct Mat2();
 /// # Panics
 /// Will panic if `rotation` is not normalized when `glam_assert` is enabled.
 
-    #[lua(kind = "Function", output(proxy))]
+    #[lua()]
     fn from_quat(#[proxy] rotation: bevy::math::Quat) -> bevy::math::Mat3;
 
 "#,
@@ -16005,7 +14307,7 @@ pub struct Mat2();
 /// # Panics
 /// Will panic if `axis` is not normalized when `glam_assert` is enabled.
 
-    #[lua(kind = "Function", output(proxy))]
+    #[lua()]
     fn from_axis_angle(#[proxy] axis: bevy::math::Vec3, angle: f32) -> bevy::math::Mat3;
 
 "#,
@@ -16013,7 +14315,7 @@ pub struct Mat2();
 /// Creates a 3D rotation matrix from the given euler rotation sequence and the angles (in
 /// radians).
 
-    #[lua(kind = "Function", output(proxy))]
+    #[lua()]
     fn from_euler(
         #[proxy]
         order: bevy::math::EulerRot,
@@ -16026,21 +14328,21 @@ pub struct Mat2();
     r#"
 /// Creates a 3D rotation matrix from `angle` (in radians) around the x axis.
 
-    #[lua(kind = "Function", output(proxy))]
+    #[lua()]
     fn from_rotation_x(angle: f32) -> bevy::math::Mat3;
 
 "#,
     r#"
 /// Creates a 3D rotation matrix from `angle` (in radians) around the y axis.
 
-    #[lua(kind = "Function", output(proxy))]
+    #[lua()]
     fn from_rotation_y(angle: f32) -> bevy::math::Mat3;
 
 "#,
     r#"
 /// Creates a 3D rotation matrix from `angle` (in radians) around the z axis.
 
-    #[lua(kind = "Function", output(proxy))]
+    #[lua()]
     fn from_rotation_z(angle: f32) -> bevy::math::Mat3;
 
 "#,
@@ -16049,7 +14351,7 @@ pub struct Mat2();
 /// The resulting matrix can be used to transform 2D points and vectors. See
 /// [`Self::transform_point2()`] and [`Self::transform_vector2()`].
 
-    #[lua(kind = "Function", output(proxy))]
+    #[lua()]
     fn from_translation(#[proxy] translation: bevy::math::Vec2) -> bevy::math::Mat3;
 
 "#,
@@ -16059,7 +14361,7 @@ pub struct Mat2();
 /// The resulting matrix can be used to transform 2D points and vectors. See
 /// [`Self::transform_point2()`] and [`Self::transform_vector2()`].
 
-    #[lua(kind = "Function", output(proxy))]
+    #[lua()]
     fn from_angle(angle: f32) -> bevy::math::Mat3;
 
 "#,
@@ -16069,7 +14371,7 @@ pub struct Mat2();
 /// The resulting matrix can be used to transform 2D points and vectors. See
 /// [`Self::transform_point2()`] and [`Self::transform_vector2()`].
 
-    #[lua(kind = "Function", output(proxy))]
+    #[lua()]
     fn from_scale_angle_translation(
         #[proxy]
         scale: bevy::math::Vec2,
@@ -16086,7 +14388,7 @@ pub struct Mat2();
 /// # Panics
 /// Will panic if all elements of `scale` are zero when `glam_assert` is enabled.
 
-    #[lua(kind = "Function", output(proxy))]
+    #[lua()]
     fn from_scale(#[proxy] scale: bevy::math::Vec2) -> bevy::math::Mat3;
 
 "#,
@@ -16095,7 +14397,7 @@ pub struct Mat2();
 /// The resulting matrix can be used to transform 2D points and vectors. See
 /// [`Self::transform_point2()`] and [`Self::transform_vector2()`].
 
-    #[lua(kind = "Function", output(proxy))]
+    #[lua()]
     fn from_mat2(#[proxy] m: bevy::math::Mat2) -> bevy::math::Mat3;
 
 "#,
@@ -16104,7 +14406,7 @@ pub struct Mat2();
 /// # Panics
 /// Panics if `index` is greater than 2.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn col(&self, index: usize) -> bevy::math::Vec3;
 
 "#,
@@ -16113,7 +14415,7 @@ pub struct Mat2();
 /// # Panics
 /// Panics if `index` is greater than 2.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn row(&self, index: usize) -> bevy::math::Vec3;
 
 "#,
@@ -16121,28 +14423,28 @@ pub struct Mat2();
 /// Returns `true` if, and only if, all elements are finite.
 /// If any element is either `NaN`, positive or negative infinity, this will return `false`.
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn is_finite(&self) -> bool;
 
 "#,
     r#"
 /// Returns `true` if any elements are `NaN`.
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn is_nan(&self) -> bool;
 
 "#,
     r#"
 /// Returns the transpose of `self`.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn transpose(&self) -> bevy::math::Mat3;
 
 "#,
     r#"
 /// Returns the determinant of `self`.
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn determinant(&self) -> f32;
 
 "#,
@@ -16152,7 +14454,7 @@ pub struct Mat2();
 /// # Panics
 /// Will panic if the determinant of `self` is zero when `glam_assert` is enabled.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn inverse(&self) -> bevy::math::Mat3;
 
 "#,
@@ -16163,7 +14465,7 @@ pub struct Mat2();
 /// # Panics
 /// Will panic if the 2nd row of `self` is not `(0, 0, 1)` when `glam_assert` is enabled.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn transform_point2(&self, #[proxy] rhs: bevy::math::Vec2) -> bevy::math::Vec2;
 
 "#,
@@ -16174,49 +14476,49 @@ pub struct Mat2();
 /// # Panics
 /// Will panic if the 2nd row of `self` is not `(0, 0, 1)` when `glam_assert` is enabled.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn transform_vector2(&self, #[proxy] rhs: bevy::math::Vec2) -> bevy::math::Vec2;
 
 "#,
     r#"
 /// Transforms a 3D vector.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn mul_vec3(&self, #[proxy] rhs: bevy::math::Vec3) -> bevy::math::Vec3;
 
 "#,
     r#"
 /// Transforms a [`Vec3A`].
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn mul_vec3a(&self, #[proxy] rhs: bevy::math::Vec3A) -> bevy::math::Vec3A;
 
 "#,
     r#"
 /// Multiplies two 3x3 matrices.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn mul_mat3(&self, #[proxy] rhs: &glam::Mat3) -> bevy::math::Mat3;
 
 "#,
     r#"
 /// Adds two 3x3 matrices.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn add_mat3(&self, #[proxy] rhs: &glam::Mat3) -> bevy::math::Mat3;
 
 "#,
     r#"
 /// Subtracts two 3x3 matrices.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn sub_mat3(&self, #[proxy] rhs: &glam::Mat3) -> bevy::math::Mat3;
 
 "#,
     r#"
 /// Multiplies a 3x3 matrix by a scalar.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn mul_scalar(&self, rhs: f32) -> bevy::math::Mat3;
 
 "#,
@@ -16229,62 +14531,45 @@ pub struct Mat2();
 /// For more see
 /// [comparing floating point numbers](https://randomascii.wordpress.com/2012/02/25/comparing-floating-point-numbers-2012-edition/).
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn abs_diff_eq(&self, #[proxy] rhs: bevy::math::Mat3, max_abs_diff: f32) -> bool;
 
 "#,
     r#"
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn as_dmat3(&self) -> bevy::math::DMat3;
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "std::cmp::PartialEq",
-        kind = "MetaFunction",
-        composite = "eq",
-        metamethod = "Eq",
-    )]
+    #[lua(as_trait = "std::cmp::PartialEq", composite = "eq")]
     fn eq(&self, #[proxy] rhs: &glam::Mat3) -> bool;
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "std::ops::Sub",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "sub",
-        metamethod = "Sub",
-    )]
+    #[lua(as_trait = "std::ops::Sub", composite = "sub")]
     fn sub(self, #[proxy] rhs: bevy::math::Mat3) -> bevy::math::Mat3;
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "std::ops::Mul",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "mul",
-        metamethod = "Mul",
-    )]
+    #[lua(as_trait = "std::ops::Mul", composite = "mul")]
     fn mul(self, #[proxy] rhs: bevy::math::Vec3A) -> bevy::math::Vec3A;
 
 "#,
     r#"
-#[lua(kind="MetaMethod", metamethod="ToString")]
+#[lua(metamethod="ToString")]
 fn index(&self) -> String {
     format!("{}", _self)
 }
 "#,
     r#"
-#[lua(kind = "MetaMethod", raw, metamethod="Index")]
+#[lua(raw, metamethod="Index")]
 fn index(&self, ctx : &Lua, idx: crate::lua::util::LuaIndex) -> Result<LuaVec3,_> {
     Ok(LuaVec3::new_ref(
-            self.reflect_ref(ctx.get_world()?).sub_ref(bevy_script_api::ReflectionPathElement::SubReflection{
+            _self.reflect_ref(ctx.get_world()?).sub_ref(bevy_script_api::ReflectionPathElement::SubReflection{
                 label:"col", 
                 get: std::sync::Arc::new(|ref_| Err(bevy_script_api::error::ReflectionError::InsufficientProvenance{
                     path: "".to_owned(), 
@@ -16305,7 +14590,7 @@ fn index(&self, ctx : &Lua, idx: crate::lua::util::LuaIndex) -> Result<LuaVec3,_
 }
 "#]
 )]
-pub struct Mat3 {
+pub struct LuaMat3 {
     #[lua(output(proxy))]
     x_axis: bevy::math::Vec3,
     #[lua(output(proxy))]
@@ -16316,92 +14601,54 @@ pub struct Mat3 {
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
     remote = "bevy::math::Mat3A",
+    bms_core_path = "bevy_mod_scripting_core",
+    bms_lua_path = "crate",
     functions[r#"
 
-    #[lua(
-        as_trait = "std::ops::Add",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "add",
-        metamethod = "Add",
-    )]
+    #[lua(as_trait = "std::ops::Add", composite = "add")]
     fn add(self, #[proxy] rhs: bevy::math::Mat3A) -> bevy::math::Mat3A;
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "std::ops::Sub",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "sub",
-        metamethod = "Sub",
-    )]
+    #[lua(as_trait = "std::ops::Sub", composite = "sub")]
     fn sub(self, #[proxy] rhs: bevy::math::Mat3A) -> bevy::math::Mat3A;
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "std::ops::Mul",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "mul",
-        metamethod = "Mul",
-    )]
+    #[lua(as_trait = "std::ops::Mul", composite = "mul")]
     fn mul(self, #[proxy] rhs: bevy::math::Affine2) -> bevy::math::Mat3A;
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "std::ops::Mul",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "mul",
-        metamethod = "Mul",
-    )]
+    #[lua(as_trait = "std::ops::Mul", composite = "mul")]
     fn mul(self, #[proxy] rhs: bevy::math::Mat3A) -> bevy::math::Mat3A;
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "std::ops::Mul",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "mul",
-        metamethod = "Mul",
-    )]
+    #[lua(as_trait = "std::ops::Mul", composite = "mul")]
     fn mul(self, #[proxy] rhs: bevy::math::Vec3A) -> bevy::math::Vec3A;
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "std::ops::Mul",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "mul",
-        metamethod = "Mul",
-    )]
+    #[lua(as_trait = "std::ops::Mul", composite = "mul")]
     fn mul(self, rhs: f32) -> bevy::math::Mat3A;
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone",
-        kind = "Method",
-        output(proxy),
-    )]
+    #[lua(as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone")]
     fn clone(&self) -> bevy::math::Mat3A;
 
 "#,
     r#"
 /// Creates a 3x3 matrix from three column vectors.
 
-    #[lua(kind = "Function", output(proxy))]
+    #[lua()]
     fn from_cols(
         #[proxy]
         x_axis: bevy::math::Vec3A,
@@ -16416,7 +14663,7 @@ pub struct Mat3 {
 /// Creates a `[f32; 9]` array storing data in column major order.
 /// If you require data in row major order `transpose` the matrix first.
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn to_cols_array(&self) -> [f32; 9];
 
 "#,
@@ -16424,21 +14671,21 @@ pub struct Mat3 {
 /// Creates a `[[f32; 3]; 3]` 3D array storing data in column major order.
 /// If you require data in row major order `transpose` the matrix first.
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn to_cols_array_2d(&self) -> [[f32; 3]; 3];
 
 "#,
     r#"
 /// Creates a 3x3 matrix with its diagonal set to `diagonal` and all other entries set to 0.
 
-    #[lua(kind = "Function", output(proxy))]
+    #[lua()]
     fn from_diagonal(#[proxy] diagonal: bevy::math::Vec3) -> bevy::math::Mat3A;
 
 "#,
     r#"
 /// Creates a 3x3 matrix from a 4x4 matrix, discarding the 4th row and column.
 
-    #[lua(kind = "Function", output(proxy))]
+    #[lua()]
     fn from_mat4(#[proxy] m: bevy::math::Mat4) -> bevy::math::Mat3A;
 
 "#,
@@ -16447,7 +14694,7 @@ pub struct Mat3 {
 /// # Panics
 /// Will panic if `rotation` is not normalized when `glam_assert` is enabled.
 
-    #[lua(kind = "Function", output(proxy))]
+    #[lua()]
     fn from_quat(#[proxy] rotation: bevy::math::Quat) -> bevy::math::Mat3A;
 
 "#,
@@ -16457,7 +14704,7 @@ pub struct Mat3 {
 /// # Panics
 /// Will panic if `axis` is not normalized when `glam_assert` is enabled.
 
-    #[lua(kind = "Function", output(proxy))]
+    #[lua()]
     fn from_axis_angle(#[proxy] axis: bevy::math::Vec3, angle: f32) -> bevy::math::Mat3A;
 
 "#,
@@ -16465,7 +14712,7 @@ pub struct Mat3 {
 /// Creates a 3D rotation matrix from the given euler rotation sequence and the angles (in
 /// radians).
 
-    #[lua(kind = "Function", output(proxy))]
+    #[lua()]
     fn from_euler(
         #[proxy]
         order: bevy::math::EulerRot,
@@ -16478,21 +14725,21 @@ pub struct Mat3 {
     r#"
 /// Creates a 3D rotation matrix from `angle` (in radians) around the x axis.
 
-    #[lua(kind = "Function", output(proxy))]
+    #[lua()]
     fn from_rotation_x(angle: f32) -> bevy::math::Mat3A;
 
 "#,
     r#"
 /// Creates a 3D rotation matrix from `angle` (in radians) around the y axis.
 
-    #[lua(kind = "Function", output(proxy))]
+    #[lua()]
     fn from_rotation_y(angle: f32) -> bevy::math::Mat3A;
 
 "#,
     r#"
 /// Creates a 3D rotation matrix from `angle` (in radians) around the z axis.
 
-    #[lua(kind = "Function", output(proxy))]
+    #[lua()]
     fn from_rotation_z(angle: f32) -> bevy::math::Mat3A;
 
 "#,
@@ -16501,7 +14748,7 @@ pub struct Mat3 {
 /// The resulting matrix can be used to transform 2D points and vectors. See
 /// [`Self::transform_point2()`] and [`Self::transform_vector2()`].
 
-    #[lua(kind = "Function", output(proxy))]
+    #[lua()]
     fn from_translation(#[proxy] translation: bevy::math::Vec2) -> bevy::math::Mat3A;
 
 "#,
@@ -16511,7 +14758,7 @@ pub struct Mat3 {
 /// The resulting matrix can be used to transform 2D points and vectors. See
 /// [`Self::transform_point2()`] and [`Self::transform_vector2()`].
 
-    #[lua(kind = "Function", output(proxy))]
+    #[lua()]
     fn from_angle(angle: f32) -> bevy::math::Mat3A;
 
 "#,
@@ -16521,7 +14768,7 @@ pub struct Mat3 {
 /// The resulting matrix can be used to transform 2D points and vectors. See
 /// [`Self::transform_point2()`] and [`Self::transform_vector2()`].
 
-    #[lua(kind = "Function", output(proxy))]
+    #[lua()]
     fn from_scale_angle_translation(
         #[proxy]
         scale: bevy::math::Vec2,
@@ -16538,7 +14785,7 @@ pub struct Mat3 {
 /// # Panics
 /// Will panic if all elements of `scale` are zero when `glam_assert` is enabled.
 
-    #[lua(kind = "Function", output(proxy))]
+    #[lua()]
     fn from_scale(#[proxy] scale: bevy::math::Vec2) -> bevy::math::Mat3A;
 
 "#,
@@ -16547,7 +14794,7 @@ pub struct Mat3 {
 /// The resulting matrix can be used to transform 2D points and vectors. See
 /// [`Self::transform_point2()`] and [`Self::transform_vector2()`].
 
-    #[lua(kind = "Function", output(proxy))]
+    #[lua()]
     fn from_mat2(#[proxy] m: bevy::math::Mat2) -> bevy::math::Mat3A;
 
 "#,
@@ -16556,7 +14803,7 @@ pub struct Mat3 {
 /// # Panics
 /// Panics if `index` is greater than 2.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn col(&self, index: usize) -> bevy::math::Vec3A;
 
 "#,
@@ -16565,7 +14812,7 @@ pub struct Mat3 {
 /// # Panics
 /// Panics if `index` is greater than 2.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn row(&self, index: usize) -> bevy::math::Vec3A;
 
 "#,
@@ -16573,28 +14820,28 @@ pub struct Mat3 {
 /// Returns `true` if, and only if, all elements are finite.
 /// If any element is either `NaN`, positive or negative infinity, this will return `false`.
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn is_finite(&self) -> bool;
 
 "#,
     r#"
 /// Returns `true` if any elements are `NaN`.
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn is_nan(&self) -> bool;
 
 "#,
     r#"
 /// Returns the transpose of `self`.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn transpose(&self) -> bevy::math::Mat3A;
 
 "#,
     r#"
 /// Returns the determinant of `self`.
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn determinant(&self) -> f32;
 
 "#,
@@ -16604,7 +14851,7 @@ pub struct Mat3 {
 /// # Panics
 /// Will panic if the determinant of `self` is zero when `glam_assert` is enabled.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn inverse(&self) -> bevy::math::Mat3A;
 
 "#,
@@ -16615,7 +14862,7 @@ pub struct Mat3 {
 /// # Panics
 /// Will panic if the 2nd row of `self` is not `(0, 0, 1)` when `glam_assert` is enabled.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn transform_point2(&self, #[proxy] rhs: bevy::math::Vec2) -> bevy::math::Vec2;
 
 "#,
@@ -16626,49 +14873,49 @@ pub struct Mat3 {
 /// # Panics
 /// Will panic if the 2nd row of `self` is not `(0, 0, 1)` when `glam_assert` is enabled.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn transform_vector2(&self, #[proxy] rhs: bevy::math::Vec2) -> bevy::math::Vec2;
 
 "#,
     r#"
 /// Transforms a 3D vector.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn mul_vec3(&self, #[proxy] rhs: bevy::math::Vec3) -> bevy::math::Vec3;
 
 "#,
     r#"
 /// Transforms a [`Vec3A`].
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn mul_vec3a(&self, #[proxy] rhs: bevy::math::Vec3A) -> bevy::math::Vec3A;
 
 "#,
     r#"
 /// Multiplies two 3x3 matrices.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn mul_mat3(&self, #[proxy] rhs: &glam::Mat3A) -> bevy::math::Mat3A;
 
 "#,
     r#"
 /// Adds two 3x3 matrices.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn add_mat3(&self, #[proxy] rhs: &glam::Mat3A) -> bevy::math::Mat3A;
 
 "#,
     r#"
 /// Subtracts two 3x3 matrices.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn sub_mat3(&self, #[proxy] rhs: &glam::Mat3A) -> bevy::math::Mat3A;
 
 "#,
     r#"
 /// Multiplies a 3x3 matrix by a scalar.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn mul_scalar(&self, rhs: f32) -> bevy::math::Mat3A;
 
 "#,
@@ -16681,62 +14928,45 @@ pub struct Mat3 {
 /// For more see
 /// [comparing floating point numbers](https://randomascii.wordpress.com/2012/02/25/comparing-floating-point-numbers-2012-edition/).
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn abs_diff_eq(&self, #[proxy] rhs: bevy::math::Mat3A, max_abs_diff: f32) -> bool;
 
 "#,
     r#"
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn as_dmat3(&self) -> bevy::math::DMat3;
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "std::ops::Neg",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "neg",
-        metamethod = "Unm",
-    )]
+    #[lua(as_trait = "std::ops::Neg", composite = "neg")]
     fn neg(self) -> bevy::math::Mat3A;
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "std::ops::Mul",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "mul",
-        metamethod = "Mul",
-    )]
+    #[lua(as_trait = "std::ops::Mul", composite = "mul")]
     fn mul(self, #[proxy] rhs: bevy::math::Vec3) -> bevy::math::Vec3;
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "std::cmp::PartialEq",
-        kind = "MetaFunction",
-        composite = "eq",
-        metamethod = "Eq",
-    )]
+    #[lua(as_trait = "std::cmp::PartialEq", composite = "eq")]
     fn eq(&self, #[proxy] rhs: &glam::Mat3A) -> bool;
 
 "#,
     r#"
-#[lua(kind="MetaMethod", metamethod="ToString")]
+#[lua(metamethod="ToString")]
 fn index(&self) -> String {
     format!("{}", _self)
 }
 "#,
     r#"
-#[lua(kind = "MetaMethod", raw, metamethod="Index")]
+#[lua(raw, metamethod="Index")]
 fn index(&self, ctx : &Lua, idx: crate::lua::util::LuaIndex) -> Result<LuaVec3A,_> {
     Ok(LuaVec3A::new_ref(
-            self.reflect_ref(ctx.get_world()?).sub_ref(bevy_script_api::ReflectionPathElement::SubReflection{
+            _self.reflect_ref(ctx.get_world()?).sub_ref(bevy_script_api::ReflectionPathElement::SubReflection{
                 label:"col", 
                 get: std::sync::Arc::new(|ref_| Err(bevy_script_api::error::ReflectionError::InsufficientProvenance{
                     path: "".to_owned(), 
@@ -16757,7 +14987,7 @@ fn index(&self, ctx : &Lua, idx: crate::lua::util::LuaIndex) -> Result<LuaVec3A,
 }
 "#]
 )]
-pub struct Mat3A {
+pub struct LuaMat3A {
     #[lua(output(proxy))]
     x_axis: bevy::math::Vec3A,
     #[lua(output(proxy))]
@@ -16768,115 +14998,66 @@ pub struct Mat3A {
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
     remote = "bevy::math::Mat4",
+    bms_core_path = "bevy_mod_scripting_core",
+    bms_lua_path = "crate",
     functions[r#"
 
-    #[lua(
-        as_trait = "std::ops::Neg",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "neg",
-        metamethod = "Unm",
-    )]
+    #[lua(as_trait = "std::ops::Neg", composite = "neg")]
     fn neg(self) -> bevy::math::Mat4;
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "std::ops::Sub",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "sub",
-        metamethod = "Sub",
-    )]
+    #[lua(as_trait = "std::ops::Sub", composite = "sub")]
     fn sub(self, #[proxy] rhs: bevy::math::Mat4) -> bevy::math::Mat4;
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "std::ops::Add",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "add",
-        metamethod = "Add",
-    )]
+    #[lua(as_trait = "std::ops::Add", composite = "add")]
     fn add(self, #[proxy] rhs: bevy::math::Mat4) -> bevy::math::Mat4;
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "std::ops::Mul",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "mul",
-        metamethod = "Mul",
-    )]
+    #[lua(as_trait = "std::ops::Mul", composite = "mul")]
     fn mul(self, #[proxy] rhs: bevy::math::Vec4) -> bevy::math::Vec4;
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "std::ops::Mul",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "mul",
-        metamethod = "Mul",
-    )]
+    #[lua(as_trait = "std::ops::Mul", composite = "mul")]
     fn mul(self, rhs: f32) -> bevy::math::Mat4;
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "std::cmp::PartialEq",
-        kind = "MetaFunction",
-        composite = "eq",
-        metamethod = "Eq",
-    )]
+    #[lua(as_trait = "std::cmp::PartialEq", composite = "eq")]
     fn eq(&self, #[proxy] rhs: &glam::Mat4) -> bool;
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "std::ops::Mul",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "mul",
-        metamethod = "Mul",
-    )]
+    #[lua(as_trait = "std::ops::Mul", composite = "mul")]
     fn mul(self, #[proxy] rhs: bevy::math::Affine3A) -> bevy::math::Mat4;
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "std::ops::Mul",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "mul",
-        metamethod = "Mul",
-    )]
+    #[lua(as_trait = "std::ops::Mul", composite = "mul")]
     fn mul(self, #[proxy] rhs: bevy::math::Mat4) -> bevy::math::Mat4;
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone",
-        kind = "Method",
-        output(proxy),
-    )]
+    #[lua(as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone")]
     fn clone(&self) -> bevy::math::Mat4;
 
 "#,
     r#"
 /// Creates a 4x4 matrix from four column vectors.
 
-    #[lua(kind = "Function", output(proxy))]
+    #[lua()]
     fn from_cols(
         #[proxy]
         x_axis: bevy::math::Vec4,
@@ -16893,7 +15074,7 @@ pub struct Mat3A {
 /// Creates a `[f32; 16]` array storing data in column major order.
 /// If you require data in row major order `transpose` the matrix first.
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn to_cols_array(&self) -> [f32; 16];
 
 "#,
@@ -16901,14 +15082,14 @@ pub struct Mat3A {
 /// Creates a `[[f32; 4]; 4]` 4D array storing data in column major order.
 /// If you require data in row major order `transpose` the matrix first.
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn to_cols_array_2d(&self) -> [[f32; 4]; 4];
 
 "#,
     r#"
 /// Creates a 4x4 matrix with its diagonal set to `diagonal` and all other entries set to 0.
 
-    #[lua(kind = "Function", output(proxy))]
+    #[lua()]
     fn from_diagonal(#[proxy] diagonal: bevy::math::Vec4) -> bevy::math::Mat4;
 
 "#,
@@ -16920,7 +15101,7 @@ pub struct Mat3A {
 /// # Panics
 /// Will panic if `rotation` is not normalized when `glam_assert` is enabled.
 
-    #[lua(kind = "Function", output(proxy))]
+    #[lua()]
     fn from_scale_rotation_translation(
         #[proxy]
         scale: bevy::math::Vec3,
@@ -16938,7 +15119,7 @@ pub struct Mat3A {
 /// # Panics
 /// Will panic if `rotation` is not normalized when `glam_assert` is enabled.
 
-    #[lua(kind = "Function", output(proxy))]
+    #[lua()]
     fn from_rotation_translation(
         #[proxy]
         rotation: bevy::math::Quat,
@@ -16954,7 +15135,7 @@ pub struct Mat3A {
 /// # Panics
 /// Will panic if `rotation` is not normalized when `glam_assert` is enabled.
 
-    #[lua(kind = "Function", output(proxy))]
+    #[lua()]
     fn from_quat(#[proxy] rotation: bevy::math::Quat) -> bevy::math::Mat4;
 
 "#,
@@ -16964,7 +15145,7 @@ pub struct Mat3A {
 /// The resulting matrix can be used to transform 3D points and vectors. See
 /// [`Self::transform_point3()`] and [`Self::transform_vector3()`].
 
-    #[lua(kind = "Function", output(proxy))]
+    #[lua()]
     fn from_mat3(#[proxy] m: bevy::math::Mat3) -> bevy::math::Mat4;
 
 "#,
@@ -16974,7 +15155,7 @@ pub struct Mat3A {
 /// The resulting matrix can be used to transform 3D points and vectors. See
 /// [`Self::transform_point3()`] and [`Self::transform_vector3()`].
 
-    #[lua(kind = "Function", output(proxy))]
+    #[lua()]
     fn from_mat3a(#[proxy] m: bevy::math::Mat3A) -> bevy::math::Mat4;
 
 "#,
@@ -16983,7 +15164,7 @@ pub struct Mat3A {
 /// The resulting matrix can be used to transform 3D points and vectors. See
 /// [`Self::transform_point3()`] and [`Self::transform_vector3()`].
 
-    #[lua(kind = "Function", output(proxy))]
+    #[lua()]
     fn from_translation(#[proxy] translation: bevy::math::Vec3) -> bevy::math::Mat4;
 
 "#,
@@ -16995,7 +15176,7 @@ pub struct Mat3A {
 /// # Panics
 /// Will panic if `axis` is not normalized when `glam_assert` is enabled.
 
-    #[lua(kind = "Function", output(proxy))]
+    #[lua()]
     fn from_axis_angle(#[proxy] axis: bevy::math::Vec3, angle: f32) -> bevy::math::Mat4;
 
 "#,
@@ -17005,7 +15186,7 @@ pub struct Mat3A {
 /// The resulting matrix can be used to transform 3D points and vectors. See
 /// [`Self::transform_point3()`] and [`Self::transform_vector3()`].
 
-    #[lua(kind = "Function", output(proxy))]
+    #[lua()]
     fn from_euler(
         #[proxy]
         order: bevy::math::EulerRot,
@@ -17021,7 +15202,7 @@ pub struct Mat3A {
 /// The resulting matrix can be used to transform 3D points and vectors. See
 /// [`Self::transform_point3()`] and [`Self::transform_vector3()`].
 
-    #[lua(kind = "Function", output(proxy))]
+    #[lua()]
     fn from_rotation_x(angle: f32) -> bevy::math::Mat4;
 
 "#,
@@ -17031,7 +15212,7 @@ pub struct Mat3A {
 /// The resulting matrix can be used to transform 3D points and vectors. See
 /// [`Self::transform_point3()`] and [`Self::transform_vector3()`].
 
-    #[lua(kind = "Function", output(proxy))]
+    #[lua()]
     fn from_rotation_y(angle: f32) -> bevy::math::Mat4;
 
 "#,
@@ -17041,7 +15222,7 @@ pub struct Mat3A {
 /// The resulting matrix can be used to transform 3D points and vectors. See
 /// [`Self::transform_point3()`] and [`Self::transform_vector3()`].
 
-    #[lua(kind = "Function", output(proxy))]
+    #[lua()]
     fn from_rotation_z(angle: f32) -> bevy::math::Mat4;
 
 "#,
@@ -17052,7 +15233,7 @@ pub struct Mat3A {
 /// # Panics
 /// Will panic if all elements of `scale` are zero when `glam_assert` is enabled.
 
-    #[lua(kind = "Function", output(proxy))]
+    #[lua()]
     fn from_scale(#[proxy] scale: bevy::math::Vec3) -> bevy::math::Mat4;
 
 "#,
@@ -17061,7 +15242,7 @@ pub struct Mat3A {
 /// # Panics
 /// Panics if `index` is greater than 3.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn col(&self, index: usize) -> bevy::math::Vec4;
 
 "#,
@@ -17070,7 +15251,7 @@ pub struct Mat3A {
 /// # Panics
 /// Panics if `index` is greater than 3.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn row(&self, index: usize) -> bevy::math::Vec4;
 
 "#,
@@ -17078,28 +15259,28 @@ pub struct Mat3A {
 /// Returns `true` if, and only if, all elements are finite.
 /// If any element is either `NaN`, positive or negative infinity, this will return `false`.
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn is_finite(&self) -> bool;
 
 "#,
     r#"
 /// Returns `true` if any elements are `NaN`.
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn is_nan(&self) -> bool;
 
 "#,
     r#"
 /// Returns the transpose of `self`.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn transpose(&self) -> bevy::math::Mat4;
 
 "#,
     r#"
 /// Returns the determinant of `self`.
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn determinant(&self) -> f32;
 
 "#,
@@ -17109,7 +15290,7 @@ pub struct Mat3A {
 /// # Panics
 /// Will panic if the determinant of `self` is zero when `glam_assert` is enabled.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn inverse(&self) -> bevy::math::Mat4;
 
 "#,
@@ -17118,7 +15299,7 @@ pub struct Mat3A {
 /// direction.
 /// For a view coordinate system with `+X=right`, `+Y=up` and `+Z=forward`.
 
-    #[lua(kind = "Function", output(proxy))]
+    #[lua()]
     fn look_to_lh(
         #[proxy]
         eye: bevy::math::Vec3,
@@ -17134,7 +15315,7 @@ pub struct Mat3A {
 /// direction.
 /// For a view coordinate system with `+X=right`, `+Y=up` and `+Z=back`.
 
-    #[lua(kind = "Function", output(proxy))]
+    #[lua()]
     fn look_to_rh(
         #[proxy]
         eye: bevy::math::Vec3,
@@ -17152,7 +15333,7 @@ pub struct Mat3A {
 /// # Panics
 /// Will panic if `up` is not normalized when `glam_assert` is enabled.
 
-    #[lua(kind = "Function", output(proxy))]
+    #[lua()]
     fn look_at_lh(
         #[proxy]
         eye: bevy::math::Vec3,
@@ -17170,7 +15351,7 @@ pub struct Mat3A {
 /// # Panics
 /// Will panic if `up` is not normalized when `glam_assert` is enabled.
 
-    #[lua(kind = "Function", output(proxy))]
+    #[lua()]
     fn look_at_rh(
         #[proxy]
         eye: bevy::math::Vec3,
@@ -17186,7 +15367,7 @@ pub struct Mat3A {
 /// This is the same as the OpenGL `gluPerspective` function.
 /// See <https://www.khronos.org/registry/OpenGL-Refpages/gl2.1/xhtml/gluPerspective.xml>
 
-    #[lua(kind = "Function", output(proxy))]
+    #[lua()]
     fn perspective_rh_gl(
         fov_y_radians: f32,
         aspect_ratio: f32,
@@ -17201,7 +15382,7 @@ pub struct Mat3A {
 /// Will panic if `z_near` or `z_far` are less than or equal to zero when `glam_assert` is
 /// enabled.
 
-    #[lua(kind = "Function", output(proxy))]
+    #[lua()]
     fn perspective_lh(
         fov_y_radians: f32,
         aspect_ratio: f32,
@@ -17216,7 +15397,7 @@ pub struct Mat3A {
 /// Will panic if `z_near` or `z_far` are less than or equal to zero when `glam_assert` is
 /// enabled.
 
-    #[lua(kind = "Function", output(proxy))]
+    #[lua()]
     fn perspective_rh(
         fov_y_radians: f32,
         aspect_ratio: f32,
@@ -17230,7 +15411,7 @@ pub struct Mat3A {
 /// # Panics
 /// Will panic if `z_near` is less than or equal to zero when `glam_assert` is enabled.
 
-    #[lua(kind = "Function", output(proxy))]
+    #[lua()]
     fn perspective_infinite_lh(
         fov_y_radians: f32,
         aspect_ratio: f32,
@@ -17243,7 +15424,7 @@ pub struct Mat3A {
 /// # Panics
 /// Will panic if `z_near` is less than or equal to zero when `glam_assert` is enabled.
 
-    #[lua(kind = "Function", output(proxy))]
+    #[lua()]
     fn perspective_infinite_reverse_lh(
         fov_y_radians: f32,
         aspect_ratio: f32,
@@ -17255,7 +15436,7 @@ pub struct Mat3A {
 /// Creates an infinite right-handed perspective projection matrix with
 /// `[0,1]` depth range.
 
-    #[lua(kind = "Function", output(proxy))]
+    #[lua()]
     fn perspective_infinite_rh(
         fov_y_radians: f32,
         aspect_ratio: f32,
@@ -17267,7 +15448,7 @@ pub struct Mat3A {
 /// Creates an infinite reverse right-handed perspective projection matrix
 /// with `[0,1]` depth range.
 
-    #[lua(kind = "Function", output(proxy))]
+    #[lua()]
     fn perspective_infinite_reverse_rh(
         fov_y_radians: f32,
         aspect_ratio: f32,
@@ -17281,7 +15462,7 @@ pub struct Mat3A {
 /// See
 /// <https://www.khronos.org/registry/OpenGL-Refpages/gl2.1/xhtml/glOrtho.xml>
 
-    #[lua(kind = "Function", output(proxy))]
+    #[lua()]
     fn orthographic_rh_gl(
         left: f32,
         right: f32,
@@ -17295,7 +15476,7 @@ pub struct Mat3A {
     r#"
 /// Creates a left-handed orthographic projection matrix with `[0,1]` depth range.
 
-    #[lua(kind = "Function", output(proxy))]
+    #[lua()]
     fn orthographic_lh(
         left: f32,
         right: f32,
@@ -17309,7 +15490,7 @@ pub struct Mat3A {
     r#"
 /// Creates a right-handed orthographic projection matrix with `[0,1]` depth range.
 
-    #[lua(kind = "Function", output(proxy))]
+    #[lua()]
     fn orthographic_rh(
         left: f32,
         right: f32,
@@ -17326,7 +15507,7 @@ pub struct Mat3A {
 /// The perspective divide is performed meaning the resulting 3D vector is divided by `w`.
 /// This method assumes that `self` contains a projective transform.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn project_point3(&self, #[proxy] rhs: bevy::math::Vec3) -> bevy::math::Vec3;
 
 "#,
@@ -17340,7 +15521,7 @@ pub struct Mat3A {
 /// # Panics
 /// Will panic if the 3rd row of `self` is not `(0, 0, 0, 1)` when `glam_assert` is enabled.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn transform_point3(&self, #[proxy] rhs: bevy::math::Vec3) -> bevy::math::Vec3;
 
 "#,
@@ -17352,7 +15533,7 @@ pub struct Mat3A {
 /// # Panics
 /// Will panic if the 3rd row of `self` is not `(0, 0, 0, 1)` when `glam_assert` is enabled.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn transform_vector3(&self, #[proxy] rhs: bevy::math::Vec3) -> bevy::math::Vec3;
 
 "#,
@@ -17360,7 +15541,7 @@ pub struct Mat3A {
 /// Transforms the given [`Vec3A`] as 3D point.
 /// This is the equivalent of multiplying the [`Vec3A`] as a 4D vector where `w` is `1.0`.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn transform_point3a(&self, #[proxy] rhs: bevy::math::Vec3A) -> bevy::math::Vec3A;
 
 "#,
@@ -17368,42 +15549,42 @@ pub struct Mat3A {
 /// Transforms the give [`Vec3A`] as 3D vector.
 /// This is the equivalent of multiplying the [`Vec3A`] as a 4D vector where `w` is `0.0`.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn transform_vector3a(&self, #[proxy] rhs: bevy::math::Vec3A) -> bevy::math::Vec3A;
 
 "#,
     r#"
 /// Transforms a 4D vector.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn mul_vec4(&self, #[proxy] rhs: bevy::math::Vec4) -> bevy::math::Vec4;
 
 "#,
     r#"
 /// Multiplies two 4x4 matrices.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn mul_mat4(&self, #[proxy] rhs: &glam::Mat4) -> bevy::math::Mat4;
 
 "#,
     r#"
 /// Adds two 4x4 matrices.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn add_mat4(&self, #[proxy] rhs: &glam::Mat4) -> bevy::math::Mat4;
 
 "#,
     r#"
 /// Subtracts two 4x4 matrices.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn sub_mat4(&self, #[proxy] rhs: &glam::Mat4) -> bevy::math::Mat4;
 
 "#,
     r#"
 /// Multiplies a 4x4 matrix by a scalar.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn mul_scalar(&self, rhs: f32) -> bevy::math::Mat4;
 
 "#,
@@ -17416,27 +15597,27 @@ pub struct Mat3A {
 /// For more see
 /// [comparing floating point numbers](https://randomascii.wordpress.com/2012/02/25/comparing-floating-point-numbers-2012-edition/).
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn abs_diff_eq(&self, #[proxy] rhs: bevy::math::Mat4, max_abs_diff: f32) -> bool;
 
 "#,
     r#"
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn as_dmat4(&self) -> bevy::math::DMat4;
 
 "#,
     r#"
-#[lua(kind="MetaMethod", metamethod="ToString")]
+#[lua(metamethod="ToString")]
 fn index(&self) -> String {
     format!("{}", _self)
 }
 "#,
     r#"
-#[lua(kind = "MetaMethod", raw, metamethod="Index")]
+#[lua(raw, metamethod="Index")]
 fn index(&self, ctx : &Lua, idx: crate::lua::util::LuaIndex) -> Result<LuaVec4,_> {
     Ok(LuaVec4::new_ref(
-            self.reflect_ref(ctx.get_world()?).sub_ref(bevy_script_api::ReflectionPathElement::SubReflection{
+            _self.reflect_ref(ctx.get_world()?).sub_ref(bevy_script_api::ReflectionPathElement::SubReflection{
                 label:"col", 
                 get: std::sync::Arc::new(|ref_| Err(bevy_script_api::error::ReflectionError::InsufficientProvenance{
                     path: "".to_owned(), 
@@ -17457,7 +15638,7 @@ fn index(&self, ctx : &Lua, idx: crate::lua::util::LuaIndex) -> Result<LuaVec4,_
 }
 "#]
 )]
-pub struct Mat4 {
+pub struct LuaMat4 {
     #[lua(output(proxy))]
     x_axis: bevy::math::Vec4,
     #[lua(output(proxy))]
@@ -17470,67 +15651,42 @@ pub struct Mat4 {
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
     remote = "bevy::math::DMat2",
+    bms_core_path = "bevy_mod_scripting_core",
+    bms_lua_path = "crate",
     functions[r#"
 
-    #[lua(
-        as_trait = "std::ops::Mul",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "mul",
-        metamethod = "Mul",
-    )]
+    #[lua(as_trait = "std::ops::Mul", composite = "mul")]
     fn mul(self, #[proxy] rhs: bevy::math::DVec2) -> bevy::math::DVec2;
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "std::ops::Mul",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "mul",
-        metamethod = "Mul",
-    )]
+    #[lua(as_trait = "std::ops::Mul", composite = "mul")]
     fn mul(self, #[proxy] rhs: bevy::math::DMat2) -> bevy::math::DMat2;
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone",
-        kind = "Method",
-        output(proxy),
-    )]
+    #[lua(as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone")]
     fn clone(&self) -> bevy::math::DMat2;
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "std::ops::Neg",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "neg",
-        metamethod = "Unm",
-    )]
+    #[lua(as_trait = "std::ops::Neg", composite = "neg")]
     fn neg(self) -> bevy::math::DMat2;
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "std::cmp::PartialEq",
-        kind = "MetaFunction",
-        composite = "eq",
-        metamethod = "Eq",
-    )]
+    #[lua(as_trait = "std::cmp::PartialEq", composite = "eq")]
     fn eq(&self, #[proxy] rhs: &glam::DMat2) -> bool;
 
 "#,
     r#"
 /// Creates a 2x2 matrix from two column vectors.
 
-    #[lua(kind = "Function", output(proxy))]
+    #[lua()]
     fn from_cols(
         #[proxy]
         x_axis: bevy::math::DVec2,
@@ -17543,7 +15699,7 @@ pub struct Mat4 {
 /// Creates a `[f64; 4]` array storing data in column major order.
 /// If you require data in row major order `transpose` the matrix first.
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn to_cols_array(&self) -> [f64; 4];
 
 "#,
@@ -17551,14 +15707,14 @@ pub struct Mat4 {
 /// Creates a `[[f64; 2]; 2]` 2D array storing data in column major order.
 /// If you require data in row major order `transpose` the matrix first.
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn to_cols_array_2d(&self) -> [[f64; 2]; 2];
 
 "#,
     r#"
 /// Creates a 2x2 matrix with its diagonal set to `diagonal` and all other entries set to 0.
 
-    #[lua(kind = "Function", output(proxy))]
+    #[lua()]
     fn from_diagonal(#[proxy] diagonal: bevy::math::DVec2) -> bevy::math::DMat2;
 
 "#,
@@ -17566,7 +15722,7 @@ pub struct Mat4 {
 /// Creates a 2x2 matrix containing the combining non-uniform `scale` and rotation of
 /// `angle` (in radians).
 
-    #[lua(kind = "Function", output(proxy))]
+    #[lua()]
     fn from_scale_angle(
         #[proxy]
         scale: bevy::math::DVec2,
@@ -17577,14 +15733,14 @@ pub struct Mat4 {
     r#"
 /// Creates a 2x2 matrix containing a rotation of `angle` (in radians).
 
-    #[lua(kind = "Function", output(proxy))]
+    #[lua()]
     fn from_angle(angle: f64) -> bevy::math::DMat2;
 
 "#,
     r#"
 /// Creates a 2x2 matrix from a 3x3 matrix, discarding the 2nd row and column.
 
-    #[lua(kind = "Function", output(proxy))]
+    #[lua()]
     fn from_mat3(#[proxy] m: bevy::math::DMat3) -> bevy::math::DMat2;
 
 "#,
@@ -17593,7 +15749,7 @@ pub struct Mat4 {
 /// # Panics
 /// Panics if `index` is greater than 1.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn col(&self, index: usize) -> bevy::math::DVec2;
 
 "#,
@@ -17602,7 +15758,7 @@ pub struct Mat4 {
 /// # Panics
 /// Panics if `index` is greater than 1.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn row(&self, index: usize) -> bevy::math::DVec2;
 
 "#,
@@ -17610,28 +15766,28 @@ pub struct Mat4 {
 /// Returns `true` if, and only if, all elements are finite.
 /// If any element is either `NaN`, positive or negative infinity, this will return `false`.
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn is_finite(&self) -> bool;
 
 "#,
     r#"
 /// Returns `true` if any elements are `NaN`.
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn is_nan(&self) -> bool;
 
 "#,
     r#"
 /// Returns the transpose of `self`.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn transpose(&self) -> bevy::math::DMat2;
 
 "#,
     r#"
 /// Returns the determinant of `self`.
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn determinant(&self) -> f64;
 
 "#,
@@ -17641,42 +15797,42 @@ pub struct Mat4 {
 /// # Panics
 /// Will panic if the determinant of `self` is zero when `glam_assert` is enabled.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn inverse(&self) -> bevy::math::DMat2;
 
 "#,
     r#"
 /// Transforms a 2D vector.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn mul_vec2(&self, #[proxy] rhs: bevy::math::DVec2) -> bevy::math::DVec2;
 
 "#,
     r#"
 /// Multiplies two 2x2 matrices.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn mul_mat2(&self, #[proxy] rhs: &glam::DMat2) -> bevy::math::DMat2;
 
 "#,
     r#"
 /// Adds two 2x2 matrices.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn add_mat2(&self, #[proxy] rhs: &glam::DMat2) -> bevy::math::DMat2;
 
 "#,
     r#"
 /// Subtracts two 2x2 matrices.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn sub_mat2(&self, #[proxy] rhs: &glam::DMat2) -> bevy::math::DMat2;
 
 "#,
     r#"
 /// Multiplies a 2x2 matrix by a scalar.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn mul_scalar(&self, rhs: f64) -> bevy::math::DMat2;
 
 "#,
@@ -17689,63 +15845,45 @@ pub struct Mat4 {
 /// For more see
 /// [comparing floating point numbers](https://randomascii.wordpress.com/2012/02/25/comparing-floating-point-numbers-2012-edition/).
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn abs_diff_eq(&self, #[proxy] rhs: bevy::math::DMat2, max_abs_diff: f64) -> bool;
 
 "#,
     r#"
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn as_mat2(&self) -> bevy::math::Mat2;
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "std::ops::Mul",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "mul",
-        metamethod = "Mul",
-    )]
+    #[lua(as_trait = "std::ops::Mul", composite = "mul")]
     fn mul(self, rhs: f64) -> bevy::math::DMat2;
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "std::ops::Sub",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "sub",
-        metamethod = "Sub",
-    )]
+    #[lua(as_trait = "std::ops::Sub", composite = "sub")]
     fn sub(self, #[proxy] rhs: bevy::math::DMat2) -> bevy::math::DMat2;
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "std::ops::Add",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "add",
-        metamethod = "Add",
-    )]
+    #[lua(as_trait = "std::ops::Add", composite = "add")]
     fn add(self, #[proxy] rhs: bevy::math::DMat2) -> bevy::math::DMat2;
 
 "#,
     r#"
-#[lua(kind="MetaMethod", metamethod="ToString")]
+#[lua(metamethod="ToString")]
 fn index(&self) -> String {
     format!("{}", _self)
 }
 "#,
     r#"
-#[lua(kind = "MetaMethod", raw, metamethod="Index")]
+#[lua(raw, metamethod="Index")]
 fn index(&self, ctx : &Lua, idx: crate::lua::util::LuaIndex) -> Result<LuaDVec2,_> {
     Ok(LuaDVec2::new_ref(
-            self.reflect_ref(ctx.get_world()?).sub_ref(bevy_script_api::ReflectionPathElement::SubReflection{
+            _self.reflect_ref(ctx.get_world()?).sub_ref(bevy_script_api::ReflectionPathElement::SubReflection{
                 label:"col", 
                 get: std::sync::Arc::new(|ref_| Err(bevy_script_api::error::ReflectionError::InsufficientProvenance{
                     path: "".to_owned(), 
@@ -17766,7 +15904,7 @@ fn index(&self, ctx : &Lua, idx: crate::lua::util::LuaIndex) -> Result<LuaDVec2,
 }
 "#]
 )]
-pub struct DMat2 {
+pub struct LuaDMat2 {
     #[lua(output(proxy))]
     x_axis: bevy::math::DVec2,
     #[lua(output(proxy))]
@@ -17775,22 +15913,18 @@ pub struct DMat2 {
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
     remote = "bevy::math::DMat3",
+    bms_core_path = "bevy_mod_scripting_core",
+    bms_lua_path = "crate",
     functions[r#"
 
-    #[lua(
-        as_trait = "std::ops::Mul",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "mul",
-        metamethod = "Mul",
-    )]
+    #[lua(as_trait = "std::ops::Mul", composite = "mul")]
     fn mul(self, #[proxy] rhs: bevy::math::DMat3) -> bevy::math::DMat3;
 
 "#,
     r#"
 /// Creates a 3x3 matrix from three column vectors.
 
-    #[lua(kind = "Function", output(proxy))]
+    #[lua()]
     fn from_cols(
         #[proxy]
         x_axis: bevy::math::DVec3,
@@ -17805,7 +15939,7 @@ pub struct DMat2 {
 /// Creates a `[f64; 9]` array storing data in column major order.
 /// If you require data in row major order `transpose` the matrix first.
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn to_cols_array(&self) -> [f64; 9];
 
 "#,
@@ -17813,21 +15947,21 @@ pub struct DMat2 {
 /// Creates a `[[f64; 3]; 3]` 3D array storing data in column major order.
 /// If you require data in row major order `transpose` the matrix first.
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn to_cols_array_2d(&self) -> [[f64; 3]; 3];
 
 "#,
     r#"
 /// Creates a 3x3 matrix with its diagonal set to `diagonal` and all other entries set to 0.
 
-    #[lua(kind = "Function", output(proxy))]
+    #[lua()]
     fn from_diagonal(#[proxy] diagonal: bevy::math::DVec3) -> bevy::math::DMat3;
 
 "#,
     r#"
 /// Creates a 3x3 matrix from a 4x4 matrix, discarding the 4th row and column.
 
-    #[lua(kind = "Function", output(proxy))]
+    #[lua()]
     fn from_mat4(#[proxy] m: bevy::math::DMat4) -> bevy::math::DMat3;
 
 "#,
@@ -17836,7 +15970,7 @@ pub struct DMat2 {
 /// # Panics
 /// Will panic if `rotation` is not normalized when `glam_assert` is enabled.
 
-    #[lua(kind = "Function", output(proxy))]
+    #[lua()]
     fn from_quat(#[proxy] rotation: bevy::math::DQuat) -> bevy::math::DMat3;
 
 "#,
@@ -17846,7 +15980,7 @@ pub struct DMat2 {
 /// # Panics
 /// Will panic if `axis` is not normalized when `glam_assert` is enabled.
 
-    #[lua(kind = "Function", output(proxy))]
+    #[lua()]
     fn from_axis_angle(
         #[proxy]
         axis: bevy::math::DVec3,
@@ -17858,7 +15992,7 @@ pub struct DMat2 {
 /// Creates a 3D rotation matrix from the given euler rotation sequence and the angles (in
 /// radians).
 
-    #[lua(kind = "Function", output(proxy))]
+    #[lua()]
     fn from_euler(
         #[proxy]
         order: bevy::math::EulerRot,
@@ -17871,21 +16005,21 @@ pub struct DMat2 {
     r#"
 /// Creates a 3D rotation matrix from `angle` (in radians) around the x axis.
 
-    #[lua(kind = "Function", output(proxy))]
+    #[lua()]
     fn from_rotation_x(angle: f64) -> bevy::math::DMat3;
 
 "#,
     r#"
 /// Creates a 3D rotation matrix from `angle` (in radians) around the y axis.
 
-    #[lua(kind = "Function", output(proxy))]
+    #[lua()]
     fn from_rotation_y(angle: f64) -> bevy::math::DMat3;
 
 "#,
     r#"
 /// Creates a 3D rotation matrix from `angle` (in radians) around the z axis.
 
-    #[lua(kind = "Function", output(proxy))]
+    #[lua()]
     fn from_rotation_z(angle: f64) -> bevy::math::DMat3;
 
 "#,
@@ -17894,7 +16028,7 @@ pub struct DMat2 {
 /// The resulting matrix can be used to transform 2D points and vectors. See
 /// [`Self::transform_point2()`] and [`Self::transform_vector2()`].
 
-    #[lua(kind = "Function", output(proxy))]
+    #[lua()]
     fn from_translation(#[proxy] translation: bevy::math::DVec2) -> bevy::math::DMat3;
 
 "#,
@@ -17904,7 +16038,7 @@ pub struct DMat2 {
 /// The resulting matrix can be used to transform 2D points and vectors. See
 /// [`Self::transform_point2()`] and [`Self::transform_vector2()`].
 
-    #[lua(kind = "Function", output(proxy))]
+    #[lua()]
     fn from_angle(angle: f64) -> bevy::math::DMat3;
 
 "#,
@@ -17914,7 +16048,7 @@ pub struct DMat2 {
 /// The resulting matrix can be used to transform 2D points and vectors. See
 /// [`Self::transform_point2()`] and [`Self::transform_vector2()`].
 
-    #[lua(kind = "Function", output(proxy))]
+    #[lua()]
     fn from_scale_angle_translation(
         #[proxy]
         scale: bevy::math::DVec2,
@@ -17931,7 +16065,7 @@ pub struct DMat2 {
 /// # Panics
 /// Will panic if all elements of `scale` are zero when `glam_assert` is enabled.
 
-    #[lua(kind = "Function", output(proxy))]
+    #[lua()]
     fn from_scale(#[proxy] scale: bevy::math::DVec2) -> bevy::math::DMat3;
 
 "#,
@@ -17940,7 +16074,7 @@ pub struct DMat2 {
 /// The resulting matrix can be used to transform 2D points and vectors. See
 /// [`Self::transform_point2()`] and [`Self::transform_vector2()`].
 
-    #[lua(kind = "Function", output(proxy))]
+    #[lua()]
     fn from_mat2(#[proxy] m: bevy::math::DMat2) -> bevy::math::DMat3;
 
 "#,
@@ -17949,7 +16083,7 @@ pub struct DMat2 {
 /// # Panics
 /// Panics if `index` is greater than 2.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn col(&self, index: usize) -> bevy::math::DVec3;
 
 "#,
@@ -17958,7 +16092,7 @@ pub struct DMat2 {
 /// # Panics
 /// Panics if `index` is greater than 2.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn row(&self, index: usize) -> bevy::math::DVec3;
 
 "#,
@@ -17966,28 +16100,28 @@ pub struct DMat2 {
 /// Returns `true` if, and only if, all elements are finite.
 /// If any element is either `NaN`, positive or negative infinity, this will return `false`.
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn is_finite(&self) -> bool;
 
 "#,
     r#"
 /// Returns `true` if any elements are `NaN`.
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn is_nan(&self) -> bool;
 
 "#,
     r#"
 /// Returns the transpose of `self`.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn transpose(&self) -> bevy::math::DMat3;
 
 "#,
     r#"
 /// Returns the determinant of `self`.
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn determinant(&self) -> f64;
 
 "#,
@@ -17997,7 +16131,7 @@ pub struct DMat2 {
 /// # Panics
 /// Will panic if the determinant of `self` is zero when `glam_assert` is enabled.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn inverse(&self) -> bevy::math::DMat3;
 
 "#,
@@ -18008,7 +16142,7 @@ pub struct DMat2 {
 /// # Panics
 /// Will panic if the 2nd row of `self` is not `(0, 0, 1)` when `glam_assert` is enabled.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn transform_point2(&self, #[proxy] rhs: bevy::math::DVec2) -> bevy::math::DVec2;
 
 "#,
@@ -18019,42 +16153,42 @@ pub struct DMat2 {
 /// # Panics
 /// Will panic if the 2nd row of `self` is not `(0, 0, 1)` when `glam_assert` is enabled.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn transform_vector2(&self, #[proxy] rhs: bevy::math::DVec2) -> bevy::math::DVec2;
 
 "#,
     r#"
 /// Transforms a 3D vector.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn mul_vec3(&self, #[proxy] rhs: bevy::math::DVec3) -> bevy::math::DVec3;
 
 "#,
     r#"
 /// Multiplies two 3x3 matrices.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn mul_mat3(&self, #[proxy] rhs: &glam::DMat3) -> bevy::math::DMat3;
 
 "#,
     r#"
 /// Adds two 3x3 matrices.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn add_mat3(&self, #[proxy] rhs: &glam::DMat3) -> bevy::math::DMat3;
 
 "#,
     r#"
 /// Subtracts two 3x3 matrices.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn sub_mat3(&self, #[proxy] rhs: &glam::DMat3) -> bevy::math::DMat3;
 
 "#,
     r#"
 /// Multiplies a 3x3 matrix by a scalar.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn mul_scalar(&self, rhs: f64) -> bevy::math::DMat3;
 
 "#,
@@ -18067,120 +16201,75 @@ pub struct DMat2 {
 /// For more see
 /// [comparing floating point numbers](https://randomascii.wordpress.com/2012/02/25/comparing-floating-point-numbers-2012-edition/).
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn abs_diff_eq(&self, #[proxy] rhs: bevy::math::DMat3, max_abs_diff: f64) -> bool;
 
 "#,
     r#"
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn as_mat3(&self) -> bevy::math::Mat3;
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "std::ops::Sub",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "sub",
-        metamethod = "Sub",
-    )]
+    #[lua(as_trait = "std::ops::Sub", composite = "sub")]
     fn sub(self, #[proxy] rhs: bevy::math::DMat3) -> bevy::math::DMat3;
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "std::ops::Mul",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "mul",
-        metamethod = "Mul",
-    )]
+    #[lua(as_trait = "std::ops::Mul", composite = "mul")]
     fn mul(self, #[proxy] rhs: bevy::math::DVec3) -> bevy::math::DVec3;
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone",
-        kind = "Method",
-        output(proxy),
-    )]
+    #[lua(as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone")]
     fn clone(&self) -> bevy::math::DMat3;
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "std::ops::Add",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "add",
-        metamethod = "Add",
-    )]
+    #[lua(as_trait = "std::ops::Add", composite = "add")]
     fn add(self, #[proxy] rhs: bevy::math::DMat3) -> bevy::math::DMat3;
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "std::ops::Mul",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "mul",
-        metamethod = "Mul",
-    )]
+    #[lua(as_trait = "std::ops::Mul", composite = "mul")]
     fn mul(self, rhs: f64) -> bevy::math::DMat3;
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "std::ops::Neg",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "neg",
-        metamethod = "Unm",
-    )]
+    #[lua(as_trait = "std::ops::Neg", composite = "neg")]
     fn neg(self) -> bevy::math::DMat3;
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "std::ops::Mul",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "mul",
-        metamethod = "Mul",
-    )]
+    #[lua(as_trait = "std::ops::Mul", composite = "mul")]
     fn mul(self, #[proxy] rhs: bevy::math::DAffine2) -> bevy::math::DMat3;
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "std::cmp::PartialEq",
-        kind = "MetaFunction",
-        composite = "eq",
-        metamethod = "Eq",
-    )]
+    #[lua(as_trait = "std::cmp::PartialEq", composite = "eq")]
     fn eq(&self, #[proxy] rhs: &glam::DMat3) -> bool;
 
 "#,
     r#"
-#[lua(kind="MetaMethod", metamethod="ToString")]
+#[lua(metamethod="ToString")]
 fn index(&self) -> String {
     format!("{}", _self)
 }
 "#,
     r#"
-#[lua(kind = "MetaMethod", raw, metamethod="Index")]
+#[lua(raw, metamethod="Index")]
 fn index(&self, ctx : &Lua, idx: crate::lua::util::LuaIndex) -> Result<LuaDVec3,_> {
     Ok(LuaDVec3::new_ref(
-            self.reflect_ref(ctx.get_world()?).sub_ref(bevy_script_api::ReflectionPathElement::SubReflection{
+            _self.reflect_ref(ctx.get_world()?).sub_ref(bevy_script_api::ReflectionPathElement::SubReflection{
                 label:"col", 
                 get: std::sync::Arc::new(|ref_| Err(bevy_script_api::error::ReflectionError::InsufficientProvenance{
                     path: "".to_owned(), 
@@ -18201,7 +16290,7 @@ fn index(&self, ctx : &Lua, idx: crate::lua::util::LuaIndex) -> Result<LuaDVec3,
 }
 "#]
 )]
-pub struct DMat3 {
+pub struct LuaDMat3 {
     #[lua(output(proxy))]
     x_axis: bevy::math::DVec3,
     #[lua(output(proxy))]
@@ -18212,80 +16301,48 @@ pub struct DMat3 {
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
     remote = "bevy::math::DMat4",
+    bms_core_path = "bevy_mod_scripting_core",
+    bms_lua_path = "crate",
     functions[r#"
 
-    #[lua(
-        as_trait = "std::ops::Mul",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "mul",
-        metamethod = "Mul",
-    )]
+    #[lua(as_trait = "std::ops::Mul", composite = "mul")]
     fn mul(self, #[proxy] rhs: bevy::math::DAffine3) -> bevy::math::DMat4;
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "std::ops::Add",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "add",
-        metamethod = "Add",
-    )]
+    #[lua(as_trait = "std::ops::Add", composite = "add")]
     fn add(self, #[proxy] rhs: bevy::math::DMat4) -> bevy::math::DMat4;
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone",
-        kind = "Method",
-        output(proxy),
-    )]
+    #[lua(as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone")]
     fn clone(&self) -> bevy::math::DMat4;
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "std::ops::Mul",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "mul",
-        metamethod = "Mul",
-    )]
+    #[lua(as_trait = "std::ops::Mul", composite = "mul")]
     fn mul(self, #[proxy] rhs: bevy::math::DMat4) -> bevy::math::DMat4;
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "std::ops::Mul",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "mul",
-        metamethod = "Mul",
-    )]
+    #[lua(as_trait = "std::ops::Mul", composite = "mul")]
     fn mul(self, #[proxy] rhs: bevy::math::DVec4) -> bevy::math::DVec4;
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "std::ops::Sub",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "sub",
-        metamethod = "Sub",
-    )]
+    #[lua(as_trait = "std::ops::Sub", composite = "sub")]
     fn sub(self, #[proxy] rhs: bevy::math::DMat4) -> bevy::math::DMat4;
 
 "#,
     r#"
 /// Creates a 4x4 matrix from four column vectors.
 
-    #[lua(kind = "Function", output(proxy))]
+    #[lua()]
     fn from_cols(
         #[proxy]
         x_axis: bevy::math::DVec4,
@@ -18302,7 +16359,7 @@ pub struct DMat3 {
 /// Creates a `[f64; 16]` array storing data in column major order.
 /// If you require data in row major order `transpose` the matrix first.
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn to_cols_array(&self) -> [f64; 16];
 
 "#,
@@ -18310,14 +16367,14 @@ pub struct DMat3 {
 /// Creates a `[[f64; 4]; 4]` 4D array storing data in column major order.
 /// If you require data in row major order `transpose` the matrix first.
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn to_cols_array_2d(&self) -> [[f64; 4]; 4];
 
 "#,
     r#"
 /// Creates a 4x4 matrix with its diagonal set to `diagonal` and all other entries set to 0.
 
-    #[lua(kind = "Function", output(proxy))]
+    #[lua()]
     fn from_diagonal(#[proxy] diagonal: bevy::math::DVec4) -> bevy::math::DMat4;
 
 "#,
@@ -18329,7 +16386,7 @@ pub struct DMat3 {
 /// # Panics
 /// Will panic if `rotation` is not normalized when `glam_assert` is enabled.
 
-    #[lua(kind = "Function", output(proxy))]
+    #[lua()]
     fn from_scale_rotation_translation(
         #[proxy]
         scale: bevy::math::DVec3,
@@ -18347,7 +16404,7 @@ pub struct DMat3 {
 /// # Panics
 /// Will panic if `rotation` is not normalized when `glam_assert` is enabled.
 
-    #[lua(kind = "Function", output(proxy))]
+    #[lua()]
     fn from_rotation_translation(
         #[proxy]
         rotation: bevy::math::DQuat,
@@ -18363,7 +16420,7 @@ pub struct DMat3 {
 /// # Panics
 /// Will panic if `rotation` is not normalized when `glam_assert` is enabled.
 
-    #[lua(kind = "Function", output(proxy))]
+    #[lua()]
     fn from_quat(#[proxy] rotation: bevy::math::DQuat) -> bevy::math::DMat4;
 
 "#,
@@ -18373,7 +16430,7 @@ pub struct DMat3 {
 /// The resulting matrix can be used to transform 3D points and vectors. See
 /// [`Self::transform_point3()`] and [`Self::transform_vector3()`].
 
-    #[lua(kind = "Function", output(proxy))]
+    #[lua()]
     fn from_mat3(#[proxy] m: bevy::math::DMat3) -> bevy::math::DMat4;
 
 "#,
@@ -18382,7 +16439,7 @@ pub struct DMat3 {
 /// The resulting matrix can be used to transform 3D points and vectors. See
 /// [`Self::transform_point3()`] and [`Self::transform_vector3()`].
 
-    #[lua(kind = "Function", output(proxy))]
+    #[lua()]
     fn from_translation(#[proxy] translation: bevy::math::DVec3) -> bevy::math::DMat4;
 
 "#,
@@ -18394,7 +16451,7 @@ pub struct DMat3 {
 /// # Panics
 /// Will panic if `axis` is not normalized when `glam_assert` is enabled.
 
-    #[lua(kind = "Function", output(proxy))]
+    #[lua()]
     fn from_axis_angle(
         #[proxy]
         axis: bevy::math::DVec3,
@@ -18408,7 +16465,7 @@ pub struct DMat3 {
 /// The resulting matrix can be used to transform 3D points and vectors. See
 /// [`Self::transform_point3()`] and [`Self::transform_vector3()`].
 
-    #[lua(kind = "Function", output(proxy))]
+    #[lua()]
     fn from_euler(
         #[proxy]
         order: bevy::math::EulerRot,
@@ -18424,7 +16481,7 @@ pub struct DMat3 {
 /// The resulting matrix can be used to transform 3D points and vectors. See
 /// [`Self::transform_point3()`] and [`Self::transform_vector3()`].
 
-    #[lua(kind = "Function", output(proxy))]
+    #[lua()]
     fn from_rotation_x(angle: f64) -> bevy::math::DMat4;
 
 "#,
@@ -18434,7 +16491,7 @@ pub struct DMat3 {
 /// The resulting matrix can be used to transform 3D points and vectors. See
 /// [`Self::transform_point3()`] and [`Self::transform_vector3()`].
 
-    #[lua(kind = "Function", output(proxy))]
+    #[lua()]
     fn from_rotation_y(angle: f64) -> bevy::math::DMat4;
 
 "#,
@@ -18444,7 +16501,7 @@ pub struct DMat3 {
 /// The resulting matrix can be used to transform 3D points and vectors. See
 /// [`Self::transform_point3()`] and [`Self::transform_vector3()`].
 
-    #[lua(kind = "Function", output(proxy))]
+    #[lua()]
     fn from_rotation_z(angle: f64) -> bevy::math::DMat4;
 
 "#,
@@ -18455,7 +16512,7 @@ pub struct DMat3 {
 /// # Panics
 /// Will panic if all elements of `scale` are zero when `glam_assert` is enabled.
 
-    #[lua(kind = "Function", output(proxy))]
+    #[lua()]
     fn from_scale(#[proxy] scale: bevy::math::DVec3) -> bevy::math::DMat4;
 
 "#,
@@ -18464,7 +16521,7 @@ pub struct DMat3 {
 /// # Panics
 /// Panics if `index` is greater than 3.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn col(&self, index: usize) -> bevy::math::DVec4;
 
 "#,
@@ -18473,7 +16530,7 @@ pub struct DMat3 {
 /// # Panics
 /// Panics if `index` is greater than 3.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn row(&self, index: usize) -> bevy::math::DVec4;
 
 "#,
@@ -18481,28 +16538,28 @@ pub struct DMat3 {
 /// Returns `true` if, and only if, all elements are finite.
 /// If any element is either `NaN`, positive or negative infinity, this will return `false`.
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn is_finite(&self) -> bool;
 
 "#,
     r#"
 /// Returns `true` if any elements are `NaN`.
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn is_nan(&self) -> bool;
 
 "#,
     r#"
 /// Returns the transpose of `self`.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn transpose(&self) -> bevy::math::DMat4;
 
 "#,
     r#"
 /// Returns the determinant of `self`.
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn determinant(&self) -> f64;
 
 "#,
@@ -18512,7 +16569,7 @@ pub struct DMat3 {
 /// # Panics
 /// Will panic if the determinant of `self` is zero when `glam_assert` is enabled.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn inverse(&self) -> bevy::math::DMat4;
 
 "#,
@@ -18521,7 +16578,7 @@ pub struct DMat3 {
 /// direction.
 /// For a view coordinate system with `+X=right`, `+Y=up` and `+Z=forward`.
 
-    #[lua(kind = "Function", output(proxy))]
+    #[lua()]
     fn look_to_lh(
         #[proxy]
         eye: bevy::math::DVec3,
@@ -18537,7 +16594,7 @@ pub struct DMat3 {
 /// direction.
 /// For a view coordinate system with `+X=right`, `+Y=up` and `+Z=back`.
 
-    #[lua(kind = "Function", output(proxy))]
+    #[lua()]
     fn look_to_rh(
         #[proxy]
         eye: bevy::math::DVec3,
@@ -18555,7 +16612,7 @@ pub struct DMat3 {
 /// # Panics
 /// Will panic if `up` is not normalized when `glam_assert` is enabled.
 
-    #[lua(kind = "Function", output(proxy))]
+    #[lua()]
     fn look_at_lh(
         #[proxy]
         eye: bevy::math::DVec3,
@@ -18573,7 +16630,7 @@ pub struct DMat3 {
 /// # Panics
 /// Will panic if `up` is not normalized when `glam_assert` is enabled.
 
-    #[lua(kind = "Function", output(proxy))]
+    #[lua()]
     fn look_at_rh(
         #[proxy]
         eye: bevy::math::DVec3,
@@ -18589,7 +16646,7 @@ pub struct DMat3 {
 /// This is the same as the OpenGL `gluPerspective` function.
 /// See <https://www.khronos.org/registry/OpenGL-Refpages/gl2.1/xhtml/gluPerspective.xml>
 
-    #[lua(kind = "Function", output(proxy))]
+    #[lua()]
     fn perspective_rh_gl(
         fov_y_radians: f64,
         aspect_ratio: f64,
@@ -18604,7 +16661,7 @@ pub struct DMat3 {
 /// Will panic if `z_near` or `z_far` are less than or equal to zero when `glam_assert` is
 /// enabled.
 
-    #[lua(kind = "Function", output(proxy))]
+    #[lua()]
     fn perspective_lh(
         fov_y_radians: f64,
         aspect_ratio: f64,
@@ -18619,7 +16676,7 @@ pub struct DMat3 {
 /// Will panic if `z_near` or `z_far` are less than or equal to zero when `glam_assert` is
 /// enabled.
 
-    #[lua(kind = "Function", output(proxy))]
+    #[lua()]
     fn perspective_rh(
         fov_y_radians: f64,
         aspect_ratio: f64,
@@ -18633,7 +16690,7 @@ pub struct DMat3 {
 /// # Panics
 /// Will panic if `z_near` is less than or equal to zero when `glam_assert` is enabled.
 
-    #[lua(kind = "Function", output(proxy))]
+    #[lua()]
     fn perspective_infinite_lh(
         fov_y_radians: f64,
         aspect_ratio: f64,
@@ -18646,7 +16703,7 @@ pub struct DMat3 {
 /// # Panics
 /// Will panic if `z_near` is less than or equal to zero when `glam_assert` is enabled.
 
-    #[lua(kind = "Function", output(proxy))]
+    #[lua()]
     fn perspective_infinite_reverse_lh(
         fov_y_radians: f64,
         aspect_ratio: f64,
@@ -18658,7 +16715,7 @@ pub struct DMat3 {
 /// Creates an infinite right-handed perspective projection matrix with
 /// `[0,1]` depth range.
 
-    #[lua(kind = "Function", output(proxy))]
+    #[lua()]
     fn perspective_infinite_rh(
         fov_y_radians: f64,
         aspect_ratio: f64,
@@ -18670,7 +16727,7 @@ pub struct DMat3 {
 /// Creates an infinite reverse right-handed perspective projection matrix
 /// with `[0,1]` depth range.
 
-    #[lua(kind = "Function", output(proxy))]
+    #[lua()]
     fn perspective_infinite_reverse_rh(
         fov_y_radians: f64,
         aspect_ratio: f64,
@@ -18684,7 +16741,7 @@ pub struct DMat3 {
 /// See
 /// <https://www.khronos.org/registry/OpenGL-Refpages/gl2.1/xhtml/glOrtho.xml>
 
-    #[lua(kind = "Function", output(proxy))]
+    #[lua()]
     fn orthographic_rh_gl(
         left: f64,
         right: f64,
@@ -18698,7 +16755,7 @@ pub struct DMat3 {
     r#"
 /// Creates a left-handed orthographic projection matrix with `[0,1]` depth range.
 
-    #[lua(kind = "Function", output(proxy))]
+    #[lua()]
     fn orthographic_lh(
         left: f64,
         right: f64,
@@ -18712,7 +16769,7 @@ pub struct DMat3 {
     r#"
 /// Creates a right-handed orthographic projection matrix with `[0,1]` depth range.
 
-    #[lua(kind = "Function", output(proxy))]
+    #[lua()]
     fn orthographic_rh(
         left: f64,
         right: f64,
@@ -18729,7 +16786,7 @@ pub struct DMat3 {
 /// The perspective divide is performed meaning the resulting 3D vector is divided by `w`.
 /// This method assumes that `self` contains a projective transform.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn project_point3(&self, #[proxy] rhs: bevy::math::DVec3) -> bevy::math::DVec3;
 
 "#,
@@ -18743,7 +16800,7 @@ pub struct DMat3 {
 /// # Panics
 /// Will panic if the 3rd row of `self` is not `(0, 0, 0, 1)` when `glam_assert` is enabled.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn transform_point3(&self, #[proxy] rhs: bevy::math::DVec3) -> bevy::math::DVec3;
 
 "#,
@@ -18755,42 +16812,42 @@ pub struct DMat3 {
 /// # Panics
 /// Will panic if the 3rd row of `self` is not `(0, 0, 0, 1)` when `glam_assert` is enabled.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn transform_vector3(&self, #[proxy] rhs: bevy::math::DVec3) -> bevy::math::DVec3;
 
 "#,
     r#"
 /// Transforms a 4D vector.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn mul_vec4(&self, #[proxy] rhs: bevy::math::DVec4) -> bevy::math::DVec4;
 
 "#,
     r#"
 /// Multiplies two 4x4 matrices.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn mul_mat4(&self, #[proxy] rhs: &glam::DMat4) -> bevy::math::DMat4;
 
 "#,
     r#"
 /// Adds two 4x4 matrices.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn add_mat4(&self, #[proxy] rhs: &glam::DMat4) -> bevy::math::DMat4;
 
 "#,
     r#"
 /// Subtracts two 4x4 matrices.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn sub_mat4(&self, #[proxy] rhs: &glam::DMat4) -> bevy::math::DMat4;
 
 "#,
     r#"
 /// Multiplies a 4x4 matrix by a scalar.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn mul_scalar(&self, rhs: f64) -> bevy::math::DMat4;
 
 "#,
@@ -18803,62 +16860,45 @@ pub struct DMat3 {
 /// For more see
 /// [comparing floating point numbers](https://randomascii.wordpress.com/2012/02/25/comparing-floating-point-numbers-2012-edition/).
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn abs_diff_eq(&self, #[proxy] rhs: bevy::math::DMat4, max_abs_diff: f64) -> bool;
 
 "#,
     r#"
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn as_mat4(&self) -> bevy::math::Mat4;
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "std::cmp::PartialEq",
-        kind = "MetaFunction",
-        composite = "eq",
-        metamethod = "Eq",
-    )]
+    #[lua(as_trait = "std::cmp::PartialEq", composite = "eq")]
     fn eq(&self, #[proxy] rhs: &glam::DMat4) -> bool;
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "std::ops::Mul",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "mul",
-        metamethod = "Mul",
-    )]
+    #[lua(as_trait = "std::ops::Mul", composite = "mul")]
     fn mul(self, rhs: f64) -> bevy::math::DMat4;
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "std::ops::Neg",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "neg",
-        metamethod = "Unm",
-    )]
+    #[lua(as_trait = "std::ops::Neg", composite = "neg")]
     fn neg(self) -> bevy::math::DMat4;
 
 "#,
     r#"
-#[lua(kind="MetaMethod", metamethod="ToString")]
+#[lua(metamethod="ToString")]
 fn index(&self) -> String {
     format!("{}", _self)
 }
 "#,
     r#"
-#[lua(kind = "MetaMethod", raw, metamethod="Index")]
+#[lua(raw, metamethod="Index")]
 fn index(&self, ctx : &Lua, idx: crate::lua::util::LuaIndex) -> Result<LuaDVec4,_> {
     Ok(LuaDVec4::new_ref(
-            self.reflect_ref(ctx.get_world()?).sub_ref(bevy_script_api::ReflectionPathElement::SubReflection{
+            _self.reflect_ref(ctx.get_world()?).sub_ref(bevy_script_api::ReflectionPathElement::SubReflection{
                 label:"col", 
                 get: std::sync::Arc::new(|ref_| Err(bevy_script_api::error::ReflectionError::InsufficientProvenance{
                     path: "".to_owned(), 
@@ -18879,7 +16919,7 @@ fn index(&self, ctx : &Lua, idx: crate::lua::util::LuaIndex) -> Result<LuaDVec4,
 }
 "#]
 )]
-pub struct DMat4 {
+pub struct LuaDMat4 {
     #[lua(output(proxy))]
     x_axis: bevy::math::DVec4,
     #[lua(output(proxy))]
@@ -18892,10 +16932,12 @@ pub struct DMat4 {
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
     remote = "bevy::math::Affine2",
+    bms_core_path = "bevy_mod_scripting_core",
+    bms_lua_path = "crate",
     functions[r#"
 /// Creates an affine transform from three column vectors.
 
-    #[lua(kind = "Function", output(proxy))]
+    #[lua()]
     fn from_cols(
         #[proxy]
         x_axis: bevy::math::Vec2,
@@ -18909,7 +16951,7 @@ pub struct DMat4 {
     r#"
 /// Creates a `[f32; 6]` array storing data in column major order.
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn to_cols_array(&self) -> [f32; 6];
 
 "#,
@@ -18918,7 +16960,7 @@ pub struct DMat4 {
 /// column major order.
 /// If you require data in row major order `transpose` the matrix first.
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn to_cols_array_2d(&self) -> [[f32; 2]; 3];
 
 "#,
@@ -18926,28 +16968,28 @@ pub struct DMat4 {
 /// Creates an affine transform that changes scale.
 /// Note that if any scale is zero the transform will be non-invertible.
 
-    #[lua(kind = "Function", output(proxy))]
+    #[lua()]
     fn from_scale(#[proxy] scale: bevy::math::Vec2) -> bevy::math::Affine2;
 
 "#,
     r#"
 /// Creates an affine transform from the given rotation `angle`.
 
-    #[lua(kind = "Function", output(proxy))]
+    #[lua()]
     fn from_angle(angle: f32) -> bevy::math::Affine2;
 
 "#,
     r#"
 /// Creates an affine transformation from the given 2D `translation`.
 
-    #[lua(kind = "Function", output(proxy))]
+    #[lua()]
     fn from_translation(#[proxy] translation: bevy::math::Vec2) -> bevy::math::Affine2;
 
 "#,
     r#"
 /// Creates an affine transform from a 2x2 matrix (expressing scale, shear and rotation)
 
-    #[lua(kind = "Function", output(proxy))]
+    #[lua()]
     fn from_mat2(#[proxy] matrix2: bevy::math::Mat2) -> bevy::math::Affine2;
 
 "#,
@@ -18957,7 +16999,7 @@ pub struct DMat4 {
 /// Equivalent to
 /// `Affine2::from_translation(translation) * Affine2::from_mat2(mat2)`
 
-    #[lua(kind = "Function", output(proxy))]
+    #[lua()]
     fn from_mat2_translation(
         #[proxy]
         matrix2: bevy::math::Mat2,
@@ -18972,7 +17014,7 @@ pub struct DMat4 {
 /// Equivalent to `Affine2::from_translation(translation) *
 /// Affine2::from_angle(angle) * Affine2::from_scale(scale)`
 
-    #[lua(kind = "Function", output(proxy))]
+    #[lua()]
     fn from_scale_angle_translation(
         #[proxy]
         scale: bevy::math::Vec2,
@@ -18987,7 +17029,7 @@ pub struct DMat4 {
 /// `translation`.
 /// Equivalent to `Affine2::from_translation(translation) * Affine2::from_angle(angle)`
 
-    #[lua(kind = "Function", output(proxy))]
+    #[lua()]
     fn from_angle_translation(
         angle: f32,
         #[proxy]
@@ -18998,21 +17040,21 @@ pub struct DMat4 {
     r#"
 /// The given `Mat3` must be an affine transform,
 
-    #[lua(kind = "Function", output(proxy))]
+    #[lua()]
     fn from_mat3(#[proxy] m: bevy::math::Mat3) -> bevy::math::Affine2;
 
 "#,
     r#"
 /// The given [`Mat3A`] must be an affine transform,
 
-    #[lua(kind = "Function", output(proxy))]
+    #[lua()]
     fn from_mat3a(#[proxy] m: bevy::math::Mat3A) -> bevy::math::Affine2;
 
 "#,
     r#"
 /// Transforms the given 2D point, applying shear, scale, rotation and translation.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn transform_point2(&self, #[proxy] rhs: bevy::math::Vec2) -> bevy::math::Vec2;
 
 "#,
@@ -19021,7 +17063,7 @@ pub struct DMat4 {
 /// translation).
 /// To also apply translation, use [`Self::transform_point2()`] instead.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn transform_vector2(&self, #[proxy] rhs: bevy::math::Vec2) -> bevy::math::Vec2;
 
 "#,
@@ -19030,14 +17072,14 @@ pub struct DMat4 {
 /// If any element is either `NaN`, positive or negative infinity, this will return
 /// `false`.
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn is_finite(&self) -> bool;
 
 "#,
     r#"
 /// Returns `true` if any elements are `NaN`.
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn is_nan(&self) -> bool;
 
 "#,
@@ -19050,7 +17092,7 @@ pub struct DMat4 {
 /// For more see
 /// [comparing floating point numbers](https://randomascii.wordpress.com/2012/02/25/comparing-floating-point-numbers-2012-edition/).
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn abs_diff_eq(&self, #[proxy] rhs: bevy::math::Affine2, max_abs_diff: f32) -> bool;
 
 "#,
@@ -19058,75 +17100,48 @@ pub struct DMat4 {
 /// Return the inverse of this transform.
 /// Note that if the transform is not invertible the result will be invalid.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn inverse(&self) -> bevy::math::Affine2;
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "std::ops::Mul",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "mul",
-        metamethod = "Mul",
-    )]
+    #[lua(as_trait = "std::ops::Mul", composite = "mul")]
     fn mul(self, #[proxy] rhs: bevy::math::Mat3A) -> bevy::math::Mat3A;
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone",
-        kind = "Method",
-        output(proxy),
-    )]
+    #[lua(as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone")]
     fn clone(&self) -> bevy::math::Affine2;
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "std::ops::Mul",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "mul",
-        metamethod = "Mul",
-    )]
+    #[lua(as_trait = "std::ops::Mul", composite = "mul")]
     fn mul(self, #[proxy] rhs: bevy::math::Affine2) -> bevy::math::Affine2;
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "std::cmp::PartialEq",
-        kind = "MetaFunction",
-        composite = "eq",
-        metamethod = "Eq",
-    )]
+    #[lua(as_trait = "std::cmp::PartialEq", composite = "eq")]
     fn eq(&self, #[proxy] rhs: &glam::Affine2) -> bool;
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "std::ops::Mul",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "mul",
-        metamethod = "Mul",
-    )]
+    #[lua(as_trait = "std::ops::Mul", composite = "mul")]
     fn mul(self, #[proxy] rhs: bevy::math::Mat3) -> bevy::math::Mat3;
 
 "#,
     r#"
-#[lua(kind="MetaMethod", metamethod="ToString")]
+#[lua(metamethod="ToString")]
 fn index(&self) -> String {
     format!("{}", _self)
 }
 "#]
 )]
-pub struct Affine2 {
+pub struct LuaAffine2 {
     #[lua(output(proxy))]
     matrix2: bevy::math::Mat2,
     #[lua(output(proxy))]
@@ -19135,55 +17150,36 @@ pub struct Affine2 {
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
     remote = "bevy::math::Affine3A",
+    bms_core_path = "bevy_mod_scripting_core",
+    bms_lua_path = "crate",
     functions[r#"
 
-    #[lua(
-        as_trait = "std::ops::Mul",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "mul",
-        metamethod = "Mul",
-    )]
+    #[lua(as_trait = "std::ops::Mul", composite = "mul")]
     fn mul(self, #[proxy] rhs: bevy::math::Affine3A) -> bevy::math::Affine3A;
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone",
-        kind = "Method",
-        output(proxy),
-    )]
+    #[lua(as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone")]
     fn clone(&self) -> bevy::math::Affine3A;
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "std::cmp::PartialEq",
-        kind = "MetaFunction",
-        composite = "eq",
-        metamethod = "Eq",
-    )]
+    #[lua(as_trait = "std::cmp::PartialEq", composite = "eq")]
     fn eq(&self, #[proxy] rhs: &glam::Affine3A) -> bool;
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "std::ops::Mul",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "mul",
-        metamethod = "Mul",
-    )]
+    #[lua(as_trait = "std::ops::Mul", composite = "mul")]
     fn mul(self, #[proxy] rhs: bevy::math::Mat4) -> bevy::math::Mat4;
 
 "#,
     r#"
 /// Creates an affine transform from three column vectors.
 
-    #[lua(kind = "Function", output(proxy))]
+    #[lua()]
     fn from_cols(
         #[proxy]
         x_axis: bevy::math::Vec3A,
@@ -19199,7 +17195,7 @@ pub struct Affine2 {
     r#"
 /// Creates a `[f32; 12]` array storing data in column major order.
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn to_cols_array(&self) -> [f32; 12];
 
 "#,
@@ -19208,7 +17204,7 @@ pub struct Affine2 {
 /// column major order.
 /// If you require data in row major order `transpose` the matrix first.
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn to_cols_array_2d(&self) -> [[f32; 3]; 4];
 
 "#,
@@ -19216,14 +17212,14 @@ pub struct Affine2 {
 /// Creates an affine transform that changes scale.
 /// Note that if any scale is zero the transform will be non-invertible.
 
-    #[lua(kind = "Function", output(proxy))]
+    #[lua()]
     fn from_scale(#[proxy] scale: bevy::math::Vec3) -> bevy::math::Affine3A;
 
 "#,
     r#"
 /// Creates an affine transform from the given `rotation` quaternion.
 
-    #[lua(kind = "Function", output(proxy))]
+    #[lua()]
     fn from_quat(#[proxy] rotation: bevy::math::Quat) -> bevy::math::Affine3A;
 
 "#,
@@ -19231,7 +17227,7 @@ pub struct Affine2 {
 /// Creates an affine transform containing a 3D rotation around a normalized
 /// rotation `axis` of `angle` (in radians).
 
-    #[lua(kind = "Function", output(proxy))]
+    #[lua()]
     fn from_axis_angle(
         #[proxy]
         axis: bevy::math::Vec3,
@@ -19243,7 +17239,7 @@ pub struct Affine2 {
 /// Creates an affine transform containing a 3D rotation around the x axis of
 /// `angle` (in radians).
 
-    #[lua(kind = "Function", output(proxy))]
+    #[lua()]
     fn from_rotation_x(angle: f32) -> bevy::math::Affine3A;
 
 "#,
@@ -19251,7 +17247,7 @@ pub struct Affine2 {
 /// Creates an affine transform containing a 3D rotation around the y axis of
 /// `angle` (in radians).
 
-    #[lua(kind = "Function", output(proxy))]
+    #[lua()]
     fn from_rotation_y(angle: f32) -> bevy::math::Affine3A;
 
 "#,
@@ -19259,14 +17255,14 @@ pub struct Affine2 {
 /// Creates an affine transform containing a 3D rotation around the z axis of
 /// `angle` (in radians).
 
-    #[lua(kind = "Function", output(proxy))]
+    #[lua()]
     fn from_rotation_z(angle: f32) -> bevy::math::Affine3A;
 
 "#,
     r#"
 /// Creates an affine transformation from the given 3D `translation`.
 
-    #[lua(kind = "Function", output(proxy))]
+    #[lua()]
     fn from_translation(#[proxy] translation: bevy::math::Vec3) -> bevy::math::Affine3A;
 
 "#,
@@ -19274,7 +17270,7 @@ pub struct Affine2 {
 /// Creates an affine transform from a 3x3 matrix (expressing scale, shear and
 /// rotation)
 
-    #[lua(kind = "Function", output(proxy))]
+    #[lua()]
     fn from_mat3(#[proxy] mat3: bevy::math::Mat3) -> bevy::math::Affine3A;
 
 "#,
@@ -19283,7 +17279,7 @@ pub struct Affine2 {
 /// and a translation vector.
 /// Equivalent to `Affine3A::from_translation(translation) * Affine3A::from_mat3(mat3)`
 
-    #[lua(kind = "Function", output(proxy))]
+    #[lua()]
     fn from_mat3_translation(
         #[proxy]
         mat3: bevy::math::Mat3,
@@ -19298,7 +17294,7 @@ pub struct Affine2 {
 /// Equivalent to `Affine3A::from_translation(translation) *
 /// Affine3A::from_quat(rotation) * Affine3A::from_scale(scale)`
 
-    #[lua(kind = "Function", output(proxy))]
+    #[lua()]
     fn from_scale_rotation_translation(
         #[proxy]
         scale: bevy::math::Vec3,
@@ -19313,7 +17309,7 @@ pub struct Affine2 {
 /// Creates an affine transform from the given 3D `rotation` and `translation`.
 /// Equivalent to `Affine3A::from_translation(translation) * Affine3A::from_quat(rotation)`
 
-    #[lua(kind = "Function", output(proxy))]
+    #[lua()]
     fn from_rotation_translation(
         #[proxy]
         rotation: bevy::math::Quat,
@@ -19326,7 +17322,7 @@ pub struct Affine2 {
 /// The given `Mat4` must be an affine transform,
 /// i.e. contain no perspective transform.
 
-    #[lua(kind = "Function", output(proxy))]
+    #[lua()]
     fn from_mat4(#[proxy] m: bevy::math::Mat4) -> bevy::math::Affine3A;
 
 "#,
@@ -19335,7 +17331,7 @@ pub struct Affine2 {
 /// direction.
 /// For a view coordinate system with `+X=right`, `+Y=up` and `+Z=forward`.
 
-    #[lua(kind = "Function", output(proxy))]
+    #[lua()]
     fn look_to_lh(
         #[proxy]
         eye: bevy::math::Vec3,
@@ -19351,7 +17347,7 @@ pub struct Affine2 {
 /// direction.
 /// For a view coordinate system with `+X=right`, `+Y=up` and `+Z=back`.
 
-    #[lua(kind = "Function", output(proxy))]
+    #[lua()]
     fn look_to_rh(
         #[proxy]
         eye: bevy::math::Vec3,
@@ -19369,7 +17365,7 @@ pub struct Affine2 {
 /// # Panics
 /// Will panic if `up` is not normalized when `glam_assert` is enabled.
 
-    #[lua(kind = "Function", output(proxy))]
+    #[lua()]
     fn look_at_lh(
         #[proxy]
         eye: bevy::math::Vec3,
@@ -19387,7 +17383,7 @@ pub struct Affine2 {
 /// # Panics
 /// Will panic if `up` is not normalized when `glam_assert` is enabled.
 
-    #[lua(kind = "Function", output(proxy))]
+    #[lua()]
     fn look_at_rh(
         #[proxy]
         eye: bevy::math::Vec3,
@@ -19401,7 +17397,7 @@ pub struct Affine2 {
     r#"
 /// Transforms the given 3D points, applying shear, scale, rotation and translation.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn transform_point3(&self, #[proxy] rhs: bevy::math::Vec3) -> bevy::math::Vec3;
 
 "#,
@@ -19410,14 +17406,14 @@ pub struct Affine2 {
 /// translation).
 /// To also apply translation, use [`Self::transform_point3()`] instead.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn transform_vector3(&self, #[proxy] rhs: bevy::math::Vec3) -> bevy::math::Vec3;
 
 "#,
     r#"
 /// Transforms the given [`Vec3A`], applying shear, scale, rotation and translation.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn transform_point3a(&self, #[proxy] rhs: bevy::math::Vec3A) -> bevy::math::Vec3A;
 
 "#,
@@ -19426,7 +17422,7 @@ pub struct Affine2 {
 /// translation).
 /// To also apply translation, use [`Self::transform_point3a()`] instead.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn transform_vector3a(&self, #[proxy] rhs: bevy::math::Vec3A) -> bevy::math::Vec3A;
 
 "#,
@@ -19435,14 +17431,14 @@ pub struct Affine2 {
 /// If any element is either `NaN`, positive or negative infinity, this will return
 /// `false`.
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn is_finite(&self) -> bool;
 
 "#,
     r#"
 /// Returns `true` if any elements are `NaN`.
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn is_nan(&self) -> bool;
 
 "#,
@@ -19455,7 +17451,7 @@ pub struct Affine2 {
 /// For more see
 /// [comparing floating point numbers](https://randomascii.wordpress.com/2012/02/25/comparing-floating-point-numbers-2012-edition/).
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn abs_diff_eq(&self, #[proxy] rhs: bevy::math::Affine3A, max_abs_diff: f32) -> bool;
 
 "#,
@@ -19463,18 +17459,18 @@ pub struct Affine2 {
 /// Return the inverse of this transform.
 /// Note that if the transform is not invertible the result will be invalid.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn inverse(&self) -> bevy::math::Affine3A;
 
 "#,
     r#"
-#[lua(kind="MetaMethod", metamethod="ToString")]
+#[lua(metamethod="ToString")]
 fn index(&self) -> String {
     format!("{}", _self)
 }
 "#]
 )]
-pub struct Affine3A {
+pub struct LuaAffine3A {
     #[lua(output(proxy))]
     matrix3: bevy::math::Mat3A,
     #[lua(output(proxy))]
@@ -19483,33 +17479,24 @@ pub struct Affine3A {
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
     remote = "bevy::math::DAffine2",
+    bms_core_path = "bevy_mod_scripting_core",
+    bms_lua_path = "crate",
     functions[r#"
 
-    #[lua(
-        as_trait = "std::ops::Mul",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "mul",
-        metamethod = "Mul",
-    )]
+    #[lua(as_trait = "std::ops::Mul", composite = "mul")]
     fn mul(self, #[proxy] rhs: bevy::math::DMat3) -> bevy::math::DMat3;
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "std::cmp::PartialEq",
-        kind = "MetaFunction",
-        composite = "eq",
-        metamethod = "Eq",
-    )]
+    #[lua(as_trait = "std::cmp::PartialEq", composite = "eq")]
     fn eq(&self, #[proxy] rhs: &glam::DAffine2) -> bool;
 
 "#,
     r#"
 /// Creates an affine transform from three column vectors.
 
-    #[lua(kind = "Function", output(proxy))]
+    #[lua()]
     fn from_cols(
         #[proxy]
         x_axis: bevy::math::DVec2,
@@ -19523,7 +17510,7 @@ pub struct Affine3A {
     r#"
 /// Creates a `[f64; 6]` array storing data in column major order.
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn to_cols_array(&self) -> [f64; 6];
 
 "#,
@@ -19532,7 +17519,7 @@ pub struct Affine3A {
 /// column major order.
 /// If you require data in row major order `transpose` the matrix first.
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn to_cols_array_2d(&self) -> [[f64; 2]; 3];
 
 "#,
@@ -19540,28 +17527,28 @@ pub struct Affine3A {
 /// Creates an affine transform that changes scale.
 /// Note that if any scale is zero the transform will be non-invertible.
 
-    #[lua(kind = "Function", output(proxy))]
+    #[lua()]
     fn from_scale(#[proxy] scale: bevy::math::DVec2) -> bevy::math::DAffine2;
 
 "#,
     r#"
 /// Creates an affine transform from the given rotation `angle`.
 
-    #[lua(kind = "Function", output(proxy))]
+    #[lua()]
     fn from_angle(angle: f64) -> bevy::math::DAffine2;
 
 "#,
     r#"
 /// Creates an affine transformation from the given 2D `translation`.
 
-    #[lua(kind = "Function", output(proxy))]
+    #[lua()]
     fn from_translation(#[proxy] translation: bevy::math::DVec2) -> bevy::math::DAffine2;
 
 "#,
     r#"
 /// Creates an affine transform from a 2x2 matrix (expressing scale, shear and rotation)
 
-    #[lua(kind = "Function", output(proxy))]
+    #[lua()]
     fn from_mat2(#[proxy] matrix2: bevy::math::DMat2) -> bevy::math::DAffine2;
 
 "#,
@@ -19571,7 +17558,7 @@ pub struct Affine3A {
 /// Equivalent to
 /// `DAffine2::from_translation(translation) * DAffine2::from_mat2(mat2)`
 
-    #[lua(kind = "Function", output(proxy))]
+    #[lua()]
     fn from_mat2_translation(
         #[proxy]
         matrix2: bevy::math::DMat2,
@@ -19586,7 +17573,7 @@ pub struct Affine3A {
 /// Equivalent to `DAffine2::from_translation(translation) *
 /// DAffine2::from_angle(angle) * DAffine2::from_scale(scale)`
 
-    #[lua(kind = "Function", output(proxy))]
+    #[lua()]
     fn from_scale_angle_translation(
         #[proxy]
         scale: bevy::math::DVec2,
@@ -19601,7 +17588,7 @@ pub struct Affine3A {
 /// `translation`.
 /// Equivalent to `DAffine2::from_translation(translation) * DAffine2::from_angle(angle)`
 
-    #[lua(kind = "Function", output(proxy))]
+    #[lua()]
     fn from_angle_translation(
         angle: f64,
         #[proxy]
@@ -19612,14 +17599,14 @@ pub struct Affine3A {
     r#"
 /// The given `DMat3` must be an affine transform,
 
-    #[lua(kind = "Function", output(proxy))]
+    #[lua()]
     fn from_mat3(#[proxy] m: bevy::math::DMat3) -> bevy::math::DAffine2;
 
 "#,
     r#"
 /// Transforms the given 2D point, applying shear, scale, rotation and translation.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn transform_point2(&self, #[proxy] rhs: bevy::math::DVec2) -> bevy::math::DVec2;
 
 "#,
@@ -19628,7 +17615,7 @@ pub struct Affine3A {
 /// translation).
 /// To also apply translation, use [`Self::transform_point2()`] instead.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn transform_vector2(&self, #[proxy] rhs: bevy::math::DVec2) -> bevy::math::DVec2;
 
 "#,
@@ -19637,14 +17624,14 @@ pub struct Affine3A {
 /// If any element is either `NaN`, positive or negative infinity, this will return
 /// `false`.
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn is_finite(&self) -> bool;
 
 "#,
     r#"
 /// Returns `true` if any elements are `NaN`.
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn is_nan(&self) -> bool;
 
 "#,
@@ -19657,7 +17644,7 @@ pub struct Affine3A {
 /// For more see
 /// [comparing floating point numbers](https://randomascii.wordpress.com/2012/02/25/comparing-floating-point-numbers-2012-edition/).
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn abs_diff_eq(&self, #[proxy] rhs: bevy::math::DAffine2, max_abs_diff: f64) -> bool;
 
 "#,
@@ -19665,40 +17652,30 @@ pub struct Affine3A {
 /// Return the inverse of this transform.
 /// Note that if the transform is not invertible the result will be invalid.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn inverse(&self) -> bevy::math::DAffine2;
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone",
-        kind = "Method",
-        output(proxy),
-    )]
+    #[lua(as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone")]
     fn clone(&self) -> bevy::math::DAffine2;
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "std::ops::Mul",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "mul",
-        metamethod = "Mul",
-    )]
+    #[lua(as_trait = "std::ops::Mul", composite = "mul")]
     fn mul(self, #[proxy] rhs: bevy::math::DAffine2) -> bevy::math::DAffine2;
 
 "#,
     r#"
-#[lua(kind="MetaMethod", metamethod="ToString")]
+#[lua(metamethod="ToString")]
 fn index(&self) -> String {
     format!("{}", _self)
 }
 "#]
 )]
-pub struct DAffine2 {
+pub struct LuaDAffine2 {
     #[lua(output(proxy))]
     matrix2: bevy::math::DMat2,
     #[lua(output(proxy))]
@@ -19707,32 +17684,24 @@ pub struct DAffine2 {
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
     remote = "bevy::math::DAffine3",
+    bms_core_path = "bevy_mod_scripting_core",
+    bms_lua_path = "crate",
     functions[r#"
 
-    #[lua(
-        as_trait = "std::ops::Mul",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "mul",
-        metamethod = "Mul",
-    )]
+    #[lua(as_trait = "std::ops::Mul", composite = "mul")]
     fn mul(self, #[proxy] rhs: bevy::math::DMat4) -> bevy::math::DMat4;
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone",
-        kind = "Method",
-        output(proxy),
-    )]
+    #[lua(as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone")]
     fn clone(&self) -> bevy::math::DAffine3;
 
 "#,
     r#"
 /// Creates an affine transform from three column vectors.
 
-    #[lua(kind = "Function", output(proxy))]
+    #[lua()]
     fn from_cols(
         #[proxy]
         x_axis: bevy::math::DVec3,
@@ -19748,7 +17717,7 @@ pub struct DAffine2 {
     r#"
 /// Creates a `[f64; 12]` array storing data in column major order.
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn to_cols_array(&self) -> [f64; 12];
 
 "#,
@@ -19757,7 +17726,7 @@ pub struct DAffine2 {
 /// column major order.
 /// If you require data in row major order `transpose` the matrix first.
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn to_cols_array_2d(&self) -> [[f64; 3]; 4];
 
 "#,
@@ -19765,14 +17734,14 @@ pub struct DAffine2 {
 /// Creates an affine transform that changes scale.
 /// Note that if any scale is zero the transform will be non-invertible.
 
-    #[lua(kind = "Function", output(proxy))]
+    #[lua()]
     fn from_scale(#[proxy] scale: bevy::math::DVec3) -> bevy::math::DAffine3;
 
 "#,
     r#"
 /// Creates an affine transform from the given `rotation` quaternion.
 
-    #[lua(kind = "Function", output(proxy))]
+    #[lua()]
     fn from_quat(#[proxy] rotation: bevy::math::DQuat) -> bevy::math::DAffine3;
 
 "#,
@@ -19780,7 +17749,7 @@ pub struct DAffine2 {
 /// Creates an affine transform containing a 3D rotation around a normalized
 /// rotation `axis` of `angle` (in radians).
 
-    #[lua(kind = "Function", output(proxy))]
+    #[lua()]
     fn from_axis_angle(
         #[proxy]
         axis: bevy::math::DVec3,
@@ -19792,7 +17761,7 @@ pub struct DAffine2 {
 /// Creates an affine transform containing a 3D rotation around the x axis of
 /// `angle` (in radians).
 
-    #[lua(kind = "Function", output(proxy))]
+    #[lua()]
     fn from_rotation_x(angle: f64) -> bevy::math::DAffine3;
 
 "#,
@@ -19800,7 +17769,7 @@ pub struct DAffine2 {
 /// Creates an affine transform containing a 3D rotation around the y axis of
 /// `angle` (in radians).
 
-    #[lua(kind = "Function", output(proxy))]
+    #[lua()]
     fn from_rotation_y(angle: f64) -> bevy::math::DAffine3;
 
 "#,
@@ -19808,14 +17777,14 @@ pub struct DAffine2 {
 /// Creates an affine transform containing a 3D rotation around the z axis of
 /// `angle` (in radians).
 
-    #[lua(kind = "Function", output(proxy))]
+    #[lua()]
     fn from_rotation_z(angle: f64) -> bevy::math::DAffine3;
 
 "#,
     r#"
 /// Creates an affine transformation from the given 3D `translation`.
 
-    #[lua(kind = "Function", output(proxy))]
+    #[lua()]
     fn from_translation(#[proxy] translation: bevy::math::DVec3) -> bevy::math::DAffine3;
 
 "#,
@@ -19823,7 +17792,7 @@ pub struct DAffine2 {
 /// Creates an affine transform from a 3x3 matrix (expressing scale, shear and
 /// rotation)
 
-    #[lua(kind = "Function", output(proxy))]
+    #[lua()]
     fn from_mat3(#[proxy] mat3: bevy::math::DMat3) -> bevy::math::DAffine3;
 
 "#,
@@ -19832,7 +17801,7 @@ pub struct DAffine2 {
 /// and a translation vector.
 /// Equivalent to `DAffine3::from_translation(translation) * DAffine3::from_mat3(mat3)`
 
-    #[lua(kind = "Function", output(proxy))]
+    #[lua()]
     fn from_mat3_translation(
         #[proxy]
         mat3: bevy::math::DMat3,
@@ -19847,7 +17816,7 @@ pub struct DAffine2 {
 /// Equivalent to `DAffine3::from_translation(translation) *
 /// DAffine3::from_quat(rotation) * DAffine3::from_scale(scale)`
 
-    #[lua(kind = "Function", output(proxy))]
+    #[lua()]
     fn from_scale_rotation_translation(
         #[proxy]
         scale: bevy::math::DVec3,
@@ -19862,7 +17831,7 @@ pub struct DAffine2 {
 /// Creates an affine transform from the given 3D `rotation` and `translation`.
 /// Equivalent to `DAffine3::from_translation(translation) * DAffine3::from_quat(rotation)`
 
-    #[lua(kind = "Function", output(proxy))]
+    #[lua()]
     fn from_rotation_translation(
         #[proxy]
         rotation: bevy::math::DQuat,
@@ -19875,7 +17844,7 @@ pub struct DAffine2 {
 /// The given `DMat4` must be an affine transform,
 /// i.e. contain no perspective transform.
 
-    #[lua(kind = "Function", output(proxy))]
+    #[lua()]
     fn from_mat4(#[proxy] m: bevy::math::DMat4) -> bevy::math::DAffine3;
 
 "#,
@@ -19884,7 +17853,7 @@ pub struct DAffine2 {
 /// direction.
 /// For a view coordinate system with `+X=right`, `+Y=up` and `+Z=forward`.
 
-    #[lua(kind = "Function", output(proxy))]
+    #[lua()]
     fn look_to_lh(
         #[proxy]
         eye: bevy::math::DVec3,
@@ -19900,7 +17869,7 @@ pub struct DAffine2 {
 /// direction.
 /// For a view coordinate system with `+X=right`, `+Y=up` and `+Z=back`.
 
-    #[lua(kind = "Function", output(proxy))]
+    #[lua()]
     fn look_to_rh(
         #[proxy]
         eye: bevy::math::DVec3,
@@ -19918,7 +17887,7 @@ pub struct DAffine2 {
 /// # Panics
 /// Will panic if `up` is not normalized when `glam_assert` is enabled.
 
-    #[lua(kind = "Function", output(proxy))]
+    #[lua()]
     fn look_at_lh(
         #[proxy]
         eye: bevy::math::DVec3,
@@ -19936,7 +17905,7 @@ pub struct DAffine2 {
 /// # Panics
 /// Will panic if `up` is not normalized when `glam_assert` is enabled.
 
-    #[lua(kind = "Function", output(proxy))]
+    #[lua()]
     fn look_at_rh(
         #[proxy]
         eye: bevy::math::DVec3,
@@ -19950,7 +17919,7 @@ pub struct DAffine2 {
     r#"
 /// Transforms the given 3D points, applying shear, scale, rotation and translation.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn transform_point3(&self, #[proxy] rhs: bevy::math::DVec3) -> bevy::math::DVec3;
 
 "#,
@@ -19959,7 +17928,7 @@ pub struct DAffine2 {
 /// translation).
 /// To also apply translation, use [`Self::transform_point3()`] instead.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn transform_vector3(&self, #[proxy] rhs: bevy::math::DVec3) -> bevy::math::DVec3;
 
 "#,
@@ -19968,14 +17937,14 @@ pub struct DAffine2 {
 /// If any element is either `NaN`, positive or negative infinity, this will return
 /// `false`.
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn is_finite(&self) -> bool;
 
 "#,
     r#"
 /// Returns `true` if any elements are `NaN`.
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn is_nan(&self) -> bool;
 
 "#,
@@ -19988,7 +17957,7 @@ pub struct DAffine2 {
 /// For more see
 /// [comparing floating point numbers](https://randomascii.wordpress.com/2012/02/25/comparing-floating-point-numbers-2012-edition/).
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn abs_diff_eq(&self, #[proxy] rhs: bevy::math::DAffine3, max_abs_diff: f64) -> bool;
 
 "#,
@@ -19996,41 +17965,30 @@ pub struct DAffine2 {
 /// Return the inverse of this transform.
 /// Note that if the transform is not invertible the result will be invalid.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn inverse(&self) -> bevy::math::DAffine3;
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "std::ops::Mul",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "mul",
-        metamethod = "Mul",
-    )]
+    #[lua(as_trait = "std::ops::Mul", composite = "mul")]
     fn mul(self, #[proxy] rhs: bevy::math::DAffine3) -> bevy::math::DAffine3;
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "std::cmp::PartialEq",
-        kind = "MetaFunction",
-        composite = "eq",
-        metamethod = "Eq",
-    )]
+    #[lua(as_trait = "std::cmp::PartialEq", composite = "eq")]
     fn eq(&self, #[proxy] rhs: &glam::DAffine3) -> bool;
 
 "#,
     r#"
-#[lua(kind="MetaMethod", metamethod="ToString")]
+#[lua(metamethod="ToString")]
 fn index(&self) -> String {
     format!("{}", _self)
 }
 "#]
 )]
-pub struct DAffine3 {
+pub struct LuaDAffine3 {
     #[lua(output(proxy))]
     matrix3: bevy::math::DMat3,
     #[lua(output(proxy))]
@@ -20039,52 +17997,33 @@ pub struct DAffine3 {
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
     remote = "bevy::math::DQuat",
+    bms_core_path = "bevy_mod_scripting_core",
+    bms_lua_path = "crate",
     functions[r#"
 /// Adds two quaternions.
 /// The sum is not guaranteed to be normalized.
 /// Note that addition is not the same as combining the rotations represented by the
 /// two quaternions! That corresponds to multiplication.
 
-    #[lua(
-        as_trait = "std::ops::Add",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "add",
-        metamethod = "Add",
-    )]
+    #[lua(as_trait = "std::ops::Add", composite = "add")]
     fn add(self, #[proxy] rhs: bevy::math::DQuat) -> bevy::math::DQuat;
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "std::ops::Neg",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "neg",
-        metamethod = "Unm",
-    )]
+    #[lua(as_trait = "std::ops::Neg", composite = "neg")]
     fn neg(self) -> bevy::math::DQuat;
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "std::cmp::PartialEq",
-        kind = "MetaFunction",
-        composite = "eq",
-        metamethod = "Eq",
-    )]
+    #[lua(as_trait = "std::cmp::PartialEq", composite = "eq")]
     fn eq(&self, #[proxy] rhs: &glam::DQuat) -> bool;
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone",
-        kind = "Method",
-        output(proxy),
-    )]
+    #[lua(as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone")]
     fn clone(&self) -> bevy::math::DQuat;
 
 "#,
@@ -20092,13 +18031,7 @@ pub struct DAffine3 {
 /// Divides a quaternion by a scalar value.
 /// The quotient is not guaranteed to be normalized.
 
-    #[lua(
-        as_trait = "std::ops::Div",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "div",
-        metamethod = "Div",
-    )]
+    #[lua(as_trait = "std::ops::Div", composite = "div")]
     fn div(self, rhs: f64) -> bevy::math::DQuat;
 
 "#,
@@ -20110,13 +18043,7 @@ pub struct DAffine3 {
 /// # Panics
 /// Will panic if `self` or `rhs` are not normalized when `glam_assert` is enabled.
 
-    #[lua(
-        as_trait = "std::ops::Mul",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "mul",
-        metamethod = "Mul",
-    )]
+    #[lua(as_trait = "std::ops::Mul", composite = "mul")]
     fn mul(self, #[proxy] rhs: bevy::math::DQuat) -> bevy::math::DQuat;
 
 "#,
@@ -20124,13 +18051,7 @@ pub struct DAffine3 {
 /// Subtracts the `rhs` quaternion from `self`.
 /// The difference is not guaranteed to be normalized.
 
-    #[lua(
-        as_trait = "std::ops::Sub",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "sub",
-        metamethod = "Sub",
-    )]
+    #[lua(as_trait = "std::ops::Sub", composite = "sub")]
     fn sub(self, #[proxy] rhs: bevy::math::DQuat) -> bevy::math::DQuat;
 
 "#,
@@ -20138,13 +18059,7 @@ pub struct DAffine3 {
 /// Multiplies a quaternion by a scalar value.
 /// The product is not guaranteed to be normalized.
 
-    #[lua(
-        as_trait = "std::ops::Mul",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "mul",
-        metamethod = "Mul",
-    )]
+    #[lua(as_trait = "std::ops::Mul", composite = "mul")]
     fn mul(self, rhs: f64) -> bevy::math::DQuat;
 
 "#,
@@ -20153,13 +18068,7 @@ pub struct DAffine3 {
 /// # Panics
 /// Will panic if `self` is not normalized when `glam_assert` is enabled.
 
-    #[lua(
-        as_trait = "std::ops::Mul",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "mul",
-        metamethod = "Mul",
-    )]
+    #[lua(as_trait = "std::ops::Mul", composite = "mul")]
     fn mul(self, #[proxy] rhs: bevy::math::DVec3) -> bevy::math::DVec3;
 
 "#,
@@ -20172,7 +18081,7 @@ pub struct DAffine3 {
 /// This function does not check if the input is normalized, it is up to the user to
 /// provide normalized input or to normalized the resulting quaternion.
 
-    #[lua(kind = "Function", output(proxy))]
+    #[lua()]
     fn from_xyzw(x: f64, y: f64, z: f64, w: f64) -> bevy::math::DQuat;
 
 "#,
@@ -20182,7 +18091,7 @@ pub struct DAffine3 {
 /// This function does not check if the input is normalized, it is up to the user to
 /// provide normalized input or to normalized the resulting quaternion.
 
-    #[lua(kind = "Function", output(proxy))]
+    #[lua()]
     fn from_array(a: [f64; 4]) -> bevy::math::DQuat;
 
 "#,
@@ -20192,7 +18101,7 @@ pub struct DAffine3 {
 /// This function does not check if the input is normalized, it is up to the user to
 /// provide normalized input or to normalized the resulting quaternion.
 
-    #[lua(kind = "Function", output(proxy))]
+    #[lua()]
     fn from_vec4(#[proxy] v: bevy::math::DVec4) -> bevy::math::DQuat;
 
 "#,
@@ -20202,7 +18111,7 @@ pub struct DAffine3 {
 /// # Panics
 /// Will panic if `axis` is not normalized when `glam_assert` is enabled.
 
-    #[lua(kind = "Function", output(proxy))]
+    #[lua()]
     fn from_axis_angle(
         #[proxy]
         axis: bevy::math::DVec3,
@@ -20214,35 +18123,35 @@ pub struct DAffine3 {
 /// Create a quaternion that rotates `v.length()` radians around `v.normalize()`.
 /// `from_scaled_axis(Vec3::ZERO)` results in the identity quaternion.
 
-    #[lua(kind = "Function", output(proxy))]
+    #[lua()]
     fn from_scaled_axis(#[proxy] v: bevy::math::DVec3) -> bevy::math::DQuat;
 
 "#,
     r#"
 /// Creates a quaternion from the `angle` (in radians) around the x axis.
 
-    #[lua(kind = "Function", output(proxy))]
+    #[lua()]
     fn from_rotation_x(angle: f64) -> bevy::math::DQuat;
 
 "#,
     r#"
 /// Creates a quaternion from the `angle` (in radians) around the y axis.
 
-    #[lua(kind = "Function", output(proxy))]
+    #[lua()]
     fn from_rotation_y(angle: f64) -> bevy::math::DQuat;
 
 "#,
     r#"
 /// Creates a quaternion from the `angle` (in radians) around the z axis.
 
-    #[lua(kind = "Function", output(proxy))]
+    #[lua()]
     fn from_rotation_z(angle: f64) -> bevy::math::DQuat;
 
 "#,
     r#"
 /// Creates a quaternion from the given Euler rotation sequence and the angles (in radians).
 
-    #[lua(kind = "Function", output(proxy))]
+    #[lua()]
     fn from_euler(
         #[proxy]
         euler: bevy::math::EulerRot,
@@ -20255,14 +18164,14 @@ pub struct DAffine3 {
     r#"
 /// Creates a quaternion from a 3x3 rotation matrix.
 
-    #[lua(kind = "Function", output(proxy))]
+    #[lua()]
     fn from_mat3(#[proxy] mat: &glam::DMat3) -> bevy::math::DQuat;
 
 "#,
     r#"
 /// Creates a quaternion from a 3x3 rotation matrix inside a homogeneous 4x4 matrix.
 
-    #[lua(kind = "Function", output(proxy))]
+    #[lua()]
     fn from_mat4(#[proxy] mat: &glam::DMat4) -> bevy::math::DQuat;
 
 "#,
@@ -20276,7 +18185,7 @@ pub struct DAffine3 {
 /// # Panics
 /// Will panic if `from` or `to` are not normalized when `glam_assert` is enabled.
 
-    #[lua(kind = "Function", output(proxy))]
+    #[lua()]
     fn from_rotation_arc(
         #[proxy]
         from: bevy::math::DVec3,
@@ -20295,7 +18204,7 @@ pub struct DAffine3 {
 /// # Panics
 /// Will panic if `from` or `to` are not normalized when `glam_assert` is enabled.
 
-    #[lua(kind = "Function", output(proxy))]
+    #[lua()]
     fn from_rotation_arc_colinear(
         #[proxy]
         from: bevy::math::DVec3,
@@ -20314,7 +18223,7 @@ pub struct DAffine3 {
 /// # Panics
 /// Will panic if `from` or `to` are not normalized when `glam_assert` is enabled.
 
-    #[lua(kind = "Function", output(proxy))]
+    #[lua()]
     fn from_rotation_arc_2d(
         #[proxy]
         from: bevy::math::DVec2,
@@ -20326,28 +18235,28 @@ pub struct DAffine3 {
     r#"
 /// Returns the rotation axis scaled by the rotation in radians.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn to_scaled_axis(self) -> bevy::math::DVec3;
 
 "#,
     r#"
 /// Returns the rotation angles for the given euler rotation sequence.
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn to_euler(self, #[proxy] euler: bevy::math::EulerRot) -> (f64, f64, f64);
 
 "#,
     r#"
 /// `[x, y, z, w]`
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn to_array(&self) -> [f64; 4];
 
 "#,
     r#"
 /// Returns the vector part of the quaternion.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn xyz(self) -> bevy::math::DVec3;
 
 "#,
@@ -20355,7 +18264,7 @@ pub struct DAffine3 {
 /// Returns the quaternion conjugate of `self`. For a unit quaternion the
 /// conjugate is also the inverse.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn conjugate(self) -> bevy::math::DQuat;
 
 "#,
@@ -20367,7 +18276,7 @@ pub struct DAffine3 {
 /// # Panics
 /// Will panic if `self` is not normalized when `glam_assert` is enabled.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn inverse(self) -> bevy::math::DQuat;
 
 "#,
@@ -20375,14 +18284,14 @@ pub struct DAffine3 {
 /// Computes the dot product of `self` and `rhs`. The dot product is
 /// equal to the cosine of the angle between two quaternion rotations.
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn dot(self, #[proxy] rhs: bevy::math::DQuat) -> f64;
 
 "#,
     r#"
 /// Computes the length of `self`.
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn length(self) -> f64;
 
 "#,
@@ -20391,7 +18300,7 @@ pub struct DAffine3 {
 /// This is generally faster than `length()` as it avoids a square
 /// root operation.
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn length_squared(self) -> f64;
 
 "#,
@@ -20399,7 +18308,7 @@ pub struct DAffine3 {
 /// Computes `1.0 / length()`.
 /// For valid results, `self` must _not_ be of length zero.
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn length_recip(self) -> f64;
 
 "#,
@@ -20409,7 +18318,7 @@ pub struct DAffine3 {
 /// Panics
 /// Will panic if `self` is zero length when `glam_assert` is enabled.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn normalize(self) -> bevy::math::DQuat;
 
 "#,
@@ -20417,13 +18326,13 @@ pub struct DAffine3 {
 /// Returns `true` if, and only if, all elements are finite.
 /// If any element is either `NaN`, positive or negative infinity, this will return `false`.
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn is_finite(self) -> bool;
 
 "#,
     r#"
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn is_nan(self) -> bool;
 
 "#,
@@ -20431,13 +18340,13 @@ pub struct DAffine3 {
 /// Returns whether `self` of length `1.0` or not.
 /// Uses a precision threshold of `1e-6`.
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn is_normalized(self) -> bool;
 
 "#,
     r#"
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn is_near_identity(self) -> bool;
 
 "#,
@@ -20448,7 +18357,7 @@ pub struct DAffine3 {
 /// # Panics
 /// Will panic if `self` or `rhs` are not normalized when `glam_assert` is enabled.
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn angle_between(self, #[proxy] rhs: bevy::math::DQuat) -> f64;
 
 "#,
@@ -20461,7 +18370,7 @@ pub struct DAffine3 {
 /// For more see
 /// [comparing floating point numbers](https://randomascii.wordpress.com/2012/02/25/comparing-floating-point-numbers-2012-edition/).
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn abs_diff_eq(self, #[proxy] rhs: bevy::math::DQuat, max_abs_diff: f64) -> bool;
 
 "#,
@@ -20473,7 +18382,7 @@ pub struct DAffine3 {
 /// # Panics
 /// Will panic if `self` or `end` are not normalized when `glam_assert` is enabled.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn lerp(self, #[proxy] end: bevy::math::DQuat, s: f64) -> bevy::math::DQuat;
 
 "#,
@@ -20485,7 +18394,7 @@ pub struct DAffine3 {
 /// # Panics
 /// Will panic if `self` or `end` are not normalized when `glam_assert` is enabled.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn slerp(self, #[proxy] end: bevy::math::DQuat, s: f64) -> bevy::math::DQuat;
 
 "#,
@@ -20494,7 +18403,7 @@ pub struct DAffine3 {
 /// # Panics
 /// Will panic if `self` is not normalized when `glam_assert` is enabled.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn mul_vec3(self, #[proxy] rhs: bevy::math::DVec3) -> bevy::math::DVec3;
 
 "#,
@@ -20505,37 +18414,37 @@ pub struct DAffine3 {
 /// # Panics
 /// Will panic if `self` or `rhs` are not normalized when `glam_assert` is enabled.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn mul_quat(self, #[proxy] rhs: bevy::math::DQuat) -> bevy::math::DQuat;
 
 "#,
     r#"
 /// Creates a quaternion from a 3x3 rotation matrix inside a 3D affine transform.
 
-    #[lua(kind = "Function", output(proxy))]
+    #[lua()]
     fn from_affine3(#[proxy] a: &glam::DAffine3) -> bevy::math::DQuat;
 
 "#,
     r#"
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn as_quat(self) -> bevy::math::Quat;
 
 "#,
     r#"
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn as_f32(self) -> bevy::math::Quat;
 
 "#,
     r#"
-#[lua(kind="MetaMethod", metamethod="ToString")]
+#[lua(metamethod="ToString")]
 fn index(&self) -> String {
     format!("{}", _self)
 }
 "#]
 )]
-pub struct DQuat {
+pub struct LuaDQuat {
     x: f64,
     y: f64,
     z: f64,
@@ -20544,65 +18453,56 @@ pub struct DQuat {
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
     remote = "bevy::math::EulerRot",
+    bms_core_path = "bevy_mod_scripting_core",
+    bms_lua_path = "crate",
     functions[r#"
 
-    #[lua(
-        as_trait = "std::cmp::PartialEq",
-        kind = "MetaFunction",
-        composite = "eq",
-        metamethod = "Eq",
-    )]
+    #[lua(as_trait = "std::cmp::PartialEq", composite = "eq")]
     fn eq(&self, #[proxy] other: &glam::EulerRot) -> bool;
 
 "#,
     r#"
 
-    #[lua(as_trait = "std::cmp::Eq", kind = "Method")]
+    #[lua(as_trait = "std::cmp::Eq")]
     fn assert_receiver_is_total_eq(&self) -> ();
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone",
-        kind = "Method",
-        output(proxy),
-    )]
+    #[lua(as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone")]
     fn clone(&self) -> bevy::math::EulerRot;
 
 "#,
     r#"
-#[lua(kind="MetaMethod", metamethod="ToString")]
+#[lua(metamethod="ToString")]
 fn index(&self) -> String {
     format!("{:?}", _self)
 }
 "#]
 )]
-pub struct EulerRot {}
+pub struct LuaEulerRot {}
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
     remote = "bevy::math::BVec3A",
+    bms_core_path = "bevy_mod_scripting_core",
+    bms_lua_path = "crate",
     functions[r#"
 
-    #[lua(
-        as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone",
-        kind = "Method",
-        output(proxy),
-    )]
+    #[lua(as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone")]
     fn clone(&self) -> bevy::math::BVec3A;
 
 "#,
     r#"
 /// Creates a new vector mask.
 
-    #[lua(kind = "Function", output(proxy))]
+    #[lua()]
     fn new(x: bool, y: bool, z: bool) -> bevy::math::BVec3A;
 
 "#,
     r#"
 /// Creates a vector with all elements set to `v`.
 
-    #[lua(kind = "Function", output(proxy))]
+    #[lua()]
     fn splat(v: bool) -> bevy::math::BVec3A;
 
 "#,
@@ -20611,21 +18511,21 @@ pub struct EulerRot {}
 /// A true element results in a `1` bit and a false element in a `0` bit.  Element `x` goes
 /// into the first lowest bit, element `y` into the second, etc.
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn bitmask(self) -> u32;
 
 "#,
     r#"
 /// Returns true if any of the elements are true, false otherwise.
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn any(self) -> bool;
 
 "#,
     r#"
 /// Returns true if all the elements are true, false otherwise.
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn all(self) -> bool;
 
 "#,
@@ -20633,7 +18533,7 @@ pub struct EulerRot {}
 /// Tests the value at `index`.
 /// Panics if `index` is greater than 2.
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn test(&self, index: usize) -> bool;
 
 "#,
@@ -20641,53 +18541,46 @@ pub struct EulerRot {}
 /// Sets the element at `index`.
 /// Panics if `index` is greater than 2.
 
-    #[lua(kind = "MutatingMethod")]
+    #[lua()]
     fn set(&mut self, index: usize, value: bool) -> ();
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "std::cmp::PartialEq",
-        kind = "MetaFunction",
-        composite = "eq",
-        metamethod = "Eq",
-    )]
+    #[lua(as_trait = "std::cmp::PartialEq", composite = "eq")]
     fn eq(&self, #[proxy] rhs: &glam::BVec3A) -> bool;
 
 "#,
     r#"
-#[lua(kind="MetaMethod", metamethod="ToString")]
+#[lua(metamethod="ToString")]
 fn index(&self) -> String {
     format!("{}", _self)
 }
 "#]
 )]
-pub struct BVec3A();
+pub struct LuaBVec3A();
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
     remote = "bevy::math::BVec4A",
+    bms_core_path = "bevy_mod_scripting_core",
+    bms_lua_path = "crate",
     functions[r#"
 
-    #[lua(
-        as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone",
-        kind = "Method",
-        output(proxy),
-    )]
+    #[lua(as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone")]
     fn clone(&self) -> bevy::math::BVec4A;
 
 "#,
     r#"
 /// Creates a new vector mask.
 
-    #[lua(kind = "Function", output(proxy))]
+    #[lua()]
     fn new(x: bool, y: bool, z: bool, w: bool) -> bevy::math::BVec4A;
 
 "#,
     r#"
 /// Creates a vector with all elements set to `v`.
 
-    #[lua(kind = "Function", output(proxy))]
+    #[lua()]
     fn splat(v: bool) -> bevy::math::BVec4A;
 
 "#,
@@ -20696,21 +18589,21 @@ pub struct BVec3A();
 /// A true element results in a `1` bit and a false element in a `0` bit.  Element `x` goes
 /// into the first lowest bit, element `y` into the second, etc.
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn bitmask(self) -> u32;
 
 "#,
     r#"
 /// Returns true if any of the elements are true, false otherwise.
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn any(self) -> bool;
 
 "#,
     r#"
 /// Returns true if all the elements are true, false otherwise.
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn all(self) -> bool;
 
 "#,
@@ -20718,7 +18611,7 @@ pub struct BVec3A();
 /// Tests the value at `index`.
 /// Panics if `index` is greater than 3.
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn test(&self, index: usize) -> bool;
 
 "#,
@@ -20726,38 +18619,35 @@ pub struct BVec3A();
 /// Sets the element at `index`.
 /// Panics if `index` is greater than 3.
 
-    #[lua(kind = "MutatingMethod")]
+    #[lua()]
     fn set(&mut self, index: usize, value: bool) -> ();
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "std::cmp::PartialEq",
-        kind = "MetaFunction",
-        composite = "eq",
-        metamethod = "Eq",
-    )]
+    #[lua(as_trait = "std::cmp::PartialEq", composite = "eq")]
     fn eq(&self, #[proxy] rhs: &glam::BVec4A) -> bool;
 
 "#,
     r#"
-#[lua(kind="MetaMethod", metamethod="ToString")]
+#[lua(metamethod="ToString")]
 fn index(&self) -> String {
     format!("{}", _self)
 }
 "#]
 )]
-pub struct BVec4A();
+pub struct LuaBVec4A();
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
     remote = "bevy::math::primitives::Direction2d",
+    bms_core_path = "bevy_mod_scripting_core",
+    bms_lua_path = "crate",
     functions[r#"
 /// Create a [`Direction2d`] from a [`Vec2`] that is already normalized.
 /// # Warning
 /// `value` must be normalized, i.e it's length must be `1.0`.
 
-    #[lua(kind = "Function", output(proxy))]
+    #[lua()]
     fn new_unchecked(
         #[proxy]
         value: bevy::math::Vec2,
@@ -20766,94 +18656,72 @@ pub struct BVec4A();
 "#,
     r#"
 
-    #[lua(
-        as_trait = "std::cmp::PartialEq",
-        kind = "MetaFunction",
-        composite = "eq",
-        metamethod = "Eq",
-    )]
+    #[lua(as_trait = "std::cmp::PartialEq", composite = "eq")]
     fn eq(&self, #[proxy] other: &bevy_math::primitives::Direction2d) -> bool;
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone",
-        kind = "Method",
-        output(proxy),
-    )]
+    #[lua(as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone")]
     fn clone(&self) -> bevy::math::primitives::Direction2d;
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "std::ops::Neg",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "neg",
-        metamethod = "Unm",
-    )]
+    #[lua(as_trait = "std::ops::Neg", composite = "neg")]
     fn neg(self) -> bevy::math::primitives::Direction2d;
 
 "#,
     r#"
-#[lua(kind="MetaMethod", metamethod="ToString")]
+#[lua(metamethod="ToString")]
 fn index(&self) -> String {
     format!("{:?}", _self)
 }
 "#]
 )]
-pub struct Direction2d();
+pub struct LuaDirection2d();
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
     remote = "bevy::math::primitives::Circle",
+    bms_core_path = "bevy_mod_scripting_core",
+    bms_lua_path = "crate",
     functions[r#"
 
-    #[lua(
-        as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone",
-        kind = "Method",
-        output(proxy),
-    )]
+    #[lua(as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone")]
     fn clone(&self) -> bevy::math::primitives::Circle;
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "std::cmp::PartialEq",
-        kind = "MetaFunction",
-        composite = "eq",
-        metamethod = "Eq",
-    )]
+    #[lua(as_trait = "std::cmp::PartialEq", composite = "eq")]
     fn eq(&self, #[proxy] other: &bevy_math::primitives::Circle) -> bool;
 
 "#,
     r#"
 /// Create a new [`Circle`] from a `radius`
 
-    #[lua(kind = "Function", output(proxy))]
+    #[lua()]
     fn new(radius: f32) -> bevy::math::primitives::Circle;
 
 "#,
     r#"
 /// Get the diameter of the circle
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn diameter(&self) -> f32;
 
 "#,
     r#"
 /// Get the area of the circle
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn area(&self) -> f32;
 
 "#,
     r#"
 /// Get the perimeter or circumference of the circle
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn perimeter(&self) -> f32;
 
 "#,
@@ -20862,41 +18730,34 @@ pub struct Direction2d();
 /// If the point is outside the circle, the returned point will be on the perimeter of the circle.
 /// Otherwise, it will be inside the circle and returned as is.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn closest_point(&self, #[proxy] point: bevy::math::Vec2) -> bevy::math::Vec2;
 
 "#,
     r#"
-#[lua(kind="MetaMethod", metamethod="ToString")]
+#[lua(metamethod="ToString")]
 fn index(&self) -> String {
     format!("{:?}", _self)
 }
 "#]
 )]
-pub struct Circle {
+pub struct LuaCircle {
     radius: f32,
 }
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
     remote = "bevy::math::primitives::Ellipse",
+    bms_core_path = "bevy_mod_scripting_core",
+    bms_lua_path = "crate",
     functions[r#"
 
-    #[lua(
-        as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone",
-        kind = "Method",
-        output(proxy),
-    )]
+    #[lua(as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone")]
     fn clone(&self) -> bevy::math::primitives::Ellipse;
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "std::cmp::PartialEq",
-        kind = "MetaFunction",
-        composite = "eq",
-        metamethod = "Eq",
-    )]
+    #[lua(as_trait = "std::cmp::PartialEq", composite = "eq")]
     fn eq(&self, #[proxy] other: &bevy_math::primitives::Ellipse) -> bool;
 
 "#,
@@ -20904,7 +18765,7 @@ pub struct Circle {
 /// Create a new `Ellipse` from half of its width and height.
 /// This corresponds to the two perpendicular radii defining the ellipse.
 
-    #[lua(kind = "Function", output(proxy))]
+    #[lua()]
     fn new(half_width: f32, half_height: f32) -> bevy::math::primitives::Ellipse;
 
 "#,
@@ -20912,53 +18773,50 @@ pub struct Circle {
 /// Create a new `Ellipse` from a given full size.
 /// `size.x` is the diameter along the X axis, and `size.y` is the diameter along the Y axis.
 
-    #[lua(kind = "Function", output(proxy))]
+    #[lua()]
     fn from_size(#[proxy] size: bevy::math::Vec2) -> bevy::math::primitives::Ellipse;
 
 "#,
     r#"
 /// Returns the length of the semi-major axis. This corresponds to the longest radius of the ellipse.
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn semi_major(self) -> f32;
 
 "#,
     r#"
 /// Returns the length of the semi-minor axis. This corresponds to the shortest radius of the ellipse.
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn semi_minor(self) -> f32;
 
 "#,
     r#"
 /// Get the area of the ellipse
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn area(&self) -> f32;
 
 "#,
     r#"
-#[lua(kind="MetaMethod", metamethod="ToString")]
+#[lua(metamethod="ToString")]
 fn index(&self) -> String {
     format!("{:?}", _self)
 }
 "#]
 )]
-pub struct Ellipse {
+pub struct LuaEllipse {
     #[lua(output(proxy))]
     half_size: bevy::math::Vec2,
 }
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
     remote = "bevy::math::primitives::Plane2d",
+    bms_core_path = "bevy_mod_scripting_core",
+    bms_lua_path = "crate",
     functions[r#"
 
-    #[lua(
-        as_trait = "std::cmp::PartialEq",
-        kind = "MetaFunction",
-        composite = "eq",
-        metamethod = "Eq",
-    )]
+    #[lua(as_trait = "std::cmp::PartialEq", composite = "eq")]
     fn eq(&self, #[proxy] other: &bevy_math::primitives::Plane2d) -> bool;
 
 "#,
@@ -20967,73 +18825,64 @@ pub struct Ellipse {
 /// # Panics
 /// Panics if the given `normal` is zero (or very close to zero), or non-finite.
 
-    #[lua(kind = "Function", output(proxy))]
+    #[lua()]
     fn new(#[proxy] normal: bevy::math::Vec2) -> bevy::math::primitives::Plane2d;
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone",
-        kind = "Method",
-        output(proxy),
-    )]
+    #[lua(as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone")]
     fn clone(&self) -> bevy::math::primitives::Plane2d;
 
 "#,
     r#"
-#[lua(kind="MetaMethod", metamethod="ToString")]
+#[lua(metamethod="ToString")]
 fn index(&self) -> String {
     format!("{:?}", _self)
 }
 "#]
 )]
-pub struct Plane2d {
+pub struct LuaPlane2d {
     #[lua(output(proxy))]
     normal: bevy::math::primitives::Direction2d,
 }
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
     remote = "bevy::math::primitives::Line2d",
+    bms_core_path = "bevy_mod_scripting_core",
+    bms_lua_path = "crate",
     functions[r#"
 
-    #[lua(
-        as_trait = "std::cmp::PartialEq",
-        kind = "MetaFunction",
-        composite = "eq",
-        metamethod = "Eq",
-    )]
+    #[lua(as_trait = "std::cmp::PartialEq", composite = "eq")]
     fn eq(&self, #[proxy] other: &bevy_math::primitives::Line2d) -> bool;
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone",
-        kind = "Method",
-        output(proxy),
-    )]
+    #[lua(as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone")]
     fn clone(&self) -> bevy::math::primitives::Line2d;
 
 "#,
     r#"
-#[lua(kind="MetaMethod", metamethod="ToString")]
+#[lua(metamethod="ToString")]
 fn index(&self) -> String {
     format!("{:?}", _self)
 }
 "#]
 )]
-pub struct Line2d {
+pub struct LuaLine2d {
     #[lua(output(proxy))]
     direction: bevy::math::primitives::Direction2d,
 }
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
     remote = "bevy::math::primitives::Segment2d",
+    bms_core_path = "bevy_mod_scripting_core",
+    bms_lua_path = "crate",
     functions[r#"
 /// Create a new `Segment2d` from a direction and full length of the segment
 
-    #[lua(kind = "Function", output(proxy))]
+    #[lua()]
     fn new(
         #[proxy]
         direction: bevy::math::primitives::Direction2d,
@@ -21044,46 +18893,37 @@ pub struct Line2d {
     r#"
 /// Get the position of the first point on the line segment
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn point1(&self) -> bevy::math::Vec2;
 
 "#,
     r#"
 /// Get the position of the second point on the line segment
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn point2(&self) -> bevy::math::Vec2;
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone",
-        kind = "Method",
-        output(proxy),
-    )]
+    #[lua(as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone")]
     fn clone(&self) -> bevy::math::primitives::Segment2d;
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "std::cmp::PartialEq",
-        kind = "MetaFunction",
-        composite = "eq",
-        metamethod = "Eq",
-    )]
+    #[lua(as_trait = "std::cmp::PartialEq", composite = "eq")]
     fn eq(&self, #[proxy] other: &bevy_math::primitives::Segment2d) -> bool;
 
 "#,
     r#"
-#[lua(kind="MetaMethod", metamethod="ToString")]
+#[lua(metamethod="ToString")]
 fn index(&self) -> String {
     format!("{:?}", _self)
 }
 "#]
 )]
-pub struct Segment2d {
+pub struct LuaSegment2d {
     #[lua(output(proxy))]
     direction: bevy::math::primitives::Direction2d,
     half_length: f32,
@@ -21091,20 +18931,18 @@ pub struct Segment2d {
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
     remote = "bevy::math::primitives::Triangle2d",
+    bms_core_path = "bevy_mod_scripting_core",
+    bms_lua_path = "crate",
     functions[r#"
 
-    #[lua(
-        as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone",
-        kind = "Method",
-        output(proxy),
-    )]
+    #[lua(as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone")]
     fn clone(&self) -> bevy::math::primitives::Triangle2d;
 
 "#,
     r#"
 /// Create a new `Triangle2d` from points `a`, `b`, and `c`
 
-    #[lua(kind = "Function", output(proxy))]
+    #[lua()]
     fn new(
         #[proxy]
         a: bevy::math::Vec2,
@@ -21118,14 +18956,14 @@ pub struct Segment2d {
     r#"
 /// Get the area of the triangle
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn area(&self) -> f32;
 
 "#,
     r#"
 /// Get the perimeter of the triangle
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn perimeter(&self) -> f32;
 
 "#,
@@ -21133,52 +18971,49 @@ pub struct Segment2d {
 /// Reverse the [`WindingOrder`] of the triangle
 /// by swapping the second and third vertices
 
-    #[lua(kind = "MutatingMethod")]
+    #[lua()]
     fn reverse(&mut self) -> ();
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "std::cmp::PartialEq",
-        kind = "MetaFunction",
-        composite = "eq",
-        metamethod = "Eq",
-    )]
+    #[lua(as_trait = "std::cmp::PartialEq", composite = "eq")]
     fn eq(&self, #[proxy] other: &bevy_math::primitives::Triangle2d) -> bool;
 
 "#,
     r#"
-#[lua(kind="MetaMethod", metamethod="ToString")]
+#[lua(metamethod="ToString")]
 fn index(&self) -> String {
     format!("{:?}", _self)
 }
 "#]
 )]
-pub struct Triangle2d {
+pub struct LuaTriangle2d {
     vertices: ReflectedValue,
 }
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
     remote = "bevy::math::primitives::Rectangle",
+    bms_core_path = "bevy_mod_scripting_core",
+    bms_lua_path = "crate",
     functions[r#"
 /// Create a new `Rectangle` from a full width and height
 
-    #[lua(kind = "Function", output(proxy))]
+    #[lua()]
     fn new(width: f32, height: f32) -> bevy::math::primitives::Rectangle;
 
 "#,
     r#"
 /// Create a new `Rectangle` from a given full size
 
-    #[lua(kind = "Function", output(proxy))]
+    #[lua()]
     fn from_size(#[proxy] size: bevy::math::Vec2) -> bevy::math::primitives::Rectangle;
 
 "#,
     r#"
 /// Create a new `Rectangle` from two corner points
 
-    #[lua(kind = "Function", output(proxy))]
+    #[lua()]
     fn from_corners(
         #[proxy]
         point1: bevy::math::Vec2,
@@ -21190,21 +19025,21 @@ pub struct Triangle2d {
     r#"
 /// Get the size of the rectangle
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn size(&self) -> bevy::math::Vec2;
 
 "#,
     r#"
 /// Get the area of the rectangle
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn area(&self) -> f32;
 
 "#,
     r#"
 /// Get the perimeter of the rectangle
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn perimeter(&self) -> f32;
 
 "#,
@@ -21213,63 +19048,47 @@ pub struct Triangle2d {
 /// If the point is outside the rectangle, the returned point will be on the perimeter of the rectangle.
 /// Otherwise, it will be inside the rectangle and returned as is.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn closest_point(&self, #[proxy] point: bevy::math::Vec2) -> bevy::math::Vec2;
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "std::cmp::PartialEq",
-        kind = "MetaFunction",
-        composite = "eq",
-        metamethod = "Eq",
-    )]
+    #[lua(as_trait = "std::cmp::PartialEq", composite = "eq")]
     fn eq(&self, #[proxy] other: &bevy_math::primitives::Rectangle) -> bool;
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone",
-        kind = "Method",
-        output(proxy),
-    )]
+    #[lua(as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone")]
     fn clone(&self) -> bevy::math::primitives::Rectangle;
 
 "#,
     r#"
-#[lua(kind="MetaMethod", metamethod="ToString")]
+#[lua(metamethod="ToString")]
 fn index(&self) -> String {
     format!("{:?}", _self)
 }
 "#]
 )]
-pub struct Rectangle {
+pub struct LuaRectangle {
     #[lua(output(proxy))]
     half_size: bevy::math::Vec2,
 }
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
     remote = "bevy::math::primitives::RegularPolygon",
+    bms_core_path = "bevy_mod_scripting_core",
+    bms_lua_path = "crate",
     functions[r#"
 
-    #[lua(
-        as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone",
-        kind = "Method",
-        output(proxy),
-    )]
+    #[lua(as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone")]
     fn clone(&self) -> bevy::math::primitives::RegularPolygon;
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "std::cmp::PartialEq",
-        kind = "MetaFunction",
-        composite = "eq",
-        metamethod = "Eq",
-    )]
+    #[lua(as_trait = "std::cmp::PartialEq", composite = "eq")]
     fn eq(&self, #[proxy] other: &bevy_math::primitives::RegularPolygon) -> bool;
 
 "#,
@@ -21279,7 +19098,7 @@ pub struct Rectangle {
 /// # Panics
 /// Panics if `circumradius` is non-positive
 
-    #[lua(kind = "Function", output(proxy))]
+    #[lua()]
     fn new(circumradius: f32, sides: usize) -> bevy::math::primitives::RegularPolygon;
 
 "#,
@@ -21287,7 +19106,7 @@ pub struct Rectangle {
 /// Get the radius of the circumcircle on which all vertices
 /// of the regular polygon lie
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn circumradius(&self) -> f32;
 
 "#,
@@ -21296,21 +19115,21 @@ pub struct Rectangle {
 /// This is the radius of the largest circle that can
 /// be drawn within the polygon
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn inradius(&self) -> f32;
 
 "#,
     r#"
 /// Get the length of one side of the regular polygon
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn side_length(&self) -> f32;
 
 "#,
     r#"
 /// Get the area of the regular polygon
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn area(&self) -> f32;
 
 "#,
@@ -21318,7 +19137,7 @@ pub struct Rectangle {
 /// Get the perimeter of the regular polygon.
 /// This is the sum of its sides
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn perimeter(&self) -> f32;
 
 "#,
@@ -21327,7 +19146,7 @@ pub struct Rectangle {
 /// This is the angle formed by two adjacent sides with points
 /// within the angle being in the interior of the polygon
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn internal_angle_degrees(&self) -> f32;
 
 "#,
@@ -21336,7 +19155,7 @@ pub struct Rectangle {
 /// This is the angle formed by two adjacent sides with points
 /// within the angle being in the interior of the polygon
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn internal_angle_radians(&self) -> f32;
 
 "#,
@@ -21345,7 +19164,7 @@ pub struct Rectangle {
 /// This is the angle formed by two adjacent sides with points
 /// within the angle being in the exterior of the polygon
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn external_angle_degrees(&self) -> f32;
 
 "#,
@@ -21354,18 +19173,18 @@ pub struct Rectangle {
 /// This is the angle formed by two adjacent sides with points
 /// within the angle being in the exterior of the polygon
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn external_angle_radians(&self) -> f32;
 
 "#,
     r#"
-#[lua(kind="MetaMethod", metamethod="ToString")]
+#[lua(metamethod="ToString")]
 fn index(&self) -> String {
     format!("{:?}", _self)
 }
 "#]
 )]
-pub struct RegularPolygon {
+pub struct LuaRegularPolygon {
     #[lua(output(proxy))]
     circumcircle: bevy::math::primitives::Circle,
     sides: usize,
@@ -21373,78 +19192,58 @@ pub struct RegularPolygon {
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
     remote = "bevy::math::primitives::Capsule2d",
+    bms_core_path = "bevy_mod_scripting_core",
+    bms_lua_path = "crate",
     functions[r#"
 
-    #[lua(
-        as_trait = "std::cmp::PartialEq",
-        kind = "MetaFunction",
-        composite = "eq",
-        metamethod = "Eq",
-    )]
+    #[lua(as_trait = "std::cmp::PartialEq", composite = "eq")]
     fn eq(&self, #[proxy] other: &bevy_math::primitives::Capsule2d) -> bool;
 
 "#,
     r#"
 /// Create a new `Capsule2d` from a radius and length
 
-    #[lua(kind = "Function", output(proxy))]
+    #[lua()]
     fn new(radius: f32, length: f32) -> bevy::math::primitives::Capsule2d;
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone",
-        kind = "Method",
-        output(proxy),
-    )]
+    #[lua(as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone")]
     fn clone(&self) -> bevy::math::primitives::Capsule2d;
 
 "#,
     r#"
-#[lua(kind="MetaMethod", metamethod="ToString")]
+#[lua(metamethod="ToString")]
 fn index(&self) -> String {
     format!("{:?}", _self)
 }
 "#]
 )]
-pub struct Capsule2d {
+pub struct LuaCapsule2d {
     radius: f32,
     half_length: f32,
 }
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
     remote = "bevy::math::primitives::Direction3d",
+    bms_core_path = "bevy_mod_scripting_core",
+    bms_lua_path = "crate",
     functions[r#"
 
-    #[lua(
-        as_trait = "std::cmp::PartialEq",
-        kind = "MetaFunction",
-        composite = "eq",
-        metamethod = "Eq",
-    )]
+    #[lua(as_trait = "std::cmp::PartialEq", composite = "eq")]
     fn eq(&self, #[proxy] other: &bevy_math::primitives::Direction3d) -> bool;
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "std::ops::Mul",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "mul",
-        metamethod = "Mul",
-    )]
+    #[lua(as_trait = "std::ops::Mul", composite = "mul")]
     fn mul(self, rhs: f32) -> bevy::math::Vec3;
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone",
-        kind = "Method",
-        output(proxy),
-    )]
+    #[lua(as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone")]
     fn clone(&self) -> bevy::math::primitives::Direction3d;
 
 "#,
@@ -21453,7 +19252,7 @@ pub struct Capsule2d {
 /// # Warning
 /// `value` must be normalized, i.e it's length must be `1.0`.
 
-    #[lua(kind = "Function", output(proxy))]
+    #[lua()]
     fn new_unchecked(
         #[proxy]
         value: bevy::math::Vec3,
@@ -21462,62 +19261,54 @@ pub struct Capsule2d {
 "#,
     r#"
 
-    #[lua(
-        as_trait = "std::ops::Neg",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "neg",
-        metamethod = "Unm",
-    )]
+    #[lua(as_trait = "std::ops::Neg", composite = "neg")]
     fn neg(self) -> bevy::math::primitives::Direction3d;
 
 "#,
     r#"
-#[lua(kind="MetaMethod", metamethod="ToString")]
+#[lua(metamethod="ToString")]
 fn index(&self) -> String {
     format!("{:?}", _self)
 }
 "#]
 )]
-pub struct Direction3d();
+pub struct LuaDirection3d();
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
     remote = "bevy::math::primitives::Sphere",
+    bms_core_path = "bevy_mod_scripting_core",
+    bms_lua_path = "crate",
     functions[r#"
 
-    #[lua(
-        as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone",
-        kind = "Method",
-        output(proxy),
-    )]
+    #[lua(as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone")]
     fn clone(&self) -> bevy::math::primitives::Sphere;
 
 "#,
     r#"
 /// Create a new [`Sphere`] from a `radius`
 
-    #[lua(kind = "Function", output(proxy))]
+    #[lua()]
     fn new(radius: f32) -> bevy::math::primitives::Sphere;
 
 "#,
     r#"
 /// Get the diameter of the sphere
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn diameter(&self) -> f32;
 
 "#,
     r#"
 /// Get the surface area of the sphere
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn area(&self) -> f32;
 
 "#,
     r#"
 /// Get the volume of the sphere
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn volume(&self) -> f32;
 
 "#,
@@ -21526,41 +19317,34 @@ pub struct Direction3d();
 /// If the point is outside the sphere, the returned point will be on the surface of the sphere.
 /// Otherwise, it will be inside the sphere and returned as is.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn closest_point(&self, #[proxy] point: bevy::math::Vec3) -> bevy::math::Vec3;
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "std::cmp::PartialEq",
-        kind = "MetaFunction",
-        composite = "eq",
-        metamethod = "Eq",
-    )]
+    #[lua(as_trait = "std::cmp::PartialEq", composite = "eq")]
     fn eq(&self, #[proxy] other: &bevy_math::primitives::Sphere) -> bool;
 
 "#,
     r#"
-#[lua(kind="MetaMethod", metamethod="ToString")]
+#[lua(metamethod="ToString")]
 fn index(&self) -> String {
     format!("{:?}", _self)
 }
 "#]
 )]
-pub struct Sphere {
+pub struct LuaSphere {
     radius: f32,
 }
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
     remote = "bevy::math::primitives::Plane3d",
+    bms_core_path = "bevy_mod_scripting_core",
+    bms_lua_path = "crate",
     functions[r#"
 
-    #[lua(
-        as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone",
-        kind = "Method",
-        output(proxy),
-    )]
+    #[lua(as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone")]
     fn clone(&self) -> bevy::math::primitives::Plane3d;
 
 "#,
@@ -21569,74 +19353,64 @@ pub struct Sphere {
 /// # Panics
 /// Panics if the given `normal` is zero (or very close to zero), or non-finite.
 
-    #[lua(kind = "Function", output(proxy))]
+    #[lua()]
     fn new(#[proxy] normal: bevy::math::Vec3) -> bevy::math::primitives::Plane3d;
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "std::cmp::PartialEq",
-        kind = "MetaFunction",
-        composite = "eq",
-        metamethod = "Eq",
-    )]
+    #[lua(as_trait = "std::cmp::PartialEq", composite = "eq")]
     fn eq(&self, #[proxy] other: &bevy_math::primitives::Plane3d) -> bool;
 
 "#,
     r#"
-#[lua(kind="MetaMethod", metamethod="ToString")]
+#[lua(metamethod="ToString")]
 fn index(&self) -> String {
     format!("{:?}", _self)
 }
 "#]
 )]
-pub struct Plane3d {
+pub struct LuaPlane3d {
     #[lua(output(proxy))]
     normal: bevy::math::primitives::Direction3d,
 }
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
     remote = "bevy::math::primitives::Line3d",
+    bms_core_path = "bevy_mod_scripting_core",
+    bms_lua_path = "crate",
     functions[r#"
 
-    #[lua(
-        as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone",
-        kind = "Method",
-        output(proxy),
-    )]
+    #[lua(as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone")]
     fn clone(&self) -> bevy::math::primitives::Line3d;
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "std::cmp::PartialEq",
-        kind = "MetaFunction",
-        composite = "eq",
-        metamethod = "Eq",
-    )]
+    #[lua(as_trait = "std::cmp::PartialEq", composite = "eq")]
     fn eq(&self, #[proxy] other: &bevy_math::primitives::Line3d) -> bool;
 
 "#,
     r#"
-#[lua(kind="MetaMethod", metamethod="ToString")]
+#[lua(metamethod="ToString")]
 fn index(&self) -> String {
     format!("{:?}", _self)
 }
 "#]
 )]
-pub struct Line3d {
+pub struct LuaLine3d {
     #[lua(output(proxy))]
     direction: bevy::math::primitives::Direction3d,
 }
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
     remote = "bevy::math::primitives::Segment3d",
+    bms_core_path = "bevy_mod_scripting_core",
+    bms_lua_path = "crate",
     functions[r#"
 /// Create a new `Segment3d` from a direction and full length of the segment
 
-    #[lua(kind = "Function", output(proxy))]
+    #[lua()]
     fn new(
         #[proxy]
         direction: bevy::math::primitives::Direction3d,
@@ -21647,46 +19421,37 @@ pub struct Line3d {
     r#"
 /// Get the position of the first point on the line segment
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn point1(&self) -> bevy::math::Vec3;
 
 "#,
     r#"
 /// Get the position of the second point on the line segment
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn point2(&self) -> bevy::math::Vec3;
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone",
-        kind = "Method",
-        output(proxy),
-    )]
+    #[lua(as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone")]
     fn clone(&self) -> bevy::math::primitives::Segment3d;
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "std::cmp::PartialEq",
-        kind = "MetaFunction",
-        composite = "eq",
-        metamethod = "Eq",
-    )]
+    #[lua(as_trait = "std::cmp::PartialEq", composite = "eq")]
     fn eq(&self, #[proxy] other: &bevy_math::primitives::Segment3d) -> bool;
 
 "#,
     r#"
-#[lua(kind="MetaMethod", metamethod="ToString")]
+#[lua(metamethod="ToString")]
 fn index(&self) -> String {
     format!("{:?}", _self)
 }
 "#]
 )]
-pub struct Segment3d {
+pub struct LuaSegment3d {
     #[lua(output(proxy))]
     direction: bevy::math::primitives::Direction3d,
     half_length: f32,
@@ -21694,20 +19459,18 @@ pub struct Segment3d {
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
     remote = "bevy::math::primitives::Cuboid",
+    bms_core_path = "bevy_mod_scripting_core",
+    bms_lua_path = "crate",
     functions[r#"
 
-    #[lua(
-        as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone",
-        kind = "Method",
-        output(proxy),
-    )]
+    #[lua(as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone")]
     fn clone(&self) -> bevy::math::primitives::Cuboid;
 
 "#,
     r#"
 /// Create a new `Cuboid` from a full x, y, and z length
 
-    #[lua(kind = "Function", output(proxy))]
+    #[lua()]
     fn new(
         x_length: f32,
         y_length: f32,
@@ -21718,14 +19481,14 @@ pub struct Segment3d {
     r#"
 /// Create a new `Cuboid` from a given full size
 
-    #[lua(kind = "Function", output(proxy))]
+    #[lua()]
     fn from_size(#[proxy] size: bevy::math::Vec3) -> bevy::math::primitives::Cuboid;
 
 "#,
     r#"
 /// Create a new `Cuboid` from two corner points
 
-    #[lua(kind = "Function", output(proxy))]
+    #[lua()]
     fn from_corners(
         #[proxy]
         point1: bevy::math::Vec3,
@@ -21737,21 +19500,21 @@ pub struct Segment3d {
     r#"
 /// Get the size of the cuboid
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn size(&self) -> bevy::math::Vec3;
 
 "#,
     r#"
 /// Get the surface area of the cuboid
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn area(&self) -> f32;
 
 "#,
     r#"
 /// Get the volume of the cuboid
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn volume(&self) -> f32;
 
 "#,
@@ -21760,67 +19523,55 @@ pub struct Segment3d {
 /// If the point is outside the cuboid, the returned point will be on the surface of the cuboid.
 /// Otherwise, it will be inside the cuboid and returned as is.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn closest_point(&self, #[proxy] point: bevy::math::Vec3) -> bevy::math::Vec3;
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "std::cmp::PartialEq",
-        kind = "MetaFunction",
-        composite = "eq",
-        metamethod = "Eq",
-    )]
+    #[lua(as_trait = "std::cmp::PartialEq", composite = "eq")]
     fn eq(&self, #[proxy] other: &bevy_math::primitives::Cuboid) -> bool;
 
 "#,
     r#"
-#[lua(kind="MetaMethod", metamethod="ToString")]
+#[lua(metamethod="ToString")]
 fn index(&self) -> String {
     format!("{:?}", _self)
 }
 "#]
 )]
-pub struct Cuboid {
+pub struct LuaCuboid {
     #[lua(output(proxy))]
     half_size: bevy::math::Vec3,
 }
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
     remote = "bevy::math::primitives::Cylinder",
+    bms_core_path = "bevy_mod_scripting_core",
+    bms_lua_path = "crate",
     functions[r#"
 
-    #[lua(
-        as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone",
-        kind = "Method",
-        output(proxy),
-    )]
+    #[lua(as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone")]
     fn clone(&self) -> bevy::math::primitives::Cylinder;
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "std::cmp::PartialEq",
-        kind = "MetaFunction",
-        composite = "eq",
-        metamethod = "Eq",
-    )]
+    #[lua(as_trait = "std::cmp::PartialEq", composite = "eq")]
     fn eq(&self, #[proxy] other: &bevy_math::primitives::Cylinder) -> bool;
 
 "#,
     r#"
 /// Create a new `Cylinder` from a radius and full height
 
-    #[lua(kind = "Function", output(proxy))]
+    #[lua()]
     fn new(radius: f32, height: f32) -> bevy::math::primitives::Cylinder;
 
 "#,
     r#"
 /// Get the base of the cylinder as a [`Circle`]
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn base(&self) -> bevy::math::primitives::Circle;
 
 "#,
@@ -21828,59 +19579,57 @@ pub struct Cuboid {
 /// Get the surface area of the side of the cylinder,
 /// also known as the lateral area
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn lateral_area(&self) -> f32;
 
 "#,
     r#"
 /// Get the surface area of one base of the cylinder
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn base_area(&self) -> f32;
 
 "#,
     r#"
 /// Get the total surface area of the cylinder
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn area(&self) -> f32;
 
 "#,
     r#"
 /// Get the volume of the cylinder
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn volume(&self) -> f32;
 
 "#,
     r#"
-#[lua(kind="MetaMethod", metamethod="ToString")]
+#[lua(metamethod="ToString")]
 fn index(&self) -> String {
     format!("{:?}", _self)
 }
 "#]
 )]
-pub struct Cylinder {
+pub struct LuaCylinder {
     radius: f32,
     half_height: f32,
 }
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
     remote = "bevy::math::primitives::Capsule3d",
+    bms_core_path = "bevy_mod_scripting_core",
+    bms_lua_path = "crate",
     functions[r#"
 
-    #[lua(
-        as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone",
-        kind = "Method",
-        output(proxy),
-    )]
+    #[lua(as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone")]
     fn clone(&self) -> bevy::math::primitives::Capsule3d;
 
 "#,
     r#"
 /// Create a new `Capsule3d` from a radius and length
 
-    #[lua(kind = "Function", output(proxy))]
+    #[lua()]
     fn new(radius: f32, length: f32) -> bevy::math::primitives::Capsule3d;
 
 "#,
@@ -21888,63 +19637,56 @@ pub struct Cylinder {
 /// Get the part connecting the hemispherical ends
 /// of the capsule as a [`Cylinder`]
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn to_cylinder(&self) -> bevy::math::primitives::Cylinder;
 
 "#,
     r#"
 /// Get the surface area of the capsule
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn area(&self) -> f32;
 
 "#,
     r#"
 /// Get the volume of the capsule
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn volume(&self) -> f32;
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "std::cmp::PartialEq",
-        kind = "MetaFunction",
-        composite = "eq",
-        metamethod = "Eq",
-    )]
+    #[lua(as_trait = "std::cmp::PartialEq", composite = "eq")]
     fn eq(&self, #[proxy] other: &bevy_math::primitives::Capsule3d) -> bool;
 
 "#,
     r#"
-#[lua(kind="MetaMethod", metamethod="ToString")]
+#[lua(metamethod="ToString")]
 fn index(&self) -> String {
     format!("{:?}", _self)
 }
 "#]
 )]
-pub struct Capsule3d {
+pub struct LuaCapsule3d {
     radius: f32,
     half_length: f32,
 }
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
     remote = "bevy::math::primitives::Cone",
+    bms_core_path = "bevy_mod_scripting_core",
+    bms_lua_path = "crate",
     functions[r#"
 
-    #[lua(
-        as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone",
-        kind = "Method",
-        output(proxy),
-    )]
+    #[lua(as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone")]
     fn clone(&self) -> bevy::math::primitives::Cone;
 
 "#,
     r#"
 /// Get the base of the cone as a [`Circle`]
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn base(&self) -> bevy::math::primitives::Circle;
 
 "#,
@@ -21952,7 +19694,7 @@ pub struct Capsule3d {
 /// Get the slant height of the cone, the length of the line segment
 /// connecting a point on the base to the apex
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn slant_height(&self) -> f32;
 
 "#,
@@ -21960,85 +19702,73 @@ pub struct Capsule3d {
 /// Get the surface area of the side of the cone,
 /// also known as the lateral area
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn lateral_area(&self) -> f32;
 
 "#,
     r#"
 /// Get the surface area of the base of the cone
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn base_area(&self) -> f32;
 
 "#,
     r#"
 /// Get the total surface area of the cone
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn area(&self) -> f32;
 
 "#,
     r#"
 /// Get the volume of the cone
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn volume(&self) -> f32;
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "std::cmp::PartialEq",
-        kind = "MetaFunction",
-        composite = "eq",
-        metamethod = "Eq",
-    )]
+    #[lua(as_trait = "std::cmp::PartialEq", composite = "eq")]
     fn eq(&self, #[proxy] other: &bevy_math::primitives::Cone) -> bool;
 
 "#,
     r#"
-#[lua(kind="MetaMethod", metamethod="ToString")]
+#[lua(metamethod="ToString")]
 fn index(&self) -> String {
     format!("{:?}", _self)
 }
 "#]
 )]
-pub struct Cone {
+pub struct LuaCone {
     radius: f32,
     height: f32,
 }
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
     remote = "bevy::math::primitives::ConicalFrustum",
+    bms_core_path = "bevy_mod_scripting_core",
+    bms_lua_path = "crate",
     functions[r#"
 
-    #[lua(
-        as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone",
-        kind = "Method",
-        output(proxy),
-    )]
+    #[lua(as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone")]
     fn clone(&self) -> bevy::math::primitives::ConicalFrustum;
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "std::cmp::PartialEq",
-        kind = "MetaFunction",
-        composite = "eq",
-        metamethod = "Eq",
-    )]
+    #[lua(as_trait = "std::cmp::PartialEq", composite = "eq")]
     fn eq(&self, #[proxy] other: &bevy_math::primitives::ConicalFrustum) -> bool;
 
 "#,
     r#"
-#[lua(kind="MetaMethod", metamethod="ToString")]
+#[lua(metamethod="ToString")]
 fn index(&self) -> String {
     format!("{:?}", _self)
 }
 "#]
 )]
-pub struct ConicalFrustum {
+pub struct LuaConicalFrustum {
     radius_top: f32,
     radius_bottom: f32,
     height: f32,
@@ -22046,12 +19776,14 @@ pub struct ConicalFrustum {
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
     remote = "bevy::math::primitives::Torus",
+    bms_core_path = "bevy_mod_scripting_core",
+    bms_lua_path = "crate",
     functions[r#"
 /// Create a new `Torus` from an inner and outer radius.
 /// The inner radius is the radius of the hole, and the outer radius
 /// is the radius of the entire object
 
-    #[lua(kind = "Function", output(proxy))]
+    #[lua()]
     fn new(inner_radius: f32, outer_radius: f32) -> bevy::math::primitives::Torus;
 
 "#,
@@ -22060,7 +19792,7 @@ pub struct ConicalFrustum {
 /// For a ring torus, this corresponds to the radius of the hole,
 /// or `major_radius - minor_radius`
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn inner_radius(&self) -> f32;
 
 "#,
@@ -22069,7 +19801,7 @@ pub struct ConicalFrustum {
 /// This corresponds to the overall radius of the entire object,
 /// or `major_radius + minor_radius`
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn outer_radius(&self) -> f32;
 
 "#,
@@ -22077,7 +19809,7 @@ pub struct ConicalFrustum {
 /// Get the surface area of the torus. Note that this only produces
 /// the expected result when the torus has a ring and isn't self-intersecting
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn area(&self) -> f32;
 
 "#,
@@ -22085,45 +19817,38 @@ pub struct ConicalFrustum {
 /// Get the volume of the torus. Note that this only produces
 /// the expected result when the torus has a ring and isn't self-intersecting
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn volume(&self) -> f32;
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone",
-        kind = "Method",
-        output(proxy),
-    )]
+    #[lua(as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone")]
     fn clone(&self) -> bevy::math::primitives::Torus;
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "std::cmp::PartialEq",
-        kind = "MetaFunction",
-        composite = "eq",
-        metamethod = "Eq",
-    )]
+    #[lua(as_trait = "std::cmp::PartialEq", composite = "eq")]
     fn eq(&self, #[proxy] other: &bevy_math::primitives::Torus) -> bool;
 
 "#,
     r#"
-#[lua(kind="MetaMethod", metamethod="ToString")]
+#[lua(metamethod="ToString")]
 fn index(&self) -> String {
     format!("{:?}", _self)
 }
 "#]
 )]
-pub struct Torus {
+pub struct LuaTorus {
     minor_radius: f32,
     major_radius: f32,
 }
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
     remote = "bevy::math::IRect",
+    bms_core_path = "bevy_mod_scripting_core",
+    bms_lua_path = "crate",
     functions[r#"
 /// Create a new rectangle from two corner points.
 /// The two points do not need to be the minimum and/or maximum corners.
@@ -22135,7 +19860,7 @@ pub struct Torus {
 /// let r = IRect::new(2, 3, 5, -1); // w=3 h=4
 /// ```
 
-    #[lua(kind = "Function", output(proxy))]
+    #[lua()]
     fn new(x0: i32, y0: i32, x1: i32, y1: i32) -> bevy::math::IRect;
 
 "#,
@@ -22152,7 +19877,7 @@ pub struct Torus {
 /// let r = IRect::from_corners(IVec2::ONE, IVec2::ZERO); // w=1 h=1
 /// ```
 
-    #[lua(kind = "Function", output(proxy))]
+    #[lua()]
     fn from_corners(
         #[proxy]
         p0: bevy::math::IVec2,
@@ -22175,7 +19900,7 @@ pub struct Torus {
 /// assert_eq!(r.max, IVec2::splat(1));
 /// ```
 
-    #[lua(kind = "Function", output(proxy))]
+    #[lua()]
     fn from_center_size(
         #[proxy]
         origin: bevy::math::IVec2,
@@ -22196,7 +19921,7 @@ pub struct Torus {
 /// assert_eq!(r.max, IVec2::splat(1));
 /// ```
 
-    #[lua(kind = "Function", output(proxy))]
+    #[lua()]
     fn from_center_half_size(
         #[proxy]
         origin: bevy::math::IVec2,
@@ -22214,7 +19939,7 @@ pub struct Torus {
 /// assert!(r.is_empty());
 /// ```
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn is_empty(&self) -> bool;
 
 "#,
@@ -22227,7 +19952,7 @@ pub struct Torus {
 /// assert_eq!(r.width(), 5);
 /// ```
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn width(&self) -> i32;
 
 "#,
@@ -22240,7 +19965,7 @@ pub struct Torus {
 /// assert_eq!(r.height(), 1);
 /// ```
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn height(&self) -> i32;
 
 "#,
@@ -22253,7 +19978,7 @@ pub struct Torus {
 /// assert_eq!(r.size(), IVec2::new(5, 1));
 /// ```
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn size(&self) -> bevy::math::IVec2;
 
 "#,
@@ -22268,7 +19993,7 @@ pub struct Torus {
 /// assert_eq!(r.half_size(), IVec2::new(2, 1));
 /// ```
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn half_size(&self) -> bevy::math::IVec2;
 
 "#,
@@ -22283,7 +20008,7 @@ pub struct Torus {
 /// assert_eq!(r.center(), IVec2::new(2, 1));
 /// ```
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn center(&self) -> bevy::math::IVec2;
 
 "#,
@@ -22298,7 +20023,7 @@ pub struct Torus {
 /// assert!(r.contains(r.max));
 /// ```
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn contains(&self, #[proxy] point: bevy::math::IVec2) -> bool;
 
 "#,
@@ -22315,7 +20040,7 @@ pub struct Torus {
 /// assert_eq!(r.max, IVec2::new(5, 3));
 /// ```
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn union(&self, #[proxy] other: bevy::math::IRect) -> bevy::math::IRect;
 
 "#,
@@ -22332,7 +20057,7 @@ pub struct Torus {
 /// assert_eq!(u.max, IVec2::new(5, 6));
 /// ```
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn union_point(&self, #[proxy] other: bevy::math::IVec2) -> bevy::math::IRect;
 
 "#,
@@ -22351,7 +20076,7 @@ pub struct Torus {
 /// assert_eq!(r.max, IVec2::new(3, 1));
 /// ```
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn intersect(&self, #[proxy] other: bevy::math::IRect) -> bevy::math::IRect;
 
 "#,
@@ -22373,59 +20098,50 @@ pub struct Torus {
 /// assert_eq!(r2.max, IVec2::new(3, 2));
 /// ```
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn inset(&self, inset: i32) -> bevy::math::IRect;
 
 "#,
     r#"
 /// Returns self as [`Rect`] (f32)
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn as_rect(&self) -> bevy::math::Rect;
 
 "#,
     r#"
 /// Returns self as [`URect`] (u32)
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn as_urect(&self) -> bevy::math::URect;
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone",
-        kind = "Method",
-        output(proxy),
-    )]
+    #[lua(as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone")]
     fn clone(&self) -> bevy::math::IRect;
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "std::cmp::PartialEq",
-        kind = "MetaFunction",
-        composite = "eq",
-        metamethod = "Eq",
-    )]
+    #[lua(as_trait = "std::cmp::PartialEq", composite = "eq")]
     fn eq(&self, #[proxy] other: &bevy_math::IRect) -> bool;
 
 "#,
     r#"
 
-    #[lua(as_trait = "std::cmp::Eq", kind = "Method")]
+    #[lua(as_trait = "std::cmp::Eq")]
     fn assert_receiver_is_total_eq(&self) -> ();
 
 "#,
     r#"
-#[lua(kind="MetaMethod", metamethod="ToString")]
+#[lua(metamethod="ToString")]
 fn index(&self) -> String {
     format!("{:?}", _self)
 }
 "#]
 )]
-pub struct IRect {
+pub struct LuaIRect {
     #[lua(output(proxy))]
     min: bevy::math::IVec2,
     #[lua(output(proxy))]
@@ -22434,6 +20150,8 @@ pub struct IRect {
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
     remote = "bevy::math::Rect",
+    bms_core_path = "bevy_mod_scripting_core",
+    bms_lua_path = "crate",
     functions[r#"
 /// Create a new rectangle from two corner points.
 /// The two points do not need to be the minimum and/or maximum corners.
@@ -22445,7 +20163,7 @@ pub struct IRect {
 /// let r = Rect::new(2., 3., 5., -1.); // w=3 h=4
 /// ```
 
-    #[lua(kind = "Function", output(proxy))]
+    #[lua()]
     fn new(x0: f32, y0: f32, x1: f32, y1: f32) -> bevy::math::Rect;
 
 "#,
@@ -22462,7 +20180,7 @@ pub struct IRect {
 /// let r = Rect::from_corners(Vec2::ONE, Vec2::ZERO); // w=1 h=1
 /// ```
 
-    #[lua(kind = "Function", output(proxy))]
+    #[lua()]
     fn from_corners(
         #[proxy]
         p0: bevy::math::Vec2,
@@ -22483,7 +20201,7 @@ pub struct IRect {
 /// assert!(r.max.abs_diff_eq(Vec2::splat(0.5), 1e-5));
 /// ```
 
-    #[lua(kind = "Function", output(proxy))]
+    #[lua()]
     fn from_center_size(
         #[proxy]
         origin: bevy::math::Vec2,
@@ -22504,7 +20222,7 @@ pub struct IRect {
 /// assert!(r.max.abs_diff_eq(Vec2::splat(1.), 1e-5));
 /// ```
 
-    #[lua(kind = "Function", output(proxy))]
+    #[lua()]
     fn from_center_half_size(
         #[proxy]
         origin: bevy::math::Vec2,
@@ -22522,7 +20240,7 @@ pub struct IRect {
 /// assert!(r.is_empty());
 /// ```
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn is_empty(&self) -> bool;
 
 "#,
@@ -22535,7 +20253,7 @@ pub struct IRect {
 /// assert!((r.width() - 5.).abs() <= 1e-5);
 /// ```
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn width(&self) -> f32;
 
 "#,
@@ -22548,7 +20266,7 @@ pub struct IRect {
 /// assert!((r.height() - 1.).abs() <= 1e-5);
 /// ```
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn height(&self) -> f32;
 
 "#,
@@ -22561,7 +20279,7 @@ pub struct IRect {
 /// assert!(r.size().abs_diff_eq(Vec2::new(5., 1.), 1e-5));
 /// ```
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn size(&self) -> bevy::math::Vec2;
 
 "#,
@@ -22574,7 +20292,7 @@ pub struct IRect {
 /// assert!(r.half_size().abs_diff_eq(Vec2::new(2.5, 0.5), 1e-5));
 /// ```
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn half_size(&self) -> bevy::math::Vec2;
 
 "#,
@@ -22587,7 +20305,7 @@ pub struct IRect {
 /// assert!(r.center().abs_diff_eq(Vec2::new(2.5, 0.5), 1e-5));
 /// ```
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn center(&self) -> bevy::math::Vec2;
 
 "#,
@@ -22602,7 +20320,7 @@ pub struct IRect {
 /// assert!(r.contains(r.max));
 /// ```
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn contains(&self, #[proxy] point: bevy::math::Vec2) -> bool;
 
 "#,
@@ -22619,7 +20337,7 @@ pub struct IRect {
 /// assert!(r.max.abs_diff_eq(Vec2::new(5., 3.), 1e-5));
 /// ```
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn union(&self, #[proxy] other: bevy::math::Rect) -> bevy::math::Rect;
 
 "#,
@@ -22636,7 +20354,7 @@ pub struct IRect {
 /// assert!(u.max.abs_diff_eq(Vec2::new(5., 6.), 1e-5));
 /// ```
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn union_point(&self, #[proxy] other: bevy::math::Vec2) -> bevy::math::Rect;
 
 "#,
@@ -22655,7 +20373,7 @@ pub struct IRect {
 /// assert!(r.max.abs_diff_eq(Vec2::new(3., 1.), 1e-5));
 /// ```
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn intersect(&self, #[proxy] other: bevy::math::Rect) -> bevy::math::Rect;
 
 "#,
@@ -22677,7 +20395,7 @@ pub struct IRect {
 /// assert!(r2.max.abs_diff_eq(Vec2::new(4., 5.), 1e-5));
 /// ```
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn inset(&self, inset: f32) -> bevy::math::Rect;
 
 "#,
@@ -22696,53 +20414,44 @@ pub struct IRect {
 /// assert_eq!(n.max.y, 0.6);
 /// ```
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn normalize(&self, #[proxy] other: bevy::math::Rect) -> bevy::math::Rect;
 
 "#,
     r#"
 /// Returns self as [`IRect`] (i32)
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn as_irect(&self) -> bevy::math::IRect;
 
 "#,
     r#"
 /// Returns self as [`URect`] (u32)
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn as_urect(&self) -> bevy::math::URect;
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "std::cmp::PartialEq",
-        kind = "MetaFunction",
-        composite = "eq",
-        metamethod = "Eq",
-    )]
+    #[lua(as_trait = "std::cmp::PartialEq", composite = "eq")]
     fn eq(&self, #[proxy] other: &bevy_math::Rect) -> bool;
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone",
-        kind = "Method",
-        output(proxy),
-    )]
+    #[lua(as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone")]
     fn clone(&self) -> bevy::math::Rect;
 
 "#,
     r#"
-#[lua(kind="MetaMethod", metamethod="ToString")]
+#[lua(metamethod="ToString")]
 fn index(&self) -> String {
     format!("{:?}", _self)
 }
 "#]
 )]
-pub struct Rect {
+pub struct LuaRect {
     #[lua(output(proxy))]
     min: bevy::math::Vec2,
     #[lua(output(proxy))]
@@ -22751,30 +20460,23 @@ pub struct Rect {
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
     remote = "bevy::math::URect",
+    bms_core_path = "bevy_mod_scripting_core",
+    bms_lua_path = "crate",
     functions[r#"
 
-    #[lua(as_trait = "std::cmp::Eq", kind = "Method")]
+    #[lua(as_trait = "std::cmp::Eq")]
     fn assert_receiver_is_total_eq(&self) -> ();
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "std::cmp::PartialEq",
-        kind = "MetaFunction",
-        composite = "eq",
-        metamethod = "Eq",
-    )]
+    #[lua(as_trait = "std::cmp::PartialEq", composite = "eq")]
     fn eq(&self, #[proxy] other: &bevy_math::URect) -> bool;
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone",
-        kind = "Method",
-        output(proxy),
-    )]
+    #[lua(as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone")]
     fn clone(&self) -> bevy::math::URect;
 
 "#,
@@ -22789,7 +20491,7 @@ pub struct Rect {
 /// let r = URect::new(2, 4, 5, 0); // w=3 h=4
 /// ```
 
-    #[lua(kind = "Function", output(proxy))]
+    #[lua()]
     fn new(x0: u32, y0: u32, x1: u32, y1: u32) -> bevy::math::URect;
 
 "#,
@@ -22806,7 +20508,7 @@ pub struct Rect {
 /// let r = URect::from_corners(UVec2::ONE, UVec2::ZERO); // w=1 h=1
 /// ```
 
-    #[lua(kind = "Function", output(proxy))]
+    #[lua()]
     fn from_corners(
         #[proxy]
         p0: bevy::math::UVec2,
@@ -22829,7 +20531,7 @@ pub struct Rect {
 /// assert_eq!(r.max, UVec2::splat(2));
 /// ```
 
-    #[lua(kind = "Function", output(proxy))]
+    #[lua()]
     fn from_center_size(
         #[proxy]
         origin: bevy::math::UVec2,
@@ -22850,7 +20552,7 @@ pub struct Rect {
 /// assert_eq!(r.max, UVec2::splat(2));
 /// ```
 
-    #[lua(kind = "Function", output(proxy))]
+    #[lua()]
     fn from_center_half_size(
         #[proxy]
         origin: bevy::math::UVec2,
@@ -22868,7 +20570,7 @@ pub struct Rect {
 /// assert!(r.is_empty());
 /// ```
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn is_empty(&self) -> bool;
 
 "#,
@@ -22881,7 +20583,7 @@ pub struct Rect {
 /// assert_eq!(r.width(), 5);
 /// ```
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn width(&self) -> u32;
 
 "#,
@@ -22894,7 +20596,7 @@ pub struct Rect {
 /// assert_eq!(r.height(), 1);
 /// ```
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn height(&self) -> u32;
 
 "#,
@@ -22907,7 +20609,7 @@ pub struct Rect {
 /// assert_eq!(r.size(), UVec2::new(5, 1));
 /// ```
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn size(&self) -> bevy::math::UVec2;
 
 "#,
@@ -22922,7 +20624,7 @@ pub struct Rect {
 /// assert_eq!(r.half_size(), UVec2::new(2, 1));
 /// ```
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn half_size(&self) -> bevy::math::UVec2;
 
 "#,
@@ -22937,7 +20639,7 @@ pub struct Rect {
 /// assert_eq!(r.center(), UVec2::new(2, 1));
 /// ```
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn center(&self) -> bevy::math::UVec2;
 
 "#,
@@ -22952,7 +20654,7 @@ pub struct Rect {
 /// assert!(r.contains(r.max));
 /// ```
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn contains(&self, #[proxy] point: bevy::math::UVec2) -> bool;
 
 "#,
@@ -22969,7 +20671,7 @@ pub struct Rect {
 /// assert_eq!(r.max, UVec2::new(5, 8));
 /// ```
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn union(&self, #[proxy] other: bevy::math::URect) -> bevy::math::URect;
 
 "#,
@@ -22986,7 +20688,7 @@ pub struct Rect {
 /// assert_eq!(u.max, UVec2::new(5, 6));
 /// ```
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn union_point(&self, #[proxy] other: bevy::math::UVec2) -> bevy::math::URect;
 
 "#,
@@ -23005,7 +20707,7 @@ pub struct Rect {
 /// assert_eq!(r.max, UVec2::new(2, 2));
 /// ```
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn intersect(&self, #[proxy] other: bevy::math::URect) -> bevy::math::URect;
 
 "#,
@@ -23027,32 +20729,32 @@ pub struct Rect {
 /// assert_eq!(r2.max, UVec2::splat(7));
 /// ```
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn inset(&self, inset: i32) -> bevy::math::URect;
 
 "#,
     r#"
 /// Returns self as [`Rect`] (f32)
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn as_rect(&self) -> bevy::math::Rect;
 
 "#,
     r#"
 /// Returns self as [`IRect`] (i32)
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn as_irect(&self) -> bevy::math::IRect;
 
 "#,
     r#"
-#[lua(kind="MetaMethod", metamethod="ToString")]
+#[lua(metamethod="ToString")]
 fn index(&self) -> String {
     format!("{:?}", _self)
 }
 "#]
 )]
-pub struct URect {
+pub struct LuaURect {
     #[lua(output(proxy))]
     min: bevy::math::UVec2,
     #[lua(output(proxy))]
@@ -23061,76 +20763,66 @@ pub struct URect {
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
     remote = "smol_str::SmolStr",
+    bms_core_path = "bevy_mod_scripting_core",
+    bms_lua_path = "crate",
     functions[r#"
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn to_string(&self) -> std::string::String;
 
 "#,
     r#"
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn len(&self) -> usize;
 
 "#,
     r#"
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn is_empty(&self) -> bool;
 
 "#,
     r#"
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn is_heap_allocated(&self) -> bool;
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "std::cmp::PartialEq",
-        kind = "MetaFunction",
-        composite = "eq",
-        metamethod = "Eq",
-    )]
+    #[lua(as_trait = "std::cmp::PartialEq", composite = "eq")]
     fn eq(&self, #[proxy] other: &smol_str::SmolStr) -> bool;
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone",
-        kind = "Method",
-        output(proxy),
-    )]
+    #[lua(as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone")]
     fn clone(&self) -> smol_str::SmolStr;
 
 "#,
     r#"
-#[lua(kind="MetaMethod", metamethod="ToString")]
+#[lua(metamethod="ToString")]
 fn index(&self) -> String {
     format!("{}", _self)
 }
 "#]
 )]
-pub struct SmolStr();
+pub struct LuaSmolStr();
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
     remote = "std::num::NonZeroIsize",
+    bms_core_path = "bevy_mod_scripting_core",
+    bms_lua_path = "crate",
     functions[r#"
 
-    #[lua(
-        as_trait = "std::cmp::PartialEq",
-        kind = "MetaFunction",
-        composite = "eq",
-        metamethod = "Eq",
-    )]
+    #[lua(as_trait = "std::cmp::PartialEq", composite = "eq")]
     fn eq(&self, #[proxy] other: &std::num::NonZeroIsize) -> bool;
 
 "#,
     r#"
 
-    #[lua(as_trait = "std::cmp::Eq", kind = "Method")]
+    #[lua(as_trait = "std::cmp::Eq")]
     fn assert_receiver_is_total_eq(&self) -> ();
 
 "#,
@@ -23140,14 +20832,14 @@ pub struct SmolStr();
 /// # Safety
 /// The value must not be zero.
 
-    #[lua(kind = "Function", output(proxy))]
+    #[lua()]
     unsafe fn new_unchecked(n: isize) -> std::num::NonZeroIsize;
 
 "#,
     r#"
 /// Returns the value as a primitive type.
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn get(self) -> isize;
 
 "#,
@@ -23161,7 +20853,7 @@ pub struct SmolStr();
 /// assert_eq!(n.leading_zeros(), 0);
 /// ```
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn leading_zeros(self) -> u32;
 
 "#,
@@ -23176,7 +20868,7 @@ pub struct SmolStr();
 /// assert_eq!(n.trailing_zeros(), 3);
 /// ```
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn trailing_zeros(self) -> u32;
 
 "#,
@@ -23197,7 +20889,7 @@ pub struct SmolStr();
 /// # }
 /// ```
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn abs(self) -> std::num::NonZeroIsize;
 
 "#,
@@ -23222,7 +20914,7 @@ pub struct SmolStr();
 /// # }
 /// ```
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn saturating_abs(self) -> std::num::NonZeroIsize;
 
 "#,
@@ -23246,7 +20938,7 @@ pub struct SmolStr();
 /// # }
 /// ```
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn wrapping_abs(self) -> std::num::NonZeroIsize;
 
 "#,
@@ -23271,7 +20963,7 @@ pub struct SmolStr();
 /// # }
 /// ```
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn unsigned_abs(self) -> std::num::NonZeroUsize;
 
 "#,
@@ -23291,7 +20983,7 @@ pub struct SmolStr();
 /// # }
 /// ```
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn is_positive(self) -> bool;
 
 "#,
@@ -23311,7 +21003,7 @@ pub struct SmolStr();
 /// # }
 /// ```
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn is_negative(self) -> bool;
 
 "#,
@@ -23337,7 +21029,7 @@ pub struct SmolStr();
 /// # }
 /// ```
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn saturating_neg(self) -> std::num::NonZeroIsize;
 
 "#,
@@ -23360,7 +21052,7 @@ pub struct SmolStr();
 /// # }
 /// ```
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn wrapping_neg(self) -> std::num::NonZeroIsize;
 
 "#,
@@ -23381,7 +21073,7 @@ pub struct SmolStr();
 /// # }
 /// ```
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn saturating_mul(
         self,
         #[proxy]
@@ -23406,43 +21098,35 @@ pub struct SmolStr();
 /// # }
 /// ```
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn saturating_pow(self, other: u32) -> std::num::NonZeroIsize;
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone",
-        kind = "Method",
-        output(proxy),
-    )]
+    #[lua(as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone")]
     fn clone(&self) -> std::num::NonZeroIsize;
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "std::ops::Neg",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "neg",
-        metamethod = "Unm",
-    )]
+    #[lua(as_trait = "std::ops::Neg", composite = "neg")]
     fn neg(self) -> std::num::NonZeroIsize;
 
 "#,
     r#"
-#[lua(kind="MetaMethod", metamethod="ToString")]
+#[lua(metamethod="ToString")]
 fn index(&self) -> String {
     format!("{}", _self)
 }
 "#]
 )]
-pub struct NonZeroIsize();
+pub struct LuaNonZeroIsize();
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
     remote = "bevy::utils::Uuid",
+    bms_core_path = "bevy_mod_scripting_core",
+    bms_lua_path = "crate",
     functions[r#"
 /// Creates a random UUID.
 /// This uses the [`getrandom`] crate to utilise the operating system's RNG
@@ -23465,34 +21149,25 @@ pub struct NonZeroIsize();
 /// [`getrandom`]: https://crates.io/crates/getrandom
 /// [from_random_bytes]: struct.Builder.html#method.from_random_bytes
 
-    #[lua(kind = "Function", output(proxy))]
+    #[lua()]
     fn new_v4() -> bevy::utils::Uuid;
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "std::cmp::PartialEq",
-        kind = "MetaFunction",
-        composite = "eq",
-        metamethod = "Eq",
-    )]
+    #[lua(as_trait = "std::cmp::PartialEq", composite = "eq")]
     fn eq(&self, #[proxy] other: &bevy_utils::Uuid) -> bool;
 
 "#,
     r#"
 
-    #[lua(as_trait = "std::cmp::Eq", kind = "Method")]
+    #[lua(as_trait = "std::cmp::Eq")]
     fn assert_receiver_is_total_eq(&self) -> ();
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone",
-        kind = "Method",
-        output(proxy),
-    )]
+    #[lua(as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone")]
     fn clone(&self) -> bevy::utils::Uuid;
 
 "#,
@@ -23513,7 +21188,7 @@ pub struct NonZeroIsize();
 /// # References
 /// * [Version in RFC4122](https://datatracker.ietf.org/doc/html/rfc4122#section-4.1.3)
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn get_version_num(&self) -> usize;
 
 "#,
@@ -23533,7 +21208,7 @@ pub struct NonZeroIsize();
 /// # }
 /// ```
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn as_u128(&self) -> u128;
 
 "#,
@@ -23559,7 +21234,7 @@ pub struct NonZeroIsize();
 /// # }
 /// ```
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn to_u128_le(&self) -> u128;
 
 "#,
@@ -23581,7 +21256,7 @@ pub struct NonZeroIsize();
 /// # }
 /// ```
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn as_u64_pair(&self) -> (u64, u64);
 
 "#,
@@ -23600,7 +21275,7 @@ pub struct NonZeroIsize();
 /// assert_eq!(bytes, uuid.into_bytes());
 /// ```
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn into_bytes(self) -> [u8; 16];
 
 "#,
@@ -23625,21 +21300,21 @@ pub struct NonZeroIsize();
 /// # }
 /// ```
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn to_bytes_le(&self) -> [u8; 16];
 
 "#,
     r#"
 /// Tests if the UUID is nil (all zeros).
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn is_nil(&self) -> bool;
 
 "#,
     r#"
 /// Tests if the UUID is max (all ones).
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn is_max(&self) -> bool;
 
 "#,
@@ -23665,7 +21340,7 @@ pub struct NonZeroIsize();
 /// );
 /// ```
 
-    #[lua(kind = "Function")]
+    #[lua()]
     fn encode_buffer() -> [u8; 45];
 
 "#,
@@ -23686,7 +21361,7 @@ pub struct NonZeroIsize();
 /// );
 /// ```
 
-    #[lua(kind = "Function", output(proxy))]
+    #[lua()]
     fn nil() -> bevy::utils::Uuid;
 
 "#,
@@ -23707,7 +21382,7 @@ pub struct NonZeroIsize();
 /// );
 /// ```
 
-    #[lua(kind = "Function", output(proxy))]
+    #[lua()]
     fn max() -> bevy::utils::Uuid;
 
 "#,
@@ -23725,7 +21400,7 @@ pub struct NonZeroIsize();
 /// );
 /// ```
 
-    #[lua(kind = "Function", output(proxy))]
+    #[lua()]
     fn from_u128(v: u128) -> bevy::utils::Uuid;
 
 "#,
@@ -23747,7 +21422,7 @@ pub struct NonZeroIsize();
 /// );
 /// ```
 
-    #[lua(kind = "Function", output(proxy))]
+    #[lua()]
     fn from_u128_le(v: u128) -> bevy::utils::Uuid;
 
 "#,
@@ -23766,7 +21441,7 @@ pub struct NonZeroIsize();
 /// );
 /// ```
 
-    #[lua(kind = "Function", output(proxy))]
+    #[lua()]
     fn from_u64_pair(high_bits: u64, low_bits: u64) -> bevy::utils::Uuid;
 
 "#,
@@ -23792,7 +21467,7 @@ pub struct NonZeroIsize();
 /// # }
 /// ```
 
-    #[lua(kind = "Function", output(proxy))]
+    #[lua()]
     fn from_bytes(bytes: [u8; 16]) -> bevy::utils::Uuid;
 
 "#,
@@ -23819,400 +21494,293 @@ pub struct NonZeroIsize();
 /// # }
 /// ```
 
-    #[lua(kind = "Function", output(proxy))]
+    #[lua()]
     fn from_bytes_le(b: [u8; 16]) -> bevy::utils::Uuid;
 
 "#,
     r#"
-#[lua(kind="MetaMethod", metamethod="ToString")]
+#[lua(metamethod="ToString")]
 fn index(&self) -> String {
     format!("{}", _self)
 }
 "#]
 )]
-pub struct Uuid();
+pub struct LuaUuid();
 #[derive(Default)]
 pub(crate) struct Globals;
-impl bevy_mod_scripting_lua::tealr::mlu::ExportInstances for Globals {
-    fn add_instances<
-        'lua,
-        T: bevy_mod_scripting_lua::tealr::mlu::InstanceCollector<'lua>,
-    >(self, instances: &mut T) -> bevy_mod_scripting_lua::tealr::mlu::mlua::Result<()> {
+impl crate::tealr::mlu::ExportInstances for Globals {
+    fn add_instances<'lua, T: crate::tealr::mlu::InstanceCollector<'lua>>(
+        self,
+        instances: &mut T,
+    ) -> crate::tealr::mlu::mlua::Result<()> {
         instances
             .add_instance(
                 "Duration",
-                bevy_mod_scripting_lua::tealr::mlu::UserDataProxy::<LuaDuration>::new,
+                crate::tealr::mlu::UserDataProxy::<LuaDuration>::new,
             )?;
         instances
             .add_instance(
                 "Instant",
-                bevy_mod_scripting_lua::tealr::mlu::UserDataProxy::<LuaInstant>::new,
+                crate::tealr::mlu::UserDataProxy::<LuaInstant>::new,
             )?;
         instances
             .add_instance(
                 "NonZeroI128",
-                bevy_mod_scripting_lua::tealr::mlu::UserDataProxy::<LuaNonZeroI128>::new,
+                crate::tealr::mlu::UserDataProxy::<LuaNonZeroI128>::new,
             )?;
         instances
             .add_instance(
                 "NonZeroI16",
-                bevy_mod_scripting_lua::tealr::mlu::UserDataProxy::<LuaNonZeroI16>::new,
+                crate::tealr::mlu::UserDataProxy::<LuaNonZeroI16>::new,
             )?;
         instances
             .add_instance(
                 "NonZeroI32",
-                bevy_mod_scripting_lua::tealr::mlu::UserDataProxy::<LuaNonZeroI32>::new,
+                crate::tealr::mlu::UserDataProxy::<LuaNonZeroI32>::new,
             )?;
         instances
             .add_instance(
                 "NonZeroI64",
-                bevy_mod_scripting_lua::tealr::mlu::UserDataProxy::<LuaNonZeroI64>::new,
+                crate::tealr::mlu::UserDataProxy::<LuaNonZeroI64>::new,
             )?;
         instances
             .add_instance(
                 "NonZeroI8",
-                bevy_mod_scripting_lua::tealr::mlu::UserDataProxy::<LuaNonZeroI8>::new,
+                crate::tealr::mlu::UserDataProxy::<LuaNonZeroI8>::new,
             )?;
         instances
             .add_instance(
                 "NonZeroU128",
-                bevy_mod_scripting_lua::tealr::mlu::UserDataProxy::<LuaNonZeroU128>::new,
+                crate::tealr::mlu::UserDataProxy::<LuaNonZeroU128>::new,
             )?;
         instances
             .add_instance(
                 "NonZeroU16",
-                bevy_mod_scripting_lua::tealr::mlu::UserDataProxy::<LuaNonZeroU16>::new,
+                crate::tealr::mlu::UserDataProxy::<LuaNonZeroU16>::new,
             )?;
         instances
             .add_instance(
                 "NonZeroU32",
-                bevy_mod_scripting_lua::tealr::mlu::UserDataProxy::<LuaNonZeroU32>::new,
+                crate::tealr::mlu::UserDataProxy::<LuaNonZeroU32>::new,
             )?;
         instances
             .add_instance(
                 "NonZeroU64",
-                bevy_mod_scripting_lua::tealr::mlu::UserDataProxy::<LuaNonZeroU64>::new,
+                crate::tealr::mlu::UserDataProxy::<LuaNonZeroU64>::new,
             )?;
         instances
             .add_instance(
                 "NonZeroU8",
-                bevy_mod_scripting_lua::tealr::mlu::UserDataProxy::<LuaNonZeroU8>::new,
+                crate::tealr::mlu::UserDataProxy::<LuaNonZeroU8>::new,
             )?;
         instances
             .add_instance(
                 "NonZeroUsize",
-                bevy_mod_scripting_lua::tealr::mlu::UserDataProxy::<LuaNonZeroUsize>::new,
+                crate::tealr::mlu::UserDataProxy::<LuaNonZeroUsize>::new,
             )?;
         instances
             .add_instance(
                 "PathBuf",
-                bevy_mod_scripting_lua::tealr::mlu::UserDataProxy::<LuaPathBuf>::new,
+                crate::tealr::mlu::UserDataProxy::<LuaPathBuf>::new,
             )?;
         instances
-            .add_instance(
-                "Quat",
-                bevy_mod_scripting_lua::tealr::mlu::UserDataProxy::<LuaQuat>::new,
-            )?;
+            .add_instance("Quat", crate::tealr::mlu::UserDataProxy::<LuaQuat>::new)?;
         instances
-            .add_instance(
-                "Vec3",
-                bevy_mod_scripting_lua::tealr::mlu::UserDataProxy::<LuaVec3>::new,
-            )?;
+            .add_instance("Vec3", crate::tealr::mlu::UserDataProxy::<LuaVec3>::new)?;
         instances
-            .add_instance(
-                "IVec2",
-                bevy_mod_scripting_lua::tealr::mlu::UserDataProxy::<LuaIVec2>::new,
-            )?;
+            .add_instance("IVec2", crate::tealr::mlu::UserDataProxy::<LuaIVec2>::new)?;
         instances
-            .add_instance(
-                "IVec3",
-                bevy_mod_scripting_lua::tealr::mlu::UserDataProxy::<LuaIVec3>::new,
-            )?;
+            .add_instance("IVec3", crate::tealr::mlu::UserDataProxy::<LuaIVec3>::new)?;
         instances
-            .add_instance(
-                "IVec4",
-                bevy_mod_scripting_lua::tealr::mlu::UserDataProxy::<LuaIVec4>::new,
-            )?;
+            .add_instance("IVec4", crate::tealr::mlu::UserDataProxy::<LuaIVec4>::new)?;
         instances
             .add_instance(
                 "I64Vec2",
-                bevy_mod_scripting_lua::tealr::mlu::UserDataProxy::<LuaI64Vec2>::new,
+                crate::tealr::mlu::UserDataProxy::<LuaI64Vec2>::new,
             )?;
         instances
             .add_instance(
                 "I64Vec3",
-                bevy_mod_scripting_lua::tealr::mlu::UserDataProxy::<LuaI64Vec3>::new,
+                crate::tealr::mlu::UserDataProxy::<LuaI64Vec3>::new,
             )?;
         instances
             .add_instance(
                 "I64Vec4",
-                bevy_mod_scripting_lua::tealr::mlu::UserDataProxy::<LuaI64Vec4>::new,
+                crate::tealr::mlu::UserDataProxy::<LuaI64Vec4>::new,
             )?;
         instances
-            .add_instance(
-                "UVec2",
-                bevy_mod_scripting_lua::tealr::mlu::UserDataProxy::<LuaUVec2>::new,
-            )?;
+            .add_instance("UVec2", crate::tealr::mlu::UserDataProxy::<LuaUVec2>::new)?;
         instances
-            .add_instance(
-                "UVec3",
-                bevy_mod_scripting_lua::tealr::mlu::UserDataProxy::<LuaUVec3>::new,
-            )?;
+            .add_instance("UVec3", crate::tealr::mlu::UserDataProxy::<LuaUVec3>::new)?;
         instances
-            .add_instance(
-                "UVec4",
-                bevy_mod_scripting_lua::tealr::mlu::UserDataProxy::<LuaUVec4>::new,
-            )?;
+            .add_instance("UVec4", crate::tealr::mlu::UserDataProxy::<LuaUVec4>::new)?;
         instances
             .add_instance(
                 "U64Vec2",
-                bevy_mod_scripting_lua::tealr::mlu::UserDataProxy::<LuaU64Vec2>::new,
+                crate::tealr::mlu::UserDataProxy::<LuaU64Vec2>::new,
             )?;
         instances
             .add_instance(
                 "U64Vec3",
-                bevy_mod_scripting_lua::tealr::mlu::UserDataProxy::<LuaU64Vec3>::new,
+                crate::tealr::mlu::UserDataProxy::<LuaU64Vec3>::new,
             )?;
         instances
             .add_instance(
                 "U64Vec4",
-                bevy_mod_scripting_lua::tealr::mlu::UserDataProxy::<LuaU64Vec4>::new,
+                crate::tealr::mlu::UserDataProxy::<LuaU64Vec4>::new,
             )?;
         instances
-            .add_instance(
-                "Vec2",
-                bevy_mod_scripting_lua::tealr::mlu::UserDataProxy::<LuaVec2>::new,
-            )?;
+            .add_instance("Vec2", crate::tealr::mlu::UserDataProxy::<LuaVec2>::new)?;
         instances
-            .add_instance(
-                "Vec3A",
-                bevy_mod_scripting_lua::tealr::mlu::UserDataProxy::<LuaVec3A>::new,
-            )?;
+            .add_instance("Vec3A", crate::tealr::mlu::UserDataProxy::<LuaVec3A>::new)?;
         instances
-            .add_instance(
-                "Vec4",
-                bevy_mod_scripting_lua::tealr::mlu::UserDataProxy::<LuaVec4>::new,
-            )?;
+            .add_instance("Vec4", crate::tealr::mlu::UserDataProxy::<LuaVec4>::new)?;
         instances
-            .add_instance(
-                "BVec2",
-                bevy_mod_scripting_lua::tealr::mlu::UserDataProxy::<LuaBVec2>::new,
-            )?;
+            .add_instance("BVec2", crate::tealr::mlu::UserDataProxy::<LuaBVec2>::new)?;
         instances
-            .add_instance(
-                "BVec3",
-                bevy_mod_scripting_lua::tealr::mlu::UserDataProxy::<LuaBVec3>::new,
-            )?;
+            .add_instance("BVec3", crate::tealr::mlu::UserDataProxy::<LuaBVec3>::new)?;
         instances
-            .add_instance(
-                "BVec4",
-                bevy_mod_scripting_lua::tealr::mlu::UserDataProxy::<LuaBVec4>::new,
-            )?;
+            .add_instance("BVec4", crate::tealr::mlu::UserDataProxy::<LuaBVec4>::new)?;
         instances
-            .add_instance(
-                "DVec2",
-                bevy_mod_scripting_lua::tealr::mlu::UserDataProxy::<LuaDVec2>::new,
-            )?;
+            .add_instance("DVec2", crate::tealr::mlu::UserDataProxy::<LuaDVec2>::new)?;
         instances
-            .add_instance(
-                "DVec3",
-                bevy_mod_scripting_lua::tealr::mlu::UserDataProxy::<LuaDVec3>::new,
-            )?;
+            .add_instance("DVec3", crate::tealr::mlu::UserDataProxy::<LuaDVec3>::new)?;
         instances
-            .add_instance(
-                "DVec4",
-                bevy_mod_scripting_lua::tealr::mlu::UserDataProxy::<LuaDVec4>::new,
-            )?;
+            .add_instance("DVec4", crate::tealr::mlu::UserDataProxy::<LuaDVec4>::new)?;
         instances
-            .add_instance(
-                "Mat2",
-                bevy_mod_scripting_lua::tealr::mlu::UserDataProxy::<LuaMat2>::new,
-            )?;
+            .add_instance("Mat2", crate::tealr::mlu::UserDataProxy::<LuaMat2>::new)?;
         instances
-            .add_instance(
-                "Mat3",
-                bevy_mod_scripting_lua::tealr::mlu::UserDataProxy::<LuaMat3>::new,
-            )?;
+            .add_instance("Mat3", crate::tealr::mlu::UserDataProxy::<LuaMat3>::new)?;
         instances
-            .add_instance(
-                "Mat3A",
-                bevy_mod_scripting_lua::tealr::mlu::UserDataProxy::<LuaMat3A>::new,
-            )?;
+            .add_instance("Mat3A", crate::tealr::mlu::UserDataProxy::<LuaMat3A>::new)?;
         instances
-            .add_instance(
-                "Mat4",
-                bevy_mod_scripting_lua::tealr::mlu::UserDataProxy::<LuaMat4>::new,
-            )?;
+            .add_instance("Mat4", crate::tealr::mlu::UserDataProxy::<LuaMat4>::new)?;
         instances
-            .add_instance(
-                "DMat2",
-                bevy_mod_scripting_lua::tealr::mlu::UserDataProxy::<LuaDMat2>::new,
-            )?;
+            .add_instance("DMat2", crate::tealr::mlu::UserDataProxy::<LuaDMat2>::new)?;
         instances
-            .add_instance(
-                "DMat3",
-                bevy_mod_scripting_lua::tealr::mlu::UserDataProxy::<LuaDMat3>::new,
-            )?;
+            .add_instance("DMat3", crate::tealr::mlu::UserDataProxy::<LuaDMat3>::new)?;
         instances
-            .add_instance(
-                "DMat4",
-                bevy_mod_scripting_lua::tealr::mlu::UserDataProxy::<LuaDMat4>::new,
-            )?;
+            .add_instance("DMat4", crate::tealr::mlu::UserDataProxy::<LuaDMat4>::new)?;
         instances
             .add_instance(
                 "Affine2",
-                bevy_mod_scripting_lua::tealr::mlu::UserDataProxy::<LuaAffine2>::new,
+                crate::tealr::mlu::UserDataProxy::<LuaAffine2>::new,
             )?;
         instances
             .add_instance(
                 "Affine3A",
-                bevy_mod_scripting_lua::tealr::mlu::UserDataProxy::<LuaAffine3A>::new,
+                crate::tealr::mlu::UserDataProxy::<LuaAffine3A>::new,
             )?;
         instances
             .add_instance(
                 "DAffine2",
-                bevy_mod_scripting_lua::tealr::mlu::UserDataProxy::<LuaDAffine2>::new,
+                crate::tealr::mlu::UserDataProxy::<LuaDAffine2>::new,
             )?;
         instances
             .add_instance(
                 "DAffine3",
-                bevy_mod_scripting_lua::tealr::mlu::UserDataProxy::<LuaDAffine3>::new,
+                crate::tealr::mlu::UserDataProxy::<LuaDAffine3>::new,
             )?;
         instances
-            .add_instance(
-                "DQuat",
-                bevy_mod_scripting_lua::tealr::mlu::UserDataProxy::<LuaDQuat>::new,
-            )?;
+            .add_instance("DQuat", crate::tealr::mlu::UserDataProxy::<LuaDQuat>::new)?;
         instances
-            .add_instance(
-                "BVec3A",
-                bevy_mod_scripting_lua::tealr::mlu::UserDataProxy::<LuaBVec3A>::new,
-            )?;
+            .add_instance("BVec3A", crate::tealr::mlu::UserDataProxy::<LuaBVec3A>::new)?;
         instances
-            .add_instance(
-                "BVec4A",
-                bevy_mod_scripting_lua::tealr::mlu::UserDataProxy::<LuaBVec4A>::new,
-            )?;
+            .add_instance("BVec4A", crate::tealr::mlu::UserDataProxy::<LuaBVec4A>::new)?;
         instances
             .add_instance(
                 "Direction2d",
-                bevy_mod_scripting_lua::tealr::mlu::UserDataProxy::<LuaDirection2d>::new,
+                crate::tealr::mlu::UserDataProxy::<LuaDirection2d>::new,
             )?;
         instances
-            .add_instance(
-                "Circle",
-                bevy_mod_scripting_lua::tealr::mlu::UserDataProxy::<LuaCircle>::new,
-            )?;
+            .add_instance("Circle", crate::tealr::mlu::UserDataProxy::<LuaCircle>::new)?;
         instances
             .add_instance(
                 "Ellipse",
-                bevy_mod_scripting_lua::tealr::mlu::UserDataProxy::<LuaEllipse>::new,
+                crate::tealr::mlu::UserDataProxy::<LuaEllipse>::new,
             )?;
         instances
             .add_instance(
                 "Plane2d",
-                bevy_mod_scripting_lua::tealr::mlu::UserDataProxy::<LuaPlane2d>::new,
+                crate::tealr::mlu::UserDataProxy::<LuaPlane2d>::new,
             )?;
         instances
             .add_instance(
                 "Segment2d",
-                bevy_mod_scripting_lua::tealr::mlu::UserDataProxy::<LuaSegment2d>::new,
+                crate::tealr::mlu::UserDataProxy::<LuaSegment2d>::new,
             )?;
         instances
             .add_instance(
                 "Triangle2d",
-                bevy_mod_scripting_lua::tealr::mlu::UserDataProxy::<LuaTriangle2d>::new,
+                crate::tealr::mlu::UserDataProxy::<LuaTriangle2d>::new,
             )?;
         instances
             .add_instance(
                 "Rectangle",
-                bevy_mod_scripting_lua::tealr::mlu::UserDataProxy::<LuaRectangle>::new,
+                crate::tealr::mlu::UserDataProxy::<LuaRectangle>::new,
             )?;
         instances
             .add_instance(
                 "RegularPolygon",
-                bevy_mod_scripting_lua::tealr::mlu::UserDataProxy::<
-                    LuaRegularPolygon,
-                >::new,
+                crate::tealr::mlu::UserDataProxy::<LuaRegularPolygon>::new,
             )?;
         instances
             .add_instance(
                 "Capsule2d",
-                bevy_mod_scripting_lua::tealr::mlu::UserDataProxy::<LuaCapsule2d>::new,
+                crate::tealr::mlu::UserDataProxy::<LuaCapsule2d>::new,
             )?;
         instances
             .add_instance(
                 "Direction3d",
-                bevy_mod_scripting_lua::tealr::mlu::UserDataProxy::<LuaDirection3d>::new,
+                crate::tealr::mlu::UserDataProxy::<LuaDirection3d>::new,
             )?;
         instances
-            .add_instance(
-                "Sphere",
-                bevy_mod_scripting_lua::tealr::mlu::UserDataProxy::<LuaSphere>::new,
-            )?;
+            .add_instance("Sphere", crate::tealr::mlu::UserDataProxy::<LuaSphere>::new)?;
         instances
             .add_instance(
                 "Plane3d",
-                bevy_mod_scripting_lua::tealr::mlu::UserDataProxy::<LuaPlane3d>::new,
+                crate::tealr::mlu::UserDataProxy::<LuaPlane3d>::new,
             )?;
         instances
             .add_instance(
                 "Segment3d",
-                bevy_mod_scripting_lua::tealr::mlu::UserDataProxy::<LuaSegment3d>::new,
+                crate::tealr::mlu::UserDataProxy::<LuaSegment3d>::new,
             )?;
         instances
-            .add_instance(
-                "Cuboid",
-                bevy_mod_scripting_lua::tealr::mlu::UserDataProxy::<LuaCuboid>::new,
-            )?;
+            .add_instance("Cuboid", crate::tealr::mlu::UserDataProxy::<LuaCuboid>::new)?;
         instances
             .add_instance(
                 "Cylinder",
-                bevy_mod_scripting_lua::tealr::mlu::UserDataProxy::<LuaCylinder>::new,
+                crate::tealr::mlu::UserDataProxy::<LuaCylinder>::new,
             )?;
         instances
             .add_instance(
                 "Capsule3d",
-                bevy_mod_scripting_lua::tealr::mlu::UserDataProxy::<LuaCapsule3d>::new,
+                crate::tealr::mlu::UserDataProxy::<LuaCapsule3d>::new,
             )?;
         instances
-            .add_instance(
-                "Torus",
-                bevy_mod_scripting_lua::tealr::mlu::UserDataProxy::<LuaTorus>::new,
-            )?;
+            .add_instance("Torus", crate::tealr::mlu::UserDataProxy::<LuaTorus>::new)?;
         instances
-            .add_instance(
-                "IRect",
-                bevy_mod_scripting_lua::tealr::mlu::UserDataProxy::<LuaIRect>::new,
-            )?;
+            .add_instance("IRect", crate::tealr::mlu::UserDataProxy::<LuaIRect>::new)?;
         instances
-            .add_instance(
-                "Rect",
-                bevy_mod_scripting_lua::tealr::mlu::UserDataProxy::<LuaRect>::new,
-            )?;
+            .add_instance("Rect", crate::tealr::mlu::UserDataProxy::<LuaRect>::new)?;
         instances
-            .add_instance(
-                "URect",
-                bevy_mod_scripting_lua::tealr::mlu::UserDataProxy::<LuaURect>::new,
-            )?;
+            .add_instance("URect", crate::tealr::mlu::UserDataProxy::<LuaURect>::new)?;
         instances
             .add_instance(
                 "NonZeroIsize",
-                bevy_mod_scripting_lua::tealr::mlu::UserDataProxy::<LuaNonZeroIsize>::new,
+                crate::tealr::mlu::UserDataProxy::<LuaNonZeroIsize>::new,
             )?;
         instances
-            .add_instance(
-                "Uuid",
-                bevy_mod_scripting_lua::tealr::mlu::UserDataProxy::<LuaUuid>::new,
-            )?;
+            .add_instance("Uuid", crate::tealr::mlu::UserDataProxy::<LuaUuid>::new)?;
         Ok(())
     }
 }
 fn bevy_reflect_context_initializer(
     _: &bevy_mod_scripting_core::script::ScriptId,
-    ctx: &mut bevy_mod_scripting_lua::prelude::Lua,
+    ctx: &mut crate::prelude::Lua,
 ) -> Result<(), bevy_mod_scripting_core::error::ScriptError> {
-    bevy_mod_scripting_lua::tealr::mlu::set_global_env(Globals, ctx)?;
+    crate::tealr::mlu::set_global_env(Globals, ctx)?;
     Ok(())
 }
 pub struct BevyReflectScriptingPlugin;
@@ -24300,362 +21868,192 @@ impl bevy::app::Plugin for BevyReflectScriptingPlugin {
         app.register_foreign_lua_type::<bevy::utils::Uuid>();
         app.add_context_initializer::<()>(bevy_reflect_context_initializer);
         app.add_documentation_fragment(
-            bevy_mod_scripting_lua::docs::LuaDocumentationFragment::new(
+            crate::docs::LuaDocumentationFragment::new(
                 "BevyReflectAPI",
                 |tw| {
                     tw.document_global_instance::<Globals>()
                         .expect("Something went wrong documenting globals")
                         .process_type::<LuaDuration>()
-                        .process_type::<
-                            bevy_mod_scripting_lua::tealr::mlu::UserDataProxy<
-                                LuaDuration,
-                            >,
-                        >()
+                        .process_type::<crate::tealr::mlu::UserDataProxy<LuaDuration>>()
                         .process_type::<LuaInstant>()
-                        .process_type::<
-                            bevy_mod_scripting_lua::tealr::mlu::UserDataProxy<LuaInstant>,
-                        >()
+                        .process_type::<crate::tealr::mlu::UserDataProxy<LuaInstant>>()
                         .process_type::<LuaNonZeroI128>()
                         .process_type::<
-                            bevy_mod_scripting_lua::tealr::mlu::UserDataProxy<
-                                LuaNonZeroI128,
-                            >,
+                            crate::tealr::mlu::UserDataProxy<LuaNonZeroI128>,
                         >()
                         .process_type::<LuaNonZeroI16>()
                         .process_type::<
-                            bevy_mod_scripting_lua::tealr::mlu::UserDataProxy<
-                                LuaNonZeroI16,
-                            >,
+                            crate::tealr::mlu::UserDataProxy<LuaNonZeroI16>,
                         >()
                         .process_type::<LuaNonZeroI32>()
                         .process_type::<
-                            bevy_mod_scripting_lua::tealr::mlu::UserDataProxy<
-                                LuaNonZeroI32,
-                            >,
+                            crate::tealr::mlu::UserDataProxy<LuaNonZeroI32>,
                         >()
                         .process_type::<LuaNonZeroI64>()
                         .process_type::<
-                            bevy_mod_scripting_lua::tealr::mlu::UserDataProxy<
-                                LuaNonZeroI64,
-                            >,
+                            crate::tealr::mlu::UserDataProxy<LuaNonZeroI64>,
                         >()
                         .process_type::<LuaNonZeroI8>()
-                        .process_type::<
-                            bevy_mod_scripting_lua::tealr::mlu::UserDataProxy<
-                                LuaNonZeroI8,
-                            >,
-                        >()
+                        .process_type::<crate::tealr::mlu::UserDataProxy<LuaNonZeroI8>>()
                         .process_type::<LuaNonZeroU128>()
                         .process_type::<
-                            bevy_mod_scripting_lua::tealr::mlu::UserDataProxy<
-                                LuaNonZeroU128,
-                            >,
+                            crate::tealr::mlu::UserDataProxy<LuaNonZeroU128>,
                         >()
                         .process_type::<LuaNonZeroU16>()
                         .process_type::<
-                            bevy_mod_scripting_lua::tealr::mlu::UserDataProxy<
-                                LuaNonZeroU16,
-                            >,
+                            crate::tealr::mlu::UserDataProxy<LuaNonZeroU16>,
                         >()
                         .process_type::<LuaNonZeroU32>()
                         .process_type::<
-                            bevy_mod_scripting_lua::tealr::mlu::UserDataProxy<
-                                LuaNonZeroU32,
-                            >,
+                            crate::tealr::mlu::UserDataProxy<LuaNonZeroU32>,
                         >()
                         .process_type::<LuaNonZeroU64>()
                         .process_type::<
-                            bevy_mod_scripting_lua::tealr::mlu::UserDataProxy<
-                                LuaNonZeroU64,
-                            >,
+                            crate::tealr::mlu::UserDataProxy<LuaNonZeroU64>,
                         >()
                         .process_type::<LuaNonZeroU8>()
-                        .process_type::<
-                            bevy_mod_scripting_lua::tealr::mlu::UserDataProxy<
-                                LuaNonZeroU8,
-                            >,
-                        >()
+                        .process_type::<crate::tealr::mlu::UserDataProxy<LuaNonZeroU8>>()
                         .process_type::<LuaNonZeroUsize>()
                         .process_type::<
-                            bevy_mod_scripting_lua::tealr::mlu::UserDataProxy<
-                                LuaNonZeroUsize,
-                            >,
+                            crate::tealr::mlu::UserDataProxy<LuaNonZeroUsize>,
                         >()
                         .process_type::<LuaPathBuf>()
-                        .process_type::<
-                            bevy_mod_scripting_lua::tealr::mlu::UserDataProxy<LuaPathBuf>,
-                        >()
+                        .process_type::<crate::tealr::mlu::UserDataProxy<LuaPathBuf>>()
                         .process_type::<LuaRangeFull>()
                         .process_type::<LuaQuat>()
-                        .process_type::<
-                            bevy_mod_scripting_lua::tealr::mlu::UserDataProxy<LuaQuat>,
-                        >()
+                        .process_type::<crate::tealr::mlu::UserDataProxy<LuaQuat>>()
                         .process_type::<LuaVec3>()
-                        .process_type::<
-                            bevy_mod_scripting_lua::tealr::mlu::UserDataProxy<LuaVec3>,
-                        >()
+                        .process_type::<crate::tealr::mlu::UserDataProxy<LuaVec3>>()
                         .process_type::<LuaIVec2>()
-                        .process_type::<
-                            bevy_mod_scripting_lua::tealr::mlu::UserDataProxy<LuaIVec2>,
-                        >()
+                        .process_type::<crate::tealr::mlu::UserDataProxy<LuaIVec2>>()
                         .process_type::<LuaIVec3>()
-                        .process_type::<
-                            bevy_mod_scripting_lua::tealr::mlu::UserDataProxy<LuaIVec3>,
-                        >()
+                        .process_type::<crate::tealr::mlu::UserDataProxy<LuaIVec3>>()
                         .process_type::<LuaIVec4>()
-                        .process_type::<
-                            bevy_mod_scripting_lua::tealr::mlu::UserDataProxy<LuaIVec4>,
-                        >()
+                        .process_type::<crate::tealr::mlu::UserDataProxy<LuaIVec4>>()
                         .process_type::<LuaI64Vec2>()
-                        .process_type::<
-                            bevy_mod_scripting_lua::tealr::mlu::UserDataProxy<LuaI64Vec2>,
-                        >()
+                        .process_type::<crate::tealr::mlu::UserDataProxy<LuaI64Vec2>>()
                         .process_type::<LuaI64Vec3>()
-                        .process_type::<
-                            bevy_mod_scripting_lua::tealr::mlu::UserDataProxy<LuaI64Vec3>,
-                        >()
+                        .process_type::<crate::tealr::mlu::UserDataProxy<LuaI64Vec3>>()
                         .process_type::<LuaI64Vec4>()
-                        .process_type::<
-                            bevy_mod_scripting_lua::tealr::mlu::UserDataProxy<LuaI64Vec4>,
-                        >()
+                        .process_type::<crate::tealr::mlu::UserDataProxy<LuaI64Vec4>>()
                         .process_type::<LuaUVec2>()
-                        .process_type::<
-                            bevy_mod_scripting_lua::tealr::mlu::UserDataProxy<LuaUVec2>,
-                        >()
+                        .process_type::<crate::tealr::mlu::UserDataProxy<LuaUVec2>>()
                         .process_type::<LuaUVec3>()
-                        .process_type::<
-                            bevy_mod_scripting_lua::tealr::mlu::UserDataProxy<LuaUVec3>,
-                        >()
+                        .process_type::<crate::tealr::mlu::UserDataProxy<LuaUVec3>>()
                         .process_type::<LuaUVec4>()
-                        .process_type::<
-                            bevy_mod_scripting_lua::tealr::mlu::UserDataProxy<LuaUVec4>,
-                        >()
+                        .process_type::<crate::tealr::mlu::UserDataProxy<LuaUVec4>>()
                         .process_type::<LuaU64Vec2>()
-                        .process_type::<
-                            bevy_mod_scripting_lua::tealr::mlu::UserDataProxy<LuaU64Vec2>,
-                        >()
+                        .process_type::<crate::tealr::mlu::UserDataProxy<LuaU64Vec2>>()
                         .process_type::<LuaU64Vec3>()
-                        .process_type::<
-                            bevy_mod_scripting_lua::tealr::mlu::UserDataProxy<LuaU64Vec3>,
-                        >()
+                        .process_type::<crate::tealr::mlu::UserDataProxy<LuaU64Vec3>>()
                         .process_type::<LuaU64Vec4>()
-                        .process_type::<
-                            bevy_mod_scripting_lua::tealr::mlu::UserDataProxy<LuaU64Vec4>,
-                        >()
+                        .process_type::<crate::tealr::mlu::UserDataProxy<LuaU64Vec4>>()
                         .process_type::<LuaVec2>()
-                        .process_type::<
-                            bevy_mod_scripting_lua::tealr::mlu::UserDataProxy<LuaVec2>,
-                        >()
+                        .process_type::<crate::tealr::mlu::UserDataProxy<LuaVec2>>()
                         .process_type::<LuaVec3A>()
-                        .process_type::<
-                            bevy_mod_scripting_lua::tealr::mlu::UserDataProxy<LuaVec3A>,
-                        >()
+                        .process_type::<crate::tealr::mlu::UserDataProxy<LuaVec3A>>()
                         .process_type::<LuaVec4>()
-                        .process_type::<
-                            bevy_mod_scripting_lua::tealr::mlu::UserDataProxy<LuaVec4>,
-                        >()
+                        .process_type::<crate::tealr::mlu::UserDataProxy<LuaVec4>>()
                         .process_type::<LuaBVec2>()
-                        .process_type::<
-                            bevy_mod_scripting_lua::tealr::mlu::UserDataProxy<LuaBVec2>,
-                        >()
+                        .process_type::<crate::tealr::mlu::UserDataProxy<LuaBVec2>>()
                         .process_type::<LuaBVec3>()
-                        .process_type::<
-                            bevy_mod_scripting_lua::tealr::mlu::UserDataProxy<LuaBVec3>,
-                        >()
+                        .process_type::<crate::tealr::mlu::UserDataProxy<LuaBVec3>>()
                         .process_type::<LuaBVec4>()
-                        .process_type::<
-                            bevy_mod_scripting_lua::tealr::mlu::UserDataProxy<LuaBVec4>,
-                        >()
+                        .process_type::<crate::tealr::mlu::UserDataProxy<LuaBVec4>>()
                         .process_type::<LuaDVec2>()
-                        .process_type::<
-                            bevy_mod_scripting_lua::tealr::mlu::UserDataProxy<LuaDVec2>,
-                        >()
+                        .process_type::<crate::tealr::mlu::UserDataProxy<LuaDVec2>>()
                         .process_type::<LuaDVec3>()
-                        .process_type::<
-                            bevy_mod_scripting_lua::tealr::mlu::UserDataProxy<LuaDVec3>,
-                        >()
+                        .process_type::<crate::tealr::mlu::UserDataProxy<LuaDVec3>>()
                         .process_type::<LuaDVec4>()
-                        .process_type::<
-                            bevy_mod_scripting_lua::tealr::mlu::UserDataProxy<LuaDVec4>,
-                        >()
+                        .process_type::<crate::tealr::mlu::UserDataProxy<LuaDVec4>>()
                         .process_type::<LuaMat2>()
-                        .process_type::<
-                            bevy_mod_scripting_lua::tealr::mlu::UserDataProxy<LuaMat2>,
-                        >()
+                        .process_type::<crate::tealr::mlu::UserDataProxy<LuaMat2>>()
                         .process_type::<LuaMat3>()
-                        .process_type::<
-                            bevy_mod_scripting_lua::tealr::mlu::UserDataProxy<LuaMat3>,
-                        >()
+                        .process_type::<crate::tealr::mlu::UserDataProxy<LuaMat3>>()
                         .process_type::<LuaMat3A>()
-                        .process_type::<
-                            bevy_mod_scripting_lua::tealr::mlu::UserDataProxy<LuaMat3A>,
-                        >()
+                        .process_type::<crate::tealr::mlu::UserDataProxy<LuaMat3A>>()
                         .process_type::<LuaMat4>()
-                        .process_type::<
-                            bevy_mod_scripting_lua::tealr::mlu::UserDataProxy<LuaMat4>,
-                        >()
+                        .process_type::<crate::tealr::mlu::UserDataProxy<LuaMat4>>()
                         .process_type::<LuaDMat2>()
-                        .process_type::<
-                            bevy_mod_scripting_lua::tealr::mlu::UserDataProxy<LuaDMat2>,
-                        >()
+                        .process_type::<crate::tealr::mlu::UserDataProxy<LuaDMat2>>()
                         .process_type::<LuaDMat3>()
-                        .process_type::<
-                            bevy_mod_scripting_lua::tealr::mlu::UserDataProxy<LuaDMat3>,
-                        >()
+                        .process_type::<crate::tealr::mlu::UserDataProxy<LuaDMat3>>()
                         .process_type::<LuaDMat4>()
-                        .process_type::<
-                            bevy_mod_scripting_lua::tealr::mlu::UserDataProxy<LuaDMat4>,
-                        >()
+                        .process_type::<crate::tealr::mlu::UserDataProxy<LuaDMat4>>()
                         .process_type::<LuaAffine2>()
-                        .process_type::<
-                            bevy_mod_scripting_lua::tealr::mlu::UserDataProxy<LuaAffine2>,
-                        >()
+                        .process_type::<crate::tealr::mlu::UserDataProxy<LuaAffine2>>()
                         .process_type::<LuaAffine3A>()
-                        .process_type::<
-                            bevy_mod_scripting_lua::tealr::mlu::UserDataProxy<
-                                LuaAffine3A,
-                            >,
-                        >()
+                        .process_type::<crate::tealr::mlu::UserDataProxy<LuaAffine3A>>()
                         .process_type::<LuaDAffine2>()
-                        .process_type::<
-                            bevy_mod_scripting_lua::tealr::mlu::UserDataProxy<
-                                LuaDAffine2,
-                            >,
-                        >()
+                        .process_type::<crate::tealr::mlu::UserDataProxy<LuaDAffine2>>()
                         .process_type::<LuaDAffine3>()
-                        .process_type::<
-                            bevy_mod_scripting_lua::tealr::mlu::UserDataProxy<
-                                LuaDAffine3,
-                            >,
-                        >()
+                        .process_type::<crate::tealr::mlu::UserDataProxy<LuaDAffine3>>()
                         .process_type::<LuaDQuat>()
-                        .process_type::<
-                            bevy_mod_scripting_lua::tealr::mlu::UserDataProxy<LuaDQuat>,
-                        >()
+                        .process_type::<crate::tealr::mlu::UserDataProxy<LuaDQuat>>()
                         .process_type::<LuaEulerRot>()
                         .process_type::<LuaBVec3A>()
-                        .process_type::<
-                            bevy_mod_scripting_lua::tealr::mlu::UserDataProxy<LuaBVec3A>,
-                        >()
+                        .process_type::<crate::tealr::mlu::UserDataProxy<LuaBVec3A>>()
                         .process_type::<LuaBVec4A>()
-                        .process_type::<
-                            bevy_mod_scripting_lua::tealr::mlu::UserDataProxy<LuaBVec4A>,
-                        >()
+                        .process_type::<crate::tealr::mlu::UserDataProxy<LuaBVec4A>>()
                         .process_type::<LuaDirection2d>()
                         .process_type::<
-                            bevy_mod_scripting_lua::tealr::mlu::UserDataProxy<
-                                LuaDirection2d,
-                            >,
+                            crate::tealr::mlu::UserDataProxy<LuaDirection2d>,
                         >()
                         .process_type::<LuaCircle>()
-                        .process_type::<
-                            bevy_mod_scripting_lua::tealr::mlu::UserDataProxy<LuaCircle>,
-                        >()
+                        .process_type::<crate::tealr::mlu::UserDataProxy<LuaCircle>>()
                         .process_type::<LuaEllipse>()
-                        .process_type::<
-                            bevy_mod_scripting_lua::tealr::mlu::UserDataProxy<LuaEllipse>,
-                        >()
+                        .process_type::<crate::tealr::mlu::UserDataProxy<LuaEllipse>>()
                         .process_type::<LuaPlane2d>()
-                        .process_type::<
-                            bevy_mod_scripting_lua::tealr::mlu::UserDataProxy<LuaPlane2d>,
-                        >()
+                        .process_type::<crate::tealr::mlu::UserDataProxy<LuaPlane2d>>()
                         .process_type::<LuaLine2d>()
                         .process_type::<LuaSegment2d>()
-                        .process_type::<
-                            bevy_mod_scripting_lua::tealr::mlu::UserDataProxy<
-                                LuaSegment2d,
-                            >,
-                        >()
+                        .process_type::<crate::tealr::mlu::UserDataProxy<LuaSegment2d>>()
                         .process_type::<LuaTriangle2d>()
                         .process_type::<
-                            bevy_mod_scripting_lua::tealr::mlu::UserDataProxy<
-                                LuaTriangle2d,
-                            >,
+                            crate::tealr::mlu::UserDataProxy<LuaTriangle2d>,
                         >()
                         .process_type::<LuaRectangle>()
-                        .process_type::<
-                            bevy_mod_scripting_lua::tealr::mlu::UserDataProxy<
-                                LuaRectangle,
-                            >,
-                        >()
+                        .process_type::<crate::tealr::mlu::UserDataProxy<LuaRectangle>>()
                         .process_type::<LuaRegularPolygon>()
                         .process_type::<
-                            bevy_mod_scripting_lua::tealr::mlu::UserDataProxy<
-                                LuaRegularPolygon,
-                            >,
+                            crate::tealr::mlu::UserDataProxy<LuaRegularPolygon>,
                         >()
                         .process_type::<LuaCapsule2d>()
-                        .process_type::<
-                            bevy_mod_scripting_lua::tealr::mlu::UserDataProxy<
-                                LuaCapsule2d,
-                            >,
-                        >()
+                        .process_type::<crate::tealr::mlu::UserDataProxy<LuaCapsule2d>>()
                         .process_type::<LuaDirection3d>()
                         .process_type::<
-                            bevy_mod_scripting_lua::tealr::mlu::UserDataProxy<
-                                LuaDirection3d,
-                            >,
+                            crate::tealr::mlu::UserDataProxy<LuaDirection3d>,
                         >()
                         .process_type::<LuaSphere>()
-                        .process_type::<
-                            bevy_mod_scripting_lua::tealr::mlu::UserDataProxy<LuaSphere>,
-                        >()
+                        .process_type::<crate::tealr::mlu::UserDataProxy<LuaSphere>>()
                         .process_type::<LuaPlane3d>()
-                        .process_type::<
-                            bevy_mod_scripting_lua::tealr::mlu::UserDataProxy<LuaPlane3d>,
-                        >()
+                        .process_type::<crate::tealr::mlu::UserDataProxy<LuaPlane3d>>()
                         .process_type::<LuaLine3d>()
                         .process_type::<LuaSegment3d>()
-                        .process_type::<
-                            bevy_mod_scripting_lua::tealr::mlu::UserDataProxy<
-                                LuaSegment3d,
-                            >,
-                        >()
+                        .process_type::<crate::tealr::mlu::UserDataProxy<LuaSegment3d>>()
                         .process_type::<LuaCuboid>()
-                        .process_type::<
-                            bevy_mod_scripting_lua::tealr::mlu::UserDataProxy<LuaCuboid>,
-                        >()
+                        .process_type::<crate::tealr::mlu::UserDataProxy<LuaCuboid>>()
                         .process_type::<LuaCylinder>()
-                        .process_type::<
-                            bevy_mod_scripting_lua::tealr::mlu::UserDataProxy<
-                                LuaCylinder,
-                            >,
-                        >()
+                        .process_type::<crate::tealr::mlu::UserDataProxy<LuaCylinder>>()
                         .process_type::<LuaCapsule3d>()
-                        .process_type::<
-                            bevy_mod_scripting_lua::tealr::mlu::UserDataProxy<
-                                LuaCapsule3d,
-                            >,
-                        >()
+                        .process_type::<crate::tealr::mlu::UserDataProxy<LuaCapsule3d>>()
                         .process_type::<LuaCone>()
                         .process_type::<LuaConicalFrustum>()
                         .process_type::<LuaTorus>()
-                        .process_type::<
-                            bevy_mod_scripting_lua::tealr::mlu::UserDataProxy<LuaTorus>,
-                        >()
+                        .process_type::<crate::tealr::mlu::UserDataProxy<LuaTorus>>()
                         .process_type::<LuaIRect>()
-                        .process_type::<
-                            bevy_mod_scripting_lua::tealr::mlu::UserDataProxy<LuaIRect>,
-                        >()
+                        .process_type::<crate::tealr::mlu::UserDataProxy<LuaIRect>>()
                         .process_type::<LuaRect>()
-                        .process_type::<
-                            bevy_mod_scripting_lua::tealr::mlu::UserDataProxy<LuaRect>,
-                        >()
+                        .process_type::<crate::tealr::mlu::UserDataProxy<LuaRect>>()
                         .process_type::<LuaURect>()
-                        .process_type::<
-                            bevy_mod_scripting_lua::tealr::mlu::UserDataProxy<LuaURect>,
-                        >()
+                        .process_type::<crate::tealr::mlu::UserDataProxy<LuaURect>>()
                         .process_type::<LuaSmolStr>()
                         .process_type::<LuaNonZeroIsize>()
                         .process_type::<
-                            bevy_mod_scripting_lua::tealr::mlu::UserDataProxy<
-                                LuaNonZeroIsize,
-                            >,
+                            crate::tealr::mlu::UserDataProxy<LuaNonZeroIsize>,
                         >()
                         .process_type::<LuaUuid>()
-                        .process_type::<
-                            bevy_mod_scripting_lua::tealr::mlu::UserDataProxy<LuaUuid>,
-                        >()
+                        .process_type::<crate::tealr::mlu::UserDataProxy<LuaUuid>>()
                 },
             ),
         );

@@ -8,9 +8,5 @@ use super::{{crate}}::*;
 {% endif %}
 {% endfor %}
 
-{% if args.self_is_bevy_script_api %}
-extern crate self as bevy_script_api;
-{% endif %}
 
-use bevy_script_api::{lua::RegisterForeignLuaType, ReflectedValue, common::bevy::GetWorld};
 use bevy_mod_scripting_core::{AddContextInitializer, StoreDocumentation};

@@ -1,6 +1,7 @@
 use std::collections::HashMap;
 
 use bevy_mod_scripting_common::{input::*, utils::doc_attribute_to_string_lit};
+use darling::util::Flag;
 use syn::punctuated::Punctuated;
 use syn::{parse_macro_input, parse_quote_spanned, DeriveInput, ExprClosure, FnArg, Variant};
 use syn::{
@@ -28,7 +29,7 @@ const VALID_META_METHODS: [&str; 27] = [
 /// - instead o a `&self` receiver we have a `_self: LuaRefProxy<Self>`
 /// - instead of a `&mut self` receiver we have a `_self: LuaRefMutProxy<Self>`
 /// - instead of a `self` receiver we have a `_self: ValLuaProxy<Self>`
-fn standardise_receiver<'a>(receiver: &mut FnArg, target_type_ident: &Ident, bms_core_path: &Path) {
+fn standardise_receiver(receiver: &mut FnArg, target_type: &Path, bms_lua_path: &Path) {
     let replacement = if let FnArg::Receiver(receiver) = receiver {
         let ref_ = &receiver.reference.as_ref().map(|(amp, lifetime)| {
             quote_spanned! {receiver.span()=>
@@ -42,9 +43,10 @@ fn standardise_receiver<'a>(receiver: &mut FnArg, target_type_ident: &Ident, bms
             (true, false) => "LuaReflectRefProxy",
             (false, _) => "LuaReflectValProxy",
         };
-
+        let unproxy_ident = syn::Ident::new(unproxy_container_name, receiver.span());
+        
         Some(syn::FnArg::Typed(parse_quote_spanned! {receiver.span()=>
-            #self_ident: #bms_core_path::proxy::#unproxy_container_name<#target_type_ident>
+            #self_ident: #bms_lua_path::bindings::proxy::#unproxy_ident::<#target_type>
         }))
     } else {
         None
@@ -93,6 +95,32 @@ fn convert_function_def_to_closure(f: TraitItemFn) -> ExprClosure {
     }
 }
 
+#[derive(FromAttributes)]
+#[darling(attributes(lua))]
+struct FunctionAttrs {
+    #[darling(multiple)]
+    pub doc: Vec<String>,
+
+    /// Marks the function as a composite with the given ID, at least one another function with the same composite
+    /// ID must exist resulting in a combined function being generated. The actual function to dispatch to will be decided based on
+    /// the types of arguments. If the signature is invalid (i.e. doesn't allow us to dispatch) an error will be thrown
+    #[darling(default)]
+    pub composite: Option<String>,
+
+    /// Marks this to be ignored, only used for fields as functions are opt-in
+    pub skip: Flag,
+
+    /// If passed will generate <T as Trait> statement before calling the method
+    /// on the type
+    pub as_trait: Option<Path>,
+
+    /// If passed will generate a metamethod call instead of using the function name
+    pub metamethod: Option<Ident>,
+
+
+    pub raw: Flag
+}
+
 #[proc_macro_derive(LuaProxy, attributes(lua, proxy))]
 pub fn impl_lua_proxy(input: TokenStream) -> TokenStream {
     let derive_input = parse_macro_input!(input as DeriveInput);
@@ -111,9 +139,8 @@ pub fn impl_lua_proxy(input: TokenStream) -> TokenStream {
         .into();
     }
 
-    let target_type_ident = &meta.ident;
-    let target_type_path: syn::Path = meta.remote.unwrap_or(meta.ident.clone().into());
-    let target_type_str = target_type_path.segments.last().unwrap().ident.to_string();
+    let target_type = meta.remote.unwrap_or(meta.ident.clone().into());
+    let target_type_str = target_type.segments.last().unwrap().ident.to_string();
     let proxy_type_ident = meta.proxy_name.unwrap_or_else(|| {
         format_ident!("{PROXY_PREFIX}{}", &meta.ident, span = meta.ident.span())
     });
@@ -141,8 +168,9 @@ pub fn impl_lua_proxy(input: TokenStream) -> TokenStream {
 
     let add_function_stmts = meta.functions.0.into_iter().map(|mut f| {
         if let Some(first_arg) = f.sig.inputs.first_mut() {
-            standardise_receiver(first_arg, target_type_ident, &bms_core)
+            standardise_receiver(first_arg, &target_type, &bms_lua)
         };
+
         // collect all args into tuple and add lua context arg
         let ctxt_alias = syn::Ident::new(CTXT_ALIAS, f.sig.inputs.span());
         let ctxt_arg = parse_quote_spanned! {f.span()=>
@@ -162,7 +190,8 @@ pub fn impl_lua_proxy(input: TokenStream) -> TokenStream {
                 }
             })
             .unzip::<_, _, Vec<_>, Vec<_>>();
-
+        
+        let attrs = FunctionAttrs::from_attributes(&f.attrs).unwrap();
         let span = f.span();
         let args_ident = format_ident!("args", span = f.sig.inputs.span());
         f.sig.inputs = Punctuated::from_iter(vec![
@@ -177,7 +206,22 @@ pub fn impl_lua_proxy(input: TokenStream) -> TokenStream {
             syn::ReturnType::Type(_, ty) => ty.to_token_stream(),
         };
 
+
         // wrap function body in our unwrapping and wrapping logic, ignore pre-existing body
+        let fn_call = match (f.default, attrs.as_trait) {
+            (Some(body), _) => quote_spanned!(span=>
+                (||{ #body })()
+            ),
+            (_, None) => quote_spanned!(span=>
+                #target_type::#func_name(#(#original_arg_idents),*)
+            ),
+            (_, Some(trait_path)) => {
+                let trait_path = quote_spanned!(span=> #trait_path);
+                quote_spanned!(span=>
+                    <#target_type as #trait_path>::#func_name(#(#original_arg_idents),*)
+                )
+            }
+        };
         f.default = Some(parse_quote_spanned! {span=>
             {
                 let mut world: #bms_lua::bindings::proxy::LuaValProxy<#bms_core::bindings::WorldCallbackAccess> = lua.globals().get("world")?;
@@ -201,7 +245,7 @@ pub fn impl_lua_proxy(input: TokenStream) -> TokenStream {
                 let (#( #original_arg_idents ),*) = unsafe { <(#(#original_arg_types),*) as #bms_core::proxy::Unproxy>::unproxy_with_world(&mut #args_ident, &world, &mut world_acceses, &type_registry, &allocator).map_err(#mlua::Error::external)? };
                 
                 // call proxy function 
-                let out = #target_type_ident::#func_name(#(#original_arg_idents),*);
+                let out = #fn_call;
                 let out = <#out_type as #bms_core::proxy::Proxy>::proxy_with_allocator(out, &mut allocator).map_err(#mlua::Error::external)?;
 
                 // TODO: output proxies
@@ -209,7 +253,13 @@ pub fn impl_lua_proxy(input: TokenStream) -> TokenStream {
             }
         });
 
-        let name = f.sig.ident.to_string();
+        let name = match attrs.metamethod{
+            Some(metamethod) => quote_spanned!(metamethod.span()=>
+                #mlua::MetaMethod::#metamethod
+            ),
+            None => f.sig.ident.to_string().to_token_stream(),
+        };
+
         let closure = convert_function_def_to_closure(f);
         quote_spanned! {span=>
             methods.add_function(#name, #closure);
@@ -219,7 +269,12 @@ pub fn impl_lua_proxy(input: TokenStream) -> TokenStream {
     let vis = &meta.vis;
     quote_spanned! {meta.ident.span()=>
 
+        #[derive(Clone, Debug)]
         #vis struct #proxy_type_ident (pub #bms_core::bindings::ReflectReference);
+
+        impl #bms_lua::bindings::proxy::LuaProxied for #target_type {
+            type Proxy = #proxy_type_ident;
+        }
 
         impl #tealr::mlu::TealData for #proxy_type_ident {
             fn add_methods<'lua, M: #tealr::mlu::TealDataMethods<'lua, Self>>(methods: &mut M) {
@@ -234,6 +289,18 @@ pub fn impl_lua_proxy(input: TokenStream) -> TokenStream {
                     name: #tealr::Name(#target_type_str.into()),
                     kind: #tealr::KindOfType::External,
                 })
+            }
+        }
+
+        impl AsRef<#bms_core::bindings::ReflectReference> for #proxy_type_ident {
+            fn as_ref(&self) -> &#bms_core::bindings::ReflectReference {
+                &self.0
+            }
+        }
+
+        impl From<#bms_core::bindings::ReflectReference> for #proxy_type_ident {
+            fn from(r: #bms_core::bindings::ReflectReference) -> Self {
+                Self(r)
             }
         }
 

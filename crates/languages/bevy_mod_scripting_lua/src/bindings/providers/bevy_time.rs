@@ -4,51 +4,53 @@
 #![cfg_attr(rustfmt, rustfmt_skip)]
 use super::bevy_ecs::*;
 use super::bevy_reflect::*;
-extern crate self as bevy_script_api;
-use bevy_script_api::{
-    lua::RegisterForeignLuaType, ReflectedValue, common::bevy::GetWorld,
-};
 use bevy_mod_scripting_core::{AddContextInitializer, StoreDocumentation};
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
     remote = "bevy::time::prelude::Fixed",
+    bms_core_path = "bevy_mod_scripting_core",
+    bms_lua_path = "crate",
     functions[r#"
 
-    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
+    #[lua(as_trait = "std::clone::Clone")]
     fn clone(&self) -> bevy::time::prelude::Fixed;
 
 "#,
     r#"
-#[lua(kind="MetaMethod", metamethod="ToString")]
+#[lua(metamethod="ToString")]
 fn index(&self) -> String {
     format!("{:?}", _self)
 }
 "#]
 )]
-pub struct Fixed {}
+pub struct LuaFixed {}
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
     remote = "bevy::time::prelude::Real",
+    bms_core_path = "bevy_mod_scripting_core",
+    bms_lua_path = "crate",
     functions[r#"
 
-    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
+    #[lua(as_trait = "std::clone::Clone")]
     fn clone(&self) -> bevy::time::prelude::Real;
 
 "#,
     r#"
-#[lua(kind="MetaMethod", metamethod="ToString")]
+#[lua(metamethod="ToString")]
 fn index(&self) -> String {
     format!("{:?}", _self)
 }
 "#]
 )]
-pub struct Real {}
+pub struct LuaReal {}
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
     remote = "bevy::time::prelude::Timer",
+    bms_core_path = "bevy_mod_scripting_core",
+    bms_lua_path = "crate",
     functions[r#"
 
-    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
+    #[lua(as_trait = "std::clone::Clone")]
     fn clone(&self) -> bevy::time::prelude::Timer;
 
 "#,
@@ -56,7 +58,7 @@ pub struct Real {}
 /// Creates a new timer with a given duration.
 /// See also [`Timer::from_seconds`](Timer::from_seconds).
 
-    #[lua(kind = "Function", output(proxy))]
+    #[lua()]
     fn new(
         #[proxy]
         duration: bevy::utils::Duration,
@@ -73,7 +75,7 @@ pub struct Real {}
 /// let mut timer = Timer::from_seconds(1.0, TimerMode::Once);
 /// ```
 
-    #[lua(kind = "Function", output(proxy))]
+    #[lua()]
     fn from_seconds(
         duration: f32,
         #[proxy]
@@ -102,7 +104,7 @@ pub struct Real {}
 /// assert!(timer_repeating.finished());
 /// ```
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn finished(&self) -> bool;
 
 "#,
@@ -119,7 +121,7 @@ pub struct Real {}
 /// assert!(!timer.just_finished());
 /// ```
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn just_finished(&self) -> bool;
 
 "#,
@@ -136,7 +138,7 @@ pub struct Real {}
 /// assert_eq!(timer.elapsed(), Duration::from_secs_f32(0.5));
 /// ```
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn elapsed(&self) -> bevy::utils::Duration;
 
 "#,
@@ -144,7 +146,7 @@ pub struct Real {}
 /// Returns the time elapsed on the timer as an `f32`.
 /// See also [`Timer::elapsed`](Timer::elapsed).
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn elapsed_secs(&self) -> f32;
 
 "#,
@@ -162,7 +164,7 @@ pub struct Real {}
 /// assert!(!timer.finished());
 /// ```
 
-    #[lua(kind = "MutatingMethod")]
+    #[lua()]
     fn set_elapsed(&mut self, #[proxy] time: bevy::utils::Duration) -> ();
 
 "#,
@@ -176,7 +178,7 @@ pub struct Real {}
 /// assert_eq!(timer.duration(), Duration::from_secs(1));
 /// ```
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn duration(&self) -> bevy::utils::Duration;
 
 "#,
@@ -191,7 +193,7 @@ pub struct Real {}
 /// assert_eq!(timer.duration(), Duration::from_secs(1));
 /// ```
 
-    #[lua(kind = "MutatingMethod")]
+    #[lua()]
     fn set_duration(&mut self, #[proxy] duration: bevy::utils::Duration) -> ();
 
 "#,
@@ -204,7 +206,7 @@ pub struct Real {}
 /// assert_eq!(timer.mode(), TimerMode::Repeating);
 /// ```
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn mode(&self) -> bevy::time::prelude::TimerMode;
 
 "#,
@@ -218,7 +220,7 @@ pub struct Real {}
 /// assert_eq!(timer.mode(), TimerMode::Once);
 /// ```
 
-    #[lua(kind = "MutatingMethod")]
+    #[lua()]
     fn set_mode(&mut self, #[proxy] mode: bevy::time::prelude::TimerMode) -> ();
 
 "#,
@@ -235,7 +237,7 @@ pub struct Real {}
 /// assert_eq!(timer.elapsed_secs(), 0.0);
 /// ```
 
-    #[lua(kind = "MutatingMethod")]
+    #[lua()]
     fn pause(&mut self) -> ();
 
 "#,
@@ -254,7 +256,7 @@ pub struct Real {}
 /// assert_eq!(timer.elapsed_secs(), 0.5);
 /// ```
 
-    #[lua(kind = "MutatingMethod")]
+    #[lua()]
     fn unpause(&mut self) -> ();
 
 "#,
@@ -272,7 +274,7 @@ pub struct Real {}
 /// assert!(!timer.paused());
 /// ```
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn paused(&self) -> bool;
 
 "#,
@@ -291,7 +293,7 @@ pub struct Real {}
 /// assert_eq!(timer.elapsed_secs(), 0.0);
 /// ```
 
-    #[lua(kind = "MutatingMethod")]
+    #[lua()]
     fn reset(&mut self) -> ();
 
 "#,
@@ -306,7 +308,7 @@ pub struct Real {}
 /// assert_eq!(timer.fraction(), 0.25);
 /// ```
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn fraction(&self) -> f32;
 
 "#,
@@ -321,7 +323,7 @@ pub struct Real {}
 /// assert_eq!(timer.fraction_remaining(), 0.75);
 /// ```
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn fraction_remaining(&self) -> f32;
 
 "#,
@@ -338,7 +340,7 @@ pub struct Real {}
 /// assert_eq!(Ordering::Equal, result);
 /// ```
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn remaining_secs(&self) -> f32;
 
 "#,
@@ -353,7 +355,7 @@ pub struct Real {}
 /// assert_eq!(timer.remaining(), Duration::from_secs_f32(1.5));
 /// ```
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn remaining(&self) -> bevy::utils::Duration;
 
 "#,
@@ -375,109 +377,100 @@ pub struct Real {}
 /// assert_eq!(timer.times_finished_this_tick(), 0);
 /// ```
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn times_finished_this_tick(&self) -> u32;
 
 "#,
     r#"
 
-    #[lua(as_trait = "std::cmp::Eq", kind = "Method")]
+    #[lua(as_trait = "std::cmp::Eq")]
     fn assert_receiver_is_total_eq(&self) -> ();
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "std::cmp::PartialEq",
-        kind = "MetaFunction",
-        composite = "eq",
-        metamethod = "Eq",
-    )]
+    #[lua(as_trait = "std::cmp::PartialEq", composite = "eq")]
     fn eq(&self, #[proxy] other: &timer::Timer) -> bool;
 
 "#,
     r#"
-#[lua(kind="MetaMethod", metamethod="ToString")]
+#[lua(metamethod="ToString")]
 fn index(&self) -> String {
     format!("{:?}", _self)
 }
 "#]
 )]
-pub struct Timer {}
+pub struct LuaTimer {}
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
     remote = "bevy::time::prelude::TimerMode",
+    bms_core_path = "bevy_mod_scripting_core",
+    bms_lua_path = "crate",
     functions[r#"
 
-    #[lua(
-        as_trait = "std::cmp::PartialEq",
-        kind = "MetaFunction",
-        composite = "eq",
-        metamethod = "Eq",
-    )]
+    #[lua(as_trait = "std::cmp::PartialEq", composite = "eq")]
     fn eq(&self, #[proxy] other: &timer::TimerMode) -> bool;
 
 "#,
     r#"
 
-    #[lua(as_trait = "std::cmp::Eq", kind = "Method")]
+    #[lua(as_trait = "std::cmp::Eq")]
     fn assert_receiver_is_total_eq(&self) -> ();
 
 "#,
     r#"
 
-    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
+    #[lua(as_trait = "std::clone::Clone")]
     fn clone(&self) -> bevy::time::prelude::TimerMode;
 
 "#,
     r#"
-#[lua(kind="MetaMethod", metamethod="ToString")]
+#[lua(metamethod="ToString")]
 fn index(&self) -> String {
     format!("{:?}", _self)
 }
 "#]
 )]
-pub struct TimerMode {}
+pub struct LuaTimerMode {}
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
     remote = "bevy::time::prelude::Virtual",
+    bms_core_path = "bevy_mod_scripting_core",
+    bms_lua_path = "crate",
     functions[r#"
 
-    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
+    #[lua(as_trait = "std::clone::Clone")]
     fn clone(&self) -> bevy::time::prelude::Virtual;
 
 "#,
     r#"
-#[lua(kind="MetaMethod", metamethod="ToString")]
+#[lua(metamethod="ToString")]
 fn index(&self) -> String {
     format!("{:?}", _self)
 }
 "#]
 )]
-pub struct Virtual {}
+pub struct LuaVirtual {}
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
     remote = "bevy::time::Stopwatch",
+    bms_core_path = "bevy_mod_scripting_core",
+    bms_lua_path = "crate",
     functions[r#"
 
-    #[lua(
-        as_trait = "std::cmp::PartialEq",
-        kind = "MetaFunction",
-        composite = "eq",
-        metamethod = "Eq",
-    )]
+    #[lua(as_trait = "std::cmp::PartialEq", composite = "eq")]
     fn eq(&self, #[proxy] other: &stopwatch::Stopwatch) -> bool;
 
 "#,
     r#"
 
-    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
+    #[lua(as_trait = "std::clone::Clone")]
     fn clone(&self) -> bevy::time::Stopwatch;
 
 "#,
     r#"
 
-    #[lua(as_trait = "std::cmp::Eq", kind = "Method")]
+    #[lua(as_trait = "std::cmp::Eq")]
     fn assert_receiver_is_total_eq(&self) -> ();
 
 "#,
@@ -491,7 +484,7 @@ pub struct Virtual {}
 /// assert_eq!(stopwatch.paused(), false);
 /// ```
 
-    #[lua(kind = "Function", output(proxy))]
+    #[lua()]
     fn new() -> bevy::time::Stopwatch;
 
 "#,
@@ -510,7 +503,7 @@ pub struct Virtual {}
 /// [`elapsed_secs`](Stopwatch::elapsed_secs) - if an `f32` value is desirable instead.
 /// [`elapsed_secs_f64`](Stopwatch::elapsed_secs_f64) - if an `f64` is desirable instead.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn elapsed(&self) -> bevy::utils::Duration;
 
 "#,
@@ -529,7 +522,7 @@ pub struct Virtual {}
 /// [`elapsed`](Stopwatch::elapsed) - if a `Duration` is desirable instead.
 /// [`elapsed_secs_f64`](Stopwatch::elapsed_secs_f64) - if an `f64` is desirable instead.
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn elapsed_secs(&self) -> f32;
 
 "#,
@@ -540,7 +533,7 @@ pub struct Virtual {}
 /// [`elapsed`](Stopwatch::elapsed) - if a `Duration` is desirable instead.
 /// [`elapsed_secs`](Stopwatch::elapsed_secs) - if an `f32` is desirable instead.
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn elapsed_secs_f64(&self) -> f64;
 
 "#,
@@ -555,7 +548,7 @@ pub struct Virtual {}
 /// assert_eq!(stopwatch.elapsed_secs(), 1.0);
 /// ```
 
-    #[lua(kind = "MutatingMethod")]
+    #[lua()]
     fn set_elapsed(&mut self, #[proxy] time: bevy::utils::Duration) -> ();
 
 "#,
@@ -573,7 +566,7 @@ pub struct Virtual {}
 /// assert_eq!(stopwatch.elapsed_secs(), 0.0);
 /// ```
 
-    #[lua(kind = "MutatingMethod")]
+    #[lua()]
     fn pause(&mut self) -> ();
 
 "#,
@@ -592,7 +585,7 @@ pub struct Virtual {}
 /// assert_eq!(stopwatch.elapsed_secs(), 1.0);
 /// ```
 
-    #[lua(kind = "MutatingMethod")]
+    #[lua()]
     fn unpause(&mut self) -> ();
 
 "#,
@@ -609,7 +602,7 @@ pub struct Virtual {}
 /// assert!(!stopwatch.paused());
 /// ```
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn paused(&self) -> bool;
 
 "#,
@@ -625,43 +618,40 @@ pub struct Virtual {}
 /// assert_eq!(stopwatch.elapsed_secs(), 0.0);
 /// ```
 
-    #[lua(kind = "MutatingMethod")]
+    #[lua()]
     fn reset(&mut self) -> ();
 
 "#,
     r#"
-#[lua(kind="MetaMethod", metamethod="ToString")]
+#[lua(metamethod="ToString")]
 fn index(&self) -> String {
     format!("{:?}", _self)
 }
 "#]
 )]
-pub struct Stopwatch {}
+pub struct LuaStopwatch {}
 #[derive(Default)]
 pub(crate) struct Globals;
-impl bevy_mod_scripting_lua::tealr::mlu::ExportInstances for Globals {
-    fn add_instances<
-        'lua,
-        T: bevy_mod_scripting_lua::tealr::mlu::InstanceCollector<'lua>,
-    >(self, instances: &mut T) -> bevy_mod_scripting_lua::tealr::mlu::mlua::Result<()> {
+impl crate::tealr::mlu::ExportInstances for Globals {
+    fn add_instances<'lua, T: crate::tealr::mlu::InstanceCollector<'lua>>(
+        self,
+        instances: &mut T,
+    ) -> crate::tealr::mlu::mlua::Result<()> {
         instances
-            .add_instance(
-                "Timer",
-                bevy_mod_scripting_lua::tealr::mlu::UserDataProxy::<LuaTimer>::new,
-            )?;
+            .add_instance("Timer", crate::tealr::mlu::UserDataProxy::<LuaTimer>::new)?;
         instances
             .add_instance(
                 "Stopwatch",
-                bevy_mod_scripting_lua::tealr::mlu::UserDataProxy::<LuaStopwatch>::new,
+                crate::tealr::mlu::UserDataProxy::<LuaStopwatch>::new,
             )?;
         Ok(())
     }
 }
 fn bevy_time_context_initializer(
     _: &bevy_mod_scripting_core::script::ScriptId,
-    ctx: &mut bevy_mod_scripting_lua::prelude::Lua,
+    ctx: &mut crate::prelude::Lua,
 ) -> Result<(), bevy_mod_scripting_core::error::ScriptError> {
-    bevy_mod_scripting_lua::tealr::mlu::set_global_env(Globals, ctx)?;
+    crate::tealr::mlu::set_global_env(Globals, ctx)?;
     Ok(())
 }
 pub struct BevyTimeScriptingPlugin;
@@ -675,7 +665,7 @@ impl bevy::app::Plugin for BevyTimeScriptingPlugin {
         app.register_foreign_lua_type::<bevy::time::Stopwatch>();
         app.add_context_initializer::<()>(bevy_time_context_initializer);
         app.add_documentation_fragment(
-            bevy_mod_scripting_lua::docs::LuaDocumentationFragment::new(
+            crate::docs::LuaDocumentationFragment::new(
                 "BevyTimeAPI",
                 |tw| {
                     tw.document_global_instance::<Globals>()
@@ -683,17 +673,11 @@ impl bevy::app::Plugin for BevyTimeScriptingPlugin {
                         .process_type::<LuaFixed>()
                         .process_type::<LuaReal>()
                         .process_type::<LuaTimer>()
-                        .process_type::<
-                            bevy_mod_scripting_lua::tealr::mlu::UserDataProxy<LuaTimer>,
-                        >()
+                        .process_type::<crate::tealr::mlu::UserDataProxy<LuaTimer>>()
                         .process_type::<LuaTimerMode>()
                         .process_type::<LuaVirtual>()
                         .process_type::<LuaStopwatch>()
-                        .process_type::<
-                            bevy_mod_scripting_lua::tealr::mlu::UserDataProxy<
-                                LuaStopwatch,
-                            >,
-                        >()
+                        .process_type::<crate::tealr::mlu::UserDataProxy<LuaStopwatch>>()
                 },
             ),
         );

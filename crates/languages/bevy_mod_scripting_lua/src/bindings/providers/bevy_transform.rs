@@ -6,23 +6,15 @@ use super::bevy_ecs::*;
 use super::bevy_reflect::*;
 use super::bevy_core::*;
 use super::bevy_hierarchy::*;
-extern crate self as bevy_script_api;
-use bevy_script_api::{
-    lua::RegisterForeignLuaType, ReflectedValue, common::bevy::GetWorld,
-};
 use bevy_mod_scripting_core::{AddContextInitializer, StoreDocumentation};
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
     remote = "bevy::transform::components::GlobalTransform",
+    bms_core_path = "bevy_mod_scripting_core",
+    bms_lua_path = "crate",
     functions[r#"
 
-    #[lua(
-        as_trait = "std::ops::Mul",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "mul",
-        metamethod = "Mul",
-    )]
+    #[lua(as_trait = "std::ops::Mul", composite = "mul")]
     fn mul(
         self,
         #[proxy]
@@ -32,42 +24,25 @@ use bevy_mod_scripting_core::{AddContextInitializer, StoreDocumentation};
 "#,
     r#"
 
-    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
+    #[lua(as_trait = "std::clone::Clone")]
     fn clone(&self) -> bevy::transform::components::GlobalTransform;
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "std::cmp::PartialEq",
-        kind = "MetaFunction",
-        composite = "eq",
-        metamethod = "Eq",
-    )]
+    #[lua(as_trait = "std::cmp::PartialEq", composite = "eq")]
     fn eq(&self, #[proxy] other: &components::global_transform::GlobalTransform) -> bool;
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "std::ops::Mul",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "mul",
-        metamethod = "Mul",
-    )]
+    #[lua(as_trait = "std::ops::Mul", composite = "mul")]
     fn mul(self, #[proxy] value: bevy::math::Vec3) -> bevy::math::Vec3;
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "std::ops::Mul",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "mul",
-        metamethod = "Mul",
-    )]
+    #[lua(as_trait = "std::ops::Mul", composite = "mul")]
     fn mul(
         self,
         #[proxy]
@@ -77,13 +52,13 @@ use bevy_mod_scripting_core::{AddContextInitializer, StoreDocumentation};
 "#,
     r#"
 
-    #[lua(kind = "Function", output(proxy))]
+    #[lua()]
     fn from_xyz(x: f32, y: f32, z: f32) -> bevy::transform::components::GlobalTransform;
 
 "#,
     r#"
 
-    #[lua(kind = "Function", output(proxy))]
+    #[lua()]
     fn from_translation(
         #[proxy]
         translation: bevy::math::Vec3,
@@ -92,7 +67,7 @@ use bevy_mod_scripting_core::{AddContextInitializer, StoreDocumentation};
 "#,
     r#"
 
-    #[lua(kind = "Function", output(proxy))]
+    #[lua()]
     fn from_rotation(
         #[proxy]
         rotation: bevy::math::Quat,
@@ -101,7 +76,7 @@ use bevy_mod_scripting_core::{AddContextInitializer, StoreDocumentation};
 "#,
     r#"
 
-    #[lua(kind = "Function", output(proxy))]
+    #[lua()]
     fn from_scale(
         #[proxy]
         scale: bevy::math::Vec3,
@@ -111,14 +86,14 @@ use bevy_mod_scripting_core::{AddContextInitializer, StoreDocumentation};
     r#"
 /// Returns the 3d affine transformation matrix as a [`Mat4`].
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn compute_matrix(&self) -> bevy::math::Mat4;
 
 "#,
     r#"
 /// Returns the 3d affine transformation matrix as an [`Affine3A`].
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn affine(&self) -> bevy::math::Affine3A;
 
 "#,
@@ -127,7 +102,7 @@ use bevy_mod_scripting_core::{AddContextInitializer, StoreDocumentation};
 /// The transform is expected to be non-degenerate and without shearing, or the output
 /// will be invalid.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn compute_transform(&self) -> bevy::transform::components::Transform;
 
 "#,
@@ -163,7 +138,7 @@ use bevy_mod_scripting_core::{AddContextInitializer, StoreDocumentation};
 /// The transform is expected to be non-degenerate and without shearing, or the output
 /// will be invalid.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn reparented_to(
         &self,
         #[proxy]
@@ -174,63 +149,63 @@ use bevy_mod_scripting_core::{AddContextInitializer, StoreDocumentation};
     r#"
 ///Return the local right vector (X).
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn right(&self) -> bevy::math::Vec3;
 
 "#,
     r#"
 ///Return the local left vector (-X).
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn left(&self) -> bevy::math::Vec3;
 
 "#,
     r#"
 ///Return the local up vector (Y).
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn up(&self) -> bevy::math::Vec3;
 
 "#,
     r#"
 ///Return the local down vector (-Y).
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn down(&self) -> bevy::math::Vec3;
 
 "#,
     r#"
 ///Return the local back vector (Z).
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn back(&self) -> bevy::math::Vec3;
 
 "#,
     r#"
 ///Return the local forward vector (-Z).
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn forward(&self) -> bevy::math::Vec3;
 
 "#,
     r#"
 /// Get the translation as a [`Vec3`].
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn translation(&self) -> bevy::math::Vec3;
 
 "#,
     r#"
 /// Get the translation as a [`Vec3A`].
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn translation_vec3a(&self) -> bevy::math::Vec3A;
 
 "#,
     r#"
 /// Get an upper bound of the radius from the given `extents`.
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn radius_vec3a(&self, #[proxy] extents: bevy::math::Vec3A) -> f32;
 
 "#,
@@ -238,7 +213,7 @@ use bevy_mod_scripting_core::{AddContextInitializer, StoreDocumentation};
 /// Transforms the given `point`, applying shear, scale, rotation and translation.
 /// This moves `point` into the local space of this [`GlobalTransform`].
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn transform_point(&self, #[proxy] point: bevy::math::Vec3) -> bevy::math::Vec3;
 
 "#,
@@ -246,7 +221,7 @@ use bevy_mod_scripting_core::{AddContextInitializer, StoreDocumentation};
 /// Multiplies `self` with `transform` component by component, returning the
 /// resulting [`GlobalTransform`]
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn mul_transform(
         &self,
         #[proxy]
@@ -255,36 +230,27 @@ use bevy_mod_scripting_core::{AddContextInitializer, StoreDocumentation};
 
 "#,
     r#"
-#[lua(kind="MetaMethod", metamethod="ToString")]
+#[lua(metamethod="ToString")]
 fn index(&self) -> String {
     format!("{:?}", _self)
 }
 "#]
 )]
-pub struct GlobalTransform();
+pub struct LuaGlobalTransform();
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
     remote = "bevy::transform::components::Transform",
+    bms_core_path = "bevy_mod_scripting_core",
+    bms_lua_path = "crate",
     functions[r#"
 
-    #[lua(
-        as_trait = "std::cmp::PartialEq",
-        kind = "MetaFunction",
-        composite = "eq",
-        metamethod = "Eq",
-    )]
+    #[lua(as_trait = "std::cmp::PartialEq", composite = "eq")]
     fn eq(&self, #[proxy] other: &components::transform::Transform) -> bool;
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "std::ops::Mul",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "mul",
-        metamethod = "Mul",
-    )]
+    #[lua(as_trait = "std::ops::Mul", composite = "mul")]
     fn mul(
         self,
         #[proxy]
@@ -294,19 +260,13 @@ pub struct GlobalTransform();
 "#,
     r#"
 
-    #[lua(
-        as_trait = "std::ops::Mul",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "mul",
-        metamethod = "Mul",
-    )]
+    #[lua(as_trait = "std::ops::Mul", composite = "mul")]
     fn mul(self, #[proxy] value: bevy::math::Vec3) -> bevy::math::Vec3;
 
 "#,
     r#"
 
-    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
+    #[lua(as_trait = "std::clone::Clone")]
     fn clone(&self) -> bevy::transform::components::Transform;
 
 "#,
@@ -315,7 +275,7 @@ pub struct GlobalTransform();
 /// is used for z-ordering elements: higher `z`-value will be in front of lower
 /// `z`-value.
 
-    #[lua(kind = "Function", output(proxy))]
+    #[lua()]
     fn from_xyz(x: f32, y: f32, z: f32) -> bevy::transform::components::Transform;
 
 "#,
@@ -323,7 +283,7 @@ pub struct GlobalTransform();
 /// Extracts the translation, rotation, and scale from `matrix`. It must be a 3d affine
 /// transformation matrix.
 
-    #[lua(kind = "Function", output(proxy))]
+    #[lua()]
     fn from_matrix(
         #[proxy]
         matrix: bevy::math::Mat4,
@@ -334,7 +294,7 @@ pub struct GlobalTransform();
 /// Creates a new [`Transform`], with `translation`. Rotation will be 0 and scale 1 on
 /// all axes.
 
-    #[lua(kind = "Function", output(proxy))]
+    #[lua()]
     fn from_translation(
         #[proxy]
         translation: bevy::math::Vec3,
@@ -345,7 +305,7 @@ pub struct GlobalTransform();
 /// Creates a new [`Transform`], with `rotation`. Translation will be 0 and scale 1 on
 /// all axes.
 
-    #[lua(kind = "Function", output(proxy))]
+    #[lua()]
     fn from_rotation(
         #[proxy]
         rotation: bevy::math::Quat,
@@ -356,7 +316,7 @@ pub struct GlobalTransform();
 /// Creates a new [`Transform`], with `scale`. Translation will be 0 and rotation 0 on
 /// all axes.
 
-    #[lua(kind = "Function", output(proxy))]
+    #[lua()]
     fn from_scale(
         #[proxy]
         scale: bevy::math::Vec3,
@@ -371,7 +331,7 @@ pub struct GlobalTransform();
 /// * if `up` is zero, `Vec3::Y` is used instead
 /// * if the resulting forward direction is parallel with `up`, an orthogonal vector is used as the "right" direction
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn looking_at(
         self,
         #[proxy]
@@ -389,7 +349,7 @@ pub struct GlobalTransform();
 /// * if `up` is zero, `Vec3::Y` is used instead
 /// * if `direction` is parallel with `up`, an orthogonal vector is used as the "right" direction
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn looking_to(
         self,
         #[proxy]
@@ -402,7 +362,7 @@ pub struct GlobalTransform();
     r#"
 /// Returns this [`Transform`] with a new translation.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn with_translation(
         self,
         #[proxy]
@@ -413,7 +373,7 @@ pub struct GlobalTransform();
     r#"
 /// Returns this [`Transform`] with a new rotation.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn with_rotation(
         self,
         #[proxy]
@@ -424,7 +384,7 @@ pub struct GlobalTransform();
     r#"
 /// Returns this [`Transform`] with a new scale.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn with_scale(
         self,
         #[proxy]
@@ -436,7 +396,7 @@ pub struct GlobalTransform();
 /// Returns the 3d affine transformation matrix from this transforms translation,
 /// rotation, and scale.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn compute_matrix(&self) -> bevy::math::Mat4;
 
 "#,
@@ -444,7 +404,7 @@ pub struct GlobalTransform();
 /// Returns the 3d affine transformation matrix from this transforms translation,
 /// rotation, and scale.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn compute_affine(&self) -> bevy::math::Affine3A;
 
 "#,
@@ -455,7 +415,7 @@ pub struct GlobalTransform();
 /// - [`3d_rotation`]
 /// [`3d_rotation`]: https://github.com/bevyengine/bevy/blob/latest/examples/transforms/3d_rotation.rs
 
-    #[lua(kind = "MutatingMethod")]
+    #[lua()]
     fn rotate(&mut self, #[proxy] rotation: bevy::math::Quat) -> ();
 
 "#,
@@ -463,7 +423,7 @@ pub struct GlobalTransform();
 /// Rotates this [`Transform`] around the given `axis` by `angle` (in radians).
 /// If this [`Transform`] has a parent, the `axis` is relative to the rotation of the parent.
 
-    #[lua(kind = "MutatingMethod")]
+    #[lua()]
     fn rotate_axis(&mut self, #[proxy] axis: bevy::math::Vec3, angle: f32) -> ();
 
 "#,
@@ -471,7 +431,7 @@ pub struct GlobalTransform();
 /// Rotates this [`Transform`] around the `X` axis by `angle` (in radians).
 /// If this [`Transform`] has a parent, the axis is relative to the rotation of the parent.
 
-    #[lua(kind = "MutatingMethod")]
+    #[lua()]
     fn rotate_x(&mut self, angle: f32) -> ();
 
 "#,
@@ -479,7 +439,7 @@ pub struct GlobalTransform();
 /// Rotates this [`Transform`] around the `Y` axis by `angle` (in radians).
 /// If this [`Transform`] has a parent, the axis is relative to the rotation of the parent.
 
-    #[lua(kind = "MutatingMethod")]
+    #[lua()]
     fn rotate_y(&mut self, angle: f32) -> ();
 
 "#,
@@ -487,7 +447,7 @@ pub struct GlobalTransform();
 /// Rotates this [`Transform`] around the `Z` axis by `angle` (in radians).
 /// If this [`Transform`] has a parent, the axis is relative to the rotation of the parent.
 
-    #[lua(kind = "MutatingMethod")]
+    #[lua()]
     fn rotate_z(&mut self, angle: f32) -> ();
 
 "#,
@@ -495,35 +455,35 @@ pub struct GlobalTransform();
 /// Rotates this [`Transform`] by the given `rotation`.
 /// The `rotation` is relative to this [`Transform`]'s current rotation.
 
-    #[lua(kind = "MutatingMethod")]
+    #[lua()]
     fn rotate_local(&mut self, #[proxy] rotation: bevy::math::Quat) -> ();
 
 "#,
     r#"
 /// Rotates this [`Transform`] around its local `axis` by `angle` (in radians).
 
-    #[lua(kind = "MutatingMethod")]
+    #[lua()]
     fn rotate_local_axis(&mut self, #[proxy] axis: bevy::math::Vec3, angle: f32) -> ();
 
 "#,
     r#"
 /// Rotates this [`Transform`] around its local `X` axis by `angle` (in radians).
 
-    #[lua(kind = "MutatingMethod")]
+    #[lua()]
     fn rotate_local_x(&mut self, angle: f32) -> ();
 
 "#,
     r#"
 /// Rotates this [`Transform`] around its local `Y` axis by `angle` (in radians).
 
-    #[lua(kind = "MutatingMethod")]
+    #[lua()]
     fn rotate_local_y(&mut self, angle: f32) -> ();
 
 "#,
     r#"
 /// Rotates this [`Transform`] around its local `Z` axis by `angle` (in radians).
 
-    #[lua(kind = "MutatingMethod")]
+    #[lua()]
     fn rotate_local_z(&mut self, angle: f32) -> ();
 
 "#,
@@ -531,7 +491,7 @@ pub struct GlobalTransform();
 /// Translates this [`Transform`] around a `point` in space.
 /// If this [`Transform`] has a parent, the `point` is relative to the [`Transform`] of the parent.
 
-    #[lua(kind = "MutatingMethod")]
+    #[lua()]
     fn translate_around(
         &mut self,
         #[proxy]
@@ -545,7 +505,7 @@ pub struct GlobalTransform();
 /// Rotates this [`Transform`] around a `point` in space.
 /// If this [`Transform`] has a parent, the `point` is relative to the [`Transform`] of the parent.
 
-    #[lua(kind = "MutatingMethod")]
+    #[lua()]
     fn rotate_around(
         &mut self,
         #[proxy]
@@ -563,7 +523,7 @@ pub struct GlobalTransform();
 /// * if `up` is zero, `Vec3::Y` is used instead
 /// * if the resulting forward direction is parallel with `up`, an orthogonal vector is used as the "right" direction
 
-    #[lua(kind = "MutatingMethod")]
+    #[lua()]
     fn look_at(
         &mut self,
         #[proxy]
@@ -581,7 +541,7 @@ pub struct GlobalTransform();
 /// * if `up` is zero, `Vec3::Y` is used instead
 /// * if `direction` is parallel with `up`, an orthogonal vector is used as the "right" direction
 
-    #[lua(kind = "MutatingMethod")]
+    #[lua()]
     fn look_to(
         &mut self,
         #[proxy]
@@ -595,7 +555,7 @@ pub struct GlobalTransform();
 /// Multiplies `self` with `transform` component by component, returning the
 /// resulting [`Transform`]
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn mul_transform(
         &self,
         #[proxy]
@@ -612,7 +572,7 @@ pub struct GlobalTransform();
 /// If you want to transform a `point` in global space to the local space of this [`Transform`],
 /// consider using [`GlobalTransform::transform_point()`] instead.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn transform_point(&self, #[proxy] point: bevy::math::Vec3) -> bevy::math::Vec3;
 
 "#,
@@ -621,19 +581,13 @@ pub struct GlobalTransform();
 /// finite. If any of them contains a `NaN`, positive or negative infinity,
 /// this will return `false`.
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn is_finite(&self) -> bool;
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "std::ops::Mul",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "mul",
-        metamethod = "Mul",
-    )]
+    #[lua(as_trait = "std::ops::Mul", composite = "mul")]
     fn mul(
         self,
         #[proxy]
@@ -642,13 +596,13 @@ pub struct GlobalTransform();
 
 "#,
     r#"
-#[lua(kind="MetaMethod", metamethod="ToString")]
+#[lua(metamethod="ToString")]
 fn index(&self) -> String {
     format!("{:?}", _self)
 }
 "#]
 )]
-pub struct Transform {
+pub struct LuaTransform {
     #[lua(output(proxy))]
     translation: bevy::math::Vec3,
     #[lua(output(proxy))]
@@ -658,31 +612,29 @@ pub struct Transform {
 }
 #[derive(Default)]
 pub(crate) struct Globals;
-impl bevy_mod_scripting_lua::tealr::mlu::ExportInstances for Globals {
-    fn add_instances<
-        'lua,
-        T: bevy_mod_scripting_lua::tealr::mlu::InstanceCollector<'lua>,
-    >(self, instances: &mut T) -> bevy_mod_scripting_lua::tealr::mlu::mlua::Result<()> {
+impl crate::tealr::mlu::ExportInstances for Globals {
+    fn add_instances<'lua, T: crate::tealr::mlu::InstanceCollector<'lua>>(
+        self,
+        instances: &mut T,
+    ) -> crate::tealr::mlu::mlua::Result<()> {
         instances
             .add_instance(
                 "GlobalTransform",
-                bevy_mod_scripting_lua::tealr::mlu::UserDataProxy::<
-                    LuaGlobalTransform,
-                >::new,
+                crate::tealr::mlu::UserDataProxy::<LuaGlobalTransform>::new,
             )?;
         instances
             .add_instance(
                 "Transform",
-                bevy_mod_scripting_lua::tealr::mlu::UserDataProxy::<LuaTransform>::new,
+                crate::tealr::mlu::UserDataProxy::<LuaTransform>::new,
             )?;
         Ok(())
     }
 }
 fn bevy_transform_context_initializer(
     _: &bevy_mod_scripting_core::script::ScriptId,
-    ctx: &mut bevy_mod_scripting_lua::prelude::Lua,
+    ctx: &mut crate::prelude::Lua,
 ) -> Result<(), bevy_mod_scripting_core::error::ScriptError> {
-    bevy_mod_scripting_lua::tealr::mlu::set_global_env(Globals, ctx)?;
+    crate::tealr::mlu::set_global_env(Globals, ctx)?;
     Ok(())
 }
 pub struct BevyTransformScriptingPlugin;
@@ -692,23 +644,17 @@ impl bevy::app::Plugin for BevyTransformScriptingPlugin {
         app.register_foreign_lua_type::<bevy::transform::components::Transform>();
         app.add_context_initializer::<()>(bevy_transform_context_initializer);
         app.add_documentation_fragment(
-            bevy_mod_scripting_lua::docs::LuaDocumentationFragment::new(
+            crate::docs::LuaDocumentationFragment::new(
                 "BevyTransformAPI",
                 |tw| {
                     tw.document_global_instance::<Globals>()
                         .expect("Something went wrong documenting globals")
                         .process_type::<LuaGlobalTransform>()
                         .process_type::<
-                            bevy_mod_scripting_lua::tealr::mlu::UserDataProxy<
-                                LuaGlobalTransform,
-                            >,
+                            crate::tealr::mlu::UserDataProxy<LuaGlobalTransform>,
                         >()
                         .process_type::<LuaTransform>()
-                        .process_type::<
-                            bevy_mod_scripting_lua::tealr::mlu::UserDataProxy<
-                                LuaTransform,
-                            >,
-                        >()
+                        .process_type::<crate::tealr::mlu::UserDataProxy<LuaTransform>>()
                 },
             ),
         );

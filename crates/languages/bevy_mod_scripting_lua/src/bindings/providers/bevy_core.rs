@@ -4,54 +4,47 @@
 #![cfg_attr(rustfmt, rustfmt_skip)]
 use super::bevy_ecs::*;
 use super::bevy_reflect::*;
-extern crate self as bevy_script_api;
-use bevy_script_api::{
-    lua::RegisterForeignLuaType, ReflectedValue, common::bevy::GetWorld,
-};
 use bevy_mod_scripting_core::{AddContextInitializer, StoreDocumentation};
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
     remote = "bevy::core::prelude::Name",
+    bms_core_path = "bevy_mod_scripting_core",
+    bms_lua_path = "crate",
     functions[r#"
 
-    #[lua(
-        as_trait = "std::cmp::PartialEq",
-        kind = "MetaFunction",
-        composite = "eq",
-        metamethod = "Eq",
-    )]
+    #[lua(as_trait = "std::cmp::PartialEq", composite = "eq")]
     fn eq(&self, #[proxy] other: &name::Name) -> bool;
 
 "#,
     r#"
 
-    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
+    #[lua(as_trait = "std::clone::Clone")]
     fn clone(&self) -> bevy::core::prelude::Name;
 
 "#,
     r#"
-#[lua(kind="MetaMethod", metamethod="ToString")]
+#[lua(metamethod="ToString")]
 fn index(&self) -> String {
     format!("{}", _self)
 }
 "#]
 )]
-pub struct Name {}
+pub struct LuaName {}
 #[derive(Default)]
 pub(crate) struct Globals;
-impl bevy_mod_scripting_lua::tealr::mlu::ExportInstances for Globals {
-    fn add_instances<
-        'lua,
-        T: bevy_mod_scripting_lua::tealr::mlu::InstanceCollector<'lua>,
-    >(self, instances: &mut T) -> bevy_mod_scripting_lua::tealr::mlu::mlua::Result<()> {
+impl crate::tealr::mlu::ExportInstances for Globals {
+    fn add_instances<'lua, T: crate::tealr::mlu::InstanceCollector<'lua>>(
+        self,
+        instances: &mut T,
+    ) -> crate::tealr::mlu::mlua::Result<()> {
         Ok(())
     }
 }
 fn bevy_core_context_initializer(
     _: &bevy_mod_scripting_core::script::ScriptId,
-    ctx: &mut bevy_mod_scripting_lua::prelude::Lua,
+    ctx: &mut crate::prelude::Lua,
 ) -> Result<(), bevy_mod_scripting_core::error::ScriptError> {
-    bevy_mod_scripting_lua::tealr::mlu::set_global_env(Globals, ctx)?;
+    crate::tealr::mlu::set_global_env(Globals, ctx)?;
     Ok(())
 }
 pub struct BevyCoreScriptingPlugin;
@@ -60,7 +53,7 @@ impl bevy::app::Plugin for BevyCoreScriptingPlugin {
         app.register_foreign_lua_type::<bevy::core::prelude::Name>();
         app.add_context_initializer::<()>(bevy_core_context_initializer);
         app.add_documentation_fragment(
-            bevy_mod_scripting_lua::docs::LuaDocumentationFragment::new(
+            crate::docs::LuaDocumentationFragment::new(
                 "BevyCoreAPI",
                 |tw| {
                     tw.document_global_instance::<Globals>()

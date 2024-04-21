@@ -8,7 +8,10 @@ use bevy_mod_scripting_core::{
     error::ReflectionError,
     proxy::{ReflectRefMutProxy, ReflectRefProxy, ReflectValProxy, Unproxy, ValProxy},
 };
-use tealr::mlu::mlua::{Error, FromLua, IntoLua, Lua, Value};
+use tealr::{
+    mlu::mlua::{Error, FromLua, IntoLua, Lua, Value},
+    ToTypename,
+};
 
 /// Local trait alias for the [`Proxied`] trait.
 pub trait LuaProxied {
@@ -76,6 +79,12 @@ macro_rules! impl_lua_unproxy {
                 self.0.0.into_lua(lua)
             }
         }
+
+        impl<T: LuaProxied> ToTypename for $ty<T> where T::Proxy: ToTypename {
+            fn to_typename() -> tealr::Type {
+                T::Proxy::to_typename()
+            }
+        }
     };
 }
 
@@ -91,6 +100,8 @@ macro_rules! impl_lua_proxy {
                 Ok(Self($as::<$generic,$generic::Proxy>::proxy(value)?))
             }
         }
+
+
     };
 }
 

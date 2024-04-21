@@ -7,10 +7,6 @@
     pub(crate) mod {{ crate.name }};
 {% endfor -%}
 
-{% if args.self_is_bevy_script_api %}
-extern crate self as bevy_script_api;
-{% endif %}
-
 pub struct {{ api_name }};
 
 impl bevy::app::Plugin for {{ api_name }} {

@@ -6,6 +6,11 @@
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
 remote="{{ item.import_path }}",
+{% if args.self_is_bms_lua %}
+bms_core_path="bevy_mod_scripting_core",
+bms_lua_path="crate",
+{% endif %}
+
 functions[
     {%- filter separated(delimeter=",\n\t\t\t", split_at="---", ignore_first=true) -%}
     {%- for function in item.functions -%}
@@ -71,7 +76,7 @@ functions[
 {% set close_item = "}" %}
 {% endif %}
 
-pub struct {{ item.ident -}} {{ open_item }}
+pub struct {{ item.ident | prefix_lua -}} {{ open_item }}
     {% if not item.is_enum %}
     {% for field in item.variants[0].fields %}
         {% if field.reflection_strategy != "Filtered" %}

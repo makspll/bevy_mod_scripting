@@ -3,17 +3,15 @@
 #![allow(unused, deprecated, dead_code)]
 #![cfg_attr(rustfmt, rustfmt_skip)]
 use super::bevy_reflect::*;
-extern crate self as bevy_script_api;
-use bevy_script_api::{
-    lua::RegisterForeignLuaType, ReflectedValue, common::bevy::GetWorld,
-};
 use bevy_mod_scripting_core::{AddContextInitializer, StoreDocumentation};
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
     remote = "bevy::ecs::entity::Entity",
+    bms_core_path = "bevy_mod_scripting_core",
+    bms_lua_path = "crate",
     functions[r#"
 
-    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
+    #[lua(as_trait = "std::clone::Clone")]
     fn clone(&self) -> bevy::ecs::entity::Entity;
 
 "#,
@@ -28,7 +26,7 @@ use bevy_mod_scripting_core::{AddContextInitializer, StoreDocumentation};
 /// `Entity` lines up between instances, but instead insert a secondary identifier as
 /// a component.
 
-    #[lua(kind = "Function", output(proxy))]
+    #[lua()]
     fn from_raw(index: u32) -> bevy::ecs::entity::Entity;
 
 "#,
@@ -38,7 +36,7 @@ use bevy_mod_scripting_core::{AddContextInitializer, StoreDocumentation};
 /// for serialization between runs.
 /// No particular structure is guaranteed for the returned bits.
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn to_bits(self) -> u64;
 
 "#,
@@ -48,7 +46,7 @@ use bevy_mod_scripting_core::{AddContextInitializer, StoreDocumentation};
 /// # Panics
 /// This method will likely panic if given `u64` values that did not come from [`Entity::to_bits`].
 
-    #[lua(kind = "Function", output(proxy))]
+    #[lua()]
     fn from_bits(bits: u64) -> bevy::ecs::entity::Entity;
 
 "#,
@@ -58,7 +56,7 @@ use bevy_mod_scripting_core::{AddContextInitializer, StoreDocumentation};
 /// with both live and dead entities. Useful for compactly representing entities within a
 /// specific snapshot of the world, such as when serializing.
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn index(self) -> u32;
 
 "#,
@@ -67,46 +65,38 @@ use bevy_mod_scripting_core::{AddContextInitializer, StoreDocumentation};
 /// entity with a given index is despawned. This serves as a "count" of the number of times a
 /// given index has been reused (index, generation) pairs uniquely identify a given Entity.
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn generation(self) -> u32;
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "std::cmp::PartialEq",
-        kind = "MetaFunction",
-        composite = "eq",
-        metamethod = "Eq",
-    )]
+    #[lua(as_trait = "std::cmp::PartialEq", composite = "eq")]
     fn eq(&self, #[proxy] other: &entity::Entity) -> bool;
 
 "#,
     r#"
-#[lua(kind="MetaMethod", metamethod="ToString")]
+#[lua(metamethod="ToString")]
 fn index(&self) -> String {
     format!("{:?}", _self)
 }
 "#]
 )]
-pub struct Entity {}
+pub struct LuaEntity {}
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
     remote = "bevy::ecs::component::ComponentId",
+    bms_core_path = "bevy_mod_scripting_core",
+    bms_lua_path = "crate",
     functions[r#"
 
-    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
+    #[lua(as_trait = "std::clone::Clone")]
     fn clone(&self) -> bevy::ecs::component::ComponentId;
 
 "#,
     r#"
 
-    #[lua(
-        as_trait = "std::cmp::PartialEq",
-        kind = "MetaFunction",
-        composite = "eq",
-        metamethod = "Eq",
-    )]
+    #[lua(as_trait = "std::cmp::PartialEq", composite = "eq")]
     fn eq(&self, #[proxy] other: &component::ComponentId) -> bool;
 
 "#,
@@ -115,69 +105,66 @@ pub struct Entity {}
 /// The `index` is a unique value associated with each type of component in a given world.
 /// Usually, this value is taken from a counter incremented for each type of component registered with the world.
 
-    #[lua(kind = "Function", output(proxy))]
+    #[lua()]
     fn new(index: usize) -> bevy::ecs::component::ComponentId;
 
 "#,
     r#"
 /// Returns the index of the current component.
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn index(self) -> usize;
 
 "#,
     r#"
 
-    #[lua(as_trait = "std::cmp::Eq", kind = "Method")]
+    #[lua(as_trait = "std::cmp::Eq")]
     fn assert_receiver_is_total_eq(&self) -> ();
 
 "#,
     r#"
-#[lua(kind="MetaMethod", metamethod="ToString")]
+#[lua(metamethod="ToString")]
 fn index(&self) -> String {
     format!("{:?}", _self)
 }
 "#]
 )]
-pub struct ComponentId();
+pub struct LuaComponentId();
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
     remote = "bevy::ecs::component::Tick",
+    bms_core_path = "bevy_mod_scripting_core",
+    bms_lua_path = "crate",
     functions[r#"
 
-    #[lua(
-        as_trait = "std::cmp::PartialEq",
-        kind = "MetaFunction",
-        composite = "eq",
-        metamethod = "Eq",
-    )]
+    #[lua(as_trait = "std::cmp::PartialEq", composite = "eq")]
     fn eq(&self, #[proxy] other: &component::Tick) -> bool;
 
 "#,
     r#"
 
-    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
+    #[lua(as_trait = "std::clone::Clone")]
     fn clone(&self) -> bevy::ecs::component::Tick;
 
 "#,
     r#"
 /// Creates a new [`Tick`] wrapping the given value.
 
-    #[lua(kind = "Function", output(proxy))]
+    #[lua()]
     fn new(tick: u32) -> bevy::ecs::component::Tick;
 
 "#,
     r#"
 /// Gets the value of this change tick.
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn get(self) -> u32;
 
 "#,
     r#"
 /// Sets the value of this change tick.
 
-    #[lua(kind = "MutatingMethod")]
+    #[lua()]
     fn set(&mut self, tick: u32) -> ();
 
 "#,
@@ -185,7 +172,7 @@ pub struct ComponentId();
 /// Returns `true` if this `Tick` occurred since the system's `last_run`.
 /// `this_run` is the current tick of the system, used as a reference to help deal with wraparound.
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn is_newer_than(
         self,
         #[proxy]
@@ -197,31 +184,33 @@ pub struct ComponentId();
 "#,
     r#"
 
-    #[lua(as_trait = "std::cmp::Eq", kind = "Method")]
+    #[lua(as_trait = "std::cmp::Eq")]
     fn assert_receiver_is_total_eq(&self) -> ();
 
 "#,
     r#"
-#[lua(kind="MetaMethod", metamethod="ToString")]
+#[lua(metamethod="ToString")]
 fn index(&self) -> String {
     format!("{:?}", _self)
 }
 "#]
 )]
-pub struct Tick {}
+pub struct LuaTick {}
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
     remote = "bevy::ecs::component::ComponentTicks",
+    bms_core_path = "bevy_mod_scripting_core",
+    bms_lua_path = "crate",
     functions[r#"
 
-    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
+    #[lua(as_trait = "std::clone::Clone")]
     fn clone(&self) -> bevy::ecs::component::ComponentTicks;
 
 "#,
     r#"
 /// Returns `true` if the component or resource was added after the system last ran.
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn is_added(
         &self,
         #[proxy]
@@ -234,7 +223,7 @@ pub struct Tick {}
     r#"
 /// Returns `true` if the component or resource was added or mutably dereferenced after the system last ran.
 
-    #[lua(kind = "Method")]
+    #[lua()]
     fn is_changed(
         &self,
         #[proxy]
@@ -247,14 +236,14 @@ pub struct Tick {}
     r#"
 /// Returns the tick recording the time this component or resource was most recently changed.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn last_changed_tick(&self) -> bevy::ecs::component::Tick;
 
 "#,
     r#"
 /// Returns the tick recording the time this component or resource was added.
 
-    #[lua(kind = "Method", output(proxy))]
+    #[lua()]
     fn added_tick(&self) -> bevy::ecs::component::Tick;
 
 "#,
@@ -271,59 +260,55 @@ pub struct Tick {}
 /// component_ticks.set_changed(world.read_change_tick());
 /// ```
 
-    #[lua(kind = "MutatingMethod")]
+    #[lua()]
     fn set_changed(&mut self, #[proxy] change_tick: bevy::ecs::component::Tick) -> ();
 
 "#,
     r#"
-#[lua(kind="MetaMethod", metamethod="ToString")]
+#[lua(metamethod="ToString")]
 fn index(&self) -> String {
     format!("{:?}", _self)
 }
 "#]
 )]
-pub struct ComponentTicks {}
+pub struct LuaComponentTicks {}
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
     remote = "bevy::ecs::entity::EntityHash",
+    bms_core_path = "bevy_mod_scripting_core",
+    bms_lua_path = "crate",
     functions[r#"
 
-    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
+    #[lua(as_trait = "std::clone::Clone")]
     fn clone(&self) -> bevy::ecs::entity::EntityHash;
 
 "#]
 )]
-pub struct EntityHash {}
+pub struct LuaEntityHash {}
 #[derive(Default)]
 pub(crate) struct Globals;
-impl bevy_mod_scripting_lua::tealr::mlu::ExportInstances for Globals {
-    fn add_instances<
-        'lua,
-        T: bevy_mod_scripting_lua::tealr::mlu::InstanceCollector<'lua>,
-    >(self, instances: &mut T) -> bevy_mod_scripting_lua::tealr::mlu::mlua::Result<()> {
+impl crate::tealr::mlu::ExportInstances for Globals {
+    fn add_instances<'lua, T: crate::tealr::mlu::InstanceCollector<'lua>>(
+        self,
+        instances: &mut T,
+    ) -> crate::tealr::mlu::mlua::Result<()> {
         instances
-            .add_instance(
-                "Entity",
-                bevy_mod_scripting_lua::tealr::mlu::UserDataProxy::<LuaEntity>::new,
-            )?;
+            .add_instance("Entity", crate::tealr::mlu::UserDataProxy::<LuaEntity>::new)?;
         instances
             .add_instance(
                 "ComponentId",
-                bevy_mod_scripting_lua::tealr::mlu::UserDataProxy::<LuaComponentId>::new,
+                crate::tealr::mlu::UserDataProxy::<LuaComponentId>::new,
             )?;
         instances
-            .add_instance(
-                "Tick",
-                bevy_mod_scripting_lua::tealr::mlu::UserDataProxy::<LuaTick>::new,
-            )?;
+            .add_instance("Tick", crate::tealr::mlu::UserDataProxy::<LuaTick>::new)?;
         Ok(())
     }
 }
 fn bevy_ecs_context_initializer(
     _: &bevy_mod_scripting_core::script::ScriptId,
-    ctx: &mut bevy_mod_scripting_lua::prelude::Lua,
+    ctx: &mut crate::prelude::Lua,
 ) -> Result<(), bevy_mod_scripting_core::error::ScriptError> {
-    bevy_mod_scripting_lua::tealr::mlu::set_global_env(Globals, ctx)?;
+    crate::tealr::mlu::set_global_env(Globals, ctx)?;
     Ok(())
 }
 pub struct BevyEcsScriptingPlugin;
@@ -336,25 +321,19 @@ impl bevy::app::Plugin for BevyEcsScriptingPlugin {
         app.register_foreign_lua_type::<bevy::ecs::entity::EntityHash>();
         app.add_context_initializer::<()>(bevy_ecs_context_initializer);
         app.add_documentation_fragment(
-            bevy_mod_scripting_lua::docs::LuaDocumentationFragment::new(
+            crate::docs::LuaDocumentationFragment::new(
                 "BevyEcsAPI",
                 |tw| {
                     tw.document_global_instance::<Globals>()
                         .expect("Something went wrong documenting globals")
                         .process_type::<LuaEntity>()
-                        .process_type::<
-                            bevy_mod_scripting_lua::tealr::mlu::UserDataProxy<LuaEntity>,
-                        >()
+                        .process_type::<crate::tealr::mlu::UserDataProxy<LuaEntity>>()
                         .process_type::<LuaComponentId>()
                         .process_type::<
-                            bevy_mod_scripting_lua::tealr::mlu::UserDataProxy<
-                                LuaComponentId,
-                            >,
+                            crate::tealr::mlu::UserDataProxy<LuaComponentId>,
                         >()
                         .process_type::<LuaTick>()
-                        .process_type::<
-                            bevy_mod_scripting_lua::tealr::mlu::UserDataProxy<LuaTick>,
-                        >()
+                        .process_type::<crate::tealr::mlu::UserDataProxy<LuaTick>>()
                         .process_type::<LuaComponentTicks>()
                         .process_type::<LuaEntityHash>()
                 },
