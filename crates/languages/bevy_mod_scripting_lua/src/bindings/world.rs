@@ -49,7 +49,7 @@ mod test {
     use tealr::mlu::mlua::Lua;
 
     use super::*;
-    use crate::bindings::proxy::LuaNonReflectProxy;
+    use crate::bindings::proxy::LuaValProxy;
     use tealr::mlu::mlua::IntoLua;
 
     #[test]
@@ -58,13 +58,12 @@ mod test {
         let world_access_guard = Arc::new(WorldAccessGuard::new(&mut world));
         let callback_access =
             unsafe { WorldCallbackAccess::new(Arc::downgrade(&world_access_guard)) };
-        let proxy =
-            LuaNonReflectProxy::<WorldCallbackAccess>(ValProxy::new(LuaWorld(callback_access)));
+        let proxy = LuaValProxy::<WorldCallbackAccess>(ValProxy::new(LuaWorld(callback_access)));
 
         let lua = Lua::new();
         let lua_val = proxy.into_lua(&lua).unwrap();
-        let mut val = LuaNonReflectProxy::<WorldCallbackAccess>::from_lua(lua_val, &lua).unwrap();
+        let mut val = LuaValProxy::<WorldCallbackAccess>::from_lua(lua_val, &lua).unwrap();
 
-        let val = val.unproxy().unwrap();
+        let _val = val.unproxy().unwrap();
     }
 }

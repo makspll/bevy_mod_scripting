@@ -8,6 +8,7 @@ use lockable::LockableHashMap;
 
 use std::{
     any::TypeId,
+    cell::UnsafeCell,
     fmt::Debug,
     marker::PhantomData,
     sync::{Arc, Weak},
@@ -28,7 +29,11 @@ use bevy::{
     },
 };
 
-use crate::{allocator::ReflectAllocationId, error::ReflectionError, prelude::ReflectAllocator};
+use crate::{
+    allocator::{ReflectAllocation, ReflectAllocationId},
+    error::ReflectionError,
+    prelude::ReflectAllocator,
+};
 
 /// Describes kinds of base value we are accessing via reflection
 #[derive(PartialEq, Eq, Copy, Clone, Hash, Debug)]
@@ -405,6 +410,20 @@ pub struct ReflectReference {
 struct UnregisteredType;
 
 impl ReflectReference {
+    pub fn new_allocated<T: Reflect>(
+        value: T,
+        allocator: &mut ReflectAllocator,
+    ) -> ReflectReference {
+        let id = allocator.allocate(ReflectAllocation::new(Arc::new(UnsafeCell::new(value))));
+        ReflectReference {
+            base: ReflectBaseType {
+                type_id: TypeId::of::<T>(),
+                base_id: ReflectBase::Owned(id),
+            },
+            reflect_path: Vec::default(),
+        }
+    }
+
     /// Returns `Ok(())` if the given access is sufficient to read the value or an appropriate error otherwise
     pub fn expect_read_access<'w>(
         &self,

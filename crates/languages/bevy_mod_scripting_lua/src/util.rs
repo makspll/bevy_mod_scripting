@@ -160,7 +160,7 @@ macro_rules! impl_userdata_from_lua {
         impl<'lua> FromLua<'lua> for $ty {
             fn from_lua(
                 value: ::tealr::mlu::mlua::Value<'lua>,
-                lua: &::tealr::mlu::mlua::Lua,
+                _lua: &::tealr::mlu::mlua::Lua,
             ) -> Result<Self, ::tealr::mlu::mlua::Error> {
                 match value {
                     tealr::mlu::mlua::Value::UserData(ud) => Ok(ud.borrow::<Self>()?.clone()),

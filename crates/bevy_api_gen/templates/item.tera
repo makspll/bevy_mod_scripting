@@ -5,11 +5,6 @@
 
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
-derive(
-    {%- if item.impls_clone -%}
-        clone,
-    {%- endif -%}
-),
 remote="{{ item.import_path }}",
 functions[
     {%- filter separated(delimeter=",\n\t\t\t", split_at="---", ignore_first=true) -%}

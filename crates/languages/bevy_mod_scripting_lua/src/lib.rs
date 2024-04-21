@@ -14,6 +14,7 @@ use bevy_mod_scripting_core::{
     script::ScriptId,
     ScriptingPlugin,
 };
+use bindings::world::LuaWorld;
 pub use tealr;
 pub mod bindings;
 use tealr::mlu::mlua::{Function, IntoLuaMulti, Lua};
@@ -140,10 +141,8 @@ pub fn with_world<F: FnOnce(&mut Lua) -> Result<(), ScriptError>>(
     f: F,
 ) -> Result<(), ScriptError> {
     WorldCallbackAccess::with_callback_access(world, |guard| {
-        context
-            .create_any_userdata(guard.clone())
-            .and_then(|guard| context.globals().set("world", guard))?;
-
+        context.globals().set("world", LuaWorld(guard.clone()));
+        // TODO set entity + script id as well
         f(context)
     })
 }

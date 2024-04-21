@@ -1,3 +1,4 @@
+use bevy::reflect::Reflect;
 use thiserror::Error;
 
 use crate::{allocator::ReflectAllocationId, bindings::ReflectReference};
@@ -89,6 +90,8 @@ pub enum ReflectionError {
         reference: ReflectReference,
         to: String,
     },
+    #[error("Failed to build concrete type from &Reflect type: {ref_}")]
+    FromReflectFailure { ref_: String },
     #[error("Could not dereference script allocation with ID: {id}. {reason}")]
     AllocationError {
         id: ReflectAllocationId,

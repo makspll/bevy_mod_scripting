@@ -38,9 +38,9 @@ fn standardise_receiver<'a>(receiver: &mut FnArg, target_type_ident: &Ident, bms
 
         let self_ident = syn::Ident::new(SELF_ALIAS, receiver.span());
         let unproxy_container_name = match (ref_.is_some(), receiver.mutability.is_some()) {
-            (true, true) => "LuaRefMutProxy",
-            (true, false) => "LuaRefProxy",
-            (false, _) => "ValLuProxy",
+            (true, true) => "LuaReflectRefMutProxy",
+            (true, false) => "LuaReflectRefProxy",
+            (false, _) => "LuaReflectValProxy",
         };
 
         Some(syn::FnArg::Typed(parse_quote_spanned! {receiver.span()=>
@@ -180,8 +180,8 @@ pub fn impl_lua_proxy(input: TokenStream) -> TokenStream {
         // wrap function body in our unwrapping and wrapping logic, ignore pre-existing body
         f.default = Some(parse_quote_spanned! {span=>
             {
-                let mut world: #bms_lua::bindings::proxy::LuaNonReflectProxy<#bms_core::bindings::WorldCallbackAccess> = lua.globals().get("world")?;
-                let mut world = <#bms_lua::bindings::proxy::LuaNonReflectProxy<#bms_core::bindings::WorldCallbackAccess> as #bms_core::proxy::Unproxy>::unproxy(&mut world).map_err(#mlua::Error::external)?;
+                let mut world: #bms_lua::bindings::proxy::LuaValProxy<#bms_core::bindings::WorldCallbackAccess> = lua.globals().get("world")?;
+                let mut world = <#bms_lua::bindings::proxy::LuaValProxy<#bms_core::bindings::WorldCallbackAccess> as #bms_core::proxy::Unproxy>::unproxy(&mut world).map_err(#mlua::Error::external)?;
                 let mut world = world.read().ok_or_else(|| #mlua::Error::external("World no longer exists"))?;
 
                 // get allocator and type registry
@@ -190,10 +190,10 @@ pub fn impl_lua_proxy(input: TokenStream) -> TokenStream {
                 let allocator_resource_id = cell.components().resource_id::<#bms_core::allocator::ReflectAllocator>().expect("Reflect Allocator wasn't initialized");
                 let type_registry_resource_id = cell.components().resource_id::<bevy::ecs::reflect::AppTypeRegistry>().expect("Type Registry wasn't initialized");
 
-                let allocator_access = world.get_access(allocator_resource_id.into()).expect("Deadlock while accessing allocator");
+                let mut allocator_access = world.get_access(allocator_resource_id.into()).expect("Deadlock while accessing allocator");
                 let type_registry_access = world.get_access(type_registry_resource_id.into()).expect("Deadlock while accessing type registry");
 
-                let allocator = world.get_resource::<#bms_core::allocator::ReflectAllocator>(&allocator_access).unwrap().unwrap();
+                let mut allocator = world.get_resource_mut::<#bms_core::allocator::ReflectAllocator>(&mut allocator_access).unwrap().unwrap();
                 let type_registry = world.get_resource::<bevy::ecs::reflect::AppTypeRegistry>(&type_registry_access).unwrap().unwrap();
                 let type_registry = type_registry.read();
                 let mut world_acceses = Vec::default();
@@ -202,8 +202,10 @@ pub fn impl_lua_proxy(input: TokenStream) -> TokenStream {
                 
                 // call proxy function 
                 let out = #target_type_ident::#func_name(#(#original_arg_idents),*);
+                let out = <#out_type as #bms_core::proxy::Proxy>::proxy_with_allocator(out, &mut allocator).map_err(#mlua::Error::external)?;
+
                 // TODO: output proxies
-                Ok(<#out_type as #bms_core::proxy::Proxy>::proxy(out))
+                Ok(out)
             }
         });
 

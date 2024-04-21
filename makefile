@@ -28,7 +28,7 @@ CODEGEN_PATH=${PWD}/target/codegen
 BEVY_PATH=${CODEGEN_PATH}/bevy
 GLAM_PATH=${CODEGEN_PATH}/glam
 OUTPUT_PATH=${CODEGEN_PATH}/output
-GENERATED_SRC_PATH=./crates/bevy_script_api/src/providers
+GENERATED_SRC_PATH=./crates/languages/bevy_mod_scripting_lua/src/bindings/providers
 GEN_BEVY_FEATURES=bevy_asset,bevy_gltf,bevy_animation,bevy_core_pipeline,bevy_ui,bevy_pbr,bevy_render,bevy_text,bevy_sprite,file_watcher,multi-threaded
 
 build_test_in_package:
