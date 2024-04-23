@@ -33,8 +33,6 @@ features = [
 ]
 
 [features]
-default = ["rune", "rune_script_api"]
-
 ## core
 doc_always = ["bevy_mod_scripting_core/doc_always"]
 
