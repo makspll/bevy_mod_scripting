@@ -39,11 +39,7 @@ pub mod prelude {
     };
 
     #[cfg(feature = "rune")]
-    pub use crate::rune::{
-        bevy::RuneBevyAPIProvider,
-        std::{RuneCopy, RuneVec},
-        FromRuneProxy, ReflectRuneProxyable, RuneProxyable, ToRuneProxy,
-    };
+    pub use crate::rune;
 
     pub use crate::{common::bevy::GetWorld, ValueIndex};
 }
