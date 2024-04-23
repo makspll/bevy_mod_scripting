@@ -9,7 +9,7 @@ fn main() {
         .add_plugins(ScriptingPlugin)
         .add_plugins(AssetPlugin::default());
 
-    static INVALID_ARGUMENT_WARNING: &str = "Expected one of: 'lua','rhai' as arguments";
+    static INVALID_ARGUMENT_WARNING: &str = "Expected one of: 'lua','rhai','rune' as arguments";
 
     let lang = args.get(1).expect(INVALID_ARGUMENT_WARNING);
 
@@ -26,6 +26,9 @@ fn main() {
         }
         "rhai" => {
             println!("Rhai documentation generation is not supported yet");
+        }
+        "rune" => {
+            println!("Rune documentation generation is not supported yet");
         }
         _ => println!("{}", INVALID_ARGUMENT_WARNING),
     }

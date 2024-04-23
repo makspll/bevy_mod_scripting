@@ -7,7 +7,7 @@ license = "MIT OR Apache-2.0"
 description = "Core traits and structures required for other parts of bevy_mod_scripting"
 repository = "https://github.com/makspll/bevy_mod_scripting"
 homepage = "https://github.com/makspll/bevy_mod_scripting"
-keywords = ["bevy", "gamedev", "scripting", "lua"]
+keywords = ["bevy", "gamedev", "scripting", "lua", "rhai", "rune"]
 categories = ["game-development"]
 readme = "readme.md"
 

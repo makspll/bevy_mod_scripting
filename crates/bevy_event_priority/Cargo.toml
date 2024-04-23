@@ -7,7 +7,7 @@ license = "MIT OR Apache-2.0"
 description = "Bevy plugin providing priority based event handling"
 repository = "https://github.com/makspll/bevy_mod_scripting"
 homepage = "https://github.com/makspll/bevy_mod_scripting"
-keywords = ["bevy", "gamedev", "scripting", "lua"]
+keywords = ["bevy", "gamedev", "scripting", "lua", "rhai", "rune"]
 categories = ["game-development"]
 readme = "readme.md"
 

@@ -5,6 +5,8 @@ pub mod error;
 pub mod lua;
 #[cfg(feature = "rhai")]
 pub mod rhai;
+#[cfg(feature = "rune")]
+pub mod rune;
 
 pub mod common;
 
@@ -34,6 +36,13 @@ pub mod prelude {
         bevy::RhaiBevyAPIProvider,
         std::{RhaiCopy, RhaiVec},
         FromRhaiProxy, ReflectRhaiProxyable, RhaiProxyable, ToRhaiProxy,
+    };
+
+    #[cfg(feature = "rune")]
+    pub use crate::rune::{
+        bevy::RuneBevyAPIProvider,
+        std::{RuneCopy, RuneVec},
+        FromRuneProxy, ReflectRuneProxyable, RuneProxyable, ToRuneProxy,
     };
 
     pub use crate::{common::bevy::GetWorld, ValueIndex};

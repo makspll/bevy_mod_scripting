@@ -59,7 +59,7 @@ impl Default for Recipients {
 pub trait ScriptHost: Send + Sync + 'static + Default + Resource {
     /// the type of the persistent script context, representing the execution context of the script
     type ScriptContext: Send + Sync + 'static;
-    /// the type of events picked up by lua callbacks
+    /// the type of events picked up by language callbacks
     type ScriptEvent: ScriptEvent;
     /// the type of asset representing the script files for this host
     type ScriptAsset: CodeAsset;

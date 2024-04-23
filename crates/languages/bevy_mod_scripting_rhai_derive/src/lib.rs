@@ -1,7 +1,7 @@
 use proc_macro::TokenStream;
 
 #[proc_macro]
-pub fn impl_lua_newtype(tokens: TokenStream) -> TokenStream {
+pub fn impl_rhai_newtype(tokens: TokenStream) -> TokenStream {
     // let newtype = parse_macro_input!(tokens as Newtype);
 
     // implementor

@@ -1,3 +1,3 @@
-# bevy_mod_scripting_lua_derive
+# bevy_mod_scripting_rhai_derive
 
 This crate is a part of the ["bevy_mod_scripting" workspace](https://github.com/makspll/bevy_mod_scripting).
