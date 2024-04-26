@@ -9,7 +9,7 @@ use bevy_mod_scripting_rhai::{
 use rhai::plugin::*;
 
 use crate::{
-    common::bevy::{ScriptTypeRegistration, ScriptWorld},
+    common::bevy::{ScriptQueryBuilder, ScriptTypeRegistration, ScriptWorld},
     ReflectedValue,
 };
 
@@ -26,6 +26,69 @@ impl CustomType for ScriptTypeRegistration {
             .with_fn("type_name", |self_: &mut Self| self_.type_name())
             .with_fn("to_string", |self_: &mut Self| self_.to_string())
             .with_fn("to_debug", |self_: &mut Self| format!("{:?}", self_));
+    }
+}
+
+impl CustomType for ScriptQueryBuilder {
+    fn build(mut builder: rhai::TypeBuilder<Self>) {
+        builder
+            .with_name("QueryBuilder")
+            // `with` is a reserved keyword, so we add _components on the end
+            .with_fn("with_components", |self_: &mut Self, with: Vec<Dynamic>| {
+                self_.with(
+                    with.into_iter()
+                        .map(Dynamic::cast::<ScriptTypeRegistration>)
+                        .collect(),
+                );
+
+                Dynamic::from(self_.clone())
+            })
+            .with_fn(
+                "without_components",
+                |self_: &mut Self, without: Vec<Dynamic>| {
+                    self_.without(
+                        without
+                            .into_iter()
+                            .map(Dynamic::cast::<ScriptTypeRegistration>)
+                            .collect(),
+                    );
+
+                    Dynamic::from(self_.clone())
+                },
+            );
+    }
+}
+
+impl IntoIterator for ScriptQueryBuilder {
+    type Item = rhai::Map;
+    type IntoIter = std::vec::IntoIter<Self::Item>;
+
+    fn into_iter(mut self) -> Self::IntoIter {
+        self.build()
+            .expect("Query failed!")
+            .into_iter()
+            .map(|result| {
+                let mut map = rhai::Map::new();
+                map.insert("Entity".into(), Dynamic::from(result.0));
+
+                for component in result.1.into_iter() {
+                    let name = component
+                        .get(|value| value.get_represented_type_info()?.type_path_table().ident())
+                        .unwrap()
+                        .unwrap();
+
+                    map.insert(
+                        name.into(),
+                        component.to_dynamic().unwrap_or_else(|_| {
+                            panic!("Converting component {} to dynamic failed!", &name)
+                        }),
+                    );
+                }
+
+                map
+            })
+            .collect::<Vec<_>>()
+            .into_iter()
     }
 }
 
@@ -71,7 +134,7 @@ impl CustomType for ScriptWorld {
                 },
             )
             .with_fn(
-                "has_compoennt",
+                "has_component",
                 |self_: ScriptWorld, entity: Entity, comp_type: ScriptTypeRegistration| {
                     self_.has_component(entity, comp_type).map_err(|e| {
                         Box::new(EvalAltResult::ErrorRuntime(
@@ -210,7 +273,28 @@ impl CustomType for ScriptWorld {
                 w.despawn(entity)
             })
             .with_fn("to_string", |self_: &mut ScriptWorld| self_.to_string())
-            .with_fn("to_debug", |self_: &mut ScriptWorld| format!("{:?}", self_));
+            .with_fn("to_debug", |self_: &mut ScriptWorld| format!("{:?}", self_))
+            .with_fn(
+                "query",
+                |self_: &mut ScriptWorld, component: ScriptTypeRegistration| {
+                    ScriptQueryBuilder::new(self_.clone())
+                        .components(vec![component])
+                        .clone()
+                },
+            )
+            .with_fn(
+                "query",
+                |self_: &mut ScriptWorld, components: Vec<Dynamic>| {
+                    ScriptQueryBuilder::new(self_.clone())
+                        .components(
+                            components
+                                .into_iter()
+                                .map(Dynamic::cast::<ScriptTypeRegistration>)
+                                .collect::<Vec<_>>(),
+                        )
+                        .clone()
+                },
+            );
     }
 }
 
@@ -225,6 +309,9 @@ impl APIProvider for RhaiBevyAPIProvider {
         engine.build_type::<ReflectedValue>();
         engine.build_type::<ScriptTypeRegistration>();
         engine.build_type::<ScriptWorld>();
+        engine.build_type::<ScriptQueryBuilder>();
+        engine.register_iterator::<Vec<rhai::Map>>();
+        engine.register_iterator::<ScriptQueryBuilder>();
         Ok(())
     }
 

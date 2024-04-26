@@ -1,12 +1,12 @@
-use std::{
-    ops::{Deref, DerefMut},
-    sync::Arc,
-};
-
 use crate::ReflectReference;
 /// Common functionality for all script hosts
 use bevy::{
-    ecs::system::Command,
+    ecs::{
+        component::ComponentId,
+        query::QueryBuilder,
+        system::Command,
+        world::{EntityRef, World},
+    },
     prelude::{
         AppTypeRegistry, BuildWorldChildren, Children, DespawnChildrenRecursive, DespawnRecursive,
         Entity, Parent, ReflectComponent, ReflectDefault, ReflectResource,
@@ -17,6 +17,12 @@ use bevy::{
     },
 };
 use bevy_mod_scripting_core::{prelude::ScriptError, world::WorldPointer};
+use parking_lot::MappedRwLockWriteGuard;
+use std::{
+    any::Any,
+    ops::{Deref, DerefMut},
+    sync::Arc,
+};
 
 /// Helper trait for retrieving a world pointer from a script context.
 pub trait GetWorld {
@@ -65,6 +71,51 @@ impl Deref for ScriptTypeRegistration {
     }
 }
 
+#[derive(Clone)]
+pub struct ScriptQueryBuilder {
+    world: ScriptWorld,
+    components: Vec<ScriptTypeRegistration>,
+    with: Vec<ScriptTypeRegistration>,
+    without: Vec<ScriptTypeRegistration>,
+}
+
+impl ScriptQueryBuilder {
+    pub fn new(world: ScriptWorld) -> Self {
+        Self {
+            world,
+            components: vec![],
+            with: vec![],
+            without: vec![],
+        }
+    }
+
+    pub fn components(&mut self, components: Vec<ScriptTypeRegistration>) -> &mut Self {
+        self.components.extend(components);
+        self
+    }
+
+    pub fn with(&mut self, with: Vec<ScriptTypeRegistration>) -> &mut Self {
+        self.with.extend(with);
+        self
+    }
+
+    pub fn without(&mut self, without: Vec<ScriptTypeRegistration>) -> &mut Self {
+        self.without.extend(without);
+        self
+    }
+
+    pub fn build(&mut self) -> Result<Vec<ScriptQueryResult>, ScriptError> {
+        self.world.query(
+            std::mem::take(&mut self.components),
+            std::mem::take(&mut self.with),
+            std::mem::take(&mut self.without),
+        )
+    }
+}
+
+#[derive(Clone)]
+pub struct ScriptQueryResult(pub Entity, pub Vec<ReflectReference>);
+
 #[derive(Clone, Debug)]
 pub struct ScriptWorld(WorldPointer);
 
@@ -104,6 +155,7 @@ impl ScriptWorld {
     pub fn new(ptr: WorldPointer) -> Self {
         Self(ptr)
     }
+
     pub fn get_children(&self, parent: Entity) -> Vec<Entity> {
         let w = self.read();
         w.get::<Children>(parent)
@@ -292,6 +344,7 @@ impl ScriptWorld {
 
         Ok(resource_data.reflect(&w).is_some())
     }
+
     pub fn remove_resource(&mut self, res_type: ScriptTypeRegistration) -> Result<(), ScriptError> {
         let mut w = self.write();
 
@@ -300,5 +353,91 @@ impl ScriptWorld {
         })?;
         resource_data.remove(&mut w);
         Ok(())
+    }
+
+    pub fn query(
+        &mut self,
+        components: Vec<ScriptTypeRegistration>,
+        with: Vec<ScriptTypeRegistration>,
+        without: Vec<ScriptTypeRegistration>,
+    ) -> Result<Vec<ScriptQueryResult>, ScriptError> {
+        let mut w = self.write();
+
+        let get_id = |component: &ScriptTypeRegistration,
+                      w: &MappedRwLockWriteGuard<World>|
+         -> Result<ComponentId, ScriptError> {
+            w.components()
+                .get_id(component.type_info().type_id())
+                .ok_or_else(|| {
+                    ScriptError::Other(format!("Not a component {}", component.short_name()))
+                })
+        };
+
+        let components: Vec<(ReflectComponent, ComponentId)> = components
+            .into_iter()
+            .map(|component| {
+                let reflect_component = component.data::<ReflectComponent>().ok_or_else(|| {
+                    ScriptError::Other(format!("Not a component {}", component.short_name()))
+                });
+
+                let component_id = get_id(&component, &w);
+                reflect_component.map(|v1| component_id.map(|v2| (v1.clone(), v2)))?
+            })
+            .collect::<Result<Vec<_>, ScriptError>>()?;
+
+        let with_ids: Vec<ComponentId> = with
+            .iter()
+            .map(|component| get_id(component, &w))
+            .collect::<Result<Vec<_>, ScriptError>>()?;
+
+        let without_ids: Vec<ComponentId> = without
+            .iter()
+            .map(|component| get_id(component, &w))
+            .collect::<Result<Vec<_>, ScriptError>>()?;
+
+        let mut q = QueryBuilder::<EntityRef>::new(&mut w);
+
+        for (_, id) in &components {
+            q.ref_id(*id);
+        }
+
+        for with_id in with_ids {
+            q.with_id(with_id);
+        }
+
+        for without_id in without_ids {
+            q.without_id(without_id);
+        }
+
+        let query_result: Vec<EntityRef<'_>> = q.build().iter_mut(&mut w).collect();
+
+        query_result
+            .into_iter()
+            .map(|filtered_entity| {
+                components
+                    .clone()
+                    .into_iter()
+                    .map(|(reflect_component, _)| {
+                        let type_id = reflect_component.type_id();
+                        reflect_component
+                            .reflect(filtered_entity)
+                            .map(|_component| {
+                                ReflectReference::new_component_ref(
+                                    reflect_component,
+                                    filtered_entity.id(),
+                                    self.clone().into(),
+                                )
+                            })
+                            .ok_or_else(|| {
+                                ScriptError::Other(format!(
+                                    "Failed to reflect component during query: {:?}",
+                                    type_id
+                                ))
+                            })
+                    })
+                    .collect::<Result<Vec<_>, ScriptError>>()
+                    .map(|references| ScriptQueryResult(filtered_entity.id(), references))
+            })
+            .collect::<Result<Vec<_>, ScriptError>>()
     }
 }

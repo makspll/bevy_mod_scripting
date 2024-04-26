@@ -1,15 +1,19 @@
-use crate::common::bevy::{ScriptTypeRegistration, ScriptWorld};
+use crate::common::bevy::{
+    ScriptQueryBuilder, ScriptQueryResult, ScriptTypeRegistration, ScriptWorld,
+};
+use crate::lua::{
+    mlua::prelude::{IntoLuaMulti, LuaError, LuaMultiValue},
+    tealr::{mlu::TypedFunction, ToTypename},
+    util::{ComponentTuple, QueryResultTuple},
+    Lua,
+};
 use crate::providers::bevy_ecs::LuaEntity;
 use crate::{impl_from_lua_with_clone, impl_tealr_type};
-
-use std::sync::Arc;
-
 use bevy::hierarchy::BuildWorldChildren;
-use bevy::prelude::AppTypeRegistry;
-
-use bevy::prelude::ReflectResource;
+use bevy::prelude::{AppTypeRegistry, ReflectResource};
 use bevy_mod_scripting_core::prelude::*;
-use bevy_mod_scripting_lua::tealr;
+use bevy_mod_scripting_lua::{prelude::IntoLua, tealr};
+use std::sync::Arc;
 
 use tealr::mlu::{
     mlua::{self},
@@ -59,6 +63,84 @@ impl TealData for LuaScriptData {
     fn add_methods<'lua, T: TealDataMethods<'lua, Self>>(methods: &mut T) {
         methods.add_meta_method(tealr::mlu::mlua::MetaMethod::ToString, |_, s, ()| {
             Ok(format!("{:?}", s))
+        });
+    }
+}
+
+pub type LuaQueryResult = ScriptQueryResult;
+
+impl_from_lua_with_clone!(LuaQueryResult);
+
+impl IntoLuaMulti<'_> for LuaQueryResult {
+    fn into_lua_multi(self, lua: &Lua) -> Result<LuaMultiValue<'_>, LuaError> {
+        let mut values = LuaMultiValue::from_vec(
+            self.1
+                .into_iter()
+                .map(|v| v.into_lua(lua))
+                .collect::<Result<Vec<_>, LuaError>>()?,
+        );
+        values.push_front(LuaEntity::new(self.0).into_lua(lua)?);
+        Ok(values)
+    }
+}
+
+impl ToTypename for LuaQueryResult {
+    fn to_typename() -> bevy_mod_scripting_lua::tealr::Type {
+        bevy_mod_scripting_lua::tealr::Type::new_single(
+            stringify!(QueryResult),
+            bevy_mod_scripting_lua::tealr::KindOfType::External,
+        )
+    }
+}
+
+pub type LuaQueryBuilder = ScriptQueryBuilder;
+
+impl_tealr_type!(LuaQueryBuilder);
+impl_from_lua_with_clone!(LuaQueryBuilder);
+
+impl TealData for LuaQueryBuilder {
+    fn add_fields<'lua, F: tealr::mlu::TealDataFields<'lua, Self>>(fields: &mut F) {
+        fields.document("A Builder object which allows for filtering and iterating over components and entities in the world.");
+    }
+
+    fn add_methods<'lua, T: TealDataMethods<'lua, Self>>(methods: &mut T) {
+        methods.document("Filters out entities without any of the components passed");
+        methods.add_method_mut("with", |_, s, components: ComponentTuple| {
+            s.with(components.0);
+            Ok(s.clone())
+        });
+
+        methods.document("Filters out entities with any components passed");
+        methods.add_method_mut("without", |_, s, components: ComponentTuple| {
+            s.without(components.0);
+            Ok(s.clone())
+        });
+
+        methods
+            .document("Queries the world and returns an iterator over the entity and components.");
+        methods.add_method_mut("iter", |ctx, s, _: ()| {
+            let query_result = s
+                .build()
+                .map_err(|e| mlua::Error::RuntimeError(e.to_string()))?;
+
+            let len = query_result.len();
+            let mut curr_idx = 0;
+            TypedFunction::from_rust_mut(
+                move |_, ()| {
+                    let o = if curr_idx < len {
+                        let query_result = query_result.get(curr_idx).unwrap();
+                        QueryResultTuple::Some(
+                            LuaEntity::new(query_result.0),
+                            query_result.1.clone(),
+                        )
+                    } else {
+                        QueryResultTuple::None
+                    };
+                    curr_idx += 1;
+                    Ok(o)
+                },
+                ctx,
+            )
         });
     }
 }
@@ -117,6 +199,14 @@ impl TealData for LuaWorld {
                     .map_err(|e| mlua::Error::RuntimeError(e.to_string()))
             },
         );
+
+        methods.document("Creates a LuaQueryBuilder, querying for the passed components types.");
+        methods.document("Can be iterated over using `LuaQueryBuilder:iter()`");
+        methods.add_method_mut("query", |_, world, components: ComponentTuple| {
+            Ok(LuaQueryBuilder::new(world.clone())
+                .components(components.0)
+                .clone())
+        });
 
         methods
             .document("Returns `true` if the given entity contains a component of the given type.");
