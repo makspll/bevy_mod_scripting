@@ -91,9 +91,9 @@ impl<T: ToTypename> ToTypename for DummyTypeName<T> {
 
 /// A utility type that allows us to accept any number of components as a parameter into a function.
 #[derive(Clone)]
-pub struct ComponentTuple(pub Vec<LuaTypeRegistration>);
+pub struct VariadicComponents(pub Vec<LuaTypeRegistration>);
 
-impl IntoLuaMulti<'_> for ComponentTuple {
+impl IntoLuaMulti<'_> for VariadicComponents {
     fn into_lua_multi(self, lua: &Lua) -> Result<LuaMultiValue<'_>, LuaError> {
         let values = LuaMultiValue::from_vec(
             self.0
@@ -106,9 +106,9 @@ impl IntoLuaMulti<'_> for ComponentTuple {
     }
 }
 
-impl FromLuaMulti<'_> for ComponentTuple {
-    fn from_lua_multi(value: LuaMultiValue<'_>, lua: &Lua) -> Result<ComponentTuple, LuaError> {
-        Ok(ComponentTuple(
+impl FromLuaMulti<'_> for VariadicComponents {
+    fn from_lua_multi(value: LuaMultiValue<'_>, lua: &Lua) -> Result<VariadicComponents, LuaError> {
+        Ok(VariadicComponents(
             value
                 .into_vec()
                 .into_iter()
@@ -118,10 +118,10 @@ impl FromLuaMulti<'_> for ComponentTuple {
     }
 }
 
-impl TealMultiValue for ComponentTuple {
+impl TealMultiValue for VariadicComponents {
     fn get_types_as_params() -> Vec<FunctionParam> {
         vec![FunctionParam {
-            // `...:T` will be a variadic parameter
+            // `...:T` will be a variadic type
             param_name: Some(Name("...".into())),
             ty: LuaTypeRegistration::to_typename(),
         }]
@@ -130,15 +130,15 @@ impl TealMultiValue for ComponentTuple {
 
 /// A utility enum that allows us to return an entity and any number of components from a function.
 #[derive(Clone)]
-pub enum QueryResultTuple {
+pub enum VariadicQueryResult {
     Some(LuaEntity, Vec<ReflectReference>),
     None,
 }
 
-impl IntoLuaMulti<'_> for QueryResultTuple {
+impl IntoLuaMulti<'_> for VariadicQueryResult {
     fn into_lua_multi(self, lua: &Lua) -> Result<LuaMultiValue<'_>, LuaError> {
         match self {
-            QueryResultTuple::Some(entity, vec) => {
+            VariadicQueryResult::Some(entity, vec) => {
                 let mut values = LuaMultiValue::from_vec(
                     vec.into_iter()
                         .map(|v| v.into_lua(lua))
@@ -148,12 +148,12 @@ impl IntoLuaMulti<'_> for QueryResultTuple {
                 values.push_front(entity.into_lua(lua)?);
                 Ok(values)
             }
-            QueryResultTuple::None => Ok(().into_lua_multi(lua)?),
+            VariadicQueryResult::None => Ok(().into_lua_multi(lua)?),
         }
     }
 }
 
-impl TealMultiValue for QueryResultTuple {
+impl TealMultiValue for VariadicQueryResult {
     fn get_types_as_params() -> Vec<FunctionParam> {
         vec![
             FunctionParam {

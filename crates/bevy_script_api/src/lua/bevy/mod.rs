@@ -4,7 +4,7 @@ use crate::common::bevy::{
 use crate::lua::{
     mlua::prelude::{IntoLuaMulti, LuaError, LuaMultiValue},
     tealr::{mlu::TypedFunction, ToTypename},
-    util::{ComponentTuple, QueryResultTuple},
+    util::{VariadicComponents, VariadicQueryResult},
     Lua,
 };
 use crate::providers::bevy_ecs::LuaEntity;
@@ -105,13 +105,13 @@ impl TealData for LuaQueryBuilder {
 
     fn add_methods<'lua, T: TealDataMethods<'lua, Self>>(methods: &mut T) {
         methods.document("Filters out entities without any of the components passed");
-        methods.add_method_mut("with", |_, s, components: ComponentTuple| {
+        methods.add_method_mut("with", |_, s, components: VariadicComponents| {
             s.with(components.0);
             Ok(s.clone())
         });
 
         methods.document("Filters out entities with any components passed");
-        methods.add_method_mut("without", |_, s, components: ComponentTuple| {
+        methods.add_method_mut("without", |_, s, components: VariadicComponents| {
             s.without(components.0);
             Ok(s.clone())
         });
@@ -129,12 +129,12 @@ impl TealData for LuaQueryBuilder {
                 move |_, ()| {
                     let o = if curr_idx < len {
                         let query_result = query_result.get(curr_idx).unwrap();
-                        QueryResultTuple::Some(
+                        VariadicQueryResult::Some(
                             LuaEntity::new(query_result.0),
                             query_result.1.clone(),
                         )
                     } else {
-                        QueryResultTuple::None
+                        VariadicQueryResult::None
                     };
                     curr_idx += 1;
                     Ok(o)
@@ -202,7 +202,7 @@ impl TealData for LuaWorld {
 
         methods.document("Creates a LuaQueryBuilder, querying for the passed components types.");
         methods.document("Can be iterated over using `LuaQueryBuilder:iter()`");
-        methods.add_method_mut("query", |_, world, components: ComponentTuple| {
+        methods.add_method_mut("query", |_, world, components: VariadicComponents| {
             Ok(LuaQueryBuilder::new(world.clone())
                 .components(components.0)
                 .clone())
