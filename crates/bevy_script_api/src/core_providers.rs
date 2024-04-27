@@ -56,6 +56,7 @@ impl bevy_mod_scripting_core::hosts::APIProvider for LuaCoreBevyAPIProvider {
 			.process_type::<bevy_mod_scripting_lua::tealr::mlu::UserDataProxy<crate::lua::bevy::LuaScriptData>>()
 			.process_type::<crate::lua::bevy::LuaTypeRegistration>()
 			.process_type::<crate::lua::std::LuaVec<T>>()
+            .process_type::<crate::lua::bevy::LuaQueryBuilder>()
             },
         ))
     }

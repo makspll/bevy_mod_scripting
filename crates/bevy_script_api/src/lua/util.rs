@@ -1,6 +1,9 @@
+use crate::{lua::bevy::LuaTypeRegistration, providers::bevy_ecs::LuaEntity, ReflectReference};
 use bevy_mod_scripting_lua::{
-    prelude::{FromLua, IntoLua, Lua, LuaError, LuaValue},
-    tealr::{self, ToTypename},
+    prelude::{
+        FromLua, FromLuaMulti, IntoLua, IntoLuaMulti, Lua, LuaError, LuaMultiValue, LuaValue,
+    },
+    tealr::{self, FunctionParam, KindOfType, Name, SingleType, TealMultiValue, ToTypename, Type},
 };
 use std::{
     marker::PhantomData,
@@ -83,6 +86,89 @@ impl<'lua, T> bevy_mod_scripting_lua::tealr::mlu::mlua::IntoLua<'lua> for DummyT
 impl<T: ToTypename> ToTypename for DummyTypeName<T> {
     fn to_typename() -> bevy_mod_scripting_lua::tealr::Type {
         T::to_typename()
+    }
+}
+
+/// A utility type that allows us to accept any number of components as a parameter into a function.
+#[derive(Clone)]
+pub struct VariadicComponents(pub Vec<LuaTypeRegistration>);
+
+impl IntoLuaMulti<'_> for VariadicComponents {
+    fn into_lua_multi(self, lua: &Lua) -> Result<LuaMultiValue<'_>, LuaError> {
+        let values = LuaMultiValue::from_vec(
+            self.0
+                .into_iter()
+                .map(|v| v.into_lua(lua).unwrap())
+                .collect(),
+        );
+
+        Ok(values)
+    }
+}
+
+impl FromLuaMulti<'_> for VariadicComponents {
+    fn from_lua_multi(value: LuaMultiValue<'_>, lua: &Lua) -> Result<VariadicComponents, LuaError> {
+        Ok(VariadicComponents(
+            value
+                .into_vec()
+                .into_iter()
+                .map(|v| LuaTypeRegistration::from_lua(v, lua).unwrap())
+                .collect(),
+        ))
+    }
+}
+
+impl TealMultiValue for VariadicComponents {
+    fn get_types_as_params() -> Vec<FunctionParam> {
+        vec![FunctionParam {
+            // `...:T` will be a variadic type
+            param_name: Some(Name("...".into())),
+            ty: LuaTypeRegistration::to_typename(),
+        }]
+    }
+}
+
+/// A utility enum that allows us to return an entity and any number of components from a function.
+#[derive(Clone)]
+pub enum VariadicQueryResult {
+    Some(LuaEntity, Vec<ReflectReference>),
+    None,
+}
+
+impl IntoLuaMulti<'_> for VariadicQueryResult {
+    fn into_lua_multi(self, lua: &Lua) -> Result<LuaMultiValue<'_>, LuaError> {
+        match self {
+            VariadicQueryResult::Some(entity, vec) => {
+                let mut values = LuaMultiValue::from_vec(
+                    vec.into_iter()
+                        .map(|v| v.into_lua(lua))
+                        .collect::<Result<Vec<_>, LuaError>>()?,
+                );
+
+                values.push_front(entity.into_lua(lua)?);
+                Ok(values)
+            }
+            VariadicQueryResult::None => Ok(().into_lua_multi(lua)?),
+        }
+    }
+}
+
+impl TealMultiValue for VariadicQueryResult {
+    fn get_types_as_params() -> Vec<FunctionParam> {
+        vec![
+            FunctionParam {
+                param_name: None,
+                ty: LuaEntity::to_typename(),
+            },
+            FunctionParam {
+                param_name: None,
+                ty: Type::Single(SingleType {
+                    kind: KindOfType::External,
+                    // tealr doesn't have a way to add variadic return types, so it's inserted into the type name instead
+                    name: Name(format!("{}...", stringify!(ReflectedValue)).into()),
+                }),
+            },
+        ]
     }
 }
 
