@@ -18,7 +18,7 @@ impl CodeAsset for RhaiFile {
 }
 
 #[derive(Default)]
-/// Asset loader for lua scripts
+/// Asset loader for rhai scripts
 pub struct RhaiLoader;
 
 impl AssetLoader for RhaiLoader {

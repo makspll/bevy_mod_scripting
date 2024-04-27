@@ -307,15 +307,15 @@ impl<T: RhaiVecElem> RhaiProxyable for Vec<T> {
     ) -> Result<(), Box<EvalAltResult>> {
         if new_val.is::<Vec<Dynamic>>() {
             let last_target_idx = self_.get_typed(|s: &Vec<T>| s.len())? - 1;
-            // there is also another case to consider, Vec has a lua representation available as well (table)
+            // there is also another case to consider, Vec has a rhai representation available as well (table)
             // if we receive one of those, we should also apply it
             for (idx, entry) in new_val.cast::<Vec<Dynamic>>().into_iter().enumerate() {
                 if idx > last_target_idx {
-                    // here we don't need to do anything special just use LuaProxyable impl
+                    // here we don't need to do anything special just use RhaiProxyable impl
                     T::apply_rhai(&mut self_.index(idx), entry)?;
                 } else {
                     // here we don't have anything to apply this to
-                    // use FromLua impl
+                    // use FromRhai impl
                     self_.get_mut_typed(|s: &mut Vec<T>| {
                         s[idx] = T::from_rhai_proxy(entry)?;
                         Ok::<_, Box<EvalAltResult>>(())

@@ -12,8 +12,10 @@ use rune::{
     Context, Diagnostics, Source, Sources, Unit, Vm,
 };
 
-mod assets;
-mod docs;
+pub use rune;
+
+pub mod assets;
+pub mod docs;
 
 pub mod prelude {
     pub use crate::{

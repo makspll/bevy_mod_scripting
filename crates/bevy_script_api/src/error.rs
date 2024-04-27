@@ -35,3 +35,10 @@ impl From<ReflectionError> for Box<bevy_mod_scripting_rhai::rhai::EvalAltResult>
         .into()
     }
 }
+
+#[cfg(feature = "rune")]
+impl From<ReflectionError> for Box<bevy_mod_scripting_rune::rune::runtime::VmError> {
+    fn from(e: ReflectionError) -> Self {
+        todo!()
+    }
+}

@@ -7,7 +7,7 @@ license = "MIT OR Apache-2.0"
 description = "Multi language scripting in Bevy"
 repository = "https://github.com/makspll/bevy_mod_scripting"
 homepage = "https://github.com/makspll/bevy_mod_scripting"
-keywords = ["bevy", "gamedev", "scripting", "lua"]
+keywords = ["bevy", "gamedev", "scripting", "lua", "rhai", "rune"]
 categories = ["game-development"]
 readme = "readme.md"
 include = ["readme.md", "/src", "/examples", "/assets", "LICENSE"]
@@ -24,11 +24,12 @@ path = "src/lib.rs"
 features = [
     "lua",
     "lua54",
-    "rhai",
     "lua_script_api",
+    "rhai",
     "rhai_script_api",
-    "teal",
     "rune",
+    "rune_script_api",
+    "teal",
 ]
 
 [features]
@@ -45,7 +46,7 @@ lua54 = ["bevy_mod_scripting_lua/lua54", "lua"]
 luajit = ["bevy_mod_scripting_lua/luajit", "lua"]
 luajit52 = ["bevy_mod_scripting_lua/luajit52", "lua"]
 
-# optional
+# lua optional
 lua_script_api = ["bevy_script_api/lua"]
 unsafe_lua_modules = ["bevy_mod_scripting_lua/unsafe_lua_modules"]
 teal = ["bevy_mod_scripting_lua/teal"]
@@ -59,6 +60,7 @@ rhai_script_api = ["bevy_script_api/rhai"]
 
 ## rune
 rune = ["bevy_mod_scripting_rune"]
+rune_script_api = ["bevy_script_api/rune"]
 
 [dependencies]
 bevy = { workspace = true }
@@ -67,7 +69,6 @@ bevy_mod_scripting_lua = { path = "crates/languages/bevy_mod_scripting_lua", ver
 bevy_mod_scripting_rhai = { path = "crates/languages/bevy_mod_scripting_rhai", version = "0.6.0", optional = true }
 bevy_mod_scripting_rune = { path = "crates/languages/bevy_mod_scripting_rune", version = "0.6.0", optional = true }
 bevy_script_api = { path = "crates/bevy_script_api", version = "0.6.0", optional = true }
-
 
 [workspace.dependencies]
 bevy = { version = "=0.13.1", default-features = false }
@@ -91,6 +92,7 @@ members = [
     "crates/languages/bevy_mod_scripting_rhai",
     "crates/languages/bevy_mod_scripting_rhai_derive",
     "crates/languages/bevy_mod_scripting_rune",
+    "crates/languages/bevy_mod_scripting_rune_derive",
     "crates/bevy_mod_scripting_common",
 ]
 resolver = "2"

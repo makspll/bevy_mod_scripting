@@ -7,17 +7,18 @@ use bevy_mod_scripting_core::{prelude::*, systems::*, world::WorldPointerGuard};
 use rhai::*;
 use std::marker::PhantomData;
 
+pub use rhai;
+
 pub mod assets;
 pub mod docs;
-pub use rhai;
+
 pub mod prelude {
     pub use crate::{
         assets::{RhaiFile, RhaiLoader},
         docs::RhaiDocFragment,
         RhaiContext, RhaiEvent, RhaiScriptHost,
     };
-    pub use rhai;
-    pub use rhai::{Engine, FuncArgs};
+    pub use rhai::{self, Engine, FuncArgs};
 }
 
 #[derive(Resource)]
@@ -49,7 +50,7 @@ pub struct RhaiContext {
 
 #[derive(Clone, Event)]
 /// A Rhai Hook. The result of creating this event will be
-/// a call to the lua script with the hook_name and the given arguments
+/// a call to the rhai script with the hook_name and the given arguments
 pub struct RhaiEvent<A: FuncArgs + Clone + 'static> {
     pub hook_name: String,
     pub args: A,
