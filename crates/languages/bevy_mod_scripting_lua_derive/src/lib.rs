@@ -117,8 +117,12 @@ struct FunctionAttrs {
     /// If passed will generate a metamethod call instead of using the function name
     pub metamethod: Option<Ident>,
 
+    /// If true will pass in the context as the last argument,
+    /// i.e. will remove that argument from the function signature and use it's name as the context alias
+    pub with_context: Flag,
 
-    pub raw: Flag
+    /// Skips the unproxying & proxying call, useful for functions that don't need to access the world
+    pub no_proxy: Flag
 }
 
 #[proc_macro_derive(LuaProxy, attributes(lua, proxy))]
@@ -173,9 +177,20 @@ pub fn impl_lua_proxy(input: TokenStream) -> TokenStream {
 
         // collect all args into tuple and add lua context arg
         let ctxt_alias = syn::Ident::new(CTXT_ALIAS, f.sig.inputs.span());
-        let ctxt_arg = parse_quote_spanned! {f.span()=>
-            #ctxt_alias: &#mlua::Lua
+
+        let attrs = FunctionAttrs::from_attributes(&f.attrs).unwrap();
+
+        let ctxt_arg = if attrs.with_context.is_present() {
+            f.sig.inputs.pop().expect("Expected at least one argument for the context").into_value()
+        } else {
+            parse_quote_spanned! {f.span()=>
+                #ctxt_alias: &#mlua::Lua
+            }
         };
+        let ctxt_arg_ident = match &ctxt_arg {
+            FnArg::Typed(arg) => arg.pat.clone(),
+            _ => panic!("Expected a typed argument, not a receiver"),
+        }; 
 
         let func_name = &f.sig.ident;
         let (original_arg_idents, original_arg_types) = f
@@ -191,7 +206,6 @@ pub fn impl_lua_proxy(input: TokenStream) -> TokenStream {
             })
             .unzip::<_, _, Vec<_>, Vec<_>>();
         
-        let attrs = FunctionAttrs::from_attributes(&f.attrs).unwrap();
         let span = f.span();
         let args_ident = format_ident!("args", span = f.sig.inputs.span());
         f.sig.inputs = Punctuated::from_iter(vec![
@@ -208,7 +222,7 @@ pub fn impl_lua_proxy(input: TokenStream) -> TokenStream {
 
 
         // wrap function body in our unwrapping and wrapping logic, ignore pre-existing body
-        let fn_call = match (f.default, attrs.as_trait) {
+        let mut fn_call = match (f.default, attrs.as_trait) {
             (Some(body), _) => quote_spanned!(span=>
                 (||{ #body })()
             ),
@@ -222,38 +236,35 @@ pub fn impl_lua_proxy(input: TokenStream) -> TokenStream {
                 )
             }
         };
-        f.default = Some(parse_quote_spanned! {span=>
-            {
-                let mut world: #bms_lua::bindings::proxy::LuaValProxy<#bms_core::bindings::WorldCallbackAccess> = lua.globals().get("world")?;
-                let mut world = <#bms_lua::bindings::proxy::LuaValProxy<#bms_core::bindings::WorldCallbackAccess> as #bms_core::proxy::Unproxy>::unproxy(&mut world).map_err(#mlua::Error::external)?;
-                let mut world = world.read().ok_or_else(|| #mlua::Error::external("World no longer exists"))?;
 
-                // get allocator and type registry
+        if f.sig.unsafety.is_some(){
+            fn_call = quote_spanned!(span=>
+                unsafe { #fn_call }
+            );
+        }
 
-                let cell = world.as_unsafe_world_cell();
-                let allocator_resource_id = cell.components().resource_id::<#bms_core::allocator::ReflectAllocator>().expect("Reflect Allocator wasn't initialized");
-                let type_registry_resource_id = cell.components().resource_id::<bevy::ecs::reflect::AppTypeRegistry>().expect("Type Registry wasn't initialized");
+        if attrs.no_proxy.is_present() {
+            f.default = Some(parse_quote_spanned! {span=>
+                {
+                    #fn_call
+                }
+            });
+        } else {
+            f.default = Some(parse_quote_spanned! {span=>
+                {
+                    let mut world: #bms_lua::bindings::proxy::LuaValProxy<#bms_core::bindings::WorldCallbackAccess> = #ctxt_arg_ident.globals().get("world")?;
+                    let mut world = <#bms_lua::bindings::proxy::LuaValProxy<#bms_core::bindings::WorldCallbackAccess> as #bms_core::proxy::Unproxy>::unproxy(&mut world).map_err(#mlua::Error::external)?;
+                    let mut world = world.read().ok_or_else(|| #mlua::Error::external("World no longer exists"))?;
+                    let out: #out_type = world.proxy_call(#args_ident, |(#(#original_arg_idents),*)| {
+                        #fn_call
+                    }).map_err(|e| #mlua::Error::external(e))?;
+                    Ok(out)
+                }
+            });
+        }
 
-                let mut allocator_access = world.get_access(allocator_resource_id.into()).expect("Deadlock while accessing allocator");
-                let type_registry_access = world.get_access(type_registry_resource_id.into()).expect("Deadlock while accessing type registry");
 
-                let mut allocator = world.get_resource_mut::<#bms_core::allocator::ReflectAllocator>(&mut allocator_access).unwrap().unwrap();
-                let type_registry = world.get_resource::<bevy::ecs::reflect::AppTypeRegistry>(&type_registry_access).unwrap().unwrap();
-                let type_registry = type_registry.read();
-                let mut world_acceses = Vec::default();
-                // Safety: we pinky promise not to touch world_accessses after this point
-                let (#( #original_arg_idents ),*) = unsafe { <(#(#original_arg_types),*) as #bms_core::proxy::Unproxy>::unproxy_with_world(&mut #args_ident, &world, &mut world_acceses, &type_registry, &allocator).map_err(#mlua::Error::external)? };
-                
-                // call proxy function 
-                let out = #fn_call;
-                let out = <#out_type as #bms_core::proxy::Proxy>::proxy_with_allocator(out, &mut allocator).map_err(#mlua::Error::external)?;
-
-                // TODO: output proxies
-                Ok(out)
-            }
-        });
-
-        let name = match attrs.metamethod{
+        let name = match &attrs.metamethod{
             Some(metamethod) => quote_spanned!(metamethod.span()=>
                 #mlua::MetaMethod::#metamethod
             ),
@@ -261,15 +272,22 @@ pub fn impl_lua_proxy(input: TokenStream) -> TokenStream {
         };
 
         let closure = convert_function_def_to_closure(f);
+        
+        let registration_method = if attrs.metamethod.is_some() {
+            quote_spanned!(span=>add_meta_function)
+        } else {
+            quote_spanned!(span=>add_function)
+        };
+
         quote_spanned! {span=>
-            methods.add_function(#name, #closure);
+            methods.#registration_method(#name, #closure);
         }
     });
 
     let vis = &meta.vis;
     quote_spanned! {meta.ident.span()=>
 
-        #[derive(Clone, Debug)]
+        #[derive(Clone, Debug, #tealr::mlu::UserData, #tealr::ToTypename)]
         #vis struct #proxy_type_ident (pub #bms_core::bindings::ReflectReference);
 
         impl #bms_lua::bindings::proxy::LuaProxied for #target_type {
@@ -283,14 +301,49 @@ pub fn impl_lua_proxy(input: TokenStream) -> TokenStream {
             }
         }
 
-        impl #tealr::ToTypename for #proxy_type_ident {
-            fn to_typename() -> #tealr::Type {
-                #tealr::Type::Single(#tealr::SingleType {
-                    name: #tealr::Name(#target_type_str.into()),
-                    kind: #tealr::KindOfType::External,
-                })
+        // impl #tealr::mlu::mlua::UserData for #proxy_type_ident
+        // where
+        //     Self: #tealr::mlu::TealData,
+        // {
+        //     fn add_methods<'lua, T: #tealr::mlu::mlua::UserDataMethods<'lua, Self>>(
+        //         methods: &mut T,
+        //     ) {
+        //         let mut wrapper = tealr::mlu::UserDataWrapper::from_user_data_methods(methods);
+        //         <Self as #tealr::mlu::TealData>::add_methods(&mut wrapper);
+        //     }
+
+        //     fn add_fields<'lua, T: #tealr::mlu::mlua::UserDataFields<'lua, Self>>(fields: &mut T) {
+        //         let mut wrapper = tealr::mlu::UserDataWrapper::from_user_data_fields(fields);
+        //         <Self as #tealr::mlu::TealData>::add_fields(&mut wrapper);
+        //     }
+        // }
+
+        impl<'lua> #tealr::mlu::mlua::FromLua<'lua> for #proxy_type_ident {
+            fn from_lua(
+                value: #tealr::mlu::mlua::Value<'lua>,
+                _lua: &#tealr::mlu::mlua::Lua,
+            ) -> Result<Self, #tealr::mlu::mlua::Error> {
+                match value {
+                    tealr::mlu::mlua::Value::UserData(ud) => Ok(ud.borrow::<Self>()?.clone()),
+                    _ => {
+                        return Err(#tealr::mlu::mlua::Error::FromLuaConversionError {
+                            from: value.type_name(),
+                            to: stringify!(#proxy_type_ident),
+                            message: None,
+                        })
+                    }
+                }
             }
         }
+
+        // impl #tealr::ToTypename for #proxy_type_ident {
+        //     fn to_typename() -> #tealr::Type {
+        //         #tealr::Type::Single(#tealr::SingleType {
+        //             name: #tealr::Name(#target_type_str.into()),
+        //             kind: #tealr::KindOfType::External,
+        //         })
+        //     }
+        // }
 
         impl AsRef<#bms_core::bindings::ReflectReference> for #proxy_type_ident {
             fn as_ref(&self) -> &#bms_core::bindings::ReflectReference {

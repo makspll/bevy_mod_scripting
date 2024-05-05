@@ -37,6 +37,7 @@ pub(crate) fn codegen(ctxt: &mut BevyCtxt<'_>, args: &Args) -> bool {
     .expect("Failed to render crate artifact");
 
     file.flush().unwrap();
+    log::trace!("Written files");
 
     true
 }

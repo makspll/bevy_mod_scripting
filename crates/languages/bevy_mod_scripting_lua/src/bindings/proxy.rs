@@ -6,7 +6,7 @@ use bevy_mod_scripting_core::{
     allocator::ReflectAllocator,
     bindings::{ReflectReference, WorldAccessGuard, WorldAccessUnit, WorldAccessWrite},
     error::ReflectionError,
-    proxy::{ReflectRefMutProxy, ReflectRefProxy, ReflectValProxy, Unproxy, ValProxy},
+    proxy::{Proxy, ReflectRefMutProxy, ReflectRefProxy, ReflectValProxy, Unproxy, ValProxy},
 };
 use tealr::{
     mlu::mlua::{Error, FromLua, IntoLua, Lua, Value},
@@ -18,21 +18,61 @@ pub trait LuaProxied {
     type Proxy;
 }
 
+/// Convenience for proxying a type into lua via itself without implementing [`Proxy`] on it.
+/// Converts to Lua via T's implementation of IntoLua directly
+pub struct IdentityProxy<T>(pub Option<T>);
+
+impl<T> Proxy for IdentityProxy<T> {
+    type Input<'i> = T;
+    fn proxy<'i>(value: Self::Input<'i>) -> Result<Self, ReflectionError> {
+        Ok(Self(Some(value)))
+    }
+}
+
+impl<T> Unproxy for IdentityProxy<T> {
+    type Output<'o> = T where
+        Self: 'o;
+
+    fn unproxy<'o>(&'o mut self) -> Result<Self::Output<'o>, ReflectionError> {
+        Ok(self
+            .0
+            .take()
+            .expect("IdentityProxy was already unproxied before"))
+    }
+}
+
+impl<T: ToTypename> ToTypename for IdentityProxy<T> {
+    fn to_typename() -> tealr::Type {
+        T::to_typename()
+    }
+}
+
+impl<'a, T: IntoLua<'a>> IntoLua<'a> for IdentityProxy<T> {
+    fn into_lua(self, lua: &'a Lua) -> tealr::mlu::mlua::prelude::LuaResult<Value<'a>> {
+        self.0.into_lua(lua)
+    }
+}
+
+impl<'a, T: FromLua<'a>> FromLua<'a> for IdentityProxy<T> {
+    fn from_lua(value: Value<'a>, lua: &'a Lua) -> Result<Self, Error> {
+        Ok(Self(Some(T::from_lua(value, lua)?)))
+    }
+}
+
 pub struct LuaValProxy<T: LuaProxied>(pub ValProxy<T, T::Proxy>);
 pub struct LuaReflectValProxy<T: LuaProxied>(pub ReflectValProxy<T, T::Proxy>);
 pub struct LuaReflectRefProxy<T: LuaProxied>(pub ReflectRefProxy<T, T::Proxy>);
 pub struct LuaReflectRefMutProxy<T: LuaProxied>(pub ReflectRefMutProxy<T, T::Proxy>);
 
 macro_rules! impl_lua_unproxy {
-    ($ty:ident as $as:ident => $generic:tt : $($bounds:path),* $(| T::Proxy: $($proxy_bounds:tt)*)?) => {
-        impl<'w, 'c, $generic:'c> Unproxy<'w, 'c> for $ty<$generic>
+    ($ty:ident as $as:ident ($generic:tt) $($bound_var:path : ($($bounds:tt)+),)*) => {
+        impl <$generic> Unproxy for $ty<$generic>
         where
-            T::Proxy: $($($proxy_bounds)*)?,
-            T: $($bounds+)*,
+            $($bound_var : $($bounds)+),*
         {
-            type Output = <$as<$generic,$generic::Proxy> as Unproxy<'w, 'c>>::Output;
+            type Output<'b> = <$as<$generic,$generic::Proxy> as Unproxy>::Output<'b> where Self: 'b;
 
-            fn collect_accesses(
+            fn collect_accesses<'w>(
                 &self,
                 guard: &WorldAccessGuard<'w>,
                 accesses: &mut bevy::utils::smallvec::SmallVec<[WorldAccessWrite<'w>; 1]>,
@@ -40,17 +80,17 @@ macro_rules! impl_lua_unproxy {
                 self.0.collect_accesses(guard, accesses)
             }
 
-            fn unproxy(&'c mut self) -> Result<Self::Output, ReflectionError> {
+            fn unproxy<'o>(&'o mut self) -> Result<Self::Output<'o>, ReflectionError> {
                 self.0.unproxy()
             }
 
-            unsafe fn unproxy_with_world(
-                &'c mut self,
+            unsafe fn unproxy_with_world<'w,'o>(
+                &'o mut self,
                 guard: &WorldAccessGuard<'w>,
-                accesses: &'c [WorldAccessUnit<'w>],
+                accesses: &'o [WorldAccessUnit<'w>],
                 type_registry: &TypeRegistry,
-                allocator: &'c ReflectAllocator,
-            ) -> Result<Self::Output, ReflectionError> {
+                allocator: &'o ReflectAllocator,
+            ) -> Result<Self::Output<'o>, ReflectionError> {
                 self.0
                     .unproxy_with_world(guard, accesses, type_registry, allocator)
             }
@@ -90,13 +130,13 @@ macro_rules! impl_lua_unproxy {
 
 macro_rules! impl_lua_proxy {
     ($ty:ident as $as:ident => $generic:tt : $($bounds:path),* $(| T::Proxy: $($proxy_bounds:tt)*)?) => {
-        impl<'a,$generic> bevy_mod_scripting_core::proxy::Proxy<'a> for $ty<$generic>
+        impl<$generic> bevy_mod_scripting_core::proxy::Proxy for $ty<$generic>
         where
             T::Proxy: $($($proxy_bounds)*)?,
             T: $($bounds+)*,
         {
-            type Input=<$as<$generic, $generic::Proxy> as bevy_mod_scripting_core::proxy::Proxy<'a>>::Input;
-            fn proxy(value: Self::Input) -> Result<Self, ReflectionError> {
+            type Input<'i>=<$as<$generic, $generic::Proxy> as bevy_mod_scripting_core::proxy::Proxy>::Input<'i>;
+            fn proxy<'i>(value: Self::Input<'i>) -> Result<Self, ReflectionError> {
                 Ok(Self($as::<$generic,$generic::Proxy>::proxy(value)?))
             }
         }
@@ -108,10 +148,25 @@ macro_rules! impl_lua_proxy {
 impl_lua_proxy!(LuaValProxy as ValProxy => T : LuaProxied | T::Proxy: From<T>);
 impl_lua_proxy!(LuaReflectValProxy as ReflectValProxy => T : LuaProxied,Reflect | T::Proxy: From<ReflectReference> );
 
-impl_lua_unproxy!(LuaValProxy as ValProxy => T : LuaProxied,From<&'c T::Proxy>);
-impl_lua_unproxy!(LuaReflectValProxy as ReflectValProxy => T : LuaProxied,FromReflect | T::Proxy: AsRef<ReflectReference>);
-impl_lua_unproxy!(LuaReflectRefProxy as ReflectRefProxy => T : LuaProxied,Reflect | T::Proxy: AsRef<ReflectReference>);
-impl_lua_unproxy!(LuaReflectRefMutProxy as ReflectRefMutProxy => T: LuaProxied,Reflect | T::Proxy: AsRef<ReflectReference>);
+impl_lua_unproxy!(LuaValProxy as ValProxy (T)
+    T: (LuaProxied),
+    T: (for <'l> From<&'l T::Proxy>),
+);
+impl_lua_unproxy!(LuaReflectValProxy as ReflectValProxy (T)
+    T: (FromReflect),
+    T: (LuaProxied),
+    T::Proxy: (AsRef<ReflectReference>),
+);
+impl_lua_unproxy!(LuaReflectRefProxy as ReflectRefProxy (T)
+    T: (LuaProxied),
+    T: (Reflect),
+    T::Proxy: (AsRef<ReflectReference>),
+);
+impl_lua_unproxy!(LuaReflectRefMutProxy as ReflectRefMutProxy (T)
+    T: (LuaProxied),
+    T: (Reflect),
+    T::Proxy: (AsRef<ReflectReference>),
+);
 
 #[cfg(test)]
 mod test {
@@ -123,10 +178,7 @@ mod test {
         allocator::ReflectAllocation,
         bindings::{ReflectBase, ReflectBaseType, ReflectReference},
     };
-    use tealr::{
-        mlu::mlua::{UserData, UserDataMethods},
-        Name,
-    };
+    use tealr::mlu::mlua::{UserData, UserDataMethods};
 
     use super::*;
 

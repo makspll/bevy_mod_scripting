@@ -4,7 +4,16 @@
 #![cfg_attr(rustfmt, rustfmt_skip)]
 use super::bevy_ecs::*;
 use super::bevy_reflect::*;
-use bevy_mod_scripting_core::{AddContextInitializer, StoreDocumentation};
+use bevy_mod_scripting_core::{
+    AddContextInitializer, StoreDocumentation, bindings::ReflectReference,
+};
+use crate::{
+    bindings::proxy::{
+        LuaReflectRefProxy, LuaReflectRefMutProxy, LuaReflectValProxy, LuaValProxy,
+        IdentityProxy,
+    },
+    RegisterLuaProxy,
+};
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
     remote = "bevy::core::prelude::Name",
@@ -12,14 +21,22 @@ use bevy_mod_scripting_core::{AddContextInitializer, StoreDocumentation};
     bms_lua_path = "crate",
     functions[r#"
 
-    #[lua(as_trait = "std::cmp::PartialEq", composite = "eq")]
-    fn eq(&self, #[proxy] other: &name::Name) -> bool;
+    #[lua(
+        as_trait = "std::cmp::PartialEq::<bevy::core::prelude::Name>",
+        composite = "eq",
+    )]
+    fn eq(
+        _self: LuaReflectRefProxy<bevy::core::prelude::Name>,
+        other: LuaReflectRefProxy<bevy::core::prelude::Name>,
+    ) -> bool;
 
 "#,
     r#"
 
     #[lua(as_trait = "std::clone::Clone")]
-    fn clone(&self) -> bevy::core::prelude::Name;
+    fn clone(
+        _self: LuaReflectRefProxy<bevy::core::prelude::Name>,
+    ) -> LuaReflectValProxy<bevy::core::prelude::Name>;
 
 "#,
     r#"
@@ -29,7 +46,7 @@ fn index(&self) -> String {
 }
 "#]
 )]
-pub struct LuaName {}
+pub struct Name {}
 #[derive(Default)]
 pub(crate) struct Globals;
 impl crate::tealr::mlu::ExportInstances for Globals {
@@ -50,7 +67,7 @@ fn bevy_core_context_initializer(
 pub struct BevyCoreScriptingPlugin;
 impl bevy::app::Plugin for BevyCoreScriptingPlugin {
     fn build(&self, app: &mut bevy::prelude::App) {
-        app.register_foreign_lua_type::<bevy::core::prelude::Name>();
+        app.register_proxy::<bevy::core::prelude::Name>();
         app.add_context_initializer::<()>(bevy_core_context_initializer);
         app.add_documentation_fragment(
             crate::docs::LuaDocumentationFragment::new(

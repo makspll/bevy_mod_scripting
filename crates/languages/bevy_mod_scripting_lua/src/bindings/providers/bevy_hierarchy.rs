@@ -5,7 +5,16 @@
 use super::bevy_ecs::*;
 use super::bevy_reflect::*;
 use super::bevy_core::*;
-use bevy_mod_scripting_core::{AddContextInitializer, StoreDocumentation};
+use bevy_mod_scripting_core::{
+    AddContextInitializer, StoreDocumentation, bindings::ReflectReference,
+};
+use crate::{
+    bindings::proxy::{
+        LuaReflectRefProxy, LuaReflectRefMutProxy, LuaReflectValProxy, LuaValProxy,
+        IdentityProxy,
+    },
+    RegisterLuaProxy,
+};
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
     remote = "bevy::hierarchy::prelude::Children",
@@ -15,7 +24,11 @@ use bevy_mod_scripting_core::{AddContextInitializer, StoreDocumentation};
 /// Swaps the child at `a_index` with the child at `b_index`.
 
     #[lua()]
-    fn swap(&mut self, a_index: usize, b_index: usize) -> ();
+    fn swap(
+        _self: LuaReflectRefMutProxy<bevy::hierarchy::prelude::Children>,
+        a_index: usize,
+        b_index: usize,
+    ) -> ();
 
 "#,
     r#"
@@ -25,7 +38,7 @@ fn index(&self) -> String {
 }
 "#]
 )]
-pub struct LuaChildren();
+pub struct Children();
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
     remote = "bevy::hierarchy::prelude::Parent",
@@ -33,21 +46,22 @@ pub struct LuaChildren();
     bms_lua_path = "crate",
     functions[r#"
 
-    #[lua(as_trait = "std::cmp::PartialEq", composite = "eq")]
-    fn eq(&self, #[proxy] other: &components::parent::Parent) -> bool;
-
-"#,
-    r#"
-/// Gets the [`Entity`] ID of the parent.
-
-    #[lua()]
-    fn get(&self) -> bevy::ecs::entity::Entity;
+    #[lua(
+        as_trait = "std::cmp::PartialEq::<bevy::hierarchy::prelude::Parent>",
+        composite = "eq",
+    )]
+    fn eq(
+        _self: LuaReflectRefProxy<bevy::hierarchy::prelude::Parent>,
+        other: LuaReflectRefProxy<bevy::hierarchy::prelude::Parent>,
+    ) -> bool;
 
 "#,
     r#"
 
     #[lua(as_trait = "std::cmp::Eq")]
-    fn assert_receiver_is_total_eq(&self) -> ();
+    fn assert_receiver_is_total_eq(
+        _self: LuaReflectRefProxy<bevy::hierarchy::prelude::Parent>,
+    ) -> ();
 
 "#,
     r#"
@@ -57,7 +71,7 @@ fn index(&self) -> String {
 }
 "#]
 )]
-pub struct LuaParent();
+pub struct Parent();
 #[derive(Default)]
 pub(crate) struct Globals;
 impl crate::tealr::mlu::ExportInstances for Globals {
@@ -78,8 +92,8 @@ fn bevy_hierarchy_context_initializer(
 pub struct BevyHierarchyScriptingPlugin;
 impl bevy::app::Plugin for BevyHierarchyScriptingPlugin {
     fn build(&self, app: &mut bevy::prelude::App) {
-        app.register_foreign_lua_type::<bevy::hierarchy::prelude::Children>();
-        app.register_foreign_lua_type::<bevy::hierarchy::prelude::Parent>();
+        app.register_proxy::<bevy::hierarchy::prelude::Children>();
+        app.register_proxy::<bevy::hierarchy::prelude::Parent>();
         app.add_context_initializer::<()>(bevy_hierarchy_context_initializer);
         app.add_documentation_fragment(
             crate::docs::LuaDocumentationFragment::new(

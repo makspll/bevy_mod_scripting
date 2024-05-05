@@ -27,12 +27,14 @@ use bevy::{
     reflect::{
         ParsedPath, Reflect, ReflectFromPtr, ReflectPath, ReflectPathError, TypeInfo, TypeRegistry,
     },
+    utils::smallvec::SmallVec,
 };
 
 use crate::{
     allocator::{ReflectAllocation, ReflectAllocationId},
     error::ReflectionError,
     prelude::ReflectAllocator,
+    proxy::{Proxy, Unproxy},
 };
 
 /// Describes kinds of base value we are accessing via reflection
@@ -241,6 +243,48 @@ impl<'w> WorldAccessGuard<'w> {
             id: id.id(),
         };
         self.get_access(access_id)
+    }
+
+    /// Call a function on a type which can be proxied, first by unproxying the input with world access,
+    /// then calling the function and finally proxying the output with the allocator.
+    pub fn proxy_call<'i, O: Proxy, T: Unproxy, F: Fn(T::Output<'_>) -> O::Input<'i>>(
+        &self,
+        mut proxied_input: T,
+        f: F,
+    ) -> Result<O, ReflectionError> {
+        let cell = self.as_unsafe_world_cell();
+        let allocator_resource_id = cell
+            .components()
+            .resource_id::<ReflectAllocator>()
+            .expect("Reflect Allocator wasn't initialized");
+        let type_registry_resource_id = cell
+            .components()
+            .resource_id::<bevy::ecs::reflect::AppTypeRegistry>()
+            .expect("Type Registry wasn't initialized");
+        let mut allocator_access = self
+            .get_access(allocator_resource_id.into())
+            .expect("Deadlock while accessing allocator");
+        let type_registry_access = self
+            .get_access(type_registry_resource_id.into())
+            .expect("Deadlock while accessing type registry");
+        let mut allocator = self
+            .get_resource_mut::<ReflectAllocator>(&mut allocator_access)
+            .unwrap()
+            .unwrap();
+        let type_registry = self
+            .get_resource::<bevy::ecs::reflect::AppTypeRegistry>(&type_registry_access)
+            .unwrap()
+            .unwrap();
+        let type_registry = type_registry.read();
+        let mut world_acceses = SmallVec::default();
+
+        proxied_input.collect_accesses(self, &mut world_acceses)?;
+        let input = unsafe {
+            proxied_input.unproxy_with_world(self, &world_acceses, &type_registry, &allocator)?
+        };
+        let out = f(input);
+
+        O::proxy_with_allocator(out, &mut allocator)
     }
 
     /// Get access to the given component, this is the only way to access a component/resource safely (in the context of the world access guard)
@@ -733,6 +777,29 @@ pub enum ReflectionPathElem {
     DeferredReflection(DeferredReflection),
 }
 
+impl ReflectionPathElem {
+    pub fn new_reflection<I: Into<ParsedPath>>(path: I) -> Self {
+        Self::Reflection(path.into())
+    }
+
+    pub fn new_deferred<I: Into<DeferredReflection>>(defref: I) -> Self {
+        Self::DeferredReflection(defref.into())
+    }
+}
+
+impl<A: 'static, B: 'static> From<(A, B)> for DeferredReflection
+where
+    A: Fn(&dyn Reflect) -> Result<&dyn Reflect, ReflectPathError<'static>> + Send + Sync,
+    B: Fn(&mut dyn Reflect) -> Result<&mut dyn Reflect, ReflectPathError<'static>> + Send + Sync,
+{
+    fn from((get, get_mut): (A, B)) -> Self {
+        Self {
+            get: Arc::new(get),
+            get_mut: Arc::new(get_mut),
+        }
+    }
+}
+
 impl<'a> ReflectPath<'a> for &'a ReflectionPathElem {
     fn reflect_element<'r>(
         self,
@@ -758,8 +825,9 @@ impl<'a> ReflectPath<'a> for &'a ReflectionPathElem {
 /// A ReflectPath which can perform arbitrary operations on the root object to produce a sub-reference
 #[derive(Clone)]
 pub struct DeferredReflection {
-    get: Arc<dyn Fn(&dyn Reflect) -> Result<&dyn Reflect, ReflectPathError<'static>> + Send + Sync>,
-    get_mut: Arc<
+    pub get:
+        Arc<dyn Fn(&dyn Reflect) -> Result<&dyn Reflect, ReflectPathError<'static>> + Send + Sync>,
+    pub get_mut: Arc<
         dyn Fn(&mut dyn Reflect) -> Result<&mut dyn Reflect, ReflectPathError<'static>>
             + Send
             + Sync,

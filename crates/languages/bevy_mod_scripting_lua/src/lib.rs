@@ -2,11 +2,12 @@ pub mod assets;
 pub mod docs;
 pub mod util;
 use bevy::{
-    app::Plugin,
+    app::{App, Plugin},
     ecs::{entity::Entity, world::World},
+    reflect::{FromType, Reflect, TypePath},
 };
 use bevy_mod_scripting_core::{
-    bindings::WorldCallbackAccess,
+    bindings::{ReflectReference, WorldCallbackAccess},
     context::{ContextBuilder, ContextInitializer, ContextPreHandlingInitializer},
     error::ScriptError,
     event::CallbackLabel,
@@ -14,10 +15,10 @@ use bevy_mod_scripting_core::{
     script::ScriptId,
     ScriptingPlugin,
 };
-use bindings::world::LuaWorld;
+use bindings::{proxy::LuaProxied, world::LuaWorld};
 pub use tealr;
 pub mod bindings;
-use tealr::mlu::mlua::{Function, IntoLuaMulti, Lua};
+use tealr::mlu::mlua::{FromLua, Function, IntoLua, IntoLuaMulti, Lua, Value};
 
 pub mod prelude {
     pub use crate::tealr::{
@@ -145,4 +146,43 @@ pub fn with_world<F: FnOnce(&mut Lua) -> Result<(), ScriptError>>(
         // TODO set entity + script id as well
         f(context)
     })
+}
+
+/// Registers a lua proxy object via the reflection system
+pub trait RegisterLuaProxy {
+    fn register_proxy<T: LuaProxied + Reflect + TypePath>(&mut self) -> &mut Self
+    where
+        T::Proxy: for<'l> IntoLua<'l> + for<'l> FromLua<'l>,
+        T::Proxy: From<ReflectReference> + AsRef<ReflectReference>;
+}
+
+impl RegisterLuaProxy for App {
+    fn register_proxy<T: LuaProxied + Reflect + TypePath>(&mut self) -> &mut Self
+    where
+        T::Proxy: for<'l> IntoLua<'l> + for<'l> FromLua<'l>,
+        T::Proxy: From<ReflectReference> + AsRef<ReflectReference>,
+    {
+        self.register_type_data::<T, ReflectLuaProxied>()
+    }
+}
+
+#[derive(Clone)]
+pub struct ReflectLuaProxied {
+    pub into_proxy:
+        for<'l> fn(ReflectReference, &'l Lua) -> Result<Value<'l>, tealr::mlu::mlua::Error>,
+    pub from_proxy:
+        for<'l> fn(Value<'l>, &'l Lua) -> Result<ReflectReference, tealr::mlu::mlua::Error>,
+}
+
+impl<T: LuaProxied + Reflect> FromType<T> for ReflectLuaProxied
+where
+    T::Proxy: for<'l> IntoLua<'l> + for<'l> FromLua<'l>,
+    T::Proxy: From<ReflectReference> + AsRef<ReflectReference>,
+{
+    fn from_type() -> Self {
+        Self {
+            into_proxy: |p, l| T::Proxy::from(p).into_lua(l),
+            from_proxy: |v, l| T::Proxy::from_lua(v, l).map(|p| p.as_ref().clone()),
+        }
+    }
 }

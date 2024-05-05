@@ -111,17 +111,21 @@ pub(crate) struct Function {
 pub(crate) struct Arg {
     /// the name of the argument as in source code
     /// None if this is a receiver, in which case ty contains the ident
-    pub(crate) ident: Option<String>,
+    pub(crate) ident: String,
 
     /// the type of argument
     /// i.e. `&Vec<MyTy>`
     pub(crate) ty: String,
+    /// The proxied type of argument for use in Unproxy and Proxy targetted code
+    /// i.e. AppropriateRefProxy<MyTy> instead of &MyTy for a reference
+    pub(crate) proxy_ty: String,
     pub(crate) reflection_strategy: ReflectionStrategy,
 }
 
 #[derive(Serialize)]
 pub(crate) struct Output {
     pub(crate) ty: String,
+    pub(crate) proxy_ty: String,
     pub(crate) reflection_strategy: ReflectionStrategy,
 }
 

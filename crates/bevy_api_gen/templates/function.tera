@@ -54,16 +54,15 @@ metamethod="Eq",
 
     {%- for arg in function.args -%}
         ---
-        {%- if arg.ident and arg.reflection_strategy == "Proxy" -%}
-            #[proxy]
-        {%- endif -%}
-        {%- if arg.ident -%}
-            {{- arg.ident }} : {# -#}
+        {%- if arg.ident != "self" -%}
+            {{- arg.ident -}}
+        {%- else -%}
+            _{{- arg.ident -}}
         {%- endif -%} 
-        {{- arg.ty -}}
+        : {{- arg.proxy_ty -}}
     {%- endfor -%}
 
     {%- endfilter -%}
-) -> {{ function.output.ty -}};
+) -> {{ function.output.proxy_ty -}};
 {%- endfilter %}
 "#

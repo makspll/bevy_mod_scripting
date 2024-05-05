@@ -9,4 +9,10 @@ use super::{{crate}}::*;
 {% endfor %}
 
 
-use bevy_mod_scripting_core::{AddContextInitializer, StoreDocumentation};
+use bevy_mod_scripting_core::{AddContextInitializer, StoreDocumentation, bindings::ReflectReference};
+
+{% if args.self_is_bms_lua %}
+use crate::{bindings::proxy::{LuaReflectRefProxy,LuaReflectRefMutProxy,LuaReflectValProxy,LuaValProxy,IdentityProxy},RegisterLuaProxy};
+{% else %}
+use bevy_mod_scripting::{lua::bindings::proxy::{LuaReflectRefProxy,LuaReflectRefMutProxy,LuaReflectValProxy,LuaValProxy,IdentityProxy}, RegisterLuaProxy};
+{% endif %}

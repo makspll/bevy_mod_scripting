@@ -136,6 +136,7 @@ fn impl_matches<'tcx>(infcx: &InferCtxt<'tcx>, ty: Ty<'tcx>, impl_def_id: DefId)
         let ocx = ObligationCtxt::new(infcx);
         let param_env = tcx.param_env_reveal_all_normalized(impl_def_id);
         let impl_args = infcx.fresh_args_for_item(DUMMY_SP, impl_def_id);
+
         let impl_trait_ref = tcx
             .impl_trait_ref(impl_def_id)
             .expect("Expected defid to be an impl for a trait")

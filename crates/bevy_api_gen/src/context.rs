@@ -152,7 +152,7 @@ pub(crate) struct FunctionContext {
     pub(crate) def_id: DefId,
     pub(crate) has_self: bool,
     pub(crate) is_unsafe: bool,
-    pub(crate) trait_did: Option<DefId>,
+    pub(crate) trait_and_impl_did: Option<(DefId, DefId)>,
     /// strategies for input and output (last element is the output)
     pub(crate) reflection_strategies: Vec<ReflectionStrategy>,
 }

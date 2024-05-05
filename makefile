@@ -46,8 +46,10 @@ valgrind:
 			--simulate-cache=yes \
 			${EXEC} --bench  ${T_ID} 
 
-install_bevy_api_gen:
+install_nightly:
 	rustup install ${NIGHTLY_VERSION}
+
+install_bevy_api_gen:
 	cargo +${NIGHTLY_VERSION} install --path ./crates/bevy_api_gen
 
 prepare_api_gen:

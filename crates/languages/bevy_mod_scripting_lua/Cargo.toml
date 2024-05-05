@@ -51,3 +51,4 @@ tealr = { version = "0.9", features = [
 parking_lot = "0.12.1"
 serde_json = "1.0.81"
 anyhow = "1.0.75"
+smol_str = "0.2"

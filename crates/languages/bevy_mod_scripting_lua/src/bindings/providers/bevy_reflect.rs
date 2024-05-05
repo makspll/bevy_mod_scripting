@@ -2,7 +2,16 @@
 #![allow(clippy::all)]
 #![allow(unused, deprecated, dead_code)]
 #![cfg_attr(rustfmt, rustfmt_skip)]
-use bevy_mod_scripting_core::{AddContextInitializer, StoreDocumentation};
+use bevy_mod_scripting_core::{
+    AddContextInitializer, StoreDocumentation, bindings::ReflectReference,
+};
+use crate::{
+    bindings::proxy::{
+        LuaReflectRefProxy, LuaReflectRefMutProxy, LuaReflectValProxy, LuaValProxy,
+        IdentityProxy,
+    },
+    RegisterLuaProxy,
+};
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
     remote = "bevy::utils::Duration",
@@ -10,44 +19,63 @@ use bevy_mod_scripting_core::{AddContextInitializer, StoreDocumentation};
     bms_lua_path = "crate",
     functions[r#"
 
-    #[lua(as_trait = "std::ops::Add", composite = "add")]
-    fn add(self, #[proxy] rhs: bevy::utils::Duration) -> bevy::utils::Duration;
+    #[lua(as_trait = "std::ops::Add::<bevy::utils::Duration>", composite = "add")]
+    fn add(
+        _self: LuaReflectValProxy<bevy::utils::Duration>,
+        rhs: LuaReflectValProxy<bevy::utils::Duration>,
+    ) -> LuaReflectValProxy<bevy::utils::Duration>;
 
 "#,
     r#"
 
     #[lua(as_trait = "std::cmp::Eq")]
-    fn assert_receiver_is_total_eq(&self) -> ();
+    fn assert_receiver_is_total_eq(
+        _self: LuaReflectRefProxy<bevy::utils::Duration>,
+    ) -> ();
 
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Mul", composite = "mul")]
-    fn mul(self, rhs: u32) -> bevy::utils::Duration;
+    #[lua(as_trait = "std::ops::Mul::<u32>", composite = "mul")]
+    fn mul(
+        _self: LuaReflectValProxy<bevy::utils::Duration>,
+        rhs: u32,
+    ) -> LuaReflectValProxy<bevy::utils::Duration>;
 
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Div", composite = "div")]
-    fn div(self, rhs: u32) -> bevy::utils::Duration;
+    #[lua(as_trait = "std::ops::Div::<u32>", composite = "div")]
+    fn div(
+        _self: LuaReflectValProxy<bevy::utils::Duration>,
+        rhs: u32,
+    ) -> LuaReflectValProxy<bevy::utils::Duration>;
 
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Sub", composite = "sub")]
-    fn sub(self, #[proxy] rhs: bevy::utils::Duration) -> bevy::utils::Duration;
+    #[lua(as_trait = "std::ops::Sub::<bevy::utils::Duration>", composite = "sub")]
+    fn sub(
+        _self: LuaReflectValProxy<bevy::utils::Duration>,
+        rhs: LuaReflectValProxy<bevy::utils::Duration>,
+    ) -> LuaReflectValProxy<bevy::utils::Duration>;
 
 "#,
     r#"
 
-    #[lua(as_trait = "std::cmp::PartialEq", composite = "eq")]
-    fn eq(&self, #[proxy] other: &bevy_utils::Duration) -> bool;
+    #[lua(as_trait = "std::cmp::PartialEq::<bevy::utils::Duration>", composite = "eq")]
+    fn eq(
+        _self: LuaReflectRefProxy<bevy::utils::Duration>,
+        other: LuaReflectRefProxy<bevy::utils::Duration>,
+    ) -> bool;
 
 "#,
     r#"
 
     #[lua(as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone")]
-    fn clone(&self) -> bevy::utils::Duration;
+    fn clone(
+        _self: LuaReflectRefProxy<bevy::utils::Duration>,
+    ) -> LuaReflectValProxy<bevy::utils::Duration>;
 
 "#,
     r#"
@@ -65,7 +93,7 @@ use bevy_mod_scripting_core::{AddContextInitializer, StoreDocumentation};
 /// ```
 
     #[lua()]
-    fn new(secs: u64, nanos: u32) -> bevy::utils::Duration;
+    fn new(secs: u64, nanos: u32) -> LuaReflectValProxy<bevy::utils::Duration>;
 
 "#,
     r#"
@@ -79,7 +107,7 @@ use bevy_mod_scripting_core::{AddContextInitializer, StoreDocumentation};
 /// ```
 
     #[lua()]
-    fn from_secs(secs: u64) -> bevy::utils::Duration;
+    fn from_secs(secs: u64) -> LuaReflectValProxy<bevy::utils::Duration>;
 
 "#,
     r#"
@@ -93,7 +121,7 @@ use bevy_mod_scripting_core::{AddContextInitializer, StoreDocumentation};
 /// ```
 
     #[lua()]
-    fn from_millis(millis: u64) -> bevy::utils::Duration;
+    fn from_millis(millis: u64) -> LuaReflectValProxy<bevy::utils::Duration>;
 
 "#,
     r#"
@@ -107,7 +135,7 @@ use bevy_mod_scripting_core::{AddContextInitializer, StoreDocumentation};
 /// ```
 
     #[lua()]
-    fn from_micros(micros: u64) -> bevy::utils::Duration;
+    fn from_micros(micros: u64) -> LuaReflectValProxy<bevy::utils::Duration>;
 
 "#,
     r#"
@@ -121,7 +149,7 @@ use bevy_mod_scripting_core::{AddContextInitializer, StoreDocumentation};
 /// ```
 
     #[lua()]
-    fn from_nanos(nanos: u64) -> bevy::utils::Duration;
+    fn from_nanos(nanos: u64) -> LuaReflectValProxy<bevy::utils::Duration>;
 
 "#,
     r#"
@@ -139,7 +167,7 @@ use bevy_mod_scripting_core::{AddContextInitializer, StoreDocumentation};
 /// ```
 
     #[lua()]
-    fn is_zero(&self) -> bool;
+    fn is_zero(_self: LuaReflectRefProxy<bevy::utils::Duration>) -> bool;
 
 "#,
     r#"
@@ -159,7 +187,7 @@ use bevy_mod_scripting_core::{AddContextInitializer, StoreDocumentation};
 /// [`subsec_nanos`]: Duration::subsec_nanos
 
     #[lua()]
-    fn as_secs(&self) -> u64;
+    fn as_secs(_self: LuaReflectRefProxy<bevy::utils::Duration>) -> u64;
 
 "#,
     r#"
@@ -176,7 +204,7 @@ use bevy_mod_scripting_core::{AddContextInitializer, StoreDocumentation};
 /// ```
 
     #[lua()]
-    fn subsec_millis(&self) -> u32;
+    fn subsec_millis(_self: LuaReflectRefProxy<bevy::utils::Duration>) -> u32;
 
 "#,
     r#"
@@ -193,7 +221,7 @@ use bevy_mod_scripting_core::{AddContextInitializer, StoreDocumentation};
 /// ```
 
     #[lua()]
-    fn subsec_micros(&self) -> u32;
+    fn subsec_micros(_self: LuaReflectRefProxy<bevy::utils::Duration>) -> u32;
 
 "#,
     r#"
@@ -210,7 +238,7 @@ use bevy_mod_scripting_core::{AddContextInitializer, StoreDocumentation};
 /// ```
 
     #[lua()]
-    fn subsec_nanos(&self) -> u32;
+    fn subsec_nanos(_self: LuaReflectRefProxy<bevy::utils::Duration>) -> u32;
 
 "#,
     r#"
@@ -223,7 +251,7 @@ use bevy_mod_scripting_core::{AddContextInitializer, StoreDocumentation};
 /// ```
 
     #[lua()]
-    fn as_millis(&self) -> u128;
+    fn as_millis(_self: LuaReflectRefProxy<bevy::utils::Duration>) -> u128;
 
 "#,
     r#"
@@ -236,7 +264,7 @@ use bevy_mod_scripting_core::{AddContextInitializer, StoreDocumentation};
 /// ```
 
     #[lua()]
-    fn as_micros(&self) -> u128;
+    fn as_micros(_self: LuaReflectRefProxy<bevy::utils::Duration>) -> u128;
 
 "#,
     r#"
@@ -249,7 +277,7 @@ use bevy_mod_scripting_core::{AddContextInitializer, StoreDocumentation};
 /// ```
 
     #[lua()]
-    fn as_nanos(&self) -> u128;
+    fn as_nanos(_self: LuaReflectRefProxy<bevy::utils::Duration>) -> u128;
 
 "#,
     r#"
@@ -265,10 +293,9 @@ use bevy_mod_scripting_core::{AddContextInitializer, StoreDocumentation};
 
     #[lua()]
     fn saturating_add(
-        self,
-        #[proxy]
-        rhs: bevy::utils::Duration,
-    ) -> bevy::utils::Duration;
+        _self: LuaReflectValProxy<bevy::utils::Duration>,
+        rhs: LuaReflectValProxy<bevy::utils::Duration>,
+    ) -> LuaReflectValProxy<bevy::utils::Duration>;
 
 "#,
     r#"
@@ -283,10 +310,9 @@ use bevy_mod_scripting_core::{AddContextInitializer, StoreDocumentation};
 
     #[lua()]
     fn saturating_sub(
-        self,
-        #[proxy]
-        rhs: bevy::utils::Duration,
-    ) -> bevy::utils::Duration;
+        _self: LuaReflectValProxy<bevy::utils::Duration>,
+        rhs: LuaReflectValProxy<bevy::utils::Duration>,
+    ) -> LuaReflectValProxy<bevy::utils::Duration>;
 
 "#,
     r#"
@@ -301,7 +327,10 @@ use bevy_mod_scripting_core::{AddContextInitializer, StoreDocumentation};
 /// ```
 
     #[lua()]
-    fn saturating_mul(self, rhs: u32) -> bevy::utils::Duration;
+    fn saturating_mul(
+        _self: LuaReflectValProxy<bevy::utils::Duration>,
+        rhs: u32,
+    ) -> LuaReflectValProxy<bevy::utils::Duration>;
 
 "#,
     r#"
@@ -315,7 +344,7 @@ use bevy_mod_scripting_core::{AddContextInitializer, StoreDocumentation};
 /// ```
 
     #[lua()]
-    fn as_secs_f64(&self) -> f64;
+    fn as_secs_f64(_self: LuaReflectRefProxy<bevy::utils::Duration>) -> f64;
 
 "#,
     r#"
@@ -329,7 +358,7 @@ use bevy_mod_scripting_core::{AddContextInitializer, StoreDocumentation};
 /// ```
 
     #[lua()]
-    fn as_secs_f32(&self) -> f32;
+    fn as_secs_f32(_self: LuaReflectRefProxy<bevy::utils::Duration>) -> f32;
 
 "#,
     r#"
@@ -359,7 +388,7 @@ use bevy_mod_scripting_core::{AddContextInitializer, StoreDocumentation};
 /// ```
 
     #[lua()]
-    fn from_secs_f64(secs: f64) -> bevy::utils::Duration;
+    fn from_secs_f64(secs: f64) -> LuaReflectValProxy<bevy::utils::Duration>;
 
 "#,
     r#"
@@ -389,7 +418,7 @@ use bevy_mod_scripting_core::{AddContextInitializer, StoreDocumentation};
 /// ```
 
     #[lua()]
-    fn from_secs_f32(secs: f32) -> bevy::utils::Duration;
+    fn from_secs_f32(secs: f32) -> LuaReflectValProxy<bevy::utils::Duration>;
 
 "#,
     r#"
@@ -405,7 +434,10 @@ use bevy_mod_scripting_core::{AddContextInitializer, StoreDocumentation};
 /// ```
 
     #[lua()]
-    fn mul_f64(self, rhs: f64) -> bevy::utils::Duration;
+    fn mul_f64(
+        _self: LuaReflectValProxy<bevy::utils::Duration>,
+        rhs: f64,
+    ) -> LuaReflectValProxy<bevy::utils::Duration>;
 
 "#,
     r#"
@@ -421,7 +453,10 @@ use bevy_mod_scripting_core::{AddContextInitializer, StoreDocumentation};
 /// ```
 
     #[lua()]
-    fn mul_f32(self, rhs: f32) -> bevy::utils::Duration;
+    fn mul_f32(
+        _self: LuaReflectValProxy<bevy::utils::Duration>,
+        rhs: f32,
+    ) -> LuaReflectValProxy<bevy::utils::Duration>;
 
 "#,
     r#"
@@ -437,7 +472,10 @@ use bevy_mod_scripting_core::{AddContextInitializer, StoreDocumentation};
 /// ```
 
     #[lua()]
-    fn div_f64(self, rhs: f64) -> bevy::utils::Duration;
+    fn div_f64(
+        _self: LuaReflectValProxy<bevy::utils::Duration>,
+        rhs: f64,
+    ) -> LuaReflectValProxy<bevy::utils::Duration>;
 
 "#,
     r#"
@@ -455,7 +493,10 @@ use bevy_mod_scripting_core::{AddContextInitializer, StoreDocumentation};
 /// ```
 
     #[lua()]
-    fn div_f32(self, rhs: f32) -> bevy::utils::Duration;
+    fn div_f32(
+        _self: LuaReflectValProxy<bevy::utils::Duration>,
+        rhs: f32,
+    ) -> LuaReflectValProxy<bevy::utils::Duration>;
 
 "#,
     r#"
@@ -465,7 +506,7 @@ fn index(&self) -> String {
 }
 "#]
 )]
-pub struct LuaDuration {}
+pub struct Duration {}
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
     remote = "bevy::utils::Instant",
@@ -476,32 +517,45 @@ pub struct LuaDuration {}
 /// This function may panic if the resulting point in time cannot be represented by the
 /// underlying data structure. See [`Instant::checked_add`] for a version without panic.
 
-    #[lua(as_trait = "std::ops::Add", composite = "add")]
-    fn add(self, #[proxy] other: bevy::utils::Duration) -> bevy::utils::Instant;
+    #[lua(as_trait = "std::ops::Add::<bevy::utils::Duration>", composite = "add")]
+    fn add(
+        _self: LuaReflectValProxy<bevy::utils::Instant>,
+        other: LuaReflectValProxy<bevy::utils::Duration>,
+    ) -> LuaReflectValProxy<bevy::utils::Instant>;
 
 "#,
     r#"
 
-    #[lua(as_trait = "std::cmp::PartialEq", composite = "eq")]
-    fn eq(&self, #[proxy] other: &bevy_utils::Instant) -> bool;
+    #[lua(as_trait = "std::cmp::PartialEq::<bevy::utils::Instant>", composite = "eq")]
+    fn eq(
+        _self: LuaReflectRefProxy<bevy::utils::Instant>,
+        other: LuaReflectRefProxy<bevy::utils::Instant>,
+    ) -> bool;
 
 "#,
     r#"
 
     #[lua(as_trait = "std::cmp::Eq")]
-    fn assert_receiver_is_total_eq(&self) -> ();
+    fn assert_receiver_is_total_eq(
+        _self: LuaReflectRefProxy<bevy::utils::Instant>,
+    ) -> ();
 
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Sub", composite = "sub")]
-    fn sub(self, #[proxy] other: bevy::utils::Duration) -> bevy::utils::Instant;
+    #[lua(as_trait = "std::ops::Sub::<bevy::utils::Duration>", composite = "sub")]
+    fn sub(
+        _self: LuaReflectValProxy<bevy::utils::Instant>,
+        other: LuaReflectValProxy<bevy::utils::Duration>,
+    ) -> LuaReflectValProxy<bevy::utils::Instant>;
 
 "#,
     r#"
 
     #[lua(as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone")]
-    fn clone(&self) -> bevy::utils::Instant;
+    fn clone(
+        _self: LuaReflectRefProxy<bevy::utils::Instant>,
+    ) -> LuaReflectValProxy<bevy::utils::Instant>;
 
 "#,
     r#"
@@ -513,7 +567,7 @@ pub struct LuaDuration {}
 /// ```
 
     #[lua()]
-    fn now() -> bevy::utils::Instant;
+    fn now() -> LuaReflectValProxy<bevy::utils::Instant>;
 
 "#,
     r#"
@@ -537,10 +591,9 @@ pub struct LuaDuration {}
 
     #[lua()]
     fn duration_since(
-        &self,
-        #[proxy]
-        earlier: bevy::utils::Instant,
-    ) -> bevy::utils::Duration;
+        _self: LuaReflectRefProxy<bevy::utils::Instant>,
+        earlier: LuaReflectValProxy<bevy::utils::Instant>,
+    ) -> LuaReflectValProxy<bevy::utils::Duration>;
 
 "#,
     r#"
@@ -559,10 +612,9 @@ pub struct LuaDuration {}
 
     #[lua()]
     fn saturating_duration_since(
-        &self,
-        #[proxy]
-        earlier: bevy::utils::Instant,
-    ) -> bevy::utils::Duration;
+        _self: LuaReflectRefProxy<bevy::utils::Instant>,
+        earlier: LuaReflectValProxy<bevy::utils::Instant>,
+    ) -> LuaReflectValProxy<bevy::utils::Duration>;
 
 "#,
     r#"
@@ -583,7 +635,9 @@ pub struct LuaDuration {}
 /// ```
 
     #[lua()]
-    fn elapsed(&self) -> bevy::utils::Duration;
+    fn elapsed(
+        _self: LuaReflectRefProxy<bevy::utils::Instant>,
+    ) -> LuaReflectValProxy<bevy::utils::Duration>;
 
 "#,
     r#"
@@ -595,8 +649,11 @@ pub struct LuaDuration {}
 /// See [Monotonicity].
 /// [Monotonicity]: Instant#monotonicity
 
-    #[lua(as_trait = "std::ops::Sub", composite = "sub")]
-    fn sub(self, #[proxy] other: bevy::utils::Instant) -> bevy::utils::Duration;
+    #[lua(as_trait = "std::ops::Sub::<bevy::utils::Instant>", composite = "sub")]
+    fn sub(
+        _self: LuaReflectValProxy<bevy::utils::Instant>,
+        other: LuaReflectValProxy<bevy::utils::Instant>,
+    ) -> LuaReflectValProxy<bevy::utils::Duration>;
 
 "#,
     r#"
@@ -606,7 +663,7 @@ fn index(&self) -> String {
 }
 "#]
 )]
-pub struct LuaInstant();
+pub struct Instant();
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
     remote = "std::num::NonZeroI128",
@@ -615,7 +672,9 @@ pub struct LuaInstant();
     functions[r#"
 
     #[lua(as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone")]
-    fn clone(&self) -> std::num::NonZeroI128;
+    fn clone(
+        _self: LuaReflectRefProxy<std::num::NonZeroI128>,
+    ) -> LuaReflectValProxy<std::num::NonZeroI128>;
 
 "#,
     r#"
@@ -625,14 +684,14 @@ pub struct LuaInstant();
 /// The value must not be zero.
 
     #[lua()]
-    unsafe fn new_unchecked(n: i128) -> std::num::NonZeroI128;
+    unsafe fn new_unchecked(n: i128) -> LuaReflectValProxy<std::num::NonZeroI128>;
 
 "#,
     r#"
 /// Returns the value as a primitive type.
 
     #[lua()]
-    fn get(self) -> i128;
+    fn get(_self: LuaReflectValProxy<std::num::NonZeroI128>) -> i128;
 
 "#,
     r#"
@@ -646,7 +705,7 @@ pub struct LuaInstant();
 /// ```
 
     #[lua()]
-    fn leading_zeros(self) -> u32;
+    fn leading_zeros(_self: LuaReflectValProxy<std::num::NonZeroI128>) -> u32;
 
 "#,
     r#"
@@ -661,7 +720,7 @@ pub struct LuaInstant();
 /// ```
 
     #[lua()]
-    fn trailing_zeros(self) -> u32;
+    fn trailing_zeros(_self: LuaReflectValProxy<std::num::NonZeroI128>) -> u32;
 
 "#,
     r#"
@@ -682,7 +741,9 @@ pub struct LuaInstant();
 /// ```
 
     #[lua()]
-    fn abs(self) -> std::num::NonZeroI128;
+    fn abs(
+        _self: LuaReflectValProxy<std::num::NonZeroI128>,
+    ) -> LuaReflectValProxy<std::num::NonZeroI128>;
 
 "#,
     r#"
@@ -707,7 +768,9 @@ pub struct LuaInstant();
 /// ```
 
     #[lua()]
-    fn saturating_abs(self) -> std::num::NonZeroI128;
+    fn saturating_abs(
+        _self: LuaReflectValProxy<std::num::NonZeroI128>,
+    ) -> LuaReflectValProxy<std::num::NonZeroI128>;
 
 "#,
     r#"
@@ -731,7 +794,9 @@ pub struct LuaInstant();
 /// ```
 
     #[lua()]
-    fn wrapping_abs(self) -> std::num::NonZeroI128;
+    fn wrapping_abs(
+        _self: LuaReflectValProxy<std::num::NonZeroI128>,
+    ) -> LuaReflectValProxy<std::num::NonZeroI128>;
 
 "#,
     r#"
@@ -756,7 +821,9 @@ pub struct LuaInstant();
 /// ```
 
     #[lua()]
-    fn unsigned_abs(self) -> std::num::NonZeroU128;
+    fn unsigned_abs(
+        _self: LuaReflectValProxy<std::num::NonZeroI128>,
+    ) -> LuaReflectValProxy<std::num::NonZeroU128>;
 
 "#,
     r#"
@@ -776,7 +843,7 @@ pub struct LuaInstant();
 /// ```
 
     #[lua()]
-    fn is_positive(self) -> bool;
+    fn is_positive(_self: LuaReflectValProxy<std::num::NonZeroI128>) -> bool;
 
 "#,
     r#"
@@ -796,7 +863,7 @@ pub struct LuaInstant();
 /// ```
 
     #[lua()]
-    fn is_negative(self) -> bool;
+    fn is_negative(_self: LuaReflectValProxy<std::num::NonZeroI128>) -> bool;
 
 "#,
     r#"
@@ -822,7 +889,9 @@ pub struct LuaInstant();
 /// ```
 
     #[lua()]
-    fn saturating_neg(self) -> std::num::NonZeroI128;
+    fn saturating_neg(
+        _self: LuaReflectValProxy<std::num::NonZeroI128>,
+    ) -> LuaReflectValProxy<std::num::NonZeroI128>;
 
 "#,
     r#"
@@ -845,7 +914,9 @@ pub struct LuaInstant();
 /// ```
 
     #[lua()]
-    fn wrapping_neg(self) -> std::num::NonZeroI128;
+    fn wrapping_neg(
+        _self: LuaReflectValProxy<std::num::NonZeroI128>,
+    ) -> LuaReflectValProxy<std::num::NonZeroI128>;
 
 "#,
     r#"
@@ -867,10 +938,9 @@ pub struct LuaInstant();
 
     #[lua()]
     fn saturating_mul(
-        self,
-        #[proxy]
-        other: std::num::NonZeroI128,
-    ) -> std::num::NonZeroI128;
+        _self: LuaReflectValProxy<std::num::NonZeroI128>,
+        other: LuaReflectValProxy<std::num::NonZeroI128>,
+    ) -> LuaReflectValProxy<std::num::NonZeroI128>;
 
 "#,
     r#"
@@ -891,25 +961,35 @@ pub struct LuaInstant();
 /// ```
 
     #[lua()]
-    fn saturating_pow(self, other: u32) -> std::num::NonZeroI128;
+    fn saturating_pow(
+        _self: LuaReflectValProxy<std::num::NonZeroI128>,
+        other: u32,
+    ) -> LuaReflectValProxy<std::num::NonZeroI128>;
 
 "#,
     r#"
 
-    #[lua(as_trait = "std::cmp::PartialEq", composite = "eq")]
-    fn eq(&self, #[proxy] other: &std::num::NonZeroI128) -> bool;
+    #[lua(as_trait = "std::cmp::PartialEq::<std::num::NonZeroI128>", composite = "eq")]
+    fn eq(
+        _self: LuaReflectRefProxy<std::num::NonZeroI128>,
+        other: LuaReflectRefProxy<std::num::NonZeroI128>,
+    ) -> bool;
 
 "#,
     r#"
 
     #[lua(as_trait = "std::ops::Neg", composite = "neg")]
-    fn neg(self) -> std::num::NonZeroI128;
+    fn neg(
+        _self: LuaReflectValProxy<std::num::NonZeroI128>,
+    ) -> LuaReflectValProxy<std::num::NonZeroI128>;
 
 "#,
     r#"
 
     #[lua(as_trait = "std::cmp::Eq")]
-    fn assert_receiver_is_total_eq(&self) -> ();
+    fn assert_receiver_is_total_eq(
+        _self: LuaReflectRefProxy<std::num::NonZeroI128>,
+    ) -> ();
 
 "#,
     r#"
@@ -919,7 +999,7 @@ fn index(&self) -> String {
 }
 "#]
 )]
-pub struct LuaNonZeroI128();
+pub struct NonZeroI128();
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
     remote = "std::num::NonZeroI16",
@@ -927,20 +1007,27 @@ pub struct LuaNonZeroI128();
     bms_lua_path = "crate",
     functions[r#"
 
-    #[lua(as_trait = "std::cmp::PartialEq", composite = "eq")]
-    fn eq(&self, #[proxy] other: &std::num::NonZeroI16) -> bool;
+    #[lua(as_trait = "std::cmp::PartialEq::<std::num::NonZeroI16>", composite = "eq")]
+    fn eq(
+        _self: LuaReflectRefProxy<std::num::NonZeroI16>,
+        other: LuaReflectRefProxy<std::num::NonZeroI16>,
+    ) -> bool;
 
 "#,
     r#"
 
     #[lua(as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone")]
-    fn clone(&self) -> std::num::NonZeroI16;
+    fn clone(
+        _self: LuaReflectRefProxy<std::num::NonZeroI16>,
+    ) -> LuaReflectValProxy<std::num::NonZeroI16>;
 
 "#,
     r#"
 
     #[lua(as_trait = "std::cmp::Eq")]
-    fn assert_receiver_is_total_eq(&self) -> ();
+    fn assert_receiver_is_total_eq(
+        _self: LuaReflectRefProxy<std::num::NonZeroI16>,
+    ) -> ();
 
 "#,
     r#"
@@ -950,14 +1037,14 @@ pub struct LuaNonZeroI128();
 /// The value must not be zero.
 
     #[lua()]
-    unsafe fn new_unchecked(n: i16) -> std::num::NonZeroI16;
+    unsafe fn new_unchecked(n: i16) -> LuaReflectValProxy<std::num::NonZeroI16>;
 
 "#,
     r#"
 /// Returns the value as a primitive type.
 
     #[lua()]
-    fn get(self) -> i16;
+    fn get(_self: LuaReflectValProxy<std::num::NonZeroI16>) -> i16;
 
 "#,
     r#"
@@ -971,7 +1058,7 @@ pub struct LuaNonZeroI128();
 /// ```
 
     #[lua()]
-    fn leading_zeros(self) -> u32;
+    fn leading_zeros(_self: LuaReflectValProxy<std::num::NonZeroI16>) -> u32;
 
 "#,
     r#"
@@ -986,7 +1073,7 @@ pub struct LuaNonZeroI128();
 /// ```
 
     #[lua()]
-    fn trailing_zeros(self) -> u32;
+    fn trailing_zeros(_self: LuaReflectValProxy<std::num::NonZeroI16>) -> u32;
 
 "#,
     r#"
@@ -1007,7 +1094,9 @@ pub struct LuaNonZeroI128();
 /// ```
 
     #[lua()]
-    fn abs(self) -> std::num::NonZeroI16;
+    fn abs(
+        _self: LuaReflectValProxy<std::num::NonZeroI16>,
+    ) -> LuaReflectValProxy<std::num::NonZeroI16>;
 
 "#,
     r#"
@@ -1032,7 +1121,9 @@ pub struct LuaNonZeroI128();
 /// ```
 
     #[lua()]
-    fn saturating_abs(self) -> std::num::NonZeroI16;
+    fn saturating_abs(
+        _self: LuaReflectValProxy<std::num::NonZeroI16>,
+    ) -> LuaReflectValProxy<std::num::NonZeroI16>;
 
 "#,
     r#"
@@ -1056,7 +1147,9 @@ pub struct LuaNonZeroI128();
 /// ```
 
     #[lua()]
-    fn wrapping_abs(self) -> std::num::NonZeroI16;
+    fn wrapping_abs(
+        _self: LuaReflectValProxy<std::num::NonZeroI16>,
+    ) -> LuaReflectValProxy<std::num::NonZeroI16>;
 
 "#,
     r#"
@@ -1081,7 +1174,9 @@ pub struct LuaNonZeroI128();
 /// ```
 
     #[lua()]
-    fn unsigned_abs(self) -> std::num::NonZeroU16;
+    fn unsigned_abs(
+        _self: LuaReflectValProxy<std::num::NonZeroI16>,
+    ) -> LuaReflectValProxy<std::num::NonZeroU16>;
 
 "#,
     r#"
@@ -1101,7 +1196,7 @@ pub struct LuaNonZeroI128();
 /// ```
 
     #[lua()]
-    fn is_positive(self) -> bool;
+    fn is_positive(_self: LuaReflectValProxy<std::num::NonZeroI16>) -> bool;
 
 "#,
     r#"
@@ -1121,7 +1216,7 @@ pub struct LuaNonZeroI128();
 /// ```
 
     #[lua()]
-    fn is_negative(self) -> bool;
+    fn is_negative(_self: LuaReflectValProxy<std::num::NonZeroI16>) -> bool;
 
 "#,
     r#"
@@ -1147,7 +1242,9 @@ pub struct LuaNonZeroI128();
 /// ```
 
     #[lua()]
-    fn saturating_neg(self) -> std::num::NonZeroI16;
+    fn saturating_neg(
+        _self: LuaReflectValProxy<std::num::NonZeroI16>,
+    ) -> LuaReflectValProxy<std::num::NonZeroI16>;
 
 "#,
     r#"
@@ -1170,7 +1267,9 @@ pub struct LuaNonZeroI128();
 /// ```
 
     #[lua()]
-    fn wrapping_neg(self) -> std::num::NonZeroI16;
+    fn wrapping_neg(
+        _self: LuaReflectValProxy<std::num::NonZeroI16>,
+    ) -> LuaReflectValProxy<std::num::NonZeroI16>;
 
 "#,
     r#"
@@ -1192,10 +1291,9 @@ pub struct LuaNonZeroI128();
 
     #[lua()]
     fn saturating_mul(
-        self,
-        #[proxy]
-        other: std::num::NonZeroI16,
-    ) -> std::num::NonZeroI16;
+        _self: LuaReflectValProxy<std::num::NonZeroI16>,
+        other: LuaReflectValProxy<std::num::NonZeroI16>,
+    ) -> LuaReflectValProxy<std::num::NonZeroI16>;
 
 "#,
     r#"
@@ -1216,13 +1314,18 @@ pub struct LuaNonZeroI128();
 /// ```
 
     #[lua()]
-    fn saturating_pow(self, other: u32) -> std::num::NonZeroI16;
+    fn saturating_pow(
+        _self: LuaReflectValProxy<std::num::NonZeroI16>,
+        other: u32,
+    ) -> LuaReflectValProxy<std::num::NonZeroI16>;
 
 "#,
     r#"
 
     #[lua(as_trait = "std::ops::Neg", composite = "neg")]
-    fn neg(self) -> std::num::NonZeroI16;
+    fn neg(
+        _self: LuaReflectValProxy<std::num::NonZeroI16>,
+    ) -> LuaReflectValProxy<std::num::NonZeroI16>;
 
 "#,
     r#"
@@ -1232,7 +1335,7 @@ fn index(&self) -> String {
 }
 "#]
 )]
-pub struct LuaNonZeroI16();
+pub struct NonZeroI16();
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
     remote = "std::num::NonZeroI32",
@@ -1241,7 +1344,9 @@ pub struct LuaNonZeroI16();
     functions[r#"
 
     #[lua(as_trait = "std::ops::Neg", composite = "neg")]
-    fn neg(self) -> std::num::NonZeroI32;
+    fn neg(
+        _self: LuaReflectValProxy<std::num::NonZeroI32>,
+    ) -> LuaReflectValProxy<std::num::NonZeroI32>;
 
 "#,
     r#"
@@ -1251,14 +1356,14 @@ pub struct LuaNonZeroI16();
 /// The value must not be zero.
 
     #[lua()]
-    unsafe fn new_unchecked(n: i32) -> std::num::NonZeroI32;
+    unsafe fn new_unchecked(n: i32) -> LuaReflectValProxy<std::num::NonZeroI32>;
 
 "#,
     r#"
 /// Returns the value as a primitive type.
 
     #[lua()]
-    fn get(self) -> i32;
+    fn get(_self: LuaReflectValProxy<std::num::NonZeroI32>) -> i32;
 
 "#,
     r#"
@@ -1272,7 +1377,7 @@ pub struct LuaNonZeroI16();
 /// ```
 
     #[lua()]
-    fn leading_zeros(self) -> u32;
+    fn leading_zeros(_self: LuaReflectValProxy<std::num::NonZeroI32>) -> u32;
 
 "#,
     r#"
@@ -1287,7 +1392,7 @@ pub struct LuaNonZeroI16();
 /// ```
 
     #[lua()]
-    fn trailing_zeros(self) -> u32;
+    fn trailing_zeros(_self: LuaReflectValProxy<std::num::NonZeroI32>) -> u32;
 
 "#,
     r#"
@@ -1308,7 +1413,9 @@ pub struct LuaNonZeroI16();
 /// ```
 
     #[lua()]
-    fn abs(self) -> std::num::NonZeroI32;
+    fn abs(
+        _self: LuaReflectValProxy<std::num::NonZeroI32>,
+    ) -> LuaReflectValProxy<std::num::NonZeroI32>;
 
 "#,
     r#"
@@ -1333,7 +1440,9 @@ pub struct LuaNonZeroI16();
 /// ```
 
     #[lua()]
-    fn saturating_abs(self) -> std::num::NonZeroI32;
+    fn saturating_abs(
+        _self: LuaReflectValProxy<std::num::NonZeroI32>,
+    ) -> LuaReflectValProxy<std::num::NonZeroI32>;
 
 "#,
     r#"
@@ -1357,7 +1466,9 @@ pub struct LuaNonZeroI16();
 /// ```
 
     #[lua()]
-    fn wrapping_abs(self) -> std::num::NonZeroI32;
+    fn wrapping_abs(
+        _self: LuaReflectValProxy<std::num::NonZeroI32>,
+    ) -> LuaReflectValProxy<std::num::NonZeroI32>;
 
 "#,
     r#"
@@ -1382,7 +1493,9 @@ pub struct LuaNonZeroI16();
 /// ```
 
     #[lua()]
-    fn unsigned_abs(self) -> std::num::NonZeroU32;
+    fn unsigned_abs(
+        _self: LuaReflectValProxy<std::num::NonZeroI32>,
+    ) -> LuaReflectValProxy<std::num::NonZeroU32>;
 
 "#,
     r#"
@@ -1402,7 +1515,7 @@ pub struct LuaNonZeroI16();
 /// ```
 
     #[lua()]
-    fn is_positive(self) -> bool;
+    fn is_positive(_self: LuaReflectValProxy<std::num::NonZeroI32>) -> bool;
 
 "#,
     r#"
@@ -1422,7 +1535,7 @@ pub struct LuaNonZeroI16();
 /// ```
 
     #[lua()]
-    fn is_negative(self) -> bool;
+    fn is_negative(_self: LuaReflectValProxy<std::num::NonZeroI32>) -> bool;
 
 "#,
     r#"
@@ -1448,7 +1561,9 @@ pub struct LuaNonZeroI16();
 /// ```
 
     #[lua()]
-    fn saturating_neg(self) -> std::num::NonZeroI32;
+    fn saturating_neg(
+        _self: LuaReflectValProxy<std::num::NonZeroI32>,
+    ) -> LuaReflectValProxy<std::num::NonZeroI32>;
 
 "#,
     r#"
@@ -1471,7 +1586,9 @@ pub struct LuaNonZeroI16();
 /// ```
 
     #[lua()]
-    fn wrapping_neg(self) -> std::num::NonZeroI32;
+    fn wrapping_neg(
+        _self: LuaReflectValProxy<std::num::NonZeroI32>,
+    ) -> LuaReflectValProxy<std::num::NonZeroI32>;
 
 "#,
     r#"
@@ -1493,10 +1610,9 @@ pub struct LuaNonZeroI16();
 
     #[lua()]
     fn saturating_mul(
-        self,
-        #[proxy]
-        other: std::num::NonZeroI32,
-    ) -> std::num::NonZeroI32;
+        _self: LuaReflectValProxy<std::num::NonZeroI32>,
+        other: LuaReflectValProxy<std::num::NonZeroI32>,
+    ) -> LuaReflectValProxy<std::num::NonZeroI32>;
 
 "#,
     r#"
@@ -1517,25 +1633,35 @@ pub struct LuaNonZeroI16();
 /// ```
 
     #[lua()]
-    fn saturating_pow(self, other: u32) -> std::num::NonZeroI32;
+    fn saturating_pow(
+        _self: LuaReflectValProxy<std::num::NonZeroI32>,
+        other: u32,
+    ) -> LuaReflectValProxy<std::num::NonZeroI32>;
 
 "#,
     r#"
 
     #[lua(as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone")]
-    fn clone(&self) -> std::num::NonZeroI32;
+    fn clone(
+        _self: LuaReflectRefProxy<std::num::NonZeroI32>,
+    ) -> LuaReflectValProxy<std::num::NonZeroI32>;
 
 "#,
     r#"
 
-    #[lua(as_trait = "std::cmp::PartialEq", composite = "eq")]
-    fn eq(&self, #[proxy] other: &std::num::NonZeroI32) -> bool;
+    #[lua(as_trait = "std::cmp::PartialEq::<std::num::NonZeroI32>", composite = "eq")]
+    fn eq(
+        _self: LuaReflectRefProxy<std::num::NonZeroI32>,
+        other: LuaReflectRefProxy<std::num::NonZeroI32>,
+    ) -> bool;
 
 "#,
     r#"
 
     #[lua(as_trait = "std::cmp::Eq")]
-    fn assert_receiver_is_total_eq(&self) -> ();
+    fn assert_receiver_is_total_eq(
+        _self: LuaReflectRefProxy<std::num::NonZeroI32>,
+    ) -> ();
 
 "#,
     r#"
@@ -1545,7 +1671,7 @@ fn index(&self) -> String {
 }
 "#]
 )]
-pub struct LuaNonZeroI32();
+pub struct NonZeroI32();
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
     remote = "std::num::NonZeroI64",
@@ -1558,14 +1684,14 @@ pub struct LuaNonZeroI32();
 /// The value must not be zero.
 
     #[lua()]
-    unsafe fn new_unchecked(n: i64) -> std::num::NonZeroI64;
+    unsafe fn new_unchecked(n: i64) -> LuaReflectValProxy<std::num::NonZeroI64>;
 
 "#,
     r#"
 /// Returns the value as a primitive type.
 
     #[lua()]
-    fn get(self) -> i64;
+    fn get(_self: LuaReflectValProxy<std::num::NonZeroI64>) -> i64;
 
 "#,
     r#"
@@ -1579,7 +1705,7 @@ pub struct LuaNonZeroI32();
 /// ```
 
     #[lua()]
-    fn leading_zeros(self) -> u32;
+    fn leading_zeros(_self: LuaReflectValProxy<std::num::NonZeroI64>) -> u32;
 
 "#,
     r#"
@@ -1594,7 +1720,7 @@ pub struct LuaNonZeroI32();
 /// ```
 
     #[lua()]
-    fn trailing_zeros(self) -> u32;
+    fn trailing_zeros(_self: LuaReflectValProxy<std::num::NonZeroI64>) -> u32;
 
 "#,
     r#"
@@ -1615,7 +1741,9 @@ pub struct LuaNonZeroI32();
 /// ```
 
     #[lua()]
-    fn abs(self) -> std::num::NonZeroI64;
+    fn abs(
+        _self: LuaReflectValProxy<std::num::NonZeroI64>,
+    ) -> LuaReflectValProxy<std::num::NonZeroI64>;
 
 "#,
     r#"
@@ -1640,7 +1768,9 @@ pub struct LuaNonZeroI32();
 /// ```
 
     #[lua()]
-    fn saturating_abs(self) -> std::num::NonZeroI64;
+    fn saturating_abs(
+        _self: LuaReflectValProxy<std::num::NonZeroI64>,
+    ) -> LuaReflectValProxy<std::num::NonZeroI64>;
 
 "#,
     r#"
@@ -1664,7 +1794,9 @@ pub struct LuaNonZeroI32();
 /// ```
 
     #[lua()]
-    fn wrapping_abs(self) -> std::num::NonZeroI64;
+    fn wrapping_abs(
+        _self: LuaReflectValProxy<std::num::NonZeroI64>,
+    ) -> LuaReflectValProxy<std::num::NonZeroI64>;
 
 "#,
     r#"
@@ -1689,7 +1821,9 @@ pub struct LuaNonZeroI32();
 /// ```
 
     #[lua()]
-    fn unsigned_abs(self) -> std::num::NonZeroU64;
+    fn unsigned_abs(
+        _self: LuaReflectValProxy<std::num::NonZeroI64>,
+    ) -> LuaReflectValProxy<std::num::NonZeroU64>;
 
 "#,
     r#"
@@ -1709,7 +1843,7 @@ pub struct LuaNonZeroI32();
 /// ```
 
     #[lua()]
-    fn is_positive(self) -> bool;
+    fn is_positive(_self: LuaReflectValProxy<std::num::NonZeroI64>) -> bool;
 
 "#,
     r#"
@@ -1729,7 +1863,7 @@ pub struct LuaNonZeroI32();
 /// ```
 
     #[lua()]
-    fn is_negative(self) -> bool;
+    fn is_negative(_self: LuaReflectValProxy<std::num::NonZeroI64>) -> bool;
 
 "#,
     r#"
@@ -1755,7 +1889,9 @@ pub struct LuaNonZeroI32();
 /// ```
 
     #[lua()]
-    fn saturating_neg(self) -> std::num::NonZeroI64;
+    fn saturating_neg(
+        _self: LuaReflectValProxy<std::num::NonZeroI64>,
+    ) -> LuaReflectValProxy<std::num::NonZeroI64>;
 
 "#,
     r#"
@@ -1778,7 +1914,9 @@ pub struct LuaNonZeroI32();
 /// ```
 
     #[lua()]
-    fn wrapping_neg(self) -> std::num::NonZeroI64;
+    fn wrapping_neg(
+        _self: LuaReflectValProxy<std::num::NonZeroI64>,
+    ) -> LuaReflectValProxy<std::num::NonZeroI64>;
 
 "#,
     r#"
@@ -1800,10 +1938,9 @@ pub struct LuaNonZeroI32();
 
     #[lua()]
     fn saturating_mul(
-        self,
-        #[proxy]
-        other: std::num::NonZeroI64,
-    ) -> std::num::NonZeroI64;
+        _self: LuaReflectValProxy<std::num::NonZeroI64>,
+        other: LuaReflectValProxy<std::num::NonZeroI64>,
+    ) -> LuaReflectValProxy<std::num::NonZeroI64>;
 
 "#,
     r#"
@@ -1824,31 +1961,43 @@ pub struct LuaNonZeroI32();
 /// ```
 
     #[lua()]
-    fn saturating_pow(self, other: u32) -> std::num::NonZeroI64;
+    fn saturating_pow(
+        _self: LuaReflectValProxy<std::num::NonZeroI64>,
+        other: u32,
+    ) -> LuaReflectValProxy<std::num::NonZeroI64>;
 
 "#,
     r#"
 
     #[lua(as_trait = "std::ops::Neg", composite = "neg")]
-    fn neg(self) -> std::num::NonZeroI64;
+    fn neg(
+        _self: LuaReflectValProxy<std::num::NonZeroI64>,
+    ) -> LuaReflectValProxy<std::num::NonZeroI64>;
 
 "#,
     r#"
 
-    #[lua(as_trait = "std::cmp::PartialEq", composite = "eq")]
-    fn eq(&self, #[proxy] other: &std::num::NonZeroI64) -> bool;
+    #[lua(as_trait = "std::cmp::PartialEq::<std::num::NonZeroI64>", composite = "eq")]
+    fn eq(
+        _self: LuaReflectRefProxy<std::num::NonZeroI64>,
+        other: LuaReflectRefProxy<std::num::NonZeroI64>,
+    ) -> bool;
 
 "#,
     r#"
 
     #[lua(as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone")]
-    fn clone(&self) -> std::num::NonZeroI64;
+    fn clone(
+        _self: LuaReflectRefProxy<std::num::NonZeroI64>,
+    ) -> LuaReflectValProxy<std::num::NonZeroI64>;
 
 "#,
     r#"
 
     #[lua(as_trait = "std::cmp::Eq")]
-    fn assert_receiver_is_total_eq(&self) -> ();
+    fn assert_receiver_is_total_eq(
+        _self: LuaReflectRefProxy<std::num::NonZeroI64>,
+    ) -> ();
 
 "#,
     r#"
@@ -1858,7 +2007,7 @@ fn index(&self) -> String {
 }
 "#]
 )]
-pub struct LuaNonZeroI64();
+pub struct NonZeroI64();
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
     remote = "std::num::NonZeroI8",
@@ -1867,25 +2016,32 @@ pub struct LuaNonZeroI64();
     functions[r#"
 
     #[lua(as_trait = "std::cmp::Eq")]
-    fn assert_receiver_is_total_eq(&self) -> ();
+    fn assert_receiver_is_total_eq(_self: LuaReflectRefProxy<std::num::NonZeroI8>) -> ();
 
 "#,
     r#"
 
     #[lua(as_trait = "std::ops::Neg", composite = "neg")]
-    fn neg(self) -> std::num::NonZeroI8;
+    fn neg(
+        _self: LuaReflectValProxy<std::num::NonZeroI8>,
+    ) -> LuaReflectValProxy<std::num::NonZeroI8>;
 
 "#,
     r#"
 
-    #[lua(as_trait = "std::cmp::PartialEq", composite = "eq")]
-    fn eq(&self, #[proxy] other: &std::num::NonZeroI8) -> bool;
+    #[lua(as_trait = "std::cmp::PartialEq::<std::num::NonZeroI8>", composite = "eq")]
+    fn eq(
+        _self: LuaReflectRefProxy<std::num::NonZeroI8>,
+        other: LuaReflectRefProxy<std::num::NonZeroI8>,
+    ) -> bool;
 
 "#,
     r#"
 
     #[lua(as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone")]
-    fn clone(&self) -> std::num::NonZeroI8;
+    fn clone(
+        _self: LuaReflectRefProxy<std::num::NonZeroI8>,
+    ) -> LuaReflectValProxy<std::num::NonZeroI8>;
 
 "#,
     r#"
@@ -1895,14 +2051,14 @@ pub struct LuaNonZeroI64();
 /// The value must not be zero.
 
     #[lua()]
-    unsafe fn new_unchecked(n: i8) -> std::num::NonZeroI8;
+    unsafe fn new_unchecked(n: i8) -> LuaReflectValProxy<std::num::NonZeroI8>;
 
 "#,
     r#"
 /// Returns the value as a primitive type.
 
     #[lua()]
-    fn get(self) -> i8;
+    fn get(_self: LuaReflectValProxy<std::num::NonZeroI8>) -> i8;
 
 "#,
     r#"
@@ -1916,7 +2072,7 @@ pub struct LuaNonZeroI64();
 /// ```
 
     #[lua()]
-    fn leading_zeros(self) -> u32;
+    fn leading_zeros(_self: LuaReflectValProxy<std::num::NonZeroI8>) -> u32;
 
 "#,
     r#"
@@ -1931,7 +2087,7 @@ pub struct LuaNonZeroI64();
 /// ```
 
     #[lua()]
-    fn trailing_zeros(self) -> u32;
+    fn trailing_zeros(_self: LuaReflectValProxy<std::num::NonZeroI8>) -> u32;
 
 "#,
     r#"
@@ -1952,7 +2108,9 @@ pub struct LuaNonZeroI64();
 /// ```
 
     #[lua()]
-    fn abs(self) -> std::num::NonZeroI8;
+    fn abs(
+        _self: LuaReflectValProxy<std::num::NonZeroI8>,
+    ) -> LuaReflectValProxy<std::num::NonZeroI8>;
 
 "#,
     r#"
@@ -1977,7 +2135,9 @@ pub struct LuaNonZeroI64();
 /// ```
 
     #[lua()]
-    fn saturating_abs(self) -> std::num::NonZeroI8;
+    fn saturating_abs(
+        _self: LuaReflectValProxy<std::num::NonZeroI8>,
+    ) -> LuaReflectValProxy<std::num::NonZeroI8>;
 
 "#,
     r#"
@@ -2001,7 +2161,9 @@ pub struct LuaNonZeroI64();
 /// ```
 
     #[lua()]
-    fn wrapping_abs(self) -> std::num::NonZeroI8;
+    fn wrapping_abs(
+        _self: LuaReflectValProxy<std::num::NonZeroI8>,
+    ) -> LuaReflectValProxy<std::num::NonZeroI8>;
 
 "#,
     r#"
@@ -2026,7 +2188,9 @@ pub struct LuaNonZeroI64();
 /// ```
 
     #[lua()]
-    fn unsigned_abs(self) -> std::num::NonZeroU8;
+    fn unsigned_abs(
+        _self: LuaReflectValProxy<std::num::NonZeroI8>,
+    ) -> LuaReflectValProxy<std::num::NonZeroU8>;
 
 "#,
     r#"
@@ -2046,7 +2210,7 @@ pub struct LuaNonZeroI64();
 /// ```
 
     #[lua()]
-    fn is_positive(self) -> bool;
+    fn is_positive(_self: LuaReflectValProxy<std::num::NonZeroI8>) -> bool;
 
 "#,
     r#"
@@ -2066,7 +2230,7 @@ pub struct LuaNonZeroI64();
 /// ```
 
     #[lua()]
-    fn is_negative(self) -> bool;
+    fn is_negative(_self: LuaReflectValProxy<std::num::NonZeroI8>) -> bool;
 
 "#,
     r#"
@@ -2092,7 +2256,9 @@ pub struct LuaNonZeroI64();
 /// ```
 
     #[lua()]
-    fn saturating_neg(self) -> std::num::NonZeroI8;
+    fn saturating_neg(
+        _self: LuaReflectValProxy<std::num::NonZeroI8>,
+    ) -> LuaReflectValProxy<std::num::NonZeroI8>;
 
 "#,
     r#"
@@ -2115,7 +2281,9 @@ pub struct LuaNonZeroI64();
 /// ```
 
     #[lua()]
-    fn wrapping_neg(self) -> std::num::NonZeroI8;
+    fn wrapping_neg(
+        _self: LuaReflectValProxy<std::num::NonZeroI8>,
+    ) -> LuaReflectValProxy<std::num::NonZeroI8>;
 
 "#,
     r#"
@@ -2136,7 +2304,10 @@ pub struct LuaNonZeroI64();
 /// ```
 
     #[lua()]
-    fn saturating_mul(self, #[proxy] other: std::num::NonZeroI8) -> std::num::NonZeroI8;
+    fn saturating_mul(
+        _self: LuaReflectValProxy<std::num::NonZeroI8>,
+        other: LuaReflectValProxy<std::num::NonZeroI8>,
+    ) -> LuaReflectValProxy<std::num::NonZeroI8>;
 
 "#,
     r#"
@@ -2157,7 +2328,10 @@ pub struct LuaNonZeroI64();
 /// ```
 
     #[lua()]
-    fn saturating_pow(self, other: u32) -> std::num::NonZeroI8;
+    fn saturating_pow(
+        _self: LuaReflectValProxy<std::num::NonZeroI8>,
+        other: u32,
+    ) -> LuaReflectValProxy<std::num::NonZeroI8>;
 
 "#,
     r#"
@@ -2167,7 +2341,7 @@ fn index(&self) -> String {
 }
 "#]
 )]
-pub struct LuaNonZeroI8();
+pub struct NonZeroI8();
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
     remote = "std::num::NonZeroU128",
@@ -2176,19 +2350,26 @@ pub struct LuaNonZeroI8();
     functions[r#"
 
     #[lua(as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone")]
-    fn clone(&self) -> std::num::NonZeroU128;
+    fn clone(
+        _self: LuaReflectRefProxy<std::num::NonZeroU128>,
+    ) -> LuaReflectValProxy<std::num::NonZeroU128>;
 
 "#,
     r#"
 
     #[lua(as_trait = "std::cmp::Eq")]
-    fn assert_receiver_is_total_eq(&self) -> ();
+    fn assert_receiver_is_total_eq(
+        _self: LuaReflectRefProxy<std::num::NonZeroU128>,
+    ) -> ();
 
 "#,
     r#"
 
-    #[lua(as_trait = "std::cmp::PartialEq", composite = "eq")]
-    fn eq(&self, #[proxy] other: &std::num::NonZeroU128) -> bool;
+    #[lua(as_trait = "std::cmp::PartialEq::<std::num::NonZeroU128>", composite = "eq")]
+    fn eq(
+        _self: LuaReflectRefProxy<std::num::NonZeroU128>,
+        other: LuaReflectRefProxy<std::num::NonZeroU128>,
+    ) -> bool;
 
 "#,
     r#"
@@ -2198,14 +2379,14 @@ pub struct LuaNonZeroI8();
 /// The value must not be zero.
 
     #[lua()]
-    unsafe fn new_unchecked(n: u128) -> std::num::NonZeroU128;
+    unsafe fn new_unchecked(n: u128) -> LuaReflectValProxy<std::num::NonZeroU128>;
 
 "#,
     r#"
 /// Returns the value as a primitive type.
 
     #[lua()]
-    fn get(self) -> u128;
+    fn get(_self: LuaReflectValProxy<std::num::NonZeroU128>) -> u128;
 
 "#,
     r#"
@@ -2219,7 +2400,7 @@ pub struct LuaNonZeroI8();
 /// ```
 
     #[lua()]
-    fn leading_zeros(self) -> u32;
+    fn leading_zeros(_self: LuaReflectValProxy<std::num::NonZeroU128>) -> u32;
 
 "#,
     r#"
@@ -2234,7 +2415,7 @@ pub struct LuaNonZeroI8();
 /// ```
 
     #[lua()]
-    fn trailing_zeros(self) -> u32;
+    fn trailing_zeros(_self: LuaReflectValProxy<std::num::NonZeroU128>) -> u32;
 
 "#,
     r#"
@@ -2255,7 +2436,10 @@ pub struct LuaNonZeroI8();
 /// ```
 
     #[lua()]
-    fn saturating_add(self, other: u128) -> std::num::NonZeroU128;
+    fn saturating_add(
+        _self: LuaReflectValProxy<std::num::NonZeroU128>,
+        other: u128,
+    ) -> LuaReflectValProxy<std::num::NonZeroU128>;
 
 "#,
     r#"
@@ -2273,7 +2457,7 @@ pub struct LuaNonZeroI8();
 /// ```
 
     #[lua()]
-    fn ilog2(self) -> u32;
+    fn ilog2(_self: LuaReflectValProxy<std::num::NonZeroU128>) -> u32;
 
 "#,
     r#"
@@ -2291,7 +2475,7 @@ pub struct LuaNonZeroI8();
 /// ```
 
     #[lua()]
-    fn ilog10(self) -> u32;
+    fn ilog10(_self: LuaReflectValProxy<std::num::NonZeroU128>) -> u32;
 
 "#,
     r#"
@@ -2308,7 +2492,7 @@ pub struct LuaNonZeroI8();
 /// ```
 
     #[lua()]
-    fn is_power_of_two(self) -> bool;
+    fn is_power_of_two(_self: LuaReflectValProxy<std::num::NonZeroU128>) -> bool;
 
 "#,
     r#"
@@ -2330,10 +2514,9 @@ pub struct LuaNonZeroI8();
 
     #[lua()]
     fn saturating_mul(
-        self,
-        #[proxy]
-        other: std::num::NonZeroU128,
-    ) -> std::num::NonZeroU128;
+        _self: LuaReflectValProxy<std::num::NonZeroU128>,
+        other: LuaReflectValProxy<std::num::NonZeroU128>,
+    ) -> LuaReflectValProxy<std::num::NonZeroU128>;
 
 "#,
     r#"
@@ -2354,7 +2537,10 @@ pub struct LuaNonZeroI8();
 /// ```
 
     #[lua()]
-    fn saturating_pow(self, other: u32) -> std::num::NonZeroU128;
+    fn saturating_pow(
+        _self: LuaReflectValProxy<std::num::NonZeroU128>,
+        other: u32,
+    ) -> LuaReflectValProxy<std::num::NonZeroU128>;
 
 "#,
     r#"
@@ -2364,7 +2550,7 @@ fn index(&self) -> String {
 }
 "#]
 )]
-pub struct LuaNonZeroU128();
+pub struct NonZeroU128();
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
     remote = "std::num::NonZeroU16",
@@ -2377,14 +2563,14 @@ pub struct LuaNonZeroU128();
 /// The value must not be zero.
 
     #[lua()]
-    unsafe fn new_unchecked(n: u16) -> std::num::NonZeroU16;
+    unsafe fn new_unchecked(n: u16) -> LuaReflectValProxy<std::num::NonZeroU16>;
 
 "#,
     r#"
 /// Returns the value as a primitive type.
 
     #[lua()]
-    fn get(self) -> u16;
+    fn get(_self: LuaReflectValProxy<std::num::NonZeroU16>) -> u16;
 
 "#,
     r#"
@@ -2398,7 +2584,7 @@ pub struct LuaNonZeroU128();
 /// ```
 
     #[lua()]
-    fn leading_zeros(self) -> u32;
+    fn leading_zeros(_self: LuaReflectValProxy<std::num::NonZeroU16>) -> u32;
 
 "#,
     r#"
@@ -2413,7 +2599,7 @@ pub struct LuaNonZeroU128();
 /// ```
 
     #[lua()]
-    fn trailing_zeros(self) -> u32;
+    fn trailing_zeros(_self: LuaReflectValProxy<std::num::NonZeroU16>) -> u32;
 
 "#,
     r#"
@@ -2434,7 +2620,10 @@ pub struct LuaNonZeroU128();
 /// ```
 
     #[lua()]
-    fn saturating_add(self, other: u16) -> std::num::NonZeroU16;
+    fn saturating_add(
+        _self: LuaReflectValProxy<std::num::NonZeroU16>,
+        other: u16,
+    ) -> LuaReflectValProxy<std::num::NonZeroU16>;
 
 "#,
     r#"
@@ -2452,7 +2641,7 @@ pub struct LuaNonZeroU128();
 /// ```
 
     #[lua()]
-    fn ilog2(self) -> u32;
+    fn ilog2(_self: LuaReflectValProxy<std::num::NonZeroU16>) -> u32;
 
 "#,
     r#"
@@ -2470,7 +2659,7 @@ pub struct LuaNonZeroU128();
 /// ```
 
     #[lua()]
-    fn ilog10(self) -> u32;
+    fn ilog10(_self: LuaReflectValProxy<std::num::NonZeroU16>) -> u32;
 
 "#,
     r#"
@@ -2487,7 +2676,7 @@ pub struct LuaNonZeroU128();
 /// ```
 
     #[lua()]
-    fn is_power_of_two(self) -> bool;
+    fn is_power_of_two(_self: LuaReflectValProxy<std::num::NonZeroU16>) -> bool;
 
 "#,
     r#"
@@ -2509,10 +2698,9 @@ pub struct LuaNonZeroU128();
 
     #[lua()]
     fn saturating_mul(
-        self,
-        #[proxy]
-        other: std::num::NonZeroU16,
-    ) -> std::num::NonZeroU16;
+        _self: LuaReflectValProxy<std::num::NonZeroU16>,
+        other: LuaReflectValProxy<std::num::NonZeroU16>,
+    ) -> LuaReflectValProxy<std::num::NonZeroU16>;
 
 "#,
     r#"
@@ -2533,25 +2721,35 @@ pub struct LuaNonZeroU128();
 /// ```
 
     #[lua()]
-    fn saturating_pow(self, other: u32) -> std::num::NonZeroU16;
+    fn saturating_pow(
+        _self: LuaReflectValProxy<std::num::NonZeroU16>,
+        other: u32,
+    ) -> LuaReflectValProxy<std::num::NonZeroU16>;
 
 "#,
     r#"
 
-    #[lua(as_trait = "std::cmp::PartialEq", composite = "eq")]
-    fn eq(&self, #[proxy] other: &std::num::NonZeroU16) -> bool;
+    #[lua(as_trait = "std::cmp::PartialEq::<std::num::NonZeroU16>", composite = "eq")]
+    fn eq(
+        _self: LuaReflectRefProxy<std::num::NonZeroU16>,
+        other: LuaReflectRefProxy<std::num::NonZeroU16>,
+    ) -> bool;
 
 "#,
     r#"
 
     #[lua(as_trait = "std::cmp::Eq")]
-    fn assert_receiver_is_total_eq(&self) -> ();
+    fn assert_receiver_is_total_eq(
+        _self: LuaReflectRefProxy<std::num::NonZeroU16>,
+    ) -> ();
 
 "#,
     r#"
 
     #[lua(as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone")]
-    fn clone(&self) -> std::num::NonZeroU16;
+    fn clone(
+        _self: LuaReflectRefProxy<std::num::NonZeroU16>,
+    ) -> LuaReflectValProxy<std::num::NonZeroU16>;
 
 "#,
     r#"
@@ -2561,7 +2759,7 @@ fn index(&self) -> String {
 }
 "#]
 )]
-pub struct LuaNonZeroU16();
+pub struct NonZeroU16();
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
     remote = "std::num::NonZeroU32",
@@ -2569,14 +2767,19 @@ pub struct LuaNonZeroU16();
     bms_lua_path = "crate",
     functions[r#"
 
-    #[lua(as_trait = "std::cmp::PartialEq", composite = "eq")]
-    fn eq(&self, #[proxy] other: &std::num::NonZeroU32) -> bool;
+    #[lua(as_trait = "std::cmp::PartialEq::<std::num::NonZeroU32>", composite = "eq")]
+    fn eq(
+        _self: LuaReflectRefProxy<std::num::NonZeroU32>,
+        other: LuaReflectRefProxy<std::num::NonZeroU32>,
+    ) -> bool;
 
 "#,
     r#"
 
     #[lua(as_trait = "std::cmp::Eq")]
-    fn assert_receiver_is_total_eq(&self) -> ();
+    fn assert_receiver_is_total_eq(
+        _self: LuaReflectRefProxy<std::num::NonZeroU32>,
+    ) -> ();
 
 "#,
     r#"
@@ -2586,14 +2789,14 @@ pub struct LuaNonZeroU16();
 /// The value must not be zero.
 
     #[lua()]
-    unsafe fn new_unchecked(n: u32) -> std::num::NonZeroU32;
+    unsafe fn new_unchecked(n: u32) -> LuaReflectValProxy<std::num::NonZeroU32>;
 
 "#,
     r#"
 /// Returns the value as a primitive type.
 
     #[lua()]
-    fn get(self) -> u32;
+    fn get(_self: LuaReflectValProxy<std::num::NonZeroU32>) -> u32;
 
 "#,
     r#"
@@ -2607,7 +2810,7 @@ pub struct LuaNonZeroU16();
 /// ```
 
     #[lua()]
-    fn leading_zeros(self) -> u32;
+    fn leading_zeros(_self: LuaReflectValProxy<std::num::NonZeroU32>) -> u32;
 
 "#,
     r#"
@@ -2622,7 +2825,7 @@ pub struct LuaNonZeroU16();
 /// ```
 
     #[lua()]
-    fn trailing_zeros(self) -> u32;
+    fn trailing_zeros(_self: LuaReflectValProxy<std::num::NonZeroU32>) -> u32;
 
 "#,
     r#"
@@ -2643,7 +2846,10 @@ pub struct LuaNonZeroU16();
 /// ```
 
     #[lua()]
-    fn saturating_add(self, other: u32) -> std::num::NonZeroU32;
+    fn saturating_add(
+        _self: LuaReflectValProxy<std::num::NonZeroU32>,
+        other: u32,
+    ) -> LuaReflectValProxy<std::num::NonZeroU32>;
 
 "#,
     r#"
@@ -2661,7 +2867,7 @@ pub struct LuaNonZeroU16();
 /// ```
 
     #[lua()]
-    fn ilog2(self) -> u32;
+    fn ilog2(_self: LuaReflectValProxy<std::num::NonZeroU32>) -> u32;
 
 "#,
     r#"
@@ -2679,7 +2885,7 @@ pub struct LuaNonZeroU16();
 /// ```
 
     #[lua()]
-    fn ilog10(self) -> u32;
+    fn ilog10(_self: LuaReflectValProxy<std::num::NonZeroU32>) -> u32;
 
 "#,
     r#"
@@ -2696,7 +2902,7 @@ pub struct LuaNonZeroU16();
 /// ```
 
     #[lua()]
-    fn is_power_of_two(self) -> bool;
+    fn is_power_of_two(_self: LuaReflectValProxy<std::num::NonZeroU32>) -> bool;
 
 "#,
     r#"
@@ -2718,10 +2924,9 @@ pub struct LuaNonZeroU16();
 
     #[lua()]
     fn saturating_mul(
-        self,
-        #[proxy]
-        other: std::num::NonZeroU32,
-    ) -> std::num::NonZeroU32;
+        _self: LuaReflectValProxy<std::num::NonZeroU32>,
+        other: LuaReflectValProxy<std::num::NonZeroU32>,
+    ) -> LuaReflectValProxy<std::num::NonZeroU32>;
 
 "#,
     r#"
@@ -2742,13 +2947,18 @@ pub struct LuaNonZeroU16();
 /// ```
 
     #[lua()]
-    fn saturating_pow(self, other: u32) -> std::num::NonZeroU32;
+    fn saturating_pow(
+        _self: LuaReflectValProxy<std::num::NonZeroU32>,
+        other: u32,
+    ) -> LuaReflectValProxy<std::num::NonZeroU32>;
 
 "#,
     r#"
 
     #[lua(as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone")]
-    fn clone(&self) -> std::num::NonZeroU32;
+    fn clone(
+        _self: LuaReflectRefProxy<std::num::NonZeroU32>,
+    ) -> LuaReflectValProxy<std::num::NonZeroU32>;
 
 "#,
     r#"
@@ -2758,7 +2968,7 @@ fn index(&self) -> String {
 }
 "#]
 )]
-pub struct LuaNonZeroU32();
+pub struct NonZeroU32();
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
     remote = "std::num::NonZeroU64",
@@ -2766,8 +2976,11 @@ pub struct LuaNonZeroU32();
     bms_lua_path = "crate",
     functions[r#"
 
-    #[lua(as_trait = "std::cmp::PartialEq", composite = "eq")]
-    fn eq(&self, #[proxy] other: &std::num::NonZeroU64) -> bool;
+    #[lua(as_trait = "std::cmp::PartialEq::<std::num::NonZeroU64>", composite = "eq")]
+    fn eq(
+        _self: LuaReflectRefProxy<std::num::NonZeroU64>,
+        other: LuaReflectRefProxy<std::num::NonZeroU64>,
+    ) -> bool;
 
 "#,
     r#"
@@ -2777,14 +2990,14 @@ pub struct LuaNonZeroU32();
 /// The value must not be zero.
 
     #[lua()]
-    unsafe fn new_unchecked(n: u64) -> std::num::NonZeroU64;
+    unsafe fn new_unchecked(n: u64) -> LuaReflectValProxy<std::num::NonZeroU64>;
 
 "#,
     r#"
 /// Returns the value as a primitive type.
 
     #[lua()]
-    fn get(self) -> u64;
+    fn get(_self: LuaReflectValProxy<std::num::NonZeroU64>) -> u64;
 
 "#,
     r#"
@@ -2798,7 +3011,7 @@ pub struct LuaNonZeroU32();
 /// ```
 
     #[lua()]
-    fn leading_zeros(self) -> u32;
+    fn leading_zeros(_self: LuaReflectValProxy<std::num::NonZeroU64>) -> u32;
 
 "#,
     r#"
@@ -2813,7 +3026,7 @@ pub struct LuaNonZeroU32();
 /// ```
 
     #[lua()]
-    fn trailing_zeros(self) -> u32;
+    fn trailing_zeros(_self: LuaReflectValProxy<std::num::NonZeroU64>) -> u32;
 
 "#,
     r#"
@@ -2834,7 +3047,10 @@ pub struct LuaNonZeroU32();
 /// ```
 
     #[lua()]
-    fn saturating_add(self, other: u64) -> std::num::NonZeroU64;
+    fn saturating_add(
+        _self: LuaReflectValProxy<std::num::NonZeroU64>,
+        other: u64,
+    ) -> LuaReflectValProxy<std::num::NonZeroU64>;
 
 "#,
     r#"
@@ -2852,7 +3068,7 @@ pub struct LuaNonZeroU32();
 /// ```
 
     #[lua()]
-    fn ilog2(self) -> u32;
+    fn ilog2(_self: LuaReflectValProxy<std::num::NonZeroU64>) -> u32;
 
 "#,
     r#"
@@ -2870,7 +3086,7 @@ pub struct LuaNonZeroU32();
 /// ```
 
     #[lua()]
-    fn ilog10(self) -> u32;
+    fn ilog10(_self: LuaReflectValProxy<std::num::NonZeroU64>) -> u32;
 
 "#,
     r#"
@@ -2887,7 +3103,7 @@ pub struct LuaNonZeroU32();
 /// ```
 
     #[lua()]
-    fn is_power_of_two(self) -> bool;
+    fn is_power_of_two(_self: LuaReflectValProxy<std::num::NonZeroU64>) -> bool;
 
 "#,
     r#"
@@ -2909,10 +3125,9 @@ pub struct LuaNonZeroU32();
 
     #[lua()]
     fn saturating_mul(
-        self,
-        #[proxy]
-        other: std::num::NonZeroU64,
-    ) -> std::num::NonZeroU64;
+        _self: LuaReflectValProxy<std::num::NonZeroU64>,
+        other: LuaReflectValProxy<std::num::NonZeroU64>,
+    ) -> LuaReflectValProxy<std::num::NonZeroU64>;
 
 "#,
     r#"
@@ -2933,19 +3148,26 @@ pub struct LuaNonZeroU32();
 /// ```
 
     #[lua()]
-    fn saturating_pow(self, other: u32) -> std::num::NonZeroU64;
+    fn saturating_pow(
+        _self: LuaReflectValProxy<std::num::NonZeroU64>,
+        other: u32,
+    ) -> LuaReflectValProxy<std::num::NonZeroU64>;
 
 "#,
     r#"
 
     #[lua(as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone")]
-    fn clone(&self) -> std::num::NonZeroU64;
+    fn clone(
+        _self: LuaReflectRefProxy<std::num::NonZeroU64>,
+    ) -> LuaReflectValProxy<std::num::NonZeroU64>;
 
 "#,
     r#"
 
     #[lua(as_trait = "std::cmp::Eq")]
-    fn assert_receiver_is_total_eq(&self) -> ();
+    fn assert_receiver_is_total_eq(
+        _self: LuaReflectRefProxy<std::num::NonZeroU64>,
+    ) -> ();
 
 "#,
     r#"
@@ -2955,7 +3177,7 @@ fn index(&self) -> String {
 }
 "#]
 )]
-pub struct LuaNonZeroU64();
+pub struct NonZeroU64();
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
     remote = "std::num::NonZeroU8",
@@ -2964,13 +3186,15 @@ pub struct LuaNonZeroU64();
     functions[r#"
 
     #[lua(as_trait = "std::cmp::Eq")]
-    fn assert_receiver_is_total_eq(&self) -> ();
+    fn assert_receiver_is_total_eq(_self: LuaReflectRefProxy<std::num::NonZeroU8>) -> ();
 
 "#,
     r#"
 
     #[lua(as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone")]
-    fn clone(&self) -> std::num::NonZeroU8;
+    fn clone(
+        _self: LuaReflectRefProxy<std::num::NonZeroU8>,
+    ) -> LuaReflectValProxy<std::num::NonZeroU8>;
 
 "#,
     r#"
@@ -2980,14 +3204,14 @@ pub struct LuaNonZeroU64();
 /// The value must not be zero.
 
     #[lua()]
-    unsafe fn new_unchecked(n: u8) -> std::num::NonZeroU8;
+    unsafe fn new_unchecked(n: u8) -> LuaReflectValProxy<std::num::NonZeroU8>;
 
 "#,
     r#"
 /// Returns the value as a primitive type.
 
     #[lua()]
-    fn get(self) -> u8;
+    fn get(_self: LuaReflectValProxy<std::num::NonZeroU8>) -> u8;
 
 "#,
     r#"
@@ -3001,7 +3225,7 @@ pub struct LuaNonZeroU64();
 /// ```
 
     #[lua()]
-    fn leading_zeros(self) -> u32;
+    fn leading_zeros(_self: LuaReflectValProxy<std::num::NonZeroU8>) -> u32;
 
 "#,
     r#"
@@ -3016,7 +3240,7 @@ pub struct LuaNonZeroU64();
 /// ```
 
     #[lua()]
-    fn trailing_zeros(self) -> u32;
+    fn trailing_zeros(_self: LuaReflectValProxy<std::num::NonZeroU8>) -> u32;
 
 "#,
     r#"
@@ -3037,7 +3261,10 @@ pub struct LuaNonZeroU64();
 /// ```
 
     #[lua()]
-    fn saturating_add(self, other: u8) -> std::num::NonZeroU8;
+    fn saturating_add(
+        _self: LuaReflectValProxy<std::num::NonZeroU8>,
+        other: u8,
+    ) -> LuaReflectValProxy<std::num::NonZeroU8>;
 
 "#,
     r#"
@@ -3055,7 +3282,7 @@ pub struct LuaNonZeroU64();
 /// ```
 
     #[lua()]
-    fn ilog2(self) -> u32;
+    fn ilog2(_self: LuaReflectValProxy<std::num::NonZeroU8>) -> u32;
 
 "#,
     r#"
@@ -3073,7 +3300,7 @@ pub struct LuaNonZeroU64();
 /// ```
 
     #[lua()]
-    fn ilog10(self) -> u32;
+    fn ilog10(_self: LuaReflectValProxy<std::num::NonZeroU8>) -> u32;
 
 "#,
     r#"
@@ -3090,7 +3317,7 @@ pub struct LuaNonZeroU64();
 /// ```
 
     #[lua()]
-    fn is_power_of_two(self) -> bool;
+    fn is_power_of_two(_self: LuaReflectValProxy<std::num::NonZeroU8>) -> bool;
 
 "#,
     r#"
@@ -3111,7 +3338,10 @@ pub struct LuaNonZeroU64();
 /// ```
 
     #[lua()]
-    fn saturating_mul(self, #[proxy] other: std::num::NonZeroU8) -> std::num::NonZeroU8;
+    fn saturating_mul(
+        _self: LuaReflectValProxy<std::num::NonZeroU8>,
+        other: LuaReflectValProxy<std::num::NonZeroU8>,
+    ) -> LuaReflectValProxy<std::num::NonZeroU8>;
 
 "#,
     r#"
@@ -3132,13 +3362,19 @@ pub struct LuaNonZeroU64();
 /// ```
 
     #[lua()]
-    fn saturating_pow(self, other: u32) -> std::num::NonZeroU8;
+    fn saturating_pow(
+        _self: LuaReflectValProxy<std::num::NonZeroU8>,
+        other: u32,
+    ) -> LuaReflectValProxy<std::num::NonZeroU8>;
 
 "#,
     r#"
 
-    #[lua(as_trait = "std::cmp::PartialEq", composite = "eq")]
-    fn eq(&self, #[proxy] other: &std::num::NonZeroU8) -> bool;
+    #[lua(as_trait = "std::cmp::PartialEq::<std::num::NonZeroU8>", composite = "eq")]
+    fn eq(
+        _self: LuaReflectRefProxy<std::num::NonZeroU8>,
+        other: LuaReflectRefProxy<std::num::NonZeroU8>,
+    ) -> bool;
 
 "#,
     r#"
@@ -3148,7 +3384,7 @@ fn index(&self) -> String {
 }
 "#]
 )]
-pub struct LuaNonZeroU8();
+pub struct NonZeroU8();
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
     remote = "std::num::NonZeroUsize",
@@ -3157,7 +3393,9 @@ pub struct LuaNonZeroU8();
     functions[r#"
 
     #[lua(as_trait = "std::cmp::Eq")]
-    fn assert_receiver_is_total_eq(&self) -> ();
+    fn assert_receiver_is_total_eq(
+        _self: LuaReflectRefProxy<std::num::NonZeroUsize>,
+    ) -> ();
 
 "#,
     r#"
@@ -3167,14 +3405,14 @@ pub struct LuaNonZeroU8();
 /// The value must not be zero.
 
     #[lua()]
-    unsafe fn new_unchecked(n: usize) -> std::num::NonZeroUsize;
+    unsafe fn new_unchecked(n: usize) -> LuaReflectValProxy<std::num::NonZeroUsize>;
 
 "#,
     r#"
 /// Returns the value as a primitive type.
 
     #[lua()]
-    fn get(self) -> usize;
+    fn get(_self: LuaReflectValProxy<std::num::NonZeroUsize>) -> usize;
 
 "#,
     r#"
@@ -3188,7 +3426,7 @@ pub struct LuaNonZeroU8();
 /// ```
 
     #[lua()]
-    fn leading_zeros(self) -> u32;
+    fn leading_zeros(_self: LuaReflectValProxy<std::num::NonZeroUsize>) -> u32;
 
 "#,
     r#"
@@ -3203,7 +3441,7 @@ pub struct LuaNonZeroU8();
 /// ```
 
     #[lua()]
-    fn trailing_zeros(self) -> u32;
+    fn trailing_zeros(_self: LuaReflectValProxy<std::num::NonZeroUsize>) -> u32;
 
 "#,
     r#"
@@ -3224,7 +3462,10 @@ pub struct LuaNonZeroU8();
 /// ```
 
     #[lua()]
-    fn saturating_add(self, other: usize) -> std::num::NonZeroUsize;
+    fn saturating_add(
+        _self: LuaReflectValProxy<std::num::NonZeroUsize>,
+        other: usize,
+    ) -> LuaReflectValProxy<std::num::NonZeroUsize>;
 
 "#,
     r#"
@@ -3242,7 +3483,7 @@ pub struct LuaNonZeroU8();
 /// ```
 
     #[lua()]
-    fn ilog2(self) -> u32;
+    fn ilog2(_self: LuaReflectValProxy<std::num::NonZeroUsize>) -> u32;
 
 "#,
     r#"
@@ -3260,7 +3501,7 @@ pub struct LuaNonZeroU8();
 /// ```
 
     #[lua()]
-    fn ilog10(self) -> u32;
+    fn ilog10(_self: LuaReflectValProxy<std::num::NonZeroUsize>) -> u32;
 
 "#,
     r#"
@@ -3277,7 +3518,7 @@ pub struct LuaNonZeroU8();
 /// ```
 
     #[lua()]
-    fn is_power_of_two(self) -> bool;
+    fn is_power_of_two(_self: LuaReflectValProxy<std::num::NonZeroUsize>) -> bool;
 
 "#,
     r#"
@@ -3299,10 +3540,9 @@ pub struct LuaNonZeroU8();
 
     #[lua()]
     fn saturating_mul(
-        self,
-        #[proxy]
-        other: std::num::NonZeroUsize,
-    ) -> std::num::NonZeroUsize;
+        _self: LuaReflectValProxy<std::num::NonZeroUsize>,
+        other: LuaReflectValProxy<std::num::NonZeroUsize>,
+    ) -> LuaReflectValProxy<std::num::NonZeroUsize>;
 
 "#,
     r#"
@@ -3323,19 +3563,27 @@ pub struct LuaNonZeroU8();
 /// ```
 
     #[lua()]
-    fn saturating_pow(self, other: u32) -> std::num::NonZeroUsize;
+    fn saturating_pow(
+        _self: LuaReflectValProxy<std::num::NonZeroUsize>,
+        other: u32,
+    ) -> LuaReflectValProxy<std::num::NonZeroUsize>;
 
 "#,
     r#"
 
-    #[lua(as_trait = "std::cmp::PartialEq", composite = "eq")]
-    fn eq(&self, #[proxy] other: &std::num::NonZeroUsize) -> bool;
+    #[lua(as_trait = "std::cmp::PartialEq::<std::num::NonZeroUsize>", composite = "eq")]
+    fn eq(
+        _self: LuaReflectRefProxy<std::num::NonZeroUsize>,
+        other: LuaReflectRefProxy<std::num::NonZeroUsize>,
+    ) -> bool;
 
 "#,
     r#"
 
     #[lua(as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone")]
-    fn clone(&self) -> std::num::NonZeroUsize;
+    fn clone(
+        _self: LuaReflectRefProxy<std::num::NonZeroUsize>,
+    ) -> LuaReflectValProxy<std::num::NonZeroUsize>;
 
 "#,
     r#"
@@ -3345,7 +3593,7 @@ fn index(&self) -> String {
 }
 "#]
 )]
-pub struct LuaNonZeroUsize();
+pub struct NonZeroUsize();
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
     remote = "std::path::PathBuf",
@@ -3353,20 +3601,28 @@ pub struct LuaNonZeroUsize();
     bms_lua_path = "crate",
     functions[r#"
 
-    #[lua(as_trait = "std::cmp::PartialEq", composite = "eq")]
-    fn eq(&self, #[proxy] other: &std::path::PathBuf) -> bool;
+    #[lua(as_trait = "std::cmp::PartialEq::<std::path::PathBuf>", composite = "eq")]
+    fn eq(
+        _self: LuaReflectRefProxy<std::path::PathBuf>,
+        other: LuaReflectRefProxy<std::path::PathBuf>,
+    ) -> bool;
 
 "#,
     r#"
 
     #[lua(as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone")]
-    fn clone(&self) -> std::path::PathBuf;
+    fn clone(
+        _self: LuaReflectRefProxy<std::path::PathBuf>,
+    ) -> LuaReflectValProxy<std::path::PathBuf>;
 
 "#,
     r#"
 
     #[lua(as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone")]
-    fn clone_from(&mut self, #[proxy] source: &std::path::PathBuf) -> ();
+    fn clone_from(
+        _self: LuaReflectRefMutProxy<std::path::PathBuf>,
+        source: LuaReflectRefProxy<std::path::PathBuf>,
+    ) -> ();
 
 "#,
     r#"
@@ -3378,7 +3634,7 @@ pub struct LuaNonZeroUsize();
 /// ```
 
     #[lua()]
-    fn new() -> std::path::PathBuf;
+    fn new() -> LuaReflectValProxy<std::path::PathBuf>;
 
 "#,
     r#"
@@ -3396,7 +3652,7 @@ pub struct LuaNonZeroUsize();
 /// [`with_capacity`]: OsString::with_capacity
 
     #[lua()]
-    fn with_capacity(capacity: usize) -> std::path::PathBuf;
+    fn with_capacity(capacity: usize) -> LuaReflectValProxy<std::path::PathBuf>;
 
 "#,
     r#"
@@ -3415,7 +3671,7 @@ pub struct LuaNonZeroUsize();
 /// ```
 
     #[lua()]
-    fn pop(&mut self) -> bool;
+    fn pop(_self: LuaReflectRefMutProxy<std::path::PathBuf>) -> bool;
 
 "#,
     r#"
@@ -3423,7 +3679,7 @@ pub struct LuaNonZeroUsize();
 /// [`capacity`]: OsString::capacity
 
     #[lua()]
-    fn capacity(&self) -> usize;
+    fn capacity(_self: LuaReflectRefProxy<std::path::PathBuf>) -> usize;
 
 "#,
     r#"
@@ -3431,7 +3687,7 @@ pub struct LuaNonZeroUsize();
 /// [`clear`]: OsString::clear
 
     #[lua()]
-    fn clear(&mut self) -> ();
+    fn clear(_self: LuaReflectRefMutProxy<std::path::PathBuf>) -> ();
 
 "#,
     r#"
@@ -3439,7 +3695,10 @@ pub struct LuaNonZeroUsize();
 /// [`reserve`]: OsString::reserve
 
     #[lua()]
-    fn reserve(&mut self, additional: usize) -> ();
+    fn reserve(
+        _self: LuaReflectRefMutProxy<std::path::PathBuf>,
+        additional: usize,
+    ) -> ();
 
 "#,
     r#"
@@ -3447,7 +3706,10 @@ pub struct LuaNonZeroUsize();
 /// [`reserve_exact`]: OsString::reserve_exact
 
     #[lua()]
-    fn reserve_exact(&mut self, additional: usize) -> ();
+    fn reserve_exact(
+        _self: LuaReflectRefMutProxy<std::path::PathBuf>,
+        additional: usize,
+    ) -> ();
 
 "#,
     r#"
@@ -3455,7 +3717,7 @@ pub struct LuaNonZeroUsize();
 /// [`shrink_to_fit`]: OsString::shrink_to_fit
 
     #[lua()]
-    fn shrink_to_fit(&mut self) -> ();
+    fn shrink_to_fit(_self: LuaReflectRefMutProxy<std::path::PathBuf>) -> ();
 
 "#,
     r#"
@@ -3463,7 +3725,10 @@ pub struct LuaNonZeroUsize();
 /// [`shrink_to`]: OsString::shrink_to
 
     #[lua()]
-    fn shrink_to(&mut self, min_capacity: usize) -> ();
+    fn shrink_to(
+        _self: LuaReflectRefMutProxy<std::path::PathBuf>,
+        min_capacity: usize,
+    ) -> ();
 
 "#,
     r#"
@@ -3473,7 +3738,7 @@ fn index(&self) -> String {
 }
 "#]
 )]
-pub struct LuaPathBuf {}
+pub struct PathBuf {}
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
     remote = "std::ops::RangeFull",
@@ -3482,19 +3747,24 @@ pub struct LuaPathBuf {}
     functions[r#"
 
     #[lua(as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone")]
-    fn clone(&self) -> std::ops::RangeFull;
+    fn clone(
+        _self: LuaReflectRefProxy<std::ops::RangeFull>,
+    ) -> LuaReflectValProxy<std::ops::RangeFull>;
 
 "#,
     r#"
 
-    #[lua(as_trait = "std::cmp::PartialEq", composite = "eq")]
-    fn eq(&self, #[proxy] other: &std::ops::RangeFull) -> bool;
+    #[lua(as_trait = "std::cmp::PartialEq::<std::ops::RangeFull>", composite = "eq")]
+    fn eq(
+        _self: LuaReflectRefProxy<std::ops::RangeFull>,
+        other: LuaReflectRefProxy<std::ops::RangeFull>,
+    ) -> bool;
 
 "#,
     r#"
 
     #[lua(as_trait = "std::cmp::Eq")]
-    fn assert_receiver_is_total_eq(&self) -> ();
+    fn assert_receiver_is_total_eq(_self: LuaReflectRefProxy<std::ops::RangeFull>) -> ();
 
 "#,
     r#"
@@ -3504,7 +3774,7 @@ fn index(&self) -> String {
 }
 "#]
 )]
-pub struct LuaRangeFull {}
+pub struct RangeFull {}
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
     remote = "bevy::math::Quat",
@@ -3513,18 +3783,23 @@ pub struct LuaRangeFull {}
     functions[r#"
 /// Rotates the [`Direction3d`] using a [`Quat`].
 
-    #[lua(as_trait = "std::ops::Mul", composite = "mul")]
+    #[lua(
+        as_trait = "std::ops::Mul::<bevy::math::primitives::Direction3d>",
+        composite = "mul",
+    )]
     fn mul(
-        self,
-        #[proxy]
-        direction: bevy::math::primitives::Direction3d,
-    ) -> bevy::math::primitives::Direction3d;
+        _self: LuaReflectValProxy<bevy::math::Quat>,
+        direction: LuaReflectValProxy<bevy::math::primitives::Direction3d>,
+    ) -> LuaReflectValProxy<bevy::math::primitives::Direction3d>;
 
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Mul", composite = "mul")]
-    fn mul(self, #[proxy] rhs: bevy::math::Vec3A) -> bevy::math::Vec3A;
+    #[lua(as_trait = "std::ops::Mul::<bevy::math::Vec3A>", composite = "mul")]
+    fn mul(
+        _self: LuaReflectValProxy<bevy::math::Quat>,
+        rhs: LuaReflectValProxy<bevy::math::Vec3A>,
+    ) -> LuaReflectValProxy<bevy::math::Vec3A>;
 
 "#,
     r#"
@@ -3532,8 +3807,11 @@ pub struct LuaRangeFull {}
 /// # Panics
 /// Will panic if `self` is not normalized when `glam_assert` is enabled.
 
-    #[lua(as_trait = "std::ops::Mul", composite = "mul")]
-    fn mul(self, #[proxy] rhs: bevy::math::Vec3) -> bevy::math::Vec3;
+    #[lua(as_trait = "std::ops::Mul::<bevy::math::Vec3>", composite = "mul")]
+    fn mul(
+        _self: LuaReflectValProxy<bevy::math::Quat>,
+        rhs: LuaReflectValProxy<bevy::math::Vec3>,
+    ) -> LuaReflectValProxy<bevy::math::Vec3>;
 
 "#,
     r#"
@@ -3544,14 +3822,19 @@ pub struct LuaRangeFull {}
 /// # Panics
 /// Will panic if `self` or `rhs` are not normalized when `glam_assert` is enabled.
 
-    #[lua(as_trait = "std::ops::Mul", composite = "mul")]
-    fn mul(self, #[proxy] rhs: bevy::math::Quat) -> bevy::math::Quat;
+    #[lua(as_trait = "std::ops::Mul::<bevy::math::Quat>", composite = "mul")]
+    fn mul(
+        _self: LuaReflectValProxy<bevy::math::Quat>,
+        rhs: LuaReflectValProxy<bevy::math::Quat>,
+    ) -> LuaReflectValProxy<bevy::math::Quat>;
 
 "#,
     r#"
 
     #[lua(as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone")]
-    fn clone(&self) -> bevy::math::Quat;
+    fn clone(
+        _self: LuaReflectRefProxy<bevy::math::Quat>,
+    ) -> LuaReflectValProxy<bevy::math::Quat>;
 
 "#,
     r#"
@@ -3560,30 +3843,42 @@ pub struct LuaRangeFull {}
 /// Note that addition is not the same as combining the rotations represented by the
 /// two quaternions! That corresponds to multiplication.
 
-    #[lua(as_trait = "std::ops::Add", composite = "add")]
-    fn add(self, #[proxy] rhs: bevy::math::Quat) -> bevy::math::Quat;
+    #[lua(as_trait = "std::ops::Add::<bevy::math::Quat>", composite = "add")]
+    fn add(
+        _self: LuaReflectValProxy<bevy::math::Quat>,
+        rhs: LuaReflectValProxy<bevy::math::Quat>,
+    ) -> LuaReflectValProxy<bevy::math::Quat>;
 
 "#,
     r#"
 /// Subtracts the `rhs` quaternion from `self`.
 /// The difference is not guaranteed to be normalized.
 
-    #[lua(as_trait = "std::ops::Sub", composite = "sub")]
-    fn sub(self, #[proxy] rhs: bevy::math::Quat) -> bevy::math::Quat;
+    #[lua(as_trait = "std::ops::Sub::<bevy::math::Quat>", composite = "sub")]
+    fn sub(
+        _self: LuaReflectValProxy<bevy::math::Quat>,
+        rhs: LuaReflectValProxy<bevy::math::Quat>,
+    ) -> LuaReflectValProxy<bevy::math::Quat>;
 
 "#,
     r#"
 
-    #[lua(as_trait = "std::cmp::PartialEq", composite = "eq")]
-    fn eq(&self, #[proxy] rhs: &glam::Quat) -> bool;
+    #[lua(as_trait = "std::cmp::PartialEq::<bevy::math::Quat>", composite = "eq")]
+    fn eq(
+        _self: LuaReflectRefProxy<bevy::math::Quat>,
+        rhs: LuaReflectRefProxy<bevy::math::Quat>,
+    ) -> bool;
 
 "#,
     r#"
 /// Divides a quaternion by a scalar value.
 /// The quotient is not guaranteed to be normalized.
 
-    #[lua(as_trait = "std::ops::Div", composite = "div")]
-    fn div(self, rhs: f32) -> bevy::math::Quat;
+    #[lua(as_trait = "std::ops::Div::<f32>", composite = "div")]
+    fn div(
+        _self: LuaReflectValProxy<bevy::math::Quat>,
+        rhs: f32,
+    ) -> LuaReflectValProxy<bevy::math::Quat>;
 
 "#,
     r#"
@@ -3596,7 +3891,7 @@ pub struct LuaRangeFull {}
 /// provide normalized input or to normalized the resulting quaternion.
 
     #[lua()]
-    fn from_xyzw(x: f32, y: f32, z: f32, w: f32) -> bevy::math::Quat;
+    fn from_xyzw(x: f32, y: f32, z: f32, w: f32) -> LuaReflectValProxy<bevy::math::Quat>;
 
 "#,
     r#"
@@ -3606,7 +3901,7 @@ pub struct LuaRangeFull {}
 /// provide normalized input or to normalized the resulting quaternion.
 
     #[lua()]
-    fn from_array(a: [f32; 4]) -> bevy::math::Quat;
+    fn from_array(a: [f32; 4]) -> LuaReflectValProxy<bevy::math::Quat>;
 
 "#,
     r#"
@@ -3616,7 +3911,9 @@ pub struct LuaRangeFull {}
 /// provide normalized input or to normalized the resulting quaternion.
 
     #[lua()]
-    fn from_vec4(#[proxy] v: bevy::math::Vec4) -> bevy::math::Quat;
+    fn from_vec4(
+        v: LuaReflectValProxy<bevy::math::Vec4>,
+    ) -> LuaReflectValProxy<bevy::math::Quat>;
 
 "#,
     r#"
@@ -3626,7 +3923,10 @@ pub struct LuaRangeFull {}
 /// Will panic if `axis` is not normalized when `glam_assert` is enabled.
 
     #[lua()]
-    fn from_axis_angle(#[proxy] axis: bevy::math::Vec3, angle: f32) -> bevy::math::Quat;
+    fn from_axis_angle(
+        axis: LuaReflectValProxy<bevy::math::Vec3>,
+        angle: f32,
+    ) -> LuaReflectValProxy<bevy::math::Quat>;
 
 "#,
     r#"
@@ -3634,28 +3934,30 @@ pub struct LuaRangeFull {}
 /// `from_scaled_axis(Vec3::ZERO)` results in the identity quaternion.
 
     #[lua()]
-    fn from_scaled_axis(#[proxy] v: bevy::math::Vec3) -> bevy::math::Quat;
+    fn from_scaled_axis(
+        v: LuaReflectValProxy<bevy::math::Vec3>,
+    ) -> LuaReflectValProxy<bevy::math::Quat>;
 
 "#,
     r#"
 /// Creates a quaternion from the `angle` (in radians) around the x axis.
 
     #[lua()]
-    fn from_rotation_x(angle: f32) -> bevy::math::Quat;
+    fn from_rotation_x(angle: f32) -> LuaReflectValProxy<bevy::math::Quat>;
 
 "#,
     r#"
 /// Creates a quaternion from the `angle` (in radians) around the y axis.
 
     #[lua()]
-    fn from_rotation_y(angle: f32) -> bevy::math::Quat;
+    fn from_rotation_y(angle: f32) -> LuaReflectValProxy<bevy::math::Quat>;
 
 "#,
     r#"
 /// Creates a quaternion from the `angle` (in radians) around the z axis.
 
     #[lua()]
-    fn from_rotation_z(angle: f32) -> bevy::math::Quat;
+    fn from_rotation_z(angle: f32) -> LuaReflectValProxy<bevy::math::Quat>;
 
 "#,
     r#"
@@ -3663,33 +3965,38 @@ pub struct LuaRangeFull {}
 
     #[lua()]
     fn from_euler(
-        #[proxy]
-        euler: bevy::math::EulerRot,
+        euler: LuaReflectValProxy<bevy::math::EulerRot>,
         a: f32,
         b: f32,
         c: f32,
-    ) -> bevy::math::Quat;
+    ) -> LuaReflectValProxy<bevy::math::Quat>;
 
 "#,
     r#"
 /// Creates a quaternion from a 3x3 rotation matrix.
 
     #[lua()]
-    fn from_mat3(#[proxy] mat: &glam::Mat3) -> bevy::math::Quat;
+    fn from_mat3(
+        mat: LuaReflectRefProxy<bevy::math::Mat3>,
+    ) -> LuaReflectValProxy<bevy::math::Quat>;
 
 "#,
     r#"
 /// Creates a quaternion from a 3x3 SIMD aligned rotation matrix.
 
     #[lua()]
-    fn from_mat3a(#[proxy] mat: &glam::Mat3A) -> bevy::math::Quat;
+    fn from_mat3a(
+        mat: LuaReflectRefProxy<bevy::math::Mat3A>,
+    ) -> LuaReflectValProxy<bevy::math::Quat>;
 
 "#,
     r#"
 /// Creates a quaternion from a 3x3 rotation matrix inside a homogeneous 4x4 matrix.
 
     #[lua()]
-    fn from_mat4(#[proxy] mat: &glam::Mat4) -> bevy::math::Quat;
+    fn from_mat4(
+        mat: LuaReflectRefProxy<bevy::math::Mat4>,
+    ) -> LuaReflectValProxy<bevy::math::Quat>;
 
 "#,
     r#"
@@ -3704,11 +4011,9 @@ pub struct LuaRangeFull {}
 
     #[lua()]
     fn from_rotation_arc(
-        #[proxy]
-        from: bevy::math::Vec3,
-        #[proxy]
-        to: bevy::math::Vec3,
-    ) -> bevy::math::Quat;
+        from: LuaReflectValProxy<bevy::math::Vec3>,
+        to: LuaReflectValProxy<bevy::math::Vec3>,
+    ) -> LuaReflectValProxy<bevy::math::Quat>;
 
 "#,
     r#"
@@ -3723,11 +4028,9 @@ pub struct LuaRangeFull {}
 
     #[lua()]
     fn from_rotation_arc_colinear(
-        #[proxy]
-        from: bevy::math::Vec3,
-        #[proxy]
-        to: bevy::math::Vec3,
-    ) -> bevy::math::Quat;
+        from: LuaReflectValProxy<bevy::math::Vec3>,
+        to: LuaReflectValProxy<bevy::math::Vec3>,
+    ) -> LuaReflectValProxy<bevy::math::Quat>;
 
 "#,
     r#"
@@ -3742,39 +4045,44 @@ pub struct LuaRangeFull {}
 
     #[lua()]
     fn from_rotation_arc_2d(
-        #[proxy]
-        from: bevy::math::Vec2,
-        #[proxy]
-        to: bevy::math::Vec2,
-    ) -> bevy::math::Quat;
+        from: LuaReflectValProxy<bevy::math::Vec2>,
+        to: LuaReflectValProxy<bevy::math::Vec2>,
+    ) -> LuaReflectValProxy<bevy::math::Quat>;
 
 "#,
     r#"
 /// Returns the rotation axis scaled by the rotation in radians.
 
     #[lua()]
-    fn to_scaled_axis(self) -> bevy::math::Vec3;
+    fn to_scaled_axis(
+        _self: LuaReflectValProxy<bevy::math::Quat>,
+    ) -> LuaReflectValProxy<bevy::math::Vec3>;
 
 "#,
     r#"
 /// Returns the rotation angles for the given euler rotation sequence.
 
     #[lua()]
-    fn to_euler(self, #[proxy] euler: bevy::math::EulerRot) -> (f32, f32, f32);
+    fn to_euler(
+        _self: LuaReflectValProxy<bevy::math::Quat>,
+        euler: LuaReflectValProxy<bevy::math::EulerRot>,
+    ) -> (f32, f32, f32);
 
 "#,
     r#"
 /// `[x, y, z, w]`
 
     #[lua()]
-    fn to_array(&self) -> [f32; 4];
+    fn to_array(_self: LuaReflectRefProxy<bevy::math::Quat>) -> [f32; 4];
 
 "#,
     r#"
 /// Returns the vector part of the quaternion.
 
     #[lua()]
-    fn xyz(self) -> bevy::math::Vec3;
+    fn xyz(
+        _self: LuaReflectValProxy<bevy::math::Quat>,
+    ) -> LuaReflectValProxy<bevy::math::Vec3>;
 
 "#,
     r#"
@@ -3782,7 +4090,9 @@ pub struct LuaRangeFull {}
 /// conjugate is also the inverse.
 
     #[lua()]
-    fn conjugate(self) -> bevy::math::Quat;
+    fn conjugate(
+        _self: LuaReflectValProxy<bevy::math::Quat>,
+    ) -> LuaReflectValProxy<bevy::math::Quat>;
 
 "#,
     r#"
@@ -3794,7 +4104,9 @@ pub struct LuaRangeFull {}
 /// Will panic if `self` is not normalized when `glam_assert` is enabled.
 
     #[lua()]
-    fn inverse(self) -> bevy::math::Quat;
+    fn inverse(
+        _self: LuaReflectValProxy<bevy::math::Quat>,
+    ) -> LuaReflectValProxy<bevy::math::Quat>;
 
 "#,
     r#"
@@ -3802,14 +4114,17 @@ pub struct LuaRangeFull {}
 /// equal to the cosine of the angle between two quaternion rotations.
 
     #[lua()]
-    fn dot(self, #[proxy] rhs: bevy::math::Quat) -> f32;
+    fn dot(
+        _self: LuaReflectValProxy<bevy::math::Quat>,
+        rhs: LuaReflectValProxy<bevy::math::Quat>,
+    ) -> f32;
 
 "#,
     r#"
 /// Computes the length of `self`.
 
     #[lua()]
-    fn length(self) -> f32;
+    fn length(_self: LuaReflectValProxy<bevy::math::Quat>) -> f32;
 
 "#,
     r#"
@@ -3818,7 +4133,7 @@ pub struct LuaRangeFull {}
 /// root operation.
 
     #[lua()]
-    fn length_squared(self) -> f32;
+    fn length_squared(_self: LuaReflectValProxy<bevy::math::Quat>) -> f32;
 
 "#,
     r#"
@@ -3826,7 +4141,7 @@ pub struct LuaRangeFull {}
 /// For valid results, `self` must _not_ be of length zero.
 
     #[lua()]
-    fn length_recip(self) -> f32;
+    fn length_recip(_self: LuaReflectValProxy<bevy::math::Quat>) -> f32;
 
 "#,
     r#"
@@ -3836,7 +4151,9 @@ pub struct LuaRangeFull {}
 /// Will panic if `self` is zero length when `glam_assert` is enabled.
 
     #[lua()]
-    fn normalize(self) -> bevy::math::Quat;
+    fn normalize(
+        _self: LuaReflectValProxy<bevy::math::Quat>,
+    ) -> LuaReflectValProxy<bevy::math::Quat>;
 
 "#,
     r#"
@@ -3844,13 +4161,13 @@ pub struct LuaRangeFull {}
 /// If any element is either `NaN`, positive or negative infinity, this will return `false`.
 
     #[lua()]
-    fn is_finite(self) -> bool;
+    fn is_finite(_self: LuaReflectValProxy<bevy::math::Quat>) -> bool;
 
 "#,
     r#"
 
     #[lua()]
-    fn is_nan(self) -> bool;
+    fn is_nan(_self: LuaReflectValProxy<bevy::math::Quat>) -> bool;
 
 "#,
     r#"
@@ -3858,13 +4175,13 @@ pub struct LuaRangeFull {}
 /// Uses a precision threshold of `1e-6`.
 
     #[lua()]
-    fn is_normalized(self) -> bool;
+    fn is_normalized(_self: LuaReflectValProxy<bevy::math::Quat>) -> bool;
 
 "#,
     r#"
 
     #[lua()]
-    fn is_near_identity(self) -> bool;
+    fn is_near_identity(_self: LuaReflectValProxy<bevy::math::Quat>) -> bool;
 
 "#,
     r#"
@@ -3875,7 +4192,10 @@ pub struct LuaRangeFull {}
 /// Will panic if `self` or `rhs` are not normalized when `glam_assert` is enabled.
 
     #[lua()]
-    fn angle_between(self, #[proxy] rhs: bevy::math::Quat) -> f32;
+    fn angle_between(
+        _self: LuaReflectValProxy<bevy::math::Quat>,
+        rhs: LuaReflectValProxy<bevy::math::Quat>,
+    ) -> f32;
 
 "#,
     r#"
@@ -3888,7 +4208,11 @@ pub struct LuaRangeFull {}
 /// [comparing floating point numbers](https://randomascii.wordpress.com/2012/02/25/comparing-floating-point-numbers-2012-edition/).
 
     #[lua()]
-    fn abs_diff_eq(self, #[proxy] rhs: bevy::math::Quat, max_abs_diff: f32) -> bool;
+    fn abs_diff_eq(
+        _self: LuaReflectValProxy<bevy::math::Quat>,
+        rhs: LuaReflectValProxy<bevy::math::Quat>,
+        max_abs_diff: f32,
+    ) -> bool;
 
 "#,
     r#"
@@ -3900,7 +4224,11 @@ pub struct LuaRangeFull {}
 /// Will panic if `self` or `end` are not normalized when `glam_assert` is enabled.
 
     #[lua()]
-    fn lerp(self, #[proxy] end: bevy::math::Quat, s: f32) -> bevy::math::Quat;
+    fn lerp(
+        _self: LuaReflectValProxy<bevy::math::Quat>,
+        end: LuaReflectValProxy<bevy::math::Quat>,
+        s: f32,
+    ) -> LuaReflectValProxy<bevy::math::Quat>;
 
 "#,
     r#"
@@ -3912,7 +4240,11 @@ pub struct LuaRangeFull {}
 /// Will panic if `self` or `end` are not normalized when `glam_assert` is enabled.
 
     #[lua()]
-    fn slerp(self, #[proxy] end: bevy::math::Quat, s: f32) -> bevy::math::Quat;
+    fn slerp(
+        _self: LuaReflectValProxy<bevy::math::Quat>,
+        end: LuaReflectValProxy<bevy::math::Quat>,
+        s: f32,
+    ) -> LuaReflectValProxy<bevy::math::Quat>;
 
 "#,
     r#"
@@ -3921,7 +4253,10 @@ pub struct LuaRangeFull {}
 /// Will panic if `self` is not normalized when `glam_assert` is enabled.
 
     #[lua()]
-    fn mul_vec3(self, #[proxy] rhs: bevy::math::Vec3) -> bevy::math::Vec3;
+    fn mul_vec3(
+        _self: LuaReflectValProxy<bevy::math::Quat>,
+        rhs: LuaReflectValProxy<bevy::math::Vec3>,
+    ) -> LuaReflectValProxy<bevy::math::Vec3>;
 
 "#,
     r#"
@@ -3932,47 +4267,64 @@ pub struct LuaRangeFull {}
 /// Will panic if `self` or `rhs` are not normalized when `glam_assert` is enabled.
 
     #[lua()]
-    fn mul_quat(self, #[proxy] rhs: bevy::math::Quat) -> bevy::math::Quat;
+    fn mul_quat(
+        _self: LuaReflectValProxy<bevy::math::Quat>,
+        rhs: LuaReflectValProxy<bevy::math::Quat>,
+    ) -> LuaReflectValProxy<bevy::math::Quat>;
 
 "#,
     r#"
 /// Creates a quaternion from a 3x3 rotation matrix inside a 3D affine transform.
 
     #[lua()]
-    fn from_affine3(#[proxy] a: &glam::Affine3A) -> bevy::math::Quat;
+    fn from_affine3(
+        a: LuaReflectRefProxy<bevy::math::Affine3A>,
+    ) -> LuaReflectValProxy<bevy::math::Quat>;
 
 "#,
     r#"
 /// Multiplies a quaternion and a 3D vector, returning the rotated vector.
 
     #[lua()]
-    fn mul_vec3a(self, #[proxy] rhs: bevy::math::Vec3A) -> bevy::math::Vec3A;
+    fn mul_vec3a(
+        _self: LuaReflectValProxy<bevy::math::Quat>,
+        rhs: LuaReflectValProxy<bevy::math::Vec3A>,
+    ) -> LuaReflectValProxy<bevy::math::Vec3A>;
 
 "#,
     r#"
 
     #[lua()]
-    fn as_dquat(self) -> bevy::math::DQuat;
+    fn as_dquat(
+        _self: LuaReflectValProxy<bevy::math::Quat>,
+    ) -> LuaReflectValProxy<bevy::math::DQuat>;
 
 "#,
     r#"
 
     #[lua()]
-    fn as_f64(self) -> bevy::math::DQuat;
+    fn as_f64(
+        _self: LuaReflectValProxy<bevy::math::Quat>,
+    ) -> LuaReflectValProxy<bevy::math::DQuat>;
 
 "#,
     r#"
 /// Multiplies a quaternion by a scalar value.
 /// The product is not guaranteed to be normalized.
 
-    #[lua(as_trait = "std::ops::Mul", composite = "mul")]
-    fn mul(self, rhs: f32) -> bevy::math::Quat;
+    #[lua(as_trait = "std::ops::Mul::<f32>", composite = "mul")]
+    fn mul(
+        _self: LuaReflectValProxy<bevy::math::Quat>,
+        rhs: f32,
+    ) -> LuaReflectValProxy<bevy::math::Quat>;
 
 "#,
     r#"
 
     #[lua(as_trait = "std::ops::Neg", composite = "neg")]
-    fn neg(self) -> bevy::math::Quat;
+    fn neg(
+        _self: LuaReflectValProxy<bevy::math::Quat>,
+    ) -> LuaReflectValProxy<bevy::math::Quat>;
 
 "#,
     r#"
@@ -3982,7 +4334,7 @@ fn index(&self) -> String {
 }
 "#]
 )]
-pub struct LuaQuat();
+pub struct Quat();
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
     remote = "bevy::math::Vec3",
@@ -3990,70 +4342,95 @@ pub struct LuaQuat();
     bms_lua_path = "crate",
     functions[r#"
 
-    #[lua(as_trait = "std::ops::Add", composite = "add")]
-    fn add(self, #[proxy] rhs: bevy::math::Vec3) -> bevy::math::Vec3;
+    #[lua(as_trait = "std::ops::Add::<bevy::math::Vec3>", composite = "add")]
+    fn add(
+        _self: LuaReflectValProxy<bevy::math::Vec3>,
+        rhs: LuaReflectValProxy<bevy::math::Vec3>,
+    ) -> LuaReflectValProxy<bevy::math::Vec3>;
 
 "#,
     r#"
 
     #[lua(as_trait = "std::ops::Neg", composite = "neg")]
-    fn neg(self) -> bevy::math::Vec3;
+    fn neg(
+        _self: LuaReflectValProxy<bevy::math::Vec3>,
+    ) -> LuaReflectValProxy<bevy::math::Vec3>;
 
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Sub", composite = "sub")]
-    fn sub(self, #[proxy] rhs: bevy::math::Vec3) -> bevy::math::Vec3;
+    #[lua(as_trait = "std::ops::Sub::<bevy::math::Vec3>", composite = "sub")]
+    fn sub(
+        _self: LuaReflectValProxy<bevy::math::Vec3>,
+        rhs: LuaReflectValProxy<bevy::math::Vec3>,
+    ) -> LuaReflectValProxy<bevy::math::Vec3>;
 
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Mul", composite = "mul")]
-    fn mul(self, rhs: f32) -> bevy::math::Vec3;
+    #[lua(as_trait = "std::ops::Mul::<f32>", composite = "mul")]
+    fn mul(
+        _self: LuaReflectValProxy<bevy::math::Vec3>,
+        rhs: f32,
+    ) -> LuaReflectValProxy<bevy::math::Vec3>;
 
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Div", composite = "div")]
-    fn div(self, #[proxy] rhs: bevy::math::Vec3) -> bevy::math::Vec3;
+    #[lua(as_trait = "std::ops::Div::<bevy::math::Vec3>", composite = "div")]
+    fn div(
+        _self: LuaReflectValProxy<bevy::math::Vec3>,
+        rhs: LuaReflectValProxy<bevy::math::Vec3>,
+    ) -> LuaReflectValProxy<bevy::math::Vec3>;
 
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Mul", composite = "mul")]
-    fn mul(self, #[proxy] rhs: bevy::math::Vec3) -> bevy::math::Vec3;
+    #[lua(as_trait = "std::ops::Mul::<bevy::math::Vec3>", composite = "mul")]
+    fn mul(
+        _self: LuaReflectValProxy<bevy::math::Vec3>,
+        rhs: LuaReflectValProxy<bevy::math::Vec3>,
+    ) -> LuaReflectValProxy<bevy::math::Vec3>;
 
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Rem", composite = "rem")]
-    fn rem(self, rhs: f32) -> bevy::math::Vec3;
+    #[lua(as_trait = "std::ops::Rem::<f32>", composite = "rem")]
+    fn rem(
+        _self: LuaReflectValProxy<bevy::math::Vec3>,
+        rhs: f32,
+    ) -> LuaReflectValProxy<bevy::math::Vec3>;
 
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Add", composite = "add")]
-    fn add(self, rhs: f32) -> bevy::math::Vec3;
+    #[lua(as_trait = "std::ops::Add::<f32>", composite = "add")]
+    fn add(
+        _self: LuaReflectValProxy<bevy::math::Vec3>,
+        rhs: f32,
+    ) -> LuaReflectValProxy<bevy::math::Vec3>;
 
 "#,
     r#"
 
     #[lua(as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone")]
-    fn clone(&self) -> bevy::math::Vec3;
+    fn clone(
+        _self: LuaReflectRefProxy<bevy::math::Vec3>,
+    ) -> LuaReflectValProxy<bevy::math::Vec3>;
 
 "#,
     r#"
 /// Creates a new vector.
 
     #[lua()]
-    fn new(x: f32, y: f32, z: f32) -> bevy::math::Vec3;
+    fn new(x: f32, y: f32, z: f32) -> LuaReflectValProxy<bevy::math::Vec3>;
 
 "#,
     r#"
 /// Creates a vector with all elements set to `v`.
 
     #[lua()]
-    fn splat(v: f32) -> bevy::math::Vec3;
+    fn splat(v: f32) -> LuaReflectValProxy<bevy::math::Vec3>;
 
 "#,
     r#"
@@ -4064,34 +4441,34 @@ pub struct LuaQuat();
 
     #[lua()]
     fn select(
-        #[proxy]
-        mask: bevy::math::BVec3,
-        #[proxy]
-        if_true: bevy::math::Vec3,
-        #[proxy]
-        if_false: bevy::math::Vec3,
-    ) -> bevy::math::Vec3;
+        mask: LuaReflectValProxy<bevy::math::BVec3>,
+        if_true: LuaReflectValProxy<bevy::math::Vec3>,
+        if_false: LuaReflectValProxy<bevy::math::Vec3>,
+    ) -> LuaReflectValProxy<bevy::math::Vec3>;
 
 "#,
     r#"
 /// Creates a new vector from an array.
 
     #[lua()]
-    fn from_array(a: [f32; 3]) -> bevy::math::Vec3;
+    fn from_array(a: [f32; 3]) -> LuaReflectValProxy<bevy::math::Vec3>;
 
 "#,
     r#"
 /// `[x, y, z]`
 
     #[lua()]
-    fn to_array(&self) -> [f32; 3];
+    fn to_array(_self: LuaReflectRefProxy<bevy::math::Vec3>) -> [f32; 3];
 
 "#,
     r#"
 /// Creates a 4D vector from `self` and the given `w` value.
 
     #[lua()]
-    fn extend(self, w: f32) -> bevy::math::Vec4;
+    fn extend(
+        _self: LuaReflectValProxy<bevy::math::Vec3>,
+        w: f32,
+    ) -> LuaReflectValProxy<bevy::math::Vec4>;
 
 "#,
     r#"
@@ -4099,28 +4476,39 @@ pub struct LuaQuat();
 /// Truncation may also be performed by using [`self.xy()`][crate::swizzles::Vec3Swizzles::xy()].
 
     #[lua()]
-    fn truncate(self) -> bevy::math::Vec2;
+    fn truncate(
+        _self: LuaReflectValProxy<bevy::math::Vec3>,
+    ) -> LuaReflectValProxy<bevy::math::Vec2>;
 
 "#,
     r#"
 /// Computes the dot product of `self` and `rhs`.
 
     #[lua()]
-    fn dot(self, #[proxy] rhs: bevy::math::Vec3) -> f32;
+    fn dot(
+        _self: LuaReflectValProxy<bevy::math::Vec3>,
+        rhs: LuaReflectValProxy<bevy::math::Vec3>,
+    ) -> f32;
 
 "#,
     r#"
 /// Returns a vector where every component is the dot product of `self` and `rhs`.
 
     #[lua()]
-    fn dot_into_vec(self, #[proxy] rhs: bevy::math::Vec3) -> bevy::math::Vec3;
+    fn dot_into_vec(
+        _self: LuaReflectValProxy<bevy::math::Vec3>,
+        rhs: LuaReflectValProxy<bevy::math::Vec3>,
+    ) -> LuaReflectValProxy<bevy::math::Vec3>;
 
 "#,
     r#"
 /// Computes the cross product of `self` and `rhs`.
 
     #[lua()]
-    fn cross(self, #[proxy] rhs: bevy::math::Vec3) -> bevy::math::Vec3;
+    fn cross(
+        _self: LuaReflectValProxy<bevy::math::Vec3>,
+        rhs: LuaReflectValProxy<bevy::math::Vec3>,
+    ) -> LuaReflectValProxy<bevy::math::Vec3>;
 
 "#,
     r#"
@@ -4128,7 +4516,10 @@ pub struct LuaQuat();
 /// In other words this computes `[self.x.min(rhs.x), self.y.min(rhs.y), ..]`.
 
     #[lua()]
-    fn min(self, #[proxy] rhs: bevy::math::Vec3) -> bevy::math::Vec3;
+    fn min(
+        _self: LuaReflectValProxy<bevy::math::Vec3>,
+        rhs: LuaReflectValProxy<bevy::math::Vec3>,
+    ) -> LuaReflectValProxy<bevy::math::Vec3>;
 
 "#,
     r#"
@@ -4136,7 +4527,10 @@ pub struct LuaQuat();
 /// In other words this computes `[self.x.max(rhs.x), self.y.max(rhs.y), ..]`.
 
     #[lua()]
-    fn max(self, #[proxy] rhs: bevy::math::Vec3) -> bevy::math::Vec3;
+    fn max(
+        _self: LuaReflectValProxy<bevy::math::Vec3>,
+        rhs: LuaReflectValProxy<bevy::math::Vec3>,
+    ) -> LuaReflectValProxy<bevy::math::Vec3>;
 
 "#,
     r#"
@@ -4147,12 +4541,10 @@ pub struct LuaQuat();
 
     #[lua()]
     fn clamp(
-        self,
-        #[proxy]
-        min: bevy::math::Vec3,
-        #[proxy]
-        max: bevy::math::Vec3,
-    ) -> bevy::math::Vec3;
+        _self: LuaReflectValProxy<bevy::math::Vec3>,
+        min: LuaReflectValProxy<bevy::math::Vec3>,
+        max: LuaReflectValProxy<bevy::math::Vec3>,
+    ) -> LuaReflectValProxy<bevy::math::Vec3>;
 
 "#,
     r#"
@@ -4160,7 +4552,7 @@ pub struct LuaQuat();
 /// In other words this computes `min(x, y, ..)`.
 
     #[lua()]
-    fn min_element(self) -> f32;
+    fn min_element(_self: LuaReflectValProxy<bevy::math::Vec3>) -> f32;
 
 "#,
     r#"
@@ -4168,7 +4560,7 @@ pub struct LuaQuat();
 /// In other words this computes `max(x, y, ..)`.
 
     #[lua()]
-    fn max_element(self) -> f32;
+    fn max_element(_self: LuaReflectValProxy<bevy::math::Vec3>) -> f32;
 
 "#,
     r#"
@@ -4178,7 +4570,10 @@ pub struct LuaQuat();
 /// elements.
 
     #[lua()]
-    fn cmpeq(self, #[proxy] rhs: bevy::math::Vec3) -> bevy::math::BVec3;
+    fn cmpeq(
+        _self: LuaReflectValProxy<bevy::math::Vec3>,
+        rhs: LuaReflectValProxy<bevy::math::Vec3>,
+    ) -> LuaReflectValProxy<bevy::math::BVec3>;
 
 "#,
     r#"
@@ -4188,7 +4583,10 @@ pub struct LuaQuat();
 /// elements.
 
     #[lua()]
-    fn cmpne(self, #[proxy] rhs: bevy::math::Vec3) -> bevy::math::BVec3;
+    fn cmpne(
+        _self: LuaReflectValProxy<bevy::math::Vec3>,
+        rhs: LuaReflectValProxy<bevy::math::Vec3>,
+    ) -> LuaReflectValProxy<bevy::math::BVec3>;
 
 "#,
     r#"
@@ -4198,7 +4596,10 @@ pub struct LuaQuat();
 /// elements.
 
     #[lua()]
-    fn cmpge(self, #[proxy] rhs: bevy::math::Vec3) -> bevy::math::BVec3;
+    fn cmpge(
+        _self: LuaReflectValProxy<bevy::math::Vec3>,
+        rhs: LuaReflectValProxy<bevy::math::Vec3>,
+    ) -> LuaReflectValProxy<bevy::math::BVec3>;
 
 "#,
     r#"
@@ -4208,7 +4609,10 @@ pub struct LuaQuat();
 /// elements.
 
     #[lua()]
-    fn cmpgt(self, #[proxy] rhs: bevy::math::Vec3) -> bevy::math::BVec3;
+    fn cmpgt(
+        _self: LuaReflectValProxy<bevy::math::Vec3>,
+        rhs: LuaReflectValProxy<bevy::math::Vec3>,
+    ) -> LuaReflectValProxy<bevy::math::BVec3>;
 
 "#,
     r#"
@@ -4218,7 +4622,10 @@ pub struct LuaQuat();
 /// elements.
 
     #[lua()]
-    fn cmple(self, #[proxy] rhs: bevy::math::Vec3) -> bevy::math::BVec3;
+    fn cmple(
+        _self: LuaReflectValProxy<bevy::math::Vec3>,
+        rhs: LuaReflectValProxy<bevy::math::Vec3>,
+    ) -> LuaReflectValProxy<bevy::math::BVec3>;
 
 "#,
     r#"
@@ -4228,14 +4635,19 @@ pub struct LuaQuat();
 /// elements.
 
     #[lua()]
-    fn cmplt(self, #[proxy] rhs: bevy::math::Vec3) -> bevy::math::BVec3;
+    fn cmplt(
+        _self: LuaReflectValProxy<bevy::math::Vec3>,
+        rhs: LuaReflectValProxy<bevy::math::Vec3>,
+    ) -> LuaReflectValProxy<bevy::math::BVec3>;
 
 "#,
     r#"
 /// Returns a vector containing the absolute value of each element of `self`.
 
     #[lua()]
-    fn abs(self) -> bevy::math::Vec3;
+    fn abs(
+        _self: LuaReflectValProxy<bevy::math::Vec3>,
+    ) -> LuaReflectValProxy<bevy::math::Vec3>;
 
 "#,
     r#"
@@ -4245,14 +4657,19 @@ pub struct LuaQuat();
 /// - `NAN` if the number is `NAN`
 
     #[lua()]
-    fn signum(self) -> bevy::math::Vec3;
+    fn signum(
+        _self: LuaReflectValProxy<bevy::math::Vec3>,
+    ) -> LuaReflectValProxy<bevy::math::Vec3>;
 
 "#,
     r#"
 /// Returns a vector with signs of `rhs` and the magnitudes of `self`.
 
     #[lua()]
-    fn copysign(self, #[proxy] rhs: bevy::math::Vec3) -> bevy::math::Vec3;
+    fn copysign(
+        _self: LuaReflectValProxy<bevy::math::Vec3>,
+        rhs: LuaReflectValProxy<bevy::math::Vec3>,
+    ) -> LuaReflectValProxy<bevy::math::Vec3>;
 
 "#,
     r#"
@@ -4261,7 +4678,7 @@ pub struct LuaQuat();
 /// into the first lowest bit, element `y` into the second, etc.
 
     #[lua()]
-    fn is_negative_bitmask(self) -> u32;
+    fn is_negative_bitmask(_self: LuaReflectValProxy<bevy::math::Vec3>) -> u32;
 
 "#,
     r#"
@@ -4269,14 +4686,14 @@ pub struct LuaQuat();
 /// `NaN`, positive or negative infinity, this will return `false`.
 
     #[lua()]
-    fn is_finite(self) -> bool;
+    fn is_finite(_self: LuaReflectValProxy<bevy::math::Vec3>) -> bool;
 
 "#,
     r#"
 /// Returns `true` if any elements are `NaN`.
 
     #[lua()]
-    fn is_nan(self) -> bool;
+    fn is_nan(_self: LuaReflectValProxy<bevy::math::Vec3>) -> bool;
 
 "#,
     r#"
@@ -4284,14 +4701,16 @@ pub struct LuaQuat();
 /// In other words, this computes `[x.is_nan(), y.is_nan(), z.is_nan(), w.is_nan()]`.
 
     #[lua()]
-    fn is_nan_mask(self) -> bevy::math::BVec3;
+    fn is_nan_mask(
+        _self: LuaReflectValProxy<bevy::math::Vec3>,
+    ) -> LuaReflectValProxy<bevy::math::BVec3>;
 
 "#,
     r#"
 /// Computes the length of `self`.
 
     #[lua()]
-    fn length(self) -> f32;
+    fn length(_self: LuaReflectValProxy<bevy::math::Vec3>) -> f32;
 
 "#,
     r#"
@@ -4299,7 +4718,7 @@ pub struct LuaQuat();
 /// This is faster than `length()` as it avoids a square root operation.
 
     #[lua()]
-    fn length_squared(self) -> f32;
+    fn length_squared(_self: LuaReflectValProxy<bevy::math::Vec3>) -> f32;
 
 "#,
     r#"
@@ -4307,28 +4726,37 @@ pub struct LuaQuat();
 /// For valid results, `self` must _not_ be of length zero.
 
     #[lua()]
-    fn length_recip(self) -> f32;
+    fn length_recip(_self: LuaReflectValProxy<bevy::math::Vec3>) -> f32;
 
 "#,
     r#"
 /// Computes the Euclidean distance between two points in space.
 
     #[lua()]
-    fn distance(self, #[proxy] rhs: bevy::math::Vec3) -> f32;
+    fn distance(
+        _self: LuaReflectValProxy<bevy::math::Vec3>,
+        rhs: LuaReflectValProxy<bevy::math::Vec3>,
+    ) -> f32;
 
 "#,
     r#"
 /// Compute the squared euclidean distance between two points in space.
 
     #[lua()]
-    fn distance_squared(self, #[proxy] rhs: bevy::math::Vec3) -> f32;
+    fn distance_squared(
+        _self: LuaReflectValProxy<bevy::math::Vec3>,
+        rhs: LuaReflectValProxy<bevy::math::Vec3>,
+    ) -> f32;
 
 "#,
     r#"
 /// Returns the element-wise quotient of [Euclidean division] of `self` by `rhs`.
 
     #[lua()]
-    fn div_euclid(self, #[proxy] rhs: bevy::math::Vec3) -> bevy::math::Vec3;
+    fn div_euclid(
+        _self: LuaReflectValProxy<bevy::math::Vec3>,
+        rhs: LuaReflectValProxy<bevy::math::Vec3>,
+    ) -> LuaReflectValProxy<bevy::math::Vec3>;
 
 "#,
     r#"
@@ -4336,7 +4764,10 @@ pub struct LuaQuat();
 /// [Euclidean division]: f32::rem_euclid
 
     #[lua()]
-    fn rem_euclid(self, #[proxy] rhs: bevy::math::Vec3) -> bevy::math::Vec3;
+    fn rem_euclid(
+        _self: LuaReflectValProxy<bevy::math::Vec3>,
+        rhs: LuaReflectValProxy<bevy::math::Vec3>,
+    ) -> LuaReflectValProxy<bevy::math::Vec3>;
 
 "#,
     r#"
@@ -4347,7 +4778,9 @@ pub struct LuaQuat();
 /// Will panic if `self` is zero length when `glam_assert` is enabled.
 
     #[lua()]
-    fn normalize(self) -> bevy::math::Vec3;
+    fn normalize(
+        _self: LuaReflectValProxy<bevy::math::Vec3>,
+    ) -> LuaReflectValProxy<bevy::math::Vec3>;
 
 "#,
     r#"
@@ -4357,7 +4790,9 @@ pub struct LuaQuat();
 /// See also [`Self::try_normalize()`].
 
     #[lua()]
-    fn normalize_or_zero(self) -> bevy::math::Vec3;
+    fn normalize_or_zero(
+        _self: LuaReflectValProxy<bevy::math::Vec3>,
+    ) -> LuaReflectValProxy<bevy::math::Vec3>;
 
 "#,
     r#"
@@ -4365,7 +4800,7 @@ pub struct LuaQuat();
 /// Uses a precision threshold of `1e-6`.
 
     #[lua()]
-    fn is_normalized(self) -> bool;
+    fn is_normalized(_self: LuaReflectValProxy<bevy::math::Vec3>) -> bool;
 
 "#,
     r#"
@@ -4375,7 +4810,10 @@ pub struct LuaQuat();
 /// Will panic if `rhs` is zero length when `glam_assert` is enabled.
 
     #[lua()]
-    fn project_onto(self, #[proxy] rhs: bevy::math::Vec3) -> bevy::math::Vec3;
+    fn project_onto(
+        _self: LuaReflectValProxy<bevy::math::Vec3>,
+        rhs: LuaReflectValProxy<bevy::math::Vec3>,
+    ) -> LuaReflectValProxy<bevy::math::Vec3>;
 
 "#,
     r#"
@@ -4387,7 +4825,10 @@ pub struct LuaQuat();
 /// Will panic if `rhs` has a length of zero when `glam_assert` is enabled.
 
     #[lua()]
-    fn reject_from(self, #[proxy] rhs: bevy::math::Vec3) -> bevy::math::Vec3;
+    fn reject_from(
+        _self: LuaReflectValProxy<bevy::math::Vec3>,
+        rhs: LuaReflectValProxy<bevy::math::Vec3>,
+    ) -> LuaReflectValProxy<bevy::math::Vec3>;
 
 "#,
     r#"
@@ -4397,7 +4838,10 @@ pub struct LuaQuat();
 /// Will panic if `rhs` is not normalized when `glam_assert` is enabled.
 
     #[lua()]
-    fn project_onto_normalized(self, #[proxy] rhs: bevy::math::Vec3) -> bevy::math::Vec3;
+    fn project_onto_normalized(
+        _self: LuaReflectValProxy<bevy::math::Vec3>,
+        rhs: LuaReflectValProxy<bevy::math::Vec3>,
+    ) -> LuaReflectValProxy<bevy::math::Vec3>;
 
 "#,
     r#"
@@ -4409,7 +4853,10 @@ pub struct LuaQuat();
 /// Will panic if `rhs` is not normalized when `glam_assert` is enabled.
 
     #[lua()]
-    fn reject_from_normalized(self, #[proxy] rhs: bevy::math::Vec3) -> bevy::math::Vec3;
+    fn reject_from_normalized(
+        _self: LuaReflectValProxy<bevy::math::Vec3>,
+        rhs: LuaReflectValProxy<bevy::math::Vec3>,
+    ) -> LuaReflectValProxy<bevy::math::Vec3>;
 
 "#,
     r#"
@@ -4417,7 +4864,9 @@ pub struct LuaQuat();
 /// Round half-way cases away from 0.0.
 
     #[lua()]
-    fn round(self) -> bevy::math::Vec3;
+    fn round(
+        _self: LuaReflectValProxy<bevy::math::Vec3>,
+    ) -> LuaReflectValProxy<bevy::math::Vec3>;
 
 "#,
     r#"
@@ -4425,7 +4874,9 @@ pub struct LuaQuat();
 /// element of `self`.
 
     #[lua()]
-    fn floor(self) -> bevy::math::Vec3;
+    fn floor(
+        _self: LuaReflectValProxy<bevy::math::Vec3>,
+    ) -> LuaReflectValProxy<bevy::math::Vec3>;
 
 "#,
     r#"
@@ -4433,7 +4884,9 @@ pub struct LuaQuat();
 /// each element of `self`.
 
     #[lua()]
-    fn ceil(self) -> bevy::math::Vec3;
+    fn ceil(
+        _self: LuaReflectValProxy<bevy::math::Vec3>,
+    ) -> LuaReflectValProxy<bevy::math::Vec3>;
 
 "#,
     r#"
@@ -4441,7 +4894,9 @@ pub struct LuaQuat();
 /// always truncated towards zero.
 
     #[lua()]
-    fn trunc(self) -> bevy::math::Vec3;
+    fn trunc(
+        _self: LuaReflectValProxy<bevy::math::Vec3>,
+    ) -> LuaReflectValProxy<bevy::math::Vec3>;
 
 "#,
     r#"
@@ -4450,7 +4905,9 @@ pub struct LuaQuat();
 /// Note that this is fast but not precise for large numbers.
 
     #[lua()]
-    fn fract(self) -> bevy::math::Vec3;
+    fn fract(
+        _self: LuaReflectValProxy<bevy::math::Vec3>,
+    ) -> LuaReflectValProxy<bevy::math::Vec3>;
 
 "#,
     r#"
@@ -4458,21 +4915,28 @@ pub struct LuaQuat();
 /// `self`.
 
     #[lua()]
-    fn exp(self) -> bevy::math::Vec3;
+    fn exp(
+        _self: LuaReflectValProxy<bevy::math::Vec3>,
+    ) -> LuaReflectValProxy<bevy::math::Vec3>;
 
 "#,
     r#"
 /// Returns a vector containing each element of `self` raised to the power of `n`.
 
     #[lua()]
-    fn powf(self, n: f32) -> bevy::math::Vec3;
+    fn powf(
+        _self: LuaReflectValProxy<bevy::math::Vec3>,
+        n: f32,
+    ) -> LuaReflectValProxy<bevy::math::Vec3>;
 
 "#,
     r#"
 /// Returns a vector containing the reciprocal `1.0/n` of each element of `self`.
 
     #[lua()]
-    fn recip(self) -> bevy::math::Vec3;
+    fn recip(
+        _self: LuaReflectValProxy<bevy::math::Vec3>,
+    ) -> LuaReflectValProxy<bevy::math::Vec3>;
 
 "#,
     r#"
@@ -4482,7 +4946,11 @@ pub struct LuaQuat();
 /// extrapolated.
 
     #[lua()]
-    fn lerp(self, #[proxy] rhs: bevy::math::Vec3, s: f32) -> bevy::math::Vec3;
+    fn lerp(
+        _self: LuaReflectValProxy<bevy::math::Vec3>,
+        rhs: LuaReflectValProxy<bevy::math::Vec3>,
+        s: f32,
+    ) -> LuaReflectValProxy<bevy::math::Vec3>;
 
 "#,
     r#"
@@ -4495,7 +4963,11 @@ pub struct LuaQuat();
 /// [comparing floating point numbers](https://randomascii.wordpress.com/2012/02/25/comparing-floating-point-numbers-2012-edition/).
 
     #[lua()]
-    fn abs_diff_eq(self, #[proxy] rhs: bevy::math::Vec3, max_abs_diff: f32) -> bool;
+    fn abs_diff_eq(
+        _self: LuaReflectValProxy<bevy::math::Vec3>,
+        rhs: LuaReflectValProxy<bevy::math::Vec3>,
+        max_abs_diff: f32,
+    ) -> bool;
 
 "#,
     r#"
@@ -4504,21 +4976,31 @@ pub struct LuaQuat();
 /// Will panic if `min` is greater than `max` when `glam_assert` is enabled.
 
     #[lua()]
-    fn clamp_length(self, min: f32, max: f32) -> bevy::math::Vec3;
+    fn clamp_length(
+        _self: LuaReflectValProxy<bevy::math::Vec3>,
+        min: f32,
+        max: f32,
+    ) -> LuaReflectValProxy<bevy::math::Vec3>;
 
 "#,
     r#"
 /// Returns a vector with a length no more than `max`
 
     #[lua()]
-    fn clamp_length_max(self, max: f32) -> bevy::math::Vec3;
+    fn clamp_length_max(
+        _self: LuaReflectValProxy<bevy::math::Vec3>,
+        max: f32,
+    ) -> LuaReflectValProxy<bevy::math::Vec3>;
 
 "#,
     r#"
 /// Returns a vector with a length no less than `min`
 
     #[lua()]
-    fn clamp_length_min(self, min: f32) -> bevy::math::Vec3;
+    fn clamp_length_min(
+        _self: LuaReflectValProxy<bevy::math::Vec3>,
+        min: f32,
+    ) -> LuaReflectValProxy<bevy::math::Vec3>;
 
 "#,
     r#"
@@ -4531,12 +5013,10 @@ pub struct LuaQuat();
 
     #[lua()]
     fn mul_add(
-        self,
-        #[proxy]
-        a: bevy::math::Vec3,
-        #[proxy]
-        b: bevy::math::Vec3,
-    ) -> bevy::math::Vec3;
+        _self: LuaReflectValProxy<bevy::math::Vec3>,
+        a: LuaReflectValProxy<bevy::math::Vec3>,
+        b: LuaReflectValProxy<bevy::math::Vec3>,
+    ) -> LuaReflectValProxy<bevy::math::Vec3>;
 
 "#,
     r#"
@@ -4544,7 +5024,10 @@ pub struct LuaQuat();
 /// The inputs do not need to be unit vectors however they must be non-zero.
 
     #[lua()]
-    fn angle_between(self, #[proxy] rhs: bevy::math::Vec3) -> f32;
+    fn angle_between(
+        _self: LuaReflectValProxy<bevy::math::Vec3>,
+        rhs: LuaReflectValProxy<bevy::math::Vec3>,
+    ) -> f32;
 
 "#,
     r#"
@@ -4554,7 +5037,9 @@ pub struct LuaQuat();
 /// [`Self::any_orthonormal_vector()`] instead.
 
     #[lua()]
-    fn any_orthogonal_vector(&self) -> bevy::math::Vec3;
+    fn any_orthogonal_vector(
+        _self: LuaReflectRefProxy<bevy::math::Vec3>,
+    ) -> LuaReflectValProxy<bevy::math::Vec3>;
 
 "#,
     r#"
@@ -4564,66 +5049,90 @@ pub struct LuaQuat();
 /// Will panic if `self` is not normalized when `glam_assert` is enabled.
 
     #[lua()]
-    fn any_orthonormal_vector(&self) -> bevy::math::Vec3;
+    fn any_orthonormal_vector(
+        _self: LuaReflectRefProxy<bevy::math::Vec3>,
+    ) -> LuaReflectValProxy<bevy::math::Vec3>;
 
 "#,
     r#"
 /// Casts all elements of `self` to `f64`.
 
     #[lua()]
-    fn as_dvec3(&self) -> bevy::math::DVec3;
+    fn as_dvec3(
+        _self: LuaReflectRefProxy<bevy::math::Vec3>,
+    ) -> LuaReflectValProxy<bevy::math::DVec3>;
 
 "#,
     r#"
 /// Casts all elements of `self` to `i32`.
 
     #[lua()]
-    fn as_ivec3(&self) -> bevy::math::IVec3;
+    fn as_ivec3(
+        _self: LuaReflectRefProxy<bevy::math::Vec3>,
+    ) -> LuaReflectValProxy<bevy::math::IVec3>;
 
 "#,
     r#"
 /// Casts all elements of `self` to `u32`.
 
     #[lua()]
-    fn as_uvec3(&self) -> bevy::math::UVec3;
+    fn as_uvec3(
+        _self: LuaReflectRefProxy<bevy::math::Vec3>,
+    ) -> LuaReflectValProxy<bevy::math::UVec3>;
 
 "#,
     r#"
 /// Casts all elements of `self` to `i64`.
 
     #[lua()]
-    fn as_i64vec3(&self) -> bevy::math::I64Vec3;
+    fn as_i64vec3(
+        _self: LuaReflectRefProxy<bevy::math::Vec3>,
+    ) -> LuaReflectValProxy<bevy::math::I64Vec3>;
 
 "#,
     r#"
 /// Casts all elements of `self` to `u64`.
 
     #[lua()]
-    fn as_u64vec3(&self) -> bevy::math::U64Vec3;
+    fn as_u64vec3(
+        _self: LuaReflectRefProxy<bevy::math::Vec3>,
+    ) -> LuaReflectValProxy<bevy::math::U64Vec3>;
 
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Div", composite = "div")]
-    fn div(self, rhs: f32) -> bevy::math::Vec3;
+    #[lua(as_trait = "std::ops::Div::<f32>", composite = "div")]
+    fn div(
+        _self: LuaReflectValProxy<bevy::math::Vec3>,
+        rhs: f32,
+    ) -> LuaReflectValProxy<bevy::math::Vec3>;
 
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Rem", composite = "rem")]
-    fn rem(self, #[proxy] rhs: bevy::math::Vec3) -> bevy::math::Vec3;
+    #[lua(as_trait = "std::ops::Rem::<bevy::math::Vec3>", composite = "rem")]
+    fn rem(
+        _self: LuaReflectValProxy<bevy::math::Vec3>,
+        rhs: LuaReflectValProxy<bevy::math::Vec3>,
+    ) -> LuaReflectValProxy<bevy::math::Vec3>;
 
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Sub", composite = "sub")]
-    fn sub(self, rhs: f32) -> bevy::math::Vec3;
+    #[lua(as_trait = "std::ops::Sub::<f32>", composite = "sub")]
+    fn sub(
+        _self: LuaReflectValProxy<bevy::math::Vec3>,
+        rhs: f32,
+    ) -> LuaReflectValProxy<bevy::math::Vec3>;
 
 "#,
     r#"
 
-    #[lua(as_trait = "std::cmp::PartialEq", composite = "eq")]
-    fn eq(&self, #[proxy] other: &glam::Vec3) -> bool;
+    #[lua(as_trait = "std::cmp::PartialEq::<bevy::math::Vec3>", composite = "eq")]
+    fn eq(
+        _self: LuaReflectRefProxy<bevy::math::Vec3>,
+        other: LuaReflectRefProxy<bevy::math::Vec3>,
+    ) -> bool;
 
 "#,
     r#"
@@ -4633,19 +5142,19 @@ fn index(&self) -> String {
 }
 "#,
     r#"
-#[lua(raw , metamethod="Index")]
-fn index(&self, lua: &Lua, idx: crate::lua::util::LuaIndex) -> Result<f32,_> {
-    Ok(_self.inner()?[*idx])
+#[lua(metamethod="Index")]
+fn index(self, idx: usize) -> IdentityProxy<f32> {
+    _self[idx - 1]
 }
 "#,
     r#"
-#[lua(raw, metamethod="NewIndex")]
-fn index(&mut self, lua: &Lua, idx: crate::lua::util::LuaIndex, val: f32) -> Result<(),_> {
-    _self.val_mut(|s| Ok(s[*idx] = val))?
+#[lua(metamethod="NewIndex")]
+fn index(&mut self, idx: usize, val: f32) -> () {
+    _self[idx - 1] = val
 }
 "#]
 )]
-pub struct LuaVec3 {
+pub struct Vec3 {
     x: f32,
     y: f32,
     z: f32,
@@ -4657,88 +5166,120 @@ pub struct LuaVec3 {
     bms_lua_path = "crate",
     functions[r#"
 
-    #[lua(as_trait = "std::ops::Add", composite = "add")]
-    fn add(self, rhs: i32) -> bevy::math::IVec2;
+    #[lua(as_trait = "std::ops::Add::<i32>", composite = "add")]
+    fn add(
+        _self: LuaReflectValProxy<bevy::math::IVec2>,
+        rhs: i32,
+    ) -> LuaReflectValProxy<bevy::math::IVec2>;
 
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Sub", composite = "sub")]
-    fn sub(self, #[proxy] rhs: bevy::math::IVec2) -> bevy::math::IVec2;
+    #[lua(as_trait = "std::ops::Sub::<bevy::math::IVec2>", composite = "sub")]
+    fn sub(
+        _self: LuaReflectValProxy<bevy::math::IVec2>,
+        rhs: LuaReflectValProxy<bevy::math::IVec2>,
+    ) -> LuaReflectValProxy<bevy::math::IVec2>;
 
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Rem", composite = "rem")]
-    fn rem(self, #[proxy] rhs: bevy::math::IVec2) -> bevy::math::IVec2;
+    #[lua(as_trait = "std::ops::Rem::<bevy::math::IVec2>", composite = "rem")]
+    fn rem(
+        _self: LuaReflectValProxy<bevy::math::IVec2>,
+        rhs: LuaReflectValProxy<bevy::math::IVec2>,
+    ) -> LuaReflectValProxy<bevy::math::IVec2>;
 
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Add", composite = "add")]
-    fn add(self, #[proxy] rhs: bevy::math::IVec2) -> bevy::math::IVec2;
+    #[lua(as_trait = "std::ops::Add::<bevy::math::IVec2>", composite = "add")]
+    fn add(
+        _self: LuaReflectValProxy<bevy::math::IVec2>,
+        rhs: LuaReflectValProxy<bevy::math::IVec2>,
+    ) -> LuaReflectValProxy<bevy::math::IVec2>;
 
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Mul", composite = "mul")]
-    fn mul(self, rhs: i32) -> bevy::math::IVec2;
+    #[lua(as_trait = "std::ops::Mul::<i32>", composite = "mul")]
+    fn mul(
+        _self: LuaReflectValProxy<bevy::math::IVec2>,
+        rhs: i32,
+    ) -> LuaReflectValProxy<bevy::math::IVec2>;
 
 "#,
     r#"
 
-    #[lua(as_trait = "std::cmp::PartialEq", composite = "eq")]
-    fn eq(&self, #[proxy] other: &glam::IVec2) -> bool;
+    #[lua(as_trait = "std::cmp::PartialEq::<bevy::math::IVec2>", composite = "eq")]
+    fn eq(
+        _self: LuaReflectRefProxy<bevy::math::IVec2>,
+        other: LuaReflectRefProxy<bevy::math::IVec2>,
+    ) -> bool;
 
 "#,
     r#"
 
     #[lua(as_trait = "std::cmp::Eq")]
-    fn assert_receiver_is_total_eq(&self) -> ();
+    fn assert_receiver_is_total_eq(_self: LuaReflectRefProxy<bevy::math::IVec2>) -> ();
 
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Sub", composite = "sub")]
-    fn sub(self, rhs: i32) -> bevy::math::IVec2;
+    #[lua(as_trait = "std::ops::Sub::<i32>", composite = "sub")]
+    fn sub(
+        _self: LuaReflectValProxy<bevy::math::IVec2>,
+        rhs: i32,
+    ) -> LuaReflectValProxy<bevy::math::IVec2>;
 
 "#,
     r#"
 
     #[lua(as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone")]
-    fn clone(&self) -> bevy::math::IVec2;
+    fn clone(
+        _self: LuaReflectRefProxy<bevy::math::IVec2>,
+    ) -> LuaReflectValProxy<bevy::math::IVec2>;
 
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Rem", composite = "rem")]
-    fn rem(self, rhs: i32) -> bevy::math::IVec2;
+    #[lua(as_trait = "std::ops::Rem::<i32>", composite = "rem")]
+    fn rem(
+        _self: LuaReflectValProxy<bevy::math::IVec2>,
+        rhs: i32,
+    ) -> LuaReflectValProxy<bevy::math::IVec2>;
 
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Mul", composite = "mul")]
-    fn mul(self, #[proxy] rhs: bevy::math::IVec2) -> bevy::math::IVec2;
+    #[lua(as_trait = "std::ops::Mul::<bevy::math::IVec2>", composite = "mul")]
+    fn mul(
+        _self: LuaReflectValProxy<bevy::math::IVec2>,
+        rhs: LuaReflectValProxy<bevy::math::IVec2>,
+    ) -> LuaReflectValProxy<bevy::math::IVec2>;
 
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Div", composite = "div")]
-    fn div(self, #[proxy] rhs: bevy::math::IVec2) -> bevy::math::IVec2;
+    #[lua(as_trait = "std::ops::Div::<bevy::math::IVec2>", composite = "div")]
+    fn div(
+        _self: LuaReflectValProxy<bevy::math::IVec2>,
+        rhs: LuaReflectValProxy<bevy::math::IVec2>,
+    ) -> LuaReflectValProxy<bevy::math::IVec2>;
 
 "#,
     r#"
 /// Creates a new vector.
 
     #[lua()]
-    fn new(x: i32, y: i32) -> bevy::math::IVec2;
+    fn new(x: i32, y: i32) -> LuaReflectValProxy<bevy::math::IVec2>;
 
 "#,
     r#"
 /// Creates a vector with all elements set to `v`.
 
     #[lua()]
-    fn splat(v: i32) -> bevy::math::IVec2;
+    fn splat(v: i32) -> LuaReflectValProxy<bevy::math::IVec2>;
 
 "#,
     r#"
@@ -4749,48 +5290,54 @@ pub struct LuaVec3 {
 
     #[lua()]
     fn select(
-        #[proxy]
-        mask: bevy::math::BVec2,
-        #[proxy]
-        if_true: bevy::math::IVec2,
-        #[proxy]
-        if_false: bevy::math::IVec2,
-    ) -> bevy::math::IVec2;
+        mask: LuaReflectValProxy<bevy::math::BVec2>,
+        if_true: LuaReflectValProxy<bevy::math::IVec2>,
+        if_false: LuaReflectValProxy<bevy::math::IVec2>,
+    ) -> LuaReflectValProxy<bevy::math::IVec2>;
 
 "#,
     r#"
 /// Creates a new vector from an array.
 
     #[lua()]
-    fn from_array(a: [i32; 2]) -> bevy::math::IVec2;
+    fn from_array(a: [i32; 2]) -> LuaReflectValProxy<bevy::math::IVec2>;
 
 "#,
     r#"
 /// `[x, y]`
 
     #[lua()]
-    fn to_array(&self) -> [i32; 2];
+    fn to_array(_self: LuaReflectRefProxy<bevy::math::IVec2>) -> [i32; 2];
 
 "#,
     r#"
 /// Creates a 3D vector from `self` and the given `z` value.
 
     #[lua()]
-    fn extend(self, z: i32) -> bevy::math::IVec3;
+    fn extend(
+        _self: LuaReflectValProxy<bevy::math::IVec2>,
+        z: i32,
+    ) -> LuaReflectValProxy<bevy::math::IVec3>;
 
 "#,
     r#"
 /// Computes the dot product of `self` and `rhs`.
 
     #[lua()]
-    fn dot(self, #[proxy] rhs: bevy::math::IVec2) -> i32;
+    fn dot(
+        _self: LuaReflectValProxy<bevy::math::IVec2>,
+        rhs: LuaReflectValProxy<bevy::math::IVec2>,
+    ) -> i32;
 
 "#,
     r#"
 /// Returns a vector where every component is the dot product of `self` and `rhs`.
 
     #[lua()]
-    fn dot_into_vec(self, #[proxy] rhs: bevy::math::IVec2) -> bevy::math::IVec2;
+    fn dot_into_vec(
+        _self: LuaReflectValProxy<bevy::math::IVec2>,
+        rhs: LuaReflectValProxy<bevy::math::IVec2>,
+    ) -> LuaReflectValProxy<bevy::math::IVec2>;
 
 "#,
     r#"
@@ -4798,7 +5345,10 @@ pub struct LuaVec3 {
 /// In other words this computes `[self.x.min(rhs.x), self.y.min(rhs.y), ..]`.
 
     #[lua()]
-    fn min(self, #[proxy] rhs: bevy::math::IVec2) -> bevy::math::IVec2;
+    fn min(
+        _self: LuaReflectValProxy<bevy::math::IVec2>,
+        rhs: LuaReflectValProxy<bevy::math::IVec2>,
+    ) -> LuaReflectValProxy<bevy::math::IVec2>;
 
 "#,
     r#"
@@ -4806,7 +5356,10 @@ pub struct LuaVec3 {
 /// In other words this computes `[self.x.max(rhs.x), self.y.max(rhs.y), ..]`.
 
     #[lua()]
-    fn max(self, #[proxy] rhs: bevy::math::IVec2) -> bevy::math::IVec2;
+    fn max(
+        _self: LuaReflectValProxy<bevy::math::IVec2>,
+        rhs: LuaReflectValProxy<bevy::math::IVec2>,
+    ) -> LuaReflectValProxy<bevy::math::IVec2>;
 
 "#,
     r#"
@@ -4817,12 +5370,10 @@ pub struct LuaVec3 {
 
     #[lua()]
     fn clamp(
-        self,
-        #[proxy]
-        min: bevy::math::IVec2,
-        #[proxy]
-        max: bevy::math::IVec2,
-    ) -> bevy::math::IVec2;
+        _self: LuaReflectValProxy<bevy::math::IVec2>,
+        min: LuaReflectValProxy<bevy::math::IVec2>,
+        max: LuaReflectValProxy<bevy::math::IVec2>,
+    ) -> LuaReflectValProxy<bevy::math::IVec2>;
 
 "#,
     r#"
@@ -4830,7 +5381,7 @@ pub struct LuaVec3 {
 /// In other words this computes `min(x, y, ..)`.
 
     #[lua()]
-    fn min_element(self) -> i32;
+    fn min_element(_self: LuaReflectValProxy<bevy::math::IVec2>) -> i32;
 
 "#,
     r#"
@@ -4838,7 +5389,7 @@ pub struct LuaVec3 {
 /// In other words this computes `max(x, y, ..)`.
 
     #[lua()]
-    fn max_element(self) -> i32;
+    fn max_element(_self: LuaReflectValProxy<bevy::math::IVec2>) -> i32;
 
 "#,
     r#"
@@ -4848,7 +5399,10 @@ pub struct LuaVec3 {
 /// elements.
 
     #[lua()]
-    fn cmpeq(self, #[proxy] rhs: bevy::math::IVec2) -> bevy::math::BVec2;
+    fn cmpeq(
+        _self: LuaReflectValProxy<bevy::math::IVec2>,
+        rhs: LuaReflectValProxy<bevy::math::IVec2>,
+    ) -> LuaReflectValProxy<bevy::math::BVec2>;
 
 "#,
     r#"
@@ -4858,7 +5412,10 @@ pub struct LuaVec3 {
 /// elements.
 
     #[lua()]
-    fn cmpne(self, #[proxy] rhs: bevy::math::IVec2) -> bevy::math::BVec2;
+    fn cmpne(
+        _self: LuaReflectValProxy<bevy::math::IVec2>,
+        rhs: LuaReflectValProxy<bevy::math::IVec2>,
+    ) -> LuaReflectValProxy<bevy::math::BVec2>;
 
 "#,
     r#"
@@ -4868,7 +5425,10 @@ pub struct LuaVec3 {
 /// elements.
 
     #[lua()]
-    fn cmpge(self, #[proxy] rhs: bevy::math::IVec2) -> bevy::math::BVec2;
+    fn cmpge(
+        _self: LuaReflectValProxy<bevy::math::IVec2>,
+        rhs: LuaReflectValProxy<bevy::math::IVec2>,
+    ) -> LuaReflectValProxy<bevy::math::BVec2>;
 
 "#,
     r#"
@@ -4878,7 +5438,10 @@ pub struct LuaVec3 {
 /// elements.
 
     #[lua()]
-    fn cmpgt(self, #[proxy] rhs: bevy::math::IVec2) -> bevy::math::BVec2;
+    fn cmpgt(
+        _self: LuaReflectValProxy<bevy::math::IVec2>,
+        rhs: LuaReflectValProxy<bevy::math::IVec2>,
+    ) -> LuaReflectValProxy<bevy::math::BVec2>;
 
 "#,
     r#"
@@ -4888,7 +5451,10 @@ pub struct LuaVec3 {
 /// elements.
 
     #[lua()]
-    fn cmple(self, #[proxy] rhs: bevy::math::IVec2) -> bevy::math::BVec2;
+    fn cmple(
+        _self: LuaReflectValProxy<bevy::math::IVec2>,
+        rhs: LuaReflectValProxy<bevy::math::IVec2>,
+    ) -> LuaReflectValProxy<bevy::math::BVec2>;
 
 "#,
     r#"
@@ -4898,14 +5464,19 @@ pub struct LuaVec3 {
 /// elements.
 
     #[lua()]
-    fn cmplt(self, #[proxy] rhs: bevy::math::IVec2) -> bevy::math::BVec2;
+    fn cmplt(
+        _self: LuaReflectValProxy<bevy::math::IVec2>,
+        rhs: LuaReflectValProxy<bevy::math::IVec2>,
+    ) -> LuaReflectValProxy<bevy::math::BVec2>;
 
 "#,
     r#"
 /// Returns a vector containing the absolute value of each element of `self`.
 
     #[lua()]
-    fn abs(self) -> bevy::math::IVec2;
+    fn abs(
+        _self: LuaReflectValProxy<bevy::math::IVec2>,
+    ) -> LuaReflectValProxy<bevy::math::IVec2>;
 
 "#,
     r#"
@@ -4915,7 +5486,9 @@ pub struct LuaVec3 {
 ///  - `-1` if the number is negative
 
     #[lua()]
-    fn signum(self) -> bevy::math::IVec2;
+    fn signum(
+        _self: LuaReflectValProxy<bevy::math::IVec2>,
+    ) -> LuaReflectValProxy<bevy::math::IVec2>;
 
 "#,
     r#"
@@ -4924,21 +5497,24 @@ pub struct LuaVec3 {
 /// into the first lowest bit, element `y` into the second, etc.
 
     #[lua()]
-    fn is_negative_bitmask(self) -> u32;
+    fn is_negative_bitmask(_self: LuaReflectValProxy<bevy::math::IVec2>) -> u32;
 
 "#,
     r#"
 /// Computes the squared length of `self`.
 
     #[lua()]
-    fn length_squared(self) -> i32;
+    fn length_squared(_self: LuaReflectValProxy<bevy::math::IVec2>) -> i32;
 
 "#,
     r#"
 /// Compute the squared euclidean distance between two points in space.
 
     #[lua()]
-    fn distance_squared(self, #[proxy] rhs: bevy::math::IVec2) -> i32;
+    fn distance_squared(
+        _self: LuaReflectValProxy<bevy::math::IVec2>,
+        rhs: LuaReflectValProxy<bevy::math::IVec2>,
+    ) -> i32;
 
 "#,
     r#"
@@ -4947,7 +5523,10 @@ pub struct LuaVec3 {
 /// This function will panic if any `rhs` element is 0 or the division results in overflow.
 
     #[lua()]
-    fn div_euclid(self, #[proxy] rhs: bevy::math::IVec2) -> bevy::math::IVec2;
+    fn div_euclid(
+        _self: LuaReflectValProxy<bevy::math::IVec2>,
+        rhs: LuaReflectValProxy<bevy::math::IVec2>,
+    ) -> LuaReflectValProxy<bevy::math::IVec2>;
 
 "#,
     r#"
@@ -4957,14 +5536,19 @@ pub struct LuaVec3 {
 /// [Euclidean division]: i32::rem_euclid
 
     #[lua()]
-    fn rem_euclid(self, #[proxy] rhs: bevy::math::IVec2) -> bevy::math::IVec2;
+    fn rem_euclid(
+        _self: LuaReflectValProxy<bevy::math::IVec2>,
+        rhs: LuaReflectValProxy<bevy::math::IVec2>,
+    ) -> LuaReflectValProxy<bevy::math::IVec2>;
 
 "#,
     r#"
 /// Returns a vector that is equal to `self` rotated by 90 degrees.
 
     #[lua()]
-    fn perp(self) -> bevy::math::IVec2;
+    fn perp(
+        _self: LuaReflectValProxy<bevy::math::IVec2>,
+    ) -> LuaReflectValProxy<bevy::math::IVec2>;
 
 "#,
     r#"
@@ -4972,7 +5556,10 @@ pub struct LuaVec3 {
 /// Also known as the wedge product, 2D cross product, and determinant.
 
     #[lua()]
-    fn perp_dot(self, #[proxy] rhs: bevy::math::IVec2) -> i32;
+    fn perp_dot(
+        _self: LuaReflectValProxy<bevy::math::IVec2>,
+        rhs: LuaReflectValProxy<bevy::math::IVec2>,
+    ) -> i32;
 
 "#,
     r#"
@@ -4981,42 +5568,55 @@ pub struct LuaVec3 {
 /// it will be like a rotation with a multiplication by `self`'s length.
 
     #[lua()]
-    fn rotate(self, #[proxy] rhs: bevy::math::IVec2) -> bevy::math::IVec2;
+    fn rotate(
+        _self: LuaReflectValProxy<bevy::math::IVec2>,
+        rhs: LuaReflectValProxy<bevy::math::IVec2>,
+    ) -> LuaReflectValProxy<bevy::math::IVec2>;
 
 "#,
     r#"
 /// Casts all elements of `self` to `f32`.
 
     #[lua()]
-    fn as_vec2(&self) -> bevy::math::Vec2;
+    fn as_vec2(
+        _self: LuaReflectRefProxy<bevy::math::IVec2>,
+    ) -> LuaReflectValProxy<bevy::math::Vec2>;
 
 "#,
     r#"
 /// Casts all elements of `self` to `f64`.
 
     #[lua()]
-    fn as_dvec2(&self) -> bevy::math::DVec2;
+    fn as_dvec2(
+        _self: LuaReflectRefProxy<bevy::math::IVec2>,
+    ) -> LuaReflectValProxy<bevy::math::DVec2>;
 
 "#,
     r#"
 /// Casts all elements of `self` to `u32`.
 
     #[lua()]
-    fn as_uvec2(&self) -> bevy::math::UVec2;
+    fn as_uvec2(
+        _self: LuaReflectRefProxy<bevy::math::IVec2>,
+    ) -> LuaReflectValProxy<bevy::math::UVec2>;
 
 "#,
     r#"
 /// Casts all elements of `self` to `i64`.
 
     #[lua()]
-    fn as_i64vec2(&self) -> bevy::math::I64Vec2;
+    fn as_i64vec2(
+        _self: LuaReflectRefProxy<bevy::math::IVec2>,
+    ) -> LuaReflectValProxy<bevy::math::I64Vec2>;
 
 "#,
     r#"
 /// Casts all elements of `self` to `u64`.
 
     #[lua()]
-    fn as_u64vec2(&self) -> bevy::math::U64Vec2;
+    fn as_u64vec2(
+        _self: LuaReflectRefProxy<bevy::math::IVec2>,
+    ) -> LuaReflectValProxy<bevy::math::U64Vec2>;
 
 "#,
     r#"
@@ -5024,7 +5624,10 @@ pub struct LuaVec3 {
 /// In other words this computes `[self.x.wrapping_add(rhs.x), self.y.wrapping_add(rhs.y), ..]`.
 
     #[lua()]
-    fn wrapping_add(self, #[proxy] rhs: bevy::math::IVec2) -> bevy::math::IVec2;
+    fn wrapping_add(
+        _self: LuaReflectValProxy<bevy::math::IVec2>,
+        rhs: LuaReflectValProxy<bevy::math::IVec2>,
+    ) -> LuaReflectValProxy<bevy::math::IVec2>;
 
 "#,
     r#"
@@ -5032,7 +5635,10 @@ pub struct LuaVec3 {
 /// In other words this computes `[self.x.wrapping_sub(rhs.x), self.y.wrapping_sub(rhs.y), ..]`.
 
     #[lua()]
-    fn wrapping_sub(self, #[proxy] rhs: bevy::math::IVec2) -> bevy::math::IVec2;
+    fn wrapping_sub(
+        _self: LuaReflectValProxy<bevy::math::IVec2>,
+        rhs: LuaReflectValProxy<bevy::math::IVec2>,
+    ) -> LuaReflectValProxy<bevy::math::IVec2>;
 
 "#,
     r#"
@@ -5040,7 +5646,10 @@ pub struct LuaVec3 {
 /// In other words this computes `[self.x.wrapping_mul(rhs.x), self.y.wrapping_mul(rhs.y), ..]`.
 
     #[lua()]
-    fn wrapping_mul(self, #[proxy] rhs: bevy::math::IVec2) -> bevy::math::IVec2;
+    fn wrapping_mul(
+        _self: LuaReflectValProxy<bevy::math::IVec2>,
+        rhs: LuaReflectValProxy<bevy::math::IVec2>,
+    ) -> LuaReflectValProxy<bevy::math::IVec2>;
 
 "#,
     r#"
@@ -5048,7 +5657,10 @@ pub struct LuaVec3 {
 /// In other words this computes `[self.x.wrapping_div(rhs.x), self.y.wrapping_div(rhs.y), ..]`.
 
     #[lua()]
-    fn wrapping_div(self, #[proxy] rhs: bevy::math::IVec2) -> bevy::math::IVec2;
+    fn wrapping_div(
+        _self: LuaReflectValProxy<bevy::math::IVec2>,
+        rhs: LuaReflectValProxy<bevy::math::IVec2>,
+    ) -> LuaReflectValProxy<bevy::math::IVec2>;
 
 "#,
     r#"
@@ -5056,7 +5668,10 @@ pub struct LuaVec3 {
 /// In other words this computes `[self.x.saturating_add(rhs.x), self.y.saturating_add(rhs.y), ..]`.
 
     #[lua()]
-    fn saturating_add(self, #[proxy] rhs: bevy::math::IVec2) -> bevy::math::IVec2;
+    fn saturating_add(
+        _self: LuaReflectValProxy<bevy::math::IVec2>,
+        rhs: LuaReflectValProxy<bevy::math::IVec2>,
+    ) -> LuaReflectValProxy<bevy::math::IVec2>;
 
 "#,
     r#"
@@ -5064,7 +5679,10 @@ pub struct LuaVec3 {
 /// In other words this computes `[self.x.saturating_sub(rhs.x), self.y.saturating_sub(rhs.y), ..]`.
 
     #[lua()]
-    fn saturating_sub(self, #[proxy] rhs: bevy::math::IVec2) -> bevy::math::IVec2;
+    fn saturating_sub(
+        _self: LuaReflectValProxy<bevy::math::IVec2>,
+        rhs: LuaReflectValProxy<bevy::math::IVec2>,
+    ) -> LuaReflectValProxy<bevy::math::IVec2>;
 
 "#,
     r#"
@@ -5072,7 +5690,10 @@ pub struct LuaVec3 {
 /// In other words this computes `[self.x.saturating_mul(rhs.x), self.y.saturating_mul(rhs.y), ..]`.
 
     #[lua()]
-    fn saturating_mul(self, #[proxy] rhs: bevy::math::IVec2) -> bevy::math::IVec2;
+    fn saturating_mul(
+        _self: LuaReflectValProxy<bevy::math::IVec2>,
+        rhs: LuaReflectValProxy<bevy::math::IVec2>,
+    ) -> LuaReflectValProxy<bevy::math::IVec2>;
 
 "#,
     r#"
@@ -5080,19 +5701,27 @@ pub struct LuaVec3 {
 /// In other words this computes `[self.x.saturating_div(rhs.x), self.y.saturating_div(rhs.y), ..]`.
 
     #[lua()]
-    fn saturating_div(self, #[proxy] rhs: bevy::math::IVec2) -> bevy::math::IVec2;
+    fn saturating_div(
+        _self: LuaReflectValProxy<bevy::math::IVec2>,
+        rhs: LuaReflectValProxy<bevy::math::IVec2>,
+    ) -> LuaReflectValProxy<bevy::math::IVec2>;
 
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Div", composite = "div")]
-    fn div(self, rhs: i32) -> bevy::math::IVec2;
+    #[lua(as_trait = "std::ops::Div::<i32>", composite = "div")]
+    fn div(
+        _self: LuaReflectValProxy<bevy::math::IVec2>,
+        rhs: i32,
+    ) -> LuaReflectValProxy<bevy::math::IVec2>;
 
 "#,
     r#"
 
     #[lua(as_trait = "std::ops::Neg", composite = "neg")]
-    fn neg(self) -> bevy::math::IVec2;
+    fn neg(
+        _self: LuaReflectValProxy<bevy::math::IVec2>,
+    ) -> LuaReflectValProxy<bevy::math::IVec2>;
 
 "#,
     r#"
@@ -5102,19 +5731,19 @@ fn index(&self) -> String {
 }
 "#,
     r#"
-#[lua(raw , metamethod="Index")]
-fn index(&self, lua: &Lua, idx: crate::lua::util::LuaIndex) -> Result<i32,_> {
-    Ok(_self.inner()?[*idx])
+#[lua(metamethod="Index")]
+fn index(self, idx: usize) -> IdentityProxy<i32> {
+    _self[idx - 1]
 }
 "#,
     r#"
-#[lua(raw, metamethod="NewIndex")]
-fn index(&mut self, lua: &Lua, idx: crate::lua::util::LuaIndex, val: i32) -> Result<(),_> {
-    _self.val_mut(|s| Ok(s[*idx] = val))?
+#[lua(metamethod="NewIndex")]
+fn index(&mut self, idx: usize, val: i32) -> () {
+    _self[idx - 1] = val
 }
 "#]
 )]
-pub struct LuaIVec2 {
+pub struct IVec2 {
     x: i32,
     y: i32,
 }
@@ -5125,34 +5754,43 @@ pub struct LuaIVec2 {
     bms_lua_path = "crate",
     functions[r#"
 
-    #[lua(as_trait = "std::ops::Sub", composite = "sub")]
-    fn sub(self, #[proxy] rhs: bevy::math::IVec3) -> bevy::math::IVec3;
+    #[lua(as_trait = "std::ops::Sub::<bevy::math::IVec3>", composite = "sub")]
+    fn sub(
+        _self: LuaReflectValProxy<bevy::math::IVec3>,
+        rhs: LuaReflectValProxy<bevy::math::IVec3>,
+    ) -> LuaReflectValProxy<bevy::math::IVec3>;
 
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Rem", composite = "rem")]
-    fn rem(self, #[proxy] rhs: bevy::math::IVec3) -> bevy::math::IVec3;
+    #[lua(as_trait = "std::ops::Rem::<bevy::math::IVec3>", composite = "rem")]
+    fn rem(
+        _self: LuaReflectValProxy<bevy::math::IVec3>,
+        rhs: LuaReflectValProxy<bevy::math::IVec3>,
+    ) -> LuaReflectValProxy<bevy::math::IVec3>;
 
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Sub", composite = "sub")]
-    fn sub(self, rhs: i32) -> bevy::math::IVec3;
+    #[lua(as_trait = "std::ops::Sub::<i32>", composite = "sub")]
+    fn sub(
+        _self: LuaReflectValProxy<bevy::math::IVec3>,
+        rhs: i32,
+    ) -> LuaReflectValProxy<bevy::math::IVec3>;
 
 "#,
     r#"
 /// Creates a new vector.
 
     #[lua()]
-    fn new(x: i32, y: i32, z: i32) -> bevy::math::IVec3;
+    fn new(x: i32, y: i32, z: i32) -> LuaReflectValProxy<bevy::math::IVec3>;
 
 "#,
     r#"
 /// Creates a vector with all elements set to `v`.
 
     #[lua()]
-    fn splat(v: i32) -> bevy::math::IVec3;
+    fn splat(v: i32) -> LuaReflectValProxy<bevy::math::IVec3>;
 
 "#,
     r#"
@@ -5163,34 +5801,34 @@ pub struct LuaIVec2 {
 
     #[lua()]
     fn select(
-        #[proxy]
-        mask: bevy::math::BVec3,
-        #[proxy]
-        if_true: bevy::math::IVec3,
-        #[proxy]
-        if_false: bevy::math::IVec3,
-    ) -> bevy::math::IVec3;
+        mask: LuaReflectValProxy<bevy::math::BVec3>,
+        if_true: LuaReflectValProxy<bevy::math::IVec3>,
+        if_false: LuaReflectValProxy<bevy::math::IVec3>,
+    ) -> LuaReflectValProxy<bevy::math::IVec3>;
 
 "#,
     r#"
 /// Creates a new vector from an array.
 
     #[lua()]
-    fn from_array(a: [i32; 3]) -> bevy::math::IVec3;
+    fn from_array(a: [i32; 3]) -> LuaReflectValProxy<bevy::math::IVec3>;
 
 "#,
     r#"
 /// `[x, y, z]`
 
     #[lua()]
-    fn to_array(&self) -> [i32; 3];
+    fn to_array(_self: LuaReflectRefProxy<bevy::math::IVec3>) -> [i32; 3];
 
 "#,
     r#"
 /// Creates a 4D vector from `self` and the given `w` value.
 
     #[lua()]
-    fn extend(self, w: i32) -> bevy::math::IVec4;
+    fn extend(
+        _self: LuaReflectValProxy<bevy::math::IVec3>,
+        w: i32,
+    ) -> LuaReflectValProxy<bevy::math::IVec4>;
 
 "#,
     r#"
@@ -5198,28 +5836,39 @@ pub struct LuaIVec2 {
 /// Truncation may also be performed by using [`self.xy()`][crate::swizzles::Vec3Swizzles::xy()].
 
     #[lua()]
-    fn truncate(self) -> bevy::math::IVec2;
+    fn truncate(
+        _self: LuaReflectValProxy<bevy::math::IVec3>,
+    ) -> LuaReflectValProxy<bevy::math::IVec2>;
 
 "#,
     r#"
 /// Computes the dot product of `self` and `rhs`.
 
     #[lua()]
-    fn dot(self, #[proxy] rhs: bevy::math::IVec3) -> i32;
+    fn dot(
+        _self: LuaReflectValProxy<bevy::math::IVec3>,
+        rhs: LuaReflectValProxy<bevy::math::IVec3>,
+    ) -> i32;
 
 "#,
     r#"
 /// Returns a vector where every component is the dot product of `self` and `rhs`.
 
     #[lua()]
-    fn dot_into_vec(self, #[proxy] rhs: bevy::math::IVec3) -> bevy::math::IVec3;
+    fn dot_into_vec(
+        _self: LuaReflectValProxy<bevy::math::IVec3>,
+        rhs: LuaReflectValProxy<bevy::math::IVec3>,
+    ) -> LuaReflectValProxy<bevy::math::IVec3>;
 
 "#,
     r#"
 /// Computes the cross product of `self` and `rhs`.
 
     #[lua()]
-    fn cross(self, #[proxy] rhs: bevy::math::IVec3) -> bevy::math::IVec3;
+    fn cross(
+        _self: LuaReflectValProxy<bevy::math::IVec3>,
+        rhs: LuaReflectValProxy<bevy::math::IVec3>,
+    ) -> LuaReflectValProxy<bevy::math::IVec3>;
 
 "#,
     r#"
@@ -5227,7 +5876,10 @@ pub struct LuaIVec2 {
 /// In other words this computes `[self.x.min(rhs.x), self.y.min(rhs.y), ..]`.
 
     #[lua()]
-    fn min(self, #[proxy] rhs: bevy::math::IVec3) -> bevy::math::IVec3;
+    fn min(
+        _self: LuaReflectValProxy<bevy::math::IVec3>,
+        rhs: LuaReflectValProxy<bevy::math::IVec3>,
+    ) -> LuaReflectValProxy<bevy::math::IVec3>;
 
 "#,
     r#"
@@ -5235,7 +5887,10 @@ pub struct LuaIVec2 {
 /// In other words this computes `[self.x.max(rhs.x), self.y.max(rhs.y), ..]`.
 
     #[lua()]
-    fn max(self, #[proxy] rhs: bevy::math::IVec3) -> bevy::math::IVec3;
+    fn max(
+        _self: LuaReflectValProxy<bevy::math::IVec3>,
+        rhs: LuaReflectValProxy<bevy::math::IVec3>,
+    ) -> LuaReflectValProxy<bevy::math::IVec3>;
 
 "#,
     r#"
@@ -5246,12 +5901,10 @@ pub struct LuaIVec2 {
 
     #[lua()]
     fn clamp(
-        self,
-        #[proxy]
-        min: bevy::math::IVec3,
-        #[proxy]
-        max: bevy::math::IVec3,
-    ) -> bevy::math::IVec3;
+        _self: LuaReflectValProxy<bevy::math::IVec3>,
+        min: LuaReflectValProxy<bevy::math::IVec3>,
+        max: LuaReflectValProxy<bevy::math::IVec3>,
+    ) -> LuaReflectValProxy<bevy::math::IVec3>;
 
 "#,
     r#"
@@ -5259,7 +5912,7 @@ pub struct LuaIVec2 {
 /// In other words this computes `min(x, y, ..)`.
 
     #[lua()]
-    fn min_element(self) -> i32;
+    fn min_element(_self: LuaReflectValProxy<bevy::math::IVec3>) -> i32;
 
 "#,
     r#"
@@ -5267,7 +5920,7 @@ pub struct LuaIVec2 {
 /// In other words this computes `max(x, y, ..)`.
 
     #[lua()]
-    fn max_element(self) -> i32;
+    fn max_element(_self: LuaReflectValProxy<bevy::math::IVec3>) -> i32;
 
 "#,
     r#"
@@ -5277,7 +5930,10 @@ pub struct LuaIVec2 {
 /// elements.
 
     #[lua()]
-    fn cmpeq(self, #[proxy] rhs: bevy::math::IVec3) -> bevy::math::BVec3;
+    fn cmpeq(
+        _self: LuaReflectValProxy<bevy::math::IVec3>,
+        rhs: LuaReflectValProxy<bevy::math::IVec3>,
+    ) -> LuaReflectValProxy<bevy::math::BVec3>;
 
 "#,
     r#"
@@ -5287,7 +5943,10 @@ pub struct LuaIVec2 {
 /// elements.
 
     #[lua()]
-    fn cmpne(self, #[proxy] rhs: bevy::math::IVec3) -> bevy::math::BVec3;
+    fn cmpne(
+        _self: LuaReflectValProxy<bevy::math::IVec3>,
+        rhs: LuaReflectValProxy<bevy::math::IVec3>,
+    ) -> LuaReflectValProxy<bevy::math::BVec3>;
 
 "#,
     r#"
@@ -5297,7 +5956,10 @@ pub struct LuaIVec2 {
 /// elements.
 
     #[lua()]
-    fn cmpge(self, #[proxy] rhs: bevy::math::IVec3) -> bevy::math::BVec3;
+    fn cmpge(
+        _self: LuaReflectValProxy<bevy::math::IVec3>,
+        rhs: LuaReflectValProxy<bevy::math::IVec3>,
+    ) -> LuaReflectValProxy<bevy::math::BVec3>;
 
 "#,
     r#"
@@ -5307,7 +5969,10 @@ pub struct LuaIVec2 {
 /// elements.
 
     #[lua()]
-    fn cmpgt(self, #[proxy] rhs: bevy::math::IVec3) -> bevy::math::BVec3;
+    fn cmpgt(
+        _self: LuaReflectValProxy<bevy::math::IVec3>,
+        rhs: LuaReflectValProxy<bevy::math::IVec3>,
+    ) -> LuaReflectValProxy<bevy::math::BVec3>;
 
 "#,
     r#"
@@ -5317,7 +5982,10 @@ pub struct LuaIVec2 {
 /// elements.
 
     #[lua()]
-    fn cmple(self, #[proxy] rhs: bevy::math::IVec3) -> bevy::math::BVec3;
+    fn cmple(
+        _self: LuaReflectValProxy<bevy::math::IVec3>,
+        rhs: LuaReflectValProxy<bevy::math::IVec3>,
+    ) -> LuaReflectValProxy<bevy::math::BVec3>;
 
 "#,
     r#"
@@ -5327,14 +5995,19 @@ pub struct LuaIVec2 {
 /// elements.
 
     #[lua()]
-    fn cmplt(self, #[proxy] rhs: bevy::math::IVec3) -> bevy::math::BVec3;
+    fn cmplt(
+        _self: LuaReflectValProxy<bevy::math::IVec3>,
+        rhs: LuaReflectValProxy<bevy::math::IVec3>,
+    ) -> LuaReflectValProxy<bevy::math::BVec3>;
 
 "#,
     r#"
 /// Returns a vector containing the absolute value of each element of `self`.
 
     #[lua()]
-    fn abs(self) -> bevy::math::IVec3;
+    fn abs(
+        _self: LuaReflectValProxy<bevy::math::IVec3>,
+    ) -> LuaReflectValProxy<bevy::math::IVec3>;
 
 "#,
     r#"
@@ -5344,7 +6017,9 @@ pub struct LuaIVec2 {
 ///  - `-1` if the number is negative
 
     #[lua()]
-    fn signum(self) -> bevy::math::IVec3;
+    fn signum(
+        _self: LuaReflectValProxy<bevy::math::IVec3>,
+    ) -> LuaReflectValProxy<bevy::math::IVec3>;
 
 "#,
     r#"
@@ -5353,21 +6028,24 @@ pub struct LuaIVec2 {
 /// into the first lowest bit, element `y` into the second, etc.
 
     #[lua()]
-    fn is_negative_bitmask(self) -> u32;
+    fn is_negative_bitmask(_self: LuaReflectValProxy<bevy::math::IVec3>) -> u32;
 
 "#,
     r#"
 /// Computes the squared length of `self`.
 
     #[lua()]
-    fn length_squared(self) -> i32;
+    fn length_squared(_self: LuaReflectValProxy<bevy::math::IVec3>) -> i32;
 
 "#,
     r#"
 /// Compute the squared euclidean distance between two points in space.
 
     #[lua()]
-    fn distance_squared(self, #[proxy] rhs: bevy::math::IVec3) -> i32;
+    fn distance_squared(
+        _self: LuaReflectValProxy<bevy::math::IVec3>,
+        rhs: LuaReflectValProxy<bevy::math::IVec3>,
+    ) -> i32;
 
 "#,
     r#"
@@ -5376,7 +6054,10 @@ pub struct LuaIVec2 {
 /// This function will panic if any `rhs` element is 0 or the division results in overflow.
 
     #[lua()]
-    fn div_euclid(self, #[proxy] rhs: bevy::math::IVec3) -> bevy::math::IVec3;
+    fn div_euclid(
+        _self: LuaReflectValProxy<bevy::math::IVec3>,
+        rhs: LuaReflectValProxy<bevy::math::IVec3>,
+    ) -> LuaReflectValProxy<bevy::math::IVec3>;
 
 "#,
     r#"
@@ -5386,49 +6067,64 @@ pub struct LuaIVec2 {
 /// [Euclidean division]: i32::rem_euclid
 
     #[lua()]
-    fn rem_euclid(self, #[proxy] rhs: bevy::math::IVec3) -> bevy::math::IVec3;
+    fn rem_euclid(
+        _self: LuaReflectValProxy<bevy::math::IVec3>,
+        rhs: LuaReflectValProxy<bevy::math::IVec3>,
+    ) -> LuaReflectValProxy<bevy::math::IVec3>;
 
 "#,
     r#"
 /// Casts all elements of `self` to `f32`.
 
     #[lua()]
-    fn as_vec3(&self) -> bevy::math::Vec3;
+    fn as_vec3(
+        _self: LuaReflectRefProxy<bevy::math::IVec3>,
+    ) -> LuaReflectValProxy<bevy::math::Vec3>;
 
 "#,
     r#"
 /// Casts all elements of `self` to `f32`.
 
     #[lua()]
-    fn as_vec3a(&self) -> bevy::math::Vec3A;
+    fn as_vec3a(
+        _self: LuaReflectRefProxy<bevy::math::IVec3>,
+    ) -> LuaReflectValProxy<bevy::math::Vec3A>;
 
 "#,
     r#"
 /// Casts all elements of `self` to `f64`.
 
     #[lua()]
-    fn as_dvec3(&self) -> bevy::math::DVec3;
+    fn as_dvec3(
+        _self: LuaReflectRefProxy<bevy::math::IVec3>,
+    ) -> LuaReflectValProxy<bevy::math::DVec3>;
 
 "#,
     r#"
 /// Casts all elements of `self` to `u32`.
 
     #[lua()]
-    fn as_uvec3(&self) -> bevy::math::UVec3;
+    fn as_uvec3(
+        _self: LuaReflectRefProxy<bevy::math::IVec3>,
+    ) -> LuaReflectValProxy<bevy::math::UVec3>;
 
 "#,
     r#"
 /// Casts all elements of `self` to `i64`.
 
     #[lua()]
-    fn as_i64vec3(&self) -> bevy::math::I64Vec3;
+    fn as_i64vec3(
+        _self: LuaReflectRefProxy<bevy::math::IVec3>,
+    ) -> LuaReflectValProxy<bevy::math::I64Vec3>;
 
 "#,
     r#"
 /// Casts all elements of `self` to `u64`.
 
     #[lua()]
-    fn as_u64vec3(&self) -> bevy::math::U64Vec3;
+    fn as_u64vec3(
+        _self: LuaReflectRefProxy<bevy::math::IVec3>,
+    ) -> LuaReflectValProxy<bevy::math::U64Vec3>;
 
 "#,
     r#"
@@ -5436,7 +6132,10 @@ pub struct LuaIVec2 {
 /// In other words this computes `[self.x.wrapping_add(rhs.x), self.y.wrapping_add(rhs.y), ..]`.
 
     #[lua()]
-    fn wrapping_add(self, #[proxy] rhs: bevy::math::IVec3) -> bevy::math::IVec3;
+    fn wrapping_add(
+        _self: LuaReflectValProxy<bevy::math::IVec3>,
+        rhs: LuaReflectValProxy<bevy::math::IVec3>,
+    ) -> LuaReflectValProxy<bevy::math::IVec3>;
 
 "#,
     r#"
@@ -5444,7 +6143,10 @@ pub struct LuaIVec2 {
 /// In other words this computes `[self.x.wrapping_sub(rhs.x), self.y.wrapping_sub(rhs.y), ..]`.
 
     #[lua()]
-    fn wrapping_sub(self, #[proxy] rhs: bevy::math::IVec3) -> bevy::math::IVec3;
+    fn wrapping_sub(
+        _self: LuaReflectValProxy<bevy::math::IVec3>,
+        rhs: LuaReflectValProxy<bevy::math::IVec3>,
+    ) -> LuaReflectValProxy<bevy::math::IVec3>;
 
 "#,
     r#"
@@ -5452,7 +6154,10 @@ pub struct LuaIVec2 {
 /// In other words this computes `[self.x.wrapping_mul(rhs.x), self.y.wrapping_mul(rhs.y), ..]`.
 
     #[lua()]
-    fn wrapping_mul(self, #[proxy] rhs: bevy::math::IVec3) -> bevy::math::IVec3;
+    fn wrapping_mul(
+        _self: LuaReflectValProxy<bevy::math::IVec3>,
+        rhs: LuaReflectValProxy<bevy::math::IVec3>,
+    ) -> LuaReflectValProxy<bevy::math::IVec3>;
 
 "#,
     r#"
@@ -5460,7 +6165,10 @@ pub struct LuaIVec2 {
 /// In other words this computes `[self.x.wrapping_div(rhs.x), self.y.wrapping_div(rhs.y), ..]`.
 
     #[lua()]
-    fn wrapping_div(self, #[proxy] rhs: bevy::math::IVec3) -> bevy::math::IVec3;
+    fn wrapping_div(
+        _self: LuaReflectValProxy<bevy::math::IVec3>,
+        rhs: LuaReflectValProxy<bevy::math::IVec3>,
+    ) -> LuaReflectValProxy<bevy::math::IVec3>;
 
 "#,
     r#"
@@ -5468,7 +6176,10 @@ pub struct LuaIVec2 {
 /// In other words this computes `[self.x.saturating_add(rhs.x), self.y.saturating_add(rhs.y), ..]`.
 
     #[lua()]
-    fn saturating_add(self, #[proxy] rhs: bevy::math::IVec3) -> bevy::math::IVec3;
+    fn saturating_add(
+        _self: LuaReflectValProxy<bevy::math::IVec3>,
+        rhs: LuaReflectValProxy<bevy::math::IVec3>,
+    ) -> LuaReflectValProxy<bevy::math::IVec3>;
 
 "#,
     r#"
@@ -5476,7 +6187,10 @@ pub struct LuaIVec2 {
 /// In other words this computes `[self.x.saturating_sub(rhs.x), self.y.saturating_sub(rhs.y), ..]`.
 
     #[lua()]
-    fn saturating_sub(self, #[proxy] rhs: bevy::math::IVec3) -> bevy::math::IVec3;
+    fn saturating_sub(
+        _self: LuaReflectValProxy<bevy::math::IVec3>,
+        rhs: LuaReflectValProxy<bevy::math::IVec3>,
+    ) -> LuaReflectValProxy<bevy::math::IVec3>;
 
 "#,
     r#"
@@ -5484,7 +6198,10 @@ pub struct LuaIVec2 {
 /// In other words this computes `[self.x.saturating_mul(rhs.x), self.y.saturating_mul(rhs.y), ..]`.
 
     #[lua()]
-    fn saturating_mul(self, #[proxy] rhs: bevy::math::IVec3) -> bevy::math::IVec3;
+    fn saturating_mul(
+        _self: LuaReflectValProxy<bevy::math::IVec3>,
+        rhs: LuaReflectValProxy<bevy::math::IVec3>,
+    ) -> LuaReflectValProxy<bevy::math::IVec3>;
 
 "#,
     r#"
@@ -5492,73 +6209,104 @@ pub struct LuaIVec2 {
 /// In other words this computes `[self.x.saturating_div(rhs.x), self.y.saturating_div(rhs.y), ..]`.
 
     #[lua()]
-    fn saturating_div(self, #[proxy] rhs: bevy::math::IVec3) -> bevy::math::IVec3;
+    fn saturating_div(
+        _self: LuaReflectValProxy<bevy::math::IVec3>,
+        rhs: LuaReflectValProxy<bevy::math::IVec3>,
+    ) -> LuaReflectValProxy<bevy::math::IVec3>;
 
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Div", composite = "div")]
-    fn div(self, #[proxy] rhs: bevy::math::IVec3) -> bevy::math::IVec3;
+    #[lua(as_trait = "std::ops::Div::<bevy::math::IVec3>", composite = "div")]
+    fn div(
+        _self: LuaReflectValProxy<bevy::math::IVec3>,
+        rhs: LuaReflectValProxy<bevy::math::IVec3>,
+    ) -> LuaReflectValProxy<bevy::math::IVec3>;
 
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Mul", composite = "mul")]
-    fn mul(self, #[proxy] rhs: bevy::math::IVec3) -> bevy::math::IVec3;
+    #[lua(as_trait = "std::ops::Mul::<bevy::math::IVec3>", composite = "mul")]
+    fn mul(
+        _self: LuaReflectValProxy<bevy::math::IVec3>,
+        rhs: LuaReflectValProxy<bevy::math::IVec3>,
+    ) -> LuaReflectValProxy<bevy::math::IVec3>;
 
 "#,
     r#"
 
     #[lua(as_trait = "std::ops::Neg", composite = "neg")]
-    fn neg(self) -> bevy::math::IVec3;
+    fn neg(
+        _self: LuaReflectValProxy<bevy::math::IVec3>,
+    ) -> LuaReflectValProxy<bevy::math::IVec3>;
 
 "#,
     r#"
 
     #[lua(as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone")]
-    fn clone(&self) -> bevy::math::IVec3;
+    fn clone(
+        _self: LuaReflectRefProxy<bevy::math::IVec3>,
+    ) -> LuaReflectValProxy<bevy::math::IVec3>;
 
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Add", composite = "add")]
-    fn add(self, #[proxy] rhs: bevy::math::IVec3) -> bevy::math::IVec3;
+    #[lua(as_trait = "std::ops::Add::<bevy::math::IVec3>", composite = "add")]
+    fn add(
+        _self: LuaReflectValProxy<bevy::math::IVec3>,
+        rhs: LuaReflectValProxy<bevy::math::IVec3>,
+    ) -> LuaReflectValProxy<bevy::math::IVec3>;
 
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Rem", composite = "rem")]
-    fn rem(self, rhs: i32) -> bevy::math::IVec3;
+    #[lua(as_trait = "std::ops::Rem::<i32>", composite = "rem")]
+    fn rem(
+        _self: LuaReflectValProxy<bevy::math::IVec3>,
+        rhs: i32,
+    ) -> LuaReflectValProxy<bevy::math::IVec3>;
 
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Add", composite = "add")]
-    fn add(self, rhs: i32) -> bevy::math::IVec3;
+    #[lua(as_trait = "std::ops::Add::<i32>", composite = "add")]
+    fn add(
+        _self: LuaReflectValProxy<bevy::math::IVec3>,
+        rhs: i32,
+    ) -> LuaReflectValProxy<bevy::math::IVec3>;
 
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Div", composite = "div")]
-    fn div(self, rhs: i32) -> bevy::math::IVec3;
+    #[lua(as_trait = "std::ops::Div::<i32>", composite = "div")]
+    fn div(
+        _self: LuaReflectValProxy<bevy::math::IVec3>,
+        rhs: i32,
+    ) -> LuaReflectValProxy<bevy::math::IVec3>;
 
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Mul", composite = "mul")]
-    fn mul(self, rhs: i32) -> bevy::math::IVec3;
+    #[lua(as_trait = "std::ops::Mul::<i32>", composite = "mul")]
+    fn mul(
+        _self: LuaReflectValProxy<bevy::math::IVec3>,
+        rhs: i32,
+    ) -> LuaReflectValProxy<bevy::math::IVec3>;
 
 "#,
     r#"
 
-    #[lua(as_trait = "std::cmp::PartialEq", composite = "eq")]
-    fn eq(&self, #[proxy] other: &glam::IVec3) -> bool;
+    #[lua(as_trait = "std::cmp::PartialEq::<bevy::math::IVec3>", composite = "eq")]
+    fn eq(
+        _self: LuaReflectRefProxy<bevy::math::IVec3>,
+        other: LuaReflectRefProxy<bevy::math::IVec3>,
+    ) -> bool;
 
 "#,
     r#"
 
     #[lua(as_trait = "std::cmp::Eq")]
-    fn assert_receiver_is_total_eq(&self) -> ();
+    fn assert_receiver_is_total_eq(_self: LuaReflectRefProxy<bevy::math::IVec3>) -> ();
 
 "#,
     r#"
@@ -5568,19 +6316,19 @@ fn index(&self) -> String {
 }
 "#,
     r#"
-#[lua(raw , metamethod="Index")]
-fn index(&self, lua: &Lua, idx: crate::lua::util::LuaIndex) -> Result<i32,_> {
-    Ok(_self.inner()?[*idx])
+#[lua(metamethod="Index")]
+fn index(self, idx: usize) -> IdentityProxy<i32> {
+    _self[idx - 1]
 }
 "#,
     r#"
-#[lua(raw, metamethod="NewIndex")]
-fn index(&mut self, lua: &Lua, idx: crate::lua::util::LuaIndex, val: i32) -> Result<(),_> {
-    _self.val_mut(|s| Ok(s[*idx] = val))?
+#[lua(metamethod="NewIndex")]
+fn index(&mut self, idx: usize, val: i32) -> () {
+    _self[idx - 1] = val
 }
 "#]
 )]
-pub struct LuaIVec3 {
+pub struct IVec3 {
     x: i32,
     y: i32,
     z: i32,
@@ -5593,39 +6341,47 @@ pub struct LuaIVec3 {
     functions[r#"
 
     #[lua(as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone")]
-    fn clone(&self) -> bevy::math::IVec4;
+    fn clone(
+        _self: LuaReflectRefProxy<bevy::math::IVec4>,
+    ) -> LuaReflectValProxy<bevy::math::IVec4>;
 
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Rem", composite = "rem")]
-    fn rem(self, rhs: i32) -> bevy::math::IVec4;
+    #[lua(as_trait = "std::ops::Rem::<i32>", composite = "rem")]
+    fn rem(
+        _self: LuaReflectValProxy<bevy::math::IVec4>,
+        rhs: i32,
+    ) -> LuaReflectValProxy<bevy::math::IVec4>;
 
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Rem", composite = "rem")]
-    fn rem(self, #[proxy] rhs: bevy::math::IVec4) -> bevy::math::IVec4;
+    #[lua(as_trait = "std::ops::Rem::<bevy::math::IVec4>", composite = "rem")]
+    fn rem(
+        _self: LuaReflectValProxy<bevy::math::IVec4>,
+        rhs: LuaReflectValProxy<bevy::math::IVec4>,
+    ) -> LuaReflectValProxy<bevy::math::IVec4>;
 
 "#,
     r#"
 
     #[lua(as_trait = "std::cmp::Eq")]
-    fn assert_receiver_is_total_eq(&self) -> ();
+    fn assert_receiver_is_total_eq(_self: LuaReflectRefProxy<bevy::math::IVec4>) -> ();
 
 "#,
     r#"
 /// Creates a new vector.
 
     #[lua()]
-    fn new(x: i32, y: i32, z: i32, w: i32) -> bevy::math::IVec4;
+    fn new(x: i32, y: i32, z: i32, w: i32) -> LuaReflectValProxy<bevy::math::IVec4>;
 
 "#,
     r#"
 /// Creates a vector with all elements set to `v`.
 
     #[lua()]
-    fn splat(v: i32) -> bevy::math::IVec4;
+    fn splat(v: i32) -> LuaReflectValProxy<bevy::math::IVec4>;
 
 "#,
     r#"
@@ -5636,27 +6392,24 @@ pub struct LuaIVec3 {
 
     #[lua()]
     fn select(
-        #[proxy]
-        mask: bevy::math::BVec4,
-        #[proxy]
-        if_true: bevy::math::IVec4,
-        #[proxy]
-        if_false: bevy::math::IVec4,
-    ) -> bevy::math::IVec4;
+        mask: LuaReflectValProxy<bevy::math::BVec4>,
+        if_true: LuaReflectValProxy<bevy::math::IVec4>,
+        if_false: LuaReflectValProxy<bevy::math::IVec4>,
+    ) -> LuaReflectValProxy<bevy::math::IVec4>;
 
 "#,
     r#"
 /// Creates a new vector from an array.
 
     #[lua()]
-    fn from_array(a: [i32; 4]) -> bevy::math::IVec4;
+    fn from_array(a: [i32; 4]) -> LuaReflectValProxy<bevy::math::IVec4>;
 
 "#,
     r#"
 /// `[x, y, z, w]`
 
     #[lua()]
-    fn to_array(&self) -> [i32; 4];
+    fn to_array(_self: LuaReflectRefProxy<bevy::math::IVec4>) -> [i32; 4];
 
 "#,
     r#"
@@ -5664,21 +6417,29 @@ pub struct LuaIVec3 {
 /// Truncation to [`IVec3`] may also be performed by using [`self.xyz()`][crate::swizzles::Vec4Swizzles::xyz()].
 
     #[lua()]
-    fn truncate(self) -> bevy::math::IVec3;
+    fn truncate(
+        _self: LuaReflectValProxy<bevy::math::IVec4>,
+    ) -> LuaReflectValProxy<bevy::math::IVec3>;
 
 "#,
     r#"
 /// Computes the dot product of `self` and `rhs`.
 
     #[lua()]
-    fn dot(self, #[proxy] rhs: bevy::math::IVec4) -> i32;
+    fn dot(
+        _self: LuaReflectValProxy<bevy::math::IVec4>,
+        rhs: LuaReflectValProxy<bevy::math::IVec4>,
+    ) -> i32;
 
 "#,
     r#"
 /// Returns a vector where every component is the dot product of `self` and `rhs`.
 
     #[lua()]
-    fn dot_into_vec(self, #[proxy] rhs: bevy::math::IVec4) -> bevy::math::IVec4;
+    fn dot_into_vec(
+        _self: LuaReflectValProxy<bevy::math::IVec4>,
+        rhs: LuaReflectValProxy<bevy::math::IVec4>,
+    ) -> LuaReflectValProxy<bevy::math::IVec4>;
 
 "#,
     r#"
@@ -5686,7 +6447,10 @@ pub struct LuaIVec3 {
 /// In other words this computes `[self.x.min(rhs.x), self.y.min(rhs.y), ..]`.
 
     #[lua()]
-    fn min(self, #[proxy] rhs: bevy::math::IVec4) -> bevy::math::IVec4;
+    fn min(
+        _self: LuaReflectValProxy<bevy::math::IVec4>,
+        rhs: LuaReflectValProxy<bevy::math::IVec4>,
+    ) -> LuaReflectValProxy<bevy::math::IVec4>;
 
 "#,
     r#"
@@ -5694,7 +6458,10 @@ pub struct LuaIVec3 {
 /// In other words this computes `[self.x.max(rhs.x), self.y.max(rhs.y), ..]`.
 
     #[lua()]
-    fn max(self, #[proxy] rhs: bevy::math::IVec4) -> bevy::math::IVec4;
+    fn max(
+        _self: LuaReflectValProxy<bevy::math::IVec4>,
+        rhs: LuaReflectValProxy<bevy::math::IVec4>,
+    ) -> LuaReflectValProxy<bevy::math::IVec4>;
 
 "#,
     r#"
@@ -5705,12 +6472,10 @@ pub struct LuaIVec3 {
 
     #[lua()]
     fn clamp(
-        self,
-        #[proxy]
-        min: bevy::math::IVec4,
-        #[proxy]
-        max: bevy::math::IVec4,
-    ) -> bevy::math::IVec4;
+        _self: LuaReflectValProxy<bevy::math::IVec4>,
+        min: LuaReflectValProxy<bevy::math::IVec4>,
+        max: LuaReflectValProxy<bevy::math::IVec4>,
+    ) -> LuaReflectValProxy<bevy::math::IVec4>;
 
 "#,
     r#"
@@ -5718,7 +6483,7 @@ pub struct LuaIVec3 {
 /// In other words this computes `min(x, y, ..)`.
 
     #[lua()]
-    fn min_element(self) -> i32;
+    fn min_element(_self: LuaReflectValProxy<bevy::math::IVec4>) -> i32;
 
 "#,
     r#"
@@ -5726,7 +6491,7 @@ pub struct LuaIVec3 {
 /// In other words this computes `max(x, y, ..)`.
 
     #[lua()]
-    fn max_element(self) -> i32;
+    fn max_element(_self: LuaReflectValProxy<bevy::math::IVec4>) -> i32;
 
 "#,
     r#"
@@ -5736,7 +6501,10 @@ pub struct LuaIVec3 {
 /// elements.
 
     #[lua()]
-    fn cmpeq(self, #[proxy] rhs: bevy::math::IVec4) -> bevy::math::BVec4;
+    fn cmpeq(
+        _self: LuaReflectValProxy<bevy::math::IVec4>,
+        rhs: LuaReflectValProxy<bevy::math::IVec4>,
+    ) -> LuaReflectValProxy<bevy::math::BVec4>;
 
 "#,
     r#"
@@ -5746,7 +6514,10 @@ pub struct LuaIVec3 {
 /// elements.
 
     #[lua()]
-    fn cmpne(self, #[proxy] rhs: bevy::math::IVec4) -> bevy::math::BVec4;
+    fn cmpne(
+        _self: LuaReflectValProxy<bevy::math::IVec4>,
+        rhs: LuaReflectValProxy<bevy::math::IVec4>,
+    ) -> LuaReflectValProxy<bevy::math::BVec4>;
 
 "#,
     r#"
@@ -5756,7 +6527,10 @@ pub struct LuaIVec3 {
 /// elements.
 
     #[lua()]
-    fn cmpge(self, #[proxy] rhs: bevy::math::IVec4) -> bevy::math::BVec4;
+    fn cmpge(
+        _self: LuaReflectValProxy<bevy::math::IVec4>,
+        rhs: LuaReflectValProxy<bevy::math::IVec4>,
+    ) -> LuaReflectValProxy<bevy::math::BVec4>;
 
 "#,
     r#"
@@ -5766,7 +6540,10 @@ pub struct LuaIVec3 {
 /// elements.
 
     #[lua()]
-    fn cmpgt(self, #[proxy] rhs: bevy::math::IVec4) -> bevy::math::BVec4;
+    fn cmpgt(
+        _self: LuaReflectValProxy<bevy::math::IVec4>,
+        rhs: LuaReflectValProxy<bevy::math::IVec4>,
+    ) -> LuaReflectValProxy<bevy::math::BVec4>;
 
 "#,
     r#"
@@ -5776,7 +6553,10 @@ pub struct LuaIVec3 {
 /// elements.
 
     #[lua()]
-    fn cmple(self, #[proxy] rhs: bevy::math::IVec4) -> bevy::math::BVec4;
+    fn cmple(
+        _self: LuaReflectValProxy<bevy::math::IVec4>,
+        rhs: LuaReflectValProxy<bevy::math::IVec4>,
+    ) -> LuaReflectValProxy<bevy::math::BVec4>;
 
 "#,
     r#"
@@ -5786,14 +6566,19 @@ pub struct LuaIVec3 {
 /// elements.
 
     #[lua()]
-    fn cmplt(self, #[proxy] rhs: bevy::math::IVec4) -> bevy::math::BVec4;
+    fn cmplt(
+        _self: LuaReflectValProxy<bevy::math::IVec4>,
+        rhs: LuaReflectValProxy<bevy::math::IVec4>,
+    ) -> LuaReflectValProxy<bevy::math::BVec4>;
 
 "#,
     r#"
 /// Returns a vector containing the absolute value of each element of `self`.
 
     #[lua()]
-    fn abs(self) -> bevy::math::IVec4;
+    fn abs(
+        _self: LuaReflectValProxy<bevy::math::IVec4>,
+    ) -> LuaReflectValProxy<bevy::math::IVec4>;
 
 "#,
     r#"
@@ -5803,7 +6588,9 @@ pub struct LuaIVec3 {
 ///  - `-1` if the number is negative
 
     #[lua()]
-    fn signum(self) -> bevy::math::IVec4;
+    fn signum(
+        _self: LuaReflectValProxy<bevy::math::IVec4>,
+    ) -> LuaReflectValProxy<bevy::math::IVec4>;
 
 "#,
     r#"
@@ -5812,21 +6599,24 @@ pub struct LuaIVec3 {
 /// into the first lowest bit, element `y` into the second, etc.
 
     #[lua()]
-    fn is_negative_bitmask(self) -> u32;
+    fn is_negative_bitmask(_self: LuaReflectValProxy<bevy::math::IVec4>) -> u32;
 
 "#,
     r#"
 /// Computes the squared length of `self`.
 
     #[lua()]
-    fn length_squared(self) -> i32;
+    fn length_squared(_self: LuaReflectValProxy<bevy::math::IVec4>) -> i32;
 
 "#,
     r#"
 /// Compute the squared euclidean distance between two points in space.
 
     #[lua()]
-    fn distance_squared(self, #[proxy] rhs: bevy::math::IVec4) -> i32;
+    fn distance_squared(
+        _self: LuaReflectValProxy<bevy::math::IVec4>,
+        rhs: LuaReflectValProxy<bevy::math::IVec4>,
+    ) -> i32;
 
 "#,
     r#"
@@ -5835,7 +6625,10 @@ pub struct LuaIVec3 {
 /// This function will panic if any `rhs` element is 0 or the division results in overflow.
 
     #[lua()]
-    fn div_euclid(self, #[proxy] rhs: bevy::math::IVec4) -> bevy::math::IVec4;
+    fn div_euclid(
+        _self: LuaReflectValProxy<bevy::math::IVec4>,
+        rhs: LuaReflectValProxy<bevy::math::IVec4>,
+    ) -> LuaReflectValProxy<bevy::math::IVec4>;
 
 "#,
     r#"
@@ -5845,42 +6638,55 @@ pub struct LuaIVec3 {
 /// [Euclidean division]: i32::rem_euclid
 
     #[lua()]
-    fn rem_euclid(self, #[proxy] rhs: bevy::math::IVec4) -> bevy::math::IVec4;
+    fn rem_euclid(
+        _self: LuaReflectValProxy<bevy::math::IVec4>,
+        rhs: LuaReflectValProxy<bevy::math::IVec4>,
+    ) -> LuaReflectValProxy<bevy::math::IVec4>;
 
 "#,
     r#"
 /// Casts all elements of `self` to `f32`.
 
     #[lua()]
-    fn as_vec4(&self) -> bevy::math::Vec4;
+    fn as_vec4(
+        _self: LuaReflectRefProxy<bevy::math::IVec4>,
+    ) -> LuaReflectValProxy<bevy::math::Vec4>;
 
 "#,
     r#"
 /// Casts all elements of `self` to `f64`.
 
     #[lua()]
-    fn as_dvec4(&self) -> bevy::math::DVec4;
+    fn as_dvec4(
+        _self: LuaReflectRefProxy<bevy::math::IVec4>,
+    ) -> LuaReflectValProxy<bevy::math::DVec4>;
 
 "#,
     r#"
 /// Casts all elements of `self` to `u32`.
 
     #[lua()]
-    fn as_uvec4(&self) -> bevy::math::UVec4;
+    fn as_uvec4(
+        _self: LuaReflectRefProxy<bevy::math::IVec4>,
+    ) -> LuaReflectValProxy<bevy::math::UVec4>;
 
 "#,
     r#"
 /// Casts all elements of `self` to `i64`.
 
     #[lua()]
-    fn as_i64vec4(&self) -> bevy::math::I64Vec4;
+    fn as_i64vec4(
+        _self: LuaReflectRefProxy<bevy::math::IVec4>,
+    ) -> LuaReflectValProxy<bevy::math::I64Vec4>;
 
 "#,
     r#"
 /// Casts all elements of `self` to `u64`.
 
     #[lua()]
-    fn as_u64vec4(&self) -> bevy::math::U64Vec4;
+    fn as_u64vec4(
+        _self: LuaReflectRefProxy<bevy::math::IVec4>,
+    ) -> LuaReflectValProxy<bevy::math::U64Vec4>;
 
 "#,
     r#"
@@ -5888,7 +6694,10 @@ pub struct LuaIVec3 {
 /// In other words this computes `[self.x.wrapping_add(rhs.x), self.y.wrapping_add(rhs.y), ..]`.
 
     #[lua()]
-    fn wrapping_add(self, #[proxy] rhs: bevy::math::IVec4) -> bevy::math::IVec4;
+    fn wrapping_add(
+        _self: LuaReflectValProxy<bevy::math::IVec4>,
+        rhs: LuaReflectValProxy<bevy::math::IVec4>,
+    ) -> LuaReflectValProxy<bevy::math::IVec4>;
 
 "#,
     r#"
@@ -5896,7 +6705,10 @@ pub struct LuaIVec3 {
 /// In other words this computes `[self.x.wrapping_sub(rhs.x), self.y.wrapping_sub(rhs.y), ..]`.
 
     #[lua()]
-    fn wrapping_sub(self, #[proxy] rhs: bevy::math::IVec4) -> bevy::math::IVec4;
+    fn wrapping_sub(
+        _self: LuaReflectValProxy<bevy::math::IVec4>,
+        rhs: LuaReflectValProxy<bevy::math::IVec4>,
+    ) -> LuaReflectValProxy<bevy::math::IVec4>;
 
 "#,
     r#"
@@ -5904,7 +6716,10 @@ pub struct LuaIVec3 {
 /// In other words this computes `[self.x.wrapping_mul(rhs.x), self.y.wrapping_mul(rhs.y), ..]`.
 
     #[lua()]
-    fn wrapping_mul(self, #[proxy] rhs: bevy::math::IVec4) -> bevy::math::IVec4;
+    fn wrapping_mul(
+        _self: LuaReflectValProxy<bevy::math::IVec4>,
+        rhs: LuaReflectValProxy<bevy::math::IVec4>,
+    ) -> LuaReflectValProxy<bevy::math::IVec4>;
 
 "#,
     r#"
@@ -5912,7 +6727,10 @@ pub struct LuaIVec3 {
 /// In other words this computes `[self.x.wrapping_div(rhs.x), self.y.wrapping_div(rhs.y), ..]`.
 
     #[lua()]
-    fn wrapping_div(self, #[proxy] rhs: bevy::math::IVec4) -> bevy::math::IVec4;
+    fn wrapping_div(
+        _self: LuaReflectValProxy<bevy::math::IVec4>,
+        rhs: LuaReflectValProxy<bevy::math::IVec4>,
+    ) -> LuaReflectValProxy<bevy::math::IVec4>;
 
 "#,
     r#"
@@ -5920,7 +6738,10 @@ pub struct LuaIVec3 {
 /// In other words this computes `[self.x.saturating_add(rhs.x), self.y.saturating_add(rhs.y), ..]`.
 
     #[lua()]
-    fn saturating_add(self, #[proxy] rhs: bevy::math::IVec4) -> bevy::math::IVec4;
+    fn saturating_add(
+        _self: LuaReflectValProxy<bevy::math::IVec4>,
+        rhs: LuaReflectValProxy<bevy::math::IVec4>,
+    ) -> LuaReflectValProxy<bevy::math::IVec4>;
 
 "#,
     r#"
@@ -5928,7 +6749,10 @@ pub struct LuaIVec3 {
 /// In other words this computes `[self.x.saturating_sub(rhs.x), self.y.saturating_sub(rhs.y), ..]`.
 
     #[lua()]
-    fn saturating_sub(self, #[proxy] rhs: bevy::math::IVec4) -> bevy::math::IVec4;
+    fn saturating_sub(
+        _self: LuaReflectValProxy<bevy::math::IVec4>,
+        rhs: LuaReflectValProxy<bevy::math::IVec4>,
+    ) -> LuaReflectValProxy<bevy::math::IVec4>;
 
 "#,
     r#"
@@ -5936,7 +6760,10 @@ pub struct LuaIVec3 {
 /// In other words this computes `[self.x.saturating_mul(rhs.x), self.y.saturating_mul(rhs.y), ..]`.
 
     #[lua()]
-    fn saturating_mul(self, #[proxy] rhs: bevy::math::IVec4) -> bevy::math::IVec4;
+    fn saturating_mul(
+        _self: LuaReflectValProxy<bevy::math::IVec4>,
+        rhs: LuaReflectValProxy<bevy::math::IVec4>,
+    ) -> LuaReflectValProxy<bevy::math::IVec4>;
 
 "#,
     r#"
@@ -5944,67 +6771,99 @@ pub struct LuaIVec3 {
 /// In other words this computes `[self.x.saturating_div(rhs.x), self.y.saturating_div(rhs.y), ..]`.
 
     #[lua()]
-    fn saturating_div(self, #[proxy] rhs: bevy::math::IVec4) -> bevy::math::IVec4;
+    fn saturating_div(
+        _self: LuaReflectValProxy<bevy::math::IVec4>,
+        rhs: LuaReflectValProxy<bevy::math::IVec4>,
+    ) -> LuaReflectValProxy<bevy::math::IVec4>;
 
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Mul", composite = "mul")]
-    fn mul(self, #[proxy] rhs: bevy::math::IVec4) -> bevy::math::IVec4;
+    #[lua(as_trait = "std::ops::Mul::<bevy::math::IVec4>", composite = "mul")]
+    fn mul(
+        _self: LuaReflectValProxy<bevy::math::IVec4>,
+        rhs: LuaReflectValProxy<bevy::math::IVec4>,
+    ) -> LuaReflectValProxy<bevy::math::IVec4>;
 
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Div", composite = "div")]
-    fn div(self, #[proxy] rhs: bevy::math::IVec4) -> bevy::math::IVec4;
+    #[lua(as_trait = "std::ops::Div::<bevy::math::IVec4>", composite = "div")]
+    fn div(
+        _self: LuaReflectValProxy<bevy::math::IVec4>,
+        rhs: LuaReflectValProxy<bevy::math::IVec4>,
+    ) -> LuaReflectValProxy<bevy::math::IVec4>;
 
 "#,
     r#"
 
-    #[lua(as_trait = "std::cmp::PartialEq", composite = "eq")]
-    fn eq(&self, #[proxy] other: &glam::IVec4) -> bool;
+    #[lua(as_trait = "std::cmp::PartialEq::<bevy::math::IVec4>", composite = "eq")]
+    fn eq(
+        _self: LuaReflectRefProxy<bevy::math::IVec4>,
+        other: LuaReflectRefProxy<bevy::math::IVec4>,
+    ) -> bool;
 
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Div", composite = "div")]
-    fn div(self, rhs: i32) -> bevy::math::IVec4;
+    #[lua(as_trait = "std::ops::Div::<i32>", composite = "div")]
+    fn div(
+        _self: LuaReflectValProxy<bevy::math::IVec4>,
+        rhs: i32,
+    ) -> LuaReflectValProxy<bevy::math::IVec4>;
 
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Mul", composite = "mul")]
-    fn mul(self, rhs: i32) -> bevy::math::IVec4;
+    #[lua(as_trait = "std::ops::Mul::<i32>", composite = "mul")]
+    fn mul(
+        _self: LuaReflectValProxy<bevy::math::IVec4>,
+        rhs: i32,
+    ) -> LuaReflectValProxy<bevy::math::IVec4>;
 
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Add", composite = "add")]
-    fn add(self, #[proxy] rhs: bevy::math::IVec4) -> bevy::math::IVec4;
+    #[lua(as_trait = "std::ops::Add::<bevy::math::IVec4>", composite = "add")]
+    fn add(
+        _self: LuaReflectValProxy<bevy::math::IVec4>,
+        rhs: LuaReflectValProxy<bevy::math::IVec4>,
+    ) -> LuaReflectValProxy<bevy::math::IVec4>;
 
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Sub", composite = "sub")]
-    fn sub(self, #[proxy] rhs: bevy::math::IVec4) -> bevy::math::IVec4;
+    #[lua(as_trait = "std::ops::Sub::<bevy::math::IVec4>", composite = "sub")]
+    fn sub(
+        _self: LuaReflectValProxy<bevy::math::IVec4>,
+        rhs: LuaReflectValProxy<bevy::math::IVec4>,
+    ) -> LuaReflectValProxy<bevy::math::IVec4>;
 
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Add", composite = "add")]
-    fn add(self, rhs: i32) -> bevy::math::IVec4;
+    #[lua(as_trait = "std::ops::Add::<i32>", composite = "add")]
+    fn add(
+        _self: LuaReflectValProxy<bevy::math::IVec4>,
+        rhs: i32,
+    ) -> LuaReflectValProxy<bevy::math::IVec4>;
 
 "#,
     r#"
 
     #[lua(as_trait = "std::ops::Neg", composite = "neg")]
-    fn neg(self) -> bevy::math::IVec4;
+    fn neg(
+        _self: LuaReflectValProxy<bevy::math::IVec4>,
+    ) -> LuaReflectValProxy<bevy::math::IVec4>;
 
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Sub", composite = "sub")]
-    fn sub(self, rhs: i32) -> bevy::math::IVec4;
+    #[lua(as_trait = "std::ops::Sub::<i32>", composite = "sub")]
+    fn sub(
+        _self: LuaReflectValProxy<bevy::math::IVec4>,
+        rhs: i32,
+    ) -> LuaReflectValProxy<bevy::math::IVec4>;
 
 "#,
     r#"
@@ -6014,19 +6873,19 @@ fn index(&self) -> String {
 }
 "#,
     r#"
-#[lua(raw , metamethod="Index")]
-fn index(&self, lua: &Lua, idx: crate::lua::util::LuaIndex) -> Result<i32,_> {
-    Ok(_self.inner()?[*idx])
+#[lua(metamethod="Index")]
+fn index(self, idx: usize) -> IdentityProxy<i32> {
+    _self[idx - 1]
 }
 "#,
     r#"
-#[lua(raw, metamethod="NewIndex")]
-fn index(&mut self, lua: &Lua, idx: crate::lua::util::LuaIndex, val: i32) -> Result<(),_> {
-    _self.val_mut(|s| Ok(s[*idx] = val))?
+#[lua(metamethod="NewIndex")]
+fn index(&mut self, idx: usize, val: i32) -> () {
+    _self[idx - 1] = val
 }
 "#]
 )]
-pub struct LuaIVec4 {
+pub struct IVec4 {
     x: i32,
     y: i32,
     z: i32,
@@ -6039,100 +6898,137 @@ pub struct LuaIVec4 {
     bms_lua_path = "crate",
     functions[r#"
 
-    #[lua(as_trait = "std::ops::Mul", composite = "mul")]
-    fn mul(self, #[proxy] rhs: bevy::math::I64Vec2) -> bevy::math::I64Vec2;
+    #[lua(as_trait = "std::ops::Mul::<bevy::math::I64Vec2>", composite = "mul")]
+    fn mul(
+        _self: LuaReflectValProxy<bevy::math::I64Vec2>,
+        rhs: LuaReflectValProxy<bevy::math::I64Vec2>,
+    ) -> LuaReflectValProxy<bevy::math::I64Vec2>;
 
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Mul", composite = "mul")]
-    fn mul(self, rhs: i64) -> bevy::math::I64Vec2;
+    #[lua(as_trait = "std::ops::Mul::<i64>", composite = "mul")]
+    fn mul(
+        _self: LuaReflectValProxy<bevy::math::I64Vec2>,
+        rhs: i64,
+    ) -> LuaReflectValProxy<bevy::math::I64Vec2>;
 
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Rem", composite = "rem")]
-    fn rem(self, #[proxy] rhs: bevy::math::I64Vec2) -> bevy::math::I64Vec2;
+    #[lua(as_trait = "std::ops::Rem::<bevy::math::I64Vec2>", composite = "rem")]
+    fn rem(
+        _self: LuaReflectValProxy<bevy::math::I64Vec2>,
+        rhs: LuaReflectValProxy<bevy::math::I64Vec2>,
+    ) -> LuaReflectValProxy<bevy::math::I64Vec2>;
 
 "#,
     r#"
 
     #[lua(as_trait = "std::ops::Neg", composite = "neg")]
-    fn neg(self) -> bevy::math::I64Vec2;
+    fn neg(
+        _self: LuaReflectValProxy<bevy::math::I64Vec2>,
+    ) -> LuaReflectValProxy<bevy::math::I64Vec2>;
 
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Div", composite = "div")]
-    fn div(self, #[proxy] rhs: bevy::math::I64Vec2) -> bevy::math::I64Vec2;
+    #[lua(as_trait = "std::ops::Div::<bevy::math::I64Vec2>", composite = "div")]
+    fn div(
+        _self: LuaReflectValProxy<bevy::math::I64Vec2>,
+        rhs: LuaReflectValProxy<bevy::math::I64Vec2>,
+    ) -> LuaReflectValProxy<bevy::math::I64Vec2>;
 
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Add", composite = "add")]
-    fn add(self, rhs: i64) -> bevy::math::I64Vec2;
+    #[lua(as_trait = "std::ops::Add::<i64>", composite = "add")]
+    fn add(
+        _self: LuaReflectValProxy<bevy::math::I64Vec2>,
+        rhs: i64,
+    ) -> LuaReflectValProxy<bevy::math::I64Vec2>;
 
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Rem", composite = "rem")]
-    fn rem(self, rhs: i64) -> bevy::math::I64Vec2;
+    #[lua(as_trait = "std::ops::Rem::<i64>", composite = "rem")]
+    fn rem(
+        _self: LuaReflectValProxy<bevy::math::I64Vec2>,
+        rhs: i64,
+    ) -> LuaReflectValProxy<bevy::math::I64Vec2>;
 
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Sub", composite = "sub")]
-    fn sub(self, rhs: i64) -> bevy::math::I64Vec2;
+    #[lua(as_trait = "std::ops::Sub::<i64>", composite = "sub")]
+    fn sub(
+        _self: LuaReflectValProxy<bevy::math::I64Vec2>,
+        rhs: i64,
+    ) -> LuaReflectValProxy<bevy::math::I64Vec2>;
 
 "#,
     r#"
 
-    #[lua(as_trait = "std::cmp::PartialEq", composite = "eq")]
-    fn eq(&self, #[proxy] other: &glam::I64Vec2) -> bool;
+    #[lua(as_trait = "std::cmp::PartialEq::<bevy::math::I64Vec2>", composite = "eq")]
+    fn eq(
+        _self: LuaReflectRefProxy<bevy::math::I64Vec2>,
+        other: LuaReflectRefProxy<bevy::math::I64Vec2>,
+    ) -> bool;
 
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Add", composite = "add")]
-    fn add(self, #[proxy] rhs: bevy::math::I64Vec2) -> bevy::math::I64Vec2;
+    #[lua(as_trait = "std::ops::Add::<bevy::math::I64Vec2>", composite = "add")]
+    fn add(
+        _self: LuaReflectValProxy<bevy::math::I64Vec2>,
+        rhs: LuaReflectValProxy<bevy::math::I64Vec2>,
+    ) -> LuaReflectValProxy<bevy::math::I64Vec2>;
 
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Div", composite = "div")]
-    fn div(self, rhs: i64) -> bevy::math::I64Vec2;
+    #[lua(as_trait = "std::ops::Div::<i64>", composite = "div")]
+    fn div(
+        _self: LuaReflectValProxy<bevy::math::I64Vec2>,
+        rhs: i64,
+    ) -> LuaReflectValProxy<bevy::math::I64Vec2>;
 
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Sub", composite = "sub")]
-    fn sub(self, #[proxy] rhs: bevy::math::I64Vec2) -> bevy::math::I64Vec2;
+    #[lua(as_trait = "std::ops::Sub::<bevy::math::I64Vec2>", composite = "sub")]
+    fn sub(
+        _self: LuaReflectValProxy<bevy::math::I64Vec2>,
+        rhs: LuaReflectValProxy<bevy::math::I64Vec2>,
+    ) -> LuaReflectValProxy<bevy::math::I64Vec2>;
 
 "#,
     r#"
 
     #[lua(as_trait = "std::cmp::Eq")]
-    fn assert_receiver_is_total_eq(&self) -> ();
+    fn assert_receiver_is_total_eq(_self: LuaReflectRefProxy<bevy::math::I64Vec2>) -> ();
 
 "#,
     r#"
 
     #[lua(as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone")]
-    fn clone(&self) -> bevy::math::I64Vec2;
+    fn clone(
+        _self: LuaReflectRefProxy<bevy::math::I64Vec2>,
+    ) -> LuaReflectValProxy<bevy::math::I64Vec2>;
 
 "#,
     r#"
 /// Creates a new vector.
 
     #[lua()]
-    fn new(x: i64, y: i64) -> bevy::math::I64Vec2;
+    fn new(x: i64, y: i64) -> LuaReflectValProxy<bevy::math::I64Vec2>;
 
 "#,
     r#"
 /// Creates a vector with all elements set to `v`.
 
     #[lua()]
-    fn splat(v: i64) -> bevy::math::I64Vec2;
+    fn splat(v: i64) -> LuaReflectValProxy<bevy::math::I64Vec2>;
 
 "#,
     r#"
@@ -6143,48 +7039,54 @@ pub struct LuaIVec4 {
 
     #[lua()]
     fn select(
-        #[proxy]
-        mask: bevy::math::BVec2,
-        #[proxy]
-        if_true: bevy::math::I64Vec2,
-        #[proxy]
-        if_false: bevy::math::I64Vec2,
-    ) -> bevy::math::I64Vec2;
+        mask: LuaReflectValProxy<bevy::math::BVec2>,
+        if_true: LuaReflectValProxy<bevy::math::I64Vec2>,
+        if_false: LuaReflectValProxy<bevy::math::I64Vec2>,
+    ) -> LuaReflectValProxy<bevy::math::I64Vec2>;
 
 "#,
     r#"
 /// Creates a new vector from an array.
 
     #[lua()]
-    fn from_array(a: [i64; 2]) -> bevy::math::I64Vec2;
+    fn from_array(a: [i64; 2]) -> LuaReflectValProxy<bevy::math::I64Vec2>;
 
 "#,
     r#"
 /// `[x, y]`
 
     #[lua()]
-    fn to_array(&self) -> [i64; 2];
+    fn to_array(_self: LuaReflectRefProxy<bevy::math::I64Vec2>) -> [i64; 2];
 
 "#,
     r#"
 /// Creates a 3D vector from `self` and the given `z` value.
 
     #[lua()]
-    fn extend(self, z: i64) -> bevy::math::I64Vec3;
+    fn extend(
+        _self: LuaReflectValProxy<bevy::math::I64Vec2>,
+        z: i64,
+    ) -> LuaReflectValProxy<bevy::math::I64Vec3>;
 
 "#,
     r#"
 /// Computes the dot product of `self` and `rhs`.
 
     #[lua()]
-    fn dot(self, #[proxy] rhs: bevy::math::I64Vec2) -> i64;
+    fn dot(
+        _self: LuaReflectValProxy<bevy::math::I64Vec2>,
+        rhs: LuaReflectValProxy<bevy::math::I64Vec2>,
+    ) -> i64;
 
 "#,
     r#"
 /// Returns a vector where every component is the dot product of `self` and `rhs`.
 
     #[lua()]
-    fn dot_into_vec(self, #[proxy] rhs: bevy::math::I64Vec2) -> bevy::math::I64Vec2;
+    fn dot_into_vec(
+        _self: LuaReflectValProxy<bevy::math::I64Vec2>,
+        rhs: LuaReflectValProxy<bevy::math::I64Vec2>,
+    ) -> LuaReflectValProxy<bevy::math::I64Vec2>;
 
 "#,
     r#"
@@ -6192,7 +7094,10 @@ pub struct LuaIVec4 {
 /// In other words this computes `[self.x.min(rhs.x), self.y.min(rhs.y), ..]`.
 
     #[lua()]
-    fn min(self, #[proxy] rhs: bevy::math::I64Vec2) -> bevy::math::I64Vec2;
+    fn min(
+        _self: LuaReflectValProxy<bevy::math::I64Vec2>,
+        rhs: LuaReflectValProxy<bevy::math::I64Vec2>,
+    ) -> LuaReflectValProxy<bevy::math::I64Vec2>;
 
 "#,
     r#"
@@ -6200,7 +7105,10 @@ pub struct LuaIVec4 {
 /// In other words this computes `[self.x.max(rhs.x), self.y.max(rhs.y), ..]`.
 
     #[lua()]
-    fn max(self, #[proxy] rhs: bevy::math::I64Vec2) -> bevy::math::I64Vec2;
+    fn max(
+        _self: LuaReflectValProxy<bevy::math::I64Vec2>,
+        rhs: LuaReflectValProxy<bevy::math::I64Vec2>,
+    ) -> LuaReflectValProxy<bevy::math::I64Vec2>;
 
 "#,
     r#"
@@ -6211,12 +7119,10 @@ pub struct LuaIVec4 {
 
     #[lua()]
     fn clamp(
-        self,
-        #[proxy]
-        min: bevy::math::I64Vec2,
-        #[proxy]
-        max: bevy::math::I64Vec2,
-    ) -> bevy::math::I64Vec2;
+        _self: LuaReflectValProxy<bevy::math::I64Vec2>,
+        min: LuaReflectValProxy<bevy::math::I64Vec2>,
+        max: LuaReflectValProxy<bevy::math::I64Vec2>,
+    ) -> LuaReflectValProxy<bevy::math::I64Vec2>;
 
 "#,
     r#"
@@ -6224,7 +7130,7 @@ pub struct LuaIVec4 {
 /// In other words this computes `min(x, y, ..)`.
 
     #[lua()]
-    fn min_element(self) -> i64;
+    fn min_element(_self: LuaReflectValProxy<bevy::math::I64Vec2>) -> i64;
 
 "#,
     r#"
@@ -6232,7 +7138,7 @@ pub struct LuaIVec4 {
 /// In other words this computes `max(x, y, ..)`.
 
     #[lua()]
-    fn max_element(self) -> i64;
+    fn max_element(_self: LuaReflectValProxy<bevy::math::I64Vec2>) -> i64;
 
 "#,
     r#"
@@ -6242,7 +7148,10 @@ pub struct LuaIVec4 {
 /// elements.
 
     #[lua()]
-    fn cmpeq(self, #[proxy] rhs: bevy::math::I64Vec2) -> bevy::math::BVec2;
+    fn cmpeq(
+        _self: LuaReflectValProxy<bevy::math::I64Vec2>,
+        rhs: LuaReflectValProxy<bevy::math::I64Vec2>,
+    ) -> LuaReflectValProxy<bevy::math::BVec2>;
 
 "#,
     r#"
@@ -6252,7 +7161,10 @@ pub struct LuaIVec4 {
 /// elements.
 
     #[lua()]
-    fn cmpne(self, #[proxy] rhs: bevy::math::I64Vec2) -> bevy::math::BVec2;
+    fn cmpne(
+        _self: LuaReflectValProxy<bevy::math::I64Vec2>,
+        rhs: LuaReflectValProxy<bevy::math::I64Vec2>,
+    ) -> LuaReflectValProxy<bevy::math::BVec2>;
 
 "#,
     r#"
@@ -6262,7 +7174,10 @@ pub struct LuaIVec4 {
 /// elements.
 
     #[lua()]
-    fn cmpge(self, #[proxy] rhs: bevy::math::I64Vec2) -> bevy::math::BVec2;
+    fn cmpge(
+        _self: LuaReflectValProxy<bevy::math::I64Vec2>,
+        rhs: LuaReflectValProxy<bevy::math::I64Vec2>,
+    ) -> LuaReflectValProxy<bevy::math::BVec2>;
 
 "#,
     r#"
@@ -6272,7 +7187,10 @@ pub struct LuaIVec4 {
 /// elements.
 
     #[lua()]
-    fn cmpgt(self, #[proxy] rhs: bevy::math::I64Vec2) -> bevy::math::BVec2;
+    fn cmpgt(
+        _self: LuaReflectValProxy<bevy::math::I64Vec2>,
+        rhs: LuaReflectValProxy<bevy::math::I64Vec2>,
+    ) -> LuaReflectValProxy<bevy::math::BVec2>;
 
 "#,
     r#"
@@ -6282,7 +7200,10 @@ pub struct LuaIVec4 {
 /// elements.
 
     #[lua()]
-    fn cmple(self, #[proxy] rhs: bevy::math::I64Vec2) -> bevy::math::BVec2;
+    fn cmple(
+        _self: LuaReflectValProxy<bevy::math::I64Vec2>,
+        rhs: LuaReflectValProxy<bevy::math::I64Vec2>,
+    ) -> LuaReflectValProxy<bevy::math::BVec2>;
 
 "#,
     r#"
@@ -6292,14 +7213,19 @@ pub struct LuaIVec4 {
 /// elements.
 
     #[lua()]
-    fn cmplt(self, #[proxy] rhs: bevy::math::I64Vec2) -> bevy::math::BVec2;
+    fn cmplt(
+        _self: LuaReflectValProxy<bevy::math::I64Vec2>,
+        rhs: LuaReflectValProxy<bevy::math::I64Vec2>,
+    ) -> LuaReflectValProxy<bevy::math::BVec2>;
 
 "#,
     r#"
 /// Returns a vector containing the absolute value of each element of `self`.
 
     #[lua()]
-    fn abs(self) -> bevy::math::I64Vec2;
+    fn abs(
+        _self: LuaReflectValProxy<bevy::math::I64Vec2>,
+    ) -> LuaReflectValProxy<bevy::math::I64Vec2>;
 
 "#,
     r#"
@@ -6309,7 +7235,9 @@ pub struct LuaIVec4 {
 ///  - `-1` if the number is negative
 
     #[lua()]
-    fn signum(self) -> bevy::math::I64Vec2;
+    fn signum(
+        _self: LuaReflectValProxy<bevy::math::I64Vec2>,
+    ) -> LuaReflectValProxy<bevy::math::I64Vec2>;
 
 "#,
     r#"
@@ -6318,21 +7246,24 @@ pub struct LuaIVec4 {
 /// into the first lowest bit, element `y` into the second, etc.
 
     #[lua()]
-    fn is_negative_bitmask(self) -> u32;
+    fn is_negative_bitmask(_self: LuaReflectValProxy<bevy::math::I64Vec2>) -> u32;
 
 "#,
     r#"
 /// Computes the squared length of `self`.
 
     #[lua()]
-    fn length_squared(self) -> i64;
+    fn length_squared(_self: LuaReflectValProxy<bevy::math::I64Vec2>) -> i64;
 
 "#,
     r#"
 /// Compute the squared euclidean distance between two points in space.
 
     #[lua()]
-    fn distance_squared(self, #[proxy] rhs: bevy::math::I64Vec2) -> i64;
+    fn distance_squared(
+        _self: LuaReflectValProxy<bevy::math::I64Vec2>,
+        rhs: LuaReflectValProxy<bevy::math::I64Vec2>,
+    ) -> i64;
 
 "#,
     r#"
@@ -6341,7 +7272,10 @@ pub struct LuaIVec4 {
 /// This function will panic if any `rhs` element is 0 or the division results in overflow.
 
     #[lua()]
-    fn div_euclid(self, #[proxy] rhs: bevy::math::I64Vec2) -> bevy::math::I64Vec2;
+    fn div_euclid(
+        _self: LuaReflectValProxy<bevy::math::I64Vec2>,
+        rhs: LuaReflectValProxy<bevy::math::I64Vec2>,
+    ) -> LuaReflectValProxy<bevy::math::I64Vec2>;
 
 "#,
     r#"
@@ -6351,14 +7285,19 @@ pub struct LuaIVec4 {
 /// [Euclidean division]: i64::rem_euclid
 
     #[lua()]
-    fn rem_euclid(self, #[proxy] rhs: bevy::math::I64Vec2) -> bevy::math::I64Vec2;
+    fn rem_euclid(
+        _self: LuaReflectValProxy<bevy::math::I64Vec2>,
+        rhs: LuaReflectValProxy<bevy::math::I64Vec2>,
+    ) -> LuaReflectValProxy<bevy::math::I64Vec2>;
 
 "#,
     r#"
 /// Returns a vector that is equal to `self` rotated by 90 degrees.
 
     #[lua()]
-    fn perp(self) -> bevy::math::I64Vec2;
+    fn perp(
+        _self: LuaReflectValProxy<bevy::math::I64Vec2>,
+    ) -> LuaReflectValProxy<bevy::math::I64Vec2>;
 
 "#,
     r#"
@@ -6366,7 +7305,10 @@ pub struct LuaIVec4 {
 /// Also known as the wedge product, 2D cross product, and determinant.
 
     #[lua()]
-    fn perp_dot(self, #[proxy] rhs: bevy::math::I64Vec2) -> i64;
+    fn perp_dot(
+        _self: LuaReflectValProxy<bevy::math::I64Vec2>,
+        rhs: LuaReflectValProxy<bevy::math::I64Vec2>,
+    ) -> i64;
 
 "#,
     r#"
@@ -6375,42 +7317,55 @@ pub struct LuaIVec4 {
 /// it will be like a rotation with a multiplication by `self`'s length.
 
     #[lua()]
-    fn rotate(self, #[proxy] rhs: bevy::math::I64Vec2) -> bevy::math::I64Vec2;
+    fn rotate(
+        _self: LuaReflectValProxy<bevy::math::I64Vec2>,
+        rhs: LuaReflectValProxy<bevy::math::I64Vec2>,
+    ) -> LuaReflectValProxy<bevy::math::I64Vec2>;
 
 "#,
     r#"
 /// Casts all elements of `self` to `f32`.
 
     #[lua()]
-    fn as_vec2(&self) -> bevy::math::Vec2;
+    fn as_vec2(
+        _self: LuaReflectRefProxy<bevy::math::I64Vec2>,
+    ) -> LuaReflectValProxy<bevy::math::Vec2>;
 
 "#,
     r#"
 /// Casts all elements of `self` to `f64`.
 
     #[lua()]
-    fn as_dvec2(&self) -> bevy::math::DVec2;
+    fn as_dvec2(
+        _self: LuaReflectRefProxy<bevy::math::I64Vec2>,
+    ) -> LuaReflectValProxy<bevy::math::DVec2>;
 
 "#,
     r#"
 /// Casts all elements of `self` to `i32`.
 
     #[lua()]
-    fn as_ivec2(&self) -> bevy::math::IVec2;
+    fn as_ivec2(
+        _self: LuaReflectRefProxy<bevy::math::I64Vec2>,
+    ) -> LuaReflectValProxy<bevy::math::IVec2>;
 
 "#,
     r#"
 /// Casts all elements of `self` to `u32`.
 
     #[lua()]
-    fn as_uvec2(&self) -> bevy::math::UVec2;
+    fn as_uvec2(
+        _self: LuaReflectRefProxy<bevy::math::I64Vec2>,
+    ) -> LuaReflectValProxy<bevy::math::UVec2>;
 
 "#,
     r#"
 /// Casts all elements of `self` to `u64`.
 
     #[lua()]
-    fn as_u64vec2(&self) -> bevy::math::U64Vec2;
+    fn as_u64vec2(
+        _self: LuaReflectRefProxy<bevy::math::I64Vec2>,
+    ) -> LuaReflectValProxy<bevy::math::U64Vec2>;
 
 "#,
     r#"
@@ -6418,7 +7373,10 @@ pub struct LuaIVec4 {
 /// In other words this computes `[self.x.wrapping_add(rhs.x), self.y.wrapping_add(rhs.y), ..]`.
 
     #[lua()]
-    fn wrapping_add(self, #[proxy] rhs: bevy::math::I64Vec2) -> bevy::math::I64Vec2;
+    fn wrapping_add(
+        _self: LuaReflectValProxy<bevy::math::I64Vec2>,
+        rhs: LuaReflectValProxy<bevy::math::I64Vec2>,
+    ) -> LuaReflectValProxy<bevy::math::I64Vec2>;
 
 "#,
     r#"
@@ -6426,7 +7384,10 @@ pub struct LuaIVec4 {
 /// In other words this computes `[self.x.wrapping_sub(rhs.x), self.y.wrapping_sub(rhs.y), ..]`.
 
     #[lua()]
-    fn wrapping_sub(self, #[proxy] rhs: bevy::math::I64Vec2) -> bevy::math::I64Vec2;
+    fn wrapping_sub(
+        _self: LuaReflectValProxy<bevy::math::I64Vec2>,
+        rhs: LuaReflectValProxy<bevy::math::I64Vec2>,
+    ) -> LuaReflectValProxy<bevy::math::I64Vec2>;
 
 "#,
     r#"
@@ -6434,7 +7395,10 @@ pub struct LuaIVec4 {
 /// In other words this computes `[self.x.wrapping_mul(rhs.x), self.y.wrapping_mul(rhs.y), ..]`.
 
     #[lua()]
-    fn wrapping_mul(self, #[proxy] rhs: bevy::math::I64Vec2) -> bevy::math::I64Vec2;
+    fn wrapping_mul(
+        _self: LuaReflectValProxy<bevy::math::I64Vec2>,
+        rhs: LuaReflectValProxy<bevy::math::I64Vec2>,
+    ) -> LuaReflectValProxy<bevy::math::I64Vec2>;
 
 "#,
     r#"
@@ -6442,7 +7406,10 @@ pub struct LuaIVec4 {
 /// In other words this computes `[self.x.wrapping_div(rhs.x), self.y.wrapping_div(rhs.y), ..]`.
 
     #[lua()]
-    fn wrapping_div(self, #[proxy] rhs: bevy::math::I64Vec2) -> bevy::math::I64Vec2;
+    fn wrapping_div(
+        _self: LuaReflectValProxy<bevy::math::I64Vec2>,
+        rhs: LuaReflectValProxy<bevy::math::I64Vec2>,
+    ) -> LuaReflectValProxy<bevy::math::I64Vec2>;
 
 "#,
     r#"
@@ -6450,7 +7417,10 @@ pub struct LuaIVec4 {
 /// In other words this computes `[self.x.saturating_add(rhs.x), self.y.saturating_add(rhs.y), ..]`.
 
     #[lua()]
-    fn saturating_add(self, #[proxy] rhs: bevy::math::I64Vec2) -> bevy::math::I64Vec2;
+    fn saturating_add(
+        _self: LuaReflectValProxy<bevy::math::I64Vec2>,
+        rhs: LuaReflectValProxy<bevy::math::I64Vec2>,
+    ) -> LuaReflectValProxy<bevy::math::I64Vec2>;
 
 "#,
     r#"
@@ -6458,7 +7428,10 @@ pub struct LuaIVec4 {
 /// In other words this computes `[self.x.saturating_sub(rhs.x), self.y.saturating_sub(rhs.y), ..]`.
 
     #[lua()]
-    fn saturating_sub(self, #[proxy] rhs: bevy::math::I64Vec2) -> bevy::math::I64Vec2;
+    fn saturating_sub(
+        _self: LuaReflectValProxy<bevy::math::I64Vec2>,
+        rhs: LuaReflectValProxy<bevy::math::I64Vec2>,
+    ) -> LuaReflectValProxy<bevy::math::I64Vec2>;
 
 "#,
     r#"
@@ -6466,7 +7439,10 @@ pub struct LuaIVec4 {
 /// In other words this computes `[self.x.saturating_mul(rhs.x), self.y.saturating_mul(rhs.y), ..]`.
 
     #[lua()]
-    fn saturating_mul(self, #[proxy] rhs: bevy::math::I64Vec2) -> bevy::math::I64Vec2;
+    fn saturating_mul(
+        _self: LuaReflectValProxy<bevy::math::I64Vec2>,
+        rhs: LuaReflectValProxy<bevy::math::I64Vec2>,
+    ) -> LuaReflectValProxy<bevy::math::I64Vec2>;
 
 "#,
     r#"
@@ -6474,7 +7450,10 @@ pub struct LuaIVec4 {
 /// In other words this computes `[self.x.saturating_div(rhs.x), self.y.saturating_div(rhs.y), ..]`.
 
     #[lua()]
-    fn saturating_div(self, #[proxy] rhs: bevy::math::I64Vec2) -> bevy::math::I64Vec2;
+    fn saturating_div(
+        _self: LuaReflectValProxy<bevy::math::I64Vec2>,
+        rhs: LuaReflectValProxy<bevy::math::I64Vec2>,
+    ) -> LuaReflectValProxy<bevy::math::I64Vec2>;
 
 "#,
     r#"
@@ -6484,7 +7463,7 @@ fn index(&self) -> String {
 }
 "#]
 )]
-pub struct LuaI64Vec2 {
+pub struct I64Vec2 {
     x: i64,
     y: i64,
 }
@@ -6495,40 +7474,49 @@ pub struct LuaI64Vec2 {
     bms_lua_path = "crate",
     functions[r#"
 
-    #[lua(as_trait = "std::ops::Sub", composite = "sub")]
-    fn sub(self, rhs: i64) -> bevy::math::I64Vec3;
+    #[lua(as_trait = "std::ops::Sub::<i64>", composite = "sub")]
+    fn sub(
+        _self: LuaReflectValProxy<bevy::math::I64Vec3>,
+        rhs: i64,
+    ) -> LuaReflectValProxy<bevy::math::I64Vec3>;
 
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Sub", composite = "sub")]
-    fn sub(self, #[proxy] rhs: bevy::math::I64Vec3) -> bevy::math::I64Vec3;
+    #[lua(as_trait = "std::ops::Sub::<bevy::math::I64Vec3>", composite = "sub")]
+    fn sub(
+        _self: LuaReflectValProxy<bevy::math::I64Vec3>,
+        rhs: LuaReflectValProxy<bevy::math::I64Vec3>,
+    ) -> LuaReflectValProxy<bevy::math::I64Vec3>;
 
 "#,
     r#"
 
     #[lua(as_trait = "std::cmp::Eq")]
-    fn assert_receiver_is_total_eq(&self) -> ();
+    fn assert_receiver_is_total_eq(_self: LuaReflectRefProxy<bevy::math::I64Vec3>) -> ();
 
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Add", composite = "add")]
-    fn add(self, rhs: i64) -> bevy::math::I64Vec3;
+    #[lua(as_trait = "std::ops::Add::<i64>", composite = "add")]
+    fn add(
+        _self: LuaReflectValProxy<bevy::math::I64Vec3>,
+        rhs: i64,
+    ) -> LuaReflectValProxy<bevy::math::I64Vec3>;
 
 "#,
     r#"
 /// Creates a new vector.
 
     #[lua()]
-    fn new(x: i64, y: i64, z: i64) -> bevy::math::I64Vec3;
+    fn new(x: i64, y: i64, z: i64) -> LuaReflectValProxy<bevy::math::I64Vec3>;
 
 "#,
     r#"
 /// Creates a vector with all elements set to `v`.
 
     #[lua()]
-    fn splat(v: i64) -> bevy::math::I64Vec3;
+    fn splat(v: i64) -> LuaReflectValProxy<bevy::math::I64Vec3>;
 
 "#,
     r#"
@@ -6539,34 +7527,34 @@ pub struct LuaI64Vec2 {
 
     #[lua()]
     fn select(
-        #[proxy]
-        mask: bevy::math::BVec3,
-        #[proxy]
-        if_true: bevy::math::I64Vec3,
-        #[proxy]
-        if_false: bevy::math::I64Vec3,
-    ) -> bevy::math::I64Vec3;
+        mask: LuaReflectValProxy<bevy::math::BVec3>,
+        if_true: LuaReflectValProxy<bevy::math::I64Vec3>,
+        if_false: LuaReflectValProxy<bevy::math::I64Vec3>,
+    ) -> LuaReflectValProxy<bevy::math::I64Vec3>;
 
 "#,
     r#"
 /// Creates a new vector from an array.
 
     #[lua()]
-    fn from_array(a: [i64; 3]) -> bevy::math::I64Vec3;
+    fn from_array(a: [i64; 3]) -> LuaReflectValProxy<bevy::math::I64Vec3>;
 
 "#,
     r#"
 /// `[x, y, z]`
 
     #[lua()]
-    fn to_array(&self) -> [i64; 3];
+    fn to_array(_self: LuaReflectRefProxy<bevy::math::I64Vec3>) -> [i64; 3];
 
 "#,
     r#"
 /// Creates a 4D vector from `self` and the given `w` value.
 
     #[lua()]
-    fn extend(self, w: i64) -> bevy::math::I64Vec4;
+    fn extend(
+        _self: LuaReflectValProxy<bevy::math::I64Vec3>,
+        w: i64,
+    ) -> LuaReflectValProxy<bevy::math::I64Vec4>;
 
 "#,
     r#"
@@ -6574,28 +7562,39 @@ pub struct LuaI64Vec2 {
 /// Truncation may also be performed by using [`self.xy()`][crate::swizzles::Vec3Swizzles::xy()].
 
     #[lua()]
-    fn truncate(self) -> bevy::math::I64Vec2;
+    fn truncate(
+        _self: LuaReflectValProxy<bevy::math::I64Vec3>,
+    ) -> LuaReflectValProxy<bevy::math::I64Vec2>;
 
 "#,
     r#"
 /// Computes the dot product of `self` and `rhs`.
 
     #[lua()]
-    fn dot(self, #[proxy] rhs: bevy::math::I64Vec3) -> i64;
+    fn dot(
+        _self: LuaReflectValProxy<bevy::math::I64Vec3>,
+        rhs: LuaReflectValProxy<bevy::math::I64Vec3>,
+    ) -> i64;
 
 "#,
     r#"
 /// Returns a vector where every component is the dot product of `self` and `rhs`.
 
     #[lua()]
-    fn dot_into_vec(self, #[proxy] rhs: bevy::math::I64Vec3) -> bevy::math::I64Vec3;
+    fn dot_into_vec(
+        _self: LuaReflectValProxy<bevy::math::I64Vec3>,
+        rhs: LuaReflectValProxy<bevy::math::I64Vec3>,
+    ) -> LuaReflectValProxy<bevy::math::I64Vec3>;
 
 "#,
     r#"
 /// Computes the cross product of `self` and `rhs`.
 
     #[lua()]
-    fn cross(self, #[proxy] rhs: bevy::math::I64Vec3) -> bevy::math::I64Vec3;
+    fn cross(
+        _self: LuaReflectValProxy<bevy::math::I64Vec3>,
+        rhs: LuaReflectValProxy<bevy::math::I64Vec3>,
+    ) -> LuaReflectValProxy<bevy::math::I64Vec3>;
 
 "#,
     r#"
@@ -6603,7 +7602,10 @@ pub struct LuaI64Vec2 {
 /// In other words this computes `[self.x.min(rhs.x), self.y.min(rhs.y), ..]`.
 
     #[lua()]
-    fn min(self, #[proxy] rhs: bevy::math::I64Vec3) -> bevy::math::I64Vec3;
+    fn min(
+        _self: LuaReflectValProxy<bevy::math::I64Vec3>,
+        rhs: LuaReflectValProxy<bevy::math::I64Vec3>,
+    ) -> LuaReflectValProxy<bevy::math::I64Vec3>;
 
 "#,
     r#"
@@ -6611,7 +7613,10 @@ pub struct LuaI64Vec2 {
 /// In other words this computes `[self.x.max(rhs.x), self.y.max(rhs.y), ..]`.
 
     #[lua()]
-    fn max(self, #[proxy] rhs: bevy::math::I64Vec3) -> bevy::math::I64Vec3;
+    fn max(
+        _self: LuaReflectValProxy<bevy::math::I64Vec3>,
+        rhs: LuaReflectValProxy<bevy::math::I64Vec3>,
+    ) -> LuaReflectValProxy<bevy::math::I64Vec3>;
 
 "#,
     r#"
@@ -6622,12 +7627,10 @@ pub struct LuaI64Vec2 {
 
     #[lua()]
     fn clamp(
-        self,
-        #[proxy]
-        min: bevy::math::I64Vec3,
-        #[proxy]
-        max: bevy::math::I64Vec3,
-    ) -> bevy::math::I64Vec3;
+        _self: LuaReflectValProxy<bevy::math::I64Vec3>,
+        min: LuaReflectValProxy<bevy::math::I64Vec3>,
+        max: LuaReflectValProxy<bevy::math::I64Vec3>,
+    ) -> LuaReflectValProxy<bevy::math::I64Vec3>;
 
 "#,
     r#"
@@ -6635,7 +7638,7 @@ pub struct LuaI64Vec2 {
 /// In other words this computes `min(x, y, ..)`.
 
     #[lua()]
-    fn min_element(self) -> i64;
+    fn min_element(_self: LuaReflectValProxy<bevy::math::I64Vec3>) -> i64;
 
 "#,
     r#"
@@ -6643,7 +7646,7 @@ pub struct LuaI64Vec2 {
 /// In other words this computes `max(x, y, ..)`.
 
     #[lua()]
-    fn max_element(self) -> i64;
+    fn max_element(_self: LuaReflectValProxy<bevy::math::I64Vec3>) -> i64;
 
 "#,
     r#"
@@ -6653,7 +7656,10 @@ pub struct LuaI64Vec2 {
 /// elements.
 
     #[lua()]
-    fn cmpeq(self, #[proxy] rhs: bevy::math::I64Vec3) -> bevy::math::BVec3;
+    fn cmpeq(
+        _self: LuaReflectValProxy<bevy::math::I64Vec3>,
+        rhs: LuaReflectValProxy<bevy::math::I64Vec3>,
+    ) -> LuaReflectValProxy<bevy::math::BVec3>;
 
 "#,
     r#"
@@ -6663,7 +7669,10 @@ pub struct LuaI64Vec2 {
 /// elements.
 
     #[lua()]
-    fn cmpne(self, #[proxy] rhs: bevy::math::I64Vec3) -> bevy::math::BVec3;
+    fn cmpne(
+        _self: LuaReflectValProxy<bevy::math::I64Vec3>,
+        rhs: LuaReflectValProxy<bevy::math::I64Vec3>,
+    ) -> LuaReflectValProxy<bevy::math::BVec3>;
 
 "#,
     r#"
@@ -6673,7 +7682,10 @@ pub struct LuaI64Vec2 {
 /// elements.
 
     #[lua()]
-    fn cmpge(self, #[proxy] rhs: bevy::math::I64Vec3) -> bevy::math::BVec3;
+    fn cmpge(
+        _self: LuaReflectValProxy<bevy::math::I64Vec3>,
+        rhs: LuaReflectValProxy<bevy::math::I64Vec3>,
+    ) -> LuaReflectValProxy<bevy::math::BVec3>;
 
 "#,
     r#"
@@ -6683,7 +7695,10 @@ pub struct LuaI64Vec2 {
 /// elements.
 
     #[lua()]
-    fn cmpgt(self, #[proxy] rhs: bevy::math::I64Vec3) -> bevy::math::BVec3;
+    fn cmpgt(
+        _self: LuaReflectValProxy<bevy::math::I64Vec3>,
+        rhs: LuaReflectValProxy<bevy::math::I64Vec3>,
+    ) -> LuaReflectValProxy<bevy::math::BVec3>;
 
 "#,
     r#"
@@ -6693,7 +7708,10 @@ pub struct LuaI64Vec2 {
 /// elements.
 
     #[lua()]
-    fn cmple(self, #[proxy] rhs: bevy::math::I64Vec3) -> bevy::math::BVec3;
+    fn cmple(
+        _self: LuaReflectValProxy<bevy::math::I64Vec3>,
+        rhs: LuaReflectValProxy<bevy::math::I64Vec3>,
+    ) -> LuaReflectValProxy<bevy::math::BVec3>;
 
 "#,
     r#"
@@ -6703,14 +7721,19 @@ pub struct LuaI64Vec2 {
 /// elements.
 
     #[lua()]
-    fn cmplt(self, #[proxy] rhs: bevy::math::I64Vec3) -> bevy::math::BVec3;
+    fn cmplt(
+        _self: LuaReflectValProxy<bevy::math::I64Vec3>,
+        rhs: LuaReflectValProxy<bevy::math::I64Vec3>,
+    ) -> LuaReflectValProxy<bevy::math::BVec3>;
 
 "#,
     r#"
 /// Returns a vector containing the absolute value of each element of `self`.
 
     #[lua()]
-    fn abs(self) -> bevy::math::I64Vec3;
+    fn abs(
+        _self: LuaReflectValProxy<bevy::math::I64Vec3>,
+    ) -> LuaReflectValProxy<bevy::math::I64Vec3>;
 
 "#,
     r#"
@@ -6720,7 +7743,9 @@ pub struct LuaI64Vec2 {
 ///  - `-1` if the number is negative
 
     #[lua()]
-    fn signum(self) -> bevy::math::I64Vec3;
+    fn signum(
+        _self: LuaReflectValProxy<bevy::math::I64Vec3>,
+    ) -> LuaReflectValProxy<bevy::math::I64Vec3>;
 
 "#,
     r#"
@@ -6729,21 +7754,24 @@ pub struct LuaI64Vec2 {
 /// into the first lowest bit, element `y` into the second, etc.
 
     #[lua()]
-    fn is_negative_bitmask(self) -> u32;
+    fn is_negative_bitmask(_self: LuaReflectValProxy<bevy::math::I64Vec3>) -> u32;
 
 "#,
     r#"
 /// Computes the squared length of `self`.
 
     #[lua()]
-    fn length_squared(self) -> i64;
+    fn length_squared(_self: LuaReflectValProxy<bevy::math::I64Vec3>) -> i64;
 
 "#,
     r#"
 /// Compute the squared euclidean distance between two points in space.
 
     #[lua()]
-    fn distance_squared(self, #[proxy] rhs: bevy::math::I64Vec3) -> i64;
+    fn distance_squared(
+        _self: LuaReflectValProxy<bevy::math::I64Vec3>,
+        rhs: LuaReflectValProxy<bevy::math::I64Vec3>,
+    ) -> i64;
 
 "#,
     r#"
@@ -6752,7 +7780,10 @@ pub struct LuaI64Vec2 {
 /// This function will panic if any `rhs` element is 0 or the division results in overflow.
 
     #[lua()]
-    fn div_euclid(self, #[proxy] rhs: bevy::math::I64Vec3) -> bevy::math::I64Vec3;
+    fn div_euclid(
+        _self: LuaReflectValProxy<bevy::math::I64Vec3>,
+        rhs: LuaReflectValProxy<bevy::math::I64Vec3>,
+    ) -> LuaReflectValProxy<bevy::math::I64Vec3>;
 
 "#,
     r#"
@@ -6762,49 +7793,64 @@ pub struct LuaI64Vec2 {
 /// [Euclidean division]: i64::rem_euclid
 
     #[lua()]
-    fn rem_euclid(self, #[proxy] rhs: bevy::math::I64Vec3) -> bevy::math::I64Vec3;
+    fn rem_euclid(
+        _self: LuaReflectValProxy<bevy::math::I64Vec3>,
+        rhs: LuaReflectValProxy<bevy::math::I64Vec3>,
+    ) -> LuaReflectValProxy<bevy::math::I64Vec3>;
 
 "#,
     r#"
 /// Casts all elements of `self` to `f32`.
 
     #[lua()]
-    fn as_vec3(&self) -> bevy::math::Vec3;
+    fn as_vec3(
+        _self: LuaReflectRefProxy<bevy::math::I64Vec3>,
+    ) -> LuaReflectValProxy<bevy::math::Vec3>;
 
 "#,
     r#"
 /// Casts all elements of `self` to `f32`.
 
     #[lua()]
-    fn as_vec3a(&self) -> bevy::math::Vec3A;
+    fn as_vec3a(
+        _self: LuaReflectRefProxy<bevy::math::I64Vec3>,
+    ) -> LuaReflectValProxy<bevy::math::Vec3A>;
 
 "#,
     r#"
 /// Casts all elements of `self` to `f64`.
 
     #[lua()]
-    fn as_dvec3(&self) -> bevy::math::DVec3;
+    fn as_dvec3(
+        _self: LuaReflectRefProxy<bevy::math::I64Vec3>,
+    ) -> LuaReflectValProxy<bevy::math::DVec3>;
 
 "#,
     r#"
 /// Casts all elements of `self` to `i32`.
 
     #[lua()]
-    fn as_ivec3(&self) -> bevy::math::IVec3;
+    fn as_ivec3(
+        _self: LuaReflectRefProxy<bevy::math::I64Vec3>,
+    ) -> LuaReflectValProxy<bevy::math::IVec3>;
 
 "#,
     r#"
 /// Casts all elements of `self` to `u32`.
 
     #[lua()]
-    fn as_uvec3(&self) -> bevy::math::UVec3;
+    fn as_uvec3(
+        _self: LuaReflectRefProxy<bevy::math::I64Vec3>,
+    ) -> LuaReflectValProxy<bevy::math::UVec3>;
 
 "#,
     r#"
 /// Casts all elements of `self` to `u64`.
 
     #[lua()]
-    fn as_u64vec3(&self) -> bevy::math::U64Vec3;
+    fn as_u64vec3(
+        _self: LuaReflectRefProxy<bevy::math::I64Vec3>,
+    ) -> LuaReflectValProxy<bevy::math::U64Vec3>;
 
 "#,
     r#"
@@ -6812,7 +7858,10 @@ pub struct LuaI64Vec2 {
 /// In other words this computes `[self.x.wrapping_add(rhs.x), self.y.wrapping_add(rhs.y), ..]`.
 
     #[lua()]
-    fn wrapping_add(self, #[proxy] rhs: bevy::math::I64Vec3) -> bevy::math::I64Vec3;
+    fn wrapping_add(
+        _self: LuaReflectValProxy<bevy::math::I64Vec3>,
+        rhs: LuaReflectValProxy<bevy::math::I64Vec3>,
+    ) -> LuaReflectValProxy<bevy::math::I64Vec3>;
 
 "#,
     r#"
@@ -6820,7 +7869,10 @@ pub struct LuaI64Vec2 {
 /// In other words this computes `[self.x.wrapping_sub(rhs.x), self.y.wrapping_sub(rhs.y), ..]`.
 
     #[lua()]
-    fn wrapping_sub(self, #[proxy] rhs: bevy::math::I64Vec3) -> bevy::math::I64Vec3;
+    fn wrapping_sub(
+        _self: LuaReflectValProxy<bevy::math::I64Vec3>,
+        rhs: LuaReflectValProxy<bevy::math::I64Vec3>,
+    ) -> LuaReflectValProxy<bevy::math::I64Vec3>;
 
 "#,
     r#"
@@ -6828,7 +7880,10 @@ pub struct LuaI64Vec2 {
 /// In other words this computes `[self.x.wrapping_mul(rhs.x), self.y.wrapping_mul(rhs.y), ..]`.
 
     #[lua()]
-    fn wrapping_mul(self, #[proxy] rhs: bevy::math::I64Vec3) -> bevy::math::I64Vec3;
+    fn wrapping_mul(
+        _self: LuaReflectValProxy<bevy::math::I64Vec3>,
+        rhs: LuaReflectValProxy<bevy::math::I64Vec3>,
+    ) -> LuaReflectValProxy<bevy::math::I64Vec3>;
 
 "#,
     r#"
@@ -6836,7 +7891,10 @@ pub struct LuaI64Vec2 {
 /// In other words this computes `[self.x.wrapping_div(rhs.x), self.y.wrapping_div(rhs.y), ..]`.
 
     #[lua()]
-    fn wrapping_div(self, #[proxy] rhs: bevy::math::I64Vec3) -> bevy::math::I64Vec3;
+    fn wrapping_div(
+        _self: LuaReflectValProxy<bevy::math::I64Vec3>,
+        rhs: LuaReflectValProxy<bevy::math::I64Vec3>,
+    ) -> LuaReflectValProxy<bevy::math::I64Vec3>;
 
 "#,
     r#"
@@ -6844,7 +7902,10 @@ pub struct LuaI64Vec2 {
 /// In other words this computes `[self.x.saturating_add(rhs.x), self.y.saturating_add(rhs.y), ..]`.
 
     #[lua()]
-    fn saturating_add(self, #[proxy] rhs: bevy::math::I64Vec3) -> bevy::math::I64Vec3;
+    fn saturating_add(
+        _self: LuaReflectValProxy<bevy::math::I64Vec3>,
+        rhs: LuaReflectValProxy<bevy::math::I64Vec3>,
+    ) -> LuaReflectValProxy<bevy::math::I64Vec3>;
 
 "#,
     r#"
@@ -6852,7 +7913,10 @@ pub struct LuaI64Vec2 {
 /// In other words this computes `[self.x.saturating_sub(rhs.x), self.y.saturating_sub(rhs.y), ..]`.
 
     #[lua()]
-    fn saturating_sub(self, #[proxy] rhs: bevy::math::I64Vec3) -> bevy::math::I64Vec3;
+    fn saturating_sub(
+        _self: LuaReflectValProxy<bevy::math::I64Vec3>,
+        rhs: LuaReflectValProxy<bevy::math::I64Vec3>,
+    ) -> LuaReflectValProxy<bevy::math::I64Vec3>;
 
 "#,
     r#"
@@ -6860,7 +7924,10 @@ pub struct LuaI64Vec2 {
 /// In other words this computes `[self.x.saturating_mul(rhs.x), self.y.saturating_mul(rhs.y), ..]`.
 
     #[lua()]
-    fn saturating_mul(self, #[proxy] rhs: bevy::math::I64Vec3) -> bevy::math::I64Vec3;
+    fn saturating_mul(
+        _self: LuaReflectValProxy<bevy::math::I64Vec3>,
+        rhs: LuaReflectValProxy<bevy::math::I64Vec3>,
+    ) -> LuaReflectValProxy<bevy::math::I64Vec3>;
 
 "#,
     r#"
@@ -6868,67 +7935,98 @@ pub struct LuaI64Vec2 {
 /// In other words this computes `[self.x.saturating_div(rhs.x), self.y.saturating_div(rhs.y), ..]`.
 
     #[lua()]
-    fn saturating_div(self, #[proxy] rhs: bevy::math::I64Vec3) -> bevy::math::I64Vec3;
+    fn saturating_div(
+        _self: LuaReflectValProxy<bevy::math::I64Vec3>,
+        rhs: LuaReflectValProxy<bevy::math::I64Vec3>,
+    ) -> LuaReflectValProxy<bevy::math::I64Vec3>;
 
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Rem", composite = "rem")]
-    fn rem(self, rhs: i64) -> bevy::math::I64Vec3;
+    #[lua(as_trait = "std::ops::Rem::<i64>", composite = "rem")]
+    fn rem(
+        _self: LuaReflectValProxy<bevy::math::I64Vec3>,
+        rhs: i64,
+    ) -> LuaReflectValProxy<bevy::math::I64Vec3>;
 
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Add", composite = "add")]
-    fn add(self, #[proxy] rhs: bevy::math::I64Vec3) -> bevy::math::I64Vec3;
+    #[lua(as_trait = "std::ops::Add::<bevy::math::I64Vec3>", composite = "add")]
+    fn add(
+        _self: LuaReflectValProxy<bevy::math::I64Vec3>,
+        rhs: LuaReflectValProxy<bevy::math::I64Vec3>,
+    ) -> LuaReflectValProxy<bevy::math::I64Vec3>;
 
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Rem", composite = "rem")]
-    fn rem(self, #[proxy] rhs: bevy::math::I64Vec3) -> bevy::math::I64Vec3;
+    #[lua(as_trait = "std::ops::Rem::<bevy::math::I64Vec3>", composite = "rem")]
+    fn rem(
+        _self: LuaReflectValProxy<bevy::math::I64Vec3>,
+        rhs: LuaReflectValProxy<bevy::math::I64Vec3>,
+    ) -> LuaReflectValProxy<bevy::math::I64Vec3>;
 
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Div", composite = "div")]
-    fn div(self, rhs: i64) -> bevy::math::I64Vec3;
+    #[lua(as_trait = "std::ops::Div::<i64>", composite = "div")]
+    fn div(
+        _self: LuaReflectValProxy<bevy::math::I64Vec3>,
+        rhs: i64,
+    ) -> LuaReflectValProxy<bevy::math::I64Vec3>;
 
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Mul", composite = "mul")]
-    fn mul(self, #[proxy] rhs: bevy::math::I64Vec3) -> bevy::math::I64Vec3;
+    #[lua(as_trait = "std::ops::Mul::<bevy::math::I64Vec3>", composite = "mul")]
+    fn mul(
+        _self: LuaReflectValProxy<bevy::math::I64Vec3>,
+        rhs: LuaReflectValProxy<bevy::math::I64Vec3>,
+    ) -> LuaReflectValProxy<bevy::math::I64Vec3>;
 
 "#,
     r#"
 
     #[lua(as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone")]
-    fn clone(&self) -> bevy::math::I64Vec3;
+    fn clone(
+        _self: LuaReflectRefProxy<bevy::math::I64Vec3>,
+    ) -> LuaReflectValProxy<bevy::math::I64Vec3>;
 
 "#,
     r#"
 
-    #[lua(as_trait = "std::cmp::PartialEq", composite = "eq")]
-    fn eq(&self, #[proxy] other: &glam::I64Vec3) -> bool;
+    #[lua(as_trait = "std::cmp::PartialEq::<bevy::math::I64Vec3>", composite = "eq")]
+    fn eq(
+        _self: LuaReflectRefProxy<bevy::math::I64Vec3>,
+        other: LuaReflectRefProxy<bevy::math::I64Vec3>,
+    ) -> bool;
 
 "#,
     r#"
 
     #[lua(as_trait = "std::ops::Neg", composite = "neg")]
-    fn neg(self) -> bevy::math::I64Vec3;
+    fn neg(
+        _self: LuaReflectValProxy<bevy::math::I64Vec3>,
+    ) -> LuaReflectValProxy<bevy::math::I64Vec3>;
 
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Mul", composite = "mul")]
-    fn mul(self, rhs: i64) -> bevy::math::I64Vec3;
+    #[lua(as_trait = "std::ops::Mul::<i64>", composite = "mul")]
+    fn mul(
+        _self: LuaReflectValProxy<bevy::math::I64Vec3>,
+        rhs: i64,
+    ) -> LuaReflectValProxy<bevy::math::I64Vec3>;
 
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Div", composite = "div")]
-    fn div(self, #[proxy] rhs: bevy::math::I64Vec3) -> bevy::math::I64Vec3;
+    #[lua(as_trait = "std::ops::Div::<bevy::math::I64Vec3>", composite = "div")]
+    fn div(
+        _self: LuaReflectValProxy<bevy::math::I64Vec3>,
+        rhs: LuaReflectValProxy<bevy::math::I64Vec3>,
+    ) -> LuaReflectValProxy<bevy::math::I64Vec3>;
 
 "#,
     r#"
@@ -6938,7 +8036,7 @@ fn index(&self) -> String {
 }
 "#]
 )]
-pub struct LuaI64Vec3 {
+pub struct I64Vec3 {
     x: i64,
     y: i64,
     z: i64,
@@ -6951,39 +8049,48 @@ pub struct LuaI64Vec3 {
     functions[r#"
 
     #[lua(as_trait = "std::cmp::Eq")]
-    fn assert_receiver_is_total_eq(&self) -> ();
+    fn assert_receiver_is_total_eq(_self: LuaReflectRefProxy<bevy::math::I64Vec4>) -> ();
 
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Add", composite = "add")]
-    fn add(self, #[proxy] rhs: bevy::math::I64Vec4) -> bevy::math::I64Vec4;
+    #[lua(as_trait = "std::ops::Add::<bevy::math::I64Vec4>", composite = "add")]
+    fn add(
+        _self: LuaReflectValProxy<bevy::math::I64Vec4>,
+        rhs: LuaReflectValProxy<bevy::math::I64Vec4>,
+    ) -> LuaReflectValProxy<bevy::math::I64Vec4>;
 
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Mul", composite = "mul")]
-    fn mul(self, #[proxy] rhs: bevy::math::I64Vec4) -> bevy::math::I64Vec4;
+    #[lua(as_trait = "std::ops::Mul::<bevy::math::I64Vec4>", composite = "mul")]
+    fn mul(
+        _self: LuaReflectValProxy<bevy::math::I64Vec4>,
+        rhs: LuaReflectValProxy<bevy::math::I64Vec4>,
+    ) -> LuaReflectValProxy<bevy::math::I64Vec4>;
 
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Rem", composite = "rem")]
-    fn rem(self, rhs: i64) -> bevy::math::I64Vec4;
+    #[lua(as_trait = "std::ops::Rem::<i64>", composite = "rem")]
+    fn rem(
+        _self: LuaReflectValProxy<bevy::math::I64Vec4>,
+        rhs: i64,
+    ) -> LuaReflectValProxy<bevy::math::I64Vec4>;
 
 "#,
     r#"
 /// Creates a new vector.
 
     #[lua()]
-    fn new(x: i64, y: i64, z: i64, w: i64) -> bevy::math::I64Vec4;
+    fn new(x: i64, y: i64, z: i64, w: i64) -> LuaReflectValProxy<bevy::math::I64Vec4>;
 
 "#,
     r#"
 /// Creates a vector with all elements set to `v`.
 
     #[lua()]
-    fn splat(v: i64) -> bevy::math::I64Vec4;
+    fn splat(v: i64) -> LuaReflectValProxy<bevy::math::I64Vec4>;
 
 "#,
     r#"
@@ -6994,27 +8101,24 @@ pub struct LuaI64Vec3 {
 
     #[lua()]
     fn select(
-        #[proxy]
-        mask: bevy::math::BVec4,
-        #[proxy]
-        if_true: bevy::math::I64Vec4,
-        #[proxy]
-        if_false: bevy::math::I64Vec4,
-    ) -> bevy::math::I64Vec4;
+        mask: LuaReflectValProxy<bevy::math::BVec4>,
+        if_true: LuaReflectValProxy<bevy::math::I64Vec4>,
+        if_false: LuaReflectValProxy<bevy::math::I64Vec4>,
+    ) -> LuaReflectValProxy<bevy::math::I64Vec4>;
 
 "#,
     r#"
 /// Creates a new vector from an array.
 
     #[lua()]
-    fn from_array(a: [i64; 4]) -> bevy::math::I64Vec4;
+    fn from_array(a: [i64; 4]) -> LuaReflectValProxy<bevy::math::I64Vec4>;
 
 "#,
     r#"
 /// `[x, y, z, w]`
 
     #[lua()]
-    fn to_array(&self) -> [i64; 4];
+    fn to_array(_self: LuaReflectRefProxy<bevy::math::I64Vec4>) -> [i64; 4];
 
 "#,
     r#"
@@ -7022,21 +8126,29 @@ pub struct LuaI64Vec3 {
 /// Truncation to [`I64Vec3`] may also be performed by using [`self.xyz()`][crate::swizzles::Vec4Swizzles::xyz()].
 
     #[lua()]
-    fn truncate(self) -> bevy::math::I64Vec3;
+    fn truncate(
+        _self: LuaReflectValProxy<bevy::math::I64Vec4>,
+    ) -> LuaReflectValProxy<bevy::math::I64Vec3>;
 
 "#,
     r#"
 /// Computes the dot product of `self` and `rhs`.
 
     #[lua()]
-    fn dot(self, #[proxy] rhs: bevy::math::I64Vec4) -> i64;
+    fn dot(
+        _self: LuaReflectValProxy<bevy::math::I64Vec4>,
+        rhs: LuaReflectValProxy<bevy::math::I64Vec4>,
+    ) -> i64;
 
 "#,
     r#"
 /// Returns a vector where every component is the dot product of `self` and `rhs`.
 
     #[lua()]
-    fn dot_into_vec(self, #[proxy] rhs: bevy::math::I64Vec4) -> bevy::math::I64Vec4;
+    fn dot_into_vec(
+        _self: LuaReflectValProxy<bevy::math::I64Vec4>,
+        rhs: LuaReflectValProxy<bevy::math::I64Vec4>,
+    ) -> LuaReflectValProxy<bevy::math::I64Vec4>;
 
 "#,
     r#"
@@ -7044,7 +8156,10 @@ pub struct LuaI64Vec3 {
 /// In other words this computes `[self.x.min(rhs.x), self.y.min(rhs.y), ..]`.
 
     #[lua()]
-    fn min(self, #[proxy] rhs: bevy::math::I64Vec4) -> bevy::math::I64Vec4;
+    fn min(
+        _self: LuaReflectValProxy<bevy::math::I64Vec4>,
+        rhs: LuaReflectValProxy<bevy::math::I64Vec4>,
+    ) -> LuaReflectValProxy<bevy::math::I64Vec4>;
 
 "#,
     r#"
@@ -7052,7 +8167,10 @@ pub struct LuaI64Vec3 {
 /// In other words this computes `[self.x.max(rhs.x), self.y.max(rhs.y), ..]`.
 
     #[lua()]
-    fn max(self, #[proxy] rhs: bevy::math::I64Vec4) -> bevy::math::I64Vec4;
+    fn max(
+        _self: LuaReflectValProxy<bevy::math::I64Vec4>,
+        rhs: LuaReflectValProxy<bevy::math::I64Vec4>,
+    ) -> LuaReflectValProxy<bevy::math::I64Vec4>;
 
 "#,
     r#"
@@ -7063,12 +8181,10 @@ pub struct LuaI64Vec3 {
 
     #[lua()]
     fn clamp(
-        self,
-        #[proxy]
-        min: bevy::math::I64Vec4,
-        #[proxy]
-        max: bevy::math::I64Vec4,
-    ) -> bevy::math::I64Vec4;
+        _self: LuaReflectValProxy<bevy::math::I64Vec4>,
+        min: LuaReflectValProxy<bevy::math::I64Vec4>,
+        max: LuaReflectValProxy<bevy::math::I64Vec4>,
+    ) -> LuaReflectValProxy<bevy::math::I64Vec4>;
 
 "#,
     r#"
@@ -7076,7 +8192,7 @@ pub struct LuaI64Vec3 {
 /// In other words this computes `min(x, y, ..)`.
 
     #[lua()]
-    fn min_element(self) -> i64;
+    fn min_element(_self: LuaReflectValProxy<bevy::math::I64Vec4>) -> i64;
 
 "#,
     r#"
@@ -7084,7 +8200,7 @@ pub struct LuaI64Vec3 {
 /// In other words this computes `max(x, y, ..)`.
 
     #[lua()]
-    fn max_element(self) -> i64;
+    fn max_element(_self: LuaReflectValProxy<bevy::math::I64Vec4>) -> i64;
 
 "#,
     r#"
@@ -7094,7 +8210,10 @@ pub struct LuaI64Vec3 {
 /// elements.
 
     #[lua()]
-    fn cmpeq(self, #[proxy] rhs: bevy::math::I64Vec4) -> bevy::math::BVec4;
+    fn cmpeq(
+        _self: LuaReflectValProxy<bevy::math::I64Vec4>,
+        rhs: LuaReflectValProxy<bevy::math::I64Vec4>,
+    ) -> LuaReflectValProxy<bevy::math::BVec4>;
 
 "#,
     r#"
@@ -7104,7 +8223,10 @@ pub struct LuaI64Vec3 {
 /// elements.
 
     #[lua()]
-    fn cmpne(self, #[proxy] rhs: bevy::math::I64Vec4) -> bevy::math::BVec4;
+    fn cmpne(
+        _self: LuaReflectValProxy<bevy::math::I64Vec4>,
+        rhs: LuaReflectValProxy<bevy::math::I64Vec4>,
+    ) -> LuaReflectValProxy<bevy::math::BVec4>;
 
 "#,
     r#"
@@ -7114,7 +8236,10 @@ pub struct LuaI64Vec3 {
 /// elements.
 
     #[lua()]
-    fn cmpge(self, #[proxy] rhs: bevy::math::I64Vec4) -> bevy::math::BVec4;
+    fn cmpge(
+        _self: LuaReflectValProxy<bevy::math::I64Vec4>,
+        rhs: LuaReflectValProxy<bevy::math::I64Vec4>,
+    ) -> LuaReflectValProxy<bevy::math::BVec4>;
 
 "#,
     r#"
@@ -7124,7 +8249,10 @@ pub struct LuaI64Vec3 {
 /// elements.
 
     #[lua()]
-    fn cmpgt(self, #[proxy] rhs: bevy::math::I64Vec4) -> bevy::math::BVec4;
+    fn cmpgt(
+        _self: LuaReflectValProxy<bevy::math::I64Vec4>,
+        rhs: LuaReflectValProxy<bevy::math::I64Vec4>,
+    ) -> LuaReflectValProxy<bevy::math::BVec4>;
 
 "#,
     r#"
@@ -7134,7 +8262,10 @@ pub struct LuaI64Vec3 {
 /// elements.
 
     #[lua()]
-    fn cmple(self, #[proxy] rhs: bevy::math::I64Vec4) -> bevy::math::BVec4;
+    fn cmple(
+        _self: LuaReflectValProxy<bevy::math::I64Vec4>,
+        rhs: LuaReflectValProxy<bevy::math::I64Vec4>,
+    ) -> LuaReflectValProxy<bevy::math::BVec4>;
 
 "#,
     r#"
@@ -7144,14 +8275,19 @@ pub struct LuaI64Vec3 {
 /// elements.
 
     #[lua()]
-    fn cmplt(self, #[proxy] rhs: bevy::math::I64Vec4) -> bevy::math::BVec4;
+    fn cmplt(
+        _self: LuaReflectValProxy<bevy::math::I64Vec4>,
+        rhs: LuaReflectValProxy<bevy::math::I64Vec4>,
+    ) -> LuaReflectValProxy<bevy::math::BVec4>;
 
 "#,
     r#"
 /// Returns a vector containing the absolute value of each element of `self`.
 
     #[lua()]
-    fn abs(self) -> bevy::math::I64Vec4;
+    fn abs(
+        _self: LuaReflectValProxy<bevy::math::I64Vec4>,
+    ) -> LuaReflectValProxy<bevy::math::I64Vec4>;
 
 "#,
     r#"
@@ -7161,7 +8297,9 @@ pub struct LuaI64Vec3 {
 ///  - `-1` if the number is negative
 
     #[lua()]
-    fn signum(self) -> bevy::math::I64Vec4;
+    fn signum(
+        _self: LuaReflectValProxy<bevy::math::I64Vec4>,
+    ) -> LuaReflectValProxy<bevy::math::I64Vec4>;
 
 "#,
     r#"
@@ -7170,21 +8308,24 @@ pub struct LuaI64Vec3 {
 /// into the first lowest bit, element `y` into the second, etc.
 
     #[lua()]
-    fn is_negative_bitmask(self) -> u32;
+    fn is_negative_bitmask(_self: LuaReflectValProxy<bevy::math::I64Vec4>) -> u32;
 
 "#,
     r#"
 /// Computes the squared length of `self`.
 
     #[lua()]
-    fn length_squared(self) -> i64;
+    fn length_squared(_self: LuaReflectValProxy<bevy::math::I64Vec4>) -> i64;
 
 "#,
     r#"
 /// Compute the squared euclidean distance between two points in space.
 
     #[lua()]
-    fn distance_squared(self, #[proxy] rhs: bevy::math::I64Vec4) -> i64;
+    fn distance_squared(
+        _self: LuaReflectValProxy<bevy::math::I64Vec4>,
+        rhs: LuaReflectValProxy<bevy::math::I64Vec4>,
+    ) -> i64;
 
 "#,
     r#"
@@ -7193,7 +8334,10 @@ pub struct LuaI64Vec3 {
 /// This function will panic if any `rhs` element is 0 or the division results in overflow.
 
     #[lua()]
-    fn div_euclid(self, #[proxy] rhs: bevy::math::I64Vec4) -> bevy::math::I64Vec4;
+    fn div_euclid(
+        _self: LuaReflectValProxy<bevy::math::I64Vec4>,
+        rhs: LuaReflectValProxy<bevy::math::I64Vec4>,
+    ) -> LuaReflectValProxy<bevy::math::I64Vec4>;
 
 "#,
     r#"
@@ -7203,42 +8347,55 @@ pub struct LuaI64Vec3 {
 /// [Euclidean division]: i64::rem_euclid
 
     #[lua()]
-    fn rem_euclid(self, #[proxy] rhs: bevy::math::I64Vec4) -> bevy::math::I64Vec4;
+    fn rem_euclid(
+        _self: LuaReflectValProxy<bevy::math::I64Vec4>,
+        rhs: LuaReflectValProxy<bevy::math::I64Vec4>,
+    ) -> LuaReflectValProxy<bevy::math::I64Vec4>;
 
 "#,
     r#"
 /// Casts all elements of `self` to `f32`.
 
     #[lua()]
-    fn as_vec4(&self) -> bevy::math::Vec4;
+    fn as_vec4(
+        _self: LuaReflectRefProxy<bevy::math::I64Vec4>,
+    ) -> LuaReflectValProxy<bevy::math::Vec4>;
 
 "#,
     r#"
 /// Casts all elements of `self` to `f64`.
 
     #[lua()]
-    fn as_dvec4(&self) -> bevy::math::DVec4;
+    fn as_dvec4(
+        _self: LuaReflectRefProxy<bevy::math::I64Vec4>,
+    ) -> LuaReflectValProxy<bevy::math::DVec4>;
 
 "#,
     r#"
 /// Casts all elements of `self` to `i32`.
 
     #[lua()]
-    fn as_ivec4(&self) -> bevy::math::IVec4;
+    fn as_ivec4(
+        _self: LuaReflectRefProxy<bevy::math::I64Vec4>,
+    ) -> LuaReflectValProxy<bevy::math::IVec4>;
 
 "#,
     r#"
 /// Casts all elements of `self` to `u32`.
 
     #[lua()]
-    fn as_uvec4(&self) -> bevy::math::UVec4;
+    fn as_uvec4(
+        _self: LuaReflectRefProxy<bevy::math::I64Vec4>,
+    ) -> LuaReflectValProxy<bevy::math::UVec4>;
 
 "#,
     r#"
 /// Casts all elements of `self` to `u64`.
 
     #[lua()]
-    fn as_u64vec4(&self) -> bevy::math::U64Vec4;
+    fn as_u64vec4(
+        _self: LuaReflectRefProxy<bevy::math::I64Vec4>,
+    ) -> LuaReflectValProxy<bevy::math::U64Vec4>;
 
 "#,
     r#"
@@ -7246,7 +8403,10 @@ pub struct LuaI64Vec3 {
 /// In other words this computes `[self.x.wrapping_add(rhs.x), self.y.wrapping_add(rhs.y), ..]`.
 
     #[lua()]
-    fn wrapping_add(self, #[proxy] rhs: bevy::math::I64Vec4) -> bevy::math::I64Vec4;
+    fn wrapping_add(
+        _self: LuaReflectValProxy<bevy::math::I64Vec4>,
+        rhs: LuaReflectValProxy<bevy::math::I64Vec4>,
+    ) -> LuaReflectValProxy<bevy::math::I64Vec4>;
 
 "#,
     r#"
@@ -7254,7 +8414,10 @@ pub struct LuaI64Vec3 {
 /// In other words this computes `[self.x.wrapping_sub(rhs.x), self.y.wrapping_sub(rhs.y), ..]`.
 
     #[lua()]
-    fn wrapping_sub(self, #[proxy] rhs: bevy::math::I64Vec4) -> bevy::math::I64Vec4;
+    fn wrapping_sub(
+        _self: LuaReflectValProxy<bevy::math::I64Vec4>,
+        rhs: LuaReflectValProxy<bevy::math::I64Vec4>,
+    ) -> LuaReflectValProxy<bevy::math::I64Vec4>;
 
 "#,
     r#"
@@ -7262,7 +8425,10 @@ pub struct LuaI64Vec3 {
 /// In other words this computes `[self.x.wrapping_mul(rhs.x), self.y.wrapping_mul(rhs.y), ..]`.
 
     #[lua()]
-    fn wrapping_mul(self, #[proxy] rhs: bevy::math::I64Vec4) -> bevy::math::I64Vec4;
+    fn wrapping_mul(
+        _self: LuaReflectValProxy<bevy::math::I64Vec4>,
+        rhs: LuaReflectValProxy<bevy::math::I64Vec4>,
+    ) -> LuaReflectValProxy<bevy::math::I64Vec4>;
 
 "#,
     r#"
@@ -7270,7 +8436,10 @@ pub struct LuaI64Vec3 {
 /// In other words this computes `[self.x.wrapping_div(rhs.x), self.y.wrapping_div(rhs.y), ..]`.
 
     #[lua()]
-    fn wrapping_div(self, #[proxy] rhs: bevy::math::I64Vec4) -> bevy::math::I64Vec4;
+    fn wrapping_div(
+        _self: LuaReflectValProxy<bevy::math::I64Vec4>,
+        rhs: LuaReflectValProxy<bevy::math::I64Vec4>,
+    ) -> LuaReflectValProxy<bevy::math::I64Vec4>;
 
 "#,
     r#"
@@ -7278,7 +8447,10 @@ pub struct LuaI64Vec3 {
 /// In other words this computes `[self.x.saturating_add(rhs.x), self.y.saturating_add(rhs.y), ..]`.
 
     #[lua()]
-    fn saturating_add(self, #[proxy] rhs: bevy::math::I64Vec4) -> bevy::math::I64Vec4;
+    fn saturating_add(
+        _self: LuaReflectValProxy<bevy::math::I64Vec4>,
+        rhs: LuaReflectValProxy<bevy::math::I64Vec4>,
+    ) -> LuaReflectValProxy<bevy::math::I64Vec4>;
 
 "#,
     r#"
@@ -7286,7 +8458,10 @@ pub struct LuaI64Vec3 {
 /// In other words this computes `[self.x.saturating_sub(rhs.x), self.y.saturating_sub(rhs.y), ..]`.
 
     #[lua()]
-    fn saturating_sub(self, #[proxy] rhs: bevy::math::I64Vec4) -> bevy::math::I64Vec4;
+    fn saturating_sub(
+        _self: LuaReflectValProxy<bevy::math::I64Vec4>,
+        rhs: LuaReflectValProxy<bevy::math::I64Vec4>,
+    ) -> LuaReflectValProxy<bevy::math::I64Vec4>;
 
 "#,
     r#"
@@ -7294,7 +8469,10 @@ pub struct LuaI64Vec3 {
 /// In other words this computes `[self.x.saturating_mul(rhs.x), self.y.saturating_mul(rhs.y), ..]`.
 
     #[lua()]
-    fn saturating_mul(self, #[proxy] rhs: bevy::math::I64Vec4) -> bevy::math::I64Vec4;
+    fn saturating_mul(
+        _self: LuaReflectValProxy<bevy::math::I64Vec4>,
+        rhs: LuaReflectValProxy<bevy::math::I64Vec4>,
+    ) -> LuaReflectValProxy<bevy::math::I64Vec4>;
 
 "#,
     r#"
@@ -7302,67 +8480,98 @@ pub struct LuaI64Vec3 {
 /// In other words this computes `[self.x.saturating_div(rhs.x), self.y.saturating_div(rhs.y), ..]`.
 
     #[lua()]
-    fn saturating_div(self, #[proxy] rhs: bevy::math::I64Vec4) -> bevy::math::I64Vec4;
+    fn saturating_div(
+        _self: LuaReflectValProxy<bevy::math::I64Vec4>,
+        rhs: LuaReflectValProxy<bevy::math::I64Vec4>,
+    ) -> LuaReflectValProxy<bevy::math::I64Vec4>;
 
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Mul", composite = "mul")]
-    fn mul(self, rhs: i64) -> bevy::math::I64Vec4;
+    #[lua(as_trait = "std::ops::Mul::<i64>", composite = "mul")]
+    fn mul(
+        _self: LuaReflectValProxy<bevy::math::I64Vec4>,
+        rhs: i64,
+    ) -> LuaReflectValProxy<bevy::math::I64Vec4>;
 
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Sub", composite = "sub")]
-    fn sub(self, #[proxy] rhs: bevy::math::I64Vec4) -> bevy::math::I64Vec4;
+    #[lua(as_trait = "std::ops::Sub::<bevy::math::I64Vec4>", composite = "sub")]
+    fn sub(
+        _self: LuaReflectValProxy<bevy::math::I64Vec4>,
+        rhs: LuaReflectValProxy<bevy::math::I64Vec4>,
+    ) -> LuaReflectValProxy<bevy::math::I64Vec4>;
 
 "#,
     r#"
 
     #[lua(as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone")]
-    fn clone(&self) -> bevy::math::I64Vec4;
+    fn clone(
+        _self: LuaReflectRefProxy<bevy::math::I64Vec4>,
+    ) -> LuaReflectValProxy<bevy::math::I64Vec4>;
 
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Div", composite = "div")]
-    fn div(self, #[proxy] rhs: bevy::math::I64Vec4) -> bevy::math::I64Vec4;
+    #[lua(as_trait = "std::ops::Div::<bevy::math::I64Vec4>", composite = "div")]
+    fn div(
+        _self: LuaReflectValProxy<bevy::math::I64Vec4>,
+        rhs: LuaReflectValProxy<bevy::math::I64Vec4>,
+    ) -> LuaReflectValProxy<bevy::math::I64Vec4>;
 
 "#,
     r#"
 
-    #[lua(as_trait = "std::cmp::PartialEq", composite = "eq")]
-    fn eq(&self, #[proxy] other: &glam::I64Vec4) -> bool;
+    #[lua(as_trait = "std::cmp::PartialEq::<bevy::math::I64Vec4>", composite = "eq")]
+    fn eq(
+        _self: LuaReflectRefProxy<bevy::math::I64Vec4>,
+        other: LuaReflectRefProxy<bevy::math::I64Vec4>,
+    ) -> bool;
 
 "#,
     r#"
 
     #[lua(as_trait = "std::ops::Neg", composite = "neg")]
-    fn neg(self) -> bevy::math::I64Vec4;
+    fn neg(
+        _self: LuaReflectValProxy<bevy::math::I64Vec4>,
+    ) -> LuaReflectValProxy<bevy::math::I64Vec4>;
 
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Div", composite = "div")]
-    fn div(self, rhs: i64) -> bevy::math::I64Vec4;
+    #[lua(as_trait = "std::ops::Div::<i64>", composite = "div")]
+    fn div(
+        _self: LuaReflectValProxy<bevy::math::I64Vec4>,
+        rhs: i64,
+    ) -> LuaReflectValProxy<bevy::math::I64Vec4>;
 
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Add", composite = "add")]
-    fn add(self, rhs: i64) -> bevy::math::I64Vec4;
+    #[lua(as_trait = "std::ops::Add::<i64>", composite = "add")]
+    fn add(
+        _self: LuaReflectValProxy<bevy::math::I64Vec4>,
+        rhs: i64,
+    ) -> LuaReflectValProxy<bevy::math::I64Vec4>;
 
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Sub", composite = "sub")]
-    fn sub(self, rhs: i64) -> bevy::math::I64Vec4;
+    #[lua(as_trait = "std::ops::Sub::<i64>", composite = "sub")]
+    fn sub(
+        _self: LuaReflectValProxy<bevy::math::I64Vec4>,
+        rhs: i64,
+    ) -> LuaReflectValProxy<bevy::math::I64Vec4>;
 
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Rem", composite = "rem")]
-    fn rem(self, #[proxy] rhs: bevy::math::I64Vec4) -> bevy::math::I64Vec4;
+    #[lua(as_trait = "std::ops::Rem::<bevy::math::I64Vec4>", composite = "rem")]
+    fn rem(
+        _self: LuaReflectValProxy<bevy::math::I64Vec4>,
+        rhs: LuaReflectValProxy<bevy::math::I64Vec4>,
+    ) -> LuaReflectValProxy<bevy::math::I64Vec4>;
 
 "#,
     r#"
@@ -7372,7 +8581,7 @@ fn index(&self) -> String {
 }
 "#]
 )]
-pub struct LuaI64Vec4 {
+pub struct I64Vec4 {
     x: i64,
     y: i64,
     z: i64,
@@ -7385,94 +8594,129 @@ pub struct LuaI64Vec4 {
     bms_lua_path = "crate",
     functions[r#"
 
-    #[lua(as_trait = "std::ops::Rem", composite = "rem")]
-    fn rem(self, #[proxy] rhs: bevy::math::UVec2) -> bevy::math::UVec2;
+    #[lua(as_trait = "std::ops::Rem::<bevy::math::UVec2>", composite = "rem")]
+    fn rem(
+        _self: LuaReflectValProxy<bevy::math::UVec2>,
+        rhs: LuaReflectValProxy<bevy::math::UVec2>,
+    ) -> LuaReflectValProxy<bevy::math::UVec2>;
 
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Rem", composite = "rem")]
-    fn rem(self, rhs: u32) -> bevy::math::UVec2;
+    #[lua(as_trait = "std::ops::Rem::<u32>", composite = "rem")]
+    fn rem(
+        _self: LuaReflectValProxy<bevy::math::UVec2>,
+        rhs: u32,
+    ) -> LuaReflectValProxy<bevy::math::UVec2>;
 
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Sub", composite = "sub")]
-    fn sub(self, rhs: u32) -> bevy::math::UVec2;
+    #[lua(as_trait = "std::ops::Sub::<u32>", composite = "sub")]
+    fn sub(
+        _self: LuaReflectValProxy<bevy::math::UVec2>,
+        rhs: u32,
+    ) -> LuaReflectValProxy<bevy::math::UVec2>;
 
 "#,
     r#"
 
-    #[lua(as_trait = "std::cmp::PartialEq", composite = "eq")]
-    fn eq(&self, #[proxy] other: &glam::UVec2) -> bool;
+    #[lua(as_trait = "std::cmp::PartialEq::<bevy::math::UVec2>", composite = "eq")]
+    fn eq(
+        _self: LuaReflectRefProxy<bevy::math::UVec2>,
+        other: LuaReflectRefProxy<bevy::math::UVec2>,
+    ) -> bool;
 
 "#,
     r#"
 
     #[lua(as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone")]
-    fn clone(&self) -> bevy::math::UVec2;
+    fn clone(
+        _self: LuaReflectRefProxy<bevy::math::UVec2>,
+    ) -> LuaReflectValProxy<bevy::math::UVec2>;
 
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Div", composite = "div")]
-    fn div(self, rhs: u32) -> bevy::math::UVec2;
+    #[lua(as_trait = "std::ops::Div::<u32>", composite = "div")]
+    fn div(
+        _self: LuaReflectValProxy<bevy::math::UVec2>,
+        rhs: u32,
+    ) -> LuaReflectValProxy<bevy::math::UVec2>;
 
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Add", composite = "add")]
-    fn add(self, rhs: u32) -> bevy::math::UVec2;
+    #[lua(as_trait = "std::ops::Add::<u32>", composite = "add")]
+    fn add(
+        _self: LuaReflectValProxy<bevy::math::UVec2>,
+        rhs: u32,
+    ) -> LuaReflectValProxy<bevy::math::UVec2>;
 
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Mul", composite = "mul")]
-    fn mul(self, #[proxy] rhs: bevy::math::UVec2) -> bevy::math::UVec2;
+    #[lua(as_trait = "std::ops::Mul::<bevy::math::UVec2>", composite = "mul")]
+    fn mul(
+        _self: LuaReflectValProxy<bevy::math::UVec2>,
+        rhs: LuaReflectValProxy<bevy::math::UVec2>,
+    ) -> LuaReflectValProxy<bevy::math::UVec2>;
 
 "#,
     r#"
 
     #[lua(as_trait = "std::cmp::Eq")]
-    fn assert_receiver_is_total_eq(&self) -> ();
+    fn assert_receiver_is_total_eq(_self: LuaReflectRefProxy<bevy::math::UVec2>) -> ();
 
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Sub", composite = "sub")]
-    fn sub(self, #[proxy] rhs: bevy::math::UVec2) -> bevy::math::UVec2;
+    #[lua(as_trait = "std::ops::Sub::<bevy::math::UVec2>", composite = "sub")]
+    fn sub(
+        _self: LuaReflectValProxy<bevy::math::UVec2>,
+        rhs: LuaReflectValProxy<bevy::math::UVec2>,
+    ) -> LuaReflectValProxy<bevy::math::UVec2>;
 
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Add", composite = "add")]
-    fn add(self, #[proxy] rhs: bevy::math::UVec2) -> bevy::math::UVec2;
+    #[lua(as_trait = "std::ops::Add::<bevy::math::UVec2>", composite = "add")]
+    fn add(
+        _self: LuaReflectValProxy<bevy::math::UVec2>,
+        rhs: LuaReflectValProxy<bevy::math::UVec2>,
+    ) -> LuaReflectValProxy<bevy::math::UVec2>;
 
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Div", composite = "div")]
-    fn div(self, #[proxy] rhs: bevy::math::UVec2) -> bevy::math::UVec2;
+    #[lua(as_trait = "std::ops::Div::<bevy::math::UVec2>", composite = "div")]
+    fn div(
+        _self: LuaReflectValProxy<bevy::math::UVec2>,
+        rhs: LuaReflectValProxy<bevy::math::UVec2>,
+    ) -> LuaReflectValProxy<bevy::math::UVec2>;
 
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Mul", composite = "mul")]
-    fn mul(self, rhs: u32) -> bevy::math::UVec2;
+    #[lua(as_trait = "std::ops::Mul::<u32>", composite = "mul")]
+    fn mul(
+        _self: LuaReflectValProxy<bevy::math::UVec2>,
+        rhs: u32,
+    ) -> LuaReflectValProxy<bevy::math::UVec2>;
 
 "#,
     r#"
 /// Creates a new vector.
 
     #[lua()]
-    fn new(x: u32, y: u32) -> bevy::math::UVec2;
+    fn new(x: u32, y: u32) -> LuaReflectValProxy<bevy::math::UVec2>;
 
 "#,
     r#"
 /// Creates a vector with all elements set to `v`.
 
     #[lua()]
-    fn splat(v: u32) -> bevy::math::UVec2;
+    fn splat(v: u32) -> LuaReflectValProxy<bevy::math::UVec2>;
 
 "#,
     r#"
@@ -7483,48 +8727,54 @@ pub struct LuaI64Vec4 {
 
     #[lua()]
     fn select(
-        #[proxy]
-        mask: bevy::math::BVec2,
-        #[proxy]
-        if_true: bevy::math::UVec2,
-        #[proxy]
-        if_false: bevy::math::UVec2,
-    ) -> bevy::math::UVec2;
+        mask: LuaReflectValProxy<bevy::math::BVec2>,
+        if_true: LuaReflectValProxy<bevy::math::UVec2>,
+        if_false: LuaReflectValProxy<bevy::math::UVec2>,
+    ) -> LuaReflectValProxy<bevy::math::UVec2>;
 
 "#,
     r#"
 /// Creates a new vector from an array.
 
     #[lua()]
-    fn from_array(a: [u32; 2]) -> bevy::math::UVec2;
+    fn from_array(a: [u32; 2]) -> LuaReflectValProxy<bevy::math::UVec2>;
 
 "#,
     r#"
 /// `[x, y]`
 
     #[lua()]
-    fn to_array(&self) -> [u32; 2];
+    fn to_array(_self: LuaReflectRefProxy<bevy::math::UVec2>) -> [u32; 2];
 
 "#,
     r#"
 /// Creates a 3D vector from `self` and the given `z` value.
 
     #[lua()]
-    fn extend(self, z: u32) -> bevy::math::UVec3;
+    fn extend(
+        _self: LuaReflectValProxy<bevy::math::UVec2>,
+        z: u32,
+    ) -> LuaReflectValProxy<bevy::math::UVec3>;
 
 "#,
     r#"
 /// Computes the dot product of `self` and `rhs`.
 
     #[lua()]
-    fn dot(self, #[proxy] rhs: bevy::math::UVec2) -> u32;
+    fn dot(
+        _self: LuaReflectValProxy<bevy::math::UVec2>,
+        rhs: LuaReflectValProxy<bevy::math::UVec2>,
+    ) -> u32;
 
 "#,
     r#"
 /// Returns a vector where every component is the dot product of `self` and `rhs`.
 
     #[lua()]
-    fn dot_into_vec(self, #[proxy] rhs: bevy::math::UVec2) -> bevy::math::UVec2;
+    fn dot_into_vec(
+        _self: LuaReflectValProxy<bevy::math::UVec2>,
+        rhs: LuaReflectValProxy<bevy::math::UVec2>,
+    ) -> LuaReflectValProxy<bevy::math::UVec2>;
 
 "#,
     r#"
@@ -7532,7 +8782,10 @@ pub struct LuaI64Vec4 {
 /// In other words this computes `[self.x.min(rhs.x), self.y.min(rhs.y), ..]`.
 
     #[lua()]
-    fn min(self, #[proxy] rhs: bevy::math::UVec2) -> bevy::math::UVec2;
+    fn min(
+        _self: LuaReflectValProxy<bevy::math::UVec2>,
+        rhs: LuaReflectValProxy<bevy::math::UVec2>,
+    ) -> LuaReflectValProxy<bevy::math::UVec2>;
 
 "#,
     r#"
@@ -7540,7 +8793,10 @@ pub struct LuaI64Vec4 {
 /// In other words this computes `[self.x.max(rhs.x), self.y.max(rhs.y), ..]`.
 
     #[lua()]
-    fn max(self, #[proxy] rhs: bevy::math::UVec2) -> bevy::math::UVec2;
+    fn max(
+        _self: LuaReflectValProxy<bevy::math::UVec2>,
+        rhs: LuaReflectValProxy<bevy::math::UVec2>,
+    ) -> LuaReflectValProxy<bevy::math::UVec2>;
 
 "#,
     r#"
@@ -7551,12 +8807,10 @@ pub struct LuaI64Vec4 {
 
     #[lua()]
     fn clamp(
-        self,
-        #[proxy]
-        min: bevy::math::UVec2,
-        #[proxy]
-        max: bevy::math::UVec2,
-    ) -> bevy::math::UVec2;
+        _self: LuaReflectValProxy<bevy::math::UVec2>,
+        min: LuaReflectValProxy<bevy::math::UVec2>,
+        max: LuaReflectValProxy<bevy::math::UVec2>,
+    ) -> LuaReflectValProxy<bevy::math::UVec2>;
 
 "#,
     r#"
@@ -7564,7 +8818,7 @@ pub struct LuaI64Vec4 {
 /// In other words this computes `min(x, y, ..)`.
 
     #[lua()]
-    fn min_element(self) -> u32;
+    fn min_element(_self: LuaReflectValProxy<bevy::math::UVec2>) -> u32;
 
 "#,
     r#"
@@ -7572,7 +8826,7 @@ pub struct LuaI64Vec4 {
 /// In other words this computes `max(x, y, ..)`.
 
     #[lua()]
-    fn max_element(self) -> u32;
+    fn max_element(_self: LuaReflectValProxy<bevy::math::UVec2>) -> u32;
 
 "#,
     r#"
@@ -7582,7 +8836,10 @@ pub struct LuaI64Vec4 {
 /// elements.
 
     #[lua()]
-    fn cmpeq(self, #[proxy] rhs: bevy::math::UVec2) -> bevy::math::BVec2;
+    fn cmpeq(
+        _self: LuaReflectValProxy<bevy::math::UVec2>,
+        rhs: LuaReflectValProxy<bevy::math::UVec2>,
+    ) -> LuaReflectValProxy<bevy::math::BVec2>;
 
 "#,
     r#"
@@ -7592,7 +8849,10 @@ pub struct LuaI64Vec4 {
 /// elements.
 
     #[lua()]
-    fn cmpne(self, #[proxy] rhs: bevy::math::UVec2) -> bevy::math::BVec2;
+    fn cmpne(
+        _self: LuaReflectValProxy<bevy::math::UVec2>,
+        rhs: LuaReflectValProxy<bevy::math::UVec2>,
+    ) -> LuaReflectValProxy<bevy::math::BVec2>;
 
 "#,
     r#"
@@ -7602,7 +8862,10 @@ pub struct LuaI64Vec4 {
 /// elements.
 
     #[lua()]
-    fn cmpge(self, #[proxy] rhs: bevy::math::UVec2) -> bevy::math::BVec2;
+    fn cmpge(
+        _self: LuaReflectValProxy<bevy::math::UVec2>,
+        rhs: LuaReflectValProxy<bevy::math::UVec2>,
+    ) -> LuaReflectValProxy<bevy::math::BVec2>;
 
 "#,
     r#"
@@ -7612,7 +8875,10 @@ pub struct LuaI64Vec4 {
 /// elements.
 
     #[lua()]
-    fn cmpgt(self, #[proxy] rhs: bevy::math::UVec2) -> bevy::math::BVec2;
+    fn cmpgt(
+        _self: LuaReflectValProxy<bevy::math::UVec2>,
+        rhs: LuaReflectValProxy<bevy::math::UVec2>,
+    ) -> LuaReflectValProxy<bevy::math::BVec2>;
 
 "#,
     r#"
@@ -7622,7 +8888,10 @@ pub struct LuaI64Vec4 {
 /// elements.
 
     #[lua()]
-    fn cmple(self, #[proxy] rhs: bevy::math::UVec2) -> bevy::math::BVec2;
+    fn cmple(
+        _self: LuaReflectValProxy<bevy::math::UVec2>,
+        rhs: LuaReflectValProxy<bevy::math::UVec2>,
+    ) -> LuaReflectValProxy<bevy::math::BVec2>;
 
 "#,
     r#"
@@ -7632,49 +8901,62 @@ pub struct LuaI64Vec4 {
 /// elements.
 
     #[lua()]
-    fn cmplt(self, #[proxy] rhs: bevy::math::UVec2) -> bevy::math::BVec2;
+    fn cmplt(
+        _self: LuaReflectValProxy<bevy::math::UVec2>,
+        rhs: LuaReflectValProxy<bevy::math::UVec2>,
+    ) -> LuaReflectValProxy<bevy::math::BVec2>;
 
 "#,
     r#"
 /// Computes the squared length of `self`.
 
     #[lua()]
-    fn length_squared(self) -> u32;
+    fn length_squared(_self: LuaReflectValProxy<bevy::math::UVec2>) -> u32;
 
 "#,
     r#"
 /// Casts all elements of `self` to `f32`.
 
     #[lua()]
-    fn as_vec2(&self) -> bevy::math::Vec2;
+    fn as_vec2(
+        _self: LuaReflectRefProxy<bevy::math::UVec2>,
+    ) -> LuaReflectValProxy<bevy::math::Vec2>;
 
 "#,
     r#"
 /// Casts all elements of `self` to `f64`.
 
     #[lua()]
-    fn as_dvec2(&self) -> bevy::math::DVec2;
+    fn as_dvec2(
+        _self: LuaReflectRefProxy<bevy::math::UVec2>,
+    ) -> LuaReflectValProxy<bevy::math::DVec2>;
 
 "#,
     r#"
 /// Casts all elements of `self` to `i32`.
 
     #[lua()]
-    fn as_ivec2(&self) -> bevy::math::IVec2;
+    fn as_ivec2(
+        _self: LuaReflectRefProxy<bevy::math::UVec2>,
+    ) -> LuaReflectValProxy<bevy::math::IVec2>;
 
 "#,
     r#"
 /// Casts all elements of `self` to `i64`.
 
     #[lua()]
-    fn as_i64vec2(&self) -> bevy::math::I64Vec2;
+    fn as_i64vec2(
+        _self: LuaReflectRefProxy<bevy::math::UVec2>,
+    ) -> LuaReflectValProxy<bevy::math::I64Vec2>;
 
 "#,
     r#"
 /// Casts all elements of `self` to `u64`.
 
     #[lua()]
-    fn as_u64vec2(&self) -> bevy::math::U64Vec2;
+    fn as_u64vec2(
+        _self: LuaReflectRefProxy<bevy::math::UVec2>,
+    ) -> LuaReflectValProxy<bevy::math::U64Vec2>;
 
 "#,
     r#"
@@ -7682,7 +8964,10 @@ pub struct LuaI64Vec4 {
 /// In other words this computes `[self.x.wrapping_add(rhs.x), self.y.wrapping_add(rhs.y), ..]`.
 
     #[lua()]
-    fn wrapping_add(self, #[proxy] rhs: bevy::math::UVec2) -> bevy::math::UVec2;
+    fn wrapping_add(
+        _self: LuaReflectValProxy<bevy::math::UVec2>,
+        rhs: LuaReflectValProxy<bevy::math::UVec2>,
+    ) -> LuaReflectValProxy<bevy::math::UVec2>;
 
 "#,
     r#"
@@ -7690,7 +8975,10 @@ pub struct LuaI64Vec4 {
 /// In other words this computes `[self.x.wrapping_sub(rhs.x), self.y.wrapping_sub(rhs.y), ..]`.
 
     #[lua()]
-    fn wrapping_sub(self, #[proxy] rhs: bevy::math::UVec2) -> bevy::math::UVec2;
+    fn wrapping_sub(
+        _self: LuaReflectValProxy<bevy::math::UVec2>,
+        rhs: LuaReflectValProxy<bevy::math::UVec2>,
+    ) -> LuaReflectValProxy<bevy::math::UVec2>;
 
 "#,
     r#"
@@ -7698,7 +8986,10 @@ pub struct LuaI64Vec4 {
 /// In other words this computes `[self.x.wrapping_mul(rhs.x), self.y.wrapping_mul(rhs.y), ..]`.
 
     #[lua()]
-    fn wrapping_mul(self, #[proxy] rhs: bevy::math::UVec2) -> bevy::math::UVec2;
+    fn wrapping_mul(
+        _self: LuaReflectValProxy<bevy::math::UVec2>,
+        rhs: LuaReflectValProxy<bevy::math::UVec2>,
+    ) -> LuaReflectValProxy<bevy::math::UVec2>;
 
 "#,
     r#"
@@ -7706,7 +8997,10 @@ pub struct LuaI64Vec4 {
 /// In other words this computes `[self.x.wrapping_div(rhs.x), self.y.wrapping_div(rhs.y), ..]`.
 
     #[lua()]
-    fn wrapping_div(self, #[proxy] rhs: bevy::math::UVec2) -> bevy::math::UVec2;
+    fn wrapping_div(
+        _self: LuaReflectValProxy<bevy::math::UVec2>,
+        rhs: LuaReflectValProxy<bevy::math::UVec2>,
+    ) -> LuaReflectValProxy<bevy::math::UVec2>;
 
 "#,
     r#"
@@ -7714,7 +9008,10 @@ pub struct LuaI64Vec4 {
 /// In other words this computes `[self.x.saturating_add(rhs.x), self.y.saturating_add(rhs.y), ..]`.
 
     #[lua()]
-    fn saturating_add(self, #[proxy] rhs: bevy::math::UVec2) -> bevy::math::UVec2;
+    fn saturating_add(
+        _self: LuaReflectValProxy<bevy::math::UVec2>,
+        rhs: LuaReflectValProxy<bevy::math::UVec2>,
+    ) -> LuaReflectValProxy<bevy::math::UVec2>;
 
 "#,
     r#"
@@ -7722,7 +9019,10 @@ pub struct LuaI64Vec4 {
 /// In other words this computes `[self.x.saturating_sub(rhs.x), self.y.saturating_sub(rhs.y), ..]`.
 
     #[lua()]
-    fn saturating_sub(self, #[proxy] rhs: bevy::math::UVec2) -> bevy::math::UVec2;
+    fn saturating_sub(
+        _self: LuaReflectValProxy<bevy::math::UVec2>,
+        rhs: LuaReflectValProxy<bevy::math::UVec2>,
+    ) -> LuaReflectValProxy<bevy::math::UVec2>;
 
 "#,
     r#"
@@ -7730,7 +9030,10 @@ pub struct LuaI64Vec4 {
 /// In other words this computes `[self.x.saturating_mul(rhs.x), self.y.saturating_mul(rhs.y), ..]`.
 
     #[lua()]
-    fn saturating_mul(self, #[proxy] rhs: bevy::math::UVec2) -> bevy::math::UVec2;
+    fn saturating_mul(
+        _self: LuaReflectValProxy<bevy::math::UVec2>,
+        rhs: LuaReflectValProxy<bevy::math::UVec2>,
+    ) -> LuaReflectValProxy<bevy::math::UVec2>;
 
 "#,
     r#"
@@ -7738,7 +9041,10 @@ pub struct LuaI64Vec4 {
 /// In other words this computes `[self.x.saturating_div(rhs.x), self.y.saturating_div(rhs.y), ..]`.
 
     #[lua()]
-    fn saturating_div(self, #[proxy] rhs: bevy::math::UVec2) -> bevy::math::UVec2;
+    fn saturating_div(
+        _self: LuaReflectValProxy<bevy::math::UVec2>,
+        rhs: LuaReflectValProxy<bevy::math::UVec2>,
+    ) -> LuaReflectValProxy<bevy::math::UVec2>;
 
 "#,
     r#"
@@ -7748,19 +9054,19 @@ fn index(&self) -> String {
 }
 "#,
     r#"
-#[lua(raw , metamethod="Index")]
-fn index(&self, lua: &Lua, idx: crate::lua::util::LuaIndex) -> Result<u32,_> {
-    Ok(_self.inner()?[*idx])
+#[lua(metamethod="Index")]
+fn index(self, idx: usize) -> IdentityProxy<u32> {
+    _self[idx - 1]
 }
 "#,
     r#"
-#[lua(raw, metamethod="NewIndex")]
-fn index(&mut self, lua: &Lua, idx: crate::lua::util::LuaIndex, val: u32) -> Result<(),_> {
-    _self.val_mut(|s| Ok(s[*idx] = val))?
+#[lua(metamethod="NewIndex")]
+fn index(&mut self, idx: usize, val: u32) -> () {
+    _self[idx - 1] = val
 }
 "#]
 )]
-pub struct LuaUVec2 {
+pub struct UVec2 {
     x: u32,
     y: u32,
 }
@@ -7771,52 +9077,70 @@ pub struct LuaUVec2 {
     bms_lua_path = "crate",
     functions[r#"
 
-    #[lua(as_trait = "std::ops::Mul", composite = "mul")]
-    fn mul(self, rhs: u32) -> bevy::math::UVec3;
+    #[lua(as_trait = "std::ops::Mul::<u32>", composite = "mul")]
+    fn mul(
+        _self: LuaReflectValProxy<bevy::math::UVec3>,
+        rhs: u32,
+    ) -> LuaReflectValProxy<bevy::math::UVec3>;
 
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Mul", composite = "mul")]
-    fn mul(self, #[proxy] rhs: bevy::math::UVec3) -> bevy::math::UVec3;
+    #[lua(as_trait = "std::ops::Mul::<bevy::math::UVec3>", composite = "mul")]
+    fn mul(
+        _self: LuaReflectValProxy<bevy::math::UVec3>,
+        rhs: LuaReflectValProxy<bevy::math::UVec3>,
+    ) -> LuaReflectValProxy<bevy::math::UVec3>;
 
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Rem", composite = "rem")]
-    fn rem(self, #[proxy] rhs: bevy::math::UVec3) -> bevy::math::UVec3;
+    #[lua(as_trait = "std::ops::Rem::<bevy::math::UVec3>", composite = "rem")]
+    fn rem(
+        _self: LuaReflectValProxy<bevy::math::UVec3>,
+        rhs: LuaReflectValProxy<bevy::math::UVec3>,
+    ) -> LuaReflectValProxy<bevy::math::UVec3>;
 
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Rem", composite = "rem")]
-    fn rem(self, rhs: u32) -> bevy::math::UVec3;
+    #[lua(as_trait = "std::ops::Rem::<u32>", composite = "rem")]
+    fn rem(
+        _self: LuaReflectValProxy<bevy::math::UVec3>,
+        rhs: u32,
+    ) -> LuaReflectValProxy<bevy::math::UVec3>;
 
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Div", composite = "div")]
-    fn div(self, rhs: u32) -> bevy::math::UVec3;
+    #[lua(as_trait = "std::ops::Div::<u32>", composite = "div")]
+    fn div(
+        _self: LuaReflectValProxy<bevy::math::UVec3>,
+        rhs: u32,
+    ) -> LuaReflectValProxy<bevy::math::UVec3>;
 
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Sub", composite = "sub")]
-    fn sub(self, #[proxy] rhs: bevy::math::UVec3) -> bevy::math::UVec3;
+    #[lua(as_trait = "std::ops::Sub::<bevy::math::UVec3>", composite = "sub")]
+    fn sub(
+        _self: LuaReflectValProxy<bevy::math::UVec3>,
+        rhs: LuaReflectValProxy<bevy::math::UVec3>,
+    ) -> LuaReflectValProxy<bevy::math::UVec3>;
 
 "#,
     r#"
 /// Creates a new vector.
 
     #[lua()]
-    fn new(x: u32, y: u32, z: u32) -> bevy::math::UVec3;
+    fn new(x: u32, y: u32, z: u32) -> LuaReflectValProxy<bevy::math::UVec3>;
 
 "#,
     r#"
 /// Creates a vector with all elements set to `v`.
 
     #[lua()]
-    fn splat(v: u32) -> bevy::math::UVec3;
+    fn splat(v: u32) -> LuaReflectValProxy<bevy::math::UVec3>;
 
 "#,
     r#"
@@ -7827,34 +9151,34 @@ pub struct LuaUVec2 {
 
     #[lua()]
     fn select(
-        #[proxy]
-        mask: bevy::math::BVec3,
-        #[proxy]
-        if_true: bevy::math::UVec3,
-        #[proxy]
-        if_false: bevy::math::UVec3,
-    ) -> bevy::math::UVec3;
+        mask: LuaReflectValProxy<bevy::math::BVec3>,
+        if_true: LuaReflectValProxy<bevy::math::UVec3>,
+        if_false: LuaReflectValProxy<bevy::math::UVec3>,
+    ) -> LuaReflectValProxy<bevy::math::UVec3>;
 
 "#,
     r#"
 /// Creates a new vector from an array.
 
     #[lua()]
-    fn from_array(a: [u32; 3]) -> bevy::math::UVec3;
+    fn from_array(a: [u32; 3]) -> LuaReflectValProxy<bevy::math::UVec3>;
 
 "#,
     r#"
 /// `[x, y, z]`
 
     #[lua()]
-    fn to_array(&self) -> [u32; 3];
+    fn to_array(_self: LuaReflectRefProxy<bevy::math::UVec3>) -> [u32; 3];
 
 "#,
     r#"
 /// Creates a 4D vector from `self` and the given `w` value.
 
     #[lua()]
-    fn extend(self, w: u32) -> bevy::math::UVec4;
+    fn extend(
+        _self: LuaReflectValProxy<bevy::math::UVec3>,
+        w: u32,
+    ) -> LuaReflectValProxy<bevy::math::UVec4>;
 
 "#,
     r#"
@@ -7862,28 +9186,39 @@ pub struct LuaUVec2 {
 /// Truncation may also be performed by using [`self.xy()`][crate::swizzles::Vec3Swizzles::xy()].
 
     #[lua()]
-    fn truncate(self) -> bevy::math::UVec2;
+    fn truncate(
+        _self: LuaReflectValProxy<bevy::math::UVec3>,
+    ) -> LuaReflectValProxy<bevy::math::UVec2>;
 
 "#,
     r#"
 /// Computes the dot product of `self` and `rhs`.
 
     #[lua()]
-    fn dot(self, #[proxy] rhs: bevy::math::UVec3) -> u32;
+    fn dot(
+        _self: LuaReflectValProxy<bevy::math::UVec3>,
+        rhs: LuaReflectValProxy<bevy::math::UVec3>,
+    ) -> u32;
 
 "#,
     r#"
 /// Returns a vector where every component is the dot product of `self` and `rhs`.
 
     #[lua()]
-    fn dot_into_vec(self, #[proxy] rhs: bevy::math::UVec3) -> bevy::math::UVec3;
+    fn dot_into_vec(
+        _self: LuaReflectValProxy<bevy::math::UVec3>,
+        rhs: LuaReflectValProxy<bevy::math::UVec3>,
+    ) -> LuaReflectValProxy<bevy::math::UVec3>;
 
 "#,
     r#"
 /// Computes the cross product of `self` and `rhs`.
 
     #[lua()]
-    fn cross(self, #[proxy] rhs: bevy::math::UVec3) -> bevy::math::UVec3;
+    fn cross(
+        _self: LuaReflectValProxy<bevy::math::UVec3>,
+        rhs: LuaReflectValProxy<bevy::math::UVec3>,
+    ) -> LuaReflectValProxy<bevy::math::UVec3>;
 
 "#,
     r#"
@@ -7891,7 +9226,10 @@ pub struct LuaUVec2 {
 /// In other words this computes `[self.x.min(rhs.x), self.y.min(rhs.y), ..]`.
 
     #[lua()]
-    fn min(self, #[proxy] rhs: bevy::math::UVec3) -> bevy::math::UVec3;
+    fn min(
+        _self: LuaReflectValProxy<bevy::math::UVec3>,
+        rhs: LuaReflectValProxy<bevy::math::UVec3>,
+    ) -> LuaReflectValProxy<bevy::math::UVec3>;
 
 "#,
     r#"
@@ -7899,7 +9237,10 @@ pub struct LuaUVec2 {
 /// In other words this computes `[self.x.max(rhs.x), self.y.max(rhs.y), ..]`.
 
     #[lua()]
-    fn max(self, #[proxy] rhs: bevy::math::UVec3) -> bevy::math::UVec3;
+    fn max(
+        _self: LuaReflectValProxy<bevy::math::UVec3>,
+        rhs: LuaReflectValProxy<bevy::math::UVec3>,
+    ) -> LuaReflectValProxy<bevy::math::UVec3>;
 
 "#,
     r#"
@@ -7910,12 +9251,10 @@ pub struct LuaUVec2 {
 
     #[lua()]
     fn clamp(
-        self,
-        #[proxy]
-        min: bevy::math::UVec3,
-        #[proxy]
-        max: bevy::math::UVec3,
-    ) -> bevy::math::UVec3;
+        _self: LuaReflectValProxy<bevy::math::UVec3>,
+        min: LuaReflectValProxy<bevy::math::UVec3>,
+        max: LuaReflectValProxy<bevy::math::UVec3>,
+    ) -> LuaReflectValProxy<bevy::math::UVec3>;
 
 "#,
     r#"
@@ -7923,7 +9262,7 @@ pub struct LuaUVec2 {
 /// In other words this computes `min(x, y, ..)`.
 
     #[lua()]
-    fn min_element(self) -> u32;
+    fn min_element(_self: LuaReflectValProxy<bevy::math::UVec3>) -> u32;
 
 "#,
     r#"
@@ -7931,7 +9270,7 @@ pub struct LuaUVec2 {
 /// In other words this computes `max(x, y, ..)`.
 
     #[lua()]
-    fn max_element(self) -> u32;
+    fn max_element(_self: LuaReflectValProxy<bevy::math::UVec3>) -> u32;
 
 "#,
     r#"
@@ -7941,7 +9280,10 @@ pub struct LuaUVec2 {
 /// elements.
 
     #[lua()]
-    fn cmpeq(self, #[proxy] rhs: bevy::math::UVec3) -> bevy::math::BVec3;
+    fn cmpeq(
+        _self: LuaReflectValProxy<bevy::math::UVec3>,
+        rhs: LuaReflectValProxy<bevy::math::UVec3>,
+    ) -> LuaReflectValProxy<bevy::math::BVec3>;
 
 "#,
     r#"
@@ -7951,7 +9293,10 @@ pub struct LuaUVec2 {
 /// elements.
 
     #[lua()]
-    fn cmpne(self, #[proxy] rhs: bevy::math::UVec3) -> bevy::math::BVec3;
+    fn cmpne(
+        _self: LuaReflectValProxy<bevy::math::UVec3>,
+        rhs: LuaReflectValProxy<bevy::math::UVec3>,
+    ) -> LuaReflectValProxy<bevy::math::BVec3>;
 
 "#,
     r#"
@@ -7961,7 +9306,10 @@ pub struct LuaUVec2 {
 /// elements.
 
     #[lua()]
-    fn cmpge(self, #[proxy] rhs: bevy::math::UVec3) -> bevy::math::BVec3;
+    fn cmpge(
+        _self: LuaReflectValProxy<bevy::math::UVec3>,
+        rhs: LuaReflectValProxy<bevy::math::UVec3>,
+    ) -> LuaReflectValProxy<bevy::math::BVec3>;
 
 "#,
     r#"
@@ -7971,7 +9319,10 @@ pub struct LuaUVec2 {
 /// elements.
 
     #[lua()]
-    fn cmpgt(self, #[proxy] rhs: bevy::math::UVec3) -> bevy::math::BVec3;
+    fn cmpgt(
+        _self: LuaReflectValProxy<bevy::math::UVec3>,
+        rhs: LuaReflectValProxy<bevy::math::UVec3>,
+    ) -> LuaReflectValProxy<bevy::math::BVec3>;
 
 "#,
     r#"
@@ -7981,7 +9332,10 @@ pub struct LuaUVec2 {
 /// elements.
 
     #[lua()]
-    fn cmple(self, #[proxy] rhs: bevy::math::UVec3) -> bevy::math::BVec3;
+    fn cmple(
+        _self: LuaReflectValProxy<bevy::math::UVec3>,
+        rhs: LuaReflectValProxy<bevy::math::UVec3>,
+    ) -> LuaReflectValProxy<bevy::math::BVec3>;
 
 "#,
     r#"
@@ -7991,56 +9345,71 @@ pub struct LuaUVec2 {
 /// elements.
 
     #[lua()]
-    fn cmplt(self, #[proxy] rhs: bevy::math::UVec3) -> bevy::math::BVec3;
+    fn cmplt(
+        _self: LuaReflectValProxy<bevy::math::UVec3>,
+        rhs: LuaReflectValProxy<bevy::math::UVec3>,
+    ) -> LuaReflectValProxy<bevy::math::BVec3>;
 
 "#,
     r#"
 /// Computes the squared length of `self`.
 
     #[lua()]
-    fn length_squared(self) -> u32;
+    fn length_squared(_self: LuaReflectValProxy<bevy::math::UVec3>) -> u32;
 
 "#,
     r#"
 /// Casts all elements of `self` to `f32`.
 
     #[lua()]
-    fn as_vec3(&self) -> bevy::math::Vec3;
+    fn as_vec3(
+        _self: LuaReflectRefProxy<bevy::math::UVec3>,
+    ) -> LuaReflectValProxy<bevy::math::Vec3>;
 
 "#,
     r#"
 /// Casts all elements of `self` to `f32`.
 
     #[lua()]
-    fn as_vec3a(&self) -> bevy::math::Vec3A;
+    fn as_vec3a(
+        _self: LuaReflectRefProxy<bevy::math::UVec3>,
+    ) -> LuaReflectValProxy<bevy::math::Vec3A>;
 
 "#,
     r#"
 /// Casts all elements of `self` to `f64`.
 
     #[lua()]
-    fn as_dvec3(&self) -> bevy::math::DVec3;
+    fn as_dvec3(
+        _self: LuaReflectRefProxy<bevy::math::UVec3>,
+    ) -> LuaReflectValProxy<bevy::math::DVec3>;
 
 "#,
     r#"
 /// Casts all elements of `self` to `i32`.
 
     #[lua()]
-    fn as_ivec3(&self) -> bevy::math::IVec3;
+    fn as_ivec3(
+        _self: LuaReflectRefProxy<bevy::math::UVec3>,
+    ) -> LuaReflectValProxy<bevy::math::IVec3>;
 
 "#,
     r#"
 /// Casts all elements of `self` to `i64`.
 
     #[lua()]
-    fn as_i64vec3(&self) -> bevy::math::I64Vec3;
+    fn as_i64vec3(
+        _self: LuaReflectRefProxy<bevy::math::UVec3>,
+    ) -> LuaReflectValProxy<bevy::math::I64Vec3>;
 
 "#,
     r#"
 /// Casts all elements of `self` to `u64`.
 
     #[lua()]
-    fn as_u64vec3(&self) -> bevy::math::U64Vec3;
+    fn as_u64vec3(
+        _self: LuaReflectRefProxy<bevy::math::UVec3>,
+    ) -> LuaReflectValProxy<bevy::math::U64Vec3>;
 
 "#,
     r#"
@@ -8048,7 +9417,10 @@ pub struct LuaUVec2 {
 /// In other words this computes `[self.x.wrapping_add(rhs.x), self.y.wrapping_add(rhs.y), ..]`.
 
     #[lua()]
-    fn wrapping_add(self, #[proxy] rhs: bevy::math::UVec3) -> bevy::math::UVec3;
+    fn wrapping_add(
+        _self: LuaReflectValProxy<bevy::math::UVec3>,
+        rhs: LuaReflectValProxy<bevy::math::UVec3>,
+    ) -> LuaReflectValProxy<bevy::math::UVec3>;
 
 "#,
     r#"
@@ -8056,7 +9428,10 @@ pub struct LuaUVec2 {
 /// In other words this computes `[self.x.wrapping_sub(rhs.x), self.y.wrapping_sub(rhs.y), ..]`.
 
     #[lua()]
-    fn wrapping_sub(self, #[proxy] rhs: bevy::math::UVec3) -> bevy::math::UVec3;
+    fn wrapping_sub(
+        _self: LuaReflectValProxy<bevy::math::UVec3>,
+        rhs: LuaReflectValProxy<bevy::math::UVec3>,
+    ) -> LuaReflectValProxy<bevy::math::UVec3>;
 
 "#,
     r#"
@@ -8064,7 +9439,10 @@ pub struct LuaUVec2 {
 /// In other words this computes `[self.x.wrapping_mul(rhs.x), self.y.wrapping_mul(rhs.y), ..]`.
 
     #[lua()]
-    fn wrapping_mul(self, #[proxy] rhs: bevy::math::UVec3) -> bevy::math::UVec3;
+    fn wrapping_mul(
+        _self: LuaReflectValProxy<bevy::math::UVec3>,
+        rhs: LuaReflectValProxy<bevy::math::UVec3>,
+    ) -> LuaReflectValProxy<bevy::math::UVec3>;
 
 "#,
     r#"
@@ -8072,7 +9450,10 @@ pub struct LuaUVec2 {
 /// In other words this computes `[self.x.wrapping_div(rhs.x), self.y.wrapping_div(rhs.y), ..]`.
 
     #[lua()]
-    fn wrapping_div(self, #[proxy] rhs: bevy::math::UVec3) -> bevy::math::UVec3;
+    fn wrapping_div(
+        _self: LuaReflectValProxy<bevy::math::UVec3>,
+        rhs: LuaReflectValProxy<bevy::math::UVec3>,
+    ) -> LuaReflectValProxy<bevy::math::UVec3>;
 
 "#,
     r#"
@@ -8080,7 +9461,10 @@ pub struct LuaUVec2 {
 /// In other words this computes `[self.x.saturating_add(rhs.x), self.y.saturating_add(rhs.y), ..]`.
 
     #[lua()]
-    fn saturating_add(self, #[proxy] rhs: bevy::math::UVec3) -> bevy::math::UVec3;
+    fn saturating_add(
+        _self: LuaReflectValProxy<bevy::math::UVec3>,
+        rhs: LuaReflectValProxy<bevy::math::UVec3>,
+    ) -> LuaReflectValProxy<bevy::math::UVec3>;
 
 "#,
     r#"
@@ -8088,7 +9472,10 @@ pub struct LuaUVec2 {
 /// In other words this computes `[self.x.saturating_sub(rhs.x), self.y.saturating_sub(rhs.y), ..]`.
 
     #[lua()]
-    fn saturating_sub(self, #[proxy] rhs: bevy::math::UVec3) -> bevy::math::UVec3;
+    fn saturating_sub(
+        _self: LuaReflectValProxy<bevy::math::UVec3>,
+        rhs: LuaReflectValProxy<bevy::math::UVec3>,
+    ) -> LuaReflectValProxy<bevy::math::UVec3>;
 
 "#,
     r#"
@@ -8096,7 +9483,10 @@ pub struct LuaUVec2 {
 /// In other words this computes `[self.x.saturating_mul(rhs.x), self.y.saturating_mul(rhs.y), ..]`.
 
     #[lua()]
-    fn saturating_mul(self, #[proxy] rhs: bevy::math::UVec3) -> bevy::math::UVec3;
+    fn saturating_mul(
+        _self: LuaReflectValProxy<bevy::math::UVec3>,
+        rhs: LuaReflectValProxy<bevy::math::UVec3>,
+    ) -> LuaReflectValProxy<bevy::math::UVec3>;
 
 "#,
     r#"
@@ -8104,49 +9494,69 @@ pub struct LuaUVec2 {
 /// In other words this computes `[self.x.saturating_div(rhs.x), self.y.saturating_div(rhs.y), ..]`.
 
     #[lua()]
-    fn saturating_div(self, #[proxy] rhs: bevy::math::UVec3) -> bevy::math::UVec3;
+    fn saturating_div(
+        _self: LuaReflectValProxy<bevy::math::UVec3>,
+        rhs: LuaReflectValProxy<bevy::math::UVec3>,
+    ) -> LuaReflectValProxy<bevy::math::UVec3>;
 
 "#,
     r#"
 
-    #[lua(as_trait = "std::cmp::PartialEq", composite = "eq")]
-    fn eq(&self, #[proxy] other: &glam::UVec3) -> bool;
+    #[lua(as_trait = "std::cmp::PartialEq::<bevy::math::UVec3>", composite = "eq")]
+    fn eq(
+        _self: LuaReflectRefProxy<bevy::math::UVec3>,
+        other: LuaReflectRefProxy<bevy::math::UVec3>,
+    ) -> bool;
 
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Add", composite = "add")]
-    fn add(self, rhs: u32) -> bevy::math::UVec3;
+    #[lua(as_trait = "std::ops::Add::<u32>", composite = "add")]
+    fn add(
+        _self: LuaReflectValProxy<bevy::math::UVec3>,
+        rhs: u32,
+    ) -> LuaReflectValProxy<bevy::math::UVec3>;
 
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Div", composite = "div")]
-    fn div(self, #[proxy] rhs: bevy::math::UVec3) -> bevy::math::UVec3;
+    #[lua(as_trait = "std::ops::Div::<bevy::math::UVec3>", composite = "div")]
+    fn div(
+        _self: LuaReflectValProxy<bevy::math::UVec3>,
+        rhs: LuaReflectValProxy<bevy::math::UVec3>,
+    ) -> LuaReflectValProxy<bevy::math::UVec3>;
 
 "#,
     r#"
 
     #[lua(as_trait = "std::cmp::Eq")]
-    fn assert_receiver_is_total_eq(&self) -> ();
+    fn assert_receiver_is_total_eq(_self: LuaReflectRefProxy<bevy::math::UVec3>) -> ();
 
 "#,
     r#"
 
     #[lua(as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone")]
-    fn clone(&self) -> bevy::math::UVec3;
+    fn clone(
+        _self: LuaReflectRefProxy<bevy::math::UVec3>,
+    ) -> LuaReflectValProxy<bevy::math::UVec3>;
 
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Add", composite = "add")]
-    fn add(self, #[proxy] rhs: bevy::math::UVec3) -> bevy::math::UVec3;
+    #[lua(as_trait = "std::ops::Add::<bevy::math::UVec3>", composite = "add")]
+    fn add(
+        _self: LuaReflectValProxy<bevy::math::UVec3>,
+        rhs: LuaReflectValProxy<bevy::math::UVec3>,
+    ) -> LuaReflectValProxy<bevy::math::UVec3>;
 
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Sub", composite = "sub")]
-    fn sub(self, rhs: u32) -> bevy::math::UVec3;
+    #[lua(as_trait = "std::ops::Sub::<u32>", composite = "sub")]
+    fn sub(
+        _self: LuaReflectValProxy<bevy::math::UVec3>,
+        rhs: u32,
+    ) -> LuaReflectValProxy<bevy::math::UVec3>;
 
 "#,
     r#"
@@ -8156,19 +9566,19 @@ fn index(&self) -> String {
 }
 "#,
     r#"
-#[lua(raw , metamethod="Index")]
-fn index(&self, lua: &Lua, idx: crate::lua::util::LuaIndex) -> Result<u32,_> {
-    Ok(_self.inner()?[*idx])
+#[lua(metamethod="Index")]
+fn index(self, idx: usize) -> IdentityProxy<u32> {
+    _self[idx - 1]
 }
 "#,
     r#"
-#[lua(raw, metamethod="NewIndex")]
-fn index(&mut self, lua: &Lua, idx: crate::lua::util::LuaIndex, val: u32) -> Result<(),_> {
-    _self.val_mut(|s| Ok(s[*idx] = val))?
+#[lua(metamethod="NewIndex")]
+fn index(&mut self, idx: usize, val: u32) -> () {
+    _self[idx - 1] = val
 }
 "#]
 )]
-pub struct LuaUVec3 {
+pub struct UVec3 {
     x: u32,
     y: u32,
     z: u32,
@@ -8180,58 +9590,76 @@ pub struct LuaUVec3 {
     bms_lua_path = "crate",
     functions[r#"
 
-    #[lua(as_trait = "std::ops::Add", composite = "add")]
-    fn add(self, #[proxy] rhs: bevy::math::UVec4) -> bevy::math::UVec4;
+    #[lua(as_trait = "std::ops::Add::<bevy::math::UVec4>", composite = "add")]
+    fn add(
+        _self: LuaReflectValProxy<bevy::math::UVec4>,
+        rhs: LuaReflectValProxy<bevy::math::UVec4>,
+    ) -> LuaReflectValProxy<bevy::math::UVec4>;
 
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Div", composite = "div")]
-    fn div(self, #[proxy] rhs: bevy::math::UVec4) -> bevy::math::UVec4;
+    #[lua(as_trait = "std::ops::Div::<bevy::math::UVec4>", composite = "div")]
+    fn div(
+        _self: LuaReflectValProxy<bevy::math::UVec4>,
+        rhs: LuaReflectValProxy<bevy::math::UVec4>,
+    ) -> LuaReflectValProxy<bevy::math::UVec4>;
 
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Div", composite = "div")]
-    fn div(self, rhs: u32) -> bevy::math::UVec4;
+    #[lua(as_trait = "std::ops::Div::<u32>", composite = "div")]
+    fn div(
+        _self: LuaReflectValProxy<bevy::math::UVec4>,
+        rhs: u32,
+    ) -> LuaReflectValProxy<bevy::math::UVec4>;
 
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Add", composite = "add")]
-    fn add(self, rhs: u32) -> bevy::math::UVec4;
+    #[lua(as_trait = "std::ops::Add::<u32>", composite = "add")]
+    fn add(
+        _self: LuaReflectValProxy<bevy::math::UVec4>,
+        rhs: u32,
+    ) -> LuaReflectValProxy<bevy::math::UVec4>;
 
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Rem", composite = "rem")]
-    fn rem(self, #[proxy] rhs: bevy::math::UVec4) -> bevy::math::UVec4;
+    #[lua(as_trait = "std::ops::Rem::<bevy::math::UVec4>", composite = "rem")]
+    fn rem(
+        _self: LuaReflectValProxy<bevy::math::UVec4>,
+        rhs: LuaReflectValProxy<bevy::math::UVec4>,
+    ) -> LuaReflectValProxy<bevy::math::UVec4>;
 
 "#,
     r#"
 
     #[lua(as_trait = "std::cmp::Eq")]
-    fn assert_receiver_is_total_eq(&self) -> ();
+    fn assert_receiver_is_total_eq(_self: LuaReflectRefProxy<bevy::math::UVec4>) -> ();
 
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Rem", composite = "rem")]
-    fn rem(self, rhs: u32) -> bevy::math::UVec4;
+    #[lua(as_trait = "std::ops::Rem::<u32>", composite = "rem")]
+    fn rem(
+        _self: LuaReflectValProxy<bevy::math::UVec4>,
+        rhs: u32,
+    ) -> LuaReflectValProxy<bevy::math::UVec4>;
 
 "#,
     r#"
 /// Creates a new vector.
 
     #[lua()]
-    fn new(x: u32, y: u32, z: u32, w: u32) -> bevy::math::UVec4;
+    fn new(x: u32, y: u32, z: u32, w: u32) -> LuaReflectValProxy<bevy::math::UVec4>;
 
 "#,
     r#"
 /// Creates a vector with all elements set to `v`.
 
     #[lua()]
-    fn splat(v: u32) -> bevy::math::UVec4;
+    fn splat(v: u32) -> LuaReflectValProxy<bevy::math::UVec4>;
 
 "#,
     r#"
@@ -8242,27 +9670,24 @@ pub struct LuaUVec3 {
 
     #[lua()]
     fn select(
-        #[proxy]
-        mask: bevy::math::BVec4,
-        #[proxy]
-        if_true: bevy::math::UVec4,
-        #[proxy]
-        if_false: bevy::math::UVec4,
-    ) -> bevy::math::UVec4;
+        mask: LuaReflectValProxy<bevy::math::BVec4>,
+        if_true: LuaReflectValProxy<bevy::math::UVec4>,
+        if_false: LuaReflectValProxy<bevy::math::UVec4>,
+    ) -> LuaReflectValProxy<bevy::math::UVec4>;
 
 "#,
     r#"
 /// Creates a new vector from an array.
 
     #[lua()]
-    fn from_array(a: [u32; 4]) -> bevy::math::UVec4;
+    fn from_array(a: [u32; 4]) -> LuaReflectValProxy<bevy::math::UVec4>;
 
 "#,
     r#"
 /// `[x, y, z, w]`
 
     #[lua()]
-    fn to_array(&self) -> [u32; 4];
+    fn to_array(_self: LuaReflectRefProxy<bevy::math::UVec4>) -> [u32; 4];
 
 "#,
     r#"
@@ -8270,21 +9695,29 @@ pub struct LuaUVec3 {
 /// Truncation to [`UVec3`] may also be performed by using [`self.xyz()`][crate::swizzles::Vec4Swizzles::xyz()].
 
     #[lua()]
-    fn truncate(self) -> bevy::math::UVec3;
+    fn truncate(
+        _self: LuaReflectValProxy<bevy::math::UVec4>,
+    ) -> LuaReflectValProxy<bevy::math::UVec3>;
 
 "#,
     r#"
 /// Computes the dot product of `self` and `rhs`.
 
     #[lua()]
-    fn dot(self, #[proxy] rhs: bevy::math::UVec4) -> u32;
+    fn dot(
+        _self: LuaReflectValProxy<bevy::math::UVec4>,
+        rhs: LuaReflectValProxy<bevy::math::UVec4>,
+    ) -> u32;
 
 "#,
     r#"
 /// Returns a vector where every component is the dot product of `self` and `rhs`.
 
     #[lua()]
-    fn dot_into_vec(self, #[proxy] rhs: bevy::math::UVec4) -> bevy::math::UVec4;
+    fn dot_into_vec(
+        _self: LuaReflectValProxy<bevy::math::UVec4>,
+        rhs: LuaReflectValProxy<bevy::math::UVec4>,
+    ) -> LuaReflectValProxy<bevy::math::UVec4>;
 
 "#,
     r#"
@@ -8292,7 +9725,10 @@ pub struct LuaUVec3 {
 /// In other words this computes `[self.x.min(rhs.x), self.y.min(rhs.y), ..]`.
 
     #[lua()]
-    fn min(self, #[proxy] rhs: bevy::math::UVec4) -> bevy::math::UVec4;
+    fn min(
+        _self: LuaReflectValProxy<bevy::math::UVec4>,
+        rhs: LuaReflectValProxy<bevy::math::UVec4>,
+    ) -> LuaReflectValProxy<bevy::math::UVec4>;
 
 "#,
     r#"
@@ -8300,7 +9736,10 @@ pub struct LuaUVec3 {
 /// In other words this computes `[self.x.max(rhs.x), self.y.max(rhs.y), ..]`.
 
     #[lua()]
-    fn max(self, #[proxy] rhs: bevy::math::UVec4) -> bevy::math::UVec4;
+    fn max(
+        _self: LuaReflectValProxy<bevy::math::UVec4>,
+        rhs: LuaReflectValProxy<bevy::math::UVec4>,
+    ) -> LuaReflectValProxy<bevy::math::UVec4>;
 
 "#,
     r#"
@@ -8311,12 +9750,10 @@ pub struct LuaUVec3 {
 
     #[lua()]
     fn clamp(
-        self,
-        #[proxy]
-        min: bevy::math::UVec4,
-        #[proxy]
-        max: bevy::math::UVec4,
-    ) -> bevy::math::UVec4;
+        _self: LuaReflectValProxy<bevy::math::UVec4>,
+        min: LuaReflectValProxy<bevy::math::UVec4>,
+        max: LuaReflectValProxy<bevy::math::UVec4>,
+    ) -> LuaReflectValProxy<bevy::math::UVec4>;
 
 "#,
     r#"
@@ -8324,7 +9761,7 @@ pub struct LuaUVec3 {
 /// In other words this computes `min(x, y, ..)`.
 
     #[lua()]
-    fn min_element(self) -> u32;
+    fn min_element(_self: LuaReflectValProxy<bevy::math::UVec4>) -> u32;
 
 "#,
     r#"
@@ -8332,7 +9769,7 @@ pub struct LuaUVec3 {
 /// In other words this computes `max(x, y, ..)`.
 
     #[lua()]
-    fn max_element(self) -> u32;
+    fn max_element(_self: LuaReflectValProxy<bevy::math::UVec4>) -> u32;
 
 "#,
     r#"
@@ -8342,7 +9779,10 @@ pub struct LuaUVec3 {
 /// elements.
 
     #[lua()]
-    fn cmpeq(self, #[proxy] rhs: bevy::math::UVec4) -> bevy::math::BVec4;
+    fn cmpeq(
+        _self: LuaReflectValProxy<bevy::math::UVec4>,
+        rhs: LuaReflectValProxy<bevy::math::UVec4>,
+    ) -> LuaReflectValProxy<bevy::math::BVec4>;
 
 "#,
     r#"
@@ -8352,7 +9792,10 @@ pub struct LuaUVec3 {
 /// elements.
 
     #[lua()]
-    fn cmpne(self, #[proxy] rhs: bevy::math::UVec4) -> bevy::math::BVec4;
+    fn cmpne(
+        _self: LuaReflectValProxy<bevy::math::UVec4>,
+        rhs: LuaReflectValProxy<bevy::math::UVec4>,
+    ) -> LuaReflectValProxy<bevy::math::BVec4>;
 
 "#,
     r#"
@@ -8362,7 +9805,10 @@ pub struct LuaUVec3 {
 /// elements.
 
     #[lua()]
-    fn cmpge(self, #[proxy] rhs: bevy::math::UVec4) -> bevy::math::BVec4;
+    fn cmpge(
+        _self: LuaReflectValProxy<bevy::math::UVec4>,
+        rhs: LuaReflectValProxy<bevy::math::UVec4>,
+    ) -> LuaReflectValProxy<bevy::math::BVec4>;
 
 "#,
     r#"
@@ -8372,7 +9818,10 @@ pub struct LuaUVec3 {
 /// elements.
 
     #[lua()]
-    fn cmpgt(self, #[proxy] rhs: bevy::math::UVec4) -> bevy::math::BVec4;
+    fn cmpgt(
+        _self: LuaReflectValProxy<bevy::math::UVec4>,
+        rhs: LuaReflectValProxy<bevy::math::UVec4>,
+    ) -> LuaReflectValProxy<bevy::math::BVec4>;
 
 "#,
     r#"
@@ -8382,7 +9831,10 @@ pub struct LuaUVec3 {
 /// elements.
 
     #[lua()]
-    fn cmple(self, #[proxy] rhs: bevy::math::UVec4) -> bevy::math::BVec4;
+    fn cmple(
+        _self: LuaReflectValProxy<bevy::math::UVec4>,
+        rhs: LuaReflectValProxy<bevy::math::UVec4>,
+    ) -> LuaReflectValProxy<bevy::math::BVec4>;
 
 "#,
     r#"
@@ -8392,49 +9844,62 @@ pub struct LuaUVec3 {
 /// elements.
 
     #[lua()]
-    fn cmplt(self, #[proxy] rhs: bevy::math::UVec4) -> bevy::math::BVec4;
+    fn cmplt(
+        _self: LuaReflectValProxy<bevy::math::UVec4>,
+        rhs: LuaReflectValProxy<bevy::math::UVec4>,
+    ) -> LuaReflectValProxy<bevy::math::BVec4>;
 
 "#,
     r#"
 /// Computes the squared length of `self`.
 
     #[lua()]
-    fn length_squared(self) -> u32;
+    fn length_squared(_self: LuaReflectValProxy<bevy::math::UVec4>) -> u32;
 
 "#,
     r#"
 /// Casts all elements of `self` to `f32`.
 
     #[lua()]
-    fn as_vec4(&self) -> bevy::math::Vec4;
+    fn as_vec4(
+        _self: LuaReflectRefProxy<bevy::math::UVec4>,
+    ) -> LuaReflectValProxy<bevy::math::Vec4>;
 
 "#,
     r#"
 /// Casts all elements of `self` to `f64`.
 
     #[lua()]
-    fn as_dvec4(&self) -> bevy::math::DVec4;
+    fn as_dvec4(
+        _self: LuaReflectRefProxy<bevy::math::UVec4>,
+    ) -> LuaReflectValProxy<bevy::math::DVec4>;
 
 "#,
     r#"
 /// Casts all elements of `self` to `i32`.
 
     #[lua()]
-    fn as_ivec4(&self) -> bevy::math::IVec4;
+    fn as_ivec4(
+        _self: LuaReflectRefProxy<bevy::math::UVec4>,
+    ) -> LuaReflectValProxy<bevy::math::IVec4>;
 
 "#,
     r#"
 /// Casts all elements of `self` to `i64`.
 
     #[lua()]
-    fn as_i64vec4(&self) -> bevy::math::I64Vec4;
+    fn as_i64vec4(
+        _self: LuaReflectRefProxy<bevy::math::UVec4>,
+    ) -> LuaReflectValProxy<bevy::math::I64Vec4>;
 
 "#,
     r#"
 /// Casts all elements of `self` to `u64`.
 
     #[lua()]
-    fn as_u64vec4(&self) -> bevy::math::U64Vec4;
+    fn as_u64vec4(
+        _self: LuaReflectRefProxy<bevy::math::UVec4>,
+    ) -> LuaReflectValProxy<bevy::math::U64Vec4>;
 
 "#,
     r#"
@@ -8442,7 +9907,10 @@ pub struct LuaUVec3 {
 /// In other words this computes `[self.x.wrapping_add(rhs.x), self.y.wrapping_add(rhs.y), ..]`.
 
     #[lua()]
-    fn wrapping_add(self, #[proxy] rhs: bevy::math::UVec4) -> bevy::math::UVec4;
+    fn wrapping_add(
+        _self: LuaReflectValProxy<bevy::math::UVec4>,
+        rhs: LuaReflectValProxy<bevy::math::UVec4>,
+    ) -> LuaReflectValProxy<bevy::math::UVec4>;
 
 "#,
     r#"
@@ -8450,7 +9918,10 @@ pub struct LuaUVec3 {
 /// In other words this computes `[self.x.wrapping_sub(rhs.x), self.y.wrapping_sub(rhs.y), ..]`.
 
     #[lua()]
-    fn wrapping_sub(self, #[proxy] rhs: bevy::math::UVec4) -> bevy::math::UVec4;
+    fn wrapping_sub(
+        _self: LuaReflectValProxy<bevy::math::UVec4>,
+        rhs: LuaReflectValProxy<bevy::math::UVec4>,
+    ) -> LuaReflectValProxy<bevy::math::UVec4>;
 
 "#,
     r#"
@@ -8458,7 +9929,10 @@ pub struct LuaUVec3 {
 /// In other words this computes `[self.x.wrapping_mul(rhs.x), self.y.wrapping_mul(rhs.y), ..]`.
 
     #[lua()]
-    fn wrapping_mul(self, #[proxy] rhs: bevy::math::UVec4) -> bevy::math::UVec4;
+    fn wrapping_mul(
+        _self: LuaReflectValProxy<bevy::math::UVec4>,
+        rhs: LuaReflectValProxy<bevy::math::UVec4>,
+    ) -> LuaReflectValProxy<bevy::math::UVec4>;
 
 "#,
     r#"
@@ -8466,7 +9940,10 @@ pub struct LuaUVec3 {
 /// In other words this computes `[self.x.wrapping_div(rhs.x), self.y.wrapping_div(rhs.y), ..]`.
 
     #[lua()]
-    fn wrapping_div(self, #[proxy] rhs: bevy::math::UVec4) -> bevy::math::UVec4;
+    fn wrapping_div(
+        _self: LuaReflectValProxy<bevy::math::UVec4>,
+        rhs: LuaReflectValProxy<bevy::math::UVec4>,
+    ) -> LuaReflectValProxy<bevy::math::UVec4>;
 
 "#,
     r#"
@@ -8474,7 +9951,10 @@ pub struct LuaUVec3 {
 /// In other words this computes `[self.x.saturating_add(rhs.x), self.y.saturating_add(rhs.y), ..]`.
 
     #[lua()]
-    fn saturating_add(self, #[proxy] rhs: bevy::math::UVec4) -> bevy::math::UVec4;
+    fn saturating_add(
+        _self: LuaReflectValProxy<bevy::math::UVec4>,
+        rhs: LuaReflectValProxy<bevy::math::UVec4>,
+    ) -> LuaReflectValProxy<bevy::math::UVec4>;
 
 "#,
     r#"
@@ -8482,7 +9962,10 @@ pub struct LuaUVec3 {
 /// In other words this computes `[self.x.saturating_sub(rhs.x), self.y.saturating_sub(rhs.y), ..]`.
 
     #[lua()]
-    fn saturating_sub(self, #[proxy] rhs: bevy::math::UVec4) -> bevy::math::UVec4;
+    fn saturating_sub(
+        _self: LuaReflectValProxy<bevy::math::UVec4>,
+        rhs: LuaReflectValProxy<bevy::math::UVec4>,
+    ) -> LuaReflectValProxy<bevy::math::UVec4>;
 
 "#,
     r#"
@@ -8490,7 +9973,10 @@ pub struct LuaUVec3 {
 /// In other words this computes `[self.x.saturating_mul(rhs.x), self.y.saturating_mul(rhs.y), ..]`.
 
     #[lua()]
-    fn saturating_mul(self, #[proxy] rhs: bevy::math::UVec4) -> bevy::math::UVec4;
+    fn saturating_mul(
+        _self: LuaReflectValProxy<bevy::math::UVec4>,
+        rhs: LuaReflectValProxy<bevy::math::UVec4>,
+    ) -> LuaReflectValProxy<bevy::math::UVec4>;
 
 "#,
     r#"
@@ -8498,43 +9984,63 @@ pub struct LuaUVec3 {
 /// In other words this computes `[self.x.saturating_div(rhs.x), self.y.saturating_div(rhs.y), ..]`.
 
     #[lua()]
-    fn saturating_div(self, #[proxy] rhs: bevy::math::UVec4) -> bevy::math::UVec4;
+    fn saturating_div(
+        _self: LuaReflectValProxy<bevy::math::UVec4>,
+        rhs: LuaReflectValProxy<bevy::math::UVec4>,
+    ) -> LuaReflectValProxy<bevy::math::UVec4>;
 
 "#,
     r#"
 
-    #[lua(as_trait = "std::cmp::PartialEq", composite = "eq")]
-    fn eq(&self, #[proxy] other: &glam::UVec4) -> bool;
+    #[lua(as_trait = "std::cmp::PartialEq::<bevy::math::UVec4>", composite = "eq")]
+    fn eq(
+        _self: LuaReflectRefProxy<bevy::math::UVec4>,
+        other: LuaReflectRefProxy<bevy::math::UVec4>,
+    ) -> bool;
 
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Sub", composite = "sub")]
-    fn sub(self, rhs: u32) -> bevy::math::UVec4;
+    #[lua(as_trait = "std::ops::Sub::<u32>", composite = "sub")]
+    fn sub(
+        _self: LuaReflectValProxy<bevy::math::UVec4>,
+        rhs: u32,
+    ) -> LuaReflectValProxy<bevy::math::UVec4>;
 
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Sub", composite = "sub")]
-    fn sub(self, #[proxy] rhs: bevy::math::UVec4) -> bevy::math::UVec4;
+    #[lua(as_trait = "std::ops::Sub::<bevy::math::UVec4>", composite = "sub")]
+    fn sub(
+        _self: LuaReflectValProxy<bevy::math::UVec4>,
+        rhs: LuaReflectValProxy<bevy::math::UVec4>,
+    ) -> LuaReflectValProxy<bevy::math::UVec4>;
 
 "#,
     r#"
 
     #[lua(as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone")]
-    fn clone(&self) -> bevy::math::UVec4;
+    fn clone(
+        _self: LuaReflectRefProxy<bevy::math::UVec4>,
+    ) -> LuaReflectValProxy<bevy::math::UVec4>;
 
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Mul", composite = "mul")]
-    fn mul(self, rhs: u32) -> bevy::math::UVec4;
+    #[lua(as_trait = "std::ops::Mul::<u32>", composite = "mul")]
+    fn mul(
+        _self: LuaReflectValProxy<bevy::math::UVec4>,
+        rhs: u32,
+    ) -> LuaReflectValProxy<bevy::math::UVec4>;
 
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Mul", composite = "mul")]
-    fn mul(self, #[proxy] rhs: bevy::math::UVec4) -> bevy::math::UVec4;
+    #[lua(as_trait = "std::ops::Mul::<bevy::math::UVec4>", composite = "mul")]
+    fn mul(
+        _self: LuaReflectValProxy<bevy::math::UVec4>,
+        rhs: LuaReflectValProxy<bevy::math::UVec4>,
+    ) -> LuaReflectValProxy<bevy::math::UVec4>;
 
 "#,
     r#"
@@ -8544,19 +10050,19 @@ fn index(&self) -> String {
 }
 "#,
     r#"
-#[lua(raw , metamethod="Index")]
-fn index(&self, lua: &Lua, idx: crate::lua::util::LuaIndex) -> Result<u32,_> {
-    Ok(_self.inner()?[*idx])
+#[lua(metamethod="Index")]
+fn index(self, idx: usize) -> IdentityProxy<u32> {
+    _self[idx - 1]
 }
 "#,
     r#"
-#[lua(raw, metamethod="NewIndex")]
-fn index(&mut self, lua: &Lua, idx: crate::lua::util::LuaIndex, val: u32) -> Result<(),_> {
-    _self.val_mut(|s| Ok(s[*idx] = val))?
+#[lua(metamethod="NewIndex")]
+fn index(&mut self, idx: usize, val: u32) -> () {
+    _self[idx - 1] = val
 }
 "#]
 )]
-pub struct LuaUVec4 {
+pub struct UVec4 {
     x: u32,
     y: u32,
     z: u32,
@@ -8569,22 +10075,25 @@ pub struct LuaUVec4 {
     bms_lua_path = "crate",
     functions[r#"
 
-    #[lua(as_trait = "std::ops::Mul", composite = "mul")]
-    fn mul(self, rhs: u64) -> bevy::math::U64Vec2;
+    #[lua(as_trait = "std::ops::Mul::<u64>", composite = "mul")]
+    fn mul(
+        _self: LuaReflectValProxy<bevy::math::U64Vec2>,
+        rhs: u64,
+    ) -> LuaReflectValProxy<bevy::math::U64Vec2>;
 
 "#,
     r#"
 /// Creates a new vector.
 
     #[lua()]
-    fn new(x: u64, y: u64) -> bevy::math::U64Vec2;
+    fn new(x: u64, y: u64) -> LuaReflectValProxy<bevy::math::U64Vec2>;
 
 "#,
     r#"
 /// Creates a vector with all elements set to `v`.
 
     #[lua()]
-    fn splat(v: u64) -> bevy::math::U64Vec2;
+    fn splat(v: u64) -> LuaReflectValProxy<bevy::math::U64Vec2>;
 
 "#,
     r#"
@@ -8595,48 +10104,54 @@ pub struct LuaUVec4 {
 
     #[lua()]
     fn select(
-        #[proxy]
-        mask: bevy::math::BVec2,
-        #[proxy]
-        if_true: bevy::math::U64Vec2,
-        #[proxy]
-        if_false: bevy::math::U64Vec2,
-    ) -> bevy::math::U64Vec2;
+        mask: LuaReflectValProxy<bevy::math::BVec2>,
+        if_true: LuaReflectValProxy<bevy::math::U64Vec2>,
+        if_false: LuaReflectValProxy<bevy::math::U64Vec2>,
+    ) -> LuaReflectValProxy<bevy::math::U64Vec2>;
 
 "#,
     r#"
 /// Creates a new vector from an array.
 
     #[lua()]
-    fn from_array(a: [u64; 2]) -> bevy::math::U64Vec2;
+    fn from_array(a: [u64; 2]) -> LuaReflectValProxy<bevy::math::U64Vec2>;
 
 "#,
     r#"
 /// `[x, y]`
 
     #[lua()]
-    fn to_array(&self) -> [u64; 2];
+    fn to_array(_self: LuaReflectRefProxy<bevy::math::U64Vec2>) -> [u64; 2];
 
 "#,
     r#"
 /// Creates a 3D vector from `self` and the given `z` value.
 
     #[lua()]
-    fn extend(self, z: u64) -> bevy::math::U64Vec3;
+    fn extend(
+        _self: LuaReflectValProxy<bevy::math::U64Vec2>,
+        z: u64,
+    ) -> LuaReflectValProxy<bevy::math::U64Vec3>;
 
 "#,
     r#"
 /// Computes the dot product of `self` and `rhs`.
 
     #[lua()]
-    fn dot(self, #[proxy] rhs: bevy::math::U64Vec2) -> u64;
+    fn dot(
+        _self: LuaReflectValProxy<bevy::math::U64Vec2>,
+        rhs: LuaReflectValProxy<bevy::math::U64Vec2>,
+    ) -> u64;
 
 "#,
     r#"
 /// Returns a vector where every component is the dot product of `self` and `rhs`.
 
     #[lua()]
-    fn dot_into_vec(self, #[proxy] rhs: bevy::math::U64Vec2) -> bevy::math::U64Vec2;
+    fn dot_into_vec(
+        _self: LuaReflectValProxy<bevy::math::U64Vec2>,
+        rhs: LuaReflectValProxy<bevy::math::U64Vec2>,
+    ) -> LuaReflectValProxy<bevy::math::U64Vec2>;
 
 "#,
     r#"
@@ -8644,7 +10159,10 @@ pub struct LuaUVec4 {
 /// In other words this computes `[self.x.min(rhs.x), self.y.min(rhs.y), ..]`.
 
     #[lua()]
-    fn min(self, #[proxy] rhs: bevy::math::U64Vec2) -> bevy::math::U64Vec2;
+    fn min(
+        _self: LuaReflectValProxy<bevy::math::U64Vec2>,
+        rhs: LuaReflectValProxy<bevy::math::U64Vec2>,
+    ) -> LuaReflectValProxy<bevy::math::U64Vec2>;
 
 "#,
     r#"
@@ -8652,7 +10170,10 @@ pub struct LuaUVec4 {
 /// In other words this computes `[self.x.max(rhs.x), self.y.max(rhs.y), ..]`.
 
     #[lua()]
-    fn max(self, #[proxy] rhs: bevy::math::U64Vec2) -> bevy::math::U64Vec2;
+    fn max(
+        _self: LuaReflectValProxy<bevy::math::U64Vec2>,
+        rhs: LuaReflectValProxy<bevy::math::U64Vec2>,
+    ) -> LuaReflectValProxy<bevy::math::U64Vec2>;
 
 "#,
     r#"
@@ -8663,12 +10184,10 @@ pub struct LuaUVec4 {
 
     #[lua()]
     fn clamp(
-        self,
-        #[proxy]
-        min: bevy::math::U64Vec2,
-        #[proxy]
-        max: bevy::math::U64Vec2,
-    ) -> bevy::math::U64Vec2;
+        _self: LuaReflectValProxy<bevy::math::U64Vec2>,
+        min: LuaReflectValProxy<bevy::math::U64Vec2>,
+        max: LuaReflectValProxy<bevy::math::U64Vec2>,
+    ) -> LuaReflectValProxy<bevy::math::U64Vec2>;
 
 "#,
     r#"
@@ -8676,7 +10195,7 @@ pub struct LuaUVec4 {
 /// In other words this computes `min(x, y, ..)`.
 
     #[lua()]
-    fn min_element(self) -> u64;
+    fn min_element(_self: LuaReflectValProxy<bevy::math::U64Vec2>) -> u64;
 
 "#,
     r#"
@@ -8684,7 +10203,7 @@ pub struct LuaUVec4 {
 /// In other words this computes `max(x, y, ..)`.
 
     #[lua()]
-    fn max_element(self) -> u64;
+    fn max_element(_self: LuaReflectValProxy<bevy::math::U64Vec2>) -> u64;
 
 "#,
     r#"
@@ -8694,7 +10213,10 @@ pub struct LuaUVec4 {
 /// elements.
 
     #[lua()]
-    fn cmpeq(self, #[proxy] rhs: bevy::math::U64Vec2) -> bevy::math::BVec2;
+    fn cmpeq(
+        _self: LuaReflectValProxy<bevy::math::U64Vec2>,
+        rhs: LuaReflectValProxy<bevy::math::U64Vec2>,
+    ) -> LuaReflectValProxy<bevy::math::BVec2>;
 
 "#,
     r#"
@@ -8704,7 +10226,10 @@ pub struct LuaUVec4 {
 /// elements.
 
     #[lua()]
-    fn cmpne(self, #[proxy] rhs: bevy::math::U64Vec2) -> bevy::math::BVec2;
+    fn cmpne(
+        _self: LuaReflectValProxy<bevy::math::U64Vec2>,
+        rhs: LuaReflectValProxy<bevy::math::U64Vec2>,
+    ) -> LuaReflectValProxy<bevy::math::BVec2>;
 
 "#,
     r#"
@@ -8714,7 +10239,10 @@ pub struct LuaUVec4 {
 /// elements.
 
     #[lua()]
-    fn cmpge(self, #[proxy] rhs: bevy::math::U64Vec2) -> bevy::math::BVec2;
+    fn cmpge(
+        _self: LuaReflectValProxy<bevy::math::U64Vec2>,
+        rhs: LuaReflectValProxy<bevy::math::U64Vec2>,
+    ) -> LuaReflectValProxy<bevy::math::BVec2>;
 
 "#,
     r#"
@@ -8724,7 +10252,10 @@ pub struct LuaUVec4 {
 /// elements.
 
     #[lua()]
-    fn cmpgt(self, #[proxy] rhs: bevy::math::U64Vec2) -> bevy::math::BVec2;
+    fn cmpgt(
+        _self: LuaReflectValProxy<bevy::math::U64Vec2>,
+        rhs: LuaReflectValProxy<bevy::math::U64Vec2>,
+    ) -> LuaReflectValProxy<bevy::math::BVec2>;
 
 "#,
     r#"
@@ -8734,7 +10265,10 @@ pub struct LuaUVec4 {
 /// elements.
 
     #[lua()]
-    fn cmple(self, #[proxy] rhs: bevy::math::U64Vec2) -> bevy::math::BVec2;
+    fn cmple(
+        _self: LuaReflectValProxy<bevy::math::U64Vec2>,
+        rhs: LuaReflectValProxy<bevy::math::U64Vec2>,
+    ) -> LuaReflectValProxy<bevy::math::BVec2>;
 
 "#,
     r#"
@@ -8744,49 +10278,62 @@ pub struct LuaUVec4 {
 /// elements.
 
     #[lua()]
-    fn cmplt(self, #[proxy] rhs: bevy::math::U64Vec2) -> bevy::math::BVec2;
+    fn cmplt(
+        _self: LuaReflectValProxy<bevy::math::U64Vec2>,
+        rhs: LuaReflectValProxy<bevy::math::U64Vec2>,
+    ) -> LuaReflectValProxy<bevy::math::BVec2>;
 
 "#,
     r#"
 /// Computes the squared length of `self`.
 
     #[lua()]
-    fn length_squared(self) -> u64;
+    fn length_squared(_self: LuaReflectValProxy<bevy::math::U64Vec2>) -> u64;
 
 "#,
     r#"
 /// Casts all elements of `self` to `f32`.
 
     #[lua()]
-    fn as_vec2(&self) -> bevy::math::Vec2;
+    fn as_vec2(
+        _self: LuaReflectRefProxy<bevy::math::U64Vec2>,
+    ) -> LuaReflectValProxy<bevy::math::Vec2>;
 
 "#,
     r#"
 /// Casts all elements of `self` to `f64`.
 
     #[lua()]
-    fn as_dvec2(&self) -> bevy::math::DVec2;
+    fn as_dvec2(
+        _self: LuaReflectRefProxy<bevy::math::U64Vec2>,
+    ) -> LuaReflectValProxy<bevy::math::DVec2>;
 
 "#,
     r#"
 /// Casts all elements of `self` to `i32`.
 
     #[lua()]
-    fn as_ivec2(&self) -> bevy::math::IVec2;
+    fn as_ivec2(
+        _self: LuaReflectRefProxy<bevy::math::U64Vec2>,
+    ) -> LuaReflectValProxy<bevy::math::IVec2>;
 
 "#,
     r#"
 /// Casts all elements of `self` to `u32`.
 
     #[lua()]
-    fn as_uvec2(&self) -> bevy::math::UVec2;
+    fn as_uvec2(
+        _self: LuaReflectRefProxy<bevy::math::U64Vec2>,
+    ) -> LuaReflectValProxy<bevy::math::UVec2>;
 
 "#,
     r#"
 /// Casts all elements of `self` to `i64`.
 
     #[lua()]
-    fn as_i64vec2(&self) -> bevy::math::I64Vec2;
+    fn as_i64vec2(
+        _self: LuaReflectRefProxy<bevy::math::U64Vec2>,
+    ) -> LuaReflectValProxy<bevy::math::I64Vec2>;
 
 "#,
     r#"
@@ -8794,7 +10341,10 @@ pub struct LuaUVec4 {
 /// In other words this computes `[self.x.wrapping_add(rhs.x), self.y.wrapping_add(rhs.y), ..]`.
 
     #[lua()]
-    fn wrapping_add(self, #[proxy] rhs: bevy::math::U64Vec2) -> bevy::math::U64Vec2;
+    fn wrapping_add(
+        _self: LuaReflectValProxy<bevy::math::U64Vec2>,
+        rhs: LuaReflectValProxy<bevy::math::U64Vec2>,
+    ) -> LuaReflectValProxy<bevy::math::U64Vec2>;
 
 "#,
     r#"
@@ -8802,7 +10352,10 @@ pub struct LuaUVec4 {
 /// In other words this computes `[self.x.wrapping_sub(rhs.x), self.y.wrapping_sub(rhs.y), ..]`.
 
     #[lua()]
-    fn wrapping_sub(self, #[proxy] rhs: bevy::math::U64Vec2) -> bevy::math::U64Vec2;
+    fn wrapping_sub(
+        _self: LuaReflectValProxy<bevy::math::U64Vec2>,
+        rhs: LuaReflectValProxy<bevy::math::U64Vec2>,
+    ) -> LuaReflectValProxy<bevy::math::U64Vec2>;
 
 "#,
     r#"
@@ -8810,7 +10363,10 @@ pub struct LuaUVec4 {
 /// In other words this computes `[self.x.wrapping_mul(rhs.x), self.y.wrapping_mul(rhs.y), ..]`.
 
     #[lua()]
-    fn wrapping_mul(self, #[proxy] rhs: bevy::math::U64Vec2) -> bevy::math::U64Vec2;
+    fn wrapping_mul(
+        _self: LuaReflectValProxy<bevy::math::U64Vec2>,
+        rhs: LuaReflectValProxy<bevy::math::U64Vec2>,
+    ) -> LuaReflectValProxy<bevy::math::U64Vec2>;
 
 "#,
     r#"
@@ -8818,7 +10374,10 @@ pub struct LuaUVec4 {
 /// In other words this computes `[self.x.wrapping_div(rhs.x), self.y.wrapping_div(rhs.y), ..]`.
 
     #[lua()]
-    fn wrapping_div(self, #[proxy] rhs: bevy::math::U64Vec2) -> bevy::math::U64Vec2;
+    fn wrapping_div(
+        _self: LuaReflectValProxy<bevy::math::U64Vec2>,
+        rhs: LuaReflectValProxy<bevy::math::U64Vec2>,
+    ) -> LuaReflectValProxy<bevy::math::U64Vec2>;
 
 "#,
     r#"
@@ -8826,7 +10385,10 @@ pub struct LuaUVec4 {
 /// In other words this computes `[self.x.saturating_add(rhs.x), self.y.saturating_add(rhs.y), ..]`.
 
     #[lua()]
-    fn saturating_add(self, #[proxy] rhs: bevy::math::U64Vec2) -> bevy::math::U64Vec2;
+    fn saturating_add(
+        _self: LuaReflectValProxy<bevy::math::U64Vec2>,
+        rhs: LuaReflectValProxy<bevy::math::U64Vec2>,
+    ) -> LuaReflectValProxy<bevy::math::U64Vec2>;
 
 "#,
     r#"
@@ -8834,7 +10396,10 @@ pub struct LuaUVec4 {
 /// In other words this computes `[self.x.saturating_sub(rhs.x), self.y.saturating_sub(rhs.y), ..]`.
 
     #[lua()]
-    fn saturating_sub(self, #[proxy] rhs: bevy::math::U64Vec2) -> bevy::math::U64Vec2;
+    fn saturating_sub(
+        _self: LuaReflectValProxy<bevy::math::U64Vec2>,
+        rhs: LuaReflectValProxy<bevy::math::U64Vec2>,
+    ) -> LuaReflectValProxy<bevy::math::U64Vec2>;
 
 "#,
     r#"
@@ -8842,7 +10407,10 @@ pub struct LuaUVec4 {
 /// In other words this computes `[self.x.saturating_mul(rhs.x), self.y.saturating_mul(rhs.y), ..]`.
 
     #[lua()]
-    fn saturating_mul(self, #[proxy] rhs: bevy::math::U64Vec2) -> bevy::math::U64Vec2;
+    fn saturating_mul(
+        _self: LuaReflectValProxy<bevy::math::U64Vec2>,
+        rhs: LuaReflectValProxy<bevy::math::U64Vec2>,
+    ) -> LuaReflectValProxy<bevy::math::U64Vec2>;
 
 "#,
     r#"
@@ -8850,79 +10418,114 @@ pub struct LuaUVec4 {
 /// In other words this computes `[self.x.saturating_div(rhs.x), self.y.saturating_div(rhs.y), ..]`.
 
     #[lua()]
-    fn saturating_div(self, #[proxy] rhs: bevy::math::U64Vec2) -> bevy::math::U64Vec2;
+    fn saturating_div(
+        _self: LuaReflectValProxy<bevy::math::U64Vec2>,
+        rhs: LuaReflectValProxy<bevy::math::U64Vec2>,
+    ) -> LuaReflectValProxy<bevy::math::U64Vec2>;
 
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Mul", composite = "mul")]
-    fn mul(self, #[proxy] rhs: bevy::math::U64Vec2) -> bevy::math::U64Vec2;
+    #[lua(as_trait = "std::ops::Mul::<bevy::math::U64Vec2>", composite = "mul")]
+    fn mul(
+        _self: LuaReflectValProxy<bevy::math::U64Vec2>,
+        rhs: LuaReflectValProxy<bevy::math::U64Vec2>,
+    ) -> LuaReflectValProxy<bevy::math::U64Vec2>;
 
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Add", composite = "add")]
-    fn add(self, rhs: u64) -> bevy::math::U64Vec2;
+    #[lua(as_trait = "std::ops::Add::<u64>", composite = "add")]
+    fn add(
+        _self: LuaReflectValProxy<bevy::math::U64Vec2>,
+        rhs: u64,
+    ) -> LuaReflectValProxy<bevy::math::U64Vec2>;
 
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Rem", composite = "rem")]
-    fn rem(self, rhs: u64) -> bevy::math::U64Vec2;
+    #[lua(as_trait = "std::ops::Rem::<u64>", composite = "rem")]
+    fn rem(
+        _self: LuaReflectValProxy<bevy::math::U64Vec2>,
+        rhs: u64,
+    ) -> LuaReflectValProxy<bevy::math::U64Vec2>;
 
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Rem", composite = "rem")]
-    fn rem(self, #[proxy] rhs: bevy::math::U64Vec2) -> bevy::math::U64Vec2;
+    #[lua(as_trait = "std::ops::Rem::<bevy::math::U64Vec2>", composite = "rem")]
+    fn rem(
+        _self: LuaReflectValProxy<bevy::math::U64Vec2>,
+        rhs: LuaReflectValProxy<bevy::math::U64Vec2>,
+    ) -> LuaReflectValProxy<bevy::math::U64Vec2>;
 
 "#,
     r#"
 
     #[lua(as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone")]
-    fn clone(&self) -> bevy::math::U64Vec2;
+    fn clone(
+        _self: LuaReflectRefProxy<bevy::math::U64Vec2>,
+    ) -> LuaReflectValProxy<bevy::math::U64Vec2>;
 
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Sub", composite = "sub")]
-    fn sub(self, #[proxy] rhs: bevy::math::U64Vec2) -> bevy::math::U64Vec2;
+    #[lua(as_trait = "std::ops::Sub::<bevy::math::U64Vec2>", composite = "sub")]
+    fn sub(
+        _self: LuaReflectValProxy<bevy::math::U64Vec2>,
+        rhs: LuaReflectValProxy<bevy::math::U64Vec2>,
+    ) -> LuaReflectValProxy<bevy::math::U64Vec2>;
 
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Add", composite = "add")]
-    fn add(self, #[proxy] rhs: bevy::math::U64Vec2) -> bevy::math::U64Vec2;
+    #[lua(as_trait = "std::ops::Add::<bevy::math::U64Vec2>", composite = "add")]
+    fn add(
+        _self: LuaReflectValProxy<bevy::math::U64Vec2>,
+        rhs: LuaReflectValProxy<bevy::math::U64Vec2>,
+    ) -> LuaReflectValProxy<bevy::math::U64Vec2>;
 
 "#,
     r#"
 
-    #[lua(as_trait = "std::cmp::PartialEq", composite = "eq")]
-    fn eq(&self, #[proxy] other: &glam::U64Vec2) -> bool;
+    #[lua(as_trait = "std::cmp::PartialEq::<bevy::math::U64Vec2>", composite = "eq")]
+    fn eq(
+        _self: LuaReflectRefProxy<bevy::math::U64Vec2>,
+        other: LuaReflectRefProxy<bevy::math::U64Vec2>,
+    ) -> bool;
 
 "#,
     r#"
 
     #[lua(as_trait = "std::cmp::Eq")]
-    fn assert_receiver_is_total_eq(&self) -> ();
+    fn assert_receiver_is_total_eq(_self: LuaReflectRefProxy<bevy::math::U64Vec2>) -> ();
 
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Sub", composite = "sub")]
-    fn sub(self, rhs: u64) -> bevy::math::U64Vec2;
+    #[lua(as_trait = "std::ops::Sub::<u64>", composite = "sub")]
+    fn sub(
+        _self: LuaReflectValProxy<bevy::math::U64Vec2>,
+        rhs: u64,
+    ) -> LuaReflectValProxy<bevy::math::U64Vec2>;
 
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Div", composite = "div")]
-    fn div(self, #[proxy] rhs: bevy::math::U64Vec2) -> bevy::math::U64Vec2;
+    #[lua(as_trait = "std::ops::Div::<bevy::math::U64Vec2>", composite = "div")]
+    fn div(
+        _self: LuaReflectValProxy<bevy::math::U64Vec2>,
+        rhs: LuaReflectValProxy<bevy::math::U64Vec2>,
+    ) -> LuaReflectValProxy<bevy::math::U64Vec2>;
 
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Div", composite = "div")]
-    fn div(self, rhs: u64) -> bevy::math::U64Vec2;
+    #[lua(as_trait = "std::ops::Div::<u64>", composite = "div")]
+    fn div(
+        _self: LuaReflectValProxy<bevy::math::U64Vec2>,
+        rhs: u64,
+    ) -> LuaReflectValProxy<bevy::math::U64Vec2>;
 
 "#,
     r#"
@@ -8932,7 +10535,7 @@ fn index(&self) -> String {
 }
 "#]
 )]
-pub struct LuaU64Vec2 {
+pub struct U64Vec2 {
     x: u64,
     y: u64,
 }
@@ -8943,22 +10546,25 @@ pub struct LuaU64Vec2 {
     bms_lua_path = "crate",
     functions[r#"
 
-    #[lua(as_trait = "std::ops::Sub", composite = "sub")]
-    fn sub(self, rhs: u64) -> bevy::math::U64Vec3;
+    #[lua(as_trait = "std::ops::Sub::<u64>", composite = "sub")]
+    fn sub(
+        _self: LuaReflectValProxy<bevy::math::U64Vec3>,
+        rhs: u64,
+    ) -> LuaReflectValProxy<bevy::math::U64Vec3>;
 
 "#,
     r#"
 /// Creates a new vector.
 
     #[lua()]
-    fn new(x: u64, y: u64, z: u64) -> bevy::math::U64Vec3;
+    fn new(x: u64, y: u64, z: u64) -> LuaReflectValProxy<bevy::math::U64Vec3>;
 
 "#,
     r#"
 /// Creates a vector with all elements set to `v`.
 
     #[lua()]
-    fn splat(v: u64) -> bevy::math::U64Vec3;
+    fn splat(v: u64) -> LuaReflectValProxy<bevy::math::U64Vec3>;
 
 "#,
     r#"
@@ -8969,34 +10575,34 @@ pub struct LuaU64Vec2 {
 
     #[lua()]
     fn select(
-        #[proxy]
-        mask: bevy::math::BVec3,
-        #[proxy]
-        if_true: bevy::math::U64Vec3,
-        #[proxy]
-        if_false: bevy::math::U64Vec3,
-    ) -> bevy::math::U64Vec3;
+        mask: LuaReflectValProxy<bevy::math::BVec3>,
+        if_true: LuaReflectValProxy<bevy::math::U64Vec3>,
+        if_false: LuaReflectValProxy<bevy::math::U64Vec3>,
+    ) -> LuaReflectValProxy<bevy::math::U64Vec3>;
 
 "#,
     r#"
 /// Creates a new vector from an array.
 
     #[lua()]
-    fn from_array(a: [u64; 3]) -> bevy::math::U64Vec3;
+    fn from_array(a: [u64; 3]) -> LuaReflectValProxy<bevy::math::U64Vec3>;
 
 "#,
     r#"
 /// `[x, y, z]`
 
     #[lua()]
-    fn to_array(&self) -> [u64; 3];
+    fn to_array(_self: LuaReflectRefProxy<bevy::math::U64Vec3>) -> [u64; 3];
 
 "#,
     r#"
 /// Creates a 4D vector from `self` and the given `w` value.
 
     #[lua()]
-    fn extend(self, w: u64) -> bevy::math::U64Vec4;
+    fn extend(
+        _self: LuaReflectValProxy<bevy::math::U64Vec3>,
+        w: u64,
+    ) -> LuaReflectValProxy<bevy::math::U64Vec4>;
 
 "#,
     r#"
@@ -9004,28 +10610,39 @@ pub struct LuaU64Vec2 {
 /// Truncation may also be performed by using [`self.xy()`][crate::swizzles::Vec3Swizzles::xy()].
 
     #[lua()]
-    fn truncate(self) -> bevy::math::U64Vec2;
+    fn truncate(
+        _self: LuaReflectValProxy<bevy::math::U64Vec3>,
+    ) -> LuaReflectValProxy<bevy::math::U64Vec2>;
 
 "#,
     r#"
 /// Computes the dot product of `self` and `rhs`.
 
     #[lua()]
-    fn dot(self, #[proxy] rhs: bevy::math::U64Vec3) -> u64;
+    fn dot(
+        _self: LuaReflectValProxy<bevy::math::U64Vec3>,
+        rhs: LuaReflectValProxy<bevy::math::U64Vec3>,
+    ) -> u64;
 
 "#,
     r#"
 /// Returns a vector where every component is the dot product of `self` and `rhs`.
 
     #[lua()]
-    fn dot_into_vec(self, #[proxy] rhs: bevy::math::U64Vec3) -> bevy::math::U64Vec3;
+    fn dot_into_vec(
+        _self: LuaReflectValProxy<bevy::math::U64Vec3>,
+        rhs: LuaReflectValProxy<bevy::math::U64Vec3>,
+    ) -> LuaReflectValProxy<bevy::math::U64Vec3>;
 
 "#,
     r#"
 /// Computes the cross product of `self` and `rhs`.
 
     #[lua()]
-    fn cross(self, #[proxy] rhs: bevy::math::U64Vec3) -> bevy::math::U64Vec3;
+    fn cross(
+        _self: LuaReflectValProxy<bevy::math::U64Vec3>,
+        rhs: LuaReflectValProxy<bevy::math::U64Vec3>,
+    ) -> LuaReflectValProxy<bevy::math::U64Vec3>;
 
 "#,
     r#"
@@ -9033,7 +10650,10 @@ pub struct LuaU64Vec2 {
 /// In other words this computes `[self.x.min(rhs.x), self.y.min(rhs.y), ..]`.
 
     #[lua()]
-    fn min(self, #[proxy] rhs: bevy::math::U64Vec3) -> bevy::math::U64Vec3;
+    fn min(
+        _self: LuaReflectValProxy<bevy::math::U64Vec3>,
+        rhs: LuaReflectValProxy<bevy::math::U64Vec3>,
+    ) -> LuaReflectValProxy<bevy::math::U64Vec3>;
 
 "#,
     r#"
@@ -9041,7 +10661,10 @@ pub struct LuaU64Vec2 {
 /// In other words this computes `[self.x.max(rhs.x), self.y.max(rhs.y), ..]`.
 
     #[lua()]
-    fn max(self, #[proxy] rhs: bevy::math::U64Vec3) -> bevy::math::U64Vec3;
+    fn max(
+        _self: LuaReflectValProxy<bevy::math::U64Vec3>,
+        rhs: LuaReflectValProxy<bevy::math::U64Vec3>,
+    ) -> LuaReflectValProxy<bevy::math::U64Vec3>;
 
 "#,
     r#"
@@ -9052,12 +10675,10 @@ pub struct LuaU64Vec2 {
 
     #[lua()]
     fn clamp(
-        self,
-        #[proxy]
-        min: bevy::math::U64Vec3,
-        #[proxy]
-        max: bevy::math::U64Vec3,
-    ) -> bevy::math::U64Vec3;
+        _self: LuaReflectValProxy<bevy::math::U64Vec3>,
+        min: LuaReflectValProxy<bevy::math::U64Vec3>,
+        max: LuaReflectValProxy<bevy::math::U64Vec3>,
+    ) -> LuaReflectValProxy<bevy::math::U64Vec3>;
 
 "#,
     r#"
@@ -9065,7 +10686,7 @@ pub struct LuaU64Vec2 {
 /// In other words this computes `min(x, y, ..)`.
 
     #[lua()]
-    fn min_element(self) -> u64;
+    fn min_element(_self: LuaReflectValProxy<bevy::math::U64Vec3>) -> u64;
 
 "#,
     r#"
@@ -9073,7 +10694,7 @@ pub struct LuaU64Vec2 {
 /// In other words this computes `max(x, y, ..)`.
 
     #[lua()]
-    fn max_element(self) -> u64;
+    fn max_element(_self: LuaReflectValProxy<bevy::math::U64Vec3>) -> u64;
 
 "#,
     r#"
@@ -9083,7 +10704,10 @@ pub struct LuaU64Vec2 {
 /// elements.
 
     #[lua()]
-    fn cmpeq(self, #[proxy] rhs: bevy::math::U64Vec3) -> bevy::math::BVec3;
+    fn cmpeq(
+        _self: LuaReflectValProxy<bevy::math::U64Vec3>,
+        rhs: LuaReflectValProxy<bevy::math::U64Vec3>,
+    ) -> LuaReflectValProxy<bevy::math::BVec3>;
 
 "#,
     r#"
@@ -9093,7 +10717,10 @@ pub struct LuaU64Vec2 {
 /// elements.
 
     #[lua()]
-    fn cmpne(self, #[proxy] rhs: bevy::math::U64Vec3) -> bevy::math::BVec3;
+    fn cmpne(
+        _self: LuaReflectValProxy<bevy::math::U64Vec3>,
+        rhs: LuaReflectValProxy<bevy::math::U64Vec3>,
+    ) -> LuaReflectValProxy<bevy::math::BVec3>;
 
 "#,
     r#"
@@ -9103,7 +10730,10 @@ pub struct LuaU64Vec2 {
 /// elements.
 
     #[lua()]
-    fn cmpge(self, #[proxy] rhs: bevy::math::U64Vec3) -> bevy::math::BVec3;
+    fn cmpge(
+        _self: LuaReflectValProxy<bevy::math::U64Vec3>,
+        rhs: LuaReflectValProxy<bevy::math::U64Vec3>,
+    ) -> LuaReflectValProxy<bevy::math::BVec3>;
 
 "#,
     r#"
@@ -9113,7 +10743,10 @@ pub struct LuaU64Vec2 {
 /// elements.
 
     #[lua()]
-    fn cmpgt(self, #[proxy] rhs: bevy::math::U64Vec3) -> bevy::math::BVec3;
+    fn cmpgt(
+        _self: LuaReflectValProxy<bevy::math::U64Vec3>,
+        rhs: LuaReflectValProxy<bevy::math::U64Vec3>,
+    ) -> LuaReflectValProxy<bevy::math::BVec3>;
 
 "#,
     r#"
@@ -9123,7 +10756,10 @@ pub struct LuaU64Vec2 {
 /// elements.
 
     #[lua()]
-    fn cmple(self, #[proxy] rhs: bevy::math::U64Vec3) -> bevy::math::BVec3;
+    fn cmple(
+        _self: LuaReflectValProxy<bevy::math::U64Vec3>,
+        rhs: LuaReflectValProxy<bevy::math::U64Vec3>,
+    ) -> LuaReflectValProxy<bevy::math::BVec3>;
 
 "#,
     r#"
@@ -9133,56 +10769,71 @@ pub struct LuaU64Vec2 {
 /// elements.
 
     #[lua()]
-    fn cmplt(self, #[proxy] rhs: bevy::math::U64Vec3) -> bevy::math::BVec3;
+    fn cmplt(
+        _self: LuaReflectValProxy<bevy::math::U64Vec3>,
+        rhs: LuaReflectValProxy<bevy::math::U64Vec3>,
+    ) -> LuaReflectValProxy<bevy::math::BVec3>;
 
 "#,
     r#"
 /// Computes the squared length of `self`.
 
     #[lua()]
-    fn length_squared(self) -> u64;
+    fn length_squared(_self: LuaReflectValProxy<bevy::math::U64Vec3>) -> u64;
 
 "#,
     r#"
 /// Casts all elements of `self` to `f32`.
 
     #[lua()]
-    fn as_vec3(&self) -> bevy::math::Vec3;
+    fn as_vec3(
+        _self: LuaReflectRefProxy<bevy::math::U64Vec3>,
+    ) -> LuaReflectValProxy<bevy::math::Vec3>;
 
 "#,
     r#"
 /// Casts all elements of `self` to `f32`.
 
     #[lua()]
-    fn as_vec3a(&self) -> bevy::math::Vec3A;
+    fn as_vec3a(
+        _self: LuaReflectRefProxy<bevy::math::U64Vec3>,
+    ) -> LuaReflectValProxy<bevy::math::Vec3A>;
 
 "#,
     r#"
 /// Casts all elements of `self` to `f64`.
 
     #[lua()]
-    fn as_dvec3(&self) -> bevy::math::DVec3;
+    fn as_dvec3(
+        _self: LuaReflectRefProxy<bevy::math::U64Vec3>,
+    ) -> LuaReflectValProxy<bevy::math::DVec3>;
 
 "#,
     r#"
 /// Casts all elements of `self` to `i32`.
 
     #[lua()]
-    fn as_ivec3(&self) -> bevy::math::IVec3;
+    fn as_ivec3(
+        _self: LuaReflectRefProxy<bevy::math::U64Vec3>,
+    ) -> LuaReflectValProxy<bevy::math::IVec3>;
 
 "#,
     r#"
 /// Casts all elements of `self` to `u32`.
 
     #[lua()]
-    fn as_uvec3(&self) -> bevy::math::UVec3;
+    fn as_uvec3(
+        _self: LuaReflectRefProxy<bevy::math::U64Vec3>,
+    ) -> LuaReflectValProxy<bevy::math::UVec3>;
 
 "#,
     r#"
 /// Casts all elements of `self` to `i64`.
 
     #[lua()]
-    fn as_i64vec3(&self) -> bevy::math::I64Vec3;
+    fn as_i64vec3(
+        _self: LuaReflectRefProxy<bevy::math::U64Vec3>,
+    ) -> LuaReflectValProxy<bevy::math::I64Vec3>;
 
 "#,
     r#"
@@ -9190,7 +10841,10 @@ pub struct LuaU64Vec2 {
 /// In other words this computes `[self.x.wrapping_add(rhs.x), self.y.wrapping_add(rhs.y), ..]`.
 
     #[lua()]
-    fn wrapping_add(self, #[proxy] rhs: bevy::math::U64Vec3) -> bevy::math::U64Vec3;
+    fn wrapping_add(
+        _self: LuaReflectValProxy<bevy::math::U64Vec3>,
+        rhs: LuaReflectValProxy<bevy::math::U64Vec3>,
+    ) -> LuaReflectValProxy<bevy::math::U64Vec3>;
 
 "#,
     r#"
@@ -9198,7 +10852,10 @@ pub struct LuaU64Vec2 {
 /// In other words this computes `[self.x.wrapping_sub(rhs.x), self.y.wrapping_sub(rhs.y), ..]`.
 
     #[lua()]
-    fn wrapping_sub(self, #[proxy] rhs: bevy::math::U64Vec3) -> bevy::math::U64Vec3;
+    fn wrapping_sub(
+        _self: LuaReflectValProxy<bevy::math::U64Vec3>,
+        rhs: LuaReflectValProxy<bevy::math::U64Vec3>,
+    ) -> LuaReflectValProxy<bevy::math::U64Vec3>;
 
 "#,
     r#"
@@ -9206,7 +10863,10 @@ pub struct LuaU64Vec2 {
 /// In other words this computes `[self.x.wrapping_mul(rhs.x), self.y.wrapping_mul(rhs.y), ..]`.
 
     #[lua()]
-    fn wrapping_mul(self, #[proxy] rhs: bevy::math::U64Vec3) -> bevy::math::U64Vec3;
+    fn wrapping_mul(
+        _self: LuaReflectValProxy<bevy::math::U64Vec3>,
+        rhs: LuaReflectValProxy<bevy::math::U64Vec3>,
+    ) -> LuaReflectValProxy<bevy::math::U64Vec3>;
 
 "#,
     r#"
@@ -9214,7 +10874,10 @@ pub struct LuaU64Vec2 {
 /// In other words this computes `[self.x.wrapping_div(rhs.x), self.y.wrapping_div(rhs.y), ..]`.
 
     #[lua()]
-    fn wrapping_div(self, #[proxy] rhs: bevy::math::U64Vec3) -> bevy::math::U64Vec3;
+    fn wrapping_div(
+        _self: LuaReflectValProxy<bevy::math::U64Vec3>,
+        rhs: LuaReflectValProxy<bevy::math::U64Vec3>,
+    ) -> LuaReflectValProxy<bevy::math::U64Vec3>;
 
 "#,
     r#"
@@ -9222,7 +10885,10 @@ pub struct LuaU64Vec2 {
 /// In other words this computes `[self.x.saturating_add(rhs.x), self.y.saturating_add(rhs.y), ..]`.
 
     #[lua()]
-    fn saturating_add(self, #[proxy] rhs: bevy::math::U64Vec3) -> bevy::math::U64Vec3;
+    fn saturating_add(
+        _self: LuaReflectValProxy<bevy::math::U64Vec3>,
+        rhs: LuaReflectValProxy<bevy::math::U64Vec3>,
+    ) -> LuaReflectValProxy<bevy::math::U64Vec3>;
 
 "#,
     r#"
@@ -9230,7 +10896,10 @@ pub struct LuaU64Vec2 {
 /// In other words this computes `[self.x.saturating_sub(rhs.x), self.y.saturating_sub(rhs.y), ..]`.
 
     #[lua()]
-    fn saturating_sub(self, #[proxy] rhs: bevy::math::U64Vec3) -> bevy::math::U64Vec3;
+    fn saturating_sub(
+        _self: LuaReflectValProxy<bevy::math::U64Vec3>,
+        rhs: LuaReflectValProxy<bevy::math::U64Vec3>,
+    ) -> LuaReflectValProxy<bevy::math::U64Vec3>;
 
 "#,
     r#"
@@ -9238,7 +10907,10 @@ pub struct LuaU64Vec2 {
 /// In other words this computes `[self.x.saturating_mul(rhs.x), self.y.saturating_mul(rhs.y), ..]`.
 
     #[lua()]
-    fn saturating_mul(self, #[proxy] rhs: bevy::math::U64Vec3) -> bevy::math::U64Vec3;
+    fn saturating_mul(
+        _self: LuaReflectValProxy<bevy::math::U64Vec3>,
+        rhs: LuaReflectValProxy<bevy::math::U64Vec3>,
+    ) -> LuaReflectValProxy<bevy::math::U64Vec3>;
 
 "#,
     r#"
@@ -9246,79 +10918,114 @@ pub struct LuaU64Vec2 {
 /// In other words this computes `[self.x.saturating_div(rhs.x), self.y.saturating_div(rhs.y), ..]`.
 
     #[lua()]
-    fn saturating_div(self, #[proxy] rhs: bevy::math::U64Vec3) -> bevy::math::U64Vec3;
+    fn saturating_div(
+        _self: LuaReflectValProxy<bevy::math::U64Vec3>,
+        rhs: LuaReflectValProxy<bevy::math::U64Vec3>,
+    ) -> LuaReflectValProxy<bevy::math::U64Vec3>;
 
 "#,
     r#"
 
     #[lua(as_trait = "std::cmp::Eq")]
-    fn assert_receiver_is_total_eq(&self) -> ();
+    fn assert_receiver_is_total_eq(_self: LuaReflectRefProxy<bevy::math::U64Vec3>) -> ();
 
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Rem", composite = "rem")]
-    fn rem(self, #[proxy] rhs: bevy::math::U64Vec3) -> bevy::math::U64Vec3;
+    #[lua(as_trait = "std::ops::Rem::<bevy::math::U64Vec3>", composite = "rem")]
+    fn rem(
+        _self: LuaReflectValProxy<bevy::math::U64Vec3>,
+        rhs: LuaReflectValProxy<bevy::math::U64Vec3>,
+    ) -> LuaReflectValProxy<bevy::math::U64Vec3>;
 
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Mul", composite = "mul")]
-    fn mul(self, rhs: u64) -> bevy::math::U64Vec3;
+    #[lua(as_trait = "std::ops::Mul::<u64>", composite = "mul")]
+    fn mul(
+        _self: LuaReflectValProxy<bevy::math::U64Vec3>,
+        rhs: u64,
+    ) -> LuaReflectValProxy<bevy::math::U64Vec3>;
 
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Add", composite = "add")]
-    fn add(self, #[proxy] rhs: bevy::math::U64Vec3) -> bevy::math::U64Vec3;
+    #[lua(as_trait = "std::ops::Add::<bevy::math::U64Vec3>", composite = "add")]
+    fn add(
+        _self: LuaReflectValProxy<bevy::math::U64Vec3>,
+        rhs: LuaReflectValProxy<bevy::math::U64Vec3>,
+    ) -> LuaReflectValProxy<bevy::math::U64Vec3>;
 
 "#,
     r#"
 
     #[lua(as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone")]
-    fn clone(&self) -> bevy::math::U64Vec3;
+    fn clone(
+        _self: LuaReflectRefProxy<bevy::math::U64Vec3>,
+    ) -> LuaReflectValProxy<bevy::math::U64Vec3>;
 
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Mul", composite = "mul")]
-    fn mul(self, #[proxy] rhs: bevy::math::U64Vec3) -> bevy::math::U64Vec3;
+    #[lua(as_trait = "std::ops::Mul::<bevy::math::U64Vec3>", composite = "mul")]
+    fn mul(
+        _self: LuaReflectValProxy<bevy::math::U64Vec3>,
+        rhs: LuaReflectValProxy<bevy::math::U64Vec3>,
+    ) -> LuaReflectValProxy<bevy::math::U64Vec3>;
 
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Div", composite = "div")]
-    fn div(self, #[proxy] rhs: bevy::math::U64Vec3) -> bevy::math::U64Vec3;
+    #[lua(as_trait = "std::ops::Div::<bevy::math::U64Vec3>", composite = "div")]
+    fn div(
+        _self: LuaReflectValProxy<bevy::math::U64Vec3>,
+        rhs: LuaReflectValProxy<bevy::math::U64Vec3>,
+    ) -> LuaReflectValProxy<bevy::math::U64Vec3>;
 
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Rem", composite = "rem")]
-    fn rem(self, rhs: u64) -> bevy::math::U64Vec3;
+    #[lua(as_trait = "std::ops::Rem::<u64>", composite = "rem")]
+    fn rem(
+        _self: LuaReflectValProxy<bevy::math::U64Vec3>,
+        rhs: u64,
+    ) -> LuaReflectValProxy<bevy::math::U64Vec3>;
 
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Div", composite = "div")]
-    fn div(self, rhs: u64) -> bevy::math::U64Vec3;
+    #[lua(as_trait = "std::ops::Div::<u64>", composite = "div")]
+    fn div(
+        _self: LuaReflectValProxy<bevy::math::U64Vec3>,
+        rhs: u64,
+    ) -> LuaReflectValProxy<bevy::math::U64Vec3>;
 
 "#,
     r#"
 
-    #[lua(as_trait = "std::cmp::PartialEq", composite = "eq")]
-    fn eq(&self, #[proxy] other: &glam::U64Vec3) -> bool;
+    #[lua(as_trait = "std::cmp::PartialEq::<bevy::math::U64Vec3>", composite = "eq")]
+    fn eq(
+        _self: LuaReflectRefProxy<bevy::math::U64Vec3>,
+        other: LuaReflectRefProxy<bevy::math::U64Vec3>,
+    ) -> bool;
 
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Add", composite = "add")]
-    fn add(self, rhs: u64) -> bevy::math::U64Vec3;
+    #[lua(as_trait = "std::ops::Add::<u64>", composite = "add")]
+    fn add(
+        _self: LuaReflectValProxy<bevy::math::U64Vec3>,
+        rhs: u64,
+    ) -> LuaReflectValProxy<bevy::math::U64Vec3>;
 
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Sub", composite = "sub")]
-    fn sub(self, #[proxy] rhs: bevy::math::U64Vec3) -> bevy::math::U64Vec3;
+    #[lua(as_trait = "std::ops::Sub::<bevy::math::U64Vec3>", composite = "sub")]
+    fn sub(
+        _self: LuaReflectValProxy<bevy::math::U64Vec3>,
+        rhs: LuaReflectValProxy<bevy::math::U64Vec3>,
+    ) -> LuaReflectValProxy<bevy::math::U64Vec3>;
 
 "#,
     r#"
@@ -9328,7 +11035,7 @@ fn index(&self) -> String {
 }
 "#]
 )]
-pub struct LuaU64Vec3 {
+pub struct U64Vec3 {
     x: u64,
     y: u64,
     z: u64,
@@ -9342,14 +11049,14 @@ pub struct LuaU64Vec3 {
 /// Creates a new vector.
 
     #[lua()]
-    fn new(x: u64, y: u64, z: u64, w: u64) -> bevy::math::U64Vec4;
+    fn new(x: u64, y: u64, z: u64, w: u64) -> LuaReflectValProxy<bevy::math::U64Vec4>;
 
 "#,
     r#"
 /// Creates a vector with all elements set to `v`.
 
     #[lua()]
-    fn splat(v: u64) -> bevy::math::U64Vec4;
+    fn splat(v: u64) -> LuaReflectValProxy<bevy::math::U64Vec4>;
 
 "#,
     r#"
@@ -9360,27 +11067,24 @@ pub struct LuaU64Vec3 {
 
     #[lua()]
     fn select(
-        #[proxy]
-        mask: bevy::math::BVec4,
-        #[proxy]
-        if_true: bevy::math::U64Vec4,
-        #[proxy]
-        if_false: bevy::math::U64Vec4,
-    ) -> bevy::math::U64Vec4;
+        mask: LuaReflectValProxy<bevy::math::BVec4>,
+        if_true: LuaReflectValProxy<bevy::math::U64Vec4>,
+        if_false: LuaReflectValProxy<bevy::math::U64Vec4>,
+    ) -> LuaReflectValProxy<bevy::math::U64Vec4>;
 
 "#,
     r#"
 /// Creates a new vector from an array.
 
     #[lua()]
-    fn from_array(a: [u64; 4]) -> bevy::math::U64Vec4;
+    fn from_array(a: [u64; 4]) -> LuaReflectValProxy<bevy::math::U64Vec4>;
 
 "#,
     r#"
 /// `[x, y, z, w]`
 
     #[lua()]
-    fn to_array(&self) -> [u64; 4];
+    fn to_array(_self: LuaReflectRefProxy<bevy::math::U64Vec4>) -> [u64; 4];
 
 "#,
     r#"
@@ -9388,21 +11092,29 @@ pub struct LuaU64Vec3 {
 /// Truncation to [`U64Vec3`] may also be performed by using [`self.xyz()`][crate::swizzles::Vec4Swizzles::xyz()].
 
     #[lua()]
-    fn truncate(self) -> bevy::math::U64Vec3;
+    fn truncate(
+        _self: LuaReflectValProxy<bevy::math::U64Vec4>,
+    ) -> LuaReflectValProxy<bevy::math::U64Vec3>;
 
 "#,
     r#"
 /// Computes the dot product of `self` and `rhs`.
 
     #[lua()]
-    fn dot(self, #[proxy] rhs: bevy::math::U64Vec4) -> u64;
+    fn dot(
+        _self: LuaReflectValProxy<bevy::math::U64Vec4>,
+        rhs: LuaReflectValProxy<bevy::math::U64Vec4>,
+    ) -> u64;
 
 "#,
     r#"
 /// Returns a vector where every component is the dot product of `self` and `rhs`.
 
     #[lua()]
-    fn dot_into_vec(self, #[proxy] rhs: bevy::math::U64Vec4) -> bevy::math::U64Vec4;
+    fn dot_into_vec(
+        _self: LuaReflectValProxy<bevy::math::U64Vec4>,
+        rhs: LuaReflectValProxy<bevy::math::U64Vec4>,
+    ) -> LuaReflectValProxy<bevy::math::U64Vec4>;
 
 "#,
     r#"
@@ -9410,7 +11122,10 @@ pub struct LuaU64Vec3 {
 /// In other words this computes `[self.x.min(rhs.x), self.y.min(rhs.y), ..]`.
 
     #[lua()]
-    fn min(self, #[proxy] rhs: bevy::math::U64Vec4) -> bevy::math::U64Vec4;
+    fn min(
+        _self: LuaReflectValProxy<bevy::math::U64Vec4>,
+        rhs: LuaReflectValProxy<bevy::math::U64Vec4>,
+    ) -> LuaReflectValProxy<bevy::math::U64Vec4>;
 
 "#,
     r#"
@@ -9418,7 +11133,10 @@ pub struct LuaU64Vec3 {
 /// In other words this computes `[self.x.max(rhs.x), self.y.max(rhs.y), ..]`.
 
     #[lua()]
-    fn max(self, #[proxy] rhs: bevy::math::U64Vec4) -> bevy::math::U64Vec4;
+    fn max(
+        _self: LuaReflectValProxy<bevy::math::U64Vec4>,
+        rhs: LuaReflectValProxy<bevy::math::U64Vec4>,
+    ) -> LuaReflectValProxy<bevy::math::U64Vec4>;
 
 "#,
     r#"
@@ -9429,12 +11147,10 @@ pub struct LuaU64Vec3 {
 
     #[lua()]
     fn clamp(
-        self,
-        #[proxy]
-        min: bevy::math::U64Vec4,
-        #[proxy]
-        max: bevy::math::U64Vec4,
-    ) -> bevy::math::U64Vec4;
+        _self: LuaReflectValProxy<bevy::math::U64Vec4>,
+        min: LuaReflectValProxy<bevy::math::U64Vec4>,
+        max: LuaReflectValProxy<bevy::math::U64Vec4>,
+    ) -> LuaReflectValProxy<bevy::math::U64Vec4>;
 
 "#,
     r#"
@@ -9442,7 +11158,7 @@ pub struct LuaU64Vec3 {
 /// In other words this computes `min(x, y, ..)`.
 
     #[lua()]
-    fn min_element(self) -> u64;
+    fn min_element(_self: LuaReflectValProxy<bevy::math::U64Vec4>) -> u64;
 
 "#,
     r#"
@@ -9450,7 +11166,7 @@ pub struct LuaU64Vec3 {
 /// In other words this computes `max(x, y, ..)`.
 
     #[lua()]
-    fn max_element(self) -> u64;
+    fn max_element(_self: LuaReflectValProxy<bevy::math::U64Vec4>) -> u64;
 
 "#,
     r#"
@@ -9460,7 +11176,10 @@ pub struct LuaU64Vec3 {
 /// elements.
 
     #[lua()]
-    fn cmpeq(self, #[proxy] rhs: bevy::math::U64Vec4) -> bevy::math::BVec4;
+    fn cmpeq(
+        _self: LuaReflectValProxy<bevy::math::U64Vec4>,
+        rhs: LuaReflectValProxy<bevy::math::U64Vec4>,
+    ) -> LuaReflectValProxy<bevy::math::BVec4>;
 
 "#,
     r#"
@@ -9470,7 +11189,10 @@ pub struct LuaU64Vec3 {
 /// elements.
 
     #[lua()]
-    fn cmpne(self, #[proxy] rhs: bevy::math::U64Vec4) -> bevy::math::BVec4;
+    fn cmpne(
+        _self: LuaReflectValProxy<bevy::math::U64Vec4>,
+        rhs: LuaReflectValProxy<bevy::math::U64Vec4>,
+    ) -> LuaReflectValProxy<bevy::math::BVec4>;
 
 "#,
     r#"
@@ -9480,7 +11202,10 @@ pub struct LuaU64Vec3 {
 /// elements.
 
     #[lua()]
-    fn cmpge(self, #[proxy] rhs: bevy::math::U64Vec4) -> bevy::math::BVec4;
+    fn cmpge(
+        _self: LuaReflectValProxy<bevy::math::U64Vec4>,
+        rhs: LuaReflectValProxy<bevy::math::U64Vec4>,
+    ) -> LuaReflectValProxy<bevy::math::BVec4>;
 
 "#,
     r#"
@@ -9490,7 +11215,10 @@ pub struct LuaU64Vec3 {
 /// elements.
 
     #[lua()]
-    fn cmpgt(self, #[proxy] rhs: bevy::math::U64Vec4) -> bevy::math::BVec4;
+    fn cmpgt(
+        _self: LuaReflectValProxy<bevy::math::U64Vec4>,
+        rhs: LuaReflectValProxy<bevy::math::U64Vec4>,
+    ) -> LuaReflectValProxy<bevy::math::BVec4>;
 
 "#,
     r#"
@@ -9500,7 +11228,10 @@ pub struct LuaU64Vec3 {
 /// elements.
 
     #[lua()]
-    fn cmple(self, #[proxy] rhs: bevy::math::U64Vec4) -> bevy::math::BVec4;
+    fn cmple(
+        _self: LuaReflectValProxy<bevy::math::U64Vec4>,
+        rhs: LuaReflectValProxy<bevy::math::U64Vec4>,
+    ) -> LuaReflectValProxy<bevy::math::BVec4>;
 
 "#,
     r#"
@@ -9510,49 +11241,62 @@ pub struct LuaU64Vec3 {
 /// elements.
 
     #[lua()]
-    fn cmplt(self, #[proxy] rhs: bevy::math::U64Vec4) -> bevy::math::BVec4;
+    fn cmplt(
+        _self: LuaReflectValProxy<bevy::math::U64Vec4>,
+        rhs: LuaReflectValProxy<bevy::math::U64Vec4>,
+    ) -> LuaReflectValProxy<bevy::math::BVec4>;
 
 "#,
     r#"
 /// Computes the squared length of `self`.
 
     #[lua()]
-    fn length_squared(self) -> u64;
+    fn length_squared(_self: LuaReflectValProxy<bevy::math::U64Vec4>) -> u64;
 
 "#,
     r#"
 /// Casts all elements of `self` to `f32`.
 
     #[lua()]
-    fn as_vec4(&self) -> bevy::math::Vec4;
+    fn as_vec4(
+        _self: LuaReflectRefProxy<bevy::math::U64Vec4>,
+    ) -> LuaReflectValProxy<bevy::math::Vec4>;
 
 "#,
     r#"
 /// Casts all elements of `self` to `f64`.
 
     #[lua()]
-    fn as_dvec4(&self) -> bevy::math::DVec4;
+    fn as_dvec4(
+        _self: LuaReflectRefProxy<bevy::math::U64Vec4>,
+    ) -> LuaReflectValProxy<bevy::math::DVec4>;
 
 "#,
     r#"
 /// Casts all elements of `self` to `i32`.
 
     #[lua()]
-    fn as_ivec4(&self) -> bevy::math::IVec4;
+    fn as_ivec4(
+        _self: LuaReflectRefProxy<bevy::math::U64Vec4>,
+    ) -> LuaReflectValProxy<bevy::math::IVec4>;
 
 "#,
     r#"
 /// Casts all elements of `self` to `u32`.
 
     #[lua()]
-    fn as_uvec4(&self) -> bevy::math::UVec4;
+    fn as_uvec4(
+        _self: LuaReflectRefProxy<bevy::math::U64Vec4>,
+    ) -> LuaReflectValProxy<bevy::math::UVec4>;
 
 "#,
     r#"
 /// Casts all elements of `self` to `i64`.
 
     #[lua()]
-    fn as_i64vec4(&self) -> bevy::math::I64Vec4;
+    fn as_i64vec4(
+        _self: LuaReflectRefProxy<bevy::math::U64Vec4>,
+    ) -> LuaReflectValProxy<bevy::math::I64Vec4>;
 
 "#,
     r#"
@@ -9560,7 +11304,10 @@ pub struct LuaU64Vec3 {
 /// In other words this computes `[self.x.wrapping_add(rhs.x), self.y.wrapping_add(rhs.y), ..]`.
 
     #[lua()]
-    fn wrapping_add(self, #[proxy] rhs: bevy::math::U64Vec4) -> bevy::math::U64Vec4;
+    fn wrapping_add(
+        _self: LuaReflectValProxy<bevy::math::U64Vec4>,
+        rhs: LuaReflectValProxy<bevy::math::U64Vec4>,
+    ) -> LuaReflectValProxy<bevy::math::U64Vec4>;
 
 "#,
     r#"
@@ -9568,7 +11315,10 @@ pub struct LuaU64Vec3 {
 /// In other words this computes `[self.x.wrapping_sub(rhs.x), self.y.wrapping_sub(rhs.y), ..]`.
 
     #[lua()]
-    fn wrapping_sub(self, #[proxy] rhs: bevy::math::U64Vec4) -> bevy::math::U64Vec4;
+    fn wrapping_sub(
+        _self: LuaReflectValProxy<bevy::math::U64Vec4>,
+        rhs: LuaReflectValProxy<bevy::math::U64Vec4>,
+    ) -> LuaReflectValProxy<bevy::math::U64Vec4>;
 
 "#,
     r#"
@@ -9576,7 +11326,10 @@ pub struct LuaU64Vec3 {
 /// In other words this computes `[self.x.wrapping_mul(rhs.x), self.y.wrapping_mul(rhs.y), ..]`.
 
     #[lua()]
-    fn wrapping_mul(self, #[proxy] rhs: bevy::math::U64Vec4) -> bevy::math::U64Vec4;
+    fn wrapping_mul(
+        _self: LuaReflectValProxy<bevy::math::U64Vec4>,
+        rhs: LuaReflectValProxy<bevy::math::U64Vec4>,
+    ) -> LuaReflectValProxy<bevy::math::U64Vec4>;
 
 "#,
     r#"
@@ -9584,7 +11337,10 @@ pub struct LuaU64Vec3 {
 /// In other words this computes `[self.x.wrapping_div(rhs.x), self.y.wrapping_div(rhs.y), ..]`.
 
     #[lua()]
-    fn wrapping_div(self, #[proxy] rhs: bevy::math::U64Vec4) -> bevy::math::U64Vec4;
+    fn wrapping_div(
+        _self: LuaReflectValProxy<bevy::math::U64Vec4>,
+        rhs: LuaReflectValProxy<bevy::math::U64Vec4>,
+    ) -> LuaReflectValProxy<bevy::math::U64Vec4>;
 
 "#,
     r#"
@@ -9592,7 +11348,10 @@ pub struct LuaU64Vec3 {
 /// In other words this computes `[self.x.saturating_add(rhs.x), self.y.saturating_add(rhs.y), ..]`.
 
     #[lua()]
-    fn saturating_add(self, #[proxy] rhs: bevy::math::U64Vec4) -> bevy::math::U64Vec4;
+    fn saturating_add(
+        _self: LuaReflectValProxy<bevy::math::U64Vec4>,
+        rhs: LuaReflectValProxy<bevy::math::U64Vec4>,
+    ) -> LuaReflectValProxy<bevy::math::U64Vec4>;
 
 "#,
     r#"
@@ -9600,7 +11359,10 @@ pub struct LuaU64Vec3 {
 /// In other words this computes `[self.x.saturating_sub(rhs.x), self.y.saturating_sub(rhs.y), ..]`.
 
     #[lua()]
-    fn saturating_sub(self, #[proxy] rhs: bevy::math::U64Vec4) -> bevy::math::U64Vec4;
+    fn saturating_sub(
+        _self: LuaReflectValProxy<bevy::math::U64Vec4>,
+        rhs: LuaReflectValProxy<bevy::math::U64Vec4>,
+    ) -> LuaReflectValProxy<bevy::math::U64Vec4>;
 
 "#,
     r#"
@@ -9608,7 +11370,10 @@ pub struct LuaU64Vec3 {
 /// In other words this computes `[self.x.saturating_mul(rhs.x), self.y.saturating_mul(rhs.y), ..]`.
 
     #[lua()]
-    fn saturating_mul(self, #[proxy] rhs: bevy::math::U64Vec4) -> bevy::math::U64Vec4;
+    fn saturating_mul(
+        _self: LuaReflectValProxy<bevy::math::U64Vec4>,
+        rhs: LuaReflectValProxy<bevy::math::U64Vec4>,
+    ) -> LuaReflectValProxy<bevy::math::U64Vec4>;
 
 "#,
     r#"
@@ -9616,85 +11381,123 @@ pub struct LuaU64Vec3 {
 /// In other words this computes `[self.x.saturating_div(rhs.x), self.y.saturating_div(rhs.y), ..]`.
 
     #[lua()]
-    fn saturating_div(self, #[proxy] rhs: bevy::math::U64Vec4) -> bevy::math::U64Vec4;
+    fn saturating_div(
+        _self: LuaReflectValProxy<bevy::math::U64Vec4>,
+        rhs: LuaReflectValProxy<bevy::math::U64Vec4>,
+    ) -> LuaReflectValProxy<bevy::math::U64Vec4>;
 
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Sub", composite = "sub")]
-    fn sub(self, rhs: u64) -> bevy::math::U64Vec4;
+    #[lua(as_trait = "std::ops::Sub::<u64>", composite = "sub")]
+    fn sub(
+        _self: LuaReflectValProxy<bevy::math::U64Vec4>,
+        rhs: u64,
+    ) -> LuaReflectValProxy<bevy::math::U64Vec4>;
 
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Mul", composite = "mul")]
-    fn mul(self, #[proxy] rhs: bevy::math::U64Vec4) -> bevy::math::U64Vec4;
+    #[lua(as_trait = "std::ops::Mul::<bevy::math::U64Vec4>", composite = "mul")]
+    fn mul(
+        _self: LuaReflectValProxy<bevy::math::U64Vec4>,
+        rhs: LuaReflectValProxy<bevy::math::U64Vec4>,
+    ) -> LuaReflectValProxy<bevy::math::U64Vec4>;
 
 "#,
     r#"
 
     #[lua(as_trait = "std::cmp::Eq")]
-    fn assert_receiver_is_total_eq(&self) -> ();
+    fn assert_receiver_is_total_eq(_self: LuaReflectRefProxy<bevy::math::U64Vec4>) -> ();
 
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Div", composite = "div")]
-    fn div(self, rhs: u64) -> bevy::math::U64Vec4;
+    #[lua(as_trait = "std::ops::Div::<u64>", composite = "div")]
+    fn div(
+        _self: LuaReflectValProxy<bevy::math::U64Vec4>,
+        rhs: u64,
+    ) -> LuaReflectValProxy<bevy::math::U64Vec4>;
 
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Sub", composite = "sub")]
-    fn sub(self, #[proxy] rhs: bevy::math::U64Vec4) -> bevy::math::U64Vec4;
+    #[lua(as_trait = "std::ops::Sub::<bevy::math::U64Vec4>", composite = "sub")]
+    fn sub(
+        _self: LuaReflectValProxy<bevy::math::U64Vec4>,
+        rhs: LuaReflectValProxy<bevy::math::U64Vec4>,
+    ) -> LuaReflectValProxy<bevy::math::U64Vec4>;
 
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Add", composite = "add")]
-    fn add(self, #[proxy] rhs: bevy::math::U64Vec4) -> bevy::math::U64Vec4;
+    #[lua(as_trait = "std::ops::Add::<bevy::math::U64Vec4>", composite = "add")]
+    fn add(
+        _self: LuaReflectValProxy<bevy::math::U64Vec4>,
+        rhs: LuaReflectValProxy<bevy::math::U64Vec4>,
+    ) -> LuaReflectValProxy<bevy::math::U64Vec4>;
 
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Div", composite = "div")]
-    fn div(self, #[proxy] rhs: bevy::math::U64Vec4) -> bevy::math::U64Vec4;
+    #[lua(as_trait = "std::ops::Div::<bevy::math::U64Vec4>", composite = "div")]
+    fn div(
+        _self: LuaReflectValProxy<bevy::math::U64Vec4>,
+        rhs: LuaReflectValProxy<bevy::math::U64Vec4>,
+    ) -> LuaReflectValProxy<bevy::math::U64Vec4>;
 
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Mul", composite = "mul")]
-    fn mul(self, rhs: u64) -> bevy::math::U64Vec4;
+    #[lua(as_trait = "std::ops::Mul::<u64>", composite = "mul")]
+    fn mul(
+        _self: LuaReflectValProxy<bevy::math::U64Vec4>,
+        rhs: u64,
+    ) -> LuaReflectValProxy<bevy::math::U64Vec4>;
 
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Rem", composite = "rem")]
-    fn rem(self, #[proxy] rhs: bevy::math::U64Vec4) -> bevy::math::U64Vec4;
+    #[lua(as_trait = "std::ops::Rem::<bevy::math::U64Vec4>", composite = "rem")]
+    fn rem(
+        _self: LuaReflectValProxy<bevy::math::U64Vec4>,
+        rhs: LuaReflectValProxy<bevy::math::U64Vec4>,
+    ) -> LuaReflectValProxy<bevy::math::U64Vec4>;
 
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Add", composite = "add")]
-    fn add(self, rhs: u64) -> bevy::math::U64Vec4;
+    #[lua(as_trait = "std::ops::Add::<u64>", composite = "add")]
+    fn add(
+        _self: LuaReflectValProxy<bevy::math::U64Vec4>,
+        rhs: u64,
+    ) -> LuaReflectValProxy<bevy::math::U64Vec4>;
 
 "#,
     r#"
 
-    #[lua(as_trait = "std::cmp::PartialEq", composite = "eq")]
-    fn eq(&self, #[proxy] other: &glam::U64Vec4) -> bool;
+    #[lua(as_trait = "std::cmp::PartialEq::<bevy::math::U64Vec4>", composite = "eq")]
+    fn eq(
+        _self: LuaReflectRefProxy<bevy::math::U64Vec4>,
+        other: LuaReflectRefProxy<bevy::math::U64Vec4>,
+    ) -> bool;
 
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Rem", composite = "rem")]
-    fn rem(self, rhs: u64) -> bevy::math::U64Vec4;
+    #[lua(as_trait = "std::ops::Rem::<u64>", composite = "rem")]
+    fn rem(
+        _self: LuaReflectValProxy<bevy::math::U64Vec4>,
+        rhs: u64,
+    ) -> LuaReflectValProxy<bevy::math::U64Vec4>;
 
 "#,
     r#"
 
     #[lua(as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone")]
-    fn clone(&self) -> bevy::math::U64Vec4;
+    fn clone(
+        _self: LuaReflectRefProxy<bevy::math::U64Vec4>,
+    ) -> LuaReflectValProxy<bevy::math::U64Vec4>;
 
 "#,
     r#"
@@ -9704,7 +11507,7 @@ fn index(&self) -> String {
 }
 "#]
 )]
-pub struct LuaU64Vec4 {
+pub struct U64Vec4 {
     x: u64,
     y: u64,
     z: u64,
@@ -9717,82 +11520,114 @@ pub struct LuaU64Vec4 {
     bms_lua_path = "crate",
     functions[r#"
 
-    #[lua(as_trait = "std::ops::Mul", composite = "mul")]
-    fn mul(self, #[proxy] rhs: bevy::math::Vec2) -> bevy::math::Vec2;
+    #[lua(as_trait = "std::ops::Mul::<bevy::math::Vec2>", composite = "mul")]
+    fn mul(
+        _self: LuaReflectValProxy<bevy::math::Vec2>,
+        rhs: LuaReflectValProxy<bevy::math::Vec2>,
+    ) -> LuaReflectValProxy<bevy::math::Vec2>;
 
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Rem", composite = "rem")]
-    fn rem(self, #[proxy] rhs: bevy::math::Vec2) -> bevy::math::Vec2;
+    #[lua(as_trait = "std::ops::Rem::<bevy::math::Vec2>", composite = "rem")]
+    fn rem(
+        _self: LuaReflectValProxy<bevy::math::Vec2>,
+        rhs: LuaReflectValProxy<bevy::math::Vec2>,
+    ) -> LuaReflectValProxy<bevy::math::Vec2>;
 
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Sub", composite = "sub")]
-    fn sub(self, rhs: f32) -> bevy::math::Vec2;
+    #[lua(as_trait = "std::ops::Sub::<f32>", composite = "sub")]
+    fn sub(
+        _self: LuaReflectValProxy<bevy::math::Vec2>,
+        rhs: f32,
+    ) -> LuaReflectValProxy<bevy::math::Vec2>;
 
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Rem", composite = "rem")]
-    fn rem(self, rhs: f32) -> bevy::math::Vec2;
+    #[lua(as_trait = "std::ops::Rem::<f32>", composite = "rem")]
+    fn rem(
+        _self: LuaReflectValProxy<bevy::math::Vec2>,
+        rhs: f32,
+    ) -> LuaReflectValProxy<bevy::math::Vec2>;
 
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Sub", composite = "sub")]
-    fn sub(self, #[proxy] rhs: bevy::math::Vec2) -> bevy::math::Vec2;
+    #[lua(as_trait = "std::ops::Sub::<bevy::math::Vec2>", composite = "sub")]
+    fn sub(
+        _self: LuaReflectValProxy<bevy::math::Vec2>,
+        rhs: LuaReflectValProxy<bevy::math::Vec2>,
+    ) -> LuaReflectValProxy<bevy::math::Vec2>;
 
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Div", composite = "div")]
-    fn div(self, rhs: f32) -> bevy::math::Vec2;
+    #[lua(as_trait = "std::ops::Div::<f32>", composite = "div")]
+    fn div(
+        _self: LuaReflectValProxy<bevy::math::Vec2>,
+        rhs: f32,
+    ) -> LuaReflectValProxy<bevy::math::Vec2>;
 
 "#,
     r#"
 
     #[lua(as_trait = "std::ops::Neg", composite = "neg")]
-    fn neg(self) -> bevy::math::Vec2;
+    fn neg(
+        _self: LuaReflectValProxy<bevy::math::Vec2>,
+    ) -> LuaReflectValProxy<bevy::math::Vec2>;
 
 "#,
     r#"
 
-    #[lua(as_trait = "std::cmp::PartialEq", composite = "eq")]
-    fn eq(&self, #[proxy] other: &glam::Vec2) -> bool;
+    #[lua(as_trait = "std::cmp::PartialEq::<bevy::math::Vec2>", composite = "eq")]
+    fn eq(
+        _self: LuaReflectRefProxy<bevy::math::Vec2>,
+        other: LuaReflectRefProxy<bevy::math::Vec2>,
+    ) -> bool;
 
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Add", composite = "add")]
-    fn add(self, #[proxy] rhs: bevy::math::Vec2) -> bevy::math::Vec2;
+    #[lua(as_trait = "std::ops::Add::<bevy::math::Vec2>", composite = "add")]
+    fn add(
+        _self: LuaReflectValProxy<bevy::math::Vec2>,
+        rhs: LuaReflectValProxy<bevy::math::Vec2>,
+    ) -> LuaReflectValProxy<bevy::math::Vec2>;
 
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Div", composite = "div")]
-    fn div(self, #[proxy] rhs: bevy::math::Vec2) -> bevy::math::Vec2;
+    #[lua(as_trait = "std::ops::Div::<bevy::math::Vec2>", composite = "div")]
+    fn div(
+        _self: LuaReflectValProxy<bevy::math::Vec2>,
+        rhs: LuaReflectValProxy<bevy::math::Vec2>,
+    ) -> LuaReflectValProxy<bevy::math::Vec2>;
 
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Mul", composite = "mul")]
-    fn mul(self, rhs: f32) -> bevy::math::Vec2;
+    #[lua(as_trait = "std::ops::Mul::<f32>", composite = "mul")]
+    fn mul(
+        _self: LuaReflectValProxy<bevy::math::Vec2>,
+        rhs: f32,
+    ) -> LuaReflectValProxy<bevy::math::Vec2>;
 
 "#,
     r#"
 /// Creates a new vector.
 
     #[lua()]
-    fn new(x: f32, y: f32) -> bevy::math::Vec2;
+    fn new(x: f32, y: f32) -> LuaReflectValProxy<bevy::math::Vec2>;
 
 "#,
     r#"
 /// Creates a vector with all elements set to `v`.
 
     #[lua()]
-    fn splat(v: f32) -> bevy::math::Vec2;
+    fn splat(v: f32) -> LuaReflectValProxy<bevy::math::Vec2>;
 
 "#,
     r#"
@@ -9803,48 +11638,54 @@ pub struct LuaU64Vec4 {
 
     #[lua()]
     fn select(
-        #[proxy]
-        mask: bevy::math::BVec2,
-        #[proxy]
-        if_true: bevy::math::Vec2,
-        #[proxy]
-        if_false: bevy::math::Vec2,
-    ) -> bevy::math::Vec2;
+        mask: LuaReflectValProxy<bevy::math::BVec2>,
+        if_true: LuaReflectValProxy<bevy::math::Vec2>,
+        if_false: LuaReflectValProxy<bevy::math::Vec2>,
+    ) -> LuaReflectValProxy<bevy::math::Vec2>;
 
 "#,
     r#"
 /// Creates a new vector from an array.
 
     #[lua()]
-    fn from_array(a: [f32; 2]) -> bevy::math::Vec2;
+    fn from_array(a: [f32; 2]) -> LuaReflectValProxy<bevy::math::Vec2>;
 
 "#,
     r#"
 /// `[x, y]`
 
     #[lua()]
-    fn to_array(&self) -> [f32; 2];
+    fn to_array(_self: LuaReflectRefProxy<bevy::math::Vec2>) -> [f32; 2];
 
 "#,
     r#"
 /// Creates a 3D vector from `self` and the given `z` value.
 
     #[lua()]
-    fn extend(self, z: f32) -> bevy::math::Vec3;
+    fn extend(
+        _self: LuaReflectValProxy<bevy::math::Vec2>,
+        z: f32,
+    ) -> LuaReflectValProxy<bevy::math::Vec3>;
 
 "#,
     r#"
 /// Computes the dot product of `self` and `rhs`.
 
     #[lua()]
-    fn dot(self, #[proxy] rhs: bevy::math::Vec2) -> f32;
+    fn dot(
+        _self: LuaReflectValProxy<bevy::math::Vec2>,
+        rhs: LuaReflectValProxy<bevy::math::Vec2>,
+    ) -> f32;
 
 "#,
     r#"
 /// Returns a vector where every component is the dot product of `self` and `rhs`.
 
     #[lua()]
-    fn dot_into_vec(self, #[proxy] rhs: bevy::math::Vec2) -> bevy::math::Vec2;
+    fn dot_into_vec(
+        _self: LuaReflectValProxy<bevy::math::Vec2>,
+        rhs: LuaReflectValProxy<bevy::math::Vec2>,
+    ) -> LuaReflectValProxy<bevy::math::Vec2>;
 
 "#,
     r#"
@@ -9852,7 +11693,10 @@ pub struct LuaU64Vec4 {
 /// In other words this computes `[self.x.min(rhs.x), self.y.min(rhs.y), ..]`.
 
     #[lua()]
-    fn min(self, #[proxy] rhs: bevy::math::Vec2) -> bevy::math::Vec2;
+    fn min(
+        _self: LuaReflectValProxy<bevy::math::Vec2>,
+        rhs: LuaReflectValProxy<bevy::math::Vec2>,
+    ) -> LuaReflectValProxy<bevy::math::Vec2>;
 
 "#,
     r#"
@@ -9860,7 +11704,10 @@ pub struct LuaU64Vec4 {
 /// In other words this computes `[self.x.max(rhs.x), self.y.max(rhs.y), ..]`.
 
     #[lua()]
-    fn max(self, #[proxy] rhs: bevy::math::Vec2) -> bevy::math::Vec2;
+    fn max(
+        _self: LuaReflectValProxy<bevy::math::Vec2>,
+        rhs: LuaReflectValProxy<bevy::math::Vec2>,
+    ) -> LuaReflectValProxy<bevy::math::Vec2>;
 
 "#,
     r#"
@@ -9871,12 +11718,10 @@ pub struct LuaU64Vec4 {
 
     #[lua()]
     fn clamp(
-        self,
-        #[proxy]
-        min: bevy::math::Vec2,
-        #[proxy]
-        max: bevy::math::Vec2,
-    ) -> bevy::math::Vec2;
+        _self: LuaReflectValProxy<bevy::math::Vec2>,
+        min: LuaReflectValProxy<bevy::math::Vec2>,
+        max: LuaReflectValProxy<bevy::math::Vec2>,
+    ) -> LuaReflectValProxy<bevy::math::Vec2>;
 
 "#,
     r#"
@@ -9884,7 +11729,7 @@ pub struct LuaU64Vec4 {
 /// In other words this computes `min(x, y, ..)`.
 
     #[lua()]
-    fn min_element(self) -> f32;
+    fn min_element(_self: LuaReflectValProxy<bevy::math::Vec2>) -> f32;
 
 "#,
     r#"
@@ -9892,7 +11737,7 @@ pub struct LuaU64Vec4 {
 /// In other words this computes `max(x, y, ..)`.
 
     #[lua()]
-    fn max_element(self) -> f32;
+    fn max_element(_self: LuaReflectValProxy<bevy::math::Vec2>) -> f32;
 
 "#,
     r#"
@@ -9902,7 +11747,10 @@ pub struct LuaU64Vec4 {
 /// elements.
 
     #[lua()]
-    fn cmpeq(self, #[proxy] rhs: bevy::math::Vec2) -> bevy::math::BVec2;
+    fn cmpeq(
+        _self: LuaReflectValProxy<bevy::math::Vec2>,
+        rhs: LuaReflectValProxy<bevy::math::Vec2>,
+    ) -> LuaReflectValProxy<bevy::math::BVec2>;
 
 "#,
     r#"
@@ -9912,7 +11760,10 @@ pub struct LuaU64Vec4 {
 /// elements.
 
     #[lua()]
-    fn cmpne(self, #[proxy] rhs: bevy::math::Vec2) -> bevy::math::BVec2;
+    fn cmpne(
+        _self: LuaReflectValProxy<bevy::math::Vec2>,
+        rhs: LuaReflectValProxy<bevy::math::Vec2>,
+    ) -> LuaReflectValProxy<bevy::math::BVec2>;
 
 "#,
     r#"
@@ -9922,7 +11773,10 @@ pub struct LuaU64Vec4 {
 /// elements.
 
     #[lua()]
-    fn cmpge(self, #[proxy] rhs: bevy::math::Vec2) -> bevy::math::BVec2;
+    fn cmpge(
+        _self: LuaReflectValProxy<bevy::math::Vec2>,
+        rhs: LuaReflectValProxy<bevy::math::Vec2>,
+    ) -> LuaReflectValProxy<bevy::math::BVec2>;
 
 "#,
     r#"
@@ -9932,7 +11786,10 @@ pub struct LuaU64Vec4 {
 /// elements.
 
     #[lua()]
-    fn cmpgt(self, #[proxy] rhs: bevy::math::Vec2) -> bevy::math::BVec2;
+    fn cmpgt(
+        _self: LuaReflectValProxy<bevy::math::Vec2>,
+        rhs: LuaReflectValProxy<bevy::math::Vec2>,
+    ) -> LuaReflectValProxy<bevy::math::BVec2>;
 
 "#,
     r#"
@@ -9942,7 +11799,10 @@ pub struct LuaU64Vec4 {
 /// elements.
 
     #[lua()]
-    fn cmple(self, #[proxy] rhs: bevy::math::Vec2) -> bevy::math::BVec2;
+    fn cmple(
+        _self: LuaReflectValProxy<bevy::math::Vec2>,
+        rhs: LuaReflectValProxy<bevy::math::Vec2>,
+    ) -> LuaReflectValProxy<bevy::math::BVec2>;
 
 "#,
     r#"
@@ -9952,14 +11812,19 @@ pub struct LuaU64Vec4 {
 /// elements.
 
     #[lua()]
-    fn cmplt(self, #[proxy] rhs: bevy::math::Vec2) -> bevy::math::BVec2;
+    fn cmplt(
+        _self: LuaReflectValProxy<bevy::math::Vec2>,
+        rhs: LuaReflectValProxy<bevy::math::Vec2>,
+    ) -> LuaReflectValProxy<bevy::math::BVec2>;
 
 "#,
     r#"
 /// Returns a vector containing the absolute value of each element of `self`.
 
     #[lua()]
-    fn abs(self) -> bevy::math::Vec2;
+    fn abs(
+        _self: LuaReflectValProxy<bevy::math::Vec2>,
+    ) -> LuaReflectValProxy<bevy::math::Vec2>;
 
 "#,
     r#"
@@ -9969,14 +11834,19 @@ pub struct LuaU64Vec4 {
 /// - `NAN` if the number is `NAN`
 
     #[lua()]
-    fn signum(self) -> bevy::math::Vec2;
+    fn signum(
+        _self: LuaReflectValProxy<bevy::math::Vec2>,
+    ) -> LuaReflectValProxy<bevy::math::Vec2>;
 
 "#,
     r#"
 /// Returns a vector with signs of `rhs` and the magnitudes of `self`.
 
     #[lua()]
-    fn copysign(self, #[proxy] rhs: bevy::math::Vec2) -> bevy::math::Vec2;
+    fn copysign(
+        _self: LuaReflectValProxy<bevy::math::Vec2>,
+        rhs: LuaReflectValProxy<bevy::math::Vec2>,
+    ) -> LuaReflectValProxy<bevy::math::Vec2>;
 
 "#,
     r#"
@@ -9985,7 +11855,7 @@ pub struct LuaU64Vec4 {
 /// into the first lowest bit, element `y` into the second, etc.
 
     #[lua()]
-    fn is_negative_bitmask(self) -> u32;
+    fn is_negative_bitmask(_self: LuaReflectValProxy<bevy::math::Vec2>) -> u32;
 
 "#,
     r#"
@@ -9993,14 +11863,14 @@ pub struct LuaU64Vec4 {
 /// `NaN`, positive or negative infinity, this will return `false`.
 
     #[lua()]
-    fn is_finite(self) -> bool;
+    fn is_finite(_self: LuaReflectValProxy<bevy::math::Vec2>) -> bool;
 
 "#,
     r#"
 /// Returns `true` if any elements are `NaN`.
 
     #[lua()]
-    fn is_nan(self) -> bool;
+    fn is_nan(_self: LuaReflectValProxy<bevy::math::Vec2>) -> bool;
 
 "#,
     r#"
@@ -10008,14 +11878,16 @@ pub struct LuaU64Vec4 {
 /// In other words, this computes `[x.is_nan(), y.is_nan(), z.is_nan(), w.is_nan()]`.
 
     #[lua()]
-    fn is_nan_mask(self) -> bevy::math::BVec2;
+    fn is_nan_mask(
+        _self: LuaReflectValProxy<bevy::math::Vec2>,
+    ) -> LuaReflectValProxy<bevy::math::BVec2>;
 
 "#,
     r#"
 /// Computes the length of `self`.
 
     #[lua()]
-    fn length(self) -> f32;
+    fn length(_self: LuaReflectValProxy<bevy::math::Vec2>) -> f32;
 
 "#,
     r#"
@@ -10023,7 +11895,7 @@ pub struct LuaU64Vec4 {
 /// This is faster than `length()` as it avoids a square root operation.
 
     #[lua()]
-    fn length_squared(self) -> f32;
+    fn length_squared(_self: LuaReflectValProxy<bevy::math::Vec2>) -> f32;
 
 "#,
     r#"
@@ -10031,28 +11903,37 @@ pub struct LuaU64Vec4 {
 /// For valid results, `self` must _not_ be of length zero.
 
     #[lua()]
-    fn length_recip(self) -> f32;
+    fn length_recip(_self: LuaReflectValProxy<bevy::math::Vec2>) -> f32;
 
 "#,
     r#"
 /// Computes the Euclidean distance between two points in space.
 
     #[lua()]
-    fn distance(self, #[proxy] rhs: bevy::math::Vec2) -> f32;
+    fn distance(
+        _self: LuaReflectValProxy<bevy::math::Vec2>,
+        rhs: LuaReflectValProxy<bevy::math::Vec2>,
+    ) -> f32;
 
 "#,
     r#"
 /// Compute the squared euclidean distance between two points in space.
 
     #[lua()]
-    fn distance_squared(self, #[proxy] rhs: bevy::math::Vec2) -> f32;
+    fn distance_squared(
+        _self: LuaReflectValProxy<bevy::math::Vec2>,
+        rhs: LuaReflectValProxy<bevy::math::Vec2>,
+    ) -> f32;
 
 "#,
     r#"
 /// Returns the element-wise quotient of [Euclidean division] of `self` by `rhs`.
 
     #[lua()]
-    fn div_euclid(self, #[proxy] rhs: bevy::math::Vec2) -> bevy::math::Vec2;
+    fn div_euclid(
+        _self: LuaReflectValProxy<bevy::math::Vec2>,
+        rhs: LuaReflectValProxy<bevy::math::Vec2>,
+    ) -> LuaReflectValProxy<bevy::math::Vec2>;
 
 "#,
     r#"
@@ -10060,7 +11941,10 @@ pub struct LuaU64Vec4 {
 /// [Euclidean division]: f32::rem_euclid
 
     #[lua()]
-    fn rem_euclid(self, #[proxy] rhs: bevy::math::Vec2) -> bevy::math::Vec2;
+    fn rem_euclid(
+        _self: LuaReflectValProxy<bevy::math::Vec2>,
+        rhs: LuaReflectValProxy<bevy::math::Vec2>,
+    ) -> LuaReflectValProxy<bevy::math::Vec2>;
 
 "#,
     r#"
@@ -10071,7 +11955,9 @@ pub struct LuaU64Vec4 {
 /// Will panic if `self` is zero length when `glam_assert` is enabled.
 
     #[lua()]
-    fn normalize(self) -> bevy::math::Vec2;
+    fn normalize(
+        _self: LuaReflectValProxy<bevy::math::Vec2>,
+    ) -> LuaReflectValProxy<bevy::math::Vec2>;
 
 "#,
     r#"
@@ -10081,7 +11967,9 @@ pub struct LuaU64Vec4 {
 /// See also [`Self::try_normalize()`].
 
     #[lua()]
-    fn normalize_or_zero(self) -> bevy::math::Vec2;
+    fn normalize_or_zero(
+        _self: LuaReflectValProxy<bevy::math::Vec2>,
+    ) -> LuaReflectValProxy<bevy::math::Vec2>;
 
 "#,
     r#"
@@ -10089,7 +11977,7 @@ pub struct LuaU64Vec4 {
 /// Uses a precision threshold of `1e-6`.
 
     #[lua()]
-    fn is_normalized(self) -> bool;
+    fn is_normalized(_self: LuaReflectValProxy<bevy::math::Vec2>) -> bool;
 
 "#,
     r#"
@@ -10099,7 +11987,10 @@ pub struct LuaU64Vec4 {
 /// Will panic if `rhs` is zero length when `glam_assert` is enabled.
 
     #[lua()]
-    fn project_onto(self, #[proxy] rhs: bevy::math::Vec2) -> bevy::math::Vec2;
+    fn project_onto(
+        _self: LuaReflectValProxy<bevy::math::Vec2>,
+        rhs: LuaReflectValProxy<bevy::math::Vec2>,
+    ) -> LuaReflectValProxy<bevy::math::Vec2>;
 
 "#,
     r#"
@@ -10111,653 +12002,10 @@ pub struct LuaU64Vec4 {
 /// Will panic if `rhs` has a length of zero when `glam_assert` is enabled.
 
     #[lua()]
-    fn reject_from(self, #[proxy] rhs: bevy::math::Vec2) -> bevy::math::Vec2;
-
-"#,
-    r#"
-/// Returns the vector projection of `self` onto `rhs`.
-/// `rhs` must be normalized.
-/// # Panics
-/// Will panic if `rhs` is not normalized when `glam_assert` is enabled.
-
-    #[lua()]
-    fn project_onto_normalized(self, #[proxy] rhs: bevy::math::Vec2) -> bevy::math::Vec2;
-
-"#,
-    r#"
-/// Returns the vector rejection of `self` from `rhs`.
-/// The vector rejection is the vector perpendicular to the projection of `self` onto
-/// `rhs`, in rhs words the result of `self - self.project_onto(rhs)`.
-/// `rhs` must be normalized.
-/// # Panics
-/// Will panic if `rhs` is not normalized when `glam_assert` is enabled.
-
-    #[lua()]
-    fn reject_from_normalized(self, #[proxy] rhs: bevy::math::Vec2) -> bevy::math::Vec2;
-
-"#,
-    r#"
-/// Returns a vector containing the nearest integer to a number for each element of `self`.
-/// Round half-way cases away from 0.0.
-
-    #[lua()]
-    fn round(self) -> bevy::math::Vec2;
-
-"#,
-    r#"
-/// Returns a vector containing the largest integer less than or equal to a number for each
-/// element of `self`.
-
-    #[lua()]
-    fn floor(self) -> bevy::math::Vec2;
-
-"#,
-    r#"
-/// Returns a vector containing the smallest integer greater than or equal to a number for
-/// each element of `self`.
-
-    #[lua()]
-    fn ceil(self) -> bevy::math::Vec2;
-
-"#,
-    r#"
-/// Returns a vector containing the integer part each element of `self`. This means numbers are
-/// always truncated towards zero.
-
-    #[lua()]
-    fn trunc(self) -> bevy::math::Vec2;
-
-"#,
-    r#"
-/// Returns a vector containing the fractional part of the vector, e.g. `self -
-/// self.floor()`.
-/// Note that this is fast but not precise for large numbers.
-
-    #[lua()]
-    fn fract(self) -> bevy::math::Vec2;
-
-"#,
-    r#"
-/// Returns a vector containing `e^self` (the exponential function) for each element of
-/// `self`.
-
-    #[lua()]
-    fn exp(self) -> bevy::math::Vec2;
-
-"#,
-    r#"
-/// Returns a vector containing each element of `self` raised to the power of `n`.
-
-    #[lua()]
-    fn powf(self, n: f32) -> bevy::math::Vec2;
-
-"#,
-    r#"
-/// Returns a vector containing the reciprocal `1.0/n` of each element of `self`.
-
-    #[lua()]
-    fn recip(self) -> bevy::math::Vec2;
-
-"#,
-    r#"
-/// Performs a linear interpolation between `self` and `rhs` based on the value `s`.
-/// When `s` is `0.0`, the result will be equal to `self`.  When `s` is `1.0`, the result
-/// will be equal to `rhs`. When `s` is outside of range `[0, 1]`, the result is linearly
-/// extrapolated.
-
-    #[lua()]
-    fn lerp(self, #[proxy] rhs: bevy::math::Vec2, s: f32) -> bevy::math::Vec2;
-
-"#,
-    r#"
-/// Returns true if the absolute difference of all elements between `self` and `rhs` is
-/// less than or equal to `max_abs_diff`.
-/// This can be used to compare if two vectors contain similar elements. It works best when
-/// comparing with a known value. The `max_abs_diff` that should be used used depends on
-/// the values being compared against.
-/// For more see
-/// [comparing floating point numbers](https://randomascii.wordpress.com/2012/02/25/comparing-floating-point-numbers-2012-edition/).
-
-    #[lua()]
-    fn abs_diff_eq(self, #[proxy] rhs: bevy::math::Vec2, max_abs_diff: f32) -> bool;
-
-"#,
-    r#"
-/// Returns a vector with a length no less than `min` and no more than `max`
-/// # Panics
-/// Will panic if `min` is greater than `max` when `glam_assert` is enabled.
-
-    #[lua()]
-    fn clamp_length(self, min: f32, max: f32) -> bevy::math::Vec2;
-
-"#,
-    r#"
-/// Returns a vector with a length no more than `max`
-
-    #[lua()]
-    fn clamp_length_max(self, max: f32) -> bevy::math::Vec2;
-
-"#,
-    r#"
-/// Returns a vector with a length no less than `min`
-
-    #[lua()]
-    fn clamp_length_min(self, min: f32) -> bevy::math::Vec2;
-
-"#,
-    r#"
-/// Fused multiply-add. Computes `(self * a) + b` element-wise with only one rounding
-/// error, yielding a more accurate result than an unfused multiply-add.
-/// Using `mul_add` *may* be more performant than an unfused multiply-add if the target
-/// architecture has a dedicated fma CPU instruction. However, this is not always true,
-/// and will be heavily dependant on designing algorithms with specific target hardware in
-/// mind.
-
-    #[lua()]
-    fn mul_add(
-        self,
-        #[proxy]
-        a: bevy::math::Vec2,
-        #[proxy]
-        b: bevy::math::Vec2,
-    ) -> bevy::math::Vec2;
-
-"#,
-    r#"
-/// Creates a 2D vector containing `[angle.cos(), angle.sin()]`. This can be used in
-/// conjunction with the [`rotate()`][Self::rotate()] method, e.g.
-/// `Vec2::from_angle(PI).rotate(Vec2::Y)` will create the vector `[-1, 0]`
-/// and rotate [`Vec2::Y`] around it returning `-Vec2::Y`.
-
-    #[lua()]
-    fn from_angle(angle: f32) -> bevy::math::Vec2;
-
-"#,
-    r#"
-/// Returns the angle (in radians) of this vector in the range `[-π, +π]`.
-/// The input does not need to be a unit vector however it must be non-zero.
-
-    #[lua()]
-    fn to_angle(self) -> f32;
-
-"#,
-    r#"
-/// Returns the angle (in radians) between `self` and `rhs` in the range `[-π, +π]`.
-/// The inputs do not need to be unit vectors however they must be non-zero.
-
-    #[lua()]
-    fn angle_between(self, #[proxy] rhs: bevy::math::Vec2) -> f32;
-
-"#,
-    r#"
-/// Returns a vector that is equal to `self` rotated by 90 degrees.
-
-    #[lua()]
-    fn perp(self) -> bevy::math::Vec2;
-
-"#,
-    r#"
-/// The perpendicular dot product of `self` and `rhs`.
-/// Also known as the wedge product, 2D cross product, and determinant.
-
-    #[lua()]
-    fn perp_dot(self, #[proxy] rhs: bevy::math::Vec2) -> f32;
-
-"#,
-    r#"
-/// Returns `rhs` rotated by the angle of `self`. If `self` is normalized,
-/// then this just rotation. This is what you usually want. Otherwise,
-/// it will be like a rotation with a multiplication by `self`'s length.
-
-    #[lua()]
-    fn rotate(self, #[proxy] rhs: bevy::math::Vec2) -> bevy::math::Vec2;
-
-"#,
-    r#"
-/// Casts all elements of `self` to `f64`.
-
-    #[lua()]
-    fn as_dvec2(&self) -> bevy::math::DVec2;
-
-"#,
-    r#"
-/// Casts all elements of `self` to `i32`.
-
-    #[lua()]
-    fn as_ivec2(&self) -> bevy::math::IVec2;
-
-"#,
-    r#"
-/// Casts all elements of `self` to `u32`.
-
-    #[lua()]
-    fn as_uvec2(&self) -> bevy::math::UVec2;
-
-"#,
-    r#"
-/// Casts all elements of `self` to `i64`.
-
-    #[lua()]
-    fn as_i64vec2(&self) -> bevy::math::I64Vec2;
-
-"#,
-    r#"
-/// Casts all elements of `self` to `u64`.
-
-    #[lua()]
-    fn as_u64vec2(&self) -> bevy::math::U64Vec2;
-
-"#,
-    r#"
-
-    #[lua(as_trait = "std::ops::Add", composite = "add")]
-    fn add(self, rhs: f32) -> bevy::math::Vec2;
-
-"#,
-    r#"
-
-    #[lua(as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone")]
-    fn clone(&self) -> bevy::math::Vec2;
-
-"#,
-    r#"
-#[lua(metamethod="ToString")]
-fn index(&self) -> String {
-    format!("{}", _self)
-}
-"#,
-    r#"
-#[lua(raw , metamethod="Index")]
-fn index(&self, lua: &Lua, idx: crate::lua::util::LuaIndex) -> Result<f32,_> {
-    Ok(_self.inner()?[*idx])
-}
-"#,
-    r#"
-#[lua(raw, metamethod="NewIndex")]
-fn index(&mut self, lua: &Lua, idx: crate::lua::util::LuaIndex, val: f32) -> Result<(),_> {
-    _self.val_mut(|s| Ok(s[*idx] = val))?
-}
-"#]
-)]
-pub struct LuaVec2 {
-    x: f32,
-    y: f32,
-}
-#[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
-#[proxy(
-    remote = "bevy::math::Vec3A",
-    bms_core_path = "bevy_mod_scripting_core",
-    bms_lua_path = "crate",
-    functions[r#"
-
-    #[lua(as_trait = "std::ops::Sub", composite = "sub")]
-    fn sub(self, rhs: f32) -> bevy::math::Vec3A;
-
-"#,
-    r#"
-
-    #[lua(as_trait = "std::ops::Sub", composite = "sub")]
-    fn sub(self, #[proxy] rhs: bevy::math::Vec3A) -> bevy::math::Vec3A;
-
-"#,
-    r#"
-
-    #[lua(as_trait = "std::cmp::PartialEq", composite = "eq")]
-    fn eq(&self, #[proxy] rhs: &glam::Vec3A) -> bool;
-
-"#,
-    r#"
-
-    #[lua(as_trait = "std::ops::Rem", composite = "rem")]
-    fn rem(self, rhs: f32) -> bevy::math::Vec3A;
-
-"#,
-    r#"
-/// Creates a new vector.
-
-    #[lua()]
-    fn new(x: f32, y: f32, z: f32) -> bevy::math::Vec3A;
-
-"#,
-    r#"
-/// Creates a vector with all elements set to `v`.
-
-    #[lua()]
-    fn splat(v: f32) -> bevy::math::Vec3A;
-
-"#,
-    r#"
-/// Creates a vector from the elements in `if_true` and `if_false`, selecting which to use
-/// for each element of `self`.
-/// A true element in the mask uses the corresponding element from `if_true`, and false
-/// uses the element from `if_false`.
-
-    #[lua()]
-    fn select(
-        #[proxy]
-        mask: bevy::math::BVec3A,
-        #[proxy]
-        if_true: bevy::math::Vec3A,
-        #[proxy]
-        if_false: bevy::math::Vec3A,
-    ) -> bevy::math::Vec3A;
-
-"#,
-    r#"
-/// Creates a new vector from an array.
-
-    #[lua()]
-    fn from_array(a: [f32; 3]) -> bevy::math::Vec3A;
-
-"#,
-    r#"
-/// `[x, y, z]`
-
-    #[lua()]
-    fn to_array(&self) -> [f32; 3];
-
-"#,
-    r#"
-/// Creates a 4D vector from `self` and the given `w` value.
-
-    #[lua()]
-    fn extend(self, w: f32) -> bevy::math::Vec4;
-
-"#,
-    r#"
-/// Creates a 2D vector from the `x` and `y` elements of `self`, discarding `z`.
-/// Truncation may also be performed by using [`self.xy()`][crate::swizzles::Vec3Swizzles::xy()].
-
-    #[lua()]
-    fn truncate(self) -> bevy::math::Vec2;
-
-"#,
-    r#"
-/// Computes the dot product of `self` and `rhs`.
-
-    #[lua()]
-    fn dot(self, #[proxy] rhs: bevy::math::Vec3A) -> f32;
-
-"#,
-    r#"
-/// Returns a vector where every component is the dot product of `self` and `rhs`.
-
-    #[lua()]
-    fn dot_into_vec(self, #[proxy] rhs: bevy::math::Vec3A) -> bevy::math::Vec3A;
-
-"#,
-    r#"
-/// Computes the cross product of `self` and `rhs`.
-
-    #[lua()]
-    fn cross(self, #[proxy] rhs: bevy::math::Vec3A) -> bevy::math::Vec3A;
-
-"#,
-    r#"
-/// Returns a vector containing the minimum values for each element of `self` and `rhs`.
-/// In other words this computes `[self.x.min(rhs.x), self.y.min(rhs.y), ..]`.
-
-    #[lua()]
-    fn min(self, #[proxy] rhs: bevy::math::Vec3A) -> bevy::math::Vec3A;
-
-"#,
-    r#"
-/// Returns a vector containing the maximum values for each element of `self` and `rhs`.
-/// In other words this computes `[self.x.max(rhs.x), self.y.max(rhs.y), ..]`.
-
-    #[lua()]
-    fn max(self, #[proxy] rhs: bevy::math::Vec3A) -> bevy::math::Vec3A;
-
-"#,
-    r#"
-/// Component-wise clamping of values, similar to [`f32::clamp`].
-/// Each element in `min` must be less-or-equal to the corresponding element in `max`.
-/// # Panics
-/// Will panic if `min` is greater than `max` when `glam_assert` is enabled.
-
-    #[lua()]
-    fn clamp(
-        self,
-        #[proxy]
-        min: bevy::math::Vec3A,
-        #[proxy]
-        max: bevy::math::Vec3A,
-    ) -> bevy::math::Vec3A;
-
-"#,
-    r#"
-/// Returns the horizontal minimum of `self`.
-/// In other words this computes `min(x, y, ..)`.
-
-    #[lua()]
-    fn min_element(self) -> f32;
-
-"#,
-    r#"
-/// Returns the horizontal maximum of `self`.
-/// In other words this computes `max(x, y, ..)`.
-
-    #[lua()]
-    fn max_element(self) -> f32;
-
-"#,
-    r#"
-/// Returns a vector mask containing the result of a `==` comparison for each element of
-/// `self` and `rhs`.
-/// In other words, this computes `[self.x == rhs.x, self.y == rhs.y, ..]` for all
-/// elements.
-
-    #[lua()]
-    fn cmpeq(self, #[proxy] rhs: bevy::math::Vec3A) -> bevy::math::BVec3A;
-
-"#,
-    r#"
-/// Returns a vector mask containing the result of a `!=` comparison for each element of
-/// `self` and `rhs`.
-/// In other words this computes `[self.x != rhs.x, self.y != rhs.y, ..]` for all
-/// elements.
-
-    #[lua()]
-    fn cmpne(self, #[proxy] rhs: bevy::math::Vec3A) -> bevy::math::BVec3A;
-
-"#,
-    r#"
-/// Returns a vector mask containing the result of a `>=` comparison for each element of
-/// `self` and `rhs`.
-/// In other words this computes `[self.x >= rhs.x, self.y >= rhs.y, ..]` for all
-/// elements.
-
-    #[lua()]
-    fn cmpge(self, #[proxy] rhs: bevy::math::Vec3A) -> bevy::math::BVec3A;
-
-"#,
-    r#"
-/// Returns a vector mask containing the result of a `>` comparison for each element of
-/// `self` and `rhs`.
-/// In other words this computes `[self.x > rhs.x, self.y > rhs.y, ..]` for all
-/// elements.
-
-    #[lua()]
-    fn cmpgt(self, #[proxy] rhs: bevy::math::Vec3A) -> bevy::math::BVec3A;
-
-"#,
-    r#"
-/// Returns a vector mask containing the result of a `<=` comparison for each element of
-/// `self` and `rhs`.
-/// In other words this computes `[self.x <= rhs.x, self.y <= rhs.y, ..]` for all
-/// elements.
-
-    #[lua()]
-    fn cmple(self, #[proxy] rhs: bevy::math::Vec3A) -> bevy::math::BVec3A;
-
-"#,
-    r#"
-/// Returns a vector mask containing the result of a `<` comparison for each element of
-/// `self` and `rhs`.
-/// In other words this computes `[self.x < rhs.x, self.y < rhs.y, ..]` for all
-/// elements.
-
-    #[lua()]
-    fn cmplt(self, #[proxy] rhs: bevy::math::Vec3A) -> bevy::math::BVec3A;
-
-"#,
-    r#"
-/// Returns a vector containing the absolute value of each element of `self`.
-
-    #[lua()]
-    fn abs(self) -> bevy::math::Vec3A;
-
-"#,
-    r#"
-/// Returns a vector with elements representing the sign of `self`.
-/// - `1.0` if the number is positive, `+0.0` or `INFINITY`
-/// - `-1.0` if the number is negative, `-0.0` or `NEG_INFINITY`
-/// - `NAN` if the number is `NAN`
-
-    #[lua()]
-    fn signum(self) -> bevy::math::Vec3A;
-
-"#,
-    r#"
-/// Returns a vector with signs of `rhs` and the magnitudes of `self`.
-
-    #[lua()]
-    fn copysign(self, #[proxy] rhs: bevy::math::Vec3A) -> bevy::math::Vec3A;
-
-"#,
-    r#"
-/// Returns a bitmask with the lowest 3 bits set to the sign bits from the elements of `self`.
-/// A negative element results in a `1` bit and a positive element in a `0` bit.  Element `x` goes
-/// into the first lowest bit, element `y` into the second, etc.
-
-    #[lua()]
-    fn is_negative_bitmask(self) -> u32;
-
-"#,
-    r#"
-/// Returns `true` if, and only if, all elements are finite.  If any element is either
-/// `NaN`, positive or negative infinity, this will return `false`.
-
-    #[lua()]
-    fn is_finite(self) -> bool;
-
-"#,
-    r#"
-/// Returns `true` if any elements are `NaN`.
-
-    #[lua()]
-    fn is_nan(self) -> bool;
-
-"#,
-    r#"
-/// Performs `is_nan` on each element of self, returning a vector mask of the results.
-/// In other words, this computes `[x.is_nan(), y.is_nan(), z.is_nan(), w.is_nan()]`.
-
-    #[lua()]
-    fn is_nan_mask(self) -> bevy::math::BVec3A;
-
-"#,
-    r#"
-/// Computes the length of `self`.
-
-    #[lua()]
-    fn length(self) -> f32;
-
-"#,
-    r#"
-/// Computes the squared length of `self`.
-/// This is faster than `length()` as it avoids a square root operation.
-
-    #[lua()]
-    fn length_squared(self) -> f32;
-
-"#,
-    r#"
-/// Computes `1.0 / length()`.
-/// For valid results, `self` must _not_ be of length zero.
-
-    #[lua()]
-    fn length_recip(self) -> f32;
-
-"#,
-    r#"
-/// Computes the Euclidean distance between two points in space.
-
-    #[lua()]
-    fn distance(self, #[proxy] rhs: bevy::math::Vec3A) -> f32;
-
-"#,
-    r#"
-/// Compute the squared euclidean distance between two points in space.
-
-    #[lua()]
-    fn distance_squared(self, #[proxy] rhs: bevy::math::Vec3A) -> f32;
-
-"#,
-    r#"
-/// Returns the element-wise quotient of [Euclidean division] of `self` by `rhs`.
-
-    #[lua()]
-    fn div_euclid(self, #[proxy] rhs: bevy::math::Vec3A) -> bevy::math::Vec3A;
-
-"#,
-    r#"
-/// Returns the element-wise remainder of [Euclidean division] of `self` by `rhs`.
-/// [Euclidean division]: f32::rem_euclid
-
-    #[lua()]
-    fn rem_euclid(self, #[proxy] rhs: bevy::math::Vec3A) -> bevy::math::Vec3A;
-
-"#,
-    r#"
-/// Returns `self` normalized to length 1.0.
-/// For valid results, `self` must _not_ be of length zero, nor very close to zero.
-/// See also [`Self::try_normalize()`] and [`Self::normalize_or_zero()`].
-/// Panics
-/// Will panic if `self` is zero length when `glam_assert` is enabled.
-
-    #[lua()]
-    fn normalize(self) -> bevy::math::Vec3A;
-
-"#,
-    r#"
-/// Returns `self` normalized to length 1.0 if possible, else returns zero.
-/// In particular, if the input is zero (or very close to zero), or non-finite,
-/// the result of this operation will be zero.
-/// See also [`Self::try_normalize()`].
-
-    #[lua()]
-    fn normalize_or_zero(self) -> bevy::math::Vec3A;
-
-"#,
-    r#"
-/// Returns whether `self` is length `1.0` or not.
-/// Uses a precision threshold of `1e-6`.
-
-    #[lua()]
-    fn is_normalized(self) -> bool;
-
-"#,
-    r#"
-/// Returns the vector projection of `self` onto `rhs`.
-/// `rhs` must be of non-zero length.
-/// # Panics
-/// Will panic if `rhs` is zero length when `glam_assert` is enabled.
-
-    #[lua()]
-    fn project_onto(self, #[proxy] rhs: bevy::math::Vec3A) -> bevy::math::Vec3A;
-
-"#,
-    r#"
-/// Returns the vector rejection of `self` from `rhs`.
-/// The vector rejection is the vector perpendicular to the projection of `self` onto
-/// `rhs`, in rhs words the result of `self - self.project_onto(rhs)`.
-/// `rhs` must be of non-zero length.
-/// # Panics
-/// Will panic if `rhs` has a length of zero when `glam_assert` is enabled.
-
-    #[lua()]
-    fn reject_from(self, #[proxy] rhs: bevy::math::Vec3A) -> bevy::math::Vec3A;
+    fn reject_from(
+        _self: LuaReflectValProxy<bevy::math::Vec2>,
+        rhs: LuaReflectValProxy<bevy::math::Vec2>,
+    ) -> LuaReflectValProxy<bevy::math::Vec2>;
 
 "#,
     r#"
@@ -10768,10 +12016,9 @@ pub struct LuaVec2 {
 
     #[lua()]
     fn project_onto_normalized(
-        self,
-        #[proxy]
-        rhs: bevy::math::Vec3A,
-    ) -> bevy::math::Vec3A;
+        _self: LuaReflectValProxy<bevy::math::Vec2>,
+        rhs: LuaReflectValProxy<bevy::math::Vec2>,
+    ) -> LuaReflectValProxy<bevy::math::Vec2>;
 
 "#,
     r#"
@@ -10784,10 +12031,9 @@ pub struct LuaVec2 {
 
     #[lua()]
     fn reject_from_normalized(
-        self,
-        #[proxy]
-        rhs: bevy::math::Vec3A,
-    ) -> bevy::math::Vec3A;
+        _self: LuaReflectValProxy<bevy::math::Vec2>,
+        rhs: LuaReflectValProxy<bevy::math::Vec2>,
+    ) -> LuaReflectValProxy<bevy::math::Vec2>;
 
 "#,
     r#"
@@ -10795,7 +12041,9 @@ pub struct LuaVec2 {
 /// Round half-way cases away from 0.0.
 
     #[lua()]
-    fn round(self) -> bevy::math::Vec3A;
+    fn round(
+        _self: LuaReflectValProxy<bevy::math::Vec2>,
+    ) -> LuaReflectValProxy<bevy::math::Vec2>;
 
 "#,
     r#"
@@ -10803,7 +12051,9 @@ pub struct LuaVec2 {
 /// element of `self`.
 
     #[lua()]
-    fn floor(self) -> bevy::math::Vec3A;
+    fn floor(
+        _self: LuaReflectValProxy<bevy::math::Vec2>,
+    ) -> LuaReflectValProxy<bevy::math::Vec2>;
 
 "#,
     r#"
@@ -10811,7 +12061,9 @@ pub struct LuaVec2 {
 /// each element of `self`.
 
     #[lua()]
-    fn ceil(self) -> bevy::math::Vec3A;
+    fn ceil(
+        _self: LuaReflectValProxy<bevy::math::Vec2>,
+    ) -> LuaReflectValProxy<bevy::math::Vec2>;
 
 "#,
     r#"
@@ -10819,7 +12071,9 @@ pub struct LuaVec2 {
 /// always truncated towards zero.
 
     #[lua()]
-    fn trunc(self) -> bevy::math::Vec3A;
+    fn trunc(
+        _self: LuaReflectValProxy<bevy::math::Vec2>,
+    ) -> LuaReflectValProxy<bevy::math::Vec2>;
 
 "#,
     r#"
@@ -10828,7 +12082,9 @@ pub struct LuaVec2 {
 /// Note that this is fast but not precise for large numbers.
 
     #[lua()]
-    fn fract(self) -> bevy::math::Vec3A;
+    fn fract(
+        _self: LuaReflectValProxy<bevy::math::Vec2>,
+    ) -> LuaReflectValProxy<bevy::math::Vec2>;
 
 "#,
     r#"
@@ -10836,21 +12092,28 @@ pub struct LuaVec2 {
 /// `self`.
 
     #[lua()]
-    fn exp(self) -> bevy::math::Vec3A;
+    fn exp(
+        _self: LuaReflectValProxy<bevy::math::Vec2>,
+    ) -> LuaReflectValProxy<bevy::math::Vec2>;
 
 "#,
     r#"
 /// Returns a vector containing each element of `self` raised to the power of `n`.
 
     #[lua()]
-    fn powf(self, n: f32) -> bevy::math::Vec3A;
+    fn powf(
+        _self: LuaReflectValProxy<bevy::math::Vec2>,
+        n: f32,
+    ) -> LuaReflectValProxy<bevy::math::Vec2>;
 
 "#,
     r#"
 /// Returns a vector containing the reciprocal `1.0/n` of each element of `self`.
 
     #[lua()]
-    fn recip(self) -> bevy::math::Vec3A;
+    fn recip(
+        _self: LuaReflectValProxy<bevy::math::Vec2>,
+    ) -> LuaReflectValProxy<bevy::math::Vec2>;
 
 "#,
     r#"
@@ -10860,7 +12123,11 @@ pub struct LuaVec2 {
 /// extrapolated.
 
     #[lua()]
-    fn lerp(self, #[proxy] rhs: bevy::math::Vec3A, s: f32) -> bevy::math::Vec3A;
+    fn lerp(
+        _self: LuaReflectValProxy<bevy::math::Vec2>,
+        rhs: LuaReflectValProxy<bevy::math::Vec2>,
+        s: f32,
+    ) -> LuaReflectValProxy<bevy::math::Vec2>;
 
 "#,
     r#"
@@ -10873,7 +12140,11 @@ pub struct LuaVec2 {
 /// [comparing floating point numbers](https://randomascii.wordpress.com/2012/02/25/comparing-floating-point-numbers-2012-edition/).
 
     #[lua()]
-    fn abs_diff_eq(self, #[proxy] rhs: bevy::math::Vec3A, max_abs_diff: f32) -> bool;
+    fn abs_diff_eq(
+        _self: LuaReflectValProxy<bevy::math::Vec2>,
+        rhs: LuaReflectValProxy<bevy::math::Vec2>,
+        max_abs_diff: f32,
+    ) -> bool;
 
 "#,
     r#"
@@ -10882,21 +12153,31 @@ pub struct LuaVec2 {
 /// Will panic if `min` is greater than `max` when `glam_assert` is enabled.
 
     #[lua()]
-    fn clamp_length(self, min: f32, max: f32) -> bevy::math::Vec3A;
+    fn clamp_length(
+        _self: LuaReflectValProxy<bevy::math::Vec2>,
+        min: f32,
+        max: f32,
+    ) -> LuaReflectValProxy<bevy::math::Vec2>;
 
 "#,
     r#"
 /// Returns a vector with a length no more than `max`
 
     #[lua()]
-    fn clamp_length_max(self, max: f32) -> bevy::math::Vec3A;
+    fn clamp_length_max(
+        _self: LuaReflectValProxy<bevy::math::Vec2>,
+        max: f32,
+    ) -> LuaReflectValProxy<bevy::math::Vec2>;
 
 "#,
     r#"
 /// Returns a vector with a length no less than `min`
 
     #[lua()]
-    fn clamp_length_min(self, min: f32) -> bevy::math::Vec3A;
+    fn clamp_length_min(
+        _self: LuaReflectValProxy<bevy::math::Vec2>,
+        min: f32,
+    ) -> LuaReflectValProxy<bevy::math::Vec2>;
 
 "#,
     r#"
@@ -10909,129 +12190,133 @@ pub struct LuaVec2 {
 
     #[lua()]
     fn mul_add(
-        self,
-        #[proxy]
-        a: bevy::math::Vec3A,
-        #[proxy]
-        b: bevy::math::Vec3A,
-    ) -> bevy::math::Vec3A;
+        _self: LuaReflectValProxy<bevy::math::Vec2>,
+        a: LuaReflectValProxy<bevy::math::Vec2>,
+        b: LuaReflectValProxy<bevy::math::Vec2>,
+    ) -> LuaReflectValProxy<bevy::math::Vec2>;
 
 "#,
     r#"
-/// Returns the angle (in radians) between two vectors.
+/// Creates a 2D vector containing `[angle.cos(), angle.sin()]`. This can be used in
+/// conjunction with the [`rotate()`][Self::rotate()] method, e.g.
+/// `Vec2::from_angle(PI).rotate(Vec2::Y)` will create the vector `[-1, 0]`
+/// and rotate [`Vec2::Y`] around it returning `-Vec2::Y`.
+
+    #[lua()]
+    fn from_angle(angle: f32) -> LuaReflectValProxy<bevy::math::Vec2>;
+
+"#,
+    r#"
+/// Returns the angle (in radians) of this vector in the range `[-π, +π]`.
+/// The input does not need to be a unit vector however it must be non-zero.
+
+    #[lua()]
+    fn to_angle(_self: LuaReflectValProxy<bevy::math::Vec2>) -> f32;
+
+"#,
+    r#"
+/// Returns the angle (in radians) between `self` and `rhs` in the range `[-π, +π]`.
 /// The inputs do not need to be unit vectors however they must be non-zero.
 
     #[lua()]
-    fn angle_between(self, #[proxy] rhs: bevy::math::Vec3A) -> f32;
+    fn angle_between(
+        _self: LuaReflectValProxy<bevy::math::Vec2>,
+        rhs: LuaReflectValProxy<bevy::math::Vec2>,
+    ) -> f32;
 
 "#,
     r#"
-/// Returns some vector that is orthogonal to the given one.
-/// The input vector must be finite and non-zero.
-/// The output vector is not necessarily unit length. For that use
-/// [`Self::any_orthonormal_vector()`] instead.
+/// Returns a vector that is equal to `self` rotated by 90 degrees.
 
     #[lua()]
-    fn any_orthogonal_vector(&self) -> bevy::math::Vec3A;
+    fn perp(
+        _self: LuaReflectValProxy<bevy::math::Vec2>,
+    ) -> LuaReflectValProxy<bevy::math::Vec2>;
 
 "#,
     r#"
-/// Returns any unit vector that is orthogonal to the given one.
-/// The input vector must be unit length.
-/// # Panics
-/// Will panic if `self` is not normalized when `glam_assert` is enabled.
+/// The perpendicular dot product of `self` and `rhs`.
+/// Also known as the wedge product, 2D cross product, and determinant.
 
     #[lua()]
-    fn any_orthonormal_vector(&self) -> bevy::math::Vec3A;
+    fn perp_dot(
+        _self: LuaReflectValProxy<bevy::math::Vec2>,
+        rhs: LuaReflectValProxy<bevy::math::Vec2>,
+    ) -> f32;
+
+"#,
+    r#"
+/// Returns `rhs` rotated by the angle of `self`. If `self` is normalized,
+/// then this just rotation. This is what you usually want. Otherwise,
+/// it will be like a rotation with a multiplication by `self`'s length.
+
+    #[lua()]
+    fn rotate(
+        _self: LuaReflectValProxy<bevy::math::Vec2>,
+        rhs: LuaReflectValProxy<bevy::math::Vec2>,
+    ) -> LuaReflectValProxy<bevy::math::Vec2>;
 
 "#,
     r#"
 /// Casts all elements of `self` to `f64`.
 
     #[lua()]
-    fn as_dvec3(&self) -> bevy::math::DVec3;
+    fn as_dvec2(
+        _self: LuaReflectRefProxy<bevy::math::Vec2>,
+    ) -> LuaReflectValProxy<bevy::math::DVec2>;
 
 "#,
     r#"
 /// Casts all elements of `self` to `i32`.
 
     #[lua()]
-    fn as_ivec3(&self) -> bevy::math::IVec3;
+    fn as_ivec2(
+        _self: LuaReflectRefProxy<bevy::math::Vec2>,
+    ) -> LuaReflectValProxy<bevy::math::IVec2>;
 
 "#,
     r#"
 /// Casts all elements of `self` to `u32`.
 
     #[lua()]
-    fn as_uvec3(&self) -> bevy::math::UVec3;
+    fn as_uvec2(
+        _self: LuaReflectRefProxy<bevy::math::Vec2>,
+    ) -> LuaReflectValProxy<bevy::math::UVec2>;
 
 "#,
     r#"
 /// Casts all elements of `self` to `i64`.
 
     #[lua()]
-    fn as_i64vec3(&self) -> bevy::math::I64Vec3;
+    fn as_i64vec2(
+        _self: LuaReflectRefProxy<bevy::math::Vec2>,
+    ) -> LuaReflectValProxy<bevy::math::I64Vec2>;
 
 "#,
     r#"
 /// Casts all elements of `self` to `u64`.
 
     #[lua()]
-    fn as_u64vec3(&self) -> bevy::math::U64Vec3;
+    fn as_u64vec2(
+        _self: LuaReflectRefProxy<bevy::math::Vec2>,
+    ) -> LuaReflectValProxy<bevy::math::U64Vec2>;
 
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Div", composite = "div")]
-    fn div(self, rhs: f32) -> bevy::math::Vec3A;
-
-"#,
-    r#"
-
-    #[lua(as_trait = "std::ops::Add", composite = "add")]
-    fn add(self, rhs: f32) -> bevy::math::Vec3A;
-
-"#,
-    r#"
-
-    #[lua(as_trait = "std::ops::Mul", composite = "mul")]
-    fn mul(self, rhs: f32) -> bevy::math::Vec3A;
-
-"#,
-    r#"
-
-    #[lua(as_trait = "std::ops::Mul", composite = "mul")]
-    fn mul(self, #[proxy] rhs: bevy::math::Vec3A) -> bevy::math::Vec3A;
+    #[lua(as_trait = "std::ops::Add::<f32>", composite = "add")]
+    fn add(
+        _self: LuaReflectValProxy<bevy::math::Vec2>,
+        rhs: f32,
+    ) -> LuaReflectValProxy<bevy::math::Vec2>;
 
 "#,
     r#"
 
     #[lua(as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone")]
-    fn clone(&self) -> bevy::math::Vec3A;
-
-"#,
-    r#"
-
-    #[lua(as_trait = "std::ops::Div", composite = "div")]
-    fn div(self, #[proxy] rhs: bevy::math::Vec3A) -> bevy::math::Vec3A;
-
-"#,
-    r#"
-
-    #[lua(as_trait = "std::ops::Neg", composite = "neg")]
-    fn neg(self) -> bevy::math::Vec3A;
-
-"#,
-    r#"
-
-    #[lua(as_trait = "std::ops::Rem", composite = "rem")]
-    fn rem(self, #[proxy] rhs: bevy::math::Vec3A) -> bevy::math::Vec3A;
-
-"#,
-    r#"
-
-    #[lua(as_trait = "std::ops::Add", composite = "add")]
-    fn add(self, #[proxy] rhs: bevy::math::Vec3A) -> bevy::math::Vec3A;
+    fn clone(
+        _self: LuaReflectRefProxy<bevy::math::Vec2>,
+    ) -> LuaReflectValProxy<bevy::math::Vec2>;
 
 "#,
     r#"
@@ -11041,60 +12326,75 @@ fn index(&self) -> String {
 }
 "#,
     r#"
-#[lua(raw , metamethod="Index")]
-fn index(&self, lua: &Lua, idx: crate::lua::util::LuaIndex) -> Result<f32,_> {
-    Ok(_self.inner()?[*idx])
+#[lua(metamethod="Index")]
+fn index(self, idx: usize) -> IdentityProxy<f32> {
+    _self[idx - 1]
 }
 "#,
     r#"
-#[lua(raw, metamethod="NewIndex")]
-fn index(&mut self, lua: &Lua, idx: crate::lua::util::LuaIndex, val: f32) -> Result<(),_> {
-    _self.val_mut(|s| Ok(s[*idx] = val))?
+#[lua(metamethod="NewIndex")]
+fn index(&mut self, idx: usize, val: f32) -> () {
+    _self[idx - 1] = val
 }
 "#]
 )]
-pub struct LuaVec3A();
+pub struct Vec2 {
+    x: f32,
+    y: f32,
+}
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
-    remote = "bevy::math::Vec4",
+    remote = "bevy::math::Vec3A",
     bms_core_path = "bevy_mod_scripting_core",
     bms_lua_path = "crate",
     functions[r#"
 
-    #[lua(as_trait = "std::ops::Sub", composite = "sub")]
-    fn sub(self, #[proxy] rhs: bevy::math::Vec4) -> bevy::math::Vec4;
+    #[lua(as_trait = "std::ops::Sub::<f32>", composite = "sub")]
+    fn sub(
+        _self: LuaReflectValProxy<bevy::math::Vec3A>,
+        rhs: f32,
+    ) -> LuaReflectValProxy<bevy::math::Vec3A>;
 
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Rem", composite = "rem")]
-    fn rem(self, #[proxy] rhs: bevy::math::Vec4) -> bevy::math::Vec4;
+    #[lua(as_trait = "std::ops::Sub::<bevy::math::Vec3A>", composite = "sub")]
+    fn sub(
+        _self: LuaReflectValProxy<bevy::math::Vec3A>,
+        rhs: LuaReflectValProxy<bevy::math::Vec3A>,
+    ) -> LuaReflectValProxy<bevy::math::Vec3A>;
 
 "#,
     r#"
 
-    #[lua(as_trait = "std::cmp::PartialEq", composite = "eq")]
-    fn eq(&self, #[proxy] rhs: &glam::Vec4) -> bool;
+    #[lua(as_trait = "std::cmp::PartialEq::<bevy::math::Vec3A>", composite = "eq")]
+    fn eq(
+        _self: LuaReflectRefProxy<bevy::math::Vec3A>,
+        rhs: LuaReflectRefProxy<bevy::math::Vec3A>,
+    ) -> bool;
 
 "#,
     r#"
 
-    #[lua(as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone")]
-    fn clone(&self) -> bevy::math::Vec4;
+    #[lua(as_trait = "std::ops::Rem::<f32>", composite = "rem")]
+    fn rem(
+        _self: LuaReflectValProxy<bevy::math::Vec3A>,
+        rhs: f32,
+    ) -> LuaReflectValProxy<bevy::math::Vec3A>;
 
 "#,
     r#"
 /// Creates a new vector.
 
     #[lua()]
-    fn new(x: f32, y: f32, z: f32, w: f32) -> bevy::math::Vec4;
+    fn new(x: f32, y: f32, z: f32) -> LuaReflectValProxy<bevy::math::Vec3A>;
 
 "#,
     r#"
 /// Creates a vector with all elements set to `v`.
 
     #[lua()]
-    fn splat(v: f32) -> bevy::math::Vec4;
+    fn splat(v: f32) -> LuaReflectValProxy<bevy::math::Vec3A>;
 
 "#,
     r#"
@@ -11105,50 +12405,74 @@ pub struct LuaVec3A();
 
     #[lua()]
     fn select(
-        #[proxy]
-        mask: bevy::math::BVec4A,
-        #[proxy]
-        if_true: bevy::math::Vec4,
-        #[proxy]
-        if_false: bevy::math::Vec4,
-    ) -> bevy::math::Vec4;
+        mask: LuaReflectValProxy<bevy::math::BVec3A>,
+        if_true: LuaReflectValProxy<bevy::math::Vec3A>,
+        if_false: LuaReflectValProxy<bevy::math::Vec3A>,
+    ) -> LuaReflectValProxy<bevy::math::Vec3A>;
 
 "#,
     r#"
 /// Creates a new vector from an array.
 
     #[lua()]
-    fn from_array(a: [f32; 4]) -> bevy::math::Vec4;
+    fn from_array(a: [f32; 3]) -> LuaReflectValProxy<bevy::math::Vec3A>;
 
 "#,
     r#"
-/// `[x, y, z, w]`
+/// `[x, y, z]`
 
     #[lua()]
-    fn to_array(&self) -> [f32; 4];
+    fn to_array(_self: LuaReflectRefProxy<bevy::math::Vec3A>) -> [f32; 3];
 
 "#,
     r#"
-/// Creates a 3D vector from the `x`, `y` and `z` elements of `self`, discarding `w`.
-/// Truncation to [`Vec3`] may also be performed by using [`self.xyz()`][crate::swizzles::Vec4Swizzles::xyz()].
-/// To truncate to [`Vec3A`] use [`Vec3A::from()`].
+/// Creates a 4D vector from `self` and the given `w` value.
 
     #[lua()]
-    fn truncate(self) -> bevy::math::Vec3;
+    fn extend(
+        _self: LuaReflectValProxy<bevy::math::Vec3A>,
+        w: f32,
+    ) -> LuaReflectValProxy<bevy::math::Vec4>;
+
+"#,
+    r#"
+/// Creates a 2D vector from the `x` and `y` elements of `self`, discarding `z`.
+/// Truncation may also be performed by using [`self.xy()`][crate::swizzles::Vec3Swizzles::xy()].
+
+    #[lua()]
+    fn truncate(
+        _self: LuaReflectValProxy<bevy::math::Vec3A>,
+    ) -> LuaReflectValProxy<bevy::math::Vec2>;
 
 "#,
     r#"
 /// Computes the dot product of `self` and `rhs`.
 
     #[lua()]
-    fn dot(self, #[proxy] rhs: bevy::math::Vec4) -> f32;
+    fn dot(
+        _self: LuaReflectValProxy<bevy::math::Vec3A>,
+        rhs: LuaReflectValProxy<bevy::math::Vec3A>,
+    ) -> f32;
 
 "#,
     r#"
 /// Returns a vector where every component is the dot product of `self` and `rhs`.
 
     #[lua()]
-    fn dot_into_vec(self, #[proxy] rhs: bevy::math::Vec4) -> bevy::math::Vec4;
+    fn dot_into_vec(
+        _self: LuaReflectValProxy<bevy::math::Vec3A>,
+        rhs: LuaReflectValProxy<bevy::math::Vec3A>,
+    ) -> LuaReflectValProxy<bevy::math::Vec3A>;
+
+"#,
+    r#"
+/// Computes the cross product of `self` and `rhs`.
+
+    #[lua()]
+    fn cross(
+        _self: LuaReflectValProxy<bevy::math::Vec3A>,
+        rhs: LuaReflectValProxy<bevy::math::Vec3A>,
+    ) -> LuaReflectValProxy<bevy::math::Vec3A>;
 
 "#,
     r#"
@@ -11156,7 +12480,10 @@ pub struct LuaVec3A();
 /// In other words this computes `[self.x.min(rhs.x), self.y.min(rhs.y), ..]`.
 
     #[lua()]
-    fn min(self, #[proxy] rhs: bevy::math::Vec4) -> bevy::math::Vec4;
+    fn min(
+        _self: LuaReflectValProxy<bevy::math::Vec3A>,
+        rhs: LuaReflectValProxy<bevy::math::Vec3A>,
+    ) -> LuaReflectValProxy<bevy::math::Vec3A>;
 
 "#,
     r#"
@@ -11164,7 +12491,10 @@ pub struct LuaVec3A();
 /// In other words this computes `[self.x.max(rhs.x), self.y.max(rhs.y), ..]`.
 
     #[lua()]
-    fn max(self, #[proxy] rhs: bevy::math::Vec4) -> bevy::math::Vec4;
+    fn max(
+        _self: LuaReflectValProxy<bevy::math::Vec3A>,
+        rhs: LuaReflectValProxy<bevy::math::Vec3A>,
+    ) -> LuaReflectValProxy<bevy::math::Vec3A>;
 
 "#,
     r#"
@@ -11175,12 +12505,10 @@ pub struct LuaVec3A();
 
     #[lua()]
     fn clamp(
-        self,
-        #[proxy]
-        min: bevy::math::Vec4,
-        #[proxy]
-        max: bevy::math::Vec4,
-    ) -> bevy::math::Vec4;
+        _self: LuaReflectValProxy<bevy::math::Vec3A>,
+        min: LuaReflectValProxy<bevy::math::Vec3A>,
+        max: LuaReflectValProxy<bevy::math::Vec3A>,
+    ) -> LuaReflectValProxy<bevy::math::Vec3A>;
 
 "#,
     r#"
@@ -11188,7 +12516,7 @@ pub struct LuaVec3A();
 /// In other words this computes `min(x, y, ..)`.
 
     #[lua()]
-    fn min_element(self) -> f32;
+    fn min_element(_self: LuaReflectValProxy<bevy::math::Vec3A>) -> f32;
 
 "#,
     r#"
@@ -11196,7 +12524,7 @@ pub struct LuaVec3A();
 /// In other words this computes `max(x, y, ..)`.
 
     #[lua()]
-    fn max_element(self) -> f32;
+    fn max_element(_self: LuaReflectValProxy<bevy::math::Vec3A>) -> f32;
 
 "#,
     r#"
@@ -11206,7 +12534,10 @@ pub struct LuaVec3A();
 /// elements.
 
     #[lua()]
-    fn cmpeq(self, #[proxy] rhs: bevy::math::Vec4) -> bevy::math::BVec4A;
+    fn cmpeq(
+        _self: LuaReflectValProxy<bevy::math::Vec3A>,
+        rhs: LuaReflectValProxy<bevy::math::Vec3A>,
+    ) -> LuaReflectValProxy<bevy::math::BVec3A>;
 
 "#,
     r#"
@@ -11216,7 +12547,10 @@ pub struct LuaVec3A();
 /// elements.
 
     #[lua()]
-    fn cmpne(self, #[proxy] rhs: bevy::math::Vec4) -> bevy::math::BVec4A;
+    fn cmpne(
+        _self: LuaReflectValProxy<bevy::math::Vec3A>,
+        rhs: LuaReflectValProxy<bevy::math::Vec3A>,
+    ) -> LuaReflectValProxy<bevy::math::BVec3A>;
 
 "#,
     r#"
@@ -11226,7 +12560,10 @@ pub struct LuaVec3A();
 /// elements.
 
     #[lua()]
-    fn cmpge(self, #[proxy] rhs: bevy::math::Vec4) -> bevy::math::BVec4A;
+    fn cmpge(
+        _self: LuaReflectValProxy<bevy::math::Vec3A>,
+        rhs: LuaReflectValProxy<bevy::math::Vec3A>,
+    ) -> LuaReflectValProxy<bevy::math::BVec3A>;
 
 "#,
     r#"
@@ -11236,7 +12573,10 @@ pub struct LuaVec3A();
 /// elements.
 
     #[lua()]
-    fn cmpgt(self, #[proxy] rhs: bevy::math::Vec4) -> bevy::math::BVec4A;
+    fn cmpgt(
+        _self: LuaReflectValProxy<bevy::math::Vec3A>,
+        rhs: LuaReflectValProxy<bevy::math::Vec3A>,
+    ) -> LuaReflectValProxy<bevy::math::BVec3A>;
 
 "#,
     r#"
@@ -11246,7 +12586,10 @@ pub struct LuaVec3A();
 /// elements.
 
     #[lua()]
-    fn cmple(self, #[proxy] rhs: bevy::math::Vec4) -> bevy::math::BVec4A;
+    fn cmple(
+        _self: LuaReflectValProxy<bevy::math::Vec3A>,
+        rhs: LuaReflectValProxy<bevy::math::Vec3A>,
+    ) -> LuaReflectValProxy<bevy::math::BVec3A>;
 
 "#,
     r#"
@@ -11256,14 +12599,19 @@ pub struct LuaVec3A();
 /// elements.
 
     #[lua()]
-    fn cmplt(self, #[proxy] rhs: bevy::math::Vec4) -> bevy::math::BVec4A;
+    fn cmplt(
+        _self: LuaReflectValProxy<bevy::math::Vec3A>,
+        rhs: LuaReflectValProxy<bevy::math::Vec3A>,
+    ) -> LuaReflectValProxy<bevy::math::BVec3A>;
 
 "#,
     r#"
 /// Returns a vector containing the absolute value of each element of `self`.
 
     #[lua()]
-    fn abs(self) -> bevy::math::Vec4;
+    fn abs(
+        _self: LuaReflectValProxy<bevy::math::Vec3A>,
+    ) -> LuaReflectValProxy<bevy::math::Vec3A>;
 
 "#,
     r#"
@@ -11273,23 +12621,28 @@ pub struct LuaVec3A();
 /// - `NAN` if the number is `NAN`
 
     #[lua()]
-    fn signum(self) -> bevy::math::Vec4;
+    fn signum(
+        _self: LuaReflectValProxy<bevy::math::Vec3A>,
+    ) -> LuaReflectValProxy<bevy::math::Vec3A>;
 
 "#,
     r#"
 /// Returns a vector with signs of `rhs` and the magnitudes of `self`.
 
     #[lua()]
-    fn copysign(self, #[proxy] rhs: bevy::math::Vec4) -> bevy::math::Vec4;
+    fn copysign(
+        _self: LuaReflectValProxy<bevy::math::Vec3A>,
+        rhs: LuaReflectValProxy<bevy::math::Vec3A>,
+    ) -> LuaReflectValProxy<bevy::math::Vec3A>;
 
 "#,
     r#"
-/// Returns a bitmask with the lowest 4 bits set to the sign bits from the elements of `self`.
+/// Returns a bitmask with the lowest 3 bits set to the sign bits from the elements of `self`.
 /// A negative element results in a `1` bit and a positive element in a `0` bit.  Element `x` goes
 /// into the first lowest bit, element `y` into the second, etc.
 
     #[lua()]
-    fn is_negative_bitmask(self) -> u32;
+    fn is_negative_bitmask(_self: LuaReflectValProxy<bevy::math::Vec3A>) -> u32;
 
 "#,
     r#"
@@ -11297,14 +12650,14 @@ pub struct LuaVec3A();
 /// `NaN`, positive or negative infinity, this will return `false`.
 
     #[lua()]
-    fn is_finite(self) -> bool;
+    fn is_finite(_self: LuaReflectValProxy<bevy::math::Vec3A>) -> bool;
 
 "#,
     r#"
 /// Returns `true` if any elements are `NaN`.
 
     #[lua()]
-    fn is_nan(self) -> bool;
+    fn is_nan(_self: LuaReflectValProxy<bevy::math::Vec3A>) -> bool;
 
 "#,
     r#"
@@ -11312,14 +12665,16 @@ pub struct LuaVec3A();
 /// In other words, this computes `[x.is_nan(), y.is_nan(), z.is_nan(), w.is_nan()]`.
 
     #[lua()]
-    fn is_nan_mask(self) -> bevy::math::BVec4A;
+    fn is_nan_mask(
+        _self: LuaReflectValProxy<bevy::math::Vec3A>,
+    ) -> LuaReflectValProxy<bevy::math::BVec3A>;
 
 "#,
     r#"
 /// Computes the length of `self`.
 
     #[lua()]
-    fn length(self) -> f32;
+    fn length(_self: LuaReflectValProxy<bevy::math::Vec3A>) -> f32;
 
 "#,
     r#"
@@ -11327,7 +12682,7 @@ pub struct LuaVec3A();
 /// This is faster than `length()` as it avoids a square root operation.
 
     #[lua()]
-    fn length_squared(self) -> f32;
+    fn length_squared(_self: LuaReflectValProxy<bevy::math::Vec3A>) -> f32;
 
 "#,
     r#"
@@ -11335,28 +12690,37 @@ pub struct LuaVec3A();
 /// For valid results, `self` must _not_ be of length zero.
 
     #[lua()]
-    fn length_recip(self) -> f32;
+    fn length_recip(_self: LuaReflectValProxy<bevy::math::Vec3A>) -> f32;
 
 "#,
     r#"
 /// Computes the Euclidean distance between two points in space.
 
     #[lua()]
-    fn distance(self, #[proxy] rhs: bevy::math::Vec4) -> f32;
+    fn distance(
+        _self: LuaReflectValProxy<bevy::math::Vec3A>,
+        rhs: LuaReflectValProxy<bevy::math::Vec3A>,
+    ) -> f32;
 
 "#,
     r#"
 /// Compute the squared euclidean distance between two points in space.
 
     #[lua()]
-    fn distance_squared(self, #[proxy] rhs: bevy::math::Vec4) -> f32;
+    fn distance_squared(
+        _self: LuaReflectValProxy<bevy::math::Vec3A>,
+        rhs: LuaReflectValProxy<bevy::math::Vec3A>,
+    ) -> f32;
 
 "#,
     r#"
 /// Returns the element-wise quotient of [Euclidean division] of `self` by `rhs`.
 
     #[lua()]
-    fn div_euclid(self, #[proxy] rhs: bevy::math::Vec4) -> bevy::math::Vec4;
+    fn div_euclid(
+        _self: LuaReflectValProxy<bevy::math::Vec3A>,
+        rhs: LuaReflectValProxy<bevy::math::Vec3A>,
+    ) -> LuaReflectValProxy<bevy::math::Vec3A>;
 
 "#,
     r#"
@@ -11364,7 +12728,10 @@ pub struct LuaVec3A();
 /// [Euclidean division]: f32::rem_euclid
 
     #[lua()]
-    fn rem_euclid(self, #[proxy] rhs: bevy::math::Vec4) -> bevy::math::Vec4;
+    fn rem_euclid(
+        _self: LuaReflectValProxy<bevy::math::Vec3A>,
+        rhs: LuaReflectValProxy<bevy::math::Vec3A>,
+    ) -> LuaReflectValProxy<bevy::math::Vec3A>;
 
 "#,
     r#"
@@ -11375,7 +12742,9 @@ pub struct LuaVec3A();
 /// Will panic if `self` is zero length when `glam_assert` is enabled.
 
     #[lua()]
-    fn normalize(self) -> bevy::math::Vec4;
+    fn normalize(
+        _self: LuaReflectValProxy<bevy::math::Vec3A>,
+    ) -> LuaReflectValProxy<bevy::math::Vec3A>;
 
 "#,
     r#"
@@ -11385,7 +12754,9 @@ pub struct LuaVec3A();
 /// See also [`Self::try_normalize()`].
 
     #[lua()]
-    fn normalize_or_zero(self) -> bevy::math::Vec4;
+    fn normalize_or_zero(
+        _self: LuaReflectValProxy<bevy::math::Vec3A>,
+    ) -> LuaReflectValProxy<bevy::math::Vec3A>;
 
 "#,
     r#"
@@ -11393,7 +12764,7 @@ pub struct LuaVec3A();
 /// Uses a precision threshold of `1e-6`.
 
     #[lua()]
-    fn is_normalized(self) -> bool;
+    fn is_normalized(_self: LuaReflectValProxy<bevy::math::Vec3A>) -> bool;
 
 "#,
     r#"
@@ -11403,7 +12774,10 @@ pub struct LuaVec3A();
 /// Will panic if `rhs` is zero length when `glam_assert` is enabled.
 
     #[lua()]
-    fn project_onto(self, #[proxy] rhs: bevy::math::Vec4) -> bevy::math::Vec4;
+    fn project_onto(
+        _self: LuaReflectValProxy<bevy::math::Vec3A>,
+        rhs: LuaReflectValProxy<bevy::math::Vec3A>,
+    ) -> LuaReflectValProxy<bevy::math::Vec3A>;
 
 "#,
     r#"
@@ -11415,7 +12789,10 @@ pub struct LuaVec3A();
 /// Will panic if `rhs` has a length of zero when `glam_assert` is enabled.
 
     #[lua()]
-    fn reject_from(self, #[proxy] rhs: bevy::math::Vec4) -> bevy::math::Vec4;
+    fn reject_from(
+        _self: LuaReflectValProxy<bevy::math::Vec3A>,
+        rhs: LuaReflectValProxy<bevy::math::Vec3A>,
+    ) -> LuaReflectValProxy<bevy::math::Vec3A>;
 
 "#,
     r#"
@@ -11425,7 +12802,10 @@ pub struct LuaVec3A();
 /// Will panic if `rhs` is not normalized when `glam_assert` is enabled.
 
     #[lua()]
-    fn project_onto_normalized(self, #[proxy] rhs: bevy::math::Vec4) -> bevy::math::Vec4;
+    fn project_onto_normalized(
+        _self: LuaReflectValProxy<bevy::math::Vec3A>,
+        rhs: LuaReflectValProxy<bevy::math::Vec3A>,
+    ) -> LuaReflectValProxy<bevy::math::Vec3A>;
 
 "#,
     r#"
@@ -11437,7 +12817,10 @@ pub struct LuaVec3A();
 /// Will panic if `rhs` is not normalized when `glam_assert` is enabled.
 
     #[lua()]
-    fn reject_from_normalized(self, #[proxy] rhs: bevy::math::Vec4) -> bevy::math::Vec4;
+    fn reject_from_normalized(
+        _self: LuaReflectValProxy<bevy::math::Vec3A>,
+        rhs: LuaReflectValProxy<bevy::math::Vec3A>,
+    ) -> LuaReflectValProxy<bevy::math::Vec3A>;
 
 "#,
     r#"
@@ -11445,7 +12828,9 @@ pub struct LuaVec3A();
 /// Round half-way cases away from 0.0.
 
     #[lua()]
-    fn round(self) -> bevy::math::Vec4;
+    fn round(
+        _self: LuaReflectValProxy<bevy::math::Vec3A>,
+    ) -> LuaReflectValProxy<bevy::math::Vec3A>;
 
 "#,
     r#"
@@ -11453,7 +12838,9 @@ pub struct LuaVec3A();
 /// element of `self`.
 
     #[lua()]
-    fn floor(self) -> bevy::math::Vec4;
+    fn floor(
+        _self: LuaReflectValProxy<bevy::math::Vec3A>,
+    ) -> LuaReflectValProxy<bevy::math::Vec3A>;
 
 "#,
     r#"
@@ -11461,7 +12848,9 @@ pub struct LuaVec3A();
 /// each element of `self`.
 
     #[lua()]
-    fn ceil(self) -> bevy::math::Vec4;
+    fn ceil(
+        _self: LuaReflectValProxy<bevy::math::Vec3A>,
+    ) -> LuaReflectValProxy<bevy::math::Vec3A>;
 
 "#,
     r#"
@@ -11469,7 +12858,9 @@ pub struct LuaVec3A();
 /// always truncated towards zero.
 
     #[lua()]
-    fn trunc(self) -> bevy::math::Vec4;
+    fn trunc(
+        _self: LuaReflectValProxy<bevy::math::Vec3A>,
+    ) -> LuaReflectValProxy<bevy::math::Vec3A>;
 
 "#,
     r#"
@@ -11478,7 +12869,9 @@ pub struct LuaVec3A();
 /// Note that this is fast but not precise for large numbers.
 
     #[lua()]
-    fn fract(self) -> bevy::math::Vec4;
+    fn fract(
+        _self: LuaReflectValProxy<bevy::math::Vec3A>,
+    ) -> LuaReflectValProxy<bevy::math::Vec3A>;
 
 "#,
     r#"
@@ -11486,21 +12879,28 @@ pub struct LuaVec3A();
 /// `self`.
 
     #[lua()]
-    fn exp(self) -> bevy::math::Vec4;
+    fn exp(
+        _self: LuaReflectValProxy<bevy::math::Vec3A>,
+    ) -> LuaReflectValProxy<bevy::math::Vec3A>;
 
 "#,
     r#"
 /// Returns a vector containing each element of `self` raised to the power of `n`.
 
     #[lua()]
-    fn powf(self, n: f32) -> bevy::math::Vec4;
+    fn powf(
+        _self: LuaReflectValProxy<bevy::math::Vec3A>,
+        n: f32,
+    ) -> LuaReflectValProxy<bevy::math::Vec3A>;
 
 "#,
     r#"
 /// Returns a vector containing the reciprocal `1.0/n` of each element of `self`.
 
     #[lua()]
-    fn recip(self) -> bevy::math::Vec4;
+    fn recip(
+        _self: LuaReflectValProxy<bevy::math::Vec3A>,
+    ) -> LuaReflectValProxy<bevy::math::Vec3A>;
 
 "#,
     r#"
@@ -11510,7 +12910,11 @@ pub struct LuaVec3A();
 /// extrapolated.
 
     #[lua()]
-    fn lerp(self, #[proxy] rhs: bevy::math::Vec4, s: f32) -> bevy::math::Vec4;
+    fn lerp(
+        _self: LuaReflectValProxy<bevy::math::Vec3A>,
+        rhs: LuaReflectValProxy<bevy::math::Vec3A>,
+        s: f32,
+    ) -> LuaReflectValProxy<bevy::math::Vec3A>;
 
 "#,
     r#"
@@ -11523,7 +12927,11 @@ pub struct LuaVec3A();
 /// [comparing floating point numbers](https://randomascii.wordpress.com/2012/02/25/comparing-floating-point-numbers-2012-edition/).
 
     #[lua()]
-    fn abs_diff_eq(self, #[proxy] rhs: bevy::math::Vec4, max_abs_diff: f32) -> bool;
+    fn abs_diff_eq(
+        _self: LuaReflectValProxy<bevy::math::Vec3A>,
+        rhs: LuaReflectValProxy<bevy::math::Vec3A>,
+        max_abs_diff: f32,
+    ) -> bool;
 
 "#,
     r#"
@@ -11532,21 +12940,31 @@ pub struct LuaVec3A();
 /// Will panic if `min` is greater than `max` when `glam_assert` is enabled.
 
     #[lua()]
-    fn clamp_length(self, min: f32, max: f32) -> bevy::math::Vec4;
+    fn clamp_length(
+        _self: LuaReflectValProxy<bevy::math::Vec3A>,
+        min: f32,
+        max: f32,
+    ) -> LuaReflectValProxy<bevy::math::Vec3A>;
 
 "#,
     r#"
 /// Returns a vector with a length no more than `max`
 
     #[lua()]
-    fn clamp_length_max(self, max: f32) -> bevy::math::Vec4;
+    fn clamp_length_max(
+        _self: LuaReflectValProxy<bevy::math::Vec3A>,
+        max: f32,
+    ) -> LuaReflectValProxy<bevy::math::Vec3A>;
 
 "#,
     r#"
 /// Returns a vector with a length no less than `min`
 
     #[lua()]
-    fn clamp_length_min(self, min: f32) -> bevy::math::Vec4;
+    fn clamp_length_min(
+        _self: LuaReflectValProxy<bevy::math::Vec3A>,
+        min: f32,
+    ) -> LuaReflectValProxy<bevy::math::Vec3A>;
 
 "#,
     r#"
@@ -11559,101 +12977,169 @@ pub struct LuaVec3A();
 
     #[lua()]
     fn mul_add(
-        self,
-        #[proxy]
-        a: bevy::math::Vec4,
-        #[proxy]
-        b: bevy::math::Vec4,
-    ) -> bevy::math::Vec4;
+        _self: LuaReflectValProxy<bevy::math::Vec3A>,
+        a: LuaReflectValProxy<bevy::math::Vec3A>,
+        b: LuaReflectValProxy<bevy::math::Vec3A>,
+    ) -> LuaReflectValProxy<bevy::math::Vec3A>;
+
+"#,
+    r#"
+/// Returns the angle (in radians) between two vectors.
+/// The inputs do not need to be unit vectors however they must be non-zero.
+
+    #[lua()]
+    fn angle_between(
+        _self: LuaReflectValProxy<bevy::math::Vec3A>,
+        rhs: LuaReflectValProxy<bevy::math::Vec3A>,
+    ) -> f32;
+
+"#,
+    r#"
+/// Returns some vector that is orthogonal to the given one.
+/// The input vector must be finite and non-zero.
+/// The output vector is not necessarily unit length. For that use
+/// [`Self::any_orthonormal_vector()`] instead.
+
+    #[lua()]
+    fn any_orthogonal_vector(
+        _self: LuaReflectRefProxy<bevy::math::Vec3A>,
+    ) -> LuaReflectValProxy<bevy::math::Vec3A>;
+
+"#,
+    r#"
+/// Returns any unit vector that is orthogonal to the given one.
+/// The input vector must be unit length.
+/// # Panics
+/// Will panic if `self` is not normalized when `glam_assert` is enabled.
+
+    #[lua()]
+    fn any_orthonormal_vector(
+        _self: LuaReflectRefProxy<bevy::math::Vec3A>,
+    ) -> LuaReflectValProxy<bevy::math::Vec3A>;
 
 "#,
     r#"
 /// Casts all elements of `self` to `f64`.
 
     #[lua()]
-    fn as_dvec4(&self) -> bevy::math::DVec4;
+    fn as_dvec3(
+        _self: LuaReflectRefProxy<bevy::math::Vec3A>,
+    ) -> LuaReflectValProxy<bevy::math::DVec3>;
 
 "#,
     r#"
 /// Casts all elements of `self` to `i32`.
 
     #[lua()]
-    fn as_ivec4(&self) -> bevy::math::IVec4;
+    fn as_ivec3(
+        _self: LuaReflectRefProxy<bevy::math::Vec3A>,
+    ) -> LuaReflectValProxy<bevy::math::IVec3>;
 
 "#,
     r#"
 /// Casts all elements of `self` to `u32`.
 
     #[lua()]
-    fn as_uvec4(&self) -> bevy::math::UVec4;
+    fn as_uvec3(
+        _self: LuaReflectRefProxy<bevy::math::Vec3A>,
+    ) -> LuaReflectValProxy<bevy::math::UVec3>;
 
 "#,
     r#"
 /// Casts all elements of `self` to `i64`.
 
     #[lua()]
-    fn as_i64vec4(&self) -> bevy::math::I64Vec4;
+    fn as_i64vec3(
+        _self: LuaReflectRefProxy<bevy::math::Vec3A>,
+    ) -> LuaReflectValProxy<bevy::math::I64Vec3>;
 
 "#,
     r#"
 /// Casts all elements of `self` to `u64`.
 
     #[lua()]
-    fn as_u64vec4(&self) -> bevy::math::U64Vec4;
+    fn as_u64vec3(
+        _self: LuaReflectRefProxy<bevy::math::Vec3A>,
+    ) -> LuaReflectValProxy<bevy::math::U64Vec3>;
 
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Rem", composite = "rem")]
-    fn rem(self, rhs: f32) -> bevy::math::Vec4;
+    #[lua(as_trait = "std::ops::Div::<f32>", composite = "div")]
+    fn div(
+        _self: LuaReflectValProxy<bevy::math::Vec3A>,
+        rhs: f32,
+    ) -> LuaReflectValProxy<bevy::math::Vec3A>;
 
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Mul", composite = "mul")]
-    fn mul(self, rhs: f32) -> bevy::math::Vec4;
+    #[lua(as_trait = "std::ops::Add::<f32>", composite = "add")]
+    fn add(
+        _self: LuaReflectValProxy<bevy::math::Vec3A>,
+        rhs: f32,
+    ) -> LuaReflectValProxy<bevy::math::Vec3A>;
 
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Add", composite = "add")]
-    fn add(self, rhs: f32) -> bevy::math::Vec4;
+    #[lua(as_trait = "std::ops::Mul::<f32>", composite = "mul")]
+    fn mul(
+        _self: LuaReflectValProxy<bevy::math::Vec3A>,
+        rhs: f32,
+    ) -> LuaReflectValProxy<bevy::math::Vec3A>;
 
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Sub", composite = "sub")]
-    fn sub(self, rhs: f32) -> bevy::math::Vec4;
+    #[lua(as_trait = "std::ops::Mul::<bevy::math::Vec3A>", composite = "mul")]
+    fn mul(
+        _self: LuaReflectValProxy<bevy::math::Vec3A>,
+        rhs: LuaReflectValProxy<bevy::math::Vec3A>,
+    ) -> LuaReflectValProxy<bevy::math::Vec3A>;
 
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Add", composite = "add")]
-    fn add(self, #[proxy] rhs: bevy::math::Vec4) -> bevy::math::Vec4;
+    #[lua(as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone")]
+    fn clone(
+        _self: LuaReflectRefProxy<bevy::math::Vec3A>,
+    ) -> LuaReflectValProxy<bevy::math::Vec3A>;
 
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Mul", composite = "mul")]
-    fn mul(self, #[proxy] rhs: bevy::math::Vec4) -> bevy::math::Vec4;
-
-"#,
-    r#"
-
-    #[lua(as_trait = "std::ops::Div", composite = "div")]
-    fn div(self, #[proxy] rhs: bevy::math::Vec4) -> bevy::math::Vec4;
+    #[lua(as_trait = "std::ops::Div::<bevy::math::Vec3A>", composite = "div")]
+    fn div(
+        _self: LuaReflectValProxy<bevy::math::Vec3A>,
+        rhs: LuaReflectValProxy<bevy::math::Vec3A>,
+    ) -> LuaReflectValProxy<bevy::math::Vec3A>;
 
 "#,
     r#"
 
     #[lua(as_trait = "std::ops::Neg", composite = "neg")]
-    fn neg(self) -> bevy::math::Vec4;
+    fn neg(
+        _self: LuaReflectValProxy<bevy::math::Vec3A>,
+    ) -> LuaReflectValProxy<bevy::math::Vec3A>;
 
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Div", composite = "div")]
-    fn div(self, rhs: f32) -> bevy::math::Vec4;
+    #[lua(as_trait = "std::ops::Rem::<bevy::math::Vec3A>", composite = "rem")]
+    fn rem(
+        _self: LuaReflectValProxy<bevy::math::Vec3A>,
+        rhs: LuaReflectValProxy<bevy::math::Vec3A>,
+    ) -> LuaReflectValProxy<bevy::math::Vec3A>;
+
+"#,
+    r#"
+
+    #[lua(as_trait = "std::ops::Add::<bevy::math::Vec3A>", composite = "add")]
+    fn add(
+        _self: LuaReflectValProxy<bevy::math::Vec3A>,
+        rhs: LuaReflectValProxy<bevy::math::Vec3A>,
+    ) -> LuaReflectValProxy<bevy::math::Vec3A>;
 
 "#,
     r#"
@@ -11663,19 +13149,785 @@ fn index(&self) -> String {
 }
 "#,
     r#"
-#[lua(raw , metamethod="Index")]
-fn index(&self, lua: &Lua, idx: crate::lua::util::LuaIndex) -> Result<f32,_> {
-    Ok(_self.inner()?[*idx])
+#[lua(metamethod="Index")]
+fn index(self, idx: usize) -> IdentityProxy<f32> {
+    _self[idx - 1]
 }
 "#,
     r#"
-#[lua(raw, metamethod="NewIndex")]
-fn index(&mut self, lua: &Lua, idx: crate::lua::util::LuaIndex, val: f32) -> Result<(),_> {
-    _self.val_mut(|s| Ok(s[*idx] = val))?
+#[lua(metamethod="NewIndex")]
+fn index(&mut self, idx: usize, val: f32) -> () {
+    _self[idx - 1] = val
 }
 "#]
 )]
-pub struct LuaVec4();
+pub struct Vec3A();
+#[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
+#[proxy(
+    remote = "bevy::math::Vec4",
+    bms_core_path = "bevy_mod_scripting_core",
+    bms_lua_path = "crate",
+    functions[r#"
+
+    #[lua(as_trait = "std::ops::Sub::<bevy::math::Vec4>", composite = "sub")]
+    fn sub(
+        _self: LuaReflectValProxy<bevy::math::Vec4>,
+        rhs: LuaReflectValProxy<bevy::math::Vec4>,
+    ) -> LuaReflectValProxy<bevy::math::Vec4>;
+
+"#,
+    r#"
+
+    #[lua(as_trait = "std::ops::Rem::<bevy::math::Vec4>", composite = "rem")]
+    fn rem(
+        _self: LuaReflectValProxy<bevy::math::Vec4>,
+        rhs: LuaReflectValProxy<bevy::math::Vec4>,
+    ) -> LuaReflectValProxy<bevy::math::Vec4>;
+
+"#,
+    r#"
+
+    #[lua(as_trait = "std::cmp::PartialEq::<bevy::math::Vec4>", composite = "eq")]
+    fn eq(
+        _self: LuaReflectRefProxy<bevy::math::Vec4>,
+        rhs: LuaReflectRefProxy<bevy::math::Vec4>,
+    ) -> bool;
+
+"#,
+    r#"
+
+    #[lua(as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone")]
+    fn clone(
+        _self: LuaReflectRefProxy<bevy::math::Vec4>,
+    ) -> LuaReflectValProxy<bevy::math::Vec4>;
+
+"#,
+    r#"
+/// Creates a new vector.
+
+    #[lua()]
+    fn new(x: f32, y: f32, z: f32, w: f32) -> LuaReflectValProxy<bevy::math::Vec4>;
+
+"#,
+    r#"
+/// Creates a vector with all elements set to `v`.
+
+    #[lua()]
+    fn splat(v: f32) -> LuaReflectValProxy<bevy::math::Vec4>;
+
+"#,
+    r#"
+/// Creates a vector from the elements in `if_true` and `if_false`, selecting which to use
+/// for each element of `self`.
+/// A true element in the mask uses the corresponding element from `if_true`, and false
+/// uses the element from `if_false`.
+
+    #[lua()]
+    fn select(
+        mask: LuaReflectValProxy<bevy::math::BVec4A>,
+        if_true: LuaReflectValProxy<bevy::math::Vec4>,
+        if_false: LuaReflectValProxy<bevy::math::Vec4>,
+    ) -> LuaReflectValProxy<bevy::math::Vec4>;
+
+"#,
+    r#"
+/// Creates a new vector from an array.
+
+    #[lua()]
+    fn from_array(a: [f32; 4]) -> LuaReflectValProxy<bevy::math::Vec4>;
+
+"#,
+    r#"
+/// `[x, y, z, w]`
+
+    #[lua()]
+    fn to_array(_self: LuaReflectRefProxy<bevy::math::Vec4>) -> [f32; 4];
+
+"#,
+    r#"
+/// Creates a 3D vector from the `x`, `y` and `z` elements of `self`, discarding `w`.
+/// Truncation to [`Vec3`] may also be performed by using [`self.xyz()`][crate::swizzles::Vec4Swizzles::xyz()].
+/// To truncate to [`Vec3A`] use [`Vec3A::from()`].
+
+    #[lua()]
+    fn truncate(
+        _self: LuaReflectValProxy<bevy::math::Vec4>,
+    ) -> LuaReflectValProxy<bevy::math::Vec3>;
+
+"#,
+    r#"
+/// Computes the dot product of `self` and `rhs`.
+
+    #[lua()]
+    fn dot(
+        _self: LuaReflectValProxy<bevy::math::Vec4>,
+        rhs: LuaReflectValProxy<bevy::math::Vec4>,
+    ) -> f32;
+
+"#,
+    r#"
+/// Returns a vector where every component is the dot product of `self` and `rhs`.
+
+    #[lua()]
+    fn dot_into_vec(
+        _self: LuaReflectValProxy<bevy::math::Vec4>,
+        rhs: LuaReflectValProxy<bevy::math::Vec4>,
+    ) -> LuaReflectValProxy<bevy::math::Vec4>;
+
+"#,
+    r#"
+/// Returns a vector containing the minimum values for each element of `self` and `rhs`.
+/// In other words this computes `[self.x.min(rhs.x), self.y.min(rhs.y), ..]`.
+
+    #[lua()]
+    fn min(
+        _self: LuaReflectValProxy<bevy::math::Vec4>,
+        rhs: LuaReflectValProxy<bevy::math::Vec4>,
+    ) -> LuaReflectValProxy<bevy::math::Vec4>;
+
+"#,
+    r#"
+/// Returns a vector containing the maximum values for each element of `self` and `rhs`.
+/// In other words this computes `[self.x.max(rhs.x), self.y.max(rhs.y), ..]`.
+
+    #[lua()]
+    fn max(
+        _self: LuaReflectValProxy<bevy::math::Vec4>,
+        rhs: LuaReflectValProxy<bevy::math::Vec4>,
+    ) -> LuaReflectValProxy<bevy::math::Vec4>;
+
+"#,
+    r#"
+/// Component-wise clamping of values, similar to [`f32::clamp`].
+/// Each element in `min` must be less-or-equal to the corresponding element in `max`.
+/// # Panics
+/// Will panic if `min` is greater than `max` when `glam_assert` is enabled.
+
+    #[lua()]
+    fn clamp(
+        _self: LuaReflectValProxy<bevy::math::Vec4>,
+        min: LuaReflectValProxy<bevy::math::Vec4>,
+        max: LuaReflectValProxy<bevy::math::Vec4>,
+    ) -> LuaReflectValProxy<bevy::math::Vec4>;
+
+"#,
+    r#"
+/// Returns the horizontal minimum of `self`.
+/// In other words this computes `min(x, y, ..)`.
+
+    #[lua()]
+    fn min_element(_self: LuaReflectValProxy<bevy::math::Vec4>) -> f32;
+
+"#,
+    r#"
+/// Returns the horizontal maximum of `self`.
+/// In other words this computes `max(x, y, ..)`.
+
+    #[lua()]
+    fn max_element(_self: LuaReflectValProxy<bevy::math::Vec4>) -> f32;
+
+"#,
+    r#"
+/// Returns a vector mask containing the result of a `==` comparison for each element of
+/// `self` and `rhs`.
+/// In other words, this computes `[self.x == rhs.x, self.y == rhs.y, ..]` for all
+/// elements.
+
+    #[lua()]
+    fn cmpeq(
+        _self: LuaReflectValProxy<bevy::math::Vec4>,
+        rhs: LuaReflectValProxy<bevy::math::Vec4>,
+    ) -> LuaReflectValProxy<bevy::math::BVec4A>;
+
+"#,
+    r#"
+/// Returns a vector mask containing the result of a `!=` comparison for each element of
+/// `self` and `rhs`.
+/// In other words this computes `[self.x != rhs.x, self.y != rhs.y, ..]` for all
+/// elements.
+
+    #[lua()]
+    fn cmpne(
+        _self: LuaReflectValProxy<bevy::math::Vec4>,
+        rhs: LuaReflectValProxy<bevy::math::Vec4>,
+    ) -> LuaReflectValProxy<bevy::math::BVec4A>;
+
+"#,
+    r#"
+/// Returns a vector mask containing the result of a `>=` comparison for each element of
+/// `self` and `rhs`.
+/// In other words this computes `[self.x >= rhs.x, self.y >= rhs.y, ..]` for all
+/// elements.
+
+    #[lua()]
+    fn cmpge(
+        _self: LuaReflectValProxy<bevy::math::Vec4>,
+        rhs: LuaReflectValProxy<bevy::math::Vec4>,
+    ) -> LuaReflectValProxy<bevy::math::BVec4A>;
+
+"#,
+    r#"
+/// Returns a vector mask containing the result of a `>` comparison for each element of
+/// `self` and `rhs`.
+/// In other words this computes `[self.x > rhs.x, self.y > rhs.y, ..]` for all
+/// elements.
+
+    #[lua()]
+    fn cmpgt(
+        _self: LuaReflectValProxy<bevy::math::Vec4>,
+        rhs: LuaReflectValProxy<bevy::math::Vec4>,
+    ) -> LuaReflectValProxy<bevy::math::BVec4A>;
+
+"#,
+    r#"
+/// Returns a vector mask containing the result of a `<=` comparison for each element of
+/// `self` and `rhs`.
+/// In other words this computes `[self.x <= rhs.x, self.y <= rhs.y, ..]` for all
+/// elements.
+
+    #[lua()]
+    fn cmple(
+        _self: LuaReflectValProxy<bevy::math::Vec4>,
+        rhs: LuaReflectValProxy<bevy::math::Vec4>,
+    ) -> LuaReflectValProxy<bevy::math::BVec4A>;
+
+"#,
+    r#"
+/// Returns a vector mask containing the result of a `<` comparison for each element of
+/// `self` and `rhs`.
+/// In other words this computes `[self.x < rhs.x, self.y < rhs.y, ..]` for all
+/// elements.
+
+    #[lua()]
+    fn cmplt(
+        _self: LuaReflectValProxy<bevy::math::Vec4>,
+        rhs: LuaReflectValProxy<bevy::math::Vec4>,
+    ) -> LuaReflectValProxy<bevy::math::BVec4A>;
+
+"#,
+    r#"
+/// Returns a vector containing the absolute value of each element of `self`.
+
+    #[lua()]
+    fn abs(
+        _self: LuaReflectValProxy<bevy::math::Vec4>,
+    ) -> LuaReflectValProxy<bevy::math::Vec4>;
+
+"#,
+    r#"
+/// Returns a vector with elements representing the sign of `self`.
+/// - `1.0` if the number is positive, `+0.0` or `INFINITY`
+/// - `-1.0` if the number is negative, `-0.0` or `NEG_INFINITY`
+/// - `NAN` if the number is `NAN`
+
+    #[lua()]
+    fn signum(
+        _self: LuaReflectValProxy<bevy::math::Vec4>,
+    ) -> LuaReflectValProxy<bevy::math::Vec4>;
+
+"#,
+    r#"
+/// Returns a vector with signs of `rhs` and the magnitudes of `self`.
+
+    #[lua()]
+    fn copysign(
+        _self: LuaReflectValProxy<bevy::math::Vec4>,
+        rhs: LuaReflectValProxy<bevy::math::Vec4>,
+    ) -> LuaReflectValProxy<bevy::math::Vec4>;
+
+"#,
+    r#"
+/// Returns a bitmask with the lowest 4 bits set to the sign bits from the elements of `self`.
+/// A negative element results in a `1` bit and a positive element in a `0` bit.  Element `x` goes
+/// into the first lowest bit, element `y` into the second, etc.
+
+    #[lua()]
+    fn is_negative_bitmask(_self: LuaReflectValProxy<bevy::math::Vec4>) -> u32;
+
+"#,
+    r#"
+/// Returns `true` if, and only if, all elements are finite.  If any element is either
+/// `NaN`, positive or negative infinity, this will return `false`.
+
+    #[lua()]
+    fn is_finite(_self: LuaReflectValProxy<bevy::math::Vec4>) -> bool;
+
+"#,
+    r#"
+/// Returns `true` if any elements are `NaN`.
+
+    #[lua()]
+    fn is_nan(_self: LuaReflectValProxy<bevy::math::Vec4>) -> bool;
+
+"#,
+    r#"
+/// Performs `is_nan` on each element of self, returning a vector mask of the results.
+/// In other words, this computes `[x.is_nan(), y.is_nan(), z.is_nan(), w.is_nan()]`.
+
+    #[lua()]
+    fn is_nan_mask(
+        _self: LuaReflectValProxy<bevy::math::Vec4>,
+    ) -> LuaReflectValProxy<bevy::math::BVec4A>;
+
+"#,
+    r#"
+/// Computes the length of `self`.
+
+    #[lua()]
+    fn length(_self: LuaReflectValProxy<bevy::math::Vec4>) -> f32;
+
+"#,
+    r#"
+/// Computes the squared length of `self`.
+/// This is faster than `length()` as it avoids a square root operation.
+
+    #[lua()]
+    fn length_squared(_self: LuaReflectValProxy<bevy::math::Vec4>) -> f32;
+
+"#,
+    r#"
+/// Computes `1.0 / length()`.
+/// For valid results, `self` must _not_ be of length zero.
+
+    #[lua()]
+    fn length_recip(_self: LuaReflectValProxy<bevy::math::Vec4>) -> f32;
+
+"#,
+    r#"
+/// Computes the Euclidean distance between two points in space.
+
+    #[lua()]
+    fn distance(
+        _self: LuaReflectValProxy<bevy::math::Vec4>,
+        rhs: LuaReflectValProxy<bevy::math::Vec4>,
+    ) -> f32;
+
+"#,
+    r#"
+/// Compute the squared euclidean distance between two points in space.
+
+    #[lua()]
+    fn distance_squared(
+        _self: LuaReflectValProxy<bevy::math::Vec4>,
+        rhs: LuaReflectValProxy<bevy::math::Vec4>,
+    ) -> f32;
+
+"#,
+    r#"
+/// Returns the element-wise quotient of [Euclidean division] of `self` by `rhs`.
+
+    #[lua()]
+    fn div_euclid(
+        _self: LuaReflectValProxy<bevy::math::Vec4>,
+        rhs: LuaReflectValProxy<bevy::math::Vec4>,
+    ) -> LuaReflectValProxy<bevy::math::Vec4>;
+
+"#,
+    r#"
+/// Returns the element-wise remainder of [Euclidean division] of `self` by `rhs`.
+/// [Euclidean division]: f32::rem_euclid
+
+    #[lua()]
+    fn rem_euclid(
+        _self: LuaReflectValProxy<bevy::math::Vec4>,
+        rhs: LuaReflectValProxy<bevy::math::Vec4>,
+    ) -> LuaReflectValProxy<bevy::math::Vec4>;
+
+"#,
+    r#"
+/// Returns `self` normalized to length 1.0.
+/// For valid results, `self` must _not_ be of length zero, nor very close to zero.
+/// See also [`Self::try_normalize()`] and [`Self::normalize_or_zero()`].
+/// Panics
+/// Will panic if `self` is zero length when `glam_assert` is enabled.
+
+    #[lua()]
+    fn normalize(
+        _self: LuaReflectValProxy<bevy::math::Vec4>,
+    ) -> LuaReflectValProxy<bevy::math::Vec4>;
+
+"#,
+    r#"
+/// Returns `self` normalized to length 1.0 if possible, else returns zero.
+/// In particular, if the input is zero (or very close to zero), or non-finite,
+/// the result of this operation will be zero.
+/// See also [`Self::try_normalize()`].
+
+    #[lua()]
+    fn normalize_or_zero(
+        _self: LuaReflectValProxy<bevy::math::Vec4>,
+    ) -> LuaReflectValProxy<bevy::math::Vec4>;
+
+"#,
+    r#"
+/// Returns whether `self` is length `1.0` or not.
+/// Uses a precision threshold of `1e-6`.
+
+    #[lua()]
+    fn is_normalized(_self: LuaReflectValProxy<bevy::math::Vec4>) -> bool;
+
+"#,
+    r#"
+/// Returns the vector projection of `self` onto `rhs`.
+/// `rhs` must be of non-zero length.
+/// # Panics
+/// Will panic if `rhs` is zero length when `glam_assert` is enabled.
+
+    #[lua()]
+    fn project_onto(
+        _self: LuaReflectValProxy<bevy::math::Vec4>,
+        rhs: LuaReflectValProxy<bevy::math::Vec4>,
+    ) -> LuaReflectValProxy<bevy::math::Vec4>;
+
+"#,
+    r#"
+/// Returns the vector rejection of `self` from `rhs`.
+/// The vector rejection is the vector perpendicular to the projection of `self` onto
+/// `rhs`, in rhs words the result of `self - self.project_onto(rhs)`.
+/// `rhs` must be of non-zero length.
+/// # Panics
+/// Will panic if `rhs` has a length of zero when `glam_assert` is enabled.
+
+    #[lua()]
+    fn reject_from(
+        _self: LuaReflectValProxy<bevy::math::Vec4>,
+        rhs: LuaReflectValProxy<bevy::math::Vec4>,
+    ) -> LuaReflectValProxy<bevy::math::Vec4>;
+
+"#,
+    r#"
+/// Returns the vector projection of `self` onto `rhs`.
+/// `rhs` must be normalized.
+/// # Panics
+/// Will panic if `rhs` is not normalized when `glam_assert` is enabled.
+
+    #[lua()]
+    fn project_onto_normalized(
+        _self: LuaReflectValProxy<bevy::math::Vec4>,
+        rhs: LuaReflectValProxy<bevy::math::Vec4>,
+    ) -> LuaReflectValProxy<bevy::math::Vec4>;
+
+"#,
+    r#"
+/// Returns the vector rejection of `self` from `rhs`.
+/// The vector rejection is the vector perpendicular to the projection of `self` onto
+/// `rhs`, in rhs words the result of `self - self.project_onto(rhs)`.
+/// `rhs` must be normalized.
+/// # Panics
+/// Will panic if `rhs` is not normalized when `glam_assert` is enabled.
+
+    #[lua()]
+    fn reject_from_normalized(
+        _self: LuaReflectValProxy<bevy::math::Vec4>,
+        rhs: LuaReflectValProxy<bevy::math::Vec4>,
+    ) -> LuaReflectValProxy<bevy::math::Vec4>;
+
+"#,
+    r#"
+/// Returns a vector containing the nearest integer to a number for each element of `self`.
+/// Round half-way cases away from 0.0.
+
+    #[lua()]
+    fn round(
+        _self: LuaReflectValProxy<bevy::math::Vec4>,
+    ) -> LuaReflectValProxy<bevy::math::Vec4>;
+
+"#,
+    r#"
+/// Returns a vector containing the largest integer less than or equal to a number for each
+/// element of `self`.
+
+    #[lua()]
+    fn floor(
+        _self: LuaReflectValProxy<bevy::math::Vec4>,
+    ) -> LuaReflectValProxy<bevy::math::Vec4>;
+
+"#,
+    r#"
+/// Returns a vector containing the smallest integer greater than or equal to a number for
+/// each element of `self`.
+
+    #[lua()]
+    fn ceil(
+        _self: LuaReflectValProxy<bevy::math::Vec4>,
+    ) -> LuaReflectValProxy<bevy::math::Vec4>;
+
+"#,
+    r#"
+/// Returns a vector containing the integer part each element of `self`. This means numbers are
+/// always truncated towards zero.
+
+    #[lua()]
+    fn trunc(
+        _self: LuaReflectValProxy<bevy::math::Vec4>,
+    ) -> LuaReflectValProxy<bevy::math::Vec4>;
+
+"#,
+    r#"
+/// Returns a vector containing the fractional part of the vector, e.g. `self -
+/// self.floor()`.
+/// Note that this is fast but not precise for large numbers.
+
+    #[lua()]
+    fn fract(
+        _self: LuaReflectValProxy<bevy::math::Vec4>,
+    ) -> LuaReflectValProxy<bevy::math::Vec4>;
+
+"#,
+    r#"
+/// Returns a vector containing `e^self` (the exponential function) for each element of
+/// `self`.
+
+    #[lua()]
+    fn exp(
+        _self: LuaReflectValProxy<bevy::math::Vec4>,
+    ) -> LuaReflectValProxy<bevy::math::Vec4>;
+
+"#,
+    r#"
+/// Returns a vector containing each element of `self` raised to the power of `n`.
+
+    #[lua()]
+    fn powf(
+        _self: LuaReflectValProxy<bevy::math::Vec4>,
+        n: f32,
+    ) -> LuaReflectValProxy<bevy::math::Vec4>;
+
+"#,
+    r#"
+/// Returns a vector containing the reciprocal `1.0/n` of each element of `self`.
+
+    #[lua()]
+    fn recip(
+        _self: LuaReflectValProxy<bevy::math::Vec4>,
+    ) -> LuaReflectValProxy<bevy::math::Vec4>;
+
+"#,
+    r#"
+/// Performs a linear interpolation between `self` and `rhs` based on the value `s`.
+/// When `s` is `0.0`, the result will be equal to `self`.  When `s` is `1.0`, the result
+/// will be equal to `rhs`. When `s` is outside of range `[0, 1]`, the result is linearly
+/// extrapolated.
+
+    #[lua()]
+    fn lerp(
+        _self: LuaReflectValProxy<bevy::math::Vec4>,
+        rhs: LuaReflectValProxy<bevy::math::Vec4>,
+        s: f32,
+    ) -> LuaReflectValProxy<bevy::math::Vec4>;
+
+"#,
+    r#"
+/// Returns true if the absolute difference of all elements between `self` and `rhs` is
+/// less than or equal to `max_abs_diff`.
+/// This can be used to compare if two vectors contain similar elements. It works best when
+/// comparing with a known value. The `max_abs_diff` that should be used used depends on
+/// the values being compared against.
+/// For more see
+/// [comparing floating point numbers](https://randomascii.wordpress.com/2012/02/25/comparing-floating-point-numbers-2012-edition/).
+
+    #[lua()]
+    fn abs_diff_eq(
+        _self: LuaReflectValProxy<bevy::math::Vec4>,
+        rhs: LuaReflectValProxy<bevy::math::Vec4>,
+        max_abs_diff: f32,
+    ) -> bool;
+
+"#,
+    r#"
+/// Returns a vector with a length no less than `min` and no more than `max`
+/// # Panics
+/// Will panic if `min` is greater than `max` when `glam_assert` is enabled.
+
+    #[lua()]
+    fn clamp_length(
+        _self: LuaReflectValProxy<bevy::math::Vec4>,
+        min: f32,
+        max: f32,
+    ) -> LuaReflectValProxy<bevy::math::Vec4>;
+
+"#,
+    r#"
+/// Returns a vector with a length no more than `max`
+
+    #[lua()]
+    fn clamp_length_max(
+        _self: LuaReflectValProxy<bevy::math::Vec4>,
+        max: f32,
+    ) -> LuaReflectValProxy<bevy::math::Vec4>;
+
+"#,
+    r#"
+/// Returns a vector with a length no less than `min`
+
+    #[lua()]
+    fn clamp_length_min(
+        _self: LuaReflectValProxy<bevy::math::Vec4>,
+        min: f32,
+    ) -> LuaReflectValProxy<bevy::math::Vec4>;
+
+"#,
+    r#"
+/// Fused multiply-add. Computes `(self * a) + b` element-wise with only one rounding
+/// error, yielding a more accurate result than an unfused multiply-add.
+/// Using `mul_add` *may* be more performant than an unfused multiply-add if the target
+/// architecture has a dedicated fma CPU instruction. However, this is not always true,
+/// and will be heavily dependant on designing algorithms with specific target hardware in
+/// mind.
+
+    #[lua()]
+    fn mul_add(
+        _self: LuaReflectValProxy<bevy::math::Vec4>,
+        a: LuaReflectValProxy<bevy::math::Vec4>,
+        b: LuaReflectValProxy<bevy::math::Vec4>,
+    ) -> LuaReflectValProxy<bevy::math::Vec4>;
+
+"#,
+    r#"
+/// Casts all elements of `self` to `f64`.
+
+    #[lua()]
+    fn as_dvec4(
+        _self: LuaReflectRefProxy<bevy::math::Vec4>,
+    ) -> LuaReflectValProxy<bevy::math::DVec4>;
+
+"#,
+    r#"
+/// Casts all elements of `self` to `i32`.
+
+    #[lua()]
+    fn as_ivec4(
+        _self: LuaReflectRefProxy<bevy::math::Vec4>,
+    ) -> LuaReflectValProxy<bevy::math::IVec4>;
+
+"#,
+    r#"
+/// Casts all elements of `self` to `u32`.
+
+    #[lua()]
+    fn as_uvec4(
+        _self: LuaReflectRefProxy<bevy::math::Vec4>,
+    ) -> LuaReflectValProxy<bevy::math::UVec4>;
+
+"#,
+    r#"
+/// Casts all elements of `self` to `i64`.
+
+    #[lua()]
+    fn as_i64vec4(
+        _self: LuaReflectRefProxy<bevy::math::Vec4>,
+    ) -> LuaReflectValProxy<bevy::math::I64Vec4>;
+
+"#,
+    r#"
+/// Casts all elements of `self` to `u64`.
+
+    #[lua()]
+    fn as_u64vec4(
+        _self: LuaReflectRefProxy<bevy::math::Vec4>,
+    ) -> LuaReflectValProxy<bevy::math::U64Vec4>;
+
+"#,
+    r#"
+
+    #[lua(as_trait = "std::ops::Rem::<f32>", composite = "rem")]
+    fn rem(
+        _self: LuaReflectValProxy<bevy::math::Vec4>,
+        rhs: f32,
+    ) -> LuaReflectValProxy<bevy::math::Vec4>;
+
+"#,
+    r#"
+
+    #[lua(as_trait = "std::ops::Mul::<f32>", composite = "mul")]
+    fn mul(
+        _self: LuaReflectValProxy<bevy::math::Vec4>,
+        rhs: f32,
+    ) -> LuaReflectValProxy<bevy::math::Vec4>;
+
+"#,
+    r#"
+
+    #[lua(as_trait = "std::ops::Add::<f32>", composite = "add")]
+    fn add(
+        _self: LuaReflectValProxy<bevy::math::Vec4>,
+        rhs: f32,
+    ) -> LuaReflectValProxy<bevy::math::Vec4>;
+
+"#,
+    r#"
+
+    #[lua(as_trait = "std::ops::Sub::<f32>", composite = "sub")]
+    fn sub(
+        _self: LuaReflectValProxy<bevy::math::Vec4>,
+        rhs: f32,
+    ) -> LuaReflectValProxy<bevy::math::Vec4>;
+
+"#,
+    r#"
+
+    #[lua(as_trait = "std::ops::Add::<bevy::math::Vec4>", composite = "add")]
+    fn add(
+        _self: LuaReflectValProxy<bevy::math::Vec4>,
+        rhs: LuaReflectValProxy<bevy::math::Vec4>,
+    ) -> LuaReflectValProxy<bevy::math::Vec4>;
+
+"#,
+    r#"
+
+    #[lua(as_trait = "std::ops::Mul::<bevy::math::Vec4>", composite = "mul")]
+    fn mul(
+        _self: LuaReflectValProxy<bevy::math::Vec4>,
+        rhs: LuaReflectValProxy<bevy::math::Vec4>,
+    ) -> LuaReflectValProxy<bevy::math::Vec4>;
+
+"#,
+    r#"
+
+    #[lua(as_trait = "std::ops::Div::<bevy::math::Vec4>", composite = "div")]
+    fn div(
+        _self: LuaReflectValProxy<bevy::math::Vec4>,
+        rhs: LuaReflectValProxy<bevy::math::Vec4>,
+    ) -> LuaReflectValProxy<bevy::math::Vec4>;
+
+"#,
+    r#"
+
+    #[lua(as_trait = "std::ops::Neg", composite = "neg")]
+    fn neg(
+        _self: LuaReflectValProxy<bevy::math::Vec4>,
+    ) -> LuaReflectValProxy<bevy::math::Vec4>;
+
+"#,
+    r#"
+
+    #[lua(as_trait = "std::ops::Div::<f32>", composite = "div")]
+    fn div(
+        _self: LuaReflectValProxy<bevy::math::Vec4>,
+        rhs: f32,
+    ) -> LuaReflectValProxy<bevy::math::Vec4>;
+
+"#,
+    r#"
+#[lua(metamethod="ToString")]
+fn index(&self) -> String {
+    format!("{}", _self)
+}
+"#,
+    r#"
+#[lua(metamethod="Index")]
+fn index(self, idx: usize) -> IdentityProxy<f32> {
+    _self[idx - 1]
+}
+"#,
+    r#"
+#[lua(metamethod="NewIndex")]
+fn index(&mut self, idx: usize, val: f32) -> () {
+    _self[idx - 1] = val
+}
+"#]
+)]
+pub struct Vec4();
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
     remote = "bevy::math::BVec2",
@@ -11684,21 +13936,23 @@ pub struct LuaVec4();
     functions[r#"
 
     #[lua(as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone")]
-    fn clone(&self) -> bevy::math::BVec2;
+    fn clone(
+        _self: LuaReflectRefProxy<bevy::math::BVec2>,
+    ) -> LuaReflectValProxy<bevy::math::BVec2>;
 
 "#,
     r#"
 /// Creates a new vector mask.
 
     #[lua()]
-    fn new(x: bool, y: bool) -> bevy::math::BVec2;
+    fn new(x: bool, y: bool) -> LuaReflectValProxy<bevy::math::BVec2>;
 
 "#,
     r#"
 /// Creates a vector with all elements set to `v`.
 
     #[lua()]
-    fn splat(v: bool) -> bevy::math::BVec2;
+    fn splat(v: bool) -> LuaReflectValProxy<bevy::math::BVec2>;
 
 "#,
     r#"
@@ -11707,21 +13961,21 @@ pub struct LuaVec4();
 /// into the first lowest bit, element `y` into the second, etc.
 
     #[lua()]
-    fn bitmask(self) -> u32;
+    fn bitmask(_self: LuaReflectValProxy<bevy::math::BVec2>) -> u32;
 
 "#,
     r#"
 /// Returns true if any of the elements are true, false otherwise.
 
     #[lua()]
-    fn any(self) -> bool;
+    fn any(_self: LuaReflectValProxy<bevy::math::BVec2>) -> bool;
 
 "#,
     r#"
 /// Returns true if all the elements are true, false otherwise.
 
     #[lua()]
-    fn all(self) -> bool;
+    fn all(_self: LuaReflectValProxy<bevy::math::BVec2>) -> bool;
 
 "#,
     r#"
@@ -11729,7 +13983,7 @@ pub struct LuaVec4();
 /// Panics if `index` is greater than 1.
 
     #[lua()]
-    fn test(&self, index: usize) -> bool;
+    fn test(_self: LuaReflectRefProxy<bevy::math::BVec2>, index: usize) -> bool;
 
 "#,
     r#"
@@ -11737,19 +13991,26 @@ pub struct LuaVec4();
 /// Panics if `index` is greater than 1.
 
     #[lua()]
-    fn set(&mut self, index: usize, value: bool) -> ();
+    fn set(
+        _self: LuaReflectRefMutProxy<bevy::math::BVec2>,
+        index: usize,
+        value: bool,
+    ) -> ();
 
 "#,
     r#"
 
-    #[lua(as_trait = "std::cmp::PartialEq", composite = "eq")]
-    fn eq(&self, #[proxy] other: &glam::BVec2) -> bool;
+    #[lua(as_trait = "std::cmp::PartialEq::<bevy::math::BVec2>", composite = "eq")]
+    fn eq(
+        _self: LuaReflectRefProxy<bevy::math::BVec2>,
+        other: LuaReflectRefProxy<bevy::math::BVec2>,
+    ) -> bool;
 
 "#,
     r#"
 
     #[lua(as_trait = "std::cmp::Eq")]
-    fn assert_receiver_is_total_eq(&self) -> ();
+    fn assert_receiver_is_total_eq(_self: LuaReflectRefProxy<bevy::math::BVec2>) -> ();
 
 "#,
     r#"
@@ -11759,7 +14020,7 @@ fn index(&self) -> String {
 }
 "#]
 )]
-pub struct LuaBVec2 {
+pub struct BVec2 {
     x: bool,
     y: bool,
 }
@@ -11771,21 +14032,21 @@ pub struct LuaBVec2 {
     functions[r#"
 
     #[lua(as_trait = "std::cmp::Eq")]
-    fn assert_receiver_is_total_eq(&self) -> ();
+    fn assert_receiver_is_total_eq(_self: LuaReflectRefProxy<bevy::math::BVec3>) -> ();
 
 "#,
     r#"
 /// Creates a new vector mask.
 
     #[lua()]
-    fn new(x: bool, y: bool, z: bool) -> bevy::math::BVec3;
+    fn new(x: bool, y: bool, z: bool) -> LuaReflectValProxy<bevy::math::BVec3>;
 
 "#,
     r#"
 /// Creates a vector with all elements set to `v`.
 
     #[lua()]
-    fn splat(v: bool) -> bevy::math::BVec3;
+    fn splat(v: bool) -> LuaReflectValProxy<bevy::math::BVec3>;
 
 "#,
     r#"
@@ -11794,21 +14055,21 @@ pub struct LuaBVec2 {
 /// into the first lowest bit, element `y` into the second, etc.
 
     #[lua()]
-    fn bitmask(self) -> u32;
+    fn bitmask(_self: LuaReflectValProxy<bevy::math::BVec3>) -> u32;
 
 "#,
     r#"
 /// Returns true if any of the elements are true, false otherwise.
 
     #[lua()]
-    fn any(self) -> bool;
+    fn any(_self: LuaReflectValProxy<bevy::math::BVec3>) -> bool;
 
 "#,
     r#"
 /// Returns true if all the elements are true, false otherwise.
 
     #[lua()]
-    fn all(self) -> bool;
+    fn all(_self: LuaReflectValProxy<bevy::math::BVec3>) -> bool;
 
 "#,
     r#"
@@ -11816,7 +14077,7 @@ pub struct LuaBVec2 {
 /// Panics if `index` is greater than 2.
 
     #[lua()]
-    fn test(&self, index: usize) -> bool;
+    fn test(_self: LuaReflectRefProxy<bevy::math::BVec3>, index: usize) -> bool;
 
 "#,
     r#"
@@ -11824,19 +14085,28 @@ pub struct LuaBVec2 {
 /// Panics if `index` is greater than 2.
 
     #[lua()]
-    fn set(&mut self, index: usize, value: bool) -> ();
+    fn set(
+        _self: LuaReflectRefMutProxy<bevy::math::BVec3>,
+        index: usize,
+        value: bool,
+    ) -> ();
 
 "#,
     r#"
 
-    #[lua(as_trait = "std::cmp::PartialEq", composite = "eq")]
-    fn eq(&self, #[proxy] other: &glam::BVec3) -> bool;
+    #[lua(as_trait = "std::cmp::PartialEq::<bevy::math::BVec3>", composite = "eq")]
+    fn eq(
+        _self: LuaReflectRefProxy<bevy::math::BVec3>,
+        other: LuaReflectRefProxy<bevy::math::BVec3>,
+    ) -> bool;
 
 "#,
     r#"
 
     #[lua(as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone")]
-    fn clone(&self) -> bevy::math::BVec3;
+    fn clone(
+        _self: LuaReflectRefProxy<bevy::math::BVec3>,
+    ) -> LuaReflectValProxy<bevy::math::BVec3>;
 
 "#,
     r#"
@@ -11846,7 +14116,7 @@ fn index(&self) -> String {
 }
 "#]
 )]
-pub struct LuaBVec3 {
+pub struct BVec3 {
     x: bool,
     y: bool,
     z: bool,
@@ -11858,34 +14128,39 @@ pub struct LuaBVec3 {
     bms_lua_path = "crate",
     functions[r#"
 
-    #[lua(as_trait = "std::cmp::PartialEq", composite = "eq")]
-    fn eq(&self, #[proxy] other: &glam::BVec4) -> bool;
+    #[lua(as_trait = "std::cmp::PartialEq::<bevy::math::BVec4>", composite = "eq")]
+    fn eq(
+        _self: LuaReflectRefProxy<bevy::math::BVec4>,
+        other: LuaReflectRefProxy<bevy::math::BVec4>,
+    ) -> bool;
 
 "#,
     r#"
 
     #[lua(as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone")]
-    fn clone(&self) -> bevy::math::BVec4;
+    fn clone(
+        _self: LuaReflectRefProxy<bevy::math::BVec4>,
+    ) -> LuaReflectValProxy<bevy::math::BVec4>;
 
 "#,
     r#"
 
     #[lua(as_trait = "std::cmp::Eq")]
-    fn assert_receiver_is_total_eq(&self) -> ();
+    fn assert_receiver_is_total_eq(_self: LuaReflectRefProxy<bevy::math::BVec4>) -> ();
 
 "#,
     r#"
 /// Creates a new vector mask.
 
     #[lua()]
-    fn new(x: bool, y: bool, z: bool, w: bool) -> bevy::math::BVec4;
+    fn new(x: bool, y: bool, z: bool, w: bool) -> LuaReflectValProxy<bevy::math::BVec4>;
 
 "#,
     r#"
 /// Creates a vector with all elements set to `v`.
 
     #[lua()]
-    fn splat(v: bool) -> bevy::math::BVec4;
+    fn splat(v: bool) -> LuaReflectValProxy<bevy::math::BVec4>;
 
 "#,
     r#"
@@ -11894,21 +14169,21 @@ pub struct LuaBVec3 {
 /// into the first lowest bit, element `y` into the second, etc.
 
     #[lua()]
-    fn bitmask(self) -> u32;
+    fn bitmask(_self: LuaReflectValProxy<bevy::math::BVec4>) -> u32;
 
 "#,
     r#"
 /// Returns true if any of the elements are true, false otherwise.
 
     #[lua()]
-    fn any(self) -> bool;
+    fn any(_self: LuaReflectValProxy<bevy::math::BVec4>) -> bool;
 
 "#,
     r#"
 /// Returns true if all the elements are true, false otherwise.
 
     #[lua()]
-    fn all(self) -> bool;
+    fn all(_self: LuaReflectValProxy<bevy::math::BVec4>) -> bool;
 
 "#,
     r#"
@@ -11916,7 +14191,7 @@ pub struct LuaBVec3 {
 /// Panics if `index` is greater than 3.
 
     #[lua()]
-    fn test(&self, index: usize) -> bool;
+    fn test(_self: LuaReflectRefProxy<bevy::math::BVec4>, index: usize) -> bool;
 
 "#,
     r#"
@@ -11924,7 +14199,11 @@ pub struct LuaBVec3 {
 /// Panics if `index` is greater than 3.
 
     #[lua()]
-    fn set(&mut self, index: usize, value: bool) -> ();
+    fn set(
+        _self: LuaReflectRefMutProxy<bevy::math::BVec4>,
+        index: usize,
+        value: bool,
+    ) -> ();
 
 "#,
     r#"
@@ -11934,7 +14213,7 @@ fn index(&self) -> String {
 }
 "#]
 )]
-pub struct LuaBVec4 {
+pub struct BVec4 {
     x: bool,
     y: bool,
     z: bool,
@@ -11947,76 +14226,105 @@ pub struct LuaBVec4 {
     bms_lua_path = "crate",
     functions[r#"
 
-    #[lua(as_trait = "std::ops::Add", composite = "add")]
-    fn add(self, #[proxy] rhs: bevy::math::DVec2) -> bevy::math::DVec2;
+    #[lua(as_trait = "std::ops::Add::<bevy::math::DVec2>", composite = "add")]
+    fn add(
+        _self: LuaReflectValProxy<bevy::math::DVec2>,
+        rhs: LuaReflectValProxy<bevy::math::DVec2>,
+    ) -> LuaReflectValProxy<bevy::math::DVec2>;
 
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Mul", composite = "mul")]
-    fn mul(self, #[proxy] rhs: bevy::math::DVec2) -> bevy::math::DVec2;
+    #[lua(as_trait = "std::ops::Mul::<bevy::math::DVec2>", composite = "mul")]
+    fn mul(
+        _self: LuaReflectValProxy<bevy::math::DVec2>,
+        rhs: LuaReflectValProxy<bevy::math::DVec2>,
+    ) -> LuaReflectValProxy<bevy::math::DVec2>;
 
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Rem", composite = "rem")]
-    fn rem(self, #[proxy] rhs: bevy::math::DVec2) -> bevy::math::DVec2;
+    #[lua(as_trait = "std::ops::Rem::<bevy::math::DVec2>", composite = "rem")]
+    fn rem(
+        _self: LuaReflectValProxy<bevy::math::DVec2>,
+        rhs: LuaReflectValProxy<bevy::math::DVec2>,
+    ) -> LuaReflectValProxy<bevy::math::DVec2>;
 
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Div", composite = "div")]
-    fn div(self, #[proxy] rhs: bevy::math::DVec2) -> bevy::math::DVec2;
+    #[lua(as_trait = "std::ops::Div::<bevy::math::DVec2>", composite = "div")]
+    fn div(
+        _self: LuaReflectValProxy<bevy::math::DVec2>,
+        rhs: LuaReflectValProxy<bevy::math::DVec2>,
+    ) -> LuaReflectValProxy<bevy::math::DVec2>;
 
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Add", composite = "add")]
-    fn add(self, rhs: f64) -> bevy::math::DVec2;
+    #[lua(as_trait = "std::ops::Add::<f64>", composite = "add")]
+    fn add(
+        _self: LuaReflectValProxy<bevy::math::DVec2>,
+        rhs: f64,
+    ) -> LuaReflectValProxy<bevy::math::DVec2>;
 
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Div", composite = "div")]
-    fn div(self, rhs: f64) -> bevy::math::DVec2;
+    #[lua(as_trait = "std::ops::Div::<f64>", composite = "div")]
+    fn div(
+        _self: LuaReflectValProxy<bevy::math::DVec2>,
+        rhs: f64,
+    ) -> LuaReflectValProxy<bevy::math::DVec2>;
 
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Rem", composite = "rem")]
-    fn rem(self, rhs: f64) -> bevy::math::DVec2;
+    #[lua(as_trait = "std::ops::Rem::<f64>", composite = "rem")]
+    fn rem(
+        _self: LuaReflectValProxy<bevy::math::DVec2>,
+        rhs: f64,
+    ) -> LuaReflectValProxy<bevy::math::DVec2>;
 
 "#,
     r#"
 
     #[lua(as_trait = "std::ops::Neg", composite = "neg")]
-    fn neg(self) -> bevy::math::DVec2;
+    fn neg(
+        _self: LuaReflectValProxy<bevy::math::DVec2>,
+    ) -> LuaReflectValProxy<bevy::math::DVec2>;
 
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Sub", composite = "sub")]
-    fn sub(self, #[proxy] rhs: bevy::math::DVec2) -> bevy::math::DVec2;
+    #[lua(as_trait = "std::ops::Sub::<bevy::math::DVec2>", composite = "sub")]
+    fn sub(
+        _self: LuaReflectValProxy<bevy::math::DVec2>,
+        rhs: LuaReflectValProxy<bevy::math::DVec2>,
+    ) -> LuaReflectValProxy<bevy::math::DVec2>;
 
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Sub", composite = "sub")]
-    fn sub(self, rhs: f64) -> bevy::math::DVec2;
+    #[lua(as_trait = "std::ops::Sub::<f64>", composite = "sub")]
+    fn sub(
+        _self: LuaReflectValProxy<bevy::math::DVec2>,
+        rhs: f64,
+    ) -> LuaReflectValProxy<bevy::math::DVec2>;
 
 "#,
     r#"
 /// Creates a new vector.
 
     #[lua()]
-    fn new(x: f64, y: f64) -> bevy::math::DVec2;
+    fn new(x: f64, y: f64) -> LuaReflectValProxy<bevy::math::DVec2>;
 
 "#,
     r#"
 /// Creates a vector with all elements set to `v`.
 
     #[lua()]
-    fn splat(v: f64) -> bevy::math::DVec2;
+    fn splat(v: f64) -> LuaReflectValProxy<bevy::math::DVec2>;
 
 "#,
     r#"
@@ -12027,48 +14335,54 @@ pub struct LuaBVec4 {
 
     #[lua()]
     fn select(
-        #[proxy]
-        mask: bevy::math::BVec2,
-        #[proxy]
-        if_true: bevy::math::DVec2,
-        #[proxy]
-        if_false: bevy::math::DVec2,
-    ) -> bevy::math::DVec2;
+        mask: LuaReflectValProxy<bevy::math::BVec2>,
+        if_true: LuaReflectValProxy<bevy::math::DVec2>,
+        if_false: LuaReflectValProxy<bevy::math::DVec2>,
+    ) -> LuaReflectValProxy<bevy::math::DVec2>;
 
 "#,
     r#"
 /// Creates a new vector from an array.
 
     #[lua()]
-    fn from_array(a: [f64; 2]) -> bevy::math::DVec2;
+    fn from_array(a: [f64; 2]) -> LuaReflectValProxy<bevy::math::DVec2>;
 
 "#,
     r#"
 /// `[x, y]`
 
     #[lua()]
-    fn to_array(&self) -> [f64; 2];
+    fn to_array(_self: LuaReflectRefProxy<bevy::math::DVec2>) -> [f64; 2];
 
 "#,
     r#"
 /// Creates a 3D vector from `self` and the given `z` value.
 
     #[lua()]
-    fn extend(self, z: f64) -> bevy::math::DVec3;
+    fn extend(
+        _self: LuaReflectValProxy<bevy::math::DVec2>,
+        z: f64,
+    ) -> LuaReflectValProxy<bevy::math::DVec3>;
 
 "#,
     r#"
 /// Computes the dot product of `self` and `rhs`.
 
     #[lua()]
-    fn dot(self, #[proxy] rhs: bevy::math::DVec2) -> f64;
+    fn dot(
+        _self: LuaReflectValProxy<bevy::math::DVec2>,
+        rhs: LuaReflectValProxy<bevy::math::DVec2>,
+    ) -> f64;
 
 "#,
     r#"
 /// Returns a vector where every component is the dot product of `self` and `rhs`.
 
     #[lua()]
-    fn dot_into_vec(self, #[proxy] rhs: bevy::math::DVec2) -> bevy::math::DVec2;
+    fn dot_into_vec(
+        _self: LuaReflectValProxy<bevy::math::DVec2>,
+        rhs: LuaReflectValProxy<bevy::math::DVec2>,
+    ) -> LuaReflectValProxy<bevy::math::DVec2>;
 
 "#,
     r#"
@@ -12076,7 +14390,10 @@ pub struct LuaBVec4 {
 /// In other words this computes `[self.x.min(rhs.x), self.y.min(rhs.y), ..]`.
 
     #[lua()]
-    fn min(self, #[proxy] rhs: bevy::math::DVec2) -> bevy::math::DVec2;
+    fn min(
+        _self: LuaReflectValProxy<bevy::math::DVec2>,
+        rhs: LuaReflectValProxy<bevy::math::DVec2>,
+    ) -> LuaReflectValProxy<bevy::math::DVec2>;
 
 "#,
     r#"
@@ -12084,7 +14401,10 @@ pub struct LuaBVec4 {
 /// In other words this computes `[self.x.max(rhs.x), self.y.max(rhs.y), ..]`.
 
     #[lua()]
-    fn max(self, #[proxy] rhs: bevy::math::DVec2) -> bevy::math::DVec2;
+    fn max(
+        _self: LuaReflectValProxy<bevy::math::DVec2>,
+        rhs: LuaReflectValProxy<bevy::math::DVec2>,
+    ) -> LuaReflectValProxy<bevy::math::DVec2>;
 
 "#,
     r#"
@@ -12095,12 +14415,10 @@ pub struct LuaBVec4 {
 
     #[lua()]
     fn clamp(
-        self,
-        #[proxy]
-        min: bevy::math::DVec2,
-        #[proxy]
-        max: bevy::math::DVec2,
-    ) -> bevy::math::DVec2;
+        _self: LuaReflectValProxy<bevy::math::DVec2>,
+        min: LuaReflectValProxy<bevy::math::DVec2>,
+        max: LuaReflectValProxy<bevy::math::DVec2>,
+    ) -> LuaReflectValProxy<bevy::math::DVec2>;
 
 "#,
     r#"
@@ -12108,7 +14426,7 @@ pub struct LuaBVec4 {
 /// In other words this computes `min(x, y, ..)`.
 
     #[lua()]
-    fn min_element(self) -> f64;
+    fn min_element(_self: LuaReflectValProxy<bevy::math::DVec2>) -> f64;
 
 "#,
     r#"
@@ -12116,7 +14434,7 @@ pub struct LuaBVec4 {
 /// In other words this computes `max(x, y, ..)`.
 
     #[lua()]
-    fn max_element(self) -> f64;
+    fn max_element(_self: LuaReflectValProxy<bevy::math::DVec2>) -> f64;
 
 "#,
     r#"
@@ -12126,7 +14444,10 @@ pub struct LuaBVec4 {
 /// elements.
 
     #[lua()]
-    fn cmpeq(self, #[proxy] rhs: bevy::math::DVec2) -> bevy::math::BVec2;
+    fn cmpeq(
+        _self: LuaReflectValProxy<bevy::math::DVec2>,
+        rhs: LuaReflectValProxy<bevy::math::DVec2>,
+    ) -> LuaReflectValProxy<bevy::math::BVec2>;
 
 "#,
     r#"
@@ -12136,7 +14457,10 @@ pub struct LuaBVec4 {
 /// elements.
 
     #[lua()]
-    fn cmpne(self, #[proxy] rhs: bevy::math::DVec2) -> bevy::math::BVec2;
+    fn cmpne(
+        _self: LuaReflectValProxy<bevy::math::DVec2>,
+        rhs: LuaReflectValProxy<bevy::math::DVec2>,
+    ) -> LuaReflectValProxy<bevy::math::BVec2>;
 
 "#,
     r#"
@@ -12146,7 +14470,10 @@ pub struct LuaBVec4 {
 /// elements.
 
     #[lua()]
-    fn cmpge(self, #[proxy] rhs: bevy::math::DVec2) -> bevy::math::BVec2;
+    fn cmpge(
+        _self: LuaReflectValProxy<bevy::math::DVec2>,
+        rhs: LuaReflectValProxy<bevy::math::DVec2>,
+    ) -> LuaReflectValProxy<bevy::math::BVec2>;
 
 "#,
     r#"
@@ -12156,7 +14483,10 @@ pub struct LuaBVec4 {
 /// elements.
 
     #[lua()]
-    fn cmpgt(self, #[proxy] rhs: bevy::math::DVec2) -> bevy::math::BVec2;
+    fn cmpgt(
+        _self: LuaReflectValProxy<bevy::math::DVec2>,
+        rhs: LuaReflectValProxy<bevy::math::DVec2>,
+    ) -> LuaReflectValProxy<bevy::math::BVec2>;
 
 "#,
     r#"
@@ -12166,7 +14496,10 @@ pub struct LuaBVec4 {
 /// elements.
 
     #[lua()]
-    fn cmple(self, #[proxy] rhs: bevy::math::DVec2) -> bevy::math::BVec2;
+    fn cmple(
+        _self: LuaReflectValProxy<bevy::math::DVec2>,
+        rhs: LuaReflectValProxy<bevy::math::DVec2>,
+    ) -> LuaReflectValProxy<bevy::math::BVec2>;
 
 "#,
     r#"
@@ -12176,14 +14509,19 @@ pub struct LuaBVec4 {
 /// elements.
 
     #[lua()]
-    fn cmplt(self, #[proxy] rhs: bevy::math::DVec2) -> bevy::math::BVec2;
+    fn cmplt(
+        _self: LuaReflectValProxy<bevy::math::DVec2>,
+        rhs: LuaReflectValProxy<bevy::math::DVec2>,
+    ) -> LuaReflectValProxy<bevy::math::BVec2>;
 
 "#,
     r#"
 /// Returns a vector containing the absolute value of each element of `self`.
 
     #[lua()]
-    fn abs(self) -> bevy::math::DVec2;
+    fn abs(
+        _self: LuaReflectValProxy<bevy::math::DVec2>,
+    ) -> LuaReflectValProxy<bevy::math::DVec2>;
 
 "#,
     r#"
@@ -12193,14 +14531,19 @@ pub struct LuaBVec4 {
 /// - `NAN` if the number is `NAN`
 
     #[lua()]
-    fn signum(self) -> bevy::math::DVec2;
+    fn signum(
+        _self: LuaReflectValProxy<bevy::math::DVec2>,
+    ) -> LuaReflectValProxy<bevy::math::DVec2>;
 
 "#,
     r#"
 /// Returns a vector with signs of `rhs` and the magnitudes of `self`.
 
     #[lua()]
-    fn copysign(self, #[proxy] rhs: bevy::math::DVec2) -> bevy::math::DVec2;
+    fn copysign(
+        _self: LuaReflectValProxy<bevy::math::DVec2>,
+        rhs: LuaReflectValProxy<bevy::math::DVec2>,
+    ) -> LuaReflectValProxy<bevy::math::DVec2>;
 
 "#,
     r#"
@@ -12209,7 +14552,7 @@ pub struct LuaBVec4 {
 /// into the first lowest bit, element `y` into the second, etc.
 
     #[lua()]
-    fn is_negative_bitmask(self) -> u32;
+    fn is_negative_bitmask(_self: LuaReflectValProxy<bevy::math::DVec2>) -> u32;
 
 "#,
     r#"
@@ -12217,14 +14560,14 @@ pub struct LuaBVec4 {
 /// `NaN`, positive or negative infinity, this will return `false`.
 
     #[lua()]
-    fn is_finite(self) -> bool;
+    fn is_finite(_self: LuaReflectValProxy<bevy::math::DVec2>) -> bool;
 
 "#,
     r#"
 /// Returns `true` if any elements are `NaN`.
 
     #[lua()]
-    fn is_nan(self) -> bool;
+    fn is_nan(_self: LuaReflectValProxy<bevy::math::DVec2>) -> bool;
 
 "#,
     r#"
@@ -12232,14 +14575,16 @@ pub struct LuaBVec4 {
 /// In other words, this computes `[x.is_nan(), y.is_nan(), z.is_nan(), w.is_nan()]`.
 
     #[lua()]
-    fn is_nan_mask(self) -> bevy::math::BVec2;
+    fn is_nan_mask(
+        _self: LuaReflectValProxy<bevy::math::DVec2>,
+    ) -> LuaReflectValProxy<bevy::math::BVec2>;
 
 "#,
     r#"
 /// Computes the length of `self`.
 
     #[lua()]
-    fn length(self) -> f64;
+    fn length(_self: LuaReflectValProxy<bevy::math::DVec2>) -> f64;
 
 "#,
     r#"
@@ -12247,7 +14592,7 @@ pub struct LuaBVec4 {
 /// This is faster than `length()` as it avoids a square root operation.
 
     #[lua()]
-    fn length_squared(self) -> f64;
+    fn length_squared(_self: LuaReflectValProxy<bevy::math::DVec2>) -> f64;
 
 "#,
     r#"
@@ -12255,28 +14600,37 @@ pub struct LuaBVec4 {
 /// For valid results, `self` must _not_ be of length zero.
 
     #[lua()]
-    fn length_recip(self) -> f64;
+    fn length_recip(_self: LuaReflectValProxy<bevy::math::DVec2>) -> f64;
 
 "#,
     r#"
 /// Computes the Euclidean distance between two points in space.
 
     #[lua()]
-    fn distance(self, #[proxy] rhs: bevy::math::DVec2) -> f64;
+    fn distance(
+        _self: LuaReflectValProxy<bevy::math::DVec2>,
+        rhs: LuaReflectValProxy<bevy::math::DVec2>,
+    ) -> f64;
 
 "#,
     r#"
 /// Compute the squared euclidean distance between two points in space.
 
     #[lua()]
-    fn distance_squared(self, #[proxy] rhs: bevy::math::DVec2) -> f64;
+    fn distance_squared(
+        _self: LuaReflectValProxy<bevy::math::DVec2>,
+        rhs: LuaReflectValProxy<bevy::math::DVec2>,
+    ) -> f64;
 
 "#,
     r#"
 /// Returns the element-wise quotient of [Euclidean division] of `self` by `rhs`.
 
     #[lua()]
-    fn div_euclid(self, #[proxy] rhs: bevy::math::DVec2) -> bevy::math::DVec2;
+    fn div_euclid(
+        _self: LuaReflectValProxy<bevy::math::DVec2>,
+        rhs: LuaReflectValProxy<bevy::math::DVec2>,
+    ) -> LuaReflectValProxy<bevy::math::DVec2>;
 
 "#,
     r#"
@@ -12284,7 +14638,10 @@ pub struct LuaBVec4 {
 /// [Euclidean division]: f64::rem_euclid
 
     #[lua()]
-    fn rem_euclid(self, #[proxy] rhs: bevy::math::DVec2) -> bevy::math::DVec2;
+    fn rem_euclid(
+        _self: LuaReflectValProxy<bevy::math::DVec2>,
+        rhs: LuaReflectValProxy<bevy::math::DVec2>,
+    ) -> LuaReflectValProxy<bevy::math::DVec2>;
 
 "#,
     r#"
@@ -12295,7 +14652,9 @@ pub struct LuaBVec4 {
 /// Will panic if `self` is zero length when `glam_assert` is enabled.
 
     #[lua()]
-    fn normalize(self) -> bevy::math::DVec2;
+    fn normalize(
+        _self: LuaReflectValProxy<bevy::math::DVec2>,
+    ) -> LuaReflectValProxy<bevy::math::DVec2>;
 
 "#,
     r#"
@@ -12305,7 +14664,9 @@ pub struct LuaBVec4 {
 /// See also [`Self::try_normalize()`].
 
     #[lua()]
-    fn normalize_or_zero(self) -> bevy::math::DVec2;
+    fn normalize_or_zero(
+        _self: LuaReflectValProxy<bevy::math::DVec2>,
+    ) -> LuaReflectValProxy<bevy::math::DVec2>;
 
 "#,
     r#"
@@ -12313,7 +14674,7 @@ pub struct LuaBVec4 {
 /// Uses a precision threshold of `1e-6`.
 
     #[lua()]
-    fn is_normalized(self) -> bool;
+    fn is_normalized(_self: LuaReflectValProxy<bevy::math::DVec2>) -> bool;
 
 "#,
     r#"
@@ -12323,7 +14684,10 @@ pub struct LuaBVec4 {
 /// Will panic if `rhs` is zero length when `glam_assert` is enabled.
 
     #[lua()]
-    fn project_onto(self, #[proxy] rhs: bevy::math::DVec2) -> bevy::math::DVec2;
+    fn project_onto(
+        _self: LuaReflectValProxy<bevy::math::DVec2>,
+        rhs: LuaReflectValProxy<bevy::math::DVec2>,
+    ) -> LuaReflectValProxy<bevy::math::DVec2>;
 
 "#,
     r#"
@@ -12335,7 +14699,10 @@ pub struct LuaBVec4 {
 /// Will panic if `rhs` has a length of zero when `glam_assert` is enabled.
 
     #[lua()]
-    fn reject_from(self, #[proxy] rhs: bevy::math::DVec2) -> bevy::math::DVec2;
+    fn reject_from(
+        _self: LuaReflectValProxy<bevy::math::DVec2>,
+        rhs: LuaReflectValProxy<bevy::math::DVec2>,
+    ) -> LuaReflectValProxy<bevy::math::DVec2>;
 
 "#,
     r#"
@@ -12346,10 +14713,9 @@ pub struct LuaBVec4 {
 
     #[lua()]
     fn project_onto_normalized(
-        self,
-        #[proxy]
-        rhs: bevy::math::DVec2,
-    ) -> bevy::math::DVec2;
+        _self: LuaReflectValProxy<bevy::math::DVec2>,
+        rhs: LuaReflectValProxy<bevy::math::DVec2>,
+    ) -> LuaReflectValProxy<bevy::math::DVec2>;
 
 "#,
     r#"
@@ -12362,10 +14728,9 @@ pub struct LuaBVec4 {
 
     #[lua()]
     fn reject_from_normalized(
-        self,
-        #[proxy]
-        rhs: bevy::math::DVec2,
-    ) -> bevy::math::DVec2;
+        _self: LuaReflectValProxy<bevy::math::DVec2>,
+        rhs: LuaReflectValProxy<bevy::math::DVec2>,
+    ) -> LuaReflectValProxy<bevy::math::DVec2>;
 
 "#,
     r#"
@@ -12373,7 +14738,9 @@ pub struct LuaBVec4 {
 /// Round half-way cases away from 0.0.
 
     #[lua()]
-    fn round(self) -> bevy::math::DVec2;
+    fn round(
+        _self: LuaReflectValProxy<bevy::math::DVec2>,
+    ) -> LuaReflectValProxy<bevy::math::DVec2>;
 
 "#,
     r#"
@@ -12381,7 +14748,9 @@ pub struct LuaBVec4 {
 /// element of `self`.
 
     #[lua()]
-    fn floor(self) -> bevy::math::DVec2;
+    fn floor(
+        _self: LuaReflectValProxy<bevy::math::DVec2>,
+    ) -> LuaReflectValProxy<bevy::math::DVec2>;
 
 "#,
     r#"
@@ -12389,7 +14758,9 @@ pub struct LuaBVec4 {
 /// each element of `self`.
 
     #[lua()]
-    fn ceil(self) -> bevy::math::DVec2;
+    fn ceil(
+        _self: LuaReflectValProxy<bevy::math::DVec2>,
+    ) -> LuaReflectValProxy<bevy::math::DVec2>;
 
 "#,
     r#"
@@ -12397,7 +14768,9 @@ pub struct LuaBVec4 {
 /// always truncated towards zero.
 
     #[lua()]
-    fn trunc(self) -> bevy::math::DVec2;
+    fn trunc(
+        _self: LuaReflectValProxy<bevy::math::DVec2>,
+    ) -> LuaReflectValProxy<bevy::math::DVec2>;
 
 "#,
     r#"
@@ -12406,7 +14779,9 @@ pub struct LuaBVec4 {
 /// Note that this is fast but not precise for large numbers.
 
     #[lua()]
-    fn fract(self) -> bevy::math::DVec2;
+    fn fract(
+        _self: LuaReflectValProxy<bevy::math::DVec2>,
+    ) -> LuaReflectValProxy<bevy::math::DVec2>;
 
 "#,
     r#"
@@ -12414,21 +14789,28 @@ pub struct LuaBVec4 {
 /// `self`.
 
     #[lua()]
-    fn exp(self) -> bevy::math::DVec2;
+    fn exp(
+        _self: LuaReflectValProxy<bevy::math::DVec2>,
+    ) -> LuaReflectValProxy<bevy::math::DVec2>;
 
 "#,
     r#"
 /// Returns a vector containing each element of `self` raised to the power of `n`.
 
     #[lua()]
-    fn powf(self, n: f64) -> bevy::math::DVec2;
+    fn powf(
+        _self: LuaReflectValProxy<bevy::math::DVec2>,
+        n: f64,
+    ) -> LuaReflectValProxy<bevy::math::DVec2>;
 
 "#,
     r#"
 /// Returns a vector containing the reciprocal `1.0/n` of each element of `self`.
 
     #[lua()]
-    fn recip(self) -> bevy::math::DVec2;
+    fn recip(
+        _self: LuaReflectValProxy<bevy::math::DVec2>,
+    ) -> LuaReflectValProxy<bevy::math::DVec2>;
 
 "#,
     r#"
@@ -12438,7 +14820,11 @@ pub struct LuaBVec4 {
 /// extrapolated.
 
     #[lua()]
-    fn lerp(self, #[proxy] rhs: bevy::math::DVec2, s: f64) -> bevy::math::DVec2;
+    fn lerp(
+        _self: LuaReflectValProxy<bevy::math::DVec2>,
+        rhs: LuaReflectValProxy<bevy::math::DVec2>,
+        s: f64,
+    ) -> LuaReflectValProxy<bevy::math::DVec2>;
 
 "#,
     r#"
@@ -12451,7 +14837,11 @@ pub struct LuaBVec4 {
 /// [comparing floating point numbers](https://randomascii.wordpress.com/2012/02/25/comparing-floating-point-numbers-2012-edition/).
 
     #[lua()]
-    fn abs_diff_eq(self, #[proxy] rhs: bevy::math::DVec2, max_abs_diff: f64) -> bool;
+    fn abs_diff_eq(
+        _self: LuaReflectValProxy<bevy::math::DVec2>,
+        rhs: LuaReflectValProxy<bevy::math::DVec2>,
+        max_abs_diff: f64,
+    ) -> bool;
 
 "#,
     r#"
@@ -12460,21 +14850,31 @@ pub struct LuaBVec4 {
 /// Will panic if `min` is greater than `max` when `glam_assert` is enabled.
 
     #[lua()]
-    fn clamp_length(self, min: f64, max: f64) -> bevy::math::DVec2;
+    fn clamp_length(
+        _self: LuaReflectValProxy<bevy::math::DVec2>,
+        min: f64,
+        max: f64,
+    ) -> LuaReflectValProxy<bevy::math::DVec2>;
 
 "#,
     r#"
 /// Returns a vector with a length no more than `max`
 
     #[lua()]
-    fn clamp_length_max(self, max: f64) -> bevy::math::DVec2;
+    fn clamp_length_max(
+        _self: LuaReflectValProxy<bevy::math::DVec2>,
+        max: f64,
+    ) -> LuaReflectValProxy<bevy::math::DVec2>;
 
 "#,
     r#"
 /// Returns a vector with a length no less than `min`
 
     #[lua()]
-    fn clamp_length_min(self, min: f64) -> bevy::math::DVec2;
+    fn clamp_length_min(
+        _self: LuaReflectValProxy<bevy::math::DVec2>,
+        min: f64,
+    ) -> LuaReflectValProxy<bevy::math::DVec2>;
 
 "#,
     r#"
@@ -12487,12 +14887,10 @@ pub struct LuaBVec4 {
 
     #[lua()]
     fn mul_add(
-        self,
-        #[proxy]
-        a: bevy::math::DVec2,
-        #[proxy]
-        b: bevy::math::DVec2,
-    ) -> bevy::math::DVec2;
+        _self: LuaReflectValProxy<bevy::math::DVec2>,
+        a: LuaReflectValProxy<bevy::math::DVec2>,
+        b: LuaReflectValProxy<bevy::math::DVec2>,
+    ) -> LuaReflectValProxy<bevy::math::DVec2>;
 
 "#,
     r#"
@@ -12502,7 +14900,7 @@ pub struct LuaBVec4 {
 /// and rotate [`DVec2::Y`] around it returning `-DVec2::Y`.
 
     #[lua()]
-    fn from_angle(angle: f64) -> bevy::math::DVec2;
+    fn from_angle(angle: f64) -> LuaReflectValProxy<bevy::math::DVec2>;
 
 "#,
     r#"
@@ -12510,7 +14908,7 @@ pub struct LuaBVec4 {
 /// The input does not need to be a unit vector however it must be non-zero.
 
     #[lua()]
-    fn to_angle(self) -> f64;
+    fn to_angle(_self: LuaReflectValProxy<bevy::math::DVec2>) -> f64;
 
 "#,
     r#"
@@ -12518,14 +14916,19 @@ pub struct LuaBVec4 {
 /// The inputs do not need to be unit vectors however they must be non-zero.
 
     #[lua()]
-    fn angle_between(self, #[proxy] rhs: bevy::math::DVec2) -> f64;
+    fn angle_between(
+        _self: LuaReflectValProxy<bevy::math::DVec2>,
+        rhs: LuaReflectValProxy<bevy::math::DVec2>,
+    ) -> f64;
 
 "#,
     r#"
 /// Returns a vector that is equal to `self` rotated by 90 degrees.
 
     #[lua()]
-    fn perp(self) -> bevy::math::DVec2;
+    fn perp(
+        _self: LuaReflectValProxy<bevy::math::DVec2>,
+    ) -> LuaReflectValProxy<bevy::math::DVec2>;
 
 "#,
     r#"
@@ -12533,7 +14936,10 @@ pub struct LuaBVec4 {
 /// Also known as the wedge product, 2D cross product, and determinant.
 
     #[lua()]
-    fn perp_dot(self, #[proxy] rhs: bevy::math::DVec2) -> f64;
+    fn perp_dot(
+        _self: LuaReflectValProxy<bevy::math::DVec2>,
+        rhs: LuaReflectValProxy<bevy::math::DVec2>,
+    ) -> f64;
 
 "#,
     r#"
@@ -12542,60 +14948,81 @@ pub struct LuaBVec4 {
 /// it will be like a rotation with a multiplication by `self`'s length.
 
     #[lua()]
-    fn rotate(self, #[proxy] rhs: bevy::math::DVec2) -> bevy::math::DVec2;
+    fn rotate(
+        _self: LuaReflectValProxy<bevy::math::DVec2>,
+        rhs: LuaReflectValProxy<bevy::math::DVec2>,
+    ) -> LuaReflectValProxy<bevy::math::DVec2>;
 
 "#,
     r#"
 /// Casts all elements of `self` to `f32`.
 
     #[lua()]
-    fn as_vec2(&self) -> bevy::math::Vec2;
+    fn as_vec2(
+        _self: LuaReflectRefProxy<bevy::math::DVec2>,
+    ) -> LuaReflectValProxy<bevy::math::Vec2>;
 
 "#,
     r#"
 /// Casts all elements of `self` to `i32`.
 
     #[lua()]
-    fn as_ivec2(&self) -> bevy::math::IVec2;
+    fn as_ivec2(
+        _self: LuaReflectRefProxy<bevy::math::DVec2>,
+    ) -> LuaReflectValProxy<bevy::math::IVec2>;
 
 "#,
     r#"
 /// Casts all elements of `self` to `u32`.
 
     #[lua()]
-    fn as_uvec2(&self) -> bevy::math::UVec2;
+    fn as_uvec2(
+        _self: LuaReflectRefProxy<bevy::math::DVec2>,
+    ) -> LuaReflectValProxy<bevy::math::UVec2>;
 
 "#,
     r#"
 /// Casts all elements of `self` to `i64`.
 
     #[lua()]
-    fn as_i64vec2(&self) -> bevy::math::I64Vec2;
+    fn as_i64vec2(
+        _self: LuaReflectRefProxy<bevy::math::DVec2>,
+    ) -> LuaReflectValProxy<bevy::math::I64Vec2>;
 
 "#,
     r#"
 /// Casts all elements of `self` to `u64`.
 
     #[lua()]
-    fn as_u64vec2(&self) -> bevy::math::U64Vec2;
+    fn as_u64vec2(
+        _self: LuaReflectRefProxy<bevy::math::DVec2>,
+    ) -> LuaReflectValProxy<bevy::math::U64Vec2>;
 
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Mul", composite = "mul")]
-    fn mul(self, rhs: f64) -> bevy::math::DVec2;
+    #[lua(as_trait = "std::ops::Mul::<f64>", composite = "mul")]
+    fn mul(
+        _self: LuaReflectValProxy<bevy::math::DVec2>,
+        rhs: f64,
+    ) -> LuaReflectValProxy<bevy::math::DVec2>;
 
 "#,
     r#"
 
-    #[lua(as_trait = "std::cmp::PartialEq", composite = "eq")]
-    fn eq(&self, #[proxy] other: &glam::DVec2) -> bool;
+    #[lua(as_trait = "std::cmp::PartialEq::<bevy::math::DVec2>", composite = "eq")]
+    fn eq(
+        _self: LuaReflectRefProxy<bevy::math::DVec2>,
+        other: LuaReflectRefProxy<bevy::math::DVec2>,
+    ) -> bool;
 
 "#,
     r#"
 
     #[lua(as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone")]
-    fn clone(&self) -> bevy::math::DVec2;
+    fn clone(
+        _self: LuaReflectRefProxy<bevy::math::DVec2>,
+    ) -> LuaReflectValProxy<bevy::math::DVec2>;
 
 "#,
     r#"
@@ -12605,19 +15032,19 @@ fn index(&self) -> String {
 }
 "#,
     r#"
-#[lua(raw , metamethod="Index")]
-fn index(&self, lua: &Lua, idx: crate::lua::util::LuaIndex) -> Result<f64,_> {
-    Ok(_self.inner()?[*idx])
+#[lua(metamethod="Index")]
+fn index(self, idx: usize) -> IdentityProxy<f64> {
+    _self[idx - 1]
 }
 "#,
     r#"
-#[lua(raw, metamethod="NewIndex")]
-fn index(&mut self, lua: &Lua, idx: crate::lua::util::LuaIndex, val: f64) -> Result<(),_> {
-    _self.val_mut(|s| Ok(s[*idx] = val))?
+#[lua(metamethod="NewIndex")]
+fn index(&mut self, idx: usize, val: f64) -> () {
+    _self[idx - 1] = val
 }
 "#]
 )]
-pub struct LuaDVec2 {
+pub struct DVec2 {
     x: f64,
     y: f64,
 }
@@ -12629,21 +15056,23 @@ pub struct LuaDVec2 {
     functions[r#"
 
     #[lua(as_trait = "std::ops::Neg", composite = "neg")]
-    fn neg(self) -> bevy::math::DVec3;
+    fn neg(
+        _self: LuaReflectValProxy<bevy::math::DVec3>,
+    ) -> LuaReflectValProxy<bevy::math::DVec3>;
 
 "#,
     r#"
 /// Creates a new vector.
 
     #[lua()]
-    fn new(x: f64, y: f64, z: f64) -> bevy::math::DVec3;
+    fn new(x: f64, y: f64, z: f64) -> LuaReflectValProxy<bevy::math::DVec3>;
 
 "#,
     r#"
 /// Creates a vector with all elements set to `v`.
 
     #[lua()]
-    fn splat(v: f64) -> bevy::math::DVec3;
+    fn splat(v: f64) -> LuaReflectValProxy<bevy::math::DVec3>;
 
 "#,
     r#"
@@ -12654,34 +15083,34 @@ pub struct LuaDVec2 {
 
     #[lua()]
     fn select(
-        #[proxy]
-        mask: bevy::math::BVec3,
-        #[proxy]
-        if_true: bevy::math::DVec3,
-        #[proxy]
-        if_false: bevy::math::DVec3,
-    ) -> bevy::math::DVec3;
+        mask: LuaReflectValProxy<bevy::math::BVec3>,
+        if_true: LuaReflectValProxy<bevy::math::DVec3>,
+        if_false: LuaReflectValProxy<bevy::math::DVec3>,
+    ) -> LuaReflectValProxy<bevy::math::DVec3>;
 
 "#,
     r#"
 /// Creates a new vector from an array.
 
     #[lua()]
-    fn from_array(a: [f64; 3]) -> bevy::math::DVec3;
+    fn from_array(a: [f64; 3]) -> LuaReflectValProxy<bevy::math::DVec3>;
 
 "#,
     r#"
 /// `[x, y, z]`
 
     #[lua()]
-    fn to_array(&self) -> [f64; 3];
+    fn to_array(_self: LuaReflectRefProxy<bevy::math::DVec3>) -> [f64; 3];
 
 "#,
     r#"
 /// Creates a 4D vector from `self` and the given `w` value.
 
     #[lua()]
-    fn extend(self, w: f64) -> bevy::math::DVec4;
+    fn extend(
+        _self: LuaReflectValProxy<bevy::math::DVec3>,
+        w: f64,
+    ) -> LuaReflectValProxy<bevy::math::DVec4>;
 
 "#,
     r#"
@@ -12689,28 +15118,39 @@ pub struct LuaDVec2 {
 /// Truncation may also be performed by using [`self.xy()`][crate::swizzles::Vec3Swizzles::xy()].
 
     #[lua()]
-    fn truncate(self) -> bevy::math::DVec2;
+    fn truncate(
+        _self: LuaReflectValProxy<bevy::math::DVec3>,
+    ) -> LuaReflectValProxy<bevy::math::DVec2>;
 
 "#,
     r#"
 /// Computes the dot product of `self` and `rhs`.
 
     #[lua()]
-    fn dot(self, #[proxy] rhs: bevy::math::DVec3) -> f64;
+    fn dot(
+        _self: LuaReflectValProxy<bevy::math::DVec3>,
+        rhs: LuaReflectValProxy<bevy::math::DVec3>,
+    ) -> f64;
 
 "#,
     r#"
 /// Returns a vector where every component is the dot product of `self` and `rhs`.
 
     #[lua()]
-    fn dot_into_vec(self, #[proxy] rhs: bevy::math::DVec3) -> bevy::math::DVec3;
+    fn dot_into_vec(
+        _self: LuaReflectValProxy<bevy::math::DVec3>,
+        rhs: LuaReflectValProxy<bevy::math::DVec3>,
+    ) -> LuaReflectValProxy<bevy::math::DVec3>;
 
 "#,
     r#"
 /// Computes the cross product of `self` and `rhs`.
 
     #[lua()]
-    fn cross(self, #[proxy] rhs: bevy::math::DVec3) -> bevy::math::DVec3;
+    fn cross(
+        _self: LuaReflectValProxy<bevy::math::DVec3>,
+        rhs: LuaReflectValProxy<bevy::math::DVec3>,
+    ) -> LuaReflectValProxy<bevy::math::DVec3>;
 
 "#,
     r#"
@@ -12718,7 +15158,10 @@ pub struct LuaDVec2 {
 /// In other words this computes `[self.x.min(rhs.x), self.y.min(rhs.y), ..]`.
 
     #[lua()]
-    fn min(self, #[proxy] rhs: bevy::math::DVec3) -> bevy::math::DVec3;
+    fn min(
+        _self: LuaReflectValProxy<bevy::math::DVec3>,
+        rhs: LuaReflectValProxy<bevy::math::DVec3>,
+    ) -> LuaReflectValProxy<bevy::math::DVec3>;
 
 "#,
     r#"
@@ -12726,7 +15169,10 @@ pub struct LuaDVec2 {
 /// In other words this computes `[self.x.max(rhs.x), self.y.max(rhs.y), ..]`.
 
     #[lua()]
-    fn max(self, #[proxy] rhs: bevy::math::DVec3) -> bevy::math::DVec3;
+    fn max(
+        _self: LuaReflectValProxy<bevy::math::DVec3>,
+        rhs: LuaReflectValProxy<bevy::math::DVec3>,
+    ) -> LuaReflectValProxy<bevy::math::DVec3>;
 
 "#,
     r#"
@@ -12737,12 +15183,10 @@ pub struct LuaDVec2 {
 
     #[lua()]
     fn clamp(
-        self,
-        #[proxy]
-        min: bevy::math::DVec3,
-        #[proxy]
-        max: bevy::math::DVec3,
-    ) -> bevy::math::DVec3;
+        _self: LuaReflectValProxy<bevy::math::DVec3>,
+        min: LuaReflectValProxy<bevy::math::DVec3>,
+        max: LuaReflectValProxy<bevy::math::DVec3>,
+    ) -> LuaReflectValProxy<bevy::math::DVec3>;
 
 "#,
     r#"
@@ -12750,7 +15194,7 @@ pub struct LuaDVec2 {
 /// In other words this computes `min(x, y, ..)`.
 
     #[lua()]
-    fn min_element(self) -> f64;
+    fn min_element(_self: LuaReflectValProxy<bevy::math::DVec3>) -> f64;
 
 "#,
     r#"
@@ -12758,7 +15202,7 @@ pub struct LuaDVec2 {
 /// In other words this computes `max(x, y, ..)`.
 
     #[lua()]
-    fn max_element(self) -> f64;
+    fn max_element(_self: LuaReflectValProxy<bevy::math::DVec3>) -> f64;
 
 "#,
     r#"
@@ -12768,7 +15212,10 @@ pub struct LuaDVec2 {
 /// elements.
 
     #[lua()]
-    fn cmpeq(self, #[proxy] rhs: bevy::math::DVec3) -> bevy::math::BVec3;
+    fn cmpeq(
+        _self: LuaReflectValProxy<bevy::math::DVec3>,
+        rhs: LuaReflectValProxy<bevy::math::DVec3>,
+    ) -> LuaReflectValProxy<bevy::math::BVec3>;
 
 "#,
     r#"
@@ -12778,7 +15225,10 @@ pub struct LuaDVec2 {
 /// elements.
 
     #[lua()]
-    fn cmpne(self, #[proxy] rhs: bevy::math::DVec3) -> bevy::math::BVec3;
+    fn cmpne(
+        _self: LuaReflectValProxy<bevy::math::DVec3>,
+        rhs: LuaReflectValProxy<bevy::math::DVec3>,
+    ) -> LuaReflectValProxy<bevy::math::BVec3>;
 
 "#,
     r#"
@@ -12788,7 +15238,10 @@ pub struct LuaDVec2 {
 /// elements.
 
     #[lua()]
-    fn cmpge(self, #[proxy] rhs: bevy::math::DVec3) -> bevy::math::BVec3;
+    fn cmpge(
+        _self: LuaReflectValProxy<bevy::math::DVec3>,
+        rhs: LuaReflectValProxy<bevy::math::DVec3>,
+    ) -> LuaReflectValProxy<bevy::math::BVec3>;
 
 "#,
     r#"
@@ -12798,7 +15251,10 @@ pub struct LuaDVec2 {
 /// elements.
 
     #[lua()]
-    fn cmpgt(self, #[proxy] rhs: bevy::math::DVec3) -> bevy::math::BVec3;
+    fn cmpgt(
+        _self: LuaReflectValProxy<bevy::math::DVec3>,
+        rhs: LuaReflectValProxy<bevy::math::DVec3>,
+    ) -> LuaReflectValProxy<bevy::math::BVec3>;
 
 "#,
     r#"
@@ -12808,7 +15264,10 @@ pub struct LuaDVec2 {
 /// elements.
 
     #[lua()]
-    fn cmple(self, #[proxy] rhs: bevy::math::DVec3) -> bevy::math::BVec3;
+    fn cmple(
+        _self: LuaReflectValProxy<bevy::math::DVec3>,
+        rhs: LuaReflectValProxy<bevy::math::DVec3>,
+    ) -> LuaReflectValProxy<bevy::math::BVec3>;
 
 "#,
     r#"
@@ -12818,14 +15277,19 @@ pub struct LuaDVec2 {
 /// elements.
 
     #[lua()]
-    fn cmplt(self, #[proxy] rhs: bevy::math::DVec3) -> bevy::math::BVec3;
+    fn cmplt(
+        _self: LuaReflectValProxy<bevy::math::DVec3>,
+        rhs: LuaReflectValProxy<bevy::math::DVec3>,
+    ) -> LuaReflectValProxy<bevy::math::BVec3>;
 
 "#,
     r#"
 /// Returns a vector containing the absolute value of each element of `self`.
 
     #[lua()]
-    fn abs(self) -> bevy::math::DVec3;
+    fn abs(
+        _self: LuaReflectValProxy<bevy::math::DVec3>,
+    ) -> LuaReflectValProxy<bevy::math::DVec3>;
 
 "#,
     r#"
@@ -12835,14 +15299,19 @@ pub struct LuaDVec2 {
 /// - `NAN` if the number is `NAN`
 
     #[lua()]
-    fn signum(self) -> bevy::math::DVec3;
+    fn signum(
+        _self: LuaReflectValProxy<bevy::math::DVec3>,
+    ) -> LuaReflectValProxy<bevy::math::DVec3>;
 
 "#,
     r#"
 /// Returns a vector with signs of `rhs` and the magnitudes of `self`.
 
     #[lua()]
-    fn copysign(self, #[proxy] rhs: bevy::math::DVec3) -> bevy::math::DVec3;
+    fn copysign(
+        _self: LuaReflectValProxy<bevy::math::DVec3>,
+        rhs: LuaReflectValProxy<bevy::math::DVec3>,
+    ) -> LuaReflectValProxy<bevy::math::DVec3>;
 
 "#,
     r#"
@@ -12851,7 +15320,7 @@ pub struct LuaDVec2 {
 /// into the first lowest bit, element `y` into the second, etc.
 
     #[lua()]
-    fn is_negative_bitmask(self) -> u32;
+    fn is_negative_bitmask(_self: LuaReflectValProxy<bevy::math::DVec3>) -> u32;
 
 "#,
     r#"
@@ -12859,14 +15328,14 @@ pub struct LuaDVec2 {
 /// `NaN`, positive or negative infinity, this will return `false`.
 
     #[lua()]
-    fn is_finite(self) -> bool;
+    fn is_finite(_self: LuaReflectValProxy<bevy::math::DVec3>) -> bool;
 
 "#,
     r#"
 /// Returns `true` if any elements are `NaN`.
 
     #[lua()]
-    fn is_nan(self) -> bool;
+    fn is_nan(_self: LuaReflectValProxy<bevy::math::DVec3>) -> bool;
 
 "#,
     r#"
@@ -12874,14 +15343,16 @@ pub struct LuaDVec2 {
 /// In other words, this computes `[x.is_nan(), y.is_nan(), z.is_nan(), w.is_nan()]`.
 
     #[lua()]
-    fn is_nan_mask(self) -> bevy::math::BVec3;
+    fn is_nan_mask(
+        _self: LuaReflectValProxy<bevy::math::DVec3>,
+    ) -> LuaReflectValProxy<bevy::math::BVec3>;
 
 "#,
     r#"
 /// Computes the length of `self`.
 
     #[lua()]
-    fn length(self) -> f64;
+    fn length(_self: LuaReflectValProxy<bevy::math::DVec3>) -> f64;
 
 "#,
     r#"
@@ -12889,7 +15360,7 @@ pub struct LuaDVec2 {
 /// This is faster than `length()` as it avoids a square root operation.
 
     #[lua()]
-    fn length_squared(self) -> f64;
+    fn length_squared(_self: LuaReflectValProxy<bevy::math::DVec3>) -> f64;
 
 "#,
     r#"
@@ -12897,28 +15368,37 @@ pub struct LuaDVec2 {
 /// For valid results, `self` must _not_ be of length zero.
 
     #[lua()]
-    fn length_recip(self) -> f64;
+    fn length_recip(_self: LuaReflectValProxy<bevy::math::DVec3>) -> f64;
 
 "#,
     r#"
 /// Computes the Euclidean distance between two points in space.
 
     #[lua()]
-    fn distance(self, #[proxy] rhs: bevy::math::DVec3) -> f64;
+    fn distance(
+        _self: LuaReflectValProxy<bevy::math::DVec3>,
+        rhs: LuaReflectValProxy<bevy::math::DVec3>,
+    ) -> f64;
 
 "#,
     r#"
 /// Compute the squared euclidean distance between two points in space.
 
     #[lua()]
-    fn distance_squared(self, #[proxy] rhs: bevy::math::DVec3) -> f64;
+    fn distance_squared(
+        _self: LuaReflectValProxy<bevy::math::DVec3>,
+        rhs: LuaReflectValProxy<bevy::math::DVec3>,
+    ) -> f64;
 
 "#,
     r#"
 /// Returns the element-wise quotient of [Euclidean division] of `self` by `rhs`.
 
     #[lua()]
-    fn div_euclid(self, #[proxy] rhs: bevy::math::DVec3) -> bevy::math::DVec3;
+    fn div_euclid(
+        _self: LuaReflectValProxy<bevy::math::DVec3>,
+        rhs: LuaReflectValProxy<bevy::math::DVec3>,
+    ) -> LuaReflectValProxy<bevy::math::DVec3>;
 
 "#,
     r#"
@@ -12926,7 +15406,10 @@ pub struct LuaDVec2 {
 /// [Euclidean division]: f64::rem_euclid
 
     #[lua()]
-    fn rem_euclid(self, #[proxy] rhs: bevy::math::DVec3) -> bevy::math::DVec3;
+    fn rem_euclid(
+        _self: LuaReflectValProxy<bevy::math::DVec3>,
+        rhs: LuaReflectValProxy<bevy::math::DVec3>,
+    ) -> LuaReflectValProxy<bevy::math::DVec3>;
 
 "#,
     r#"
@@ -12937,7 +15420,9 @@ pub struct LuaDVec2 {
 /// Will panic if `self` is zero length when `glam_assert` is enabled.
 
     #[lua()]
-    fn normalize(self) -> bevy::math::DVec3;
+    fn normalize(
+        _self: LuaReflectValProxy<bevy::math::DVec3>,
+    ) -> LuaReflectValProxy<bevy::math::DVec3>;
 
 "#,
     r#"
@@ -12947,7 +15432,9 @@ pub struct LuaDVec2 {
 /// See also [`Self::try_normalize()`].
 
     #[lua()]
-    fn normalize_or_zero(self) -> bevy::math::DVec3;
+    fn normalize_or_zero(
+        _self: LuaReflectValProxy<bevy::math::DVec3>,
+    ) -> LuaReflectValProxy<bevy::math::DVec3>;
 
 "#,
     r#"
@@ -12955,7 +15442,7 @@ pub struct LuaDVec2 {
 /// Uses a precision threshold of `1e-6`.
 
     #[lua()]
-    fn is_normalized(self) -> bool;
+    fn is_normalized(_self: LuaReflectValProxy<bevy::math::DVec3>) -> bool;
 
 "#,
     r#"
@@ -12965,7 +15452,10 @@ pub struct LuaDVec2 {
 /// Will panic if `rhs` is zero length when `glam_assert` is enabled.
 
     #[lua()]
-    fn project_onto(self, #[proxy] rhs: bevy::math::DVec3) -> bevy::math::DVec3;
+    fn project_onto(
+        _self: LuaReflectValProxy<bevy::math::DVec3>,
+        rhs: LuaReflectValProxy<bevy::math::DVec3>,
+    ) -> LuaReflectValProxy<bevy::math::DVec3>;
 
 "#,
     r#"
@@ -12977,7 +15467,10 @@ pub struct LuaDVec2 {
 /// Will panic if `rhs` has a length of zero when `glam_assert` is enabled.
 
     #[lua()]
-    fn reject_from(self, #[proxy] rhs: bevy::math::DVec3) -> bevy::math::DVec3;
+    fn reject_from(
+        _self: LuaReflectValProxy<bevy::math::DVec3>,
+        rhs: LuaReflectValProxy<bevy::math::DVec3>,
+    ) -> LuaReflectValProxy<bevy::math::DVec3>;
 
 "#,
     r#"
@@ -12988,10 +15481,9 @@ pub struct LuaDVec2 {
 
     #[lua()]
     fn project_onto_normalized(
-        self,
-        #[proxy]
-        rhs: bevy::math::DVec3,
-    ) -> bevy::math::DVec3;
+        _self: LuaReflectValProxy<bevy::math::DVec3>,
+        rhs: LuaReflectValProxy<bevy::math::DVec3>,
+    ) -> LuaReflectValProxy<bevy::math::DVec3>;
 
 "#,
     r#"
@@ -13004,10 +15496,9 @@ pub struct LuaDVec2 {
 
     #[lua()]
     fn reject_from_normalized(
-        self,
-        #[proxy]
-        rhs: bevy::math::DVec3,
-    ) -> bevy::math::DVec3;
+        _self: LuaReflectValProxy<bevy::math::DVec3>,
+        rhs: LuaReflectValProxy<bevy::math::DVec3>,
+    ) -> LuaReflectValProxy<bevy::math::DVec3>;
 
 "#,
     r#"
@@ -13015,7 +15506,9 @@ pub struct LuaDVec2 {
 /// Round half-way cases away from 0.0.
 
     #[lua()]
-    fn round(self) -> bevy::math::DVec3;
+    fn round(
+        _self: LuaReflectValProxy<bevy::math::DVec3>,
+    ) -> LuaReflectValProxy<bevy::math::DVec3>;
 
 "#,
     r#"
@@ -13023,7 +15516,9 @@ pub struct LuaDVec2 {
 /// element of `self`.
 
     #[lua()]
-    fn floor(self) -> bevy::math::DVec3;
+    fn floor(
+        _self: LuaReflectValProxy<bevy::math::DVec3>,
+    ) -> LuaReflectValProxy<bevy::math::DVec3>;
 
 "#,
     r#"
@@ -13031,7 +15526,9 @@ pub struct LuaDVec2 {
 /// each element of `self`.
 
     #[lua()]
-    fn ceil(self) -> bevy::math::DVec3;
+    fn ceil(
+        _self: LuaReflectValProxy<bevy::math::DVec3>,
+    ) -> LuaReflectValProxy<bevy::math::DVec3>;
 
 "#,
     r#"
@@ -13039,7 +15536,9 @@ pub struct LuaDVec2 {
 /// always truncated towards zero.
 
     #[lua()]
-    fn trunc(self) -> bevy::math::DVec3;
+    fn trunc(
+        _self: LuaReflectValProxy<bevy::math::DVec3>,
+    ) -> LuaReflectValProxy<bevy::math::DVec3>;
 
 "#,
     r#"
@@ -13048,7 +15547,9 @@ pub struct LuaDVec2 {
 /// Note that this is fast but not precise for large numbers.
 
     #[lua()]
-    fn fract(self) -> bevy::math::DVec3;
+    fn fract(
+        _self: LuaReflectValProxy<bevy::math::DVec3>,
+    ) -> LuaReflectValProxy<bevy::math::DVec3>;
 
 "#,
     r#"
@@ -13056,21 +15557,28 @@ pub struct LuaDVec2 {
 /// `self`.
 
     #[lua()]
-    fn exp(self) -> bevy::math::DVec3;
+    fn exp(
+        _self: LuaReflectValProxy<bevy::math::DVec3>,
+    ) -> LuaReflectValProxy<bevy::math::DVec3>;
 
 "#,
     r#"
 /// Returns a vector containing each element of `self` raised to the power of `n`.
 
     #[lua()]
-    fn powf(self, n: f64) -> bevy::math::DVec3;
+    fn powf(
+        _self: LuaReflectValProxy<bevy::math::DVec3>,
+        n: f64,
+    ) -> LuaReflectValProxy<bevy::math::DVec3>;
 
 "#,
     r#"
 /// Returns a vector containing the reciprocal `1.0/n` of each element of `self`.
 
     #[lua()]
-    fn recip(self) -> bevy::math::DVec3;
+    fn recip(
+        _self: LuaReflectValProxy<bevy::math::DVec3>,
+    ) -> LuaReflectValProxy<bevy::math::DVec3>;
 
 "#,
     r#"
@@ -13080,7 +15588,11 @@ pub struct LuaDVec2 {
 /// extrapolated.
 
     #[lua()]
-    fn lerp(self, #[proxy] rhs: bevy::math::DVec3, s: f64) -> bevy::math::DVec3;
+    fn lerp(
+        _self: LuaReflectValProxy<bevy::math::DVec3>,
+        rhs: LuaReflectValProxy<bevy::math::DVec3>,
+        s: f64,
+    ) -> LuaReflectValProxy<bevy::math::DVec3>;
 
 "#,
     r#"
@@ -13093,7 +15605,11 @@ pub struct LuaDVec2 {
 /// [comparing floating point numbers](https://randomascii.wordpress.com/2012/02/25/comparing-floating-point-numbers-2012-edition/).
 
     #[lua()]
-    fn abs_diff_eq(self, #[proxy] rhs: bevy::math::DVec3, max_abs_diff: f64) -> bool;
+    fn abs_diff_eq(
+        _self: LuaReflectValProxy<bevy::math::DVec3>,
+        rhs: LuaReflectValProxy<bevy::math::DVec3>,
+        max_abs_diff: f64,
+    ) -> bool;
 
 "#,
     r#"
@@ -13102,21 +15618,31 @@ pub struct LuaDVec2 {
 /// Will panic if `min` is greater than `max` when `glam_assert` is enabled.
 
     #[lua()]
-    fn clamp_length(self, min: f64, max: f64) -> bevy::math::DVec3;
+    fn clamp_length(
+        _self: LuaReflectValProxy<bevy::math::DVec3>,
+        min: f64,
+        max: f64,
+    ) -> LuaReflectValProxy<bevy::math::DVec3>;
 
 "#,
     r#"
 /// Returns a vector with a length no more than `max`
 
     #[lua()]
-    fn clamp_length_max(self, max: f64) -> bevy::math::DVec3;
+    fn clamp_length_max(
+        _self: LuaReflectValProxy<bevy::math::DVec3>,
+        max: f64,
+    ) -> LuaReflectValProxy<bevy::math::DVec3>;
 
 "#,
     r#"
 /// Returns a vector with a length no less than `min`
 
     #[lua()]
-    fn clamp_length_min(self, min: f64) -> bevy::math::DVec3;
+    fn clamp_length_min(
+        _self: LuaReflectValProxy<bevy::math::DVec3>,
+        min: f64,
+    ) -> LuaReflectValProxy<bevy::math::DVec3>;
 
 "#,
     r#"
@@ -13129,12 +15655,10 @@ pub struct LuaDVec2 {
 
     #[lua()]
     fn mul_add(
-        self,
-        #[proxy]
-        a: bevy::math::DVec3,
-        #[proxy]
-        b: bevy::math::DVec3,
-    ) -> bevy::math::DVec3;
+        _self: LuaReflectValProxy<bevy::math::DVec3>,
+        a: LuaReflectValProxy<bevy::math::DVec3>,
+        b: LuaReflectValProxy<bevy::math::DVec3>,
+    ) -> LuaReflectValProxy<bevy::math::DVec3>;
 
 "#,
     r#"
@@ -13142,7 +15666,10 @@ pub struct LuaDVec2 {
 /// The inputs do not need to be unit vectors however they must be non-zero.
 
     #[lua()]
-    fn angle_between(self, #[proxy] rhs: bevy::math::DVec3) -> f64;
+    fn angle_between(
+        _self: LuaReflectValProxy<bevy::math::DVec3>,
+        rhs: LuaReflectValProxy<bevy::math::DVec3>,
+    ) -> f64;
 
 "#,
     r#"
@@ -13152,7 +15679,9 @@ pub struct LuaDVec2 {
 /// [`Self::any_orthonormal_vector()`] instead.
 
     #[lua()]
-    fn any_orthogonal_vector(&self) -> bevy::math::DVec3;
+    fn any_orthogonal_vector(
+        _self: LuaReflectRefProxy<bevy::math::DVec3>,
+    ) -> LuaReflectValProxy<bevy::math::DVec3>;
 
 "#,
     r#"
@@ -13162,121 +15691,170 @@ pub struct LuaDVec2 {
 /// Will panic if `self` is not normalized when `glam_assert` is enabled.
 
     #[lua()]
-    fn any_orthonormal_vector(&self) -> bevy::math::DVec3;
+    fn any_orthonormal_vector(
+        _self: LuaReflectRefProxy<bevy::math::DVec3>,
+    ) -> LuaReflectValProxy<bevy::math::DVec3>;
 
 "#,
     r#"
 /// Casts all elements of `self` to `f32`.
 
     #[lua()]
-    fn as_vec3(&self) -> bevy::math::Vec3;
+    fn as_vec3(
+        _self: LuaReflectRefProxy<bevy::math::DVec3>,
+    ) -> LuaReflectValProxy<bevy::math::Vec3>;
 
 "#,
     r#"
 /// Casts all elements of `self` to `f32`.
 
     #[lua()]
-    fn as_vec3a(&self) -> bevy::math::Vec3A;
+    fn as_vec3a(
+        _self: LuaReflectRefProxy<bevy::math::DVec3>,
+    ) -> LuaReflectValProxy<bevy::math::Vec3A>;
 
 "#,
     r#"
 /// Casts all elements of `self` to `i32`.
 
     #[lua()]
-    fn as_ivec3(&self) -> bevy::math::IVec3;
+    fn as_ivec3(
+        _self: LuaReflectRefProxy<bevy::math::DVec3>,
+    ) -> LuaReflectValProxy<bevy::math::IVec3>;
 
 "#,
     r#"
 /// Casts all elements of `self` to `u32`.
 
     #[lua()]
-    fn as_uvec3(&self) -> bevy::math::UVec3;
+    fn as_uvec3(
+        _self: LuaReflectRefProxy<bevy::math::DVec3>,
+    ) -> LuaReflectValProxy<bevy::math::UVec3>;
 
 "#,
     r#"
 /// Casts all elements of `self` to `i64`.
 
     #[lua()]
-    fn as_i64vec3(&self) -> bevy::math::I64Vec3;
+    fn as_i64vec3(
+        _self: LuaReflectRefProxy<bevy::math::DVec3>,
+    ) -> LuaReflectValProxy<bevy::math::I64Vec3>;
 
 "#,
     r#"
 /// Casts all elements of `self` to `u64`.
 
     #[lua()]
-    fn as_u64vec3(&self) -> bevy::math::U64Vec3;
+    fn as_u64vec3(
+        _self: LuaReflectRefProxy<bevy::math::DVec3>,
+    ) -> LuaReflectValProxy<bevy::math::U64Vec3>;
 
 "#,
     r#"
 
-    #[lua(as_trait = "std::cmp::PartialEq", composite = "eq")]
-    fn eq(&self, #[proxy] other: &glam::DVec3) -> bool;
+    #[lua(as_trait = "std::cmp::PartialEq::<bevy::math::DVec3>", composite = "eq")]
+    fn eq(
+        _self: LuaReflectRefProxy<bevy::math::DVec3>,
+        other: LuaReflectRefProxy<bevy::math::DVec3>,
+    ) -> bool;
 
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Mul", composite = "mul")]
-    fn mul(self, rhs: f64) -> bevy::math::DVec3;
+    #[lua(as_trait = "std::ops::Mul::<f64>", composite = "mul")]
+    fn mul(
+        _self: LuaReflectValProxy<bevy::math::DVec3>,
+        rhs: f64,
+    ) -> LuaReflectValProxy<bevy::math::DVec3>;
 
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Sub", composite = "sub")]
-    fn sub(self, rhs: f64) -> bevy::math::DVec3;
+    #[lua(as_trait = "std::ops::Sub::<f64>", composite = "sub")]
+    fn sub(
+        _self: LuaReflectValProxy<bevy::math::DVec3>,
+        rhs: f64,
+    ) -> LuaReflectValProxy<bevy::math::DVec3>;
 
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Div", composite = "div")]
-    fn div(self, rhs: f64) -> bevy::math::DVec3;
+    #[lua(as_trait = "std::ops::Div::<f64>", composite = "div")]
+    fn div(
+        _self: LuaReflectValProxy<bevy::math::DVec3>,
+        rhs: f64,
+    ) -> LuaReflectValProxy<bevy::math::DVec3>;
 
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Add", composite = "add")]
-    fn add(self, rhs: f64) -> bevy::math::DVec3;
+    #[lua(as_trait = "std::ops::Add::<f64>", composite = "add")]
+    fn add(
+        _self: LuaReflectValProxy<bevy::math::DVec3>,
+        rhs: f64,
+    ) -> LuaReflectValProxy<bevy::math::DVec3>;
 
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Mul", composite = "mul")]
-    fn mul(self, #[proxy] rhs: bevy::math::DVec3) -> bevy::math::DVec3;
+    #[lua(as_trait = "std::ops::Mul::<bevy::math::DVec3>", composite = "mul")]
+    fn mul(
+        _self: LuaReflectValProxy<bevy::math::DVec3>,
+        rhs: LuaReflectValProxy<bevy::math::DVec3>,
+    ) -> LuaReflectValProxy<bevy::math::DVec3>;
 
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Add", composite = "add")]
-    fn add(self, #[proxy] rhs: bevy::math::DVec3) -> bevy::math::DVec3;
+    #[lua(as_trait = "std::ops::Add::<bevy::math::DVec3>", composite = "add")]
+    fn add(
+        _self: LuaReflectValProxy<bevy::math::DVec3>,
+        rhs: LuaReflectValProxy<bevy::math::DVec3>,
+    ) -> LuaReflectValProxy<bevy::math::DVec3>;
 
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Sub", composite = "sub")]
-    fn sub(self, #[proxy] rhs: bevy::math::DVec3) -> bevy::math::DVec3;
+    #[lua(as_trait = "std::ops::Sub::<bevy::math::DVec3>", composite = "sub")]
+    fn sub(
+        _self: LuaReflectValProxy<bevy::math::DVec3>,
+        rhs: LuaReflectValProxy<bevy::math::DVec3>,
+    ) -> LuaReflectValProxy<bevy::math::DVec3>;
 
 "#,
     r#"
 
     #[lua(as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone")]
-    fn clone(&self) -> bevy::math::DVec3;
+    fn clone(
+        _self: LuaReflectRefProxy<bevy::math::DVec3>,
+    ) -> LuaReflectValProxy<bevy::math::DVec3>;
 
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Div", composite = "div")]
-    fn div(self, #[proxy] rhs: bevy::math::DVec3) -> bevy::math::DVec3;
+    #[lua(as_trait = "std::ops::Div::<bevy::math::DVec3>", composite = "div")]
+    fn div(
+        _self: LuaReflectValProxy<bevy::math::DVec3>,
+        rhs: LuaReflectValProxy<bevy::math::DVec3>,
+    ) -> LuaReflectValProxy<bevy::math::DVec3>;
 
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Rem", composite = "rem")]
-    fn rem(self, rhs: f64) -> bevy::math::DVec3;
+    #[lua(as_trait = "std::ops::Rem::<f64>", composite = "rem")]
+    fn rem(
+        _self: LuaReflectValProxy<bevy::math::DVec3>,
+        rhs: f64,
+    ) -> LuaReflectValProxy<bevy::math::DVec3>;
 
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Rem", composite = "rem")]
-    fn rem(self, #[proxy] rhs: bevy::math::DVec3) -> bevy::math::DVec3;
+    #[lua(as_trait = "std::ops::Rem::<bevy::math::DVec3>", composite = "rem")]
+    fn rem(
+        _self: LuaReflectValProxy<bevy::math::DVec3>,
+        rhs: LuaReflectValProxy<bevy::math::DVec3>,
+    ) -> LuaReflectValProxy<bevy::math::DVec3>;
 
 "#,
     r#"
@@ -13286,19 +15864,19 @@ fn index(&self) -> String {
 }
 "#,
     r#"
-#[lua(raw , metamethod="Index")]
-fn index(&self, lua: &Lua, idx: crate::lua::util::LuaIndex) -> Result<f64,_> {
-    Ok(_self.inner()?[*idx])
+#[lua(metamethod="Index")]
+fn index(self, idx: usize) -> IdentityProxy<f64> {
+    _self[idx - 1]
 }
 "#,
     r#"
-#[lua(raw, metamethod="NewIndex")]
-fn index(&mut self, lua: &Lua, idx: crate::lua::util::LuaIndex, val: f64) -> Result<(),_> {
-    _self.val_mut(|s| Ok(s[*idx] = val))?
+#[lua(metamethod="NewIndex")]
+fn index(&mut self, idx: usize, val: f64) -> () {
+    _self[idx - 1] = val
 }
 "#]
 )]
-pub struct LuaDVec3 {
+pub struct DVec3 {
     x: f64,
     y: f64,
     z: f64,
@@ -13310,82 +15888,113 @@ pub struct LuaDVec3 {
     bms_lua_path = "crate",
     functions[r#"
 
-    #[lua(as_trait = "std::ops::Add", composite = "add")]
-    fn add(self, rhs: f64) -> bevy::math::DVec4;
+    #[lua(as_trait = "std::ops::Add::<f64>", composite = "add")]
+    fn add(
+        _self: LuaReflectValProxy<bevy::math::DVec4>,
+        rhs: f64,
+    ) -> LuaReflectValProxy<bevy::math::DVec4>;
 
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Rem", composite = "rem")]
-    fn rem(self, rhs: f64) -> bevy::math::DVec4;
+    #[lua(as_trait = "std::ops::Rem::<f64>", composite = "rem")]
+    fn rem(
+        _self: LuaReflectValProxy<bevy::math::DVec4>,
+        rhs: f64,
+    ) -> LuaReflectValProxy<bevy::math::DVec4>;
 
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Mul", composite = "mul")]
-    fn mul(self, rhs: f64) -> bevy::math::DVec4;
+    #[lua(as_trait = "std::ops::Mul::<f64>", composite = "mul")]
+    fn mul(
+        _self: LuaReflectValProxy<bevy::math::DVec4>,
+        rhs: f64,
+    ) -> LuaReflectValProxy<bevy::math::DVec4>;
 
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Sub", composite = "sub")]
-    fn sub(self, rhs: f64) -> bevy::math::DVec4;
+    #[lua(as_trait = "std::ops::Sub::<f64>", composite = "sub")]
+    fn sub(
+        _self: LuaReflectValProxy<bevy::math::DVec4>,
+        rhs: f64,
+    ) -> LuaReflectValProxy<bevy::math::DVec4>;
 
 "#,
     r#"
 
-    #[lua(as_trait = "std::cmp::PartialEq", composite = "eq")]
-    fn eq(&self, #[proxy] other: &glam::DVec4) -> bool;
+    #[lua(as_trait = "std::cmp::PartialEq::<bevy::math::DVec4>", composite = "eq")]
+    fn eq(
+        _self: LuaReflectRefProxy<bevy::math::DVec4>,
+        other: LuaReflectRefProxy<bevy::math::DVec4>,
+    ) -> bool;
 
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Sub", composite = "sub")]
-    fn sub(self, #[proxy] rhs: bevy::math::DVec4) -> bevy::math::DVec4;
+    #[lua(as_trait = "std::ops::Sub::<bevy::math::DVec4>", composite = "sub")]
+    fn sub(
+        _self: LuaReflectValProxy<bevy::math::DVec4>,
+        rhs: LuaReflectValProxy<bevy::math::DVec4>,
+    ) -> LuaReflectValProxy<bevy::math::DVec4>;
 
 "#,
     r#"
 
     #[lua(as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone")]
-    fn clone(&self) -> bevy::math::DVec4;
+    fn clone(
+        _self: LuaReflectRefProxy<bevy::math::DVec4>,
+    ) -> LuaReflectValProxy<bevy::math::DVec4>;
 
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Rem", composite = "rem")]
-    fn rem(self, #[proxy] rhs: bevy::math::DVec4) -> bevy::math::DVec4;
+    #[lua(as_trait = "std::ops::Rem::<bevy::math::DVec4>", composite = "rem")]
+    fn rem(
+        _self: LuaReflectValProxy<bevy::math::DVec4>,
+        rhs: LuaReflectValProxy<bevy::math::DVec4>,
+    ) -> LuaReflectValProxy<bevy::math::DVec4>;
 
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Div", composite = "div")]
-    fn div(self, #[proxy] rhs: bevy::math::DVec4) -> bevy::math::DVec4;
+    #[lua(as_trait = "std::ops::Div::<bevy::math::DVec4>", composite = "div")]
+    fn div(
+        _self: LuaReflectValProxy<bevy::math::DVec4>,
+        rhs: LuaReflectValProxy<bevy::math::DVec4>,
+    ) -> LuaReflectValProxy<bevy::math::DVec4>;
 
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Add", composite = "add")]
-    fn add(self, #[proxy] rhs: bevy::math::DVec4) -> bevy::math::DVec4;
+    #[lua(as_trait = "std::ops::Add::<bevy::math::DVec4>", composite = "add")]
+    fn add(
+        _self: LuaReflectValProxy<bevy::math::DVec4>,
+        rhs: LuaReflectValProxy<bevy::math::DVec4>,
+    ) -> LuaReflectValProxy<bevy::math::DVec4>;
 
 "#,
     r#"
 
     #[lua(as_trait = "std::ops::Neg", composite = "neg")]
-    fn neg(self) -> bevy::math::DVec4;
+    fn neg(
+        _self: LuaReflectValProxy<bevy::math::DVec4>,
+    ) -> LuaReflectValProxy<bevy::math::DVec4>;
 
 "#,
     r#"
 /// Creates a new vector.
 
     #[lua()]
-    fn new(x: f64, y: f64, z: f64, w: f64) -> bevy::math::DVec4;
+    fn new(x: f64, y: f64, z: f64, w: f64) -> LuaReflectValProxy<bevy::math::DVec4>;
 
 "#,
     r#"
 /// Creates a vector with all elements set to `v`.
 
     #[lua()]
-    fn splat(v: f64) -> bevy::math::DVec4;
+    fn splat(v: f64) -> LuaReflectValProxy<bevy::math::DVec4>;
 
 "#,
     r#"
@@ -13396,27 +16005,24 @@ pub struct LuaDVec3 {
 
     #[lua()]
     fn select(
-        #[proxy]
-        mask: bevy::math::BVec4,
-        #[proxy]
-        if_true: bevy::math::DVec4,
-        #[proxy]
-        if_false: bevy::math::DVec4,
-    ) -> bevy::math::DVec4;
+        mask: LuaReflectValProxy<bevy::math::BVec4>,
+        if_true: LuaReflectValProxy<bevy::math::DVec4>,
+        if_false: LuaReflectValProxy<bevy::math::DVec4>,
+    ) -> LuaReflectValProxy<bevy::math::DVec4>;
 
 "#,
     r#"
 /// Creates a new vector from an array.
 
     #[lua()]
-    fn from_array(a: [f64; 4]) -> bevy::math::DVec4;
+    fn from_array(a: [f64; 4]) -> LuaReflectValProxy<bevy::math::DVec4>;
 
 "#,
     r#"
 /// `[x, y, z, w]`
 
     #[lua()]
-    fn to_array(&self) -> [f64; 4];
+    fn to_array(_self: LuaReflectRefProxy<bevy::math::DVec4>) -> [f64; 4];
 
 "#,
     r#"
@@ -13424,21 +16030,29 @@ pub struct LuaDVec3 {
 /// Truncation to [`DVec3`] may also be performed by using [`self.xyz()`][crate::swizzles::Vec4Swizzles::xyz()].
 
     #[lua()]
-    fn truncate(self) -> bevy::math::DVec3;
+    fn truncate(
+        _self: LuaReflectValProxy<bevy::math::DVec4>,
+    ) -> LuaReflectValProxy<bevy::math::DVec3>;
 
 "#,
     r#"
 /// Computes the dot product of `self` and `rhs`.
 
     #[lua()]
-    fn dot(self, #[proxy] rhs: bevy::math::DVec4) -> f64;
+    fn dot(
+        _self: LuaReflectValProxy<bevy::math::DVec4>,
+        rhs: LuaReflectValProxy<bevy::math::DVec4>,
+    ) -> f64;
 
 "#,
     r#"
 /// Returns a vector where every component is the dot product of `self` and `rhs`.
 
     #[lua()]
-    fn dot_into_vec(self, #[proxy] rhs: bevy::math::DVec4) -> bevy::math::DVec4;
+    fn dot_into_vec(
+        _self: LuaReflectValProxy<bevy::math::DVec4>,
+        rhs: LuaReflectValProxy<bevy::math::DVec4>,
+    ) -> LuaReflectValProxy<bevy::math::DVec4>;
 
 "#,
     r#"
@@ -13446,7 +16060,10 @@ pub struct LuaDVec3 {
 /// In other words this computes `[self.x.min(rhs.x), self.y.min(rhs.y), ..]`.
 
     #[lua()]
-    fn min(self, #[proxy] rhs: bevy::math::DVec4) -> bevy::math::DVec4;
+    fn min(
+        _self: LuaReflectValProxy<bevy::math::DVec4>,
+        rhs: LuaReflectValProxy<bevy::math::DVec4>,
+    ) -> LuaReflectValProxy<bevy::math::DVec4>;
 
 "#,
     r#"
@@ -13454,7 +16071,10 @@ pub struct LuaDVec3 {
 /// In other words this computes `[self.x.max(rhs.x), self.y.max(rhs.y), ..]`.
 
     #[lua()]
-    fn max(self, #[proxy] rhs: bevy::math::DVec4) -> bevy::math::DVec4;
+    fn max(
+        _self: LuaReflectValProxy<bevy::math::DVec4>,
+        rhs: LuaReflectValProxy<bevy::math::DVec4>,
+    ) -> LuaReflectValProxy<bevy::math::DVec4>;
 
 "#,
     r#"
@@ -13465,12 +16085,10 @@ pub struct LuaDVec3 {
 
     #[lua()]
     fn clamp(
-        self,
-        #[proxy]
-        min: bevy::math::DVec4,
-        #[proxy]
-        max: bevy::math::DVec4,
-    ) -> bevy::math::DVec4;
+        _self: LuaReflectValProxy<bevy::math::DVec4>,
+        min: LuaReflectValProxy<bevy::math::DVec4>,
+        max: LuaReflectValProxy<bevy::math::DVec4>,
+    ) -> LuaReflectValProxy<bevy::math::DVec4>;
 
 "#,
     r#"
@@ -13478,7 +16096,7 @@ pub struct LuaDVec3 {
 /// In other words this computes `min(x, y, ..)`.
 
     #[lua()]
-    fn min_element(self) -> f64;
+    fn min_element(_self: LuaReflectValProxy<bevy::math::DVec4>) -> f64;
 
 "#,
     r#"
@@ -13486,7 +16104,7 @@ pub struct LuaDVec3 {
 /// In other words this computes `max(x, y, ..)`.
 
     #[lua()]
-    fn max_element(self) -> f64;
+    fn max_element(_self: LuaReflectValProxy<bevy::math::DVec4>) -> f64;
 
 "#,
     r#"
@@ -13496,7 +16114,10 @@ pub struct LuaDVec3 {
 /// elements.
 
     #[lua()]
-    fn cmpeq(self, #[proxy] rhs: bevy::math::DVec4) -> bevy::math::BVec4;
+    fn cmpeq(
+        _self: LuaReflectValProxy<bevy::math::DVec4>,
+        rhs: LuaReflectValProxy<bevy::math::DVec4>,
+    ) -> LuaReflectValProxy<bevy::math::BVec4>;
 
 "#,
     r#"
@@ -13506,7 +16127,10 @@ pub struct LuaDVec3 {
 /// elements.
 
     #[lua()]
-    fn cmpne(self, #[proxy] rhs: bevy::math::DVec4) -> bevy::math::BVec4;
+    fn cmpne(
+        _self: LuaReflectValProxy<bevy::math::DVec4>,
+        rhs: LuaReflectValProxy<bevy::math::DVec4>,
+    ) -> LuaReflectValProxy<bevy::math::BVec4>;
 
 "#,
     r#"
@@ -13516,7 +16140,10 @@ pub struct LuaDVec3 {
 /// elements.
 
     #[lua()]
-    fn cmpge(self, #[proxy] rhs: bevy::math::DVec4) -> bevy::math::BVec4;
+    fn cmpge(
+        _self: LuaReflectValProxy<bevy::math::DVec4>,
+        rhs: LuaReflectValProxy<bevy::math::DVec4>,
+    ) -> LuaReflectValProxy<bevy::math::BVec4>;
 
 "#,
     r#"
@@ -13526,7 +16153,10 @@ pub struct LuaDVec3 {
 /// elements.
 
     #[lua()]
-    fn cmpgt(self, #[proxy] rhs: bevy::math::DVec4) -> bevy::math::BVec4;
+    fn cmpgt(
+        _self: LuaReflectValProxy<bevy::math::DVec4>,
+        rhs: LuaReflectValProxy<bevy::math::DVec4>,
+    ) -> LuaReflectValProxy<bevy::math::BVec4>;
 
 "#,
     r#"
@@ -13536,7 +16166,10 @@ pub struct LuaDVec3 {
 /// elements.
 
     #[lua()]
-    fn cmple(self, #[proxy] rhs: bevy::math::DVec4) -> bevy::math::BVec4;
+    fn cmple(
+        _self: LuaReflectValProxy<bevy::math::DVec4>,
+        rhs: LuaReflectValProxy<bevy::math::DVec4>,
+    ) -> LuaReflectValProxy<bevy::math::BVec4>;
 
 "#,
     r#"
@@ -13546,14 +16179,19 @@ pub struct LuaDVec3 {
 /// elements.
 
     #[lua()]
-    fn cmplt(self, #[proxy] rhs: bevy::math::DVec4) -> bevy::math::BVec4;
+    fn cmplt(
+        _self: LuaReflectValProxy<bevy::math::DVec4>,
+        rhs: LuaReflectValProxy<bevy::math::DVec4>,
+    ) -> LuaReflectValProxy<bevy::math::BVec4>;
 
 "#,
     r#"
 /// Returns a vector containing the absolute value of each element of `self`.
 
     #[lua()]
-    fn abs(self) -> bevy::math::DVec4;
+    fn abs(
+        _self: LuaReflectValProxy<bevy::math::DVec4>,
+    ) -> LuaReflectValProxy<bevy::math::DVec4>;
 
 "#,
     r#"
@@ -13563,14 +16201,19 @@ pub struct LuaDVec3 {
 /// - `NAN` if the number is `NAN`
 
     #[lua()]
-    fn signum(self) -> bevy::math::DVec4;
+    fn signum(
+        _self: LuaReflectValProxy<bevy::math::DVec4>,
+    ) -> LuaReflectValProxy<bevy::math::DVec4>;
 
 "#,
     r#"
 /// Returns a vector with signs of `rhs` and the magnitudes of `self`.
 
     #[lua()]
-    fn copysign(self, #[proxy] rhs: bevy::math::DVec4) -> bevy::math::DVec4;
+    fn copysign(
+        _self: LuaReflectValProxy<bevy::math::DVec4>,
+        rhs: LuaReflectValProxy<bevy::math::DVec4>,
+    ) -> LuaReflectValProxy<bevy::math::DVec4>;
 
 "#,
     r#"
@@ -13579,7 +16222,7 @@ pub struct LuaDVec3 {
 /// into the first lowest bit, element `y` into the second, etc.
 
     #[lua()]
-    fn is_negative_bitmask(self) -> u32;
+    fn is_negative_bitmask(_self: LuaReflectValProxy<bevy::math::DVec4>) -> u32;
 
 "#,
     r#"
@@ -13587,14 +16230,14 @@ pub struct LuaDVec3 {
 /// `NaN`, positive or negative infinity, this will return `false`.
 
     #[lua()]
-    fn is_finite(self) -> bool;
+    fn is_finite(_self: LuaReflectValProxy<bevy::math::DVec4>) -> bool;
 
 "#,
     r#"
 /// Returns `true` if any elements are `NaN`.
 
     #[lua()]
-    fn is_nan(self) -> bool;
+    fn is_nan(_self: LuaReflectValProxy<bevy::math::DVec4>) -> bool;
 
 "#,
     r#"
@@ -13602,14 +16245,16 @@ pub struct LuaDVec3 {
 /// In other words, this computes `[x.is_nan(), y.is_nan(), z.is_nan(), w.is_nan()]`.
 
     #[lua()]
-    fn is_nan_mask(self) -> bevy::math::BVec4;
+    fn is_nan_mask(
+        _self: LuaReflectValProxy<bevy::math::DVec4>,
+    ) -> LuaReflectValProxy<bevy::math::BVec4>;
 
 "#,
     r#"
 /// Computes the length of `self`.
 
     #[lua()]
-    fn length(self) -> f64;
+    fn length(_self: LuaReflectValProxy<bevy::math::DVec4>) -> f64;
 
 "#,
     r#"
@@ -13617,7 +16262,7 @@ pub struct LuaDVec3 {
 /// This is faster than `length()` as it avoids a square root operation.
 
     #[lua()]
-    fn length_squared(self) -> f64;
+    fn length_squared(_self: LuaReflectValProxy<bevy::math::DVec4>) -> f64;
 
 "#,
     r#"
@@ -13625,28 +16270,37 @@ pub struct LuaDVec3 {
 /// For valid results, `self` must _not_ be of length zero.
 
     #[lua()]
-    fn length_recip(self) -> f64;
+    fn length_recip(_self: LuaReflectValProxy<bevy::math::DVec4>) -> f64;
 
 "#,
     r#"
 /// Computes the Euclidean distance between two points in space.
 
     #[lua()]
-    fn distance(self, #[proxy] rhs: bevy::math::DVec4) -> f64;
+    fn distance(
+        _self: LuaReflectValProxy<bevy::math::DVec4>,
+        rhs: LuaReflectValProxy<bevy::math::DVec4>,
+    ) -> f64;
 
 "#,
     r#"
 /// Compute the squared euclidean distance between two points in space.
 
     #[lua()]
-    fn distance_squared(self, #[proxy] rhs: bevy::math::DVec4) -> f64;
+    fn distance_squared(
+        _self: LuaReflectValProxy<bevy::math::DVec4>,
+        rhs: LuaReflectValProxy<bevy::math::DVec4>,
+    ) -> f64;
 
 "#,
     r#"
 /// Returns the element-wise quotient of [Euclidean division] of `self` by `rhs`.
 
     #[lua()]
-    fn div_euclid(self, #[proxy] rhs: bevy::math::DVec4) -> bevy::math::DVec4;
+    fn div_euclid(
+        _self: LuaReflectValProxy<bevy::math::DVec4>,
+        rhs: LuaReflectValProxy<bevy::math::DVec4>,
+    ) -> LuaReflectValProxy<bevy::math::DVec4>;
 
 "#,
     r#"
@@ -13654,7 +16308,10 @@ pub struct LuaDVec3 {
 /// [Euclidean division]: f64::rem_euclid
 
     #[lua()]
-    fn rem_euclid(self, #[proxy] rhs: bevy::math::DVec4) -> bevy::math::DVec4;
+    fn rem_euclid(
+        _self: LuaReflectValProxy<bevy::math::DVec4>,
+        rhs: LuaReflectValProxy<bevy::math::DVec4>,
+    ) -> LuaReflectValProxy<bevy::math::DVec4>;
 
 "#,
     r#"
@@ -13665,7 +16322,9 @@ pub struct LuaDVec3 {
 /// Will panic if `self` is zero length when `glam_assert` is enabled.
 
     #[lua()]
-    fn normalize(self) -> bevy::math::DVec4;
+    fn normalize(
+        _self: LuaReflectValProxy<bevy::math::DVec4>,
+    ) -> LuaReflectValProxy<bevy::math::DVec4>;
 
 "#,
     r#"
@@ -13675,7 +16334,9 @@ pub struct LuaDVec3 {
 /// See also [`Self::try_normalize()`].
 
     #[lua()]
-    fn normalize_or_zero(self) -> bevy::math::DVec4;
+    fn normalize_or_zero(
+        _self: LuaReflectValProxy<bevy::math::DVec4>,
+    ) -> LuaReflectValProxy<bevy::math::DVec4>;
 
 "#,
     r#"
@@ -13683,7 +16344,7 @@ pub struct LuaDVec3 {
 /// Uses a precision threshold of `1e-6`.
 
     #[lua()]
-    fn is_normalized(self) -> bool;
+    fn is_normalized(_self: LuaReflectValProxy<bevy::math::DVec4>) -> bool;
 
 "#,
     r#"
@@ -13693,7 +16354,10 @@ pub struct LuaDVec3 {
 /// Will panic if `rhs` is zero length when `glam_assert` is enabled.
 
     #[lua()]
-    fn project_onto(self, #[proxy] rhs: bevy::math::DVec4) -> bevy::math::DVec4;
+    fn project_onto(
+        _self: LuaReflectValProxy<bevy::math::DVec4>,
+        rhs: LuaReflectValProxy<bevy::math::DVec4>,
+    ) -> LuaReflectValProxy<bevy::math::DVec4>;
 
 "#,
     r#"
@@ -13705,7 +16369,10 @@ pub struct LuaDVec3 {
 /// Will panic if `rhs` has a length of zero when `glam_assert` is enabled.
 
     #[lua()]
-    fn reject_from(self, #[proxy] rhs: bevy::math::DVec4) -> bevy::math::DVec4;
+    fn reject_from(
+        _self: LuaReflectValProxy<bevy::math::DVec4>,
+        rhs: LuaReflectValProxy<bevy::math::DVec4>,
+    ) -> LuaReflectValProxy<bevy::math::DVec4>;
 
 "#,
     r#"
@@ -13716,10 +16383,9 @@ pub struct LuaDVec3 {
 
     #[lua()]
     fn project_onto_normalized(
-        self,
-        #[proxy]
-        rhs: bevy::math::DVec4,
-    ) -> bevy::math::DVec4;
+        _self: LuaReflectValProxy<bevy::math::DVec4>,
+        rhs: LuaReflectValProxy<bevy::math::DVec4>,
+    ) -> LuaReflectValProxy<bevy::math::DVec4>;
 
 "#,
     r#"
@@ -13732,10 +16398,9 @@ pub struct LuaDVec3 {
 
     #[lua()]
     fn reject_from_normalized(
-        self,
-        #[proxy]
-        rhs: bevy::math::DVec4,
-    ) -> bevy::math::DVec4;
+        _self: LuaReflectValProxy<bevy::math::DVec4>,
+        rhs: LuaReflectValProxy<bevy::math::DVec4>,
+    ) -> LuaReflectValProxy<bevy::math::DVec4>;
 
 "#,
     r#"
@@ -13743,7 +16408,9 @@ pub struct LuaDVec3 {
 /// Round half-way cases away from 0.0.
 
     #[lua()]
-    fn round(self) -> bevy::math::DVec4;
+    fn round(
+        _self: LuaReflectValProxy<bevy::math::DVec4>,
+    ) -> LuaReflectValProxy<bevy::math::DVec4>;
 
 "#,
     r#"
@@ -13751,7 +16418,9 @@ pub struct LuaDVec3 {
 /// element of `self`.
 
     #[lua()]
-    fn floor(self) -> bevy::math::DVec4;
+    fn floor(
+        _self: LuaReflectValProxy<bevy::math::DVec4>,
+    ) -> LuaReflectValProxy<bevy::math::DVec4>;
 
 "#,
     r#"
@@ -13759,7 +16428,9 @@ pub struct LuaDVec3 {
 /// each element of `self`.
 
     #[lua()]
-    fn ceil(self) -> bevy::math::DVec4;
+    fn ceil(
+        _self: LuaReflectValProxy<bevy::math::DVec4>,
+    ) -> LuaReflectValProxy<bevy::math::DVec4>;
 
 "#,
     r#"
@@ -13767,7 +16438,9 @@ pub struct LuaDVec3 {
 /// always truncated towards zero.
 
     #[lua()]
-    fn trunc(self) -> bevy::math::DVec4;
+    fn trunc(
+        _self: LuaReflectValProxy<bevy::math::DVec4>,
+    ) -> LuaReflectValProxy<bevy::math::DVec4>;
 
 "#,
     r#"
@@ -13776,7 +16449,9 @@ pub struct LuaDVec3 {
 /// Note that this is fast but not precise for large numbers.
 
     #[lua()]
-    fn fract(self) -> bevy::math::DVec4;
+    fn fract(
+        _self: LuaReflectValProxy<bevy::math::DVec4>,
+    ) -> LuaReflectValProxy<bevy::math::DVec4>;
 
 "#,
     r#"
@@ -13784,21 +16459,28 @@ pub struct LuaDVec3 {
 /// `self`.
 
     #[lua()]
-    fn exp(self) -> bevy::math::DVec4;
+    fn exp(
+        _self: LuaReflectValProxy<bevy::math::DVec4>,
+    ) -> LuaReflectValProxy<bevy::math::DVec4>;
 
 "#,
     r#"
 /// Returns a vector containing each element of `self` raised to the power of `n`.
 
     #[lua()]
-    fn powf(self, n: f64) -> bevy::math::DVec4;
+    fn powf(
+        _self: LuaReflectValProxy<bevy::math::DVec4>,
+        n: f64,
+    ) -> LuaReflectValProxy<bevy::math::DVec4>;
 
 "#,
     r#"
 /// Returns a vector containing the reciprocal `1.0/n` of each element of `self`.
 
     #[lua()]
-    fn recip(self) -> bevy::math::DVec4;
+    fn recip(
+        _self: LuaReflectValProxy<bevy::math::DVec4>,
+    ) -> LuaReflectValProxy<bevy::math::DVec4>;
 
 "#,
     r#"
@@ -13808,7 +16490,11 @@ pub struct LuaDVec3 {
 /// extrapolated.
 
     #[lua()]
-    fn lerp(self, #[proxy] rhs: bevy::math::DVec4, s: f64) -> bevy::math::DVec4;
+    fn lerp(
+        _self: LuaReflectValProxy<bevy::math::DVec4>,
+        rhs: LuaReflectValProxy<bevy::math::DVec4>,
+        s: f64,
+    ) -> LuaReflectValProxy<bevy::math::DVec4>;
 
 "#,
     r#"
@@ -13821,7 +16507,11 @@ pub struct LuaDVec3 {
 /// [comparing floating point numbers](https://randomascii.wordpress.com/2012/02/25/comparing-floating-point-numbers-2012-edition/).
 
     #[lua()]
-    fn abs_diff_eq(self, #[proxy] rhs: bevy::math::DVec4, max_abs_diff: f64) -> bool;
+    fn abs_diff_eq(
+        _self: LuaReflectValProxy<bevy::math::DVec4>,
+        rhs: LuaReflectValProxy<bevy::math::DVec4>,
+        max_abs_diff: f64,
+    ) -> bool;
 
 "#,
     r#"
@@ -13830,21 +16520,31 @@ pub struct LuaDVec3 {
 /// Will panic if `min` is greater than `max` when `glam_assert` is enabled.
 
     #[lua()]
-    fn clamp_length(self, min: f64, max: f64) -> bevy::math::DVec4;
+    fn clamp_length(
+        _self: LuaReflectValProxy<bevy::math::DVec4>,
+        min: f64,
+        max: f64,
+    ) -> LuaReflectValProxy<bevy::math::DVec4>;
 
 "#,
     r#"
 /// Returns a vector with a length no more than `max`
 
     #[lua()]
-    fn clamp_length_max(self, max: f64) -> bevy::math::DVec4;
+    fn clamp_length_max(
+        _self: LuaReflectValProxy<bevy::math::DVec4>,
+        max: f64,
+    ) -> LuaReflectValProxy<bevy::math::DVec4>;
 
 "#,
     r#"
 /// Returns a vector with a length no less than `min`
 
     #[lua()]
-    fn clamp_length_min(self, min: f64) -> bevy::math::DVec4;
+    fn clamp_length_min(
+        _self: LuaReflectValProxy<bevy::math::DVec4>,
+        min: f64,
+    ) -> LuaReflectValProxy<bevy::math::DVec4>;
 
 "#,
     r#"
@@ -13857,59 +16557,73 @@ pub struct LuaDVec3 {
 
     #[lua()]
     fn mul_add(
-        self,
-        #[proxy]
-        a: bevy::math::DVec4,
-        #[proxy]
-        b: bevy::math::DVec4,
-    ) -> bevy::math::DVec4;
+        _self: LuaReflectValProxy<bevy::math::DVec4>,
+        a: LuaReflectValProxy<bevy::math::DVec4>,
+        b: LuaReflectValProxy<bevy::math::DVec4>,
+    ) -> LuaReflectValProxy<bevy::math::DVec4>;
 
 "#,
     r#"
 /// Casts all elements of `self` to `f32`.
 
     #[lua()]
-    fn as_vec4(&self) -> bevy::math::Vec4;
+    fn as_vec4(
+        _self: LuaReflectRefProxy<bevy::math::DVec4>,
+    ) -> LuaReflectValProxy<bevy::math::Vec4>;
 
 "#,
     r#"
 /// Casts all elements of `self` to `i32`.
 
     #[lua()]
-    fn as_ivec4(&self) -> bevy::math::IVec4;
+    fn as_ivec4(
+        _self: LuaReflectRefProxy<bevy::math::DVec4>,
+    ) -> LuaReflectValProxy<bevy::math::IVec4>;
 
 "#,
     r#"
 /// Casts all elements of `self` to `u32`.
 
     #[lua()]
-    fn as_uvec4(&self) -> bevy::math::UVec4;
+    fn as_uvec4(
+        _self: LuaReflectRefProxy<bevy::math::DVec4>,
+    ) -> LuaReflectValProxy<bevy::math::UVec4>;
 
 "#,
     r#"
 /// Casts all elements of `self` to `i64`.
 
     #[lua()]
-    fn as_i64vec4(&self) -> bevy::math::I64Vec4;
+    fn as_i64vec4(
+        _self: LuaReflectRefProxy<bevy::math::DVec4>,
+    ) -> LuaReflectValProxy<bevy::math::I64Vec4>;
 
 "#,
     r#"
 /// Casts all elements of `self` to `u64`.
 
     #[lua()]
-    fn as_u64vec4(&self) -> bevy::math::U64Vec4;
+    fn as_u64vec4(
+        _self: LuaReflectRefProxy<bevy::math::DVec4>,
+    ) -> LuaReflectValProxy<bevy::math::U64Vec4>;
 
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Mul", composite = "mul")]
-    fn mul(self, #[proxy] rhs: bevy::math::DVec4) -> bevy::math::DVec4;
+    #[lua(as_trait = "std::ops::Mul::<bevy::math::DVec4>", composite = "mul")]
+    fn mul(
+        _self: LuaReflectValProxy<bevy::math::DVec4>,
+        rhs: LuaReflectValProxy<bevy::math::DVec4>,
+    ) -> LuaReflectValProxy<bevy::math::DVec4>;
 
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Div", composite = "div")]
-    fn div(self, rhs: f64) -> bevy::math::DVec4;
+    #[lua(as_trait = "std::ops::Div::<f64>", composite = "div")]
+    fn div(
+        _self: LuaReflectValProxy<bevy::math::DVec4>,
+        rhs: f64,
+    ) -> LuaReflectValProxy<bevy::math::DVec4>;
 
 "#,
     r#"
@@ -13919,19 +16633,19 @@ fn index(&self) -> String {
 }
 "#,
     r#"
-#[lua(raw , metamethod="Index")]
-fn index(&self, lua: &Lua, idx: crate::lua::util::LuaIndex) -> Result<f64,_> {
-    Ok(_self.inner()?[*idx])
+#[lua(metamethod="Index")]
+fn index(self, idx: usize) -> IdentityProxy<f64> {
+    _self[idx - 1]
 }
 "#,
     r#"
-#[lua(raw, metamethod="NewIndex")]
-fn index(&mut self, lua: &Lua, idx: crate::lua::util::LuaIndex, val: f64) -> Result<(),_> {
-    _self.val_mut(|s| Ok(s[*idx] = val))?
+#[lua(metamethod="NewIndex")]
+fn index(&mut self, idx: usize, val: f64) -> () {
+    _self[idx - 1] = val
 }
 "#]
 )]
-pub struct LuaDVec4 {
+pub struct DVec4 {
     x: f64,
     y: f64,
     z: f64,
@@ -13944,14 +16658,20 @@ pub struct LuaDVec4 {
     bms_lua_path = "crate",
     functions[r#"
 
-    #[lua(as_trait = "std::ops::Mul", composite = "mul")]
-    fn mul(self, #[proxy] rhs: bevy::math::Mat2) -> bevy::math::Mat2;
+    #[lua(as_trait = "std::ops::Mul::<bevy::math::Mat2>", composite = "mul")]
+    fn mul(
+        _self: LuaReflectValProxy<bevy::math::Mat2>,
+        rhs: LuaReflectValProxy<bevy::math::Mat2>,
+    ) -> LuaReflectValProxy<bevy::math::Mat2>;
 
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Sub", composite = "sub")]
-    fn sub(self, #[proxy] rhs: bevy::math::Mat2) -> bevy::math::Mat2;
+    #[lua(as_trait = "std::ops::Sub::<bevy::math::Mat2>", composite = "sub")]
+    fn sub(
+        _self: LuaReflectValProxy<bevy::math::Mat2>,
+        rhs: LuaReflectValProxy<bevy::math::Mat2>,
+    ) -> LuaReflectValProxy<bevy::math::Mat2>;
 
 "#,
     r#"
@@ -13959,11 +16679,9 @@ pub struct LuaDVec4 {
 
     #[lua()]
     fn from_cols(
-        #[proxy]
-        x_axis: bevy::math::Vec2,
-        #[proxy]
-        y_axis: bevy::math::Vec2,
-    ) -> bevy::math::Mat2;
+        x_axis: LuaReflectValProxy<bevy::math::Vec2>,
+        y_axis: LuaReflectValProxy<bevy::math::Vec2>,
+    ) -> LuaReflectValProxy<bevy::math::Mat2>;
 
 "#,
     r#"
@@ -13971,7 +16689,7 @@ pub struct LuaDVec4 {
 /// If you require data in row major order `transpose` the matrix first.
 
     #[lua()]
-    fn to_cols_array(&self) -> [f32; 4];
+    fn to_cols_array(_self: LuaReflectRefProxy<bevy::math::Mat2>) -> [f32; 4];
 
 "#,
     r#"
@@ -13979,14 +16697,16 @@ pub struct LuaDVec4 {
 /// If you require data in row major order `transpose` the matrix first.
 
     #[lua()]
-    fn to_cols_array_2d(&self) -> [[f32; 2]; 2];
+    fn to_cols_array_2d(_self: LuaReflectRefProxy<bevy::math::Mat2>) -> [[f32; 2]; 2];
 
 "#,
     r#"
 /// Creates a 2x2 matrix with its diagonal set to `diagonal` and all other entries set to 0.
 
     #[lua()]
-    fn from_diagonal(#[proxy] diagonal: bevy::math::Vec2) -> bevy::math::Mat2;
+    fn from_diagonal(
+        diagonal: LuaReflectValProxy<bevy::math::Vec2>,
+    ) -> LuaReflectValProxy<bevy::math::Mat2>;
 
 "#,
     r#"
@@ -13995,31 +16715,34 @@ pub struct LuaDVec4 {
 
     #[lua()]
     fn from_scale_angle(
-        #[proxy]
-        scale: bevy::math::Vec2,
+        scale: LuaReflectValProxy<bevy::math::Vec2>,
         angle: f32,
-    ) -> bevy::math::Mat2;
+    ) -> LuaReflectValProxy<bevy::math::Mat2>;
 
 "#,
     r#"
 /// Creates a 2x2 matrix containing a rotation of `angle` (in radians).
 
     #[lua()]
-    fn from_angle(angle: f32) -> bevy::math::Mat2;
+    fn from_angle(angle: f32) -> LuaReflectValProxy<bevy::math::Mat2>;
 
 "#,
     r#"
 /// Creates a 2x2 matrix from a 3x3 matrix, discarding the 2nd row and column.
 
     #[lua()]
-    fn from_mat3(#[proxy] m: bevy::math::Mat3) -> bevy::math::Mat2;
+    fn from_mat3(
+        m: LuaReflectValProxy<bevy::math::Mat3>,
+    ) -> LuaReflectValProxy<bevy::math::Mat2>;
 
 "#,
     r#"
 /// Creates a 2x2 matrix from a 3x3 matrix, discarding the 2nd row and column.
 
     #[lua()]
-    fn from_mat3a(#[proxy] m: bevy::math::Mat3A) -> bevy::math::Mat2;
+    fn from_mat3a(
+        m: LuaReflectValProxy<bevy::math::Mat3A>,
+    ) -> LuaReflectValProxy<bevy::math::Mat2>;
 
 "#,
     r#"
@@ -14028,7 +16751,10 @@ pub struct LuaDVec4 {
 /// Panics if `index` is greater than 1.
 
     #[lua()]
-    fn col(&self, index: usize) -> bevy::math::Vec2;
+    fn col(
+        _self: LuaReflectRefProxy<bevy::math::Mat2>,
+        index: usize,
+    ) -> LuaReflectValProxy<bevy::math::Vec2>;
 
 "#,
     r#"
@@ -14037,7 +16763,10 @@ pub struct LuaDVec4 {
 /// Panics if `index` is greater than 1.
 
     #[lua()]
-    fn row(&self, index: usize) -> bevy::math::Vec2;
+    fn row(
+        _self: LuaReflectRefProxy<bevy::math::Mat2>,
+        index: usize,
+    ) -> LuaReflectValProxy<bevy::math::Vec2>;
 
 "#,
     r#"
@@ -14045,28 +16774,30 @@ pub struct LuaDVec4 {
 /// If any element is either `NaN`, positive or negative infinity, this will return `false`.
 
     #[lua()]
-    fn is_finite(&self) -> bool;
+    fn is_finite(_self: LuaReflectRefProxy<bevy::math::Mat2>) -> bool;
 
 "#,
     r#"
 /// Returns `true` if any elements are `NaN`.
 
     #[lua()]
-    fn is_nan(&self) -> bool;
+    fn is_nan(_self: LuaReflectRefProxy<bevy::math::Mat2>) -> bool;
 
 "#,
     r#"
 /// Returns the transpose of `self`.
 
     #[lua()]
-    fn transpose(&self) -> bevy::math::Mat2;
+    fn transpose(
+        _self: LuaReflectRefProxy<bevy::math::Mat2>,
+    ) -> LuaReflectValProxy<bevy::math::Mat2>;
 
 "#,
     r#"
 /// Returns the determinant of `self`.
 
     #[lua()]
-    fn determinant(&self) -> f32;
+    fn determinant(_self: LuaReflectRefProxy<bevy::math::Mat2>) -> f32;
 
 "#,
     r#"
@@ -14076,42 +16807,59 @@ pub struct LuaDVec4 {
 /// Will panic if the determinant of `self` is zero when `glam_assert` is enabled.
 
     #[lua()]
-    fn inverse(&self) -> bevy::math::Mat2;
+    fn inverse(
+        _self: LuaReflectRefProxy<bevy::math::Mat2>,
+    ) -> LuaReflectValProxy<bevy::math::Mat2>;
 
 "#,
     r#"
 /// Transforms a 2D vector.
 
     #[lua()]
-    fn mul_vec2(&self, #[proxy] rhs: bevy::math::Vec2) -> bevy::math::Vec2;
+    fn mul_vec2(
+        _self: LuaReflectRefProxy<bevy::math::Mat2>,
+        rhs: LuaReflectValProxy<bevy::math::Vec2>,
+    ) -> LuaReflectValProxy<bevy::math::Vec2>;
 
 "#,
     r#"
 /// Multiplies two 2x2 matrices.
 
     #[lua()]
-    fn mul_mat2(&self, #[proxy] rhs: &glam::Mat2) -> bevy::math::Mat2;
+    fn mul_mat2(
+        _self: LuaReflectRefProxy<bevy::math::Mat2>,
+        rhs: LuaReflectRefProxy<bevy::math::Mat2>,
+    ) -> LuaReflectValProxy<bevy::math::Mat2>;
 
 "#,
     r#"
 /// Adds two 2x2 matrices.
 
     #[lua()]
-    fn add_mat2(&self, #[proxy] rhs: &glam::Mat2) -> bevy::math::Mat2;
+    fn add_mat2(
+        _self: LuaReflectRefProxy<bevy::math::Mat2>,
+        rhs: LuaReflectRefProxy<bevy::math::Mat2>,
+    ) -> LuaReflectValProxy<bevy::math::Mat2>;
 
 "#,
     r#"
 /// Subtracts two 2x2 matrices.
 
     #[lua()]
-    fn sub_mat2(&self, #[proxy] rhs: &glam::Mat2) -> bevy::math::Mat2;
+    fn sub_mat2(
+        _self: LuaReflectRefProxy<bevy::math::Mat2>,
+        rhs: LuaReflectRefProxy<bevy::math::Mat2>,
+    ) -> LuaReflectValProxy<bevy::math::Mat2>;
 
 "#,
     r#"
 /// Multiplies a 2x2 matrix by a scalar.
 
     #[lua()]
-    fn mul_scalar(&self, rhs: f32) -> bevy::math::Mat2;
+    fn mul_scalar(
+        _self: LuaReflectRefProxy<bevy::math::Mat2>,
+        rhs: f32,
+    ) -> LuaReflectValProxy<bevy::math::Mat2>;
 
 "#,
     r#"
@@ -14124,49 +16872,71 @@ pub struct LuaDVec4 {
 /// [comparing floating point numbers](https://randomascii.wordpress.com/2012/02/25/comparing-floating-point-numbers-2012-edition/).
 
     #[lua()]
-    fn abs_diff_eq(&self, #[proxy] rhs: bevy::math::Mat2, max_abs_diff: f32) -> bool;
+    fn abs_diff_eq(
+        _self: LuaReflectRefProxy<bevy::math::Mat2>,
+        rhs: LuaReflectValProxy<bevy::math::Mat2>,
+        max_abs_diff: f32,
+    ) -> bool;
 
 "#,
     r#"
 
     #[lua()]
-    fn as_dmat2(&self) -> bevy::math::DMat2;
+    fn as_dmat2(
+        _self: LuaReflectRefProxy<bevy::math::Mat2>,
+    ) -> LuaReflectValProxy<bevy::math::DMat2>;
 
 "#,
     r#"
 
     #[lua(as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone")]
-    fn clone(&self) -> bevy::math::Mat2;
+    fn clone(
+        _self: LuaReflectRefProxy<bevy::math::Mat2>,
+    ) -> LuaReflectValProxy<bevy::math::Mat2>;
 
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Add", composite = "add")]
-    fn add(self, #[proxy] rhs: bevy::math::Mat2) -> bevy::math::Mat2;
+    #[lua(as_trait = "std::ops::Add::<bevy::math::Mat2>", composite = "add")]
+    fn add(
+        _self: LuaReflectValProxy<bevy::math::Mat2>,
+        rhs: LuaReflectValProxy<bevy::math::Mat2>,
+    ) -> LuaReflectValProxy<bevy::math::Mat2>;
 
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Mul", composite = "mul")]
-    fn mul(self, #[proxy] rhs: bevy::math::Vec2) -> bevy::math::Vec2;
+    #[lua(as_trait = "std::ops::Mul::<bevy::math::Vec2>", composite = "mul")]
+    fn mul(
+        _self: LuaReflectValProxy<bevy::math::Mat2>,
+        rhs: LuaReflectValProxy<bevy::math::Vec2>,
+    ) -> LuaReflectValProxy<bevy::math::Vec2>;
 
 "#,
     r#"
 
     #[lua(as_trait = "std::ops::Neg", composite = "neg")]
-    fn neg(self) -> bevy::math::Mat2;
+    fn neg(
+        _self: LuaReflectValProxy<bevy::math::Mat2>,
+    ) -> LuaReflectValProxy<bevy::math::Mat2>;
 
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Mul", composite = "mul")]
-    fn mul(self, rhs: f32) -> bevy::math::Mat2;
+    #[lua(as_trait = "std::ops::Mul::<f32>", composite = "mul")]
+    fn mul(
+        _self: LuaReflectValProxy<bevy::math::Mat2>,
+        rhs: f32,
+    ) -> LuaReflectValProxy<bevy::math::Mat2>;
 
 "#,
     r#"
 
-    #[lua(as_trait = "std::cmp::PartialEq", composite = "eq")]
-    fn eq(&self, #[proxy] rhs: &glam::Mat2) -> bool;
+    #[lua(as_trait = "std::cmp::PartialEq::<bevy::math::Mat2>", composite = "eq")]
+    fn eq(
+        _self: LuaReflectRefProxy<bevy::math::Mat2>,
+        rhs: LuaReflectRefProxy<bevy::math::Mat2>,
+    ) -> bool;
 
 "#,
     r#"
@@ -14176,31 +16946,27 @@ fn index(&self) -> String {
 }
 "#,
     r#"
-#[lua(raw, metamethod="Index")]
-fn index(&self, ctx : &Lua, idx: crate::lua::util::LuaIndex) -> Result<LuaVec2,_> {
-    Ok(LuaVec2::new_ref(
-            _self.reflect_ref(ctx.get_world()?).sub_ref(bevy_script_api::ReflectionPathElement::SubReflection{
-                label:"col", 
-                get: std::sync::Arc::new(|ref_| Err(bevy_script_api::error::ReflectionError::InsufficientProvenance{
-                    path: "".to_owned(), 
-                    msg: "Cannot get column of matrix with immutable reference".to_owned()
-                })),
-                get_mut: std::sync::Arc::new(move |ref_| {
-                    if ref_.is::<bevy::math::Mat2>(){
-                        Ok(ref_.downcast_mut::<bevy::math::Mat2>()
-                            .unwrap()
-                            .col_mut(*idx))
-                    } else {
-                        Err(bevy_script_api::error::ReflectionError::CannotDowncast{from: ref_.get_represented_type_info().unwrap().type_path().into(), to:"Mat3".into()})
-                    }	
-                })
-            })
-        )
-    )
+#[lua(metamethod="Index")]
+fn index(_self: IdentityProxy<Self>, idx: usize) -> IdentityProxy<LuaVec2> {
+    let mut curr_ref = _self.0.clone();
+    let def_ref = bevy_mod_scripting_core::bindings::DeferredReflection{
+        get: std::sync::Arc::new(|ref_| Err(bevy::reflect::ReflectPathError::InvalidDowncast)),
+        get_mut: std::sync::Arc::new(move |ref_| {
+            if ref_.is::<bevy::math::Mat2>(){
+                Ok(ref_.downcast_mut::<bevy::math::Mat2>()
+                    .unwrap()
+                    .col_mut(idx - 1))
+            } else {
+                Err(bevy::reflect::ReflectPathError::InvalidDowncast)
+            }	
+        })
+    };
+    curr_ref.reflect_path.push(bevy_mod_scripting_core::bindings::ReflectionPathElem::new_deferred(def_ref));
+    LuaVec2(curr_ref)
 }
 "#]
 )]
-pub struct LuaMat2();
+pub struct Mat2();
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
     remote = "bevy::math::Mat3",
@@ -14209,43 +16975,62 @@ pub struct LuaMat2();
     functions[r#"
 
     #[lua(as_trait = "std::ops::Neg", composite = "neg")]
-    fn neg(self) -> bevy::math::Mat3;
+    fn neg(
+        _self: LuaReflectValProxy<bevy::math::Mat3>,
+    ) -> LuaReflectValProxy<bevy::math::Mat3>;
 
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Mul", composite = "mul")]
-    fn mul(self, #[proxy] rhs: bevy::math::Vec3) -> bevy::math::Vec3;
+    #[lua(as_trait = "std::ops::Mul::<bevy::math::Vec3>", composite = "mul")]
+    fn mul(
+        _self: LuaReflectValProxy<bevy::math::Mat3>,
+        rhs: LuaReflectValProxy<bevy::math::Vec3>,
+    ) -> LuaReflectValProxy<bevy::math::Vec3>;
 
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Mul", composite = "mul")]
-    fn mul(self, #[proxy] rhs: bevy::math::Mat3) -> bevy::math::Mat3;
+    #[lua(as_trait = "std::ops::Mul::<bevy::math::Mat3>", composite = "mul")]
+    fn mul(
+        _self: LuaReflectValProxy<bevy::math::Mat3>,
+        rhs: LuaReflectValProxy<bevy::math::Mat3>,
+    ) -> LuaReflectValProxy<bevy::math::Mat3>;
 
 "#,
     r#"
 
     #[lua(as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone")]
-    fn clone(&self) -> bevy::math::Mat3;
+    fn clone(
+        _self: LuaReflectRefProxy<bevy::math::Mat3>,
+    ) -> LuaReflectValProxy<bevy::math::Mat3>;
 
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Mul", composite = "mul")]
-    fn mul(self, rhs: f32) -> bevy::math::Mat3;
+    #[lua(as_trait = "std::ops::Mul::<f32>", composite = "mul")]
+    fn mul(
+        _self: LuaReflectValProxy<bevy::math::Mat3>,
+        rhs: f32,
+    ) -> LuaReflectValProxy<bevy::math::Mat3>;
 
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Add", composite = "add")]
-    fn add(self, #[proxy] rhs: bevy::math::Mat3) -> bevy::math::Mat3;
+    #[lua(as_trait = "std::ops::Add::<bevy::math::Mat3>", composite = "add")]
+    fn add(
+        _self: LuaReflectValProxy<bevy::math::Mat3>,
+        rhs: LuaReflectValProxy<bevy::math::Mat3>,
+    ) -> LuaReflectValProxy<bevy::math::Mat3>;
 
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Mul", composite = "mul")]
-    fn mul(self, #[proxy] rhs: bevy::math::Affine2) -> bevy::math::Mat3;
+    #[lua(as_trait = "std::ops::Mul::<bevy::math::Affine2>", composite = "mul")]
+    fn mul(
+        _self: LuaReflectValProxy<bevy::math::Mat3>,
+        rhs: LuaReflectValProxy<bevy::math::Affine2>,
+    ) -> LuaReflectValProxy<bevy::math::Mat3>;
 
 "#,
     r#"
@@ -14253,13 +17038,10 @@ pub struct LuaMat2();
 
     #[lua()]
     fn from_cols(
-        #[proxy]
-        x_axis: bevy::math::Vec3,
-        #[proxy]
-        y_axis: bevy::math::Vec3,
-        #[proxy]
-        z_axis: bevy::math::Vec3,
-    ) -> bevy::math::Mat3;
+        x_axis: LuaReflectValProxy<bevy::math::Vec3>,
+        y_axis: LuaReflectValProxy<bevy::math::Vec3>,
+        z_axis: LuaReflectValProxy<bevy::math::Vec3>,
+    ) -> LuaReflectValProxy<bevy::math::Mat3>;
 
 "#,
     r#"
@@ -14267,7 +17049,7 @@ pub struct LuaMat2();
 /// If you require data in row major order `transpose` the matrix first.
 
     #[lua()]
-    fn to_cols_array(&self) -> [f32; 9];
+    fn to_cols_array(_self: LuaReflectRefProxy<bevy::math::Mat3>) -> [f32; 9];
 
 "#,
     r#"
@@ -14275,21 +17057,25 @@ pub struct LuaMat2();
 /// If you require data in row major order `transpose` the matrix first.
 
     #[lua()]
-    fn to_cols_array_2d(&self) -> [[f32; 3]; 3];
+    fn to_cols_array_2d(_self: LuaReflectRefProxy<bevy::math::Mat3>) -> [[f32; 3]; 3];
 
 "#,
     r#"
 /// Creates a 3x3 matrix with its diagonal set to `diagonal` and all other entries set to 0.
 
     #[lua()]
-    fn from_diagonal(#[proxy] diagonal: bevy::math::Vec3) -> bevy::math::Mat3;
+    fn from_diagonal(
+        diagonal: LuaReflectValProxy<bevy::math::Vec3>,
+    ) -> LuaReflectValProxy<bevy::math::Mat3>;
 
 "#,
     r#"
 /// Creates a 3x3 matrix from a 4x4 matrix, discarding the 4th row and column.
 
     #[lua()]
-    fn from_mat4(#[proxy] m: bevy::math::Mat4) -> bevy::math::Mat3;
+    fn from_mat4(
+        m: LuaReflectValProxy<bevy::math::Mat4>,
+    ) -> LuaReflectValProxy<bevy::math::Mat3>;
 
 "#,
     r#"
@@ -14298,7 +17084,9 @@ pub struct LuaMat2();
 /// Will panic if `rotation` is not normalized when `glam_assert` is enabled.
 
     #[lua()]
-    fn from_quat(#[proxy] rotation: bevy::math::Quat) -> bevy::math::Mat3;
+    fn from_quat(
+        rotation: LuaReflectValProxy<bevy::math::Quat>,
+    ) -> LuaReflectValProxy<bevy::math::Mat3>;
 
 "#,
     r#"
@@ -14308,7 +17096,10 @@ pub struct LuaMat2();
 /// Will panic if `axis` is not normalized when `glam_assert` is enabled.
 
     #[lua()]
-    fn from_axis_angle(#[proxy] axis: bevy::math::Vec3, angle: f32) -> bevy::math::Mat3;
+    fn from_axis_angle(
+        axis: LuaReflectValProxy<bevy::math::Vec3>,
+        angle: f32,
+    ) -> LuaReflectValProxy<bevy::math::Mat3>;
 
 "#,
     r#"
@@ -14317,33 +17108,32 @@ pub struct LuaMat2();
 
     #[lua()]
     fn from_euler(
-        #[proxy]
-        order: bevy::math::EulerRot,
+        order: LuaReflectValProxy<bevy::math::EulerRot>,
         a: f32,
         b: f32,
         c: f32,
-    ) -> bevy::math::Mat3;
+    ) -> LuaReflectValProxy<bevy::math::Mat3>;
 
 "#,
     r#"
 /// Creates a 3D rotation matrix from `angle` (in radians) around the x axis.
 
     #[lua()]
-    fn from_rotation_x(angle: f32) -> bevy::math::Mat3;
+    fn from_rotation_x(angle: f32) -> LuaReflectValProxy<bevy::math::Mat3>;
 
 "#,
     r#"
 /// Creates a 3D rotation matrix from `angle` (in radians) around the y axis.
 
     #[lua()]
-    fn from_rotation_y(angle: f32) -> bevy::math::Mat3;
+    fn from_rotation_y(angle: f32) -> LuaReflectValProxy<bevy::math::Mat3>;
 
 "#,
     r#"
 /// Creates a 3D rotation matrix from `angle` (in radians) around the z axis.
 
     #[lua()]
-    fn from_rotation_z(angle: f32) -> bevy::math::Mat3;
+    fn from_rotation_z(angle: f32) -> LuaReflectValProxy<bevy::math::Mat3>;
 
 "#,
     r#"
@@ -14352,7 +17142,9 @@ pub struct LuaMat2();
 /// [`Self::transform_point2()`] and [`Self::transform_vector2()`].
 
     #[lua()]
-    fn from_translation(#[proxy] translation: bevy::math::Vec2) -> bevy::math::Mat3;
+    fn from_translation(
+        translation: LuaReflectValProxy<bevy::math::Vec2>,
+    ) -> LuaReflectValProxy<bevy::math::Mat3>;
 
 "#,
     r#"
@@ -14362,7 +17154,7 @@ pub struct LuaMat2();
 /// [`Self::transform_point2()`] and [`Self::transform_vector2()`].
 
     #[lua()]
-    fn from_angle(angle: f32) -> bevy::math::Mat3;
+    fn from_angle(angle: f32) -> LuaReflectValProxy<bevy::math::Mat3>;
 
 "#,
     r#"
@@ -14373,12 +17165,10 @@ pub struct LuaMat2();
 
     #[lua()]
     fn from_scale_angle_translation(
-        #[proxy]
-        scale: bevy::math::Vec2,
+        scale: LuaReflectValProxy<bevy::math::Vec2>,
         angle: f32,
-        #[proxy]
-        translation: bevy::math::Vec2,
-    ) -> bevy::math::Mat3;
+        translation: LuaReflectValProxy<bevy::math::Vec2>,
+    ) -> LuaReflectValProxy<bevy::math::Mat3>;
 
 "#,
     r#"
@@ -14389,7 +17179,9 @@ pub struct LuaMat2();
 /// Will panic if all elements of `scale` are zero when `glam_assert` is enabled.
 
     #[lua()]
-    fn from_scale(#[proxy] scale: bevy::math::Vec2) -> bevy::math::Mat3;
+    fn from_scale(
+        scale: LuaReflectValProxy<bevy::math::Vec2>,
+    ) -> LuaReflectValProxy<bevy::math::Mat3>;
 
 "#,
     r#"
@@ -14398,7 +17190,9 @@ pub struct LuaMat2();
 /// [`Self::transform_point2()`] and [`Self::transform_vector2()`].
 
     #[lua()]
-    fn from_mat2(#[proxy] m: bevy::math::Mat2) -> bevy::math::Mat3;
+    fn from_mat2(
+        m: LuaReflectValProxy<bevy::math::Mat2>,
+    ) -> LuaReflectValProxy<bevy::math::Mat3>;
 
 "#,
     r#"
@@ -14407,7 +17201,10 @@ pub struct LuaMat2();
 /// Panics if `index` is greater than 2.
 
     #[lua()]
-    fn col(&self, index: usize) -> bevy::math::Vec3;
+    fn col(
+        _self: LuaReflectRefProxy<bevy::math::Mat3>,
+        index: usize,
+    ) -> LuaReflectValProxy<bevy::math::Vec3>;
 
 "#,
     r#"
@@ -14416,7 +17213,10 @@ pub struct LuaMat2();
 /// Panics if `index` is greater than 2.
 
     #[lua()]
-    fn row(&self, index: usize) -> bevy::math::Vec3;
+    fn row(
+        _self: LuaReflectRefProxy<bevy::math::Mat3>,
+        index: usize,
+    ) -> LuaReflectValProxy<bevy::math::Vec3>;
 
 "#,
     r#"
@@ -14424,28 +17224,30 @@ pub struct LuaMat2();
 /// If any element is either `NaN`, positive or negative infinity, this will return `false`.
 
     #[lua()]
-    fn is_finite(&self) -> bool;
+    fn is_finite(_self: LuaReflectRefProxy<bevy::math::Mat3>) -> bool;
 
 "#,
     r#"
 /// Returns `true` if any elements are `NaN`.
 
     #[lua()]
-    fn is_nan(&self) -> bool;
+    fn is_nan(_self: LuaReflectRefProxy<bevy::math::Mat3>) -> bool;
 
 "#,
     r#"
 /// Returns the transpose of `self`.
 
     #[lua()]
-    fn transpose(&self) -> bevy::math::Mat3;
+    fn transpose(
+        _self: LuaReflectRefProxy<bevy::math::Mat3>,
+    ) -> LuaReflectValProxy<bevy::math::Mat3>;
 
 "#,
     r#"
 /// Returns the determinant of `self`.
 
     #[lua()]
-    fn determinant(&self) -> f32;
+    fn determinant(_self: LuaReflectRefProxy<bevy::math::Mat3>) -> f32;
 
 "#,
     r#"
@@ -14455,7 +17257,9 @@ pub struct LuaMat2();
 /// Will panic if the determinant of `self` is zero when `glam_assert` is enabled.
 
     #[lua()]
-    fn inverse(&self) -> bevy::math::Mat3;
+    fn inverse(
+        _self: LuaReflectRefProxy<bevy::math::Mat3>,
+    ) -> LuaReflectValProxy<bevy::math::Mat3>;
 
 "#,
     r#"
@@ -14466,7 +17270,10 @@ pub struct LuaMat2();
 /// Will panic if the 2nd row of `self` is not `(0, 0, 1)` when `glam_assert` is enabled.
 
     #[lua()]
-    fn transform_point2(&self, #[proxy] rhs: bevy::math::Vec2) -> bevy::math::Vec2;
+    fn transform_point2(
+        _self: LuaReflectRefProxy<bevy::math::Mat3>,
+        rhs: LuaReflectValProxy<bevy::math::Vec2>,
+    ) -> LuaReflectValProxy<bevy::math::Vec2>;
 
 "#,
     r#"
@@ -14477,49 +17284,70 @@ pub struct LuaMat2();
 /// Will panic if the 2nd row of `self` is not `(0, 0, 1)` when `glam_assert` is enabled.
 
     #[lua()]
-    fn transform_vector2(&self, #[proxy] rhs: bevy::math::Vec2) -> bevy::math::Vec2;
+    fn transform_vector2(
+        _self: LuaReflectRefProxy<bevy::math::Mat3>,
+        rhs: LuaReflectValProxy<bevy::math::Vec2>,
+    ) -> LuaReflectValProxy<bevy::math::Vec2>;
 
 "#,
     r#"
 /// Transforms a 3D vector.
 
     #[lua()]
-    fn mul_vec3(&self, #[proxy] rhs: bevy::math::Vec3) -> bevy::math::Vec3;
+    fn mul_vec3(
+        _self: LuaReflectRefProxy<bevy::math::Mat3>,
+        rhs: LuaReflectValProxy<bevy::math::Vec3>,
+    ) -> LuaReflectValProxy<bevy::math::Vec3>;
 
 "#,
     r#"
 /// Transforms a [`Vec3A`].
 
     #[lua()]
-    fn mul_vec3a(&self, #[proxy] rhs: bevy::math::Vec3A) -> bevy::math::Vec3A;
+    fn mul_vec3a(
+        _self: LuaReflectRefProxy<bevy::math::Mat3>,
+        rhs: LuaReflectValProxy<bevy::math::Vec3A>,
+    ) -> LuaReflectValProxy<bevy::math::Vec3A>;
 
 "#,
     r#"
 /// Multiplies two 3x3 matrices.
 
     #[lua()]
-    fn mul_mat3(&self, #[proxy] rhs: &glam::Mat3) -> bevy::math::Mat3;
+    fn mul_mat3(
+        _self: LuaReflectRefProxy<bevy::math::Mat3>,
+        rhs: LuaReflectRefProxy<bevy::math::Mat3>,
+    ) -> LuaReflectValProxy<bevy::math::Mat3>;
 
 "#,
     r#"
 /// Adds two 3x3 matrices.
 
     #[lua()]
-    fn add_mat3(&self, #[proxy] rhs: &glam::Mat3) -> bevy::math::Mat3;
+    fn add_mat3(
+        _self: LuaReflectRefProxy<bevy::math::Mat3>,
+        rhs: LuaReflectRefProxy<bevy::math::Mat3>,
+    ) -> LuaReflectValProxy<bevy::math::Mat3>;
 
 "#,
     r#"
 /// Subtracts two 3x3 matrices.
 
     #[lua()]
-    fn sub_mat3(&self, #[proxy] rhs: &glam::Mat3) -> bevy::math::Mat3;
+    fn sub_mat3(
+        _self: LuaReflectRefProxy<bevy::math::Mat3>,
+        rhs: LuaReflectRefProxy<bevy::math::Mat3>,
+    ) -> LuaReflectValProxy<bevy::math::Mat3>;
 
 "#,
     r#"
 /// Multiplies a 3x3 matrix by a scalar.
 
     #[lua()]
-    fn mul_scalar(&self, rhs: f32) -> bevy::math::Mat3;
+    fn mul_scalar(
+        _self: LuaReflectRefProxy<bevy::math::Mat3>,
+        rhs: f32,
+    ) -> LuaReflectValProxy<bevy::math::Mat3>;
 
 "#,
     r#"
@@ -14532,31 +17360,46 @@ pub struct LuaMat2();
 /// [comparing floating point numbers](https://randomascii.wordpress.com/2012/02/25/comparing-floating-point-numbers-2012-edition/).
 
     #[lua()]
-    fn abs_diff_eq(&self, #[proxy] rhs: bevy::math::Mat3, max_abs_diff: f32) -> bool;
+    fn abs_diff_eq(
+        _self: LuaReflectRefProxy<bevy::math::Mat3>,
+        rhs: LuaReflectValProxy<bevy::math::Mat3>,
+        max_abs_diff: f32,
+    ) -> bool;
 
 "#,
     r#"
 
     #[lua()]
-    fn as_dmat3(&self) -> bevy::math::DMat3;
+    fn as_dmat3(
+        _self: LuaReflectRefProxy<bevy::math::Mat3>,
+    ) -> LuaReflectValProxy<bevy::math::DMat3>;
 
 "#,
     r#"
 
-    #[lua(as_trait = "std::cmp::PartialEq", composite = "eq")]
-    fn eq(&self, #[proxy] rhs: &glam::Mat3) -> bool;
+    #[lua(as_trait = "std::cmp::PartialEq::<bevy::math::Mat3>", composite = "eq")]
+    fn eq(
+        _self: LuaReflectRefProxy<bevy::math::Mat3>,
+        rhs: LuaReflectRefProxy<bevy::math::Mat3>,
+    ) -> bool;
 
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Sub", composite = "sub")]
-    fn sub(self, #[proxy] rhs: bevy::math::Mat3) -> bevy::math::Mat3;
+    #[lua(as_trait = "std::ops::Sub::<bevy::math::Mat3>", composite = "sub")]
+    fn sub(
+        _self: LuaReflectValProxy<bevy::math::Mat3>,
+        rhs: LuaReflectValProxy<bevy::math::Mat3>,
+    ) -> LuaReflectValProxy<bevy::math::Mat3>;
 
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Mul", composite = "mul")]
-    fn mul(self, #[proxy] rhs: bevy::math::Vec3A) -> bevy::math::Vec3A;
+    #[lua(as_trait = "std::ops::Mul::<bevy::math::Vec3A>", composite = "mul")]
+    fn mul(
+        _self: LuaReflectValProxy<bevy::math::Mat3>,
+        rhs: LuaReflectValProxy<bevy::math::Vec3A>,
+    ) -> LuaReflectValProxy<bevy::math::Vec3A>;
 
 "#,
     r#"
@@ -14566,36 +17409,29 @@ fn index(&self) -> String {
 }
 "#,
     r#"
-#[lua(raw, metamethod="Index")]
-fn index(&self, ctx : &Lua, idx: crate::lua::util::LuaIndex) -> Result<LuaVec3,_> {
-    Ok(LuaVec3::new_ref(
-            _self.reflect_ref(ctx.get_world()?).sub_ref(bevy_script_api::ReflectionPathElement::SubReflection{
-                label:"col", 
-                get: std::sync::Arc::new(|ref_| Err(bevy_script_api::error::ReflectionError::InsufficientProvenance{
-                    path: "".to_owned(), 
-                    msg: "Cannot get column of matrix with immutable reference".to_owned()
-                })),
-                get_mut: std::sync::Arc::new(move |ref_| {
-                    if ref_.is::<bevy::math::Mat3>(){
-                        Ok(ref_.downcast_mut::<bevy::math::Mat3>()
-                            .unwrap()
-                            .col_mut(*idx))
-                    } else {
-                        Err(bevy_script_api::error::ReflectionError::CannotDowncast{from: ref_.get_represented_type_info().unwrap().type_path().into(), to:"Mat3".into()})
-                    }	
-                })
-            })
-        )
-    )
+#[lua(metamethod="Index")]
+fn index(_self: IdentityProxy<Self>, idx: usize) -> IdentityProxy<LuaVec3> {
+    let mut curr_ref = _self.0.clone();
+    let def_ref = bevy_mod_scripting_core::bindings::DeferredReflection{
+        get: std::sync::Arc::new(|ref_| Err(bevy::reflect::ReflectPathError::InvalidDowncast)),
+        get_mut: std::sync::Arc::new(move |ref_| {
+            if ref_.is::<bevy::math::Mat3>(){
+                Ok(ref_.downcast_mut::<bevy::math::Mat3>()
+                    .unwrap()
+                    .col_mut(idx - 1))
+            } else {
+                Err(bevy::reflect::ReflectPathError::InvalidDowncast)
+            }	
+        })
+    };
+    curr_ref.reflect_path.push(bevy_mod_scripting_core::bindings::ReflectionPathElem::new_deferred(def_ref));
+    LuaVec3(curr_ref)
 }
 "#]
 )]
-pub struct LuaMat3 {
-    #[lua(output(proxy))]
+pub struct Mat3 {
     x_axis: bevy::math::Vec3,
-    #[lua(output(proxy))]
     y_axis: bevy::math::Vec3,
-    #[lua(output(proxy))]
     z_axis: bevy::math::Vec3,
 }
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
@@ -14605,44 +17441,64 @@ pub struct LuaMat3 {
     bms_lua_path = "crate",
     functions[r#"
 
-    #[lua(as_trait = "std::ops::Add", composite = "add")]
-    fn add(self, #[proxy] rhs: bevy::math::Mat3A) -> bevy::math::Mat3A;
+    #[lua(as_trait = "std::ops::Add::<bevy::math::Mat3A>", composite = "add")]
+    fn add(
+        _self: LuaReflectValProxy<bevy::math::Mat3A>,
+        rhs: LuaReflectValProxy<bevy::math::Mat3A>,
+    ) -> LuaReflectValProxy<bevy::math::Mat3A>;
 
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Sub", composite = "sub")]
-    fn sub(self, #[proxy] rhs: bevy::math::Mat3A) -> bevy::math::Mat3A;
+    #[lua(as_trait = "std::ops::Sub::<bevy::math::Mat3A>", composite = "sub")]
+    fn sub(
+        _self: LuaReflectValProxy<bevy::math::Mat3A>,
+        rhs: LuaReflectValProxy<bevy::math::Mat3A>,
+    ) -> LuaReflectValProxy<bevy::math::Mat3A>;
 
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Mul", composite = "mul")]
-    fn mul(self, #[proxy] rhs: bevy::math::Affine2) -> bevy::math::Mat3A;
+    #[lua(as_trait = "std::ops::Mul::<bevy::math::Affine2>", composite = "mul")]
+    fn mul(
+        _self: LuaReflectValProxy<bevy::math::Mat3A>,
+        rhs: LuaReflectValProxy<bevy::math::Affine2>,
+    ) -> LuaReflectValProxy<bevy::math::Mat3A>;
 
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Mul", composite = "mul")]
-    fn mul(self, #[proxy] rhs: bevy::math::Mat3A) -> bevy::math::Mat3A;
+    #[lua(as_trait = "std::ops::Mul::<bevy::math::Mat3A>", composite = "mul")]
+    fn mul(
+        _self: LuaReflectValProxy<bevy::math::Mat3A>,
+        rhs: LuaReflectValProxy<bevy::math::Mat3A>,
+    ) -> LuaReflectValProxy<bevy::math::Mat3A>;
 
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Mul", composite = "mul")]
-    fn mul(self, #[proxy] rhs: bevy::math::Vec3A) -> bevy::math::Vec3A;
+    #[lua(as_trait = "std::ops::Mul::<bevy::math::Vec3A>", composite = "mul")]
+    fn mul(
+        _self: LuaReflectValProxy<bevy::math::Mat3A>,
+        rhs: LuaReflectValProxy<bevy::math::Vec3A>,
+    ) -> LuaReflectValProxy<bevy::math::Vec3A>;
 
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Mul", composite = "mul")]
-    fn mul(self, rhs: f32) -> bevy::math::Mat3A;
+    #[lua(as_trait = "std::ops::Mul::<f32>", composite = "mul")]
+    fn mul(
+        _self: LuaReflectValProxy<bevy::math::Mat3A>,
+        rhs: f32,
+    ) -> LuaReflectValProxy<bevy::math::Mat3A>;
 
 "#,
     r#"
 
     #[lua(as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone")]
-    fn clone(&self) -> bevy::math::Mat3A;
+    fn clone(
+        _self: LuaReflectRefProxy<bevy::math::Mat3A>,
+    ) -> LuaReflectValProxy<bevy::math::Mat3A>;
 
 "#,
     r#"
@@ -14650,13 +17506,10 @@ pub struct LuaMat3 {
 
     #[lua()]
     fn from_cols(
-        #[proxy]
-        x_axis: bevy::math::Vec3A,
-        #[proxy]
-        y_axis: bevy::math::Vec3A,
-        #[proxy]
-        z_axis: bevy::math::Vec3A,
-    ) -> bevy::math::Mat3A;
+        x_axis: LuaReflectValProxy<bevy::math::Vec3A>,
+        y_axis: LuaReflectValProxy<bevy::math::Vec3A>,
+        z_axis: LuaReflectValProxy<bevy::math::Vec3A>,
+    ) -> LuaReflectValProxy<bevy::math::Mat3A>;
 
 "#,
     r#"
@@ -14664,7 +17517,7 @@ pub struct LuaMat3 {
 /// If you require data in row major order `transpose` the matrix first.
 
     #[lua()]
-    fn to_cols_array(&self) -> [f32; 9];
+    fn to_cols_array(_self: LuaReflectRefProxy<bevy::math::Mat3A>) -> [f32; 9];
 
 "#,
     r#"
@@ -14672,21 +17525,25 @@ pub struct LuaMat3 {
 /// If you require data in row major order `transpose` the matrix first.
 
     #[lua()]
-    fn to_cols_array_2d(&self) -> [[f32; 3]; 3];
+    fn to_cols_array_2d(_self: LuaReflectRefProxy<bevy::math::Mat3A>) -> [[f32; 3]; 3];
 
 "#,
     r#"
 /// Creates a 3x3 matrix with its diagonal set to `diagonal` and all other entries set to 0.
 
     #[lua()]
-    fn from_diagonal(#[proxy] diagonal: bevy::math::Vec3) -> bevy::math::Mat3A;
+    fn from_diagonal(
+        diagonal: LuaReflectValProxy<bevy::math::Vec3>,
+    ) -> LuaReflectValProxy<bevy::math::Mat3A>;
 
 "#,
     r#"
 /// Creates a 3x3 matrix from a 4x4 matrix, discarding the 4th row and column.
 
     #[lua()]
-    fn from_mat4(#[proxy] m: bevy::math::Mat4) -> bevy::math::Mat3A;
+    fn from_mat4(
+        m: LuaReflectValProxy<bevy::math::Mat4>,
+    ) -> LuaReflectValProxy<bevy::math::Mat3A>;
 
 "#,
     r#"
@@ -14695,7 +17552,9 @@ pub struct LuaMat3 {
 /// Will panic if `rotation` is not normalized when `glam_assert` is enabled.
 
     #[lua()]
-    fn from_quat(#[proxy] rotation: bevy::math::Quat) -> bevy::math::Mat3A;
+    fn from_quat(
+        rotation: LuaReflectValProxy<bevy::math::Quat>,
+    ) -> LuaReflectValProxy<bevy::math::Mat3A>;
 
 "#,
     r#"
@@ -14705,7 +17564,10 @@ pub struct LuaMat3 {
 /// Will panic if `axis` is not normalized when `glam_assert` is enabled.
 
     #[lua()]
-    fn from_axis_angle(#[proxy] axis: bevy::math::Vec3, angle: f32) -> bevy::math::Mat3A;
+    fn from_axis_angle(
+        axis: LuaReflectValProxy<bevy::math::Vec3>,
+        angle: f32,
+    ) -> LuaReflectValProxy<bevy::math::Mat3A>;
 
 "#,
     r#"
@@ -14714,33 +17576,32 @@ pub struct LuaMat3 {
 
     #[lua()]
     fn from_euler(
-        #[proxy]
-        order: bevy::math::EulerRot,
+        order: LuaReflectValProxy<bevy::math::EulerRot>,
         a: f32,
         b: f32,
         c: f32,
-    ) -> bevy::math::Mat3A;
+    ) -> LuaReflectValProxy<bevy::math::Mat3A>;
 
 "#,
     r#"
 /// Creates a 3D rotation matrix from `angle` (in radians) around the x axis.
 
     #[lua()]
-    fn from_rotation_x(angle: f32) -> bevy::math::Mat3A;
+    fn from_rotation_x(angle: f32) -> LuaReflectValProxy<bevy::math::Mat3A>;
 
 "#,
     r#"
 /// Creates a 3D rotation matrix from `angle` (in radians) around the y axis.
 
     #[lua()]
-    fn from_rotation_y(angle: f32) -> bevy::math::Mat3A;
+    fn from_rotation_y(angle: f32) -> LuaReflectValProxy<bevy::math::Mat3A>;
 
 "#,
     r#"
 /// Creates a 3D rotation matrix from `angle` (in radians) around the z axis.
 
     #[lua()]
-    fn from_rotation_z(angle: f32) -> bevy::math::Mat3A;
+    fn from_rotation_z(angle: f32) -> LuaReflectValProxy<bevy::math::Mat3A>;
 
 "#,
     r#"
@@ -14749,7 +17610,9 @@ pub struct LuaMat3 {
 /// [`Self::transform_point2()`] and [`Self::transform_vector2()`].
 
     #[lua()]
-    fn from_translation(#[proxy] translation: bevy::math::Vec2) -> bevy::math::Mat3A;
+    fn from_translation(
+        translation: LuaReflectValProxy<bevy::math::Vec2>,
+    ) -> LuaReflectValProxy<bevy::math::Mat3A>;
 
 "#,
     r#"
@@ -14759,7 +17622,7 @@ pub struct LuaMat3 {
 /// [`Self::transform_point2()`] and [`Self::transform_vector2()`].
 
     #[lua()]
-    fn from_angle(angle: f32) -> bevy::math::Mat3A;
+    fn from_angle(angle: f32) -> LuaReflectValProxy<bevy::math::Mat3A>;
 
 "#,
     r#"
@@ -14770,12 +17633,10 @@ pub struct LuaMat3 {
 
     #[lua()]
     fn from_scale_angle_translation(
-        #[proxy]
-        scale: bevy::math::Vec2,
+        scale: LuaReflectValProxy<bevy::math::Vec2>,
         angle: f32,
-        #[proxy]
-        translation: bevy::math::Vec2,
-    ) -> bevy::math::Mat3A;
+        translation: LuaReflectValProxy<bevy::math::Vec2>,
+    ) -> LuaReflectValProxy<bevy::math::Mat3A>;
 
 "#,
     r#"
@@ -14786,7 +17647,9 @@ pub struct LuaMat3 {
 /// Will panic if all elements of `scale` are zero when `glam_assert` is enabled.
 
     #[lua()]
-    fn from_scale(#[proxy] scale: bevy::math::Vec2) -> bevy::math::Mat3A;
+    fn from_scale(
+        scale: LuaReflectValProxy<bevy::math::Vec2>,
+    ) -> LuaReflectValProxy<bevy::math::Mat3A>;
 
 "#,
     r#"
@@ -14795,7 +17658,9 @@ pub struct LuaMat3 {
 /// [`Self::transform_point2()`] and [`Self::transform_vector2()`].
 
     #[lua()]
-    fn from_mat2(#[proxy] m: bevy::math::Mat2) -> bevy::math::Mat3A;
+    fn from_mat2(
+        m: LuaReflectValProxy<bevy::math::Mat2>,
+    ) -> LuaReflectValProxy<bevy::math::Mat3A>;
 
 "#,
     r#"
@@ -14804,7 +17669,10 @@ pub struct LuaMat3 {
 /// Panics if `index` is greater than 2.
 
     #[lua()]
-    fn col(&self, index: usize) -> bevy::math::Vec3A;
+    fn col(
+        _self: LuaReflectRefProxy<bevy::math::Mat3A>,
+        index: usize,
+    ) -> LuaReflectValProxy<bevy::math::Vec3A>;
 
 "#,
     r#"
@@ -14813,7 +17681,10 @@ pub struct LuaMat3 {
 /// Panics if `index` is greater than 2.
 
     #[lua()]
-    fn row(&self, index: usize) -> bevy::math::Vec3A;
+    fn row(
+        _self: LuaReflectRefProxy<bevy::math::Mat3A>,
+        index: usize,
+    ) -> LuaReflectValProxy<bevy::math::Vec3A>;
 
 "#,
     r#"
@@ -14821,28 +17692,30 @@ pub struct LuaMat3 {
 /// If any element is either `NaN`, positive or negative infinity, this will return `false`.
 
     #[lua()]
-    fn is_finite(&self) -> bool;
+    fn is_finite(_self: LuaReflectRefProxy<bevy::math::Mat3A>) -> bool;
 
 "#,
     r#"
 /// Returns `true` if any elements are `NaN`.
 
     #[lua()]
-    fn is_nan(&self) -> bool;
+    fn is_nan(_self: LuaReflectRefProxy<bevy::math::Mat3A>) -> bool;
 
 "#,
     r#"
 /// Returns the transpose of `self`.
 
     #[lua()]
-    fn transpose(&self) -> bevy::math::Mat3A;
+    fn transpose(
+        _self: LuaReflectRefProxy<bevy::math::Mat3A>,
+    ) -> LuaReflectValProxy<bevy::math::Mat3A>;
 
 "#,
     r#"
 /// Returns the determinant of `self`.
 
     #[lua()]
-    fn determinant(&self) -> f32;
+    fn determinant(_self: LuaReflectRefProxy<bevy::math::Mat3A>) -> f32;
 
 "#,
     r#"
@@ -14852,7 +17725,9 @@ pub struct LuaMat3 {
 /// Will panic if the determinant of `self` is zero when `glam_assert` is enabled.
 
     #[lua()]
-    fn inverse(&self) -> bevy::math::Mat3A;
+    fn inverse(
+        _self: LuaReflectRefProxy<bevy::math::Mat3A>,
+    ) -> LuaReflectValProxy<bevy::math::Mat3A>;
 
 "#,
     r#"
@@ -14863,7 +17738,10 @@ pub struct LuaMat3 {
 /// Will panic if the 2nd row of `self` is not `(0, 0, 1)` when `glam_assert` is enabled.
 
     #[lua()]
-    fn transform_point2(&self, #[proxy] rhs: bevy::math::Vec2) -> bevy::math::Vec2;
+    fn transform_point2(
+        _self: LuaReflectRefProxy<bevy::math::Mat3A>,
+        rhs: LuaReflectValProxy<bevy::math::Vec2>,
+    ) -> LuaReflectValProxy<bevy::math::Vec2>;
 
 "#,
     r#"
@@ -14874,49 +17752,70 @@ pub struct LuaMat3 {
 /// Will panic if the 2nd row of `self` is not `(0, 0, 1)` when `glam_assert` is enabled.
 
     #[lua()]
-    fn transform_vector2(&self, #[proxy] rhs: bevy::math::Vec2) -> bevy::math::Vec2;
+    fn transform_vector2(
+        _self: LuaReflectRefProxy<bevy::math::Mat3A>,
+        rhs: LuaReflectValProxy<bevy::math::Vec2>,
+    ) -> LuaReflectValProxy<bevy::math::Vec2>;
 
 "#,
     r#"
 /// Transforms a 3D vector.
 
     #[lua()]
-    fn mul_vec3(&self, #[proxy] rhs: bevy::math::Vec3) -> bevy::math::Vec3;
+    fn mul_vec3(
+        _self: LuaReflectRefProxy<bevy::math::Mat3A>,
+        rhs: LuaReflectValProxy<bevy::math::Vec3>,
+    ) -> LuaReflectValProxy<bevy::math::Vec3>;
 
 "#,
     r#"
 /// Transforms a [`Vec3A`].
 
     #[lua()]
-    fn mul_vec3a(&self, #[proxy] rhs: bevy::math::Vec3A) -> bevy::math::Vec3A;
+    fn mul_vec3a(
+        _self: LuaReflectRefProxy<bevy::math::Mat3A>,
+        rhs: LuaReflectValProxy<bevy::math::Vec3A>,
+    ) -> LuaReflectValProxy<bevy::math::Vec3A>;
 
 "#,
     r#"
 /// Multiplies two 3x3 matrices.
 
     #[lua()]
-    fn mul_mat3(&self, #[proxy] rhs: &glam::Mat3A) -> bevy::math::Mat3A;
+    fn mul_mat3(
+        _self: LuaReflectRefProxy<bevy::math::Mat3A>,
+        rhs: LuaReflectRefProxy<bevy::math::Mat3A>,
+    ) -> LuaReflectValProxy<bevy::math::Mat3A>;
 
 "#,
     r#"
 /// Adds two 3x3 matrices.
 
     #[lua()]
-    fn add_mat3(&self, #[proxy] rhs: &glam::Mat3A) -> bevy::math::Mat3A;
+    fn add_mat3(
+        _self: LuaReflectRefProxy<bevy::math::Mat3A>,
+        rhs: LuaReflectRefProxy<bevy::math::Mat3A>,
+    ) -> LuaReflectValProxy<bevy::math::Mat3A>;
 
 "#,
     r#"
 /// Subtracts two 3x3 matrices.
 
     #[lua()]
-    fn sub_mat3(&self, #[proxy] rhs: &glam::Mat3A) -> bevy::math::Mat3A;
+    fn sub_mat3(
+        _self: LuaReflectRefProxy<bevy::math::Mat3A>,
+        rhs: LuaReflectRefProxy<bevy::math::Mat3A>,
+    ) -> LuaReflectValProxy<bevy::math::Mat3A>;
 
 "#,
     r#"
 /// Multiplies a 3x3 matrix by a scalar.
 
     #[lua()]
-    fn mul_scalar(&self, rhs: f32) -> bevy::math::Mat3A;
+    fn mul_scalar(
+        _self: LuaReflectRefProxy<bevy::math::Mat3A>,
+        rhs: f32,
+    ) -> LuaReflectValProxy<bevy::math::Mat3A>;
 
 "#,
     r#"
@@ -14929,31 +17828,45 @@ pub struct LuaMat3 {
 /// [comparing floating point numbers](https://randomascii.wordpress.com/2012/02/25/comparing-floating-point-numbers-2012-edition/).
 
     #[lua()]
-    fn abs_diff_eq(&self, #[proxy] rhs: bevy::math::Mat3A, max_abs_diff: f32) -> bool;
+    fn abs_diff_eq(
+        _self: LuaReflectRefProxy<bevy::math::Mat3A>,
+        rhs: LuaReflectValProxy<bevy::math::Mat3A>,
+        max_abs_diff: f32,
+    ) -> bool;
 
 "#,
     r#"
 
     #[lua()]
-    fn as_dmat3(&self) -> bevy::math::DMat3;
+    fn as_dmat3(
+        _self: LuaReflectRefProxy<bevy::math::Mat3A>,
+    ) -> LuaReflectValProxy<bevy::math::DMat3>;
 
 "#,
     r#"
 
     #[lua(as_trait = "std::ops::Neg", composite = "neg")]
-    fn neg(self) -> bevy::math::Mat3A;
+    fn neg(
+        _self: LuaReflectValProxy<bevy::math::Mat3A>,
+    ) -> LuaReflectValProxy<bevy::math::Mat3A>;
 
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Mul", composite = "mul")]
-    fn mul(self, #[proxy] rhs: bevy::math::Vec3) -> bevy::math::Vec3;
+    #[lua(as_trait = "std::ops::Mul::<bevy::math::Vec3>", composite = "mul")]
+    fn mul(
+        _self: LuaReflectValProxy<bevy::math::Mat3A>,
+        rhs: LuaReflectValProxy<bevy::math::Vec3>,
+    ) -> LuaReflectValProxy<bevy::math::Vec3>;
 
 "#,
     r#"
 
-    #[lua(as_trait = "std::cmp::PartialEq", composite = "eq")]
-    fn eq(&self, #[proxy] rhs: &glam::Mat3A) -> bool;
+    #[lua(as_trait = "std::cmp::PartialEq::<bevy::math::Mat3A>", composite = "eq")]
+    fn eq(
+        _self: LuaReflectRefProxy<bevy::math::Mat3A>,
+        rhs: LuaReflectRefProxy<bevy::math::Mat3A>,
+    ) -> bool;
 
 "#,
     r#"
@@ -14963,36 +17876,29 @@ fn index(&self) -> String {
 }
 "#,
     r#"
-#[lua(raw, metamethod="Index")]
-fn index(&self, ctx : &Lua, idx: crate::lua::util::LuaIndex) -> Result<LuaVec3A,_> {
-    Ok(LuaVec3A::new_ref(
-            _self.reflect_ref(ctx.get_world()?).sub_ref(bevy_script_api::ReflectionPathElement::SubReflection{
-                label:"col", 
-                get: std::sync::Arc::new(|ref_| Err(bevy_script_api::error::ReflectionError::InsufficientProvenance{
-                    path: "".to_owned(), 
-                    msg: "Cannot get column of matrix with immutable reference".to_owned()
-                })),
-                get_mut: std::sync::Arc::new(move |ref_| {
-                    if ref_.is::<bevy::math::Mat3A>(){
-                        Ok(ref_.downcast_mut::<bevy::math::Mat3A>()
-                            .unwrap()
-                            .col_mut(*idx))
-                    } else {
-                        Err(bevy_script_api::error::ReflectionError::CannotDowncast{from: ref_.get_represented_type_info().unwrap().type_path().into(), to:"Mat3".into()})
-                    }	
-                })
-            })
-        )
-    )
+#[lua(metamethod="Index")]
+fn index(_self: IdentityProxy<Self>, idx: usize) -> IdentityProxy<LuaVec3A> {
+    let mut curr_ref = _self.0.clone();
+    let def_ref = bevy_mod_scripting_core::bindings::DeferredReflection{
+        get: std::sync::Arc::new(|ref_| Err(bevy::reflect::ReflectPathError::InvalidDowncast)),
+        get_mut: std::sync::Arc::new(move |ref_| {
+            if ref_.is::<bevy::math::Mat3A>(){
+                Ok(ref_.downcast_mut::<bevy::math::Mat3A>()
+                    .unwrap()
+                    .col_mut(idx - 1))
+            } else {
+                Err(bevy::reflect::ReflectPathError::InvalidDowncast)
+            }	
+        })
+    };
+    curr_ref.reflect_path.push(bevy_mod_scripting_core::bindings::ReflectionPathElem::new_deferred(def_ref));
+    LuaVec3A(curr_ref)
 }
 "#]
 )]
-pub struct LuaMat3A {
-    #[lua(output(proxy))]
+pub struct Mat3A {
     x_axis: bevy::math::Vec3A,
-    #[lua(output(proxy))]
     y_axis: bevy::math::Vec3A,
-    #[lua(output(proxy))]
     z_axis: bevy::math::Vec3A,
 }
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
@@ -15003,55 +17909,80 @@ pub struct LuaMat3A {
     functions[r#"
 
     #[lua(as_trait = "std::ops::Neg", composite = "neg")]
-    fn neg(self) -> bevy::math::Mat4;
+    fn neg(
+        _self: LuaReflectValProxy<bevy::math::Mat4>,
+    ) -> LuaReflectValProxy<bevy::math::Mat4>;
 
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Sub", composite = "sub")]
-    fn sub(self, #[proxy] rhs: bevy::math::Mat4) -> bevy::math::Mat4;
+    #[lua(as_trait = "std::ops::Sub::<bevy::math::Mat4>", composite = "sub")]
+    fn sub(
+        _self: LuaReflectValProxy<bevy::math::Mat4>,
+        rhs: LuaReflectValProxy<bevy::math::Mat4>,
+    ) -> LuaReflectValProxy<bevy::math::Mat4>;
 
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Add", composite = "add")]
-    fn add(self, #[proxy] rhs: bevy::math::Mat4) -> bevy::math::Mat4;
+    #[lua(as_trait = "std::ops::Add::<bevy::math::Mat4>", composite = "add")]
+    fn add(
+        _self: LuaReflectValProxy<bevy::math::Mat4>,
+        rhs: LuaReflectValProxy<bevy::math::Mat4>,
+    ) -> LuaReflectValProxy<bevy::math::Mat4>;
 
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Mul", composite = "mul")]
-    fn mul(self, #[proxy] rhs: bevy::math::Vec4) -> bevy::math::Vec4;
+    #[lua(as_trait = "std::ops::Mul::<bevy::math::Vec4>", composite = "mul")]
+    fn mul(
+        _self: LuaReflectValProxy<bevy::math::Mat4>,
+        rhs: LuaReflectValProxy<bevy::math::Vec4>,
+    ) -> LuaReflectValProxy<bevy::math::Vec4>;
 
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Mul", composite = "mul")]
-    fn mul(self, rhs: f32) -> bevy::math::Mat4;
+    #[lua(as_trait = "std::ops::Mul::<f32>", composite = "mul")]
+    fn mul(
+        _self: LuaReflectValProxy<bevy::math::Mat4>,
+        rhs: f32,
+    ) -> LuaReflectValProxy<bevy::math::Mat4>;
 
 "#,
     r#"
 
-    #[lua(as_trait = "std::cmp::PartialEq", composite = "eq")]
-    fn eq(&self, #[proxy] rhs: &glam::Mat4) -> bool;
+    #[lua(as_trait = "std::cmp::PartialEq::<bevy::math::Mat4>", composite = "eq")]
+    fn eq(
+        _self: LuaReflectRefProxy<bevy::math::Mat4>,
+        rhs: LuaReflectRefProxy<bevy::math::Mat4>,
+    ) -> bool;
 
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Mul", composite = "mul")]
-    fn mul(self, #[proxy] rhs: bevy::math::Affine3A) -> bevy::math::Mat4;
+    #[lua(as_trait = "std::ops::Mul::<bevy::math::Affine3A>", composite = "mul")]
+    fn mul(
+        _self: LuaReflectValProxy<bevy::math::Mat4>,
+        rhs: LuaReflectValProxy<bevy::math::Affine3A>,
+    ) -> LuaReflectValProxy<bevy::math::Mat4>;
 
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Mul", composite = "mul")]
-    fn mul(self, #[proxy] rhs: bevy::math::Mat4) -> bevy::math::Mat4;
+    #[lua(as_trait = "std::ops::Mul::<bevy::math::Mat4>", composite = "mul")]
+    fn mul(
+        _self: LuaReflectValProxy<bevy::math::Mat4>,
+        rhs: LuaReflectValProxy<bevy::math::Mat4>,
+    ) -> LuaReflectValProxy<bevy::math::Mat4>;
 
 "#,
     r#"
 
     #[lua(as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone")]
-    fn clone(&self) -> bevy::math::Mat4;
+    fn clone(
+        _self: LuaReflectRefProxy<bevy::math::Mat4>,
+    ) -> LuaReflectValProxy<bevy::math::Mat4>;
 
 "#,
     r#"
@@ -15059,15 +17990,11 @@ pub struct LuaMat3A {
 
     #[lua()]
     fn from_cols(
-        #[proxy]
-        x_axis: bevy::math::Vec4,
-        #[proxy]
-        y_axis: bevy::math::Vec4,
-        #[proxy]
-        z_axis: bevy::math::Vec4,
-        #[proxy]
-        w_axis: bevy::math::Vec4,
-    ) -> bevy::math::Mat4;
+        x_axis: LuaReflectValProxy<bevy::math::Vec4>,
+        y_axis: LuaReflectValProxy<bevy::math::Vec4>,
+        z_axis: LuaReflectValProxy<bevy::math::Vec4>,
+        w_axis: LuaReflectValProxy<bevy::math::Vec4>,
+    ) -> LuaReflectValProxy<bevy::math::Mat4>;
 
 "#,
     r#"
@@ -15075,7 +18002,7 @@ pub struct LuaMat3A {
 /// If you require data in row major order `transpose` the matrix first.
 
     #[lua()]
-    fn to_cols_array(&self) -> [f32; 16];
+    fn to_cols_array(_self: LuaReflectRefProxy<bevy::math::Mat4>) -> [f32; 16];
 
 "#,
     r#"
@@ -15083,14 +18010,16 @@ pub struct LuaMat3A {
 /// If you require data in row major order `transpose` the matrix first.
 
     #[lua()]
-    fn to_cols_array_2d(&self) -> [[f32; 4]; 4];
+    fn to_cols_array_2d(_self: LuaReflectRefProxy<bevy::math::Mat4>) -> [[f32; 4]; 4];
 
 "#,
     r#"
 /// Creates a 4x4 matrix with its diagonal set to `diagonal` and all other entries set to 0.
 
     #[lua()]
-    fn from_diagonal(#[proxy] diagonal: bevy::math::Vec4) -> bevy::math::Mat4;
+    fn from_diagonal(
+        diagonal: LuaReflectValProxy<bevy::math::Vec4>,
+    ) -> LuaReflectValProxy<bevy::math::Mat4>;
 
 "#,
     r#"
@@ -15103,13 +18032,10 @@ pub struct LuaMat3A {
 
     #[lua()]
     fn from_scale_rotation_translation(
-        #[proxy]
-        scale: bevy::math::Vec3,
-        #[proxy]
-        rotation: bevy::math::Quat,
-        #[proxy]
-        translation: bevy::math::Vec3,
-    ) -> bevy::math::Mat4;
+        scale: LuaReflectValProxy<bevy::math::Vec3>,
+        rotation: LuaReflectValProxy<bevy::math::Quat>,
+        translation: LuaReflectValProxy<bevy::math::Vec3>,
+    ) -> LuaReflectValProxy<bevy::math::Mat4>;
 
 "#,
     r#"
@@ -15121,11 +18047,9 @@ pub struct LuaMat3A {
 
     #[lua()]
     fn from_rotation_translation(
-        #[proxy]
-        rotation: bevy::math::Quat,
-        #[proxy]
-        translation: bevy::math::Vec3,
-    ) -> bevy::math::Mat4;
+        rotation: LuaReflectValProxy<bevy::math::Quat>,
+        translation: LuaReflectValProxy<bevy::math::Vec3>,
+    ) -> LuaReflectValProxy<bevy::math::Mat4>;
 
 "#,
     r#"
@@ -15136,7 +18060,9 @@ pub struct LuaMat3A {
 /// Will panic if `rotation` is not normalized when `glam_assert` is enabled.
 
     #[lua()]
-    fn from_quat(#[proxy] rotation: bevy::math::Quat) -> bevy::math::Mat4;
+    fn from_quat(
+        rotation: LuaReflectValProxy<bevy::math::Quat>,
+    ) -> LuaReflectValProxy<bevy::math::Mat4>;
 
 "#,
     r#"
@@ -15146,7 +18072,9 @@ pub struct LuaMat3A {
 /// [`Self::transform_point3()`] and [`Self::transform_vector3()`].
 
     #[lua()]
-    fn from_mat3(#[proxy] m: bevy::math::Mat3) -> bevy::math::Mat4;
+    fn from_mat3(
+        m: LuaReflectValProxy<bevy::math::Mat3>,
+    ) -> LuaReflectValProxy<bevy::math::Mat4>;
 
 "#,
     r#"
@@ -15156,7 +18084,9 @@ pub struct LuaMat3A {
 /// [`Self::transform_point3()`] and [`Self::transform_vector3()`].
 
     #[lua()]
-    fn from_mat3a(#[proxy] m: bevy::math::Mat3A) -> bevy::math::Mat4;
+    fn from_mat3a(
+        m: LuaReflectValProxy<bevy::math::Mat3A>,
+    ) -> LuaReflectValProxy<bevy::math::Mat4>;
 
 "#,
     r#"
@@ -15165,7 +18095,9 @@ pub struct LuaMat3A {
 /// [`Self::transform_point3()`] and [`Self::transform_vector3()`].
 
     #[lua()]
-    fn from_translation(#[proxy] translation: bevy::math::Vec3) -> bevy::math::Mat4;
+    fn from_translation(
+        translation: LuaReflectValProxy<bevy::math::Vec3>,
+    ) -> LuaReflectValProxy<bevy::math::Mat4>;
 
 "#,
     r#"
@@ -15177,7 +18109,10 @@ pub struct LuaMat3A {
 /// Will panic if `axis` is not normalized when `glam_assert` is enabled.
 
     #[lua()]
-    fn from_axis_angle(#[proxy] axis: bevy::math::Vec3, angle: f32) -> bevy::math::Mat4;
+    fn from_axis_angle(
+        axis: LuaReflectValProxy<bevy::math::Vec3>,
+        angle: f32,
+    ) -> LuaReflectValProxy<bevy::math::Mat4>;
 
 "#,
     r#"
@@ -15188,12 +18123,11 @@ pub struct LuaMat3A {
 
     #[lua()]
     fn from_euler(
-        #[proxy]
-        order: bevy::math::EulerRot,
+        order: LuaReflectValProxy<bevy::math::EulerRot>,
         a: f32,
         b: f32,
         c: f32,
-    ) -> bevy::math::Mat4;
+    ) -> LuaReflectValProxy<bevy::math::Mat4>;
 
 "#,
     r#"
@@ -15203,7 +18137,7 @@ pub struct LuaMat3A {
 /// [`Self::transform_point3()`] and [`Self::transform_vector3()`].
 
     #[lua()]
-    fn from_rotation_x(angle: f32) -> bevy::math::Mat4;
+    fn from_rotation_x(angle: f32) -> LuaReflectValProxy<bevy::math::Mat4>;
 
 "#,
     r#"
@@ -15213,7 +18147,7 @@ pub struct LuaMat3A {
 /// [`Self::transform_point3()`] and [`Self::transform_vector3()`].
 
     #[lua()]
-    fn from_rotation_y(angle: f32) -> bevy::math::Mat4;
+    fn from_rotation_y(angle: f32) -> LuaReflectValProxy<bevy::math::Mat4>;
 
 "#,
     r#"
@@ -15223,7 +18157,7 @@ pub struct LuaMat3A {
 /// [`Self::transform_point3()`] and [`Self::transform_vector3()`].
 
     #[lua()]
-    fn from_rotation_z(angle: f32) -> bevy::math::Mat4;
+    fn from_rotation_z(angle: f32) -> LuaReflectValProxy<bevy::math::Mat4>;
 
 "#,
     r#"
@@ -15234,7 +18168,9 @@ pub struct LuaMat3A {
 /// Will panic if all elements of `scale` are zero when `glam_assert` is enabled.
 
     #[lua()]
-    fn from_scale(#[proxy] scale: bevy::math::Vec3) -> bevy::math::Mat4;
+    fn from_scale(
+        scale: LuaReflectValProxy<bevy::math::Vec3>,
+    ) -> LuaReflectValProxy<bevy::math::Mat4>;
 
 "#,
     r#"
@@ -15243,7 +18179,10 @@ pub struct LuaMat3A {
 /// Panics if `index` is greater than 3.
 
     #[lua()]
-    fn col(&self, index: usize) -> bevy::math::Vec4;
+    fn col(
+        _self: LuaReflectRefProxy<bevy::math::Mat4>,
+        index: usize,
+    ) -> LuaReflectValProxy<bevy::math::Vec4>;
 
 "#,
     r#"
@@ -15252,7 +18191,10 @@ pub struct LuaMat3A {
 /// Panics if `index` is greater than 3.
 
     #[lua()]
-    fn row(&self, index: usize) -> bevy::math::Vec4;
+    fn row(
+        _self: LuaReflectRefProxy<bevy::math::Mat4>,
+        index: usize,
+    ) -> LuaReflectValProxy<bevy::math::Vec4>;
 
 "#,
     r#"
@@ -15260,28 +18202,30 @@ pub struct LuaMat3A {
 /// If any element is either `NaN`, positive or negative infinity, this will return `false`.
 
     #[lua()]
-    fn is_finite(&self) -> bool;
+    fn is_finite(_self: LuaReflectRefProxy<bevy::math::Mat4>) -> bool;
 
 "#,
     r#"
 /// Returns `true` if any elements are `NaN`.
 
     #[lua()]
-    fn is_nan(&self) -> bool;
+    fn is_nan(_self: LuaReflectRefProxy<bevy::math::Mat4>) -> bool;
 
 "#,
     r#"
 /// Returns the transpose of `self`.
 
     #[lua()]
-    fn transpose(&self) -> bevy::math::Mat4;
+    fn transpose(
+        _self: LuaReflectRefProxy<bevy::math::Mat4>,
+    ) -> LuaReflectValProxy<bevy::math::Mat4>;
 
 "#,
     r#"
 /// Returns the determinant of `self`.
 
     #[lua()]
-    fn determinant(&self) -> f32;
+    fn determinant(_self: LuaReflectRefProxy<bevy::math::Mat4>) -> f32;
 
 "#,
     r#"
@@ -15291,7 +18235,9 @@ pub struct LuaMat3A {
 /// Will panic if the determinant of `self` is zero when `glam_assert` is enabled.
 
     #[lua()]
-    fn inverse(&self) -> bevy::math::Mat4;
+    fn inverse(
+        _self: LuaReflectRefProxy<bevy::math::Mat4>,
+    ) -> LuaReflectValProxy<bevy::math::Mat4>;
 
 "#,
     r#"
@@ -15301,13 +18247,10 @@ pub struct LuaMat3A {
 
     #[lua()]
     fn look_to_lh(
-        #[proxy]
-        eye: bevy::math::Vec3,
-        #[proxy]
-        dir: bevy::math::Vec3,
-        #[proxy]
-        up: bevy::math::Vec3,
-    ) -> bevy::math::Mat4;
+        eye: LuaReflectValProxy<bevy::math::Vec3>,
+        dir: LuaReflectValProxy<bevy::math::Vec3>,
+        up: LuaReflectValProxy<bevy::math::Vec3>,
+    ) -> LuaReflectValProxy<bevy::math::Mat4>;
 
 "#,
     r#"
@@ -15317,13 +18260,10 @@ pub struct LuaMat3A {
 
     #[lua()]
     fn look_to_rh(
-        #[proxy]
-        eye: bevy::math::Vec3,
-        #[proxy]
-        dir: bevy::math::Vec3,
-        #[proxy]
-        up: bevy::math::Vec3,
-    ) -> bevy::math::Mat4;
+        eye: LuaReflectValProxy<bevy::math::Vec3>,
+        dir: LuaReflectValProxy<bevy::math::Vec3>,
+        up: LuaReflectValProxy<bevy::math::Vec3>,
+    ) -> LuaReflectValProxy<bevy::math::Mat4>;
 
 "#,
     r#"
@@ -15335,13 +18275,10 @@ pub struct LuaMat3A {
 
     #[lua()]
     fn look_at_lh(
-        #[proxy]
-        eye: bevy::math::Vec3,
-        #[proxy]
-        center: bevy::math::Vec3,
-        #[proxy]
-        up: bevy::math::Vec3,
-    ) -> bevy::math::Mat4;
+        eye: LuaReflectValProxy<bevy::math::Vec3>,
+        center: LuaReflectValProxy<bevy::math::Vec3>,
+        up: LuaReflectValProxy<bevy::math::Vec3>,
+    ) -> LuaReflectValProxy<bevy::math::Mat4>;
 
 "#,
     r#"
@@ -15353,13 +18290,10 @@ pub struct LuaMat3A {
 
     #[lua()]
     fn look_at_rh(
-        #[proxy]
-        eye: bevy::math::Vec3,
-        #[proxy]
-        center: bevy::math::Vec3,
-        #[proxy]
-        up: bevy::math::Vec3,
-    ) -> bevy::math::Mat4;
+        eye: LuaReflectValProxy<bevy::math::Vec3>,
+        center: LuaReflectValProxy<bevy::math::Vec3>,
+        up: LuaReflectValProxy<bevy::math::Vec3>,
+    ) -> LuaReflectValProxy<bevy::math::Mat4>;
 
 "#,
     r#"
@@ -15373,7 +18307,7 @@ pub struct LuaMat3A {
         aspect_ratio: f32,
         z_near: f32,
         z_far: f32,
-    ) -> bevy::math::Mat4;
+    ) -> LuaReflectValProxy<bevy::math::Mat4>;
 
 "#,
     r#"
@@ -15388,7 +18322,7 @@ pub struct LuaMat3A {
         aspect_ratio: f32,
         z_near: f32,
         z_far: f32,
-    ) -> bevy::math::Mat4;
+    ) -> LuaReflectValProxy<bevy::math::Mat4>;
 
 "#,
     r#"
@@ -15403,7 +18337,7 @@ pub struct LuaMat3A {
         aspect_ratio: f32,
         z_near: f32,
         z_far: f32,
-    ) -> bevy::math::Mat4;
+    ) -> LuaReflectValProxy<bevy::math::Mat4>;
 
 "#,
     r#"
@@ -15416,7 +18350,7 @@ pub struct LuaMat3A {
         fov_y_radians: f32,
         aspect_ratio: f32,
         z_near: f32,
-    ) -> bevy::math::Mat4;
+    ) -> LuaReflectValProxy<bevy::math::Mat4>;
 
 "#,
     r#"
@@ -15429,7 +18363,7 @@ pub struct LuaMat3A {
         fov_y_radians: f32,
         aspect_ratio: f32,
         z_near: f32,
-    ) -> bevy::math::Mat4;
+    ) -> LuaReflectValProxy<bevy::math::Mat4>;
 
 "#,
     r#"
@@ -15441,7 +18375,7 @@ pub struct LuaMat3A {
         fov_y_radians: f32,
         aspect_ratio: f32,
         z_near: f32,
-    ) -> bevy::math::Mat4;
+    ) -> LuaReflectValProxy<bevy::math::Mat4>;
 
 "#,
     r#"
@@ -15453,7 +18387,7 @@ pub struct LuaMat3A {
         fov_y_radians: f32,
         aspect_ratio: f32,
         z_near: f32,
-    ) -> bevy::math::Mat4;
+    ) -> LuaReflectValProxy<bevy::math::Mat4>;
 
 "#,
     r#"
@@ -15470,7 +18404,7 @@ pub struct LuaMat3A {
         top: f32,
         near: f32,
         far: f32,
-    ) -> bevy::math::Mat4;
+    ) -> LuaReflectValProxy<bevy::math::Mat4>;
 
 "#,
     r#"
@@ -15484,7 +18418,7 @@ pub struct LuaMat3A {
         top: f32,
         near: f32,
         far: f32,
-    ) -> bevy::math::Mat4;
+    ) -> LuaReflectValProxy<bevy::math::Mat4>;
 
 "#,
     r#"
@@ -15498,7 +18432,7 @@ pub struct LuaMat3A {
         top: f32,
         near: f32,
         far: f32,
-    ) -> bevy::math::Mat4;
+    ) -> LuaReflectValProxy<bevy::math::Mat4>;
 
 "#,
     r#"
@@ -15508,7 +18442,10 @@ pub struct LuaMat3A {
 /// This method assumes that `self` contains a projective transform.
 
     #[lua()]
-    fn project_point3(&self, #[proxy] rhs: bevy::math::Vec3) -> bevy::math::Vec3;
+    fn project_point3(
+        _self: LuaReflectRefProxy<bevy::math::Mat4>,
+        rhs: LuaReflectValProxy<bevy::math::Vec3>,
+    ) -> LuaReflectValProxy<bevy::math::Vec3>;
 
 "#,
     r#"
@@ -15522,7 +18459,10 @@ pub struct LuaMat3A {
 /// Will panic if the 3rd row of `self` is not `(0, 0, 0, 1)` when `glam_assert` is enabled.
 
     #[lua()]
-    fn transform_point3(&self, #[proxy] rhs: bevy::math::Vec3) -> bevy::math::Vec3;
+    fn transform_point3(
+        _self: LuaReflectRefProxy<bevy::math::Mat4>,
+        rhs: LuaReflectValProxy<bevy::math::Vec3>,
+    ) -> LuaReflectValProxy<bevy::math::Vec3>;
 
 "#,
     r#"
@@ -15534,7 +18474,10 @@ pub struct LuaMat3A {
 /// Will panic if the 3rd row of `self` is not `(0, 0, 0, 1)` when `glam_assert` is enabled.
 
     #[lua()]
-    fn transform_vector3(&self, #[proxy] rhs: bevy::math::Vec3) -> bevy::math::Vec3;
+    fn transform_vector3(
+        _self: LuaReflectRefProxy<bevy::math::Mat4>,
+        rhs: LuaReflectValProxy<bevy::math::Vec3>,
+    ) -> LuaReflectValProxy<bevy::math::Vec3>;
 
 "#,
     r#"
@@ -15542,7 +18485,10 @@ pub struct LuaMat3A {
 /// This is the equivalent of multiplying the [`Vec3A`] as a 4D vector where `w` is `1.0`.
 
     #[lua()]
-    fn transform_point3a(&self, #[proxy] rhs: bevy::math::Vec3A) -> bevy::math::Vec3A;
+    fn transform_point3a(
+        _self: LuaReflectRefProxy<bevy::math::Mat4>,
+        rhs: LuaReflectValProxy<bevy::math::Vec3A>,
+    ) -> LuaReflectValProxy<bevy::math::Vec3A>;
 
 "#,
     r#"
@@ -15550,42 +18496,60 @@ pub struct LuaMat3A {
 /// This is the equivalent of multiplying the [`Vec3A`] as a 4D vector where `w` is `0.0`.
 
     #[lua()]
-    fn transform_vector3a(&self, #[proxy] rhs: bevy::math::Vec3A) -> bevy::math::Vec3A;
+    fn transform_vector3a(
+        _self: LuaReflectRefProxy<bevy::math::Mat4>,
+        rhs: LuaReflectValProxy<bevy::math::Vec3A>,
+    ) -> LuaReflectValProxy<bevy::math::Vec3A>;
 
 "#,
     r#"
 /// Transforms a 4D vector.
 
     #[lua()]
-    fn mul_vec4(&self, #[proxy] rhs: bevy::math::Vec4) -> bevy::math::Vec4;
+    fn mul_vec4(
+        _self: LuaReflectRefProxy<bevy::math::Mat4>,
+        rhs: LuaReflectValProxy<bevy::math::Vec4>,
+    ) -> LuaReflectValProxy<bevy::math::Vec4>;
 
 "#,
     r#"
 /// Multiplies two 4x4 matrices.
 
     #[lua()]
-    fn mul_mat4(&self, #[proxy] rhs: &glam::Mat4) -> bevy::math::Mat4;
+    fn mul_mat4(
+        _self: LuaReflectRefProxy<bevy::math::Mat4>,
+        rhs: LuaReflectRefProxy<bevy::math::Mat4>,
+    ) -> LuaReflectValProxy<bevy::math::Mat4>;
 
 "#,
     r#"
 /// Adds two 4x4 matrices.
 
     #[lua()]
-    fn add_mat4(&self, #[proxy] rhs: &glam::Mat4) -> bevy::math::Mat4;
+    fn add_mat4(
+        _self: LuaReflectRefProxy<bevy::math::Mat4>,
+        rhs: LuaReflectRefProxy<bevy::math::Mat4>,
+    ) -> LuaReflectValProxy<bevy::math::Mat4>;
 
 "#,
     r#"
 /// Subtracts two 4x4 matrices.
 
     #[lua()]
-    fn sub_mat4(&self, #[proxy] rhs: &glam::Mat4) -> bevy::math::Mat4;
+    fn sub_mat4(
+        _self: LuaReflectRefProxy<bevy::math::Mat4>,
+        rhs: LuaReflectRefProxy<bevy::math::Mat4>,
+    ) -> LuaReflectValProxy<bevy::math::Mat4>;
 
 "#,
     r#"
 /// Multiplies a 4x4 matrix by a scalar.
 
     #[lua()]
-    fn mul_scalar(&self, rhs: f32) -> bevy::math::Mat4;
+    fn mul_scalar(
+        _self: LuaReflectRefProxy<bevy::math::Mat4>,
+        rhs: f32,
+    ) -> LuaReflectValProxy<bevy::math::Mat4>;
 
 "#,
     r#"
@@ -15598,13 +18562,19 @@ pub struct LuaMat3A {
 /// [comparing floating point numbers](https://randomascii.wordpress.com/2012/02/25/comparing-floating-point-numbers-2012-edition/).
 
     #[lua()]
-    fn abs_diff_eq(&self, #[proxy] rhs: bevy::math::Mat4, max_abs_diff: f32) -> bool;
+    fn abs_diff_eq(
+        _self: LuaReflectRefProxy<bevy::math::Mat4>,
+        rhs: LuaReflectValProxy<bevy::math::Mat4>,
+        max_abs_diff: f32,
+    ) -> bool;
 
 "#,
     r#"
 
     #[lua()]
-    fn as_dmat4(&self) -> bevy::math::DMat4;
+    fn as_dmat4(
+        _self: LuaReflectRefProxy<bevy::math::Mat4>,
+    ) -> LuaReflectValProxy<bevy::math::DMat4>;
 
 "#,
     r#"
@@ -15614,38 +18584,30 @@ fn index(&self) -> String {
 }
 "#,
     r#"
-#[lua(raw, metamethod="Index")]
-fn index(&self, ctx : &Lua, idx: crate::lua::util::LuaIndex) -> Result<LuaVec4,_> {
-    Ok(LuaVec4::new_ref(
-            _self.reflect_ref(ctx.get_world()?).sub_ref(bevy_script_api::ReflectionPathElement::SubReflection{
-                label:"col", 
-                get: std::sync::Arc::new(|ref_| Err(bevy_script_api::error::ReflectionError::InsufficientProvenance{
-                    path: "".to_owned(), 
-                    msg: "Cannot get column of matrix with immutable reference".to_owned()
-                })),
-                get_mut: std::sync::Arc::new(move |ref_| {
-                    if ref_.is::<bevy::math::Mat4>(){
-                        Ok(ref_.downcast_mut::<bevy::math::Mat4>()
-                            .unwrap()
-                            .col_mut(*idx))
-                    } else {
-                        Err(bevy_script_api::error::ReflectionError::CannotDowncast{from: ref_.get_represented_type_info().unwrap().type_path().into(), to:"Mat3".into()})
-                    }	
-                })
-            })
-        )
-    )
+#[lua(metamethod="Index")]
+fn index(_self: IdentityProxy<Self>, idx: usize) -> IdentityProxy<LuaVec4> {
+    let mut curr_ref = _self.0.clone();
+    let def_ref = bevy_mod_scripting_core::bindings::DeferredReflection{
+        get: std::sync::Arc::new(|ref_| Err(bevy::reflect::ReflectPathError::InvalidDowncast)),
+        get_mut: std::sync::Arc::new(move |ref_| {
+            if ref_.is::<bevy::math::Mat4>(){
+                Ok(ref_.downcast_mut::<bevy::math::Mat4>()
+                    .unwrap()
+                    .col_mut(idx - 1))
+            } else {
+                Err(bevy::reflect::ReflectPathError::InvalidDowncast)
+            }	
+        })
+    };
+    curr_ref.reflect_path.push(bevy_mod_scripting_core::bindings::ReflectionPathElem::new_deferred(def_ref));
+    LuaVec4(curr_ref)
 }
 "#]
 )]
-pub struct LuaMat4 {
-    #[lua(output(proxy))]
+pub struct Mat4 {
     x_axis: bevy::math::Vec4,
-    #[lua(output(proxy))]
     y_axis: bevy::math::Vec4,
-    #[lua(output(proxy))]
     z_axis: bevy::math::Vec4,
-    #[lua(output(proxy))]
     w_axis: bevy::math::Vec4,
 }
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
@@ -15655,32 +18617,45 @@ pub struct LuaMat4 {
     bms_lua_path = "crate",
     functions[r#"
 
-    #[lua(as_trait = "std::ops::Mul", composite = "mul")]
-    fn mul(self, #[proxy] rhs: bevy::math::DVec2) -> bevy::math::DVec2;
+    #[lua(as_trait = "std::ops::Mul::<bevy::math::DVec2>", composite = "mul")]
+    fn mul(
+        _self: LuaReflectValProxy<bevy::math::DMat2>,
+        rhs: LuaReflectValProxy<bevy::math::DVec2>,
+    ) -> LuaReflectValProxy<bevy::math::DVec2>;
 
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Mul", composite = "mul")]
-    fn mul(self, #[proxy] rhs: bevy::math::DMat2) -> bevy::math::DMat2;
+    #[lua(as_trait = "std::ops::Mul::<bevy::math::DMat2>", composite = "mul")]
+    fn mul(
+        _self: LuaReflectValProxy<bevy::math::DMat2>,
+        rhs: LuaReflectValProxy<bevy::math::DMat2>,
+    ) -> LuaReflectValProxy<bevy::math::DMat2>;
 
 "#,
     r#"
 
     #[lua(as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone")]
-    fn clone(&self) -> bevy::math::DMat2;
+    fn clone(
+        _self: LuaReflectRefProxy<bevy::math::DMat2>,
+    ) -> LuaReflectValProxy<bevy::math::DMat2>;
 
 "#,
     r#"
 
     #[lua(as_trait = "std::ops::Neg", composite = "neg")]
-    fn neg(self) -> bevy::math::DMat2;
+    fn neg(
+        _self: LuaReflectValProxy<bevy::math::DMat2>,
+    ) -> LuaReflectValProxy<bevy::math::DMat2>;
 
 "#,
     r#"
 
-    #[lua(as_trait = "std::cmp::PartialEq", composite = "eq")]
-    fn eq(&self, #[proxy] rhs: &glam::DMat2) -> bool;
+    #[lua(as_trait = "std::cmp::PartialEq::<bevy::math::DMat2>", composite = "eq")]
+    fn eq(
+        _self: LuaReflectRefProxy<bevy::math::DMat2>,
+        rhs: LuaReflectRefProxy<bevy::math::DMat2>,
+    ) -> bool;
 
 "#,
     r#"
@@ -15688,11 +18663,9 @@ pub struct LuaMat4 {
 
     #[lua()]
     fn from_cols(
-        #[proxy]
-        x_axis: bevy::math::DVec2,
-        #[proxy]
-        y_axis: bevy::math::DVec2,
-    ) -> bevy::math::DMat2;
+        x_axis: LuaReflectValProxy<bevy::math::DVec2>,
+        y_axis: LuaReflectValProxy<bevy::math::DVec2>,
+    ) -> LuaReflectValProxy<bevy::math::DMat2>;
 
 "#,
     r#"
@@ -15700,7 +18673,7 @@ pub struct LuaMat4 {
 /// If you require data in row major order `transpose` the matrix first.
 
     #[lua()]
-    fn to_cols_array(&self) -> [f64; 4];
+    fn to_cols_array(_self: LuaReflectRefProxy<bevy::math::DMat2>) -> [f64; 4];
 
 "#,
     r#"
@@ -15708,14 +18681,16 @@ pub struct LuaMat4 {
 /// If you require data in row major order `transpose` the matrix first.
 
     #[lua()]
-    fn to_cols_array_2d(&self) -> [[f64; 2]; 2];
+    fn to_cols_array_2d(_self: LuaReflectRefProxy<bevy::math::DMat2>) -> [[f64; 2]; 2];
 
 "#,
     r#"
 /// Creates a 2x2 matrix with its diagonal set to `diagonal` and all other entries set to 0.
 
     #[lua()]
-    fn from_diagonal(#[proxy] diagonal: bevy::math::DVec2) -> bevy::math::DMat2;
+    fn from_diagonal(
+        diagonal: LuaReflectValProxy<bevy::math::DVec2>,
+    ) -> LuaReflectValProxy<bevy::math::DMat2>;
 
 "#,
     r#"
@@ -15724,24 +18699,25 @@ pub struct LuaMat4 {
 
     #[lua()]
     fn from_scale_angle(
-        #[proxy]
-        scale: bevy::math::DVec2,
+        scale: LuaReflectValProxy<bevy::math::DVec2>,
         angle: f64,
-    ) -> bevy::math::DMat2;
+    ) -> LuaReflectValProxy<bevy::math::DMat2>;
 
 "#,
     r#"
 /// Creates a 2x2 matrix containing a rotation of `angle` (in radians).
 
     #[lua()]
-    fn from_angle(angle: f64) -> bevy::math::DMat2;
+    fn from_angle(angle: f64) -> LuaReflectValProxy<bevy::math::DMat2>;
 
 "#,
     r#"
 /// Creates a 2x2 matrix from a 3x3 matrix, discarding the 2nd row and column.
 
     #[lua()]
-    fn from_mat3(#[proxy] m: bevy::math::DMat3) -> bevy::math::DMat2;
+    fn from_mat3(
+        m: LuaReflectValProxy<bevy::math::DMat3>,
+    ) -> LuaReflectValProxy<bevy::math::DMat2>;
 
 "#,
     r#"
@@ -15750,7 +18726,10 @@ pub struct LuaMat4 {
 /// Panics if `index` is greater than 1.
 
     #[lua()]
-    fn col(&self, index: usize) -> bevy::math::DVec2;
+    fn col(
+        _self: LuaReflectRefProxy<bevy::math::DMat2>,
+        index: usize,
+    ) -> LuaReflectValProxy<bevy::math::DVec2>;
 
 "#,
     r#"
@@ -15759,7 +18738,10 @@ pub struct LuaMat4 {
 /// Panics if `index` is greater than 1.
 
     #[lua()]
-    fn row(&self, index: usize) -> bevy::math::DVec2;
+    fn row(
+        _self: LuaReflectRefProxy<bevy::math::DMat2>,
+        index: usize,
+    ) -> LuaReflectValProxy<bevy::math::DVec2>;
 
 "#,
     r#"
@@ -15767,28 +18749,30 @@ pub struct LuaMat4 {
 /// If any element is either `NaN`, positive or negative infinity, this will return `false`.
 
     #[lua()]
-    fn is_finite(&self) -> bool;
+    fn is_finite(_self: LuaReflectRefProxy<bevy::math::DMat2>) -> bool;
 
 "#,
     r#"
 /// Returns `true` if any elements are `NaN`.
 
     #[lua()]
-    fn is_nan(&self) -> bool;
+    fn is_nan(_self: LuaReflectRefProxy<bevy::math::DMat2>) -> bool;
 
 "#,
     r#"
 /// Returns the transpose of `self`.
 
     #[lua()]
-    fn transpose(&self) -> bevy::math::DMat2;
+    fn transpose(
+        _self: LuaReflectRefProxy<bevy::math::DMat2>,
+    ) -> LuaReflectValProxy<bevy::math::DMat2>;
 
 "#,
     r#"
 /// Returns the determinant of `self`.
 
     #[lua()]
-    fn determinant(&self) -> f64;
+    fn determinant(_self: LuaReflectRefProxy<bevy::math::DMat2>) -> f64;
 
 "#,
     r#"
@@ -15798,42 +18782,59 @@ pub struct LuaMat4 {
 /// Will panic if the determinant of `self` is zero when `glam_assert` is enabled.
 
     #[lua()]
-    fn inverse(&self) -> bevy::math::DMat2;
+    fn inverse(
+        _self: LuaReflectRefProxy<bevy::math::DMat2>,
+    ) -> LuaReflectValProxy<bevy::math::DMat2>;
 
 "#,
     r#"
 /// Transforms a 2D vector.
 
     #[lua()]
-    fn mul_vec2(&self, #[proxy] rhs: bevy::math::DVec2) -> bevy::math::DVec2;
+    fn mul_vec2(
+        _self: LuaReflectRefProxy<bevy::math::DMat2>,
+        rhs: LuaReflectValProxy<bevy::math::DVec2>,
+    ) -> LuaReflectValProxy<bevy::math::DVec2>;
 
 "#,
     r#"
 /// Multiplies two 2x2 matrices.
 
     #[lua()]
-    fn mul_mat2(&self, #[proxy] rhs: &glam::DMat2) -> bevy::math::DMat2;
+    fn mul_mat2(
+        _self: LuaReflectRefProxy<bevy::math::DMat2>,
+        rhs: LuaReflectRefProxy<bevy::math::DMat2>,
+    ) -> LuaReflectValProxy<bevy::math::DMat2>;
 
 "#,
     r#"
 /// Adds two 2x2 matrices.
 
     #[lua()]
-    fn add_mat2(&self, #[proxy] rhs: &glam::DMat2) -> bevy::math::DMat2;
+    fn add_mat2(
+        _self: LuaReflectRefProxy<bevy::math::DMat2>,
+        rhs: LuaReflectRefProxy<bevy::math::DMat2>,
+    ) -> LuaReflectValProxy<bevy::math::DMat2>;
 
 "#,
     r#"
 /// Subtracts two 2x2 matrices.
 
     #[lua()]
-    fn sub_mat2(&self, #[proxy] rhs: &glam::DMat2) -> bevy::math::DMat2;
+    fn sub_mat2(
+        _self: LuaReflectRefProxy<bevy::math::DMat2>,
+        rhs: LuaReflectRefProxy<bevy::math::DMat2>,
+    ) -> LuaReflectValProxy<bevy::math::DMat2>;
 
 "#,
     r#"
 /// Multiplies a 2x2 matrix by a scalar.
 
     #[lua()]
-    fn mul_scalar(&self, rhs: f64) -> bevy::math::DMat2;
+    fn mul_scalar(
+        _self: LuaReflectRefProxy<bevy::math::DMat2>,
+        rhs: f64,
+    ) -> LuaReflectValProxy<bevy::math::DMat2>;
 
 "#,
     r#"
@@ -15846,31 +18847,46 @@ pub struct LuaMat4 {
 /// [comparing floating point numbers](https://randomascii.wordpress.com/2012/02/25/comparing-floating-point-numbers-2012-edition/).
 
     #[lua()]
-    fn abs_diff_eq(&self, #[proxy] rhs: bevy::math::DMat2, max_abs_diff: f64) -> bool;
+    fn abs_diff_eq(
+        _self: LuaReflectRefProxy<bevy::math::DMat2>,
+        rhs: LuaReflectValProxy<bevy::math::DMat2>,
+        max_abs_diff: f64,
+    ) -> bool;
 
 "#,
     r#"
 
     #[lua()]
-    fn as_mat2(&self) -> bevy::math::Mat2;
+    fn as_mat2(
+        _self: LuaReflectRefProxy<bevy::math::DMat2>,
+    ) -> LuaReflectValProxy<bevy::math::Mat2>;
 
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Mul", composite = "mul")]
-    fn mul(self, rhs: f64) -> bevy::math::DMat2;
+    #[lua(as_trait = "std::ops::Mul::<f64>", composite = "mul")]
+    fn mul(
+        _self: LuaReflectValProxy<bevy::math::DMat2>,
+        rhs: f64,
+    ) -> LuaReflectValProxy<bevy::math::DMat2>;
 
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Sub", composite = "sub")]
-    fn sub(self, #[proxy] rhs: bevy::math::DMat2) -> bevy::math::DMat2;
+    #[lua(as_trait = "std::ops::Sub::<bevy::math::DMat2>", composite = "sub")]
+    fn sub(
+        _self: LuaReflectValProxy<bevy::math::DMat2>,
+        rhs: LuaReflectValProxy<bevy::math::DMat2>,
+    ) -> LuaReflectValProxy<bevy::math::DMat2>;
 
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Add", composite = "add")]
-    fn add(self, #[proxy] rhs: bevy::math::DMat2) -> bevy::math::DMat2;
+    #[lua(as_trait = "std::ops::Add::<bevy::math::DMat2>", composite = "add")]
+    fn add(
+        _self: LuaReflectValProxy<bevy::math::DMat2>,
+        rhs: LuaReflectValProxy<bevy::math::DMat2>,
+    ) -> LuaReflectValProxy<bevy::math::DMat2>;
 
 "#,
     r#"
@@ -15880,34 +18896,28 @@ fn index(&self) -> String {
 }
 "#,
     r#"
-#[lua(raw, metamethod="Index")]
-fn index(&self, ctx : &Lua, idx: crate::lua::util::LuaIndex) -> Result<LuaDVec2,_> {
-    Ok(LuaDVec2::new_ref(
-            _self.reflect_ref(ctx.get_world()?).sub_ref(bevy_script_api::ReflectionPathElement::SubReflection{
-                label:"col", 
-                get: std::sync::Arc::new(|ref_| Err(bevy_script_api::error::ReflectionError::InsufficientProvenance{
-                    path: "".to_owned(), 
-                    msg: "Cannot get column of matrix with immutable reference".to_owned()
-                })),
-                get_mut: std::sync::Arc::new(move |ref_| {
-                    if ref_.is::<bevy::math::DMat2>(){
-                        Ok(ref_.downcast_mut::<bevy::math::DMat2>()
-                            .unwrap()
-                            .col_mut(*idx))
-                    } else {
-                        Err(bevy_script_api::error::ReflectionError::CannotDowncast{from: ref_.get_represented_type_info().unwrap().type_path().into(), to:"Mat3".into()})
-                    }	
-                })
-            })
-        )
-    )
+#[lua(metamethod="Index")]
+fn index(_self: IdentityProxy<Self>, idx: usize) -> IdentityProxy<LuaDVec2> {
+    let mut curr_ref = _self.0.clone();
+    let def_ref = bevy_mod_scripting_core::bindings::DeferredReflection{
+        get: std::sync::Arc::new(|ref_| Err(bevy::reflect::ReflectPathError::InvalidDowncast)),
+        get_mut: std::sync::Arc::new(move |ref_| {
+            if ref_.is::<bevy::math::DMat2>(){
+                Ok(ref_.downcast_mut::<bevy::math::DMat2>()
+                    .unwrap()
+                    .col_mut(idx - 1))
+            } else {
+                Err(bevy::reflect::ReflectPathError::InvalidDowncast)
+            }	
+        })
+    };
+    curr_ref.reflect_path.push(bevy_mod_scripting_core::bindings::ReflectionPathElem::new_deferred(def_ref));
+    LuaDVec2(curr_ref)
 }
 "#]
 )]
-pub struct LuaDMat2 {
-    #[lua(output(proxy))]
+pub struct DMat2 {
     x_axis: bevy::math::DVec2,
-    #[lua(output(proxy))]
     y_axis: bevy::math::DVec2,
 }
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
@@ -15917,8 +18927,11 @@ pub struct LuaDMat2 {
     bms_lua_path = "crate",
     functions[r#"
 
-    #[lua(as_trait = "std::ops::Mul", composite = "mul")]
-    fn mul(self, #[proxy] rhs: bevy::math::DMat3) -> bevy::math::DMat3;
+    #[lua(as_trait = "std::ops::Mul::<bevy::math::DMat3>", composite = "mul")]
+    fn mul(
+        _self: LuaReflectValProxy<bevy::math::DMat3>,
+        rhs: LuaReflectValProxy<bevy::math::DMat3>,
+    ) -> LuaReflectValProxy<bevy::math::DMat3>;
 
 "#,
     r#"
@@ -15926,13 +18939,10 @@ pub struct LuaDMat2 {
 
     #[lua()]
     fn from_cols(
-        #[proxy]
-        x_axis: bevy::math::DVec3,
-        #[proxy]
-        y_axis: bevy::math::DVec3,
-        #[proxy]
-        z_axis: bevy::math::DVec3,
-    ) -> bevy::math::DMat3;
+        x_axis: LuaReflectValProxy<bevy::math::DVec3>,
+        y_axis: LuaReflectValProxy<bevy::math::DVec3>,
+        z_axis: LuaReflectValProxy<bevy::math::DVec3>,
+    ) -> LuaReflectValProxy<bevy::math::DMat3>;
 
 "#,
     r#"
@@ -15940,7 +18950,7 @@ pub struct LuaDMat2 {
 /// If you require data in row major order `transpose` the matrix first.
 
     #[lua()]
-    fn to_cols_array(&self) -> [f64; 9];
+    fn to_cols_array(_self: LuaReflectRefProxy<bevy::math::DMat3>) -> [f64; 9];
 
 "#,
     r#"
@@ -15948,21 +18958,25 @@ pub struct LuaDMat2 {
 /// If you require data in row major order `transpose` the matrix first.
 
     #[lua()]
-    fn to_cols_array_2d(&self) -> [[f64; 3]; 3];
+    fn to_cols_array_2d(_self: LuaReflectRefProxy<bevy::math::DMat3>) -> [[f64; 3]; 3];
 
 "#,
     r#"
 /// Creates a 3x3 matrix with its diagonal set to `diagonal` and all other entries set to 0.
 
     #[lua()]
-    fn from_diagonal(#[proxy] diagonal: bevy::math::DVec3) -> bevy::math::DMat3;
+    fn from_diagonal(
+        diagonal: LuaReflectValProxy<bevy::math::DVec3>,
+    ) -> LuaReflectValProxy<bevy::math::DMat3>;
 
 "#,
     r#"
 /// Creates a 3x3 matrix from a 4x4 matrix, discarding the 4th row and column.
 
     #[lua()]
-    fn from_mat4(#[proxy] m: bevy::math::DMat4) -> bevy::math::DMat3;
+    fn from_mat4(
+        m: LuaReflectValProxy<bevy::math::DMat4>,
+    ) -> LuaReflectValProxy<bevy::math::DMat3>;
 
 "#,
     r#"
@@ -15971,7 +18985,9 @@ pub struct LuaDMat2 {
 /// Will panic if `rotation` is not normalized when `glam_assert` is enabled.
 
     #[lua()]
-    fn from_quat(#[proxy] rotation: bevy::math::DQuat) -> bevy::math::DMat3;
+    fn from_quat(
+        rotation: LuaReflectValProxy<bevy::math::DQuat>,
+    ) -> LuaReflectValProxy<bevy::math::DMat3>;
 
 "#,
     r#"
@@ -15982,10 +18998,9 @@ pub struct LuaDMat2 {
 
     #[lua()]
     fn from_axis_angle(
-        #[proxy]
-        axis: bevy::math::DVec3,
+        axis: LuaReflectValProxy<bevy::math::DVec3>,
         angle: f64,
-    ) -> bevy::math::DMat3;
+    ) -> LuaReflectValProxy<bevy::math::DMat3>;
 
 "#,
     r#"
@@ -15994,33 +19009,32 @@ pub struct LuaDMat2 {
 
     #[lua()]
     fn from_euler(
-        #[proxy]
-        order: bevy::math::EulerRot,
+        order: LuaReflectValProxy<bevy::math::EulerRot>,
         a: f64,
         b: f64,
         c: f64,
-    ) -> bevy::math::DMat3;
+    ) -> LuaReflectValProxy<bevy::math::DMat3>;
 
 "#,
     r#"
 /// Creates a 3D rotation matrix from `angle` (in radians) around the x axis.
 
     #[lua()]
-    fn from_rotation_x(angle: f64) -> bevy::math::DMat3;
+    fn from_rotation_x(angle: f64) -> LuaReflectValProxy<bevy::math::DMat3>;
 
 "#,
     r#"
 /// Creates a 3D rotation matrix from `angle` (in radians) around the y axis.
 
     #[lua()]
-    fn from_rotation_y(angle: f64) -> bevy::math::DMat3;
+    fn from_rotation_y(angle: f64) -> LuaReflectValProxy<bevy::math::DMat3>;
 
 "#,
     r#"
 /// Creates a 3D rotation matrix from `angle` (in radians) around the z axis.
 
     #[lua()]
-    fn from_rotation_z(angle: f64) -> bevy::math::DMat3;
+    fn from_rotation_z(angle: f64) -> LuaReflectValProxy<bevy::math::DMat3>;
 
 "#,
     r#"
@@ -16029,7 +19043,9 @@ pub struct LuaDMat2 {
 /// [`Self::transform_point2()`] and [`Self::transform_vector2()`].
 
     #[lua()]
-    fn from_translation(#[proxy] translation: bevy::math::DVec2) -> bevy::math::DMat3;
+    fn from_translation(
+        translation: LuaReflectValProxy<bevy::math::DVec2>,
+    ) -> LuaReflectValProxy<bevy::math::DMat3>;
 
 "#,
     r#"
@@ -16039,7 +19055,7 @@ pub struct LuaDMat2 {
 /// [`Self::transform_point2()`] and [`Self::transform_vector2()`].
 
     #[lua()]
-    fn from_angle(angle: f64) -> bevy::math::DMat3;
+    fn from_angle(angle: f64) -> LuaReflectValProxy<bevy::math::DMat3>;
 
 "#,
     r#"
@@ -16050,12 +19066,10 @@ pub struct LuaDMat2 {
 
     #[lua()]
     fn from_scale_angle_translation(
-        #[proxy]
-        scale: bevy::math::DVec2,
+        scale: LuaReflectValProxy<bevy::math::DVec2>,
         angle: f64,
-        #[proxy]
-        translation: bevy::math::DVec2,
-    ) -> bevy::math::DMat3;
+        translation: LuaReflectValProxy<bevy::math::DVec2>,
+    ) -> LuaReflectValProxy<bevy::math::DMat3>;
 
 "#,
     r#"
@@ -16066,7 +19080,9 @@ pub struct LuaDMat2 {
 /// Will panic if all elements of `scale` are zero when `glam_assert` is enabled.
 
     #[lua()]
-    fn from_scale(#[proxy] scale: bevy::math::DVec2) -> bevy::math::DMat3;
+    fn from_scale(
+        scale: LuaReflectValProxy<bevy::math::DVec2>,
+    ) -> LuaReflectValProxy<bevy::math::DMat3>;
 
 "#,
     r#"
@@ -16075,7 +19091,9 @@ pub struct LuaDMat2 {
 /// [`Self::transform_point2()`] and [`Self::transform_vector2()`].
 
     #[lua()]
-    fn from_mat2(#[proxy] m: bevy::math::DMat2) -> bevy::math::DMat3;
+    fn from_mat2(
+        m: LuaReflectValProxy<bevy::math::DMat2>,
+    ) -> LuaReflectValProxy<bevy::math::DMat3>;
 
 "#,
     r#"
@@ -16084,7 +19102,10 @@ pub struct LuaDMat2 {
 /// Panics if `index` is greater than 2.
 
     #[lua()]
-    fn col(&self, index: usize) -> bevy::math::DVec3;
+    fn col(
+        _self: LuaReflectRefProxy<bevy::math::DMat3>,
+        index: usize,
+    ) -> LuaReflectValProxy<bevy::math::DVec3>;
 
 "#,
     r#"
@@ -16093,7 +19114,10 @@ pub struct LuaDMat2 {
 /// Panics if `index` is greater than 2.
 
     #[lua()]
-    fn row(&self, index: usize) -> bevy::math::DVec3;
+    fn row(
+        _self: LuaReflectRefProxy<bevy::math::DMat3>,
+        index: usize,
+    ) -> LuaReflectValProxy<bevy::math::DVec3>;
 
 "#,
     r#"
@@ -16101,28 +19125,30 @@ pub struct LuaDMat2 {
 /// If any element is either `NaN`, positive or negative infinity, this will return `false`.
 
     #[lua()]
-    fn is_finite(&self) -> bool;
+    fn is_finite(_self: LuaReflectRefProxy<bevy::math::DMat3>) -> bool;
 
 "#,
     r#"
 /// Returns `true` if any elements are `NaN`.
 
     #[lua()]
-    fn is_nan(&self) -> bool;
+    fn is_nan(_self: LuaReflectRefProxy<bevy::math::DMat3>) -> bool;
 
 "#,
     r#"
 /// Returns the transpose of `self`.
 
     #[lua()]
-    fn transpose(&self) -> bevy::math::DMat3;
+    fn transpose(
+        _self: LuaReflectRefProxy<bevy::math::DMat3>,
+    ) -> LuaReflectValProxy<bevy::math::DMat3>;
 
 "#,
     r#"
 /// Returns the determinant of `self`.
 
     #[lua()]
-    fn determinant(&self) -> f64;
+    fn determinant(_self: LuaReflectRefProxy<bevy::math::DMat3>) -> f64;
 
 "#,
     r#"
@@ -16132,7 +19158,9 @@ pub struct LuaDMat2 {
 /// Will panic if the determinant of `self` is zero when `glam_assert` is enabled.
 
     #[lua()]
-    fn inverse(&self) -> bevy::math::DMat3;
+    fn inverse(
+        _self: LuaReflectRefProxy<bevy::math::DMat3>,
+    ) -> LuaReflectValProxy<bevy::math::DMat3>;
 
 "#,
     r#"
@@ -16143,7 +19171,10 @@ pub struct LuaDMat2 {
 /// Will panic if the 2nd row of `self` is not `(0, 0, 1)` when `glam_assert` is enabled.
 
     #[lua()]
-    fn transform_point2(&self, #[proxy] rhs: bevy::math::DVec2) -> bevy::math::DVec2;
+    fn transform_point2(
+        _self: LuaReflectRefProxy<bevy::math::DMat3>,
+        rhs: LuaReflectValProxy<bevy::math::DVec2>,
+    ) -> LuaReflectValProxy<bevy::math::DVec2>;
 
 "#,
     r#"
@@ -16154,42 +19185,60 @@ pub struct LuaDMat2 {
 /// Will panic if the 2nd row of `self` is not `(0, 0, 1)` when `glam_assert` is enabled.
 
     #[lua()]
-    fn transform_vector2(&self, #[proxy] rhs: bevy::math::DVec2) -> bevy::math::DVec2;
+    fn transform_vector2(
+        _self: LuaReflectRefProxy<bevy::math::DMat3>,
+        rhs: LuaReflectValProxy<bevy::math::DVec2>,
+    ) -> LuaReflectValProxy<bevy::math::DVec2>;
 
 "#,
     r#"
 /// Transforms a 3D vector.
 
     #[lua()]
-    fn mul_vec3(&self, #[proxy] rhs: bevy::math::DVec3) -> bevy::math::DVec3;
+    fn mul_vec3(
+        _self: LuaReflectRefProxy<bevy::math::DMat3>,
+        rhs: LuaReflectValProxy<bevy::math::DVec3>,
+    ) -> LuaReflectValProxy<bevy::math::DVec3>;
 
 "#,
     r#"
 /// Multiplies two 3x3 matrices.
 
     #[lua()]
-    fn mul_mat3(&self, #[proxy] rhs: &glam::DMat3) -> bevy::math::DMat3;
+    fn mul_mat3(
+        _self: LuaReflectRefProxy<bevy::math::DMat3>,
+        rhs: LuaReflectRefProxy<bevy::math::DMat3>,
+    ) -> LuaReflectValProxy<bevy::math::DMat3>;
 
 "#,
     r#"
 /// Adds two 3x3 matrices.
 
     #[lua()]
-    fn add_mat3(&self, #[proxy] rhs: &glam::DMat3) -> bevy::math::DMat3;
+    fn add_mat3(
+        _self: LuaReflectRefProxy<bevy::math::DMat3>,
+        rhs: LuaReflectRefProxy<bevy::math::DMat3>,
+    ) -> LuaReflectValProxy<bevy::math::DMat3>;
 
 "#,
     r#"
 /// Subtracts two 3x3 matrices.
 
     #[lua()]
-    fn sub_mat3(&self, #[proxy] rhs: &glam::DMat3) -> bevy::math::DMat3;
+    fn sub_mat3(
+        _self: LuaReflectRefProxy<bevy::math::DMat3>,
+        rhs: LuaReflectRefProxy<bevy::math::DMat3>,
+    ) -> LuaReflectValProxy<bevy::math::DMat3>;
 
 "#,
     r#"
 /// Multiplies a 3x3 matrix by a scalar.
 
     #[lua()]
-    fn mul_scalar(&self, rhs: f64) -> bevy::math::DMat3;
+    fn mul_scalar(
+        _self: LuaReflectRefProxy<bevy::math::DMat3>,
+        rhs: f64,
+    ) -> LuaReflectValProxy<bevy::math::DMat3>;
 
 "#,
     r#"
@@ -16202,61 +19251,89 @@ pub struct LuaDMat2 {
 /// [comparing floating point numbers](https://randomascii.wordpress.com/2012/02/25/comparing-floating-point-numbers-2012-edition/).
 
     #[lua()]
-    fn abs_diff_eq(&self, #[proxy] rhs: bevy::math::DMat3, max_abs_diff: f64) -> bool;
+    fn abs_diff_eq(
+        _self: LuaReflectRefProxy<bevy::math::DMat3>,
+        rhs: LuaReflectValProxy<bevy::math::DMat3>,
+        max_abs_diff: f64,
+    ) -> bool;
 
 "#,
     r#"
 
     #[lua()]
-    fn as_mat3(&self) -> bevy::math::Mat3;
+    fn as_mat3(
+        _self: LuaReflectRefProxy<bevy::math::DMat3>,
+    ) -> LuaReflectValProxy<bevy::math::Mat3>;
 
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Sub", composite = "sub")]
-    fn sub(self, #[proxy] rhs: bevy::math::DMat3) -> bevy::math::DMat3;
+    #[lua(as_trait = "std::ops::Sub::<bevy::math::DMat3>", composite = "sub")]
+    fn sub(
+        _self: LuaReflectValProxy<bevy::math::DMat3>,
+        rhs: LuaReflectValProxy<bevy::math::DMat3>,
+    ) -> LuaReflectValProxy<bevy::math::DMat3>;
 
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Mul", composite = "mul")]
-    fn mul(self, #[proxy] rhs: bevy::math::DVec3) -> bevy::math::DVec3;
+    #[lua(as_trait = "std::ops::Mul::<bevy::math::DVec3>", composite = "mul")]
+    fn mul(
+        _self: LuaReflectValProxy<bevy::math::DMat3>,
+        rhs: LuaReflectValProxy<bevy::math::DVec3>,
+    ) -> LuaReflectValProxy<bevy::math::DVec3>;
 
 "#,
     r#"
 
     #[lua(as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone")]
-    fn clone(&self) -> bevy::math::DMat3;
+    fn clone(
+        _self: LuaReflectRefProxy<bevy::math::DMat3>,
+    ) -> LuaReflectValProxy<bevy::math::DMat3>;
 
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Add", composite = "add")]
-    fn add(self, #[proxy] rhs: bevy::math::DMat3) -> bevy::math::DMat3;
+    #[lua(as_trait = "std::ops::Add::<bevy::math::DMat3>", composite = "add")]
+    fn add(
+        _self: LuaReflectValProxy<bevy::math::DMat3>,
+        rhs: LuaReflectValProxy<bevy::math::DMat3>,
+    ) -> LuaReflectValProxy<bevy::math::DMat3>;
 
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Mul", composite = "mul")]
-    fn mul(self, rhs: f64) -> bevy::math::DMat3;
+    #[lua(as_trait = "std::ops::Mul::<f64>", composite = "mul")]
+    fn mul(
+        _self: LuaReflectValProxy<bevy::math::DMat3>,
+        rhs: f64,
+    ) -> LuaReflectValProxy<bevy::math::DMat3>;
 
 "#,
     r#"
 
     #[lua(as_trait = "std::ops::Neg", composite = "neg")]
-    fn neg(self) -> bevy::math::DMat3;
+    fn neg(
+        _self: LuaReflectValProxy<bevy::math::DMat3>,
+    ) -> LuaReflectValProxy<bevy::math::DMat3>;
 
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Mul", composite = "mul")]
-    fn mul(self, #[proxy] rhs: bevy::math::DAffine2) -> bevy::math::DMat3;
+    #[lua(as_trait = "std::ops::Mul::<bevy::math::DAffine2>", composite = "mul")]
+    fn mul(
+        _self: LuaReflectValProxy<bevy::math::DMat3>,
+        rhs: LuaReflectValProxy<bevy::math::DAffine2>,
+    ) -> LuaReflectValProxy<bevy::math::DMat3>;
 
 "#,
     r#"
 
-    #[lua(as_trait = "std::cmp::PartialEq", composite = "eq")]
-    fn eq(&self, #[proxy] rhs: &glam::DMat3) -> bool;
+    #[lua(as_trait = "std::cmp::PartialEq::<bevy::math::DMat3>", composite = "eq")]
+    fn eq(
+        _self: LuaReflectRefProxy<bevy::math::DMat3>,
+        rhs: LuaReflectRefProxy<bevy::math::DMat3>,
+    ) -> bool;
 
 "#,
     r#"
@@ -16266,36 +19343,29 @@ fn index(&self) -> String {
 }
 "#,
     r#"
-#[lua(raw, metamethod="Index")]
-fn index(&self, ctx : &Lua, idx: crate::lua::util::LuaIndex) -> Result<LuaDVec3,_> {
-    Ok(LuaDVec3::new_ref(
-            _self.reflect_ref(ctx.get_world()?).sub_ref(bevy_script_api::ReflectionPathElement::SubReflection{
-                label:"col", 
-                get: std::sync::Arc::new(|ref_| Err(bevy_script_api::error::ReflectionError::InsufficientProvenance{
-                    path: "".to_owned(), 
-                    msg: "Cannot get column of matrix with immutable reference".to_owned()
-                })),
-                get_mut: std::sync::Arc::new(move |ref_| {
-                    if ref_.is::<bevy::math::DMat3>(){
-                        Ok(ref_.downcast_mut::<bevy::math::DMat3>()
-                            .unwrap()
-                            .col_mut(*idx))
-                    } else {
-                        Err(bevy_script_api::error::ReflectionError::CannotDowncast{from: ref_.get_represented_type_info().unwrap().type_path().into(), to:"Mat3".into()})
-                    }	
-                })
-            })
-        )
-    )
+#[lua(metamethod="Index")]
+fn index(_self: IdentityProxy<Self>, idx: usize) -> IdentityProxy<LuaDVec3> {
+    let mut curr_ref = _self.0.clone();
+    let def_ref = bevy_mod_scripting_core::bindings::DeferredReflection{
+        get: std::sync::Arc::new(|ref_| Err(bevy::reflect::ReflectPathError::InvalidDowncast)),
+        get_mut: std::sync::Arc::new(move |ref_| {
+            if ref_.is::<bevy::math::DMat3>(){
+                Ok(ref_.downcast_mut::<bevy::math::DMat3>()
+                    .unwrap()
+                    .col_mut(idx - 1))
+            } else {
+                Err(bevy::reflect::ReflectPathError::InvalidDowncast)
+            }	
+        })
+    };
+    curr_ref.reflect_path.push(bevy_mod_scripting_core::bindings::ReflectionPathElem::new_deferred(def_ref));
+    LuaDVec3(curr_ref)
 }
 "#]
 )]
-pub struct LuaDMat3 {
-    #[lua(output(proxy))]
+pub struct DMat3 {
     x_axis: bevy::math::DVec3,
-    #[lua(output(proxy))]
     y_axis: bevy::math::DVec3,
-    #[lua(output(proxy))]
     z_axis: bevy::math::DVec3,
 }
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
@@ -16305,38 +19375,55 @@ pub struct LuaDMat3 {
     bms_lua_path = "crate",
     functions[r#"
 
-    #[lua(as_trait = "std::ops::Mul", composite = "mul")]
-    fn mul(self, #[proxy] rhs: bevy::math::DAffine3) -> bevy::math::DMat4;
+    #[lua(as_trait = "std::ops::Mul::<bevy::math::DAffine3>", composite = "mul")]
+    fn mul(
+        _self: LuaReflectValProxy<bevy::math::DMat4>,
+        rhs: LuaReflectValProxy<bevy::math::DAffine3>,
+    ) -> LuaReflectValProxy<bevy::math::DMat4>;
 
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Add", composite = "add")]
-    fn add(self, #[proxy] rhs: bevy::math::DMat4) -> bevy::math::DMat4;
+    #[lua(as_trait = "std::ops::Add::<bevy::math::DMat4>", composite = "add")]
+    fn add(
+        _self: LuaReflectValProxy<bevy::math::DMat4>,
+        rhs: LuaReflectValProxy<bevy::math::DMat4>,
+    ) -> LuaReflectValProxy<bevy::math::DMat4>;
 
 "#,
     r#"
 
     #[lua(as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone")]
-    fn clone(&self) -> bevy::math::DMat4;
+    fn clone(
+        _self: LuaReflectRefProxy<bevy::math::DMat4>,
+    ) -> LuaReflectValProxy<bevy::math::DMat4>;
 
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Mul", composite = "mul")]
-    fn mul(self, #[proxy] rhs: bevy::math::DMat4) -> bevy::math::DMat4;
+    #[lua(as_trait = "std::ops::Mul::<bevy::math::DMat4>", composite = "mul")]
+    fn mul(
+        _self: LuaReflectValProxy<bevy::math::DMat4>,
+        rhs: LuaReflectValProxy<bevy::math::DMat4>,
+    ) -> LuaReflectValProxy<bevy::math::DMat4>;
 
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Mul", composite = "mul")]
-    fn mul(self, #[proxy] rhs: bevy::math::DVec4) -> bevy::math::DVec4;
+    #[lua(as_trait = "std::ops::Mul::<bevy::math::DVec4>", composite = "mul")]
+    fn mul(
+        _self: LuaReflectValProxy<bevy::math::DMat4>,
+        rhs: LuaReflectValProxy<bevy::math::DVec4>,
+    ) -> LuaReflectValProxy<bevy::math::DVec4>;
 
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Sub", composite = "sub")]
-    fn sub(self, #[proxy] rhs: bevy::math::DMat4) -> bevy::math::DMat4;
+    #[lua(as_trait = "std::ops::Sub::<bevy::math::DMat4>", composite = "sub")]
+    fn sub(
+        _self: LuaReflectValProxy<bevy::math::DMat4>,
+        rhs: LuaReflectValProxy<bevy::math::DMat4>,
+    ) -> LuaReflectValProxy<bevy::math::DMat4>;
 
 "#,
     r#"
@@ -16344,15 +19431,11 @@ pub struct LuaDMat3 {
 
     #[lua()]
     fn from_cols(
-        #[proxy]
-        x_axis: bevy::math::DVec4,
-        #[proxy]
-        y_axis: bevy::math::DVec4,
-        #[proxy]
-        z_axis: bevy::math::DVec4,
-        #[proxy]
-        w_axis: bevy::math::DVec4,
-    ) -> bevy::math::DMat4;
+        x_axis: LuaReflectValProxy<bevy::math::DVec4>,
+        y_axis: LuaReflectValProxy<bevy::math::DVec4>,
+        z_axis: LuaReflectValProxy<bevy::math::DVec4>,
+        w_axis: LuaReflectValProxy<bevy::math::DVec4>,
+    ) -> LuaReflectValProxy<bevy::math::DMat4>;
 
 "#,
     r#"
@@ -16360,7 +19443,7 @@ pub struct LuaDMat3 {
 /// If you require data in row major order `transpose` the matrix first.
 
     #[lua()]
-    fn to_cols_array(&self) -> [f64; 16];
+    fn to_cols_array(_self: LuaReflectRefProxy<bevy::math::DMat4>) -> [f64; 16];
 
 "#,
     r#"
@@ -16368,14 +19451,16 @@ pub struct LuaDMat3 {
 /// If you require data in row major order `transpose` the matrix first.
 
     #[lua()]
-    fn to_cols_array_2d(&self) -> [[f64; 4]; 4];
+    fn to_cols_array_2d(_self: LuaReflectRefProxy<bevy::math::DMat4>) -> [[f64; 4]; 4];
 
 "#,
     r#"
 /// Creates a 4x4 matrix with its diagonal set to `diagonal` and all other entries set to 0.
 
     #[lua()]
-    fn from_diagonal(#[proxy] diagonal: bevy::math::DVec4) -> bevy::math::DMat4;
+    fn from_diagonal(
+        diagonal: LuaReflectValProxy<bevy::math::DVec4>,
+    ) -> LuaReflectValProxy<bevy::math::DMat4>;
 
 "#,
     r#"
@@ -16388,13 +19473,10 @@ pub struct LuaDMat3 {
 
     #[lua()]
     fn from_scale_rotation_translation(
-        #[proxy]
-        scale: bevy::math::DVec3,
-        #[proxy]
-        rotation: bevy::math::DQuat,
-        #[proxy]
-        translation: bevy::math::DVec3,
-    ) -> bevy::math::DMat4;
+        scale: LuaReflectValProxy<bevy::math::DVec3>,
+        rotation: LuaReflectValProxy<bevy::math::DQuat>,
+        translation: LuaReflectValProxy<bevy::math::DVec3>,
+    ) -> LuaReflectValProxy<bevy::math::DMat4>;
 
 "#,
     r#"
@@ -16406,11 +19488,9 @@ pub struct LuaDMat3 {
 
     #[lua()]
     fn from_rotation_translation(
-        #[proxy]
-        rotation: bevy::math::DQuat,
-        #[proxy]
-        translation: bevy::math::DVec3,
-    ) -> bevy::math::DMat4;
+        rotation: LuaReflectValProxy<bevy::math::DQuat>,
+        translation: LuaReflectValProxy<bevy::math::DVec3>,
+    ) -> LuaReflectValProxy<bevy::math::DMat4>;
 
 "#,
     r#"
@@ -16421,7 +19501,9 @@ pub struct LuaDMat3 {
 /// Will panic if `rotation` is not normalized when `glam_assert` is enabled.
 
     #[lua()]
-    fn from_quat(#[proxy] rotation: bevy::math::DQuat) -> bevy::math::DMat4;
+    fn from_quat(
+        rotation: LuaReflectValProxy<bevy::math::DQuat>,
+    ) -> LuaReflectValProxy<bevy::math::DMat4>;
 
 "#,
     r#"
@@ -16431,7 +19513,9 @@ pub struct LuaDMat3 {
 /// [`Self::transform_point3()`] and [`Self::transform_vector3()`].
 
     #[lua()]
-    fn from_mat3(#[proxy] m: bevy::math::DMat3) -> bevy::math::DMat4;
+    fn from_mat3(
+        m: LuaReflectValProxy<bevy::math::DMat3>,
+    ) -> LuaReflectValProxy<bevy::math::DMat4>;
 
 "#,
     r#"
@@ -16440,7 +19524,9 @@ pub struct LuaDMat3 {
 /// [`Self::transform_point3()`] and [`Self::transform_vector3()`].
 
     #[lua()]
-    fn from_translation(#[proxy] translation: bevy::math::DVec3) -> bevy::math::DMat4;
+    fn from_translation(
+        translation: LuaReflectValProxy<bevy::math::DVec3>,
+    ) -> LuaReflectValProxy<bevy::math::DMat4>;
 
 "#,
     r#"
@@ -16453,10 +19539,9 @@ pub struct LuaDMat3 {
 
     #[lua()]
     fn from_axis_angle(
-        #[proxy]
-        axis: bevy::math::DVec3,
+        axis: LuaReflectValProxy<bevy::math::DVec3>,
         angle: f64,
-    ) -> bevy::math::DMat4;
+    ) -> LuaReflectValProxy<bevy::math::DMat4>;
 
 "#,
     r#"
@@ -16467,12 +19552,11 @@ pub struct LuaDMat3 {
 
     #[lua()]
     fn from_euler(
-        #[proxy]
-        order: bevy::math::EulerRot,
+        order: LuaReflectValProxy<bevy::math::EulerRot>,
         a: f64,
         b: f64,
         c: f64,
-    ) -> bevy::math::DMat4;
+    ) -> LuaReflectValProxy<bevy::math::DMat4>;
 
 "#,
     r#"
@@ -16482,7 +19566,7 @@ pub struct LuaDMat3 {
 /// [`Self::transform_point3()`] and [`Self::transform_vector3()`].
 
     #[lua()]
-    fn from_rotation_x(angle: f64) -> bevy::math::DMat4;
+    fn from_rotation_x(angle: f64) -> LuaReflectValProxy<bevy::math::DMat4>;
 
 "#,
     r#"
@@ -16492,7 +19576,7 @@ pub struct LuaDMat3 {
 /// [`Self::transform_point3()`] and [`Self::transform_vector3()`].
 
     #[lua()]
-    fn from_rotation_y(angle: f64) -> bevy::math::DMat4;
+    fn from_rotation_y(angle: f64) -> LuaReflectValProxy<bevy::math::DMat4>;
 
 "#,
     r#"
@@ -16502,7 +19586,7 @@ pub struct LuaDMat3 {
 /// [`Self::transform_point3()`] and [`Self::transform_vector3()`].
 
     #[lua()]
-    fn from_rotation_z(angle: f64) -> bevy::math::DMat4;
+    fn from_rotation_z(angle: f64) -> LuaReflectValProxy<bevy::math::DMat4>;
 
 "#,
     r#"
@@ -16513,7 +19597,9 @@ pub struct LuaDMat3 {
 /// Will panic if all elements of `scale` are zero when `glam_assert` is enabled.
 
     #[lua()]
-    fn from_scale(#[proxy] scale: bevy::math::DVec3) -> bevy::math::DMat4;
+    fn from_scale(
+        scale: LuaReflectValProxy<bevy::math::DVec3>,
+    ) -> LuaReflectValProxy<bevy::math::DMat4>;
 
 "#,
     r#"
@@ -16522,7 +19608,10 @@ pub struct LuaDMat3 {
 /// Panics if `index` is greater than 3.
 
     #[lua()]
-    fn col(&self, index: usize) -> bevy::math::DVec4;
+    fn col(
+        _self: LuaReflectRefProxy<bevy::math::DMat4>,
+        index: usize,
+    ) -> LuaReflectValProxy<bevy::math::DVec4>;
 
 "#,
     r#"
@@ -16531,7 +19620,10 @@ pub struct LuaDMat3 {
 /// Panics if `index` is greater than 3.
 
     #[lua()]
-    fn row(&self, index: usize) -> bevy::math::DVec4;
+    fn row(
+        _self: LuaReflectRefProxy<bevy::math::DMat4>,
+        index: usize,
+    ) -> LuaReflectValProxy<bevy::math::DVec4>;
 
 "#,
     r#"
@@ -16539,28 +19631,30 @@ pub struct LuaDMat3 {
 /// If any element is either `NaN`, positive or negative infinity, this will return `false`.
 
     #[lua()]
-    fn is_finite(&self) -> bool;
+    fn is_finite(_self: LuaReflectRefProxy<bevy::math::DMat4>) -> bool;
 
 "#,
     r#"
 /// Returns `true` if any elements are `NaN`.
 
     #[lua()]
-    fn is_nan(&self) -> bool;
+    fn is_nan(_self: LuaReflectRefProxy<bevy::math::DMat4>) -> bool;
 
 "#,
     r#"
 /// Returns the transpose of `self`.
 
     #[lua()]
-    fn transpose(&self) -> bevy::math::DMat4;
+    fn transpose(
+        _self: LuaReflectRefProxy<bevy::math::DMat4>,
+    ) -> LuaReflectValProxy<bevy::math::DMat4>;
 
 "#,
     r#"
 /// Returns the determinant of `self`.
 
     #[lua()]
-    fn determinant(&self) -> f64;
+    fn determinant(_self: LuaReflectRefProxy<bevy::math::DMat4>) -> f64;
 
 "#,
     r#"
@@ -16570,7 +19664,9 @@ pub struct LuaDMat3 {
 /// Will panic if the determinant of `self` is zero when `glam_assert` is enabled.
 
     #[lua()]
-    fn inverse(&self) -> bevy::math::DMat4;
+    fn inverse(
+        _self: LuaReflectRefProxy<bevy::math::DMat4>,
+    ) -> LuaReflectValProxy<bevy::math::DMat4>;
 
 "#,
     r#"
@@ -16580,13 +19676,10 @@ pub struct LuaDMat3 {
 
     #[lua()]
     fn look_to_lh(
-        #[proxy]
-        eye: bevy::math::DVec3,
-        #[proxy]
-        dir: bevy::math::DVec3,
-        #[proxy]
-        up: bevy::math::DVec3,
-    ) -> bevy::math::DMat4;
+        eye: LuaReflectValProxy<bevy::math::DVec3>,
+        dir: LuaReflectValProxy<bevy::math::DVec3>,
+        up: LuaReflectValProxy<bevy::math::DVec3>,
+    ) -> LuaReflectValProxy<bevy::math::DMat4>;
 
 "#,
     r#"
@@ -16596,13 +19689,10 @@ pub struct LuaDMat3 {
 
     #[lua()]
     fn look_to_rh(
-        #[proxy]
-        eye: bevy::math::DVec3,
-        #[proxy]
-        dir: bevy::math::DVec3,
-        #[proxy]
-        up: bevy::math::DVec3,
-    ) -> bevy::math::DMat4;
+        eye: LuaReflectValProxy<bevy::math::DVec3>,
+        dir: LuaReflectValProxy<bevy::math::DVec3>,
+        up: LuaReflectValProxy<bevy::math::DVec3>,
+    ) -> LuaReflectValProxy<bevy::math::DMat4>;
 
 "#,
     r#"
@@ -16614,13 +19704,10 @@ pub struct LuaDMat3 {
 
     #[lua()]
     fn look_at_lh(
-        #[proxy]
-        eye: bevy::math::DVec3,
-        #[proxy]
-        center: bevy::math::DVec3,
-        #[proxy]
-        up: bevy::math::DVec3,
-    ) -> bevy::math::DMat4;
+        eye: LuaReflectValProxy<bevy::math::DVec3>,
+        center: LuaReflectValProxy<bevy::math::DVec3>,
+        up: LuaReflectValProxy<bevy::math::DVec3>,
+    ) -> LuaReflectValProxy<bevy::math::DMat4>;
 
 "#,
     r#"
@@ -16632,13 +19719,10 @@ pub struct LuaDMat3 {
 
     #[lua()]
     fn look_at_rh(
-        #[proxy]
-        eye: bevy::math::DVec3,
-        #[proxy]
-        center: bevy::math::DVec3,
-        #[proxy]
-        up: bevy::math::DVec3,
-    ) -> bevy::math::DMat4;
+        eye: LuaReflectValProxy<bevy::math::DVec3>,
+        center: LuaReflectValProxy<bevy::math::DVec3>,
+        up: LuaReflectValProxy<bevy::math::DVec3>,
+    ) -> LuaReflectValProxy<bevy::math::DMat4>;
 
 "#,
     r#"
@@ -16652,7 +19736,7 @@ pub struct LuaDMat3 {
         aspect_ratio: f64,
         z_near: f64,
         z_far: f64,
-    ) -> bevy::math::DMat4;
+    ) -> LuaReflectValProxy<bevy::math::DMat4>;
 
 "#,
     r#"
@@ -16667,7 +19751,7 @@ pub struct LuaDMat3 {
         aspect_ratio: f64,
         z_near: f64,
         z_far: f64,
-    ) -> bevy::math::DMat4;
+    ) -> LuaReflectValProxy<bevy::math::DMat4>;
 
 "#,
     r#"
@@ -16682,7 +19766,7 @@ pub struct LuaDMat3 {
         aspect_ratio: f64,
         z_near: f64,
         z_far: f64,
-    ) -> bevy::math::DMat4;
+    ) -> LuaReflectValProxy<bevy::math::DMat4>;
 
 "#,
     r#"
@@ -16695,7 +19779,7 @@ pub struct LuaDMat3 {
         fov_y_radians: f64,
         aspect_ratio: f64,
         z_near: f64,
-    ) -> bevy::math::DMat4;
+    ) -> LuaReflectValProxy<bevy::math::DMat4>;
 
 "#,
     r#"
@@ -16708,7 +19792,7 @@ pub struct LuaDMat3 {
         fov_y_radians: f64,
         aspect_ratio: f64,
         z_near: f64,
-    ) -> bevy::math::DMat4;
+    ) -> LuaReflectValProxy<bevy::math::DMat4>;
 
 "#,
     r#"
@@ -16720,7 +19804,7 @@ pub struct LuaDMat3 {
         fov_y_radians: f64,
         aspect_ratio: f64,
         z_near: f64,
-    ) -> bevy::math::DMat4;
+    ) -> LuaReflectValProxy<bevy::math::DMat4>;
 
 "#,
     r#"
@@ -16732,7 +19816,7 @@ pub struct LuaDMat3 {
         fov_y_radians: f64,
         aspect_ratio: f64,
         z_near: f64,
-    ) -> bevy::math::DMat4;
+    ) -> LuaReflectValProxy<bevy::math::DMat4>;
 
 "#,
     r#"
@@ -16749,7 +19833,7 @@ pub struct LuaDMat3 {
         top: f64,
         near: f64,
         far: f64,
-    ) -> bevy::math::DMat4;
+    ) -> LuaReflectValProxy<bevy::math::DMat4>;
 
 "#,
     r#"
@@ -16763,7 +19847,7 @@ pub struct LuaDMat3 {
         top: f64,
         near: f64,
         far: f64,
-    ) -> bevy::math::DMat4;
+    ) -> LuaReflectValProxy<bevy::math::DMat4>;
 
 "#,
     r#"
@@ -16777,7 +19861,7 @@ pub struct LuaDMat3 {
         top: f64,
         near: f64,
         far: f64,
-    ) -> bevy::math::DMat4;
+    ) -> LuaReflectValProxy<bevy::math::DMat4>;
 
 "#,
     r#"
@@ -16787,7 +19871,10 @@ pub struct LuaDMat3 {
 /// This method assumes that `self` contains a projective transform.
 
     #[lua()]
-    fn project_point3(&self, #[proxy] rhs: bevy::math::DVec3) -> bevy::math::DVec3;
+    fn project_point3(
+        _self: LuaReflectRefProxy<bevy::math::DMat4>,
+        rhs: LuaReflectValProxy<bevy::math::DVec3>,
+    ) -> LuaReflectValProxy<bevy::math::DVec3>;
 
 "#,
     r#"
@@ -16801,7 +19888,10 @@ pub struct LuaDMat3 {
 /// Will panic if the 3rd row of `self` is not `(0, 0, 0, 1)` when `glam_assert` is enabled.
 
     #[lua()]
-    fn transform_point3(&self, #[proxy] rhs: bevy::math::DVec3) -> bevy::math::DVec3;
+    fn transform_point3(
+        _self: LuaReflectRefProxy<bevy::math::DMat4>,
+        rhs: LuaReflectValProxy<bevy::math::DVec3>,
+    ) -> LuaReflectValProxy<bevy::math::DVec3>;
 
 "#,
     r#"
@@ -16813,42 +19903,60 @@ pub struct LuaDMat3 {
 /// Will panic if the 3rd row of `self` is not `(0, 0, 0, 1)` when `glam_assert` is enabled.
 
     #[lua()]
-    fn transform_vector3(&self, #[proxy] rhs: bevy::math::DVec3) -> bevy::math::DVec3;
+    fn transform_vector3(
+        _self: LuaReflectRefProxy<bevy::math::DMat4>,
+        rhs: LuaReflectValProxy<bevy::math::DVec3>,
+    ) -> LuaReflectValProxy<bevy::math::DVec3>;
 
 "#,
     r#"
 /// Transforms a 4D vector.
 
     #[lua()]
-    fn mul_vec4(&self, #[proxy] rhs: bevy::math::DVec4) -> bevy::math::DVec4;
+    fn mul_vec4(
+        _self: LuaReflectRefProxy<bevy::math::DMat4>,
+        rhs: LuaReflectValProxy<bevy::math::DVec4>,
+    ) -> LuaReflectValProxy<bevy::math::DVec4>;
 
 "#,
     r#"
 /// Multiplies two 4x4 matrices.
 
     #[lua()]
-    fn mul_mat4(&self, #[proxy] rhs: &glam::DMat4) -> bevy::math::DMat4;
+    fn mul_mat4(
+        _self: LuaReflectRefProxy<bevy::math::DMat4>,
+        rhs: LuaReflectRefProxy<bevy::math::DMat4>,
+    ) -> LuaReflectValProxy<bevy::math::DMat4>;
 
 "#,
     r#"
 /// Adds two 4x4 matrices.
 
     #[lua()]
-    fn add_mat4(&self, #[proxy] rhs: &glam::DMat4) -> bevy::math::DMat4;
+    fn add_mat4(
+        _self: LuaReflectRefProxy<bevy::math::DMat4>,
+        rhs: LuaReflectRefProxy<bevy::math::DMat4>,
+    ) -> LuaReflectValProxy<bevy::math::DMat4>;
 
 "#,
     r#"
 /// Subtracts two 4x4 matrices.
 
     #[lua()]
-    fn sub_mat4(&self, #[proxy] rhs: &glam::DMat4) -> bevy::math::DMat4;
+    fn sub_mat4(
+        _self: LuaReflectRefProxy<bevy::math::DMat4>,
+        rhs: LuaReflectRefProxy<bevy::math::DMat4>,
+    ) -> LuaReflectValProxy<bevy::math::DMat4>;
 
 "#,
     r#"
 /// Multiplies a 4x4 matrix by a scalar.
 
     #[lua()]
-    fn mul_scalar(&self, rhs: f64) -> bevy::math::DMat4;
+    fn mul_scalar(
+        _self: LuaReflectRefProxy<bevy::math::DMat4>,
+        rhs: f64,
+    ) -> LuaReflectValProxy<bevy::math::DMat4>;
 
 "#,
     r#"
@@ -16861,31 +19969,45 @@ pub struct LuaDMat3 {
 /// [comparing floating point numbers](https://randomascii.wordpress.com/2012/02/25/comparing-floating-point-numbers-2012-edition/).
 
     #[lua()]
-    fn abs_diff_eq(&self, #[proxy] rhs: bevy::math::DMat4, max_abs_diff: f64) -> bool;
+    fn abs_diff_eq(
+        _self: LuaReflectRefProxy<bevy::math::DMat4>,
+        rhs: LuaReflectValProxy<bevy::math::DMat4>,
+        max_abs_diff: f64,
+    ) -> bool;
 
 "#,
     r#"
 
     #[lua()]
-    fn as_mat4(&self) -> bevy::math::Mat4;
+    fn as_mat4(
+        _self: LuaReflectRefProxy<bevy::math::DMat4>,
+    ) -> LuaReflectValProxy<bevy::math::Mat4>;
 
 "#,
     r#"
 
-    #[lua(as_trait = "std::cmp::PartialEq", composite = "eq")]
-    fn eq(&self, #[proxy] rhs: &glam::DMat4) -> bool;
+    #[lua(as_trait = "std::cmp::PartialEq::<bevy::math::DMat4>", composite = "eq")]
+    fn eq(
+        _self: LuaReflectRefProxy<bevy::math::DMat4>,
+        rhs: LuaReflectRefProxy<bevy::math::DMat4>,
+    ) -> bool;
 
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Mul", composite = "mul")]
-    fn mul(self, rhs: f64) -> bevy::math::DMat4;
+    #[lua(as_trait = "std::ops::Mul::<f64>", composite = "mul")]
+    fn mul(
+        _self: LuaReflectValProxy<bevy::math::DMat4>,
+        rhs: f64,
+    ) -> LuaReflectValProxy<bevy::math::DMat4>;
 
 "#,
     r#"
 
     #[lua(as_trait = "std::ops::Neg", composite = "neg")]
-    fn neg(self) -> bevy::math::DMat4;
+    fn neg(
+        _self: LuaReflectValProxy<bevy::math::DMat4>,
+    ) -> LuaReflectValProxy<bevy::math::DMat4>;
 
 "#,
     r#"
@@ -16895,38 +20017,30 @@ fn index(&self) -> String {
 }
 "#,
     r#"
-#[lua(raw, metamethod="Index")]
-fn index(&self, ctx : &Lua, idx: crate::lua::util::LuaIndex) -> Result<LuaDVec4,_> {
-    Ok(LuaDVec4::new_ref(
-            _self.reflect_ref(ctx.get_world()?).sub_ref(bevy_script_api::ReflectionPathElement::SubReflection{
-                label:"col", 
-                get: std::sync::Arc::new(|ref_| Err(bevy_script_api::error::ReflectionError::InsufficientProvenance{
-                    path: "".to_owned(), 
-                    msg: "Cannot get column of matrix with immutable reference".to_owned()
-                })),
-                get_mut: std::sync::Arc::new(move |ref_| {
-                    if ref_.is::<bevy::math::DMat4>(){
-                        Ok(ref_.downcast_mut::<bevy::math::DMat4>()
-                            .unwrap()
-                            .col_mut(*idx))
-                    } else {
-                        Err(bevy_script_api::error::ReflectionError::CannotDowncast{from: ref_.get_represented_type_info().unwrap().type_path().into(), to:"Mat3".into()})
-                    }	
-                })
-            })
-        )
-    )
+#[lua(metamethod="Index")]
+fn index(_self: IdentityProxy<Self>, idx: usize) -> IdentityProxy<LuaDVec4> {
+    let mut curr_ref = _self.0.clone();
+    let def_ref = bevy_mod_scripting_core::bindings::DeferredReflection{
+        get: std::sync::Arc::new(|ref_| Err(bevy::reflect::ReflectPathError::InvalidDowncast)),
+        get_mut: std::sync::Arc::new(move |ref_| {
+            if ref_.is::<bevy::math::DMat4>(){
+                Ok(ref_.downcast_mut::<bevy::math::DMat4>()
+                    .unwrap()
+                    .col_mut(idx - 1))
+            } else {
+                Err(bevy::reflect::ReflectPathError::InvalidDowncast)
+            }	
+        })
+    };
+    curr_ref.reflect_path.push(bevy_mod_scripting_core::bindings::ReflectionPathElem::new_deferred(def_ref));
+    LuaDVec4(curr_ref)
 }
 "#]
 )]
-pub struct LuaDMat4 {
-    #[lua(output(proxy))]
+pub struct DMat4 {
     x_axis: bevy::math::DVec4,
-    #[lua(output(proxy))]
     y_axis: bevy::math::DVec4,
-    #[lua(output(proxy))]
     z_axis: bevy::math::DVec4,
-    #[lua(output(proxy))]
     w_axis: bevy::math::DVec4,
 }
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
@@ -16939,20 +20053,17 @@ pub struct LuaDMat4 {
 
     #[lua()]
     fn from_cols(
-        #[proxy]
-        x_axis: bevy::math::Vec2,
-        #[proxy]
-        y_axis: bevy::math::Vec2,
-        #[proxy]
-        z_axis: bevy::math::Vec2,
-    ) -> bevy::math::Affine2;
+        x_axis: LuaReflectValProxy<bevy::math::Vec2>,
+        y_axis: LuaReflectValProxy<bevy::math::Vec2>,
+        z_axis: LuaReflectValProxy<bevy::math::Vec2>,
+    ) -> LuaReflectValProxy<bevy::math::Affine2>;
 
 "#,
     r#"
 /// Creates a `[f32; 6]` array storing data in column major order.
 
     #[lua()]
-    fn to_cols_array(&self) -> [f32; 6];
+    fn to_cols_array(_self: LuaReflectRefProxy<bevy::math::Affine2>) -> [f32; 6];
 
 "#,
     r#"
@@ -16961,7 +20072,7 @@ pub struct LuaDMat4 {
 /// If you require data in row major order `transpose` the matrix first.
 
     #[lua()]
-    fn to_cols_array_2d(&self) -> [[f32; 2]; 3];
+    fn to_cols_array_2d(_self: LuaReflectRefProxy<bevy::math::Affine2>) -> [[f32; 2]; 3];
 
 "#,
     r#"
@@ -16969,28 +20080,34 @@ pub struct LuaDMat4 {
 /// Note that if any scale is zero the transform will be non-invertible.
 
     #[lua()]
-    fn from_scale(#[proxy] scale: bevy::math::Vec2) -> bevy::math::Affine2;
+    fn from_scale(
+        scale: LuaReflectValProxy<bevy::math::Vec2>,
+    ) -> LuaReflectValProxy<bevy::math::Affine2>;
 
 "#,
     r#"
 /// Creates an affine transform from the given rotation `angle`.
 
     #[lua()]
-    fn from_angle(angle: f32) -> bevy::math::Affine2;
+    fn from_angle(angle: f32) -> LuaReflectValProxy<bevy::math::Affine2>;
 
 "#,
     r#"
 /// Creates an affine transformation from the given 2D `translation`.
 
     #[lua()]
-    fn from_translation(#[proxy] translation: bevy::math::Vec2) -> bevy::math::Affine2;
+    fn from_translation(
+        translation: LuaReflectValProxy<bevy::math::Vec2>,
+    ) -> LuaReflectValProxy<bevy::math::Affine2>;
 
 "#,
     r#"
 /// Creates an affine transform from a 2x2 matrix (expressing scale, shear and rotation)
 
     #[lua()]
-    fn from_mat2(#[proxy] matrix2: bevy::math::Mat2) -> bevy::math::Affine2;
+    fn from_mat2(
+        matrix2: LuaReflectValProxy<bevy::math::Mat2>,
+    ) -> LuaReflectValProxy<bevy::math::Affine2>;
 
 "#,
     r#"
@@ -17001,11 +20118,9 @@ pub struct LuaDMat4 {
 
     #[lua()]
     fn from_mat2_translation(
-        #[proxy]
-        matrix2: bevy::math::Mat2,
-        #[proxy]
-        translation: bevy::math::Vec2,
-    ) -> bevy::math::Affine2;
+        matrix2: LuaReflectValProxy<bevy::math::Mat2>,
+        translation: LuaReflectValProxy<bevy::math::Vec2>,
+    ) -> LuaReflectValProxy<bevy::math::Affine2>;
 
 "#,
     r#"
@@ -17016,12 +20131,10 @@ pub struct LuaDMat4 {
 
     #[lua()]
     fn from_scale_angle_translation(
-        #[proxy]
-        scale: bevy::math::Vec2,
+        scale: LuaReflectValProxy<bevy::math::Vec2>,
         angle: f32,
-        #[proxy]
-        translation: bevy::math::Vec2,
-    ) -> bevy::math::Affine2;
+        translation: LuaReflectValProxy<bevy::math::Vec2>,
+    ) -> LuaReflectValProxy<bevy::math::Affine2>;
 
 "#,
     r#"
@@ -17032,30 +20145,36 @@ pub struct LuaDMat4 {
     #[lua()]
     fn from_angle_translation(
         angle: f32,
-        #[proxy]
-        translation: bevy::math::Vec2,
-    ) -> bevy::math::Affine2;
+        translation: LuaReflectValProxy<bevy::math::Vec2>,
+    ) -> LuaReflectValProxy<bevy::math::Affine2>;
 
 "#,
     r#"
 /// The given `Mat3` must be an affine transform,
 
     #[lua()]
-    fn from_mat3(#[proxy] m: bevy::math::Mat3) -> bevy::math::Affine2;
+    fn from_mat3(
+        m: LuaReflectValProxy<bevy::math::Mat3>,
+    ) -> LuaReflectValProxy<bevy::math::Affine2>;
 
 "#,
     r#"
 /// The given [`Mat3A`] must be an affine transform,
 
     #[lua()]
-    fn from_mat3a(#[proxy] m: bevy::math::Mat3A) -> bevy::math::Affine2;
+    fn from_mat3a(
+        m: LuaReflectValProxy<bevy::math::Mat3A>,
+    ) -> LuaReflectValProxy<bevy::math::Affine2>;
 
 "#,
     r#"
 /// Transforms the given 2D point, applying shear, scale, rotation and translation.
 
     #[lua()]
-    fn transform_point2(&self, #[proxy] rhs: bevy::math::Vec2) -> bevy::math::Vec2;
+    fn transform_point2(
+        _self: LuaReflectRefProxy<bevy::math::Affine2>,
+        rhs: LuaReflectValProxy<bevy::math::Vec2>,
+    ) -> LuaReflectValProxy<bevy::math::Vec2>;
 
 "#,
     r#"
@@ -17064,7 +20183,10 @@ pub struct LuaDMat4 {
 /// To also apply translation, use [`Self::transform_point2()`] instead.
 
     #[lua()]
-    fn transform_vector2(&self, #[proxy] rhs: bevy::math::Vec2) -> bevy::math::Vec2;
+    fn transform_vector2(
+        _self: LuaReflectRefProxy<bevy::math::Affine2>,
+        rhs: LuaReflectValProxy<bevy::math::Vec2>,
+    ) -> LuaReflectValProxy<bevy::math::Vec2>;
 
 "#,
     r#"
@@ -17073,14 +20195,14 @@ pub struct LuaDMat4 {
 /// `false`.
 
     #[lua()]
-    fn is_finite(&self) -> bool;
+    fn is_finite(_self: LuaReflectRefProxy<bevy::math::Affine2>) -> bool;
 
 "#,
     r#"
 /// Returns `true` if any elements are `NaN`.
 
     #[lua()]
-    fn is_nan(&self) -> bool;
+    fn is_nan(_self: LuaReflectRefProxy<bevy::math::Affine2>) -> bool;
 
 "#,
     r#"
@@ -17093,7 +20215,11 @@ pub struct LuaDMat4 {
 /// [comparing floating point numbers](https://randomascii.wordpress.com/2012/02/25/comparing-floating-point-numbers-2012-edition/).
 
     #[lua()]
-    fn abs_diff_eq(&self, #[proxy] rhs: bevy::math::Affine2, max_abs_diff: f32) -> bool;
+    fn abs_diff_eq(
+        _self: LuaReflectRefProxy<bevy::math::Affine2>,
+        rhs: LuaReflectValProxy<bevy::math::Affine2>,
+        max_abs_diff: f32,
+    ) -> bool;
 
 "#,
     r#"
@@ -17101,37 +20227,53 @@ pub struct LuaDMat4 {
 /// Note that if the transform is not invertible the result will be invalid.
 
     #[lua()]
-    fn inverse(&self) -> bevy::math::Affine2;
+    fn inverse(
+        _self: LuaReflectRefProxy<bevy::math::Affine2>,
+    ) -> LuaReflectValProxy<bevy::math::Affine2>;
 
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Mul", composite = "mul")]
-    fn mul(self, #[proxy] rhs: bevy::math::Mat3A) -> bevy::math::Mat3A;
+    #[lua(as_trait = "std::ops::Mul::<bevy::math::Mat3A>", composite = "mul")]
+    fn mul(
+        _self: LuaReflectValProxy<bevy::math::Affine2>,
+        rhs: LuaReflectValProxy<bevy::math::Mat3A>,
+    ) -> LuaReflectValProxy<bevy::math::Mat3A>;
 
 "#,
     r#"
 
     #[lua(as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone")]
-    fn clone(&self) -> bevy::math::Affine2;
+    fn clone(
+        _self: LuaReflectRefProxy<bevy::math::Affine2>,
+    ) -> LuaReflectValProxy<bevy::math::Affine2>;
 
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Mul", composite = "mul")]
-    fn mul(self, #[proxy] rhs: bevy::math::Affine2) -> bevy::math::Affine2;
+    #[lua(as_trait = "std::ops::Mul::<bevy::math::Affine2>", composite = "mul")]
+    fn mul(
+        _self: LuaReflectValProxy<bevy::math::Affine2>,
+        rhs: LuaReflectValProxy<bevy::math::Affine2>,
+    ) -> LuaReflectValProxy<bevy::math::Affine2>;
 
 "#,
     r#"
 
-    #[lua(as_trait = "std::cmp::PartialEq", composite = "eq")]
-    fn eq(&self, #[proxy] rhs: &glam::Affine2) -> bool;
+    #[lua(as_trait = "std::cmp::PartialEq::<bevy::math::Affine2>", composite = "eq")]
+    fn eq(
+        _self: LuaReflectRefProxy<bevy::math::Affine2>,
+        rhs: LuaReflectRefProxy<bevy::math::Affine2>,
+    ) -> bool;
 
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Mul", composite = "mul")]
-    fn mul(self, #[proxy] rhs: bevy::math::Mat3) -> bevy::math::Mat3;
+    #[lua(as_trait = "std::ops::Mul::<bevy::math::Mat3>", composite = "mul")]
+    fn mul(
+        _self: LuaReflectValProxy<bevy::math::Affine2>,
+        rhs: LuaReflectValProxy<bevy::math::Mat3>,
+    ) -> LuaReflectValProxy<bevy::math::Mat3>;
 
 "#,
     r#"
@@ -17141,10 +20283,8 @@ fn index(&self) -> String {
 }
 "#]
 )]
-pub struct LuaAffine2 {
-    #[lua(output(proxy))]
+pub struct Affine2 {
     matrix2: bevy::math::Mat2,
-    #[lua(output(proxy))]
     translation: bevy::math::Vec2,
 }
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
@@ -17154,26 +20294,37 @@ pub struct LuaAffine2 {
     bms_lua_path = "crate",
     functions[r#"
 
-    #[lua(as_trait = "std::ops::Mul", composite = "mul")]
-    fn mul(self, #[proxy] rhs: bevy::math::Affine3A) -> bevy::math::Affine3A;
+    #[lua(as_trait = "std::ops::Mul::<bevy::math::Affine3A>", composite = "mul")]
+    fn mul(
+        _self: LuaReflectValProxy<bevy::math::Affine3A>,
+        rhs: LuaReflectValProxy<bevy::math::Affine3A>,
+    ) -> LuaReflectValProxy<bevy::math::Affine3A>;
 
 "#,
     r#"
 
     #[lua(as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone")]
-    fn clone(&self) -> bevy::math::Affine3A;
+    fn clone(
+        _self: LuaReflectRefProxy<bevy::math::Affine3A>,
+    ) -> LuaReflectValProxy<bevy::math::Affine3A>;
 
 "#,
     r#"
 
-    #[lua(as_trait = "std::cmp::PartialEq", composite = "eq")]
-    fn eq(&self, #[proxy] rhs: &glam::Affine3A) -> bool;
+    #[lua(as_trait = "std::cmp::PartialEq::<bevy::math::Affine3A>", composite = "eq")]
+    fn eq(
+        _self: LuaReflectRefProxy<bevy::math::Affine3A>,
+        rhs: LuaReflectRefProxy<bevy::math::Affine3A>,
+    ) -> bool;
 
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Mul", composite = "mul")]
-    fn mul(self, #[proxy] rhs: bevy::math::Mat4) -> bevy::math::Mat4;
+    #[lua(as_trait = "std::ops::Mul::<bevy::math::Mat4>", composite = "mul")]
+    fn mul(
+        _self: LuaReflectValProxy<bevy::math::Affine3A>,
+        rhs: LuaReflectValProxy<bevy::math::Mat4>,
+    ) -> LuaReflectValProxy<bevy::math::Mat4>;
 
 "#,
     r#"
@@ -17181,22 +20332,18 @@ pub struct LuaAffine2 {
 
     #[lua()]
     fn from_cols(
-        #[proxy]
-        x_axis: bevy::math::Vec3A,
-        #[proxy]
-        y_axis: bevy::math::Vec3A,
-        #[proxy]
-        z_axis: bevy::math::Vec3A,
-        #[proxy]
-        w_axis: bevy::math::Vec3A,
-    ) -> bevy::math::Affine3A;
+        x_axis: LuaReflectValProxy<bevy::math::Vec3A>,
+        y_axis: LuaReflectValProxy<bevy::math::Vec3A>,
+        z_axis: LuaReflectValProxy<bevy::math::Vec3A>,
+        w_axis: LuaReflectValProxy<bevy::math::Vec3A>,
+    ) -> LuaReflectValProxy<bevy::math::Affine3A>;
 
 "#,
     r#"
 /// Creates a `[f32; 12]` array storing data in column major order.
 
     #[lua()]
-    fn to_cols_array(&self) -> [f32; 12];
+    fn to_cols_array(_self: LuaReflectRefProxy<bevy::math::Affine3A>) -> [f32; 12];
 
 "#,
     r#"
@@ -17205,7 +20352,9 @@ pub struct LuaAffine2 {
 /// If you require data in row major order `transpose` the matrix first.
 
     #[lua()]
-    fn to_cols_array_2d(&self) -> [[f32; 3]; 4];
+    fn to_cols_array_2d(
+        _self: LuaReflectRefProxy<bevy::math::Affine3A>,
+    ) -> [[f32; 3]; 4];
 
 "#,
     r#"
@@ -17213,14 +20362,18 @@ pub struct LuaAffine2 {
 /// Note that if any scale is zero the transform will be non-invertible.
 
     #[lua()]
-    fn from_scale(#[proxy] scale: bevy::math::Vec3) -> bevy::math::Affine3A;
+    fn from_scale(
+        scale: LuaReflectValProxy<bevy::math::Vec3>,
+    ) -> LuaReflectValProxy<bevy::math::Affine3A>;
 
 "#,
     r#"
 /// Creates an affine transform from the given `rotation` quaternion.
 
     #[lua()]
-    fn from_quat(#[proxy] rotation: bevy::math::Quat) -> bevy::math::Affine3A;
+    fn from_quat(
+        rotation: LuaReflectValProxy<bevy::math::Quat>,
+    ) -> LuaReflectValProxy<bevy::math::Affine3A>;
 
 "#,
     r#"
@@ -17229,10 +20382,9 @@ pub struct LuaAffine2 {
 
     #[lua()]
     fn from_axis_angle(
-        #[proxy]
-        axis: bevy::math::Vec3,
+        axis: LuaReflectValProxy<bevy::math::Vec3>,
         angle: f32,
-    ) -> bevy::math::Affine3A;
+    ) -> LuaReflectValProxy<bevy::math::Affine3A>;
 
 "#,
     r#"
@@ -17240,7 +20392,7 @@ pub struct LuaAffine2 {
 /// `angle` (in radians).
 
     #[lua()]
-    fn from_rotation_x(angle: f32) -> bevy::math::Affine3A;
+    fn from_rotation_x(angle: f32) -> LuaReflectValProxy<bevy::math::Affine3A>;
 
 "#,
     r#"
@@ -17248,7 +20400,7 @@ pub struct LuaAffine2 {
 /// `angle` (in radians).
 
     #[lua()]
-    fn from_rotation_y(angle: f32) -> bevy::math::Affine3A;
+    fn from_rotation_y(angle: f32) -> LuaReflectValProxy<bevy::math::Affine3A>;
 
 "#,
     r#"
@@ -17256,14 +20408,16 @@ pub struct LuaAffine2 {
 /// `angle` (in radians).
 
     #[lua()]
-    fn from_rotation_z(angle: f32) -> bevy::math::Affine3A;
+    fn from_rotation_z(angle: f32) -> LuaReflectValProxy<bevy::math::Affine3A>;
 
 "#,
     r#"
 /// Creates an affine transformation from the given 3D `translation`.
 
     #[lua()]
-    fn from_translation(#[proxy] translation: bevy::math::Vec3) -> bevy::math::Affine3A;
+    fn from_translation(
+        translation: LuaReflectValProxy<bevy::math::Vec3>,
+    ) -> LuaReflectValProxy<bevy::math::Affine3A>;
 
 "#,
     r#"
@@ -17271,7 +20425,9 @@ pub struct LuaAffine2 {
 /// rotation)
 
     #[lua()]
-    fn from_mat3(#[proxy] mat3: bevy::math::Mat3) -> bevy::math::Affine3A;
+    fn from_mat3(
+        mat3: LuaReflectValProxy<bevy::math::Mat3>,
+    ) -> LuaReflectValProxy<bevy::math::Affine3A>;
 
 "#,
     r#"
@@ -17281,11 +20437,9 @@ pub struct LuaAffine2 {
 
     #[lua()]
     fn from_mat3_translation(
-        #[proxy]
-        mat3: bevy::math::Mat3,
-        #[proxy]
-        translation: bevy::math::Vec3,
-    ) -> bevy::math::Affine3A;
+        mat3: LuaReflectValProxy<bevy::math::Mat3>,
+        translation: LuaReflectValProxy<bevy::math::Vec3>,
+    ) -> LuaReflectValProxy<bevy::math::Affine3A>;
 
 "#,
     r#"
@@ -17296,13 +20450,10 @@ pub struct LuaAffine2 {
 
     #[lua()]
     fn from_scale_rotation_translation(
-        #[proxy]
-        scale: bevy::math::Vec3,
-        #[proxy]
-        rotation: bevy::math::Quat,
-        #[proxy]
-        translation: bevy::math::Vec3,
-    ) -> bevy::math::Affine3A;
+        scale: LuaReflectValProxy<bevy::math::Vec3>,
+        rotation: LuaReflectValProxy<bevy::math::Quat>,
+        translation: LuaReflectValProxy<bevy::math::Vec3>,
+    ) -> LuaReflectValProxy<bevy::math::Affine3A>;
 
 "#,
     r#"
@@ -17311,11 +20462,9 @@ pub struct LuaAffine2 {
 
     #[lua()]
     fn from_rotation_translation(
-        #[proxy]
-        rotation: bevy::math::Quat,
-        #[proxy]
-        translation: bevy::math::Vec3,
-    ) -> bevy::math::Affine3A;
+        rotation: LuaReflectValProxy<bevy::math::Quat>,
+        translation: LuaReflectValProxy<bevy::math::Vec3>,
+    ) -> LuaReflectValProxy<bevy::math::Affine3A>;
 
 "#,
     r#"
@@ -17323,7 +20472,9 @@ pub struct LuaAffine2 {
 /// i.e. contain no perspective transform.
 
     #[lua()]
-    fn from_mat4(#[proxy] m: bevy::math::Mat4) -> bevy::math::Affine3A;
+    fn from_mat4(
+        m: LuaReflectValProxy<bevy::math::Mat4>,
+    ) -> LuaReflectValProxy<bevy::math::Affine3A>;
 
 "#,
     r#"
@@ -17333,13 +20484,10 @@ pub struct LuaAffine2 {
 
     #[lua()]
     fn look_to_lh(
-        #[proxy]
-        eye: bevy::math::Vec3,
-        #[proxy]
-        dir: bevy::math::Vec3,
-        #[proxy]
-        up: bevy::math::Vec3,
-    ) -> bevy::math::Affine3A;
+        eye: LuaReflectValProxy<bevy::math::Vec3>,
+        dir: LuaReflectValProxy<bevy::math::Vec3>,
+        up: LuaReflectValProxy<bevy::math::Vec3>,
+    ) -> LuaReflectValProxy<bevy::math::Affine3A>;
 
 "#,
     r#"
@@ -17349,13 +20497,10 @@ pub struct LuaAffine2 {
 
     #[lua()]
     fn look_to_rh(
-        #[proxy]
-        eye: bevy::math::Vec3,
-        #[proxy]
-        dir: bevy::math::Vec3,
-        #[proxy]
-        up: bevy::math::Vec3,
-    ) -> bevy::math::Affine3A;
+        eye: LuaReflectValProxy<bevy::math::Vec3>,
+        dir: LuaReflectValProxy<bevy::math::Vec3>,
+        up: LuaReflectValProxy<bevy::math::Vec3>,
+    ) -> LuaReflectValProxy<bevy::math::Affine3A>;
 
 "#,
     r#"
@@ -17367,13 +20512,10 @@ pub struct LuaAffine2 {
 
     #[lua()]
     fn look_at_lh(
-        #[proxy]
-        eye: bevy::math::Vec3,
-        #[proxy]
-        center: bevy::math::Vec3,
-        #[proxy]
-        up: bevy::math::Vec3,
-    ) -> bevy::math::Affine3A;
+        eye: LuaReflectValProxy<bevy::math::Vec3>,
+        center: LuaReflectValProxy<bevy::math::Vec3>,
+        up: LuaReflectValProxy<bevy::math::Vec3>,
+    ) -> LuaReflectValProxy<bevy::math::Affine3A>;
 
 "#,
     r#"
@@ -17385,20 +20527,20 @@ pub struct LuaAffine2 {
 
     #[lua()]
     fn look_at_rh(
-        #[proxy]
-        eye: bevy::math::Vec3,
-        #[proxy]
-        center: bevy::math::Vec3,
-        #[proxy]
-        up: bevy::math::Vec3,
-    ) -> bevy::math::Affine3A;
+        eye: LuaReflectValProxy<bevy::math::Vec3>,
+        center: LuaReflectValProxy<bevy::math::Vec3>,
+        up: LuaReflectValProxy<bevy::math::Vec3>,
+    ) -> LuaReflectValProxy<bevy::math::Affine3A>;
 
 "#,
     r#"
 /// Transforms the given 3D points, applying shear, scale, rotation and translation.
 
     #[lua()]
-    fn transform_point3(&self, #[proxy] rhs: bevy::math::Vec3) -> bevy::math::Vec3;
+    fn transform_point3(
+        _self: LuaReflectRefProxy<bevy::math::Affine3A>,
+        rhs: LuaReflectValProxy<bevy::math::Vec3>,
+    ) -> LuaReflectValProxy<bevy::math::Vec3>;
 
 "#,
     r#"
@@ -17407,14 +20549,20 @@ pub struct LuaAffine2 {
 /// To also apply translation, use [`Self::transform_point3()`] instead.
 
     #[lua()]
-    fn transform_vector3(&self, #[proxy] rhs: bevy::math::Vec3) -> bevy::math::Vec3;
+    fn transform_vector3(
+        _self: LuaReflectRefProxy<bevy::math::Affine3A>,
+        rhs: LuaReflectValProxy<bevy::math::Vec3>,
+    ) -> LuaReflectValProxy<bevy::math::Vec3>;
 
 "#,
     r#"
 /// Transforms the given [`Vec3A`], applying shear, scale, rotation and translation.
 
     #[lua()]
-    fn transform_point3a(&self, #[proxy] rhs: bevy::math::Vec3A) -> bevy::math::Vec3A;
+    fn transform_point3a(
+        _self: LuaReflectRefProxy<bevy::math::Affine3A>,
+        rhs: LuaReflectValProxy<bevy::math::Vec3A>,
+    ) -> LuaReflectValProxy<bevy::math::Vec3A>;
 
 "#,
     r#"
@@ -17423,7 +20571,10 @@ pub struct LuaAffine2 {
 /// To also apply translation, use [`Self::transform_point3a()`] instead.
 
     #[lua()]
-    fn transform_vector3a(&self, #[proxy] rhs: bevy::math::Vec3A) -> bevy::math::Vec3A;
+    fn transform_vector3a(
+        _self: LuaReflectRefProxy<bevy::math::Affine3A>,
+        rhs: LuaReflectValProxy<bevy::math::Vec3A>,
+    ) -> LuaReflectValProxy<bevy::math::Vec3A>;
 
 "#,
     r#"
@@ -17432,14 +20583,14 @@ pub struct LuaAffine2 {
 /// `false`.
 
     #[lua()]
-    fn is_finite(&self) -> bool;
+    fn is_finite(_self: LuaReflectRefProxy<bevy::math::Affine3A>) -> bool;
 
 "#,
     r#"
 /// Returns `true` if any elements are `NaN`.
 
     #[lua()]
-    fn is_nan(&self) -> bool;
+    fn is_nan(_self: LuaReflectRefProxy<bevy::math::Affine3A>) -> bool;
 
 "#,
     r#"
@@ -17452,7 +20603,11 @@ pub struct LuaAffine2 {
 /// [comparing floating point numbers](https://randomascii.wordpress.com/2012/02/25/comparing-floating-point-numbers-2012-edition/).
 
     #[lua()]
-    fn abs_diff_eq(&self, #[proxy] rhs: bevy::math::Affine3A, max_abs_diff: f32) -> bool;
+    fn abs_diff_eq(
+        _self: LuaReflectRefProxy<bevy::math::Affine3A>,
+        rhs: LuaReflectValProxy<bevy::math::Affine3A>,
+        max_abs_diff: f32,
+    ) -> bool;
 
 "#,
     r#"
@@ -17460,7 +20615,9 @@ pub struct LuaAffine2 {
 /// Note that if the transform is not invertible the result will be invalid.
 
     #[lua()]
-    fn inverse(&self) -> bevy::math::Affine3A;
+    fn inverse(
+        _self: LuaReflectRefProxy<bevy::math::Affine3A>,
+    ) -> LuaReflectValProxy<bevy::math::Affine3A>;
 
 "#,
     r#"
@@ -17470,10 +20627,8 @@ fn index(&self) -> String {
 }
 "#]
 )]
-pub struct LuaAffine3A {
-    #[lua(output(proxy))]
+pub struct Affine3A {
     matrix3: bevy::math::Mat3A,
-    #[lua(output(proxy))]
     translation: bevy::math::Vec3A,
 }
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
@@ -17483,14 +20638,20 @@ pub struct LuaAffine3A {
     bms_lua_path = "crate",
     functions[r#"
 
-    #[lua(as_trait = "std::ops::Mul", composite = "mul")]
-    fn mul(self, #[proxy] rhs: bevy::math::DMat3) -> bevy::math::DMat3;
+    #[lua(as_trait = "std::ops::Mul::<bevy::math::DMat3>", composite = "mul")]
+    fn mul(
+        _self: LuaReflectValProxy<bevy::math::DAffine2>,
+        rhs: LuaReflectValProxy<bevy::math::DMat3>,
+    ) -> LuaReflectValProxy<bevy::math::DMat3>;
 
 "#,
     r#"
 
-    #[lua(as_trait = "std::cmp::PartialEq", composite = "eq")]
-    fn eq(&self, #[proxy] rhs: &glam::DAffine2) -> bool;
+    #[lua(as_trait = "std::cmp::PartialEq::<bevy::math::DAffine2>", composite = "eq")]
+    fn eq(
+        _self: LuaReflectRefProxy<bevy::math::DAffine2>,
+        rhs: LuaReflectRefProxy<bevy::math::DAffine2>,
+    ) -> bool;
 
 "#,
     r#"
@@ -17498,20 +20659,17 @@ pub struct LuaAffine3A {
 
     #[lua()]
     fn from_cols(
-        #[proxy]
-        x_axis: bevy::math::DVec2,
-        #[proxy]
-        y_axis: bevy::math::DVec2,
-        #[proxy]
-        z_axis: bevy::math::DVec2,
-    ) -> bevy::math::DAffine2;
+        x_axis: LuaReflectValProxy<bevy::math::DVec2>,
+        y_axis: LuaReflectValProxy<bevy::math::DVec2>,
+        z_axis: LuaReflectValProxy<bevy::math::DVec2>,
+    ) -> LuaReflectValProxy<bevy::math::DAffine2>;
 
 "#,
     r#"
 /// Creates a `[f64; 6]` array storing data in column major order.
 
     #[lua()]
-    fn to_cols_array(&self) -> [f64; 6];
+    fn to_cols_array(_self: LuaReflectRefProxy<bevy::math::DAffine2>) -> [f64; 6];
 
 "#,
     r#"
@@ -17520,7 +20678,9 @@ pub struct LuaAffine3A {
 /// If you require data in row major order `transpose` the matrix first.
 
     #[lua()]
-    fn to_cols_array_2d(&self) -> [[f64; 2]; 3];
+    fn to_cols_array_2d(
+        _self: LuaReflectRefProxy<bevy::math::DAffine2>,
+    ) -> [[f64; 2]; 3];
 
 "#,
     r#"
@@ -17528,28 +20688,34 @@ pub struct LuaAffine3A {
 /// Note that if any scale is zero the transform will be non-invertible.
 
     #[lua()]
-    fn from_scale(#[proxy] scale: bevy::math::DVec2) -> bevy::math::DAffine2;
+    fn from_scale(
+        scale: LuaReflectValProxy<bevy::math::DVec2>,
+    ) -> LuaReflectValProxy<bevy::math::DAffine2>;
 
 "#,
     r#"
 /// Creates an affine transform from the given rotation `angle`.
 
     #[lua()]
-    fn from_angle(angle: f64) -> bevy::math::DAffine2;
+    fn from_angle(angle: f64) -> LuaReflectValProxy<bevy::math::DAffine2>;
 
 "#,
     r#"
 /// Creates an affine transformation from the given 2D `translation`.
 
     #[lua()]
-    fn from_translation(#[proxy] translation: bevy::math::DVec2) -> bevy::math::DAffine2;
+    fn from_translation(
+        translation: LuaReflectValProxy<bevy::math::DVec2>,
+    ) -> LuaReflectValProxy<bevy::math::DAffine2>;
 
 "#,
     r#"
 /// Creates an affine transform from a 2x2 matrix (expressing scale, shear and rotation)
 
     #[lua()]
-    fn from_mat2(#[proxy] matrix2: bevy::math::DMat2) -> bevy::math::DAffine2;
+    fn from_mat2(
+        matrix2: LuaReflectValProxy<bevy::math::DMat2>,
+    ) -> LuaReflectValProxy<bevy::math::DAffine2>;
 
 "#,
     r#"
@@ -17560,11 +20726,9 @@ pub struct LuaAffine3A {
 
     #[lua()]
     fn from_mat2_translation(
-        #[proxy]
-        matrix2: bevy::math::DMat2,
-        #[proxy]
-        translation: bevy::math::DVec2,
-    ) -> bevy::math::DAffine2;
+        matrix2: LuaReflectValProxy<bevy::math::DMat2>,
+        translation: LuaReflectValProxy<bevy::math::DVec2>,
+    ) -> LuaReflectValProxy<bevy::math::DAffine2>;
 
 "#,
     r#"
@@ -17575,12 +20739,10 @@ pub struct LuaAffine3A {
 
     #[lua()]
     fn from_scale_angle_translation(
-        #[proxy]
-        scale: bevy::math::DVec2,
+        scale: LuaReflectValProxy<bevy::math::DVec2>,
         angle: f64,
-        #[proxy]
-        translation: bevy::math::DVec2,
-    ) -> bevy::math::DAffine2;
+        translation: LuaReflectValProxy<bevy::math::DVec2>,
+    ) -> LuaReflectValProxy<bevy::math::DAffine2>;
 
 "#,
     r#"
@@ -17591,23 +20753,27 @@ pub struct LuaAffine3A {
     #[lua()]
     fn from_angle_translation(
         angle: f64,
-        #[proxy]
-        translation: bevy::math::DVec2,
-    ) -> bevy::math::DAffine2;
+        translation: LuaReflectValProxy<bevy::math::DVec2>,
+    ) -> LuaReflectValProxy<bevy::math::DAffine2>;
 
 "#,
     r#"
 /// The given `DMat3` must be an affine transform,
 
     #[lua()]
-    fn from_mat3(#[proxy] m: bevy::math::DMat3) -> bevy::math::DAffine2;
+    fn from_mat3(
+        m: LuaReflectValProxy<bevy::math::DMat3>,
+    ) -> LuaReflectValProxy<bevy::math::DAffine2>;
 
 "#,
     r#"
 /// Transforms the given 2D point, applying shear, scale, rotation and translation.
 
     #[lua()]
-    fn transform_point2(&self, #[proxy] rhs: bevy::math::DVec2) -> bevy::math::DVec2;
+    fn transform_point2(
+        _self: LuaReflectRefProxy<bevy::math::DAffine2>,
+        rhs: LuaReflectValProxy<bevy::math::DVec2>,
+    ) -> LuaReflectValProxy<bevy::math::DVec2>;
 
 "#,
     r#"
@@ -17616,7 +20782,10 @@ pub struct LuaAffine3A {
 /// To also apply translation, use [`Self::transform_point2()`] instead.
 
     #[lua()]
-    fn transform_vector2(&self, #[proxy] rhs: bevy::math::DVec2) -> bevy::math::DVec2;
+    fn transform_vector2(
+        _self: LuaReflectRefProxy<bevy::math::DAffine2>,
+        rhs: LuaReflectValProxy<bevy::math::DVec2>,
+    ) -> LuaReflectValProxy<bevy::math::DVec2>;
 
 "#,
     r#"
@@ -17625,14 +20794,14 @@ pub struct LuaAffine3A {
 /// `false`.
 
     #[lua()]
-    fn is_finite(&self) -> bool;
+    fn is_finite(_self: LuaReflectRefProxy<bevy::math::DAffine2>) -> bool;
 
 "#,
     r#"
 /// Returns `true` if any elements are `NaN`.
 
     #[lua()]
-    fn is_nan(&self) -> bool;
+    fn is_nan(_self: LuaReflectRefProxy<bevy::math::DAffine2>) -> bool;
 
 "#,
     r#"
@@ -17645,7 +20814,11 @@ pub struct LuaAffine3A {
 /// [comparing floating point numbers](https://randomascii.wordpress.com/2012/02/25/comparing-floating-point-numbers-2012-edition/).
 
     #[lua()]
-    fn abs_diff_eq(&self, #[proxy] rhs: bevy::math::DAffine2, max_abs_diff: f64) -> bool;
+    fn abs_diff_eq(
+        _self: LuaReflectRefProxy<bevy::math::DAffine2>,
+        rhs: LuaReflectValProxy<bevy::math::DAffine2>,
+        max_abs_diff: f64,
+    ) -> bool;
 
 "#,
     r#"
@@ -17653,19 +20826,26 @@ pub struct LuaAffine3A {
 /// Note that if the transform is not invertible the result will be invalid.
 
     #[lua()]
-    fn inverse(&self) -> bevy::math::DAffine2;
+    fn inverse(
+        _self: LuaReflectRefProxy<bevy::math::DAffine2>,
+    ) -> LuaReflectValProxy<bevy::math::DAffine2>;
 
 "#,
     r#"
 
     #[lua(as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone")]
-    fn clone(&self) -> bevy::math::DAffine2;
+    fn clone(
+        _self: LuaReflectRefProxy<bevy::math::DAffine2>,
+    ) -> LuaReflectValProxy<bevy::math::DAffine2>;
 
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Mul", composite = "mul")]
-    fn mul(self, #[proxy] rhs: bevy::math::DAffine2) -> bevy::math::DAffine2;
+    #[lua(as_trait = "std::ops::Mul::<bevy::math::DAffine2>", composite = "mul")]
+    fn mul(
+        _self: LuaReflectValProxy<bevy::math::DAffine2>,
+        rhs: LuaReflectValProxy<bevy::math::DAffine2>,
+    ) -> LuaReflectValProxy<bevy::math::DAffine2>;
 
 "#,
     r#"
@@ -17675,10 +20855,8 @@ fn index(&self) -> String {
 }
 "#]
 )]
-pub struct LuaDAffine2 {
-    #[lua(output(proxy))]
+pub struct DAffine2 {
     matrix2: bevy::math::DMat2,
-    #[lua(output(proxy))]
     translation: bevy::math::DVec2,
 }
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
@@ -17688,14 +20866,19 @@ pub struct LuaDAffine2 {
     bms_lua_path = "crate",
     functions[r#"
 
-    #[lua(as_trait = "std::ops::Mul", composite = "mul")]
-    fn mul(self, #[proxy] rhs: bevy::math::DMat4) -> bevy::math::DMat4;
+    #[lua(as_trait = "std::ops::Mul::<bevy::math::DMat4>", composite = "mul")]
+    fn mul(
+        _self: LuaReflectValProxy<bevy::math::DAffine3>,
+        rhs: LuaReflectValProxy<bevy::math::DMat4>,
+    ) -> LuaReflectValProxy<bevy::math::DMat4>;
 
 "#,
     r#"
 
     #[lua(as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone")]
-    fn clone(&self) -> bevy::math::DAffine3;
+    fn clone(
+        _self: LuaReflectRefProxy<bevy::math::DAffine3>,
+    ) -> LuaReflectValProxy<bevy::math::DAffine3>;
 
 "#,
     r#"
@@ -17703,22 +20886,18 @@ pub struct LuaDAffine2 {
 
     #[lua()]
     fn from_cols(
-        #[proxy]
-        x_axis: bevy::math::DVec3,
-        #[proxy]
-        y_axis: bevy::math::DVec3,
-        #[proxy]
-        z_axis: bevy::math::DVec3,
-        #[proxy]
-        w_axis: bevy::math::DVec3,
-    ) -> bevy::math::DAffine3;
+        x_axis: LuaReflectValProxy<bevy::math::DVec3>,
+        y_axis: LuaReflectValProxy<bevy::math::DVec3>,
+        z_axis: LuaReflectValProxy<bevy::math::DVec3>,
+        w_axis: LuaReflectValProxy<bevy::math::DVec3>,
+    ) -> LuaReflectValProxy<bevy::math::DAffine3>;
 
 "#,
     r#"
 /// Creates a `[f64; 12]` array storing data in column major order.
 
     #[lua()]
-    fn to_cols_array(&self) -> [f64; 12];
+    fn to_cols_array(_self: LuaReflectRefProxy<bevy::math::DAffine3>) -> [f64; 12];
 
 "#,
     r#"
@@ -17727,7 +20906,9 @@ pub struct LuaDAffine2 {
 /// If you require data in row major order `transpose` the matrix first.
 
     #[lua()]
-    fn to_cols_array_2d(&self) -> [[f64; 3]; 4];
+    fn to_cols_array_2d(
+        _self: LuaReflectRefProxy<bevy::math::DAffine3>,
+    ) -> [[f64; 3]; 4];
 
 "#,
     r#"
@@ -17735,14 +20916,18 @@ pub struct LuaDAffine2 {
 /// Note that if any scale is zero the transform will be non-invertible.
 
     #[lua()]
-    fn from_scale(#[proxy] scale: bevy::math::DVec3) -> bevy::math::DAffine3;
+    fn from_scale(
+        scale: LuaReflectValProxy<bevy::math::DVec3>,
+    ) -> LuaReflectValProxy<bevy::math::DAffine3>;
 
 "#,
     r#"
 /// Creates an affine transform from the given `rotation` quaternion.
 
     #[lua()]
-    fn from_quat(#[proxy] rotation: bevy::math::DQuat) -> bevy::math::DAffine3;
+    fn from_quat(
+        rotation: LuaReflectValProxy<bevy::math::DQuat>,
+    ) -> LuaReflectValProxy<bevy::math::DAffine3>;
 
 "#,
     r#"
@@ -17751,10 +20936,9 @@ pub struct LuaDAffine2 {
 
     #[lua()]
     fn from_axis_angle(
-        #[proxy]
-        axis: bevy::math::DVec3,
+        axis: LuaReflectValProxy<bevy::math::DVec3>,
         angle: f64,
-    ) -> bevy::math::DAffine3;
+    ) -> LuaReflectValProxy<bevy::math::DAffine3>;
 
 "#,
     r#"
@@ -17762,7 +20946,7 @@ pub struct LuaDAffine2 {
 /// `angle` (in radians).
 
     #[lua()]
-    fn from_rotation_x(angle: f64) -> bevy::math::DAffine3;
+    fn from_rotation_x(angle: f64) -> LuaReflectValProxy<bevy::math::DAffine3>;
 
 "#,
     r#"
@@ -17770,7 +20954,7 @@ pub struct LuaDAffine2 {
 /// `angle` (in radians).
 
     #[lua()]
-    fn from_rotation_y(angle: f64) -> bevy::math::DAffine3;
+    fn from_rotation_y(angle: f64) -> LuaReflectValProxy<bevy::math::DAffine3>;
 
 "#,
     r#"
@@ -17778,14 +20962,16 @@ pub struct LuaDAffine2 {
 /// `angle` (in radians).
 
     #[lua()]
-    fn from_rotation_z(angle: f64) -> bevy::math::DAffine3;
+    fn from_rotation_z(angle: f64) -> LuaReflectValProxy<bevy::math::DAffine3>;
 
 "#,
     r#"
 /// Creates an affine transformation from the given 3D `translation`.
 
     #[lua()]
-    fn from_translation(#[proxy] translation: bevy::math::DVec3) -> bevy::math::DAffine3;
+    fn from_translation(
+        translation: LuaReflectValProxy<bevy::math::DVec3>,
+    ) -> LuaReflectValProxy<bevy::math::DAffine3>;
 
 "#,
     r#"
@@ -17793,7 +20979,9 @@ pub struct LuaDAffine2 {
 /// rotation)
 
     #[lua()]
-    fn from_mat3(#[proxy] mat3: bevy::math::DMat3) -> bevy::math::DAffine3;
+    fn from_mat3(
+        mat3: LuaReflectValProxy<bevy::math::DMat3>,
+    ) -> LuaReflectValProxy<bevy::math::DAffine3>;
 
 "#,
     r#"
@@ -17803,11 +20991,9 @@ pub struct LuaDAffine2 {
 
     #[lua()]
     fn from_mat3_translation(
-        #[proxy]
-        mat3: bevy::math::DMat3,
-        #[proxy]
-        translation: bevy::math::DVec3,
-    ) -> bevy::math::DAffine3;
+        mat3: LuaReflectValProxy<bevy::math::DMat3>,
+        translation: LuaReflectValProxy<bevy::math::DVec3>,
+    ) -> LuaReflectValProxy<bevy::math::DAffine3>;
 
 "#,
     r#"
@@ -17818,13 +21004,10 @@ pub struct LuaDAffine2 {
 
     #[lua()]
     fn from_scale_rotation_translation(
-        #[proxy]
-        scale: bevy::math::DVec3,
-        #[proxy]
-        rotation: bevy::math::DQuat,
-        #[proxy]
-        translation: bevy::math::DVec3,
-    ) -> bevy::math::DAffine3;
+        scale: LuaReflectValProxy<bevy::math::DVec3>,
+        rotation: LuaReflectValProxy<bevy::math::DQuat>,
+        translation: LuaReflectValProxy<bevy::math::DVec3>,
+    ) -> LuaReflectValProxy<bevy::math::DAffine3>;
 
 "#,
     r#"
@@ -17833,11 +21016,9 @@ pub struct LuaDAffine2 {
 
     #[lua()]
     fn from_rotation_translation(
-        #[proxy]
-        rotation: bevy::math::DQuat,
-        #[proxy]
-        translation: bevy::math::DVec3,
-    ) -> bevy::math::DAffine3;
+        rotation: LuaReflectValProxy<bevy::math::DQuat>,
+        translation: LuaReflectValProxy<bevy::math::DVec3>,
+    ) -> LuaReflectValProxy<bevy::math::DAffine3>;
 
 "#,
     r#"
@@ -17845,7 +21026,9 @@ pub struct LuaDAffine2 {
 /// i.e. contain no perspective transform.
 
     #[lua()]
-    fn from_mat4(#[proxy] m: bevy::math::DMat4) -> bevy::math::DAffine3;
+    fn from_mat4(
+        m: LuaReflectValProxy<bevy::math::DMat4>,
+    ) -> LuaReflectValProxy<bevy::math::DAffine3>;
 
 "#,
     r#"
@@ -17855,13 +21038,10 @@ pub struct LuaDAffine2 {
 
     #[lua()]
     fn look_to_lh(
-        #[proxy]
-        eye: bevy::math::DVec3,
-        #[proxy]
-        dir: bevy::math::DVec3,
-        #[proxy]
-        up: bevy::math::DVec3,
-    ) -> bevy::math::DAffine3;
+        eye: LuaReflectValProxy<bevy::math::DVec3>,
+        dir: LuaReflectValProxy<bevy::math::DVec3>,
+        up: LuaReflectValProxy<bevy::math::DVec3>,
+    ) -> LuaReflectValProxy<bevy::math::DAffine3>;
 
 "#,
     r#"
@@ -17871,13 +21051,10 @@ pub struct LuaDAffine2 {
 
     #[lua()]
     fn look_to_rh(
-        #[proxy]
-        eye: bevy::math::DVec3,
-        #[proxy]
-        dir: bevy::math::DVec3,
-        #[proxy]
-        up: bevy::math::DVec3,
-    ) -> bevy::math::DAffine3;
+        eye: LuaReflectValProxy<bevy::math::DVec3>,
+        dir: LuaReflectValProxy<bevy::math::DVec3>,
+        up: LuaReflectValProxy<bevy::math::DVec3>,
+    ) -> LuaReflectValProxy<bevy::math::DAffine3>;
 
 "#,
     r#"
@@ -17889,13 +21066,10 @@ pub struct LuaDAffine2 {
 
     #[lua()]
     fn look_at_lh(
-        #[proxy]
-        eye: bevy::math::DVec3,
-        #[proxy]
-        center: bevy::math::DVec3,
-        #[proxy]
-        up: bevy::math::DVec3,
-    ) -> bevy::math::DAffine3;
+        eye: LuaReflectValProxy<bevy::math::DVec3>,
+        center: LuaReflectValProxy<bevy::math::DVec3>,
+        up: LuaReflectValProxy<bevy::math::DVec3>,
+    ) -> LuaReflectValProxy<bevy::math::DAffine3>;
 
 "#,
     r#"
@@ -17907,20 +21081,20 @@ pub struct LuaDAffine2 {
 
     #[lua()]
     fn look_at_rh(
-        #[proxy]
-        eye: bevy::math::DVec3,
-        #[proxy]
-        center: bevy::math::DVec3,
-        #[proxy]
-        up: bevy::math::DVec3,
-    ) -> bevy::math::DAffine3;
+        eye: LuaReflectValProxy<bevy::math::DVec3>,
+        center: LuaReflectValProxy<bevy::math::DVec3>,
+        up: LuaReflectValProxy<bevy::math::DVec3>,
+    ) -> LuaReflectValProxy<bevy::math::DAffine3>;
 
 "#,
     r#"
 /// Transforms the given 3D points, applying shear, scale, rotation and translation.
 
     #[lua()]
-    fn transform_point3(&self, #[proxy] rhs: bevy::math::DVec3) -> bevy::math::DVec3;
+    fn transform_point3(
+        _self: LuaReflectRefProxy<bevy::math::DAffine3>,
+        rhs: LuaReflectValProxy<bevy::math::DVec3>,
+    ) -> LuaReflectValProxy<bevy::math::DVec3>;
 
 "#,
     r#"
@@ -17929,7 +21103,10 @@ pub struct LuaDAffine2 {
 /// To also apply translation, use [`Self::transform_point3()`] instead.
 
     #[lua()]
-    fn transform_vector3(&self, #[proxy] rhs: bevy::math::DVec3) -> bevy::math::DVec3;
+    fn transform_vector3(
+        _self: LuaReflectRefProxy<bevy::math::DAffine3>,
+        rhs: LuaReflectValProxy<bevy::math::DVec3>,
+    ) -> LuaReflectValProxy<bevy::math::DVec3>;
 
 "#,
     r#"
@@ -17938,14 +21115,14 @@ pub struct LuaDAffine2 {
 /// `false`.
 
     #[lua()]
-    fn is_finite(&self) -> bool;
+    fn is_finite(_self: LuaReflectRefProxy<bevy::math::DAffine3>) -> bool;
 
 "#,
     r#"
 /// Returns `true` if any elements are `NaN`.
 
     #[lua()]
-    fn is_nan(&self) -> bool;
+    fn is_nan(_self: LuaReflectRefProxy<bevy::math::DAffine3>) -> bool;
 
 "#,
     r#"
@@ -17958,7 +21135,11 @@ pub struct LuaDAffine2 {
 /// [comparing floating point numbers](https://randomascii.wordpress.com/2012/02/25/comparing-floating-point-numbers-2012-edition/).
 
     #[lua()]
-    fn abs_diff_eq(&self, #[proxy] rhs: bevy::math::DAffine3, max_abs_diff: f64) -> bool;
+    fn abs_diff_eq(
+        _self: LuaReflectRefProxy<bevy::math::DAffine3>,
+        rhs: LuaReflectValProxy<bevy::math::DAffine3>,
+        max_abs_diff: f64,
+    ) -> bool;
 
 "#,
     r#"
@@ -17966,19 +21147,27 @@ pub struct LuaDAffine2 {
 /// Note that if the transform is not invertible the result will be invalid.
 
     #[lua()]
-    fn inverse(&self) -> bevy::math::DAffine3;
+    fn inverse(
+        _self: LuaReflectRefProxy<bevy::math::DAffine3>,
+    ) -> LuaReflectValProxy<bevy::math::DAffine3>;
 
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Mul", composite = "mul")]
-    fn mul(self, #[proxy] rhs: bevy::math::DAffine3) -> bevy::math::DAffine3;
+    #[lua(as_trait = "std::ops::Mul::<bevy::math::DAffine3>", composite = "mul")]
+    fn mul(
+        _self: LuaReflectValProxy<bevy::math::DAffine3>,
+        rhs: LuaReflectValProxy<bevy::math::DAffine3>,
+    ) -> LuaReflectValProxy<bevy::math::DAffine3>;
 
 "#,
     r#"
 
-    #[lua(as_trait = "std::cmp::PartialEq", composite = "eq")]
-    fn eq(&self, #[proxy] rhs: &glam::DAffine3) -> bool;
+    #[lua(as_trait = "std::cmp::PartialEq::<bevy::math::DAffine3>", composite = "eq")]
+    fn eq(
+        _self: LuaReflectRefProxy<bevy::math::DAffine3>,
+        rhs: LuaReflectRefProxy<bevy::math::DAffine3>,
+    ) -> bool;
 
 "#,
     r#"
@@ -17988,10 +21177,8 @@ fn index(&self) -> String {
 }
 "#]
 )]
-pub struct LuaDAffine3 {
-    #[lua(output(proxy))]
+pub struct DAffine3 {
     matrix3: bevy::math::DMat3,
-    #[lua(output(proxy))]
     translation: bevy::math::DVec3,
 }
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
@@ -18005,34 +21192,47 @@ pub struct LuaDAffine3 {
 /// Note that addition is not the same as combining the rotations represented by the
 /// two quaternions! That corresponds to multiplication.
 
-    #[lua(as_trait = "std::ops::Add", composite = "add")]
-    fn add(self, #[proxy] rhs: bevy::math::DQuat) -> bevy::math::DQuat;
+    #[lua(as_trait = "std::ops::Add::<bevy::math::DQuat>", composite = "add")]
+    fn add(
+        _self: LuaReflectValProxy<bevy::math::DQuat>,
+        rhs: LuaReflectValProxy<bevy::math::DQuat>,
+    ) -> LuaReflectValProxy<bevy::math::DQuat>;
 
 "#,
     r#"
 
     #[lua(as_trait = "std::ops::Neg", composite = "neg")]
-    fn neg(self) -> bevy::math::DQuat;
+    fn neg(
+        _self: LuaReflectValProxy<bevy::math::DQuat>,
+    ) -> LuaReflectValProxy<bevy::math::DQuat>;
 
 "#,
     r#"
 
-    #[lua(as_trait = "std::cmp::PartialEq", composite = "eq")]
-    fn eq(&self, #[proxy] rhs: &glam::DQuat) -> bool;
+    #[lua(as_trait = "std::cmp::PartialEq::<bevy::math::DQuat>", composite = "eq")]
+    fn eq(
+        _self: LuaReflectRefProxy<bevy::math::DQuat>,
+        rhs: LuaReflectRefProxy<bevy::math::DQuat>,
+    ) -> bool;
 
 "#,
     r#"
 
     #[lua(as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone")]
-    fn clone(&self) -> bevy::math::DQuat;
+    fn clone(
+        _self: LuaReflectRefProxy<bevy::math::DQuat>,
+    ) -> LuaReflectValProxy<bevy::math::DQuat>;
 
 "#,
     r#"
 /// Divides a quaternion by a scalar value.
 /// The quotient is not guaranteed to be normalized.
 
-    #[lua(as_trait = "std::ops::Div", composite = "div")]
-    fn div(self, rhs: f64) -> bevy::math::DQuat;
+    #[lua(as_trait = "std::ops::Div::<f64>", composite = "div")]
+    fn div(
+        _self: LuaReflectValProxy<bevy::math::DQuat>,
+        rhs: f64,
+    ) -> LuaReflectValProxy<bevy::math::DQuat>;
 
 "#,
     r#"
@@ -18043,24 +21243,33 @@ pub struct LuaDAffine3 {
 /// # Panics
 /// Will panic if `self` or `rhs` are not normalized when `glam_assert` is enabled.
 
-    #[lua(as_trait = "std::ops::Mul", composite = "mul")]
-    fn mul(self, #[proxy] rhs: bevy::math::DQuat) -> bevy::math::DQuat;
+    #[lua(as_trait = "std::ops::Mul::<bevy::math::DQuat>", composite = "mul")]
+    fn mul(
+        _self: LuaReflectValProxy<bevy::math::DQuat>,
+        rhs: LuaReflectValProxy<bevy::math::DQuat>,
+    ) -> LuaReflectValProxy<bevy::math::DQuat>;
 
 "#,
     r#"
 /// Subtracts the `rhs` quaternion from `self`.
 /// The difference is not guaranteed to be normalized.
 
-    #[lua(as_trait = "std::ops::Sub", composite = "sub")]
-    fn sub(self, #[proxy] rhs: bevy::math::DQuat) -> bevy::math::DQuat;
+    #[lua(as_trait = "std::ops::Sub::<bevy::math::DQuat>", composite = "sub")]
+    fn sub(
+        _self: LuaReflectValProxy<bevy::math::DQuat>,
+        rhs: LuaReflectValProxy<bevy::math::DQuat>,
+    ) -> LuaReflectValProxy<bevy::math::DQuat>;
 
 "#,
     r#"
 /// Multiplies a quaternion by a scalar value.
 /// The product is not guaranteed to be normalized.
 
-    #[lua(as_trait = "std::ops::Mul", composite = "mul")]
-    fn mul(self, rhs: f64) -> bevy::math::DQuat;
+    #[lua(as_trait = "std::ops::Mul::<f64>", composite = "mul")]
+    fn mul(
+        _self: LuaReflectValProxy<bevy::math::DQuat>,
+        rhs: f64,
+    ) -> LuaReflectValProxy<bevy::math::DQuat>;
 
 "#,
     r#"
@@ -18068,8 +21277,11 @@ pub struct LuaDAffine3 {
 /// # Panics
 /// Will panic if `self` is not normalized when `glam_assert` is enabled.
 
-    #[lua(as_trait = "std::ops::Mul", composite = "mul")]
-    fn mul(self, #[proxy] rhs: bevy::math::DVec3) -> bevy::math::DVec3;
+    #[lua(as_trait = "std::ops::Mul::<bevy::math::DVec3>", composite = "mul")]
+    fn mul(
+        _self: LuaReflectValProxy<bevy::math::DQuat>,
+        rhs: LuaReflectValProxy<bevy::math::DVec3>,
+    ) -> LuaReflectValProxy<bevy::math::DVec3>;
 
 "#,
     r#"
@@ -18082,7 +21294,12 @@ pub struct LuaDAffine3 {
 /// provide normalized input or to normalized the resulting quaternion.
 
     #[lua()]
-    fn from_xyzw(x: f64, y: f64, z: f64, w: f64) -> bevy::math::DQuat;
+    fn from_xyzw(
+        x: f64,
+        y: f64,
+        z: f64,
+        w: f64,
+    ) -> LuaReflectValProxy<bevy::math::DQuat>;
 
 "#,
     r#"
@@ -18092,7 +21309,7 @@ pub struct LuaDAffine3 {
 /// provide normalized input or to normalized the resulting quaternion.
 
     #[lua()]
-    fn from_array(a: [f64; 4]) -> bevy::math::DQuat;
+    fn from_array(a: [f64; 4]) -> LuaReflectValProxy<bevy::math::DQuat>;
 
 "#,
     r#"
@@ -18102,7 +21319,9 @@ pub struct LuaDAffine3 {
 /// provide normalized input or to normalized the resulting quaternion.
 
     #[lua()]
-    fn from_vec4(#[proxy] v: bevy::math::DVec4) -> bevy::math::DQuat;
+    fn from_vec4(
+        v: LuaReflectValProxy<bevy::math::DVec4>,
+    ) -> LuaReflectValProxy<bevy::math::DQuat>;
 
 "#,
     r#"
@@ -18113,10 +21332,9 @@ pub struct LuaDAffine3 {
 
     #[lua()]
     fn from_axis_angle(
-        #[proxy]
-        axis: bevy::math::DVec3,
+        axis: LuaReflectValProxy<bevy::math::DVec3>,
         angle: f64,
-    ) -> bevy::math::DQuat;
+    ) -> LuaReflectValProxy<bevy::math::DQuat>;
 
 "#,
     r#"
@@ -18124,28 +21342,30 @@ pub struct LuaDAffine3 {
 /// `from_scaled_axis(Vec3::ZERO)` results in the identity quaternion.
 
     #[lua()]
-    fn from_scaled_axis(#[proxy] v: bevy::math::DVec3) -> bevy::math::DQuat;
+    fn from_scaled_axis(
+        v: LuaReflectValProxy<bevy::math::DVec3>,
+    ) -> LuaReflectValProxy<bevy::math::DQuat>;
 
 "#,
     r#"
 /// Creates a quaternion from the `angle` (in radians) around the x axis.
 
     #[lua()]
-    fn from_rotation_x(angle: f64) -> bevy::math::DQuat;
+    fn from_rotation_x(angle: f64) -> LuaReflectValProxy<bevy::math::DQuat>;
 
 "#,
     r#"
 /// Creates a quaternion from the `angle` (in radians) around the y axis.
 
     #[lua()]
-    fn from_rotation_y(angle: f64) -> bevy::math::DQuat;
+    fn from_rotation_y(angle: f64) -> LuaReflectValProxy<bevy::math::DQuat>;
 
 "#,
     r#"
 /// Creates a quaternion from the `angle` (in radians) around the z axis.
 
     #[lua()]
-    fn from_rotation_z(angle: f64) -> bevy::math::DQuat;
+    fn from_rotation_z(angle: f64) -> LuaReflectValProxy<bevy::math::DQuat>;
 
 "#,
     r#"
@@ -18153,26 +21373,29 @@ pub struct LuaDAffine3 {
 
     #[lua()]
     fn from_euler(
-        #[proxy]
-        euler: bevy::math::EulerRot,
+        euler: LuaReflectValProxy<bevy::math::EulerRot>,
         a: f64,
         b: f64,
         c: f64,
-    ) -> bevy::math::DQuat;
+    ) -> LuaReflectValProxy<bevy::math::DQuat>;
 
 "#,
     r#"
 /// Creates a quaternion from a 3x3 rotation matrix.
 
     #[lua()]
-    fn from_mat3(#[proxy] mat: &glam::DMat3) -> bevy::math::DQuat;
+    fn from_mat3(
+        mat: LuaReflectRefProxy<bevy::math::DMat3>,
+    ) -> LuaReflectValProxy<bevy::math::DQuat>;
 
 "#,
     r#"
 /// Creates a quaternion from a 3x3 rotation matrix inside a homogeneous 4x4 matrix.
 
     #[lua()]
-    fn from_mat4(#[proxy] mat: &glam::DMat4) -> bevy::math::DQuat;
+    fn from_mat4(
+        mat: LuaReflectRefProxy<bevy::math::DMat4>,
+    ) -> LuaReflectValProxy<bevy::math::DQuat>;
 
 "#,
     r#"
@@ -18187,11 +21410,9 @@ pub struct LuaDAffine3 {
 
     #[lua()]
     fn from_rotation_arc(
-        #[proxy]
-        from: bevy::math::DVec3,
-        #[proxy]
-        to: bevy::math::DVec3,
-    ) -> bevy::math::DQuat;
+        from: LuaReflectValProxy<bevy::math::DVec3>,
+        to: LuaReflectValProxy<bevy::math::DVec3>,
+    ) -> LuaReflectValProxy<bevy::math::DQuat>;
 
 "#,
     r#"
@@ -18206,11 +21427,9 @@ pub struct LuaDAffine3 {
 
     #[lua()]
     fn from_rotation_arc_colinear(
-        #[proxy]
-        from: bevy::math::DVec3,
-        #[proxy]
-        to: bevy::math::DVec3,
-    ) -> bevy::math::DQuat;
+        from: LuaReflectValProxy<bevy::math::DVec3>,
+        to: LuaReflectValProxy<bevy::math::DVec3>,
+    ) -> LuaReflectValProxy<bevy::math::DQuat>;
 
 "#,
     r#"
@@ -18225,39 +21444,44 @@ pub struct LuaDAffine3 {
 
     #[lua()]
     fn from_rotation_arc_2d(
-        #[proxy]
-        from: bevy::math::DVec2,
-        #[proxy]
-        to: bevy::math::DVec2,
-    ) -> bevy::math::DQuat;
+        from: LuaReflectValProxy<bevy::math::DVec2>,
+        to: LuaReflectValProxy<bevy::math::DVec2>,
+    ) -> LuaReflectValProxy<bevy::math::DQuat>;
 
 "#,
     r#"
 /// Returns the rotation axis scaled by the rotation in radians.
 
     #[lua()]
-    fn to_scaled_axis(self) -> bevy::math::DVec3;
+    fn to_scaled_axis(
+        _self: LuaReflectValProxy<bevy::math::DQuat>,
+    ) -> LuaReflectValProxy<bevy::math::DVec3>;
 
 "#,
     r#"
 /// Returns the rotation angles for the given euler rotation sequence.
 
     #[lua()]
-    fn to_euler(self, #[proxy] euler: bevy::math::EulerRot) -> (f64, f64, f64);
+    fn to_euler(
+        _self: LuaReflectValProxy<bevy::math::DQuat>,
+        euler: LuaReflectValProxy<bevy::math::EulerRot>,
+    ) -> (f64, f64, f64);
 
 "#,
     r#"
 /// `[x, y, z, w]`
 
     #[lua()]
-    fn to_array(&self) -> [f64; 4];
+    fn to_array(_self: LuaReflectRefProxy<bevy::math::DQuat>) -> [f64; 4];
 
 "#,
     r#"
 /// Returns the vector part of the quaternion.
 
     #[lua()]
-    fn xyz(self) -> bevy::math::DVec3;
+    fn xyz(
+        _self: LuaReflectValProxy<bevy::math::DQuat>,
+    ) -> LuaReflectValProxy<bevy::math::DVec3>;
 
 "#,
     r#"
@@ -18265,7 +21489,9 @@ pub struct LuaDAffine3 {
 /// conjugate is also the inverse.
 
     #[lua()]
-    fn conjugate(self) -> bevy::math::DQuat;
+    fn conjugate(
+        _self: LuaReflectValProxy<bevy::math::DQuat>,
+    ) -> LuaReflectValProxy<bevy::math::DQuat>;
 
 "#,
     r#"
@@ -18277,7 +21503,9 @@ pub struct LuaDAffine3 {
 /// Will panic if `self` is not normalized when `glam_assert` is enabled.
 
     #[lua()]
-    fn inverse(self) -> bevy::math::DQuat;
+    fn inverse(
+        _self: LuaReflectValProxy<bevy::math::DQuat>,
+    ) -> LuaReflectValProxy<bevy::math::DQuat>;
 
 "#,
     r#"
@@ -18285,14 +21513,17 @@ pub struct LuaDAffine3 {
 /// equal to the cosine of the angle between two quaternion rotations.
 
     #[lua()]
-    fn dot(self, #[proxy] rhs: bevy::math::DQuat) -> f64;
+    fn dot(
+        _self: LuaReflectValProxy<bevy::math::DQuat>,
+        rhs: LuaReflectValProxy<bevy::math::DQuat>,
+    ) -> f64;
 
 "#,
     r#"
 /// Computes the length of `self`.
 
     #[lua()]
-    fn length(self) -> f64;
+    fn length(_self: LuaReflectValProxy<bevy::math::DQuat>) -> f64;
 
 "#,
     r#"
@@ -18301,7 +21532,7 @@ pub struct LuaDAffine3 {
 /// root operation.
 
     #[lua()]
-    fn length_squared(self) -> f64;
+    fn length_squared(_self: LuaReflectValProxy<bevy::math::DQuat>) -> f64;
 
 "#,
     r#"
@@ -18309,7 +21540,7 @@ pub struct LuaDAffine3 {
 /// For valid results, `self` must _not_ be of length zero.
 
     #[lua()]
-    fn length_recip(self) -> f64;
+    fn length_recip(_self: LuaReflectValProxy<bevy::math::DQuat>) -> f64;
 
 "#,
     r#"
@@ -18319,7 +21550,9 @@ pub struct LuaDAffine3 {
 /// Will panic if `self` is zero length when `glam_assert` is enabled.
 
     #[lua()]
-    fn normalize(self) -> bevy::math::DQuat;
+    fn normalize(
+        _self: LuaReflectValProxy<bevy::math::DQuat>,
+    ) -> LuaReflectValProxy<bevy::math::DQuat>;
 
 "#,
     r#"
@@ -18327,13 +21560,13 @@ pub struct LuaDAffine3 {
 /// If any element is either `NaN`, positive or negative infinity, this will return `false`.
 
     #[lua()]
-    fn is_finite(self) -> bool;
+    fn is_finite(_self: LuaReflectValProxy<bevy::math::DQuat>) -> bool;
 
 "#,
     r#"
 
     #[lua()]
-    fn is_nan(self) -> bool;
+    fn is_nan(_self: LuaReflectValProxy<bevy::math::DQuat>) -> bool;
 
 "#,
     r#"
@@ -18341,13 +21574,13 @@ pub struct LuaDAffine3 {
 /// Uses a precision threshold of `1e-6`.
 
     #[lua()]
-    fn is_normalized(self) -> bool;
+    fn is_normalized(_self: LuaReflectValProxy<bevy::math::DQuat>) -> bool;
 
 "#,
     r#"
 
     #[lua()]
-    fn is_near_identity(self) -> bool;
+    fn is_near_identity(_self: LuaReflectValProxy<bevy::math::DQuat>) -> bool;
 
 "#,
     r#"
@@ -18358,7 +21591,10 @@ pub struct LuaDAffine3 {
 /// Will panic if `self` or `rhs` are not normalized when `glam_assert` is enabled.
 
     #[lua()]
-    fn angle_between(self, #[proxy] rhs: bevy::math::DQuat) -> f64;
+    fn angle_between(
+        _self: LuaReflectValProxy<bevy::math::DQuat>,
+        rhs: LuaReflectValProxy<bevy::math::DQuat>,
+    ) -> f64;
 
 "#,
     r#"
@@ -18371,7 +21607,11 @@ pub struct LuaDAffine3 {
 /// [comparing floating point numbers](https://randomascii.wordpress.com/2012/02/25/comparing-floating-point-numbers-2012-edition/).
 
     #[lua()]
-    fn abs_diff_eq(self, #[proxy] rhs: bevy::math::DQuat, max_abs_diff: f64) -> bool;
+    fn abs_diff_eq(
+        _self: LuaReflectValProxy<bevy::math::DQuat>,
+        rhs: LuaReflectValProxy<bevy::math::DQuat>,
+        max_abs_diff: f64,
+    ) -> bool;
 
 "#,
     r#"
@@ -18383,7 +21623,11 @@ pub struct LuaDAffine3 {
 /// Will panic if `self` or `end` are not normalized when `glam_assert` is enabled.
 
     #[lua()]
-    fn lerp(self, #[proxy] end: bevy::math::DQuat, s: f64) -> bevy::math::DQuat;
+    fn lerp(
+        _self: LuaReflectValProxy<bevy::math::DQuat>,
+        end: LuaReflectValProxy<bevy::math::DQuat>,
+        s: f64,
+    ) -> LuaReflectValProxy<bevy::math::DQuat>;
 
 "#,
     r#"
@@ -18395,7 +21639,11 @@ pub struct LuaDAffine3 {
 /// Will panic if `self` or `end` are not normalized when `glam_assert` is enabled.
 
     #[lua()]
-    fn slerp(self, #[proxy] end: bevy::math::DQuat, s: f64) -> bevy::math::DQuat;
+    fn slerp(
+        _self: LuaReflectValProxy<bevy::math::DQuat>,
+        end: LuaReflectValProxy<bevy::math::DQuat>,
+        s: f64,
+    ) -> LuaReflectValProxy<bevy::math::DQuat>;
 
 "#,
     r#"
@@ -18404,7 +21652,10 @@ pub struct LuaDAffine3 {
 /// Will panic if `self` is not normalized when `glam_assert` is enabled.
 
     #[lua()]
-    fn mul_vec3(self, #[proxy] rhs: bevy::math::DVec3) -> bevy::math::DVec3;
+    fn mul_vec3(
+        _self: LuaReflectValProxy<bevy::math::DQuat>,
+        rhs: LuaReflectValProxy<bevy::math::DVec3>,
+    ) -> LuaReflectValProxy<bevy::math::DVec3>;
 
 "#,
     r#"
@@ -18415,26 +21666,35 @@ pub struct LuaDAffine3 {
 /// Will panic if `self` or `rhs` are not normalized when `glam_assert` is enabled.
 
     #[lua()]
-    fn mul_quat(self, #[proxy] rhs: bevy::math::DQuat) -> bevy::math::DQuat;
+    fn mul_quat(
+        _self: LuaReflectValProxy<bevy::math::DQuat>,
+        rhs: LuaReflectValProxy<bevy::math::DQuat>,
+    ) -> LuaReflectValProxy<bevy::math::DQuat>;
 
 "#,
     r#"
 /// Creates a quaternion from a 3x3 rotation matrix inside a 3D affine transform.
 
     #[lua()]
-    fn from_affine3(#[proxy] a: &glam::DAffine3) -> bevy::math::DQuat;
+    fn from_affine3(
+        a: LuaReflectRefProxy<bevy::math::DAffine3>,
+    ) -> LuaReflectValProxy<bevy::math::DQuat>;
 
 "#,
     r#"
 
     #[lua()]
-    fn as_quat(self) -> bevy::math::Quat;
+    fn as_quat(
+        _self: LuaReflectValProxy<bevy::math::DQuat>,
+    ) -> LuaReflectValProxy<bevy::math::Quat>;
 
 "#,
     r#"
 
     #[lua()]
-    fn as_f32(self) -> bevy::math::Quat;
+    fn as_f32(
+        _self: LuaReflectValProxy<bevy::math::DQuat>,
+    ) -> LuaReflectValProxy<bevy::math::Quat>;
 
 "#,
     r#"
@@ -18444,7 +21704,7 @@ fn index(&self) -> String {
 }
 "#]
 )]
-pub struct LuaDQuat {
+pub struct DQuat {
     x: f64,
     y: f64,
     z: f64,
@@ -18457,20 +21717,27 @@ pub struct LuaDQuat {
     bms_lua_path = "crate",
     functions[r#"
 
-    #[lua(as_trait = "std::cmp::PartialEq", composite = "eq")]
-    fn eq(&self, #[proxy] other: &glam::EulerRot) -> bool;
+    #[lua(as_trait = "std::cmp::PartialEq::<bevy::math::EulerRot>", composite = "eq")]
+    fn eq(
+        _self: LuaReflectRefProxy<bevy::math::EulerRot>,
+        other: LuaReflectRefProxy<bevy::math::EulerRot>,
+    ) -> bool;
 
 "#,
     r#"
 
     #[lua(as_trait = "std::cmp::Eq")]
-    fn assert_receiver_is_total_eq(&self) -> ();
+    fn assert_receiver_is_total_eq(
+        _self: LuaReflectRefProxy<bevy::math::EulerRot>,
+    ) -> ();
 
 "#,
     r#"
 
     #[lua(as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone")]
-    fn clone(&self) -> bevy::math::EulerRot;
+    fn clone(
+        _self: LuaReflectRefProxy<bevy::math::EulerRot>,
+    ) -> LuaReflectValProxy<bevy::math::EulerRot>;
 
 "#,
     r#"
@@ -18480,7 +21747,7 @@ fn index(&self) -> String {
 }
 "#]
 )]
-pub struct LuaEulerRot {}
+pub struct EulerRot {}
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
     remote = "bevy::math::BVec3A",
@@ -18489,21 +21756,23 @@ pub struct LuaEulerRot {}
     functions[r#"
 
     #[lua(as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone")]
-    fn clone(&self) -> bevy::math::BVec3A;
+    fn clone(
+        _self: LuaReflectRefProxy<bevy::math::BVec3A>,
+    ) -> LuaReflectValProxy<bevy::math::BVec3A>;
 
 "#,
     r#"
 /// Creates a new vector mask.
 
     #[lua()]
-    fn new(x: bool, y: bool, z: bool) -> bevy::math::BVec3A;
+    fn new(x: bool, y: bool, z: bool) -> LuaReflectValProxy<bevy::math::BVec3A>;
 
 "#,
     r#"
 /// Creates a vector with all elements set to `v`.
 
     #[lua()]
-    fn splat(v: bool) -> bevy::math::BVec3A;
+    fn splat(v: bool) -> LuaReflectValProxy<bevy::math::BVec3A>;
 
 "#,
     r#"
@@ -18512,21 +21781,21 @@ pub struct LuaEulerRot {}
 /// into the first lowest bit, element `y` into the second, etc.
 
     #[lua()]
-    fn bitmask(self) -> u32;
+    fn bitmask(_self: LuaReflectValProxy<bevy::math::BVec3A>) -> u32;
 
 "#,
     r#"
 /// Returns true if any of the elements are true, false otherwise.
 
     #[lua()]
-    fn any(self) -> bool;
+    fn any(_self: LuaReflectValProxy<bevy::math::BVec3A>) -> bool;
 
 "#,
     r#"
 /// Returns true if all the elements are true, false otherwise.
 
     #[lua()]
-    fn all(self) -> bool;
+    fn all(_self: LuaReflectValProxy<bevy::math::BVec3A>) -> bool;
 
 "#,
     r#"
@@ -18534,7 +21803,7 @@ pub struct LuaEulerRot {}
 /// Panics if `index` is greater than 2.
 
     #[lua()]
-    fn test(&self, index: usize) -> bool;
+    fn test(_self: LuaReflectRefProxy<bevy::math::BVec3A>, index: usize) -> bool;
 
 "#,
     r#"
@@ -18542,13 +21811,20 @@ pub struct LuaEulerRot {}
 /// Panics if `index` is greater than 2.
 
     #[lua()]
-    fn set(&mut self, index: usize, value: bool) -> ();
+    fn set(
+        _self: LuaReflectRefMutProxy<bevy::math::BVec3A>,
+        index: usize,
+        value: bool,
+    ) -> ();
 
 "#,
     r#"
 
-    #[lua(as_trait = "std::cmp::PartialEq", composite = "eq")]
-    fn eq(&self, #[proxy] rhs: &glam::BVec3A) -> bool;
+    #[lua(as_trait = "std::cmp::PartialEq::<bevy::math::BVec3A>", composite = "eq")]
+    fn eq(
+        _self: LuaReflectRefProxy<bevy::math::BVec3A>,
+        rhs: LuaReflectRefProxy<bevy::math::BVec3A>,
+    ) -> bool;
 
 "#,
     r#"
@@ -18558,7 +21834,7 @@ fn index(&self) -> String {
 }
 "#]
 )]
-pub struct LuaBVec3A();
+pub struct BVec3A();
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
     remote = "bevy::math::BVec4A",
@@ -18567,21 +21843,23 @@ pub struct LuaBVec3A();
     functions[r#"
 
     #[lua(as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone")]
-    fn clone(&self) -> bevy::math::BVec4A;
+    fn clone(
+        _self: LuaReflectRefProxy<bevy::math::BVec4A>,
+    ) -> LuaReflectValProxy<bevy::math::BVec4A>;
 
 "#,
     r#"
 /// Creates a new vector mask.
 
     #[lua()]
-    fn new(x: bool, y: bool, z: bool, w: bool) -> bevy::math::BVec4A;
+    fn new(x: bool, y: bool, z: bool, w: bool) -> LuaReflectValProxy<bevy::math::BVec4A>;
 
 "#,
     r#"
 /// Creates a vector with all elements set to `v`.
 
     #[lua()]
-    fn splat(v: bool) -> bevy::math::BVec4A;
+    fn splat(v: bool) -> LuaReflectValProxy<bevy::math::BVec4A>;
 
 "#,
     r#"
@@ -18590,21 +21868,21 @@ pub struct LuaBVec3A();
 /// into the first lowest bit, element `y` into the second, etc.
 
     #[lua()]
-    fn bitmask(self) -> u32;
+    fn bitmask(_self: LuaReflectValProxy<bevy::math::BVec4A>) -> u32;
 
 "#,
     r#"
 /// Returns true if any of the elements are true, false otherwise.
 
     #[lua()]
-    fn any(self) -> bool;
+    fn any(_self: LuaReflectValProxy<bevy::math::BVec4A>) -> bool;
 
 "#,
     r#"
 /// Returns true if all the elements are true, false otherwise.
 
     #[lua()]
-    fn all(self) -> bool;
+    fn all(_self: LuaReflectValProxy<bevy::math::BVec4A>) -> bool;
 
 "#,
     r#"
@@ -18612,7 +21890,7 @@ pub struct LuaBVec3A();
 /// Panics if `index` is greater than 3.
 
     #[lua()]
-    fn test(&self, index: usize) -> bool;
+    fn test(_self: LuaReflectRefProxy<bevy::math::BVec4A>, index: usize) -> bool;
 
 "#,
     r#"
@@ -18620,13 +21898,20 @@ pub struct LuaBVec3A();
 /// Panics if `index` is greater than 3.
 
     #[lua()]
-    fn set(&mut self, index: usize, value: bool) -> ();
+    fn set(
+        _self: LuaReflectRefMutProxy<bevy::math::BVec4A>,
+        index: usize,
+        value: bool,
+    ) -> ();
 
 "#,
     r#"
 
-    #[lua(as_trait = "std::cmp::PartialEq", composite = "eq")]
-    fn eq(&self, #[proxy] rhs: &glam::BVec4A) -> bool;
+    #[lua(as_trait = "std::cmp::PartialEq::<bevy::math::BVec4A>", composite = "eq")]
+    fn eq(
+        _self: LuaReflectRefProxy<bevy::math::BVec4A>,
+        rhs: LuaReflectRefProxy<bevy::math::BVec4A>,
+    ) -> bool;
 
 "#,
     r#"
@@ -18636,7 +21921,7 @@ fn index(&self) -> String {
 }
 "#]
 )]
-pub struct LuaBVec4A();
+pub struct BVec4A();
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
     remote = "bevy::math::primitives::Direction2d",
@@ -18649,27 +21934,36 @@ pub struct LuaBVec4A();
 
     #[lua()]
     fn new_unchecked(
-        #[proxy]
-        value: bevy::math::Vec2,
-    ) -> bevy::math::primitives::Direction2d;
+        value: LuaReflectValProxy<bevy::math::Vec2>,
+    ) -> LuaReflectValProxy<bevy::math::primitives::Direction2d>;
 
 "#,
     r#"
 
-    #[lua(as_trait = "std::cmp::PartialEq", composite = "eq")]
-    fn eq(&self, #[proxy] other: &bevy_math::primitives::Direction2d) -> bool;
+    #[lua(
+        as_trait = "std::cmp::PartialEq::<bevy::math::primitives::Direction2d>",
+        composite = "eq",
+    )]
+    fn eq(
+        _self: LuaReflectRefProxy<bevy::math::primitives::Direction2d>,
+        other: LuaReflectRefProxy<bevy::math::primitives::Direction2d>,
+    ) -> bool;
 
 "#,
     r#"
 
     #[lua(as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone")]
-    fn clone(&self) -> bevy::math::primitives::Direction2d;
+    fn clone(
+        _self: LuaReflectRefProxy<bevy::math::primitives::Direction2d>,
+    ) -> LuaReflectValProxy<bevy::math::primitives::Direction2d>;
 
 "#,
     r#"
 
     #[lua(as_trait = "std::ops::Neg", composite = "neg")]
-    fn neg(self) -> bevy::math::primitives::Direction2d;
+    fn neg(
+        _self: LuaReflectValProxy<bevy::math::primitives::Direction2d>,
+    ) -> LuaReflectValProxy<bevy::math::primitives::Direction2d>;
 
 "#,
     r#"
@@ -18679,7 +21973,7 @@ fn index(&self) -> String {
 }
 "#]
 )]
-pub struct LuaDirection2d();
+pub struct Direction2d();
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
     remote = "bevy::math::primitives::Circle",
@@ -18688,41 +21982,49 @@ pub struct LuaDirection2d();
     functions[r#"
 
     #[lua(as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone")]
-    fn clone(&self) -> bevy::math::primitives::Circle;
+    fn clone(
+        _self: LuaReflectRefProxy<bevy::math::primitives::Circle>,
+    ) -> LuaReflectValProxy<bevy::math::primitives::Circle>;
 
 "#,
     r#"
 
-    #[lua(as_trait = "std::cmp::PartialEq", composite = "eq")]
-    fn eq(&self, #[proxy] other: &bevy_math::primitives::Circle) -> bool;
+    #[lua(
+        as_trait = "std::cmp::PartialEq::<bevy::math::primitives::Circle>",
+        composite = "eq",
+    )]
+    fn eq(
+        _self: LuaReflectRefProxy<bevy::math::primitives::Circle>,
+        other: LuaReflectRefProxy<bevy::math::primitives::Circle>,
+    ) -> bool;
 
 "#,
     r#"
 /// Create a new [`Circle`] from a `radius`
 
     #[lua()]
-    fn new(radius: f32) -> bevy::math::primitives::Circle;
+    fn new(radius: f32) -> LuaReflectValProxy<bevy::math::primitives::Circle>;
 
 "#,
     r#"
 /// Get the diameter of the circle
 
     #[lua()]
-    fn diameter(&self) -> f32;
+    fn diameter(_self: LuaReflectRefProxy<bevy::math::primitives::Circle>) -> f32;
 
 "#,
     r#"
 /// Get the area of the circle
 
     #[lua()]
-    fn area(&self) -> f32;
+    fn area(_self: LuaReflectRefProxy<bevy::math::primitives::Circle>) -> f32;
 
 "#,
     r#"
 /// Get the perimeter or circumference of the circle
 
     #[lua()]
-    fn perimeter(&self) -> f32;
+    fn perimeter(_self: LuaReflectRefProxy<bevy::math::primitives::Circle>) -> f32;
 
 "#,
     r#"
@@ -18731,7 +22033,10 @@ pub struct LuaDirection2d();
 /// Otherwise, it will be inside the circle and returned as is.
 
     #[lua()]
-    fn closest_point(&self, #[proxy] point: bevy::math::Vec2) -> bevy::math::Vec2;
+    fn closest_point(
+        _self: LuaReflectRefProxy<bevy::math::primitives::Circle>,
+        point: LuaReflectValProxy<bevy::math::Vec2>,
+    ) -> LuaReflectValProxy<bevy::math::Vec2>;
 
 "#,
     r#"
@@ -18741,7 +22046,7 @@ fn index(&self) -> String {
 }
 "#]
 )]
-pub struct LuaCircle {
+pub struct Circle {
     radius: f32,
 }
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
@@ -18752,13 +22057,21 @@ pub struct LuaCircle {
     functions[r#"
 
     #[lua(as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone")]
-    fn clone(&self) -> bevy::math::primitives::Ellipse;
+    fn clone(
+        _self: LuaReflectRefProxy<bevy::math::primitives::Ellipse>,
+    ) -> LuaReflectValProxy<bevy::math::primitives::Ellipse>;
 
 "#,
     r#"
 
-    #[lua(as_trait = "std::cmp::PartialEq", composite = "eq")]
-    fn eq(&self, #[proxy] other: &bevy_math::primitives::Ellipse) -> bool;
+    #[lua(
+        as_trait = "std::cmp::PartialEq::<bevy::math::primitives::Ellipse>",
+        composite = "eq",
+    )]
+    fn eq(
+        _self: LuaReflectRefProxy<bevy::math::primitives::Ellipse>,
+        other: LuaReflectRefProxy<bevy::math::primitives::Ellipse>,
+    ) -> bool;
 
 "#,
     r#"
@@ -18766,7 +22079,10 @@ pub struct LuaCircle {
 /// This corresponds to the two perpendicular radii defining the ellipse.
 
     #[lua()]
-    fn new(half_width: f32, half_height: f32) -> bevy::math::primitives::Ellipse;
+    fn new(
+        half_width: f32,
+        half_height: f32,
+    ) -> LuaReflectValProxy<bevy::math::primitives::Ellipse>;
 
 "#,
     r#"
@@ -18774,28 +22090,30 @@ pub struct LuaCircle {
 /// `size.x` is the diameter along the X axis, and `size.y` is the diameter along the Y axis.
 
     #[lua()]
-    fn from_size(#[proxy] size: bevy::math::Vec2) -> bevy::math::primitives::Ellipse;
+    fn from_size(
+        size: LuaReflectValProxy<bevy::math::Vec2>,
+    ) -> LuaReflectValProxy<bevy::math::primitives::Ellipse>;
 
 "#,
     r#"
 /// Returns the length of the semi-major axis. This corresponds to the longest radius of the ellipse.
 
     #[lua()]
-    fn semi_major(self) -> f32;
+    fn semi_major(_self: LuaReflectValProxy<bevy::math::primitives::Ellipse>) -> f32;
 
 "#,
     r#"
 /// Returns the length of the semi-minor axis. This corresponds to the shortest radius of the ellipse.
 
     #[lua()]
-    fn semi_minor(self) -> f32;
+    fn semi_minor(_self: LuaReflectValProxy<bevy::math::primitives::Ellipse>) -> f32;
 
 "#,
     r#"
 /// Get the area of the ellipse
 
     #[lua()]
-    fn area(&self) -> f32;
+    fn area(_self: LuaReflectRefProxy<bevy::math::primitives::Ellipse>) -> f32;
 
 "#,
     r#"
@@ -18805,8 +22123,7 @@ fn index(&self) -> String {
 }
 "#]
 )]
-pub struct LuaEllipse {
-    #[lua(output(proxy))]
+pub struct Ellipse {
     half_size: bevy::math::Vec2,
 }
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
@@ -18816,8 +22133,14 @@ pub struct LuaEllipse {
     bms_lua_path = "crate",
     functions[r#"
 
-    #[lua(as_trait = "std::cmp::PartialEq", composite = "eq")]
-    fn eq(&self, #[proxy] other: &bevy_math::primitives::Plane2d) -> bool;
+    #[lua(
+        as_trait = "std::cmp::PartialEq::<bevy::math::primitives::Plane2d>",
+        composite = "eq",
+    )]
+    fn eq(
+        _self: LuaReflectRefProxy<bevy::math::primitives::Plane2d>,
+        other: LuaReflectRefProxy<bevy::math::primitives::Plane2d>,
+    ) -> bool;
 
 "#,
     r#"
@@ -18826,13 +22149,17 @@ pub struct LuaEllipse {
 /// Panics if the given `normal` is zero (or very close to zero), or non-finite.
 
     #[lua()]
-    fn new(#[proxy] normal: bevy::math::Vec2) -> bevy::math::primitives::Plane2d;
+    fn new(
+        normal: LuaReflectValProxy<bevy::math::Vec2>,
+    ) -> LuaReflectValProxy<bevy::math::primitives::Plane2d>;
 
 "#,
     r#"
 
     #[lua(as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone")]
-    fn clone(&self) -> bevy::math::primitives::Plane2d;
+    fn clone(
+        _self: LuaReflectRefProxy<bevy::math::primitives::Plane2d>,
+    ) -> LuaReflectValProxy<bevy::math::primitives::Plane2d>;
 
 "#,
     r#"
@@ -18842,8 +22169,7 @@ fn index(&self) -> String {
 }
 "#]
 )]
-pub struct LuaPlane2d {
-    #[lua(output(proxy))]
+pub struct Plane2d {
     normal: bevy::math::primitives::Direction2d,
 }
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
@@ -18853,14 +22179,22 @@ pub struct LuaPlane2d {
     bms_lua_path = "crate",
     functions[r#"
 
-    #[lua(as_trait = "std::cmp::PartialEq", composite = "eq")]
-    fn eq(&self, #[proxy] other: &bevy_math::primitives::Line2d) -> bool;
+    #[lua(
+        as_trait = "std::cmp::PartialEq::<bevy::math::primitives::Line2d>",
+        composite = "eq",
+    )]
+    fn eq(
+        _self: LuaReflectRefProxy<bevy::math::primitives::Line2d>,
+        other: LuaReflectRefProxy<bevy::math::primitives::Line2d>,
+    ) -> bool;
 
 "#,
     r#"
 
     #[lua(as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone")]
-    fn clone(&self) -> bevy::math::primitives::Line2d;
+    fn clone(
+        _self: LuaReflectRefProxy<bevy::math::primitives::Line2d>,
+    ) -> LuaReflectValProxy<bevy::math::primitives::Line2d>;
 
 "#,
     r#"
@@ -18870,8 +22204,7 @@ fn index(&self) -> String {
 }
 "#]
 )]
-pub struct LuaLine2d {
-    #[lua(output(proxy))]
+pub struct Line2d {
     direction: bevy::math::primitives::Direction2d,
 }
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
@@ -18884,36 +22217,47 @@ pub struct LuaLine2d {
 
     #[lua()]
     fn new(
-        #[proxy]
-        direction: bevy::math::primitives::Direction2d,
+        direction: LuaReflectValProxy<bevy::math::primitives::Direction2d>,
         length: f32,
-    ) -> bevy::math::primitives::Segment2d;
+    ) -> LuaReflectValProxy<bevy::math::primitives::Segment2d>;
 
 "#,
     r#"
 /// Get the position of the first point on the line segment
 
     #[lua()]
-    fn point1(&self) -> bevy::math::Vec2;
+    fn point1(
+        _self: LuaReflectRefProxy<bevy::math::primitives::Segment2d>,
+    ) -> LuaReflectValProxy<bevy::math::Vec2>;
 
 "#,
     r#"
 /// Get the position of the second point on the line segment
 
     #[lua()]
-    fn point2(&self) -> bevy::math::Vec2;
+    fn point2(
+        _self: LuaReflectRefProxy<bevy::math::primitives::Segment2d>,
+    ) -> LuaReflectValProxy<bevy::math::Vec2>;
 
 "#,
     r#"
 
     #[lua(as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone")]
-    fn clone(&self) -> bevy::math::primitives::Segment2d;
+    fn clone(
+        _self: LuaReflectRefProxy<bevy::math::primitives::Segment2d>,
+    ) -> LuaReflectValProxy<bevy::math::primitives::Segment2d>;
 
 "#,
     r#"
 
-    #[lua(as_trait = "std::cmp::PartialEq", composite = "eq")]
-    fn eq(&self, #[proxy] other: &bevy_math::primitives::Segment2d) -> bool;
+    #[lua(
+        as_trait = "std::cmp::PartialEq::<bevy::math::primitives::Segment2d>",
+        composite = "eq",
+    )]
+    fn eq(
+        _self: LuaReflectRefProxy<bevy::math::primitives::Segment2d>,
+        other: LuaReflectRefProxy<bevy::math::primitives::Segment2d>,
+    ) -> bool;
 
 "#,
     r#"
@@ -18923,8 +22267,7 @@ fn index(&self) -> String {
 }
 "#]
 )]
-pub struct LuaSegment2d {
-    #[lua(output(proxy))]
+pub struct Segment2d {
     direction: bevy::math::primitives::Direction2d,
     half_length: f32,
 }
@@ -18936,7 +22279,9 @@ pub struct LuaSegment2d {
     functions[r#"
 
     #[lua(as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone")]
-    fn clone(&self) -> bevy::math::primitives::Triangle2d;
+    fn clone(
+        _self: LuaReflectRefProxy<bevy::math::primitives::Triangle2d>,
+    ) -> LuaReflectValProxy<bevy::math::primitives::Triangle2d>;
 
 "#,
     r#"
@@ -18944,27 +22289,24 @@ pub struct LuaSegment2d {
 
     #[lua()]
     fn new(
-        #[proxy]
-        a: bevy::math::Vec2,
-        #[proxy]
-        b: bevy::math::Vec2,
-        #[proxy]
-        c: bevy::math::Vec2,
-    ) -> bevy::math::primitives::Triangle2d;
+        a: LuaReflectValProxy<bevy::math::Vec2>,
+        b: LuaReflectValProxy<bevy::math::Vec2>,
+        c: LuaReflectValProxy<bevy::math::Vec2>,
+    ) -> LuaReflectValProxy<bevy::math::primitives::Triangle2d>;
 
 "#,
     r#"
 /// Get the area of the triangle
 
     #[lua()]
-    fn area(&self) -> f32;
+    fn area(_self: LuaReflectRefProxy<bevy::math::primitives::Triangle2d>) -> f32;
 
 "#,
     r#"
 /// Get the perimeter of the triangle
 
     #[lua()]
-    fn perimeter(&self) -> f32;
+    fn perimeter(_self: LuaReflectRefProxy<bevy::math::primitives::Triangle2d>) -> f32;
 
 "#,
     r#"
@@ -18972,13 +22314,19 @@ pub struct LuaSegment2d {
 /// by swapping the second and third vertices
 
     #[lua()]
-    fn reverse(&mut self) -> ();
+    fn reverse(_self: LuaReflectRefMutProxy<bevy::math::primitives::Triangle2d>) -> ();
 
 "#,
     r#"
 
-    #[lua(as_trait = "std::cmp::PartialEq", composite = "eq")]
-    fn eq(&self, #[proxy] other: &bevy_math::primitives::Triangle2d) -> bool;
+    #[lua(
+        as_trait = "std::cmp::PartialEq::<bevy::math::primitives::Triangle2d>",
+        composite = "eq",
+    )]
+    fn eq(
+        _self: LuaReflectRefProxy<bevy::math::primitives::Triangle2d>,
+        other: LuaReflectRefProxy<bevy::math::primitives::Triangle2d>,
+    ) -> bool;
 
 "#,
     r#"
@@ -18988,8 +22336,8 @@ fn index(&self) -> String {
 }
 "#]
 )]
-pub struct LuaTriangle2d {
-    vertices: ReflectedValue,
+pub struct Triangle2d {
+    vertices: ReflectReference,
 }
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
@@ -19000,14 +22348,19 @@ pub struct LuaTriangle2d {
 /// Create a new `Rectangle` from a full width and height
 
     #[lua()]
-    fn new(width: f32, height: f32) -> bevy::math::primitives::Rectangle;
+    fn new(
+        width: f32,
+        height: f32,
+    ) -> LuaReflectValProxy<bevy::math::primitives::Rectangle>;
 
 "#,
     r#"
 /// Create a new `Rectangle` from a given full size
 
     #[lua()]
-    fn from_size(#[proxy] size: bevy::math::Vec2) -> bevy::math::primitives::Rectangle;
+    fn from_size(
+        size: LuaReflectValProxy<bevy::math::Vec2>,
+    ) -> LuaReflectValProxy<bevy::math::primitives::Rectangle>;
 
 "#,
     r#"
@@ -19015,32 +22368,32 @@ pub struct LuaTriangle2d {
 
     #[lua()]
     fn from_corners(
-        #[proxy]
-        point1: bevy::math::Vec2,
-        #[proxy]
-        point2: bevy::math::Vec2,
-    ) -> bevy::math::primitives::Rectangle;
+        point1: LuaReflectValProxy<bevy::math::Vec2>,
+        point2: LuaReflectValProxy<bevy::math::Vec2>,
+    ) -> LuaReflectValProxy<bevy::math::primitives::Rectangle>;
 
 "#,
     r#"
 /// Get the size of the rectangle
 
     #[lua()]
-    fn size(&self) -> bevy::math::Vec2;
+    fn size(
+        _self: LuaReflectRefProxy<bevy::math::primitives::Rectangle>,
+    ) -> LuaReflectValProxy<bevy::math::Vec2>;
 
 "#,
     r#"
 /// Get the area of the rectangle
 
     #[lua()]
-    fn area(&self) -> f32;
+    fn area(_self: LuaReflectRefProxy<bevy::math::primitives::Rectangle>) -> f32;
 
 "#,
     r#"
 /// Get the perimeter of the rectangle
 
     #[lua()]
-    fn perimeter(&self) -> f32;
+    fn perimeter(_self: LuaReflectRefProxy<bevy::math::primitives::Rectangle>) -> f32;
 
 "#,
     r#"
@@ -19049,19 +22402,30 @@ pub struct LuaTriangle2d {
 /// Otherwise, it will be inside the rectangle and returned as is.
 
     #[lua()]
-    fn closest_point(&self, #[proxy] point: bevy::math::Vec2) -> bevy::math::Vec2;
+    fn closest_point(
+        _self: LuaReflectRefProxy<bevy::math::primitives::Rectangle>,
+        point: LuaReflectValProxy<bevy::math::Vec2>,
+    ) -> LuaReflectValProxy<bevy::math::Vec2>;
 
 "#,
     r#"
 
-    #[lua(as_trait = "std::cmp::PartialEq", composite = "eq")]
-    fn eq(&self, #[proxy] other: &bevy_math::primitives::Rectangle) -> bool;
+    #[lua(
+        as_trait = "std::cmp::PartialEq::<bevy::math::primitives::Rectangle>",
+        composite = "eq",
+    )]
+    fn eq(
+        _self: LuaReflectRefProxy<bevy::math::primitives::Rectangle>,
+        other: LuaReflectRefProxy<bevy::math::primitives::Rectangle>,
+    ) -> bool;
 
 "#,
     r#"
 
     #[lua(as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone")]
-    fn clone(&self) -> bevy::math::primitives::Rectangle;
+    fn clone(
+        _self: LuaReflectRefProxy<bevy::math::primitives::Rectangle>,
+    ) -> LuaReflectValProxy<bevy::math::primitives::Rectangle>;
 
 "#,
     r#"
@@ -19071,8 +22435,7 @@ fn index(&self) -> String {
 }
 "#]
 )]
-pub struct LuaRectangle {
-    #[lua(output(proxy))]
+pub struct Rectangle {
     half_size: bevy::math::Vec2,
 }
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
@@ -19083,13 +22446,21 @@ pub struct LuaRectangle {
     functions[r#"
 
     #[lua(as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone")]
-    fn clone(&self) -> bevy::math::primitives::RegularPolygon;
+    fn clone(
+        _self: LuaReflectRefProxy<bevy::math::primitives::RegularPolygon>,
+    ) -> LuaReflectValProxy<bevy::math::primitives::RegularPolygon>;
 
 "#,
     r#"
 
-    #[lua(as_trait = "std::cmp::PartialEq", composite = "eq")]
-    fn eq(&self, #[proxy] other: &bevy_math::primitives::RegularPolygon) -> bool;
+    #[lua(
+        as_trait = "std::cmp::PartialEq::<bevy::math::primitives::RegularPolygon>",
+        composite = "eq",
+    )]
+    fn eq(
+        _self: LuaReflectRefProxy<bevy::math::primitives::RegularPolygon>,
+        other: LuaReflectRefProxy<bevy::math::primitives::RegularPolygon>,
+    ) -> bool;
 
 "#,
     r#"
@@ -19099,7 +22470,10 @@ pub struct LuaRectangle {
 /// Panics if `circumradius` is non-positive
 
     #[lua()]
-    fn new(circumradius: f32, sides: usize) -> bevy::math::primitives::RegularPolygon;
+    fn new(
+        circumradius: f32,
+        sides: usize,
+    ) -> LuaReflectValProxy<bevy::math::primitives::RegularPolygon>;
 
 "#,
     r#"
@@ -19107,7 +22481,9 @@ pub struct LuaRectangle {
 /// of the regular polygon lie
 
     #[lua()]
-    fn circumradius(&self) -> f32;
+    fn circumradius(
+        _self: LuaReflectRefProxy<bevy::math::primitives::RegularPolygon>,
+    ) -> f32;
 
 "#,
     r#"
@@ -19116,21 +22492,25 @@ pub struct LuaRectangle {
 /// be drawn within the polygon
 
     #[lua()]
-    fn inradius(&self) -> f32;
+    fn inradius(
+        _self: LuaReflectRefProxy<bevy::math::primitives::RegularPolygon>,
+    ) -> f32;
 
 "#,
     r#"
 /// Get the length of one side of the regular polygon
 
     #[lua()]
-    fn side_length(&self) -> f32;
+    fn side_length(
+        _self: LuaReflectRefProxy<bevy::math::primitives::RegularPolygon>,
+    ) -> f32;
 
 "#,
     r#"
 /// Get the area of the regular polygon
 
     #[lua()]
-    fn area(&self) -> f32;
+    fn area(_self: LuaReflectRefProxy<bevy::math::primitives::RegularPolygon>) -> f32;
 
 "#,
     r#"
@@ -19138,7 +22518,9 @@ pub struct LuaRectangle {
 /// This is the sum of its sides
 
     #[lua()]
-    fn perimeter(&self) -> f32;
+    fn perimeter(
+        _self: LuaReflectRefProxy<bevy::math::primitives::RegularPolygon>,
+    ) -> f32;
 
 "#,
     r#"
@@ -19147,7 +22529,9 @@ pub struct LuaRectangle {
 /// within the angle being in the interior of the polygon
 
     #[lua()]
-    fn internal_angle_degrees(&self) -> f32;
+    fn internal_angle_degrees(
+        _self: LuaReflectRefProxy<bevy::math::primitives::RegularPolygon>,
+    ) -> f32;
 
 "#,
     r#"
@@ -19156,7 +22540,9 @@ pub struct LuaRectangle {
 /// within the angle being in the interior of the polygon
 
     #[lua()]
-    fn internal_angle_radians(&self) -> f32;
+    fn internal_angle_radians(
+        _self: LuaReflectRefProxy<bevy::math::primitives::RegularPolygon>,
+    ) -> f32;
 
 "#,
     r#"
@@ -19165,7 +22551,9 @@ pub struct LuaRectangle {
 /// within the angle being in the exterior of the polygon
 
     #[lua()]
-    fn external_angle_degrees(&self) -> f32;
+    fn external_angle_degrees(
+        _self: LuaReflectRefProxy<bevy::math::primitives::RegularPolygon>,
+    ) -> f32;
 
 "#,
     r#"
@@ -19174,7 +22562,9 @@ pub struct LuaRectangle {
 /// within the angle being in the exterior of the polygon
 
     #[lua()]
-    fn external_angle_radians(&self) -> f32;
+    fn external_angle_radians(
+        _self: LuaReflectRefProxy<bevy::math::primitives::RegularPolygon>,
+    ) -> f32;
 
 "#,
     r#"
@@ -19184,8 +22574,7 @@ fn index(&self) -> String {
 }
 "#]
 )]
-pub struct LuaRegularPolygon {
-    #[lua(output(proxy))]
+pub struct RegularPolygon {
     circumcircle: bevy::math::primitives::Circle,
     sides: usize,
 }
@@ -19196,21 +22585,32 @@ pub struct LuaRegularPolygon {
     bms_lua_path = "crate",
     functions[r#"
 
-    #[lua(as_trait = "std::cmp::PartialEq", composite = "eq")]
-    fn eq(&self, #[proxy] other: &bevy_math::primitives::Capsule2d) -> bool;
+    #[lua(
+        as_trait = "std::cmp::PartialEq::<bevy::math::primitives::Capsule2d>",
+        composite = "eq",
+    )]
+    fn eq(
+        _self: LuaReflectRefProxy<bevy::math::primitives::Capsule2d>,
+        other: LuaReflectRefProxy<bevy::math::primitives::Capsule2d>,
+    ) -> bool;
 
 "#,
     r#"
 /// Create a new `Capsule2d` from a radius and length
 
     #[lua()]
-    fn new(radius: f32, length: f32) -> bevy::math::primitives::Capsule2d;
+    fn new(
+        radius: f32,
+        length: f32,
+    ) -> LuaReflectValProxy<bevy::math::primitives::Capsule2d>;
 
 "#,
     r#"
 
     #[lua(as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone")]
-    fn clone(&self) -> bevy::math::primitives::Capsule2d;
+    fn clone(
+        _self: LuaReflectRefProxy<bevy::math::primitives::Capsule2d>,
+    ) -> LuaReflectValProxy<bevy::math::primitives::Capsule2d>;
 
 "#,
     r#"
@@ -19220,7 +22620,7 @@ fn index(&self) -> String {
 }
 "#]
 )]
-pub struct LuaCapsule2d {
+pub struct Capsule2d {
     radius: f32,
     half_length: f32,
 }
@@ -19231,20 +22631,31 @@ pub struct LuaCapsule2d {
     bms_lua_path = "crate",
     functions[r#"
 
-    #[lua(as_trait = "std::cmp::PartialEq", composite = "eq")]
-    fn eq(&self, #[proxy] other: &bevy_math::primitives::Direction3d) -> bool;
+    #[lua(
+        as_trait = "std::cmp::PartialEq::<bevy::math::primitives::Direction3d>",
+        composite = "eq",
+    )]
+    fn eq(
+        _self: LuaReflectRefProxy<bevy::math::primitives::Direction3d>,
+        other: LuaReflectRefProxy<bevy::math::primitives::Direction3d>,
+    ) -> bool;
 
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Mul", composite = "mul")]
-    fn mul(self, rhs: f32) -> bevy::math::Vec3;
+    #[lua(as_trait = "std::ops::Mul::<f32>", composite = "mul")]
+    fn mul(
+        _self: LuaReflectValProxy<bevy::math::primitives::Direction3d>,
+        rhs: f32,
+    ) -> LuaReflectValProxy<bevy::math::Vec3>;
 
 "#,
     r#"
 
     #[lua(as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone")]
-    fn clone(&self) -> bevy::math::primitives::Direction3d;
+    fn clone(
+        _self: LuaReflectRefProxy<bevy::math::primitives::Direction3d>,
+    ) -> LuaReflectValProxy<bevy::math::primitives::Direction3d>;
 
 "#,
     r#"
@@ -19254,15 +22665,16 @@ pub struct LuaCapsule2d {
 
     #[lua()]
     fn new_unchecked(
-        #[proxy]
-        value: bevy::math::Vec3,
-    ) -> bevy::math::primitives::Direction3d;
+        value: LuaReflectValProxy<bevy::math::Vec3>,
+    ) -> LuaReflectValProxy<bevy::math::primitives::Direction3d>;
 
 "#,
     r#"
 
     #[lua(as_trait = "std::ops::Neg", composite = "neg")]
-    fn neg(self) -> bevy::math::primitives::Direction3d;
+    fn neg(
+        _self: LuaReflectValProxy<bevy::math::primitives::Direction3d>,
+    ) -> LuaReflectValProxy<bevy::math::primitives::Direction3d>;
 
 "#,
     r#"
@@ -19272,7 +22684,7 @@ fn index(&self) -> String {
 }
 "#]
 )]
-pub struct LuaDirection3d();
+pub struct Direction3d();
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
     remote = "bevy::math::primitives::Sphere",
@@ -19281,35 +22693,37 @@ pub struct LuaDirection3d();
     functions[r#"
 
     #[lua(as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone")]
-    fn clone(&self) -> bevy::math::primitives::Sphere;
+    fn clone(
+        _self: LuaReflectRefProxy<bevy::math::primitives::Sphere>,
+    ) -> LuaReflectValProxy<bevy::math::primitives::Sphere>;
 
 "#,
     r#"
 /// Create a new [`Sphere`] from a `radius`
 
     #[lua()]
-    fn new(radius: f32) -> bevy::math::primitives::Sphere;
+    fn new(radius: f32) -> LuaReflectValProxy<bevy::math::primitives::Sphere>;
 
 "#,
     r#"
 /// Get the diameter of the sphere
 
     #[lua()]
-    fn diameter(&self) -> f32;
+    fn diameter(_self: LuaReflectRefProxy<bevy::math::primitives::Sphere>) -> f32;
 
 "#,
     r#"
 /// Get the surface area of the sphere
 
     #[lua()]
-    fn area(&self) -> f32;
+    fn area(_self: LuaReflectRefProxy<bevy::math::primitives::Sphere>) -> f32;
 
 "#,
     r#"
 /// Get the volume of the sphere
 
     #[lua()]
-    fn volume(&self) -> f32;
+    fn volume(_self: LuaReflectRefProxy<bevy::math::primitives::Sphere>) -> f32;
 
 "#,
     r#"
@@ -19318,13 +22732,22 @@ pub struct LuaDirection3d();
 /// Otherwise, it will be inside the sphere and returned as is.
 
     #[lua()]
-    fn closest_point(&self, #[proxy] point: bevy::math::Vec3) -> bevy::math::Vec3;
+    fn closest_point(
+        _self: LuaReflectRefProxy<bevy::math::primitives::Sphere>,
+        point: LuaReflectValProxy<bevy::math::Vec3>,
+    ) -> LuaReflectValProxy<bevy::math::Vec3>;
 
 "#,
     r#"
 
-    #[lua(as_trait = "std::cmp::PartialEq", composite = "eq")]
-    fn eq(&self, #[proxy] other: &bevy_math::primitives::Sphere) -> bool;
+    #[lua(
+        as_trait = "std::cmp::PartialEq::<bevy::math::primitives::Sphere>",
+        composite = "eq",
+    )]
+    fn eq(
+        _self: LuaReflectRefProxy<bevy::math::primitives::Sphere>,
+        other: LuaReflectRefProxy<bevy::math::primitives::Sphere>,
+    ) -> bool;
 
 "#,
     r#"
@@ -19334,7 +22757,7 @@ fn index(&self) -> String {
 }
 "#]
 )]
-pub struct LuaSphere {
+pub struct Sphere {
     radius: f32,
 }
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
@@ -19345,7 +22768,9 @@ pub struct LuaSphere {
     functions[r#"
 
     #[lua(as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone")]
-    fn clone(&self) -> bevy::math::primitives::Plane3d;
+    fn clone(
+        _self: LuaReflectRefProxy<bevy::math::primitives::Plane3d>,
+    ) -> LuaReflectValProxy<bevy::math::primitives::Plane3d>;
 
 "#,
     r#"
@@ -19354,13 +22779,21 @@ pub struct LuaSphere {
 /// Panics if the given `normal` is zero (or very close to zero), or non-finite.
 
     #[lua()]
-    fn new(#[proxy] normal: bevy::math::Vec3) -> bevy::math::primitives::Plane3d;
+    fn new(
+        normal: LuaReflectValProxy<bevy::math::Vec3>,
+    ) -> LuaReflectValProxy<bevy::math::primitives::Plane3d>;
 
 "#,
     r#"
 
-    #[lua(as_trait = "std::cmp::PartialEq", composite = "eq")]
-    fn eq(&self, #[proxy] other: &bevy_math::primitives::Plane3d) -> bool;
+    #[lua(
+        as_trait = "std::cmp::PartialEq::<bevy::math::primitives::Plane3d>",
+        composite = "eq",
+    )]
+    fn eq(
+        _self: LuaReflectRefProxy<bevy::math::primitives::Plane3d>,
+        other: LuaReflectRefProxy<bevy::math::primitives::Plane3d>,
+    ) -> bool;
 
 "#,
     r#"
@@ -19370,8 +22803,7 @@ fn index(&self) -> String {
 }
 "#]
 )]
-pub struct LuaPlane3d {
-    #[lua(output(proxy))]
+pub struct Plane3d {
     normal: bevy::math::primitives::Direction3d,
 }
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
@@ -19382,13 +22814,21 @@ pub struct LuaPlane3d {
     functions[r#"
 
     #[lua(as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone")]
-    fn clone(&self) -> bevy::math::primitives::Line3d;
+    fn clone(
+        _self: LuaReflectRefProxy<bevy::math::primitives::Line3d>,
+    ) -> LuaReflectValProxy<bevy::math::primitives::Line3d>;
 
 "#,
     r#"
 
-    #[lua(as_trait = "std::cmp::PartialEq", composite = "eq")]
-    fn eq(&self, #[proxy] other: &bevy_math::primitives::Line3d) -> bool;
+    #[lua(
+        as_trait = "std::cmp::PartialEq::<bevy::math::primitives::Line3d>",
+        composite = "eq",
+    )]
+    fn eq(
+        _self: LuaReflectRefProxy<bevy::math::primitives::Line3d>,
+        other: LuaReflectRefProxy<bevy::math::primitives::Line3d>,
+    ) -> bool;
 
 "#,
     r#"
@@ -19398,8 +22838,7 @@ fn index(&self) -> String {
 }
 "#]
 )]
-pub struct LuaLine3d {
-    #[lua(output(proxy))]
+pub struct Line3d {
     direction: bevy::math::primitives::Direction3d,
 }
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
@@ -19412,36 +22851,47 @@ pub struct LuaLine3d {
 
     #[lua()]
     fn new(
-        #[proxy]
-        direction: bevy::math::primitives::Direction3d,
+        direction: LuaReflectValProxy<bevy::math::primitives::Direction3d>,
         length: f32,
-    ) -> bevy::math::primitives::Segment3d;
+    ) -> LuaReflectValProxy<bevy::math::primitives::Segment3d>;
 
 "#,
     r#"
 /// Get the position of the first point on the line segment
 
     #[lua()]
-    fn point1(&self) -> bevy::math::Vec3;
+    fn point1(
+        _self: LuaReflectRefProxy<bevy::math::primitives::Segment3d>,
+    ) -> LuaReflectValProxy<bevy::math::Vec3>;
 
 "#,
     r#"
 /// Get the position of the second point on the line segment
 
     #[lua()]
-    fn point2(&self) -> bevy::math::Vec3;
+    fn point2(
+        _self: LuaReflectRefProxy<bevy::math::primitives::Segment3d>,
+    ) -> LuaReflectValProxy<bevy::math::Vec3>;
 
 "#,
     r#"
 
     #[lua(as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone")]
-    fn clone(&self) -> bevy::math::primitives::Segment3d;
+    fn clone(
+        _self: LuaReflectRefProxy<bevy::math::primitives::Segment3d>,
+    ) -> LuaReflectValProxy<bevy::math::primitives::Segment3d>;
 
 "#,
     r#"
 
-    #[lua(as_trait = "std::cmp::PartialEq", composite = "eq")]
-    fn eq(&self, #[proxy] other: &bevy_math::primitives::Segment3d) -> bool;
+    #[lua(
+        as_trait = "std::cmp::PartialEq::<bevy::math::primitives::Segment3d>",
+        composite = "eq",
+    )]
+    fn eq(
+        _self: LuaReflectRefProxy<bevy::math::primitives::Segment3d>,
+        other: LuaReflectRefProxy<bevy::math::primitives::Segment3d>,
+    ) -> bool;
 
 "#,
     r#"
@@ -19451,8 +22901,7 @@ fn index(&self) -> String {
 }
 "#]
 )]
-pub struct LuaSegment3d {
-    #[lua(output(proxy))]
+pub struct Segment3d {
     direction: bevy::math::primitives::Direction3d,
     half_length: f32,
 }
@@ -19464,7 +22913,9 @@ pub struct LuaSegment3d {
     functions[r#"
 
     #[lua(as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone")]
-    fn clone(&self) -> bevy::math::primitives::Cuboid;
+    fn clone(
+        _self: LuaReflectRefProxy<bevy::math::primitives::Cuboid>,
+    ) -> LuaReflectValProxy<bevy::math::primitives::Cuboid>;
 
 "#,
     r#"
@@ -19475,14 +22926,16 @@ pub struct LuaSegment3d {
         x_length: f32,
         y_length: f32,
         z_length: f32,
-    ) -> bevy::math::primitives::Cuboid;
+    ) -> LuaReflectValProxy<bevy::math::primitives::Cuboid>;
 
 "#,
     r#"
 /// Create a new `Cuboid` from a given full size
 
     #[lua()]
-    fn from_size(#[proxy] size: bevy::math::Vec3) -> bevy::math::primitives::Cuboid;
+    fn from_size(
+        size: LuaReflectValProxy<bevy::math::Vec3>,
+    ) -> LuaReflectValProxy<bevy::math::primitives::Cuboid>;
 
 "#,
     r#"
@@ -19490,32 +22943,32 @@ pub struct LuaSegment3d {
 
     #[lua()]
     fn from_corners(
-        #[proxy]
-        point1: bevy::math::Vec3,
-        #[proxy]
-        point2: bevy::math::Vec3,
-    ) -> bevy::math::primitives::Cuboid;
+        point1: LuaReflectValProxy<bevy::math::Vec3>,
+        point2: LuaReflectValProxy<bevy::math::Vec3>,
+    ) -> LuaReflectValProxy<bevy::math::primitives::Cuboid>;
 
 "#,
     r#"
 /// Get the size of the cuboid
 
     #[lua()]
-    fn size(&self) -> bevy::math::Vec3;
+    fn size(
+        _self: LuaReflectRefProxy<bevy::math::primitives::Cuboid>,
+    ) -> LuaReflectValProxy<bevy::math::Vec3>;
 
 "#,
     r#"
 /// Get the surface area of the cuboid
 
     #[lua()]
-    fn area(&self) -> f32;
+    fn area(_self: LuaReflectRefProxy<bevy::math::primitives::Cuboid>) -> f32;
 
 "#,
     r#"
 /// Get the volume of the cuboid
 
     #[lua()]
-    fn volume(&self) -> f32;
+    fn volume(_self: LuaReflectRefProxy<bevy::math::primitives::Cuboid>) -> f32;
 
 "#,
     r#"
@@ -19524,13 +22977,22 @@ pub struct LuaSegment3d {
 /// Otherwise, it will be inside the cuboid and returned as is.
 
     #[lua()]
-    fn closest_point(&self, #[proxy] point: bevy::math::Vec3) -> bevy::math::Vec3;
+    fn closest_point(
+        _self: LuaReflectRefProxy<bevy::math::primitives::Cuboid>,
+        point: LuaReflectValProxy<bevy::math::Vec3>,
+    ) -> LuaReflectValProxy<bevy::math::Vec3>;
 
 "#,
     r#"
 
-    #[lua(as_trait = "std::cmp::PartialEq", composite = "eq")]
-    fn eq(&self, #[proxy] other: &bevy_math::primitives::Cuboid) -> bool;
+    #[lua(
+        as_trait = "std::cmp::PartialEq::<bevy::math::primitives::Cuboid>",
+        composite = "eq",
+    )]
+    fn eq(
+        _self: LuaReflectRefProxy<bevy::math::primitives::Cuboid>,
+        other: LuaReflectRefProxy<bevy::math::primitives::Cuboid>,
+    ) -> bool;
 
 "#,
     r#"
@@ -19540,8 +23002,7 @@ fn index(&self) -> String {
 }
 "#]
 )]
-pub struct LuaCuboid {
-    #[lua(output(proxy))]
+pub struct Cuboid {
     half_size: bevy::math::Vec3,
 }
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
@@ -19552,27 +23013,40 @@ pub struct LuaCuboid {
     functions[r#"
 
     #[lua(as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone")]
-    fn clone(&self) -> bevy::math::primitives::Cylinder;
+    fn clone(
+        _self: LuaReflectRefProxy<bevy::math::primitives::Cylinder>,
+    ) -> LuaReflectValProxy<bevy::math::primitives::Cylinder>;
 
 "#,
     r#"
 
-    #[lua(as_trait = "std::cmp::PartialEq", composite = "eq")]
-    fn eq(&self, #[proxy] other: &bevy_math::primitives::Cylinder) -> bool;
+    #[lua(
+        as_trait = "std::cmp::PartialEq::<bevy::math::primitives::Cylinder>",
+        composite = "eq",
+    )]
+    fn eq(
+        _self: LuaReflectRefProxy<bevy::math::primitives::Cylinder>,
+        other: LuaReflectRefProxy<bevy::math::primitives::Cylinder>,
+    ) -> bool;
 
 "#,
     r#"
 /// Create a new `Cylinder` from a radius and full height
 
     #[lua()]
-    fn new(radius: f32, height: f32) -> bevy::math::primitives::Cylinder;
+    fn new(
+        radius: f32,
+        height: f32,
+    ) -> LuaReflectValProxy<bevy::math::primitives::Cylinder>;
 
 "#,
     r#"
 /// Get the base of the cylinder as a [`Circle`]
 
     #[lua()]
-    fn base(&self) -> bevy::math::primitives::Circle;
+    fn base(
+        _self: LuaReflectRefProxy<bevy::math::primitives::Cylinder>,
+    ) -> LuaReflectValProxy<bevy::math::primitives::Circle>;
 
 "#,
     r#"
@@ -19580,28 +23054,28 @@ pub struct LuaCuboid {
 /// also known as the lateral area
 
     #[lua()]
-    fn lateral_area(&self) -> f32;
+    fn lateral_area(_self: LuaReflectRefProxy<bevy::math::primitives::Cylinder>) -> f32;
 
 "#,
     r#"
 /// Get the surface area of one base of the cylinder
 
     #[lua()]
-    fn base_area(&self) -> f32;
+    fn base_area(_self: LuaReflectRefProxy<bevy::math::primitives::Cylinder>) -> f32;
 
 "#,
     r#"
 /// Get the total surface area of the cylinder
 
     #[lua()]
-    fn area(&self) -> f32;
+    fn area(_self: LuaReflectRefProxy<bevy::math::primitives::Cylinder>) -> f32;
 
 "#,
     r#"
 /// Get the volume of the cylinder
 
     #[lua()]
-    fn volume(&self) -> f32;
+    fn volume(_self: LuaReflectRefProxy<bevy::math::primitives::Cylinder>) -> f32;
 
 "#,
     r#"
@@ -19611,7 +23085,7 @@ fn index(&self) -> String {
 }
 "#]
 )]
-pub struct LuaCylinder {
+pub struct Cylinder {
     radius: f32,
     half_height: f32,
 }
@@ -19623,14 +23097,19 @@ pub struct LuaCylinder {
     functions[r#"
 
     #[lua(as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone")]
-    fn clone(&self) -> bevy::math::primitives::Capsule3d;
+    fn clone(
+        _self: LuaReflectRefProxy<bevy::math::primitives::Capsule3d>,
+    ) -> LuaReflectValProxy<bevy::math::primitives::Capsule3d>;
 
 "#,
     r#"
 /// Create a new `Capsule3d` from a radius and length
 
     #[lua()]
-    fn new(radius: f32, length: f32) -> bevy::math::primitives::Capsule3d;
+    fn new(
+        radius: f32,
+        length: f32,
+    ) -> LuaReflectValProxy<bevy::math::primitives::Capsule3d>;
 
 "#,
     r#"
@@ -19638,27 +23117,35 @@ pub struct LuaCylinder {
 /// of the capsule as a [`Cylinder`]
 
     #[lua()]
-    fn to_cylinder(&self) -> bevy::math::primitives::Cylinder;
+    fn to_cylinder(
+        _self: LuaReflectRefProxy<bevy::math::primitives::Capsule3d>,
+    ) -> LuaReflectValProxy<bevy::math::primitives::Cylinder>;
 
 "#,
     r#"
 /// Get the surface area of the capsule
 
     #[lua()]
-    fn area(&self) -> f32;
+    fn area(_self: LuaReflectRefProxy<bevy::math::primitives::Capsule3d>) -> f32;
 
 "#,
     r#"
 /// Get the volume of the capsule
 
     #[lua()]
-    fn volume(&self) -> f32;
+    fn volume(_self: LuaReflectRefProxy<bevy::math::primitives::Capsule3d>) -> f32;
 
 "#,
     r#"
 
-    #[lua(as_trait = "std::cmp::PartialEq", composite = "eq")]
-    fn eq(&self, #[proxy] other: &bevy_math::primitives::Capsule3d) -> bool;
+    #[lua(
+        as_trait = "std::cmp::PartialEq::<bevy::math::primitives::Capsule3d>",
+        composite = "eq",
+    )]
+    fn eq(
+        _self: LuaReflectRefProxy<bevy::math::primitives::Capsule3d>,
+        other: LuaReflectRefProxy<bevy::math::primitives::Capsule3d>,
+    ) -> bool;
 
 "#,
     r#"
@@ -19668,7 +23155,7 @@ fn index(&self) -> String {
 }
 "#]
 )]
-pub struct LuaCapsule3d {
+pub struct Capsule3d {
     radius: f32,
     half_length: f32,
 }
@@ -19680,14 +23167,18 @@ pub struct LuaCapsule3d {
     functions[r#"
 
     #[lua(as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone")]
-    fn clone(&self) -> bevy::math::primitives::Cone;
+    fn clone(
+        _self: LuaReflectRefProxy<bevy::math::primitives::Cone>,
+    ) -> LuaReflectValProxy<bevy::math::primitives::Cone>;
 
 "#,
     r#"
 /// Get the base of the cone as a [`Circle`]
 
     #[lua()]
-    fn base(&self) -> bevy::math::primitives::Circle;
+    fn base(
+        _self: LuaReflectRefProxy<bevy::math::primitives::Cone>,
+    ) -> LuaReflectValProxy<bevy::math::primitives::Circle>;
 
 "#,
     r#"
@@ -19695,7 +23186,7 @@ pub struct LuaCapsule3d {
 /// connecting a point on the base to the apex
 
     #[lua()]
-    fn slant_height(&self) -> f32;
+    fn slant_height(_self: LuaReflectRefProxy<bevy::math::primitives::Cone>) -> f32;
 
 "#,
     r#"
@@ -19703,34 +23194,40 @@ pub struct LuaCapsule3d {
 /// also known as the lateral area
 
     #[lua()]
-    fn lateral_area(&self) -> f32;
+    fn lateral_area(_self: LuaReflectRefProxy<bevy::math::primitives::Cone>) -> f32;
 
 "#,
     r#"
 /// Get the surface area of the base of the cone
 
     #[lua()]
-    fn base_area(&self) -> f32;
+    fn base_area(_self: LuaReflectRefProxy<bevy::math::primitives::Cone>) -> f32;
 
 "#,
     r#"
 /// Get the total surface area of the cone
 
     #[lua()]
-    fn area(&self) -> f32;
+    fn area(_self: LuaReflectRefProxy<bevy::math::primitives::Cone>) -> f32;
 
 "#,
     r#"
 /// Get the volume of the cone
 
     #[lua()]
-    fn volume(&self) -> f32;
+    fn volume(_self: LuaReflectRefProxy<bevy::math::primitives::Cone>) -> f32;
 
 "#,
     r#"
 
-    #[lua(as_trait = "std::cmp::PartialEq", composite = "eq")]
-    fn eq(&self, #[proxy] other: &bevy_math::primitives::Cone) -> bool;
+    #[lua(
+        as_trait = "std::cmp::PartialEq::<bevy::math::primitives::Cone>",
+        composite = "eq",
+    )]
+    fn eq(
+        _self: LuaReflectRefProxy<bevy::math::primitives::Cone>,
+        other: LuaReflectRefProxy<bevy::math::primitives::Cone>,
+    ) -> bool;
 
 "#,
     r#"
@@ -19740,7 +23237,7 @@ fn index(&self) -> String {
 }
 "#]
 )]
-pub struct LuaCone {
+pub struct Cone {
     radius: f32,
     height: f32,
 }
@@ -19752,13 +23249,21 @@ pub struct LuaCone {
     functions[r#"
 
     #[lua(as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone")]
-    fn clone(&self) -> bevy::math::primitives::ConicalFrustum;
+    fn clone(
+        _self: LuaReflectRefProxy<bevy::math::primitives::ConicalFrustum>,
+    ) -> LuaReflectValProxy<bevy::math::primitives::ConicalFrustum>;
 
 "#,
     r#"
 
-    #[lua(as_trait = "std::cmp::PartialEq", composite = "eq")]
-    fn eq(&self, #[proxy] other: &bevy_math::primitives::ConicalFrustum) -> bool;
+    #[lua(
+        as_trait = "std::cmp::PartialEq::<bevy::math::primitives::ConicalFrustum>",
+        composite = "eq",
+    )]
+    fn eq(
+        _self: LuaReflectRefProxy<bevy::math::primitives::ConicalFrustum>,
+        other: LuaReflectRefProxy<bevy::math::primitives::ConicalFrustum>,
+    ) -> bool;
 
 "#,
     r#"
@@ -19768,7 +23273,7 @@ fn index(&self) -> String {
 }
 "#]
 )]
-pub struct LuaConicalFrustum {
+pub struct ConicalFrustum {
     radius_top: f32,
     radius_bottom: f32,
     height: f32,
@@ -19784,7 +23289,10 @@ pub struct LuaConicalFrustum {
 /// is the radius of the entire object
 
     #[lua()]
-    fn new(inner_radius: f32, outer_radius: f32) -> bevy::math::primitives::Torus;
+    fn new(
+        inner_radius: f32,
+        outer_radius: f32,
+    ) -> LuaReflectValProxy<bevy::math::primitives::Torus>;
 
 "#,
     r#"
@@ -19793,7 +23301,7 @@ pub struct LuaConicalFrustum {
 /// or `major_radius - minor_radius`
 
     #[lua()]
-    fn inner_radius(&self) -> f32;
+    fn inner_radius(_self: LuaReflectRefProxy<bevy::math::primitives::Torus>) -> f32;
 
 "#,
     r#"
@@ -19802,7 +23310,7 @@ pub struct LuaConicalFrustum {
 /// or `major_radius + minor_radius`
 
     #[lua()]
-    fn outer_radius(&self) -> f32;
+    fn outer_radius(_self: LuaReflectRefProxy<bevy::math::primitives::Torus>) -> f32;
 
 "#,
     r#"
@@ -19810,7 +23318,7 @@ pub struct LuaConicalFrustum {
 /// the expected result when the torus has a ring and isn't self-intersecting
 
     #[lua()]
-    fn area(&self) -> f32;
+    fn area(_self: LuaReflectRefProxy<bevy::math::primitives::Torus>) -> f32;
 
 "#,
     r#"
@@ -19818,19 +23326,27 @@ pub struct LuaConicalFrustum {
 /// the expected result when the torus has a ring and isn't self-intersecting
 
     #[lua()]
-    fn volume(&self) -> f32;
+    fn volume(_self: LuaReflectRefProxy<bevy::math::primitives::Torus>) -> f32;
 
 "#,
     r#"
 
     #[lua(as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone")]
-    fn clone(&self) -> bevy::math::primitives::Torus;
+    fn clone(
+        _self: LuaReflectRefProxy<bevy::math::primitives::Torus>,
+    ) -> LuaReflectValProxy<bevy::math::primitives::Torus>;
 
 "#,
     r#"
 
-    #[lua(as_trait = "std::cmp::PartialEq", composite = "eq")]
-    fn eq(&self, #[proxy] other: &bevy_math::primitives::Torus) -> bool;
+    #[lua(
+        as_trait = "std::cmp::PartialEq::<bevy::math::primitives::Torus>",
+        composite = "eq",
+    )]
+    fn eq(
+        _self: LuaReflectRefProxy<bevy::math::primitives::Torus>,
+        other: LuaReflectRefProxy<bevy::math::primitives::Torus>,
+    ) -> bool;
 
 "#,
     r#"
@@ -19840,7 +23356,7 @@ fn index(&self) -> String {
 }
 "#]
 )]
-pub struct LuaTorus {
+pub struct Torus {
     minor_radius: f32,
     major_radius: f32,
 }
@@ -19861,7 +23377,7 @@ pub struct LuaTorus {
 /// ```
 
     #[lua()]
-    fn new(x0: i32, y0: i32, x1: i32, y1: i32) -> bevy::math::IRect;
+    fn new(x0: i32, y0: i32, x1: i32, y1: i32) -> LuaReflectValProxy<bevy::math::IRect>;
 
 "#,
     r#"
@@ -19879,11 +23395,9 @@ pub struct LuaTorus {
 
     #[lua()]
     fn from_corners(
-        #[proxy]
-        p0: bevy::math::IVec2,
-        #[proxy]
-        p1: bevy::math::IVec2,
-    ) -> bevy::math::IRect;
+        p0: LuaReflectValProxy<bevy::math::IVec2>,
+        p1: LuaReflectValProxy<bevy::math::IVec2>,
+    ) -> LuaReflectValProxy<bevy::math::IRect>;
 
 "#,
     r#"
@@ -19902,11 +23416,9 @@ pub struct LuaTorus {
 
     #[lua()]
     fn from_center_size(
-        #[proxy]
-        origin: bevy::math::IVec2,
-        #[proxy]
-        size: bevy::math::IVec2,
-    ) -> bevy::math::IRect;
+        origin: LuaReflectValProxy<bevy::math::IVec2>,
+        size: LuaReflectValProxy<bevy::math::IVec2>,
+    ) -> LuaReflectValProxy<bevy::math::IRect>;
 
 "#,
     r#"
@@ -19923,11 +23435,9 @@ pub struct LuaTorus {
 
     #[lua()]
     fn from_center_half_size(
-        #[proxy]
-        origin: bevy::math::IVec2,
-        #[proxy]
-        half_size: bevy::math::IVec2,
-    ) -> bevy::math::IRect;
+        origin: LuaReflectValProxy<bevy::math::IVec2>,
+        half_size: LuaReflectValProxy<bevy::math::IVec2>,
+    ) -> LuaReflectValProxy<bevy::math::IRect>;
 
 "#,
     r#"
@@ -19940,7 +23450,7 @@ pub struct LuaTorus {
 /// ```
 
     #[lua()]
-    fn is_empty(&self) -> bool;
+    fn is_empty(_self: LuaReflectRefProxy<bevy::math::IRect>) -> bool;
 
 "#,
     r#"
@@ -19953,7 +23463,7 @@ pub struct LuaTorus {
 /// ```
 
     #[lua()]
-    fn width(&self) -> i32;
+    fn width(_self: LuaReflectRefProxy<bevy::math::IRect>) -> i32;
 
 "#,
     r#"
@@ -19966,7 +23476,7 @@ pub struct LuaTorus {
 /// ```
 
     #[lua()]
-    fn height(&self) -> i32;
+    fn height(_self: LuaReflectRefProxy<bevy::math::IRect>) -> i32;
 
 "#,
     r#"
@@ -19979,7 +23489,9 @@ pub struct LuaTorus {
 /// ```
 
     #[lua()]
-    fn size(&self) -> bevy::math::IVec2;
+    fn size(
+        _self: LuaReflectRefProxy<bevy::math::IRect>,
+    ) -> LuaReflectValProxy<bevy::math::IVec2>;
 
 "#,
     r#"
@@ -19994,7 +23506,9 @@ pub struct LuaTorus {
 /// ```
 
     #[lua()]
-    fn half_size(&self) -> bevy::math::IVec2;
+    fn half_size(
+        _self: LuaReflectRefProxy<bevy::math::IRect>,
+    ) -> LuaReflectValProxy<bevy::math::IVec2>;
 
 "#,
     r#"
@@ -20009,7 +23523,9 @@ pub struct LuaTorus {
 /// ```
 
     #[lua()]
-    fn center(&self) -> bevy::math::IVec2;
+    fn center(
+        _self: LuaReflectRefProxy<bevy::math::IRect>,
+    ) -> LuaReflectValProxy<bevy::math::IVec2>;
 
 "#,
     r#"
@@ -20024,7 +23540,10 @@ pub struct LuaTorus {
 /// ```
 
     #[lua()]
-    fn contains(&self, #[proxy] point: bevy::math::IVec2) -> bool;
+    fn contains(
+        _self: LuaReflectRefProxy<bevy::math::IRect>,
+        point: LuaReflectValProxy<bevy::math::IVec2>,
+    ) -> bool;
 
 "#,
     r#"
@@ -20041,7 +23560,10 @@ pub struct LuaTorus {
 /// ```
 
     #[lua()]
-    fn union(&self, #[proxy] other: bevy::math::IRect) -> bevy::math::IRect;
+    fn union(
+        _self: LuaReflectRefProxy<bevy::math::IRect>,
+        other: LuaReflectValProxy<bevy::math::IRect>,
+    ) -> LuaReflectValProxy<bevy::math::IRect>;
 
 "#,
     r#"
@@ -20058,7 +23580,10 @@ pub struct LuaTorus {
 /// ```
 
     #[lua()]
-    fn union_point(&self, #[proxy] other: bevy::math::IVec2) -> bevy::math::IRect;
+    fn union_point(
+        _self: LuaReflectRefProxy<bevy::math::IRect>,
+        other: LuaReflectValProxy<bevy::math::IVec2>,
+    ) -> LuaReflectValProxy<bevy::math::IRect>;
 
 "#,
     r#"
@@ -20077,7 +23602,10 @@ pub struct LuaTorus {
 /// ```
 
     #[lua()]
-    fn intersect(&self, #[proxy] other: bevy::math::IRect) -> bevy::math::IRect;
+    fn intersect(
+        _self: LuaReflectRefProxy<bevy::math::IRect>,
+        other: LuaReflectValProxy<bevy::math::IRect>,
+    ) -> LuaReflectValProxy<bevy::math::IRect>;
 
 "#,
     r#"
@@ -20099,39 +23627,51 @@ pub struct LuaTorus {
 /// ```
 
     #[lua()]
-    fn inset(&self, inset: i32) -> bevy::math::IRect;
+    fn inset(
+        _self: LuaReflectRefProxy<bevy::math::IRect>,
+        inset: i32,
+    ) -> LuaReflectValProxy<bevy::math::IRect>;
 
 "#,
     r#"
 /// Returns self as [`Rect`] (f32)
 
     #[lua()]
-    fn as_rect(&self) -> bevy::math::Rect;
+    fn as_rect(
+        _self: LuaReflectRefProxy<bevy::math::IRect>,
+    ) -> LuaReflectValProxy<bevy::math::Rect>;
 
 "#,
     r#"
 /// Returns self as [`URect`] (u32)
 
     #[lua()]
-    fn as_urect(&self) -> bevy::math::URect;
+    fn as_urect(
+        _self: LuaReflectRefProxy<bevy::math::IRect>,
+    ) -> LuaReflectValProxy<bevy::math::URect>;
 
 "#,
     r#"
 
     #[lua(as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone")]
-    fn clone(&self) -> bevy::math::IRect;
+    fn clone(
+        _self: LuaReflectRefProxy<bevy::math::IRect>,
+    ) -> LuaReflectValProxy<bevy::math::IRect>;
 
 "#,
     r#"
 
-    #[lua(as_trait = "std::cmp::PartialEq", composite = "eq")]
-    fn eq(&self, #[proxy] other: &bevy_math::IRect) -> bool;
+    #[lua(as_trait = "std::cmp::PartialEq::<bevy::math::IRect>", composite = "eq")]
+    fn eq(
+        _self: LuaReflectRefProxy<bevy::math::IRect>,
+        other: LuaReflectRefProxy<bevy::math::IRect>,
+    ) -> bool;
 
 "#,
     r#"
 
     #[lua(as_trait = "std::cmp::Eq")]
-    fn assert_receiver_is_total_eq(&self) -> ();
+    fn assert_receiver_is_total_eq(_self: LuaReflectRefProxy<bevy::math::IRect>) -> ();
 
 "#,
     r#"
@@ -20141,10 +23681,8 @@ fn index(&self) -> String {
 }
 "#]
 )]
-pub struct LuaIRect {
-    #[lua(output(proxy))]
+pub struct IRect {
     min: bevy::math::IVec2,
-    #[lua(output(proxy))]
     max: bevy::math::IVec2,
 }
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
@@ -20164,7 +23702,7 @@ pub struct LuaIRect {
 /// ```
 
     #[lua()]
-    fn new(x0: f32, y0: f32, x1: f32, y1: f32) -> bevy::math::Rect;
+    fn new(x0: f32, y0: f32, x1: f32, y1: f32) -> LuaReflectValProxy<bevy::math::Rect>;
 
 "#,
     r#"
@@ -20182,11 +23720,9 @@ pub struct LuaIRect {
 
     #[lua()]
     fn from_corners(
-        #[proxy]
-        p0: bevy::math::Vec2,
-        #[proxy]
-        p1: bevy::math::Vec2,
-    ) -> bevy::math::Rect;
+        p0: LuaReflectValProxy<bevy::math::Vec2>,
+        p1: LuaReflectValProxy<bevy::math::Vec2>,
+    ) -> LuaReflectValProxy<bevy::math::Rect>;
 
 "#,
     r#"
@@ -20203,11 +23739,9 @@ pub struct LuaIRect {
 
     #[lua()]
     fn from_center_size(
-        #[proxy]
-        origin: bevy::math::Vec2,
-        #[proxy]
-        size: bevy::math::Vec2,
-    ) -> bevy::math::Rect;
+        origin: LuaReflectValProxy<bevy::math::Vec2>,
+        size: LuaReflectValProxy<bevy::math::Vec2>,
+    ) -> LuaReflectValProxy<bevy::math::Rect>;
 
 "#,
     r#"
@@ -20224,11 +23758,9 @@ pub struct LuaIRect {
 
     #[lua()]
     fn from_center_half_size(
-        #[proxy]
-        origin: bevy::math::Vec2,
-        #[proxy]
-        half_size: bevy::math::Vec2,
-    ) -> bevy::math::Rect;
+        origin: LuaReflectValProxy<bevy::math::Vec2>,
+        half_size: LuaReflectValProxy<bevy::math::Vec2>,
+    ) -> LuaReflectValProxy<bevy::math::Rect>;
 
 "#,
     r#"
@@ -20241,7 +23773,7 @@ pub struct LuaIRect {
 /// ```
 
     #[lua()]
-    fn is_empty(&self) -> bool;
+    fn is_empty(_self: LuaReflectRefProxy<bevy::math::Rect>) -> bool;
 
 "#,
     r#"
@@ -20254,7 +23786,7 @@ pub struct LuaIRect {
 /// ```
 
     #[lua()]
-    fn width(&self) -> f32;
+    fn width(_self: LuaReflectRefProxy<bevy::math::Rect>) -> f32;
 
 "#,
     r#"
@@ -20267,7 +23799,7 @@ pub struct LuaIRect {
 /// ```
 
     #[lua()]
-    fn height(&self) -> f32;
+    fn height(_self: LuaReflectRefProxy<bevy::math::Rect>) -> f32;
 
 "#,
     r#"
@@ -20280,7 +23812,9 @@ pub struct LuaIRect {
 /// ```
 
     #[lua()]
-    fn size(&self) -> bevy::math::Vec2;
+    fn size(
+        _self: LuaReflectRefProxy<bevy::math::Rect>,
+    ) -> LuaReflectValProxy<bevy::math::Vec2>;
 
 "#,
     r#"
@@ -20293,7 +23827,9 @@ pub struct LuaIRect {
 /// ```
 
     #[lua()]
-    fn half_size(&self) -> bevy::math::Vec2;
+    fn half_size(
+        _self: LuaReflectRefProxy<bevy::math::Rect>,
+    ) -> LuaReflectValProxy<bevy::math::Vec2>;
 
 "#,
     r#"
@@ -20306,7 +23842,9 @@ pub struct LuaIRect {
 /// ```
 
     #[lua()]
-    fn center(&self) -> bevy::math::Vec2;
+    fn center(
+        _self: LuaReflectRefProxy<bevy::math::Rect>,
+    ) -> LuaReflectValProxy<bevy::math::Vec2>;
 
 "#,
     r#"
@@ -20321,7 +23859,10 @@ pub struct LuaIRect {
 /// ```
 
     #[lua()]
-    fn contains(&self, #[proxy] point: bevy::math::Vec2) -> bool;
+    fn contains(
+        _self: LuaReflectRefProxy<bevy::math::Rect>,
+        point: LuaReflectValProxy<bevy::math::Vec2>,
+    ) -> bool;
 
 "#,
     r#"
@@ -20338,7 +23879,10 @@ pub struct LuaIRect {
 /// ```
 
     #[lua()]
-    fn union(&self, #[proxy] other: bevy::math::Rect) -> bevy::math::Rect;
+    fn union(
+        _self: LuaReflectRefProxy<bevy::math::Rect>,
+        other: LuaReflectValProxy<bevy::math::Rect>,
+    ) -> LuaReflectValProxy<bevy::math::Rect>;
 
 "#,
     r#"
@@ -20355,7 +23899,10 @@ pub struct LuaIRect {
 /// ```
 
     #[lua()]
-    fn union_point(&self, #[proxy] other: bevy::math::Vec2) -> bevy::math::Rect;
+    fn union_point(
+        _self: LuaReflectRefProxy<bevy::math::Rect>,
+        other: LuaReflectValProxy<bevy::math::Vec2>,
+    ) -> LuaReflectValProxy<bevy::math::Rect>;
 
 "#,
     r#"
@@ -20374,7 +23921,10 @@ pub struct LuaIRect {
 /// ```
 
     #[lua()]
-    fn intersect(&self, #[proxy] other: bevy::math::Rect) -> bevy::math::Rect;
+    fn intersect(
+        _self: LuaReflectRefProxy<bevy::math::Rect>,
+        other: LuaReflectValProxy<bevy::math::Rect>,
+    ) -> LuaReflectValProxy<bevy::math::Rect>;
 
 "#,
     r#"
@@ -20396,7 +23946,10 @@ pub struct LuaIRect {
 /// ```
 
     #[lua()]
-    fn inset(&self, inset: f32) -> bevy::math::Rect;
+    fn inset(
+        _self: LuaReflectRefProxy<bevy::math::Rect>,
+        inset: f32,
+    ) -> LuaReflectValProxy<bevy::math::Rect>;
 
 "#,
     r#"
@@ -20415,33 +23968,45 @@ pub struct LuaIRect {
 /// ```
 
     #[lua()]
-    fn normalize(&self, #[proxy] other: bevy::math::Rect) -> bevy::math::Rect;
+    fn normalize(
+        _self: LuaReflectRefProxy<bevy::math::Rect>,
+        other: LuaReflectValProxy<bevy::math::Rect>,
+    ) -> LuaReflectValProxy<bevy::math::Rect>;
 
 "#,
     r#"
 /// Returns self as [`IRect`] (i32)
 
     #[lua()]
-    fn as_irect(&self) -> bevy::math::IRect;
+    fn as_irect(
+        _self: LuaReflectRefProxy<bevy::math::Rect>,
+    ) -> LuaReflectValProxy<bevy::math::IRect>;
 
 "#,
     r#"
 /// Returns self as [`URect`] (u32)
 
     #[lua()]
-    fn as_urect(&self) -> bevy::math::URect;
+    fn as_urect(
+        _self: LuaReflectRefProxy<bevy::math::Rect>,
+    ) -> LuaReflectValProxy<bevy::math::URect>;
 
 "#,
     r#"
 
-    #[lua(as_trait = "std::cmp::PartialEq", composite = "eq")]
-    fn eq(&self, #[proxy] other: &bevy_math::Rect) -> bool;
+    #[lua(as_trait = "std::cmp::PartialEq::<bevy::math::Rect>", composite = "eq")]
+    fn eq(
+        _self: LuaReflectRefProxy<bevy::math::Rect>,
+        other: LuaReflectRefProxy<bevy::math::Rect>,
+    ) -> bool;
 
 "#,
     r#"
 
     #[lua(as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone")]
-    fn clone(&self) -> bevy::math::Rect;
+    fn clone(
+        _self: LuaReflectRefProxy<bevy::math::Rect>,
+    ) -> LuaReflectValProxy<bevy::math::Rect>;
 
 "#,
     r#"
@@ -20451,10 +24016,8 @@ fn index(&self) -> String {
 }
 "#]
 )]
-pub struct LuaRect {
-    #[lua(output(proxy))]
+pub struct Rect {
     min: bevy::math::Vec2,
-    #[lua(output(proxy))]
     max: bevy::math::Vec2,
 }
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
@@ -20465,19 +24028,24 @@ pub struct LuaRect {
     functions[r#"
 
     #[lua(as_trait = "std::cmp::Eq")]
-    fn assert_receiver_is_total_eq(&self) -> ();
+    fn assert_receiver_is_total_eq(_self: LuaReflectRefProxy<bevy::math::URect>) -> ();
 
 "#,
     r#"
 
-    #[lua(as_trait = "std::cmp::PartialEq", composite = "eq")]
-    fn eq(&self, #[proxy] other: &bevy_math::URect) -> bool;
+    #[lua(as_trait = "std::cmp::PartialEq::<bevy::math::URect>", composite = "eq")]
+    fn eq(
+        _self: LuaReflectRefProxy<bevy::math::URect>,
+        other: LuaReflectRefProxy<bevy::math::URect>,
+    ) -> bool;
 
 "#,
     r#"
 
     #[lua(as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone")]
-    fn clone(&self) -> bevy::math::URect;
+    fn clone(
+        _self: LuaReflectRefProxy<bevy::math::URect>,
+    ) -> LuaReflectValProxy<bevy::math::URect>;
 
 "#,
     r#"
@@ -20492,7 +24060,7 @@ pub struct LuaRect {
 /// ```
 
     #[lua()]
-    fn new(x0: u32, y0: u32, x1: u32, y1: u32) -> bevy::math::URect;
+    fn new(x0: u32, y0: u32, x1: u32, y1: u32) -> LuaReflectValProxy<bevy::math::URect>;
 
 "#,
     r#"
@@ -20510,11 +24078,9 @@ pub struct LuaRect {
 
     #[lua()]
     fn from_corners(
-        #[proxy]
-        p0: bevy::math::UVec2,
-        #[proxy]
-        p1: bevy::math::UVec2,
-    ) -> bevy::math::URect;
+        p0: LuaReflectValProxy<bevy::math::UVec2>,
+        p1: LuaReflectValProxy<bevy::math::UVec2>,
+    ) -> LuaReflectValProxy<bevy::math::URect>;
 
 "#,
     r#"
@@ -20533,11 +24099,9 @@ pub struct LuaRect {
 
     #[lua()]
     fn from_center_size(
-        #[proxy]
-        origin: bevy::math::UVec2,
-        #[proxy]
-        size: bevy::math::UVec2,
-    ) -> bevy::math::URect;
+        origin: LuaReflectValProxy<bevy::math::UVec2>,
+        size: LuaReflectValProxy<bevy::math::UVec2>,
+    ) -> LuaReflectValProxy<bevy::math::URect>;
 
 "#,
     r#"
@@ -20554,11 +24118,9 @@ pub struct LuaRect {
 
     #[lua()]
     fn from_center_half_size(
-        #[proxy]
-        origin: bevy::math::UVec2,
-        #[proxy]
-        half_size: bevy::math::UVec2,
-    ) -> bevy::math::URect;
+        origin: LuaReflectValProxy<bevy::math::UVec2>,
+        half_size: LuaReflectValProxy<bevy::math::UVec2>,
+    ) -> LuaReflectValProxy<bevy::math::URect>;
 
 "#,
     r#"
@@ -20571,7 +24133,7 @@ pub struct LuaRect {
 /// ```
 
     #[lua()]
-    fn is_empty(&self) -> bool;
+    fn is_empty(_self: LuaReflectRefProxy<bevy::math::URect>) -> bool;
 
 "#,
     r#"
@@ -20584,7 +24146,7 @@ pub struct LuaRect {
 /// ```
 
     #[lua()]
-    fn width(&self) -> u32;
+    fn width(_self: LuaReflectRefProxy<bevy::math::URect>) -> u32;
 
 "#,
     r#"
@@ -20597,7 +24159,7 @@ pub struct LuaRect {
 /// ```
 
     #[lua()]
-    fn height(&self) -> u32;
+    fn height(_self: LuaReflectRefProxy<bevy::math::URect>) -> u32;
 
 "#,
     r#"
@@ -20610,7 +24172,9 @@ pub struct LuaRect {
 /// ```
 
     #[lua()]
-    fn size(&self) -> bevy::math::UVec2;
+    fn size(
+        _self: LuaReflectRefProxy<bevy::math::URect>,
+    ) -> LuaReflectValProxy<bevy::math::UVec2>;
 
 "#,
     r#"
@@ -20625,7 +24189,9 @@ pub struct LuaRect {
 /// ```
 
     #[lua()]
-    fn half_size(&self) -> bevy::math::UVec2;
+    fn half_size(
+        _self: LuaReflectRefProxy<bevy::math::URect>,
+    ) -> LuaReflectValProxy<bevy::math::UVec2>;
 
 "#,
     r#"
@@ -20640,7 +24206,9 @@ pub struct LuaRect {
 /// ```
 
     #[lua()]
-    fn center(&self) -> bevy::math::UVec2;
+    fn center(
+        _self: LuaReflectRefProxy<bevy::math::URect>,
+    ) -> LuaReflectValProxy<bevy::math::UVec2>;
 
 "#,
     r#"
@@ -20655,7 +24223,10 @@ pub struct LuaRect {
 /// ```
 
     #[lua()]
-    fn contains(&self, #[proxy] point: bevy::math::UVec2) -> bool;
+    fn contains(
+        _self: LuaReflectRefProxy<bevy::math::URect>,
+        point: LuaReflectValProxy<bevy::math::UVec2>,
+    ) -> bool;
 
 "#,
     r#"
@@ -20672,7 +24243,10 @@ pub struct LuaRect {
 /// ```
 
     #[lua()]
-    fn union(&self, #[proxy] other: bevy::math::URect) -> bevy::math::URect;
+    fn union(
+        _self: LuaReflectRefProxy<bevy::math::URect>,
+        other: LuaReflectValProxy<bevy::math::URect>,
+    ) -> LuaReflectValProxy<bevy::math::URect>;
 
 "#,
     r#"
@@ -20689,7 +24263,10 @@ pub struct LuaRect {
 /// ```
 
     #[lua()]
-    fn union_point(&self, #[proxy] other: bevy::math::UVec2) -> bevy::math::URect;
+    fn union_point(
+        _self: LuaReflectRefProxy<bevy::math::URect>,
+        other: LuaReflectValProxy<bevy::math::UVec2>,
+    ) -> LuaReflectValProxy<bevy::math::URect>;
 
 "#,
     r#"
@@ -20708,7 +24285,10 @@ pub struct LuaRect {
 /// ```
 
     #[lua()]
-    fn intersect(&self, #[proxy] other: bevy::math::URect) -> bevy::math::URect;
+    fn intersect(
+        _self: LuaReflectRefProxy<bevy::math::URect>,
+        other: LuaReflectValProxy<bevy::math::URect>,
+    ) -> LuaReflectValProxy<bevy::math::URect>;
 
 "#,
     r#"
@@ -20730,21 +24310,28 @@ pub struct LuaRect {
 /// ```
 
     #[lua()]
-    fn inset(&self, inset: i32) -> bevy::math::URect;
+    fn inset(
+        _self: LuaReflectRefProxy<bevy::math::URect>,
+        inset: i32,
+    ) -> LuaReflectValProxy<bevy::math::URect>;
 
 "#,
     r#"
 /// Returns self as [`Rect`] (f32)
 
     #[lua()]
-    fn as_rect(&self) -> bevy::math::Rect;
+    fn as_rect(
+        _self: LuaReflectRefProxy<bevy::math::URect>,
+    ) -> LuaReflectValProxy<bevy::math::Rect>;
 
 "#,
     r#"
 /// Returns self as [`IRect`] (i32)
 
     #[lua()]
-    fn as_irect(&self) -> bevy::math::IRect;
+    fn as_irect(
+        _self: LuaReflectRefProxy<bevy::math::URect>,
+    ) -> LuaReflectValProxy<bevy::math::IRect>;
 
 "#,
     r#"
@@ -20754,10 +24341,8 @@ fn index(&self) -> String {
 }
 "#]
 )]
-pub struct LuaURect {
-    #[lua(output(proxy))]
+pub struct URect {
     min: bevy::math::UVec2,
-    #[lua(output(proxy))]
     max: bevy::math::UVec2,
 }
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
@@ -20768,37 +24353,42 @@ pub struct LuaURect {
     functions[r#"
 
     #[lua()]
-    fn to_string(&self) -> std::string::String;
+    fn to_string(_self: LuaReflectRefProxy<smol_str::SmolStr>) -> std::string::String;
 
 "#,
     r#"
 
     #[lua()]
-    fn len(&self) -> usize;
+    fn len(_self: LuaReflectRefProxy<smol_str::SmolStr>) -> usize;
 
 "#,
     r#"
 
     #[lua()]
-    fn is_empty(&self) -> bool;
+    fn is_empty(_self: LuaReflectRefProxy<smol_str::SmolStr>) -> bool;
 
 "#,
     r#"
 
     #[lua()]
-    fn is_heap_allocated(&self) -> bool;
+    fn is_heap_allocated(_self: LuaReflectRefProxy<smol_str::SmolStr>) -> bool;
 
 "#,
     r#"
 
-    #[lua(as_trait = "std::cmp::PartialEq", composite = "eq")]
-    fn eq(&self, #[proxy] other: &smol_str::SmolStr) -> bool;
+    #[lua(as_trait = "std::cmp::PartialEq::<smol_str::SmolStr>", composite = "eq")]
+    fn eq(
+        _self: LuaReflectRefProxy<smol_str::SmolStr>,
+        other: LuaReflectRefProxy<smol_str::SmolStr>,
+    ) -> bool;
 
 "#,
     r#"
 
     #[lua(as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone")]
-    fn clone(&self) -> smol_str::SmolStr;
+    fn clone(
+        _self: LuaReflectRefProxy<smol_str::SmolStr>,
+    ) -> LuaReflectValProxy<smol_str::SmolStr>;
 
 "#,
     r#"
@@ -20808,7 +24398,7 @@ fn index(&self) -> String {
 }
 "#]
 )]
-pub struct LuaSmolStr();
+pub struct SmolStr();
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
     remote = "std::num::NonZeroIsize",
@@ -20816,14 +24406,19 @@ pub struct LuaSmolStr();
     bms_lua_path = "crate",
     functions[r#"
 
-    #[lua(as_trait = "std::cmp::PartialEq", composite = "eq")]
-    fn eq(&self, #[proxy] other: &std::num::NonZeroIsize) -> bool;
+    #[lua(as_trait = "std::cmp::PartialEq::<std::num::NonZeroIsize>", composite = "eq")]
+    fn eq(
+        _self: LuaReflectRefProxy<std::num::NonZeroIsize>,
+        other: LuaReflectRefProxy<std::num::NonZeroIsize>,
+    ) -> bool;
 
 "#,
     r#"
 
     #[lua(as_trait = "std::cmp::Eq")]
-    fn assert_receiver_is_total_eq(&self) -> ();
+    fn assert_receiver_is_total_eq(
+        _self: LuaReflectRefProxy<std::num::NonZeroIsize>,
+    ) -> ();
 
 "#,
     r#"
@@ -20833,14 +24428,14 @@ pub struct LuaSmolStr();
 /// The value must not be zero.
 
     #[lua()]
-    unsafe fn new_unchecked(n: isize) -> std::num::NonZeroIsize;
+    unsafe fn new_unchecked(n: isize) -> LuaReflectValProxy<std::num::NonZeroIsize>;
 
 "#,
     r#"
 /// Returns the value as a primitive type.
 
     #[lua()]
-    fn get(self) -> isize;
+    fn get(_self: LuaReflectValProxy<std::num::NonZeroIsize>) -> isize;
 
 "#,
     r#"
@@ -20854,7 +24449,7 @@ pub struct LuaSmolStr();
 /// ```
 
     #[lua()]
-    fn leading_zeros(self) -> u32;
+    fn leading_zeros(_self: LuaReflectValProxy<std::num::NonZeroIsize>) -> u32;
 
 "#,
     r#"
@@ -20869,7 +24464,7 @@ pub struct LuaSmolStr();
 /// ```
 
     #[lua()]
-    fn trailing_zeros(self) -> u32;
+    fn trailing_zeros(_self: LuaReflectValProxy<std::num::NonZeroIsize>) -> u32;
 
 "#,
     r#"
@@ -20890,7 +24485,9 @@ pub struct LuaSmolStr();
 /// ```
 
     #[lua()]
-    fn abs(self) -> std::num::NonZeroIsize;
+    fn abs(
+        _self: LuaReflectValProxy<std::num::NonZeroIsize>,
+    ) -> LuaReflectValProxy<std::num::NonZeroIsize>;
 
 "#,
     r#"
@@ -20915,7 +24512,9 @@ pub struct LuaSmolStr();
 /// ```
 
     #[lua()]
-    fn saturating_abs(self) -> std::num::NonZeroIsize;
+    fn saturating_abs(
+        _self: LuaReflectValProxy<std::num::NonZeroIsize>,
+    ) -> LuaReflectValProxy<std::num::NonZeroIsize>;
 
 "#,
     r#"
@@ -20939,7 +24538,9 @@ pub struct LuaSmolStr();
 /// ```
 
     #[lua()]
-    fn wrapping_abs(self) -> std::num::NonZeroIsize;
+    fn wrapping_abs(
+        _self: LuaReflectValProxy<std::num::NonZeroIsize>,
+    ) -> LuaReflectValProxy<std::num::NonZeroIsize>;
 
 "#,
     r#"
@@ -20964,7 +24565,9 @@ pub struct LuaSmolStr();
 /// ```
 
     #[lua()]
-    fn unsigned_abs(self) -> std::num::NonZeroUsize;
+    fn unsigned_abs(
+        _self: LuaReflectValProxy<std::num::NonZeroIsize>,
+    ) -> LuaReflectValProxy<std::num::NonZeroUsize>;
 
 "#,
     r#"
@@ -20984,7 +24587,7 @@ pub struct LuaSmolStr();
 /// ```
 
     #[lua()]
-    fn is_positive(self) -> bool;
+    fn is_positive(_self: LuaReflectValProxy<std::num::NonZeroIsize>) -> bool;
 
 "#,
     r#"
@@ -21004,7 +24607,7 @@ pub struct LuaSmolStr();
 /// ```
 
     #[lua()]
-    fn is_negative(self) -> bool;
+    fn is_negative(_self: LuaReflectValProxy<std::num::NonZeroIsize>) -> bool;
 
 "#,
     r#"
@@ -21030,7 +24633,9 @@ pub struct LuaSmolStr();
 /// ```
 
     #[lua()]
-    fn saturating_neg(self) -> std::num::NonZeroIsize;
+    fn saturating_neg(
+        _self: LuaReflectValProxy<std::num::NonZeroIsize>,
+    ) -> LuaReflectValProxy<std::num::NonZeroIsize>;
 
 "#,
     r#"
@@ -21053,7 +24658,9 @@ pub struct LuaSmolStr();
 /// ```
 
     #[lua()]
-    fn wrapping_neg(self) -> std::num::NonZeroIsize;
+    fn wrapping_neg(
+        _self: LuaReflectValProxy<std::num::NonZeroIsize>,
+    ) -> LuaReflectValProxy<std::num::NonZeroIsize>;
 
 "#,
     r#"
@@ -21075,10 +24682,9 @@ pub struct LuaSmolStr();
 
     #[lua()]
     fn saturating_mul(
-        self,
-        #[proxy]
-        other: std::num::NonZeroIsize,
-    ) -> std::num::NonZeroIsize;
+        _self: LuaReflectValProxy<std::num::NonZeroIsize>,
+        other: LuaReflectValProxy<std::num::NonZeroIsize>,
+    ) -> LuaReflectValProxy<std::num::NonZeroIsize>;
 
 "#,
     r#"
@@ -21099,19 +24705,26 @@ pub struct LuaSmolStr();
 /// ```
 
     #[lua()]
-    fn saturating_pow(self, other: u32) -> std::num::NonZeroIsize;
+    fn saturating_pow(
+        _self: LuaReflectValProxy<std::num::NonZeroIsize>,
+        other: u32,
+    ) -> LuaReflectValProxy<std::num::NonZeroIsize>;
 
 "#,
     r#"
 
     #[lua(as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone")]
-    fn clone(&self) -> std::num::NonZeroIsize;
+    fn clone(
+        _self: LuaReflectRefProxy<std::num::NonZeroIsize>,
+    ) -> LuaReflectValProxy<std::num::NonZeroIsize>;
 
 "#,
     r#"
 
     #[lua(as_trait = "std::ops::Neg", composite = "neg")]
-    fn neg(self) -> std::num::NonZeroIsize;
+    fn neg(
+        _self: LuaReflectValProxy<std::num::NonZeroIsize>,
+    ) -> LuaReflectValProxy<std::num::NonZeroIsize>;
 
 "#,
     r#"
@@ -21121,7 +24734,7 @@ fn index(&self) -> String {
 }
 "#]
 )]
-pub struct LuaNonZeroIsize();
+pub struct NonZeroIsize();
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
     remote = "bevy::utils::Uuid",
@@ -21150,25 +24763,30 @@ pub struct LuaNonZeroIsize();
 /// [from_random_bytes]: struct.Builder.html#method.from_random_bytes
 
     #[lua()]
-    fn new_v4() -> bevy::utils::Uuid;
+    fn new_v4() -> LuaReflectValProxy<bevy::utils::Uuid>;
 
 "#,
     r#"
 
-    #[lua(as_trait = "std::cmp::PartialEq", composite = "eq")]
-    fn eq(&self, #[proxy] other: &bevy_utils::Uuid) -> bool;
+    #[lua(as_trait = "std::cmp::PartialEq::<bevy::utils::Uuid>", composite = "eq")]
+    fn eq(
+        _self: LuaReflectRefProxy<bevy::utils::Uuid>,
+        other: LuaReflectRefProxy<bevy::utils::Uuid>,
+    ) -> bool;
 
 "#,
     r#"
 
     #[lua(as_trait = "std::cmp::Eq")]
-    fn assert_receiver_is_total_eq(&self) -> ();
+    fn assert_receiver_is_total_eq(_self: LuaReflectRefProxy<bevy::utils::Uuid>) -> ();
 
 "#,
     r#"
 
     #[lua(as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone")]
-    fn clone(&self) -> bevy::utils::Uuid;
+    fn clone(
+        _self: LuaReflectRefProxy<bevy::utils::Uuid>,
+    ) -> LuaReflectValProxy<bevy::utils::Uuid>;
 
 "#,
     r#"
@@ -21189,7 +24807,7 @@ pub struct LuaNonZeroIsize();
 /// * [Version in RFC4122](https://datatracker.ietf.org/doc/html/rfc4122#section-4.1.3)
 
     #[lua()]
-    fn get_version_num(&self) -> usize;
+    fn get_version_num(_self: LuaReflectRefProxy<bevy::utils::Uuid>) -> usize;
 
 "#,
     r#"
@@ -21209,7 +24827,7 @@ pub struct LuaNonZeroIsize();
 /// ```
 
     #[lua()]
-    fn as_u128(&self) -> u128;
+    fn as_u128(_self: LuaReflectRefProxy<bevy::utils::Uuid>) -> u128;
 
 "#,
     r#"
@@ -21235,7 +24853,7 @@ pub struct LuaNonZeroIsize();
 /// ```
 
     #[lua()]
-    fn to_u128_le(&self) -> u128;
+    fn to_u128_le(_self: LuaReflectRefProxy<bevy::utils::Uuid>) -> u128;
 
 "#,
     r#"
@@ -21257,7 +24875,7 @@ pub struct LuaNonZeroIsize();
 /// ```
 
     #[lua()]
-    fn as_u64_pair(&self) -> (u64, u64);
+    fn as_u64_pair(_self: LuaReflectRefProxy<bevy::utils::Uuid>) -> (u64, u64);
 
 "#,
     r#"
@@ -21276,7 +24894,7 @@ pub struct LuaNonZeroIsize();
 /// ```
 
     #[lua()]
-    fn into_bytes(self) -> [u8; 16];
+    fn into_bytes(_self: LuaReflectValProxy<bevy::utils::Uuid>) -> [u8; 16];
 
 "#,
     r#"
@@ -21301,21 +24919,21 @@ pub struct LuaNonZeroIsize();
 /// ```
 
     #[lua()]
-    fn to_bytes_le(&self) -> [u8; 16];
+    fn to_bytes_le(_self: LuaReflectRefProxy<bevy::utils::Uuid>) -> [u8; 16];
 
 "#,
     r#"
 /// Tests if the UUID is nil (all zeros).
 
     #[lua()]
-    fn is_nil(&self) -> bool;
+    fn is_nil(_self: LuaReflectRefProxy<bevy::utils::Uuid>) -> bool;
 
 "#,
     r#"
 /// Tests if the UUID is max (all ones).
 
     #[lua()]
-    fn is_max(&self) -> bool;
+    fn is_max(_self: LuaReflectRefProxy<bevy::utils::Uuid>) -> bool;
 
 "#,
     r#"
@@ -21362,7 +24980,7 @@ pub struct LuaNonZeroIsize();
 /// ```
 
     #[lua()]
-    fn nil() -> bevy::utils::Uuid;
+    fn nil() -> LuaReflectValProxy<bevy::utils::Uuid>;
 
 "#,
     r#"
@@ -21383,7 +25001,7 @@ pub struct LuaNonZeroIsize();
 /// ```
 
     #[lua()]
-    fn max() -> bevy::utils::Uuid;
+    fn max() -> LuaReflectValProxy<bevy::utils::Uuid>;
 
 "#,
     r#"
@@ -21401,7 +25019,7 @@ pub struct LuaNonZeroIsize();
 /// ```
 
     #[lua()]
-    fn from_u128(v: u128) -> bevy::utils::Uuid;
+    fn from_u128(v: u128) -> LuaReflectValProxy<bevy::utils::Uuid>;
 
 "#,
     r#"
@@ -21423,7 +25041,7 @@ pub struct LuaNonZeroIsize();
 /// ```
 
     #[lua()]
-    fn from_u128_le(v: u128) -> bevy::utils::Uuid;
+    fn from_u128_le(v: u128) -> LuaReflectValProxy<bevy::utils::Uuid>;
 
 "#,
     r#"
@@ -21442,7 +25060,10 @@ pub struct LuaNonZeroIsize();
 /// ```
 
     #[lua()]
-    fn from_u64_pair(high_bits: u64, low_bits: u64) -> bevy::utils::Uuid;
+    fn from_u64_pair(
+        high_bits: u64,
+        low_bits: u64,
+    ) -> LuaReflectValProxy<bevy::utils::Uuid>;
 
 "#,
     r#"
@@ -21468,7 +25089,7 @@ pub struct LuaNonZeroIsize();
 /// ```
 
     #[lua()]
-    fn from_bytes(bytes: [u8; 16]) -> bevy::utils::Uuid;
+    fn from_bytes(bytes: [u8; 16]) -> LuaReflectValProxy<bevy::utils::Uuid>;
 
 "#,
     r#"
@@ -21495,7 +25116,7 @@ pub struct LuaNonZeroIsize();
 /// ```
 
     #[lua()]
-    fn from_bytes_le(b: [u8; 16]) -> bevy::utils::Uuid;
+    fn from_bytes_le(b: [u8; 16]) -> LuaReflectValProxy<bevy::utils::Uuid>;
 
 "#,
     r#"
@@ -21505,7 +25126,7 @@ fn index(&self) -> String {
 }
 "#]
 )]
-pub struct LuaUuid();
+pub struct Uuid();
 #[derive(Default)]
 pub(crate) struct Globals;
 impl crate::tealr::mlu::ExportInstances for Globals {
@@ -21786,86 +25407,86 @@ fn bevy_reflect_context_initializer(
 pub struct BevyReflectScriptingPlugin;
 impl bevy::app::Plugin for BevyReflectScriptingPlugin {
     fn build(&self, app: &mut bevy::prelude::App) {
-        app.register_foreign_lua_type::<bevy::utils::Duration>();
-        app.register_foreign_lua_type::<bevy::utils::Instant>();
-        app.register_foreign_lua_type::<std::num::NonZeroI128>();
-        app.register_foreign_lua_type::<std::num::NonZeroI16>();
-        app.register_foreign_lua_type::<std::num::NonZeroI32>();
-        app.register_foreign_lua_type::<std::num::NonZeroI64>();
-        app.register_foreign_lua_type::<std::num::NonZeroI8>();
-        app.register_foreign_lua_type::<std::num::NonZeroU128>();
-        app.register_foreign_lua_type::<std::num::NonZeroU16>();
-        app.register_foreign_lua_type::<std::num::NonZeroU32>();
-        app.register_foreign_lua_type::<std::num::NonZeroU64>();
-        app.register_foreign_lua_type::<std::num::NonZeroU8>();
-        app.register_foreign_lua_type::<std::num::NonZeroUsize>();
-        app.register_foreign_lua_type::<std::path::PathBuf>();
-        app.register_foreign_lua_type::<std::ops::RangeFull>();
-        app.register_foreign_lua_type::<bevy::math::Quat>();
-        app.register_foreign_lua_type::<bevy::math::Vec3>();
-        app.register_foreign_lua_type::<bevy::math::IVec2>();
-        app.register_foreign_lua_type::<bevy::math::IVec3>();
-        app.register_foreign_lua_type::<bevy::math::IVec4>();
-        app.register_foreign_lua_type::<bevy::math::I64Vec2>();
-        app.register_foreign_lua_type::<bevy::math::I64Vec3>();
-        app.register_foreign_lua_type::<bevy::math::I64Vec4>();
-        app.register_foreign_lua_type::<bevy::math::UVec2>();
-        app.register_foreign_lua_type::<bevy::math::UVec3>();
-        app.register_foreign_lua_type::<bevy::math::UVec4>();
-        app.register_foreign_lua_type::<bevy::math::U64Vec2>();
-        app.register_foreign_lua_type::<bevy::math::U64Vec3>();
-        app.register_foreign_lua_type::<bevy::math::U64Vec4>();
-        app.register_foreign_lua_type::<bevy::math::Vec2>();
-        app.register_foreign_lua_type::<bevy::math::Vec3A>();
-        app.register_foreign_lua_type::<bevy::math::Vec4>();
-        app.register_foreign_lua_type::<bevy::math::BVec2>();
-        app.register_foreign_lua_type::<bevy::math::BVec3>();
-        app.register_foreign_lua_type::<bevy::math::BVec4>();
-        app.register_foreign_lua_type::<bevy::math::DVec2>();
-        app.register_foreign_lua_type::<bevy::math::DVec3>();
-        app.register_foreign_lua_type::<bevy::math::DVec4>();
-        app.register_foreign_lua_type::<bevy::math::Mat2>();
-        app.register_foreign_lua_type::<bevy::math::Mat3>();
-        app.register_foreign_lua_type::<bevy::math::Mat3A>();
-        app.register_foreign_lua_type::<bevy::math::Mat4>();
-        app.register_foreign_lua_type::<bevy::math::DMat2>();
-        app.register_foreign_lua_type::<bevy::math::DMat3>();
-        app.register_foreign_lua_type::<bevy::math::DMat4>();
-        app.register_foreign_lua_type::<bevy::math::Affine2>();
-        app.register_foreign_lua_type::<bevy::math::Affine3A>();
-        app.register_foreign_lua_type::<bevy::math::DAffine2>();
-        app.register_foreign_lua_type::<bevy::math::DAffine3>();
-        app.register_foreign_lua_type::<bevy::math::DQuat>();
-        app.register_foreign_lua_type::<bevy::math::EulerRot>();
-        app.register_foreign_lua_type::<bevy::math::BVec3A>();
-        app.register_foreign_lua_type::<bevy::math::BVec4A>();
-        app.register_foreign_lua_type::<bevy::math::primitives::Direction2d>();
-        app.register_foreign_lua_type::<bevy::math::primitives::Circle>();
-        app.register_foreign_lua_type::<bevy::math::primitives::Ellipse>();
-        app.register_foreign_lua_type::<bevy::math::primitives::Plane2d>();
-        app.register_foreign_lua_type::<bevy::math::primitives::Line2d>();
-        app.register_foreign_lua_type::<bevy::math::primitives::Segment2d>();
-        app.register_foreign_lua_type::<bevy::math::primitives::Triangle2d>();
-        app.register_foreign_lua_type::<bevy::math::primitives::Rectangle>();
-        app.register_foreign_lua_type::<bevy::math::primitives::RegularPolygon>();
-        app.register_foreign_lua_type::<bevy::math::primitives::Capsule2d>();
-        app.register_foreign_lua_type::<bevy::math::primitives::Direction3d>();
-        app.register_foreign_lua_type::<bevy::math::primitives::Sphere>();
-        app.register_foreign_lua_type::<bevy::math::primitives::Plane3d>();
-        app.register_foreign_lua_type::<bevy::math::primitives::Line3d>();
-        app.register_foreign_lua_type::<bevy::math::primitives::Segment3d>();
-        app.register_foreign_lua_type::<bevy::math::primitives::Cuboid>();
-        app.register_foreign_lua_type::<bevy::math::primitives::Cylinder>();
-        app.register_foreign_lua_type::<bevy::math::primitives::Capsule3d>();
-        app.register_foreign_lua_type::<bevy::math::primitives::Cone>();
-        app.register_foreign_lua_type::<bevy::math::primitives::ConicalFrustum>();
-        app.register_foreign_lua_type::<bevy::math::primitives::Torus>();
-        app.register_foreign_lua_type::<bevy::math::IRect>();
-        app.register_foreign_lua_type::<bevy::math::Rect>();
-        app.register_foreign_lua_type::<bevy::math::URect>();
-        app.register_foreign_lua_type::<smol_str::SmolStr>();
-        app.register_foreign_lua_type::<std::num::NonZeroIsize>();
-        app.register_foreign_lua_type::<bevy::utils::Uuid>();
+        app.register_proxy::<bevy::utils::Duration>();
+        app.register_proxy::<bevy::utils::Instant>();
+        app.register_proxy::<std::num::NonZeroI128>();
+        app.register_proxy::<std::num::NonZeroI16>();
+        app.register_proxy::<std::num::NonZeroI32>();
+        app.register_proxy::<std::num::NonZeroI64>();
+        app.register_proxy::<std::num::NonZeroI8>();
+        app.register_proxy::<std::num::NonZeroU128>();
+        app.register_proxy::<std::num::NonZeroU16>();
+        app.register_proxy::<std::num::NonZeroU32>();
+        app.register_proxy::<std::num::NonZeroU64>();
+        app.register_proxy::<std::num::NonZeroU8>();
+        app.register_proxy::<std::num::NonZeroUsize>();
+        app.register_proxy::<std::path::PathBuf>();
+        app.register_proxy::<std::ops::RangeFull>();
+        app.register_proxy::<bevy::math::Quat>();
+        app.register_proxy::<bevy::math::Vec3>();
+        app.register_proxy::<bevy::math::IVec2>();
+        app.register_proxy::<bevy::math::IVec3>();
+        app.register_proxy::<bevy::math::IVec4>();
+        app.register_proxy::<bevy::math::I64Vec2>();
+        app.register_proxy::<bevy::math::I64Vec3>();
+        app.register_proxy::<bevy::math::I64Vec4>();
+        app.register_proxy::<bevy::math::UVec2>();
+        app.register_proxy::<bevy::math::UVec3>();
+        app.register_proxy::<bevy::math::UVec4>();
+        app.register_proxy::<bevy::math::U64Vec2>();
+        app.register_proxy::<bevy::math::U64Vec3>();
+        app.register_proxy::<bevy::math::U64Vec4>();
+        app.register_proxy::<bevy::math::Vec2>();
+        app.register_proxy::<bevy::math::Vec3A>();
+        app.register_proxy::<bevy::math::Vec4>();
+        app.register_proxy::<bevy::math::BVec2>();
+        app.register_proxy::<bevy::math::BVec3>();
+        app.register_proxy::<bevy::math::BVec4>();
+        app.register_proxy::<bevy::math::DVec2>();
+        app.register_proxy::<bevy::math::DVec3>();
+        app.register_proxy::<bevy::math::DVec4>();
+        app.register_proxy::<bevy::math::Mat2>();
+        app.register_proxy::<bevy::math::Mat3>();
+        app.register_proxy::<bevy::math::Mat3A>();
+        app.register_proxy::<bevy::math::Mat4>();
+        app.register_proxy::<bevy::math::DMat2>();
+        app.register_proxy::<bevy::math::DMat3>();
+        app.register_proxy::<bevy::math::DMat4>();
+        app.register_proxy::<bevy::math::Affine2>();
+        app.register_proxy::<bevy::math::Affine3A>();
+        app.register_proxy::<bevy::math::DAffine2>();
+        app.register_proxy::<bevy::math::DAffine3>();
+        app.register_proxy::<bevy::math::DQuat>();
+        app.register_proxy::<bevy::math::EulerRot>();
+        app.register_proxy::<bevy::math::BVec3A>();
+        app.register_proxy::<bevy::math::BVec4A>();
+        app.register_proxy::<bevy::math::primitives::Direction2d>();
+        app.register_proxy::<bevy::math::primitives::Circle>();
+        app.register_proxy::<bevy::math::primitives::Ellipse>();
+        app.register_proxy::<bevy::math::primitives::Plane2d>();
+        app.register_proxy::<bevy::math::primitives::Line2d>();
+        app.register_proxy::<bevy::math::primitives::Segment2d>();
+        app.register_proxy::<bevy::math::primitives::Triangle2d>();
+        app.register_proxy::<bevy::math::primitives::Rectangle>();
+        app.register_proxy::<bevy::math::primitives::RegularPolygon>();
+        app.register_proxy::<bevy::math::primitives::Capsule2d>();
+        app.register_proxy::<bevy::math::primitives::Direction3d>();
+        app.register_proxy::<bevy::math::primitives::Sphere>();
+        app.register_proxy::<bevy::math::primitives::Plane3d>();
+        app.register_proxy::<bevy::math::primitives::Line3d>();
+        app.register_proxy::<bevy::math::primitives::Segment3d>();
+        app.register_proxy::<bevy::math::primitives::Cuboid>();
+        app.register_proxy::<bevy::math::primitives::Cylinder>();
+        app.register_proxy::<bevy::math::primitives::Capsule3d>();
+        app.register_proxy::<bevy::math::primitives::Cone>();
+        app.register_proxy::<bevy::math::primitives::ConicalFrustum>();
+        app.register_proxy::<bevy::math::primitives::Torus>();
+        app.register_proxy::<bevy::math::IRect>();
+        app.register_proxy::<bevy::math::Rect>();
+        app.register_proxy::<bevy::math::URect>();
+        app.register_proxy::<smol_str::SmolStr>();
+        app.register_proxy::<std::num::NonZeroIsize>();
+        app.register_proxy::<bevy::utils::Uuid>();
         app.add_context_initializer::<()>(bevy_reflect_context_initializer);
         app.add_documentation_fragment(
             crate::docs::LuaDocumentationFragment::new(

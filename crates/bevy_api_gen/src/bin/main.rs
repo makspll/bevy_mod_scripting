@@ -134,12 +134,13 @@ fn main() {
 
     let temp_dir = tempdir::TempDir::new("bevy_api_gen_bootstrap")
         .expect("Error occured when trying to acquire temp file");
+    let path = temp_dir.path().to_owned();
 
-    debug!("Temporary directory: {}", &temp_dir.path().display());
+    debug!("Temporary directory: {}", &path.display());
 
-    write_bootstrap_files(temp_dir.path());
+    write_bootstrap_files(&path);
 
-    let bootstrap_rlibs = build_bootstrap(temp_dir.path(), &plugin_target_dir.join("bootstrap"));
+    let bootstrap_rlibs = build_bootstrap(&path, &plugin_target_dir.join("bootstrap"));
 
     if bootstrap_rlibs.len() == BOOTSTRAP_DEPS.len() {
         let extern_args = bootstrap_rlibs
@@ -169,7 +170,13 @@ fn main() {
     rustc_plugin::cli_main(BevyAnalyzer);
 
     // just making sure the temp dir lives until everything is done
-    drop(temp_dir);
+    if let Err(err) = std::fs::remove_dir_all(&path) {
+        log::error!(
+            "Error occured when trying to delete temporary directory: `{}`. {}",
+            path.to_string_lossy(),
+            err
+        )
+    }
 }
 
 /// Build bootstrap files if they don't exist

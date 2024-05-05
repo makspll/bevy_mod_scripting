@@ -205,7 +205,7 @@ pub(crate) fn find_methods_and_fields(ctxt: &mut BevyCtxt<'_>, _args: &Args) -> 
                         is_unsafe,
                         def_id: fn_did,
                         has_self,
-                        trait_did,
+                        trait_and_impl_did: trait_did.map(|td| (td, *impl_did)),
                         reflection_strategies,
                     })
                 })
@@ -331,6 +331,7 @@ fn type_is_adt_and_reflectable<'tcx>(
     ty.ty_adt_def().is_some_and(|adt_def| {
         let did = adt_def.did();
 
+        // even though our meta might already be written at this point, we use this as a quick out
         if reflect_types.contains_key(&did) {
             // local types are easy to check
             return true;
@@ -343,24 +344,18 @@ fn type_is_adt_and_reflectable<'tcx>(
         // so search for these metas!
         let crate_name = tcx.crate_name(did.krate).to_ident_string();
 
-        let meta_sources = if tcx.crate_name(LOCAL_CRATE).as_str() == "bevy_reflect" {
-            // otherwise meta loader might expect the meta to exist
-            vec![crate_name]
-        } else {
-            vec![crate_name, "bevy_reflect".to_string()]
-        };
+        let contains_hash = meta_loader.one_of_meta_files_contains(
+            &[&crate_name, "bevy_reflect"],
+            Some(&tcx.crate_name(LOCAL_CRATE).to_ident_string()),
+            tcx.def_path_hash(did),
+        );
 
-        let meta = match meta_sources.iter().find_map(|s| meta_loader.meta_for(s)) {
-            Some(meta) => meta,
-            None => return false, // TODO: is it possible we get false negatives here ? perhaps due to parallel compilation ? or possibly because of dependency order
-        };
-
-        let contains_hash = meta.contains_def_path_hash(tcx.def_path_hash(did));
         log::trace!(
             "Meta for type: `{}`, contained in meta `{}`",
             tcx.item_name(did),
             contains_hash
         );
+
         contains_hash
     })
 }

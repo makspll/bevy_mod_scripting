@@ -84,7 +84,11 @@ pub enum ReflectionError {
     InvalidBaseReference { base: String, reason: String },
     #[error("Cannot safely access `{base}`. {reason}")]
     InsufficientAccess { base: String, reason: String },
-
+    #[error("Tried to access `{base:?}` with insufficient provenance. {reason}")]
+    InsufficientProvenance {
+        base: ReflectReference,
+        reason: String,
+    },
     #[error("Cannot downcast reference: {reference:?} to: {to}")]
     CannotDowncast {
         reference: ReflectReference,
