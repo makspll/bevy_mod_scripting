@@ -137,6 +137,16 @@ path = "examples/lua/complex_game_loop.rs"
 required-features = ["lua54"]
 
 [[example]]
+name = "dynamic_queries_lua"
+path = "examples/lua/dynamic_queries.rs"
+required-features = ["lua54", "lua_script_api"]
+
+[[example]]
+name = "dynamic_queries_rhai"
+path = "examples/rhai/dynamic_queries.rs"
+required-features = ["rhai", "rhai_script_api"]
+
+[[example]]
 name = "game_of_life_lua"
 path = "examples/lua/game_of_life.rs"
 required-features = [
