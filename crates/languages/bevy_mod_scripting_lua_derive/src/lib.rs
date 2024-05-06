@@ -44,7 +44,7 @@ fn standardise_receiver(receiver: &mut FnArg, target_type: &Path, bms_lua_path: 
             (false, _) => "LuaReflectValProxy",
         };
         let unproxy_ident = syn::Ident::new(unproxy_container_name, receiver.span());
-        
+
         Some(syn::FnArg::Typed(parse_quote_spanned! {receiver.span()=>
             #self_ident: #bms_lua_path::bindings::proxy::#unproxy_ident::<#target_type>
         }))
@@ -84,18 +84,153 @@ fn collect_args_in_tuple<'a, I: Iterator<Item = &'a FnArg>>(
 
 /// Convert a function definition to a closure, for example:
 /// - `fn foo(a: i32, b: f32) -> f32 { a + b }` becomes `|a: i32, b: f32| { a + b} `
-fn convert_function_def_to_closure(f: TraitItemFn) -> ExprClosure {
+fn convert_function_def_to_closure(f: &TraitItemFn) -> ExprClosure {
     let span = f.span();
-    let sig = f.sig.inputs;
+    let sig = &f.sig.inputs;
     let body = f
         .default
+        .as_ref()
         .unwrap_or_else(|| panic!("Function {} must have a body", f.sig.ident));
     parse_quote_spanned! {span =>
         |#sig| #body
     }
 }
 
-#[derive(FromAttributes)]
+/// Processes the function def to wrap it in the necessary proxying logic
+/// Will convert the function signature to take in two arguments:
+/// - a context argument
+/// - a tuple of all arguments passed to the underlying function
+fn proxy_wrap_function_def(
+    f: &mut TraitItemFn,
+    target_type: &Path,
+    bms_core: &Path,
+    bms_lua: &Path,
+    mlua: &Path,
+    attrs: &FunctionAttrs,
+) {
+    if let Some(first_arg) = f.sig.inputs.first_mut() {
+        standardise_receiver(first_arg, target_type, bms_lua)
+    };
+
+    // collect all args into tuple and add lua context arg
+    let ctxt_alias = syn::Ident::new(CTXT_ALIAS, f.sig.inputs.span());
+
+    let ctxt_arg = if attrs.with_context.is_present() {
+        f.sig
+            .inputs
+            .pop()
+            .expect("Expected at least one argument for the context")
+            .into_value()
+    } else {
+        parse_quote_spanned! {f.span()=>
+            #ctxt_alias: &#mlua::Lua
+        }
+    };
+    let ctxt_arg_ident = match &ctxt_arg {
+        FnArg::Typed(arg) => arg.pat.clone(),
+        _ => panic!("Expected a typed argument, not a receiver for the context argument"),
+    };
+
+    let func_name = &f.sig.ident;
+    let (original_arg_idents, _) = f
+        .sig
+        .inputs
+        .iter()
+        .map(|arg| {
+            if let FnArg::Typed(arg) = arg {
+                (arg.pat.clone(), arg.ty.clone())
+            } else {
+                panic!("Function arguments must be typed")
+            }
+        })
+        .unzip::<_, _, Vec<_>, Vec<_>>();
+
+    let span = f.span();
+    let args_ident = format_ident!("args", span = f.sig.inputs.span());
+
+    // change signature to take in a single args tuple instead of multiple arguments (on top of a context arg)
+    f.sig.inputs = Punctuated::from_iter(vec![
+        ctxt_arg,
+        collect_args_in_tuple(f.sig.inputs.iter(), &args_ident, true),
+    ]);
+
+    let out_type = match &f.sig.output {
+        syn::ReturnType::Default => quote_spanned! {f.span()=>
+            ()
+        },
+        syn::ReturnType::Type(_, ty) => ty.to_token_stream(),
+    };
+
+    // wrap function body in our unwrapping and wrapping logic, ignore pre-existing body
+    let mut fn_call = std::panic::catch_unwind(|| {
+        let mut fn_call = match (&f.default, &attrs.as_trait) {
+            (Some(body), _) => quote_spanned!(span=>
+                (||{ #body })()
+            ),
+            (_, None) => quote_spanned!(span=>
+                #target_type::#func_name(#(#original_arg_idents),*)
+            ),
+            (_, Some(trait_path)) => {
+                let trait_path = quote_spanned!(span=> #trait_path);
+                quote_spanned!(span=>
+                    <#target_type as #trait_path>::#func_name(#(#original_arg_idents),*)
+                )
+            }
+        };
+        fn_call
+    })
+    .unwrap(); // todo: handle the error nicer
+
+    if f.sig.unsafety.is_some() {
+        fn_call = quote_spanned!(span=>
+            unsafe { #fn_call }
+        );
+    }
+
+    if attrs.no_proxy.is_present() {
+        f.default = Some(parse_quote_spanned! {span=>
+            {
+                #fn_call
+            }
+        });
+    } else {
+        f.default = Some(parse_quote_spanned! {span=>
+            {
+                let mut world: #bms_lua::bindings::proxy::LuaValProxy<#bms_core::bindings::WorldCallbackAccess> = #ctxt_arg_ident.globals().get("world")?;
+                let mut world = <#bms_lua::bindings::proxy::LuaValProxy<#bms_core::bindings::WorldCallbackAccess> as #bms_core::proxy::Unproxy>::unproxy(&mut world).map_err(#mlua::Error::external)?;
+                let mut world = world.read().ok_or_else(|| #mlua::Error::external("World no longer exists"))?;
+                let out: #out_type = world.proxy_call(#args_ident, |(#(#original_arg_idents),*)| {
+                    #fn_call
+                }).map_err(|e| #mlua::Error::external(e))?;
+                Ok(out)
+            }
+        });
+    }
+}
+
+fn generate_methods_registration(
+    attrs: &FunctionAttrs,
+    span: Span,
+    name: proc_macro2::TokenStream,
+    closure: ExprClosure,
+) -> proc_macro2::TokenStream {
+    let registration_method = if attrs.metamethod.is_some() {
+        quote_spanned!(span=>add_meta_function)
+    } else {
+        quote_spanned!(span=>add_function)
+    };
+    let docs = attrs.doc.iter().map(|doc| {
+        quote_spanned! {span=>
+            methods.document(#doc);
+        }
+    });
+    quote_spanned! {span=>
+        #(#docs)*
+        methods.#registration_method(#name, #closure);
+    }
+}
+
+#[derive(FromAttributes, Clone)]
 #[darling(attributes(lua))]
 struct FunctionAttrs {
     #[darling(multiple)]
@@ -122,14 +257,14 @@ struct FunctionAttrs {
     pub with_context: Flag,
 
     /// Skips the unproxying & proxying call, useful for functions that don't need to access the world
-    pub no_proxy: Flag
+    pub no_proxy: Flag,
 }
 
 #[proc_macro_derive(LuaProxy, attributes(lua, proxy))]
 pub fn impl_lua_proxy(input: TokenStream) -> TokenStream {
     let derive_input = parse_macro_input!(input as DeriveInput);
 
-    let meta: ProxyInput = match ProxyInput::from_derive_input(&derive_input) {
+    let mut meta: ProxyInput = match ProxyInput::from_derive_input(&derive_input) {
         Ok(v) => v,
         Err(e) => return darling::Error::write_errors(e).into(),
     };
@@ -151,10 +286,10 @@ pub fn impl_lua_proxy(input: TokenStream) -> TokenStream {
 
     let bms_core = meta.bms_core_path.0;
     let bms_lua = meta.bms_lua_path.0;
-    let tealr = quote_spanned!(bms_lua.span()=>
+    let tealr: Path = parse_quote_spanned!(bms_lua.span()=>
         #bms_lua::tealr
     );
-    let mlua = quote_spanned!(bms_core.span()=>
+    let mlua: Path = parse_quote_spanned!(bms_core.span()=>
         #tealr::mlu::mlua
     );
 
@@ -170,118 +305,111 @@ pub fn impl_lua_proxy(input: TokenStream) -> TokenStream {
             )
         });
 
-    let add_function_stmts = meta.functions.0.into_iter().map(|mut f| {
-        if let Some(first_arg) = f.sig.inputs.first_mut() {
-            standardise_receiver(first_arg, &target_type, &bms_lua)
+    // extract composites first
+    let mut composites: HashMap<String, Vec<(TraitItemFn, FunctionAttrs)>> = HashMap::new();
+    meta.functions.0.retain(|f| {
+        let attrs = FunctionAttrs::from_attributes(&f.attrs).unwrap();
+        if let Some(composite_id) = &attrs.composite {
+            composites
+                .entry(composite_id.to_owned())
+                .or_default()
+                .push((f.clone(), attrs));
+            true
+        } else {
+            false
+        }
+    });
+
+    let add_composite_function_stmts = composites.into_values().map(|functions| {
+        let (first_function, first_function_attrs) = functions
+            .first()
+            .cloned()
+            .expect("At least one function must be a composite for this code to be reached");
+
+        let name = match &first_function_attrs.metamethod {
+            Some(metamethod) => quote_spanned!(metamethod.span()=>
+                #mlua::MetaMethod::#metamethod
+            ),
+            None => first_function.sig.ident.to_string().to_token_stream(),
         };
 
-        // collect all args into tuple and add lua context arg
-        let ctxt_alias = syn::Ident::new(CTXT_ALIAS, f.sig.inputs.span());
+        let value_arg_types = (0..first_function.sig.inputs.len())
+            .map(|_| {
+                quote_spanned!(first_function.span()=>
+                    #mlua::Value
+                )
+            })
+            .collect::<Vec<_>>();
 
+        let value_arg_names = (0..first_function.sig.inputs.len()).map(|i| {
+            format_ident!("arg{}", i, span = first_function.span())
+        }).collect::<Vec<_>>(); 
+
+        let closures = functions
+            .into_iter()
+            .map(|(mut f, attrs)| {
+                proxy_wrap_function_def(&mut f, &target_type, &bms_core, &bms_lua, &mlua, &attrs);
+                convert_function_def_to_closure(&f)
+            })
+            .collect::<Vec<_>>();
+
+        let closure_args_types = closures.iter().map(|closure| {
+            let last = closure.inputs.last().unwrap();
+            if let syn::Pat::Type(pat_type) = last {
+                &pat_type.ty
+            } else {
+                panic!("Closure must have a single argument tuple as its last argument")
+            }
+        });
+
+        // panic!(
+        //     "{}",
+        //     quote! {
+        //         #(
+        //             if let Ok(args) = <#closure_args_types as #mlua::FromLua>::from_lua(args) {
+        //                 return (#closures)(ctxt, args);
+        //             }
+        //         )*
+        //         Err(#mlua::Error::external("Invalid arguments for composite function"))
+        //     }
+        // );
+        let closure = parse_quote_spanned! {first_function.span()=>
+            |ctxt, (#(#value_arg_names,)*): (#(#value_arg_types,)*)| {
+                let args = #mlua::MultiValue::from_vec(vec![#(#value_arg_names,)*]);
+                #(
+                    if let Ok(args) = <#closure_args_types as #mlua::FromLuaMulti>::from_lua_multi(args.clone(), ctxt) {
+                        let out : Result<_, #mlua::Error> = (#closures)(ctxt, args);
+                        return out?.into_lua(ctxt)
+                    }
+                )*
+                Err(#mlua::Error::external("Invalid arguments for composite function"))
+            }
+        };
+        // panic!("asd");
+
+        generate_methods_registration(&first_function_attrs, first_function.span(), name, closure)
+    });
+
+    let add_function_stmts = meta.functions.0.into_iter().filter_map(|mut f| {
         let attrs = FunctionAttrs::from_attributes(&f.attrs).unwrap();
 
-        let ctxt_arg = if attrs.with_context.is_present() {
-            f.sig.inputs.pop().expect("Expected at least one argument for the context").into_value()
-        } else {
-            parse_quote_spanned! {f.span()=>
-                #ctxt_alias: &#mlua::Lua
-            }
-        };
-        let ctxt_arg_ident = match &ctxt_arg {
-            FnArg::Typed(arg) => arg.pat.clone(),
-            _ => panic!("Expected a typed argument, not a receiver"),
-        }; 
-
-        let func_name = &f.sig.ident;
-        let (original_arg_idents, original_arg_types) = f
-            .sig
-            .inputs
-            .iter()
-            .map(|arg| {
-                if let FnArg::Typed(arg) = arg {
-                    (arg.pat.clone(), arg.ty.clone())
-                } else {
-                    panic!("Function arguments must be typed")
-                }
-            })
-            .unzip::<_, _, Vec<_>, Vec<_>>();
-        
-        let span = f.span();
-        let args_ident = format_ident!("args", span = f.sig.inputs.span());
-        f.sig.inputs = Punctuated::from_iter(vec![
-            ctxt_arg,
-            collect_args_in_tuple(f.sig.inputs.iter(), &args_ident, true),
-        ]);
-
-        let out_type = match &f.sig.output {
-            syn::ReturnType::Default => quote_spanned! {f.span()=>
-                ()
-            },
-            syn::ReturnType::Type(_, ty) => ty.to_token_stream(),
-        };
-
-
-        // wrap function body in our unwrapping and wrapping logic, ignore pre-existing body
-        let mut fn_call = match (f.default, attrs.as_trait) {
-            (Some(body), _) => quote_spanned!(span=>
-                (||{ #body })()
-            ),
-            (_, None) => quote_spanned!(span=>
-                #target_type::#func_name(#(#original_arg_idents),*)
-            ),
-            (_, Some(trait_path)) => {
-                let trait_path = quote_spanned!(span=> #trait_path);
-                quote_spanned!(span=>
-                    <#target_type as #trait_path>::#func_name(#(#original_arg_idents),*)
-                )
-            }
-        };
-
-        if f.sig.unsafety.is_some(){
-            fn_call = quote_spanned!(span=>
-                unsafe { #fn_call }
-            );
+        if attrs.skip.is_present() {
+            return None;
         }
 
-        if attrs.no_proxy.is_present() {
-            f.default = Some(parse_quote_spanned! {span=>
-                {
-                    #fn_call
-                }
-            });
-        } else {
-            f.default = Some(parse_quote_spanned! {span=>
-                {
-                    let mut world: #bms_lua::bindings::proxy::LuaValProxy<#bms_core::bindings::WorldCallbackAccess> = #ctxt_arg_ident.globals().get("world")?;
-                    let mut world = <#bms_lua::bindings::proxy::LuaValProxy<#bms_core::bindings::WorldCallbackAccess> as #bms_core::proxy::Unproxy>::unproxy(&mut world).map_err(#mlua::Error::external)?;
-                    let mut world = world.read().ok_or_else(|| #mlua::Error::external("World no longer exists"))?;
-                    let out: #out_type = world.proxy_call(#args_ident, |(#(#original_arg_idents),*)| {
-                        #fn_call
-                    }).map_err(|e| #mlua::Error::external(e))?;
-                    Ok(out)
-                }
-            });
-        }
+        proxy_wrap_function_def(&mut f, &target_type, &bms_core, &bms_lua, &mlua, &attrs);
 
-
-        let name = match &attrs.metamethod{
+        let name = match &attrs.metamethod {
             Some(metamethod) => quote_spanned!(metamethod.span()=>
                 #mlua::MetaMethod::#metamethod
             ),
             None => f.sig.ident.to_string().to_token_stream(),
         };
+        let span = f.span();
 
-        let closure = convert_function_def_to_closure(f);
-        
-        let registration_method = if attrs.metamethod.is_some() {
-            quote_spanned!(span=>add_meta_function)
-        } else {
-            quote_spanned!(span=>add_function)
-        };
+        let closure = convert_function_def_to_closure(&f);
 
-        quote_spanned! {span=>
-            methods.#registration_method(#name, #closure);
-        }
+        Some(generate_methods_registration(&attrs, span, name, closure))
     });
 
     let vis = &meta.vis;
@@ -297,6 +425,7 @@ pub fn impl_lua_proxy(input: TokenStream) -> TokenStream {
         impl #tealr::mlu::TealData for #proxy_type_ident {
             fn add_methods<'lua, M: #tealr::mlu::TealDataMethods<'lua, Self>>(methods: &mut M) {
                 #(#type_level_document_calls)*
+                #(#add_composite_function_stmts)*
                 #(#add_function_stmts)*
             }
         }
