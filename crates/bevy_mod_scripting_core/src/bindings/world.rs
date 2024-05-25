@@ -45,7 +45,7 @@ use crate::{
 
 use super::{
     proxy::{Proxy, Unproxy},
-    ReflectBase, ReflectBaseType, ReflectReference,
+    ReflectBase, ReflectBaseType, ReflectReference, ScriptTypeRegistration,
 };
 
 /// Describes kinds of base value we are accessing via reflection
@@ -132,7 +132,7 @@ const CONCURRENT_ACCESS_MSG: &str =
 
 /// common world methods
 impl WorldCallbackAccess {
-    pub fn get_type_by_name(&self, type_name: &str) -> Option<Arc<TypeRegistration>> {
+    pub fn get_type_by_name(&self, type_name: &str) -> Option<ScriptTypeRegistration> {
         let world = self.read().unwrap_or_else(|| panic!("{STALE_WORLD_MSG}"));
 
         world.with_resource(|_, registry: Mut<AppTypeRegistry>| {
@@ -140,14 +140,14 @@ impl WorldCallbackAccess {
             registry
                 .get_with_short_type_path(type_name)
                 .or_else(|| registry.get_with_type_path(type_name))
-                .map(|registration| Arc::new(registration.clone()))
+                .map(|registration| ScriptTypeRegistration::new(Arc::new(registration.clone())))
         })
     }
 
     pub fn add_default_component(
         &self,
         entity: Entity,
-        registration: Arc<TypeRegistration>,
+        registration: ScriptTypeRegistration,
     ) -> ScriptResult<()> {
         let world = self.read().unwrap_or_else(|| panic!("{STALE_WORLD_MSG}"));
 
@@ -243,7 +243,7 @@ impl WorldCallbackAccess {
     pub fn remove_component(
         &self,
         entity: Entity,
-        registration: Arc<TypeRegistration>,
+        registration: ScriptTypeRegistration,
     ) -> ScriptResult<()> {
         let world = self.read().unwrap_or_else(|| panic!("{STALE_WORLD_MSG}"));
 
@@ -290,7 +290,7 @@ impl WorldCallbackAccess {
         })
     }
 
-    pub fn remove_resource(&self, registration: Arc<TypeRegistration>) -> ScriptResult<()> {
+    pub fn remove_resource(&self, registration: ScriptTypeRegistration) -> ScriptResult<()> {
         let world = self.read().unwrap_or_else(|| panic!("{STALE_WORLD_MSG}"));
 
         let component_data = registration.data::<ReflectResource>().ok_or_else(|| ScriptError::new_runtime_error(format!(
@@ -1124,23 +1124,24 @@ mod test_api {
     use bevy::ecs::world::FromWorld;
     use bevy::hierarchy::BuildChildren;
 
+    use crate::bindings::ScriptTypeRegistration;
     use crate::prelude::{ScriptErrorInner, ScriptErrorKind};
 
     use super::test::{setup_world, TestComponent, TestResource};
 
     use super::*;
 
-    fn get_reg(world: &WorldCallbackAccess, name: &str) -> Arc<TypeRegistration> {
+    fn get_reg(world: &WorldCallbackAccess, name: &str) -> ScriptTypeRegistration {
         world.get_type_by_name(name).expect("Type not found")
     }
 
-    fn test_comp_reg(world: &WorldCallbackAccess) -> Arc<TypeRegistration> {
+    fn test_comp_reg(world: &WorldCallbackAccess) -> ScriptTypeRegistration {
         world
             .get_type_by_name("TestComponent")
             .expect("Component not found")
     }
 
-    fn test_resource_reg(world: &WorldCallbackAccess) -> Arc<TypeRegistration> {
+    fn test_resource_reg(world: &WorldCallbackAccess) -> ScriptTypeRegistration {
         world
             .get_type_by_name("TestResource")
             .expect("Resource not found")
