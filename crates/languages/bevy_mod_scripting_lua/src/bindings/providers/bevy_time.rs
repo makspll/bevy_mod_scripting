@@ -12,7 +12,7 @@ use crate::{
         LuaReflectRefProxy, LuaReflectRefMutProxy, LuaReflectValProxy, LuaValProxy,
         IdentityProxy,
     },
-    RegisterLuaProxy, tealr::mlu::mlua::IntoLua,
+    RegisterLua, tealr::mlu::mlua::IntoLua,
 };
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
@@ -579,12 +579,12 @@ fn bevy_time_context_initializer(
 pub struct BevyTimeScriptingPlugin;
 impl bevy::app::Plugin for BevyTimeScriptingPlugin {
     fn build(&self, app: &mut bevy::prelude::App) {
-        app.register_proxy::<bevy::time::prelude::Fixed>();
-        app.register_proxy::<bevy::time::prelude::Real>();
-        app.register_proxy::<bevy::time::prelude::Timer>();
-        app.register_proxy::<bevy::time::prelude::TimerMode>();
-        app.register_proxy::<bevy::time::prelude::Virtual>();
-        app.register_proxy::<bevy::time::Stopwatch>();
+        app.register_lua_proxy::<bevy::time::prelude::Fixed>();
+        app.register_lua_proxy::<bevy::time::prelude::Real>();
+        app.register_lua_proxy::<bevy::time::prelude::Timer>();
+        app.register_lua_proxy::<bevy::time::prelude::TimerMode>();
+        app.register_lua_proxy::<bevy::time::prelude::Virtual>();
+        app.register_lua_proxy::<bevy::time::Stopwatch>();
         app.add_context_initializer::<()>(bevy_time_context_initializer);
         app.add_documentation_fragment(
             crate::docs::LuaDocumentationFragment::new(

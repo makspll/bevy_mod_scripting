@@ -1,29 +1,29 @@
 {
     "version": "2.0.0",
     "inputs": [
+        // used for launch.json as well due to bug https://github.com/microsoft/vscode/issues/212384
         {
             "id": "test_name",
             "type": "promptString",
-            "description": "Run only tests including this string in their name",
-            "default": ""
+            "description": "Run tests with given path",
+            "default": "bindings::reference::test::test_index_lua_value_field"
         },
         {
             "id": "package",
             "type": "promptString",
             "description": "The crate location of this unit test",
             "default": "bevy_mod_scripting"
-        }
-    ],
-    "tasks": [
+        },
         {
-            "label": "Build specific package's unit tests",
-            "type": "process",
-            "command": "make",
-            "args": [
-                "build_test_in_package",
-                "PACKAGE=${input:package}",
-                "TEST_NAME=${input:test_name}"
-            ]
-        }
+            "id": "features",
+            "type": "promptString",
+            "description": "Features to activate for the build",
+        },
+        {
+            "id": "pwd",
+            "type": "promptString",
+            "description": "The working directory for the test",
+            "default": "${workspaceFolder}"
+        },
     ]
 }

@@ -1,13 +1,13 @@
 use bevy::ecs::system::Resource;
 use bevy::reflect::Reflect;
+use std::any::TypeId;
 use std::cell::UnsafeCell;
 use std::collections::HashMap;
 use std::fmt::{Display, Formatter};
-use std::rc::Rc;
 use std::sync::Arc;
 
 #[derive(Copy, Clone, PartialEq, Eq, Hash, Debug)]
-pub struct ReflectAllocationId(pub(self) usize);
+pub struct ReflectAllocationId(pub(crate) usize);
 impl ReflectAllocationId {
     pub fn id(&self) -> usize {
         self.0
@@ -41,18 +41,25 @@ impl Display for ReflectAllocationId {
 pub struct ReflectAllocator {
     // TODO: experiment with object pools, sparse set etc.
     allocations: HashMap<ReflectAllocationId, ReflectAllocation>,
+    types: HashMap<ReflectAllocationId, TypeId>,
 }
 
 impl ReflectAllocator {
     /// Allocates a new [`Reflect`] value and returns an [`AllocationId`] which can be used to access it later
-    pub fn allocate(&mut self, value: ReflectAllocation) -> ReflectAllocationId {
+    pub fn allocate<T: Reflect>(&mut self, value: T) -> (ReflectAllocationId, ReflectAllocation) {
         let id = ReflectAllocationId(self.allocations.len());
-        self.allocations.insert(id, value);
-        id
+        let value = ReflectAllocation::new(Arc::new(UnsafeCell::new(value)));
+        self.allocations.insert(id, value.clone());
+        self.types.insert(id, TypeId::of::<T>());
+        (id, value)
     }
 
     pub fn get(&self, id: ReflectAllocationId) -> Option<ReflectAllocation> {
         self.allocations.get(&id).cloned()
+    }
+
+    pub fn get_type_id(&self, id: ReflectAllocationId) -> Option<TypeId> {
+        self.types.get(&id).cloned()
     }
 
     pub fn get_mut(&self, id: ReflectAllocationId) -> Option<ReflectAllocation> {
@@ -78,10 +85,9 @@ mod test {
     #[test]
     fn test_reflect_allocator() {
         let mut allocator = ReflectAllocator::default();
-        let value = ReflectAllocation::new(Arc::new(UnsafeCell::new(0)));
-        allocator.allocate(value.clone());
+        let (id, val) = allocator.allocate(0);
         assert_eq!(allocator.allocations.len(), 1);
-        drop(value);
+        drop(val);
         allocator.clean_garbage_allocations();
         assert_eq!(allocator.allocations.len(), 0);
     }

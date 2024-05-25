@@ -13,7 +13,7 @@ use crate::{
         LuaReflectRefProxy, LuaReflectRefMutProxy, LuaReflectValProxy, LuaValProxy,
         IdentityProxy,
     },
-    RegisterLuaProxy, tealr::mlu::mlua::IntoLua,
+    RegisterLua, tealr::mlu::mlua::IntoLua,
 };
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
@@ -1725,43 +1725,43 @@ fn bevy_window_context_initializer(
 pub struct BevyWindowScriptingPlugin;
 impl bevy::app::Plugin for BevyWindowScriptingPlugin {
     fn build(&self, app: &mut bevy::prelude::App) {
-        app.register_proxy::<bevy::window::prelude::CursorEntered>();
-        app.register_proxy::<bevy::window::prelude::CursorIcon>();
-        app.register_proxy::<bevy::window::prelude::CursorLeft>();
-        app.register_proxy::<bevy::window::prelude::CursorMoved>();
-        app.register_proxy::<bevy::window::prelude::FileDragAndDrop>();
-        app.register_proxy::<bevy::window::prelude::Ime>();
-        app.register_proxy::<bevy::window::prelude::MonitorSelection>();
-        app.register_proxy::<bevy::window::prelude::ReceivedCharacter>();
-        app.register_proxy::<bevy::window::prelude::Window>();
-        app.register_proxy::<bevy::window::prelude::WindowMoved>();
-        app.register_proxy::<bevy::window::prelude::WindowPosition>();
-        app.register_proxy::<bevy::window::prelude::WindowResizeConstraints>();
-        app.register_proxy::<bevy::window::WindowResized>();
-        app.register_proxy::<bevy::window::WindowCreated>();
-        app.register_proxy::<bevy::window::WindowClosed>();
-        app.register_proxy::<bevy::window::WindowCloseRequested>();
-        app.register_proxy::<bevy::window::WindowDestroyed>();
-        app.register_proxy::<bevy::window::RequestRedraw>();
-        app.register_proxy::<bevy::window::WindowFocused>();
-        app.register_proxy::<bevy::window::WindowOccluded>();
-        app.register_proxy::<bevy::window::WindowScaleFactorChanged>();
-        app.register_proxy::<bevy::window::WindowBackendScaleFactorChanged>();
-        app.register_proxy::<bevy::window::WindowThemeChanged>();
-        app.register_proxy::<bevy::window::ApplicationLifetime>();
-        app.register_proxy::<bevy::window::PrimaryWindow>();
-        app.register_proxy::<bevy::window::Cursor>();
-        app.register_proxy::<bevy::window::CursorGrabMode>();
-        app.register_proxy::<bevy::window::CompositeAlphaMode>();
-        app.register_proxy::<bevy::window::WindowResolution>();
-        app.register_proxy::<bevy::window::WindowMode>();
-        app.register_proxy::<bevy::window::WindowLevel>();
-        app.register_proxy::<bevy::window::PresentMode>();
-        app.register_proxy::<bevy::window::InternalWindowState>();
-        app.register_proxy::<bevy::window::WindowTheme>();
-        app.register_proxy::<bevy::window::EnabledButtons>();
-        app.register_proxy::<bevy::window::WindowRef>();
-        app.register_proxy::<bevy::window::NormalizedWindowRef>();
+        app.register_lua_proxy::<bevy::window::prelude::CursorEntered>();
+        app.register_lua_proxy::<bevy::window::prelude::CursorIcon>();
+        app.register_lua_proxy::<bevy::window::prelude::CursorLeft>();
+        app.register_lua_proxy::<bevy::window::prelude::CursorMoved>();
+        app.register_lua_proxy::<bevy::window::prelude::FileDragAndDrop>();
+        app.register_lua_proxy::<bevy::window::prelude::Ime>();
+        app.register_lua_proxy::<bevy::window::prelude::MonitorSelection>();
+        app.register_lua_proxy::<bevy::window::prelude::ReceivedCharacter>();
+        app.register_lua_proxy::<bevy::window::prelude::Window>();
+        app.register_lua_proxy::<bevy::window::prelude::WindowMoved>();
+        app.register_lua_proxy::<bevy::window::prelude::WindowPosition>();
+        app.register_lua_proxy::<bevy::window::prelude::WindowResizeConstraints>();
+        app.register_lua_proxy::<bevy::window::WindowResized>();
+        app.register_lua_proxy::<bevy::window::WindowCreated>();
+        app.register_lua_proxy::<bevy::window::WindowClosed>();
+        app.register_lua_proxy::<bevy::window::WindowCloseRequested>();
+        app.register_lua_proxy::<bevy::window::WindowDestroyed>();
+        app.register_lua_proxy::<bevy::window::RequestRedraw>();
+        app.register_lua_proxy::<bevy::window::WindowFocused>();
+        app.register_lua_proxy::<bevy::window::WindowOccluded>();
+        app.register_lua_proxy::<bevy::window::WindowScaleFactorChanged>();
+        app.register_lua_proxy::<bevy::window::WindowBackendScaleFactorChanged>();
+        app.register_lua_proxy::<bevy::window::WindowThemeChanged>();
+        app.register_lua_proxy::<bevy::window::ApplicationLifetime>();
+        app.register_lua_proxy::<bevy::window::PrimaryWindow>();
+        app.register_lua_proxy::<bevy::window::Cursor>();
+        app.register_lua_proxy::<bevy::window::CursorGrabMode>();
+        app.register_lua_proxy::<bevy::window::CompositeAlphaMode>();
+        app.register_lua_proxy::<bevy::window::WindowResolution>();
+        app.register_lua_proxy::<bevy::window::WindowMode>();
+        app.register_lua_proxy::<bevy::window::WindowLevel>();
+        app.register_lua_proxy::<bevy::window::PresentMode>();
+        app.register_lua_proxy::<bevy::window::InternalWindowState>();
+        app.register_lua_proxy::<bevy::window::WindowTheme>();
+        app.register_lua_proxy::<bevy::window::EnabledButtons>();
+        app.register_lua_proxy::<bevy::window::WindowRef>();
+        app.register_lua_proxy::<bevy::window::NormalizedWindowRef>();
         app.add_context_initializer::<()>(bevy_window_context_initializer);
         app.add_documentation_fragment(
             crate::docs::LuaDocumentationFragment::new(

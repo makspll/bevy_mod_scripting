@@ -13,7 +13,7 @@ use crate::{
         LuaReflectRefProxy, LuaReflectRefMutProxy, LuaReflectValProxy, LuaValProxy,
         IdentityProxy,
     },
-    RegisterLuaProxy, tealr::mlu::mlua::IntoLua,
+    RegisterLua, tealr::mlu::mlua::IntoLua,
 };
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
@@ -92,8 +92,8 @@ fn bevy_hierarchy_context_initializer(
 pub struct BevyHierarchyScriptingPlugin;
 impl bevy::app::Plugin for BevyHierarchyScriptingPlugin {
     fn build(&self, app: &mut bevy::prelude::App) {
-        app.register_proxy::<bevy::hierarchy::prelude::Children>();
-        app.register_proxy::<bevy::hierarchy::prelude::Parent>();
+        app.register_lua_proxy::<bevy::hierarchy::prelude::Children>();
+        app.register_lua_proxy::<bevy::hierarchy::prelude::Parent>();
         app.add_context_initializer::<()>(bevy_hierarchy_context_initializer);
         app.add_documentation_fragment(
             crate::docs::LuaDocumentationFragment::new(

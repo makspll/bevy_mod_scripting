@@ -12,7 +12,7 @@ use crate::{
         LuaReflectRefProxy, LuaReflectRefMutProxy, LuaReflectValProxy, LuaValProxy,
         IdentityProxy,
     },
-    RegisterLuaProxy, tealr::mlu::mlua::IntoLua,
+    RegisterLua, tealr::mlu::mlua::IntoLua,
 };
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
@@ -1578,38 +1578,38 @@ fn bevy_input_context_initializer(
 pub struct BevyInputScriptingPlugin;
 impl bevy::app::Plugin for BevyInputScriptingPlugin {
     fn build(&self, app: &mut bevy::prelude::App) {
-        app.register_proxy::<bevy::input::gamepad::Gamepad>();
-        app.register_proxy::<bevy::input::gamepad::GamepadAxis>();
-        app.register_proxy::<bevy::input::gamepad::GamepadAxisType>();
-        app.register_proxy::<bevy::input::gamepad::GamepadButton>();
-        app.register_proxy::<bevy::input::gamepad::GamepadButtonType>();
-        app.register_proxy::<bevy::input::keyboard::KeyCode>();
-        app.register_proxy::<bevy::input::mouse::MouseButton>();
-        app.register_proxy::<bevy::input::touch::TouchInput>();
-        app.register_proxy::<bevy::input::keyboard::Key>();
-        app.register_proxy::<bevy::input::keyboard::KeyboardInput>();
-        app.register_proxy::<bevy::input::keyboard::NativeKey>();
-        app.register_proxy::<bevy::input::keyboard::NativeKeyCode>();
-        app.register_proxy::<bevy::input::mouse::MouseButtonInput>();
-        app.register_proxy::<bevy::input::mouse::MouseMotion>();
-        app.register_proxy::<bevy::input::mouse::MouseScrollUnit>();
-        app.register_proxy::<bevy::input::mouse::MouseWheel>();
-        app.register_proxy::<bevy::input::touch::ForceTouch>();
-        app.register_proxy::<bevy::input::touch::TouchPhase>();
-        app.register_proxy::<bevy::input::touchpad::TouchpadMagnify>();
-        app.register_proxy::<bevy::input::touchpad::TouchpadRotate>();
-        app.register_proxy::<bevy::input::gamepad::AxisSettings>();
-        app.register_proxy::<bevy::input::gamepad::ButtonAxisSettings>();
-        app.register_proxy::<bevy::input::gamepad::ButtonSettings>();
-        app.register_proxy::<bevy::input::gamepad::GamepadAxisChangedEvent>();
-        app.register_proxy::<bevy::input::gamepad::GamepadButtonChangedEvent>();
-        app.register_proxy::<bevy::input::gamepad::GamepadButtonInput>();
-        app.register_proxy::<bevy::input::gamepad::GamepadConnection>();
-        app.register_proxy::<bevy::input::gamepad::GamepadConnectionEvent>();
-        app.register_proxy::<bevy::input::gamepad::GamepadEvent>();
-        app.register_proxy::<bevy::input::gamepad::GamepadSettings>();
-        app.register_proxy::<bevy::input::ButtonState>();
-        app.register_proxy::<bevy::input::gamepad::GamepadInfo>();
+        app.register_lua_proxy::<bevy::input::gamepad::Gamepad>();
+        app.register_lua_proxy::<bevy::input::gamepad::GamepadAxis>();
+        app.register_lua_proxy::<bevy::input::gamepad::GamepadAxisType>();
+        app.register_lua_proxy::<bevy::input::gamepad::GamepadButton>();
+        app.register_lua_proxy::<bevy::input::gamepad::GamepadButtonType>();
+        app.register_lua_proxy::<bevy::input::keyboard::KeyCode>();
+        app.register_lua_proxy::<bevy::input::mouse::MouseButton>();
+        app.register_lua_proxy::<bevy::input::touch::TouchInput>();
+        app.register_lua_proxy::<bevy::input::keyboard::Key>();
+        app.register_lua_proxy::<bevy::input::keyboard::KeyboardInput>();
+        app.register_lua_proxy::<bevy::input::keyboard::NativeKey>();
+        app.register_lua_proxy::<bevy::input::keyboard::NativeKeyCode>();
+        app.register_lua_proxy::<bevy::input::mouse::MouseButtonInput>();
+        app.register_lua_proxy::<bevy::input::mouse::MouseMotion>();
+        app.register_lua_proxy::<bevy::input::mouse::MouseScrollUnit>();
+        app.register_lua_proxy::<bevy::input::mouse::MouseWheel>();
+        app.register_lua_proxy::<bevy::input::touch::ForceTouch>();
+        app.register_lua_proxy::<bevy::input::touch::TouchPhase>();
+        app.register_lua_proxy::<bevy::input::touchpad::TouchpadMagnify>();
+        app.register_lua_proxy::<bevy::input::touchpad::TouchpadRotate>();
+        app.register_lua_proxy::<bevy::input::gamepad::AxisSettings>();
+        app.register_lua_proxy::<bevy::input::gamepad::ButtonAxisSettings>();
+        app.register_lua_proxy::<bevy::input::gamepad::ButtonSettings>();
+        app.register_lua_proxy::<bevy::input::gamepad::GamepadAxisChangedEvent>();
+        app.register_lua_proxy::<bevy::input::gamepad::GamepadButtonChangedEvent>();
+        app.register_lua_proxy::<bevy::input::gamepad::GamepadButtonInput>();
+        app.register_lua_proxy::<bevy::input::gamepad::GamepadConnection>();
+        app.register_lua_proxy::<bevy::input::gamepad::GamepadConnectionEvent>();
+        app.register_lua_proxy::<bevy::input::gamepad::GamepadEvent>();
+        app.register_lua_proxy::<bevy::input::gamepad::GamepadSettings>();
+        app.register_lua_proxy::<bevy::input::ButtonState>();
+        app.register_lua_proxy::<bevy::input::gamepad::GamepadInfo>();
         app.add_context_initializer::<()>(bevy_input_context_initializer);
         app.add_documentation_fragment(
             crate::docs::LuaDocumentationFragment::new(

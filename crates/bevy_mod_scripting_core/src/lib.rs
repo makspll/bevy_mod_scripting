@@ -1,9 +1,9 @@
 #![allow(clippy::arc_with_non_send_sync)]
 
 use crate::event::ScriptErrorEvent;
-use allocator::ReflectAllocator;
 use asset::{ScriptAsset, ScriptAssetLoader, ScriptAssetSettings};
 use bevy::prelude::*;
+use bindings::ReflectAllocator;
 use context::{
     Context, ContextAssigner, ContextBuilder, ContextInitializer, ContextLoadingSettings,
     ContextPreHandlingInitializer, ScriptContexts,
@@ -18,7 +18,6 @@ use runtime::{Runtime, RuntimeContainer};
 use script::Scripts;
 use systems::garbage_collector;
 
-pub mod allocator;
 pub mod asset;
 pub mod bindings;
 pub mod commands;
@@ -27,7 +26,6 @@ pub mod docs;
 pub mod error;
 pub mod event;
 pub mod handler;
-pub mod proxy;
 pub mod runtime;
 pub mod script;
 pub mod systems;

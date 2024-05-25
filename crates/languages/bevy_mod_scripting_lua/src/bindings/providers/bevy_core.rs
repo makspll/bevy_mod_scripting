@@ -12,7 +12,7 @@ use crate::{
         LuaReflectRefProxy, LuaReflectRefMutProxy, LuaReflectValProxy, LuaValProxy,
         IdentityProxy,
     },
-    RegisterLuaProxy, tealr::mlu::mlua::IntoLua,
+    RegisterLua, tealr::mlu::mlua::IntoLua,
 };
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
@@ -67,7 +67,7 @@ fn bevy_core_context_initializer(
 pub struct BevyCoreScriptingPlugin;
 impl bevy::app::Plugin for BevyCoreScriptingPlugin {
     fn build(&self, app: &mut bevy::prelude::App) {
-        app.register_proxy::<bevy::core::prelude::Name>();
+        app.register_lua_proxy::<bevy::core::prelude::Name>();
         app.add_context_initializer::<()>(bevy_core_context_initializer);
         app.add_documentation_fragment(
             crate::docs::LuaDocumentationFragment::new(

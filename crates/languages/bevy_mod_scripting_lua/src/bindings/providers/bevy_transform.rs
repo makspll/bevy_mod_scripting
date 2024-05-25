@@ -14,7 +14,7 @@ use crate::{
         LuaReflectRefProxy, LuaReflectRefMutProxy, LuaReflectValProxy, LuaValProxy,
         IdentityProxy,
     },
-    RegisterLuaProxy, tealr::mlu::mlua::IntoLua,
+    RegisterLua, tealr::mlu::mlua::IntoLua,
 };
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
@@ -337,8 +337,8 @@ fn bevy_transform_context_initializer(
 pub struct BevyTransformScriptingPlugin;
 impl bevy::app::Plugin for BevyTransformScriptingPlugin {
     fn build(&self, app: &mut bevy::prelude::App) {
-        app.register_proxy::<bevy::transform::components::GlobalTransform>();
-        app.register_proxy::<bevy::transform::components::Transform>();
+        app.register_lua_proxy::<bevy::transform::components::GlobalTransform>();
+        app.register_lua_proxy::<bevy::transform::components::Transform>();
         app.add_context_initializer::<()>(bevy_transform_context_initializer);
         app.add_documentation_fragment(
             crate::docs::LuaDocumentationFragment::new(

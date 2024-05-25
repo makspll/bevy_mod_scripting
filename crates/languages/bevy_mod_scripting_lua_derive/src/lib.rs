@@ -163,7 +163,7 @@ fn proxy_wrap_function_def(
 
     // wrap function body in our unwrapping and wrapping logic, ignore pre-existing body
     let mut fn_call = std::panic::catch_unwind(|| {
-        let mut fn_call = match (&f.default, &attrs.as_trait) {
+        match (&f.default, &attrs.as_trait) {
             (Some(body), _) => quote_spanned!(span=>
                 (||{ #body })()
             ),
@@ -176,8 +176,7 @@ fn proxy_wrap_function_def(
                     <#target_type as #trait_path>::#func_name(#(#original_arg_idents),*)
                 )
             }
-        };
-        fn_call
+        }
     })
     .unwrap(); // todo: handle the error nicer
 
@@ -197,7 +196,7 @@ fn proxy_wrap_function_def(
         f.default = Some(parse_quote_spanned! {span=>
             {
                 let mut world: #bms_lua::bindings::proxy::LuaValProxy<#bms_core::bindings::WorldCallbackAccess> = #ctxt_arg_ident.globals().get("world")?;
-                let mut world = <#bms_lua::bindings::proxy::LuaValProxy<#bms_core::bindings::WorldCallbackAccess> as #bms_core::proxy::Unproxy>::unproxy(&mut world).map_err(#mlua::Error::external)?;
+                let mut world = <#bms_lua::bindings::proxy::LuaValProxy<#bms_core::bindings::WorldCallbackAccess> as #bms_core::bindings::Unproxy>::unproxy(&mut world).map_err(#mlua::Error::external)?;
                 let mut world = world.read().ok_or_else(|| #mlua::Error::external("World no longer exists"))?;
                 let out: #out_type = world.proxy_call(#args_ident, |(#(#original_arg_idents),*)| {
                     #fn_call
@@ -362,17 +361,6 @@ pub fn impl_lua_proxy(input: TokenStream) -> TokenStream {
             }
         });
 
-        // panic!(
-        //     "{}",
-        //     quote! {
-        //         #(
-        //             if let Ok(args) = <#closure_args_types as #mlua::FromLua>::from_lua(args) {
-        //                 return (#closures)(ctxt, args);
-        //             }
-        //         )*
-        //         Err(#mlua::Error::external("Invalid arguments for composite function"))
-        //     }
-        // );
         let closure = parse_quote_spanned! {first_function.span()=>
             |ctxt, (#(#value_arg_names,)*): (#(#value_arg_types,)*)| {
                 let args = #mlua::MultiValue::from_vec(vec![#(#value_arg_names,)*]);
@@ -385,7 +373,6 @@ pub fn impl_lua_proxy(input: TokenStream) -> TokenStream {
                 Err(#mlua::Error::external("Invalid arguments for composite function"))
             }
         };
-        // panic!("asd");
 
         generate_methods_registration(&first_function_attrs, first_function.span(), name, closure)
     });
@@ -430,22 +417,6 @@ pub fn impl_lua_proxy(input: TokenStream) -> TokenStream {
             }
         }
 
-        // impl #tealr::mlu::mlua::UserData for #proxy_type_ident
-        // where
-        //     Self: #tealr::mlu::TealData,
-        // {
-        //     fn add_methods<'lua, T: #tealr::mlu::mlua::UserDataMethods<'lua, Self>>(
-        //         methods: &mut T,
-        //     ) {
-        //         let mut wrapper = tealr::mlu::UserDataWrapper::from_user_data_methods(methods);
-        //         <Self as #tealr::mlu::TealData>::add_methods(&mut wrapper);
-        //     }
-
-        //     fn add_fields<'lua, T: #tealr::mlu::mlua::UserDataFields<'lua, Self>>(fields: &mut T) {
-        //         let mut wrapper = tealr::mlu::UserDataWrapper::from_user_data_fields(fields);
-        //         <Self as #tealr::mlu::TealData>::add_fields(&mut wrapper);
-        //     }
-        // }
 
         impl<'lua> #tealr::mlu::mlua::FromLua<'lua> for #proxy_type_ident {
             fn from_lua(
@@ -465,14 +436,6 @@ pub fn impl_lua_proxy(input: TokenStream) -> TokenStream {
             }
         }
 
-        // impl #tealr::ToTypename for #proxy_type_ident {
-        //     fn to_typename() -> #tealr::Type {
-        //         #tealr::Type::Single(#tealr::SingleType {
-        //             name: #tealr::Name(#target_type_str.into()),
-        //             kind: #tealr::KindOfType::External,
-        //         })
-        //     }
-        // }
 
         impl AsRef<#bms_core::bindings::ReflectReference> for #proxy_type_ident {
             fn as_ref(&self) -> &#bms_core::bindings::ReflectReference {

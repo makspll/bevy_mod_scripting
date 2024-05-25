@@ -11,7 +11,7 @@ use crate::{
         LuaReflectRefProxy, LuaReflectRefMutProxy, LuaReflectValProxy, LuaValProxy,
         IdentityProxy,
     },
-    RegisterLuaProxy, tealr::mlu::mlua::IntoLua,
+    RegisterLua, tealr::mlu::mlua::IntoLua,
 };
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
@@ -356,11 +356,11 @@ fn bevy_ecs_context_initializer(
 pub struct BevyEcsScriptingPlugin;
 impl bevy::app::Plugin for BevyEcsScriptingPlugin {
     fn build(&self, app: &mut bevy::prelude::App) {
-        app.register_proxy::<bevy::ecs::entity::Entity>();
-        app.register_proxy::<bevy::ecs::component::ComponentId>();
-        app.register_proxy::<bevy::ecs::component::Tick>();
-        app.register_proxy::<bevy::ecs::component::ComponentTicks>();
-        app.register_proxy::<bevy::ecs::entity::EntityHash>();
+        app.register_lua_proxy::<bevy::ecs::entity::Entity>();
+        app.register_lua_proxy::<bevy::ecs::component::ComponentId>();
+        app.register_lua_proxy::<bevy::ecs::component::Tick>();
+        app.register_lua_proxy::<bevy::ecs::component::ComponentTicks>();
+        app.register_lua_proxy::<bevy::ecs::entity::EntityHash>();
         app.add_context_initializer::<()>(bevy_ecs_context_initializer);
         app.add_documentation_fragment(
             crate::docs::LuaDocumentationFragment::new(

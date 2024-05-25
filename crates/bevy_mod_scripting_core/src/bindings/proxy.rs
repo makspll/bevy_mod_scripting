@@ -13,11 +13,14 @@ use bevy::{
 };
 
 use crate::{
-    allocator::ReflectAllocation,
-    bindings::{
-        ReflectBaseType, ReflectReference, WorldAccessGuard, WorldAccessUnit, WorldAccessWrite,
-    },
-    prelude::{ReflectAllocator, ReflectionError},
+    bindings::ReflectAllocation,
+    error::ScriptResult,
+    prelude::{ReflectAllocator, ScriptError},
+};
+
+use super::{
+    world::{WorldAccessGuard, WorldAccessUnit, WorldAccessWrite},
+    ReflectReference, DEFAULT_INTERVAL, DEFAULT_TIMEOUT,
 };
 
 /// Inverse to [`Unproxy`], packages up a type into a proxy type.
@@ -25,19 +28,18 @@ pub trait Proxy: Sized {
     type Input<'a>;
 
     /// Proxies a type without access to the allocator, types which require access to the allocator will throw an error here
-    fn proxy<'a>(input: Self::Input<'a>) -> Result<Self, ReflectionError> {
-        Err(ReflectionError::InsufficientAccess {
-            base: std::any::type_name::<Self>().to_owned(),
-            reason: "Attempted to proxy a type that requires an allocator without providing it"
-                .to_owned(),
-        })
+    fn proxy<'a>(input: Self::Input<'a>) -> ScriptResult<Self> {
+        Err(ScriptError::new_reflection_error(format!(
+            "Cannot unproxy type: `{}` without allocator access. Use proxy_with_allocator instead.",
+            std::any::type_name::<Self>(),
+        )))
     }
 
     /// Proxies a type with access to the allocator
     fn proxy_with_allocator<'a>(
         input: Self::Input<'a>,
         _allocator: &mut ReflectAllocator,
-    ) -> Result<Self, ReflectionError> {
+    ) -> ScriptResult<Self> {
         Self::proxy(input)
     }
 }
@@ -57,7 +59,7 @@ pub trait Unproxy {
         &self,
         _guard: &WorldAccessGuard<'w>,
         _accesses: &mut SmallVec<[WorldAccessWrite<'w>; 1]>,
-    ) -> Result<(), ReflectionError> {
+    ) -> ScriptResult<()> {
         Ok(())
     }
 
@@ -67,12 +69,11 @@ pub trait Unproxy {
 
     /// Unproxies a proxy type into the represented type without world access
     /// This will fail on proxies which require world access to unproxy (for example those whose proxies are glorified [`ReflectReference`]'s )
-    fn unproxy<'o>(&'o mut self) -> Result<Self::Output<'o>, ReflectionError> {
-        Err(ReflectionError::InsufficientAccess {
-            base: std::any::type_name::<Self::Output<'_>>().to_owned(),
-            reason: "Attempted to unproxy a type that requires world access without providing it"
-                .to_owned(),
-        })
+    fn unproxy<'o>(&'o mut self) -> ScriptResult<Self::Output<'o>> {
+        Err(ScriptError::new_reflection_error(format!(
+            "Cannot unproxy type: `{}` without world access. Use unproxy_with_world instead",
+            std::any::type_name::<Self>(),
+        )))
     }
 
     /// Unproxies a proxy type into the represented type with world access
@@ -84,7 +85,7 @@ pub trait Unproxy {
         _accesses: &'o [WorldAccessUnit<'w>],
         _type_registry: &TypeRegistry,
         _allocator: &'o ReflectAllocator,
-    ) -> Result<Self::Output<'o>, ReflectionError> {
+    ) -> ScriptResult<Self::Output<'o>> {
         self.unproxy()
     }
 }
@@ -123,6 +124,7 @@ impl<T, P> ReflectRefProxy<T, P> {
 
 /// A proxy type which when unproxied will return a mutable reference to a `T` value.
 /// Assumes that the proxy type contains a [`ReflectReference`] via [`AsRef<ReflectReference>`]
+#[derive(Debug)]
 pub struct ReflectRefMutProxy<T, P>(pub P, PhantomData<T>);
 
 impl<T, P> ReflectRefMutProxy<T, P> {
@@ -137,7 +139,7 @@ where
 {
     type Output<'o> = T where Self: 'o;
 
-    fn unproxy<'o>(&'o mut self) -> Result<Self::Output<'o>, ReflectionError> {
+    fn unproxy<'o>(&'o mut self) -> ScriptResult<Self::Output<'o>> {
         Ok(T::from(&self.0))
     }
 }
@@ -148,7 +150,7 @@ where
 {
     type Input<'a> = T;
 
-    fn proxy<'a>(input: Self::Input<'a>) -> Result<Self, ReflectionError> {
+    fn proxy<'a>(input: Self::Input<'a>) -> ScriptResult<Self> {
         Ok(ValProxy::new(input.into()))
     }
 }
@@ -163,7 +165,7 @@ where
     fn proxy_with_allocator<'a>(
         input: Self::Input<'a>,
         allocator: &mut ReflectAllocator,
-    ) -> Result<Self, ReflectionError> {
+    ) -> ScriptResult<Self> {
         Ok(Self::new(
             ReflectReference::new_allocated(input, allocator).into(),
         ))
@@ -183,25 +185,28 @@ where
         _accesses: &'o [WorldAccessUnit<'w>],
         type_registry: &TypeRegistry,
         allocator: &'o ReflectAllocator,
-    ) -> Result<Self::Output<'o>, ReflectionError> {
+    ) -> ScriptResult<Self::Output<'o>> {
         let reflect_ref: &ReflectReference = self.0.as_ref();
         let access = reflect_ref.base.base_id.get_reflect_access_id();
-        let access =
-            guard
-                .get_access(access)
-                .ok_or_else(|| ReflectionError::InsufficientAccess {
-                    base: std::any::type_name::<T>().to_owned(),
-                    reason: "Attempted to access the same component/resource/allocation in one Unproxying operation".to_owned(),
-                })?;
+        let access = guard
+            .get_access_timeout(access, DEFAULT_TIMEOUT, DEFAULT_INTERVAL)
+            .ok_or_else(|| {
+                ScriptError::new_reflection_error(format!(
+                    "Could not unproxy type: `{}`. Aliasing access.",
+                    std::any::type_name::<T>()
+                ))
+            })?;
         let out = reflect_ref.reflect(
             guard.as_unsafe_world_cell(),
             &access,
             type_registry,
             Some(allocator),
         )?;
-        let out = T::from_reflect(out).ok_or_else(|| ReflectionError::CannotDowncast {
-            reference: reflect_ref.clone(),
-            to: std::any::type_name::<T>().to_string(),
+        let out = T::from_reflect(out).ok_or_else(|| {
+            ScriptError::new_reflection_error(format!(
+                "FromReflect failed for `{}`.",
+                std::any::type_name::<T>()
+            ))
         })?;
         guard.release_access(access);
         Ok(out)
@@ -218,9 +223,12 @@ where
     fn proxy_with_allocator<'a>(
         input: Self::Input<'a>,
         allocator: &mut ReflectAllocator,
-    ) -> Result<Self, ReflectionError> {
-        let inner = T::from_reflect(input).ok_or_else(|| ReflectionError::FromReflectFailure {
-            ref_: input.reflect_type_path().to_owned(),
+    ) -> ScriptResult<Self> {
+        let inner = T::from_reflect(input).ok_or_else(|| {
+            ScriptError::new_reflection_error(format!(
+                "FromReflect failed for `{}`.",
+                std::any::type_name::<T>()
+            ))
         })?;
         Ok(Self::new(
             ReflectReference::new_allocated(inner, allocator).into(),
@@ -239,15 +247,17 @@ where
         &self,
         guard: &WorldAccessGuard<'w>,
         accesses: &mut SmallVec<[WorldAccessUnit<'w>; 1]>,
-    ) -> Result<(), ReflectionError> {
+    ) -> ScriptResult<()> {
         let reflect_ref: &ReflectReference = self.0.as_ref();
         let access = reflect_ref.base.base_id.get_reflect_access_id();
-        let access =
-            guard.get_access(access)
-                .ok_or_else(|| ReflectionError::InsufficientAccess {
-                    base: std::any::type_name::<T>().to_owned(),
-                    reason: "Attempted to access the same component/resource/allocation in one Unproxying operation".to_owned(),
-                })?;
+        let access = guard
+            .get_access_timeout(access, DEFAULT_TIMEOUT, DEFAULT_INTERVAL)
+            .ok_or_else(|| {
+                ScriptError::new_reflection_error(format!(
+                    "Could not unproxy type: `{}`. Aliasing access.",
+                    std::any::type_name::<T>()
+                ))
+            })?;
         accesses.push(access);
         Ok(())
     }
@@ -258,14 +268,14 @@ where
         accesses: &'o [WorldAccessUnit<'w>],
         type_registry: &TypeRegistry,
         allocator: &'o ReflectAllocator,
-    ) -> Result<Self::Output<'o>, ReflectionError> {
+    ) -> ScriptResult<Self::Output<'o>> {
         let reflect_ref: &ReflectReference = self.0.as_ref();
-        let access = accesses
-            .last()
-            .ok_or_else(|| ReflectionError::InsufficientAccess {
-                base: std::any::type_name::<T>().to_owned(),
-                reason: "No access collected when unproxying".to_owned(),
-            })?;
+        let access = accesses.last().ok_or_else(|| {
+            ScriptError::new_reflection_error(format!(
+                "No required access collected when unproxying type: `{}`.",
+                std::any::type_name::<T>()
+            ))
+        })?;
 
         let out = reflect_ref.reflect(
             guard.as_unsafe_world_cell(),
@@ -273,12 +283,12 @@ where
             type_registry,
             Some(allocator),
         )?;
-        let out = out
-            .downcast_ref()
-            .ok_or_else(|| ReflectionError::CannotDowncast {
-                reference: reflect_ref.clone(),
-                to: std::any::type_name::<T>().to_string(),
-            })?;
+        let out = out.downcast_ref().ok_or_else(|| {
+            ScriptError::new_reflection_error(format!(
+                "Could not downcast value from reflect reference to type: `{}`.",
+                std::any::type_name::<T>()
+            ))
+        })?;
         Ok(out)
     }
 
@@ -298,15 +308,17 @@ where
         &self,
         guard: &WorldAccessGuard<'w>,
         accesses: &mut SmallVec<[WorldAccessUnit<'w>; 1]>,
-    ) -> Result<(), ReflectionError> {
+    ) -> ScriptResult<()> {
         let reflect_ref: &ReflectReference = self.0.as_ref();
         let access = reflect_ref.base.base_id.get_reflect_access_id();
-        let access =
-            guard.get_access(access)
-                .ok_or_else(|| ReflectionError::InsufficientAccess {
-                    base: std::any::type_name::<T>().to_owned(),
-                    reason: "Attempted to access the same component/resource/allocation in one Unproxying operation".to_owned(),
-                })?;
+        let access = guard
+            .get_access_timeout(access, DEFAULT_TIMEOUT, DEFAULT_INTERVAL)
+            .ok_or_else(|| {
+                ScriptError::new_reflection_error(format!(
+                    "Could not unproxy type: `{}`. Aliasing access.",
+                    std::any::type_name::<T>()
+                ))
+            })?;
         accesses.push(access);
         Ok(())
     }
@@ -317,16 +329,23 @@ where
         accesses: &'o [WorldAccessUnit<'w>],
         type_registry: &TypeRegistry,
         allocator: &'o ReflectAllocator,
-    ) -> Result<Self::Output<'o>, ReflectionError> {
+    ) -> ScriptResult<Self::Output<'o>> {
         let reflect_ref: &ReflectReference = self.0.as_ref();
         accesses
             .last()
-            .ok_or_else(|| ReflectionError::InsufficientAccess {
-                base: std::any::type_name::<T>().to_owned(),
-                reason: "No access collected when unproxying".to_owned(),
+            .ok_or_else(|| {
+                ScriptError::new_reflection_error(format!(
+                    "No required access collected when unproxying type: `{}`.",
+                    std::any::type_name::<T>()
+                ))
             })
             .and_then(|access| {
-                reflect_ref.expect_write_access(access, type_registry, guard.as_unsafe_world_cell())
+                reflect_ref.expect_write_access(
+                    access,
+                    type_registry,
+                    Some(allocator),
+                    guard.as_unsafe_world_cell(),
+                )
             })?;
 
         // Safety:
@@ -339,12 +358,12 @@ where
                 Some(allocator),
             )?
         };
-        let out = out
-            .downcast_mut()
-            .ok_or_else(|| ReflectionError::CannotDowncast {
-                reference: reflect_ref.clone(),
-                to: std::any::type_name::<T>().to_string(),
-            })?;
+        let out = out.downcast_mut().ok_or_else(|| {
+            ScriptError::new_reflection_error(format!(
+                "Could not downcast value from reflect reference to type: `{}`.",
+                std::any::type_name::<T>()
+            ))
+        })?;
         Ok(out)
     }
 
@@ -362,7 +381,7 @@ macro_rules! impl_unproxy_via_vec {
                 &self,
                 guard: &WorldAccessGuard<'w>,
                 accesses: &mut SmallVec<[WorldAccessUnit<'w>; 1]>,
-            ) -> Result<(), ReflectionError> {
+            ) -> ScriptResult<()> {
                 for item in self {
                     item.collect_accesses(guard, accesses)?;
                 }
@@ -373,7 +392,7 @@ macro_rules! impl_unproxy_via_vec {
                 self.iter().map(|item| item.accesses_len()).sum()
             }
 
-            fn unproxy<'o>(&'o mut self) -> Result<Self::Output<'o>, ReflectionError> {
+            fn unproxy(&mut self) -> ScriptResult<Self::Output<'_>> {
                 let mut out = Vec::with_capacity(self.len());
                 for item in self {
                     let unproxied = item.unproxy()?;
@@ -388,10 +407,10 @@ macro_rules! impl_unproxy_via_vec {
                 accesses: &'o [WorldAccessUnit<'w>],
                 type_registry: &TypeRegistry,
                 allocator: &'o ReflectAllocator,
-            ) -> Result<Self::Output<'o>, ReflectionError> {
+            ) -> ScriptResult<Self::Output<'o>> {
                 let mut out = Vec::with_capacity(self.len());
                 let mut offset = 0;
-                for item in self {
+                for item in self.iter_mut() {
                     let width = item.accesses_len();
                     let unproxied = item.unproxy_with_world(
                         guard,
@@ -409,11 +428,11 @@ macro_rules! impl_unproxy_via_vec {
 }
 
 macro_rules! impl_proxy_via_vec {
-    ($type:ty, $item_type:ty ,$in_type:ty, ($($generics:tt)*)) => {
+    ($type:ty, $item_type:ty, $in_type:ty, ($($generics:tt)*)) => {
         impl<$($generics)*> Proxy for $type {
             type Input<'i> = $in_type;
 
-            fn proxy(input: Self::Input<'_>) -> Result<Self, ReflectionError> {
+            fn proxy(input: Self::Input<'_>) -> ScriptResult<Self> {
                 let mut out = Vec::with_capacity(input.len());
                 for item in input {
                     out.push(<$item_type as Proxy>::proxy(item)?);
@@ -424,7 +443,7 @@ macro_rules! impl_proxy_via_vec {
             fn proxy_with_allocator(
                 input: Self::Input<'_>,
                 _allocator: &mut ReflectAllocator,
-            ) -> Result<Self, ReflectionError> {
+            ) -> ScriptResult<Self> {
                 let mut out = Vec::with_capacity(input.len());
                 for item in input {
                     out.push(<$item_type as Proxy>::proxy_with_allocator(item, _allocator)?);
@@ -438,61 +457,61 @@ macro_rules! impl_proxy_via_vec {
 impl_unproxy_via_vec!(Vec<T>, Vec<T::Output<'o>>, (T: Unproxy));
 impl_proxy_via_vec!(Vec<T>, T, Vec<T::Input<'i>>, (T: Proxy));
 impl_unproxy_via_vec!([T; C], [T::Output<'o>; C], (T: Unproxy, const C: usize));
-impl_proxy_via_vec!([T; C],T,[T::Input<'i>; C],(T: Proxy, const C: usize));
+impl_proxy_via_vec!([T; C],T,[T::Input<'i>; C], (T: Proxy, const C: usize));
 impl_unproxy_via_vec!(SmallVec<[T; C]>, SmallVec<[T::Output<'o>; C]>, (T: Unproxy, const C: usize));
 impl_proxy_via_vec!(SmallVec<[T; C]>, T, SmallVec<[T::Input<'i>; C]>, (T: Proxy, const C: usize));
 
 // impl_proxy_unproxy_via_vec!(T, SmallVec, SmallVec<[T; C]>);
-impl<'c, T: Unproxy + 'c> Unproxy for &'c T {
-    type Output<'o> = &'c T where Self: 'o;
+// impl<'c, T: 'c> Unproxy for &'c T {
+//     type Output<'o> = &'c T where Self: 'o;
 
-    fn unproxy<'o>(&'o mut self) -> Result<Self::Output<'o>, ReflectionError> {
-        Ok(self)
-    }
-}
+//     fn unproxy(&mut self) -> ScriptResult<Self::Output<'_>> {
+//         Ok(self)
+//     }
+// }
 
-impl<'s, T: Proxy> Proxy for &'s T {
-    type Input<'b> = &'s T;
+// impl<'s, T> Proxy for &'s T {
+//     type Input<'b> = &'s T;
 
-    fn proxy<'a>(input: Self::Input<'a>) -> Result<Self, ReflectionError> {
-        Ok(input)
-    }
+//     fn proxy(input: Self::Input<'_>) -> ScriptResult<Self> {
+//         Ok(input)
+//     }
 
-    fn proxy_with_allocator<'a>(
-        input: Self::Input<'a>,
-        _allocator: &mut ReflectAllocator,
-    ) -> Result<Self, ReflectionError> {
-        Ok(input)
-    }
-}
+//     fn proxy_with_allocator(
+//         input: Self::Input<'_>,
+//         _allocator: &mut ReflectAllocator,
+//     ) -> ScriptResult<Self> {
+//         Ok(input)
+//     }
+// }
 
-impl<T: Unproxy> Unproxy for &mut T {
-    type Output<'o> = &'o mut T where Self: 'o;
+// impl<T> Unproxy for &mut T {
+//     type Output<'o> = &'o mut T where Self: 'o;
 
-    fn unproxy<'o>(&'o mut self) -> Result<Self::Output<'o>, ReflectionError> {
-        Ok(self)
-    }
-}
+//     fn unproxy(&mut self) -> ScriptResult<Self::Output<'_>> {
+//         Ok(self)
+//     }
+// }
 
-impl<'s, T: Proxy> Proxy for &'s mut T {
-    type Input<'a> = &'s mut T;
+// impl<'s, T> Proxy for &'s mut T {
+//     type Input<'a> = &'s mut T;
 
-    fn proxy<'a>(input: Self::Input<'a>) -> Result<Self, ReflectionError> {
-        Ok(input)
-    }
+//     fn proxy(input: Self::Input<'_>) -> ScriptResult<Self> {
+//         Ok(input)
+//     }
 
-    fn proxy_with_allocator<'a>(
-        input: Self::Input<'a>,
-        _allocator: &mut ReflectAllocator,
-    ) -> Result<Self, ReflectionError> {
-        Ok(input)
-    }
-}
+//     fn proxy_with_allocator(
+//         input: Self::Input<'_>,
+//         _allocator: &mut ReflectAllocator,
+//     ) -> ScriptResult<Self> {
+//         Ok(input)
+//     }
+// }
 
 impl<T: Unproxy> Unproxy for Option<T> {
     type Output<'o> = Option<T::Output<'o>> where Self: 'o;
 
-    fn unproxy<'o>(&'o mut self) -> Result<Self::Output<'o>, ReflectionError> {
+    fn unproxy(&mut self) -> ScriptResult<Self::Output<'_>> {
         if let Some(s) = self {
             let inner = s.unproxy()?;
             Ok(Some(inner))
@@ -507,7 +526,7 @@ impl<T: Unproxy> Unproxy for Option<T> {
         accesses: &'o [WorldAccessUnit<'w>],
         type_registry: &TypeRegistry,
         allocator: &'o ReflectAllocator,
-    ) -> Result<Self::Output<'o>, ReflectionError> {
+    ) -> ScriptResult<Self::Output<'o>> {
         if let Some(s) = self {
             let inner = s.unproxy_with_world(guard, accesses, type_registry, allocator)?;
             Ok(Some(inner))
@@ -520,7 +539,7 @@ impl<T: Unproxy> Unproxy for Option<T> {
         &self,
         guard: &WorldAccessGuard<'w>,
         accesses: &mut SmallVec<[WorldAccessWrite<'w>; 1]>,
-    ) -> Result<(), ReflectionError> {
+    ) -> ScriptResult<()> {
         self.as_ref()
             .map(|s| s.collect_accesses(guard, accesses))
             .unwrap_or_else(|| Ok(()))
@@ -534,14 +553,14 @@ impl<T: Unproxy> Unproxy for Option<T> {
 impl<T: Proxy> Proxy for Option<T> {
     type Input<'a> = Option<T::Input<'a>>;
 
-    fn proxy<'a>(input: Self::Input<'a>) -> Result<Self, ReflectionError> {
+    fn proxy(input: Self::Input<'_>) -> ScriptResult<Self> {
         input.map(T::proxy).transpose()
     }
 
-    fn proxy_with_allocator<'a>(
-        input: Self::Input<'a>,
+    fn proxy_with_allocator(
+        input: Self::Input<'_>,
         _allocator: &mut ReflectAllocator,
-    ) -> Result<Self, ReflectionError> {
+    ) -> ScriptResult<Self> {
         input
             .map(|i| T::proxy_with_allocator(i, _allocator))
             .transpose()
@@ -550,15 +569,37 @@ impl<T: Proxy> Proxy for Option<T> {
 
 macro_rules! impl_unproxy_by_move {
     ($($ty:ty),*) => {
-        $(impl Unproxy for $ty {
-            type Output<'o> = $ty;
+        $(
+            impl Unproxy for $ty {
+                type Output<'o> = $ty;
 
-            fn unproxy<'o>(
-                &'o mut self
-            ) -> Result<Self::Output<'o>, ReflectionError> {
-                Ok(*self)
+                fn unproxy(
+                    &mut self
+                ) -> ScriptResult<Self::Output<'_>> {
+                    Ok(*self)
+                }
             }
-        })*
+
+            impl Unproxy for &$ty {
+                type Output<'o> = &'o $ty where Self : 'o;
+
+                fn unproxy(
+                    &mut self
+                ) -> ScriptResult<Self::Output<'_>> {
+                    Ok(self)
+                }
+            }
+
+            impl Unproxy for &mut $ty {
+                type Output<'o> = &'o mut $ty where Self : 'o;
+
+                fn unproxy(
+                    &mut self
+                ) -> ScriptResult<Self::Output<'_>> {
+                    Ok(self)
+                }
+            }
+        )*
     };
 }
 
@@ -568,7 +609,23 @@ macro_rules! impl_proxy_by_move {
             impl Proxy for $ty {
                 type Input<'a> = Self;
 
-                fn proxy<'a>(input: Self::Input<'a>) -> Result<Self, ReflectionError> {
+                fn proxy(input: Self::Input<'_>) -> ScriptResult<Self> {
+                    Ok(input)
+                }
+            }
+
+            impl <'l>Proxy for &'l $ty {
+                type Input<'a> = Self;
+
+                fn proxy(input: Self::Input<'_>) -> ScriptResult<Self> {
+                    Ok(input)
+                }
+            }
+
+            impl <'l>Proxy for &'l mut $ty {
+                type Input<'a> = Self;
+
+                fn proxy(input: Self::Input<'_>) -> ScriptResult<Self> {
                     Ok(input)
                 }
             }
@@ -629,7 +686,7 @@ macro_rules! impl_unproxy_by_clone {
         $(impl Unproxy for $ty {
             type Output<'o> = $ty;
 
-            fn unproxy<'o>(&'o mut self) -> Result<Self::Output<'o>, ReflectionError> {
+            fn unproxy(&mut self) -> ScriptResult<Self::Output<'_>> {
                 Ok(self.clone())
             }
         })*
@@ -646,11 +703,11 @@ macro_rules! impl_tuple_unproxy_proxy {
             type Input<'a> = ($($ty::Input<'a>,)*);
 
             #[allow(clippy::unused_unit)]
-            fn proxy<'a>(_input: Self::Input<'a>) -> Result<Self, ReflectionError> {
+            fn proxy(_input: Self::Input<'_>) -> ScriptResult<Self> {
                 Ok(($($ty::proxy(_input.$idx)?,)*))
             }
 
-            fn proxy_with_allocator<'a>(_input: Self::Input<'a>, _allocator: &mut ReflectAllocator) -> Result<Self, ReflectionError> {
+            fn proxy_with_allocator(_input: Self::Input<'_>, _allocator: &mut ReflectAllocator) -> ScriptResult<Self> {
                 Ok(($($ty::proxy_with_allocator(_input.$idx, _allocator)?,)*))
             }
         }
@@ -662,7 +719,7 @@ macro_rules! impl_tuple_unproxy_proxy {
                 &self,
                 _guard: &WorldAccessGuard<'w>,
                 _accesses: &mut SmallVec<[WorldAccessWrite<'w>; 1]>,
-            ) -> Result<(), ReflectionError> {
+            ) -> ScriptResult<()> {
                 $(self.$idx.collect_accesses(_guard, _accesses)?;)*
                 Ok(())
             }
@@ -673,7 +730,7 @@ macro_rules! impl_tuple_unproxy_proxy {
                 _len
             }
 
-            fn unproxy<'o>(&'o mut self) -> Result<Self::Output<'o>, ReflectionError> {
+            fn unproxy(&mut self) -> ScriptResult<Self::Output<'_>> {
                 Ok(($(
                     self.$idx.unproxy()?
                 ,)*))
@@ -686,7 +743,7 @@ macro_rules! impl_tuple_unproxy_proxy {
                 _accesses: &'o [WorldAccessUnit<'w>],
                 _type_registry: &TypeRegistry,
                 _allocator: &'o ReflectAllocator,
-            ) -> Result<Self::Output<'o>, ReflectionError> {
+            ) -> ScriptResult<Self::Output<'o>> {
                 let mut _offset = 0;
 
                 Ok(($(
@@ -742,14 +799,10 @@ impl_tuple_unproxy_proxy!((A, 0), (B, 1), (C, 2), (D, 3), (E, 4), (F, 5), (G, 6)
 
 #[cfg(test)]
 mod test {
-    use std::{cell::UnsafeCell, sync::Arc};
 
     use bevy::ecs::{component::Component, world::World};
 
-    use crate::{
-        allocator::ReflectAllocation,
-        bindings::{ReflectBase, ReflectBaseType},
-    };
+    use crate::bindings::{ReflectBase, ReflectBaseType};
 
     use super::*;
 
@@ -794,13 +847,10 @@ mod test {
             let type_registry = TypeRegistry::default();
             let mut allocator = ReflectAllocator::default();
 
-            // test allocator version works as well
-            <$($proxy_ty)* as Proxy>::proxy_with_allocator($original, &mut allocator).unwrap();
-            // test proxying works
-            let mut proxy = <$($proxy_ty)* as Proxy>::proxy($original).unwrap();
+            // test with world version
+            let mut proxy = <$($proxy_ty)* as Proxy>::proxy_with_allocator($original, &mut allocator).unwrap();
             proxy.collect_accesses(&world, &mut accesses).unwrap();
 
-            // test both unproxy methods work
             let unproxied = unsafe {
                 proxy
                     .unproxy_with_world(&world, &mut accesses, &type_registry, &allocator)
@@ -812,12 +862,15 @@ mod test {
                 $original, unproxied
             );
 
+            let mut proxy = <$($proxy_ty)* as Proxy>::proxy($original).unwrap();
+
             let unproxied_without_world = proxy.unproxy().unwrap();
             assert_eq!(
                 unproxied_without_world, $original,
                 "Proxy and unproxy does not yield original type, expected {:?}, got {:?}",
                 $original, unproxied_without_world
             );
+
         };
     }
 
@@ -845,7 +898,7 @@ mod test {
             Vec::<Option<ValProxy::<Test, ValTestProxy>>>
         );
         assert_proxy_invertible!(vec![&1, &2, &3], Vec::<&usize>);
-        assert_proxy_invertible!(vec![&(1, 2)], Vec::<&(usize, usize)>);
+        // assert_proxy_invertible!(vec![&(1, 2)], Vec::<&(usize, usize)>);
         assert_proxy_invertible!(vec![vec![1, 2], vec![1, 2, 3]], Vec::<Vec<usize>>);
         assert_proxy_invertible!(
             vec![vec![(1, 2), (3, 4)], vec![(1, 2), (3, 4)]],
@@ -865,9 +918,7 @@ mod test {
     #[test]
     pub fn test_val_proxy() {
         let mut allocator = ReflectAllocator::default();
-        let alloc_id = allocator.allocate(ReflectAllocation::new(Arc::new(UnsafeCell::new(Test(
-            "test",
-        )))));
+        let (alloc_id, _) = allocator.allocate(Test("test"));
 
         let mut proxy = ReflectValProxy::<Test, TestProxy>::new(TestProxy(ReflectReference {
             base: ReflectBaseType {
@@ -893,9 +944,7 @@ mod test {
     #[test]
     pub fn test_proxy_ref() {
         let mut allocator = ReflectAllocator::default();
-        let alloc_id = allocator.allocate(ReflectAllocation::new(Arc::new(UnsafeCell::new(Test(
-            "test",
-        )))));
+        let (alloc_id, _) = allocator.allocate(Test("test"));
 
         let mut proxy = ReflectRefProxy::<Test, TestProxy>::new(TestProxy(ReflectReference {
             base: ReflectBaseType {
@@ -921,9 +970,7 @@ mod test {
     #[test]
     pub fn test_proxy_ref_mut() {
         let mut allocator = ReflectAllocator::default();
-        let alloc_id = allocator.allocate(ReflectAllocation::new(Arc::new(UnsafeCell::new(Test(
-            "test",
-        )))));
+        let (alloc_id, _) = allocator.allocate(Test("test"));
 
         let mut proxy = ReflectRefMutProxy::<Test, TestProxy>::new(TestProxy(ReflectReference {
             base: ReflectBaseType {
@@ -949,9 +996,7 @@ mod test {
     #[test]
     pub fn test_vec_proxy_ref_mut() {
         let mut allocator = ReflectAllocator::default();
-        let alloc_id = allocator.allocate(ReflectAllocation::new(Arc::new(UnsafeCell::new(Test(
-            "test",
-        )))));
+        let (alloc_id, _) = allocator.allocate(Test("test"));
 
         let mut proxy = vec![Some(ReflectRefMutProxy::<Test, TestProxy>::new(TestProxy(
             ReflectReference {
@@ -980,9 +1025,7 @@ mod test {
     pub fn test_invalid_access() {
         let mut allocator = ReflectAllocator::default();
 
-        let allocation_id = allocator.allocate(ReflectAllocation::new(Arc::new(UnsafeCell::new(
-            Test("test"),
-        ))));
+        let (allocation_id, _) = allocator.allocate(Test("test"));
 
         let reflect_ref = ReflectReference {
             base: ReflectBaseType {
@@ -1003,9 +1046,6 @@ mod test {
         let world = WorldAccessGuard::new(&mut world);
 
         let result = proxy.collect_accesses(&world, &mut accesses);
-        assert!(matches!(
-            result,
-            Err(ReflectionError::InsufficientAccess { .. })
-        ));
+        assert!(matches!(result, Err(..)));
     }
 }

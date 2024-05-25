@@ -157,7 +157,7 @@ macro_rules! __cfg_feature_any_lua52_lua53_lua54_luajit52 {
 #[macro_export]
 macro_rules! impl_userdata_from_lua {
     ($ty:ident) => {
-        impl<'lua> FromLua<'lua> for $ty {
+        impl<'lua> ::tealr::mlu::mlua::FromLua<'lua> for $ty {
             fn from_lua(
                 value: ::tealr::mlu::mlua::Value<'lua>,
                 _lua: &::tealr::mlu::mlua::Lua,

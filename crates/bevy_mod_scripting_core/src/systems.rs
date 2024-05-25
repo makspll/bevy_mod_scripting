@@ -2,8 +2,8 @@ use bevy::{ecs::system::SystemState, prelude::*};
 use std::any::type_name;
 
 use crate::{
-    allocator::ReflectAllocator,
     asset::{ScriptAsset, ScriptAssetSettings},
+    bindings::ReflectAllocator,
     commands::{CreateOrUpdateScript, DeleteScript},
     context::{Context, ContextLoadingSettings, ScriptContexts},
     event::{IntoCallbackLabel, ScriptCallbackEvent, ScriptErrorEvent},

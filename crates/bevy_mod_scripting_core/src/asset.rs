@@ -45,10 +45,9 @@ impl AssetLoader for ScriptAssetLoader {
     ) -> BoxedFuture<'a, Result<Self::Asset, Self::Error>> {
         Box::pin(async move {
             let mut content = Vec::new();
-            reader
-                .read_to_end(&mut content)
-                .await
-                .map_err(|e| ScriptError::new_with_context(load_context.asset_path(), e.into()))?;
+            reader.read_to_end(&mut content).await.map_err(|e| {
+                ScriptError::new_lifecycle_error(e).with_context(load_context.asset_path())
+            })?;
             if let Some(processor) = &self.preprocessor {
                 processor(&mut content)?;
             }

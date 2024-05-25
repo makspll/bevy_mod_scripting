@@ -3,10 +3,10 @@
 
 use bevy::reflect::{FromReflect, Reflect, TypeRegistry};
 use bevy_mod_scripting_core::{
-    allocator::ReflectAllocator,
+    bindings::ReflectAllocator,
+    bindings::{Proxy, ReflectRefMutProxy, ReflectRefProxy, ReflectValProxy, Unproxy, ValProxy},
     bindings::{ReflectReference, WorldAccessGuard, WorldAccessUnit, WorldAccessWrite},
     error::ReflectionError,
-    proxy::{Proxy, ReflectRefMutProxy, ReflectRefProxy, ReflectValProxy, Unproxy, ValProxy},
 };
 use tealr::{
     mlu::mlua::{Error, FromLua, IntoLua, Lua, Value},
@@ -80,7 +80,7 @@ macro_rules! impl_lua_unproxy {
                 self.0.collect_accesses(guard, accesses)
             }
 
-            fn unproxy<'o>(&'o mut self) -> Result<Self::Output<'o>, ReflectionError> {
+            fn unproxy(&mut self) -> Result<Self::Output<'_>, ReflectionError> {
                 self.0.unproxy()
             }
 
@@ -130,12 +130,12 @@ macro_rules! impl_lua_unproxy {
 
 macro_rules! impl_lua_proxy {
     ($ty:ident as $as:ident => $generic:tt : $($bounds:path),* $(| T::Proxy: $($proxy_bounds:tt)*)?) => {
-        impl<$generic> bevy_mod_scripting_core::proxy::Proxy for $ty<$generic>
+        impl<$generic> bevy_mod_scripting_core::bindings::Proxy for $ty<$generic>
         where
             T::Proxy: $($($proxy_bounds)*)?,
             T: $($bounds+)*,
         {
-            type Input<'i>=<$as<$generic, $generic::Proxy> as bevy_mod_scripting_core::proxy::Proxy>::Input<'i>;
+            type Input<'i>=<$as<$generic, $generic::Proxy> as bevy_mod_scripting_core::bindings::Proxy>::Input<'i>;
             fn proxy<'i>(value: Self::Input<'i>) -> Result<Self, ReflectionError> {
                 Ok(Self($as::<$generic,$generic::Proxy>::proxy(value)?))
             }
@@ -175,7 +175,7 @@ mod test {
 
     use bevy::{ecs::component::Component, reflect::Reflect};
     use bevy_mod_scripting_core::{
-        allocator::ReflectAllocation,
+        bindings::ReflectAllocation,
         bindings::{ReflectBase, ReflectBaseType, ReflectReference},
     };
     use tealr::mlu::mlua::{UserData, UserDataMethods};
@@ -254,8 +254,7 @@ mod test {
         let globals = lua.globals();
         let test = Test("test".to_string());
         let mut allocator = ReflectAllocator::default();
-        let allocation_id =
-            allocator.allocate(ReflectAllocation::new(Arc::new(UnsafeCell::new(test))));
+        let (allocation_id, _) = allocator.allocate(test);
         let reflect_ref = ReflectReference {
             base: ReflectBaseType {
                 type_id: std::any::TypeId::of::<Test>(),

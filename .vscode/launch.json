@@ -5,61 +5,33 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "type": "lldb",
-            "request": "launch",
-            "name": "Debug specific unit test",
-            "preLaunchTask": "Build specific package's unit tests",
-            "program": "${workspaceFolder}/target/debug/test_binary",
-            "env": {
-                "CARGO_MANIFEST_DIR": "${workspaceFolder}/bevy_mod_scripting",
-                "LD_LIBRARY_PATH": "${workspaceFolder}/target/debug/deps:${env:HOME}/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/lib"
-            },
-            "cwd": "${workspaceFolder}",
-        },
-        {
-            "name": "Debug example 'game_of_life_lua'",
+            "name": "Debug a test in bevy_mod_scripting_lua",
             "type": "lldb",
             "request": "launch",
             "cargo": {
                 "args": [
-                    "build",
-                    "--example=game_of_life_lua",
-                    "--package=bevy_mod_scripting",
-                    "--features=lua54,teal,lua_script_api",
+                    "test",
+                    "--no-run",
+                    "--features",
+                    "lua54",
+                    "--package",
+                    "bevy_mod_scripting_lua",
+                    "--lib",
+                    "--",
+                    "${input:test_name}",
+                    "--show-output"
                 ],
                 "filter": {
-                    "name": "game_of_life_lua",
-                    "kind": "example"
+                    "kind": "lib",
+                    "name": "bevy_mod_scripting_lua"
                 }
             },
-            "args": [],
-            "cwd": "${workspaceFolder}",
+            "cwd": "${workspaceFolder}/crates/languages/bevy_mod_scripting_lua",
             "env": {
-                "CARGO_MANIFEST_DIR": "${workspaceFolder}",
+                "CARGO_MANIFEST_DIR": "${workspaceFolder}/crates/languages/bevy_mod_scripting_lua",
                 "LD_LIBRARY_PATH": "${workspaceFolder}/target/debug/deps:${env:HOME}/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/lib"
             }
         },
-        {
-            "name": "Debug example 'game_of_life_rhai'",
-            "type": "lldb",
-            "request": "launch",
-            "cargo": {
-                "args": [
-                    "build",
-                    "--example=game_of_life_rhai",
-                    "--package=bevy_mod_scripting",
-                    "--features=rhai,rhai_script_api",
-                ],
-                "filter": {
-                    "name": "game_of_life_rhai",
-                    "kind": "example"
-                }
-            },
-            "args": [],
-            "cwd": "${workspaceFolder}",
-            "env": {
-                "CARGO_MANIFEST_DIR": "${workspaceFolder}"
-            }
-        }
-    ]
+    ],
+    "inputs": []
 }
