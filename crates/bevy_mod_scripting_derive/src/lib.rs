@@ -1,29 +1,25 @@
-use std::collections::HashMap;
+mod input; 
+mod utils;
 
-use bevy_mod_scripting_common::{input::*, utils::doc_attribute_to_string_lit};
+use crate::{input::*, utils::doc_attribute_to_string_lit};
+
+use std::collections::HashMap;
 use darling::util::Flag;
-use syn::punctuated::Punctuated;
-use syn::{parse_macro_input, parse_quote_spanned, DeriveInput, ExprClosure, FnArg, Variant};
 use syn::{
-    parse_quote, spanned::Spanned, AttrStyle, Attribute, Field, Meta, Path, Token, TraitItemFn,
+    spanned::Spanned, Path, Token, TraitItemFn, parse_quote,
+    parse_macro_input, parse_quote_spanned, DeriveInput, ExprClosure, FnArg,
+    punctuated::Punctuated
 };
 
 use darling::{FromAttributes, FromDeriveInput};
 use proc_macro::TokenStream;
 use proc_macro2::*;
 use quote::*;
-use vec1::{vec1, Vec1};
+
 
 const SELF_ALIAS: &str = "_self";
 const CTXT_ALIAS: &str = "lua";
-const RAW_OUT_ALIAS: &str = "__proxied_out";
-const PROXY_OUT_ALIAS: &str = "__proxy_out";
 const PROXY_PREFIX: &str = "Lua";
-const VALID_META_METHODS: [&str; 27] = [
-    "Add", "Sub", "Mul", "Div", "Mod", "Pow", "Unm", "IDiv", "BAnd", "BOr", "BXor", "BNot", "Shl",
-    "Shr", "Concat", "Len", "Eq", "Lt", "Le", "Index", "NewIndex", "Call", "ToString", "Pairs",
-    "IPairs", "Iter", "Close",
-];
 
 /// Convert receiver to a standardised form, for example:
 /// - instead o a `&self` receiver we have a `_self: LuaRefProxy<Self>`
@@ -63,7 +59,7 @@ fn collect_args_in_tuple<'a, I: Iterator<Item = &'a FnArg>>(
     name: &Ident,
     outer_mut: bool,
 ) -> FnArg {
-    let (arg_names, arg_types) = args
+    let (_, arg_types) = args
         .map(|arg| {
             if let FnArg::Typed(arg) = arg {
                 (arg.pat.clone(), arg.ty.clone())
@@ -313,9 +309,9 @@ pub fn impl_lua_proxy(input: TokenStream) -> TokenStream {
                 .entry(composite_id.to_owned())
                 .or_default()
                 .push((f.clone(), attrs));
-            true
-        } else {
             false
+        } else {
+            true
         }
     });
 
@@ -400,10 +396,45 @@ pub fn impl_lua_proxy(input: TokenStream) -> TokenStream {
     });
 
     let vis = &meta.vis;
+
+    let definition = if meta.proxy_as_self.is_present() {
+        quote_spanned!(derive_input.span()=>
+            #[derive(Clone, Debug, #tealr::mlu::UserData, #tealr::ToTypename)]
+            #vis struct #proxy_type_ident (pub #target_type);
+        )
+    } else {
+        quote_spanned!(derive_input.span()=>
+            #[derive(Clone, Debug, #tealr::mlu::UserData, #tealr::ToTypename)]
+            #vis struct #proxy_type_ident (pub #bms_core::bindings::ReflectReference);
+        )
+   };
+
+   let conversions = if meta.proxy_as_self.is_present() {
+        quote!(
+            impl <'a>From<&'a #proxy_type_ident> for #target_type {
+                fn from(r: &'a #proxy_type_ident) -> Self {
+                    r.0.clone()
+                }
+            }
+        )
+    } else {
+        quote_spanned!(derive_input.span()=>
+            impl AsRef<#bms_core::bindings::ReflectReference> for #proxy_type_ident {
+                fn as_ref(&self) -> &#bms_core::bindings::ReflectReference {
+                    &self.0
+                }
+            }
+
+            impl From<#bms_core::bindings::ReflectReference> for #proxy_type_ident {
+                fn from(r: #bms_core::bindings::ReflectReference) -> Self {
+                    Self(r)
+                }
+            }
+        )
+    };
     quote_spanned! {meta.ident.span()=>
 
-        #[derive(Clone, Debug, #tealr::mlu::UserData, #tealr::ToTypename)]
-        #vis struct #proxy_type_ident (pub #bms_core::bindings::ReflectReference);
+        #definition
 
         impl #bms_lua::bindings::proxy::LuaProxied for #target_type {
             type Proxy = #proxy_type_ident;
@@ -436,25 +467,8 @@ pub fn impl_lua_proxy(input: TokenStream) -> TokenStream {
             }
         }
 
-
-        impl AsRef<#bms_core::bindings::ReflectReference> for #proxy_type_ident {
-            fn as_ref(&self) -> &#bms_core::bindings::ReflectReference {
-                &self.0
-            }
-        }
-
-        impl From<#bms_core::bindings::ReflectReference> for #proxy_type_ident {
-            fn from(r: #bms_core::bindings::ReflectReference) -> Self {
-                Self(r)
-            }
-        }
-
-
+        #conversions
     }
     .into()
 }
 
-// test cases TODO:
-// - pub/private wrapper being generated correctly
-// - proxy name being generated correctly with custom name
-// - proxy name being generated correctly with default name

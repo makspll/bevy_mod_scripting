@@ -58,9 +58,9 @@ pub struct FeatureGraph {
 }
 
 impl FeatureGraph {
-    /// Works out which dependencies are enabled by the given feature, including transitive relations between crates
+    /// Works out which dependencies are enabled (in the workspace) are enabled by the given feature, including transitive relations between crates
     /// includes normal dependencies as well
-    pub fn dependencies_for_features(
+    pub fn workspace_dependencies_for_features(
         &self,
         features: &[String],
         include_default: bool,
@@ -70,14 +70,24 @@ impl FeatureGraph {
             .crates
             .iter()
             .find(|c| c.name == self.workspace_root)
-            .unwrap();
+            .unwrap_or_else(|| {
+                panic!(
+                    "Failed to find workspace root `{}`, in crates in this workspace.",
+                    self.workspace_root
+                )
+            });
         let mut buffer = Default::default();
-        self.dependencies_for_features_on_crate(root, features, include_default, &mut buffer);
+        self.workspace_dependencies_for_features_on_crate(
+            root,
+            features,
+            include_default,
+            &mut buffer,
+        );
 
         buffer.iter().map(|c| c.name.as_str()).collect()
     }
 
-    fn dependencies_for_features_on_crate<'a>(
+    fn workspace_dependencies_for_features_on_crate<'a>(
         &'a self,
         crate_: &'a Crate,
         features: &[String],
@@ -107,15 +117,19 @@ impl FeatureGraph {
                     enable_optional,
                 } => {
                     if *enable_optional {
-                        deps.entry(self.crates.iter().find(|c| c.name == *dependency).unwrap())
-                            .or_default()
-                            .push(feature.to_owned());
+                        if let Some(workspace_dep) =
+                            self.crates.iter().find(|c| c.name == *dependency)
+                        {
+                            deps.entry(workspace_dep)
+                                .or_default()
+                                .push(feature.to_owned());
+                        }
                     }
                 }
                 FeatureEffect::EnableOptionalDep(d) => {
-                    _ = deps
-                        .entry(self.crates.iter().find(|c| c.name == *d).unwrap())
-                        .or_default()
+                    if let Some(workspace_dep) = self.crates.iter().find(|c| c.name == *d) {
+                        deps.entry(workspace_dep).or_default();
+                    }
                 }
                 _ => unreachable!(),
             };
@@ -131,7 +145,12 @@ impl FeatureGraph {
         // repeat for all dependencies recursively
         for (dep, features) in deps.iter() {
             buffer.insert(dep);
-            self.dependencies_for_features_on_crate(dep, features, include_default, buffer);
+            self.workspace_dependencies_for_features_on_crate(
+                dep,
+                features,
+                include_default,
+                buffer,
+            );
         }
     }
 

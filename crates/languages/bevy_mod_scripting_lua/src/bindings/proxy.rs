@@ -3,10 +3,11 @@
 
 use bevy::reflect::{FromReflect, Reflect, TypeRegistry};
 use bevy_mod_scripting_core::{
-    bindings::ReflectAllocator,
-    bindings::{Proxy, ReflectRefMutProxy, ReflectRefProxy, ReflectValProxy, Unproxy, ValProxy},
-    bindings::{ReflectReference, WorldAccessGuard, WorldAccessUnit, WorldAccessWrite},
-    error::ReflectionError,
+    bindings::{
+        Proxy, ReflectAllocator, ReflectRefMutProxy, ReflectRefProxy, ReflectReference,
+        ReflectValProxy, Unproxy, ValProxy, WorldAccessGuard, WorldAccessUnit, WorldAccessWrite,
+    },
+    error::ScriptResult,
 };
 use tealr::{
     mlu::mlua::{Error, FromLua, IntoLua, Lua, Value},
@@ -24,7 +25,7 @@ pub struct IdentityProxy<T>(pub Option<T>);
 
 impl<T> Proxy for IdentityProxy<T> {
     type Input<'i> = T;
-    fn proxy<'i>(value: Self::Input<'i>) -> Result<Self, ReflectionError> {
+    fn proxy<'i>(value: Self::Input<'i>) -> ScriptResult<Self> {
         Ok(Self(Some(value)))
     }
 }
@@ -33,7 +34,7 @@ impl<T> Unproxy for IdentityProxy<T> {
     type Output<'o> = T where
         Self: 'o;
 
-    fn unproxy<'o>(&'o mut self) -> Result<Self::Output<'o>, ReflectionError> {
+    fn unproxy<'o>(&'o mut self) -> ScriptResult<Self::Output<'o>> {
         Ok(self
             .0
             .take()
@@ -76,11 +77,11 @@ macro_rules! impl_lua_unproxy {
                 &self,
                 guard: &WorldAccessGuard<'w>,
                 accesses: &mut bevy::utils::smallvec::SmallVec<[WorldAccessWrite<'w>; 1]>,
-            ) -> Result<(), ReflectionError> {
+            ) -> ScriptResult<()> {
                 self.0.collect_accesses(guard, accesses)
             }
 
-            fn unproxy(&mut self) -> Result<Self::Output<'_>, ReflectionError> {
+            fn unproxy(&mut self) -> ScriptResult<Self::Output<'_>> {
                 self.0.unproxy()
             }
 
@@ -90,7 +91,7 @@ macro_rules! impl_lua_unproxy {
                 accesses: &'o [WorldAccessUnit<'w>],
                 type_registry: &TypeRegistry,
                 allocator: &'o ReflectAllocator,
-            ) -> Result<Self::Output<'o>, ReflectionError> {
+            ) -> ScriptResult<Self::Output<'o>> {
                 self.0
                     .unproxy_with_world(guard, accesses, type_registry, allocator)
             }
@@ -136,7 +137,7 @@ macro_rules! impl_lua_proxy {
             T: $($bounds+)*,
         {
             type Input<'i>=<$as<$generic, $generic::Proxy> as bevy_mod_scripting_core::bindings::Proxy>::Input<'i>;
-            fn proxy<'i>(value: Self::Input<'i>) -> Result<Self, ReflectionError> {
+            fn proxy<'i>(value: Self::Input<'i>) -> ScriptResult<Self> {
                 Ok(Self($as::<$generic,$generic::Proxy>::proxy(value)?))
             }
         }
@@ -167,109 +168,3 @@ impl_lua_unproxy!(LuaReflectRefMutProxy as ReflectRefMutProxy (T)
     T: (Reflect),
     T::Proxy: (AsRef<ReflectReference>),
 );
-
-#[cfg(test)]
-mod test {
-
-    use std::{cell::UnsafeCell, sync::Arc};
-
-    use bevy::{ecs::component::Component, reflect::Reflect};
-    use bevy_mod_scripting_core::{
-        bindings::ReflectAllocation,
-        bindings::{ReflectBase, ReflectBaseType, ReflectReference},
-    };
-    use tealr::mlu::mlua::{UserData, UserDataMethods};
-
-    use super::*;
-
-    #[derive(Reflect, Component)]
-    struct Test(pub String);
-
-    impl Test {
-        fn _set(&mut self, value: &Test) {
-            self.0 = value.0.clone();
-        }
-    }
-
-    impl LuaProxied for Test {
-        type Proxy = TestProxy;
-    }
-
-    #[derive(Debug, Clone)]
-    struct TestProxy(ReflectReference);
-
-    impl From<TestProxy> for ReflectReference {
-        fn from(value: TestProxy) -> Self {
-            value.0
-        }
-    }
-
-    impl From<ReflectReference> for TestProxy {
-        fn from(value: ReflectReference) -> Self {
-            TestProxy(value)
-        }
-    }
-
-    impl AsRef<ReflectReference> for TestProxy {
-        fn as_ref(&self) -> &ReflectReference {
-            &self.0
-        }
-    }
-    impl<'lua> FromLua<'lua> for TestProxy {
-        fn from_lua(
-            value: Value<'lua>,
-            _lua: &'lua Lua,
-        ) -> tealr::mlu::mlua::prelude::LuaResult<Self> {
-            match value {
-                Value::UserData(ud) => {
-                    if let Ok(s) = ud.borrow::<Self>() {
-                        Ok(s.clone())
-                    } else {
-                        panic!()
-                    }
-                }
-                _ => panic!(),
-            }
-        }
-    }
-
-    impl UserData for TestProxy {
-        fn add_methods<'lua, M: UserDataMethods<'lua, Self>>(methods: &mut M) {
-            methods.add_method("set", |_lua, _self_, _val: LuaReflectRefProxy<Test>| Ok(()))
-        }
-    }
-
-    impl tealr::ToTypename for TestProxy {
-        fn to_typename() -> tealr::Type {
-            tealr::Type::Single(tealr::SingleType {
-                name: tealr::Name("test".into()),
-                kind: tealr::KindOfType::External,
-            })
-        }
-    }
-
-    #[test]
-    pub fn test_call_set() {
-        let lua = Lua::new();
-        let globals = lua.globals();
-        let test = Test("test".to_string());
-        let mut allocator = ReflectAllocator::default();
-        let (allocation_id, _) = allocator.allocate(test);
-        let reflect_ref = ReflectReference {
-            base: ReflectBaseType {
-                type_id: std::any::TypeId::of::<Test>(),
-                base_id: ReflectBase::Owned(allocation_id),
-            },
-            reflect_path: vec![],
-        };
-        let proxy = TestProxy(reflect_ref);
-        globals.set("test", proxy).unwrap();
-        lua.load(
-            r#"
-            test:set(test)
-        "#,
-        )
-        .exec()
-        .unwrap();
-    }
-}

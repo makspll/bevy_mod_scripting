@@ -39,7 +39,10 @@ fn main() {
         (Some(root), true) => {
             let feature_graph = FeatureGraph::from_metadata(&metadata, root);
             let dependencies = feature_graph
-                .dependencies_for_features(args.features.as_ref(), !args.no_default_features)
+                .workspace_dependencies_for_features(
+                    args.features.as_ref(),
+                    !args.no_default_features,
+                )
                 .into_iter()
                 .map(|s| s.to_owned())
                 .collect::<Vec<String>>();

@@ -1,6 +1,9 @@
-use std::{ops::Deref, sync::Arc};
+use std::{any::TypeId, ops::Deref, sync::Arc};
 
-use bevy::reflect::TypeRegistration;
+use bevy::{ecs::entity::Entity, reflect::TypeRegistration};
+
+use super::{ReflectReference, WorldCallbackAccess, STALE_WORLD_MSG};
+use crate::prelude::{ScriptError, ScriptResult};
 
 /// A wrapper around a `TypeRegistration` that provides additional information about the type.
 ///
@@ -21,6 +24,11 @@ impl ScriptTypeRegistration {
     #[inline(always)]
     pub fn type_name(&self) -> &'static str {
         self.0.type_info().type_path_table().path()
+    }
+
+    #[inline(always)]
+    pub fn type_id(&self) -> TypeId {
+        self.0.type_info().type_id()
     }
 }
 
@@ -43,5 +51,64 @@ impl Deref for ScriptTypeRegistration {
 
     fn deref(&self) -> &Self::Target {
         &self.0
+    }
+}
+
+#[derive(Clone)]
+pub struct ScriptQueryBuilder {
+    world: WorldCallbackAccess,
+    components: Vec<ScriptTypeRegistration>,
+    with: Vec<ScriptTypeRegistration>,
+    without: Vec<ScriptTypeRegistration>,
+}
+
+impl ScriptQueryBuilder {
+    pub fn new(world: WorldCallbackAccess) -> Self {
+        Self {
+            world,
+            components: vec![],
+            with: vec![],
+            without: vec![],
+        }
+    }
+
+    pub fn components(&mut self, components: Vec<ScriptTypeRegistration>) -> &mut Self {
+        self.components.extend(components);
+        self
+    }
+
+    pub fn with(&mut self, with: Vec<ScriptTypeRegistration>) -> &mut Self {
+        self.with.extend(with);
+        self
+    }
+
+    pub fn without(&mut self, without: Vec<ScriptTypeRegistration>) -> &mut Self {
+        self.without.extend(without);
+        self
+    }
+
+    pub fn build(&mut self) -> ScriptResult<Vec<ScriptQueryResult>> {
+        self.world.query(
+            std::mem::take(&mut self.components),
+            std::mem::take(&mut self.with),
+            std::mem::take(&mut self.without),
+        )
+    }
+}
+
+#[derive(Clone)]
+pub struct ScriptQueryResult(pub Entity, pub Vec<ReflectReference>);
+
+impl WorldCallbackAccess {
+    pub fn query(
+        &mut self,
+        components: Vec<ScriptTypeRegistration>,
+        with: Vec<ScriptTypeRegistration>,
+        without: Vec<ScriptTypeRegistration>,
+    ) -> ScriptResult<Vec<ScriptQueryResult>> {
+        // for c in components {
+
+        // }
+        todo!()
     }
 }

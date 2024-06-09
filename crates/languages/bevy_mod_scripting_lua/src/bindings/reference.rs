@@ -5,10 +5,8 @@ use bevy::{
     reflect::{OffsetAccess, ParsedPath, ReflectFromReflect},
 };
 use bevy_mod_scripting_core::{
-    bindings::ReflectAllocator,
-    bindings::Unproxy,
-    bindings::{ReflectReference, WorldCallbackAccess},
-    error::ReflectionError,
+    bindings::{ReflectAllocator, ReflectReference, Unproxy, WorldCallbackAccess},
+    error::ScriptError,
 };
 use tealr::mlu::{
     mlua::{self, FromLua, IntoLua, Lua, MetaMethod, UserData, Value},
@@ -35,16 +33,14 @@ impl LuaReflectReference {
         // note we do not need to refer to LuaWorld here, it does not matter what the proxy is, that's pretty neat,
         let world = lua.get_world()?;
         // TODO: i don't like the pingponging between errors here, need something more ergonomic
-        world
-            .with_resource(|world, type_registry: Mut<AppTypeRegistry>| {
+        let result: Result<Value, ScriptError> =
+            world.with_resource(|world, type_registry: Mut<AppTypeRegistry>| {
                 world.with_resource(|world, allocator: Mut<ReflectAllocator>| {
                     let type_registry = type_registry.read();
                     // first we need the type id of the pointed to object to figure out how to work with it
                     let type_id =
                         self.0
-                            .with_reflect(world, &type_registry, Some(&allocator), |r| {
-                                Ok(r.type_id())
-                            })?;
+                            .with_reflect(world, &type_registry, Some(&allocator), |r| r.type_id());
                     if let Some(type_data) = type_registry.get_type_data::<ReflectLuaValue>(type_id)
                     {
                         self.0
@@ -59,21 +55,19 @@ impl LuaReflectReference {
                         Ok(self.clone().into_lua(lua)?)
                     }
                 })
-            })
-            .map_err(mlua::Error::external)
+            });
+        result.map_err(mlua::Error::external)
     }
 
     pub fn set_with_lua_proxy(&self, lua: &Lua, value: Value) -> Result<(), mlua::Error> {
         let world = lua.get_world()?;
-        world
-            .with_resource(|world, type_registry: Mut<AppTypeRegistry>| {
+        let result: Result<(), ScriptError> =
+            world.with_resource(|world, type_registry: Mut<AppTypeRegistry>| {
                 world.with_resource(|world, allocator: Mut<ReflectAllocator>| {
                     let type_registry = type_registry.read();
                     let type_id =
                         self.0
-                            .with_reflect(world, &type_registry, Some(&allocator), |r| {
-                                Ok(r.type_id())
-                            })?;
+                            .with_reflect(world, &type_registry, Some(&allocator), |r| r.type_id());
 
                     if let Some(type_data) = type_registry.get_type_data::<ReflectLuaValue>(type_id)
                     {
@@ -87,44 +81,42 @@ impl LuaReflectReference {
                         let other = (type_data.from_proxy)(value, lua)?;
 
                         // first we need to get a copy of the other value
-                        let other =
-                            other.with_reflect(world, &type_registry, Some(&allocator), |r| {
-                                Ok(type_registry
+                        let other = other
+                            .with_reflect(world, &type_registry, Some(&allocator), |r| {
+                                type_registry
                                     .get_type_data::<ReflectFromReflect>(r.type_id())
                                     .and_then(|from_reflect_td| from_reflect_td.from_reflect(r))
-                                    .ok_or_else(|| ReflectionError::FromReflectFailure {
-                                        ref_: r
-                                            .get_represented_type_info()
-                                            .map(|t| t.type_path())
-                                            .unwrap_or_else(|| "Unknown Type")
-                                            .to_owned(),
-                                    })?)
+                            })
+                            .ok_or_else(|| {
+                                ScriptError::new_reflection_error(format!(
+                                    "Failed to call ReflectFromReflect for type id: {:?}",
+                                    type_registry.get_type_info(type_id).map(|t| t.type_path())
+                                ))
                             })?;
 
                         // now we can set it
                         self.0
                             .with_reflect_mut(world, &type_registry, Some(&allocator), |r| {
                                 r.set(other).map_err(|e| {
-                                    Box::new(ReflectionError::InvalidAssignment {
-                                        lhs: self.0.clone(),
-                                        rhs: format!("{e:?}"),
-                                        reason: "Invalid type".to_owned(),
-                                    })
-                                        as Box<dyn Error + Send + Sync + 'static>
+                                    ScriptError::new_runtime_error(format!(
+                                        "Invalid assignment `{:?}` = `{:?}`. Wrong type.",
+                                        self.0.clone(),
+                                        e,
+                                    ))
                                 })
                             })?;
                         Ok(())
                     } else {
-                        Err(Box::new(ReflectionError::InvalidAssignment {
-                            lhs: self.0.clone(),
-                            rhs: format!("{value:?}"),
-                            reason: "Lhs has no registered LuaValue or LuaProxied type data."
-                                .to_owned(),
-                        }))
+                        Err(ScriptError::new_runtime_error(format!(
+                            "Invalid assignment `{:?}` = `{:?}`. Wrong type.",
+                            self.0.clone(),
+                            value,
+                        )))
                     }
                 })
-            })
-            .map_err(mlua::Error::external)
+            });
+
+        result.map_err(mlua::Error::external)
     }
 
     /// Adjusts all the numeric accesses in the path from 1-indexed to 0-indexed
@@ -214,7 +206,7 @@ mod test {
         bindings::ReflectAllocator,
         bindings::{ReflectBase, ReflectBaseType, WorldAccessGuard, WorldCallbackAccess},
     };
-    use bevy_mod_scripting_lua_derive::LuaProxy;
+    use bevy_mod_scripting_derive::LuaProxy;
 
     use crate::{bindings::world::LuaWorld, RegisterLua};
 

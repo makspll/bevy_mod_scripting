@@ -1,4 +1,4 @@
-use darling::{FromDeriveInput, FromMeta};
+use darling::{util::Flag, FromDeriveInput, FromMeta};
 use proc_macro2::Ident;
 use std::ops::{Deref, DerefMut};
 use syn::{spanned::Spanned, visit_mut::VisitMut, Attribute, Field, TraitItemFn, Variant};
@@ -30,10 +30,19 @@ pub struct ProxyInput {
     pub vis: syn::Visibility,
     /// The generics on the target type
     pub generics: syn::Generics,
+    /// The attributes on the target type
     pub attrs: Vec<Attribute>,
 
     /// The path to the type for which we are generating a proxy if it's a foreign type
     pub remote: Option<syn::Path>,
+
+    /// If set to true, will generate a simple newtype instead of a ReflectReference wrapping type
+    /// Only used for the special world proxies, probably not useful for anything else, the macro assumes we have an inner ReflectReference in the wrapper
+    pub proxy_as_self: Flag,
+
+    /// Special flag for world proxies, if set to true the proxy will be treated as a world proxy, meaning we do not double fetch the world and instead use the world from the wrapper.
+    /// This requires proxy_as_self to also be true
+    pub self_is_world: Flag,
 
     /// The path to the bevy_mod_scripting_core crate
     #[darling(default)]

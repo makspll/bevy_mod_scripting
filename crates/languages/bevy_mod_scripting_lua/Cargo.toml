@@ -41,7 +41,7 @@ path = "src/lib.rs"
 [dependencies]
 bevy = { workspace = true, default-features = false }
 bevy_mod_scripting_core = { workspace = true }
-bevy_mod_scripting_lua_derive = { path = "../bevy_mod_scripting_lua_derive", version = "0.6.0" }
+bevy_mod_scripting_derive = { path = "../../bevy_mod_scripting_derive", version = "0.6.0" }
 tealr = { version = "0.9", features = [
     "mlua_vendored",
     "mlua_send",

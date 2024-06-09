@@ -33,7 +33,7 @@ use bevy::{
     ptr::Ptr,
     reflect::{
         std_traits::ReflectDefault, Access, ParsedPath, Reflect, ReflectFromPtr, ReflectPath,
-        ReflectPathError, TypeInfo, TypeRegistration, TypeRegistry,
+        ReflectPathError, TypeInfo, TypePath, TypeRegistration, TypeRegistry,
     },
     utils::smallvec::SmallVec,
 };
@@ -84,7 +84,7 @@ impl From<ReflectAllocationId> for ReflectAccessId {
 /// While [`WorldAccessGuard`] prevents aliasing at runtime and also makes sure world exists at least as long as the guard itself,
 /// borrows sadly do not persist the script-host boundary :(. That is to be expected, but instead we can make an abstraction which removes the lifetime parameter, making the outer type 'static,
 /// while making sure the lifetime is still satisfied!
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct WorldCallbackAccess(Weak<WorldAccessGuard<'static>>);
 
 impl WorldCallbackAccess {
@@ -125,12 +125,14 @@ impl WorldCallbackAccess {
     }
 }
 
-const STALE_WORLD_MSG: &str = "Tried to access world via stale reference";
-const CONCURRENT_WORLD_ACCESS_MSG: &str = "Something else is accessing the world right now!";
-const CONCURRENT_ACCESS_MSG: &str =
+pub(crate) const STALE_WORLD_MSG: &str = "Tried to access world via stale reference";
+pub(crate) const CONCURRENT_WORLD_ACCESS_MSG: &str =
+    "Something else is accessing the world right now!";
+pub(crate) const CONCURRENT_ACCESS_MSG: &str =
     "Something else is accessing the resource/component/allocation right now!";
 
-/// common world methods
+/// common world methods, see:
+/// - [`crate::bindings::query`] for query related functionality
 impl WorldCallbackAccess {
     pub fn get_type_by_name(&self, type_name: &str) -> Option<ScriptTypeRegistration> {
         let world = self.read().unwrap_or_else(|| panic!("{STALE_WORLD_MSG}"));
