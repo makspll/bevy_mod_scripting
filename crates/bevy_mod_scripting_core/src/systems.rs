@@ -33,6 +33,7 @@ pub fn script_add_synchronizer<H: ScriptHost + 'static>(
     script_assets: Res<Assets<H::ScriptAsset>>,
     mut contexts: ResMut<ScriptContexts<H::ScriptContext>>,
     mut event_writer: EventWriter<ScriptLoaded>,
+    mut error_writer: EventWriter<ScriptErrorEvent>,
 ) {
     debug!("Handling addition/modification of scripts");
 
@@ -47,6 +48,7 @@ pub fn script_add_synchronizer<H: ScriptHost + 'static>(
                     &mut providers,
                     &mut contexts,
                     &mut event_writer,
+                    &mut error_writer,
                 )
             })
         } else {
@@ -84,6 +86,7 @@ pub fn script_add_synchronizer<H: ScriptHost + 'static>(
                     &mut providers,
                     &mut contexts,
                     &mut event_writer,
+                    &mut error_writer,
                 )
             }
         }
@@ -120,6 +123,7 @@ pub fn script_hot_reload_handler<H: ScriptHost>(
     mut providers: ResMut<APIProviders<H>>,
     mut contexts: ResMut<ScriptContexts<H::ScriptContext>>,
     mut event_writer: EventWriter<ScriptLoaded>,
+    mut error_writer: EventWriter<ScriptErrorEvent>,
 ) {
     for e in events.read() {
         let (handle, created) = match e {
@@ -147,6 +151,7 @@ pub fn script_hot_reload_handler<H: ScriptHost>(
                         &mut providers,
                         &mut contexts,
                         &mut event_writer,
+                        &mut error_writer,
                     );
                 }
             }
