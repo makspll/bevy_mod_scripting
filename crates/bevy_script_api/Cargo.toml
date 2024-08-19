@@ -27,7 +27,7 @@ bevy = { workspace = true, default-features = false, features = [
     "bevy_text",
     "bevy_sprite",
     "file_watcher",
-    "multi-threaded",
+    "multi_threaded",
 ] }
 bevy_mod_scripting_core = { workspace = true }
 parking_lot = "0.12.1"

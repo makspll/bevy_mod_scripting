@@ -135,7 +135,7 @@ impl AssetLoader for LuaLoader {
         reader: &'a mut Reader, //bytes: &'a [u8],
         _settings: &'a (),
         load_context: &'a mut bevy::asset::LoadContext,
-    ) -> bevy::asset::BoxedFuture<'a, Result<Self::Asset, Self::Error>> {
+    ) -> bevy::utils::BoxedFuture<'a, Result<Self::Asset, Self::Error>> {
         bevy::prelude::info!("lua loader invoked: {:#}", load_context.asset_path());
         Box::pin(async move {
             let mut bytes = Vec::new();

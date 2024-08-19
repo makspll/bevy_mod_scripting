@@ -21,15 +21,15 @@ PACKAGE=bevy_mod_scripting
 TEST_NAME=
 # # valgrind outputs a callgrind.out.<pid>. We can analyze this with kcachegrind
 # kcachegrind
-NIGHTLY_VERSION=nightly-2024-01-24
-BEVY_VERSION=0.13.1
-GLAM_VERSION=0.25.0
+NIGHTLY_VERSION=nightly-2024-08-13
+BEVY_VERSION=0.14.1
+GLAM_VERSION=0.28.0
 CODEGEN_PATH=${PWD}/target/codegen
 BEVY_PATH=${CODEGEN_PATH}/bevy
 GLAM_PATH=${CODEGEN_PATH}/glam
 OUTPUT_PATH=${CODEGEN_PATH}/output
 GENERATED_SRC_PATH=./crates/bevy_script_api/src/providers
-GEN_BEVY_FEATURES=bevy_asset,bevy_gltf,bevy_animation,bevy_core_pipeline,bevy_ui,bevy_pbr,bevy_render,bevy_text,bevy_sprite,file_watcher,multi-threaded
+GEN_BEVY_FEATURES=bevy_asset,bevy_gltf,bevy_animation,bevy_core_pipeline,bevy_ui,bevy_pbr,bevy_render,bevy_text,bevy_sprite,file_watcher,multi_threaded
 
 build_test_in_package:
 	@cargo test --no-run --lib --workspace $(TEST_NAME)

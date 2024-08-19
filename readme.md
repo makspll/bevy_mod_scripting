@@ -201,19 +201,21 @@ Documentation features are exposed at runtime via the `update_documentation` bui
 use bevy::prelude::*;
 use bevy_mod_scripting::prelude::*;
 
-#[cfg(feature = "lua")]
 fn main() -> std::io::Result<()> {
     let mut app = App::new();
 
     app.add_plugins(DefaultPlugins)
-        .add_plugins(ScriptingPlugin)
-        .add_script_host::<LuaScriptHost<()>>(PostUpdate)
+        .add_plugins(ScriptingPlugin);
+    #[cfg(feature = "lua")]
+    {
+    app.add_script_host::<LuaScriptHost<()>>(PostUpdate)
         // Note: This is a noop in optimized builds unless the `doc_always` feature is enabled!
         // this will pickup any API providers added *BEFOREHAND* like this one
         .add_api_provider::<LuaScriptHost<()>>(Box::new(LuaBevyAPIProvider))
         .add_api_provider::<LuaScriptHost<()>>(Box::new(LuaCoreBevyAPIProvider))
         .update_documentation::<LuaScriptHost<()>>()
         .add_script_handler::<LuaScriptHost<()>, 0, 0>(PostUpdate);
+    }
 
     Ok(())
 }
@@ -268,3 +270,10 @@ To see more complex applications of this library have a look at the examples:
 
 Below is a video showcasing the game_of_life example:
 [![Watch the video](https://img.youtube.com/vi/Mo9gh2g3ZHw/maxresdefault.jpg)](https://www.youtube.com/watch?v=Mo9gh2g3ZHw)
+
+# Compatibility
+
+| bevy_mod_scripting  | bevy   |
+|---------------------|--------|
+| 0.7                 | 0.14   |
+| 0.6                 | 0.13.1 |

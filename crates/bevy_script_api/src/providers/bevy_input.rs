@@ -713,7 +713,7 @@ struct TouchPhase {}
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
     derive(clone),
-    remote = "bevy::input::touchpad::TouchpadMagnify",
+    remote = "bevy::input::touch::TouchpadMagnify",
     functions[r#"
 
     #[lua(
@@ -722,13 +722,13 @@ struct TouchPhase {}
         composite = "eq",
         metamethod = "Eq",
     )]
-    fn eq(&self, #[proxy] other: &touchpad::TouchpadMagnify) -> bool;
+    fn eq(&self, #[proxy] other: &touch::TouchpadMagnify) -> bool;
 
 "#,
     r#"
 
     #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
-    fn clone(&self) -> bevy::input::touchpad::TouchpadMagnify;
+    fn clone(&self) -> bevy::input::touch::TouchpadMagnify;
 
 "#,
     r#"
@@ -742,7 +742,7 @@ struct TouchpadMagnify(f32);
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
     derive(clone),
-    remote = "bevy::input::touchpad::TouchpadRotate",
+    remote = "bevy::input::touch::TouchpadRotate",
     functions[r#"
 
     #[lua(
@@ -751,13 +751,13 @@ struct TouchpadMagnify(f32);
         composite = "eq",
         metamethod = "Eq",
     )]
-    fn eq(&self, #[proxy] other: &touchpad::TouchpadRotate) -> bool;
+    fn eq(&self, #[proxy] other: &touch::TouchpadRotate) -> bool;
 
 "#,
     r#"
 
     #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
-    fn clone(&self) -> bevy::input::touchpad::TouchpadRotate;
+    fn clone(&self) -> bevy::input::touch::TouchpadRotate;
 
 "#,
     r#"
@@ -1525,8 +1525,8 @@ impl bevy_mod_scripting_core::hosts::APIProvider for BevyInputAPIProvider {
         app.register_foreign_lua_type::<bevy::input::mouse::MouseWheel>();
         app.register_foreign_lua_type::<bevy::input::touch::ForceTouch>();
         app.register_foreign_lua_type::<bevy::input::touch::TouchPhase>();
-        app.register_foreign_lua_type::<bevy::input::touchpad::TouchpadMagnify>();
-        app.register_foreign_lua_type::<bevy::input::touchpad::TouchpadRotate>();
+        app.register_foreign_lua_type::<bevy::input::touch::TouchpadMagnify>();
+        app.register_foreign_lua_type::<bevy::input::touch::TouchpadRotate>();
         app.register_foreign_lua_type::<bevy::input::gamepad::AxisSettings>();
         app.register_foreign_lua_type::<bevy::input::gamepad::ButtonAxisSettings>();
         app.register_foreign_lua_type::<bevy::input::gamepad::ButtonSettings>();
