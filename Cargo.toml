@@ -78,7 +78,7 @@ bevy_mod_scripting_common = { path = "crates/bevy_mod_scripting_common", version
 bevy = { workspace = true, default-features = true }
 clap = { version = "4.1", features = ["derive"] }
 rand = "0.8.5"
-# bevy_console = "0.11.1"
+bevy_console = "0.12"
 rhai-rand = "0.1"
 
 [workspace]
