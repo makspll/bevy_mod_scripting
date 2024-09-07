@@ -22,12 +22,22 @@ impl FileLoader for ModifyingFileLoader {
             );
             RealFileLoader.read_file(path).map(|mut f| {
                 // we make it pub so in case we are re-exporting this crate we won't run into private re-export issues
-                if !f.contains("pub extern crate mlua") {
-                    f.push_str("#[allow(unused_extern_crates)] pub extern crate mlua;");
+
+                for crate_ in &["bevy_reflect", "mlua"] {
+                    if !f.contains(&format!("extern crate {crate_}")) {
+                        if f.contains(&format!("pub use {crate_}")) {
+                            f.push_str(&format!(
+                                "#[allow(unused_extern_crates)] pub extern crate {crate_};"
+                            ));
+                        } else {
+                            // this causes issues in proc macros so let's make it private where we can
+                            f.push_str(&format!(
+                                "#[allow(unused_extern_crates)] extern crate {crate_};"
+                            ));
+                        }
+                    }
                 }
-                if !f.contains("pub extern crate bevy_reflect") {
-                    f.push_str("#[allow(unused_extern_crates)] pub extern crate bevy_reflect;");
-                }
+
                 f
             })
         } else {
