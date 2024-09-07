@@ -308,8 +308,10 @@ fn find_bootstrap_dir() -> PathBuf {
     loop {
         if path.join("target").exists() {
             break;
+        } else if let Some(parent) = path.parent() {
+            path = parent.to_path_buf();
         } else {
-            path = path.parent().unwrap().to_owned();
+            panic!("Could not find `target` directory");
         }
     }
 
