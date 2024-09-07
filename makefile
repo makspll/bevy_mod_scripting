@@ -21,7 +21,7 @@ PACKAGE=bevy_mod_scripting
 TEST_NAME=
 # # valgrind outputs a callgrind.out.<pid>. We can analyze this with kcachegrind
 # kcachegrind
-NIGHTLY_VERSION=nightly-2024-01-24
+NIGHTLY_VERSION=nightly-2024-05-20
 BEVY_VERSION=0.14.2
 GLAM_VERSION=0.28.0
 CODEGEN_PATH=${PWD}/target/codegen
@@ -48,6 +48,7 @@ valgrind:
 
 install_bevy_api_gen:
 	rustup install ${NIGHTLY_VERSION}
+	rustup component add rust-src rustc-dev llvm-tools-preview --toolchain ${NIGHTLY_VERSION}
 	cargo +${NIGHTLY_VERSION} install --path ./crates/bevy_api_gen
 
 prepare_api_gen:

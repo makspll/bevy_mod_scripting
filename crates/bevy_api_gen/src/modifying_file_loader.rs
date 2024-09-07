@@ -21,10 +21,11 @@ impl FileLoader for ModifyingFileLoader {
                 path.to_str().unwrap()
             );
             RealFileLoader.read_file(path).map(|mut f| {
-                if !f.contains("extern crate mlua") {
+                // we make it pub so in case we are re-exporting this crate we won't run into private re-export issues
+                if !f.contains("pub extern crate mlua") {
                     f.push_str("#[allow(unused_extern_crates)] extern crate mlua;");
                 }
-                if !f.contains("extern crate bevy_reflect") {
+                if !f.contains("pub extern crate bevy_reflect") {
                     f.push_str("#[allow(unused_extern_crates)] extern crate bevy_reflect;");
                 }
                 f

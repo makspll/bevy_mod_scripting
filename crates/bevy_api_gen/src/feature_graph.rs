@@ -2,7 +2,7 @@ use std::collections::{HashMap, HashSet};
 
 use cargo_metadata::{DependencyKind, Metadata, Package};
 use itertools::{Either, Itertools};
-use log::{debug, info};
+use log::debug;
 
 #[derive(Clone, Debug)]
 pub enum FeatureEffect {
