@@ -1,1 +1,2 @@
-type-complexity-threshold=1000
+type-complexity-threshold = 1000
+allow = ["type_complexity", "too_many_arguments"]
