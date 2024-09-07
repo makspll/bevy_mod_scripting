@@ -23,12 +23,6 @@ use bevy_script_api::{
 
 "#,
     r#"
-
-    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
-    fn clone(&self) -> bevy::ecs::entity::Entity;
-
-"#,
-    r#"
 /// Creates a new entity ID with the specified `index` and a generation of 1.
 /// # Note
 /// Spawning a specific `entity` value is __rarely the right choice__. Most apps should favor
@@ -83,13 +77,28 @@ use bevy_script_api::{
 
 "#,
     r#"
+
+    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
+    fn clone(&self) -> bevy::ecs::entity::Entity;
+
+"#,
+    r#"
 #[lua(kind="MetaMethod", metamethod="ToString")]
 fn index(&self) -> String {
-    format!("{:?}", _self)
+    format!("{}", _self)
 }
 "#]
 )]
 struct Entity {}
+#[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
+#[proxy(derive(), remote = "bevy::ecs::world::OnAdd", functions[])]
+struct OnAdd {}
+#[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
+#[proxy(derive(), remote = "bevy::ecs::world::OnInsert", functions[])]
+struct OnInsert {}
+#[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
+#[proxy(derive(), remote = "bevy::ecs::world::OnRemove", functions[])]
+struct OnRemove {}
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
     derive(clone),
@@ -112,12 +121,6 @@ struct Entity {}
 "#,
     r#"
 
-    #[lua(as_trait = "std::cmp::Eq", kind = "Method")]
-    fn assert_receiver_is_total_eq(&self) -> ();
-
-"#,
-    r#"
-
     #[lua(
         as_trait = "std::cmp::PartialEq",
         kind = "MetaFunction",
@@ -134,6 +137,12 @@ struct Entity {}
 
 "#,
     r#"
+
+    #[lua(as_trait = "std::cmp::Eq", kind = "Method")]
+    fn assert_receiver_is_total_eq(&self) -> ();
+
+"#,
+    r#"
 #[lua(kind="MetaMethod", metamethod="ToString")]
 fn index(&self) -> String {
     format!("{:?}", _self)
@@ -147,14 +156,19 @@ struct ComponentId();
     remote = "bevy::ecs::component::Tick",
     functions[r#"
 
-    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
-    fn clone(&self) -> bevy::ecs::component::Tick;
+    #[lua(
+        as_trait = "std::cmp::PartialEq",
+        kind = "MetaFunction",
+        composite = "eq",
+        metamethod = "Eq",
+    )]
+    fn eq(&self, #[proxy] other: &component::Tick) -> bool;
 
 "#,
     r#"
 
-    #[lua(as_trait = "std::cmp::Eq", kind = "Method")]
-    fn assert_receiver_is_total_eq(&self) -> ();
+    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
+    fn clone(&self) -> bevy::ecs::component::Tick;
 
 "#,
     r#"
@@ -194,13 +208,8 @@ struct ComponentId();
 "#,
     r#"
 
-    #[lua(
-        as_trait = "std::cmp::PartialEq",
-        kind = "MetaFunction",
-        composite = "eq",
-        metamethod = "Eq",
-    )]
-    fn eq(&self, #[proxy] other: &component::Tick) -> bool;
+    #[lua(as_trait = "std::cmp::Eq", kind = "Method")]
+    fn assert_receiver_is_total_eq(&self) -> ();
 
 "#,
     r#"
@@ -222,7 +231,8 @@ struct Tick {}
 
 "#,
     r#"
-/// Returns `true` if the component or resource was added after the system last ran.
+/// Returns `true` if the component or resource was added after the system last ran
+/// (or the system is running for the first time).
 
     #[lua(kind = "Method")]
     fn is_added(
@@ -235,7 +245,8 @@ struct Tick {}
 
 "#,
     r#"
-/// Returns `true` if the component or resource was added or mutably dereferenced after the system last ran.
+/// Returns `true` if the component or resource was added or mutably dereferenced after the system last ran
+/// (or the system is running for the first time).
 
     #[lua(kind = "Method")]
     fn is_changed(
@@ -289,6 +300,66 @@ struct ComponentTicks {}
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
     derive(clone),
+    remote = "bevy::ecs::identifier::Identifier",
+    functions[r#"
+
+    #[lua(
+        as_trait = "std::cmp::PartialEq",
+        kind = "MetaFunction",
+        composite = "eq",
+        metamethod = "Eq",
+    )]
+    fn eq(&self, #[proxy] other: &identifier::Identifier) -> bool;
+
+"#,
+    r#"
+
+    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
+    fn clone(&self) -> bevy::ecs::identifier::Identifier;
+
+"#,
+    r#"
+/// Returns the value of the low segment of the [`Identifier`].
+
+    #[lua(kind = "Method")]
+    fn low(self) -> u32;
+
+"#,
+    r#"
+/// Returns the masked value of the high segment of the [`Identifier`].
+/// Does not include the flag bits.
+
+    #[lua(kind = "Method")]
+    fn masked_high(self) -> u32;
+
+"#,
+    r#"
+/// Convert the [`Identifier`] into a `u64`.
+
+    #[lua(kind = "Method")]
+    fn to_bits(self) -> u64;
+
+"#,
+    r#"
+/// Convert a `u64` into an [`Identifier`].
+/// # Panics
+/// This method will likely panic if given `u64` values that did not come from [`Identifier::to_bits`].
+
+    #[lua(kind = "Function", output(proxy))]
+    fn from_bits(value: u64) -> bevy::ecs::identifier::Identifier;
+
+"#,
+    r#"
+#[lua(kind="MetaMethod", metamethod="ToString")]
+fn index(&self) -> String {
+    format!("{:?}", _self)
+}
+"#]
+)]
+struct Identifier {}
+#[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
+#[proxy(
+    derive(clone),
     remote = "bevy::ecs::entity::EntityHash",
     functions[r#"
 
@@ -320,6 +391,11 @@ impl bevy_mod_scripting_lua::tealr::mlu::ExportInstances for Globals {
                 "Tick",
                 bevy_mod_scripting_lua::tealr::mlu::UserDataProxy::<LuaTick>::new,
             )?;
+        instances
+            .add_instance(
+                "Identifier",
+                bevy_mod_scripting_lua::tealr::mlu::UserDataProxy::<LuaIdentifier>::new,
+            )?;
         Ok(())
     }
 }
@@ -349,6 +425,9 @@ impl bevy_mod_scripting_core::hosts::APIProvider for BevyEcsAPIProvider {
                         .process_type::<
                             bevy_mod_scripting_lua::tealr::mlu::UserDataProxy<LuaEntity>,
                         >()
+                        .process_type::<LuaOnAdd>()
+                        .process_type::<LuaOnInsert>()
+                        .process_type::<LuaOnRemove>()
                         .process_type::<LuaComponentId>()
                         .process_type::<
                             bevy_mod_scripting_lua::tealr::mlu::UserDataProxy<
@@ -360,6 +439,12 @@ impl bevy_mod_scripting_core::hosts::APIProvider for BevyEcsAPIProvider {
                             bevy_mod_scripting_lua::tealr::mlu::UserDataProxy<LuaTick>,
                         >()
                         .process_type::<LuaComponentTicks>()
+                        .process_type::<LuaIdentifier>()
+                        .process_type::<
+                            bevy_mod_scripting_lua::tealr::mlu::UserDataProxy<
+                                LuaIdentifier,
+                            >,
+                        >()
                         .process_type::<LuaEntityHash>()
                 },
             ),
@@ -382,9 +467,13 @@ impl bevy_mod_scripting_core::hosts::APIProvider for BevyEcsAPIProvider {
     }
     fn register_with_app(&self, app: &mut bevy::app::App) {
         app.register_foreign_lua_type::<bevy::ecs::entity::Entity>();
+        app.register_foreign_lua_type::<bevy::ecs::world::OnAdd>();
+        app.register_foreign_lua_type::<bevy::ecs::world::OnInsert>();
+        app.register_foreign_lua_type::<bevy::ecs::world::OnRemove>();
         app.register_foreign_lua_type::<bevy::ecs::component::ComponentId>();
         app.register_foreign_lua_type::<bevy::ecs::component::Tick>();
         app.register_foreign_lua_type::<bevy::ecs::component::ComponentTicks>();
+        app.register_foreign_lua_type::<bevy::ecs::identifier::Identifier>();
         app.register_foreign_lua_type::<bevy::ecs::entity::EntityHash>();
     }
 }
