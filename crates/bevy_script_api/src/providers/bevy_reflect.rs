@@ -856,62 +856,6 @@ struct RangeFull {}
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
     derive(clone),
-    remote = "std::any::TypeId",
-    functions[r#"
-
-    #[lua(as_trait = "std::cmp::Eq", kind = "Method")]
-    fn assert_receiver_is_total_eq(&self) -> ();
-
-"#,
-    r#"
-/// Returns the `TypeId` of the type this generic function has been
-/// instantiated with.
-/// # Examples
-/// ```
-/// use std::any::{Any, TypeId};
-/// fn is_string<T: ?Sized + Any>(_s: &T) -> bool {
-///     TypeId::of::<String>() == TypeId::of::<T>()
-/// }
-/// assert_eq!(is_string(&0), false);
-/// assert_eq!(is_string(&"cookie monster".to_string()), true);
-/// ```
-
-    #[lua(kind = "Function", output(proxy))]
-    fn of() -> std::any::TypeId;
-
-"#,
-    r#"
-
-    #[lua(
-        as_trait = "bevy::reflect::erased_serde::__private::serde::__private::Clone",
-        kind = "Method",
-        output(proxy),
-    )]
-    fn clone(&self) -> std::any::TypeId;
-
-"#,
-    r#"
-
-    #[lua(
-        as_trait = "std::cmp::PartialEq",
-        kind = "MetaFunction",
-        composite = "eq",
-        metamethod = "Eq",
-    )]
-    fn eq(&self, #[proxy] other: &std::any::TypeId) -> bool;
-
-"#,
-    r#"
-#[lua(kind="MetaMethod", metamethod="ToString")]
-fn index(&self) -> String {
-    format!("{:?}", _self)
-}
-"#]
-)]
-struct TypeId {}
-#[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
-#[proxy(
-    derive(clone),
     remote = "bevy::math::Quat",
     functions[r#"
 
@@ -20058,11 +20002,6 @@ impl bevy_mod_scripting_lua::tealr::mlu::ExportInstances for Globals {
             )?;
         instances
             .add_instance(
-                "TypeId",
-                bevy_mod_scripting_lua::tealr::mlu::UserDataProxy::<LuaTypeId>::new,
-            )?;
-        instances
-            .add_instance(
                 "Quat",
                 bevy_mod_scripting_lua::tealr::mlu::UserDataProxy::<LuaQuat>::new,
             )?;
@@ -20291,10 +20230,6 @@ impl bevy_mod_scripting_core::hosts::APIProvider for BevyReflectAPIProvider {
                             bevy_mod_scripting_lua::tealr::mlu::UserDataProxy<LuaPathBuf>,
                         >()
                         .process_type::<LuaRangeFull>()
-                        .process_type::<LuaTypeId>()
-                        .process_type::<
-                            bevy_mod_scripting_lua::tealr::mlu::UserDataProxy<LuaTypeId>,
-                        >()
                         .process_type::<LuaQuat>()
                         .process_type::<
                             bevy_mod_scripting_lua::tealr::mlu::UserDataProxy<LuaQuat>,
@@ -20479,7 +20414,6 @@ impl bevy_mod_scripting_core::hosts::APIProvider for BevyReflectAPIProvider {
         app.register_foreign_lua_type::<bevy::utils::Instant>();
         app.register_foreign_lua_type::<std::path::PathBuf>();
         app.register_foreign_lua_type::<std::ops::RangeFull>();
-        app.register_foreign_lua_type::<std::any::TypeId>();
         app.register_foreign_lua_type::<bevy::math::Quat>();
         app.register_foreign_lua_type::<bevy::math::Vec3>();
         app.register_foreign_lua_type::<bevy::math::IVec2>();
