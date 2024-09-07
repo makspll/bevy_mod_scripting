@@ -7,12 +7,12 @@ use std::{
 };
 
 use crate::{
-    ScriptErrorEvent,
     asset::CodeAsset,
     docs::DocFragment,
     error::ScriptError,
     event::{ScriptEvent, ScriptLoaded},
     world::WorldPointer,
+    ScriptErrorEvent,
 };
 
 /// Describes the target set of scripts this event should
