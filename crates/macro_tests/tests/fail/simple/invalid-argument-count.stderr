@@ -10,7 +10,3 @@ note: method defined here
 14 |     pub fn my_fn(&self, _: usize) {}
    |            ^^^^^ -----  --------
    = note: this error originates in the derive macro `LuaProxy` (in Nightly builds, run with -Z macro-backtrace for more info)
-help: provide the argument
-   |
-4  | #[derive(LuaProxy(LuaProxy, /* usize */), Reflect, Clone)]
-   |                  +++++++++++++++++++++++
