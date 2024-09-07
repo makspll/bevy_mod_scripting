@@ -60,7 +60,7 @@ clean_bevy:
 	cd ${BEVY_PATH} && cargo clean
 
 generate_bevy:
-	cd ${BEVY_PATH} && cargo +${NIGHTLY_VERSION} bevy-api-gen generate --output ${OUTPUT_PATH} --template-args '{ "self_is_bevy_script_api": true}' --features ${GEN_BEVY_FEATURES}
+	cd ${BEVY_PATH} && cargo +${NIGHTLY_VERSION} bevy-api-gen generate --output ${OUTPUT_PATH} --template-args '{ "self_is_bevy_script_api": true}' --features ${GEN_BEVY_FEATURES} -vv
 
 collect_bevy:
 	cd ${BEVY_PATH} && cargo +${NIGHTLY_VERSION} bevy-api-gen collect --output ${OUTPUT_PATH} --template-args '{ "self_is_bevy_script_api": true}'
