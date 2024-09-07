@@ -1,4 +1,4 @@
-error[E0277]: the trait bound `&str: FromLua<'_>` is not satisfied
+error[E0277]: the trait bound `&str: FromLuaMulti<'lua>` is not satisfied
  --> tests/fail/references/non-proxy-reference.rs:4:10
   |
 4 | #[derive(LuaProxy, Reflect, Clone)]

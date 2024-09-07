@@ -81,9 +81,9 @@ impl Signature {
             FnArg::Receiver(ref receiver) => {
                 let type_ =
                     SimpleType::new_from_fn_arg(PROXY_PREFIX, &arg, proxied_type_path, &type_map)?;
-                let attrs = ArgAttributes::from_attributes(&receiver.attrs)?;
+                // let attrs = ArgAttributes::from_attributes(&receiver.attrs)?;
                 Arg::new(
-                    attrs,
+                    // attrs,
                     Ident::new(SELF_ALIAS, receiver.span()),
                     receiver.mutability,
                     type_,
@@ -133,7 +133,7 @@ impl Signature {
         };
 
         Ok(Arg::new(
-            attrs,
+            // attrs,
             arg_name,
             mutability,
             type_,

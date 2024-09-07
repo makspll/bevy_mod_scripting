@@ -1,12 +1,14 @@
 use std::collections::{HashMap, HashSet};
 
-use cargo_metadata::{Metadata, Package};
+use cargo_metadata::{DependencyKind, Metadata, Package};
 use itertools::{Either, Itertools};
+use log::debug;
 
 #[derive(Clone, Debug)]
 pub enum FeatureEffect {
     /// A feature which enables another feature
     /// in a dependency
+    /// if enable_optional is true, the dependency may not itself be enabled in which case the feature is not enabled
     EnableDepFeature {
         feature: String,
         dependency: String,
@@ -53,8 +55,8 @@ pub enum Depdenency {
 
 #[derive(Debug)]
 pub struct FeatureGraph {
-    workspace_root: String,
-    crates: Vec<Crate>,
+    pub workspace_root: String,
+    pub crates: Vec<Crate>,
 }
 
 impl FeatureGraph {
@@ -72,7 +74,7 @@ impl FeatureGraph {
             .find(|c| c.name == self.workspace_root)
             .unwrap();
         let mut buffer = Default::default();
-        self.dependencies_for_features_on_crate(root, features, include_default, &mut buffer);
+        self.dependencies_for_features_on_crate(root, features, include_default, &mut buffer, 0);
 
         buffer.iter().map(|c| c.name.as_str()).collect()
     }
@@ -83,7 +85,18 @@ impl FeatureGraph {
         features: &[String],
         include_default: bool,
         buffer: &mut HashSet<&'a Crate>,
+        depth: usize,
     ) {
+        let log_prefix = "|".to_owned() + &"-".repeat(depth);
+        debug!(
+            "{log_prefix}Processing dependencies for crate: `{}` with features: {}",
+            crate_.name,
+            features.join(", ")
+        );
+        if depth > 30 {
+            panic!("Recursion depth exceeded");
+        }
+
         let active_features = features
             .iter()
             .map(|f| {
@@ -106,6 +119,7 @@ impl FeatureGraph {
                     dependency,
                     enable_optional,
                 } => {
+                    // we ignore optional dependencies's features, is this what we want to do?
                     if *enable_optional {
                         deps.entry(self.crates.iter().find(|c| c.name == *dependency).unwrap())
                             .or_default()
@@ -129,10 +143,26 @@ impl FeatureGraph {
         }));
 
         // repeat for all dependencies recursively
+        // we also ignore optional dependencies here, again is this what we want to do? I can't remember
         for (dep, features) in deps.iter() {
+            debug!(
+                "{log_prefix}Adding dependency: {} with features {:?}",
+                dep.name, features
+            );
             buffer.insert(dep);
-            self.dependencies_for_features_on_crate(dep, features, include_default, buffer);
+            self.dependencies_for_features_on_crate(
+                dep,
+                features,
+                include_default,
+                buffer,
+                depth + 1,
+            );
         }
+
+        debug!(
+            "{log_prefix}Finished processing dependencies for crate: `{}`",
+            crate_.name
+        );
     }
 
     /// "flattens" feature effects to a list of effects based on the selected active features, features which enable other features are expanded until
@@ -182,6 +212,7 @@ impl FeatureGraph {
         let (optional_dependencies, other_dependencies) = meta
             .dependencies
             .iter()
+            .filter(|d| d.kind == DependencyKind::Normal) // dev dependencies can introduce weird cycles, and we don't care about them anyway
             .map(|f| (f.name.clone(), f.optional))
             .partition_map(|(name, opt)| {
                 if opt {

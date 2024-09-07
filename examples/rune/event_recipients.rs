@@ -115,5 +115,5 @@ fn main() {
         .add_script_handler::<RuneScriptHost<MyRuneArg>, 0, 0>(PostUpdate)
         .add_script_host::<RuneScriptHost<MyRuneArg>>(PostUpdate)
         .add_api_provider::<RuneScriptHost<MyRuneArg>>(Box::new(RuneAPIProvider))
-        .run()
+        .run();
 }

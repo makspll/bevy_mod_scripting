@@ -109,8 +109,8 @@ fn extract_composite_functions(functions: &mut Vec<Function>) -> Vec<CompositeFu
     }
 
     composites
-        .into_iter()
-        .map(|(id, functions)| CompositeFunction { id, functions })
+        .into_values()
+        .map(|functions| CompositeFunction { functions })
         .collect()
 }
 

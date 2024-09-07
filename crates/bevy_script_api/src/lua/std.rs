@@ -3,7 +3,7 @@ use std::sync::Arc;
 use bevy::reflect::FromReflect;
 use bevy::reflect::Reflect;
 
-use bevy::reflect::TypePath;
+use bevy::reflect::{GetTypeRegistration, TypePath};
 use bevy_mod_scripting_lua::tealr;
 
 use bevy_mod_scripting_lua::tealr::ToTypename;
@@ -99,8 +99,15 @@ impl<'lua> IntoLuaProxy<'lua> for String {
     }
 }
 
-impl<T: LuaProxyable + Reflect + FromReflect + TypePath + for<'a> FromLuaProxy<'a> + Clone>
-    LuaProxyable for Option<T>
+impl<
+        T: LuaProxyable
+            + Reflect
+            + FromReflect
+            + GetTypeRegistration
+            + TypePath
+            + for<'a> FromLuaProxy<'a>
+            + Clone,
+    > LuaProxyable for Option<T>
 {
     fn ref_to_lua(self_: ReflectReference, lua: &Lua) -> mlua::Result<Value> {
         self_.get_typed(|s: &Option<T>| match s {
@@ -236,6 +243,7 @@ pub type LuaVec<T> = ScriptVec<T>;
 impl<
         T: ToTypename
             + FromReflect
+            + GetTypeRegistration
             + TypePath
             + LuaProxyable
             + for<'a> FromLuaProxy<'a>
@@ -263,6 +271,7 @@ impl<T: ToTypename> ToTypename for LuaVec<T> {
 impl<
         T: ToTypename
             + FromReflect
+            + GetTypeRegistration
             + TypePath
             + LuaProxyable
             + for<'a> FromLuaProxy<'a>
@@ -282,6 +291,7 @@ impl<
 impl<
         T: ToTypename
             + FromReflect
+            + GetTypeRegistration
             + TypePath
             + LuaProxyable
             + for<'a> FromLuaProxy<'a>
@@ -371,6 +381,7 @@ impl<
 impl<
         T: ToTypename
             + FromReflect
+            + GetTypeRegistration
             + TypePath
             + LuaProxyable
             + for<'a> FromLuaProxy<'a>
@@ -432,6 +443,7 @@ impl<
             + for<'a> IntoLuaProxy<'a>
             + Clone
             + FromReflect
+            + GetTypeRegistration
             + TypePath
             + LuaProxyable
             + std::fmt::Debug,

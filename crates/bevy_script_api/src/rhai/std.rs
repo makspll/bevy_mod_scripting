@@ -4,7 +4,7 @@ use std::{
     iter::Map,
 };
 
-use bevy::reflect::{FromReflect, Reflect, TypePath};
+use bevy::reflect::{FromReflect, GetTypeRegistration, Reflect, TypePath};
 #[allow(deprecated)]
 use bevy_mod_scripting_rhai::rhai::{CustomType, Dynamic, Engine, EvalAltResult, Position};
 
@@ -114,8 +114,15 @@ impl_rhai_proxy!(f64 as FLOAT);
 impl_rhai_proxy!(bool as bool);
 impl_rhai_proxy!(String as Into);
 
-impl<T: RhaiProxyable + Reflect + FromReflect + TypePath + Clone + FromRhaiProxy> RhaiProxyable
-    for Option<T>
+impl<
+        T: RhaiProxyable
+            + Reflect
+            + FromReflect
+            + TypePath
+            + Clone
+            + FromRhaiProxy
+            + GetTypeRegistration,
+    > RhaiProxyable for Option<T>
 {
     fn ref_to_rhai(self_: crate::ReflectReference) -> Result<Dynamic, Box<EvalAltResult>> {
         self_.get_typed(|s: &Option<T>| match s {
@@ -241,8 +248,14 @@ impl<T: ToRhaiProxy> ToRhaiProxy for Option<T> {
 }
 
 /// Composite trait composing the various traits required for a type `T` to be used as part of a RhaiVec<T>
-pub trait RhaiVecElem: FromReflect + TypePath + RhaiProxyable + FromRhaiProxy + Clone {}
-impl<T: FromReflect + TypePath + RhaiProxyable + FromRhaiProxy + Clone> RhaiVecElem for T {}
+pub trait RhaiVecElem:
+    FromReflect + GetTypeRegistration + TypePath + RhaiProxyable + FromRhaiProxy + Clone
+{
+}
+impl<T: FromReflect + GetTypeRegistration + TypePath + RhaiProxyable + FromRhaiProxy + Clone>
+    RhaiVecElem for T
+{
+}
 
 /// A ScriptVec wrapper which implements a custom iterator ontop of ScriptVec's
 pub struct RhaiVec<T: RhaiVecElem>(pub ScriptVec<T>);

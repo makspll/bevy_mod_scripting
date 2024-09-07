@@ -1,3 +1,5 @@
+#![allow(clippy::manual_unwrap_or_default)] // from darling
+
 use std::collections::HashMap;
 
 use bevy_mod_scripting_common::input::{SimpleType, VisitSimpleType};
@@ -18,7 +20,7 @@ pub struct ArgAttributes {
 /// Struct for holding argument/output information in functions passed via `functions[..]` meta
 #[derive(Debug)]
 pub struct Arg {
-    pub attrs: ArgAttributes,
+    // pub attrs: ArgAttributes,
     pub mutability: Option<Mut>,
     /// the type of the argument, only suported patterns are allowed
     pub name: Ident,
@@ -32,14 +34,14 @@ pub struct Arg {
 
 impl Arg {
     pub fn new(
-        attrs: ArgAttributes,
+        // attrs: ArgAttributes,
         name: Ident,
         mutability: Option<Mut>,
         type_: SimpleType,
         is_raw: bool,
     ) -> Self {
         Self {
-            attrs,
+            // attrs,
             mutability,
             span: name.span(),
             name,

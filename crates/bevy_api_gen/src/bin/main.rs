@@ -2,15 +2,15 @@ use std::{
     collections::HashMap,
     env,
     fs::{create_dir_all, File},
-    io::Write,
-    path::Path,
+    io::{BufRead, Write},
+    path::{Path, PathBuf},
     process::{Command, Stdio},
 };
 
 use bevy_api_gen::*;
 use cargo_metadata::camino::Utf8Path;
 use clap::Parser;
-use log::{debug, info};
+use log::{debug, error, info};
 use strum::VariantNames;
 use tera::Context;
 
@@ -25,19 +25,34 @@ fn main() {
     }
     env_logger::init();
 
+    info!("Computing crate metadata");
     let metadata = cargo_metadata::MetadataCommand::new()
         .no_deps()
         .other_options(["--all-features".to_string(), "--offline".to_string()])
         .exec()
         .unwrap();
+
     let crates = metadata
         .workspace_packages()
         .iter()
         .map(|p| p.name.to_owned())
         .collect::<Vec<_>>();
+
+    info!("Computing active features");
     let include_crates = match (&args.workspace_root, args.cmd.is_generate()) {
         (Some(root), true) => {
             let feature_graph = FeatureGraph::from_metadata(&metadata, root);
+            info!(
+                "Using workspace root: {}, found {} crates",
+                feature_graph.workspace_root,
+                feature_graph.crates.len()
+            );
+
+            info!(
+                "Computing all transitive dependencies for enabled top-level features: {}",
+                args.features.join(",")
+            );
+
             let dependencies = feature_graph
                 .dependencies_for_features(args.features.as_ref(), !args.no_default_features)
                 .into_iter()
@@ -51,6 +66,8 @@ fn main() {
 
     let plugin_subdir = format!("plugin-{}", env!("RUSTC_CHANNEL"));
     let plugin_target_dir = metadata.target_directory.join(plugin_subdir);
+
+    info!("Computing wokrspace metadata");
 
     // inform the deps about the workspace crates, this is going to be useful when working with meta files as we will be able to
     // know when to panic if a crate is not found
@@ -132,14 +149,13 @@ fn main() {
         _ => {}
     }
 
-    let temp_dir = tempdir::TempDir::new("bevy_api_gen_bootstrap")
-        .expect("Error occured when trying to acquire temp file");
+    let temp_dir = find_bootstrap_dir();
 
-    debug!("Temporary directory: {}", &temp_dir.path().display());
+    debug!("Bootstrap directory: {}", &temp_dir.as_path().display());
 
-    write_bootstrap_files(temp_dir.path());
+    write_bootstrap_files(temp_dir.as_path());
 
-    let bootstrap_rlibs = build_bootstrap(temp_dir.path(), &plugin_target_dir.join("bootstrap"));
+    let bootstrap_rlibs = build_bootstrap(temp_dir.as_path(), &plugin_target_dir.join("bootstrap"));
 
     if bootstrap_rlibs.len() == BOOTSTRAP_DEPS.len() {
         let extern_args = bootstrap_rlibs
@@ -195,20 +211,50 @@ fn build_bootstrap(
     let mut cmd = Command::new("cargo")
         .current_dir(temp_dir)
         .stdout(Stdio::piped())
+        .stderr(Stdio::piped())
         .args(["build", "--message-format=json"])
         .spawn()
         .unwrap();
 
+    info!(
+        "cd {} && cargo build --message-format=json",
+        temp_dir.display()
+    );
+
     let reader = std::io::BufReader::new(cmd.stdout.take().unwrap());
+    let err_reader = std::io::BufReader::new(cmd.stderr.take().unwrap());
 
     std::fs::create_dir_all(cache_dir).unwrap();
 
     let mut bootstrap_rlibs = HashMap::with_capacity(BOOTSTRAP_DEPS.len());
     for msg in cargo_metadata::Message::parse_stream(reader) {
-        if let cargo_metadata::Message::CompilerArtifact(artifact) = msg.unwrap() {
+        let msg = msg.unwrap();
+        if let cargo_metadata::Message::CompilerArtifact(artifact) = msg {
             for artifact in artifact.filenames.into_iter() {
                 process_artifact(artifact, &mut bootstrap_rlibs);
             }
+        } else {
+            match msg {
+                cargo_metadata::Message::BuildFinished(finished) => {
+                    if !finished.success {
+                        error!("Bootstrapping crate failed to build artifact");
+                    }
+                }
+                cargo_metadata::Message::TextLine(t) => {
+                    info!("{t}");
+                }
+                cargo_metadata::Message::CompilerMessage(msg) => {
+                    info!("{msg}");
+                }
+                _ => {}
+            }
+        }
+    }
+    for msg in err_reader.lines() {
+        if let Ok(line) = msg {
+            info!("{line}");
+        } else {
+            panic!("Failed to read cargo stderr");
         }
     }
 
@@ -224,10 +270,17 @@ fn build_bootstrap(
             std::fs::copy(path, dest).unwrap();
         }
     }
+    match cmd.wait() {
+        Ok(status) => {
+            if !status.success() {
+                panic!("Building bootstrap crate returned a failure status code");
+            }
+        }
+        Err(e) => {
+            panic!("Failed to wait on cargo build process: {}", e);
+        }
+    }
 
-    if !cmd.wait().unwrap().success() {
-        panic!("Building bootstrap crate returned a failure status code");
-    };
     bootstrap_rlibs
 }
 
@@ -246,6 +299,28 @@ fn process_artifact(
             bootstrap_rlibs.insert(lib_name.to_owned(), artifact);
         }
     }
+}
+
+/// finds best location for bootstrapping crate
+/// this will be the nearest target/bevy_api_gen_bootstrap directory
+fn find_bootstrap_dir() -> PathBuf {
+    let mut path = env::current_dir().unwrap();
+    loop {
+        if path.join("target").exists() {
+            break;
+        } else if let Some(parent) = path.parent() {
+            path = parent.to_path_buf();
+        } else {
+            panic!("Could not find `target` directory");
+        }
+    }
+
+    path.push("target");
+    path.push("bevy_api_gen_bootstrap");
+
+    // create all the directories
+    create_dir_all(&path).unwrap();
+    path
 }
 
 /// Generate bootstrapping crate files

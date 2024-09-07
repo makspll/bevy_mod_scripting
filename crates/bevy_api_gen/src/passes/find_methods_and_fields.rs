@@ -3,7 +3,7 @@ use log::{info, trace};
 use rustc_ast::Attribute;
 use rustc_hir::{
     def_id::{DefId, LOCAL_CRATE},
-    Unsafety,
+    Safety,
 };
 use rustc_infer::infer::TyCtxtInferExt;
 use rustc_middle::ty::{AdtKind, AssocKind, FieldDef, FnSig, ParamEnv, Ty, TyCtxt, TyKind};
@@ -135,7 +135,7 @@ pub(crate) fn find_methods_and_fields(ctxt: &mut BevyCtxt<'_>, _args: &Args) -> 
                         }
                     };
 
-                    let is_unsafe = sig.unsafety == Unsafety::Unsafe;
+                    let is_unsafe = sig.safety == Safety::Unsafe;
 
                     if trait_did.is_none() && !ctxt.tcx.visibility(fn_did).is_public() {
                         log::info!(

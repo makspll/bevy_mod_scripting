@@ -42,7 +42,7 @@ impl rustc_driver::Callbacks for BevyAnalyzerCallbacks {
             ..
         } = &self.args.cmd
         {
-            templates_dir = templates.to_owned();
+            templates.clone_into(&mut templates_dir);
             if let Some(meta_output) = meta_output {
                 meta_dirs.push(meta_output.to_owned())
             };

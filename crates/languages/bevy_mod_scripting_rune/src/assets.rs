@@ -32,7 +32,12 @@ impl AssetLoader for RuneLoader {
         reader: &'a mut Reader,
         _settings: &'a (),
         _load_context: &'a mut bevy::asset::LoadContext,
-    ) -> bevy::utils::BoxedFuture<'a, Result<Self::Asset, Self::Error>> {
+    ) -> impl bevy::utils::ConditionalSendFuture<
+        Output = std::result::Result<
+            <Self as bevy::asset::AssetLoader>::Asset,
+            <Self as bevy::asset::AssetLoader>::Error,
+        >,
+    > {
         Box::pin(async move {
             let mut bytes = Vec::new();
             reader.read_to_end(&mut bytes).await?;

@@ -32,7 +32,7 @@ impl APIProvider for LuaAPIProvider {
 
                     let mut events: Mut<Events<PrintConsoleLine>> =
                         world.get_resource_mut().unwrap();
-                    events.send(PrintConsoleLine { line: msg.into() });
+                    events.send(PrintConsoleLine { line: msg });
 
                     // return something
                     Ok(())
@@ -71,7 +71,7 @@ pub fn forward_script_err_to_console(
 ) {
     for e in r.read() {
         w.send(PrintConsoleLine {
-            line: format!("ERROR:{}", e.error).into(),
+            line: format!("ERROR:{}", e.error),
         });
     }
 }

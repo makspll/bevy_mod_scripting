@@ -1,6 +1,6 @@
 use std::marker::PhantomData;
 
-use bevy::reflect::{FromReflect, TypePath};
+use bevy::reflect::{FromReflect, GetTypeRegistration, TypePath};
 
 use crate::{error::ReflectionError, ReflectReference, ValueIndex};
 
@@ -26,7 +26,9 @@ impl<T> std::fmt::Debug for ScriptVec<T> {
     }
 }
 
-impl<T: std::fmt::Display + FromReflect + TypePath> std::fmt::Display for ScriptVec<T> {
+impl<T: std::fmt::Display + FromReflect + GetTypeRegistration + TypePath> std::fmt::Display
+    for ScriptVec<T>
+{
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         let str = self
             .ref_
@@ -39,7 +41,7 @@ impl<T: std::fmt::Display + FromReflect + TypePath> std::fmt::Display for Script
     }
 }
 
-impl<T: FromReflect + TypePath> ScriptVec<T> {
+impl<T: FromReflect + TypePath + GetTypeRegistration> ScriptVec<T> {
     pub fn new_ref(ref_: ReflectReference) -> Self {
         Self {
             ref_,
@@ -116,7 +118,7 @@ impl<T: FromReflect> Iterator for ScriptVecIterator<T> {
     }
 }
 
-impl<T: FromReflect + TypePath> IntoIterator for ScriptVec<T> {
+impl<T: FromReflect + TypePath + GetTypeRegistration> IntoIterator for ScriptVec<T> {
     type Item = ReflectReference;
 
     type IntoIter = ScriptVecIterator<T>;
