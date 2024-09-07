@@ -299,6 +299,10 @@ macro_rules! impl_tealr_generic{
 
         impl ::bevy::reflect::Reflect for $name {
 
+            fn try_apply(&mut self, _: &(dyn bevy::prelude::Reflect + 'static)) -> std::result::Result<(), bevy::reflect::ApplyError> {
+                panic!("This should never be called, I am a dummy implementation");
+            }
+
             fn into_any(self: Box<Self>) -> Box<dyn std::any::Any> {
                 panic!("This should never be called, I am a dummy implementation");
             }
@@ -354,6 +358,12 @@ macro_rules! impl_tealr_generic{
 
         impl ::bevy::reflect::FromReflect for $name {
             fn from_reflect(_: &(dyn bevy::prelude::Reflect + 'static)) -> std::option::Option<Self> {
+                panic!("This should never be called, I am a dummy implementation");
+            }
+        }
+
+        impl ::bevy::reflect::GetTypeRegistration for $name {
+            fn get_type_registration() -> bevy::reflect::TypeRegistration {
                 panic!("This should never be called, I am a dummy implementation");
             }
         }

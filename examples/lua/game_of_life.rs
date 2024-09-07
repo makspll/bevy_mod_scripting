@@ -95,7 +95,7 @@ pub fn setup(
                     settings.display_grid_dimensions.0 as f32,
                     settings.display_grid_dimensions.1 as f32,
                 )),
-                color: Color::TOMATO,
+                color: Color::srgb(1.0, 0.388, 0.278), // TOMATO
                 ..Default::default()
             },
             ..Default::default()

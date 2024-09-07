@@ -21,15 +21,15 @@ PACKAGE=bevy_mod_scripting
 TEST_NAME=
 # # valgrind outputs a callgrind.out.<pid>. We can analyze this with kcachegrind
 # kcachegrind
-NIGHTLY_VERSION=nightly-2024-01-24
-BEVY_VERSION=0.13.1
-GLAM_VERSION=0.25.0
+NIGHTLY_VERSION=nightly-2024-05-20
+BEVY_VERSION=0.14.2
+GLAM_VERSION=0.28.0
 CODEGEN_PATH=${PWD}/target/codegen
 BEVY_PATH=${CODEGEN_PATH}/bevy
 GLAM_PATH=${CODEGEN_PATH}/glam
 OUTPUT_PATH=${CODEGEN_PATH}/output
 GENERATED_SRC_PATH=./crates/bevy_script_api/src/providers
-GEN_BEVY_FEATURES=bevy_asset,bevy_gltf,bevy_animation,bevy_core_pipeline,bevy_ui,bevy_pbr,bevy_render,bevy_text,bevy_sprite,file_watcher,multi-threaded
+GEN_BEVY_FEATURES=bevy_asset,bevy_gltf,bevy_animation,bevy_core_pipeline,bevy_ui,bevy_pbr,bevy_render,bevy_text,bevy_sprite,file_watcher,multi_threaded
 
 build_test_in_package:
 	@cargo test --no-run --lib --workspace $(TEST_NAME)
@@ -48,6 +48,7 @@ valgrind:
 
 install_bevy_api_gen:
 	rustup install ${NIGHTLY_VERSION}
+	rustup component add rust-src rustc-dev llvm-tools-preview --toolchain ${NIGHTLY_VERSION}
 	cargo +${NIGHTLY_VERSION} install --path ./crates/bevy_api_gen
 
 prepare_api_gen:
@@ -60,7 +61,7 @@ clean_bevy:
 	cd ${BEVY_PATH} && cargo clean
 
 generate_bevy:
-	cd ${BEVY_PATH} && cargo +${NIGHTLY_VERSION} bevy-api-gen generate --output ${OUTPUT_PATH} --template-args '{ "self_is_bevy_script_api": true}' --features ${GEN_BEVY_FEATURES}
+	cd ${BEVY_PATH} && cargo +${NIGHTLY_VERSION} bevy-api-gen generate --output ${OUTPUT_PATH} --template-args '{ "self_is_bevy_script_api": true}' --features ${GEN_BEVY_FEATURES} 
 
 collect_bevy:
 	cd ${BEVY_PATH} && cargo +${NIGHTLY_VERSION} bevy-api-gen collect --output ${OUTPUT_PATH} --template-args '{ "self_is_bevy_script_api": true}'

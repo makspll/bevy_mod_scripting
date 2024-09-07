@@ -201,19 +201,21 @@ Documentation features are exposed at runtime via the `update_documentation` bui
 use bevy::prelude::*;
 use bevy_mod_scripting::prelude::*;
 
-#[cfg(feature = "lua")]
 fn main() -> std::io::Result<()> {
     let mut app = App::new();
 
     app.add_plugins(DefaultPlugins)
-        .add_plugins(ScriptingPlugin)
-        .add_script_host::<LuaScriptHost<()>>(PostUpdate)
+        .add_plugins(ScriptingPlugin);
+    #[cfg(feature = "lua")]
+    {
+    app.add_script_host::<LuaScriptHost<()>>(PostUpdate)
         // Note: This is a noop in optimized builds unless the `doc_always` feature is enabled!
         // this will pickup any API providers added *BEFOREHAND* like this one
         .add_api_provider::<LuaScriptHost<()>>(Box::new(LuaBevyAPIProvider))
         .add_api_provider::<LuaScriptHost<()>>(Box::new(LuaCoreBevyAPIProvider))
         .update_documentation::<LuaScriptHost<()>>()
         .add_script_handler::<LuaScriptHost<()>, 0, 0>(PostUpdate);
+    }
 
     Ok(())
 }
@@ -223,7 +225,7 @@ fn main() -> std::io::Result<()> {
 
 `tealr`, a wrapper around the `mlua` crate, provides mechanisms for Lua documentation generation. It can generate `d.tl` files for static typing in Lua via the `teal` project, but using `teal` isn't necessary for documentation generation. 
 
-See [this example](bevy_mod_scripting/examples/lua/documentation_gen.rs) for a demonstration. 
+See [this example](examples/lua/documentation_gen.rs) for a demonstration. 
 
 The Bevy API documentation for this crate is auto-generated with each release and can be found [here](https://github.com/makspll/bevy_mod_scripting_lua) and [here](https://makspll.github.io/bevy_mod_scripting_lua/v0.3.0/). You may need to adjust the `page_root` in the auto-generated `assets/doc/tealr_doc_gen_config.json` file to a path like `assets/doc/YourAPI`.
 
@@ -268,3 +270,10 @@ To see more complex applications of this library have a look at the examples:
 
 Below is a video showcasing the game_of_life example:
 [![Watch the video](https://img.youtube.com/vi/Mo9gh2g3ZHw/maxresdefault.jpg)](https://www.youtube.com/watch?v=Mo9gh2g3ZHw)
+
+# Compatibility
+
+| bevy_mod_scripting  | bevy   |
+|---------------------|--------|
+| 0.7                 | 0.14   |
+| 0.6                 | 0.13.1 |

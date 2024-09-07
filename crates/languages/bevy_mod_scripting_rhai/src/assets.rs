@@ -25,17 +25,15 @@ impl AssetLoader for RhaiLoader {
     type Asset = RhaiFile;
     type Settings = ();
     type Error = anyhow::Error;
-    fn load<'a>(
+    async fn load<'a>(
         &'a self,
-        reader: &'a mut Reader,
+        reader: &'a mut Reader<'_>,
         _: &'a Self::Settings,
-        _: &'a mut LoadContext,
-    ) -> bevy::asset::BoxedFuture<'a, Result<Self::Asset, Self::Error>> {
-        Box::pin(async move {
-            let mut bytes = Vec::new();
-            reader.read_to_end(&mut bytes).await?;
-            Ok(RhaiFile { bytes })
-        })
+        _: &'a mut LoadContext<'_>,
+    ) -> Result<Self::Asset, Self::Error> {
+        let mut bytes = Vec::new();
+        reader.read_to_end(&mut bytes).await?;
+        Ok(RhaiFile { bytes })
     }
 
     fn extensions(&self) -> &[&str] {

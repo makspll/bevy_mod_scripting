@@ -1,3 +1,5 @@
+#![allow(clippy::manual_unwrap_or_default)] // from darling
+
 use bevy_mod_scripting_common::input::{
     DuoPath, IdentifierRenamingVisitor, Reference, SimpleType, VisitSimpleType,
 };
@@ -125,7 +127,6 @@ pub struct FunctionAttributes {
 /// Useful for binary operators which can accept many types on both sides
 #[derive(Debug)]
 pub struct CompositeFunction {
-    pub id: String,
     pub functions: Vec1<Function>,
 }
 
