@@ -223,7 +223,7 @@ fn main() -> std::io::Result<()> {
 
 `tealr`, a wrapper around the `mlua` crate, provides mechanisms for Lua documentation generation. It can generate `d.tl` files for static typing in Lua via the `teal` project, but using `teal` isn't necessary for documentation generation. 
 
-See [this example](bevy_mod_scripting/examples/lua/documentation_gen.rs) for a demonstration. 
+See [this example](examples/lua/documentation_gen.rs) for a demonstration. 
 
 The Bevy API documentation for this crate is auto-generated with each release and can be found [here](https://github.com/makspll/bevy_mod_scripting_lua) and [here](https://makspll.github.io/bevy_mod_scripting_lua/v0.3.0/). You may need to adjust the `page_root` in the auto-generated `assets/doc/tealr_doc_gen_config.json` file to a path like `assets/doc/YourAPI`.
 
