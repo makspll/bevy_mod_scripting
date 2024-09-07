@@ -25,7 +25,8 @@ const PROXY_PREFIX: &str = "Lua";
 /// - instead o a `&self` receiver we have a `_self: LuaRefProxy<Self>`
 /// - instead of a `&mut self` receiver we have a `_self: LuaRefMutProxy<Self>`
 /// - instead of a `self` receiver we have a `_self: ValLuaProxy<Self>`
-fn standardise_receiver(receiver: &mut FnArg, target_type: &Path, bms_lua_path: &Path) {
+/// Returns true if the receiver was changed
+fn standardise_receiver(receiver: &mut FnArg, target_type: &Path, bms_lua_path: &Path, proxy_as_self: bool) -> bool {
     let replacement = if let FnArg::Receiver(receiver) = receiver {
         let ref_ = &receiver.reference.as_ref().map(|(amp, lifetime)| {
             quote_spanned! {receiver.span()=>
@@ -34,21 +35,34 @@ fn standardise_receiver(receiver: &mut FnArg, target_type: &Path, bms_lua_path: 
         });
 
         let self_ident = syn::Ident::new(SELF_ALIAS, receiver.span());
-        let unproxy_container_name = match (ref_.is_some(), receiver.mutability.is_some()) {
-            (true, true) => "LuaReflectRefMutProxy",
-            (true, false) => "LuaReflectRefProxy",
-            (false, _) => "LuaReflectValProxy",
+        let self_ident_type = if proxy_as_self {
+            quote_spanned! {receiver.span()=>
+                #target_type
+            }
+        } else {
+            let unproxy_container_name = match (ref_.is_some(), receiver.mutability.is_some()) {
+                (true, true) => "LuaReflectRefMutProxy",
+                (true, false) => "LuaReflectRefProxy",
+                (false, _) => "LuaReflectValProxy",
+            };
+            let unproxy_ident = syn::Ident::new(unproxy_container_name, receiver.span());
+    
+            quote_spanned! {receiver.span()=>
+                #bms_lua_path::bindings::proxy::#unproxy_ident::<#target_type>
+            }
         };
-        let unproxy_ident = syn::Ident::new(unproxy_container_name, receiver.span());
 
         Some(syn::FnArg::Typed(parse_quote_spanned! {receiver.span()=>
-            #self_ident: #bms_lua_path::bindings::proxy::#unproxy_ident::<#target_type>
+            #self_ident: #self_ident_type
         }))
     } else {
         None
     };
     if let Some(replacement) = replacement {
         *receiver = replacement;
+        true
+    } else {
+        false
     }
 }
 
@@ -101,12 +115,11 @@ fn proxy_wrap_function_def(
     target_type: &Path,
     bms_core: &Path,
     bms_lua: &Path,
+    proxy_as_self: bool,
+    self_is_world: bool,
     mlua: &Path,
     attrs: &FunctionAttrs,
 ) {
-    if let Some(first_arg) = f.sig.inputs.first_mut() {
-        standardise_receiver(first_arg, target_type, bms_lua)
-    };
 
     // collect all args into tuple and add lua context arg
     let ctxt_alias = syn::Ident::new(CTXT_ALIAS, f.sig.inputs.span());
@@ -122,9 +135,15 @@ fn proxy_wrap_function_def(
             #ctxt_alias: &#mlua::Lua
         }
     };
+
     let ctxt_arg_ident = match &ctxt_arg {
         FnArg::Typed(arg) => arg.pat.clone(),
         _ => panic!("Expected a typed argument, not a receiver for the context argument"),
+    };
+
+    let mut has_receiver = false;
+    if let Some(first_arg) = f.sig.inputs.first_mut() {
+        has_receiver = standardise_receiver(first_arg, target_type, bms_lua, proxy_as_self);
     };
 
     let func_name = &f.sig.ident;
@@ -189,11 +208,23 @@ fn proxy_wrap_function_def(
             }
         });
     } else {
-        f.default = Some(parse_quote_spanned! {span=>
-            {
+        let world = if self_is_world {
+            quote_spanned!(span=>
                 let mut world: #bms_lua::bindings::proxy::LuaValProxy<#bms_core::bindings::WorldCallbackAccess> = #ctxt_arg_ident.globals().get("world")?;
                 let mut world = <#bms_lua::bindings::proxy::LuaValProxy<#bms_core::bindings::WorldCallbackAccess> as #bms_core::bindings::Unproxy>::unproxy(&mut world).map_err(#mlua::Error::external)?;
                 let mut world = world.read().ok_or_else(|| #mlua::Error::external("World no longer exists"))?;
+            )
+        } else {
+            let first_arg_ident = original_arg_idents.first()
+                .expect("Expected at least one argument if self_is_world is passed");
+            quote_spanned!(span=>
+                let world = #args_ident.0;
+            )
+        };   
+
+        f.default = Some(parse_quote_spanned! {span=>
+            {
+                #world
                 let out: #out_type = world.proxy_call(#args_ident, |(#(#original_arg_idents),*)| {
                     #fn_call
                 }).map_err(|e| #mlua::Error::external(e))?;
@@ -343,7 +374,7 @@ pub fn impl_lua_proxy(input: TokenStream) -> TokenStream {
         let closures = functions
             .into_iter()
             .map(|(mut f, attrs)| {
-                proxy_wrap_function_def(&mut f, &target_type, &bms_core, &bms_lua, &mlua, &attrs);
+                proxy_wrap_function_def(&mut f, &target_type, &bms_core, &bms_lua, meta.proxy_as_self.is_present(), meta.self_is_world.is_present(), &mlua, &attrs);
                 convert_function_def_to_closure(&f)
             })
             .collect::<Vec<_>>();
@@ -380,7 +411,7 @@ pub fn impl_lua_proxy(input: TokenStream) -> TokenStream {
             return None;
         }
 
-        proxy_wrap_function_def(&mut f, &target_type, &bms_core, &bms_lua, &mlua, &attrs);
+        proxy_wrap_function_def(&mut f, &target_type, &bms_core, &bms_lua, meta.proxy_as_self.is_present(), meta.self_is_world.is_present(), &mlua, &attrs);
 
         let name = match &attrs.metamethod {
             Some(metamethod) => quote_spanned!(metamethod.span()=>
