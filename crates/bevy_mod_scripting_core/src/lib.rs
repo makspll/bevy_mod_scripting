@@ -57,7 +57,7 @@ impl GenDocumentation for App {
         #[cfg(any(debug_assertions, feature = "doc_always"))]
         {
             info!("Generating documentation");
-            let w = &mut self.world;
+            let w = &mut self.world_mut();
             let providers: &APIProviders<T> = w.resource();
             if let Err(e) = providers.gen_all() {
                 error!("{}", e);
@@ -137,7 +137,7 @@ impl AddScriptApiProvider for App {
         >,
     ) -> &mut Self {
         provider.register_with_app(self);
-        let w = &mut self.world;
+        let w = &mut self.world_mut();
         let providers: &mut APIProviders<T> = &mut w.resource_mut();
         providers.providers.push(provider);
         self

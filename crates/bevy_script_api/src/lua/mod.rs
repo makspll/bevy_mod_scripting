@@ -42,7 +42,7 @@ impl RegisterForeignLuaType for App {
         &mut self,
     ) -> &mut Self {
         {
-            let registry = self.world.resource_mut::<AppTypeRegistry>();
+            let registry = self.world_mut().resource_mut::<AppTypeRegistry>();
             let mut registry = registry.write();
 
             let user_data = <ReflectLuaProxyable as FromType<T>>::from_type();

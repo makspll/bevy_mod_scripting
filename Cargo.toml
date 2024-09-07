@@ -70,7 +70,7 @@ bevy_script_api = { path = "crates/bevy_script_api", version = "0.6.0", optional
 
 
 [workspace.dependencies]
-bevy = { version = "=0.13.1", default-features = false }
+bevy = { version = "0.14.2", default-features = false }
 bevy_mod_scripting_core = { path = "crates/bevy_mod_scripting_core", version = "0.6.0" }
 bevy_mod_scripting_common = { path = "crates/bevy_mod_scripting_common", version = "0.6.0" }
 
@@ -78,7 +78,7 @@ bevy_mod_scripting_common = { path = "crates/bevy_mod_scripting_common", version
 bevy = { workspace = true, default-features = true }
 clap = { version = "4.1", features = ["derive"] }
 rand = "0.8.5"
-bevy_console = "0.11.1"
+bevy_console = "0.12"
 rhai-rand = "0.1"
 
 [workspace]
@@ -118,7 +118,7 @@ required-features = [
     "lua54",
     "lua_script_api",
     "bevy/file_watcher",
-    "bevy/multi-threaded",
+    "bevy/multi_threaded",
 ]
 
 [[example]]
@@ -128,7 +128,7 @@ required-features = [
     "rhai",
     "rhai_script_api",
     "bevy/file_watcher",
-    "bevy/multi-threaded",
+    "bevy/multi_threaded",
 ]
 
 [[example]]
@@ -153,7 +153,7 @@ required-features = [
     "lua54",
     "lua_script_api",
     "bevy/file_watcher",
-    "bevy/multi-threaded",
+    "bevy/multi_threaded",
 ]
 
 [[example]]
@@ -163,7 +163,7 @@ required-features = [
     "rhai",
     "rhai_script_api",
     "bevy/file_watcher",
-    "bevy/multi-threaded",
+    "bevy/multi_threaded",
 ]
 
 [[example]]

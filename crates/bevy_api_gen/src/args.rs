@@ -104,6 +104,7 @@ impl Verbosity {
 
 fn default_ignored_types() -> String {
     [
+        "std::any::TypeId",
         "bevy_reflect::DynamicArray",
         "bevy_reflect::DynamicList",
         "bevy_reflect::DynamicMap",

@@ -6,6 +6,7 @@ use super::bevy_ecs::*;
 use super::bevy_reflect::*;
 use super::bevy_core::*;
 use super::bevy_hierarchy::*;
+use super::bevy_math::*;
 extern crate self as bevy_script_api;
 use bevy_script_api::{
     lua::RegisterForeignLuaType, ReflectedValue, common::bevy::GetWorld,
@@ -16,30 +17,8 @@ use bevy_script_api::{
     remote = "bevy::transform::components::GlobalTransform",
     functions[r#"
 
-    #[lua(
-        as_trait = "std::ops::Mul",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "mul",
-        metamethod = "Mul",
-    )]
-    fn mul(
-        self,
-        #[proxy]
-        transform: bevy::transform::components::Transform,
-    ) -> bevy::transform::components::GlobalTransform;
-
-"#,
-    r#"
-
-    #[lua(
-        as_trait = "std::ops::Mul",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "mul",
-        metamethod = "Mul",
-    )]
-    fn mul(self, #[proxy] value: bevy::math::Vec3) -> bevy::math::Vec3;
+    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
+    fn clone(&self) -> bevy::transform::components::GlobalTransform;
 
 "#,
     r#"
@@ -153,42 +132,42 @@ use bevy_script_api::{
 ///Return the local right vector (X).
 
     #[lua(kind = "Method", output(proxy))]
-    fn right(&self) -> bevy::math::Vec3;
+    fn right(&self) -> bevy::math::Dir3;
 
 "#,
     r#"
 ///Return the local left vector (-X).
 
     #[lua(kind = "Method", output(proxy))]
-    fn left(&self) -> bevy::math::Vec3;
+    fn left(&self) -> bevy::math::Dir3;
 
 "#,
     r#"
 ///Return the local up vector (Y).
 
     #[lua(kind = "Method", output(proxy))]
-    fn up(&self) -> bevy::math::Vec3;
+    fn up(&self) -> bevy::math::Dir3;
 
 "#,
     r#"
 ///Return the local down vector (-Y).
 
     #[lua(kind = "Method", output(proxy))]
-    fn down(&self) -> bevy::math::Vec3;
+    fn down(&self) -> bevy::math::Dir3;
 
 "#,
     r#"
 ///Return the local back vector (Z).
 
     #[lua(kind = "Method", output(proxy))]
-    fn back(&self) -> bevy::math::Vec3;
+    fn back(&self) -> bevy::math::Dir3;
 
 "#,
     r#"
 ///Return the local forward vector (-Z).
 
     #[lua(kind = "Method", output(proxy))]
-    fn forward(&self) -> bevy::math::Vec3;
+    fn forward(&self) -> bevy::math::Dir3;
 
 "#,
     r#"
@@ -234,8 +213,18 @@ use bevy_script_api::{
 "#,
     r#"
 
-    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
-    fn clone(&self) -> bevy::transform::components::GlobalTransform;
+    #[lua(
+        as_trait = "std::ops::Mul",
+        kind = "MetaFunction",
+        output(proxy),
+        composite = "mul",
+        metamethod = "Mul",
+    )]
+    fn mul(
+        self,
+        #[proxy]
+        global_transform: bevy::transform::components::GlobalTransform,
+    ) -> bevy::transform::components::GlobalTransform;
 
 "#,
     r#"
@@ -250,8 +239,20 @@ use bevy_script_api::{
     fn mul(
         self,
         #[proxy]
-        global_transform: bevy::transform::components::GlobalTransform,
+        transform: bevy::transform::components::Transform,
     ) -> bevy::transform::components::GlobalTransform;
+
+"#,
+    r#"
+
+    #[lua(
+        as_trait = "std::ops::Mul",
+        kind = "MetaFunction",
+        output(proxy),
+        composite = "mul",
+        metamethod = "Mul",
+    )]
+    fn mul(self, #[proxy] value: bevy::math::Vec3) -> bevy::math::Vec3;
 
 "#,
     r#"
@@ -269,12 +270,51 @@ struct GlobalTransform();
     functions[r#"
 
     #[lua(
-        as_trait = "std::cmp::PartialEq",
+        as_trait = "std::ops::Mul",
         kind = "MetaFunction",
-        composite = "eq",
-        metamethod = "Eq",
+        output(proxy),
+        composite = "mul",
+        metamethod = "Mul",
     )]
-    fn eq(&self, #[proxy] other: &components::transform::Transform) -> bool;
+    fn mul(
+        self,
+        #[proxy]
+        global_transform: bevy::transform::components::GlobalTransform,
+    ) -> bevy::transform::components::GlobalTransform;
+
+"#,
+    r#"
+
+    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
+    fn clone(&self) -> bevy::transform::components::Transform;
+
+"#,
+    r#"
+
+    #[lua(
+        as_trait = "std::ops::Mul",
+        kind = "MetaFunction",
+        output(proxy),
+        composite = "mul",
+        metamethod = "Mul",
+    )]
+    fn mul(self, #[proxy] value: bevy::math::Vec3) -> bevy::math::Vec3;
+
+"#,
+    r#"
+
+    #[lua(
+        as_trait = "std::ops::Mul",
+        kind = "MetaFunction",
+        output(proxy),
+        composite = "mul",
+        metamethod = "Mul",
+    )]
+    fn mul(
+        self,
+        #[proxy]
+        transform: bevy::transform::components::Transform,
+    ) -> bevy::transform::components::Transform;
 
 "#,
     r#"
@@ -293,7 +333,7 @@ struct GlobalTransform();
     #[lua(kind = "Function", output(proxy))]
     fn from_matrix(
         #[proxy]
-        matrix: bevy::math::Mat4,
+        world_from_local: bevy::math::Mat4,
     ) -> bevy::transform::components::Transform;
 
 "#,
@@ -327,42 +367,6 @@ struct GlobalTransform();
     fn from_scale(
         #[proxy]
         scale: bevy::math::Vec3,
-    ) -> bevy::transform::components::Transform;
-
-"#,
-    r#"
-/// Returns this [`Transform`] with a new rotation so that [`Transform::forward`]
-/// points towards the `target` position and [`Transform::up`] points towards `up`.
-/// In some cases it's not possible to construct a rotation. Another axis will be picked in those cases:
-/// * if `target` is the same as the transform translation, `Vec3::Z` is used instead
-/// * if `up` is zero, `Vec3::Y` is used instead
-/// * if the resulting forward direction is parallel with `up`, an orthogonal vector is used as the "right" direction
-
-    #[lua(kind = "Method", output(proxy))]
-    fn looking_at(
-        self,
-        #[proxy]
-        target: bevy::math::Vec3,
-        #[proxy]
-        up: bevy::math::Vec3,
-    ) -> bevy::transform::components::Transform;
-
-"#,
-    r#"
-/// Returns this [`Transform`] with a new rotation so that [`Transform::forward`]
-/// points in the given `direction` and [`Transform::up`] points towards `up`.
-/// In some cases it's not possible to construct a rotation. Another axis will be picked in those cases:
-/// * if `direction` is zero, `Vec3::Z` is used instead
-/// * if `up` is zero, `Vec3::Y` is used instead
-/// * if `direction` is parallel with `up`, an orthogonal vector is used as the "right" direction
-
-    #[lua(kind = "Method", output(proxy))]
-    fn looking_to(
-        self,
-        #[proxy]
-        direction: bevy::math::Vec3,
-        #[proxy]
-        up: bevy::math::Vec3,
     ) -> bevy::transform::components::Transform;
 
 "#,
@@ -416,6 +420,69 @@ struct GlobalTransform();
 
 "#,
     r#"
+/// Get the unit vector in the local `X` direction.
+
+    #[lua(kind = "Method", output(proxy))]
+    fn local_x(&self) -> bevy::math::Dir3;
+
+"#,
+    r#"
+/// Equivalent to [`-local_x()`][Transform::local_x()]
+
+    #[lua(kind = "Method", output(proxy))]
+    fn left(&self) -> bevy::math::Dir3;
+
+"#,
+    r#"
+/// Equivalent to [`local_x()`][Transform::local_x()]
+
+    #[lua(kind = "Method", output(proxy))]
+    fn right(&self) -> bevy::math::Dir3;
+
+"#,
+    r#"
+/// Get the unit vector in the local `Y` direction.
+
+    #[lua(kind = "Method", output(proxy))]
+    fn local_y(&self) -> bevy::math::Dir3;
+
+"#,
+    r#"
+/// Equivalent to [`local_y()`][Transform::local_y]
+
+    #[lua(kind = "Method", output(proxy))]
+    fn up(&self) -> bevy::math::Dir3;
+
+"#,
+    r#"
+/// Equivalent to [`-local_y()`][Transform::local_y]
+
+    #[lua(kind = "Method", output(proxy))]
+    fn down(&self) -> bevy::math::Dir3;
+
+"#,
+    r#"
+/// Get the unit vector in the local `Z` direction.
+
+    #[lua(kind = "Method", output(proxy))]
+    fn local_z(&self) -> bevy::math::Dir3;
+
+"#,
+    r#"
+/// Equivalent to [`-local_z()`][Transform::local_z]
+
+    #[lua(kind = "Method", output(proxy))]
+    fn forward(&self) -> bevy::math::Dir3;
+
+"#,
+    r#"
+/// Equivalent to [`local_z()`][Transform::local_z]
+
+    #[lua(kind = "Method", output(proxy))]
+    fn back(&self) -> bevy::math::Dir3;
+
+"#,
+    r#"
 /// Rotates this [`Transform`] by the given rotation.
 /// If this [`Transform`] has a parent, the `rotation` is relative to the rotation of the parent.
 /// # Examples
@@ -431,7 +498,7 @@ struct GlobalTransform();
 /// If this [`Transform`] has a parent, the `axis` is relative to the rotation of the parent.
 
     #[lua(kind = "MutatingMethod")]
-    fn rotate_axis(&mut self, #[proxy] axis: bevy::math::Vec3, angle: f32) -> ();
+    fn rotate_axis(&mut self, #[proxy] axis: bevy::math::Dir3, angle: f32) -> ();
 
 "#,
     r#"
@@ -470,7 +537,7 @@ struct GlobalTransform();
 /// Rotates this [`Transform`] around its local `axis` by `angle` (in radians).
 
     #[lua(kind = "MutatingMethod")]
-    fn rotate_local_axis(&mut self, #[proxy] axis: bevy::math::Vec3, angle: f32) -> ();
+    fn rotate_local_axis(&mut self, #[proxy] axis: bevy::math::Dir3, angle: f32) -> ();
 
 "#,
     r#"
@@ -523,42 +590,6 @@ struct GlobalTransform();
 
 "#,
     r#"
-/// Rotates this [`Transform`] so that [`Transform::forward`] points towards the `target` position,
-/// and [`Transform::up`] points towards `up`.
-/// In some cases it's not possible to construct a rotation. Another axis will be picked in those cases:
-/// * if `target` is the same as the transform translation, `Vec3::Z` is used instead
-/// * if `up` is zero, `Vec3::Y` is used instead
-/// * if the resulting forward direction is parallel with `up`, an orthogonal vector is used as the "right" direction
-
-    #[lua(kind = "MutatingMethod")]
-    fn look_at(
-        &mut self,
-        #[proxy]
-        target: bevy::math::Vec3,
-        #[proxy]
-        up: bevy::math::Vec3,
-    ) -> ();
-
-"#,
-    r#"
-/// Rotates this [`Transform`] so that [`Transform::forward`] points in the given `direction`
-/// and [`Transform::up`] points towards `up`.
-/// In some cases it's not possible to construct a rotation. Another axis will be picked in those cases:
-/// * if `direction` is zero, `Vec3::NEG_Z` is used instead
-/// * if `up` is zero, `Vec3::Y` is used instead
-/// * if `direction` is parallel with `up`, an orthogonal vector is used as the "right" direction
-
-    #[lua(kind = "MutatingMethod")]
-    fn look_to(
-        &mut self,
-        #[proxy]
-        direction: bevy::math::Vec3,
-        #[proxy]
-        up: bevy::math::Vec3,
-    ) -> ();
-
-"#,
-    r#"
 /// Multiplies `self` with `transform` component by component, returning the
 /// resulting [`Transform`]
 
@@ -595,51 +626,12 @@ struct GlobalTransform();
     r#"
 
     #[lua(
-        as_trait = "std::ops::Mul",
+        as_trait = "std::cmp::PartialEq",
         kind = "MetaFunction",
-        output(proxy),
-        composite = "mul",
-        metamethod = "Mul",
+        composite = "eq",
+        metamethod = "Eq",
     )]
-    fn mul(
-        self,
-        #[proxy]
-        transform: bevy::transform::components::Transform,
-    ) -> bevy::transform::components::Transform;
-
-"#,
-    r#"
-
-    #[lua(
-        as_trait = "std::ops::Mul",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "mul",
-        metamethod = "Mul",
-    )]
-    fn mul(
-        self,
-        #[proxy]
-        global_transform: bevy::transform::components::GlobalTransform,
-    ) -> bevy::transform::components::GlobalTransform;
-
-"#,
-    r#"
-
-    #[lua(
-        as_trait = "std::ops::Mul",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "mul",
-        metamethod = "Mul",
-    )]
-    fn mul(self, #[proxy] value: bevy::math::Vec3) -> bevy::math::Vec3;
-
-"#,
-    r#"
-
-    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
-    fn clone(&self) -> bevy::transform::components::Transform;
+    fn eq(&self, #[proxy] other: &components::transform::Transform) -> bool;
 
 "#,
     r#"

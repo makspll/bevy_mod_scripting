@@ -111,7 +111,7 @@ fn main() -> std::io::Result<()> {
                 .expect("Could not find MyProxiedStruct Resource");
             println!("After the script MyProxiedStruct resource is now: {my_thing:#?}");
             // exit app
-            world.send_event(AppExit);
+            world.send_event(AppExit::Success);
         });
 
     app.run();

@@ -4,6 +4,7 @@
 #![cfg_attr(rustfmt, rustfmt_skip)]
 pub mod bevy_ecs;
 pub mod bevy_transform;
+pub mod bevy_math;
 pub mod bevy_input;
 pub mod bevy_core;
 pub mod bevy_time;
@@ -23,6 +24,7 @@ impl bevy_mod_scripting_core::hosts::APIProvider for LuaBevyAPIProvider {
     ) -> Result<(), bevy_mod_scripting_core::error::ScriptError> {
         bevy_ecs::BevyEcsAPIProvider.attach_api(ctx)?;
         bevy_transform::BevyTransformAPIProvider.attach_api(ctx)?;
+        bevy_math::BevyMathAPIProvider.attach_api(ctx)?;
         bevy_input::BevyInputAPIProvider.attach_api(ctx)?;
         bevy_core::BevyCoreAPIProvider.attach_api(ctx)?;
         bevy_time::BevyTimeAPIProvider.attach_api(ctx)?;
@@ -35,6 +37,7 @@ impl bevy_mod_scripting_core::hosts::APIProvider for LuaBevyAPIProvider {
         [
             bevy_ecs::BevyEcsAPIProvider.get_doc_fragment(),
             bevy_transform::BevyTransformAPIProvider.get_doc_fragment(),
+            bevy_math::BevyMathAPIProvider.get_doc_fragment(),
             bevy_input::BevyInputAPIProvider.get_doc_fragment(),
             bevy_core::BevyCoreAPIProvider.get_doc_fragment(),
             bevy_time::BevyTimeAPIProvider.get_doc_fragment(),
@@ -70,6 +73,7 @@ impl bevy_mod_scripting_core::hosts::APIProvider for LuaBevyAPIProvider {
     fn register_with_app(&self, app: &mut bevy::app::App) {
         bevy_ecs::BevyEcsAPIProvider.register_with_app(app);
         bevy_transform::BevyTransformAPIProvider.register_with_app(app);
+        bevy_math::BevyMathAPIProvider.register_with_app(app);
         bevy_input::BevyInputAPIProvider.register_with_app(app);
         bevy_core::BevyCoreAPIProvider.register_with_app(app);
         bevy_time::BevyTimeAPIProvider.register_with_app(app);

@@ -44,7 +44,8 @@ pub(crate) fn find_reflect_types(ctxt: &mut BevyCtxt<'_>, args: &Args) -> bool {
                 // only non parametrized simple types are allowed, i.e. "MyStruct" is allowed but "MyStruct<T>" isn't
                     generics.count() == 0 &&
                     self_ty.def().is_some_and(|did| {
-                            if ignored_types.contains(&format!("{}::{}",ctxt.tcx.crate_name(LOCAL_CRATE),ctxt.tcx.item_name(did))) {
+                            let short_form = format!("{}::{}",ctxt.tcx.crate_name(LOCAL_CRATE),ctxt.tcx.item_name(did));
+                            if ignored_types.contains(&short_form) || ignored_types.contains(&tcx.def_path_str(did)) {
                                 info!("Ignoring type: {:?}", tcx.def_path_str(did));
                                 return false;
                             };

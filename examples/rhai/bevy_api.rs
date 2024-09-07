@@ -171,7 +171,7 @@ fn main() -> std::io::Result<()> {
                 .expect("Something went wrong in the script!");
             });
 
-            world.send_event(AppExit);
+            world.send_event(AppExit::Success);
         });
 
     app.run();

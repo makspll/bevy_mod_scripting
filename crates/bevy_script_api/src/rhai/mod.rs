@@ -27,7 +27,7 @@ impl RegisterForeignRhaiType for App {
         &mut self,
     ) -> &mut Self {
         {
-            let registry = self.world.resource_mut::<AppTypeRegistry>();
+            let registry = self.world_mut().resource_mut::<AppTypeRegistry>();
             let mut registry = registry.write();
 
             let rhai_data = <ReflectRhaiProxyable as FromType<T>>::from_type();

@@ -1,3 +1,4 @@
+#![allow(clippy::manual_unwrap_or_default)] // from darling
 use darling::{util::Flag, FromDeriveInput, FromMeta};
 use proc_macro2::Ident;
 use quote::format_ident;
@@ -94,6 +95,7 @@ pub struct ProxyType {
 /// - Result
 /// - Vec
 /// - Tuple
+///
 /// This type helps us destructure these patterns and unwrap/wrap proxies fully without dealing with the full syn::Type enum
 #[derive(Debug, Clone)]
 pub enum SimpleType {
@@ -537,6 +539,8 @@ impl VisitSimpleType<Type> for TypeConstructorVisitor {
 
 #[derive(FromDeriveInput)]
 #[darling(attributes(proxy), forward_attrs(allow, doc, cfg))]
+#[allow(clippy::manual_unwrap_or_default)]
+
 pub struct ProxyInput {
     /// The name of the type for which we are generating a proxy
     pub ident: syn::Ident,

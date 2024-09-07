@@ -10,7 +10,7 @@ fn main() {
         .add_script_host::<RuneScriptHost<()>>(PostUpdate)
         .add_script_handler::<RuneScriptHost<()>, 0, 1>(PostUpdate)
         .add_api_provider::<RuneScriptHost<()>>(Box::new(MyAPIProvider))
-        .run()
+        .run();
 }
 
 struct MyAPIProvider;
