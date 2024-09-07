@@ -4,7 +4,7 @@ use bevy::{
     ecs::{
         component::ComponentId,
         query::QueryBuilder,
-        world::{EntityRef, World, Command},
+        world::{Command, EntityRef, World},
     },
     prelude::{
         AppTypeRegistry, BuildWorldChildren, Children, DespawnChildrenRecursive, DespawnRecursive,
