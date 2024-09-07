@@ -21,7 +21,7 @@ PACKAGE=bevy_mod_scripting
 TEST_NAME=
 # # valgrind outputs a callgrind.out.<pid>. We can analyze this with kcachegrind
 # kcachegrind
-NIGHTLY_VERSION=nightly-nightly-2024-01-24
+NIGHTLY_VERSION=nightly-2024-01-24
 BEVY_VERSION=0.14.2
 GLAM_VERSION=0.28.0
 CODEGEN_PATH=${PWD}/target/codegen
