@@ -31,11 +31,6 @@ pub(crate) fn cache_traits(ctxt: &mut BevyCtxt<'_>, _args: &Args) -> bool {
             ctxt.cached_traits
                 .std_source_traits
                 .insert(def_path_str.to_string(), trait_did);
-        } else if STD_SOURCE_TRAITS.contains(&def_path_str.as_str()) {
-            trace!("found misc trait def id: {trait_did:?}");
-            ctxt.cached_traits
-                .std_source_traits
-                .insert(def_path_str.to_string(), trait_did);
         }
     }
 
