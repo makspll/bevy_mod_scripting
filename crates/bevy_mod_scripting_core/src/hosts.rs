@@ -12,6 +12,7 @@ use crate::{
     error::ScriptError,
     event::{ScriptEvent, ScriptLoaded},
     world::WorldPointer,
+    ScriptErrorEvent,
 };
 
 /// Describes the target set of scripts this event should
@@ -358,6 +359,7 @@ impl<T: Asset> Script<T> {
         providers: &mut APIProviders<H>,
         contexts: &mut ScriptContexts<H::ScriptContext>,
         event_writer: &mut EventWriter<ScriptLoaded>,
+        error_writer: &mut EventWriter<ScriptErrorEvent>,
     ) {
         debug!("reloading script {}", script.id);
 
@@ -374,6 +376,7 @@ impl<T: Asset> Script<T> {
                 providers,
                 contexts,
                 event_writer,
+                error_writer,
             );
         } else {
             // remove old context
@@ -392,6 +395,7 @@ impl<T: Asset> Script<T> {
         providers: &mut APIProviders<H>,
         contexts: &mut ScriptContexts<H::ScriptContext>,
         event_writer: &mut EventWriter<ScriptLoaded>,
+        error_writer: &mut EventWriter<ScriptErrorEvent>,
     ) {
         let fd = ScriptData {
             sid: new_script.id(),
@@ -424,6 +428,7 @@ impl<T: Asset> Script<T> {
                 // this script will now never execute, unless manually reloaded
                 // but contexts are left in a valid state
                 contexts.insert_context(fd, None);
+                error_writer.send(ScriptErrorEvent { error: e });
             }
         }
     }
