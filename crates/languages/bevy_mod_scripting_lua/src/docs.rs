@@ -100,12 +100,6 @@ impl DocFragment for LuaDocFragment {
         // fixes bug in tealr which causes syntax errors in teal due to duplicate fields (from having both getters and setters)
         tw.given_types.iter_mut().for_each(|tg| {
             if let TypeGenerator::Record(rg) = tg {
-                let rgname = rg
-                    .type_name
-                    .to_vec()
-                    .into_iter()
-                    .map(|raw: NamePart| raw.as_ref_str().to_owned())
-                    .collect::<Vec<_>>();
                 rg.fields
                     .sort_by(|f1, f2| f1.name.deref().cmp(&f2.name.deref()));
                 rg.fields.dedup_by(|a, b| a.name == b.name);
