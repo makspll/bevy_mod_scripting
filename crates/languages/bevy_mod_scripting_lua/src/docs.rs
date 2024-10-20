@@ -9,7 +9,7 @@ use std::{
 };
 
 //use bevy::asset::FileAssetIo;
-use bevy::{asset::io::file::FileAssetReader, log::info};
+use bevy::asset::io::file::FileAssetReader;
 use bevy_mod_scripting_core::prelude::*;
 use tealr::{NameContainer, NamePart, TypeGenerator, TypeWalker};
 
@@ -106,7 +106,6 @@ impl DocFragment for LuaDocFragment {
                     .into_iter()
                     .map(|raw: NamePart| raw.as_ref_str().to_owned())
                     .collect::<Vec<_>>();
-                info!("Encountered type: {:?}", rgname);
                 rg.fields
                     .sort_by(|f1, f2| f1.name.deref().cmp(&f2.name.deref()));
                 rg.fields.dedup_by(|a, b| a.name == b.name);
@@ -216,14 +215,13 @@ impl DocFragment for LuaDocFragment {
 fn escape_name(raw: &mut NameContainer) {
     // List of Lua reserved keywords
     const KEYWORD_FIELDS: &[&str] = &[
-        // Values
-        "false", "true", "nil", // Operators
-        "and", "not", "or", // If-Else
-        "if", "then", "else", "elseif", "end", // Loops
-        "for", "in", "break", "do", "repeat", "until", "while", // Funcs
-        "function", "return", // Declarations
-        "local",  // Teal extra
-        "record",
+        "false", "true", "nil", // Values
+        "and", "not", "or", // Operators
+        "if", "then", "else", "elseif", "end", // If-Else
+        "for", "in", "break", "do", "repeat", "until", "while", // Loops
+        "function", "return", // Funcs
+        "local",  // Declarations
+        "record", // Teal extra
     ];
     let Ok(name) = str::from_utf8(&raw) else {
         return;
