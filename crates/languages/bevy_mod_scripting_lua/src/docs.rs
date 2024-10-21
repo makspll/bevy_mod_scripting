@@ -11,7 +11,7 @@ use std::{
 //use bevy::asset::FileAssetIo;
 use bevy::asset::io::file::FileAssetReader;
 use bevy_mod_scripting_core::prelude::*;
-use tealr::{NameContainer, NamePart, TypeGenerator, TypeWalker};
+use tealr::{NameContainer, TypeGenerator, TypeWalker};
 
 pub type TypeWalkerBuilder = fn(TypeWalker) -> TypeWalker;
 
