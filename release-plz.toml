@@ -1,6 +1,7 @@
 [workspace]
 dependencies_update = false
 publish_timeout = "30m"
+version_group = "main"
 
 [[package]]
 name = "bevy_mod_scripting_lua"
