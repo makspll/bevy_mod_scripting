@@ -1,4 +1,15 @@
 # Changelog
+
+## [0.6.1](https://github.com/makspll/bevy_mod_scripting/compare/bevy_mod_scripting-v0.6.0...bevy_mod_scripting-v0.6.1) - 2024-11-03
+
+### Other
+
+- Add dynamic query examples ([#120](https://github.com/makspll/bevy_mod_scripting/pull/120))
+- Migrate to bevy 0.14 ([#127](https://github.com/makspll/bevy_mod_scripting/pull/127))
+- Fix Broken Example ([#123](https://github.com/makspll/bevy_mod_scripting/pull/123))
+- Fix cross-platform CI.yml ([#111](https://github.com/makspll/bevy_mod_scripting/pull/111))
+- update metadata
+
 ## v0.2.2
 - Bump `tealr_doc_gen` and `tealr` versions
 - Change bevy dependency semver to "0.9"
