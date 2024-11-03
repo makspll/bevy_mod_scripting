@@ -1,0 +1,40 @@
+[workspace]
+dependencies_update = false
+publish_timeout = "30m"
+
+[[package]]
+name = "bevy_mod_scripting_lua"
+publish_features = ["lua54"]
+version_group = "main"
+
+[[package]]
+name = "bevy_mod_scripting_common"
+version_group = "main"
+
+[[package]]
+name = "bevy_mod_scripting_core"
+version_group = "main"
+
+[[package]]
+name = "bevy_mod_scripting_rhai"
+version_group = "main"
+
+[[package]]
+name = "bevy_mod_scripting_rune"
+version_group = "main"
+
+[[package]]
+name = "bevy_script_api"
+version_group = "main"
+
+[[package]]
+name = "bevy_event_priority"
+version_group = "main"
+
+[[package]]
+name = "bevy_mod_scripting_lua_derive"
+version_group = "main"
+
+[[package]]
+name = "bevy_mod_scripting_rhai_derive"
+version_group = "main"
