@@ -1,14 +1,17 @@
+use core::str;
 use std::{
+    borrow::Cow,
     env,
     fs::{self, File},
     io::Write,
+    ops::Deref,
     process::Command,
 };
 
 //use bevy::asset::FileAssetIo;
 use bevy::asset::io::file::FileAssetReader;
 use bevy_mod_scripting_core::prelude::*;
-use tealr::{TypeGenerator, TypeWalker};
+use tealr::{NameContainer, TypeGenerator, TypeWalker};
 
 pub type TypeWalkerBuilder = fn(TypeWalker) -> TypeWalker;
 
@@ -97,7 +100,24 @@ impl DocFragment for LuaDocFragment {
         // fixes bug in tealr which causes syntax errors in teal due to duplicate fields (from having both getters and setters)
         tw.given_types.iter_mut().for_each(|tg| {
             if let TypeGenerator::Record(rg) = tg {
+                rg.fields
+                    .sort_by(|f1, f2| f1.name.deref().cmp(&f2.name.deref()));
                 rg.fields.dedup_by(|a, b| a.name == b.name);
+                rg.static_fields
+                    .sort_by(|f1, f2| f1.name.deref().cmp(&f2.name.deref()));
+                rg.static_fields.dedup_by(|a, b| a.name == b.name);
+                for field in rg.fields.iter_mut().chain(rg.static_fields.iter_mut()) {
+                    escape_name(&mut field.name);
+                }
+                for func in rg
+                    .functions
+                    .iter_mut()
+                    .chain(rg.mut_functions.iter_mut())
+                    .chain(rg.methods.iter_mut())
+                    .chain(rg.mut_methods.iter_mut())
+                {
+                    escape_name(&mut func.name);
+                }
             }
         });
 
@@ -170,5 +190,38 @@ impl DocFragment for LuaDocFragment {
             }
         }
         Ok(())
+    }
+}
+
+/// Escapes a name of a table field, if that table field is a reserved keyword.
+///
+/// ## Background
+///
+/// String keys in a Lua table are allowed to be anything, even reserved
+/// keywords. By default when tealr generates the type definition for a table
+/// field, the string it generates is `{name} : {type}`. This causes a syntax
+/// error when writing a bare keyword, since `nil : {type}` is considered trying
+/// to add a type to the *value* nil (which is invalid).
+///
+/// To get around this tealr allows us to escape table fields using the
+/// `["{name}"] : {value}` syntax. This function detects if a name is one of the
+/// Lua reserved words and fixes it if so.
+fn escape_name(raw: &mut NameContainer) {
+    // List of Lua reserved keywords
+    const KEYWORD_FIELDS: &[&str] = &[
+        "false", "true", "nil", // Values
+        "and", "not", "or", // Operators
+        "if", "then", "else", "elseif", "end", // If-Else
+        "for", "in", "break", "do", "repeat", "until", "while", // Loops
+        "function", "return", // Funcs
+        "local",  // Declarations
+        "record", // Teal extra
+    ];
+    let Ok(name) = str::from_utf8(&raw) else {
+        return;
+    };
+    if KEYWORD_FIELDS.contains(&name) {
+        let mapped = format!("[\"{name}\"]");
+        *raw = NameContainer::from(Cow::Owned(mapped));
     }
 }
