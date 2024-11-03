@@ -1,4 +1,4 @@
-# bevy_mod_scripting Changelog
+# Changelog
 ## v0.2.2
 - Bump `tealr_doc_gen` and `tealr` versions
 - Change bevy dependency semver to "0.9"
