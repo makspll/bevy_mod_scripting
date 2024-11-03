@@ -46,6 +46,13 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
+      - name: Install Nightly Rust toolchain
+        uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: nightly-2024-05-20
+          override: true
+          working-directory: crates/bevy_api_gen
       - name: Install Rust toolchain
         uses: actions-rs/toolchain@v1
         with:
