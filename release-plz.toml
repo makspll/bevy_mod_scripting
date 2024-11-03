@@ -1,10 +1,33 @@
 [workspace]
 dependencies_update = false
 publish_timeout = "30m"
+git_release_enable = false
 
 [[package]]
 name = "bevy_mod_scripting"
 version_group = "main"
+git_release_enable = true
+git_release_name = "v{{ version }}"
+git_release_body = """
+{{ changelog }}
+{% if remote.contributors %}
+### Contributors
+{% for contributor in remote.contributors %}
+* @{{ contributor.username }}
+{% endfor %}
+{% endif %}
+"""
+changelog_include = [
+    "bevy_mod_scripting_lua",
+    "bevy_mod_scripting_common",
+    "bevy_mod_scripting_core",
+    "bevy_mod_scripting_rhai",
+    "bevy_mod_scripting_rune",
+    "bevy_script_api",
+    "bevy_event_priority",
+    "bevy_mod_scripting_lua_derive",
+    "bevy_mod_scripting_rhai_derive",
+]
 
 [[package]]
 name = "bevy_mod_scripting_lua"
