@@ -7,7 +7,7 @@ use bevy_mod_scripting_core::{
         Proxy, ReflectAllocator, ReflectRefMutProxy, ReflectRefProxy, ReflectReference,
         ReflectValProxy, Unproxy, ValProxy, WorldAccessGuard, WorldAccessUnit, WorldAccessWrite,
     },
-    error::ScriptResult,
+    error::{ScriptError, ScriptResult},
 };
 use tealr::{
     mlu::mlua::{Error, FromLua, IntoLua, Lua, Value},
@@ -21,16 +21,16 @@ pub trait LuaProxied {
 
 /// Convenience for proxying a type into lua via itself without implementing [`Proxy`] on it.
 /// Converts to Lua via T's implementation of IntoLua directly
-pub struct IdentityProxy<T>(pub Option<T>);
+pub struct LuaIdentityProxy<T>(pub Option<T>);
 
-impl<T> Proxy for IdentityProxy<T> {
+impl<T> Proxy for LuaIdentityProxy<T> {
     type Input<'i> = T;
     fn proxy<'i>(value: Self::Input<'i>) -> ScriptResult<Self> {
         Ok(Self(Some(value)))
     }
 }
 
-impl<T> Unproxy for IdentityProxy<T> {
+impl<T> Unproxy for LuaIdentityProxy<T> {
     type Output<'o> = T where
         Self: 'o;
 
@@ -42,27 +42,46 @@ impl<T> Unproxy for IdentityProxy<T> {
     }
 }
 
-impl<T: ToTypename> ToTypename for IdentityProxy<T> {
+impl<T: ToTypename> ToTypename for LuaIdentityProxy<T> {
     fn to_typename() -> tealr::Type {
         T::to_typename()
     }
 }
 
-impl<'a, T: IntoLua<'a>> IntoLua<'a> for IdentityProxy<T> {
+impl<'a, T: IntoLua<'a>> IntoLua<'a> for LuaIdentityProxy<T> {
     fn into_lua(self, lua: &'a Lua) -> tealr::mlu::mlua::prelude::LuaResult<Value<'a>> {
         self.0.into_lua(lua)
     }
 }
 
-impl<'a, T: FromLua<'a>> FromLua<'a> for IdentityProxy<T> {
+impl<'a, T: FromLua<'a>> FromLua<'a> for LuaIdentityProxy<T> {
     fn from_lua(value: Value<'a>, lua: &'a Lua) -> Result<Self, Error> {
         Ok(Self(Some(T::from_lua(value, lua)?)))
     }
 }
 
+/// Proxy which uses [`ValProxy`] to represent the type in Lua. Requires that the type implements [`LuaProxied`] and that the proxy implements [`From`] for the type.
+///
+/// Used for types which are copied into lua rather than references to originals in the world.
+/// Use when your type does not implement Reflect or if it's a simple type that can be copied into lua.
 pub struct LuaValProxy<T: LuaProxied>(pub ValProxy<T, T::Proxy>);
+
+/// Proxy which uses [`ReflectValProxy`] to represent the type in Lua. Requires that the type implements [`LuaProxied`] and [`FromReflect`] and that the proxy implements [`AsRef<ReflectReference>`].
+/// Think of the proxy as just a container for a [`ReflectReference`].
+///
+/// Semantically equivalent to `T`, use it where you would use the `T` type.
 pub struct LuaReflectValProxy<T: LuaProxied>(pub ReflectValProxy<T, T::Proxy>);
+
+/// Proxy which uses [`ReflectRefProxy`] to represent the type in Lua. Requires that the type implements [`LuaProxied`] and [`Reflect`] and that the proxy implements [`AsRef<ReflectReference>`].
+/// Think of the proxy as just a container for a [`ReflectReference`].
+///
+/// Semantically equivalent to `&T`, use it where you would use the `&T` type.
 pub struct LuaReflectRefProxy<T: LuaProxied>(pub ReflectRefProxy<T, T::Proxy>);
+
+/// Proxy which uses [`ReflectRefMutProxy`] to represent the type in Lua. Requires that the type implements [`LuaProxied`] and [`Reflect`] and that the proxy implements [`AsRef<ReflectReference>`].
+/// Think of the proxy as just a container for a [`ReflectReference`].
+///
+/// Semantically equivalent to `&mut T`, use it where you would use the `&mut T` type.
 pub struct LuaReflectRefMutProxy<T: LuaProxied>(pub ReflectRefMutProxy<T, T::Proxy>);
 
 macro_rules! impl_lua_unproxy {

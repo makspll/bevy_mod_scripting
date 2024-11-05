@@ -2,7 +2,7 @@ use std::sync::Arc;
 
 use bevy::ecs::{reflect::AppTypeRegistry, world::Mut};
 use bevy_mod_scripting_core::{
-    bindings::{Unproxy, WorldAccessGuard},
+    bindings::{Unproxy, WorldAccessGuard, WorldCallbackAccess},
     error::ScriptError,
 };
 use bevy_mod_scripting_derive::LuaProxy;
@@ -18,7 +18,7 @@ use crate::{impl_userdata_from_lua, impl_userdata_with_tealdata};
 
 use super::{
     providers::bevy_ecs::LuaEntity,
-    proxy::{LuaProxied, LuaValProxy},
+    proxy::{LuaIdentityProxy, LuaProxied, LuaValProxy},
     type_registration::LuaTypeRegistration,
 };
 
@@ -27,20 +27,33 @@ use super::{
 #[proxy(
     bms_core_path = "bevy_mod_scripting_core",
     bms_lua_path = "crate",
-    proxy_as_self,
-    remote = "bevy_mod_scripting_core::bindings::WorldCallbackAccess",
+    get_world_callback_access_fn = "self::LuaWorld::world_callback_access",
+    proxy_as_type = "self::LuaWorld",
+    remote = "bevy_mod_scripting_core::bindings::WorldAccessGuard<'_>",
     functions [
         r#"
             #[lua()]
-            fn get_type_by_name(&self, type_name: String) -> Result<LuaTypeRegistration, ScriptError>;
+            fn add_default_component(&self, entity: LuaEntity, registration: LuaTypeRegistration) -> Result<IdentityProxy<()>, ScriptError>;
         "#,
-        r#"
-            #[lua()]
-            fn add_default_component(&self, entity: LuaEntity, registration: LuaTypeRegistration) -> Result<(), ScriptError>;
-        "#,
+        // r#"
+        //     #[lua()]
+        //     fn get_type_by_name(&self, type_name: String) -> Result<LuaTypeRegistration, ScriptError>;
+        // "#,
     ]
 )]
-pub struct World;
+pub struct LuaWorld(WorldCallbackAccess);
+
+impl LuaWorld {
+    pub fn world_callback_access(self) -> WorldCallbackAccess {
+        self.0.clone()
+    }
+}
+
+impl ToTypename for LuaWorld {
+    fn to_typename() -> Type {
+        Type::Userdata
+    }
+}
 
 // impl_userdata_from_lua!(LuaWorld);
 
@@ -55,24 +68,24 @@ pub struct World;
 // }
 
 // impl TealData for LuaWorld {
-//     // fn add_methods<'lua, T: tealr::mlu::TealDataMethods<'lua, Self>>(methods: &mut T) {
-//     //     methods.add_method("get_type_by_name", |_, world, type_name: String| {
-//     //         Ok(world
-//     //             .0
-//     //             .get_type_by_name(type_name.as_str())
-//     //             .map(Into::<LuaTypeRegistration>::into))
-//     //     });
+//     fn add_methods<'lua, T: tealr::mlu::TealDataMethods<'lua, Self>>(methods: &mut T) {
+//         methods.add_method("get_type_by_name", |_, world, type_name: String| {
+//             Ok(world
+//                 .0
+//                 .get_type_by_name(type_name.as_str())
+//                 .map(Into::<LuaTypeRegistration>::into))
+//         });
 
-//     //     methods.add_method(
-//     //         "add_default_component",
-//     //         |_, world, (entity, registration): (LuaEntity, LuaTypeRegistration)| {
-//     //             let entity = entity.0.with_reflect(world, type_registry, allocator, f)
-//     //             Ok(world
-//     //                 .0
-//     //                 .add_default_component(entity.0.with, registration.0.clone()))
-//     //         },
-//     //     )
-//     // }
+//         methods.add_method(
+//             "add_default_component",
+//             |_, world, (entity, registration): (LuaEntity, LuaTypeRegistration)| {
+//                 let entity = entity.0.with_reflect(world, type_registry, allocator, f)
+//                 Ok(world
+//                     .0
+//                     .add_default_component(entity.0.with, registration.0.clone()))
+//             },
+//         )
+//     }
 // }
 
 pub trait GetWorld {

@@ -11,7 +11,7 @@ use bevy_mod_scripting_core::{
 use crate::{
     bindings::proxy::{
         LuaReflectRefProxy, LuaReflectRefMutProxy, LuaReflectValProxy, LuaValProxy,
-        IdentityProxy,
+        LuaIdentityProxy,
     },
     RegisterLua, tealr::mlu::mlua::IntoLua,
 };

@@ -759,6 +759,66 @@ impl<'w> WorldAccessGuard<'w> {
     }
 }
 
+/// Impl block for higher level world methods
+impl<'w> WorldAccessGuard<'w> {
+    pub fn get_type_by_name(&self, type_name: &str) -> Option<ScriptTypeRegistration> {
+        self.with_resource(|_, registry: Mut<AppTypeRegistry>| {
+            let registry = registry.read();
+            registry
+                .get_with_short_type_path(type_name)
+                .or_else(|| registry.get_with_type_path(type_name))
+                .map(|registration| ScriptTypeRegistration::new(Arc::new(registration.clone())))
+        })
+    }
+
+    pub fn add_default_component(
+        &self,
+        entity: Entity,
+        registration: ScriptTypeRegistration,
+    ) -> ScriptResult<()> {
+        let component_data = registration.data::<ReflectComponent>().ok_or_else(|| ScriptError::new_runtime_error(format!(
+            "Cannot add default component since type: `{}`, Does not have ReflectComponent data registered.",
+            registration.type_info().type_path()
+        )))?;
+
+        // we look for ReflectDefault or ReflectFromWorld data then a ReflectComponent data
+        let instance = if let Some(default_td) = registration.data::<ReflectDefault>() {
+            default_td.default()
+        } else if let Some(from_world_td) = registration.data::<ReflectFromWorld>() {
+            if let Some(world) = self.get_whole_world_access() {
+                from_world_td.from_world(world)
+            } else {
+                panic!("{CONCURRENT_WORLD_ACCESS_MSG}")
+            }
+        } else {
+            return Err(ScriptError::new_runtime_error(format!(
+                "Cannot add default component since type: `{}`, Does not have ReflectDefault or ReflectFromWorld data registered.",
+                registration.type_info().type_path()
+            )));
+        };
+
+        //  TODO: this shouldn't need entire world access it feels
+        if let Some(world) = self.get_whole_world_access() {
+            let app_registry = world
+                .remove_resource::<AppTypeRegistry>()
+                .unwrap_or_else(|| panic!("Missing type registry"));
+
+            let mut entity = world.get_entity_mut(entity).ok_or_else(|| {
+                ScriptError::new_runtime_error(format!("Entity does not exist: {:?}", entity))
+            })?;
+            {
+                let registry = app_registry.read();
+                component_data.insert(&mut entity, instance.as_ref(), &registry);
+            }
+            world.insert_resource(app_registry);
+        } else {
+            panic!("{CONCURRENT_WORLD_ACCESS_MSG}")
+        }
+
+        Ok(())
+    }
+}
+
 /// Having this is permission to access the contained [`ReflectAccessId`], there is no way to access anything safely through a [`WorldAccessGuard`]
 /// without having a [`WorldAccess`] instance for that particular [`ReflectAccessId`].
 ///

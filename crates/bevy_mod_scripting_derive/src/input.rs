@@ -36,13 +36,12 @@ pub struct ProxyInput {
     /// The path to the type for which we are generating a proxy if it's a foreign type
     pub remote: Option<syn::Path>,
 
-    /// If set to true, will generate a simple newtype instead of a ReflectReference wrapping type
-    /// Only used for the special world proxies, probably not useful for anything else, the macro assumes we have an inner ReflectReference in the wrapper
-    pub proxy_as_self: Flag,
+    /// if provided will call the function at this path to get the world callback access. Normally this is retrieved using a global variable.
+    pub get_world_callback_access_fn: Option<syn::Path>,
 
-    /// Special flag for world proxies, if set to true the proxy will be treated as a world proxy, meaning we do not double fetch the world and instead use the world from the wrapper.
-    /// This requires proxy_as_self to also be true
-    pub self_is_world: Flag,
+    /// If set will use the given path as the type for the proxy instead of generating a new one
+    /// Only used for the special world proxies, probably not useful for anything else, the macro assumes we have an inner ReflectReference in the wrapper
+    pub proxy_as_type: Option<syn::Path>,
 
     /// The path to the bevy_mod_scripting_core crate
     #[darling(default)]

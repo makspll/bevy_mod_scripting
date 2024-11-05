@@ -567,6 +567,74 @@ impl<T: Proxy> Proxy for Option<T> {
     }
 }
 
+impl<T: Proxy, E> Proxy for Result<T, E> {
+    type Input<'a> = Result<T::Input<'a>, E>;
+
+    fn proxy(input: Self::Input<'_>) -> ScriptResult<Self> {
+        match input {
+            Ok(i) => Ok(Ok(T::proxy(i)?)),
+            Err(e) => Ok(Err(e)),
+        }
+    }
+
+    fn proxy_with_allocator(
+        input: Self::Input<'_>,
+        _allocator: &mut ReflectAllocator,
+    ) -> ScriptResult<Self> {
+        match input {
+            Ok(i) => Ok(Ok(T::proxy_with_allocator(i, _allocator)?)),
+            Err(e) => Ok(Err(e)),
+        }
+    }
+}
+
+impl<T: Unproxy, E: Unproxy> Unproxy for Result<T, E> {
+    type Output<'o> = Result<T::Output<'o>, E::Output<'o>> where Self: 'o;
+
+    fn unproxy(&mut self) -> ScriptResult<Self::Output<'_>> {
+        match self {
+            Ok(s) => Ok(Ok(s.unproxy()?)),
+            Err(e) => Ok(Err(e.unproxy()?)),
+        }
+    }
+
+    unsafe fn unproxy_with_world<'w, 'o>(
+        &'o mut self,
+        guard: &WorldAccessGuard<'w>,
+        accesses: &'o [WorldAccessUnit<'w>],
+        type_registry: &TypeRegistry,
+        allocator: &'o ReflectAllocator,
+    ) -> ScriptResult<Self::Output<'o>> {
+        match self {
+            Ok(s) => Ok(Ok(s.unproxy_with_world(
+                guard,
+                accesses,
+                type_registry,
+                allocator,
+            )?)),
+            Err(e) => Ok(Err(e.unproxy()?)),
+        }
+    }
+
+    fn collect_accesses<'w>(
+        &self,
+        guard: &WorldAccessGuard<'w>,
+        accesses: &mut SmallVec<[WorldAccessWrite<'w>; 1]>,
+    ) -> ScriptResult<()> {
+        match self {
+            Ok(s) => s.collect_accesses(guard, accesses),
+            Err(_) => Ok(()),
+        }
+    }
+
+    fn accesses_len(&self) -> usize {
+        match self {
+            Ok(s) => s.accesses_len(),
+            Err(_) => 0,
+        }
+    }
+}
+
 macro_rules! impl_unproxy_by_move {
     ($($ty:ty),*) => {
         $(
