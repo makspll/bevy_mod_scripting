@@ -1,3 +1,4 @@
+use bevy::reflect::PartialReflect;
 use parking_lot::RwLock;
 use std::fmt;
 use std::fmt::{Debug, Display};
@@ -122,47 +123,52 @@ impl ReflectionPathElement {
         match self {
             ReflectionPathElement::SubReflection { get, .. } => get(base),
             ReflectionPathElement::FieldAccess(field) => match base.reflect_ref() {
-                ReflectRef::Struct(s) => {
-                    s.field(field)
-                        .ok_or_else(|| ReflectionError::InvalidReflectionPath {
-                            path: self.to_string(),
-                            msg: "No such field".to_owned(),
-                        })
-                }
+                ReflectRef::Struct(s) => s
+                    .field(field)
+                    .map(PartialReflect::try_as_reflect)
+                    .flatten()
+                    .ok_or_else(|| ReflectionError::InvalidReflectionPath {
+                        path: self.to_string(),
+                        msg: "No such field".to_owned(),
+                    }),
                 _ => Err(ReflectionError::InvalidReflectionPath {
                     path: self.to_string(),
                     msg: "No such field".to_owned(),
                 }),
             },
             ReflectionPathElement::IndexAccess(index) => match base.reflect_ref() {
-                ReflectRef::TupleStruct(s) => {
-                    s.field(*index)
-                        .ok_or_else(|| ReflectionError::InvalidReflectionPath {
-                            path: self.to_string(),
-                            msg: "No such element".to_owned(),
-                        })
-                }
-                ReflectRef::Tuple(s) => {
-                    s.field(*index)
-                        .ok_or_else(|| ReflectionError::InvalidReflectionPath {
-                            path: self.to_string(),
-                            msg: "No such element".to_owned(),
-                        })
-                }
-                ReflectRef::List(s) => {
-                    s.get(*index)
-                        .ok_or_else(|| ReflectionError::InvalidReflectionPath {
-                            path: self.to_string(),
-                            msg: "No such element".to_owned(),
-                        })
-                }
-                ReflectRef::Array(s) => {
-                    s.get(*index)
-                        .ok_or_else(|| ReflectionError::InvalidReflectionPath {
-                            path: self.to_string(),
-                            msg: "No such element".to_owned(),
-                        })
-                }
+                ReflectRef::TupleStruct(s) => s
+                    .field(*index)
+                    .map(PartialReflect::try_as_reflect)
+                    .flatten()
+                    .ok_or_else(|| ReflectionError::InvalidReflectionPath {
+                        path: self.to_string(),
+                        msg: "No such element".to_owned(),
+                    }),
+                ReflectRef::Tuple(s) => s
+                    .field(*index)
+                    .map(PartialReflect::try_as_reflect)
+                    .flatten()
+                    .ok_or_else(|| ReflectionError::InvalidReflectionPath {
+                        path: self.to_string(),
+                        msg: "No such element".to_owned(),
+                    }),
+                ReflectRef::List(s) => s
+                    .get(*index)
+                    .map(PartialReflect::try_as_reflect)
+                    .flatten()
+                    .ok_or_else(|| ReflectionError::InvalidReflectionPath {
+                        path: self.to_string(),
+                        msg: "No such element".to_owned(),
+                    }),
+                ReflectRef::Array(s) => s
+                    .get(*index)
+                    .map(PartialReflect::try_as_reflect)
+                    .flatten()
+                    .ok_or_else(|| ReflectionError::InvalidReflectionPath {
+                        path: self.to_string(),
+                        msg: "No such element".to_owned(),
+                    }),
                 _ => Err(ReflectionError::InvalidReflectionPath {
                     path: self.to_string(),
                     msg: "No such element".to_owned(),
@@ -178,47 +184,52 @@ impl ReflectionPathElement {
         match self {
             ReflectionPathElement::SubReflection { get_mut, .. } => get_mut(base),
             ReflectionPathElement::FieldAccess(field) => match base.reflect_mut() {
-                ReflectMut::Struct(s) => {
-                    s.field_mut(field)
-                        .ok_or_else(|| ReflectionError::InvalidReflectionPath {
-                            path: self.to_string(),
-                            msg: "No such field".to_owned(),
-                        })
-                }
+                ReflectMut::Struct(s) => s
+                    .field_mut(field)
+                    .map(PartialReflect::try_as_reflect_mut)
+                    .flatten()
+                    .ok_or_else(|| ReflectionError::InvalidReflectionPath {
+                        path: self.to_string(),
+                        msg: "No such field".to_owned(),
+                    }),
                 _ => Err(ReflectionError::InvalidReflectionPath {
                     path: self.to_string(),
                     msg: "No such field".to_owned(),
                 }),
             },
             ReflectionPathElement::IndexAccess(index) => match base.reflect_mut() {
-                ReflectMut::TupleStruct(s) => {
-                    s.field_mut(*index)
-                        .ok_or_else(|| ReflectionError::InvalidReflectionPath {
-                            path: self.to_string(),
-                            msg: "No such element".to_owned(),
-                        })
-                }
-                ReflectMut::Tuple(s) => {
-                    s.field_mut(*index)
-                        .ok_or_else(|| ReflectionError::InvalidReflectionPath {
-                            path: self.to_string(),
-                            msg: "No such element".to_owned(),
-                        })
-                }
-                ReflectMut::List(s) => {
-                    s.get_mut(*index)
-                        .ok_or_else(|| ReflectionError::InvalidReflectionPath {
-                            path: self.to_string(),
-                            msg: "No such element".to_owned(),
-                        })
-                }
-                ReflectMut::Array(s) => {
-                    s.get_mut(*index)
-                        .ok_or_else(|| ReflectionError::InvalidReflectionPath {
-                            path: self.to_string(),
-                            msg: "No such element".to_owned(),
-                        })
-                }
+                ReflectMut::TupleStruct(s) => s
+                    .field_mut(*index)
+                    .map(PartialReflect::try_as_reflect_mut)
+                    .flatten()
+                    .ok_or_else(|| ReflectionError::InvalidReflectionPath {
+                        path: self.to_string(),
+                        msg: "No such element".to_owned(),
+                    }),
+                ReflectMut::Tuple(s) => s
+                    .field_mut(*index)
+                    .map(PartialReflect::try_as_reflect_mut)
+                    .flatten()
+                    .ok_or_else(|| ReflectionError::InvalidReflectionPath {
+                        path: self.to_string(),
+                        msg: "No such element".to_owned(),
+                    }),
+                ReflectMut::List(s) => s
+                    .get_mut(*index)
+                    .map(PartialReflect::try_as_reflect_mut)
+                    .flatten()
+                    .ok_or_else(|| ReflectionError::InvalidReflectionPath {
+                        path: self.to_string(),
+                        msg: "No such element".to_owned(),
+                    }),
+                ReflectMut::Array(s) => s
+                    .get_mut(*index)
+                    .map(PartialReflect::try_as_reflect_mut)
+                    .flatten()
+                    .ok_or_else(|| ReflectionError::InvalidReflectionPath {
+                        path: self.to_string(),
+                        msg: "No such element".to_owned(),
+                    }),
                 _ => Err(ReflectionError::InvalidReflectionPath {
                     path: self.to_string(),
                     msg: "No such element".to_owned(),
@@ -310,9 +321,9 @@ impl ReflectionPath {
 
                 let entity_ref =
                     g.get_entity(*entity)
-                        .ok_or_else(|| ReflectionError::InvalidBaseReference {
+                        .map_err(|e| ReflectionError::InvalidBaseReference {
                             base: self.base.to_string(),
-                            reason: "This entity does not exist".to_owned(),
+                            reason: format!("This entity could not be retrieved. {e}"),
                         })?;
 
                 let ref_ = self.walk_path(comp.reflect(entity_ref).ok_or_else(|| {
