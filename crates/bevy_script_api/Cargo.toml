@@ -28,7 +28,6 @@ bevy = { workspace = true, default-features = false, features = [
     "bevy_sprite",
     "file_watcher",
     "multi_threaded",
-    "bevy_reflect",
 ] }
 uuid = "1.10"
 bevy_mod_scripting_core = { workspace = true }

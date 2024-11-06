@@ -2829,13 +2829,13 @@ struct Capsule2d {
     fn sagitta(&self) -> f32;
 
 "#,
-    r#"
-/// Returns the area of this sector
+//     r#"
+// /// Returns the area of this sector
 
-    #[lua(kind = "Method")]
-    fn area(&self) -> f32;
+//     #[lua(kind = "Method")]
+//     fn area(&self) -> f32;
 
-"#,
+// "#,
     r#"
 #[lua(kind="MetaMethod", metamethod="ToString")]
 fn index(&self) -> String {
@@ -2946,13 +2946,13 @@ struct CircularSector {
     fn sagitta(&self) -> f32;
 
 "#,
-    r#"
-/// Returns the area of this segment
+//     r#"
+// /// Returns the area of this segment
 
-    #[lua(kind = "Method")]
-    fn area(&self) -> f32;
+//     #[lua(kind = "Method")]
+//     fn area(&self) -> f32;
 
-"#,
+// "#,
     r#"
 
     #[lua(

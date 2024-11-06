@@ -13,21 +13,22 @@ use bevy_script_api::{
 #[proxy(
     derive(),
     remote = "bevy::input::gamepad::Gamepad",
-    functions[r#"
-/// Returns the USB vendor ID as assigned by the USB-IF, if available.
+    functions[
+        // r#"
+// /// Returns the USB vendor ID as assigned by the USB-IF, if available.
 
-    #[lua(kind = "Method")]
-    fn vendor_id(&self) -> std::option::Option<u16>;
+//     #[lua(kind = "Method")]
+//     fn vendor_id(&self) -> std::option::Option<u16>;
 
-"#,
-    r#"
-/// Returns the USB product ID as assigned by the [vendor], if available.
-/// [vendor]: Self::vendor_id
+// "#,
+//     r#"
+// /// Returns the USB product ID as assigned by the [vendor], if available.
+// /// [vendor]: Self::vendor_id
 
-    #[lua(kind = "Method")]
-    fn product_id(&self) -> std::option::Option<u16>;
+//     #[lua(kind = "Method")]
+//     fn product_id(&self) -> std::option::Option<u16>;
 
-"#,
+// "#,
     r#"
 /// Returns the left stick as a [`Vec2`]
 
@@ -49,37 +50,37 @@ use bevy_script_api::{
     fn dpad(&self) -> bevy::math::Vec2;
 
 "#,
-    r#"
-/// Returns `true` if the [`GamepadButton`] has been pressed.
+//     r#"
+// /// Returns `true` if the [`GamepadButton`] has been pressed.
 
-    #[lua(kind = "Method")]
-    fn pressed(&self, #[proxy] button_type: bevy::input::gamepad::GamepadButton) -> bool;
+//     #[lua(kind = "Method")]
+//     fn pressed(&self, #[proxy] button_type: bevy::input::gamepad::GamepadButton) -> bool;
 
-"#,
-    r#"
-/// Returns `true` if the [`GamepadButton`] has been pressed during the current frame.
-/// Note: This function does not imply information regarding the current state of [`ButtonInput::pressed`] or [`ButtonInput::just_released`].
+// "#,
+//     r#"
+// /// Returns `true` if the [`GamepadButton`] has been pressed during the current frame.
+// /// Note: This function does not imply information regarding the current state of [`ButtonInput::pressed`] or [`ButtonInput::just_released`].
 
-    #[lua(kind = "Method")]
-    fn just_pressed(
-        &self,
-        #[proxy]
-        button_type: bevy::input::gamepad::GamepadButton,
-    ) -> bool;
+//     #[lua(kind = "Method")]
+//     fn just_pressed(
+//         &self,
+//         #[proxy]
+//         button_type: bevy::input::gamepad::GamepadButton,
+//     ) -> bool;
 
-"#,
-    r#"
-/// Returns `true` if the [`GamepadButton`] has been released during the current frame.
-/// Note: This function does not imply information regarding the current state of [`ButtonInput::pressed`] or [`ButtonInput::just_pressed`].
+// "#,
+//     r#"
+// /// Returns `true` if the [`GamepadButton`] has been released during the current frame.
+// /// Note: This function does not imply information regarding the current state of [`ButtonInput::pressed`] or [`ButtonInput::just_pressed`].
 
-    #[lua(kind = "Method")]
-    fn just_released(
-        &self,
-        #[proxy]
-        button_type: bevy::input::gamepad::GamepadButton,
-    ) -> bool;
+//     #[lua(kind = "Method")]
+//     fn just_released(
+//         &self,
+//         #[proxy]
+//         button_type: bevy::input::gamepad::GamepadButton,
+//     ) -> bool;
 
-"#,
+// "#,
     r#"
 #[lua(kind="MetaMethod", metamethod="ToString")]
 fn index(&self) -> String {
@@ -824,45 +825,45 @@ fn index(&self) -> String {
 "#]
 )]
 struct GamepadEvent {}
-#[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
-#[proxy(
-    derive(clone),
-    remote = "bevy::input::gamepad::GamepadInfo",
-    functions[r#"
+// #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
+// #[proxy(
+//     derive(clone),
+//     remote = "bevy::input::gamepad::GamepadInfo",
+//     functions[r#"
 
-    #[lua(
-        as_trait = "std::cmp::PartialEq",
-        kind = "MetaFunction",
-        composite = "eq",
-        metamethod = "Eq",
-    )]
-    fn eq(&self, #[proxy] other: &gamepad::GamepadInfo) -> bool;
+//     #[lua(
+//         as_trait = "std::cmp::PartialEq",
+//         kind = "MetaFunction",
+//         composite = "eq",
+//         metamethod = "Eq",
+//     )]
+//     fn eq(&self, #[proxy] other: &gamepad::GamepadInfo) -> bool;
 
-"#,
-    r#"
+// "#,
+//     r#"
 
-    #[lua(as_trait = "std::cmp::Eq", kind = "Method")]
-    fn assert_receiver_is_total_eq(&self) -> ();
+//     #[lua(as_trait = "std::cmp::Eq", kind = "Method")]
+//     fn assert_receiver_is_total_eq(&self) -> ();
 
-"#,
-    r#"
+// "#,
+//     r#"
 
-    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
-    fn clone(&self) -> bevy::input::gamepad::GamepadInfo;
+//     #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
+//     fn clone(&self) -> bevy::input::gamepad::GamepadInfo;
 
-"#,
-    r#"
-#[lua(kind="MetaMethod", metamethod="ToString")]
-fn index(&self) -> String {
-    format!("{:?}", _self)
-}
-"#]
-)]
-struct GamepadInfo {
-    name: std::string::String,
-    vendor_id: std::option::Option<u16>,
-    product_id: std::option::Option<u16>,
-}
+// "#,
+//     r#"
+// #[lua(kind="MetaMethod", metamethod="ToString")]
+// fn index(&self) -> String {
+//     format!("{:?}", _self)
+// }
+// "#]
+// )]
+// struct GamepadInfo {
+//     name: std::string::String,
+//     vendor_id: std::option::Option<u16>,
+//     product_id: std::option::Option<u16>,
+// }
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
     derive(clone),
@@ -1818,7 +1819,7 @@ impl bevy_mod_scripting_core::hosts::APIProvider for BevyInputAPIProvider {
                             >,
                         >()
                         .process_type::<LuaGamepadEvent>()
-                        .process_type::<LuaGamepadInfo>()
+                        // .process_type::<LuaGamepadInfo>()
                         .process_type::<LuaGamepadInput>()
                         .process_type::<LuaGamepadRumbleRequest>()
                         .process_type::<LuaRawGamepadAxisChangedEvent>()
@@ -1898,7 +1899,7 @@ impl bevy_mod_scripting_core::hosts::APIProvider for BevyInputAPIProvider {
         app.register_foreign_lua_type::<bevy::input::gamepad::GamepadConnection>();
         app.register_foreign_lua_type::<bevy::input::gamepad::GamepadConnectionEvent>();
         app.register_foreign_lua_type::<bevy::input::gamepad::GamepadEvent>();
-        app.register_foreign_lua_type::<bevy::input::gamepad::GamepadInfo>();
+        // app.register_foreign_lua_type::<bevy::input::gamepad::GamepadInfo>();
         app.register_foreign_lua_type::<bevy::input::gamepad::GamepadInput>();
         app.register_foreign_lua_type::<bevy::input::gamepad::GamepadRumbleRequest>();
         app.register_foreign_lua_type::<

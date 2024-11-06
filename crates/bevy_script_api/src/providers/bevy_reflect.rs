@@ -23,21 +23,21 @@ use bevy_script_api::{
     fn new(v: bool) -> std::sync::atomic::AtomicBool;
 
 "#,
-    r#"
-/// Consumes the atomic and returns the contained value.
-/// This is safe because passing `self` by value guarantees that no other threads are
-/// concurrently accessing the atomic data.
-/// # Examples
-/// ```
-/// use std::sync::atomic::AtomicBool;
-/// let some_bool = AtomicBool::new(true);
-/// assert_eq!(some_bool.into_inner(), true);
-/// ```
+//     r#"
+// /// Consumes the atomic and returns the contained value.
+// /// This is safe because passing `self` by value guarantees that no other threads are
+// /// concurrently accessing the atomic data.
+// /// # Examples
+// /// ```
+// /// use std::sync::atomic::AtomicBool;
+// /// let some_bool = AtomicBool::new(true);
+// /// assert_eq!(some_bool.into_inner(), true);
+// /// ```
 
-    #[lua(kind = "Method")]
-    fn into_inner(self) -> bool;
+//     #[lua(kind = "Method")]
+//     fn into_inner(self) -> bool;
 
-"#,
+// "#,
     r#"
 #[lua(kind="MetaMethod", metamethod="ToString")]
 fn index(&self) -> String {
@@ -62,21 +62,21 @@ struct AtomicBool {}
     fn new(v: i16) -> std::sync::atomic::AtomicI16;
 
 "#,
-    r#"
-/// Consumes the atomic and returns the contained value.
-/// This is safe because passing `self` by value guarantees that no other threads are
-/// concurrently accessing the atomic data.
-/// # Examples
-/// ```
-///use std::sync::atomic::AtomicI16;
-///let some_var = AtomicI16::new(5);
-/// assert_eq!(some_var.into_inner(), 5);
-/// ```
+//     r#"
+// /// Consumes the atomic and returns the contained value.
+// /// This is safe because passing `self` by value guarantees that no other threads are
+// /// concurrently accessing the atomic data.
+// /// # Examples
+// /// ```
+// ///use std::sync::atomic::AtomicI16;
+// ///let some_var = AtomicI16::new(5);
+// /// assert_eq!(some_var.into_inner(), 5);
+// /// ```
 
-    #[lua(kind = "Method")]
-    fn into_inner(self) -> i16;
+//     #[lua(kind = "Method")]
+//     fn into_inner(self) -> i16;
 
-"#,
+// "#,
     r#"
 #[lua(kind="MetaMethod", metamethod="ToString")]
 fn index(&self) -> String {
@@ -101,21 +101,21 @@ struct AtomicI16 {}
     fn new(v: i32) -> std::sync::atomic::AtomicI32;
 
 "#,
-    r#"
-/// Consumes the atomic and returns the contained value.
-/// This is safe because passing `self` by value guarantees that no other threads are
-/// concurrently accessing the atomic data.
-/// # Examples
-/// ```
-///use std::sync::atomic::AtomicI32;
-///let some_var = AtomicI32::new(5);
-/// assert_eq!(some_var.into_inner(), 5);
-/// ```
+//     r#"
+// /// Consumes the atomic and returns the contained value.
+// /// This is safe because passing `self` by value guarantees that no other threads are
+// /// concurrently accessing the atomic data.
+// /// # Examples
+// /// ```
+// ///use std::sync::atomic::AtomicI32;
+// ///let some_var = AtomicI32::new(5);
+// /// assert_eq!(some_var.into_inner(), 5);
+// /// ```
 
-    #[lua(kind = "Method")]
-    fn into_inner(self) -> i32;
+//     #[lua(kind = "Method")]
+//     fn into_inner(self) -> i32;
 
-"#,
+// "#,
     r#"
 #[lua(kind="MetaMethod", metamethod="ToString")]
 fn index(&self) -> String {
@@ -140,21 +140,21 @@ struct AtomicI32 {}
     fn new(v: i64) -> std::sync::atomic::AtomicI64;
 
 "#,
-    r#"
-/// Consumes the atomic and returns the contained value.
-/// This is safe because passing `self` by value guarantees that no other threads are
-/// concurrently accessing the atomic data.
-/// # Examples
-/// ```
-///use std::sync::atomic::AtomicI64;
-///let some_var = AtomicI64::new(5);
-/// assert_eq!(some_var.into_inner(), 5);
-/// ```
+//     r#"
+// /// Consumes the atomic and returns the contained value.
+// /// This is safe because passing `self` by value guarantees that no other threads are
+// /// concurrently accessing the atomic data.
+// /// # Examples
+// /// ```
+// ///use std::sync::atomic::AtomicI64;
+// ///let some_var = AtomicI64::new(5);
+// /// assert_eq!(some_var.into_inner(), 5);
+// /// ```
 
-    #[lua(kind = "Method")]
-    fn into_inner(self) -> i64;
+//     #[lua(kind = "Method")]
+//     fn into_inner(self) -> i64;
 
-"#,
+// "#,
     r#"
 #[lua(kind="MetaMethod", metamethod="ToString")]
 fn index(&self) -> String {
@@ -179,21 +179,21 @@ struct AtomicI64 {}
     fn new(v: i8) -> std::sync::atomic::AtomicI8;
 
 "#,
-    r#"
-/// Consumes the atomic and returns the contained value.
-/// This is safe because passing `self` by value guarantees that no other threads are
-/// concurrently accessing the atomic data.
-/// # Examples
-/// ```
-///use std::sync::atomic::AtomicI8;
-///let some_var = AtomicI8::new(5);
-/// assert_eq!(some_var.into_inner(), 5);
-/// ```
+//     r#"
+// /// Consumes the atomic and returns the contained value.
+// /// This is safe because passing `self` by value guarantees that no other threads are
+// /// concurrently accessing the atomic data.
+// /// # Examples
+// /// ```
+// ///use std::sync::atomic::AtomicI8;
+// ///let some_var = AtomicI8::new(5);
+// /// assert_eq!(some_var.into_inner(), 5);
+// /// ```
 
-    #[lua(kind = "Method")]
-    fn into_inner(self) -> i8;
+//     #[lua(kind = "Method")]
+//     fn into_inner(self) -> i8;
 
-"#,
+// "#,
     r#"
 #[lua(kind="MetaMethod", metamethod="ToString")]
 fn index(&self) -> String {
@@ -218,21 +218,21 @@ struct AtomicI8 {}
     fn new(v: isize) -> std::sync::atomic::AtomicIsize;
 
 "#,
-    r#"
-/// Consumes the atomic and returns the contained value.
-/// This is safe because passing `self` by value guarantees that no other threads are
-/// concurrently accessing the atomic data.
-/// # Examples
-/// ```
-///use std::sync::atomic::AtomicIsize;
-///let some_var = AtomicIsize::new(5);
-/// assert_eq!(some_var.into_inner(), 5);
-/// ```
+//     r#"
+// /// Consumes the atomic and returns the contained value.
+// /// This is safe because passing `self` by value guarantees that no other threads are
+// /// concurrently accessing the atomic data.
+// /// # Examples
+// /// ```
+// ///use std::sync::atomic::AtomicIsize;
+// ///let some_var = AtomicIsize::new(5);
+// /// assert_eq!(some_var.into_inner(), 5);
+// /// ```
 
-    #[lua(kind = "Method")]
-    fn into_inner(self) -> isize;
+//     #[lua(kind = "Method")]
+//     fn into_inner(self) -> isize;
 
-"#,
+// "#,
     r#"
 #[lua(kind="MetaMethod", metamethod="ToString")]
 fn index(&self) -> String {
@@ -257,21 +257,21 @@ struct AtomicIsize {}
     fn new(v: u16) -> std::sync::atomic::AtomicU16;
 
 "#,
-    r#"
-/// Consumes the atomic and returns the contained value.
-/// This is safe because passing `self` by value guarantees that no other threads are
-/// concurrently accessing the atomic data.
-/// # Examples
-/// ```
-///use std::sync::atomic::AtomicU16;
-///let some_var = AtomicU16::new(5);
-/// assert_eq!(some_var.into_inner(), 5);
-/// ```
+//     r#"
+// /// Consumes the atomic and returns the contained value.
+// /// This is safe because passing `self` by value guarantees that no other threads are
+// /// concurrently accessing the atomic data.
+// /// # Examples
+// /// ```
+// ///use std::sync::atomic::AtomicU16;
+// ///let some_var = AtomicU16::new(5);
+// /// assert_eq!(some_var.into_inner(), 5);
+// /// ```
 
-    #[lua(kind = "Method")]
-    fn into_inner(self) -> u16;
+//     #[lua(kind = "Method")]
+//     fn into_inner(self) -> u16;
 
-"#,
+// "#,
     r#"
 #[lua(kind="MetaMethod", metamethod="ToString")]
 fn index(&self) -> String {
@@ -296,21 +296,21 @@ struct AtomicU16 {}
     fn new(v: u32) -> std::sync::atomic::AtomicU32;
 
 "#,
-    r#"
-/// Consumes the atomic and returns the contained value.
-/// This is safe because passing `self` by value guarantees that no other threads are
-/// concurrently accessing the atomic data.
-/// # Examples
-/// ```
-///use std::sync::atomic::AtomicU32;
-///let some_var = AtomicU32::new(5);
-/// assert_eq!(some_var.into_inner(), 5);
-/// ```
+//     r#"
+// /// Consumes the atomic and returns the contained value.
+// /// This is safe because passing `self` by value guarantees that no other threads are
+// /// concurrently accessing the atomic data.
+// /// # Examples
+// /// ```
+// ///use std::sync::atomic::AtomicU32;
+// ///let some_var = AtomicU32::new(5);
+// /// assert_eq!(some_var.into_inner(), 5);
+// /// ```
 
-    #[lua(kind = "Method")]
-    fn into_inner(self) -> u32;
+//     #[lua(kind = "Method")]
+//     fn into_inner(self) -> u32;
 
-"#,
+// "#,
     r#"
 #[lua(kind="MetaMethod", metamethod="ToString")]
 fn index(&self) -> String {
@@ -335,21 +335,21 @@ struct AtomicU32 {}
     fn new(v: u64) -> std::sync::atomic::AtomicU64;
 
 "#,
-    r#"
-/// Consumes the atomic and returns the contained value.
-/// This is safe because passing `self` by value guarantees that no other threads are
-/// concurrently accessing the atomic data.
-/// # Examples
-/// ```
-///use std::sync::atomic::AtomicU64;
-///let some_var = AtomicU64::new(5);
-/// assert_eq!(some_var.into_inner(), 5);
-/// ```
+//     r#"
+// /// Consumes the atomic and returns the contained value.
+// /// This is safe because passing `self` by value guarantees that no other threads are
+// /// concurrently accessing the atomic data.
+// /// # Examples
+// /// ```
+// ///use std::sync::atomic::AtomicU64;
+// ///let some_var = AtomicU64::new(5);
+// /// assert_eq!(some_var.into_inner(), 5);
+// /// ```
 
-    #[lua(kind = "Method")]
-    fn into_inner(self) -> u64;
+//     #[lua(kind = "Method")]
+//     fn into_inner(self) -> u64;
 
-"#,
+// "#,
     r#"
 #[lua(kind="MetaMethod", metamethod="ToString")]
 fn index(&self) -> String {
@@ -374,21 +374,21 @@ struct AtomicU64 {}
     fn new(v: u8) -> std::sync::atomic::AtomicU8;
 
 "#,
-    r#"
-/// Consumes the atomic and returns the contained value.
-/// This is safe because passing `self` by value guarantees that no other threads are
-/// concurrently accessing the atomic data.
-/// # Examples
-/// ```
-///use std::sync::atomic::AtomicU8;
-///let some_var = AtomicU8::new(5);
-/// assert_eq!(some_var.into_inner(), 5);
-/// ```
+//     r#"
+// /// Consumes the atomic and returns the contained value.
+// /// This is safe because passing `self` by value guarantees that no other threads are
+// /// concurrently accessing the atomic data.
+// /// # Examples
+// /// ```
+// ///use std::sync::atomic::AtomicU8;
+// ///let some_var = AtomicU8::new(5);
+// /// assert_eq!(some_var.into_inner(), 5);
+// /// ```
 
-    #[lua(kind = "Method")]
-    fn into_inner(self) -> u8;
+//     #[lua(kind = "Method")]
+//     fn into_inner(self) -> u8;
 
-"#,
+// "#,
     r#"
 #[lua(kind="MetaMethod", metamethod="ToString")]
 fn index(&self) -> String {
@@ -413,21 +413,21 @@ struct AtomicU8 {}
     fn new(v: usize) -> std::sync::atomic::AtomicUsize;
 
 "#,
-    r#"
-/// Consumes the atomic and returns the contained value.
-/// This is safe because passing `self` by value guarantees that no other threads are
-/// concurrently accessing the atomic data.
-/// # Examples
-/// ```
-///use std::sync::atomic::AtomicUsize;
-///let some_var = AtomicUsize::new(5);
-/// assert_eq!(some_var.into_inner(), 5);
-/// ```
+//     r#"
+// /// Consumes the atomic and returns the contained value.
+// /// This is safe because passing `self` by value guarantees that no other threads are
+// /// concurrently accessing the atomic data.
+// /// # Examples
+// /// ```
+// ///use std::sync::atomic::AtomicUsize;
+// ///let some_var = AtomicUsize::new(5);
+// /// assert_eq!(some_var.into_inner(), 5);
+// /// ```
 
-    #[lua(kind = "Method")]
-    fn into_inner(self) -> usize;
+//     #[lua(kind = "Method")]
+//     fn into_inner(self) -> usize;
 
-"#,
+// "#,
     r#"
 #[lua(kind="MetaMethod", metamethod="ToString")]
 fn index(&self) -> String {
