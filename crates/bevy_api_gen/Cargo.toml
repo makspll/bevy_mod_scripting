@@ -37,17 +37,16 @@ source = "discover"
 rustc_private = true
 
 [rust-analyzer.check]
-overrideCommand = ["cargo", "+nightly-2024-05-20", "a", "--message-format=json"]
+overrideCommand = ["cargo", "+nightly-2024-11-05", "a", "--message-format=json"]
 
 
 [dependencies]
 log = "0.4"
 env_logger = "0.11"
-rustc_plugin = "=0.10.0-nightly-2024-05-20"
+rustc_plugin = { path = "../../../rustc_plugin/crates/rustc_plugin" }
 indexmap = "2"
 tempdir = "0.3"
 cargo_metadata = "0.18"
-rustc_data_structures = "0.0.1"
 serde_json = "1"
 serde = "1"
 clap = { version = "4", features = ["derive", "string"] }

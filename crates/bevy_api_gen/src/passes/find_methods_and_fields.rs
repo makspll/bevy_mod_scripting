@@ -6,7 +6,9 @@ use rustc_hir::{
     Safety,
 };
 use rustc_infer::infer::TyCtxtInferExt;
-use rustc_middle::ty::{AdtKind, AssocKind, FieldDef, FnSig, ParamEnv, Ty, TyCtxt, TyKind};
+use rustc_middle::ty::{
+    AdtKind, AssocKind, FieldDef, FnSig, ParamEnv, Ty, TyCtxt, TyKind, TypingMode,
+};
 use rustc_span::Symbol;
 use rustc_trait_selection::infer::InferCtxtExt;
 
@@ -86,7 +88,6 @@ pub(crate) fn find_methods_and_fields(ctxt: &mut BevyCtxt<'_>, _args: &Args) -> 
         let mut all_impls = ctxt
             .tcx
             .inherent_impls(def_id)
-            .unwrap()
             .iter()
             .chain(trait_impls_for_ty.iter().flatten())
             .collect::<Vec<_>>();
@@ -410,7 +411,7 @@ pub(crate) fn impls_trait<'tcx>(
     trait_did: DefId,
 ) -> bool {
     tcx.infer_ctxt()
-        .build()
+        .build(TypingMode::non_body_analysis())
         .type_implements_trait(trait_did, [ty], param_env)
         .must_apply_modulo_regions()
 }
