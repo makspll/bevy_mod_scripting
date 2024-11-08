@@ -287,6 +287,12 @@ macro_rules! impl_tealr_generic{
 
         }
 
+        impl ::bevy::reflect::Typed for $name {
+            fn type_info() -> &'static ::bevy::reflect::TypeInfo {
+                panic!("This should never be called, I am a dummy implementation")
+            }
+        }
+
         impl ::bevy::reflect::TypePath for $name {
             fn short_type_path() -> &'static str{
                 panic!("This should never be called, I am a dummy implementation")
@@ -297,11 +303,59 @@ macro_rules! impl_tealr_generic{
             }
         }
 
-        impl ::bevy::reflect::Reflect for $name {
 
-            fn try_apply(&mut self, _: &(dyn bevy::prelude::Reflect + 'static)) -> std::result::Result<(), bevy::reflect::ApplyError> {
+        impl ::bevy::reflect::PartialReflect for $name {
+            fn get_represented_type_info(&self) -> std::option::Option<&'static bevy::reflect::TypeInfo> {
                 panic!("This should never be called, I am a dummy implementation");
             }
+
+            fn into_partial_reflect(self: Box<Self>) -> Box<dyn ::bevy::reflect::PartialReflect> {
+                panic!("This should never be called, I am a dummy implementation");
+            }
+
+            fn as_partial_reflect(&self) -> &dyn ::bevy::reflect::PartialReflect {
+                panic!("This should never be called, I am a dummy implementation");
+            }
+
+            fn as_partial_reflect_mut(&mut self) -> &mut dyn ::bevy::reflect::PartialReflect {
+                panic!("This should never be called, I am a dummy implementation");
+            }
+
+            fn try_into_reflect(self: Box<Self>) -> std::result::Result<std::boxed::Box<(dyn bevy::prelude::Reflect + 'static)>, std::boxed::Box<(dyn bevy::prelude::PartialReflect + 'static)>> {
+                panic!("This should never be called, I am a dummy implementation");
+            }
+
+            fn try_as_reflect(&self) -> std::option::Option<&(dyn bevy::prelude::Reflect + 'static)> {
+                panic!("This should never be called, I am a dummy implementation");
+            }
+
+            fn try_as_reflect_mut(&mut self) -> std::option::Option<&mut (dyn bevy::prelude::Reflect + 'static)> {
+                panic!("This should never be called, I am a dummy implementation");
+            }
+
+            fn try_apply(&mut self, value: &dyn ::bevy::prelude::PartialReflect) -> std::result::Result<(), ::bevy::reflect::ApplyError> {
+                panic!("This should never be called, I am a dummy implementation");
+            }
+
+            fn reflect_ref(&self) -> ::bevy::reflect::ReflectRef {
+                panic!("This should never be called, I am a dummy implementation");
+            }
+
+            fn reflect_mut(&mut self) -> ::bevy::reflect::ReflectMut {
+                panic!("This should never be called, I am a dummy implementation");
+            }
+
+            fn reflect_owned(self: Box<Self>) -> ::bevy::reflect::ReflectOwned {
+                panic!("This should never be called, I am a dummy implementation");
+            }
+
+            fn clone_value(&self) -> Box<dyn ::bevy::prelude::PartialReflect + 'static> {
+                panic!("This should never be called, I am a dummy implementation");
+            }
+        }
+
+
+        impl ::bevy::reflect::Reflect for $name {
 
             fn into_any(self: Box<Self>) -> Box<dyn std::any::Any> {
                 panic!("This should never be called, I am a dummy implementation");
@@ -323,43 +377,20 @@ macro_rules! impl_tealr_generic{
                 panic!("This should never be called, I am a dummy implementation");
             }
 
-            fn apply(&mut self, _: &dyn ::bevy::reflect::Reflect) {
-                panic!("This should never be called, I am a dummy implementation");
-            }
-
             fn set(&mut self, _: Box<dyn ::bevy::reflect::Reflect>) -> Result<(), Box<dyn ::bevy::reflect::Reflect>> {
-                panic!("This should never be called, I am a dummy implementation");
-            }
-
-            fn reflect_ref(&self) -> bevy::reflect::ReflectRef {
-                panic!("This should never be called, I am a dummy implementation");
-            }
-
-            fn reflect_mut(&mut self) -> bevy::reflect::ReflectMut {
-                panic!("This should never be called, I am a dummy implementation");
-            }
-
-            fn clone_value(&self) -> Box<dyn ::bevy::reflect::Reflect> {
                 panic!("This should never be called, I am a dummy implementation");
             }
 
             fn into_reflect(self: Box<Self>) -> Box<dyn ::bevy::reflect::Reflect> {
                 panic!("This should never be called, I am a dummy implementation");
             }
-
-            fn reflect_owned(self: Box<Self>) -> ::bevy::reflect::ReflectOwned {
-                panic!("This should never be called, I am a dummy implementation");
-            }
-
-            fn get_represented_type_info(&self) -> std::option::Option<&'static bevy::reflect::TypeInfo> {
-                panic!("This should never be called, I am a dummy implementation");
-            }
         }
 
         impl ::bevy::reflect::FromReflect for $name {
-            fn from_reflect(_: &(dyn bevy::prelude::Reflect + 'static)) -> std::option::Option<Self> {
+            fn from_reflect(_: &(dyn bevy::prelude::PartialReflect + 'static)) -> std::option::Option<Self> {
                 panic!("This should never be called, I am a dummy implementation");
             }
+
         }
 
         impl ::bevy::reflect::GetTypeRegistration for $name {

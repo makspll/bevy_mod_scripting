@@ -27,22 +27,15 @@ impl AssetLoader for RuneLoader {
     type Settings = ();
     type Error = Error;
 
-    fn load<'a>(
-        &'a self,
-        reader: &'a mut Reader,
-        _settings: &'a (),
-        _load_context: &'a mut bevy::asset::LoadContext,
-    ) -> impl bevy::utils::ConditionalSendFuture<
-        Output = std::result::Result<
-            <Self as bevy::asset::AssetLoader>::Asset,
-            <Self as bevy::asset::AssetLoader>::Error,
-        >,
-    > {
-        Box::pin(async move {
-            let mut bytes = Vec::new();
-            reader.read_to_end(&mut bytes).await?;
-            Ok(RuneFile { bytes })
-        })
+    async fn load(
+        &self,
+        reader: &mut dyn Reader,
+        _settings: &(),
+        _load_context: &mut bevy::asset::LoadContext<'_>,
+    ) -> std::result::Result<Self::Asset, Self::Error> {
+        let mut bytes = Vec::new();
+        reader.read_to_end(&mut bytes).await?;
+        Ok(RuneFile { bytes })
     }
 
     fn extensions(&self) -> &[&str] {

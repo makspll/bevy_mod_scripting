@@ -50,7 +50,7 @@ jobs:
         uses: actions-rs/toolchain@v1
         with:
           profile: minimal
-          toolchain: nightly-2024-05-20
+          toolchain: nightly-2024-11-05
           override: true
           working-directory: crates/bevy_api_gen
       - name: Install Rust toolchain
