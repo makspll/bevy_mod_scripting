@@ -19,6 +19,9 @@
     "rust-analyzer.check.overrideCommand": [
         "/home/makspll/git/bevy_mod_scripting/check.sh"
     ],
+    "rust-analyzer.cargo.buildScripts.overrideCommand": [
+        "/home/makspll/git/bevy_mod_scripting/check.sh"
+    ],
     "rust-analyzer.showUnlinkedFileNotification": false,
     // "rust-analyzer.semanticHighlighting.operator.enable": false
 }
