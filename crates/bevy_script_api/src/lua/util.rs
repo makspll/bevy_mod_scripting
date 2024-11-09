@@ -333,7 +333,7 @@ macro_rules! impl_tealr_generic{
                 panic!("This should never be called, I am a dummy implementation");
             }
 
-            fn try_apply(&mut self, value: &dyn ::bevy::prelude::PartialReflect) -> std::result::Result<(), ::bevy::reflect::ApplyError> {
+            fn try_apply(&mut self, _value: &dyn ::bevy::prelude::PartialReflect) -> std::result::Result<(), ::bevy::reflect::ApplyError> {
                 panic!("This should never be called, I am a dummy implementation");
             }
 

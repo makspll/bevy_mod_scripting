@@ -243,7 +243,7 @@ impl ScriptWorld {
             bevy::reflect::TypeInfo::List(_) => component_data.insert(&mut entity_ref, &DynamicList::default(), &registry_lock),
             bevy::reflect::TypeInfo::Array(_) => component_data.insert(&mut entity_ref, &DynamicArray::new(Box::new([])), &registry_lock),
             bevy::reflect::TypeInfo::Map(_) => component_data.insert(&mut entity_ref, &DynamicMap::default(), &registry_lock),
-            bevy::reflect::TypeInfo::Set(set_info) => component_data.insert(&mut entity_ref, &DynamicSet::default(), &registry_lock),
+            bevy::reflect::TypeInfo::Set(_) => component_data.insert(&mut entity_ref, &DynamicSet::default(), &registry_lock),
             bevy::reflect::TypeInfo::Opaque(_) => component_data.insert(&mut entity_ref,
                 comp_type.data::<ReflectDefault>().ok_or_else(||
                     ScriptError::Other(format!("Component {} is a value or dynamic type with no `ReflectDefault` type_data, cannot instantiate sensible value",comp_type.short_name())))?

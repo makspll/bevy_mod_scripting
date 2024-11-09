@@ -1,5 +1,5 @@
 use bevy::{
-    asset::{io::Reader, Asset, AssetLoader, AsyncReadExt},
+    asset::{io::Reader, Asset, AssetLoader},
     reflect::TypePath,
     utils::BoxedFuture,
 };

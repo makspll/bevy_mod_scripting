@@ -111,25 +111,26 @@ codegen-units = 8
 incremental = false
 debug = false
 
-[[example]]
-name = "console_integration_lua"
-path = "examples/lua/console_integration.rs"
-required-features = [
-    "lua54",
-    "lua_script_api",
-    "bevy/file_watcher",
-    "bevy/multi_threaded",
-]
+# TODO: bump once bevy is released and the lib is updated
+# [[example]]
+# name = "console_integration_lua"
+# path = "examples/lua/console_integration.rs"
+# required-features = [
+#     "lua54",
+#     "lua_script_api",
+#     "bevy/file_watcher",
+#     "bevy/multi_threaded",
+# ]
 
-[[example]]
-name = "console_integration_rhai"
-path = "examples/rhai/console_integration.rs"
-required-features = [
-    "rhai",
-    "rhai_script_api",
-    "bevy/file_watcher",
-    "bevy/multi_threaded",
-]
+# [[example]]
+# name = "console_integration_rhai"
+# path = "examples/rhai/console_integration.rs"
+# required-features = [
+#     "rhai",
+#     "rhai_script_api",
+#     "bevy/file_watcher",
+#     "bevy/multi_threaded",
+# ]
 
 [[example]]
 name = "complex_game_loop_lua"
