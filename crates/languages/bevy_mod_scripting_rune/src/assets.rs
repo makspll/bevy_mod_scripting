@@ -1,6 +1,6 @@
 use anyhow::Error;
 use bevy::{
-    asset::{io::Reader, Asset, AssetLoader, AsyncReadExt},
+    asset::{io::Reader, Asset, AssetLoader},
     reflect::TypePath,
 };
 use bevy_mod_scripting_core::prelude::*;
