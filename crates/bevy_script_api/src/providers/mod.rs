@@ -2,6 +2,7 @@
 #![allow(clippy::all)]
 #![allow(unused, deprecated, dead_code)]
 #![cfg_attr(rustfmt, rustfmt_skip)]
+pub mod bevy_a11y;
 pub mod bevy_ecs;
 pub mod bevy_transform;
 pub mod bevy_math;
@@ -22,6 +23,7 @@ impl bevy_mod_scripting_core::hosts::APIProvider for LuaBevyAPIProvider {
         &mut self,
         ctx: &mut Self::APITarget,
     ) -> Result<(), bevy_mod_scripting_core::error::ScriptError> {
+        bevy_a11y::BevyA11YAPIProvider.attach_api(ctx)?;
         bevy_ecs::BevyEcsAPIProvider.attach_api(ctx)?;
         bevy_transform::BevyTransformAPIProvider.attach_api(ctx)?;
         bevy_math::BevyMathAPIProvider.attach_api(ctx)?;
@@ -35,6 +37,7 @@ impl bevy_mod_scripting_core::hosts::APIProvider for LuaBevyAPIProvider {
     }
     fn get_doc_fragment(&self) -> Option<Self::DocTarget> {
         [
+            bevy_a11y::BevyA11YAPIProvider.get_doc_fragment(),
             bevy_ecs::BevyEcsAPIProvider.get_doc_fragment(),
             bevy_transform::BevyTransformAPIProvider.get_doc_fragment(),
             bevy_math::BevyMathAPIProvider.get_doc_fragment(),
@@ -71,6 +74,7 @@ impl bevy_mod_scripting_core::hosts::APIProvider for LuaBevyAPIProvider {
         Ok(())
     }
     fn register_with_app(&self, app: &mut bevy::app::App) {
+        bevy_a11y::BevyA11YAPIProvider.register_with_app(app);
         bevy_ecs::BevyEcsAPIProvider.register_with_app(app);
         bevy_transform::BevyTransformAPIProvider.register_with_app(app);
         bevy_math::BevyMathAPIProvider.register_with_app(app);

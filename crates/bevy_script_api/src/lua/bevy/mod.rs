@@ -9,7 +9,7 @@ use crate::lua::{
 };
 use crate::providers::bevy_ecs::LuaEntity;
 use crate::{impl_from_lua_with_clone, impl_tealr_type};
-use bevy::hierarchy::BuildWorldChildren;
+use bevy::hierarchy::BuildChildren;
 use bevy::prelude::{AppTypeRegistry, ReflectResource};
 use bevy_mod_scripting_core::prelude::*;
 use bevy_mod_scripting_lua::{prelude::IntoLua, tealr};
@@ -288,8 +288,8 @@ impl TealData for LuaWorld {
                     .map(|e| e.inner())
                     .collect::<Result<Vec<_>, _>>()?;
 
-                if let Some(mut entity) = w.get_entity_mut(parent.inner()?) {
-                    entity.push_children(&children);
+                if let Ok(mut entity) = w.get_entity_mut(parent.inner()?) {
+                    entity.add_children(&children);
                 }
 
                 Ok(())

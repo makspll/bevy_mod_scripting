@@ -138,13 +138,13 @@ impl CachedTraits {
             .all(|t| self.std_source_traits.contains_key(*t))
     }
 
-    pub(crate) fn missing_std_source_traits(&self) -> Vec<String> {
-        STD_SOURCE_TRAITS
-            .iter()
-            .filter(|t| !self.std_source_traits.contains_key(**t))
-            .map(|s| (*s).to_owned())
-            .collect()
-    }
+    // pub(crate) fn missing_std_source_traits(&self) -> Vec<String> {
+    //     STD_SOURCE_TRAITS
+    //         .iter()
+    //         .filter(|t| !self.std_source_traits.contains_key(**t))
+    //         .map(|s| (*s).to_owned())
+    //         .collect()
+    // }
 }
 
 #[derive(Clone, Debug)]

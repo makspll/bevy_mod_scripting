@@ -91,18 +91,15 @@ pub fn setup(
 
     let script_path = "scripts/game_of_life.rhai";
 
-    commands.spawn(Camera2dBundle::default());
+    commands.spawn(Camera2d);
     commands
-        .spawn(SpriteBundle {
-            texture: assets.add(image),
-            sprite: Sprite {
-                custom_size: Some(Vec2::new(
-                    settings.display_grid_dimensions.0 as f32,
-                    settings.display_grid_dimensions.1 as f32,
-                )),
-                color: Color::srgb(1.0, 0.388, 0.278), // TOMATO
-                ..Default::default()
-            },
+        .spawn(Sprite {
+            image: assets.add(image),
+            custom_size: Some(Vec2::new(
+                settings.display_grid_dimensions.0 as f32,
+                settings.display_grid_dimensions.1 as f32,
+            )),
+            color: Color::srgb(1.0, 0.388, 0.278), // TOMATO
             ..Default::default()
         })
         .insert(LifeState {
@@ -161,11 +158,11 @@ pub fn sync_window_size(
 /// Runs after LifeState components are updated, updates their rendered representation
 pub fn update_rendered_state(
     mut assets: ResMut<Assets<Image>>,
-    query: Query<(&LifeState, &Handle<Image>)>,
+    query: Query<(&LifeState, &Sprite)>,
 ) {
     for (new_state, old_rendered_state) in query.iter() {
         let old_rendered_state = assets
-            .get_mut(old_rendered_state)
+            .get_mut(&old_rendered_state.image)
             .expect("World is not setup correctly");
 
         old_rendered_state.data = new_state.cells.clone();

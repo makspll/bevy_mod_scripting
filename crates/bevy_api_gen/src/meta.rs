@@ -94,7 +94,7 @@ impl MetaLoader {
         let cache = self.cache.borrow();
         if cache.contains_key(crate_name) {
             trace!("Loading meta from cache for: {}", crate_name);
-            return cache.get(crate_name).cloned();
+            cache.get(crate_name).cloned()
         } else {
             trace!("Loading meta from filesystem for: {}", crate_name);
             drop(cache);

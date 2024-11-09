@@ -33,13 +33,6 @@ struct Children();
     derive(),
     remote = "bevy::hierarchy::prelude::Parent",
     functions[r#"
-/// Gets the [`Entity`] ID of the parent.
-
-    #[lua(kind = "Method", output(proxy))]
-    fn get(&self) -> bevy::ecs::entity::Entity;
-
-"#,
-    r#"
 
     #[lua(
         as_trait = "std::cmp::PartialEq",
@@ -48,6 +41,13 @@ struct Children();
         metamethod = "Eq",
     )]
     fn eq(&self, #[proxy] other: &components::parent::Parent) -> bool;
+
+"#,
+    r#"
+/// Gets the [`Entity`] ID of the parent.
+
+    #[lua(kind = "Method", output(proxy))]
+    fn get(&self) -> bevy::ecs::entity::Entity;
 
 "#,
     r#"
@@ -64,6 +64,41 @@ fn index(&self) -> String {
 "#]
 )]
 struct Parent();
+#[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
+#[proxy(
+    derive(clone),
+    remote = "bevy::hierarchy::HierarchyEvent",
+    functions[r#"
+
+    #[lua(as_trait = "std::cmp::Eq", kind = "Method")]
+    fn assert_receiver_is_total_eq(&self) -> ();
+
+"#,
+    r#"
+
+    #[lua(
+        as_trait = "std::cmp::PartialEq",
+        kind = "MetaFunction",
+        composite = "eq",
+        metamethod = "Eq",
+    )]
+    fn eq(&self, #[proxy] other: &events::HierarchyEvent) -> bool;
+
+"#,
+    r#"
+
+    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
+    fn clone(&self) -> bevy::hierarchy::HierarchyEvent;
+
+"#,
+    r#"
+#[lua(kind="MetaMethod", metamethod="ToString")]
+fn index(&self) -> String {
+    format!("{:?}", _self)
+}
+"#]
+)]
+struct HierarchyEvent {}
 #[derive(Default)]
 pub(crate) struct Globals;
 impl bevy_mod_scripting_lua::tealr::mlu::ExportInstances for Globals {
@@ -98,6 +133,7 @@ impl bevy_mod_scripting_core::hosts::APIProvider for BevyHierarchyAPIProvider {
                         .expect("Something went wrong documenting globals")
                         .process_type::<LuaChildren>()
                         .process_type::<LuaParent>()
+                        .process_type::<LuaHierarchyEvent>()
                 },
             ),
         )
@@ -120,5 +156,6 @@ impl bevy_mod_scripting_core::hosts::APIProvider for BevyHierarchyAPIProvider {
     fn register_with_app(&self, app: &mut bevy::app::App) {
         app.register_foreign_lua_type::<bevy::hierarchy::prelude::Children>();
         app.register_foreign_lua_type::<bevy::hierarchy::prelude::Parent>();
+        app.register_foreign_lua_type::<bevy::hierarchy::HierarchyEvent>();
     }
 }
