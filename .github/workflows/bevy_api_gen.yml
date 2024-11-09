@@ -1,12 +1,10 @@
 on:
-  pull_request:
-    paths: 
-    - "crates/bevy_api_gen/**"
   push:
     branches:
-      - main
+      - "**"
     paths: 
       - "crates/bevy_api_gen/**"
+      - ".github/workflows/bevy_api_gen.yml"
 
 
 name: Check and Lint - bevy_api_gen
