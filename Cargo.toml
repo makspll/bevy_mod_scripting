@@ -1,6 +1,6 @@
 [package]
 name = "bevy_mod_scripting"
-version = "0.7.1"
+version = "0.8.0-alpha.0"
 authors = ["Maksymilian Mozolewski <makspl17@gmail.com>"]
 edition = "2021"
 license = "MIT OR Apache-2.0"
@@ -63,16 +63,16 @@ rune = ["bevy_mod_scripting_rune"]
 [dependencies]
 bevy = { workspace = true }
 bevy_mod_scripting_core = { workspace = true }
-bevy_mod_scripting_lua = { path = "crates/languages/bevy_mod_scripting_lua", version = "0.7.1", optional = true }
-bevy_mod_scripting_rhai = { path = "crates/languages/bevy_mod_scripting_rhai", version = "0.7.1", optional = true }
-bevy_mod_scripting_rune = { path = "crates/languages/bevy_mod_scripting_rune", version = "0.7.1", optional = true }
-bevy_script_api = { path = "crates/bevy_script_api", version = "0.7.1", optional = true }
+bevy_mod_scripting_lua = { path = "crates/languages/bevy_mod_scripting_lua", version = "0.8.0-alpha.0", optional = true }
+bevy_mod_scripting_rhai = { path = "crates/languages/bevy_mod_scripting_rhai", version = "0.8.0-alpha.0", optional = true }
+bevy_mod_scripting_rune = { path = "crates/languages/bevy_mod_scripting_rune", version = "0.8.0-alpha.0", optional = true }
+bevy_script_api = { path = "crates/bevy_script_api", version = "0.8.0-alpha.0", optional = true }
 
 
 [workspace.dependencies]
 bevy = { version = "0.15.0-rc.2", default-features = false }
-bevy_mod_scripting_core = { path = "crates/bevy_mod_scripting_core", version = "0.7.1" }
-bevy_mod_scripting_common = { path = "crates/bevy_mod_scripting_common", version = "0.7.1" }
+bevy_mod_scripting_core = { path = "crates/bevy_mod_scripting_core", version = "0.8.0-alpha.0" }
+bevy_mod_scripting_common = { path = "crates/bevy_mod_scripting_common", version = "0.8.0-alpha.0" }
 
 [dev-dependencies]
 bevy = { workspace = true, default-features = true }
