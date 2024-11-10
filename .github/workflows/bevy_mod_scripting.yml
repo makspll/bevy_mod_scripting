@@ -21,7 +21,7 @@ concurrency:
 
 jobs:
   check:
-    name: Check - {{ matrix.run_args.label }}
+    name: Check - ${{ matrix.run_args.label }}
     runs-on: ${{ matrix.run_args.os }}
     strategy:
       matrix:
