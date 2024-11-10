@@ -4,6 +4,7 @@
 #![cfg_attr(rustfmt, rustfmt_skip)]
 use super::bevy_ecs::*;
 use super::bevy_reflect::*;
+use super::bevy_core::*;
 use super::bevy_math::*;
 extern crate self as bevy_script_api;
 use bevy_script_api::{
@@ -13,23 +14,7 @@ use bevy_script_api::{
 #[proxy(
     derive(),
     remote = "bevy::input::gamepad::Gamepad",
-    functions[
-        // r#"
-// /// Returns the USB vendor ID as assigned by the USB-IF, if available.
-
-//     #[lua(kind = "Method")]
-//     fn vendor_id(&self) -> std::option::Option<u16>;
-
-// "#,
-//     r#"
-// /// Returns the USB product ID as assigned by the [vendor], if available.
-// /// [vendor]: Self::vendor_id
-
-//     #[lua(kind = "Method")]
-//     fn product_id(&self) -> std::option::Option<u16>;
-
-// "#,
-    r#"
+    functions[r#"
 /// Returns the left stick as a [`Vec2`]
 
     #[lua(kind = "Method", output(proxy))]
@@ -50,37 +35,6 @@ use bevy_script_api::{
     fn dpad(&self) -> bevy::math::Vec2;
 
 "#,
-//     r#"
-// /// Returns `true` if the [`GamepadButton`] has been pressed.
-
-//     #[lua(kind = "Method")]
-//     fn pressed(&self, #[proxy] button_type: bevy::input::gamepad::GamepadButton) -> bool;
-
-// "#,
-//     r#"
-// /// Returns `true` if the [`GamepadButton`] has been pressed during the current frame.
-// /// Note: This function does not imply information regarding the current state of [`ButtonInput::pressed`] or [`ButtonInput::just_released`].
-
-//     #[lua(kind = "Method")]
-//     fn just_pressed(
-//         &self,
-//         #[proxy]
-//         button_type: bevy::input::gamepad::GamepadButton,
-//     ) -> bool;
-
-// "#,
-//     r#"
-// /// Returns `true` if the [`GamepadButton`] has been released during the current frame.
-// /// Note: This function does not imply information regarding the current state of [`ButtonInput::pressed`] or [`ButtonInput::just_pressed`].
-
-//     #[lua(kind = "Method")]
-//     fn just_released(
-//         &self,
-//         #[proxy]
-//         button_type: bevy::input::gamepad::GamepadButton,
-//     ) -> bool;
-
-// "#,
     r#"
 #[lua(kind="MetaMethod", metamethod="ToString")]
 fn index(&self) -> String {
@@ -88,15 +42,25 @@ fn index(&self) -> String {
 }
 "#]
 )]
-struct Gamepad {}
+struct Gamepad {
+    vendor_id: std::option::Option<u16>,
+    product_id: std::option::Option<u16>,
+    digital: ReflectedValue,
+    analog: ReflectedValue,
+}
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
     derive(clone),
     remote = "bevy::input::gamepad::GamepadAxis",
     functions[r#"
 
-    #[lua(as_trait = "std::cmp::Eq", kind = "Method")]
-    fn assert_receiver_is_total_eq(&self) -> ();
+    #[lua(
+        as_trait = "std::cmp::PartialEq",
+        kind = "MetaFunction",
+        composite = "eq",
+        metamethod = "Eq",
+    )]
+    fn eq(&self, #[proxy] other: &gamepad::GamepadAxis) -> bool;
 
 "#,
     r#"
@@ -107,13 +71,8 @@ struct Gamepad {}
 "#,
     r#"
 
-    #[lua(
-        as_trait = "std::cmp::PartialEq",
-        kind = "MetaFunction",
-        composite = "eq",
-        metamethod = "Eq",
-    )]
-    fn eq(&self, #[proxy] other: &gamepad::GamepadAxis) -> bool;
+    #[lua(as_trait = "std::cmp::Eq", kind = "Method")]
+    fn assert_receiver_is_total_eq(&self) -> ();
 
 "#,
     r#"
@@ -130,13 +89,8 @@ struct GamepadAxis {}
     remote = "bevy::input::gamepad::GamepadButton",
     functions[r#"
 
-    #[lua(
-        as_trait = "std::cmp::PartialEq",
-        kind = "MetaFunction",
-        composite = "eq",
-        metamethod = "Eq",
-    )]
-    fn eq(&self, #[proxy] other: &gamepad::GamepadButton) -> bool;
+    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
+    fn clone(&self) -> bevy::input::gamepad::GamepadButton;
 
 "#,
     r#"
@@ -147,8 +101,13 @@ struct GamepadAxis {}
 "#,
     r#"
 
-    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
-    fn clone(&self) -> bevy::input::gamepad::GamepadButton;
+    #[lua(
+        as_trait = "std::cmp::PartialEq",
+        kind = "MetaFunction",
+        composite = "eq",
+        metamethod = "Eq",
+    )]
+    fn eq(&self, #[proxy] other: &gamepad::GamepadButton) -> bool;
 
 "#,
     r#"
@@ -193,8 +152,13 @@ struct GamepadSettings {
     remote = "bevy::input::keyboard::KeyCode",
     functions[r#"
 
-    #[lua(as_trait = "std::cmp::Eq", kind = "Method")]
-    fn assert_receiver_is_total_eq(&self) -> ();
+    #[lua(
+        as_trait = "std::cmp::PartialEq",
+        kind = "MetaFunction",
+        composite = "eq",
+        metamethod = "Eq",
+    )]
+    fn eq(&self, #[proxy] other: &keyboard::KeyCode) -> bool;
 
 "#,
     r#"
@@ -205,13 +169,8 @@ struct GamepadSettings {
 "#,
     r#"
 
-    #[lua(
-        as_trait = "std::cmp::PartialEq",
-        kind = "MetaFunction",
-        composite = "eq",
-        metamethod = "Eq",
-    )]
-    fn eq(&self, #[proxy] other: &keyboard::KeyCode) -> bool;
+    #[lua(as_trait = "std::cmp::Eq", kind = "Method")]
+    fn assert_receiver_is_total_eq(&self) -> ();
 
 "#,
     r#"
@@ -301,12 +260,6 @@ struct TouchInput {
     remote = "bevy::input::keyboard::KeyboardFocusLost",
     functions[r#"
 
-    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
-    fn clone(&self) -> bevy::input::keyboard::KeyboardFocusLost;
-
-"#,
-    r#"
-
     #[lua(
         as_trait = "std::cmp::PartialEq",
         kind = "MetaFunction",
@@ -314,6 +267,12 @@ struct TouchInput {
         metamethod = "Eq",
     )]
     fn eq(&self, #[proxy] other: &keyboard::KeyboardFocusLost) -> bool;
+
+"#,
+    r#"
+
+    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
+    fn clone(&self) -> bevy::input::keyboard::KeyboardFocusLost;
 
 "#,
     r#"
@@ -336,12 +295,6 @@ struct KeyboardFocusLost {}
     remote = "bevy::input::keyboard::KeyboardInput",
     functions[r#"
 
-    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
-    fn clone(&self) -> bevy::input::keyboard::KeyboardInput;
-
-"#,
-    r#"
-
     #[lua(
         as_trait = "std::cmp::PartialEq",
         kind = "MetaFunction",
@@ -349,6 +302,12 @@ struct KeyboardFocusLost {}
         metamethod = "Eq",
     )]
     fn eq(&self, #[proxy] other: &keyboard::KeyboardInput) -> bool;
+
+"#,
+    r#"
+
+    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
+    fn clone(&self) -> bevy::input::keyboard::KeyboardInput;
 
 "#,
     r#"
@@ -381,12 +340,6 @@ struct KeyboardInput {
     remote = "bevy::input::mouse::AccumulatedMouseMotion",
     functions[r#"
 
-    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
-    fn clone(&self) -> bevy::input::mouse::AccumulatedMouseMotion;
-
-"#,
-    r#"
-
     #[lua(
         as_trait = "std::cmp::PartialEq",
         kind = "MetaFunction",
@@ -394,6 +347,12 @@ struct KeyboardInput {
         metamethod = "Eq",
     )]
     fn eq(&self, #[proxy] other: &mouse::AccumulatedMouseMotion) -> bool;
+
+"#,
+    r#"
+
+    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
+    fn clone(&self) -> bevy::input::mouse::AccumulatedMouseMotion;
 
 "#,
     r#"
@@ -447,6 +406,12 @@ struct AccumulatedMouseScroll {
     remote = "bevy::input::mouse::MouseButtonInput",
     functions[r#"
 
+    #[lua(as_trait = "std::cmp::Eq", kind = "Method")]
+    fn assert_receiver_is_total_eq(&self) -> ();
+
+"#,
+    r#"
+
     #[lua(
         as_trait = "std::cmp::PartialEq",
         kind = "MetaFunction",
@@ -460,12 +425,6 @@ struct AccumulatedMouseScroll {
 
     #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
     fn clone(&self) -> bevy::input::mouse::MouseButtonInput;
-
-"#,
-    r#"
-
-    #[lua(as_trait = "std::cmp::Eq", kind = "Method")]
-    fn assert_receiver_is_total_eq(&self) -> ();
 
 "#,
     r#"
@@ -557,6 +516,17 @@ struct MouseWheel {
     remote = "bevy::input::gamepad::GamepadAxisChangedEvent",
     functions[r#"
 
+    #[lua(
+        as_trait = "std::cmp::PartialEq",
+        kind = "MetaFunction",
+        composite = "eq",
+        metamethod = "Eq",
+    )]
+    fn eq(&self, #[proxy] other: &gamepad::GamepadAxisChangedEvent) -> bool;
+
+"#,
+    r#"
+
     #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
     fn clone(&self) -> bevy::input::gamepad::GamepadAxisChangedEvent;
 
@@ -572,17 +542,6 @@ struct MouseWheel {
         axis: bevy::input::gamepad::GamepadAxis,
         value: f32,
     ) -> bevy::input::gamepad::GamepadAxisChangedEvent;
-
-"#,
-    r#"
-
-    #[lua(
-        as_trait = "std::cmp::PartialEq",
-        kind = "MetaFunction",
-        composite = "eq",
-        metamethod = "Eq",
-    )]
-    fn eq(&self, #[proxy] other: &gamepad::GamepadAxisChangedEvent) -> bool;
 
 "#,
     r#"
@@ -656,14 +615,17 @@ struct GamepadButtonChangedEvent {
     derive(clone),
     remote = "bevy::input::gamepad::GamepadButtonStateChangedEvent",
     functions[r#"
+/// Creates a new [`GamepadButtonStateChangedEvent`]
 
-    #[lua(
-        as_trait = "std::cmp::PartialEq",
-        kind = "MetaFunction",
-        composite = "eq",
-        metamethod = "Eq",
-    )]
-    fn eq(&self, #[proxy] other: &gamepad::GamepadButtonStateChangedEvent) -> bool;
+    #[lua(kind = "Function", output(proxy))]
+    fn new(
+        #[proxy]
+        entity: bevy::ecs::entity::Entity,
+        #[proxy]
+        button: bevy::input::gamepad::GamepadButton,
+        #[proxy]
+        state: bevy::input::ButtonState,
+    ) -> bevy::input::gamepad::GamepadButtonStateChangedEvent;
 
 "#,
     r#"
@@ -679,17 +641,14 @@ struct GamepadButtonChangedEvent {
 
 "#,
     r#"
-/// Creates a new [`GamepadButtonStateChangedEvent`]
 
-    #[lua(kind = "Function", output(proxy))]
-    fn new(
-        #[proxy]
-        entity: bevy::ecs::entity::Entity,
-        #[proxy]
-        button: bevy::input::gamepad::GamepadButton,
-        #[proxy]
-        state: bevy::input::ButtonState,
-    ) -> bevy::input::gamepad::GamepadButtonStateChangedEvent;
+    #[lua(
+        as_trait = "std::cmp::PartialEq",
+        kind = "MetaFunction",
+        composite = "eq",
+        metamethod = "Eq",
+    )]
+    fn eq(&self, #[proxy] other: &gamepad::GamepadButtonStateChangedEvent) -> bool;
 
 "#,
     r#"
@@ -741,6 +700,23 @@ struct GamepadConnection {}
     derive(clone),
     remote = "bevy::input::gamepad::GamepadConnectionEvent",
     functions[r#"
+
+    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
+    fn clone(&self) -> bevy::input::gamepad::GamepadConnectionEvent;
+
+"#,
+    r#"
+
+    #[lua(
+        as_trait = "std::cmp::PartialEq",
+        kind = "MetaFunction",
+        composite = "eq",
+        metamethod = "Eq",
+    )]
+    fn eq(&self, #[proxy] other: &gamepad::GamepadConnectionEvent) -> bool;
+
+"#,
+    r#"
 /// Creates a [`GamepadConnectionEvent`].
 
     #[lua(kind = "Function", output(proxy))]
@@ -764,23 +740,6 @@ struct GamepadConnection {}
 
     #[lua(kind = "Method")]
     fn disconnected(&self) -> bool;
-
-"#,
-    r#"
-
-    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
-    fn clone(&self) -> bevy::input::gamepad::GamepadConnectionEvent;
-
-"#,
-    r#"
-
-    #[lua(
-        as_trait = "std::cmp::PartialEq",
-        kind = "MetaFunction",
-        composite = "eq",
-        metamethod = "Eq",
-    )]
-    fn eq(&self, #[proxy] other: &gamepad::GamepadConnectionEvent) -> bool;
 
 "#,
     r#"
@@ -825,56 +784,11 @@ fn index(&self) -> String {
 "#]
 )]
 struct GamepadEvent {}
-// #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
-// #[proxy(
-//     derive(clone),
-//     remote = "bevy::input::gamepad::GamepadInfo",
-//     functions[r#"
-
-//     #[lua(
-//         as_trait = "std::cmp::PartialEq",
-//         kind = "MetaFunction",
-//         composite = "eq",
-//         metamethod = "Eq",
-//     )]
-//     fn eq(&self, #[proxy] other: &gamepad::GamepadInfo) -> bool;
-
-// "#,
-//     r#"
-
-//     #[lua(as_trait = "std::cmp::Eq", kind = "Method")]
-//     fn assert_receiver_is_total_eq(&self) -> ();
-
-// "#,
-//     r#"
-
-//     #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
-//     fn clone(&self) -> bevy::input::gamepad::GamepadInfo;
-
-// "#,
-//     r#"
-// #[lua(kind="MetaMethod", metamethod="ToString")]
-// fn index(&self) -> String {
-//     format!("{:?}", _self)
-// }
-// "#]
-// )]
-// struct GamepadInfo {
-//     name: std::string::String,
-//     vendor_id: std::option::Option<u16>,
-//     product_id: std::option::Option<u16>,
-// }
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
     derive(clone),
     remote = "bevy::input::gamepad::GamepadInput",
     functions[r#"
-
-    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
-    fn clone(&self) -> bevy::input::gamepad::GamepadInput;
-
-"#,
-    r#"
 
     #[lua(
         as_trait = "std::cmp::PartialEq",
@@ -883,6 +797,12 @@ struct GamepadEvent {}
         metamethod = "Eq",
     )]
     fn eq(&self, #[proxy] other: &gamepad::GamepadInput) -> bool;
+
+"#,
+    r#"
+
+    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
+    fn clone(&self) -> bevy::input::gamepad::GamepadInput;
 
 "#,
     r#"
@@ -924,12 +844,6 @@ struct GamepadRumbleRequest {}
     remote = "bevy::input::gamepad::RawGamepadAxisChangedEvent",
     functions[r#"
 
-    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
-    fn clone(&self) -> bevy::input::gamepad::RawGamepadAxisChangedEvent;
-
-"#,
-    r#"
-
     #[lua(
         as_trait = "std::cmp::PartialEq",
         kind = "MetaFunction",
@@ -937,6 +851,12 @@ struct GamepadRumbleRequest {}
         metamethod = "Eq",
     )]
     fn eq(&self, #[proxy] other: &gamepad::RawGamepadAxisChangedEvent) -> bool;
+
+"#,
+    r#"
+
+    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
+    fn clone(&self) -> bevy::input::gamepad::RawGamepadAxisChangedEvent;
 
 "#,
     r#"
@@ -977,6 +897,17 @@ struct RawGamepadAxisChangedEvent {
 
 "#,
     r#"
+
+    #[lua(
+        as_trait = "std::cmp::PartialEq",
+        kind = "MetaFunction",
+        composite = "eq",
+        metamethod = "Eq",
+    )]
+    fn eq(&self, #[proxy] other: &gamepad::RawGamepadButtonChangedEvent) -> bool;
+
+"#,
+    r#"
 /// Creates a [`RawGamepadButtonChangedEvent`].
 
     #[lua(kind = "Function", output(proxy))]
@@ -987,17 +918,6 @@ struct RawGamepadAxisChangedEvent {
         button_type: bevy::input::gamepad::GamepadButton,
         value: f32,
     ) -> bevy::input::gamepad::RawGamepadButtonChangedEvent;
-
-"#,
-    r#"
-
-    #[lua(
-        as_trait = "std::cmp::PartialEq",
-        kind = "MetaFunction",
-        composite = "eq",
-        metamethod = "Eq",
-    )]
-    fn eq(&self, #[proxy] other: &gamepad::RawGamepadButtonChangedEvent) -> bool;
 
 "#,
     r#"
@@ -1020,12 +940,6 @@ struct RawGamepadButtonChangedEvent {
     remote = "bevy::input::gamepad::RawGamepadEvent",
     functions[r#"
 
-    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
-    fn clone(&self) -> bevy::input::gamepad::RawGamepadEvent;
-
-"#,
-    r#"
-
     #[lua(
         as_trait = "std::cmp::PartialEq",
         kind = "MetaFunction",
@@ -1033,6 +947,12 @@ struct RawGamepadButtonChangedEvent {
         metamethod = "Eq",
     )]
     fn eq(&self, #[proxy] other: &gamepad::RawGamepadEvent) -> bool;
+
+"#,
+    r#"
+
+    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
+    fn clone(&self) -> bevy::input::gamepad::RawGamepadEvent;
 
 "#,
     r#"
@@ -1049,12 +969,6 @@ struct RawGamepadEvent {}
     remote = "bevy::input::gestures::PinchGesture",
     functions[r#"
 
-    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
-    fn clone(&self) -> bevy::input::gestures::PinchGesture;
-
-"#,
-    r#"
-
     #[lua(
         as_trait = "std::cmp::PartialEq",
         kind = "MetaFunction",
@@ -1062,6 +976,12 @@ struct RawGamepadEvent {}
         metamethod = "Eq",
     )]
     fn eq(&self, #[proxy] other: &gestures::PinchGesture) -> bool;
+
+"#,
+    r#"
+
+    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
+    fn clone(&self) -> bevy::input::gestures::PinchGesture;
 
 "#,
     r#"
@@ -1078,12 +998,6 @@ struct PinchGesture(f32);
     remote = "bevy::input::gestures::RotationGesture",
     functions[r#"
 
-    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
-    fn clone(&self) -> bevy::input::gestures::RotationGesture;
-
-"#,
-    r#"
-
     #[lua(
         as_trait = "std::cmp::PartialEq",
         kind = "MetaFunction",
@@ -1091,6 +1005,12 @@ struct PinchGesture(f32);
         metamethod = "Eq",
     )]
     fn eq(&self, #[proxy] other: &gestures::RotationGesture) -> bool;
+
+"#,
+    r#"
+
+    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
+    fn clone(&self) -> bevy::input::gestures::RotationGesture;
 
 "#,
     r#"
@@ -1107,12 +1027,6 @@ struct RotationGesture(f32);
     remote = "bevy::input::gestures::DoubleTapGesture",
     functions[r#"
 
-    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
-    fn clone(&self) -> bevy::input::gestures::DoubleTapGesture;
-
-"#,
-    r#"
-
     #[lua(
         as_trait = "std::cmp::PartialEq",
         kind = "MetaFunction",
@@ -1120,6 +1034,12 @@ struct RotationGesture(f32);
         metamethod = "Eq",
     )]
     fn eq(&self, #[proxy] other: &gestures::DoubleTapGesture) -> bool;
+
+"#,
+    r#"
+
+    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
+    fn clone(&self) -> bevy::input::gestures::DoubleTapGesture;
 
 "#,
     r#"
@@ -1136,6 +1056,12 @@ struct DoubleTapGesture {}
     remote = "bevy::input::gestures::PanGesture",
     functions[r#"
 
+    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
+    fn clone(&self) -> bevy::input::gestures::PanGesture;
+
+"#,
+    r#"
+
     #[lua(
         as_trait = "std::cmp::PartialEq",
         kind = "MetaFunction",
@@ -1143,12 +1069,6 @@ struct DoubleTapGesture {}
         metamethod = "Eq",
     )]
     fn eq(&self, #[proxy] other: &gestures::PanGesture) -> bool;
-
-"#,
-    r#"
-
-    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
-    fn clone(&self) -> bevy::input::gestures::PanGesture;
 
 "#,
     r#"
@@ -1170,12 +1090,6 @@ struct PanGesture(#[lua(output(proxy))] bevy::math::Vec2);
 
 "#,
     r#"
-
-    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
-    fn clone(&self) -> bevy::input::ButtonState;
-
-"#,
-    r#"
 /// Is this button pressed?
 
     #[lua(kind = "Method")]
@@ -1194,6 +1108,12 @@ struct PanGesture(#[lua(output(proxy))] bevy::math::Vec2);
 
 "#,
     r#"
+
+    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
+    fn clone(&self) -> bevy::input::ButtonState;
+
+"#,
+    r#"
 #[lua(kind="MetaMethod", metamethod="ToString")]
 fn index(&self) -> String {
     format!("{:?}", _self)
@@ -1207,8 +1127,13 @@ struct ButtonState {}
     remote = "bevy::input::gamepad::ButtonSettings",
     functions[r#"
 
-    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
-    fn clone(&self) -> bevy::input::gamepad::ButtonSettings;
+    #[lua(
+        as_trait = "std::cmp::PartialEq",
+        kind = "MetaFunction",
+        composite = "eq",
+        metamethod = "Eq",
+    )]
+    fn eq(&self, #[proxy] other: &gamepad::ButtonSettings) -> bool;
 
 "#,
     r#"
@@ -1261,13 +1186,8 @@ struct ButtonState {}
 "#,
     r#"
 
-    #[lua(
-        as_trait = "std::cmp::PartialEq",
-        kind = "MetaFunction",
-        composite = "eq",
-        metamethod = "Eq",
-    )]
-    fn eq(&self, #[proxy] other: &gamepad::ButtonSettings) -> bool;
+    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
+    fn clone(&self) -> bevy::input::gamepad::ButtonSettings;
 
 "#,
     r#"
@@ -1284,13 +1204,8 @@ struct ButtonSettings {}
     remote = "bevy::input::gamepad::AxisSettings",
     functions[r#"
 
-    #[lua(
-        as_trait = "std::cmp::PartialEq",
-        kind = "MetaFunction",
-        composite = "eq",
-        metamethod = "Eq",
-    )]
-    fn eq(&self, #[proxy] other: &gamepad::AxisSettings) -> bool;
+    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
+    fn clone(&self) -> bevy::input::gamepad::AxisSettings;
 
 "#,
     r#"
@@ -1399,8 +1314,13 @@ struct ButtonSettings {}
 "#,
     r#"
 
-    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
-    fn clone(&self) -> bevy::input::gamepad::AxisSettings;
+    #[lua(
+        as_trait = "std::cmp::PartialEq",
+        kind = "MetaFunction",
+        composite = "eq",
+        metamethod = "Eq",
+    )]
+    fn eq(&self, #[proxy] other: &gamepad::AxisSettings) -> bool;
 
 "#,
     r#"
@@ -1416,12 +1336,6 @@ struct AxisSettings {}
     derive(clone),
     remote = "bevy::input::gamepad::ButtonAxisSettings",
     functions[r#"
-
-    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
-    fn clone(&self) -> bevy::input::gamepad::ButtonAxisSettings;
-
-"#,
-    r#"
 /// Filters the `new_value` based on the `old_value`, according to the [`ButtonAxisSettings`].
 /// Returns the clamped `new_value`, according to the [`ButtonAxisSettings`], if the change
 /// exceeds the settings threshold, and `None` otherwise.
@@ -1432,6 +1346,12 @@ struct AxisSettings {}
         new_value: f32,
         old_value: std::option::Option<f32>,
     ) -> std::option::Option<f32>;
+
+"#,
+    r#"
+
+    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
+    fn clone(&self) -> bevy::input::gamepad::ButtonAxisSettings;
 
 "#,
     r#"
@@ -1451,19 +1371,9 @@ struct ButtonAxisSettings {
     derive(clone),
     remote = "bevy::input::gamepad::GamepadRumbleIntensity",
     functions[r#"
-/// Creates a new rumble intensity with weak motor intensity set to the given value.
-/// Clamped within the `0.0` to `1.0` range.
 
-    #[lua(kind = "Function", output(proxy))]
-    fn weak_motor(intensity: f32) -> bevy::input::gamepad::GamepadRumbleIntensity;
-
-"#,
-    r#"
-/// Creates a new rumble intensity with strong motor intensity set to the given value.
-/// Clamped within the `0.0` to `1.0` range.
-
-    #[lua(kind = "Function", output(proxy))]
-    fn strong_motor(intensity: f32) -> bevy::input::gamepad::GamepadRumbleIntensity;
+    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
+    fn clone(&self) -> bevy::input::gamepad::GamepadRumbleIntensity;
 
 "#,
     r#"
@@ -1478,9 +1388,19 @@ struct ButtonAxisSettings {
 
 "#,
     r#"
+/// Creates a new rumble intensity with weak motor intensity set to the given value.
+/// Clamped within the `0.0` to `1.0` range.
 
-    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
-    fn clone(&self) -> bevy::input::gamepad::GamepadRumbleIntensity;
+    #[lua(kind = "Function", output(proxy))]
+    fn weak_motor(intensity: f32) -> bevy::input::gamepad::GamepadRumbleIntensity;
+
+"#,
+    r#"
+/// Creates a new rumble intensity with strong motor intensity set to the given value.
+/// Clamped within the `0.0` to `1.0` range.
+
+    #[lua(kind = "Function", output(proxy))]
+    fn strong_motor(intensity: f32) -> bevy::input::gamepad::GamepadRumbleIntensity;
 
 "#,
     r#"
@@ -1570,12 +1490,6 @@ struct NativeKeyCode {}
     remote = "bevy::input::keyboard::NativeKey",
     functions[r#"
 
-    #[lua(as_trait = "std::cmp::Eq", kind = "Method")]
-    fn assert_receiver_is_total_eq(&self) -> ();
-
-"#,
-    r#"
-
     #[lua(
         as_trait = "std::cmp::PartialEq",
         kind = "MetaFunction",
@@ -1592,6 +1506,12 @@ struct NativeKeyCode {}
 
 "#,
     r#"
+
+    #[lua(as_trait = "std::cmp::Eq", kind = "Method")]
+    fn assert_receiver_is_total_eq(&self) -> ();
+
+"#,
+    r#"
 #[lua(kind="MetaMethod", metamethod="ToString")]
 fn index(&self) -> String {
     format!("{:?}", _self)
@@ -1604,6 +1524,12 @@ struct NativeKey {}
     derive(clone),
     remote = "bevy::input::mouse::MouseScrollUnit",
     functions[r#"
+
+    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
+    fn clone(&self) -> bevy::input::mouse::MouseScrollUnit;
+
+"#,
+    r#"
 
     #[lua(as_trait = "std::cmp::Eq", kind = "Method")]
     fn assert_receiver_is_total_eq(&self) -> ();
@@ -1621,12 +1547,6 @@ struct NativeKey {}
 
 "#,
     r#"
-
-    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
-    fn clone(&self) -> bevy::input::mouse::MouseScrollUnit;
-
-"#,
-    r#"
 #[lua(kind="MetaMethod", metamethod="ToString")]
 fn index(&self) -> String {
     format!("{:?}", _self)
@@ -1640,8 +1560,13 @@ struct MouseScrollUnit {}
     remote = "bevy::input::touch::TouchPhase",
     functions[r#"
 
-    #[lua(as_trait = "std::cmp::Eq", kind = "Method")]
-    fn assert_receiver_is_total_eq(&self) -> ();
+    #[lua(
+        as_trait = "std::cmp::PartialEq",
+        kind = "MetaFunction",
+        composite = "eq",
+        metamethod = "Eq",
+    )]
+    fn eq(&self, #[proxy] other: &touch::TouchPhase) -> bool;
 
 "#,
     r#"
@@ -1652,13 +1577,8 @@ struct MouseScrollUnit {}
 "#,
     r#"
 
-    #[lua(
-        as_trait = "std::cmp::PartialEq",
-        kind = "MetaFunction",
-        composite = "eq",
-        metamethod = "Eq",
-    )]
-    fn eq(&self, #[proxy] other: &touch::TouchPhase) -> bool;
+    #[lua(as_trait = "std::cmp::Eq", kind = "Method")]
+    fn assert_receiver_is_total_eq(&self) -> ();
 
 "#,
     r#"
@@ -1819,7 +1739,6 @@ impl bevy_mod_scripting_core::hosts::APIProvider for BevyInputAPIProvider {
                             >,
                         >()
                         .process_type::<LuaGamepadEvent>()
-                        // .process_type::<LuaGamepadInfo>()
                         .process_type::<LuaGamepadInput>()
                         .process_type::<LuaGamepadRumbleRequest>()
                         .process_type::<LuaRawGamepadAxisChangedEvent>()
@@ -1899,7 +1818,6 @@ impl bevy_mod_scripting_core::hosts::APIProvider for BevyInputAPIProvider {
         app.register_foreign_lua_type::<bevy::input::gamepad::GamepadConnection>();
         app.register_foreign_lua_type::<bevy::input::gamepad::GamepadConnectionEvent>();
         app.register_foreign_lua_type::<bevy::input::gamepad::GamepadEvent>();
-        // app.register_foreign_lua_type::<bevy::input::gamepad::GamepadInfo>();
         app.register_foreign_lua_type::<bevy::input::gamepad::GamepadInput>();
         app.register_foreign_lua_type::<bevy::input::gamepad::GamepadRumbleRequest>();
         app.register_foreign_lua_type::<

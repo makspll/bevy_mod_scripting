@@ -15,7 +15,7 @@ debug = false
 
 [dev-dependencies]
 trybuild = "1.0"
-bevy = { version = "0.15.0-rc.2", default-features = false }
+bevy = { version = "0.15.0-rc.3", default-features = false }
 bevy_mod_scripting = { path = "../../", features = [
     "lua",
     "lua_script_api",

@@ -18,13 +18,12 @@ use bevy_script_api::{
     functions[r#"
 
     #[lua(
-        as_trait = "std::ops::Mul",
+        as_trait = "std::cmp::PartialEq",
         kind = "MetaFunction",
-        output(proxy),
-        composite = "mul",
-        metamethod = "Mul",
+        composite = "eq",
+        metamethod = "Eq",
     )]
-    fn mul(self, #[proxy] value: bevy::math::Vec3) -> bevy::math::Vec3;
+    fn eq(&self, #[proxy] other: &components::global_transform::GlobalTransform) -> bool;
 
 "#,
     r#"
@@ -39,8 +38,26 @@ use bevy_script_api::{
     fn mul(
         self,
         #[proxy]
-        global_transform: bevy::transform::components::GlobalTransform,
+        transform: bevy::transform::components::Transform,
     ) -> bevy::transform::components::GlobalTransform;
+
+"#,
+    r#"
+
+    #[lua(
+        as_trait = "std::ops::Mul",
+        kind = "MetaFunction",
+        output(proxy),
+        composite = "mul",
+        metamethod = "Mul",
+    )]
+    fn mul(self, #[proxy] value: bevy::math::Vec3) -> bevy::math::Vec3;
+
+"#,
+    r#"
+
+    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
+    fn clone(&self) -> bevy::transform::components::GlobalTransform;
 
 "#,
     r#"
@@ -216,6 +233,27 @@ use bevy_script_api::{
 
 "#,
     r#"
+/// Get the rotation as a [`Quat`].
+/// The transform is expected to be non-degenerate and without shearing, or the output will be invalid.
+/// # Warning
+/// This is calculated using `to_scale_rotation_translation`, meaning that you
+/// should probably use it directly if you also need translation or scale.
+
+    #[lua(kind = "Method", output(proxy))]
+    fn rotation(&self) -> bevy::math::Quat;
+
+"#,
+    r#"
+/// Get the scale as a [`Vec3`].
+/// The transform is expected to be non-degenerate and without shearing, or the output will be invalid.
+/// Some of the computations overlap with `to_scale_rotation_translation`, which means you should use
+/// it instead if you also need rotation.
+
+    #[lua(kind = "Method", output(proxy))]
+    fn scale(&self) -> bevy::math::Vec3;
+
+"#,
+    r#"
 /// Get an upper bound of the radius from the given `extents`.
 
     #[lua(kind = "Method")]
@@ -271,23 +309,6 @@ use bevy_script_api::{
 "#,
     r#"
 
-    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
-    fn clone(&self) -> bevy::transform::components::GlobalTransform;
-
-"#,
-    r#"
-
-    #[lua(
-        as_trait = "std::cmp::PartialEq",
-        kind = "MetaFunction",
-        composite = "eq",
-        metamethod = "Eq",
-    )]
-    fn eq(&self, #[proxy] other: &components::global_transform::GlobalTransform) -> bool;
-
-"#,
-    r#"
-
     #[lua(
         as_trait = "std::ops::Mul",
         kind = "MetaFunction",
@@ -298,7 +319,7 @@ use bevy_script_api::{
     fn mul(
         self,
         #[proxy]
-        transform: bevy::transform::components::Transform,
+        global_transform: bevy::transform::components::GlobalTransform,
     ) -> bevy::transform::components::GlobalTransform;
 
 "#,
@@ -323,50 +344,6 @@ struct GlobalTransform();
         metamethod = "Eq",
     )]
     fn eq(&self, #[proxy] other: &components::transform::Transform) -> bool;
-
-"#,
-    r#"
-
-    #[lua(
-        as_trait = "std::ops::Mul",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "mul",
-        metamethod = "Mul",
-    )]
-    fn mul(
-        self,
-        #[proxy]
-        global_transform: bevy::transform::components::GlobalTransform,
-    ) -> bevy::transform::components::GlobalTransform;
-
-"#,
-    r#"
-
-    #[lua(
-        as_trait = "std::ops::Mul",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "mul",
-        metamethod = "Mul",
-    )]
-    fn mul(
-        self,
-        #[proxy]
-        transform: bevy::transform::components::Transform,
-    ) -> bevy::transform::components::Transform;
-
-"#,
-    r#"
-
-    #[lua(
-        as_trait = "std::ops::Mul",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "mul",
-        metamethod = "Mul",
-    )]
-    fn mul(self, #[proxy] value: bevy::math::Vec3) -> bevy::math::Vec3;
 
 "#,
     r#"
@@ -697,8 +674,52 @@ struct GlobalTransform();
 "#,
     r#"
 
+    #[lua(
+        as_trait = "std::ops::Mul",
+        kind = "MetaFunction",
+        output(proxy),
+        composite = "mul",
+        metamethod = "Mul",
+    )]
+    fn mul(
+        self,
+        #[proxy]
+        global_transform: bevy::transform::components::GlobalTransform,
+    ) -> bevy::transform::components::GlobalTransform;
+
+"#,
+    r#"
+
     #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
     fn clone(&self) -> bevy::transform::components::Transform;
+
+"#,
+    r#"
+
+    #[lua(
+        as_trait = "std::ops::Mul",
+        kind = "MetaFunction",
+        output(proxy),
+        composite = "mul",
+        metamethod = "Mul",
+    )]
+    fn mul(self, #[proxy] value: bevy::math::Vec3) -> bevy::math::Vec3;
+
+"#,
+    r#"
+
+    #[lua(
+        as_trait = "std::ops::Mul",
+        kind = "MetaFunction",
+        output(proxy),
+        composite = "mul",
+        metamethod = "Mul",
+    )]
+    fn mul(
+        self,
+        #[proxy]
+        transform: bevy::transform::components::Transform,
+    ) -> bevy::transform::components::Transform;
 
 "#,
     r#"

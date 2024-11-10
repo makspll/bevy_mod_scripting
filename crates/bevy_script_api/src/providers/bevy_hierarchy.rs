@@ -34,6 +34,12 @@ struct Children();
     remote = "bevy::hierarchy::prelude::Parent",
     functions[r#"
 
+    #[lua(as_trait = "std::cmp::Eq", kind = "Method")]
+    fn assert_receiver_is_total_eq(&self) -> ();
+
+"#,
+    r#"
+
     #[lua(
         as_trait = "std::cmp::PartialEq",
         kind = "MetaFunction",
@@ -48,12 +54,6 @@ struct Children();
 
     #[lua(kind = "Method", output(proxy))]
     fn get(&self) -> bevy::ecs::entity::Entity;
-
-"#,
-    r#"
-
-    #[lua(as_trait = "std::cmp::Eq", kind = "Method")]
-    fn assert_receiver_is_total_eq(&self) -> ();
 
 "#,
     r#"
