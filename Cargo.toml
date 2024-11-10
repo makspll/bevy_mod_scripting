@@ -70,7 +70,7 @@ bevy_script_api = { path = "crates/bevy_script_api", version = "0.8.0-alpha.0", 
 
 
 [workspace.dependencies]
-bevy = { version = "0.15.0-rc.2", default-features = false }
+bevy = { version = "0.15.0-rc.3", default-features = false }
 bevy_mod_scripting_core = { path = "crates/bevy_mod_scripting_core", version = "0.8.0-alpha.0" }
 bevy_mod_scripting_common = { path = "crates/bevy_mod_scripting_common", version = "0.8.0-alpha.0" }
 
