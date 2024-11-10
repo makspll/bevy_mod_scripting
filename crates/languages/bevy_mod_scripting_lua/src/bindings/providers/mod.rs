@@ -2,87 +2,28 @@
 #![allow(clippy::all)]
 #![allow(unused, deprecated, dead_code)]
 #![cfg_attr(rustfmt, rustfmt_skip)]
-pub mod bevy_a11y;
-pub mod bevy_ecs;
-pub mod bevy_transform;
-pub mod bevy_math;
-pub mod bevy_input;
-pub mod bevy_core;
-pub mod bevy_time;
-pub mod bevy_hierarchy;
-pub mod bevy_window;
-pub mod bevy_reflect;
-extern crate self as bevy_script_api;
-use bevy_mod_scripting_core::docs::DocFragment;
-pub struct LuaBevyAPIProvider;
-impl bevy_mod_scripting_core::hosts::APIProvider for LuaBevyAPIProvider {
-    type APITarget = std::sync::Mutex<bevy_mod_scripting_lua::tealr::mlu::mlua::Lua>;
-    type ScriptContext = std::sync::Mutex<bevy_mod_scripting_lua::tealr::mlu::mlua::Lua>;
-    type DocTarget = bevy_mod_scripting_lua::docs::LuaDocFragment;
-    fn attach_api(
-        &mut self,
-        ctx: &mut Self::APITarget,
-    ) -> Result<(), bevy_mod_scripting_core::error::ScriptError> {
-        bevy_a11y::BevyA11YAPIProvider.attach_api(ctx)?;
-        bevy_ecs::BevyEcsAPIProvider.attach_api(ctx)?;
-        bevy_transform::BevyTransformAPIProvider.attach_api(ctx)?;
-        bevy_math::BevyMathAPIProvider.attach_api(ctx)?;
-        bevy_input::BevyInputAPIProvider.attach_api(ctx)?;
-        bevy_core::BevyCoreAPIProvider.attach_api(ctx)?;
-        bevy_time::BevyTimeAPIProvider.attach_api(ctx)?;
-        bevy_hierarchy::BevyHierarchyAPIProvider.attach_api(ctx)?;
-        bevy_window::BevyWindowAPIProvider.attach_api(ctx)?;
-        bevy_reflect::BevyReflectAPIProvider.attach_api(ctx)?;
-        Ok(())
-    }
-    fn get_doc_fragment(&self) -> Option<Self::DocTarget> {
-        [
-            bevy_a11y::BevyA11YAPIProvider.get_doc_fragment(),
-            bevy_ecs::BevyEcsAPIProvider.get_doc_fragment(),
-            bevy_transform::BevyTransformAPIProvider.get_doc_fragment(),
-            bevy_math::BevyMathAPIProvider.get_doc_fragment(),
-            bevy_input::BevyInputAPIProvider.get_doc_fragment(),
-            bevy_core::BevyCoreAPIProvider.get_doc_fragment(),
-            bevy_time::BevyTimeAPIProvider.get_doc_fragment(),
-            bevy_hierarchy::BevyHierarchyAPIProvider.get_doc_fragment(),
-            bevy_window::BevyWindowAPIProvider.get_doc_fragment(),
-            bevy_reflect::BevyReflectAPIProvider.get_doc_fragment(),
-        ]
-            .into_iter()
-            .filter_map(|a: Option<_>| a)
-            .fold(
-                None,
-                |a, b| match a {
-                    Some(a) => Some(a.merge(b)),
-                    None => Some(b),
-                },
-            )
-    }
-    fn setup_script(
-        &mut self,
-        script_data: &bevy_mod_scripting_core::hosts::ScriptData,
-        ctx: &mut Self::ScriptContext,
-    ) -> Result<(), bevy_mod_scripting_core::error::ScriptError> {
-        Ok(())
-    }
-    fn setup_script_runtime(
-        &mut self,
-        world_ptr: bevy_mod_scripting_core::world::WorldPointer,
-        _script_data: &bevy_mod_scripting_core::hosts::ScriptData,
-        ctx: &mut Self::ScriptContext,
-    ) -> Result<(), bevy_mod_scripting_core::error::ScriptError> {
-        Ok(())
-    }
-    fn register_with_app(&self, app: &mut bevy::app::App) {
-        bevy_a11y::BevyA11YAPIProvider.register_with_app(app);
-        bevy_ecs::BevyEcsAPIProvider.register_with_app(app);
-        bevy_transform::BevyTransformAPIProvider.register_with_app(app);
-        bevy_math::BevyMathAPIProvider.register_with_app(app);
-        bevy_input::BevyInputAPIProvider.register_with_app(app);
-        bevy_core::BevyCoreAPIProvider.register_with_app(app);
-        bevy_time::BevyTimeAPIProvider.register_with_app(app);
-        bevy_hierarchy::BevyHierarchyAPIProvider.register_with_app(app);
-        bevy_window::BevyWindowAPIProvider.register_with_app(app);
-        bevy_reflect::BevyReflectAPIProvider.register_with_app(app);
+pub(crate) mod bevy_a11y;
+pub(crate) mod bevy_ecs;
+pub(crate) mod bevy_transform;
+pub(crate) mod bevy_math;
+pub(crate) mod bevy_input;
+pub(crate) mod bevy_core;
+pub(crate) mod bevy_time;
+pub(crate) mod bevy_hierarchy;
+pub(crate) mod bevy_window;
+pub(crate) mod bevy_reflect;
+pub struct LuaBevyScriptingPlugin;
+impl bevy::app::Plugin for LuaBevyScriptingPlugin {
+    fn build(&self, app: &mut bevy::prelude::App) {
+        bevy_a11y::BevyA11YScriptingPlugin.build(app);
+        bevy_ecs::BevyEcsScriptingPlugin.build(app);
+        bevy_transform::BevyTransformScriptingPlugin.build(app);
+        bevy_math::BevyMathScriptingPlugin.build(app);
+        bevy_input::BevyInputScriptingPlugin.build(app);
+        bevy_core::BevyCoreScriptingPlugin.build(app);
+        bevy_time::BevyTimeScriptingPlugin.build(app);
+        bevy_hierarchy::BevyHierarchyScriptingPlugin.build(app);
+        bevy_window::BevyWindowScriptingPlugin.build(app);
+        bevy_reflect::BevyReflectScriptingPlugin.build(app);
     }
 }

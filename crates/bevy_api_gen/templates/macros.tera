@@ -1,6 +1,6 @@
 {% macro vector_index(num_type) %}
 #[lua(metamethod="Index")]
-fn index(self, idx: usize) -> IdentityProxy<{{ num_type }}> {
+fn index(self, idx: usize) -> LuaIdentityProxy<{{ num_type }}> {
     _self[idx - 1]
 }
 {% endmacro vector_index %}
@@ -14,15 +14,13 @@ fn index(&mut self, idx: usize, val: {{ num_type }}) -> () {
 
 {% macro matrix_index(col_type, mat_type, bms_core_path) %}
 #[lua(metamethod="Index")]
-fn index(_self: IdentityProxy<Self>, idx: usize) -> IdentityProxy<{{ col_type | prefix_lua }}> {
+fn index(_self: LuaIdentityProxy<Self>, idx: usize) -> LuaIdentityProxy<{{ col_type | prefix_lua }}> {
     let mut curr_ref = _self.0.clone();
     let def_ref = {{bms_core_path}}::bindings::DeferredReflection{
         get: std::sync::Arc::new(|ref_| Err(bevy::reflect::ReflectPathError::InvalidDowncast)),
         get_mut: std::sync::Arc::new(move |ref_| {
-            if ref_.is::<bevy::math::{{ mat_type }}>(){
-                Ok(ref_.downcast_mut::<bevy::math::{{ mat_type }}>()
-                    .unwrap()
-                    .col_mut(idx - 1))
+            if let Some(ret) = ref_.try_as_reflect_mut().map(|ret| ret.downcast_mut::<bevy::math::{{ mat_type }}>()).flatten(){
+                Ok(ret.col_mut(idx - 1))
             } else {
                 Err(bevy::reflect::ReflectPathError::InvalidDowncast)
             }	

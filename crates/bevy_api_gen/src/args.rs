@@ -112,6 +112,7 @@ fn default_ignored_types() -> String {
         "bevy_reflect::DynamicTuple",
         "bevy_reflect::DynamicTupleStruct",
         "bevy_reflect::DynamicEnum",
+        "bevy_reflect::DynamicSet",
         "bevy_reflect::OsString", // TODO: once macros allow Vecs for primitives as args remove this from ignored types
     ]
     .join(",")

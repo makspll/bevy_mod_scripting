@@ -12,7 +12,7 @@ use super::{{crate}}::*;
 use bevy_mod_scripting_core::{AddContextInitializer, StoreDocumentation, bindings::ReflectReference};
 
 {% if args.self_is_bms_lua %}
-use crate::{bindings::proxy::{LuaReflectRefProxy,LuaReflectRefMutProxy,LuaReflectValProxy,LuaValProxy,IdentityProxy},RegisterLuaProxy, tealr::mlu::mlua::IntoLua};
+use crate::{bindings::proxy::{LuaReflectRefProxy,LuaReflectRefMutProxy,LuaReflectValProxy,LuaValProxy,LuaIdentityProxy},RegisterLua, tealr::mlu::mlua::IntoLua};
 {% else %}
-use bevy_mod_scripting::{lua::bindings::proxy::{LuaReflectRefProxy,LuaReflectRefMutProxy,LuaReflectValProxy,LuaValProxy,IdentityProxy}, RegisterLuaProxy,  tealr::mlu::mlua::IntoLua};
+use bevy_mod_scripting::{lua::bindings::proxy::{LuaReflectRefProxy,LuaReflectRefMutProxy,LuaReflectValProxy,LuaValProxy,LuaIdentityProxy}, RegisterLua,  tealr::mlu::mlua::IntoLua};
 {% endif %}

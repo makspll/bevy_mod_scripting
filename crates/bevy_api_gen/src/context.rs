@@ -83,7 +83,8 @@ impl ReflectType<'_> {
 
 pub(crate) const DEF_PATHS_FROM_LUA: [&str; 2] = ["value::FromLuaMulti", "mlua::FromLuaMulti"];
 pub(crate) const DEF_PATHS_INTO_LUA: [&str; 2] = ["value::IntoLuaMulti", "mlua::IntoLuaMulti"];
-pub(crate) const DEF_PATHS_REFLECT: [&str; 2] = ["bevy_reflect::Reflect", "reflect::Reflect"];
+pub(crate) const DEF_PATHS_REFLECT: [&str; 2] =
+    ["bevy_reflect::PartialReflect", "reflect::PartialReflect"];
 pub(crate) const DEF_PATHS_GET_TYPE_REGISTRATION: [&str; 2] = [
     "bevy_reflect::GetTypeRegistration",
     "reflect::GetTypeRegistration",

@@ -5,128 +5,140 @@
 use super::bevy_ecs::*;
 use super::bevy_reflect::*;
 use super::bevy_core::*;
-extern crate self as bevy_script_api;
-use bevy_script_api::{
-    lua::RegisterForeignLuaType, ReflectedValue, common::bevy::GetWorld,
+use bevy_mod_scripting_core::{
+    AddContextInitializer, StoreDocumentation, bindings::ReflectReference,
 };
-#[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
+use crate::{
+    bindings::proxy::{
+        LuaReflectRefProxy, LuaReflectRefMutProxy, LuaReflectValProxy, LuaValProxy,
+        LuaIdentityProxy,
+    },
+    RegisterLua, tealr::mlu::mlua::IntoLua,
+};
+#[derive(bevy_mod_scripting_derive::LuaProxy)]
 #[proxy(
-    derive(),
     remote = "bevy::hierarchy::prelude::Children",
+    bms_core_path = "bevy_mod_scripting_core",
+    bms_lua_path = "crate",
     functions[r#"
 /// Swaps the child at `a_index` with the child at `b_index`.
 
-    #[lua(kind = "MutatingMethod")]
-    fn swap(&mut self, a_index: usize, b_index: usize) -> ();
+    #[lua()]
+    fn swap(
+        _self: LuaReflectRefMutProxy<bevy::hierarchy::prelude::Children>,
+        a_index: usize,
+        b_index: usize,
+    ) -> ();
 
 "#,
     r#"
-#[lua(kind="MetaMethod", metamethod="ToString")]
+#[lua(metamethod="ToString")]
 fn index(&self) -> String {
     format!("{:?}", _self)
 }
 "#]
 )]
-struct Children();
-#[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
+pub struct Children();
+#[derive(bevy_mod_scripting_derive::LuaProxy)]
 #[proxy(
-    derive(),
     remote = "bevy::hierarchy::prelude::Parent",
+    bms_core_path = "bevy_mod_scripting_core",
+    bms_lua_path = "crate",
     functions[r#"
 
-    #[lua(as_trait = "std::cmp::Eq", kind = "Method")]
-    fn assert_receiver_is_total_eq(&self) -> ();
+    #[lua(as_trait = "std::cmp::Eq")]
+    fn assert_receiver_is_total_eq(
+        _self: LuaReflectRefProxy<bevy::hierarchy::prelude::Parent>,
+    ) -> ();
 
 "#,
     r#"
 
     #[lua(
-        as_trait = "std::cmp::PartialEq",
-        kind = "MetaFunction",
+        as_trait = "std::cmp::PartialEq::<bevy::hierarchy::prelude::Parent>",
         composite = "eq",
-        metamethod = "Eq",
     )]
-    fn eq(&self, #[proxy] other: &components::parent::Parent) -> bool;
+    fn eq(
+        _self: LuaReflectRefProxy<bevy::hierarchy::prelude::Parent>,
+        other: LuaReflectRefProxy<bevy::hierarchy::prelude::Parent>,
+    ) -> bool;
 
 "#,
     r#"
-/// Gets the [`Entity`] ID of the parent.
-
-    #[lua(kind = "Method", output(proxy))]
-    fn get(&self) -> bevy::ecs::entity::Entity;
-
-"#,
-    r#"
-#[lua(kind="MetaMethod", metamethod="ToString")]
+#[lua(metamethod="ToString")]
 fn index(&self) -> String {
     format!("{:?}", _self)
 }
 "#]
 )]
-struct Parent();
-#[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
+pub struct Parent();
+#[derive(bevy_mod_scripting_derive::LuaProxy)]
 #[proxy(
-    derive(clone),
     remote = "bevy::hierarchy::HierarchyEvent",
+    bms_core_path = "bevy_mod_scripting_core",
+    bms_lua_path = "crate",
     functions[r#"
 
-    #[lua(as_trait = "std::cmp::Eq", kind = "Method")]
-    fn assert_receiver_is_total_eq(&self) -> ();
+    #[lua(as_trait = "std::cmp::Eq")]
+    fn assert_receiver_is_total_eq(
+        _self: LuaReflectRefProxy<bevy::hierarchy::HierarchyEvent>,
+    ) -> ();
 
 "#,
     r#"
 
     #[lua(
-        as_trait = "std::cmp::PartialEq",
-        kind = "MetaFunction",
+        as_trait = "std::cmp::PartialEq::<bevy::hierarchy::HierarchyEvent>",
         composite = "eq",
-        metamethod = "Eq",
     )]
-    fn eq(&self, #[proxy] other: &events::HierarchyEvent) -> bool;
+    fn eq(
+        _self: LuaReflectRefProxy<bevy::hierarchy::HierarchyEvent>,
+        other: LuaReflectRefProxy<bevy::hierarchy::HierarchyEvent>,
+    ) -> bool;
 
 "#,
     r#"
 
-    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
-    fn clone(&self) -> bevy::hierarchy::HierarchyEvent;
+    #[lua(as_trait = "std::clone::Clone")]
+    fn clone(
+        _self: LuaReflectRefProxy<bevy::hierarchy::HierarchyEvent>,
+    ) -> LuaReflectValProxy<bevy::hierarchy::HierarchyEvent>;
 
 "#,
     r#"
-#[lua(kind="MetaMethod", metamethod="ToString")]
+#[lua(metamethod="ToString")]
 fn index(&self) -> String {
     format!("{:?}", _self)
 }
 "#]
 )]
-struct HierarchyEvent {}
+pub struct HierarchyEvent {}
 #[derive(Default)]
 pub(crate) struct Globals;
-impl bevy_mod_scripting_lua::tealr::mlu::ExportInstances for Globals {
-    fn add_instances<
-        'lua,
-        T: bevy_mod_scripting_lua::tealr::mlu::InstanceCollector<'lua>,
-    >(self, instances: &mut T) -> bevy_mod_scripting_lua::tealr::mlu::mlua::Result<()> {
+impl crate::tealr::mlu::ExportInstances for Globals {
+    fn add_instances<'lua, T: crate::tealr::mlu::InstanceCollector<'lua>>(
+        self,
+        instances: &mut T,
+    ) -> crate::tealr::mlu::mlua::Result<()> {
         Ok(())
     }
 }
-pub struct BevyHierarchyAPIProvider;
-impl bevy_mod_scripting_core::hosts::APIProvider for BevyHierarchyAPIProvider {
-    type APITarget = std::sync::Mutex<bevy_mod_scripting_lua::tealr::mlu::mlua::Lua>;
-    type ScriptContext = std::sync::Mutex<bevy_mod_scripting_lua::tealr::mlu::mlua::Lua>;
-    type DocTarget = bevy_mod_scripting_lua::docs::LuaDocFragment;
-    fn attach_api(
-        &mut self,
-        ctx: &mut Self::APITarget,
-    ) -> Result<(), bevy_mod_scripting_core::error::ScriptError> {
-        let ctx = ctx.get_mut().expect("Unable to acquire lock on Lua context");
-        bevy_mod_scripting_lua::tealr::mlu::set_global_env(Globals, ctx)
-            .map_err(|e| bevy_mod_scripting_core::error::ScriptError::Other(
-                e.to_string(),
-            ))
-    }
-    fn get_doc_fragment(&self) -> Option<Self::DocTarget> {
-        Some(
-            bevy_mod_scripting_lua::docs::LuaDocFragment::new(
+fn bevy_hierarchy_context_initializer(
+    _: &bevy_mod_scripting_core::script::ScriptId,
+    ctx: &mut crate::prelude::Lua,
+) -> Result<(), bevy_mod_scripting_core::error::ScriptError> {
+    crate::tealr::mlu::set_global_env(Globals, ctx)?;
+    Ok(())
+}
+pub struct BevyHierarchyScriptingPlugin;
+impl bevy::app::Plugin for BevyHierarchyScriptingPlugin {
+    fn build(&self, app: &mut bevy::prelude::App) {
+        app.register_lua_proxy::<bevy::hierarchy::prelude::Children>();
+        app.register_lua_proxy::<bevy::hierarchy::prelude::Parent>();
+        app.register_lua_proxy::<bevy::hierarchy::HierarchyEvent>();
+        app.add_context_initializer::<()>(bevy_hierarchy_context_initializer);
+        app.add_documentation_fragment(
+            crate::docs::LuaDocumentationFragment::new(
                 "BevyHierarchyAPI",
                 |tw| {
                     tw.document_global_instance::<Globals>()
@@ -136,26 +148,6 @@ impl bevy_mod_scripting_core::hosts::APIProvider for BevyHierarchyAPIProvider {
                         .process_type::<LuaHierarchyEvent>()
                 },
             ),
-        )
-    }
-    fn setup_script(
-        &mut self,
-        script_data: &bevy_mod_scripting_core::hosts::ScriptData,
-        ctx: &mut Self::ScriptContext,
-    ) -> Result<(), bevy_mod_scripting_core::error::ScriptError> {
-        Ok(())
-    }
-    fn setup_script_runtime(
-        &mut self,
-        world_ptr: bevy_mod_scripting_core::world::WorldPointer,
-        _script_data: &bevy_mod_scripting_core::hosts::ScriptData,
-        ctx: &mut Self::ScriptContext,
-    ) -> Result<(), bevy_mod_scripting_core::error::ScriptError> {
-        Ok(())
-    }
-    fn register_with_app(&self, app: &mut bevy::app::App) {
-        app.register_foreign_lua_type::<bevy::hierarchy::prelude::Children>();
-        app.register_foreign_lua_type::<bevy::hierarchy::prelude::Parent>();
-        app.register_foreign_lua_type::<bevy::hierarchy::HierarchyEvent>();
+        );
     }
 }

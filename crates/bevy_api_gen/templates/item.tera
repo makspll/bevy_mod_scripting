@@ -11,7 +11,7 @@
 {% set bms_lua_path="bevy_mod_scripting::lua" %}
 {% endif %}
 
-#[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
+#[derive(bevy_mod_scripting_derive::LuaProxy)]
 #[proxy(
 remote="{{ item.import_path }}",
 bms_core_path="{{bms_core_path}}",

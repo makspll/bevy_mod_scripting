@@ -4,7 +4,7 @@ pub mod util;
 use bevy::{
     app::{App, Plugin},
     ecs::{entity::Entity, world::World},
-    reflect::{FromType, GetTypeRegistration, Reflect, TypePath},
+    reflect::{FromType, GetTypeRegistration, PartialReflect, Reflect, TypePath},
 };
 use bevy_mod_scripting_core::{
     bindings::{ReflectReference, WorldCallbackAccess},
@@ -173,11 +173,10 @@ pub trait RegisterLua {
         T::Proxy: for<'l> IntoLua<'l> + for<'l> FromLua<'l>,
         T::Proxy: From<ReflectReference> + AsRef<ReflectReference>;
 
-    fn register_lua_value<T: Reflect + Clone + TypePath + GetTypeRegistration>(
-        &mut self,
-    ) -> &mut Self
+    fn register_lua_value<T>(&mut self) -> &mut Self
     where
-        T: for<'l> IntoLua<'l> + for<'l> FromLua<'l>;
+        T: for<'l> IntoLua<'l> + for<'l> FromLua<'l>,
+        T: Reflect + Clone + TypePath + GetTypeRegistration;
 }
 
 impl RegisterLua for App {
@@ -192,11 +191,10 @@ impl RegisterLua for App {
         self.register_type_data::<T, ReflectLuaProxied>()
     }
 
-    fn register_lua_value<T: Reflect + Clone + TypePath + GetTypeRegistration>(
-        &mut self,
-    ) -> &mut Self
+    fn register_lua_value<T>(&mut self) -> &mut Self
     where
         T: for<'l> IntoLua<'l> + for<'l> FromLua<'l>,
+        T: Reflect + Clone + TypePath + GetTypeRegistration,
     {
         self.register_type::<T>();
         self.register_type_data::<T, ReflectLuaValue>()
@@ -231,11 +229,15 @@ where
 /// pass by value semantics, These need to implement [`Clone`]
 #[derive(Clone)]
 pub struct ReflectLuaValue {
-    pub into_value: for<'l> fn(&dyn Reflect, &'l Lua) -> Result<Value<'l>, tealr::mlu::mlua::Error>,
-    pub set_value:
-        for<'l> fn(&mut dyn Reflect, Value<'l>, &'l Lua) -> Result<(), tealr::mlu::mlua::Error>,
+    pub into_value:
+        for<'l> fn(&dyn PartialReflect, &'l Lua) -> Result<Value<'l>, tealr::mlu::mlua::Error>,
+    pub set_value: for<'l> fn(
+        &mut dyn PartialReflect,
+        Value<'l>,
+        &'l Lua,
+    ) -> Result<(), tealr::mlu::mlua::Error>,
     pub from_value:
-        for<'l> fn(Value<'l>, &'l Lua) -> Result<Box<dyn Reflect>, tealr::mlu::mlua::Error>,
+        for<'l> fn(Value<'l>, &'l Lua) -> Result<Box<dyn PartialReflect>, tealr::mlu::mlua::Error>,
 }
 
 impl<T: Reflect + Clone + for<'l> IntoLua<'l> + for<'l> FromLua<'l>> FromType<T>
@@ -243,13 +245,13 @@ impl<T: Reflect + Clone + for<'l> IntoLua<'l> + for<'l> FromLua<'l>> FromType<T>
 {
     fn from_type() -> Self {
         Self {
-            into_value: |v, l| v.downcast_ref::<T>().unwrap().clone().into_lua(l),
+            into_value: |v, l| v.try_downcast_ref::<T>().unwrap().clone().into_lua(l),
             set_value: |t, v, l| {
-                let mut t = t.downcast_mut::<T>().unwrap();
+                let t = t.try_downcast_mut::<T>().unwrap();
                 *t = T::from_lua(v, l)?;
                 Ok(())
             },
-            from_value: |v, l| T::from_lua(v, l).map(|v| Box::new(v) as Box<dyn Reflect>),
+            from_value: |v, l| T::from_lua(v, l).map(|v| Box::new(v) as Box<dyn PartialReflect>),
         }
     }
 }

@@ -33,7 +33,7 @@ pub struct {{ "ScriptingPlugin" | prefix_cratename | convert_case(case="upper_ca
 impl bevy::app::Plugin for {{ "ScriptingPlugin" | prefix_cratename | convert_case(case="upper_camel")}} {
     fn build(&self, app: &mut bevy::prelude::App) {
         {% for item in items %}
-        app.register_proxy::<{{ item.import_path }}>();
+        app.register_lua_proxy::<{{ item.import_path }}>();
         {% endfor %}
         app.add_context_initializer::<()>({{ "ContextInitializer" | prefix_cratename | convert_case(case="snake") }});
         app.add_documentation_fragment(
