@@ -57,21 +57,21 @@ pub(crate) fn cache_traits(ctxt: &mut BevyCtxt<'_>, _args: &Args) -> bool {
 
     log::trace!("has_std: {}", has_std);
 
-    if has_std && !ctxt.cached_traits.has_all_std_source_traits() {
-        log::debug!(
-            "all traits: {}",
-            tcx.all_traits()
-                .map(|t| tcx.def_path_str(t).to_string())
-                .collect::<Vec<_>>()
-                .join(", ")
-        );
+    // if has_std && !ctxt.cached_traits.has_all_std_source_traits() {
+    //     log::debug!(
+    //         "all traits: {}",
+    //         tcx.all_traits()
+    //             .map(|t| tcx.def_path_str(t).to_string())
+    //             .collect::<Vec<_>>()
+    //             .join(", ")
+    //     );
 
-        panic!(
-            "Could not find traits: [{}] in crate: {}, did bootstrapping go wrong?",
-            ctxt.cached_traits.missing_std_source_traits().join(", "),
-            tcx.crate_name(LOCAL_CRATE)
-        )
-    }
+    //     panic!(
+    //         "Could not find traits: [{}] in crate: {}, did bootstrapping go wrong?",
+    //         ctxt.cached_traits.missing_std_source_traits().join(", "),
+    //         tcx.crate_name(LOCAL_CRATE)
+    //     )
+    // }
 
     true
 }
