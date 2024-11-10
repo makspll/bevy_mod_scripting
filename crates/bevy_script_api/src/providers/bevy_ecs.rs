@@ -13,13 +13,8 @@ use bevy_script_api::{
     remote = "bevy::ecs::entity::Entity",
     functions[r#"
 
-    #[lua(
-        as_trait = "std::cmp::PartialEq",
-        kind = "MetaFunction",
-        composite = "eq",
-        metamethod = "Eq",
-    )]
-    fn eq(&self, #[proxy] other: &entity::Entity) -> bool;
+    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
+    fn clone(&self) -> bevy::ecs::entity::Entity;
 
 "#,
     r#"
@@ -78,8 +73,13 @@ use bevy_script_api::{
 "#,
     r#"
 
-    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
-    fn clone(&self) -> bevy::ecs::entity::Entity;
+    #[lua(
+        as_trait = "std::cmp::PartialEq",
+        kind = "MetaFunction",
+        composite = "eq",
+        metamethod = "Eq",
+    )]
+    fn eq(&self, #[proxy] other: &entity::Entity) -> bool;
 
 "#,
     r#"
@@ -144,18 +144,6 @@ struct OnReplace {}
     remote = "bevy::ecs::component::ComponentId",
     functions[r#"
 
-    #[lua(as_trait = "std::cmp::Eq", kind = "Method")]
-    fn assert_receiver_is_total_eq(&self) -> ();
-
-"#,
-    r#"
-
-    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
-    fn clone(&self) -> bevy::ecs::component::ComponentId;
-
-"#,
-    r#"
-
     #[lua(
         as_trait = "std::cmp::PartialEq",
         kind = "MetaFunction",
@@ -182,6 +170,18 @@ struct OnReplace {}
 
 "#,
     r#"
+
+    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
+    fn clone(&self) -> bevy::ecs::component::ComponentId;
+
+"#,
+    r#"
+
+    #[lua(as_trait = "std::cmp::Eq", kind = "Method")]
+    fn assert_receiver_is_total_eq(&self) -> ();
+
+"#,
+    r#"
 #[lua(kind="MetaMethod", metamethod="ToString")]
 fn index(&self) -> String {
     format!("{:?}", _self)
@@ -197,6 +197,17 @@ struct ComponentId();
 
     #[lua(as_trait = "std::cmp::Eq", kind = "Method")]
     fn assert_receiver_is_total_eq(&self) -> ();
+
+"#,
+    r#"
+
+    #[lua(
+        as_trait = "std::cmp::PartialEq",
+        kind = "MetaFunction",
+        composite = "eq",
+        metamethod = "Eq",
+    )]
+    fn eq(&self, #[proxy] other: &component::Tick) -> bool;
 
 "#,
     r#"
@@ -238,17 +249,6 @@ struct ComponentId();
         #[proxy]
         this_run: bevy::ecs::component::Tick,
     ) -> bool;
-
-"#,
-    r#"
-
-    #[lua(
-        as_trait = "std::cmp::PartialEq",
-        kind = "MetaFunction",
-        composite = "eq",
-        metamethod = "Eq",
-    )]
-    fn eq(&self, #[proxy] other: &component::Tick) -> bool;
 
 "#,
     r#"
@@ -342,6 +342,12 @@ struct ComponentTicks {}
     remote = "bevy::ecs::identifier::Identifier",
     functions[r#"
 
+    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
+    fn clone(&self) -> bevy::ecs::identifier::Identifier;
+
+"#,
+    r#"
+
     #[lua(
         as_trait = "std::cmp::PartialEq",
         kind = "MetaFunction",
@@ -380,12 +386,6 @@ struct ComponentTicks {}
 
     #[lua(kind = "Function", output(proxy))]
     fn from_bits(value: u64) -> bevy::ecs::identifier::Identifier;
-
-"#,
-    r#"
-
-    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
-    fn clone(&self) -> bevy::ecs::identifier::Identifier;
 
 "#,
     r#"
