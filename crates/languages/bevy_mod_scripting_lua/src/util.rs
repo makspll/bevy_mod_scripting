@@ -35,7 +35,7 @@ macro_rules! lua_path {
 ///
 /// Current configuration will provide "/scripts/*.lua" paths
 /// ```rust
-/// use bevy_mod_scripting::lua_path;
+/// use bevy_mod_scripting_lua::lua_path;
 /// assert_eq!("scripts/build/my_script.lua",lua_path!("my_script"))
 /// ```
 #[cfg(not(feature = "teal"))]
