@@ -138,13 +138,13 @@ impl CachedTraits {
             .all(|t| self.std_source_traits.contains_key(*t))
     }
 
-    // pub(crate) fn missing_std_source_traits(&self) -> Vec<String> {
-    //     STD_SOURCE_TRAITS
-    //         .iter()
-    //         .filter(|t| !self.std_source_traits.contains_key(**t))
-    //         .map(|s| (*s).to_owned())
-    //         .collect()
-    // }
+    pub(crate) fn missing_std_source_traits(&self) -> Vec<String> {
+        STD_SOURCE_TRAITS
+            .iter()
+            .filter(|t| !self.std_source_traits.contains_key(**t))
+            .map(|s| (*s).to_owned())
+            .collect()
+    }
 }
 
 #[derive(Clone, Debug)]
@@ -152,7 +152,7 @@ pub(crate) struct FunctionContext {
     pub(crate) def_id: DefId,
     pub(crate) has_self: bool,
     pub(crate) is_unsafe: bool,
-    pub(crate) trait_did: Option<DefId>,
+    pub(crate) trait_and_impl_did: Option<(DefId, DefId)>,
     /// strategies for input and output (last element is the output)
     pub(crate) reflection_strategies: Vec<ReflectionStrategy>,
 }

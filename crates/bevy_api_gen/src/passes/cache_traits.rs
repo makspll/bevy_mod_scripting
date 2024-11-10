@@ -66,12 +66,11 @@ pub(crate) fn cache_traits(ctxt: &mut BevyCtxt<'_>, _args: &Args) -> bool {
                 .join(", ")
         );
 
-        // TODO: figure out why some crates are missing std::fmt::Display etc
-        // panic!(
-        //     "Could not find traits: [{}] in crate: {}, did bootstrapping go wrong?",
-        //     ctxt.cached_traits.missing_std_source_traits().join(", "),
-        //     tcx.crate_name(LOCAL_CRATE)
-        // )
+        panic!(
+            "Could not find traits: [{}] in crate: {}, did bootstrapping go wrong?",
+            ctxt.cached_traits.missing_std_source_traits().join(", "),
+            tcx.crate_name(LOCAL_CRATE)
+        )
     }
 
     true

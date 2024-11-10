@@ -66,6 +66,28 @@ impl MetaLoader {
         self.meta_for_retry(crate_name, 3)
     }
 
+    /// Searches the given meta sources in order for the provided DefPathHash, once a meta file containing this hash is found
+    /// the search stops and returns true, if no meta file is found containing the hash, false is returned
+    ///
+    /// if a curr_source argument is provided, the search will skip this source as it is assumed that the current crate is still being compiled and not meta file for it exists yet
+    pub fn one_of_meta_files_contains(
+        &self,
+        meta_sources: &[&str],
+        curr_source: Option<&str>,
+        target_def_path_hash: DefPathHash,
+    ) -> bool {
+        let meta = match meta_sources
+            .iter()
+            .filter(|s| curr_source.is_none() || curr_source.is_some_and(|cs| cs == **s))
+            .find_map(|s| self.meta_for(s))
+        {
+            Some(meta) => meta,
+            None => return false, // TODO: is it possible we get false negatives here ? perhaps due to parallel compilation ? or possibly because of dependency order
+        };
+
+        meta.contains_def_path_hash(target_def_path_hash)
+    }
+
     fn meta_for_retry(&self, crate_name: &str, _try_attempts: usize) -> Option<Meta> {
         let meta = self
             .meta_dirs
@@ -94,7 +116,7 @@ impl MetaLoader {
         let cache = self.cache.borrow();
         if cache.contains_key(crate_name) {
             trace!("Loading meta from cache for: {}", crate_name);
-            cache.get(crate_name).cloned()
+            return cache.get(crate_name).cloned();
         } else {
             trace!("Loading meta from filesystem for: {}", crate_name);
             drop(cache);

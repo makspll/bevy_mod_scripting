@@ -111,17 +111,21 @@ pub(crate) struct Function {
 pub(crate) struct Arg {
     /// the name of the argument as in source code
     /// None if this is a receiver, in which case ty contains the ident
-    pub(crate) ident: Option<String>,
+    pub(crate) ident: String,
 
     /// the type of argument
     /// i.e. `&Vec<MyTy>`
     pub(crate) ty: String,
+    /// The proxied type of argument for use in Unproxy and Proxy targetted code
+    /// i.e. AppropriateRefProxy<MyTy> instead of &MyTy for a reference
+    pub(crate) proxy_ty: String,
     pub(crate) reflection_strategy: ReflectionStrategy,
 }
 
 #[derive(Serialize)]
 pub(crate) struct Output {
     pub(crate) ty: String,
+    pub(crate) proxy_ty: String,
     pub(crate) reflection_strategy: ReflectionStrategy,
 }
 
@@ -195,8 +199,9 @@ pub(crate) fn configure_tera_env(tera: &mut Tera, crate_name: &str) {
 
             let file = syn::parse_file(&str)
                 .map_err(|e| tera::Error::msg(e.to_string()))
-                .inspect_err(|_| {
+                .map_err(|e| {
                     log::error!("prettyplease error on input: ```\n{}\n```", str);
+                    e
                 })?;
 
             let out = prettyplease::unparse(&file);

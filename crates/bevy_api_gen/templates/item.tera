@@ -3,14 +3,20 @@
 {# for now #}
 {% endfor %}
 
+{% if args.self_is_bms_lua %}
+{% set bms_core_path="bevy_mod_scripting_core" %}
+{% set bms_lua_path="crate" %}
+{% else %}
+{% set bms_core_path="bevy_mod_scripting::core" %}
+{% set bms_lua_path="bevy_mod_scripting::lua" %}
+{% endif %}
+
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
-derive(
-    {%- if item.impls_clone -%}
-        clone,
-    {%- endif -%}
-),
 remote="{{ item.import_path }}",
+bms_core_path="{{bms_core_path}}",
+bms_lua_path="{{bms_lua_path}}",
+
 functions[
     {%- filter separated(delimeter=",\n\t\t\t", split_at="---", ignore_first=true) -%}
     {%- for function in item.functions -%}
@@ -61,7 +67,7 @@ functions[
         r#"
         {%- set mat_type = item.import_path | split(pat="::") | last -%}
         {%- set col_type = mat_type | replace(from="Mat", to="Vec")-%}
-        {{- macros::matrix_index(col_type=col_type,mat_type=mat_type)-}}
+        {{- macros::matrix_index(col_type=col_type,mat_type=mat_type,bms_core_path=bms_core_path)-}}
         "#
     {% endif %}
     {%- endfilter -%}
@@ -76,7 +82,7 @@ functions[
 {% set close_item = "}" %}
 {% endif %}
 
-struct {{ item.ident -}} {{ open_item }}
+pub struct {{ item.ident -}} {{ open_item }}
     {% if not item.is_enum %}
     {% for field in item.variants[0].fields %}
         {% if field.reflection_strategy != "Filtered" %}

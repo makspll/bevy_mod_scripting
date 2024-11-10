@@ -27,7 +27,7 @@ impl std::fmt::Debug for ImportPathElement {
 /// Because we do not need ALL the items in the crate, we start searching from the item itself and traverse up the tree.
 /// Caches results for already found items.
 pub(crate) struct ImportPathFinder<'tcx> {
-    tcx: TyCtxt<'tcx>,
+    pub(crate) tcx: TyCtxt<'tcx>,
     pub(crate) cache: IndexMap<DefId, Vec<Vec<ImportPathElement>>>,
     pub(crate) include_private_paths: bool,
     pub(crate) import_path_processor: Option<Box<dyn Fn(&str) -> String>>,

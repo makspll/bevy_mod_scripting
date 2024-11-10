@@ -13,6 +13,11 @@ r#"
 as_trait="{{ function.from_trait_path }}",
 {%- endif -%}
 
+{% if is_op %}
+composite="{{ function.ident }}",
+{% endif %}
+
+{#
 {% if function.has_self and not is_op %}
 kind="{% if function.args.0.ty is starting_with("&mut") %}Mutating{% endif %}Method",
 {% elif is_op %}
@@ -25,9 +30,7 @@ kind="Function",
 output(proxy),
 {%- endif -%}
 
-{% if is_op %}
-composite="{{ function.ident }}",
-{% endif %}
+
 
 {% if function.from_trait_path == "std::ops::Neg" %}
 metamethod="Unm",
@@ -44,23 +47,22 @@ metamethod="Mod",
 {% elif function.from_trait_path == "std::cmp::PartialEq" %}
 metamethod="Eq",
 {% endif %}
-
+#}
 )] 
 {% if function.is_unsafe %}unsafe {% endif -%}fn {{ function.ident }} (
     {%- filter separated(delimeter=", ", split_at="---", ignore_first=true) -%}
 
     {%- for arg in function.args -%}
         ---
-        {%- if arg.ident and arg.reflection_strategy == "Proxy" -%}
-            #[proxy]
-        {%- endif -%}
-        {%- if arg.ident -%}
-            {{- arg.ident }} : {# -#}
+        {%- if arg.ident != "self" -%}
+            {{- arg.ident -}}
+        {%- else -%}
+            _{{- arg.ident -}}
         {%- endif -%} 
-        {{- arg.ty -}}
+        : {{- arg.proxy_ty -}}
     {%- endfor -%}
 
     {%- endfilter -%}
-) -> {{ function.output.ty -}};
+) -> {{ function.output.proxy_ty -}};
 {%- endfilter %}
 "#
