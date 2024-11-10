@@ -264,6 +264,7 @@ To see more complex applications of this library have a look at the examples:
 - [generating statically typed lua wrappers + ReflectReference system](examples/wrappers.rs)
 - [lua - documentation generation + lua static typing](examples/lua/documentation_gen.rs)
 - [lua - bevy console integration](examples/lua/console_integration.rs)
+- [lua - dynamic queryies](examples/lua/dynamic_queries.rs)
 - [rhai - bevy console integration](examples/rhai/console_integration.rs)
 - [lua - game of life with teal](examples/lua/game_of_life.rs)
 - [rhai - game of life](examples/rhai/game_of_life.rs)
