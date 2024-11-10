@@ -21,19 +21,9 @@ doc_always = []
 
 
 [dependencies]
-bevy = { workspace = true, default-features = false, features = [
-    "bevy_asset",
-    "bevy_gltf",
-    "bevy_animation",
-    "bevy_core_pipeline",
-    "bevy_ui",
-    "bevy_pbr",
-    "bevy_render",
-    "bevy_text",
-    "bevy_sprite",
-] }
-bevy_event_priority = { path = "../bevy_event_priority", version = "0.8.0-alpha.1" }
+bevy = { workspace = true, default-features = false, features = ["bevy_asset"] }
 thiserror = "1.0.31"
 paste = "1.0.7"
 parking_lot = "0.12.1"
-anyhow = "1.0.75"
+lockable = "0.0.8"
+smallvec = "1.11"
