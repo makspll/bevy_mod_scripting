@@ -92,6 +92,7 @@ members = [
     "crates/languages/bevy_mod_scripting_rhai_derive",
     "crates/languages/bevy_mod_scripting_rune",
     "crates/bevy_mod_scripting_common",
+    "crates/bevy_mod_scripting_derive",
 ]
 resolver = "2"
 exclude = ["crates/bevy_api_gen", "crates/macro_tests"]

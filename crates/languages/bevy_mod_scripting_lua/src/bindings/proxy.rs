@@ -10,13 +10,65 @@ use bevy_mod_scripting_core::{
     error::{ScriptError, ScriptResult},
 };
 use tealr::{
-    mlu::mlua::{Error, FromLua, IntoLua, Lua, Value},
+    mlu::mlua::{Error, FromLua, IntoLua, IntoLuaMulti, Lua, Value},
     ToTypename,
 };
 
-/// Local trait alias for the [`Proxied`] trait.
+use super::world::Nil;
+
+/// Think of this as a Local trait alias for the [`Proxy`] trait. Specifies the proxy type for a given type.
 pub trait LuaProxied {
     type Proxy;
+}
+
+/// Proxy which acts exactly like `T` when converting to Lua, but provides a `ToTypename` implementation based on another type `N`.
+/// Used internally basically only to support Result types in Lua directly.
+/// Will be unnecessary once I get rid of tealr.    
+pub(crate) struct TypenameProxy<T, N: ToTypename>(T, std::marker::PhantomData<N>);
+
+impl<T, N: ToTypename> TypenameProxy<T, N> {
+    pub fn new(value: T) -> Self {
+        Self(value, std::marker::PhantomData)
+    }
+}
+
+impl<T, N: ToTypename> ToTypename for TypenameProxy<T, N> {
+    fn to_typename() -> tealr::Type {
+        N::to_typename()
+    }
+}
+
+impl<'a, T: IntoLuaMulti<'a>, N: ToTypename> IntoLua<'a> for TypenameProxy<T, N> {
+    fn into_lua(self, lua: &'a Lua) -> tealr::mlu::mlua::Result<Value<'a>> {
+        self.0
+            .into_lua_multi(lua)
+            .map(|mut v| v.pop_front().unwrap())
+    }
+}
+
+/// Proxy which converts to lua by throwing the error. Can be used inside a [`Result`] to proxy into a result which will throw the error if it's an [`Err`] when converting to Lua.
+pub struct ErrorProxy<E>(E);
+
+impl<'a, E: Into<Box<dyn std::error::Error + Send + Sync + 'static>>> IntoLua<'a>
+    for ErrorProxy<E>
+{
+    fn into_lua(self, _: &'a Lua) -> tealr::mlu::mlua::prelude::LuaResult<Value<'a>> {
+        Err(Error::external(self.0))
+    }
+}
+
+/// This should never really need to be used, but it's here so we can use the type in Lua.
+impl<E> ToTypename for ErrorProxy<E> {
+    fn to_typename() -> tealr::Type {
+        tealr::Type::new_single("Error", tealr::KindOfType::External)
+    }
+}
+
+impl<E: Into<Box<dyn std::error::Error + Send + Sync + 'static>>> Proxy for ErrorProxy<E> {
+    type Input<'i> = E;
+    fn proxy<'i>(value: Self::Input<'i>) -> ScriptResult<Self> {
+        Ok(Self(value))
+    }
 }
 
 /// Convenience for proxying a type into lua via itself without implementing [`Proxy`] on it.

@@ -32,7 +32,7 @@ GENERATED_SRC_PATH=./crates/languages/bevy_mod_scripting_lua/src/bindings/provid
 GEN_BEVY_FEATURES=bevy_asset,bevy_gltf,bevy_animation,bevy_core_pipeline,bevy_ui,bevy_pbr,bevy_render,bevy_text,bevy_sprite,file_watcher,multi_threaded
 
 build_test_in_package:
-	@cargo test --no-run --lib --workspace $(TEST_NAME)
+	@cargo test --no-run --lib --package ${PACKAGE} $(TEST_NAME) --features ${TEST_FEATURES}
 	@export OUTPUT=$$(find ./target/debug/deps/ -regex ".*${PACKAGE}[^.]*" -printf "%T@\t%Tc %6k KiB %p\n" | sort -n -r | awk '{print $$NF}' | head -1); \
 	mv $${OUTPUT} ./target/debug/test_binary && echo "Using: $${OUTPUT}" && ls -v ./target/debug/ | grep "test_binary"
 

@@ -177,6 +177,18 @@ impl LuaProxied for ReflectReference {
     type Proxy = LuaReflectReference;
 }
 
+impl From<LuaReflectReference> for ReflectReference {
+    fn from(value: LuaReflectReference) -> Self {
+        value.0
+    }
+}
+
+impl From<ReflectReference> for LuaReflectReference {
+    fn from(value: ReflectReference) -> Self {
+        Self(value)
+    }
+}
+
 impl TealData for LuaReflectReference {
     fn add_methods<'lua, T: tealr::mlu::TealDataMethods<'lua, Self>>(m: &mut T) {
         m.add_meta_function(
