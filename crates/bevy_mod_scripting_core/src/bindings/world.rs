@@ -135,16 +135,10 @@ pub(crate) const CONCURRENT_ACCESS_MSG: &str =
 /// common world methods, see:
 /// - [`crate::bindings::query`] for query related functionality
 impl WorldCallbackAccess {
-    pub fn get_type_by_name(&self, type_name: &str) -> Option<ScriptTypeRegistration> {
+    // TODO: uses `String` for type_name to avoid lifetime issues with types proxying this via macros
+    pub fn get_type_by_name(&self, type_name: String) -> Option<ScriptTypeRegistration> {
         let world = self.read().unwrap_or_else(|| panic!("{STALE_WORLD_MSG}"));
-
-        world.with_resource(|_, registry: Mut<AppTypeRegistry>| {
-            let registry = registry.read();
-            registry
-                .get_with_short_type_path(type_name)
-                .or_else(|| registry.get_with_type_path(type_name))
-                .map(|registration| ScriptTypeRegistration::new(Arc::new(registration.clone())))
-        })
+        world.get_type_by_name(type_name)
     }
 
     pub fn add_default_component(
@@ -153,50 +147,7 @@ impl WorldCallbackAccess {
         registration: ScriptTypeRegistration,
     ) -> ScriptResult<()> {
         let world = self.read().unwrap_or_else(|| panic!("{STALE_WORLD_MSG}"));
-
-        let component_data = registration.data::<ReflectComponent>().ok_or_else(|| ScriptError::new_runtime_error(format!(
-            "Cannot add default component since type: `{}`, Does not have ReflectComponent data registered.",
-            registration.type_info().type_path()
-        )))?;
-
-        // we look for ReflectDefault or ReflectFromWorld data then a ReflectComponent data
-        let instance = if let Some(default_td) = registration.data::<ReflectDefault>() {
-            default_td.default()
-        } else if let Some(from_world_td) = registration.data::<ReflectFromWorld>() {
-            if let Some(world) = world.get_whole_world_access() {
-                from_world_td.from_world(world)
-            } else {
-                panic!("{CONCURRENT_WORLD_ACCESS_MSG}")
-            }
-        } else {
-            return Err(ScriptError::new_runtime_error(format!(
-                "Cannot add default component since type: `{}`, Does not have ReflectDefault or ReflectFromWorld data registered.",
-                registration.type_info().type_path()
-            )));
-        };
-
-        //  TODO: this shouldn't need entire world access it feels
-        if let Some(world) = world.get_whole_world_access() {
-            let app_registry = world
-                .remove_resource::<AppTypeRegistry>()
-                .unwrap_or_else(|| panic!("Missing type registry"));
-
-            let mut entity = world.get_entity_mut(entity).map_err(|e| {
-                ScriptError::new_runtime_error(format!(
-                    "Could not access entity: {:?}. {e}",
-                    entity
-                ))
-            })?;
-            {
-                let registry = app_registry.read();
-                component_data.insert(&mut entity, instance.as_partial_reflect(), &registry);
-            }
-            world.insert_resource(app_registry);
-        } else {
-            panic!("{CONCURRENT_WORLD_ACCESS_MSG}")
-        }
-
-        Ok(())
+        world.add_default_component(entity, registration)
     }
 
     pub fn get_component(
@@ -205,45 +156,12 @@ impl WorldCallbackAccess {
         component_id: ComponentId,
     ) -> ScriptResult<Option<ReflectReference>> {
         let world = self.read().unwrap_or_else(|| panic!("{STALE_WORLD_MSG}"));
-
-        let entity = world.cell.get_entity(entity).ok_or_else(|| {
-            ScriptError::new_runtime_error(format!("Entity does not exist: {:?}", entity))
-        })?;
-
-        let component_info = world
-            .cell
-            .components()
-            .get_info(component_id)
-            .ok_or_else(|| {
-                ScriptError::new_runtime_error(format!(
-                    "Component does not exist: {:?}",
-                    component_id
-                ))
-            })?;
-
-        if entity.contains_id(component_id) {
-            Ok(Some(ReflectReference {
-                base: ReflectBaseType {
-                    type_id: component_info
-                        .type_id()
-                        .expect("Component does not have type id"),
-                    base_id: ReflectBase::Component(entity.id(), component_id),
-                },
-                reflect_path: Default::default(),
-            }))
-        } else {
-            Ok(None)
-        }
+        world.get_component(entity, component_id)
     }
 
     pub fn has_component(&self, entity: Entity, component_id: ComponentId) -> ScriptResult<bool> {
         let world = self.read().unwrap_or_else(|| panic!("{STALE_WORLD_MSG}"));
-
-        let entity = world.cell.get_entity(entity).ok_or_else(|| {
-            ScriptError::new_runtime_error(format!("Entity does not exist: {:?}", entity))
-        })?;
-
-        Ok(entity.contains_id(component_id))
+        world.has_component(entity, component_id)
     }
 
     pub fn remove_component(
@@ -252,129 +170,42 @@ impl WorldCallbackAccess {
         registration: ScriptTypeRegistration,
     ) -> ScriptResult<()> {
         let world = self.read().unwrap_or_else(|| panic!("{STALE_WORLD_MSG}"));
-
-        let component_data = registration.data::<ReflectComponent>().ok_or_else(|| ScriptError::new_runtime_error(format!(
-            "Cannot remove component since type: `{}`, Does not have ReflectComponent data registered.",
-            registration.type_info().type_path()
-        )))?;
-
-        //  TODO: this shouldn't need entire world access it feels
-        if let Some(world) = world.get_whole_world_access() {
-            let mut entity = world.get_entity_mut(entity).map_err(|e| {
-                ScriptError::new_runtime_error(format!(
-                    "Could not retrieve entity: {:?}. {e}",
-                    entity
-                ))
-            })?;
-
-            component_data.remove(&mut entity);
-        } else {
-            panic!("{CONCURRENT_WORLD_ACCESS_MSG}")
-        }
-        Ok(())
+        world.remove_component(entity, registration)
     }
 
     pub fn get_resource(&self, resource_id: ComponentId) -> ScriptResult<ReflectReference> {
         let world = self.read().unwrap_or_else(|| panic!("{STALE_WORLD_MSG}"));
-
-        let component_info = world
-            .cell
-            .components()
-            .get_info(resource_id)
-            .ok_or_else(|| {
-                ScriptError::new_runtime_error(format!(
-                    "Resource does not exist: {:?}",
-                    resource_id
-                ))
-            })?;
-
-        Ok(ReflectReference {
-            base: ReflectBaseType {
-                type_id: component_info
-                    .type_id()
-                    .expect("Resource does not have type id"),
-                base_id: ReflectBase::Resource(resource_id),
-            },
-            reflect_path: Default::default(),
-        })
+        world.get_resource(resource_id)
     }
 
     pub fn remove_resource(&self, registration: ScriptTypeRegistration) -> ScriptResult<()> {
         let world = self.read().unwrap_or_else(|| panic!("{STALE_WORLD_MSG}"));
-
-        let component_data = registration.data::<ReflectResource>().ok_or_else(|| ScriptError::new_runtime_error(format!(
-            "Cannot remove resource since type: `{}`, Does not have ReflectResource data registered.",
-            registration.type_info().type_path()
-        )))?;
-
-        //  TODO: this shouldn't need entire world access it feels
-        if let Some(world) = world.get_whole_world_access() {
-            component_data.remove(world);
-        } else {
-            panic!("{CONCURRENT_WORLD_ACCESS_MSG}")
-        }
-        Ok(())
+        world.remove_resource(registration)
     }
 
     pub fn has_resource(&self, resource_id: ComponentId) -> bool {
         let world = self.read().unwrap_or_else(|| panic!("{STALE_WORLD_MSG}"));
-
-        world.cell.components().get_info(resource_id).is_some()
+        world.has_resource(resource_id)
     }
 
     pub fn get_children(&self, entity: Entity) -> ScriptResult<Vec<Entity>> {
         let world = self.read().unwrap_or_else(|| panic!("{STALE_WORLD_MSG}"));
-
-        let access = world
-            .get_component_access_typed::<Children>()
-            .unwrap_or_else(|| panic!("{CONCURRENT_ACCESS_MSG}"));
-
-        Ok(world
-            .get_component::<Children>(&access, entity)?
-            .map(|c| c.to_vec())
-            .unwrap_or_default())
+        world.get_children(entity)
     }
 
     pub fn get_parent(&self, entity: Entity) -> ScriptResult<Option<Entity>> {
         let world = self.read().unwrap_or_else(|| panic!("{STALE_WORLD_MSG}"));
-
-        let access = world
-            .get_component_access_typed::<Parent>()
-            .unwrap_or_else(|| panic!("{CONCURRENT_ACCESS_MSG}"));
-
-        Ok(world
-            .get_component::<Parent>(&access, entity)?
-            .map(|c| c.get()))
+        world.get_parent(entity)
     }
 
     pub fn push_children(&self, parent: Entity, children: &[Entity]) -> ScriptResult<()> {
         let world = self.read().unwrap_or_else(|| panic!("{STALE_WORLD_MSG}"));
-
-        if let Some(world) = world.get_whole_world_access() {
-            let mut queue = CommandQueue::default();
-            let mut commands = Commands::new(&mut queue, world);
-            commands.entity(parent).add_children(children);
-            queue.apply(world);
-        } else {
-            panic!("{CONCURRENT_WORLD_ACCESS_MSG}")
-        }
-
-        Ok(())
+        world.push_children(parent, children)
     }
 
     pub fn remove_children(&self, parent: Entity, children: &[Entity]) -> ScriptResult<()> {
         let world = self.read().unwrap_or_else(|| panic!("{STALE_WORLD_MSG}"));
-
-        if let Some(world) = world.get_whole_world_access() {
-            let mut queue = CommandQueue::default();
-            let mut commands = Commands::new(&mut queue, world);
-            commands.entity(parent).remove_children(children);
-            queue.apply(world);
-        } else {
-            panic!("{CONCURRENT_WORLD_ACCESS_MSG}")
-        }
-
-        Ok(())
+        world.remove_children(parent, children)
     }
 
     pub fn insert_children(
@@ -384,62 +215,22 @@ impl WorldCallbackAccess {
         children: &[Entity],
     ) -> ScriptResult<()> {
         let world = self.read().unwrap_or_else(|| panic!("{STALE_WORLD_MSG}"));
-
-        if let Some(world) = world.get_whole_world_access() {
-            let mut queue = CommandQueue::default();
-            let mut commands = Commands::new(&mut queue, world);
-            commands.entity(parent).insert_children(index, children);
-            queue.apply(world);
-        } else {
-            panic!("{CONCURRENT_WORLD_ACCESS_MSG}")
-        }
-
-        Ok(())
+        world.insert_children(parent, index, children)
     }
 
     pub fn despawn_recursive(&self, entity: Entity) -> ScriptResult<()> {
         let world = self.read().unwrap_or_else(|| panic!("{STALE_WORLD_MSG}"));
-
-        if let Some(world) = world.get_whole_world_access() {
-            let mut queue = CommandQueue::default();
-            let mut commands = Commands::new(&mut queue, world);
-            commands.entity(entity).despawn_recursive();
-            queue.apply(world);
-        } else {
-            panic!("{CONCURRENT_WORLD_ACCESS_MSG}")
-        }
-
-        Ok(())
+        world.despawn_recursive(entity)
     }
 
     pub fn despawn(&self, entity: Entity) -> ScriptResult<()> {
         let world = self.read().unwrap_or_else(|| panic!("{STALE_WORLD_MSG}"));
-
-        if let Some(world) = world.get_whole_world_access() {
-            let mut queue = CommandQueue::default();
-            let mut commands = Commands::new(&mut queue, world);
-            commands.entity(entity).despawn();
-            queue.apply(world);
-        } else {
-            panic!("{CONCURRENT_WORLD_ACCESS_MSG}")
-        }
-
-        Ok(())
+        world.despawn(entity)
     }
 
     pub fn despawn_descendants(&self, entity: Entity) -> ScriptResult<()> {
         let world = self.read().unwrap_or_else(|| panic!("{STALE_WORLD_MSG}"));
-
-        if let Some(world) = world.get_whole_world_access() {
-            let mut queue = CommandQueue::default();
-            let mut commands = Commands::new(&mut queue, world);
-            commands.entity(entity).despawn_descendants();
-            queue.apply(world);
-        } else {
-            panic!("{CONCURRENT_WORLD_ACCESS_MSG}")
-        }
-
-        Ok(())
+        world.despawn_descendants(entity)
     }
 }
 
@@ -638,7 +429,7 @@ impl<'w> WorldAccessGuard<'w> {
             });
 
         let resource = self
-            .get_resource_mut::<R>(&mut access)
+            .get_resource_with_access_mut::<R>(&mut access)
             .expect("invariant")
             .expect("invariant");
         let out = f(self, resource);
@@ -653,29 +444,30 @@ impl<'w> WorldAccessGuard<'w> {
         mut proxied_input: T,
         f: F,
     ) -> ScriptResult<O> {
-        self.with_resource(|world, type_registry: Mut<AppTypeRegistry>| {
-            world.with_resource(|_, mut allocator: Mut<ReflectAllocator>| {
-                let type_registry = type_registry.read();
-                let mut world_acceses = SmallVec::default();
+        let type_registry =
+            self.with_resource(|_, type_registry: Mut<AppTypeRegistry>| type_registry.clone());
 
-                proxied_input.collect_accesses(self, &mut world_acceses)?;
-                let input = unsafe {
-                    proxied_input.unproxy_with_world(
-                        self,
-                        &world_acceses,
-                        &type_registry,
-                        &allocator,
-                    )?
-                };
-                let out = f(input);
+        let type_registry = type_registry.read();
+        let mut world_acceses = SmallVec::default();
 
-                O::proxy_with_allocator(out, &mut allocator)
-            })
-        })
+        let unproxied_input = self.with_resource(|_, allocator: Mut<ReflectAllocator>| {
+            proxied_input.collect_accesses(self, &mut world_acceses)?;
+            unsafe {
+                proxied_input.unproxy_with_world(self, &world_acceses, &type_registry, &allocator)
+            }
+        })?;
+
+        let out = f(unproxied_input);
+
+        let proxied_output = self.with_resource(|_, mut allocator: Mut<ReflectAllocator>| {
+            O::proxy_with_allocator(out, &mut allocator)
+        })?;
+
+        Ok(proxied_output)
     }
 
     /// Get access to the given component, this is the only way to access a component/resource safely (in the context of the world access guard)
-    pub fn get_component<T: Component>(
+    pub fn get_component_with_access<T: Component>(
         &self,
         access: &WorldAccessWrite,
         entity: Entity,
@@ -699,7 +491,7 @@ impl<'w> WorldAccessGuard<'w> {
     }
 
     /// Get access to the given component, this is the only way to access a component/resource safely (in the context of the world access guard)
-    pub fn get_component_mut<T: Component>(
+    pub fn get_component_with_access_mut<T: Component>(
         &self,
         access: &mut WorldAccessWrite,
         entity: Entity,
@@ -723,7 +515,10 @@ impl<'w> WorldAccessGuard<'w> {
     }
 
     /// Get access to the given resource
-    pub fn get_resource<T: Resource>(&self, access: &WorldAccessWrite) -> ScriptResult<Option<&T>> {
+    pub fn get_resource_with_access<T: Resource>(
+        &self,
+        access: &WorldAccessWrite,
+    ) -> ScriptResult<Option<&T>> {
         let resource_id = match self.cell.components().resource_id::<T>() {
             Some(id) => id,
             None => return Ok(None),
@@ -743,7 +538,7 @@ impl<'w> WorldAccessGuard<'w> {
     }
 
     /// Get access to the given resource, this is the only way to access a component/resource safely (in the context of the world access guard)
-    pub fn get_resource_mut<T: Resource>(
+    pub fn get_resource_with_access_mut<T: Resource>(
         &self,
         access: &mut WorldAccessWrite,
     ) -> ScriptResult<Option<Mut<T>>> {
@@ -768,12 +563,12 @@ impl<'w> WorldAccessGuard<'w> {
 
 /// Impl block for higher level world methods
 impl<'w> WorldAccessGuard<'w> {
-    pub fn get_type_by_name(&self, type_name: &str) -> Option<ScriptTypeRegistration> {
+    pub fn get_type_by_name(&self, type_name: String) -> Option<ScriptTypeRegistration> {
         self.with_resource(|_, registry: Mut<AppTypeRegistry>| {
             let registry = registry.read();
             registry
-                .get_with_short_type_path(type_name)
-                .or_else(|| registry.get_with_type_path(type_name))
+                .get_with_short_type_path(&type_name)
+                .or_else(|| registry.get_with_type_path(&type_name))
                 .map(|registration| ScriptTypeRegistration::new(Arc::new(registration.clone())))
         })
     }
@@ -821,6 +616,220 @@ impl<'w> WorldAccessGuard<'w> {
                 component_data.insert(&mut entity, instance.as_partial_reflect(), &registry);
             }
             world.insert_resource(app_registry);
+        } else {
+            panic!("{CONCURRENT_WORLD_ACCESS_MSG}")
+        }
+
+        Ok(())
+    }
+    pub fn get_component(
+        &self,
+        entity: Entity,
+        component_id: ComponentId,
+    ) -> ScriptResult<Option<ReflectReference>> {
+        let entity = self.cell.get_entity(entity).ok_or_else(|| {
+            ScriptError::new_runtime_error(format!("Entity does not exist: {:?}", entity))
+        })?;
+
+        let component_info = self
+            .cell
+            .components()
+            .get_info(component_id)
+            .ok_or_else(|| {
+                ScriptError::new_runtime_error(format!(
+                    "Component does not exist: {:?}",
+                    component_id
+                ))
+            })?;
+
+        if entity.contains_id(component_id) {
+            Ok(Some(ReflectReference {
+                base: ReflectBaseType {
+                    type_id: component_info
+                        .type_id()
+                        .expect("Component does not have type id"),
+                    base_id: ReflectBase::Component(entity.id(), component_id),
+                },
+                reflect_path: Default::default(),
+            }))
+        } else {
+            Ok(None)
+        }
+    }
+
+    pub fn has_component(&self, entity: Entity, component_id: ComponentId) -> ScriptResult<bool> {
+        let entity = self.cell.get_entity(entity).ok_or_else(|| {
+            ScriptError::new_runtime_error(format!("Entity does not exist: {:?}", entity))
+        })?;
+
+        Ok(entity.contains_id(component_id))
+    }
+
+    pub fn remove_component(
+        &self,
+        entity: Entity,
+        registration: ScriptTypeRegistration,
+    ) -> ScriptResult<()> {
+        let component_data = registration.data::<ReflectComponent>().ok_or_else(|| ScriptError::new_runtime_error(format!(
+            "Cannot remove component since type: `{}`, Does not have ReflectComponent data registered.",
+            registration.type_info().type_path()
+        )))?;
+
+        //  TODO: this shouldn't need entire world access it feels
+        if let Some(world) = self.get_whole_world_access() {
+            let mut entity = world.get_entity_mut(entity).map_err(|e| {
+                ScriptError::new_runtime_error(format!(
+                    "Could not retrieve entity: {:?}. {e}",
+                    entity
+                ))
+            })?;
+
+            component_data.remove(&mut entity);
+        } else {
+            panic!("{CONCURRENT_WORLD_ACCESS_MSG}")
+        }
+        Ok(())
+    }
+
+    pub fn get_resource(&self, resource_id: ComponentId) -> ScriptResult<ReflectReference> {
+        let component_info = self
+            .cell
+            .components()
+            .get_info(resource_id)
+            .ok_or_else(|| {
+                ScriptError::new_runtime_error(format!(
+                    "Resource does not exist: {:?}",
+                    resource_id
+                ))
+            })?;
+
+        Ok(ReflectReference {
+            base: ReflectBaseType {
+                type_id: component_info
+                    .type_id()
+                    .expect("Resource does not have type id"),
+                base_id: ReflectBase::Resource(resource_id),
+            },
+            reflect_path: Default::default(),
+        })
+    }
+
+    pub fn remove_resource(&self, registration: ScriptTypeRegistration) -> ScriptResult<()> {
+        let component_data = registration.data::<ReflectResource>().ok_or_else(|| ScriptError::new_runtime_error(format!(
+            "Cannot remove resource since type: `{}`, Does not have ReflectResource data registered.",
+            registration.type_info().type_path()
+        )))?;
+
+        //  TODO: this shouldn't need entire world access it feels
+        if let Some(world) = self.get_whole_world_access() {
+            component_data.remove(world);
+        } else {
+            panic!("{CONCURRENT_WORLD_ACCESS_MSG}")
+        }
+        Ok(())
+    }
+
+    pub fn has_resource(&self, resource_id: ComponentId) -> bool {
+        self.cell.components().get_info(resource_id).is_some()
+    }
+
+    pub fn get_children(&self, entity: Entity) -> ScriptResult<Vec<Entity>> {
+        let access = self
+            .get_component_access_typed::<Children>()
+            .unwrap_or_else(|| panic!("{CONCURRENT_ACCESS_MSG}"));
+
+        Ok(self
+            .get_component_with_access::<Children>(&access, entity)?
+            .map(|c| c.to_vec())
+            .unwrap_or_default())
+    }
+
+    pub fn get_parent(&self, entity: Entity) -> ScriptResult<Option<Entity>> {
+        let access = self
+            .get_component_access_typed::<Parent>()
+            .unwrap_or_else(|| panic!("{CONCURRENT_ACCESS_MSG}"));
+
+        Ok(self
+            .get_component_with_access::<Parent>(&access, entity)?
+            .map(|c| c.get()))
+    }
+
+    pub fn push_children(&self, parent: Entity, children: &[Entity]) -> ScriptResult<()> {
+        if let Some(world) = self.get_whole_world_access() {
+            let mut queue = CommandQueue::default();
+            let mut commands = Commands::new(&mut queue, world);
+            commands.entity(parent).add_children(children);
+            queue.apply(world);
+        } else {
+            panic!("{CONCURRENT_WORLD_ACCESS_MSG}")
+        }
+
+        Ok(())
+    }
+
+    pub fn remove_children(&self, parent: Entity, children: &[Entity]) -> ScriptResult<()> {
+        if let Some(world) = self.get_whole_world_access() {
+            let mut queue = CommandQueue::default();
+            let mut commands = Commands::new(&mut queue, world);
+            commands.entity(parent).remove_children(children);
+            queue.apply(world);
+        } else {
+            panic!("{CONCURRENT_WORLD_ACCESS_MSG}")
+        }
+
+        Ok(())
+    }
+
+    pub fn insert_children(
+        &self,
+        parent: Entity,
+        index: usize,
+        children: &[Entity],
+    ) -> ScriptResult<()> {
+        if let Some(world) = self.get_whole_world_access() {
+            let mut queue = CommandQueue::default();
+            let mut commands = Commands::new(&mut queue, world);
+            commands.entity(parent).insert_children(index, children);
+            queue.apply(world);
+        } else {
+            panic!("{CONCURRENT_WORLD_ACCESS_MSG}")
+        }
+
+        Ok(())
+    }
+
+    pub fn despawn_recursive(&self, entity: Entity) -> ScriptResult<()> {
+        if let Some(world) = self.get_whole_world_access() {
+            let mut queue = CommandQueue::default();
+            let mut commands = Commands::new(&mut queue, world);
+            commands.entity(entity).despawn_recursive();
+            queue.apply(world);
+        } else {
+            panic!("{CONCURRENT_WORLD_ACCESS_MSG}")
+        }
+
+        Ok(())
+    }
+
+    pub fn despawn(&self, entity: Entity) -> ScriptResult<()> {
+        if let Some(world) = self.get_whole_world_access() {
+            let mut queue = CommandQueue::default();
+            let mut commands = Commands::new(&mut queue, world);
+            commands.entity(entity).despawn();
+            queue.apply(world);
+        } else {
+            panic!("{CONCURRENT_WORLD_ACCESS_MSG}")
+        }
+
+        Ok(())
+    }
+
+    pub fn despawn_descendants(&self, entity: Entity) -> ScriptResult<()> {
+        if let Some(world) = self.get_whole_world_access() {
+            let mut queue = CommandQueue::default();
+            let mut commands = Commands::new(&mut queue, world);
+            commands.entity(entity).despawn_descendants();
+            queue.apply(world);
         } else {
             panic!("{CONCURRENT_WORLD_ACCESS_MSG}")
         }
@@ -1204,18 +1213,20 @@ mod test_api {
     use super::*;
 
     fn get_reg(world: &WorldCallbackAccess, name: &str) -> ScriptTypeRegistration {
-        world.get_type_by_name(name).expect("Type not found")
+        world
+            .get_type_by_name(name.to_owned())
+            .expect("Type not found")
     }
 
     fn test_comp_reg(world: &WorldCallbackAccess) -> ScriptTypeRegistration {
         world
-            .get_type_by_name("TestComponent")
+            .get_type_by_name("TestComponent".to_owned())
             .expect("Component not found")
     }
 
     fn test_resource_reg(world: &WorldCallbackAccess) -> ScriptTypeRegistration {
         world
-            .get_type_by_name("TestResource")
+            .get_type_by_name("TestResource".to_owned())
             .expect("Resource not found")
     }
 
@@ -1223,8 +1234,8 @@ mod test_api {
     fn test_get_type_by_name() {
         let (mut world, _, _) = setup_world(|_, _| {});
         WorldCallbackAccess::with_callback_access(&mut world, |world| {
-            let comp_reg = world.get_type_by_name("TestComponent").unwrap();
-            let resource_reg = world.get_type_by_name("TestResource").unwrap();
+            let comp_reg = world.get_type_by_name("TestComponent".to_owned()).unwrap();
+            let resource_reg = world.get_type_by_name("TestResource".to_owned()).unwrap();
 
             assert_eq!(
                 comp_reg.type_info().type_id(),
@@ -1241,8 +1252,8 @@ mod test_api {
     fn test_get_type_by_name_invalid() {
         let (mut world, _, _) = setup_world(|_, _| {});
         WorldCallbackAccess::with_callback_access(&mut world, |world| {
-            let comp_reg = world.get_type_by_name("x");
-            let resource_reg = world.get_type_by_name("z");
+            let comp_reg = world.get_type_by_name("x".to_owned());
+            let resource_reg = world.get_type_by_name("z".to_owned());
 
             assert!(comp_reg.is_none());
             assert!(resource_reg.is_none());

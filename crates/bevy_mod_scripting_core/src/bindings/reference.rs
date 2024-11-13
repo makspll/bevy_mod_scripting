@@ -185,7 +185,7 @@ impl ReflectReference {
         world: UnsafeWorldCell<'w>,
         access: &'c WorldAccessWrite<'w>,
         type_registry: &TypeRegistry,
-        allocator: Option<&'c ReflectAllocator>,
+        allocator: Option<&ReflectAllocator>,
     ) -> ScriptResult<&'c dyn PartialReflect> {
         self.expect_read_access(access, type_registry, allocator, world)?;
         // Safety: since we have read access to the underlying componentId we can safely access the component
@@ -202,7 +202,7 @@ impl ReflectReference {
         world: UnsafeWorldCell<'w>,
         access: &'c mut WorldAccessWrite<'w>,
         type_registry: &TypeRegistry,
-        allocator: Option<&'c ReflectAllocator>,
+        allocator: Option<&ReflectAllocator>,
     ) -> ScriptResult<&'c mut dyn PartialReflect> {
         self.expect_write_access(access, type_registry, allocator, world)?;
         // Safety: since we have write access to the underlying reflect access id we can safely access the component
@@ -218,7 +218,7 @@ impl ReflectReference {
         &self,
         world: UnsafeWorldCell<'w>,
         type_registry: &TypeRegistry,
-        allocator: Option<&'w ReflectAllocator>,
+        allocator: Option<&ReflectAllocator>,
     ) -> ScriptResult<&'w dyn PartialReflect> {
         if let ReflectBase::Owned(id) = &self.base.base_id {
             let allocator =
@@ -266,7 +266,7 @@ impl ReflectReference {
         &self,
         world: UnsafeWorldCell<'w>,
         type_registry: &TypeRegistry,
-        allocator: Option<&'w ReflectAllocator>,
+        allocator: Option<&ReflectAllocator>,
     ) -> ScriptResult<&'w mut dyn PartialReflect> {
         if let ReflectBase::Owned(id) = &self.base.base_id {
             let allocator = allocator.ok_or_else(|| ScriptError::new_reflection_error("Allocator missing"))?;

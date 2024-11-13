@@ -161,7 +161,7 @@ macro_rules! impl_lua_unproxy {
                 guard: &WorldAccessGuard<'w>,
                 accesses: &'o [WorldAccessUnit<'w>],
                 type_registry: &TypeRegistry,
-                allocator: &'o ReflectAllocator,
+                allocator: &ReflectAllocator,
             ) -> ScriptResult<Self::Output<'o>> {
                 self.0
                     .unproxy_with_world(guard, accesses, type_registry, allocator)

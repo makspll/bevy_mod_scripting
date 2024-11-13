@@ -391,22 +391,30 @@ mod test {
         let _val = val.unproxy().unwrap();
     }
 
-    fn lua_tests() -> Vec<(&'static str, &'static str)> {
+    fn lua_tests() -> Vec<(&'static str, &'static str, u32)> {
         vec![
             (
                 "get_type_by_name with unregistered type returns nothing",
                 "
                     assert(world:get_type_by_name('UnregisteredType') == nil)
                 ",
+                line!(),
             ),
             (
-                "get_type_by_name with registered type returns type",
+                "get_type_by_name with registered type returns correct type",
                 "
                     local type = world:get_type_by_name('TestComponent')
-                    assert(type ~= nil)
-                    assert(type.type_name == 'TestComponent')
-                    assert(type.short_name == 'TestComponent')
+
+                    local expected = {
+                        type_name = 'bevy_mod_scripting_lua::bindings::world::test::TestComponent',
+                        short_name = 'TestComponent',
+                    }
+
+                    assert(type ~= nil, 'Type not found')
+                    assert(type.type_name == expected.type_name, 'type_name mismatch, expected: ' .. expected.type_name .. ', got: ' .. type.type_name)
+                    assert(type.short_name == expected.short_name, 'short_name mismatch, expected: ' .. expected.short_name .. ', got: ' .. type.short_name)
                 ",
+                line!(),
             ),
         ]
     }
@@ -417,10 +425,16 @@ mod test {
     #[derive(Resource, Debug, Clone, Reflect)]
     pub struct TestResource(String);
 
-    /// Initializes test world for scripts
+    /// Initializes test world for tests
     fn init_world() -> World {
         let mut world = World::default();
-        world.init_resource::<AppTypeRegistry>();
+        let type_registry = AppTypeRegistry::default();
+        {
+            let mut type_registry = type_registry.write();
+            type_registry.register::<TestComponent>();
+            type_registry.register::<TestResource>();
+        }
+        world.insert_resource(type_registry);
         world.init_resource::<ReflectAllocator>();
         // add some entities
         world.spawn(TestComponent("Hello".to_string()));
@@ -432,15 +446,21 @@ mod test {
     fn world_lua_api_tests() {
         // use lua assertions to test the api
 
-        for (test_name, code) in lua_tests() {
+        for (test_name, code, line) in lua_tests() {
             let lua = Lua::new();
             let mut world = init_world();
             WorldCallbackAccess::with_callback_access(&mut world, |world| {
                 lua.globals().set("world", LuaWorld(world.clone())).unwrap();
 
                 let code = lua.load(code);
+                // ide friendly link to test, i.e. crates/languages/bevy_mod_scripting_lua/src/bindings/world.rs:139
+                let filename = file!();
+                let test_hyperlink = format!("{filename}:{line}");
                 code.exec()
-                    .map_err(|e| panic!("Failed lua test: {test_name}. Error: {e}"));
+                    .inspect_err(|e| {
+                        panic!("Failed lua test: `{test_name}` at: {test_hyperlink}. Error: {e}")
+                    })
+                    .unwrap();
             });
         }
     }

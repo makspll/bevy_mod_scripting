@@ -113,7 +113,7 @@ impl ScriptError {
     pub fn with_context<S: ToString>(self, context: S) -> Self {
         Self(Arc::new(ScriptErrorInner {
             script: self.0.script.clone(),
-            kind: self.0.kind.clone(),
+            kind: self.0.kind,
             context: context.to_string(),
             reason: self.0.reason.clone(),
         }))

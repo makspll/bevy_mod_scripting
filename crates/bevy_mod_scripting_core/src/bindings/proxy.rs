@@ -82,7 +82,7 @@ pub trait Unproxy {
         _guard: &WorldAccessGuard<'w>,
         _accesses: &'o [WorldAccessUnit<'w>],
         _type_registry: &TypeRegistry,
-        _allocator: &'o ReflectAllocator,
+        _allocator: &ReflectAllocator,
     ) -> ScriptResult<Self::Output<'o>> {
         self.unproxy()
     }
@@ -265,7 +265,7 @@ where
         guard: &WorldAccessGuard<'w>,
         accesses: &'o [WorldAccessUnit<'w>],
         type_registry: &TypeRegistry,
-        allocator: &'o ReflectAllocator,
+        allocator: &ReflectAllocator,
     ) -> ScriptResult<Self::Output<'o>> {
         let reflect_ref: &ReflectReference = self.0.as_ref();
         let access = accesses.last().ok_or_else(|| {
@@ -326,7 +326,7 @@ where
         guard: &WorldAccessGuard<'w>,
         accesses: &'o [WorldAccessUnit<'w>],
         type_registry: &TypeRegistry,
-        allocator: &'o ReflectAllocator,
+        allocator: &ReflectAllocator,
     ) -> ScriptResult<Self::Output<'o>> {
         let reflect_ref: &ReflectReference = self.0.as_ref();
         accesses
@@ -404,7 +404,7 @@ macro_rules! impl_unproxy_via_vec {
                 guard: &WorldAccessGuard<'w>,
                 accesses: &'o [WorldAccessUnit<'w>],
                 type_registry: &TypeRegistry,
-                allocator: &'o ReflectAllocator,
+                allocator: &ReflectAllocator,
             ) -> ScriptResult<Self::Output<'o>> {
                 let mut out = Vec::with_capacity(self.len());
                 let mut offset = 0;
@@ -523,7 +523,7 @@ impl<T: Unproxy> Unproxy for Option<T> {
         guard: &WorldAccessGuard<'w>,
         accesses: &'o [WorldAccessUnit<'w>],
         type_registry: &TypeRegistry,
-        allocator: &'o ReflectAllocator,
+        allocator: &ReflectAllocator,
     ) -> ScriptResult<Self::Output<'o>> {
         if let Some(s) = self {
             let inner = s.unproxy_with_world(guard, accesses, type_registry, allocator)?;
@@ -565,13 +565,13 @@ impl<T: Proxy> Proxy for Option<T> {
     }
 }
 
-impl<T: Proxy, E> Proxy for Result<T, E> {
-    type Input<'a> = Result<T::Input<'a>, E>;
+impl<T: Proxy, E: Proxy> Proxy for Result<T, E> {
+    type Input<'a> = Result<T::Input<'a>, E::Input<'a>>;
 
     fn proxy(input: Self::Input<'_>) -> ScriptResult<Self> {
         match input {
             Ok(i) => Ok(Ok(T::proxy(i)?)),
-            Err(e) => Ok(Err(e)),
+            Err(e) => Ok(Err(E::proxy(e)?)),
         }
     }
 
@@ -581,7 +581,7 @@ impl<T: Proxy, E> Proxy for Result<T, E> {
     ) -> ScriptResult<Self> {
         match input {
             Ok(i) => Ok(Ok(T::proxy_with_allocator(i, _allocator)?)),
-            Err(e) => Ok(Err(e)),
+            Err(e) => Ok(Err(E::proxy_with_allocator(e, _allocator)?)),
         }
     }
 }
@@ -601,7 +601,7 @@ impl<T: Unproxy, E: Unproxy> Unproxy for Result<T, E> {
         guard: &WorldAccessGuard<'w>,
         accesses: &'o [WorldAccessUnit<'w>],
         type_registry: &TypeRegistry,
-        allocator: &'o ReflectAllocator,
+        allocator: &ReflectAllocator,
     ) -> ScriptResult<Self::Output<'o>> {
         match self {
             Ok(s) => Ok(Ok(s.unproxy_with_world(
@@ -808,7 +808,7 @@ macro_rules! impl_tuple_unproxy_proxy {
                 _guard: &WorldAccessGuard<'w>,
                 _accesses: &'o [WorldAccessUnit<'w>],
                 _type_registry: &TypeRegistry,
-                _allocator: &'o ReflectAllocator,
+                _allocator: &ReflectAllocator,
             ) -> ScriptResult<Self::Output<'o>> {
                 let mut _offset = 0;
 
