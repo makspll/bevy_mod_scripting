@@ -8,7 +8,7 @@ use crate::{asset::ScriptAsset, context::ContextId};
 
 pub type ScriptId = Cow<'static, str>;
 
-#[derive(bevy::ecs::component::Component, Reflect)]
+#[derive(bevy::ecs::component::Component, Reflect, Clone)]
 pub struct ScriptComponent(pub Vec<ScriptId>);
 
 impl Deref for ScriptComponent {

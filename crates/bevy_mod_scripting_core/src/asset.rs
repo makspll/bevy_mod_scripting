@@ -13,7 +13,7 @@ use bevy::{
 use crate::{prelude::ScriptError, script::ScriptId};
 
 /// Represents a script loaded into memory as an asset
-#[derive(Asset, TypePath)]
+#[derive(Asset, TypePath, Clone)]
 pub struct ScriptAsset {
     pub content: Box<[u8]>,
     /// The virtual filesystem path of the asset, used to map to the script Id for asset backed scripts
