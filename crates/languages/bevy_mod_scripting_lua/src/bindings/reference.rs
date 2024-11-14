@@ -29,6 +29,11 @@ use super::{
 pub struct LuaReflectReference(pub ReflectReference);
 
 impl LuaReflectReference {
+    pub fn len(&self, lua: &Lua) -> Result<Option<usize>, mlua::Error> {
+        let world = lua.get_world()?;
+        Ok(self.0.len(&world))
+    }
+
     /// Queries the reflection system for a proxy registration for the underlying type.
     /// If found will convert to lua using this proxy
     /// If not found will use <Self as [`IntoLua`]>::into_lua to convert to lua
@@ -117,13 +122,6 @@ impl LuaReflectReference {
                                         e,
                                     ))
                                 })
-                                // r.set(other).map_err(|e| {
-                                //     ScriptError::new_runtime_error(format!(
-                                //         "Invalid assignment `{:?}` = `{:?}`. Wrong type.",
-                                //         self.0.clone(),
-                                //         e,
-                                //     ))
-                                // })
                             })?;
                         Ok(())
                     } else {
@@ -223,6 +221,10 @@ impl TealData for LuaReflectReference {
                 self_.set_with_lua_proxy(l, value)
             },
         );
+
+        m.add_meta_function(MetaMethod::Len, |l, self_: LuaReflectReference| {
+            self_.len(l)
+        })
     }
 }
 

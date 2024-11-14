@@ -183,13 +183,19 @@ impl TealData for LuaWorld {
 
         methods.add_method(
             "get_resource",
-            |_, this, resource_id: LuaReflectValProxy<ComponentId>| {
+            |_, this, registration: LuaValProxy<ScriptTypeRegistration>| {
                 let world = this.0.read().ok_or_else(|| {
                     mlua::Error::external(ScriptError::new_reflection_error("Stale world access"))
                 })?;
-                let out: Result<LuaValProxy<ReflectReference>, ErrorProxy<ScriptError>> = world
-                    .proxy_call(resource_id, |resource_id| world.get_resource(resource_id))
-                    .map_err(mlua::Error::external)?;
+                let out: Result<Option<LuaValProxy<ReflectReference>>, ErrorProxy<ScriptError>> =
+                    world
+                        .proxy_call(registration, |registration| {
+                            match registration.resource_id {
+                                Some(resource_id) => world.get_resource(resource_id),
+                                None => Ok(None),
+                            }
+                        })
+                        .map_err(mlua::Error::external)?;
 
                 Ok(TypenameProxy::<_, LuaReflectRefProxy<ReflectReference>>::new(out))
             },
@@ -213,12 +219,17 @@ impl TealData for LuaWorld {
 
         methods.add_method(
             "has_resource",
-            |_, this, resource_id: LuaReflectValProxy<ComponentId>| {
+            |_, this, registration: LuaValProxy<ScriptTypeRegistration>| {
                 let world = this.0.read().ok_or_else(|| {
                     mlua::Error::external(ScriptError::new_reflection_error("Stale world access"))
                 })?;
                 let out: bool = world
-                    .proxy_call(resource_id, |resource_id| world.has_resource(resource_id))
+                    .proxy_call(registration, |registration| {
+                        match registration.resource_id {
+                            Some(resource_id) => world.has_resource(resource_id),
+                            None => false,
+                        }
+                    })
                     .map_err(mlua::Error::external)?;
 
                 Ok(out)

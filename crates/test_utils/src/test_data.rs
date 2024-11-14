@@ -35,6 +35,23 @@ impl TestResource {
     }
 }
 
+/// Resource with Reflect and ReflectDefault registered but no ReflectResource
+#[derive(Resource, Reflect, PartialEq, Eq, Debug)]
+#[reflect(Default)]
+pub struct ResourceWithDefault(pub String);
+
+impl Default for ResourceWithDefault {
+    fn default() -> Self {
+        Self(String::from("Default"))
+    }
+}
+
+impl ResourceWithDefault {
+    pub fn init() -> Self {
+        Self(String::from("Initial Value"))
+    }
+}
+
 /// Component with Reflect and ReflectFromWorld registered but no ReflectComponent
 #[derive(Reflect, Component, PartialEq, Debug)]
 #[reflect(FromWorld)]
@@ -148,7 +165,7 @@ macro_rules! impl_test_component_ids {
                 assert_eq!(entity.generation(), 1, "Test setup failed. Did you spawn entities before running setup_world?");
             )*
             $(
-                world.init_resource::<$res_type>();
+                world.insert_resource::<$res_type>(<$res_type>::init());
                 registry.register::<$res_type>();
                 let registered_id = world.resource_id::<$res_type>().unwrap().index();
                 assert_eq!(registered_id, TEST_COMPONENT_ID_START + $res_id, "Test setup failed. Did you register components before running setup_world?");
@@ -179,7 +196,8 @@ impl_test_component_ids!(
         CompWithFromWorldAndComponentData => 4
     ],
     [
-        TestResource => 5
+        TestResource => 5,
+        ResourceWithDefault => 6
     ]
 );
 

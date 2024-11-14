@@ -56,10 +56,33 @@ pub struct ReflectReference {
     pub reflect_path: Vec<ReflectionPathElem>,
 }
 
-// just a dummy standin for unregistered types
-struct UnregisteredType;
+
 
 impl ReflectReference {
+
+    /// If this is a reference to something with a length accessible via reflection, returns that length.
+    pub fn len(&self, world: &WorldAccessGuard) -> Option<usize> {
+        world.with_resource(|world, type_registry: Mut<AppTypeRegistry>| {
+            world.with_resource(|world, allocator: Mut<ReflectAllocator>| {
+                let type_registry = type_registry.read();
+                self
+                    .with_reflect(world, &type_registry, Some(&allocator), |r| {
+                        match r.reflect_ref() {
+                            bevy::reflect::ReflectRef::Struct(s) => Some(s.field_len()),
+                            bevy::reflect::ReflectRef::TupleStruct(ts) => Some(ts.field_len()),
+                            bevy::reflect::ReflectRef::Tuple(t) => Some(t.field_len()),
+                            bevy::reflect::ReflectRef::List(l) => Some(l.len()),
+                            bevy::reflect::ReflectRef::Array(a) => Some(a.len()),
+                            bevy::reflect::ReflectRef::Map(m) => Some(m.len( )),
+                            bevy::reflect::ReflectRef::Set(s) => Some(s.len()),
+                            bevy::reflect::ReflectRef::Enum(e) => Some(e.field_len()),
+                            bevy::reflect::ReflectRef::Opaque(_) => None,
+                        }
+                    })
+            })
+        })
+    }
+
     pub fn new_allocated<T: PartialReflect>(
         value: T,
         allocator: &mut ReflectAllocator,

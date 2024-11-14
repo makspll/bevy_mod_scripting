@@ -13,13 +13,19 @@ use std::{any::TypeId, ops::Deref, sync::Arc};
 pub struct ScriptTypeRegistration {
     pub(crate) registration: Arc<TypeRegistration>,
     pub component_id: Option<ComponentId>,
+    pub resource_id: Option<ComponentId>,
 }
 
 impl ScriptTypeRegistration {
-    pub fn new(registration: Arc<TypeRegistration>, component_id: Option<ComponentId>) -> Self {
+    pub fn new(
+        registration: Arc<TypeRegistration>,
+        component_id: Option<ComponentId>,
+        resource_id: Option<ComponentId>,
+    ) -> Self {
         Self {
             registration,
             component_id,
+            resource_id,
         }
     }
 
@@ -38,6 +44,7 @@ impl ScriptTypeRegistration {
         self.registration.type_info().type_id()
     }
 
+    /// Returns the [`ComponentId`] for this type, if it is a component or a resource.
     #[inline(always)]
     pub fn component_id(&self) -> Option<ComponentId> {
         self.component_id

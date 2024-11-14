@@ -170,7 +170,7 @@ impl WorldCallbackAccess {
         world.remove_component(entity, registration)
     }
 
-    pub fn get_resource(&self, resource_id: ComponentId) -> ScriptResult<ReflectReference> {
+    pub fn get_resource(&self, resource_id: ComponentId) -> ScriptResult<Option<ReflectReference>> {
         let world = self.read().unwrap_or_else(|| panic!("{STALE_WORLD_MSG}"));
         world.get_resource(resource_id)
     }
@@ -290,10 +290,11 @@ impl<'w> WorldAccessGuard<'w> {
 
     /// Gets the component id of the given component or resource
     pub fn get_component_id(&self, id: TypeId) -> Option<ComponentId> {
-        let components = self.cell.components();
-        components
-            .get_id(id)
-            .or_else(|| components.get_resource_id(id))
+        self.cell.components().get_id(id)
+    }
+
+    pub fn get_resource_id(&self, id: TypeId) -> Option<ComponentId> {
+        self.cell.components().get_resource_id(id)
     }
 
     /// Checks nobody else is currently accessing the world, and if so locks access to it until
@@ -609,6 +610,7 @@ impl<'w> WorldAccessGuard<'w> {
                     ScriptTypeRegistration::new(
                         Arc::new(registration.clone()),
                         world.get_component_id(registration.type_id()),
+                        world.get_resource_id(registration.type_id()),
                     )
                 })
         })
@@ -733,19 +735,13 @@ impl<'w> WorldAccessGuard<'w> {
         Ok(())
     }
 
-    pub fn get_resource(&self, resource_id: ComponentId) -> ScriptResult<ReflectReference> {
-        let component_info = self
-            .cell
-            .components()
-            .get_info(resource_id)
-            .ok_or_else(|| {
-                ScriptError::new_runtime_error(format!(
-                    "Resource does not exist: {:?}",
-                    resource_id
-                ))
-            })?;
+    pub fn get_resource(&self, resource_id: ComponentId) -> ScriptResult<Option<ReflectReference>> {
+        let component_info = match self.cell.components().get_info(resource_id) {
+            Some(info) => info,
+            None => return Ok(None),
+        };
 
-        Ok(ReflectReference {
+        Ok(Some(ReflectReference {
             base: ReflectBaseType {
                 type_id: component_info
                     .type_id()
@@ -753,7 +749,7 @@ impl<'w> WorldAccessGuard<'w> {
                 base_id: ReflectBase::Resource(resource_id),
             },
             reflect_path: Default::default(),
-        })
+        }))
     }
 
     pub fn remove_resource(&self, registration: ScriptTypeRegistration) -> ScriptResult<()> {
@@ -772,7 +768,9 @@ impl<'w> WorldAccessGuard<'w> {
     }
 
     pub fn has_resource(&self, resource_id: ComponentId) -> bool {
-        self.cell.components().get_info(resource_id).is_some()
+        // Safety: we are not reading the value at all
+        let res_ptr = unsafe { self.cell.get_resource_by_id(resource_id) };
+        res_ptr.is_some()
     }
 
     pub fn get_children(&self, entity: Entity) -> ScriptResult<Vec<Entity>> {
@@ -1520,6 +1518,7 @@ mod test {
         WorldCallbackAccess::with_callback_access(&mut world, |world| {
             let comp_ref = world
                 .get_resource(TestResource::test_component_id())
+                .unwrap()
                 .unwrap();
             assert_eq!(
                 comp_ref,
@@ -1542,13 +1541,9 @@ mod test {
         WorldCallbackAccess::with_callback_access(&mut world, |world| {
             let comp_ref = world.get_resource(fake_comp);
             match comp_ref {
-                Ok(_) => panic!("Expected error"),
-                Err(e) => {
-                    assert_eq!(e.kind, ScriptErrorKind::RuntimeError);
-                    assert_eq!(
-                        e.reason.to_string(),
-                        format!("Resource does not exist: {fake_comp:?}")
-                    )
+                Ok(None) => {}
+                e => {
+                    panic!("Expected ok with none, got: {:?}", e);
                 }
             }
         });

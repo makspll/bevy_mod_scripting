@@ -2,10 +2,14 @@ use bevy::{
     app::App,
     asset::{AssetPlugin, AssetServer},
     prelude::{AppTypeRegistry, Entity, World},
+    reflect::{Reflect, TypeRegistration},
     MinimalPlugins,
 };
 use bevy_mod_scripting_core::{
-    bindings::{Proxy, ReflectAllocator, ReflectReference, ReflectValProxy, WorldCallbackAccess},
+    bindings::{
+        Proxy, ReflectAllocator, ReflectReference, ReflectValProxy, ScriptTypeRegistration,
+        WorldCallbackAccess,
+    },
     context::ContextLoadingSettings,
     error::ScriptError,
     event::CallbackLabel,
@@ -18,7 +22,7 @@ use bevy_mod_scripting_lua::{
         world::{GetWorld, LuaWorld},
     },
     lua_context_load, lua_handler,
-    prelude::{Lua, LuaHookTriggers},
+    prelude::{Lua, LuaFunction, LuaHookTriggers},
     register_lua_values, LuaScriptingPlugin, ReflectLuaValue,
 };
 use libtest_mimic::{Arguments, Failed, Trial};
@@ -28,6 +32,7 @@ use std::{
     fs::{self, DirEntry},
     io,
     path::{Path, PathBuf},
+    sync::Arc,
 };
 use test_utils::test_data::{setup_world, EnumerateTestComponents};
 
@@ -48,6 +53,16 @@ fn init_app() -> App {
 }
 
 fn init_lua_test_utils(_script_name: &Cow<'static, str>, lua: &mut Lua) -> Result<(), ScriptError> {
+    let _get_mock_type = lua
+        .create_function(|_, ()| {
+            #[derive(Reflect)]
+            struct Dummy;
+            let reg =
+                ScriptTypeRegistration::new(Arc::new(TypeRegistration::of::<Dummy>()), None, None);
+            Ok(<ScriptTypeRegistration as LuaProxied>::Proxy::from(reg))
+        })
+        .unwrap();
+
     let _get_entity_with_test_component = lua
         .create_function(|l, s: String| {
             let world = l.get_world().unwrap();
@@ -70,13 +85,41 @@ fn init_lua_test_utils(_script_name: &Cow<'static, str>, lua: &mut Lua) -> Resul
         })
         .unwrap();
 
-    lua.globals()
+    let assert_throws = lua
+        .create_function(|_, (f, regex): (LuaFunction, String)| {
+            let result = f.call::<(), ()>(());
+            match result {
+                Ok(_) => Err(tealr::mlu::mlua::Error::RuntimeError(
+                    "Expected function to throw error, but it did not.".into(),
+                )),
+                Err(e) => {
+                    let error_message = e.to_string();
+                    let regex = regex::Regex::new(&regex).unwrap();
+                    if regex.is_match(&error_message) {
+                        Ok(())
+                    } else {
+                        Err(tealr::mlu::mlua::Error::RuntimeError(format!(
+                            "Expected error message to match the regex: \n{}\n\nBut got:\n{}",
+                            regex.as_str(),
+                            error_message
+                        )))
+                    }
+                }
+            }
+        })
+        .unwrap();
+
+    let globals = lua.globals();
+    globals
         .set(
             "_get_entity_with_test_component",
             _get_entity_with_test_component,
         )
         .unwrap();
 
+    globals.set("assert_throws", assert_throws).unwrap();
+
+    globals.set("_get_mock_type", _get_mock_type).unwrap();
     Ok(())
 }
 
@@ -128,7 +171,14 @@ impl Test {
     }
 
     fn name(&self) -> String {
-        format!("lua_test - {}", self.path.to_string_lossy())
+        format!(
+            "lua_test - {}",
+            self.path
+                .to_string_lossy()
+                .split(&format!("tests{}data", std::path::MAIN_SEPARATOR))
+                .last()
+                .unwrap()
+        )
     }
 }
 
