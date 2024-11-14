@@ -1,21 +1,19 @@
-mod input; 
+mod input;
 mod utils;
 
 use crate::{input::*, utils::doc_attribute_to_string_lit};
 
-use std::collections::HashMap;
 use darling::util::Flag;
+use std::collections::HashMap;
 use syn::{
-    spanned::Spanned, Path, Token, TraitItemFn, parse_quote,
-    parse_macro_input, parse_quote_spanned, DeriveInput, ExprClosure, FnArg,
-    punctuated::Punctuated
+    parse_macro_input, parse_quote, parse_quote_spanned, punctuated::Punctuated, spanned::Spanned,
+    DeriveInput, ExprClosure, FnArg, Path, Token, TraitItemFn,
 };
 
 use darling::{FromAttributes, FromDeriveInput};
 use proc_macro::TokenStream;
 use proc_macro2::*;
 use quote::*;
-
 
 const SELF_ALIAS: &str = "_self";
 const CTXT_ALIAS: &str = "lua";
@@ -26,7 +24,12 @@ const PROXY_PREFIX: &str = "Lua";
 /// - instead of a `&mut self` receiver we have a `_self: LuaRefMutProxy<Self>`
 /// - instead of a `self` receiver we have a `_self: ValLuaProxy<Self>`
 /// Returns true if the receiver was changed
-fn standardise_receiver(receiver: &mut FnArg, target_type: &Path, bms_lua_path: &Path, proxy_as_type: Option<&Path>) -> bool {
+fn standardise_receiver(
+    receiver: &mut FnArg,
+    target_type: &Path,
+    bms_lua_path: &Path,
+    proxy_as_type: Option<&Path>,
+) -> bool {
     let replacement = if let FnArg::Receiver(receiver) = receiver {
         let ref_ = &receiver.reference.as_ref().map(|(amp, lifetime)| {
             quote_spanned! {receiver.span()=>
@@ -35,12 +38,12 @@ fn standardise_receiver(receiver: &mut FnArg, target_type: &Path, bms_lua_path: 
         });
 
         let self_ident = syn::Ident::new(SELF_ALIAS, receiver.span());
-        let self_ident_type = match proxy_as_type{
+        let self_ident_type = match proxy_as_type {
             Some(target_type) => {
                 quote_spanned! {receiver.span()=>
                     #target_type
                 }
-            },
+            }
             None => {
                 let unproxy_container_name = match (ref_.is_some(), receiver.mutability.is_some()) {
                     (true, true) => "LuaReflectRefMutProxy",
@@ -48,7 +51,7 @@ fn standardise_receiver(receiver: &mut FnArg, target_type: &Path, bms_lua_path: 
                     (false, _) => "LuaReflectValProxy",
                 };
                 let unproxy_ident = syn::Ident::new(unproxy_container_name, receiver.span());
-        
+
                 quote_spanned! {receiver.span()=>
                     #bms_lua_path::bindings::proxy::#unproxy_ident::<#target_type>
                 }
@@ -123,7 +126,6 @@ fn proxy_wrap_function_def(
     mlua: &Path,
     attrs: &FunctionAttrs,
 ) {
-
     // collect all args into tuple and add lua context arg
     let ctxt_alias = syn::Ident::new(CTXT_ALIAS, f.sig.inputs.span());
 
@@ -179,8 +181,6 @@ fn proxy_wrap_function_def(
     } else {
         Default::default()
     };
-    
-    
 
     // change signature to take in a single args tuple instead of multiple arguments (on top of a context arg)
     f.sig.inputs = Punctuated::from_iter(vec![
@@ -202,13 +202,16 @@ fn proxy_wrap_function_def(
         syn::ReturnType::Type(_, ty) => ty.to_token_stream(),
     };
 
-
     // wrap function body in our unwrapping and wrapping logic, ignore pre-existing body
     let mut fn_call = std::panic::catch_unwind(|| {
-        match (&f.default, &attrs.as_trait, get_world_callback_access_fn.is_some()) {
+        match (
+            &f.default,
+            &attrs.as_trait,
+            get_world_callback_access_fn.is_some(),
+        ) {
             (_, _, true) => quote_spanned!(span=>
                 world.#func_name(#(#original_arg_idents),*)
-            ),  
+            ),
             (Some(body), _, _) => quote_spanned!(span=>
                 (||{ #body })()
             ),
@@ -249,8 +252,7 @@ fn proxy_wrap_function_def(
                 let mut world = <#bms_lua::bindings::proxy::LuaValProxy<#bms_core::bindings::WorldCallbackAccess> as #bms_core::bindings::Unproxy>::unproxy(&mut world).map_err(#mlua::Error::external)?;
                 let mut world = world.read().ok_or_else(|| #mlua::Error::external("World no longer exists"))?;
             )
-        };   
-
+        };
 
         f.default = Some(parse_quote_spanned! {span=>
             {
@@ -339,9 +341,17 @@ pub fn impl_lua_proxy(input: TokenStream) -> TokenStream {
     let target_type_str = target_type.segments.last().unwrap().ident.to_string();
     let proxy_type_ident = match meta.proxy_as_type.as_ref() {
         Some(proxy_as_type) => proxy_as_type.clone(),
-        None => meta.proxy_name.unwrap_or_else(|| format_ident!("{PROXY_PREFIX}{}", &target_type_str, span = meta.ident.span())).into(),
+        None => meta
+            .proxy_name
+            .unwrap_or_else(|| {
+                format_ident!(
+                    "{PROXY_PREFIX}{}",
+                    &target_type_str,
+                    span = meta.ident.span()
+                )
+            })
+            .into(),
     };
-
 
     let bms_core = meta.bms_core_path.0;
     let bms_lua = meta.bms_lua_path.0;
@@ -444,7 +454,16 @@ pub fn impl_lua_proxy(input: TokenStream) -> TokenStream {
             return None;
         }
 
-        proxy_wrap_function_def(&mut f, &target_type, &bms_core, &bms_lua, meta.get_world_callback_access_fn.as_ref(), meta.proxy_as_type.as_ref(), &mlua, &attrs);
+        proxy_wrap_function_def(
+            &mut f,
+            &target_type,
+            &bms_core,
+            &bms_lua,
+            meta.get_world_callback_access_fn.as_ref(),
+            meta.proxy_as_type.as_ref(),
+            &mlua,
+            &attrs,
+        );
 
         let name = match &attrs.metamethod {
             Some(metamethod) => quote_spanned!(metamethod.span()=>
@@ -468,9 +487,9 @@ pub fn impl_lua_proxy(input: TokenStream) -> TokenStream {
             #[derive(Clone, Debug, #tealr::mlu::UserData, #tealr::ToTypename)]
             #vis struct #proxy_type_ident (pub #bms_core::bindings::ReflectReference);
         )
-   };
+    };
 
-   let conversions = if let Some(proxy_as_type) = meta.proxy_as_type.as_ref() {
+    let conversions = if let Some(proxy_as_type) = meta.proxy_as_type.as_ref() {
         Default::default()
     } else {
         quote_spanned!(derive_input.span()=>
@@ -488,7 +507,6 @@ pub fn impl_lua_proxy(input: TokenStream) -> TokenStream {
         )
     };
 
-    
     quote_spanned! {meta.ident.span()=>
 
         #definition
@@ -528,4 +546,3 @@ pub fn impl_lua_proxy(input: TokenStream) -> TokenStream {
     }
     .into()
 }
-

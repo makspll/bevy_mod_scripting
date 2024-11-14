@@ -32,7 +32,7 @@ impl From<ScriptTypeRegistration> for LuaTypeRegistration {
 
 impl From<&LuaTypeRegistration> for ScriptTypeRegistration {
     fn from(value: &LuaTypeRegistration) -> Self {
-        todo!()
+        value.0.clone()
     }
 }
 

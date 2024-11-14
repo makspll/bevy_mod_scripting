@@ -1,56 +1,60 @@
+use super::{ReflectReference, WorldCallbackAccess};
+use crate::prelude::ScriptResult;
+use bevy::{
+    ecs::{component::ComponentId, entity::Entity},
+    reflect::TypeRegistration,
+};
 use std::{any::TypeId, ops::Deref, sync::Arc};
-
-use bevy::{ecs::entity::Entity, reflect::TypeRegistration};
-
-use super::{ReflectReference, WorldCallbackAccess, STALE_WORLD_MSG};
-use crate::prelude::{ScriptError, ScriptResult};
 
 /// A wrapper around a `TypeRegistration` that provides additional information about the type.
 ///
 /// This is used as a hook to a rust type from a scripting language. We should be able to easily convert between a type name and a [`ScriptTypeRegistration`].
 #[derive(Clone)]
-pub struct ScriptTypeRegistration(pub(crate) Arc<TypeRegistration>);
+pub struct ScriptTypeRegistration {
+    pub(crate) registration: Arc<TypeRegistration>,
+    pub component_id: Option<ComponentId>,
+}
 
 impl ScriptTypeRegistration {
-    pub fn new(arc: Arc<TypeRegistration>) -> Self {
-        Self(arc)
+    pub fn new(registration: Arc<TypeRegistration>, component_id: Option<ComponentId>) -> Self {
+        Self {
+            registration,
+            component_id,
+        }
     }
 
     #[inline(always)]
     pub fn short_name(&self) -> &str {
-        self.0.type_info().type_path_table().short_path()
+        self.registration.type_info().type_path_table().short_path()
     }
 
     #[inline(always)]
     pub fn type_name(&self) -> &'static str {
-        self.0.type_info().type_path_table().path()
+        self.registration.type_info().type_path_table().path()
     }
 
     #[inline(always)]
     pub fn type_id(&self) -> TypeId {
-        self.0.type_info().type_id()
+        self.registration.type_info().type_id()
+    }
+
+    #[inline(always)]
+    pub fn component_id(&self) -> Option<ComponentId> {
+        self.component_id
     }
 }
 
 impl std::fmt::Debug for ScriptTypeRegistration {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         f.debug_tuple("ScriptTypeRegistration")
-            .field(&self.0.type_info().type_path())
+            .field(&self.registration.type_info().type_path())
             .finish()
     }
 }
 
 impl std::fmt::Display for ScriptTypeRegistration {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        f.write_str(self.0.type_info().type_path())
-    }
-}
-
-impl Deref for ScriptTypeRegistration {
-    type Target = Arc<TypeRegistration>;
-
-    fn deref(&self) -> &Self::Target {
-        &self.0
+        f.write_str(self.registration.type_info().type_path())
     }
 }
 

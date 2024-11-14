@@ -54,6 +54,28 @@ impl ToTypename for LuaWorld {
 
 impl TealData for LuaWorld {
     fn add_methods<'lua, T: tealr::mlu::TealDataMethods<'lua, Self>>(methods: &mut T) {
+        methods.add_method("_list_accesses", |_, this, ()| {
+            let world = this.0.read().ok_or_else(|| {
+                mlua::Error::external(ScriptError::new_reflection_error("Stale world access"))
+            })?;
+            let accesses = world
+                .list_accesses()
+                .into_iter()
+                .map(|v| format!("Access to: {v:?}"))
+                .collect::<Vec<_>>();
+            Ok(accesses)
+        });
+
+        methods.add_method("spawn", |_, this, ()| {
+            let world = this.0.read().ok_or_else(|| {
+                mlua::Error::external(ScriptError::new_reflection_error("Stale world access"))
+            })?;
+            let entity: LuaReflectValProxy<Entity> = world
+                .proxy_call((), |()| world.spawn())
+                .map_err(mlua::Error::external)?;
+            Ok(entity)
+        });
+
         methods.add_method("get_type_by_name", |_, this, type_name: String| {
             let world = this.0.read().ok_or_else(|| {
                 mlua::Error::external(ScriptError::new_reflection_error("Stale world access"))
@@ -88,14 +110,22 @@ impl TealData for LuaWorld {
 
         methods.add_method(
             "get_component",
-            |_, this, args: (LuaReflectValProxy<Entity>, LuaReflectValProxy<ComponentId>)| {
+            |_,
+             this,
+             args: (
+                LuaReflectValProxy<Entity>,
+                LuaValProxy<ScriptTypeRegistration>,
+            )| {
                 let world = this.0.read().ok_or_else(|| {
                     mlua::Error::external(ScriptError::new_reflection_error("Stale world access"))
                 })?;
                 let out: Result<Option<LuaValProxy<ReflectReference>>, ErrorProxy<ScriptError>> =
                     world
                         .proxy_call(args, |(entity, component_id)| {
-                            world.get_component(entity, component_id)
+                            match component_id.component_id() {
+                                Some(component_id) => world.get_component(entity, component_id),
+                                None => Ok(None),
+                            }
                         })
                         .map_err(mlua::Error::external)?;
 
@@ -108,13 +138,21 @@ impl TealData for LuaWorld {
 
         methods.add_method(
             "has_component",
-            |_, this, args: (LuaReflectValProxy<Entity>, LuaReflectValProxy<ComponentId>)| {
+            |_,
+             this,
+             args: (
+                LuaReflectValProxy<Entity>,
+                LuaValProxy<ScriptTypeRegistration>,
+            )| {
                 let world = this.0.read().ok_or_else(|| {
                     mlua::Error::external(ScriptError::new_reflection_error("Stale world access"))
                 })?;
                 let out: Result<bool, ErrorProxy<ScriptError>> = world
-                    .proxy_call(args, |(entity, component_id)| {
-                        world.has_component(entity, component_id)
+                    .proxy_call(args, |(entity, registration)| {
+                        match registration.component_id() {
+                            Some(component_id) => world.has_component(entity, component_id),
+                            None => Ok(false),
+                        }
                     })
                     .map_err(mlua::Error::external)?;
 
@@ -345,123 +383,5 @@ impl GetWorld for mlua::Lua {
                     .ok_or_else(|| ScriptError::new_reflection_error("Stale world access"))
             })
             .map_err(mlua::Error::external)
-    }
-}
-
-#[cfg(test)]
-mod test {
-    use std::sync::Arc;
-
-    use bevy::{
-        app::App,
-        ecs::world::World,
-        prelude::{Component, Resource},
-        reflect::Reflect,
-    };
-    use bevy_mod_scripting_core::bindings::{
-        ReflectAllocator, Unproxy, ValProxy, WorldAccessGuard,
-    };
-    use tealr::mlu::mlua::Lua;
-
-    use super::*;
-    use crate::bindings::proxy::LuaValProxy;
-    use tealr::mlu::mlua::IntoLua;
-
-    #[test]
-    fn test_world_from_to_lua() {
-        let mut world = World::new();
-        let world_access_guard = Arc::new(WorldAccessGuard::new(&mut world));
-        let callback_access = unsafe {
-            bevy_mod_scripting_core::bindings::WorldCallbackAccess::new(Arc::downgrade(
-                &world_access_guard,
-            ))
-        };
-        let proxy = LuaValProxy::<bevy_mod_scripting_core::bindings::WorldCallbackAccess>(
-            ValProxy::new(LuaWorld(callback_access)),
-        );
-
-        let lua = Lua::new();
-        let lua_val = proxy.into_lua(&lua).unwrap();
-        let mut val =
-            LuaValProxy::<bevy_mod_scripting_core::bindings::WorldCallbackAccess>::from_lua(
-                lua_val, &lua,
-            )
-            .unwrap();
-
-        let _val = val.unproxy().unwrap();
-    }
-
-    fn lua_tests() -> Vec<(&'static str, &'static str, u32)> {
-        vec![
-            (
-                "get_type_by_name with unregistered type returns nothing",
-                "
-                    assert(world:get_type_by_name('UnregisteredType') == nil)
-                ",
-                line!(),
-            ),
-            (
-                "get_type_by_name with registered type returns correct type",
-                "
-                    local type = world:get_type_by_name('TestComponent')
-
-                    local expected = {
-                        type_name = 'bevy_mod_scripting_lua::bindings::world::test::TestComponent',
-                        short_name = 'TestComponent',
-                    }
-
-                    assert(type ~= nil, 'Type not found')
-                    assert(type.type_name == expected.type_name, 'type_name mismatch, expected: ' .. expected.type_name .. ', got: ' .. type.type_name)
-                    assert(type.short_name == expected.short_name, 'short_name mismatch, expected: ' .. expected.short_name .. ', got: ' .. type.short_name)
-                ",
-                line!(),
-            ),
-        ]
-    }
-
-    #[derive(Component, Debug, Clone, Reflect)]
-    pub struct TestComponent(String);
-
-    #[derive(Resource, Debug, Clone, Reflect)]
-    pub struct TestResource(String);
-
-    /// Initializes test world for tests
-    fn init_world() -> World {
-        let mut world = World::default();
-        let type_registry = AppTypeRegistry::default();
-        {
-            let mut type_registry = type_registry.write();
-            type_registry.register::<TestComponent>();
-            type_registry.register::<TestResource>();
-        }
-        world.insert_resource(type_registry);
-        world.init_resource::<ReflectAllocator>();
-        // add some entities
-        world.spawn(TestComponent("Hello".to_string()));
-        world.insert_resource(TestResource("World".to_string()));
-        world
-    }
-
-    #[test]
-    fn world_lua_api_tests() {
-        // use lua assertions to test the api
-
-        for (test_name, code, line) in lua_tests() {
-            let lua = Lua::new();
-            let mut world = init_world();
-            WorldCallbackAccess::with_callback_access(&mut world, |world| {
-                lua.globals().set("world", LuaWorld(world.clone())).unwrap();
-
-                let code = lua.load(code);
-                // ide friendly link to test, i.e. crates/languages/bevy_mod_scripting_lua/src/bindings/world.rs:139
-                let filename = file!();
-                let test_hyperlink = format!("{filename}:{line}");
-                code.exec()
-                    .inspect_err(|e| {
-                        panic!("Failed lua test: `{test_name}` at: {test_hyperlink}. Error: {e}")
-                    })
-                    .unwrap();
-            });
-        }
     }
 }

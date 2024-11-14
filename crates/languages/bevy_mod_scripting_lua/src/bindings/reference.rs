@@ -1,4 +1,7 @@
-use std::{any::Any, error::Error};
+use std::{
+    any::{Any, TypeId},
+    error::Error,
+};
 
 use bevy::{
     ecs::{reflect::AppTypeRegistry, world::Mut},
@@ -37,18 +40,28 @@ impl LuaReflectReference {
             world.with_resource(|world, type_registry: Mut<AppTypeRegistry>| {
                 world.with_resource(|world, allocator: Mut<ReflectAllocator>| {
                     let type_registry = type_registry.read();
+
                     // first we need the type id of the pointed to object to figure out how to work with it
                     let type_id =
                         self.0
-                            .with_reflect(world, &type_registry, Some(&allocator), |r| r.type_id());
-                    if let Some(type_data) = type_registry.get_type_data::<ReflectLuaValue>(type_id)
+                            .with_reflect(world, &type_registry, Some(&allocator), |r| {
+                                r.get_represented_type_info().map(|t| t.type_id())
+                            });
+
+                    // convenience, ideally we probably should just avoid lookups when no type id is here, but for now we just use a dummy type nothing will ever
+                    // be registered for. If the type we're reflecting doesn't represent anything or a registered type, we use a generic reflect reference.
+                    struct Dummy;
+                    let type_id_or_dummy = type_id.unwrap_or(TypeId::of::<Dummy>());
+
+                    if let Some(type_data) =
+                        type_registry.get_type_data::<ReflectLuaValue>(type_id_or_dummy)
                     {
                         self.0
                             .with_reflect(world, &type_registry, Some(&allocator), |r| {
                                 Ok((type_data.into_value)(r, lua)?)
                             })
                     } else if let Some(type_data) =
-                        type_registry.get_type_data::<ReflectLuaProxied>(type_id)
+                        type_registry.get_type_data::<ReflectLuaProxied>(type_id_or_dummy)
                     {
                         Ok((type_data.into_proxy)(self.0.clone(), lua)?)
                     } else {

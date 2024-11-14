@@ -53,3 +53,11 @@ anyhow = "1.0.75"
 uuid = "1.1"
 smol_str = "0.2.2"
 smallvec = "1.13"
+
+[dev-dependencies]
+test_utils = { workspace = true }
+libtest-mimic = "0.8"
+
+[[test]]
+name = "lua_tests"
+harness = false

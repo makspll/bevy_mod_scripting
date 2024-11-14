@@ -4,17 +4,14 @@
 //! reflection gives us access to `dyn PartialReflect` objects via their type name,
 //! Scripting languages only really support `Clone` objects so if we want to support references,
 //! we need wrapper types which have owned and ref variants.
-use lockable::LockableHashMap;
+use lockable::{LockableHashMap, SyncLimit};
 
 use std::{
     any::TypeId,
-    cell::UnsafeCell,
-    error::Error,
     fmt::Debug,
     marker::PhantomData,
-    ops::Index,
     sync::{
-        atomic::{AtomicBool, AtomicUsize, Ordering},
+        atomic::{AtomicUsize, Ordering},
         Arc, Weak,
     },
     time::Duration,
@@ -22,7 +19,6 @@ use std::{
 
 use bevy::{
     ecs::{
-        change_detection::MutUntyped,
         component::{Component, ComponentId},
         entity::Entity,
         reflect::{AppTypeRegistry, ReflectComponent, ReflectFromWorld, ReflectResource},
@@ -30,17 +26,13 @@ use bevy::{
         world::{unsafe_world_cell::UnsafeWorldCell, CommandQueue, Mut, World},
     },
     hierarchy::{BuildChildren, Children, DespawnRecursiveExt, Parent},
-    ptr::Ptr,
-    reflect::{
-        std_traits::ReflectDefault, Access, ParsedPath, Reflect, ReflectFromPtr, ReflectPath,
-        ReflectPathError, TypeInfo, TypePath, TypeRegistration, TypeRegistry,
-    },
+    reflect::{std_traits::ReflectDefault, TypeRegistry},
 };
 
 use smallvec::SmallVec;
 
 use crate::{
-    bindings::{ReflectAllocation, ReflectAllocationId},
+    bindings::ReflectAllocationId,
     prelude::{ReflectAllocator, ScriptError, ScriptResult},
 };
 
@@ -135,6 +127,11 @@ pub(crate) const CONCURRENT_ACCESS_MSG: &str =
 /// common world methods, see:
 /// - [`crate::bindings::query`] for query related functionality
 impl WorldCallbackAccess {
+    pub fn spawn(&self) -> Entity {
+        let world = self.read().unwrap_or_else(|| panic!("{STALE_WORLD_MSG}"));
+        world.spawn()
+    }
+
     // TODO: uses `String` for type_name to avoid lifetime issues with types proxying this via macros
     pub fn get_type_by_name(&self, type_name: String) -> Option<ScriptTypeRegistration> {
         let world = self.read().unwrap_or_else(|| panic!("{STALE_WORLD_MSG}"));
@@ -261,6 +258,24 @@ impl<'w> WorldAccessGuard<'w> {
         }
     }
 
+    /// Purely debugging utility to list all accesses currently held.
+    pub fn list_accesses(&self) -> Vec<ReflectAccessId> {
+        let keys = self.accesses.keys_with_entries_or_locked();
+
+        // return only those which have no value
+        keys.into_iter()
+            .filter(|k| {
+                let val = self
+                    .accesses
+                    .blocking_lock(*k, SyncLimit::no_limit())
+                    .unwrap();
+                let val = val.value().unwrap();
+
+                val.is_none()
+            })
+            .collect()
+    }
+
     /// Retrieves the underlying unsafe world cell, with no additional guarantees of safety
     /// proceed with caution and only use this if you understand what you're doing
     pub fn as_unsafe_world_cell(&self) -> UnsafeWorldCell<'w> {
@@ -271,6 +286,14 @@ impl<'w> WorldAccessGuard<'w> {
     /// proceed with caution and only use this if you understand what you're doing
     pub fn as_unsafe_world_cell_readonly(&self) -> UnsafeWorldCell<'w> {
         self.cell
+    }
+
+    /// Gets the component id of the given component or resource
+    pub fn get_component_id(&self, id: TypeId) -> Option<ComponentId> {
+        let components = self.cell.components();
+        components
+            .get_id(id)
+            .or_else(|| components.get_resource_id(id))
     }
 
     /// Checks nobody else is currently accessing the world, and if so locks access to it until
@@ -463,6 +486,11 @@ impl<'w> WorldAccessGuard<'w> {
             O::proxy_with_allocator(out, &mut allocator)
         })?;
 
+        // make sure to release all accesses
+        world_acceses.drain(..).for_each(|a| {
+            self.release_access(a);
+        });
+
         Ok(proxied_output)
     }
 
@@ -563,13 +591,26 @@ impl<'w> WorldAccessGuard<'w> {
 
 /// Impl block for higher level world methods
 impl<'w> WorldAccessGuard<'w> {
+    pub fn spawn(&self) -> Entity {
+        if let Some(world) = self.get_whole_world_access() {
+            world.spawn_empty().id()
+        } else {
+            panic!("{CONCURRENT_WORLD_ACCESS_MSG}")
+        }
+    }
+
     pub fn get_type_by_name(&self, type_name: String) -> Option<ScriptTypeRegistration> {
-        self.with_resource(|_, registry: Mut<AppTypeRegistry>| {
+        self.with_resource(|world, registry: Mut<AppTypeRegistry>| {
             let registry = registry.read();
             registry
                 .get_with_short_type_path(&type_name)
                 .or_else(|| registry.get_with_type_path(&type_name))
-                .map(|registration| ScriptTypeRegistration::new(Arc::new(registration.clone())))
+                .map(|registration| {
+                    ScriptTypeRegistration::new(
+                        Arc::new(registration.clone()),
+                        world.get_component_id(registration.type_id()),
+                    )
+                })
         })
     }
 
@@ -578,15 +619,16 @@ impl<'w> WorldAccessGuard<'w> {
         entity: Entity,
         registration: ScriptTypeRegistration,
     ) -> ScriptResult<()> {
-        let component_data = registration.data::<ReflectComponent>().ok_or_else(|| ScriptError::new_runtime_error(format!(
+        let component_data = registration.registration.data::<ReflectComponent>().ok_or_else(|| ScriptError::new_runtime_error(format!(
             "Cannot add default component since type: `{}`, Does not have ReflectComponent data registered.",
-            registration.type_info().type_path()
+            registration.registration.type_info().type_path()
         )))?;
 
         // we look for ReflectDefault or ReflectFromWorld data then a ReflectComponent data
-        let instance = if let Some(default_td) = registration.data::<ReflectDefault>() {
+        let instance = if let Some(default_td) = registration.registration.data::<ReflectDefault>()
+        {
             default_td.default()
-        } else if let Some(from_world_td) = registration.data::<ReflectFromWorld>() {
+        } else if let Some(from_world_td) = registration.registration.data::<ReflectFromWorld>() {
             if let Some(world) = self.get_whole_world_access() {
                 from_world_td.from_world(world)
             } else {
@@ -595,7 +637,7 @@ impl<'w> WorldAccessGuard<'w> {
         } else {
             return Err(ScriptError::new_runtime_error(format!(
                 "Cannot add default component since type: `{}`, Does not have ReflectDefault or ReflectFromWorld data registered.",
-                registration.type_info().type_path()
+                registration.registration.type_info().type_path()
             )));
         };
 
@@ -670,9 +712,9 @@ impl<'w> WorldAccessGuard<'w> {
         entity: Entity,
         registration: ScriptTypeRegistration,
     ) -> ScriptResult<()> {
-        let component_data = registration.data::<ReflectComponent>().ok_or_else(|| ScriptError::new_runtime_error(format!(
+        let component_data = registration.registration.data::<ReflectComponent>().ok_or_else(|| ScriptError::new_runtime_error(format!(
             "Cannot remove component since type: `{}`, Does not have ReflectComponent data registered.",
-            registration.type_info().type_path()
+            registration.registration.type_info().type_path()
         )))?;
 
         //  TODO: this shouldn't need entire world access it feels
@@ -715,9 +757,9 @@ impl<'w> WorldAccessGuard<'w> {
     }
 
     pub fn remove_resource(&self, registration: ScriptTypeRegistration) -> ScriptResult<()> {
-        let component_data = registration.data::<ReflectResource>().ok_or_else(|| ScriptError::new_runtime_error(format!(
+        let component_data = registration.registration.data::<ReflectResource>().ok_or_else(|| ScriptError::new_runtime_error(format!(
             "Cannot remove resource since type: `{}`, Does not have ReflectResource data registered.",
-            registration.type_info().type_path()
+            registration.registration.type_info().type_path()
         )))?;
 
         //  TODO: this shouldn't need entire world access it feels
@@ -894,70 +936,45 @@ impl<'w> WorldAccessWrite<'w> {
 
 #[cfg(test)]
 mod test {
+    use crate::bindings::ScriptTypeRegistration;
+    use crate::prelude::ScriptErrorKind;
+    use bevy::ecs::system::Commands;
+    use bevy::hierarchy::BuildChildren;
+    use bevy::reflect::{ParsedPath, Reflect};
 
-    use std::{any::Any, cell::UnsafeCell, convert::identity, sync::RwLock};
+    use super::*;
+    use std::any::TypeId;
 
     use crate::{
+        bindings::ReflectAllocator,
         bindings::{
             DeferredReflection, ReflectBase, ReflectBaseType, ReflectReference, ReflectionPathElem,
         },
-        bindings::{ReflectAllocation, ReflectAllocator},
     };
 
-    use super::*;
-    use bevy::{
-        ecs::{component::Component, reflect::ReflectResource, system::Resource, world::World},
-        reflect::TypeRegistryArc,
+    use bevy::ecs::world::World;
+    use test_utils::test_data::{
+        setup_world, CompWithFromWorld, GetTestComponentId, TestComponent, TestResource,
     };
 
-    #[derive(Component, Reflect, PartialEq, Eq, Debug)]
-    #[reflect(Component)]
-    pub(crate) struct TestComponent {
-        pub strings: Vec<String>,
-    }
-
-    #[derive(Resource, Reflect, Default, PartialEq, Eq, Debug)]
-    #[reflect(Resource)]
-    pub(crate) struct TestResource {
-        pub bytes: Vec<u8>,
-    }
-
-    pub(crate) fn setup_world<F: FnOnce(&mut World, &mut TypeRegistry)>(
-        init: F,
-    ) -> (World, ComponentId, ComponentId) {
-        let mut world = World::default();
-        let allocator = ReflectAllocator::default();
-
-        let component_id = world.register_component::<TestComponent>();
-        let resource_id = world.init_resource::<TestResource>();
-
-        let mut type_registry = TypeRegistry::new();
-        type_registry.register::<TestComponent>();
-        type_registry.register::<TestResource>();
-
-        init(&mut world, &mut type_registry);
-
-        world.insert_resource(allocator);
-
-        world.insert_resource(AppTypeRegistry(TypeRegistryArc {
-            internal: Arc::new(RwLock::new(type_registry)),
-        }));
-
-        (world, component_id, resource_id)
+    fn init_world() -> World {
+        setup_world(|w, _| {
+            w.init_resource::<ReflectAllocator>();
+        })
     }
 
     /// Tests that the given ref_ can be accessed and the value is as expected and access is released correctly (not for allocated values)
     fn assert_access_yields<
         O: Reflect + PartialEq + Debug,
-        F: FnOnce(&mut World, ComponentId, ComponentId) -> ReflectReference,
-        G: FnOnce(&WorldAccessGuard, ComponentId, ComponentId),
+        F: FnOnce(&mut World) -> ReflectReference,
+        G: FnOnce(&WorldAccessGuard),
     >(
         init: F,
         post_check: G,
         expected: O,
     ) {
-        let (mut world, component_id, resource_id) = setup_world(|_, _| {});
-        let ref_ = init(&mut world, component_id, resource_id);
+        let mut world = init_world();
+        let ref_ = init(&mut world);
 
         WorldCallbackAccess::with_callback_access(&mut world, |world| {
             let world = world.read().unwrap();
@@ -985,31 +1002,35 @@ mod test {
             });
 
             assert!(
-                world.get_component_access(component_id).is_some(),
+                world
+                    .get_component_access(TestComponent::test_component_id())
+                    .is_some(),
                 "access to component was not release correctly"
             );
 
             assert!(
-                world.get_resource_access(resource_id).is_some(),
+                world
+                    .get_resource_access(TestResource::test_component_id())
+                    .is_some(),
                 "access to component was not release correctly"
             );
 
-            post_check(&world, component_id, resource_id);
+            post_check(&world);
         });
     }
 
     /// Tests that setting to the expected value works as well as follow up reads give the expected value
     fn assert_set_then_get_yields<
         O: Reflect + PartialEq + Debug + Clone,
-        F: FnOnce(&mut World, ComponentId, ComponentId) -> ReflectReference,
-        G: FnOnce(&WorldAccessGuard, ComponentId, ComponentId),
+        F: FnOnce(&mut World) -> ReflectReference,
+        G: FnOnce(&WorldAccessGuard),
     >(
         init: F,
         post_check: G,
         expected: O,
     ) {
-        let (mut world, component_id, resource_id) = setup_world(|_, _| {});
-        let ref_ = init(&mut world, component_id, resource_id);
+        let mut world = init_world();
+        let ref_ = init(&mut world);
         WorldCallbackAccess::with_callback_access(&mut world, |world| {
             let world = world.read().unwrap();
             // test set
@@ -1055,13 +1076,13 @@ mod test {
                     })
                 })
             });
-            post_check(&world, component_id, resource_id);
+            post_check(&world);
         });
     }
 
     #[test]
     fn test_component_access() {
-        let init = |world: &mut World, component_id, _| {
+        let init = |world: &mut World| {
             let entity = world
                 .spawn(TestComponent {
                     strings: vec![String::from("initial")],
@@ -1070,7 +1091,7 @@ mod test {
 
             ReflectReference {
                 base: ReflectBaseType {
-                    base_id: ReflectBase::Component(entity, component_id),
+                    base_id: ReflectBase::Component(entity, TestComponent::test_component_id()),
                     type_id: TypeId::of::<TestComponent>(),
                 },
                 reflect_path: vec![
@@ -1089,18 +1110,18 @@ mod test {
             }
         };
 
-        assert_access_yields(init, |_, _, _| {}, String::from("initial"));
-        assert_set_then_get_yields(init, |_, _, _| {}, String::from("set"));
+        assert_access_yields(init, |_| {}, String::from("initial"));
+        assert_set_then_get_yields(init, |_| {}, String::from("set"));
     }
 
     #[test]
     fn test_resource_access() {
-        let init = |world: &mut World, _, resource_id| {
+        let init = |world: &mut World| {
             world.insert_resource(TestResource { bytes: vec![42u8] });
 
             ReflectReference {
                 base: ReflectBaseType {
-                    base_id: ReflectBase::Resource(resource_id),
+                    base_id: ReflectBase::Resource(TestResource::test_component_id()),
                     type_id: TypeId::of::<TestResource>(),
                 },
                 reflect_path: vec![
@@ -1118,13 +1139,13 @@ mod test {
                 ],
             }
         };
-        assert_access_yields(init, |_, _, _| {}, 42u8);
-        assert_set_then_get_yields(init, |_, _, _| {}, 69u8);
+        assert_access_yields(init, |_| {}, 42u8);
+        assert_set_then_get_yields(init, |_| {}, 69u8);
     }
 
     #[test]
     fn test_script_alloc_access() {
-        let init = |world: &mut World, _, _| {
+        let init = |world: &mut World| {
             let mut script_allocator = ReflectAllocator::default();
             let mut ref_ = ReflectReference::new_allocated(
                 TestComponent {
@@ -1146,7 +1167,7 @@ mod test {
             world.insert_resource(script_allocator);
             ref_
         };
-        let post_check = |world: &WorldAccessGuard, _, _| {
+        let post_check = |world: &WorldAccessGuard| {
             assert!(
                 world
                     .get_allocation_access(ReflectAllocationId(0))
@@ -1197,20 +1218,6 @@ mod test {
         guard.release_access(access);
         assert_eq!(0, guard.accesses_count.load(Ordering::Relaxed));
     }
-}
-
-#[cfg(test)]
-mod test_api {
-    use bevy::ecs::system::Commands;
-    use bevy::ecs::world::FromWorld;
-    use bevy::hierarchy::BuildChildren;
-
-    use crate::bindings::ScriptTypeRegistration;
-    use crate::prelude::{ScriptErrorInner, ScriptErrorKind};
-
-    use super::test::{setup_world, TestComponent, TestResource};
-
-    use super::*;
 
     fn get_reg(world: &WorldCallbackAccess, name: &str) -> ScriptTypeRegistration {
         world
@@ -1232,17 +1239,17 @@ mod test_api {
 
     #[test]
     fn test_get_type_by_name() {
-        let (mut world, _, _) = setup_world(|_, _| {});
+        let mut world = init_world();
         WorldCallbackAccess::with_callback_access(&mut world, |world| {
             let comp_reg = world.get_type_by_name("TestComponent".to_owned()).unwrap();
             let resource_reg = world.get_type_by_name("TestResource".to_owned()).unwrap();
 
             assert_eq!(
-                comp_reg.type_info().type_id(),
+                comp_reg.registration.type_info().type_id(),
                 std::any::TypeId::of::<TestComponent>()
             );
             assert_eq!(
-                resource_reg.type_info().type_id(),
+                resource_reg.registration.type_info().type_id(),
                 std::any::TypeId::of::<TestResource>()
             );
         });
@@ -1250,7 +1257,8 @@ mod test_api {
 
     #[test]
     fn test_get_type_by_name_invalid() {
-        let (mut world, _, _) = setup_world(|_, _| {});
+        let mut world = init_world();
+
         WorldCallbackAccess::with_callback_access(&mut world, |world| {
             let comp_reg = world.get_type_by_name("x".to_owned());
             let resource_reg = world.get_type_by_name("z".to_owned());
@@ -1262,19 +1270,7 @@ mod test_api {
 
     #[test]
     fn test_add_default_component_from_world() {
-        #[derive(Reflect, Component, PartialEq, Debug)]
-        #[reflect(FromWorld, Component)]
-        struct CompWithFromWorld(pub String);
-        impl FromWorld for CompWithFromWorld {
-            fn from_world(_: &mut World) -> Self {
-                Self(String::from("FromWorld"))
-            }
-        }
-
-        let (mut world, _, _) = setup_world(|w, r| {
-            w.register_component::<CompWithFromWorld>();
-            r.register::<CompWithFromWorld>();
-        });
+        let mut world = init_world();
 
         let entity = world.spawn_empty().id();
 
@@ -1291,20 +1287,7 @@ mod test_api {
 
     #[test]
     fn test_add_default_component_default() {
-        #[derive(Reflect, Component, PartialEq, Debug)]
-        #[reflect(Default, Component)]
-        struct CompWithFromWorld(pub String);
-
-        impl Default for CompWithFromWorld {
-            fn default() -> Self {
-                Self(String::from("Default"))
-            }
-        }
-
-        let (mut world, _, _) = setup_world(|w, r| {
-            w.register_component::<CompWithFromWorld>();
-            r.register::<CompWithFromWorld>();
-        });
+        let mut world = init_world();
 
         let entity = world.spawn_empty().id();
 
@@ -1321,14 +1304,7 @@ mod test_api {
 
     #[test]
     fn test_add_default_component_missing_from_world_and_default() {
-        #[derive(Reflect, Component, PartialEq, Debug)]
-        #[reflect(Component)]
-        struct CompWithFromWorld(pub String);
-
-        let (mut world, _, _) = setup_world(|w, r| {
-            w.register_component::<CompWithFromWorld>();
-            r.register::<CompWithFromWorld>();
-        });
+        let mut world = init_world();
 
         let entity = world.spawn_empty().id();
 
@@ -1340,7 +1316,7 @@ mod test_api {
                 }
                 Err(ScriptError(inner)) => {
                     assert_eq!(inner.kind, ScriptErrorKind::RuntimeError);
-                    assert_eq!(inner.reason.to_string(), format!("Cannot add default component since type: `{}`, Does not have ReflectDefault or ReflectFromWorld data registered.", comp_reg.type_info().type_path()));
+                    assert_eq!(inner.reason.to_string(), format!("Cannot add default component since type: `{}`, Does not have ReflectDefault or ReflectFromWorld data registered.", comp_reg.registration.type_info().type_path()));
                 }
             }
         });
@@ -1348,20 +1324,7 @@ mod test_api {
 
     #[test]
     fn test_add_default_component_missing_component_data() {
-        #[derive(Reflect, Component, PartialEq, Debug)]
-        #[reflect(Default)]
-        struct CompWithFromWorld(pub String);
-
-        impl Default for CompWithFromWorld {
-            fn default() -> Self {
-                Self(String::from("Default"))
-            }
-        }
-
-        let (mut world, _, _) = setup_world(|w, r| {
-            w.register_component::<CompWithFromWorld>();
-            r.register::<CompWithFromWorld>();
-        });
+        let mut world = init_world();
 
         let entity = world.spawn_empty().id();
 
@@ -1373,7 +1336,7 @@ mod test_api {
                 }
                 Err(ScriptError(inner)) => {
                     assert_eq!(inner.kind, ScriptErrorKind::RuntimeError);
-                    assert_eq!(inner.reason.to_string(), format!("Cannot add default component since type: `{}`, Does not have ReflectComponent data registered.", comp_reg.type_info().type_path()));
+                    assert_eq!(inner.reason.to_string(), format!("Cannot add default component since type: `{}`, Does not have ReflectComponent data registered.", comp_reg.registration.type_info().type_path()));
                 }
             }
         });
@@ -1381,17 +1344,21 @@ mod test_api {
 
     #[test]
     fn test_get_component_existing() {
-        let (mut world, comp_id, _) = setup_world(|_, _| {});
+        let mut world = init_world();
+
         let entity = world.spawn(TestComponent { strings: vec![] }).id();
 
         WorldCallbackAccess::with_callback_access(&mut world, |world| {
-            let comp_ref = world.get_component(entity, comp_id).unwrap().unwrap();
+            let comp_ref = world
+                .get_component(entity, TestComponent::test_component_id())
+                .unwrap()
+                .unwrap();
             assert_eq!(
                 comp_ref,
                 ReflectReference {
                     base: ReflectBaseType {
                         type_id: std::any::TypeId::of::<TestComponent>(),
-                        base_id: ReflectBase::Component(entity, comp_id),
+                        base_id: ReflectBase::Component(entity, TestComponent::test_component_id()),
                     },
                     reflect_path: Default::default(),
                 }
@@ -1401,21 +1368,25 @@ mod test_api {
 
     #[test]
     fn test_get_component_missing() {
-        let (mut world, comp_id, _) = setup_world(|_, _| {});
+        let mut world = init_world();
+
         let entity = world.spawn_empty().id();
 
         WorldCallbackAccess::with_callback_access(&mut world, |world| {
-            let comp_ref = world.get_component(entity, comp_id).unwrap();
+            let comp_ref = world
+                .get_component(entity, TestComponent::test_component_id())
+                .unwrap();
             assert_eq!(comp_ref, None);
         });
     }
 
     #[test]
     fn test_get_component_missing_entity() {
-        let (mut world, comp_id, _) = setup_world(|_, _| {});
+        let mut world = init_world();
 
         WorldCallbackAccess::with_callback_access(&mut world, |world| {
-            let comp_ref = world.get_component(Entity::from_raw(0), comp_id);
+            let comp_ref =
+                world.get_component(Entity::from_raw(0), TestComponent::test_component_id());
             match comp_ref {
                 Ok(_) => {
                     panic!("Expected error")
@@ -1430,7 +1401,7 @@ mod test_api {
 
     #[test]
     fn test_get_component_unregistered_component() {
-        let (mut world, _, _) = setup_world(|_, _| {});
+        let mut world = init_world();
 
         let entity = world.spawn_empty().id();
         let fake_id = ComponentId::new(999);
@@ -1454,7 +1425,7 @@ mod test_api {
 
     #[test]
     fn test_remove_component() {
-        let (mut world, _, _) = setup_world(|_, _| {});
+        let mut world = init_world();
 
         let entity = world
             .spawn(TestComponent {
@@ -1476,7 +1447,7 @@ mod test_api {
 
     #[test]
     fn test_remove_component_empty_idempotent() {
-        let (mut world, _, _) = setup_world(|_, _| {});
+        let mut world = init_world();
 
         let entity = world.spawn_empty().id();
 
@@ -1494,7 +1465,7 @@ mod test_api {
 
     #[test]
     fn test_remove_component_missing_comp_registration() {
-        let (mut world, _, _) = setup_world(|_, _| {});
+        let mut world = init_world();
 
         let entity = world.spawn_empty().id();
 
@@ -1506,7 +1477,10 @@ mod test_api {
                 }
                 Err(e) => {
                     assert_eq!(e.kind, ScriptErrorKind::RuntimeError);
-                    assert_eq!(e.reason.to_string(), format!("Cannot remove component since type: `{}`, Does not have ReflectComponent data registered.", test_resource_reg(world).type_info().type_path()));
+                    assert_eq!(
+                        e.reason.to_string(),
+                        format!("Cannot remove component since type: `{}`, Does not have ReflectComponent data registered.", test_resource_reg(world).registration.type_info().type_path())
+                    );
                 }
             }
         });
@@ -1519,7 +1493,8 @@ mod test_api {
 
     #[test]
     fn test_remove_component_missing_entity() {
-        let (mut world, _, _) = setup_world(|_, _| {});
+        let mut world = init_world();
+
         let fake_entity = Entity::from_raw(0);
 
         WorldCallbackAccess::with_callback_access(&mut world, |world| {
@@ -1538,17 +1513,20 @@ mod test_api {
 
     #[test]
     fn test_get_resource_existing() {
-        let (mut world, _, resource_id) = setup_world(|_, _| {});
+        let mut world = init_world();
+
         world.insert_resource(TestResource { bytes: vec![1] });
 
         WorldCallbackAccess::with_callback_access(&mut world, |world| {
-            let comp_ref = world.get_resource(resource_id).unwrap();
+            let comp_ref = world
+                .get_resource(TestResource::test_component_id())
+                .unwrap();
             assert_eq!(
                 comp_ref,
                 ReflectReference {
                     base: ReflectBaseType {
                         type_id: std::any::TypeId::of::<TestResource>(),
-                        base_id: ReflectBase::Resource(resource_id),
+                        base_id: ReflectBase::Resource(TestResource::test_component_id()),
                     },
                     reflect_path: Default::default(),
                 }
@@ -1558,7 +1536,8 @@ mod test_api {
 
     #[test]
     fn test_get_resource_non_existing() {
-        let (mut world, _, _) = setup_world(|_, _| {});
+        let mut world = init_world();
+
         let fake_comp = ComponentId::new(999);
         WorldCallbackAccess::with_callback_access(&mut world, |world| {
             let comp_ref = world.get_resource(fake_comp);
@@ -1577,7 +1556,7 @@ mod test_api {
 
     #[test]
     fn test_remove_resource() {
-        let (mut world, _, _) = setup_world(|_, _| {});
+        let mut world = init_world();
 
         world.insert_resource(TestResource { bytes: vec![1] });
 
@@ -1590,7 +1569,7 @@ mod test_api {
 
     #[test]
     fn test_remove_resource_missing_idempotent() {
-        let (mut world, _, _) = setup_world(|_, _| {});
+        let mut world = init_world();
 
         world.remove_resource::<TestResource>();
 
@@ -1603,14 +1582,14 @@ mod test_api {
 
     #[test]
     fn test_remove_resource_missing_resource_registration() {
-        let (mut world, _, _) = setup_world(|_, _| {});
+        let mut world = init_world();
 
         WorldCallbackAccess::with_callback_access(&mut world, |world| {
             match world.remove_resource(test_comp_reg(world)) {
                 Ok(_) => panic!("Expected error"),
                 Err(e) => {
                     assert_eq!(e.kind, ScriptErrorKind::RuntimeError);
-                    assert_eq!(e.reason.to_string(), format!("Cannot remove resource since type: `{}`, Does not have ReflectResource data registered.", test_comp_reg(world).type_info().type_path()));
+                    assert_eq!(e.reason.to_string(), format!("Cannot remove resource since type: `{}`, Does not have ReflectResource data registered.", test_comp_reg(world).registration.type_info().type_path()));
                 }
             }
         });
@@ -1618,26 +1597,26 @@ mod test_api {
 
     #[test]
     fn test_has_resource_existing() {
-        let (mut world, _, res_reg) = setup_world(|_, _| {});
+        let mut world = init_world();
 
         WorldCallbackAccess::with_callback_access(&mut world, |world| {
-            assert!(world.has_resource(res_reg));
+            assert!(world.has_resource(TestResource::test_component_id()));
         });
     }
 
     #[test]
     fn test_has_resource_missing() {
-        let (mut world, _, res_reg) = setup_world(|_, _| {});
+        let mut world = init_world();
 
         world.remove_resource::<TestResource>();
         WorldCallbackAccess::with_callback_access(&mut world, |world| {
-            assert!(world.has_resource(res_reg));
+            assert!(world.has_resource(TestResource::test_component_id()));
         });
     }
 
     #[test]
     fn test_get_children_1_child() {
-        let (mut world, _, _) = setup_world(|_, _| {});
+        let mut world = init_world();
 
         let parent = world.spawn_empty().id();
         let child = world.spawn_empty().id();
@@ -1658,7 +1637,7 @@ mod test_api {
         expected = "Component not registered: `bevy_hierarchy::components::children::Children`"
     )]
     fn test_get_children_children_component_unregistered() {
-        let (mut world, _, _) = setup_world(|_, _| {});
+        let mut world = init_world();
 
         let parent = world.spawn_empty().id();
 
@@ -1669,7 +1648,7 @@ mod test_api {
 
     #[test]
     fn test_get_children_no_children() {
-        let (mut world, _, _) = setup_world(|_, _| {});
+        let mut world = init_world();
 
         world.register_component::<Children>();
         let parent = world.spawn_empty().id();
@@ -1682,7 +1661,7 @@ mod test_api {
 
     #[test]
     fn test_get_parent_1_parent() {
-        let (mut world, _, _) = setup_world(|_, _| {});
+        let mut world = init_world();
 
         let parent = world.spawn_empty().id();
         let child = world.spawn_empty().id();
@@ -1699,7 +1678,8 @@ mod test_api {
 
     #[test]
     fn test_get_parent_no_parent() {
-        let (mut world, _, _) = setup_world(|_, _| {});
+        let mut world = init_world();
+
         world.register_component::<Parent>();
 
         let child = world.spawn_empty().id();
@@ -1715,7 +1695,7 @@ mod test_api {
         expected = "Component not registered: `bevy_hierarchy::components::parent::Parent`"
     )]
     fn test_get_parent_parent_component_unregistered() {
-        let (mut world, _, _) = setup_world(|_, _| {});
+        let mut world = init_world();
 
         let child = world.spawn_empty().id();
 
@@ -1726,7 +1706,7 @@ mod test_api {
 
     #[test]
     fn test_push_children_empty_entity() {
-        let (mut world, _, _) = setup_world(|_, _| {});
+        let mut world = init_world();
 
         let parent = world.spawn_empty().id();
         let child = world.spawn_empty().id();
@@ -1742,7 +1722,7 @@ mod test_api {
 
     #[test]
     fn test_push_children_entity_with_1_child() {
-        let (mut world, _, _) = setup_world(|_, _| {});
+        let mut world = init_world();
 
         let parent = world.spawn_empty().id();
         let child = world.spawn_empty().id();
@@ -1765,7 +1745,7 @@ mod test_api {
 
     #[test]
     fn test_remove_children_entity_with_1_child() {
-        let (mut world, _, _) = setup_world(|_, _| {});
+        let mut world = init_world();
 
         let parent = world.spawn_empty().id();
         let child = world.spawn_empty().id();
@@ -1784,7 +1764,7 @@ mod test_api {
 
     #[test]
     fn test_remove_children_remove_half_children() {
-        let (mut world, _, _) = setup_world(|_, _| {});
+        let mut world = init_world();
 
         let parent = world.spawn_empty().id();
         let child = world.spawn_empty().id();
@@ -1805,7 +1785,7 @@ mod test_api {
 
     #[test]
     fn test_insert_children_empty() {
-        let (mut world, _, _) = setup_world(|_, _| {});
+        let mut world = init_world();
 
         let parent = world.spawn_empty().id();
         let child = world.spawn_empty().id();
@@ -1821,7 +1801,7 @@ mod test_api {
 
     #[test]
     fn test_insert_children_middle() {
-        let (mut world, _, _) = setup_world(|_, _| {});
+        let mut world = init_world();
 
         let parent = world.spawn_empty().id();
         let child = world.spawn_empty().id();
@@ -1848,7 +1828,7 @@ mod test_api {
 
     #[test]
     fn test_despawn_entity() {
-        let (mut world, _, _) = setup_world(|_, _| {});
+        let mut world = init_world();
 
         let entity = world.spawn_empty().id();
 
@@ -1861,7 +1841,7 @@ mod test_api {
 
     #[test]
     fn test_despawn_recursive() {
-        let (mut world, _, _) = setup_world(|_, _| {});
+        let mut world = init_world();
 
         let parent = world.spawn_empty().id();
         let child = world.spawn_empty().id();
@@ -1880,7 +1860,7 @@ mod test_api {
 
     #[test]
     fn test_despawn_descendants() {
-        let (mut world, _, _) = setup_world(|_, _| {});
+        let mut world = init_world();
 
         let parent = world.spawn_empty().id();
         let child = world.spawn_empty().id();

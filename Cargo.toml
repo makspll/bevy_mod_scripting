@@ -73,6 +73,7 @@ bevy_script_api = { path = "crates/bevy_script_api", version = "0.8.0-alpha.1", 
 bevy = { version = "0.15.0-rc.3", default-features = false }
 bevy_mod_scripting_core = { path = "crates/bevy_mod_scripting_core", version = "0.8.0-alpha.1" }
 bevy_mod_scripting_common = { path = "crates/bevy_mod_scripting_common", version = "0.8.0-alpha.1" }
+test_utils = { path = "crates/test_utils" }
 
 [dev-dependencies]
 bevy = { workspace = true, default-features = true }
@@ -93,6 +94,7 @@ members = [
     "crates/languages/bevy_mod_scripting_rune",
     "crates/bevy_mod_scripting_common",
     "crates/bevy_mod_scripting_derive",
+    "crates/test_utils",
 ]
 resolver = "2"
 exclude = ["crates/bevy_api_gen", "crates/macro_tests"]

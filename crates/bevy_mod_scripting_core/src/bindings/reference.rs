@@ -28,7 +28,8 @@ use bevy::{
     },
     ptr::Ptr,
     reflect::{
-        Access, ParsedPath, PartialReflect, Reflect, ReflectFromPtr, ReflectPath, ReflectPathError, TypeInfo, TypeRegistry
+        Access, ParsedPath, PartialReflect, Reflect, ReflectFromPtr, ReflectPath, ReflectPathError,
+        TypeInfo, TypeRegistry,
     },
 };
 use smallvec::SmallVec;
@@ -59,7 +60,6 @@ pub struct ReflectReference {
 struct UnregisteredType;
 
 impl ReflectReference {
-
     pub fn new_allocated<T: PartialReflect>(
         value: T,
         allocator: &mut ReflectAllocator,
@@ -269,7 +269,8 @@ impl ReflectReference {
         allocator: Option<&ReflectAllocator>,
     ) -> ScriptResult<&'w mut dyn PartialReflect> {
         if let ReflectBase::Owned(id) = &self.base.base_id {
-            let allocator = allocator.ok_or_else(|| ScriptError::new_reflection_error("Allocator missing"))?;
+            let allocator =
+                allocator.ok_or_else(|| ScriptError::new_reflection_error("Allocator missing"))?;
 
             let arc = allocator
                 .get_mut(*id)
@@ -318,7 +319,10 @@ impl ReflectReference {
         Ok(current)
     }
 
-    fn walk_path_mut<'a>(&self, root: &'a mut dyn PartialReflect) -> ScriptResult<&'a mut dyn PartialReflect> {
+    fn walk_path_mut<'a>(
+        &self,
+        root: &'a mut dyn PartialReflect,
+    ) -> ScriptResult<&'a mut dyn PartialReflect> {
         let mut current = root;
         for elem in self.reflect_path.iter() {
             current = elem
@@ -428,8 +432,12 @@ impl ReflectionPathElem {
 
 impl<A: 'static, B: 'static> From<(A, B)> for DeferredReflection
 where
-    A: Fn(&dyn PartialReflect) -> Result<&dyn PartialReflect, ReflectPathError<'static>> + Send + Sync,
-    B: Fn(&mut dyn PartialReflect) -> Result<&mut dyn PartialReflect, ReflectPathError<'static>> + Send + Sync,
+    A: Fn(&dyn PartialReflect) -> Result<&dyn PartialReflect, ReflectPathError<'static>>
+        + Send
+        + Sync,
+    B: Fn(&mut dyn PartialReflect) -> Result<&mut dyn PartialReflect, ReflectPathError<'static>>
+        + Send
+        + Sync,
 {
     fn from((get, get_mut): (A, B)) -> Self {
         Self {
@@ -476,10 +484,15 @@ impl<'a> ReflectPath<'a> for &'a ReflectionPathElem {
 /// A ReflectPath which can perform arbitrary operations on the root object to produce a sub-reference
 #[derive(Clone)]
 pub struct DeferredReflection {
-    pub get:
-        Arc<dyn Fn(&dyn PartialReflect) -> Result<&dyn PartialReflect, ReflectPathError<'static>> + Send + Sync>,
+    pub get: Arc<
+        dyn Fn(&dyn PartialReflect) -> Result<&dyn PartialReflect, ReflectPathError<'static>>
+            + Send
+            + Sync,
+    >,
     pub get_mut: Arc<
-        dyn Fn(&mut dyn PartialReflect) -> Result<&mut dyn PartialReflect, ReflectPathError<'static>>
+        dyn Fn(
+                &mut dyn PartialReflect,
+            ) -> Result<&mut dyn PartialReflect, ReflectPathError<'static>>
             + Send
             + Sync,
     >,

@@ -42,7 +42,7 @@ impl<'a, T: IntoLuaMulti<'a>, N: ToTypename> IntoLua<'a> for TypenameProxy<T, N>
     fn into_lua(self, lua: &'a Lua) -> tealr::mlu::mlua::Result<Value<'a>> {
         self.0
             .into_lua_multi(lua)
-            .map(|mut v| v.pop_front().unwrap())
+            .map(|mut v| v.pop_front().unwrap_or_else(|| Value::Nil))
     }
 }
 
@@ -210,6 +210,13 @@ macro_rules! impl_lua_proxy {
             type Input<'i>=<$as<$generic, $generic::Proxy> as bevy_mod_scripting_core::bindings::Proxy>::Input<'i>;
             fn proxy<'i>(value: Self::Input<'i>) -> ScriptResult<Self> {
                 Ok(Self($as::<$generic,$generic::Proxy>::proxy(value)?))
+            }
+
+            fn proxy_with_allocator<'i>(
+                value: Self::Input<'i>,
+                allocator: &mut bevy_mod_scripting_core::bindings::ReflectAllocator,
+            ) -> ScriptResult<Self> {
+                Ok(Self($as::<$generic,$generic::Proxy>::proxy_with_allocator(value, allocator)?))
             }
         }
 

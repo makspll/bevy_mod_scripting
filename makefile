@@ -32,9 +32,11 @@ GENERATED_SRC_PATH=./crates/languages/bevy_mod_scripting_lua/src/bindings/provid
 GEN_BEVY_FEATURES=bevy_asset,bevy_gltf,bevy_animation,bevy_core_pipeline,bevy_ui,bevy_pbr,bevy_render,bevy_text,bevy_sprite,file_watcher,multi_threaded
 
 build_test_in_package:
-	@cargo test --no-run --lib --package ${PACKAGE} $(TEST_NAME) --features ${TEST_FEATURES}
-	@export OUTPUT=$$(find ./target/debug/deps/ -regex ".*${PACKAGE}[^.]*" -printf "%T@\t%Tc %6k KiB %p\n" | sort -n -r | awk '{print $$NF}' | head -1); \
-	mv $${OUTPUT} ./target/debug/test_binary && echo "Using: $${OUTPUT}" && ls -v ./target/debug/ | grep "test_binary"
+	@RUSTFLAGS=-g cargo test --no-run  --all-targets --features ${TEST_FEATURES} --package ${PACKAGE} $(TEST_NAME) --message-format=json | jq -r 'first(select(.executable != null and .target.kind == ["test"])) | .executable' | xargs -I@ ln -fs @ ./target/debug/test_binary
+
+run_lua_tests:
+	cargo test --features=lua54 --package bevy_mod_scripting_lua --test lua_tests
+
 
 comp_benches:
 	RUSTFLAGS="-g" cargo bench --no-run 

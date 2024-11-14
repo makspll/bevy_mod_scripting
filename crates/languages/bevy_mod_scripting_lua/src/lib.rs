@@ -53,25 +53,29 @@ impl<A: LuaEventArg> Default for LuaScriptingPlugin<A> {
     }
 }
 
+pub fn register_lua_values(app: &mut bevy::prelude::App) {
+    app.register_lua_value::<usize>();
+    app.register_lua_value::<isize>();
+    app.register_lua_value::<f32>();
+    app.register_lua_value::<f64>();
+    app.register_lua_value::<u128>();
+    app.register_lua_value::<u64>();
+    app.register_lua_value::<u32>();
+    app.register_lua_value::<u16>();
+    app.register_lua_value::<u8>();
+    app.register_lua_value::<i128>();
+    app.register_lua_value::<i64>();
+    app.register_lua_value::<i32>();
+    app.register_lua_value::<i16>();
+    app.register_lua_value::<i8>();
+    app.register_lua_value::<String>();
+    app.register_lua_value::<bool>();
+}
+
 impl<A: LuaEventArg> Plugin for LuaScriptingPlugin<A> {
     fn build(&self, app: &mut bevy::prelude::App) {
         self.scripting_plugin.build(app);
-        app.register_lua_value::<usize>();
-        app.register_lua_value::<isize>();
-        app.register_lua_value::<f32>();
-        app.register_lua_value::<f64>();
-        app.register_lua_value::<u128>();
-        app.register_lua_value::<u64>();
-        app.register_lua_value::<u32>();
-        app.register_lua_value::<u16>();
-        app.register_lua_value::<u8>();
-        app.register_lua_value::<i128>();
-        app.register_lua_value::<i64>();
-        app.register_lua_value::<i32>();
-        app.register_lua_value::<i16>();
-        app.register_lua_value::<i8>();
-        app.register_lua_value::<String>();
-        app.register_lua_value::<bool>();
+        register_lua_values(app);
     }
 }
 
