@@ -111,7 +111,7 @@ impl Test {
             (),
             Entity::from_raw(1),
             &(self.name()).into(),
-            &CallbackLabel::new("test").ok_or("invalid callback label")?,
+            &CallbackLabel::new("on_test").ok_or("invalid callback label")?,
             &mut lua,
             &context_settings.context_pre_handling_initializers,
             &mut (),
