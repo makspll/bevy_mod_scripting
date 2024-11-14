@@ -28,6 +28,14 @@ use crate::{
 
 "#,
     r#"
+
+    #[lua(as_trait = "std::clone::Clone")]
+    fn clone(
+        _self: LuaReflectRefProxy<bevy::math::AspectRatio>,
+    ) -> LuaReflectValProxy<bevy::math::AspectRatio>;
+
+"#,
+    r#"
 /// Returns the aspect ratio as a f32 value.
 
     #[lua()]
@@ -65,14 +73,6 @@ use crate::{
 
 "#,
     r#"
-
-    #[lua(as_trait = "std::clone::Clone")]
-    fn clone(
-        _self: LuaReflectRefProxy<bevy::math::AspectRatio>,
-    ) -> LuaReflectValProxy<bevy::math::AspectRatio>;
-
-"#,
-    r#"
 #[lua(metamethod="ToString")]
 fn index(&self) -> String {
     format!("{:?}", _self)
@@ -86,6 +86,14 @@ pub struct AspectRatio();
     bms_core_path = "bevy_mod_scripting_core",
     bms_lua_path = "crate",
     functions[r#"
+
+    #[lua(as_trait = "std::cmp::Eq")]
+    fn assert_receiver_is_total_eq(
+        _self: LuaReflectRefProxy<bevy::math::CompassOctant>,
+    ) -> ();
+
+"#,
+    r#"
 
     #[lua(as_trait = "std::clone::Clone")]
     fn clone(
@@ -103,14 +111,6 @@ pub struct AspectRatio();
         _self: LuaReflectRefProxy<bevy::math::CompassOctant>,
         other: LuaReflectRefProxy<bevy::math::CompassOctant>,
     ) -> bool;
-
-"#,
-    r#"
-
-    #[lua(as_trait = "std::cmp::Eq")]
-    fn assert_receiver_is_total_eq(
-        _self: LuaReflectRefProxy<bevy::math::CompassOctant>,
-    ) -> ();
 
 "#,
     r#"
@@ -169,19 +169,19 @@ pub struct CompassQuadrant {}
     bms_lua_path = "crate",
     functions[r#"
 
-    #[lua(as_trait = "std::ops::Mul::<bevy::math::Isometry2d>", composite = "mul")]
-    fn mul(
-        _self: LuaReflectValProxy<bevy::math::Isometry2d>,
-        rhs: LuaReflectValProxy<bevy::math::Isometry2d>,
+    #[lua(as_trait = "std::clone::Clone")]
+    fn clone(
+        _self: LuaReflectRefProxy<bevy::math::Isometry2d>,
     ) -> LuaReflectValProxy<bevy::math::Isometry2d>;
 
 "#,
     r#"
 
-    #[lua(as_trait = "std::clone::Clone")]
-    fn clone(
+    #[lua(as_trait = "std::cmp::PartialEq::<bevy::math::Isometry2d>", composite = "eq")]
+    fn eq(
         _self: LuaReflectRefProxy<bevy::math::Isometry2d>,
-    ) -> LuaReflectValProxy<bevy::math::Isometry2d>;
+        other: LuaReflectRefProxy<bevy::math::Isometry2d>,
+    ) -> bool;
 
 "#,
     r#"
@@ -223,20 +223,20 @@ pub struct CompassQuadrant {}
 "#,
     r#"
 
-    #[lua(as_trait = "std::cmp::PartialEq::<bevy::math::Isometry2d>", composite = "eq")]
-    fn eq(
-        _self: LuaReflectRefProxy<bevy::math::Isometry2d>,
-        other: LuaReflectRefProxy<bevy::math::Isometry2d>,
-    ) -> bool;
-
-"#,
-    r#"
-
     #[lua(as_trait = "std::ops::Mul::<bevy::math::prelude::Dir2>", composite = "mul")]
     fn mul(
         _self: LuaReflectValProxy<bevy::math::Isometry2d>,
         rhs: LuaReflectValProxy<bevy::math::prelude::Dir2>,
     ) -> LuaReflectValProxy<bevy::math::prelude::Dir2>;
+
+"#,
+    r#"
+
+    #[lua(as_trait = "std::ops::Mul::<bevy::math::Isometry2d>", composite = "mul")]
+    fn mul(
+        _self: LuaReflectValProxy<bevy::math::Isometry2d>,
+        rhs: LuaReflectValProxy<bevy::math::Isometry2d>,
+    ) -> LuaReflectValProxy<bevy::math::Isometry2d>;
 
 "#,
     r#"
@@ -256,6 +256,41 @@ pub struct Isometry2d {
     bms_core_path = "bevy_mod_scripting_core",
     bms_lua_path = "crate",
     functions[r#"
+
+    #[lua(as_trait = "std::clone::Clone")]
+    fn clone(
+        _self: LuaReflectRefProxy<bevy::math::Isometry3d>,
+    ) -> LuaReflectValProxy<bevy::math::Isometry3d>;
+
+"#,
+    r#"
+
+    #[lua(as_trait = "std::cmp::PartialEq::<bevy::math::Isometry3d>", composite = "eq")]
+    fn eq(
+        _self: LuaReflectRefProxy<bevy::math::Isometry3d>,
+        other: LuaReflectRefProxy<bevy::math::Isometry3d>,
+    ) -> bool;
+
+"#,
+    r#"
+
+    #[lua(as_trait = "std::ops::Mul::<bevy::math::Isometry3d>", composite = "mul")]
+    fn mul(
+        _self: LuaReflectValProxy<bevy::math::Isometry3d>,
+        rhs: LuaReflectValProxy<bevy::math::Isometry3d>,
+    ) -> LuaReflectValProxy<bevy::math::Isometry3d>;
+
+"#,
+    r#"
+
+    #[lua(as_trait = "std::ops::Mul::<bevy::math::prelude::Dir3>", composite = "mul")]
+    fn mul(
+        _self: LuaReflectValProxy<bevy::math::Isometry3d>,
+        rhs: LuaReflectValProxy<bevy::math::prelude::Dir3>,
+    ) -> LuaReflectValProxy<bevy::math::prelude::Dir3>;
+
+"#,
+    r#"
 /// Create a three-dimensional isometry from a translation with the given `x`, `y`, and `z` components.
 
     #[lua()]
@@ -279,41 +314,6 @@ pub struct Isometry2d {
     #[lua()]
     fn inverse_mul(
         _self: LuaReflectRefProxy<bevy::math::Isometry3d>,
-        rhs: LuaReflectValProxy<bevy::math::Isometry3d>,
-    ) -> LuaReflectValProxy<bevy::math::Isometry3d>;
-
-"#,
-    r#"
-
-    #[lua(as_trait = "std::cmp::PartialEq::<bevy::math::Isometry3d>", composite = "eq")]
-    fn eq(
-        _self: LuaReflectRefProxy<bevy::math::Isometry3d>,
-        other: LuaReflectRefProxy<bevy::math::Isometry3d>,
-    ) -> bool;
-
-"#,
-    r#"
-
-    #[lua(as_trait = "std::clone::Clone")]
-    fn clone(
-        _self: LuaReflectRefProxy<bevy::math::Isometry3d>,
-    ) -> LuaReflectValProxy<bevy::math::Isometry3d>;
-
-"#,
-    r#"
-
-    #[lua(as_trait = "std::ops::Mul::<bevy::math::prelude::Dir3>", composite = "mul")]
-    fn mul(
-        _self: LuaReflectValProxy<bevy::math::Isometry3d>,
-        rhs: LuaReflectValProxy<bevy::math::prelude::Dir3>,
-    ) -> LuaReflectValProxy<bevy::math::prelude::Dir3>;
-
-"#,
-    r#"
-
-    #[lua(as_trait = "std::ops::Mul::<bevy::math::Isometry3d>", composite = "mul")]
-    fn mul(
-        _self: LuaReflectValProxy<bevy::math::Isometry3d>,
         rhs: LuaReflectValProxy<bevy::math::Isometry3d>,
     ) -> LuaReflectValProxy<bevy::math::Isometry3d>;
 
@@ -826,18 +826,6 @@ pub struct Rot2 {
 "#,
     r#"
 
-    #[lua(
-        as_trait = "std::cmp::PartialEq::<bevy::math::prelude::Dir2>",
-        composite = "eq",
-    )]
-    fn eq(
-        _self: LuaReflectRefProxy<bevy::math::prelude::Dir2>,
-        other: LuaReflectRefProxy<bevy::math::prelude::Dir2>,
-    ) -> bool;
-
-"#,
-    r#"
-
     #[lua(as_trait = "std::clone::Clone")]
     fn clone(
         _self: LuaReflectRefProxy<bevy::math::prelude::Dir2>,
@@ -850,6 +838,18 @@ pub struct Rot2 {
     fn neg(
         _self: LuaReflectValProxy<bevy::math::prelude::Dir2>,
     ) -> LuaReflectValProxy<bevy::math::prelude::Dir2>;
+
+"#,
+    r#"
+
+    #[lua(
+        as_trait = "std::cmp::PartialEq::<bevy::math::prelude::Dir2>",
+        composite = "eq",
+    )]
+    fn eq(
+        _self: LuaReflectRefProxy<bevy::math::prelude::Dir2>,
+        other: LuaReflectRefProxy<bevy::math::prelude::Dir2>,
+    ) -> bool;
 
 "#,
     r#"
@@ -867,6 +867,14 @@ pub struct Dir2();
     bms_lua_path = "crate",
     functions[r#"
 
+    #[lua(as_trait = "std::ops::Neg", composite = "neg")]
+    fn neg(
+        _self: LuaReflectValProxy<bevy::math::prelude::Dir3>,
+    ) -> LuaReflectValProxy<bevy::math::prelude::Dir3>;
+
+"#,
+    r#"
+
     #[lua(
         as_trait = "std::cmp::PartialEq::<bevy::math::prelude::Dir3>",
         composite = "eq",
@@ -879,9 +887,9 @@ pub struct Dir2();
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Neg", composite = "neg")]
-    fn neg(
-        _self: LuaReflectValProxy<bevy::math::prelude::Dir3>,
+    #[lua(as_trait = "std::clone::Clone")]
+    fn clone(
+        _self: LuaReflectRefProxy<bevy::math::prelude::Dir3>,
     ) -> LuaReflectValProxy<bevy::math::prelude::Dir3>;
 
 "#,
@@ -963,14 +971,6 @@ pub struct Dir2();
 
 "#,
     r#"
-
-    #[lua(as_trait = "std::clone::Clone")]
-    fn clone(
-        _self: LuaReflectRefProxy<bevy::math::prelude::Dir3>,
-    ) -> LuaReflectValProxy<bevy::math::prelude::Dir3>;
-
-"#,
-    r#"
 #[lua(metamethod="ToString")]
 fn index(&self) -> String {
     format!("{:?}", _self)
@@ -984,6 +984,22 @@ pub struct Dir3();
     bms_core_path = "bevy_mod_scripting_core",
     bms_lua_path = "crate",
     functions[r#"
+
+    #[lua(as_trait = "std::ops::Neg", composite = "neg")]
+    fn neg(
+        _self: LuaReflectValProxy<bevy::math::prelude::Dir3A>,
+    ) -> LuaReflectValProxy<bevy::math::prelude::Dir3A>;
+
+"#,
+    r#"
+
+    #[lua(as_trait = "std::clone::Clone")]
+    fn clone(
+        _self: LuaReflectRefProxy<bevy::math::prelude::Dir3A>,
+    ) -> LuaReflectValProxy<bevy::math::prelude::Dir3A>;
+
+"#,
+    r#"
 /// Create a direction from its `x`, `y`, and `z` components, assuming the resulting vector is normalized.
 /// # Warning
 /// The vector produced from `x`, `y`, and `z` must be normalized, i.e its length must be `1.0`.
@@ -1040,14 +1056,6 @@ pub struct Dir3();
 "#,
     r#"
 
-    #[lua(as_trait = "std::clone::Clone")]
-    fn clone(
-        _self: LuaReflectRefProxy<bevy::math::prelude::Dir3A>,
-    ) -> LuaReflectValProxy<bevy::math::prelude::Dir3A>;
-
-"#,
-    r#"
-
     #[lua(
         as_trait = "std::cmp::PartialEq::<bevy::math::prelude::Dir3A>",
         composite = "eq",
@@ -1056,14 +1064,6 @@ pub struct Dir3();
         _self: LuaReflectRefProxy<bevy::math::prelude::Dir3A>,
         other: LuaReflectRefProxy<bevy::math::prelude::Dir3A>,
     ) -> bool;
-
-"#,
-    r#"
-
-    #[lua(as_trait = "std::ops::Neg", composite = "neg")]
-    fn neg(
-        _self: LuaReflectValProxy<bevy::math::prelude::Dir3A>,
-    ) -> LuaReflectValProxy<bevy::math::prelude::Dir3A>;
 
 "#,
     r#"
@@ -1268,6 +1268,26 @@ pub struct IRect {
     bms_core_path = "bevy_mod_scripting_core",
     bms_lua_path = "crate",
     functions[r#"
+
+    #[lua(
+        as_trait = "std::cmp::PartialEq::<bevy::math::prelude::Rect>",
+        composite = "eq",
+    )]
+    fn eq(
+        _self: LuaReflectRefProxy<bevy::math::prelude::Rect>,
+        other: LuaReflectRefProxy<bevy::math::prelude::Rect>,
+    ) -> bool;
+
+"#,
+    r#"
+
+    #[lua(as_trait = "std::clone::Clone")]
+    fn clone(
+        _self: LuaReflectRefProxy<bevy::math::prelude::Rect>,
+    ) -> LuaReflectValProxy<bevy::math::prelude::Rect>;
+
+"#,
+    r#"
 /// Create a new rectangle from two corner points.
 /// The two points do not need to be the minimum and/or maximum corners.
 /// They only need to be two opposite corners.
@@ -1434,26 +1454,6 @@ pub struct IRect {
 
 "#,
     r#"
-
-    #[lua(
-        as_trait = "std::cmp::PartialEq::<bevy::math::prelude::Rect>",
-        composite = "eq",
-    )]
-    fn eq(
-        _self: LuaReflectRefProxy<bevy::math::prelude::Rect>,
-        other: LuaReflectRefProxy<bevy::math::prelude::Rect>,
-    ) -> bool;
-
-"#,
-    r#"
-
-    #[lua(as_trait = "std::clone::Clone")]
-    fn clone(
-        _self: LuaReflectRefProxy<bevy::math::prelude::Rect>,
-    ) -> LuaReflectValProxy<bevy::math::prelude::Rect>;
-
-"#,
-    r#"
 #[lua(metamethod="ToString")]
 fn index(&self) -> String {
     format!("{:?}", _self)
@@ -1471,14 +1471,6 @@ pub struct Rect {
     bms_lua_path = "crate",
     functions[r#"
 
-    #[lua(as_trait = "std::clone::Clone")]
-    fn clone(
-        _self: LuaReflectRefProxy<bevy::math::prelude::URect>,
-    ) -> LuaReflectValProxy<bevy::math::prelude::URect>;
-
-"#,
-    r#"
-
     #[lua(
         as_trait = "std::cmp::PartialEq::<bevy::math::prelude::URect>",
         composite = "eq",
@@ -1487,14 +1479,6 @@ pub struct Rect {
         _self: LuaReflectRefProxy<bevy::math::prelude::URect>,
         other: LuaReflectRefProxy<bevy::math::prelude::URect>,
     ) -> bool;
-
-"#,
-    r#"
-
-    #[lua(as_trait = "std::cmp::Eq")]
-    fn assert_receiver_is_total_eq(
-        _self: LuaReflectRefProxy<bevy::math::prelude::URect>,
-    ) -> ();
 
 "#,
     r#"
@@ -1642,6 +1626,22 @@ pub struct Rect {
 
 "#,
     r#"
+
+    #[lua(as_trait = "std::cmp::Eq")]
+    fn assert_receiver_is_total_eq(
+        _self: LuaReflectRefProxy<bevy::math::prelude::URect>,
+    ) -> ();
+
+"#,
+    r#"
+
+    #[lua(as_trait = "std::clone::Clone")]
+    fn clone(
+        _self: LuaReflectRefProxy<bevy::math::prelude::URect>,
+    ) -> LuaReflectValProxy<bevy::math::prelude::URect>;
+
+"#,
+    r#"
 #[lua(metamethod="ToString")]
 fn index(&self) -> String {
     format!("{:?}", _self)
@@ -1702,6 +1702,14 @@ pub struct Aabb2d {
     bms_core_path = "bevy_mod_scripting_core",
     bms_lua_path = "crate",
     functions[r#"
+
+    #[lua(as_trait = "std::clone::Clone")]
+    fn clone(
+        _self: LuaReflectRefProxy<bevy::math::bounding::BoundingCircle>,
+    ) -> LuaReflectValProxy<bevy::math::bounding::BoundingCircle>;
+
+"#,
+    r#"
 /// Get the radius of the bounding circle
 
     #[lua()]
@@ -1715,14 +1723,6 @@ pub struct Aabb2d {
     fn aabb_2d(
         _self: LuaReflectRefProxy<bevy::math::bounding::BoundingCircle>,
     ) -> LuaReflectValProxy<bevy::math::bounding::Aabb2d>;
-
-"#,
-    r#"
-
-    #[lua(as_trait = "std::clone::Clone")]
-    fn clone(
-        _self: LuaReflectRefProxy<bevy::math::bounding::BoundingCircle>,
-    ) -> LuaReflectValProxy<bevy::math::bounding::BoundingCircle>;
 
 "#,
     r#"
@@ -1742,17 +1742,15 @@ pub struct BoundingCircle {
     bms_core_path = "bevy_mod_scripting_core",
     bms_lua_path = "crate",
     functions[r#"
-/// Create a new [`Circle`] from a `radius`
 
-    #[lua()]
-    fn new(radius: f32) -> LuaReflectValProxy<bevy::math::primitives::Circle>;
-
-"#,
-    r#"
-/// Get the diameter of the circle
-
-    #[lua()]
-    fn diameter(_self: LuaReflectRefProxy<bevy::math::primitives::Circle>) -> f32;
+    #[lua(
+        as_trait = "std::cmp::PartialEq::<bevy::math::primitives::Circle>",
+        composite = "eq",
+    )]
+    fn eq(
+        _self: LuaReflectRefProxy<bevy::math::primitives::Circle>,
+        other: LuaReflectRefProxy<bevy::math::primitives::Circle>,
+    ) -> bool;
 
 "#,
     r#"
@@ -1764,15 +1762,17 @@ pub struct BoundingCircle {
 
 "#,
     r#"
+/// Create a new [`Circle`] from a `radius`
 
-    #[lua(
-        as_trait = "std::cmp::PartialEq::<bevy::math::primitives::Circle>",
-        composite = "eq",
-    )]
-    fn eq(
-        _self: LuaReflectRefProxy<bevy::math::primitives::Circle>,
-        other: LuaReflectRefProxy<bevy::math::primitives::Circle>,
-    ) -> bool;
+    #[lua()]
+    fn new(radius: f32) -> LuaReflectValProxy<bevy::math::primitives::Circle>;
+
+"#,
+    r#"
+/// Get the diameter of the circle
+
+    #[lua()]
+    fn diameter(_self: LuaReflectRefProxy<bevy::math::primitives::Circle>) -> f32;
 
 "#,
     r#"
@@ -1792,14 +1792,6 @@ pub struct Circle {
     bms_lua_path = "crate",
     functions[r#"
 
-    #[lua(as_trait = "std::clone::Clone")]
-    fn clone(
-        _self: LuaReflectRefProxy<bevy::math::primitives::Annulus>,
-    ) -> LuaReflectValProxy<bevy::math::primitives::Annulus>;
-
-"#,
-    r#"
-
     #[lua(
         as_trait = "std::cmp::PartialEq::<bevy::math::primitives::Annulus>",
         composite = "eq",
@@ -1808,6 +1800,14 @@ pub struct Circle {
         _self: LuaReflectRefProxy<bevy::math::primitives::Annulus>,
         other: LuaReflectRefProxy<bevy::math::primitives::Annulus>,
     ) -> bool;
+
+"#,
+    r#"
+
+    #[lua(as_trait = "std::clone::Clone")]
+    fn clone(
+        _self: LuaReflectRefProxy<bevy::math::primitives::Annulus>,
+    ) -> LuaReflectValProxy<bevy::math::primitives::Annulus>;
 
 "#,
     r#"
@@ -1994,18 +1994,6 @@ pub struct Arc2d {
     bms_core_path = "bevy_mod_scripting_core",
     bms_lua_path = "crate",
     functions[r#"
-
-    #[lua(
-        as_trait = "std::cmp::PartialEq::<bevy::math::primitives::Capsule2d>",
-        composite = "eq",
-    )]
-    fn eq(
-        _self: LuaReflectRefProxy<bevy::math::primitives::Capsule2d>,
-        other: LuaReflectRefProxy<bevy::math::primitives::Capsule2d>,
-    ) -> bool;
-
-"#,
-    r#"
 /// Create a new `Capsule2d` from a radius and length
 
     #[lua()]
@@ -2022,6 +2010,18 @@ pub struct Arc2d {
     fn to_inner_rectangle(
         _self: LuaReflectRefProxy<bevy::math::primitives::Capsule2d>,
     ) -> LuaReflectValProxy<bevy::math::primitives::Rectangle>;
+
+"#,
+    r#"
+
+    #[lua(
+        as_trait = "std::cmp::PartialEq::<bevy::math::primitives::Capsule2d>",
+        composite = "eq",
+    )]
+    fn eq(
+        _self: LuaReflectRefProxy<bevy::math::primitives::Capsule2d>,
+        other: LuaReflectRefProxy<bevy::math::primitives::Capsule2d>,
+    ) -> bool;
 
 "#,
     r#"
@@ -2049,6 +2049,18 @@ pub struct Capsule2d {
     bms_core_path = "bevy_mod_scripting_core",
     bms_lua_path = "crate",
     functions[r#"
+
+    #[lua(
+        as_trait = "std::cmp::PartialEq::<bevy::math::primitives::CircularSector>",
+        composite = "eq",
+    )]
+    fn eq(
+        _self: LuaReflectRefProxy<bevy::math::primitives::CircularSector>,
+        other: LuaReflectRefProxy<bevy::math::primitives::CircularSector>,
+    ) -> bool;
+
+"#,
+    r#"
 /// Create a new [`CircularSector`] from a `radius` and an `angle`
 
     #[lua()]
@@ -2166,18 +2178,6 @@ pub struct Capsule2d {
 
 "#,
     r#"
-
-    #[lua(
-        as_trait = "std::cmp::PartialEq::<bevy::math::primitives::CircularSector>",
-        composite = "eq",
-    )]
-    fn eq(
-        _self: LuaReflectRefProxy<bevy::math::primitives::CircularSector>,
-        other: LuaReflectRefProxy<bevy::math::primitives::CircularSector>,
-    ) -> bool;
-
-"#,
-    r#"
 #[lua(metamethod="ToString")]
 fn index(&self) -> String {
     format!("{:?}", _self)
@@ -2193,14 +2193,6 @@ pub struct CircularSector {
     bms_core_path = "bevy_mod_scripting_core",
     bms_lua_path = "crate",
     functions[r#"
-
-    #[lua(as_trait = "std::clone::Clone")]
-    fn clone(
-        _self: LuaReflectRefProxy<bevy::math::primitives::CircularSegment>,
-    ) -> LuaReflectValProxy<bevy::math::primitives::CircularSegment>;
-
-"#,
-    r#"
 
     #[lua(
         as_trait = "std::cmp::PartialEq::<bevy::math::primitives::CircularSegment>",
@@ -2325,6 +2317,14 @@ pub struct CircularSector {
 
 "#,
     r#"
+
+    #[lua(as_trait = "std::clone::Clone")]
+    fn clone(
+        _self: LuaReflectRefProxy<bevy::math::primitives::CircularSegment>,
+    ) -> LuaReflectValProxy<bevy::math::primitives::CircularSegment>;
+
+"#,
+    r#"
 #[lua(metamethod="ToString")]
 fn index(&self) -> String {
     format!("{:?}", _self)
@@ -2341,6 +2341,14 @@ pub struct CircularSegment {
     bms_lua_path = "crate",
     functions[r#"
 
+    #[lua(as_trait = "std::clone::Clone")]
+    fn clone(
+        _self: LuaReflectRefProxy<bevy::math::primitives::Ellipse>,
+    ) -> LuaReflectValProxy<bevy::math::primitives::Ellipse>;
+
+"#,
+    r#"
+
     #[lua(
         as_trait = "std::cmp::PartialEq::<bevy::math::primitives::Ellipse>",
         composite = "eq",
@@ -2349,14 +2357,6 @@ pub struct CircularSegment {
         _self: LuaReflectRefProxy<bevy::math::primitives::Ellipse>,
         other: LuaReflectRefProxy<bevy::math::primitives::Ellipse>,
     ) -> bool;
-
-"#,
-    r#"
-
-    #[lua(as_trait = "std::clone::Clone")]
-    fn clone(
-        _self: LuaReflectRefProxy<bevy::math::primitives::Ellipse>,
-    ) -> LuaReflectValProxy<bevy::math::primitives::Ellipse>;
 
 "#,
     r#"
@@ -2453,14 +2453,6 @@ pub struct Line2d {
     bms_lua_path = "crate",
     functions[r#"
 
-    #[lua(as_trait = "std::clone::Clone")]
-    fn clone(
-        _self: LuaReflectRefProxy<bevy::math::primitives::Plane2d>,
-    ) -> LuaReflectValProxy<bevy::math::primitives::Plane2d>;
-
-"#,
-    r#"
-
     #[lua(
         as_trait = "std::cmp::PartialEq::<bevy::math::primitives::Plane2d>",
         composite = "eq",
@@ -2469,6 +2461,14 @@ pub struct Line2d {
         _self: LuaReflectRefProxy<bevy::math::primitives::Plane2d>,
         other: LuaReflectRefProxy<bevy::math::primitives::Plane2d>,
     ) -> bool;
+
+"#,
+    r#"
+
+    #[lua(as_trait = "std::clone::Clone")]
+    fn clone(
+        _self: LuaReflectRefProxy<bevy::math::primitives::Plane2d>,
+    ) -> LuaReflectValProxy<bevy::math::primitives::Plane2d>;
 
 "#,
     r#"
@@ -2487,6 +2487,24 @@ pub struct Plane2d {
     bms_core_path = "bevy_mod_scripting_core",
     bms_lua_path = "crate",
     functions[r#"
+/// Create a new `Rectangle` from a full width and height
+
+    #[lua()]
+    fn new(
+        width: f32,
+        height: f32,
+    ) -> LuaReflectValProxy<bevy::math::primitives::Rectangle>;
+
+"#,
+    r#"
+/// Create a `Rectangle` from a single length.
+/// The resulting `Rectangle` will be the same size in every direction.
+
+    #[lua()]
+    fn from_length(length: f32) -> LuaReflectValProxy<bevy::math::primitives::Rectangle>;
+
+"#,
+    r#"
 
     #[lua(as_trait = "std::clone::Clone")]
     fn clone(
@@ -2507,24 +2525,6 @@ pub struct Plane2d {
 
 "#,
     r#"
-/// Create a new `Rectangle` from a full width and height
-
-    #[lua()]
-    fn new(
-        width: f32,
-        height: f32,
-    ) -> LuaReflectValProxy<bevy::math::primitives::Rectangle>;
-
-"#,
-    r#"
-/// Create a `Rectangle` from a single length.
-/// The resulting `Rectangle` will be the same size in every direction.
-
-    #[lua()]
-    fn from_length(length: f32) -> LuaReflectValProxy<bevy::math::primitives::Rectangle>;
-
-"#,
-    r#"
 #[lua(metamethod="ToString")]
 fn index(&self) -> String {
     format!("{:?}", _self)
@@ -2540,14 +2540,6 @@ pub struct Rectangle {
     bms_core_path = "bevy_mod_scripting_core",
     bms_lua_path = "crate",
     functions[r#"
-
-    #[lua(as_trait = "std::clone::Clone")]
-    fn clone(
-        _self: LuaReflectRefProxy<bevy::math::primitives::RegularPolygon>,
-    ) -> LuaReflectValProxy<bevy::math::primitives::RegularPolygon>;
-
-"#,
-    r#"
 /// Create a new `RegularPolygon`
 /// from the radius of the circumcircle and a number of sides
 /// # Panics
@@ -2647,6 +2639,14 @@ pub struct Rectangle {
 
 "#,
     r#"
+
+    #[lua(as_trait = "std::clone::Clone")]
+    fn clone(
+        _self: LuaReflectRefProxy<bevy::math::primitives::RegularPolygon>,
+    ) -> LuaReflectValProxy<bevy::math::primitives::RegularPolygon>;
+
+"#,
+    r#"
 #[lua(metamethod="ToString")]
 fn index(&self) -> String {
     format!("{:?}", _self)
@@ -2668,18 +2668,6 @@ pub struct RegularPolygon {
     fn clone(
         _self: LuaReflectRefProxy<bevy::math::primitives::Rhombus>,
     ) -> LuaReflectValProxy<bevy::math::primitives::Rhombus>;
-
-"#,
-    r#"
-
-    #[lua(
-        as_trait = "std::cmp::PartialEq::<bevy::math::primitives::Rhombus>",
-        composite = "eq",
-    )]
-    fn eq(
-        _self: LuaReflectRefProxy<bevy::math::primitives::Rhombus>,
-        other: LuaReflectRefProxy<bevy::math::primitives::Rhombus>,
-    ) -> bool;
 
 "#,
     r#"
@@ -2732,6 +2720,18 @@ pub struct RegularPolygon {
 
 "#,
     r#"
+
+    #[lua(
+        as_trait = "std::cmp::PartialEq::<bevy::math::primitives::Rhombus>",
+        composite = "eq",
+    )]
+    fn eq(
+        _self: LuaReflectRefProxy<bevy::math::primitives::Rhombus>,
+        other: LuaReflectRefProxy<bevy::math::primitives::Rhombus>,
+    ) -> bool;
+
+"#,
+    r#"
 #[lua(metamethod="ToString")]
 fn index(&self) -> String {
     format!("{:?}", _self)
@@ -2747,16 +2747,6 @@ pub struct Rhombus {
     bms_core_path = "bevy_mod_scripting_core",
     bms_lua_path = "crate",
     functions[r#"
-/// Create a new `Segment2d` from a direction and full length of the segment
-
-    #[lua()]
-    fn new(
-        direction: LuaReflectValProxy<bevy::math::prelude::Dir2>,
-        length: f32,
-    ) -> LuaReflectValProxy<bevy::math::primitives::Segment2d>;
-
-"#,
-    r#"
 
     #[lua(
         as_trait = "std::cmp::PartialEq::<bevy::math::primitives::Segment2d>",
@@ -2777,6 +2767,16 @@ pub struct Rhombus {
 
 "#,
     r#"
+/// Create a new `Segment2d` from a direction and full length of the segment
+
+    #[lua()]
+    fn new(
+        direction: LuaReflectValProxy<bevy::math::prelude::Dir2>,
+        length: f32,
+    ) -> LuaReflectValProxy<bevy::math::primitives::Segment2d>;
+
+"#,
+    r#"
 #[lua(metamethod="ToString")]
 fn index(&self) -> String {
     format!("{:?}", _self)
@@ -2793,18 +2793,6 @@ pub struct Segment2d {
     bms_core_path = "bevy_mod_scripting_core",
     bms_lua_path = "crate",
     functions[r#"
-
-    #[lua(
-        as_trait = "std::cmp::PartialEq::<bevy::math::primitives::Triangle2d>",
-        composite = "eq",
-    )]
-    fn eq(
-        _self: LuaReflectRefProxy<bevy::math::primitives::Triangle2d>,
-        other: LuaReflectRefProxy<bevy::math::primitives::Triangle2d>,
-    ) -> bool;
-
-"#,
-    r#"
 /// Checks if the triangle is degenerate, meaning it has zero area.
 /// A triangle is degenerate if the cross product of the vectors `ab` and `ac` has a length less than `10e-7`.
 /// This indicates that the three vertices are collinear or nearly collinear.
@@ -2848,6 +2836,18 @@ pub struct Segment2d {
 "#,
     r#"
 
+    #[lua(
+        as_trait = "std::cmp::PartialEq::<bevy::math::primitives::Triangle2d>",
+        composite = "eq",
+    )]
+    fn eq(
+        _self: LuaReflectRefProxy<bevy::math::primitives::Triangle2d>,
+        other: LuaReflectRefProxy<bevy::math::primitives::Triangle2d>,
+    ) -> bool;
+
+"#,
+    r#"
+
     #[lua(as_trait = "std::clone::Clone")]
     fn clone(
         _self: LuaReflectRefProxy<bevy::math::primitives::Triangle2d>,
@@ -2870,20 +2870,20 @@ pub struct Triangle2d {
     bms_core_path = "bevy_mod_scripting_core",
     bms_lua_path = "crate",
     functions[r#"
+
+    #[lua(as_trait = "std::clone::Clone")]
+    fn clone(
+        _self: LuaReflectRefProxy<bevy::math::bounding::Aabb3d>,
+    ) -> LuaReflectValProxy<bevy::math::bounding::Aabb3d>;
+
+"#,
+    r#"
 /// Computes the smallest [`BoundingSphere`] containing this [`Aabb3d`].
 
     #[lua()]
     fn bounding_sphere(
         _self: LuaReflectRefProxy<bevy::math::bounding::Aabb3d>,
     ) -> LuaReflectValProxy<bevy::math::bounding::BoundingSphere>;
-
-"#,
-    r#"
-
-    #[lua(as_trait = "std::clone::Clone")]
-    fn clone(
-        _self: LuaReflectRefProxy<bevy::math::bounding::Aabb3d>,
-    ) -> LuaReflectValProxy<bevy::math::bounding::Aabb3d>;
 
 "#,
     r#"
@@ -2903,14 +2903,6 @@ pub struct Aabb3d {
     bms_core_path = "bevy_mod_scripting_core",
     bms_lua_path = "crate",
     functions[r#"
-
-    #[lua(as_trait = "std::clone::Clone")]
-    fn clone(
-        _self: LuaReflectRefProxy<bevy::math::bounding::BoundingSphere>,
-    ) -> LuaReflectValProxy<bevy::math::bounding::BoundingSphere>;
-
-"#,
-    r#"
 /// Get the radius of the bounding sphere
 
     #[lua()]
@@ -2924,6 +2916,14 @@ pub struct Aabb3d {
     fn aabb_3d(
         _self: LuaReflectRefProxy<bevy::math::bounding::BoundingSphere>,
     ) -> LuaReflectValProxy<bevy::math::bounding::Aabb3d>;
+
+"#,
+    r#"
+
+    #[lua(as_trait = "std::clone::Clone")]
+    fn clone(
+        _self: LuaReflectRefProxy<bevy::math::bounding::BoundingSphere>,
+    ) -> LuaReflectValProxy<bevy::math::bounding::BoundingSphere>;
 
 "#,
     r#"
@@ -2943,14 +2943,6 @@ pub struct BoundingSphere {
     bms_core_path = "bevy_mod_scripting_core",
     bms_lua_path = "crate",
     functions[r#"
-
-    #[lua(as_trait = "std::clone::Clone")]
-    fn clone(
-        _self: LuaReflectRefProxy<bevy::math::primitives::Sphere>,
-    ) -> LuaReflectValProxy<bevy::math::primitives::Sphere>;
-
-"#,
-    r#"
 
     #[lua(
         as_trait = "std::cmp::PartialEq::<bevy::math::primitives::Sphere>",
@@ -2974,6 +2966,14 @@ pub struct BoundingSphere {
 
     #[lua()]
     fn diameter(_self: LuaReflectRefProxy<bevy::math::primitives::Sphere>) -> f32;
+
+"#,
+    r#"
+
+    #[lua(as_trait = "std::clone::Clone")]
+    fn clone(
+        _self: LuaReflectRefProxy<bevy::math::primitives::Sphere>,
+    ) -> LuaReflectValProxy<bevy::math::primitives::Sphere>;
 
 "#,
     r#"
@@ -3012,6 +3012,14 @@ pub struct Sphere {
 "#,
     r#"
 
+    #[lua(as_trait = "std::clone::Clone")]
+    fn clone(
+        _self: LuaReflectRefProxy<bevy::math::primitives::Cuboid>,
+    ) -> LuaReflectValProxy<bevy::math::primitives::Cuboid>;
+
+"#,
+    r#"
+
     #[lua(
         as_trait = "std::cmp::PartialEq::<bevy::math::primitives::Cuboid>",
         composite = "eq",
@@ -3020,14 +3028,6 @@ pub struct Sphere {
         _self: LuaReflectRefProxy<bevy::math::primitives::Cuboid>,
         other: LuaReflectRefProxy<bevy::math::primitives::Cuboid>,
     ) -> bool;
-
-"#,
-    r#"
-
-    #[lua(as_trait = "std::clone::Clone")]
-    fn clone(
-        _self: LuaReflectRefProxy<bevy::math::primitives::Cuboid>,
-    ) -> LuaReflectValProxy<bevy::math::primitives::Cuboid>;
 
 "#,
     r#"
@@ -3046,14 +3046,6 @@ pub struct Cuboid {
     bms_core_path = "bevy_mod_scripting_core",
     bms_lua_path = "crate",
     functions[r#"
-
-    #[lua(as_trait = "std::clone::Clone")]
-    fn clone(
-        _self: LuaReflectRefProxy<bevy::math::primitives::Cylinder>,
-    ) -> LuaReflectValProxy<bevy::math::primitives::Cylinder>;
-
-"#,
-    r#"
 /// Create a new `Cylinder` from a radius and full height
 
     #[lua()]
@@ -3085,6 +3077,14 @@ pub struct Cuboid {
 
     #[lua()]
     fn base_area(_self: LuaReflectRefProxy<bevy::math::primitives::Cylinder>) -> f32;
+
+"#,
+    r#"
+
+    #[lua(as_trait = "std::clone::Clone")]
+    fn clone(
+        _self: LuaReflectRefProxy<bevy::math::primitives::Cylinder>,
+    ) -> LuaReflectValProxy<bevy::math::primitives::Cylinder>;
 
 "#,
     r#"
@@ -3128,6 +3128,14 @@ pub struct Cylinder {
 
 "#,
     r#"
+
+    #[lua(as_trait = "std::clone::Clone")]
+    fn clone(
+        _self: LuaReflectRefProxy<bevy::math::primitives::Capsule3d>,
+    ) -> LuaReflectValProxy<bevy::math::primitives::Capsule3d>;
+
+"#,
+    r#"
 /// Create a new `Capsule3d` from a radius and length
 
     #[lua()]
@@ -3145,14 +3153,6 @@ pub struct Cylinder {
     fn to_cylinder(
         _self: LuaReflectRefProxy<bevy::math::primitives::Capsule3d>,
     ) -> LuaReflectValProxy<bevy::math::primitives::Cylinder>;
-
-"#,
-    r#"
-
-    #[lua(as_trait = "std::clone::Clone")]
-    fn clone(
-        _self: LuaReflectRefProxy<bevy::math::primitives::Capsule3d>,
-    ) -> LuaReflectValProxy<bevy::math::primitives::Capsule3d>;
 
 "#,
     r#"
@@ -3248,14 +3248,6 @@ pub struct Cone {
     bms_lua_path = "crate",
     functions[r#"
 
-    #[lua(as_trait = "std::clone::Clone")]
-    fn clone(
-        _self: LuaReflectRefProxy<bevy::math::primitives::ConicalFrustum>,
-    ) -> LuaReflectValProxy<bevy::math::primitives::ConicalFrustum>;
-
-"#,
-    r#"
-
     #[lua(
         as_trait = "std::cmp::PartialEq::<bevy::math::primitives::ConicalFrustum>",
         composite = "eq",
@@ -3264,6 +3256,14 @@ pub struct Cone {
         _self: LuaReflectRefProxy<bevy::math::primitives::ConicalFrustum>,
         other: LuaReflectRefProxy<bevy::math::primitives::ConicalFrustum>,
     ) -> bool;
+
+"#,
+    r#"
+
+    #[lua(as_trait = "std::clone::Clone")]
+    fn clone(
+        _self: LuaReflectRefProxy<bevy::math::primitives::ConicalFrustum>,
+    ) -> LuaReflectValProxy<bevy::math::primitives::ConicalFrustum>;
 
 "#,
     r#"
@@ -3355,18 +3355,6 @@ pub struct Line3d {
     bms_lua_path = "crate",
     functions[r#"
 
-    #[lua(
-        as_trait = "std::cmp::PartialEq::<bevy::math::primitives::Segment3d>",
-        composite = "eq",
-    )]
-    fn eq(
-        _self: LuaReflectRefProxy<bevy::math::primitives::Segment3d>,
-        other: LuaReflectRefProxy<bevy::math::primitives::Segment3d>,
-    ) -> bool;
-
-"#,
-    r#"
-
     #[lua(as_trait = "std::clone::Clone")]
     fn clone(
         _self: LuaReflectRefProxy<bevy::math::primitives::Segment3d>,
@@ -3381,6 +3369,18 @@ pub struct Line3d {
         direction: LuaReflectValProxy<bevy::math::prelude::Dir3>,
         length: f32,
     ) -> LuaReflectValProxy<bevy::math::primitives::Segment3d>;
+
+"#,
+    r#"
+
+    #[lua(
+        as_trait = "std::cmp::PartialEq::<bevy::math::primitives::Segment3d>",
+        composite = "eq",
+    )]
+    fn eq(
+        _self: LuaReflectRefProxy<bevy::math::primitives::Segment3d>,
+        other: LuaReflectRefProxy<bevy::math::primitives::Segment3d>,
+    ) -> bool;
 
 "#,
     r#"
@@ -3400,26 +3400,6 @@ pub struct Segment3d {
     bms_core_path = "bevy_mod_scripting_core",
     bms_lua_path = "crate",
     functions[r#"
-
-    #[lua(
-        as_trait = "std::cmp::PartialEq::<bevy::math::primitives::Torus>",
-        composite = "eq",
-    )]
-    fn eq(
-        _self: LuaReflectRefProxy<bevy::math::primitives::Torus>,
-        other: LuaReflectRefProxy<bevy::math::primitives::Torus>,
-    ) -> bool;
-
-"#,
-    r#"
-
-    #[lua(as_trait = "std::clone::Clone")]
-    fn clone(
-        _self: LuaReflectRefProxy<bevy::math::primitives::Torus>,
-    ) -> LuaReflectValProxy<bevy::math::primitives::Torus>;
-
-"#,
-    r#"
 /// Create a new `Torus` from an inner and outer radius.
 /// The inner radius is the radius of the hole, and the outer radius
 /// is the radius of the entire object
@@ -3450,6 +3430,26 @@ pub struct Segment3d {
 
 "#,
     r#"
+
+    #[lua(as_trait = "std::clone::Clone")]
+    fn clone(
+        _self: LuaReflectRefProxy<bevy::math::primitives::Torus>,
+    ) -> LuaReflectValProxy<bevy::math::primitives::Torus>;
+
+"#,
+    r#"
+
+    #[lua(
+        as_trait = "std::cmp::PartialEq::<bevy::math::primitives::Torus>",
+        composite = "eq",
+    )]
+    fn eq(
+        _self: LuaReflectRefProxy<bevy::math::primitives::Torus>,
+        other: LuaReflectRefProxy<bevy::math::primitives::Torus>,
+    ) -> bool;
+
+"#,
+    r#"
 #[lua(metamethod="ToString")]
 fn index(&self) -> String {
     format!("{:?}", _self)
@@ -3466,6 +3466,26 @@ pub struct Torus {
     bms_core_path = "bevy_mod_scripting_core",
     bms_lua_path = "crate",
     functions[r#"
+
+    #[lua(
+        as_trait = "std::cmp::PartialEq::<bevy::math::primitives::Triangle3d>",
+        composite = "eq",
+    )]
+    fn eq(
+        _self: LuaReflectRefProxy<bevy::math::primitives::Triangle3d>,
+        other: LuaReflectRefProxy<bevy::math::primitives::Triangle3d>,
+    ) -> bool;
+
+"#,
+    r#"
+
+    #[lua(as_trait = "std::clone::Clone")]
+    fn clone(
+        _self: LuaReflectRefProxy<bevy::math::primitives::Triangle3d>,
+    ) -> LuaReflectValProxy<bevy::math::primitives::Triangle3d>;
+
+"#,
+    r#"
 /// Checks if the triangle is degenerate, meaning it has zero area.
 /// A triangle is degenerate if the cross product of the vectors `ab` and `ac` has a length less than `10e-7`.
 /// This indicates that the three vertices are collinear or nearly collinear.
@@ -3503,26 +3523,6 @@ pub struct Torus {
     #[lua()]
     fn reversed(
         _self: LuaReflectValProxy<bevy::math::primitives::Triangle3d>,
-    ) -> LuaReflectValProxy<bevy::math::primitives::Triangle3d>;
-
-"#,
-    r#"
-
-    #[lua(
-        as_trait = "std::cmp::PartialEq::<bevy::math::primitives::Triangle3d>",
-        composite = "eq",
-    )]
-    fn eq(
-        _self: LuaReflectRefProxy<bevy::math::primitives::Triangle3d>,
-        other: LuaReflectRefProxy<bevy::math::primitives::Triangle3d>,
-    ) -> bool;
-
-"#,
-    r#"
-
-    #[lua(as_trait = "std::clone::Clone")]
-    fn clone(
-        _self: LuaReflectRefProxy<bevy::math::primitives::Triangle3d>,
     ) -> LuaReflectValProxy<bevy::math::primitives::Triangle3d>;
 
 "#,
@@ -3686,14 +3686,6 @@ pub struct BoundingCircleCast {
     bms_core_path = "bevy_mod_scripting_core",
     bms_lua_path = "crate",
     functions[r#"
-
-    #[lua(as_trait = "std::clone::Clone")]
-    fn clone(
-        _self: LuaReflectRefProxy<bevy::math::bounding::RayCast3d>,
-    ) -> LuaReflectValProxy<bevy::math::bounding::RayCast3d>;
-
-"#,
-    r#"
 /// Construct a [`RayCast3d`] from a [`Ray3d`] and max distance.
 
     #[lua()]
@@ -3721,6 +3713,14 @@ pub struct BoundingCircleCast {
         _self: LuaReflectRefProxy<bevy::math::bounding::RayCast3d>,
         sphere: LuaReflectRefProxy<bevy::math::bounding::BoundingSphere>,
     ) -> std::option::Option<f32>;
+
+"#,
+    r#"
+
+    #[lua(as_trait = "std::clone::Clone")]
+    fn clone(
+        _self: LuaReflectRefProxy<bevy::math::bounding::RayCast3d>,
+    ) -> LuaReflectValProxy<bevy::math::bounding::RayCast3d>;
 
 "#,
     r#"
@@ -3786,14 +3786,6 @@ pub struct AabbCast3d {
     bms_core_path = "bevy_mod_scripting_core",
     bms_lua_path = "crate",
     functions[r#"
-
-    #[lua(as_trait = "std::clone::Clone")]
-    fn clone(
-        _self: LuaReflectRefProxy<bevy::math::bounding::BoundingSphereCast>,
-    ) -> LuaReflectValProxy<bevy::math::bounding::BoundingSphereCast>;
-
-"#,
-    r#"
 /// Construct a [`BoundingSphereCast`] from a [`BoundingSphere`], [`Ray3d`], and max distance.
 
     #[lua()]
@@ -3815,6 +3807,14 @@ pub struct AabbCast3d {
 
 "#,
     r#"
+
+    #[lua(as_trait = "std::clone::Clone")]
+    fn clone(
+        _self: LuaReflectRefProxy<bevy::math::bounding::BoundingSphereCast>,
+    ) -> LuaReflectValProxy<bevy::math::bounding::BoundingSphereCast>;
+
+"#,
+    r#"
 #[lua(metamethod="ToString")]
 fn index(&self) -> String {
     format!("{:?}", _self)
@@ -3831,6 +3831,14 @@ pub struct BoundingSphereCast {
     bms_core_path = "bevy_mod_scripting_core",
     bms_lua_path = "crate",
     functions[r#"
+
+    #[lua(as_trait = "std::clone::Clone")]
+    fn clone(
+        _self: LuaReflectRefProxy<bevy::math::curve::interval::Interval>,
+    ) -> LuaReflectValProxy<bevy::math::curve::interval::Interval>;
+
+"#,
+    r#"
 
     #[lua(
         as_trait = "std::cmp::PartialEq::<bevy::math::curve::interval::Interval>",
@@ -3923,14 +3931,6 @@ pub struct BoundingSphereCast {
 
 "#,
     r#"
-
-    #[lua(as_trait = "std::clone::Clone")]
-    fn clone(
-        _self: LuaReflectRefProxy<bevy::math::curve::interval::Interval>,
-    ) -> LuaReflectValProxy<bevy::math::curve::interval::Interval>;
-
-"#,
-    r#"
 #[lua(metamethod="ToString")]
 fn index(&self) -> String {
     format!("{:?}", _self)
@@ -3944,31 +3944,6 @@ pub struct Interval {}
     bms_core_path = "bevy_mod_scripting_core",
     bms_lua_path = "crate",
     functions[r#"
-
-    #[lua(as_trait = "std::cmp::PartialEq::<bevy::math::FloatOrd>", composite = "eq")]
-    fn eq(
-        _self: LuaReflectRefProxy<bevy::math::FloatOrd>,
-        other: LuaReflectRefProxy<bevy::math::FloatOrd>,
-    ) -> bool;
-
-"#,
-    r#"
-
-    #[lua(as_trait = "std::clone::Clone")]
-    fn clone(
-        _self: LuaReflectRefProxy<bevy::math::FloatOrd>,
-    ) -> LuaReflectValProxy<bevy::math::FloatOrd>;
-
-"#,
-    r#"
-
-    #[lua(as_trait = "std::ops::Neg", composite = "neg")]
-    fn neg(
-        _self: LuaReflectValProxy<bevy::math::FloatOrd>,
-    ) -> LuaReflectValProxy<bevy::math::FloatOrd>;
-
-"#,
-    r#"
 
     #[lua(as_trait = "std::cmp::PartialOrd::<bevy::math::FloatOrd>")]
     fn lt(
@@ -4005,6 +3980,31 @@ pub struct Interval {}
 
 "#,
     r#"
+
+    #[lua(as_trait = "std::clone::Clone")]
+    fn clone(
+        _self: LuaReflectRefProxy<bevy::math::FloatOrd>,
+    ) -> LuaReflectValProxy<bevy::math::FloatOrd>;
+
+"#,
+    r#"
+
+    #[lua(as_trait = "std::cmp::PartialEq::<bevy::math::FloatOrd>", composite = "eq")]
+    fn eq(
+        _self: LuaReflectRefProxy<bevy::math::FloatOrd>,
+        other: LuaReflectRefProxy<bevy::math::FloatOrd>,
+    ) -> bool;
+
+"#,
+    r#"
+
+    #[lua(as_trait = "std::ops::Neg", composite = "neg")]
+    fn neg(
+        _self: LuaReflectValProxy<bevy::math::FloatOrd>,
+    ) -> LuaReflectValProxy<bevy::math::FloatOrd>;
+
+"#,
+    r#"
 #[lua(metamethod="ToString")]
 fn index(&self) -> String {
     format!("{:?}", _self)
@@ -4019,6 +4019,14 @@ pub struct FloatOrd(f32);
     bms_lua_path = "crate",
     functions[r#"
 
+    #[lua(as_trait = "std::clone::Clone")]
+    fn clone(
+        _self: LuaReflectRefProxy<bevy::math::primitives::Plane3d>,
+    ) -> LuaReflectValProxy<bevy::math::primitives::Plane3d>;
+
+"#,
+    r#"
+
     #[lua(
         as_trait = "std::cmp::PartialEq::<bevy::math::primitives::Plane3d>",
         composite = "eq",
@@ -4027,14 +4035,6 @@ pub struct FloatOrd(f32);
         _self: LuaReflectRefProxy<bevy::math::primitives::Plane3d>,
         other: LuaReflectRefProxy<bevy::math::primitives::Plane3d>,
     ) -> bool;
-
-"#,
-    r#"
-
-    #[lua(as_trait = "std::clone::Clone")]
-    fn clone(
-        _self: LuaReflectRefProxy<bevy::math::primitives::Plane3d>,
-    ) -> LuaReflectValProxy<bevy::math::primitives::Plane3d>;
 
 "#,
     r#"
@@ -4054,6 +4054,18 @@ pub struct Plane3d {
     bms_core_path = "bevy_mod_scripting_core",
     bms_lua_path = "crate",
     functions[r#"
+/// Get the signed volume of the tetrahedron.
+/// If it's negative, the normal vector of the face defined by
+/// the first three points using the right-hand rule points
+/// away from the fourth vertex.
+
+    #[lua()]
+    fn signed_volume(
+        _self: LuaReflectRefProxy<bevy::math::primitives::Tetrahedron>,
+    ) -> f32;
+
+"#,
+    r#"
 
     #[lua(
         as_trait = "std::cmp::PartialEq::<bevy::math::primitives::Tetrahedron>",
@@ -4074,18 +4086,6 @@ pub struct Plane3d {
 
 "#,
     r#"
-/// Get the signed volume of the tetrahedron.
-/// If it's negative, the normal vector of the face defined by
-/// the first three points using the right-hand rule points
-/// away from the fourth vertex.
-
-    #[lua()]
-    fn signed_volume(
-        _self: LuaReflectRefProxy<bevy::math::primitives::Tetrahedron>,
-    ) -> f32;
-
-"#,
-    r#"
 #[lua(metamethod="ToString")]
 fn index(&self) -> String {
     format!("{:?}", _self)
@@ -4102,6 +4102,14 @@ pub struct Tetrahedron {
     bms_lua_path = "crate",
     functions[r#"
 
+    #[lua(as_trait = "std::clone::Clone")]
+    fn clone(
+        _self: LuaReflectRefProxy<bevy::math::curve::easing::EaseFunction>,
+    ) -> LuaReflectValProxy<bevy::math::curve::easing::EaseFunction>;
+
+"#,
+    r#"
+
     #[lua(
         as_trait = "std::cmp::PartialEq::<bevy::math::curve::easing::EaseFunction>",
         composite = "eq",
@@ -4110,14 +4118,6 @@ pub struct Tetrahedron {
         _self: LuaReflectRefProxy<bevy::math::curve::easing::EaseFunction>,
         other: LuaReflectRefProxy<bevy::math::curve::easing::EaseFunction>,
     ) -> bool;
-
-"#,
-    r#"
-
-    #[lua(as_trait = "std::clone::Clone")]
-    fn clone(
-        _self: LuaReflectRefProxy<bevy::math::curve::easing::EaseFunction>,
-    ) -> LuaReflectValProxy<bevy::math::curve::easing::EaseFunction>;
 
 "#,
     r#"

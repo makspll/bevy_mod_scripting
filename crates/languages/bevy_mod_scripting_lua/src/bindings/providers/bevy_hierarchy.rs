@@ -79,14 +79,6 @@ pub struct Parent();
     bms_lua_path = "crate",
     functions[r#"
 
-    #[lua(as_trait = "std::cmp::Eq")]
-    fn assert_receiver_is_total_eq(
-        _self: LuaReflectRefProxy<bevy::hierarchy::HierarchyEvent>,
-    ) -> ();
-
-"#,
-    r#"
-
     #[lua(
         as_trait = "std::cmp::PartialEq::<bevy::hierarchy::HierarchyEvent>",
         composite = "eq",
@@ -103,6 +95,14 @@ pub struct Parent();
     fn clone(
         _self: LuaReflectRefProxy<bevy::hierarchy::HierarchyEvent>,
     ) -> LuaReflectValProxy<bevy::hierarchy::HierarchyEvent>;
+
+"#,
+    r#"
+
+    #[lua(as_trait = "std::cmp::Eq")]
+    fn assert_receiver_is_total_eq(
+        _self: LuaReflectRefProxy<bevy::hierarchy::HierarchyEvent>,
+    ) -> ();
 
 "#,
     r#"

@@ -24,14 +24,10 @@ use crate::{
     bms_lua_path = "crate",
     functions[r#"
 
-    #[lua(
-        as_trait = "std::cmp::PartialEq::<bevy::transform::components::GlobalTransform>",
-        composite = "eq",
-    )]
-    fn eq(
+    #[lua(as_trait = "std::clone::Clone")]
+    fn clone(
         _self: LuaReflectRefProxy<bevy::transform::components::GlobalTransform>,
-        other: LuaReflectRefProxy<bevy::transform::components::GlobalTransform>,
-    ) -> bool;
+    ) -> LuaReflectValProxy<bevy::transform::components::GlobalTransform>;
 
 "#,
     r#"
@@ -48,10 +44,28 @@ use crate::{
 "#,
     r#"
 
-    #[lua(as_trait = "std::clone::Clone")]
-    fn clone(
-        _self: LuaReflectRefProxy<bevy::transform::components::GlobalTransform>,
+    #[lua(
+        as_trait = "std::ops::Mul::<bevy::transform::components::GlobalTransform>",
+        composite = "mul",
+    )]
+    fn mul(
+        _self: LuaReflectValProxy<bevy::transform::components::GlobalTransform>,
+        global_transform: LuaReflectValProxy<
+            bevy::transform::components::GlobalTransform,
+        >,
     ) -> LuaReflectValProxy<bevy::transform::components::GlobalTransform>;
+
+"#,
+    r#"
+
+    #[lua(
+        as_trait = "std::cmp::PartialEq::<bevy::transform::components::GlobalTransform>",
+        composite = "eq",
+    )]
+    fn eq(
+        _self: LuaReflectRefProxy<bevy::transform::components::GlobalTransform>,
+        other: LuaReflectRefProxy<bevy::transform::components::GlobalTransform>,
+    ) -> bool;
 
 "#,
     r#"
@@ -126,20 +140,6 @@ use crate::{
 
 "#,
     r#"
-
-    #[lua(
-        as_trait = "std::ops::Mul::<bevy::transform::components::GlobalTransform>",
-        composite = "mul",
-    )]
-    fn mul(
-        _self: LuaReflectValProxy<bevy::transform::components::GlobalTransform>,
-        global_transform: LuaReflectValProxy<
-            bevy::transform::components::GlobalTransform,
-        >,
-    ) -> LuaReflectValProxy<bevy::transform::components::GlobalTransform>;
-
-"#,
-    r#"
 #[lua(metamethod="ToString")]
 fn index(&self) -> String {
     format!("{:?}", _self)
@@ -162,6 +162,20 @@ pub struct GlobalTransform();
         _self: LuaReflectRefProxy<bevy::transform::components::Transform>,
         other: LuaReflectRefProxy<bevy::transform::components::Transform>,
     ) -> bool;
+
+"#,
+    r#"
+
+    #[lua(
+        as_trait = "std::ops::Mul::<bevy::transform::components::GlobalTransform>",
+        composite = "mul",
+    )]
+    fn mul(
+        _self: LuaReflectValProxy<bevy::transform::components::Transform>,
+        global_transform: LuaReflectValProxy<
+            bevy::transform::components::GlobalTransform,
+        >,
+    ) -> LuaReflectValProxy<bevy::transform::components::GlobalTransform>;
 
 "#,
     r#"
@@ -260,20 +274,6 @@ pub struct GlobalTransform();
     fn is_finite(
         _self: LuaReflectRefProxy<bevy::transform::components::Transform>,
     ) -> bool;
-
-"#,
-    r#"
-
-    #[lua(
-        as_trait = "std::ops::Mul::<bevy::transform::components::GlobalTransform>",
-        composite = "mul",
-    )]
-    fn mul(
-        _self: LuaReflectValProxy<bevy::transform::components::Transform>,
-        global_transform: LuaReflectValProxy<
-            bevy::transform::components::GlobalTransform,
-        >,
-    ) -> LuaReflectValProxy<bevy::transform::components::GlobalTransform>;
 
 "#,
     r#"

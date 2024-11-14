@@ -5,15 +5,17 @@ use bevy::{
     MinimalPlugins,
 };
 use bevy_mod_scripting_core::{
-    bindings::{Proxy, ReflectAllocator, ReflectValProxy, WorldCallbackAccess},
+    bindings::{Proxy, ReflectAllocator, ReflectReference, ReflectValProxy, WorldCallbackAccess},
     context::ContextLoadingSettings,
+    error::ScriptError,
     event::CallbackLabel,
     script::ScriptId,
 };
 use bevy_mod_scripting_lua::{
     bindings::{
+        providers::bevy_ecs::LuaEntity,
         proxy::{LuaProxied, LuaReflectValProxy},
-        world::LuaWorld,
+        world::{GetWorld, LuaWorld},
     },
     lua_context_load, lua_handler,
     prelude::{Lua, LuaHookTriggers},
@@ -22,11 +24,12 @@ use bevy_mod_scripting_lua::{
 use libtest_mimic::{Arguments, Failed, Trial};
 use std::{
     any::TypeId,
+    borrow::Cow,
     fs::{self, DirEntry},
     io,
     path::{Path, PathBuf},
 };
-use test_utils::test_data::setup_world;
+use test_utils::test_data::{setup_world, EnumerateTestComponents};
 
 /// Initializes world for tests
 fn init_app() -> App {
@@ -44,6 +47,39 @@ fn init_app() -> App {
     app
 }
 
+fn init_lua_test_utils(_script_name: &Cow<'static, str>, lua: &mut Lua) -> Result<(), ScriptError> {
+    let _get_entity_with_test_component = lua
+        .create_function(|l, s: String| {
+            let world = l.get_world().unwrap();
+            let opt_entity = world.with_resource::<ReflectAllocator, _, _>(|_, mut allocator| {
+                let a = World::enumerate_test_components()
+                    .iter()
+                    .find(|(name, _, _)| name.contains(&s))
+                    .map(|(_, _, c)| {
+                        let reference = ReflectReference::new_allocated(
+                            c.unwrap_or(Entity::from_raw(9999)),
+                            &mut allocator,
+                        );
+                        <<Entity as LuaProxied>::Proxy>::from(reference)
+                    });
+
+                a
+            });
+
+            Ok(opt_entity)
+        })
+        .unwrap();
+
+    lua.globals()
+        .set(
+            "_get_entity_with_test_component",
+            _get_entity_with_test_component,
+        )
+        .unwrap();
+
+    Ok(())
+}
+
 struct Test {
     code: String,
     path: PathBuf,
@@ -54,10 +90,13 @@ impl Test {
         // let lua = Lua::new();
         // set file information
         let mut app = init_app();
-        let context_settings: ContextLoadingSettings<Lua, ()> =
-            app.world_mut()
-                .remove_resource()
-                .ok_or("could not find context loading settings")?;
+        let mut context_settings: ContextLoadingSettings<Lua, ()> = app
+            .world_mut()
+            .remove_resource()
+            .ok_or("could not find context loading settings")?;
+        context_settings
+            .context_initializers
+            .push(init_lua_test_utils);
 
         let mut lua = lua_context_load(
             &(self.name()).into(),
@@ -89,18 +128,7 @@ impl Test {
     }
 
     fn name(&self) -> String {
-        // use the path from teh "data" directory as the test name separated by hyphens
-        let test = self
-            .path
-            .to_string_lossy()
-            .split("data")
-            .skip(1)
-            .collect::<Vec<_>>()
-            .join("data")
-            .trim_start_matches("/")
-            .replace("/", " - ")
-            .replace(".lua", "");
-        format!("lua_test - {test}")
+        format!("lua_test - {}", self.path.to_string_lossy())
     }
 }
 

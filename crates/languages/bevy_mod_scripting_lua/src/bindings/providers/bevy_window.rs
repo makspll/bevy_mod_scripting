@@ -25,6 +25,14 @@ use crate::{
     bms_lua_path = "crate",
     functions[r#"
 
+    #[lua(as_trait = "std::clone::Clone")]
+    fn clone(
+        _self: LuaReflectRefProxy<bevy::window::prelude::CursorEntered>,
+    ) -> LuaReflectValProxy<bevy::window::prelude::CursorEntered>;
+
+"#,
+    r#"
+
     #[lua(
         as_trait = "std::cmp::PartialEq::<bevy::window::prelude::CursorEntered>",
         composite = "eq",
@@ -33,14 +41,6 @@ use crate::{
         _self: LuaReflectRefProxy<bevy::window::prelude::CursorEntered>,
         other: LuaReflectRefProxy<bevy::window::prelude::CursorEntered>,
     ) -> bool;
-
-"#,
-    r#"
-
-    #[lua(as_trait = "std::clone::Clone")]
-    fn clone(
-        _self: LuaReflectRefProxy<bevy::window::prelude::CursorEntered>,
-    ) -> LuaReflectValProxy<bevy::window::prelude::CursorEntered>;
 
 "#,
     r#"
@@ -68,18 +68,18 @@ pub struct CursorEntered {
     bms_lua_path = "crate",
     functions[r#"
 
-    #[lua(as_trait = "std::clone::Clone")]
-    fn clone(
-        _self: LuaReflectRefProxy<bevy::window::prelude::CursorLeft>,
-    ) -> LuaReflectValProxy<bevy::window::prelude::CursorLeft>;
-
-"#,
-    r#"
-
     #[lua(as_trait = "std::cmp::Eq")]
     fn assert_receiver_is_total_eq(
         _self: LuaReflectRefProxy<bevy::window::prelude::CursorLeft>,
     ) -> ();
+
+"#,
+    r#"
+
+    #[lua(as_trait = "std::clone::Clone")]
+    fn clone(
+        _self: LuaReflectRefProxy<bevy::window::prelude::CursorLeft>,
+    ) -> LuaReflectValProxy<bevy::window::prelude::CursorLeft>;
 
 "#,
     r#"
@@ -189,14 +189,6 @@ pub struct FileDragAndDrop {}
     bms_lua_path = "crate",
     functions[r#"
 
-    #[lua(as_trait = "std::cmp::Eq")]
-    fn assert_receiver_is_total_eq(
-        _self: LuaReflectRefProxy<bevy::window::prelude::Ime>,
-    ) -> ();
-
-"#,
-    r#"
-
     #[lua(as_trait = "std::clone::Clone")]
     fn clone(
         _self: LuaReflectRefProxy<bevy::window::prelude::Ime>,
@@ -216,6 +208,14 @@ pub struct FileDragAndDrop {}
 
 "#,
     r#"
+
+    #[lua(as_trait = "std::cmp::Eq")]
+    fn assert_receiver_is_total_eq(
+        _self: LuaReflectRefProxy<bevy::window::prelude::Ime>,
+    ) -> ();
+
+"#,
+    r#"
 #[lua(metamethod="ToString")]
 fn index(&self) -> String {
     format!("{:?}", _self)
@@ -230,14 +230,6 @@ pub struct Ime {}
     bms_lua_path = "crate",
     functions[r#"
 
-    #[lua(as_trait = "std::clone::Clone")]
-    fn clone(
-        _self: LuaReflectRefProxy<bevy::window::prelude::MonitorSelection>,
-    ) -> LuaReflectValProxy<bevy::window::prelude::MonitorSelection>;
-
-"#,
-    r#"
-
     #[lua(
         as_trait = "std::cmp::PartialEq::<bevy::window::prelude::MonitorSelection>",
         composite = "eq",
@@ -246,6 +238,14 @@ pub struct Ime {}
         _self: LuaReflectRefProxy<bevy::window::prelude::MonitorSelection>,
         other: LuaReflectRefProxy<bevy::window::prelude::MonitorSelection>,
     ) -> bool;
+
+"#,
+    r#"
+
+    #[lua(as_trait = "std::clone::Clone")]
+    fn clone(
+        _self: LuaReflectRefProxy<bevy::window::prelude::MonitorSelection>,
+    ) -> LuaReflectValProxy<bevy::window::prelude::MonitorSelection>;
 
 "#,
     r#"
@@ -270,6 +270,14 @@ pub struct MonitorSelection {}
     bms_core_path = "bevy_mod_scripting_core",
     bms_lua_path = "crate",
     functions[r#"
+
+    #[lua(as_trait = "std::clone::Clone")]
+    fn clone(
+        _self: LuaReflectRefProxy<bevy::window::prelude::Window>,
+    ) -> LuaReflectValProxy<bevy::window::prelude::Window>;
+
+"#,
+    r#"
 /// Setting to true will attempt to maximize the window.
 /// Setting to false will attempt to un-maximize the window.
 
@@ -343,14 +351,6 @@ pub struct MonitorSelection {}
 
 "#,
     r#"
-
-    #[lua(as_trait = "std::clone::Clone")]
-    fn clone(
-        _self: LuaReflectRefProxy<bevy::window::prelude::Window>,
-    ) -> LuaReflectValProxy<bevy::window::prelude::Window>;
-
-"#,
-    r#"
 #[lua(metamethod="ToString")]
 fn index(&self) -> String {
     format!("{:?}", _self)
@@ -402,6 +402,14 @@ pub struct Window {
     bms_lua_path = "crate",
     functions[r#"
 
+    #[lua(as_trait = "std::clone::Clone")]
+    fn clone(
+        _self: LuaReflectRefProxy<bevy::window::prelude::WindowMoved>,
+    ) -> LuaReflectValProxy<bevy::window::prelude::WindowMoved>;
+
+"#,
+    r#"
+
     #[lua(
         as_trait = "std::cmp::PartialEq::<bevy::window::prelude::WindowMoved>",
         composite = "eq",
@@ -410,14 +418,6 @@ pub struct Window {
         _self: LuaReflectRefProxy<bevy::window::prelude::WindowMoved>,
         other: LuaReflectRefProxy<bevy::window::prelude::WindowMoved>,
     ) -> bool;
-
-"#,
-    r#"
-
-    #[lua(as_trait = "std::clone::Clone")]
-    fn clone(
-        _self: LuaReflectRefProxy<bevy::window::prelude::WindowMoved>,
-    ) -> LuaReflectValProxy<bevy::window::prelude::WindowMoved>;
 
 "#,
     r#"
@@ -488,9 +488,11 @@ pub struct WindowPosition {}
     bms_core_path = "bevy_mod_scripting_core",
     bms_lua_path = "crate",
     functions[r#"
+/// Checks if the constraints are valid.
+/// Will output warnings if it isn't.
 
-    #[lua(as_trait = "std::clone::Clone")]
-    fn clone(
+    #[lua()]
+    fn check_constraints(
         _self: LuaReflectRefProxy<bevy::window::prelude::WindowResizeConstraints>,
     ) -> LuaReflectValProxy<bevy::window::prelude::WindowResizeConstraints>;
 
@@ -508,11 +510,9 @@ pub struct WindowPosition {}
 
 "#,
     r#"
-/// Checks if the constraints are valid.
-/// Will output warnings if it isn't.
 
-    #[lua()]
-    fn check_constraints(
+    #[lua(as_trait = "std::clone::Clone")]
+    fn clone(
         _self: LuaReflectRefProxy<bevy::window::prelude::WindowResizeConstraints>,
     ) -> LuaReflectValProxy<bevy::window::prelude::WindowResizeConstraints>;
 
@@ -537,6 +537,14 @@ pub struct WindowResizeConstraints {
     bms_lua_path = "crate",
     functions[r#"
 
+    #[lua(as_trait = "std::clone::Clone")]
+    fn clone(
+        _self: LuaReflectRefProxy<bevy::window::WindowEvent>,
+    ) -> LuaReflectValProxy<bevy::window::WindowEvent>;
+
+"#,
+    r#"
+
     #[lua(
         as_trait = "std::cmp::PartialEq::<bevy::window::WindowEvent>",
         composite = "eq",
@@ -545,14 +553,6 @@ pub struct WindowResizeConstraints {
         _self: LuaReflectRefProxy<bevy::window::WindowEvent>,
         other: LuaReflectRefProxy<bevy::window::WindowEvent>,
     ) -> bool;
-
-"#,
-    r#"
-
-    #[lua(as_trait = "std::clone::Clone")]
-    fn clone(
-        _self: LuaReflectRefProxy<bevy::window::WindowEvent>,
-    ) -> LuaReflectValProxy<bevy::window::WindowEvent>;
 
 "#,
     r#"
@@ -693,6 +693,14 @@ pub struct WindowClosing {
     bms_lua_path = "crate",
     functions[r#"
 
+    #[lua(as_trait = "std::cmp::Eq")]
+    fn assert_receiver_is_total_eq(
+        _self: LuaReflectRefProxy<bevy::window::WindowClosed>,
+    ) -> ();
+
+"#,
+    r#"
+
     #[lua(as_trait = "std::clone::Clone")]
     fn clone(
         _self: LuaReflectRefProxy<bevy::window::WindowClosed>,
@@ -712,14 +720,6 @@ pub struct WindowClosing {
 
 "#,
     r#"
-
-    #[lua(as_trait = "std::cmp::Eq")]
-    fn assert_receiver_is_total_eq(
-        _self: LuaReflectRefProxy<bevy::window::WindowClosed>,
-    ) -> ();
-
-"#,
-    r#"
 #[lua(metamethod="ToString")]
 fn index(&self) -> String {
     format!("{:?}", _self)
@@ -736,10 +736,14 @@ pub struct WindowClosed {
     bms_lua_path = "crate",
     functions[r#"
 
-    #[lua(as_trait = "std::cmp::Eq")]
-    fn assert_receiver_is_total_eq(
+    #[lua(
+        as_trait = "std::cmp::PartialEq::<bevy::window::WindowCloseRequested>",
+        composite = "eq",
+    )]
+    fn eq(
         _self: LuaReflectRefProxy<bevy::window::WindowCloseRequested>,
-    ) -> ();
+        other: LuaReflectRefProxy<bevy::window::WindowCloseRequested>,
+    ) -> bool;
 
 "#,
     r#"
@@ -752,14 +756,10 @@ pub struct WindowClosed {
 "#,
     r#"
 
-    #[lua(
-        as_trait = "std::cmp::PartialEq::<bevy::window::WindowCloseRequested>",
-        composite = "eq",
-    )]
-    fn eq(
+    #[lua(as_trait = "std::cmp::Eq")]
+    fn assert_receiver_is_total_eq(
         _self: LuaReflectRefProxy<bevy::window::WindowCloseRequested>,
-        other: LuaReflectRefProxy<bevy::window::WindowCloseRequested>,
-    ) -> bool;
+    ) -> ();
 
 "#,
     r#"
@@ -791,18 +791,18 @@ pub struct WindowCloseRequested {
 "#,
     r#"
 
-    #[lua(as_trait = "std::cmp::Eq")]
-    fn assert_receiver_is_total_eq(
-        _self: LuaReflectRefProxy<bevy::window::WindowDestroyed>,
-    ) -> ();
-
-"#,
-    r#"
-
     #[lua(as_trait = "std::clone::Clone")]
     fn clone(
         _self: LuaReflectRefProxy<bevy::window::WindowDestroyed>,
     ) -> LuaReflectValProxy<bevy::window::WindowDestroyed>;
+
+"#,
+    r#"
+
+    #[lua(as_trait = "std::cmp::Eq")]
+    fn assert_receiver_is_total_eq(
+        _self: LuaReflectRefProxy<bevy::window::WindowDestroyed>,
+    ) -> ();
 
 "#,
     r#"
@@ -863,14 +863,6 @@ pub struct RequestRedraw {}
     bms_lua_path = "crate",
     functions[r#"
 
-    #[lua(as_trait = "std::cmp::Eq")]
-    fn assert_receiver_is_total_eq(
-        _self: LuaReflectRefProxy<bevy::window::WindowFocused>,
-    ) -> ();
-
-"#,
-    r#"
-
     #[lua(
         as_trait = "std::cmp::PartialEq::<bevy::window::WindowFocused>",
         composite = "eq",
@@ -879,6 +871,14 @@ pub struct RequestRedraw {}
         _self: LuaReflectRefProxy<bevy::window::WindowFocused>,
         other: LuaReflectRefProxy<bevy::window::WindowFocused>,
     ) -> bool;
+
+"#,
+    r#"
+
+    #[lua(as_trait = "std::cmp::Eq")]
+    fn assert_receiver_is_total_eq(
+        _self: LuaReflectRefProxy<bevy::window::WindowFocused>,
+    ) -> ();
 
 "#,
     r#"
@@ -907,6 +907,14 @@ pub struct WindowFocused {
     bms_lua_path = "crate",
     functions[r#"
 
+    #[lua(as_trait = "std::clone::Clone")]
+    fn clone(
+        _self: LuaReflectRefProxy<bevy::window::WindowOccluded>,
+    ) -> LuaReflectValProxy<bevy::window::WindowOccluded>;
+
+"#,
+    r#"
+
     #[lua(
         as_trait = "std::cmp::PartialEq::<bevy::window::WindowOccluded>",
         composite = "eq",
@@ -923,14 +931,6 @@ pub struct WindowFocused {
     fn assert_receiver_is_total_eq(
         _self: LuaReflectRefProxy<bevy::window::WindowOccluded>,
     ) -> ();
-
-"#,
-    r#"
-
-    #[lua(as_trait = "std::clone::Clone")]
-    fn clone(
-        _self: LuaReflectRefProxy<bevy::window::WindowOccluded>,
-    ) -> LuaReflectValProxy<bevy::window::WindowOccluded>;
 
 "#,
     r#"
@@ -987,14 +987,6 @@ pub struct WindowScaleFactorChanged {
     bms_lua_path = "crate",
     functions[r#"
 
-    #[lua(as_trait = "std::clone::Clone")]
-    fn clone(
-        _self: LuaReflectRefProxy<bevy::window::WindowBackendScaleFactorChanged>,
-    ) -> LuaReflectValProxy<bevy::window::WindowBackendScaleFactorChanged>;
-
-"#,
-    r#"
-
     #[lua(
         as_trait = "std::cmp::PartialEq::<bevy::window::WindowBackendScaleFactorChanged>",
         composite = "eq",
@@ -1003,6 +995,14 @@ pub struct WindowScaleFactorChanged {
         _self: LuaReflectRefProxy<bevy::window::WindowBackendScaleFactorChanged>,
         other: LuaReflectRefProxy<bevy::window::WindowBackendScaleFactorChanged>,
     ) -> bool;
+
+"#,
+    r#"
+
+    #[lua(as_trait = "std::clone::Clone")]
+    fn clone(
+        _self: LuaReflectRefProxy<bevy::window::WindowBackendScaleFactorChanged>,
+    ) -> LuaReflectValProxy<bevy::window::WindowBackendScaleFactorChanged>;
 
 "#,
     r#"
@@ -1023,6 +1023,14 @@ pub struct WindowBackendScaleFactorChanged {
     bms_lua_path = "crate",
     functions[r#"
 
+    #[lua(as_trait = "std::cmp::Eq")]
+    fn assert_receiver_is_total_eq(
+        _self: LuaReflectRefProxy<bevy::window::WindowThemeChanged>,
+    ) -> ();
+
+"#,
+    r#"
+
     #[lua(
         as_trait = "std::cmp::PartialEq::<bevy::window::WindowThemeChanged>",
         composite = "eq",
@@ -1039,14 +1047,6 @@ pub struct WindowBackendScaleFactorChanged {
     fn clone(
         _self: LuaReflectRefProxy<bevy::window::WindowThemeChanged>,
     ) -> LuaReflectValProxy<bevy::window::WindowThemeChanged>;
-
-"#,
-    r#"
-
-    #[lua(as_trait = "std::cmp::Eq")]
-    fn assert_receiver_is_total_eq(
-        _self: LuaReflectRefProxy<bevy::window::WindowThemeChanged>,
-    ) -> ();
 
 "#,
     r#"
@@ -1067,10 +1067,25 @@ pub struct WindowThemeChanged {
     bms_lua_path = "crate",
     functions[r#"
 
+    #[lua(as_trait = "std::cmp::Eq")]
+    fn assert_receiver_is_total_eq(
+        _self: LuaReflectRefProxy<bevy::window::AppLifecycle>,
+    ) -> ();
+
+"#,
+    r#"
+
     #[lua(as_trait = "std::clone::Clone")]
     fn clone(
         _self: LuaReflectRefProxy<bevy::window::AppLifecycle>,
     ) -> LuaReflectValProxy<bevy::window::AppLifecycle>;
+
+"#,
+    r#"
+/// Return `true` if the app can be updated.
+
+    #[lua()]
+    fn is_active(_self: LuaReflectRefProxy<bevy::window::AppLifecycle>) -> bool;
 
 "#,
     r#"
@@ -1083,21 +1098,6 @@ pub struct WindowThemeChanged {
         _self: LuaReflectRefProxy<bevy::window::AppLifecycle>,
         other: LuaReflectRefProxy<bevy::window::AppLifecycle>,
     ) -> bool;
-
-"#,
-    r#"
-/// Return `true` if the app can be updated.
-
-    #[lua()]
-    fn is_active(_self: LuaReflectRefProxy<bevy::window::AppLifecycle>) -> bool;
-
-"#,
-    r#"
-
-    #[lua(as_trait = "std::cmp::Eq")]
-    fn assert_receiver_is_total_eq(
-        _self: LuaReflectRefProxy<bevy::window::AppLifecycle>,
-    ) -> ();
 
 "#,
     r#"
@@ -1156,14 +1156,6 @@ pub struct PrimaryWindow {}
     bms_lua_path = "crate",
     functions[r#"
 
-    #[lua(as_trait = "std::cmp::Eq")]
-    fn assert_receiver_is_total_eq(
-        _self: LuaReflectRefProxy<bevy::window::WindowTheme>,
-    ) -> ();
-
-"#,
-    r#"
-
     #[lua(
         as_trait = "std::cmp::PartialEq::<bevy::window::WindowTheme>",
         composite = "eq",
@@ -1172,6 +1164,14 @@ pub struct PrimaryWindow {}
         _self: LuaReflectRefProxy<bevy::window::WindowTheme>,
         other: LuaReflectRefProxy<bevy::window::WindowTheme>,
     ) -> bool;
+
+"#,
+    r#"
+
+    #[lua(as_trait = "std::cmp::Eq")]
+    fn assert_receiver_is_total_eq(
+        _self: LuaReflectRefProxy<bevy::window::WindowTheme>,
+    ) -> ();
 
 "#,
     r#"
@@ -1272,14 +1272,6 @@ pub struct PrimaryMonitor {}
     bms_lua_path = "crate",
     functions[r#"
 
-    #[lua(as_trait = "std::clone::Clone")]
-    fn clone(
-        _self: LuaReflectRefProxy<bevy::window::SystemCursorIcon>,
-    ) -> LuaReflectValProxy<bevy::window::SystemCursorIcon>;
-
-"#,
-    r#"
-
     #[lua(as_trait = "std::cmp::Eq")]
     fn assert_receiver_is_total_eq(
         _self: LuaReflectRefProxy<bevy::window::SystemCursorIcon>,
@@ -1296,6 +1288,14 @@ pub struct PrimaryMonitor {}
         _self: LuaReflectRefProxy<bevy::window::SystemCursorIcon>,
         other: LuaReflectRefProxy<bevy::window::SystemCursorIcon>,
     ) -> bool;
+
+"#,
+    r#"
+
+    #[lua(as_trait = "std::clone::Clone")]
+    fn clone(
+        _self: LuaReflectRefProxy<bevy::window::SystemCursorIcon>,
+    ) -> LuaReflectValProxy<bevy::window::SystemCursorIcon>;
 
 "#,
     r#"
@@ -1400,14 +1400,6 @@ pub struct CursorOptions {
     bms_lua_path = "crate",
     functions[r#"
 
-    #[lua(as_trait = "std::cmp::Eq")]
-    fn assert_receiver_is_total_eq(
-        _self: LuaReflectRefProxy<bevy::window::PresentMode>,
-    ) -> ();
-
-"#,
-    r#"
-
     #[lua(as_trait = "std::clone::Clone")]
     fn clone(
         _self: LuaReflectRefProxy<bevy::window::PresentMode>,
@@ -1427,6 +1419,14 @@ pub struct CursorOptions {
 
 "#,
     r#"
+
+    #[lua(as_trait = "std::cmp::Eq")]
+    fn assert_receiver_is_total_eq(
+        _self: LuaReflectRefProxy<bevy::window::PresentMode>,
+    ) -> ();
+
+"#,
+    r#"
 #[lua(metamethod="ToString")]
 fn index(&self) -> String {
     format!("{:?}", _self)
@@ -1440,18 +1440,6 @@ pub struct PresentMode {}
     bms_core_path = "bevy_mod_scripting_core",
     bms_lua_path = "crate",
     functions[r#"
-
-    #[lua(
-        as_trait = "std::cmp::PartialEq::<bevy::window::WindowMode>",
-        composite = "eq",
-    )]
-    fn eq(
-        _self: LuaReflectRefProxy<bevy::window::WindowMode>,
-        other: LuaReflectRefProxy<bevy::window::WindowMode>,
-    ) -> bool;
-
-"#,
-    r#"
 
     #[lua(as_trait = "std::cmp::Eq")]
     fn assert_receiver_is_total_eq(
@@ -1468,6 +1456,18 @@ pub struct PresentMode {}
 
 "#,
     r#"
+
+    #[lua(
+        as_trait = "std::cmp::PartialEq::<bevy::window::WindowMode>",
+        composite = "eq",
+    )]
+    fn eq(
+        _self: LuaReflectRefProxy<bevy::window::WindowMode>,
+        other: LuaReflectRefProxy<bevy::window::WindowMode>,
+    ) -> bool;
+
+"#,
+    r#"
 #[lua(metamethod="ToString")]
 fn index(&self) -> String {
     format!("{:?}", _self)
@@ -1481,14 +1481,6 @@ pub struct WindowMode {}
     bms_core_path = "bevy_mod_scripting_core",
     bms_lua_path = "crate",
     functions[r#"
-
-    #[lua(as_trait = "std::clone::Clone")]
-    fn clone(
-        _self: LuaReflectRefProxy<bevy::window::WindowResolution>,
-    ) -> LuaReflectValProxy<bevy::window::WindowResolution>;
-
-"#,
-    r#"
 /// Creates a new [`WindowResolution`].
 
     #[lua()]
@@ -1636,6 +1628,14 @@ pub struct WindowMode {}
 
 "#,
     r#"
+
+    #[lua(as_trait = "std::clone::Clone")]
+    fn clone(
+        _self: LuaReflectRefProxy<bevy::window::WindowResolution>,
+    ) -> LuaReflectValProxy<bevy::window::WindowResolution>;
+
+"#,
+    r#"
 #[lua(metamethod="ToString")]
 fn index(&self) -> String {
     format!("{:?}", _self)
@@ -1650,14 +1650,10 @@ pub struct WindowResolution {}
     bms_lua_path = "crate",
     functions[r#"
 
-    #[lua(
-        as_trait = "std::cmp::PartialEq::<bevy::window::CompositeAlphaMode>",
-        composite = "eq",
-    )]
-    fn eq(
+    #[lua(as_trait = "std::cmp::Eq")]
+    fn assert_receiver_is_total_eq(
         _self: LuaReflectRefProxy<bevy::window::CompositeAlphaMode>,
-        other: LuaReflectRefProxy<bevy::window::CompositeAlphaMode>,
-    ) -> bool;
+    ) -> ();
 
 "#,
     r#"
@@ -1670,10 +1666,14 @@ pub struct WindowResolution {}
 "#,
     r#"
 
-    #[lua(as_trait = "std::cmp::Eq")]
-    fn assert_receiver_is_total_eq(
+    #[lua(
+        as_trait = "std::cmp::PartialEq::<bevy::window::CompositeAlphaMode>",
+        composite = "eq",
+    )]
+    fn eq(
         _self: LuaReflectRefProxy<bevy::window::CompositeAlphaMode>,
-    ) -> ();
+        other: LuaReflectRefProxy<bevy::window::CompositeAlphaMode>,
+    ) -> bool;
 
 "#,
     r#"
@@ -1691,6 +1691,14 @@ pub struct CompositeAlphaMode {}
     bms_lua_path = "crate",
     functions[r#"
 
+    #[lua(as_trait = "std::clone::Clone")]
+    fn clone(
+        _self: LuaReflectRefProxy<bevy::window::EnabledButtons>,
+    ) -> LuaReflectValProxy<bevy::window::EnabledButtons>;
+
+"#,
+    r#"
+
     #[lua(
         as_trait = "std::cmp::PartialEq::<bevy::window::EnabledButtons>",
         composite = "eq",
@@ -1699,14 +1707,6 @@ pub struct CompositeAlphaMode {}
         _self: LuaReflectRefProxy<bevy::window::EnabledButtons>,
         other: LuaReflectRefProxy<bevy::window::EnabledButtons>,
     ) -> bool;
-
-"#,
-    r#"
-
-    #[lua(as_trait = "std::clone::Clone")]
-    fn clone(
-        _self: LuaReflectRefProxy<bevy::window::EnabledButtons>,
-    ) -> LuaReflectValProxy<bevy::window::EnabledButtons>;
 
 "#,
     r#"
@@ -1728,14 +1728,6 @@ pub struct EnabledButtons {
     bms_lua_path = "crate",
     functions[r#"
 
-    #[lua(as_trait = "std::cmp::Eq")]
-    fn assert_receiver_is_total_eq(
-        _self: LuaReflectRefProxy<bevy::window::WindowLevel>,
-    ) -> ();
-
-"#,
-    r#"
-
     #[lua(
         as_trait = "std::cmp::PartialEq::<bevy::window::WindowLevel>",
         composite = "eq",
@@ -1744,6 +1736,14 @@ pub struct EnabledButtons {
         _self: LuaReflectRefProxy<bevy::window::WindowLevel>,
         other: LuaReflectRefProxy<bevy::window::WindowLevel>,
     ) -> bool;
+
+"#,
+    r#"
+
+    #[lua(as_trait = "std::cmp::Eq")]
+    fn assert_receiver_is_total_eq(
+        _self: LuaReflectRefProxy<bevy::window::WindowLevel>,
+    ) -> ();
 
 "#,
     r#"
@@ -1768,6 +1768,26 @@ pub struct WindowLevel {}
     bms_core_path = "bevy_mod_scripting_core",
     bms_lua_path = "crate",
     functions[r#"
+
+    #[lua(as_trait = "std::clone::Clone")]
+    fn clone(
+        _self: LuaReflectRefProxy<bevy::window::InternalWindowState>,
+    ) -> LuaReflectValProxy<bevy::window::InternalWindowState>;
+
+"#,
+    r#"
+
+    #[lua(
+        as_trait = "std::cmp::PartialEq::<bevy::window::InternalWindowState>",
+        composite = "eq",
+    )]
+    fn eq(
+        _self: LuaReflectRefProxy<bevy::window::InternalWindowState>,
+        other: LuaReflectRefProxy<bevy::window::InternalWindowState>,
+    ) -> bool;
+
+"#,
+    r#"
 /// Consumes the current maximize request, if it exists. This should only be called by window backends.
 
     #[lua()]
@@ -1791,26 +1811,6 @@ pub struct WindowLevel {}
     #[lua()]
     fn take_move_request(
         _self: LuaReflectRefMutProxy<bevy::window::InternalWindowState>,
-    ) -> bool;
-
-"#,
-    r#"
-
-    #[lua(as_trait = "std::clone::Clone")]
-    fn clone(
-        _self: LuaReflectRefProxy<bevy::window::InternalWindowState>,
-    ) -> LuaReflectValProxy<bevy::window::InternalWindowState>;
-
-"#,
-    r#"
-
-    #[lua(
-        as_trait = "std::cmp::PartialEq::<bevy::window::InternalWindowState>",
-        composite = "eq",
-    )]
-    fn eq(
-        _self: LuaReflectRefProxy<bevy::window::InternalWindowState>,
-        other: LuaReflectRefProxy<bevy::window::InternalWindowState>,
     ) -> bool;
 
 "#,
@@ -1841,18 +1841,18 @@ pub struct InternalWindowState {}
 "#,
     r#"
 
-    #[lua(as_trait = "std::cmp::Eq")]
-    fn assert_receiver_is_total_eq(
-        _self: LuaReflectRefProxy<bevy::window::CursorGrabMode>,
-    ) -> ();
-
-"#,
-    r#"
-
     #[lua(as_trait = "std::clone::Clone")]
     fn clone(
         _self: LuaReflectRefProxy<bevy::window::CursorGrabMode>,
     ) -> LuaReflectValProxy<bevy::window::CursorGrabMode>;
+
+"#,
+    r#"
+
+    #[lua(as_trait = "std::cmp::Eq")]
+    fn assert_receiver_is_total_eq(
+        _self: LuaReflectRefProxy<bevy::window::CursorGrabMode>,
+    ) -> ();
 
 "#,
     r#"

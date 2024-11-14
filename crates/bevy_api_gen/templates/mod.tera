@@ -4,7 +4,7 @@
 #![cfg_attr(rustfmt, rustfmt_skip)]
 {% filter prettyplease %}
 {%- for crate in crates %}
-    pub(crate) mod {{ crate.name }};
+    pub mod {{ crate.name }};
 {% endfor -%}
 
 pub struct {{ api_name }};

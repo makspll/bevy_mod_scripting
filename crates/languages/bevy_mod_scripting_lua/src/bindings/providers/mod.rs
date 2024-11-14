@@ -2,16 +2,16 @@
 #![allow(clippy::all)]
 #![allow(unused, deprecated, dead_code)]
 #![cfg_attr(rustfmt, rustfmt_skip)]
-pub(crate) mod bevy_a11y;
-pub(crate) mod bevy_ecs;
-pub(crate) mod bevy_transform;
-pub(crate) mod bevy_math;
-pub(crate) mod bevy_input;
-pub(crate) mod bevy_core;
-pub(crate) mod bevy_time;
-pub(crate) mod bevy_hierarchy;
-pub(crate) mod bevy_window;
-pub(crate) mod bevy_reflect;
+pub mod bevy_a11y;
+pub mod bevy_ecs;
+pub mod bevy_transform;
+pub mod bevy_math;
+pub mod bevy_input;
+pub mod bevy_core;
+pub mod bevy_time;
+pub mod bevy_hierarchy;
+pub mod bevy_window;
+pub mod bevy_reflect;
 pub struct LuaBevyScriptingPlugin;
 impl bevy::app::Plugin for LuaBevyScriptingPlugin {
     fn build(&self, app: &mut bevy::prelude::App) {
