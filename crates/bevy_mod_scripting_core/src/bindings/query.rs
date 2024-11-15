@@ -1,10 +1,14 @@
-use super::{ReflectReference, WorldCallbackAccess};
-use crate::prelude::ScriptResult;
+use super::{ReflectReference, WorldAccessGuard, WorldCallbackAccess};
+use crate::{
+    bindings::{CONCURRENT_WORLD_ACCESS_MSG, STALE_WORLD_MSG},
+    prelude::ScriptResult,
+};
 use bevy::{
     ecs::{component::ComponentId, entity::Entity},
+    prelude::{EntityRef, QueryBuilder},
     reflect::TypeRegistration,
 };
-use std::{any::TypeId, ops::Deref, sync::Arc};
+use std::{any::TypeId, collections::VecDeque, sync::Arc};
 
 /// A wrapper around a `TypeRegistration` that provides additional information about the type.
 ///
@@ -65,24 +69,14 @@ impl std::fmt::Display for ScriptTypeRegistration {
     }
 }
 
-#[derive(Clone)]
+#[derive(Clone, Default)]
 pub struct ScriptQueryBuilder {
-    world: WorldCallbackAccess,
     components: Vec<ScriptTypeRegistration>,
     with: Vec<ScriptTypeRegistration>,
     without: Vec<ScriptTypeRegistration>,
 }
 
 impl ScriptQueryBuilder {
-    pub fn new(world: WorldCallbackAccess) -> Self {
-        Self {
-            world,
-            components: vec![],
-            with: vec![],
-            without: vec![],
-        }
-    }
-
     pub fn components(&mut self, components: Vec<ScriptTypeRegistration>) -> &mut Self {
         self.components.extend(components);
         self
@@ -97,29 +91,76 @@ impl ScriptQueryBuilder {
         self.without.extend(without);
         self
     }
-
-    pub fn build(&mut self) -> ScriptResult<Vec<ScriptQueryResult>> {
-        self.world.query(
-            std::mem::take(&mut self.components),
-            std::mem::take(&mut self.with),
-            std::mem::take(&mut self.without),
-        )
-    }
 }
 
 #[derive(Clone)]
 pub struct ScriptQueryResult(pub Entity, pub Vec<ReflectReference>);
 
 impl WorldCallbackAccess {
-    pub fn query(
-        &mut self,
-        components: Vec<ScriptTypeRegistration>,
-        with: Vec<ScriptTypeRegistration>,
-        without: Vec<ScriptTypeRegistration>,
-    ) -> ScriptResult<Vec<ScriptQueryResult>> {
-        // for c in components {
-
-        // }
-        todo!()
+    pub fn query(&self, query: ScriptQueryBuilder) -> ScriptResult<VecDeque<ScriptQueryResult>> {
+        // find the set of components
+        self.read()
+            .unwrap_or_else(|| panic!("{STALE_WORLD_MSG}"))
+            .query(query)
     }
+}
+
+impl<'w> WorldAccessGuard<'w> {
+    pub fn query(&self, query: ScriptQueryBuilder) -> ScriptResult<VecDeque<ScriptQueryResult>> {
+        let world = self
+            .get_whole_world_access()
+            .unwrap_or_else(|| panic!("{CONCURRENT_WORLD_ACCESS_MSG}"));
+
+        let mut dynamic_query = QueryBuilder::<EntityRef>::new(world);
+
+        // we don't actually want to fetch the data for components now, only figure out
+        // which entities match the query
+        // so we might be being slightly overkill
+        for c in &query.components {
+            dynamic_query.ref_id(c.component_id().unwrap());
+        }
+
+        for w in query.with {
+            dynamic_query.with_id(w.component_id.unwrap());
+        }
+
+        for without_id in query.without {
+            dynamic_query.without_id(without_id.component_id.unwrap());
+        }
+
+        let mut built_query = dynamic_query.build();
+        let query_result = built_query.iter(world);
+
+        Ok(query_result
+            .map(|r| {
+                let references: Vec<_> = query
+                    .components
+                    .iter()
+                    .map(|c| ReflectReference {
+                        base: super::ReflectBaseType {
+                            type_id: c.type_id(),
+                            base_id: super::ReflectBase::Component(r.id(), c.component_id.unwrap()),
+                        },
+                        reflect_path: vec![],
+                    })
+                    .collect();
+                ScriptQueryResult(r.id(), references)
+            })
+            .collect())
+    }
+}
+
+#[cfg(test)]
+mod test {
+    use test_utils::test_data::setup_world;
+
+    use super::*;
+
+    // #[test]
+    // fn test_simple_query() {
+    //     let world = setup_world(|w,r|{
+    //         w.spawn(TestComponent::init())
+    //         w.spawn(Te)
+    //     })
+    // }
 }

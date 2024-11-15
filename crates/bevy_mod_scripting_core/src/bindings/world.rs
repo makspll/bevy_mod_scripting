@@ -245,11 +245,11 @@ pub const DEFAULT_INTERVAL: Duration = Duration::from_millis(10);
 /// Provides safe access to the world via [`WorldAccess`] permissions, which enforce aliasing rules at runtime in multi-thread environments
 #[derive(Clone)]
 pub struct WorldAccessGuard<'w> {
-    cell: UnsafeWorldCell<'w>,
+    pub cell: UnsafeWorldCell<'w>,
     // TODO: this is fairly hefty, explore other ways to hand out locks on WorldAccess
-    accesses: Arc<LockableHashMap<ReflectAccessId, Option<WorldAccessUnit<'w>>>>,
+    pub accesses: Arc<LockableHashMap<ReflectAccessId, Option<WorldAccessUnit<'w>>>>,
     /// true if anybody has any access to the world
-    accesses_count: Arc<AtomicUsize>,
+    pub accesses_count: Arc<AtomicUsize>,
     // TODO can we track code/stack locations of things holding onto theese locks for debugging?
 }
 

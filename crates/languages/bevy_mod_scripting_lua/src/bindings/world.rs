@@ -20,6 +20,7 @@ use tealr::{
 };
 
 use super::proxy::LuaReflectRefProxy;
+use super::query::LuaQueryBuilder;
 use super::{
     providers::bevy_ecs::LuaEntity,
     proxy::{
@@ -27,6 +28,7 @@ use super::{
     },
     type_registration::LuaTypeRegistration,
 };
+use crate::util::Variadic;
 use crate::{impl_userdata_from_lua, impl_userdata_with_tealdata};
 
 pub struct Nil;
@@ -373,6 +375,25 @@ impl TealData for LuaWorld {
                     .map_err(mlua::Error::external)?;
 
                 Ok(TypenameProxy::<_, Nil>::new(out))
+            },
+        );
+
+        methods.add_method(
+            "query",
+            |_, this, mut components: Variadic<LuaValProxy<ScriptTypeRegistration>>| {
+                let world = this.0.read().ok_or_else(|| {
+                    mlua::Error::external(ScriptError::new_reflection_error("Stale world access"))
+                })?;
+                let mut builder = LuaQueryBuilder::default();
+                let deque = components.0;
+                builder.components(
+                    deque
+                        .into_iter()
+                        .map(|mut c| c.unproxy())
+                        .collect::<Result<_, _>>()
+                        .map_err(tealr::mlu::mlua::Error::external)?,
+                );
+                Ok(builder)
             },
         );
     }
