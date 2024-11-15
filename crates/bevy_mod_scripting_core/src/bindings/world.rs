@@ -185,6 +185,11 @@ impl WorldCallbackAccess {
         world.has_resource(resource_id)
     }
 
+    pub fn has_entity(&self, entity: Entity) -> bool {
+        let world = self.read().unwrap_or_else(|| panic!("{STALE_WORLD_MSG}"));
+        world.has_entity(entity)
+    }
+
     pub fn get_children(&self, entity: Entity) -> ScriptResult<Vec<Entity>> {
         let world = self.read().unwrap_or_else(|| panic!("{STALE_WORLD_MSG}"));
         world.get_children(entity)
@@ -588,6 +593,11 @@ impl<'w> WorldAccessGuard<'w> {
             ))
         }
     }
+
+    /// checks if a given entity exists and is valid
+    pub fn is_valid_entity(&self, entity: Entity) -> bool {
+        self.cell.get_entity(entity).is_some()
+    }
 }
 
 /// Impl block for higher level world methods
@@ -773,7 +783,18 @@ impl<'w> WorldAccessGuard<'w> {
         res_ptr.is_some()
     }
 
+    pub fn has_entity(&self, entity: Entity) -> bool {
+        self.is_valid_entity(entity)
+    }
+
     pub fn get_children(&self, entity: Entity) -> ScriptResult<Vec<Entity>> {
+        if !self.is_valid_entity(entity) {
+            return Err(ScriptError::new_runtime_error(format!(
+                "Entity does not exist or is not valid: {:?}",
+                entity
+            )));
+        }
+
         let access = self
             .get_component_access_typed::<Children>()
             .unwrap_or_else(|| panic!("{CONCURRENT_ACCESS_MSG}"));
@@ -785,6 +806,13 @@ impl<'w> WorldAccessGuard<'w> {
     }
 
     pub fn get_parent(&self, entity: Entity) -> ScriptResult<Option<Entity>> {
+        if !self.is_valid_entity(entity) {
+            return Err(ScriptError::new_runtime_error(format!(
+                "Entity does not exist or is not valid: {:?}",
+                entity
+            )));
+        }
+
         let access = self
             .get_component_access_typed::<Parent>()
             .unwrap_or_else(|| panic!("{CONCURRENT_ACCESS_MSG}"));
@@ -795,6 +823,22 @@ impl<'w> WorldAccessGuard<'w> {
     }
 
     pub fn push_children(&self, parent: Entity, children: &[Entity]) -> ScriptResult<()> {
+        // verify entities exist
+        if !self.is_valid_entity(parent) {
+            return Err(ScriptError::new_runtime_error(format!(
+                "The parent Entity does not exist or is not valid: {:?}",
+                parent
+            )));
+        }
+        for c in children {
+            if !self.is_valid_entity(*c) {
+                return Err(ScriptError::new_runtime_error(format!(
+                    "the Entity does not exist or is not valid: {:?}",
+                    c
+                )));
+            }
+        }
+
         if let Some(world) = self.get_whole_world_access() {
             let mut queue = CommandQueue::default();
             let mut commands = Commands::new(&mut queue, world);
@@ -808,6 +852,22 @@ impl<'w> WorldAccessGuard<'w> {
     }
 
     pub fn remove_children(&self, parent: Entity, children: &[Entity]) -> ScriptResult<()> {
+        if !self.is_valid_entity(parent) {
+            return Err(ScriptError::new_runtime_error(format!(
+                "The parent Entity does not exist or is not valid: {:?}",
+                parent
+            )));
+        }
+
+        for c in children {
+            if !self.is_valid_entity(*c) {
+                return Err(ScriptError::new_runtime_error(format!(
+                    "the Entity does not exist or is not valid: {:?}",
+                    c
+                )));
+            }
+        }
+
         if let Some(world) = self.get_whole_world_access() {
             let mut queue = CommandQueue::default();
             let mut commands = Commands::new(&mut queue, world);
@@ -826,6 +886,22 @@ impl<'w> WorldAccessGuard<'w> {
         index: usize,
         children: &[Entity],
     ) -> ScriptResult<()> {
+        if !self.is_valid_entity(parent) {
+            return Err(ScriptError::new_runtime_error(format!(
+                "parent Entity does not exist or is not valid: {:?}",
+                parent
+            )));
+        }
+
+        for c in children {
+            if !self.is_valid_entity(*c) {
+                return Err(ScriptError::new_runtime_error(format!(
+                    "the Entity does not exist or is not valid: {:?}",
+                    c
+                )));
+            }
+        }
+
         if let Some(world) = self.get_whole_world_access() {
             let mut queue = CommandQueue::default();
             let mut commands = Commands::new(&mut queue, world);
@@ -838,11 +914,18 @@ impl<'w> WorldAccessGuard<'w> {
         Ok(())
     }
 
-    pub fn despawn_recursive(&self, entity: Entity) -> ScriptResult<()> {
+    pub fn despawn_recursive(&self, parent: Entity) -> ScriptResult<()> {
+        if !self.is_valid_entity(parent) {
+            return Err(ScriptError::new_runtime_error(format!(
+                "parent Entity does not exist or is not valid: {:?}",
+                parent
+            )));
+        }
+
         if let Some(world) = self.get_whole_world_access() {
             let mut queue = CommandQueue::default();
             let mut commands = Commands::new(&mut queue, world);
-            commands.entity(entity).despawn_recursive();
+            commands.entity(parent).despawn_recursive();
             queue.apply(world);
         } else {
             panic!("{CONCURRENT_WORLD_ACCESS_MSG}")
@@ -852,6 +935,13 @@ impl<'w> WorldAccessGuard<'w> {
     }
 
     pub fn despawn(&self, entity: Entity) -> ScriptResult<()> {
+        if !self.is_valid_entity(entity) {
+            return Err(ScriptError::new_runtime_error(format!(
+                "Entity does not exist or is not valid: {:?}",
+                entity
+            )));
+        }
+
         if let Some(world) = self.get_whole_world_access() {
             let mut queue = CommandQueue::default();
             let mut commands = Commands::new(&mut queue, world);
@@ -864,11 +954,18 @@ impl<'w> WorldAccessGuard<'w> {
         Ok(())
     }
 
-    pub fn despawn_descendants(&self, entity: Entity) -> ScriptResult<()> {
+    pub fn despawn_descendants(&self, parent: Entity) -> ScriptResult<()> {
+        if !self.is_valid_entity(parent) {
+            return Err(ScriptError::new_runtime_error(format!(
+                "parent Entity does not exist or is not valid: {:?}",
+                parent
+            )));
+        }
+
         if let Some(world) = self.get_whole_world_access() {
             let mut queue = CommandQueue::default();
             let mut commands = Commands::new(&mut queue, world);
-            commands.entity(entity).despawn_descendants();
+            commands.entity(parent).despawn_descendants();
             queue.apply(world);
         } else {
             panic!("{CONCURRENT_WORLD_ACCESS_MSG}")

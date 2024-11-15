@@ -1,7 +1,7 @@
 use bevy::{
     app::App,
     asset::{AssetPlugin, AssetServer},
-    prelude::{AppTypeRegistry, Entity, World},
+    prelude::{AppTypeRegistry, Children, Entity, HierarchyPlugin, Parent, World},
     reflect::{Reflect, TypeRegistration},
     MinimalPlugins,
 };
@@ -30,7 +30,7 @@ use std::{
     any::TypeId,
     borrow::Cow,
     fs::{self, DirEntry},
-    io,
+    io, panic,
     path::{Path, PathBuf},
     sync::Arc,
 };
@@ -46,8 +46,15 @@ fn init_app() -> App {
 
     // we probably should cut down some fat in here, but it's fast enough so meh
     app.add_plugins(AssetPlugin::default())
+        .add_plugins(HierarchyPlugin)
         .add_plugins(LuaScriptingPlugin::<()>::default())
         .add_plugins(bevy_mod_scripting_lua::bindings::providers::LuaBevyScriptingPlugin);
+
+    // for some reason hierarchy plugin doesn't register the children component
+    app.world_mut().register_component::<Children>();
+    app.world_mut().register_component::<Parent>();
+    app.finish();
+    app.cleanup();
 
     app
 }
@@ -88,23 +95,24 @@ fn init_lua_test_utils(_script_name: &Cow<'static, str>, lua: &mut Lua) -> Resul
     let assert_throws = lua
         .create_function(|_, (f, regex): (LuaFunction, String)| {
             let result = f.call::<(), ()>(());
-            match result {
-                Ok(_) => Err(tealr::mlu::mlua::Error::RuntimeError(
-                    "Expected function to throw error, but it did not.".into(),
-                )),
-                Err(e) => {
-                    let error_message = e.to_string();
-                    let regex = regex::Regex::new(&regex).unwrap();
-                    if regex.is_match(&error_message) {
-                        Ok(())
-                    } else {
-                        Err(tealr::mlu::mlua::Error::RuntimeError(format!(
-                            "Expected error message to match the regex: \n{}\n\nBut got:\n{}",
-                            regex.as_str(),
-                            error_message
-                        )))
-                    }
+            let err = match result {
+                Ok(_) => {
+                    return Err(tealr::mlu::mlua::Error::RuntimeError(
+                        "Expected function to throw error, but it did not.".into(),
+                    ))
                 }
+                Err(e) => e.to_string(),
+            };
+
+            let regex = regex::Regex::new(&regex).unwrap();
+            if regex.is_match(&err) {
+                Ok(())
+            } else {
+                Err(tealr::mlu::mlua::Error::RuntimeError(format!(
+                    "Expected error message to match the regex: \n{}\n\nBut got:\n{}",
+                    regex.as_str(),
+                    err
+                )))
             }
         })
         .unwrap();

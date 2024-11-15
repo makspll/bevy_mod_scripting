@@ -237,6 +237,20 @@ impl TealData for LuaWorld {
         );
 
         methods.add_method(
+            "has_entity",
+            |_, this, entity: LuaReflectValProxy<Entity>| {
+                let world = this.0.read().ok_or_else(|| {
+                    mlua::Error::external(ScriptError::new_reflection_error("Stale world access"))
+                })?;
+                let out: bool = world
+                    .proxy_call(entity, |entity| world.has_entity(entity))
+                    .map_err(mlua::Error::external)?;
+
+                Ok(out)
+            },
+        );
+
+        methods.add_method(
             "get_children",
             |_, this, entity: LuaReflectValProxy<Entity>| {
                 let world = this.0.read().ok_or_else(|| {
@@ -315,7 +329,7 @@ impl TealData for LuaWorld {
                 })?;
                 let out: Result<(), ErrorProxy<ScriptError>> = world
                     .proxy_call(args, |(parent, index, children)| {
-                        world.insert_children(parent, index, &children)
+                        world.insert_children(parent, index - 1, &children)
                     })
                     .map_err(mlua::Error::external)?;
 
