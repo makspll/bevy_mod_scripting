@@ -1,4 +1,4 @@
-use std::marker::PhantomData;
+use std::{any::type_name, marker::PhantomData};
 
 use bevy::{asset::Handle, ecs::world::Mut, log::debug, prelude::Command};
 
@@ -7,6 +7,7 @@ use crate::{
     context::{Context, ContextLoadingSettings, ScriptContexts},
     prelude::{Runtime, RuntimeContainer},
     script::{Script, ScriptId, Scripts},
+    systems::handle_script_errors,
 };
 
 pub struct DeleteScript<C: Context, R: Runtime> {
@@ -111,8 +112,14 @@ impl<C: Context, R: Runtime> Command for CreateOrUpdateScript<C, R> {
             let current_context_id = if let Some(id) = current_context_id {
                 id
             } else {
-                let ctxt = (builder.load)(&self.id, &self.content, &settings.context_initializers, &settings.context_pre_handling_initializers, world, &mut runtime.runtime).unwrap();
-                contexts.insert(ctxt)
+                let ctxt = (builder.load)(&self.id, &self.content, &settings.context_initializers, &settings.context_pre_handling_initializers, world, &mut runtime.runtime);
+                match ctxt {
+                    Ok(ctxt) => contexts.insert(ctxt),
+                    Err(e) => {
+                        handle_script_errors(world, &format!("Failed to load context for script with id: {}. With runtime type: {} and context type: {}", self.id, type_name::<R>(), type_name::<C>()), [e]);
+                        return;
+                    }
+                }
             };
 
             if let Some(previous) = previous_context_id {

@@ -57,8 +57,15 @@ pub struct ReflectReference {
 }
 
 
-
 impl ReflectReference {
+
+    pub fn print_with_world(&self, world: &WorldAccessGuard) -> String {
+        let base = world.with_resource(|_, type_registry: Mut<AppTypeRegistry>| {
+            self.base.display_with_type_name(&type_registry.read())
+        });
+
+        format!("Reference(base: {}, path: {:?})", base, self.reflect_path)
+    }
 
     /// If this is a reference to something with a length accessible via reflection, returns that length.
     pub fn len(&self, world: &WorldAccessGuard) -> Option<usize> {
@@ -371,11 +378,15 @@ impl ReflectBaseType {
     }
 
     pub fn display_with_type_name(&self, type_registry: &TypeRegistry) -> String {
-        format!(
-            "ReflectBase({}, {:?})",
-            Self::type_name(self.type_id, type_registry),
-            self.base_id
-        )
+        let type_name = Self::type_name(self.type_id, type_registry);
+
+        let kind = match self.base_id {
+            ReflectBase::Component(entity, _) => "Component",
+            ReflectBase::Resource(_) => "Resource",
+            ReflectBase::Owned(id) => "Allocation",
+        };
+
+        format!("{}({})", kind, type_name)
     }
 }
 

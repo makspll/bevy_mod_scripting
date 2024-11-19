@@ -396,6 +396,15 @@ impl TealData for LuaWorld {
                 Ok(builder)
             },
         );
+
+        methods.add_method("exit", |_, this, ()| {
+            // TODO: somehow end control flow on lua side
+            let world = this.0.read().ok_or_else(|| {
+                mlua::Error::external(ScriptError::new_reflection_error("Stale world access"))
+            })?;
+            world.exit();
+            Ok(())
+        });
     }
 
     fn add_fields<'lua, F: tealr::mlu::TealDataFields<'lua, Self>>(_fields: &mut F) {}

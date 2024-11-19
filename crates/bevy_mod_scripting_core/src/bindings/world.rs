@@ -18,6 +18,7 @@ use std::{
 };
 
 use bevy::{
+    app::AppExit,
     ecs::{
         component::{Component, ComponentId},
         entity::Entity,
@@ -233,6 +234,11 @@ impl WorldCallbackAccess {
     pub fn despawn_descendants(&self, entity: Entity) -> ScriptResult<()> {
         let world = self.read().unwrap_or_else(|| panic!("{STALE_WORLD_MSG}"));
         world.despawn_descendants(entity)
+    }
+
+    pub fn exit(&self) {
+        let world = self.read().unwrap_or_else(|| panic!("{STALE_WORLD_MSG}"));
+        world.exit()
     }
 }
 
@@ -972,6 +978,15 @@ impl<'w> WorldAccessGuard<'w> {
         }
 
         Ok(())
+    }
+
+    /// Sends AppExit event to the world with success status
+    pub fn exit(&self) {
+        if let Some(world) = self.get_whole_world_access() {
+            world.send_event(AppExit::Success);
+        } else {
+            panic!("{CONCURRENT_WORLD_ACCESS_MSG}")
+        }
     }
 }
 

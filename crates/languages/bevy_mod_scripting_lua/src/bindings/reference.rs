@@ -224,7 +224,12 @@ impl TealData for LuaReflectReference {
 
         m.add_meta_function(MetaMethod::Len, |l, self_: LuaReflectReference| {
             self_.len(l)
-        })
+        });
+
+        m.add_meta_function(MetaMethod::ToString, |lua, self_: LuaReflectReference| {
+            let world = lua.get_world()?;
+            Ok(self_.0.print_with_world(&world))
+        });
     }
 }
 

@@ -6,6 +6,7 @@ use crate::{
     bindings::ReflectAllocator,
     commands::{CreateOrUpdateScript, DeleteScript},
     context::{Context, ContextLoadingSettings, ScriptContexts},
+    error::{ScriptError, ScriptResult},
     event::{IntoCallbackLabel, ScriptCallbackEvent, ScriptErrorEvent},
     handler::{Args, CallbackSettings},
     prelude::RuntimeSettings,
@@ -181,18 +182,30 @@ pub fn event_handler<L: IntoCallbackLabel, A: Args, C: Context, R: Runtime>(
     world.insert_non_send_resource(runtime_container);
     world.insert_non_send_resource(script_contexts);
 
-    for error in errors {
-        let mut error_events = world
-            .get_resource_mut::<Events<ScriptErrorEvent>>()
-            .expect("Missing events resource");
-
-        bevy::log::error!(
-            "Encountered error in event handling for - Runtime {}, Context: {}, Args: {}. {}",
+    handle_script_errors(
+        world,
+        &format!(
+            "Encountered error in event handling for: Runtime {}, Context: {}, Args: {}",
             type_name::<R>(),
             type_name::<C>(),
-            type_name::<A>(),
-            error.to_string()
-        );
+            type_name::<A>()
+        ),
+        errors,
+    );
+}
+
+/// Handles errors caused by script execution and sends them to the error event channel
+pub(crate) fn handle_script_errors<I: IntoIterator<Item = ScriptError>>(
+    world: &mut World,
+    context: &str,
+    errors: I,
+) {
+    let mut error_events = world
+        .get_resource_mut::<Events<ScriptErrorEvent>>()
+        .expect("Missing events resource");
+
+    for error in errors {
+        bevy::log::error!("{}. {}", context, error.to_string());
         error_events.send(ScriptErrorEvent { error });
     }
 }
