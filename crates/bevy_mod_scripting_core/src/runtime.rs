@@ -8,7 +8,7 @@ impl<T: 'static> Runtime for T {}
 
 pub type RuntimeInitializer<R> = fn(&mut R);
 
-#[derive(Clone, Resource)]
+#[derive(Resource)]
 pub struct RuntimeSettings<R: Runtime> {
     pub initializers: Vec<RuntimeInitializer<R>>,
 }
@@ -21,16 +21,16 @@ impl<R: Runtime> Default for RuntimeSettings<R> {
     }
 }
 
+impl<R: Runtime> Clone for RuntimeSettings<R> {
+    fn clone(&self) -> Self {
+        Self {
+            initializers: self.initializers.clone(),
+        }
+    }
+}
+
 /// Stores a particular runtime.
 #[derive(Resource)]
 pub struct RuntimeContainer<R: Runtime> {
-    pub runtime: Option<R>,
-}
-
-impl<T: Runtime> Default for RuntimeContainer<T> {
-    fn default() -> Self {
-        Self {
-            runtime: Default::default(),
-        }
-    }
+    pub runtime: R,
 }

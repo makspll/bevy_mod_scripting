@@ -136,7 +136,7 @@ pub struct ContextAssigner<C: Context> {
 impl<C: Context> Default for ContextAssigner<C> {
     fn default() -> Self {
         Self {
-            assign: |_, _, _, c| Some(c.allocate_id()),
+            assign: |old, _, _, _| old.map(|s| s.context_id),
             remove: |id, _, c| _ = c.remove(id),
         }
     }

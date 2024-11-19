@@ -106,10 +106,12 @@ impl<C: Context, R: Runtime> Command for CreateOrUpdateScript<C, R> {
             // If None assign new context ID, otherwise assign the old one
             // If re-loading and different from the previous one, the old one will be removed
             let current_context_id = (assigner.assign)(script.as_deref(), &self.id, &self.content, &mut contexts);
+            debug!("Context assigned: {:?}", current_context_id);
+
             let current_context_id = if let Some(id) = current_context_id {
                 id
             } else {
-                let ctxt = (builder.load)(&self.id, &self.content, &settings.context_initializers, &settings.context_pre_handling_initializers, world, runtime.runtime.as_mut().unwrap()).unwrap();
+                let ctxt = (builder.load)(&self.id, &self.content, &settings.context_initializers, &settings.context_pre_handling_initializers, world, &mut runtime.runtime).unwrap();
                 contexts.insert(ctxt)
             };
 

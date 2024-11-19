@@ -7,15 +7,19 @@ use bevy::{
     reflect::{FromType, GetTypeRegistration, PartialReflect, Reflect, TypePath},
 };
 use bevy_mod_scripting_core::{
-    bindings::{ReflectReference, WorldCallbackAccess},
+    bindings::{ReflectAllocator, ReflectReference, WorldCallbackAccess},
     context::{ContextBuilder, ContextInitializer, ContextPreHandlingInitializer},
     error::ScriptError,
     event::CallbackLabel,
     handler::Args,
     script::ScriptId,
-    ScriptingPlugin,
+    AddContextPreHandlingInitializer, ScriptingPlugin,
 };
-use bindings::{proxy::LuaProxied, world::LuaWorld};
+use bindings::{
+    providers::bevy_ecs::LuaEntity,
+    proxy::LuaProxied,
+    world::{GetWorld, LuaWorld},
+};
 pub use tealr;
 pub mod bindings;
 use tealr::mlu::mlua::{FromLua, Function, IntoLua, IntoLuaMulti, Lua, Value};
@@ -42,7 +46,8 @@ impl<A: LuaEventArg> Default for LuaScriptingPlugin<A> {
         LuaScriptingPlugin {
             scripting_plugin: ScriptingPlugin {
                 context_assigner: None,
-                runtime_builder: None,
+                runtime_builder: Default::default,
+                runtime_settings: None,
                 callback_handler: Some(lua_handler::<A>),
                 context_builder: Some(ContextBuilder::<Lua, ()> {
                     load: lua_context_load,
@@ -76,6 +81,17 @@ impl<A: LuaEventArg> Plugin for LuaScriptingPlugin<A> {
     fn build(&self, app: &mut bevy::prelude::App) {
         self.scripting_plugin.build(app);
         register_lua_values(app);
+        app.add_context_pre_handling_initializer::<()>(|script_id, entity, context: &mut Lua| {
+            let world = context.get_world().unwrap();
+            let lua_entity = world.with_resource::<ReflectAllocator, _, _>(|_, mut allocator| {
+                let reflect_reference = ReflectReference::new_allocated(entity, &mut allocator);
+                <Entity as LuaProxied>::Proxy::from(reflect_reference)
+            });
+
+            context.globals().set("script_id", script_id.to_owned())?;
+            context.globals().set("entity", lua_entity)?;
+            Ok(())
+        });
     }
 }
 
@@ -163,7 +179,6 @@ pub fn with_world<F: FnOnce(&mut Lua) -> Result<(), ScriptError>>(
 ) -> Result<(), ScriptError> {
     WorldCallbackAccess::with_callback_access(world, |guard| {
         context.globals().set("world", LuaWorld(guard.clone()))?;
-        // TODO set entity + script id as well
         f(context)
     })
 }

@@ -3,7 +3,6 @@
 //     reflect::TypePath,
 //     utils::BoxedFuture,
 // };
-// use bevy_mod_scripting_core::asset::CodeAsset;
 
 // use anyhow::Error;
 

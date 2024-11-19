@@ -21,15 +21,7 @@ name = "bevy_mod_scripting"
 path = "src/lib.rs"
 
 [package.metadata."docs.rs"]
-features = [
-    "lua",
-    "lua54",
-    "rhai",
-    "lua_script_api",
-    "rhai_script_api",
-    "teal",
-    "rune",
-]
+features = ["lua", "lua54", "rhai", "teal", "rune"]
 
 [features]
 ## core
@@ -46,7 +38,6 @@ luajit = ["bevy_mod_scripting_lua/luajit", "lua"]
 luajit52 = ["bevy_mod_scripting_lua/luajit52", "lua"]
 
 # optional
-lua_script_api = ["bevy_script_api/lua"]
 unsafe_lua_modules = ["bevy_mod_scripting_lua/unsafe_lua_modules"]
 teal = ["bevy_mod_scripting_lua/teal"]
 mlua_serialize = ["bevy_mod_scripting_lua/mlua_serialize"]
@@ -55,7 +46,6 @@ mlua_async = ["bevy_mod_scripting_lua/mlua_async"]
 
 ## rhai
 rhai = ["bevy_mod_scripting_rhai"]
-rhai_script_api = ["bevy_script_api/rhai"]
 
 ## rune
 rune = ["bevy_mod_scripting_rune"]
@@ -66,7 +56,6 @@ bevy_mod_scripting_core = { workspace = true }
 bevy_mod_scripting_lua = { path = "crates/languages/bevy_mod_scripting_lua", version = "0.8.0-alpha.1", optional = true }
 bevy_mod_scripting_rhai = { path = "crates/languages/bevy_mod_scripting_rhai", version = "0.8.0-alpha.1", optional = true }
 bevy_mod_scripting_rune = { path = "crates/languages/bevy_mod_scripting_rune", version = "0.8.0-alpha.1", optional = true }
-bevy_script_api = { path = "crates/bevy_script_api", version = "0.8.0-alpha.1", optional = true }
 
 
 [workspace.dependencies]
@@ -86,7 +75,6 @@ rhai-rand = "0.1"
 members = [
     "crates/bevy_mod_scripting_core",
     "crates/bevy_event_priority",
-    "crates/bevy_script_api",
     "crates/languages/bevy_mod_scripting_lua",
     "crates/languages/bevy_mod_scripting_lua_derive",
     "crates/languages/bevy_mod_scripting_rhai",
@@ -120,7 +108,7 @@ debug = false
 # path = "examples/lua/console_integration.rs"
 # required-features = [
 #     "lua54",
-#     "lua_script_api",
+#     
 #     "bevy/file_watcher",
 #     "bevy/multi_threaded",
 # ]
@@ -130,7 +118,7 @@ debug = false
 # path = "examples/rhai/console_integration.rs"
 # required-features = [
 #     "rhai",
-#     "rhai_script_api",
+#     ,
 #     "bevy/file_watcher",
 #     "bevy/multi_threaded",
 # ]
@@ -143,32 +131,22 @@ required-features = ["lua54"]
 [[example]]
 name = "dynamic_queries_lua"
 path = "examples/lua/dynamic_queries.rs"
-required-features = ["lua54", "lua_script_api"]
+required-features = ["lua54"]
 
 [[example]]
 name = "dynamic_queries_rhai"
 path = "examples/rhai/dynamic_queries.rs"
-required-features = ["rhai", "rhai_script_api"]
+required-features = ["rhai"]
 
 [[example]]
 name = "game_of_life_lua"
 path = "examples/lua/game_of_life.rs"
-required-features = [
-    "lua54",
-    "lua_script_api",
-    "bevy/file_watcher",
-    "bevy/multi_threaded",
-]
+required-features = ["lua54", "bevy/file_watcher", "bevy/multi_threaded"]
 
 [[example]]
+required-features = ["rhai", "bevy/file_watcher", "bevy/multi_threaded"]
 name = "game_of_life_rhai"
 path = "examples/rhai/game_of_life.rs"
-required-features = [
-    "rhai",
-    "rhai_script_api",
-    "bevy/file_watcher",
-    "bevy/multi_threaded",
-]
 
 [[example]]
 name = "event_recipients_lua"
@@ -183,22 +161,22 @@ required-features = ["lua54"]
 [[example]]
 name = "documentation_gen_lua"
 path = "examples/lua/documentation_gen.rs"
-required-features = ["lua54", "teal", "lua_script_api"]
+required-features = ["lua54", "teal"]
 
 [[example]]
 name = "bevy_api_lua"
 path = "examples/lua/bevy_api.rs"
-required-features = ["lua54", "lua_script_api"]
+required-features = ["lua54"]
 
 [[example]]
 name = "bevy_api_rhai"
 path = "examples/rhai/bevy_api.rs"
-required-features = ["rhai", "rhai_script_api"]
+required-features = ["rhai"]
 
 [[example]]
 name = "wrappers"
 path = "examples/wrappers.rs"
-required-features = ["lua54", "lua_script_api"]
+required-features = ["lua54"]
 
 [[example]]
 name = "minimal_rune"

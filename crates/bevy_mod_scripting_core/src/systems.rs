@@ -22,11 +22,9 @@ pub fn initialize_runtime<R: Runtime>(
     mut runtime: NonSendMut<RuntimeContainer<R>>,
     settings: Res<RuntimeSettings<R>>,
 ) {
-    if let Some(r) = runtime.runtime.as_mut() {
-        for initializer in settings.initializers.iter() {
-            (initializer)(r);
-        }
-    };
+    for initializer in settings.initializers.iter() {
+        (initializer)(&mut runtime.runtime);
+    }
 }
 
 /// Processes and reacts appropriately to script asset events, and queues commands to update the internal script state
@@ -95,16 +93,11 @@ pub fn event_handler<L: IntoCallbackLabel, A: Args, C: Context, R: Runtime>(
         .remove_non_send_resource::<RuntimeContainer<R>>()
         .unwrap_or_else(|| {
             panic!(
-                "No runtime container for runtime  {} found",
+                "No runtime container for runtime {} found. Was the scripting plugin initialized correctly?",
                 type_name::<R>()
             )
         });
-    let runtime = runtime_container.runtime.as_mut().unwrap_or_else(|| {
-        panic!(
-            "No valid runtime in runtime container for runtime {}",
-            type_name::<R>()
-        )
-    });
+    let runtime = &mut runtime_container.runtime;
     let mut script_contexts = world
         .remove_non_send_resource::<ScriptContexts<C>>()
         .unwrap_or_else(|| panic!("No script contexts found for context {}", type_name::<C>()));
@@ -246,10 +239,16 @@ mod test {
         });
         app.add_systems(Update, event_handler::<L, A, C, R>);
         app.insert_resource::<Scripts>(Scripts { scripts });
-        app.insert_non_send_resource::<RuntimeContainer<R>>(RuntimeContainer {
-            runtime: Some(runtime),
-        });
+        app.insert_non_send_resource::<RuntimeContainer<R>>(RuntimeContainer { runtime });
         app.insert_non_send_resource::<ScriptContexts<C>>(ScriptContexts { contexts });
+        app.insert_resource(ContextLoadingSettings::<C, R> {
+            loader: None,
+            assigner: None,
+            context_initializers: vec![],
+            context_pre_handling_initializers: vec![],
+        });
+        app.finish();
+        app.cleanup();
         app
     }
 
@@ -315,8 +314,6 @@ mod test {
         assert_eq!(
             test_runtime
                 .runtime
-                .as_ref()
-                .unwrap()
                 .invocations
                 .iter()
                 .map(|(e, s)| (*e, s.clone()))
@@ -390,6 +387,7 @@ mod test {
                 "test_args_entity".to_owned(),
                 crate::event::Recipients::Entity(test_entity_id),
             ));
+
         app.update();
 
         let test_context = app
@@ -413,8 +411,6 @@ mod test {
         assert_eq!(
             test_runtime
                 .runtime
-                .as_ref()
-                .unwrap()
                 .invocations
                 .iter()
                 .map(|(e, s)| (*e, s.clone()))

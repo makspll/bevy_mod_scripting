@@ -32,7 +32,7 @@ jobs:
       - uses: actions-rs/cargo@v1
         with:
           command: run
-          args: --features=lua54,lua_script_api lua
+          args: --features=lua54 lua
       - run: cat ./assets/scripts/doc/tealr_doc_gen_config.json
       - name: Push to pages
         uses: cpina/github-action-push-to-another-repository@main

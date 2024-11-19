@@ -26,15 +26,15 @@ jobs:
     strategy:
       matrix:
        run_args: [ 
-        {label: Windows - All Features,        os: windows-latest,      features: "lua54,rhai,teal,lua_script_api,rhai_script_api,rune",      cross: x86_64-pc-windows-msvc    }, 
-        {label: MacOS - All Features,          os: macOS-latest,        features: "lua54,rhai,teal,lua_script_api,rhai_script_api,rune",      cross: x86_64-apple-darwin       },
-        {label: Ubuntu - All Features,         os: ubuntu-latest,       features: "lua54,lua_script_api,rhai,teal,rhai_script_api,rune",      cross: x86_64-unknown-linux-gnu  }, 
-        {label: Ubuntu Aarch64 - All Features, os: ubuntu-latest,       features: "lua54,rhai,teal,lua_script_api,rhai_script_api,rune",      cross: aarch64-unknown-linux-gnu },
-        {label: Ubuntu - Lua51,                os: ubuntu-latest,       features: "lua51,lua_script_api",                                     cross: x86_64-unknown-linux-gnu  }, 
-        {label: Ubuntu - Lua52,                os: ubuntu-latest,       features: "lua52,lua_script_api",                                     cross: x86_64-unknown-linux-gnu  }, 
-        {label: Ubuntu - Lua53,                os: ubuntu-latest,       features: "lua53,lua_script_api",                                     cross: x86_64-unknown-linux-gnu  }, 
-        {label: Ubuntu - Luajit,               os: ubuntu-latest,       features: "luajit,lua_script_api",                                    cross: x86_64-unknown-linux-gnu  }, 
-        {label: Ubuntu - Luajit52,             os: ubuntu-latest,       features: "luajit52,lua_script_api",                                  cross: x86_64-unknown-linux-gnu  }
+        {label: Windows - All Features,        os: windows-latest,      features: "lua54,rhai,teal,rune",      cross: x86_64-pc-windows-msvc    }, 
+        {label: MacOS - All Features,          os: macOS-latest,        features: "lua54,rhai,teal,rune",      cross: x86_64-apple-darwin       },
+        {label: Ubuntu - All Features,         os: ubuntu-latest,       features: "lua54,rhai,teal,rune",      cross: x86_64-unknown-linux-gnu  }, 
+        {label: Ubuntu Aarch64 - All Features, os: ubuntu-latest,       features: "lua54,rhai,teal,rune",      cross: aarch64-unknown-linux-gnu },
+        {label: Ubuntu - Lua51,                os: ubuntu-latest,       features: "lua51",                                     cross: x86_64-unknown-linux-gnu  }, 
+        {label: Ubuntu - Lua52,                os: ubuntu-latest,       features: "lua52",                                     cross: x86_64-unknown-linux-gnu  }, 
+        {label: Ubuntu - Lua53,                os: ubuntu-latest,       features: "lua53",                                     cross: x86_64-unknown-linux-gnu  }, 
+        {label: Ubuntu - Luajit,               os: ubuntu-latest,       features: "luajit",                                    cross: x86_64-unknown-linux-gnu  }, 
+        {label: Ubuntu - Luajit52,             os: ubuntu-latest,       features: "luajit52",                                  cross: x86_64-unknown-linux-gnu  }
       ]
     steps:
       - if: runner.os == 'linux'
@@ -94,7 +94,7 @@ jobs:
       - uses: actions-rs/cargo@v1
         with:
           command: clippy
-          args: --features=lua54,rhai,teal,lua_script_api,rhai_script_api,rune --profile=ephemeral-build -- -D warnings 
+          args: --features=lua54,rhai,teal,rune --profile=ephemeral-build -- -D warnings 
   tests:
     name: Tests
     runs-on: ubuntu-latest
@@ -114,7 +114,7 @@ jobs:
       - uses: actions-rs/cargo@v1
         with:
           command: test
-          args: --workspace --features=lua54,rhai,teal,lua_script_api,rhai_script_api,rune --profile=ephemeral-build
+          args: --workspace --features=lua54,rhai,teal,rune --profile=ephemeral-build
   docs:
     name: Docs
     runs-on: ubuntu-latest

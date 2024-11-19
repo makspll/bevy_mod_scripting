@@ -34,17 +34,30 @@ pub mod prelude {
     pub use {crate::docs::*, crate::error::*, crate::event::*, crate::systems::*, crate::*};
 }
 
-#[derive(Default)]
 /// Bevy plugin enabling scripting within the bevy mod scripting framework
 pub struct ScriptingPlugin<A: Args, C: Context, R: Runtime> {
     /// Callback for initiating the runtime
-    pub runtime_builder: Option<fn() -> R>,
+    pub runtime_builder: fn() -> R,
+    /// Settings for the runtime
+    pub runtime_settings: Option<RuntimeSettings<R>>,
     /// The handler used for executing callbacks in scripts
     pub callback_handler: Option<HandlerFn<A, C, R>>,
     /// The context builder for loading contexts
     pub context_builder: Option<ContextBuilder<C, R>>,
     /// The context assigner for assigning contexts to scripts, if not provided default strategy of keeping each script in its own context is used
     pub context_assigner: Option<ContextAssigner<C>>,
+}
+
+impl<A: Args, C: Context, R: Runtime + Default> Default for ScriptingPlugin<A, C, R> {
+    fn default() -> Self {
+        Self {
+            runtime_builder: R::default,
+            runtime_settings: Default::default(),
+            callback_handler: Default::default(),
+            context_builder: Default::default(),
+            context_assigner: Default::default(),
+        }
+    }
 }
 
 impl<A: Args, C: Context, R: Runtime> Plugin for ScriptingPlugin<A, C, R> {
@@ -60,11 +73,10 @@ impl<A: Args, C: Context, R: Runtime> Plugin for ScriptingPlugin<A, C, R> {
                 extensions: &[],
                 preprocessor: None,
             })
-            // not every script host will have a runtime, for convenience we add a dummy runtime
+            .insert_resource(self.runtime_settings.as_ref().cloned().unwrap_or_default())
             .insert_non_send_resource::<RuntimeContainer<R>>(RuntimeContainer {
-                runtime: self.runtime_builder.map(|f| f()),
+                runtime: (self.runtime_builder)(),
             })
-            .init_non_send_resource::<RuntimeContainer<R>>()
             .init_non_send_resource::<ScriptContexts<C>>()
             .insert_resource::<CallbackSettings<A, C, R>>(CallbackSettings {
                 callback_handler: self.callback_handler,
@@ -86,7 +98,9 @@ pub trait AddRuntimeInitializer<R: Runtime> {
 
 impl<R: Runtime> AddRuntimeInitializer<R> for App {
     fn add_runtime_initializer(&mut self, initializer: RuntimeInitializer<R>) -> &mut Self {
-        self.world_mut().init_resource::<RuntimeSettings<R>>();
+        if !self.world_mut().contains_resource::<RuntimeSettings<R>>() {
+            self.world_mut().init_resource::<RuntimeSettings<R>>();
+        }
         self.world_mut()
             .resource_mut::<RuntimeSettings<R>>()
             .as_mut()
@@ -178,5 +192,34 @@ impl<D: DocumentationFragment> StoreDocumentation<D> for App {
         }
 
         top_fragment.gen_docs()
+    }
+}
+
+#[cfg(test)]
+mod test {
+    use super::*;
+
+    #[test]
+    fn test_default_scripting_plugin_initializes_all_resources_correctly() {
+        let mut app = App::new();
+        #[derive(Default, Clone)]
+        struct A;
+        #[derive(Default, Clone)]
+        struct C;
+        #[derive(Default, Clone)]
+        struct R;
+        app.add_plugins(AssetPlugin::default());
+        app.add_plugins(ScriptingPlugin::<A, C, R>::default());
+
+        assert!(app.world().contains_resource::<Scripts>());
+        assert!(app.world().contains_resource::<ReflectAllocator>());
+        assert!(app.world().contains_resource::<ScriptAssetSettings>());
+        assert!(app.world().contains_resource::<RuntimeSettings<R>>());
+        assert!(app.world().contains_resource::<CallbackSettings<A, C, R>>());
+        assert!(app
+            .world()
+            .contains_resource::<ContextLoadingSettings<C, R>>());
+        assert!(app.world().contains_non_send::<RuntimeContainer<R>>());
+        assert!(app.world().contains_non_send::<ScriptContexts<C>>());
     }
 }
