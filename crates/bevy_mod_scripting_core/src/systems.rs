@@ -46,7 +46,19 @@ pub fn sync_script_data<C: Context, R: Runtime>(
         };
         // get the path
         let asset = script_assets.get(*id);
-        let asset = asset.as_ref().expect("Asset was expected to be loaded!");
+        let asset = match asset.as_ref() {
+            Some(a) => a,
+            None => {
+                if remove {
+                    debug!(
+                        "Script presumably failed to load, no need to remove anything, ignoring."
+                    );
+                    continue;
+                } else {
+                    panic!("Asset was expected to be loaded!");
+                }
+            }
+        };
 
         let path = &asset.asset_path;
         // convert it to script id

@@ -16,7 +16,7 @@ use crate::{
         LuaReflectRefProxy, LuaReflectRefMutProxy, LuaReflectValProxy, LuaValProxy,
         LuaIdentityProxy,
     },
-    RegisterLua, tealr::mlu::mlua::IntoLua,
+    type_data::RegisterLua, tealr::mlu::mlua::IntoLua,
 };
 #[derive(bevy_mod_scripting_derive::LuaProxy)]
 #[proxy(

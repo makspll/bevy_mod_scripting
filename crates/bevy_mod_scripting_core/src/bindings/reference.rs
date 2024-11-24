@@ -59,11 +59,17 @@ pub struct ReflectReference {
 
 impl ReflectReference {
 
+    /// Prints the reference using the world to resolve type names.
     pub fn print_with_world(&self, world: &WorldAccessGuard) -> String {
-        let base = world.with_resource(|_, type_registry: Mut<AppTypeRegistry>| {
-            self.base.display_with_type_name(&type_registry.read())
-        });
+        world.with_resource(|_, type_registry: Mut<AppTypeRegistry>| {
+            let type_registry = type_registry.read();
+            self.print_with_type_registry(&type_registry)
+        })
+    }
 
+    /// Prints the reference using the type registry to resolve type names. Prefer this over [`Self::print_with_world`] if you have a type registry available.
+    pub fn print_with_type_registry(&self, type_registry: &TypeRegistry) -> String {
+        let base = self.base.display_with_type_name(type_registry);
         format!("Reference(base: {}, path: {:?})", base, self.reflect_path)
     }
 
@@ -90,7 +96,7 @@ impl ReflectReference {
         })
     }
 
-    pub fn new_allocated<T: PartialReflect>(
+    pub fn new_allocated<T: Reflect>(
         value: T,
         allocator: &mut ReflectAllocator,
     ) -> ReflectReference {
@@ -98,6 +104,21 @@ impl ReflectReference {
         ReflectReference {
             base: ReflectBaseType {
                 type_id: TypeId::of::<T>(),
+                base_id: ReflectBase::Owned(id),
+            },
+            reflect_path: Vec::default(),
+        }
+    }
+
+    pub fn new_allocated_boxed(
+        value: Box<dyn PartialReflect>,
+        allocator: &mut ReflectAllocator,
+    ) -> ReflectReference {
+        let type_id = value.get_represented_type_info().map(|i| i.type_id()).expect("Expected type info for boxed value");
+        let (id, _) = allocator.allocate_boxed(value);
+        ReflectReference {
+            base: ReflectBaseType {
+                type_id,
                 base_id: ReflectBase::Owned(id),
             },
             reflect_path: Vec::default(),

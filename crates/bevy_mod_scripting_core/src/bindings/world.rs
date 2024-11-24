@@ -472,6 +472,21 @@ impl<'w> WorldAccessGuard<'w> {
         out
     }
 
+    /// Convenience to get commonly used resources at the same time. Internally identical to [`Self::with_resource`]
+    pub fn with_allocator_and_type_registry<
+        O,
+        F: FnOnce(&Self, Mut<AppTypeRegistry>, Mut<ReflectAllocator>) -> O,
+    >(
+        &self,
+        f: F,
+    ) -> O {
+        self.with_resource(|world, registry: Mut<AppTypeRegistry>| {
+            world.with_resource(|world, allocator: Mut<ReflectAllocator>| {
+                f(world, registry, allocator)
+            })
+        })
+    }
+
     /// Call a function on a type which can be proxied, first by unproxying the input with world access,
     /// then calling the function and finally proxying the output with the allocator.
     pub fn proxy_call<'i, O: Proxy, T: Unproxy, F: Fn(T::Output<'_>) -> O::Input<'i>>(

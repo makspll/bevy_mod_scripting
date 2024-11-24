@@ -1,10 +1,12 @@
 pub mod assets;
 pub mod docs;
+pub mod type_data;
 pub mod util;
 use bevy::{
-    app::{App, Plugin},
+    app::{App, Plugin, Startup},
     ecs::{entity::Entity, world::World},
-    reflect::{FromType, GetTypeRegistration, PartialReflect, Reflect, TypePath},
+    prelude::{AppTypeRegistry, Mut},
+    reflect::{impl_reflect, FromType, GetTypeRegistration, PartialReflect, Reflect, TypePath},
 };
 use bevy_mod_scripting_core::{
     bindings::{ReflectAllocator, ReflectReference, WorldCallbackAccess},
@@ -23,6 +25,9 @@ use bindings::{
 pub use tealr;
 pub mod bindings;
 use tealr::mlu::mlua::{FromLua, Function, IntoLua, IntoLuaMulti, Lua, Value};
+use type_data::{
+    pre_register_common_containers, register_lua_values, ReflectLuaProxied, ReflectLuaValue,
+};
 
 pub mod prelude {
     pub use crate::tealr::{
@@ -58,25 +63,6 @@ impl<A: LuaEventArg> Default for LuaScriptingPlugin<A> {
     }
 }
 
-pub fn register_lua_values(app: &mut bevy::prelude::App) {
-    app.register_lua_value::<usize>();
-    app.register_lua_value::<isize>();
-    app.register_lua_value::<f32>();
-    app.register_lua_value::<f64>();
-    app.register_lua_value::<u128>();
-    app.register_lua_value::<u64>();
-    app.register_lua_value::<u32>();
-    app.register_lua_value::<u16>();
-    app.register_lua_value::<u8>();
-    app.register_lua_value::<i128>();
-    app.register_lua_value::<i64>();
-    app.register_lua_value::<i32>();
-    app.register_lua_value::<i16>();
-    app.register_lua_value::<i8>();
-    app.register_lua_value::<String>();
-    app.register_lua_value::<bool>();
-}
-
 impl<A: LuaEventArg> Plugin for LuaScriptingPlugin<A> {
     fn build(&self, app: &mut bevy::prelude::App) {
         self.scripting_plugin.build(app);
@@ -92,6 +78,11 @@ impl<A: LuaEventArg> Plugin for LuaScriptingPlugin<A> {
             context.globals().set("entity", lua_entity)?;
             Ok(())
         });
+    }
+
+    fn cleanup(&self, app: &mut App) {
+        let mut type_registry = app.world_mut().get_resource_mut().unwrap();
+        pre_register_common_containers(&mut type_registry);
     }
 }
 
@@ -181,96 +172,4 @@ pub fn with_world<F: FnOnce(&mut Lua) -> Result<(), ScriptError>>(
         context.globals().set("world", LuaWorld(guard.clone()))?;
         f(context)
     })
-}
-
-/// Registers a lua proxy object via the reflection system
-pub trait RegisterLua {
-    fn register_lua_proxy<T: LuaProxied + Reflect + TypePath + GetTypeRegistration>(
-        &mut self,
-    ) -> &mut Self
-    where
-        T::Proxy: for<'l> IntoLua<'l> + for<'l> FromLua<'l>,
-        T::Proxy: From<ReflectReference> + AsRef<ReflectReference>;
-
-    fn register_lua_value<T>(&mut self) -> &mut Self
-    where
-        T: for<'l> IntoLua<'l> + for<'l> FromLua<'l>,
-        T: Reflect + Clone + TypePath + GetTypeRegistration;
-}
-
-impl RegisterLua for App {
-    fn register_lua_proxy<T: LuaProxied + Reflect + TypePath + GetTypeRegistration>(
-        &mut self,
-    ) -> &mut Self
-    where
-        T::Proxy: for<'l> IntoLua<'l> + for<'l> FromLua<'l>,
-        T::Proxy: From<ReflectReference> + AsRef<ReflectReference>,
-    {
-        self.register_type::<T>();
-        self.register_type_data::<T, ReflectLuaProxied>()
-    }
-
-    fn register_lua_value<T>(&mut self) -> &mut Self
-    where
-        T: for<'l> IntoLua<'l> + for<'l> FromLua<'l>,
-        T: Reflect + Clone + TypePath + GetTypeRegistration,
-    {
-        self.register_type::<T>();
-        self.register_type_data::<T, ReflectLuaValue>()
-    }
-}
-
-/// Stores the procedure used to convert a lua value to a reflect value and vice versa, Used for types which are represented in lua via proxies which store
-/// a reference to the actual value.
-/// This is used for types which are represented in lua with pass by reference semantics
-#[derive(Clone)]
-pub struct ReflectLuaProxied {
-    pub into_proxy:
-        for<'l> fn(ReflectReference, &'l Lua) -> Result<Value<'l>, tealr::mlu::mlua::Error>,
-    pub from_proxy:
-        for<'l> fn(Value<'l>, &'l Lua) -> Result<ReflectReference, tealr::mlu::mlua::Error>,
-}
-
-impl<T: LuaProxied + Reflect> FromType<T> for ReflectLuaProxied
-where
-    T::Proxy: for<'l> IntoLua<'l> + for<'l> FromLua<'l>,
-    T::Proxy: From<ReflectReference> + AsRef<ReflectReference>,
-{
-    fn from_type() -> Self {
-        Self {
-            into_proxy: |p, l| T::Proxy::from(p).into_lua(l),
-            from_proxy: |v, l| T::Proxy::from_lua(v, l).map(|p| p.as_ref().clone()),
-        }
-    }
-}
-
-/// Stores the procedure used to convert a lua value to a reflect value and vice versa, Used for types which are represented directly in lua with
-/// pass by value semantics, These need to implement [`Clone`]
-#[derive(Clone)]
-pub struct ReflectLuaValue {
-    pub into_value:
-        for<'l> fn(&dyn PartialReflect, &'l Lua) -> Result<Value<'l>, tealr::mlu::mlua::Error>,
-    pub set_value: for<'l> fn(
-        &mut dyn PartialReflect,
-        Value<'l>,
-        &'l Lua,
-    ) -> Result<(), tealr::mlu::mlua::Error>,
-    pub from_value:
-        for<'l> fn(Value<'l>, &'l Lua) -> Result<Box<dyn PartialReflect>, tealr::mlu::mlua::Error>,
-}
-
-impl<T: Reflect + Clone + for<'l> IntoLua<'l> + for<'l> FromLua<'l>> FromType<T>
-    for ReflectLuaValue
-{
-    fn from_type() -> Self {
-        Self {
-            into_value: |v, l| v.try_downcast_ref::<T>().unwrap().clone().into_lua(l),
-            set_value: |t, v, l| {
-                let t = t.try_downcast_mut::<T>().unwrap();
-                *t = T::from_lua(v, l)?;
-                Ok(())
-            },
-            from_value: |v, l| T::from_lua(v, l).map(|v| Box::new(v) as Box<dyn PartialReflect>),
-        }
-    }
 }

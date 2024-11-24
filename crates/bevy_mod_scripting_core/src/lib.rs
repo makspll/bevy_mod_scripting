@@ -26,6 +26,7 @@ pub mod docs;
 pub mod error;
 pub mod event;
 pub mod handler;
+pub mod reflection_extensions;
 pub mod runtime;
 pub mod script;
 pub mod systems;
