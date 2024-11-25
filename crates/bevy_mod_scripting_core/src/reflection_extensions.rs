@@ -14,6 +14,9 @@ pub trait PartialReflectExt {
     /// If the type is an option, returns either the inner value or None if the option is None.
     /// Errors if the type is not an option.
     fn as_option(&self) -> Result<Option<&dyn PartialReflect>, ScriptError>;
+
+    /// If the type is an iterable list-like type, returns an iterator over the elements.
+    fn as_list(&self) -> Result<impl Iterator<Item = &dyn PartialReflect>, ScriptError>;
 }
 
 impl<T: PartialReflect + ?Sized> PartialReflectExt for T {
@@ -39,8 +42,6 @@ impl<T: PartialReflect + ?Sized> PartialReflectExt for T {
         Ok(())
     }
 
-    /// If the type is an option, returns either the inner value or None if the option is None.
-    /// Errors if the type is not an option.
     fn as_option(&self) -> Result<Option<&dyn PartialReflect>, ScriptError> {
         self.expect_type(Some("core"), "Option")?;
 
@@ -53,6 +54,19 @@ impl<T: PartialReflect + ?Sized> PartialReflectExt for T {
         }
 
         unreachable!("core::Option is an enum with a tuple variant")
+    }
+
+    fn as_list(&self) -> Result<impl Iterator<Item = &dyn PartialReflect>, ScriptError> {
+        if let bevy::reflect::ReflectRef::List(l) = self.reflect_ref() {
+            Ok(l.iter())
+        } else {
+            Err(ScriptError::new_runtime_error(format!(
+                "Expected list-like type from crate core, but got {}",
+                self.get_represented_type_info()
+                    .map(|ti| ti.type_path())
+                    .unwrap_or_else(|| "dynamic type with no type information")
+            )))
+        }
     }
 }
 

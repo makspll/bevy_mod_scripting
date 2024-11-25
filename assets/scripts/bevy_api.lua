@@ -25,8 +25,8 @@ function on_event()
     print(comp.option_usize)
     comp.option_usize = nil
     print(comp.option_usize)
-    world:exit()
 
+    print("vec")
     print(comp.vec_of_usize)
     print(comp.vec_of_usize[2])
     comp.vec_of_usize[2] = 69
@@ -34,16 +34,6 @@ function on_event()
     world:exit()
 
     print("============")
-
-    -- the index metamethod on ReflectValue's uses bevy's reflection mechanism on top of some custom sub-reflection logic to
-    -- allow reflecting inside Options, Vectors etc. 
-    -- when we index into ReflectValue's we either get back a custom proxy or another ReflectValue
-
-    -- the LuaBevyAPIProvider provides us custom proxies for many bevy types as well as std types.
-    -- all of these implementations can be overridden via the bevy TypeRegistry
-    print("Hello:", comp.usize._1)
-    comp.usize[1] = 2
-    print("comp.usize after assigning to 2: ", comp.usize._1)
 
     -- vec's and matrices have custom __index and __newindex overrides
     print("comp.vec2 before: ", comp.vec2)

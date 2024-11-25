@@ -9,9 +9,9 @@ use bevy::{
     log::debug,
     prelude::{AppTypeRegistry, Mut},
     reflect::{
-        impl_reflect, DynamicEnum, DynamicTuple, DynamicVariant, FromType, GetTypeRegistration,
-        ParsedPath, PartialReflect, Reflect, ReflectFromReflect, ReflectPathError, TypePath,
-        TypeRegistration,
+        impl_reflect, DynamicEnum, DynamicList, DynamicTuple, DynamicVariant, FromType,
+        GetTypeRegistration, ParsedPath, PartialReflect, Reflect, ReflectFromReflect,
+        ReflectPathError, TypePath, TypeRegistration,
     },
 };
 use bevy_mod_scripting_core::{
@@ -153,6 +153,31 @@ pub struct ReflectLuaValue {
 }
 
 impl ReflectLuaValue {
+    fn dynamic_option_from_value<'lua>(
+        v: Value<'lua>,
+        lua: &'lua Lua,
+        from_value: &Arc<
+            dyn for<'l> Fn(
+                    Value<'l>,
+                    &'l Lua,
+                )
+                    -> Result<Box<dyn PartialReflect>, tealr::mlu::mlua::Error>
+                + Send
+                + Sync
+                + 'static,
+        >,
+    ) -> Result<DynamicEnum, tealr::mlu::mlua::Error> {
+        if v.is_nil() {
+            Ok(DynamicEnum::new("None", DynamicVariant::Unit))
+        } else {
+            let inner = (from_value)(v, lua)?;
+            Ok(DynamicEnum::new(
+                "Some",
+                DynamicVariant::Tuple([inner].into_iter().collect()),
+            ))
+        }
+    }
+
     /// generates implementation for an inner type wrapped by an option
     ///
     /// the option should check if the value is None if so return nil,
@@ -176,32 +201,102 @@ impl ReflectLuaValue {
                     .unwrap_or_else(|| Ok(Value::Nil))
             }),
             set_value: Arc::new(move |r, v, l| {
-                if v.is_nil() {
-                    r.apply(&DynamicEnum::new("None", DynamicVariant::Unit));
-                } else {
-                    r.apply(&DynamicEnum::new(
-                        "Some",
-                        DynamicVariant::Tuple([(from_value_clone)(v, l)?].into_iter().collect()),
-                    ));
-                }
+                let dynamic = Self::dynamic_option_from_value(v, l, &from_value_clone)?;
+                r.apply(&dynamic);
+
                 Ok(())
             }),
             from_value: Arc::new(move |v, l| {
-                let dynamic_option = if v.is_nil() {
-                    DynamicEnum::new("None", DynamicVariant::Unit)
-                } else {
-                    let inner = (from_value_clone2)(v, l)?;
-                    DynamicEnum::new("Some", DynamicVariant::Tuple([inner].into_iter().collect()))
-                };
+                let dynamic_option = Self::dynamic_option_from_value(v, l, &from_value_clone2)?;
 
-                let reflect_option = from_reflect_clone
+                from_reflect_clone
                     .from_reflect(&dynamic_option)
                     .ok_or_else(|| {
                         tealr::mlu::mlua::Error::external(ScriptError::new_runtime_error(
                             "Failed to convert to option",
                         ))
-                    })?;
-                Ok(reflect_option.into_partial_reflect())
+                    })
+                    .map(<dyn Reflect>::into_partial_reflect)
+            }),
+        }
+    }
+
+    fn dynamic_list_from_value<'lua>(
+        v: Value<'lua>,
+        lua: &'lua Lua,
+        from_value: &Arc<
+            dyn for<'l> Fn(
+                    Value<'l>,
+                    &'l Lua,
+                )
+                    -> Result<Box<dyn PartialReflect>, tealr::mlu::mlua::Error>
+                + Send
+                + Sync
+                + 'static,
+        >,
+    ) -> Result<DynamicList, tealr::mlu::mlua::Error> {
+        let table = if let Value::Table(t) = v {
+            t
+        } else {
+            return Err(tealr::mlu::mlua::Error::external(
+                ScriptError::new_runtime_error(format!(
+                    "Cannot set value of type `{}` via type: `{}`. Expected table",
+                    v.type_name(),
+                    "List",
+                )),
+            ));
+        };
+
+        let lua_values = table.sequence_values().collect::<Result<Vec<Value>, _>>()?;
+
+        let converted_values = lua_values
+            .into_iter()
+            .map(|v| (from_value)(v, lua))
+            .collect::<Result<Vec<_>, _>>()?;
+
+        Ok(DynamicList::from_iter(converted_values))
+    }
+
+    pub fn new_for_list(inner_reflect_lua_value: &ReflectLuaValue) -> Self {
+        let into_value_clone = inner_reflect_lua_value.into_value.clone();
+        let from_value_clone = inner_reflect_lua_value.from_value.clone();
+        let from_value_clone2 = inner_reflect_lua_value.from_value.clone();
+        // let vec_from_reflect = vec_from_reflect.clone();
+        Self {
+            into_value: Arc::new(move |r, l| {
+                let inner = r.as_list().map_err(tealr::mlu::mlua::Error::external)?;
+                let inner = inner
+                    .map(|i| (into_value_clone)(i, l))
+                    .collect::<Result<Vec<_>, _>>()?;
+
+                l.create_table_from(
+                    inner
+                        .into_iter()
+                        .enumerate()
+                        .map(|(i, v)| (Value::Integer(i as i64 + 1), v)),
+                )
+                .map(Value::Table)
+            }),
+            set_value: Arc::new(move |r, v, l| {
+                let dynamic = Self::dynamic_list_from_value(v, l, &from_value_clone)?;
+                r.apply(&dynamic);
+                Ok(())
+            }),
+            from_value: Arc::new(move |v, l| {
+                let dynamic = Self::dynamic_list_from_value(v, l, &from_value_clone2)?;
+
+                // vec_from_reflect
+                //     .from_reflect(&dynamic)
+                //     .ok_or_else(|| {
+                //         tealr::mlu::mlua::Error::external(ScriptError::new_runtime_error(
+                //             "Failed to convert to option",
+                //         ))
+                //     })
+                //     .map(<dyn Reflect>::into_partial_reflect)
+                // TODO: testing this out, not returning a concrete type could be weird
+                // would anything but this impl care about this?
+                // Ok(Box::new(dynamic))
+                Ok(Box::new(dynamic))
             }),
         }
     }
@@ -278,6 +373,21 @@ fn destructure_option_type(reg: &TypeRegistration) -> Option<(TypeId, TypeId)> {
     }
 }
 
+fn destructure_vec_type(reg: &TypeRegistration) -> Option<(TypeId, TypeId)> {
+    let type_path_table = reg.type_info().type_path_table();
+    let is_core = type_path_table.crate_name().is_some_and(|s| s == "alloc");
+    let is_vec = type_path_table.ident().is_some_and(|s| s == "Vec");
+
+    if is_core && is_vec {
+        reg.type_info()
+            .generics()
+            .get_named("T")
+            .map(|t| (reg.type_id(), t.type_id()))
+    } else {
+        None
+    }
+}
+
 /// iterates over type data for all types which have registered [`ReflectLuaProxied`] and [`ReflectLuaValue`] implementations,
 /// and registers corresponding [`Option<T>`] [`Result<T, E>`] etc type data equivalents
 pub fn pre_register_common_containers(type_registry: &mut AppTypeRegistry) {
@@ -294,7 +404,7 @@ pub fn pre_register_common_containers(type_registry: &mut AppTypeRegistry) {
                 type_registry.get_type_data::<ReflectFromReflect>(option_type_id)
             {
                 let option_lua_proxied_data =
-                    ReflectLuaValue::new_for_option(&inner_lua_value_data, &option_from_reflect);
+                    ReflectLuaValue::new_for_option(inner_lua_value_data, option_from_reflect);
 
                 lua_value_insertions.insert(option_type_id, option_lua_proxied_data);
             }
@@ -311,6 +421,20 @@ pub fn pre_register_common_containers(type_registry: &mut AppTypeRegistry) {
 
                 lua_proxied_insertions.insert(option_type_id, option_lua_proxied_data);
             }
+        }
+    }
+
+    for (vec_type_id, inner_type_id) in type_registry.iter().filter_map(destructure_vec_type) {
+        if let Some(inner_lua_value_data) =
+            type_registry.get_type_data::<ReflectLuaValue>(inner_type_id)
+        {
+            // if let Some(vec_from_reflect) =
+            //     type_registry.get_type_data::<ReflectFromReflect>(vec_type_id)
+            // {
+            let vec_lua_value_data = ReflectLuaValue::new_for_list(inner_lua_value_data);
+
+            lua_value_insertions.insert(vec_type_id, vec_lua_value_data);
+            // }
         }
     }
 
@@ -381,38 +505,38 @@ mod tests {
         AppTypeRegistry(type_registry_arc)
     }
 
+    macro_rules! assert_transitively_registers {
+        ($target_type:ty, $container_type:ty, $type_data:ty) => {{
+            let mut app_type_registry = setup_type_registry::<$target_type, $container_type>();
+            app_type_registry
+                .write()
+                .register_type_data::<$target_type, $type_data>();
+
+            pre_register_common_containers(&mut app_type_registry);
+
+            let type_registry = app_type_registry.read();
+            let container_type_id = std::any::TypeId::of::<$container_type>();
+            let container_type_registration = type_registry.get(container_type_id).unwrap();
+
+            let type_data = container_type_registration.contains::<$type_data>();
+            assert!(
+                type_data,
+                "{:?} should have type data {:?}",
+                std::any::type_name::<$container_type>(),
+                std::any::type_name::<$type_data>()
+            );
+        }};
+    }
+
     #[test]
     fn test_pre_register_common_containers_lua_value() {
-        let mut app_type_registry = setup_type_registry::<usize, Option<usize>>();
-        app_type_registry
-            .write()
-            .register_type_data::<usize, ReflectLuaValue>();
-
-        pre_register_common_containers(&mut app_type_registry);
-
-        let type_registry = app_type_registry.read();
-        let option_type_id = std::any::TypeId::of::<Option<usize>>();
-        let option_type_registration = type_registry.get(option_type_id).unwrap();
-
-        let type_data = option_type_registration.contains::<ReflectLuaValue>();
-        assert!(type_data, "Option<usize> should have type data");
+        assert_transitively_registers!(usize, Option<usize>, ReflectLuaValue);
+        assert_transitively_registers!(usize, Vec<usize>, ReflectLuaValue);
     }
 
     #[test]
     fn test_pre_register_common_containers_lua_proxy() {
-        let mut app_type_registry = setup_type_registry::<Proxied, Option<Proxied>>();
-        app_type_registry
-            .write()
-            .register_type_data::<Proxied, ReflectLuaProxied>();
-
-        pre_register_common_containers(&mut app_type_registry);
-
-        let type_registry = app_type_registry.read();
-        let option_type_id = std::any::TypeId::of::<Option<Proxied>>();
-        let option_type_registration = type_registry.get(option_type_id).unwrap();
-
-        let type_data = option_type_registration.contains::<ReflectLuaProxied>();
-        assert!(type_data, "Option<usize> should have type data");
+        assert_transitively_registers!(Proxied, Option<Proxied>, ReflectLuaProxied);
     }
 
     #[test]
@@ -558,6 +682,42 @@ mod tests {
     }
 
     #[test]
+    fn test_vec_lua_value_impl_into_value() {
+        let mut app_type_registry = setup_type_registry::<usize, Vec<usize>>();
+        app_type_registry
+            .write()
+            .register_type_data::<usize, ReflectLuaValue>();
+
+        pre_register_common_containers(&mut app_type_registry);
+
+        let type_registry = app_type_registry.read();
+        let option_type_data = type_registry
+            .get_type_data::<ReflectLuaValue>(std::any::TypeId::of::<Vec<usize>>())
+            .unwrap();
+        let inner_type_data = type_registry
+            .get_type_data::<ReflectLuaValue>(std::any::TypeId::of::<usize>())
+            .unwrap();
+
+        // option::some into_value should be a table with the inner value converted to Lua
+        let lua = Lua::new();
+        let value: usize = 5;
+        let option_value = vec![value];
+        let expected_into_value = (inner_type_data.into_value)(&value, &lua).unwrap();
+        let gotten_into_value = (option_type_data.into_value)(&option_value, &lua).unwrap();
+
+        assert_eq!(
+            expected_into_value,
+            gotten_into_value.as_table().unwrap().pop().unwrap(),
+        );
+
+        // an empty vec should be equivalent to an empty table
+        let vec_value: Vec<usize> = vec![];
+        let gotten_into_value = (option_type_data.into_value)(&vec_value, &lua).unwrap();
+
+        assert!(gotten_into_value.as_table().unwrap().is_empty());
+    }
+
+    #[test]
     fn test_option_lua_value_set_value() {
         let mut app_type_registry = setup_type_registry::<usize, Option<usize>>();
         app_type_registry
@@ -607,6 +767,47 @@ mod tests {
     }
 
     #[test]
+    fn test_vec_lua_value_set_value() {
+        let mut app_type_registry = setup_type_registry::<usize, Vec<usize>>();
+        app_type_registry
+            .write()
+            .register_type_data::<usize, ReflectLuaValue>();
+
+        pre_register_common_containers(&mut app_type_registry);
+
+        let type_registry = app_type_registry.read();
+        let option_type_data = type_registry
+            .get_type_data::<ReflectLuaValue>(std::any::TypeId::of::<Vec<usize>>())
+            .unwrap();
+
+        // setting an existing vec
+        let lua = Lua::new();
+        let new_vec = Value::Table(
+            lua.create_table_from(vec![(1, 5.into_lua(&lua).unwrap())])
+                .unwrap(),
+        );
+        let mut target_vec = vec![0usize];
+        (option_type_data.set_value)(&mut target_vec, new_vec.clone(), &lua).unwrap();
+        assert_eq!(target_vec, vec![5],);
+
+        // setting an existing vec to an empty table should create a new empty vec
+        (option_type_data.set_value)(
+            &mut target_vec,
+            Value::Table(
+                lua.create_table_from(Vec::<(isize, usize)>::default())
+                    .unwrap(),
+            ),
+            &lua,
+        )
+        .unwrap();
+        assert_eq!(target_vec, Vec::<usize>::default(),);
+
+        // setting an empty vec to a table with a value should set the vec to the value
+        (option_type_data.set_value)(&mut target_vec, new_vec, &lua).unwrap();
+        assert_eq!(target_vec, vec![5],);
+    }
+
+    #[test]
     fn test_option_lua_value_from_value() {
         let mut app_type_registry = setup_type_registry::<usize, Option<usize>>();
         app_type_registry
@@ -640,6 +841,45 @@ mod tests {
             *gotten_value.try_downcast::<Option<usize>>().unwrap(),
             "Option<usize> from_value should correctly convert a nil value"
         );
+    }
+
+    #[test]
+    fn test_vec_lua_value_from_value() {
+        let mut app_type_registry = setup_type_registry::<usize, Vec<usize>>();
+        app_type_registry
+            .write()
+            .register_type_data::<usize, ReflectLuaValue>();
+
+        pre_register_common_containers(&mut app_type_registry);
+
+        let type_registry = app_type_registry.read();
+        let option_type_data = type_registry
+            .get_type_data::<ReflectLuaValue>(std::any::TypeId::of::<Vec<usize>>())
+            .unwrap();
+
+        // from_value should correctly work for concrete values
+        let lua = Lua::new();
+        let value = vec![5usize];
+        let gotten_value =
+            (option_type_data.from_value)(value.into_lua(&lua).unwrap(), &lua).unwrap();
+
+        assert_eq!(
+            gotten_value
+                .as_list()
+                .unwrap()
+                .map(|v| *v.try_downcast_ref::<usize>().unwrap())
+                .collect::<Vec<_>>()
+                .pop(),
+            Some(5usize)
+        );
+
+        // from_value should correctly work for empty lists
+        let nil_lua = Value::Table(
+            lua.create_table_from(Vec::<(isize, usize)>::default())
+                .unwrap(),
+        );
+        let gotten_value = (option_type_data.from_value)(nil_lua, &lua).unwrap();
+        assert!(gotten_value.as_list().unwrap().count() == 0);
     }
 
     #[test]

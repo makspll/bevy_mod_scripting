@@ -14,11 +14,11 @@ pub struct MyComponent {
     usize: usize,
     f32: f32,
     mat3: Mat3,
+    vec_of_usize: Vec<usize>,
+    option_usize: Option<usize>,
     option_vec3: Option<Vec3>,
     vec_of_option_bools: Vec<Option<bool>>,
     option_vec_of_bools: Option<Vec<bool>>,
-    vec_of_usize: Vec<usize>,
-    option_usize: Option<usize>,
 }
 
 const SCRIPT_NAME: &str = "scripts/bevy_api.lua";

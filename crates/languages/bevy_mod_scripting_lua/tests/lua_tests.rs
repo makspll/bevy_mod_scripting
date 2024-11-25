@@ -23,7 +23,8 @@ use bevy_mod_scripting_lua::{
     },
     lua_context_load, lua_handler,
     prelude::{Lua, LuaFunction, LuaHookTriggers},
-    register_lua_values, LuaScriptingPlugin, ReflectLuaValue,
+    type_data::{register_lua_values, ReflectLuaValue},
+    LuaScriptingPlugin,
 };
 use libtest_mimic::{Arguments, Failed, Trial};
 use std::{
