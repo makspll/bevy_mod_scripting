@@ -62,28 +62,28 @@ impl ReflectAllocator {
         (id, value)
     }
 
-    /// Moves the given boxed [`PartialReflect`] value into the allocator, returning an [`AllocationId`] which can be used to access it later
-    pub fn allocate_boxed(
-        &mut self,
-        existing: Box<dyn PartialReflect>,
-    ) -> (ReflectAllocationId, ReflectAllocation) {
-        let type_id = existing.get_represented_type_info().map(|i| i.type_id());
-        let id = ReflectAllocationId(self.allocations.len());
+    // /// Moves the given boxed [`PartialReflect`] value into the allocator, returning an [`AllocationId`] which can be used to access it later
+    // pub fn allocate_boxed(
+    //     &mut self,
+    //     existing: Box<dyn PartialReflect>,
+    // ) -> (ReflectAllocationId, ReflectAllocation) {
+    //     let type_id = existing.get_represented_type_info().map(|i| i.type_id());
+    //     let id = ReflectAllocationId(self.allocations.len());
 
-        let raw_ptr = Box::into_raw(existing);
-        // Safety:
-        // - we are the only ones to have access to this value since we have the Box
-        // - UnsafeCell is repr(transparent), meaning we can safely transmute between it and the trait object
-        // TODO: I don't think we can use this, because from_raw has a pre-condition that requires the pointer to have been an arc before
-        let arc: Arc<UnsafeCell<dyn PartialReflect>> =
-            unsafe { Arc::from_raw(raw_ptr as *const _) };
-        let allocation = ReflectAllocation::new(arc);
-        self.allocations.insert(id, allocation.clone());
-        if let Some(type_id) = type_id {
-            self.types.insert(id, type_id);
-        }
-        (id, allocation)
-    }
+    //     let raw_ptr = Box::into_raw(existing);
+    //     // Safety:
+    //     // - we are the only ones to have access to this value since we have the Box
+    //     // - UnsafeCell is repr(transparent), meaning we can safely transmute between it and the trait object
+    //     // TODO: I don't think we can use this, because from_raw has a pre-condition that requires the pointer to have been an arc before
+    //     let arc: Arc<UnsafeCell<dyn PartialReflect>> =
+    //         unsafe { Arc::from_raw(raw_ptr as *const _) };
+    //     let allocation = ReflectAllocation::new(arc);
+    //     self.allocations.insert(id, allocation.clone());
+    //     if let Some(type_id) = type_id {
+    //         self.types.insert(id, type_id);
+    //     }
+    //     (id, allocation)
+    // }
 
     pub fn get(&self, id: ReflectAllocationId) -> Option<ReflectAllocation> {
         self.allocations.get(&id).cloned()

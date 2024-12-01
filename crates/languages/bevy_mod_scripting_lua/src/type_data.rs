@@ -1,5 +1,6 @@
 use std::{
-    any::TypeId,
+    any::{Any, TypeId},
+    clone,
     collections::{HashMap, HashSet},
     sync::Arc,
 };
@@ -10,8 +11,8 @@ use bevy::{
     prelude::{AppTypeRegistry, Mut},
     reflect::{
         impl_reflect, DynamicEnum, DynamicList, DynamicTuple, DynamicVariant, FromType,
-        GetTypeRegistration, ParsedPath, PartialReflect, Reflect, ReflectFromReflect,
-        ReflectPathError, TypePath, TypeRegistration,
+        GetTypeRegistration, List, ParsedPath, PartialReflect, Reflect, ReflectFromReflect,
+        ReflectMut, ReflectPathError, TypeInfo, TypePath, TypeRegistration,
     },
 };
 use bevy_mod_scripting_core::{
@@ -19,15 +20,16 @@ use bevy_mod_scripting_core::{
     error::ScriptError,
     reflection_extensions::PartialReflectExt,
 };
-use tealr::mlu::mlua::{FromLua, IntoLua, Lua, Value};
+use tealr::mlu::mlua::{FromLua, IntoLua, Lua, Table, Value};
 
-use crate::bindings::{proxy::LuaProxied, world::GetWorld};
+use crate::bindings::{proxy::LuaProxied, reference::LuaReflectReference, world::GetWorld};
 
 /// Stores the procedure used to convert a lua value to a reflect value and vice versa, Used for types which are represented in lua via proxies which store
 /// a reference to the actual value.
 /// This is used for types which are represented in lua with pass by reference semantics
 #[derive(Clone)]
 pub struct ReflectLuaProxied {
+    // TODO: should these be script errors?
     pub into_proxy: Arc<
         dyn for<'l> Fn(ReflectReference, &'l Lua) -> Result<Value<'l>, tealr::mlu::mlua::Error>
             + Send
@@ -40,34 +42,38 @@ pub struct ReflectLuaProxied {
             + Sync
             + 'static,
     >,
+    /// Optional override for setting behavior, should be respected by all handling types for unproxying to work recurively.
+    /// Normally used when [`PartialReflect::apply`] does not do the right thing.
+    pub opt_set: Option<
+        Arc<
+            dyn for<'l> Fn(
+                    &mut dyn PartialReflect,
+                    Box<dyn PartialReflect>,
+                ) -> Result<(), ScriptError>
+                + Send
+                + Sync
+                + 'static,
+        >,
+    >,
 }
 
 impl ReflectLuaProxied {
     /// Generates a type data which can be used on [`Option<T>`] types which are represented in lua with pass by reference semantics
-    fn new_for_option(
-        inner_lua_proxied_data: &ReflectLuaProxied,
-        option_from_reflect: &ReflectFromReflect,
-    ) -> Self {
+    fn new_for_option(inner_lua_proxied_data: &ReflectLuaProxied, container_type_info: &'static TypeInfo) -> Self {
         let ref_into_option = |mut r: ReflectReference| {
             r.index_path(ParsedPath::parse_static("0").expect("Invalid reflection path"));
             r
         };
         let into_proxy_clone = inner_lua_proxied_data.into_proxy.clone();
         let from_proxy_clone = inner_lua_proxied_data.from_proxy.clone();
-        let option_from_reflect = option_from_reflect.clone();
+        // let from_proxy_clone = inner_lua_proxied_data.from_proxy.clone();
         Self {
             into_proxy: Arc::new(move |reflect_ref, l| {
                 // read the value and check if it is None, if so return nil
                 // otherwise use the inner type's into_proxy
-                let world = l.get_world()?;
-                let is_some = world
-                    .with_allocator_and_type_registry(|_, type_registry, allocator| {
-                        let type_registry = type_registry.read();
-                        reflect_ref.with_reflect(&world, &type_registry, Some(&allocator), |s| {
-                            s.as_option().map(|r| r.is_some())
-                        })
-                    })
-                    .map_err(tealr::mlu::mlua::Error::external)?;
+                let world = l.get_world();
+                let is_some = reflect_ref
+                    .with_reflect(&world, |s, _, _| s.as_option().map(|r| r.is_some()))??;
 
                 if is_some {
                     (into_proxy_clone)(ref_into_option(reflect_ref), l)
@@ -77,33 +83,169 @@ impl ReflectLuaProxied {
             }),
             from_proxy: Arc::new(move |v, l| {
                 if v.is_nil() {
+                    bevy::log::debug!("Option from proxy: Nil");
                     // we need to allocate a new reflect reference since we don't have one existing
-                    let dynamic_value = DynamicEnum::new("None", DynamicVariant::Unit);
-
-                    let world = l.get_world()?;
+                    let mut dynamic_value = DynamicEnum::new("None", DynamicVariant::Unit);
+                    dynamic_value.set_represented_type(Some(container_type_info));
+                    let world = l.get_world();
                     let reflect_ref =
-                        world.with_resource(|w, mut allocator: Mut<ReflectAllocator>| {
-                            let value = option_from_reflect
-                                .from_reflect(&dynamic_value)
-                                .ok_or_else(|| {
-                                    tealr::mlu::mlua::Error::external(
-                                        ScriptError::new_reflection_error(""),
-                                    )
-                                })?
-                                .into_partial_reflect();
-                            Ok::<_, tealr::mlu::mlua::Error>(ReflectReference::new_allocated_boxed(
-                                value,
+                        world.with_resource(|_, mut allocator: Mut<ReflectAllocator>| {
+                            Ok::<_, tealr::mlu::mlua::Error>(ReflectReference::new_allocated(
+                                dynamic_value,
                                 &mut allocator,
                             ))
                         })?;
 
                     Ok(reflect_ref)
                 } else {
+                    bevy::log::debug!("Option from proxy: {:?}", v);
                     let mut inner_ref = (from_proxy_clone)(v, l)?;
                     inner_ref.reflect_path.pop();
                     Ok(inner_ref)
                 }
             }),
+            opt_set: None,
+        }
+    }
+
+    fn dynamic_list_from_value<'lua>(
+        v: Table<'lua>,
+        lua: &'lua Lua,
+        from_proxy: &Arc<
+            dyn for<'l> Fn(
+                    Value<'l>,
+                    &'l Lua,
+                )
+                    -> Result<Box<dyn PartialReflect>, tealr::mlu::mlua::Error>
+                + Send
+                + Sync
+                + 'static,
+        >,
+        container_type_info: &'static TypeInfo
+    ) -> Result<DynamicList, tealr::mlu::mlua::Error> {
+        let lua_values = v.sequence_values().collect::<Result<Vec<Value>, _>>()?;
+
+        let converted_values = lua_values
+            .into_iter()
+            .map(|v| (from_proxy)(v, lua))
+            .collect::<Result<Vec<_>, _>>()?;
+
+        let mut dynamic_type = DynamicList::from_iter(converted_values);
+        dynamic_type.set_represented_type(Some(container_type_info));
+        Ok(dynamic_type)
+    }
+
+    fn dynamic_list_from_proxy<'lua>(
+        v: Table<'lua>,
+        lua: &'lua Lua,
+        from_proxy: &Arc<
+            dyn for<'l> Fn(Value<'l>, &'l Lua) -> Result<ReflectReference, tealr::mlu::mlua::Error>
+                + Send
+                + Sync
+                + 'static,
+        >,
+        container_type_info: &'static TypeInfo,
+    ) -> Result<DynamicList, tealr::mlu::mlua::Error> {
+        let lua_values = v.sequence_values().collect::<Result<Vec<Value>, _>>()?;
+
+        // TODO: less allocations plz, i can't be bothered to do this right now
+        let converted_values = lua_values
+            .into_iter()
+            .map(|v| (from_proxy)(v, lua))
+            .collect::<Result<Vec<_>, _>>()?;
+        let world = lua.get_world();
+
+        let boxed_values = converted_values
+            .into_iter()
+            .map(|v| v.with_reflect(&world, |r, _, _| r.clone_value()))
+            .collect::<Result<Vec<_>, _>>()?;
+
+        let mut dynamic_type = DynamicList::from_iter(boxed_values);
+        // TODO: what to do with this memory, I think it's fine to leave hanging till exit
+        dynamic_type.set_represented_type(Some(container_type_info));
+        Ok(dynamic_type)
+    }
+
+    fn new_for_listlike_value(
+        inner_lua_value_data: &ReflectLuaValue,
+        container_type_info: &'static TypeInfo,
+    ) -> Self {
+        let from_value_clone = inner_lua_value_data.from_value.clone();
+        Self {
+            into_proxy: Arc::new(|r, l| LuaReflectReference(r).into_lua(l)),
+            from_proxy: Arc::new(move |v, l| {
+                if let Value::Table(t) = v {
+                    let dynamic_table = Self::dynamic_list_from_value(t, l, &from_value_clone, container_type_info)?;
+                    let world = l.get_world();
+                    let allocated =
+                        world.with_resource(|_, mut allocator: Mut<ReflectAllocator>| {
+                            ReflectReference::new_allocated(dynamic_table, &mut allocator)
+                        });
+                    Ok(allocated)
+                } else {
+                    LuaReflectReference::from_lua(v, l).map(|v| v.0)
+                }
+            }),
+            opt_set: Some(Arc::new(|r, other| {
+                r.set_as_list(other, |a, b| {
+                    Ok(a.try_apply(b)?)
+                })
+            })),
+        }
+    }
+
+    fn new_for_listlike_proxy(inner_lua_proxied_data: &ReflectLuaProxied) -> Self {
+        // let from_proxy_clone = inner_lua_proxied_data.from_proxy.clone();
+        Self {
+            into_proxy: Arc::new(|r, l| LuaReflectReference(r).into_lua(l)),
+            // from_proxy: Arc::new(|v, l| {
+            //     // if it's a table, set existing elements using underlying from proxy
+            //     // if it's a ref, return the ref
+
+            //     if let Value::Table(t) = v {
+            //         let ts = t.sequence_values::<Value>();
+            //         for e in ts {
+            //             let v = e?;
+            //             let elem_ref = (from_proxy_clone)(v, l)?;
+            //         }
+            //     } else {
+            //         LuaReflectReference::from_lua(v, l)
+            //     }
+            // }),
+            from_proxy: Arc::new(|v, l| {
+                // can either be a table or a direct ref
+                // construct dynamic vec either way
+                // if let Value::Table(t) = v {
+                //     for v in t.sequence_values::<Value>() {
+                //         let lua_elem = v?;
+                //     }
+                // } else {
+                //     todo!()
+                // }
+                todo!()
+            }),
+            opt_set: todo!(), //     set_from_proxy: todo!(), // set_from_proxy: Arc::new(|r, v, l| {
+                              //                              //     let table = if let Value::Table(t) = v {
+                              //                              //         t
+                              //                              //     } else {
+                              //                              //         return Err(tealr::mlu::mlua::Error::external(
+                              //                              //             ScriptError::new_runtime_error(format!(
+                              //                              //                 "Cannot set value of type `{}` via type: `{}`. Expected table",
+                              //                              //                 v.type_name(),
+                              //                              //                 "List",
+                              //                              //             )),
+                              //                              //         ));
+                              //                              //     };
+
+                              //                              //     let lua_values = table.sequence_values().collect::<Result<Vec<Value>, _>>()?;
+
+                              //                              //     let converted_values = lua_values
+                              //                              //         .into_iter()
+                              //                              //         .map(|v| (from_proxy)(v, lua))
+                              //                              //         .collect::<Result<Vec<_>, _>>()?;
+
+                              //                              //     let target_list = r.as_list().map_err(tealr::mlu::mlua::Error::external)?;
+                              //                              // }),
         }
     }
 }
@@ -117,6 +259,16 @@ where
         Self {
             into_proxy: Arc::new(|p, l| T::Proxy::from(p).into_lua(l)),
             from_proxy: Arc::new(|v, l| T::Proxy::from_lua(v, l).map(|p| p.as_ref().clone())),
+            opt_set: None,
+            // set_from_proxy: Arc::new(|r, v, l| {
+            //     let proxy = T::Proxy::from_lua(v, l).map(|p| p.as_ref().clone())?;
+            //     let world = l.get_world();
+            //     proxy.with_reflect(&world, |other, _, _| {
+            //         r.apply(other);
+            //         Ok::<_, tealr::mlu::mlua::Error>(())
+            //     })?;
+            //     Ok(())
+            // }),
         }
     }
 }
@@ -131,16 +283,16 @@ pub struct ReflectLuaValue {
             + Sync
             + 'static,
     >,
-    pub set_value: Arc<
-        dyn for<'l> Fn(
-                &mut dyn PartialReflect,
-                Value<'l>,
-                &'l Lua,
-            ) -> Result<(), tealr::mlu::mlua::Error>
-            + Send
-            + Sync
-            + 'static,
-    >,
+    // pub set_value: Arc<
+    //     dyn for<'l> Fn(
+    //             &mut dyn PartialReflect,
+    //             Value<'l>,
+    //             &'l Lua,
+    //         ) -> Result<(), tealr::mlu::mlua::Error>
+    //         + Send
+    //         + Sync
+    //         + 'static,
+    // >,
     pub from_value: Arc<
         dyn for<'l> Fn(
                 Value<'l>,
@@ -166,16 +318,18 @@ impl ReflectLuaValue {
                 + Sync
                 + 'static,
         >,
+        container_type_info: &'static TypeInfo,
     ) -> Result<DynamicEnum, tealr::mlu::mlua::Error> {
-        if v.is_nil() {
-            Ok(DynamicEnum::new("None", DynamicVariant::Unit))
+        let mut dynamic_enum = if v.is_nil() {
+            DynamicEnum::new("None", DynamicVariant::Unit)
         } else {
             let inner = (from_value)(v, lua)?;
-            Ok(DynamicEnum::new(
-                "Some",
-                DynamicVariant::Tuple([inner].into_iter().collect()),
-            ))
-        }
+            DynamicEnum::new("Some", DynamicVariant::Tuple([inner].into_iter().collect()))
+        };
+
+        dynamic_enum.set_represented_type(Some(container_type_info));
+
+        Ok(dynamic_enum)
     }
 
     /// generates implementation for an inner type wrapped by an option
@@ -184,15 +338,10 @@ impl ReflectLuaValue {
     /// if the value is some use ReflectLuaValue implementation of the inner type.
     ///
     /// If there is a type mismatch at any point will return an error
-    pub fn new_for_option(
-        inner_reflect_lua_value: &ReflectLuaValue,
-        option_from_reflect: &ReflectFromReflect,
-    ) -> Self {
+    pub fn new_for_option(inner_reflect_lua_value: &ReflectLuaValue, container_type_info: &'static TypeInfo) -> Self {
         let into_value_clone = inner_reflect_lua_value.into_value.clone();
         // we have to do this so the closures can be moved into the arc
-        let from_value_clone = inner_reflect_lua_value.from_value.clone();
         let from_value_clone2 = inner_reflect_lua_value.from_value.clone();
-        let from_reflect_clone = option_from_reflect.clone();
         Self {
             into_value: Arc::new(move |r, lua| {
                 r.as_option()
@@ -200,106 +349,100 @@ impl ReflectLuaValue {
                     .map(|inner| (into_value_clone)(inner, lua))
                     .unwrap_or_else(|| Ok(Value::Nil))
             }),
-            set_value: Arc::new(move |r, v, l| {
-                let dynamic = Self::dynamic_option_from_value(v, l, &from_value_clone)?;
-                r.apply(&dynamic);
-
-                Ok(())
-            }),
             from_value: Arc::new(move |v, l| {
-                let dynamic_option = Self::dynamic_option_from_value(v, l, &from_value_clone2)?;
+                let dynamic_option = Self::dynamic_option_from_value(v, l, &from_value_clone2, container_type_info)?;
 
-                from_reflect_clone
-                    .from_reflect(&dynamic_option)
-                    .ok_or_else(|| {
-                        tealr::mlu::mlua::Error::external(ScriptError::new_runtime_error(
-                            "Failed to convert to option",
-                        ))
-                    })
-                    .map(<dyn Reflect>::into_partial_reflect)
+                Ok(Box::new(dynamic_option))
             }),
+            // set_value: Arc::new(move |r, v, l| {
+            //     let dynamic = Self::dynamic_option_from_value(v, l, &from_value_clone)?;
+            //     r.apply(&dynamic);
+            //     Ok(())
+            // }),
         }
     }
 
-    fn dynamic_list_from_value<'lua>(
-        v: Value<'lua>,
-        lua: &'lua Lua,
-        from_value: &Arc<
-            dyn for<'l> Fn(
-                    Value<'l>,
-                    &'l Lua,
-                )
-                    -> Result<Box<dyn PartialReflect>, tealr::mlu::mlua::Error>
-                + Send
-                + Sync
-                + 'static,
-        >,
-    ) -> Result<DynamicList, tealr::mlu::mlua::Error> {
-        let table = if let Value::Table(t) = v {
-            t
-        } else {
-            return Err(tealr::mlu::mlua::Error::external(
-                ScriptError::new_runtime_error(format!(
-                    "Cannot set value of type `{}` via type: `{}`. Expected table",
-                    v.type_name(),
-                    "List",
-                )),
-            ));
-        };
+    // fn dynamic_list_from_value<'lua>(
+    //     v: Value<'lua>,
+    //     lua: &'lua Lua,
+    //     from_value: &Arc<
+    //         dyn for<'l> Fn(
+    //                 Value<'l>,
+    //                 &'l Lua,
+    //             )
+    //                 -> Result<Box<dyn PartialReflect>, tealr::mlu::mlua::Error>
+    //             + Send
+    //             + Sync
+    //             + 'static,
+    //     >,
+    // ) -> Result<DynamicList, tealr::mlu::mlua::Error> {
+    //     let table = if let Value::Table(t) = v {
+    //         t
+    //     } else {
+    //         return Err(tealr::mlu::mlua::Error::external(
+    //             ScriptError::new_runtime_error(format!(
+    //                 "Cannot set value of type `{}` via type: `{}`. Expected table",
+    //                 v.type_name(),
+    //                 "List",
+    //             )),
+    //         ));
+    //     };
 
-        let lua_values = table.sequence_values().collect::<Result<Vec<Value>, _>>()?;
+    //     let lua_values = table.sequence_values().collect::<Result<Vec<Value>, _>>()?;
 
-        let converted_values = lua_values
-            .into_iter()
-            .map(|v| (from_value)(v, lua))
-            .collect::<Result<Vec<_>, _>>()?;
+    //     let converted_values = lua_values
+    //         .into_iter()
+    //         .map(|v| (from_value)(v, lua))
+    //         .collect::<Result<Vec<_>, _>>()?;
+    //     let dynamic_type = DynamicList::from_iter(converted_values);
+    //     // TODO: set the represented type, need to pass type info
+    //     // dynamic_type.set_represented_type(represented_type);
+    //     Ok(dynamic_type)
+    // }
 
-        Ok(DynamicList::from_iter(converted_values))
-    }
+    // pub fn new_for_list(inner_reflect_lua_value: &ReflectLuaValue) -> Self {
+    //     let into_value_clone = inner_reflect_lua_value.into_value.clone();
+    //     let from_value_clone = inner_reflect_lua_value.from_value.clone();
+    //     let from_value_clone2 = inner_reflect_lua_value.from_value.clone();
+    //     Self {
+    //         into_value: Arc::new(move |r, l| {
+    //             let inner = r.as_list().map_err(tealr::mlu::mlua::Error::external)?;
+    //             let inner = inner
+    //                 .map(|i| (into_value_clone)(i, l))
+    //                 .collect::<Result<Vec<_>, _>>()?;
 
-    pub fn new_for_list(inner_reflect_lua_value: &ReflectLuaValue) -> Self {
-        let into_value_clone = inner_reflect_lua_value.into_value.clone();
-        let from_value_clone = inner_reflect_lua_value.from_value.clone();
-        let from_value_clone2 = inner_reflect_lua_value.from_value.clone();
-        // let vec_from_reflect = vec_from_reflect.clone();
-        Self {
-            into_value: Arc::new(move |r, l| {
-                let inner = r.as_list().map_err(tealr::mlu::mlua::Error::external)?;
-                let inner = inner
-                    .map(|i| (into_value_clone)(i, l))
-                    .collect::<Result<Vec<_>, _>>()?;
+    //             let t = l.create_table_from(
+    //                 inner
+    //                     .into_iter()
+    //                     .enumerate()
+    //                     .map(|(i, v)| (Value::Integer(i as i64 + 1), v)),
+    //             )?;
 
-                l.create_table_from(
-                    inner
-                        .into_iter()
-                        .enumerate()
-                        .map(|(i, v)| (Value::Integer(i as i64 + 1), v)),
-                )
-                .map(Value::Table)
-            }),
-            set_value: Arc::new(move |r, v, l| {
-                let dynamic = Self::dynamic_list_from_value(v, l, &from_value_clone)?;
-                r.apply(&dynamic);
-                Ok(())
-            }),
-            from_value: Arc::new(move |v, l| {
-                let dynamic = Self::dynamic_list_from_value(v, l, &from_value_clone2)?;
+    //             Ok(Value::Table(t))
+    //         }),
+    //         set_value: Arc::new(move |r, v, l| {
+    //             let dynamic = Self::dynamic_list_from_value(v, l, &from_value_clone)?;
 
-                // vec_from_reflect
-                //     .from_reflect(&dynamic)
-                //     .ok_or_else(|| {
-                //         tealr::mlu::mlua::Error::external(ScriptError::new_runtime_error(
-                //             "Failed to convert to option",
-                //         ))
-                //     })
-                //     .map(<dyn Reflect>::into_partial_reflect)
-                // TODO: testing this out, not returning a concrete type could be weird
-                // would anything but this impl care about this?
-                // Ok(Box::new(dynamic))
-                Ok(Box::new(dynamic))
-            }),
-        }
-    }
+    //             // apply will not remove excess elements
+    //             if let ReflectMut::List(list) = r.reflect_mut() {
+    //                 if dynamic.len() < list.len() {
+    //                     (dynamic.len()..list.len()).rev().for_each(|i| {
+    //                         list.remove(i);
+    //                     });
+    //                 }
+    //             }
+    //             println!("reflect: {:?}", r);
+    //             println!("dynamic: {:?}", dynamic);
+
+    //             r.apply(&dynamic);
+    //             Ok(())
+    //         }),
+    //         from_value: Arc::new(move |v, l| {
+    //             let dynamic = Self::dynamic_list_from_value(v, l, &from_value_clone2)?;
+    //             Ok(Box::new(dynamic))
+    //         }),
+    //     }
+    // }
 }
 
 impl<T: Reflect + Clone + for<'l> IntoLua<'l> + for<'l> FromLua<'l>> FromType<T>
@@ -307,13 +450,27 @@ impl<T: Reflect + Clone + for<'l> IntoLua<'l> + for<'l> FromLua<'l>> FromType<T>
 {
     fn from_type() -> Self {
         Self {
-            into_value: Arc::new(|v, l| v.try_downcast_ref::<T>().unwrap().clone().into_lua(l)),
-            set_value: Arc::new(|t, v, l| {
-                let t = t.try_downcast_mut::<T>().unwrap();
-                *t = T::from_lua(v, l)?;
-                Ok(())
+            into_value: Arc::new(|v, l| {
+                bevy::log::debug!("Converting lua value to lua: {:?}", v);
+                v.try_downcast_ref::<T>()
+                    .unwrap_or_else(|| {
+                        panic!(
+                            "Expected type: {}, got: {}",
+                            std::any::type_name::<T>(),
+                            v.reflect_type_path()
+                        )
+                    })
+                    .clone()
+                    .into_lua(l)
             }),
+            // set_value: Arc::new(|t, v, l| {
+            //     bevy::log::debug!("Setting lua value: {:?}, with {:?}", t, v);
+            //     let t = t.try_downcast_mut::<T>().unwrap();
+            //     *t = T::from_lua(v, l)?;
+            //     Ok(())
+            // }),
             from_value: Arc::new(|v, l| {
+                bevy::log::debug!("Building concrete type from lua value: {:?}", v);
                 T::from_lua(v, l).map(|v| Box::new(v) as Box<dyn PartialReflect>)
             }),
         }
@@ -373,19 +530,11 @@ fn destructure_option_type(reg: &TypeRegistration) -> Option<(TypeId, TypeId)> {
     }
 }
 
-fn destructure_vec_type(reg: &TypeRegistration) -> Option<(TypeId, TypeId)> {
-    let type_path_table = reg.type_info().type_path_table();
-    let is_core = type_path_table.crate_name().is_some_and(|s| s == "alloc");
-    let is_vec = type_path_table.ident().is_some_and(|s| s == "Vec");
+fn destructure_list_type(reg: &TypeRegistration) -> Option<(TypeId, TypeId)> {
+    let type_path_table = reg.type_info().as_list().ok()?;
 
-    if is_core && is_vec {
-        reg.type_info()
-            .generics()
-            .get_named("T")
-            .map(|t| (reg.type_id(), t.type_id()))
-    } else {
-        None
-    }
+    let inner_type_id = type_path_table.item_ty().id();
+    Some((reg.type_id(), inner_type_id))
 }
 
 /// iterates over type data for all types which have registered [`ReflectLuaProxied`] and [`ReflectLuaValue`] implementations,
@@ -397,44 +546,32 @@ pub fn pre_register_common_containers(type_registry: &mut AppTypeRegistry) {
     let mut lua_proxied_insertions: HashMap<TypeId, ReflectLuaProxied> = Default::default();
     for (option_type_id, inner_type_id) in type_registry.iter().filter_map(destructure_option_type)
     {
+        let container_type_info = type_registry.get(option_type_id).expect("invariant").type_info();
+        // TODO: reuse the leaked box in both branches when either is true
         if let Some(inner_lua_value_data) =
             type_registry.get_type_data::<ReflectLuaValue>(inner_type_id)
         {
-            if let Some(option_from_reflect) =
-                type_registry.get_type_data::<ReflectFromReflect>(option_type_id)
-            {
-                let option_lua_proxied_data =
-                    ReflectLuaValue::new_for_option(inner_lua_value_data, option_from_reflect);
-
-                lua_value_insertions.insert(option_type_id, option_lua_proxied_data);
-            }
+            let option_lua_proxied_data = ReflectLuaValue::new_for_option(inner_lua_value_data, Box::leak(Box::new(container_type_info.clone())));
+            lua_value_insertions.insert(option_type_id, option_lua_proxied_data);
         }
 
         if let Some(inner_lua_proxied_data) =
             type_registry.get_type_data::<ReflectLuaProxied>(inner_type_id)
         {
-            if let Some(option_from_reflect) =
-                type_registry.get_type_data::<ReflectFromReflect>(option_type_id)
-            {
-                let option_lua_proxied_data =
-                    ReflectLuaProxied::new_for_option(inner_lua_proxied_data, option_from_reflect);
+            let option_lua_proxied_data = ReflectLuaProxied::new_for_option(inner_lua_proxied_data, Box::leak(Box::new(container_type_info.clone())));
 
-                lua_proxied_insertions.insert(option_type_id, option_lua_proxied_data);
-            }
+            lua_proxied_insertions.insert(option_type_id, option_lua_proxied_data);
         }
     }
 
-    for (vec_type_id, inner_type_id) in type_registry.iter().filter_map(destructure_vec_type) {
+    for (vec_type_id, inner_type_id) in type_registry.iter().filter_map(destructure_list_type) {
+        let container_type_info = type_registry.get(vec_type_id).expect("invariant").type_info();
         if let Some(inner_lua_value_data) =
             type_registry.get_type_data::<ReflectLuaValue>(inner_type_id)
         {
-            // if let Some(vec_from_reflect) =
-            //     type_registry.get_type_data::<ReflectFromReflect>(vec_type_id)
-            // {
-            let vec_lua_value_data = ReflectLuaValue::new_for_list(inner_lua_value_data);
-
-            lua_value_insertions.insert(vec_type_id, vec_lua_value_data);
-            // }
+            let vec_lua_proxied_data =
+                ReflectLuaProxied::new_for_listlike_value(inner_lua_value_data, Box::leak(Box::new(container_type_info.clone())));
+            lua_proxied_insertions.insert(vec_type_id, vec_lua_proxied_data);
         }
     }
 
@@ -483,7 +620,7 @@ mod tests {
     use bevy_mod_scripting_core::bindings::WorldCallbackAccess;
     use std::sync::Arc;
 
-    #[derive(Reflect)]
+    #[derive(Reflect, Debug, PartialEq)]
     struct Proxied(usize);
 
     impl LuaProxied for Proxied {
@@ -505,16 +642,29 @@ mod tests {
         AppTypeRegistry(type_registry_arc)
     }
 
-    macro_rules! assert_transitively_registers {
+    macro_rules! prepare_type_registry_with_common_containers {
         ($target_type:ty, $container_type:ty, $type_data:ty) => {{
-            let mut app_type_registry = setup_type_registry::<$target_type, $container_type>();
-            app_type_registry
-                .write()
-                .register_type_data::<$target_type, $type_data>();
+            {
+                let mut type_registry = setup_type_registry::<$target_type, $container_type>();
+                type_registry
+                    .write()
+                    .register_type_data::<$target_type, $type_data>();
 
-            pre_register_common_containers(&mut app_type_registry);
+                pre_register_common_containers(&mut type_registry);
+                type_registry
+            }
+        }};
+    }
 
-            let type_registry = app_type_registry.read();
+    macro_rules! assert_transitively_registers {
+        ($target_type:ty = $inner_type_data:ty, $container_type:ty = $type_data:ty) => {{
+            let type_registry = prepare_type_registry_with_common_containers!(
+                $target_type,
+                $container_type,
+                $inner_type_data
+            );
+
+            let type_registry = type_registry.read();
             let container_type_id = std::any::TypeId::of::<$container_type>();
             let container_type_registration = type_registry.get(container_type_id).unwrap();
 
@@ -528,358 +678,302 @@ mod tests {
         }};
     }
 
+    macro_rules! assert_lua_value_into_equals {
+        ($target_type:ty, $container_type:ty, $type_data:ty, $val:expr => $exp:expr) => {{
+            let type_registry = prepare_type_registry_with_common_containers!(
+                $target_type,
+                $container_type,
+                $type_data
+            );
+
+            let type_registry = type_registry.read();
+            let container_type_id = std::any::TypeId::of::<$container_type>();
+            let container_type_data = type_registry
+                .get_type_data::<$type_data>(container_type_id)
+                .unwrap();
+            let l = Lua::new();
+            let out = (container_type_data.into_value)(&$val, &l).unwrap();
+            assert_eq!(out, $exp);
+        }};
+    }
+
+    macro_rules! assert_lua_container_value_from_equals {
+        ($target_type:ty, $container_type:ty, $type_data:ty, $val:expr => $exp:expr) => {{
+            let type_registry = prepare_type_registry_with_common_containers!(
+                $target_type,
+                $container_type,
+                $type_data
+            );
+
+            let type_registry = type_registry.read();
+            let container_type_id = std::any::TypeId::of::<$container_type>();
+            let container_type_data = type_registry
+                .get_type_data::<$type_data>(container_type_id)
+                .unwrap();
+            let l = Lua::new();
+            let out = (container_type_data.from_value)($val, &l).unwrap();
+            assert!(out.reflect_partial_eq(&$exp).unwrap());
+        }};
+    }
+
+    // macro_rules! assert_lua_container_value_after_set_equals {
+    //     ($target_type:ty, $container_type:ty, $type_data:ty, $val:expr => $set:expr => $exp:expr) => {{
+    //         let type_registry = prepare_type_registry_with_common_containers!(
+    //             $target_type,
+    //             $container_type,
+    //             $type_data
+    //         );
+
+    //         let type_registry = type_registry.read();
+    //         let container_type_id = std::any::TypeId::of::<$container_type>();
+    //         let container_type_data = type_registry
+    //             .get_type_data::<$type_data>(container_type_id)
+    //             .unwrap();
+    //         let l = Lua::new();
+    //         let mut target = $val;
+    //         (container_type_data.set_value)(&mut target, $set, &l).unwrap();
+    //         assert!(
+    //             target.reflect_partial_eq(&$exp).unwrap(),
+    //             "Expected {:?} got: {:?}",
+    //             $exp,
+    //             target
+    //         );
+    //     }};
+    // }
+
+    macro_rules! assert_lua_container_proxy_into_proxy {
+        (;WITH; $target_type:ty = $inner_type_data:ty, $container_type:ty = $type_data:ty ;FROM; $val:expr ;INTO; $exp:expr) => {{
+            let app_type_registry = prepare_type_registry_with_common_containers!(
+                $target_type,
+                $container_type,
+                $inner_type_data
+            );
+            let mut world = World::new();
+
+            let type_registry = app_type_registry.read();
+            let container_type_id = std::any::TypeId::of::<$container_type>();
+            let container_type_data = type_registry
+                .get_type_data::<$type_data>(container_type_id)
+                .unwrap()
+                .clone();
+
+            let mut allocator = ReflectAllocator::default();
+            let allocated_value = ReflectReference::new_allocated($val, &mut allocator);
+            world.insert_resource(allocator);
+            drop(type_registry);
+            world.insert_resource(app_type_registry);
+            let lua = Lua::new();
+            WorldCallbackAccess::with_callback_access(&mut world, |world| {
+                lua.globals().set("world", LuaWorld(world.clone())).unwrap();
+
+                let gotten_into_value =
+                    (container_type_data.into_proxy)(allocated_value, &lua).unwrap();
+                let converted_ref = LuaReflectReference::from_lua(gotten_into_value.clone(), &lua)
+                    .expect(&format!(
+                        "Could not convert to lua reflect reference got: {:?}",
+                        gotten_into_value
+                    ))
+                    .0;
+                let world = world.read().unwrap();
+                converted_ref.with_reflect(&world, |r, _, _| {
+                    assert!(
+                        r.reflect_partial_eq(&$exp).unwrap(),
+                        "Expected {:?} got {:?}",
+                        $exp,
+                        r
+                    );
+                });
+            });
+        }};
+    }
+
+    macro_rules! assert_lua_container_proxy_opt_set {
+        ($allocator:ident, $lua:ident ;WITH; $target_type:ty = $inner_type_data:ty, $container_type:ty = $type_data:ty ;SET; $val:expr ;TO; $set:expr ;EXPECT; $exp:expr) => {{
+            let app_type_registry = prepare_type_registry_with_common_containers!(
+                $target_type,
+                $container_type,
+                $inner_type_data
+            );
+            let mut world = World::new();
+
+            let type_registry = app_type_registry.read();
+            let container_type_id = std::any::TypeId::of::<$container_type>();
+            let container_type_data = type_registry
+                .get_type_data::<$type_data>(container_type_id)
+                .unwrap()
+                .clone();
+
+            let mut $allocator = ReflectAllocator::default();
+            drop(type_registry);
+            world.insert_resource(app_type_registry);
+            let $lua = Lua::new();
+            let set_expr = Box::new($set);
+            world.insert_resource($allocator);
+            WorldCallbackAccess::with_callback_access(&mut world, |world| {
+                $lua.globals()
+                    .set("world", LuaWorld(world.clone()))
+                    .unwrap();
+                let mut target = $val;
+                (container_type_data.opt_set.unwrap())(&mut target, set_expr).unwrap();
+                assert!(target.reflect_partial_eq(&$exp).unwrap());
+            });
+        }};
+    }
+
+    macro_rules! assert_lua_container_proxy_into_proxy_lua_only {
+        (;WITH; $target_type:ty = $inner_type_data:ty, $container_type:ty = $type_data:ty ;FROM; $val:expr ;INTO; $exp:expr) => {{
+            let app_type_registry = prepare_type_registry_with_common_containers!(
+                $target_type,
+                $container_type,
+                $inner_type_data
+            );
+            let mut world = World::new();
+
+            let type_registry = app_type_registry.read();
+            let container_type_id = std::any::TypeId::of::<$container_type>();
+            let container_type_data = type_registry
+                .get_type_data::<$type_data>(container_type_id)
+                .unwrap()
+                .clone();
+
+            let mut allocator = ReflectAllocator::default();
+            let allocated_value = ReflectReference::new_allocated($val, &mut allocator);
+            world.insert_resource(allocator);
+            drop(type_registry);
+            world.insert_resource(app_type_registry);
+            let lua = Lua::new();
+            WorldCallbackAccess::with_callback_access(&mut world, |world| {
+                lua.globals().set("world", LuaWorld(world.clone())).unwrap();
+
+                let gotten_into_value =
+                    (container_type_data.into_proxy)(allocated_value, &lua).unwrap();
+                assert_eq!(gotten_into_value, $exp);
+            });
+        }};
+    }
+
     #[test]
     fn test_pre_register_common_containers_lua_value() {
-        assert_transitively_registers!(usize, Option<usize>, ReflectLuaValue);
-        assert_transitively_registers!(usize, Vec<usize>, ReflectLuaValue);
+        assert_transitively_registers!(usize = ReflectLuaValue, Option<usize> = ReflectLuaValue);
+        assert_transitively_registers!(usize = ReflectLuaValue, Vec<usize> = ReflectLuaProxied);
     }
 
     #[test]
     fn test_pre_register_common_containers_lua_proxy() {
-        assert_transitively_registers!(Proxied, Option<Proxied>, ReflectLuaProxied);
+        assert_transitively_registers!(Proxied = ReflectLuaProxied, Option<Proxied> = ReflectLuaProxied );
     }
 
     #[test]
-    fn test_option_lua_proxy_impl_into_proxy() {
-        let mut app_type_registry = setup_type_registry::<Proxied, Option<Proxied>>();
-        app_type_registry
-            .write()
-            .register_type_data::<Proxied, ReflectLuaProxied>();
-        let mut world = World::default();
+    fn test_option_container_impls() {
+        // Inner Value
+        // into
+        assert_lua_value_into_equals!(
+            usize,
+            Option<usize>,
+            ReflectLuaValue,
+            Some(2usize) => Value::Integer(2)
+        );
+        assert_lua_value_into_equals!(
+            usize,
+            Option<usize>,
+            ReflectLuaValue,
+            None::<usize> => Value::Nil
+        );
 
-        pre_register_common_containers(&mut app_type_registry);
+        // from
+        assert_lua_container_value_from_equals!(
+            usize,
+            Option<usize>,
+            ReflectLuaValue,
+            Value::Integer(2) => Some(2usize)
+        );
+        assert_lua_container_value_from_equals!(
+            usize,Option<usize>,
+            ReflectLuaValue,
+            Value::Nil => None::<usize>
+        );
 
-        let type_registry = app_type_registry.read();
-        let option_type_data = type_registry
-            .get_type_data::<ReflectLuaProxied>(std::any::TypeId::of::<Option<Proxied>>())
-            .unwrap()
-            .clone();
-        let inner_type_data = type_registry
-            .get_type_data::<ReflectLuaProxied>(std::any::TypeId::of::<Proxied>())
-            .unwrap()
-            .clone();
+        // set
+        // assert_lua_container_value_after_set_equals!(
+        //     usize, Option<usize>,
+        //     ReflectLuaValue,
+        //     Some(2usize) => Value::Nil => None::<usize>
+        // );
+        // assert_lua_container_value_after_set_equals!(
+        //     usize, Option<usize>,
+        //     ReflectLuaValue,
+        //     None::<usize> => Value::Integer(2) => Some(2usize)
+        // );
+        // assert_lua_container_value_after_set_equals!(
+        //     usize, Option<usize>,
+        //     ReflectLuaValue,
+        //     None::<usize> => Value::Nil => None::<usize>
+        // );
+        // assert_lua_container_value_after_set_equals!(
+        //     usize, Option<usize>,
+        //     ReflectLuaValue,
+        //     Some(2usize) => Value::Integer(3) => Some(3usize)
+        // );
 
-        let mut allocator = ReflectAllocator::default();
-        let inner_value = ReflectReference::new_allocated(Proxied(4), &mut allocator);
-        let some_value = ReflectReference::new_allocated(Some(Proxied(4)), &mut allocator);
-        let none_value = ReflectReference::new_allocated(None::<Proxied>, &mut allocator);
-        world.insert_resource(allocator);
-        drop(type_registry);
-        world.insert_resource(app_type_registry);
+        // Inner Proxy
+        // into
+        assert_lua_container_proxy_into_proxy!(
+            ;WITH; Proxied = ReflectLuaProxied, Option<Proxied> = ReflectLuaProxied 
+            ;FROM; Some(Proxied(2))
+            ;INTO; Proxied(2usize));
+        assert_lua_container_proxy_into_proxy_lua_only!(
+            ;WITH; Proxied = ReflectLuaProxied, Option<Proxied> = ReflectLuaProxied
+            ;FROM; None::<Proxied>
+            ;INTO; Value::Nil
+        );
 
-        let lua = Lua::new();
-        WorldCallbackAccess::with_callback_access(&mut world, |world| {
-            lua.globals().set("world", LuaWorld(world.clone())).unwrap();
-
-            // option::some into_proxy should be equivalent result to inner_type into_proxy apart from the reflect path
-            let expected_into_value = (inner_type_data.into_proxy)(inner_value, &lua).unwrap();
-            let gotten_into_value = (option_type_data.into_proxy)(some_value, &lua).unwrap();
-
-            let converted_into_value = LuaReflectReference::from_lua(expected_into_value, &lua)
-                .unwrap()
-                .0
-                .reflect_path;
-
-            let mut converted_gotten_into_value =
-                LuaReflectReference::from_lua(gotten_into_value, &lua)
-                    .unwrap()
-                    .0
-                    .reflect_path;
-            converted_gotten_into_value.pop();
-
-            assert_eq!(
-                converted_into_value, converted_gotten_into_value,
-                "Option<Proxied> into_proxy should be equivalent to Proxied into_proxy for Some variant apart from the last element in the path"
-            );
-
-            // the none variant should be equivalent to Value::Nil
-            let expected_into_value = Value::Nil;
-            let gotten_into_value = (option_type_data.into_proxy)(none_value, &lua).unwrap();
-
-            assert_eq!(
-                expected_into_value, gotten_into_value,
-                "Option<Proxied> into_proxy should be equivalent to Value::Nil for None variant"
-            );
-        })
+        // set from
+        // assert_lua_container_proxy_opt_set!(alloc, lua, Proxied, Option<Proxied>, ReflectLuaProxied,
+        //     Some(Proxied(2))
+        //     => None::<Proxied>
+        //     => None::<Proxied>);
+        // assert_lua_container_proxy_opt_set!(alloc, lua, Proxied, Option<Proxied>, ReflectLuaProxied,
+        //     None::<Proxied>
+        //     => Proxied(2)// LuaReflectReference(ReflectReference::new_allocated(Proxied(2), &mut alloc))
+        //     => Some(Proxied(2)));
+        // assert_lua_container_proxy_opt_set!(alloc, lua, Proxied, Option<Proxied>, ReflectLuaProxied,
+        //     Some(Proxied(2))
+        //     =>  Proxied(3) // LuaReflectReference(ReflectReference::new_allocated(Proxied(3), &mut alloc))
+        //     => Some(Proxied(3)));
+        // assert_lua_container_proxy_opt_set!(alloc, lua, Proxied, Option<Proxied>, ReflectLuaProxied,
+        //     None::<Proxied>
+        //     => None::<Proxied>
+        //     => None::<Proxied>);
     }
 
     #[test]
-    fn test_option_lua_proxy_impl_from_proxy() {
-        let mut app_type_registry = setup_type_registry::<Proxied, Option<Proxied>>();
-        app_type_registry
-            .write()
-            .register_type_data::<Proxied, ReflectLuaProxied>();
-        let mut world = World::default();
-
-        pre_register_common_containers(&mut app_type_registry);
-
-        let type_registry = app_type_registry.read();
-        let option_type_data = type_registry
-            .get_type_data::<ReflectLuaProxied>(std::any::TypeId::of::<Option<Proxied>>())
-            .unwrap()
-            .clone();
-
-        let mut allocator = ReflectAllocator::default();
-        let some_value = ReflectReference::new_allocated(Some(Proxied(4)), &mut allocator);
-        let none_value = ReflectReference::new_allocated(None::<Proxied>, &mut allocator);
-        world.insert_resource(allocator);
-        drop(type_registry);
-        world.insert_resource(app_type_registry);
-
-        let lua = Lua::new();
-        WorldCallbackAccess::with_callback_access(&mut world, |world| {
-            lua.globals().set("world", LuaWorld(world.clone())).unwrap();
-
-            let some_lua_value = LuaReflectReference(some_value.clone())
-                .into_lua(&lua)
-                .unwrap();
-            let gotten_value = (option_type_data.from_proxy)(some_lua_value, &lua).unwrap();
-            assert_eq!(gotten_value.reflect_path, some_value.reflect_path);
-
-            let gotten_value = (option_type_data.from_proxy)(Value::Nil, &lua).unwrap();
-            assert_eq!(gotten_value.reflect_path, none_value.reflect_path);
-        })
-    }
-
-    #[test]
-    fn test_option_lua_value_impl_into_value() {
-        let mut app_type_registry = setup_type_registry::<usize, Option<usize>>();
-        app_type_registry
-            .write()
-            .register_type_data::<usize, ReflectLuaValue>();
-
-        pre_register_common_containers(&mut app_type_registry);
-
-        let type_registry = app_type_registry.read();
-        let option_type_data = type_registry
-            .get_type_data::<ReflectLuaValue>(std::any::TypeId::of::<Option<usize>>())
-            .unwrap();
-        let inner_type_data = type_registry
-            .get_type_data::<ReflectLuaValue>(std::any::TypeId::of::<usize>())
-            .unwrap();
-
-        // option::some into_value should be equivalent result to inner_type into_value
-        let lua = Lua::new();
-        let value: usize = 5;
-        let option_value = Some(value);
-        let expected_into_value = (inner_type_data.into_value)(&value, &lua).unwrap();
-        let gotten_into_value = (option_type_data.into_value)(&option_value, &lua).unwrap();
-
-        assert_eq!(
-            expected_into_value, gotten_into_value,
-            "Option<usize> into_value should be equivalent to usize into_value for Some variant"
+    fn test_listlike_container_impls() {
+        // Inner Value
+        // into
+        assert_lua_container_proxy_into_proxy!(
+            ;WITH; usize = ReflectLuaValue, Vec<usize> = ReflectLuaProxied
+            ;FROM; vec![Proxied(2), Proxied(3)]
+            ;INTO; vec![Proxied(2), Proxied(3)]
+        );
+        assert_lua_container_proxy_into_proxy!(
+            ;WITH; usize = ReflectLuaValue, Vec<usize> = ReflectLuaProxied
+            ;FROM; Vec::<Proxied>::default()
+            ;INTO; Vec::<Proxied>::default()
         );
 
-        // the none variant should be equivalent to Value::Nil
-        let option_value: Option<usize> = None;
-        let expected_into_value = Value::Nil;
-        let gotten_into_value = (option_type_data.into_value)(&option_value, &lua).unwrap();
-
-        assert_eq!(
-            expected_into_value, gotten_into_value,
-            "Option<usize> into_value should be equivalent to Value::Nil for None variant"
-        );
-    }
-
-    #[test]
-    fn test_vec_lua_value_impl_into_value() {
-        let mut app_type_registry = setup_type_registry::<usize, Vec<usize>>();
-        app_type_registry
-            .write()
-            .register_type_data::<usize, ReflectLuaValue>();
-
-        pre_register_common_containers(&mut app_type_registry);
-
-        let type_registry = app_type_registry.read();
-        let option_type_data = type_registry
-            .get_type_data::<ReflectLuaValue>(std::any::TypeId::of::<Vec<usize>>())
-            .unwrap();
-        let inner_type_data = type_registry
-            .get_type_data::<ReflectLuaValue>(std::any::TypeId::of::<usize>())
-            .unwrap();
-
-        // option::some into_value should be a table with the inner value converted to Lua
-        let lua = Lua::new();
-        let value: usize = 5;
-        let option_value = vec![value];
-        let expected_into_value = (inner_type_data.into_value)(&value, &lua).unwrap();
-        let gotten_into_value = (option_type_data.into_value)(&option_value, &lua).unwrap();
-
-        assert_eq!(
-            expected_into_value,
-            gotten_into_value.as_table().unwrap().pop().unwrap(),
+        assert_lua_container_proxy_opt_set!(alloc, lua
+            ;WITH; usize = ReflectLuaValue, Vec<usize> = ReflectLuaProxied
+            ;SET; Vec::<Proxied>::default()
+            ;TO; Vec::<Proxied>::default()
+            ;EXPECT; Vec::<Proxied>::default()
         );
 
-        // an empty vec should be equivalent to an empty table
-        let vec_value: Vec<usize> = vec![];
-        let gotten_into_value = (option_type_data.into_value)(&vec_value, &lua).unwrap();
-
-        assert!(gotten_into_value.as_table().unwrap().is_empty());
-    }
-
-    #[test]
-    fn test_option_lua_value_set_value() {
-        let mut app_type_registry = setup_type_registry::<usize, Option<usize>>();
-        app_type_registry
-            .write()
-            .register_type_data::<usize, ReflectLuaValue>();
-
-        pre_register_common_containers(&mut app_type_registry);
-
-        let type_registry = app_type_registry.read();
-        let option_type_data = type_registry
-            .get_type_data::<ReflectLuaValue>(std::any::TypeId::of::<Option<usize>>())
-            .unwrap();
-
-        // setting an existing Some variant works correctly
-        let lua = Lua::new();
-        let mut target_option = Some(0usize);
-        (option_type_data.set_value)(&mut target_option, 5.into_lua(&lua).unwrap(), &lua).unwrap();
-        assert_eq!(
-            target_option,
-            Some(5),
-            "Option<usize> set_value should set the value to Some(5)"
+        assert_lua_container_proxy_opt_set!(alloc, lua
+            ;WITH; usize = ReflectLuaValue, Vec<usize> = ReflectLuaProxied
+            ;SET; Vec::<Proxied>::default()
+            ;TO; vec![Proxied(2)]
+            ;EXPECT; vec![Proxied(2)]
         );
-
-        // setting an existing Some variant to nil should set the value to None
-        (option_type_data.set_value)(&mut target_option, Value::Nil, &lua).unwrap();
-        assert_eq!(
-            target_option, None,
-            "Option<usize> set_value should set the value to None"
-        );
-
-        // setting a none variant should set the Some variant correctly
-        let mut target_option: Option<usize> = None;
-        (option_type_data.set_value)(&mut target_option, 5usize.into_lua(&lua).unwrap(), &lua)
-            .unwrap();
-        assert_eq!(
-            target_option,
-            Some(5),
-            "Option<usize> set_value should set the value to None"
-        );
-
-        // setting a none variant to nil should stay as None
-        (option_type_data.set_value)(&mut target_option, Value::Nil, &lua).unwrap();
-        assert_eq!(
-            target_option, None,
-            "Option<usize> set_value should set the value to None"
-        );
-    }
-
-    #[test]
-    fn test_vec_lua_value_set_value() {
-        let mut app_type_registry = setup_type_registry::<usize, Vec<usize>>();
-        app_type_registry
-            .write()
-            .register_type_data::<usize, ReflectLuaValue>();
-
-        pre_register_common_containers(&mut app_type_registry);
-
-        let type_registry = app_type_registry.read();
-        let option_type_data = type_registry
-            .get_type_data::<ReflectLuaValue>(std::any::TypeId::of::<Vec<usize>>())
-            .unwrap();
-
-        // setting an existing vec
-        let lua = Lua::new();
-        let new_vec = Value::Table(
-            lua.create_table_from(vec![(1, 5.into_lua(&lua).unwrap())])
-                .unwrap(),
-        );
-        let mut target_vec = vec![0usize];
-        (option_type_data.set_value)(&mut target_vec, new_vec.clone(), &lua).unwrap();
-        assert_eq!(target_vec, vec![5],);
-
-        // setting an existing vec to an empty table should create a new empty vec
-        (option_type_data.set_value)(
-            &mut target_vec,
-            Value::Table(
-                lua.create_table_from(Vec::<(isize, usize)>::default())
-                    .unwrap(),
-            ),
-            &lua,
-        )
-        .unwrap();
-        assert_eq!(target_vec, Vec::<usize>::default(),);
-
-        // setting an empty vec to a table with a value should set the vec to the value
-        (option_type_data.set_value)(&mut target_vec, new_vec, &lua).unwrap();
-        assert_eq!(target_vec, vec![5],);
-    }
-
-    #[test]
-    fn test_option_lua_value_from_value() {
-        let mut app_type_registry = setup_type_registry::<usize, Option<usize>>();
-        app_type_registry
-            .write()
-            .register_type_data::<usize, ReflectLuaValue>();
-
-        pre_register_common_containers(&mut app_type_registry);
-
-        let type_registry = app_type_registry.read();
-        let option_type_data = type_registry
-            .get_type_data::<ReflectLuaValue>(std::any::TypeId::of::<Option<usize>>())
-            .unwrap();
-
-        // from_value should correctly work for concrete values
-        let lua = Lua::new();
-        let value = 5usize;
-        let gotten_value =
-            (option_type_data.from_value)(value.into_lua(&lua).unwrap(), &lua).unwrap();
-
-        assert_eq!(
-            Some(value),
-            *gotten_value.try_downcast::<Option<usize>>().unwrap(),
-            "Option<usize> from_value should correctly convert a value"
-        );
-
-        // from_value should correctly work for nil values
-        let nil_lua = Value::Nil;
-        let gotten_value = (option_type_data.from_value)(nil_lua, &lua).unwrap();
-        assert_eq!(
-            None::<usize>,
-            *gotten_value.try_downcast::<Option<usize>>().unwrap(),
-            "Option<usize> from_value should correctly convert a nil value"
-        );
-    }
-
-    #[test]
-    fn test_vec_lua_value_from_value() {
-        let mut app_type_registry = setup_type_registry::<usize, Vec<usize>>();
-        app_type_registry
-            .write()
-            .register_type_data::<usize, ReflectLuaValue>();
-
-        pre_register_common_containers(&mut app_type_registry);
-
-        let type_registry = app_type_registry.read();
-        let option_type_data = type_registry
-            .get_type_data::<ReflectLuaValue>(std::any::TypeId::of::<Vec<usize>>())
-            .unwrap();
-
-        // from_value should correctly work for concrete values
-        let lua = Lua::new();
-        let value = vec![5usize];
-        let gotten_value =
-            (option_type_data.from_value)(value.into_lua(&lua).unwrap(), &lua).unwrap();
-
-        assert_eq!(
-            gotten_value
-                .as_list()
-                .unwrap()
-                .map(|v| *v.try_downcast_ref::<usize>().unwrap())
-                .collect::<Vec<_>>()
-                .pop(),
-            Some(5usize)
-        );
-
-        // from_value should correctly work for empty lists
-        let nil_lua = Value::Table(
-            lua.create_table_from(Vec::<(isize, usize)>::default())
-                .unwrap(),
-        );
-        let gotten_value = (option_type_data.from_value)(nil_lua, &lua).unwrap();
-        assert!(gotten_value.as_list().unwrap().count() == 0);
     }
 
     #[test]

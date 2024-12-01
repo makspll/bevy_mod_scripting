@@ -10,6 +10,7 @@ use std::{
     any::TypeId,
     fmt::Debug,
     marker::PhantomData,
+    mem,
     sync::{
         atomic::{AtomicUsize, Ordering},
         Arc, Weak,
@@ -248,12 +249,52 @@ pub type WorldAccessUnit<'w> = WorldAccessWrite<'w>;
 pub const DEFAULT_TIMEOUT: Duration = Duration::from_secs(5);
 pub const DEFAULT_INTERVAL: Duration = Duration::from_millis(10);
 
+enum WorldAccessValue<'w> {
+    Free(WorldAccessWrite<'w>),
+    Locked(std::panic::Location<'static>),
+}
+
+impl<'w> WorldAccessValue<'w> {
+    fn is_locked(&self) -> bool {
+        matches!(self, WorldAccessValue::Locked(_))
+    }
+
+    fn as_location(&self) -> Option<std::panic::Location<'static>> {
+        match self {
+            WorldAccessValue::Free(_) => None,
+            WorldAccessValue::Locked(location) => Some(*location),
+        }
+    }
+
+    fn into_access(self) -> Option<WorldAccessWrite<'w>> {
+        match self {
+            WorldAccessValue::Free(access) => Some(access),
+            WorldAccessValue::Locked(_) => None,
+        }
+    }
+
+    #[track_caller]
+    fn take(&mut self) -> Option<WorldAccessUnit<'w>> {
+        mem::replace(
+            self,
+            WorldAccessValue::Locked(*std::panic::Location::caller()),
+        )
+        .into_access()
+    }
+}
+
+impl<'w> From<WorldAccessWrite<'w>> for WorldAccessValue<'w> {
+    fn from(value: WorldAccessWrite<'w>) -> Self {
+        WorldAccessValue::Free(value)
+    }
+}
+
 /// Provides safe access to the world via [`WorldAccess`] permissions, which enforce aliasing rules at runtime in multi-thread environments
 #[derive(Clone)]
 pub struct WorldAccessGuard<'w> {
     pub cell: UnsafeWorldCell<'w>,
     // TODO: this is fairly hefty, explore other ways to hand out locks on WorldAccess
-    pub accesses: Arc<LockableHashMap<ReflectAccessId, Option<WorldAccessUnit<'w>>>>,
+    accesses: Arc<LockableHashMap<ReflectAccessId, WorldAccessValue<'w>>>,
     /// true if anybody has any access to the world
     pub accesses_count: Arc<AtomicUsize>,
     // TODO can we track code/stack locations of things holding onto theese locks for debugging?
@@ -282,7 +323,7 @@ impl<'w> WorldAccessGuard<'w> {
                     .unwrap();
                 let val = val.value().unwrap();
 
-                val.is_none()
+                val.is_locked()
             })
             .collect()
     }
@@ -308,6 +349,7 @@ impl<'w> WorldAccessGuard<'w> {
         self.cell.components().get_resource_id(id)
     }
 
+    #[track_caller]
     /// Checks nobody else is currently accessing the world, and if so locks access to it until
     /// [`release_whole_world_access`] is called.
     pub fn get_whole_world_access(&self) -> Option<&mut World> {
@@ -325,6 +367,17 @@ impl<'w> WorldAccessGuard<'w> {
         self.accesses_count.fetch_sub(1, Ordering::Relaxed);
     }
 
+    pub fn get_access_location(&self, raid: ReflectAccessId) -> Option<std::panic::Location<'w>> {
+        let guard = self
+            .accesses
+            .blocking_lock(raid, lockable::SyncLimit::no_limit())
+            .unwrap();
+        let guard = guard.value().unwrap();
+
+        guard.as_location()
+    }
+
+    #[track_caller]
     /// Tries to get access to the given reflect access id, if it's already given out returns `None`. If you want to wait for access, use [`WorldAccessGuard::get_access_timeout`] instead.
     /// Remember to release this access once done with [`WorldAccessGuard::release_access`] or nobody else will be able to access this id!.
     ///
@@ -335,13 +388,14 @@ impl<'w> WorldAccessGuard<'w> {
             .blocking_lock(raid, lockable::SyncLimit::no_limit())
             .unwrap();
         let guard = guard.value_or_insert_with(|| {
-            Some(WorldAccessWrite {
+            WorldAccessWrite {
                 raid,
                 _ph: PhantomData,
-            })
+            }
+            .into()
         });
 
-        if guard.is_some() {
+        if !guard.is_locked() {
             self.accesses_count.fetch_add(1, Ordering::Relaxed);
             guard.take()
         } else {
@@ -355,12 +409,13 @@ impl<'w> WorldAccessGuard<'w> {
     ///
     /// # Panic
     /// Will panic once access was not available after the timeout was reached
+    #[track_caller]
     pub fn get_access_timeout(
         &self,
         raid: ReflectAccessId,
         timeout: Duration,
         interval: Duration,
-    ) -> Option<WorldAccessUnit<'w>> {
+    ) -> WorldAccessUnit<'w> {
         let mut access = self.get_access(raid);
         let start = std::time::Instant::now();
 
@@ -368,10 +423,14 @@ impl<'w> WorldAccessGuard<'w> {
             std::thread::sleep(interval);
             access = self.get_access(raid);
             if start.elapsed() > timeout {
-                return None;
+                panic!(
+                    "Timed out while waiting for access to {:?}. This is likely a deadlock. The access is being held by: {:?}",
+                    raid,
+                    self.get_access_location(raid)
+                );
             }
         }
-        access
+        access.expect("invariant")
     }
 
     /// Releases access to the given reflect access id
@@ -387,14 +446,15 @@ impl<'w> WorldAccessGuard<'w> {
 
         // should not be possible, we are the only ones who can instantiate WorldAccessUnit
         assert!(
-            guard.is_none(),
+            guard.is_locked(),
             "Invariant violated, an access has been released by someone else already who shouldn't have been able to do so"
         );
 
         self.accesses_count.fetch_sub(1, Ordering::Relaxed);
-        *guard = Some(access);
+        *guard = WorldAccessValue::Free(access);
     }
 
+    #[track_caller]
     /// Get access to the given component_id, this is the only way to access a component/resource safely (in the context of the world access guard)
     /// since you can only access this component_id through a RwLock, there is no way to break aliasing rules.
     /// Additionally the 'w lifetime prevents you from storing this access outside the lifetime of the underlying cell
@@ -406,6 +466,7 @@ impl<'w> WorldAccessGuard<'w> {
         self.get_access(access_id)
     }
 
+    #[track_caller]
     /// Similar to [`Self::get_component_access`] but typed, additionally panics if the component is not registered
     pub fn get_component_access_typed<T: Component>(&self) -> Option<WorldAccessUnit<'w>> {
         self.get_component_access(
@@ -418,6 +479,7 @@ impl<'w> WorldAccessGuard<'w> {
         )
     }
 
+    #[track_caller]
     /// Get access to the given component_id, this is the only way to access a component/resource safely (in the context of the world access guard)
     /// since you can only access this component_id through a RwLock, there is no way to break aliasing rules.
     /// Additionally the 'w lifetime prevents you from storing this access outside the lifetime of the underlying cell
@@ -425,6 +487,7 @@ impl<'w> WorldAccessGuard<'w> {
         self.get_component_access(cid)
     }
 
+    #[track_caller]
     /// Similar to [`Self::get_resource_access`] but typed, additionally panics if the resource is not registered
     pub fn get_resource_access_typed<T: Resource>(&self) -> Option<WorldAccessUnit<'w>> {
         self.get_resource_access(
@@ -437,6 +500,7 @@ impl<'w> WorldAccessGuard<'w> {
         )
     }
 
+    #[track_caller]
     /// Get access to the given allocation_id, this is the only way to access a script owned value safely (in the context of the world access guard)
     pub fn get_allocation_access(&self, id: ReflectAllocationId) -> Option<WorldAccessUnit<'w>> {
         let access_id = ReflectAccessId {
@@ -446,6 +510,7 @@ impl<'w> WorldAccessGuard<'w> {
         self.get_access(access_id)
     }
 
+    #[track_caller]
     /// Provides access to a resource via callback. Panics if the resource does not exist or if waiting for access times out.
     pub fn with_resource<R: Resource, O, F: FnOnce(&Self, Mut<R>) -> O>(&self, f: F) -> O {
         let cid = self
@@ -454,14 +519,7 @@ impl<'w> WorldAccessGuard<'w> {
             .resource_id::<R>()
             .unwrap_or_else(|| panic!("Resource not registered: `{}`", std::any::type_name::<R>()));
 
-        let mut access = self
-            .get_access_timeout(cid.into(), DEFAULT_TIMEOUT, DEFAULT_INTERVAL)
-            .unwrap_or_else(|| {
-                panic!(
-                    "Timed out while waiting for access to resource: `{}`",
-                    std::any::type_name::<R>()
-                )
-            });
+        let mut access = self.get_access_timeout(cid.into(), DEFAULT_TIMEOUT, DEFAULT_INTERVAL);
 
         let resource = self
             .get_resource_with_access_mut::<R>(&mut access)
@@ -472,6 +530,7 @@ impl<'w> WorldAccessGuard<'w> {
         out
     }
 
+    #[track_caller]
     /// Convenience to get commonly used resources at the same time. Internally identical to [`Self::with_resource`]
     pub fn with_allocator_and_type_registry<
         O,
@@ -487,6 +546,7 @@ impl<'w> WorldAccessGuard<'w> {
         })
     }
 
+    #[track_caller]
     /// Call a function on a type which can be proxied, first by unproxying the input with world access,
     /// then calling the function and finally proxying the output with the allocator.
     pub fn proxy_call<'i, O: Proxy, T: Unproxy, F: Fn(T::Output<'_>) -> O::Input<'i>>(
@@ -521,6 +581,7 @@ impl<'w> WorldAccessGuard<'w> {
         Ok(proxied_output)
     }
 
+    #[track_caller]
     /// Get access to the given component, this is the only way to access a component/resource safely (in the context of the world access guard)
     pub fn get_component_with_access<T: Component>(
         &self,
@@ -545,6 +606,7 @@ impl<'w> WorldAccessGuard<'w> {
         }
     }
 
+    #[track_caller]
     /// Get access to the given component, this is the only way to access a component/resource safely (in the context of the world access guard)
     pub fn get_component_with_access_mut<T: Component>(
         &self,
@@ -569,6 +631,7 @@ impl<'w> WorldAccessGuard<'w> {
         }
     }
 
+    #[track_caller]
     /// Get access to the given resource
     pub fn get_resource_with_access<T: Resource>(
         &self,
@@ -592,6 +655,7 @@ impl<'w> WorldAccessGuard<'w> {
         }
     }
 
+    #[track_caller]
     /// Get access to the given resource, this is the only way to access a component/resource safely (in the context of the world access guard)
     pub fn get_resource_with_access_mut<T: Resource>(
         &self,
@@ -1105,25 +1169,20 @@ mod test {
             let world = world.read().unwrap();
 
             // test read
-            world.with_resource(|world, allocator: Mut<ReflectAllocator>| {
-                world.with_resource(|world, type_registry: Mut<AppTypeRegistry>| {
-                    let type_registry = type_registry.read();
-                    ref_.with_reflect(world, &type_registry, Some(&allocator), |reflect| {
-                        let orig = reflect.try_downcast_ref::<O>();
+            ref_.with_reflect(&world, |reflect, _, _| {
+                let orig = reflect.try_downcast_ref::<O>();
 
-                        let orig = match orig {
-                            Some(v) => v,
-                            None => {
-                                panic!(
-                                    "Could not downcast value {reflect:?} to {}",
-                                    std::any::type_name::<O>()
-                                )
-                            }
-                        };
+                let orig = match orig {
+                    Some(v) => v,
+                    None => {
+                        panic!(
+                            "Could not downcast value {reflect:?} to {}",
+                            std::any::type_name::<O>()
+                        )
+                    }
+                };
 
-                        assert_eq!(orig, &expected);
-                    })
-                })
+                assert_eq!(orig, &expected);
             });
 
             assert!(
@@ -1159,47 +1218,37 @@ mod test {
         WorldCallbackAccess::with_callback_access(&mut world, |world| {
             let world = world.read().unwrap();
             // test set
-            world.with_resource(|world, allocator: Mut<ReflectAllocator>| {
-                world.with_resource(|world, type_registry: Mut<AppTypeRegistry>| {
-                    let type_registry = type_registry.read();
-                    ref_.with_reflect_mut(world, &type_registry, Some(&allocator), |reflect| {
-                        let orig = reflect.try_downcast_mut::<O>();
+            ref_.with_reflect_mut(&world, |reflect, _, _| {
+                let orig = reflect.try_downcast_mut::<O>();
 
-                        let orig = match orig {
-                            Some(v) => v,
-                            None => {
-                                panic!(
-                                    "Could not downcast value {reflect:?} to {}",
-                                    std::any::type_name::<O>()
-                                )
-                            }
-                        };
+                let orig = match orig {
+                    Some(v) => v,
+                    None => {
+                        panic!(
+                            "Could not downcast value {reflect:?} to {}",
+                            std::any::type_name::<O>()
+                        )
+                    }
+                };
 
-                        *orig = expected.clone();
-                    })
-                })
+                *orig = expected.clone();
             });
 
             // test read
-            world.with_resource(|world, allocator: Mut<ReflectAllocator>| {
-                world.with_resource(|world, type_registry: Mut<AppTypeRegistry>| {
-                    let type_registry = type_registry.read();
-                    ref_.with_reflect(world, &type_registry, Some(&allocator), |reflect| {
-                        let orig = reflect.try_downcast_ref::<O>();
+            ref_.with_reflect(&world, |reflect, _, _| {
+                let orig = reflect.try_downcast_ref::<O>();
 
-                        let orig = match orig {
-                            Some(v) => v,
-                            None => {
-                                panic!(
-                                    "Could not downcast value {reflect:?} to {}",
-                                    std::any::type_name::<O>()
-                                )
-                            }
-                        };
+                let orig = match orig {
+                    Some(v) => v,
+                    None => {
+                        panic!(
+                            "Could not downcast value {reflect:?} to {}",
+                            std::any::type_name::<O>()
+                        )
+                    }
+                };
 
-                        assert_eq!(orig, &expected);
-                    })
-                })
+                assert_eq!(orig, &expected);
             });
             post_check(&world);
         });

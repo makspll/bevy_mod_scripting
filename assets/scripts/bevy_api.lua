@@ -19,19 +19,26 @@ function on_event()
     local comp = world:get_component(entity, my_component_type)
     print("Before script: ", comp)
 
-
+    print("\noption")
     print(comp.option_usize)
     comp.option_usize = 69
     print(comp.option_usize)
     comp.option_usize = nil
     print(comp.option_usize)
 
-    print("vec")
-    print(comp.vec_of_usize)
+    print("\nvec")
+    print(table_to_string(comp.vec_of_usize))
+    comp.vec_of_usize = {42,69,72}
+    comp.vec_of_usize[1] = 0
     print(comp.vec_of_usize[2])
-    comp.vec_of_usize[2] = 69
-    print(comp.vec_of_usize[2])
-    world:exit()
+    print(table_to_string(comp.vec_of_usize))
+    comp.vec_of_usize = {}
+    print(table_to_string(comp.vec_of_usize))
+    comp.vec_of_usize = comp.vec_of_usize2
+    print(table_to_string(comp.vec_of_usize))
+    comp.vec_of_usize = comp.vec_of_usize
+    print(table_to_string(comp.vec_of_usize))
+
 
     print("============")
 

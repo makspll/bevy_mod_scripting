@@ -68,7 +68,7 @@ impl<A: LuaEventArg> Plugin for LuaScriptingPlugin<A> {
         self.scripting_plugin.build(app);
         register_lua_values(app);
         app.add_context_pre_handling_initializer::<()>(|script_id, entity, context: &mut Lua| {
-            let world = context.get_world().unwrap();
+            let world = context.get_world();
             let lua_entity = world.with_resource::<ReflectAllocator, _, _>(|_, mut allocator| {
                 let reflect_reference = ReflectReference::new_allocated(entity, &mut allocator);
                 <Entity as LuaProxied>::Proxy::from(reflect_reference)

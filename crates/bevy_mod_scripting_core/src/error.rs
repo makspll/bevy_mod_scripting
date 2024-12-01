@@ -3,7 +3,7 @@ use std::{
     sync::Arc,
 };
 
-use bevy::reflect::Reflect;
+use bevy::reflect::{ApplyError, Reflect};
 use thiserror::Error;
 
 use crate::{bindings::ReflectAllocationId, bindings::ReflectReference};
@@ -144,38 +144,9 @@ impl std::fmt::Display for ScriptError {
     }
 }
 
-// #[derive(Error, Debug, Clone)]
-// pub enum ReflectionError {
-//     #[error("Base reference `{base}` is invalid. {reason}")]
-//     InvalidBaseReference { base: String, reason: String },
-//     #[error("Cannot safely access `{base}`. {reason}")]
-//     InsufficientAccess { base: String, reason: String },
-//     #[error("Tried to access `{base:?}` with insufficient provenance. {reason}")]
-//     InsufficientProvenance {
-//         base: ReflectReference,
-//         reason: String,
-//     },
-//     #[error("Cannot downcast reference: {reference:?} to: {to}")]
-//     CannotDowncast {
-//         reference: ReflectReference,
-//         to: String,
-//     },
-//     #[error("Could not assign `{rhs}` to `{lhs:?}`. {reason}")]
-//     InvalidAssignment {
-//         lhs: ReflectReference,
-//         rhs: String,
-//         reason: String,
-//     },
-//     #[error("Failed to build concrete type from &Reflect type: `{ref_}`. Does this type have a FromReflect type data?")]
-//     FromReflectFailure { ref_: String },
-//     #[error("Could not dereference script allocation with ID: {id}. {reason}")]
-//     AllocationError {
-//         id: ReflectAllocationId,
-//         reason: String,
-//     },
-//     #[error("Attempted to access world via stale world reference. Did you store a reference to a world across a frame boundary?")]
-//     StaleWorldAccess,
-
-//     #[error("{0}")]
-//     Other(String),
-// }
+#[cfg(feature = "mlua_impls")]
+impl From<ScriptError> for mlua::Error {
+    fn from(value: ScriptError) -> Self {
+        mlua::Error::external(value)
+    }
+}

@@ -397,7 +397,7 @@ impl TealData for LuaWorld {
             },
         );
 
-        methods.add_method("exit", |_, this, ()| {
+        methods.add_method("exit", |lua, this, ()| {
             // TODO: somehow end control flow on lua side
             let world = this.0.read().ok_or_else(|| {
                 mlua::Error::external(ScriptError::new_reflection_error("Stale world access"))
@@ -424,11 +424,12 @@ impl From<&LuaWorld> for WorldCallbackAccess {
 }
 
 pub trait GetWorld {
-    fn get_world(&self) -> Result<Arc<WorldAccessGuard<'static>>, mlua::Error>;
+    fn get_world(&self) -> Arc<WorldAccessGuard<'static>>;
+    fn try_get_world(&self) -> Result<Arc<WorldAccessGuard<'static>>, mlua::Error>;
 }
 
 impl GetWorld for mlua::Lua {
-    fn get_world(&self) -> Result<Arc<WorldAccessGuard<'static>>, mlua::Error> {
+    fn try_get_world(&self) -> Result<Arc<WorldAccessGuard<'static>>, mlua::Error> {
         self.globals()
             .get::<_, LuaValProxy<bevy_mod_scripting_core::bindings::WorldCallbackAccess>>("world")?
             .unproxy()
@@ -438,5 +439,10 @@ impl GetWorld for mlua::Lua {
                     .ok_or_else(|| ScriptError::new_reflection_error("Stale world access"))
             })
             .map_err(mlua::Error::external)
+    }
+
+    fn get_world(&self) -> Arc<WorldAccessGuard<'static>> {
+        self.try_get_world()
+            .expect("global 'world' did not exist or was invalid. Cannot retrieve world")
     }
 }

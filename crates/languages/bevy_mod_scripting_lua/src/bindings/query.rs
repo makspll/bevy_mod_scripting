@@ -76,7 +76,7 @@ impl TealData for LuaQueryBuilder {
         );
 
         methods.add_function("iter", |l, this: LuaQueryBuilder| {
-            let world = l.get_world()?;
+            let world = l.get_world();
             let mut result = world
                 .query(this.0)
                 .map_err(tealr::mlu::mlua::Error::external)?;

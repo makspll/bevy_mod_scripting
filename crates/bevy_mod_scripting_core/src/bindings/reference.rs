@@ -36,7 +36,7 @@ use smallvec::SmallVec;
 
 use crate::{
     bindings::{ReflectAllocation, ReflectAllocationId},
-    prelude::{ReflectAllocator, ScriptError, ScriptResult},
+    prelude::{ReflectAllocator, ScriptError, ScriptResult}, reflection_extensions::TypeIdExtensions,
 };
 
 use super::{
@@ -59,6 +59,11 @@ pub struct ReflectReference {
 
 impl ReflectReference {
 
+    /// Creates a new infinite iterator. This iterator will keep returning the next element reference forever.
+    pub fn into_iter_infinite(self) -> ReflectRefIter {
+        ReflectRefIter::new_indexed(self)
+    }
+
     /// Prints the reference using the world to resolve type names.
     pub fn print_with_world(&self, world: &WorldAccessGuard) -> String {
         world.with_resource(|_, type_registry: Mut<AppTypeRegistry>| {
@@ -74,48 +79,29 @@ impl ReflectReference {
     }
 
     /// If this is a reference to something with a length accessible via reflection, returns that length.
-    pub fn len(&self, world: &WorldAccessGuard) -> Option<usize> {
-        world.with_resource(|world, type_registry: Mut<AppTypeRegistry>| {
-            world.with_resource(|world, allocator: Mut<ReflectAllocator>| {
-                let type_registry = type_registry.read();
-                self
-                    .with_reflect(world, &type_registry, Some(&allocator), |r| {
-                        match r.reflect_ref() {
-                            bevy::reflect::ReflectRef::Struct(s) => Some(s.field_len()),
-                            bevy::reflect::ReflectRef::TupleStruct(ts) => Some(ts.field_len()),
-                            bevy::reflect::ReflectRef::Tuple(t) => Some(t.field_len()),
-                            bevy::reflect::ReflectRef::List(l) => Some(l.len()),
-                            bevy::reflect::ReflectRef::Array(a) => Some(a.len()),
-                            bevy::reflect::ReflectRef::Map(m) => Some(m.len( )),
-                            bevy::reflect::ReflectRef::Set(s) => Some(s.len()),
-                            bevy::reflect::ReflectRef::Enum(e) => Some(e.field_len()),
-                            bevy::reflect::ReflectRef::Opaque(_) => None,
-                        }
-                    })
+    pub fn len(&self, world: &WorldAccessGuard) -> ScriptResult<Option<usize>> {
+        self
+            .with_reflect(world, |r, _, _| {
+                match r.reflect_ref() {
+                    bevy::reflect::ReflectRef::Struct(s) => Some(s.field_len()),
+                    bevy::reflect::ReflectRef::TupleStruct(ts) => Some(ts.field_len()),
+                    bevy::reflect::ReflectRef::Tuple(t) => Some(t.field_len()),
+                    bevy::reflect::ReflectRef::List(l) => Some(l.len()),
+                    bevy::reflect::ReflectRef::Array(a) => Some(a.len()),
+                    bevy::reflect::ReflectRef::Map(m) => Some(m.len( )),
+                    bevy::reflect::ReflectRef::Set(s) => Some(s.len()),
+                    bevy::reflect::ReflectRef::Enum(e) => Some(e.field_len()),
+                    bevy::reflect::ReflectRef::Opaque(_) => None,
+                }
             })
-        })
     }
 
-    pub fn new_allocated<T: Reflect>(
+    pub fn new_allocated<T: PartialReflect>(
         value: T,
         allocator: &mut ReflectAllocator,
     ) -> ReflectReference {
+        let type_id = value.get_represented_type_info().map(|i| i.type_id()).unwrap_or_else(|| panic!("Type '{}' has no represented type information to allocate with.", std::any::type_name::<T>()));
         let (id, _) = allocator.allocate(value);
-        ReflectReference {
-            base: ReflectBaseType {
-                type_id: TypeId::of::<T>(),
-                base_id: ReflectBase::Owned(id),
-            },
-            reflect_path: Vec::default(),
-        }
-    }
-
-    pub fn new_allocated_boxed(
-        value: Box<dyn PartialReflect>,
-        allocator: &mut ReflectAllocator,
-    ) -> ReflectReference {
-        let type_id = value.get_represented_type_info().map(|i| i.type_id()).expect("Expected type info for boxed value");
-        let (id, _) = allocator.allocate_boxed(value);
         ReflectReference {
             base: ReflectBaseType {
                 type_id,
@@ -132,61 +118,64 @@ impl ReflectReference {
     }
 
     /// A form of [`Self::reflect`] which does the access checks for you.
-    /// Panics if it waits for access too long to prevent deadlocks.
-    pub fn with_reflect<O, F: FnOnce(&dyn PartialReflect) -> O>(
+    #[track_caller]
+    pub fn with_reflect<O, F: FnOnce(&dyn PartialReflect, &TypeRegistry , &ReflectAllocator) -> O>(
         &self,
         world: &WorldAccessGuard,
-        type_registry: &TypeRegistry,
-        allocator: Option<&ReflectAllocator>,
         f: F,
-    ) -> O {
+    ) -> ScriptResult<O> {
         let access = world
             .get_access_timeout(
                 self.base.base_id.get_reflect_access_id(),
                 DEFAULT_TIMEOUT,
                 DEFAULT_INTERVAL,
-            )
-            .unwrap_or_else(|| panic!("Timeout when waiting for access for: `{:?}`", self));
+            );
 
-        let reflect = self
-            .reflect(
-                world.as_unsafe_world_cell(),
-                &access,
-                type_registry,
-                allocator,
-            )
-            .unwrap();
-        let o = f(reflect);
+        let out = world.with_allocator_and_type_registry(|_, type_registry, allocator| {
+            let type_registry = type_registry.read();
+            let reflect = self
+                .reflect(
+                    world.as_unsafe_world_cell(),
+                    &access,
+                    &type_registry,
+                    Some(&allocator),
+                )?;
+            let o = f(reflect, &type_registry, &allocator);
+    
+            Ok(o)
+        });
+
         world.release_access(access);
-        o
+        out
     }
 
-    pub fn with_reflect_mut<O, F: FnOnce(&mut dyn PartialReflect) -> O>(
+    #[track_caller]
+    pub fn with_reflect_mut<O, F: FnOnce(&mut dyn PartialReflect, &TypeRegistry, &mut ReflectAllocator) -> O>(
         &self,
         world: &WorldAccessGuard,
-        type_registry: &TypeRegistry,
-        allocator: Option<&ReflectAllocator>,
         f: F,
-    ) -> O {
+    ) -> ScriptResult<O> {
         let mut access = world
             .get_access_timeout(
                 self.base.base_id.get_reflect_access_id(),
                 DEFAULT_TIMEOUT,
                 DEFAULT_INTERVAL,
-            )
-            .unwrap_or_else(|| panic!("Timeout when waiting for access for: `{:?}`", self));
+            );
+        let out = world.with_allocator_and_type_registry(|_, type_registry, mut allocator| {
+            let type_registry = type_registry.read();
+            let reflect = self
+                .reflect_mut(
+                    world.as_unsafe_world_cell(),
+                    &mut access,
+                    &type_registry,
+                    Some(&allocator),
+                )?;
+            let o = f(reflect, &type_registry, &mut allocator);
+            Ok(o)
+        });
 
-        let reflect = self
-            .reflect_mut(
-                world.as_unsafe_world_cell(),
-                &mut access,
-                type_registry,
-                allocator,
-            )
-            .unwrap();
-        let o = f(reflect);
         world.release_access(access);
-        o
+        out
     }
 
     /// Returns `Ok(())` if the given access is sufficient to read the value or an appropriate error otherwise
@@ -566,3 +555,65 @@ impl PartialEq for DeferredReflection {
 }
 
 impl Eq for DeferredReflection {}
+
+
+/// A generic iterator over any reflected value.
+/// Unlike a normal iterator, this one does not have a halting condition, it will keep returning elements forever.
+/// The iterator does not try to access the value, it just works out the next index/key to access.
+/// You will know you've reached the end when you get an error when trying to access the next element.
+#[derive(Debug,Clone)]
+pub struct ReflectRefIter {
+    pub(crate) base: ReflectReference,
+    // TODO: support maps etc
+    pub(crate) index: IterationKey,
+}
+
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub enum IterationKey {
+    Index(usize),
+}
+
+impl ReflectRefIter {
+    pub fn new_indexed(base: ReflectReference) -> Self {
+        Self { base, index: IterationKey::Index(0) }
+    }
+
+    pub fn index(&self) -> IterationKey {
+        self.index.clone()
+    }
+
+    /// Returns the next element in the iterator, it does not have a halting condition
+    pub fn next_ref(&mut self) -> (ReflectReference, IterationKey) {
+        let index = self.index();
+        let next = match &mut self.index {
+            IterationKey::Index(i) => {
+                let mut next = self.base.clone();
+                let parsed_path = ParsedPath::parse(&format!("[{}]", *i)).expect("invariant violated");
+                next.index_path(ReflectionPathElem::Reflection(parsed_path));
+                *i += 1;
+                next
+            }
+        };
+        (next, index)
+    }
+}
+
+impl Iterator for ReflectRefIter {
+    type Item = Result<ReflectReference, ScriptError>;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        let result: Result<_, _> = {
+            match &mut self.index {
+                IterationKey::Index(i) => {
+                    let mut next = self.base.clone();
+                    let parsed_path = ParsedPath::parse(&i.to_string()).unwrap();
+                    next.index_path(ReflectionPathElem::Reflection(parsed_path));
+                    *i += 1;
+                    Ok(next)
+                }
+            }
+        };
+
+        return Some(result);
+    }
+}

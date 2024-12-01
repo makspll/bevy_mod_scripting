@@ -40,7 +40,7 @@ path = "src/lib.rs"
 
 [dependencies]
 bevy = { workspace = true, default-features = false }
-bevy_mod_scripting_core = { workspace = true }
+bevy_mod_scripting_core = { workspace = true, features = ["mlua_impls"] }
 bevy_mod_scripting_derive = { path = "../../bevy_mod_scripting_derive" }
 tealr = { version = "0.9", features = [
     "mlua_vendored",

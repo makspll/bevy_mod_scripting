@@ -73,7 +73,7 @@ fn init_lua_test_utils(_script_name: &Cow<'static, str>, lua: &mut Lua) -> Resul
 
     let _get_entity_with_test_component = lua
         .create_function(|l, s: String| {
-            let world = l.get_world().unwrap();
+            let world = l.get_world();
             let opt_entity = world.with_resource::<ReflectAllocator, _, _>(|_, mut allocator| {
                 let a = World::enumerate_test_components()
                     .iter()

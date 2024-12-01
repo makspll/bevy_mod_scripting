@@ -186,14 +186,7 @@ where
     ) -> ScriptResult<Self::Output<'o>> {
         let reflect_ref: &ReflectReference = self.0.as_ref();
         let access = reflect_ref.base.base_id.get_reflect_access_id();
-        let access = guard
-            .get_access_timeout(access, DEFAULT_TIMEOUT, DEFAULT_INTERVAL)
-            .ok_or_else(|| {
-                ScriptError::new_reflection_error(format!(
-                    "Could not unproxy type: `{}`. Aliasing access.",
-                    std::any::type_name::<T>()
-                ))
-            })?;
+        let access = guard.get_access_timeout(access, DEFAULT_TIMEOUT, DEFAULT_INTERVAL);
         let out = reflect_ref.reflect(
             guard.as_unsafe_world_cell(),
             &access,
@@ -248,14 +241,7 @@ where
     ) -> ScriptResult<()> {
         let reflect_ref: &ReflectReference = self.0.as_ref();
         let access = reflect_ref.base.base_id.get_reflect_access_id();
-        let access = guard
-            .get_access_timeout(access, DEFAULT_TIMEOUT, DEFAULT_INTERVAL)
-            .ok_or_else(|| {
-                ScriptError::new_reflection_error(format!(
-                    "Could not unproxy type: `{}`. Aliasing access.",
-                    std::any::type_name::<T>()
-                ))
-            })?;
+        let access = guard.get_access_timeout(access, DEFAULT_TIMEOUT, DEFAULT_INTERVAL);
         accesses.push(access);
         Ok(())
     }
@@ -309,14 +295,7 @@ where
     ) -> ScriptResult<()> {
         let reflect_ref: &ReflectReference = self.0.as_ref();
         let access = reflect_ref.base.base_id.get_reflect_access_id();
-        let access = guard
-            .get_access_timeout(access, DEFAULT_TIMEOUT, DEFAULT_INTERVAL)
-            .ok_or_else(|| {
-                ScriptError::new_reflection_error(format!(
-                    "Could not unproxy type: `{}`. Aliasing access.",
-                    std::any::type_name::<T>()
-                ))
-            })?;
+        let access = guard.get_access_timeout(access, DEFAULT_TIMEOUT, DEFAULT_INTERVAL);
         accesses.push(access);
         Ok(())
     }
