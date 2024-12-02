@@ -16,9 +16,7 @@ use bevy::{
     },
 };
 use bevy_mod_scripting_core::{
-    bindings::{DeferredReflection, ReflectAllocator, ReflectReference, ReflectionPathElem},
-    error::ScriptError,
-    reflection_extensions::PartialReflectExt,
+    bindings::{DeferredReflection, ReflectAllocator, ReflectReference, ReflectionPathElem}, error::ScriptError, new_deferred_reflection, reflection_extensions::PartialReflectExt
 };
 use tealr::mlu::mlua::{FromLua, IntoLua, Lua, Table, Value};
 
@@ -62,11 +60,13 @@ impl ReflectLuaProxied {
     fn new_for_option(inner_lua_proxied_data: &ReflectLuaProxied, container_type_info: &'static TypeInfo) -> Self {
         let ref_into_option = |mut r: ReflectReference| {
             r.index_path(ParsedPath::parse_static("0").expect("Invalid reflection path"));
+            // why is this necessary? well we need for the from_proxy to work correctly 
+            // we need to know if the reference came from this impl so we can pop the last element
+            r.index_path(ReflectionPathElem::Identity);
             r
         };
         let into_proxy_clone = inner_lua_proxied_data.into_proxy.clone();
         let from_proxy_clone = inner_lua_proxied_data.from_proxy.clone();
-        // let from_proxy_clone = inner_lua_proxied_data.from_proxy.clone();
         Self {
             into_proxy: Arc::new(move |reflect_ref, l| {
                 // read the value and check if it is None, if so return nil
@@ -98,10 +98,27 @@ impl ReflectLuaProxied {
 
                     Ok(reflect_ref)
                 } else {
-                    bevy::log::debug!("Option from proxy: {:?}", v);
+                    // this ref could've come from this into_proxy or from something else, we need to differentiate here
+                    // we need to 
                     let mut inner_ref = (from_proxy_clone)(v, l)?;
-                    inner_ref.reflect_path.pop();
-                    Ok(inner_ref)
+                    if inner_ref.reflect_path.last().is_some_and(|p| p == &ReflectionPathElem::Identity) {
+                        // if the last path element is identity, then it came from this impl
+                        // we need to remove the path derefing to the inner value and we're done
+                        inner_ref.reflect_path.pop();
+                        Ok(inner_ref)
+                    } else {
+                        // otherwise we need to wrap it in an option dynamically so it's an option, to do that we need to reflect the value and box it
+                        let world = l.get_world();
+                        let reflect_ref = inner_ref.with_reflect(&world, |r,_, mut allocator| {
+                            let mut dynamic = DynamicEnum::new("Some", DynamicVariant::Tuple([r.clone_value()].into_iter().collect()));
+                            dynamic.set_represented_type(Some(container_type_info));
+                            ReflectReference::new_allocated(
+                                dynamic,
+                                &mut allocator,
+                            )
+                        })?;
+                        Ok(reflect_ref)
+                    }
                 }
             }),
             opt_set: None,
@@ -538,7 +555,8 @@ fn destructure_list_type(reg: &TypeRegistration) -> Option<(TypeId, TypeId)> {
 }
 
 /// iterates over type data for all types which have registered [`ReflectLuaProxied`] and [`ReflectLuaValue`] implementations,
-/// and registers corresponding [`Option<T>`] [`Result<T, E>`] etc type data equivalents
+/// and registers corresponding [`Option<T>`] [`Result<T, E>`] etc type data equivalents.
+/// for combinations of nested containers, this should be run more times per level of nesting required.
 pub fn pre_register_common_containers(type_registry: &mut AppTypeRegistry) {
     let mut type_registry = type_registry.write();
 

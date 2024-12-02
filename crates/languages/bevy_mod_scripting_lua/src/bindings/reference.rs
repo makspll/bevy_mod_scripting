@@ -108,9 +108,10 @@ impl LuaReflectReference {
         }) {
             bevy::log::debug!("Setting value with ReflectLuaValue registration");
             let other = (type_data.from_value)(value, lua)?;
-            let o = self
-                .0
-                .with_reflect_mut(&world, |r, _, _| r.try_apply(other.as_partial_reflect()))?;
+            self.0.with_reflect_mut(&world, |r, _, _| {
+                r.try_apply(other.as_partial_reflect())
+                    .map_err(ScriptError::new_reflection_error)
+            })??;
         } else if let Some(type_data) =
             world.with_resource::<AppTypeRegistry, _, _>(|_, type_registry| {
                 type_registry
@@ -193,6 +194,7 @@ impl LuaReflectReference {
         }
     }
 }
+
 impl_userdata_from_lua!(LuaReflectReference);
 
 impl LuaProxied for ReflectReference {
@@ -209,16 +211,6 @@ impl From<ReflectReference> for LuaReflectReference {
     fn from(value: ReflectReference) -> Self {
         Self(value)
     }
-}
-
-#[derive(Debug, Clone, tealr::mlu::UserData, tealr::ToTypename)]
-pub struct LuaReflectRefIter(pub ReflectRefIter);
-impl_userdata_from_lua!(LuaReflectRefIter);
-
-impl TealData for LuaReflectRefIter {
-    fn add_methods<'lua, T: tealr::mlu::TealDataMethods<'lua, Self>>(_methods: &mut T) {}
-
-    fn add_fields<'lua, F: tealr::mlu::TealDataFields<'lua, Self>>(_fields: &mut F) {}
 }
 
 impl TealData for LuaReflectReference {
@@ -253,6 +245,13 @@ impl TealData for LuaReflectReference {
                 self_.0.index_path(elem);
                 bevy::log::debug!("Target reflect reference after indexing key: {:?}", self_.0);
                 self_.set_with_lua_proxy(l, value)
+            },
+        );
+
+        m.add_function_mut(
+            "insert",
+            |l, (mut self_, key): (LuaReflectReference, usize, LuaReflect)| {
+                self_.0.insert_at(key, l.get_world())
             },
         );
 

@@ -82,6 +82,9 @@ impl<A: LuaEventArg> Plugin for LuaScriptingPlugin<A> {
 
     fn cleanup(&self, app: &mut App) {
         let mut type_registry = app.world_mut().get_resource_mut().unwrap();
+
+        // we register up to two levels of nesting, if more are needed, the user will have to do this manually
+        pre_register_common_containers(&mut type_registry);
         pre_register_common_containers(&mut type_registry);
     }
 }

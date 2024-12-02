@@ -28,15 +28,14 @@ use bevy::{
     },
     ptr::Ptr,
     reflect::{
-        Access, ParsedPath, PartialReflect, Reflect, ReflectFromPtr, ReflectPath, ReflectPathError,
-        TypeInfo, TypeRegistry,
+        Access, DynamicEnum, DynamicTuple, ParsedPath, PartialReflect, Reflect, ReflectFromPtr, ReflectPath, ReflectPathError, TypeInfo, TypeRegistry
     },
 };
 use smallvec::SmallVec;
 
 use crate::{
     bindings::{ReflectAllocation, ReflectAllocationId},
-    prelude::{ReflectAllocator, ScriptError, ScriptResult}, reflection_extensions::TypeIdExtensions,
+    prelude::{ReflectAllocator, ScriptError, ScriptResult}, reflection_extensions::{PartialReflectExt, TypeIdExtensions},
 };
 
 use super::{
@@ -62,6 +61,16 @@ impl ReflectReference {
     /// Creates a new infinite iterator. This iterator will keep returning the next element reference forever.
     pub fn into_iter_infinite(self) -> ReflectRefIter {
         ReflectRefIter::new_indexed(self)
+    }
+
+    /// Attempts to insert into the reflected value, if the underlying supports inserting at usize indices
+    pub fn insert_at(&mut self, world: &WorldAccessGuard, index: usize, elem: ReflectReference) -> ScriptResult<()> {
+        self.with_reflect_mut(world, |target, type_registry, allocator| {
+            elem.with_reflect_only(world, type_registry, allocator, |other,_,_| {
+                target.insert_at(index, other.clone_value())
+            })?
+        })??;
+        Ok(())
     }
 
     /// Prints the reference using the world to resolve type names.
@@ -119,9 +128,22 @@ impl ReflectReference {
 
     /// A form of [`Self::reflect`] which does the access checks for you.
     #[track_caller]
-    pub fn with_reflect<O, F: FnOnce(&dyn PartialReflect, &TypeRegistry , &ReflectAllocator) -> O>(
+    pub fn with_reflect<O, F: FnOnce(&dyn PartialReflect, &TypeRegistry , &mut ReflectAllocator) -> O>(
         &self,
         world: &WorldAccessGuard,
+        f: F,
+    ) -> ScriptResult<O> {
+        world.with_allocator_and_type_registry(|world, type_registry, mut allocator| {
+            let type_registry = type_registry.write();
+            self.with_reflect_only(world, &type_registry, &mut allocator, f)
+        })
+    }
+
+    pub fn with_reflect_only<O, F: FnOnce(&dyn PartialReflect, &TypeRegistry , &mut ReflectAllocator) -> O>(
+        &self,
+        world: &WorldAccessGuard,
+        type_registry: &TypeRegistry,
+        allocator: &mut ReflectAllocator,
         f: F,
     ) -> ScriptResult<O> {
         let access = world
@@ -131,22 +153,16 @@ impl ReflectReference {
                 DEFAULT_INTERVAL,
             );
 
-        let out = world.with_allocator_and_type_registry(|_, type_registry, allocator| {
-            let type_registry = type_registry.read();
-            let reflect = self
-                .reflect(
-                    world.as_unsafe_world_cell(),
-                    &access,
-                    &type_registry,
-                    Some(&allocator),
-                )?;
-            let o = f(reflect, &type_registry, &allocator);
-    
-            Ok(o)
-        });
+        let reflect = self
+            .reflect(
+                world.as_unsafe_world_cell(),
+                &access,
+                type_registry,
+                Some(allocator),
+            ).map(|r| f(r, type_registry, allocator));
 
         world.release_access(access);
-        out
+        reflect
     }
 
     #[track_caller]
@@ -155,27 +171,36 @@ impl ReflectReference {
         world: &WorldAccessGuard,
         f: F,
     ) -> ScriptResult<O> {
+        world.with_allocator_and_type_registry(|_, type_registry, mut allocator| {
+            let type_registry = type_registry.read();
+            self.with_reflect_mut_only(world, &type_registry,  &mut allocator, f)
+        })
+    }
+
+    pub fn with_reflect_mut_only<O, F: FnOnce(&mut dyn PartialReflect, &TypeRegistry, &mut ReflectAllocator) -> O>(
+        &self,
+        world: &WorldAccessGuard,
+        type_registry: &TypeRegistry,
+        allocator: &mut ReflectAllocator,
+        f: F,
+    ) -> ScriptResult<O> {
         let mut access = world
             .get_access_timeout(
                 self.base.base_id.get_reflect_access_id(),
                 DEFAULT_TIMEOUT,
                 DEFAULT_INTERVAL,
             );
-        let out = world.with_allocator_and_type_registry(|_, type_registry, mut allocator| {
-            let type_registry = type_registry.read();
-            let reflect = self
-                .reflect_mut(
-                    world.as_unsafe_world_cell(),
-                    &mut access,
-                    &type_registry,
-                    Some(&allocator),
-                )?;
-            let o = f(reflect, &type_registry, &mut allocator);
-            Ok(o)
-        });
 
+        let reflect = self
+            .reflect_mut(
+                world.as_unsafe_world_cell(),
+                &mut access,
+                type_registry,
+                Some(allocator),
+            ).map(|r| f(r, type_registry, allocator));
+        
         world.release_access(access);
-        out
+        reflect
     }
 
     /// Returns `Ok(())` if the given access is sufficient to read the value or an appropriate error otherwise
@@ -456,12 +481,14 @@ impl ReflectBase {
 }
 
 /// An element in the reflection path, the base reference included
-#[derive(Clone, PartialEq, Eq, Debug)]
+#[derive(Clone, Debug, PartialEq, Eq)]
 pub enum ReflectionPathElem {
     /// A standard reflection path, i.e. `.field_name[vec_index]`, pre-parsed since we construct once potentially use many times
     Reflection(ParsedPath),
     /// a deferred reflection
     DeferredReflection(DeferredReflection),
+    /// a no-op reflection, i.e. a reference to the base object, useful identity to have
+    Identity
 }
 
 impl ReflectionPathElem {
@@ -511,6 +538,7 @@ impl<'a> ReflectPath<'a> for &'a ReflectionPathElem {
         match self {
             ReflectionPathElem::Reflection(path) => path.reflect_element(root),
             ReflectionPathElem::DeferredReflection(f) => (f.get)(root),
+            ReflectionPathElem::Identity => Ok(root),
         }
     }
 
@@ -521,6 +549,7 @@ impl<'a> ReflectPath<'a> for &'a ReflectionPathElem {
         match self {
             ReflectionPathElem::Reflection(path) => path.reflect_element_mut(root),
             ReflectionPathElem::DeferredReflection(defref) => (defref.get_mut)(root),
+            ReflectionPathElem::Identity => Ok(root)
         }
     }
 }
@@ -541,6 +570,22 @@ pub struct DeferredReflection {
             + Sync,
     >,
 }
+
+/// Given a function, repeats it with a mutable reference for the get_mut deferred variant
+#[macro_export]
+macro_rules! new_deferred_reflection {
+    (|$root:ident| {$($get:tt)*}) => {
+        DeferredReflection::from((
+            |$root: &dyn PartialReflect| -> Result<&dyn PartialReflect, ReflectPathError<'static>> {
+                $($get)*
+            },
+            |$root: &mut dyn PartialReflect| -> Result<&mut dyn PartialReflect, ReflectPathError<'static>> {
+                $($get)*
+            },
+        ))
+    };
+}
+
 
 impl Debug for DeferredReflection {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
@@ -614,6 +659,6 @@ impl Iterator for ReflectRefIter {
             }
         };
 
-        return Some(result);
+        Some(result)
     }
 }

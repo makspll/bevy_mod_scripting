@@ -33,8 +33,11 @@ pub trait PartialReflectExt {
         other: Box<dyn PartialReflect>,
         apply: F,
         ) -> Result<(), ScriptError>;
-    }
+    
 
+    /// Inserts into the type at the given key, if the type supports inserting with the given key
+    fn insert_at(&mut self, index: usize, value: Box<dyn PartialReflect>) -> Result<(), ScriptError>;
+}
 pub trait TypeIdExtensions {
     fn type_id_or_dummy(&self) -> TypeId;
 }
@@ -129,7 +132,6 @@ impl<T: PartialReflect + ?Sized> PartialReflectExt for T {
         match (self.reflect_mut(), other.reflect_mut()) {
             (bevy::reflect::ReflectMut::List(l), bevy::reflect::ReflectMut::List(r)) => {
 
-                let excess_elems = max(l.len() as isize - r.len() as isize, 0) as usize;
                 let to_be_inserted_elems = max(r.len() as isize - l.len() as isize, 0) as usize;
                 let apply_range = 0..(r.len() - to_be_inserted_elems);
 
@@ -153,20 +155,6 @@ impl<T: PartialReflect + ?Sized> PartialReflectExt for T {
                 for i in apply_range {
                     apply(l.get_mut(i).expect("invariant"), r.get(i).expect("invariant"))?;
                 };
-
-
-
-                // for right_elem in r.iter() {
-                //     if let Some(left_elem) = l.get_mut(i) {
-                //         apply(left_elem, right_elem)?
-                //     } else {
-                //         shorter = true;
-                //         break;
-                //     }
-                //     i+=1;
-                // };
-                
-
                 
                 Ok(())
             }
@@ -178,29 +166,27 @@ impl<T: PartialReflect + ?Sized> PartialReflectExt for T {
         }
     }
 
-    // fn set_as_list<I: IntoIterator<Item = Box<dyn PartialReflect>>>(
-    //     &mut self,
-    //     other: I,
-    // ) -> Result<(), ScriptError> {
-    //     if let bevy::reflect::ReflectMut::List(list) = self.reflect_mut() {
-    //         let mut left_index = 0;
-    //         for i in other {
-    //             if let Some(left_item) = list.get_mut(left_index) {
-    //                 left_item.apply
-    //             } else {
-    //             }
-    //             left_index += 1;
-    //         }
-    //         Ok(())
-    //     } else {
-    //         Err(ScriptError::new_runtime_error(format!(
-    //             "Expected list-like type from crate core, but got {}",
-    //             self.get_represented_type_info()
-    //                 .map(|ti| ti.type_path())
-    //                 .unwrap_or_else(|| "dynamic type with no type information")
-    //         )))
-    //     }
-    // }
+    fn insert_at(&mut self, index: usize, value: Box<dyn PartialReflect>) -> Result<(), ScriptError> {
+        match self.reflect_mut() {
+            bevy::reflect::ReflectMut::List(l) => {
+                l.insert(index, value);
+                Ok(())
+            },
+            bevy::reflect::ReflectMut::Map(m) => {
+                m.insert_boxed(Box::new(index), value);
+                Ok(())
+            },
+            bevy::reflect::ReflectMut::Set(s) => {
+                s.insert_boxed(value);
+                Ok(())
+            },
+            _ => Err(ScriptError::new_reflection_error(format!(
+                "Could not insert into {}. The type does not support insertion at a key.",
+                self.reflect_type_path()
+            ))),
+        }
+    }
+
 }
 
 
@@ -343,5 +329,38 @@ mod test {
             })
             .unwrap();
         assert_eq!(other, list);
+    }
+
+    #[test]
+    fn test_insert_at_vec() {
+        let mut list = vec![1, 2, 3];
+        let value = 4;
+        let value_ref: Box<dyn PartialReflect> = Box::new(value);
+        list.insert_at(&1, value_ref).unwrap();
+        assert_eq!(vec![1, 4, 2, 3], list);
+    }
+
+    #[test]
+    fn test_insert_at_map() {
+        let mut map = std::collections::HashMap::<i32, i32>::default();
+        let value = 4;
+        let value_ref: Box<dyn PartialReflect> = Box::new(value);
+        map.insert(1, 2);
+        map.insert(2, 3);
+        map.insert(3, 4);
+        map.insert_at(&1, value_ref).unwrap();
+        assert_eq!(4, map[&1]);
+    }
+
+    #[test]
+    fn test_insert_at_set() {
+        let mut set = std::collections::HashSet::<i32>::default();
+        let value = 4;
+        let value_ref: Box<dyn PartialReflect> = Box::new(value);
+        set.insert(1);
+        set.insert(2);
+        set.insert(3);
+        set.insert_at(&1, value_ref).unwrap();
+        assert!(set.contains(&4));
     }
 }
