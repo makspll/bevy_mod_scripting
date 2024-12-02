@@ -78,7 +78,7 @@ bevy_mod_scripting_common = { path = "crates/bevy_mod_scripting_common", version
 bevy = { workspace = true, default-features = true }
 clap = { version = "4.1", features = ["derive"] }
 rand = "0.8.5"
-bevy_console = "0.12"
+bevy_console = "0.13"
 rhai-rand = "0.1"
 
 [workspace]
@@ -111,26 +111,25 @@ codegen-units = 8
 incremental = false
 debug = false
 
-# TODO: bump once bevy is released and the lib is updated
-# [[example]]
-# name = "console_integration_lua"
-# path = "examples/lua/console_integration.rs"
-# required-features = [
-#     "lua54",
-#     "lua_script_api",
-#     "bevy/file_watcher",
-#     "bevy/multi_threaded",
-# ]
+[[example]]
+name = "console_integration_lua"
+path = "examples/lua/console_integration.rs"
+required-features = [
+    "lua54",
+    "lua_script_api",
+    "bevy/file_watcher",
+    "bevy/multi_threaded",
+]
 
-# [[example]]
-# name = "console_integration_rhai"
-# path = "examples/rhai/console_integration.rs"
-# required-features = [
-#     "rhai",
-#     "rhai_script_api",
-#     "bevy/file_watcher",
-#     "bevy/multi_threaded",
-# ]
+[[example]]
+name = "console_integration_rhai"
+path = "examples/rhai/console_integration.rs"
+required-features = [
+    "rhai",
+    "rhai_script_api",
+    "bevy/file_watcher",
+    "bevy/multi_threaded",
+]
 
 [[example]]
 name = "complex_game_loop_lua"
