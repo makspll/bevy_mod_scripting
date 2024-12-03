@@ -15,14 +15,14 @@ jobs:
     env:
       working-directory: docs/src
     steps:
+
     - name: Checkout repository
       uses: actions/checkout@v4
-
+    
     - uses: actions-rs/toolchain@v1
-      with:
-        toolchain: stable
-        components: mdbook
-        override: true
+
+    - name: Install mdBook
+      run: cargo install mdbook
 
     - name: Build the book
       run: mdbook build
