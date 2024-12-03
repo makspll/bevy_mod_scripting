@@ -386,7 +386,7 @@ fn type_is_supported_as_non_proxy_return_val<'tcx>(
 ) -> bool {
     trace!("Checkign type is supported as non proxy return val: '{ty:?}' with param_env: '{param_env:?}'");
     if let TyKind::Ref(region, _, _) = ty.kind() {
-        if !region.get_name().is_some_and(|rn| rn.as_str() == "'static") {
+        if region.get_name().is_none_or(|rn| rn.as_str() != "'static") {
             return false;
         }
     }

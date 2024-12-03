@@ -8,7 +8,7 @@ bevy_api_gen is a Cargo plugin that generates reflection-powered wrappers for Be
 To install bevy_api_gen, use the following command:
 
 ```bash
-cargo +nightly-2024-01-24 install bevy_api_gen
+cargo +nightly-2024-11-05 install bevy_api_gen
 ```
 
 # Usage
@@ -18,17 +18,17 @@ cargo +nightly-2024-01-24 install bevy_api_gen
 To run the main codegen process, use the following command:
 
 ```bash
-cargo +nightly-2024-01-24 bevy-api-gen generate
+cargo +nightly-2024-11-05 bevy-api-gen generate
 ```
 
-This will perform all parts of the process and generate meta as well as .rs files for each crate in your workspace in your `/target/plugin-nightly-2024-01-24/bevy_api_gen` directory
+This will perform all parts of the process and generate meta as well as .rs files for each crate in your workspace in your `/target/plugin-nightly-2024-11-05/bevy_api_gen` directory
 
 ## Collect
 
 After generating all the files, you can 'collect' them in a mod.rs file like so:
 
 ```bash
-cargo +nightly-2024-01-24 bevy-api-gen collect
+cargo +nightly-2024-11-05 bevy-api-gen collect
 ```
 
 ## List Types
@@ -36,7 +36,7 @@ cargo +nightly-2024-01-24 bevy-api-gen collect
 To see a list of all `Reflect` implementing types in your workspace run:
 
 ```bash
-cargo +nightly-2024-01-24 bevy-api-gen list-types > all_types.txt
+cargo +nightly-2024-11-05 bevy-api-gen list-types > all_types.txt
 ```
 
 ## List Templates
@@ -44,7 +44,7 @@ cargo +nightly-2024-01-24 bevy-api-gen list-types > all_types.txt
 To see the list of all templates which you can override use:
 
 ```bash
-cargo +nightly-2024-01-24 bevy-api-gen list-templates
+cargo +nightly-2024-11-05 bevy-api-gen list-templates
 ```
 
 ## Print Template
@@ -52,5 +52,5 @@ cargo +nightly-2024-01-24 bevy-api-gen list-templates
 You can also print any of the templates to stdout:
 
 ```bash
-cargo +nightly-2024-01-24 bevy-api-gen print item.tera
+cargo +nightly-2024-11-05 bevy-api-gen print item.tera
 ```

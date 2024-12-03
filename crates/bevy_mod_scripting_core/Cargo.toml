@@ -25,6 +25,7 @@ mlua_impls = ["mlua"]
 [dependencies]
 mlua = { version = "0.9", optional = true }
 bevy = { workspace = true, default-features = false, features = ["bevy_asset"] }
+
 thiserror = "1.0.31"
 paste = "1.0.7"
 parking_lot = "0.12.1"
