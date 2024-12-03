@@ -1,0 +1,35 @@
+name: Deploy mdBook to GitHub Pages
+
+on:
+  push:
+    branches:
+      - "**"
+    paths:
+      - 'docs/**'
+
+jobs:
+
+  build:
+    name: Build Book - mdbook
+    runs-on: ubuntu-latest
+    env:
+      working-directory: docs/src
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - uses: actions-rs/toolchain@v1
+      with:
+        toolchain: stable
+        components: mdbook
+        override: true
+
+    - name: Build the book
+      run: mdbook build
+
+    - name: Deploy to GitHub Pages
+      if: github.ref == 'refs/heads/main'
+      uses: peaceiris/actions-gh-pages@v3
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        publish_dir: book
