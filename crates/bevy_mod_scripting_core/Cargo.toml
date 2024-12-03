@@ -19,20 +19,19 @@ path = "src/lib.rs"
 # if enabled enables documentation updating in optimized builds
 doc_always = []
 
+# if enabled enables some common mlua trait implementations 
+mlua_impls = ["mlua"]
 
 [dependencies]
-bevy = { workspace = true, default-features = false, features = [
-    "bevy_asset",
-    "bevy_animation",
-    "bevy_core_pipeline",
-    "bevy_ui",
-    "bevy_pbr",
-    "bevy_render",
-    "bevy_text",
-    "bevy_sprite",
-] }
-bevy_event_priority = { path = "../bevy_event_priority", version = "0.8.0-alpha.2" }
+mlua = { version = "0.9", optional = true }
+bevy = { workspace = true, default-features = false, features = ["bevy_asset"] }
+
 thiserror = "1.0.31"
 paste = "1.0.7"
 parking_lot = "0.12.1"
-anyhow = "1.0.75"
+lockable = "0.0.8"
+smallvec = "1.11"
+itertools = "0.13"
+
+[dev-dependencies]
+test_utils = { workspace = true }

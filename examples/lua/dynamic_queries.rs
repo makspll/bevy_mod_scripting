@@ -1,5 +1,8 @@
-use bevy::prelude::*;
+use asset::ScriptAsset;
+use bevy::{core::FrameCount, prelude::*};
 use bevy_mod_scripting::prelude::*;
+use bevy_mod_scripting_lua::{bindings::providers::LuaBevyScriptingPlugin, LuaScriptingPlugin};
+use script::ScriptComponent;
 
 #[derive(Component, Reflect)]
 #[reflect(Component)]
@@ -13,22 +16,32 @@ pub struct ComponentB;
 #[reflect(Component)]
 pub struct ComponentC;
 
+fn load_script(
+    server: Res<AssetServer>,
+    mut commands: Commands,
+    mut handle: Local<Handle<ScriptAsset>>,
+) {
+    let path = "scripts/dynamic_queries.lua";
+    let handle_ = server.load::<ScriptAsset>(path);
+    *handle = handle_;
+
+    commands.spawn(ScriptComponent::new(vec![path.into()]));
+}
+
 fn main() {
     let mut app = App::new();
 
-    app.add_plugins((DefaultPlugins, ScriptingPlugin))
+    app.add_plugins(DefaultPlugins);
+    app.add_plugins(LuaScriptingPlugin::<()>::default());
+    app.add_plugins(LuaBevyScriptingPlugin)
         .register_type::<ComponentA>()
         .register_type::<ComponentB>()
         .register_type::<ComponentC>()
-        .add_script_host::<LuaScriptHost<()>>(PostUpdate)
-        .add_script_handler::<LuaScriptHost<()>, 0, 0>(PostUpdate)
-        .add_api_provider::<LuaScriptHost<()>>(Box::new(LuaBevyAPIProvider))
-        .add_api_provider::<LuaScriptHost<()>>(Box::new(LuaCoreBevyAPIProvider))
-        .add_systems(Startup, (setup, apply_deferred, run).chain())
+        .add_systems(Startup, (setup, load_script))
         .run();
 }
 
-fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
+fn setup(mut commands: Commands) {
     commands.spawn((ComponentA,));
     commands.spawn((ComponentA, ComponentB));
     commands.spawn((ComponentA, ComponentC));
@@ -43,22 +56,4 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
     commands.spawn((ComponentC, ComponentA));
     commands.spawn((ComponentC, ComponentB));
     commands.spawn((ComponentC, ComponentA, ComponentB));
-
-    let path = "scripts/dynamic_queries.lua";
-    let handle = asset_server.load(path);
-
-    commands.spawn(ScriptCollection::<LuaFile> {
-        scripts: vec![Script::new(path.into(), handle)],
-    });
-}
-
-fn run(mut events: PriorityEventWriter<LuaEvent<()>>) {
-    events.send(
-        LuaEvent {
-            hook_name: "on_event".into(),
-            args: (),
-            recipients: Recipients::All,
-        },
-        0,
-    );
 }

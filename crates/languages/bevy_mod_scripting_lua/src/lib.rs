@@ -1,197 +1,178 @@
-use crate::{
-    assets::{LuaFile, LuaLoader},
-    docs::LuaDocFragment,
-};
-use bevy::{ecs::schedule::ScheduleLabel, prelude::*};
-use bevy_mod_scripting_core::{prelude::*, systems::*, world::WorldPointerGuard};
-
-use std::fmt;
-use std::marker::PhantomData;
-use std::sync::Mutex;
-use tealr::mlu::mlua::{prelude::*, Function};
-
 pub mod assets;
 pub mod docs;
+pub mod type_data;
 pub mod util;
+use bevy::{
+    app::{App, Plugin, Startup},
+    ecs::{entity::Entity, world::World},
+    prelude::{AppTypeRegistry, Mut},
+    reflect::{impl_reflect, FromType, GetTypeRegistration, PartialReflect, Reflect, TypePath},
+};
+use bevy_mod_scripting_core::{
+    bindings::{ReflectAllocator, ReflectReference, WorldCallbackAccess},
+    context::{ContextBuilder, ContextInitializer, ContextPreHandlingInitializer},
+    error::ScriptError,
+    event::CallbackLabel,
+    handler::Args,
+    script::ScriptId,
+    AddContextPreHandlingInitializer, ScriptingPlugin,
+};
+use bindings::{
+    providers::bevy_ecs::LuaEntity,
+    proxy::LuaProxied,
+    world::{GetWorld, LuaWorld},
+};
 pub use tealr;
+pub mod bindings;
+use tealr::mlu::mlua::{FromLua, Function, IntoLua, IntoLuaMulti, Lua, Value};
+use type_data::{
+    pre_register_common_containers, register_lua_values, ReflectLuaProxied, ReflectLuaValue,
+};
+
 pub mod prelude {
-    pub use crate::{
-        assets::{LuaFile, LuaLoader},
-        docs::{LuaDocFragment, TypeWalkerBuilder},
-        tealr::{
-            self,
-            mlu::{
-                mlua::{self, prelude::*, Value},
-                TealData,
-            },
+    pub use crate::tealr::{
+        self,
+        mlu::{
+            mlua::{self, prelude::*, Value},
+            TealData,
         },
-        LuaEvent, LuaScriptHost,
     };
 }
 
-pub trait LuaArg: for<'lua> IntoLuaMulti<'lua> + Clone + Sync + Send + 'static {}
+pub trait LuaEventArg: Args + for<'l> IntoLuaMulti<'l> {}
+impl<T: Args + for<'l> IntoLuaMulti<'l>> LuaEventArg for T {}
 
-impl<T: for<'lua> IntoLuaMulti<'lua> + Clone + Sync + Send + 'static> LuaArg for T {}
-
-#[derive(Clone, Event)]
-/// A Lua Hook. The result of creating this event will be
-/// a call to the lua script with the hook_name and the given arguments
-pub struct LuaEvent<A: LuaArg> {
-    pub hook_name: String,
-    pub args: A,
-    pub recipients: Recipients,
+pub struct LuaScriptingPlugin<A: Args + for<'l> IntoLuaMulti<'l>> {
+    pub scripting_plugin: ScriptingPlugin<A, Lua, ()>,
 }
 
-impl<A: LuaArg> fmt::Debug for LuaEvent<A> {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        f.debug_struct("LuaEvent")
-            .field("hook_name", &self.hook_name)
-            .field("recipients", &self.recipients)
-            .finish()
-    }
-}
-
-impl<A: LuaArg> ScriptEvent for LuaEvent<A> {
-    fn recipients(&self) -> &crate::Recipients {
-        &self.recipients
-    }
-}
-
-#[derive(Resource)]
-/// Lua script host, enables Lua scripting.
-pub struct LuaScriptHost<A: LuaArg> {
-    _ph: PhantomData<A>,
-}
-
-impl<A: LuaArg> Default for LuaScriptHost<A> {
+impl<A: LuaEventArg> Default for LuaScriptingPlugin<A> {
     fn default() -> Self {
-        Self {
-            _ph: Default::default(),
+        LuaScriptingPlugin {
+            scripting_plugin: ScriptingPlugin {
+                context_assigner: None,
+                runtime_builder: Default::default,
+                runtime_settings: None,
+                callback_handler: Some(lua_handler::<A>),
+                context_builder: Some(ContextBuilder::<Lua, ()> {
+                    load: lua_context_load,
+                    reload: lua_context_reload,
+                }),
+            },
         }
     }
 }
 
-impl<A: LuaArg> ScriptHost for LuaScriptHost<A> {
-    type ScriptContext = Mutex<Lua>;
-    type APITarget = Mutex<Lua>;
-    type ScriptEvent = LuaEvent<A>;
-    type ScriptAsset = LuaFile;
-    type DocTarget = LuaDocFragment;
+impl<A: LuaEventArg> Plugin for LuaScriptingPlugin<A> {
+    fn build(&self, app: &mut bevy::prelude::App) {
+        self.scripting_plugin.build(app);
+        register_lua_values(app);
+        app.add_context_pre_handling_initializer::<()>(|script_id, entity, context: &mut Lua| {
+            let world = context.get_world();
+            let lua_entity = world.with_resource::<ReflectAllocator, _, _>(|_, mut allocator| {
+                let reflect_reference = ReflectReference::new_allocated(entity, &mut allocator);
+                <Entity as LuaProxied>::Proxy::from(reflect_reference)
+            });
 
-    fn register_with_app_in_set(app: &mut App, schedule: impl ScheduleLabel, set: impl SystemSet) {
-        app.add_priority_event::<Self::ScriptEvent>()
-            .init_asset::<LuaFile>()
-            .init_asset_loader::<LuaLoader>()
-            .init_resource::<CachedScriptState<Self>>()
-            .init_resource::<ScriptContexts<Self::ScriptContext>>()
-            .init_resource::<APIProviders<Self>>()
-            .register_type::<ScriptCollection<Self::ScriptAsset>>()
-            .register_type::<Script<Self::ScriptAsset>>()
-            .register_type::<Handle<LuaFile>>()
-            // handle script insertions removal first
-            // then update their contexts later on script asset changes
-            .add_systems(
-                schedule,
-                (
-                    script_add_synchronizer::<Self>,
-                    script_remove_synchronizer::<Self>,
-                    script_hot_reload_handler::<Self>,
-                )
-                    .chain()
-                    .in_set(set),
-            );
-    }
-
-    fn load_script(
-        &mut self,
-        script: &[u8],
-        script_data: &ScriptData,
-        providers: &mut APIProviders<Self>,
-    ) -> Result<Self::ScriptContext, ScriptError> {
-        #[cfg(feature = "unsafe_lua_modules")]
-        let lua = unsafe { Lua::unsafe_new() };
-        #[cfg(not(feature = "unsafe_lua_modules"))]
-        let lua = Lua::new();
-
-        // init lua api before loading script
-        let mut lua = Mutex::new(lua);
-        providers.attach_all(&mut lua)?;
-
-        lua.get_mut()
-            .map_err(|e| ScriptError::FailedToLoad {
-                script: script_data.name.to_owned(),
-                msg: e.to_string(),
-            })?
-            .load(script)
-            .set_name(script_data.name)
-            .exec()
-            .map_err(|e| ScriptError::FailedToLoad {
-                script: script_data.name.to_owned(),
-                msg: e.to_string(),
-            })?;
-
-        Ok(lua)
-    }
-
-    fn setup_script(
-        &mut self,
-        script_data: &ScriptData,
-        ctx: &mut Self::ScriptContext,
-        providers: &mut APIProviders<Self>,
-    ) -> Result<(), ScriptError> {
-        providers.setup_all(script_data, ctx)
-    }
-
-    fn handle_events<'a>(
-        &mut self,
-        world: &mut World,
-        events: &[Self::ScriptEvent],
-        ctxs: impl Iterator<Item = (ScriptData<'a>, &'a mut Self::ScriptContext)>,
-        providers: &mut APIProviders<Self>,
-    ) {
-        // safety:
-        // - we have &mut World access
-        // - we do not use the original reference again anywhere in this function
-        let world = unsafe { WorldPointerGuard::new(world) };
-
-        ctxs.for_each(|(script_data, ctx)| {
-            providers
-                .setup_runtime_all(world.clone(), &script_data, ctx)
-                .expect("Could not setup script runtime");
-
-            let ctx = ctx.get_mut().expect("Poison error in context");
-
-            // event order is preserved, but scripts can't rely on any temporal
-            // guarantees when it comes to other scripts callbacks,
-            // at least for now.
-            let globals = ctx.globals();
-            for event in events {
-                // check if this script should handle this event
-                if !event.recipients().is_recipient(&script_data) {
-                    continue;
-                }
-
-                let f: Function = match globals.raw_get(event.hook_name.clone()) {
-                    Ok(f) => f,
-                    Err(_) => continue, // not subscribed to this event
-                };
-
-                if let Err(error) = f.call::<_, ()>(event.args.clone()) {
-                    let mut world = world.write();
-                    let mut state: CachedScriptState<Self> = world.remove_resource().unwrap();
-
-                    let (_, mut error_wrt, _) = state.event_state.get_mut(&mut world);
-
-                    let error = ScriptError::RuntimeError {
-                        script: script_data.name.to_owned(),
-                        msg: error.to_string(),
-                    };
-
-                    error!("{}", error);
-                    error_wrt.send(ScriptErrorEvent { error });
-                    world.insert_resource(state);
-                }
-            }
+            context.globals().set("script_id", script_id.to_owned())?;
+            context.globals().set("entity", lua_entity)?;
+            Ok(())
         });
     }
+
+    fn cleanup(&self, app: &mut App) {
+        let mut type_registry = app.world_mut().get_resource_mut().unwrap();
+
+        // we register up to two levels of nesting, if more are needed, the user will have to do this manually
+        pre_register_common_containers(&mut type_registry);
+        pre_register_common_containers(&mut type_registry);
+    }
+}
+
+pub fn lua_context_load(
+    script_id: &ScriptId,
+    content: &[u8],
+    initializers: &[ContextInitializer<Lua>],
+    pre_handling_initializers: &[ContextPreHandlingInitializer<Lua>],
+    world: &mut World,
+    _: &mut (),
+) -> Result<Lua, ScriptError> {
+    #[cfg(feature = "unsafe_lua_modules")]
+    let context = unsafe { Lua::unsafe_new() };
+    #[cfg(not(feature = "unsafe_lua_modules"))]
+    let mut context = Lua::new();
+
+    with_world(world, &mut context, |context| {
+        initializers
+            .iter()
+            .try_for_each(|init| init(script_id, context))?;
+
+        pre_handling_initializers
+            .iter()
+            .try_for_each(|init| init(script_id, Entity::from_raw(0), context))?;
+
+        context.load(content).exec()?;
+        Ok(())
+    })?;
+
+    Ok(context)
+}
+
+pub fn lua_context_reload(
+    script: &ScriptId,
+    content: &[u8],
+    old_ctxt: &mut Lua,
+    initializers: &[ContextInitializer<Lua>],
+    pre_handling_initializers: &[ContextPreHandlingInitializer<Lua>],
+    world: &mut World,
+    _: &mut (),
+) -> Result<(), ScriptError> {
+    *old_ctxt = lua_context_load(
+        script,
+        content,
+        initializers,
+        pre_handling_initializers,
+        world,
+        &mut (),
+    )?;
+    Ok(())
+}
+
+#[allow(clippy::too_many_arguments)]
+pub fn lua_handler<A: Args + for<'l> IntoLuaMulti<'l>>(
+    args: A,
+    entity: bevy::ecs::entity::Entity,
+    script_id: &ScriptId,
+    callback_label: &CallbackLabel,
+    context: &mut Lua,
+    pre_handling_initializers: &[ContextPreHandlingInitializer<Lua>],
+    _: &mut (),
+    world: &mut bevy::ecs::world::World,
+) -> Result<(), bevy_mod_scripting_core::error::ScriptError> {
+    with_world(world, context, |context| {
+        pre_handling_initializers
+            .iter()
+            .try_for_each(|init| init(script_id, entity, context))?;
+
+        let handler: Function = match context.globals().raw_get(callback_label.as_ref()) {
+            Ok(handler) => handler,
+            // not subscribed to this event type
+            Err(_) => return Ok(()),
+        };
+
+        handler.call::<_, ()>(args)?;
+        Ok(())
+    })
+}
+
+/// Safely scopes world access for a lua context to the given closure's scope
+pub fn with_world<F: FnOnce(&mut Lua) -> Result<(), ScriptError>>(
+    world: &mut World,
+    context: &mut Lua,
+    f: F,
+) -> Result<(), ScriptError> {
+    WorldCallbackAccess::with_callback_access(world, |guard| {
+        context.globals().set("world", LuaWorld(guard.clone()))?;
+        f(context)
+    })
 }

@@ -28,13 +28,15 @@ CODEGEN_PATH=${PWD}/target/codegen
 BEVY_PATH=${CODEGEN_PATH}/bevy
 GLAM_PATH=${CODEGEN_PATH}/glam
 OUTPUT_PATH=${CODEGEN_PATH}/output
-GENERATED_SRC_PATH=./crates/bevy_script_api/src/providers
+GENERATED_SRC_PATH=./crates/languages/bevy_mod_scripting_lua/src/bindings/providers
 GEN_BEVY_FEATURES=bevy_asset,bevy_animation,bevy_core_pipeline,bevy_ui,bevy_pbr,bevy_render,bevy_text,bevy_sprite,file_watcher,multi_threaded
 
 build_test_in_package:
-	@cargo test --no-run --lib --workspace $(TEST_NAME)
-	@export OUTPUT=$$(find ./target/debug/deps/ -regex ".*${PACKAGE}[^.]*" -printf "%T@\t%Tc %6k KiB %p\n" | sort -n -r | awk '{print $$NF}' | head -1); \
-	mv $${OUTPUT} ./target/debug/test_binary && echo "Using: $${OUTPUT}" && ls -v ./target/debug/ | grep "test_binary"
+	@RUSTFLAGS=-g cargo test --no-run  --all-targets --features ${TEST_FEATURES} --package ${PACKAGE} $(TEST_NAME) --message-format=json | jq -r 'first(select(.executable != null and .target.kind == ["test"])) | .executable' | xargs -I@ ln -fs @ ./target/debug/test_binary
+
+run_lua_tests:
+	cargo test --features=lua54 --package bevy_mod_scripting_lua --test lua_tests
+
 
 comp_benches:
 	RUSTFLAGS="-g" cargo bench --no-run 
@@ -61,10 +63,10 @@ clean_bevy:
 	cd ${BEVY_PATH} && cargo clean
 
 generate_bevy:
-	cd ${BEVY_PATH} && cargo +${NIGHTLY_VERSION} bevy-api-gen generate --output ${OUTPUT_PATH} --template-args '{ "self_is_bevy_script_api": true}' --features ${GEN_BEVY_FEATURES} -vv
+	cd ${BEVY_PATH} && cargo +${NIGHTLY_VERSION} bevy-api-gen generate --output ${OUTPUT_PATH} --template-args '{ "self_is_bms_lua": true}' --features ${GEN_BEVY_FEATURES} -vv
 
 collect_bevy:
-	cd ${BEVY_PATH} && cargo +${NIGHTLY_VERSION} bevy-api-gen collect --output ${OUTPUT_PATH} --template-args '{ "self_is_bevy_script_api": true}' -vv
+	cd ${BEVY_PATH} && cargo +${NIGHTLY_VERSION} bevy-api-gen collect --output ${OUTPUT_PATH} --template-args '{ "self_is_bms_lua": true}' -vv
 
 deletion_confirmation:
 	@echo -n "This action will delete ALL files in directories: '${GENERATED_SRC_PATH}' amd ${OUTPUT_PATH} (y/N) "

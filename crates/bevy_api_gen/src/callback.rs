@@ -87,6 +87,7 @@ impl rustc_driver::Callbacks for BevyAnalyzerCallbacks {
                 if !continue_ {
                     break;
                 }
+                trace!("Finished pass, continuing");
             }
         });
         rustc_driver::Compilation::Continue

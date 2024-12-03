@@ -36,10 +36,6 @@ source = "discover"
 [package.metadata.rust-analyzer]
 rustc_private = true
 
-[rust-analyzer.check]
-overrideCommand = ["cargo", "+nightly-2024-11-05", "a", "--message-format=json"]
-
-
 [dependencies]
 log = "0.4"
 env_logger = "0.11"

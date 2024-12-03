@@ -1,7 +1,6 @@
 local my_routine;
 
 function on_update()
-
     if my_routine == nil then
         my_routine = coroutine.create(function()
             local starttime = os.time()
@@ -18,7 +17,7 @@ function on_update()
             coroutine.resume(my_routine)
         else
             print("Couroutine has finished, no longer running")
+            world:exit()
         end
     end
-
 end

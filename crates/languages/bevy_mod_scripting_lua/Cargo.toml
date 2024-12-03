@@ -41,7 +41,8 @@ path = "src/lib.rs"
 
 [dependencies]
 bevy = { workspace = true, default-features = false }
-bevy_mod_scripting_core = { workspace = true }
+bevy_mod_scripting_core = { workspace = true, features = ["mlua_impls"] }
+bevy_mod_scripting_derive = { path = "../../bevy_mod_scripting_derive" }
 tealr = { version = "0.9", features = [
     "mlua_vendored",
     "mlua_send",
@@ -50,3 +51,15 @@ tealr = { version = "0.9", features = [
 parking_lot = "0.12.1"
 serde_json = "1.0.81"
 anyhow = "1.0.75"
+uuid = "1.1"
+smol_str = "0.2.2"
+smallvec = "1.13"
+
+[dev-dependencies]
+test_utils = { workspace = true }
+libtest-mimic = "0.8"
+regex = "1.11"
+
+[[test]]
+name = "lua_tests"
+harness = false

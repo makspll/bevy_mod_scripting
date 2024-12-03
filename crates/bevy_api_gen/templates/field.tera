@@ -1,6 +1,4 @@
-{%- if field.reflection_strategy == "Proxy" -%}
-        #[lua(output(proxy))]
-{%- elif field.reflection_strategy == "Filtered" -%}
+{%- if field.reflection_strategy == "Filtered" -%}
         #[lua(skip)]
 {%- endif -%}
 
@@ -10,6 +8,6 @@
 {% if field.reflection_strategy != "Reflection" -%}
 {{- field.ty -}}
 {%- else -%}
-ReflectedValue
+ReflectReference
 {%- endif -%} ,
 

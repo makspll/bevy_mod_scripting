@@ -12,6 +12,12 @@
             "type": "promptString",
             "description": "The crate location of this unit test",
             "default": "bevy_mod_scripting"
+        },
+        {
+            "id": "features",
+            "type": "promptString",
+            "description": "The features to enable for this unit test",
+            "default": ""
         }
     ],
     "tasks": [
@@ -22,7 +28,8 @@
             "args": [
                 "build_test_in_package",
                 "PACKAGE=${input:package}",
-                "TEST_NAME=${input:test_name}"
+                "TEST_NAME=${input:test_name}",
+                "TEST_FEATURES=${input:features}"
             ]
         }
     ]
