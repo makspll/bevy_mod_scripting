@@ -6,6 +6,7 @@ on:
       - "**"
     paths:
       - 'docs/**'
+      - '.github/workflows/mdbook.yml'
 
 jobs:
 
@@ -13,7 +14,7 @@ jobs:
     name: Build Book - mdbook
     runs-on: ubuntu-latest
     env:
-      working-directory: docs/src
+      working-directory: docs
     steps:
 
     - name: Checkout repository
