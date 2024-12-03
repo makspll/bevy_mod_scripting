@@ -1,6 +1,6 @@
 [package]
 name = "bevy_mod_scripting_core"
-version = "0.8.0-alpha.2"
+version = "0.8.0-alpha.3"
 authors = ["Maksymilian Mozolewski <makspl17@gmail.com>"]
 edition = "2021"
 license = "MIT OR Apache-2.0"
@@ -31,7 +31,7 @@ bevy = { workspace = true, default-features = false, features = [
     "bevy_text",
     "bevy_sprite",
 ] }
-bevy_event_priority = { path = "../bevy_event_priority", version = "0.8.0-alpha.2" }
+bevy_event_priority = { path = "../bevy_event_priority", version = "0.8.0-alpha.3" }
 thiserror = "1.0.31"
 paste = "1.0.7"
 parking_lot = "0.12.1"
