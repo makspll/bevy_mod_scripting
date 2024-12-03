@@ -2,7 +2,6 @@
 #![allow(clippy::all)]
 #![allow(unused, deprecated, dead_code)]
 #![cfg_attr(rustfmt, rustfmt_skip)]
-pub mod bevy_a11y;
 pub mod bevy_ecs;
 pub mod bevy_transform;
 pub mod bevy_math;
@@ -10,12 +9,10 @@ pub mod bevy_input;
 pub mod bevy_core;
 pub mod bevy_time;
 pub mod bevy_hierarchy;
-pub mod bevy_window;
 pub mod bevy_reflect;
 pub struct LuaBevyScriptingPlugin;
 impl bevy::app::Plugin for LuaBevyScriptingPlugin {
     fn build(&self, app: &mut bevy::prelude::App) {
-        bevy_a11y::BevyA11YScriptingPlugin.build(app);
         bevy_ecs::BevyEcsScriptingPlugin.build(app);
         bevy_transform::BevyTransformScriptingPlugin.build(app);
         bevy_math::BevyMathScriptingPlugin.build(app);
@@ -23,7 +20,6 @@ impl bevy::app::Plugin for LuaBevyScriptingPlugin {
         bevy_core::BevyCoreScriptingPlugin.build(app);
         bevy_time::BevyTimeScriptingPlugin.build(app);
         bevy_hierarchy::BevyHierarchyScriptingPlugin.build(app);
-        bevy_window::BevyWindowScriptingPlugin.build(app);
         bevy_reflect::BevyReflectScriptingPlugin.build(app);
     }
 }

@@ -20,10 +20,14 @@ use crate::{
     bms_lua_path = "crate",
     functions[r#"
 
-    #[lua(as_trait = "std::clone::Clone")]
-    fn clone(
+    #[lua(
+        as_trait = "std::cmp::PartialEq::<bevy::ecs::entity::Entity>",
+        composite = "eq",
+    )]
+    fn eq(
         _self: LuaReflectRefProxy<bevy::ecs::entity::Entity>,
-    ) -> LuaReflectValProxy<bevy::ecs::entity::Entity>;
+        other: LuaReflectRefProxy<bevy::ecs::entity::Entity>,
+    ) -> bool;
 
 "#,
     r#"
@@ -82,14 +86,10 @@ use crate::{
 "#,
     r#"
 
-    #[lua(
-        as_trait = "std::cmp::PartialEq::<bevy::ecs::entity::Entity>",
-        composite = "eq",
-    )]
-    fn eq(
+    #[lua(as_trait = "std::clone::Clone")]
+    fn clone(
         _self: LuaReflectRefProxy<bevy::ecs::entity::Entity>,
-        other: LuaReflectRefProxy<bevy::ecs::entity::Entity>,
-    ) -> bool;
+    ) -> LuaReflectValProxy<bevy::ecs::entity::Entity>;
 
 "#,
     r#"
@@ -158,6 +158,22 @@ pub struct OnReplace {}
     bms_core_path = "bevy_mod_scripting_core",
     bms_lua_path = "crate",
     functions[r#"
+/// Creates a new [`ComponentId`].
+/// The `index` is a unique value associated with each type of component in a given world.
+/// Usually, this value is taken from a counter incremented for each type of component registered with the world.
+
+    #[lua()]
+    fn new(index: usize) -> LuaReflectValProxy<bevy::ecs::component::ComponentId>;
+
+"#,
+    r#"
+/// Returns the index of the current component.
+
+    #[lua()]
+    fn index(_self: LuaReflectValProxy<bevy::ecs::component::ComponentId>) -> usize;
+
+"#,
+    r#"
 
     #[lua(as_trait = "std::clone::Clone")]
     fn clone(
@@ -186,22 +202,6 @@ pub struct OnReplace {}
 
 "#,
     r#"
-/// Creates a new [`ComponentId`].
-/// The `index` is a unique value associated with each type of component in a given world.
-/// Usually, this value is taken from a counter incremented for each type of component registered with the world.
-
-    #[lua()]
-    fn new(index: usize) -> LuaReflectValProxy<bevy::ecs::component::ComponentId>;
-
-"#,
-    r#"
-/// Returns the index of the current component.
-
-    #[lua()]
-    fn index(_self: LuaReflectValProxy<bevy::ecs::component::ComponentId>) -> usize;
-
-"#,
-    r#"
 #[lua(metamethod="ToString")]
 fn index(&self) -> String {
     format!("{:?}", _self)
@@ -220,6 +220,26 @@ pub struct ComponentId();
     fn clone(
         _self: LuaReflectRefProxy<bevy::ecs::component::Tick>,
     ) -> LuaReflectValProxy<bevy::ecs::component::Tick>;
+
+"#,
+    r#"
+
+    #[lua(
+        as_trait = "std::cmp::PartialEq::<bevy::ecs::component::Tick>",
+        composite = "eq",
+    )]
+    fn eq(
+        _self: LuaReflectRefProxy<bevy::ecs::component::Tick>,
+        other: LuaReflectRefProxy<bevy::ecs::component::Tick>,
+    ) -> bool;
+
+"#,
+    r#"
+
+    #[lua(as_trait = "std::cmp::Eq")]
+    fn assert_receiver_is_total_eq(
+        _self: LuaReflectRefProxy<bevy::ecs::component::Tick>,
+    ) -> ();
 
 "#,
     r#"
@@ -256,26 +276,6 @@ pub struct ComponentId();
 
 "#,
     r#"
-
-    #[lua(as_trait = "std::cmp::Eq")]
-    fn assert_receiver_is_total_eq(
-        _self: LuaReflectRefProxy<bevy::ecs::component::Tick>,
-    ) -> ();
-
-"#,
-    r#"
-
-    #[lua(
-        as_trait = "std::cmp::PartialEq::<bevy::ecs::component::Tick>",
-        composite = "eq",
-    )]
-    fn eq(
-        _self: LuaReflectRefProxy<bevy::ecs::component::Tick>,
-        other: LuaReflectRefProxy<bevy::ecs::component::Tick>,
-    ) -> bool;
-
-"#,
-    r#"
 #[lua(metamethod="ToString")]
 fn index(&self) -> String {
     format!("{:?}", _self)
@@ -289,14 +289,6 @@ pub struct Tick {}
     bms_core_path = "bevy_mod_scripting_core",
     bms_lua_path = "crate",
     functions[r#"
-
-    #[lua(as_trait = "std::clone::Clone")]
-    fn clone(
-        _self: LuaReflectRefProxy<bevy::ecs::component::ComponentTicks>,
-    ) -> LuaReflectValProxy<bevy::ecs::component::ComponentTicks>;
-
-"#,
-    r#"
 /// Returns `true` if the component or resource was added after the system last ran
 /// (or the system is running for the first time).
 
@@ -321,21 +313,12 @@ pub struct Tick {}
 
 "#,
     r#"
-/// Returns the tick recording the time this component or resource was most recently changed.
+/// Creates a new instance with the same change tick for `added` and `changed`.
 
     #[lua()]
-    fn last_changed_tick(
-        _self: LuaReflectRefProxy<bevy::ecs::component::ComponentTicks>,
-    ) -> LuaReflectValProxy<bevy::ecs::component::Tick>;
-
-"#,
-    r#"
-/// Returns the tick recording the time this component or resource was added.
-
-    #[lua()]
-    fn added_tick(
-        _self: LuaReflectRefProxy<bevy::ecs::component::ComponentTicks>,
-    ) -> LuaReflectValProxy<bevy::ecs::component::Tick>;
+    fn new(
+        change_tick: LuaReflectValProxy<bevy::ecs::component::Tick>,
+    ) -> LuaReflectValProxy<bevy::ecs::component::ComponentTicks>;
 
 "#,
     r#"
@@ -359,27 +342,30 @@ pub struct Tick {}
 
 "#,
     r#"
+
+    #[lua(as_trait = "std::clone::Clone")]
+    fn clone(
+        _self: LuaReflectRefProxy<bevy::ecs::component::ComponentTicks>,
+    ) -> LuaReflectValProxy<bevy::ecs::component::ComponentTicks>;
+
+"#,
+    r#"
 #[lua(metamethod="ToString")]
 fn index(&self) -> String {
     format!("{:?}", _self)
 }
 "#]
 )]
-pub struct ComponentTicks {}
+pub struct ComponentTicks {
+    added: bevy::ecs::component::Tick,
+    changed: bevy::ecs::component::Tick,
+}
 #[derive(bevy_mod_scripting_derive::LuaProxy)]
 #[proxy(
     remote = "bevy::ecs::identifier::Identifier",
     bms_core_path = "bevy_mod_scripting_core",
     bms_lua_path = "crate",
     functions[r#"
-
-    #[lua(as_trait = "std::clone::Clone")]
-    fn clone(
-        _self: LuaReflectRefProxy<bevy::ecs::identifier::Identifier>,
-    ) -> LuaReflectValProxy<bevy::ecs::identifier::Identifier>;
-
-"#,
-    r#"
 
     #[lua(
         as_trait = "std::cmp::PartialEq::<bevy::ecs::identifier::Identifier>",
@@ -420,6 +406,14 @@ pub struct ComponentTicks {}
 
     #[lua()]
     fn from_bits(value: u64) -> LuaReflectValProxy<bevy::ecs::identifier::Identifier>;
+
+"#,
+    r#"
+
+    #[lua(as_trait = "std::clone::Clone")]
+    fn clone(
+        _self: LuaReflectRefProxy<bevy::ecs::identifier::Identifier>,
+    ) -> LuaReflectValProxy<bevy::ecs::identifier::Identifier>;
 
 "#,
     r#"
@@ -492,6 +486,11 @@ impl crate::tealr::mlu::ExportInstances for Globals {
             .add_instance("Tick", crate::tealr::mlu::UserDataProxy::<LuaTick>::new)?;
         instances
             .add_instance(
+                "ComponentTicks",
+                crate::tealr::mlu::UserDataProxy::<LuaComponentTicks>::new,
+            )?;
+        instances
+            .add_instance(
                 "Identifier",
                 crate::tealr::mlu::UserDataProxy::<LuaIdentifier>::new,
             )?;
@@ -540,6 +539,9 @@ impl bevy::app::Plugin for BevyEcsScriptingPlugin {
                         .process_type::<LuaTick>()
                         .process_type::<crate::tealr::mlu::UserDataProxy<LuaTick>>()
                         .process_type::<LuaComponentTicks>()
+                        .process_type::<
+                            crate::tealr::mlu::UserDataProxy<LuaComponentTicks>,
+                        >()
                         .process_type::<LuaIdentifier>()
                         .process_type::<
                             crate::tealr::mlu::UserDataProxy<LuaIdentifier>,

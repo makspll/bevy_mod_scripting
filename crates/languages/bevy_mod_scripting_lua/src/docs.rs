@@ -1,14 +1,17 @@
+use core::str;
 use std::{
+    borrow::Cow,
     env,
     fs::{self, File},
     io::Write,
+    ops::Deref,
     process::Command,
 };
 
 //use bevy::asset::FileAssetIo;
 use bevy::asset::io::file::FileAssetReader;
 use bevy_mod_scripting_core::prelude::*;
-use tealr::{TypeGenerator, TypeWalker};
+use tealr::{NameContainer, TypeGenerator, TypeWalker};
 
 pub type TypeWalkerBuilder = fn(TypeWalker) -> TypeWalker;
 

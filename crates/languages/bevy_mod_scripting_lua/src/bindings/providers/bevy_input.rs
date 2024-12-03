@@ -22,18 +22,64 @@ use crate::{
     bms_core_path = "bevy_mod_scripting_core",
     bms_lua_path = "crate",
     functions[r#"
+/// Returns the USB vendor ID as assigned by the USB-IF, if available.
+
+    #[lua()]
+    fn vendor_id(
+        _self: LuaReflectRefProxy<bevy::input::gamepad::Gamepad>,
+    ) -> std::option::Option<u16>;
+
+"#,
+    r#"
+/// Returns the USB product ID as assigned by the [vendor], if available.
+/// [vendor]: Self::vendor_id
+
+    #[lua()]
+    fn product_id(
+        _self: LuaReflectRefProxy<bevy::input::gamepad::Gamepad>,
+    ) -> std::option::Option<u16>;
+
+"#,
+    r#"
+/// Returns `true` if the [`GamepadButton`] has been pressed.
+
+    #[lua()]
+    fn pressed(
+        _self: LuaReflectRefProxy<bevy::input::gamepad::Gamepad>,
+        button_type: LuaReflectValProxy<bevy::input::gamepad::GamepadButton>,
+    ) -> bool;
+
+"#,
+    r#"
+/// Returns `true` if the [`GamepadButton`] has been pressed during the current frame.
+/// Note: This function does not imply information regarding the current state of [`ButtonInput::pressed`] or [`ButtonInput::just_released`].
+
+    #[lua()]
+    fn just_pressed(
+        _self: LuaReflectRefProxy<bevy::input::gamepad::Gamepad>,
+        button_type: LuaReflectValProxy<bevy::input::gamepad::GamepadButton>,
+    ) -> bool;
+
+"#,
+    r#"
+/// Returns `true` if the [`GamepadButton`] has been released during the current frame.
+/// Note: This function does not imply information regarding the current state of [`ButtonInput::pressed`] or [`ButtonInput::just_pressed`].
+
+    #[lua()]
+    fn just_released(
+        _self: LuaReflectRefProxy<bevy::input::gamepad::Gamepad>,
+        button_type: LuaReflectValProxy<bevy::input::gamepad::GamepadButton>,
+    ) -> bool;
+
+"#,
+    r#"
 #[lua(metamethod="ToString")]
 fn index(&self) -> String {
     format!("{:?}", _self)
 }
 "#]
 )]
-pub struct Gamepad {
-    vendor_id: std::option::Option<u16>,
-    product_id: std::option::Option<u16>,
-    digital: ReflectReference,
-    analog: ReflectReference,
-}
+pub struct Gamepad {}
 #[derive(bevy_mod_scripting_derive::LuaProxy)]
 #[proxy(
     remote = "bevy::input::gamepad::GamepadAxis",
@@ -49,6 +95,14 @@ pub struct Gamepad {
 "#,
     r#"
 
+    #[lua(as_trait = "std::clone::Clone")]
+    fn clone(
+        _self: LuaReflectRefProxy<bevy::input::gamepad::GamepadAxis>,
+    ) -> LuaReflectValProxy<bevy::input::gamepad::GamepadAxis>;
+
+"#,
+    r#"
+
     #[lua(
         as_trait = "std::cmp::PartialEq::<bevy::input::gamepad::GamepadAxis>",
         composite = "eq",
@@ -57,14 +111,6 @@ pub struct Gamepad {
         _self: LuaReflectRefProxy<bevy::input::gamepad::GamepadAxis>,
         other: LuaReflectRefProxy<bevy::input::gamepad::GamepadAxis>,
     ) -> bool;
-
-"#,
-    r#"
-
-    #[lua(as_trait = "std::clone::Clone")]
-    fn clone(
-        _self: LuaReflectRefProxy<bevy::input::gamepad::GamepadAxis>,
-    ) -> LuaReflectValProxy<bevy::input::gamepad::GamepadAxis>;
 
 "#,
     r#"
@@ -82,14 +128,6 @@ pub struct GamepadAxis {}
     bms_lua_path = "crate",
     functions[r#"
 
-    #[lua(as_trait = "std::clone::Clone")]
-    fn clone(
-        _self: LuaReflectRefProxy<bevy::input::gamepad::GamepadButton>,
-    ) -> LuaReflectValProxy<bevy::input::gamepad::GamepadButton>;
-
-"#,
-    r#"
-
     #[lua(
         as_trait = "std::cmp::PartialEq::<bevy::input::gamepad::GamepadButton>",
         composite = "eq",
@@ -106,6 +144,14 @@ pub struct GamepadAxis {}
     fn assert_receiver_is_total_eq(
         _self: LuaReflectRefProxy<bevy::input::gamepad::GamepadButton>,
     ) -> ();
+
+"#,
+    r#"
+
+    #[lua(as_trait = "std::clone::Clone")]
+    fn clone(
+        _self: LuaReflectRefProxy<bevy::input::gamepad::GamepadButton>,
+    ) -> LuaReflectValProxy<bevy::input::gamepad::GamepadButton>;
 
 "#,
     r#"
@@ -151,6 +197,14 @@ pub struct GamepadSettings {
     bms_lua_path = "crate",
     functions[r#"
 
+    #[lua(as_trait = "std::cmp::Eq")]
+    fn assert_receiver_is_total_eq(
+        _self: LuaReflectRefProxy<bevy::input::keyboard::KeyCode>,
+    ) -> ();
+
+"#,
+    r#"
+
     #[lua(as_trait = "std::clone::Clone")]
     fn clone(
         _self: LuaReflectRefProxy<bevy::input::keyboard::KeyCode>,
@@ -167,14 +221,6 @@ pub struct GamepadSettings {
         _self: LuaReflectRefProxy<bevy::input::keyboard::KeyCode>,
         other: LuaReflectRefProxy<bevy::input::keyboard::KeyCode>,
     ) -> bool;
-
-"#,
-    r#"
-
-    #[lua(as_trait = "std::cmp::Eq")]
-    fn assert_receiver_is_total_eq(
-        _self: LuaReflectRefProxy<bevy::input::keyboard::KeyCode>,
-    ) -> ();
 
 "#,
     r#"
@@ -204,18 +250,18 @@ pub struct KeyCode {}
 "#,
     r#"
 
-    #[lua(as_trait = "std::cmp::Eq")]
-    fn assert_receiver_is_total_eq(
-        _self: LuaReflectRefProxy<bevy::input::mouse::MouseButton>,
-    ) -> ();
-
-"#,
-    r#"
-
     #[lua(as_trait = "std::clone::Clone")]
     fn clone(
         _self: LuaReflectRefProxy<bevy::input::mouse::MouseButton>,
     ) -> LuaReflectValProxy<bevy::input::mouse::MouseButton>;
+
+"#,
+    r#"
+
+    #[lua(as_trait = "std::cmp::Eq")]
+    fn assert_receiver_is_total_eq(
+        _self: LuaReflectRefProxy<bevy::input::mouse::MouseButton>,
+    ) -> ();
 
 "#,
     r#"
@@ -272,10 +318,10 @@ pub struct TouchInput {
     bms_lua_path = "crate",
     functions[r#"
 
-    #[lua(as_trait = "std::clone::Clone")]
-    fn clone(
+    #[lua(as_trait = "std::cmp::Eq")]
+    fn assert_receiver_is_total_eq(
         _self: LuaReflectRefProxy<bevy::input::keyboard::KeyboardFocusLost>,
-    ) -> LuaReflectValProxy<bevy::input::keyboard::KeyboardFocusLost>;
+    ) -> ();
 
 "#,
     r#"
@@ -292,10 +338,10 @@ pub struct TouchInput {
 "#,
     r#"
 
-    #[lua(as_trait = "std::cmp::Eq")]
-    fn assert_receiver_is_total_eq(
+    #[lua(as_trait = "std::clone::Clone")]
+    fn clone(
         _self: LuaReflectRefProxy<bevy::input::keyboard::KeyboardFocusLost>,
-    ) -> ();
+    ) -> LuaReflectValProxy<bevy::input::keyboard::KeyboardFocusLost>;
 
 "#,
     r#"
@@ -313,14 +359,6 @@ pub struct KeyboardFocusLost {}
     bms_lua_path = "crate",
     functions[r#"
 
-    #[lua(as_trait = "std::cmp::Eq")]
-    fn assert_receiver_is_total_eq(
-        _self: LuaReflectRefProxy<bevy::input::keyboard::KeyboardInput>,
-    ) -> ();
-
-"#,
-    r#"
-
     #[lua(
         as_trait = "std::cmp::PartialEq::<bevy::input::keyboard::KeyboardInput>",
         composite = "eq",
@@ -337,6 +375,14 @@ pub struct KeyboardFocusLost {}
     fn clone(
         _self: LuaReflectRefProxy<bevy::input::keyboard::KeyboardInput>,
     ) -> LuaReflectValProxy<bevy::input::keyboard::KeyboardInput>;
+
+"#,
+    r#"
+
+    #[lua(as_trait = "std::cmp::Eq")]
+    fn assert_receiver_is_total_eq(
+        _self: LuaReflectRefProxy<bevy::input::keyboard::KeyboardInput>,
+    ) -> ();
 
 "#,
     r#"
@@ -360,14 +406,6 @@ pub struct KeyboardInput {
     bms_lua_path = "crate",
     functions[r#"
 
-    #[lua(as_trait = "std::clone::Clone")]
-    fn clone(
-        _self: LuaReflectRefProxy<bevy::input::mouse::AccumulatedMouseMotion>,
-    ) -> LuaReflectValProxy<bevy::input::mouse::AccumulatedMouseMotion>;
-
-"#,
-    r#"
-
     #[lua(
         as_trait = "std::cmp::PartialEq::<bevy::input::mouse::AccumulatedMouseMotion>",
         composite = "eq",
@@ -376,6 +414,14 @@ pub struct KeyboardInput {
         _self: LuaReflectRefProxy<bevy::input::mouse::AccumulatedMouseMotion>,
         other: LuaReflectRefProxy<bevy::input::mouse::AccumulatedMouseMotion>,
     ) -> bool;
+
+"#,
+    r#"
+
+    #[lua(as_trait = "std::clone::Clone")]
+    fn clone(
+        _self: LuaReflectRefProxy<bevy::input::mouse::AccumulatedMouseMotion>,
+    ) -> LuaReflectValProxy<bevy::input::mouse::AccumulatedMouseMotion>;
 
 "#,
     r#"
@@ -431,18 +477,18 @@ pub struct AccumulatedMouseScroll {
     bms_lua_path = "crate",
     functions[r#"
 
-    #[lua(as_trait = "std::clone::Clone")]
-    fn clone(
-        _self: LuaReflectRefProxy<bevy::input::mouse::MouseButtonInput>,
-    ) -> LuaReflectValProxy<bevy::input::mouse::MouseButtonInput>;
-
-"#,
-    r#"
-
     #[lua(as_trait = "std::cmp::Eq")]
     fn assert_receiver_is_total_eq(
         _self: LuaReflectRefProxy<bevy::input::mouse::MouseButtonInput>,
     ) -> ();
+
+"#,
+    r#"
+
+    #[lua(as_trait = "std::clone::Clone")]
+    fn clone(
+        _self: LuaReflectRefProxy<bevy::input::mouse::MouseButtonInput>,
+    ) -> LuaReflectValProxy<bevy::input::mouse::MouseButtonInput>;
 
 "#,
     r#"
@@ -476,14 +522,6 @@ pub struct MouseButtonInput {
     bms_lua_path = "crate",
     functions[r#"
 
-    #[lua(as_trait = "std::clone::Clone")]
-    fn clone(
-        _self: LuaReflectRefProxy<bevy::input::mouse::MouseMotion>,
-    ) -> LuaReflectValProxy<bevy::input::mouse::MouseMotion>;
-
-"#,
-    r#"
-
     #[lua(
         as_trait = "std::cmp::PartialEq::<bevy::input::mouse::MouseMotion>",
         composite = "eq",
@@ -492,6 +530,14 @@ pub struct MouseButtonInput {
         _self: LuaReflectRefProxy<bevy::input::mouse::MouseMotion>,
         other: LuaReflectRefProxy<bevy::input::mouse::MouseMotion>,
     ) -> bool;
+
+"#,
+    r#"
+
+    #[lua(as_trait = "std::clone::Clone")]
+    fn clone(
+        _self: LuaReflectRefProxy<bevy::input::mouse::MouseMotion>,
+    ) -> LuaReflectValProxy<bevy::input::mouse::MouseMotion>;
 
 "#,
     r#"
@@ -586,6 +632,14 @@ pub struct GamepadAxisChangedEvent {
     bms_lua_path = "crate",
     functions[r#"
 
+    #[lua(as_trait = "std::clone::Clone")]
+    fn clone(
+        _self: LuaReflectRefProxy<bevy::input::gamepad::GamepadButtonChangedEvent>,
+    ) -> LuaReflectValProxy<bevy::input::gamepad::GamepadButtonChangedEvent>;
+
+"#,
+    r#"
+
     #[lua(
         as_trait = "std::cmp::PartialEq::<bevy::input::gamepad::GamepadButtonChangedEvent>",
         composite = "eq",
@@ -594,14 +648,6 @@ pub struct GamepadAxisChangedEvent {
         _self: LuaReflectRefProxy<bevy::input::gamepad::GamepadButtonChangedEvent>,
         other: LuaReflectRefProxy<bevy::input::gamepad::GamepadButtonChangedEvent>,
     ) -> bool;
-
-"#,
-    r#"
-
-    #[lua(as_trait = "std::clone::Clone")]
-    fn clone(
-        _self: LuaReflectRefProxy<bevy::input::gamepad::GamepadButtonChangedEvent>,
-    ) -> LuaReflectValProxy<bevy::input::gamepad::GamepadButtonChangedEvent>;
 
 "#,
     r#"
@@ -624,14 +670,6 @@ pub struct GamepadButtonChangedEvent {
     bms_lua_path = "crate",
     functions[r#"
 
-    #[lua(as_trait = "std::clone::Clone")]
-    fn clone(
-        _self: LuaReflectRefProxy<bevy::input::gamepad::GamepadButtonStateChangedEvent>,
-    ) -> LuaReflectValProxy<bevy::input::gamepad::GamepadButtonStateChangedEvent>;
-
-"#,
-    r#"
-
     #[lua(as_trait = "std::cmp::Eq")]
     fn assert_receiver_is_total_eq(
         _self: LuaReflectRefProxy<bevy::input::gamepad::GamepadButtonStateChangedEvent>,
@@ -648,6 +686,14 @@ pub struct GamepadButtonChangedEvent {
         _self: LuaReflectRefProxy<bevy::input::gamepad::GamepadButtonStateChangedEvent>,
         other: LuaReflectRefProxy<bevy::input::gamepad::GamepadButtonStateChangedEvent>,
     ) -> bool;
+
+"#,
+    r#"
+
+    #[lua(as_trait = "std::clone::Clone")]
+    fn clone(
+        _self: LuaReflectRefProxy<bevy::input::gamepad::GamepadButtonStateChangedEvent>,
+    ) -> LuaReflectValProxy<bevy::input::gamepad::GamepadButtonStateChangedEvent>;
 
 "#,
     r#"
@@ -702,14 +748,6 @@ pub struct GamepadConnection {}
     bms_lua_path = "crate",
     functions[r#"
 
-    #[lua(as_trait = "std::clone::Clone")]
-    fn clone(
-        _self: LuaReflectRefProxy<bevy::input::gamepad::GamepadConnectionEvent>,
-    ) -> LuaReflectValProxy<bevy::input::gamepad::GamepadConnectionEvent>;
-
-"#,
-    r#"
-
     #[lua(
         as_trait = "std::cmp::PartialEq::<bevy::input::gamepad::GamepadConnectionEvent>",
         composite = "eq",
@@ -739,6 +777,14 @@ pub struct GamepadConnection {}
 
 "#,
     r#"
+
+    #[lua(as_trait = "std::clone::Clone")]
+    fn clone(
+        _self: LuaReflectRefProxy<bevy::input::gamepad::GamepadConnectionEvent>,
+    ) -> LuaReflectValProxy<bevy::input::gamepad::GamepadConnectionEvent>;
+
+"#,
+    r#"
 #[lua(metamethod="ToString")]
 fn index(&self) -> String {
     format!("{:?}", _self)
@@ -756,14 +802,6 @@ pub struct GamepadConnectionEvent {
     bms_lua_path = "crate",
     functions[r#"
 
-    #[lua(as_trait = "std::clone::Clone")]
-    fn clone(
-        _self: LuaReflectRefProxy<bevy::input::gamepad::GamepadEvent>,
-    ) -> LuaReflectValProxy<bevy::input::gamepad::GamepadEvent>;
-
-"#,
-    r#"
-
     #[lua(
         as_trait = "std::cmp::PartialEq::<bevy::input::gamepad::GamepadEvent>",
         composite = "eq",
@@ -772,6 +810,14 @@ pub struct GamepadConnectionEvent {
         _self: LuaReflectRefProxy<bevy::input::gamepad::GamepadEvent>,
         other: LuaReflectRefProxy<bevy::input::gamepad::GamepadEvent>,
     ) -> bool;
+
+"#,
+    r#"
+
+    #[lua(as_trait = "std::clone::Clone")]
+    fn clone(
+        _self: LuaReflectRefProxy<bevy::input::gamepad::GamepadEvent>,
+    ) -> LuaReflectValProxy<bevy::input::gamepad::GamepadEvent>;
 
 "#,
     r#"
@@ -882,14 +928,6 @@ pub struct RawGamepadAxisChangedEvent {
     bms_lua_path = "crate",
     functions[r#"
 
-    #[lua(as_trait = "std::clone::Clone")]
-    fn clone(
-        _self: LuaReflectRefProxy<bevy::input::gamepad::RawGamepadButtonChangedEvent>,
-    ) -> LuaReflectValProxy<bevy::input::gamepad::RawGamepadButtonChangedEvent>;
-
-"#,
-    r#"
-
     #[lua(
         as_trait = "std::cmp::PartialEq::<bevy::input::gamepad::RawGamepadButtonChangedEvent>",
         composite = "eq",
@@ -898,6 +936,14 @@ pub struct RawGamepadAxisChangedEvent {
         _self: LuaReflectRefProxy<bevy::input::gamepad::RawGamepadButtonChangedEvent>,
         other: LuaReflectRefProxy<bevy::input::gamepad::RawGamepadButtonChangedEvent>,
     ) -> bool;
+
+"#,
+    r#"
+
+    #[lua(as_trait = "std::clone::Clone")]
+    fn clone(
+        _self: LuaReflectRefProxy<bevy::input::gamepad::RawGamepadButtonChangedEvent>,
+    ) -> LuaReflectValProxy<bevy::input::gamepad::RawGamepadButtonChangedEvent>;
 
 "#,
     r#"
@@ -919,14 +965,6 @@ pub struct RawGamepadButtonChangedEvent {
     bms_lua_path = "crate",
     functions[r#"
 
-    #[lua(as_trait = "std::clone::Clone")]
-    fn clone(
-        _self: LuaReflectRefProxy<bevy::input::gamepad::RawGamepadEvent>,
-    ) -> LuaReflectValProxy<bevy::input::gamepad::RawGamepadEvent>;
-
-"#,
-    r#"
-
     #[lua(
         as_trait = "std::cmp::PartialEq::<bevy::input::gamepad::RawGamepadEvent>",
         composite = "eq",
@@ -935,6 +973,14 @@ pub struct RawGamepadButtonChangedEvent {
         _self: LuaReflectRefProxy<bevy::input::gamepad::RawGamepadEvent>,
         other: LuaReflectRefProxy<bevy::input::gamepad::RawGamepadEvent>,
     ) -> bool;
+
+"#,
+    r#"
+
+    #[lua(as_trait = "std::clone::Clone")]
+    fn clone(
+        _self: LuaReflectRefProxy<bevy::input::gamepad::RawGamepadEvent>,
+    ) -> LuaReflectValProxy<bevy::input::gamepad::RawGamepadEvent>;
 
 "#,
     r#"
@@ -952,14 +998,6 @@ pub struct RawGamepadEvent {}
     bms_lua_path = "crate",
     functions[r#"
 
-    #[lua(as_trait = "std::clone::Clone")]
-    fn clone(
-        _self: LuaReflectRefProxy<bevy::input::gestures::PinchGesture>,
-    ) -> LuaReflectValProxy<bevy::input::gestures::PinchGesture>;
-
-"#,
-    r#"
-
     #[lua(
         as_trait = "std::cmp::PartialEq::<bevy::input::gestures::PinchGesture>",
         composite = "eq",
@@ -968,6 +1006,14 @@ pub struct RawGamepadEvent {}
         _self: LuaReflectRefProxy<bevy::input::gestures::PinchGesture>,
         other: LuaReflectRefProxy<bevy::input::gestures::PinchGesture>,
     ) -> bool;
+
+"#,
+    r#"
+
+    #[lua(as_trait = "std::clone::Clone")]
+    fn clone(
+        _self: LuaReflectRefProxy<bevy::input::gestures::PinchGesture>,
+    ) -> LuaReflectValProxy<bevy::input::gestures::PinchGesture>;
 
 "#,
     r#"
@@ -1018,14 +1064,6 @@ pub struct RotationGesture(f32);
     bms_lua_path = "crate",
     functions[r#"
 
-    #[lua(as_trait = "std::clone::Clone")]
-    fn clone(
-        _self: LuaReflectRefProxy<bevy::input::gestures::DoubleTapGesture>,
-    ) -> LuaReflectValProxy<bevy::input::gestures::DoubleTapGesture>;
-
-"#,
-    r#"
-
     #[lua(
         as_trait = "std::cmp::PartialEq::<bevy::input::gestures::DoubleTapGesture>",
         composite = "eq",
@@ -1034,6 +1072,14 @@ pub struct RotationGesture(f32);
         _self: LuaReflectRefProxy<bevy::input::gestures::DoubleTapGesture>,
         other: LuaReflectRefProxy<bevy::input::gestures::DoubleTapGesture>,
     ) -> bool;
+
+"#,
+    r#"
+
+    #[lua(as_trait = "std::clone::Clone")]
+    fn clone(
+        _self: LuaReflectRefProxy<bevy::input::gestures::DoubleTapGesture>,
+    ) -> LuaReflectValProxy<bevy::input::gestures::DoubleTapGesture>;
 
 "#,
     r#"
@@ -1051,14 +1097,6 @@ pub struct DoubleTapGesture {}
     bms_lua_path = "crate",
     functions[r#"
 
-    #[lua(as_trait = "std::clone::Clone")]
-    fn clone(
-        _self: LuaReflectRefProxy<bevy::input::gestures::PanGesture>,
-    ) -> LuaReflectValProxy<bevy::input::gestures::PanGesture>;
-
-"#,
-    r#"
-
     #[lua(
         as_trait = "std::cmp::PartialEq::<bevy::input::gestures::PanGesture>",
         composite = "eq",
@@ -1067,6 +1105,14 @@ pub struct DoubleTapGesture {}
         _self: LuaReflectRefProxy<bevy::input::gestures::PanGesture>,
         other: LuaReflectRefProxy<bevy::input::gestures::PanGesture>,
     ) -> bool;
+
+"#,
+    r#"
+
+    #[lua(as_trait = "std::clone::Clone")]
+    fn clone(
+        _self: LuaReflectRefProxy<bevy::input::gestures::PanGesture>,
+    ) -> LuaReflectValProxy<bevy::input::gestures::PanGesture>;
 
 "#,
     r#"
@@ -1084,6 +1130,14 @@ pub struct PanGesture(ReflectReference);
     bms_lua_path = "crate",
     functions[r#"
 
+    #[lua(as_trait = "std::cmp::Eq")]
+    fn assert_receiver_is_total_eq(
+        _self: LuaReflectRefProxy<bevy::input::ButtonState>,
+    ) -> ();
+
+"#,
+    r#"
+
     #[lua(
         as_trait = "std::cmp::PartialEq::<bevy::input::ButtonState>",
         composite = "eq",
@@ -1095,26 +1149,18 @@ pub struct PanGesture(ReflectReference);
 
 "#,
     r#"
-/// Is this button pressed?
-
-    #[lua()]
-    fn is_pressed(_self: LuaReflectRefProxy<bevy::input::ButtonState>) -> bool;
-
-"#,
-    r#"
-
-    #[lua(as_trait = "std::cmp::Eq")]
-    fn assert_receiver_is_total_eq(
-        _self: LuaReflectRefProxy<bevy::input::ButtonState>,
-    ) -> ();
-
-"#,
-    r#"
 
     #[lua(as_trait = "std::clone::Clone")]
     fn clone(
         _self: LuaReflectRefProxy<bevy::input::ButtonState>,
     ) -> LuaReflectValProxy<bevy::input::ButtonState>;
+
+"#,
+    r#"
+/// Is this button pressed?
+
+    #[lua()]
+    fn is_pressed(_self: LuaReflectRefProxy<bevy::input::ButtonState>) -> bool;
 
 "#,
     r#"
@@ -1131,6 +1177,18 @@ pub struct ButtonState {}
     bms_core_path = "bevy_mod_scripting_core",
     bms_lua_path = "crate",
     functions[r#"
+
+    #[lua(
+        as_trait = "std::cmp::PartialEq::<bevy::input::gamepad::ButtonSettings>",
+        composite = "eq",
+    )]
+    fn eq(
+        _self: LuaReflectRefProxy<bevy::input::gamepad::ButtonSettings>,
+        other: LuaReflectRefProxy<bevy::input::gamepad::ButtonSettings>,
+    ) -> bool;
+
+"#,
+    r#"
 
     #[lua(as_trait = "std::clone::Clone")]
     fn clone(
@@ -1203,18 +1261,6 @@ pub struct ButtonState {}
 
 "#,
     r#"
-
-    #[lua(
-        as_trait = "std::cmp::PartialEq::<bevy::input::gamepad::ButtonSettings>",
-        composite = "eq",
-    )]
-    fn eq(
-        _self: LuaReflectRefProxy<bevy::input::gamepad::ButtonSettings>,
-        other: LuaReflectRefProxy<bevy::input::gamepad::ButtonSettings>,
-    ) -> bool;
-
-"#,
-    r#"
 #[lua(metamethod="ToString")]
 fn index(&self) -> String {
     format!("{:?}", _self)
@@ -1229,10 +1275,14 @@ pub struct ButtonSettings {}
     bms_lua_path = "crate",
     functions[r#"
 
-    #[lua(as_trait = "std::clone::Clone")]
-    fn clone(
+    #[lua(
+        as_trait = "std::cmp::PartialEq::<bevy::input::gamepad::AxisSettings>",
+        composite = "eq",
+    )]
+    fn eq(
         _self: LuaReflectRefProxy<bevy::input::gamepad::AxisSettings>,
-    ) -> LuaReflectValProxy<bevy::input::gamepad::AxisSettings>;
+        other: LuaReflectRefProxy<bevy::input::gamepad::AxisSettings>,
+    ) -> bool;
 
 "#,
     r#"
@@ -1367,14 +1417,10 @@ pub struct ButtonSettings {}
 "#,
     r#"
 
-    #[lua(
-        as_trait = "std::cmp::PartialEq::<bevy::input::gamepad::AxisSettings>",
-        composite = "eq",
-    )]
-    fn eq(
+    #[lua(as_trait = "std::clone::Clone")]
+    fn clone(
         _self: LuaReflectRefProxy<bevy::input::gamepad::AxisSettings>,
-        other: LuaReflectRefProxy<bevy::input::gamepad::AxisSettings>,
-    ) -> bool;
+    ) -> LuaReflectValProxy<bevy::input::gamepad::AxisSettings>;
 
 "#,
     r#"
@@ -1430,6 +1476,18 @@ pub struct ButtonAxisSettings {
     bms_lua_path = "crate",
     functions[r#"
 
+    #[lua(
+        as_trait = "std::cmp::PartialEq::<bevy::input::gamepad::GamepadRumbleIntensity>",
+        composite = "eq",
+    )]
+    fn eq(
+        _self: LuaReflectRefProxy<bevy::input::gamepad::GamepadRumbleIntensity>,
+        other: LuaReflectRefProxy<bevy::input::gamepad::GamepadRumbleIntensity>,
+    ) -> bool;
+
+"#,
+    r#"
+
     #[lua(as_trait = "std::clone::Clone")]
     fn clone(
         _self: LuaReflectRefProxy<bevy::input::gamepad::GamepadRumbleIntensity>,
@@ -1454,18 +1512,6 @@ pub struct ButtonAxisSettings {
     fn strong_motor(
         intensity: f32,
     ) -> LuaReflectValProxy<bevy::input::gamepad::GamepadRumbleIntensity>;
-
-"#,
-    r#"
-
-    #[lua(
-        as_trait = "std::cmp::PartialEq::<bevy::input::gamepad::GamepadRumbleIntensity>",
-        composite = "eq",
-    )]
-    fn eq(
-        _self: LuaReflectRefProxy<bevy::input::gamepad::GamepadRumbleIntensity>,
-        other: LuaReflectRefProxy<bevy::input::gamepad::GamepadRumbleIntensity>,
-    ) -> bool;
 
 "#,
     r#"
@@ -1539,18 +1585,18 @@ pub struct Key {}
 "#,
     r#"
 
-    #[lua(as_trait = "std::clone::Clone")]
-    fn clone(
-        _self: LuaReflectRefProxy<bevy::input::keyboard::NativeKeyCode>,
-    ) -> LuaReflectValProxy<bevy::input::keyboard::NativeKeyCode>;
-
-"#,
-    r#"
-
     #[lua(as_trait = "std::cmp::Eq")]
     fn assert_receiver_is_total_eq(
         _self: LuaReflectRefProxy<bevy::input::keyboard::NativeKeyCode>,
     ) -> ();
+
+"#,
+    r#"
+
+    #[lua(as_trait = "std::clone::Clone")]
+    fn clone(
+        _self: LuaReflectRefProxy<bevy::input::keyboard::NativeKeyCode>,
+    ) -> LuaReflectValProxy<bevy::input::keyboard::NativeKeyCode>;
 
 "#,
     r#"
@@ -1567,6 +1613,14 @@ pub struct NativeKeyCode {}
     bms_core_path = "bevy_mod_scripting_core",
     bms_lua_path = "crate",
     functions[r#"
+
+    #[lua(as_trait = "std::cmp::Eq")]
+    fn assert_receiver_is_total_eq(
+        _self: LuaReflectRefProxy<bevy::input::keyboard::NativeKey>,
+    ) -> ();
+
+"#,
+    r#"
 
     #[lua(as_trait = "std::clone::Clone")]
     fn clone(
@@ -1587,14 +1641,6 @@ pub struct NativeKeyCode {}
 
 "#,
     r#"
-
-    #[lua(as_trait = "std::cmp::Eq")]
-    fn assert_receiver_is_total_eq(
-        _self: LuaReflectRefProxy<bevy::input::keyboard::NativeKey>,
-    ) -> ();
-
-"#,
-    r#"
 #[lua(metamethod="ToString")]
 fn index(&self) -> String {
     format!("{:?}", _self)
@@ -1608,18 +1654,6 @@ pub struct NativeKey {}
     bms_core_path = "bevy_mod_scripting_core",
     bms_lua_path = "crate",
     functions[r#"
-
-    #[lua(
-        as_trait = "std::cmp::PartialEq::<bevy::input::mouse::MouseScrollUnit>",
-        composite = "eq",
-    )]
-    fn eq(
-        _self: LuaReflectRefProxy<bevy::input::mouse::MouseScrollUnit>,
-        other: LuaReflectRefProxy<bevy::input::mouse::MouseScrollUnit>,
-    ) -> bool;
-
-"#,
-    r#"
 
     #[lua(as_trait = "std::cmp::Eq")]
     fn assert_receiver_is_total_eq(
@@ -1636,6 +1670,18 @@ pub struct NativeKey {}
 
 "#,
     r#"
+
+    #[lua(
+        as_trait = "std::cmp::PartialEq::<bevy::input::mouse::MouseScrollUnit>",
+        composite = "eq",
+    )]
+    fn eq(
+        _self: LuaReflectRefProxy<bevy::input::mouse::MouseScrollUnit>,
+        other: LuaReflectRefProxy<bevy::input::mouse::MouseScrollUnit>,
+    ) -> bool;
+
+"#,
+    r#"
 #[lua(metamethod="ToString")]
 fn index(&self) -> String {
     format!("{:?}", _self)
@@ -1649,6 +1695,14 @@ pub struct MouseScrollUnit {}
     bms_core_path = "bevy_mod_scripting_core",
     bms_lua_path = "crate",
     functions[r#"
+
+    #[lua(as_trait = "std::cmp::Eq")]
+    fn assert_receiver_is_total_eq(
+        _self: LuaReflectRefProxy<bevy::input::touch::TouchPhase>,
+    ) -> ();
+
+"#,
+    r#"
 
     #[lua(as_trait = "std::clone::Clone")]
     fn clone(
@@ -1669,14 +1723,6 @@ pub struct MouseScrollUnit {}
 
 "#,
     r#"
-
-    #[lua(as_trait = "std::cmp::Eq")]
-    fn assert_receiver_is_total_eq(
-        _self: LuaReflectRefProxy<bevy::input::touch::TouchPhase>,
-    ) -> ();
-
-"#,
-    r#"
 #[lua(metamethod="ToString")]
 fn index(&self) -> String {
     format!("{:?}", _self)
@@ -1691,6 +1737,14 @@ pub struct TouchPhase {}
     bms_lua_path = "crate",
     functions[r#"
 
+    #[lua(as_trait = "std::clone::Clone")]
+    fn clone(
+        _self: LuaReflectRefProxy<bevy::input::touch::ForceTouch>,
+    ) -> LuaReflectValProxy<bevy::input::touch::ForceTouch>;
+
+"#,
+    r#"
+
     #[lua(
         as_trait = "std::cmp::PartialEq::<bevy::input::touch::ForceTouch>",
         composite = "eq",
@@ -1699,14 +1753,6 @@ pub struct TouchPhase {}
         _self: LuaReflectRefProxy<bevy::input::touch::ForceTouch>,
         other: LuaReflectRefProxy<bevy::input::touch::ForceTouch>,
     ) -> bool;
-
-"#,
-    r#"
-
-    #[lua(as_trait = "std::clone::Clone")]
-    fn clone(
-        _self: LuaReflectRefProxy<bevy::input::touch::ForceTouch>,
-    ) -> LuaReflectValProxy<bevy::input::touch::ForceTouch>;
 
 "#,
     r#"

@@ -79,6 +79,14 @@ pub struct Parent();
     bms_lua_path = "crate",
     functions[r#"
 
+    #[lua(as_trait = "std::clone::Clone")]
+    fn clone(
+        _self: LuaReflectRefProxy<bevy::hierarchy::HierarchyEvent>,
+    ) -> LuaReflectValProxy<bevy::hierarchy::HierarchyEvent>;
+
+"#,
+    r#"
+
     #[lua(
         as_trait = "std::cmp::PartialEq::<bevy::hierarchy::HierarchyEvent>",
         composite = "eq",
@@ -87,14 +95,6 @@ pub struct Parent();
         _self: LuaReflectRefProxy<bevy::hierarchy::HierarchyEvent>,
         other: LuaReflectRefProxy<bevy::hierarchy::HierarchyEvent>,
     ) -> bool;
-
-"#,
-    r#"
-
-    #[lua(as_trait = "std::clone::Clone")]
-    fn clone(
-        _self: LuaReflectRefProxy<bevy::hierarchy::HierarchyEvent>,
-    ) -> LuaReflectValProxy<bevy::hierarchy::HierarchyEvent>;
 
 "#,
     r#"

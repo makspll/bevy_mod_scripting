@@ -24,6 +24,20 @@ use crate::{
     bms_lua_path = "crate",
     functions[r#"
 
+    #[lua(
+        as_trait = "std::ops::Mul::<bevy::transform::components::GlobalTransform>",
+        composite = "mul",
+    )]
+    fn mul(
+        _self: LuaReflectValProxy<bevy::transform::components::GlobalTransform>,
+        global_transform: LuaReflectValProxy<
+            bevy::transform::components::GlobalTransform,
+        >,
+    ) -> LuaReflectValProxy<bevy::transform::components::GlobalTransform>;
+
+"#,
+    r#"
+
     #[lua(as_trait = "std::clone::Clone")]
     fn clone(
         _self: LuaReflectRefProxy<bevy::transform::components::GlobalTransform>,
@@ -39,20 +53,6 @@ use crate::{
     fn mul(
         _self: LuaReflectValProxy<bevy::transform::components::GlobalTransform>,
         transform: LuaReflectValProxy<bevy::transform::components::Transform>,
-    ) -> LuaReflectValProxy<bevy::transform::components::GlobalTransform>;
-
-"#,
-    r#"
-
-    #[lua(
-        as_trait = "std::ops::Mul::<bevy::transform::components::GlobalTransform>",
-        composite = "mul",
-    )]
-    fn mul(
-        _self: LuaReflectValProxy<bevy::transform::components::GlobalTransform>,
-        global_transform: LuaReflectValProxy<
-            bevy::transform::components::GlobalTransform,
-        >,
     ) -> LuaReflectValProxy<bevy::transform::components::GlobalTransform>;
 
 "#,
@@ -153,32 +153,6 @@ pub struct GlobalTransform();
     bms_core_path = "bevy_mod_scripting_core",
     bms_lua_path = "crate",
     functions[r#"
-
-    #[lua(
-        as_trait = "std::cmp::PartialEq::<bevy::transform::components::Transform>",
-        composite = "eq",
-    )]
-    fn eq(
-        _self: LuaReflectRefProxy<bevy::transform::components::Transform>,
-        other: LuaReflectRefProxy<bevy::transform::components::Transform>,
-    ) -> bool;
-
-"#,
-    r#"
-
-    #[lua(
-        as_trait = "std::ops::Mul::<bevy::transform::components::GlobalTransform>",
-        composite = "mul",
-    )]
-    fn mul(
-        _self: LuaReflectValProxy<bevy::transform::components::Transform>,
-        global_transform: LuaReflectValProxy<
-            bevy::transform::components::GlobalTransform,
-        >,
-    ) -> LuaReflectValProxy<bevy::transform::components::GlobalTransform>;
-
-"#,
-    r#"
 /// Creates a new [`Transform`] at the position `(x, y, z)`. In 2d, the `z` component
 /// is used for z-ordering elements: higher `z`-value will be in front of lower
 /// `z`-value.
@@ -278,10 +252,28 @@ pub struct GlobalTransform();
 "#,
     r#"
 
-    #[lua(as_trait = "std::clone::Clone")]
-    fn clone(
+    #[lua(
+        as_trait = "std::ops::Mul::<bevy::transform::components::GlobalTransform>",
+        composite = "mul",
+    )]
+    fn mul(
+        _self: LuaReflectValProxy<bevy::transform::components::Transform>,
+        global_transform: LuaReflectValProxy<
+            bevy::transform::components::GlobalTransform,
+        >,
+    ) -> LuaReflectValProxy<bevy::transform::components::GlobalTransform>;
+
+"#,
+    r#"
+
+    #[lua(
+        as_trait = "std::cmp::PartialEq::<bevy::transform::components::Transform>",
+        composite = "eq",
+    )]
+    fn eq(
         _self: LuaReflectRefProxy<bevy::transform::components::Transform>,
-    ) -> LuaReflectValProxy<bevy::transform::components::Transform>;
+        other: LuaReflectRefProxy<bevy::transform::components::Transform>,
+    ) -> bool;
 
 "#,
     r#"
@@ -293,6 +285,14 @@ pub struct GlobalTransform();
     fn mul(
         _self: LuaReflectValProxy<bevy::transform::components::Transform>,
         transform: LuaReflectValProxy<bevy::transform::components::Transform>,
+    ) -> LuaReflectValProxy<bevy::transform::components::Transform>;
+
+"#,
+    r#"
+
+    #[lua(as_trait = "std::clone::Clone")]
+    fn clone(
+        _self: LuaReflectRefProxy<bevy::transform::components::Transform>,
     ) -> LuaReflectValProxy<bevy::transform::components::Transform>;
 
 "#,
