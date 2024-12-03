@@ -1,6 +1,6 @@
 [package]
 name = "bevy_mod_scripting_lua"
-version = "0.7.1"
+version = "0.8.0-alpha.2"
 authors = ["Maksymilian Mozolewski <makspl17@gmail.com>"]
 edition = "2021"
 license = "MIT OR Apache-2.0"
@@ -30,6 +30,7 @@ lua53 = ["tealr/mlua_lua53"]
 lua54 = ["tealr/mlua_lua54"]
 luajit = ["tealr/mlua_luajit"]
 luajit52 = ["tealr/mlua_luajit52"]
+luau = ["tealr/mlua_luau"]
 mlua_serialize = ["tealr/mlua_serialize"]
 mlua_macros = ["tealr/mlua_macros"]
 mlua_async = ["tealr/mlua_async"]

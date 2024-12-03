@@ -55,6 +55,17 @@ struct Real {}
 
 "#,
     r#"
+
+    #[lua(
+        as_trait = "std::cmp::PartialEq",
+        kind = "MetaFunction",
+        composite = "eq",
+        metamethod = "Eq",
+    )]
+    fn eq(&self, #[proxy] other: &timer::Timer) -> bool;
+
+"#,
+    r#"
 /// Creates a new timer with a given duration.
 /// See also [`Timer::from_seconds`](Timer::from_seconds).
 
@@ -148,6 +159,14 @@ struct Real {}
 
     #[lua(kind = "Method")]
     fn elapsed_secs(&self) -> f32;
+
+"#,
+    r#"
+/// Returns the time elapsed on the timer as an `f64`.
+/// See also [`Timer::elapsed`](Timer::elapsed).
+
+    #[lua(kind = "Method")]
+    fn elapsed_secs_f64(&self) -> f64;
 
 "#,
     r#"
@@ -262,7 +281,7 @@ struct Real {}
 "#,
     r#"
 /// Returns `true` if the timer is paused.
-/// See also [`Stopwatch::paused`](Stopwatch::paused).
+/// See also [`Stopwatch::is_paused`](Stopwatch::is_paused).
 /// # Examples
 /// ```
 /// # use bevy_time::*;
@@ -383,17 +402,6 @@ struct Real {}
 "#,
     r#"
 
-    #[lua(
-        as_trait = "std::cmp::PartialEq",
-        kind = "MetaFunction",
-        composite = "eq",
-        metamethod = "Eq",
-    )]
-    fn eq(&self, #[proxy] other: &timer::Timer) -> bool;
-
-"#,
-    r#"
-
     #[lua(as_trait = "std::cmp::Eq", kind = "Method")]
     fn assert_receiver_is_total_eq(&self) -> ();
 
@@ -412,12 +420,6 @@ struct Timer {}
     remote = "bevy::time::prelude::TimerMode",
     functions[r#"
 
-    #[lua(as_trait = "std::cmp::Eq", kind = "Method")]
-    fn assert_receiver_is_total_eq(&self) -> ();
-
-"#,
-    r#"
-
     #[lua(
         as_trait = "std::cmp::PartialEq",
         kind = "MetaFunction",
@@ -425,6 +427,12 @@ struct Timer {}
         metamethod = "Eq",
     )]
     fn eq(&self, #[proxy] other: &timer::TimerMode) -> bool;
+
+"#,
+    r#"
+
+    #[lua(as_trait = "std::cmp::Eq", kind = "Method")]
+    fn assert_receiver_is_total_eq(&self) -> ();
 
 "#,
     r#"
@@ -471,13 +479,8 @@ struct Virtual {}
 "#,
     r#"
 
-    #[lua(
-        as_trait = "std::cmp::PartialEq",
-        kind = "MetaFunction",
-        composite = "eq",
-        metamethod = "Eq",
-    )]
-    fn eq(&self, #[proxy] other: &stopwatch::Stopwatch) -> bool;
+    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
+    fn clone(&self) -> bevy::time::Stopwatch;
 
 "#,
     r#"
@@ -487,7 +490,7 @@ struct Virtual {}
 /// # use bevy_time::*;
 /// let stopwatch = Stopwatch::new();
 /// assert_eq!(stopwatch.elapsed_secs(), 0.0);
-/// assert_eq!(stopwatch.paused(), false);
+/// assert_eq!(stopwatch.is_paused(), false);
 /// ```
 
     #[lua(kind = "Function", output(proxy))]
@@ -568,7 +571,7 @@ struct Virtual {}
 /// let mut stopwatch = Stopwatch::new();
 /// stopwatch.pause();
 /// stopwatch.tick(Duration::from_secs_f32(1.5));
-/// assert!(stopwatch.paused());
+/// assert!(stopwatch.is_paused());
 /// assert_eq!(stopwatch.elapsed_secs(), 0.0);
 /// ```
 
@@ -587,7 +590,7 @@ struct Virtual {}
 /// stopwatch.tick(Duration::from_secs_f32(1.0));
 /// stopwatch.unpause();
 /// stopwatch.tick(Duration::from_secs_f32(1.0));
-/// assert!(!stopwatch.paused());
+/// assert!(!stopwatch.is_paused());
 /// assert_eq!(stopwatch.elapsed_secs(), 1.0);
 /// ```
 
@@ -601,15 +604,15 @@ struct Virtual {}
 /// ```
 /// # use bevy_time::*;
 /// let mut stopwatch = Stopwatch::new();
-/// assert!(!stopwatch.paused());
+/// assert!(!stopwatch.is_paused());
 /// stopwatch.pause();
-/// assert!(stopwatch.paused());
+/// assert!(stopwatch.is_paused());
 /// stopwatch.unpause();
-/// assert!(!stopwatch.paused());
+/// assert!(!stopwatch.is_paused());
 /// ```
 
     #[lua(kind = "Method")]
-    fn paused(&self) -> bool;
+    fn is_paused(&self) -> bool;
 
 "#,
     r#"
@@ -630,8 +633,13 @@ struct Virtual {}
 "#,
     r#"
 
-    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
-    fn clone(&self) -> bevy::time::Stopwatch;
+    #[lua(
+        as_trait = "std::cmp::PartialEq",
+        kind = "MetaFunction",
+        composite = "eq",
+        metamethod = "Eq",
+    )]
+    fn eq(&self, #[proxy] other: &stopwatch::Stopwatch) -> bool;
 
 "#,
     r#"

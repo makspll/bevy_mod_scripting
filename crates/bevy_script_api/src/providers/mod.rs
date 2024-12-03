@@ -9,7 +9,6 @@ pub mod bevy_input;
 pub mod bevy_core;
 pub mod bevy_time;
 pub mod bevy_hierarchy;
-pub mod bevy_window;
 pub mod bevy_reflect;
 extern crate self as bevy_script_api;
 use bevy_mod_scripting_core::docs::DocFragment;
@@ -29,7 +28,6 @@ impl bevy_mod_scripting_core::hosts::APIProvider for LuaBevyAPIProvider {
         bevy_core::BevyCoreAPIProvider.attach_api(ctx)?;
         bevy_time::BevyTimeAPIProvider.attach_api(ctx)?;
         bevy_hierarchy::BevyHierarchyAPIProvider.attach_api(ctx)?;
-        bevy_window::BevyWindowAPIProvider.attach_api(ctx)?;
         bevy_reflect::BevyReflectAPIProvider.attach_api(ctx)?;
         Ok(())
     }
@@ -42,7 +40,6 @@ impl bevy_mod_scripting_core::hosts::APIProvider for LuaBevyAPIProvider {
             bevy_core::BevyCoreAPIProvider.get_doc_fragment(),
             bevy_time::BevyTimeAPIProvider.get_doc_fragment(),
             bevy_hierarchy::BevyHierarchyAPIProvider.get_doc_fragment(),
-            bevy_window::BevyWindowAPIProvider.get_doc_fragment(),
             bevy_reflect::BevyReflectAPIProvider.get_doc_fragment(),
         ]
             .into_iter()
@@ -78,7 +75,6 @@ impl bevy_mod_scripting_core::hosts::APIProvider for LuaBevyAPIProvider {
         bevy_core::BevyCoreAPIProvider.register_with_app(app);
         bevy_time::BevyTimeAPIProvider.register_with_app(app);
         bevy_hierarchy::BevyHierarchyAPIProvider.register_with_app(app);
-        bevy_window::BevyWindowAPIProvider.register_with_app(app);
         bevy_reflect::BevyReflectAPIProvider.register_with_app(app);
     }
 }

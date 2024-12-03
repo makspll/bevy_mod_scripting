@@ -195,9 +195,8 @@ pub(crate) fn configure_tera_env(tera: &mut Tera, crate_name: &str) {
 
             let file = syn::parse_file(&str)
                 .map_err(|e| tera::Error::msg(e.to_string()))
-                .map_err(|e| {
+                .inspect_err(|_| {
                     log::error!("prettyplease error on input: ```\n{}\n```", str);
-                    e
                 })?;
 
             let out = prettyplease::unparse(&file);

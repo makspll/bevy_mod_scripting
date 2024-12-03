@@ -10,17 +10,81 @@ use bevy_script_api::{
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
     derive(clone),
-    remote = "bevy::math::CompassOctant",
+    remote = "bevy::math::AspectRatio",
     functions[r#"
 
-    #[lua(as_trait = "std::cmp::Eq", kind = "Method")]
-    fn assert_receiver_is_total_eq(&self) -> ();
+    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
+    fn clone(&self) -> bevy::math::AspectRatio;
+
+"#,
+    r#"
+/// Returns the aspect ratio as a f32 value.
+
+    #[lua(kind = "Method")]
+    fn ratio(&self) -> f32;
+
+"#,
+    r#"
+/// Returns the inverse of this aspect ratio (height/width).
+
+    #[lua(kind = "Method", output(proxy))]
+    fn inverse(&self) -> bevy::math::AspectRatio;
+
+"#,
+    r#"
+/// Returns true if the aspect ratio represents a landscape orientation.
+
+    #[lua(kind = "Method")]
+    fn is_landscape(&self) -> bool;
+
+"#,
+    r#"
+/// Returns true if the aspect ratio represents a portrait orientation.
+
+    #[lua(kind = "Method")]
+    fn is_portrait(&self) -> bool;
+
+"#,
+    r#"
+/// Returns true if the aspect ratio is exactly square.
+
+    #[lua(kind = "Method")]
+    fn is_square(&self) -> bool;
 
 "#,
     r#"
 
+    #[lua(
+        as_trait = "std::cmp::PartialEq",
+        kind = "MetaFunction",
+        composite = "eq",
+        metamethod = "Eq",
+    )]
+    fn eq(&self, #[proxy] other: &aspect_ratio::AspectRatio) -> bool;
+
+"#,
+    r#"
+#[lua(kind="MetaMethod", metamethod="ToString")]
+fn index(&self) -> String {
+    format!("{:?}", _self)
+}
+"#]
+)]
+struct AspectRatio();
+#[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
+#[proxy(
+    derive(clone),
+    remote = "bevy::math::CompassOctant",
+    functions[r#"
+
     #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
     fn clone(&self) -> bevy::math::CompassOctant;
+
+"#,
+    r#"
+
+    #[lua(as_trait = "std::cmp::Eq", kind = "Method")]
+    fn assert_receiver_is_total_eq(&self) -> ();
 
 "#,
     r#"
@@ -48,6 +112,12 @@ struct CompassOctant {}
     remote = "bevy::math::CompassQuadrant",
     functions[r#"
 
+    #[lua(as_trait = "std::cmp::Eq", kind = "Method")]
+    fn assert_receiver_is_total_eq(&self) -> ();
+
+"#,
+    r#"
+
     #[lua(
         as_trait = "std::cmp::PartialEq",
         kind = "MetaFunction",
@@ -64,12 +134,6 @@ struct CompassOctant {}
 
 "#,
     r#"
-
-    #[lua(as_trait = "std::cmp::Eq", kind = "Method")]
-    fn assert_receiver_is_total_eq(&self) -> ();
-
-"#,
-    r#"
 #[lua(kind="MetaMethod", metamethod="ToString")]
 fn index(&self) -> String {
     format!("{:?}", _self)
@@ -80,25 +144,41 @@ struct CompassQuadrant {}
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
     derive(clone),
-    remote = "bevy::math::AspectRatio",
+    remote = "bevy::math::Isometry2d",
     functions[r#"
-/// Create a new `AspectRatio` from a given `width` and `height`.
 
-    #[lua(kind = "Function", output(proxy))]
-    fn new(width: f32, height: f32) -> bevy::math::AspectRatio;
-
-"#,
-    r#"
-/// Create a new `AspectRatio` from a given amount of `x` pixels and `y` pixels.
-
-    #[lua(kind = "Function", output(proxy))]
-    fn from_pixels(x: u32, y: u32) -> bevy::math::AspectRatio;
+    #[lua(
+        as_trait = "std::ops::Mul",
+        kind = "MetaFunction",
+        output(proxy),
+        composite = "mul",
+        metamethod = "Mul",
+    )]
+    fn mul(self, #[proxy] rhs: bevy::math::prelude::Dir2) -> bevy::math::prelude::Dir2;
 
 "#,
     r#"
 
-    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
-    fn clone(&self) -> bevy::math::AspectRatio;
+    #[lua(
+        as_trait = "std::ops::Mul",
+        kind = "MetaFunction",
+        output(proxy),
+        composite = "mul",
+        metamethod = "Mul",
+    )]
+    fn mul(self, #[proxy] rhs: bevy::math::prelude::Vec2) -> bevy::math::prelude::Vec2;
+
+"#,
+    r#"
+
+    #[lua(
+        as_trait = "std::ops::Mul",
+        kind = "MetaFunction",
+        output(proxy),
+        composite = "mul",
+        metamethod = "Mul",
+    )]
+    fn mul(self, #[proxy] rhs: bevy::math::Isometry2d) -> bevy::math::Isometry2d;
 
 "#,
     r#"
@@ -109,7 +189,94 @@ struct CompassQuadrant {}
         composite = "eq",
         metamethod = "Eq",
     )]
-    fn eq(&self, #[proxy] other: &aspect_ratio::AspectRatio) -> bool;
+    fn eq(&self, #[proxy] other: &isometry::Isometry2d) -> bool;
+
+"#,
+    r#"
+
+    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
+    fn clone(&self) -> bevy::math::Isometry2d;
+
+"#,
+    r#"
+/// Create a two-dimensional isometry from a rotation and a translation.
+
+    #[lua(kind = "Function", output(proxy))]
+    fn new(
+        #[proxy]
+        translation: bevy::math::prelude::Vec2,
+        #[proxy]
+        rotation: bevy::math::Rot2,
+    ) -> bevy::math::Isometry2d;
+
+"#,
+    r#"
+/// Create a two-dimensional isometry from a rotation.
+
+    #[lua(kind = "Function", output(proxy))]
+    fn from_rotation(#[proxy] rotation: bevy::math::Rot2) -> bevy::math::Isometry2d;
+
+"#,
+    r#"
+/// Create a two-dimensional isometry from a translation.
+
+    #[lua(kind = "Function", output(proxy))]
+    fn from_translation(
+        #[proxy]
+        translation: bevy::math::prelude::Vec2,
+    ) -> bevy::math::Isometry2d;
+
+"#,
+    r#"
+/// Create a two-dimensional isometry from a translation with the given `x` and `y` components.
+
+    #[lua(kind = "Function", output(proxy))]
+    fn from_xy(x: f32, y: f32) -> bevy::math::Isometry2d;
+
+"#,
+    r#"
+/// The inverse isometry that undoes this one.
+
+    #[lua(kind = "Method", output(proxy))]
+    fn inverse(&self) -> bevy::math::Isometry2d;
+
+"#,
+    r#"
+/// Compute `iso1.inverse() * iso2` in a more efficient way for one-shot cases.
+/// If the same isometry is used multiple times, it is more efficient to instead compute
+/// the inverse once and use that for each transformation.
+
+    #[lua(kind = "Method", output(proxy))]
+    fn inverse_mul(
+        &self,
+        #[proxy]
+        rhs: bevy::math::Isometry2d,
+    ) -> bevy::math::Isometry2d;
+
+"#,
+    r#"
+/// Transform a point by rotating and translating it using this isometry.
+
+    #[lua(kind = "Method", output(proxy))]
+    fn transform_point(
+        &self,
+        #[proxy]
+        point: bevy::math::prelude::Vec2,
+    ) -> bevy::math::prelude::Vec2;
+
+"#,
+    r#"
+/// Transform a point by rotating and translating it using the inverse of this isometry.
+/// This is more efficient than `iso.inverse().transform_point(point)` for one-shot cases.
+/// If the same isometry is used multiple times, it is more efficient to instead compute
+/// the inverse once and use that for each transformation.
+
+    #[lua(kind = "Method", output(proxy))]
+    fn inverse_transform_point(
+        &self,
+        #[proxy]
+        point: bevy::math::prelude::Vec2,
+    ) -> bevy::math::prelude::Vec2;
 
 "#,
     r#"
@@ -119,22 +286,144 @@ fn index(&self) -> String {
 }
 "#]
 )]
-struct AspectRatio();
+struct Isometry2d {
+    #[lua(output(proxy))]
+    rotation: bevy::math::Rot2,
+    #[lua(output(proxy))]
+    translation: bevy::math::prelude::Vec2,
+}
+#[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
+#[proxy(
+    derive(clone),
+    remote = "bevy::math::Isometry3d",
+    functions[r#"
+
+    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
+    fn clone(&self) -> bevy::math::Isometry3d;
+
+"#,
+    r#"
+
+    #[lua(
+        as_trait = "std::ops::Mul",
+        kind = "MetaFunction",
+        output(proxy),
+        composite = "mul",
+        metamethod = "Mul",
+    )]
+    fn mul(self, #[proxy] rhs: bevy::math::Vec3A) -> bevy::math::Vec3A;
+
+"#,
+    r#"
+/// Create a three-dimensional isometry from a rotation.
+
+    #[lua(kind = "Function", output(proxy))]
+    fn from_rotation(
+        #[proxy]
+        rotation: bevy::math::prelude::Quat,
+    ) -> bevy::math::Isometry3d;
+
+"#,
+    r#"
+/// Create a three-dimensional isometry from a translation with the given `x`, `y`, and `z` components.
+
+    #[lua(kind = "Function", output(proxy))]
+    fn from_xyz(x: f32, y: f32, z: f32) -> bevy::math::Isometry3d;
+
+"#,
+    r#"
+/// The inverse isometry that undoes this one.
+
+    #[lua(kind = "Method", output(proxy))]
+    fn inverse(&self) -> bevy::math::Isometry3d;
+
+"#,
+    r#"
+/// Compute `iso1.inverse() * iso2` in a more efficient way for one-shot cases.
+/// If the same isometry is used multiple times, it is more efficient to instead compute
+/// the inverse once and use that for each transformation.
+
+    #[lua(kind = "Method", output(proxy))]
+    fn inverse_mul(
+        &self,
+        #[proxy]
+        rhs: bevy::math::Isometry3d,
+    ) -> bevy::math::Isometry3d;
+
+"#,
+    r#"
+
+    #[lua(
+        as_trait = "std::ops::Mul",
+        kind = "MetaFunction",
+        output(proxy),
+        composite = "mul",
+        metamethod = "Mul",
+    )]
+    fn mul(self, #[proxy] rhs: bevy::math::Isometry3d) -> bevy::math::Isometry3d;
+
+"#,
+    r#"
+
+    #[lua(
+        as_trait = "std::cmp::PartialEq",
+        kind = "MetaFunction",
+        composite = "eq",
+        metamethod = "Eq",
+    )]
+    fn eq(&self, #[proxy] other: &isometry::Isometry3d) -> bool;
+
+"#,
+    r#"
+
+    #[lua(
+        as_trait = "std::ops::Mul",
+        kind = "MetaFunction",
+        output(proxy),
+        composite = "mul",
+        metamethod = "Mul",
+    )]
+    fn mul(self, #[proxy] rhs: bevy::math::prelude::Vec3) -> bevy::math::prelude::Vec3;
+
+"#,
+    r#"
+
+    #[lua(
+        as_trait = "std::ops::Mul",
+        kind = "MetaFunction",
+        output(proxy),
+        composite = "mul",
+        metamethod = "Mul",
+    )]
+    fn mul(self, #[proxy] rhs: bevy::math::prelude::Dir3) -> bevy::math::prelude::Dir3;
+
+"#,
+    r#"
+#[lua(kind="MetaMethod", metamethod="ToString")]
+fn index(&self) -> String {
+    format!("{:?}", _self)
+}
+"#]
+)]
+struct Isometry3d {
+    #[lua(output(proxy))]
+    rotation: bevy::math::prelude::Quat,
+    #[lua(output(proxy))]
+    translation: bevy::math::Vec3A,
+}
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
     derive(clone),
     remote = "bevy::math::Ray2d",
     functions[r#"
 /// Create a new `Ray2d` from a given origin and direction
-/// # Panics
-/// Panics if the given `direction` is zero (or very close to zero), or non-finite.
 
     #[lua(kind = "Function", output(proxy))]
     fn new(
         #[proxy]
         origin: bevy::math::prelude::Vec2,
         #[proxy]
-        direction: bevy::math::prelude::Vec2,
+        direction: bevy::math::prelude::Dir2,
     ) -> bevy::math::Ray2d;
 
 "#,
@@ -194,12 +483,6 @@ struct Ray2d {
     remote = "bevy::math::Ray3d",
     functions[r#"
 
-    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
-    fn clone(&self) -> bevy::math::Ray3d;
-
-"#,
-    r#"
-
     #[lua(
         as_trait = "std::cmp::PartialEq",
         kind = "MetaFunction",
@@ -211,15 +494,13 @@ struct Ray2d {
 "#,
     r#"
 /// Create a new `Ray3d` from a given origin and direction
-/// # Panics
-/// Panics if the given `direction` is zero (or very close to zero), or non-finite.
 
     #[lua(kind = "Function", output(proxy))]
     fn new(
         #[proxy]
         origin: bevy::math::prelude::Vec3,
         #[proxy]
-        direction: bevy::math::prelude::Vec3,
+        direction: bevy::math::prelude::Dir3,
     ) -> bevy::math::Ray3d;
 
 "#,
@@ -244,6 +525,12 @@ struct Ray2d {
 
 "#,
     r#"
+
+    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
+    fn clone(&self) -> bevy::math::Ray3d;
+
+"#,
+    r#"
 #[lua(kind="MetaMethod", metamethod="ToString")]
 fn index(&self) -> String {
     format!("{:?}", _self)
@@ -261,19 +548,6 @@ struct Ray3d {
     derive(clone),
     remote = "bevy::math::Rot2",
     functions[r#"
-/// Rotates a [`Vec2`] by a [`Rot2`].
-
-    #[lua(
-        as_trait = "std::ops::Mul",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "mul",
-        metamethod = "Mul",
-    )]
-    fn mul(self, #[proxy] rhs: bevy::math::prelude::Vec2) -> bevy::math::prelude::Vec2;
-
-"#,
-    r#"
 /// Rotates the [`Dir2`] using a [`Rot2`].
 
     #[lua(
@@ -292,12 +566,31 @@ struct Ray3d {
 "#,
     r#"
 
-    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
-    fn clone(&self) -> bevy::math::Rot2;
+    #[lua(
+        as_trait = "std::ops::Mul",
+        kind = "MetaFunction",
+        output(proxy),
+        composite = "mul",
+        metamethod = "Mul",
+    )]
+    fn mul(self, #[proxy] rhs: bevy::math::Rot2) -> bevy::math::Rot2;
 
 "#,
     r#"
 /// Creates a [`Rot2`] from a counterclockwise angle in radians.
+/// # Note
+/// The input rotation will always be clamped to the range `(-π, π]` by design.
+/// # Example
+/// ```
+/// # use bevy_math::Rot2;
+/// # use approx::assert_relative_eq;
+/// # use std::f32::consts::{FRAC_PI_2, PI};
+/// let rot1 = Rot2::radians(3.0 * FRAC_PI_2);
+/// let rot2 = Rot2::radians(-FRAC_PI_2);
+/// assert_relative_eq!(rot1, rot2);
+/// let rot3 = Rot2::radians(PI);
+/// assert_relative_eq!(rot1 * rot1, rot3);
+/// ```
 
     #[lua(kind = "Function", output(proxy))]
     fn radians(radians: f32) -> bevy::math::Rot2;
@@ -305,9 +598,40 @@ struct Ray3d {
 "#,
     r#"
 /// Creates a [`Rot2`] from a counterclockwise angle in degrees.
+/// # Note
+/// The input rotation will always be clamped to the range `(-180°, 180°]` by design.
+/// # Example
+/// ```
+/// # use bevy_math::Rot2;
+/// # use approx::assert_relative_eq;
+/// let rot1 = Rot2::degrees(270.0);
+/// let rot2 = Rot2::degrees(-90.0);
+/// assert_relative_eq!(rot1, rot2);
+/// let rot3 = Rot2::degrees(180.0);
+/// assert_relative_eq!(rot1 * rot1, rot3);
+/// ```
 
     #[lua(kind = "Function", output(proxy))]
     fn degrees(degrees: f32) -> bevy::math::Rot2;
+
+"#,
+    r#"
+/// Creates a [`Rot2`] from a counterclockwise fraction of a full turn of 360 degrees.
+/// # Note
+/// The input rotation will always be clamped to the range `(-50%, 50%]` by design.
+/// # Example
+/// ```
+/// # use bevy_math::Rot2;
+/// # use approx::assert_relative_eq;
+/// let rot1 = Rot2::turn_fraction(0.75);
+/// let rot2 = Rot2::turn_fraction(-0.25);
+/// assert_relative_eq!(rot1, rot2);
+/// let rot3 = Rot2::turn_fraction(0.5);
+/// assert_relative_eq!(rot1 * rot1, rot3);
+/// ```
+
+    #[lua(kind = "Function", output(proxy))]
+    fn turn_fraction(fraction: f32) -> bevy::math::Rot2;
 
 "#,
     r#"
@@ -332,6 +656,13 @@ struct Ray3d {
 
     #[lua(kind = "Method")]
     fn as_degrees(self) -> f32;
+
+"#,
+    r#"
+/// Returns the rotation as a fraction of a full 360 degree turn.
+
+    #[lua(kind = "Method")]
+    fn as_turn_fraction(self) -> f32;
 
 "#,
     r#"
@@ -385,6 +716,15 @@ struct Ray3d {
 
 "#,
     r#"
+/// Returns `self` after an approximate normalization, assuming the value is already nearly normalized.
+/// Useful for preventing numerical error accumulation.
+/// See [`Dir3::fast_renormalize`](crate::Dir3::fast_renormalize) for an example of when such error accumulation might occur.
+
+    #[lua(kind = "Method", output(proxy))]
+    fn fast_renormalize(self) -> bevy::math::Rot2;
+
+"#,
+    r#"
 /// Returns `true` if the rotation is neither infinite nor NaN.
 
     #[lua(kind = "Method")]
@@ -418,6 +758,13 @@ struct Ray3d {
 
     #[lua(kind = "Method")]
     fn angle_between(self, #[proxy] other: bevy::math::Rot2) -> f32;
+
+"#,
+    r#"
+/// Returns the angle in radians needed to make `self` and `other` coincide.
+
+    #[lua(kind = "Method")]
+    fn angle_to(self, #[proxy] other: bevy::math::Rot2) -> f32;
 
 "#,
     r#"
@@ -486,6 +833,7 @@ struct Ray3d {
 
 "#,
     r#"
+/// Rotates a [`Vec2`] by a [`Rot2`].
 
     #[lua(
         as_trait = "std::ops::Mul",
@@ -494,7 +842,7 @@ struct Ray3d {
         composite = "mul",
         metamethod = "Mul",
     )]
-    fn mul(self, #[proxy] rhs: bevy::math::Rot2) -> bevy::math::Rot2;
+    fn mul(self, #[proxy] rhs: bevy::math::prelude::Vec2) -> bevy::math::prelude::Vec2;
 
 "#,
     r#"
@@ -506,6 +854,12 @@ struct Ray3d {
         metamethod = "Eq",
     )]
     fn eq(&self, #[proxy] other: &rotation2d::Rot2) -> bool;
+
+"#,
+    r#"
+
+    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
+    fn clone(&self) -> bevy::math::Rot2;
 
 "#,
     r#"
@@ -524,6 +878,17 @@ struct Rot2 {
     derive(clone),
     remote = "bevy::math::prelude::Dir2",
     functions[r#"
+
+    #[lua(
+        as_trait = "std::cmp::PartialEq",
+        kind = "MetaFunction",
+        composite = "eq",
+        metamethod = "Eq",
+    )]
+    fn eq(&self, #[proxy] other: &direction::Dir2) -> bool;
+
+"#,
+    r#"
 /// Create a [`Dir2`] from a [`Vec2`] that is already normalized.
 /// # Warning
 /// `value` must be normalized, i.e its length must be `1.0`.
@@ -533,6 +898,15 @@ struct Rot2 {
         #[proxy]
         value: bevy::math::prelude::Vec2,
     ) -> bevy::math::prelude::Dir2;
+
+"#,
+    r#"
+/// Create a direction from its `x` and `y` components, assuming the resulting vector is normalized.
+/// # Warning
+/// The vector produced from `x` and `y` must be normalized, i.e its length must be `1.0`.
+
+    #[lua(kind = "Function", output(proxy))]
+    fn from_xy_unchecked(x: f32, y: f32) -> bevy::math::prelude::Dir2;
 
 "#,
     r#"
@@ -617,6 +991,27 @@ struct Rot2 {
 
 "#,
     r#"
+/// Returns `self` after an approximate normalization, assuming the value is already nearly normalized.
+/// Useful for preventing numerical error accumulation.
+/// See [`Dir3::fast_renormalize`] for an example of when such error accumulation might occur.
+
+    #[lua(kind = "Method", output(proxy))]
+    fn fast_renormalize(self) -> bevy::math::prelude::Dir2;
+
+"#,
+    r#"
+
+    #[lua(
+        as_trait = "std::ops::Neg",
+        kind = "MetaFunction",
+        output(proxy),
+        composite = "neg",
+        metamethod = "Unm",
+    )]
+    fn neg(self) -> bevy::math::prelude::Dir2;
+
+"#,
+    r#"
 
     #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
     fn clone(&self) -> bevy::math::prelude::Dir2;
@@ -635,29 +1030,6 @@ struct Rot2 {
 
 "#,
     r#"
-
-    #[lua(
-        as_trait = "std::cmp::PartialEq",
-        kind = "MetaFunction",
-        composite = "eq",
-        metamethod = "Eq",
-    )]
-    fn eq(&self, #[proxy] other: &direction::Dir2) -> bool;
-
-"#,
-    r#"
-
-    #[lua(
-        as_trait = "std::ops::Neg",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "neg",
-        metamethod = "Unm",
-    )]
-    fn neg(self) -> bevy::math::prelude::Dir2;
-
-"#,
-    r#"
 #[lua(kind="MetaMethod", metamethod="ToString")]
 fn index(&self) -> String {
     format!("{:?}", _self)
@@ -671,6 +1043,24 @@ struct Dir2();
     remote = "bevy::math::prelude::Dir3",
     functions[r#"
 
+    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
+    fn clone(&self) -> bevy::math::prelude::Dir3;
+
+"#,
+    r#"
+
+    #[lua(
+        as_trait = "std::ops::Mul",
+        kind = "MetaFunction",
+        output(proxy),
+        composite = "mul",
+        metamethod = "Mul",
+    )]
+    fn mul(self, rhs: f32) -> bevy::math::prelude::Vec3;
+
+"#,
+    r#"
+
     #[lua(
         as_trait = "std::ops::Neg",
         kind = "MetaFunction",
@@ -679,6 +1069,17 @@ struct Dir2();
         metamethod = "Unm",
     )]
     fn neg(self) -> bevy::math::prelude::Dir3;
+
+"#,
+    r#"
+
+    #[lua(
+        as_trait = "std::cmp::PartialEq",
+        kind = "MetaFunction",
+        composite = "eq",
+        metamethod = "Eq",
+    )]
+    fn eq(&self, #[proxy] other: &direction::Dir3) -> bool;
 
 "#,
     r#"
@@ -691,6 +1092,15 @@ struct Dir2();
         #[proxy]
         value: bevy::math::prelude::Vec3,
     ) -> bevy::math::prelude::Dir3;
+
+"#,
+    r#"
+/// Create a direction from its `x`, `y`, and `z` components, assuming the resulting vector is normalized.
+/// # Warning
+/// The vector produced from `x`, `y`, and `z` must be normalized, i.e its length must be `1.0`.
+
+    #[lua(kind = "Function", output(proxy))]
+    fn from_xyz_unchecked(x: f32, y: f32, z: f32) -> bevy::math::prelude::Dir3;
 
 "#,
     r#"
@@ -733,32 +1143,34 @@ struct Dir2();
 
 "#,
     r#"
+/// Returns `self` after an approximate normalization, assuming the value is already nearly normalized.
+/// Useful for preventing numerical error accumulation.
+/// # Example
+/// The following seemingly benign code would start accumulating errors over time,
+/// leading to `dir` eventually not being normalized anymore.
+/// ```
+/// # use bevy_math::prelude::*;
+/// # let N: usize = 200;
+/// let mut dir = Dir3::X;
+/// let quaternion = Quat::from_euler(EulerRot::XYZ, 1.0, 2.0, 3.0);
+/// for i in 0..N {
+///     dir = quaternion * dir;
+/// }
+/// ```
+/// Instead, do the following.
+/// ```
+/// # use bevy_math::prelude::*;
+/// # let N: usize = 200;
+/// let mut dir = Dir3::X;
+/// let quaternion = Quat::from_euler(EulerRot::XYZ, 1.0, 2.0, 3.0);
+/// for i in 0..N {
+///     dir = quaternion * dir;
+///     dir = dir.fast_renormalize();
+/// }
+/// ```
 
-    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
-    fn clone(&self) -> bevy::math::prelude::Dir3;
-
-"#,
-    r#"
-
-    #[lua(
-        as_trait = "std::cmp::PartialEq",
-        kind = "MetaFunction",
-        composite = "eq",
-        metamethod = "Eq",
-    )]
-    fn eq(&self, #[proxy] other: &direction::Dir3) -> bool;
-
-"#,
-    r#"
-
-    #[lua(
-        as_trait = "std::ops::Mul",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "mul",
-        metamethod = "Mul",
-    )]
-    fn mul(self, rhs: f32) -> bevy::math::prelude::Vec3;
+    #[lua(kind = "Method", output(proxy))]
+    fn fast_renormalize(self) -> bevy::math::prelude::Dir3;
 
 "#,
     r#"
@@ -774,41 +1186,21 @@ struct Dir3();
     derive(clone),
     remote = "bevy::math::prelude::Dir3A",
     functions[r#"
-
-    #[lua(
-        as_trait = "std::ops::Mul",
-        kind = "MetaFunction",
-        output(proxy),
-        composite = "mul",
-        metamethod = "Mul",
-    )]
-    fn mul(self, rhs: f32) -> bevy::math::Vec3A;
-
-"#,
-    r#"
-
-    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
-    fn clone(&self) -> bevy::math::prelude::Dir3A;
-
-"#,
-    r#"
-
-    #[lua(
-        as_trait = "std::cmp::PartialEq",
-        kind = "MetaFunction",
-        composite = "eq",
-        metamethod = "Eq",
-    )]
-    fn eq(&self, #[proxy] other: &direction::Dir3A) -> bool;
-
-"#,
-    r#"
 /// Create a [`Dir3A`] from a [`Vec3A`] that is already normalized.
 /// # Warning
 /// `value` must be normalized, i.e its length must be `1.0`.
 
     #[lua(kind = "Function", output(proxy))]
     fn new_unchecked(#[proxy] value: bevy::math::Vec3A) -> bevy::math::prelude::Dir3A;
+
+"#,
+    r#"
+/// Create a direction from its `x`, `y`, and `z` components, assuming the resulting vector is normalized.
+/// # Warning
+/// The vector produced from `x`, `y`, and `z` must be normalized, i.e its length must be `1.0`.
+
+    #[lua(kind = "Function", output(proxy))]
+    fn from_xyz_unchecked(x: f32, y: f32, z: f32) -> bevy::math::prelude::Dir3A;
 
 "#,
     r#"
@@ -851,6 +1243,38 @@ struct Dir3();
 
 "#,
     r#"
+/// Returns `self` after an approximate normalization, assuming the value is already nearly normalized.
+/// Useful for preventing numerical error accumulation.
+/// See [`Dir3::fast_renormalize`] for an example of when such error accumulation might occur.
+
+    #[lua(kind = "Method", output(proxy))]
+    fn fast_renormalize(self) -> bevy::math::prelude::Dir3A;
+
+"#,
+    r#"
+
+    #[lua(
+        as_trait = "std::cmp::PartialEq",
+        kind = "MetaFunction",
+        composite = "eq",
+        metamethod = "Eq",
+    )]
+    fn eq(&self, #[proxy] other: &direction::Dir3A) -> bool;
+
+"#,
+    r#"
+
+    #[lua(
+        as_trait = "std::ops::Mul",
+        kind = "MetaFunction",
+        output(proxy),
+        composite = "mul",
+        metamethod = "Mul",
+    )]
+    fn mul(self, rhs: f32) -> bevy::math::Vec3A;
+
+"#,
+    r#"
 
     #[lua(
         as_trait = "std::ops::Neg",
@@ -860,6 +1284,12 @@ struct Dir3();
         metamethod = "Unm",
     )]
     fn neg(self) -> bevy::math::prelude::Dir3A;
+
+"#,
+    r#"
+
+    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
+    fn clone(&self) -> bevy::math::prelude::Dir3A;
 
 "#,
     r#"
@@ -875,6 +1305,29 @@ struct Dir3A();
     derive(clone),
     remote = "bevy::math::prelude::IRect",
     functions[r#"
+
+    #[lua(
+        as_trait = "std::cmp::PartialEq",
+        kind = "MetaFunction",
+        composite = "eq",
+        metamethod = "Eq",
+    )]
+    fn eq(&self, #[proxy] other: &rects::irect::IRect) -> bool;
+
+"#,
+    r#"
+
+    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
+    fn clone(&self) -> bevy::math::prelude::IRect;
+
+"#,
+    r#"
+
+    #[lua(as_trait = "std::cmp::Eq", kind = "Method")]
+    fn assert_receiver_is_total_eq(&self) -> ();
+
+"#,
+    r#"
 /// Create a new rectangle from two corner points.
 /// The two points do not need to be the minimum and/or maximum corners.
 /// They only need to be two opposite corners.
@@ -913,7 +1366,7 @@ struct Dir3A();
 "#,
     r#"
 /// Create a new rectangle from its center and size.
-/// # Rounding Behaviour
+/// # Rounding Behavior
 /// If the size contains odd numbers they will be rounded down to the nearest whole number.
 /// # Panics
 /// This method panics if any of the components of the size is negative.
@@ -1009,7 +1462,7 @@ struct Dir3A();
 "#,
     r#"
 /// Rectangle half-size.
-/// # Rounding Behaviour
+/// # Rounding Behavior
 /// If the full size contains odd numbers they will be rounded down to the nearest whole number when calculating the half size.
 /// # Examples
 /// ```
@@ -1024,7 +1477,7 @@ struct Dir3A();
 "#,
     r#"
 /// The center point of the rectangle.
-/// # Rounding Behaviour
+/// # Rounding Behavior
 /// If the (min + max) contains odd numbers they will be rounded down to the nearest whole number when calculating the center.
 /// # Examples
 /// ```
@@ -1154,29 +1607,6 @@ struct Dir3A();
 
 "#,
     r#"
-
-    #[lua(as_trait = "std::cmp::Eq", kind = "Method")]
-    fn assert_receiver_is_total_eq(&self) -> ();
-
-"#,
-    r#"
-
-    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
-    fn clone(&self) -> bevy::math::prelude::IRect;
-
-"#,
-    r#"
-
-    #[lua(
-        as_trait = "std::cmp::PartialEq",
-        kind = "MetaFunction",
-        composite = "eq",
-        metamethod = "Eq",
-    )]
-    fn eq(&self, #[proxy] other: &rects::irect::IRect) -> bool;
-
-"#,
-    r#"
 #[lua(kind="MetaMethod", metamethod="ToString")]
 fn index(&self) -> String {
     format!("{:?}", _self)
@@ -1194,6 +1624,23 @@ struct IRect {
     derive(clone),
     remote = "bevy::math::prelude::Rect",
     functions[r#"
+
+    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
+    fn clone(&self) -> bevy::math::prelude::Rect;
+
+"#,
+    r#"
+
+    #[lua(
+        as_trait = "std::cmp::PartialEq",
+        kind = "MetaFunction",
+        composite = "eq",
+        metamethod = "Eq",
+    )]
+    fn eq(&self, #[proxy] other: &rects::rect::Rect) -> bool;
+
+"#,
+    r#"
 /// Create a new rectangle from two corner points.
 /// The two points do not need to be the minimum and/or maximum corners.
 /// They only need to be two opposite corners.
@@ -1490,23 +1937,6 @@ struct IRect {
 
 "#,
     r#"
-
-    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
-    fn clone(&self) -> bevy::math::prelude::Rect;
-
-"#,
-    r#"
-
-    #[lua(
-        as_trait = "std::cmp::PartialEq",
-        kind = "MetaFunction",
-        composite = "eq",
-        metamethod = "Eq",
-    )]
-    fn eq(&self, #[proxy] other: &rects::rect::Rect) -> bool;
-
-"#,
-    r#"
 #[lua(kind="MetaMethod", metamethod="ToString")]
 fn index(&self) -> String {
     format!("{:?}", _self)
@@ -1524,6 +1954,29 @@ struct Rect {
     derive(clone),
     remote = "bevy::math::prelude::URect",
     functions[r#"
+
+    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
+    fn clone(&self) -> bevy::math::prelude::URect;
+
+"#,
+    r#"
+
+    #[lua(
+        as_trait = "std::cmp::PartialEq",
+        kind = "MetaFunction",
+        composite = "eq",
+        metamethod = "Eq",
+    )]
+    fn eq(&self, #[proxy] other: &rects::urect::URect) -> bool;
+
+"#,
+    r#"
+
+    #[lua(as_trait = "std::cmp::Eq", kind = "Method")]
+    fn assert_receiver_is_total_eq(&self) -> ();
+
+"#,
+    r#"
 /// Create a new rectangle from two corner points.
 /// The two points do not need to be the minimum and/or maximum corners.
 /// They only need to be two opposite corners.
@@ -1562,7 +2015,7 @@ struct Rect {
 "#,
     r#"
 /// Create a new rectangle from its center and size.
-/// # Rounding Behaviour
+/// # Rounding Behavior
 /// If the size contains odd numbers they will be rounded down to the nearest whole number.
 /// # Panics
 /// This method panics if any of the components of the size is negative or if `origin - (size / 2)` results in any negatives.
@@ -1658,7 +2111,7 @@ struct Rect {
 "#,
     r#"
 /// Rectangle half-size.
-/// # Rounding Behaviour
+/// # Rounding Behavior
 /// If the full size contains odd numbers they will be rounded down to the nearest whole number when calculating the half size.
 /// # Examples
 /// ```
@@ -1673,7 +2126,7 @@ struct Rect {
 "#,
     r#"
 /// The center point of the rectangle.
-/// # Rounding Behaviour
+/// # Rounding Behavior
 /// If the (min + max) contains odd numbers they will be rounded down to the nearest whole number when calculating the center.
 /// # Examples
 /// ```
@@ -1803,29 +2256,6 @@ struct Rect {
 
 "#,
     r#"
-
-    #[lua(
-        as_trait = "std::cmp::PartialEq",
-        kind = "MetaFunction",
-        composite = "eq",
-        metamethod = "Eq",
-    )]
-    fn eq(&self, #[proxy] other: &rects::urect::URect) -> bool;
-
-"#,
-    r#"
-
-    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
-    fn clone(&self) -> bevy::math::prelude::URect;
-
-"#,
-    r#"
-
-    #[lua(as_trait = "std::cmp::Eq", kind = "Method")]
-    fn assert_receiver_is_total_eq(&self) -> ();
-
-"#,
-    r#"
 #[lua(kind="MetaMethod", metamethod="ToString")]
 fn index(&self) -> String {
     format!("{:?}", _self)
@@ -1851,6 +2281,12 @@ struct Affine3 {
     derive(clone),
     remote = "bevy::math::bounding::Aabb2d",
     functions[r#"
+
+    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
+    fn clone(&self) -> bevy::math::bounding::Aabb2d;
+
+"#,
+    r#"
 /// Constructs an AABB from its center and half-size.
 
     #[lua(kind = "Function", output(proxy))]
@@ -1883,12 +2319,6 @@ struct Affine3 {
 
 "#,
     r#"
-
-    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
-    fn clone(&self) -> bevy::math::bounding::Aabb2d;
-
-"#,
-    r#"
 #[lua(kind="MetaMethod", metamethod="ToString")]
 fn index(&self) -> String {
     format!("{:?}", _self)
@@ -1906,12 +2336,6 @@ struct Aabb2d {
     derive(clone),
     remote = "bevy::math::bounding::BoundingCircle",
     functions[r#"
-
-    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
-    fn clone(&self) -> bevy::math::bounding::BoundingCircle;
-
-"#,
-    r#"
 /// Constructs a bounding circle from its center and radius.
 
     #[lua(kind = "Function", output(proxy))]
@@ -1950,6 +2374,12 @@ struct Aabb2d {
 
 "#,
     r#"
+
+    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
+    fn clone(&self) -> bevy::math::bounding::BoundingCircle;
+
+"#,
+    r#"
 #[lua(kind="MetaMethod", metamethod="ToString")]
 fn index(&self) -> String {
     format!("{:?}", _self)
@@ -1970,17 +2400,6 @@ struct BoundingCircle {
 
     #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
     fn clone(&self) -> bevy::math::primitives::Circle;
-
-"#,
-    r#"
-
-    #[lua(
-        as_trait = "std::cmp::PartialEq",
-        kind = "MetaFunction",
-        composite = "eq",
-        metamethod = "Eq",
-    )]
-    fn eq(&self, #[proxy] other: &primitives::dim2::Circle) -> bool;
 
 "#,
     r#"
@@ -2011,6 +2430,17 @@ struct BoundingCircle {
 
 "#,
     r#"
+
+    #[lua(
+        as_trait = "std::cmp::PartialEq",
+        kind = "MetaFunction",
+        composite = "eq",
+        metamethod = "Eq",
+    )]
+    fn eq(&self, #[proxy] other: &primitives::dim2::Circle) -> bool;
+
+"#,
+    r#"
 #[lua(kind="MetaMethod", metamethod="ToString")]
 fn index(&self) -> String {
     format!("{:?}", _self)
@@ -2019,6 +2449,75 @@ fn index(&self) -> String {
 )]
 struct Circle {
     radius: f32,
+}
+#[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
+#[proxy(
+    derive(clone),
+    remote = "bevy::math::primitives::Annulus",
+    functions[r#"
+
+    #[lua(
+        as_trait = "std::cmp::PartialEq",
+        kind = "MetaFunction",
+        composite = "eq",
+        metamethod = "Eq",
+    )]
+    fn eq(&self, #[proxy] other: &primitives::dim2::Annulus) -> bool;
+
+"#,
+    r#"
+
+    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
+    fn clone(&self) -> bevy::math::primitives::Annulus;
+
+"#,
+    r#"
+/// Create a new [`Annulus`] from the radii of the inner and outer circle
+
+    #[lua(kind = "Function", output(proxy))]
+    fn new(inner_radius: f32, outer_radius: f32) -> bevy::math::primitives::Annulus;
+
+"#,
+    r#"
+/// Get the diameter of the annulus
+
+    #[lua(kind = "Method")]
+    fn diameter(&self) -> f32;
+
+"#,
+    r#"
+/// Get the thickness of the annulus
+
+    #[lua(kind = "Method")]
+    fn thickness(&self) -> f32;
+
+"#,
+    r#"
+/// Finds the point on the annulus that is closest to the given `point`:
+/// - If the point is outside of the annulus completely, the returned point will be on the outer perimeter.
+/// - If the point is inside of the inner circle (hole) of the annulus, the returned point will be on the inner perimeter.
+/// - Otherwise, the returned point is overlapping the annulus and returned as is.
+
+    #[lua(kind = "Method", output(proxy))]
+    fn closest_point(
+        &self,
+        #[proxy]
+        point: bevy::math::prelude::Vec2,
+    ) -> bevy::math::prelude::Vec2;
+
+"#,
+    r#"
+#[lua(kind="MetaMethod", metamethod="ToString")]
+fn index(&self) -> String {
+    format!("{:?}", _self)
+}
+"#]
+)]
+struct Annulus {
+    #[lua(output(proxy))]
+    inner_circle: bevy::math::primitives::Circle,
+    #[lua(output(proxy))]
+    outer_circle: bevy::math::primitives::Circle,
 }
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
@@ -2189,6 +2688,12 @@ struct Arc2d {
 
 "#,
     r#"
+
+    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
+    fn clone(&self) -> bevy::math::primitives::Capsule2d;
+
+"#,
+    r#"
 /// Create a new `Capsule2d` from a radius and length
 
     #[lua(kind = "Function", output(proxy))]
@@ -2196,9 +2701,10 @@ struct Arc2d {
 
 "#,
     r#"
+/// Get the part connecting the semicircular ends of the capsule as a [`Rectangle`]
 
-    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
-    fn clone(&self) -> bevy::math::primitives::Capsule2d;
+    #[lua(kind = "Method", output(proxy))]
+    fn to_inner_rectangle(&self) -> bevy::math::primitives::Rectangle;
 
 "#,
     r#"
@@ -2217,23 +2723,6 @@ struct Capsule2d {
     derive(clone),
     remote = "bevy::math::primitives::CircularSector",
     functions[r#"
-
-    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
-    fn clone(&self) -> bevy::math::primitives::CircularSector;
-
-"#,
-    r#"
-
-    #[lua(
-        as_trait = "std::cmp::PartialEq",
-        kind = "MetaFunction",
-        composite = "eq",
-        metamethod = "Eq",
-    )]
-    fn eq(&self, #[proxy] other: &primitives::dim2::CircularSector) -> bool;
-
-"#,
-    r#"
 /// Create a new [`CircularSector`] from a `radius` and an `angle`
 
     #[lua(kind = "Function", output(proxy))]
@@ -2331,10 +2820,20 @@ struct Capsule2d {
 
 "#,
     r#"
-/// Returns the area of this sector
 
-    #[lua(kind = "Method")]
-    fn area(&self) -> f32;
+    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
+    fn clone(&self) -> bevy::math::primitives::CircularSector;
+
+"#,
+    r#"
+
+    #[lua(
+        as_trait = "std::cmp::PartialEq",
+        kind = "MetaFunction",
+        composite = "eq",
+        metamethod = "Eq",
+    )]
+    fn eq(&self, #[proxy] other: &primitives::dim2::CircularSector) -> bool;
 
 "#,
     r#"
@@ -2353,23 +2852,6 @@ struct CircularSector {
     derive(clone),
     remote = "bevy::math::primitives::CircularSegment",
     functions[r#"
-
-    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
-    fn clone(&self) -> bevy::math::primitives::CircularSegment;
-
-"#,
-    r#"
-
-    #[lua(
-        as_trait = "std::cmp::PartialEq",
-        kind = "MetaFunction",
-        composite = "eq",
-        metamethod = "Eq",
-    )]
-    fn eq(&self, #[proxy] other: &primitives::dim2::CircularSegment) -> bool;
-
-"#,
-    r#"
 /// Create a new [`CircularSegment`] from a `radius`, and an `angle`
 
     #[lua(kind = "Function", output(proxy))]
@@ -2465,10 +2947,20 @@ struct CircularSector {
 
 "#,
     r#"
-/// Returns the area of this segment
 
-    #[lua(kind = "Method")]
-    fn area(&self) -> f32;
+    #[lua(
+        as_trait = "std::cmp::PartialEq",
+        kind = "MetaFunction",
+        composite = "eq",
+        metamethod = "Eq",
+    )]
+    fn eq(&self, #[proxy] other: &primitives::dim2::CircularSegment) -> bool;
+
+"#,
+    r#"
+
+    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
+    fn clone(&self) -> bevy::math::primitives::CircularSegment;
 
 "#,
     r#"
@@ -2487,17 +2979,6 @@ struct CircularSegment {
     derive(clone),
     remote = "bevy::math::primitives::Ellipse",
     functions[r#"
-
-    #[lua(
-        as_trait = "std::cmp::PartialEq",
-        kind = "MetaFunction",
-        composite = "eq",
-        metamethod = "Eq",
-    )]
-    fn eq(&self, #[proxy] other: &primitives::dim2::Ellipse) -> bool;
-
-"#,
-    r#"
 /// Create a new `Ellipse` from half of its width and height.
 /// This corresponds to the two perpendicular radii defining the ellipse.
 
@@ -2554,6 +3035,17 @@ struct CircularSegment {
 
 "#,
     r#"
+
+    #[lua(
+        as_trait = "std::cmp::PartialEq",
+        kind = "MetaFunction",
+        composite = "eq",
+        metamethod = "Eq",
+    )]
+    fn eq(&self, #[proxy] other: &primitives::dim2::Ellipse) -> bool;
+
+"#,
+    r#"
 #[lua(kind="MetaMethod", metamethod="ToString")]
 fn index(&self) -> String {
     format!("{:?}", _self)
@@ -2570,12 +3062,6 @@ struct Ellipse {
     remote = "bevy::math::primitives::Line2d",
     functions[r#"
 
-    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
-    fn clone(&self) -> bevy::math::primitives::Line2d;
-
-"#,
-    r#"
-
     #[lua(
         as_trait = "std::cmp::PartialEq",
         kind = "MetaFunction",
@@ -2583,6 +3069,12 @@ struct Ellipse {
         metamethod = "Eq",
     )]
     fn eq(&self, #[proxy] other: &primitives::dim2::Line2d) -> bool;
+
+"#,
+    r#"
+
+    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
+    fn clone(&self) -> bevy::math::primitives::Line2d;
 
 "#,
     r#"
@@ -2601,6 +3093,17 @@ struct Line2d {
     derive(clone),
     remote = "bevy::math::primitives::Plane2d",
     functions[r#"
+
+    #[lua(
+        as_trait = "std::cmp::PartialEq",
+        kind = "MetaFunction",
+        composite = "eq",
+        metamethod = "Eq",
+    )]
+    fn eq(&self, #[proxy] other: &primitives::dim2::Plane2d) -> bool;
+
+"#,
+    r#"
 /// Create a new `Plane2d` from a normal
 /// # Panics
 /// Panics if the given `normal` is zero (or very close to zero), or non-finite.
@@ -2610,17 +3113,6 @@ struct Line2d {
         #[proxy]
         normal: bevy::math::prelude::Vec2,
     ) -> bevy::math::primitives::Plane2d;
-
-"#,
-    r#"
-
-    #[lua(
-        as_trait = "std::cmp::PartialEq",
-        kind = "MetaFunction",
-        composite = "eq",
-        metamethod = "Eq",
-    )]
-    fn eq(&self, #[proxy] other: &primitives::dim2::Plane2d) -> bool;
 
 "#,
     r#"
@@ -2645,6 +3137,17 @@ struct Plane2d {
     derive(clone),
     remote = "bevy::math::primitives::Rectangle",
     functions[r#"
+
+    #[lua(
+        as_trait = "std::cmp::PartialEq",
+        kind = "MetaFunction",
+        composite = "eq",
+        metamethod = "Eq",
+    )]
+    fn eq(&self, #[proxy] other: &primitives::dim2::Rectangle) -> bool;
+
+"#,
+    r#"
 /// Create a new `Rectangle` from a full width and height
 
     #[lua(kind = "Function", output(proxy))]
@@ -2703,17 +3206,6 @@ struct Plane2d {
 "#,
     r#"
 
-    #[lua(
-        as_trait = "std::cmp::PartialEq",
-        kind = "MetaFunction",
-        composite = "eq",
-        metamethod = "Eq",
-    )]
-    fn eq(&self, #[proxy] other: &primitives::dim2::Rectangle) -> bool;
-
-"#,
-    r#"
-
     #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
     fn clone(&self) -> bevy::math::primitives::Rectangle;
 
@@ -2757,7 +3249,7 @@ struct Rectangle {
 /// Panics if `circumradius` is negative
 
     #[lua(kind = "Function", output(proxy))]
-    fn new(circumradius: f32, sides: usize) -> bevy::math::primitives::RegularPolygon;
+    fn new(circumradius: f32, sides: u32) -> bevy::math::primitives::RegularPolygon;
 
 "#,
     r#"
@@ -2830,30 +3322,13 @@ fn index(&self) -> String {
 struct RegularPolygon {
     #[lua(output(proxy))]
     circumcircle: bevy::math::primitives::Circle,
-    sides: usize,
+    sides: u32,
 }
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
     derive(clone),
     remote = "bevy::math::primitives::Rhombus",
     functions[r#"
-
-    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
-    fn clone(&self) -> bevy::math::primitives::Rhombus;
-
-"#,
-    r#"
-
-    #[lua(
-        as_trait = "std::cmp::PartialEq",
-        kind = "MetaFunction",
-        composite = "eq",
-        metamethod = "Eq",
-    )]
-    fn eq(&self, #[proxy] other: &primitives::dim2::Rhombus) -> bool;
-
-"#,
-    r#"
 /// Create a new `Rhombus` from a vertical and horizontal diagonal sizes.
 
     #[lua(kind = "Function", output(proxy))]
@@ -2914,6 +3389,23 @@ struct RegularPolygon {
 
 "#,
     r#"
+
+    #[lua(
+        as_trait = "std::cmp::PartialEq",
+        kind = "MetaFunction",
+        composite = "eq",
+        metamethod = "Eq",
+    )]
+    fn eq(&self, #[proxy] other: &primitives::dim2::Rhombus) -> bool;
+
+"#,
+    r#"
+
+    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
+    fn clone(&self) -> bevy::math::primitives::Rhombus;
+
+"#,
+    r#"
 #[lua(kind="MetaMethod", metamethod="ToString")]
 fn index(&self) -> String {
     format!("{:?}", _self)
@@ -2929,6 +3421,23 @@ struct Rhombus {
     derive(clone),
     remote = "bevy::math::primitives::Segment2d",
     functions[r#"
+
+    #[lua(
+        as_trait = "std::cmp::PartialEq",
+        kind = "MetaFunction",
+        composite = "eq",
+        metamethod = "Eq",
+    )]
+    fn eq(&self, #[proxy] other: &primitives::dim2::Segment2d) -> bool;
+
+"#,
+    r#"
+
+    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
+    fn clone(&self) -> bevy::math::primitives::Segment2d;
+
+"#,
+    r#"
 /// Create a new `Segment2d` from a direction and full length of the segment
 
     #[lua(kind = "Function", output(proxy))]
@@ -2954,23 +3463,6 @@ struct Rhombus {
 
 "#,
     r#"
-
-    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
-    fn clone(&self) -> bevy::math::primitives::Segment2d;
-
-"#,
-    r#"
-
-    #[lua(
-        as_trait = "std::cmp::PartialEq",
-        kind = "MetaFunction",
-        composite = "eq",
-        metamethod = "Eq",
-    )]
-    fn eq(&self, #[proxy] other: &primitives::dim2::Segment2d) -> bool;
-
-"#,
-    r#"
 #[lua(kind="MetaMethod", metamethod="ToString")]
 fn index(&self) -> String {
     format!("{:?}", _self)
@@ -2987,6 +3479,17 @@ struct Segment2d {
     derive(clone),
     remote = "bevy::math::primitives::Triangle2d",
     functions[r#"
+
+    #[lua(
+        as_trait = "std::cmp::PartialEq",
+        kind = "MetaFunction",
+        composite = "eq",
+        metamethod = "Eq",
+    )]
+    fn eq(&self, #[proxy] other: &primitives::dim2::Triangle2d) -> bool;
+
+"#,
+    r#"
 
     #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
     fn clone(&self) -> bevy::math::primitives::Triangle2d;
@@ -3045,17 +3548,6 @@ struct Segment2d {
 
 "#,
     r#"
-
-    #[lua(
-        as_trait = "std::cmp::PartialEq",
-        kind = "MetaFunction",
-        composite = "eq",
-        metamethod = "Eq",
-    )]
-    fn eq(&self, #[proxy] other: &primitives::dim2::Triangle2d) -> bool;
-
-"#,
-    r#"
 #[lua(kind="MetaMethod", metamethod="ToString")]
 fn index(&self) -> String {
     format!("{:?}", _self)
@@ -3100,6 +3592,12 @@ struct Aabb3d {
     derive(clone),
     remote = "bevy::math::bounding::BoundingSphere",
     functions[r#"
+
+    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
+    fn clone(&self) -> bevy::math::bounding::BoundingSphere;
+
+"#,
+    r#"
 /// Get the radius of the bounding sphere
 
     #[lua(kind = "Method")]
@@ -3111,12 +3609,6 @@ struct Aabb3d {
 
     #[lua(kind = "Method", output(proxy))]
     fn aabb_3d(&self) -> bevy::math::bounding::Aabb3d;
-
-"#,
-    r#"
-
-    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
-    fn clone(&self) -> bevy::math::bounding::BoundingSphere;
 
 "#,
     r#"
@@ -3137,6 +3629,17 @@ struct BoundingSphere {
     derive(clone),
     remote = "bevy::math::primitives::Sphere",
     functions[r#"
+
+    #[lua(
+        as_trait = "std::cmp::PartialEq",
+        kind = "MetaFunction",
+        composite = "eq",
+        metamethod = "Eq",
+    )]
+    fn eq(&self, #[proxy] other: &primitives::dim3::Sphere) -> bool;
+
+"#,
+    r#"
 /// Create a new [`Sphere`] from a `radius`
 
     #[lua(kind = "Function", output(proxy))]
@@ -3165,17 +3668,6 @@ struct BoundingSphere {
 "#,
     r#"
 
-    #[lua(
-        as_trait = "std::cmp::PartialEq",
-        kind = "MetaFunction",
-        composite = "eq",
-        metamethod = "Eq",
-    )]
-    fn eq(&self, #[proxy] other: &primitives::dim3::Sphere) -> bool;
-
-"#,
-    r#"
-
     #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
     fn clone(&self) -> bevy::math::primitives::Sphere;
 
@@ -3195,6 +3687,12 @@ struct Sphere {
     derive(clone),
     remote = "bevy::math::primitives::Cuboid",
     functions[r#"
+
+    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
+    fn clone(&self) -> bevy::math::primitives::Cuboid;
+
+"#,
+    r#"
 /// Create a new `Cuboid` from a full x, y, and z length
 
     #[lua(kind = "Function", output(proxy))]
@@ -3267,12 +3765,6 @@ struct Sphere {
 
 "#,
     r#"
-
-    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
-    fn clone(&self) -> bevy::math::primitives::Cuboid;
-
-"#,
-    r#"
 #[lua(kind="MetaMethod", metamethod="ToString")]
 fn index(&self) -> String {
     format!("{:?}", _self)
@@ -3296,12 +3788,6 @@ struct Cuboid {
         metamethod = "Eq",
     )]
     fn eq(&self, #[proxy] other: &primitives::dim3::Cylinder) -> bool;
-
-"#,
-    r#"
-
-    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
-    fn clone(&self) -> bevy::math::primitives::Cylinder;
 
 "#,
     r#"
@@ -3334,6 +3820,12 @@ struct Cuboid {
 
 "#,
     r#"
+
+    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
+    fn clone(&self) -> bevy::math::primitives::Cylinder;
+
+"#,
+    r#"
 #[lua(kind="MetaMethod", metamethod="ToString")]
 fn index(&self) -> String {
     format!("{:?}", _self)
@@ -3349,17 +3841,6 @@ struct Cylinder {
     derive(clone),
     remote = "bevy::math::primitives::Capsule3d",
     functions[r#"
-
-    #[lua(
-        as_trait = "std::cmp::PartialEq",
-        kind = "MetaFunction",
-        composite = "eq",
-        metamethod = "Eq",
-    )]
-    fn eq(&self, #[proxy] other: &primitives::dim3::Capsule3d) -> bool;
-
-"#,
-    r#"
 /// Create a new `Capsule3d` from a radius and length
 
     #[lua(kind = "Function", output(proxy))]
@@ -3378,6 +3859,17 @@ struct Cylinder {
 
     #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
     fn clone(&self) -> bevy::math::primitives::Capsule3d;
+
+"#,
+    r#"
+
+    #[lua(
+        as_trait = "std::cmp::PartialEq",
+        kind = "MetaFunction",
+        composite = "eq",
+        metamethod = "Eq",
+    )]
+    fn eq(&self, #[proxy] other: &primitives::dim3::Capsule3d) -> bool;
 
 "#,
     r#"
@@ -3407,9 +3899,10 @@ struct Capsule3d {
 
 "#,
     r#"
+/// Create a new [`Cone`] from a radius and height.
 
-    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
-    fn clone(&self) -> bevy::math::primitives::Cone;
+    #[lua(kind = "Function", output(proxy))]
+    fn new(radius: f32, height: f32) -> bevy::math::primitives::Cone;
 
 "#,
     r#"
@@ -3440,6 +3933,12 @@ struct Capsule3d {
 
     #[lua(kind = "Method")]
     fn base_area(&self) -> f32;
+
+"#,
+    r#"
+
+    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
+    fn clone(&self) -> bevy::math::primitives::Cone;
 
 "#,
     r#"
@@ -3491,6 +3990,62 @@ struct ConicalFrustum {
     derive(clone),
     remote = "bevy::math::primitives::InfinitePlane3d",
     functions[r#"
+/// Computes an [`Isometry3d`] which transforms points from the plane in 3D space with the given
+/// `origin` to the XY-plane.
+/// ## Guarantees
+/// * the transformation is a [congruence] meaning it will preserve all distances and angles of
+///   the transformed geometry
+/// * uses the least rotation possible to transform the geometry
+/// * if two geometries are transformed with the same isometry, then the relations between
+///   them, like distances, are also preserved
+/// * compared to projections, the transformation is lossless (up to floating point errors)
+///   reversible
+/// ## Non-Guarantees
+/// * the rotation used is generally not unique
+/// * the orientation of the transformed geometry in the XY plane might be arbitrary, to
+///   enforce some kind of alignment the user has to use an extra transformation ontop of this
+///   one
+/// See [`isometries_xy`] for example usescases.
+/// [congruence]: https://en.wikipedia.org/wiki/Congruence_(geometry)
+/// [`isometries_xy`]: `InfinitePlane3d::isometries_xy`
+
+    #[lua(kind = "Method", output(proxy))]
+    fn isometry_into_xy(
+        &self,
+        #[proxy]
+        origin: bevy::math::prelude::Vec3,
+    ) -> bevy::math::Isometry3d;
+
+"#,
+    r#"
+/// Computes an [`Isometry3d`] which transforms points from the XY-plane to this plane with the
+/// given `origin`.
+/// ## Guarantees
+/// * the transformation is a [congruence] meaning it will preserve all distances and angles of
+///   the transformed geometry
+/// * uses the least rotation possible to transform the geometry
+/// * if two geometries are transformed with the same isometry, then the relations between
+///   them, like distances, are also preserved
+/// * compared to projections, the transformation is lossless (up to floating point errors)
+///   reversible
+/// ## Non-Guarantees
+/// * the rotation used is generally not unique
+/// * the orientation of the transformed geometry in the XY plane might be arbitrary, to
+///   enforce some kind of alignment the user has to use an extra transformation ontop of this
+///   one
+/// See [`isometries_xy`] for example usescases.
+/// [congruence]: https://en.wikipedia.org/wiki/Congruence_(geometry)
+/// [`isometries_xy`]: `InfinitePlane3d::isometries_xy`
+
+    #[lua(kind = "Method", output(proxy))]
+    fn isometry_from_xy(
+        &self,
+        #[proxy]
+        origin: bevy::math::prelude::Vec3,
+    ) -> bevy::math::Isometry3d;
+
+"#,
+    r#"
 
     #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
     fn clone(&self) -> bevy::math::primitives::InfinitePlane3d;
@@ -3555,6 +4110,12 @@ struct Line3d {
     derive(clone),
     remote = "bevy::math::primitives::Segment3d",
     functions[r#"
+
+    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
+    fn clone(&self) -> bevy::math::primitives::Segment3d;
+
+"#,
+    r#"
 /// Create a new `Segment3d` from a direction and full length of the segment
 
     #[lua(kind = "Function", output(proxy))]
@@ -3577,12 +4138,6 @@ struct Line3d {
 
     #[lua(kind = "Method", output(proxy))]
     fn point2(&self) -> bevy::math::prelude::Vec3;
-
-"#,
-    r#"
-
-    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
-    fn clone(&self) -> bevy::math::primitives::Segment3d;
 
 "#,
     r#"
@@ -3641,12 +4196,6 @@ struct Segment3d {
 "#,
     r#"
 
-    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
-    fn clone(&self) -> bevy::math::primitives::Torus;
-
-"#,
-    r#"
-
     #[lua(
         as_trait = "std::cmp::PartialEq",
         kind = "MetaFunction",
@@ -3654,6 +4203,12 @@ struct Segment3d {
         metamethod = "Eq",
     )]
     fn eq(&self, #[proxy] other: &primitives::dim3::Torus) -> bool;
+
+"#,
+    r#"
+
+    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
+    fn clone(&self) -> bevy::math::primitives::Torus;
 
 "#,
     r#"
@@ -3672,23 +4227,6 @@ struct Torus {
     derive(clone),
     remote = "bevy::math::primitives::Triangle3d",
     functions[r#"
-
-    #[lua(
-        as_trait = "std::cmp::PartialEq",
-        kind = "MetaFunction",
-        composite = "eq",
-        metamethod = "Eq",
-    )]
-    fn eq(&self, #[proxy] other: &primitives::dim3::Triangle3d) -> bool;
-
-"#,
-    r#"
-
-    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
-    fn clone(&self) -> bevy::math::primitives::Triangle3d;
-
-"#,
-    r#"
 /// Create a new [`Triangle3d`] from points `a`, `b`, and `c`.
 
     #[lua(kind = "Function", output(proxy))]
@@ -3753,6 +4291,23 @@ struct Torus {
 
     #[lua(kind = "Method", output(proxy))]
     fn circumcenter(&self) -> bevy::math::prelude::Vec3;
+
+"#,
+    r#"
+
+    #[lua(
+        as_trait = "std::cmp::PartialEq",
+        kind = "MetaFunction",
+        composite = "eq",
+        metamethod = "Eq",
+    )]
+    fn eq(&self, #[proxy] other: &primitives::dim3::Triangle3d) -> bool;
+
+"#,
+    r#"
+
+    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
+    fn clone(&self) -> bevy::math::primitives::Triangle3d;
 
 "#,
     r#"
@@ -3845,12 +4400,6 @@ struct RayCast2d {
     derive(clone),
     remote = "bevy::math::bounding::AabbCast2d",
     functions[r#"
-
-    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
-    fn clone(&self) -> bevy::math::bounding::AabbCast2d;
-
-"#,
-    r#"
 /// Construct an [`AabbCast2d`] from an [`Aabb2d`], origin, [`Dir2`], and max distance.
 
     #[lua(kind = "Function", output(proxy))]
@@ -3887,6 +4436,12 @@ struct RayCast2d {
         #[proxy]
         aabb: bevy::math::bounding::Aabb2d,
     ) -> std::option::Option<f32>;
+
+"#,
+    r#"
+
+    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
+    fn clone(&self) -> bevy::math::bounding::AabbCast2d;
 
 "#,
     r#"
@@ -3969,6 +4524,12 @@ struct BoundingCircleCast {
     derive(clone),
     remote = "bevy::math::bounding::RayCast3d",
     functions[r#"
+
+    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
+    fn clone(&self) -> bevy::math::bounding::RayCast3d;
+
+"#,
+    r#"
 /// Construct a [`RayCast3d`] from a [`Ray3d`] and max distance.
 
     #[lua(kind = "Function", output(proxy))]
@@ -4006,12 +4567,6 @@ struct BoundingCircleCast {
         #[proxy]
         sphere: &bounding::bounded3d::BoundingSphere,
     ) -> std::option::Option<f32>;
-
-"#,
-    r#"
-
-    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
-    fn clone(&self) -> bevy::math::bounding::RayCast3d;
 
 "#,
     r#"
@@ -4125,6 +4680,104 @@ struct BoundingSphereCast {
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
     derive(clone),
+    remote = "bevy::math::curve::interval::Interval",
+    functions[r#"
+/// Get the start of this interval.
+
+    #[lua(kind = "Method")]
+    fn start(self) -> f32;
+
+"#,
+    r#"
+/// Get the end of this interval.
+
+    #[lua(kind = "Method")]
+    fn end(self) -> f32;
+
+"#,
+    r#"
+/// Get the length of this interval. Note that the result may be infinite (`f32::INFINITY`).
+
+    #[lua(kind = "Method")]
+    fn length(self) -> f32;
+
+"#,
+    r#"
+/// Returns `true` if this interval is bounded — that is, if both its start and end are finite.
+/// Equivalently, an interval is bounded if its length is finite.
+
+    #[lua(kind = "Method")]
+    fn is_bounded(self) -> bool;
+
+"#,
+    r#"
+/// Returns `true` if this interval has a finite start.
+
+    #[lua(kind = "Method")]
+    fn has_finite_start(self) -> bool;
+
+"#,
+    r#"
+/// Returns `true` if this interval has a finite end.
+
+    #[lua(kind = "Method")]
+    fn has_finite_end(self) -> bool;
+
+"#,
+    r#"
+/// Returns `true` if `item` is contained in this interval.
+
+    #[lua(kind = "Method")]
+    fn contains(self, item: f32) -> bool;
+
+"#,
+    r#"
+/// Returns `true` if the other interval is contained in this interval.
+/// This is non-strict: each interval will contain itself.
+
+    #[lua(kind = "Method")]
+    fn contains_interval(
+        self,
+        #[proxy]
+        other: bevy::math::curve::interval::Interval,
+    ) -> bool;
+
+"#,
+    r#"
+/// Clamp the given `value` to lie within this interval.
+
+    #[lua(kind = "Method")]
+    fn clamp(self, value: f32) -> f32;
+
+"#,
+    r#"
+
+    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
+    fn clone(&self) -> bevy::math::curve::interval::Interval;
+
+"#,
+    r#"
+
+    #[lua(
+        as_trait = "std::cmp::PartialEq",
+        kind = "MetaFunction",
+        composite = "eq",
+        metamethod = "Eq",
+    )]
+    fn eq(&self, #[proxy] other: &curve::interval::Interval) -> bool;
+
+"#,
+    r#"
+#[lua(kind="MetaMethod", metamethod="ToString")]
+fn index(&self) -> String {
+    format!("{:?}", _self)
+}
+"#]
+)]
+struct Interval {}
+#[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
+#[proxy(
+    derive(clone),
     remote = "bevy::math::FloatOrd",
     functions[r#"
 
@@ -4153,17 +4806,6 @@ struct BoundingSphereCast {
     r#"
 
     #[lua(
-        as_trait = "std::cmp::PartialEq",
-        kind = "MetaFunction",
-        composite = "eq",
-        metamethod = "Eq",
-    )]
-    fn eq(&self, #[proxy] other: &float_ord::FloatOrd) -> bool;
-
-"#,
-    r#"
-
-    #[lua(
         as_trait = "std::ops::Neg",
         kind = "MetaFunction",
         output(proxy),
@@ -4171,6 +4813,17 @@ struct BoundingSphereCast {
         metamethod = "Unm",
     )]
     fn neg(self) -> bevy::math::FloatOrd;
+
+"#,
+    r#"
+
+    #[lua(
+        as_trait = "std::cmp::PartialEq",
+        kind = "MetaFunction",
+        composite = "eq",
+        metamethod = "Eq",
+    )]
+    fn eq(&self, #[proxy] other: &float_ord::FloatOrd) -> bool;
 
 "#,
     r#"
@@ -4190,88 +4843,8 @@ struct FloatOrd(f32);
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
     derive(clone),
-    remote = "bevy::math::primitives::Annulus",
-    functions[r#"
-/// Create a new [`Annulus`] from the radii of the inner and outer circle
-
-    #[lua(kind = "Function", output(proxy))]
-    fn new(inner_radius: f32, outer_radius: f32) -> bevy::math::primitives::Annulus;
-
-"#,
-    r#"
-/// Get the diameter of the annulus
-
-    #[lua(kind = "Method")]
-    fn diameter(&self) -> f32;
-
-"#,
-    r#"
-/// Get the thickness of the annulus
-
-    #[lua(kind = "Method")]
-    fn thickness(&self) -> f32;
-
-"#,
-    r#"
-/// Finds the point on the annulus that is closest to the given `point`:
-/// - If the point is outside of the annulus completely, the returned point will be on the outer perimeter.
-/// - If the point is inside of the inner circle (hole) of the annulus, the returned point will be on the inner perimeter.
-/// - Otherwise, the returned point is overlapping the annulus and returned as is.
-
-    #[lua(kind = "Method", output(proxy))]
-    fn closest_point(
-        &self,
-        #[proxy]
-        point: bevy::math::prelude::Vec2,
-    ) -> bevy::math::prelude::Vec2;
-
-"#,
-    r#"
-
-    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
-    fn clone(&self) -> bevy::math::primitives::Annulus;
-
-"#,
-    r#"
-
-    #[lua(
-        as_trait = "std::cmp::PartialEq",
-        kind = "MetaFunction",
-        composite = "eq",
-        metamethod = "Eq",
-    )]
-    fn eq(&self, #[proxy] other: &primitives::dim2::Annulus) -> bool;
-
-"#,
-    r#"
-#[lua(kind="MetaMethod", metamethod="ToString")]
-fn index(&self) -> String {
-    format!("{:?}", _self)
-}
-"#]
-)]
-struct Annulus {
-    #[lua(output(proxy))]
-    inner_circle: bevy::math::primitives::Circle,
-    #[lua(output(proxy))]
-    outer_circle: bevy::math::primitives::Circle,
-}
-#[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
-#[proxy(
-    derive(clone),
     remote = "bevy::math::primitives::Plane3d",
     functions[r#"
-
-    #[lua(
-        as_trait = "std::cmp::PartialEq",
-        kind = "MetaFunction",
-        composite = "eq",
-        metamethod = "Eq",
-    )]
-    fn eq(&self, #[proxy] other: &primitives::dim3::Plane3d) -> bool;
-
-"#,
-    r#"
 /// Create a new `Plane3d` from a normal and a half size
 /// # Panics
 /// Panics if the given `normal` is zero (or very close to zero), or non-finite.
@@ -4292,6 +4865,17 @@ struct Annulus {
 
 "#,
     r#"
+
+    #[lua(
+        as_trait = "std::cmp::PartialEq",
+        kind = "MetaFunction",
+        composite = "eq",
+        metamethod = "Eq",
+    )]
+    fn eq(&self, #[proxy] other: &primitives::dim3::Plane3d) -> bool;
+
+"#,
+    r#"
 #[lua(kind="MetaMethod", metamethod="ToString")]
 fn index(&self) -> String {
     format!("{:?}", _self)
@@ -4309,17 +4893,6 @@ struct Plane3d {
     derive(clone),
     remote = "bevy::math::primitives::Tetrahedron",
     functions[r#"
-
-    #[lua(
-        as_trait = "std::cmp::PartialEq",
-        kind = "MetaFunction",
-        composite = "eq",
-        metamethod = "Eq",
-    )]
-    fn eq(&self, #[proxy] other: &primitives::dim3::Tetrahedron) -> bool;
-
-"#,
-    r#"
 
     #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
     fn clone(&self) -> bevy::math::primitives::Tetrahedron;
@@ -4361,6 +4934,17 @@ struct Plane3d {
 
 "#,
     r#"
+
+    #[lua(
+        as_trait = "std::cmp::PartialEq",
+        kind = "MetaFunction",
+        composite = "eq",
+        metamethod = "Eq",
+    )]
+    fn eq(&self, #[proxy] other: &primitives::dim3::Tetrahedron) -> bool;
+
+"#,
+    r#"
 #[lua(kind="MetaMethod", metamethod="ToString")]
 fn index(&self) -> String {
     format!("{:?}", _self)
@@ -4370,6 +4954,35 @@ fn index(&self) -> String {
 struct Tetrahedron {
     vertices: ReflectedValue,
 }
+#[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
+#[proxy(
+    derive(clone),
+    remote = "bevy::math::curve::easing::EaseFunction",
+    functions[r#"
+
+    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
+    fn clone(&self) -> bevy::math::curve::easing::EaseFunction;
+
+"#,
+    r#"
+
+    #[lua(
+        as_trait = "std::cmp::PartialEq",
+        kind = "MetaFunction",
+        composite = "eq",
+        metamethod = "Eq",
+    )]
+    fn eq(&self, #[proxy] other: &curve::easing::EaseFunction) -> bool;
+
+"#,
+    r#"
+#[lua(kind="MetaMethod", metamethod="ToString")]
+fn index(&self) -> String {
+    format!("{:?}", _self)
+}
+"#]
+)]
+struct EaseFunction {}
 #[derive(Default)]
 pub(crate) struct Globals;
 impl bevy_mod_scripting_lua::tealr::mlu::ExportInstances for Globals {
@@ -4379,8 +4992,13 @@ impl bevy_mod_scripting_lua::tealr::mlu::ExportInstances for Globals {
     >(self, instances: &mut T) -> bevy_mod_scripting_lua::tealr::mlu::mlua::Result<()> {
         instances
             .add_instance(
-                "AspectRatio",
-                bevy_mod_scripting_lua::tealr::mlu::UserDataProxy::<LuaAspectRatio>::new,
+                "Isometry2d",
+                bevy_mod_scripting_lua::tealr::mlu::UserDataProxy::<LuaIsometry2d>::new,
+            )?;
+        instances
+            .add_instance(
+                "Isometry3d",
+                bevy_mod_scripting_lua::tealr::mlu::UserDataProxy::<LuaIsometry3d>::new,
             )?;
         instances
             .add_instance(
@@ -4443,6 +5061,11 @@ impl bevy_mod_scripting_lua::tealr::mlu::ExportInstances for Globals {
             .add_instance(
                 "Circle",
                 bevy_mod_scripting_lua::tealr::mlu::UserDataProxy::<LuaCircle>::new,
+            )?;
+        instances
+            .add_instance(
+                "Annulus",
+                bevy_mod_scripting_lua::tealr::mlu::UserDataProxy::<LuaAnnulus>::new,
             )?;
         instances
             .add_instance(
@@ -4527,6 +5150,11 @@ impl bevy_mod_scripting_lua::tealr::mlu::ExportInstances for Globals {
             )?;
         instances
             .add_instance(
+                "Cone",
+                bevy_mod_scripting_lua::tealr::mlu::UserDataProxy::<LuaCone>::new,
+            )?;
+        instances
+            .add_instance(
                 "Segment3d",
                 bevy_mod_scripting_lua::tealr::mlu::UserDataProxy::<LuaSegment3d>::new,
             )?;
@@ -4576,11 +5204,6 @@ impl bevy_mod_scripting_lua::tealr::mlu::ExportInstances for Globals {
             )?;
         instances
             .add_instance(
-                "Annulus",
-                bevy_mod_scripting_lua::tealr::mlu::UserDataProxy::<LuaAnnulus>::new,
-            )?;
-        instances
-            .add_instance(
                 "Plane3d",
                 bevy_mod_scripting_lua::tealr::mlu::UserDataProxy::<LuaPlane3d>::new,
             )?;
@@ -4614,12 +5237,19 @@ impl bevy_mod_scripting_core::hosts::APIProvider for BevyMathAPIProvider {
                 |tw| {
                     tw.document_global_instance::<Globals>()
                         .expect("Something went wrong documenting globals")
+                        .process_type::<LuaAspectRatio>()
                         .process_type::<LuaCompassOctant>()
                         .process_type::<LuaCompassQuadrant>()
-                        .process_type::<LuaAspectRatio>()
+                        .process_type::<LuaIsometry2d>()
                         .process_type::<
                             bevy_mod_scripting_lua::tealr::mlu::UserDataProxy<
-                                LuaAspectRatio,
+                                LuaIsometry2d,
+                            >,
+                        >()
+                        .process_type::<LuaIsometry3d>()
+                        .process_type::<
+                            bevy_mod_scripting_lua::tealr::mlu::UserDataProxy<
+                                LuaIsometry3d,
                             >,
                         >()
                         .process_type::<LuaRay2d>()
@@ -4672,6 +5302,10 @@ impl bevy_mod_scripting_core::hosts::APIProvider for BevyMathAPIProvider {
                         .process_type::<LuaCircle>()
                         .process_type::<
                             bevy_mod_scripting_lua::tealr::mlu::UserDataProxy<LuaCircle>,
+                        >()
+                        .process_type::<LuaAnnulus>()
+                        .process_type::<
+                            bevy_mod_scripting_lua::tealr::mlu::UserDataProxy<LuaAnnulus>,
                         >()
                         .process_type::<LuaArc2d>()
                         .process_type::<
@@ -4755,6 +5389,9 @@ impl bevy_mod_scripting_core::hosts::APIProvider for BevyMathAPIProvider {
                             >,
                         >()
                         .process_type::<LuaCone>()
+                        .process_type::<
+                            bevy_mod_scripting_lua::tealr::mlu::UserDataProxy<LuaCone>,
+                        >()
                         .process_type::<LuaConicalFrustum>()
                         .process_type::<LuaInfinitePlane3d>()
                         .process_type::<LuaLine3d>()
@@ -4810,11 +5447,8 @@ impl bevy_mod_scripting_core::hosts::APIProvider for BevyMathAPIProvider {
                                 LuaBoundingSphereCast,
                             >,
                         >()
+                        .process_type::<LuaInterval>()
                         .process_type::<LuaFloatOrd>()
-                        .process_type::<LuaAnnulus>()
-                        .process_type::<
-                            bevy_mod_scripting_lua::tealr::mlu::UserDataProxy<LuaAnnulus>,
-                        >()
                         .process_type::<LuaPlane3d>()
                         .process_type::<
                             bevy_mod_scripting_lua::tealr::mlu::UserDataProxy<LuaPlane3d>,
@@ -4825,6 +5459,7 @@ impl bevy_mod_scripting_core::hosts::APIProvider for BevyMathAPIProvider {
                                 LuaTetrahedron,
                             >,
                         >()
+                        .process_type::<LuaEaseFunction>()
                 },
             ),
         )
@@ -4845,9 +5480,11 @@ impl bevy_mod_scripting_core::hosts::APIProvider for BevyMathAPIProvider {
         Ok(())
     }
     fn register_with_app(&self, app: &mut bevy::app::App) {
+        app.register_foreign_lua_type::<bevy::math::AspectRatio>();
         app.register_foreign_lua_type::<bevy::math::CompassOctant>();
         app.register_foreign_lua_type::<bevy::math::CompassQuadrant>();
-        app.register_foreign_lua_type::<bevy::math::AspectRatio>();
+        app.register_foreign_lua_type::<bevy::math::Isometry2d>();
+        app.register_foreign_lua_type::<bevy::math::Isometry3d>();
         app.register_foreign_lua_type::<bevy::math::Ray2d>();
         app.register_foreign_lua_type::<bevy::math::Ray3d>();
         app.register_foreign_lua_type::<bevy::math::Rot2>();
@@ -4861,6 +5498,7 @@ impl bevy_mod_scripting_core::hosts::APIProvider for BevyMathAPIProvider {
         app.register_foreign_lua_type::<bevy::math::bounding::Aabb2d>();
         app.register_foreign_lua_type::<bevy::math::bounding::BoundingCircle>();
         app.register_foreign_lua_type::<bevy::math::primitives::Circle>();
+        app.register_foreign_lua_type::<bevy::math::primitives::Annulus>();
         app.register_foreign_lua_type::<bevy::math::primitives::Arc2d>();
         app.register_foreign_lua_type::<bevy::math::primitives::Capsule2d>();
         app.register_foreign_lua_type::<bevy::math::primitives::CircularSector>();
@@ -4892,9 +5530,10 @@ impl bevy_mod_scripting_core::hosts::APIProvider for BevyMathAPIProvider {
         app.register_foreign_lua_type::<bevy::math::bounding::RayCast3d>();
         app.register_foreign_lua_type::<bevy::math::bounding::AabbCast3d>();
         app.register_foreign_lua_type::<bevy::math::bounding::BoundingSphereCast>();
+        app.register_foreign_lua_type::<bevy::math::curve::interval::Interval>();
         app.register_foreign_lua_type::<bevy::math::FloatOrd>();
-        app.register_foreign_lua_type::<bevy::math::primitives::Annulus>();
         app.register_foreign_lua_type::<bevy::math::primitives::Plane3d>();
         app.register_foreign_lua_type::<bevy::math::primitives::Tetrahedron>();
+        app.register_foreign_lua_type::<bevy::math::curve::easing::EaseFunction>();
     }
 }

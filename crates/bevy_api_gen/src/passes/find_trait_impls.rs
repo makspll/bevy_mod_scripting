@@ -6,7 +6,7 @@ use rustc_infer::{
     infer::{InferCtxt, TyCtxtInferExt},
     traits::{Obligation, ObligationCause},
 };
-use rustc_middle::ty::Ty;
+use rustc_middle::ty::{Ty, TypingMode};
 use rustc_span::DUMMY_SP;
 use rustc_trait_selection::traits::ObligationCtxt;
 
@@ -105,7 +105,7 @@ fn type_impl_of_trait(
             //TODO: false negatives coming from this inference
 
             let ty = tcx.type_of(reflect_ty_did).instantiate_identity();
-            let infcx = tcx.infer_ctxt().build();
+            let infcx = tcx.infer_ctxt().build(TypingMode::non_body_analysis());
             let result = impl_matches(&infcx, ty, impl_did);
             log::trace!("Result: {:#?}", result);
             if result {

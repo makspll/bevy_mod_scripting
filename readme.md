@@ -41,6 +41,14 @@ The languages currently supported are as follows:
 |Language| Support Level | Documentation Generation |
 |----|----|----|
 |Lua|4|[Yes](https://makspll.github.io/bevy_mod_scripting_lua/latest/)|
+|Lua51|4|[Yes](https://makspll.github.io/bevy_mod_scripting_lua/latest/)|
+|Lua52|4|[Yes](https://makspll.github.io/bevy_mod_scripting_lua/latest/)|
+|Lua53|4|[Yes](https://makspll.github.io/bevy_mod_scripting_lua/latest/)|
+|Lua54|4|[Yes](https://makspll.github.io/bevy_mod_scripting_lua/latest/)|
+|Luajit|4|[Yes](https://makspll.github.io/bevy_mod_scripting_lua/latest/)|
+|Luajit52|4|[Yes](https://makspll.github.io/bevy_mod_scripting_lua/latest/)|
+|Luau|4|[Yes](https://makspll.github.io/bevy_mod_scripting_lua/latest/)|
+|Teal|4|[Yes](https://makspll.github.io/bevy_mod_scripting_lua/latest/)|
 |Rhai|2|No|
 |Rune|1|No|
 
@@ -264,6 +272,7 @@ To see more complex applications of this library have a look at the examples:
 - [generating statically typed lua wrappers + ReflectReference system](examples/wrappers.rs)
 - [lua - documentation generation + lua static typing](examples/lua/documentation_gen.rs)
 - [lua - bevy console integration](examples/lua/console_integration.rs)
+- [lua - dynamic queryies](examples/lua/dynamic_queries.rs)
 - [rhai - bevy console integration](examples/rhai/console_integration.rs)
 - [lua - game of life with teal](examples/lua/game_of_life.rs)
 - [rhai - game of life](examples/rhai/game_of_life.rs)

@@ -85,20 +85,59 @@ use bevy_script_api::{
     r#"
 #[lua(kind="MetaMethod", metamethod="ToString")]
 fn index(&self) -> String {
-    format!("{}", _self)
+    format!("{:?}", _self)
 }
 "#]
 )]
 struct Entity {}
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
-#[proxy(derive(), remote = "bevy::ecs::world::OnAdd", functions[])]
+#[proxy(
+    derive(),
+    remote = "bevy::ecs::world::OnAdd",
+    functions[r#"
+#[lua(kind="MetaMethod", metamethod="ToString")]
+fn index(&self) -> String {
+    format!("{:?}", _self)
+}
+"#]
+)]
 struct OnAdd {}
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
-#[proxy(derive(), remote = "bevy::ecs::world::OnInsert", functions[])]
+#[proxy(
+    derive(),
+    remote = "bevy::ecs::world::OnInsert",
+    functions[r#"
+#[lua(kind="MetaMethod", metamethod="ToString")]
+fn index(&self) -> String {
+    format!("{:?}", _self)
+}
+"#]
+)]
 struct OnInsert {}
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
-#[proxy(derive(), remote = "bevy::ecs::world::OnRemove", functions[])]
+#[proxy(
+    derive(),
+    remote = "bevy::ecs::world::OnRemove",
+    functions[r#"
+#[lua(kind="MetaMethod", metamethod="ToString")]
+fn index(&self) -> String {
+    format!("{:?}", _self)
+}
+"#]
+)]
 struct OnRemove {}
+#[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
+#[proxy(
+    derive(),
+    remote = "bevy::ecs::world::OnReplace",
+    functions[r#"
+#[lua(kind="MetaMethod", metamethod="ToString")]
+fn index(&self) -> String {
+    format!("{:?}", _self)
+}
+"#]
+)]
+struct OnReplace {}
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
     derive(clone),
@@ -121,6 +160,12 @@ struct OnRemove {}
 "#,
     r#"
 
+    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
+    fn clone(&self) -> bevy::ecs::component::ComponentId;
+
+"#,
+    r#"
+
     #[lua(
         as_trait = "std::cmp::PartialEq",
         kind = "MetaFunction",
@@ -128,12 +173,6 @@ struct OnRemove {}
         metamethod = "Eq",
     )]
     fn eq(&self, #[proxy] other: &component::ComponentId) -> bool;
-
-"#,
-    r#"
-
-    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
-    fn clone(&self) -> bevy::ecs::component::ComponentId;
 
 "#,
     r#"
@@ -156,6 +195,12 @@ struct ComponentId();
     remote = "bevy::ecs::component::Tick",
     functions[r#"
 
+    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
+    fn clone(&self) -> bevy::ecs::component::Tick;
+
+"#,
+    r#"
+
     #[lua(
         as_trait = "std::cmp::PartialEq",
         kind = "MetaFunction",
@@ -167,8 +212,8 @@ struct ComponentId();
 "#,
     r#"
 
-    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
-    fn clone(&self) -> bevy::ecs::component::Tick;
+    #[lua(as_trait = "std::cmp::Eq", kind = "Method")]
+    fn assert_receiver_is_total_eq(&self) -> ();
 
 "#,
     r#"
@@ -207,12 +252,6 @@ struct ComponentId();
 
 "#,
     r#"
-
-    #[lua(as_trait = "std::cmp::Eq", kind = "Method")]
-    fn assert_receiver_is_total_eq(&self) -> ();
-
-"#,
-    r#"
 #[lua(kind="MetaMethod", metamethod="ToString")]
 fn index(&self) -> String {
     format!("{:?}", _self)
@@ -225,12 +264,6 @@ struct Tick {}
     derive(clone),
     remote = "bevy::ecs::component::ComponentTicks",
     functions[r#"
-
-    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
-    fn clone(&self) -> bevy::ecs::component::ComponentTicks;
-
-"#,
-    r#"
 /// Returns `true` if the component or resource was added after the system last ran
 /// (or the system is running for the first time).
 
@@ -259,17 +292,13 @@ struct Tick {}
 
 "#,
     r#"
-/// Returns the tick recording the time this component or resource was most recently changed.
+/// Creates a new instance with the same change tick for `added` and `changed`.
 
-    #[lua(kind = "Method", output(proxy))]
-    fn last_changed_tick(&self) -> bevy::ecs::component::Tick;
-
-"#,
-    r#"
-/// Returns the tick recording the time this component or resource was added.
-
-    #[lua(kind = "Method", output(proxy))]
-    fn added_tick(&self) -> bevy::ecs::component::Tick;
+    #[lua(kind = "Function", output(proxy))]
+    fn new(
+        #[proxy]
+        change_tick: bevy::ecs::component::Tick,
+    ) -> bevy::ecs::component::ComponentTicks;
 
 "#,
     r#"
@@ -290,13 +319,24 @@ struct Tick {}
 
 "#,
     r#"
+
+    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
+    fn clone(&self) -> bevy::ecs::component::ComponentTicks;
+
+"#,
+    r#"
 #[lua(kind="MetaMethod", metamethod="ToString")]
 fn index(&self) -> String {
     format!("{:?}", _self)
 }
 "#]
 )]
-struct ComponentTicks {}
+struct ComponentTicks {
+    #[lua(output(proxy))]
+    added: bevy::ecs::component::Tick,
+    #[lua(output(proxy))]
+    changed: bevy::ecs::component::Tick,
+}
 #[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
 #[proxy(
     derive(clone),
@@ -310,12 +350,6 @@ struct ComponentTicks {}
         metamethod = "Eq",
     )]
     fn eq(&self, #[proxy] other: &identifier::Identifier) -> bool;
-
-"#,
-    r#"
-
-    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
-    fn clone(&self) -> bevy::ecs::identifier::Identifier;
 
 "#,
     r#"
@@ -350,6 +384,12 @@ struct ComponentTicks {}
 
 "#,
     r#"
+
+    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
+    fn clone(&self) -> bevy::ecs::identifier::Identifier;
+
+"#,
+    r#"
 #[lua(kind="MetaMethod", metamethod="ToString")]
 fn index(&self) -> String {
     format!("{:?}", _self)
@@ -369,6 +409,27 @@ struct Identifier {}
 "#]
 )]
 struct EntityHash {}
+#[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
+#[proxy(
+    derive(clone),
+    remote = "bevy::ecs::removal_detection::RemovedComponentEntity",
+    functions[r#"
+
+    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
+    fn clone(&self) -> bevy::ecs::removal_detection::RemovedComponentEntity;
+
+"#,
+    r#"
+#[lua(kind="MetaMethod", metamethod="ToString")]
+fn index(&self) -> String {
+    format!("{:?}", _self)
+}
+"#]
+)]
+struct RemovedComponentEntity();
+#[derive(bevy_mod_scripting_lua_derive::LuaProxy)]
+#[proxy(derive(), remote = "bevy::ecs::system::SystemIdMarker", functions[])]
+struct SystemIdMarker {}
 #[derive(Default)]
 pub(crate) struct Globals;
 impl bevy_mod_scripting_lua::tealr::mlu::ExportInstances for Globals {
@@ -390,6 +451,13 @@ impl bevy_mod_scripting_lua::tealr::mlu::ExportInstances for Globals {
             .add_instance(
                 "Tick",
                 bevy_mod_scripting_lua::tealr::mlu::UserDataProxy::<LuaTick>::new,
+            )?;
+        instances
+            .add_instance(
+                "ComponentTicks",
+                bevy_mod_scripting_lua::tealr::mlu::UserDataProxy::<
+                    LuaComponentTicks,
+                >::new,
             )?;
         instances
             .add_instance(
@@ -428,6 +496,7 @@ impl bevy_mod_scripting_core::hosts::APIProvider for BevyEcsAPIProvider {
                         .process_type::<LuaOnAdd>()
                         .process_type::<LuaOnInsert>()
                         .process_type::<LuaOnRemove>()
+                        .process_type::<LuaOnReplace>()
                         .process_type::<LuaComponentId>()
                         .process_type::<
                             bevy_mod_scripting_lua::tealr::mlu::UserDataProxy<
@@ -439,6 +508,11 @@ impl bevy_mod_scripting_core::hosts::APIProvider for BevyEcsAPIProvider {
                             bevy_mod_scripting_lua::tealr::mlu::UserDataProxy<LuaTick>,
                         >()
                         .process_type::<LuaComponentTicks>()
+                        .process_type::<
+                            bevy_mod_scripting_lua::tealr::mlu::UserDataProxy<
+                                LuaComponentTicks,
+                            >,
+                        >()
                         .process_type::<LuaIdentifier>()
                         .process_type::<
                             bevy_mod_scripting_lua::tealr::mlu::UserDataProxy<
@@ -446,6 +520,8 @@ impl bevy_mod_scripting_core::hosts::APIProvider for BevyEcsAPIProvider {
                             >,
                         >()
                         .process_type::<LuaEntityHash>()
+                        .process_type::<LuaRemovedComponentEntity>()
+                        .process_type::<LuaSystemIdMarker>()
                 },
             ),
         )
@@ -470,10 +546,15 @@ impl bevy_mod_scripting_core::hosts::APIProvider for BevyEcsAPIProvider {
         app.register_foreign_lua_type::<bevy::ecs::world::OnAdd>();
         app.register_foreign_lua_type::<bevy::ecs::world::OnInsert>();
         app.register_foreign_lua_type::<bevy::ecs::world::OnRemove>();
+        app.register_foreign_lua_type::<bevy::ecs::world::OnReplace>();
         app.register_foreign_lua_type::<bevy::ecs::component::ComponentId>();
         app.register_foreign_lua_type::<bevy::ecs::component::Tick>();
         app.register_foreign_lua_type::<bevy::ecs::component::ComponentTicks>();
         app.register_foreign_lua_type::<bevy::ecs::identifier::Identifier>();
         app.register_foreign_lua_type::<bevy::ecs::entity::EntityHash>();
+        app.register_foreign_lua_type::<
+                bevy::ecs::removal_detection::RemovedComponentEntity,
+            >();
+        app.register_foreign_lua_type::<bevy::ecs::system::SystemIdMarker>();
     }
 }

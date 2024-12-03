@@ -101,10 +101,10 @@ impl DocFragment for LuaDocFragment {
         tw.given_types.iter_mut().for_each(|tg| {
             if let TypeGenerator::Record(rg) = tg {
                 rg.fields
-                    .sort_by(|f1, f2| f1.name.deref().cmp(&f2.name.deref()));
+                    .sort_by(|f1, f2| f1.name.deref().cmp(f2.name.deref()));
                 rg.fields.dedup_by(|a, b| a.name == b.name);
                 rg.static_fields
-                    .sort_by(|f1, f2| f1.name.deref().cmp(&f2.name.deref()));
+                    .sort_by(|f1, f2| f1.name.deref().cmp(f2.name.deref()));
                 rg.static_fields.dedup_by(|a, b| a.name == b.name);
                 for field in rg.fields.iter_mut().chain(rg.static_fields.iter_mut()) {
                     escape_name(&mut field.name);
@@ -217,7 +217,7 @@ fn escape_name(raw: &mut NameContainer) {
         "local",  // Declarations
         "record", // Teal extra
     ];
-    let Ok(name) = str::from_utf8(&raw) else {
+    let Ok(name) = str::from_utf8(raw) else {
         return;
     };
     if KEYWORD_FIELDS.contains(&name) {
