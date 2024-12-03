@@ -89,7 +89,7 @@ pub struct PriorityIterator<'w, E: PriorityEvent> {
     events: &'w mut PriorityEvents<E>,
 }
 
-impl<'w, E: PriorityEvent> Iterator for PriorityIterator<'w, E> {
+impl<E: PriorityEvent> Iterator for PriorityIterator<'_, E> {
     type Item = E;
 
     fn next(&mut self) -> Option<Self::Item> {
@@ -108,7 +108,7 @@ impl<'w, E: PriorityEvent> Iterator for PriorityIterator<'w, E> {
     }
 }
 
-impl<'s, E: PriorityEvent> PriorityEventReader<'_, 's, E> {
+impl<E: PriorityEvent> PriorityEventReader<'_, '_, E> {
     /// Iterates over events this reader has not seen yet, while also clearing them.
     /// Will not remove any events of priority lower than min (0 is highest, inf is lowest)
     /// but will discard events of higher priority
@@ -140,7 +140,7 @@ pub struct PriorityEventWriter<'w, 's, E: PriorityEvent> {
     marker: PhantomData<&'s usize>,
 }
 
-impl<'w, 's, E: PriorityEvent> PriorityEventWriter<'w, 's, E> {
+impl<E: PriorityEvent> PriorityEventWriter<'_, '_, E> {
     pub fn send(&mut self, event: E, prio: u32) {
         self.events.events.push(EventInstance::new(event, prio));
     }

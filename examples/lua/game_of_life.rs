@@ -3,12 +3,12 @@ use std::sync::Mutex;
 
 use bevy::{
     diagnostic::{FrameTimeDiagnosticsPlugin, LogDiagnosticsPlugin},
+    image::ImageSampler,
     prelude::*,
     reflect::Reflect,
     render::{
         render_asset::RenderAssetUsages,
         render_resource::{Extent3d, TextureDimension, TextureFormat},
-        texture::ImageSampler,
     },
     window::{PrimaryWindow, WindowResized},
 };

@@ -1,5 +1,19 @@
 # Changelog
 
+## [0.8.0-alpha.2](https://github.com/makspll/bevy_mod_scripting/compare/v0.8.0-alpha.1...v0.8.0-alpha.2) - 2024-12-03
+
+### Fixed
+
+- bug when compiling without `teal` feature ([#148](https://github.com/makspll/bevy_mod_scripting/pull/148))
+
+### Other
+
+- Small fixes ([#155](https://github.com/makspll/bevy_mod_scripting/pull/155))
+- Luau support attempt ([#154](https://github.com/makspll/bevy_mod_scripting/pull/154))
+- Bump bevy & bevy console ([#153](https://github.com/makspll/bevy_mod_scripting/pull/153))
+- Fix failing doctest ([#146](https://github.com/makspll/bevy_mod_scripting/pull/146))
+- update Cargo.toml dependencies
+
 ## [0.8.0-alpha.1](https://github.com/makspll/bevy_mod_scripting/compare/v0.8.0-alpha.0...v0.8.0-alpha.1) - 2024-11-10
 
 ### Other

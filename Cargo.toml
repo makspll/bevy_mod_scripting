@@ -1,6 +1,6 @@
 [package]
 name = "bevy_mod_scripting"
-version = "0.8.0-alpha.1"
+version = "0.8.0-alpha.2"
 authors = ["Maksymilian Mozolewski <makspl17@gmail.com>"]
 edition = "2021"
 license = "MIT OR Apache-2.0"
@@ -36,6 +36,7 @@ lua53 = ["bevy_mod_scripting_lua/lua53", "lua"]
 lua54 = ["bevy_mod_scripting_lua/lua54", "lua"]
 luajit = ["bevy_mod_scripting_lua/luajit", "lua"]
 luajit52 = ["bevy_mod_scripting_lua/luajit52", "lua"]
+luau = ["bevy_mod_scripting_lua/luau", "lua"]
 
 # optional
 unsafe_lua_modules = ["bevy_mod_scripting_lua/unsafe_lua_modules"]
@@ -53,22 +54,22 @@ rune = ["bevy_mod_scripting_rune"]
 [dependencies]
 bevy = { workspace = true }
 bevy_mod_scripting_core = { workspace = true }
-bevy_mod_scripting_lua = { path = "crates/languages/bevy_mod_scripting_lua", version = "0.8.0-alpha.1", optional = true }
-bevy_mod_scripting_rhai = { path = "crates/languages/bevy_mod_scripting_rhai", version = "0.8.0-alpha.1", optional = true }
-bevy_mod_scripting_rune = { path = "crates/languages/bevy_mod_scripting_rune", version = "0.8.0-alpha.1", optional = true }
+bevy_mod_scripting_lua = { path = "crates/languages/bevy_mod_scripting_lua", version = "0.8.0-alpha.2", optional = true }
+bevy_mod_scripting_rhai = { path = "crates/languages/bevy_mod_scripting_rhai", version = "0.8.0-alpha.2", optional = true }
+bevy_mod_scripting_rune = { path = "crates/languages/bevy_mod_scripting_rune", version = "0.8.0-alpha.2", optional = true }
 
 
 [workspace.dependencies]
-bevy = { version = "0.15.0-rc.3", default-features = false }
-bevy_mod_scripting_core = { path = "crates/bevy_mod_scripting_core", version = "0.8.0-alpha.1" }
-bevy_mod_scripting_common = { path = "crates/bevy_mod_scripting_common", version = "0.8.0-alpha.1" }
+bevy = { version = "0.15.0", default-features = false }
+bevy_mod_scripting_core = { path = "crates/bevy_mod_scripting_core", version = "0.8.0-alpha.2" }
+bevy_mod_scripting_common = { path = "crates/bevy_mod_scripting_common", version = "0.8.0-alpha.2" }
 test_utils = { path = "crates/test_utils" }
 
 [dev-dependencies]
 bevy = { workspace = true, default-features = true }
 clap = { version = "4.1", features = ["derive"] }
 rand = "0.8.5"
-bevy_console = "0.12"
+bevy_console = "0.13"
 rhai-rand = "0.1"
 
 [workspace]
@@ -102,26 +103,23 @@ codegen-units = 8
 incremental = false
 debug = false
 
-# TODO: bump once bevy is released and the lib is updated
-# [[example]]
-# name = "console_integration_lua"
-# path = "examples/lua/console_integration.rs"
-# required-features = [
-#     "lua54",
-#     
-#     "bevy/file_watcher",
-#     "bevy/multi_threaded",
-# ]
+[[example]]
+name = "console_integration_lua"
+path = "examples/lua/console_integration.rs"
+required-features = [
+    "lua54",
+    "bevy/file_watcher",
+    "bevy/multi_threaded",
+]
 
-# [[example]]
-# name = "console_integration_rhai"
-# path = "examples/rhai/console_integration.rs"
-# required-features = [
-#     "rhai",
-#     ,
-#     "bevy/file_watcher",
-#     "bevy/multi_threaded",
-# ]
+[[example]]
+name = "console_integration_rhai"
+path = "examples/rhai/console_integration.rs"
+required-features = [
+    "rhai",
+    "bevy/file_watcher",
+    "bevy/multi_threaded",
+]
 
 [[example]]
 name = "complex_game_loop_lua"

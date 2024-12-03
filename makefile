@@ -22,14 +22,14 @@ TEST_NAME=
 # # valgrind outputs a callgrind.out.<pid>. We can analyze this with kcachegrind
 # kcachegrind
 NIGHTLY_VERSION=nightly-2024-11-05
-BEVY_VERSION=0.15.0-rc.3
+BEVY_VERSION=0.15.0
 GLAM_VERSION=0.29.0
 CODEGEN_PATH=${PWD}/target/codegen
 BEVY_PATH=${CODEGEN_PATH}/bevy
 GLAM_PATH=${CODEGEN_PATH}/glam
 OUTPUT_PATH=${CODEGEN_PATH}/output
 GENERATED_SRC_PATH=./crates/languages/bevy_mod_scripting_lua/src/bindings/providers
-GEN_BEVY_FEATURES=bevy_asset,bevy_gltf,bevy_animation,bevy_core_pipeline,bevy_ui,bevy_pbr,bevy_render,bevy_text,bevy_sprite,file_watcher,multi_threaded
+GEN_BEVY_FEATURES=bevy_asset,bevy_animation,bevy_core_pipeline,bevy_ui,bevy_pbr,bevy_render,bevy_text,bevy_sprite,file_watcher,multi_threaded
 
 build_test_in_package:
 	@RUSTFLAGS=-g cargo test --no-run  --all-targets --features ${TEST_FEATURES} --package ${PACKAGE} $(TEST_NAME) --message-format=json | jq -r 'first(select(.executable != null and .target.kind == ["test"])) | .executable' | xargs -I@ ln -fs @ ./target/debug/test_binary

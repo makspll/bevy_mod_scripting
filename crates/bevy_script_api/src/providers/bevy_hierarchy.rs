@@ -70,8 +70,8 @@ struct Parent();
     remote = "bevy::hierarchy::HierarchyEvent",
     functions[r#"
 
-    #[lua(as_trait = "std::cmp::Eq", kind = "Method")]
-    fn assert_receiver_is_total_eq(&self) -> ();
+    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
+    fn clone(&self) -> bevy::hierarchy::HierarchyEvent;
 
 "#,
     r#"
@@ -87,8 +87,8 @@ struct Parent();
 "#,
     r#"
 
-    #[lua(as_trait = "std::clone::Clone", kind = "Method", output(proxy))]
-    fn clone(&self) -> bevy::hierarchy::HierarchyEvent;
+    #[lua(as_trait = "std::cmp::Eq", kind = "Method")]
+    fn assert_receiver_is_total_eq(&self) -> ();
 
 "#,
     r#"

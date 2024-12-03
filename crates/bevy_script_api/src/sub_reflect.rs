@@ -290,9 +290,9 @@ impl ReflectionPath {
     ) -> Result<&'a mut dyn Reflect, ReflectionError> {
         if let Some(first) = self.accesses.first() {
             if self.accesses.len() > 1 {
-                return self.accesses[1..]
+                self.accesses[1..]
                     .iter()
-                    .try_fold(first.sub_ref_mut(ref_)?, |a, access| access.sub_ref_mut(a));
+                    .try_fold(first.sub_ref_mut(ref_)?, |a, access| access.sub_ref_mut(a))
             } else {
                 first.sub_ref_mut(ref_)
             }

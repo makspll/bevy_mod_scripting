@@ -8,6 +8,7 @@ on:
       - '.github/workflows/release-plz.yml'
       - '.github/workflows/bevy_api_gen.yml'
       - '.github/workflows/macro_tests.yml'
+      - 'docs/**'
 
 
 name: Check and Lint - bevy_mod_scripting
@@ -34,7 +35,8 @@ jobs:
         {label: Ubuntu - Lua52,                os: ubuntu-latest,       features: "lua52",                                     cross: x86_64-unknown-linux-gnu  }, 
         {label: Ubuntu - Lua53,                os: ubuntu-latest,       features: "lua53",                                     cross: x86_64-unknown-linux-gnu  }, 
         {label: Ubuntu - Luajit,               os: ubuntu-latest,       features: "luajit",                                    cross: x86_64-unknown-linux-gnu  }, 
-        {label: Ubuntu - Luajit52,             os: ubuntu-latest,       features: "luajit52",                                  cross: x86_64-unknown-linux-gnu  }
+        {label: Ubuntu - Luajit52,             os: ubuntu-latest,       features: "luajit52",                                  cross: x86_64-unknown-linux-gnu  },
+        {label: Ubuntu - Luau,                 os: ubuntu-latest,       features: "luau",                                      cross: x86_64-unknown-linux-gnu  }
       ]
     steps:
       - if: runner.os == 'linux'
