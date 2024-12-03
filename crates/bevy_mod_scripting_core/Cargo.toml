@@ -23,7 +23,6 @@ doc_always = []
 [dependencies]
 bevy = { workspace = true, default-features = false, features = [
     "bevy_asset",
-    "bevy_gltf",
     "bevy_animation",
     "bevy_core_pipeline",
     "bevy_ui",

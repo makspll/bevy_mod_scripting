@@ -2,7 +2,6 @@
 #![allow(clippy::all)]
 #![allow(unused, deprecated, dead_code)]
 #![cfg_attr(rustfmt, rustfmt_skip)]
-pub mod bevy_a11y;
 pub mod bevy_ecs;
 pub mod bevy_transform;
 pub mod bevy_math;
@@ -10,7 +9,6 @@ pub mod bevy_input;
 pub mod bevy_core;
 pub mod bevy_time;
 pub mod bevy_hierarchy;
-pub mod bevy_window;
 pub mod bevy_reflect;
 extern crate self as bevy_script_api;
 use bevy_mod_scripting_core::docs::DocFragment;
@@ -23,7 +21,6 @@ impl bevy_mod_scripting_core::hosts::APIProvider for LuaBevyAPIProvider {
         &mut self,
         ctx: &mut Self::APITarget,
     ) -> Result<(), bevy_mod_scripting_core::error::ScriptError> {
-        bevy_a11y::BevyA11YAPIProvider.attach_api(ctx)?;
         bevy_ecs::BevyEcsAPIProvider.attach_api(ctx)?;
         bevy_transform::BevyTransformAPIProvider.attach_api(ctx)?;
         bevy_math::BevyMathAPIProvider.attach_api(ctx)?;
@@ -31,13 +28,11 @@ impl bevy_mod_scripting_core::hosts::APIProvider for LuaBevyAPIProvider {
         bevy_core::BevyCoreAPIProvider.attach_api(ctx)?;
         bevy_time::BevyTimeAPIProvider.attach_api(ctx)?;
         bevy_hierarchy::BevyHierarchyAPIProvider.attach_api(ctx)?;
-        bevy_window::BevyWindowAPIProvider.attach_api(ctx)?;
         bevy_reflect::BevyReflectAPIProvider.attach_api(ctx)?;
         Ok(())
     }
     fn get_doc_fragment(&self) -> Option<Self::DocTarget> {
         [
-            bevy_a11y::BevyA11YAPIProvider.get_doc_fragment(),
             bevy_ecs::BevyEcsAPIProvider.get_doc_fragment(),
             bevy_transform::BevyTransformAPIProvider.get_doc_fragment(),
             bevy_math::BevyMathAPIProvider.get_doc_fragment(),
@@ -45,7 +40,6 @@ impl bevy_mod_scripting_core::hosts::APIProvider for LuaBevyAPIProvider {
             bevy_core::BevyCoreAPIProvider.get_doc_fragment(),
             bevy_time::BevyTimeAPIProvider.get_doc_fragment(),
             bevy_hierarchy::BevyHierarchyAPIProvider.get_doc_fragment(),
-            bevy_window::BevyWindowAPIProvider.get_doc_fragment(),
             bevy_reflect::BevyReflectAPIProvider.get_doc_fragment(),
         ]
             .into_iter()
@@ -74,7 +68,6 @@ impl bevy_mod_scripting_core::hosts::APIProvider for LuaBevyAPIProvider {
         Ok(())
     }
     fn register_with_app(&self, app: &mut bevy::app::App) {
-        bevy_a11y::BevyA11YAPIProvider.register_with_app(app);
         bevy_ecs::BevyEcsAPIProvider.register_with_app(app);
         bevy_transform::BevyTransformAPIProvider.register_with_app(app);
         bevy_math::BevyMathAPIProvider.register_with_app(app);
@@ -82,7 +75,6 @@ impl bevy_mod_scripting_core::hosts::APIProvider for LuaBevyAPIProvider {
         bevy_core::BevyCoreAPIProvider.register_with_app(app);
         bevy_time::BevyTimeAPIProvider.register_with_app(app);
         bevy_hierarchy::BevyHierarchyAPIProvider.register_with_app(app);
-        bevy_window::BevyWindowAPIProvider.register_with_app(app);
         bevy_reflect::BevyReflectAPIProvider.register_with_app(app);
     }
 }
