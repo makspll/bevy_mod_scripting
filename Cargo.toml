@@ -44,6 +44,7 @@ lua53 = ["bevy_mod_scripting_lua/lua53", "lua"]
 lua54 = ["bevy_mod_scripting_lua/lua54", "lua"]
 luajit = ["bevy_mod_scripting_lua/luajit", "lua"]
 luajit52 = ["bevy_mod_scripting_lua/luajit52", "lua"]
+luau = ["bevy_mod_scripting_lua/luau", "lua"]
 
 # optional
 lua_script_api = ["bevy_script_api/lua"]
