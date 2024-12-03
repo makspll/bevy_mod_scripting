@@ -41,6 +41,14 @@ The languages currently supported are as follows:
 |Language| Support Level | Documentation Generation |
 |----|----|----|
 |Lua|4|[Yes](https://makspll.github.io/bevy_mod_scripting_lua/latest/)|
+|Lua51|4|[Yes](https://makspll.github.io/bevy_mod_scripting_lua/latest/)|
+|Lua52|4|[Yes](https://makspll.github.io/bevy_mod_scripting_lua/latest/)|
+|Lua53|4|[Yes](https://makspll.github.io/bevy_mod_scripting_lua/latest/)|
+|Lua54|4|[Yes](https://makspll.github.io/bevy_mod_scripting_lua/latest/)|
+|Luajit|4|[Yes](https://makspll.github.io/bevy_mod_scripting_lua/latest/)|
+|Luajit52|4|[Yes](https://makspll.github.io/bevy_mod_scripting_lua/latest/)|
+|Luau|4|[Yes](https://makspll.github.io/bevy_mod_scripting_lua/latest/)|
+|Teal|4|[Yes](https://makspll.github.io/bevy_mod_scripting_lua/latest/)|
 |Rhai|2|No|
 |Rune|1|No|
 
