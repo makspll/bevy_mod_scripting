@@ -34,7 +34,9 @@ jobs:
         {label: Ubuntu - Lua52,                os: ubuntu-latest,       features: "lua52,lua_script_api",                                     cross: x86_64-unknown-linux-gnu  }, 
         {label: Ubuntu - Lua53,                os: ubuntu-latest,       features: "lua53,lua_script_api",                                     cross: x86_64-unknown-linux-gnu  }, 
         {label: Ubuntu - Luajit,               os: ubuntu-latest,       features: "luajit,lua_script_api",                                    cross: x86_64-unknown-linux-gnu  }, 
-        {label: Ubuntu - Luajit52,             os: ubuntu-latest,       features: "luajit52,lua_script_api",                                  cross: x86_64-unknown-linux-gnu  }
+        {label: Ubuntu - Luajit52,             os: ubuntu-latest,       features: "luajit52,lua_script_api",                                  cross: x86_64-unknown-linux-gnu  },
+        {label: Ubuntu - Luau,                 os: ubuntu-latest,       features: "luau,lua_script_api",                                      cross: x86_64-unknown-linux-gnu  }
+
       ]
     steps:
       - if: runner.os == 'linux'
