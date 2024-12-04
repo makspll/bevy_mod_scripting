@@ -284,5 +284,6 @@ Below is a video showcasing the game_of_life example:
 
 | bevy_mod_scripting  | bevy   |
 |---------------------|--------|
+| 0.8                 | 0.15   |
 | 0.7                 | 0.14   |
 | 0.6                 | 0.13.1 |
