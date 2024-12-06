@@ -6,6 +6,8 @@
 //! we need wrapper types which have owned and ref variants.
 use lockable::LockableHashMap;
 
+pub use itertools::Either;
+
 use std::{
     any::TypeId,
     cell::UnsafeCell,
@@ -28,7 +30,7 @@ use bevy::{
     },
     ptr::Ptr,
     reflect::{
-        Access, DynamicEnum, DynamicTuple, ParsedPath, PartialReflect, Reflect, ReflectFromPtr, ReflectPath, ReflectPathError, TypeInfo, TypeRegistry
+        Access, DynamicEnum, DynamicTuple, ParsedPath, PartialReflect, Reflect, ReflectFromPtr, ReflectPath, ReflectPathError, TypeData, TypeInfo, TypeRegistry
     },
 };
 use smallvec::SmallVec;
@@ -203,6 +205,38 @@ impl ReflectReference {
         reflect
     }
 
+    /// convenience for:
+    /// - retrieving the type id at the tip of the reference
+    /// - retrieving the type data for that type id if it exists
+    /// - calling the function with the type data if it exists
+    /// - or calling the function with [`self`] only if the type data does not exist
+    pub fn map_type_data<D,D2,O,F>(self, world: &WorldAccessGuard, map: F) -> ScriptResult<O>
+    where 
+        F: FnOnce(Self, Option<Either<D,D2>>) -> O,
+        D: TypeData + Clone,
+        D2: TypeData + Clone,
+    {
+        if let Some(type_id) = self.with_reflect(&world, |r, _, _| {
+            r.get_represented_type_info().map(|t| t.type_id())
+        })? {
+
+            if let Some(type_data) = world.with_resource(|_, type_registry: Mut<AppTypeRegistry>| {
+                let type_registry = type_registry.read();
+                type_registry.get_type_data::<D>(type_id).cloned()
+            }) {
+                return Ok(map(self, Some(Either::Left(type_data))));
+            } else if let Some(type_data) = world.with_resource(|_, type_registry: Mut<AppTypeRegistry>| {
+                let type_registry = type_registry.read();
+                type_registry.get_type_data::<D2>(type_id).cloned()
+            }) {
+                return Ok(map(self, Some(Either::Right(type_data))));
+            }
+        }
+
+        Ok(map(self, None))
+    }
+
+
     /// Returns `Ok(())` if the given access is sufficient to read the value or an appropriate error otherwise
     pub fn expect_read_access<'w>(
         &self,
@@ -255,7 +289,7 @@ impl ReflectReference {
         self.expect_read_access(access, type_registry, allocator, world)?;
         // Safety: since we have read access to the underlying componentId we can safely access the component
         // and we can return a reference tied to its lifetime, which will prevent invalid aliasing
-        return unsafe { self.reflect_unsafe(world, type_registry, allocator) };
+        unsafe { self.reflect_unsafe(world, type_registry, allocator) }
     }
 
     /// Retrieves a reference to the underlying `dyn PartialReflect` type valid for the 'w lifetime of the world cell.
@@ -272,7 +306,7 @@ impl ReflectReference {
         self.expect_write_access(access, type_registry, allocator, world)?;
         // Safety: since we have write access to the underlying reflect access id we can safely access the component
         // and we can return a reference tied to its lifetime, which will prevent invalid aliasing
-        return unsafe { self.reflect_mut_unsafe(world, type_registry, allocator) };
+        unsafe { self.reflect_mut_unsafe(world, type_registry, allocator) }
     }
 
     /// Retrieves a reference to the underlying `dyn PartialReflect` type valid for the 'w lifetime of the world cell
@@ -416,9 +450,9 @@ impl ReflectBaseType {
         let type_name = Self::type_name(self.type_id, type_registry);
 
         let kind = match self.base_id {
-            ReflectBase::Component(entity, _) => "Component",
+            ReflectBase::Component(_, _) => "Component",
             ReflectBase::Resource(_) => "Resource",
-            ReflectBase::Owned(id) => "Allocation",
+            ReflectBase::Owned(_) => "Allocation",
         };
 
         format!("{}({})", kind, type_name)

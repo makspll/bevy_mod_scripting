@@ -9,7 +9,7 @@ use bevy::{
 };
 use bevy_mod_scripting_core::{
     bindings::{
-        ReflectAllocator, ReflectRefIter, ReflectReference, ReflectionPathElem, Unproxy,
+        Either, ReflectAllocator, ReflectRefIter, ReflectReference, ReflectionPathElem, Unproxy,
         WorldCallbackAccess,
     },
     error::ScriptError,
@@ -54,99 +54,64 @@ impl LuaReflectReference {
     pub fn to_lua_proxy(self, lua: &Lua) -> Result<Value<'_>, mlua::Error> {
         // note we do not need to refer to LuaWorld here, it does not matter what the proxy is, that's pretty neat,
         let world = lua.get_world();
-        // TODO: i don't like the pingponging between errors here, need something more ergonomic
-        // first we need the type id of the pointed to object to figure out how to work with it
-        let type_id = self.0.with_reflect(&world, |r, _, _| {
-            r.get_represented_type_info().map(|t| t.type_id())
-        })?;
 
-        // convenience, ideally we probably should just avoid lookups when no type id is here, but for now we just use a dummy type nothing will ever
-        // be registered for. If the type we're reflecting doesn't represent anything or a registered type, we use a generic reflect reference.
-        struct Dummy;
-        let type_id_or_dummy = type_id.unwrap_or(TypeId::of::<Dummy>());
-
-        if let Some(type_data) = world.with_resource::<AppTypeRegistry, _, _>(|_, type_registry| {
-            type_registry
-                .read()
-                .get_type_data::<ReflectLuaValue>(type_id_or_dummy)
-                .cloned()
-        }) {
-            self.0
-                .with_reflect(&world, |r, _, _| (type_data.into_value)(r, lua))?
-        } else if let Some(type_data) =
-            world.with_resource::<AppTypeRegistry, _, _>(|_, type_registry| {
-                type_registry
-                    .read()
-                    .get_type_data::<ReflectLuaProxied>(type_id_or_dummy)
-                    .cloned()
-            })
-        {
-            Ok((type_data.into_proxy)(self.0.clone(), lua)?)
-        } else {
-            Ok(self.clone().into_lua(lua)?)
-        }
+        self.0.map_type_data(
+            &world,
+            |self_, type_data: Option<Either<ReflectLuaValue, ReflectLuaProxied>>| match type_data {
+                Some(Either::Left(value_data)) => {
+                    self_.with_reflect(&world, |r, _, _| (value_data.into_value)(r, lua))?
+                }
+                Some(Either::Right(proxy_data)) => Ok((proxy_data.into_proxy)(self_, lua)?),
+                None => Ok(LuaReflectReference(self_).into_lua(lua)?),
+            },
+        )?
     }
 
-    pub fn set_with_lua_proxy(&self, lua: &Lua, value: Value) -> Result<(), mlua::Error> {
+    pub fn set_with_lua_proxy(self, lua: &Lua, value: Value) -> Result<(), mlua::Error> {
         bevy::log::debug!("Setting lua reflect reference with value: {:?}", value);
 
         let world = lua.get_world();
-        let type_id = self.0.with_reflect(&world, |r, _, _| {
-            r.get_represented_type_info().map(|t| t.type_id())
-        })?;
 
-        // convenience, ideally we probably should just avoid lookups when no type id is here, but for now we just use a dummy type nothing will ever
-        // be registered for. If the type we're reflecting doesn't represent anything or a registered type, we use a generic reflect reference.
-        struct Unknown;
-        let type_id_or_dummy = type_id.unwrap_or(TypeId::of::<Unknown>());
-
-        if let Some(type_data) = world.with_resource::<AppTypeRegistry, _, _>(|_, type_registry| {
-            type_registry
-                .read()
-                .get_type_data::<ReflectLuaValue>(type_id_or_dummy)
-                .cloned()
-        }) {
-            bevy::log::debug!("Setting value with ReflectLuaValue registration");
-            let other = (type_data.from_value)(value, lua)?;
-            self.0.with_reflect_mut(&world, |r, _, _| {
-                r.try_apply(other.as_partial_reflect())
-                    .map_err(ScriptError::new_reflection_error)
-            })??;
-        } else if let Some(type_data) =
-            world.with_resource::<AppTypeRegistry, _, _>(|_, type_registry| {
-                type_registry
-                    .read()
-                    .get_type_data::<ReflectLuaProxied>(type_id_or_dummy)
-                    .cloned()
-            })
-        {
-            bevy::log::debug!("Setting value with ReflectLuaProxied registration");
-            let other = (type_data.from_proxy)(value, lua)?;
-            let other = other.with_reflect(&world, |r, _, _| r.clone_value())?;
-            // now we can set it
-            self.0.with_reflect_mut(&world, |r, _, _| {
-                if let Some(set) = type_data.opt_set {
-                    set(r, other)
-                } else {
-                    r.try_apply(other.as_partial_reflect())
-                        .map_err(ScriptError::new_reflection_error)?;
-                    Ok(())
-                }
-            })??;
-        } else {
-            bevy::log::debug!("No registration found, throwing error");
-            // we don't know how to assign the value
-            // prod to see if it's a common container (i.e. Option or Vec)
-            world.with_resource::<AppTypeRegistry, _, _>(|_,type_registry| {
-                    let type_registry = type_registry.read();
-                    Err(ScriptError::new_runtime_error(format!(
-                                "Invalid assignment `{:?}` = `{:?}`. The underlying type does: `{}` not support assignment.",
-                                self.0.print_with_type_registry(&type_registry),
-                                value,
-                                type_registry.get_type_info(type_id_or_dummy).map(|t| t.type_path()).unwrap_or_else(|| "Unknown")
+        self.0.map_type_data(
+            &world.clone(),
+            move |self_, type_data: Option<Either<ReflectLuaValue, ReflectLuaProxied>>| {
+                // let world = world.clone(); // move copy into closure
+                match type_data {
+                    Some(Either::Left(value_data)) => {
+                        let other = (value_data.from_value)(value, lua)?;
+                        self_.with_reflect_mut(&world, |r, _, _| {
+                            r.try_apply(other.as_partial_reflect())
+                                .map_err(ScriptError::new_reflection_error)
+                        })?
+                    }
+                    Some(Either::Right(proxy_data)) => {
+                        let other = (proxy_data.from_proxy)(value, lua)?;
+                        let other = other.with_reflect(&world, |r, _, _| r.clone_value())?;
+                        // now we can set it
+                        self_.with_reflect_mut(&world, |r, _, _| {
+                            if let Some(set) = proxy_data.opt_set {
+                                set(r, other)
+                            } else {
+                                r.try_apply(other.as_partial_reflect())
+                                    .map_err(ScriptError::new_reflection_error)?;
+                                Ok(())
+                            }
+                        })?
+                    }
+                    None => {
+                        world.with_resource(|_, type_registry: Mut<AppTypeRegistry>| {
+                            let type_registry = type_registry.read();
+                            Err(ScriptError::new_runtime_error(format!(
+                                "Invalid assignment `{:?}` = `{:?}`. The underlying type does not support assignment.",
+                                self_.print_with_type_registry(&type_registry),
+                                value
                             )))
-                })?;
-        };
+                        })?;
+                        Ok(())
+                    },
+                }
+            },
+        )??;
         Ok(())
     }
 
@@ -250,8 +215,10 @@ impl TealData for LuaReflectReference {
 
         m.add_function_mut(
             "insert",
-            |l, (mut self_, key): (LuaReflectReference, usize, LuaReflect)| {
-                self_.0.insert_at(key, l.get_world())
+            |l, (mut self_, key): (LuaReflectReference, usize, Value)| {
+                // check target type for a from_lua function
+                // let world = l.get_world();
+                // self.0.
             },
         );
 

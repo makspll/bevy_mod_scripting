@@ -215,54 +215,10 @@ impl ReflectLuaProxied {
         // let from_proxy_clone = inner_lua_proxied_data.from_proxy.clone();
         Self {
             into_proxy: Arc::new(|r, l| LuaReflectReference(r).into_lua(l)),
-            // from_proxy: Arc::new(|v, l| {
-            //     // if it's a table, set existing elements using underlying from proxy
-            //     // if it's a ref, return the ref
-
-            //     if let Value::Table(t) = v {
-            //         let ts = t.sequence_values::<Value>();
-            //         for e in ts {
-            //             let v = e?;
-            //             let elem_ref = (from_proxy_clone)(v, l)?;
-            //         }
-            //     } else {
-            //         LuaReflectReference::from_lua(v, l)
-            //     }
-            // }),
             from_proxy: Arc::new(|v, l| {
-                // can either be a table or a direct ref
-                // construct dynamic vec either way
-                // if let Value::Table(t) = v {
-                //     for v in t.sequence_values::<Value>() {
-                //         let lua_elem = v?;
-                //     }
-                // } else {
-                //     todo!()
-                // }
                 todo!()
             }),
-            opt_set: todo!(), //     set_from_proxy: todo!(), // set_from_proxy: Arc::new(|r, v, l| {
-                              //                              //     let table = if let Value::Table(t) = v {
-                              //                              //         t
-                              //                              //     } else {
-                              //                              //         return Err(tealr::mlu::mlua::Error::external(
-                              //                              //             ScriptError::new_runtime_error(format!(
-                              //                              //                 "Cannot set value of type `{}` via type: `{}`. Expected table",
-                              //                              //                 v.type_name(),
-                              //                              //                 "List",
-                              //                              //             )),
-                              //                              //         ));
-                              //                              //     };
-
-                              //                              //     let lua_values = table.sequence_values().collect::<Result<Vec<Value>, _>>()?;
-
-                              //                              //     let converted_values = lua_values
-                              //                              //         .into_iter()
-                              //                              //         .map(|v| (from_proxy)(v, lua))
-                              //                              //         .collect::<Result<Vec<_>, _>>()?;
-
-                              //                              //     let target_list = r.as_list().map_err(tealr::mlu::mlua::Error::external)?;
-                              //                              // }),
+            opt_set: todo!(),
         }
     }
 }
@@ -277,15 +233,6 @@ where
             into_proxy: Arc::new(|p, l| T::Proxy::from(p).into_lua(l)),
             from_proxy: Arc::new(|v, l| T::Proxy::from_lua(v, l).map(|p| p.as_ref().clone())),
             opt_set: None,
-            // set_from_proxy: Arc::new(|r, v, l| {
-            //     let proxy = T::Proxy::from_lua(v, l).map(|p| p.as_ref().clone())?;
-            //     let world = l.get_world();
-            //     proxy.with_reflect(&world, |other, _, _| {
-            //         r.apply(other);
-            //         Ok::<_, tealr::mlu::mlua::Error>(())
-            //     })?;
-            //     Ok(())
-            // }),
         }
     }
 }
@@ -300,16 +247,6 @@ pub struct ReflectLuaValue {
             + Sync
             + 'static,
     >,
-    // pub set_value: Arc<
-    //     dyn for<'l> Fn(
-    //             &mut dyn PartialReflect,
-    //             Value<'l>,
-    //             &'l Lua,
-    //         ) -> Result<(), tealr::mlu::mlua::Error>
-    //         + Send
-    //         + Sync
-    //         + 'static,
-    // >,
     pub from_value: Arc<
         dyn for<'l> Fn(
                 Value<'l>,
@@ -371,95 +308,8 @@ impl ReflectLuaValue {
 
                 Ok(Box::new(dynamic_option))
             }),
-            // set_value: Arc::new(move |r, v, l| {
-            //     let dynamic = Self::dynamic_option_from_value(v, l, &from_value_clone)?;
-            //     r.apply(&dynamic);
-            //     Ok(())
-            // }),
         }
     }
-
-    // fn dynamic_list_from_value<'lua>(
-    //     v: Value<'lua>,
-    //     lua: &'lua Lua,
-    //     from_value: &Arc<
-    //         dyn for<'l> Fn(
-    //                 Value<'l>,
-    //                 &'l Lua,
-    //             )
-    //                 -> Result<Box<dyn PartialReflect>, tealr::mlu::mlua::Error>
-    //             + Send
-    //             + Sync
-    //             + 'static,
-    //     >,
-    // ) -> Result<DynamicList, tealr::mlu::mlua::Error> {
-    //     let table = if let Value::Table(t) = v {
-    //         t
-    //     } else {
-    //         return Err(tealr::mlu::mlua::Error::external(
-    //             ScriptError::new_runtime_error(format!(
-    //                 "Cannot set value of type `{}` via type: `{}`. Expected table",
-    //                 v.type_name(),
-    //                 "List",
-    //             )),
-    //         ));
-    //     };
-
-    //     let lua_values = table.sequence_values().collect::<Result<Vec<Value>, _>>()?;
-
-    //     let converted_values = lua_values
-    //         .into_iter()
-    //         .map(|v| (from_value)(v, lua))
-    //         .collect::<Result<Vec<_>, _>>()?;
-    //     let dynamic_type = DynamicList::from_iter(converted_values);
-    //     // TODO: set the represented type, need to pass type info
-    //     // dynamic_type.set_represented_type(represented_type);
-    //     Ok(dynamic_type)
-    // }
-
-    // pub fn new_for_list(inner_reflect_lua_value: &ReflectLuaValue) -> Self {
-    //     let into_value_clone = inner_reflect_lua_value.into_value.clone();
-    //     let from_value_clone = inner_reflect_lua_value.from_value.clone();
-    //     let from_value_clone2 = inner_reflect_lua_value.from_value.clone();
-    //     Self {
-    //         into_value: Arc::new(move |r, l| {
-    //             let inner = r.as_list().map_err(tealr::mlu::mlua::Error::external)?;
-    //             let inner = inner
-    //                 .map(|i| (into_value_clone)(i, l))
-    //                 .collect::<Result<Vec<_>, _>>()?;
-
-    //             let t = l.create_table_from(
-    //                 inner
-    //                     .into_iter()
-    //                     .enumerate()
-    //                     .map(|(i, v)| (Value::Integer(i as i64 + 1), v)),
-    //             )?;
-
-    //             Ok(Value::Table(t))
-    //         }),
-    //         set_value: Arc::new(move |r, v, l| {
-    //             let dynamic = Self::dynamic_list_from_value(v, l, &from_value_clone)?;
-
-    //             // apply will not remove excess elements
-    //             if let ReflectMut::List(list) = r.reflect_mut() {
-    //                 if dynamic.len() < list.len() {
-    //                     (dynamic.len()..list.len()).rev().for_each(|i| {
-    //                         list.remove(i);
-    //                     });
-    //                 }
-    //             }
-    //             println!("reflect: {:?}", r);
-    //             println!("dynamic: {:?}", dynamic);
-
-    //             r.apply(&dynamic);
-    //             Ok(())
-    //         }),
-    //         from_value: Arc::new(move |v, l| {
-    //             let dynamic = Self::dynamic_list_from_value(v, l, &from_value_clone2)?;
-    //             Ok(Box::new(dynamic))
-    //         }),
-    //     }
-    // }
 }
 
 impl<T: Reflect + Clone + for<'l> IntoLua<'l> + for<'l> FromLua<'l>> FromType<T>

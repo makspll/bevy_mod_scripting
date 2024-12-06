@@ -1,6 +1,6 @@
 use std::{any::TypeId, cmp::max};
 
-use bevy::reflect::{List, PartialReflect};
+use bevy::reflect::{FromType, List, PartialReflect, TypeData};
 use itertools::Itertools;
 
 use crate::error::ScriptError;
@@ -39,11 +39,11 @@ pub trait PartialReflectExt {
     fn insert_at(&mut self, index: usize, value: Box<dyn PartialReflect>) -> Result<(), ScriptError>;
 }
 pub trait TypeIdExtensions {
-    fn type_id_or_dummy(&self) -> TypeId;
+    fn type_id_or_fake_id(&self) -> TypeId;
 }
 
 impl TypeIdExtensions for Option<TypeId> {
-    fn type_id_or_dummy(&self) -> TypeId {
+    fn type_id_or_fake_id(&self) -> TypeId {
         struct UknownType;
         match self {
             Some(t) => *t,
@@ -189,12 +189,10 @@ impl<T: PartialReflect + ?Sized> PartialReflectExt for T {
 
 }
 
-
-
-
 #[cfg(test)]
 mod test {
     use super::*;
+
 
     #[test]
     fn test_type_no_crate() {
