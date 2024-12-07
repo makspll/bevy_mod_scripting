@@ -14,18 +14,54 @@ impl ReflectAllocationId {
     }
 }
 
+/// Pointer which owns the value it points to, and will deallocate it when dropped
+#[derive(Debug)]
+pub struct OwningPtr<T: ?Sized> {
+    ptr: *mut T,
+}
+
+impl<T: ?Sized> OwningPtr<T> {
+    /// Creates a new OwningPtr from a raw pointer
+    /// # Safety
+    /// The pointer must come from a Box::leak call, and no more than one OwningPtr can exist for a given pointer
+    pub unsafe fn new(ptr: *mut T) -> Self {
+        Self { ptr }
+    }
+}
+
+impl<T: ?Sized> Drop for OwningPtr<T> {
+    fn drop(&mut self) {
+        unsafe {
+            // Safety: we own the pointer, only one OwningPtr can exist for a given pointer
+            let _ = Box::from_raw(self.ptr);
+        }
+    }
+}
+
+// yikes, the indirection. I need this to store boxed values too though
 #[derive(Clone, Debug)]
-pub struct ReflectAllocation(pub(self) Arc<UnsafeCell<dyn PartialReflect>>);
+pub enum ReflectAllocation {
+    Double(Arc<OwningPtr<dyn PartialReflect>>),
+    Single(Arc<UnsafeCell<dyn PartialReflect>>),
+}
 
 unsafe impl Send for ReflectAllocation {}
 unsafe impl Sync for ReflectAllocation {}
 
 impl ReflectAllocation {
     pub fn get_ptr(&self) -> *mut dyn PartialReflect {
-        self.0.get()
+        match self {
+            ReflectAllocation::Double(v) => v.ptr,
+            ReflectAllocation::Single(v) => v.get(),
+        }
     }
     pub fn new(value: Arc<UnsafeCell<dyn PartialReflect>>) -> Self {
-        Self(value)
+        Self::Single(value)
+    }
+
+    pub fn new_boxed(value: Box<dyn PartialReflect>) -> Self {
+        let ptr = Box::leak::<'static>(value);
+        Self::Double(Arc::new(unsafe { OwningPtr::new(ptr) }))
     }
 }
 
@@ -55,6 +91,21 @@ impl ReflectAllocator {
 
         let id = ReflectAllocationId(self.allocations.len());
         let value = ReflectAllocation::new(Arc::new(UnsafeCell::new(value)));
+        self.allocations.insert(id, value.clone());
+        if let Some(type_id) = type_id {
+            self.types.insert(id, type_id);
+        }
+        (id, value)
+    }
+
+    pub fn allocate_boxed(
+        &mut self,
+        value: Box<dyn PartialReflect>,
+    ) -> (ReflectAllocationId, ReflectAllocation) {
+        let type_id = value.get_represented_type_info().map(|i| i.type_id());
+
+        let id = ReflectAllocationId(self.allocations.len());
+        let value = ReflectAllocation::new_boxed(value);
         self.allocations.insert(id, value.clone());
         if let Some(type_id) = type_id {
             self.types.insert(id, type_id);
@@ -105,7 +156,10 @@ impl ReflectAllocator {
     /// Runs a garbage collection pass on the allocations, removing any allocations which have no more strong references
     /// Needs to be run periodically to prevent memory leaks
     pub fn clean_garbage_allocations(&mut self) {
-        self.allocations.retain(|_, v| Arc::strong_count(&v.0) > 1);
+        self.allocations.retain(|_, v| match v {
+            ReflectAllocation::Single(v) => Arc::strong_count(v) > 1,
+            ReflectAllocation::Double(v) => Arc::strong_count(v) > 1,
+        });
     }
 }
 

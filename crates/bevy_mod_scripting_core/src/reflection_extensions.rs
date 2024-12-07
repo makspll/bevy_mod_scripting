@@ -24,6 +24,9 @@ pub trait PartialReflectExt {
     /// If the type is an iterable list-like type, returns an iterator over the elements.
     fn as_list(&self) -> Result<impl Iterator<Item = &dyn PartialReflect>, ScriptError>;
 
+    /// If the type is a usize, returns the value as a usize otherwise throws a convenient error
+    fn as_usize(&self) -> Result<usize, ScriptError>;
+
     /// If the type is an iterable list-like type, sets the elements of the list to the elements of the other list-like type.
     /// This acts as a set operation, so the left list will have the same length as the right list after this operation.
     fn set_as_list<
@@ -36,7 +39,31 @@ pub trait PartialReflectExt {
     
 
     /// Inserts into the type at the given key, if the type supports inserting with the given key
-    fn insert_at(&mut self, index: usize, value: Box<dyn PartialReflect>) -> Result<(), ScriptError>;
+    fn try_insert_boxed(&mut self, index: Box<dyn PartialReflect>, value: Box<dyn PartialReflect>) -> Result<(), ScriptError>;
+
+    /// Tries to insert the given value into the type, if the type is a container type. 
+    /// The insertion will happen at the natural `end` of the container.
+    /// For lists, this is the length of the list.
+    /// For sets, this will simply insert the value into the set.
+    /// For maps, there is no natural `end`, so the push will error out
+    fn try_push_boxed(&mut self, value: Box<dyn PartialReflect>) -> Result<(), ScriptError>;
+
+
+    // If the type has a natural last element to pop, pops the last element and returns it as a boxed value.
+    fn try_pop_boxed(&mut self) -> Result<Box<dyn PartialReflect>, ScriptError>;
+
+    /// If the type is a container type, empties the contents
+    fn try_clear(&mut self) -> Result<(), ScriptError>;
+
+    /// If the type is a container type, returns the type id of the elements in the container.
+    /// For maps, this is the type id of the values.
+    fn element_type_id(&self) -> Option<TypeId>;
+
+    /// If the type is a container type, returns the type id of the keys in the container.
+    /// For lists and arrays, this is the type id of usize.
+    /// For maps, this is the type id of the keys.
+    fn key_type_id(&self) -> Option<TypeId>;
+
 }
 pub trait TypeIdExtensions {
     fn type_id_or_fake_id(&self) -> TypeId;
@@ -166,14 +193,24 @@ impl<T: PartialReflect + ?Sized> PartialReflectExt for T {
         }
     }
 
-    fn insert_at(&mut self, index: usize, value: Box<dyn PartialReflect>) -> Result<(), ScriptError> {
+    fn as_usize(&self) -> Result<usize, ScriptError> {
+        self.as_partial_reflect().try_downcast_ref::<usize>().copied()
+            .ok_or_else(|| ScriptError::new_runtime_error(format!(
+                "Expected type usize, but got {}",
+                self.get_represented_type_info()
+                    .map(|ti| ti.type_path())
+                    .unwrap_or_else(|| "dynamic type with no type information")
+            )))
+    }
+
+    fn try_insert_boxed(&mut self, key: Box<dyn PartialReflect>, value: Box<dyn PartialReflect>) -> Result<(), ScriptError> {
         match self.reflect_mut() {
             bevy::reflect::ReflectMut::List(l) => {
-                l.insert(index, value);
+                l.insert(key.as_usize()?, value);
                 Ok(())
             },
             bevy::reflect::ReflectMut::Map(m) => {
-                m.insert_boxed(Box::new(index), value);
+                m.insert_boxed(key, value);
                 Ok(())
             },
             bevy::reflect::ReflectMut::Set(s) => {
@@ -187,10 +224,84 @@ impl<T: PartialReflect + ?Sized> PartialReflectExt for T {
         }
     }
 
+    fn try_push_boxed(&mut self, value: Box<dyn PartialReflect>) -> Result<(), ScriptError> {
+        match self.reflect_mut() {
+            bevy::reflect::ReflectMut::List(l) => {
+                l.push(value);
+                Ok(())
+            },
+            bevy::reflect::ReflectMut::Set(s) => {
+                s.insert_boxed(value);
+                Ok(())
+            },
+            _ => Err(ScriptError::new_reflection_error(format!(
+                "Could not push into {}. The type does not support pushing.",
+                self.reflect_type_path()
+            ))),
+        }
+    }
+
+    fn try_clear(&mut self) -> Result<(), ScriptError> {
+        match self.reflect_mut() {
+            bevy::reflect::ReflectMut::List(l) => {
+                let _ = l.drain();
+                Ok(())
+            },
+            bevy::reflect::ReflectMut::Map(m) => {
+                let _ = m.drain();
+                Ok(())
+            },
+            bevy::reflect::ReflectMut::Set(s) => {
+                let _ = s.drain();
+                Ok(())
+            },
+            _ => Err(ScriptError::new_reflection_error(format!(
+                "Could not clear {}. The type does not support clearing.",
+                self.reflect_type_path()
+            ))),
+        }
+    }
+
+    
+    fn try_pop_boxed(&mut self) -> Result<Box<dyn PartialReflect>, ScriptError> {
+        match self.reflect_mut() {
+            bevy::reflect::ReflectMut::List(l) => {
+                l.pop().ok_or_else(|| ScriptError::new_runtime_error("Tried to pop from an empty list"))
+            },
+            _ => Err(ScriptError::new_reflection_error(format!(
+                "Could not pop from {}. The type does not support popping.",
+                self.reflect_type_path()
+            ))),
+        }
+    }    
+
+    fn element_type_id(&self) -> Option<TypeId> {
+        let elem: TypeId = match self.get_represented_type_info()? {
+            bevy::reflect::TypeInfo::List(list_info) => list_info.item_ty().id(),
+            bevy::reflect::TypeInfo::Array(array_info) => array_info.item_ty().id(),
+            bevy::reflect::TypeInfo::Map(map_info) => map_info.value_ty().id(),
+            bevy::reflect::TypeInfo::Set(set_info) => set_info.value_ty().id(),
+            _ => return None,
+        };
+        Some(elem)
+    }
+    
+    fn key_type_id(&self) -> Option<TypeId> {
+        let key: TypeId = match self.get_represented_type_info()? {
+            bevy::reflect::TypeInfo::Map(map_info) => map_info.key_ty().id(),
+            bevy::reflect::TypeInfo::List(_) |  bevy::reflect::TypeInfo::Array(_) => TypeId::of::<usize>(),
+            _ => return None,
+        };
+        Some(key)
+    }
+    
+
 }
 
 #[cfg(test)]
 mod test {
+    use bevy::reflect::{DynamicMap, Map};
+
     use super::*;
 
 
@@ -330,35 +441,47 @@ mod test {
     }
 
     #[test]
-    fn test_insert_at_vec() {
+    fn test_try_insert_vec() {
         let mut list = vec![1, 2, 3];
         let value = 4;
         let value_ref: Box<dyn PartialReflect> = Box::new(value);
-        list.insert_at(&1, value_ref).unwrap();
+        list.try_insert_boxed(Box::new(1usize), value_ref).unwrap();
         assert_eq!(vec![1, 4, 2, 3], list);
     }
 
     #[test]
-    fn test_insert_at_map() {
+    fn test_try_insert_map() {
         let mut map = std::collections::HashMap::<i32, i32>::default();
         let value = 4;
         let value_ref: Box<dyn PartialReflect> = Box::new(value);
         map.insert(1, 2);
         map.insert(2, 3);
         map.insert(3, 4);
-        map.insert_at(&1, value_ref).unwrap();
+        map.try_insert_boxed(Box::new(1), value_ref).unwrap();
         assert_eq!(4, map[&1]);
     }
 
     #[test]
-    fn test_insert_at_set() {
+    fn test_try_insert_set() {
         let mut set = std::collections::HashSet::<i32>::default();
         let value = 4;
         let value_ref: Box<dyn PartialReflect> = Box::new(value);
         set.insert(1);
         set.insert(2);
         set.insert(3);
-        set.insert_at(&1, value_ref).unwrap();
+        set.try_insert_boxed(Box::new(1), value_ref).unwrap();
         assert!(set.contains(&4));
+    }
+
+    #[test]
+    fn test_try_insert_dynamic_map_into_map_of_maps() {
+        let mut map = std::collections::HashMap::<i32, std::collections::HashMap<i32, i32>>::default();
+        let value = DynamicMap::from_iter(vec![(1, 2), (2, 3), (3, 4)]);
+        let value_ref: Box<dyn PartialReflect> = Box::new(value.clone_dynamic());
+        map.insert(1, std::collections::HashMap::<i32, i32>::default());
+        map.insert(2, std::collections::HashMap::<i32, i32>::default());
+        map.insert(3, std::collections::HashMap::<i32, i32>::default());
+        map.try_insert_boxed(Box::new(1), value_ref).unwrap();
+        assert!(value.reflect_partial_eq(&map[&1]).unwrap());
     }
 }

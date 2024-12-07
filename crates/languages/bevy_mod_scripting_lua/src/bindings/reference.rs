@@ -1,18 +1,21 @@
 use std::{
     any::{Any, TypeId},
     error::Error,
+    sync::Arc,
 };
 
 use bevy::{
     ecs::{reflect::AppTypeRegistry, world::Mut},
-    reflect::{OffsetAccess, ParsedPath, ReflectFromReflect},
+    reflect::{OffsetAccess, ParsedPath, PartialReflect, ReflectFromReflect},
 };
 use bevy_mod_scripting_core::{
     bindings::{
-        Either, ReflectAllocator, ReflectRefIter, ReflectReference, ReflectionPathElem, Unproxy,
-        WorldCallbackAccess,
+        DeferredReflection, Either, ReflectAllocator, ReflectRefIter, ReflectReference,
+        ReflectReferencePrinter, ReflectionPathElem, TypeIdSource, Unproxy, WorldCallbackAccess,
     },
     error::ScriptError,
+    new_deferred_reflection,
+    reflection_extensions::PartialReflectExt,
 };
 use tealr::mlu::{
     generics::Q,
@@ -48,6 +51,49 @@ impl LuaReflectReference {
             .map_err(tealr::mlu::mlua::Error::external)
     }
 
+    pub fn concrete_from_value(
+        self,
+        value: Value,
+        lua: &Lua,
+        type_id_source: TypeIdSource,
+    ) -> Result<Box<dyn PartialReflect>, mlua::Error> {
+        let world = lua.get_world();
+
+        let type_id = self.0.type_id_of(type_id_source, &world)?;
+
+        let o = ReflectReference::map_type_data(
+            type_id,
+            &world.clone(),
+            move |type_data: Option<Either<ReflectLuaValue, ReflectLuaProxied>>| {
+                let val = match type_data {
+                    Some(Either::Left(value_data)) => {
+                        bevy::log::debug!("Converting using ReflectLuaValue");
+                        (value_data.from_value)(value, lua)?
+                    }
+                    Some(Either::Right(proxy_data)) => {
+                        bevy::log::debug!("Converting using ReflectLuaProxied");
+                        let other = (proxy_data.from_proxy)(value, lua)?;
+                        other.with_reflect(&world, |r, _, _| r.clone_value())?
+                    }
+                    None => {
+                        bevy::log::debug!("No conversion type data found");
+                        return Err(ScriptError::new_runtime_error(format!(
+                            "Tried to convert lua value: '{value:?}', to {}: '{}'. but this type does not support conversion from lua.",
+                            match type_id_source {
+                                TypeIdSource::Key => "key type of",
+                                TypeIdSource::Element => "element type of",
+                                TypeIdSource::Tail => "",
+                            },
+                            ReflectReferencePrinter::new(self.0).pretty_print(&world),
+                        )));
+                    }
+                };
+                Ok(val)
+            },
+        )??;
+        Ok(o)
+    }
+
     /// Queries the reflection system for a proxy registration for the underlying type.
     /// If found will convert to lua using this proxy
     /// If not found will use <Self as [`IntoLua`]>::into_lua to convert to lua
@@ -55,14 +101,17 @@ impl LuaReflectReference {
         // note we do not need to refer to LuaWorld here, it does not matter what the proxy is, that's pretty neat,
         let world = lua.get_world();
 
-        self.0.map_type_data(
+        let type_id = self.0.type_id_of(TypeIdSource::Tail, &world)?;
+
+        ReflectReference::map_type_data(
+            type_id,
             &world,
-            |self_, type_data: Option<Either<ReflectLuaValue, ReflectLuaProxied>>| match type_data {
-                Some(Either::Left(value_data)) => {
-                    self_.with_reflect(&world, |r, _, _| (value_data.into_value)(r, lua))?
-                }
-                Some(Either::Right(proxy_data)) => Ok((proxy_data.into_proxy)(self_, lua)?),
-                None => Ok(LuaReflectReference(self_).into_lua(lua)?),
+            |type_data: Option<Either<ReflectLuaValue, ReflectLuaProxied>>| match type_data {
+                Some(Either::Left(value_data)) => self
+                    .0
+                    .with_reflect(&world, |r, _, _| (value_data.into_value)(r, lua))?,
+                Some(Either::Right(proxy_data)) => Ok((proxy_data.into_proxy)(self.0, lua)?),
+                None => Ok(LuaReflectReference(self.0).into_lua(lua)?),
             },
         )?
     }
@@ -72,14 +121,17 @@ impl LuaReflectReference {
 
         let world = lua.get_world();
 
-        self.0.map_type_data(
+        let type_id = self.0.type_id_of(TypeIdSource::Tail, &world)?;
+
+        ReflectReference::map_type_data(
+            type_id,
             &world.clone(),
-            move |self_, type_data: Option<Either<ReflectLuaValue, ReflectLuaProxied>>| {
+            move |type_data: Option<Either<ReflectLuaValue, ReflectLuaProxied>>| {
                 // let world = world.clone(); // move copy into closure
                 match type_data {
                     Some(Either::Left(value_data)) => {
                         let other = (value_data.from_value)(value, lua)?;
-                        self_.with_reflect_mut(&world, |r, _, _| {
+                        self.0.with_reflect_mut(&world, |r, _, _| {
                             r.try_apply(other.as_partial_reflect())
                                 .map_err(ScriptError::new_reflection_error)
                         })?
@@ -88,7 +140,7 @@ impl LuaReflectReference {
                         let other = (proxy_data.from_proxy)(value, lua)?;
                         let other = other.with_reflect(&world, |r, _, _| r.clone_value())?;
                         // now we can set it
-                        self_.with_reflect_mut(&world, |r, _, _| {
+                        self.0.with_reflect_mut(&world, |r, _, _| {
                             if let Some(set) = proxy_data.opt_set {
                                 set(r, other)
                             } else {
@@ -99,16 +151,11 @@ impl LuaReflectReference {
                         })?
                     }
                     None => {
-                        world.with_resource(|_, type_registry: Mut<AppTypeRegistry>| {
-                            let type_registry = type_registry.read();
-                            Err(ScriptError::new_runtime_error(format!(
-                                "Invalid assignment `{:?}` = `{:?}`. The underlying type does not support assignment.",
-                                self_.print_with_type_registry(&type_registry),
-                                value
-                            )))
-                        })?;
-                        Ok(())
-                    },
+                        return Err(ScriptError::new_runtime_error(format!(
+                                "Invalid assignment `{}` = `{value:?}`. The left hand side does not support conversion from lua.",
+                                ReflectReferencePrinter::new(self.0).pretty_print(&world),
+                            )));
+                    }
                 }
             },
         )??;
@@ -215,12 +262,62 @@ impl TealData for LuaReflectReference {
 
         m.add_function_mut(
             "insert",
-            |l, (mut self_, key): (LuaReflectReference, usize, Value)| {
-                // check target type for a from_lua function
-                // let world = l.get_world();
-                // self.0.
+            |l, (self_, key, value): (LuaReflectReference, Value, Value)| {
+                let world = l.get_world();
+                bevy::log::debug!(
+                    "ReflectReference::insert with key: {:?} and value: {:?}",
+                    key,
+                    value
+                );
+                let key = self_
+                    .clone()
+                    .concrete_from_value(key, l, TypeIdSource::Key)?;
+                bevy::log::debug!("Key: {:?}", key);
+                let value = self_
+                    .clone()
+                    .concrete_from_value(value, l, TypeIdSource::Element)?;
+                bevy::log::debug!("Value: {:?}", value);
+                self_
+                    .0
+                    .with_reflect_mut(&world, |r, _, _| r.try_insert_boxed(key, value))??;
+                Ok(())
             },
         );
+
+        m.add_function_mut("push", |l, (self_, value): (LuaReflectReference, Value)| {
+            let world = l.get_world();
+            bevy::log::debug!("ReflectReference::push with value: {:?}", value);
+            let value = self_
+                .clone()
+                .concrete_from_value(value, l, TypeIdSource::Element)?;
+            self_
+                .0
+                .with_reflect_mut(&world, |r, _, _| r.try_push_boxed(value))??;
+            Ok(())
+        });
+
+        m.add_function_mut("pop", |l, self_: LuaReflectReference| {
+            let world = l.get_world();
+            bevy::log::debug!("ReflectReference::pop");
+            let ref_ = self_.0.with_reflect_mut(&world, |r, _, allocator| {
+                let last_elem = r.try_pop_boxed()?;
+                let reflect_ref = LuaReflectReference(ReflectReference::new_allocated_boxed(
+                    last_elem, allocator,
+                ));
+                Ok::<_, ScriptError>(reflect_ref)
+            })??;
+
+            Ok(ref_)
+        });
+
+        m.add_function("clear", |l, self_: LuaReflectReference| {
+            let world = l.get_world();
+            bevy::log::debug!("ReflectReference::clear");
+            self_
+                .0
+                .with_reflect_mut(&world, |r, _, _| r.try_clear())??;
+            Ok(())
+        });
 
         m.add_meta_function(MetaMethod::Len, |l, self_: LuaReflectReference| {
             self_.len(l)
@@ -266,7 +363,13 @@ impl TealData for LuaReflectReference {
 
         m.add_meta_function(MetaMethod::ToString, |lua, self_: LuaReflectReference| {
             let world = lua.get_world();
-            Ok(self_.0.print_with_world(&world))
+            Ok(ReflectReferencePrinter::new(self_.0).pretty_print(&world))
+        });
+
+        m.add_function("print_value", |lua, self_: LuaReflectReference| {
+            let world = lua.get_world();
+
+            Ok(ReflectReferencePrinter::new(self_.0).pretty_print_value(&world))
         });
     }
 }

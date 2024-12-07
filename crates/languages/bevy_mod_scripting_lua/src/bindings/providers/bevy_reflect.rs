@@ -2775,7 +2775,7 @@ pub struct Quat();
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Add::<bevy::math::Vec3>", composite = "add")]
+    #[lua(as_trait = "std::ops::Add::<bevy::math::Vec3>", composite = "MetaMethod::Add")]
     fn add(
         _self: LuaReflectValProxy<bevy::math::Vec3>,
         rhs: LuaReflectValProxy<bevy::math::Vec3>,

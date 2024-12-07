@@ -38,6 +38,14 @@ function on_event()
     print(table_to_string(comp.vec_of_usize))
     comp.vec_of_usize = comp.vec_of_usize
     print(table_to_string(comp.vec_of_usize))
+    comp.vec_of_usize:insert(1, 42)
+    print(table_to_string(comp.vec_of_usize))
+
+    print("\nmap")
+    -- print(comp.map_of_strings["key"])
+    comp.map_of_strings:insert("key2", "value")
+    -- print(comp.map_of_strings["key2"])
+
 
 
     print("============")
@@ -75,6 +83,8 @@ function on_event()
     comp.vec_of_option_bools:insert(1,nil)
     print("comp.vec_of_option_bools after insert: ", table_to_string(comp.vec_of_option_bools))
 
+
+
     print("comp.vec_of_option_bools before push: ", table_to_string(comp.vec_of_option_bools))
     comp.vec_of_option_bools:push(false)
     print("comp.vec_of_option_bools after push: ", table_to_string(comp.vec_of_option_bools))
@@ -82,7 +92,7 @@ function on_event()
     print("comp.vec_of_option_bools len after push: ", #comp.vec_of_option_bools)
 
     print("comp.vec_of_option_bools before pop: ", table_to_string(comp.vec_of_option_bools))
-    print(comp.vec_of_option_bools:pop())
+    print(comp.vec_of_option_bools:pop():print_value())
     print("comp.vec_of_option_bools after pop: ", table_to_string(comp.vec_of_option_bools))
 
     print("the pairs inside comp.vec_of_option_bools: ")             
@@ -90,27 +100,14 @@ function on_event()
         print(string.format(" - %s:%s",k,v))
     end
 
+
     comp.vec_of_option_bools:clear()
     print("comp.vec_of_option_bools after clear: ", table_to_string(comp.vec_of_option_bools))
-
     print("comp.vec_of_option_bools len after clear: ", #comp.vec_of_option_bools)
-    print("============")
-
-    print("comp.option_vec_of_bools before: ", table_to_string(comp.option_vec_of_bools))
-    print(comp.option_vec_of_bools:pop())
-    print("comp.option_vec_of_bools after pop: ", table_to_string(comp.option_vec_of_bools))
-
-
-    print("comp.option_vec_of_bools len after pop: ", #comp.option_vec_of_bools)
-
-    print("the pairs inside comp.option_vec_of_bools: ")
-    for k,v in pairs(comp.option_vec_of_bools) do
-        print(string.format(" - %s:%s",k,v))
-    end
 
     print("============")
 
-    local complex_vec_op = Vec3.new(0,1,0):any_orthonormal_vector() + comp.mat3.x_axis 
+    local complex_vec_op = Vec3.new(0,1,0):any_orthonormal_vector() + comp.mat3[1] 
     print("(0,1,0).any_orthonormal_vector() + mat3.x_axis is: ", complex_vec_op) 
 
     local new_mat3 = Mat3.from_cols(Vec3.new(1,0,0),Vec3.new(0,1,0),Vec3.new(0,0,-1))
@@ -121,8 +118,11 @@ function on_event()
     comp.f32 = comp.f32 + comp.f32 + comp.vec2:min_element()
     comp.vec2 = Vec2.new(2,1)
     comp.quat = Quat.from_xyzw(3,2,1,4)
-    comp.mat3.x_axis = Vec3.new(69,69,69)
+    comp.mat3[1] = Vec3.new(69,69,69)
 
+
+    world:exit()
+    do return end
     print("============")
 
     -- this is an example of something impossible to achieve with plain bevy reflection under the hood

@@ -4,6 +4,7 @@
 //! reflection gives us access to `dyn PartialReflect` objects via their type name,
 //! Scripting languages only really support `Clone` objects so if we want to support references,
 //! we need wrapper types which have owned and ref variants.
+use itertools::Itertools;
 use lockable::LockableHashMap;
 
 pub use itertools::Either;
@@ -30,7 +31,7 @@ use bevy::{
     },
     ptr::Ptr,
     reflect::{
-        Access, DynamicEnum, DynamicTuple, ParsedPath, PartialReflect, Reflect, ReflectFromPtr, ReflectPath, ReflectPathError, TypeData, TypeInfo, TypeRegistry
+        Access, AccessError, DynamicEnum, DynamicTuple, ParsedPath, PartialReflect, Reflect, ReflectFromPtr, ReflectMut, ReflectPath, ReflectPathError, ReflectRef, TypeData, TypeInfo, TypeRegistry
     },
 };
 use smallvec::SmallVec;
@@ -57,36 +58,23 @@ pub struct ReflectReference {
     pub reflect_path: Vec<ReflectionPathElem>,
 }
 
+/// Specifies where we should source the type id from when reflecting a ReflectReference
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum TypeIdSource {
+    /// Use the type id the reference points to after walking the path
+    Tail,
+    /// Given the Tail referene is a container type, use the type id of the elements in the container
+    Element,
+    /// Givent the Tail reference is a container type, use the type id of the keys of the container
+    Key,
+}
+
 
 impl ReflectReference {
 
     /// Creates a new infinite iterator. This iterator will keep returning the next element reference forever.
     pub fn into_iter_infinite(self) -> ReflectRefIter {
         ReflectRefIter::new_indexed(self)
-    }
-
-    /// Attempts to insert into the reflected value, if the underlying supports inserting at usize indices
-    pub fn insert_at(&mut self, world: &WorldAccessGuard, index: usize, elem: ReflectReference) -> ScriptResult<()> {
-        self.with_reflect_mut(world, |target, type_registry, allocator| {
-            elem.with_reflect_only(world, type_registry, allocator, |other,_,_| {
-                target.insert_at(index, other.clone_value())
-            })?
-        })??;
-        Ok(())
-    }
-
-    /// Prints the reference using the world to resolve type names.
-    pub fn print_with_world(&self, world: &WorldAccessGuard) -> String {
-        world.with_resource(|_, type_registry: Mut<AppTypeRegistry>| {
-            let type_registry = type_registry.read();
-            self.print_with_type_registry(&type_registry)
-        })
-    }
-
-    /// Prints the reference using the type registry to resolve type names. Prefer this over [`Self::print_with_world`] if you have a type registry available.
-    pub fn print_with_type_registry(&self, type_registry: &TypeRegistry) -> String {
-        let base = self.base.display_with_type_name(type_registry);
-        format!("Reference(base: {}, path: {:?})", base, self.reflect_path)
     }
 
     /// If this is a reference to something with a length accessible via reflection, returns that length.
@@ -113,6 +101,21 @@ impl ReflectReference {
     ) -> ReflectReference {
         let type_id = value.get_represented_type_info().map(|i| i.type_id()).unwrap_or_else(|| panic!("Type '{}' has no represented type information to allocate with.", std::any::type_name::<T>()));
         let (id, _) = allocator.allocate(value);
+        ReflectReference {
+            base: ReflectBaseType {
+                type_id,
+                base_id: ReflectBase::Owned(id),
+            },
+            reflect_path: Vec::default(),
+        }
+    }
+
+    pub fn new_allocated_boxed(
+        value: Box<dyn PartialReflect>,
+        allocator: &mut ReflectAllocator,
+    ) -> ReflectReference {
+        let type_id = value.get_represented_type_info().map(|i| i.type_id()).unwrap_or_else(|| panic!("Type '{}' has no represented type information to allocate with.", std::any::type_name_of_val(value.as_ref())));
+        let (id, _) = allocator.allocate_boxed(value);
         ReflectReference {
             base: ReflectBaseType {
                 type_id,
@@ -205,35 +208,55 @@ impl ReflectReference {
         reflect
     }
 
-    /// convenience for:
-    /// - retrieving the type id at the tip of the reference
-    /// - retrieving the type data for that type id if it exists
-    /// - calling the function with the type data if it exists
-    /// - or calling the function with [`self`] only if the type data does not exist
-    pub fn map_type_data<D,D2,O,F>(self, world: &WorldAccessGuard, map: F) -> ScriptResult<O>
+
+    fn tail_type_id(&self, world: &WorldAccessGuard) -> ScriptResult<Option<TypeId>> {
+        self.with_reflect(world, |r, _, _| {
+            r.get_represented_type_info().map(|t| t.type_id())
+        })
+    }
+
+    fn element_type_id(&self, world: &WorldAccessGuard) -> ScriptResult<Option<TypeId>> {
+        self.with_reflect(world, |r, _, _| {
+            r.element_type_id()
+        })
+    }
+
+    fn key_type_id(&self, world: &WorldAccessGuard) -> ScriptResult<Option<TypeId>> {
+        self.with_reflect(world, |r, _, _| {
+            r.key_type_id()
+        })
+    }
+
+    pub fn type_id_of(&self, source: TypeIdSource, world: &WorldAccessGuard) -> ScriptResult<Option<TypeId>> {
+        match source {
+            TypeIdSource::Tail => self.tail_type_id(world),
+            TypeIdSource::Element => self.element_type_id(world),
+            TypeIdSource::Key => self.key_type_id(world),
+        }
+    }
+
+    pub fn map_type_data<D,D2,O,F>(type_id: Option<TypeId>, world: &WorldAccessGuard, map: F) -> ScriptResult<O>
     where 
-        F: FnOnce(Self, Option<Either<D,D2>>) -> O,
+        F: FnOnce(Option<Either<D,D2>>) -> O,
         D: TypeData + Clone,
         D2: TypeData + Clone,
     {
-        if let Some(type_id) = self.with_reflect(&world, |r, _, _| {
-            r.get_represented_type_info().map(|t| t.type_id())
-        })? {
+        if let Some(type_id) = type_id {
 
             if let Some(type_data) = world.with_resource(|_, type_registry: Mut<AppTypeRegistry>| {
                 let type_registry = type_registry.read();
                 type_registry.get_type_data::<D>(type_id).cloned()
             }) {
-                return Ok(map(self, Some(Either::Left(type_data))));
+                return Ok(map(Some(Either::Left(type_data))));
             } else if let Some(type_data) = world.with_resource(|_, type_registry: Mut<AppTypeRegistry>| {
                 let type_registry = type_registry.read();
                 type_registry.get_type_data::<D2>(type_id).cloned()
             }) {
-                return Ok(map(self, Some(Either::Right(type_data))));
+                return Ok(map(Some(Either::Right(type_data))));
             }
         }
 
-        Ok(map(self, None))
+        Ok(map(None))
     }
 
 
@@ -514,6 +537,24 @@ impl ReflectBase {
     }
 }
 
+fn map_key_to_concrete(key: &str, key_type_id: TypeId) -> Option<Box<dyn PartialReflect>> {
+    let string_type_id = std::any::TypeId::of::<String>();
+    let usize_type_id = std::any::TypeId::of::<usize>();
+    let f32_type_id = std::any::TypeId::of::<f32>();
+    let bool_type_id = std::any::TypeId::of::<bool>();
+
+
+    match key_type_id {
+        // string_type_id => Some(Box::new(key.to_owned())),
+        usize_type_id => key.parse::<usize>().ok().map(|u| Box::new(u) as Box<dyn PartialReflect>),
+        f32_type_id => key.parse::<f32>().ok().map(|f| Box::new(f) as Box<dyn PartialReflect>),
+        bool_type_id => key.parse::<bool>().ok().map(|b| Box::new(b) as Box<dyn PartialReflect>),
+        _ => return None,
+    }
+}
+
+
+
 /// An element in the reflection path, the base reference included
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub enum ReflectionPathElem {
@@ -521,6 +562,8 @@ pub enum ReflectionPathElem {
     Reflection(ParsedPath),
     /// a deferred reflection
     DeferredReflection(DeferredReflection),
+    /// a map access, i.e. a reference to the key in a map
+    MapAccess(String),
     /// a no-op reflection, i.e. a reference to the base object, useful identity to have
     Identity
 }
@@ -573,6 +616,17 @@ impl<'a> ReflectPath<'a> for &'a ReflectionPathElem {
             ReflectionPathElem::Reflection(path) => path.reflect_element(root),
             ReflectionPathElem::DeferredReflection(f) => (f.get)(root),
             ReflectionPathElem::Identity => Ok(root),
+            ReflectionPathElem::MapAccess(key) => {
+                if let ReflectRef::Map(map) = root.reflect_ref() {
+                    let key_type_id = map.key_type_id().expect("Expected map keys to represent a type to be able to assign values");
+                    let key = map_key_to_concrete(key, key_type_id)
+                        .ok_or_else(|| ReflectPathError::InvalidDowncast)?;
+                    map.get(key.as_ref()).ok_or_else(|| ReflectPathError::InvalidDowncast)
+                } else {
+                    Err(ReflectPathError::InvalidDowncast)
+                }
+            },
+            
         }
     }
 
@@ -583,7 +637,18 @@ impl<'a> ReflectPath<'a> for &'a ReflectionPathElem {
         match self {
             ReflectionPathElem::Reflection(path) => path.reflect_element_mut(root),
             ReflectionPathElem::DeferredReflection(defref) => (defref.get_mut)(root),
-            ReflectionPathElem::Identity => Ok(root)
+            ReflectionPathElem::Identity => Ok(root),
+            ReflectionPathElem::MapAccess(key) => {
+                if let ReflectMut::Map(map) = root.reflect_mut() {
+                    let key_type_id = map.key_type_id().expect("Expected map keys to represent a type to be able to assign values");
+                    let key = map_key_to_concrete(key, key_type_id)
+                        .ok_or_else(|| ReflectPathError::InvalidDowncast)?;
+                    map.get_mut(key.as_ref()).ok_or_else(|| ReflectPathError::InvalidDowncast)
+                } else {
+                    Err(ReflectPathError::InvalidDowncast)
+                }
+            },
+            
         }
     }
 }
@@ -609,11 +674,11 @@ pub struct DeferredReflection {
 #[macro_export]
 macro_rules! new_deferred_reflection {
     (|$root:ident| {$($get:tt)*}) => {
-        DeferredReflection::from((
-            |$root: &dyn PartialReflect| -> Result<&dyn PartialReflect, ReflectPathError<'static>> {
+        $crate::bindings::reference::DeferredReflection::from((
+            |$root: &dyn PartialReflect| -> Result<&dyn PartialReflect, bevy::reflect::ReflectPathError<'static>> {
                 $($get)*
             },
-            |$root: &mut dyn PartialReflect| -> Result<&mut dyn PartialReflect, ReflectPathError<'static>> {
+            |$root: &mut dyn PartialReflect| -> Result<&mut dyn PartialReflect, bevy::reflect::ReflectPathError<'static>> {
                 $($get)*
             },
         ))
@@ -695,4 +760,270 @@ impl Iterator for ReflectRefIter {
 
         Some(result)
     }
+}
+
+pub struct ReflectReferencePrinter{
+    pub(crate) reference: ReflectReference,
+}
+
+#[derive(Clone, Copy, Debug)]
+enum BracketType {
+    Square,
+    Curly,
+    Round,
+}
+
+impl BracketType {
+
+    fn open(self) -> char {
+        match self {
+            BracketType::Square => '[',
+            BracketType::Curly => '{',
+            BracketType::Round => '(',
+        }
+    }
+
+    fn close(self) -> char {
+        match self {
+            BracketType::Square => ']',
+            BracketType::Curly => '}',
+            BracketType::Round => ')',
+        }
+    }
+
+    fn surrounded<F: FnOnce(&mut String)>(self, output: &mut String, f: F) {
+        output.push(self.open());
+        f(output);
+        output.push(self.close());
+    }
+}
+
+macro_rules! downcast_case {
+    ($id:ident, $out:ident, $t:path) => {
+        {
+            $out.push_str(stringify!($t));
+            $out.push('(');
+            if let Some($id) = $id.as_partial_reflect().try_downcast_ref::<$t>() {
+                $out.push_str(&format!("{:?}", $id));
+            } else {
+                $out.push_str("<Could not downcast>");
+            }
+            $out.push(')');
+        }
+    }
+}
+
+impl ReflectReferencePrinter {
+    const UNREGISTERED_TYPE: &'static str = "<Unregistered TypeId>";
+    const UNKNOWN_FIELD: &'static str = "<Unknown Field>";
+
+    pub fn new(reference: ReflectReference) -> Self {
+        Self { reference }
+    }
+    
+    /// Given a reflect reference, prints the type path of the reference resolving the type names with short names.
+    /// I.e. `MyType(Component).field_name[0].field_name[1] -> FieldType::Name`
+    pub fn pretty_print(&self, world: &WorldAccessGuard) -> String {
+        let mut pretty_path = String::new();
+
+        pretty_path.push_str("<Reference to ");
+
+        let root_suffix = match self.reference.base.base_id {
+            ReflectBase::Component(e, _) => format!("Component on entity {e}"),
+            ReflectBase::Resource(_) => "Resource".to_owned(),
+            ReflectBase::Owned(_) => "Allocation".to_owned(),
+        };
+
+        let tail_type_id = self.reference.tail_type_id(world).ok().flatten();
+
+        world.with_resource(|_, type_registry : Mut<AppTypeRegistry>| {
+            let type_registry = type_registry.read();
+            let root_type_path = type_registry.get_type_info(self.reference.base.type_id).map(|t| t.type_path_table().short_path()).unwrap_or("<Unregistered TypeId>");
+            pretty_path.push_str(&format!("{}({})", root_suffix, root_type_path));
+
+            for elem in self.reference.reflect_path.iter() {
+                match elem {
+                    ReflectionPathElem::Reflection(path) => {
+                        pretty_path.push_str(&path.to_string());
+                    }
+                    ReflectionPathElem::DeferredReflection(_) => {
+                        pretty_path.push_str(".<Deferred>");
+                    }
+                    ReflectionPathElem::Identity => {
+                        pretty_path.push_str("");
+                    }
+                    ReflectionPathElem::MapAccess(key) => {
+                        pretty_path.push_str(&format!("[{}]", key));
+                    },
+                    
+                }
+            }
+
+            if let Some(tail_type_id) = tail_type_id {
+                let type_path = type_registry.get_type_info(tail_type_id).map(|t| t.type_path_table().short_path()).unwrap_or(Self::UNREGISTERED_TYPE);
+                pretty_path.push_str(&format!(" -> {}", type_path));
+            }
+        });
+
+        pretty_path.push('>');
+
+        pretty_path
+    }
+
+
+    pub fn pretty_print_value_opaque(&self, v: &dyn PartialReflect, output: &mut String) {
+        
+        let type_id = v.get_represented_type_info().map(|t| t.type_id()).type_id_or_fake_id();
+        output.push_str("Reflect(");
+        match type_id {
+            id if id == TypeId::of::<usize>() => downcast_case!(v, output, usize),
+            id if id == TypeId::of::<isize>() => downcast_case!(v, output, isize),
+            id if id == TypeId::of::<f32>() => downcast_case!(v, output, f32),
+            id if id == TypeId::of::<f64>() => downcast_case!(v, output, f64),
+            id if id == TypeId::of::<u128>() => downcast_case!(v, output, u128),
+            id if id == TypeId::of::<u64>() => downcast_case!(v, output, u64),
+            id if id == TypeId::of::<u32>() => downcast_case!(v, output, u32),
+            id if id == TypeId::of::<u16>() => downcast_case!(v, output, u16),
+            id if id == TypeId::of::<u8>() => downcast_case!(v, output, u8),
+            id if id == TypeId::of::<i128>() => downcast_case!(v, output, i128),
+            id if id == TypeId::of::<i64>() => downcast_case!(v, output, i64),
+            id if id == TypeId::of::<i32>() => downcast_case!(v, output, i32),
+            id if id == TypeId::of::<i16>() => downcast_case!(v, output, i16),
+            id if id == TypeId::of::<i8>() => downcast_case!(v, output, i8),
+            id if id == TypeId::of::<String>() => downcast_case!(v, output, String),
+            id if id == TypeId::of::<bool>() => downcast_case!(v, output, bool),
+            _ => {
+                output.push_str(v.get_represented_type_info().map(|t| t.type_path()).unwrap_or(Self::UNREGISTERED_TYPE));
+            }
+        }
+        output.push(')');
+
+    }
+
+    /// Prints the actual value of the reference. Tries to use best available method to print the value.
+    pub fn pretty_print_value(&self, world: &WorldAccessGuard) -> String {
+        let mut output = String::new();
+
+        // instead of relying on type registrations, simply traverse the reflection tree and print sensible values
+        self.reference.with_reflect(world, |r, _, _| {
+            self.pretty_print_value_inner(r, &mut output);
+        }).unwrap_or_else(|e| {
+            output.push_str(&format!("<Error in printing: {}>", e));
+        });
+
+        output
+    }
+
+    fn pretty_print_key_values<K: AsRef<str>,V: AsRef<str>,I: IntoIterator<Item=(Option<K>,V)>>(bracket: BracketType, i: I, output: &mut String) {
+        bracket.surrounded(output, |output| {
+            let mut iter = i.into_iter().peekable();
+            while let Some((key, val)) = iter.next() {
+                if let Some(key) = key {
+                    output.push_str(key.as_ref());
+                    output.push_str(": ");
+                }
+                output.push_str(val.as_ref());
+                if iter.peek().is_some() {
+                    output.push_str(", ");
+                }
+            }
+        });
+    }
+
+
+    fn pretty_print_value_struct<'k,N: Iterator<Item=&'k str>, M: Iterator<Item=&'k dyn PartialReflect>>(&self, field_names: N, field_values: M, output: &mut String) {
+        let field_names = field_names.into_iter();
+        let fields = field_values.into_iter();
+        let fields_iter = fields.zip_longest(field_names).map(|e| {
+            let (val, name) = match e {
+                itertools::EitherOrBoth::Both(val, name) => (val, name),
+                itertools::EitherOrBoth::Left(val) => (val, Self::UNKNOWN_FIELD),
+                itertools::EitherOrBoth::Right(name) => (().as_partial_reflect(), name),
+            };
+            let mut field_printed = String::new();
+            self.pretty_print_value_inner(val, &mut field_printed);
+            (Some(name), field_printed)
+        });
+        Self::pretty_print_key_values(BracketType::Curly, fields_iter, output);
+    }
+
+    fn pretty_print_value_inner(&self, v: &dyn PartialReflect, output: &mut String) {
+        match v.reflect_ref() {
+            bevy::reflect::ReflectRef::Struct(s) => {
+                let field_names = s.get_represented_struct_info().map(|info| info.field_names()).unwrap_or_default().iter();
+                let field_values = s.iter_fields();
+
+                self.pretty_print_value_struct(field_names.copied(), field_values, output);
+
+            },
+            ReflectRef::TupleStruct(t) => {
+                let fields_iter = t.iter_fields().enumerate().map(|(i, val)| {
+                    let mut field_printed = String::new();
+                    self.pretty_print_value_inner(val, &mut field_printed);
+                    (Some(i.to_string()), field_printed)
+                });
+                Self::pretty_print_key_values(BracketType::Round, fields_iter, output);
+            },
+            ReflectRef::Tuple(t) => {
+                let fields_iter = t.iter_fields().map(|val| {
+                    let mut field_printed = String::new();
+                    self.pretty_print_value_inner(val, &mut field_printed);
+                    (None::<String>, field_printed)
+                });
+                Self::pretty_print_key_values(BracketType::Round, fields_iter, output);
+            },
+            ReflectRef::List(l) => {
+                let fields_iter = l.iter().map(|val| {
+                    let mut field_printed = String::new();
+                    self.pretty_print_value_inner(val, &mut field_printed);
+                    (None::<String>, field_printed)
+                });
+                Self::pretty_print_key_values(BracketType::Square, fields_iter, output);
+            },
+            ReflectRef::Array(a) => {
+                let fields_iter = a.iter().map(|val| {
+                    let mut field_printed = String::new();
+                    self.pretty_print_value_inner(val, &mut field_printed);
+                    (None::<String>, field_printed)
+                });
+                Self::pretty_print_key_values(BracketType::Square, fields_iter, output);
+            },
+            ReflectRef::Map(m) => {
+                let fields_iter = m.iter().map(|(key, val)| {
+                    let mut key_printed = String::new();
+                    self.pretty_print_value_inner(key, &mut key_printed);
+
+                    let mut field_printed = String::new();
+                    self.pretty_print_value_inner(val, &mut field_printed);
+                    (Some(key_printed), field_printed)
+                });
+                Self::pretty_print_key_values(BracketType::Curly, fields_iter, output);
+            },
+            ReflectRef::Set(s) => {
+                let fields_iter = s.iter().map(|val| {
+                    let mut field_printed = String::new();
+                    self.pretty_print_value_inner(val, &mut field_printed);
+                    (None::<String>, field_printed)
+                });
+                Self::pretty_print_key_values(BracketType::Curly, fields_iter, output);
+            },
+            ReflectRef::Enum(e) => {
+                output.push_str(&e.variant_path());
+                let bracket_type = match e.variant_type() {
+                    bevy::reflect::VariantType::Tuple => BracketType::Round,
+                    _ => BracketType::Curly,
+                };
+                let key_vals = e.iter_fields().map(|v| {
+                    let mut field_printed = String::new();
+                    self.pretty_print_value_inner(v.value(), &mut field_printed);
+                    (v.name(), field_printed)
+                });
+                Self::pretty_print_key_values(bracket_type, key_vals, output);
+            },
+            ReflectRef::Opaque(o) =>  {
+                self.pretty_print_value_opaque(o, output);
+            },
+        }
+
+    } 
 }

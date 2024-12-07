@@ -1,6 +1,7 @@
 use asset::ScriptAsset;
 use bevy::app::AppExit;
 use bevy::prelude::*;
+use bevy::utils::hashbrown::HashMap;
 use bevy_mod_scripting::lua::LuaScriptingPlugin;
 use bevy_mod_scripting::prelude::*;
 use bevy_mod_scripting_lua::bindings::providers::LuaBevyScriptingPlugin;
@@ -16,6 +17,7 @@ pub struct MyComponent {
     mat3: Mat3,
     vec_of_usize: Vec<usize>,
     vec_of_usize2: Vec<usize>,
+    map_of_strings: HashMap<String, String>,
     option_usize: Option<usize>,
     option_vec3: Option<Vec3>,
     vec_of_option_bools: Vec<Option<bool>>,
@@ -46,6 +48,7 @@ fn init_data(mut commands: Commands) {
             option_vec_of_bools: Some(vec![true, true, true]),
             vec_of_usize: vec![1, 2, 3],
             vec_of_usize2: vec![4, 5, 6],
+            map_of_strings: HashMap::from_iter(vec![("key".into(), "value".into())]),
             option_usize: None,
         },
         ScriptComponent::new(vec![SCRIPT_NAME.into()]),

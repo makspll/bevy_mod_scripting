@@ -191,6 +191,7 @@ impl ReflectLuaProxied {
         Self {
             into_proxy: Arc::new(|r, l| LuaReflectReference(r).into_lua(l)),
             from_proxy: Arc::new(move |v, l| {
+                bevy::log::debug!("Building listlike type from lua value: {:?}", v);
                 if let Value::Table(t) = v {
                     let dynamic_table = Self::dynamic_list_from_value(t, l, &from_value_clone, container_type_info)?;
                     let world = l.get_world();
@@ -216,6 +217,7 @@ impl ReflectLuaProxied {
         Self {
             into_proxy: Arc::new(|r, l| LuaReflectReference(r).into_lua(l)),
             from_proxy: Arc::new(|v, l| {
+                bevy::log::debug!("Building listlike type from proxied value: {:?}", v);
                 todo!()
             }),
             opt_set: todo!(),
@@ -231,7 +233,10 @@ where
     fn from_type() -> Self {
         Self {
             into_proxy: Arc::new(|p, l| T::Proxy::from(p).into_lua(l)),
-            from_proxy: Arc::new(|v, l| T::Proxy::from_lua(v, l).map(|p| p.as_ref().clone())),
+            from_proxy: Arc::new(|v, l| {
+                bevy::log::debug!("Building proxied type from lua value: {:?}", v);
+                T::Proxy::from_lua(v, l).map(|p| p.as_ref().clone())
+            }),
             opt_set: None,
         }
     }
