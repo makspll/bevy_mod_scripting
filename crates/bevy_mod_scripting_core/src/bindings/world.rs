@@ -551,6 +551,20 @@ impl<'w> WorldAccessGuard<'w> {
     /// then calling the function and finally proxying the output with the allocator.
     pub fn proxy_call<'i, O: Proxy, T: Unproxy, F: Fn(T::Output<'_>) -> O::Input<'i>>(
         &self,
+        proxied_input: T,
+        f: F,
+    ) -> ScriptResult<O> {
+        self.try_proxy_call(proxied_input, |o| Ok::<_, ScriptError>(f(o)))
+    }
+
+    pub fn try_proxy_call<
+        'i,
+        O: Proxy,
+        E: Into<Box<dyn std::error::Error + Send + Sync>>,
+        T: Unproxy,
+        F: Fn(T::Output<'_>) -> Result<O::Input<'i>, E>,
+    >(
+        &self,
         mut proxied_input: T,
         f: F,
     ) -> ScriptResult<O> {
@@ -567,7 +581,10 @@ impl<'w> WorldAccessGuard<'w> {
             }
         })?;
 
-        let out = f(unproxied_input);
+        let out = f(unproxied_input).map_err(|e| {
+            let e: Box<dyn std::error::Error + Send + Sync> = e.into();
+            ScriptError::new_generic_error(e)
+        })?;
 
         let proxied_output = self.with_resource(|_, mut allocator: Mut<ReflectAllocator>| {
             O::proxy_with_allocator(out, &mut allocator)

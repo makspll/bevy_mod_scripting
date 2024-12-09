@@ -460,7 +460,7 @@ pub struct AtomicUsize {}
     bms_lua_path = "crate",
     functions[r#"
 
-    #[lua(as_trait = "std::ops::Div::<u32>", composite = "div")]
+    #[lua(as_trait = "std::ops::Div::<u32>", composite = "div", metamethod = "Div")]
     fn div(
         _self: LuaReflectValProxy<bevy::utils::Duration>,
         rhs: u32,
@@ -485,7 +485,11 @@ pub struct AtomicUsize {}
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Sub::<bevy::utils::Duration>", composite = "sub")]
+    #[lua(
+        as_trait = "std::ops::Sub::<bevy::utils::Duration>",
+        composite = "sub",
+        metamethod = "Sub",
+    )]
     fn sub(
         _self: LuaReflectValProxy<bevy::utils::Duration>,
         rhs: LuaReflectValProxy<bevy::utils::Duration>,
@@ -494,7 +498,11 @@ pub struct AtomicUsize {}
 "#,
     r#"
 
-    #[lua(as_trait = "std::cmp::PartialEq::<bevy::utils::Duration>", composite = "eq")]
+    #[lua(
+        as_trait = "std::cmp::PartialEq::<bevy::utils::Duration>",
+        composite = "eq",
+        metamethod = "Eq",
+    )]
     fn eq(
         _self: LuaReflectRefProxy<bevy::utils::Duration>,
         other: LuaReflectRefProxy<bevy::utils::Duration>,
@@ -978,7 +986,11 @@ pub struct AtomicUsize {}
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Add::<bevy::utils::Duration>", composite = "add")]
+    #[lua(
+        as_trait = "std::ops::Add::<bevy::utils::Duration>",
+        composite = "add",
+        metamethod = "Add",
+    )]
     fn add(
         _self: LuaReflectValProxy<bevy::utils::Duration>,
         rhs: LuaReflectValProxy<bevy::utils::Duration>,
@@ -987,7 +999,7 @@ pub struct AtomicUsize {}
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Mul::<u32>", composite = "mul")]
+    #[lua(as_trait = "std::ops::Mul::<u32>", composite = "mul", metamethod = "Mul")]
     fn mul(
         _self: LuaReflectValProxy<bevy::utils::Duration>,
         rhs: u32,
@@ -1017,7 +1029,11 @@ pub struct Duration {}
 "#,
     r#"
 
-    #[lua(as_trait = "std::cmp::PartialEq::<bevy::utils::Instant>", composite = "eq")]
+    #[lua(
+        as_trait = "std::cmp::PartialEq::<bevy::utils::Instant>",
+        composite = "eq",
+        metamethod = "Eq",
+    )]
     fn eq(
         _self: LuaReflectRefProxy<bevy::utils::Instant>,
         other: LuaReflectRefProxy<bevy::utils::Instant>,
@@ -1034,7 +1050,11 @@ pub struct Duration {}
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Sub::<bevy::utils::Duration>", composite = "sub")]
+    #[lua(
+        as_trait = "std::ops::Sub::<bevy::utils::Duration>",
+        composite = "sub",
+        metamethod = "Sub",
+    )]
     fn sub(
         _self: LuaReflectValProxy<bevy::utils::Instant>,
         other: LuaReflectValProxy<bevy::utils::Duration>,
@@ -1050,7 +1070,11 @@ pub struct Duration {}
 /// See [Monotonicity].
 /// [Monotonicity]: Instant#monotonicity
 
-    #[lua(as_trait = "std::ops::Sub::<bevy::utils::Instant>", composite = "sub")]
+    #[lua(
+        as_trait = "std::ops::Sub::<bevy::utils::Instant>",
+        composite = "sub",
+        metamethod = "Sub",
+    )]
     fn sub(
         _self: LuaReflectValProxy<bevy::utils::Instant>,
         other: LuaReflectValProxy<bevy::utils::Instant>,
@@ -1144,7 +1168,11 @@ pub struct Duration {}
 /// This function may panic if the resulting point in time cannot be represented by the
 /// underlying data structure. See [`Instant::checked_add`] for a version without panic.
 
-    #[lua(as_trait = "std::ops::Add::<bevy::utils::Duration>", composite = "add")]
+    #[lua(
+        as_trait = "std::ops::Add::<bevy::utils::Duration>",
+        composite = "add",
+        metamethod = "Add",
+    )]
     fn add(
         _self: LuaReflectValProxy<bevy::utils::Instant>,
         other: LuaReflectValProxy<bevy::utils::Duration>,
@@ -1166,7 +1194,11 @@ pub struct Instant();
     bms_lua_path = "crate",
     functions[r#"
 
-    #[lua(as_trait = "std::cmp::PartialEq::<std::path::PathBuf>", composite = "eq")]
+    #[lua(
+        as_trait = "std::cmp::PartialEq::<std::path::PathBuf>",
+        composite = "eq",
+        metamethod = "Eq",
+    )]
     fn eq(
         _self: LuaReflectRefProxy<std::path::PathBuf>,
         other: LuaReflectRefProxy<std::path::PathBuf>,
@@ -1328,7 +1360,11 @@ pub struct PathBuf {}
 "#,
     r#"
 
-    #[lua(as_trait = "std::cmp::PartialEq::<std::ops::RangeFull>", composite = "eq")]
+    #[lua(
+        as_trait = "std::cmp::PartialEq::<std::ops::RangeFull>",
+        composite = "eq",
+        metamethod = "Eq",
+    )]
     fn eq(
         _self: LuaReflectRefProxy<std::ops::RangeFull>,
         other: LuaReflectRefProxy<std::ops::RangeFull>,
@@ -1352,7 +1388,11 @@ pub struct RangeFull {}
 /// Subtracts the `rhs` quaternion from `self`.
 /// The difference is not guaranteed to be normalized.
 
-    #[lua(as_trait = "std::ops::Sub::<bevy::math::Quat>", composite = "sub")]
+    #[lua(
+        as_trait = "std::ops::Sub::<bevy::math::Quat>",
+        composite = "sub",
+        metamethod = "Sub",
+    )]
     fn sub(
         _self: LuaReflectValProxy<bevy::math::Quat>,
         rhs: LuaReflectValProxy<bevy::math::Quat>,
@@ -1363,7 +1403,7 @@ pub struct RangeFull {}
 /// Multiplies a quaternion by a scalar value.
 /// The product is not guaranteed to be normalized.
 
-    #[lua(as_trait = "std::ops::Mul::<f32>", composite = "mul")]
+    #[lua(as_trait = "std::ops::Mul::<f32>", composite = "mul", metamethod = "Mul")]
     fn mul(
         _self: LuaReflectValProxy<bevy::math::Quat>,
         rhs: f32,
@@ -1380,7 +1420,7 @@ pub struct RangeFull {}
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Neg", composite = "neg")]
+    #[lua(as_trait = "std::ops::Neg", composite = "neg", metamethod = "Unm")]
     fn neg(
         _self: LuaReflectValProxy<bevy::math::Quat>,
     ) -> LuaReflectValProxy<bevy::math::Quat>;
@@ -1388,7 +1428,11 @@ pub struct RangeFull {}
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Mul::<bevy::math::Vec3A>", composite = "mul")]
+    #[lua(
+        as_trait = "std::ops::Mul::<bevy::math::Vec3A>",
+        composite = "mul",
+        metamethod = "Mul",
+    )]
     fn mul(
         _self: LuaReflectValProxy<bevy::math::Quat>,
         rhs: LuaReflectValProxy<bevy::math::Vec3A>,
@@ -1400,7 +1444,11 @@ pub struct RangeFull {}
 /// # Panics
 /// Will panic if `self` is not normalized when `glam_assert` is enabled.
 
-    #[lua(as_trait = "std::ops::Mul::<bevy::math::Vec3>", composite = "mul")]
+    #[lua(
+        as_trait = "std::ops::Mul::<bevy::math::Vec3>",
+        composite = "mul",
+        metamethod = "Mul",
+    )]
     fn mul(
         _self: LuaReflectValProxy<bevy::math::Quat>,
         rhs: LuaReflectValProxy<bevy::math::Vec3>,
@@ -1413,7 +1461,11 @@ pub struct RangeFull {}
 /// Note that addition is not the same as combining the rotations represented by the
 /// two quaternions! That corresponds to multiplication.
 
-    #[lua(as_trait = "std::ops::Add::<bevy::math::Quat>", composite = "add")]
+    #[lua(
+        as_trait = "std::ops::Add::<bevy::math::Quat>",
+        composite = "add",
+        metamethod = "Add",
+    )]
     fn add(
         _self: LuaReflectValProxy<bevy::math::Quat>,
         rhs: LuaReflectValProxy<bevy::math::Quat>,
@@ -1424,7 +1476,7 @@ pub struct RangeFull {}
 /// Divides a quaternion by a scalar value.
 /// The quotient is not guaranteed to be normalized.
 
-    #[lua(as_trait = "std::ops::Div::<f32>", composite = "div")]
+    #[lua(as_trait = "std::ops::Div::<f32>", composite = "div", metamethod = "Div")]
     fn div(
         _self: LuaReflectValProxy<bevy::math::Quat>,
         rhs: f32,
@@ -1433,7 +1485,11 @@ pub struct RangeFull {}
 "#,
     r#"
 
-    #[lua(as_trait = "std::cmp::PartialEq::<bevy::math::Quat>", composite = "eq")]
+    #[lua(
+        as_trait = "std::cmp::PartialEq::<bevy::math::Quat>",
+        composite = "eq",
+        metamethod = "Eq",
+    )]
     fn eq(
         _self: LuaReflectRefProxy<bevy::math::Quat>,
         rhs: LuaReflectRefProxy<bevy::math::Quat>,
@@ -1903,7 +1959,11 @@ pub struct RangeFull {}
 /// # Panics
 /// Will panic if `self` or `rhs` are not normalized when `glam_assert` is enabled.
 
-    #[lua(as_trait = "std::ops::Mul::<bevy::math::Quat>", composite = "mul")]
+    #[lua(
+        as_trait = "std::ops::Mul::<bevy::math::Quat>",
+        composite = "mul",
+        metamethod = "Mul",
+    )]
     fn mul(
         _self: LuaReflectValProxy<bevy::math::Quat>,
         rhs: LuaReflectValProxy<bevy::math::Quat>,
@@ -1925,7 +1985,7 @@ pub struct Quat();
     bms_lua_path = "crate",
     functions[r#"
 
-    #[lua(as_trait = "std::ops::Mul::<f32>", composite = "mul")]
+    #[lua(as_trait = "std::ops::Mul::<f32>", composite = "mul", metamethod = "Mul")]
     fn mul(
         _self: LuaReflectValProxy<bevy::math::Vec3>,
         rhs: f32,
@@ -2757,7 +2817,7 @@ pub struct Quat();
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Div::<f32>", composite = "div")]
+    #[lua(as_trait = "std::ops::Div::<f32>", composite = "div", metamethod = "Div")]
     fn div(
         _self: LuaReflectValProxy<bevy::math::Vec3>,
         rhs: f32,
@@ -2766,7 +2826,7 @@ pub struct Quat();
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Sub::<f32>", composite = "sub")]
+    #[lua(as_trait = "std::ops::Sub::<f32>", composite = "sub", metamethod = "Sub")]
     fn sub(
         _self: LuaReflectValProxy<bevy::math::Vec3>,
         rhs: f32,
@@ -2775,7 +2835,11 @@ pub struct Quat();
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Add::<bevy::math::Vec3>", composite = "MetaMethod::Add")]
+    #[lua(
+        as_trait = "std::ops::Add::<bevy::math::Vec3>",
+        composite = "add",
+        metamethod = "Add",
+    )]
     fn add(
         _self: LuaReflectValProxy<bevy::math::Vec3>,
         rhs: LuaReflectValProxy<bevy::math::Vec3>,
@@ -2784,7 +2848,7 @@ pub struct Quat();
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Rem::<f32>", composite = "rem")]
+    #[lua(as_trait = "std::ops::Rem::<f32>", composite = "rem", metamethod = "Mod")]
     fn rem(
         _self: LuaReflectValProxy<bevy::math::Vec3>,
         rhs: f32,
@@ -2793,7 +2857,11 @@ pub struct Quat();
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Div::<bevy::math::Vec3>", composite = "div")]
+    #[lua(
+        as_trait = "std::ops::Div::<bevy::math::Vec3>",
+        composite = "div",
+        metamethod = "Div",
+    )]
     fn div(
         _self: LuaReflectValProxy<bevy::math::Vec3>,
         rhs: LuaReflectValProxy<bevy::math::Vec3>,
@@ -2802,7 +2870,11 @@ pub struct Quat();
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Sub::<bevy::math::Vec3>", composite = "sub")]
+    #[lua(
+        as_trait = "std::ops::Sub::<bevy::math::Vec3>",
+        composite = "sub",
+        metamethod = "Sub",
+    )]
     fn sub(
         _self: LuaReflectValProxy<bevy::math::Vec3>,
         rhs: LuaReflectValProxy<bevy::math::Vec3>,
@@ -2811,7 +2883,7 @@ pub struct Quat();
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Add::<f32>", composite = "add")]
+    #[lua(as_trait = "std::ops::Add::<f32>", composite = "add", metamethod = "Add")]
     fn add(
         _self: LuaReflectValProxy<bevy::math::Vec3>,
         rhs: f32,
@@ -2820,7 +2892,11 @@ pub struct Quat();
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Div::<&bevy::math::Vec3>", composite = "div")]
+    #[lua(
+        as_trait = "std::ops::Div::<&bevy::math::Vec3>",
+        composite = "div",
+        metamethod = "Div",
+    )]
     fn div(
         _self: LuaReflectValProxy<bevy::math::Vec3>,
         rhs: LuaReflectRefProxy<bevy::math::Vec3>,
@@ -2829,7 +2905,7 @@ pub struct Quat();
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Neg", composite = "neg")]
+    #[lua(as_trait = "std::ops::Neg", composite = "neg", metamethod = "Unm")]
     fn neg(
         _self: LuaReflectValProxy<bevy::math::Vec3>,
     ) -> LuaReflectValProxy<bevy::math::Vec3>;
@@ -2837,7 +2913,11 @@ pub struct Quat();
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Rem::<&bevy::math::Vec3>", composite = "rem")]
+    #[lua(
+        as_trait = "std::ops::Rem::<&bevy::math::Vec3>",
+        composite = "rem",
+        metamethod = "Mod",
+    )]
     fn rem(
         _self: LuaReflectValProxy<bevy::math::Vec3>,
         rhs: LuaReflectRefProxy<bevy::math::Vec3>,
@@ -2846,7 +2926,11 @@ pub struct Quat();
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Sub::<&bevy::math::Vec3>", composite = "sub")]
+    #[lua(
+        as_trait = "std::ops::Sub::<&bevy::math::Vec3>",
+        composite = "sub",
+        metamethod = "Sub",
+    )]
     fn sub(
         _self: LuaReflectValProxy<bevy::math::Vec3>,
         rhs: LuaReflectRefProxy<bevy::math::Vec3>,
@@ -2855,7 +2939,11 @@ pub struct Quat();
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Rem::<bevy::math::Vec3>", composite = "rem")]
+    #[lua(
+        as_trait = "std::ops::Rem::<bevy::math::Vec3>",
+        composite = "rem",
+        metamethod = "Mod",
+    )]
     fn rem(
         _self: LuaReflectValProxy<bevy::math::Vec3>,
         rhs: LuaReflectValProxy<bevy::math::Vec3>,
@@ -2864,7 +2952,11 @@ pub struct Quat();
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Mul::<&bevy::math::Vec3>", composite = "mul")]
+    #[lua(
+        as_trait = "std::ops::Mul::<&bevy::math::Vec3>",
+        composite = "mul",
+        metamethod = "Mul",
+    )]
     fn mul(
         _self: LuaReflectValProxy<bevy::math::Vec3>,
         rhs: LuaReflectRefProxy<bevy::math::Vec3>,
@@ -2873,7 +2965,11 @@ pub struct Quat();
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Mul::<bevy::math::Vec3>", composite = "mul")]
+    #[lua(
+        as_trait = "std::ops::Mul::<bevy::math::Vec3>",
+        composite = "mul",
+        metamethod = "Mul",
+    )]
     fn mul(
         _self: LuaReflectValProxy<bevy::math::Vec3>,
         rhs: LuaReflectValProxy<bevy::math::Vec3>,
@@ -2882,7 +2978,11 @@ pub struct Quat();
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Add::<&bevy::math::Vec3>", composite = "add")]
+    #[lua(
+        as_trait = "std::ops::Add::<&bevy::math::Vec3>",
+        composite = "add",
+        metamethod = "Add",
+    )]
     fn add(
         _self: LuaReflectValProxy<bevy::math::Vec3>,
         rhs: LuaReflectRefProxy<bevy::math::Vec3>,
@@ -2899,7 +2999,11 @@ pub struct Quat();
 "#,
     r#"
 
-    #[lua(as_trait = "std::cmp::PartialEq::<bevy::math::Vec3>", composite = "eq")]
+    #[lua(
+        as_trait = "std::cmp::PartialEq::<bevy::math::Vec3>",
+        composite = "eq",
+        metamethod = "Eq",
+    )]
     fn eq(
         _self: LuaReflectRefProxy<bevy::math::Vec3>,
         other: LuaReflectRefProxy<bevy::math::Vec3>,
@@ -2937,7 +3041,11 @@ pub struct Vec3 {
     bms_lua_path = "crate",
     functions[r#"
 
-    #[lua(as_trait = "std::ops::Add::<bevy::math::IVec2>", composite = "add")]
+    #[lua(
+        as_trait = "std::ops::Add::<bevy::math::IVec2>",
+        composite = "add",
+        metamethod = "Add",
+    )]
     fn add(
         _self: LuaReflectValProxy<bevy::math::IVec2>,
         rhs: LuaReflectValProxy<bevy::math::IVec2>,
@@ -2946,7 +3054,11 @@ pub struct Vec3 {
 "#,
     r#"
 
-    #[lua(as_trait = "std::cmp::PartialEq::<bevy::math::IVec2>", composite = "eq")]
+    #[lua(
+        as_trait = "std::cmp::PartialEq::<bevy::math::IVec2>",
+        composite = "eq",
+        metamethod = "Eq",
+    )]
     fn eq(
         _self: LuaReflectRefProxy<bevy::math::IVec2>,
         other: LuaReflectRefProxy<bevy::math::IVec2>,
@@ -2955,7 +3067,11 @@ pub struct Vec3 {
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Add::<&bevy::math::IVec2>", composite = "add")]
+    #[lua(
+        as_trait = "std::ops::Add::<&bevy::math::IVec2>",
+        composite = "add",
+        metamethod = "Add",
+    )]
     fn add(
         _self: LuaReflectValProxy<bevy::math::IVec2>,
         rhs: LuaReflectRefProxy<bevy::math::IVec2>,
@@ -2964,7 +3080,7 @@ pub struct Vec3 {
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Mul::<i32>", composite = "mul")]
+    #[lua(as_trait = "std::ops::Mul::<i32>", composite = "mul", metamethod = "Mul")]
     fn mul(
         _self: LuaReflectValProxy<bevy::math::IVec2>,
         rhs: i32,
@@ -2973,7 +3089,11 @@ pub struct Vec3 {
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Mul::<&bevy::math::IVec2>", composite = "mul")]
+    #[lua(
+        as_trait = "std::ops::Mul::<&bevy::math::IVec2>",
+        composite = "mul",
+        metamethod = "Mul",
+    )]
     fn mul(
         _self: LuaReflectValProxy<bevy::math::IVec2>,
         rhs: LuaReflectRefProxy<bevy::math::IVec2>,
@@ -2982,7 +3102,11 @@ pub struct Vec3 {
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Rem::<bevy::math::IVec2>", composite = "rem")]
+    #[lua(
+        as_trait = "std::ops::Rem::<bevy::math::IVec2>",
+        composite = "rem",
+        metamethod = "Mod",
+    )]
     fn rem(
         _self: LuaReflectValProxy<bevy::math::IVec2>,
         rhs: LuaReflectValProxy<bevy::math::IVec2>,
@@ -2991,7 +3115,11 @@ pub struct Vec3 {
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Sub::<bevy::math::IVec2>", composite = "sub")]
+    #[lua(
+        as_trait = "std::ops::Sub::<bevy::math::IVec2>",
+        composite = "sub",
+        metamethod = "Sub",
+    )]
     fn sub(
         _self: LuaReflectValProxy<bevy::math::IVec2>,
         rhs: LuaReflectValProxy<bevy::math::IVec2>,
@@ -3000,7 +3128,11 @@ pub struct Vec3 {
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Mul::<bevy::math::IVec2>", composite = "mul")]
+    #[lua(
+        as_trait = "std::ops::Mul::<bevy::math::IVec2>",
+        composite = "mul",
+        metamethod = "Mul",
+    )]
     fn mul(
         _self: LuaReflectValProxy<bevy::math::IVec2>,
         rhs: LuaReflectValProxy<bevy::math::IVec2>,
@@ -3009,7 +3141,7 @@ pub struct Vec3 {
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Rem::<i32>", composite = "rem")]
+    #[lua(as_trait = "std::ops::Rem::<i32>", composite = "rem", metamethod = "Mod")]
     fn rem(
         _self: LuaReflectValProxy<bevy::math::IVec2>,
         rhs: i32,
@@ -3018,7 +3150,11 @@ pub struct Vec3 {
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Div::<&bevy::math::IVec2>", composite = "div")]
+    #[lua(
+        as_trait = "std::ops::Div::<&bevy::math::IVec2>",
+        composite = "div",
+        metamethod = "Div",
+    )]
     fn div(
         _self: LuaReflectValProxy<bevy::math::IVec2>,
         rhs: LuaReflectRefProxy<bevy::math::IVec2>,
@@ -3041,7 +3177,7 @@ pub struct Vec3 {
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Sub::<i32>", composite = "sub")]
+    #[lua(as_trait = "std::ops::Sub::<i32>", composite = "sub", metamethod = "Sub")]
     fn sub(
         _self: LuaReflectValProxy<bevy::math::IVec2>,
         rhs: i32,
@@ -3050,7 +3186,7 @@ pub struct Vec3 {
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Div::<i32>", composite = "div")]
+    #[lua(as_trait = "std::ops::Div::<i32>", composite = "div", metamethod = "Div")]
     fn div(
         _self: LuaReflectValProxy<bevy::math::IVec2>,
         rhs: i32,
@@ -3059,7 +3195,11 @@ pub struct Vec3 {
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Rem::<&bevy::math::IVec2>", composite = "rem")]
+    #[lua(
+        as_trait = "std::ops::Rem::<&bevy::math::IVec2>",
+        composite = "rem",
+        metamethod = "Mod",
+    )]
     fn rem(
         _self: LuaReflectValProxy<bevy::math::IVec2>,
         rhs: LuaReflectRefProxy<bevy::math::IVec2>,
@@ -3068,7 +3208,11 @@ pub struct Vec3 {
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Div::<bevy::math::IVec2>", composite = "div")]
+    #[lua(
+        as_trait = "std::ops::Div::<bevy::math::IVec2>",
+        composite = "div",
+        metamethod = "Div",
+    )]
     fn div(
         _self: LuaReflectValProxy<bevy::math::IVec2>,
         rhs: LuaReflectValProxy<bevy::math::IVec2>,
@@ -3077,7 +3221,7 @@ pub struct Vec3 {
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Add::<i32>", composite = "add")]
+    #[lua(as_trait = "std::ops::Add::<i32>", composite = "add", metamethod = "Add")]
     fn add(
         _self: LuaReflectValProxy<bevy::math::IVec2>,
         rhs: i32,
@@ -3086,7 +3230,7 @@ pub struct Vec3 {
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Neg", composite = "neg")]
+    #[lua(as_trait = "std::ops::Neg", composite = "neg", metamethod = "Unm")]
     fn neg(
         _self: LuaReflectValProxy<bevy::math::IVec2>,
     ) -> LuaReflectValProxy<bevy::math::IVec2>;
@@ -3612,7 +3756,11 @@ pub struct Vec3 {
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Sub::<&bevy::math::IVec2>", composite = "sub")]
+    #[lua(
+        as_trait = "std::ops::Sub::<&bevy::math::IVec2>",
+        composite = "sub",
+        metamethod = "Sub",
+    )]
     fn sub(
         _self: LuaReflectValProxy<bevy::math::IVec2>,
         rhs: LuaReflectRefProxy<bevy::math::IVec2>,
@@ -3649,7 +3797,11 @@ pub struct IVec2 {
     bms_lua_path = "crate",
     functions[r#"
 
-    #[lua(as_trait = "std::ops::Add::<bevy::math::IVec3>", composite = "add")]
+    #[lua(
+        as_trait = "std::ops::Add::<bevy::math::IVec3>",
+        composite = "add",
+        metamethod = "Add",
+    )]
     fn add(
         _self: LuaReflectValProxy<bevy::math::IVec3>,
         rhs: LuaReflectValProxy<bevy::math::IVec3>,
@@ -3664,7 +3816,7 @@ pub struct IVec2 {
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Div::<i32>", composite = "div")]
+    #[lua(as_trait = "std::ops::Div::<i32>", composite = "div", metamethod = "Div")]
     fn div(
         _self: LuaReflectValProxy<bevy::math::IVec3>,
         rhs: i32,
@@ -3673,7 +3825,11 @@ pub struct IVec2 {
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Sub::<&bevy::math::IVec3>", composite = "sub")]
+    #[lua(
+        as_trait = "std::ops::Sub::<&bevy::math::IVec3>",
+        composite = "sub",
+        metamethod = "Sub",
+    )]
     fn sub(
         _self: LuaReflectValProxy<bevy::math::IVec3>,
         rhs: LuaReflectRefProxy<bevy::math::IVec3>,
@@ -3682,7 +3838,7 @@ pub struct IVec2 {
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Mul::<i32>", composite = "mul")]
+    #[lua(as_trait = "std::ops::Mul::<i32>", composite = "mul", metamethod = "Mul")]
     fn mul(
         _self: LuaReflectValProxy<bevy::math::IVec3>,
         rhs: i32,
@@ -3691,7 +3847,11 @@ pub struct IVec2 {
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Div::<&bevy::math::IVec3>", composite = "div")]
+    #[lua(
+        as_trait = "std::ops::Div::<&bevy::math::IVec3>",
+        composite = "div",
+        metamethod = "Div",
+    )]
     fn div(
         _self: LuaReflectValProxy<bevy::math::IVec3>,
         rhs: LuaReflectRefProxy<bevy::math::IVec3>,
@@ -3708,7 +3868,11 @@ pub struct IVec2 {
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Add::<&bevy::math::IVec3>", composite = "add")]
+    #[lua(
+        as_trait = "std::ops::Add::<&bevy::math::IVec3>",
+        composite = "add",
+        metamethod = "Add",
+    )]
     fn add(
         _self: LuaReflectValProxy<bevy::math::IVec3>,
         rhs: LuaReflectRefProxy<bevy::math::IVec3>,
@@ -3717,7 +3881,11 @@ pub struct IVec2 {
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Div::<bevy::math::IVec3>", composite = "div")]
+    #[lua(
+        as_trait = "std::ops::Div::<bevy::math::IVec3>",
+        composite = "div",
+        metamethod = "Div",
+    )]
     fn div(
         _self: LuaReflectValProxy<bevy::math::IVec3>,
         rhs: LuaReflectValProxy<bevy::math::IVec3>,
@@ -3726,7 +3894,11 @@ pub struct IVec2 {
 "#,
     r#"
 
-    #[lua(as_trait = "std::cmp::PartialEq::<bevy::math::IVec3>", composite = "eq")]
+    #[lua(
+        as_trait = "std::cmp::PartialEq::<bevy::math::IVec3>",
+        composite = "eq",
+        metamethod = "Eq",
+    )]
     fn eq(
         _self: LuaReflectRefProxy<bevy::math::IVec3>,
         other: LuaReflectRefProxy<bevy::math::IVec3>,
@@ -3735,7 +3907,7 @@ pub struct IVec2 {
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Neg", composite = "neg")]
+    #[lua(as_trait = "std::ops::Neg", composite = "neg", metamethod = "Unm")]
     fn neg(
         _self: LuaReflectValProxy<bevy::math::IVec3>,
     ) -> LuaReflectValProxy<bevy::math::IVec3>;
@@ -3743,7 +3915,11 @@ pub struct IVec2 {
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Rem::<bevy::math::IVec3>", composite = "rem")]
+    #[lua(
+        as_trait = "std::ops::Rem::<bevy::math::IVec3>",
+        composite = "rem",
+        metamethod = "Mod",
+    )]
     fn rem(
         _self: LuaReflectValProxy<bevy::math::IVec3>,
         rhs: LuaReflectValProxy<bevy::math::IVec3>,
@@ -3752,7 +3928,11 @@ pub struct IVec2 {
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Sub::<bevy::math::IVec3>", composite = "sub")]
+    #[lua(
+        as_trait = "std::ops::Sub::<bevy::math::IVec3>",
+        composite = "sub",
+        metamethod = "Sub",
+    )]
     fn sub(
         _self: LuaReflectValProxy<bevy::math::IVec3>,
         rhs: LuaReflectValProxy<bevy::math::IVec3>,
@@ -3761,7 +3941,7 @@ pub struct IVec2 {
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Rem::<i32>", composite = "rem")]
+    #[lua(as_trait = "std::ops::Rem::<i32>", composite = "rem", metamethod = "Mod")]
     fn rem(
         _self: LuaReflectValProxy<bevy::math::IVec3>,
         rhs: i32,
@@ -3770,7 +3950,11 @@ pub struct IVec2 {
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Mul::<bevy::math::IVec3>", composite = "mul")]
+    #[lua(
+        as_trait = "std::ops::Mul::<bevy::math::IVec3>",
+        composite = "mul",
+        metamethod = "Mul",
+    )]
     fn mul(
         _self: LuaReflectValProxy<bevy::math::IVec3>,
         rhs: LuaReflectValProxy<bevy::math::IVec3>,
@@ -3779,7 +3963,7 @@ pub struct IVec2 {
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Add::<i32>", composite = "add")]
+    #[lua(as_trait = "std::ops::Add::<i32>", composite = "add", metamethod = "Add")]
     fn add(
         _self: LuaReflectValProxy<bevy::math::IVec3>,
         rhs: i32,
@@ -3788,7 +3972,11 @@ pub struct IVec2 {
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Mul::<&bevy::math::IVec3>", composite = "mul")]
+    #[lua(
+        as_trait = "std::ops::Mul::<&bevy::math::IVec3>",
+        composite = "mul",
+        metamethod = "Mul",
+    )]
     fn mul(
         _self: LuaReflectValProxy<bevy::math::IVec3>,
         rhs: LuaReflectRefProxy<bevy::math::IVec3>,
@@ -4322,7 +4510,11 @@ pub struct IVec2 {
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Rem::<&bevy::math::IVec3>", composite = "rem")]
+    #[lua(
+        as_trait = "std::ops::Rem::<&bevy::math::IVec3>",
+        composite = "rem",
+        metamethod = "Mod",
+    )]
     fn rem(
         _self: LuaReflectValProxy<bevy::math::IVec3>,
         rhs: LuaReflectRefProxy<bevy::math::IVec3>,
@@ -4331,7 +4523,7 @@ pub struct IVec2 {
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Sub::<i32>", composite = "sub")]
+    #[lua(as_trait = "std::ops::Sub::<i32>", composite = "sub", metamethod = "Sub")]
     fn sub(
         _self: LuaReflectValProxy<bevy::math::IVec3>,
         rhs: i32,
@@ -4369,7 +4561,11 @@ pub struct IVec3 {
     bms_lua_path = "crate",
     functions[r#"
 
-    #[lua(as_trait = "std::ops::Sub::<bevy::math::IVec4>", composite = "sub")]
+    #[lua(
+        as_trait = "std::ops::Sub::<bevy::math::IVec4>",
+        composite = "sub",
+        metamethod = "Sub",
+    )]
     fn sub(
         _self: LuaReflectValProxy<bevy::math::IVec4>,
         rhs: LuaReflectValProxy<bevy::math::IVec4>,
@@ -4378,7 +4574,11 @@ pub struct IVec3 {
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Rem::<&bevy::math::IVec4>", composite = "rem")]
+    #[lua(
+        as_trait = "std::ops::Rem::<&bevy::math::IVec4>",
+        composite = "rem",
+        metamethod = "Mod",
+    )]
     fn rem(
         _self: LuaReflectValProxy<bevy::math::IVec4>,
         rhs: LuaReflectRefProxy<bevy::math::IVec4>,
@@ -4395,7 +4595,7 @@ pub struct IVec3 {
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Mul::<i32>", composite = "mul")]
+    #[lua(as_trait = "std::ops::Mul::<i32>", composite = "mul", metamethod = "Mul")]
     fn mul(
         _self: LuaReflectValProxy<bevy::math::IVec4>,
         rhs: i32,
@@ -4404,7 +4604,11 @@ pub struct IVec3 {
 "#,
     r#"
 
-    #[lua(as_trait = "std::cmp::PartialEq::<bevy::math::IVec4>", composite = "eq")]
+    #[lua(
+        as_trait = "std::cmp::PartialEq::<bevy::math::IVec4>",
+        composite = "eq",
+        metamethod = "Eq",
+    )]
     fn eq(
         _self: LuaReflectRefProxy<bevy::math::IVec4>,
         other: LuaReflectRefProxy<bevy::math::IVec4>,
@@ -4419,7 +4623,7 @@ pub struct IVec3 {
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Sub::<i32>", composite = "sub")]
+    #[lua(as_trait = "std::ops::Sub::<i32>", composite = "sub", metamethod = "Sub")]
     fn sub(
         _self: LuaReflectValProxy<bevy::math::IVec4>,
         rhs: i32,
@@ -4428,7 +4632,11 @@ pub struct IVec3 {
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Rem::<bevy::math::IVec4>", composite = "rem")]
+    #[lua(
+        as_trait = "std::ops::Rem::<bevy::math::IVec4>",
+        composite = "rem",
+        metamethod = "Mod",
+    )]
     fn rem(
         _self: LuaReflectValProxy<bevy::math::IVec4>,
         rhs: LuaReflectValProxy<bevy::math::IVec4>,
@@ -4437,7 +4645,11 @@ pub struct IVec3 {
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Mul::<&bevy::math::IVec4>", composite = "mul")]
+    #[lua(
+        as_trait = "std::ops::Mul::<&bevy::math::IVec4>",
+        composite = "mul",
+        metamethod = "Mul",
+    )]
     fn mul(
         _self: LuaReflectValProxy<bevy::math::IVec4>,
         rhs: LuaReflectRefProxy<bevy::math::IVec4>,
@@ -4446,7 +4658,11 @@ pub struct IVec3 {
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Sub::<&bevy::math::IVec4>", composite = "sub")]
+    #[lua(
+        as_trait = "std::ops::Sub::<&bevy::math::IVec4>",
+        composite = "sub",
+        metamethod = "Sub",
+    )]
     fn sub(
         _self: LuaReflectValProxy<bevy::math::IVec4>,
         rhs: LuaReflectRefProxy<bevy::math::IVec4>,
@@ -4455,7 +4671,7 @@ pub struct IVec3 {
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Neg", composite = "neg")]
+    #[lua(as_trait = "std::ops::Neg", composite = "neg", metamethod = "Unm")]
     fn neg(
         _self: LuaReflectValProxy<bevy::math::IVec4>,
     ) -> LuaReflectValProxy<bevy::math::IVec4>;
@@ -4463,7 +4679,11 @@ pub struct IVec3 {
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Mul::<bevy::math::IVec4>", composite = "mul")]
+    #[lua(
+        as_trait = "std::ops::Mul::<bevy::math::IVec4>",
+        composite = "mul",
+        metamethod = "Mul",
+    )]
     fn mul(
         _self: LuaReflectValProxy<bevy::math::IVec4>,
         rhs: LuaReflectValProxy<bevy::math::IVec4>,
@@ -4472,7 +4692,11 @@ pub struct IVec3 {
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Div::<bevy::math::IVec4>", composite = "div")]
+    #[lua(
+        as_trait = "std::ops::Div::<bevy::math::IVec4>",
+        composite = "div",
+        metamethod = "Div",
+    )]
     fn div(
         _self: LuaReflectValProxy<bevy::math::IVec4>,
         rhs: LuaReflectValProxy<bevy::math::IVec4>,
@@ -4481,7 +4705,7 @@ pub struct IVec3 {
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Add::<i32>", composite = "add")]
+    #[lua(as_trait = "std::ops::Add::<i32>", composite = "add", metamethod = "Add")]
     fn add(
         _self: LuaReflectValProxy<bevy::math::IVec4>,
         rhs: i32,
@@ -4490,7 +4714,7 @@ pub struct IVec3 {
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Div::<i32>", composite = "div")]
+    #[lua(as_trait = "std::ops::Div::<i32>", composite = "div", metamethod = "Div")]
     fn div(
         _self: LuaReflectValProxy<bevy::math::IVec4>,
         rhs: i32,
@@ -4499,7 +4723,7 @@ pub struct IVec3 {
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Rem::<i32>", composite = "rem")]
+    #[lua(as_trait = "std::ops::Rem::<i32>", composite = "rem", metamethod = "Mod")]
     fn rem(
         _self: LuaReflectValProxy<bevy::math::IVec4>,
         rhs: i32,
@@ -4508,7 +4732,11 @@ pub struct IVec3 {
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Div::<&bevy::math::IVec4>", composite = "div")]
+    #[lua(
+        as_trait = "std::ops::Div::<&bevy::math::IVec4>",
+        composite = "div",
+        metamethod = "Div",
+    )]
     fn div(
         _self: LuaReflectValProxy<bevy::math::IVec4>,
         rhs: LuaReflectRefProxy<bevy::math::IVec4>,
@@ -4517,7 +4745,11 @@ pub struct IVec3 {
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Add::<bevy::math::IVec4>", composite = "add")]
+    #[lua(
+        as_trait = "std::ops::Add::<bevy::math::IVec4>",
+        composite = "add",
+        metamethod = "Add",
+    )]
     fn add(
         _self: LuaReflectValProxy<bevy::math::IVec4>,
         rhs: LuaReflectValProxy<bevy::math::IVec4>,
@@ -4526,7 +4758,11 @@ pub struct IVec3 {
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Add::<&bevy::math::IVec4>", composite = "add")]
+    #[lua(
+        as_trait = "std::ops::Add::<&bevy::math::IVec4>",
+        composite = "add",
+        metamethod = "Add",
+    )]
     fn add(
         _self: LuaReflectValProxy<bevy::math::IVec4>,
         rhs: LuaReflectRefProxy<bevy::math::IVec4>,
@@ -5071,7 +5307,11 @@ pub struct IVec4 {
     bms_lua_path = "crate",
     functions[r#"
 
-    #[lua(as_trait = "std::ops::Mul::<&bevy::math::I64Vec2>", composite = "mul")]
+    #[lua(
+        as_trait = "std::ops::Mul::<&bevy::math::I64Vec2>",
+        composite = "mul",
+        metamethod = "Mul",
+    )]
     fn mul(
         _self: LuaReflectValProxy<bevy::math::I64Vec2>,
         rhs: LuaReflectRefProxy<bevy::math::I64Vec2>,
@@ -5080,7 +5320,11 @@ pub struct IVec4 {
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Rem::<bevy::math::I64Vec2>", composite = "rem")]
+    #[lua(
+        as_trait = "std::ops::Rem::<bevy::math::I64Vec2>",
+        composite = "rem",
+        metamethod = "Mod",
+    )]
     fn rem(
         _self: LuaReflectValProxy<bevy::math::I64Vec2>,
         rhs: LuaReflectValProxy<bevy::math::I64Vec2>,
@@ -5089,7 +5333,7 @@ pub struct IVec4 {
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Mul::<i64>", composite = "mul")]
+    #[lua(as_trait = "std::ops::Mul::<i64>", composite = "mul", metamethod = "Mul")]
     fn mul(
         _self: LuaReflectValProxy<bevy::math::I64Vec2>,
         rhs: i64,
@@ -5098,7 +5342,11 @@ pub struct IVec4 {
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Add::<bevy::math::I64Vec2>", composite = "add")]
+    #[lua(
+        as_trait = "std::ops::Add::<bevy::math::I64Vec2>",
+        composite = "add",
+        metamethod = "Add",
+    )]
     fn add(
         _self: LuaReflectValProxy<bevy::math::I64Vec2>,
         rhs: LuaReflectValProxy<bevy::math::I64Vec2>,
@@ -5107,7 +5355,11 @@ pub struct IVec4 {
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Sub::<&bevy::math::I64Vec2>", composite = "sub")]
+    #[lua(
+        as_trait = "std::ops::Sub::<&bevy::math::I64Vec2>",
+        composite = "sub",
+        metamethod = "Sub",
+    )]
     fn sub(
         _self: LuaReflectValProxy<bevy::math::I64Vec2>,
         rhs: LuaReflectRefProxy<bevy::math::I64Vec2>,
@@ -5122,7 +5374,7 @@ pub struct IVec4 {
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Div::<i64>", composite = "div")]
+    #[lua(as_trait = "std::ops::Div::<i64>", composite = "div", metamethod = "Div")]
     fn div(
         _self: LuaReflectValProxy<bevy::math::I64Vec2>,
         rhs: i64,
@@ -5131,7 +5383,7 @@ pub struct IVec4 {
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Rem::<i64>", composite = "rem")]
+    #[lua(as_trait = "std::ops::Rem::<i64>", composite = "rem", metamethod = "Mod")]
     fn rem(
         _self: LuaReflectValProxy<bevy::math::I64Vec2>,
         rhs: i64,
@@ -5140,7 +5392,7 @@ pub struct IVec4 {
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Add::<i64>", composite = "add")]
+    #[lua(as_trait = "std::ops::Add::<i64>", composite = "add", metamethod = "Add")]
     fn add(
         _self: LuaReflectValProxy<bevy::math::I64Vec2>,
         rhs: i64,
@@ -5149,7 +5401,11 @@ pub struct IVec4 {
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Div::<&bevy::math::I64Vec2>", composite = "div")]
+    #[lua(
+        as_trait = "std::ops::Div::<&bevy::math::I64Vec2>",
+        composite = "div",
+        metamethod = "Div",
+    )]
     fn div(
         _self: LuaReflectValProxy<bevy::math::I64Vec2>,
         rhs: LuaReflectRefProxy<bevy::math::I64Vec2>,
@@ -5676,7 +5932,11 @@ pub struct IVec4 {
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Mul::<bevy::math::I64Vec2>", composite = "mul")]
+    #[lua(
+        as_trait = "std::ops::Mul::<bevy::math::I64Vec2>",
+        composite = "mul",
+        metamethod = "Mul",
+    )]
     fn mul(
         _self: LuaReflectValProxy<bevy::math::I64Vec2>,
         rhs: LuaReflectValProxy<bevy::math::I64Vec2>,
@@ -5685,7 +5945,11 @@ pub struct IVec4 {
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Sub::<bevy::math::I64Vec2>", composite = "sub")]
+    #[lua(
+        as_trait = "std::ops::Sub::<bevy::math::I64Vec2>",
+        composite = "sub",
+        metamethod = "Sub",
+    )]
     fn sub(
         _self: LuaReflectValProxy<bevy::math::I64Vec2>,
         rhs: LuaReflectValProxy<bevy::math::I64Vec2>,
@@ -5694,7 +5958,11 @@ pub struct IVec4 {
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Div::<bevy::math::I64Vec2>", composite = "div")]
+    #[lua(
+        as_trait = "std::ops::Div::<bevy::math::I64Vec2>",
+        composite = "div",
+        metamethod = "Div",
+    )]
     fn div(
         _self: LuaReflectValProxy<bevy::math::I64Vec2>,
         rhs: LuaReflectValProxy<bevy::math::I64Vec2>,
@@ -5703,7 +5971,11 @@ pub struct IVec4 {
 "#,
     r#"
 
-    #[lua(as_trait = "std::cmp::PartialEq::<bevy::math::I64Vec2>", composite = "eq")]
+    #[lua(
+        as_trait = "std::cmp::PartialEq::<bevy::math::I64Vec2>",
+        composite = "eq",
+        metamethod = "Eq",
+    )]
     fn eq(
         _self: LuaReflectRefProxy<bevy::math::I64Vec2>,
         other: LuaReflectRefProxy<bevy::math::I64Vec2>,
@@ -5720,7 +5992,7 @@ pub struct IVec4 {
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Sub::<i64>", composite = "sub")]
+    #[lua(as_trait = "std::ops::Sub::<i64>", composite = "sub", metamethod = "Sub")]
     fn sub(
         _self: LuaReflectValProxy<bevy::math::I64Vec2>,
         rhs: i64,
@@ -5729,7 +6001,11 @@ pub struct IVec4 {
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Add::<&bevy::math::I64Vec2>", composite = "add")]
+    #[lua(
+        as_trait = "std::ops::Add::<&bevy::math::I64Vec2>",
+        composite = "add",
+        metamethod = "Add",
+    )]
     fn add(
         _self: LuaReflectValProxy<bevy::math::I64Vec2>,
         rhs: LuaReflectRefProxy<bevy::math::I64Vec2>,
@@ -5738,7 +6014,7 @@ pub struct IVec4 {
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Neg", composite = "neg")]
+    #[lua(as_trait = "std::ops::Neg", composite = "neg", metamethod = "Unm")]
     fn neg(
         _self: LuaReflectValProxy<bevy::math::I64Vec2>,
     ) -> LuaReflectValProxy<bevy::math::I64Vec2>;
@@ -5746,7 +6022,11 @@ pub struct IVec4 {
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Rem::<&bevy::math::I64Vec2>", composite = "rem")]
+    #[lua(
+        as_trait = "std::ops::Rem::<&bevy::math::I64Vec2>",
+        composite = "rem",
+        metamethod = "Mod",
+    )]
     fn rem(
         _self: LuaReflectValProxy<bevy::math::I64Vec2>,
         rhs: LuaReflectRefProxy<bevy::math::I64Vec2>,
@@ -5771,7 +6051,7 @@ pub struct I64Vec2 {
     bms_lua_path = "crate",
     functions[r#"
 
-    #[lua(as_trait = "std::ops::Neg", composite = "neg")]
+    #[lua(as_trait = "std::ops::Neg", composite = "neg", metamethod = "Unm")]
     fn neg(
         _self: LuaReflectValProxy<bevy::math::I64Vec3>,
     ) -> LuaReflectValProxy<bevy::math::I64Vec3>;
@@ -5779,7 +6059,7 @@ pub struct I64Vec2 {
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Div::<i64>", composite = "div")]
+    #[lua(as_trait = "std::ops::Div::<i64>", composite = "div", metamethod = "Div")]
     fn div(
         _self: LuaReflectValProxy<bevy::math::I64Vec3>,
         rhs: i64,
@@ -5796,7 +6076,11 @@ pub struct I64Vec2 {
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Mul::<&bevy::math::I64Vec3>", composite = "mul")]
+    #[lua(
+        as_trait = "std::ops::Mul::<&bevy::math::I64Vec3>",
+        composite = "mul",
+        metamethod = "Mul",
+    )]
     fn mul(
         _self: LuaReflectValProxy<bevy::math::I64Vec3>,
         rhs: LuaReflectRefProxy<bevy::math::I64Vec3>,
@@ -5805,7 +6089,7 @@ pub struct I64Vec2 {
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Add::<i64>", composite = "add")]
+    #[lua(as_trait = "std::ops::Add::<i64>", composite = "add", metamethod = "Add")]
     fn add(
         _self: LuaReflectValProxy<bevy::math::I64Vec3>,
         rhs: i64,
@@ -5814,7 +6098,7 @@ pub struct I64Vec2 {
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Mul::<i64>", composite = "mul")]
+    #[lua(as_trait = "std::ops::Mul::<i64>", composite = "mul", metamethod = "Mul")]
     fn mul(
         _self: LuaReflectValProxy<bevy::math::I64Vec3>,
         rhs: i64,
@@ -5823,7 +6107,11 @@ pub struct I64Vec2 {
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Div::<bevy::math::I64Vec3>", composite = "div")]
+    #[lua(
+        as_trait = "std::ops::Div::<bevy::math::I64Vec3>",
+        composite = "div",
+        metamethod = "Div",
+    )]
     fn div(
         _self: LuaReflectValProxy<bevy::math::I64Vec3>,
         rhs: LuaReflectValProxy<bevy::math::I64Vec3>,
@@ -5838,7 +6126,11 @@ pub struct I64Vec2 {
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Sub::<bevy::math::I64Vec3>", composite = "sub")]
+    #[lua(
+        as_trait = "std::ops::Sub::<bevy::math::I64Vec3>",
+        composite = "sub",
+        metamethod = "Sub",
+    )]
     fn sub(
         _self: LuaReflectValProxy<bevy::math::I64Vec3>,
         rhs: LuaReflectValProxy<bevy::math::I64Vec3>,
@@ -5847,7 +6139,11 @@ pub struct I64Vec2 {
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Div::<&bevy::math::I64Vec3>", composite = "div")]
+    #[lua(
+        as_trait = "std::ops::Div::<&bevy::math::I64Vec3>",
+        composite = "div",
+        metamethod = "Div",
+    )]
     fn div(
         _self: LuaReflectValProxy<bevy::math::I64Vec3>,
         rhs: LuaReflectRefProxy<bevy::math::I64Vec3>,
@@ -5856,7 +6152,11 @@ pub struct I64Vec2 {
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Rem::<&bevy::math::I64Vec3>", composite = "rem")]
+    #[lua(
+        as_trait = "std::ops::Rem::<&bevy::math::I64Vec3>",
+        composite = "rem",
+        metamethod = "Mod",
+    )]
     fn rem(
         _self: LuaReflectValProxy<bevy::math::I64Vec3>,
         rhs: LuaReflectRefProxy<bevy::math::I64Vec3>,
@@ -5865,7 +6165,11 @@ pub struct I64Vec2 {
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Mul::<bevy::math::I64Vec3>", composite = "mul")]
+    #[lua(
+        as_trait = "std::ops::Mul::<bevy::math::I64Vec3>",
+        composite = "mul",
+        metamethod = "Mul",
+    )]
     fn mul(
         _self: LuaReflectValProxy<bevy::math::I64Vec3>,
         rhs: LuaReflectValProxy<bevy::math::I64Vec3>,
@@ -5874,7 +6178,7 @@ pub struct I64Vec2 {
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Rem::<i64>", composite = "rem")]
+    #[lua(as_trait = "std::ops::Rem::<i64>", composite = "rem", metamethod = "Mod")]
     fn rem(
         _self: LuaReflectValProxy<bevy::math::I64Vec3>,
         rhs: i64,
@@ -5883,7 +6187,11 @@ pub struct I64Vec2 {
 "#,
     r#"
 
-    #[lua(as_trait = "std::cmp::PartialEq::<bevy::math::I64Vec3>", composite = "eq")]
+    #[lua(
+        as_trait = "std::cmp::PartialEq::<bevy::math::I64Vec3>",
+        composite = "eq",
+        metamethod = "Eq",
+    )]
     fn eq(
         _self: LuaReflectRefProxy<bevy::math::I64Vec3>,
         other: LuaReflectRefProxy<bevy::math::I64Vec3>,
@@ -5892,7 +6200,11 @@ pub struct I64Vec2 {
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Rem::<bevy::math::I64Vec3>", composite = "rem")]
+    #[lua(
+        as_trait = "std::ops::Rem::<bevy::math::I64Vec3>",
+        composite = "rem",
+        metamethod = "Mod",
+    )]
     fn rem(
         _self: LuaReflectValProxy<bevy::math::I64Vec3>,
         rhs: LuaReflectValProxy<bevy::math::I64Vec3>,
@@ -5901,7 +6213,7 @@ pub struct I64Vec2 {
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Sub::<i64>", composite = "sub")]
+    #[lua(as_trait = "std::ops::Sub::<i64>", composite = "sub", metamethod = "Sub")]
     fn sub(
         _self: LuaReflectValProxy<bevy::math::I64Vec3>,
         rhs: i64,
@@ -5910,7 +6222,11 @@ pub struct I64Vec2 {
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Add::<&bevy::math::I64Vec3>", composite = "add")]
+    #[lua(
+        as_trait = "std::ops::Add::<&bevy::math::I64Vec3>",
+        composite = "add",
+        metamethod = "Add",
+    )]
     fn add(
         _self: LuaReflectValProxy<bevy::math::I64Vec3>,
         rhs: LuaReflectRefProxy<bevy::math::I64Vec3>,
@@ -5919,7 +6235,11 @@ pub struct I64Vec2 {
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Sub::<&bevy::math::I64Vec3>", composite = "sub")]
+    #[lua(
+        as_trait = "std::ops::Sub::<&bevy::math::I64Vec3>",
+        composite = "sub",
+        metamethod = "Sub",
+    )]
     fn sub(
         _self: LuaReflectValProxy<bevy::math::I64Vec3>,
         rhs: LuaReflectRefProxy<bevy::math::I64Vec3>,
@@ -5928,7 +6248,11 @@ pub struct I64Vec2 {
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Add::<bevy::math::I64Vec3>", composite = "add")]
+    #[lua(
+        as_trait = "std::ops::Add::<bevy::math::I64Vec3>",
+        composite = "add",
+        metamethod = "Add",
+    )]
     fn add(
         _self: LuaReflectValProxy<bevy::math::I64Vec3>,
         rhs: LuaReflectValProxy<bevy::math::I64Vec3>,
@@ -6479,7 +6803,11 @@ pub struct I64Vec3 {
     bms_lua_path = "crate",
     functions[r#"
 
-    #[lua(as_trait = "std::ops::Div::<bevy::math::I64Vec4>", composite = "div")]
+    #[lua(
+        as_trait = "std::ops::Div::<bevy::math::I64Vec4>",
+        composite = "div",
+        metamethod = "Div",
+    )]
     fn div(
         _self: LuaReflectValProxy<bevy::math::I64Vec4>,
         rhs: LuaReflectValProxy<bevy::math::I64Vec4>,
@@ -6488,7 +6816,7 @@ pub struct I64Vec3 {
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Div::<i64>", composite = "div")]
+    #[lua(as_trait = "std::ops::Div::<i64>", composite = "div", metamethod = "Div")]
     fn div(
         _self: LuaReflectValProxy<bevy::math::I64Vec4>,
         rhs: i64,
@@ -6497,7 +6825,7 @@ pub struct I64Vec3 {
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Add::<i64>", composite = "add")]
+    #[lua(as_trait = "std::ops::Add::<i64>", composite = "add", metamethod = "Add")]
     fn add(
         _self: LuaReflectValProxy<bevy::math::I64Vec4>,
         rhs: i64,
@@ -6506,7 +6834,11 @@ pub struct I64Vec3 {
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Rem::<bevy::math::I64Vec4>", composite = "rem")]
+    #[lua(
+        as_trait = "std::ops::Rem::<bevy::math::I64Vec4>",
+        composite = "rem",
+        metamethod = "Mod",
+    )]
     fn rem(
         _self: LuaReflectValProxy<bevy::math::I64Vec4>,
         rhs: LuaReflectValProxy<bevy::math::I64Vec4>,
@@ -6515,7 +6847,11 @@ pub struct I64Vec3 {
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Div::<&bevy::math::I64Vec4>", composite = "div")]
+    #[lua(
+        as_trait = "std::ops::Div::<&bevy::math::I64Vec4>",
+        composite = "div",
+        metamethod = "Div",
+    )]
     fn div(
         _self: LuaReflectValProxy<bevy::math::I64Vec4>,
         rhs: LuaReflectRefProxy<bevy::math::I64Vec4>,
@@ -6530,7 +6866,11 @@ pub struct I64Vec3 {
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Add::<bevy::math::I64Vec4>", composite = "add")]
+    #[lua(
+        as_trait = "std::ops::Add::<bevy::math::I64Vec4>",
+        composite = "add",
+        metamethod = "Add",
+    )]
     fn add(
         _self: LuaReflectValProxy<bevy::math::I64Vec4>,
         rhs: LuaReflectValProxy<bevy::math::I64Vec4>,
@@ -6539,7 +6879,7 @@ pub struct I64Vec3 {
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Rem::<i64>", composite = "rem")]
+    #[lua(as_trait = "std::ops::Rem::<i64>", composite = "rem", metamethod = "Mod")]
     fn rem(
         _self: LuaReflectValProxy<bevy::math::I64Vec4>,
         rhs: i64,
@@ -6548,7 +6888,7 @@ pub struct I64Vec3 {
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Sub::<i64>", composite = "sub")]
+    #[lua(as_trait = "std::ops::Sub::<i64>", composite = "sub", metamethod = "Sub")]
     fn sub(
         _self: LuaReflectValProxy<bevy::math::I64Vec4>,
         rhs: i64,
@@ -6557,7 +6897,11 @@ pub struct I64Vec3 {
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Sub::<bevy::math::I64Vec4>", composite = "sub")]
+    #[lua(
+        as_trait = "std::ops::Sub::<bevy::math::I64Vec4>",
+        composite = "sub",
+        metamethod = "Sub",
+    )]
     fn sub(
         _self: LuaReflectValProxy<bevy::math::I64Vec4>,
         rhs: LuaReflectValProxy<bevy::math::I64Vec4>,
@@ -6566,7 +6910,11 @@ pub struct I64Vec3 {
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Mul::<bevy::math::I64Vec4>", composite = "mul")]
+    #[lua(
+        as_trait = "std::ops::Mul::<bevy::math::I64Vec4>",
+        composite = "mul",
+        metamethod = "Mul",
+    )]
     fn mul(
         _self: LuaReflectValProxy<bevy::math::I64Vec4>,
         rhs: LuaReflectValProxy<bevy::math::I64Vec4>,
@@ -6575,7 +6923,7 @@ pub struct I64Vec3 {
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Mul::<i64>", composite = "mul")]
+    #[lua(as_trait = "std::ops::Mul::<i64>", composite = "mul", metamethod = "Mul")]
     fn mul(
         _self: LuaReflectValProxy<bevy::math::I64Vec4>,
         rhs: i64,
@@ -6584,7 +6932,11 @@ pub struct I64Vec3 {
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Sub::<&bevy::math::I64Vec4>", composite = "sub")]
+    #[lua(
+        as_trait = "std::ops::Sub::<&bevy::math::I64Vec4>",
+        composite = "sub",
+        metamethod = "Sub",
+    )]
     fn sub(
         _self: LuaReflectValProxy<bevy::math::I64Vec4>,
         rhs: LuaReflectRefProxy<bevy::math::I64Vec4>,
@@ -6593,7 +6945,11 @@ pub struct I64Vec3 {
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Add::<&bevy::math::I64Vec4>", composite = "add")]
+    #[lua(
+        as_trait = "std::ops::Add::<&bevy::math::I64Vec4>",
+        composite = "add",
+        metamethod = "Add",
+    )]
     fn add(
         _self: LuaReflectValProxy<bevy::math::I64Vec4>,
         rhs: LuaReflectRefProxy<bevy::math::I64Vec4>,
@@ -6602,7 +6958,11 @@ pub struct I64Vec3 {
 "#,
     r#"
 
-    #[lua(as_trait = "std::cmp::PartialEq::<bevy::math::I64Vec4>", composite = "eq")]
+    #[lua(
+        as_trait = "std::cmp::PartialEq::<bevy::math::I64Vec4>",
+        composite = "eq",
+        metamethod = "Eq",
+    )]
     fn eq(
         _self: LuaReflectRefProxy<bevy::math::I64Vec4>,
         other: LuaReflectRefProxy<bevy::math::I64Vec4>,
@@ -7117,7 +7477,11 @@ pub struct I64Vec3 {
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Rem::<&bevy::math::I64Vec4>", composite = "rem")]
+    #[lua(
+        as_trait = "std::ops::Rem::<&bevy::math::I64Vec4>",
+        composite = "rem",
+        metamethod = "Mod",
+    )]
     fn rem(
         _self: LuaReflectValProxy<bevy::math::I64Vec4>,
         rhs: LuaReflectRefProxy<bevy::math::I64Vec4>,
@@ -7126,7 +7490,7 @@ pub struct I64Vec3 {
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Neg", composite = "neg")]
+    #[lua(as_trait = "std::ops::Neg", composite = "neg", metamethod = "Unm")]
     fn neg(
         _self: LuaReflectValProxy<bevy::math::I64Vec4>,
     ) -> LuaReflectValProxy<bevy::math::I64Vec4>;
@@ -7134,7 +7498,11 @@ pub struct I64Vec3 {
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Mul::<&bevy::math::I64Vec4>", composite = "mul")]
+    #[lua(
+        as_trait = "std::ops::Mul::<&bevy::math::I64Vec4>",
+        composite = "mul",
+        metamethod = "Mul",
+    )]
     fn mul(
         _self: LuaReflectValProxy<bevy::math::I64Vec4>,
         rhs: LuaReflectRefProxy<bevy::math::I64Vec4>,
@@ -7175,7 +7543,7 @@ pub struct I64Vec4 {
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Add::<u32>", composite = "add")]
+    #[lua(as_trait = "std::ops::Add::<u32>", composite = "add", metamethod = "Add")]
     fn add(
         _self: LuaReflectValProxy<bevy::math::UVec2>,
         rhs: u32,
@@ -7184,7 +7552,11 @@ pub struct I64Vec4 {
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Div::<bevy::math::UVec2>", composite = "div")]
+    #[lua(
+        as_trait = "std::ops::Div::<bevy::math::UVec2>",
+        composite = "div",
+        metamethod = "Div",
+    )]
     fn div(
         _self: LuaReflectValProxy<bevy::math::UVec2>,
         rhs: LuaReflectValProxy<bevy::math::UVec2>,
@@ -7193,7 +7565,11 @@ pub struct I64Vec4 {
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Add::<bevy::math::UVec2>", composite = "add")]
+    #[lua(
+        as_trait = "std::ops::Add::<bevy::math::UVec2>",
+        composite = "add",
+        metamethod = "Add",
+    )]
     fn add(
         _self: LuaReflectValProxy<bevy::math::UVec2>,
         rhs: LuaReflectValProxy<bevy::math::UVec2>,
@@ -7202,7 +7578,11 @@ pub struct I64Vec4 {
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Rem::<bevy::math::UVec2>", composite = "rem")]
+    #[lua(
+        as_trait = "std::ops::Rem::<bevy::math::UVec2>",
+        composite = "rem",
+        metamethod = "Mod",
+    )]
     fn rem(
         _self: LuaReflectValProxy<bevy::math::UVec2>,
         rhs: LuaReflectValProxy<bevy::math::UVec2>,
@@ -7211,7 +7591,11 @@ pub struct I64Vec4 {
 "#,
     r#"
 
-    #[lua(as_trait = "std::cmp::PartialEq::<bevy::math::UVec2>", composite = "eq")]
+    #[lua(
+        as_trait = "std::cmp::PartialEq::<bevy::math::UVec2>",
+        composite = "eq",
+        metamethod = "Eq",
+    )]
     fn eq(
         _self: LuaReflectRefProxy<bevy::math::UVec2>,
         other: LuaReflectRefProxy<bevy::math::UVec2>,
@@ -7228,7 +7612,11 @@ pub struct I64Vec4 {
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Rem::<&bevy::math::UVec2>", composite = "rem")]
+    #[lua(
+        as_trait = "std::ops::Rem::<&bevy::math::UVec2>",
+        composite = "rem",
+        metamethod = "Mod",
+    )]
     fn rem(
         _self: LuaReflectValProxy<bevy::math::UVec2>,
         rhs: LuaReflectRefProxy<bevy::math::UVec2>,
@@ -7237,7 +7625,11 @@ pub struct I64Vec4 {
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Mul::<bevy::math::UVec2>", composite = "mul")]
+    #[lua(
+        as_trait = "std::ops::Mul::<bevy::math::UVec2>",
+        composite = "mul",
+        metamethod = "Mul",
+    )]
     fn mul(
         _self: LuaReflectValProxy<bevy::math::UVec2>,
         rhs: LuaReflectValProxy<bevy::math::UVec2>,
@@ -7246,7 +7638,11 @@ pub struct I64Vec4 {
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Sub::<&bevy::math::UVec2>", composite = "sub")]
+    #[lua(
+        as_trait = "std::ops::Sub::<&bevy::math::UVec2>",
+        composite = "sub",
+        metamethod = "Sub",
+    )]
     fn sub(
         _self: LuaReflectValProxy<bevy::math::UVec2>,
         rhs: LuaReflectRefProxy<bevy::math::UVec2>,
@@ -7255,7 +7651,7 @@ pub struct I64Vec4 {
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Rem::<u32>", composite = "rem")]
+    #[lua(as_trait = "std::ops::Rem::<u32>", composite = "rem", metamethod = "Mod")]
     fn rem(
         _self: LuaReflectValProxy<bevy::math::UVec2>,
         rhs: u32,
@@ -7264,7 +7660,11 @@ pub struct I64Vec4 {
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Div::<&bevy::math::UVec2>", composite = "div")]
+    #[lua(
+        as_trait = "std::ops::Div::<&bevy::math::UVec2>",
+        composite = "div",
+        metamethod = "Div",
+    )]
     fn div(
         _self: LuaReflectValProxy<bevy::math::UVec2>,
         rhs: LuaReflectRefProxy<bevy::math::UVec2>,
@@ -7673,7 +8073,11 @@ pub struct I64Vec4 {
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Sub::<bevy::math::UVec2>", composite = "sub")]
+    #[lua(
+        as_trait = "std::ops::Sub::<bevy::math::UVec2>",
+        composite = "sub",
+        metamethod = "Sub",
+    )]
     fn sub(
         _self: LuaReflectValProxy<bevy::math::UVec2>,
         rhs: LuaReflectValProxy<bevy::math::UVec2>,
@@ -7682,7 +8086,11 @@ pub struct I64Vec4 {
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Mul::<&bevy::math::UVec2>", composite = "mul")]
+    #[lua(
+        as_trait = "std::ops::Mul::<&bevy::math::UVec2>",
+        composite = "mul",
+        metamethod = "Mul",
+    )]
     fn mul(
         _self: LuaReflectValProxy<bevy::math::UVec2>,
         rhs: LuaReflectRefProxy<bevy::math::UVec2>,
@@ -7691,7 +8099,7 @@ pub struct I64Vec4 {
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Sub::<u32>", composite = "sub")]
+    #[lua(as_trait = "std::ops::Sub::<u32>", composite = "sub", metamethod = "Sub")]
     fn sub(
         _self: LuaReflectValProxy<bevy::math::UVec2>,
         rhs: u32,
@@ -7700,7 +8108,7 @@ pub struct I64Vec4 {
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Mul::<u32>", composite = "mul")]
+    #[lua(as_trait = "std::ops::Mul::<u32>", composite = "mul", metamethod = "Mul")]
     fn mul(
         _self: LuaReflectValProxy<bevy::math::UVec2>,
         rhs: u32,
@@ -7709,7 +8117,11 @@ pub struct I64Vec4 {
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Add::<&bevy::math::UVec2>", composite = "add")]
+    #[lua(
+        as_trait = "std::ops::Add::<&bevy::math::UVec2>",
+        composite = "add",
+        metamethod = "Add",
+    )]
     fn add(
         _self: LuaReflectValProxy<bevy::math::UVec2>,
         rhs: LuaReflectRefProxy<bevy::math::UVec2>,
@@ -7718,7 +8130,7 @@ pub struct I64Vec4 {
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Div::<u32>", composite = "div")]
+    #[lua(as_trait = "std::ops::Div::<u32>", composite = "div", metamethod = "Div")]
     fn div(
         _self: LuaReflectValProxy<bevy::math::UVec2>,
         rhs: u32,
@@ -7755,7 +8167,11 @@ pub struct UVec2 {
     bms_lua_path = "crate",
     functions[r#"
 
-    #[lua(as_trait = "std::ops::Div::<&bevy::math::UVec3>", composite = "div")]
+    #[lua(
+        as_trait = "std::ops::Div::<&bevy::math::UVec3>",
+        composite = "div",
+        metamethod = "Div",
+    )]
     fn div(
         _self: LuaReflectValProxy<bevy::math::UVec3>,
         rhs: LuaReflectRefProxy<bevy::math::UVec3>,
@@ -7764,7 +8180,11 @@ pub struct UVec2 {
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Add::<bevy::math::UVec3>", composite = "add")]
+    #[lua(
+        as_trait = "std::ops::Add::<bevy::math::UVec3>",
+        composite = "add",
+        metamethod = "Add",
+    )]
     fn add(
         _self: LuaReflectValProxy<bevy::math::UVec3>,
         rhs: LuaReflectValProxy<bevy::math::UVec3>,
@@ -7773,7 +8193,11 @@ pub struct UVec2 {
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Mul::<&bevy::math::UVec3>", composite = "mul")]
+    #[lua(
+        as_trait = "std::ops::Mul::<&bevy::math::UVec3>",
+        composite = "mul",
+        metamethod = "Mul",
+    )]
     fn mul(
         _self: LuaReflectValProxy<bevy::math::UVec3>,
         rhs: LuaReflectRefProxy<bevy::math::UVec3>,
@@ -7782,7 +8206,11 @@ pub struct UVec2 {
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Mul::<bevy::math::UVec3>", composite = "mul")]
+    #[lua(
+        as_trait = "std::ops::Mul::<bevy::math::UVec3>",
+        composite = "mul",
+        metamethod = "Mul",
+    )]
     fn mul(
         _self: LuaReflectValProxy<bevy::math::UVec3>,
         rhs: LuaReflectValProxy<bevy::math::UVec3>,
@@ -7791,7 +8219,7 @@ pub struct UVec2 {
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Sub::<u32>", composite = "sub")]
+    #[lua(as_trait = "std::ops::Sub::<u32>", composite = "sub", metamethod = "Sub")]
     fn sub(
         _self: LuaReflectValProxy<bevy::math::UVec3>,
         rhs: u32,
@@ -7800,7 +8228,11 @@ pub struct UVec2 {
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Rem::<&bevy::math::UVec3>", composite = "rem")]
+    #[lua(
+        as_trait = "std::ops::Rem::<&bevy::math::UVec3>",
+        composite = "rem",
+        metamethod = "Mod",
+    )]
     fn rem(
         _self: LuaReflectValProxy<bevy::math::UVec3>,
         rhs: LuaReflectRefProxy<bevy::math::UVec3>,
@@ -7809,7 +8241,11 @@ pub struct UVec2 {
 "#,
     r#"
 
-    #[lua(as_trait = "std::cmp::PartialEq::<bevy::math::UVec3>", composite = "eq")]
+    #[lua(
+        as_trait = "std::cmp::PartialEq::<bevy::math::UVec3>",
+        composite = "eq",
+        metamethod = "Eq",
+    )]
     fn eq(
         _self: LuaReflectRefProxy<bevy::math::UVec3>,
         other: LuaReflectRefProxy<bevy::math::UVec3>,
@@ -7818,7 +8254,11 @@ pub struct UVec2 {
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Add::<&bevy::math::UVec3>", composite = "add")]
+    #[lua(
+        as_trait = "std::ops::Add::<&bevy::math::UVec3>",
+        composite = "add",
+        metamethod = "Add",
+    )]
     fn add(
         _self: LuaReflectValProxy<bevy::math::UVec3>,
         rhs: LuaReflectRefProxy<bevy::math::UVec3>,
@@ -7827,7 +8267,7 @@ pub struct UVec2 {
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Div::<u32>", composite = "div")]
+    #[lua(as_trait = "std::ops::Div::<u32>", composite = "div", metamethod = "Div")]
     fn div(
         _self: LuaReflectValProxy<bevy::math::UVec3>,
         rhs: u32,
@@ -7836,7 +8276,7 @@ pub struct UVec2 {
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Rem::<u32>", composite = "rem")]
+    #[lua(as_trait = "std::ops::Rem::<u32>", composite = "rem", metamethod = "Mod")]
     fn rem(
         _self: LuaReflectValProxy<bevy::math::UVec3>,
         rhs: u32,
@@ -7845,7 +8285,11 @@ pub struct UVec2 {
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Rem::<bevy::math::UVec3>", composite = "rem")]
+    #[lua(
+        as_trait = "std::ops::Rem::<bevy::math::UVec3>",
+        composite = "rem",
+        metamethod = "Mod",
+    )]
     fn rem(
         _self: LuaReflectValProxy<bevy::math::UVec3>,
         rhs: LuaReflectValProxy<bevy::math::UVec3>,
@@ -7862,7 +8306,11 @@ pub struct UVec2 {
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Sub::<&bevy::math::UVec3>", composite = "sub")]
+    #[lua(
+        as_trait = "std::ops::Sub::<&bevy::math::UVec3>",
+        composite = "sub",
+        metamethod = "Sub",
+    )]
     fn sub(
         _self: LuaReflectValProxy<bevy::math::UVec3>,
         rhs: LuaReflectRefProxy<bevy::math::UVec3>,
@@ -7871,7 +8319,11 @@ pub struct UVec2 {
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Div::<bevy::math::UVec3>", composite = "div")]
+    #[lua(
+        as_trait = "std::ops::Div::<bevy::math::UVec3>",
+        composite = "div",
+        metamethod = "Div",
+    )]
     fn div(
         _self: LuaReflectValProxy<bevy::math::UVec3>,
         rhs: LuaReflectValProxy<bevy::math::UVec3>,
@@ -8319,7 +8771,7 @@ pub struct UVec2 {
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Add::<u32>", composite = "add")]
+    #[lua(as_trait = "std::ops::Add::<u32>", composite = "add", metamethod = "Add")]
     fn add(
         _self: LuaReflectValProxy<bevy::math::UVec3>,
         rhs: u32,
@@ -8334,7 +8786,7 @@ pub struct UVec2 {
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Mul::<u32>", composite = "mul")]
+    #[lua(as_trait = "std::ops::Mul::<u32>", composite = "mul", metamethod = "Mul")]
     fn mul(
         _self: LuaReflectValProxy<bevy::math::UVec3>,
         rhs: u32,
@@ -8343,7 +8795,11 @@ pub struct UVec2 {
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Sub::<bevy::math::UVec3>", composite = "sub")]
+    #[lua(
+        as_trait = "std::ops::Sub::<bevy::math::UVec3>",
+        composite = "sub",
+        metamethod = "Sub",
+    )]
     fn sub(
         _self: LuaReflectValProxy<bevy::math::UVec3>,
         rhs: LuaReflectValProxy<bevy::math::UVec3>,
@@ -8381,7 +8837,11 @@ pub struct UVec3 {
     bms_lua_path = "crate",
     functions[r#"
 
-    #[lua(as_trait = "std::ops::Mul::<&bevy::math::UVec4>", composite = "mul")]
+    #[lua(
+        as_trait = "std::ops::Mul::<&bevy::math::UVec4>",
+        composite = "mul",
+        metamethod = "Mul",
+    )]
     fn mul(
         _self: LuaReflectValProxy<bevy::math::UVec4>,
         rhs: LuaReflectRefProxy<bevy::math::UVec4>,
@@ -8390,7 +8850,7 @@ pub struct UVec3 {
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Div::<u32>", composite = "div")]
+    #[lua(as_trait = "std::ops::Div::<u32>", composite = "div", metamethod = "Div")]
     fn div(
         _self: LuaReflectValProxy<bevy::math::UVec4>,
         rhs: u32,
@@ -8399,7 +8859,11 @@ pub struct UVec3 {
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Div::<bevy::math::UVec4>", composite = "div")]
+    #[lua(
+        as_trait = "std::ops::Div::<bevy::math::UVec4>",
+        composite = "div",
+        metamethod = "Div",
+    )]
     fn div(
         _self: LuaReflectValProxy<bevy::math::UVec4>,
         rhs: LuaReflectValProxy<bevy::math::UVec4>,
@@ -8828,7 +9292,11 @@ pub struct UVec3 {
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Sub::<&bevy::math::UVec4>", composite = "sub")]
+    #[lua(
+        as_trait = "std::ops::Sub::<&bevy::math::UVec4>",
+        composite = "sub",
+        metamethod = "Sub",
+    )]
     fn sub(
         _self: LuaReflectValProxy<bevy::math::UVec4>,
         rhs: LuaReflectRefProxy<bevy::math::UVec4>,
@@ -8845,7 +9313,11 @@ pub struct UVec3 {
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Sub::<bevy::math::UVec4>", composite = "sub")]
+    #[lua(
+        as_trait = "std::ops::Sub::<bevy::math::UVec4>",
+        composite = "sub",
+        metamethod = "Sub",
+    )]
     fn sub(
         _self: LuaReflectValProxy<bevy::math::UVec4>,
         rhs: LuaReflectValProxy<bevy::math::UVec4>,
@@ -8854,7 +9326,11 @@ pub struct UVec3 {
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Mul::<bevy::math::UVec4>", composite = "mul")]
+    #[lua(
+        as_trait = "std::ops::Mul::<bevy::math::UVec4>",
+        composite = "mul",
+        metamethod = "Mul",
+    )]
     fn mul(
         _self: LuaReflectValProxy<bevy::math::UVec4>,
         rhs: LuaReflectValProxy<bevy::math::UVec4>,
@@ -8863,7 +9339,11 @@ pub struct UVec3 {
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Add::<bevy::math::UVec4>", composite = "add")]
+    #[lua(
+        as_trait = "std::ops::Add::<bevy::math::UVec4>",
+        composite = "add",
+        metamethod = "Add",
+    )]
     fn add(
         _self: LuaReflectValProxy<bevy::math::UVec4>,
         rhs: LuaReflectValProxy<bevy::math::UVec4>,
@@ -8878,7 +9358,11 @@ pub struct UVec3 {
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Add::<&bevy::math::UVec4>", composite = "add")]
+    #[lua(
+        as_trait = "std::ops::Add::<&bevy::math::UVec4>",
+        composite = "add",
+        metamethod = "Add",
+    )]
     fn add(
         _self: LuaReflectValProxy<bevy::math::UVec4>,
         rhs: LuaReflectRefProxy<bevy::math::UVec4>,
@@ -8887,7 +9371,11 @@ pub struct UVec3 {
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Rem::<bevy::math::UVec4>", composite = "rem")]
+    #[lua(
+        as_trait = "std::ops::Rem::<bevy::math::UVec4>",
+        composite = "rem",
+        metamethod = "Mod",
+    )]
     fn rem(
         _self: LuaReflectValProxy<bevy::math::UVec4>,
         rhs: LuaReflectValProxy<bevy::math::UVec4>,
@@ -8896,7 +9384,7 @@ pub struct UVec3 {
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Rem::<u32>", composite = "rem")]
+    #[lua(as_trait = "std::ops::Rem::<u32>", composite = "rem", metamethod = "Mod")]
     fn rem(
         _self: LuaReflectValProxy<bevy::math::UVec4>,
         rhs: u32,
@@ -8905,7 +9393,7 @@ pub struct UVec3 {
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Add::<u32>", composite = "add")]
+    #[lua(as_trait = "std::ops::Add::<u32>", composite = "add", metamethod = "Add")]
     fn add(
         _self: LuaReflectValProxy<bevy::math::UVec4>,
         rhs: u32,
@@ -8914,7 +9402,11 @@ pub struct UVec3 {
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Div::<&bevy::math::UVec4>", composite = "div")]
+    #[lua(
+        as_trait = "std::ops::Div::<&bevy::math::UVec4>",
+        composite = "div",
+        metamethod = "Div",
+    )]
     fn div(
         _self: LuaReflectValProxy<bevy::math::UVec4>,
         rhs: LuaReflectRefProxy<bevy::math::UVec4>,
@@ -8923,7 +9415,11 @@ pub struct UVec3 {
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Rem::<&bevy::math::UVec4>", composite = "rem")]
+    #[lua(
+        as_trait = "std::ops::Rem::<&bevy::math::UVec4>",
+        composite = "rem",
+        metamethod = "Mod",
+    )]
     fn rem(
         _self: LuaReflectValProxy<bevy::math::UVec4>,
         rhs: LuaReflectRefProxy<bevy::math::UVec4>,
@@ -8932,7 +9428,11 @@ pub struct UVec3 {
 "#,
     r#"
 
-    #[lua(as_trait = "std::cmp::PartialEq::<bevy::math::UVec4>", composite = "eq")]
+    #[lua(
+        as_trait = "std::cmp::PartialEq::<bevy::math::UVec4>",
+        composite = "eq",
+        metamethod = "Eq",
+    )]
     fn eq(
         _self: LuaReflectRefProxy<bevy::math::UVec4>,
         other: LuaReflectRefProxy<bevy::math::UVec4>,
@@ -8941,7 +9441,7 @@ pub struct UVec3 {
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Sub::<u32>", composite = "sub")]
+    #[lua(as_trait = "std::ops::Sub::<u32>", composite = "sub", metamethod = "Sub")]
     fn sub(
         _self: LuaReflectValProxy<bevy::math::UVec4>,
         rhs: u32,
@@ -8950,7 +9450,7 @@ pub struct UVec3 {
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Mul::<u32>", composite = "mul")]
+    #[lua(as_trait = "std::ops::Mul::<u32>", composite = "mul", metamethod = "Mul")]
     fn mul(
         _self: LuaReflectValProxy<bevy::math::UVec4>,
         rhs: u32,
@@ -8989,7 +9489,11 @@ pub struct UVec4 {
     bms_lua_path = "crate",
     functions[r#"
 
-    #[lua(as_trait = "std::ops::Rem::<bevy::math::U64Vec2>", composite = "rem")]
+    #[lua(
+        as_trait = "std::ops::Rem::<bevy::math::U64Vec2>",
+        composite = "rem",
+        metamethod = "Mod",
+    )]
     fn rem(
         _self: LuaReflectValProxy<bevy::math::U64Vec2>,
         rhs: LuaReflectValProxy<bevy::math::U64Vec2>,
@@ -8998,7 +9502,7 @@ pub struct UVec4 {
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Div::<u64>", composite = "div")]
+    #[lua(as_trait = "std::ops::Div::<u64>", composite = "div", metamethod = "Div")]
     fn div(
         _self: LuaReflectValProxy<bevy::math::U64Vec2>,
         rhs: u64,
@@ -9007,7 +9511,11 @@ pub struct UVec4 {
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Rem::<&bevy::math::U64Vec2>", composite = "rem")]
+    #[lua(
+        as_trait = "std::ops::Rem::<&bevy::math::U64Vec2>",
+        composite = "rem",
+        metamethod = "Mod",
+    )]
     fn rem(
         _self: LuaReflectValProxy<bevy::math::U64Vec2>,
         rhs: LuaReflectRefProxy<bevy::math::U64Vec2>,
@@ -9016,7 +9524,11 @@ pub struct UVec4 {
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Sub::<bevy::math::U64Vec2>", composite = "sub")]
+    #[lua(
+        as_trait = "std::ops::Sub::<bevy::math::U64Vec2>",
+        composite = "sub",
+        metamethod = "Sub",
+    )]
     fn sub(
         _self: LuaReflectValProxy<bevy::math::U64Vec2>,
         rhs: LuaReflectValProxy<bevy::math::U64Vec2>,
@@ -9031,7 +9543,7 @@ pub struct UVec4 {
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Rem::<u64>", composite = "rem")]
+    #[lua(as_trait = "std::ops::Rem::<u64>", composite = "rem", metamethod = "Mod")]
     fn rem(
         _self: LuaReflectValProxy<bevy::math::U64Vec2>,
         rhs: u64,
@@ -9048,7 +9560,7 @@ pub struct UVec4 {
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Sub::<u64>", composite = "sub")]
+    #[lua(as_trait = "std::ops::Sub::<u64>", composite = "sub", metamethod = "Sub")]
     fn sub(
         _self: LuaReflectValProxy<bevy::math::U64Vec2>,
         rhs: u64,
@@ -9057,7 +9569,7 @@ pub struct UVec4 {
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Add::<u64>", composite = "add")]
+    #[lua(as_trait = "std::ops::Add::<u64>", composite = "add", metamethod = "Add")]
     fn add(
         _self: LuaReflectValProxy<bevy::math::U64Vec2>,
         rhs: u64,
@@ -9066,7 +9578,7 @@ pub struct UVec4 {
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Mul::<u64>", composite = "mul")]
+    #[lua(as_trait = "std::ops::Mul::<u64>", composite = "mul", metamethod = "Mul")]
     fn mul(
         _self: LuaReflectValProxy<bevy::math::U64Vec2>,
         rhs: u64,
@@ -9075,7 +9587,11 @@ pub struct UVec4 {
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Sub::<&bevy::math::U64Vec2>", composite = "sub")]
+    #[lua(
+        as_trait = "std::ops::Sub::<&bevy::math::U64Vec2>",
+        composite = "sub",
+        metamethod = "Sub",
+    )]
     fn sub(
         _self: LuaReflectValProxy<bevy::math::U64Vec2>,
         rhs: LuaReflectRefProxy<bevy::math::U64Vec2>,
@@ -9084,7 +9600,11 @@ pub struct UVec4 {
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Add::<&bevy::math::U64Vec2>", composite = "add")]
+    #[lua(
+        as_trait = "std::ops::Add::<&bevy::math::U64Vec2>",
+        composite = "add",
+        metamethod = "Add",
+    )]
     fn add(
         _self: LuaReflectValProxy<bevy::math::U64Vec2>,
         rhs: LuaReflectRefProxy<bevy::math::U64Vec2>,
@@ -9093,7 +9613,11 @@ pub struct UVec4 {
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Div::<&bevy::math::U64Vec2>", composite = "div")]
+    #[lua(
+        as_trait = "std::ops::Div::<&bevy::math::U64Vec2>",
+        composite = "div",
+        metamethod = "Div",
+    )]
     fn div(
         _self: LuaReflectValProxy<bevy::math::U64Vec2>,
         rhs: LuaReflectRefProxy<bevy::math::U64Vec2>,
@@ -9102,7 +9626,11 @@ pub struct UVec4 {
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Mul::<bevy::math::U64Vec2>", composite = "mul")]
+    #[lua(
+        as_trait = "std::ops::Mul::<bevy::math::U64Vec2>",
+        composite = "mul",
+        metamethod = "Mul",
+    )]
     fn mul(
         _self: LuaReflectValProxy<bevy::math::U64Vec2>,
         rhs: LuaReflectValProxy<bevy::math::U64Vec2>,
@@ -9111,7 +9639,11 @@ pub struct UVec4 {
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Div::<bevy::math::U64Vec2>", composite = "div")]
+    #[lua(
+        as_trait = "std::ops::Div::<bevy::math::U64Vec2>",
+        composite = "div",
+        metamethod = "Div",
+    )]
     fn div(
         _self: LuaReflectValProxy<bevy::math::U64Vec2>,
         rhs: LuaReflectValProxy<bevy::math::U64Vec2>,
@@ -9120,7 +9652,11 @@ pub struct UVec4 {
 "#,
     r#"
 
-    #[lua(as_trait = "std::cmp::PartialEq::<bevy::math::U64Vec2>", composite = "eq")]
+    #[lua(
+        as_trait = "std::cmp::PartialEq::<bevy::math::U64Vec2>",
+        composite = "eq",
+        metamethod = "Eq",
+    )]
     fn eq(
         _self: LuaReflectRefProxy<bevy::math::U64Vec2>,
         other: LuaReflectRefProxy<bevy::math::U64Vec2>,
@@ -9129,7 +9665,11 @@ pub struct UVec4 {
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Mul::<&bevy::math::U64Vec2>", composite = "mul")]
+    #[lua(
+        as_trait = "std::ops::Mul::<&bevy::math::U64Vec2>",
+        composite = "mul",
+        metamethod = "Mul",
+    )]
     fn mul(
         _self: LuaReflectValProxy<bevy::math::U64Vec2>,
         rhs: LuaReflectRefProxy<bevy::math::U64Vec2>,
@@ -9138,7 +9678,11 @@ pub struct UVec4 {
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Add::<bevy::math::U64Vec2>", composite = "add")]
+    #[lua(
+        as_trait = "std::ops::Add::<bevy::math::U64Vec2>",
+        composite = "add",
+        metamethod = "Add",
+    )]
     fn add(
         _self: LuaReflectValProxy<bevy::math::U64Vec2>,
         rhs: LuaReflectValProxy<bevy::math::U64Vec2>,
@@ -10002,7 +10546,7 @@ pub struct U64Vec2 {
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Mul::<u64>", composite = "mul")]
+    #[lua(as_trait = "std::ops::Mul::<u64>", composite = "mul", metamethod = "Mul")]
     fn mul(
         _self: LuaReflectValProxy<bevy::math::U64Vec3>,
         rhs: u64,
@@ -10011,7 +10555,11 @@ pub struct U64Vec2 {
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Rem::<bevy::math::U64Vec3>", composite = "rem")]
+    #[lua(
+        as_trait = "std::ops::Rem::<bevy::math::U64Vec3>",
+        composite = "rem",
+        metamethod = "Mod",
+    )]
     fn rem(
         _self: LuaReflectValProxy<bevy::math::U64Vec3>,
         rhs: LuaReflectValProxy<bevy::math::U64Vec3>,
@@ -10020,7 +10568,11 @@ pub struct U64Vec2 {
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Sub::<&bevy::math::U64Vec3>", composite = "sub")]
+    #[lua(
+        as_trait = "std::ops::Sub::<&bevy::math::U64Vec3>",
+        composite = "sub",
+        metamethod = "Sub",
+    )]
     fn sub(
         _self: LuaReflectValProxy<bevy::math::U64Vec3>,
         rhs: LuaReflectRefProxy<bevy::math::U64Vec3>,
@@ -10029,7 +10581,7 @@ pub struct U64Vec2 {
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Div::<u64>", composite = "div")]
+    #[lua(as_trait = "std::ops::Div::<u64>", composite = "div", metamethod = "Div")]
     fn div(
         _self: LuaReflectValProxy<bevy::math::U64Vec3>,
         rhs: u64,
@@ -10038,7 +10590,11 @@ pub struct U64Vec2 {
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Div::<&bevy::math::U64Vec3>", composite = "div")]
+    #[lua(
+        as_trait = "std::ops::Div::<&bevy::math::U64Vec3>",
+        composite = "div",
+        metamethod = "Div",
+    )]
     fn div(
         _self: LuaReflectValProxy<bevy::math::U64Vec3>,
         rhs: LuaReflectRefProxy<bevy::math::U64Vec3>,
@@ -10047,7 +10603,11 @@ pub struct U64Vec2 {
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Mul::<bevy::math::U64Vec3>", composite = "mul")]
+    #[lua(
+        as_trait = "std::ops::Mul::<bevy::math::U64Vec3>",
+        composite = "mul",
+        metamethod = "Mul",
+    )]
     fn mul(
         _self: LuaReflectValProxy<bevy::math::U64Vec3>,
         rhs: LuaReflectValProxy<bevy::math::U64Vec3>,
@@ -10056,7 +10616,7 @@ pub struct U64Vec2 {
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Sub::<u64>", composite = "sub")]
+    #[lua(as_trait = "std::ops::Sub::<u64>", composite = "sub", metamethod = "Sub")]
     fn sub(
         _self: LuaReflectValProxy<bevy::math::U64Vec3>,
         rhs: u64,
@@ -10065,7 +10625,11 @@ pub struct U64Vec2 {
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Add::<&bevy::math::U64Vec3>", composite = "add")]
+    #[lua(
+        as_trait = "std::ops::Add::<&bevy::math::U64Vec3>",
+        composite = "add",
+        metamethod = "Add",
+    )]
     fn add(
         _self: LuaReflectValProxy<bevy::math::U64Vec3>,
         rhs: LuaReflectRefProxy<bevy::math::U64Vec3>,
@@ -10080,7 +10644,11 @@ pub struct U64Vec2 {
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Mul::<&bevy::math::U64Vec3>", composite = "mul")]
+    #[lua(
+        as_trait = "std::ops::Mul::<&bevy::math::U64Vec3>",
+        composite = "mul",
+        metamethod = "Mul",
+    )]
     fn mul(
         _self: LuaReflectValProxy<bevy::math::U64Vec3>,
         rhs: LuaReflectRefProxy<bevy::math::U64Vec3>,
@@ -10089,7 +10657,11 @@ pub struct U64Vec2 {
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Div::<bevy::math::U64Vec3>", composite = "div")]
+    #[lua(
+        as_trait = "std::ops::Div::<bevy::math::U64Vec3>",
+        composite = "div",
+        metamethod = "Div",
+    )]
     fn div(
         _self: LuaReflectValProxy<bevy::math::U64Vec3>,
         rhs: LuaReflectValProxy<bevy::math::U64Vec3>,
@@ -10098,7 +10670,7 @@ pub struct U64Vec2 {
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Add::<u64>", composite = "add")]
+    #[lua(as_trait = "std::ops::Add::<u64>", composite = "add", metamethod = "Add")]
     fn add(
         _self: LuaReflectValProxy<bevy::math::U64Vec3>,
         rhs: u64,
@@ -10107,7 +10679,7 @@ pub struct U64Vec2 {
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Rem::<u64>", composite = "rem")]
+    #[lua(as_trait = "std::ops::Rem::<u64>", composite = "rem", metamethod = "Mod")]
     fn rem(
         _self: LuaReflectValProxy<bevy::math::U64Vec3>,
         rhs: u64,
@@ -10116,7 +10688,11 @@ pub struct U64Vec2 {
 "#,
     r#"
 
-    #[lua(as_trait = "std::cmp::PartialEq::<bevy::math::U64Vec3>", composite = "eq")]
+    #[lua(
+        as_trait = "std::cmp::PartialEq::<bevy::math::U64Vec3>",
+        composite = "eq",
+        metamethod = "Eq",
+    )]
     fn eq(
         _self: LuaReflectRefProxy<bevy::math::U64Vec3>,
         other: LuaReflectRefProxy<bevy::math::U64Vec3>,
@@ -10125,7 +10701,11 @@ pub struct U64Vec2 {
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Add::<bevy::math::U64Vec3>", composite = "add")]
+    #[lua(
+        as_trait = "std::ops::Add::<bevy::math::U64Vec3>",
+        composite = "add",
+        metamethod = "Add",
+    )]
     fn add(
         _self: LuaReflectValProxy<bevy::math::U64Vec3>,
         rhs: LuaReflectValProxy<bevy::math::U64Vec3>,
@@ -10142,7 +10722,11 @@ pub struct U64Vec2 {
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Sub::<bevy::math::U64Vec3>", composite = "sub")]
+    #[lua(
+        as_trait = "std::ops::Sub::<bevy::math::U64Vec3>",
+        composite = "sub",
+        metamethod = "Sub",
+    )]
     fn sub(
         _self: LuaReflectValProxy<bevy::math::U64Vec3>,
         rhs: LuaReflectValProxy<bevy::math::U64Vec3>,
@@ -10151,7 +10735,11 @@ pub struct U64Vec2 {
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Rem::<&bevy::math::U64Vec3>", composite = "rem")]
+    #[lua(
+        as_trait = "std::ops::Rem::<&bevy::math::U64Vec3>",
+        composite = "rem",
+        metamethod = "Mod",
+    )]
     fn rem(
         _self: LuaReflectValProxy<bevy::math::U64Vec3>,
         rhs: LuaReflectRefProxy<bevy::math::U64Vec3>,
@@ -10177,7 +10765,11 @@ pub struct U64Vec3 {
     bms_lua_path = "crate",
     functions[r#"
 
-    #[lua(as_trait = "std::ops::Rem::<&bevy::math::U64Vec4>", composite = "rem")]
+    #[lua(
+        as_trait = "std::ops::Rem::<&bevy::math::U64Vec4>",
+        composite = "rem",
+        metamethod = "Mod",
+    )]
     fn rem(
         _self: LuaReflectValProxy<bevy::math::U64Vec4>,
         rhs: LuaReflectRefProxy<bevy::math::U64Vec4>,
@@ -10186,7 +10778,11 @@ pub struct U64Vec3 {
 "#,
     r#"
 
-    #[lua(as_trait = "std::cmp::PartialEq::<bevy::math::U64Vec4>", composite = "eq")]
+    #[lua(
+        as_trait = "std::cmp::PartialEq::<bevy::math::U64Vec4>",
+        composite = "eq",
+        metamethod = "Eq",
+    )]
     fn eq(
         _self: LuaReflectRefProxy<bevy::math::U64Vec4>,
         other: LuaReflectRefProxy<bevy::math::U64Vec4>,
@@ -10195,7 +10791,7 @@ pub struct U64Vec3 {
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Div::<u64>", composite = "div")]
+    #[lua(as_trait = "std::ops::Div::<u64>", composite = "div", metamethod = "Div")]
     fn div(
         _self: LuaReflectValProxy<bevy::math::U64Vec4>,
         rhs: u64,
@@ -10204,7 +10800,11 @@ pub struct U64Vec3 {
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Div::<bevy::math::U64Vec4>", composite = "div")]
+    #[lua(
+        as_trait = "std::ops::Div::<bevy::math::U64Vec4>",
+        composite = "div",
+        metamethod = "Div",
+    )]
     fn div(
         _self: LuaReflectValProxy<bevy::math::U64Vec4>,
         rhs: LuaReflectValProxy<bevy::math::U64Vec4>,
@@ -10213,7 +10813,11 @@ pub struct U64Vec3 {
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Rem::<bevy::math::U64Vec4>", composite = "rem")]
+    #[lua(
+        as_trait = "std::ops::Rem::<bevy::math::U64Vec4>",
+        composite = "rem",
+        metamethod = "Mod",
+    )]
     fn rem(
         _self: LuaReflectValProxy<bevy::math::U64Vec4>,
         rhs: LuaReflectValProxy<bevy::math::U64Vec4>,
@@ -10222,7 +10826,7 @@ pub struct U64Vec3 {
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Mul::<u64>", composite = "mul")]
+    #[lua(as_trait = "std::ops::Mul::<u64>", composite = "mul", metamethod = "Mul")]
     fn mul(
         _self: LuaReflectValProxy<bevy::math::U64Vec4>,
         rhs: u64,
@@ -10651,7 +11255,7 @@ pub struct U64Vec3 {
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Add::<u64>", composite = "add")]
+    #[lua(as_trait = "std::ops::Add::<u64>", composite = "add", metamethod = "Add")]
     fn add(
         _self: LuaReflectValProxy<bevy::math::U64Vec4>,
         rhs: u64,
@@ -10660,7 +11264,11 @@ pub struct U64Vec3 {
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Mul::<bevy::math::U64Vec4>", composite = "mul")]
+    #[lua(
+        as_trait = "std::ops::Mul::<bevy::math::U64Vec4>",
+        composite = "mul",
+        metamethod = "Mul",
+    )]
     fn mul(
         _self: LuaReflectValProxy<bevy::math::U64Vec4>,
         rhs: LuaReflectValProxy<bevy::math::U64Vec4>,
@@ -10675,7 +11283,11 @@ pub struct U64Vec3 {
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Mul::<&bevy::math::U64Vec4>", composite = "mul")]
+    #[lua(
+        as_trait = "std::ops::Mul::<&bevy::math::U64Vec4>",
+        composite = "mul",
+        metamethod = "Mul",
+    )]
     fn mul(
         _self: LuaReflectValProxy<bevy::math::U64Vec4>,
         rhs: LuaReflectRefProxy<bevy::math::U64Vec4>,
@@ -10684,7 +11296,11 @@ pub struct U64Vec3 {
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Sub::<bevy::math::U64Vec4>", composite = "sub")]
+    #[lua(
+        as_trait = "std::ops::Sub::<bevy::math::U64Vec4>",
+        composite = "sub",
+        metamethod = "Sub",
+    )]
     fn sub(
         _self: LuaReflectValProxy<bevy::math::U64Vec4>,
         rhs: LuaReflectValProxy<bevy::math::U64Vec4>,
@@ -10693,7 +11309,11 @@ pub struct U64Vec3 {
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Add::<&bevy::math::U64Vec4>", composite = "add")]
+    #[lua(
+        as_trait = "std::ops::Add::<&bevy::math::U64Vec4>",
+        composite = "add",
+        metamethod = "Add",
+    )]
     fn add(
         _self: LuaReflectValProxy<bevy::math::U64Vec4>,
         rhs: LuaReflectRefProxy<bevy::math::U64Vec4>,
@@ -10702,7 +11322,7 @@ pub struct U64Vec3 {
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Rem::<u64>", composite = "rem")]
+    #[lua(as_trait = "std::ops::Rem::<u64>", composite = "rem", metamethod = "Mod")]
     fn rem(
         _self: LuaReflectValProxy<bevy::math::U64Vec4>,
         rhs: u64,
@@ -10711,7 +11331,11 @@ pub struct U64Vec3 {
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Sub::<&bevy::math::U64Vec4>", composite = "sub")]
+    #[lua(
+        as_trait = "std::ops::Sub::<&bevy::math::U64Vec4>",
+        composite = "sub",
+        metamethod = "Sub",
+    )]
     fn sub(
         _self: LuaReflectValProxy<bevy::math::U64Vec4>,
         rhs: LuaReflectRefProxy<bevy::math::U64Vec4>,
@@ -10720,7 +11344,11 @@ pub struct U64Vec3 {
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Add::<bevy::math::U64Vec4>", composite = "add")]
+    #[lua(
+        as_trait = "std::ops::Add::<bevy::math::U64Vec4>",
+        composite = "add",
+        metamethod = "Add",
+    )]
     fn add(
         _self: LuaReflectValProxy<bevy::math::U64Vec4>,
         rhs: LuaReflectValProxy<bevy::math::U64Vec4>,
@@ -10729,7 +11357,11 @@ pub struct U64Vec3 {
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Div::<&bevy::math::U64Vec4>", composite = "div")]
+    #[lua(
+        as_trait = "std::ops::Div::<&bevy::math::U64Vec4>",
+        composite = "div",
+        metamethod = "Div",
+    )]
     fn div(
         _self: LuaReflectValProxy<bevy::math::U64Vec4>,
         rhs: LuaReflectRefProxy<bevy::math::U64Vec4>,
@@ -10738,7 +11370,7 @@ pub struct U64Vec3 {
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Sub::<u64>", composite = "sub")]
+    #[lua(as_trait = "std::ops::Sub::<u64>", composite = "sub", metamethod = "Sub")]
     fn sub(
         _self: LuaReflectValProxy<bevy::math::U64Vec4>,
         rhs: u64,
@@ -10773,7 +11405,11 @@ pub struct U64Vec4 {
     bms_lua_path = "crate",
     functions[r#"
 
-    #[lua(as_trait = "std::ops::Rem::<&bevy::math::Vec2>", composite = "rem")]
+    #[lua(
+        as_trait = "std::ops::Rem::<&bevy::math::Vec2>",
+        composite = "rem",
+        metamethod = "Mod",
+    )]
     fn rem(
         _self: LuaReflectValProxy<bevy::math::Vec2>,
         rhs: LuaReflectRefProxy<bevy::math::Vec2>,
@@ -10782,7 +11418,7 @@ pub struct U64Vec4 {
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Rem::<f32>", composite = "rem")]
+    #[lua(as_trait = "std::ops::Rem::<f32>", composite = "rem", metamethod = "Mod")]
     fn rem(
         _self: LuaReflectValProxy<bevy::math::Vec2>,
         rhs: f32,
@@ -10791,7 +11427,11 @@ pub struct U64Vec4 {
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Add::<&bevy::math::Vec2>", composite = "add")]
+    #[lua(
+        as_trait = "std::ops::Add::<&bevy::math::Vec2>",
+        composite = "add",
+        metamethod = "Add",
+    )]
     fn add(
         _self: LuaReflectValProxy<bevy::math::Vec2>,
         rhs: LuaReflectRefProxy<bevy::math::Vec2>,
@@ -10800,7 +11440,11 @@ pub struct U64Vec4 {
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Div::<&bevy::math::Vec2>", composite = "div")]
+    #[lua(
+        as_trait = "std::ops::Div::<&bevy::math::Vec2>",
+        composite = "div",
+        metamethod = "Div",
+    )]
     fn div(
         _self: LuaReflectValProxy<bevy::math::Vec2>,
         rhs: LuaReflectRefProxy<bevy::math::Vec2>,
@@ -10809,7 +11453,7 @@ pub struct U64Vec4 {
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Mul::<f32>", composite = "mul")]
+    #[lua(as_trait = "std::ops::Mul::<f32>", composite = "mul", metamethod = "Mul")]
     fn mul(
         _self: LuaReflectValProxy<bevy::math::Vec2>,
         rhs: f32,
@@ -10818,7 +11462,11 @@ pub struct U64Vec4 {
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Add::<bevy::math::Vec2>", composite = "add")]
+    #[lua(
+        as_trait = "std::ops::Add::<bevy::math::Vec2>",
+        composite = "add",
+        metamethod = "Add",
+    )]
     fn add(
         _self: LuaReflectValProxy<bevy::math::Vec2>,
         rhs: LuaReflectValProxy<bevy::math::Vec2>,
@@ -10827,7 +11475,7 @@ pub struct U64Vec4 {
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Div::<f32>", composite = "div")]
+    #[lua(as_trait = "std::ops::Div::<f32>", composite = "div", metamethod = "Div")]
     fn div(
         _self: LuaReflectValProxy<bevy::math::Vec2>,
         rhs: f32,
@@ -10836,7 +11484,11 @@ pub struct U64Vec4 {
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Mul::<bevy::math::Vec2>", composite = "mul")]
+    #[lua(
+        as_trait = "std::ops::Mul::<bevy::math::Vec2>",
+        composite = "mul",
+        metamethod = "Mul",
+    )]
     fn mul(
         _self: LuaReflectValProxy<bevy::math::Vec2>,
         rhs: LuaReflectValProxy<bevy::math::Vec2>,
@@ -10845,7 +11497,7 @@ pub struct U64Vec4 {
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Add::<f32>", composite = "add")]
+    #[lua(as_trait = "std::ops::Add::<f32>", composite = "add", metamethod = "Add")]
     fn add(
         _self: LuaReflectValProxy<bevy::math::Vec2>,
         rhs: f32,
@@ -10854,7 +11506,11 @@ pub struct U64Vec4 {
 "#,
     r#"
 
-    #[lua(as_trait = "std::cmp::PartialEq::<bevy::math::Vec2>", composite = "eq")]
+    #[lua(
+        as_trait = "std::cmp::PartialEq::<bevy::math::Vec2>",
+        composite = "eq",
+        metamethod = "Eq",
+    )]
     fn eq(
         _self: LuaReflectRefProxy<bevy::math::Vec2>,
         other: LuaReflectRefProxy<bevy::math::Vec2>,
@@ -11713,7 +12369,7 @@ pub struct U64Vec4 {
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Sub::<f32>", composite = "sub")]
+    #[lua(as_trait = "std::ops::Sub::<f32>", composite = "sub", metamethod = "Sub")]
     fn sub(
         _self: LuaReflectValProxy<bevy::math::Vec2>,
         rhs: f32,
@@ -11722,7 +12378,11 @@ pub struct U64Vec4 {
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Sub::<bevy::math::Vec2>", composite = "sub")]
+    #[lua(
+        as_trait = "std::ops::Sub::<bevy::math::Vec2>",
+        composite = "sub",
+        metamethod = "Sub",
+    )]
     fn sub(
         _self: LuaReflectValProxy<bevy::math::Vec2>,
         rhs: LuaReflectValProxy<bevy::math::Vec2>,
@@ -11731,7 +12391,11 @@ pub struct U64Vec4 {
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Mul::<&bevy::math::Vec2>", composite = "mul")]
+    #[lua(
+        as_trait = "std::ops::Mul::<&bevy::math::Vec2>",
+        composite = "mul",
+        metamethod = "Mul",
+    )]
     fn mul(
         _self: LuaReflectValProxy<bevy::math::Vec2>,
         rhs: LuaReflectRefProxy<bevy::math::Vec2>,
@@ -11740,7 +12404,11 @@ pub struct U64Vec4 {
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Div::<bevy::math::Vec2>", composite = "div")]
+    #[lua(
+        as_trait = "std::ops::Div::<bevy::math::Vec2>",
+        composite = "div",
+        metamethod = "Div",
+    )]
     fn div(
         _self: LuaReflectValProxy<bevy::math::Vec2>,
         rhs: LuaReflectValProxy<bevy::math::Vec2>,
@@ -11749,7 +12417,11 @@ pub struct U64Vec4 {
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Sub::<&bevy::math::Vec2>", composite = "sub")]
+    #[lua(
+        as_trait = "std::ops::Sub::<&bevy::math::Vec2>",
+        composite = "sub",
+        metamethod = "Sub",
+    )]
     fn sub(
         _self: LuaReflectValProxy<bevy::math::Vec2>,
         rhs: LuaReflectRefProxy<bevy::math::Vec2>,
@@ -11758,7 +12430,11 @@ pub struct U64Vec4 {
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Rem::<bevy::math::Vec2>", composite = "rem")]
+    #[lua(
+        as_trait = "std::ops::Rem::<bevy::math::Vec2>",
+        composite = "rem",
+        metamethod = "Mod",
+    )]
     fn rem(
         _self: LuaReflectValProxy<bevy::math::Vec2>,
         rhs: LuaReflectValProxy<bevy::math::Vec2>,
@@ -11767,7 +12443,7 @@ pub struct U64Vec4 {
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Neg", composite = "neg")]
+    #[lua(as_trait = "std::ops::Neg", composite = "neg", metamethod = "Unm")]
     fn neg(
         _self: LuaReflectValProxy<bevy::math::Vec2>,
     ) -> LuaReflectValProxy<bevy::math::Vec2>;
@@ -11803,7 +12479,11 @@ pub struct Vec2 {
     bms_lua_path = "crate",
     functions[r#"
 
-    #[lua(as_trait = "std::ops::Rem::<bevy::math::Vec3A>", composite = "rem")]
+    #[lua(
+        as_trait = "std::ops::Rem::<bevy::math::Vec3A>",
+        composite = "rem",
+        metamethod = "Mod",
+    )]
     fn rem(
         _self: LuaReflectValProxy<bevy::math::Vec3A>,
         rhs: LuaReflectValProxy<bevy::math::Vec3A>,
@@ -11812,7 +12492,11 @@ pub struct Vec2 {
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Sub::<bevy::math::Vec3A>", composite = "sub")]
+    #[lua(
+        as_trait = "std::ops::Sub::<bevy::math::Vec3A>",
+        composite = "sub",
+        metamethod = "Sub",
+    )]
     fn sub(
         _self: LuaReflectValProxy<bevy::math::Vec3A>,
         rhs: LuaReflectValProxy<bevy::math::Vec3A>,
@@ -11821,7 +12505,11 @@ pub struct Vec2 {
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Mul::<bevy::math::Vec3A>", composite = "mul")]
+    #[lua(
+        as_trait = "std::ops::Mul::<bevy::math::Vec3A>",
+        composite = "mul",
+        metamethod = "Mul",
+    )]
     fn mul(
         _self: LuaReflectValProxy<bevy::math::Vec3A>,
         rhs: LuaReflectValProxy<bevy::math::Vec3A>,
@@ -11830,7 +12518,11 @@ pub struct Vec2 {
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Rem::<&bevy::math::Vec3A>", composite = "rem")]
+    #[lua(
+        as_trait = "std::ops::Rem::<&bevy::math::Vec3A>",
+        composite = "rem",
+        metamethod = "Mod",
+    )]
     fn rem(
         _self: LuaReflectValProxy<bevy::math::Vec3A>,
         rhs: LuaReflectRefProxy<bevy::math::Vec3A>,
@@ -11839,7 +12531,7 @@ pub struct Vec2 {
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Mul::<f32>", composite = "mul")]
+    #[lua(as_trait = "std::ops::Mul::<f32>", composite = "mul", metamethod = "Mul")]
     fn mul(
         _self: LuaReflectValProxy<bevy::math::Vec3A>,
         rhs: f32,
@@ -11848,7 +12540,11 @@ pub struct Vec2 {
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Mul::<&bevy::math::Vec3A>", composite = "mul")]
+    #[lua(
+        as_trait = "std::ops::Mul::<&bevy::math::Vec3A>",
+        composite = "mul",
+        metamethod = "Mul",
+    )]
     fn mul(
         _self: LuaReflectValProxy<bevy::math::Vec3A>,
         rhs: LuaReflectRefProxy<bevy::math::Vec3A>,
@@ -11857,7 +12553,7 @@ pub struct Vec2 {
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Rem::<f32>", composite = "rem")]
+    #[lua(as_trait = "std::ops::Rem::<f32>", composite = "rem", metamethod = "Mod")]
     fn rem(
         _self: LuaReflectValProxy<bevy::math::Vec3A>,
         rhs: f32,
@@ -11866,7 +12562,11 @@ pub struct Vec2 {
 "#,
     r#"
 
-    #[lua(as_trait = "std::cmp::PartialEq::<bevy::math::Vec3A>", composite = "eq")]
+    #[lua(
+        as_trait = "std::cmp::PartialEq::<bevy::math::Vec3A>",
+        composite = "eq",
+        metamethod = "Eq",
+    )]
     fn eq(
         _self: LuaReflectRefProxy<bevy::math::Vec3A>,
         rhs: LuaReflectRefProxy<bevy::math::Vec3A>,
@@ -11875,7 +12575,11 @@ pub struct Vec2 {
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Sub::<&bevy::math::Vec3A>", composite = "sub")]
+    #[lua(
+        as_trait = "std::ops::Sub::<&bevy::math::Vec3A>",
+        composite = "sub",
+        metamethod = "Sub",
+    )]
     fn sub(
         _self: LuaReflectValProxy<bevy::math::Vec3A>,
         rhs: LuaReflectRefProxy<bevy::math::Vec3A>,
@@ -11884,7 +12588,7 @@ pub struct Vec2 {
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Neg", composite = "neg")]
+    #[lua(as_trait = "std::ops::Neg", composite = "neg", metamethod = "Unm")]
     fn neg(
         _self: LuaReflectValProxy<bevy::math::Vec3A>,
     ) -> LuaReflectValProxy<bevy::math::Vec3A>;
@@ -12725,7 +13429,11 @@ pub struct Vec2 {
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Div::<&bevy::math::Vec3A>", composite = "div")]
+    #[lua(
+        as_trait = "std::ops::Div::<&bevy::math::Vec3A>",
+        composite = "div",
+        metamethod = "Div",
+    )]
     fn div(
         _self: LuaReflectValProxy<bevy::math::Vec3A>,
         rhs: LuaReflectRefProxy<bevy::math::Vec3A>,
@@ -12742,7 +13450,7 @@ pub struct Vec2 {
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Div::<f32>", composite = "div")]
+    #[lua(as_trait = "std::ops::Div::<f32>", composite = "div", metamethod = "Div")]
     fn div(
         _self: LuaReflectValProxy<bevy::math::Vec3A>,
         rhs: f32,
@@ -12751,7 +13459,7 @@ pub struct Vec2 {
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Sub::<f32>", composite = "sub")]
+    #[lua(as_trait = "std::ops::Sub::<f32>", composite = "sub", metamethod = "Sub")]
     fn sub(
         _self: LuaReflectValProxy<bevy::math::Vec3A>,
         rhs: f32,
@@ -12760,7 +13468,11 @@ pub struct Vec2 {
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Add::<&bevy::math::Vec3A>", composite = "add")]
+    #[lua(
+        as_trait = "std::ops::Add::<&bevy::math::Vec3A>",
+        composite = "add",
+        metamethod = "Add",
+    )]
     fn add(
         _self: LuaReflectValProxy<bevy::math::Vec3A>,
         rhs: LuaReflectRefProxy<bevy::math::Vec3A>,
@@ -12769,7 +13481,11 @@ pub struct Vec2 {
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Div::<bevy::math::Vec3A>", composite = "div")]
+    #[lua(
+        as_trait = "std::ops::Div::<bevy::math::Vec3A>",
+        composite = "div",
+        metamethod = "Div",
+    )]
     fn div(
         _self: LuaReflectValProxy<bevy::math::Vec3A>,
         rhs: LuaReflectValProxy<bevy::math::Vec3A>,
@@ -12778,7 +13494,11 @@ pub struct Vec2 {
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Add::<bevy::math::Vec3A>", composite = "add")]
+    #[lua(
+        as_trait = "std::ops::Add::<bevy::math::Vec3A>",
+        composite = "add",
+        metamethod = "Add",
+    )]
     fn add(
         _self: LuaReflectValProxy<bevy::math::Vec3A>,
         rhs: LuaReflectValProxy<bevy::math::Vec3A>,
@@ -12787,7 +13507,7 @@ pub struct Vec2 {
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Add::<f32>", composite = "add")]
+    #[lua(as_trait = "std::ops::Add::<f32>", composite = "add", metamethod = "Add")]
     fn add(
         _self: LuaReflectValProxy<bevy::math::Vec3A>,
         rhs: f32,
@@ -12821,7 +13541,11 @@ pub struct Vec3A();
     bms_lua_path = "crate",
     functions[r#"
 
-    #[lua(as_trait = "std::ops::Sub::<bevy::math::Vec4>", composite = "sub")]
+    #[lua(
+        as_trait = "std::ops::Sub::<bevy::math::Vec4>",
+        composite = "sub",
+        metamethod = "Sub",
+    )]
     fn sub(
         _self: LuaReflectValProxy<bevy::math::Vec4>,
         rhs: LuaReflectValProxy<bevy::math::Vec4>,
@@ -12830,7 +13554,11 @@ pub struct Vec3A();
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Div::<&bevy::math::Vec4>", composite = "div")]
+    #[lua(
+        as_trait = "std::ops::Div::<&bevy::math::Vec4>",
+        composite = "div",
+        metamethod = "Div",
+    )]
     fn div(
         _self: LuaReflectValProxy<bevy::math::Vec4>,
         rhs: LuaReflectRefProxy<bevy::math::Vec4>,
@@ -12839,7 +13567,7 @@ pub struct Vec3A();
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Rem::<f32>", composite = "rem")]
+    #[lua(as_trait = "std::ops::Rem::<f32>", composite = "rem", metamethod = "Mod")]
     fn rem(
         _self: LuaReflectValProxy<bevy::math::Vec4>,
         rhs: f32,
@@ -12856,7 +13584,11 @@ pub struct Vec3A();
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Rem::<bevy::math::Vec4>", composite = "rem")]
+    #[lua(
+        as_trait = "std::ops::Rem::<bevy::math::Vec4>",
+        composite = "rem",
+        metamethod = "Mod",
+    )]
     fn rem(
         _self: LuaReflectValProxy<bevy::math::Vec4>,
         rhs: LuaReflectValProxy<bevy::math::Vec4>,
@@ -12865,7 +13597,7 @@ pub struct Vec3A();
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Sub::<f32>", composite = "sub")]
+    #[lua(as_trait = "std::ops::Sub::<f32>", composite = "sub", metamethod = "Sub")]
     fn sub(
         _self: LuaReflectValProxy<bevy::math::Vec4>,
         rhs: f32,
@@ -12874,7 +13606,11 @@ pub struct Vec3A();
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Add::<bevy::math::Vec4>", composite = "add")]
+    #[lua(
+        as_trait = "std::ops::Add::<bevy::math::Vec4>",
+        composite = "add",
+        metamethod = "Add",
+    )]
     fn add(
         _self: LuaReflectValProxy<bevy::math::Vec4>,
         rhs: LuaReflectValProxy<bevy::math::Vec4>,
@@ -12883,7 +13619,11 @@ pub struct Vec3A();
 "#,
     r#"
 
-    #[lua(as_trait = "std::cmp::PartialEq::<bevy::math::Vec4>", composite = "eq")]
+    #[lua(
+        as_trait = "std::cmp::PartialEq::<bevy::math::Vec4>",
+        composite = "eq",
+        metamethod = "Eq",
+    )]
     fn eq(
         _self: LuaReflectRefProxy<bevy::math::Vec4>,
         rhs: LuaReflectRefProxy<bevy::math::Vec4>,
@@ -12892,7 +13632,7 @@ pub struct Vec3A();
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Mul::<f32>", composite = "mul")]
+    #[lua(as_trait = "std::ops::Mul::<f32>", composite = "mul", metamethod = "Mul")]
     fn mul(
         _self: LuaReflectValProxy<bevy::math::Vec4>,
         rhs: f32,
@@ -12901,7 +13641,11 @@ pub struct Vec3A();
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Mul::<&bevy::math::Vec4>", composite = "mul")]
+    #[lua(
+        as_trait = "std::ops::Mul::<&bevy::math::Vec4>",
+        composite = "mul",
+        metamethod = "Mul",
+    )]
     fn mul(
         _self: LuaReflectValProxy<bevy::math::Vec4>,
         rhs: LuaReflectRefProxy<bevy::math::Vec4>,
@@ -12910,7 +13654,7 @@ pub struct Vec3A();
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Div::<f32>", composite = "div")]
+    #[lua(as_trait = "std::ops::Div::<f32>", composite = "div", metamethod = "Div")]
     fn div(
         _self: LuaReflectValProxy<bevy::math::Vec4>,
         rhs: f32,
@@ -12919,7 +13663,11 @@ pub struct Vec3A();
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Div::<bevy::math::Vec4>", composite = "div")]
+    #[lua(
+        as_trait = "std::ops::Div::<bevy::math::Vec4>",
+        composite = "div",
+        metamethod = "Div",
+    )]
     fn div(
         _self: LuaReflectValProxy<bevy::math::Vec4>,
         rhs: LuaReflectValProxy<bevy::math::Vec4>,
@@ -12928,7 +13676,11 @@ pub struct Vec3A();
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Sub::<&bevy::math::Vec4>", composite = "sub")]
+    #[lua(
+        as_trait = "std::ops::Sub::<&bevy::math::Vec4>",
+        composite = "sub",
+        metamethod = "Sub",
+    )]
     fn sub(
         _self: LuaReflectValProxy<bevy::math::Vec4>,
         rhs: LuaReflectRefProxy<bevy::math::Vec4>,
@@ -12937,7 +13689,11 @@ pub struct Vec3A();
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Add::<&bevy::math::Vec4>", composite = "add")]
+    #[lua(
+        as_trait = "std::ops::Add::<&bevy::math::Vec4>",
+        composite = "add",
+        metamethod = "Add",
+    )]
     fn add(
         _self: LuaReflectValProxy<bevy::math::Vec4>,
         rhs: LuaReflectRefProxy<bevy::math::Vec4>,
@@ -12946,7 +13702,7 @@ pub struct Vec3A();
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Neg", composite = "neg")]
+    #[lua(as_trait = "std::ops::Neg", composite = "neg", metamethod = "Unm")]
     fn neg(
         _self: LuaReflectValProxy<bevy::math::Vec4>,
     ) -> LuaReflectValProxy<bevy::math::Vec4>;
@@ -13733,7 +14489,11 @@ pub struct Vec3A();
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Mul::<bevy::math::Vec4>", composite = "mul")]
+    #[lua(
+        as_trait = "std::ops::Mul::<bevy::math::Vec4>",
+        composite = "mul",
+        metamethod = "Mul",
+    )]
     fn mul(
         _self: LuaReflectValProxy<bevy::math::Vec4>,
         rhs: LuaReflectValProxy<bevy::math::Vec4>,
@@ -13742,7 +14502,7 @@ pub struct Vec3A();
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Add::<f32>", composite = "add")]
+    #[lua(as_trait = "std::ops::Add::<f32>", composite = "add", metamethod = "Add")]
     fn add(
         _self: LuaReflectValProxy<bevy::math::Vec4>,
         rhs: f32,
@@ -13751,7 +14511,11 @@ pub struct Vec3A();
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Rem::<&bevy::math::Vec4>", composite = "rem")]
+    #[lua(
+        as_trait = "std::ops::Rem::<&bevy::math::Vec4>",
+        composite = "rem",
+        metamethod = "Mod",
+    )]
     fn rem(
         _self: LuaReflectValProxy<bevy::math::Vec4>,
         rhs: LuaReflectRefProxy<bevy::math::Vec4>,
@@ -13785,7 +14549,11 @@ pub struct Vec4();
     bms_lua_path = "crate",
     functions[r#"
 
-    #[lua(as_trait = "std::cmp::PartialEq::<bevy::math::BVec2>", composite = "eq")]
+    #[lua(
+        as_trait = "std::cmp::PartialEq::<bevy::math::BVec2>",
+        composite = "eq",
+        metamethod = "Eq",
+    )]
     fn eq(
         _self: LuaReflectRefProxy<bevy::math::BVec2>,
         other: LuaReflectRefProxy<bevy::math::BVec2>,
@@ -13952,7 +14720,11 @@ pub struct BVec2 {
 "#,
     r#"
 
-    #[lua(as_trait = "std::cmp::PartialEq::<bevy::math::BVec3>", composite = "eq")]
+    #[lua(
+        as_trait = "std::cmp::PartialEq::<bevy::math::BVec3>",
+        composite = "eq",
+        metamethod = "Eq",
+    )]
     fn eq(
         _self: LuaReflectRefProxy<bevy::math::BVec3>,
         other: LuaReflectRefProxy<bevy::math::BVec3>,
@@ -13992,7 +14764,11 @@ pub struct BVec3 {
     bms_lua_path = "crate",
     functions[r#"
 
-    #[lua(as_trait = "std::cmp::PartialEq::<bevy::math::BVec4>", composite = "eq")]
+    #[lua(
+        as_trait = "std::cmp::PartialEq::<bevy::math::BVec4>",
+        composite = "eq",
+        metamethod = "Eq",
+    )]
     fn eq(
         _self: LuaReflectRefProxy<bevy::math::BVec4>,
         other: LuaReflectRefProxy<bevy::math::BVec4>,
@@ -14097,7 +14873,7 @@ pub struct BVec4 {
     bms_lua_path = "crate",
     functions[r#"
 
-    #[lua(as_trait = "std::ops::Add::<f64>", composite = "add")]
+    #[lua(as_trait = "std::ops::Add::<f64>", composite = "add", metamethod = "Add")]
     fn add(
         _self: LuaReflectValProxy<bevy::math::DVec2>,
         rhs: f64,
@@ -14106,7 +14882,11 @@ pub struct BVec4 {
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Add::<bevy::math::DVec2>", composite = "add")]
+    #[lua(
+        as_trait = "std::ops::Add::<bevy::math::DVec2>",
+        composite = "add",
+        metamethod = "Add",
+    )]
     fn add(
         _self: LuaReflectValProxy<bevy::math::DVec2>,
         rhs: LuaReflectValProxy<bevy::math::DVec2>,
@@ -14115,7 +14895,7 @@ pub struct BVec4 {
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Neg", composite = "neg")]
+    #[lua(as_trait = "std::ops::Neg", composite = "neg", metamethod = "Unm")]
     fn neg(
         _self: LuaReflectValProxy<bevy::math::DVec2>,
     ) -> LuaReflectValProxy<bevy::math::DVec2>;
@@ -14123,7 +14903,11 @@ pub struct BVec4 {
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Mul::<&bevy::math::DVec2>", composite = "mul")]
+    #[lua(
+        as_trait = "std::ops::Mul::<&bevy::math::DVec2>",
+        composite = "mul",
+        metamethod = "Mul",
+    )]
     fn mul(
         _self: LuaReflectValProxy<bevy::math::DVec2>,
         rhs: LuaReflectRefProxy<bevy::math::DVec2>,
@@ -14132,7 +14916,11 @@ pub struct BVec4 {
 "#,
     r#"
 
-    #[lua(as_trait = "std::cmp::PartialEq::<bevy::math::DVec2>", composite = "eq")]
+    #[lua(
+        as_trait = "std::cmp::PartialEq::<bevy::math::DVec2>",
+        composite = "eq",
+        metamethod = "Eq",
+    )]
     fn eq(
         _self: LuaReflectRefProxy<bevy::math::DVec2>,
         other: LuaReflectRefProxy<bevy::math::DVec2>,
@@ -14141,7 +14929,11 @@ pub struct BVec4 {
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Mul::<bevy::math::DVec2>", composite = "mul")]
+    #[lua(
+        as_trait = "std::ops::Mul::<bevy::math::DVec2>",
+        composite = "mul",
+        metamethod = "Mul",
+    )]
     fn mul(
         _self: LuaReflectValProxy<bevy::math::DVec2>,
         rhs: LuaReflectValProxy<bevy::math::DVec2>,
@@ -14150,7 +14942,11 @@ pub struct BVec4 {
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Div::<bevy::math::DVec2>", composite = "div")]
+    #[lua(
+        as_trait = "std::ops::Div::<bevy::math::DVec2>",
+        composite = "div",
+        metamethod = "Div",
+    )]
     fn div(
         _self: LuaReflectValProxy<bevy::math::DVec2>,
         rhs: LuaReflectValProxy<bevy::math::DVec2>,
@@ -14159,7 +14955,7 @@ pub struct BVec4 {
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Rem::<f64>", composite = "rem")]
+    #[lua(as_trait = "std::ops::Rem::<f64>", composite = "rem", metamethod = "Mod")]
     fn rem(
         _self: LuaReflectValProxy<bevy::math::DVec2>,
         rhs: f64,
@@ -14168,7 +14964,11 @@ pub struct BVec4 {
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Rem::<bevy::math::DVec2>", composite = "rem")]
+    #[lua(
+        as_trait = "std::ops::Rem::<bevy::math::DVec2>",
+        composite = "rem",
+        metamethod = "Mod",
+    )]
     fn rem(
         _self: LuaReflectValProxy<bevy::math::DVec2>,
         rhs: LuaReflectValProxy<bevy::math::DVec2>,
@@ -14177,7 +14977,7 @@ pub struct BVec4 {
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Mul::<f64>", composite = "mul")]
+    #[lua(as_trait = "std::ops::Mul::<f64>", composite = "mul", metamethod = "Mul")]
     fn mul(
         _self: LuaReflectValProxy<bevy::math::DVec2>,
         rhs: f64,
@@ -15028,7 +15828,11 @@ pub struct BVec4 {
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Sub::<bevy::math::DVec2>", composite = "sub")]
+    #[lua(
+        as_trait = "std::ops::Sub::<bevy::math::DVec2>",
+        composite = "sub",
+        metamethod = "Sub",
+    )]
     fn sub(
         _self: LuaReflectValProxy<bevy::math::DVec2>,
         rhs: LuaReflectValProxy<bevy::math::DVec2>,
@@ -15037,7 +15841,11 @@ pub struct BVec4 {
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Div::<&bevy::math::DVec2>", composite = "div")]
+    #[lua(
+        as_trait = "std::ops::Div::<&bevy::math::DVec2>",
+        composite = "div",
+        metamethod = "Div",
+    )]
     fn div(
         _self: LuaReflectValProxy<bevy::math::DVec2>,
         rhs: LuaReflectRefProxy<bevy::math::DVec2>,
@@ -15046,7 +15854,11 @@ pub struct BVec4 {
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Add::<&bevy::math::DVec2>", composite = "add")]
+    #[lua(
+        as_trait = "std::ops::Add::<&bevy::math::DVec2>",
+        composite = "add",
+        metamethod = "Add",
+    )]
     fn add(
         _self: LuaReflectValProxy<bevy::math::DVec2>,
         rhs: LuaReflectRefProxy<bevy::math::DVec2>,
@@ -15063,7 +15875,7 @@ pub struct BVec4 {
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Div::<f64>", composite = "div")]
+    #[lua(as_trait = "std::ops::Div::<f64>", composite = "div", metamethod = "Div")]
     fn div(
         _self: LuaReflectValProxy<bevy::math::DVec2>,
         rhs: f64,
@@ -15072,7 +15884,7 @@ pub struct BVec4 {
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Sub::<f64>", composite = "sub")]
+    #[lua(as_trait = "std::ops::Sub::<f64>", composite = "sub", metamethod = "Sub")]
     fn sub(
         _self: LuaReflectValProxy<bevy::math::DVec2>,
         rhs: f64,
@@ -15081,7 +15893,11 @@ pub struct BVec4 {
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Rem::<&bevy::math::DVec2>", composite = "rem")]
+    #[lua(
+        as_trait = "std::ops::Rem::<&bevy::math::DVec2>",
+        composite = "rem",
+        metamethod = "Mod",
+    )]
     fn rem(
         _self: LuaReflectValProxy<bevy::math::DVec2>,
         rhs: LuaReflectRefProxy<bevy::math::DVec2>,
@@ -15090,7 +15906,11 @@ pub struct BVec4 {
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Sub::<&bevy::math::DVec2>", composite = "sub")]
+    #[lua(
+        as_trait = "std::ops::Sub::<&bevy::math::DVec2>",
+        composite = "sub",
+        metamethod = "Sub",
+    )]
     fn sub(
         _self: LuaReflectValProxy<bevy::math::DVec2>,
         rhs: LuaReflectRefProxy<bevy::math::DVec2>,
@@ -15127,7 +15947,11 @@ pub struct DVec2 {
     bms_lua_path = "crate",
     functions[r#"
 
-    #[lua(as_trait = "std::ops::Rem::<bevy::math::DVec3>", composite = "rem")]
+    #[lua(
+        as_trait = "std::ops::Rem::<bevy::math::DVec3>",
+        composite = "rem",
+        metamethod = "Mod",
+    )]
     fn rem(
         _self: LuaReflectValProxy<bevy::math::DVec3>,
         rhs: LuaReflectValProxy<bevy::math::DVec3>,
@@ -15136,7 +15960,7 @@ pub struct DVec2 {
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Add::<f64>", composite = "add")]
+    #[lua(as_trait = "std::ops::Add::<f64>", composite = "add", metamethod = "Add")]
     fn add(
         _self: LuaReflectValProxy<bevy::math::DVec3>,
         rhs: f64,
@@ -15145,7 +15969,7 @@ pub struct DVec2 {
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Div::<f64>", composite = "div")]
+    #[lua(as_trait = "std::ops::Div::<f64>", composite = "div", metamethod = "Div")]
     fn div(
         _self: LuaReflectValProxy<bevy::math::DVec3>,
         rhs: f64,
@@ -15162,7 +15986,11 @@ pub struct DVec2 {
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Div::<&bevy::math::DVec3>", composite = "div")]
+    #[lua(
+        as_trait = "std::ops::Div::<&bevy::math::DVec3>",
+        composite = "div",
+        metamethod = "Div",
+    )]
     fn div(
         _self: LuaReflectValProxy<bevy::math::DVec3>,
         rhs: LuaReflectRefProxy<bevy::math::DVec3>,
@@ -15171,7 +15999,11 @@ pub struct DVec2 {
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Add::<&bevy::math::DVec3>", composite = "add")]
+    #[lua(
+        as_trait = "std::ops::Add::<&bevy::math::DVec3>",
+        composite = "add",
+        metamethod = "Add",
+    )]
     fn add(
         _self: LuaReflectValProxy<bevy::math::DVec3>,
         rhs: LuaReflectRefProxy<bevy::math::DVec3>,
@@ -15180,7 +16012,11 @@ pub struct DVec2 {
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Div::<bevy::math::DVec3>", composite = "div")]
+    #[lua(
+        as_trait = "std::ops::Div::<bevy::math::DVec3>",
+        composite = "div",
+        metamethod = "Div",
+    )]
     fn div(
         _self: LuaReflectValProxy<bevy::math::DVec3>,
         rhs: LuaReflectValProxy<bevy::math::DVec3>,
@@ -15189,7 +16025,7 @@ pub struct DVec2 {
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Sub::<f64>", composite = "sub")]
+    #[lua(as_trait = "std::ops::Sub::<f64>", composite = "sub", metamethod = "Sub")]
     fn sub(
         _self: LuaReflectValProxy<bevy::math::DVec3>,
         rhs: f64,
@@ -15198,7 +16034,7 @@ pub struct DVec2 {
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Mul::<f64>", composite = "mul")]
+    #[lua(as_trait = "std::ops::Mul::<f64>", composite = "mul", metamethod = "Mul")]
     fn mul(
         _self: LuaReflectValProxy<bevy::math::DVec3>,
         rhs: f64,
@@ -15207,7 +16043,7 @@ pub struct DVec2 {
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Rem::<f64>", composite = "rem")]
+    #[lua(as_trait = "std::ops::Rem::<f64>", composite = "rem", metamethod = "Mod")]
     fn rem(
         _self: LuaReflectValProxy<bevy::math::DVec3>,
         rhs: f64,
@@ -15216,7 +16052,11 @@ pub struct DVec2 {
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Sub::<&bevy::math::DVec3>", composite = "sub")]
+    #[lua(
+        as_trait = "std::ops::Sub::<&bevy::math::DVec3>",
+        composite = "sub",
+        metamethod = "Sub",
+    )]
     fn sub(
         _self: LuaReflectValProxy<bevy::math::DVec3>,
         rhs: LuaReflectRefProxy<bevy::math::DVec3>,
@@ -15225,7 +16065,11 @@ pub struct DVec2 {
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Mul::<&bevy::math::DVec3>", composite = "mul")]
+    #[lua(
+        as_trait = "std::ops::Mul::<&bevy::math::DVec3>",
+        composite = "mul",
+        metamethod = "Mul",
+    )]
     fn mul(
         _self: LuaReflectValProxy<bevy::math::DVec3>,
         rhs: LuaReflectRefProxy<bevy::math::DVec3>,
@@ -15234,7 +16078,11 @@ pub struct DVec2 {
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Rem::<&bevy::math::DVec3>", composite = "rem")]
+    #[lua(
+        as_trait = "std::ops::Rem::<&bevy::math::DVec3>",
+        composite = "rem",
+        metamethod = "Mod",
+    )]
     fn rem(
         _self: LuaReflectValProxy<bevy::math::DVec3>,
         rhs: LuaReflectRefProxy<bevy::math::DVec3>,
@@ -15243,7 +16091,11 @@ pub struct DVec2 {
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Sub::<bevy::math::DVec3>", composite = "sub")]
+    #[lua(
+        as_trait = "std::ops::Sub::<bevy::math::DVec3>",
+        composite = "sub",
+        metamethod = "Sub",
+    )]
     fn sub(
         _self: LuaReflectValProxy<bevy::math::DVec3>,
         rhs: LuaReflectValProxy<bevy::math::DVec3>,
@@ -16084,7 +16936,11 @@ pub struct DVec2 {
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Add::<bevy::math::DVec3>", composite = "add")]
+    #[lua(
+        as_trait = "std::ops::Add::<bevy::math::DVec3>",
+        composite = "add",
+        metamethod = "Add",
+    )]
     fn add(
         _self: LuaReflectValProxy<bevy::math::DVec3>,
         rhs: LuaReflectValProxy<bevy::math::DVec3>,
@@ -16093,7 +16949,11 @@ pub struct DVec2 {
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Mul::<bevy::math::DVec3>", composite = "mul")]
+    #[lua(
+        as_trait = "std::ops::Mul::<bevy::math::DVec3>",
+        composite = "mul",
+        metamethod = "Mul",
+    )]
     fn mul(
         _self: LuaReflectValProxy<bevy::math::DVec3>,
         rhs: LuaReflectValProxy<bevy::math::DVec3>,
@@ -16102,7 +16962,11 @@ pub struct DVec2 {
 "#,
     r#"
 
-    #[lua(as_trait = "std::cmp::PartialEq::<bevy::math::DVec3>", composite = "eq")]
+    #[lua(
+        as_trait = "std::cmp::PartialEq::<bevy::math::DVec3>",
+        composite = "eq",
+        metamethod = "Eq",
+    )]
     fn eq(
         _self: LuaReflectRefProxy<bevy::math::DVec3>,
         other: LuaReflectRefProxy<bevy::math::DVec3>,
@@ -16111,7 +16975,7 @@ pub struct DVec2 {
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Neg", composite = "neg")]
+    #[lua(as_trait = "std::ops::Neg", composite = "neg", metamethod = "Unm")]
     fn neg(
         _self: LuaReflectValProxy<bevy::math::DVec3>,
     ) -> LuaReflectValProxy<bevy::math::DVec3>;
@@ -16926,7 +17790,11 @@ pub struct DVec3 {
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Sub::<&bevy::math::DVec4>", composite = "sub")]
+    #[lua(
+        as_trait = "std::ops::Sub::<&bevy::math::DVec4>",
+        composite = "sub",
+        metamethod = "Sub",
+    )]
     fn sub(
         _self: LuaReflectValProxy<bevy::math::DVec4>,
         rhs: LuaReflectRefProxy<bevy::math::DVec4>,
@@ -16935,7 +17803,7 @@ pub struct DVec3 {
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Rem::<f64>", composite = "rem")]
+    #[lua(as_trait = "std::ops::Rem::<f64>", composite = "rem", metamethod = "Mod")]
     fn rem(
         _self: LuaReflectValProxy<bevy::math::DVec4>,
         rhs: f64,
@@ -16944,7 +17812,7 @@ pub struct DVec3 {
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Neg", composite = "neg")]
+    #[lua(as_trait = "std::ops::Neg", composite = "neg", metamethod = "Unm")]
     fn neg(
         _self: LuaReflectValProxy<bevy::math::DVec4>,
     ) -> LuaReflectValProxy<bevy::math::DVec4>;
@@ -16952,7 +17820,11 @@ pub struct DVec3 {
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Rem::<&bevy::math::DVec4>", composite = "rem")]
+    #[lua(
+        as_trait = "std::ops::Rem::<&bevy::math::DVec4>",
+        composite = "rem",
+        metamethod = "Mod",
+    )]
     fn rem(
         _self: LuaReflectValProxy<bevy::math::DVec4>,
         rhs: LuaReflectRefProxy<bevy::math::DVec4>,
@@ -16961,7 +17833,11 @@ pub struct DVec3 {
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Add::<bevy::math::DVec4>", composite = "add")]
+    #[lua(
+        as_trait = "std::ops::Add::<bevy::math::DVec4>",
+        composite = "add",
+        metamethod = "Add",
+    )]
     fn add(
         _self: LuaReflectValProxy<bevy::math::DVec4>,
         rhs: LuaReflectValProxy<bevy::math::DVec4>,
@@ -16970,7 +17846,11 @@ pub struct DVec3 {
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Mul::<&bevy::math::DVec4>", composite = "mul")]
+    #[lua(
+        as_trait = "std::ops::Mul::<&bevy::math::DVec4>",
+        composite = "mul",
+        metamethod = "Mul",
+    )]
     fn mul(
         _self: LuaReflectValProxy<bevy::math::DVec4>,
         rhs: LuaReflectRefProxy<bevy::math::DVec4>,
@@ -16979,7 +17859,7 @@ pub struct DVec3 {
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Sub::<f64>", composite = "sub")]
+    #[lua(as_trait = "std::ops::Sub::<f64>", composite = "sub", metamethod = "Sub")]
     fn sub(
         _self: LuaReflectValProxy<bevy::math::DVec4>,
         rhs: f64,
@@ -16988,7 +17868,11 @@ pub struct DVec3 {
 "#,
     r#"
 
-    #[lua(as_trait = "std::cmp::PartialEq::<bevy::math::DVec4>", composite = "eq")]
+    #[lua(
+        as_trait = "std::cmp::PartialEq::<bevy::math::DVec4>",
+        composite = "eq",
+        metamethod = "Eq",
+    )]
     fn eq(
         _self: LuaReflectRefProxy<bevy::math::DVec4>,
         other: LuaReflectRefProxy<bevy::math::DVec4>,
@@ -16997,7 +17881,11 @@ pub struct DVec3 {
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Div::<bevy::math::DVec4>", composite = "div")]
+    #[lua(
+        as_trait = "std::ops::Div::<bevy::math::DVec4>",
+        composite = "div",
+        metamethod = "Div",
+    )]
     fn div(
         _self: LuaReflectValProxy<bevy::math::DVec4>,
         rhs: LuaReflectValProxy<bevy::math::DVec4>,
@@ -17006,7 +17894,11 @@ pub struct DVec3 {
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Mul::<bevy::math::DVec4>", composite = "mul")]
+    #[lua(
+        as_trait = "std::ops::Mul::<bevy::math::DVec4>",
+        composite = "mul",
+        metamethod = "Mul",
+    )]
     fn mul(
         _self: LuaReflectValProxy<bevy::math::DVec4>,
         rhs: LuaReflectValProxy<bevy::math::DVec4>,
@@ -17015,7 +17907,7 @@ pub struct DVec3 {
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Mul::<f64>", composite = "mul")]
+    #[lua(as_trait = "std::ops::Mul::<f64>", composite = "mul", metamethod = "Mul")]
     fn mul(
         _self: LuaReflectValProxy<bevy::math::DVec4>,
         rhs: f64,
@@ -17024,7 +17916,11 @@ pub struct DVec3 {
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Add::<&bevy::math::DVec4>", composite = "add")]
+    #[lua(
+        as_trait = "std::ops::Add::<&bevy::math::DVec4>",
+        composite = "add",
+        metamethod = "Add",
+    )]
     fn add(
         _self: LuaReflectValProxy<bevy::math::DVec4>,
         rhs: LuaReflectRefProxy<bevy::math::DVec4>,
@@ -17033,7 +17929,7 @@ pub struct DVec3 {
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Add::<f64>", composite = "add")]
+    #[lua(as_trait = "std::ops::Add::<f64>", composite = "add", metamethod = "Add")]
     fn add(
         _self: LuaReflectValProxy<bevy::math::DVec4>,
         rhs: f64,
@@ -17042,7 +17938,11 @@ pub struct DVec3 {
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Div::<&bevy::math::DVec4>", composite = "div")]
+    #[lua(
+        as_trait = "std::ops::Div::<&bevy::math::DVec4>",
+        composite = "div",
+        metamethod = "Div",
+    )]
     fn div(
         _self: LuaReflectValProxy<bevy::math::DVec4>,
         rhs: LuaReflectRefProxy<bevy::math::DVec4>,
@@ -17051,7 +17951,11 @@ pub struct DVec3 {
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Sub::<bevy::math::DVec4>", composite = "sub")]
+    #[lua(
+        as_trait = "std::ops::Sub::<bevy::math::DVec4>",
+        composite = "sub",
+        metamethod = "Sub",
+    )]
     fn sub(
         _self: LuaReflectValProxy<bevy::math::DVec4>,
         rhs: LuaReflectValProxy<bevy::math::DVec4>,
@@ -17068,7 +17972,11 @@ pub struct DVec3 {
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Rem::<bevy::math::DVec4>", composite = "rem")]
+    #[lua(
+        as_trait = "std::ops::Rem::<bevy::math::DVec4>",
+        composite = "rem",
+        metamethod = "Mod",
+    )]
     fn rem(
         _self: LuaReflectValProxy<bevy::math::DVec4>,
         rhs: LuaReflectValProxy<bevy::math::DVec4>,
@@ -17077,7 +17985,7 @@ pub struct DVec3 {
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Div::<f64>", composite = "div")]
+    #[lua(as_trait = "std::ops::Div::<f64>", composite = "div", metamethod = "Div")]
     fn div(
         _self: LuaReflectValProxy<bevy::math::DVec4>,
         rhs: f64,
@@ -17116,7 +18024,11 @@ pub struct DVec4 {
     bms_lua_path = "crate",
     functions[r#"
 
-    #[lua(as_trait = "std::ops::Add::<bevy::math::Mat2>", composite = "add")]
+    #[lua(
+        as_trait = "std::ops::Add::<bevy::math::Mat2>",
+        composite = "add",
+        metamethod = "Add",
+    )]
     fn add(
         _self: LuaReflectValProxy<bevy::math::Mat2>,
         rhs: LuaReflectValProxy<bevy::math::Mat2>,
@@ -17125,7 +18037,11 @@ pub struct DVec4 {
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Mul::<bevy::math::Mat2>", composite = "mul")]
+    #[lua(
+        as_trait = "std::ops::Mul::<bevy::math::Mat2>",
+        composite = "mul",
+        metamethod = "Mul",
+    )]
     fn mul(
         _self: LuaReflectValProxy<bevy::math::Mat2>,
         rhs: LuaReflectValProxy<bevy::math::Mat2>,
@@ -17394,7 +18310,7 @@ pub struct DVec4 {
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Neg", composite = "neg")]
+    #[lua(as_trait = "std::ops::Neg", composite = "neg", metamethod = "Unm")]
     fn neg(
         _self: LuaReflectValProxy<bevy::math::Mat2>,
     ) -> LuaReflectValProxy<bevy::math::Mat2>;
@@ -17402,7 +18318,7 @@ pub struct DVec4 {
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Div::<f32>", composite = "div")]
+    #[lua(as_trait = "std::ops::Div::<f32>", composite = "div", metamethod = "Div")]
     fn div(
         _self: LuaReflectValProxy<bevy::math::Mat2>,
         rhs: f32,
@@ -17411,7 +18327,7 @@ pub struct DVec4 {
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Mul::<f32>", composite = "mul")]
+    #[lua(as_trait = "std::ops::Mul::<f32>", composite = "mul", metamethod = "Mul")]
     fn mul(
         _self: LuaReflectValProxy<bevy::math::Mat2>,
         rhs: f32,
@@ -17420,7 +18336,11 @@ pub struct DVec4 {
 "#,
     r#"
 
-    #[lua(as_trait = "std::cmp::PartialEq::<bevy::math::Mat2>", composite = "eq")]
+    #[lua(
+        as_trait = "std::cmp::PartialEq::<bevy::math::Mat2>",
+        composite = "eq",
+        metamethod = "Eq",
+    )]
     fn eq(
         _self: LuaReflectRefProxy<bevy::math::Mat2>,
         rhs: LuaReflectRefProxy<bevy::math::Mat2>,
@@ -17429,7 +18349,11 @@ pub struct DVec4 {
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Mul::<bevy::math::Vec2>", composite = "mul")]
+    #[lua(
+        as_trait = "std::ops::Mul::<bevy::math::Vec2>",
+        composite = "mul",
+        metamethod = "Mul",
+    )]
     fn mul(
         _self: LuaReflectValProxy<bevy::math::Mat2>,
         rhs: LuaReflectValProxy<bevy::math::Vec2>,
@@ -17438,7 +18362,11 @@ pub struct DVec4 {
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Sub::<bevy::math::Mat2>", composite = "sub")]
+    #[lua(
+        as_trait = "std::ops::Sub::<bevy::math::Mat2>",
+        composite = "sub",
+        metamethod = "Sub",
+    )]
     fn sub(
         _self: LuaReflectValProxy<bevy::math::Mat2>,
         rhs: LuaReflectValProxy<bevy::math::Mat2>,
@@ -17460,21 +18388,21 @@ fn index(&self) -> String {
 }
 "#,
     r#"
-#[lua(metamethod="Index")]
-fn index(_self: LuaIdentityProxy<Self>, idx: usize) -> LuaIdentityProxy<LuaVec2> {
-    let mut curr_ref = _self.0.clone();
-    let def_ref = bevy_mod_scripting_core::bindings::DeferredReflection{
-        get: std::sync::Arc::new(|ref_| Err(bevy::reflect::ReflectPathError::InvalidDowncast)),
-        get_mut: std::sync::Arc::new(move |ref_| {
-            if let Some(ret) = ref_.try_as_reflect_mut().map(|ret| ret.downcast_mut::<bevy::math::Mat2>()).flatten(){
-                Ok(ret.col_mut(idx - 1))
-            } else {
-                Err(bevy::reflect::ReflectPathError::InvalidDowncast)
-            }	
-        })
+#[lua(metamethod="Index", with_context, no_proxy)]
+fn index(_self: Self, idx: usize, lua: &tealr::mlu::mlua::Lua) -> Result<tealr::mlu::mlua::Value, tealr::mlu::mlua::Error> {
+    let mut curr_ref = _self.0;
+
+    let path = match idx {
+        1 => "x_axis",
+        2 => "y_axis",
+        3 => "z_axis",
+        4 => "w_axis",
+        _ => "unknown_axis"
     };
-    curr_ref.reflect_path.push(bevy_mod_scripting_core::bindings::ReflectionPathElem::new_deferred(def_ref));
-    LuaVec2(curr_ref)
+
+    let parsed_path = bevy::reflect::ParsedPath::parse_static(path).expect("invariant");
+    curr_ref.index_path(bevy_mod_scripting_core::bindings::ReflectionPathElem::new_reflection(parsed_path));
+    crate::bindings::reference::LuaReflectReference(curr_ref).to_lua_proxy(lua)
 }
 "#]
 )]
@@ -17486,7 +18414,11 @@ pub struct Mat2();
     bms_lua_path = "crate",
     functions[r#"
 
-    #[lua(as_trait = "std::ops::Sub::<bevy::math::Mat3>", composite = "sub")]
+    #[lua(
+        as_trait = "std::ops::Sub::<bevy::math::Mat3>",
+        composite = "sub",
+        metamethod = "Sub",
+    )]
     fn sub(
         _self: LuaReflectValProxy<bevy::math::Mat3>,
         rhs: LuaReflectValProxy<bevy::math::Mat3>,
@@ -17495,7 +18427,11 @@ pub struct Mat2();
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Mul::<bevy::math::Mat3>", composite = "mul")]
+    #[lua(
+        as_trait = "std::ops::Mul::<bevy::math::Mat3>",
+        composite = "mul",
+        metamethod = "Mul",
+    )]
     fn mul(
         _self: LuaReflectValProxy<bevy::math::Mat3>,
         rhs: LuaReflectValProxy<bevy::math::Mat3>,
@@ -17504,7 +18440,7 @@ pub struct Mat2();
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Div::<f32>", composite = "div")]
+    #[lua(as_trait = "std::ops::Div::<f32>", composite = "div", metamethod = "Div")]
     fn div(
         _self: LuaReflectValProxy<bevy::math::Mat3>,
         rhs: f32,
@@ -17513,7 +18449,11 @@ pub struct Mat2();
 "#,
     r#"
 
-    #[lua(as_trait = "std::cmp::PartialEq::<bevy::math::Mat3>", composite = "eq")]
+    #[lua(
+        as_trait = "std::cmp::PartialEq::<bevy::math::Mat3>",
+        composite = "eq",
+        metamethod = "Eq",
+    )]
     fn eq(
         _self: LuaReflectRefProxy<bevy::math::Mat3>,
         rhs: LuaReflectRefProxy<bevy::math::Mat3>,
@@ -17522,7 +18462,11 @@ pub struct Mat2();
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Add::<bevy::math::Mat3>", composite = "add")]
+    #[lua(
+        as_trait = "std::ops::Add::<bevy::math::Mat3>",
+        composite = "add",
+        metamethod = "Add",
+    )]
     fn add(
         _self: LuaReflectValProxy<bevy::math::Mat3>,
         rhs: LuaReflectValProxy<bevy::math::Mat3>,
@@ -17531,7 +18475,7 @@ pub struct Mat2();
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Neg", composite = "neg")]
+    #[lua(as_trait = "std::ops::Neg", composite = "neg", metamethod = "Unm")]
     fn neg(
         _self: LuaReflectValProxy<bevy::math::Mat3>,
     ) -> LuaReflectValProxy<bevy::math::Mat3>;
@@ -17928,7 +18872,11 @@ pub struct Mat2();
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Mul::<bevy::math::Affine2>", composite = "mul")]
+    #[lua(
+        as_trait = "std::ops::Mul::<bevy::math::Affine2>",
+        composite = "mul",
+        metamethod = "Mul",
+    )]
     fn mul(
         _self: LuaReflectValProxy<bevy::math::Mat3>,
         rhs: LuaReflectValProxy<bevy::math::Affine2>,
@@ -17937,7 +18885,11 @@ pub struct Mat2();
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Mul::<bevy::math::Vec3>", composite = "mul")]
+    #[lua(
+        as_trait = "std::ops::Mul::<bevy::math::Vec3>",
+        composite = "mul",
+        metamethod = "Mul",
+    )]
     fn mul(
         _self: LuaReflectValProxy<bevy::math::Mat3>,
         rhs: LuaReflectValProxy<bevy::math::Vec3>,
@@ -17954,7 +18906,11 @@ pub struct Mat2();
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Mul::<bevy::math::Vec3A>", composite = "mul")]
+    #[lua(
+        as_trait = "std::ops::Mul::<bevy::math::Vec3A>",
+        composite = "mul",
+        metamethod = "Mul",
+    )]
     fn mul(
         _self: LuaReflectValProxy<bevy::math::Mat3>,
         rhs: LuaReflectValProxy<bevy::math::Vec3A>,
@@ -17963,7 +18919,7 @@ pub struct Mat2();
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Mul::<f32>", composite = "mul")]
+    #[lua(as_trait = "std::ops::Mul::<f32>", composite = "mul", metamethod = "Mul")]
     fn mul(
         _self: LuaReflectValProxy<bevy::math::Mat3>,
         rhs: f32,
@@ -17977,21 +18933,21 @@ fn index(&self) -> String {
 }
 "#,
     r#"
-#[lua(metamethod="Index")]
-fn index(_self: LuaIdentityProxy<Self>, idx: usize) -> LuaIdentityProxy<LuaVec3> {
-    let mut curr_ref = _self.0.clone();
-    let def_ref = bevy_mod_scripting_core::bindings::DeferredReflection{
-        get: std::sync::Arc::new(|ref_| Err(bevy::reflect::ReflectPathError::InvalidDowncast)),
-        get_mut: std::sync::Arc::new(move |ref_| {
-            if let Some(ret) = ref_.try_as_reflect_mut().map(|ret| ret.downcast_mut::<bevy::math::Mat3>()).flatten(){
-                Ok(ret.col_mut(idx - 1))
-            } else {
-                Err(bevy::reflect::ReflectPathError::InvalidDowncast)
-            }	
-        })
+#[lua(metamethod="Index", with_context, no_proxy)]
+fn index(_self: Self, idx: usize, lua: &tealr::mlu::mlua::Lua) -> Result<tealr::mlu::mlua::Value, tealr::mlu::mlua::Error> {
+    let mut curr_ref = _self.0;
+
+    let path = match idx {
+        1 => "x_axis",
+        2 => "y_axis",
+        3 => "z_axis",
+        4 => "w_axis",
+        _ => "unknown_axis"
     };
-    curr_ref.reflect_path.push(bevy_mod_scripting_core::bindings::ReflectionPathElem::new_deferred(def_ref));
-    LuaVec3(curr_ref)
+
+    let parsed_path = bevy::reflect::ParsedPath::parse_static(path).expect("invariant");
+    curr_ref.index_path(bevy_mod_scripting_core::bindings::ReflectionPathElem::new_reflection(parsed_path));
+    crate::bindings::reference::LuaReflectReference(curr_ref).to_lua_proxy(lua)
 }
 "#]
 )]
@@ -18007,7 +18963,11 @@ pub struct Mat3 {
     bms_lua_path = "crate",
     functions[r#"
 
-    #[lua(as_trait = "std::ops::Sub::<bevy::math::Mat3A>", composite = "sub")]
+    #[lua(
+        as_trait = "std::ops::Sub::<bevy::math::Mat3A>",
+        composite = "sub",
+        metamethod = "Sub",
+    )]
     fn sub(
         _self: LuaReflectValProxy<bevy::math::Mat3A>,
         rhs: LuaReflectValProxy<bevy::math::Mat3A>,
@@ -18016,7 +18976,11 @@ pub struct Mat3 {
 "#,
     r#"
 
-    #[lua(as_trait = "std::cmp::PartialEq::<bevy::math::Mat3A>", composite = "eq")]
+    #[lua(
+        as_trait = "std::cmp::PartialEq::<bevy::math::Mat3A>",
+        composite = "eq",
+        metamethod = "Eq",
+    )]
     fn eq(
         _self: LuaReflectRefProxy<bevy::math::Mat3A>,
         rhs: LuaReflectRefProxy<bevy::math::Mat3A>,
@@ -18025,7 +18989,11 @@ pub struct Mat3 {
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Mul::<bevy::math::Mat3A>", composite = "mul")]
+    #[lua(
+        as_trait = "std::ops::Mul::<bevy::math::Mat3A>",
+        composite = "mul",
+        metamethod = "Mul",
+    )]
     fn mul(
         _self: LuaReflectValProxy<bevy::math::Mat3A>,
         rhs: LuaReflectValProxy<bevy::math::Mat3A>,
@@ -18034,7 +19002,11 @@ pub struct Mat3 {
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Add::<bevy::math::Mat3A>", composite = "add")]
+    #[lua(
+        as_trait = "std::ops::Add::<bevy::math::Mat3A>",
+        composite = "add",
+        metamethod = "Add",
+    )]
     fn add(
         _self: LuaReflectValProxy<bevy::math::Mat3A>,
         rhs: LuaReflectValProxy<bevy::math::Mat3A>,
@@ -18043,7 +19015,7 @@ pub struct Mat3 {
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Neg", composite = "neg")]
+    #[lua(as_trait = "std::ops::Neg", composite = "neg", metamethod = "Unm")]
     fn neg(
         _self: LuaReflectValProxy<bevy::math::Mat3A>,
     ) -> LuaReflectValProxy<bevy::math::Mat3A>;
@@ -18051,7 +19023,11 @@ pub struct Mat3 {
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Mul::<bevy::math::Vec3A>", composite = "mul")]
+    #[lua(
+        as_trait = "std::ops::Mul::<bevy::math::Vec3A>",
+        composite = "mul",
+        metamethod = "Mul",
+    )]
     fn mul(
         _self: LuaReflectValProxy<bevy::math::Mat3A>,
         rhs: LuaReflectValProxy<bevy::math::Vec3A>,
@@ -18449,7 +19425,7 @@ pub struct Mat3 {
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Div::<f32>", composite = "div")]
+    #[lua(as_trait = "std::ops::Div::<f32>", composite = "div", metamethod = "Div")]
     fn div(
         _self: LuaReflectValProxy<bevy::math::Mat3A>,
         rhs: f32,
@@ -18458,7 +19434,11 @@ pub struct Mat3 {
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Mul::<bevy::math::Affine2>", composite = "mul")]
+    #[lua(
+        as_trait = "std::ops::Mul::<bevy::math::Affine2>",
+        composite = "mul",
+        metamethod = "Mul",
+    )]
     fn mul(
         _self: LuaReflectValProxy<bevy::math::Mat3A>,
         rhs: LuaReflectValProxy<bevy::math::Affine2>,
@@ -18475,7 +19455,7 @@ pub struct Mat3 {
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Mul::<f32>", composite = "mul")]
+    #[lua(as_trait = "std::ops::Mul::<f32>", composite = "mul", metamethod = "Mul")]
     fn mul(
         _self: LuaReflectValProxy<bevy::math::Mat3A>,
         rhs: f32,
@@ -18484,7 +19464,11 @@ pub struct Mat3 {
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Mul::<bevy::math::Vec3>", composite = "mul")]
+    #[lua(
+        as_trait = "std::ops::Mul::<bevy::math::Vec3>",
+        composite = "mul",
+        metamethod = "Mul",
+    )]
     fn mul(
         _self: LuaReflectValProxy<bevy::math::Mat3A>,
         rhs: LuaReflectValProxy<bevy::math::Vec3>,
@@ -18498,21 +19482,21 @@ fn index(&self) -> String {
 }
 "#,
     r#"
-#[lua(metamethod="Index")]
-fn index(_self: LuaIdentityProxy<Self>, idx: usize) -> LuaIdentityProxy<LuaVec3A> {
-    let mut curr_ref = _self.0.clone();
-    let def_ref = bevy_mod_scripting_core::bindings::DeferredReflection{
-        get: std::sync::Arc::new(|ref_| Err(bevy::reflect::ReflectPathError::InvalidDowncast)),
-        get_mut: std::sync::Arc::new(move |ref_| {
-            if let Some(ret) = ref_.try_as_reflect_mut().map(|ret| ret.downcast_mut::<bevy::math::Mat3A>()).flatten(){
-                Ok(ret.col_mut(idx - 1))
-            } else {
-                Err(bevy::reflect::ReflectPathError::InvalidDowncast)
-            }	
-        })
+#[lua(metamethod="Index", with_context, no_proxy)]
+fn index(_self: Self, idx: usize, lua: &tealr::mlu::mlua::Lua) -> Result<tealr::mlu::mlua::Value, tealr::mlu::mlua::Error> {
+    let mut curr_ref = _self.0;
+
+    let path = match idx {
+        1 => "x_axis",
+        2 => "y_axis",
+        3 => "z_axis",
+        4 => "w_axis",
+        _ => "unknown_axis"
     };
-    curr_ref.reflect_path.push(bevy_mod_scripting_core::bindings::ReflectionPathElem::new_deferred(def_ref));
-    LuaVec3A(curr_ref)
+
+    let parsed_path = bevy::reflect::ParsedPath::parse_static(path).expect("invariant");
+    curr_ref.index_path(bevy_mod_scripting_core::bindings::ReflectionPathElem::new_reflection(parsed_path));
+    crate::bindings::reference::LuaReflectReference(curr_ref).to_lua_proxy(lua)
 }
 "#]
 )]
@@ -18528,7 +19512,11 @@ pub struct Mat3A {
     bms_lua_path = "crate",
     functions[r#"
 
-    #[lua(as_trait = "std::cmp::PartialEq::<bevy::math::Mat4>", composite = "eq")]
+    #[lua(
+        as_trait = "std::cmp::PartialEq::<bevy::math::Mat4>",
+        composite = "eq",
+        metamethod = "Eq",
+    )]
     fn eq(
         _self: LuaReflectRefProxy<bevy::math::Mat4>,
         rhs: LuaReflectRefProxy<bevy::math::Mat4>,
@@ -18537,7 +19525,7 @@ pub struct Mat3A {
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Div::<f32>", composite = "div")]
+    #[lua(as_trait = "std::ops::Div::<f32>", composite = "div", metamethod = "Div")]
     fn div(
         _self: LuaReflectValProxy<bevy::math::Mat4>,
         rhs: f32,
@@ -18546,7 +19534,11 @@ pub struct Mat3A {
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Mul::<bevy::math::Mat4>", composite = "mul")]
+    #[lua(
+        as_trait = "std::ops::Mul::<bevy::math::Mat4>",
+        composite = "mul",
+        metamethod = "Mul",
+    )]
     fn mul(
         _self: LuaReflectValProxy<bevy::math::Mat4>,
         rhs: LuaReflectValProxy<bevy::math::Mat4>,
@@ -19210,7 +20202,11 @@ pub struct Mat3A {
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Add::<bevy::math::Mat4>", composite = "add")]
+    #[lua(
+        as_trait = "std::ops::Add::<bevy::math::Mat4>",
+        composite = "add",
+        metamethod = "Add",
+    )]
     fn add(
         _self: LuaReflectValProxy<bevy::math::Mat4>,
         rhs: LuaReflectValProxy<bevy::math::Mat4>,
@@ -19219,7 +20215,7 @@ pub struct Mat3A {
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Mul::<f32>", composite = "mul")]
+    #[lua(as_trait = "std::ops::Mul::<f32>", composite = "mul", metamethod = "Mul")]
     fn mul(
         _self: LuaReflectValProxy<bevy::math::Mat4>,
         rhs: f32,
@@ -19236,7 +20232,7 @@ pub struct Mat3A {
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Neg", composite = "neg")]
+    #[lua(as_trait = "std::ops::Neg", composite = "neg", metamethod = "Unm")]
     fn neg(
         _self: LuaReflectValProxy<bevy::math::Mat4>,
     ) -> LuaReflectValProxy<bevy::math::Mat4>;
@@ -19244,7 +20240,11 @@ pub struct Mat3A {
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Mul::<bevy::math::Vec4>", composite = "mul")]
+    #[lua(
+        as_trait = "std::ops::Mul::<bevy::math::Vec4>",
+        composite = "mul",
+        metamethod = "Mul",
+    )]
     fn mul(
         _self: LuaReflectValProxy<bevy::math::Mat4>,
         rhs: LuaReflectValProxy<bevy::math::Vec4>,
@@ -19253,7 +20253,11 @@ pub struct Mat3A {
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Mul::<bevy::math::Affine3A>", composite = "mul")]
+    #[lua(
+        as_trait = "std::ops::Mul::<bevy::math::Affine3A>",
+        composite = "mul",
+        metamethod = "Mul",
+    )]
     fn mul(
         _self: LuaReflectValProxy<bevy::math::Mat4>,
         rhs: LuaReflectValProxy<bevy::math::Affine3A>,
@@ -19262,7 +20266,11 @@ pub struct Mat3A {
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Sub::<bevy::math::Mat4>", composite = "sub")]
+    #[lua(
+        as_trait = "std::ops::Sub::<bevy::math::Mat4>",
+        composite = "sub",
+        metamethod = "Sub",
+    )]
     fn sub(
         _self: LuaReflectValProxy<bevy::math::Mat4>,
         rhs: LuaReflectValProxy<bevy::math::Mat4>,
@@ -19276,21 +20284,21 @@ fn index(&self) -> String {
 }
 "#,
     r#"
-#[lua(metamethod="Index")]
-fn index(_self: LuaIdentityProxy<Self>, idx: usize) -> LuaIdentityProxy<LuaVec4> {
-    let mut curr_ref = _self.0.clone();
-    let def_ref = bevy_mod_scripting_core::bindings::DeferredReflection{
-        get: std::sync::Arc::new(|ref_| Err(bevy::reflect::ReflectPathError::InvalidDowncast)),
-        get_mut: std::sync::Arc::new(move |ref_| {
-            if let Some(ret) = ref_.try_as_reflect_mut().map(|ret| ret.downcast_mut::<bevy::math::Mat4>()).flatten(){
-                Ok(ret.col_mut(idx - 1))
-            } else {
-                Err(bevy::reflect::ReflectPathError::InvalidDowncast)
-            }	
-        })
+#[lua(metamethod="Index", with_context, no_proxy)]
+fn index(_self: Self, idx: usize, lua: &tealr::mlu::mlua::Lua) -> Result<tealr::mlu::mlua::Value, tealr::mlu::mlua::Error> {
+    let mut curr_ref = _self.0;
+
+    let path = match idx {
+        1 => "x_axis",
+        2 => "y_axis",
+        3 => "z_axis",
+        4 => "w_axis",
+        _ => "unknown_axis"
     };
-    curr_ref.reflect_path.push(bevy_mod_scripting_core::bindings::ReflectionPathElem::new_deferred(def_ref));
-    LuaVec4(curr_ref)
+
+    let parsed_path = bevy::reflect::ParsedPath::parse_static(path).expect("invariant");
+    curr_ref.index_path(bevy_mod_scripting_core::bindings::ReflectionPathElem::new_reflection(parsed_path));
+    crate::bindings::reference::LuaReflectReference(curr_ref).to_lua_proxy(lua)
 }
 "#]
 )]
@@ -19544,7 +20552,7 @@ pub struct Mat4 {
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Mul::<f64>", composite = "mul")]
+    #[lua(as_trait = "std::ops::Mul::<f64>", composite = "mul", metamethod = "Mul")]
     fn mul(
         _self: LuaReflectValProxy<bevy::math::DMat2>,
         rhs: f64,
@@ -19561,7 +20569,11 @@ pub struct Mat4 {
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Mul::<bevy::math::DMat2>", composite = "mul")]
+    #[lua(
+        as_trait = "std::ops::Mul::<bevy::math::DMat2>",
+        composite = "mul",
+        metamethod = "Mul",
+    )]
     fn mul(
         _self: LuaReflectValProxy<bevy::math::DMat2>,
         rhs: LuaReflectValProxy<bevy::math::DMat2>,
@@ -19570,7 +20582,7 @@ pub struct Mat4 {
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Div::<f64>", composite = "div")]
+    #[lua(as_trait = "std::ops::Div::<f64>", composite = "div", metamethod = "Div")]
     fn div(
         _self: LuaReflectValProxy<bevy::math::DMat2>,
         rhs: f64,
@@ -19579,7 +20591,11 @@ pub struct Mat4 {
 "#,
     r#"
 
-    #[lua(as_trait = "std::cmp::PartialEq::<bevy::math::DMat2>", composite = "eq")]
+    #[lua(
+        as_trait = "std::cmp::PartialEq::<bevy::math::DMat2>",
+        composite = "eq",
+        metamethod = "Eq",
+    )]
     fn eq(
         _self: LuaReflectRefProxy<bevy::math::DMat2>,
         rhs: LuaReflectRefProxy<bevy::math::DMat2>,
@@ -19588,7 +20604,11 @@ pub struct Mat4 {
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Sub::<bevy::math::DMat2>", composite = "sub")]
+    #[lua(
+        as_trait = "std::ops::Sub::<bevy::math::DMat2>",
+        composite = "sub",
+        metamethod = "Sub",
+    )]
     fn sub(
         _self: LuaReflectValProxy<bevy::math::DMat2>,
         rhs: LuaReflectValProxy<bevy::math::DMat2>,
@@ -19597,7 +20617,11 @@ pub struct Mat4 {
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Add::<bevy::math::DMat2>", composite = "add")]
+    #[lua(
+        as_trait = "std::ops::Add::<bevy::math::DMat2>",
+        composite = "add",
+        metamethod = "Add",
+    )]
     fn add(
         _self: LuaReflectValProxy<bevy::math::DMat2>,
         rhs: LuaReflectValProxy<bevy::math::DMat2>,
@@ -19606,7 +20630,11 @@ pub struct Mat4 {
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Mul::<bevy::math::DVec2>", composite = "mul")]
+    #[lua(
+        as_trait = "std::ops::Mul::<bevy::math::DVec2>",
+        composite = "mul",
+        metamethod = "Mul",
+    )]
     fn mul(
         _self: LuaReflectValProxy<bevy::math::DMat2>,
         rhs: LuaReflectValProxy<bevy::math::DVec2>,
@@ -19615,7 +20643,7 @@ pub struct Mat4 {
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Neg", composite = "neg")]
+    #[lua(as_trait = "std::ops::Neg", composite = "neg", metamethod = "Unm")]
     fn neg(
         _self: LuaReflectValProxy<bevy::math::DMat2>,
     ) -> LuaReflectValProxy<bevy::math::DMat2>;
@@ -19628,21 +20656,21 @@ fn index(&self) -> String {
 }
 "#,
     r#"
-#[lua(metamethod="Index")]
-fn index(_self: LuaIdentityProxy<Self>, idx: usize) -> LuaIdentityProxy<LuaDVec2> {
-    let mut curr_ref = _self.0.clone();
-    let def_ref = bevy_mod_scripting_core::bindings::DeferredReflection{
-        get: std::sync::Arc::new(|ref_| Err(bevy::reflect::ReflectPathError::InvalidDowncast)),
-        get_mut: std::sync::Arc::new(move |ref_| {
-            if let Some(ret) = ref_.try_as_reflect_mut().map(|ret| ret.downcast_mut::<bevy::math::DMat2>()).flatten(){
-                Ok(ret.col_mut(idx - 1))
-            } else {
-                Err(bevy::reflect::ReflectPathError::InvalidDowncast)
-            }	
-        })
+#[lua(metamethod="Index", with_context, no_proxy)]
+fn index(_self: Self, idx: usize, lua: &tealr::mlu::mlua::Lua) -> Result<tealr::mlu::mlua::Value, tealr::mlu::mlua::Error> {
+    let mut curr_ref = _self.0;
+
+    let path = match idx {
+        1 => "x_axis",
+        2 => "y_axis",
+        3 => "z_axis",
+        4 => "w_axis",
+        _ => "unknown_axis"
     };
-    curr_ref.reflect_path.push(bevy_mod_scripting_core::bindings::ReflectionPathElem::new_deferred(def_ref));
-    LuaDVec2(curr_ref)
+
+    let parsed_path = bevy::reflect::ParsedPath::parse_static(path).expect("invariant");
+    curr_ref.index_path(bevy_mod_scripting_core::bindings::ReflectionPathElem::new_reflection(parsed_path));
+    crate::bindings::reference::LuaReflectReference(curr_ref).to_lua_proxy(lua)
 }
 "#]
 )]
@@ -19657,7 +20685,11 @@ pub struct DMat2 {
     bms_lua_path = "crate",
     functions[r#"
 
-    #[lua(as_trait = "std::ops::Add::<bevy::math::DMat3>", composite = "add")]
+    #[lua(
+        as_trait = "std::ops::Add::<bevy::math::DMat3>",
+        composite = "add",
+        metamethod = "Add",
+    )]
     fn add(
         _self: LuaReflectValProxy<bevy::math::DMat3>,
         rhs: LuaReflectValProxy<bevy::math::DMat3>,
@@ -19666,7 +20698,7 @@ pub struct DMat2 {
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Mul::<f64>", composite = "mul")]
+    #[lua(as_trait = "std::ops::Mul::<f64>", composite = "mul", metamethod = "Mul")]
     fn mul(
         _self: LuaReflectValProxy<bevy::math::DMat3>,
         rhs: f64,
@@ -19675,7 +20707,11 @@ pub struct DMat2 {
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Sub::<bevy::math::DMat3>", composite = "sub")]
+    #[lua(
+        as_trait = "std::ops::Sub::<bevy::math::DMat3>",
+        composite = "sub",
+        metamethod = "Sub",
+    )]
     fn sub(
         _self: LuaReflectValProxy<bevy::math::DMat3>,
         rhs: LuaReflectValProxy<bevy::math::DMat3>,
@@ -19692,7 +20728,11 @@ pub struct DMat2 {
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Mul::<bevy::math::DMat3>", composite = "mul")]
+    #[lua(
+        as_trait = "std::ops::Mul::<bevy::math::DMat3>",
+        composite = "mul",
+        metamethod = "Mul",
+    )]
     fn mul(
         _self: LuaReflectValProxy<bevy::math::DMat3>,
         rhs: LuaReflectValProxy<bevy::math::DMat3>,
@@ -19701,7 +20741,11 @@ pub struct DMat2 {
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Mul::<bevy::math::DAffine2>", composite = "mul")]
+    #[lua(
+        as_trait = "std::ops::Mul::<bevy::math::DAffine2>",
+        composite = "mul",
+        metamethod = "Mul",
+    )]
     fn mul(
         _self: LuaReflectValProxy<bevy::math::DMat3>,
         rhs: LuaReflectValProxy<bevy::math::DAffine2>,
@@ -19710,7 +20754,7 @@ pub struct DMat2 {
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Div::<f64>", composite = "div")]
+    #[lua(as_trait = "std::ops::Div::<f64>", composite = "div", metamethod = "Div")]
     fn div(
         _self: LuaReflectValProxy<bevy::math::DMat3>,
         rhs: f64,
@@ -19719,7 +20763,7 @@ pub struct DMat2 {
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Neg", composite = "neg")]
+    #[lua(as_trait = "std::ops::Neg", composite = "neg", metamethod = "Unm")]
     fn neg(
         _self: LuaReflectValProxy<bevy::math::DMat3>,
     ) -> LuaReflectValProxy<bevy::math::DMat3>;
@@ -19727,7 +20771,11 @@ pub struct DMat2 {
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Mul::<bevy::math::DVec3>", composite = "mul")]
+    #[lua(
+        as_trait = "std::ops::Mul::<bevy::math::DVec3>",
+        composite = "mul",
+        metamethod = "Mul",
+    )]
     fn mul(
         _self: LuaReflectValProxy<bevy::math::DMat3>,
         rhs: LuaReflectValProxy<bevy::math::DVec3>,
@@ -19736,7 +20784,11 @@ pub struct DMat2 {
 "#,
     r#"
 
-    #[lua(as_trait = "std::cmp::PartialEq::<bevy::math::DMat3>", composite = "eq")]
+    #[lua(
+        as_trait = "std::cmp::PartialEq::<bevy::math::DMat3>",
+        composite = "eq",
+        metamethod = "Eq",
+    )]
     fn eq(
         _self: LuaReflectRefProxy<bevy::math::DMat3>,
         rhs: LuaReflectRefProxy<bevy::math::DMat3>,
@@ -20129,21 +21181,21 @@ fn index(&self) -> String {
 }
 "#,
     r#"
-#[lua(metamethod="Index")]
-fn index(_self: LuaIdentityProxy<Self>, idx: usize) -> LuaIdentityProxy<LuaDVec3> {
-    let mut curr_ref = _self.0.clone();
-    let def_ref = bevy_mod_scripting_core::bindings::DeferredReflection{
-        get: std::sync::Arc::new(|ref_| Err(bevy::reflect::ReflectPathError::InvalidDowncast)),
-        get_mut: std::sync::Arc::new(move |ref_| {
-            if let Some(ret) = ref_.try_as_reflect_mut().map(|ret| ret.downcast_mut::<bevy::math::DMat3>()).flatten(){
-                Ok(ret.col_mut(idx - 1))
-            } else {
-                Err(bevy::reflect::ReflectPathError::InvalidDowncast)
-            }	
-        })
+#[lua(metamethod="Index", with_context, no_proxy)]
+fn index(_self: Self, idx: usize, lua: &tealr::mlu::mlua::Lua) -> Result<tealr::mlu::mlua::Value, tealr::mlu::mlua::Error> {
+    let mut curr_ref = _self.0;
+
+    let path = match idx {
+        1 => "x_axis",
+        2 => "y_axis",
+        3 => "z_axis",
+        4 => "w_axis",
+        _ => "unknown_axis"
     };
-    curr_ref.reflect_path.push(bevy_mod_scripting_core::bindings::ReflectionPathElem::new_deferred(def_ref));
-    LuaDVec3(curr_ref)
+
+    let parsed_path = bevy::reflect::ParsedPath::parse_static(path).expect("invariant");
+    curr_ref.index_path(bevy_mod_scripting_core::bindings::ReflectionPathElem::new_reflection(parsed_path));
+    crate::bindings::reference::LuaReflectReference(curr_ref).to_lua_proxy(lua)
 }
 "#]
 )]
@@ -20159,7 +21211,11 @@ pub struct DMat3 {
     bms_lua_path = "crate",
     functions[r#"
 
-    #[lua(as_trait = "std::ops::Mul::<bevy::math::DMat4>", composite = "mul")]
+    #[lua(
+        as_trait = "std::ops::Mul::<bevy::math::DMat4>",
+        composite = "mul",
+        metamethod = "Mul",
+    )]
     fn mul(
         _self: LuaReflectValProxy<bevy::math::DMat4>,
         rhs: LuaReflectValProxy<bevy::math::DMat4>,
@@ -20168,7 +21224,7 @@ pub struct DMat3 {
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Div::<f64>", composite = "div")]
+    #[lua(as_trait = "std::ops::Div::<f64>", composite = "div", metamethod = "Div")]
     fn div(
         _self: LuaReflectValProxy<bevy::math::DMat4>,
         rhs: f64,
@@ -20177,7 +21233,11 @@ pub struct DMat3 {
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Mul::<bevy::math::DAffine3>", composite = "mul")]
+    #[lua(
+        as_trait = "std::ops::Mul::<bevy::math::DAffine3>",
+        composite = "mul",
+        metamethod = "Mul",
+    )]
     fn mul(
         _self: LuaReflectValProxy<bevy::math::DMat4>,
         rhs: LuaReflectValProxy<bevy::math::DAffine3>,
@@ -20186,7 +21246,11 @@ pub struct DMat3 {
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Sub::<bevy::math::DMat4>", composite = "sub")]
+    #[lua(
+        as_trait = "std::ops::Sub::<bevy::math::DMat4>",
+        composite = "sub",
+        metamethod = "Sub",
+    )]
     fn sub(
         _self: LuaReflectValProxy<bevy::math::DMat4>,
         rhs: LuaReflectValProxy<bevy::math::DMat4>,
@@ -20195,7 +21259,11 @@ pub struct DMat3 {
 "#,
     r#"
 
-    #[lua(as_trait = "std::cmp::PartialEq::<bevy::math::DMat4>", composite = "eq")]
+    #[lua(
+        as_trait = "std::cmp::PartialEq::<bevy::math::DMat4>",
+        composite = "eq",
+        metamethod = "Eq",
+    )]
     fn eq(
         _self: LuaReflectRefProxy<bevy::math::DMat4>,
         rhs: LuaReflectRefProxy<bevy::math::DMat4>,
@@ -20204,7 +21272,7 @@ pub struct DMat3 {
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Mul::<f64>", composite = "mul")]
+    #[lua(as_trait = "std::ops::Mul::<f64>", composite = "mul", metamethod = "Mul")]
     fn mul(
         _self: LuaReflectValProxy<bevy::math::DMat4>,
         rhs: f64,
@@ -20821,7 +21889,7 @@ pub struct DMat3 {
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Neg", composite = "neg")]
+    #[lua(as_trait = "std::ops::Neg", composite = "neg", metamethod = "Unm")]
     fn neg(
         _self: LuaReflectValProxy<bevy::math::DMat4>,
     ) -> LuaReflectValProxy<bevy::math::DMat4>;
@@ -20837,7 +21905,11 @@ pub struct DMat3 {
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Add::<bevy::math::DMat4>", composite = "add")]
+    #[lua(
+        as_trait = "std::ops::Add::<bevy::math::DMat4>",
+        composite = "add",
+        metamethod = "Add",
+    )]
     fn add(
         _self: LuaReflectValProxy<bevy::math::DMat4>,
         rhs: LuaReflectValProxy<bevy::math::DMat4>,
@@ -20846,7 +21918,11 @@ pub struct DMat3 {
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Mul::<bevy::math::DVec4>", composite = "mul")]
+    #[lua(
+        as_trait = "std::ops::Mul::<bevy::math::DVec4>",
+        composite = "mul",
+        metamethod = "Mul",
+    )]
     fn mul(
         _self: LuaReflectValProxy<bevy::math::DMat4>,
         rhs: LuaReflectValProxy<bevy::math::DVec4>,
@@ -20860,21 +21936,21 @@ fn index(&self) -> String {
 }
 "#,
     r#"
-#[lua(metamethod="Index")]
-fn index(_self: LuaIdentityProxy<Self>, idx: usize) -> LuaIdentityProxy<LuaDVec4> {
-    let mut curr_ref = _self.0.clone();
-    let def_ref = bevy_mod_scripting_core::bindings::DeferredReflection{
-        get: std::sync::Arc::new(|ref_| Err(bevy::reflect::ReflectPathError::InvalidDowncast)),
-        get_mut: std::sync::Arc::new(move |ref_| {
-            if let Some(ret) = ref_.try_as_reflect_mut().map(|ret| ret.downcast_mut::<bevy::math::DMat4>()).flatten(){
-                Ok(ret.col_mut(idx - 1))
-            } else {
-                Err(bevy::reflect::ReflectPathError::InvalidDowncast)
-            }	
-        })
+#[lua(metamethod="Index", with_context, no_proxy)]
+fn index(_self: Self, idx: usize, lua: &tealr::mlu::mlua::Lua) -> Result<tealr::mlu::mlua::Value, tealr::mlu::mlua::Error> {
+    let mut curr_ref = _self.0;
+
+    let path = match idx {
+        1 => "x_axis",
+        2 => "y_axis",
+        3 => "z_axis",
+        4 => "w_axis",
+        _ => "unknown_axis"
     };
-    curr_ref.reflect_path.push(bevy_mod_scripting_core::bindings::ReflectionPathElem::new_deferred(def_ref));
-    LuaDVec4(curr_ref)
+
+    let parsed_path = bevy::reflect::ParsedPath::parse_static(path).expect("invariant");
+    curr_ref.index_path(bevy_mod_scripting_core::bindings::ReflectionPathElem::new_reflection(parsed_path));
+    crate::bindings::reference::LuaReflectReference(curr_ref).to_lua_proxy(lua)
 }
 "#]
 )]
@@ -20891,7 +21967,11 @@ pub struct DMat4 {
     bms_lua_path = "crate",
     functions[r#"
 
-    #[lua(as_trait = "std::ops::Mul::<bevy::math::Affine2>", composite = "mul")]
+    #[lua(
+        as_trait = "std::ops::Mul::<bevy::math::Affine2>",
+        composite = "mul",
+        metamethod = "Mul",
+    )]
     fn mul(
         _self: LuaReflectValProxy<bevy::math::Affine2>,
         rhs: LuaReflectValProxy<bevy::math::Affine2>,
@@ -20900,7 +21980,11 @@ pub struct DMat4 {
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Mul::<bevy::math::Mat3>", composite = "mul")]
+    #[lua(
+        as_trait = "std::ops::Mul::<bevy::math::Mat3>",
+        composite = "mul",
+        metamethod = "Mul",
+    )]
     fn mul(
         _self: LuaReflectValProxy<bevy::math::Affine2>,
         rhs: LuaReflectValProxy<bevy::math::Mat3>,
@@ -20917,7 +22001,11 @@ pub struct DMat4 {
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Mul::<bevy::math::Mat3A>", composite = "mul")]
+    #[lua(
+        as_trait = "std::ops::Mul::<bevy::math::Mat3A>",
+        composite = "mul",
+        metamethod = "Mul",
+    )]
     fn mul(
         _self: LuaReflectValProxy<bevy::math::Affine2>,
         rhs: LuaReflectValProxy<bevy::math::Mat3A>,
@@ -20926,7 +22014,11 @@ pub struct DMat4 {
 "#,
     r#"
 
-    #[lua(as_trait = "std::cmp::PartialEq::<bevy::math::Affine2>", composite = "eq")]
+    #[lua(
+        as_trait = "std::cmp::PartialEq::<bevy::math::Affine2>",
+        composite = "eq",
+        metamethod = "Eq",
+    )]
     fn eq(
         _self: LuaReflectRefProxy<bevy::math::Affine2>,
         rhs: LuaReflectRefProxy<bevy::math::Affine2>,
@@ -21135,7 +22227,11 @@ pub struct Affine2 {
     bms_lua_path = "crate",
     functions[r#"
 
-    #[lua(as_trait = "std::cmp::PartialEq::<bevy::math::Affine3A>", composite = "eq")]
+    #[lua(
+        as_trait = "std::cmp::PartialEq::<bevy::math::Affine3A>",
+        composite = "eq",
+        metamethod = "Eq",
+    )]
     fn eq(
         _self: LuaReflectRefProxy<bevy::math::Affine3A>,
         rhs: LuaReflectRefProxy<bevy::math::Affine3A>,
@@ -21144,7 +22240,11 @@ pub struct Affine2 {
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Mul::<bevy::math::Affine3A>", composite = "mul")]
+    #[lua(
+        as_trait = "std::ops::Mul::<bevy::math::Affine3A>",
+        composite = "mul",
+        metamethod = "Mul",
+    )]
     fn mul(
         _self: LuaReflectValProxy<bevy::math::Affine3A>,
         rhs: LuaReflectValProxy<bevy::math::Affine3A>,
@@ -21454,7 +22554,11 @@ pub struct Affine2 {
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Mul::<bevy::math::Mat4>", composite = "mul")]
+    #[lua(
+        as_trait = "std::ops::Mul::<bevy::math::Mat4>",
+        composite = "mul",
+        metamethod = "Mul",
+    )]
     fn mul(
         _self: LuaReflectValProxy<bevy::math::Affine3A>,
         rhs: LuaReflectValProxy<bevy::math::Mat4>,
@@ -21479,7 +22583,11 @@ pub struct Affine3A {
     bms_lua_path = "crate",
     functions[r#"
 
-    #[lua(as_trait = "std::ops::Mul::<bevy::math::DMat3>", composite = "mul")]
+    #[lua(
+        as_trait = "std::ops::Mul::<bevy::math::DMat3>",
+        composite = "mul",
+        metamethod = "Mul",
+    )]
     fn mul(
         _self: LuaReflectValProxy<bevy::math::DAffine2>,
         rhs: LuaReflectValProxy<bevy::math::DMat3>,
@@ -21673,7 +22781,11 @@ pub struct Affine3A {
 "#,
     r#"
 
-    #[lua(as_trait = "std::cmp::PartialEq::<bevy::math::DAffine2>", composite = "eq")]
+    #[lua(
+        as_trait = "std::cmp::PartialEq::<bevy::math::DAffine2>",
+        composite = "eq",
+        metamethod = "Eq",
+    )]
     fn eq(
         _self: LuaReflectRefProxy<bevy::math::DAffine2>,
         rhs: LuaReflectRefProxy<bevy::math::DAffine2>,
@@ -21682,7 +22794,11 @@ pub struct Affine3A {
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Mul::<bevy::math::DAffine2>", composite = "mul")]
+    #[lua(
+        as_trait = "std::ops::Mul::<bevy::math::DAffine2>",
+        composite = "mul",
+        metamethod = "Mul",
+    )]
     fn mul(
         _self: LuaReflectValProxy<bevy::math::DAffine2>,
         rhs: LuaReflectValProxy<bevy::math::DAffine2>,
@@ -21707,7 +22823,11 @@ pub struct DAffine2 {
     bms_lua_path = "crate",
     functions[r#"
 
-    #[lua(as_trait = "std::cmp::PartialEq::<bevy::math::DAffine3>", composite = "eq")]
+    #[lua(
+        as_trait = "std::cmp::PartialEq::<bevy::math::DAffine3>",
+        composite = "eq",
+        metamethod = "Eq",
+    )]
     fn eq(
         _self: LuaReflectRefProxy<bevy::math::DAffine3>,
         rhs: LuaReflectRefProxy<bevy::math::DAffine3>,
@@ -21716,7 +22836,11 @@ pub struct DAffine2 {
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Mul::<bevy::math::DAffine3>", composite = "mul")]
+    #[lua(
+        as_trait = "std::ops::Mul::<bevy::math::DAffine3>",
+        composite = "mul",
+        metamethod = "Mul",
+    )]
     fn mul(
         _self: LuaReflectValProxy<bevy::math::DAffine3>,
         rhs: LuaReflectValProxy<bevy::math::DAffine3>,
@@ -21725,7 +22849,11 @@ pub struct DAffine2 {
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Mul::<bevy::math::DMat4>", composite = "mul")]
+    #[lua(
+        as_trait = "std::ops::Mul::<bevy::math::DMat4>",
+        composite = "mul",
+        metamethod = "Mul",
+    )]
     fn mul(
         _self: LuaReflectValProxy<bevy::math::DAffine3>,
         rhs: LuaReflectValProxy<bevy::math::DMat4>,
@@ -22033,7 +23161,11 @@ pub struct DAffine3 {
 /// Note that addition is not the same as combining the rotations represented by the
 /// two quaternions! That corresponds to multiplication.
 
-    #[lua(as_trait = "std::ops::Add::<bevy::math::DQuat>", composite = "add")]
+    #[lua(
+        as_trait = "std::ops::Add::<bevy::math::DQuat>",
+        composite = "add",
+        metamethod = "Add",
+    )]
     fn add(
         _self: LuaReflectValProxy<bevy::math::DQuat>,
         rhs: LuaReflectValProxy<bevy::math::DQuat>,
@@ -22044,7 +23176,7 @@ pub struct DAffine3 {
 /// Multiplies a quaternion by a scalar value.
 /// The product is not guaranteed to be normalized.
 
-    #[lua(as_trait = "std::ops::Mul::<f64>", composite = "mul")]
+    #[lua(as_trait = "std::ops::Mul::<f64>", composite = "mul", metamethod = "Mul")]
     fn mul(
         _self: LuaReflectValProxy<bevy::math::DQuat>,
         rhs: f64,
@@ -22059,7 +23191,11 @@ pub struct DAffine3 {
 /// # Panics
 /// Will panic if `self` or `rhs` are not normalized when `glam_assert` is enabled.
 
-    #[lua(as_trait = "std::ops::Mul::<bevy::math::DQuat>", composite = "mul")]
+    #[lua(
+        as_trait = "std::ops::Mul::<bevy::math::DQuat>",
+        composite = "mul",
+        metamethod = "Mul",
+    )]
     fn mul(
         _self: LuaReflectValProxy<bevy::math::DQuat>,
         rhs: LuaReflectValProxy<bevy::math::DQuat>,
@@ -22516,7 +23652,11 @@ pub struct DAffine3 {
 /// # Panics
 /// Will panic if `self` is not normalized when `glam_assert` is enabled.
 
-    #[lua(as_trait = "std::ops::Mul::<bevy::math::DVec3>", composite = "mul")]
+    #[lua(
+        as_trait = "std::ops::Mul::<bevy::math::DVec3>",
+        composite = "mul",
+        metamethod = "Mul",
+    )]
     fn mul(
         _self: LuaReflectValProxy<bevy::math::DQuat>,
         rhs: LuaReflectValProxy<bevy::math::DVec3>,
@@ -22525,7 +23665,7 @@ pub struct DAffine3 {
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Neg", composite = "neg")]
+    #[lua(as_trait = "std::ops::Neg", composite = "neg", metamethod = "Unm")]
     fn neg(
         _self: LuaReflectValProxy<bevy::math::DQuat>,
     ) -> LuaReflectValProxy<bevy::math::DQuat>;
@@ -22533,7 +23673,11 @@ pub struct DAffine3 {
 "#,
     r#"
 
-    #[lua(as_trait = "std::cmp::PartialEq::<bevy::math::DQuat>", composite = "eq")]
+    #[lua(
+        as_trait = "std::cmp::PartialEq::<bevy::math::DQuat>",
+        composite = "eq",
+        metamethod = "Eq",
+    )]
     fn eq(
         _self: LuaReflectRefProxy<bevy::math::DQuat>,
         rhs: LuaReflectRefProxy<bevy::math::DQuat>,
@@ -22544,7 +23688,11 @@ pub struct DAffine3 {
 /// Subtracts the `rhs` quaternion from `self`.
 /// The difference is not guaranteed to be normalized.
 
-    #[lua(as_trait = "std::ops::Sub::<bevy::math::DQuat>", composite = "sub")]
+    #[lua(
+        as_trait = "std::ops::Sub::<bevy::math::DQuat>",
+        composite = "sub",
+        metamethod = "Sub",
+    )]
     fn sub(
         _self: LuaReflectValProxy<bevy::math::DQuat>,
         rhs: LuaReflectValProxy<bevy::math::DQuat>,
@@ -22555,7 +23703,7 @@ pub struct DAffine3 {
 /// Divides a quaternion by a scalar value.
 /// The quotient is not guaranteed to be normalized.
 
-    #[lua(as_trait = "std::ops::Div::<f64>", composite = "div")]
+    #[lua(as_trait = "std::ops::Div::<f64>", composite = "div", metamethod = "Div")]
     fn div(
         _self: LuaReflectValProxy<bevy::math::DQuat>,
         rhs: f64,
@@ -22590,7 +23738,11 @@ pub struct DQuat {
 "#,
     r#"
 
-    #[lua(as_trait = "std::cmp::PartialEq::<bevy::math::EulerRot>", composite = "eq")]
+    #[lua(
+        as_trait = "std::cmp::PartialEq::<bevy::math::EulerRot>",
+        composite = "eq",
+        metamethod = "Eq",
+    )]
     fn eq(
         _self: LuaReflectRefProxy<bevy::math::EulerRot>,
         other: LuaReflectRefProxy<bevy::math::EulerRot>,
@@ -22692,7 +23844,11 @@ pub struct EulerRot {}
 "#,
     r#"
 
-    #[lua(as_trait = "std::cmp::PartialEq::<bevy::math::BVec3A>", composite = "eq")]
+    #[lua(
+        as_trait = "std::cmp::PartialEq::<bevy::math::BVec3A>",
+        composite = "eq",
+        metamethod = "Eq",
+    )]
     fn eq(
         _self: LuaReflectRefProxy<bevy::math::BVec3A>,
         rhs: LuaReflectRefProxy<bevy::math::BVec3A>,
@@ -22714,7 +23870,11 @@ pub struct BVec3A();
     bms_lua_path = "crate",
     functions[r#"
 
-    #[lua(as_trait = "std::cmp::PartialEq::<bevy::math::BVec4A>", composite = "eq")]
+    #[lua(
+        as_trait = "std::cmp::PartialEq::<bevy::math::BVec4A>",
+        composite = "eq",
+        metamethod = "Eq",
+    )]
     fn eq(
         _self: LuaReflectRefProxy<bevy::math::BVec4A>,
         rhs: LuaReflectRefProxy<bevy::math::BVec4A>,
@@ -22840,7 +24000,11 @@ pub struct BVec4A();
 "#,
     r#"
 
-    #[lua(as_trait = "std::cmp::PartialEq::<smol_str::SmolStr>", composite = "eq")]
+    #[lua(
+        as_trait = "std::cmp::PartialEq::<smol_str::SmolStr>",
+        composite = "eq",
+        metamethod = "Eq",
+    )]
     fn eq(
         _self: LuaReflectRefProxy<smol_str::SmolStr>,
         other: LuaReflectRefProxy<smol_str::SmolStr>,
@@ -23048,7 +24212,11 @@ pub struct SmolStr();
 "#,
     r#"
 
-    #[lua(as_trait = "std::cmp::PartialEq::<uuid::Uuid>", composite = "eq")]
+    #[lua(
+        as_trait = "std::cmp::PartialEq::<uuid::Uuid>",
+        composite = "eq",
+        metamethod = "Eq",
+    )]
     fn eq(
         _self: LuaReflectRefProxy<uuid::Uuid>,
         other: LuaReflectRefProxy<uuid::Uuid>,

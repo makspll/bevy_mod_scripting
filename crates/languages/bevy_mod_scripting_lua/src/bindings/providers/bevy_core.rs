@@ -21,22 +21,23 @@ use crate::{
     bms_lua_path = "crate",
     functions[r#"
 
+    #[lua(as_trait = "std::clone::Clone")]
+    fn clone(
+        _self: LuaReflectRefProxy<bevy::core::prelude::Name>,
+    ) -> LuaReflectValProxy<bevy::core::prelude::Name>;
+
+"#,
+    r#"
+
     #[lua(
         as_trait = "std::cmp::PartialEq::<bevy::core::prelude::Name>",
         composite = "eq",
+        metamethod = "Eq",
     )]
     fn eq(
         _self: LuaReflectRefProxy<bevy::core::prelude::Name>,
         other: LuaReflectRefProxy<bevy::core::prelude::Name>,
     ) -> bool;
-
-"#,
-    r#"
-
-    #[lua(as_trait = "std::clone::Clone")]
-    fn clone(
-        _self: LuaReflectRefProxy<bevy::core::prelude::Name>,
-    ) -> LuaReflectValProxy<bevy::core::prelude::Name>;
 
 "#,
     r#"

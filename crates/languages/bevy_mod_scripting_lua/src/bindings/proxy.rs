@@ -71,6 +71,12 @@ impl<E: Into<Box<dyn std::error::Error + Send + Sync + 'static>>> Proxy for Erro
     }
 }
 
+impl From<ErrorProxy<tealr::mlu::mlua::Error>> for tealr::mlu::mlua::Error {
+    fn from(val: ErrorProxy<tealr::mlu::mlua::Error>) -> Self {
+        val.0
+    }
+}
+
 /// Convenience for proxying a type into lua via itself without implementing [`Proxy`] on it.
 /// Converts to Lua via T's implementation of IntoLua directly
 pub struct LuaIdentityProxy<T>(pub Option<T>);
@@ -83,7 +89,9 @@ impl<T> Proxy for LuaIdentityProxy<T> {
 }
 
 impl<T> Unproxy for LuaIdentityProxy<T> {
-    type Output<'o> = T where
+    type Output<'o>
+        = T
+    where
         Self: 'o;
 
     fn unproxy<'o>(&'o mut self) -> ScriptResult<Self::Output<'o>> {

@@ -131,15 +131,11 @@ impl std::fmt::Display for ScriptError {
         if let Some(script) = &self.0.script {
             write!(
                 f,
-                "Encountered {} error in script `{}`: {}",
+                "{} in script `{}`: {}",
                 self.0.kind, script, self.0.reason
             )
         } else {
-            write!(
-                f,
-                "Encountered {} error in a script: {}",
-                self.0.kind, self.0.reason
-            )
+            write!(f, "{}: {}", self.0.kind, self.0.reason)
         }
     }
 }

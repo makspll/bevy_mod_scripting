@@ -19,18 +19,6 @@ use crate::{
     bms_core_path = "bevy_mod_scripting_core",
     bms_lua_path = "crate",
     functions[r#"
-
-    #[lua(
-        as_trait = "std::cmp::PartialEq::<bevy::ecs::entity::Entity>",
-        composite = "eq",
-    )]
-    fn eq(
-        _self: LuaReflectRefProxy<bevy::ecs::entity::Entity>,
-        other: LuaReflectRefProxy<bevy::ecs::entity::Entity>,
-    ) -> bool;
-
-"#,
-    r#"
 /// Creates a new entity ID with the specified `index` and a generation of 1.
 /// # Note
 /// Spawning a specific `entity` value is __rarely the right choice__. Most apps should favor
@@ -90,6 +78,19 @@ use crate::{
     fn clone(
         _self: LuaReflectRefProxy<bevy::ecs::entity::Entity>,
     ) -> LuaReflectValProxy<bevy::ecs::entity::Entity>;
+
+"#,
+    r#"
+
+    #[lua(
+        as_trait = "std::cmp::PartialEq::<bevy::ecs::entity::Entity>",
+        composite = "eq",
+        metamethod = "Eq",
+    )]
+    fn eq(
+        _self: LuaReflectRefProxy<bevy::ecs::entity::Entity>,
+        other: LuaReflectRefProxy<bevy::ecs::entity::Entity>,
+    ) -> bool;
 
 "#,
     r#"
@@ -158,6 +159,14 @@ pub struct OnReplace {}
     bms_core_path = "bevy_mod_scripting_core",
     bms_lua_path = "crate",
     functions[r#"
+
+    #[lua(as_trait = "std::cmp::Eq")]
+    fn assert_receiver_is_total_eq(
+        _self: LuaReflectRefProxy<bevy::ecs::component::ComponentId>,
+    ) -> ();
+
+"#,
+    r#"
 /// Creates a new [`ComponentId`].
 /// The `index` is a unique value associated with each type of component in a given world.
 /// Usually, this value is taken from a counter incremented for each type of component registered with the world.
@@ -186,19 +195,12 @@ pub struct OnReplace {}
     #[lua(
         as_trait = "std::cmp::PartialEq::<bevy::ecs::component::ComponentId>",
         composite = "eq",
+        metamethod = "Eq",
     )]
     fn eq(
         _self: LuaReflectRefProxy<bevy::ecs::component::ComponentId>,
         other: LuaReflectRefProxy<bevy::ecs::component::ComponentId>,
     ) -> bool;
-
-"#,
-    r#"
-
-    #[lua(as_trait = "std::cmp::Eq")]
-    fn assert_receiver_is_total_eq(
-        _self: LuaReflectRefProxy<bevy::ecs::component::ComponentId>,
-    ) -> ();
 
 "#,
     r#"
@@ -215,34 +217,6 @@ pub struct ComponentId();
     bms_core_path = "bevy_mod_scripting_core",
     bms_lua_path = "crate",
     functions[r#"
-
-    #[lua(as_trait = "std::clone::Clone")]
-    fn clone(
-        _self: LuaReflectRefProxy<bevy::ecs::component::Tick>,
-    ) -> LuaReflectValProxy<bevy::ecs::component::Tick>;
-
-"#,
-    r#"
-
-    #[lua(
-        as_trait = "std::cmp::PartialEq::<bevy::ecs::component::Tick>",
-        composite = "eq",
-    )]
-    fn eq(
-        _self: LuaReflectRefProxy<bevy::ecs::component::Tick>,
-        other: LuaReflectRefProxy<bevy::ecs::component::Tick>,
-    ) -> bool;
-
-"#,
-    r#"
-
-    #[lua(as_trait = "std::cmp::Eq")]
-    fn assert_receiver_is_total_eq(
-        _self: LuaReflectRefProxy<bevy::ecs::component::Tick>,
-    ) -> ();
-
-"#,
-    r#"
 /// Creates a new [`Tick`] wrapping the given value.
 
     #[lua()]
@@ -273,6 +247,35 @@ pub struct ComponentId();
         last_run: LuaReflectValProxy<bevy::ecs::component::Tick>,
         this_run: LuaReflectValProxy<bevy::ecs::component::Tick>,
     ) -> bool;
+
+"#,
+    r#"
+
+    #[lua(as_trait = "std::cmp::Eq")]
+    fn assert_receiver_is_total_eq(
+        _self: LuaReflectRefProxy<bevy::ecs::component::Tick>,
+    ) -> ();
+
+"#,
+    r#"
+
+    #[lua(
+        as_trait = "std::cmp::PartialEq::<bevy::ecs::component::Tick>",
+        composite = "eq",
+        metamethod = "Eq",
+    )]
+    fn eq(
+        _self: LuaReflectRefProxy<bevy::ecs::component::Tick>,
+        other: LuaReflectRefProxy<bevy::ecs::component::Tick>,
+    ) -> bool;
+
+"#,
+    r#"
+
+    #[lua(as_trait = "std::clone::Clone")]
+    fn clone(
+        _self: LuaReflectRefProxy<bevy::ecs::component::Tick>,
+    ) -> LuaReflectValProxy<bevy::ecs::component::Tick>;
 
 "#,
     r#"
@@ -367,9 +370,18 @@ pub struct ComponentTicks {
     bms_lua_path = "crate",
     functions[r#"
 
+    #[lua(as_trait = "std::clone::Clone")]
+    fn clone(
+        _self: LuaReflectRefProxy<bevy::ecs::identifier::Identifier>,
+    ) -> LuaReflectValProxy<bevy::ecs::identifier::Identifier>;
+
+"#,
+    r#"
+
     #[lua(
         as_trait = "std::cmp::PartialEq::<bevy::ecs::identifier::Identifier>",
         composite = "eq",
+        metamethod = "Eq",
     )]
     fn eq(
         _self: LuaReflectRefProxy<bevy::ecs::identifier::Identifier>,
@@ -406,14 +418,6 @@ pub struct ComponentTicks {
 
     #[lua()]
     fn from_bits(value: u64) -> LuaReflectValProxy<bevy::ecs::identifier::Identifier>;
-
-"#,
-    r#"
-
-    #[lua(as_trait = "std::clone::Clone")]
-    fn clone(
-        _self: LuaReflectRefProxy<bevy::ecs::identifier::Identifier>,
-    ) -> LuaReflectValProxy<bevy::ecs::identifier::Identifier>;
 
 "#,
     r#"

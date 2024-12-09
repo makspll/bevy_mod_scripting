@@ -107,18 +107,29 @@ function on_event()
 
     print("============")
 
+    print(Vec3.new(0,1,0) + Vec3.new(1,0,0))
+    print(Vec3.new(0,1,0):any_orthonormal_vector())
+    print(comp.mat3[1])
+    print(Vec3.new(0,1,0):any_orthonormal_vector() + comp.mat3[1])
     local complex_vec_op = Vec3.new(0,1,0):any_orthonormal_vector() + comp.mat3[1] 
     print("(0,1,0).any_orthonormal_vector() + mat3.x_axis is: ", complex_vec_op) 
 
     local new_mat3 = Mat3.from_cols(Vec3.new(1,0,0),Vec3.new(0,1,0),Vec3.new(0,0,-1))
     print("new_mat3 is:", new_mat3)
 
-    comp.vec2 = comp.vec2 + comp.vec2
+    -- comp.vec2 = comp.vec2 + comp.vec2
+    print("A")
     comp.usize = comp.vec2:min_element()
+    
+    print("B")
     comp.f32 = comp.f32 + comp.f32 + comp.vec2:min_element()
+    print("C")
     comp.vec2 = Vec2.new(2,1)
+    print("D")
     comp.quat = Quat.from_xyzw(3,2,1,4)
+    print("E")
     comp.mat3[1] = Vec3.new(69,69,69)
+    print("F")
 
 
     world:exit()

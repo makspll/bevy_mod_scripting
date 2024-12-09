@@ -12,42 +12,27 @@ r#"
     {% endif %}
 as_trait="{{ function.from_trait_path }}",
 {%- endif -%}
-
 {% if is_op %}
 composite="{{ function.ident }}",
 {% endif %}
 
-{#
-{% if function.has_self and not is_op %}
-kind="{% if function.args.0.ty is starting_with("&mut") %}Mutating{% endif %}Method",
-{% elif is_op %}
-kind="MetaFunction",
-{% else %}
-kind="Function",
+{% if function.from_trait_path %}
+    {% if function.from_trait_path is starting_with("std::ops::Neg") %}
+    metamethod="Unm",
+    {% elif function.from_trait_path is starting_with("std::ops::Mul") %}
+    metamethod="Mul",
+    {% elif function.from_trait_path is starting_with("std::ops::Add") %}
+    metamethod="Add",
+    {% elif function.from_trait_path is starting_with("std::ops::Sub") %}
+    metamethod="Sub",
+    {% elif function.from_trait_path is starting_with("std::ops::Div") %}
+    metamethod="Div",
+    {% elif function.from_trait_path is starting_with("std::ops::Rem") %}
+    metamethod="Mod",
+    {% elif function.from_trait_path is starting_with("std::cmp::PartialEq") %}
+    metamethod="Eq",
+    {% endif %}
 {% endif %}
-
-{%- if function.output.reflection_strategy == "Proxy" -%}
-output(proxy),
-{%- endif -%}
-
-
-
-{% if function.from_trait_path == "std::ops::Neg" %}
-metamethod="Unm",
-{% elif function.from_trait_path == "std::ops::Mul" %}
-metamethod="Mul",
-{% elif function.from_trait_path == "std::ops::Add" %}
-metamethod="Add",
-{% elif function.from_trait_path == "std::ops::Sub" %}
-metamethod="Sub",
-{% elif function.from_trait_path == "std::ops::Div" %}
-metamethod="Div",
-{% elif function.from_trait_path == "std::ops::Rem" %}
-metamethod="Mod",
-{% elif function.from_trait_path == "std::cmp::PartialEq" %}
-metamethod="Eq",
-{% endif %}
-#}
 )] 
 {% if function.is_unsafe %}unsafe {% endif -%}fn {{ function.ident }} (
     {%- filter separated(delimeter=", ", split_at="---", ignore_first=true) -%}

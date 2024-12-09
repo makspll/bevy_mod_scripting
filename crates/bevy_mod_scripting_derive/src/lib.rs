@@ -152,7 +152,7 @@ fn proxy_wrap_function_def(
     };
 
     let func_name = &f.sig.ident;
-    let (mut original_arg_idents, _) = f
+    let (mut original_arg_idents, mut original_arg_types) = f
         .sig
         .inputs
         .iter()
@@ -190,6 +190,7 @@ fn proxy_wrap_function_def(
 
     let args_var_to_use = if get_world_callback_access_fn.is_some() {
         original_arg_idents.remove(0);
+        original_arg_types.remove(0);
         args_tail_ident
     } else {
         args_ident
@@ -203,7 +204,7 @@ fn proxy_wrap_function_def(
     };
 
     // wrap function body in our unwrapping and wrapping logic, ignore pre-existing body
-    let mut fn_call = std::panic::catch_unwind(|| {
+    let mut fn_call = //std::panic::catch_unwind(|| {
         match (
             &f.default,
             &attrs.as_trait,
@@ -212,9 +213,19 @@ fn proxy_wrap_function_def(
             (_, _, true) => quote_spanned!(span=>
                 world.#func_name(#(#original_arg_idents),*)
             ),
-            (Some(body), _, _) => quote_spanned!(span=>
-                (||{ #body })()
-            ),
+            (Some(body), _, _) => {
+                if attrs.no_proxy.is_present() {
+                    // in this case the entire thing is just this
+                    quote_spanned!(span=>
+                        {(|#ctxt_arg_ident, (#(#original_arg_idents),*) : (#(#original_arg_types),*)|{ #body })(#ctxt_alias, #args_var_to_use)}
+                    )
+                } else {
+                    // in this case we are just using this to contain any ? calls and early returns
+                    quote_spanned!(span=> 
+                        (|| { #body })()
+                    )
+                }
+            },
             (_, None, _) => quote_spanned!(span=>
                 #target_type::#func_name(#(#original_arg_idents),*)
             ),
@@ -224,9 +235,9 @@ fn proxy_wrap_function_def(
                     <#target_type as #trait_path>::#func_name(#(#original_arg_idents),*)
                 )
             }
-        }
-    })
-    .unwrap(); // todo: handle the error nicer
+        };
+    //})
+    // .unwrap(); // todo: handle the error nicer
 
     if f.sig.unsafety.is_some() {
         fn_call = quote_spanned!(span=>
@@ -236,9 +247,9 @@ fn proxy_wrap_function_def(
 
     if attrs.no_proxy.is_present() {
         f.default = Some(parse_quote_spanned! {span=>
-            {
-                #fn_call
-            }
+            
+            #fn_call
+            
         });
     } else {
         let world = if let Some(world_getter_fn_path) = get_world_callback_access_fn {
@@ -254,11 +265,17 @@ fn proxy_wrap_function_def(
             )
         };
 
+        let proxy_call_name: Ident = if attrs.fallible.is_present() {
+            format_ident!("try_proxy_call", span = span)
+        } else {
+            format_ident!("proxy_call", span = span)
+        };
+
         f.default = Some(parse_quote_spanned! {span=>
             {
                 #args_split
                 #world
-                let out: #out_type = world.proxy_call(#args_var_to_use, |(#(#original_arg_idents),*)| {
+                let out: #out_type = world.#proxy_call_name(#args_var_to_use, |(#(#original_arg_idents),*)| {
                     #fn_call
                 }).map_err(|e| #mlua::Error::external(e))?;
                 Ok(out)
@@ -314,6 +331,9 @@ struct FunctionAttrs {
     /// If true will pass in the context as the last argument,
     /// i.e. will remove that argument from the function signature and use it's name as the context alias
     pub with_context: Flag,
+
+    /// if true will treat output as a fallible result
+    pub fallible: Flag,
 
     /// Skips the unproxying & proxying call, useful for functions that don't need to access the world
     pub no_proxy: Flag,
@@ -377,7 +397,7 @@ pub fn impl_lua_proxy(input: TokenStream) -> TokenStream {
     // extract composites first
     let mut composites: HashMap<String, Vec<(TraitItemFn, FunctionAttrs)>> = HashMap::new();
     meta.functions.0.retain(|f| {
-        let attrs = FunctionAttrs::from_attributes(&f.attrs).unwrap();
+        let attrs = FunctionAttrs::from_attributes(&f.attrs).expect("Function attributes must be valid");
         if let Some(composite_id) = &attrs.composite {
             composites
                 .entry(composite_id.to_owned())
@@ -423,7 +443,7 @@ pub fn impl_lua_proxy(input: TokenStream) -> TokenStream {
             .collect::<Vec<_>>();
 
         let closure_args_types = closures.iter().map(|closure| {
-            let last = closure.inputs.last().unwrap();
+            let last = closure.inputs.last().expect("Closure must have at least one argument");
             if let syn::Pat::Type(pat_type) = last {
                 &pat_type.ty
             } else {
@@ -448,7 +468,7 @@ pub fn impl_lua_proxy(input: TokenStream) -> TokenStream {
     });
 
     let add_function_stmts = meta.functions.0.into_iter().filter_map(|mut f| {
-        let attrs = FunctionAttrs::from_attributes(&f.attrs).unwrap();
+        let attrs = FunctionAttrs::from_attributes(&f.attrs).expect("Function attributes must be valid");
 
         if attrs.skip.is_present() {
             return None;

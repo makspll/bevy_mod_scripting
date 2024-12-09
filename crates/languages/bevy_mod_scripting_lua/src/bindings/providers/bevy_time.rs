@@ -74,11 +74,20 @@ pub struct Real {}
     #[lua(
         as_trait = "std::cmp::PartialEq::<bevy::time::prelude::Timer>",
         composite = "eq",
+        metamethod = "Eq",
     )]
     fn eq(
         _self: LuaReflectRefProxy<bevy::time::prelude::Timer>,
         other: LuaReflectRefProxy<bevy::time::prelude::Timer>,
     ) -> bool;
+
+"#,
+    r#"
+
+    #[lua(as_trait = "std::cmp::Eq")]
+    fn assert_receiver_is_total_eq(
+        _self: LuaReflectRefProxy<bevy::time::prelude::Timer>,
+    ) -> ();
 
 "#,
     r#"
@@ -331,14 +340,6 @@ pub struct Real {}
 
 "#,
     r#"
-
-    #[lua(as_trait = "std::cmp::Eq")]
-    fn assert_receiver_is_total_eq(
-        _self: LuaReflectRefProxy<bevy::time::prelude::Timer>,
-    ) -> ();
-
-"#,
-    r#"
 #[lua(metamethod="ToString")]
 fn index(&self) -> String {
     format!("{:?}", _self)
@@ -356,6 +357,7 @@ pub struct Timer {}
     #[lua(
         as_trait = "std::cmp::PartialEq::<bevy::time::prelude::TimerMode>",
         composite = "eq",
+        metamethod = "Eq",
     )]
     fn eq(
         _self: LuaReflectRefProxy<bevy::time::prelude::TimerMode>,
@@ -365,18 +367,18 @@ pub struct Timer {}
 "#,
     r#"
 
-    #[lua(as_trait = "std::cmp::Eq")]
-    fn assert_receiver_is_total_eq(
-        _self: LuaReflectRefProxy<bevy::time::prelude::TimerMode>,
-    ) -> ();
-
-"#,
-    r#"
-
     #[lua(as_trait = "std::clone::Clone")]
     fn clone(
         _self: LuaReflectRefProxy<bevy::time::prelude::TimerMode>,
     ) -> LuaReflectValProxy<bevy::time::prelude::TimerMode>;
+
+"#,
+    r#"
+
+    #[lua(as_trait = "std::cmp::Eq")]
+    fn assert_receiver_is_total_eq(
+        _self: LuaReflectRefProxy<bevy::time::prelude::TimerMode>,
+    ) -> ();
 
 "#,
     r#"
@@ -414,14 +416,6 @@ pub struct Virtual {}
     bms_core_path = "bevy_mod_scripting_core",
     bms_lua_path = "crate",
     functions[r#"
-
-    #[lua(as_trait = "std::cmp::Eq")]
-    fn assert_receiver_is_total_eq(
-        _self: LuaReflectRefProxy<bevy::time::Stopwatch>,
-    ) -> ();
-
-"#,
-    r#"
 
     #[lua(as_trait = "std::clone::Clone")]
     fn clone(
@@ -545,11 +539,23 @@ pub struct Virtual {}
 "#,
     r#"
 
-    #[lua(as_trait = "std::cmp::PartialEq::<bevy::time::Stopwatch>", composite = "eq")]
+    #[lua(
+        as_trait = "std::cmp::PartialEq::<bevy::time::Stopwatch>",
+        composite = "eq",
+        metamethod = "Eq",
+    )]
     fn eq(
         _self: LuaReflectRefProxy<bevy::time::Stopwatch>,
         other: LuaReflectRefProxy<bevy::time::Stopwatch>,
     ) -> bool;
+
+"#,
+    r#"
+
+    #[lua(as_trait = "std::cmp::Eq")]
+    fn assert_receiver_is_total_eq(
+        _self: LuaReflectRefProxy<bevy::time::Stopwatch>,
+    ) -> ();
 
 "#,
     r#"

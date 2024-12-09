@@ -65,7 +65,11 @@ use crate::{
 "#,
     r#"
 
-    #[lua(as_trait = "std::cmp::PartialEq::<bevy::math::AspectRatio>", composite = "eq")]
+    #[lua(
+        as_trait = "std::cmp::PartialEq::<bevy::math::AspectRatio>",
+        composite = "eq",
+        metamethod = "Eq",
+    )]
     fn eq(
         _self: LuaReflectRefProxy<bevy::math::AspectRatio>,
         other: LuaReflectRefProxy<bevy::math::AspectRatio>,
@@ -106,6 +110,7 @@ pub struct AspectRatio();
     #[lua(
         as_trait = "std::cmp::PartialEq::<bevy::math::CompassOctant>",
         composite = "eq",
+        metamethod = "Eq",
     )]
     fn eq(
         _self: LuaReflectRefProxy<bevy::math::CompassOctant>,
@@ -139,6 +144,7 @@ pub struct CompassOctant {}
     #[lua(
         as_trait = "std::cmp::PartialEq::<bevy::math::CompassQuadrant>",
         composite = "eq",
+        metamethod = "Eq",
     )]
     fn eq(
         _self: LuaReflectRefProxy<bevy::math::CompassQuadrant>,
@@ -169,7 +175,11 @@ pub struct CompassQuadrant {}
     bms_lua_path = "crate",
     functions[r#"
 
-    #[lua(as_trait = "std::ops::Mul::<bevy::math::prelude::Dir2>", composite = "mul")]
+    #[lua(
+        as_trait = "std::ops::Mul::<bevy::math::prelude::Dir2>",
+        composite = "mul",
+        metamethod = "Mul",
+    )]
     fn mul(
         _self: LuaReflectValProxy<bevy::math::Isometry2d>,
         rhs: LuaReflectValProxy<bevy::math::prelude::Dir2>,
@@ -178,7 +188,11 @@ pub struct CompassQuadrant {}
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Mul::<bevy::math::Isometry2d>", composite = "mul")]
+    #[lua(
+        as_trait = "std::ops::Mul::<bevy::math::Isometry2d>",
+        composite = "mul",
+        metamethod = "Mul",
+    )]
     fn mul(
         _self: LuaReflectValProxy<bevy::math::Isometry2d>,
         rhs: LuaReflectValProxy<bevy::math::Isometry2d>,
@@ -187,7 +201,11 @@ pub struct CompassQuadrant {}
 "#,
     r#"
 
-    #[lua(as_trait = "std::cmp::PartialEq::<bevy::math::Isometry2d>", composite = "eq")]
+    #[lua(
+        as_trait = "std::cmp::PartialEq::<bevy::math::Isometry2d>",
+        composite = "eq",
+        metamethod = "Eq",
+    )]
     fn eq(
         _self: LuaReflectRefProxy<bevy::math::Isometry2d>,
         other: LuaReflectRefProxy<bevy::math::Isometry2d>,
@@ -293,7 +311,11 @@ pub struct Isometry2d {
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Mul::<bevy::math::Isometry3d>", composite = "mul")]
+    #[lua(
+        as_trait = "std::ops::Mul::<bevy::math::Isometry3d>",
+        composite = "mul",
+        metamethod = "Mul",
+    )]
     fn mul(
         _self: LuaReflectValProxy<bevy::math::Isometry3d>,
         rhs: LuaReflectValProxy<bevy::math::Isometry3d>,
@@ -302,7 +324,11 @@ pub struct Isometry2d {
 "#,
     r#"
 
-    #[lua(as_trait = "std::cmp::PartialEq::<bevy::math::Isometry3d>", composite = "eq")]
+    #[lua(
+        as_trait = "std::cmp::PartialEq::<bevy::math::Isometry3d>",
+        composite = "eq",
+        metamethod = "Eq",
+    )]
     fn eq(
         _self: LuaReflectRefProxy<bevy::math::Isometry3d>,
         other: LuaReflectRefProxy<bevy::math::Isometry3d>,
@@ -311,7 +337,11 @@ pub struct Isometry2d {
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Mul::<bevy::math::prelude::Dir3>", composite = "mul")]
+    #[lua(
+        as_trait = "std::ops::Mul::<bevy::math::prelude::Dir3>",
+        composite = "mul",
+        metamethod = "Mul",
+    )]
     fn mul(
         _self: LuaReflectValProxy<bevy::math::Isometry3d>,
         rhs: LuaReflectValProxy<bevy::math::prelude::Dir3>,
@@ -336,7 +366,11 @@ pub struct Isometry3d {
     bms_lua_path = "crate",
     functions[r#"
 
-    #[lua(as_trait = "std::cmp::PartialEq::<bevy::math::Ray2d>", composite = "eq")]
+    #[lua(
+        as_trait = "std::cmp::PartialEq::<bevy::math::Ray2d>",
+        composite = "eq",
+        metamethod = "Eq",
+    )]
     fn eq(
         _self: LuaReflectRefProxy<bevy::math::Ray2d>,
         other: LuaReflectRefProxy<bevy::math::Ray2d>,
@@ -369,7 +403,11 @@ pub struct Ray2d {
     bms_lua_path = "crate",
     functions[r#"
 
-    #[lua(as_trait = "std::cmp::PartialEq::<bevy::math::Ray3d>", composite = "eq")]
+    #[lua(
+        as_trait = "std::cmp::PartialEq::<bevy::math::Ray3d>",
+        composite = "eq",
+        metamethod = "Eq",
+    )]
     fn eq(
         _self: LuaReflectRefProxy<bevy::math::Ray3d>,
         other: LuaReflectRefProxy<bevy::math::Ray3d>,
@@ -403,7 +441,11 @@ pub struct Ray3d {
     functions[r#"
 /// Rotates the [`Dir2`] using a [`Rot2`].
 
-    #[lua(as_trait = "std::ops::Mul::<bevy::math::prelude::Dir2>", composite = "mul")]
+    #[lua(
+        as_trait = "std::ops::Mul::<bevy::math::prelude::Dir2>",
+        composite = "mul",
+        metamethod = "Mul",
+    )]
     fn mul(
         _self: LuaReflectValProxy<bevy::math::Rot2>,
         direction: LuaReflectValProxy<bevy::math::prelude::Dir2>,
@@ -412,7 +454,11 @@ pub struct Ray3d {
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Mul::<bevy::math::Rot2>", composite = "mul")]
+    #[lua(
+        as_trait = "std::ops::Mul::<bevy::math::Rot2>",
+        composite = "mul",
+        metamethod = "Mul",
+    )]
     fn mul(
         _self: LuaReflectValProxy<bevy::math::Rot2>,
         rhs: LuaReflectValProxy<bevy::math::Rot2>,
@@ -697,7 +743,11 @@ pub struct Ray3d {
 "#,
     r#"
 
-    #[lua(as_trait = "std::cmp::PartialEq::<bevy::math::Rot2>", composite = "eq")]
+    #[lua(
+        as_trait = "std::cmp::PartialEq::<bevy::math::Rot2>",
+        composite = "eq",
+        metamethod = "Eq",
+    )]
     fn eq(
         _self: LuaReflectRefProxy<bevy::math::Rot2>,
         other: LuaReflectRefProxy<bevy::math::Rot2>,
@@ -733,6 +783,7 @@ pub struct Rot2 {
     #[lua(
         as_trait = "std::cmp::PartialEq::<bevy::math::prelude::Dir2>",
         composite = "eq",
+        metamethod = "Eq",
     )]
     fn eq(
         _self: LuaReflectRefProxy<bevy::math::prelude::Dir2>,
@@ -848,7 +899,7 @@ pub struct Rot2 {
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Neg", composite = "neg")]
+    #[lua(as_trait = "std::ops::Neg", composite = "neg", metamethod = "Unm")]
     fn neg(
         _self: LuaReflectValProxy<bevy::math::prelude::Dir2>,
     ) -> LuaReflectValProxy<bevy::math::prelude::Dir2>;
@@ -885,7 +936,7 @@ pub struct Dir2();
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Neg", composite = "neg")]
+    #[lua(as_trait = "std::ops::Neg", composite = "neg", metamethod = "Unm")]
     fn neg(
         _self: LuaReflectValProxy<bevy::math::prelude::Dir3>,
     ) -> LuaReflectValProxy<bevy::math::prelude::Dir3>;
@@ -896,6 +947,7 @@ pub struct Dir2();
     #[lua(
         as_trait = "std::cmp::PartialEq::<bevy::math::prelude::Dir3>",
         composite = "eq",
+        metamethod = "Eq",
     )]
     fn eq(
         _self: LuaReflectRefProxy<bevy::math::prelude::Dir3>,
@@ -1053,6 +1105,7 @@ pub struct Dir3();
     #[lua(
         as_trait = "std::cmp::PartialEq::<bevy::math::prelude::Dir3A>",
         composite = "eq",
+        metamethod = "Eq",
     )]
     fn eq(
         _self: LuaReflectRefProxy<bevy::math::prelude::Dir3A>,
@@ -1062,7 +1115,7 @@ pub struct Dir3();
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Neg", composite = "neg")]
+    #[lua(as_trait = "std::ops::Neg", composite = "neg", metamethod = "Unm")]
     fn neg(
         _self: LuaReflectValProxy<bevy::math::prelude::Dir3A>,
     ) -> LuaReflectValProxy<bevy::math::prelude::Dir3A>;
@@ -1094,6 +1147,7 @@ pub struct Dir3A();
     #[lua(
         as_trait = "std::cmp::PartialEq::<bevy::math::prelude::IRect>",
         composite = "eq",
+        metamethod = "Eq",
     )]
     fn eq(
         _self: LuaReflectRefProxy<bevy::math::prelude::IRect>,
@@ -1290,6 +1344,7 @@ pub struct IRect {
     #[lua(
         as_trait = "std::cmp::PartialEq::<bevy::math::prelude::Rect>",
         composite = "eq",
+        metamethod = "Eq",
     )]
     fn eq(
         _self: LuaReflectRefProxy<bevy::math::prelude::Rect>,
@@ -1492,6 +1547,7 @@ pub struct Rect {
     #[lua(
         as_trait = "std::cmp::PartialEq::<bevy::math::prelude::URect>",
         composite = "eq",
+        metamethod = "Eq",
     )]
     fn eq(
         _self: LuaReflectRefProxy<bevy::math::prelude::URect>,
@@ -1778,6 +1834,7 @@ pub struct BoundingCircle {
     #[lua(
         as_trait = "std::cmp::PartialEq::<bevy::math::primitives::Circle>",
         composite = "eq",
+        metamethod = "Eq",
     )]
     fn eq(
         _self: LuaReflectRefProxy<bevy::math::primitives::Circle>,
@@ -1805,6 +1862,7 @@ pub struct Circle {
     #[lua(
         as_trait = "std::cmp::PartialEq::<bevy::math::primitives::Annulus>",
         composite = "eq",
+        metamethod = "Eq",
     )]
     fn eq(
         _self: LuaReflectRefProxy<bevy::math::primitives::Annulus>,
@@ -1873,6 +1931,7 @@ pub struct Annulus {
     #[lua(
         as_trait = "std::cmp::PartialEq::<bevy::math::primitives::Arc2d>",
         composite = "eq",
+        metamethod = "Eq",
     )]
     fn eq(
         _self: LuaReflectRefProxy<bevy::math::primitives::Arc2d>,
@@ -2008,6 +2067,7 @@ pub struct Arc2d {
     #[lua(
         as_trait = "std::cmp::PartialEq::<bevy::math::primitives::Capsule2d>",
         composite = "eq",
+        metamethod = "Eq",
     )]
     fn eq(
         _self: LuaReflectRefProxy<bevy::math::primitives::Capsule2d>,
@@ -2180,6 +2240,7 @@ pub struct Capsule2d {
     #[lua(
         as_trait = "std::cmp::PartialEq::<bevy::math::primitives::CircularSector>",
         composite = "eq",
+        metamethod = "Eq",
     )]
     fn eq(
         _self: LuaReflectRefProxy<bevy::math::primitives::CircularSector>,
@@ -2319,6 +2380,7 @@ pub struct CircularSector {
     #[lua(
         as_trait = "std::cmp::PartialEq::<bevy::math::primitives::CircularSegment>",
         composite = "eq",
+        metamethod = "Eq",
     )]
     fn eq(
         _self: LuaReflectRefProxy<bevy::math::primitives::CircularSegment>,
@@ -2404,6 +2466,7 @@ pub struct CircularSegment {
     #[lua(
         as_trait = "std::cmp::PartialEq::<bevy::math::primitives::Ellipse>",
         composite = "eq",
+        metamethod = "Eq",
     )]
     fn eq(
         _self: LuaReflectRefProxy<bevy::math::primitives::Ellipse>,
@@ -2431,6 +2494,7 @@ pub struct Ellipse {
     #[lua(
         as_trait = "std::cmp::PartialEq::<bevy::math::primitives::Line2d>",
         composite = "eq",
+        metamethod = "Eq",
     )]
     fn eq(
         _self: LuaReflectRefProxy<bevy::math::primitives::Line2d>,
@@ -2466,6 +2530,7 @@ pub struct Line2d {
     #[lua(
         as_trait = "std::cmp::PartialEq::<bevy::math::primitives::Plane2d>",
         composite = "eq",
+        metamethod = "Eq",
     )]
     fn eq(
         _self: LuaReflectRefProxy<bevy::math::primitives::Plane2d>,
@@ -2501,6 +2566,7 @@ pub struct Plane2d {
     #[lua(
         as_trait = "std::cmp::PartialEq::<bevy::math::primitives::Rectangle>",
         composite = "eq",
+        metamethod = "Eq",
     )]
     fn eq(
         _self: LuaReflectRefProxy<bevy::math::primitives::Rectangle>,
@@ -2562,6 +2628,7 @@ pub struct Rectangle {
     #[lua(
         as_trait = "std::cmp::PartialEq::<bevy::math::primitives::RegularPolygon>",
         composite = "eq",
+        metamethod = "Eq",
     )]
     fn eq(
         _self: LuaReflectRefProxy<bevy::math::primitives::RegularPolygon>,
@@ -2726,6 +2793,7 @@ pub struct RegularPolygon {
     #[lua(
         as_trait = "std::cmp::PartialEq::<bevy::math::primitives::Rhombus>",
         composite = "eq",
+        metamethod = "Eq",
     )]
     fn eq(
         _self: LuaReflectRefProxy<bevy::math::primitives::Rhombus>,
@@ -2761,6 +2829,7 @@ pub struct Rhombus {
     #[lua(
         as_trait = "std::cmp::PartialEq::<bevy::math::primitives::Segment2d>",
         composite = "eq",
+        metamethod = "Eq",
     )]
     fn eq(
         _self: LuaReflectRefProxy<bevy::math::primitives::Segment2d>,
@@ -2807,6 +2876,7 @@ pub struct Segment2d {
     #[lua(
         as_trait = "std::cmp::PartialEq::<bevy::math::primitives::Triangle2d>",
         composite = "eq",
+        metamethod = "Eq",
     )]
     fn eq(
         _self: LuaReflectRefProxy<bevy::math::primitives::Triangle2d>,
@@ -2957,6 +3027,7 @@ pub struct BoundingSphere {
     #[lua(
         as_trait = "std::cmp::PartialEq::<bevy::math::primitives::Sphere>",
         composite = "eq",
+        metamethod = "Eq",
     )]
     fn eq(
         _self: LuaReflectRefProxy<bevy::math::primitives::Sphere>,
@@ -3033,6 +3104,7 @@ pub struct Sphere {
     #[lua(
         as_trait = "std::cmp::PartialEq::<bevy::math::primitives::Cuboid>",
         composite = "eq",
+        metamethod = "Eq",
     )]
     fn eq(
         _self: LuaReflectRefProxy<bevy::math::primitives::Cuboid>,
@@ -3060,6 +3132,7 @@ pub struct Cuboid {
     #[lua(
         as_trait = "std::cmp::PartialEq::<bevy::math::primitives::Cylinder>",
         composite = "eq",
+        metamethod = "Eq",
     )]
     fn eq(
         _self: LuaReflectRefProxy<bevy::math::primitives::Cylinder>,
@@ -3158,6 +3231,7 @@ pub struct Cylinder {
     #[lua(
         as_trait = "std::cmp::PartialEq::<bevy::math::primitives::Capsule3d>",
         composite = "eq",
+        metamethod = "Eq",
     )]
     fn eq(
         _self: LuaReflectRefProxy<bevy::math::primitives::Capsule3d>,
@@ -3186,6 +3260,7 @@ pub struct Capsule3d {
     #[lua(
         as_trait = "std::cmp::PartialEq::<bevy::math::primitives::Cone>",
         composite = "eq",
+        metamethod = "Eq",
     )]
     fn eq(
         _self: LuaReflectRefProxy<bevy::math::primitives::Cone>,
@@ -3269,6 +3344,7 @@ pub struct Cone {
     #[lua(
         as_trait = "std::cmp::PartialEq::<bevy::math::primitives::ConicalFrustum>",
         composite = "eq",
+        metamethod = "Eq",
     )]
     fn eq(
         _self: LuaReflectRefProxy<bevy::math::primitives::ConicalFrustum>,
@@ -3306,6 +3382,7 @@ pub struct ConicalFrustum {
     #[lua(
         as_trait = "std::cmp::PartialEq::<bevy::math::primitives::InfinitePlane3d>",
         composite = "eq",
+        metamethod = "Eq",
     )]
     fn eq(
         _self: LuaReflectRefProxy<bevy::math::primitives::InfinitePlane3d>,
@@ -3341,6 +3418,7 @@ pub struct InfinitePlane3d {
     #[lua(
         as_trait = "std::cmp::PartialEq::<bevy::math::primitives::Line3d>",
         composite = "eq",
+        metamethod = "Eq",
     )]
     fn eq(
         _self: LuaReflectRefProxy<bevy::math::primitives::Line3d>,
@@ -3386,6 +3464,7 @@ pub struct Line3d {
     #[lua(
         as_trait = "std::cmp::PartialEq::<bevy::math::primitives::Segment3d>",
         composite = "eq",
+        metamethod = "Eq",
     )]
     fn eq(
         _self: LuaReflectRefProxy<bevy::math::primitives::Segment3d>,
@@ -3444,6 +3523,7 @@ pub struct Segment3d {
     #[lua(
         as_trait = "std::cmp::PartialEq::<bevy::math::primitives::Torus>",
         composite = "eq",
+        metamethod = "Eq",
     )]
     fn eq(
         _self: LuaReflectRefProxy<bevy::math::primitives::Torus>,
@@ -3521,6 +3601,7 @@ pub struct Torus {
     #[lua(
         as_trait = "std::cmp::PartialEq::<bevy::math::primitives::Triangle3d>",
         composite = "eq",
+        metamethod = "Eq",
     )]
     fn eq(
         _self: LuaReflectRefProxy<bevy::math::primitives::Triangle3d>,
@@ -3933,6 +4014,7 @@ pub struct BoundingSphereCast {
     #[lua(
         as_trait = "std::cmp::PartialEq::<bevy::math::curve::interval::Interval>",
         composite = "eq",
+        metamethod = "Eq",
     )]
     fn eq(
         _self: LuaReflectRefProxy<bevy::math::curve::interval::Interval>,
@@ -3991,7 +4073,7 @@ pub struct Interval {}
 "#,
     r#"
 
-    #[lua(as_trait = "std::ops::Neg", composite = "neg")]
+    #[lua(as_trait = "std::ops::Neg", composite = "neg", metamethod = "Unm")]
     fn neg(
         _self: LuaReflectValProxy<bevy::math::FloatOrd>,
     ) -> LuaReflectValProxy<bevy::math::FloatOrd>;
@@ -3999,7 +4081,11 @@ pub struct Interval {}
 "#,
     r#"
 
-    #[lua(as_trait = "std::cmp::PartialEq::<bevy::math::FloatOrd>", composite = "eq")]
+    #[lua(
+        as_trait = "std::cmp::PartialEq::<bevy::math::FloatOrd>",
+        composite = "eq",
+        metamethod = "Eq",
+    )]
     fn eq(
         _self: LuaReflectRefProxy<bevy::math::FloatOrd>,
         other: LuaReflectRefProxy<bevy::math::FloatOrd>,
@@ -4040,6 +4126,7 @@ pub struct FloatOrd(f32);
     #[lua(
         as_trait = "std::cmp::PartialEq::<bevy::math::primitives::Plane3d>",
         composite = "eq",
+        metamethod = "Eq",
     )]
     fn eq(
         _self: LuaReflectRefProxy<bevy::math::primitives::Plane3d>,
@@ -4088,6 +4175,7 @@ pub struct Plane3d {
     #[lua(
         as_trait = "std::cmp::PartialEq::<bevy::math::primitives::Tetrahedron>",
         composite = "eq",
+        metamethod = "Eq",
     )]
     fn eq(
         _self: LuaReflectRefProxy<bevy::math::primitives::Tetrahedron>,
@@ -4123,6 +4211,7 @@ pub struct Tetrahedron {
     #[lua(
         as_trait = "std::cmp::PartialEq::<bevy::math::curve::easing::EaseFunction>",
         composite = "eq",
+        metamethod = "Eq",
     )]
     fn eq(
         _self: LuaReflectRefProxy<bevy::math::curve::easing::EaseFunction>,
