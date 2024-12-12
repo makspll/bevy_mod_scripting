@@ -4,47 +4,40 @@
 //! reflection gives us access to `dyn PartialReflect` objects via their type name,
 //! Scripting languages only really support `Clone` objects so if we want to support references,
 //! we need wrapper types which have owned and ref variants.
-use itertools::Itertools;
-use lockable::LockableHashMap;
-
-pub use itertools::Either;
-
 use std::{
     any::TypeId,
-    cell::UnsafeCell,
-    error::Error,
     fmt::Debug,
-    marker::PhantomData,
-    ops::Index,
-    sync::{Arc, Weak},
-    time::Duration,
+    sync::Arc,
 };
-
 use bevy::{
     ecs::{
         change_detection::MutUntyped,
-        component::{Component, ComponentId},
+        component::ComponentId,
         entity::Entity,
-        reflect::AppTypeRegistry,
-        system::Resource,
-        world::{unsafe_world_cell::UnsafeWorldCell, Mut, World},
-    },
-    ptr::Ptr,
-    reflect::{
-        Access, AccessError, DynamicEnum, DynamicTuple, ParsedPath, PartialReflect, Reflect, ReflectFromPtr, ReflectMut, ReflectPath, ReflectPathError, ReflectRef, TypeData, TypeInfo, TypeRegistry
-    },
+        world::unsafe_world_cell::UnsafeWorldCell,
+    }, prelude::{Component, Resource}, ptr::Ptr, reflect::{
+        func::{args::ArgInfo, ArgValue},
+        ParsedPath,
+        PartialReflect,
+        ReflectFromPtr,
+        ReflectMut,
+        ReflectPath,
+        ReflectPathError,
+        ReflectRef,
+        TypeData,
+    }
 };
-use smallvec::SmallVec;
-
+use itertools::Either;
 use crate::{
-    bindings::{ReflectAllocation, ReflectAllocationId},
-    prelude::{ReflectAllocator, ScriptError, ScriptResult}, reflection_extensions::{PartialReflectExt, TypeIdExtensions},
+    bindings::{pretty_print::DisplayWithWorld, ReflectAllocationId},
+    prelude::{ReflectAllocator, ScriptError, ScriptResult},
+    reflection_extensions::PartialReflectExt,
+    with_access_read,
+    with_access_write,
 };
-
 use super::{
-    proxy::{Proxy, Unproxy},
-    ReflectAccessId, ReflectAccessKind, WorldAccessGuard, WorldAccessWrite, DEFAULT_INTERVAL,
-    DEFAULT_TIMEOUT,
+    access_map::{AccessMapKey, ReflectAccessId},
+    WorldAccessGuard,
 };
 
 /// An accessor to a `dyn PartialReflect` struct, stores a base ID of the type and a reflection path
@@ -80,7 +73,7 @@ impl ReflectReference {
     /// If this is a reference to something with a length accessible via reflection, returns that length.
     pub fn len(&self, world: &WorldAccessGuard) -> ScriptResult<Option<usize>> {
         self
-            .with_reflect(world, |r, _, _| {
+            .with_reflect(world, |r| {
                 match r.reflect_ref() {
                     bevy::reflect::ReflectRef::Struct(s) => Some(s.field_len()),
                     bevy::reflect::ReflectRef::TupleStruct(ts) => Some(ts.field_len()),
@@ -90,7 +83,7 @@ impl ReflectReference {
                     bevy::reflect::ReflectRef::Map(m) => Some(m.len( )),
                     bevy::reflect::ReflectRef::Set(s) => Some(s.len()),
                     bevy::reflect::ReflectRef::Enum(e) => Some(e.field_len()),
-                    bevy::reflect::ReflectRef::Opaque(_) => None,
+                    _ => None,
                 }
             })
     }
@@ -125,104 +118,87 @@ impl ReflectReference {
         }
     }
 
+    pub fn new_resource_ref<T: Resource>(world: &WorldAccessGuard) -> Option<Self> {
+        let reflect_id = ReflectAccessId::for_resource::<T>(&world.as_unsafe_world_cell())?;
+        Some(Self {
+            base: ReflectBaseType {
+                type_id: TypeId::of::<T>(),
+                base_id: ReflectBase::Resource(reflect_id.into()),
+            },
+            reflect_path: Vec::default(),
+        })
+    }
+
+    pub fn new_component_ref<T: Component>(
+        entity: Entity,
+        world: &WorldAccessGuard,
+    ) -> Option<Self> {
+        let reflect_id = ReflectAccessId::for_component::<T>(&world.as_unsafe_world_cell())?;
+        Some(Self {
+            base: ReflectBaseType {
+                type_id: TypeId::of::<T>(),
+                base_id: ReflectBase::Component(entity, reflect_id.into()),
+            },
+            reflect_path: Vec::default(),
+        })
+    }
+
     /// Indexes into the reflect path inside this reference.
     /// You can use [`Self::reflect`] and [`Self::reflect_mut`] to get the actual value.
     pub fn index_path<T: Into<ReflectionPathElem>>(&mut self, index: T) {
         self.reflect_path.push(index.into());
     }
 
-    /// A form of [`Self::reflect`] which does the access checks for you.
-    #[track_caller]
-    pub fn with_reflect<O, F: FnOnce(&dyn PartialReflect, &TypeRegistry , &mut ReflectAllocator) -> O>(
+    /// The way to access the value of the reference, that is the pointed-to value.
+    /// This method is safe to use as it ensures no-one else has aliasing access to the value at the same time.
+    /// 
+    /// # Panics
+    /// - if the value is aliased and the access is not allowed
+    pub fn with_reflect<O, F: FnOnce(&dyn PartialReflect) -> O>(
         &self,
         world: &WorldAccessGuard,
         f: F,
     ) -> ScriptResult<O> {
-        world.with_allocator_and_type_registry(|world, type_registry, mut allocator| {
-            let type_registry = type_registry.write();
-            self.with_reflect_only(world, &type_registry, &mut allocator, f)
+        let access_id = ReflectAccessId::for_reference(self.base.base_id.clone()).ok_or_else(|| ScriptError::new_reflection_error(""))?;
+        with_access_read!(world.0.accesses, access_id ,"could not access reflect reference",{
+            unsafe { self.reflect_unsafe(world) }
+            .map(f)
         })
     }
 
-    pub fn with_reflect_only<O, F: FnOnce(&dyn PartialReflect, &TypeRegistry , &mut ReflectAllocator) -> O>(
-        &self,
-        world: &WorldAccessGuard,
-        type_registry: &TypeRegistry,
-        allocator: &mut ReflectAllocator,
-        f: F,
-    ) -> ScriptResult<O> {
-        let access = world
-            .get_access_timeout(
-                self.base.base_id.get_reflect_access_id(),
-                DEFAULT_TIMEOUT,
-                DEFAULT_INTERVAL,
-            );
 
-        let reflect = self
-            .reflect(
-                world.as_unsafe_world_cell(),
-                &access,
-                type_registry,
-                Some(allocator),
-            ).map(|r| f(r, type_registry, allocator));
-
-        world.release_access(access);
-        reflect
-    }
-
-    #[track_caller]
-    pub fn with_reflect_mut<O, F: FnOnce(&mut dyn PartialReflect, &TypeRegistry, &mut ReflectAllocator) -> O>(
+    /// The way to access the value of the reference, that is the pointed-to value.
+    /// This method is safe to use as it ensures no-one else has aliasing access to the value at the same time.
+    /// 
+    /// # Panics
+    /// - if the value is aliased and the access is not allowed
+    pub fn with_reflect_mut<O, F: FnOnce(&mut dyn PartialReflect) -> O>(
         &self,
         world: &WorldAccessGuard,
         f: F,
     ) -> ScriptResult<O> {
-        world.with_allocator_and_type_registry(|_, type_registry, mut allocator| {
-            let type_registry = type_registry.read();
-            self.with_reflect_mut_only(world, &type_registry,  &mut allocator, f)
+        let access_id = ReflectAccessId::for_reference(self.base.base_id.clone()).ok_or_else(|| ScriptError::new_reflection_error(""))?;
+        with_access_write!(world.0.accesses, access_id, "Could not access reflect reference mutably", {
+            unsafe { self.reflect_mut_unsafe(world) }
+            .map(f)
         })
     }
 
-    pub fn with_reflect_mut_only<O, F: FnOnce(&mut dyn PartialReflect, &TypeRegistry, &mut ReflectAllocator) -> O>(
-        &self,
-        world: &WorldAccessGuard,
-        type_registry: &TypeRegistry,
-        allocator: &mut ReflectAllocator,
-        f: F,
-    ) -> ScriptResult<O> {
-        let mut access = world
-            .get_access_timeout(
-                self.base.base_id.get_reflect_access_id(),
-                DEFAULT_TIMEOUT,
-                DEFAULT_INTERVAL,
-            );
 
-        let reflect = self
-            .reflect_mut(
-                world.as_unsafe_world_cell(),
-                &mut access,
-                type_registry,
-                Some(allocator),
-            ).map(|r| f(r, type_registry, allocator));
-        
-        world.release_access(access);
-        reflect
-    }
-
-
-    fn tail_type_id(&self, world: &WorldAccessGuard) -> ScriptResult<Option<TypeId>> {
-        self.with_reflect(world, |r, _, _| {
+    pub fn tail_type_id(&self, world: &WorldAccessGuard) -> ScriptResult<Option<TypeId>> {
+        self.with_reflect(world, |r| {
             r.get_represented_type_info().map(|t| t.type_id())
         })
     }
 
-    fn element_type_id(&self, world: &WorldAccessGuard) -> ScriptResult<Option<TypeId>> {
-        self.with_reflect(world, |r, _, _| {
+    pub fn element_type_id(&self, world: &WorldAccessGuard) -> ScriptResult<Option<TypeId>> {
+        self.with_reflect(world, |r| {
             r.element_type_id()
         })
     }
 
-    fn key_type_id(&self, world: &WorldAccessGuard) -> ScriptResult<Option<TypeId>> {
-        self.with_reflect(world, |r, _, _| {
+    pub fn key_type_id(&self, world: &WorldAccessGuard) -> ScriptResult<Option<TypeId>> {
+        self.with_reflect(world, |r| {
             r.key_type_id()
         })
     }
@@ -242,16 +218,13 @@ impl ReflectReference {
         D2: TypeData + Clone,
     {
         if let Some(type_id) = type_id {
-
-            if let Some(type_data) = world.with_resource(|_, type_registry: Mut<AppTypeRegistry>| {
-                let type_registry = type_registry.read();
-                type_registry.get_type_data::<D>(type_id).cloned()
-            }) {
+            let type_registry = world.type_registry();
+            let type_registry = type_registry.read();
+            if let Some(type_data) = type_registry.get_type_data::<D>(type_id).cloned() {
+                drop(type_registry);
                 return Ok(map(Some(Either::Left(type_data))));
-            } else if let Some(type_data) = world.with_resource(|_, type_registry: Mut<AppTypeRegistry>| {
-                let type_registry = type_registry.read();
-                type_registry.get_type_data::<D2>(type_id).cloned()
-            }) {
+            } else if let Some(type_data) = type_registry.get_type_data::<D2>(type_id).cloned() {
+                drop(type_registry);
                 return Ok(map(Some(Either::Right(type_data))));
             }
         }
@@ -259,112 +232,114 @@ impl ReflectReference {
         Ok(map(None))
     }
 
+    /// Converts the reference into an argument that can be consumed by a dynamic function.
+    /// 
+    /// In the case that the underlying value is dynamic, this will convert to an [`ArgValue::Owned`] Which notably will not be directly usable by the function.
+    /// To use the output you must make sure your calling mechanism is lenient enough to accept Owned variants in place of refs/muts.
+    /// 
+    /// Or alternatively convert any non concrete types to concrete types using `from_reflect` before calling this function.
+    /// 
+    /// # Safety
+    /// - The caller must ensure this reference has permission to access the underlying value
+    pub unsafe fn into_arg_value<'w>(self, world: &'w WorldAccessGuard, arg_info: &ArgInfo) -> ScriptResult<ArgValue<'w>> {
+        // arg values need to always return a reference to a concrete type `T`, so we need a FromReflect bound
+        // to ensure we can convert the `dyn PartialReflect` into a concrete type
+        
+        match arg_info.ownership() {
+            bevy::reflect::func::args::Ownership::Ref => {
+                
+                let mut ref_ = unsafe {self.reflect_unsafe(world)?};
 
-    /// Returns `Ok(())` if the given access is sufficient to read the value or an appropriate error otherwise
-    pub fn expect_read_access<'w>(
-        &self,
-        access: &WorldAccessWrite<'w>,
-        type_registry: &TypeRegistry,
-        allocator: Option<&ReflectAllocator>,
-        world: UnsafeWorldCell<'w>,
-    ) -> ScriptResult<()> {
-        if !access.can_read(self.base.base_id.get_reflect_access_id()) {
-            Err(ScriptError::new_reflection_error(format!(
-                "Invalid access when trying to read: `{}`, instead got access to `{}`",
-                self.base.display_with_type_name(type_registry),
-                access.to_enriched_str(type_registry, allocator, world)
-            )))
-        } else {
-            Ok(())
+                if ref_.is_dynamic() {
+                    let allocator = world.allocator();
+                    let mut allocator = allocator.write();
+                    
+                    let boxed = <dyn PartialReflect as PartialReflectExt>::from_reflect(ref_, world)?.into_partial_reflect();
+                    let (_, allocation) = allocator.allocate_boxed(boxed); 
+                    // Safety:
+                    // we are the only ones with this id, nobody else can touch this.
+                    // we only need to make sure this doesn't get dropped before we're done with it
+                    // the only time that will happen is when ReflectAllocator::clean_garbage_allocations is called
+                    // this will not happen while script event handlers are running
+                    ref_ = unsafe { &*allocation.get_ptr() };
+                }
+                Ok(ArgValue::Ref(ref_))
+            },
+            bevy::reflect::func::args::Ownership::Mut => {
+                
+                let mut mut_ = unsafe {self.reflect_mut_unsafe(world)?};
+
+                if mut_.is_dynamic() {
+                    let allocator = world.allocator();
+                    let mut allocator = allocator.write();
+                    
+                    let boxed = <dyn PartialReflect as PartialReflectExt>::from_reflect(mut_, world)?.into_partial_reflect();
+                    let (_, allocation) = allocator.allocate_boxed(boxed); 
+                    // Safety:
+                    // same as the ref branch
+                    mut_ = unsafe { &mut *allocation.get_ptr() };
+                }
+
+                Ok(ArgValue::Mut(mut_))
+                
+            }
+            _ => {
+                let ref_ = unsafe {self.reflect_unsafe(world)?};
+                Ok(ArgValue::Owned(<dyn PartialReflect as PartialReflectExt>::from_reflect(ref_, world)?.into_partial_reflect()))
+            }
         }
+        
+
     }
 
-    /// Returns `Ok(())` if the given access is sufficient to write to the value or an appropriate error otherwise
-    /// Note that this is not sufficient for write access, you also need to ensure the [`WorldAccessWrite`] won't be used to access the same value mutably elsewhere,
-    /// if you have a `&mut WorldAccessWrite` you can guarantee this statically. This function just checks that the access itself is for the right base with write access
-    pub fn expect_write_access<'w>(
-        &self,
-        access: &WorldAccessWrite<'w>,
-        type_registry: &TypeRegistry,
-        allocator: Option<&ReflectAllocator>,
-        world: UnsafeWorldCell<'w>,
-    ) -> ScriptResult<()> {
-        if !access.can_read(self.base.base_id.get_reflect_access_id()) {
-            Err(ScriptError::new_reflection_error(format!(
-                "Invalid access when trying to write: `{}`, instead got access to `{}`",
-                self.base.display_with_type_name(type_registry),
-                access.to_enriched_str(type_registry, allocator, world)
-            )))
-        } else {
-            Ok(())
-        }
-    }
-
-    /// Retrieves a reference to the underlying `dyn PartialReflect` type valid for the 'w lifetime of the world cell.
-    /// If the underlying componentId is not the same as the one we have access to, an error is returned.
-    pub fn reflect<'w, 'c>(
-        &self,
-        world: UnsafeWorldCell<'w>,
-        access: &'c WorldAccessWrite<'w>,
-        type_registry: &TypeRegistry,
-        allocator: Option<&ReflectAllocator>,
-    ) -> ScriptResult<&'c dyn PartialReflect> {
-        self.expect_read_access(access, type_registry, allocator, world)?;
-        // Safety: since we have read access to the underlying componentId we can safely access the component
-        // and we can return a reference tied to its lifetime, which will prevent invalid aliasing
-        unsafe { self.reflect_unsafe(world, type_registry, allocator) }
-    }
-
-    /// Retrieves a reference to the underlying `dyn PartialReflect` type valid for the 'w lifetime of the world cell.
-    /// If the underlying componentId is not the same as the one we have access to, an error is returned.
-    ///
-    /// If we are accessing a component or resource, it's marked as changed
-    pub fn reflect_mut<'w, 'c>(
-        &self,
-        world: UnsafeWorldCell<'w>,
-        access: &'c mut WorldAccessWrite<'w>,
-        type_registry: &TypeRegistry,
-        allocator: Option<&ReflectAllocator>,
-    ) -> ScriptResult<&'c mut dyn PartialReflect> {
-        self.expect_write_access(access, type_registry, allocator, world)?;
-        // Safety: since we have write access to the underlying reflect access id we can safely access the component
-        // and we can return a reference tied to its lifetime, which will prevent invalid aliasing
-        unsafe { self.reflect_mut_unsafe(world, type_registry, allocator) }
-    }
 
     /// Retrieves a reference to the underlying `dyn PartialReflect` type valid for the 'w lifetime of the world cell
     /// # Safety
+    /// 
     /// - The caller must ensure the cell has permission to access the underlying value
-    /// - The caller must ensure no aliasing mut references to the same value exist at all at the same time
+    /// - The caller must ensure no aliasing references to the same value exist at all at the same time
+    /// 
+    /// To do this safely you need to use [`WorldAccessGuard::claim_read_access`] or [`WorldAccessGuard::claim_global_access`] to ensure nobody else is currently accessing the value.
     pub unsafe fn reflect_unsafe<'w>(
         &self,
-        world: UnsafeWorldCell<'w>,
-        type_registry: &TypeRegistry,
-        allocator: Option<&ReflectAllocator>,
+        world: &WorldAccessGuard<'w>
     ) -> ScriptResult<&'w dyn PartialReflect> {
+        
         if let ReflectBase::Owned(id) = &self.base.base_id {
-            let allocator =
-                allocator.ok_or_else(|| ScriptError::new_reflection_error("Allocator missing"))?;
+            
+            let allocator = world.allocator();
+            let allocator = allocator.read();
+            
             let arc = allocator
-                .get(*id)
+                .get(id)
                 .ok_or_else(|| ScriptError::new_reflection_error("Missing allocation"))?;
 
             // safety: caller promises it's fine :)
             return self.walk_path(unsafe { &*arc.get_ptr() });
         };
+
+        
+        let type_registry = world.type_registry();
+        let type_registry = type_registry.read();
+        
+
         // all Reflect types should have this derived
-        let from_ptr_data: &ReflectFromPtr = type_registry
-            .get_type_data(self.base.type_id)
-            .expect("FromPtr is not registered for this type, cannot retrieve reflect reference");
+        let from_ptr_data: &ReflectFromPtr = 
+            type_registry
+                .get_type_data(self.base.type_id)
+                .ok_or_else(|| ScriptError::new_reflection_error(
+                    format!("FromPtr is not registered for {}", self.display_with_world(world)))
+                )?;
 
         let ptr = self
             .base
             .base_id
             .clone()
-            .into_ptr(world)
+            .into_ptr(world.as_unsafe_world_cell())
             .ok_or_else(|| 
                 ScriptError::new_reflection_error(
-                    format!("Base reference is invalid, is the component/resource initialized? does the entity exist?. When accessing: `{}`", self.base.display_with_type_name(type_registry))))?;
+                    format!("Base reference is invalid, is the component/resource initialized? does the entity exist?. When accessing: `{}`", self.base.display_with_world(world))))?;
+        
 
         // (Ptr) Safety: we use the same type_id to both
         // 1) retrieve the ptr
@@ -374,9 +349,14 @@ impl ReflectReference {
         debug_assert_eq!(
             from_ptr_data.type_id(),
             self.base.type_id,
-            "Invariant violated"
+            "Safety invariant violated"
         );
+
         let base = unsafe { from_ptr_data.as_reflect(ptr) };
+        
+
+        drop(type_registry);
+
         self.walk_path(base.as_partial_reflect())
     }
 
@@ -384,38 +364,42 @@ impl ReflectReference {
     /// # Safety
     /// - The caller must ensure the cell has permission to access the underlying value
     /// - The caller must ensure no other references to the same value exist at all at the same time (even if you have the correct access)
+    /// 
+    /// To do this safely you need to use [`WorldAccessGuard::claim_write_access`] or [`WorldAccessGuard::claim_global_access`] to ensure nobody else is currently accessing the value.
     pub unsafe fn reflect_mut_unsafe<'w>(
         &self,
-        world: UnsafeWorldCell<'w>,
-        type_registry: &TypeRegistry,
-        allocator: Option<&ReflectAllocator>,
+        world: &WorldAccessGuard<'w>
     ) -> ScriptResult<&'w mut dyn PartialReflect> {
         if let ReflectBase::Owned(id) = &self.base.base_id {
-            let allocator =
-                allocator.ok_or_else(|| ScriptError::new_reflection_error("Allocator missing"))?;
-
+            let allocator = world.allocator();
+            let allocator = allocator.read();
             let arc = allocator
-                .get_mut(*id)
+                .get_mut(id)
                 .ok_or_else(|| ScriptError::new_reflection_error("Missing allocation"))?;
 
             // Safety: caller promises this is fine :)
             return self.walk_path_mut(unsafe { &mut *arc.get_ptr() });
         };
 
+
+        let type_registry = world.type_registry();
+        let type_registry = type_registry.read();
+
         // all Reflect types should have this derived
         let from_ptr_data: &ReflectFromPtr = type_registry
             .get_type_data(self.base.type_id)
-            .expect("FromPtr is not registered for this type, cannot retrieve reflect reference");
+            .ok_or_else(|| 
+                ScriptError::new_reflection_error(
+                    format!("Base reference is invalid, is the component/resource initialized? When accessing: `{}`", self.base.display_with_world(world))))?;
 
         let ptr = self
          .base
          .base_id
          .clone()
-         .into_ptr_mut(world)
+         .into_ptr_mut(world.as_unsafe_world_cell())
          .ok_or_else(|| 
             ScriptError::new_reflection_error(
-                format!("Base reference is invalid, is the component/resource initialized? does the entity exist?. When accessing: `{}`", self.base.display_with_type_name(type_registry))))?
-         .into_inner();
+                format!("Base reference is invalid, is the component/resource initialized? does the entity exist?. When accessing: `{}`", self.base.display_with_world(world))))?;
 
         // (Ptr) Safety: we use the same type_id to both
         // 1) retrieve the ptr
@@ -427,7 +411,8 @@ impl ReflectReference {
             self.base.type_id,
             "Invariant violated"
         );
-        let base = unsafe { from_ptr_data.as_reflect_mut(ptr) };
+        let base = unsafe { from_ptr_data.as_reflect_mut(ptr.into_inner()) };
+        drop(type_registry);
         self.walk_path_mut(base.as_partial_reflect_mut())
     }
 
@@ -459,27 +444,6 @@ impl ReflectReference {
 pub struct ReflectBaseType {
     pub type_id: TypeId,
     pub base_id: ReflectBase,
-}
-
-impl ReflectBaseType {
-    pub fn type_name(type_id: TypeId, type_registry: &TypeRegistry) -> &'static str {
-        type_registry
-            .get_type_info(type_id)
-            .map(TypeInfo::type_path)
-            .unwrap_or("<Unregistered TypeId>")
-    }
-
-    pub fn display_with_type_name(&self, type_registry: &TypeRegistry) -> String {
-        let type_name = Self::type_name(self.type_id, type_registry);
-
-        let kind = match self.base_id {
-            ReflectBase::Component(_, _) => "Component",
-            ReflectBase::Resource(_) => "Resource",
-            ReflectBase::Owned(_) => "Allocation",
-        };
-
-        format!("{}({})", kind, type_name)
-    }
 }
 
 /// The Id of the kind of reflection base being pointed to
@@ -528,28 +492,17 @@ impl ReflectBase {
             _ => None,
         }
     }
-
-    pub fn get_reflect_access_id(&self) -> ReflectAccessId {
-        match self {
-            ReflectBase::Component(_, cid) | ReflectBase::Resource(cid) => (*cid).into(),
-            ReflectBase::Owned(id) => (*id).into(),
-        }
-    }
 }
 
 fn map_key_to_concrete(key: &str, key_type_id: TypeId) -> Option<Box<dyn PartialReflect>> {
-    let string_type_id = std::any::TypeId::of::<String>();
-    let usize_type_id = std::any::TypeId::of::<usize>();
-    let f32_type_id = std::any::TypeId::of::<f32>();
-    let bool_type_id = std::any::TypeId::of::<bool>();
 
 
     match key_type_id {
-        // string_type_id => Some(Box::new(key.to_owned())),
-        usize_type_id => key.parse::<usize>().ok().map(|u| Box::new(u) as Box<dyn PartialReflect>),
-        f32_type_id => key.parse::<f32>().ok().map(|f| Box::new(f) as Box<dyn PartialReflect>),
-        bool_type_id => key.parse::<bool>().ok().map(|b| Box::new(b) as Box<dyn PartialReflect>),
-        _ => return None,
+        _ if key_type_id == std::any::TypeId::of::<String>() => Some(Box::new(key.to_owned())),
+        _ if key_type_id == std::any::TypeId::of::<usize>()  => key.parse::<usize>().ok().map(|u| Box::new(u) as Box<dyn PartialReflect>),
+        _ if key_type_id == std::any::TypeId::of::<f32>() => key.parse::<f32>().ok().map(|f| Box::new(f) as Box<dyn PartialReflect>),
+        _ if key_type_id == std::any::TypeId::of::<bool>() => key.parse::<bool>().ok().map(|b| Box::new(b) as Box<dyn PartialReflect>),
+        _ => None,
     }
 }
 
@@ -620,8 +573,8 @@ impl<'a> ReflectPath<'a> for &'a ReflectionPathElem {
                 if let ReflectRef::Map(map) = root.reflect_ref() {
                     let key_type_id = map.key_type_id().expect("Expected map keys to represent a type to be able to assign values");
                     let key = map_key_to_concrete(key, key_type_id)
-                        .ok_or_else(|| ReflectPathError::InvalidDowncast)?;
-                    map.get(key.as_ref()).ok_or_else(|| ReflectPathError::InvalidDowncast)
+                        .ok_or(ReflectPathError::InvalidDowncast)?;
+                    map.get(key.as_ref()).ok_or(ReflectPathError::InvalidDowncast)
                 } else {
                     Err(ReflectPathError::InvalidDowncast)
                 }
@@ -642,8 +595,8 @@ impl<'a> ReflectPath<'a> for &'a ReflectionPathElem {
                 if let ReflectMut::Map(map) = root.reflect_mut() {
                     let key_type_id = map.key_type_id().expect("Expected map keys to represent a type to be able to assign values");
                     let key = map_key_to_concrete(key, key_type_id)
-                        .ok_or_else(|| ReflectPathError::InvalidDowncast)?;
-                    map.get_mut(key.as_ref()).ok_or_else(|| ReflectPathError::InvalidDowncast)
+                        .ok_or(ReflectPathError::InvalidDowncast)?;
+                    map.get_mut(key.as_ref()).ok_or(ReflectPathError::InvalidDowncast)
                 } else {
                     Err(ReflectPathError::InvalidDowncast)
                 }
@@ -760,270 +713,4 @@ impl Iterator for ReflectRefIter {
 
         Some(result)
     }
-}
-
-pub struct ReflectReferencePrinter{
-    pub(crate) reference: ReflectReference,
-}
-
-#[derive(Clone, Copy, Debug)]
-enum BracketType {
-    Square,
-    Curly,
-    Round,
-}
-
-impl BracketType {
-
-    fn open(self) -> char {
-        match self {
-            BracketType::Square => '[',
-            BracketType::Curly => '{',
-            BracketType::Round => '(',
-        }
-    }
-
-    fn close(self) -> char {
-        match self {
-            BracketType::Square => ']',
-            BracketType::Curly => '}',
-            BracketType::Round => ')',
-        }
-    }
-
-    fn surrounded<F: FnOnce(&mut String)>(self, output: &mut String, f: F) {
-        output.push(self.open());
-        f(output);
-        output.push(self.close());
-    }
-}
-
-macro_rules! downcast_case {
-    ($id:ident, $out:ident, $t:path) => {
-        {
-            $out.push_str(stringify!($t));
-            $out.push('(');
-            if let Some($id) = $id.as_partial_reflect().try_downcast_ref::<$t>() {
-                $out.push_str(&format!("{:?}", $id));
-            } else {
-                $out.push_str("<Could not downcast>");
-            }
-            $out.push(')');
-        }
-    }
-}
-
-impl ReflectReferencePrinter {
-    const UNREGISTERED_TYPE: &'static str = "<Unregistered TypeId>";
-    const UNKNOWN_FIELD: &'static str = "<Unknown Field>";
-
-    pub fn new(reference: ReflectReference) -> Self {
-        Self { reference }
-    }
-    
-    /// Given a reflect reference, prints the type path of the reference resolving the type names with short names.
-    /// I.e. `MyType(Component).field_name[0].field_name[1] -> FieldType::Name`
-    pub fn pretty_print(&self, world: &WorldAccessGuard) -> String {
-        let mut pretty_path = String::new();
-
-        pretty_path.push_str("<Reference to ");
-
-        let root_suffix = match self.reference.base.base_id {
-            ReflectBase::Component(e, _) => format!("Component on entity {e}"),
-            ReflectBase::Resource(_) => "Resource".to_owned(),
-            ReflectBase::Owned(_) => "Allocation".to_owned(),
-        };
-
-        let tail_type_id = self.reference.tail_type_id(world).ok().flatten();
-
-        world.with_resource(|_, type_registry : Mut<AppTypeRegistry>| {
-            let type_registry = type_registry.read();
-            let root_type_path = type_registry.get_type_info(self.reference.base.type_id).map(|t| t.type_path_table().short_path()).unwrap_or("<Unregistered TypeId>");
-            pretty_path.push_str(&format!("{}({})", root_suffix, root_type_path));
-
-            for elem in self.reference.reflect_path.iter() {
-                match elem {
-                    ReflectionPathElem::Reflection(path) => {
-                        pretty_path.push_str(&path.to_string());
-                    }
-                    ReflectionPathElem::DeferredReflection(_) => {
-                        pretty_path.push_str(".<Deferred>");
-                    }
-                    ReflectionPathElem::Identity => {
-                        pretty_path.push_str("");
-                    }
-                    ReflectionPathElem::MapAccess(key) => {
-                        pretty_path.push_str(&format!("[{}]", key));
-                    },
-                    
-                }
-            }
-
-            if let Some(tail_type_id) = tail_type_id {
-                let type_path = type_registry.get_type_info(tail_type_id).map(|t| t.type_path_table().short_path()).unwrap_or(Self::UNREGISTERED_TYPE);
-                pretty_path.push_str(&format!(" -> {}", type_path));
-            }
-        });
-
-        pretty_path.push('>');
-
-        pretty_path
-    }
-
-
-    pub fn pretty_print_value_opaque(&self, v: &dyn PartialReflect, output: &mut String) {
-        
-        let type_id = v.get_represented_type_info().map(|t| t.type_id()).type_id_or_fake_id();
-        output.push_str("Reflect(");
-        match type_id {
-            id if id == TypeId::of::<usize>() => downcast_case!(v, output, usize),
-            id if id == TypeId::of::<isize>() => downcast_case!(v, output, isize),
-            id if id == TypeId::of::<f32>() => downcast_case!(v, output, f32),
-            id if id == TypeId::of::<f64>() => downcast_case!(v, output, f64),
-            id if id == TypeId::of::<u128>() => downcast_case!(v, output, u128),
-            id if id == TypeId::of::<u64>() => downcast_case!(v, output, u64),
-            id if id == TypeId::of::<u32>() => downcast_case!(v, output, u32),
-            id if id == TypeId::of::<u16>() => downcast_case!(v, output, u16),
-            id if id == TypeId::of::<u8>() => downcast_case!(v, output, u8),
-            id if id == TypeId::of::<i128>() => downcast_case!(v, output, i128),
-            id if id == TypeId::of::<i64>() => downcast_case!(v, output, i64),
-            id if id == TypeId::of::<i32>() => downcast_case!(v, output, i32),
-            id if id == TypeId::of::<i16>() => downcast_case!(v, output, i16),
-            id if id == TypeId::of::<i8>() => downcast_case!(v, output, i8),
-            id if id == TypeId::of::<String>() => downcast_case!(v, output, String),
-            id if id == TypeId::of::<bool>() => downcast_case!(v, output, bool),
-            _ => {
-                output.push_str(v.get_represented_type_info().map(|t| t.type_path()).unwrap_or(Self::UNREGISTERED_TYPE));
-            }
-        }
-        output.push(')');
-
-    }
-
-    /// Prints the actual value of the reference. Tries to use best available method to print the value.
-    pub fn pretty_print_value(&self, world: &WorldAccessGuard) -> String {
-        let mut output = String::new();
-
-        // instead of relying on type registrations, simply traverse the reflection tree and print sensible values
-        self.reference.with_reflect(world, |r, _, _| {
-            self.pretty_print_value_inner(r, &mut output);
-        }).unwrap_or_else(|e| {
-            output.push_str(&format!("<Error in printing: {}>", e));
-        });
-
-        output
-    }
-
-    fn pretty_print_key_values<K: AsRef<str>,V: AsRef<str>,I: IntoIterator<Item=(Option<K>,V)>>(bracket: BracketType, i: I, output: &mut String) {
-        bracket.surrounded(output, |output| {
-            let mut iter = i.into_iter().peekable();
-            while let Some((key, val)) = iter.next() {
-                if let Some(key) = key {
-                    output.push_str(key.as_ref());
-                    output.push_str(": ");
-                }
-                output.push_str(val.as_ref());
-                if iter.peek().is_some() {
-                    output.push_str(", ");
-                }
-            }
-        });
-    }
-
-
-    fn pretty_print_value_struct<'k,N: Iterator<Item=&'k str>, M: Iterator<Item=&'k dyn PartialReflect>>(&self, field_names: N, field_values: M, output: &mut String) {
-        let field_names = field_names.into_iter();
-        let fields = field_values.into_iter();
-        let fields_iter = fields.zip_longest(field_names).map(|e| {
-            let (val, name) = match e {
-                itertools::EitherOrBoth::Both(val, name) => (val, name),
-                itertools::EitherOrBoth::Left(val) => (val, Self::UNKNOWN_FIELD),
-                itertools::EitherOrBoth::Right(name) => (().as_partial_reflect(), name),
-            };
-            let mut field_printed = String::new();
-            self.pretty_print_value_inner(val, &mut field_printed);
-            (Some(name), field_printed)
-        });
-        Self::pretty_print_key_values(BracketType::Curly, fields_iter, output);
-    }
-
-    fn pretty_print_value_inner(&self, v: &dyn PartialReflect, output: &mut String) {
-        match v.reflect_ref() {
-            bevy::reflect::ReflectRef::Struct(s) => {
-                let field_names = s.get_represented_struct_info().map(|info| info.field_names()).unwrap_or_default().iter();
-                let field_values = s.iter_fields();
-
-                self.pretty_print_value_struct(field_names.copied(), field_values, output);
-
-            },
-            ReflectRef::TupleStruct(t) => {
-                let fields_iter = t.iter_fields().enumerate().map(|(i, val)| {
-                    let mut field_printed = String::new();
-                    self.pretty_print_value_inner(val, &mut field_printed);
-                    (Some(i.to_string()), field_printed)
-                });
-                Self::pretty_print_key_values(BracketType::Round, fields_iter, output);
-            },
-            ReflectRef::Tuple(t) => {
-                let fields_iter = t.iter_fields().map(|val| {
-                    let mut field_printed = String::new();
-                    self.pretty_print_value_inner(val, &mut field_printed);
-                    (None::<String>, field_printed)
-                });
-                Self::pretty_print_key_values(BracketType::Round, fields_iter, output);
-            },
-            ReflectRef::List(l) => {
-                let fields_iter = l.iter().map(|val| {
-                    let mut field_printed = String::new();
-                    self.pretty_print_value_inner(val, &mut field_printed);
-                    (None::<String>, field_printed)
-                });
-                Self::pretty_print_key_values(BracketType::Square, fields_iter, output);
-            },
-            ReflectRef::Array(a) => {
-                let fields_iter = a.iter().map(|val| {
-                    let mut field_printed = String::new();
-                    self.pretty_print_value_inner(val, &mut field_printed);
-                    (None::<String>, field_printed)
-                });
-                Self::pretty_print_key_values(BracketType::Square, fields_iter, output);
-            },
-            ReflectRef::Map(m) => {
-                let fields_iter = m.iter().map(|(key, val)| {
-                    let mut key_printed = String::new();
-                    self.pretty_print_value_inner(key, &mut key_printed);
-
-                    let mut field_printed = String::new();
-                    self.pretty_print_value_inner(val, &mut field_printed);
-                    (Some(key_printed), field_printed)
-                });
-                Self::pretty_print_key_values(BracketType::Curly, fields_iter, output);
-            },
-            ReflectRef::Set(s) => {
-                let fields_iter = s.iter().map(|val| {
-                    let mut field_printed = String::new();
-                    self.pretty_print_value_inner(val, &mut field_printed);
-                    (None::<String>, field_printed)
-                });
-                Self::pretty_print_key_values(BracketType::Curly, fields_iter, output);
-            },
-            ReflectRef::Enum(e) => {
-                output.push_str(&e.variant_path());
-                let bracket_type = match e.variant_type() {
-                    bevy::reflect::VariantType::Tuple => BracketType::Round,
-                    _ => BracketType::Curly,
-                };
-                let key_vals = e.iter_fields().map(|v| {
-                    let mut field_printed = String::new();
-                    self.pretty_print_value_inner(v.value(), &mut field_printed);
-                    (v.name(), field_printed)
-                });
-                Self::pretty_print_key_values(bracket_type, key_vals, output);
-            },
-            ReflectRef::Opaque(o) =>  {
-                self.pretty_print_value_opaque(o, output);
-            },
-        }
-
-    } 
 }

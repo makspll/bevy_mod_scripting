@@ -116,6 +116,27 @@ impl CompWithFromWorldAndComponentData {
     }
 }
 
+#[derive(Resource, Reflect, PartialEq, Debug)]
+pub struct TestResourceWithVariousFields {
+    pub string: String,
+    pub usize: usize,
+    pub int: i32,
+    pub float: f32,
+    pub bool: bool,
+}
+
+impl TestResourceWithVariousFields {
+    pub fn init() -> Self {
+        Self {
+            string: "Initial Value".to_string(),
+            usize: 22,
+            int: 42,
+            float: 69.0,
+            bool: true,
+        }
+    }
+}
+
 pub(crate) const TEST_COMPONENT_ID_START: usize = 20;
 pub(crate) const TEST_ENTITY_ID_START: u32 = 0;
 
@@ -197,7 +218,8 @@ impl_test_component_ids!(
     ],
     [
         TestResource => 5,
-        ResourceWithDefault => 6
+        ResourceWithDefault => 6,
+        TestResourceWithVariousFields => 7,
     ]
 );
 

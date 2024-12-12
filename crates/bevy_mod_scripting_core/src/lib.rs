@@ -3,12 +3,13 @@
 use crate::event::ScriptErrorEvent;
 use asset::{ScriptAsset, ScriptAssetLoader, ScriptAssetSettings};
 use bevy::prelude::*;
-use bindings::ReflectAllocator;
+use bindings::{AppReflectAllocator, ReflectAllocator};
 use context::{
     Context, ContextAssigner, ContextBuilder, ContextInitializer, ContextLoadingSettings,
     ContextPreHandlingInitializer, ScriptContexts,
 };
 use handler::{Args, CallbackSettings, HandlerFn};
+pub use itertools::Either;
 use prelude::{
     initialize_runtime,
     runtime::{RuntimeInitializer, RuntimeSettings},
@@ -65,7 +66,7 @@ impl<A: Args, C: Context, R: Runtime> Plugin for ScriptingPlugin<A, C, R> {
     fn build(&self, app: &mut bevy::prelude::App) {
         app.add_event::<ScriptErrorEvent>()
             .add_event::<ScriptCallbackEvent<A>>()
-            .init_resource::<ReflectAllocator>()
+            .init_resource::<AppReflectAllocator>()
             .init_resource::<ScriptAssetSettings>()
             .init_resource::<Scripts>()
             .init_asset::<ScriptAsset>()
@@ -213,7 +214,7 @@ mod test {
         app.add_plugins(ScriptingPlugin::<A, C, R>::default());
 
         assert!(app.world().contains_resource::<Scripts>());
-        assert!(app.world().contains_resource::<ReflectAllocator>());
+        assert!(app.world().contains_resource::<AppTypeRegistry>());
         assert!(app.world().contains_resource::<ScriptAssetSettings>());
         assert!(app.world().contains_resource::<RuntimeSettings<R>>());
         assert!(app.world().contains_resource::<CallbackSettings<A, C, R>>());

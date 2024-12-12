@@ -1,7 +1,11 @@
+pub mod access_map;
 pub mod allocator;
-pub mod proxy;
+pub mod function;
+pub mod pretty_print;
+// pub mod proxy;
 pub mod query;
 pub mod reference;
 pub mod world;
 
-pub use {allocator::*, proxy::*, query::*, reference::*, world::*};
+pub use {allocator::*, query::*, reference::*, world::*};
+// pub use {proxy::*};

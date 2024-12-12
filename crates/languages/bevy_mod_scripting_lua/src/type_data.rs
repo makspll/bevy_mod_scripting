@@ -20,7 +20,7 @@ use bevy_mod_scripting_core::{
 };
 use tealr::mlu::mlua::{FromLua, IntoLua, Lua, Table, Value};
 
-use crate::bindings::{proxy::LuaProxied, reference::LuaReflectReference, world::GetWorld};
+use crate::bindings::{reference::LuaReflectReference, world::GetWorld};
 
 /// Stores the procedure used to convert a lua value to a reflect value and vice versa, Used for types which are represented in lua via proxies which store
 /// a reference to the actual value.

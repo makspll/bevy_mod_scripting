@@ -2,6 +2,7 @@ use super::{ReflectReference, WorldAccessGuard, WorldCallbackAccess};
 use crate::{
     bindings::{CONCURRENT_WORLD_ACCESS_MSG, STALE_WORLD_MSG},
     prelude::ScriptResult,
+    with_global_access,
 };
 use bevy::{
     ecs::{component::ComponentId, entity::Entity},
@@ -107,46 +108,48 @@ impl WorldCallbackAccess {
 
 impl<'w> WorldAccessGuard<'w> {
     pub fn query(&self, query: ScriptQueryBuilder) -> ScriptResult<VecDeque<ScriptQueryResult>> {
-        let world = self
-            .get_whole_world_access()
-            .unwrap_or_else(|| panic!("{CONCURRENT_WORLD_ACCESS_MSG}"));
+        with_global_access!(self.0.accesses, "Could not query", {
+            let world = unsafe { self.as_unsafe_world_cell().world_mut() };
+            let mut dynamic_query = QueryBuilder::<EntityRef>::new(world);
 
-        let mut dynamic_query = QueryBuilder::<EntityRef>::new(world);
+            // we don't actually want to fetch the data for components now, only figure out
+            // which entities match the query
+            // so we might be being slightly overkill
+            for c in &query.components {
+                dynamic_query.ref_id(c.component_id().unwrap());
+            }
 
-        // we don't actually want to fetch the data for components now, only figure out
-        // which entities match the query
-        // so we might be being slightly overkill
-        for c in &query.components {
-            dynamic_query.ref_id(c.component_id().unwrap());
-        }
+            for w in query.with {
+                dynamic_query.with_id(w.component_id.unwrap());
+            }
 
-        for w in query.with {
-            dynamic_query.with_id(w.component_id.unwrap());
-        }
+            for without_id in query.without {
+                dynamic_query.without_id(without_id.component_id.unwrap());
+            }
 
-        for without_id in query.without {
-            dynamic_query.without_id(without_id.component_id.unwrap());
-        }
+            let mut built_query = dynamic_query.build();
+            let query_result = built_query.iter(world);
 
-        let mut built_query = dynamic_query.build();
-        let query_result = built_query.iter(world);
-
-        Ok(query_result
-            .map(|r| {
-                let references: Vec<_> = query
-                    .components
-                    .iter()
-                    .map(|c| ReflectReference {
-                        base: super::ReflectBaseType {
-                            type_id: c.type_id(),
-                            base_id: super::ReflectBase::Component(r.id(), c.component_id.unwrap()),
-                        },
-                        reflect_path: vec![],
-                    })
-                    .collect();
-                ScriptQueryResult(r.id(), references)
-            })
-            .collect())
+            Ok(query_result
+                .map(|r| {
+                    let references: Vec<_> = query
+                        .components
+                        .iter()
+                        .map(|c| ReflectReference {
+                            base: super::ReflectBaseType {
+                                type_id: c.type_id(),
+                                base_id: super::ReflectBase::Component(
+                                    r.id(),
+                                    c.component_id.unwrap(),
+                                ),
+                            },
+                            reflect_path: vec![],
+                        })
+                        .collect();
+                    ScriptQueryResult(r.id(), references)
+                })
+                .collect())
+        })
     }
 }
 

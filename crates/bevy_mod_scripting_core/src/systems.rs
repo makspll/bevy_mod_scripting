@@ -9,13 +9,14 @@ use crate::{
     error::{ScriptError, ScriptResult},
     event::{IntoCallbackLabel, ScriptCallbackEvent, ScriptErrorEvent},
     handler::{Args, CallbackSettings},
-    prelude::RuntimeSettings,
+    prelude::{AppReflectAllocator, RuntimeSettings},
     runtime::{Runtime, RuntimeContainer},
     script::{ScriptComponent, Scripts},
 };
 
 /// Cleans up dangling script allocations
-pub fn garbage_collector(mut allocator: ResMut<ReflectAllocator>) {
+pub fn garbage_collector(allocator: ResMut<AppReflectAllocator>) {
+    let mut allocator = allocator.write();
     allocator.clean_garbage_allocations()
 }
 

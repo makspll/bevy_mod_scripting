@@ -116,8 +116,8 @@ function on_event()
 
     local new_mat3 = Mat3.from_cols(Vec3.new(1,0,0),Vec3.new(0,1,0),Vec3.new(0,0,-1))
     print("new_mat3 is:", new_mat3)
-
-    -- comp.vec2 = comp.vec2 + comp.vec2
+    
+    comp.vec2 = comp.vec2 + comp.vec2
     print("A")
     comp.usize = comp.vec2:min_element()
     

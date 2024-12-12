@@ -4,9 +4,7 @@ use bevy::ecs::{component::ComponentId, reflect::AppTypeRegistry, world::Mut};
 use bevy::prelude::Entity;
 
 use bevy_mod_scripting_core::{
-    bindings::{
-        ReflectReference, ScriptTypeRegistration, Unproxy, WorldAccessGuard, WorldCallbackAccess,
-    },
+    bindings::{ReflectReference, ScriptTypeRegistration, WorldAccessGuard, WorldCallbackAccess},
     error::ScriptError,
 };
 use bevy_mod_scripting_derive::LuaProxy;
@@ -19,13 +17,13 @@ use tealr::{
     ToTypename, Type,
 };
 
-use super::proxy::LuaReflectRefProxy;
+// use super::proxy::LuaReflectRefProxy;
 use super::query::LuaQueryBuilder;
 use super::{
     providers::bevy_ecs::LuaEntity,
-    proxy::{
-        ErrorProxy, LuaIdentityProxy, LuaProxied, LuaReflectValProxy, LuaValProxy, TypenameProxy,
-    },
+    // proxy::{
+    //     ErrorProxy, LuaIdentityProxy, LuaProxied, LuaReflectValProxy, LuaValProxy, TypenameProxy,
+    // },
     type_registration::LuaTypeRegistration,
 };
 use crate::util::Variadic;

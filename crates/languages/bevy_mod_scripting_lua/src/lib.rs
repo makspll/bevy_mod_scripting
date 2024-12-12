@@ -19,7 +19,7 @@ use bevy_mod_scripting_core::{
 };
 use bindings::{
     providers::bevy_ecs::LuaEntity,
-    proxy::LuaProxied,
+    // proxy::LuaProxied,
     world::{GetWorld, LuaWorld},
 };
 pub use tealr;

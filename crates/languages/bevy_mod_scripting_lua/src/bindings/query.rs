@@ -2,8 +2,7 @@ use std::ops::{Deref, DerefMut};
 
 use bevy::prelude::Entity;
 use bevy_mod_scripting_core::bindings::{
-    ReflectAllocator, ReflectReference, ScriptQueryBuilder, ScriptTypeRegistration, Unproxy,
-    ValProxy,
+    ReflectAllocator, ReflectReference, ScriptQueryBuilder, ScriptTypeRegistration,
 };
 use tealr::{
     mlu::{
@@ -16,7 +15,7 @@ use tealr::{
 use crate::{impl_userdata_from_lua, impl_userdata_with_tealdata, util::Variadic};
 
 use super::{
-    proxy::{LuaProxied, LuaValProxy},
+    // proxy::{LuaProxied, LuaValProxy},
     reference::LuaReflectReference,
     world::GetWorld,
 };

@@ -6,7 +6,7 @@ use tealr::mlu::TealData;
 
 use crate::impl_userdata_from_lua;
 
-use super::proxy::LuaProxied;
+// use super::proxy::LuaProxied;
 
 /// Caches information about type data
 #[derive(Clone, tealr::mlu::UserData, tealr::ToTypename)]

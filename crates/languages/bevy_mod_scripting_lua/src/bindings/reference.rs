@@ -10,8 +10,8 @@ use bevy::{
 };
 use bevy_mod_scripting_core::{
     bindings::{
-        DeferredReflection, Either, ReflectAllocator, ReflectRefIter, ReflectReference,
-        ReflectReferencePrinter, ReflectionPathElem, TypeIdSource, Unproxy, WorldCallbackAccess,
+        DeferredReflection, ReflectAllocator, ReflectRefIter, ReflectReference, ReflectionPathElem,
+        TypeIdSource, WorldCallbackAccess,
     },
     error::ScriptError,
     new_deferred_reflection,
@@ -28,7 +28,7 @@ use crate::{
 };
 
 use super::{
-    proxy::{LuaProxied, LuaValProxy},
+    // proxy::{LuaProxied, LuaValProxy},
     world::GetWorld,
 };
 
@@ -151,10 +151,10 @@ impl LuaReflectReference {
                         })?
                     }
                     None => {
-                        return Err(ScriptError::new_runtime_error(format!(
+                        Err(ScriptError::new_runtime_error(format!(
                                 "Invalid assignment `{}` = `{value:?}`. The left hand side does not support conversion from lua.",
                                 ReflectReferencePrinter::new(self.0).pretty_print(&world),
-                            )));
+                            )))
                     }
                 }
             },

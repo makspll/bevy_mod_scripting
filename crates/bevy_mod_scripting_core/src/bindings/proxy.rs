@@ -16,10 +16,7 @@ use crate::{
     prelude::{ReflectAllocator, ScriptError},
 };
 
-use super::{
-    world::{WorldAccessGuard, WorldAccessUnit, WorldAccessWrite},
-    ReflectReference, DEFAULT_INTERVAL, DEFAULT_TIMEOUT,
-};
+use super::{world::WorldAccessGuard, ReflectReference, DEFAULT_INTERVAL, DEFAULT_TIMEOUT};
 
 /// Inverse to [`Unproxy`], packages up a type into a proxy type.
 pub trait Proxy: Sized {
@@ -53,11 +50,11 @@ pub trait Unproxy {
     where
         Self: 'o;
 
-    fn collect_accesses<'w>(
-        &self,
-        _guard: &WorldAccessGuard<'w>,
-        _accesses: &mut SmallVec<[WorldAccessWrite<'w>; 1]>,
-    ) -> ScriptResult<()> {
+    fn collect_accesses<'w>(&self, _guard: &WorldAccessGuard<'w>) -> ScriptResult<()> {
+        Ok(())
+    }
+
+    fn release_accesses<'w>(&self, _guard: &WorldAccessGuard<'w>) -> ScriptResult<()> {
         Ok(())
     }
 
@@ -80,7 +77,6 @@ pub trait Unproxy {
     unsafe fn unproxy_with_world<'w, 'o>(
         &'o mut self,
         _guard: &WorldAccessGuard<'w>,
-        _accesses: &'o [WorldAccessUnit<'w>],
         _type_registry: &TypeRegistry,
         _allocator: &ReflectAllocator,
     ) -> ScriptResult<Self::Output<'o>> {
@@ -135,7 +131,10 @@ impl<T, P> Unproxy for ValProxy<T, P>
 where
     T: for<'l> From<&'l P>,
 {
-    type Output<'o> = T where Self: 'o;
+    type Output<'o>
+        = T
+    where
+        Self: 'o;
 
     fn unproxy<'o>(&'o mut self) -> ScriptResult<Self::Output<'o>> {
         Ok(T::from(&self.0))
@@ -175,7 +174,10 @@ where
     P: AsRef<ReflectReference>,
     T: FromReflect,
 {
-    type Output<'o> = T where Self: 'o;
+    type Output<'o>
+        = T
+    where
+        Self: 'o;
 
     unsafe fn unproxy_with_world<'w, 'o>(
         &'o mut self,
@@ -184,23 +186,29 @@ where
         type_registry: &TypeRegistry,
         allocator: &'o ReflectAllocator,
     ) -> ScriptResult<Self::Output<'o>> {
+        bevy::log::debug!(
+            "Unproxying ReflectValProxy for type: `{}`",
+            std::any::type_name::<T>()
+        );
         let reflect_ref: &ReflectReference = self.0.as_ref();
         let access = reflect_ref.base.base_id.get_reflect_access_id();
         let access = guard.get_access_timeout(access, DEFAULT_TIMEOUT, DEFAULT_INTERVAL);
-        let out = reflect_ref.reflect(
-            guard.as_unsafe_world_cell(),
-            &access,
-            type_registry,
-            Some(allocator),
-        )?;
-        let out = T::from_reflect(out).ok_or_else(|| {
-            ScriptError::new_reflection_error(format!(
-                "FromReflect failed for `{}`.",
-                std::any::type_name::<T>()
-            ))
-        })?;
+        let out = (|| {
+            let out = reflect_ref.reflect(
+                guard.as_unsafe_world_cell(),
+                &access,
+                type_registry,
+                Some(allocator),
+            )?;
+            T::from_reflect(out).ok_or_else(|| {
+                ScriptError::new_reflection_error(format!(
+                    "FromReflect failed for `{}`.",
+                    std::any::type_name::<T>()
+                ))
+            })
+        })();
         guard.release_access(access);
-        Ok(out)
+        out
     }
 }
 
@@ -232,13 +240,20 @@ where
     P: AsRef<ReflectReference>,
     T: Reflect,
 {
-    type Output<'o> = &'o T where Self: 'o;
+    type Output<'o>
+        = &'o T
+    where
+        Self: 'o;
 
     fn collect_accesses<'w>(
         &self,
         guard: &WorldAccessGuard<'w>,
         accesses: &mut SmallVec<[WorldAccessUnit<'w>; 1]>,
     ) -> ScriptResult<()> {
+        bevy::log::debug!(
+            "Unproxying ReflectRefProxy for type: `{}`",
+            std::any::type_name::<T>()
+        );
         let reflect_ref: &ReflectReference = self.0.as_ref();
         let access = reflect_ref.base.base_id.get_reflect_access_id();
         let access = guard.get_access_timeout(access, DEFAULT_TIMEOUT, DEFAULT_INTERVAL);
@@ -286,7 +301,10 @@ where
     P: AsRef<ReflectReference>,
     T: Reflect,
 {
-    type Output<'o> = &'o mut T where Self: 'o;
+    type Output<'o>
+        = &'o mut T
+    where
+        Self: 'o;
 
     fn collect_accesses<'w>(
         &self,
@@ -486,7 +504,10 @@ impl_proxy_via_vec!(SmallVec<[T; C]>, T, SmallVec<[T::Input<'i>; C]>, (T: Proxy,
 // }
 
 impl<T: Unproxy> Unproxy for Option<T> {
-    type Output<'o> = Option<T::Output<'o>> where Self: 'o;
+    type Output<'o>
+        = Option<T::Output<'o>>
+    where
+        Self: 'o;
 
     fn unproxy(&mut self) -> ScriptResult<Self::Output<'_>> {
         if let Some(s) = self {
@@ -515,7 +536,7 @@ impl<T: Unproxy> Unproxy for Option<T> {
     fn collect_accesses<'w>(
         &self,
         guard: &WorldAccessGuard<'w>,
-        accesses: &mut SmallVec<[WorldAccessWrite<'w>; 1]>,
+        accesses: &mut SmallVec<[WorldAccess<'w>; 1]>,
     ) -> ScriptResult<()> {
         self.as_ref()
             .map(|s| s.collect_accesses(guard, accesses))
@@ -566,7 +587,10 @@ impl<T: Proxy, E: Proxy> Proxy for Result<T, E> {
 }
 
 impl<T: Unproxy, E: Unproxy> Unproxy for Result<T, E> {
-    type Output<'o> = Result<T::Output<'o>, E::Output<'o>> where Self: 'o;
+    type Output<'o>
+        = Result<T::Output<'o>, E::Output<'o>>
+    where
+        Self: 'o;
 
     fn unproxy(&mut self) -> ScriptResult<Self::Output<'_>> {
         match self {
@@ -596,7 +620,7 @@ impl<T: Unproxy, E: Unproxy> Unproxy for Result<T, E> {
     fn collect_accesses<'w>(
         &self,
         guard: &WorldAccessGuard<'w>,
-        accesses: &mut SmallVec<[WorldAccessWrite<'w>; 1]>,
+        accesses: &mut SmallVec<[WorldAccess<'w>; 1]>,
     ) -> ScriptResult<()> {
         match self {
             Ok(s) => s.collect_accesses(guard, accesses),

@@ -1,9 +1,9 @@
-use std::{any::TypeId, cmp::max};
+use std::{any::{Any, TypeId}, cmp::max};
 
-use bevy::reflect::{FromType, List, PartialReflect, TypeData};
+use bevy::reflect::{FromType, List, PartialReflect, Reflect, ReflectFromReflect, TypeData};
 use itertools::Itertools;
 
-use crate::error::ScriptError;
+use crate::{bindings::{pretty_print::DisplayWithWorld, WorldAccessGuard}, error::{ScriptError, ScriptResult}};
 
 /// Extension trait for [`PartialReflect`] providing additional functionality for working with specific types.
 pub trait PartialReflectExt {
@@ -64,6 +64,8 @@ pub trait PartialReflectExt {
     /// For maps, this is the type id of the keys.
     fn key_type_id(&self) -> Option<TypeId>;
 
+    /// Tries to construct the concrete underlying type from a possibly untyped reference
+    fn from_reflect(reflect: &dyn PartialReflect, world: &WorldAccessGuard) -> ScriptResult<Box<dyn Reflect>>;
 }
 pub trait TypeIdExtensions {
     fn type_id_or_fake_id(&self) -> TypeId;
@@ -293,6 +295,19 @@ impl<T: PartialReflect + ?Sized> PartialReflectExt for T {
             _ => return None,
         };
         Some(key)
+    }
+
+    fn from_reflect(reflect: &dyn PartialReflect, world: &WorldAccessGuard) -> ScriptResult<Box<dyn Reflect>> {
+
+        let type_info = reflect.get_represented_type_info().ok_or_else(|| ScriptError::new_runtime_error("Could not construct concrete type as the reference does not contain type information."))?;
+        let type_id = type_info.type_id();
+
+        let type_registry = world.type_registry();
+        let type_registry = type_registry.read();
+        
+        let from_reflect_type_data: &ReflectFromReflect = type_registry.get_type_data(type_id).ok_or_else(|| ScriptError::new_runtime_error(format!("Could not construct concrete type from type id {} as it does not have a FromReflect type data registered.", type_id.display_with_world(world))))?;
+        from_reflect_type_data.from_reflect(reflect)
+            .ok_or_else(|| ScriptError::new_runtime_error(format!("Could not construct concrete type from type: {}. From Reflect implementation failed", type_id.display_with_world(world))))
     }
     
 

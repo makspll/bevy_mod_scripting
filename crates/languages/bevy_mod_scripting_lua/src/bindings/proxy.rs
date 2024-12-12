@@ -4,8 +4,8 @@
 use bevy::reflect::{FromReflect, Reflect, TypeRegistry};
 use bevy_mod_scripting_core::{
     bindings::{
-        Proxy, ReflectAllocator, ReflectRefMutProxy, ReflectRefProxy, ReflectReference,
-        ReflectValProxy, Unproxy, ValProxy, WorldAccessGuard, WorldAccessUnit, WorldAccessWrite,
+        Proxy, ReflectAllocator, ReflectReference, ReflectValProxy, Unproxy, ValProxy,
+        WorldAccessGuard,
     },
     error::{ScriptError, ScriptResult},
 };
