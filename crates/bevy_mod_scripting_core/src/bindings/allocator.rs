@@ -7,7 +7,7 @@ use std::collections::HashMap;
 use std::fmt::{Display, Formatter};
 use std::sync::Arc;
 
-#[derive(Clone, PartialEq, Eq, Hash, Debug)]
+#[derive(Clone, PartialEq, Eq, Hash, Debug, PartialOrd, Ord)]
 pub struct ReflectAllocationId(pub(crate) Arc<usize>);
 impl ReflectAllocationId {
     pub fn id(&self) -> usize {

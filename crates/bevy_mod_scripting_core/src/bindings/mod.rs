@@ -5,6 +5,7 @@ pub mod pretty_print;
 // pub mod proxy;
 pub mod query;
 pub mod reference;
+pub mod script_val;
 pub mod world;
 
 pub use {allocator::*, query::*, reference::*, world::*};

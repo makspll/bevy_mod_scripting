@@ -31,3 +31,5 @@ pub mod prelude {
     // #[cfg(feature = "rune")]
     // pub use bevy_mod_scripting_rune::prelude::*;
 }
+
+pub use bevy_mod_scripting_functions::*;

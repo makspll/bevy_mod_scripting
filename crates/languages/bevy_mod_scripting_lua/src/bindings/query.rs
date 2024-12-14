@@ -39,9 +39,9 @@ impl DerefMut for LuaQueryBuilder {
 
 impl LuaQueryBuilder {}
 
-impl LuaProxied for ScriptQueryBuilder {
-    type Proxy = LuaQueryBuilder;
-}
+// impl LuaProxied for ScriptQueryBuilder {
+//     type Proxy = LuaQueryBuilder;
+// }
 
 impl_userdata_from_lua!(LuaQueryBuilder);
 impl_userdata_with_tealdata!(LuaQueryBuilder);

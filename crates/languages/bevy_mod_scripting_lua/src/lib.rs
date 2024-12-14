@@ -1,6 +1,6 @@
 pub mod assets;
 pub mod docs;
-pub mod type_data;
+// pub mod type_data;
 pub mod util;
 use bevy::{
     app::{App, Plugin, Startup},
@@ -18,25 +18,20 @@ use bevy_mod_scripting_core::{
     AddContextPreHandlingInitializer, ScriptingPlugin,
 };
 use bindings::{
-    providers::bevy_ecs::LuaEntity,
+    // providers::bevy_ecs::LuaEntity,
     // proxy::LuaProxied,
+    reference::LuaReflectReference,
     world::{GetWorld, LuaWorld},
 };
-pub use tealr;
+pub use mlua;
+use mlua::{Function, IntoLuaMulti, Lua};
 pub mod bindings;
-use tealr::mlu::mlua::{FromLua, Function, IntoLua, IntoLuaMulti, Lua, Value};
-use type_data::{
-    pre_register_common_containers, register_lua_values, ReflectLuaProxied, ReflectLuaValue,
-};
+// use type_data::{
+//     pre_register_common_containers, register_lua_values, ReflectLuaProxied, ReflectLuaValue,
+// };
 
 pub mod prelude {
-    pub use crate::tealr::{
-        self,
-        mlu::{
-            mlua::{self, prelude::*, Value},
-            TealData,
-        },
-    };
+    pub use crate::mlua::{self, prelude::*, Value};
 }
 
 pub trait LuaEventArg: Args + for<'l> IntoLuaMulti<'l> {}
@@ -66,26 +61,26 @@ impl<A: LuaEventArg> Default for LuaScriptingPlugin<A> {
 impl<A: LuaEventArg> Plugin for LuaScriptingPlugin<A> {
     fn build(&self, app: &mut bevy::prelude::App) {
         self.scripting_plugin.build(app);
-        register_lua_values(app);
+        // register_lua_values(app);
         app.add_context_pre_handling_initializer::<()>(|script_id, entity, context: &mut Lua| {
             let world = context.get_world();
-            let lua_entity = world.with_resource::<ReflectAllocator, _, _>(|_, mut allocator| {
-                let reflect_reference = ReflectReference::new_allocated(entity, &mut allocator);
-                <Entity as LuaProxied>::Proxy::from(reflect_reference)
-            });
+            // let lua_entity = world.with_resource::<ReflectAllocator, _, _>(|_, mut allocator| {
+            //     let reflect_reference = ReflectReference::new_allocated(entity, &mut allocator);
+            //     <Entity as LuaProxied>::Proxy::from(reflect_reference)
+            // });
 
             context.globals().set("script_id", script_id.to_owned())?;
-            context.globals().set("entity", lua_entity)?;
+            // context.globals().set("entity", lua_entity)?;
             Ok(())
         });
     }
 
     fn cleanup(&self, app: &mut App) {
-        let mut type_registry = app.world_mut().get_resource_mut().unwrap();
+        // let mut type_registry = app.world_mut().get_resource_mut().unwrap();
 
         // we register up to two levels of nesting, if more are needed, the user will have to do this manually
-        pre_register_common_containers(&mut type_registry);
-        pre_register_common_containers(&mut type_registry);
+        // pre_register_common_containers(&mut type_registry);
+        // pre_register_common_containers(&mut type_registry);
     }
 }
 
@@ -172,7 +167,10 @@ pub fn with_world<F: FnOnce(&mut Lua) -> Result<(), ScriptError>>(
     f: F,
 ) -> Result<(), ScriptError> {
     WorldCallbackAccess::with_callback_access(world, |guard| {
-        context.globals().set("world", LuaWorld(guard.clone()))?;
+        context
+            .globals()
+            .set("world", LuaReflectReference(ReflectReference::new_world()))?;
+        context.set_app_data(guard.clone());
         f(context)
     })
 }

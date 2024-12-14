@@ -24,16 +24,16 @@ unsafe_lua_modules = []
 # enable teal utilities
 teal = []
 
-lua51 = ["tealr/mlua_lua51"]
-lua52 = ["tealr/mlua_lua52"]
-lua53 = ["tealr/mlua_lua53"]
-lua54 = ["tealr/mlua_lua54"]
-luajit = ["tealr/mlua_luajit"]
-luajit52 = ["tealr/mlua_luajit52"]
-luau = ["tealr/mlua_luau"]
-mlua_serialize = ["tealr/mlua_serialize"]
-mlua_macros = ["tealr/mlua_macros"]
-mlua_async = ["tealr/mlua_async"]
+lua51 = ["mlua/lua51"]
+lua52 = ["mlua/lua52"]
+lua53 = ["mlua/lua53"]
+lua54 = ["mlua/lua54"]
+luajit = ["mlua/luajit"]
+luajit52 = ["mlua/luajit52"]
+luau = ["mlua/luau"]
+mlua_serialize = ["mlua/serialize"]
+mlua_macros = ["mlua/macros"]
+mlua_async = ["mlua/async"]
 
 [lib]
 name = "bevy_mod_scripting_lua"
@@ -42,12 +42,11 @@ path = "src/lib.rs"
 [dependencies]
 bevy = { workspace = true, default-features = false }
 bevy_mod_scripting_core = { workspace = true, features = ["mlua_impls"] }
-bevy_mod_scripting_derive = { path = "../../bevy_mod_scripting_derive" }
-tealr = { version = "0.9", features = [
-    "mlua_vendored",
-    "mlua_send",
-    "mlua_macros",
+bevy_mod_scripting_functions = { workspace = true, features = [
+    "core_functions",
 ] }
+bevy_mod_scripting_derive = { path = "../../bevy_mod_scripting_derive" }
+mlua = { version = "0.9", features = ["vendored", "send", "macros"] }
 parking_lot = "0.12.1"
 serde_json = "1.0.81"
 anyhow = "1.0.75"

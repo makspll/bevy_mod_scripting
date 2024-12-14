@@ -29,15 +29,11 @@ use bevy::{
 };
 use itertools::Either;
 use crate::{
-    bindings::{pretty_print::DisplayWithWorld, ReflectAllocationId},
-    prelude::{ReflectAllocator, ScriptError, ScriptResult},
-    reflection_extensions::PartialReflectExt,
-    with_access_read,
-    with_access_write,
+    bindings::{pretty_print::DisplayWithWorld, ReflectAllocationId}, error::{ReflectReferenceError, ValueConversionError}, prelude::{ReflectAllocator, ScriptError, ScriptResult}, reflection_extensions::PartialReflectExt, with_access_read, with_access_write
 };
 use super::{
     access_map::{AccessMapKey, ReflectAccessId},
-    WorldAccessGuard,
+    WorldAccessGuard, WorldCallbackAccess, WorldGuard,
 };
 
 /// An accessor to a `dyn PartialReflect` struct, stores a base ID of the type and a reflection path
@@ -71,7 +67,7 @@ impl ReflectReference {
     }
 
     /// If this is a reference to something with a length accessible via reflection, returns that length.
-    pub fn len(&self, world: &WorldAccessGuard) -> ScriptResult<Option<usize>> {
+    pub fn len(&self, world: WorldGuard) -> ScriptResult<Option<usize>> {
         self
             .with_reflect(world, |r| {
                 match r.reflect_ref() {
@@ -86,6 +82,16 @@ impl ReflectReference {
                     _ => None,
                 }
             })
+    }
+
+    pub fn new_world() -> Self {
+        Self {
+            base: ReflectBaseType {
+                type_id: TypeId::of::<WorldCallbackAccess>(),
+                base_id: ReflectBase::World,
+            },
+            reflect_path: Vec::default(),
+        }
     }
 
     pub fn new_allocated<T: PartialReflect>(
@@ -118,7 +124,7 @@ impl ReflectReference {
         }
     }
 
-    pub fn new_resource_ref<T: Resource>(world: &WorldAccessGuard) -> Option<Self> {
+    pub fn new_resource_ref<T: Resource>(world: WorldGuard) -> Option<Self> {
         let reflect_id = ReflectAccessId::for_resource::<T>(&world.as_unsafe_world_cell())?;
         Some(Self {
             base: ReflectBaseType {
@@ -131,7 +137,7 @@ impl ReflectReference {
 
     pub fn new_component_ref<T: Component>(
         entity: Entity,
-        world: &WorldAccessGuard,
+        world: WorldGuard,
     ) -> Option<Self> {
         let reflect_id = ReflectAccessId::for_component::<T>(&world.as_unsafe_world_cell())?;
         Some(Self {
@@ -146,7 +152,29 @@ impl ReflectReference {
     /// Indexes into the reflect path inside this reference.
     /// You can use [`Self::reflect`] and [`Self::reflect_mut`] to get the actual value.
     pub fn index_path<T: Into<ReflectionPathElem>>(&mut self, index: T) {
+        debug_assert!(!matches!(self.base.base_id, ReflectBase::World), "Trying to index into a world reference. This will always fail");
         self.reflect_path.push(index.into());
+    }
+
+
+    /// Tries to downcast to the specified type and cloning the value if successful.
+    pub fn downcast<O: Clone + PartialReflect>(&self, world: WorldGuard) -> ScriptResult<O> {
+        self.with_reflect(world, |r| {
+            r.try_downcast_ref::<O>().cloned()
+        }).transpose().ok_or_else(|| ScriptError::new_reflection_error(ValueConversionError::TypeMismatch {
+            expected_type: std::any::type_name::<O>().into(),
+            actual_type: None,
+        }))?
+    }
+
+    /// Reflects into the value of the reference, cloning it using [`PartialReflect::clone_value`] or if it's a world reference, cloning the world access.
+    pub fn clone_value(&self, world: WorldGuard) -> ScriptResult<Box<dyn PartialReflect>> {
+        if matches!(self.base.base_id, ReflectBase::World) {
+            return Ok(Box::new(WorldCallbackAccess::from_guard(world)));
+        }
+        self.with_reflect(world, |r| {
+            r.clone_value()
+        })
     }
 
     /// The way to access the value of the reference, that is the pointed-to value.
@@ -156,12 +184,14 @@ impl ReflectReference {
     /// - if the value is aliased and the access is not allowed
     pub fn with_reflect<O, F: FnOnce(&dyn PartialReflect) -> O>(
         &self,
-        world: &WorldAccessGuard,
+        world: WorldGuard,
         f: F,
     ) -> ScriptResult<O> {
-        let access_id = ReflectAccessId::for_reference(self.base.base_id.clone()).ok_or_else(|| ScriptError::new_reflection_error(""))?;
+        debug_assert!(!matches!(self.base.base_id, ReflectBase::World), "Trying to access a world reference directly. This will always fail");
+
+        let access_id = ReflectAccessId::for_reference(self.base.base_id.clone()).ok_or_else(|| ReflectReferenceError::InvalidBaseReference { reason: format!("For Reference: {}. Component or allocation id is invalid.", self.display_with_world(world.clone())).into() })?;
         with_access_read!(world.0.accesses, access_id ,"could not access reflect reference",{
-            unsafe { self.reflect_unsafe(world) }
+            unsafe { self.reflect_unsafe(world.clone()) }
             .map(f)
         })
     }
@@ -174,36 +204,41 @@ impl ReflectReference {
     /// - if the value is aliased and the access is not allowed
     pub fn with_reflect_mut<O, F: FnOnce(&mut dyn PartialReflect) -> O>(
         &self,
-        world: &WorldAccessGuard,
+        world: WorldGuard,
         f: F,
     ) -> ScriptResult<O> {
-        let access_id = ReflectAccessId::for_reference(self.base.base_id.clone()).ok_or_else(|| ScriptError::new_reflection_error(""))?;
+        debug_assert!(!matches!(self.base.base_id, ReflectBase::World), "Trying to access a world reference directly. This will always fail");
+
+        let access_id = ReflectAccessId::for_reference(self.base.base_id.clone()).ok_or_else(|| ReflectReferenceError::InvalidBaseReference { reason: format!("For Reference: {}. Component or allocation id is invalid.", self.display_with_world(world.clone())).into() })?;
         with_access_write!(world.0.accesses, access_id, "Could not access reflect reference mutably", {
-            unsafe { self.reflect_mut_unsafe(world) }
+            unsafe { self.reflect_mut_unsafe(world.clone()) }
             .map(f)
         })
     }
 
 
-    pub fn tail_type_id(&self, world: &WorldAccessGuard) -> ScriptResult<Option<TypeId>> {
+    pub fn tail_type_id(&self, world: WorldGuard) -> ScriptResult<Option<TypeId>> {
+        if self.reflect_path.is_empty() {
+            return Ok(Some(self.base.type_id));
+        }
         self.with_reflect(world, |r| {
             r.get_represented_type_info().map(|t| t.type_id())
         })
     }
 
-    pub fn element_type_id(&self, world: &WorldAccessGuard) -> ScriptResult<Option<TypeId>> {
+    pub fn element_type_id(&self, world: WorldGuard) -> ScriptResult<Option<TypeId>> {
         self.with_reflect(world, |r| {
             r.element_type_id()
         })
     }
 
-    pub fn key_type_id(&self, world: &WorldAccessGuard) -> ScriptResult<Option<TypeId>> {
+    pub fn key_type_id(&self, world: WorldGuard) -> ScriptResult<Option<TypeId>> {
         self.with_reflect(world, |r| {
             r.key_type_id()
         })
     }
 
-    pub fn type_id_of(&self, source: TypeIdSource, world: &WorldAccessGuard) -> ScriptResult<Option<TypeId>> {
+    pub fn type_id_of(&self, source: TypeIdSource, world: WorldGuard) -> ScriptResult<Option<TypeId>> {
         match source {
             TypeIdSource::Tail => self.tail_type_id(world),
             TypeIdSource::Element => self.element_type_id(world),
@@ -211,7 +246,7 @@ impl ReflectReference {
         }
     }
 
-    pub fn map_type_data<D,D2,O,F>(type_id: Option<TypeId>, world: &WorldAccessGuard, map: F) -> ScriptResult<O>
+    pub fn map_type_data<D,D2,O,F>(type_id: Option<TypeId>, world: WorldGuard, map: F) -> ScriptResult<O>
     where 
         F: FnOnce(Option<Either<D,D2>>) -> O,
         D: TypeData + Clone,
@@ -241,14 +276,22 @@ impl ReflectReference {
     /// 
     /// # Safety
     /// - The caller must ensure this reference has permission to access the underlying value
-    pub unsafe fn into_arg_value<'w>(self, world: &'w WorldAccessGuard, arg_info: &ArgInfo) -> ScriptResult<ArgValue<'w>> {
-        // arg values need to always return a reference to a concrete type `T`, so we need a FromReflect bound
-        // to ensure we can convert the `dyn PartialReflect` into a concrete type
-        
+    pub unsafe fn into_arg_value<'w>(self, world: WorldGuard<'w>, arg_info: &ArgInfo) -> ScriptResult<ArgValue<'w>> {
+        println!("A {}", Arc::strong_count(&world));
+        println!("{:?}", self);
+        if ReflectBase::World == self.base.base_id {
+            // Safety: we already have an Arc<WorldAccessGuard<'w>> so creating a new one from the existing one is safe
+            // as the caller of this function will make sure the Arc is dropped after the lifetime 'w is done.
+            let new_guard = WorldCallbackAccess::from_guard(world.clone());
+            println!("B {}", Arc::strong_count(&world));
+            new_guard.read().unwrap();
+            return Ok(ArgValue::Owned(Box::new(WorldCallbackAccess::from_guard(world))));
+        }
+
         match arg_info.ownership() {
             bevy::reflect::func::args::Ownership::Ref => {
                 
-                let mut ref_ = unsafe {self.reflect_unsafe(world)?};
+                let mut ref_ = unsafe {self.reflect_unsafe(world.clone())?};
 
                 if ref_.is_dynamic() {
                     let allocator = world.allocator();
@@ -267,7 +310,7 @@ impl ReflectReference {
             },
             bevy::reflect::func::args::Ownership::Mut => {
                 
-                let mut mut_ = unsafe {self.reflect_mut_unsafe(world)?};
+                let mut mut_ = unsafe {self.reflect_mut_unsafe(world.clone())?};
 
                 if mut_.is_dynamic() {
                     let allocator = world.allocator();
@@ -284,7 +327,7 @@ impl ReflectReference {
                 
             }
             _ => {
-                let ref_ = unsafe {self.reflect_unsafe(world)?};
+                let ref_ = unsafe {self.reflect_unsafe(world.clone())?};
                 Ok(ArgValue::Owned(<dyn PartialReflect as PartialReflectExt>::from_reflect(ref_, world)?.into_partial_reflect()))
             }
         }
@@ -302,7 +345,7 @@ impl ReflectReference {
     /// To do this safely you need to use [`WorldAccessGuard::claim_read_access`] or [`WorldAccessGuard::claim_global_access`] to ensure nobody else is currently accessing the value.
     pub unsafe fn reflect_unsafe<'w>(
         &self,
-        world: &WorldAccessGuard<'w>
+        world: WorldGuard<'w>
     ) -> ScriptResult<&'w dyn PartialReflect> {
         
         if let ReflectBase::Owned(id) = &self.base.base_id {
@@ -316,7 +359,7 @@ impl ReflectReference {
 
             // safety: caller promises it's fine :)
             return self.walk_path(unsafe { &*arc.get_ptr() });
-        };
+        }
 
         
         let type_registry = world.type_registry();
@@ -328,7 +371,7 @@ impl ReflectReference {
             type_registry
                 .get_type_data(self.base.type_id)
                 .ok_or_else(|| ScriptError::new_reflection_error(
-                    format!("FromPtr is not registered for {}", self.display_with_world(world)))
+                    format!("FromPtr is not registered for {}", self.display_with_world(world.clone())))
                 )?;
 
         let ptr = self
@@ -368,7 +411,7 @@ impl ReflectReference {
     /// To do this safely you need to use [`WorldAccessGuard::claim_write_access`] or [`WorldAccessGuard::claim_global_access`] to ensure nobody else is currently accessing the value.
     pub unsafe fn reflect_mut_unsafe<'w>(
         &self,
-        world: &WorldAccessGuard<'w>
+        world: WorldGuard<'w>
     ) -> ScriptResult<&'w mut dyn PartialReflect> {
         if let ReflectBase::Owned(id) = &self.base.base_id {
             let allocator = world.allocator();
@@ -390,7 +433,7 @@ impl ReflectReference {
             .get_type_data(self.base.type_id)
             .ok_or_else(|| 
                 ScriptError::new_reflection_error(
-                    format!("Base reference is invalid, is the component/resource initialized? When accessing: `{}`", self.base.display_with_world(world))))?;
+                    format!("Base reference is invalid, is the component/resource initialized? When accessing: `{}`", self.base.display_with_world(world.clone()))))?;
 
         let ptr = self
          .base
@@ -440,18 +483,19 @@ impl ReflectReference {
     }
 }
 
-#[derive(Clone, Debug, PartialEq, Eq)]
+#[derive(Clone, Debug, PartialEq, Eq, PartialOrd)]
 pub struct ReflectBaseType {
     pub type_id: TypeId,
     pub base_id: ReflectBase,
 }
 
 /// The Id of the kind of reflection base being pointed to
-#[derive(Clone, Debug, PartialEq, Eq)]
+#[derive(Clone, Debug, PartialEq, Eq, PartialOrd)]
 pub enum ReflectBase {
     Component(Entity, ComponentId),
     Resource(ComponentId),
     Owned(ReflectAllocationId),
+    World
 }
 
 impl ReflectBase {

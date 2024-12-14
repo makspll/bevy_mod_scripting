@@ -3,8 +3,7 @@ use bevy::app::AppExit;
 use bevy::prelude::*;
 use bevy::utils::hashbrown::HashMap;
 use bevy_mod_scripting::lua::LuaScriptingPlugin;
-use bevy_mod_scripting::prelude::*;
-use bevy_mod_scripting_lua::bindings::providers::LuaBevyScriptingPlugin;
+use bevy_mod_scripting::{prelude::*, BevyFunctionsPlugin};
 use script::ScriptComponent;
 
 #[derive(Component, Default, Reflect)]
@@ -74,7 +73,8 @@ fn main() -> std::io::Result<()> {
 
     app.add_plugins(DefaultPlugins)
         .add_plugins(LuaScriptingPlugin::<()>::default())
-        .add_plugins(LuaBevyScriptingPlugin)
+        .add_plugins(BevyFunctionsPlugin)
+        // .add_plugins(LuaBevyScriptingPlugin)
         .register_type::<MyComponent>()
         .add_systems(Startup, (init_data, load_script))
         .add_systems(

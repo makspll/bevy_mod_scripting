@@ -225,6 +225,11 @@ impl ReflectLuaProxied {
     }
 }
 
+/// Temp for compat
+pub trait LuaProxied {
+    type Proxy;
+}
+
 impl<T: LuaProxied + Reflect> FromType<T> for ReflectLuaProxied
 where
     T::Proxy: for<'l> IntoLua<'l> + for<'l> FromLua<'l>,

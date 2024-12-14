@@ -1,4 +1,6 @@
 use std::{
+    any::TypeId,
+    borrow::Cow,
     ops::{Deref, DerefMut},
     sync::Arc,
 };
@@ -49,7 +51,7 @@ impl From<ScriptError> for Box<dyn std::error::Error + Send + Sync + 'static> {
     }
 }
 /// An error with an optional script Context
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 pub struct ScriptError(pub Arc<ScriptErrorInner>);
 
 impl Deref for ScriptError {
@@ -67,6 +69,14 @@ pub struct ScriptErrorInner {
     pub kind: ScriptErrorKind,
     pub context: String,
     pub reason: Arc<dyn std::error::Error + Send + Sync>,
+}
+
+impl PartialEq for ScriptErrorInner {
+    fn eq(&self, other: &Self) -> bool {
+        self.kind == other.kind
+            && self.context == other.context
+            && self.reason.to_string() == other.reason.to_string()
+    }
 }
 
 impl ScriptError {
@@ -118,6 +128,15 @@ impl ScriptError {
             reason: self.0.reason.clone(),
         }))
     }
+
+    pub fn with_appended_context<S: ToString>(self, context: S) -> Self {
+        Self(Arc::new(ScriptErrorInner {
+            script: self.0.script.clone(),
+            kind: self.0.kind,
+            context: format!("{}. {}", self.0.context, context.to_string()),
+            reason: self.0.reason.clone(),
+        }))
+    }
 }
 
 impl<T: std::error::Error + Send + Sync + 'static> From<T> for ScriptError {
@@ -145,4 +164,36 @@ impl From<ScriptError> for mlua::Error {
     fn from(value: ScriptError) -> Self {
         mlua::Error::external(value)
     }
+}
+
+#[derive(thiserror::Error, Debug)]
+pub enum ValueConversionError {
+    #[error("Expected type: {expected_type}, got: {actual_type:?}")]
+    TypeMismatch {
+        expected_type: Cow<'static, str>,
+        actual_type: Option<Cow<'static, str>>,
+    },
+    #[error("Could not index script value {base:?} using index {index}. Reason: {reason:?}")]
+    InvalidIndex {
+        index: Cow<'static, str>,
+        base: Option<Cow<'static, str>>,
+        reason: Option<Cow<'static, str>>,
+    },
+    #[error("Type was not registed with the type registry: {type_id:?}. Could not convert.")]
+    MissingTypeInformation { type_id: TypeId },
+}
+
+#[derive(thiserror::Error, Debug)]
+pub enum FunctionError {
+    #[error("Function {function_name:?} not found in type registry for type {type_:?}")]
+    FunctionNotFound {
+        function_name: Cow<'static, str>,
+        type_: Option<Cow<'static, str>>,
+    },
+}
+
+#[derive(thiserror::Error, Debug)]
+pub enum ReflectReferenceError {
+    #[error("Reference could not be reflected, due to missing component, entity or resource. {reason:?}")]
+    InvalidBaseReference { reason: Cow<'static, str> },
 }

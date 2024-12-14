@@ -1,0 +1,23 @@
+[package]
+name = "bevy_mod_scripting_functions"
+version = "0.8.0-alpha.2"
+edition = "2021"
+authors = ["Maksymilian Mozolewski <makspl17@gmail.com>"]
+license = "MIT OR Apache-2.0"
+description = "Necessary functionality for Lua support with bevy_mod_scripting"
+repository = "https://github.com/makspll/bevy_mod_scripting"
+homepage = "https://github.com/makspll/bevy_mod_scripting"
+keywords = ["bevy", "gamedev", "scripting", "rhai"]
+categories = ["game-development"]
+readme = "readme.md"
+
+[features]
+default = ["core_functions"]
+core_functions = ["bevy_mod_scripting_core"]
+
+
+[dependencies]
+bevy = { workspace = true, default-features = false, features = [
+    "reflect_functions",
+] }
+bevy_mod_scripting_core = { workspace = true, optional = true }

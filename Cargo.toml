@@ -57,12 +57,13 @@ bevy_mod_scripting_core = { workspace = true }
 bevy_mod_scripting_lua = { path = "crates/languages/bevy_mod_scripting_lua", version = "0.8.0-alpha.2", optional = true }
 bevy_mod_scripting_rhai = { path = "crates/languages/bevy_mod_scripting_rhai", version = "0.8.0-alpha.2", optional = true }
 bevy_mod_scripting_rune = { path = "crates/languages/bevy_mod_scripting_rune", version = "0.8.0-alpha.2", optional = true }
-
+bevy_mod_scripting_functions = { workspace = true }
 
 [workspace.dependencies]
 bevy = { version = "0.15.0", default-features = false }
 bevy_mod_scripting_core = { path = "crates/bevy_mod_scripting_core", version = "0.8.0-alpha.2" }
 bevy_mod_scripting_common = { path = "crates/bevy_mod_scripting_common", version = "0.8.0-alpha.2" }
+bevy_mod_scripting_functions = { path = "crates/bevy_mod_scripting_functions", version = "0.8.0-alpha.2" }
 test_utils = { path = "crates/test_utils" }
 
 [dev-dependencies]
@@ -84,6 +85,7 @@ members = [
     "crates/bevy_mod_scripting_common",
     "crates/bevy_mod_scripting_derive",
     "crates/test_utils",
+    "crates/bevy_mod_scripting_functions",
 ]
 resolver = "2"
 exclude = ["crates/bevy_api_gen", "crates/macro_tests"]
@@ -106,20 +108,12 @@ debug = false
 [[example]]
 name = "console_integration_lua"
 path = "examples/lua/console_integration.rs"
-required-features = [
-    "lua54",
-    "bevy/file_watcher",
-    "bevy/multi_threaded",
-]
+required-features = ["lua54", "bevy/file_watcher", "bevy/multi_threaded"]
 
 [[example]]
 name = "console_integration_rhai"
 path = "examples/rhai/console_integration.rs"
-required-features = [
-    "rhai",
-    "bevy/file_watcher",
-    "bevy/multi_threaded",
-]
+required-features = ["rhai", "bevy/file_watcher", "bevy/multi_threaded"]
 
 [[example]]
 name = "complex_game_loop_lua"

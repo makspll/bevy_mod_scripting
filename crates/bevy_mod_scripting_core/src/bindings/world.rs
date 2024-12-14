@@ -28,7 +28,10 @@ use bevy::{
         world::{unsafe_world_cell::UnsafeWorldCell, CommandQueue, Mut, World},
     },
     hierarchy::{BuildChildren, Children, DespawnRecursiveExt, Parent},
-    reflect::{std_traits::ReflectDefault, Reflect, TypeRegistry, TypeRegistryArc},
+    reflect::{
+        func::args::FromArg, std_traits::ReflectDefault, PartialReflect, Reflect, TypePath,
+        TypeRegistry, TypeRegistryArc,
+    },
     utils::HashMap,
 };
 
@@ -42,7 +45,7 @@ use crate::{
 };
 
 use super::{
-    access_map::{AccessCount, AccessMap, AccessMapKey, ReflectAccessId},
+    access_map::{AccessCount, AccessMap, ReflectAccessId},
     // proxy::{Proxy, Unproxy},
     AppReflectAllocator,
     ReflectBase,
@@ -51,11 +54,16 @@ use super::{
     ScriptTypeRegistration,
 };
 
+/// Prefer to directly using [`WorldAccessGuard`]. If the underlying type changes, this alias will be updated.
+pub type WorldGuard<'w> = Arc<WorldAccessGuard<'w>>;
+/// Similar to [`WorldGuard`], but without the arc, use for when you don't need the outer Arc.
+pub type WorldGuardRef<'w> = &'w WorldAccessGuard<'w>;
+
 /// While [`WorldAccessGuard`] prevents aliasing at runtime and also makes sure world exists at least as long as the guard itself,
 /// borrows sadly do not persist the script-host boundary :(. That is to be expected, but instead we can make an abstraction which removes the lifetime parameter, making the outer type 'static,
 /// while making sure the lifetime is still satisfied!
-#[derive(Clone, Debug)]
-pub struct WorldCallbackAccess(Weak<WorldAccessGuard<'static>>);
+#[derive(Clone, Debug, Reflect)]
+pub struct WorldCallbackAccess(#[reflect(ignore)] pub(crate) Weak<WorldAccessGuard<'static>>);
 
 impl WorldCallbackAccess {
     /// Wraps a callback which requires access to the world in a 'static way via [`WorldCallbackAccess`].
@@ -73,6 +81,8 @@ impl WorldCallbackAccess {
 
     /// Creates a new [`WorldCallbackAccess`] with an erased lifetime.
     ///
+    /// For safe alternative see [`Self::from_guard`]
+    ///
     /// # Safety
     /// - The caller must ensure the [`WorldAccessGuard`] will not outlive the 'w lifetime
     /// - In practice this means that between the moment the original Arc is dropped, the lifetime 'w must be valid
@@ -89,8 +99,13 @@ impl WorldCallbackAccess {
         Self(world)
     }
 
+    pub fn from_guard(world: WorldGuard<'_>) -> Self {
+        // Safety: the caller ensures `WorldAccessGuard` does not outlive the original lifetime 'w
+        unsafe { Self::new(Arc::downgrade(&world)) }
+    }
+
     /// Attempts to read the world access guard, if it still exists
-    pub fn read(&self) -> Option<Arc<WorldAccessGuard<'static>>> {
+    pub fn read(&self) -> Option<WorldGuard<'static>> {
         self.0.upgrade()
     }
 }

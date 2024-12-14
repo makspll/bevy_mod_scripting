@@ -1,6 +1,9 @@
 use crate::reflection_extensions::TypeIdExtensions;
 
-use super::{ReflectBase, ReflectBaseType, ReflectReference, ReflectionPathElem, WorldAccessGuard};
+use super::{
+    script_val::ScriptValue, ReflectBase, ReflectBaseType, ReflectReference, ReflectionPathElem,
+    WorldAccessGuard, WorldGuard,
+};
 use bevy::reflect::{PartialReflect, ReflectRef};
 use itertools::Itertools;
 use std::{any::TypeId, borrow::Cow};
@@ -61,7 +64,7 @@ impl ReflectReferencePrinter {
         Self { reference }
     }
 
-    fn pretty_print_base(base: &ReflectBaseType, world: &WorldAccessGuard, out: &mut String) {
+    fn pretty_print_base(base: &ReflectBaseType, world: WorldGuard, out: &mut String) {
         let type_id = base.type_id;
         let type_registry = world.type_registry();
         let type_registry = type_registry.read();
@@ -75,6 +78,7 @@ impl ReflectReferencePrinter {
             ReflectBase::Component(e, _) => format!("Component on entity {}", e),
             ReflectBase::Resource(_) => "Resource".to_owned(),
             ReflectBase::Owned(_) => "Allocation".to_owned(),
+            ReflectBase::World => "World".to_owned(),
         };
 
         out.push_str(&format!("{}({})", base_kind, type_path));
@@ -82,15 +86,15 @@ impl ReflectReferencePrinter {
 
     /// Given a reflect reference, prints the type path of the reference resolving the type names with short names.
     /// I.e. `MyType(Component).field_name[0].field_name[1] -> FieldType::Name`
-    pub fn pretty_print(&self, world: &WorldAccessGuard) -> String {
+    pub fn pretty_print(&self, world: WorldGuard) -> String {
         let mut pretty_path = String::new();
 
         pretty_path.push_str("<Reference to ");
 
-        let tail_type_id = self.reference.tail_type_id(world).ok().flatten();
+        let tail_type_id = self.reference.tail_type_id(world.clone()).ok().flatten();
         let type_registry = world.type_registry();
 
-        Self::pretty_print_base(&self.reference.base, world, &mut pretty_path);
+        Self::pretty_print_base(&self.reference.base, world.clone(), &mut pretty_path);
 
         for elem in self.reference.reflect_path.iter() {
             match elem {
@@ -161,7 +165,7 @@ impl ReflectReferencePrinter {
     }
 
     /// Prints the actual value of the reference. Tries to use best available method to print the value.
-    pub fn pretty_print_value(&self, world: &WorldAccessGuard) -> String {
+    pub fn pretty_print_value(&self, world: WorldGuard) -> String {
         let mut output = String::new();
 
         // instead of relying on type registrations, simply traverse the reflection tree and print sensible values
@@ -323,37 +327,37 @@ impl ReflectReferencePrinter {
 pub trait DisplayWithWorld {
     /// Display the `shallowest` representation of the type using world access.
     /// For references this is the type path and the type of the value they are pointing to.
-    fn display_with_world(&self, world: &WorldAccessGuard) -> String;
+    fn display_with_world(&self, world: WorldGuard) -> String;
 
     /// Display the most literal representation of the type using world access.
     /// I.e. for references this would be the pointed to value itself.
-    fn display_value_with_world(&self, world: &WorldAccessGuard) -> String;
+    fn display_value_with_world(&self, world: WorldGuard) -> String;
 }
 
 impl DisplayWithWorld for ReflectReference {
-    fn display_with_world(&self, world: &WorldAccessGuard) -> String {
+    fn display_with_world(&self, world: WorldGuard) -> String {
         ReflectReferencePrinter::new(self.clone()).pretty_print(world)
     }
 
-    fn display_value_with_world(&self, world: &WorldAccessGuard) -> String {
+    fn display_value_with_world(&self, world: WorldGuard) -> String {
         ReflectReferencePrinter::new(self.clone()).pretty_print_value(world)
     }
 }
 
 impl DisplayWithWorld for ReflectBaseType {
-    fn display_with_world(&self, world: &WorldAccessGuard) -> String {
+    fn display_with_world(&self, world: WorldGuard) -> String {
         let mut string = String::new();
         ReflectReferencePrinter::pretty_print_base(self, world, &mut string);
         string
     }
 
-    fn display_value_with_world(&self, world: &WorldAccessGuard) -> String {
+    fn display_value_with_world(&self, world: WorldGuard) -> String {
         self.display_with_world(world)
     }
 }
 
 impl DisplayWithWorld for TypeId {
-    fn display_with_world(&self, world: &WorldAccessGuard) -> String {
+    fn display_with_world(&self, world: WorldGuard) -> String {
         let type_registry = world.type_registry();
         let type_registry = type_registry.read();
 
@@ -366,7 +370,28 @@ impl DisplayWithWorld for TypeId {
             .to_string()
     }
 
-    fn display_value_with_world(&self, world: &WorldAccessGuard) -> String {
+    fn display_value_with_world(&self, world: WorldGuard) -> String {
         self.display_with_world(world)
+    }
+}
+
+impl DisplayWithWorld for ScriptValue {
+    fn display_with_world(&self, world: WorldGuard) -> String {
+        match self {
+            ScriptValue::Reference(r) => r.display_with_world(world),
+            _ => self.display_value_with_world(world),
+        }
+    }
+
+    fn display_value_with_world(&self, world: WorldGuard) -> String {
+        match self {
+            ScriptValue::Reference(r) => r.display_value_with_world(world),
+            ScriptValue::Unit => "()".to_owned(),
+            ScriptValue::Bool(b) => b.to_string(),
+            ScriptValue::Integer(i) => i.to_string(),
+            ScriptValue::Float(f) => f.to_string(),
+            ScriptValue::String(cow) => cow.to_string(),
+            ScriptValue::World => "World".to_owned(),
+        }
     }
 }
