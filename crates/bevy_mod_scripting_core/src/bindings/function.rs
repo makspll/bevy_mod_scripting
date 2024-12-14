@@ -1,14 +1,19 @@
-use std::{borrow::Cow, sync::Arc};
+use std::{borrow::Cow, ops::Deref, sync::Arc};
 
-use bevy::reflect::func::{
-    args::{Arg, ArgInfo, Ownership},
-    ArgList, ArgValue, DynamicFunction, FunctionResult, Return,
+use bevy::reflect::{
+    func::{
+        args::{Arg, ArgInfo, Ownership},
+        ArgList, ArgValue, DynamicFunction, FunctionResult, Return,
+    },
+    PartialReflect,
 };
 
-use crate::error::{ScriptError, ScriptResult};
+use crate::error::{ScriptError, ScriptResult, ValueConversionError};
 
 use super::{
-    access_map::ReflectAccessId, pretty_print::DisplayWithWorld, script_val::ScriptValue,
+    access_map::ReflectAccessId,
+    pretty_print::DisplayWithWorld,
+    script_val::{FromScriptValue, IntoScriptValue, ScriptValue},
     ReflectBase, ReflectReference, WorldAccessGuard, WorldCallbackAccess, WorldGuard,
 };
 
@@ -22,6 +27,18 @@ pub trait CallableWithAccess {
         world: Arc<WorldAccessGuard>,
         f: F,
     ) -> ScriptResult<O>;
+
+    fn dynamic_call<I: IntoIterator<Item = ScriptValue>>(
+        &self,
+        args: I,
+        world: Arc<WorldAccessGuard>,
+    ) -> ScriptResult<ScriptValue> {
+        self.with_call(args, world.clone(), |r| match r {
+            Return::Owned(partial_reflect) => partial_reflect.as_ref().into_script_value(world),
+            Return::Ref(ref_) => ref_.into_script_value(world),
+            Return::Mut(mut_ref) => mut_ref.into_script_value(world),
+        })?
+    }
 }
 
 impl CallableWithAccess for DynamicFunction<'_> {
@@ -33,14 +50,6 @@ impl CallableWithAccess for DynamicFunction<'_> {
     ) -> ScriptResult<O> {
         let info = self.info().args();
 
-        // if info.len() != args.len() {
-        //     return Err(ScriptError::new_reflection_error(format!(
-        //         "Expected {} arguments, got {}",
-        //         info.len(),
-        //         args.len()
-        //     )));
-        // }
-
         // We need to:
         // 1. Claim the correct access for each argument
         // 2. Convert to ArgsList for the function call
@@ -50,10 +59,28 @@ impl CallableWithAccess for DynamicFunction<'_> {
         // 6. Return the result
         let arg_iter = args.into_iter();
 
-        let (args_list, mut accesses) = arg_iter.into_args_list_with_access(info, world.clone())?;
-        // let arc_world = &arc_world;
+        let (mut args_list, mut accesses) =
+            arg_iter.into_args_list_with_access(info, world.clone())?;
 
-        let return_val = match self.call(args_list) {
+        let mut final_args_list = ArgList::default();
+        // we sometimes want to use the boxed value in the arg instead of allocating and refing to it.
+        // for this reason let's be lenient in calling functions. Allow passing owned values as refs
+        for (arg, info) in args_list.iter_mut().zip(info.iter()) {
+            let next_arg = match (arg, info.ownership()) {
+                (ArgValue::Owned(r), Ownership::Ref) => {
+                    ArgValue::Ref((r as &Box<dyn PartialReflect>).as_ref())
+                }
+                (ArgValue::Owned(r), Ownership::Mut) => ArgValue::Mut(r.as_mut()),
+                (v, _) => {
+                    // muahaha, shouldn't allocate due to ZST
+                    let a = std::mem::replace(v, ArgValue::Owned(Box::new(())));
+                    a
+                }
+            };
+            final_args_list = final_args_list.push_arg(next_arg);
+        }
+
+        let return_val = match self.call(final_args_list) {
             Ok(return_val) => return_val,
             Err(e) => {
                 // Safety: we have not generated any unsafe aliases
@@ -85,7 +112,7 @@ pub trait IntoArgsListWithAccess {
         self,
         arg_info: &[ArgInfo],
         world: WorldGuard<'w>,
-    ) -> ScriptResult<(ArgList<'w>, Vec<(ReflectAccessId, Ownership)>)>;
+    ) -> ScriptResult<(Vec<ArgValue<'w>>, Vec<(ReflectAccessId, Ownership)>)>;
 }
 
 impl<I: Iterator<Item = ScriptValue>> IntoArgsListWithAccess for I {
@@ -97,17 +124,16 @@ impl<I: Iterator<Item = ScriptValue>> IntoArgsListWithAccess for I {
         self,
         arg_info: &[ArgInfo],
         world: WorldGuard<'w>,
-    ) -> ScriptResult<(ArgList<'w>, Vec<(ReflectAccessId, Ownership)>)> {
-        // if self.len() != arg_info.len() {
-        //     return Err(ScriptError::new_reflection_error(format!(
-        //         "Expected {} arguments, got {}",
-        //         arg_info.len(),
-        //         self.len()
-        //     )));
-        // }
-
+    ) -> ScriptResult<(Vec<ArgValue<'w>>, Vec<(ReflectAccessId, Ownership)>)> {
         let mut accesses = Vec::default();
-        let mut arg_list = ArgList::new();
+        let mut arg_list = Vec::default();
+
+        let release_accesses = |accesses: &mut Vec<(ReflectAccessId, Ownership)>| {
+            accesses.iter().for_each(|(id, _)| {
+                // Safety: we have not generated any unsafe aliases
+                unsafe { world.release_access(*id) };
+            });
+        };
 
         for (value, arg_info) in self.zip(arg_info.iter()) {
             match value {
@@ -116,7 +142,7 @@ impl<I: Iterator<Item = ScriptValue>> IntoArgsListWithAccess for I {
                     ReflectAccessId::for_reference(arg_ref.base.base_id.clone()).ok_or_else(|| {
                         ScriptError::new_reflection_error(format!(
                             "Could not call function, argument: {:?}, with type: {} is not a valid reference. Have you registered the type?",
-                            arg_info.name(),
+                            arg_info.name().map(str::to_owned).unwrap_or_else(|| arg_info.index().to_string()),
                             arg_ref.display_with_world(world.clone())
                         ))
                     })?;
@@ -130,10 +156,7 @@ impl<I: Iterator<Item = ScriptValue>> IntoArgsListWithAccess for I {
                     };
 
                     if !success {
-                        accesses.drain(..).for_each(|(id, _)| {
-                            // Safety: we have not generated any unsafe aliases
-                            unsafe { world.release_access(id) };
-                        });
+                        release_accesses(&mut accesses);
                         return Err(ScriptError::new_reflection_error(format!(
                             "Could not claim access for argument {}",
                             arg_ref.display_with_world(world.clone())
@@ -146,22 +169,43 @@ impl<I: Iterator<Item = ScriptValue>> IntoArgsListWithAccess for I {
                     let val = match val {
                         Ok(v) => v,
                         Err(e) => {
+                            release_accesses(&mut accesses);
+                            return Err(e);
+                        }
+                    };
+                    arg_list.push(val);
+                }
+                ScriptValue::World => {
+                    arg_list.push(ArgValue::Owned(Box::new(WorldCallbackAccess::from_guard(
+                        world.clone(),
+                    ))));
+                }
+                value => {
+                    let value = match <dyn PartialReflect>::from_script_value(
+                        value,
+                        world.clone(),
+                        arg_info.type_id(),
+                    ) {
+                        Some(Ok(v)) => v,
+                        Some(Err(e)) => {
                             // Safety: Same as above
-
                             accesses.iter().for_each(|(id, _)| {
                                 unsafe { world.release_access(*id) };
                             });
                             return Err(e);
                         }
+                        None => {
+                            release_accesses(&mut accesses);
+                            return Err(ValueConversionError::TypeMismatch {
+                                expected_type: arg_info.type_path().into(),
+                                actual_type: None,
+                            }
+                            .into());
+                        }
                     };
-                    arg_list = arg_list.push_arg(val);
+
+                    arg_list.push(ArgValue::Owned(value));
                 }
-                ScriptValue::World => {
-                    arg_list = arg_list.push_arg(ArgValue::Owned(Box::new(
-                        WorldCallbackAccess::from_guard(world.clone()),
-                    )));
-                }
-                v => todo!(),
             }
         }
 

@@ -3,7 +3,10 @@
 use crate::event::ScriptErrorEvent;
 use asset::{ScriptAsset, ScriptAssetLoader, ScriptAssetSettings};
 use bevy::prelude::*;
-use bindings::{AppReflectAllocator, ReflectAllocator, WorldCallbackAccess};
+use bindings::{
+    script_val::ScriptValue, AppReflectAllocator, ReflectAllocator, ScriptTypeRegistration,
+    WorldCallbackAccess,
+};
 use context::{
     Context, ContextAssigner, ContextBuilder, ContextInitializer, ContextLoadingSettings,
     ContextPreHandlingInitializer, ScriptContexts,
@@ -99,6 +102,8 @@ impl<A: Args, C: Context, R: Runtime> Plugin for ScriptingPlugin<A, C, R> {
 /// Register all types that need to be accessed via reflection
 fn register_types(app: &mut App) {
     app.register_type::<WorldCallbackAccess>();
+    app.register_type::<ScriptValue>();
+    app.register_type::<ScriptTypeRegistration>();
 }
 
 pub trait AddRuntimeInitializer<R: Runtime> {

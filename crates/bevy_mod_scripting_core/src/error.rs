@@ -51,7 +51,8 @@ impl From<ScriptError> for Box<dyn std::error::Error + Send + Sync + 'static> {
     }
 }
 /// An error with an optional script Context
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, Reflect)]
+#[reflect(opaque)]
 pub struct ScriptError(pub Arc<ScriptErrorInner>);
 
 impl Deref for ScriptError {

@@ -23,5 +23,11 @@
         "/home/makspll/git/bevy_mod_scripting/check.sh"
     ],
     "rust-analyzer.showUnlinkedFileNotification": false,
+    "rust-analyzer.runnables.extraTestBinaryArgs": [
+        "--show-output",
+    ],
+    "rust-analyzer.runnables.extraArgs": [
+        "--profile=release-with-debug",
+    ],
     // "rust-analyzer.semanticHighlighting.operator.enable": false
 }

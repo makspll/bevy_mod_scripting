@@ -7,14 +7,15 @@ use crate::{
 use bevy::{
     ecs::{component::ComponentId, entity::Entity},
     prelude::{EntityRef, QueryBuilder},
-    reflect::TypeRegistration,
+    reflect::{Reflect, TypeRegistration},
 };
 use std::{any::TypeId, collections::VecDeque, sync::Arc};
 
 /// A wrapper around a `TypeRegistration` that provides additional information about the type.
 ///
 /// This is used as a hook to a rust type from a scripting language. We should be able to easily convert between a type name and a [`ScriptTypeRegistration`].
-#[derive(Clone)]
+#[derive(Clone, Reflect)]
+#[reflect(opaque)]
 pub struct ScriptTypeRegistration {
     pub(crate) registration: Arc<TypeRegistration>,
     pub component_id: Option<ComponentId>,

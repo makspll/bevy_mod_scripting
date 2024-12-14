@@ -1,7 +1,7 @@
 use std::ops::{Deref, DerefMut};
 
-use bevy_mod_scripting_core::bindings::{script_val::ScriptValue, ReflectBase};
-use mlua::{FromLua, Value};
+use bevy_mod_scripting_core::bindings::{script_val::ScriptValue, ReflectBase, ReflectReference};
+use mlua::{FromLua, IntoLua, IntoLuaMulti, MultiValue, Value};
 
 use super::reference::LuaReflectReference;
 
@@ -41,11 +41,11 @@ impl<'lua> FromLua<'lua> for LuaScriptValue {
             // Value::Function(function) => todo!(),
             // Value::Thread(thread) => todo!(),
             Value::UserData(ud) => {
-                let ud = ud.take::<LuaReflectReference>()?;
+                let ud = ud.borrow::<LuaReflectReference>()?;
                 if ud.0.base.base_id == ReflectBase::World {
                     ScriptValue::World
                 } else {
-                    ScriptValue::Reference(ud.into())
+                    ScriptValue::Reference(ud.clone().into())
                 }
             }
             // Value::Error(error) => todo!(),
@@ -58,6 +58,22 @@ impl<'lua> FromLua<'lua> for LuaScriptValue {
             }
         }
         .into())
+    }
+}
+
+impl<'lua> IntoLua<'lua> for LuaScriptValue {
+    fn into_lua(self, lua: &'lua mlua::Lua) -> mlua::Result<mlua::Value<'lua>> {
+        Ok(match self.0 {
+            ScriptValue::Unit => Value::Nil,
+            ScriptValue::Bool(b) => Value::Boolean(b),
+            ScriptValue::Integer(i) => Value::Integer(i),
+            ScriptValue::Float(f) => Value::Number(f),
+            ScriptValue::String(s) => Value::String(lua.create_string(s.as_ref())?),
+            ScriptValue::World => {
+                LuaReflectReference::from(ReflectReference::new_world()).into_lua(lua)?
+            }
+            ScriptValue::Reference(r) => LuaReflectReference::from(r).into_lua(lua)?,
+        })
     }
 }
 

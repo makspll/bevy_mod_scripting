@@ -7,13 +7,8 @@ use crate::{bindings::{pretty_print::DisplayWithWorld, script_val::{IntoScriptVa
 use crate::bindings::script_val::FromScriptValue;
 /// Extension trait for [`PartialReflect`] providing additional functionality for working with specific types.
 pub trait PartialReflectExt {
+    fn allocate_cloned(&self, world: WorldGuard) -> ReflectReference;
     fn allocate(boxed: Box<dyn PartialReflect>, world: WorldGuard) -> ReflectReference;
-
-    fn from_primitive(value: ScriptValue, _: WorldGuard, target_type_id: TypeId) -> Option<ScriptResult<Box<dyn PartialReflect>>>;
-
-    /// If the type is a primitive type, returns the value as a [`ScriptValue`].
-    /// Primitive types are all simple types that are not the [`ScriptValue::Reference`] variant.
-    fn as_primitive(&self, guard: WorldGuard) -> Option<ScriptValue>;
 
     /// Check if the represented type is from the given crate and has the given type identifier,
     /// returns false if not representing any type or if the type is not from the given crate or does not have the given type identifier.
@@ -112,76 +107,6 @@ impl<T: PartialReflect + ?Sized> PartialReflectExt for T {
         Ok(())
     }
 
-    fn from_primitive(value: ScriptValue, world: WorldGuard, target_type_id: TypeId) -> Option<ScriptResult<Box<dyn PartialReflect>>> {
-        Some(match target_type_id{
-            // TODO: if these types ever support reflect, we can uncomment these lines
-            // For some of these we specifically require the borrowed static variant, this will never let you use a dynamically created string from the script
-            // we should instead allocate and leak perhaps. then garbage collect later
-            t if t == TypeId::of::<()>() => <()>::from_script_value(value, world, target_type_id),
-            t if t == TypeId::of::<bool>() => bool::from_script_value(value, world, target_type_id),
-            t if t == TypeId::of::<str>() => <&str>::from_script_value(value, world, target_type_id),
-            // t if t == TypeId::of::<CStr>() => <CStr>::from_script_value(value, world, target_type_id),
-            // t if t == TypeId::of::<OsStr>() => <OsStr>::from_script_value(value, world, target_type_id),
-            t if t == TypeId::of::<Path>() => <&Path>::from_script_value(value, world, target_type_id),
-            t if t == TypeId::of::<Cow<'static, str>>() => <Cow<'static, str>>::from_script_value(value, world, target_type_id),
-            // t if t == TypeId::of::<Cow<'static, CStr>>() => <Cow<'static, CStr>>::from_script_value(value, world, target_type_id),
-            t if t == TypeId::of::<f32>() => f32::from_script_value(value, world, target_type_id),
-            t if t == TypeId::of::<f64>() => f64::from_script_value(value, world, target_type_id),
-            t if t == TypeId::of::<i8>() => i8::from_script_value(value, world, target_type_id),
-            t if t == TypeId::of::<i16>() => i16::from_script_value(value, world, target_type_id),
-            t if t == TypeId::of::<i32>() => i32::from_script_value(value, world, target_type_id),
-            t if t == TypeId::of::<i64>() => i64::from_script_value(value, world, target_type_id),
-            t if t == TypeId::of::<i128>() => i128::from_script_value(value, world, target_type_id),
-            t if t == TypeId::of::<isize>() => isize::from_script_value(value, world, target_type_id),
-            t if t == TypeId::of::<u8>() => u8::from_script_value(value, world, target_type_id),
-            t if t == TypeId::of::<u16>() => u16::from_script_value(value, world, target_type_id),
-            t if t == TypeId::of::<u32>() => u32::from_script_value(value, world, target_type_id),
-            t if t == TypeId::of::<u64>() => u64::from_script_value(value, world, target_type_id),
-            t if t == TypeId::of::<u128>() => u128::from_script_value(value, world, target_type_id),
-            t if t == TypeId::of::<usize>() => usize::from_script_value(value, world, target_type_id),
-            // t if t == TypeId::of::<Box<str>>() => <Box<str>>::from_script_value(value, world, target_type_id),
-            // t if t == TypeId::of::<CString>() => <CString>::from_script_value(value, world, target_type_id),
-            t if t == TypeId::of::<String>() => <String>::from_script_value(value, world, target_type_id),
-            t if t == TypeId::of::<OsString>() => <OsString>::from_script_value(value, world, target_type_id),
-            t if t == TypeId::of::<PathBuf>() => <PathBuf>::from_script_value(value, world, target_type_id),
-            _ => return None,
-        })
-    } 
-
-    fn as_primitive(&self, guard: WorldGuard) -> Option<ScriptValue> {
-        let type_id = self.get_represented_type_info().map(|ti| ti.type_id()).type_id_or_fake_id();
-
-        match type_id {
-            _ if TypeId::of::<()>() == type_id => self.as_partial_reflect().try_downcast_ref::<()>().and_then(|v| v.into_script_value(guard).ok()),
-            _ if TypeId::of::<bool>() == type_id => self.as_partial_reflect().try_downcast_ref::<bool>().and_then(|v| v.into_script_value(guard).ok()),
-            _ if TypeId::of::<&'static str>() == type_id => self.as_partial_reflect().try_downcast_ref::<&'static str>().and_then(|v| v.into_script_value(guard).ok()),
-            _ if TypeId::of::<&'static CStr>() == type_id => self.as_partial_reflect().try_downcast_ref::<&'static CStr>().and_then(|v| v.into_script_value(guard).ok()),
-            _ if TypeId::of::<&'static OsStr>() == type_id => self.as_partial_reflect().try_downcast_ref::<&'static OsStr>().and_then(|v| v.into_script_value(guard).ok()),
-            _ if TypeId::of::<Path>() == type_id => self.as_partial_reflect().try_downcast_ref::<&'static Path>().and_then(|v| v.into_script_value(guard).ok()),
-            _ if TypeId::of::<Cow<'static, str>>() == type_id => self.as_partial_reflect().try_downcast_ref::<Cow<'static, str>>().and_then(|v| v.clone().into_script_value(guard).ok()),
-            _ if TypeId::of::<Cow<'static, CStr>>() == type_id => self.as_partial_reflect().try_downcast_ref::<Cow<'static, CStr>>().and_then(|v| v.clone().into_script_value(guard).ok()),
-            _ if TypeId::of::<f32>() == type_id => self.as_partial_reflect().try_downcast_ref::<f32>().and_then(|v| v.into_script_value(guard).ok()),
-            _ if TypeId::of::<f64>() == type_id => self.as_partial_reflect().try_downcast_ref::<f64>().and_then(|v| v.into_script_value(guard).ok()),
-            _ if TypeId::of::<i8>() == type_id => self.as_partial_reflect().try_downcast_ref::<i8>().and_then(|v| v.into_script_value(guard).ok()),
-            _ if TypeId::of::<i16>() == type_id => self.as_partial_reflect().try_downcast_ref::<i16>().and_then(|v| v.into_script_value(guard).ok()),
-            _ if TypeId::of::<i32>() == type_id => self.as_partial_reflect().try_downcast_ref::<i32>().and_then(|v| v.into_script_value(guard).ok()),
-            _ if TypeId::of::<i64>() == type_id => self.as_partial_reflect().try_downcast_ref::<i64>().and_then(|v| v.into_script_value(guard).ok()),
-            _ if TypeId::of::<i128>() == type_id => self.as_partial_reflect().try_downcast_ref::<i128>().and_then(|v| v.into_script_value(guard).ok()),
-            _ if TypeId::of::<isize>() == type_id => self.as_partial_reflect().try_downcast_ref::<isize>().and_then(|v| v.into_script_value(guard).ok()),
-            _ if TypeId::of::<u8>() == type_id => self.as_partial_reflect().try_downcast_ref::<u8>().and_then(|v| v.into_script_value(guard).ok()),
-            _ if TypeId::of::<u16>() == type_id => self.as_partial_reflect().try_downcast_ref::<u16>().and_then(|v| v.into_script_value(guard).ok()),
-            _ if TypeId::of::<u32>() == type_id => self.as_partial_reflect().try_downcast_ref::<u32>().and_then(|v| v.into_script_value(guard).ok()),
-            _ if TypeId::of::<u64>() == type_id => self.as_partial_reflect().try_downcast_ref::<u64>().and_then(|v| v.into_script_value(guard).ok()),
-            _ if TypeId::of::<u128>() == type_id => self.as_partial_reflect().try_downcast_ref::<u128>().and_then(|v| v.into_script_value(guard).ok()),
-            _ if TypeId::of::<usize>() == type_id => self.as_partial_reflect().try_downcast_ref::<usize>().and_then(|v| v.into_script_value(guard).ok()),
-            _ if TypeId::of::<Box<str>>() == type_id => self.as_partial_reflect().try_downcast_ref::<Box<str>>().and_then(|v| v.to_owned().into_script_value(guard).ok()),
-            _ if TypeId::of::<CString>() == type_id => self.as_partial_reflect().try_downcast_ref::<CString>().and_then(|v| v.to_owned().into_script_value(guard).ok()),
-            _ if TypeId::of::<String>() == type_id => self.as_partial_reflect().try_downcast_ref::<String>().and_then(|v| v.to_owned().into_script_value(guard).ok()),
-            _ if TypeId::of::<OsString>() == type_id => self.as_partial_reflect().try_downcast_ref::<OsString>().and_then(|v| v.to_owned().into_script_value(guard).ok()),
-            _ if TypeId::of::<PathBuf>() == type_id => self.as_partial_reflect().try_downcast_ref::<PathBuf>().and_then(|v| v.to_owned().into_script_value(guard).ok()),        
-            _ => None,
-        }
-    }
 
     fn as_option(&self) -> Result<Option<&dyn PartialReflect>, ScriptError> {
         if let bevy::reflect::ReflectRef::Enum(e) = self.reflect_ref() {
@@ -393,6 +318,11 @@ impl<T: PartialReflect + ?Sized> PartialReflectExt for T {
         let allocator = world.allocator();
         let mut allocator = allocator.write();
         ReflectReference::new_allocated_boxed(boxed, &mut allocator)
+    }
+
+    fn allocate_cloned(&self, world: WorldGuard) -> ReflectReference {
+        let boxed = self.clone_value();
+        Self::allocate(boxed, world)
     }
     
 
@@ -626,46 +556,4 @@ mod test {
     }
 
 
-    #[test]
-    fn test_as_primitive() {
-        let mut world = World::new();
-        world.insert_resource(AppReflectAllocator::default());
-        world.insert_resource(AppTypeRegistry::default());
-        let world = WorldAccessGuard::new(&mut world);
-        let world = WorldGuard::new(world);
-
-        assert_eq!(true.as_primitive(world.clone()), Some(ScriptValue::Bool(true)));
-        assert_eq!(false.as_primitive(world.clone()), Some(ScriptValue::Bool(false)));
-        assert_eq!(0i64.as_primitive(world.clone()), Some(ScriptValue::Integer(0)));
-        assert_eq!(0.0f64.as_primitive(world.clone()), Some(ScriptValue::Float(0.0)));
-        assert_eq!("".as_primitive(world.clone()), Some(ScriptValue::String("".into())));
-        assert_eq!("hello".as_primitive(world.clone()), Some(ScriptValue::String("hello".into())));
-        // assert_eq!(CString::new("hello").unwrap().as_primtive(world.clone()), Some(ScriptValue::String("hello".into())));
-        // assert_eq!(OsStr::new("hello").as_primtive(world.clone()), Some(ScriptValue::String("hello".into())));
-        assert_eq!(Path::new("hello").as_primitive(world.clone()), Some(ScriptValue::String("hello".into())));
-        assert_eq!(Cow::Borrowed("hello").as_primitive(world.clone()), Some(ScriptValue::String("hello".into())));
-        assert_eq!(Cow::Owned::<str>("hello".to_string()).as_primitive(world.clone()), Some(ScriptValue::String("hello".into())));
-        // assert_eq!(Box::<str>::from("hello").as_primtive(world.clone()), Some(ScriptValue::String("hello".into())));
-        assert_eq!(().as_primitive(world.clone()), Some(ScriptValue::Unit));       
-    }
-
-    #[test]
-    fn test_from_primitive() {
-        let mut world = World::new();
-        world.insert_resource(AppReflectAllocator::default());
-        world.insert_resource(AppTypeRegistry::default());
-        let world = WorldAccessGuard::new(&mut world);
-        let world = WorldGuard::new(world);
-
-        assert!(<()>::from_primitive(ScriptValue::Unit, world.clone(), TypeId::of::<()>()).unwrap().unwrap().reflect_partial_eq(&()).unwrap());
-        assert!(bool::from_primitive(ScriptValue::Bool(true), world.clone(), TypeId::of::<bool>()).unwrap().unwrap().reflect_partial_eq(&true).unwrap());
-        assert!(i32::from_primitive(ScriptValue::Integer(42), world.clone(), TypeId::of::<i32>()).unwrap().unwrap().reflect_partial_eq(&42).unwrap());
-        assert!(f64::from_primitive(ScriptValue::Float(42.0), world.clone(), TypeId::of::<f64>()).unwrap().unwrap().reflect_partial_eq(&42.0).unwrap());
-        assert!(String::from_primitive(ScriptValue::String("hello".into()), world.clone(), TypeId::of::<String>()).unwrap().unwrap().reflect_partial_eq(&"hello".to_string()).unwrap());
-        assert!(OsString::from_primitive(ScriptValue::String("hello".into()), world.clone(), TypeId::of::<OsString>()).unwrap().unwrap().reflect_partial_eq(&OsString::from("hello")).unwrap());
-        assert!(PathBuf::from_primitive(ScriptValue::String("hello".into()), world.clone(), TypeId::of::<PathBuf>()).unwrap().unwrap().reflect_partial_eq(&PathBuf::from("hello")).unwrap());
-        assert!(Cow::<str>::from_primitive(ScriptValue::String("hello".into()), world.clone(), TypeId::of::<Cow<'static, str>>()).unwrap().unwrap().reflect_partial_eq(&Cow::Borrowed("hello")).unwrap());
-        assert!(i32::from_primitive(ScriptValue::Float(42.0), world.clone(), TypeId::of::<i32>()).unwrap().unwrap().reflect_partial_eq(&42).unwrap());
-        assert!(f32::from_primitive(ScriptValue::Float(42.0), world.clone(), TypeId::of::<i32>()).unwrap().unwrap().reflect_partial_eq(&42).unwrap());
-    }
 }

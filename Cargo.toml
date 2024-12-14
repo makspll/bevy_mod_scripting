@@ -105,6 +105,10 @@ codegen-units = 8
 incremental = false
 debug = false
 
+[profile.release-with-debug]
+inherits = "release"
+debug = true
+
 [[example]]
 name = "console_integration_lua"
 path = "examples/lua/console_integration.rs"

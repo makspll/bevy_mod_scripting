@@ -9,26 +9,22 @@ end
     
 function on_event()
 
-    world:spawn()
-
-    world:exit()
-
-    -- print(entity) 
-    -- print(script)
-    -- print(world)
+    print(entity) 
+    print(script)
+    print(world)
 
 
-    -- local my_component_type = world:get_type_by_name("MyComponent")
+    local my_component_type = world:get_type_by_name("MyComponent")
 
-    -- local comp = world:get_component(entity, my_component_type)
-    -- print("Before script: ", comp)
+    local comp = world:get_component(entity, my_component_type)
+    print("Before script: ", comp:print_value())
 
-    -- print("\noption")
-    -- print(comp.option_usize)
-    -- comp.option_usize = 69
-    -- print(comp.option_usize)
-    -- comp.option_usize = nil
-    -- print(comp.option_usize)
+    print("\noption")
+    print(comp.option_usize)
+    comp.option_usize = 69
+    print(comp.option_usize)
+    comp.option_usize = nil
+    print(comp.option_usize)
 
     -- print("\nvec")
     -- print(table_to_string(comp.vec_of_usize))

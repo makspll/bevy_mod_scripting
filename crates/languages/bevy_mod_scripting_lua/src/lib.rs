@@ -14,6 +14,7 @@ use bevy_mod_scripting_core::{
     error::ScriptError,
     event::CallbackLabel,
     handler::Args,
+    reflection_extensions::PartialReflectExt,
     script::ScriptId,
     AddContextPreHandlingInitializer, ScriptingPlugin,
 };
@@ -68,8 +69,11 @@ impl<A: LuaEventArg> Plugin for LuaScriptingPlugin<A> {
             //     let reflect_reference = ReflectReference::new_allocated(entity, &mut allocator);
             //     <Entity as LuaProxied>::Proxy::from(reflect_reference)
             // });
-
-            context.globals().set("script_id", script_id.to_owned())?;
+            context.globals().set(
+                "entity",
+                LuaReflectReference(<Entity>::allocate(Box::new(entity), world)),
+            )?;
+            context.globals().set("script_id", script_id.clone())?;
             // context.globals().set("entity", lua_entity)?;
             Ok(())
         });

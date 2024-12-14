@@ -16,7 +16,7 @@ use bevy_mod_scripting_core::{
     bindings::{
         function::CallableWithAccess,
         pretty_print::{DisplayWithWorld, ReflectReferencePrinter},
-        script_val::{FromScriptValue, ScriptValue},
+        script_val::{FromScriptValue, IntoScriptValue, ScriptValue},
         DeferredReflection, ReflectAllocator, ReflectRefIter, ReflectReference, ReflectionPathElem,
         TypeIdSource, WorldCallbackAccess,
     },
@@ -28,13 +28,12 @@ use bevy_mod_scripting_core::{
 use bevy_mod_scripting_functions::namespaced_register::{GetNamespacedFunction, Namespace};
 use mlua::{IntoLua, Lua, MetaMethod, UserData, UserDataMethods, Value, Variadic};
 
-use crate::bindings::world::LuaWorld;
-
 use super::{
     // proxy::{LuaProxied, LuaValProxy},
     script_value::LuaScriptValue,
     world::GetWorld,
 };
+use crate::bindings::world::LuaWorld;
 
 /// Lua UserData wrapper for [`bevy_mod_scripting_core::bindings::ReflectReference`].
 /// Acts as a lua reflection interface. Any value which is registered in the type registry can be interacted with using this type.
@@ -286,58 +285,43 @@ impl UserData for LuaReflectReference {
     fn add_methods<'lua, T: UserDataMethods<'lua, Self>>(m: &mut T) {
         m.add_meta_function(
             MetaMethod::Index,
-            |lua, (self_, key): (LuaReflectReference, String)| {
+            |lua, (self_, key): (LuaReflectReference, LuaScriptValue)| {
                 let world = lua.get_world();
-                let type_id = self_.0.tail_type_id(world.clone())?.type_id_or_fake_id();
+                let mut self_: ReflectReference = self_.into();
+                let type_id = self_.tail_type_id(world.clone())?.type_id_or_fake_id();
 
-                let func = lua.create_function(move |_, args: Variadic<LuaScriptValue>| {
-                    let registry =
+                let key: ScriptValue = key.into();
+
+                if let ScriptValue::String(ref key) = key {
+                    let function_registry =
                         world.with_resource(|registry: &AppFunctionRegistry| registry.clone());
-                    let registry = registry.read();
+                    let registry = function_registry.read();
 
-                    let func = registry
-                        .get_namespaced_function(key.clone(), Namespace::OnType(type_id))
-                        .ok_or_else(|| {
-                            mlua::Error::external(FunctionError::FunctionNotFound {
-                                function_name: key.clone().into(),
-                                type_: Some(type_id.display_with_world(world.clone()).into()),
-                            })
-                        })?;
-                    let info = func.info();
+                    if let Some(func) =
+                        registry.get_namespaced_function(key.clone(), Namespace::OnType(type_id))
+                    {
+                        let func = func.clone();
+                        let func =
+                            lua.create_function(move |_, args: Variadic<LuaScriptValue>| {
+                                let out = func.dynamic_call(
+                                    args.into_iter().map(Into::into),
+                                    world.clone(),
+                                )?;
 
-                    // convert args according to type info
-                    println!(
-                        "Calling function {:?} with args (before converting): {:?}",
-                        info.name(),
-                        args
-                    );
+                                Ok(LuaScriptValue::from(out))
+                            })?;
 
-                    // let args = info
-                    //     .args()
-                    //     .iter()
-                    //     .map(|i| i.type_id())
-                    //     .zip(args.into_iter())
-                    //     .map(|(target_type_id, arg)| {
-                    //         let boxed = <ScriptValue>::from_script_value(
-                    //             arg.into(),
-                    //             world.clone(),
-                    //             target_type_id,
-                    //         )?;
-                    //         Ok(<dyn PartialReflect>::allocate(boxed, world.clone()))
-                    //     })
-                    //     .collect::<ScriptResult<Vec<_>>>()?;
-                    println!("Calling function {:?} with args: {:?}", info.name(), args);
-                    func.with_call(args.into_iter().map(Into::into), world.clone(), |r| {
-                        // let result = r.call()?;
-                        println!("Result: {:?}", r);
-                        0
-                    })?;
-                    Ok(())
-                })?;
+                        return func.into_lua(lua);
+                    }
+                };
 
-                Ok(func)
+                let mut reflect_path: ReflectionPathElem = key.try_into()?;
+                reflect_path.convert_to_0_indexed();
+                self_.index_path(reflect_path);
+                let script_value = self_.into_script_value(world)?;
+                LuaScriptValue::from(script_value).into_lua(lua)
             },
-        )
+        );
 
         // m.add_meta_function(
         //     MetaMethod::Index,
@@ -474,16 +458,15 @@ impl UserData for LuaReflectReference {
         //     Ok((iterator, Value::Nil, Value::Nil))
         // });
 
-        // m.add_meta_function(MetaMethod::ToString, |lua, self_: LuaReflectReference| {
-        //     let world = lua.get_world();
-        //     Ok(ReflectReferencePrinter::new(self_.0).pretty_print(&world))
-        // });
+        m.add_meta_function(MetaMethod::ToString, |lua, self_: LuaReflectReference| {
+            let world = lua.get_world();
+            Ok(self_.0.display_with_world(world))
+        });
 
-        // m.add_function("print_value", |lua, self_: LuaReflectReference| {
-        //     let world = lua.get_world();
-
-        //     Ok(ReflectReferencePrinter::new(self_.0).pretty_print_value(&world))
-        // });
+        m.add_function("print_value", |lua, self_: LuaReflectReference| {
+            let world = lua.get_world();
+            Ok(self_.0.display_value_with_world(world))
+        });
     }
 }
 

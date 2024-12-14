@@ -63,7 +63,8 @@ pub type WorldGuardRef<'w> = &'w WorldAccessGuard<'w>;
 /// borrows sadly do not persist the script-host boundary :(. That is to be expected, but instead we can make an abstraction which removes the lifetime parameter, making the outer type 'static,
 /// while making sure the lifetime is still satisfied!
 #[derive(Clone, Debug, Reflect)]
-pub struct WorldCallbackAccess(#[reflect(ignore)] pub(crate) Weak<WorldAccessGuard<'static>>);
+#[reflect(opaque)]
+pub struct WorldCallbackAccess(pub(crate) Weak<WorldAccessGuard<'static>>);
 
 impl WorldCallbackAccess {
     /// Wraps a callback which requires access to the world in a 'static way via [`WorldCallbackAccess`].

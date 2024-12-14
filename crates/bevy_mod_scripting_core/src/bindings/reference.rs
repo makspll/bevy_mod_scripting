@@ -277,13 +277,10 @@ impl ReflectReference {
     /// # Safety
     /// - The caller must ensure this reference has permission to access the underlying value
     pub unsafe fn into_arg_value<'w>(self, world: WorldGuard<'w>, arg_info: &ArgInfo) -> ScriptResult<ArgValue<'w>> {
-        println!("A {}", Arc::strong_count(&world));
-        println!("{:?}", self);
         if ReflectBase::World == self.base.base_id {
             // Safety: we already have an Arc<WorldAccessGuard<'w>> so creating a new one from the existing one is safe
             // as the caller of this function will make sure the Arc is dropped after the lifetime 'w is done.
             let new_guard = WorldCallbackAccess::from_guard(world.clone());
-            println!("B {}", Arc::strong_count(&world));
             new_guard.read().unwrap();
             return Ok(ArgValue::Owned(Box::new(WorldCallbackAccess::from_guard(world))));
         }
@@ -572,6 +569,23 @@ impl ReflectionPathElem {
 
     pub fn new_deferred<I: Into<DeferredReflection>>(defref: I) -> Self {
         Self::DeferredReflection(defref.into())
+    }
+
+    /// Assumes the accesses are 1 indexed and converts them to 0 indexed
+    pub fn convert_to_0_indexed(&mut self){
+        match self {
+            ReflectionPathElem::Reflection(path) => {
+                path.0.iter_mut().for_each(|a| match a.access {
+                    bevy::reflect::Access::FieldIndex(ref mut i) => *i -= 1,
+                    bevy::reflect::Access::TupleIndex(ref mut i) => *i -= 1,
+                    bevy::reflect::Access::ListIndex(ref mut i) => *i -= 1,
+                    _ => {}
+                });
+            },
+            ReflectionPathElem::DeferredReflection(_) => {},
+            ReflectionPathElem::MapAccess(_) => {},
+            ReflectionPathElem::Identity => {},
+        };
     }
 }
 
