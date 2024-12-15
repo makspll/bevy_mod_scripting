@@ -35,10 +35,10 @@ pub mod prelude {
     pub use crate::mlua::{self, prelude::*, Value};
 }
 
-pub trait LuaEventArg: Args + for<'l> IntoLuaMulti<'l> {}
-impl<T: Args + for<'l> IntoLuaMulti<'l>> LuaEventArg for T {}
+pub trait LuaEventArg: Args + IntoLuaMulti {}
+impl<T: Args + IntoLuaMulti> LuaEventArg for T {}
 
-pub struct LuaScriptingPlugin<A: Args + for<'l> IntoLuaMulti<'l>> {
+pub struct LuaScriptingPlugin<A: Args + IntoLuaMulti> {
     pub scripting_plugin: ScriptingPlugin<A, Lua, ()>,
 }
 
@@ -147,7 +147,7 @@ pub fn lua_context_reload(
 }
 
 #[allow(clippy::too_many_arguments)]
-pub fn lua_handler<A: Args + for<'l> IntoLuaMulti<'l>>(
+pub fn lua_handler<A: Args + IntoLuaMulti>(
     args: A,
     entity: bevy::ecs::entity::Entity,
     script_id: &ScriptId,
@@ -169,7 +169,7 @@ pub fn lua_handler<A: Args + for<'l> IntoLuaMulti<'l>>(
         };
 
         handler
-            .call::<_, ()>(args)
+            .call::<()>(args)
             .map_err(ScriptError::from_mlua_error)?;
         Ok(())
     })

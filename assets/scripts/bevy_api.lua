@@ -6,8 +6,9 @@ function table_to_string(t)
     return result .. "]"
 end
 
-    
+
 function on_event()
+    -- send exit event, to finish after one call
     world:exit()
 
     print(entity) 
@@ -22,7 +23,7 @@ function on_event()
 
     print("\noption")
     -- print(comp:get("option_usize"))
-    print(comp.option_usie)
+    print(comp.option_usize)
     comp.option_usize = 69
     print(comp.option_usize)
     comp.option_usize = nil

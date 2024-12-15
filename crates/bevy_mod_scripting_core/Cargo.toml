@@ -23,7 +23,7 @@ doc_always = []
 mlua_impls = ["mlua"]
 
 [dependencies]
-mlua = { version = "0.9", optional = true }
+mlua = { optional = true, workspace = true }
 bevy = { workspace = true, default-features = false, features = [
     "bevy_asset",
     "reflect_functions",

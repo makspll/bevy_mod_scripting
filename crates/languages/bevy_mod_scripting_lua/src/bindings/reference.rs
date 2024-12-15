@@ -60,11 +60,7 @@ impl From<ReflectReference> for LuaReflectReference {
 }
 
 /// Looks up a function in the registry on the given type id
-fn lookup_function<'lua>(
-    lua: &'lua Lua,
-    key: &str,
-    type_id: TypeId,
-) -> Option<Result<Function<'lua>, mlua::Error>> {
+fn lookup_function(lua: &Lua, key: &str, type_id: TypeId) -> Option<Result<Function, mlua::Error>> {
     let function = lookup_dynamic_function(lua, key, type_id);
 
     function.map(|function| {
@@ -103,7 +99,7 @@ fn lookup_dynamic_function_typed<'lua, T: 'static + ?Sized>(
 }
 
 impl UserData for LuaReflectReference {
-    fn add_methods<'lua, T: UserDataMethods<'lua, Self>>(m: &mut T) {
+    fn add_methods<T: UserDataMethods<Self>>(m: &mut T) {
         m.add_meta_function(
             MetaMethod::Index,
             |lua, (self_, key): (LuaReflectReference, LuaScriptValue)| {

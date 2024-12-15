@@ -28,8 +28,8 @@ impl From<ScriptValue> for LuaScriptValue {
     }
 }
 
-impl<'lua> FromLua<'lua> for LuaScriptValue {
-    fn from_lua(value: mlua::Value<'lua>, lua: &'lua mlua::Lua) -> mlua::Result<Self> {
+impl FromLua for LuaScriptValue {
+    fn from_lua(value: mlua::Value, _lua: &mlua::Lua) -> mlua::Result<Self> {
         Ok(match value {
             Value::Nil => ScriptValue::Unit,
             Value::Boolean(b) => ScriptValue::Bool(b),
@@ -52,7 +52,7 @@ impl<'lua> FromLua<'lua> for LuaScriptValue {
             _ => {
                 return Err(mlua::Error::FromLuaConversionError {
                     from: value.type_name(),
-                    to: "ScriptValue",
+                    to: "ScriptValue".to_owned(),
                     message: Some("unsupported value type".to_owned()),
                 })
             }
@@ -61,8 +61,8 @@ impl<'lua> FromLua<'lua> for LuaScriptValue {
     }
 }
 
-impl<'lua> IntoLua<'lua> for LuaScriptValue {
-    fn into_lua(self, lua: &'lua mlua::Lua) -> mlua::Result<mlua::Value<'lua>> {
+impl IntoLua for LuaScriptValue {
+    fn into_lua(self, lua: &mlua::Lua) -> mlua::Result<mlua::Value> {
         Ok(match self.0 {
             ScriptValue::Unit => Value::Nil,
             ScriptValue::Bool(b) => Value::Boolean(b),

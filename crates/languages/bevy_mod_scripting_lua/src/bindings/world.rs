@@ -29,7 +29,7 @@ impl LuaWorld {
 }
 
 impl UserData for LuaWorld {
-    fn add_methods<'lua, T: UserDataMethods<'lua, Self>>(methods: &mut T) {
+    fn add_methods<T: UserDataMethods<Self>>(methods: &mut T) {
         // methods.add_meta_function(
         //     MetaMethod::Index,
         //     |lua, (world, key): (LuaWorld, String)| {
