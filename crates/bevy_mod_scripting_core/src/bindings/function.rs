@@ -235,8 +235,7 @@ impl<I: Iterator<Item = ScriptValue>> IntoArgsListWithAccess for I {
                                 function_info,
                                 Some(argument_info),
                                 InteropError::impossible_conversion(argument_info.type_id()),
-                            )
-                            .into());
+                            ));
                         }
                     };
 

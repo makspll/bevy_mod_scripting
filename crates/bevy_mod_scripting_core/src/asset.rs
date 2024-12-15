@@ -47,7 +47,7 @@ impl AssetLoader for ScriptAssetLoader {
         reader
             .read_to_end(&mut content)
             .await
-            .map_err(|e| ScriptError::new_error(e).with_context(load_context.asset_path()))?;
+            .map_err(|e| ScriptError::new_external(e).with_context(load_context.asset_path()))?;
         if let Some(processor) = &self.preprocessor {
             processor(&mut content)?;
         }

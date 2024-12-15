@@ -111,7 +111,7 @@ impl ScriptError {
         match error {
             mlua::Error::ExternalError(inner) => {
                 if let Some(script_error) = inner.downcast_ref::<InteropError>() {
-                    Self::new(script_error.clone())
+                    script_error.clone().into()
                 } else {
                     Self::new_external(inner)
                 }
@@ -217,6 +217,12 @@ impl DisplayWithWorld for InteropError {
 }
 
 impl_dummy_display!(InteropError);
+
+impl From<InteropError> for ScriptError {
+    fn from(val: InteropError) -> Self {
+        ScriptError::new(val)
+    }
+}
 
 impl InteropError {
     pub fn missing_world() -> Self {
