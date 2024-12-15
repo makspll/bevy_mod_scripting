@@ -20,7 +20,7 @@ use bevy_mod_scripting_core::{
         DeferredReflection, ReflectAllocator, ReflectRefIter, ReflectReference, ReflectionPathElem,
         TypeIdSource, WorldCallbackAccess,
     },
-    error::{FunctionError, ScriptError, ScriptResult},
+    error::{FunctionError, ScriptError, ScriptResult, ValueConversionError},
     new_deferred_reflection,
     reflection_extensions::{PartialReflectExt, TypeIdExtensions},
     Either,
@@ -318,8 +318,52 @@ impl UserData for LuaReflectReference {
                 let mut reflect_path: ReflectionPathElem = key.try_into()?;
                 reflect_path.convert_to_0_indexed();
                 self_.index_path(reflect_path);
-                let script_value = self_.into_script_value(world)?;
+                let script_value = self_.with_reflect(world.clone(), |r| {
+                    <&dyn PartialReflect>::into_script_value(r, world.clone())
+                })??;
                 LuaScriptValue::from(script_value).into_lua(lua)
+            },
+        );
+
+        m.add_meta_function(
+            MetaMethod::NewIndex,
+            |lua, (self_, key, value): (LuaReflectReference, LuaScriptValue, LuaScriptValue)| {
+                let mut self_: ReflectReference = self_.into();
+                let key: ScriptValue = key.into();
+                let value: ScriptValue = value.into();
+                let mut reflect_path: ReflectionPathElem = key.try_into()?;
+                reflect_path.convert_to_0_indexed();
+
+                let world = lua.get_world();
+
+                self_.index_path(reflect_path);
+                self_.with_reflect_mut(world.clone(), |r| {
+                    let target_type_id = r
+                        .get_represented_type_info()
+                        .map(|i| i.type_id())
+                        .type_id_or_fake_id();
+                    let other = <dyn PartialReflect>::from_script_value(
+                        value,
+                        world.clone(),
+                        target_type_id,
+                    )
+                    .transpose()?
+                    .ok_or_else(|| ValueConversionError::TypeMismatch {
+                        expected_type: target_type_id.display_with_world(world.clone()).into(),
+                        actual_type: Some(
+                            r.get_represented_type_info()
+                                .map(|i| i.type_id())
+                                .type_id_or_fake_id()
+                                .display_with_world(world.clone())
+                                .into(),
+                        ),
+                    })?;
+
+                    r.try_apply(other.as_partial_reflect())?;
+                    Ok::<_, ScriptError>(())
+                })??;
+
+                Ok(())
             },
         );
 

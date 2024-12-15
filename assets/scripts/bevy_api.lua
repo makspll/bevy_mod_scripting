@@ -25,10 +25,10 @@ function on_event()
     print(comp.option_usize)
     comp.option_usize = nil
     print(comp.option_usize)
-
-    -- print("\nvec")
+    world:exit()
+    print("\nvec")
     -- print(table_to_string(comp.vec_of_usize))
-    -- comp.vec_of_usize = {42,69,72}
+    comp.vec_of_usize = {42,69,72}
     -- comp.vec_of_usize[1] = 0
     -- print(comp.vec_of_usize[2])
     -- print(table_to_string(comp.vec_of_usize))

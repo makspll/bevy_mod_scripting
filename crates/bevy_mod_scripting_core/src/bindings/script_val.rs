@@ -277,11 +277,6 @@ impl FromScriptValue for dyn PartialReflect {
         world: WorldGuard,
         target_type_id: TypeId,
     ) -> Option<ScriptResult<Box<dyn PartialReflect>>> {
-        println!(
-            "type: {:?}",
-            target_type_id.display_with_world(world.clone())
-        );
-
         match target_type_id {
             // TODO: if these types ever support reflect, we can uncomment these lines
             // For some of these we specifically require the borrowed static variant, this will never let you use a dynamically created string from the script
@@ -344,7 +339,6 @@ impl FromScriptValue for dyn PartialReflect {
                 return u128::from_script_value(value, world, target_type_id)
             }
             t if t == TypeId::of::<usize>() => {
-                println!("usize {:?}", value);
                 return usize::from_script_value(value, world, target_type_id);
             }
             // t if t == TypeId::of::<Box<str>>() => return <Box<str>>::from_script_value(value, world, target_type_id),
@@ -1451,24 +1445,6 @@ mod test {
         .unwrap()
         .reflect_partial_eq(&"hello")
         .unwrap());
-
-        println!(
-            "{:?}",
-            <dyn PartialReflect>::from_script_value(
-                ScriptValue::Reference(option_reference.clone()),
-                guard.clone(),
-                TypeId::of::<Option<usize>>()
-            )
-        );
-
-        println!(
-            "heL: {:?}",
-            <dyn PartialReflect>::from_script_value(
-                ScriptValue::Reference(usize_reference.clone()),
-                guard.clone(),
-                TypeId::of::<Option<usize>>()
-            )
-        );
         assert!(<dyn PartialReflect>::from_script_value(
             ScriptValue::Reference(usize_reference.clone()),
             guard.clone(),
@@ -1499,14 +1475,6 @@ mod test {
         .reflect_partial_eq(&Some(Some(2usize)))
         .unwrap());
 
-        println!(
-            "heL: {:?}",
-            <dyn PartialReflect>::from_script_value(
-                ScriptValue::Unit,
-                guard.clone(),
-                TypeId::of::<Option<Option<usize>>>()
-            )
-        );
         assert!(<dyn PartialReflect>::from_script_value(
             ScriptValue::Unit,
             guard.clone(),
@@ -1553,14 +1521,6 @@ mod test {
         .reflect_partial_eq(&Some("hello".to_string()))
         .unwrap());
 
-        println!(
-            "{:?}",
-            <dyn PartialReflect>::from_script_value(
-                ScriptValue::Unit,
-                guard.clone(),
-                TypeId::of::<Option<String>>()
-            )
-        );
         assert!(<dyn PartialReflect>::from_script_value(
             ScriptValue::Unit,
             guard.clone(),
