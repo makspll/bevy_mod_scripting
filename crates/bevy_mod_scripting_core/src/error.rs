@@ -119,14 +119,6 @@ impl ScriptError {
         }))
     }
 
-    pub fn with_context<S: ToString>(self, context: S) -> Self {
-        Self(Arc::new(ScriptErrorInner {
-            script: self.0.script.clone(),
-            context: context.to_string(),
-            reason: self.0.reason.clone(),
-        }))
-    }
-
     pub fn with_script<S: ToString>(self, script: S) -> Self {
         Self(Arc::new(ScriptErrorInner {
             script: Some(script.to_string()),
@@ -135,10 +127,10 @@ impl ScriptError {
         }))
     }
 
-    pub fn with_appended_context<S: ToString>(self, context: S) -> Self {
+    pub fn with_context<S: ToString>(self, context: S) -> Self {
         Self(Arc::new(ScriptErrorInner {
             script: self.0.script.clone(),
-            context: format!("{}. {}", self.0.context, context.to_string()),
+            context: format!("{}\n{}", self.0.context, context.to_string()),
             reason: self.0.reason.clone(),
         }))
     }
@@ -149,11 +141,11 @@ impl std::fmt::Display for ScriptError {
         if let Some(script) = &self.0.script {
             write!(
                 f,
-                "error in script `{}`: {}.\n{}",
+                "error in script `{}`: {}.\nContext:{}",
                 script, self.0.reason, self.0.context
             )
         } else {
-            write!(f, "error: {}.\n{}", self.0.reason, self.0.context)
+            write!(f, "error: {}.\nContext:{}", self.0.reason, self.0.context)
         }
     }
 }
@@ -162,14 +154,14 @@ impl DisplayWithWorld for ScriptError {
     fn display_with_world(&self, world: crate::bindings::WorldGuard) -> String {
         if let Some(script) = &self.0.script {
             format!(
-                "error in script `{}`: {}.\n{}",
+                "error in script `{}`: {}.\nContext:{}",
                 script,
                 self.0.reason.display_with_world(world),
                 self.0.context
             )
         } else {
             format!(
-                "error: {}.\n{}",
+                "error: {}.\nContext:{}",
                 self.0.reason.display_with_world(world),
                 self.0.context
             )
@@ -211,18 +203,26 @@ impl From<InteropError> for ScriptError {
 }
 
 impl InteropError {
+    /// Thrown if a callback requires world access, but is unable to do so due
+    /// to the world not being reachable at all via any mechanism.
     pub fn missing_world() -> Self {
         Self(Arc::new(InteropErrorInner::MissingWorld))
     }
 
+    /// Thrown if a callback requires world access, but is unable to do so due
+    /// to the world being dropped. I.e. Symptom of a script trying to persist a world reference somewhere.
     pub fn stale_world_access() -> Self {
         Self(Arc::new(InteropErrorInner::StaleWorldAccess))
     }
 
+    /// Thrown if a base type is not registered with the reflection system
+    /// and therefore the reference cannot be dereferenced
     pub fn unregistered_base(base: ReflectBaseType) -> Self {
         Self(Arc::new(InteropErrorInner::UnregisteredBase { base }))
     }
 
+    /// Thrown if a base type is not registered with the reflection system
+    /// with the specific type data.
     pub fn missing_type_data(type_id: TypeId, type_data: String) -> Self {
         Self(Arc::new(InteropErrorInner::MissingTypeData {
             type_id,
@@ -230,6 +230,8 @@ impl InteropError {
         }))
     }
 
+    /// Thrown if a type cannot be converted from reflect, this can happen if the type was unable to
+    /// re-construct itself from a dynamic value.
     pub fn failed_from_reflect(type_id: Option<TypeId>, reason: String) -> Self {
         Self(Arc::new(InteropErrorInner::FailedFromReflect {
             type_id,
@@ -237,18 +239,24 @@ impl InteropError {
         }))
     }
 
+    /// Thrown if access to the given reflection base is required but cannot be claimed.
+    /// This is likely due to some other script already claiming access to the base.
     pub fn cannot_claim_access(base: ReflectBaseType) -> Self {
         Self(Arc::new(InteropErrorInner::CannotClaimAccess { base }))
     }
 
+    /// Thrown if a conversion into the given type is impossible.
+    /// Should be thrown with context on the other type if possible.
     pub fn impossible_conversion(into: TypeId) -> Self {
         Self(Arc::new(InteropErrorInner::ImpossibleConversion { into }))
     }
 
+    /// Thrown if a value was expected to be of one type but was of another
     pub fn type_mismatch(expected: TypeId, got: Option<TypeId>) -> Self {
         Self(Arc::new(InteropErrorInner::TypeMismatch { expected, got }))
     }
 
+    /// Identical to [`InteropError::type_mismatch`] but for more abstract types
     pub fn string_type_mismatch(expected: String, got: Option<TypeId>) -> Self {
         Self(Arc::new(InteropErrorInner::StringTypeMismatch {
             expected,
@@ -256,20 +264,24 @@ impl InteropError {
         }))
     }
 
+    /// Thrown if a [`ScriptValue`] could not be converted to the expected type
     pub fn value_mismatch(expected: TypeId, got: ScriptValue) -> Self {
         Self(Arc::new(InteropErrorInner::ValueMismatch { expected, got }))
     }
 
+    /// Thrown if a downcast from a reflect reference to a specific type failed
     pub fn could_not_downcast(from: ReflectReference, to: TypeId) -> Self {
         Self(Arc::new(InteropErrorInner::CouldNotDowncast { from, to }))
     }
 
+    /// Thrown if a garbage collected allocation was attempted to be accessed
     pub fn garbage_collected_allocation(reference: ReflectReference) -> Self {
         Self(Arc::new(InteropErrorInner::GarbageCollectedAllocation {
             reference,
         }))
     }
 
+    /// Thrown if a reflection path is invalid
     pub fn reflection_path_error(error: String, reference: Option<ReflectReference>) -> Self {
         Self(Arc::new(InteropErrorInner::ReflectionPathError {
             error,
@@ -277,6 +289,7 @@ impl InteropError {
         }))
     }
 
+    /// Thrown if an operation is not supported on the given base type, optionally with a value argument that was used to carry it out
     pub fn unsupported_operation(
         base: Option<TypeId>,
         value: Option<Box<dyn PartialReflect>>,
@@ -289,20 +302,24 @@ impl InteropError {
         }))
     }
 
+    /// Thrown if an invalid index operation was attempted on a value
     pub fn invalid_index(value: ScriptValue, reason: String) -> Self {
         Self(Arc::new(InteropErrorInner::InvalidIndex { value, reason }))
     }
 
+    /// Thrown if an entity was missing or invalid
     pub fn missing_entity(entity: Entity) -> Self {
         Self(Arc::new(InteropErrorInner::MissingEntity { entity }))
     }
 
+    /// Thrown if a component was invalid
     pub fn invalid_component(component_id: ComponentId) -> Self {
         Self(Arc::new(InteropErrorInner::InvalidComponent {
             component_id,
         }))
     }
 
+    /// Thrown when an error happens in a function call. The inner error provides details on the error.
     pub fn function_interop_error(
         function_info: &FunctionInfo,
         argument_info: Option<&ArgInfo>,
@@ -327,6 +344,9 @@ impl InteropError {
         }))
     }
 
+    /// Thrown when the error happens after a function call, and an error is thrown by bevy.
+    ///
+    /// I.e. mismatch in args, or invalid number of arguments
     pub fn function_call_error(inner: FunctionError) -> Self {
         Self(Arc::new(InteropErrorInner::FunctionCallError { inner }))
     }

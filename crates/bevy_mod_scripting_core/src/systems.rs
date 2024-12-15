@@ -187,8 +187,12 @@ pub fn event_handler<L: IntoCallbackLabel, A: Args, C: Context, R: Runtime>(
                     world,
                 )
                 .map_err(|e| {
-                    // println!("{e:?}");
-                    e.with_script(script.id.clone())
+                    e.with_script(script.id.clone()).with_context(&format!(
+                        "Event handling for: Runtime {}, Context: {}, Args: {}",
+                        type_name::<R>(),
+                        type_name::<C>(),
+                        type_name::<A>()
+                    ))
                 });
 
                 push_err_and_continue!(errors, handler_result)
@@ -199,22 +203,12 @@ pub fn event_handler<L: IntoCallbackLabel, A: Args, C: Context, R: Runtime>(
     world.insert_non_send_resource(runtime_container);
     world.insert_non_send_resource(script_contexts);
 
-    handle_script_errors(
-        world,
-        &format!(
-            "Encountered error in event handling for: Runtime {}, Context: {}, Args: {}",
-            type_name::<R>(),
-            type_name::<C>(),
-            type_name::<A>()
-        ),
-        errors.into_iter(),
-    );
+    handle_script_errors(world, errors.into_iter());
 }
 
 /// Handles errors caused by script execution and sends them to the error event channel
 pub(crate) fn handle_script_errors<I: Iterator<Item = ScriptError> + Clone>(
     world: &mut World,
-    context: &str,
     errors: I,
 ) {
     let mut error_events = world
@@ -227,7 +221,7 @@ pub(crate) fn handle_script_errors<I: Iterator<Item = ScriptError> + Clone>(
 
     for error in errors {
         let arc_world = WorldGuard::new(WorldAccessGuard::new(world));
-        bevy::log::error!("{}. {}", context, error.display_with_world(arc_world));
+        bevy::log::error!("{}", error.display_with_world(arc_world));
     }
 }
 
